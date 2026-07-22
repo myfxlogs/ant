@@ -29,6 +29,7 @@ func (s *MarketplaceServer) GetProviderEarnings(
 		TotalEarnings:     result.TotalEarnings.String(),
 		AvailableBalance:  result.AvailableBalance.String(),
 		PendingWithdrawal: result.PendingWithdrawal.String(),
+		PendingSettlement: result.PendingSettlement.String(),
 		LifetimeWithdrawn: result.LifetimeWithdrawn.String(),
 		TotalSales:        result.TotalSales,
 		ActiveStrategies:  result.ActiveStrategies,
@@ -62,7 +63,6 @@ func (s *MarketplaceServer) ListProviderTransactions(
 			StrategyTitle: r.StrategyTitle,
 			BuyerName:     r.BuyerName,
 			CreatedAt:     r.CreatedAt,
-			Status:        r.Status,
 		})
 	}
 

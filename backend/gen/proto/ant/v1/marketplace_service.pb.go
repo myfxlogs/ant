@@ -6147,7 +6147,6 @@ type MarketplaceAnalytics struct {
 	TotalStrategies   int32                  `protobuf:"varint,8,opt,name=total_strategies,json=totalStrategies,proto3" json:"total_strategies,omitempty"`
 	NewStrategies     int32                  `protobuf:"varint,9,opt,name=new_strategies,json=newStrategies,proto3" json:"new_strategies,omitempty"`
 	RefundRate        string                 `protobuf:"bytes,10,opt,name=refund_rate,json=refundRate,proto3" json:"refund_rate,omitempty"`
-	RenewalRate       string                 `protobuf:"bytes,11,opt,name=renewal_rate,json=renewalRate,proto3" json:"renewal_rate,omitempty"`
 	Daily             []*DailyAnalytics      `protobuf:"bytes,12,rep,name=daily,proto3" json:"daily,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
@@ -6249,13 +6248,6 @@ func (x *MarketplaceAnalytics) GetNewStrategies() int32 {
 func (x *MarketplaceAnalytics) GetRefundRate() string {
 	if x != nil {
 		return x.RefundRate
-	}
-	return ""
-}
-
-func (x *MarketplaceAnalytics) GetRenewalRate() string {
-	if x != nil {
-		return x.RenewalRate
 	}
 	return ""
 }
@@ -7027,7 +7019,7 @@ type ProviderEarnings struct {
 	LifetimeWithdrawn string                 `protobuf:"bytes,4,opt,name=lifetime_withdrawn,json=lifetimeWithdrawn,proto3" json:"lifetime_withdrawn,omitempty"`
 	TotalSales        int32                  `protobuf:"varint,5,opt,name=total_sales,json=totalSales,proto3" json:"total_sales,omitempty"`
 	ActiveStrategies  int32                  `protobuf:"varint,6,opt,name=active_strategies,json=activeStrategies,proto3" json:"active_strategies,omitempty"`
-	NextPayoutDate    string                 `protobuf:"bytes,7,opt,name=next_payout_date,json=nextPayoutDate,proto3" json:"next_payout_date,omitempty"`
+	PendingSettlement string                 `protobuf:"bytes,7,opt,name=pending_settlement,json=pendingSettlement,proto3" json:"pending_settlement,omitempty"` // Phase 5.4: frozen settlement balance
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -7104,9 +7096,9 @@ func (x *ProviderEarnings) GetActiveStrategies() int32 {
 	return 0
 }
 
-func (x *ProviderEarnings) GetNextPayoutDate() string {
+func (x *ProviderEarnings) GetPendingSettlement() string {
 	if x != nil {
-		return x.NextPayoutDate
+		return x.PendingSettlement
 	}
 	return ""
 }
@@ -7114,12 +7106,11 @@ func (x *ProviderEarnings) GetNextPayoutDate() string {
 type ProviderTransactionItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	TxType        string                 `protobuf:"bytes,2,opt,name=tx_type,json=txType,proto3" json:"tx_type,omitempty"` // sale / platform_fee / withdrawal / refund
+	TxType        string                 `protobuf:"bytes,2,opt,name=tx_type,json=txType,proto3" json:"tx_type,omitempty"` // settlement / fee_settlement / refund_reversal
 	Amount        string                 `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	StrategyTitle string                 `protobuf:"bytes,4,opt,name=strategy_title,json=strategyTitle,proto3" json:"strategy_title,omitempty"`
 	BuyerName     string                 `protobuf:"bytes,5,opt,name=buyer_name,json=buyerName,proto3" json:"buyer_name,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -7192,13 +7183,6 @@ func (x *ProviderTransactionItem) GetBuyerName() string {
 func (x *ProviderTransactionItem) GetCreatedAt() string {
 	if x != nil {
 		return x.CreatedAt
-	}
-	return ""
-}
-
-func (x *ProviderTransactionItem) GetStatus() string {
-	if x != nil {
-		return x.Status
 	}
 	return ""
 }
@@ -7303,6 +7287,1963 @@ func (x *ListProviderTransactionsResponse) GetTransactions() []*ProviderTransact
 func (x *ListProviderTransactionsResponse) GetTotal() int32 {
 	if x != nil {
 		return x.Total
+	}
+	return 0
+}
+
+type DecayMetrics struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	DecayScore        int32                  `protobuf:"varint,1,opt,name=decay_score,json=decayScore,proto3" json:"decay_score,omitempty"`
+	SharpeDeclinePct  string                 `protobuf:"bytes,2,opt,name=sharpe_decline_pct,json=sharpeDeclinePct,proto3" json:"sharpe_decline_pct,omitempty"`
+	WinrateDeclinePct string                 `protobuf:"bytes,3,opt,name=winrate_decline_pct,json=winrateDeclinePct,proto3" json:"winrate_decline_pct,omitempty"`
+	ReturnDelta       string                 `protobuf:"bytes,4,opt,name=return_delta,json=returnDelta,proto3" json:"return_delta,omitempty"`
+	TriggerReason     string                 `protobuf:"bytes,5,opt,name=trigger_reason,json=triggerReason,proto3" json:"trigger_reason,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *DecayMetrics) Reset() {
+	*x = DecayMetrics{}
+	mi := &file_marketplace_service_proto_msgTypes[102]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DecayMetrics) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DecayMetrics) ProtoMessage() {}
+
+func (x *DecayMetrics) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[102]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DecayMetrics.ProtoReflect.Descriptor instead.
+func (*DecayMetrics) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{102}
+}
+
+func (x *DecayMetrics) GetDecayScore() int32 {
+	if x != nil {
+		return x.DecayScore
+	}
+	return 0
+}
+
+func (x *DecayMetrics) GetSharpeDeclinePct() string {
+	if x != nil {
+		return x.SharpeDeclinePct
+	}
+	return ""
+}
+
+func (x *DecayMetrics) GetWinrateDeclinePct() string {
+	if x != nil {
+		return x.WinrateDeclinePct
+	}
+	return ""
+}
+
+func (x *DecayMetrics) GetReturnDelta() string {
+	if x != nil {
+		return x.ReturnDelta
+	}
+	return ""
+}
+
+func (x *DecayMetrics) GetTriggerReason() string {
+	if x != nil {
+		return x.TriggerReason
+	}
+	return ""
+}
+
+type DetectStrategyDecayRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DetectStrategyDecayRequest) Reset() {
+	*x = DetectStrategyDecayRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[103]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DetectStrategyDecayRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DetectStrategyDecayRequest) ProtoMessage() {}
+
+func (x *DetectStrategyDecayRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[103]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DetectStrategyDecayRequest.ProtoReflect.Descriptor instead.
+func (*DetectStrategyDecayRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{103}
+}
+
+func (x *DetectStrategyDecayRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+type DetectStrategyDecayResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	IsDecaying        bool                   `protobuf:"varint,1,opt,name=is_decaying,json=isDecaying,proto3" json:"is_decaying,omitempty"`
+	DecayScore        int32                  `protobuf:"varint,2,opt,name=decay_score,json=decayScore,proto3" json:"decay_score,omitempty"` // 0-3, number of signals that fired
+	TriggerReason     string                 `protobuf:"bytes,3,opt,name=trigger_reason,json=triggerReason,proto3" json:"trigger_reason,omitempty"`
+	BaselineSharpe    string                 `protobuf:"bytes,4,opt,name=baseline_sharpe,json=baselineSharpe,proto3" json:"baseline_sharpe,omitempty"`
+	BaselineWinRate   string                 `protobuf:"bytes,5,opt,name=baseline_win_rate,json=baselineWinRate,proto3" json:"baseline_win_rate,omitempty"`
+	RecentSharpe      string                 `protobuf:"bytes,6,opt,name=recent_sharpe,json=recentSharpe,proto3" json:"recent_sharpe,omitempty"`
+	RecentWinRate     string                 `protobuf:"bytes,7,opt,name=recent_win_rate,json=recentWinRate,proto3" json:"recent_win_rate,omitempty"`
+	SharpeDeclinePct  string                 `protobuf:"bytes,8,opt,name=sharpe_decline_pct,json=sharpeDeclinePct,proto3" json:"sharpe_decline_pct,omitempty"`
+	WinrateDeclinePct string                 `protobuf:"bytes,9,opt,name=winrate_decline_pct,json=winrateDeclinePct,proto3" json:"winrate_decline_pct,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *DetectStrategyDecayResponse) Reset() {
+	*x = DetectStrategyDecayResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[104]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DetectStrategyDecayResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DetectStrategyDecayResponse) ProtoMessage() {}
+
+func (x *DetectStrategyDecayResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[104]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DetectStrategyDecayResponse.ProtoReflect.Descriptor instead.
+func (*DetectStrategyDecayResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{104}
+}
+
+func (x *DetectStrategyDecayResponse) GetIsDecaying() bool {
+	if x != nil {
+		return x.IsDecaying
+	}
+	return false
+}
+
+func (x *DetectStrategyDecayResponse) GetDecayScore() int32 {
+	if x != nil {
+		return x.DecayScore
+	}
+	return 0
+}
+
+func (x *DetectStrategyDecayResponse) GetTriggerReason() string {
+	if x != nil {
+		return x.TriggerReason
+	}
+	return ""
+}
+
+func (x *DetectStrategyDecayResponse) GetBaselineSharpe() string {
+	if x != nil {
+		return x.BaselineSharpe
+	}
+	return ""
+}
+
+func (x *DetectStrategyDecayResponse) GetBaselineWinRate() string {
+	if x != nil {
+		return x.BaselineWinRate
+	}
+	return ""
+}
+
+func (x *DetectStrategyDecayResponse) GetRecentSharpe() string {
+	if x != nil {
+		return x.RecentSharpe
+	}
+	return ""
+}
+
+func (x *DetectStrategyDecayResponse) GetRecentWinRate() string {
+	if x != nil {
+		return x.RecentWinRate
+	}
+	return ""
+}
+
+func (x *DetectStrategyDecayResponse) GetSharpeDeclinePct() string {
+	if x != nil {
+		return x.SharpeDeclinePct
+	}
+	return ""
+}
+
+func (x *DetectStrategyDecayResponse) GetWinrateDeclinePct() string {
+	if x != nil {
+		return x.WinrateDeclinePct
+	}
+	return ""
+}
+
+type ListOptimizationTasksRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // pending | completed | rejected | published (empty = all)
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOptimizationTasksRequest) Reset() {
+	*x = ListOptimizationTasksRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[105]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOptimizationTasksRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOptimizationTasksRequest) ProtoMessage() {}
+
+func (x *ListOptimizationTasksRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[105]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOptimizationTasksRequest.ProtoReflect.Descriptor instead.
+func (*ListOptimizationTasksRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{105}
+}
+
+func (x *ListOptimizationTasksRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ListOptimizationTasksRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListOptimizationTasksRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type OptimizationTaskInfo struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	StrategyId         string                 `protobuf:"bytes,2,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	Status             string                 `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	TriggerReason      string                 `protobuf:"bytes,4,opt,name=trigger_reason,json=triggerReason,proto3" json:"trigger_reason,omitempty"`
+	ChangeSummary      string                 `protobuf:"bytes,5,opt,name=change_summary,json=changeSummary,proto3" json:"change_summary,omitempty"`
+	CreatedAtMs        int64                  `protobuf:"varint,6,opt,name=created_at_ms,json=createdAtMs,proto3" json:"created_at_ms,omitempty"`
+	CompletedAtMs      int64                  `protobuf:"varint,7,opt,name=completed_at_ms,json=completedAtMs,proto3" json:"completed_at_ms,omitempty"`
+	PublishedVersionId string                 `protobuf:"bytes,8,opt,name=published_version_id,json=publishedVersionId,proto3" json:"published_version_id,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *OptimizationTaskInfo) Reset() {
+	*x = OptimizationTaskInfo{}
+	mi := &file_marketplace_service_proto_msgTypes[106]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OptimizationTaskInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OptimizationTaskInfo) ProtoMessage() {}
+
+func (x *OptimizationTaskInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[106]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OptimizationTaskInfo.ProtoReflect.Descriptor instead.
+func (*OptimizationTaskInfo) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{106}
+}
+
+func (x *OptimizationTaskInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *OptimizationTaskInfo) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *OptimizationTaskInfo) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *OptimizationTaskInfo) GetTriggerReason() string {
+	if x != nil {
+		return x.TriggerReason
+	}
+	return ""
+}
+
+func (x *OptimizationTaskInfo) GetChangeSummary() string {
+	if x != nil {
+		return x.ChangeSummary
+	}
+	return ""
+}
+
+func (x *OptimizationTaskInfo) GetCreatedAtMs() int64 {
+	if x != nil {
+		return x.CreatedAtMs
+	}
+	return 0
+}
+
+func (x *OptimizationTaskInfo) GetCompletedAtMs() int64 {
+	if x != nil {
+		return x.CompletedAtMs
+	}
+	return 0
+}
+
+func (x *OptimizationTaskInfo) GetPublishedVersionId() string {
+	if x != nil {
+		return x.PublishedVersionId
+	}
+	return ""
+}
+
+type ListOptimizationTasksResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Tasks         []*OptimizationTaskInfo `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
+	Total         int32                   `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOptimizationTasksResponse) Reset() {
+	*x = ListOptimizationTasksResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[107]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOptimizationTasksResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOptimizationTasksResponse) ProtoMessage() {}
+
+func (x *ListOptimizationTasksResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[107]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOptimizationTasksResponse.ProtoReflect.Descriptor instead.
+func (*ListOptimizationTasksResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{107}
+}
+
+func (x *ListOptimizationTasksResponse) GetTasks() []*OptimizationTaskInfo {
+	if x != nil {
+		return x.Tasks
+	}
+	return nil
+}
+
+func (x *ListOptimizationTasksResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type GetOptimizationTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetOptimizationTaskRequest) Reset() {
+	*x = GetOptimizationTaskRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[108]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetOptimizationTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetOptimizationTaskRequest) ProtoMessage() {}
+
+func (x *GetOptimizationTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[108]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetOptimizationTaskRequest.ProtoReflect.Descriptor instead.
+func (*GetOptimizationTaskRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{108}
+}
+
+func (x *GetOptimizationTaskRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type GetOptimizationTaskResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Task             *OptimizationTaskInfo  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	SuggestedCode    string                 `protobuf:"bytes,2,opt,name=suggested_code,json=suggestedCode,proto3" json:"suggested_code,omitempty"`
+	SuggestedParams  string                 `protobuf:"bytes,3,opt,name=suggested_params,json=suggestedParams,proto3" json:"suggested_params,omitempty"`
+	BacktestSnapshot []byte                 `protobuf:"bytes,4,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"`
+	DecayMetrics     *DecayMetrics          `protobuf:"bytes,5,opt,name=decay_metrics,json=decayMetrics,proto3" json:"decay_metrics,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetOptimizationTaskResponse) Reset() {
+	*x = GetOptimizationTaskResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[109]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetOptimizationTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetOptimizationTaskResponse) ProtoMessage() {}
+
+func (x *GetOptimizationTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[109]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetOptimizationTaskResponse.ProtoReflect.Descriptor instead.
+func (*GetOptimizationTaskResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{109}
+}
+
+func (x *GetOptimizationTaskResponse) GetTask() *OptimizationTaskInfo {
+	if x != nil {
+		return x.Task
+	}
+	return nil
+}
+
+func (x *GetOptimizationTaskResponse) GetSuggestedCode() string {
+	if x != nil {
+		return x.SuggestedCode
+	}
+	return ""
+}
+
+func (x *GetOptimizationTaskResponse) GetSuggestedParams() string {
+	if x != nil {
+		return x.SuggestedParams
+	}
+	return ""
+}
+
+func (x *GetOptimizationTaskResponse) GetBacktestSnapshot() []byte {
+	if x != nil {
+		return x.BacktestSnapshot
+	}
+	return nil
+}
+
+func (x *GetOptimizationTaskResponse) GetDecayMetrics() *DecayMetrics {
+	if x != nil {
+		return x.DecayMetrics
+	}
+	return nil
+}
+
+type RejectOptimizationTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectOptimizationTaskRequest) Reset() {
+	*x = RejectOptimizationTaskRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[110]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectOptimizationTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectOptimizationTaskRequest) ProtoMessage() {}
+
+func (x *RejectOptimizationTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[110]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectOptimizationTaskRequest.ProtoReflect.Descriptor instead.
+func (*RejectOptimizationTaskRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{110}
+}
+
+func (x *RejectOptimizationTaskRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type RejectOptimizationTaskResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RejectOptimizationTaskResponse) Reset() {
+	*x = RejectOptimizationTaskResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[111]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RejectOptimizationTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectOptimizationTaskResponse) ProtoMessage() {}
+
+func (x *RejectOptimizationTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[111]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectOptimizationTaskResponse.ProtoReflect.Descriptor instead.
+func (*RejectOptimizationTaskResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{111}
+}
+
+func (x *RejectOptimizationTaskResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type PublishOptimizationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishOptimizationRequest) Reset() {
+	*x = PublishOptimizationRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[112]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishOptimizationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishOptimizationRequest) ProtoMessage() {}
+
+func (x *PublishOptimizationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[112]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishOptimizationRequest.ProtoReflect.Descriptor instead.
+func (*PublishOptimizationRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{112}
+}
+
+func (x *PublishOptimizationRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type PublishOptimizationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	VersionId     string                 `protobuf:"bytes,1,opt,name=version_id,json=versionId,proto3" json:"version_id,omitempty"`
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PublishOptimizationResponse) Reset() {
+	*x = PublishOptimizationResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[113]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PublishOptimizationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PublishOptimizationResponse) ProtoMessage() {}
+
+func (x *PublishOptimizationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[113]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PublishOptimizationResponse.ProtoReflect.Descriptor instead.
+func (*PublishOptimizationResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{113}
+}
+
+func (x *PublishOptimizationResponse) GetVersionId() string {
+	if x != nil {
+		return x.VersionId
+	}
+	return ""
+}
+
+func (x *PublishOptimizationResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type PreviewOptimizationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PreviewOptimizationRequest) Reset() {
+	*x = PreviewOptimizationRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[114]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PreviewOptimizationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PreviewOptimizationRequest) ProtoMessage() {}
+
+func (x *PreviewOptimizationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[114]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PreviewOptimizationRequest.ProtoReflect.Descriptor instead.
+func (*PreviewOptimizationRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{114}
+}
+
+func (x *PreviewOptimizationRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type PreviewOptimizationResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Task  *OptimizationTaskInfo  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
+	// Original strategy's backtest snapshot at publish time.
+	OriginalBacktest *BacktestSnapshot `protobuf:"bytes,2,opt,name=original_backtest,json=originalBacktest,proto3" json:"original_backtest,omitempty"`
+	// Optimized version's backtest snapshot from the AI-generated code.
+	OptimizedBacktest *BacktestSnapshot `protobuf:"bytes,3,opt,name=optimized_backtest,json=optimizedBacktest,proto3" json:"optimized_backtest,omitempty"`
+	// Decay metrics that triggered the optimization.
+	DecayMetrics *DecayMetrics `protobuf:"bytes,4,opt,name=decay_metrics,json=decayMetrics,proto3" json:"decay_metrics,omitempty"`
+	// AI-generated change summary for the optimization.
+	ChangeSummary string `protobuf:"bytes,5,opt,name=change_summary,json=changeSummary,proto3" json:"change_summary,omitempty"`
+	// Suggested optimized source code (truncated preview).
+	SuggestedCodePreview string `protobuf:"bytes,6,opt,name=suggested_code_preview,json=suggestedCodePreview,proto3" json:"suggested_code_preview,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *PreviewOptimizationResponse) Reset() {
+	*x = PreviewOptimizationResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[115]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PreviewOptimizationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PreviewOptimizationResponse) ProtoMessage() {}
+
+func (x *PreviewOptimizationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[115]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PreviewOptimizationResponse.ProtoReflect.Descriptor instead.
+func (*PreviewOptimizationResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{115}
+}
+
+func (x *PreviewOptimizationResponse) GetTask() *OptimizationTaskInfo {
+	if x != nil {
+		return x.Task
+	}
+	return nil
+}
+
+func (x *PreviewOptimizationResponse) GetOriginalBacktest() *BacktestSnapshot {
+	if x != nil {
+		return x.OriginalBacktest
+	}
+	return nil
+}
+
+func (x *PreviewOptimizationResponse) GetOptimizedBacktest() *BacktestSnapshot {
+	if x != nil {
+		return x.OptimizedBacktest
+	}
+	return nil
+}
+
+func (x *PreviewOptimizationResponse) GetDecayMetrics() *DecayMetrics {
+	if x != nil {
+		return x.DecayMetrics
+	}
+	return nil
+}
+
+func (x *PreviewOptimizationResponse) GetChangeSummary() string {
+	if x != nil {
+		return x.ChangeSummary
+	}
+	return ""
+}
+
+func (x *PreviewOptimizationResponse) GetSuggestedCodePreview() string {
+	if x != nil {
+		return x.SuggestedCodePreview
+	}
+	return ""
+}
+
+type CreateBundleRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Title           string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description     string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	PriceModel      string                 `protobuf:"bytes,3,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"` // once | subscription
+	PriceAmount     string                 `protobuf:"bytes,4,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	StrategyIds     []string               `protobuf:"bytes,5,rep,name=strategy_ids,json=strategyIds,proto3" json:"strategy_ids,omitempty"`
+	PlatformFeeRate string                 `protobuf:"bytes,6,opt,name=platform_fee_rate,json=platformFeeRate,proto3" json:"platform_fee_rate,omitempty"` // optional, defaults to 0.10
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *CreateBundleRequest) Reset() {
+	*x = CreateBundleRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[116]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateBundleRequest) ProtoMessage() {}
+
+func (x *CreateBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[116]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateBundleRequest.ProtoReflect.Descriptor instead.
+func (*CreateBundleRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{116}
+}
+
+func (x *CreateBundleRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *CreateBundleRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *CreateBundleRequest) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *CreateBundleRequest) GetPriceAmount() string {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return ""
+}
+
+func (x *CreateBundleRequest) GetStrategyIds() []string {
+	if x != nil {
+		return x.StrategyIds
+	}
+	return nil
+}
+
+func (x *CreateBundleRequest) GetPlatformFeeRate() string {
+	if x != nil {
+		return x.PlatformFeeRate
+	}
+	return ""
+}
+
+type CreateBundleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BundleId      string                 `protobuf:"bytes,1,opt,name=bundle_id,json=bundleId,proto3" json:"bundle_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateBundleResponse) Reset() {
+	*x = CreateBundleResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[117]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateBundleResponse) ProtoMessage() {}
+
+func (x *CreateBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[117]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateBundleResponse.ProtoReflect.Descriptor instead.
+func (*CreateBundleResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{117}
+}
+
+func (x *CreateBundleResponse) GetBundleId() string {
+	if x != nil {
+		return x.BundleId
+	}
+	return ""
+}
+
+type ListBundlesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PublisherId   string                 `protobuf:"bytes,1,opt,name=publisher_id,json=publisherId,proto3" json:"publisher_id,omitempty"` // optional filter
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBundlesRequest) Reset() {
+	*x = ListBundlesRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[118]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBundlesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBundlesRequest) ProtoMessage() {}
+
+func (x *ListBundlesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[118]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBundlesRequest.ProtoReflect.Descriptor instead.
+func (*ListBundlesRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{118}
+}
+
+func (x *ListBundlesRequest) GetPublisherId() string {
+	if x != nil {
+		return x.PublisherId
+	}
+	return ""
+}
+
+func (x *ListBundlesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListBundlesRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type BundleItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	SortOrder     int32                  `protobuf:"varint,2,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	PriceAmount   string                 `protobuf:"bytes,4,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BundleItem) Reset() {
+	*x = BundleItem{}
+	mi := &file_marketplace_service_proto_msgTypes[119]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BundleItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BundleItem) ProtoMessage() {}
+
+func (x *BundleItem) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[119]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BundleItem.ProtoReflect.Descriptor instead.
+func (*BundleItem) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{119}
+}
+
+func (x *BundleItem) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *BundleItem) GetSortOrder() int32 {
+	if x != nil {
+		return x.SortOrder
+	}
+	return 0
+}
+
+func (x *BundleItem) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *BundleItem) GetPriceAmount() string {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return ""
+}
+
+type BundleInfo struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Title           string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	Description     string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	PublisherId     string                 `protobuf:"bytes,4,opt,name=publisher_id,json=publisherId,proto3" json:"publisher_id,omitempty"`
+	PriceModel      string                 `protobuf:"bytes,5,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
+	PriceAmount     string                 `protobuf:"bytes,6,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	PlatformFeeRate string                 `protobuf:"bytes,7,opt,name=platform_fee_rate,json=platformFeeRate,proto3" json:"platform_fee_rate,omitempty"`
+	TotalPurchases  int32                  `protobuf:"varint,8,opt,name=total_purchases,json=totalPurchases,proto3" json:"total_purchases,omitempty"`
+	CreatedAtMs     int64                  `protobuf:"varint,9,opt,name=created_at_ms,json=createdAtMs,proto3" json:"created_at_ms,omitempty"`
+	Items           []*BundleItem          `protobuf:"bytes,10,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *BundleInfo) Reset() {
+	*x = BundleInfo{}
+	mi := &file_marketplace_service_proto_msgTypes[120]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BundleInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BundleInfo) ProtoMessage() {}
+
+func (x *BundleInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[120]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BundleInfo.ProtoReflect.Descriptor instead.
+func (*BundleInfo) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{120}
+}
+
+func (x *BundleInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetPublisherId() string {
+	if x != nil {
+		return x.PublisherId
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetPriceAmount() string {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetPlatformFeeRate() string {
+	if x != nil {
+		return x.PlatformFeeRate
+	}
+	return ""
+}
+
+func (x *BundleInfo) GetTotalPurchases() int32 {
+	if x != nil {
+		return x.TotalPurchases
+	}
+	return 0
+}
+
+func (x *BundleInfo) GetCreatedAtMs() int64 {
+	if x != nil {
+		return x.CreatedAtMs
+	}
+	return 0
+}
+
+func (x *BundleInfo) GetItems() []*BundleItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type ListBundlesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Bundles       []*BundleInfo          `protobuf:"bytes,1,rep,name=bundles,proto3" json:"bundles,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBundlesResponse) Reset() {
+	*x = ListBundlesResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[121]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBundlesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBundlesResponse) ProtoMessage() {}
+
+func (x *ListBundlesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[121]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBundlesResponse.ProtoReflect.Descriptor instead.
+func (*ListBundlesResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{121}
+}
+
+func (x *ListBundlesResponse) GetBundles() []*BundleInfo {
+	if x != nil {
+		return x.Bundles
+	}
+	return nil
+}
+
+func (x *ListBundlesResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type GetBundleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BundleId      string                 `protobuf:"bytes,1,opt,name=bundle_id,json=bundleId,proto3" json:"bundle_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBundleRequest) Reset() {
+	*x = GetBundleRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[122]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBundleRequest) ProtoMessage() {}
+
+func (x *GetBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[122]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBundleRequest.ProtoReflect.Descriptor instead.
+func (*GetBundleRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{122}
+}
+
+func (x *GetBundleRequest) GetBundleId() string {
+	if x != nil {
+		return x.BundleId
+	}
+	return ""
+}
+
+type GetBundleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Bundle        *BundleInfo            `protobuf:"bytes,1,opt,name=bundle,proto3" json:"bundle,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetBundleResponse) Reset() {
+	*x = GetBundleResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[123]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetBundleResponse) ProtoMessage() {}
+
+func (x *GetBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[123]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetBundleResponse.ProtoReflect.Descriptor instead.
+func (*GetBundleResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{123}
+}
+
+func (x *GetBundleResponse) GetBundle() *BundleInfo {
+	if x != nil {
+		return x.Bundle
+	}
+	return nil
+}
+
+type PurchaseBundleRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	BundleId       string                 `protobuf:"bytes,1,opt,name=bundle_id,json=bundleId,proto3" json:"bundle_id,omitempty"`
+	IdempotencyKey string                 `protobuf:"bytes,2,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PurchaseBundleRequest) Reset() {
+	*x = PurchaseBundleRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[124]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurchaseBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurchaseBundleRequest) ProtoMessage() {}
+
+func (x *PurchaseBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[124]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurchaseBundleRequest.ProtoReflect.Descriptor instead.
+func (*PurchaseBundleRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{124}
+}
+
+func (x *PurchaseBundleRequest) GetBundleId() string {
+	if x != nil {
+		return x.BundleId
+	}
+	return ""
+}
+
+func (x *PurchaseBundleRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+type PurchaseBundleResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	SubscriptionId string                 `protobuf:"bytes,1,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
+	TransactionId  string                 `protobuf:"bytes,2,opt,name=transaction_id,json=transactionId,proto3" json:"transaction_id,omitempty"`
+	AmountCharged  string                 `protobuf:"bytes,3,opt,name=amount_charged,json=amountCharged,proto3" json:"amount_charged,omitempty"`
+	BalanceAfter   string                 `protobuf:"bytes,4,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PurchaseBundleResponse) Reset() {
+	*x = PurchaseBundleResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[125]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurchaseBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurchaseBundleResponse) ProtoMessage() {}
+
+func (x *PurchaseBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[125]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurchaseBundleResponse.ProtoReflect.Descriptor instead.
+func (*PurchaseBundleResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{125}
+}
+
+func (x *PurchaseBundleResponse) GetSubscriptionId() string {
+	if x != nil {
+		return x.SubscriptionId
+	}
+	return ""
+}
+
+func (x *PurchaseBundleResponse) GetTransactionId() string {
+	if x != nil {
+		return x.TransactionId
+	}
+	return ""
+}
+
+func (x *PurchaseBundleResponse) GetAmountCharged() string {
+	if x != nil {
+		return x.AmountCharged
+	}
+	return ""
+}
+
+func (x *PurchaseBundleResponse) GetBalanceAfter() string {
+	if x != nil {
+		return x.BalanceAfter
+	}
+	return ""
+}
+
+type DeleteBundleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BundleId      string                 `protobuf:"bytes,1,opt,name=bundle_id,json=bundleId,proto3" json:"bundle_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBundleRequest) Reset() {
+	*x = DeleteBundleRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[126]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBundleRequest) ProtoMessage() {}
+
+func (x *DeleteBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[126]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBundleRequest.ProtoReflect.Descriptor instead.
+func (*DeleteBundleRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{126}
+}
+
+func (x *DeleteBundleRequest) GetBundleId() string {
+	if x != nil {
+		return x.BundleId
+	}
+	return ""
+}
+
+type DeleteBundleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBundleResponse) Reset() {
+	*x = DeleteBundleResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[127]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBundleResponse) ProtoMessage() {}
+
+func (x *DeleteBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[127]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBundleResponse.ProtoReflect.Descriptor instead.
+func (*DeleteBundleResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{127}
+}
+
+func (x *DeleteBundleResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type FeeTierInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	TierName      string                 `protobuf:"bytes,2,opt,name=tier_name,json=tierName,proto3" json:"tier_name,omitempty"`
+	MinSalesCount int32                  `protobuf:"varint,3,opt,name=min_sales_count,json=minSalesCount,proto3" json:"min_sales_count,omitempty"`
+	FeeRate       string                 `protobuf:"bytes,4,opt,name=fee_rate,json=feeRate,proto3" json:"fee_rate,omitempty"`
+	SortOrder     int32                  `protobuf:"varint,5,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	Enabled       bool                   `protobuf:"varint,6,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FeeTierInfo) Reset() {
+	*x = FeeTierInfo{}
+	mi := &file_marketplace_service_proto_msgTypes[128]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FeeTierInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FeeTierInfo) ProtoMessage() {}
+
+func (x *FeeTierInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[128]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FeeTierInfo.ProtoReflect.Descriptor instead.
+func (*FeeTierInfo) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{128}
+}
+
+func (x *FeeTierInfo) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *FeeTierInfo) GetTierName() string {
+	if x != nil {
+		return x.TierName
+	}
+	return ""
+}
+
+func (x *FeeTierInfo) GetMinSalesCount() int32 {
+	if x != nil {
+		return x.MinSalesCount
+	}
+	return 0
+}
+
+func (x *FeeTierInfo) GetFeeRate() string {
+	if x != nil {
+		return x.FeeRate
+	}
+	return ""
+}
+
+func (x *FeeTierInfo) GetSortOrder() int32 {
+	if x != nil {
+		return x.SortOrder
+	}
+	return 0
+}
+
+func (x *FeeTierInfo) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+type ListFeeTiersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tiers         []*FeeTierInfo         `protobuf:"bytes,1,rep,name=tiers,proto3" json:"tiers,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListFeeTiersResponse) Reset() {
+	*x = ListFeeTiersResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[129]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListFeeTiersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListFeeTiersResponse) ProtoMessage() {}
+
+func (x *ListFeeTiersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[129]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListFeeTiersResponse.ProtoReflect.Descriptor instead.
+func (*ListFeeTiersResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{129}
+}
+
+func (x *ListFeeTiersResponse) GetTiers() []*FeeTierInfo {
+	if x != nil {
+		return x.Tiers
+	}
+	return nil
+}
+
+type UpdateFeeTierRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	FeeRate       string                 `protobuf:"bytes,2,opt,name=fee_rate,json=feeRate,proto3" json:"fee_rate,omitempty"`
+	MinSalesCount int32                  `protobuf:"varint,3,opt,name=min_sales_count,json=minSalesCount,proto3" json:"min_sales_count,omitempty"`
+	Enabled       bool                   `protobuf:"varint,4,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFeeTierRequest) Reset() {
+	*x = UpdateFeeTierRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[130]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFeeTierRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFeeTierRequest) ProtoMessage() {}
+
+func (x *UpdateFeeTierRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[130]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFeeTierRequest.ProtoReflect.Descriptor instead.
+func (*UpdateFeeTierRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{130}
+}
+
+func (x *UpdateFeeTierRequest) GetId() int32 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateFeeTierRequest) GetFeeRate() string {
+	if x != nil {
+		return x.FeeRate
+	}
+	return ""
+}
+
+func (x *UpdateFeeTierRequest) GetMinSalesCount() int32 {
+	if x != nil {
+		return x.MinSalesCount
+	}
+	return 0
+}
+
+func (x *UpdateFeeTierRequest) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+type UpdateFeeTierResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFeeTierResponse) Reset() {
+	*x = UpdateFeeTierResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[131]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFeeTierResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFeeTierResponse) ProtoMessage() {}
+
+func (x *UpdateFeeTierResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[131]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFeeTierResponse.ProtoReflect.Descriptor instead.
+func (*UpdateFeeTierResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{131}
+}
+
+func (x *UpdateFeeTierResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type GetProviderFeeTierRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PublisherId   string                 `protobuf:"bytes,1,opt,name=publisher_id,json=publisherId,proto3" json:"publisher_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetProviderFeeTierRequest) Reset() {
+	*x = GetProviderFeeTierRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[132]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProviderFeeTierRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProviderFeeTierRequest) ProtoMessage() {}
+
+func (x *GetProviderFeeTierRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[132]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProviderFeeTierRequest.ProtoReflect.Descriptor instead.
+func (*GetProviderFeeTierRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{132}
+}
+
+func (x *GetProviderFeeTierRequest) GetPublisherId() string {
+	if x != nil {
+		return x.PublisherId
+	}
+	return ""
+}
+
+type GetProviderFeeTierResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	TierName         string                 `protobuf:"bytes,1,opt,name=tier_name,json=tierName,proto3" json:"tier_name,omitempty"`
+	FeeRate          string                 `protobuf:"bytes,2,opt,name=fee_rate,json=feeRate,proto3" json:"fee_rate,omitempty"`
+	MinSalesCount    int32                  `protobuf:"varint,3,opt,name=min_sales_count,json=minSalesCount,proto3" json:"min_sales_count,omitempty"`
+	CurrentSales     int32                  `protobuf:"varint,4,opt,name=current_sales,json=currentSales,proto3" json:"current_sales,omitempty"`
+	NextTierMinSales int32                  `protobuf:"varint,5,opt,name=next_tier_min_sales,json=nextTierMinSales,proto3" json:"next_tier_min_sales,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetProviderFeeTierResponse) Reset() {
+	*x = GetProviderFeeTierResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[133]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetProviderFeeTierResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProviderFeeTierResponse) ProtoMessage() {}
+
+func (x *GetProviderFeeTierResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[133]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProviderFeeTierResponse.ProtoReflect.Descriptor instead.
+func (*GetProviderFeeTierResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{133}
+}
+
+func (x *GetProviderFeeTierResponse) GetTierName() string {
+	if x != nil {
+		return x.TierName
+	}
+	return ""
+}
+
+func (x *GetProviderFeeTierResponse) GetFeeRate() string {
+	if x != nil {
+		return x.FeeRate
+	}
+	return ""
+}
+
+func (x *GetProviderFeeTierResponse) GetMinSalesCount() int32 {
+	if x != nil {
+		return x.MinSalesCount
+	}
+	return 0
+}
+
+func (x *GetProviderFeeTierResponse) GetCurrentSales() int32 {
+	if x != nil {
+		return x.CurrentSales
+	}
+	return 0
+}
+
+func (x *GetProviderFeeTierResponse) GetNextTierMinSales() int32 {
+	if x != nil {
+		return x.NextTierMinSales
 	}
 	return 0
 }
@@ -7882,7 +9823,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x04date\x18\x01 \x01(\tR\x04date\x12\x10\n" +
 	"\x03gmv\x18\x02 \x01(\tR\x03gmv\x12\"\n" +
 	"\ftransactions\x18\x03 \x01(\x05R\ftransactions\x12'\n" +
-	"\x0fnew_subscribers\x18\x04 \x01(\x05R\x0enewSubscribers\"\xde\x03\n" +
+	"\x0fnew_subscribers\x18\x04 \x01(\x05R\x0enewSubscribers\"\xbb\x03\n" +
 	"\x14MarketplaceAnalytics\x12\x1b\n" +
 	"\ttotal_gmv\x18\x01 \x01(\tR\btotalGmv\x12)\n" +
 	"\x10platform_revenue\x18\x02 \x01(\tR\x0fplatformRevenue\x12)\n" +
@@ -7895,8 +9836,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x0enew_strategies\x18\t \x01(\x05R\rnewStrategies\x12\x1f\n" +
 	"\vrefund_rate\x18\n" +
 	" \x01(\tR\n" +
-	"refundRate\x12!\n" +
-	"\frenewal_rate\x18\v \x01(\tR\vrenewalRate\x12,\n" +
+	"refundRate\x12,\n" +
 	"\x05daily\x18\f \x03(\v2\x16.ant.v1.DailyAnalyticsR\x05daily\"W\n" +
 	"\aTopItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -7957,7 +9897,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x14DisableCouponRequest\x12\x1b\n" +
 	"\tcoupon_id\x18\x01 \x01(\tR\bcouponId\"1\n" +
 	"\x15DisableCouponResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xbc\x02\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xc1\x02\n" +
 	"\x10ProviderEarnings\x12%\n" +
 	"\x0etotal_earnings\x18\x01 \x01(\tR\rtotalEarnings\x12+\n" +
 	"\x11available_balance\x18\x02 \x01(\tR\x10availableBalance\x12-\n" +
@@ -7965,8 +9905,8 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x12lifetime_withdrawn\x18\x04 \x01(\tR\x11lifetimeWithdrawn\x12\x1f\n" +
 	"\vtotal_sales\x18\x05 \x01(\x05R\n" +
 	"totalSales\x12+\n" +
-	"\x11active_strategies\x18\x06 \x01(\x05R\x10activeStrategies\x12(\n" +
-	"\x10next_payout_date\x18\a \x01(\tR\x0enextPayoutDate\"\xd7\x01\n" +
+	"\x11active_strategies\x18\x06 \x01(\x05R\x10activeStrategies\x12-\n" +
+	"\x12pending_settlement\x18\a \x01(\tR\x11pendingSettlement\"\xbf\x01\n" +
 	"\x17ProviderTransactionItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\atx_type\x18\x02 \x01(\tR\x06txType\x12\x16\n" +
@@ -7975,14 +9915,159 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
 	"buyer_name\x18\x05 \x01(\tR\tbuyerName\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x16\n" +
-	"\x06status\x18\a \x01(\tR\x06status\"O\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\"O\n" +
 	"\x1fListProviderTransactionsRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\x05R\x06offset\"}\n" +
 	" ListProviderTransactionsResponse\x12C\n" +
 	"\ftransactions\x18\x01 \x03(\v2\x1f.ant.v1.ProviderTransactionItemR\ftransactions\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total2\xc5\x1d\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xd7\x01\n" +
+	"\fDecayMetrics\x12\x1f\n" +
+	"\vdecay_score\x18\x01 \x01(\x05R\n" +
+	"decayScore\x12,\n" +
+	"\x12sharpe_decline_pct\x18\x02 \x01(\tR\x10sharpeDeclinePct\x12.\n" +
+	"\x13winrate_decline_pct\x18\x03 \x01(\tR\x11winrateDeclinePct\x12!\n" +
+	"\freturn_delta\x18\x04 \x01(\tR\vreturnDelta\x12%\n" +
+	"\x0etrigger_reason\x18\x05 \x01(\tR\rtriggerReason\"=\n" +
+	"\x1aDetectStrategyDecayRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\"\x86\x03\n" +
+	"\x1bDetectStrategyDecayResponse\x12\x1f\n" +
+	"\vis_decaying\x18\x01 \x01(\bR\n" +
+	"isDecaying\x12\x1f\n" +
+	"\vdecay_score\x18\x02 \x01(\x05R\n" +
+	"decayScore\x12%\n" +
+	"\x0etrigger_reason\x18\x03 \x01(\tR\rtriggerReason\x12'\n" +
+	"\x0fbaseline_sharpe\x18\x04 \x01(\tR\x0ebaselineSharpe\x12*\n" +
+	"\x11baseline_win_rate\x18\x05 \x01(\tR\x0fbaselineWinRate\x12#\n" +
+	"\rrecent_sharpe\x18\x06 \x01(\tR\frecentSharpe\x12&\n" +
+	"\x0frecent_win_rate\x18\a \x01(\tR\rrecentWinRate\x12,\n" +
+	"\x12sharpe_decline_pct\x18\b \x01(\tR\x10sharpeDeclinePct\x12.\n" +
+	"\x13winrate_decline_pct\x18\t \x01(\tR\x11winrateDeclinePct\"d\n" +
+	"\x1cListOptimizationTasksRequest\x12\x16\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\xab\x02\n" +
+	"\x14OptimizationTaskInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
+	"\vstrategy_id\x18\x02 \x01(\tR\n" +
+	"strategyId\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\tR\x06status\x12%\n" +
+	"\x0etrigger_reason\x18\x04 \x01(\tR\rtriggerReason\x12%\n" +
+	"\x0echange_summary\x18\x05 \x01(\tR\rchangeSummary\x12\"\n" +
+	"\rcreated_at_ms\x18\x06 \x01(\x03R\vcreatedAtMs\x12&\n" +
+	"\x0fcompleted_at_ms\x18\a \x01(\x03R\rcompletedAtMs\x120\n" +
+	"\x14published_version_id\x18\b \x01(\tR\x12publishedVersionId\"i\n" +
+	"\x1dListOptimizationTasksResponse\x122\n" +
+	"\x05tasks\x18\x01 \x03(\v2\x1c.ant.v1.OptimizationTaskInfoR\x05tasks\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"5\n" +
+	"\x1aGetOptimizationTaskRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\"\x89\x02\n" +
+	"\x1bGetOptimizationTaskResponse\x120\n" +
+	"\x04task\x18\x01 \x01(\v2\x1c.ant.v1.OptimizationTaskInfoR\x04task\x12%\n" +
+	"\x0esuggested_code\x18\x02 \x01(\tR\rsuggestedCode\x12)\n" +
+	"\x10suggested_params\x18\x03 \x01(\tR\x0fsuggestedParams\x12+\n" +
+	"\x11backtest_snapshot\x18\x04 \x01(\fR\x10backtestSnapshot\x129\n" +
+	"\rdecay_metrics\x18\x05 \x01(\v2\x14.ant.v1.DecayMetricsR\fdecayMetrics\"8\n" +
+	"\x1dRejectOptimizationTaskRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\":\n" +
+	"\x1eRejectOptimizationTaskResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"5\n" +
+	"\x1aPublishOptimizationRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\"V\n" +
+	"\x1bPublishOptimizationResponse\x12\x1d\n" +
+	"\n" +
+	"version_id\x18\x01 \x01(\tR\tversionId\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\"5\n" +
+	"\x1aPreviewOptimizationRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\"\xf7\x02\n" +
+	"\x1bPreviewOptimizationResponse\x120\n" +
+	"\x04task\x18\x01 \x01(\v2\x1c.ant.v1.OptimizationTaskInfoR\x04task\x12E\n" +
+	"\x11original_backtest\x18\x02 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10originalBacktest\x12G\n" +
+	"\x12optimized_backtest\x18\x03 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x11optimizedBacktest\x129\n" +
+	"\rdecay_metrics\x18\x04 \x01(\v2\x14.ant.v1.DecayMetricsR\fdecayMetrics\x12%\n" +
+	"\x0echange_summary\x18\x05 \x01(\tR\rchangeSummary\x124\n" +
+	"\x16suggested_code_preview\x18\x06 \x01(\tR\x14suggestedCodePreview\"\xe0\x01\n" +
+	"\x13CreateBundleRequest\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vprice_model\x18\x03 \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\x04 \x01(\tR\vpriceAmount\x12!\n" +
+	"\fstrategy_ids\x18\x05 \x03(\tR\vstrategyIds\x12*\n" +
+	"\x11platform_fee_rate\x18\x06 \x01(\tR\x0fplatformFeeRate\"3\n" +
+	"\x14CreateBundleResponse\x12\x1b\n" +
+	"\tbundle_id\x18\x01 \x01(\tR\bbundleId\"e\n" +
+	"\x12ListBundlesRequest\x12!\n" +
+	"\fpublisher_id\x18\x01 \x01(\tR\vpublisherId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\x85\x01\n" +
+	"\n" +
+	"BundleItem\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12\x1d\n" +
+	"\n" +
+	"sort_order\x18\x02 \x01(\x05R\tsortOrder\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12!\n" +
+	"\fprice_amount\x18\x04 \x01(\tR\vpriceAmount\"\xde\x02\n" +
+	"\n" +
+	"BundleInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12!\n" +
+	"\fpublisher_id\x18\x04 \x01(\tR\vpublisherId\x12\x1f\n" +
+	"\vprice_model\x18\x05 \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\x06 \x01(\tR\vpriceAmount\x12*\n" +
+	"\x11platform_fee_rate\x18\a \x01(\tR\x0fplatformFeeRate\x12'\n" +
+	"\x0ftotal_purchases\x18\b \x01(\x05R\x0etotalPurchases\x12\"\n" +
+	"\rcreated_at_ms\x18\t \x01(\x03R\vcreatedAtMs\x12(\n" +
+	"\x05items\x18\n" +
+	" \x03(\v2\x12.ant.v1.BundleItemR\x05items\"Y\n" +
+	"\x13ListBundlesResponse\x12,\n" +
+	"\abundles\x18\x01 \x03(\v2\x12.ant.v1.BundleInfoR\abundles\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"/\n" +
+	"\x10GetBundleRequest\x12\x1b\n" +
+	"\tbundle_id\x18\x01 \x01(\tR\bbundleId\"?\n" +
+	"\x11GetBundleResponse\x12*\n" +
+	"\x06bundle\x18\x01 \x01(\v2\x12.ant.v1.BundleInfoR\x06bundle\"]\n" +
+	"\x15PurchaseBundleRequest\x12\x1b\n" +
+	"\tbundle_id\x18\x01 \x01(\tR\bbundleId\x12'\n" +
+	"\x0fidempotency_key\x18\x02 \x01(\tR\x0eidempotencyKey\"\xb4\x01\n" +
+	"\x16PurchaseBundleResponse\x12'\n" +
+	"\x0fsubscription_id\x18\x01 \x01(\tR\x0esubscriptionId\x12%\n" +
+	"\x0etransaction_id\x18\x02 \x01(\tR\rtransactionId\x12%\n" +
+	"\x0eamount_charged\x18\x03 \x01(\tR\ramountCharged\x12#\n" +
+	"\rbalance_after\x18\x04 \x01(\tR\fbalanceAfter\"2\n" +
+	"\x13DeleteBundleRequest\x12\x1b\n" +
+	"\tbundle_id\x18\x01 \x01(\tR\bbundleId\"0\n" +
+	"\x14DeleteBundleResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb6\x01\n" +
+	"\vFeeTierInfo\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1b\n" +
+	"\ttier_name\x18\x02 \x01(\tR\btierName\x12&\n" +
+	"\x0fmin_sales_count\x18\x03 \x01(\x05R\rminSalesCount\x12\x19\n" +
+	"\bfee_rate\x18\x04 \x01(\tR\afeeRate\x12\x1d\n" +
+	"\n" +
+	"sort_order\x18\x05 \x01(\x05R\tsortOrder\x12\x18\n" +
+	"\aenabled\x18\x06 \x01(\bR\aenabled\"A\n" +
+	"\x14ListFeeTiersResponse\x12)\n" +
+	"\x05tiers\x18\x01 \x03(\v2\x13.ant.v1.FeeTierInfoR\x05tiers\"\x83\x01\n" +
+	"\x14UpdateFeeTierRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x19\n" +
+	"\bfee_rate\x18\x02 \x01(\tR\afeeRate\x12&\n" +
+	"\x0fmin_sales_count\x18\x03 \x01(\x05R\rminSalesCount\x12\x18\n" +
+	"\aenabled\x18\x04 \x01(\bR\aenabled\"1\n" +
+	"\x15UpdateFeeTierResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\">\n" +
+	"\x19GetProviderFeeTierRequest\x12!\n" +
+	"\fpublisher_id\x18\x01 \x01(\tR\vpublisherId\"\xd0\x01\n" +
+	"\x1aGetProviderFeeTierResponse\x12\x1b\n" +
+	"\ttier_name\x18\x01 \x01(\tR\btierName\x12\x19\n" +
+	"\bfee_rate\x18\x02 \x01(\tR\afeeRate\x12&\n" +
+	"\x0fmin_sales_count\x18\x03 \x01(\x05R\rminSalesCount\x12#\n" +
+	"\rcurrent_sales\x18\x04 \x01(\x05R\fcurrentSales\x12-\n" +
+	"\x13next_tier_min_sales\x18\x05 \x01(\x05R\x10nextTierMinSales2\xf6&\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
@@ -8027,7 +10112,21 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\vListCoupons\x12\x1a.ant.v1.ListCouponsRequest\x1a\x1b.ant.v1.ListCouponsResponse\x12L\n" +
 	"\rDisableCoupon\x12\x1c.ant.v1.DisableCouponRequest\x1a\x1d.ant.v1.DisableCouponResponse\x12G\n" +
 	"\x13GetProviderEarnings\x12\x16.google.protobuf.Empty\x1a\x18.ant.v1.ProviderEarnings\x12m\n" +
-	"\x18ListProviderTransactions\x12'.ant.v1.ListProviderTransactionsRequest\x1a(.ant.v1.ListProviderTransactionsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x18ListProviderTransactions\x12'.ant.v1.ListProviderTransactionsRequest\x1a(.ant.v1.ListProviderTransactionsResponse\x12^\n" +
+	"\x13DetectStrategyDecay\x12\".ant.v1.DetectStrategyDecayRequest\x1a#.ant.v1.DetectStrategyDecayResponse\x12d\n" +
+	"\x15ListOptimizationTasks\x12$.ant.v1.ListOptimizationTasksRequest\x1a%.ant.v1.ListOptimizationTasksResponse\x12^\n" +
+	"\x13GetOptimizationTask\x12\".ant.v1.GetOptimizationTaskRequest\x1a#.ant.v1.GetOptimizationTaskResponse\x12g\n" +
+	"\x16RejectOptimizationTask\x12%.ant.v1.RejectOptimizationTaskRequest\x1a&.ant.v1.RejectOptimizationTaskResponse\x12^\n" +
+	"\x13PublishOptimization\x12\".ant.v1.PublishOptimizationRequest\x1a#.ant.v1.PublishOptimizationResponse\x12^\n" +
+	"\x13PreviewOptimization\x12\".ant.v1.PreviewOptimizationRequest\x1a#.ant.v1.PreviewOptimizationResponse\x12I\n" +
+	"\fCreateBundle\x12\x1b.ant.v1.CreateBundleRequest\x1a\x1c.ant.v1.CreateBundleResponse\x12F\n" +
+	"\vListBundles\x12\x1a.ant.v1.ListBundlesRequest\x1a\x1b.ant.v1.ListBundlesResponse\x12@\n" +
+	"\tGetBundle\x12\x18.ant.v1.GetBundleRequest\x1a\x19.ant.v1.GetBundleResponse\x12O\n" +
+	"\x0ePurchaseBundle\x12\x1d.ant.v1.PurchaseBundleRequest\x1a\x1e.ant.v1.PurchaseBundleResponse\x12I\n" +
+	"\fDeleteBundle\x12\x1b.ant.v1.DeleteBundleRequest\x1a\x1c.ant.v1.DeleteBundleResponse\x12D\n" +
+	"\fListFeeTiers\x12\x16.google.protobuf.Empty\x1a\x1c.ant.v1.ListFeeTiersResponse\x12L\n" +
+	"\rUpdateFeeTier\x12\x1c.ant.v1.UpdateFeeTierRequest\x1a\x1d.ant.v1.UpdateFeeTierResponse\x12[\n" +
+	"\x12GetProviderFeeTier\x12!.ant.v1.GetProviderFeeTierRequest\x1a\".ant.v1.GetProviderFeeTierResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_marketplace_service_proto_rawDescOnce sync.Once
@@ -8041,7 +10140,7 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 102)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 134)
 var file_marketplace_service_proto_goTypes = []any{
 	(*PublishStrategyRequest)(nil),           // 0: ant.v1.PublishStrategyRequest
 	(*BacktestSnapshot)(nil),                 // 1: ant.v1.BacktestSnapshot
@@ -8145,28 +10244,60 @@ var file_marketplace_service_proto_goTypes = []any{
 	(*ProviderTransactionItem)(nil),          // 99: ant.v1.ProviderTransactionItem
 	(*ListProviderTransactionsRequest)(nil),  // 100: ant.v1.ListProviderTransactionsRequest
 	(*ListProviderTransactionsResponse)(nil), // 101: ant.v1.ListProviderTransactionsResponse
-	(*timestamppb.Timestamp)(nil),            // 102: google.protobuf.Timestamp
-	(*BacktestExecutionConfig)(nil),          // 103: ant.v1.BacktestExecutionConfig
-	(*emptypb.Empty)(nil),                    // 104: google.protobuf.Empty
-	(*BacktestRunUpdate)(nil),                // 105: ant.v1.BacktestRunUpdate
+	(*DecayMetrics)(nil),                     // 102: ant.v1.DecayMetrics
+	(*DetectStrategyDecayRequest)(nil),       // 103: ant.v1.DetectStrategyDecayRequest
+	(*DetectStrategyDecayResponse)(nil),      // 104: ant.v1.DetectStrategyDecayResponse
+	(*ListOptimizationTasksRequest)(nil),     // 105: ant.v1.ListOptimizationTasksRequest
+	(*OptimizationTaskInfo)(nil),             // 106: ant.v1.OptimizationTaskInfo
+	(*ListOptimizationTasksResponse)(nil),    // 107: ant.v1.ListOptimizationTasksResponse
+	(*GetOptimizationTaskRequest)(nil),       // 108: ant.v1.GetOptimizationTaskRequest
+	(*GetOptimizationTaskResponse)(nil),      // 109: ant.v1.GetOptimizationTaskResponse
+	(*RejectOptimizationTaskRequest)(nil),    // 110: ant.v1.RejectOptimizationTaskRequest
+	(*RejectOptimizationTaskResponse)(nil),   // 111: ant.v1.RejectOptimizationTaskResponse
+	(*PublishOptimizationRequest)(nil),       // 112: ant.v1.PublishOptimizationRequest
+	(*PublishOptimizationResponse)(nil),      // 113: ant.v1.PublishOptimizationResponse
+	(*PreviewOptimizationRequest)(nil),       // 114: ant.v1.PreviewOptimizationRequest
+	(*PreviewOptimizationResponse)(nil),      // 115: ant.v1.PreviewOptimizationResponse
+	(*CreateBundleRequest)(nil),              // 116: ant.v1.CreateBundleRequest
+	(*CreateBundleResponse)(nil),             // 117: ant.v1.CreateBundleResponse
+	(*ListBundlesRequest)(nil),               // 118: ant.v1.ListBundlesRequest
+	(*BundleItem)(nil),                       // 119: ant.v1.BundleItem
+	(*BundleInfo)(nil),                       // 120: ant.v1.BundleInfo
+	(*ListBundlesResponse)(nil),              // 121: ant.v1.ListBundlesResponse
+	(*GetBundleRequest)(nil),                 // 122: ant.v1.GetBundleRequest
+	(*GetBundleResponse)(nil),                // 123: ant.v1.GetBundleResponse
+	(*PurchaseBundleRequest)(nil),            // 124: ant.v1.PurchaseBundleRequest
+	(*PurchaseBundleResponse)(nil),           // 125: ant.v1.PurchaseBundleResponse
+	(*DeleteBundleRequest)(nil),              // 126: ant.v1.DeleteBundleRequest
+	(*DeleteBundleResponse)(nil),             // 127: ant.v1.DeleteBundleResponse
+	(*FeeTierInfo)(nil),                      // 128: ant.v1.FeeTierInfo
+	(*ListFeeTiersResponse)(nil),             // 129: ant.v1.ListFeeTiersResponse
+	(*UpdateFeeTierRequest)(nil),             // 130: ant.v1.UpdateFeeTierRequest
+	(*UpdateFeeTierResponse)(nil),            // 131: ant.v1.UpdateFeeTierResponse
+	(*GetProviderFeeTierRequest)(nil),        // 132: ant.v1.GetProviderFeeTierRequest
+	(*GetProviderFeeTierResponse)(nil),       // 133: ant.v1.GetProviderFeeTierResponse
+	(*timestamppb.Timestamp)(nil),            // 134: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil),          // 135: ant.v1.BacktestExecutionConfig
+	(*emptypb.Empty)(nil),                    // 136: google.protobuf.Empty
+	(*BacktestRunUpdate)(nil),                // 137: ant.v1.BacktestRunUpdate
 }
 var file_marketplace_service_proto_depIdxs = []int32{
 	1,   // 0: ant.v1.PublishStrategyRequest.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
-	102, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
+	134, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
 	11,  // 2: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	102, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	134, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
 	1,   // 4: ant.v1.PublishedStrategy.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
 	14,  // 5: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	102, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	102, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
+	134, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	134, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
 	19,  // 8: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	102, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	134, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
 	24,  // 10: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	102, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	134, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
 	31,  // 12: ant.v1.GetPublisherStatsResponse.revenue_trend:type_name -> ant.v1.RevenueTrendPoint
 	32,  // 13: ant.v1.GetPublisherStatsResponse.subscriber_trend:type_name -> ant.v1.SubscriberTrendPoint
 	33,  // 14: ant.v1.GetPublisherStatsResponse.strategy_breakdown:type_name -> ant.v1.StrategyBreakdown
-	103, // 15: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	135, // 15: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
 	37,  // 16: ant.v1.GetLivePerformanceResponse.points:type_name -> ant.v1.LivePerformancePoint
 	38,  // 17: ant.v1.GetLivePerformanceResponse.summary:type_name -> ant.v1.LivePerformanceSummary
 	1,   // 18: ant.v1.GenerateAndPublishEvent.backtest:type_name -> ant.v1.BacktestSnapshot
@@ -8188,97 +10319,136 @@ var file_marketplace_service_proto_depIdxs = []int32{
 	86,  // 34: ant.v1.TopProvidersResponse.by_strategies:type_name -> ant.v1.TopItem
 	91,  // 35: ant.v1.ListCouponsResponse.coupons:type_name -> ant.v1.CouponInfo
 	99,  // 36: ant.v1.ListProviderTransactionsResponse.transactions:type_name -> ant.v1.ProviderTransactionItem
-	0,   // 37: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
-	3,   // 38: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
-	5,   // 39: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	7,   // 40: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
-	9,   // 41: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	12,  // 42: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	15,  // 43: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
-	17,  // 44: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
-	20,  // 45: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
-	22,  // 46: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
-	25,  // 47: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
-	27,  // 48: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
-	29,  // 49: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
-	34,  // 50: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
-	35,  // 51: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
-	39,  // 52: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
-	41,  // 53: ant.v1.MarketplaceService.GenerateAndPublish:input_type -> ant.v1.GenerateAndPublishRequest
-	44,  // 54: ant.v1.MarketplaceService.GenerateFromTemplate:input_type -> ant.v1.GenerateFromTemplateRequest
-	45,  // 55: ant.v1.MarketplaceService.ListStrategyTemplates:input_type -> ant.v1.ListStrategyTemplatesRequest
-	48,  // 56: ant.v1.MarketplaceService.ListAutoGenTasks:input_type -> ant.v1.ListAutoGenTasksRequest
-	51,  // 57: ant.v1.MarketplaceService.ApproveAutoGenTask:input_type -> ant.v1.ApproveAutoGenTaskRequest
-	53,  // 58: ant.v1.MarketplaceService.RejectAutoGenTask:input_type -> ant.v1.RejectAutoGenTaskRequest
-	55,  // 59: ant.v1.MarketplaceService.TriggerBatchGeneration:input_type -> ant.v1.TriggerBatchGenerationRequest
-	57,  // 60: ant.v1.MarketplaceService.ListLeaderboard:input_type -> ant.v1.ListLeaderboardRequest
-	60,  // 61: ant.v1.MarketplaceService.StartTrial:input_type -> ant.v1.StartTrialRequest
-	62,  // 62: ant.v1.MarketplaceService.CompareStrategies:input_type -> ant.v1.CompareStrategiesRequest
-	65,  // 63: ant.v1.MarketplaceService.GetStrategyPublicInfo:input_type -> ant.v1.GetStrategyPublicInfoRequest
-	67,  // 64: ant.v1.MarketplaceService.RequestVerification:input_type -> ant.v1.RequestVerificationRequest
-	69,  // 65: ant.v1.MarketplaceService.AdminProcessVerification:input_type -> ant.v1.AdminProcessVerificationRequest
-	71,  // 66: ant.v1.MarketplaceService.AdminListStrategies:input_type -> ant.v1.AdminListStrategiesRequest
-	74,  // 67: ant.v1.MarketplaceService.AdminFeatureStrategy:input_type -> ant.v1.AdminFeatureStrategyRequest
-	76,  // 68: ant.v1.MarketplaceService.RequestRefund:input_type -> ant.v1.RequestRefundRequest
-	78,  // 69: ant.v1.MarketplaceService.AdminListRefundRequests:input_type -> ant.v1.AdminListRefundRequestsRequest
-	81,  // 70: ant.v1.MarketplaceService.AdminProcessRefund:input_type -> ant.v1.AdminProcessRefundRequest
-	83,  // 71: ant.v1.MarketplaceService.GetMarketplaceAnalytics:input_type -> ant.v1.GetMarketplaceAnalyticsRequest
-	104, // 72: ant.v1.MarketplaceService.GetTopStrategies:input_type -> google.protobuf.Empty
-	104, // 73: ant.v1.MarketplaceService.GetTopProviders:input_type -> google.protobuf.Empty
-	89,  // 74: ant.v1.MarketplaceService.ValidateCoupon:input_type -> ant.v1.ValidateCouponRequest
-	92,  // 75: ant.v1.MarketplaceService.CreateCoupon:input_type -> ant.v1.CreateCouponRequest
-	94,  // 76: ant.v1.MarketplaceService.ListCoupons:input_type -> ant.v1.ListCouponsRequest
-	96,  // 77: ant.v1.MarketplaceService.DisableCoupon:input_type -> ant.v1.DisableCouponRequest
-	104, // 78: ant.v1.MarketplaceService.GetProviderEarnings:input_type -> google.protobuf.Empty
-	100, // 79: ant.v1.MarketplaceService.ListProviderTransactions:input_type -> ant.v1.ListProviderTransactionsRequest
-	2,   // 80: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	4,   // 81: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	6,   // 82: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	8,   // 83: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
-	10,  // 84: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	13,  // 85: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	16,  // 86: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	18,  // 87: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	21,  // 88: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	23,  // 89: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	26,  // 90: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	28,  // 91: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
-	30,  // 92: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
-	105, // 93: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
-	36,  // 94: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
-	40,  // 95: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
-	42,  // 96: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
-	42,  // 97: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
-	46,  // 98: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
-	49,  // 99: ant.v1.MarketplaceService.ListAutoGenTasks:output_type -> ant.v1.ListAutoGenTasksResponse
-	52,  // 100: ant.v1.MarketplaceService.ApproveAutoGenTask:output_type -> ant.v1.ApproveAutoGenTaskResponse
-	54,  // 101: ant.v1.MarketplaceService.RejectAutoGenTask:output_type -> ant.v1.RejectAutoGenTaskResponse
-	56,  // 102: ant.v1.MarketplaceService.TriggerBatchGeneration:output_type -> ant.v1.TriggerBatchGenerationResponse
-	59,  // 103: ant.v1.MarketplaceService.ListLeaderboard:output_type -> ant.v1.ListLeaderboardResponse
-	61,  // 104: ant.v1.MarketplaceService.StartTrial:output_type -> ant.v1.StartTrialResponse
-	64,  // 105: ant.v1.MarketplaceService.CompareStrategies:output_type -> ant.v1.CompareStrategiesResponse
-	66,  // 106: ant.v1.MarketplaceService.GetStrategyPublicInfo:output_type -> ant.v1.GetStrategyPublicInfoResponse
-	68,  // 107: ant.v1.MarketplaceService.RequestVerification:output_type -> ant.v1.RequestVerificationResponse
-	70,  // 108: ant.v1.MarketplaceService.AdminProcessVerification:output_type -> ant.v1.AdminProcessVerificationResponse
-	73,  // 109: ant.v1.MarketplaceService.AdminListStrategies:output_type -> ant.v1.AdminListStrategiesResponse
-	75,  // 110: ant.v1.MarketplaceService.AdminFeatureStrategy:output_type -> ant.v1.AdminFeatureStrategyResponse
-	77,  // 111: ant.v1.MarketplaceService.RequestRefund:output_type -> ant.v1.RequestRefundResponse
-	80,  // 112: ant.v1.MarketplaceService.AdminListRefundRequests:output_type -> ant.v1.AdminListRefundRequestsResponse
-	82,  // 113: ant.v1.MarketplaceService.AdminProcessRefund:output_type -> ant.v1.AdminProcessRefundResponse
-	85,  // 114: ant.v1.MarketplaceService.GetMarketplaceAnalytics:output_type -> ant.v1.MarketplaceAnalytics
-	87,  // 115: ant.v1.MarketplaceService.GetTopStrategies:output_type -> ant.v1.TopStrategiesResponse
-	88,  // 116: ant.v1.MarketplaceService.GetTopProviders:output_type -> ant.v1.TopProvidersResponse
-	90,  // 117: ant.v1.MarketplaceService.ValidateCoupon:output_type -> ant.v1.ValidateCouponResponse
-	93,  // 118: ant.v1.MarketplaceService.CreateCoupon:output_type -> ant.v1.CreateCouponResponse
-	95,  // 119: ant.v1.MarketplaceService.ListCoupons:output_type -> ant.v1.ListCouponsResponse
-	97,  // 120: ant.v1.MarketplaceService.DisableCoupon:output_type -> ant.v1.DisableCouponResponse
-	98,  // 121: ant.v1.MarketplaceService.GetProviderEarnings:output_type -> ant.v1.ProviderEarnings
-	101, // 122: ant.v1.MarketplaceService.ListProviderTransactions:output_type -> ant.v1.ListProviderTransactionsResponse
-	80,  // [80:123] is the sub-list for method output_type
-	37,  // [37:80] is the sub-list for method input_type
-	37,  // [37:37] is the sub-list for extension type_name
-	37,  // [37:37] is the sub-list for extension extendee
-	0,   // [0:37] is the sub-list for field type_name
+	106, // 37: ant.v1.ListOptimizationTasksResponse.tasks:type_name -> ant.v1.OptimizationTaskInfo
+	106, // 38: ant.v1.GetOptimizationTaskResponse.task:type_name -> ant.v1.OptimizationTaskInfo
+	102, // 39: ant.v1.GetOptimizationTaskResponse.decay_metrics:type_name -> ant.v1.DecayMetrics
+	106, // 40: ant.v1.PreviewOptimizationResponse.task:type_name -> ant.v1.OptimizationTaskInfo
+	1,   // 41: ant.v1.PreviewOptimizationResponse.original_backtest:type_name -> ant.v1.BacktestSnapshot
+	1,   // 42: ant.v1.PreviewOptimizationResponse.optimized_backtest:type_name -> ant.v1.BacktestSnapshot
+	102, // 43: ant.v1.PreviewOptimizationResponse.decay_metrics:type_name -> ant.v1.DecayMetrics
+	119, // 44: ant.v1.BundleInfo.items:type_name -> ant.v1.BundleItem
+	120, // 45: ant.v1.ListBundlesResponse.bundles:type_name -> ant.v1.BundleInfo
+	120, // 46: ant.v1.GetBundleResponse.bundle:type_name -> ant.v1.BundleInfo
+	128, // 47: ant.v1.ListFeeTiersResponse.tiers:type_name -> ant.v1.FeeTierInfo
+	0,   // 48: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
+	3,   // 49: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
+	5,   // 50: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
+	7,   // 51: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
+	9,   // 52: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	12,  // 53: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	15,  // 54: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	17,  // 55: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	20,  // 56: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	22,  // 57: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	25,  // 58: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	27,  // 59: ant.v1.MarketplaceService.UnpublishStrategy:input_type -> ant.v1.UnpublishMarketStrategyRequest
+	29,  // 60: ant.v1.MarketplaceService.GetPublisherStats:input_type -> ant.v1.GetPublisherStatsRequest
+	34,  // 61: ant.v1.MarketplaceService.RunMarketBacktest:input_type -> ant.v1.RunMarketBacktestRequest
+	35,  // 62: ant.v1.MarketplaceService.GetLivePerformance:input_type -> ant.v1.GetLivePerformanceRequest
+	39,  // 63: ant.v1.MarketplaceService.LinkLiveAccount:input_type -> ant.v1.LinkLiveAccountRequest
+	41,  // 64: ant.v1.MarketplaceService.GenerateAndPublish:input_type -> ant.v1.GenerateAndPublishRequest
+	44,  // 65: ant.v1.MarketplaceService.GenerateFromTemplate:input_type -> ant.v1.GenerateFromTemplateRequest
+	45,  // 66: ant.v1.MarketplaceService.ListStrategyTemplates:input_type -> ant.v1.ListStrategyTemplatesRequest
+	48,  // 67: ant.v1.MarketplaceService.ListAutoGenTasks:input_type -> ant.v1.ListAutoGenTasksRequest
+	51,  // 68: ant.v1.MarketplaceService.ApproveAutoGenTask:input_type -> ant.v1.ApproveAutoGenTaskRequest
+	53,  // 69: ant.v1.MarketplaceService.RejectAutoGenTask:input_type -> ant.v1.RejectAutoGenTaskRequest
+	55,  // 70: ant.v1.MarketplaceService.TriggerBatchGeneration:input_type -> ant.v1.TriggerBatchGenerationRequest
+	57,  // 71: ant.v1.MarketplaceService.ListLeaderboard:input_type -> ant.v1.ListLeaderboardRequest
+	60,  // 72: ant.v1.MarketplaceService.StartTrial:input_type -> ant.v1.StartTrialRequest
+	62,  // 73: ant.v1.MarketplaceService.CompareStrategies:input_type -> ant.v1.CompareStrategiesRequest
+	65,  // 74: ant.v1.MarketplaceService.GetStrategyPublicInfo:input_type -> ant.v1.GetStrategyPublicInfoRequest
+	67,  // 75: ant.v1.MarketplaceService.RequestVerification:input_type -> ant.v1.RequestVerificationRequest
+	69,  // 76: ant.v1.MarketplaceService.AdminProcessVerification:input_type -> ant.v1.AdminProcessVerificationRequest
+	71,  // 77: ant.v1.MarketplaceService.AdminListStrategies:input_type -> ant.v1.AdminListStrategiesRequest
+	74,  // 78: ant.v1.MarketplaceService.AdminFeatureStrategy:input_type -> ant.v1.AdminFeatureStrategyRequest
+	76,  // 79: ant.v1.MarketplaceService.RequestRefund:input_type -> ant.v1.RequestRefundRequest
+	78,  // 80: ant.v1.MarketplaceService.AdminListRefundRequests:input_type -> ant.v1.AdminListRefundRequestsRequest
+	81,  // 81: ant.v1.MarketplaceService.AdminProcessRefund:input_type -> ant.v1.AdminProcessRefundRequest
+	83,  // 82: ant.v1.MarketplaceService.GetMarketplaceAnalytics:input_type -> ant.v1.GetMarketplaceAnalyticsRequest
+	136, // 83: ant.v1.MarketplaceService.GetTopStrategies:input_type -> google.protobuf.Empty
+	136, // 84: ant.v1.MarketplaceService.GetTopProviders:input_type -> google.protobuf.Empty
+	89,  // 85: ant.v1.MarketplaceService.ValidateCoupon:input_type -> ant.v1.ValidateCouponRequest
+	92,  // 86: ant.v1.MarketplaceService.CreateCoupon:input_type -> ant.v1.CreateCouponRequest
+	94,  // 87: ant.v1.MarketplaceService.ListCoupons:input_type -> ant.v1.ListCouponsRequest
+	96,  // 88: ant.v1.MarketplaceService.DisableCoupon:input_type -> ant.v1.DisableCouponRequest
+	136, // 89: ant.v1.MarketplaceService.GetProviderEarnings:input_type -> google.protobuf.Empty
+	100, // 90: ant.v1.MarketplaceService.ListProviderTransactions:input_type -> ant.v1.ListProviderTransactionsRequest
+	103, // 91: ant.v1.MarketplaceService.DetectStrategyDecay:input_type -> ant.v1.DetectStrategyDecayRequest
+	105, // 92: ant.v1.MarketplaceService.ListOptimizationTasks:input_type -> ant.v1.ListOptimizationTasksRequest
+	108, // 93: ant.v1.MarketplaceService.GetOptimizationTask:input_type -> ant.v1.GetOptimizationTaskRequest
+	110, // 94: ant.v1.MarketplaceService.RejectOptimizationTask:input_type -> ant.v1.RejectOptimizationTaskRequest
+	112, // 95: ant.v1.MarketplaceService.PublishOptimization:input_type -> ant.v1.PublishOptimizationRequest
+	114, // 96: ant.v1.MarketplaceService.PreviewOptimization:input_type -> ant.v1.PreviewOptimizationRequest
+	116, // 97: ant.v1.MarketplaceService.CreateBundle:input_type -> ant.v1.CreateBundleRequest
+	118, // 98: ant.v1.MarketplaceService.ListBundles:input_type -> ant.v1.ListBundlesRequest
+	122, // 99: ant.v1.MarketplaceService.GetBundle:input_type -> ant.v1.GetBundleRequest
+	124, // 100: ant.v1.MarketplaceService.PurchaseBundle:input_type -> ant.v1.PurchaseBundleRequest
+	126, // 101: ant.v1.MarketplaceService.DeleteBundle:input_type -> ant.v1.DeleteBundleRequest
+	136, // 102: ant.v1.MarketplaceService.ListFeeTiers:input_type -> google.protobuf.Empty
+	130, // 103: ant.v1.MarketplaceService.UpdateFeeTier:input_type -> ant.v1.UpdateFeeTierRequest
+	132, // 104: ant.v1.MarketplaceService.GetProviderFeeTier:input_type -> ant.v1.GetProviderFeeTierRequest
+	2,   // 105: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	4,   // 106: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	6,   // 107: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	8,   // 108: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	10,  // 109: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	13,  // 110: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	16,  // 111: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	18,  // 112: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	21,  // 113: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	23,  // 114: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	26,  // 115: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	28,  // 116: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
+	30,  // 117: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
+	137, // 118: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
+	36,  // 119: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
+	40,  // 120: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
+	42,  // 121: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
+	42,  // 122: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
+	46,  // 123: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
+	49,  // 124: ant.v1.MarketplaceService.ListAutoGenTasks:output_type -> ant.v1.ListAutoGenTasksResponse
+	52,  // 125: ant.v1.MarketplaceService.ApproveAutoGenTask:output_type -> ant.v1.ApproveAutoGenTaskResponse
+	54,  // 126: ant.v1.MarketplaceService.RejectAutoGenTask:output_type -> ant.v1.RejectAutoGenTaskResponse
+	56,  // 127: ant.v1.MarketplaceService.TriggerBatchGeneration:output_type -> ant.v1.TriggerBatchGenerationResponse
+	59,  // 128: ant.v1.MarketplaceService.ListLeaderboard:output_type -> ant.v1.ListLeaderboardResponse
+	61,  // 129: ant.v1.MarketplaceService.StartTrial:output_type -> ant.v1.StartTrialResponse
+	64,  // 130: ant.v1.MarketplaceService.CompareStrategies:output_type -> ant.v1.CompareStrategiesResponse
+	66,  // 131: ant.v1.MarketplaceService.GetStrategyPublicInfo:output_type -> ant.v1.GetStrategyPublicInfoResponse
+	68,  // 132: ant.v1.MarketplaceService.RequestVerification:output_type -> ant.v1.RequestVerificationResponse
+	70,  // 133: ant.v1.MarketplaceService.AdminProcessVerification:output_type -> ant.v1.AdminProcessVerificationResponse
+	73,  // 134: ant.v1.MarketplaceService.AdminListStrategies:output_type -> ant.v1.AdminListStrategiesResponse
+	75,  // 135: ant.v1.MarketplaceService.AdminFeatureStrategy:output_type -> ant.v1.AdminFeatureStrategyResponse
+	77,  // 136: ant.v1.MarketplaceService.RequestRefund:output_type -> ant.v1.RequestRefundResponse
+	80,  // 137: ant.v1.MarketplaceService.AdminListRefundRequests:output_type -> ant.v1.AdminListRefundRequestsResponse
+	82,  // 138: ant.v1.MarketplaceService.AdminProcessRefund:output_type -> ant.v1.AdminProcessRefundResponse
+	85,  // 139: ant.v1.MarketplaceService.GetMarketplaceAnalytics:output_type -> ant.v1.MarketplaceAnalytics
+	87,  // 140: ant.v1.MarketplaceService.GetTopStrategies:output_type -> ant.v1.TopStrategiesResponse
+	88,  // 141: ant.v1.MarketplaceService.GetTopProviders:output_type -> ant.v1.TopProvidersResponse
+	90,  // 142: ant.v1.MarketplaceService.ValidateCoupon:output_type -> ant.v1.ValidateCouponResponse
+	93,  // 143: ant.v1.MarketplaceService.CreateCoupon:output_type -> ant.v1.CreateCouponResponse
+	95,  // 144: ant.v1.MarketplaceService.ListCoupons:output_type -> ant.v1.ListCouponsResponse
+	97,  // 145: ant.v1.MarketplaceService.DisableCoupon:output_type -> ant.v1.DisableCouponResponse
+	98,  // 146: ant.v1.MarketplaceService.GetProviderEarnings:output_type -> ant.v1.ProviderEarnings
+	101, // 147: ant.v1.MarketplaceService.ListProviderTransactions:output_type -> ant.v1.ListProviderTransactionsResponse
+	104, // 148: ant.v1.MarketplaceService.DetectStrategyDecay:output_type -> ant.v1.DetectStrategyDecayResponse
+	107, // 149: ant.v1.MarketplaceService.ListOptimizationTasks:output_type -> ant.v1.ListOptimizationTasksResponse
+	109, // 150: ant.v1.MarketplaceService.GetOptimizationTask:output_type -> ant.v1.GetOptimizationTaskResponse
+	111, // 151: ant.v1.MarketplaceService.RejectOptimizationTask:output_type -> ant.v1.RejectOptimizationTaskResponse
+	113, // 152: ant.v1.MarketplaceService.PublishOptimization:output_type -> ant.v1.PublishOptimizationResponse
+	115, // 153: ant.v1.MarketplaceService.PreviewOptimization:output_type -> ant.v1.PreviewOptimizationResponse
+	117, // 154: ant.v1.MarketplaceService.CreateBundle:output_type -> ant.v1.CreateBundleResponse
+	121, // 155: ant.v1.MarketplaceService.ListBundles:output_type -> ant.v1.ListBundlesResponse
+	123, // 156: ant.v1.MarketplaceService.GetBundle:output_type -> ant.v1.GetBundleResponse
+	125, // 157: ant.v1.MarketplaceService.PurchaseBundle:output_type -> ant.v1.PurchaseBundleResponse
+	127, // 158: ant.v1.MarketplaceService.DeleteBundle:output_type -> ant.v1.DeleteBundleResponse
+	129, // 159: ant.v1.MarketplaceService.ListFeeTiers:output_type -> ant.v1.ListFeeTiersResponse
+	131, // 160: ant.v1.MarketplaceService.UpdateFeeTier:output_type -> ant.v1.UpdateFeeTierResponse
+	133, // 161: ant.v1.MarketplaceService.GetProviderFeeTier:output_type -> ant.v1.GetProviderFeeTierResponse
+	105, // [105:162] is the sub-list for method output_type
+	48,  // [48:105] is the sub-list for method input_type
+	48,  // [48:48] is the sub-list for extension type_name
+	48,  // [48:48] is the sub-list for extension extendee
+	0,   // [0:48] is the sub-list for field type_name
 }
 
 func init() { file_marketplace_service_proto_init() }
@@ -8294,7 +10464,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   102,
+			NumMessages:   134,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -116,9 +116,23 @@ func (r *WalletRepository) AdjustBalanceTx(ctx context.Context, tx pgx.Tx, walle
 		idemKey = "auto-" + uuid.New().String()
 	}
 
-	// 1. Lock wallet row and update balance (R9: CHECK ensures >= 0).
-	var balanceBefore string
+	// 1. Idempotency check (R7) — must happen BEFORE balance update to prevent
+	// double-credit on retry. If idem_key exists, return the existing wallet state.
+	var existingWalletID uuid.UUID
 	err := tx.QueryRow(ctx,
+		`SELECT wallet_id FROM wallet_transactions WHERE idem_key = $1`, idemKey,
+	).Scan(&existingWalletID)
+	if err == nil {
+		// Idempotent replay — return current wallet state without modifying balance.
+		return r.walletAfterUpdate(ctx, tx, walletID, uuid.Nil)
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, fmt.Errorf("wallet repo: idem check: %w", err)
+	}
+
+	// 2. Lock wallet row and update balance (R9: CHECK ensures >= 0).
+	var balanceBefore string
+	err = tx.QueryRow(ctx,
 		`SELECT balance::text FROM user_wallets WHERE id = $1 FOR UPDATE`, walletID,
 	).Scan(&balanceBefore)
 	if err != nil {
@@ -139,14 +153,23 @@ func (r *WalletRepository) AdjustBalanceTx(ctx context.Context, tx pgx.Tx, walle
 		return nil, fmt.Errorf("wallet repo: adjust balance: %w", err)
 	}
 
-	// 2. Insert transaction with hash chain + idempotency + outbox (shared helper).
+	// 3. Insert transaction with hash chain + idempotency + outbox (shared helper).
 	txID, _, err := r.ledgerChainInsert(ctx, tx, walletID, userID, amount, txType, description,
 		operatorID, idemKey, balanceBefore, balanceAfter)
 	if err != nil {
+		// Concurrent race: another transaction inserted the same idem_key
+		// between our idempotency check and INSERT. Undo the balance update
+		// to prevent double-credit, then return as idempotent replay.
+		if errors.Is(err, model.ErrIdempotentReplay) {
+			_, _ = tx.Exec(ctx,
+				`UPDATE user_wallets SET balance = balance - ($1)::numeric WHERE id = $2`,
+				amount, walletID)
+			return r.walletAfterUpdate(ctx, tx, walletID, uuid.Nil)
+		}
 		return nil, err
 	}
 
-	// 3. Return updated wallet.
+	// 4. Return updated wallet.
 	return r.walletAfterUpdate(ctx, tx, walletID, txID)
 }
 

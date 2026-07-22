@@ -6,15 +6,17 @@ import (
 	"time"
 )
 
-// getRevenueTrend returns daily revenue for the last 30 days, split by sale vs subscription.
+// getRevenueTrend returns daily revenue for the last 30 days, split by one-time vs subscription.
 func (s *Service) getRevenueTrend(ctx context.Context, userID string) ([]RevenueTrendPoint, error) {
 	rows, err := s.pg.Query(ctx,
-		`SELECT date_trunc('day', created_at) AS day,
-		        COALESCE(SUM(amount::numeric) FILTER (WHERE description LIKE 'Strategy sale: %' AND description NOT LIKE 'Strategy renewal%'), 0)::text,
-		        COALESCE(SUM(amount::numeric) FILTER (WHERE description LIKE 'Strategy renewal%'), 0)::text
-		 FROM wallet_transactions
-		 WHERE user_id::text = $1 AND tx_type = 'sale'
-		   AND created_at > now() - INTERVAL '30 days'
+		`SELECT date_trunc('day', wt.created_at) AS day,
+		        COALESCE(SUM(wt.amount::numeric) FILTER (WHERE us.kind = 'purchase'), 0)::text,
+		        COALESCE(SUM(wt.amount::numeric) FILTER (WHERE us.kind = 'subscription'), 0)::text
+		 FROM wallet_transactions wt
+		 JOIN marketplace_settlements ms ON ms.id::text = REPLACE(wt.idem_key, 'mkt-settle-', '')
+		 JOIN user_subscriptions us ON us.id = ms.purchase_id
+		 WHERE wt.user_id::text = $1 AND wt.tx_type = 'settlement'
+		   AND wt.created_at > now() - INTERVAL '30 days'
 		 GROUP BY day ORDER BY day`,
 		userID)
 	if err != nil {
@@ -127,21 +129,26 @@ func (s *Service) getSubscriberTrend(ctx context.Context, userID string) ([]Subs
 // getStrategyBreakdown returns per-strategy analytics for the publisher.
 func (s *Service) getStrategyBreakdown(ctx context.Context, userID string) ([]StrategyBreakdown, error) {
 	rows, err := s.pg.Query(ctx,
-		`SELECT ms.strategy_id::text,
-		        COALESCE(ms.title, ''),
-		        ms.total_subscribers,
-		        COALESCE(SUM(wt.amount::numeric), 0)::text,
+		`SELECT ms2.strategy_id::text,
+		        COALESCE(ms2.title, ''),
+		        ms2.total_subscribers,
+		        COALESCE((
+		          SELECT SUM(wt.amount::numeric)
+		          FROM wallet_transactions wt
+		          JOIN marketplace_settlements settle ON settle.id::text = REPLACE(wt.idem_key, 'mkt-settle-', '')
+		          JOIN user_subscriptions us ON us.id = settle.purchase_id
+		          WHERE wt.user_id::text = $1 AND wt.tx_type = 'settlement'
+		            AND us.target_strategy_id = ms2.strategy_id
+		        ), 0)::text,
 		        COALESCE(AVG(mr.rating), 0),
 		        COUNT(mr.rating),
-		        ms.price_model,
-		        COALESCE(ms.price_amount::text, '0')
-		 FROM marketplace_strategies ms
-		 LEFT JOIN wallet_transactions wt ON wt.user_id::text = $1 AND wt.tx_type = 'sale'
-		      AND wt.description LIKE 'Strategy sale: ' || COALESCE(ms.title, '') || '%'
-		 LEFT JOIN marketplace_ratings mr ON mr.strategy_id = ms.strategy_id
-		 WHERE ms.publisher_id::text = $1 AND ms.status = 'published'
-		 GROUP BY ms.strategy_id, ms.title, ms.total_subscribers, ms.price_model, ms.price_amount
-		 ORDER BY ms.total_subscribers DESC`,
+		        ms2.price_model,
+		        COALESCE(ms2.price_amount::text, '0')
+		 FROM marketplace_strategies ms2
+		 LEFT JOIN marketplace_ratings mr ON mr.strategy_id = ms2.strategy_id
+		 WHERE ms2.publisher_id::text = $1 AND ms2.status = 'published'
+		 GROUP BY ms2.strategy_id, ms2.title, ms2.total_subscribers, ms2.price_model, ms2.price_amount
+		 ORDER BY ms2.total_subscribers DESC`,
 		userID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: strategy breakdown: %w", err)

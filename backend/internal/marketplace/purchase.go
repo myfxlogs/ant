@@ -6,10 +6,42 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 )
 
 // ── Purchase ──────────────────────────────────────────────────────────────────
+
+// queryRower is the minimal interface for executing a QueryRow, satisfied by
+// both pgx.Tx and *pgxpool.Pool.
+type queryRower interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+// lookupExistingPurchase reads an already-completed purchase by idempotency key.
+// Used for idempotency check and duplicate race fallback. Caller must handle
+// pgx.ErrNoRows (no existing purchase found).
+func (s *Service) lookupExistingPurchase(ctx context.Context, q queryRower, idempotencyKey string, uid uuid.UUID) (*PurchaseResult, error) {
+	var subID, txID, amount, balance string
+	err := q.QueryRow(ctx,
+		`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
+		 FROM user_subscriptions us
+		 LEFT JOIN wallet_transactions wt ON wt.idem_key = $3 || us.idempotency_key
+		 JOIN user_wallets w ON w.user_id = us.subscriber_user_id
+		 WHERE us.idempotency_key = $1 AND us.subscriber_user_id = $2`,
+		idempotencyKey, uid, IdemKeyBuy,
+	).Scan(&subID, &txID, &amount, &balance)
+	if err != nil {
+		return nil, err
+	}
+	return &PurchaseResult{
+		SubscriptionID: subID,
+		TransactionID:  txID,
+		AmountCharged:  amount,
+		BalanceAfter:   balance,
+	}, nil
+}
 
 // PurchaseStrategy atomically charges the user's wallet, credits the publisher,
 // and creates a subscription — all in a single DB transaction with FOR UPDATE
@@ -32,23 +64,10 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 
 	// 0. Idempotency check inside transaction — serialized to prevent races.
 	if idempotencyKey != "" {
-		var existingSubID, existingTxID, existingAmount, existingBalance string
-		err := tx.QueryRow(ctx,
-			`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
-			 FROM user_subscriptions us
-			 LEFT JOIN wallet_transactions wt ON wt.idem_key = 'mkt-buy-' || us.idempotency_key
-			 JOIN user_wallets w ON w.user_id = us.subscriber_user_id
-			 WHERE us.idempotency_key = $1 AND us.subscriber_user_id = $2`,
-			idempotencyKey, uid,
-		).Scan(&existingSubID, &existingTxID, &existingAmount, &existingBalance)
+		existing, err := s.lookupExistingPurchase(ctx, tx, idempotencyKey, uid)
 		if err == nil {
 			_ = tx.Rollback(ctx)
-			return &PurchaseResult{
-				SubscriptionID: existingSubID,
-				TransactionID:  existingTxID,
-				AmountCharged:  existingAmount,
-				BalanceAfter:   existingBalance,
-			}, nil
+			return existing, nil
 		}
 	}
 
@@ -57,13 +76,11 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	var priceAmountStr string
 	var strategyTitle string
 	var dbPublisherID string
-	var platformFeeRateStr string
 	err = tx.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text,
-		        COALESCE(platform_fee_rate::text, '0')
+		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text
 		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		sid,
-	).Scan(&priceModel, &priceAmountStr, &strategyTitle, &dbPublisherID, &platformFeeRateStr)
+	).Scan(&priceModel, &priceAmountStr, &strategyTitle, &dbPublisherID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: strategy not published")
 	}
@@ -71,19 +88,33 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: invalid price_amount in DB: %w", err)
 	}
-	feeRateDec, err := decimal.NewFromString(platformFeeRateStr)
+	// Use tiered fee rate based on publisher's sales volume.
+	// Read inside the transaction for snapshot consistency.
+	pid, err := uuid.Parse(dbPublisherID)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: invalid platform_fee_rate in DB: %w", err)
+		return nil, fmt.Errorf("marketplace: invalid publisher_id in DB: %w", err)
+	}
+
+	// Phase 5.4: Lazy settlement — settle publisher's expired frozen balances
+	// before fee tier calculation so settled sales count is up-to-date.
+	if _, err := s.SettleExpired(ctx, pid.String()); err != nil {
+		s.log.Warn("purchase: lazy settlement failed for publisher",
+			zap.String("publisherID", pid.String()), zap.Error(err))
+	}
+
+	feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, pid.String())
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: get effective fee rate: %w", err)
 	}
 	if (priceModel != PriceModelOnce && priceModel != PriceModelSubscription) || !priceDec.IsPositive() {
 		return nil, fmt.Errorf("marketplace: strategy is not purchasable")
 	}
 
-	// Apply coupon if provided.
+	// Apply coupon if provided (validated inside the transaction to prevent TOCTOU race).
 	finalAmount := priceDec
 	var couponID string
 	if couponCode != "" {
-		cp, err := s.ValidateCoupon(ctx, couponCode, strategyID, priceDec.String())
+		cp, err := s.validateCouponTx(ctx, tx, couponCode, sid, priceDec)
 		if err != nil {
 			return nil, fmt.Errorf("marketplace: validate coupon: %w", err)
 		}
@@ -101,12 +132,6 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		subKind = SubKindSubscription
 		exp := time.Now().Add(30 * 24 * time.Hour)
 		expiresAt = &exp
-	}
-
-	// Use publisher from DB as source of truth (ignore client-supplied value).
-	pid, err := uuid.Parse(dbPublisherID)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: invalid publisher_id in DB: %w", err)
 	}
 
 	// 2. Guard: cannot purchase your own strategy.
@@ -144,7 +169,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	// 5. Deduct buyer balance via AdjustBalanceTx (hash chain + idempotency + ledger_outbox).
 	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strategyTitle)
 	buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
-		negAmountStr, TxTypePurchase, buyerDesc, nil, "mkt-buy-"+idempotencyKey)
+		negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyBuy+idempotencyKey)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: charge buyer: %w", err)
 	}
@@ -154,58 +179,15 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		buyerTxID = *buyerWallet.LastTransactionID
 	}
 
-	// 7. Credit publisher wallet via AdjustBalanceTx (hash chain + idempotency).
+	// 6. Compute fee split — publisher and platform amounts are recorded in a
+	//    frozen settlement row, NOT credited to wallets yet. Settlement happens
+	//    lazily after the refund window expires (see settlement.go SettleExpired).
 	feeDec := finalAmount.Mul(feeRateDec)
 	pubDec := finalAmount.Sub(feeDec)
 	pubAmountStr := pubDec.StringFixed(2)
+	feeStr := feeDec.StringFixed(2)
 
-	// Ensure publisher wallet exists.
-	var pubWalletID uuid.UUID
-	err = tx.QueryRow(ctx,
-		`INSERT INTO user_wallets (user_id) VALUES ($1)
-		 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-		 RETURNING id`,
-		pid,
-	).Scan(&pubWalletID)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: publisher wallet: %w", err)
-	}
-
-	saleDesc := fmt.Sprintf("Strategy sale: %s", strategyTitle)
-	if feeDec.GreaterThan(decimal.Zero) {
-		saleDesc += fmt.Sprintf(" (platform fee: %s)", feeDec.StringFixed(2))
-	}
-	_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pid,
-		pubAmountStr, TxTypeSale, saleDesc, nil, "mkt-sale-"+idempotencyKey)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: credit publisher: %w", err)
-	}
-
-	// 8b. Credit platform fee to system wallet via AdjustBalanceTx.
-	if feeDec.GreaterThan(decimal.Zero) {
-		feeStr := feeDec.StringFixed(2)
-
-		// Ensure system wallet exists.
-		var sysWalletID uuid.UUID
-		err = tx.QueryRow(ctx,
-			`INSERT INTO user_wallets (user_id) VALUES ($1)
-			 ON CONFLICT (user_id) DO UPDATE SET user_id = $1
-			 RETURNING id`,
-			SystemUserID,
-		).Scan(&sysWalletID)
-		if err != nil {
-			return nil, fmt.Errorf("marketplace: system wallet: %w", err)
-		}
-
-		feeDesc := fmt.Sprintf("Platform fee from strategy sale: %s", strategyTitle)
-		_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
-			feeStr, TxTypePlatformFee, feeDesc, nil, "mkt-fee-"+idempotencyKey)
-		if err != nil {
-			return nil, fmt.Errorf("marketplace: credit platform fee: %w", err)
-		}
-	}
-
-	// 9. Insert subscription row (target_user_id = publisher from DB).
+	// 7. Insert subscription row (target_user_id = publisher from DB).
 	subID := uuid.New()
 	err = tx.QueryRow(ctx,
 		`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
@@ -218,25 +200,20 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		// Return the now-existing subscription gracefully.
 		if idempotencyKey != "" && isUniqueViolation(err) {
 			_ = tx.Rollback(ctx)
-			var dupSubID, dupTxID, dupAmount, dupBalance string
-			if err2 := s.pg.QueryRow(ctx,
-				`SELECT us.id::text, wt.id::text, ABS(wt.amount)::text, w.balance::text
-				 FROM user_subscriptions us
-				 LEFT JOIN wallet_transactions wt ON wt.idem_key = 'mkt-buy-' || us.idempotency_key
-				 JOIN user_wallets w ON w.user_id = us.subscriber_user_id
-				 WHERE us.idempotency_key = $1 AND us.subscriber_user_id = $2`,
-				idempotencyKey, uid,
-			).Scan(&dupSubID, &dupTxID, &dupAmount, &dupBalance); err2 == nil {
-				return &PurchaseResult{
-					SubscriptionID: dupSubID, TransactionID: dupTxID,
-					AmountCharged: dupAmount, BalanceAfter: dupBalance,
-				}, nil
+			if dup, err2 := s.lookupExistingPurchase(ctx, s.pg, idempotencyKey, uid); err2 == nil {
+				return dup, nil
 			}
 		}
 		return nil, fmt.Errorf("marketplace: create subscription: %w", err)
 	}
 
-	// 10. Increment total_subscribers counter.
+	// 8. Create frozen settlement record — replaces direct publisher/platform credits.
+	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, pid, amountStr, feeStr, pubAmountStr)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: create settlement: %w", err)
+	}
+
+	// 9. Increment total_subscribers counter.
 	_, err = tx.Exec(ctx,
 		`UPDATE marketplace_strategies SET total_subscribers = total_subscribers + 1 WHERE strategy_id = $1`,
 		sid,
@@ -245,7 +222,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		return nil, fmt.Errorf("marketplace: update subscriber count: %w", err)
 	}
 
-	// 11. If a coupon was applied, atomically consume it.
+	// 10. If a coupon was applied, atomically consume it.
 	if couponID != "" {
 		var consumed bool
 		err = tx.QueryRow(ctx,
@@ -301,7 +278,7 @@ func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceA
 		s.pubCache.clear()
 		// Notify subscribers of price change.
 		if oldPrice != priceAmount {
-			go s.notifyPriceChange(context.Background(), sid, title, oldPrice, priceAmount)
+			go s.notifyPriceChange(context.WithoutCancel(ctx), sid, title, oldPrice, priceAmount)
 		}
 	}
 	return err

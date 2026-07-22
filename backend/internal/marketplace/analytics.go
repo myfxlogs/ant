@@ -11,18 +11,17 @@ import (
 
 // AnalyticsResult holds the marketplace analytics data.
 type AnalyticsResult struct {
-	TotalGMV         decimal.Decimal
-	PlatformRevenue  decimal.Decimal
-	ProviderRevenue  decimal.Decimal
-	TotalTx          int32
-	ActiveBuyers     int32
-	NewSubscribers   int32
-	ARPU             decimal.Decimal
-	TotalStrategies  int32
-	NewStrategies    int32
-	RefundRate       decimal.Decimal
-	RenewalRate      decimal.Decimal
-	Daily            []DailyAnalyticsRow
+	TotalGMV        decimal.Decimal
+	PlatformRevenue decimal.Decimal
+	ProviderRevenue decimal.Decimal
+	TotalTx         int32
+	ActiveBuyers    int32
+	NewSubscribers  int32
+	ARPU            decimal.Decimal
+	TotalStrategies int32
+	NewStrategies   int32
+	RefundRate      decimal.Decimal
+	Daily           []DailyAnalyticsRow
 }
 
 type DailyAnalyticsRow struct {
@@ -46,10 +45,11 @@ func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*
 	since := time.Now().Add(-interval)
 
 	// Total GMV and transactions from wallet_transactions.
+	// Purchase tx amounts are negative (buyer debit), so use ABS().
 	var totalGMV decimal.Decimal
 	var totalTx int32
 	err := s.pg.QueryRow(ctx,
-		`SELECT COALESCE(SUM(amount),0), COUNT(*)
+		`SELECT COALESCE(SUM(ABS(amount)),0), COUNT(*)
 		 FROM wallet_transactions
 		 WHERE tx_type = 'purchase' AND created_at >= $1`,
 		since,
@@ -58,19 +58,30 @@ func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*
 		return nil, fmt.Errorf("marketplace: analytics gmv: %w", err)
 	}
 
-	// Platform revenue = sum of fee-type transactions.
+	// Platform revenue = sum of fee_settlement transactions (Phase 5.4: replaces platform_fee).
 	var platformRev decimal.Decimal
 	err = s.pg.QueryRow(ctx,
 		`SELECT COALESCE(SUM(amount),0)
 		 FROM wallet_transactions
-		 WHERE tx_type = 'fee' AND created_at >= $1`,
+		 WHERE tx_type = 'fee_settlement' AND created_at >= $1`,
 		since,
 	).Scan(&platformRev)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: analytics platform revenue: %w", err)
 	}
 
-	providerRev := totalGMV.Sub(platformRev)
+	// Provider revenue = sum of settlement transactions (Phase 5.4: directly from settled amounts,
+	// not derived from GMV - platformFee, since GMV includes frozen purchases not yet settled).
+	var providerRev decimal.Decimal
+	err = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(SUM(amount),0)
+		 FROM wallet_transactions
+		 WHERE tx_type = 'settlement' AND created_at >= $1`,
+		since,
+	).Scan(&providerRev)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: analytics provider revenue: %w", err)
+	}
 
 	// Active buyers = distinct users with purchases in period.
 	var activeBuyers int32
@@ -136,12 +147,18 @@ func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*
 
 	// Daily breakdown.
 	dailyRows, err := s.pg.Query(ctx,
-		`SELECT DATE(created_at)::text as d,
-		        COALESCE(SUM(CASE WHEN tx_type='purchase' THEN amount ELSE 0 END),0),
-		        COUNT(CASE WHEN tx_type='purchase' THEN 1 END)::int,
-		        0
-		 FROM wallet_transactions
-		 WHERE created_at >= $1
+		`SELECT DATE(wt.created_at)::text as d,
+		        COALESCE(SUM(ABS(CASE WHEN wt.tx_type='purchase' THEN wt.amount ELSE 0 END)),0),
+		        COUNT(CASE WHEN wt.tx_type='purchase' THEN 1 END)::int,
+		        COALESCE(MAX(subs.cnt), 0)::int
+		 FROM wallet_transactions wt
+		 LEFT JOIN (
+		   SELECT DATE(created_at)::date as sub_date, COUNT(*)::int as cnt
+		   FROM user_subscriptions
+		   WHERE created_at >= $1
+		   GROUP BY sub_date
+		 ) subs ON subs.sub_date = DATE(wt.created_at)
+		 WHERE wt.created_at >= $1
 		 GROUP BY d ORDER BY d`,
 		since,
 	)
@@ -179,13 +196,16 @@ func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*
 
 // GetTopStrategies returns top strategies by revenue and subscribers.
 func (s *Service) GetTopStrategies(ctx context.Context) ([]TopItemRow, []TopItemRow, error) {
-	// By revenue (total_pnl as proxy).
+	// By revenue from settlement transactions (Phase 5.4).
 	revRows, err := s.pg.Query(ctx,
 		`SELECT ms.strategy_id::text, COALESCE(ms.title,''),
-		        COALESCE(ms.total_pnl,0)
-		 FROM marketplace_strategies ms
-		 WHERE ms.status = 'published'
-		 ORDER BY COALESCE(ms.total_pnl,0) DESC LIMIT 10`)
+		        COALESCE(SUM(wt.amount),0)
+		 FROM wallet_transactions wt
+		 JOIN user_subscriptions us`+subJoinOnClause+`
+		 JOIN marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id
+		 WHERE wt.tx_type = 'settlement'
+		 GROUP BY ms.strategy_id, ms.title
+		 ORDER BY COALESCE(SUM(wt.amount),0) DESC LIMIT 10`)
 	if err != nil {
 		return nil, nil, fmt.Errorf("marketplace: top strategies by revenue: %w", err)
 	}
@@ -238,16 +258,18 @@ func (s *Service) GetTopStrategies(ctx context.Context) ([]TopItemRow, []TopItem
 
 // GetTopProviders returns top providers by revenue and strategy count.
 func (s *Service) GetTopProviders(ctx context.Context) ([]TopItemRow, []TopItemRow, error) {
-	// By revenue.
+	// By revenue from settlement transactions (Phase 5.4).
 	revRows, err := s.pg.Query(ctx,
 		`SELECT ms.publisher_id::text,
 		        COALESCE(u.nickname, u.email, ms.publisher_id::text),
-		        COALESCE(SUM(ms.total_pnl),0)
-		 FROM marketplace_strategies ms
+		        COALESCE(SUM(wt.amount),0)
+		 FROM wallet_transactions wt
+		 JOIN user_subscriptions us`+subJoinOnClause+`
+		 JOIN marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id
 		 LEFT JOIN users u ON u.id = ms.publisher_id
-		 WHERE ms.status = 'published' AND ms.publisher_id IS NOT NULL
+		 WHERE wt.tx_type = 'settlement' AND ms.publisher_id IS NOT NULL
 		 GROUP BY ms.publisher_id, u.nickname, u.email
-		 ORDER BY COALESCE(SUM(ms.total_pnl),0) DESC LIMIT 10`)
+		 ORDER BY COALESCE(SUM(wt.amount),0) DESC LIMIT 10`)
 	if err != nil {
 		return nil, nil, fmt.Errorf("marketplace: top providers by revenue: %w", err)
 	}

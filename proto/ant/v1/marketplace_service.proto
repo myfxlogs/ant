@@ -76,6 +76,23 @@ service MarketplaceService {
   // Phase 4.6: Provider earnings & withdrawal.
   rpc GetProviderEarnings(google.protobuf.Empty) returns (ProviderEarnings);
   rpc ListProviderTransactions(ListProviderTransactionsRequest) returns (ListProviderTransactionsResponse);
+  // Phase 5.1: AI strategy iteration — decay detection + optimization.
+  rpc DetectStrategyDecay(DetectStrategyDecayRequest) returns (DetectStrategyDecayResponse);
+  rpc ListOptimizationTasks(ListOptimizationTasksRequest) returns (ListOptimizationTasksResponse);
+  rpc GetOptimizationTask(GetOptimizationTaskRequest) returns (GetOptimizationTaskResponse);
+  rpc RejectOptimizationTask(RejectOptimizationTaskRequest) returns (RejectOptimizationTaskResponse);
+  rpc PublishOptimization(PublishOptimizationRequest) returns (PublishOptimizationResponse);
+  rpc PreviewOptimization(PreviewOptimizationRequest) returns (PreviewOptimizationResponse);
+  // Phase 5.2: Strategy bundles.
+  rpc CreateBundle(CreateBundleRequest) returns (CreateBundleResponse);
+  rpc ListBundles(ListBundlesRequest) returns (ListBundlesResponse);
+  rpc GetBundle(GetBundleRequest) returns (GetBundleResponse);
+  rpc PurchaseBundle(PurchaseBundleRequest) returns (PurchaseBundleResponse);
+  rpc DeleteBundle(DeleteBundleRequest) returns (DeleteBundleResponse);
+  // Phase 5.3: Tiered fee rates.
+  rpc ListFeeTiers(google.protobuf.Empty) returns (ListFeeTiersResponse);
+  rpc UpdateFeeTier(UpdateFeeTierRequest) returns (UpdateFeeTierResponse);
+  rpc GetProviderFeeTier(GetProviderFeeTierRequest) returns (GetProviderFeeTierResponse);
 }
 
 message PublishStrategyRequest {
@@ -770,7 +787,6 @@ message MarketplaceAnalytics {
   int32 total_strategies = 8;
   int32 new_strategies = 9;
   string refund_rate = 10;
-  string renewal_rate = 11;
   repeated DailyAnalytics daily = 12;
 }
 
@@ -861,17 +877,16 @@ message ProviderEarnings {
   string lifetime_withdrawn = 4;
   int32 total_sales = 5;
   int32 active_strategies = 6;
-  string next_payout_date = 7;
+  string pending_settlement = 7;  // Phase 5.4: frozen settlement balance
 }
 
 message ProviderTransactionItem {
   string id = 1;
-  string tx_type = 2;       // sale / platform_fee / withdrawal / refund
+  string tx_type = 2;       // settlement / fee_settlement / refund_reversal
   string amount = 3;
   string strategy_title = 4;
   string buyer_name = 5;
   string created_at = 6;
-  string status = 7;
 }
 
 message ListProviderTransactionsRequest {
@@ -882,4 +897,211 @@ message ListProviderTransactionsRequest {
 message ListProviderTransactionsResponse {
   repeated ProviderTransactionItem transactions = 1;
   int32 total = 2;
+}
+
+// ── Phase 5.1: AI Strategy Iteration ──────────────────────────────────────────
+
+message DecayMetrics {
+  int32 decay_score = 1;
+  string sharpe_decline_pct = 2;
+  string winrate_decline_pct = 3;
+  string return_delta = 4;
+  string trigger_reason = 5;
+}
+
+message DetectStrategyDecayRequest {
+  string strategy_id = 1;
+}
+
+message DetectStrategyDecayResponse {
+  bool is_decaying = 1;
+  int32 decay_score = 2;       // 0-3, number of signals that fired
+  string trigger_reason = 3;
+  string baseline_sharpe = 4;
+  string baseline_win_rate = 5;
+  string recent_sharpe = 6;
+  string recent_win_rate = 7;
+  string sharpe_decline_pct = 8;
+  string winrate_decline_pct = 9;
+}
+
+message ListOptimizationTasksRequest {
+  string status = 1;    // pending | completed | rejected | published (empty = all)
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message OptimizationTaskInfo {
+  string id = 1;
+  string strategy_id = 2;
+  string status = 3;
+  string trigger_reason = 4;
+  string change_summary = 5;
+  int64 created_at_ms = 6;
+  int64 completed_at_ms = 7;
+  string published_version_id = 8;
+}
+
+message ListOptimizationTasksResponse {
+  repeated OptimizationTaskInfo tasks = 1;
+  int32 total = 2;
+}
+
+message GetOptimizationTaskRequest {
+  string task_id = 1;
+}
+
+message GetOptimizationTaskResponse {
+  OptimizationTaskInfo task = 1;
+  string suggested_code = 2;
+  string suggested_params = 3;
+  bytes backtest_snapshot = 4;
+  DecayMetrics decay_metrics = 5;
+}
+
+message RejectOptimizationTaskRequest {
+  string task_id = 1;
+}
+
+message RejectOptimizationTaskResponse {
+  bool success = 1;
+}
+
+message PublishOptimizationRequest {
+  string task_id = 1;
+}
+
+message PublishOptimizationResponse {
+  string version_id = 1;
+  bool success = 2;
+}
+
+message PreviewOptimizationRequest {
+  string task_id = 1;
+}
+
+message PreviewOptimizationResponse {
+  OptimizationTaskInfo task = 1;
+  // Original strategy's backtest snapshot at publish time.
+  BacktestSnapshot original_backtest = 2;
+  // Optimized version's backtest snapshot from the AI-generated code.
+  BacktestSnapshot optimized_backtest = 3;
+  // Decay metrics that triggered the optimization.
+  DecayMetrics decay_metrics = 4;
+  // AI-generated change summary for the optimization.
+  string change_summary = 5;
+  // Suggested optimized source code (truncated preview).
+  string suggested_code_preview = 6;
+}
+
+// ── Phase 5.2: Strategy Bundles ───────────────────────────────────────────────
+
+message CreateBundleRequest {
+  string title = 1;
+  string description = 2;
+  string price_model = 3;        // once | subscription
+  string price_amount = 4;
+  repeated string strategy_ids = 5;
+  string platform_fee_rate = 6;  // optional, defaults to 0.10
+}
+
+message CreateBundleResponse {
+  string bundle_id = 1;
+}
+
+message ListBundlesRequest {
+  string publisher_id = 1;   // optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message BundleItem {
+  string strategy_id = 1;
+  int32 sort_order = 2;
+  string title = 3;
+  string price_amount = 4;
+}
+
+message BundleInfo {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string publisher_id = 4;
+  string price_model = 5;
+  string price_amount = 6;
+  string platform_fee_rate = 7;
+  int32 total_purchases = 8;
+  int64 created_at_ms = 9;
+  repeated BundleItem items = 10;
+}
+
+message ListBundlesResponse {
+  repeated BundleInfo bundles = 1;
+  int32 total = 2;
+}
+
+message GetBundleRequest {
+  string bundle_id = 1;
+}
+
+message GetBundleResponse {
+  BundleInfo bundle = 1;
+}
+
+message PurchaseBundleRequest {
+  string bundle_id = 1;
+  string idempotency_key = 2;
+}
+
+message PurchaseBundleResponse {
+  string subscription_id = 1;
+  string transaction_id = 2;
+  string amount_charged = 3;
+  string balance_after = 4;
+}
+
+message DeleteBundleRequest {
+  string bundle_id = 1;
+}
+
+message DeleteBundleResponse {
+  bool success = 1;
+}
+
+// ── Phase 5.3: Tiered Fee Rates ───────────────────────────────────────────────
+
+message FeeTierInfo {
+  int32 id = 1;
+  string tier_name = 2;
+  int32 min_sales_count = 3;
+  string fee_rate = 4;
+  int32 sort_order = 5;
+  bool enabled = 6;
+}
+
+message ListFeeTiersResponse {
+  repeated FeeTierInfo tiers = 1;
+}
+
+message UpdateFeeTierRequest {
+  int32 id = 1;
+  string fee_rate = 2;
+  int32 min_sales_count = 3;
+  bool enabled = 4;
+}
+
+message UpdateFeeTierResponse {
+  bool success = 1;
+}
+
+message GetProviderFeeTierRequest {
+  string publisher_id = 1;
+}
+
+message GetProviderFeeTierResponse {
+  string tier_name = 1;
+  string fee_rate = 2;
+  int32 min_sales_count = 3;
+  int32 current_sales = 4;
+  int32 next_tier_min_sales = 5;
 }

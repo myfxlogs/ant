@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Statistic, Table, Tag, Button, Spin } from 'antd';
-import { DollarOutlined, WalletOutlined, ArrowUpOutlined, ShopOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Statistic, Table, Tag, Button, Spin, message, Empty } from 'antd';
+import { DollarOutlined, WalletOutlined, ArrowUpOutlined, ShopOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
@@ -14,9 +14,11 @@ export default function ProviderEarningsPanel() {
   const [txTotal, setTxTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const fetchEarnings = useCallback(async () => {
     setLoading(true);
+    setError(false);
     try {
       const [e, tx] = await Promise.all([
         marketplaceClient.getProviderEarnings({}),
@@ -25,26 +27,31 @@ export default function ProviderEarningsPanel() {
       setEarnings(e);
       setTransactions(tx.transactions || []);
       setTxTotal(tx.total || 0);
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(true);
+      message.error(t('marketplace.earnings.loadError', { defaultValue: 'Failed to load earnings data' }));
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, t]);
 
   useEffect(() => {
     fetchEarnings();
   }, [fetchEarnings]);
 
   if (loading) return <Spin style={{ display: 'block', margin: '40px auto' }} />;
-  if (!earnings) return null;
+  if (error || !earnings) return (
+    <Empty description={t('marketplace.earnings.loadError', { defaultValue: 'Failed to load earnings data' })}>
+      <Button onClick={fetchEarnings}>{t('common.retry', { defaultValue: 'Retry' })}</Button>
+    </Empty>
+  );
 
   const cols = [
     {
       title: t('marketplace.earnings.colType', { defaultValue: 'Type' }),
       dataIndex: 'txType', key: 'txType',
       render: (v: string) => {
-        const color = v === 'sale' ? 'green' : v === 'refund_reversal' ? 'red' : 'default';
+        const color = v === 'settlement' ? 'green' : v === 'fee_settlement' ? 'blue' : v === 'refund_reversal' ? 'red' : 'default';
         return <Tag color={color}>{v}</Tag>;
       },
     },
@@ -85,6 +92,15 @@ export default function ProviderEarningsPanel() {
               title={t('marketplace.earnings.available', { defaultValue: 'Available Balance' })}
               value={`¥${Number(earnings.availableBalance || 0).toFixed(2)}`}
               prefix={<WalletOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#fffbe6' }}>
+            <Statistic
+              title={t('marketplace.earnings.pendingSettlement', { defaultValue: 'Pending Settlement' })}
+              value={`¥${Number(earnings.pendingSettlement || 0).toFixed(2)}`}
+              prefix={<ClockCircleOutlined />}
             />
           </Card>
         </Col>

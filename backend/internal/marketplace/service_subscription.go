@@ -115,7 +115,7 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	}
 
 	// Lazily notify subscriptions expiring within 3 days (push-first, no cron).
-	go s.notifySubExpiring(context.Background(), uid)
+	go s.notifySubExpiring(context.WithoutCancel(ctx), uid)
 
 	rows, err := s.pg.Query(ctx, `
 		SELECT id, target_user_id, target_strategy_id, kind, active, created_at, expires_at
@@ -186,7 +186,13 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			failed++
 			continue
 		}
-		feeRateDec, _ := decimal.NewFromString(p.platformFeeRate)
+		feeRateDec, err := decimal.NewFromString(p.platformFeeRate)
+		if err != nil {
+			s.log.Warn("renewal: invalid platform_fee_rate", zap.String("subID", p.subID), zap.String("feeRate", p.platformFeeRate), zap.Error(err))
+			_ = tx.Rollback(ctx)
+			failed++
+			continue
+		}
 		feeDec := priceDec.Mul(feeRateDec)
 		pubDec := priceDec.Sub(feeDec)
 
@@ -194,7 +200,13 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 		negAmountStr := "-" + amountStr
 
 		// 1. Lock buyer wallet and deduct.
-		uid, _ := uuid.Parse(p.userID)
+		uid, err := uuid.Parse(p.userID)
+		if err != nil {
+			s.log.Warn("renewal: invalid user_id", zap.String("subID", p.subID), zap.String("userID", p.userID), zap.Error(err))
+			_ = tx.Rollback(ctx)
+			failed++
+			continue
+		}
 		var buyerWalletID uuid.UUID
 		if err := tx.QueryRow(ctx,
 			`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
@@ -208,7 +220,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 		// 2. Charge buyer via AdjustBalanceTx (hash chain + idempotency).
 		buyerDesc := fmt.Sprintf("Subscription renewal: %s", p.title)
 		_, chargeErr := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
-			negAmountStr, TxTypePurchase, buyerDesc, nil, "mkt-renew-"+p.subID)
+			negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyRenewBuy+p.subID)
 
 		if chargeErr != nil {
 			// Insufficient balance — deactivate and commit (not rollback,
@@ -226,56 +238,31 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			continue
 		}
 
-		// 3. Credit publisher wallet via AdjustBalanceTx (hash chain + idempotency).
-		pubID, _ := uuid.Parse(p.publisherID)
+		// 3. Create frozen settlement for renewal (Phase 5.4).
+		pubID, err := uuid.Parse(p.publisherID)
+		if err != nil {
+			s.log.Warn("renewal: invalid publisher_id", zap.String("subID", p.subID), zap.String("publisherID", p.publisherID), zap.Error(err))
+			_ = tx.Rollback(ctx)
+			failed++
+			continue
+		}
 		pubAmountStr := pubDec.StringFixed(2)
-		var pubWalletID uuid.UUID
-		if err := tx.QueryRow(ctx,
-			`INSERT INTO user_wallets (user_id) VALUES ($1)
-			 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-			 RETURNING id`,
-			pubID,
-		).Scan(&pubWalletID); err != nil {
-			s.log.Warn("renewal: publisher wallet failed", zap.String("subID", p.subID), zap.Error(err))
+		feeStr := feeDec.StringFixed(2)
+		subUUID, err := uuid.Parse(p.subID)
+		if err != nil {
+			s.log.Warn("renewal: invalid sub_id", zap.String("subID", p.subID), zap.Error(err))
 			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
-		saleDesc := fmt.Sprintf("Strategy renewal sale: %s", p.title)
-		if _, err := s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubID,
-			pubAmountStr, TxTypeSale, saleDesc, nil, "mkt-renew-sale-"+p.subID); err != nil {
-			s.log.Warn("renewal: credit publisher failed", zap.String("subID", p.subID), zap.Error(err))
+		if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr); err != nil {
+			s.log.Warn("renewal: create settlement failed", zap.String("subID", p.subID), zap.Error(err))
 			_ = tx.Rollback(ctx)
 			failed++
 			continue
 		}
 
-		// 4. Credit platform fee to system wallet via AdjustBalanceTx.
-		if feeDec.GreaterThan(decimal.Zero) {
-			feeStr := feeDec.StringFixed(2)
-			var sysWalletID uuid.UUID
-			if err := tx.QueryRow(ctx,
-				`INSERT INTO user_wallets (user_id) VALUES ($1)
-				 ON CONFLICT (user_id) DO UPDATE SET user_id = $1
-				 RETURNING id`,
-				SystemUserID,
-			).Scan(&sysWalletID); err != nil {
-				s.log.Warn("renewal: system wallet failed", zap.String("subID", p.subID), zap.Error(err))
-				_ = tx.Rollback(ctx)
-				failed++
-				continue
-			}
-			feeDesc := fmt.Sprintf("Platform fee from renewal: %s", p.title)
-			if _, err := s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
-				feeStr, TxTypePlatformFee, feeDesc, nil, "mkt-renew-fee-"+p.subID); err != nil {
-				s.log.Warn("renewal: platform fee tx failed", zap.String("subID", p.subID), zap.Error(err))
-				_ = tx.Rollback(ctx)
-				failed++
-				continue
-			}
-		}
-
-		// 5. Extend subscription by 30 days.
+		// 4. Extend subscription by 30 days.
 		if _, eErr := tx.Exec(ctx,
 			`UPDATE user_subscriptions SET expires_at = now() + INTERVAL '30 days' WHERE id = $1`,
 			p.subID,

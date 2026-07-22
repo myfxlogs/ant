@@ -163,6 +163,48 @@ const (
 	// MarketplaceServiceListProviderTransactionsProcedure is the fully-qualified name of the
 	// MarketplaceService's ListProviderTransactions RPC.
 	MarketplaceServiceListProviderTransactionsProcedure = "/ant.v1.MarketplaceService/ListProviderTransactions"
+	// MarketplaceServiceDetectStrategyDecayProcedure is the fully-qualified name of the
+	// MarketplaceService's DetectStrategyDecay RPC.
+	MarketplaceServiceDetectStrategyDecayProcedure = "/ant.v1.MarketplaceService/DetectStrategyDecay"
+	// MarketplaceServiceListOptimizationTasksProcedure is the fully-qualified name of the
+	// MarketplaceService's ListOptimizationTasks RPC.
+	MarketplaceServiceListOptimizationTasksProcedure = "/ant.v1.MarketplaceService/ListOptimizationTasks"
+	// MarketplaceServiceGetOptimizationTaskProcedure is the fully-qualified name of the
+	// MarketplaceService's GetOptimizationTask RPC.
+	MarketplaceServiceGetOptimizationTaskProcedure = "/ant.v1.MarketplaceService/GetOptimizationTask"
+	// MarketplaceServiceRejectOptimizationTaskProcedure is the fully-qualified name of the
+	// MarketplaceService's RejectOptimizationTask RPC.
+	MarketplaceServiceRejectOptimizationTaskProcedure = "/ant.v1.MarketplaceService/RejectOptimizationTask"
+	// MarketplaceServicePublishOptimizationProcedure is the fully-qualified name of the
+	// MarketplaceService's PublishOptimization RPC.
+	MarketplaceServicePublishOptimizationProcedure = "/ant.v1.MarketplaceService/PublishOptimization"
+	// MarketplaceServicePreviewOptimizationProcedure is the fully-qualified name of the
+	// MarketplaceService's PreviewOptimization RPC.
+	MarketplaceServicePreviewOptimizationProcedure = "/ant.v1.MarketplaceService/PreviewOptimization"
+	// MarketplaceServiceCreateBundleProcedure is the fully-qualified name of the MarketplaceService's
+	// CreateBundle RPC.
+	MarketplaceServiceCreateBundleProcedure = "/ant.v1.MarketplaceService/CreateBundle"
+	// MarketplaceServiceListBundlesProcedure is the fully-qualified name of the MarketplaceService's
+	// ListBundles RPC.
+	MarketplaceServiceListBundlesProcedure = "/ant.v1.MarketplaceService/ListBundles"
+	// MarketplaceServiceGetBundleProcedure is the fully-qualified name of the MarketplaceService's
+	// GetBundle RPC.
+	MarketplaceServiceGetBundleProcedure = "/ant.v1.MarketplaceService/GetBundle"
+	// MarketplaceServicePurchaseBundleProcedure is the fully-qualified name of the MarketplaceService's
+	// PurchaseBundle RPC.
+	MarketplaceServicePurchaseBundleProcedure = "/ant.v1.MarketplaceService/PurchaseBundle"
+	// MarketplaceServiceDeleteBundleProcedure is the fully-qualified name of the MarketplaceService's
+	// DeleteBundle RPC.
+	MarketplaceServiceDeleteBundleProcedure = "/ant.v1.MarketplaceService/DeleteBundle"
+	// MarketplaceServiceListFeeTiersProcedure is the fully-qualified name of the MarketplaceService's
+	// ListFeeTiers RPC.
+	MarketplaceServiceListFeeTiersProcedure = "/ant.v1.MarketplaceService/ListFeeTiers"
+	// MarketplaceServiceUpdateFeeTierProcedure is the fully-qualified name of the MarketplaceService's
+	// UpdateFeeTier RPC.
+	MarketplaceServiceUpdateFeeTierProcedure = "/ant.v1.MarketplaceService/UpdateFeeTier"
+	// MarketplaceServiceGetProviderFeeTierProcedure is the fully-qualified name of the
+	// MarketplaceService's GetProviderFeeTier RPC.
+	MarketplaceServiceGetProviderFeeTierProcedure = "/ant.v1.MarketplaceService/GetProviderFeeTier"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -236,6 +278,23 @@ type MarketplaceServiceClient interface {
 	// Phase 4.6: Provider earnings & withdrawal.
 	GetProviderEarnings(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ProviderEarnings], error)
 	ListProviderTransactions(context.Context, *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error)
+	// Phase 5.1: AI strategy iteration — decay detection + optimization.
+	DetectStrategyDecay(context.Context, *connect.Request[v1.DetectStrategyDecayRequest]) (*connect.Response[v1.DetectStrategyDecayResponse], error)
+	ListOptimizationTasks(context.Context, *connect.Request[v1.ListOptimizationTasksRequest]) (*connect.Response[v1.ListOptimizationTasksResponse], error)
+	GetOptimizationTask(context.Context, *connect.Request[v1.GetOptimizationTaskRequest]) (*connect.Response[v1.GetOptimizationTaskResponse], error)
+	RejectOptimizationTask(context.Context, *connect.Request[v1.RejectOptimizationTaskRequest]) (*connect.Response[v1.RejectOptimizationTaskResponse], error)
+	PublishOptimization(context.Context, *connect.Request[v1.PublishOptimizationRequest]) (*connect.Response[v1.PublishOptimizationResponse], error)
+	PreviewOptimization(context.Context, *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error)
+	// Phase 5.2: Strategy bundles.
+	CreateBundle(context.Context, *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error)
+	ListBundles(context.Context, *connect.Request[v1.ListBundlesRequest]) (*connect.Response[v1.ListBundlesResponse], error)
+	GetBundle(context.Context, *connect.Request[v1.GetBundleRequest]) (*connect.Response[v1.GetBundleResponse], error)
+	PurchaseBundle(context.Context, *connect.Request[v1.PurchaseBundleRequest]) (*connect.Response[v1.PurchaseBundleResponse], error)
+	DeleteBundle(context.Context, *connect.Request[v1.DeleteBundleRequest]) (*connect.Response[v1.DeleteBundleResponse], error)
+	// Phase 5.3: Tiered fee rates.
+	ListFeeTiers(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ListFeeTiersResponse], error)
+	UpdateFeeTier(context.Context, *connect.Request[v1.UpdateFeeTierRequest]) (*connect.Response[v1.UpdateFeeTierResponse], error)
+	GetProviderFeeTier(context.Context, *connect.Request[v1.GetProviderFeeTierRequest]) (*connect.Response[v1.GetProviderFeeTierResponse], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -507,6 +566,90 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("ListProviderTransactions")),
 			connect.WithClientOptions(opts...),
 		),
+		detectStrategyDecay: connect.NewClient[v1.DetectStrategyDecayRequest, v1.DetectStrategyDecayResponse](
+			httpClient,
+			baseURL+MarketplaceServiceDetectStrategyDecayProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("DetectStrategyDecay")),
+			connect.WithClientOptions(opts...),
+		),
+		listOptimizationTasks: connect.NewClient[v1.ListOptimizationTasksRequest, v1.ListOptimizationTasksResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListOptimizationTasksProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListOptimizationTasks")),
+			connect.WithClientOptions(opts...),
+		),
+		getOptimizationTask: connect.NewClient[v1.GetOptimizationTaskRequest, v1.GetOptimizationTaskResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetOptimizationTaskProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetOptimizationTask")),
+			connect.WithClientOptions(opts...),
+		),
+		rejectOptimizationTask: connect.NewClient[v1.RejectOptimizationTaskRequest, v1.RejectOptimizationTaskResponse](
+			httpClient,
+			baseURL+MarketplaceServiceRejectOptimizationTaskProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("RejectOptimizationTask")),
+			connect.WithClientOptions(opts...),
+		),
+		publishOptimization: connect.NewClient[v1.PublishOptimizationRequest, v1.PublishOptimizationResponse](
+			httpClient,
+			baseURL+MarketplaceServicePublishOptimizationProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("PublishOptimization")),
+			connect.WithClientOptions(opts...),
+		),
+		previewOptimization: connect.NewClient[v1.PreviewOptimizationRequest, v1.PreviewOptimizationResponse](
+			httpClient,
+			baseURL+MarketplaceServicePreviewOptimizationProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("PreviewOptimization")),
+			connect.WithClientOptions(opts...),
+		),
+		createBundle: connect.NewClient[v1.CreateBundleRequest, v1.CreateBundleResponse](
+			httpClient,
+			baseURL+MarketplaceServiceCreateBundleProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("CreateBundle")),
+			connect.WithClientOptions(opts...),
+		),
+		listBundles: connect.NewClient[v1.ListBundlesRequest, v1.ListBundlesResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListBundlesProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListBundles")),
+			connect.WithClientOptions(opts...),
+		),
+		getBundle: connect.NewClient[v1.GetBundleRequest, v1.GetBundleResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetBundleProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetBundle")),
+			connect.WithClientOptions(opts...),
+		),
+		purchaseBundle: connect.NewClient[v1.PurchaseBundleRequest, v1.PurchaseBundleResponse](
+			httpClient,
+			baseURL+MarketplaceServicePurchaseBundleProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("PurchaseBundle")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteBundle: connect.NewClient[v1.DeleteBundleRequest, v1.DeleteBundleResponse](
+			httpClient,
+			baseURL+MarketplaceServiceDeleteBundleProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("DeleteBundle")),
+			connect.WithClientOptions(opts...),
+		),
+		listFeeTiers: connect.NewClient[emptypb.Empty, v1.ListFeeTiersResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListFeeTiersProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListFeeTiers")),
+			connect.WithClientOptions(opts...),
+		),
+		updateFeeTier: connect.NewClient[v1.UpdateFeeTierRequest, v1.UpdateFeeTierResponse](
+			httpClient,
+			baseURL+MarketplaceServiceUpdateFeeTierProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("UpdateFeeTier")),
+			connect.WithClientOptions(opts...),
+		),
+		getProviderFeeTier: connect.NewClient[v1.GetProviderFeeTierRequest, v1.GetProviderFeeTierResponse](
+			httpClient,
+			baseURL+MarketplaceServiceGetProviderFeeTierProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("GetProviderFeeTier")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -555,6 +698,20 @@ type marketplaceServiceClient struct {
 	disableCoupon            *connect.Client[v1.DisableCouponRequest, v1.DisableCouponResponse]
 	getProviderEarnings      *connect.Client[emptypb.Empty, v1.ProviderEarnings]
 	listProviderTransactions *connect.Client[v1.ListProviderTransactionsRequest, v1.ListProviderTransactionsResponse]
+	detectStrategyDecay      *connect.Client[v1.DetectStrategyDecayRequest, v1.DetectStrategyDecayResponse]
+	listOptimizationTasks    *connect.Client[v1.ListOptimizationTasksRequest, v1.ListOptimizationTasksResponse]
+	getOptimizationTask      *connect.Client[v1.GetOptimizationTaskRequest, v1.GetOptimizationTaskResponse]
+	rejectOptimizationTask   *connect.Client[v1.RejectOptimizationTaskRequest, v1.RejectOptimizationTaskResponse]
+	publishOptimization      *connect.Client[v1.PublishOptimizationRequest, v1.PublishOptimizationResponse]
+	previewOptimization      *connect.Client[v1.PreviewOptimizationRequest, v1.PreviewOptimizationResponse]
+	createBundle             *connect.Client[v1.CreateBundleRequest, v1.CreateBundleResponse]
+	listBundles              *connect.Client[v1.ListBundlesRequest, v1.ListBundlesResponse]
+	getBundle                *connect.Client[v1.GetBundleRequest, v1.GetBundleResponse]
+	purchaseBundle           *connect.Client[v1.PurchaseBundleRequest, v1.PurchaseBundleResponse]
+	deleteBundle             *connect.Client[v1.DeleteBundleRequest, v1.DeleteBundleResponse]
+	listFeeTiers             *connect.Client[emptypb.Empty, v1.ListFeeTiersResponse]
+	updateFeeTier            *connect.Client[v1.UpdateFeeTierRequest, v1.UpdateFeeTierResponse]
+	getProviderFeeTier       *connect.Client[v1.GetProviderFeeTierRequest, v1.GetProviderFeeTierResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -772,6 +929,76 @@ func (c *marketplaceServiceClient) ListProviderTransactions(ctx context.Context,
 	return c.listProviderTransactions.CallUnary(ctx, req)
 }
 
+// DetectStrategyDecay calls ant.v1.MarketplaceService.DetectStrategyDecay.
+func (c *marketplaceServiceClient) DetectStrategyDecay(ctx context.Context, req *connect.Request[v1.DetectStrategyDecayRequest]) (*connect.Response[v1.DetectStrategyDecayResponse], error) {
+	return c.detectStrategyDecay.CallUnary(ctx, req)
+}
+
+// ListOptimizationTasks calls ant.v1.MarketplaceService.ListOptimizationTasks.
+func (c *marketplaceServiceClient) ListOptimizationTasks(ctx context.Context, req *connect.Request[v1.ListOptimizationTasksRequest]) (*connect.Response[v1.ListOptimizationTasksResponse], error) {
+	return c.listOptimizationTasks.CallUnary(ctx, req)
+}
+
+// GetOptimizationTask calls ant.v1.MarketplaceService.GetOptimizationTask.
+func (c *marketplaceServiceClient) GetOptimizationTask(ctx context.Context, req *connect.Request[v1.GetOptimizationTaskRequest]) (*connect.Response[v1.GetOptimizationTaskResponse], error) {
+	return c.getOptimizationTask.CallUnary(ctx, req)
+}
+
+// RejectOptimizationTask calls ant.v1.MarketplaceService.RejectOptimizationTask.
+func (c *marketplaceServiceClient) RejectOptimizationTask(ctx context.Context, req *connect.Request[v1.RejectOptimizationTaskRequest]) (*connect.Response[v1.RejectOptimizationTaskResponse], error) {
+	return c.rejectOptimizationTask.CallUnary(ctx, req)
+}
+
+// PublishOptimization calls ant.v1.MarketplaceService.PublishOptimization.
+func (c *marketplaceServiceClient) PublishOptimization(ctx context.Context, req *connect.Request[v1.PublishOptimizationRequest]) (*connect.Response[v1.PublishOptimizationResponse], error) {
+	return c.publishOptimization.CallUnary(ctx, req)
+}
+
+// PreviewOptimization calls ant.v1.MarketplaceService.PreviewOptimization.
+func (c *marketplaceServiceClient) PreviewOptimization(ctx context.Context, req *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error) {
+	return c.previewOptimization.CallUnary(ctx, req)
+}
+
+// CreateBundle calls ant.v1.MarketplaceService.CreateBundle.
+func (c *marketplaceServiceClient) CreateBundle(ctx context.Context, req *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error) {
+	return c.createBundle.CallUnary(ctx, req)
+}
+
+// ListBundles calls ant.v1.MarketplaceService.ListBundles.
+func (c *marketplaceServiceClient) ListBundles(ctx context.Context, req *connect.Request[v1.ListBundlesRequest]) (*connect.Response[v1.ListBundlesResponse], error) {
+	return c.listBundles.CallUnary(ctx, req)
+}
+
+// GetBundle calls ant.v1.MarketplaceService.GetBundle.
+func (c *marketplaceServiceClient) GetBundle(ctx context.Context, req *connect.Request[v1.GetBundleRequest]) (*connect.Response[v1.GetBundleResponse], error) {
+	return c.getBundle.CallUnary(ctx, req)
+}
+
+// PurchaseBundle calls ant.v1.MarketplaceService.PurchaseBundle.
+func (c *marketplaceServiceClient) PurchaseBundle(ctx context.Context, req *connect.Request[v1.PurchaseBundleRequest]) (*connect.Response[v1.PurchaseBundleResponse], error) {
+	return c.purchaseBundle.CallUnary(ctx, req)
+}
+
+// DeleteBundle calls ant.v1.MarketplaceService.DeleteBundle.
+func (c *marketplaceServiceClient) DeleteBundle(ctx context.Context, req *connect.Request[v1.DeleteBundleRequest]) (*connect.Response[v1.DeleteBundleResponse], error) {
+	return c.deleteBundle.CallUnary(ctx, req)
+}
+
+// ListFeeTiers calls ant.v1.MarketplaceService.ListFeeTiers.
+func (c *marketplaceServiceClient) ListFeeTiers(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[v1.ListFeeTiersResponse], error) {
+	return c.listFeeTiers.CallUnary(ctx, req)
+}
+
+// UpdateFeeTier calls ant.v1.MarketplaceService.UpdateFeeTier.
+func (c *marketplaceServiceClient) UpdateFeeTier(ctx context.Context, req *connect.Request[v1.UpdateFeeTierRequest]) (*connect.Response[v1.UpdateFeeTierResponse], error) {
+	return c.updateFeeTier.CallUnary(ctx, req)
+}
+
+// GetProviderFeeTier calls ant.v1.MarketplaceService.GetProviderFeeTier.
+func (c *marketplaceServiceClient) GetProviderFeeTier(ctx context.Context, req *connect.Request[v1.GetProviderFeeTierRequest]) (*connect.Response[v1.GetProviderFeeTierResponse], error) {
+	return c.getProviderFeeTier.CallUnary(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -843,6 +1070,23 @@ type MarketplaceServiceHandler interface {
 	// Phase 4.6: Provider earnings & withdrawal.
 	GetProviderEarnings(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ProviderEarnings], error)
 	ListProviderTransactions(context.Context, *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error)
+	// Phase 5.1: AI strategy iteration — decay detection + optimization.
+	DetectStrategyDecay(context.Context, *connect.Request[v1.DetectStrategyDecayRequest]) (*connect.Response[v1.DetectStrategyDecayResponse], error)
+	ListOptimizationTasks(context.Context, *connect.Request[v1.ListOptimizationTasksRequest]) (*connect.Response[v1.ListOptimizationTasksResponse], error)
+	GetOptimizationTask(context.Context, *connect.Request[v1.GetOptimizationTaskRequest]) (*connect.Response[v1.GetOptimizationTaskResponse], error)
+	RejectOptimizationTask(context.Context, *connect.Request[v1.RejectOptimizationTaskRequest]) (*connect.Response[v1.RejectOptimizationTaskResponse], error)
+	PublishOptimization(context.Context, *connect.Request[v1.PublishOptimizationRequest]) (*connect.Response[v1.PublishOptimizationResponse], error)
+	PreviewOptimization(context.Context, *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error)
+	// Phase 5.2: Strategy bundles.
+	CreateBundle(context.Context, *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error)
+	ListBundles(context.Context, *connect.Request[v1.ListBundlesRequest]) (*connect.Response[v1.ListBundlesResponse], error)
+	GetBundle(context.Context, *connect.Request[v1.GetBundleRequest]) (*connect.Response[v1.GetBundleResponse], error)
+	PurchaseBundle(context.Context, *connect.Request[v1.PurchaseBundleRequest]) (*connect.Response[v1.PurchaseBundleResponse], error)
+	DeleteBundle(context.Context, *connect.Request[v1.DeleteBundleRequest]) (*connect.Response[v1.DeleteBundleResponse], error)
+	// Phase 5.3: Tiered fee rates.
+	ListFeeTiers(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ListFeeTiersResponse], error)
+	UpdateFeeTier(context.Context, *connect.Request[v1.UpdateFeeTierRequest]) (*connect.Response[v1.UpdateFeeTierResponse], error)
+	GetProviderFeeTier(context.Context, *connect.Request[v1.GetProviderFeeTierRequest]) (*connect.Response[v1.GetProviderFeeTierResponse], error)
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -1110,6 +1354,90 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("ListProviderTransactions")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceDetectStrategyDecayHandler := connect.NewUnaryHandler(
+		MarketplaceServiceDetectStrategyDecayProcedure,
+		svc.DetectStrategyDecay,
+		connect.WithSchema(marketplaceServiceMethods.ByName("DetectStrategyDecay")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListOptimizationTasksHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListOptimizationTasksProcedure,
+		svc.ListOptimizationTasks,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListOptimizationTasks")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetOptimizationTaskHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetOptimizationTaskProcedure,
+		svc.GetOptimizationTask,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetOptimizationTask")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceRejectOptimizationTaskHandler := connect.NewUnaryHandler(
+		MarketplaceServiceRejectOptimizationTaskProcedure,
+		svc.RejectOptimizationTask,
+		connect.WithSchema(marketplaceServiceMethods.ByName("RejectOptimizationTask")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServicePublishOptimizationHandler := connect.NewUnaryHandler(
+		MarketplaceServicePublishOptimizationProcedure,
+		svc.PublishOptimization,
+		connect.WithSchema(marketplaceServiceMethods.ByName("PublishOptimization")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServicePreviewOptimizationHandler := connect.NewUnaryHandler(
+		MarketplaceServicePreviewOptimizationProcedure,
+		svc.PreviewOptimization,
+		connect.WithSchema(marketplaceServiceMethods.ByName("PreviewOptimization")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceCreateBundleHandler := connect.NewUnaryHandler(
+		MarketplaceServiceCreateBundleProcedure,
+		svc.CreateBundle,
+		connect.WithSchema(marketplaceServiceMethods.ByName("CreateBundle")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListBundlesHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListBundlesProcedure,
+		svc.ListBundles,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListBundles")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetBundleHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetBundleProcedure,
+		svc.GetBundle,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetBundle")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServicePurchaseBundleHandler := connect.NewUnaryHandler(
+		MarketplaceServicePurchaseBundleProcedure,
+		svc.PurchaseBundle,
+		connect.WithSchema(marketplaceServiceMethods.ByName("PurchaseBundle")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceDeleteBundleHandler := connect.NewUnaryHandler(
+		MarketplaceServiceDeleteBundleProcedure,
+		svc.DeleteBundle,
+		connect.WithSchema(marketplaceServiceMethods.ByName("DeleteBundle")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListFeeTiersHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListFeeTiersProcedure,
+		svc.ListFeeTiers,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListFeeTiers")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceUpdateFeeTierHandler := connect.NewUnaryHandler(
+		MarketplaceServiceUpdateFeeTierProcedure,
+		svc.UpdateFeeTier,
+		connect.WithSchema(marketplaceServiceMethods.ByName("UpdateFeeTier")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceGetProviderFeeTierHandler := connect.NewUnaryHandler(
+		MarketplaceServiceGetProviderFeeTierProcedure,
+		svc.GetProviderFeeTier,
+		connect.WithSchema(marketplaceServiceMethods.ByName("GetProviderFeeTier")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -1198,6 +1526,34 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceGetProviderEarningsHandler.ServeHTTP(w, r)
 		case MarketplaceServiceListProviderTransactionsProcedure:
 			marketplaceServiceListProviderTransactionsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceDetectStrategyDecayProcedure:
+			marketplaceServiceDetectStrategyDecayHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListOptimizationTasksProcedure:
+			marketplaceServiceListOptimizationTasksHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetOptimizationTaskProcedure:
+			marketplaceServiceGetOptimizationTaskHandler.ServeHTTP(w, r)
+		case MarketplaceServiceRejectOptimizationTaskProcedure:
+			marketplaceServiceRejectOptimizationTaskHandler.ServeHTTP(w, r)
+		case MarketplaceServicePublishOptimizationProcedure:
+			marketplaceServicePublishOptimizationHandler.ServeHTTP(w, r)
+		case MarketplaceServicePreviewOptimizationProcedure:
+			marketplaceServicePreviewOptimizationHandler.ServeHTTP(w, r)
+		case MarketplaceServiceCreateBundleProcedure:
+			marketplaceServiceCreateBundleHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListBundlesProcedure:
+			marketplaceServiceListBundlesHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetBundleProcedure:
+			marketplaceServiceGetBundleHandler.ServeHTTP(w, r)
+		case MarketplaceServicePurchaseBundleProcedure:
+			marketplaceServicePurchaseBundleHandler.ServeHTTP(w, r)
+		case MarketplaceServiceDeleteBundleProcedure:
+			marketplaceServiceDeleteBundleHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListFeeTiersProcedure:
+			marketplaceServiceListFeeTiersHandler.ServeHTTP(w, r)
+		case MarketplaceServiceUpdateFeeTierProcedure:
+			marketplaceServiceUpdateFeeTierHandler.ServeHTTP(w, r)
+		case MarketplaceServiceGetProviderFeeTierProcedure:
+			marketplaceServiceGetProviderFeeTierHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -1377,4 +1733,60 @@ func (UnimplementedMarketplaceServiceHandler) GetProviderEarnings(context.Contex
 
 func (UnimplementedMarketplaceServiceHandler) ListProviderTransactions(context.Context, *connect.Request[v1.ListProviderTransactionsRequest]) (*connect.Response[v1.ListProviderTransactionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListProviderTransactions is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) DetectStrategyDecay(context.Context, *connect.Request[v1.DetectStrategyDecayRequest]) (*connect.Response[v1.DetectStrategyDecayResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.DetectStrategyDecay is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListOptimizationTasks(context.Context, *connect.Request[v1.ListOptimizationTasksRequest]) (*connect.Response[v1.ListOptimizationTasksResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListOptimizationTasks is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetOptimizationTask(context.Context, *connect.Request[v1.GetOptimizationTaskRequest]) (*connect.Response[v1.GetOptimizationTaskResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetOptimizationTask is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) RejectOptimizationTask(context.Context, *connect.Request[v1.RejectOptimizationTaskRequest]) (*connect.Response[v1.RejectOptimizationTaskResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RejectOptimizationTask is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) PublishOptimization(context.Context, *connect.Request[v1.PublishOptimizationRequest]) (*connect.Response[v1.PublishOptimizationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.PublishOptimization is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) PreviewOptimization(context.Context, *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.PreviewOptimization is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) CreateBundle(context.Context, *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.CreateBundle is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListBundles(context.Context, *connect.Request[v1.ListBundlesRequest]) (*connect.Response[v1.ListBundlesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListBundles is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetBundle(context.Context, *connect.Request[v1.GetBundleRequest]) (*connect.Response[v1.GetBundleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetBundle is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) PurchaseBundle(context.Context, *connect.Request[v1.PurchaseBundleRequest]) (*connect.Response[v1.PurchaseBundleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.PurchaseBundle is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) DeleteBundle(context.Context, *connect.Request[v1.DeleteBundleRequest]) (*connect.Response[v1.DeleteBundleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.DeleteBundle is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListFeeTiers(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.ListFeeTiersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListFeeTiers is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) UpdateFeeTier(context.Context, *connect.Request[v1.UpdateFeeTierRequest]) (*connect.Response[v1.UpdateFeeTierResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.UpdateFeeTier is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) GetProviderFeeTier(context.Context, *connect.Request[v1.GetProviderFeeTierRequest]) (*connect.Response[v1.GetProviderFeeTierResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.GetProviderFeeTier is not implemented"))
 }

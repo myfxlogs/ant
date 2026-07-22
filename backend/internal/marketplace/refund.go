@@ -3,9 +3,11 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -20,8 +22,9 @@ type RefundResult struct {
 }
 
 // RefundPurchase reverses a paid strategy purchase: credits the buyer back,
-// debits the publisher and platform fee, deactivates the subscription, and
-// decrements the subscriber counter. All steps run in a single DB transaction.
+// handles the settlement (frozen→mark refunded, settled→reverse publisher+platform),
+// deactivates the subscription, and decrements the subscriber counter.
+// All steps run in a single DB transaction.
 func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID string) (*RefundResult, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
@@ -72,9 +75,7 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		return nil, fmt.Errorf("marketplace: subscription missing idempotency key")
 	}
 
-	buyKey := "mkt-buy-" + idemKey
-	saleKey := "mkt-sale-" + idemKey
-	feeKey := "mkt-fee-" + idemKey
+	buyKey := IdemKeyBuy + idemKey
 
 	// 2. Find the original purchase transaction by its unique idem_key.
 	var purchaseAmount string
@@ -87,10 +88,11 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 	}
 
 	// amount is negative in the transaction; use absolute value for credit.
-	absAmount := purchaseAmount
-	if len(absAmount) > 0 && absAmount[0] == '-' {
-		absAmount = absAmount[1:]
+	purchaseDec, err := decimal.NewFromString(purchaseAmount)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid purchase amount: %w", err)
 	}
+	absAmount := purchaseDec.Abs().StringFixed(2)
 
 	// 3. Refund buyer wallet via AdjustBalanceTx (hash chain + idempotency).
 	var buyerWalletID uuid.UUID
@@ -104,7 +106,7 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 
 	refundDesc := fmt.Sprintf("Refund for subscription %s", sid)
 	buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
-		absAmount, TxTypeRefund, refundDesc, nil, "mkt-refund-"+sid.String())
+		absAmount, TxTypeRefund, refundDesc, nil, IdemKeyRefund+sid.String())
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: refund buyer: %w", err)
 	}
@@ -114,69 +116,90 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		refundTxID = *buyerWallet.LastTransactionID
 	}
 
-	// 4. Find publisher's original sale transaction by idem_key.
-	var pubNetReceived string
+	// 4. Handle settlement — if frozen, simply mark as refunded (no publisher debit needed).
+	//    If already settled, reverse the publisher and platform credits.
+	var settlementStatus, settlementID, providerAmount, platformFee string
 	err = tx.QueryRow(ctx,
-		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
-		saleKey,
-	).Scan(&pubNetReceived)
+		`SELECT status, id::text, provider_amount::text, platform_fee::text
+		 FROM marketplace_settlements WHERE purchase_id = $1 FOR UPDATE`,
+		sid,
+	).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
 	if err != nil {
-		pubNetReceived = "0"
-	}
-	if len(pubNetReceived) > 0 && pubNetReceived[0] == '-' {
-		pubNetReceived = pubNetReceived[1:]
-	}
-
-	// 5. Debit publisher by the net amount they actually received.
-	if pubNetReceived != "0" {
-		pubUUID, _ := uuid.Parse(subTargetUserID)
-		var pubWalletID uuid.UUID
-		err = tx.QueryRow(ctx,
-			`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
-			pubUUID,
-		).Scan(&pubWalletID)
-		if err == nil {
-			negNet := "-" + pubNetReceived
-			revDesc := fmt.Sprintf("Refund reversal for subscription %s", sid)
-			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubUUID,
-				negNet, TxTypeRefundReversal, revDesc, nil, "mkt-rev-"+sid.String())
+		s.log.Warn("marketplace: settlement not found for subscription, skipping settlement reversal",
+			zap.String("subID", sid.String()), zap.Error(err))
+	} else {
+		switch settlementStatus {
+		case SettlementStatusFrozen:
+			// Settlement still frozen — just mark as refunded. No wallet debits needed.
+			_, err = tx.Exec(ctx,
+				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
+				settlementID, time.Now(),
+			)
 			if err != nil {
-				s.log.Warn("marketplace: refund reversal failed (insufficient publisher balance)",
-					zap.String("subID", sid.String()), zap.Error(err))
+				return nil, fmt.Errorf("marketplace: mark settlement refunded: %w", err)
 			}
+
+		case SettlementStatusSettled:
+			// Already settled — reverse publisher and platform credits.
+			// providerAmount and platformFee already fetched above.
+
+			// Debit publisher.
+			pubUUID, perr := uuid.Parse(subTargetUserID)
+			if perr != nil {
+				return nil, fmt.Errorf("marketplace: invalid publisher_id in subscription: %w", perr)
+			}
+			var pubWalletID uuid.UUID
+			err = tx.QueryRow(ctx,
+				`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+				pubUUID,
+			).Scan(&pubWalletID)
+			if err == nil {
+				negPub := "-" + providerAmount
+				revDesc := fmt.Sprintf("Refund reversal for subscription %s", sid)
+				_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubUUID,
+					negPub, TxTypeRefundReversal, revDesc, nil, IdemKeyRev+sid.String())
+				if err != nil {
+					s.log.Warn("marketplace: refund reversal failed (insufficient publisher balance)",
+						zap.String("subID", sid.String()), zap.Error(err))
+				}
+			}
+
+			// Debit platform fee.
+			if platformFee != "0.00" && platformFee != "" {
+				var sysWalletID uuid.UUID
+				err = tx.QueryRow(ctx,
+					`INSERT INTO user_wallets (user_id) VALUES ($1)
+					 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+					 RETURNING id`,
+					SystemUserID,
+				).Scan(&sysWalletID)
+				if err == nil {
+					negFee := "-" + platformFee
+					feeRevDesc := fmt.Sprintf("Platform fee reversal for subscription %s", sid)
+					_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
+						negFee, TxTypeRefundReversal, feeRevDesc, nil, IdemKeyFeeRev+sid.String())
+					if err != nil {
+						s.log.Warn("marketplace: platform fee reversal failed",
+							zap.String("subID", sid.String()), zap.Error(err))
+					}
+				}
+			}
+
+			// Mark settlement as refunded.
+			_, err = tx.Exec(ctx,
+				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
+				settlementID, time.Now(),
+			)
+			if err != nil {
+				return nil, fmt.Errorf("marketplace: mark settled refund: %w", err)
+			}
+
+		case SettlementStatusRefunded:
+			return nil, fmt.Errorf("marketplace: settlement already refunded")
 		}
 	}
 
-	// 6. Reverse the platform fee credited to the system wallet at purchase time.
-	var feeReceived string
-	_ = tx.QueryRow(ctx,
-		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
-		feeKey,
-	).Scan(&feeReceived)
-	if len(feeReceived) > 0 && feeReceived[0] == '-' {
-		feeReceived = feeReceived[1:]
-	}
-	if feeReceived != "" && feeReceived != "0" {
-		var sysWalletID uuid.UUID
-		err = tx.QueryRow(ctx,
-			`INSERT INTO user_wallets (user_id) VALUES ($1)
-			 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-			 RETURNING id`,
-			SystemUserID,
-		).Scan(&sysWalletID)
-		if err == nil {
-			negFee := "-" + feeReceived
-			feeRevDesc := fmt.Sprintf("Platform fee reversal for subscription %s", sid)
-			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
-				negFee, TxTypePlatformFee, feeRevDesc, nil, "mkt-fee-rev-"+sid.String())
-			if err != nil {
-				s.log.Warn("marketplace: platform fee reversal failed (insufficient system wallet)",
-					zap.String("subID", sid.String()), zap.Error(err))
-			}
-		}
-	}
-
-	// 7. Deactivate subscription.
+	// 5. Deactivate subscription.
 	_, err = tx.Exec(ctx,
 		`UPDATE user_subscriptions SET active = false WHERE id = $1`,
 		sid,
@@ -185,7 +208,7 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		return nil, fmt.Errorf("marketplace: deactivate subscription: %w", err)
 	}
 
-	// 8. Decrement subscriber counter (floor at 0).
+	// 6. Decrement subscriber counter (floor at 0).
 	_, err = tx.Exec(ctx,
 		`UPDATE marketplace_strategies SET total_subscribers = GREATEST(total_subscribers - 1, 0)
 		 WHERE strategy_id = $1`,

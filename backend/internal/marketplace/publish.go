@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -23,8 +24,8 @@ type publishedCacheEntry struct {
 }
 
 type publishedCache struct {
-	mu   sync.RWMutex
-	m    map[string]publishedCacheEntry
+	mu sync.RWMutex
+	m  map[string]publishedCacheEntry
 }
 
 func newPublishedCache() *publishedCache {
@@ -101,7 +102,13 @@ func (s *Service) Unpublish(ctx context.Context, strategyID, userID string, isAd
 }
 
 // GetPublisherStats returns aggregated dashboard statistics for a publisher.
+// Triggers lazy settlement of expired frozen balances before computing stats.
 func (s *Service) GetPublisherStats(ctx context.Context, userID string) (*PublisherStats, error) {
+	// Phase 5.4: Lazy settlement — settle expired frozen balances for this provider.
+	if _, err := s.SettleExpired(ctx, userID); err != nil {
+		s.log.Warn("publisher stats: lazy settlement failed", zap.String("userID", userID), zap.Error(err))
+	}
+
 	var stats PublisherStats
 	err := s.pg.QueryRow(ctx,
 		`SELECT COUNT(*), COALESCE(SUM(total_subscribers),0)
@@ -112,20 +119,34 @@ func (s *Service) GetPublisherStats(ctx context.Context, userID string) (*Publis
 		return nil, err
 	}
 
-	// Total revenue from sale transactions.
+	// Total revenue from settled transactions (Phase 5.4: settlement tx_type replaces sale).
 	_ = s.pg.QueryRow(ctx,
 		`SELECT COALESCE(SUM(amount::numeric),0)::text FROM wallet_transactions
-		 WHERE user_id::text = $1 AND tx_type = 'sale'`,
+		 WHERE user_id::text = $1 AND tx_type = 'settlement'`,
 		userID,
 	).Scan(&stats.TotalRevenue)
 
-	// Monthly revenue (last 30 days).
+	// Monthly revenue (last 30 days) — settled only.
 	_ = s.pg.QueryRow(ctx,
 		`SELECT COALESCE(SUM(amount::numeric),0)::text FROM wallet_transactions
-		 WHERE user_id::text = $1 AND tx_type = 'sale'
+		 WHERE user_id::text = $1 AND tx_type = 'settlement'
 		   AND created_at > now() - INTERVAL '30 days'`,
 		userID,
 	).Scan(&stats.MonthlyRevenue)
+
+	// Phase 5.4: Pending settlement balance (frozen provider_amount sum).
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(SUM(provider_amount),0)::text FROM marketplace_settlements
+		 WHERE provider_id::text = $1 AND status = 'frozen'`,
+		userID,
+	).Scan(&stats.PendingSettlement)
+
+	// Phase 5.4: Earliest next settlement date among frozen rows.
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(MIN(settles_at)::text, '') FROM marketplace_settlements
+		 WHERE provider_id::text = $1 AND status = 'frozen'`,
+		userID,
+	).Scan(&stats.NextSettlementDate)
 
 	// Average rating across all published strategies.
 	_ = s.pg.QueryRow(ctx,
@@ -204,7 +225,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 
 	// Notify users who opted into new strategy notifications.
 	if sid, err := uuid.Parse(params.StrategyID); err == nil {
-		go s.notifyNewStrategy(context.Background(), sid, params.Title, params.AssetClass)
+		go s.notifyNewStrategy(context.WithoutCancel(ctx), sid, params.Title, params.AssetClass)
 	}
 
 	return publishID.String(), nil
