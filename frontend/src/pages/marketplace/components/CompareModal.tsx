@@ -4,6 +4,8 @@ import { SwapOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
+import { useAuthRequired } from '@/hooks/useAuthRequired';
+import { useAuthStore } from '@/stores/authStore';
 import type { StrategyComparison } from '@/gen/ant/v1/marketplace_service_pb';
 
 const { Text } = Typography;
@@ -26,6 +28,7 @@ interface MetricDef {
 
 export default function CompareModal({ open, strategyIds, onClose, onRemove }: Props) {
   const { t } = useTranslation();
+  const isAuthed = useAuthStore(s => !!s.accessToken);
 
   const { data: strategies } = useRpcQuery(
     ['marketplace', 'compare', strategyIds.join(',')],
@@ -34,7 +37,7 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
       const resp = await marketplaceClient.compareStrategies({ strategyIds });
       return (resp.strategies || []) as StrategyComparison[];
     },
-    { enabled: strategyIds.length > 0 },
+    { enabled: strategyIds.length > 0 && isAuthed },
   );
 
   const rows = strategies || [];
@@ -131,16 +134,18 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
 
 // Hook for managing compare selection state.
 export function useCompareSelection() {
+  const requireAuth = useAuthRequired();
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
 
   const toggleCompare = useCallback((id: string) => {
+    if (!requireAuth()) return;
     setCompareIds(prev => {
       if (prev.includes(id)) return prev.filter(x => x !== id);
       if (prev.length >= 4) return prev;
       return [...prev, id];
     });
-  }, []);
+  }, [requireAuth]);
 
   const removeFromCompare = useCallback((id: string) => {
     setCompareIds(prev => prev.filter(x => x !== id));

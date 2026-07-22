@@ -18,6 +18,7 @@ export interface MarketplaceCtx {
     strategyBreakdown: StrategyBreakdown[];
   };
   // UI state
+  isAuthenticated: boolean;
   activeTab: TabKey; setActiveTab: (t: TabKey) => void;
   searchText: string; setSearchText: (v: string) => void;
   priceFilter: PriceFilter; setPriceFilter: (f: PriceFilter) => void;

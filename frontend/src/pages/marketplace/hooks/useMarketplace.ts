@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { walletApi } from '@/client/wallet';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
+import { useAuthRequired } from '@/hooks/useAuthRequired';
 import { useAuthStore } from '@/stores/authStore';
 import type { PublishedStrategy, SubscriptionItem } from '@/gen/ant/v1/marketplace_service_pb';
 import type { MarketplaceCtx } from '../MarketplaceContext';
@@ -19,10 +20,11 @@ export type PriceFilter = 'all' | 'free' | 'paid';
 export type SortBy = 'score' | 'newest' | 'popular' | 'rating' | 'price_asc' | 'price_desc';
 export type TabKey = 'market' | 'leaderboard' | 'purchases' | 'author' | 'bundles' | 'optimization' | 'fees';
 
-export function useMarketplace(): MarketplaceCtx {
+export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCompare'> {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuthStore();
   const userId = user?.id || '';
+  const requireAuth = useAuthRequired();
 
   const [activeTab, setActiveTab] = useState<TabKey>('market');
   const [searchText, setSearchText] = useState('');
@@ -57,8 +59,8 @@ export function useMarketplace(): MarketplaceCtx {
   // Client-side price filter + cache-warmed list
   const strategies = useMemo(() => {
     let list = allStrategies;
-    if (priceFilter === 'free') list = list.filter(s => !s.priceAmount || s.priceAmount === 0);
-    if (priceFilter === 'paid') list = list.filter(s => s.priceAmount && s.priceAmount > 0);
+    if (priceFilter === 'free') list = list.filter(s => !s.priceAmount || s.priceAmount === '0');
+    if (priceFilter === 'paid') list = list.filter(s => s.priceAmount && Number(s.priceAmount) > 0);
     return list;
   }, [allStrategies, priceFilter]);
 
@@ -123,10 +125,11 @@ export function useMarketplace(): MarketplaceCtx {
   const [backtestDrawerOpen, setBacktestDrawerOpen] = useState(false);
   const [backtestStrategyId, setBacktestStrategyId] = useState('');
   const handleRunBacktest = useCallback((s: PublishedStrategy) => {
+    if (!requireAuth()) return;
     setDetailOpen(false); // close detail
     setBacktestStrategyId(s.strategyId);
     setBacktestDrawerOpen(true);
-  }, []);
+  }, [requireAuth]);
 
   // ── Detail ──
   const openDetail = useCallback((s: PublishedStrategy) => {
@@ -143,7 +146,7 @@ export function useMarketplace(): MarketplaceCtx {
   const isOwner = useCallback((strategyId: string) => ownedIds.has(strategyId), [ownedIds]);
 
   const handleGetFree = useCallback(async (strategy: PublishedStrategy) => {
-    if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }
+    if (!requireAuth()) return;
     try {
       await marketplaceClient.subscribe({
         userId,
@@ -154,10 +157,10 @@ export function useMarketplace(): MarketplaceCtx {
       message.success(t('marketplace.messages.subscribed'));
       refetchPurchases();
     } catch { message.error(t('marketplace.messages.subscribeFailed')); }
-  }, [userId, t, refetchPurchases]);
+  }, [requireAuth, userId, t, refetchPurchases]);
 
   const handleBuy = useCallback(async (strategy: PublishedStrategy) => {
-    if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }
+    if (!requireAuth()) return;
     try {
       const wallet = await walletApi.getWallet(userId);
       const balance = wallet?.balance || '0';
@@ -167,7 +170,7 @@ export function useMarketplace(): MarketplaceCtx {
     } catch {
       message.error(t('marketplace.payment.purchaseFailed', 'Purchase failed. Please try again.'));
     }
-  }, [userId, t]);
+  }, [requireAuth, userId, t]);
 
   const handleConfirmPayment = useCallback(async (couponCode?: string) => {
     if (!paymentStrategy) return;

@@ -4,6 +4,8 @@ import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlin
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
 import { marketplaceClient } from '@/client/connect';
+import { useAuthRequired } from '@/hooks/useAuthRequired';
+import { useAuthStore } from '@/stores/authStore';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 import LivePerformanceTab from './LivePerformanceTab';
 import ShareButtons from './ShareButtons';
@@ -43,6 +45,8 @@ function fmtTime(ts: { seconds?: bigint | number } | undefined | null): string {
 export default function StrategyDetailModal({ strategy, open, isPurchased, isOwner, onClose, onGetFree, onBuy, onRunBacktest }: Props) {
   const { t } = useTranslation();
   const d = useStrategyDiscussion();
+  const requireAuth = useAuthRequired();
+  const isAuthed = useAuthStore(s => !!s.accessToken);
 
   const [commentText, setCommentText] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -55,13 +59,17 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
   useEffect(() => {
     if (strategy && open) {
       d.load(strategy.strategyId);
-      setVersionsLoading(true);
-      strategyVersionApi.list(strategy.strategyId, 20, 0)
-        .then(r => setVersions(r.versions || []))
-        .catch(() => setVersions([]))
-        .finally(() => setVersionsLoading(false));
+      if (isAuthed) {
+        setVersionsLoading(true);
+        strategyVersionApi.list(strategy.strategyId, 20, 0)
+          .then(r => setVersions(r.versions || []))
+          .catch(() => setVersions([]))
+          .finally(() => setVersionsLoading(false));
+      } else {
+        setVersions([]);
+      }
     }
-  }, [strategy?.strategyId, open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [strategy?.strategyId, open, isAuthed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const doComment = useCallback(async () => {
     const text = commentText.trim();
@@ -77,6 +85,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
 
   const handleStartTrial = useCallback(async () => {
     if (!strategy) return;
+    if (!requireAuth()) return;
     setTrialLoading(true);
     try {
       const resp = await marketplaceClient.startTrial({ strategyId: strategy.strategyId });
@@ -91,7 +100,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
     } finally {
       setTrialLoading(false);
     }
-  }, [strategy, t]);
+  }, [strategy, t, requireAuth]);
 
   if (!strategy) return null;
 
