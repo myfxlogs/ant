@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { patchAntdDropdown } from './vite-plugin-patch-antd'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), patchAntdDropdown()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
