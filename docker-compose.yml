@@ -75,6 +75,7 @@ services:
       - ANT_MASTER_KEY=${ANT_MASTER_KEY}
       - TRONGRID_API_KEY=${TRONGRID_API_KEY:-}
       - TRONSCAN_API_KEY=${TRONSCAN_API_KEY:-}
+      - DEPOSIT_XPUB_FINGERPRINT=${DEPOSIT_XPUB_FINGERPRINT:-}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
       interval: 10s

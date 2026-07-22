@@ -278,6 +278,9 @@ func main() {
 	defer stop()
 
 	// ADR-0026 R5: Verify xpub fingerprint at startup to detect key substitution.
+	// Resolve xpub from DB (system_config) first, fall back to env var.
+	// DB is the canonical source — survives server migration (PG volume), editable via admin UI.
+	resolveDepositXpub(context.Background(), pool, cfg, log)
 	if cfg.DepositXpub != "" {
 		fp, err := hdwallet.XpubFingerprint(cfg.DepositXpub)
 		if err != nil {

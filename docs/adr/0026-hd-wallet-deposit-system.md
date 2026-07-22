@@ -1,12 +1,14 @@
 # ADR-0026 · HD 钱包充值系统 — 每用户独立地址 + 自动到账确认
 
 - **状态**：Accepted
-- **日期**：2026-07-17 (Proposed) / 2026-07-19 (Accepted, post-audit) / 2026-07-19 (v2, 冷签名安全模型定稿)
+- **日期**：2026-07-17 (Proposed) / 2026-07-19 (Accepted, post-audit) / 2026-07-19 (v2, 冷签名安全模型定稿) / 2026-07-22 (v3, 归集策略简化)
 - **决策者**：Team
 - **关联 spec**：无
 
-> **v2 安全模型（权威，覆盖本文任何冲突表述）**：单台物理主机、无 KMS/HSM/额外资源、不做自动归集。
+> **v3 归集策略（权威，覆盖本文任何冲突表述）**：单台物理主机、无 KMS/HSM/额外资源。
 > 采用**在线 watch-only（仅 xpub，零私钥）+ 气隙冷签名机（唯一持钥、签名、USB 传 proto 交易包）**。
+> **归集和提现均为管理员手动触发**——系统自动做所有不需要私钥的事（监控、入账、对账、Dashboard 余额展示、Bundle 构建/广播），
+> 管理员在 Dashboard 上做决策和触发，冷签机只做签名这一件事。无自动定时归集。
 > 目标：**用户链上 USDT 对实时 root 免疫**（在线机无可签之物）。落地必读 §2.4 密钥模型、§2.7 归集、§8 单机安全约束。
 
 ## 1. 背景
@@ -219,6 +221,38 @@ CREATE TABLE sweep_bundles (
 
 **安全结论：** 在线主机被实时 root 完全攻陷 → 只泄漏公开信息（xpub、地址、内部账本），**签不出任何链上转账**，用户 USDT（分地址 + 冷钱包）不可被盗。
 
+#### 2.4.1 冷钱包独立密钥（安全域隔离）
+
+**冷钱包私钥独立于 BIP39 种子。** 冷钱包不在 HD 树内——它是一个独立生成的 TRC20 密钥对，私钥由冷签机单独管理。
+
+| | BIP39 种子（HD 树）| 冷钱包私钥 |
+|---|---|---|
+| 保护范围 | 用户充值地址私钥 + 能量账户私钥 | 冷钱包（归集目标 + 提现源）|
+| 派生方式 | m/44'/195'/0'/0/{index} + m/44'/195'/0'/1/0 | 独立生成的 secp256k1 密钥对 |
+| 冷签机获取方式 | 输入 BIP39 助记词后按需派生 | `-cold-wallet-key <hex>` 参数导入 |
+| 泄露后果 | 充值地址 + 能量账户全损 | 冷钱包全损 |
+| 密钥轮换 | 新 BIP39 种子 + 新 xpub | 新 TRC20 地址 + 更新 config |
+
+**安全优势：** 种子泄露 ≠ 冷钱包泄露。冷钱包累计归集了大量 USDT——这个隔离意味着攻击者需要同时攻破种子和冷钱包私钥才能拿走所有资金。
+
+**冷签机持有清单：**
+```
+├─ BIP39 助记词 (stdin 输入, 不落盘)
+│   → 充值地址私钥 (TransferTx, DerivationIndex=index) — sweep 签名
+│   → 能量账户私钥 (DelegateTx/UndelegateTx, m/44'/195'/0'/1/0) — 能量签名
+└─ 冷钱包私钥 (-cold-wallet-key 参数)
+    → TransferTx FromAddress==coldWalletAddr — 提现签名
+```
+
+**signTx() 签名分支：**
+```
+TransferTx:
+  from == coldWalletAddr  → 用独立冷钱包私钥签名 (提现)
+  from != coldWalletAddr  → 用 BIP39 派生私钥签名 (归集)
+DelegateTx / UndelegateTx:
+  → 用 BIP39 派生能量账户私钥签名 (m/44'/195'/0'/1/0)
+```
+
 | 层级 | 措施 | 实现方式 |
 |---|---|---|
 | **生成** | 离线生成 | 气隙机生成 24 词助记词，永不联网 |
@@ -305,42 +339,61 @@ CREATE TABLE sweep_bundles (
   - 两个源都查不到 → 忽略（可能是假交易）
 ```
 
-### 2.7 归集策略：手动、离线冷签名、按余额优先级
+### 2.7 归集策略：人工决策 + 系统自动执行 + 离线冷签名
 
-**不做自动归集。** 分地址的 USDT 私钥只在冷签名机，资金本身已安全；归集只为便于记账/提现汇入冷钱包，无时间压力。归集目标 = **冷钱包**（配置 `cold_wallet_address`），非热钱包。
+**不做自动定时归集。** 分地址的 USDT 私钥只在冷签名机，资金本身已安全；归集只为便于记账/提现汇入冷钱包，无时间压力。
 
 **管理端归集看板（只读，便利用途，非权威）：**
 - 列出所有分地址链上 USDT 余额，**按金额降序**。
 - 显示待归集总额；单地址 ≥ `sweep_alert_threshold` 高亮提醒。
 - 数据来自在线机查链，可能被 root 篡改——最终以冷签名机屏幕与链上事实为准。
 
-**归集 = 3 个交易，签名方不同（全部冷签名）：**
+**归集 = 管理端一键操作，系统自动 3 腿执行。** 每地址 3 笔链上交易，全部冷签名：
 
-| 步 | 交易 | 签名方 |
-|---|---|---|
-| 1 | `DelegateResource`（能量账户 → 分地址）| 能量账户（冷）|
-| 2 | `TRC20 Transfer`（分地址 → 冷钱包）| 分地址私钥（冷）|
-| 3 | `UndelegateResource`（收回 Energy）| 能量账户（冷）|
+| 步 | 交易 | 签名方 | 谁触发 | 谁执行 |
+|---|---|---|---|---|
+| 1 | `DelegateResource`（能量账户 → 分地址）| 能量账户（冷）| Admin 点"构建" | 系统自动 Broadcast + 确认 |
+| 2 | `TRC20 Transfer`（分地址 → 冷钱包）| 分地址私钥（冷）| 同上 | 同上 |
+| 3 | `UndelegateResource`（收回 Energy）| 能量账户（冷）| 同上 | 同上 |
 
 分地址仅**接收**委托，不需其私钥参与委托交易；三笔签名密钥都只在冷签名机。
 
-**归集流程（operator 手动）：**
+**归集操作流程（admin 手动触发）：**
 
 ```
-1. operator 在看板选择待归集地址（通常大额优先）
-2. 在线机构建「未签名交易包」(proto: UnsignedSweepBundle)
-   - 每地址含 delegate / transfer(→冷钱包) / undelegate 原始交易
-   - transfer 目的地固定为 cold_wallet_address
-   - Energy 量按 has_received_usdt 动态计算（首次 ~169k, 常规 ~84.5k, +buffer）
-3. 导出 USB → 冷签名机
-4. 冷签名机校验并签名 (proto: SignedSweepBundle):
-   - 硬白名单: 只签 transfer 目的地 == cold_wallet_address 的交易, 其余拒签
+1. Admin 打开 Dashboard → Sweep 视图 → 查看各地址余额（按金额降序）
+2. 选择要归集的地址 → 点击 [构建归集 Bundle]
+   → 系统自动: 构建 UnsignedSweepBundle (3N 笔交易, proto binary)
+3. 导出 Bundle → USB → 气隙冷签机
+4. 冷签机校验 + 签名 (SignedSweepBundle):
+   - 硬白名单: transfer.to == cold_wallet_address，否则拒签
    - 屏幕显示每笔 金额/源/目的地 供 operator 核对
+   - 冷钱包用独立私钥（非 BIP39 种子派生，§2.4.1）
 5. 签名包 USB → 在线机
-6. 在线机按序广播: delegate→确认→transfer→确认→undelegate
-   - 每步落 sweep_logs 状态机
+6. Admin 点击 [导入签名包] → 系统自动按序广播:
+   delegate → 等确认 → transfer → 等确认 → undelegate → 等确认
+   - 每步落 sweep_logs 状态机，Dashboard 实时显示进度
 7. 更新 has_received_usdt; 触发对账
 ```
+
+**批量归集：** 一次冷签名批次内委托整批 Energy、归集多个地址、统一收回，减少 USB 往返与签名次数。
+
+**提现操作流程（admin 手动触发）：**
+
+```
+1. 用户通过 WalletPage 发起提现:
+   - BeginWithdrawal → Passkey 签名 → FinishWithdrawal (资金冻结)
+   - 状态: SIGNED_WAITING_BUNDLE
+2. Admin 打开 Dashboard → 提现审核列表
+   → 查看: 用户、金额、目标地址、白名单状态
+3. Admin 点击 [构建提现 Bundle] → 导出 → USB → 冷签机
+4. 冷签机:
+   - 用自持公钥库验证 WebAuthn 断言 (R11)
+   - 验证 dest ∈ 用户提现白名单
+   - 验证单笔/单日限额
+   - 用冷钱包独立私钥签名 TransferTx (§2.4.1)
+5. 签名包 USB → 在线机 → Admin 点击 [导入并广播]
+6. 广播成功 → CompleteWithdrawal (扣除冻结余额)
 
 **能量账户：** 独立冷账户，只质押 TRX 换 Energy、只做委托/收回，**绝不持有 USDT**；私钥在冷签名机。质押（FreezeBalanceV2）为一次性冷签名设置。批量归集可一次委托整批、统一收回（Stake 2.0 委托/收回无锁定）。
 
@@ -357,6 +410,18 @@ CREATE TABLE sweep_bundles (
 | 新用户 onboarding | 分地址需预存 TRX（增加一步操作或冷签额外签名） | 无需额外操作 |
 
 **选 B 的理由**：规模上去后成本差异是数量级的。三腿复杂度是 TRON Stake 2.0 资源模型的必然产物（非偶然设计），且每腿由 `sweep_logs.leg_type` 独立追踪、已签 bundle 持久化（§11 Q3）使崩溃可恢复，不依赖手工协调。如果用户量确定很小（<100），A 的简单性有优势；但本系统面向增长，选 B 是第一性下的最优解。
+
+**管理员 Dashboard 操作清单：**
+
+| 操作 | 触发方式 | 说明 |
+|------|---------|------|
+| 查看待归集余额 | 自动刷新 | GetSweepDashboard — 地址列表 + 余额降序 |
+| 构建归集 Bundle | Admin 点按钮 | BuildUnsignedBundle — 系统自动构建 3N 笔交易 |
+| 导出 Bundle | Admin 点导出 | 下载 UnsignedSweepBundle proto binary |
+| 导入签名包 | Admin 点导入 | 上传 SignedSweepBundle → 自动广播 |
+| 查看广播进度 | 自动刷新 | 每腿状态: PENDING→SWEEPING→DONE/FAILED |
+| 构建 undelegate-only | Admin 点按钮 | 回收卡住地址的委托能量 |
+| 提现审核 | Admin 点按钮 | 查看 SIGNED_WAITING_BUNDLE 列表 → 构建/导出/冷签/导入/广播 |
 
 **归集幂等与广播安全（确定性验证 — 第一性原理）：**
 - sweep_logs 记录状态: PENDING → SWEEPING → DONE / FAILED / MANUAL_REVIEW
@@ -448,10 +513,11 @@ CREATE TABLE sweep_bundles (
 - 为后续提现功能奠定基础（提现同走冷签名）
 
 ### 负面
-- 归集/提现需 operator 手动走离线冷签名（USB 往返），非全自动
-- 需要离线管理主种子与气隙冷签名机
+- 归集/提现需 Admin 手动触发 + 离线冷签名（USB 往返），非全自动
+- 需 Admin 定期查看 Dashboard 并操作（每日 ~15 分钟），无人值守时充值地址余额积压
+- 需要离线管理主种子、冷钱包私钥与气隙冷签名机
 - 需要 Stake TRX 获取 Energy（资金锁定 14 天解押期）
-- 实现复杂度较高（在线构建/广播与离线签名分离）
+- 冷钱包私钥独立于 BIP39 种子——需额外备份
 
 ### 中性
 - 需要新增链上监控服务
@@ -575,12 +641,12 @@ backend/cmd/
 
 | 阶段 | 内容 | 预估工期 | 依赖 |
 |---|---|---|---|
-| **Phase 1** | `hdgen`(离线: 种子/xpub/fingerprint) + xpub watch-only 按需派生 + index SEQUENCE 分配 + GetDepositAddress RPC + DB migration | 3 天 | 无 |
+| **Phase 1** | `hdgen`(离线: 种子/xpub/fingerprint + 独立冷钱包密钥对) + xpub watch-only 按需派生 + index SEQUENCE 分配 + GetDepositAddress RPC + DB migration | 3 天 | 无 |
 | **Phase 2** | 区块事件扫描(全地址) + 自动确认入账 + txHash 唯一约束 + 断点恢复 + advisory lock | 3 天 | Phase 1 |
-| **Phase 3** | `cmd/coldsign`(离线签名) + UnsignedSweepBundle 构建/广播 + 归集状态机 + 防双花 | 4 天 | Phase 2 |
+| **Phase 3** | `cmd/coldsign`(离线签名, 含 -cold-wallet-key) + UnsignedSweepBundle 构建/广播(Admin 手动触发) + 归集状态机 + 防双花 | 4 天 | Phase 2 |
 | **Phase 4** | 多源验证 + 对账机制 (每 6h) + 地址审计 | 2 天 | Phase 2 |
-| **Phase 5** | 前端改造（用户: 独立地址 + QR；管理端: 归集看板） | 2 天 | Phase 1/3 |
-| **总计** | | **~14 天** | |
+| **Phase 5** | 前端改造（用户: 充值地址+QR+提现 Passkey；管理端: Sweep Dashboard+提现审核+Bundle 管理） | 3 天 | Phase 1/3 |
+| **总计** | | **~15 天** | |
 
 ### 5.6 配置项
 
@@ -702,12 +768,14 @@ message UnsignedTx {          // Q7: oneof 按 kind 拆分字段语义
 message DelegateTx   { string energy_account = 1; string to_address = 2; int64 energy = 3; }
 message UndelegateTx { string energy_account = 1; string to_address = 2; }
 message TransferTx {          // 归集(to=冷钱包) 或 提现(to=用户地址)
-  int32  derivation_index = 1;// 归集: 分地址 index; 提现: 冷钱包
+  int32  derivation_index = 1;// 归集: 分地址 index (HD 派生); 提现: 0 (不使用, 冷钱包独立密钥 §2.4.1)
   string from_address = 2;
   string to_address = 3;
   string amount = 4;          // NUMERIC → string (禁 float)
   WithdrawalAuth auth = 5;    // Q8: 仅提现时填, 归集为空
-}
+  // coldsign 签名分支:
+  //   无 auth + to==cold_wallet → 归集: BIP39 派生 derivation_index 签名
+  //   有 auth + from==cold_wallet → 提现: 冷钱包独立私钥(-cold-wallet-key)签名 §2.4.1
 message WithdrawalAuth {      // Q8: coldsign 据此重建 challenge=sha256(amount|dest|nonce|user_id)
   string user_id = 1;
   string nonce = 2;
@@ -857,16 +925,19 @@ func XpubFingerprint(xpub string) string { return hex(sha256(xpub)) }
 
 ```
 cmd/hdgen (离线):  生成助记词 → seed → 派生 account xpub
-  → 导出: xpub, fingerprint, [(index, address)...] (proto AddressBatch, 无私钥)
+  → 导出: xpub, fingerprint (proto XpubExport, 无私钥)
+  另: 独立生成冷钱包密钥对 → 冷钱包私钥单独保管
 cmd/coldsign (离线): 读 UnsignedSweepBundle(proto)
   1) seed := mnemonic (启动时手输, 不落盘)
-  2) 每条 tx 按 oneof 派生私钥 (§11 D/G):
-     - TransferTx: 按 derivation_index 派生分地址私钥 m/44'/195'/0'/0/index
-     - DelegateTx/UndelegateTx: 按能量账户固定路径 m/44'/195'/0'/1/0
-  3) 白名单(R4): TransferTx 且无 auth(归集) → to 必须==cold_wallet_address, 否则 abort;
-                 TransferTx 且有 auth(提现) → 验 WebAuthn 断言 + dest∈白名单 + 限额
+     cold_sk := 冷钱包私钥 (-cold-wallet-key hex 参数, §2.4.1)
+  2) 每条 tx 按 oneof 派生/选择私钥:
+     - TransferTx + from==coldWalletAddr → 用 cold_sk 签名 (提现, §2.4.1)
+     - TransferTx + from!=coldWalletAddr → 按 derivation_index 派生分地址私钥 (归集)
+     - DelegateTx/UndelegateTx → 按能量账户固定路径 m/44'/195'/0'/1/0
+  3) 白名单(R4): TransferTx + 无 auth → to 必须==cold_wallet_address, 否则 abort;
+                 TransferTx + 有 auth → 验 WebAuthn 断言 + dest∈白名单 + 限额
   4) 打印 tx 类型/from/to/amount 供 operator 核对
-  5) gotron-sdk 用私钥签 raw_tx → SignedTx{signed_tx, expected_txid}
+  5) 用对应私钥签 raw_tx → SignedTx{signed_tx_data, tx_hash}
   6) 输出 SignedSweepBundle(proto)
 ```
 
@@ -879,7 +950,9 @@ cmd/coldsign (离线): 读 UnsignedSweepBundle(proto)
 - `last_scanned_block` 部署脚本设为当时链高。
 - **验收**：向已退役/已派生地址打款可捕获入账；起两个进程仅一个跑 worker。
 
-### 10.4 Phase C — 归集：构建/广播/状态机/防双花（§2.7）
+### 10.4 Phase C — 归集：构建/广播/状态机/防双花（§2.7，Admin 手动触发）
+
+**归集为 admin 手动触发，不是自动定时周期。** 自动部分仅限于：构建 UnsignedBundle、按序广播+确认、状态机追踪。触发权在管理员。
 
 ```go
 // internal/sweep/builder.go
@@ -888,10 +961,14 @@ BuildUnsignedBundle(addrs []Addr) (*antv1.UnsignedSweepBundle, error) // gotron-
 BroadcastBundle(signed *antv1.SignedSweepBundle) error  // 按序: delegate→等确认→transfer→等确认→undelegate
 // internal/sweep/state.go
 //  - 广播后 GetTransactionInfoByID 判定 SUCCESS/FAILED/未知(保持SWEEPING)
-//  - 重试前(R防双花): GetTransactionsFromAddress(分地址, only_to=cold) 确认无成功/待确认出账
+//  - 重试前检查链上出账(防双花): TronGrid 查 from→cold_wallet 转账记录
 ```
 
-- **验收**：模拟"DB 写 tx_hash 前崩溃 + 链上已成功" → 重试不产生第二笔（先查链上出账拦截）。
+**保留：** Builder、Broadcaster、StateMachine、CheckDoubleSpend、ReconfirmSweeping（追踪已广播 bundle 状态）。
+
+**删除/停用：** 自动 buildPendingBundles 定时器调用、expireStalePendingSign、resumeBroadcasting（改为 admin 在 Dashboard 查看状态后手动触发）。
+
+**验收：** Admin Dashboard 选地址 → 构建 Bundle → 导出 → 冷签 → 导入 → 系统自动广播 3 腿 → Dashboard 显示进度。模拟 DB 写 tx_hash 前崩溃 + 链上已成功 → 重试不产生第二笔。
 
 ### 10.5 Phase D — 账本完整性（R7/R8/R9）
 
@@ -1031,13 +1108,14 @@ cmd/solvency-check (在管理员设备/冷机运行, 独立):
 
 ### 12.2 能量账户 TRX 不足
 
-**风险**：TRON 网络 Energy 价格上涨 → 质押的 5000 TRX 不够委托整批归集 → delegate 腿 FAILED → 归集停。
+**风险**：TRON 网络 Energy 价格上涨 → 质押的 TRX 不够委托整批归集 → delegate 腿 FAILED → 归集停。能量账户 TRX 耗尽会导致所有充值地址无法归集。
 
 **缓解**：
-- 监控指标：归集前计算单地址所需 Energy，若 `stake_trx_amount × 当前 Energy 价格` 不足以覆盖 `batch_size` 个地址的委托需求 → 告警（不执行归集，防止部分失败）。
-- 自动降级：能量不足时自动缩小 `sweep_batch_size`（如从 10 降到 3），保证每批能成功。
-- 补质押流程：告警 → admin 评估 → 冷签名机签一笔 `FreezeBalanceV2` 追加质押 → 广播。14 天解押期意味着从决定到新增质押生效有延时，需要提前量。
-- Energy 价格监控：每日记录 TRON 网络 Energy 均价（TronGrid `/wallet/getenergyprices`），价格环比上涨 > 30% 时提前告警。
+- Sweep Dashboard 显示能量账户当前 TRX 余额和可用 Energy 量（Admin 在操作前可自行判断）。
+- 构建 Bundle 前检查：若能量账户 TRX 余额不足以覆盖所选地址的委托需求 → 返回错误提示，不构建 Bundle（防止部分失败后能量锁死，§2.7）。
+- Admin 手动减少归集地址数量降级处理。
+- 补质押流程：Admin 评估 → 冷签名机签一笔 `FreezeBalanceV2` 追加质押 → 广播。14 天解押期意味着从决定到新增质押生效有延时，需要提前量。
+- Energy 价格监控：每日记录 TRON 网络 Energy 均价（TronGrid `/wallet/getenergyprices`），在 Dashboard 展示趋势，供 Admin 预判。
 
 ### 12.3 链上监控主源不可用
 
