@@ -92,7 +92,7 @@ func (s *Service) HasActiveTrial(ctx context.Context, userID, strategyID string)
 
 	// Lazily notify trials expiring within 24h (push-first, no cron).
 	if exists {
-		go s.notifyTrialExpiring(context.Background(), uid, sid)
+		go s.notifyTrialExpiring(context.WithoutCancel(ctx), uid, sid)
 	}
 
 	return exists, nil

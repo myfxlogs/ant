@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"go.uber.org/zap"
 	"connectrpc.com/connect"
+	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/service"
@@ -33,7 +33,7 @@ func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.Re
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.RegisterResponse{
-		User: &antv1.User{Id: user.ID.String(), Email: m.Email, AccountNumber: acctNum},
+		User:                  &antv1.User{Id: user.ID.String(), Email: m.Email, AccountNumber: acctNum},
 		EmailVerificationSent: s.emailVerifSvc != nil,
 	}), nil
 }

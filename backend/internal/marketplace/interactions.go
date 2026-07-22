@@ -36,7 +36,7 @@ func (s *Service) Rate(ctx context.Context, userID, strategyID string, rating in
 	// Notify the strategy publisher of the new rating.
 	var title string
 	_ = s.pg.QueryRow(ctx, `SELECT COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id=$1`, sid).Scan(&title)
-	go s.notifyNewRating(context.Background(), sid, title, rating)
+	go s.notifyNewRating(context.WithoutCancel(ctx), sid, title, rating)
 
 	s.pubCache.clear()
 	return avg, count, err

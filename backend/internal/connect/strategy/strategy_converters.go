@@ -144,7 +144,7 @@ func parseRisk(raw []byte) *antv1.BacktestRisk {
 	}
 	r := resp.GetRisk()
 	return &antv1.BacktestRisk{
-		Score:      int32(r.GetScore()),
+		Score:      r.GetScore(),
 		Level:      r.GetLevel(),
 		Reasons:    r.GetReasons(),
 		Warnings:   r.GetWarnings(),

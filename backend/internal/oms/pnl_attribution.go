@@ -128,7 +128,7 @@ func (at *PnLAttributor) Attribute(side string, openPrice, closePrice, lots, con
 	notional := lots.Mul(contractSize).Mul(openPrice)
 
 	// Gross P&L (signal dimension)
-	grossPnL := decimal.Zero
+	var grossPnL decimal.Decimal
 	if side == "buy" {
 		grossPnL = closePrice.Sub(openPrice).Mul(lots).Mul(contractSize)
 	} else {

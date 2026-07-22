@@ -26,9 +26,11 @@ func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.
 		return nil, fmt.Errorf("service: get account credentials: %w", err)
 	}
 	return &AccountCredentials{
-		Login:      row.Login,
-		Platform:   row.MtType,
-		BrokerHost: row.BrokerHost,
+		Login:         row.Login,
+		Platform:      row.MtType,
+		BrokerHost:    row.BrokerHost,
+		BrokerCompany: row.BrokerCompany,
+		AccountID:     id,
 	}, nil
 }
 

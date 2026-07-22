@@ -121,6 +121,67 @@ AI 优化: agent-engine 拿原始策略 + 近期行情 → 生成优化版本
 
 ---
 
+## 模块 5.4 · 冻结结算机制（🔴 架构完整性缺口）
+
+> 设计来源：`docs/roadmaps/strategy-marketplace.md` §退款与冻结结算
+> 当前购买流程是"买即到账"——不符合设计文档。必须补上冻结期 + 惰性结算。
+
+**Why**: 买方需要退款保护，提供者需要防止恶意退款。当前直接到账意味着退款要从提供者钱包扣回——如果已提现就退不了。
+
+**核心设计**：购买时钱不进提供者钱包，`marketplace_settlements` 记录债务。冻结期后惰性结算。
+
+```
+购买时: buyer -amount（终态），settlements INSERT（frozen）
+7天后: provider + provider_amount，platform + platform_fee，settlement → settled
+7天内: buyer + amount，settlement → refunded
+```
+
+- [ ] **5.4a 数据模型**
+
+  **文件**：`backend/migrations/xxx_marketplace_settlements.up.sql` (new)
+
+  ```sql
+  CREATE TABLE marketplace_settlements (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      purchase_id UUID NOT NULL REFERENCES user_subscriptions(id),
+      buyer_id UUID NOT NULL,
+      provider_id UUID NOT NULL,
+      amount NUMERIC(20,8) NOT NULL,
+      platform_fee NUMERIC(20,8) NOT NULL,
+      provider_amount NUMERIC(20,8) NOT NULL,
+      status VARCHAR(20) NOT NULL DEFAULT 'frozen',  -- frozen / settled / refunded
+      refund_window_days INT NOT NULL DEFAULT 7,
+      freezes_at TIMESTAMPTZ NOT NULL,
+      settles_at TIMESTAMPTZ NOT NULL,
+      settled_at TIMESTAMPTZ,
+      refunded_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  );
+  ```
+
+- [ ] **5.4b 改造 `PurchaseStrategy`**：购买时不再直接转账给提供者，改为 INSERT settlement（frozen）。提供者钱包不受影响。
+
+- [ ] **5.4c 惰性结算 `SettleExpired`**：提供者 Dashboard、提现、新购买触发时，扫描该提供者所有 `frozen WHERE settles_at <= now()`，批量转账。**禁止定时器。**
+
+- [ ] **5.4d 退款改造 `RefundPurchase`**：退款时从 settlement 查 frozen 状态 → buyer 直接加回 → settlement → refunded。提供者无感知。
+
+- [ ] **5.4e 提供者 Dashboard**：区分"可用余额"（已结算）和"待结算"（frozen + 预计解冻日期）。提现只能提取可用余额。
+
+- **Gate 5.4**：`go build ./...` + 完整购买→冻结→退款流程测试 + 购买→等冻结期→惰性结算测试
+
+---
+
+## 依赖关系更新
+
+```
+5.1 (AI 迭代更新) ──── 依赖 Phase 4.4 (版本管理) + Phase 1.1 (实盘数据)
+5.4 (冻结结算)       ──── 独立，改造 purchase.go + refund.go
+5.2 (策略捆绑包)     ──── 独立
+5.3 (阶梯费率)       ──── 独立
+```
+
+---
+
 ## Phase 5 完成检验
 
 ```bash

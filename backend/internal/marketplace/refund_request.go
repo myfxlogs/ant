@@ -2,10 +2,13 @@ package marketplace
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -26,6 +29,8 @@ type RefundRequestRow struct {
 
 // CreateRefundRequest creates a pending refund request for a subscription.
 // Validates that the subscription belongs to the user and is within 7 days of purchase.
+// The entire operation runs in a single transaction with FOR UPDATE on the subscription
+// row to prevent races between the active-status check and the insert.
 func (s *Service) CreateRefundRequest(ctx context.Context, userID, subscriptionID, reason string) (string, error) {
 	uid, err := uuid.Parse(userID)
 	if err != nil {
@@ -36,12 +41,18 @@ func (s *Service) CreateRefundRequest(ctx context.Context, userID, subscriptionI
 		return "", fmt.Errorf("marketplace: invalid subscription_id: %w", err)
 	}
 
-	// Verify subscription belongs to user and is active.
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: begin tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	// Lock subscription row for the duration of this operation.
 	var active bool
 	var createdAt time.Time
-	err = s.pg.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`SELECT active, created_at FROM user_subscriptions
-		 WHERE id = $1 AND subscriber_user_id = $2`,
+		 WHERE id = $1 AND subscriber_user_id = $2 FOR UPDATE`,
 		sid, uid,
 	).Scan(&active, &createdAt)
 	if err != nil {
@@ -56,29 +67,27 @@ func (s *Service) CreateRefundRequest(ctx context.Context, userID, subscriptionI
 		return "", fmt.Errorf("marketplace: refund window (7 days) has expired")
 	}
 
-	// Check no existing pending request.
-	var existingCount int32
-	err = s.pg.QueryRow(ctx,
-		`SELECT COUNT(*) FROM marketplace_refund_requests
-		 WHERE subscription_id = $1 AND status = 'pending'`,
-		sid,
-	).Scan(&existingCount)
-	if err != nil {
-		return "", fmt.Errorf("marketplace: check existing refund: %w", err)
-	}
-	if existingCount > 0 {
-		return "", fmt.Errorf("marketplace: a pending refund request already exists for this subscription")
-	}
-
+	// Atomic check-then-insert: prevents concurrent duplicate pending requests.
 	var id string
-	err = s.pg.QueryRow(ctx,
+	err = tx.QueryRow(ctx,
 		`INSERT INTO marketplace_refund_requests (user_id, subscription_id, reason, status)
-		 VALUES ($1, $2, $3, 'pending')
+		 SELECT $1, $2, $3, 'pending'
+		 WHERE NOT EXISTS (
+		   SELECT 1 FROM marketplace_refund_requests
+		   WHERE subscription_id = $2 AND status = 'pending'
+		 )
 		 RETURNING id::text`,
 		uid, sid, reason,
 	).Scan(&id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", fmt.Errorf("marketplace: a pending refund request already exists for this subscription")
+		}
 		return "", fmt.Errorf("marketplace: create refund request: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("marketplace: commit refund request: %w", err)
 	}
 
 	return id, nil
@@ -105,7 +114,7 @@ func (s *Service) ListRefundRequests(ctx context.Context, status string, limit, 
 
 	whereClause := ""
 	if len(conditions) > 0 {
-		whereClause = " WHERE " + joinStrings(conditions, " AND ")
+		whereClause = " WHERE " + strings.Join(conditions, " AND ")
 	}
 
 	var total int32
@@ -222,15 +231,4 @@ func (s *Service) ProcessRefundRequest(ctx context.Context, adminID, refundID st
 	}
 	s.pubCache.clear()
 	return nil
-}
-
-func joinStrings(ss []string, sep string) string {
-	if len(ss) == 0 {
-		return ""
-	}
-	result := ss[0]
-	for i := 1; i < len(ss); i++ {
-		result += sep + ss[i]
-	}
-	return result
 }

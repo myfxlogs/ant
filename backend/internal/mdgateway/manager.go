@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mdgateway/adapter/mt4"
+	"alphaforge/internal/mdgateway/adapter/mt5"
 	anttrace "alphaforge/internal/trace"
 )
 
@@ -23,6 +26,8 @@ type Gateway interface {
 	SubscribeOrderUpdate(ctx context.Context, handler mdtick.OrderUpdateHandler) error
 	HealthCheck(ctx context.Context) error
 	SessionID() string
+	Config() mdtick.AccountConfig
+	SetBrokerHost(host string)
 	// SetStatusCallback registers a callback that fires when the gateway's
 	// connection state changes (connected → reconnecting → disconnected).
 	// The callback is concurrency-safe and must not block the caller.
@@ -63,6 +68,7 @@ type Manager struct {
 	lastTickAt    map[string]int64
 	disconnecting map[string]bool
 	baseCtx       context.Context
+	rediscoverer  *HostRediscoverer // §0: broker host rediscovery
 }
 
 func NewManager(deps ManagerDeps) *Manager {
@@ -89,6 +95,9 @@ func (m *Manager) SetOTelTracer(t *anttrace.Tracer) { m.otelTracer = t }
 
 // SetBaseContext sets the base context for tick processing.
 func (m *Manager) SetBaseContext(ctx context.Context) { m.baseCtx = ctx }
+
+// SetRediscoverer injects the broker host rediscoverer (§0).
+func (m *Manager) SetRediscoverer(r *HostRediscoverer) { m.rediscoverer = r }
 
 func (m *Manager) baseContext() context.Context {
 	if m.baseCtx != nil {
@@ -210,9 +219,57 @@ func (m *Manager) ReconnectGateway(ctx context.Context, accountID string) error 
 	}
 	// Re-connect with fresh session.
 	if err := gw.Connect(ctx); err != nil {
+		// §0: On host errors, attempt broker host rediscovery.
+		if m.rediscoverer != nil {
+			// We need the broker company and platform for search.
+			// Extract from the gateway's config via the Config accessor.
+			cfg := gatewayConfig(gw)
+			if cfg != nil {
+				newHost, rerr := m.rediscoverer.MaybeRediscover(
+					ctx, err, cfg.Broker, cfg.Platform, accountID,
+					func(host string) error {
+						testCfg := *cfg
+						testCfg.BrokerHost = host
+						var testGW Gateway
+						switch strings.ToLower(cfg.Platform) {
+						case "mt4":
+							testGW = mt4.New(testCfg, m.log)
+						case "mt5":
+							testGW = mt5.New(testCfg, m.log)
+						}
+						if cerr := testGW.Connect(ctx); cerr != nil {
+							return cerr
+						}
+						testGW.Disconnect(ctx)
+						return nil
+					},
+				)
+				if rerr == nil && newHost != "" {
+					// Update the gateway's config with the new host and retry.
+					updateGatewayHost(gw, newHost)
+					if err := gw.Connect(ctx); err != nil {
+						return fmt.Errorf("mdgateway: reconnect %s after rediscovery: %w", accountID, err)
+					}
+					m.log.Info("mdgateway: reconnected after host rediscovery",
+						zap.String("account", accountID), zap.String("newHost", newHost))
+					return nil
+				}
+			}
+		}
 		return fmt.Errorf("mdgateway: reconnect %s: %w", accountID, err)
 	}
 	return nil
+}
+
+// gatewayConfig extracts the AccountConfig from a Gateway via type assertion.
+func gatewayConfig(gw Gateway) *mdtick.AccountConfig {
+	cfg := gw.Config()
+	return &cfg
+}
+
+// updateGatewayHost sets a new broker host on a Gateway via its SetBrokerHost method.
+func updateGatewayHost(gw Gateway, host string) {
+	gw.SetBrokerHost(host)
 }
 
 // ResetLastTickAt resets the last-tick timestamp for an account after a

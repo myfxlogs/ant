@@ -919,6 +919,126 @@ func (x *ResetPasswordResponse) GetMessage() string {
 	return ""
 }
 
+type VerifyMTIdentityRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`                             // 用户邮箱（定位用户）
+	MtLogin       string                 `protobuf:"bytes,2,opt,name=mt_login,json=mtLogin,proto3" json:"mt_login,omitempty"`          // MT 账户号
+	MtPassword    string                 `protobuf:"bytes,3,opt,name=mt_password,json=mtPassword,proto3" json:"mt_password,omitempty"` // MT 账户密码（只读 or 交易密码）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyMTIdentityRequest) Reset() {
+	*x = VerifyMTIdentityRequest{}
+	mi := &file_auth_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyMTIdentityRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyMTIdentityRequest) ProtoMessage() {}
+
+func (x *VerifyMTIdentityRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyMTIdentityRequest.ProtoReflect.Descriptor instead.
+func (*VerifyMTIdentityRequest) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *VerifyMTIdentityRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *VerifyMTIdentityRequest) GetMtLogin() string {
+	if x != nil {
+		return x.MtLogin
+	}
+	return ""
+}
+
+func (x *VerifyMTIdentityRequest) GetMtPassword() string {
+	if x != nil {
+		return x.MtPassword
+	}
+	return ""
+}
+
+type VerifyMTIdentityResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Verified      bool                   `protobuf:"varint,1,opt,name=verified,proto3" json:"verified,omitempty"`
+	ResetToken    string                 `protobuf:"bytes,2,opt,name=reset_token,json=resetToken,proto3" json:"reset_token,omitempty"`
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyMTIdentityResponse) Reset() {
+	*x = VerifyMTIdentityResponse{}
+	mi := &file_auth_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyMTIdentityResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyMTIdentityResponse) ProtoMessage() {}
+
+func (x *VerifyMTIdentityResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyMTIdentityResponse.ProtoReflect.Descriptor instead.
+func (*VerifyMTIdentityResponse) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *VerifyMTIdentityResponse) GetVerified() bool {
+	if x != nil {
+		return x.Verified
+	}
+	return false
+}
+
+func (x *VerifyMTIdentityResponse) GetResetToken() string {
+	if x != nil {
+		return x.ResetToken
+	}
+	return ""
+}
+
+func (x *VerifyMTIdentityResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
@@ -985,7 +1105,17 @@ const file_auth_proto_rawDesc = "" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"K\n" +
 	"\x15ResetPasswordResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\xd3\x05\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"k\n" +
+	"\x17VerifyMTIdentityRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\x12\x19\n" +
+	"\bmt_login\x18\x02 \x01(\tR\amtLogin\x12\x1f\n" +
+	"\vmt_password\x18\x03 \x01(\tR\n" +
+	"mtPassword\"q\n" +
+	"\x18VerifyMTIdentityResponse\x12\x1a\n" +
+	"\bverified\x18\x01 \x01(\bR\bverified\x12\x1f\n" +
+	"\vreset_token\x18\x02 \x01(\tR\n" +
+	"resetToken\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage2\xaa\x06\n" +
 	"\vAuthService\x124\n" +
 	"\x05Login\x12\x14.ant.v1.LoginRequest\x1a\x15.ant.v1.LoginResponse\x128\n" +
 	"\x06Logout\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12I\n" +
@@ -996,7 +1126,8 @@ const file_auth_proto_rawDesc = "" +
 	"\vVerifyEmail\x12\x1a.ant.v1.VerifyEmailRequest\x1a\x1b.ant.v1.VerifyEmailResponse\x12[\n" +
 	"\x12ResendVerification\x12!.ant.v1.ResendVerificationRequest\x1a\".ant.v1.ResendVerificationResponse\x12O\n" +
 	"\x0eForgotPassword\x12\x1d.ant.v1.ForgotPasswordRequest\x1a\x1e.ant.v1.ForgotPasswordResponse\x12L\n" +
-	"\rResetPassword\x12\x1c.ant.v1.ResetPasswordRequest\x1a\x1d.ant.v1.ResetPasswordResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\rResetPassword\x12\x1c.ant.v1.ResetPasswordRequest\x1a\x1d.ant.v1.ResetPasswordResponse\x12U\n" +
+	"\x10VerifyMTIdentity\x12\x1f.ant.v1.VerifyMTIdentityRequest\x1a .ant.v1.VerifyMTIdentityResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -1010,7 +1141,7 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_auth_proto_goTypes = []any{
 	(*LoginRequest)(nil),               // 0: ant.v1.LoginRequest
 	(*LoginResponse)(nil),              // 1: ant.v1.LoginResponse
@@ -1028,37 +1159,41 @@ var file_auth_proto_goTypes = []any{
 	(*ForgotPasswordResponse)(nil),     // 13: ant.v1.ForgotPasswordResponse
 	(*ResetPasswordRequest)(nil),       // 14: ant.v1.ResetPasswordRequest
 	(*ResetPasswordResponse)(nil),      // 15: ant.v1.ResetPasswordResponse
-	(*timestamppb.Timestamp)(nil),      // 16: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),              // 17: google.protobuf.Empty
+	(*VerifyMTIdentityRequest)(nil),    // 16: ant.v1.VerifyMTIdentityRequest
+	(*VerifyMTIdentityResponse)(nil),   // 17: ant.v1.VerifyMTIdentityResponse
+	(*timestamppb.Timestamp)(nil),      // 18: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),              // 19: google.protobuf.Empty
 }
 var file_auth_proto_depIdxs = []int32{
 	7,  // 0: ant.v1.LoginResponse.user:type_name -> ant.v1.User
 	7,  // 1: ant.v1.GetMeResponse.user:type_name -> ant.v1.User
 	7,  // 2: ant.v1.RegisterResponse.user:type_name -> ant.v1.User
-	16, // 3: ant.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	16, // 4: ant.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	18, // 3: ant.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	18, // 4: ant.v1.User.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 5: ant.v1.AuthService.Login:input_type -> ant.v1.LoginRequest
-	17, // 6: ant.v1.AuthService.Logout:input_type -> google.protobuf.Empty
+	19, // 6: ant.v1.AuthService.Logout:input_type -> google.protobuf.Empty
 	2,  // 7: ant.v1.AuthService.RefreshToken:input_type -> ant.v1.RefreshTokenRequest
-	17, // 8: ant.v1.AuthService.RefreshTokenFromCookie:input_type -> google.protobuf.Empty
-	17, // 9: ant.v1.AuthService.GetMe:input_type -> google.protobuf.Empty
+	19, // 8: ant.v1.AuthService.RefreshTokenFromCookie:input_type -> google.protobuf.Empty
+	19, // 9: ant.v1.AuthService.GetMe:input_type -> google.protobuf.Empty
 	5,  // 10: ant.v1.AuthService.Register:input_type -> ant.v1.RegisterRequest
 	8,  // 11: ant.v1.AuthService.VerifyEmail:input_type -> ant.v1.VerifyEmailRequest
 	10, // 12: ant.v1.AuthService.ResendVerification:input_type -> ant.v1.ResendVerificationRequest
 	12, // 13: ant.v1.AuthService.ForgotPassword:input_type -> ant.v1.ForgotPasswordRequest
 	14, // 14: ant.v1.AuthService.ResetPassword:input_type -> ant.v1.ResetPasswordRequest
-	1,  // 15: ant.v1.AuthService.Login:output_type -> ant.v1.LoginResponse
-	17, // 16: ant.v1.AuthService.Logout:output_type -> google.protobuf.Empty
-	3,  // 17: ant.v1.AuthService.RefreshToken:output_type -> ant.v1.RefreshTokenResponse
-	3,  // 18: ant.v1.AuthService.RefreshTokenFromCookie:output_type -> ant.v1.RefreshTokenResponse
-	4,  // 19: ant.v1.AuthService.GetMe:output_type -> ant.v1.GetMeResponse
-	6,  // 20: ant.v1.AuthService.Register:output_type -> ant.v1.RegisterResponse
-	9,  // 21: ant.v1.AuthService.VerifyEmail:output_type -> ant.v1.VerifyEmailResponse
-	11, // 22: ant.v1.AuthService.ResendVerification:output_type -> ant.v1.ResendVerificationResponse
-	13, // 23: ant.v1.AuthService.ForgotPassword:output_type -> ant.v1.ForgotPasswordResponse
-	15, // 24: ant.v1.AuthService.ResetPassword:output_type -> ant.v1.ResetPasswordResponse
-	15, // [15:25] is the sub-list for method output_type
-	5,  // [5:15] is the sub-list for method input_type
+	16, // 15: ant.v1.AuthService.VerifyMTIdentity:input_type -> ant.v1.VerifyMTIdentityRequest
+	1,  // 16: ant.v1.AuthService.Login:output_type -> ant.v1.LoginResponse
+	19, // 17: ant.v1.AuthService.Logout:output_type -> google.protobuf.Empty
+	3,  // 18: ant.v1.AuthService.RefreshToken:output_type -> ant.v1.RefreshTokenResponse
+	3,  // 19: ant.v1.AuthService.RefreshTokenFromCookie:output_type -> ant.v1.RefreshTokenResponse
+	4,  // 20: ant.v1.AuthService.GetMe:output_type -> ant.v1.GetMeResponse
+	6,  // 21: ant.v1.AuthService.Register:output_type -> ant.v1.RegisterResponse
+	9,  // 22: ant.v1.AuthService.VerifyEmail:output_type -> ant.v1.VerifyEmailResponse
+	11, // 23: ant.v1.AuthService.ResendVerification:output_type -> ant.v1.ResendVerificationResponse
+	13, // 24: ant.v1.AuthService.ForgotPassword:output_type -> ant.v1.ForgotPasswordResponse
+	15, // 25: ant.v1.AuthService.ResetPassword:output_type -> ant.v1.ResetPasswordResponse
+	17, // 26: ant.v1.AuthService.VerifyMTIdentity:output_type -> ant.v1.VerifyMTIdentityResponse
+	16, // [16:27] is the sub-list for method output_type
+	5,  // [5:16] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -1075,7 +1210,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -48,7 +48,6 @@ func (s *ConversationSession) GetOrCreate(ctx context.Context, userID uuid.UUID,
 		title = strategyKey
 	}
 	conv, err = s.repo.CreateWithStrategyKey(ctx, userID, title, strategyKey)
-	conv, err = s.repo.CreateWithStrategyKey(ctx, userID, title, strategyKey)
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}

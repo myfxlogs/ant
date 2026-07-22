@@ -124,7 +124,7 @@ func (f *UserMetricsFlusher) Start(ctx context.Context) {
 	}
 	f.running = true
 	ctx, f.cancel = context.WithCancel(ctx)
-	go f.loop(ctx)
+	go func(ctx context.Context) { f.loop(ctx) }(ctx)
 }
 
 // Stop halts the background flush loop.

@@ -38,7 +38,7 @@ func periodSeconds(period string) int64 {
 // (1m/5m/15m/30m/1h/4h/1d/1w). Each period is fetched and inserted
 // independently — one period failing does not affect the others.
 // Deduplicates: only one backfill per account+symbol runs at a time.
-func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
+func (s *MtHubServer) backfillKlines(ctx context.Context, accountID, rawSymbol string) {
 	key := accountID + ":" + rawSymbol
 	s.backfillMu.Lock()
 	if s.backfilling[key] {
@@ -53,7 +53,7 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 		s.backfillMu.Unlock()
 	}()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	broker, err := s.platform.GetAccountBroker(ctx, accountID)

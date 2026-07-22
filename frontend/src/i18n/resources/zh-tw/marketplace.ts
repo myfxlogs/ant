@@ -2,7 +2,7 @@ const Marketplace = {
   "marketplace": {
     "title": "策略市場",
     "subtitle": "發現和訂閱交易策略",
-    "tabs": { "marketplace": "市場", "purchases": "我的購買", "author": "作者中心" },
+    "tabs": { "marketplace": "市場", "purchases": "我的購買", "author": "作者中心", "bundles": "捆綁包", "optimization": "AI 優化", "fees": "階梯費率" },
     "searchPlaceholder": "搜尋策略...",
     "empty": "暫無策略",
     "filter": { "all": "全部", "free": "免費", "paid": "付費" },

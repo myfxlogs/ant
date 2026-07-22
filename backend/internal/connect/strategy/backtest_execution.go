@@ -125,10 +125,10 @@ func (s *StrategyExecutionServer) fetchSymbolInfo(ctx context.Context, run *repo
 	}
 	p := params[0]
 	// Compute point as decimal string to preserve precision (no float64).
-	point := decimal.New(1, int32(-p.Digits)).String()
+	point := decimal.New(1, -p.Digits).String()
 
 	info := &antv1.SymbolInfo{
-		Digits:       int32(p.Digits),
+		Digits:       p.Digits,
 		Point:        point,
 		ContractSize: p.LotSize.String(),
 		StopsLevel:   p.StopLevel,

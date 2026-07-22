@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS marketplace_strategy_optimization_tasks;

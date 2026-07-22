@@ -32,7 +32,47 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	gw.SetBreaker(mgr.GetOrCreateBreaker(cfg))
 
 	if err := gw.Connect(ctx); err != nil {
-		return nil, fmt.Errorf("connect: %w", err)
+		// §0: On host errors (connection refused / DNS failure), attempt
+		// broker host rediscovery before giving up.
+		if mgr.rediscoverer != nil {
+			newHost, rerr := mgr.rediscoverer.MaybeRediscover(
+				ctx, err, cfg.Broker, cfg.Platform, accID,
+				func(host string) error {
+					testCfg := cfg
+					testCfg.BrokerHost = host
+					var testGW Gateway
+					switch strings.ToLower(cfg.Platform) {
+					case "mt4":
+						testGW = mt4.New(testCfg, log)
+					case "mt5":
+						testGW = mt5.New(testCfg, log)
+					}
+					if cerr := testGW.Connect(ctx); cerr != nil {
+						return cerr
+					}
+					testGW.Disconnect(ctx)
+					return nil
+				},
+			)
+			if rerr == nil && newHost != "" {
+				// Rediscovery succeeded — reconnect with the new host.
+				cfg.BrokerHost = newHost
+				gw = mt4.New(cfg, log)
+				if strings.ToLower(cfg.Platform) == "mt5" {
+					gw = mt5.New(cfg, log)
+				}
+				gw.SetBreaker(mgr.GetOrCreateBreaker(cfg))
+				if err := gw.Connect(ctx); err != nil {
+					return nil, fmt.Errorf("connect after rediscovery: %w", err)
+				}
+				log.Info("mdgateway: gateway connected after host rediscovery",
+					zap.String("account", accID), zap.String("newHost", newHost))
+			} else {
+				return nil, fmt.Errorf("connect: %w", err)
+			}
+		} else {
+			return nil, fmt.Errorf("connect: %w", err)
+		}
 	}
 
 	// Wire gateway connection state changes → OnAccountStatus callback.

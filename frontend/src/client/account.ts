@@ -94,7 +94,7 @@ export const accountApi = {
     await accountClient.reconnectAccount({ id });
   },
 
-  searchBroker: async (company: string, mtType?: string) => {
+  searchBroker: async (company: string, mtType?: string): Promise<Record<string, unknown>[]> => {
     const response = await accountClient.searchBroker({
       company,
       mtType: mtType || 'MT5',

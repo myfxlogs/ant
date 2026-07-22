@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Tabs, Typography, Drawer, Button, Badge } from 'antd';
-import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined } from '@ant-design/icons';
+import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined, GiftOutlined, ThunderboltOutlined, PercentageOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import Seo from '@/components/common/Seo';
 import { useMarketplace } from './hooks/useMarketplace';
@@ -14,6 +14,9 @@ import StrategyDetailModal from './components/StrategyDetailModal';
 import PaymentModal from './components/PaymentModal';
 import ProtectedBacktestPanel from './components/ProtectedBacktestPanel';
 import CompareModal, { useCompareSelection } from './components/CompareModal';
+import BundleTab from './components/BundleTab';
+import OptimizationTab from './components/OptimizationTab';
+import FeeTierPanel from './components/FeeTierPanel';
 
 const { Title, Text } = Typography;
 
@@ -22,6 +25,9 @@ const PurchaseTabMemo = memo(PurchaseTab);
 const AuthorTabMemo = memo(AuthorTab);
 const AutoGenerateMemo = memo(AutoGeneratePanel);
 const LeaderboardTabMemo = memo(LeaderboardTab);
+const BundleTabMemo = memo(BundleTab);
+const OptimizationTabMemo = memo(OptimizationTab);
+const FeeTierPanelMemo = memo(FeeTierPanel);
 
 function MarketplaceUI() {
   const { t } = useTranslation();
@@ -49,6 +55,9 @@ function MarketplaceUI() {
             { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai', { defaultValue: 'AI Generate' })}</span>, children: <AutoGenerateMemo /> },
             { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases', 'My Purchases')}</span>, children: <PurchaseTabMemo /> },
             { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author', 'Author Center')}</span>, children: <AuthorTabMemo /> },
+            { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles', { defaultValue: 'Bundles' })}</span>, children: <BundleTabMemo /> },
+            { key: 'optimization', label: <span><ThunderboltOutlined /> {t('marketplace.tabs.optimization', { defaultValue: 'AI Optimization' })}</span>, children: <OptimizationTabMemo /> },
+            { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees', { defaultValue: 'Fee Tiers' })}</span>, children: <FeeTierPanelMemo /> },
           ]} />
           <StrategyDetailModal
             strategy={m.detailStrategy} open={m.detailOpen}

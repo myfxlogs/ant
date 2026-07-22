@@ -30,4 +30,3 @@ func TestPublisher(t *testing.T) {
 		t.Error("publisher not set")
 	}
 }
-

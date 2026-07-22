@@ -121,7 +121,7 @@ func configureStrategyExecution(
 		if result.Passed {
 			return
 		}
-		go autoFixCode(context.Background(), run, result, aiSvc, backtestRunRepo, notifSender, log)
+		go autoFixCode(context.WithoutCancel(ctx), run, result, aiSvc, backtestRunRepo, notifSender, log)
 	}
 	srv.SetOnBacktestComplete(onBacktestComplete)
 	return srv

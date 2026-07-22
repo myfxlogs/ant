@@ -343,8 +343,11 @@ func main() {
 	sentryHandler := sentryhttp.New(sentryhttp.Options{Repanic: false, WaitForDelivery: true})
 	sentryWrapped := sentryHandler.Handle(mux)
 
+	// Wrap with SSE stream limit before keepalive to enforce per-user max streams.
+	limitedHandler := interceptor.SSEStreamLimitMiddleware(5)(sentryWrapped)
+
 	// Wrap with SSE keepalive to prevent Cloudflare/nginx from closing idle streams.
-	keepaliveHandler := interceptor.SSEKeepaliveMiddleware(10 * time.Second)(sentryWrapped)
+	keepaliveHandler := interceptor.SSEKeepaliveMiddleware(10 * time.Second)(limitedHandler)
 	if err := server.Run(ctx, keepaliveHandler, port, log); err != nil {
 		log.Fatal("server failed", zap.Error(err))
 	}

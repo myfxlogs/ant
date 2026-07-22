@@ -46,14 +46,16 @@ func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("login required"))
 	}
 	expireDays := req.Msg.ExpireDays
-	if expireDays <= 0 { expireDays = 7 }
+	if expireDays <= 0 {
+		expireDays = 7
+	}
 	b := make([]byte, 16)
 	rand.Read(b)
 	token := hex.EncodeToString(b)
 	st := &repository.ShareToken{
 		UserID: uid, AccountID: req.Msg.AccountId, Token: token,
 		Description: req.Msg.Description, ShowPositions: req.Msg.ShowPositions,
-		ExpiresAt:   time.Now().Add(time.Duration(expireDays) * 24 * time.Hour),
+		ExpiresAt: time.Now().Add(time.Duration(expireDays) * 24 * time.Hour),
 	}
 	if err := s.repo.Create(ctx, st); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -74,8 +76,12 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	user, _ := s.userRepo.GetByID(ctx, st.UserID)
 	userName := "匿名用户"
 	if user != nil {
-		if user.Email != "" { userName = user.Email }
-		if user.Nickname != nil && *user.Nickname != "" { userName = *user.Nickname }
+		if user.Email != "" {
+			userName = user.Email
+		}
+		if user.Nickname != nil && *user.Nickname != "" {
+			userName = *user.Nickname
+		}
 	}
 
 	aid, _ := uuid.Parse(st.AccountID)
@@ -214,7 +220,7 @@ func (s tradeSummary) winRateStr() string {
 	if s.wins+s.losses == 0 {
 		return "0"
 	}
-	return decimal.NewFromInt(int64(s.wins)).Div(decimal.NewFromInt(int64(s.wins+s.losses))).Mul(decimal.NewFromInt(100)).String()
+	return decimal.NewFromInt(int64(s.wins)).Div(decimal.NewFromInt(int64(s.wins + s.losses))).Mul(decimal.NewFromInt(100)).String()
 }
 
 func (s tradeSummary) maxDrawdownStr() string {

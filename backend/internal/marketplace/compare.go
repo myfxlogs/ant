@@ -89,7 +89,7 @@ func (s *Service) compareOne(ctx context.Context, strategyID string) (StrategyCo
 			c.BacktestMaxDD = snap.MaxDrawdown
 			c.BacktestSharpe = snap.SharpeRatio
 			c.BacktestWinRate = snap.WinRate
-			c.BacktestTotalTrades = int32(snap.TotalTrades)
+			c.BacktestTotalTrades = snap.TotalTrades
 		}
 	}
 

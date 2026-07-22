@@ -83,7 +83,7 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 
 	// Trigger auto-gate evaluation after backtest completes.
 	if s.onBacktestComplete != nil {
-		go s.onBacktestComplete(context.Background(), run)
+		go s.onBacktestComplete(context.WithoutCancel(ctx), run)
 	}
 }
 

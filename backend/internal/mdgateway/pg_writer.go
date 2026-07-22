@@ -17,17 +17,15 @@ import (
 
 // PgWriterConfig mirrors CHWriterConfig for drop-in replacement.
 type PgWriterConfig struct {
-	FlushInterval time.Duration // default 500ms
-	MaxBatchSize  int           // default 2000
-	QueueSize     int           // default 10000
+	MaxBatchSize int // default 2000
+	QueueSize    int // default 10000
 }
 
 // DefaultPgWriterConfig returns production-tuned defaults.
 func DefaultPgWriterConfig() PgWriterConfig {
 	return PgWriterConfig{
-		FlushInterval: 500 * time.Millisecond,
-		MaxBatchSize:  2000,
-		QueueSize:     10000,
+		MaxBatchSize: 2000,
+		QueueSize:    10000,
 	}
 }
 
@@ -95,10 +93,8 @@ func (w *PgWriter) EnqueueBar(b *mdtick.Bar) {
 }
 
 // Start begins the flush loop. Blocks until ctx.Done.
+// Flush is event-driven: when a batch reaches MaxBatchSize, or on shutdown.
 func (w *PgWriter) Start(ctx context.Context) {
-	ticker := time.NewTicker(w.cfg.FlushInterval)
-	defer ticker.Stop()
-
 	var tickBatch []*mdtick.Tick
 	var barBatch []*mdtick.Bar
 
@@ -119,11 +115,6 @@ func (w *PgWriter) Start(ctx context.Context) {
 				w.flushBars(ctx, barBatch)
 				barBatch = barBatch[:0]
 			}
-		case <-ticker.C:
-			w.flushTicks(ctx, tickBatch)
-			w.flushBars(ctx, barBatch)
-			tickBatch = tickBatch[:0]
-			barBatch = barBatch[:0]
 		}
 	}
 }
@@ -166,11 +157,11 @@ func (w *PgWriter) flushTicks(ctx context.Context, batch []*mdtick.Tick) {
 	}
 	// Async dual-write to CH read replica (best-effort, non-blocking).
 	if w.chStore != nil {
-		go func() {
-			if err := w.chStore.InsertTicks(context.Background(), records); err != nil {
+		go func(ctx context.Context) {
+			if err := w.chStore.InsertTicks(ctx, records); err != nil {
 				w.log.Warn("pgwriter: ch dual-write ticks failed", zap.Int("count", len(records)), zap.Error(err))
 			}
-		}()
+		}(ctx)
 	}
 }
 
@@ -200,11 +191,11 @@ func (w *PgWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 	}
 	// Async dual-write to CH read replica (best-effort, non-blocking).
 	if w.chStore != nil {
-		go func() {
-			if err := w.chStore.InsertBars(context.Background(), bars); err != nil {
+		go func(ctx context.Context) {
+			if err := w.chStore.InsertBars(ctx, bars); err != nil {
 				w.log.Warn("pgwriter: ch dual-write bars failed", zap.Int("count", len(bars)), zap.Error(err))
 			}
-		}()
+		}(ctx)
 	}
 }
 

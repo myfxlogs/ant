@@ -138,7 +138,7 @@ func (s *MtHubServer) SubscribeBars(ctx context.Context, req *connect.Request[an
 
 	// Backfill historical bars asynchronously — PriceHistory fallback handles
 	// immediate needs for the requested period via direct broker fetch.
-	go s.backfillKlines(m.AccountId, m.Symbol)
+	go s.backfillKlines(ctx, m.AccountId, m.Symbol)
 
 	return connect.NewResponse(&antv1.SubscribeBarsResponse{}), nil
 }

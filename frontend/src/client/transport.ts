@@ -66,7 +66,7 @@ const interceptors: Interceptor[] = [
     } catch (error: unknown) {
       if (error instanceof ConnectError && error.code === Code.Unauthenticated) {
         const proc = procedureHint(req).key;
-        if (proc.includes('authservice') && (proc.includes('refreshtoken') || proc.includes('login') || proc.includes('register'))) {
+        if (proc.includes('authservice') && (proc.includes('refreshtoken') || proc.includes('login') || proc.includes('register') || proc.includes('verifyemail') || proc.includes('resendverification') || proc.includes('forgotpassword') || proc.includes('resetpassword') || proc.includes('verifymtidentity'))) {
           throw error;
         }
         const newToken = await refreshAccessToken();
@@ -80,7 +80,7 @@ const interceptors: Interceptor[] = [
   },
   (next) => async (req) => {
     const proc = procedureHint(req).key;
-    const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register') || proc.includes('refreshtoken'));
+    const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register') || proc.includes('refreshtoken') || proc.includes('verifyemail') || proc.includes('resendverification') || proc.includes('forgotpassword') || proc.includes('resetpassword') || proc.includes('verifymtidentity'));
 
     // Proactive preflight: refresh if token is missing (page reload) or about to expire.
     // Always call ensureFreshToken() for non-auth requests so it can attempt

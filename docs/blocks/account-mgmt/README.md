@@ -32,3 +32,4 @@ account-mgmt → 所有需要用户认证和 MT 账户的模块
 
 - `docs/adr/0026-hd-wallet-deposit-system.md`
 - [spec/31-saas-foundation.md](spec/31-saas-foundation.md)
+- [plans/mt-password-reset.md](plans/mt-password-reset.md) — MT 凭据验证密码重置

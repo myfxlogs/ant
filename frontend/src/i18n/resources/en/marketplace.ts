@@ -2,7 +2,7 @@ const Marketplace = {
   "marketplace": {
     "title": "Marketplace",
     "subtitle": "Discover and subscribe to trading strategies",
-    "tabs": { "marketplace": "Market", "purchases": "My Purchases", "author": "Author Center" },
+    "tabs": { "marketplace": "Market", "purchases": "My Purchases", "author": "Author Center", "bundles": "Bundles", "optimization": "AI Optimization", "fees": "Fee Tiers" },
     "searchPlaceholder": "Search strategies...",
     "empty": "No strategies found",
     "filter": { "all": "All", "free": "Free", "paid": "Paid" },

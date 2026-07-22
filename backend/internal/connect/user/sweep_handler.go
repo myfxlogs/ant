@@ -141,10 +141,10 @@ func (s *DepositServer) GetSweepDashboard(ctx context.Context, req *connect.Requ
 	}
 
 	return connect.NewResponse(&antv1.GetSweepDashboardResponse{
-		Addresses:     items,
-		Total:         total,
-		TotalUnswept:  totalUnswept,
-		Threshold:     threshold,
+		Addresses:    items,
+		Total:        total,
+		TotalUnswept: totalUnswept,
+		Threshold:    threshold,
 	}), nil
 }
 

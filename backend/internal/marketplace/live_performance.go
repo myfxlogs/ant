@@ -206,11 +206,13 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 
 	// Get running peak equity for drawdown calculation.
 	var peak decimal.Decimal
-	err = tx.QueryRow(ctx,
+	if err := tx.QueryRow(ctx,
 		`SELECT MAX(equity) FROM marketplace_live_performance
 			WHERE strategy_id = $1 AND account_id = $2`,
 		sid, aid,
-	).Scan(&peak)
+	).Scan(&peak); err != nil {
+		s.log.Warn("live performance: load peak equity failed", zap.Error(err))
+	}
 	if equity.GreaterThan(peak) {
 		peak = equity
 	}
@@ -316,7 +318,7 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	// Notify subscribers of performance anomalies (push-first, no cron).
 	var title string
 	_ = s.pg.QueryRow(context.Background(), `SELECT COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id = $1`, sid).Scan(&title)
-	go s.notifyPerformanceAnomaly(context.Background(), sid, title, dailyReturn, drawdown)
+	go s.notifyPerformanceAnomaly(context.WithoutCancel(ctx), sid, title, dailyReturn, drawdown)
 
 	return nil
 }

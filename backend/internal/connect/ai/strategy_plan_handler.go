@@ -83,11 +83,6 @@ func (s *StrategyPlanServer) AnalyzePlan(
 		return stream.Send(&antv1.AnalyzePlanChunk{Phase: "error", Error: systemai.FriendlyError(err)})
 	}
 
-	plan := intent.Plan
-	if plan == "" {
-		plan = buildFallbackPlan(intent)
-	}
-
 	sysPrompt := ai.AgentPrompt(lang) + "\n\n## 当前任务：制定执行计划（绝对不要生成代码！）\n分析用户需求，输出一个纯文本的执行计划。每行一个步骤，用 1. 2. 3. 开头。只讨论策略逻辑和方案，不要写任何代码。"
 	userPrompt := fmt.Sprintf("用户需求: %s\n\n分析结果: 策略类型=%s, 方向=%s, 风险=%s\n请用1-2句话生成一个简明的执行计划。",
 		m.Message, intent.StrategyFamily, intent.TradeDirection, intent.RiskLevel)
@@ -244,27 +239,6 @@ func (s *StrategyPlanServer) ExecutePlan(
 
 
 
-
-func buildFallbackPlan(intent *ai.IntentResult) string {
-	s := "Strategy Plan:\n"
-	if intent.StrategyFamily != "" && intent.StrategyFamily != "unknown" {
-		s += "- Type: " + intent.StrategyFamily + "\n"
-	}
-	if intent.TradeDirection != "" && intent.TradeDirection != "unknown" {
-		s += "- Direction: " + intent.TradeDirection + "\n"
-	}
-	if intent.RiskLevel != "" && intent.RiskLevel != "unknown" {
-		s += "- Risk: " + intent.RiskLevel + "\n"
-	}
-	if len(intent.EntrySignals) > 0 {
-		s += "- Entry: " + strings.Join(intent.EntrySignals, ", ") + "\n"
-	}
-	if len(intent.ExitSignals) > 0 {
-		s += "- Exit: " + strings.Join(intent.ExitSignals, ", ") + "\n"
-	}
-	s += "- Default position sizing and 2% stop loss will be applied."
-	return s
-}
 
 func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 	if m.FeedbackMessage != "" {

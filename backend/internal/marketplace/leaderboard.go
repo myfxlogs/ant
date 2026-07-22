@@ -56,83 +56,61 @@ func (s *Service) ListLeaderboard(ctx context.Context, lbType, period, assetClas
 }
 
 func (s *Service) leaderboardByReturn(ctx context.Context, period, assetClass string, limit int) ([]LeaderboardEntry, error) {
-	periodFilter := leaderboardPeriodToInterval(period)
-	query := `SELECT ms.strategy_id::text, usp.id::text, COALESCE(ms.title,''),
-	        COALESCE(u.email, u.nickname, usp.user_id::text), usp.user_id::text,
-	        COALESCE(ms.price_model,''), COALESCE(ms.price_amount::text,'0'),
-	        COALESCE(ms.asset_class,''), COALESCE(ms.timeframe,''), COALESCE(ms.risk_level,''),
-	        COALESCE(ms.total_subscribers,0),
-	        COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
-	        COALESCE(lps.total_return::text,'0'), COALESCE(lps.max_drawdown::text,'0'),
-	        COALESCE(lps.sharpe_ratio::text,''), COALESCE(lps.win_rate::text,''),
-	        COALESCE(lps.total_trades,0), COALESCE(lps.tracking_since::text,''),
-	        EXTRACT(EPOCH FROM usp.published_at) * 1000,
-	        ms.backtest_snapshot
-	 FROM marketplace_strategies ms
-	 JOIN user_strategy_publishes usp ON usp.platform_strategy_id = ms.strategy_id
-	 LEFT JOIN users u ON u.id = usp.user_id
-	 LEFT JOIN marketplace_live_performance_summary lps ON lps.strategy_id = ms.strategy_id
-	 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.strategy_id
-	 WHERE ms.status = 'published' AND lps.strategy_id IS NOT NULL`
-	if periodFilter != "" {
-		query += fmt.Sprintf(" AND lps.last_updated >= now() - INTERVAL '%s'", periodFilter)
-	}
-	args := []interface{}{}
-	argIdx := 1
-	if assetClass != "" {
-		query += fmt.Sprintf(" AND ms.asset_class = $%d", argIdx)
-		args = append(args, assetClass)
-		argIdx++
-	}
-	query += fmt.Sprintf(" ORDER BY lps.total_return DESC LIMIT $%d", argIdx)
-	args = append(args, limit)
-
+	query, args := buildLeaderboardQuery("return", period, assetClass, limit)
 	return s.scanLeaderboard(ctx, query, args)
 }
 
 func (s *Service) leaderboardByPopular(ctx context.Context, assetClass string, limit int) ([]LeaderboardEntry, error) {
-	query := `SELECT ms.strategy_id::text, usp.id::text, COALESCE(ms.title,''),
-	        COALESCE(u.email, u.nickname, usp.user_id::text), usp.user_id::text,
-	        COALESCE(ms.price_model,''), COALESCE(ms.price_amount::text,'0'),
-	        COALESCE(ms.asset_class,''), COALESCE(ms.timeframe,''), COALESCE(ms.risk_level,''),
-	        COALESCE(ms.total_subscribers,0),
-	        COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
-	        '0', '0', '', '', 0, '',
-	        EXTRACT(EPOCH FROM usp.published_at) * 1000,
-	        ms.backtest_snapshot
-	 FROM marketplace_strategies ms
-	 JOIN user_strategy_publishes usp ON usp.platform_strategy_id = ms.strategy_id
-	 LEFT JOIN users u ON u.id = usp.user_id
-	 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.strategy_id
-	 WHERE ms.status = 'published'`
-	args := []interface{}{}
-	argIdx := 1
-	if assetClass != "" {
-		query += fmt.Sprintf(" AND ms.asset_class = $%d", argIdx)
-		args = append(args, assetClass)
-		argIdx++
-	}
-	query += fmt.Sprintf(" ORDER BY COALESCE(ms.total_subscribers,0) DESC, COALESCE(r.avg_rating,0) DESC LIMIT $%d", argIdx)
-	args = append(args, limit)
-
+	query, args := buildLeaderboardQuery("popular", "", assetClass, limit)
 	return s.scanLeaderboard(ctx, query, args)
 }
 
 func (s *Service) leaderboardByNew(ctx context.Context, assetClass string, limit int) ([]LeaderboardEntry, error) {
-	query := `SELECT ms.strategy_id::text, usp.id::text, COALESCE(ms.title,''),
-	        COALESCE(u.email, u.nickname, usp.user_id::text), usp.user_id::text,
-	        COALESCE(ms.price_model,''), COALESCE(ms.price_amount::text,'0'),
-	        COALESCE(ms.asset_class,''), COALESCE(ms.timeframe,''), COALESCE(ms.risk_level,''),
-	        COALESCE(ms.total_subscribers,0),
-	        COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0),
-	        '0', '0', '', '', 0, '',
-	        EXTRACT(EPOCH FROM usp.published_at) * 1000,
-	        ms.backtest_snapshot
-	 FROM marketplace_strategies ms
-	 JOIN user_strategy_publishes usp ON usp.platform_strategy_id = ms.strategy_id
-	 LEFT JOIN users u ON u.id = usp.user_id
-	 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.strategy_id
-	 WHERE ms.status = 'published' AND usp.published_at > now() - INTERVAL '30 days'`
+	query, args := buildLeaderboardQuery("new", "", assetClass, limit)
+	return s.scanLeaderboard(ctx, query, args)
+}
+
+func buildLeaderboardQuery(lbType, period, assetClass string, limit int) (string, []interface{}) {
+	base := `SELECT ms.strategy_id::text, usp.id::text, COALESCE(ms.title,''),
+        COALESCE(u.email, u.nickname, usp.user_id::text), usp.user_id::text,
+        COALESCE(ms.price_model,''), COALESCE(ms.price_amount::text,'0'),
+        COALESCE(ms.asset_class,''), COALESCE(ms.timeframe,''), COALESCE(ms.risk_level,''),
+        COALESCE(ms.total_subscribers,0),
+        COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0)`
+	var metrics string
+	var extraJoins string
+	extraWhere := ""
+	orderBy := ""
+	switch lbType {
+	case "return":
+		metrics = `,
+        COALESCE(lps.total_return::text,'0'), COALESCE(lps.max_drawdown::text,'0'),
+        COALESCE(lps.sharpe_ratio::text,''), COALESCE(lps.win_rate::text,''),
+        COALESCE(lps.total_trades,0), COALESCE(lps.tracking_since::text,'')`
+		extraJoins = ` LEFT JOIN marketplace_live_performance_summary lps ON lps.strategy_id = ms.strategy_id`
+		extraWhere = ` AND lps.strategy_id IS NOT NULL`
+		interval := leaderboardPeriodToInterval(period)
+		if interval != "" {
+			extraWhere += fmt.Sprintf(" AND lps.last_updated >= now() - INTERVAL '%s'", interval)
+		}
+		orderBy = ` ORDER BY lps.total_return DESC`
+	case "new":
+		metrics = `,
+        '0', '0', '', '', 0, ''`
+		extraWhere = ` AND usp.published_at > now() - INTERVAL '30 days'`
+		orderBy = ` ORDER BY COALESCE(ms.win_rate,0) DESC, usp.published_at DESC`
+	default:
+		metrics = `,
+        '0', '0', '', '', 0, ''`
+		orderBy = ` ORDER BY COALESCE(ms.total_subscribers,0) DESC, COALESCE(r.avg_rating,0) DESC`
+	}
+	from := ` FROM marketplace_strategies ms
+ JOIN user_strategy_publishes usp ON usp.platform_strategy_id = ms.strategy_id
+ LEFT JOIN users u ON u.id = usp.user_id
+ LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id = ms.strategy_id` + extraJoins
+	query := base + metrics + `,
+        EXTRACT(EPOCH FROM usp.published_at) * 1000,
+        ms.backtest_snapshot` + from + ` WHERE ms.status = 'published'` + extraWhere
 	args := []interface{}{}
 	argIdx := 1
 	if assetClass != "" {
@@ -140,10 +118,9 @@ func (s *Service) leaderboardByNew(ctx context.Context, assetClass string, limit
 		args = append(args, assetClass)
 		argIdx++
 	}
-	query += fmt.Sprintf(" ORDER BY COALESCE(ms.win_rate,0) DESC, usp.published_at DESC LIMIT $%d", argIdx)
+	query += fmt.Sprintf(orderBy+" LIMIT $%d", argIdx)
 	args = append(args, limit)
-
-	return s.scanLeaderboard(ctx, query, args)
+	return query, args
 }
 
 func (s *Service) scanLeaderboard(ctx context.Context, query string, args []interface{}) ([]LeaderboardEntry, error) {

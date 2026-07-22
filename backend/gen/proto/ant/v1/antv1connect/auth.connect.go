@@ -59,6 +59,9 @@ const (
 	// AuthServiceResetPasswordProcedure is the fully-qualified name of the AuthService's ResetPassword
 	// RPC.
 	AuthServiceResetPasswordProcedure = "/ant.v1.AuthService/ResetPassword"
+	// AuthServiceVerifyMTIdentityProcedure is the fully-qualified name of the AuthService's
+	// VerifyMTIdentity RPC.
+	AuthServiceVerifyMTIdentityProcedure = "/ant.v1.AuthService/VerifyMTIdentity"
 )
 
 // AuthServiceClient is a client for the ant.v1.AuthService service.
@@ -73,6 +76,7 @@ type AuthServiceClient interface {
 	ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error)
 	ForgotPassword(context.Context, *connect.Request[v1.ForgotPasswordRequest]) (*connect.Response[v1.ForgotPasswordResponse], error)
 	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
+	VerifyMTIdentity(context.Context, *connect.Request[v1.VerifyMTIdentityRequest]) (*connect.Response[v1.VerifyMTIdentityResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the ant.v1.AuthService service. By default, it uses
@@ -146,6 +150,12 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("ResetPassword")),
 			connect.WithClientOptions(opts...),
 		),
+		verifyMTIdentity: connect.NewClient[v1.VerifyMTIdentityRequest, v1.VerifyMTIdentityResponse](
+			httpClient,
+			baseURL+AuthServiceVerifyMTIdentityProcedure,
+			connect.WithSchema(authServiceMethods.ByName("VerifyMTIdentity")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -161,6 +171,7 @@ type authServiceClient struct {
 	resendVerification     *connect.Client[v1.ResendVerificationRequest, v1.ResendVerificationResponse]
 	forgotPassword         *connect.Client[v1.ForgotPasswordRequest, v1.ForgotPasswordResponse]
 	resetPassword          *connect.Client[v1.ResetPasswordRequest, v1.ResetPasswordResponse]
+	verifyMTIdentity       *connect.Client[v1.VerifyMTIdentityRequest, v1.VerifyMTIdentityResponse]
 }
 
 // Login calls ant.v1.AuthService.Login.
@@ -213,6 +224,11 @@ func (c *authServiceClient) ResetPassword(ctx context.Context, req *connect.Requ
 	return c.resetPassword.CallUnary(ctx, req)
 }
 
+// VerifyMTIdentity calls ant.v1.AuthService.VerifyMTIdentity.
+func (c *authServiceClient) VerifyMTIdentity(ctx context.Context, req *connect.Request[v1.VerifyMTIdentityRequest]) (*connect.Response[v1.VerifyMTIdentityResponse], error) {
+	return c.verifyMTIdentity.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the ant.v1.AuthService service.
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
@@ -225,6 +241,7 @@ type AuthServiceHandler interface {
 	ResendVerification(context.Context, *connect.Request[v1.ResendVerificationRequest]) (*connect.Response[v1.ResendVerificationResponse], error)
 	ForgotPassword(context.Context, *connect.Request[v1.ForgotPasswordRequest]) (*connect.Response[v1.ForgotPasswordResponse], error)
 	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
+	VerifyMTIdentity(context.Context, *connect.Request[v1.VerifyMTIdentityRequest]) (*connect.Response[v1.VerifyMTIdentityResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -294,6 +311,12 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("ResetPassword")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceVerifyMTIdentityHandler := connect.NewUnaryHandler(
+		AuthServiceVerifyMTIdentityProcedure,
+		svc.VerifyMTIdentity,
+		connect.WithSchema(authServiceMethods.ByName("VerifyMTIdentity")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceLoginProcedure:
@@ -316,6 +339,8 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceForgotPasswordHandler.ServeHTTP(w, r)
 		case AuthServiceResetPasswordProcedure:
 			authServiceResetPasswordHandler.ServeHTTP(w, r)
+		case AuthServiceVerifyMTIdentityProcedure:
+			authServiceVerifyMTIdentityHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -363,4 +388,8 @@ func (UnimplementedAuthServiceHandler) ForgotPassword(context.Context, *connect.
 
 func (UnimplementedAuthServiceHandler) ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.ResetPassword is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) VerifyMTIdentity(context.Context, *connect.Request[v1.VerifyMTIdentityRequest]) (*connect.Response[v1.VerifyMTIdentityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AuthService.VerifyMTIdentity is not implemented"))
 }

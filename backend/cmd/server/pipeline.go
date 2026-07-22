@@ -13,6 +13,7 @@ import (
 
 	"alphaforge/internal/mdgateway"
 	"alphaforge/internal/mdgateway/adapter"
+	"alphaforge/internal/mdgateway/adapter/brokersearch"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
@@ -96,6 +97,7 @@ func startMdGatewayPipeline(
 		Hub:            hub,
 		BrokerRegistry: brokerReg,
 		FactorPusher:   factorPusher,
+		Searcher:       brokersearch.New("", ""),
 		OnAccountProfit: func(accountID, userID string, p *mdtick.ProfitUpdate) {
 			// Write latest balance/equity to PG via AccountService.
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

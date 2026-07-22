@@ -12,6 +12,7 @@ import AdminLayout from '@/components/layout/AdminLayout';
 const Login = lazy(() => import('@/pages/auth/Login'));
 const Register = lazy(() => import('@/pages/auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage'));
 const BrokersPage = lazy(() => import('@/pages/landing/BrokersPage'));
@@ -69,6 +70,7 @@ const publicRoutes = (
     <Route path="/register" element={<PublicRoute>{wrap(<Register />)}</PublicRoute>} />
     <Route path="/verify-email" element={<PublicRoute>{wrap(<VerifyEmail />)}</PublicRoute>} />
     <Route path="/forgot-password" element={<PublicRoute>{wrap(<ForgotPassword />)}</PublicRoute>} />
+    <Route path="/reset-password" element={<PublicRoute>{wrap(<ResetPassword />)}</PublicRoute>} />
   </>
 );
 

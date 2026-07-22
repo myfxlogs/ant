@@ -138,9 +138,9 @@ func (s *DepositServer) ListDepositAddresses(ctx context.Context, req *connect.R
 		items[i] = depositAddressToProto(&a)
 	}
 	return connect.NewResponse(&antv1.ListDepositAddressesResponse{
-		Addresses:       items,
-		Total:           total,
-		AvailableCount:  int32(available),
+		Addresses:      items,
+		Total:          total,
+		AvailableCount: int32(available),
 	}), nil
 }
 

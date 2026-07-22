@@ -2,7 +2,7 @@ const Marketplace = {
   "marketplace": {
     "title": "Thị Trường",
     "subtitle": "Khám phá và đăng ký chiến lược giao dịch",
-    "tabs": { "marketplace": "Thị Trường", "purchases": "Đã Mua", "author": "Tác Giả" },
+    "tabs": { "marketplace": "Thị Trường", "purchases": "Đã Mua", "author": "Tác Giả", "bundles": "Gói Combo", "optimization": "Tối Ưu AI", "fees": "Bậc Phí" },
     "searchPlaceholder": "Tìm kiếm chiến lược...",
     "empty": "Không tìm thấy chiến lược",
     "filter": { "all": "Tất Cả", "free": "Miễn Phí", "paid": "Trả Phí" },

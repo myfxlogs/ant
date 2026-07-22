@@ -75,9 +75,11 @@ type AccountDTO struct {
 
 // AccountCredentials holds the fields needed to verify an MT account password.
 type AccountCredentials struct {
-	Login      string
-	Platform   string
-	BrokerHost string
+	Login         string
+	Platform      string
+	BrokerHost    string
+	BrokerCompany string
+	AccountID     string
 }
 
 // AccountSnapshot holds the current state of an MT account from the database.

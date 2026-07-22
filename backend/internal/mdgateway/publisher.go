@@ -64,7 +64,7 @@ func (p *Publisher) PublishBar(ctx context.Context, b *mdtick.Bar) error {
 		Low:            b.Low.String(),
 		Close:         b.Close.String(),
 		Volume:         b.Volume,
-		TickCount:      uint32(b.TickCount),
+		TickCount:      b.TickCount,
 		IsReplay:       b.IsReplay,
 	})
 	if err != nil {
@@ -98,7 +98,7 @@ func (p *Publisher) PublishBarRevision(ctx context.Context, b *mdtick.Bar) error
 		Low:            b.Low.String(),
 		Close:         b.Close.String(),
 		Volume:         b.Volume,
-		TickCount:      uint32(b.TickCount),
+		TickCount:      b.TickCount,
 		IsReplay:       b.IsReplay,
 	})
 	if err != nil {

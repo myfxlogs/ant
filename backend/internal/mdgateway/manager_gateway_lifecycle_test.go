@@ -45,6 +45,14 @@ func (g *fakeGateway) SubscribeOrderUpdate(ctx context.Context, handler mdtick.O
 
 func (g *fakeGateway) SetStatusCallback(func(status, message string)) {}
 
+func (g *fakeGateway) Config() mdtick.AccountConfig {
+	return mdtick.AccountConfig{Platform: g.platform, AccountID: g.accountID}
+}
+
+func (g *fakeGateway) SetBrokerHost(host string) {}
+
+func (g *fakeGateway) SetBreaker(b mdtick.Breaker) {}
+
 func (g *fakeGateway) HealthCheck(ctx context.Context) error {
 	if g.failHealth {
 		return context.DeadlineExceeded

@@ -2,7 +2,7 @@ const Marketplace = {
   "marketplace": {
     "title": "マーケットプレイス",
     "subtitle": "トレーディング戦略を見つけて購読する",
-    "tabs": { "marketplace": "マーケット", "purchases": "購入済み", "author": "作者センター" },
+    "tabs": { "marketplace": "マーケット", "purchases": "購入済み", "author": "作者センター", "bundles": "バンドル", "optimization": "AI最適化", "fees": "手数料ティア" },
     "searchPlaceholder": "戦略を検索...",
     "empty": "戦略が見つかりません",
     "filter": { "all": "すべて", "free": "無料", "paid": "有料" },

@@ -79,3 +79,4 @@ ssh/
 bin/alphaforge
 bin/
 e2e/shots/*
+backend/test_email.go

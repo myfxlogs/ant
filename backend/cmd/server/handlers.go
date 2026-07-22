@@ -27,17 +27,19 @@ import (
 	"alphaforge/internal/connect/strategy"
 	subscriptionhdr "alphaforge/internal/connect/subscription"
 	"alphaforge/internal/connect/system"
-	"alphaforge/internal/reconcile"
+	"alphaforge/internal/connect/user"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway"
 	"alphaforge/internal/mdgateway/adapter"
+	"alphaforge/internal/mdgateway/adapter/brokersearch"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
 	"alphaforge/internal/notifier"
 	papereng "alphaforge/internal/paper"
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/pkg/secretbox"
+	"alphaforge/internal/reconcile"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/risksvc"
@@ -47,8 +49,8 @@ import (
 	antredis "alphaforge/internal/storage/redis"
 	"alphaforge/internal/usermgr"
 
-	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/secrets"
+	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/sweep"
 
 	connectrpc "connectrpc.com/connect"
@@ -112,7 +114,16 @@ func registerHandlers(
 		To:       splitAndTrim(cfg.SMTPTo, ","),
 	}, log)
 
-	authServer := registerAuthHandler(mux, pool, cfg, jwtSecret, userRepo, registrationSvc, emailNotifier, log, otelInterceptor, rateLimitInterceptor, authInterceptor)
+	// Create shared broker searcher for account binding and §0 host rediscovery.
+	searcher := brokersearch.New("", "")
+
+	// Create HostRediscoverer for §0 broker host lazy rediscovery on connection failure.
+	rediscoverer := mdgateway.NewHostRediscoverer(searcher, pool, log)
+
+	// Create MT connection tester early so it can be shared between auth and account handlers.
+	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, rediscoverer, log)
+
+	authServer := registerAuthHandler(mux, pool, cfg, jwtSecret, userRepo, registrationSvc, emailNotifier, mtTester, log, otelInterceptor, rateLimitInterceptor, authInterceptor)
 
 	registerWalletHandler(mux, walletSvc, platformSvc, log, otelInterceptor, authInterceptor)
 
@@ -172,7 +183,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(otelInterceptor, authInterceptor)))
 
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
-	registerAccountHandler(mux, cfg, accountSvc, accountEventPub, hub, log, otelInterceptor, authInterceptor)
+	registerAccountHandler(mux, cfg, accountSvc, accountEventPub, hub, mtTester, searcher, log, otelInterceptor, authInterceptor)
 
 	mktplaceHandler := registerMarketplaceHandlers(ctx, mux, nc, log, marketDataRepo, mktplaceSvc, walletRepo, platformSvc, otelInterceptor, authInterceptor)
 
@@ -232,6 +243,11 @@ func registerHandlers(
 
 	// Phase 2: Wire AI generator into marketplace handler for GenerateAndPublish.
 	mktplaceHandler.SetGenerator(agentGateway.Generator())
+
+	// Phase 5.1: Wire AI generator into marketplace service for auto-optimization.
+	if agentGateway.Generator() != nil {
+		mktplaceSvc.SetOptimizer(agentGateway.Generator())
+	}
 
 	// ADR-0025 §8: Load persisted hook configs from DB at startup.
 	if pool != nil && agentGateway.HookEngine() != nil {
@@ -390,7 +406,7 @@ func registerHandlers(
 		if uid != uuid.Nil {
 			if gs, err := autoTradingRepo.GetGlobalSettingsByUserID(ctx, uid); err == nil && gs != nil {
 				return &risk.UserRiskConfig{
-					MaxLotSize: gs.MaxLotSize, MaxPositions: int(gs.MaxPositions),
+					MaxLotSize: gs.MaxLotSize, MaxPositions: gs.MaxPositions,
 					MaxDailyLoss:       gs.MaxDailyLoss,
 					MaxDrawdownPercent: gs.MaxDrawdownPercent,
 					MaxRiskPercent:     gs.MaxRiskPercent,

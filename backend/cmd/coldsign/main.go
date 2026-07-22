@@ -159,7 +159,7 @@ func signTx(tx *antv1.UnsignedTx, seed []byte, coldWalletAddr string, credDB *Cr
 	var err error
 	switch tx.Tx.(type) {
 	case *antv1.UnsignedTx_Transfer:
-		sk, err = hdwallet.DeriveDepositPrivKey(seed, uint32(tx.DerivationIndex))
+		sk, err = hdwallet.DeriveDepositPrivKey(seed, tx.DerivationIndex)
 		if err != nil {
 			return nil, fmt.Errorf("derive private key at index %d: %w", tx.DerivationIndex, err)
 		}

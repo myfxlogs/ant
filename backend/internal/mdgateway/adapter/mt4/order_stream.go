@@ -117,7 +117,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				o := update.GetOrder()
 				updateTicket = int64(o.GetTicket())
 				updateType = mt4UpdateActionLabel(update.GetAction())
-				updateOrderType = mt4OrderOpLabel(pb.Op(o.GetType()))
+				updateOrderType = mt4OrderOpLabel(o.GetType())
 				updateSymbol = o.GetSymbol()
 				updateVolume = decimal.NewFromFloat(o.GetLots())
 				updateOpenPrice = decimal.NewFromFloat(o.GetOpenPrice())

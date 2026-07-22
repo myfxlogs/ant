@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -184,7 +184,7 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 		if s.mtTester == nil {
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
 		}
-		if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
+		if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password, creds.BrokerCompany, creds.AccountID); err != nil {
 			s.log.Warn("DeleteAccount: password verification failed", zap.String("accountId", req.Msg.Id), zap.Error(err))
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password verification failed: %w", err))
 		}

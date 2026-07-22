@@ -15,35 +15,6 @@ import (
 
 // --- normalizer.go ---
 
-func TestStripSuffix(t *testing.T) {
-	t.Parallel()
-	tests := []struct {
-		name string
-		raw  string
-		want string
-	}{
-		{"dot m suffix", "EURUSD.m", "EURUSD"},
-		{"dot pro suffix", "XAUUSD.pro", "XAUUSD"},
-		{"dot x suffix", "BTCUSD.x", "BTCUSD"},
-		{"dot c suffix", "GBPUSD.c", "GBPUSD"},
-		{"unknown dot suffix kept", "EURUSD.ecn", "EURUSD.ECN"},
-		{"no suffix", "EURUSD", "EURUSD"},
-		{"_i suffix", "EURUSD_i", "EURUSD"},
-		{"_r suffix", "EURUSD_r", "EURUSD"},
-		{"_institutional suffix", "EURUSD_institutional", "EURUSD"},
-		{"_retail suffix", "EURUSD_retail", "EURUSD"},
-		{"lowercase input", "eurusd.m", "EURUSD"},
-		{"empty", "", ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := stripSuffix(tt.raw); got != tt.want {
-				t.Errorf("stripSuffix(%q) = %q, want %q", tt.raw, got, tt.want)
-			}
-		})
-	}
-}
-
 func TestInvalidateCache(t *testing.T) {
 	t.Parallel()
 	n := NewNormalizer(nil)
@@ -94,22 +65,6 @@ func TestDefaultQuoteSymbols(t *testing.T) {
 		if !has[e] {
 			t.Errorf("defaultQuoteSymbols missing %q", e)
 		}
-	}
-}
-
-func TestCgroupMemoryLimit(t *testing.T) {
-	t.Parallel()
-	limit := cgroupMemoryLimit()
-	if limit <= 0 {
-		t.Errorf("cgroupMemoryLimit = %d, want >0", limit)
-	}
-}
-
-func TestCurrentMemoryRatio(t *testing.T) {
-	t.Parallel()
-	r := currentMemoryRatio()
-	if r < 0 {
-		t.Errorf("currentMemoryRatio = %f, want >=0", r)
 	}
 }
 
@@ -812,8 +767,8 @@ func TestPgWriterDrain_Empty(t *testing.T) {
 func TestDefaultPgWriterConfig(t *testing.T) {
 	t.Parallel()
 	cfg := DefaultPgWriterConfig()
-	if cfg.FlushInterval <= 0 {
-		t.Errorf("FlushInterval = %v, want >0", cfg.FlushInterval)
+	if cfg.MaxBatchSize <= 0 {
+		t.Errorf("MaxBatchSize = %d, want >0", cfg.MaxBatchSize)
 	}
 	if cfg.QueueSize <= 0 {
 		t.Errorf("QueueSize = %d, want >0", cfg.QueueSize)

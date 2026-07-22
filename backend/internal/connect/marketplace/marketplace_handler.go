@@ -58,6 +58,21 @@ type marketplaceSvc interface {
 	DisableCoupon(ctx context.Context, couponID string) error
 	GetProviderEarnings(ctx context.Context, userID string) (*marketplace.ProviderEarningsResult, error)
 	ListProviderTransactions(ctx context.Context, userID string, limit, offset int) ([]marketplace.ProviderTxRow, int, error)
+	DetectDecay(ctx context.Context, strategyID string) (*marketplace.DecayResult, error)
+	CreateOptimizationTask(ctx context.Context, strategyID, publisherID, triggerReason string, decayResult *marketplace.DecayResult) (string, error)
+	ListOptimizationTasks(ctx context.Context, publisherID, status string, limit, offset int) ([]marketplace.OptimizationTask, int, error)
+	GetOptimizationTask(ctx context.Context, taskID, publisherID string) (*marketplace.OptimizationTask, error)
+	RejectOptimizationTask(ctx context.Context, taskID, publisherID string) error
+	PublishOptimization(ctx context.Context, taskID, publisherID string) (string, error)
+	PreviewOptimization(ctx context.Context, taskID, publisherID string) (*marketplace.PreviewOptimizationResult, error)
+	CreateBundle(ctx context.Context, publisherID, title, description, priceModel, priceAmount string, strategyIDs []string, platformFeeRate string) (string, error)
+	ListBundles(ctx context.Context, publisherID string, limit, offset int) ([]marketplace.Bundle, int, error)
+	GetBundle(ctx context.Context, bundleID string) (*marketplace.Bundle, error)
+	PurchaseBundle(ctx context.Context, userID, bundleID, idempotencyKey string) (*marketplace.PurchaseResult, error)
+	DeleteBundle(ctx context.Context, bundleID, userID string, isAdmin bool) error
+	ListFeeTiers(ctx context.Context) ([]marketplace.FeeTier, error)
+	UpdateFeeTier(ctx context.Context, tierID int32, feeRate string, minSalesCount int32, enabled bool) error
+	GetProviderFeeTierWithStats(ctx context.Context, publisherID string) (*marketplace.ProviderFeeTierResult, error)
 }
 
 // agentGenerator is the interface for the AI strategy generator (agent.Generator).

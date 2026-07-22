@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auth.proto.
  */
 export const file_auth: GenFile = /*@__PURE__*/
-  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIk8KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyEh8KF2VtYWlsX3ZlcmlmaWNhdGlvbl9zZW50GAIgASgIIv8BCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJEhYKDmVtYWlsX3ZlcmlmaWVkGAogASgIIiMKElZlcmlmeUVtYWlsUmVxdWVzdBINCgV0b2tlbhgBIAEoCSI3ChNWZXJpZnlFbWFpbFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIqChlSZXNlbmRWZXJpZmljYXRpb25SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIj4KGlJlc2VuZFZlcmlmaWNhdGlvblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSImChVGb3Jnb3RQYXNzd29yZFJlcXVlc3QSDQoFZW1haWwYASABKAkiOgoWRm9yZ290UGFzc3dvcmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiOwoUUmVzZXRQYXNzd29yZFJlcXVlc3QSDQoFdG9rZW4YASABKAkSFAoMbmV3X3Bhc3N3b3JkGAIgASgJIjkKFVJlc2V0UGFzc3dvcmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAky0wUKC0F1dGhTZXJ2aWNlEjQKBUxvZ2luEhQuYW50LnYxLkxvZ2luUmVxdWVzdBoVLmFudC52MS5Mb2dpblJlc3BvbnNlEjgKBkxvZ291dBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJJCgxSZWZyZXNoVG9rZW4SGy5hbnQudjEuUmVmcmVzaFRva2VuUmVxdWVzdBocLmFudC52MS5SZWZyZXNoVG9rZW5SZXNwb25zZRJOChZSZWZyZXNoVG9rZW5Gcm9tQ29va2llEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhwuYW50LnYxLlJlZnJlc2hUb2tlblJlc3BvbnNlEjYKBUdldE1lEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhUuYW50LnYxLkdldE1lUmVzcG9uc2USPQoIUmVnaXN0ZXISFy5hbnQudjEuUmVnaXN0ZXJSZXF1ZXN0GhguYW50LnYxLlJlZ2lzdGVyUmVzcG9uc2USRgoLVmVyaWZ5RW1haWwSGi5hbnQudjEuVmVyaWZ5RW1haWxSZXF1ZXN0GhsuYW50LnYxLlZlcmlmeUVtYWlsUmVzcG9uc2USWwoSUmVzZW5kVmVyaWZpY2F0aW9uEiEuYW50LnYxLlJlc2VuZFZlcmlmaWNhdGlvblJlcXVlc3QaIi5hbnQudjEuUmVzZW5kVmVyaWZpY2F0aW9uUmVzcG9uc2USTwoORm9yZ290UGFzc3dvcmQSHS5hbnQudjEuRm9yZ290UGFzc3dvcmRSZXF1ZXN0Gh4uYW50LnYxLkZvcmdvdFBhc3N3b3JkUmVzcG9uc2USTAoNUmVzZXRQYXNzd29yZBIcLmFudC52MS5SZXNldFBhc3N3b3JkUmVxdWVzdBodLmFudC52MS5SZXNldFBhc3N3b3JkUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
+  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIk8KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyEh8KF2VtYWlsX3ZlcmlmaWNhdGlvbl9zZW50GAIgASgIIv8BCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJEhYKDmVtYWlsX3ZlcmlmaWVkGAogASgIIiMKElZlcmlmeUVtYWlsUmVxdWVzdBINCgV0b2tlbhgBIAEoCSI3ChNWZXJpZnlFbWFpbFJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSIqChlSZXNlbmRWZXJpZmljYXRpb25SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIj4KGlJlc2VuZFZlcmlmaWNhdGlvblJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSDwoHbWVzc2FnZRgCIAEoCSImChVGb3Jnb3RQYXNzd29yZFJlcXVlc3QSDQoFZW1haWwYASABKAkiOgoWRm9yZ290UGFzc3dvcmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiOwoUUmVzZXRQYXNzd29yZFJlcXVlc3QSDQoFdG9rZW4YASABKAkSFAoMbmV3X3Bhc3N3b3JkGAIgASgJIjkKFVJlc2V0UGFzc3dvcmRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEg8KB21lc3NhZ2UYAiABKAkiTwoXVmVyaWZ5TVRJZGVudGl0eVJlcXVlc3QSDQoFZW1haWwYASABKAkSEAoIbXRfbG9naW4YAiABKAkSEwoLbXRfcGFzc3dvcmQYAyABKAkiUgoYVmVyaWZ5TVRJZGVudGl0eVJlc3BvbnNlEhAKCHZlcmlmaWVkGAEgASgIEhMKC3Jlc2V0X3Rva2VuGAIgASgJEg8KB21lc3NhZ2UYAyABKAkyqgYKC0F1dGhTZXJ2aWNlEjQKBUxvZ2luEhQuYW50LnYxLkxvZ2luUmVxdWVzdBoVLmFudC52MS5Mb2dpblJlc3BvbnNlEjgKBkxvZ291dBIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJJCgxSZWZyZXNoVG9rZW4SGy5hbnQudjEuUmVmcmVzaFRva2VuUmVxdWVzdBocLmFudC52MS5SZWZyZXNoVG9rZW5SZXNwb25zZRJOChZSZWZyZXNoVG9rZW5Gcm9tQ29va2llEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhwuYW50LnYxLlJlZnJlc2hUb2tlblJlc3BvbnNlEjYKBUdldE1lEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GhUuYW50LnYxLkdldE1lUmVzcG9uc2USPQoIUmVnaXN0ZXISFy5hbnQudjEuUmVnaXN0ZXJSZXF1ZXN0GhguYW50LnYxLlJlZ2lzdGVyUmVzcG9uc2USRgoLVmVyaWZ5RW1haWwSGi5hbnQudjEuVmVyaWZ5RW1haWxSZXF1ZXN0GhsuYW50LnYxLlZlcmlmeUVtYWlsUmVzcG9uc2USWwoSUmVzZW5kVmVyaWZpY2F0aW9uEiEuYW50LnYxLlJlc2VuZFZlcmlmaWNhdGlvblJlcXVlc3QaIi5hbnQudjEuUmVzZW5kVmVyaWZpY2F0aW9uUmVzcG9uc2USTwoORm9yZ290UGFzc3dvcmQSHS5hbnQudjEuRm9yZ290UGFzc3dvcmRSZXF1ZXN0Gh4uYW50LnYxLkZvcmdvdFBhc3N3b3JkUmVzcG9uc2USTAoNUmVzZXRQYXNzd29yZBIcLmFudC52MS5SZXNldFBhc3N3b3JkUmVxdWVzdBodLmFudC52MS5SZXNldFBhc3N3b3JkUmVzcG9uc2USVQoQVmVyaWZ5TVRJZGVudGl0eRIfLmFudC52MS5WZXJpZnlNVElkZW50aXR5UmVxdWVzdBogLmFudC52MS5WZXJpZnlNVElkZW50aXR5UmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
 
 /**
  * @generated from message ant.v1.LoginRequest
@@ -413,6 +413,66 @@ export const ResetPasswordResponseSchema: GenMessage<ResetPasswordResponse> = /*
   messageDesc(file_auth, 15);
 
 /**
+ * @generated from message ant.v1.VerifyMTIdentityRequest
+ */
+export type VerifyMTIdentityRequest = Message<"ant.v1.VerifyMTIdentityRequest"> & {
+  /**
+   * 用户邮箱（定位用户）
+   *
+   * @generated from field: string email = 1;
+   */
+  email: string;
+
+  /**
+   * MT 账户号
+   *
+   * @generated from field: string mt_login = 2;
+   */
+  mtLogin: string;
+
+  /**
+   * MT 账户密码（只读 or 交易密码）
+   *
+   * @generated from field: string mt_password = 3;
+   */
+  mtPassword: string;
+};
+
+/**
+ * Describes the message ant.v1.VerifyMTIdentityRequest.
+ * Use `create(VerifyMTIdentityRequestSchema)` to create a new message.
+ */
+export const VerifyMTIdentityRequestSchema: GenMessage<VerifyMTIdentityRequest> = /*@__PURE__*/
+  messageDesc(file_auth, 16);
+
+/**
+ * @generated from message ant.v1.VerifyMTIdentityResponse
+ */
+export type VerifyMTIdentityResponse = Message<"ant.v1.VerifyMTIdentityResponse"> & {
+  /**
+   * @generated from field: bool verified = 1;
+   */
+  verified: boolean;
+
+  /**
+   * @generated from field: string reset_token = 2;
+   */
+  resetToken: string;
+
+  /**
+   * @generated from field: string message = 3;
+   */
+  message: string;
+};
+
+/**
+ * Describes the message ant.v1.VerifyMTIdentityResponse.
+ * Use `create(VerifyMTIdentityResponseSchema)` to create a new message.
+ */
+export const VerifyMTIdentityResponseSchema: GenMessage<VerifyMTIdentityResponse> = /*@__PURE__*/
+  messageDesc(file_auth, 17);
+
+/**
  * @generated from service ant.v1.AuthService
  */
 export const AuthService: GenService<{
@@ -495,6 +555,14 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof ResetPasswordRequestSchema;
     output: typeof ResetPasswordResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AuthService.VerifyMTIdentity
+   */
+  verifyMTIdentity: {
+    methodKind: "unary";
+    input: typeof VerifyMTIdentityRequestSchema;
+    output: typeof VerifyMTIdentityResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_auth, 0);

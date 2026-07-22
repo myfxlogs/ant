@@ -12,7 +12,7 @@ import (
 
 func builtinCharToString(vm *VM, args []interp.Value) (interp.Value, error) {
 	ch := argI(args, 0)
-	return interp.StringVal(string(rune(ch))), nil
+	return interp.StringVal(string(ch)), nil
 }
 
 func builtinCharArrayToString(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -43,14 +43,14 @@ func builtinCharArrayToString(vm *VM, args []interp.Value) (interp.Value, error)
 	}
 	var sb strings.Builder
 	for i := start; i < end; i++ {
-		sb.WriteRune(rune(arr[i].ToInt()))
+		sb.WriteRune(arr[i].ToInt())
 	}
 	return interp.StringVal(sb.String()), nil
 }
 
 func builtinShortToString(vm *VM, args []interp.Value) (interp.Value, error) {
 	ch := argI(args, 0)
-	return interp.StringVal(string(rune(ch))), nil
+	return interp.StringVal(string(ch)), nil
 }
 
 func builtinShortArrayToString(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -71,7 +71,7 @@ func builtinStringToCharArray(vm *VM, args []interp.Value) (interp.Value, error)
 	s := argS(args, 0)
 	arr := make([]interp.Value, len(s))
 	for i, c := range s {
-		arr[i] = interp.IntVal(int32(c))
+		arr[i] = interp.IntVal(c)
 	}
 	return interp.Value{Kind: interp.ValArray, Array: arr}, nil
 }

@@ -85,7 +85,7 @@ func (s *WebAuthnServer) ListCredentials(ctx context.Context, _ *connect.Request
 			CredentialId:  c.CredentialID,
 			Name:          c.Name,
 			CreatedAtTsMs: c.CreatedAt.UnixMilli(),
-			SignCount:     int64(c.SignCount),
+			SignCount:     c.SignCount,
 		}
 	}
 
@@ -176,12 +176,12 @@ func (s *WebAuthnServer) ListWithdrawals(ctx context.Context, req *connect.Reque
 	items := make([]*antv1.WithdrawalEntry, len(withdrawals))
 	for i, w := range withdrawals {
 		entry := &antv1.WithdrawalEntry{
-			Id:             w.ID.String(),
-			Amount:         w.Amount,
-			DestAddress:    w.DestAddress,
-			Nonce:          uint64(w.Nonce),
-			Status:         w.Status,
-			CreatedAtTsMs:  w.CreatedAt.UnixMilli(),
+			Id:            w.ID.String(),
+			Amount:        w.Amount,
+			DestAddress:   w.DestAddress,
+			Nonce:         uint64(w.Nonce),
+			Status:        w.Status,
+			CreatedAtTsMs: w.CreatedAt.UnixMilli(),
 		}
 		if w.TxHash != nil {
 			entry.TxHash = *w.TxHash
@@ -311,7 +311,7 @@ func (s *WebAuthnServer) ExportCredentialList(ctx context.Context, _ *connect.Re
 			UserId:       c.UserID.String(),
 			CredentialId: c.CredentialID,
 			PublicKey:    c.PublicKey,
-			SignCount:    int64(c.SignCount),
+			SignCount:    c.SignCount,
 		}
 	}
 

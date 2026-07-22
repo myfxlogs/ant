@@ -31,3 +31,4 @@ agent-engine → strategy-marketplace(AI 生成策略 + 迭代优化)
 ```
 ## 关联文档
 - [spec/26-ai-strategy-generation.md](spec/26-ai-strategy-generation.md)
+- [跨策略学习与经验积累设计](design-cross-strategy-learning.md) — 平台级知识蒸馏与 Agent 知识注入（Year 2）

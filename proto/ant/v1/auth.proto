@@ -18,6 +18,7 @@ service AuthService {
   rpc ResendVerification(ResendVerificationRequest) returns (ResendVerificationResponse);
   rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse);
   rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc VerifyMTIdentity(VerifyMTIdentityRequest) returns (VerifyMTIdentityResponse);
 }
 
 message LoginRequest {
@@ -106,4 +107,16 @@ message ResetPasswordRequest {
 message ResetPasswordResponse {
   bool success = 1;
   string message = 2;
+}
+
+message VerifyMTIdentityRequest {
+  string email = 1;        // 用户邮箱（定位用户）
+  string mt_login = 2;     // MT 账户号
+  string mt_password = 3;  // MT 账户密码（只读 or 交易密码）
+}
+
+message VerifyMTIdentityResponse {
+  bool verified = 1;
+  string reset_token = 2;
+  string message = 3;
 }

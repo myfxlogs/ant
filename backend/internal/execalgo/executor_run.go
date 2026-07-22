@@ -67,7 +67,7 @@ func (e *Executor) run(ctx context.Context) {
 						e.transitionTo(ExecCancelled)
 						return
 					case <-retryTicker.C:
-						tradeable, reason = e.cfg.MarketState.IsTradeable(e.cfg.Schedule.Parent.Symbol)
+						tradeable, _ = e.cfg.MarketState.IsTradeable(e.cfg.Schedule.Parent.Symbol)
 					}
 				}
 				e.emit(ExecEvent{State: ExecRunning, SliceIndex: i, TotalSlices: total, Timestamp: time.Now()})

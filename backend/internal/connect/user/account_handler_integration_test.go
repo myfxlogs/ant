@@ -35,7 +35,7 @@ func (m *mockMTTester) Test(ctx context.Context, platform, brokerHost, login, pa
 	return m.info, m.err
 }
 
-func (m *mockMTTester) VerifyPassword(ctx context.Context, platform, brokerHost, login, password string) error {
+func (m *mockMTTester) VerifyPassword(ctx context.Context, platform, brokerHost, login, password, brokerCompany, accountID string) error {
 	return m.err
 }
 
@@ -496,7 +496,6 @@ func TestPasswordChangeWithOldPassword(t *testing.T) {
 // errors (not panics, not nil responses) when the database is unavailable.
 func TestErrorRecovery_PGUnavailable(t *testing.T) {
 	pool := getTestPG(t)
-	
 
 	userID := uuid.New()
 	insertTestUser(t, pool, userID, fmt.Sprintf("err-recov-%d@test.io", time.Now().UnixNano()))

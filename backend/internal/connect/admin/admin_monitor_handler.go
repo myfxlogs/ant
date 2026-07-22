@@ -93,9 +93,9 @@ func (s *AdminMonitorServer) collect(ctx context.Context) *antv1.MonitorSnapshot
 	// DB pool stats
 	if s.pool != nil {
 		stat := s.pool.Stat()
-		snap.DbPoolTotal = int32(stat.TotalConns())
-		snap.DbPoolIdle = int32(stat.IdleConns())
-		snap.DbPoolAcquired = int32(stat.AcquiredConns())
+		snap.DbPoolTotal = stat.TotalConns()
+		snap.DbPoolIdle = stat.IdleConns()
+		snap.DbPoolAcquired = stat.AcquiredConns()
 		if err := s.pool.Ping(ctx); err != nil {
 			snap.DbStatus = "unhealthy: " + err.Error()
 		} else {

@@ -54,6 +54,20 @@ func (g *Gateway) SetBreaker(b mdtick.Breaker) {
 func (g *Gateway) Platform() string  { return "mt5" }
 func (g *Gateway) AccountID() string { return g.cfg.AccountID }
 
+// Config returns a copy of the gateway's account config.
+func (g *Gateway) Config() mdtick.AccountConfig {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return g.cfg
+}
+
+// SetBrokerHost updates the broker host in the gateway's config (§0 rediscovery).
+func (g *Gateway) SetBrokerHost(host string) {
+	g.mu.Lock()
+	g.cfg.BrokerHost = host
+	g.mu.Unlock()
+}
+
 // token returns the sanitized mtapi token (strips \r, \n, and other control chars).
 func (g *Gateway) token() string {
 	return sanitizeToken(g.cfg.MtapiToken)

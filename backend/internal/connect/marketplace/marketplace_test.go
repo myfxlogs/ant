@@ -214,6 +214,51 @@ func (s *stubMarketplaceSvc) GetProviderEarnings(_ context.Context, _ string) (*
 func (s *stubMarketplaceSvc) ListProviderTransactions(_ context.Context, _ string, _, _ int) ([]marketplace.ProviderTxRow, int, error) {
 	return nil, 0, s.err
 }
+func (s *stubMarketplaceSvc) DetectDecay(_ context.Context, _ string) (*marketplace.DecayResult, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) CreateOptimizationTask(_ context.Context, _, _, _ string, _ *marketplace.DecayResult) (string, error) {
+	return "", s.err
+}
+func (s *stubMarketplaceSvc) ListOptimizationTasks(_ context.Context, _, _ string, _, _ int) ([]marketplace.OptimizationTask, int, error) {
+	return nil, 0, s.err
+}
+func (s *stubMarketplaceSvc) GetOptimizationTask(_ context.Context, _, _ string) (*marketplace.OptimizationTask, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) RejectOptimizationTask(_ context.Context, _, _ string) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) PublishOptimization(_ context.Context, _, _ string) (string, error) {
+	return "", s.err
+}
+func (s *stubMarketplaceSvc) PreviewOptimization(_ context.Context, _, _ string) (*marketplace.PreviewOptimizationResult, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) CreateBundle(_ context.Context, _, _, _, _, _ string, _ []string, _ string) (string, error) {
+	return "", s.err
+}
+func (s *stubMarketplaceSvc) ListBundles(_ context.Context, _ string, _, _ int) ([]marketplace.Bundle, int, error) {
+	return nil, 0, s.err
+}
+func (s *stubMarketplaceSvc) GetBundle(_ context.Context, _ string) (*marketplace.Bundle, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) PurchaseBundle(_ context.Context, _, _, _ string) (*marketplace.PurchaseResult, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) DeleteBundle(_ context.Context, _, _ string, _ bool) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) ListFeeTiers(_ context.Context) ([]marketplace.FeeTier, error) {
+	return nil, s.err
+}
+func (s *stubMarketplaceSvc) UpdateFeeTier(_ context.Context, _ int32, _ string, _ int32, _ bool) error {
+	return s.err
+}
+func (s *stubMarketplaceSvc) GetProviderFeeTierWithStats(_ context.Context, _ string) (*marketplace.ProviderFeeTierResult, error) {
+	return nil, s.err
+}
 
 type stubAdminChecker struct{ isAdmin bool }
 

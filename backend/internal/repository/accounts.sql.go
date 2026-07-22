@@ -61,7 +61,7 @@ func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (MtAccou
 }
 
 const getAccountCredentials = `-- name: GetAccountCredentials :one
-SELECT login, password_encrypted, mt_type, broker_host FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+SELECT id, login, password_encrypted, mt_type, broker_host, broker_company FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 `
 
 type GetAccountCredentialsParams struct {
@@ -70,20 +70,24 @@ type GetAccountCredentialsParams struct {
 }
 
 type GetAccountCredentialsRow struct {
-	Login              string
-	PasswordEncrypted  []byte
-	MtType             string
-	BrokerHost         string
+	ID                pgtype.UUID
+	Login             string
+	PasswordEncrypted []byte
+	MtType            string
+	BrokerHost        string
+	BrokerCompany     string
 }
 
 func (q *Queries) GetAccountCredentials(ctx context.Context, arg GetAccountCredentialsParams) (GetAccountCredentialsRow, error) {
 	row := q.db.QueryRow(ctx, getAccountCredentials, arg.ID, arg.UserID)
 	var i GetAccountCredentialsRow
 	err := row.Scan(
+		&i.ID,
 		&i.Login,
 		&i.PasswordEncrypted,
 		&i.MtType,
 		&i.BrokerHost,
+		&i.BrokerCompany,
 	)
 	return i, err
 }

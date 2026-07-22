@@ -77,7 +77,7 @@ func (c *SeriesCache) TriX(period, shift int) float64 {
 
 // Alligator returns jaw, teeth, lips using SMMA with shifts.
 func (c *SeriesCache) Alligator(jawPeriod, jawShift, teethPeriod, teethShift, lipsPeriod, lipsShift int, method string, shift int) (jaw, teeth, lips float64) {
-	maFunc := c.SMMA
+	var maFunc func(int, int) float64
 	switch method {
 	case "SMA", "sma":
 		maFunc = c.SMA

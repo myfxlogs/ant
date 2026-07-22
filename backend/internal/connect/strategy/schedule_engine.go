@@ -234,7 +234,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 
 	strParams, _ := schedule.GetParameters()
 
-	runCtx, cancel := context.WithCancel(context.Background())
+	runCtx, cancel := context.WithCancel(ctx)
 	handle := &runHandle{cancel: cancel}
 	handle.wg.Add(1)
 
@@ -264,14 +264,14 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 			StrategyCode: cfg.Code,
 			Status:       "running",
 		}
-		if err := e.runner.runRepo.Create(context.Background(), run); err != nil {
+		if err := e.runner.runRepo.Create(ctx, run); err != nil {
 			e.log.Warn("dispatch: failed to create run record", zap.Error(err))
 		} else {
 			cfg.RunID = run.ID
 		}
 	}
 
-	go e.runOne(runCtx, schedule, cfg, handle)
+	go func(ctx context.Context) { e.runOne(ctx, schedule, cfg, handle) }(runCtx)
 
 	e.log.Info("dispatched", zap.String("schedule_id", schedule.ID.String()),
 		zap.String("symbol", schedule.Symbol), zap.String("timeframe", schedule.Timeframe))

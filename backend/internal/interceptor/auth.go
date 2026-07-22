@@ -47,6 +47,9 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			strings.HasSuffix(procLower, "/refreshtokenfromcookie") ||
 			strings.HasSuffix(procLower, "/verifyemail") ||
 			strings.HasSuffix(procLower, "/resendverification") ||
+			strings.HasSuffix(procLower, "/forgotpassword") ||
+			strings.HasSuffix(procLower, "/resetpassword") ||
+			strings.HasSuffix(procLower, "/verifymtidentity") ||
 			strings.HasSuffix(procLower, "/getsharedperformance") ||
 			// Marketplace read-only RPCs — public browsing for SEO (ADR-0026).
 			strings.HasSuffix(procLower, "/listpublished") ||

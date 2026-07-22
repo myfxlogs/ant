@@ -30,6 +30,7 @@ func registerAuthHandler(
 	userRepo *repository.UserRepository,
 	registrationSvc *service.RegistrationService,
 	emailNotifier *notifier.EmailNotifier,
+	mtTester user.MTConnectionTester,
 	log *zap.Logger,
 	otelInterceptor, rateLimitInterceptor, authInterceptor connectrpc.Interceptor,
 ) *user.AuthServer {
@@ -43,6 +44,7 @@ func registerAuthHandler(
 	}
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
 	authServer.WithPasswordReset(passwordResetRepo, emailNotifier, cfg.AppURL)
+	authServer.WithMTIdentityVerification(pool, mtTester)
 	authServer.SetRequireEmailVerification(cfg.RequireEmailVerification)
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, withSency(otelInterceptor, rateLimitInterceptor, authInterceptor)))
 	return authServer
@@ -80,11 +82,11 @@ func registerAccountHandler(
 	accountSvc *service.AccountService,
 	accountEventPub *mdgateway.AccountEventPublisher,
 	hub *mthub.Hub,
+	mtTester user.MTConnectionTester,
+	searcher *brokersearch.Searcher,
 	log *zap.Logger,
 	otelInterceptor, authInterceptor connectrpc.Interceptor,
 ) {
-	searcher := brokersearch.New("", "")
-	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, log)
 	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
 		WithSessionWaiter(hub).
 		WithStopGateway(hub.RemoveGateway)

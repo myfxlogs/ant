@@ -54,7 +54,7 @@ func builtinStringSetCharacter(vm *VM, args []interp.Value) (interp.Value, error
 	if pos < 0 || pos >= len(s) {
 		return interp.StringVal(s), nil
 	}
-	return interp.StringVal(s[:pos] + string(rune(ch)) + s[pos+1:]), nil
+	return interp.StringVal(s[:pos] + string(ch) + s[pos+1:]), nil
 }
 
 func builtinStringToLower(vm *VM, args []interp.Value) (interp.Value, error) {

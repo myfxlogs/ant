@@ -14,7 +14,7 @@ func (c *astCompiler) compileFor(s *interp.Statement) {
 
 	// Condition
 	condStart := int32(len(c.bc.Code))
-	jmpEnd := int32(-1)
+	var jmpEnd int32
 	if s.Cond != nil {
 		c.compileExpr(s.Cond)
 		jmpEnd = c.emitJump(OP_JMP_IF_FALSE, 0)

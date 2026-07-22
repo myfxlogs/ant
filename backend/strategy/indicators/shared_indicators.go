@@ -10,7 +10,7 @@ import (
 // SMMA with offsets: jaw(13,8), teeth(8,5), lips(5,3) are typical defaults.
 func Alligator(src BarSource, jawPeriod, jawShift, teethPeriod, teethShift, lipsPeriod, lipsShift int, method string, appliedPrice int, shift int) (jaw, teeth, lips decimal.Decimal) {
 	src = withAppliedPrice(src, appliedPrice)
-	maFunc := smma
+	var maFunc func(BarSource, int, int) float64
 	switch method {
 	case "SMA", "sma":
 		maFunc = sma

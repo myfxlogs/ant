@@ -14,6 +14,7 @@ import {
   ThunderboltOutlined,
   CodeOutlined,
   SettingOutlined,
+  RocketOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -34,6 +35,8 @@ const getTypeIcon = (type: Notification['type']) => {
       return <WarningOutlined style={{ color: '#faad14' }} />;
     case 'strategy_execution':
       return <CheckCircleOutlined style={{ color: '#722ed1' }} />;
+    case 'strategy_version_update':
+      return <RocketOutlined style={{ color: '#13c2c2' }} />;
     default:
       return <SettingOutlined style={{ color: '#8c8c8c' }} />;
   }
@@ -45,6 +48,7 @@ const getTypeTag = (type: Notification['type']) => {
     signal: { color: 'green', labelKey: 'notifications.types.signal' },
     risk_alert: { color: 'orange', labelKey: 'notifications.types.risk_alert' },
     strategy_execution: { color: 'purple', labelKey: 'notifications.types.strategy_execution' },
+    strategy_version_update: { color: 'cyan', labelKey: 'notifications.types.strategy_version_update' },
     system: { color: 'default', labelKey: 'notifications.types.system' },
   };
   return typeMap[type] || typeMap.system;

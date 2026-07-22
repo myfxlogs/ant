@@ -130,7 +130,8 @@ func (c *TronClient) GetTransactionInfo(ctx context.Context, txid string) (confi
 	if info.GetReceipt() != nil {
 		energyUsed = info.GetReceipt().GetEnergyUsageTotal()
 	}
-	success = info.GetResult() == core.TransactionInfo_SUCESS
+	// 0 is the success code from the generated TransactionInfoCode enum.
+	success = info.GetResult() == 0
 	return true, success, energyUsed, nil
 }
 

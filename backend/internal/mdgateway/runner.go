@@ -10,8 +10,9 @@ import (
 	"go.uber.org/zap"
 
 	anttrace "alphaforge/internal/trace"
-	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mdgateway/adapter"
+	"alphaforge/internal/mdgateway/adapter/brokersearch"
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mdgateway/adapter/mt4"
 	"alphaforge/internal/mdgateway/adapter/mt5"
 	"alphaforge/internal/mdgateway/backfiller"
@@ -38,6 +39,7 @@ type RunnerDeps struct {
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
 	FactorPusher        func(bar *mdtick.Bar)   // M10-BASE-B6: push finalized bars to factor subscriber
+	Searcher            *brokersearch.Searcher  // §0: broker host rediscovery
 }
 
 // Run assembles and starts the full mdgateway pipeline. Blocks until ctx.Done.
@@ -75,7 +77,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	if deps.ChStore != nil {
 		pgWriter.SetCHStore(deps.ChStore)
 	}
-	go pgWriter.Start(ctx)
+	go func(ctx context.Context) { pgWriter.Start(ctx) }(ctx)
 
 	// --- Normalizer + Quality + Dedup ---
 	normalizer := NewNormalizer(deps.PG)
@@ -125,6 +127,10 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 	// --- Open bar ticker (500ms) for real-time price updates ---
 	go mgr.StartOpenBarTicker(ctx)
+
+	// --- Host rediscoverer (§0: broker_host lazy rediscovery) ---
+	rediscoverer := NewHostRediscoverer(deps.Searcher, deps.PG, log)
+	mgr.SetRediscoverer(rediscoverer)
 
 	// --- Health monitor (start before gateways so accounts with no ticks are caught) ---
 	go healthMonitor(ctx, mgr, nil, log, deps.OnAccountDisconnect)

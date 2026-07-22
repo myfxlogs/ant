@@ -38,12 +38,14 @@ func NewRateLimitInterceptor(requestsPerMinute int, enabled bool) *RateLimitInte
 		burst:     3,
 		enabled:   enabled,
 		protectedPaths: map[string]bool{
-			"/ant.v1.AuthService/Login":          true,
-			"/ant.v1.AuthService/Register":       true,
-			"/ant.v1.AIService/GenerateStrategy": true,
-			"/ant.v1.StrategyPlanService/Plan":   true,
-			"/ant.v1.CodeAssistService/Analyze":  true,
-			"/ant.v1.AIGatewayService/Complete":  true,
+			"/ant.v1.AuthService/Login":            true,
+			"/ant.v1.AuthService/Register":         true,
+			"/ant.v1.AuthService/ForgotPassword":   true,
+			"/ant.v1.AuthService/VerifyMTIdentity": true,
+			"/ant.v1.AIService/GenerateStrategy":   true,
+			"/ant.v1.StrategyPlanService/Plan":     true,
+			"/ant.v1.CodeAssistService/Analyze":    true,
+			"/ant.v1.AIGatewayService/Complete":    true,
 		},
 	}
 	go i.cleanupLoop()

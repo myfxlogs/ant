@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_wallet_transactions_user_tx_type;

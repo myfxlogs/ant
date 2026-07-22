@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -24,8 +24,9 @@ import (
 // MTConnectionTester validates MT account credentials by connecting to the broker.
 type MTConnectionTester interface {
 	Test(ctx context.Context, platform, brokerHost, login, password string) (*mdtick.MTAccountInfo, error)
-	// VerifyPassword only connects to the broker to verify credentials, without fetching account info.
-	VerifyPassword(ctx context.Context, platform, brokerHost, login, password string) error
+	// VerifyPassword connects to the broker to verify credentials without fetching account info.
+	// brokerCompany and accountID are used for §0 host rediscovery on ErrHost failures.
+	VerifyPassword(ctx context.Context, platform, brokerHost, login, password, brokerCompany, accountID string) error
 }
 
 // SessionReadyWaiter provides an event-driven (channel-based) way to wait for
@@ -40,7 +41,7 @@ type AccountServer struct {
 	searcher      *brokersearch.Searcher
 	publisher     *mdgateway.AccountEventPublisher
 	mtTester      MTConnectionTester
-	sessionWaiter SessionReadyWaiter // may be nil
+	sessionWaiter SessionReadyWaiter                                // may be nil
 	stopGateway   func(ctx context.Context, accountID string) error // may be nil
 	log           *zap.Logger
 }
@@ -84,12 +85,12 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
 		BrokerHost: a.BrokerHost,
-		Status: a.Status,
-		Balance: a.Balance.String(), Credit: a.Credit.String(), Equity: a.Equity.String(), Margin: a.Margin.String(),
+		Status:     a.Status,
+		Balance:    a.Balance.String(), Credit: a.Credit.String(), Equity: a.Equity.String(), Margin: a.Margin.String(),
 		FreeMargin: a.FreeMargin.String(), MarginLevel: a.MarginLevel.String(),
 		Leverage: a.Leverage, Currency: a.Currency,
 		IsInvestor: a.IsInvestor, LastError: a.LastError,
-		IsDisabled: a.Status == string(service.StatusDisconnected) || a.Status == string(service.StatusFrozen),
+		IsDisabled:  a.Status == string(service.StatusDisconnected) || a.Status == string(service.StatusFrozen),
 		ConnectedAt: connectedAt,
 	}
 }

@@ -10,7 +10,6 @@ extern void *tree_sitter_mql();
 import "C"
 import (
 	"sync"
-	"unsafe"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )
@@ -30,7 +29,7 @@ func Language() (*sitter.Language, error) {
 			err = wrapErr("tree_sitter_mql returned nil")
 			return
 		}
-		mqlLang = sitter.NewLanguage(unsafe.Pointer(ptr))
+		mqlLang = sitter.NewLanguage(ptr)
 	})
 	if err != nil {
 		return nil, err

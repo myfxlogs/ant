@@ -68,7 +68,7 @@ func aggregateBars(bars []sdk.Bar, tf string) []sdk.Bar {
 		return nil
 	}
 	dur := tfDuration(tf)
-	durMs := int64(dur.Milliseconds())
+	durMs := dur.Milliseconds()
 	var result []sdk.Bar
 	var current *sdk.Bar
 	var curBucket int64

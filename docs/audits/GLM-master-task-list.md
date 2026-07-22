@@ -17,14 +17,22 @@
 
 | # | 文件 | 行数 | 拆为 |
 |----|------|------|------|
-| P0-1a | `backend/cmd/server/handlers.go` | 462 | `handlers_marketplace.go` + `handlers_strategy.go` + `handlers_user.go` + `handlers_admin.go` |
-| P0-1b | `backend/internal/service/account_service.go` | 452 | `account_crud.go` + `account_lifecycle.go` + `account_sync.go` |
-| P0-1c | `frontend/src/.../AutoGeneratePanel.tsx` | 433 | 完工后拆为 `AutoGeneratePanel.tsx` + `AutoGenerateProgress.tsx` + `AutoGenerateResult.tsx` |
+| P0-1a | `backend/cmd/server/handlers.go` | 462 | ✅ `handlers_marketplace.go` + `handlers_user.go` 已拆分 |
+| P0-1b | `backend/internal/service/account_service.go` | 452 | ✅ `account_crud.go` + `account_sync_service.go` 已拆分 |
+| P0-1c | `frontend/src/.../AutoGeneratePanel.tsx` | 433 | ✅ 已拆为 `AutoGeneratePanel.tsx` + `AutoGenerateProgress.tsx` + `AutoGenerateResult.tsx` |
 | P0-1d | `backend/internal/connect/user/deposit_handler.go` | 406 | ✅ 已拆为 `deposit_handler.go` (240) + `sweep_handler.go` (186) |
 
-**Gate**：`go run ./tools/check-file-lines --strict` 零 ERROR
+**Gate**：`go run ./tools/check-file-lines --strict` 零 ERROR ✅ Phase 1-4 文件拆分全部完成
 
-### P0-2 · 死代码删除
+### P0-2 · 忘记密码前端（阻塞上线）✅
+
+| # | 内容 | 详见 |
+|----|------|------|
+| P0-2a ✅ | `frontend/src/pages/auth/ForgotPassword.tsx` | 邮箱/MT验证/管理员三选一 Tab |
+| P0-2b ✅ | `frontend/src/pages/auth/ResetPassword.tsx` | 输入新密码 → 调 ResetPassword RPC |
+| P0-2c ✅ | MT 凭据验证（VerifyMTIdentity RPC + handler + rate limit） | `docs/blocks/account-mgmt/plans/mt-password-reset.md` |
+
+### P0-3 · 死代码删除
 
 | # | 内容 | 方式 |
 |----|------|------|
@@ -160,3 +168,18 @@
 - 禁止 JSON 序列化（外部 API 除外）
 - 价格/金额禁止 float64
 - 文件大小：Go ≤300 行（软性）/ ≤450 行（硬性红线），TS ≤250/375
+
+---
+
+## 施工进度
+
+| Phase | 状态 | 备注 |
+|-------|------|------|
+| 施工前清理（下线 copytrade） | ✅ | migration 212 已执行 |
+| Phase 1 · 信任基础设施 | ✅ | 实盘/质量门槛/验证/风险声明 + walkforward 升级 |
+| Phase 2 · AI 策略供给 | ✅ | 批量生成 + 参数模板 + 提供者面板 |
+| Phase 3 · 增长引擎 | ✅ | 排行榜/试用/对比/通知/分享 |
+| Phase 4 · 平台运营 | ✅ | Admin 管理/退款/收入/优惠券 |
+| Phase 5 · AI 迭代 + 增值 | ✅ | 衰减检测/策略优化/捆绑包/阶梯费率 已实现并跑通 |
+| SEO S1-S4 | ✅ | Seo.tsx + 关键词落地页 + JSON-LD + sitemap |
+| 用户系统加固 | ✅ | 5/5 完成（密码强度✅ Token撤销✅ 密码找回✅ MT验证✅ 前端页面✅） |

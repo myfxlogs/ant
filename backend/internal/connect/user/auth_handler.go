@@ -8,6 +8,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -30,6 +31,8 @@ type AuthServer struct {
 	jwtSecret         string
 	log               *zap.Logger
 	insecure          bool
+	pg                *pgxpool.Pool      // for MT identity verification queries
+	mtTester          MTConnectionTester // for MT credential verification
 }
 
 var _ antv1c.AuthServiceHandler = (*AuthServer)(nil)
@@ -62,6 +65,14 @@ func (s *AuthServer) WithPasswordReset(repo *repository.PasswordResetRepo, email
 	s.passwordResetRepo = repo
 	s.emailNotifier = email
 	s.appURL = appURL
+	return s
+}
+
+// WithMTIdentityVerification wires the pg pool and MT connection tester for
+// MT-based password reset identity verification.
+func (s *AuthServer) WithMTIdentityVerification(pg *pgxpool.Pool, tester MTConnectionTester) *AuthServer {
+	s.pg = pg
+	s.mtTester = tester
 	return s
 }
 

@@ -17,7 +17,7 @@ export interface PurchasedItem extends SubscriptionItem {
 
 export type PriceFilter = 'all' | 'free' | 'paid';
 export type SortBy = 'score' | 'newest' | 'popular' | 'rating' | 'price_asc' | 'price_desc';
-export type TabKey = 'market' | 'leaderboard' | 'purchases' | 'author';
+export type TabKey = 'market' | 'leaderboard' | 'purchases' | 'author' | 'bundles' | 'optimization' | 'fees';
 
 export function useMarketplace(): MarketplaceCtx {
   const { t } = useTranslation();

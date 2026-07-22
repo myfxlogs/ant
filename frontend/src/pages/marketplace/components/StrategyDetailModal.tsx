@@ -7,6 +7,9 @@ import { marketplaceClient } from '@/client/connect';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 import LivePerformanceTab from './LivePerformanceTab';
 import ShareButtons from './ShareButtons';
+import { strategyVersionApi } from '@/client/strategy';
+import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
+import { VersionHistoryTab, versionHistoryTabLabel } from './VersionHistoryTab';
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -45,11 +48,18 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [perfTab, setPerfTab] = useState('backtest');
   const [trialLoading, setTrialLoading] = useState(false);
+  const [versions, setVersions] = useState<StrategyVersionInfo[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
 
   // Load discussion data when a new strategy is opened
   useEffect(() => {
     if (strategy && open) {
       d.load(strategy.strategyId);
+      setVersionsLoading(true);
+      strategyVersionApi.list(strategy.strategyId, 20, 0)
+        .then(r => setVersions(r.versions || []))
+        .catch(() => setVersions([]))
+        .finally(() => setVersionsLoading(false));
     }
   }, [strategy?.strategyId, open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -287,6 +297,9 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         )},
         { key: 'live', label: t('marketplace.detail.liveTab', { defaultValue: 'Live Performance' }), children: (
           <LivePerformanceTab strategyId={strategy.strategyId} isOwner={isOwner} />
+        )},
+        { key: 'versions', label: versionHistoryTabLabel(t), children: (
+          <VersionHistoryTab versions={versions} versionsLoading={versionsLoading} isPurchased={isPurchased} />
         )},
       ]} />
 
