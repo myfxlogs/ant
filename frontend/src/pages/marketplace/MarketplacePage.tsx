@@ -1,8 +1,9 @@
-import { memo } from 'react';
-import { Tabs, Typography, Drawer, Button, Badge } from 'antd';
-import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined, GiftOutlined, ThunderboltOutlined, PercentageOutlined } from '@ant-design/icons';
+import { memo, useState, useEffect } from 'react';
+import { Tabs, Typography, Drawer, Button, Badge, Select } from 'antd';
+import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined, GiftOutlined, ThunderboltOutlined, PercentageOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import Seo from '@/components/common/Seo';
+import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import { useMarketplace } from './hooks/useMarketplace';
 import { MarketplaceProvider } from './MarketplaceContext';
 import MarketTab from './components/MarketTab';
@@ -33,6 +34,20 @@ function MarketplaceUI() {
   const { t } = useTranslation();
   const m = useMarketplace();
   const compare = useCompareSelection();
+  const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(navigator.language));
+
+  useEffect(() => { setLanguage(normalizeLanguage(navigator.language)); }, []);
+
+  const langSelector = (
+    <Select
+      size="small"
+      value={lang}
+      onChange={(l: SupportedLanguage) => { setLang(l); setLanguage(l); }}
+      suffixIcon={<GlobalOutlined />}
+      style={{ minWidth: 120 }}
+      options={SUPPORTED_LANGUAGES.map(l => ({ value: l, label: l.toUpperCase() }))}
+    />
+  );
 
   return (
     <MarketplaceProvider value={{ ...m, compareIds: compare.compareIds, toggleCompare: compare.toggleCompare }}>
@@ -43,22 +58,25 @@ function MarketplaceUI() {
       ]} />
       <div style={{ padding: '24px 24px 80px', background: 'var(--color-bg-secondary)', minHeight: '100vh' }}>
         <div className="max-w-7xl mx-auto">
-          <div style={{ marginBottom: 20 }}>
-            <Title level={3} style={{ margin: 0 }}>
-              <ShopOutlined style={{ marginRight: 8 }} />{t('marketplace.title')}
-            </Title>
-            <Text type="secondary">{t('marketplace.subtitle')}</Text>
+          <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <Title level={3} style={{ margin: 0 }}>
+                <ShopOutlined style={{ marginRight: 8 }} />{t('marketplace.title')}
+              </Title>
+              <Text type="secondary">{t('marketplace.subtitle')}</Text>
+            </div>
+            {!m.isAuthenticated && <div>{langSelector}</div>}
           </div>
           <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as any)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
             { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard')}</span>, children: <LeaderboardTabMemo /> },
-            { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles')}</span>, children: <BundleTabMemo /> },
-            { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees')}</span>, children: <FeeTierPanelMemo /> },
             ...(m.isAuthenticated ? [
               { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai')}</span>, children: <AutoGenerateMemo /> },
               { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases')}</span>, children: <PurchaseTabMemo /> },
               { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author')}</span>, children: <AuthorTabMemo /> },
+              { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles')}</span>, children: <BundleTabMemo /> },
               { key: 'optimization', label: <span><ThunderboltOutlined /> {t('marketplace.tabs.optimization')}</span>, children: <OptimizationTabMemo /> },
+              { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees')}</span>, children: <FeeTierPanelMemo /> },
             ] : []),
           ]} />
           <StrategyDetailModal
