@@ -55,7 +55,9 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			strings.HasSuffix(procLower, "/listpublished") ||
 			strings.HasSuffix(procLower, "/listratings") ||
 			strings.HasSuffix(procLower, "/listcomments") ||
-			strings.HasSuffix(procLower, "/getstrategypublicinfo") {
+			strings.HasSuffix(procLower, "/getstrategypublicinfo") ||
+			strings.HasSuffix(procLower, "/listleaderboard") ||
+			strings.HasSuffix(procLower, "/listbundles") {
 			return next(ctx, req)
 		}
 
