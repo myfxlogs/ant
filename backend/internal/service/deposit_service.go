@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/btcsuite/btcd/btcutil/hdkeychain"
@@ -30,6 +31,7 @@ type DepositService struct {
 	walletRepo *repository.WalletRepository
 	pg         *pgxpool.Pool
 	log        *zap.Logger
+	xpubMu     sync.RWMutex
 	xpub       string
 	xpubKey    *hdkeychain.ExtendedKey // pre-parsed for hot-path derivation
 
@@ -73,13 +75,35 @@ func NewDepositService(
 // Xpub returns the account-level xpub string. Used by ImportDepositAddresses
 // for one-time cross-check of hdgen output against online derivation (ADR-0026 §7 step 5).
 func (s *DepositService) Xpub() string {
+	s.xpubMu.RLock()
+	defer s.xpubMu.RUnlock()
 	return s.xpub
 }
 
 // XpubKey returns the pre-parsed account-level extended public key.
 // Returns nil if xpub was not set or failed to parse at init.
 func (s *DepositService) XpubKey() *hdkeychain.ExtendedKey {
+	s.xpubMu.RLock()
+	defer s.xpubMu.RUnlock()
 	return s.xpubKey
+}
+
+// UpdateXpub hot-reloads the xpub at runtime (called by ImportXpub admin RPC).
+// Validates the new xpub, then atomically swaps both xpub string and parsed key.
+func (s *DepositService) UpdateXpub(xpub string) error {
+	if err := hdwallet.ValidateXpub(xpub); err != nil {
+		return fmt.Errorf("deposit service: validate xpub: %w", err)
+	}
+	ext, err := hdwallet.ParseXpub(xpub)
+	if err != nil {
+		return fmt.Errorf("deposit service: parse xpub: %w", err)
+	}
+	s.xpubMu.Lock()
+	s.xpub = xpub
+	s.xpubKey = ext
+	s.xpubMu.Unlock()
+	s.log.Info("deposit xpub hot-reloaded")
+	return nil
 }
 
 // SetCompromisedChecker wires the xpub auditor to block address derivation on mismatch.
@@ -110,10 +134,10 @@ func (s *DepositService) GetOrDeriveAddress(ctx context.Context, userID uuid.UUI
 		return "", "", fmt.Errorf("deposit service: next index: %w", err)
 	}
 
-	if s.xpubKey != nil {
-		addr, err = hdwallet.DeriveAddressFromExtKey(s.xpubKey, uint32(idx))
+	if xpubKey := s.XpubKey(); xpubKey != nil {
+		addr, err = hdwallet.DeriveAddressFromExtKey(xpubKey, uint32(idx))
 	} else {
-		addr, err = hdwallet.DeriveAddressFromXpub(s.xpub, uint32(idx))
+		addr, err = hdwallet.DeriveAddressFromXpub(s.Xpub(), uint32(idx))
 	}
 	if err != nil {
 		return "", "", fmt.Errorf("deposit service: derive address at index %d: %w", idx, err)

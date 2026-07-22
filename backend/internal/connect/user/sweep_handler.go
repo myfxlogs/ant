@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/hdwallet"
 )
 
 // ── Sweep (归集) RPC handlers ────────────────────────────────────────────
@@ -73,6 +74,41 @@ func (s *DepositServer) ExportUnsignedSweepBundle(ctx context.Context, req *conn
 	}
 
 	return connect.NewResponse(&antv1.ExportUnsignedSweepBundleResponse{UnsignedBundle: data}), nil
+}
+
+func (s *DepositServer) ExportBatchUnsignedSweepBundle(ctx context.Context, req *connect.Request[antv1.ExportBatchUnsignedSweepBundleRequest]) (*connect.Response[antv1.ExportBatchUnsignedSweepBundleResponse], error) {
+	if _, err := s.requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+	if s.sweepWorker == nil {
+		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("sweep worker not initialized"))
+	}
+
+	if len(req.Msg.DepositAddressIds) == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("deposit_address_ids is required"))
+	}
+
+	addrIDs := make([]uuid.UUID, 0, len(req.Msg.DepositAddressIds))
+	for _, idStr := range req.Msg.DepositAddressIds {
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid deposit_address_id %q: %w", idStr, err))
+		}
+		addrIDs = append(addrIDs, id)
+	}
+
+	bundle, err := s.sweepWorker.ExportBatchUnsignedBundle(ctx, addrIDs)
+	if err != nil {
+		s.log.Error("ExportBatchUnsignedSweepBundle", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	data, err := proto.Marshal(bundle)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal bundle: %w", err))
+	}
+
+	return connect.NewResponse(&antv1.ExportBatchUnsignedSweepBundleResponse{UnsignedBundle: data}), nil
 }
 
 func (s *DepositServer) ImportSignedSweepBundle(ctx context.Context, req *connect.Request[antv1.ImportSignedSweepBundleRequest]) (*connect.Response[antv1.ImportSignedSweepBundleResponse], error) {
@@ -182,5 +218,54 @@ func (s *DepositServer) BuildUndelegateOnlyBundle(ctx context.Context, req *conn
 
 	return connect.NewResponse(&antv1.BuildUndelegateOnlyBundleResponse{
 		UnsignedBundle: data,
+	}), nil
+}
+
+func (s *DepositServer) ImportXpub(ctx context.Context, req *connect.Request[antv1.ImportXpubRequest]) (*connect.Response[antv1.ImportXpubResponse], error) {
+	if _, err := s.requireAdmin(ctx); err != nil {
+		return nil, err
+	}
+
+	export := &antv1.XpubExport{}
+	if err := proto.Unmarshal(req.Msg.XpubExport, export); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("parse xpub export: %w", err))
+	}
+
+	if err := hdwallet.ValidateXpub(export.Xpub); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid xpub: %w", err))
+	}
+
+	fp, err := hdwallet.XpubFingerprint(export.Xpub)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("compute fingerprint: %w", err))
+	}
+
+	fingerprintVerified := false
+	if s.xpubFingerprint != "" {
+		if fp != s.xpubFingerprint {
+			return nil, connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("xpub fingerprint mismatch — potential key substitution (expected %s, got %s)", s.xpubFingerprint, fp))
+		}
+		fingerprintVerified = true
+	}
+
+	if err := s.adminRepo.SetConfig(ctx, "deposit_xpub", export.Xpub, "HD wallet account-level xpub (imported via admin UI)"); err != nil {
+		s.log.Error("ImportXpub: store config", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("store xpub in config: %w", err))
+	}
+
+	if err := s.svc.UpdateXpub(export.Xpub); err != nil {
+		s.log.Error("ImportXpub: hot-reload", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("hot-reload xpub: %w", err))
+	}
+
+	s.log.Info("ImportXpub: xpub imported and hot-reloaded",
+		zap.String("fingerprint", fp),
+		zap.Bool("fingerprint_verified", fingerprintVerified))
+
+	return connect.NewResponse(&antv1.ImportXpubResponse{
+		Xpub:                export.Xpub,
+		Fingerprint:         fp,
+		FingerprintVerified: fingerprintVerified,
 	}), nil
 }

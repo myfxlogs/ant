@@ -62,7 +62,7 @@ func startBackgroundServices(
 	if cfg.DepositXpub == "" {
 		return
 	}
-	auditor, err := audit.NewXpubAuditor(addrRepo, adminRepo, cfg.DepositXpub, log)
+	auditor, err := audit.NewXpubAuditor(addrRepo, adminRepo, depositSvc, log)
 	if err != nil {
 		log.Fatal("failed to create xpub auditor", zap.Error(err))
 	}

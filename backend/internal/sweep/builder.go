@@ -24,6 +24,9 @@ type SweepConfig struct {
 	EnergyBufferPercent  string // e.g. "10"
 	EnergyTRXRate        string // TRX (SUN) per energy unit, e.g. "1" = 1 SUN per energy
 	FeeLimit             int64  // TRC20 transfer fee limit in SUN
+	BaseEnergyFirst      int64  // energy for first sweep (has_received_usdt=false)
+	BaseEnergySubsequent int64  // energy for subsequent sweeps
+	RawTxExpiryHours     int    // raw tx expiry window in hours
 }
 
 // Validate checks that required config values are set.
@@ -43,14 +46,15 @@ func (c SweepConfig) Validate() error {
 // Builder constructs unsigned sweep bundles for cold signing.
 // It uses the Tron gRPC client to build raw transactions without signing (R1: watch-only).
 type Builder struct {
-	tron      *TronClient
-	addrRepo  *repository.DepositAddressRepository
-	adminRepo *repository.AdminRepository
-	log       *zap.Logger
+	tron           *TronClient
+	addrRepo       *repository.DepositAddressRepository
+	adminRepo      *repository.AdminRepository
+	log            *zap.Logger
+	xpubFingerprint string // ADR-0026 R5: set on every bundle for coldsign verification
 }
 
-func NewBuilder(tron *TronClient, addrRepo *repository.DepositAddressRepository, adminRepo *repository.AdminRepository, log *zap.Logger) *Builder {
-	return &Builder{tron: tron, addrRepo: addrRepo, adminRepo: adminRepo, log: log}
+func NewBuilder(tron *TronClient, addrRepo *repository.DepositAddressRepository, adminRepo *repository.AdminRepository, xpubFingerprint string, log *zap.Logger) *Builder {
+	return &Builder{tron: tron, addrRepo: addrRepo, adminRepo: adminRepo, xpubFingerprint: xpubFingerprint, log: log}
 }
 
 // loadConfig reads sweep-related config from system_config.
@@ -76,6 +80,31 @@ func (b *Builder) loadConfig(ctx context.Context) (SweepConfig, error) {
 		energyTRXRate = "1" // 1 SUN per energy unit (conservative default)
 	}
 
+	feeLimit := int64(1_000_000_000) // 1000 TRX in SUN — generous for USDT transfers
+	if v := get("sweep_fee_limit"); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
+			feeLimit = n
+		}
+	}
+	baseEnergyFirst := int64(130_000)
+	if v := get("sweep_base_energy_first"); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
+			baseEnergyFirst = n
+		}
+	}
+	baseEnergySubsequent := int64(65_000)
+	if v := get("sweep_base_energy_subsequent"); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
+			baseEnergySubsequent = n
+		}
+	}
+	rawTxExpiryHours := 23
+	if v := get("sweep_raw_tx_expiry_hours"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			rawTxExpiryHours = n
+		}
+	}
+
 	return SweepConfig{
 		ColdWalletAddress:    get("cold_wallet_address"),
 		EnergyAccountAddress: get("energy_account_address"),
@@ -83,17 +112,20 @@ func (b *Builder) loadConfig(ctx context.Context) (SweepConfig, error) {
 		DEMFactor:            demFactor,
 		EnergyBufferPercent:  energyBuffer,
 		EnergyTRXRate:        energyTRXRate,
-		FeeLimit:             1_000_000_000, // 1000 TRX in SUN — generous for USDT transfers
+		FeeLimit:             feeLimit,
+		BaseEnergyFirst:      baseEnergyFirst,
+		BaseEnergySubsequent: baseEnergySubsequent,
+		RawTxExpiryHours:     rawTxExpiryHours,
 	}, nil
 }
 
 // calculateEnergy computes the energy amount for delegate/undelegate legs.
 // First sweep (has_received_usdt=false): 130k × dem_factor + buffer%.
 // Subsequent sweeps (has_received_usdt=true): 65k × dem_factor + buffer%.
-func calculateEnergy(hasReceivedUSDT bool, demFactor, bufferPercent string) (int64, error) {
-	baseEnergy := decimal.NewFromInt(65_000)
+func calculateEnergy(hasReceivedUSDT bool, demFactor, bufferPercent string, baseFirst, baseSubsequent int64) (int64, error) {
+	baseEnergy := decimal.NewFromInt(baseSubsequent)
 	if !hasReceivedUSDT {
-		baseEnergy = decimal.NewFromInt(130_000)
+		baseEnergy = decimal.NewFromInt(baseFirst)
 	}
 
 	dem, err := decimal.NewFromString(demFactor)
@@ -136,7 +168,7 @@ func (b *Builder) BuildUnsignedBundle(ctx context.Context, addr *model.DepositAd
 		return nil, err
 	}
 
-	energyAmount, err := calculateEnergy(addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent)
+	energyAmount, err := calculateEnergy(addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent, cfg.BaseEnergyFirst, cfg.BaseEnergySubsequent)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +187,7 @@ func (b *Builder) BuildUnsignedBundle(ctx context.Context, addr *model.DepositAd
 	usdtDecimals := decimal.NewFromInt(1_000_000)
 	amountSmallest := amountDec.Mul(usdtDecimals).BigInt()
 
-	expiryMs := time.Now().Add(23 * time.Hour).UnixMilli()
+	expiryMs := time.Now().Add(time.Duration(cfg.RawTxExpiryHours) * time.Hour).UnixMilli()
 	batchID := uuid.New().String()
 
 	// Leg 0: DelegateResource (energy_account → deposit_address)
@@ -193,7 +225,7 @@ func (b *Builder) BuildUnsignedBundle(ctx context.Context, addr *model.DepositAd
 	bundle := &antv1.UnsignedSweepBundle{
 		BundleId:        batchID,
 		BuiltAtMs:       time.Now().UnixMilli(),
-		XpubFingerprint: "", // Set by caller if available
+		XpubFingerprint: b.xpubFingerprint, // ADR-0026 R5: coldsign verifies this matches its own derivation
 		Txs: []*antv1.UnsignedTx{
 			{
 				Kind:            antv1.TxKind_TX_KIND_DELEGATE,
@@ -274,13 +306,13 @@ func (b *Builder) BuildUndelegateOnlyBundle(ctx context.Context, entries []Batch
 		return nil, fmt.Errorf("sweep builder: undelegate-only: %w", err)
 	}
 
-	expiryMs := time.Now().Add(23 * time.Hour).UnixMilli()
+	expiryMs := time.Now().Add(time.Duration(cfg.RawTxExpiryHours) * time.Hour).UnixMilli()
 	batchID := uuid.New().String()
 
 	var txs []*antv1.UnsignedTx
 	for _, e := range entries {
 		// Use the same energy calculation to know how much TRX to undelegate.
-		energyAmount, err := calculateEnergy(e.Addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent)
+		energyAmount, err := calculateEnergy(e.Addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent, cfg.BaseEnergyFirst, cfg.BaseEnergySubsequent)
 		if err != nil {
 			return nil, fmt.Errorf("sweep builder: undelegate-only: calculate energy: %w", err)
 		}
@@ -319,7 +351,7 @@ func (b *Builder) BuildUndelegateOnlyBundle(ctx context.Context, entries []Batch
 	bundle := &antv1.UnsignedSweepBundle{
 		BundleId:        batchID,
 		BuiltAtMs:       time.Now().UnixMilli(),
-		XpubFingerprint: "",
+		XpubFingerprint: b.xpubFingerprint,
 		Txs:             txs,
 	}
 

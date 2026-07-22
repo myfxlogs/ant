@@ -68,10 +68,12 @@ func registerDepositHandler(
 	depositSvc *service.DepositService,
 	platformSvc *service.PlatformService,
 	sweepWorker *sweep.Worker,
+	adminRepo *repository.AdminRepository,
+	xpubFingerprint string,
 	log *zap.Logger,
 	otelInterceptor, authInterceptor connectrpc.Interceptor,
 ) {
-	depositServer := user.NewDepositServer(depositSvc, platformSvc, sweepWorker, log)
+	depositServer := user.NewDepositServer(depositSvc, platformSvc, sweepWorker, adminRepo, xpubFingerprint, log)
 	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
 }
 

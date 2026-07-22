@@ -19,35 +19,44 @@ import (
 	"alphaforge/internal/repository"
 )
 
+// XpubProvider returns the current account-level xpub key.
+// Implemented by *service.DepositService — allows auditor to see hot-reloaded xpub.
+type XpubProvider interface {
+	XpubKey() *hdkeychain.ExtendedKey
+}
+
 // XpubAuditor periodically verifies that all DB deposit addresses match
 // the xpub-derived addresses. Runs every 24h (ADR-0026 §12.1).
 type XpubAuditor struct {
-	addrRepo *repository.DepositAddressRepository
-	adminRepo *repository.AdminRepository
-	log       *zap.Logger
+	addrRepo    *repository.DepositAddressRepository
+	adminRepo   *repository.AdminRepository
+	xpubProvider XpubProvider
+	log         *zap.Logger
 
-	xpubKey *hdkeychain.ExtendedKey // parsed once, reused for all derivations
 	// compromised is set to true if audit detects a mismatch.
 	// When true, address assignment must be blocked.
 	compromised atomic.Bool
 }
 
-// NewXpubAuditor creates the auditor. xpubStr is the account-level xpub.
+// NewXpubAuditor creates the auditor. xpubProvider must return the current xpub key
+// (dynamically — reflects hot-reloads via DepositService.UpdateXpub).
 func NewXpubAuditor(
 	addrRepo *repository.DepositAddressRepository,
 	adminRepo *repository.AdminRepository,
-	xpubStr string,
+	xpubProvider XpubProvider,
 	log *zap.Logger,
 ) (*XpubAuditor, error) {
-	ext, err := hdwallet.ParseXpub(xpubStr)
-	if err != nil {
-		return nil, fmt.Errorf("xpub audit: parse xpub: %w", err)
+	if xpubProvider == nil {
+		return nil, fmt.Errorf("xpub audit: xpubProvider is nil")
+	}
+	if xpubProvider.XpubKey() == nil {
+		return nil, fmt.Errorf("xpub audit: xpub not configured")
 	}
 	return &XpubAuditor{
-		addrRepo:  addrRepo,
-		adminRepo: adminRepo,
-		xpubKey:   ext,
-		log:       log,
+		addrRepo:     addrRepo,
+		adminRepo:    adminRepo,
+		xpubProvider: xpubProvider,
+		log:          log,
 	}, nil
 }
 
@@ -79,6 +88,11 @@ func (a *XpubAuditor) Run(ctx context.Context) error {
 // auditOnce performs a single audit pass: re-derives all DB addresses from xpub
 // and compares. Sets compromised flag on mismatch.
 func (a *XpubAuditor) auditOnce(ctx context.Context) error {
+	xpubKey := a.xpubProvider.XpubKey()
+	if xpubKey == nil {
+		return fmt.Errorf("xpub audit: xpub not configured (provider returned nil)")
+	}
+
 	addrs, err := a.addrRepo.ListAllAddressesWithIndex(ctx)
 	if err != nil {
 		return fmt.Errorf("xpub audit: list addresses: %w", err)
@@ -86,7 +100,7 @@ func (a *XpubAuditor) auditOnce(ctx context.Context) error {
 
 	var mismatches int
 	for _, dbAddr := range addrs {
-		derived, err := hdwallet.DeriveAddressFromExtKey(a.xpubKey, dbAddr.DerivationIndex)
+		derived, err := hdwallet.DeriveAddressFromExtKey(xpubKey, dbAddr.DerivationIndex)
 		if err != nil {
 			return fmt.Errorf("xpub audit: derive index %d: %w", dbAddr.DerivationIndex, err)
 		}

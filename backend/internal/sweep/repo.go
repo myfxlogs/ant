@@ -44,30 +44,31 @@ func (r *BundleRepository) SaveUnsignedBundle(ctx context.Context, batchID, addr
 	return nil
 }
 
-// ListPendingSignAddrIDs returns the set of deposit_address_ids that have
-// a PENDING_SIGN bundle. Used by buildPendingBundles to skip addresses
-// already awaiting cold signing (D4: prevent duplicate bundle creation).
-// JOINs sweep_logs because batch bundles may have NULL deposit_address_id
-// in sweep_bundles — the legs always carry the correct addr ID.
-func (r *BundleRepository) ListPendingSignAddrIDs(ctx context.Context) (map[uuid.UUID]bool, error) {
+// HasPendingSignBundle checks if any address in the list has a PENDING_SIGN bundle.
+// D4: prevents duplicate bundle creation for addresses already awaiting cold signing.
+func (r *BundleRepository) HasPendingSignBundle(ctx context.Context, addrIDs []uuid.UUID) ([]uuid.UUID, error) {
+	if len(addrIDs) == 0 {
+		return nil, nil
+	}
 	rows, err := r.db.Query(ctx, `
 		SELECT DISTINCT sl.deposit_address_id
 		FROM sweep_bundles sb
 		JOIN sweep_logs sl ON sl.batch_id = sb.batch_id
 		WHERE sb.status = 'PENDING_SIGN'
-	`)
+		AND sl.deposit_address_id = ANY($1)
+	`, addrIDs)
 	if err != nil {
-		return nil, fmt.Errorf("sweep bundle repo: list pending sign addr ids: %w", err)
+		return nil, fmt.Errorf("sweep bundle repo: has pending sign: %w", err)
 	}
 	defer rows.Close()
 
-	out := make(map[uuid.UUID]bool)
+	var out []uuid.UUID
 	for rows.Next() {
 		var id uuid.UUID
 		if err := rows.Scan(&id); err != nil {
-			return nil, fmt.Errorf("sweep bundle repo: scan addr id: %w", err)
+			return nil, fmt.Errorf("sweep bundle repo: scan pending addr id: %w", err)
 		}
-		out[id] = true
+		out = append(out, id)
 	}
 	return out, rows.Err()
 }

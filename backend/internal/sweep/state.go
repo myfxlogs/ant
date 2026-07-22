@@ -3,6 +3,7 @@ package sweep
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -99,7 +100,13 @@ func (s *StateMachine) ReconfirmSweeping(ctx context.Context) error {
 // - SWEEPING without tx_hash → FAILED (stuck before broadcast)
 // - PENDING → FAILED (stuck before broadcast)
 func (s *StateMachine) MarkStuckSweeping(ctx context.Context) error {
-	count, err := s.sweepRepo.MarkStuckSweepingAsFailed(ctx, 5*time.Minute)
+	stuckTimeout := 5 * time.Minute
+	if cfg, err := s.adminRepo.GetConfig(ctx, "sweep_stuck_timeout_seconds"); err == nil && cfg != nil && cfg.Value != "" {
+		if n, err := strconv.Atoi(cfg.Value); err == nil && n > 0 {
+			stuckTimeout = time.Duration(n) * time.Second
+		}
+	}
+	count, err := s.sweepRepo.MarkStuckSweepingAsFailed(ctx, stuckTimeout)
 	if err != nil {
 		return fmt.Errorf("sweep state: mark stuck: %w", err)
 	}
@@ -165,20 +172,7 @@ func (s *StateMachine) CheckDoubleSpend(ctx context.Context, addrID uuid.UUID, f
 	return false, nil
 }
 
-// markLegDone transitions a leg to DONE and, for transfer legs, marks has_received_usdt
-// on the deposit address (ADR §2.7 step 7). Shared logic for ReconfirmSweeping.
+// markLegDone delegates to the shared package-level function.
 func (s *StateMachine) markLegDone(ctx context.Context, leg *model.SweepLog) {
-	if err := s.sweepRepo.UpdateToDone(ctx, leg.ID); err != nil {
-		s.log.Error("sweep state: update to done",
-			zap.String("leg_type", leg.LegType),
-			zap.Error(err))
-		return
-	}
-	if leg.LegType == "transfer" {
-		if err := s.addrRepo.MarkReceivedUSDT(ctx, leg.DepositAddressID); err != nil {
-			s.log.Error("sweep state: mark received usdt",
-				zap.String("addr_id", leg.DepositAddressID.String()),
-				zap.Error(err))
-		}
-	}
+	markLegDone(ctx, s.sweepRepo, s.addrRepo, s.log, leg)
 }

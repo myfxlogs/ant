@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"alphaforge/internal/model"
 )
@@ -43,4 +44,22 @@ type AdminRepoIface interface {
 // TronGridIface is the subset of TronGridClient methods used by sweep.
 type TronGridIface interface {
 	HasOutgoingTRC20Transfer(ctx context.Context, from, to, contract string) (bool, error)
+}
+
+// markLegDone transitions a leg to DONE and, for transfer legs, marks has_received_usdt
+// on the deposit address (ADR §2.7 step 7). Shared by Broadcaster and StateMachine.
+func markLegDone(ctx context.Context, sweepRepo SweepLogRepoIface, addrRepo AddrRepoIface, log *zap.Logger, leg *model.SweepLog) {
+	if err := sweepRepo.UpdateToDone(ctx, leg.ID); err != nil {
+		log.Error("sweep: update to done",
+			zap.String("leg_type", leg.LegType),
+			zap.Error(err))
+		return
+	}
+	if leg.LegType == "transfer" {
+		if err := addrRepo.MarkReceivedUSDT(ctx, leg.DepositAddressID); err != nil {
+			log.Error("sweep: mark received usdt",
+				zap.String("addr_id", leg.DepositAddressID.String()),
+				zap.Error(err))
+		}
+	}
 }

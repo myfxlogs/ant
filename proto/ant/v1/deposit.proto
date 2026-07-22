@@ -23,12 +23,16 @@ service DepositService {
   rpc ListPendingSignBundles(ListPendingSignBundlesRequest) returns (ListPendingSignBundlesResponse);
   // Admin: export an unsigned sweep bundle for a specific address (manual sweep).
   rpc ExportUnsignedSweepBundle(ExportUnsignedSweepBundleRequest) returns (ExportUnsignedSweepBundleResponse);
+  // Admin: export a batch unsigned sweep bundle for multiple addresses (manual batch sweep).
+  rpc ExportBatchUnsignedSweepBundle(ExportBatchUnsignedSweepBundleRequest) returns (ExportBatchUnsignedSweepBundleResponse);
   // Admin: import a signed sweep bundle from cold signing machine and broadcast.
   rpc ImportSignedSweepBundle(ImportSignedSweepBundleRequest) returns (ImportSignedSweepBundleResponse);
   // Admin: get sweep dashboard — addresses with unswept balances, sorted descending.
   rpc GetSweepDashboard(GetSweepDashboardRequest) returns (GetSweepDashboardResponse);
   // Admin: build undelegate-only bundle for energy recovery from stuck MANUAL_REVIEW addresses.
   rpc BuildUndelegateOnlyBundle(BuildUndelegateOnlyBundleRequest) returns (BuildUndelegateOnlyBundleResponse);
+  // Admin: import xpub from hdgen output (xpub-export.bin). Hot-reloads deposit service.
+  rpc ImportXpub(ImportXpubRequest) returns (ImportXpubResponse);
 }
 
 message Deposit {
@@ -238,6 +242,13 @@ message ExportUnsignedSweepBundleResponse {
   bytes unsigned_bundle = 1;   // serialized UnsignedSweepBundle proto
 }
 
+message ExportBatchUnsignedSweepBundleRequest {
+  repeated string deposit_address_ids = 1;
+}
+message ExportBatchUnsignedSweepBundleResponse {
+  bytes unsigned_bundle = 1;   // serialized UnsignedSweepBundle proto (batch)
+}
+
 message ImportSignedSweepBundleRequest {
   bytes signed_bundle = 1;     // serialized SignedSweepBundle proto
 }
@@ -274,4 +285,14 @@ message BuildUndelegateOnlyBundleRequest {
 
 message BuildUndelegateOnlyBundleResponse {
   bytes unsigned_bundle = 1;     // serialized UnsignedSweepBundle proto (undelegate-only txs)
+}
+
+message ImportXpubRequest {
+  bytes xpub_export = 1;         // serialized XpubExport proto (from hdgen)
+}
+
+message ImportXpubResponse {
+  string xpub = 1;               // the imported xpub string
+  string fingerprint = 2;        // SHA-256 fingerprint of the xpub
+  bool fingerprint_verified = 3; // true if env DEPOSIT_XPUB_FINGERPRINT matched
 }

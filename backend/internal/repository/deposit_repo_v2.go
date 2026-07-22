@@ -116,12 +116,6 @@ func (r *DepositRepository) ListManualReview(ctx context.Context, page, pageSize
 	return out, total, rows.Err()
 }
 
-// UnsweptAddress represents an address with unswept confirmed deposit balance.
-type UnsweptAddress struct {
-	AddrID uuid.UUID
-	Amount string
-}
-
 // SweepDashboardRow is a single row in the sweep dashboard (C4).
 type SweepDashboardRow struct {
 	AddrID          uuid.UUID
@@ -129,52 +123,6 @@ type SweepDashboardRow struct {
 	DerivationIndex int32
 	UnsweptAmount   string
 	SweepStatus     string // highest-priority sweep status for this address
-}
-
-// ListUnsweptAddresses finds addresses with confirmed deposits that haven't been fully swept.
-// In the 3-leg model, only transfer legs carry USDT amounts (ADR §2.3).
-// Excludes addresses with active PENDING/SWEEPING sweep tasks.
-func (r *DepositRepository) ListUnsweptAddresses(ctx context.Context, threshold string, limit int) ([]UnsweptAddress, error) {
-	rows, err := r.db.Query(ctx, `
-		WITH addr_balance AS (
-			SELECT d.deposit_address_id,
-			       SUM(d.amount) AS total_deposits,
-			       COALESCE(SUM(sl.amount) FILTER (WHERE sl.status = 'DONE' AND sl.leg_type = 'transfer'), 0) AS total_swept
-			FROM deposits d
-			LEFT JOIN sweep_logs sl ON sl.deposit_address_id = d.deposit_address_id
-			WHERE d.status = 'CONFIRMED'
-			GROUP BY d.deposit_address_id
-		)
-		SELECT deposit_address_id, (total_deposits - total_swept)::text AS unswept_amount
-		FROM addr_balance
-		WHERE (total_deposits - total_swept) >= $1::numeric
-		AND NOT EXISTS (
-			SELECT 1 FROM sweep_logs sl2
-			WHERE sl2.deposit_address_id = addr_balance.deposit_address_id
-			AND sl2.status IN ('PENDING', 'SWEEPING', 'MANUAL_REVIEW')
-		)
-		AND NOT EXISTS (
-			SELECT 1 FROM sweep_logs sl3
-			WHERE sl3.deposit_address_id = addr_balance.deposit_address_id
-			AND sl3.status = 'FAILED'
-			AND sl3.updated_at > NOW() - INTERVAL '1 hour'
-		)
-		LIMIT $2
-	`, threshold, limit)
-	if err != nil {
-		return nil, fmt.Errorf("deposit repo v2: list unswept: %w", err)
-	}
-	defer rows.Close()
-
-	var out []UnsweptAddress
-	for rows.Next() {
-		var u UnsweptAddress
-		if err := rows.Scan(&u.AddrID, &u.Amount); err != nil {
-			return nil, fmt.Errorf("deposit repo v2: scan unswept: %w", err)
-		}
-		out = append(out, u)
-	}
-	return out, rows.Err()
 }
 
 // GetUnsweptBalance returns the unswept confirmed deposit balance for a single address.

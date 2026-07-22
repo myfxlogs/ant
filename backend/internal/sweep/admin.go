@@ -146,5 +146,14 @@ func (w *Worker) BuildUndelegateOnlyBundle(ctx context.Context, addrIDs []uuid.U
 		return nil, fmt.Errorf("sweep worker: undelegate-only: build: %w", err)
 	}
 
+	batchID, err := uuid.Parse(bundle.BundleId)
+	if err != nil {
+		return nil, fmt.Errorf("sweep worker: undelegate-only: parse batch_id: %w", err)
+	}
+
+	if err := w.saveUndelegateOnlyBundleAndLegs(ctx, batchID, entries, bundle); err != nil {
+		return nil, fmt.Errorf("sweep worker: undelegate-only: save: %w", err)
+	}
+
 	return bundle, nil
 }

@@ -54,6 +54,9 @@ const (
 	// DepositServiceExportUnsignedSweepBundleProcedure is the fully-qualified name of the
 	// DepositService's ExportUnsignedSweepBundle RPC.
 	DepositServiceExportUnsignedSweepBundleProcedure = "/ant.v1.DepositService/ExportUnsignedSweepBundle"
+	// DepositServiceExportBatchUnsignedSweepBundleProcedure is the fully-qualified name of the
+	// DepositService's ExportBatchUnsignedSweepBundle RPC.
+	DepositServiceExportBatchUnsignedSweepBundleProcedure = "/ant.v1.DepositService/ExportBatchUnsignedSweepBundle"
 	// DepositServiceImportSignedSweepBundleProcedure is the fully-qualified name of the
 	// DepositService's ImportSignedSweepBundle RPC.
 	DepositServiceImportSignedSweepBundleProcedure = "/ant.v1.DepositService/ImportSignedSweepBundle"
@@ -63,6 +66,9 @@ const (
 	// DepositServiceBuildUndelegateOnlyBundleProcedure is the fully-qualified name of the
 	// DepositService's BuildUndelegateOnlyBundle RPC.
 	DepositServiceBuildUndelegateOnlyBundleProcedure = "/ant.v1.DepositService/BuildUndelegateOnlyBundle"
+	// DepositServiceImportXpubProcedure is the fully-qualified name of the DepositService's ImportXpub
+	// RPC.
+	DepositServiceImportXpubProcedure = "/ant.v1.DepositService/ImportXpub"
 )
 
 // DepositServiceClient is a client for the ant.v1.DepositService service.
@@ -81,12 +87,16 @@ type DepositServiceClient interface {
 	ListPendingSignBundles(context.Context, *connect.Request[v1.ListPendingSignBundlesRequest]) (*connect.Response[v1.ListPendingSignBundlesResponse], error)
 	// Admin: export an unsigned sweep bundle for a specific address (manual sweep).
 	ExportUnsignedSweepBundle(context.Context, *connect.Request[v1.ExportUnsignedSweepBundleRequest]) (*connect.Response[v1.ExportUnsignedSweepBundleResponse], error)
+	// Admin: export a batch unsigned sweep bundle for multiple addresses (manual batch sweep).
+	ExportBatchUnsignedSweepBundle(context.Context, *connect.Request[v1.ExportBatchUnsignedSweepBundleRequest]) (*connect.Response[v1.ExportBatchUnsignedSweepBundleResponse], error)
 	// Admin: import a signed sweep bundle from cold signing machine and broadcast.
 	ImportSignedSweepBundle(context.Context, *connect.Request[v1.ImportSignedSweepBundleRequest]) (*connect.Response[v1.ImportSignedSweepBundleResponse], error)
 	// Admin: get sweep dashboard — addresses with unswept balances, sorted descending.
 	GetSweepDashboard(context.Context, *connect.Request[v1.GetSweepDashboardRequest]) (*connect.Response[v1.GetSweepDashboardResponse], error)
 	// Admin: build undelegate-only bundle for energy recovery from stuck MANUAL_REVIEW addresses.
 	BuildUndelegateOnlyBundle(context.Context, *connect.Request[v1.BuildUndelegateOnlyBundleRequest]) (*connect.Response[v1.BuildUndelegateOnlyBundleResponse], error)
+	// Admin: import xpub from hdgen output (xpub-export.bin). Hot-reloads deposit service.
+	ImportXpub(context.Context, *connect.Request[v1.ImportXpubRequest]) (*connect.Response[v1.ImportXpubResponse], error)
 }
 
 // NewDepositServiceClient constructs a client for the ant.v1.DepositService service. By default, it
@@ -142,6 +152,12 @@ func NewDepositServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(depositServiceMethods.ByName("ExportUnsignedSweepBundle")),
 			connect.WithClientOptions(opts...),
 		),
+		exportBatchUnsignedSweepBundle: connect.NewClient[v1.ExportBatchUnsignedSweepBundleRequest, v1.ExportBatchUnsignedSweepBundleResponse](
+			httpClient,
+			baseURL+DepositServiceExportBatchUnsignedSweepBundleProcedure,
+			connect.WithSchema(depositServiceMethods.ByName("ExportBatchUnsignedSweepBundle")),
+			connect.WithClientOptions(opts...),
+		),
 		importSignedSweepBundle: connect.NewClient[v1.ImportSignedSweepBundleRequest, v1.ImportSignedSweepBundleResponse](
 			httpClient,
 			baseURL+DepositServiceImportSignedSweepBundleProcedure,
@@ -160,21 +176,29 @@ func NewDepositServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(depositServiceMethods.ByName("BuildUndelegateOnlyBundle")),
 			connect.WithClientOptions(opts...),
 		),
+		importXpub: connect.NewClient[v1.ImportXpubRequest, v1.ImportXpubResponse](
+			httpClient,
+			baseURL+DepositServiceImportXpubProcedure,
+			connect.WithSchema(depositServiceMethods.ByName("ImportXpub")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // depositServiceClient implements DepositServiceClient.
 type depositServiceClient struct {
-	getDepositAddress         *connect.Client[v1.GetDepositAddressRequest, v1.GetDepositAddressResponse]
-	listMyDeposits            *connect.Client[v1.ListMyDepositsRequest, v1.ListMyDepositsResponse]
-	listManualReviewDeposits  *connect.Client[v1.ListManualReviewDepositsRequest, v1.ListManualReviewDepositsResponse]
-	listDepositAddresses      *connect.Client[v1.ListDepositAddressesRequest, v1.ListDepositAddressesResponse]
-	importDepositAddresses    *connect.Client[v1.ImportDepositAddressesRequest, v1.ImportDepositAddressesResponse]
-	listPendingSignBundles    *connect.Client[v1.ListPendingSignBundlesRequest, v1.ListPendingSignBundlesResponse]
-	exportUnsignedSweepBundle *connect.Client[v1.ExportUnsignedSweepBundleRequest, v1.ExportUnsignedSweepBundleResponse]
-	importSignedSweepBundle   *connect.Client[v1.ImportSignedSweepBundleRequest, v1.ImportSignedSweepBundleResponse]
-	getSweepDashboard         *connect.Client[v1.GetSweepDashboardRequest, v1.GetSweepDashboardResponse]
-	buildUndelegateOnlyBundle *connect.Client[v1.BuildUndelegateOnlyBundleRequest, v1.BuildUndelegateOnlyBundleResponse]
+	getDepositAddress              *connect.Client[v1.GetDepositAddressRequest, v1.GetDepositAddressResponse]
+	listMyDeposits                 *connect.Client[v1.ListMyDepositsRequest, v1.ListMyDepositsResponse]
+	listManualReviewDeposits       *connect.Client[v1.ListManualReviewDepositsRequest, v1.ListManualReviewDepositsResponse]
+	listDepositAddresses           *connect.Client[v1.ListDepositAddressesRequest, v1.ListDepositAddressesResponse]
+	importDepositAddresses         *connect.Client[v1.ImportDepositAddressesRequest, v1.ImportDepositAddressesResponse]
+	listPendingSignBundles         *connect.Client[v1.ListPendingSignBundlesRequest, v1.ListPendingSignBundlesResponse]
+	exportUnsignedSweepBundle      *connect.Client[v1.ExportUnsignedSweepBundleRequest, v1.ExportUnsignedSweepBundleResponse]
+	exportBatchUnsignedSweepBundle *connect.Client[v1.ExportBatchUnsignedSweepBundleRequest, v1.ExportBatchUnsignedSweepBundleResponse]
+	importSignedSweepBundle        *connect.Client[v1.ImportSignedSweepBundleRequest, v1.ImportSignedSweepBundleResponse]
+	getSweepDashboard              *connect.Client[v1.GetSweepDashboardRequest, v1.GetSweepDashboardResponse]
+	buildUndelegateOnlyBundle      *connect.Client[v1.BuildUndelegateOnlyBundleRequest, v1.BuildUndelegateOnlyBundleResponse]
+	importXpub                     *connect.Client[v1.ImportXpubRequest, v1.ImportXpubResponse]
 }
 
 // GetDepositAddress calls ant.v1.DepositService.GetDepositAddress.
@@ -212,6 +236,11 @@ func (c *depositServiceClient) ExportUnsignedSweepBundle(ctx context.Context, re
 	return c.exportUnsignedSweepBundle.CallUnary(ctx, req)
 }
 
+// ExportBatchUnsignedSweepBundle calls ant.v1.DepositService.ExportBatchUnsignedSweepBundle.
+func (c *depositServiceClient) ExportBatchUnsignedSweepBundle(ctx context.Context, req *connect.Request[v1.ExportBatchUnsignedSweepBundleRequest]) (*connect.Response[v1.ExportBatchUnsignedSweepBundleResponse], error) {
+	return c.exportBatchUnsignedSweepBundle.CallUnary(ctx, req)
+}
+
 // ImportSignedSweepBundle calls ant.v1.DepositService.ImportSignedSweepBundle.
 func (c *depositServiceClient) ImportSignedSweepBundle(ctx context.Context, req *connect.Request[v1.ImportSignedSweepBundleRequest]) (*connect.Response[v1.ImportSignedSweepBundleResponse], error) {
 	return c.importSignedSweepBundle.CallUnary(ctx, req)
@@ -225,6 +254,11 @@ func (c *depositServiceClient) GetSweepDashboard(ctx context.Context, req *conne
 // BuildUndelegateOnlyBundle calls ant.v1.DepositService.BuildUndelegateOnlyBundle.
 func (c *depositServiceClient) BuildUndelegateOnlyBundle(ctx context.Context, req *connect.Request[v1.BuildUndelegateOnlyBundleRequest]) (*connect.Response[v1.BuildUndelegateOnlyBundleResponse], error) {
 	return c.buildUndelegateOnlyBundle.CallUnary(ctx, req)
+}
+
+// ImportXpub calls ant.v1.DepositService.ImportXpub.
+func (c *depositServiceClient) ImportXpub(ctx context.Context, req *connect.Request[v1.ImportXpubRequest]) (*connect.Response[v1.ImportXpubResponse], error) {
+	return c.importXpub.CallUnary(ctx, req)
 }
 
 // DepositServiceHandler is an implementation of the ant.v1.DepositService service.
@@ -243,12 +277,16 @@ type DepositServiceHandler interface {
 	ListPendingSignBundles(context.Context, *connect.Request[v1.ListPendingSignBundlesRequest]) (*connect.Response[v1.ListPendingSignBundlesResponse], error)
 	// Admin: export an unsigned sweep bundle for a specific address (manual sweep).
 	ExportUnsignedSweepBundle(context.Context, *connect.Request[v1.ExportUnsignedSweepBundleRequest]) (*connect.Response[v1.ExportUnsignedSweepBundleResponse], error)
+	// Admin: export a batch unsigned sweep bundle for multiple addresses (manual batch sweep).
+	ExportBatchUnsignedSweepBundle(context.Context, *connect.Request[v1.ExportBatchUnsignedSweepBundleRequest]) (*connect.Response[v1.ExportBatchUnsignedSweepBundleResponse], error)
 	// Admin: import a signed sweep bundle from cold signing machine and broadcast.
 	ImportSignedSweepBundle(context.Context, *connect.Request[v1.ImportSignedSweepBundleRequest]) (*connect.Response[v1.ImportSignedSweepBundleResponse], error)
 	// Admin: get sweep dashboard — addresses with unswept balances, sorted descending.
 	GetSweepDashboard(context.Context, *connect.Request[v1.GetSweepDashboardRequest]) (*connect.Response[v1.GetSweepDashboardResponse], error)
 	// Admin: build undelegate-only bundle for energy recovery from stuck MANUAL_REVIEW addresses.
 	BuildUndelegateOnlyBundle(context.Context, *connect.Request[v1.BuildUndelegateOnlyBundleRequest]) (*connect.Response[v1.BuildUndelegateOnlyBundleResponse], error)
+	// Admin: import xpub from hdgen output (xpub-export.bin). Hot-reloads deposit service.
+	ImportXpub(context.Context, *connect.Request[v1.ImportXpubRequest]) (*connect.Response[v1.ImportXpubResponse], error)
 }
 
 // NewDepositServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -300,6 +338,12 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 		connect.WithSchema(depositServiceMethods.ByName("ExportUnsignedSweepBundle")),
 		connect.WithHandlerOptions(opts...),
 	)
+	depositServiceExportBatchUnsignedSweepBundleHandler := connect.NewUnaryHandler(
+		DepositServiceExportBatchUnsignedSweepBundleProcedure,
+		svc.ExportBatchUnsignedSweepBundle,
+		connect.WithSchema(depositServiceMethods.ByName("ExportBatchUnsignedSweepBundle")),
+		connect.WithHandlerOptions(opts...),
+	)
 	depositServiceImportSignedSweepBundleHandler := connect.NewUnaryHandler(
 		DepositServiceImportSignedSweepBundleProcedure,
 		svc.ImportSignedSweepBundle,
@@ -318,6 +362,12 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 		connect.WithSchema(depositServiceMethods.ByName("BuildUndelegateOnlyBundle")),
 		connect.WithHandlerOptions(opts...),
 	)
+	depositServiceImportXpubHandler := connect.NewUnaryHandler(
+		DepositServiceImportXpubProcedure,
+		svc.ImportXpub,
+		connect.WithSchema(depositServiceMethods.ByName("ImportXpub")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.DepositService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DepositServiceGetDepositAddressProcedure:
@@ -334,12 +384,16 @@ func NewDepositServiceHandler(svc DepositServiceHandler, opts ...connect.Handler
 			depositServiceListPendingSignBundlesHandler.ServeHTTP(w, r)
 		case DepositServiceExportUnsignedSweepBundleProcedure:
 			depositServiceExportUnsignedSweepBundleHandler.ServeHTTP(w, r)
+		case DepositServiceExportBatchUnsignedSweepBundleProcedure:
+			depositServiceExportBatchUnsignedSweepBundleHandler.ServeHTTP(w, r)
 		case DepositServiceImportSignedSweepBundleProcedure:
 			depositServiceImportSignedSweepBundleHandler.ServeHTTP(w, r)
 		case DepositServiceGetSweepDashboardProcedure:
 			depositServiceGetSweepDashboardHandler.ServeHTTP(w, r)
 		case DepositServiceBuildUndelegateOnlyBundleProcedure:
 			depositServiceBuildUndelegateOnlyBundleHandler.ServeHTTP(w, r)
+		case DepositServiceImportXpubProcedure:
+			depositServiceImportXpubHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -377,6 +431,10 @@ func (UnimplementedDepositServiceHandler) ExportUnsignedSweepBundle(context.Cont
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ExportUnsignedSweepBundle is not implemented"))
 }
 
+func (UnimplementedDepositServiceHandler) ExportBatchUnsignedSweepBundle(context.Context, *connect.Request[v1.ExportBatchUnsignedSweepBundleRequest]) (*connect.Response[v1.ExportBatchUnsignedSweepBundleResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ExportBatchUnsignedSweepBundle is not implemented"))
+}
+
 func (UnimplementedDepositServiceHandler) ImportSignedSweepBundle(context.Context, *connect.Request[v1.ImportSignedSweepBundleRequest]) (*connect.Response[v1.ImportSignedSweepBundleResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ImportSignedSweepBundle is not implemented"))
 }
@@ -387,4 +445,8 @@ func (UnimplementedDepositServiceHandler) GetSweepDashboard(context.Context, *co
 
 func (UnimplementedDepositServiceHandler) BuildUndelegateOnlyBundle(context.Context, *connect.Request[v1.BuildUndelegateOnlyBundleRequest]) (*connect.Response[v1.BuildUndelegateOnlyBundleResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.BuildUndelegateOnlyBundle is not implemented"))
+}
+
+func (UnimplementedDepositServiceHandler) ImportXpub(context.Context, *connect.Request[v1.ImportXpubRequest]) (*connect.Response[v1.ImportXpubResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.DepositService.ImportXpub is not implemented"))
 }

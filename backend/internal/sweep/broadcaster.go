@@ -199,7 +199,15 @@ func (b *Broadcaster) broadcastLeg(ctx context.Context, leg *model.SweepLog, sig
 	confirmCtx, cancel := context.WithTimeout(ctx, confirmTimeout)
 	defer cancel()
 
-	success, energyUsed, err := b.tron.WaitForConfirmation(confirmCtx, txid, 3*time.Second)
+	pollInterval := 3 * time.Second
+	if b.adminRepo != nil {
+		if cfg, err := b.adminRepo.GetConfig(ctx, "sweep_poll_interval_seconds"); err == nil && cfg != nil && cfg.Value != "" {
+			if n, err := strconv.Atoi(cfg.Value); err == nil && n > 0 {
+				pollInterval = time.Duration(n) * time.Second
+			}
+		}
+	}
+	success, energyUsed, err := b.tron.WaitForConfirmation(confirmCtx, txid, pollInterval)
 	if err != nil {
 		// Timeout — leave as SWEEPING for reconfirmation checker.
 		b.log.Warn("sweep broadcaster: confirmation timeout, leaving SWEEPING",
@@ -230,21 +238,7 @@ func (b *Broadcaster) broadcastLeg(ctx context.Context, leg *model.SweepLog, sig
 	return nil
 }
 
-// markLegDone transitions a leg to DONE and, for transfer legs, marks has_received_usdt
-// on the deposit address (ADR §2.7 step 7). Centralizes the pattern that was
-// duplicated across BroadcastBundle, broadcastLeg, and ReconfirmSweeping.
+// markLegDone delegates to the shared package-level function.
 func (b *Broadcaster) markLegDone(ctx context.Context, leg *model.SweepLog) {
-	if err := b.sweepRepo.UpdateToDone(ctx, leg.ID); err != nil {
-		b.log.Error("sweep broadcaster: update to done",
-			zap.String("leg_type", leg.LegType),
-			zap.Error(err))
-		return
-	}
-	if leg.LegType == "transfer" {
-		if err := b.addrRepo.MarkReceivedUSDT(ctx, leg.DepositAddressID); err != nil {
-			b.log.Error("sweep broadcaster: mark received usdt",
-				zap.String("addr_id", leg.DepositAddressID.String()),
-				zap.Error(err))
-		}
-	}
+	markLegDone(ctx, b.sweepRepo, b.addrRepo, b.log, leg)
 }

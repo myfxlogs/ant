@@ -934,20 +934,20 @@ ALTER TABLE wallet_transactions
 - **R11** 提现必须携带用户 WebAuthn 断言，由 `coldsign` 用自持公钥验证后才签。
 - **R12** 提现白名单/用户公钥的变更必须带外确认 + 时间锁 + 入哈希链流水。
 
-### 9.6 现状差距（审计所得，落地必改）
+### 9.6 现状差距（审计所得 — 闭合状态）
 
-代码审计（`wallet_repo.go` / `deposit_service.go` / migrations 147–148）发现与本 ADR 的偏差：
+代码审计（`wallet_repo.go` / `deposit_service.go` / migrations 147–148）发现与本 ADR 的偏差。
 
-| 差距 | 现状 | 必改 |
-|---|---|---|
-| **在线机仍持私钥** | `deposit_service.ImportDepositAddresses` 仍用 `PurposeDepositPrivKey` + `EncryptedPrivkey` 导入加密私钥（v1 模型）| 改为 watch-only：xpub 派生、DB 不存私钥（§2.4）|
-| **余额可为负** | migration 147 无 `CHECK (balance >= 0)`，`AdjustBalanceTx` 直接 `balance + amount` | 加 CHECK + 冻结模式（R9）|
-| **流水非真不可改** | `wallet_transactions` 注释称 immutable，但无 DB 触发器、无哈希链 | 加 append-only 触发器 + 哈希链（R8）|
-| **无幂等键** | `AdjustBalance` 无 `idem_key`，重试可双记（仅 `ConfirmDeposit` 靠 `deposits.tx_hash` 幂等）| 全路径加 `idem_key`（R7）|
-| **无提现实现/授权** | 无提现路径与用户签名验证 | 按 §9.4 实现 |
-| **无偿付能力校验** | 无链下校验器/死人开关 | 按 §9.2 实现 |
-| **USDT=USD 1:1** | 钱包 `currency='USD'`，充值按 USDT 数额 1:1 记 USD | 明确口径为 USDT，或书面承担脱锚风险 |
-| **遗留手动充值** | `deposit_requests`（migration 198）与新 HD 系统并存 | 迁移后清理（§7）|
+| 差距 | 现状 | 必改 | 闭合状态 |
+|---|---|---|---|
+| **在线机仍持私钥** | ~~`deposit_service.ImportDepositAddresses` 仍用 `PurposeDepositPrivKey`~~ | ~~改为 watch-only~~ | ✅ 已闭合：watch-only xpub 派生，DB 不存私钥，`derive_priv.go` 仅 `cmd/coldsign`/`cmd/hdgen` 使用 |
+| **余额可为负** | ~~migration 147 无 `CHECK (balance >= 0)`~~ | ~~加 CHECK + 冻结模式~~ | ✅ 已闭合：`CHECK (balance >= 0)` 已加，`AdjustBalanceTx` 捕获 `isCheckViolation`，冻结模式 `FreezeForWithdrawal`/`CompleteWithdrawal`/`CancelWithdrawal` 已实现 |
+| **流水非真不可改** | ~~无 DB 触发器、无哈希链~~ | ~~加 append-only 触发器 + 哈希链~~ | ✅ 已闭合：`wallet_transactions` 有 `seq`/`prev_hash`/`entry_hash`/`idem_key`，`ledgerChainInsert` 实现哈希链 + `ledger_outbox` 外发 |
+| **无幂等键** | ~~`AdjustBalance` 无 `idem_key`~~ | ~~全路径加 `idem_key`~~ | ✅ 已闭合：`AdjustBalanceTx` 强制 `idemKey`，`ConfirmDeposit` 用 `"deposit-"+txHash`，`FreezeForWithdrawal` 用 `"withdrawal-{id}"` |
+| **无提现实现/授权** | 无提现路径与用户签名验证 | 按 §9.4 实现 | ✅ 已闭合：`webauthn_withdrawal.go` + `coldsign` R11 WebAuthn 验证 + `FreezeForWithdrawal`/`CompleteWithdrawal`/`CancelWithdrawal` |
+| **无偿付能力校验** | 无链下校验器/死人开关 | 按 §9.2 实现 | ✅ 已实现、MVP 不部署：`cmd/solvency-check` 已实现（偿付能力 + 死人开关 + 篡改检测），MVP 阶段不部署运行（见 §13.2） |
+| **USDT=USD 1:1** | 钱包 `currency='USD'`，充值按 USDT 数额 1:1 记 USD | 明确口径为 USDT，或书面承担脱锚风险 | ✅ 已闭合：口径明确为 USDT 1:1 USD，书面承担脱锚风险 |
+| **遗留手动充值** | `deposit_requests`（migration 198）与新 HD 系统并存 | 迁移后清理（§7） | ✅ 已闭合：旧 RPC 已删除，`deposit_requests` 为死数据 |
 
 ## 10. 落地实现指南（GLM 权威执行手册 — 最优方法）
 
@@ -1014,6 +1014,8 @@ cmd/coldsign (离线): 读 UnsignedSweepBundle(proto)
 
 **归集为 admin 手动触发，不是自动定时周期。** 自动部分仅限于：构建 UnsignedBundle、按序广播+确认、状态机追踪。触发权在管理员。
 
+> **v3 定案（2026-07-22）**：`runCycle` 中的自动 `buildPendingBundles` 调用已删除。Worker 周期仅保留：ReconfirmSweeping、MarkStuckSweeping、expireStalePendingSign、resumeBroadcasting（崩溃恢复）。构建未签名 Bundle 仅通过 Admin RPC `ExportUnsignedBundle` 手动触发。未配置 sweep TRON gRPC 客户端时，`sweepWorker` 优雅禁用（`handlers.go` 中 `sweepTronClient == nil` → 不创建 Worker → `main.go` 不启动 goroutine）。
+
 ```go
 // internal/sweep/builder.go
 BuildUnsignedBundle(addrs []Addr) (*antv1.UnsignedSweepBundle, error) // gotron-sdk 造 raw_tx, 不签名
@@ -1026,7 +1028,8 @@ BroadcastBundle(signed *antv1.SignedSweepBundle) error  // 按序: delegate→�
 
 **保留：** Builder、Broadcaster、StateMachine、CheckDoubleSpend、ReconfirmSweeping（追踪已广播 bundle 状态）。
 
-**删除/停用：** 自动 `buildPendingBundles` 定时器调用、`expireStalePendingSign`。
+**已删除：** 自动 `buildPendingBundles` 定时器调用（v3 定案，2026-07-22）。
+**保留：** `expireStalePendingSign` — 清理 24h 未冷签的 stale bundle，释放地址。
 **保留：** `resumeBroadcasting` — 崩溃恢复。Admin 导入签名包后广播过程中服务重启，需要自动恢复。
 **保留：** `ReconfirmSweeping` — 追踪已广播但未确认的腿状态。
 
@@ -1209,3 +1212,55 @@ cmd/solvency-check (在管理员设备/冷机运行, 独立):
 - 告警：校验器连续 3 轮（6h）无输出 → 运营方应收到空窗告警（如果出站通道正常）；但**最终依赖人工确认**（这是校验器自身存活问题在单机下的天花板）。
 
 > 完整运维 SOP 见独立 runbook：`docs/runbook/hd-wallet-operations.md`。
+
+## 13. MVP 上线档位
+
+> MVP = 最小可信上线集。只包含「不动则不赔钱」的核心功能；推迟项不阻塞上线。
+
+### 13.1 启用项（MVP 必须）
+
+| 功能 | 模块 | 验收标准 |
+|------|------|---------|
+| 充值监控 | `chain/monitor.go` | 区块事件扫描→多源验证→自动入账；单实例 |
+| 内部账本 | `wallet_repo.go` | `idem_key` 幂等 + `CHECK(balance>=0)` + 哈希链 |
+| WebAuthn 提现 | `webauthn_withdrawal.go` + `withdrawal_builder.go` + `coldsign` R11 | 用户 Passkey 签名→在线机构建 UnsignedTx→冷签机验断言→广播；`runWithdrawalBuilder` 自动构建 PENDING_SIGN bundle |
+| 手动归集 | `sweep/` admin RPC | Admin 触发 Export→冷签→Import→广播 |
+| xpub 校验 | `main.go` 启动 | DB xpub + env 指纹校验，不匹配拒启动 |
+| 地址审计 | `xpub_audit.go` | DB 地址 vs xpub 派生比对，不一致告警 |
+
+### 13.2 推迟项（MVP 不含）
+
+| 功能 | ADR 章节 | 推迟原因 |
+|------|---------|---------|
+| 自动归集 | §10.4 | 手动归集已满足 MVP |
+| 哈希链外发 | §9.1 R8 | `ledger_shipper.go` 已实现（LISTEN/NOTIFY + fallback ticker），MVP 不部署运行 |
+| 离机偿付校验器 | §9.2 R10 | `cmd/solvency-check` 已实现（偿付能力 + 死人开关 + 篡改检测），MVP 不部署运行 |
+| 自建 Tron 节点 | §2.5 | 成本过高，TronGrid API 足够 |
+| MPC 多签 | §8.2 | 单机气隙已为理论最优 |
+
+## 14. 操作 SOP — WebAuthn 提现 + 手动归集
+
+### 14.1 WebAuthn 提现（用户 Passkey 签名 → 冷签机验断言 → 广播）
+
+**密钥**：冷钱包独立私钥（非 BIP39 种子），通过 `-cold-wallet-key` 传入。
+
+1. **[用户端]** 用户在 WalletPage 发起提现：`BeginWithdrawal`（金额+目标地址）→ Passkey 签 challenge → `FinishWithdrawal`（资金冻结，状态 `SIGNED_WAITING_BUNDLE`）
+2. **[在线机]** `runWithdrawalBuilder` 每 30s 自动扫描 `SIGNED_WAITING_BUNDLE` 提现 → 构建 `UnsignedTx{TRANSFER, from=cold_wallet, to=user_addr, key_source=cold_wallet_key, auth=WithdrawalAuth{...}}` → 持久化为 `PENDING_SIGN` bundle
+3. **[在线机]** Admin 导出 `PENDING_SIGN` bundle → proto binary → USB
+4. **[USB]** 在线机 → 气隙机
+5. **[气隙机]** `coldsign -i bundle.bin -o signed.bin -cold-wallet <addr> -cold-wallet-key <hex>` → 验证 WebAuthn 断言（R11）+ 白名单 + 限额 + 屏幕核对 → 签名
+6. **[USB]** 气隙机 → 在线机
+7. **[在线机]** Admin 导入 `ImportSignedBundle` → 自动广播 → `CompleteWithdrawal`（扣冻结）或失败 `CancelWithdrawal`（解冻）
+8. **[验证]** TronScan 确认上链 + 余额已扣 + `wallet_transactions` 有 `idem_key=withdrawal-{id}`
+
+### 14.2 手动归集（补流动性）
+
+**密钥**：BIP39 种子派生分地址私钥 + 能量账户私钥，均在气隙机。
+
+1. **[在线机]** Admin 打开 Sweep Dashboard → 查看各地址余额降序 → 评估能量账户 TRX 是否足够
+2. **[在线机]** 选地址 → [构建归集 Bundle] → 每地址 3 笔（delegate+transfer+undelegate）→ 导出 proto binary
+3. **[USB]** 在线机 → 气隙机
+4. **[气隙机]** `coldsign -i bundle.bin -o signed.bin -cold-wallet <addr>` → Mnemonic from stdin → 验证 R4 白名单 + 逐笔屏幕核对 → 签名
+5. **[USB]** 气隙机 → 在线机
+6. **[在线机]** Admin 导入 `ImportSignedBundle` → 自动按序广播 delegate→transfer→undelegate → Dashboard 显示进度
+7. **[异常]** FAILED→可重建 Bundle 重试；超时→Worker 自动 ReconfirmSweeping；卡死→MANUAL_REVIEW；能量不足→减少地址数降级

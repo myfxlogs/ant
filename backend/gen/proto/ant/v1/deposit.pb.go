@@ -1849,6 +1849,94 @@ func (x *ExportUnsignedSweepBundleResponse) GetUnsignedBundle() []byte {
 	return nil
 }
 
+type ExportBatchUnsignedSweepBundleRequest struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	DepositAddressIds []string               `protobuf:"bytes,1,rep,name=deposit_address_ids,json=depositAddressIds,proto3" json:"deposit_address_ids,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ExportBatchUnsignedSweepBundleRequest) Reset() {
+	*x = ExportBatchUnsignedSweepBundleRequest{}
+	mi := &file_deposit_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportBatchUnsignedSweepBundleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportBatchUnsignedSweepBundleRequest) ProtoMessage() {}
+
+func (x *ExportBatchUnsignedSweepBundleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportBatchUnsignedSweepBundleRequest.ProtoReflect.Descriptor instead.
+func (*ExportBatchUnsignedSweepBundleRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *ExportBatchUnsignedSweepBundleRequest) GetDepositAddressIds() []string {
+	if x != nil {
+		return x.DepositAddressIds
+	}
+	return nil
+}
+
+type ExportBatchUnsignedSweepBundleResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UnsignedBundle []byte                 `protobuf:"bytes,1,opt,name=unsigned_bundle,json=unsignedBundle,proto3" json:"unsigned_bundle,omitempty"` // serialized UnsignedSweepBundle proto (batch)
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ExportBatchUnsignedSweepBundleResponse) Reset() {
+	*x = ExportBatchUnsignedSweepBundleResponse{}
+	mi := &file_deposit_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportBatchUnsignedSweepBundleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportBatchUnsignedSweepBundleResponse) ProtoMessage() {}
+
+func (x *ExportBatchUnsignedSweepBundleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportBatchUnsignedSweepBundleResponse.ProtoReflect.Descriptor instead.
+func (*ExportBatchUnsignedSweepBundleResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ExportBatchUnsignedSweepBundleResponse) GetUnsignedBundle() []byte {
+	if x != nil {
+		return x.UnsignedBundle
+	}
+	return nil
+}
+
 type ImportSignedSweepBundleRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SignedBundle  []byte                 `protobuf:"bytes,1,opt,name=signed_bundle,json=signedBundle,proto3" json:"signed_bundle,omitempty"` // serialized SignedSweepBundle proto
@@ -1858,7 +1946,7 @@ type ImportSignedSweepBundleRequest struct {
 
 func (x *ImportSignedSweepBundleRequest) Reset() {
 	*x = ImportSignedSweepBundleRequest{}
-	mi := &file_deposit_proto_msgTypes[28]
+	mi := &file_deposit_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1870,7 +1958,7 @@ func (x *ImportSignedSweepBundleRequest) String() string {
 func (*ImportSignedSweepBundleRequest) ProtoMessage() {}
 
 func (x *ImportSignedSweepBundleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[28]
+	mi := &file_deposit_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1883,7 +1971,7 @@ func (x *ImportSignedSweepBundleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportSignedSweepBundleRequest.ProtoReflect.Descriptor instead.
 func (*ImportSignedSweepBundleRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{28}
+	return file_deposit_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ImportSignedSweepBundleRequest) GetSignedBundle() []byte {
@@ -1903,7 +1991,7 @@ type ImportSignedSweepBundleResponse struct {
 
 func (x *ImportSignedSweepBundleResponse) Reset() {
 	*x = ImportSignedSweepBundleResponse{}
-	mi := &file_deposit_proto_msgTypes[29]
+	mi := &file_deposit_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1915,7 +2003,7 @@ func (x *ImportSignedSweepBundleResponse) String() string {
 func (*ImportSignedSweepBundleResponse) ProtoMessage() {}
 
 func (x *ImportSignedSweepBundleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[29]
+	mi := &file_deposit_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1928,7 +2016,7 @@ func (x *ImportSignedSweepBundleResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportSignedSweepBundleResponse.ProtoReflect.Descriptor instead.
 func (*ImportSignedSweepBundleResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{29}
+	return file_deposit_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ImportSignedSweepBundleResponse) GetBatchId() string {
@@ -1960,7 +2048,7 @@ type SweepDashboardEntry struct {
 
 func (x *SweepDashboardEntry) Reset() {
 	*x = SweepDashboardEntry{}
-	mi := &file_deposit_proto_msgTypes[30]
+	mi := &file_deposit_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1972,7 +2060,7 @@ func (x *SweepDashboardEntry) String() string {
 func (*SweepDashboardEntry) ProtoMessage() {}
 
 func (x *SweepDashboardEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[30]
+	mi := &file_deposit_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1985,7 +2073,7 @@ func (x *SweepDashboardEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SweepDashboardEntry.ProtoReflect.Descriptor instead.
 func (*SweepDashboardEntry) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{30}
+	return file_deposit_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *SweepDashboardEntry) GetDepositAddressId() string {
@@ -2040,7 +2128,7 @@ type GetSweepDashboardRequest struct {
 
 func (x *GetSweepDashboardRequest) Reset() {
 	*x = GetSweepDashboardRequest{}
-	mi := &file_deposit_proto_msgTypes[31]
+	mi := &file_deposit_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2052,7 +2140,7 @@ func (x *GetSweepDashboardRequest) String() string {
 func (*GetSweepDashboardRequest) ProtoMessage() {}
 
 func (x *GetSweepDashboardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[31]
+	mi := &file_deposit_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2065,7 +2153,7 @@ func (x *GetSweepDashboardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSweepDashboardRequest.ProtoReflect.Descriptor instead.
 func (*GetSweepDashboardRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{31}
+	return file_deposit_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetSweepDashboardRequest) GetPage() int32 {
@@ -2094,7 +2182,7 @@ type GetSweepDashboardResponse struct {
 
 func (x *GetSweepDashboardResponse) Reset() {
 	*x = GetSweepDashboardResponse{}
-	mi := &file_deposit_proto_msgTypes[32]
+	mi := &file_deposit_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2106,7 +2194,7 @@ func (x *GetSweepDashboardResponse) String() string {
 func (*GetSweepDashboardResponse) ProtoMessage() {}
 
 func (x *GetSweepDashboardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[32]
+	mi := &file_deposit_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2119,7 +2207,7 @@ func (x *GetSweepDashboardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSweepDashboardResponse.ProtoReflect.Descriptor instead.
 func (*GetSweepDashboardResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{32}
+	return file_deposit_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GetSweepDashboardResponse) GetAddresses() []*SweepDashboardEntry {
@@ -2159,7 +2247,7 @@ type BuildUndelegateOnlyBundleRequest struct {
 
 func (x *BuildUndelegateOnlyBundleRequest) Reset() {
 	*x = BuildUndelegateOnlyBundleRequest{}
-	mi := &file_deposit_proto_msgTypes[33]
+	mi := &file_deposit_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2171,7 +2259,7 @@ func (x *BuildUndelegateOnlyBundleRequest) String() string {
 func (*BuildUndelegateOnlyBundleRequest) ProtoMessage() {}
 
 func (x *BuildUndelegateOnlyBundleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[33]
+	mi := &file_deposit_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2184,7 +2272,7 @@ func (x *BuildUndelegateOnlyBundleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildUndelegateOnlyBundleRequest.ProtoReflect.Descriptor instead.
 func (*BuildUndelegateOnlyBundleRequest) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{33}
+	return file_deposit_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *BuildUndelegateOnlyBundleRequest) GetDepositAddressIds() []string {
@@ -2203,7 +2291,7 @@ type BuildUndelegateOnlyBundleResponse struct {
 
 func (x *BuildUndelegateOnlyBundleResponse) Reset() {
 	*x = BuildUndelegateOnlyBundleResponse{}
-	mi := &file_deposit_proto_msgTypes[34]
+	mi := &file_deposit_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2215,7 +2303,7 @@ func (x *BuildUndelegateOnlyBundleResponse) String() string {
 func (*BuildUndelegateOnlyBundleResponse) ProtoMessage() {}
 
 func (x *BuildUndelegateOnlyBundleResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_deposit_proto_msgTypes[34]
+	mi := &file_deposit_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2228,7 +2316,7 @@ func (x *BuildUndelegateOnlyBundleResponse) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use BuildUndelegateOnlyBundleResponse.ProtoReflect.Descriptor instead.
 func (*BuildUndelegateOnlyBundleResponse) Descriptor() ([]byte, []int) {
-	return file_deposit_proto_rawDescGZIP(), []int{34}
+	return file_deposit_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *BuildUndelegateOnlyBundleResponse) GetUnsignedBundle() []byte {
@@ -2236,6 +2324,110 @@ func (x *BuildUndelegateOnlyBundleResponse) GetUnsignedBundle() []byte {
 		return x.UnsignedBundle
 	}
 	return nil
+}
+
+type ImportXpubRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	XpubExport    []byte                 `protobuf:"bytes,1,opt,name=xpub_export,json=xpubExport,proto3" json:"xpub_export,omitempty"` // serialized XpubExport proto (from hdgen)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImportXpubRequest) Reset() {
+	*x = ImportXpubRequest{}
+	mi := &file_deposit_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportXpubRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportXpubRequest) ProtoMessage() {}
+
+func (x *ImportXpubRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportXpubRequest.ProtoReflect.Descriptor instead.
+func (*ImportXpubRequest) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *ImportXpubRequest) GetXpubExport() []byte {
+	if x != nil {
+		return x.XpubExport
+	}
+	return nil
+}
+
+type ImportXpubResponse struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Xpub                string                 `protobuf:"bytes,1,opt,name=xpub,proto3" json:"xpub,omitempty"`                                                           // the imported xpub string
+	Fingerprint         string                 `protobuf:"bytes,2,opt,name=fingerprint,proto3" json:"fingerprint,omitempty"`                                             // SHA-256 fingerprint of the xpub
+	FingerprintVerified bool                   `protobuf:"varint,3,opt,name=fingerprint_verified,json=fingerprintVerified,proto3" json:"fingerprint_verified,omitempty"` // true if env DEPOSIT_XPUB_FINGERPRINT matched
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *ImportXpubResponse) Reset() {
+	*x = ImportXpubResponse{}
+	mi := &file_deposit_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportXpubResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportXpubResponse) ProtoMessage() {}
+
+func (x *ImportXpubResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_deposit_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportXpubResponse.ProtoReflect.Descriptor instead.
+func (*ImportXpubResponse) Descriptor() ([]byte, []int) {
+	return file_deposit_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *ImportXpubResponse) GetXpub() string {
+	if x != nil {
+		return x.Xpub
+	}
+	return ""
+}
+
+func (x *ImportXpubResponse) GetFingerprint() string {
+	if x != nil {
+		return x.Fingerprint
+	}
+	return ""
+}
+
+func (x *ImportXpubResponse) GetFingerprintVerified() bool {
+	if x != nil {
+		return x.FingerprintVerified
+	}
+	return false
 }
 
 var File_deposit_proto protoreflect.FileDescriptor
@@ -2372,6 +2564,10 @@ const file_deposit_proto_rawDesc = "" +
 	" ExportUnsignedSweepBundleRequest\x12,\n" +
 	"\x12deposit_address_id\x18\x01 \x01(\tR\x10depositAddressId\"L\n" +
 	"!ExportUnsignedSweepBundleResponse\x12'\n" +
+	"\x0funsigned_bundle\x18\x01 \x01(\fR\x0eunsignedBundle\"W\n" +
+	"%ExportBatchUnsignedSweepBundleRequest\x12.\n" +
+	"\x13deposit_address_ids\x18\x01 \x03(\tR\x11depositAddressIds\"Q\n" +
+	"&ExportBatchUnsignedSweepBundleResponse\x12'\n" +
 	"\x0funsigned_bundle\x18\x01 \x01(\fR\x0eunsignedBundle\"E\n" +
 	"\x1eImportSignedSweepBundleRequest\x12#\n" +
 	"\rsigned_bundle\x18\x01 \x01(\fR\fsignedBundle\"k\n" +
@@ -2396,12 +2592,19 @@ const file_deposit_proto_rawDesc = "" +
 	" BuildUndelegateOnlyBundleRequest\x12.\n" +
 	"\x13deposit_address_ids\x18\x01 \x03(\tR\x11depositAddressIds\"L\n" +
 	"!BuildUndelegateOnlyBundleResponse\x12'\n" +
-	"\x0funsigned_bundle\x18\x01 \x01(\fR\x0eunsignedBundle*e\n" +
+	"\x0funsigned_bundle\x18\x01 \x01(\fR\x0eunsignedBundle\"4\n" +
+	"\x11ImportXpubRequest\x12\x1f\n" +
+	"\vxpub_export\x18\x01 \x01(\fR\n" +
+	"xpubExport\"}\n" +
+	"\x12ImportXpubResponse\x12\x12\n" +
+	"\x04xpub\x18\x01 \x01(\tR\x04xpub\x12 \n" +
+	"\vfingerprint\x18\x02 \x01(\tR\vfingerprint\x121\n" +
+	"\x14fingerprint_verified\x18\x03 \x01(\bR\x13fingerprintVerified*e\n" +
 	"\x06TxKind\x12\x17\n" +
 	"\x13TX_KIND_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10TX_KIND_DELEGATE\x10\x01\x12\x14\n" +
 	"\x10TX_KIND_TRANSFER\x10\x02\x12\x16\n" +
-	"\x12TX_KIND_UNDELEGATE\x10\x032\x89\b\n" +
+	"\x12TX_KIND_UNDELEGATE\x10\x032\xcf\t\n" +
 	"\x0eDepositService\x12X\n" +
 	"\x11GetDepositAddress\x12 .ant.v1.GetDepositAddressRequest\x1a!.ant.v1.GetDepositAddressResponse\x12O\n" +
 	"\x0eListMyDeposits\x12\x1d.ant.v1.ListMyDepositsRequest\x1a\x1e.ant.v1.ListMyDepositsResponse\x12m\n" +
@@ -2409,10 +2612,13 @@ const file_deposit_proto_rawDesc = "" +
 	"\x14ListDepositAddresses\x12#.ant.v1.ListDepositAddressesRequest\x1a$.ant.v1.ListDepositAddressesResponse\x12g\n" +
 	"\x16ImportDepositAddresses\x12%.ant.v1.ImportDepositAddressesRequest\x1a&.ant.v1.ImportDepositAddressesResponse\x12g\n" +
 	"\x16ListPendingSignBundles\x12%.ant.v1.ListPendingSignBundlesRequest\x1a&.ant.v1.ListPendingSignBundlesResponse\x12p\n" +
-	"\x19ExportUnsignedSweepBundle\x12(.ant.v1.ExportUnsignedSweepBundleRequest\x1a).ant.v1.ExportUnsignedSweepBundleResponse\x12j\n" +
+	"\x19ExportUnsignedSweepBundle\x12(.ant.v1.ExportUnsignedSweepBundleRequest\x1a).ant.v1.ExportUnsignedSweepBundleResponse\x12\x7f\n" +
+	"\x1eExportBatchUnsignedSweepBundle\x12-.ant.v1.ExportBatchUnsignedSweepBundleRequest\x1a..ant.v1.ExportBatchUnsignedSweepBundleResponse\x12j\n" +
 	"\x17ImportSignedSweepBundle\x12&.ant.v1.ImportSignedSweepBundleRequest\x1a'.ant.v1.ImportSignedSweepBundleResponse\x12X\n" +
 	"\x11GetSweepDashboard\x12 .ant.v1.GetSweepDashboardRequest\x1a!.ant.v1.GetSweepDashboardResponse\x12p\n" +
-	"\x19BuildUndelegateOnlyBundle\x12(.ant.v1.BuildUndelegateOnlyBundleRequest\x1a).ant.v1.BuildUndelegateOnlyBundleResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x19BuildUndelegateOnlyBundle\x12(.ant.v1.BuildUndelegateOnlyBundleRequest\x1a).ant.v1.BuildUndelegateOnlyBundleResponse\x12C\n" +
+	"\n" +
+	"ImportXpub\x12\x19.ant.v1.ImportXpubRequest\x1a\x1a.ant.v1.ImportXpubResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_deposit_proto_rawDescOnce sync.Once
@@ -2427,53 +2633,57 @@ func file_deposit_proto_rawDescGZIP() []byte {
 }
 
 var file_deposit_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
+var file_deposit_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
 var file_deposit_proto_goTypes = []any{
-	(TxKind)(0),                               // 0: ant.v1.TxKind
-	(*Deposit)(nil),                           // 1: ant.v1.Deposit
-	(*GetDepositAddressRequest)(nil),          // 2: ant.v1.GetDepositAddressRequest
-	(*GetDepositAddressResponse)(nil),         // 3: ant.v1.GetDepositAddressResponse
-	(*ListMyDepositsRequest)(nil),             // 4: ant.v1.ListMyDepositsRequest
-	(*ListMyDepositsResponse)(nil),            // 5: ant.v1.ListMyDepositsResponse
-	(*ListManualReviewDepositsRequest)(nil),   // 6: ant.v1.ListManualReviewDepositsRequest
-	(*ListManualReviewDepositsResponse)(nil),  // 7: ant.v1.ListManualReviewDepositsResponse
-	(*DepositAddress)(nil),                    // 8: ant.v1.DepositAddress
-	(*ListDepositAddressesRequest)(nil),       // 9: ant.v1.ListDepositAddressesRequest
-	(*ListDepositAddressesResponse)(nil),      // 10: ant.v1.ListDepositAddressesResponse
-	(*AddressBatchEntry)(nil),                 // 11: ant.v1.AddressBatchEntry
-	(*AddressBatch)(nil),                      // 12: ant.v1.AddressBatch
-	(*ImportDepositAddressesRequest)(nil),     // 13: ant.v1.ImportDepositAddressesRequest
-	(*ImportDepositAddressesResponse)(nil),    // 14: ant.v1.ImportDepositAddressesResponse
-	(*XpubExport)(nil),                        // 15: ant.v1.XpubExport
-	(*WithdrawalAuth)(nil),                    // 16: ant.v1.WithdrawalAuth
-	(*DelegateTx)(nil),                        // 17: ant.v1.DelegateTx
-	(*TransferTx)(nil),                        // 18: ant.v1.TransferTx
-	(*UndelegateTx)(nil),                      // 19: ant.v1.UndelegateTx
-	(*UnsignedTx)(nil),                        // 20: ant.v1.UnsignedTx
-	(*UnsignedSweepBundle)(nil),               // 21: ant.v1.UnsignedSweepBundle
-	(*SignedTx)(nil),                          // 22: ant.v1.SignedTx
-	(*SignedSweepBundle)(nil),                 // 23: ant.v1.SignedSweepBundle
-	(*PendingSignBundleEntry)(nil),            // 24: ant.v1.PendingSignBundleEntry
-	(*ListPendingSignBundlesRequest)(nil),     // 25: ant.v1.ListPendingSignBundlesRequest
-	(*ListPendingSignBundlesResponse)(nil),    // 26: ant.v1.ListPendingSignBundlesResponse
-	(*ExportUnsignedSweepBundleRequest)(nil),  // 27: ant.v1.ExportUnsignedSweepBundleRequest
-	(*ExportUnsignedSweepBundleResponse)(nil), // 28: ant.v1.ExportUnsignedSweepBundleResponse
-	(*ImportSignedSweepBundleRequest)(nil),    // 29: ant.v1.ImportSignedSweepBundleRequest
-	(*ImportSignedSweepBundleResponse)(nil),   // 30: ant.v1.ImportSignedSweepBundleResponse
-	(*SweepDashboardEntry)(nil),               // 31: ant.v1.SweepDashboardEntry
-	(*GetSweepDashboardRequest)(nil),          // 32: ant.v1.GetSweepDashboardRequest
-	(*GetSweepDashboardResponse)(nil),         // 33: ant.v1.GetSweepDashboardResponse
-	(*BuildUndelegateOnlyBundleRequest)(nil),  // 34: ant.v1.BuildUndelegateOnlyBundleRequest
-	(*BuildUndelegateOnlyBundleResponse)(nil), // 35: ant.v1.BuildUndelegateOnlyBundleResponse
-	(*timestamppb.Timestamp)(nil),             // 36: google.protobuf.Timestamp
+	(TxKind)(0),                                    // 0: ant.v1.TxKind
+	(*Deposit)(nil),                                // 1: ant.v1.Deposit
+	(*GetDepositAddressRequest)(nil),               // 2: ant.v1.GetDepositAddressRequest
+	(*GetDepositAddressResponse)(nil),              // 3: ant.v1.GetDepositAddressResponse
+	(*ListMyDepositsRequest)(nil),                  // 4: ant.v1.ListMyDepositsRequest
+	(*ListMyDepositsResponse)(nil),                 // 5: ant.v1.ListMyDepositsResponse
+	(*ListManualReviewDepositsRequest)(nil),        // 6: ant.v1.ListManualReviewDepositsRequest
+	(*ListManualReviewDepositsResponse)(nil),       // 7: ant.v1.ListManualReviewDepositsResponse
+	(*DepositAddress)(nil),                         // 8: ant.v1.DepositAddress
+	(*ListDepositAddressesRequest)(nil),            // 9: ant.v1.ListDepositAddressesRequest
+	(*ListDepositAddressesResponse)(nil),           // 10: ant.v1.ListDepositAddressesResponse
+	(*AddressBatchEntry)(nil),                      // 11: ant.v1.AddressBatchEntry
+	(*AddressBatch)(nil),                           // 12: ant.v1.AddressBatch
+	(*ImportDepositAddressesRequest)(nil),          // 13: ant.v1.ImportDepositAddressesRequest
+	(*ImportDepositAddressesResponse)(nil),         // 14: ant.v1.ImportDepositAddressesResponse
+	(*XpubExport)(nil),                             // 15: ant.v1.XpubExport
+	(*WithdrawalAuth)(nil),                         // 16: ant.v1.WithdrawalAuth
+	(*DelegateTx)(nil),                             // 17: ant.v1.DelegateTx
+	(*TransferTx)(nil),                             // 18: ant.v1.TransferTx
+	(*UndelegateTx)(nil),                           // 19: ant.v1.UndelegateTx
+	(*UnsignedTx)(nil),                             // 20: ant.v1.UnsignedTx
+	(*UnsignedSweepBundle)(nil),                    // 21: ant.v1.UnsignedSweepBundle
+	(*SignedTx)(nil),                               // 22: ant.v1.SignedTx
+	(*SignedSweepBundle)(nil),                      // 23: ant.v1.SignedSweepBundle
+	(*PendingSignBundleEntry)(nil),                 // 24: ant.v1.PendingSignBundleEntry
+	(*ListPendingSignBundlesRequest)(nil),          // 25: ant.v1.ListPendingSignBundlesRequest
+	(*ListPendingSignBundlesResponse)(nil),         // 26: ant.v1.ListPendingSignBundlesResponse
+	(*ExportUnsignedSweepBundleRequest)(nil),       // 27: ant.v1.ExportUnsignedSweepBundleRequest
+	(*ExportUnsignedSweepBundleResponse)(nil),      // 28: ant.v1.ExportUnsignedSweepBundleResponse
+	(*ExportBatchUnsignedSweepBundleRequest)(nil),  // 29: ant.v1.ExportBatchUnsignedSweepBundleRequest
+	(*ExportBatchUnsignedSweepBundleResponse)(nil), // 30: ant.v1.ExportBatchUnsignedSweepBundleResponse
+	(*ImportSignedSweepBundleRequest)(nil),         // 31: ant.v1.ImportSignedSweepBundleRequest
+	(*ImportSignedSweepBundleResponse)(nil),        // 32: ant.v1.ImportSignedSweepBundleResponse
+	(*SweepDashboardEntry)(nil),                    // 33: ant.v1.SweepDashboardEntry
+	(*GetSweepDashboardRequest)(nil),               // 34: ant.v1.GetSweepDashboardRequest
+	(*GetSweepDashboardResponse)(nil),              // 35: ant.v1.GetSweepDashboardResponse
+	(*BuildUndelegateOnlyBundleRequest)(nil),       // 36: ant.v1.BuildUndelegateOnlyBundleRequest
+	(*BuildUndelegateOnlyBundleResponse)(nil),      // 37: ant.v1.BuildUndelegateOnlyBundleResponse
+	(*ImportXpubRequest)(nil),                      // 38: ant.v1.ImportXpubRequest
+	(*ImportXpubResponse)(nil),                     // 39: ant.v1.ImportXpubResponse
+	(*timestamppb.Timestamp)(nil),                  // 40: google.protobuf.Timestamp
 }
 var file_deposit_proto_depIdxs = []int32{
-	36, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
-	36, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
+	40, // 0: ant.v1.Deposit.confirmed_at:type_name -> google.protobuf.Timestamp
+	40, // 1: ant.v1.Deposit.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 2: ant.v1.ListMyDepositsResponse.deposits:type_name -> ant.v1.Deposit
 	1,  // 3: ant.v1.ListManualReviewDepositsResponse.deposits:type_name -> ant.v1.Deposit
-	36, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
-	36, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
+	40, // 4: ant.v1.DepositAddress.assigned_at:type_name -> google.protobuf.Timestamp
+	40, // 5: ant.v1.DepositAddress.created_at:type_name -> google.protobuf.Timestamp
 	8,  // 6: ant.v1.ListDepositAddressesResponse.addresses:type_name -> ant.v1.DepositAddress
 	11, // 7: ant.v1.AddressBatch.entries:type_name -> ant.v1.AddressBatchEntry
 	16, // 8: ant.v1.TransferTx.auth:type_name -> ant.v1.WithdrawalAuth
@@ -2485,7 +2695,7 @@ var file_deposit_proto_depIdxs = []int32{
 	0,  // 14: ant.v1.SignedTx.kind:type_name -> ant.v1.TxKind
 	22, // 15: ant.v1.SignedSweepBundle.txs:type_name -> ant.v1.SignedTx
 	24, // 16: ant.v1.ListPendingSignBundlesResponse.bundles:type_name -> ant.v1.PendingSignBundleEntry
-	31, // 17: ant.v1.GetSweepDashboardResponse.addresses:type_name -> ant.v1.SweepDashboardEntry
+	33, // 17: ant.v1.GetSweepDashboardResponse.addresses:type_name -> ant.v1.SweepDashboardEntry
 	2,  // 18: ant.v1.DepositService.GetDepositAddress:input_type -> ant.v1.GetDepositAddressRequest
 	4,  // 19: ant.v1.DepositService.ListMyDeposits:input_type -> ant.v1.ListMyDepositsRequest
 	6,  // 20: ant.v1.DepositService.ListManualReviewDeposits:input_type -> ant.v1.ListManualReviewDepositsRequest
@@ -2493,21 +2703,25 @@ var file_deposit_proto_depIdxs = []int32{
 	13, // 22: ant.v1.DepositService.ImportDepositAddresses:input_type -> ant.v1.ImportDepositAddressesRequest
 	25, // 23: ant.v1.DepositService.ListPendingSignBundles:input_type -> ant.v1.ListPendingSignBundlesRequest
 	27, // 24: ant.v1.DepositService.ExportUnsignedSweepBundle:input_type -> ant.v1.ExportUnsignedSweepBundleRequest
-	29, // 25: ant.v1.DepositService.ImportSignedSweepBundle:input_type -> ant.v1.ImportSignedSweepBundleRequest
-	32, // 26: ant.v1.DepositService.GetSweepDashboard:input_type -> ant.v1.GetSweepDashboardRequest
-	34, // 27: ant.v1.DepositService.BuildUndelegateOnlyBundle:input_type -> ant.v1.BuildUndelegateOnlyBundleRequest
-	3,  // 28: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
-	5,  // 29: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
-	7,  // 30: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
-	10, // 31: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
-	14, // 32: ant.v1.DepositService.ImportDepositAddresses:output_type -> ant.v1.ImportDepositAddressesResponse
-	26, // 33: ant.v1.DepositService.ListPendingSignBundles:output_type -> ant.v1.ListPendingSignBundlesResponse
-	28, // 34: ant.v1.DepositService.ExportUnsignedSweepBundle:output_type -> ant.v1.ExportUnsignedSweepBundleResponse
-	30, // 35: ant.v1.DepositService.ImportSignedSweepBundle:output_type -> ant.v1.ImportSignedSweepBundleResponse
-	33, // 36: ant.v1.DepositService.GetSweepDashboard:output_type -> ant.v1.GetSweepDashboardResponse
-	35, // 37: ant.v1.DepositService.BuildUndelegateOnlyBundle:output_type -> ant.v1.BuildUndelegateOnlyBundleResponse
-	28, // [28:38] is the sub-list for method output_type
-	18, // [18:28] is the sub-list for method input_type
+	29, // 25: ant.v1.DepositService.ExportBatchUnsignedSweepBundle:input_type -> ant.v1.ExportBatchUnsignedSweepBundleRequest
+	31, // 26: ant.v1.DepositService.ImportSignedSweepBundle:input_type -> ant.v1.ImportSignedSweepBundleRequest
+	34, // 27: ant.v1.DepositService.GetSweepDashboard:input_type -> ant.v1.GetSweepDashboardRequest
+	36, // 28: ant.v1.DepositService.BuildUndelegateOnlyBundle:input_type -> ant.v1.BuildUndelegateOnlyBundleRequest
+	38, // 29: ant.v1.DepositService.ImportXpub:input_type -> ant.v1.ImportXpubRequest
+	3,  // 30: ant.v1.DepositService.GetDepositAddress:output_type -> ant.v1.GetDepositAddressResponse
+	5,  // 31: ant.v1.DepositService.ListMyDeposits:output_type -> ant.v1.ListMyDepositsResponse
+	7,  // 32: ant.v1.DepositService.ListManualReviewDeposits:output_type -> ant.v1.ListManualReviewDepositsResponse
+	10, // 33: ant.v1.DepositService.ListDepositAddresses:output_type -> ant.v1.ListDepositAddressesResponse
+	14, // 34: ant.v1.DepositService.ImportDepositAddresses:output_type -> ant.v1.ImportDepositAddressesResponse
+	26, // 35: ant.v1.DepositService.ListPendingSignBundles:output_type -> ant.v1.ListPendingSignBundlesResponse
+	28, // 36: ant.v1.DepositService.ExportUnsignedSweepBundle:output_type -> ant.v1.ExportUnsignedSweepBundleResponse
+	30, // 37: ant.v1.DepositService.ExportBatchUnsignedSweepBundle:output_type -> ant.v1.ExportBatchUnsignedSweepBundleResponse
+	32, // 38: ant.v1.DepositService.ImportSignedSweepBundle:output_type -> ant.v1.ImportSignedSweepBundleResponse
+	35, // 39: ant.v1.DepositService.GetSweepDashboard:output_type -> ant.v1.GetSweepDashboardResponse
+	37, // 40: ant.v1.DepositService.BuildUndelegateOnlyBundle:output_type -> ant.v1.BuildUndelegateOnlyBundleResponse
+	39, // 41: ant.v1.DepositService.ImportXpub:output_type -> ant.v1.ImportXpubResponse
+	30, // [30:42] is the sub-list for method output_type
+	18, // [18:30] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
@@ -2529,7 +2743,7 @@ func file_deposit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_deposit_proto_rawDesc), len(file_deposit_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   35,
+			NumMessages:   39,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

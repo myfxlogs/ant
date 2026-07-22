@@ -44,7 +44,7 @@ func (b *Builder) BuildBatchUnsignedBundle(ctx context.Context, entries []BatchS
 
 	totalEnergy := int64(0)
 	for _, e := range entries {
-		energyAmount, err := calculateEnergy(e.Addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent)
+		energyAmount, err := calculateEnergy(e.Addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent, cfg.BaseEnergyFirst, cfg.BaseEnergySubsequent)
 		if err != nil {
 			return nil, fmt.Errorf("sweep builder: batch: calculate energy: %w", err)
 		}
@@ -56,7 +56,7 @@ func (b *Builder) BuildBatchUnsignedBundle(ctx context.Context, entries []BatchS
 		return nil, fmt.Errorf("sweep builder: batch: energy to trx: %w", err)
 	}
 
-	expiryMs := time.Now().Add(23 * time.Hour).UnixMilli()
+	expiryMs := time.Now().Add(time.Duration(cfg.RawTxExpiryHours) * time.Hour).UnixMilli()
 	batchID := uuid.New().String()
 
 	var txs []*antv1.UnsignedTx
@@ -72,7 +72,7 @@ func (b *Builder) BuildBatchUnsignedBundle(ctx context.Context, entries []BatchS
 	bundle := &antv1.UnsignedSweepBundle{
 		BundleId:        batchID,
 		BuiltAtMs:       time.Now().UnixMilli(),
-		XpubFingerprint: "",
+		XpubFingerprint: b.xpubFingerprint,
 		Txs:             txs,
 	}
 
@@ -89,7 +89,7 @@ func (b *Builder) BuildBatchUnsignedBundle(ctx context.Context, entries []BatchS
 // buildBatchAddrTxs builds the 3 legs (delegate, transfer, undelegate) for a single
 // address within a batch bundle.
 func (b *Builder) buildBatchAddrTxs(ctx context.Context, e BatchSweepEntry, cfg SweepConfig, expiryMs int64) ([]*antv1.UnsignedTx, error) {
-	addrEnergy, err := calculateEnergy(e.Addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent)
+	addrEnergy, err := calculateEnergy(e.Addr.HasReceivedUSDT, cfg.DEMFactor, cfg.EnergyBufferPercent, cfg.BaseEnergyFirst, cfg.BaseEnergySubsequent)
 	if err != nil {
 		return nil, fmt.Errorf("sweep builder: batch: per-addr energy: %w", err)
 	}

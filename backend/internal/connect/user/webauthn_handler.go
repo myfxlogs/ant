@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
@@ -47,12 +48,16 @@ func (s *WebAuthnServer) BeginRegistration(ctx context.Context, req *connect.Req
 }
 
 func (s *WebAuthnServer) FinishRegistration(ctx context.Context, req *connect.Request[antv1.FinishRegistrationRequest]) (*connect.Response[antv1.FinishRegistrationResponse], error) {
-	// The response bytes contain "sessionID|responseJSON" (set by BeginRegistration).
+	// The response bytes contain "base64(sessionID)|responseJSON" (set by BeginRegistration).
 	parts := strings.SplitN(string(req.Msg.CredentialResponse), "|", 2)
 	if len(parts) != 2 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid response format"))
 	}
-	sessionID := parts[0]
+	sessionIDBytes, err := base64.StdEncoding.DecodeString(parts[0])
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid session header: %w", err))
+	}
+	sessionID := string(sessionIDBytes)
 	responseBytes := []byte(parts[1])
 
 	cred, err := s.svc.FinishRegistration(ctx, sessionID, responseBytes)

@@ -17,14 +17,16 @@ import (
 	"alphaforge/internal/repository"
 )
 
-// Worker runs the periodic sweep lifecycle:
+// Worker runs the periodic sweep lifecycle (crash recovery + state machine only):
 // 1. Reconfirm SWEEPING legs (state machine).
 // 2. Mark stuck legs as FAILED/MANUAL_REVIEW.
-// 3. Resume broadcasting any persisted BROADCASTING bundles (crash recovery, Q3).
-// 4. Build unsigned bundles for new unswept addresses (export for cold signing).
+// 3. Expire stale PENDING_SIGN bundles (24h raw_tx expiry).
+// 4. Resume broadcasting any persisted BROADCASTING bundles (crash recovery, Q3).
 //
+// Per ADR-0026 §10.4: sweep is admin-manual-trigger only. The worker does NOT
+// auto-build unsigned bundles — that is done via ExportUnsignedBundle / admin RPC.
 // The worker does NOT sign transactions — signing is done on the air-gapped
-// coldsign machine. The worker only builds, exports, and broadcasts.
+// coldsign machine. The worker only reconfirms, recovers, and broadcasts.
 type Worker struct {
 	builder     *Builder
 	broadcaster *Broadcaster
@@ -97,7 +99,14 @@ func (w *Worker) Run(ctx context.Context) error {
 
 	w.log.Info("sweep worker started (advisory lock acquired)")
 
-	ticker := time.NewTicker(w.scanInterval)
+	scanInterval := w.scanInterval
+	if cfg, err := w.adminRepo.GetConfig(ctx, "sweep_scan_interval_seconds"); err == nil && cfg != nil && cfg.Value != "" {
+		if n, err := strconv.Atoi(cfg.Value); err == nil && n > 0 {
+			scanInterval = time.Duration(n) * time.Second
+		}
+	}
+
+	ticker := time.NewTicker(scanInterval)
 	defer ticker.Stop()
 
 	// Run one cycle immediately on startup for crash recovery.
@@ -139,10 +148,8 @@ func (w *Worker) runCycle(ctx context.Context) error {
 		w.log.Error("sweep worker: resume broadcasting", zap.Error(err))
 	}
 
-	// 5. Build unsigned bundles for unswept addresses (export for cold signing).
-	if err := w.buildPendingBundles(ctx); err != nil {
-		w.log.Error("sweep worker: build pending", zap.Error(err))
-	}
+	// No automatic bundle building (ADR-0026 §10.4).
+	// Sweep is admin-manual-trigger only — see ExportUnsignedBundle / ExportBatchUnsignedBundle.
 
 	return nil
 }
@@ -152,7 +159,13 @@ func (w *Worker) runCycle(ctx context.Context) error {
 // 24h matches the raw_tx expiry window — if cold signing hasn't happened by then,
 // the unsigned transactions are no longer valid on chain anyway.
 func (w *Worker) expireStalePendingSign(ctx context.Context) error {
-	batchIDs, err := w.bundleRepo.ExpireStalePendingSign(ctx, 24*time.Hour)
+	pendingSignExpiry := 24 * time.Hour
+	if cfg, err := w.adminRepo.GetConfig(ctx, "sweep_pending_sign_expiry_hours"); err == nil && cfg != nil && cfg.Value != "" {
+		if n, err := strconv.Atoi(cfg.Value); err == nil && n > 0 {
+			pendingSignExpiry = time.Duration(n) * time.Hour
+		}
+	}
+	batchIDs, err := w.bundleRepo.ExpireStalePendingSign(ctx, pendingSignExpiry)
 	if err != nil {
 		return fmt.Errorf("expire stale pending sign: %w", err)
 	}
@@ -213,96 +226,103 @@ func (w *Worker) resumeBroadcasting(ctx context.Context) error {
 	return nil
 }
 
-// buildPendingBundles finds unswept addresses and builds unsigned bundles
-// for export to the cold signing machine. Does NOT broadcast — requires cold signing first.
-// Uses batch builder to group all eligible addresses into a single cold-sign session (ADR §2.7).
-func (w *Worker) buildPendingBundles(ctx context.Context) error {
-	threshold := "0.01"
-	batchSize := 10
-
-	if cfg, err := w.adminRepo.GetConfig(ctx, "sweep_threshold"); err == nil && cfg != nil && cfg.Value != "" {
-		threshold = cfg.Value
-	}
-	if cfg, err := w.adminRepo.GetConfig(ctx, "sweep_batch_size"); err == nil && cfg != nil && cfg.Value != "" {
-		if n, err := strconv.Atoi(cfg.Value); err == nil && n > 0 {
-			batchSize = n
-		}
+// ExportBatchUnsignedBundle builds a batch unsigned bundle for multiple addresses.
+// Admin RPC entry point for manual batch sweep initiation (ADR §2.7: "批量归集可一次委托整批").
+// Each address is double-spend checked; eligible addresses are grouped into a single
+// cold-sign session to minimize USB round-trips.
+func (w *Worker) ExportBatchUnsignedBundle(ctx context.Context, addrIDs []uuid.UUID) (*antv1.UnsignedSweepBundle, error) {
+	if len(addrIDs) == 0 {
+		return nil, fmt.Errorf("sweep worker: batch export: empty address list")
 	}
 
-	unswept, err := w.depositRepo.ListUnsweptAddresses(ctx, threshold, batchSize)
-	if err != nil {
-		return fmt.Errorf("build pending: list unswept: %w", err)
-	}
-	if len(unswept) == 0 {
-		return nil
-	}
-
-	// D4: Skip addresses that already have a PENDING_SIGN bundle awaiting cold signing.
-	pendingSignAddrs, err := w.bundleRepo.ListPendingSignAddrIDs(ctx)
-	if err != nil {
-		w.log.Warn("sweep worker: list pending sign addr ids, proceeding without skip", zap.Error(err))
-		pendingSignAddrs = make(map[uuid.UUID]bool)
-	}
-
-	// Build entries for batch bundle, filtering out skipped addresses and checking double-spend.
 	var entries []BatchSweepEntry
-	for _, u := range unswept {
-		if pendingSignAddrs[u.AddrID] {
-			w.log.Debug("sweep worker: skipping address — PENDING_SIGN bundle exists",
-				zap.String("addr_id", u.AddrID.String()))
-			continue
-		}
-
-		addr, err := w.addrRepo.GetByID(ctx, u.AddrID)
+	var checkedIDs []uuid.UUID
+	for _, id := range addrIDs {
+		addr, err := w.addrRepo.GetByID(ctx, id)
 		if err != nil {
-			w.log.Error("sweep worker: get address for build",
-				zap.String("addr_id", u.AddrID.String()),
-				zap.Error(err))
-			continue
+			return nil, fmt.Errorf("sweep worker: batch export: address lookup %s: %w", id, err)
 		}
 		if addr == nil {
-			w.log.Warn("sweep worker: address not found",
-				zap.String("addr_id", u.AddrID.String()))
-			continue
+			return nil, fmt.Errorf("sweep worker: batch export: address not found: %s", id)
 		}
 
-		hasOutgoing, err := w.state.CheckDoubleSpend(ctx, addr.ID, addr.Address)
+		amount, err := w.depositRepo.GetUnsweptBalance(ctx, id)
 		if err != nil {
-			w.log.Error("sweep worker: double-spend check",
-				zap.String("address", addr.Address),
-				zap.Error(err))
-			continue
+			return nil, fmt.Errorf("sweep worker: batch export: get unswept balance %s: %w", id, err)
 		}
-		if hasOutgoing {
-			w.log.Warn("sweep worker: skipping address — outgoing transfer detected (double-spend prevention)",
-				zap.String("address", addr.Address))
+		if amount == "" {
+			w.log.Warn("sweep worker: batch export: skipping address — no unswept balance",
+				zap.String("addr_id", id.String()))
 			continue
 		}
 
-		entries = append(entries, BatchSweepEntry{Addr: addr, Amount: u.Amount})
+		checkedIDs = append(checkedIDs, id)
+		entries = append(entries, BatchSweepEntry{Addr: addr, Amount: amount})
+	}
+
+	// D4 pre-filter: skip addresses with existing PENDING_SIGN bundles to avoid
+	// unnecessary tx building. The authoritative check is inside saveBatchBundleAndLegs
+	// transaction to eliminate TOCTOU race.
+	if len(checkedIDs) > 0 {
+		pendingIDs, err := w.bundleRepo.HasPendingSignBundle(ctx, checkedIDs)
+		if err != nil {
+			return nil, fmt.Errorf("sweep worker: batch export: check pending sign: %w", err)
+		}
+		if len(pendingIDs) > 0 {
+			pendingSet := make(map[uuid.UUID]bool, len(pendingIDs))
+			for _, pid := range pendingIDs {
+				pendingSet[pid] = true
+			}
+			filtered := entries[:0]
+			for _, e := range entries {
+				if pendingSet[e.Addr.ID] {
+					w.log.Warn("sweep worker: batch export: skipping address — PENDING_SIGN bundle exists",
+						zap.String("addr_id", e.Addr.ID.String()))
+					continue
+				}
+				filtered = append(filtered, e)
+			}
+			entries = filtered
+		}
 	}
 
 	if len(entries) == 0 {
-		return nil
+		return nil, fmt.Errorf("sweep worker: batch export: no eligible addresses after filtering")
 	}
 
-	// Build a single batch bundle for all eligible addresses (ADR §2.7: "批量归集可一次委托整批").
+	// Double-spend check for each eligible address — filter out flagged addresses.
+	dsFiltered := entries[:0]
+	for _, e := range entries {
+		hasOutgoing, err := w.state.CheckDoubleSpend(ctx, e.Addr.ID, e.Addr.Address)
+		if err != nil {
+			return nil, fmt.Errorf("sweep worker: batch export: double-spend check %s: %w", e.Addr.ID, err)
+		}
+		if hasOutgoing {
+			w.log.Warn("sweep worker: batch export: skipping address — outgoing transfer detected",
+				zap.String("addr_id", e.Addr.ID.String()),
+				zap.String("address", e.Addr.Address))
+			continue
+		}
+		dsFiltered = append(dsFiltered, e)
+	}
+	entries = dsFiltered
+
+	if len(entries) == 0 {
+		return nil, fmt.Errorf("sweep worker: batch export: no eligible addresses after double-spend filter")
+	}
+
 	bundle, err := w.builder.BuildBatchUnsignedBundle(ctx, entries)
 	if err != nil {
-		w.log.Error("sweep worker: batch build failed, falling back to individual bundles",
-			zap.Error(err))
-		return w.buildIndividualBundles(ctx, entries)
+		return nil, fmt.Errorf("sweep worker: batch export: build: %w", err)
 	}
 
 	batchID, err := uuid.Parse(bundle.BundleId)
 	if err != nil {
-		return fmt.Errorf("sweep worker: parse batch_id from bundle: %w", err)
+		return nil, fmt.Errorf("sweep worker: batch export: parse batch_id: %w", err)
 	}
+
 	if err := w.saveBatchBundleAndLegs(ctx, batchID, entries, bundle); err != nil {
-		w.log.Error("sweep worker: save batch bundle and legs",
-			zap.String("batch_id", bundle.BundleId),
-			zap.Error(err))
-		return err
+		return nil, fmt.Errorf("sweep worker: batch export: save: %w", err)
 	}
 
 	w.log.Info("sweep worker: batch unsigned bundle ready for cold signing",
@@ -310,39 +330,7 @@ func (w *Worker) buildPendingBundles(ctx context.Context) error {
 		zap.Int("addresses", len(entries)),
 		zap.Int("txs", len(bundle.Txs)))
 
-	return nil
-}
-
-// buildIndividualBundles is a fallback when batch build fails — builds one bundle per address.
-func (w *Worker) buildIndividualBundles(ctx context.Context, entries []BatchSweepEntry) error {
-	for _, e := range entries {
-		bundle, err := w.builder.BuildUnsignedBundle(ctx, e.Addr, e.Amount)
-		if err != nil {
-			w.log.Error("sweep worker: individual build",
-				zap.String("address", e.Addr.Address),
-				zap.Error(err))
-			continue
-		}
-
-		batchID, perr := uuid.Parse(bundle.BundleId)
-		if perr != nil {
-			w.log.Error("sweep worker: parse batch_id from individual bundle",
-				zap.String("bundle_id", bundle.BundleId), zap.Error(perr))
-			continue
-		}
-		if err := w.saveBundleAndLegs(ctx, batchID, e.Addr.ID, bundle, e.Amount); err != nil {
-			w.log.Error("sweep worker: save individual bundle and legs",
-				zap.String("batch_id", bundle.BundleId),
-				zap.Error(err))
-			continue
-		}
-
-		w.log.Info("sweep worker: unsigned bundle ready for cold signing",
-			zap.String("batch_id", bundle.BundleId),
-			zap.String("address", e.Addr.Address),
-			zap.String("amount", e.Amount))
-	}
-	return nil
+	return bundle, nil
 }
 
 // saveBatchBundleAndLegs creates sweep_log legs for all addresses in a batch and persists
@@ -353,6 +341,26 @@ func (w *Worker) saveBatchBundleAndLegs(ctx context.Context, batchID uuid.UUID, 
 		return fmt.Errorf("save batch bundle and legs: begin tx: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+
+	// D4 (authoritative): Check for PENDING_SIGN bundles inside the transaction
+	// to eliminate TOCTOU race — two concurrent admin RPCs could both pass a
+	// pre-tx check and create duplicate PENDING_SIGN bundles for the same address.
+	bundleRepoTx := NewBundleRepository(tx)
+	addrIDs := make([]uuid.UUID, len(entries))
+	for i, e := range entries {
+		addrIDs[i] = e.Addr.ID
+	}
+	pendingIDs, err := bundleRepoTx.HasPendingSignBundle(ctx, addrIDs)
+	if err != nil {
+		return fmt.Errorf("save batch bundle and legs: check pending sign: %w", err)
+	}
+	if len(pendingIDs) > 0 {
+		idStrs := make([]string, len(pendingIDs))
+		for i, id := range pendingIDs {
+			idStrs[i] = id.String()
+		}
+		return fmt.Errorf("save batch bundle and legs: addresses already have PENDING_SIGN bundles: %v", idStrs)
+	}
 
 	sweepRepoTx := repository.NewSweepLogRepository(tx)
 	legSeq := 0
@@ -370,7 +378,6 @@ func (w *Worker) saveBatchBundleAndLegs(ctx context.Context, batchID uuid.UUID, 
 		}
 	}
 
-	bundleRepoTx := NewBundleRepository(tx)
 	// Batch bundles have no single deposit_address_id — pass first entry's addr for compatibility.
 	var firstAddrID uuid.UUID
 	if len(entries) > 0 {
@@ -394,4 +401,40 @@ func (w *Worker) saveBundleAndLegs(ctx context.Context, batchID, addrID uuid.UUI
 		{Addr: &model.DepositAddress{ID: addrID}, Amount: amount},
 	}
 	return w.saveBatchBundleAndLegs(ctx, batchID, entries, bundle)
+}
+
+// saveUndelegateOnlyBundleAndLegs persists an undelegate-only bundle with one leg per address.
+// Unlike saveBatchBundleAndLegs which creates 3 legs (delegate/transfer/undelegate) per address,
+// this creates only 1 undelegate leg per address — matching the bundle's tx count.
+// No D4 PENDING_SIGN check: undelegate is chain-idempotent (second undelegate fails harmlessly)
+// and does not transfer USDT, so duplicate bundles pose no double-spend risk.
+func (w *Worker) saveUndelegateOnlyBundleAndLegs(ctx context.Context, batchID uuid.UUID, entries []BatchSweepEntry, bundle *antv1.UnsignedSweepBundle) error {
+	tx, err := w.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("save undelegate-only: begin tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	sweepRepoTx := repository.NewSweepLogRepository(tx)
+	legSeq := 0
+	for _, e := range entries {
+		if _, err := sweepRepoTx.CreateLeg(ctx, batchID, e.Addr.ID, "undelegate", legSeq, "0"); err != nil {
+			return fmt.Errorf("save undelegate-only: create leg seq %d: %w", legSeq, err)
+		}
+		legSeq++
+	}
+
+	bundleRepoTx := NewBundleRepository(tx)
+	var firstAddrID uuid.UUID
+	if len(entries) > 0 {
+		firstAddrID = entries[0].Addr.ID
+	}
+	if err := bundleRepoTx.SaveUnsignedBundle(ctx, batchID, firstAddrID, bundle, time.Now().UnixMilli()); err != nil {
+		return fmt.Errorf("save undelegate-only: save bundle: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("save undelegate-only: commit: %w", err)
+	}
+	return nil
 }

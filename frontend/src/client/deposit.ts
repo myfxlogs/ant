@@ -1,7 +1,22 @@
 import { depositClient } from './connect';
-import type { GetDepositAddressResponse, ListMyDepositsResponse, ListManualReviewDepositsResponse, ListDepositAddressesResponse, ImportDepositAddressesResponse } from '../gen/ant/v1/deposit_pb';
+import type {
+  GetDepositAddressResponse,
+  ListMyDepositsResponse,
+  ListManualReviewDepositsResponse,
+  ListDepositAddressesResponse,
+  ImportDepositAddressesResponse,
+  ListPendingSignBundlesResponse,
+  PendingSignBundleEntry,
+  ExportUnsignedSweepBundleResponse,
+  ExportBatchUnsignedSweepBundleResponse,
+  ImportSignedSweepBundleResponse,
+  GetSweepDashboardResponse,
+  SweepDashboardEntry,
+  BuildUndelegateOnlyBundleResponse,
+  ImportXpubResponse,
+} from '../gen/ant/v1/deposit_pb';
 
-export type { Deposit, DepositAddress } from '../gen/ant/v1/deposit_pb';
+export type { PendingSignBundleEntry, SweepDashboardEntry };
 
 export const depositApi = {
   getDepositAddress: async () => {
@@ -44,6 +59,51 @@ export const depositApi = {
     return {
       imported: msg.imported || 0,
       skipped: msg.skipped || 0,
+    };
+  },
+
+  // Admin: Sweep APIs
+  listPendingSignBundles: async () => {
+    const msg = await depositClient.listPendingSignBundles({}) as ListPendingSignBundlesResponse;
+    return msg.bundles as PendingSignBundleEntry[];
+  },
+
+  exportUnsignedSweepBundle: async (depositAddressId: string) => {
+    const msg = await depositClient.exportUnsignedSweepBundle({ depositAddressId }) as ExportUnsignedSweepBundleResponse;
+    return msg.unsignedBundle;
+  },
+
+  exportBatchUnsignedSweepBundle: async (depositAddressIds: string[]) => {
+    const msg = await depositClient.exportBatchUnsignedSweepBundle({ depositAddressIds }) as ExportBatchUnsignedSweepBundleResponse;
+    return msg.unsignedBundle;
+  },
+
+  importSignedSweepBundle: async (signedBundle: Uint8Array) => {
+    const msg = await depositClient.importSignedSweepBundle({ signedBundle }) as ImportSignedSweepBundleResponse;
+    return { batchId: msg.batchId, broadcastComplete: msg.broadcastComplete };
+  },
+
+  getSweepDashboard: async (page = 1, pageSize = 20) => {
+    const msg = await depositClient.getSweepDashboard({ page, pageSize }) as GetSweepDashboardResponse;
+    return {
+      addresses: msg.addresses as SweepDashboardEntry[],
+      total: msg.total,
+      totalUnswept: msg.totalUnswept,
+      threshold: msg.threshold,
+    };
+  },
+
+  buildUndelegateOnlyBundle: async (depositAddressIds: string[]) => {
+    const msg = await depositClient.buildUndelegateOnlyBundle({ depositAddressIds }) as BuildUndelegateOnlyBundleResponse;
+    return msg.unsignedBundle;
+  },
+
+  importXpub: async (xpubExport: Uint8Array) => {
+    const msg = await depositClient.importXpub({ xpubExport }) as ImportXpubResponse;
+    return {
+      xpub: msg.xpub,
+      fingerprint: msg.fingerprint,
+      fingerprintVerified: msg.fingerprintVerified,
     };
   },
 };

@@ -56,6 +56,7 @@ export default function AdminLayout() {
     { key: '/admin/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.walletManagement', { defaultValue: 'Wallets' }) },
     { key: '/admin/billing', icon: <DollarOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.billing', { defaultValue: 'Billing' }) },
     { key: '/admin/deposits', icon: <DollarOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.deposits', { defaultValue: 'Deposits' }) },
+    { key: '/admin/sweep', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.sweep', { defaultValue: 'Sweep' }) },
     { key: '/admin/accounts', icon: <BankOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
     { key: '/admin/trading', icon: <LineChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
     { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },

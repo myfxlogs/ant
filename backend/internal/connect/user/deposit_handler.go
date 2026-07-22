@@ -15,22 +15,25 @@ import (
 	"alphaforge/internal/hdwallet"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/model"
+	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
 	"alphaforge/internal/sweep"
 )
 
 // DepositServer implements ant.v1.DepositServiceHandler.
 type DepositServer struct {
-	svc         *service.DepositService
-	platformSvc *service.PlatformService
-	sweepWorker *sweep.Worker
-	log         *zap.Logger
+	svc             *service.DepositService
+	platformSvc     *service.PlatformService
+	sweepWorker     *sweep.Worker
+	adminRepo       *repository.AdminRepository
+	xpubFingerprint string // from env DEPOSIT_XPUB_FINGERPRINT, integrity anchor
+	log             *zap.Logger
 }
 
 var _ antv1c.DepositServiceHandler = (*DepositServer)(nil)
 
-func NewDepositServer(svc *service.DepositService, platformSvc *service.PlatformService, sweepWorker *sweep.Worker, log *zap.Logger) *DepositServer {
-	return &DepositServer{svc: svc, platformSvc: platformSvc, sweepWorker: sweepWorker, log: log}
+func NewDepositServer(svc *service.DepositService, platformSvc *service.PlatformService, sweepWorker *sweep.Worker, adminRepo *repository.AdminRepository, xpubFingerprint string, log *zap.Logger) *DepositServer {
+	return &DepositServer{svc: svc, platformSvc: platformSvc, sweepWorker: sweepWorker, adminRepo: adminRepo, xpubFingerprint: xpubFingerprint, log: log}
 }
 
 func depositToProto(d *model.Deposit) *antv1.Deposit {

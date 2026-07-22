@@ -53,6 +53,7 @@ const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAna
 const CouponManagement = lazy(() => import('@/pages/admin/CouponManagement'));
 const BillingManagement = lazy(() => import('@/pages/admin/BillingManagement'));
 const DepositManagement = lazy(() => import('@/pages/admin/DepositManagement'));
+const SweepManagement = lazy(() => import('@/pages/admin/SweepManagement'));
 const MonitoringPage = lazy(() => import('@/pages/admin/MonitoringPage'));
 const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
 const SharePerformancePage = lazy(() => import('@/pages/share/SharePerformancePage'));
@@ -112,6 +113,7 @@ const adminRoutes = (
     <Route path="wallet" element={wrap(<WalletManagement />)} />
     <Route path="billing" element={wrap(<BillingManagement />)} />
     <Route path="deposits" element={wrap(<DepositManagement />)} />
+    <Route path="sweep" element={wrap(<SweepManagement />)} />
     <Route path="accounts" element={wrap(<AccountManagement />)} />
     <Route path="trading" element={wrap(<TradingMonitor />)} />
     <Route path="logs" element={wrap(<OperationLogs />)} />
