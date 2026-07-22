@@ -244,13 +244,13 @@ CREATE TABLE sweep_bundles (
     → TransferTx FromAddress==coldWalletAddr — 提现签名
 ```
 
-**signTx() 签名分支：**
+**signTx() 签名分支（R3b：key_source 为权威，不靠 from_address 猜测）：**
 ```
-TransferTx:
-  from == coldWalletAddr  → 用独立冷钱包私钥签名 (提现)
-  from != coldWalletAddr  → 用 BIP39 派生私钥签名 (归集)
-DelegateTx / UndelegateTx:
-  → 用 BIP39 派生能量账户私钥签名 (m/44'/195'/0'/1/0)
+key_source = cold_wallet_key  → 用独立冷钱包私钥签名 (提现, -cold-wallet-key 参数)
+key_source = bip39_derivation_index X:
+  ├─ TransferTx            → m/44'/195'/0'/0/X  (归集分地址)
+  └─ DelegateTx/UndelegateTx → m/44'/195'/0'/1/0 (能量账户固定路径)
+key_source 未设置 → abort (proto 不合法)
 ```
 
 | 层级 | 措施 | 实现方式 |
@@ -726,6 +726,7 @@ HD 钱包上线前需要完成的准备工作：
 - **R1 在线机零私钥**：在线代码库中**不得出现**任何私钥、助记词、种子、KEK 的读取/存储/派生路径。仅允许 xpub（公钥）与公开地址。CI 应有 grep 断言（无 `PrivateKey`/`Mnemonic`/`Seed`/`Decrypt` 于钱包路径）。
 - **R2 签名只在气隙机**：归集、能量委托/收回、提现的**所有签名**只能由 `cmd/coldsign` 在离线机完成。在线机只构建未签名交易与广播已签名交易。
 - **R3 跨机交换用 proto**：`UnsignedSweepBundle` / `SignedSweepBundle` 用 protobuf 序列化经 USB 传递，**禁止 JSON**（遵守 AGENTS.md）。
+- **R3b 密钥源显式声明**：`UnsignedTx.key_source` 必须显式声明 `bip39_derivation_index` 或 `cold_wallet_key`。冷签机**不得依赖 `from_address` 字符串匹配或 context 推断来决定用哪个密钥**——proto 本身是唯一权威。防配置篡改导致的静默密钥切换。
 - **R4 冷地址硬白名单**：`coldsign` 只签 `transfer.to == cold_wallet_address` 的转账，其余一律拒签（防在线机被 root 篡改改道）。
 - **R5 xpub 完整性**：服务启动校验 `deposit_xpub` 指纹 == `deposit_xpub_fingerprint`，不符则拒绝启动。
 - **R6 单实例**：监控/广播/对账用 PG advisory lock 保证全局仅一个执行者（单机无需 leader 选举）。
@@ -747,7 +748,9 @@ HD 钱包上线前需要完成的准备工作：
 
 **结论**：用户链上资金对实时 root 免疫；不可在单机绝对保证的仅「内部账本」与「提现目的地」，二者均不导致存款被盗空。
 
-### 8.3 交易包 proto（落地契约）
+### 8.3 交易包 proto（落地契约 — v3 修订，显式密钥源）
+
+**v3 关键变更**：`derivation_index`（隐式——冷签机靠 `from_address == cold_wallet_address` 字符串比较猜测用哪个密钥）替换为 `oneof key_source`（显式——proto 本身声明密钥来源）。意图显式化消除冷签机猜测逻辑，也消除"配置被改后静默切换到错误密钥"的隐患。
 
 ```proto
 enum TxKind {                 // Q6: enum 提供编译期类型检查
@@ -757,44 +760,92 @@ enum TxKind {                 // Q6: enum 提供编译期类型检查
   TX_KIND_UNDELEGATE  = 3;
 }
 
-message UnsignedTx {          // Q7: oneof 按 kind 拆分字段语义
-  bytes raw_tx = 1;           // gotron-sdk 构造的待签原始交易 (设长过期, 近 24h 上限, 供崩溃恢复)
+message UnsignedTx {
+  // ── 跨切面公共字段（冷签机 flat-read，oneof tx 仅用于类型特定逻辑）──
+  TxKind kind         = 1;
+  string from_address = 2;    // 源地址（充值地址 / 能量账户 / 冷钱包）
+  string to_address   = 4;    // 目标地址（冷钱包 / 用户地址 / 能量账户）
+  string amount       = 5;    // 金额（USDT/TRX，decimal string，禁 float）
+  bytes  raw_tx       = 6;    // gotron-sdk 构造的待签原始交易（24h 过期，崩溃恢复窗口）
+  int64  expiry_ms    = 7;    // raw_tx 过期时间戳 (ms)
+  string expected_txid = 8;   // 预期 txid（idempotent broadcast）
+
+  // ── 密钥源（显式声明，v3 新增 — 冷签机不需要猜测用哪个密钥）──
+  oneof key_source {
+    uint32 bip39_derivation_index = 3;  // BIP39 种子派生 m/44'/195'/0'/0/{index}
+                                        // 用于: sweep transfer (分地址 0+),
+                                        //       delegate/undelegate (能量账户 index=0, change chain)
+    bool   cold_wallet_key       = 15;  // 冷钱包独立私钥 (-cold-wallet-key 参数, §2.4.1)
+                                        // 用于: withdrawal transfer
+  }
+
+  // ── 交易类型（Q7: oneof 按 kind 拆分字段语义）──
   oneof tx {
-    DelegateTx   delegate   = 2;
-    TransferTx   transfer   = 3;
-    UndelegateTx undelegate = 4;
+    DelegateTx   delegate   = 10;
+    TransferTx   transfer   = 11;
+    UndelegateTx undelegate = 12;
   }
 }
-message DelegateTx   { string energy_account = 1; string to_address = 2; int64 energy = 3; }
-message UndelegateTx { string energy_account = 1; string to_address = 2; }
-message TransferTx {          // 归集(to=冷钱包) 或 提现(to=用户地址)
-  int32  derivation_index = 1;// 归集: 分地址 index (HD 派生); 提现: 0 (不使用, 冷钱包独立密钥 §2.4.1)
-  string from_address = 2;
-  string to_address = 3;
-  string amount = 4;          // NUMERIC → string (禁 float)
-  WithdrawalAuth auth = 5;    // Q8: 仅提现时填, 归集为空
-  // coldsign 签名分支:
-  //   无 auth + to==cold_wallet → 归集: BIP39 派生 derivation_index 签名
-  //   有 auth + from==cold_wallet → 提现: 冷钱包独立私钥(-cold-wallet-key)签名 §2.4.1
-message WithdrawalAuth {      // Q8: coldsign 据此重建 challenge=sha256(amount|dest|nonce|user_id)
-  string user_id = 1;
-  string nonce = 2;
-  string credential_id = 3;   // WebAuthn 凭证 ID
-  bytes  assertion = 4;       // WebAuthn 断言
+
+message DelegateTx {
+  string energy_account = 1;  // 能量账户 TRC20 地址
+  string resource       = 2;  // "ENERGY"
+}
+message UndelegateTx {
+  string energy_account = 1;
+  string resource       = 2;
+}
+message TransferTx {
+  // v3: derivation_index 移除，改用 UnsignedTx.key_source
+  string token_contract = 1;  // TRC20 合约地址（USDT），空 = TRX
+  WithdrawalAuth auth   = 5;  // Q8: 仅提现时填, 归集为空
 }
 
-message LegacyUnsignedTx_DEPRECATED {
-  string kind = 1;            // 旧平铺结构, 仅作迁移参考, 落地用上方 oneof
-  string from_address = 2;
-  string to_address = 3;
-  string amount = 4;          // NUMERIC → string (禁 float)
-  int64  energy = 5;          // delegate 用
-  bytes  raw_tx = 6;          // gotron-sdk 构造的待签原始交易
-  int32  derivation_index = 7;// transfer: 分地址 index; delegate/undelegate: 能量账户
+message WithdrawalAuth {      // Q8: coldsign 据此重建 challenge=sha256(amount|dest|nonce|user_id)
+  string user_id       = 1;
+  uint64 nonce         = 2;
+  string credential_id = 3;   // WebAuthn 凭证 ID
+  bytes  assertion     = 4;   // WebAuthn 断言
 }
-message UnsignedSweepBundle { repeated UnsignedTx txs = 1; int64 built_at_ms = 2; }
-message SignedTx   { bytes signed_tx = 1; string expected_txid = 2; }
-message SignedSweepBundle { repeated SignedTx txs = 1; }
+
+// ── sweep 场景的 key_source 规则 ──
+//   DelegateTx   → bip39_derivation_index = 0 (能量账户, change chain: m/44'/195'/0'/1/0)
+//                   from_address = energy_account, to_address = deposit_address
+//   TransferTx   → bip39_derivation_index = {分地址 index}
+//                   from_address = deposit_address, to_address = cold_wallet
+//   UndelegateTx → bip39_derivation_index = 0 (能量账户, change chain)
+//                   from_address = energy_account, to_address = deposit_address
+//
+// ── withdrawal 场景的 key_source 规则 ──
+//   TransferTx   → cold_wallet_key = true
+//                   from_address = cold_wallet, to_address = 用户白名单地址
+
+message LegacyUnsignedTx_DEPRECATED {
+  // 旧平铺结构，仅作迁移参考。v3 落地用上方 oneof key_source。
+  string kind = 1; string from_address = 2; string to_address = 3;
+  string amount = 4; int64 energy = 5; bytes raw_tx = 6;
+  int32 derivation_index = 7;
+}
+message UnsignedSweepBundle {
+  repeated UnsignedTx txs = 1;
+  string bundle_id        = 2;    // 唯一 batch_id（跨在线机/冷签机关联）
+  int64  built_at_ms      = 3;    // 构建时间（expiry 判断）
+  string xpub_fingerprint = 4;    // xpub 指纹（冷签机验证身份）
+}
+message SignedTx {
+  TxKind kind            = 1;
+  string from_address    = 2;
+  string to_address      = 3;
+  string amount          = 4;
+  bytes  signed_tx_data  = 5;    // 已签名的 TRON 交易数据
+  string tx_hash         = 6;    // 匹配 UnsignedTx.expected_txid
+}
+message SignedSweepBundle {
+  repeated SignedTx txs  = 1;
+  string bundle_id       = 2;    // 匹配 UnsignedSweepBundle.bundle_id
+  int64  signed_at       = 3;    // 签名时间戳 (ms)
+  string xpub_fingerprint = 4;   // 已验证的 xpub 指纹
+}
 ```
 
 ### 8.4 提现（后续功能，同一模型）
@@ -930,10 +981,13 @@ cmd/hdgen (离线):  生成助记词 → seed → 派生 account xpub
 cmd/coldsign (离线): 读 UnsignedSweepBundle(proto)
   1) seed := mnemonic (启动时手输, 不落盘)
      cold_sk := 冷钱包私钥 (-cold-wallet-key hex 参数, §2.4.1)
-  2) 每条 tx 按 oneof 派生/选择私钥:
-     - TransferTx + from==coldWalletAddr → 用 cold_sk 签名 (提现, §2.4.1)
-     - TransferTx + from!=coldWalletAddr → 按 derivation_index 派生分地址私钥 (归集)
-     - DelegateTx/UndelegateTx → 按能量账户固定路径 m/44'/195'/0'/1/0
+  2) 每条 tx 按 UnsignedTx.key_source (R3b) 选择私钥:
+     - key_source = bip39_derivation_index X:
+         Transfer → m/44'/195'/0'/0/X (归集分地址)
+         Delegate/Undelegate → m/44'/195'/0'/1/0 (能量账户, 固定路径; key_source index 仅用于验证)
+     - key_source = cold_wallet_key:
+         → 用 cold_sk 签名 (提现, §2.4.1)
+     - key_source 未设置 → abort (proto 不合法)
   3) 白名单(R4): TransferTx + 无 auth → to 必须==cold_wallet_address, 否则 abort;
                  TransferTx + 有 auth → 验 WebAuthn 断言 + dest∈白名单 + 限额
   4) 打印 tx 类型/from/to/amount 供 operator 核对
