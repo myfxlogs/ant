@@ -601,32 +601,37 @@ message ListMyDepositsResponse {
 ```
 backend/internal/
 ├── hdwallet/
-│   ├── xpub.go             # HD 公开派生 (使用 btcutil/hdkeychain, 仅 xpub, 无私钥)
-│   ├── tron.go             # Tron 地址生成 (从公钥; 在线不签名)
-│   └── wallet_test.go
+│   ├── xpub.go              # HD 公开派生 (watch-only, 仅 xpub, 无私钥)
+│   ├── derive_priv.go       # 私钥派生 (仅 cmd/coldsign 使用, 不引入在线代码)
+│   ├── sign_tron.go         # TRON 交易签名 (仅 cmd/coldsign 使用)
+│   └── wallet.go            # BIP39 助记词生成 (cmd/hdgen)
 ├── chain/
-│   ├── monitor.go          # 链上监控 worker
-│   ├── verify.go           # 交易验证 + 多源交叉
-│   ├── tron_grid.go        # TronGrid API client
-│   ├── tron_scan.go        # TronScan API client (备源)
-│   └── monitor_test.go
+│   ├── monitor.go           # 链上监控 worker (区块事件扫描 + 双源验证)
+│   ├── tron_grid.go         # TronGrid API client (主源)
+│   └── tron_scan.go         # TronScan API client (备源)
 ├── sweep/                   # 在线侧: 只构建与广播, 不签名
 │   ├── builder.go           # 构建 UnsignedSweepBundle (delegate/transfer/undelegate)
-│   ├── broadcaster.go       # 导入 SignedSweepBundle → 按序广播
-│   ├── state.go             # sweep_logs 状态机 + reconfirmation + 防双花
-│   ├── energy.go            # Energy 需求计算 (DEM) - 仅计算, 不签名
-│   └── sweep_test.go
+│   ├── batch_builder.go     # 批量构建 (多地址一个 USB 往返)
+│   ├── broadcaster.go       # 导入 SignedSweepBundle → 按序广播 + 确认
+│   ├── state.go             # 状态机: ReconfirmSweeping + CheckDoubleSpend + 防双花
+│   ├── worker.go            # Worker 周期: 仅保留 ReconfirmSweeping + resumeBroadcasting
+│   ├── tron_client.go       # TRON gRPC client (构建交易 + 广播 + 确认)
+│   ├── admin.go             # Admin RPC: Dashboard + Export/Import Bundle
+│   ├── interfaces.go        # 接口定义 (TronClient/SweepRepo/TronGrid)
+│   ├── repo.go              # BundleRepository (未签名/已签名 bundle 持久化)
+│   └── sweep_test.go        # Broadcaster + StateMachine 测试 (884 行)
 ├── reconcile/
-│   ├── reconcile.go        # 两阶段对账 (内部 6h + 链上 24h)
-│   └── reconcile_test.go
+│   └── reconcile.go         # 两阶段对账 (内部 6h + 链上 24h)
 ├── service/
-│   ├── deposit_service.go  # 修改: 自动确认入账逻辑
-│   └── wallet_service.go   # 修改: xpub 地址派生/分配
+│   ├── deposit_service.go   # 充值: 地址派生 + 按需分配 + 到账确认入账
+│   ├── withdrawal_builder.go # 提现 Bundle 构建 (Admin 手动触发)
+│   └── webauthn_withdrawal.go # WebAuthn 提现: Begin → Passkey 签名 → Finish → 冻结
 ├── repository/
-│   └── deposit_address_repo.go  # 新增 (无 wallet_secrets_repo, 服务器零私钥)
-└── connect/
-    ├── user/deposit_handler.go   # 修改: GetDepositAddress RPC
-    └── admin/sweep_handler.go    # 新增: 归集看板 + 构建/广播 RPC
+│   ├── deposit_repo_v2.go   # deposits / sweep_logs / sweep_bundles CRUD
+│   └── sweep_log_repo.go    # sweep_logs 3 腿状态管理
+└── connect/user/
+    ├── deposit_handler.go   # DepositService RPC (充值 + 归集 Admin 操作)
+    └── sweep_handler.go     # Sweep RPC: Dashboard + Export/Import Bundle + Undelegate
 
 backend/cmd/
 ├── hdgen/
@@ -719,7 +724,7 @@ HD 钱包上线前需要完成的准备工作：
 
 ## 8. 单机气隙冷签名安全模型（落地权威约束）
 
-> 本节为 GLM 落地的**强制约束**，与前文任何自动归集/在线私钥表述冲突时以本节为准。
+> 本节为 GLM 落地的**强制约束**。归集和提现均为 Admin 手动触发（§2.7），系统自动执行已签名的 Bundle 广播和链上确认。
 
 ### 8.1 不可违反的红线
 
@@ -737,6 +742,7 @@ HD 钱包上线前需要完成的准备工作：
 |---|---|---|
 | 分地址 USDT / 冷钱包 USDT | ✅ 完全免疫 | 私钥永不在线机 (R1/R2) |
 | 归集不被改道 | ✅ | 冷地址硬白名单 (R4) |
+| 密钥不被静默切换 | ✅ | key_source 显式声明 (R3b)，冷签机不猜测 |
 | 新地址不被劫持 | ✅ | xpub 指纹校验 + 地址审计 (R5/§2.4) |
 | 能量账户 TRX | ✅ | 能量账户私钥也在冷机 |
 | 内部账本完整性 | ⚠️ 不可绝对保证 | 持续 root 可篡改 DB；靠链上对账检测 + 从链重建 |
@@ -1020,7 +1026,9 @@ BroadcastBundle(signed *antv1.SignedSweepBundle) error  // 按序: delegate→�
 
 **保留：** Builder、Broadcaster、StateMachine、CheckDoubleSpend、ReconfirmSweeping（追踪已广播 bundle 状态）。
 
-**删除/停用：** 自动 buildPendingBundles 定时器调用、expireStalePendingSign、resumeBroadcasting（改为 admin 在 Dashboard 查看状态后手动触发）。
+**删除/停用：** 自动 `buildPendingBundles` 定时器调用、`expireStalePendingSign`。
+**保留：** `resumeBroadcasting` — 崩溃恢复。Admin 导入签名包后广播过程中服务重启，需要自动恢复。
+**保留：** `ReconfirmSweeping` — 追踪已广播但未确认的腿状态。
 
 **验收：** Admin Dashboard 选地址 → 构建 Bundle → 导出 → 冷签 → 导入 → 系统自动广播 3 腿 → Dashboard 显示进度。模拟 DB 写 tx_hash 前崩溃 + 链上已成功 → 重试不产生第二笔。
 
