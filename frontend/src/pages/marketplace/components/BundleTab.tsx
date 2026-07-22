@@ -47,7 +47,7 @@ export default function BundleTab() {
       const vals = await form.validateFields();
       const ids = strategyIdsRaw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
       if (ids.length < 2) {
-        message.error(t('marketplace.bundle.needTwoStrategies', '至少选择 2 个策略'));
+        message.error(t('marketplace.bundle.needTwoStrategies'));
         return;
       }
       setCreating(true);
@@ -59,13 +59,13 @@ export default function BundleTab() {
         strategyIds: ids,
         platformFeeRate: vals.platformFeeRate || '0.10',
       }));
-      message.success(t('marketplace.bundle.created', '捆绑包创建成功'));
+      message.success(t('marketplace.bundle.created'));
       setCreateOpen(false);
       form.resetFields();
       setStrategyIdsRaw('');
       fetchBundles();
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.bundle.createFailed', '创建失败'));
+      message.error(e?.message || t('marketplace.bundle.createFailed'));
     } finally {
       setCreating(false);
     }
@@ -76,10 +76,10 @@ export default function BundleTab() {
     setPurchasing(bundleId);
     try {
       const resp = await marketplaceClient.purchaseBundle(create(PurchaseBundleRequestSchema, { bundleId, idempotencyKey }));
-      message.success(t('marketplace.bundle.purchased', '购买成功！已订阅包内所有策略。'));
+      message.success(t('marketplace.bundle.purchased'));
       fetchBundles();
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.bundle.purchaseFailed', '购买失败'));
+      message.error(e?.message || t('marketplace.bundle.purchaseFailed'));
     } finally {
       setPurchasing(null);
     }
@@ -88,24 +88,24 @@ export default function BundleTab() {
   const handleDelete = useCallback(async (bundleId: string) => {
     try {
       await marketplaceClient.deleteBundle(create(DeleteBundleRequestSchema, { bundleId }));
-      message.success(t('marketplace.bundle.deleted', '已删除'));
+      message.success(t('marketplace.bundle.deleted'));
       fetchBundles();
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.bundle.deleteFailed', '删除失败'));
+      message.error(e?.message || t('marketplace.bundle.deleteFailed'));
     }
   }, [t, fetchBundles]);
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <Text strong style={{ fontSize: 15 }}>{t('marketplace.bundle.title', '策略捆绑包')}</Text>
+        <Text strong style={{ fontSize: 15 }}>{t('marketplace.bundle.title')}</Text>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-          {t('marketplace.bundle.create', '创建捆绑包')}
+          {t('marketplace.bundle.create')}
         </Button>
       </div>
 
       {bundles.length === 0 && !loading ? (
-        <Empty description={t('marketplace.bundle.empty', '暂无捆绑包')} />
+        <Empty description={t('marketplace.bundle.empty')} />
       ) : (
         <Table<BundleInfo>
           rowKey="id"
@@ -115,7 +115,7 @@ export default function BundleTab() {
           size="small"
           columns={[
             {
-              title: t('marketplace.bundle.name', '名称'), dataIndex: 'title', key: 'title',
+              title: t('marketplace.bundle.name'), dataIndex: 'title', key: 'title',
               render: (v: string, row: BundleInfo) => (
                 <div>
                   <Text strong>{v}</Text>
@@ -125,7 +125,7 @@ export default function BundleTab() {
               ),
             },
             {
-              title: t('marketplace.bundle.strategies', '包含策略'), key: 'items',
+              title: t('marketplace.bundle.strategies'), key: 'items',
               render: (_: unknown, row: BundleInfo) => (
                 <Space wrap>
                   {(row.items || []).map((item, i) => (
@@ -135,21 +135,21 @@ export default function BundleTab() {
               ),
             },
             {
-              title: t('marketplace.detail.price', '价格'), key: 'price',
+              title: t('marketplace.detail.price'), key: 'price',
               render: (_: unknown, row: BundleInfo) => (
                 <Tag color={row.priceModel === 'once' ? 'gold' : 'blue'}>
                   {row.priceModel === 'once'
                     ? `¥${row.priceAmount}`
-                    : `¥${row.priceAmount}/${t('marketplace.bundle.month', '月')}`}
+                    : `¥${row.priceAmount}/${t('marketplace.bundle.month')}`}
                 </Tag>
               ),
               width: 120,
             },
             {
-              title: t('marketplace.bundle.purchases', '购买数'), dataIndex: 'totalPurchases', key: 'purchases', width: 80,
+              title: t('marketplace.bundle.purchases'), dataIndex: 'totalPurchases', key: 'purchases', width: 80,
             },
             {
-              title: t('marketplace.bundle.actions', '操作'), key: 'actions', width: 160,
+              title: t('marketplace.bundle.actions'), key: 'actions', width: 160,
               render: (_: unknown, row: BundleInfo) => (
                 <Space>
                   <Button
@@ -157,11 +157,11 @@ export default function BundleTab() {
                     loading={purchasing === row.id}
                     onClick={() => handlePurchase(row.id)}
                   >
-                    {t('marketplace.bundle.buy', '购买')}
+                    {t('marketplace.bundle.buy')}
                   </Button>
                   {row.publisherId === user?.id && (
                     <Popconfirm
-                      title={t('marketplace.bundle.confirmDelete', '确认删除此捆绑包？')}
+                      title={t('marketplace.bundle.confirmDelete')}
                       onConfirm={() => handleDelete(row.id)}
                     >
                       <Button danger size="small" icon={<DeleteOutlined />} />
@@ -175,37 +175,37 @@ export default function BundleTab() {
       )}
 
       <Modal
-        title={t('marketplace.bundle.createTitle', '创建策略捆绑包')}
+        title={t('marketplace.bundle.createTitle')}
         open={createOpen}
         onOk={handleCreate}
         onCancel={() => setCreateOpen(false)}
         confirmLoading={creating}
-        okText={t('marketplace.bundle.create', '创建')}
+        okText={t('marketplace.bundle.create')}
         width={600}
       >
         <Form form={form} layout="vertical" initialValues={{ priceModel: 'once', platformFeeRate: '0.10' }}>
-          <Form.Item name="title" label={t('marketplace.bundle.nameLabel', '捆绑包名称')} rules={[{ required: true }]}>
-            <Input placeholder={t('marketplace.bundle.namePlaceholder', '如：趋势跟踪三件套')} />
+          <Form.Item name="title" label={t('marketplace.bundle.nameLabel')} rules={[{ required: true }]}>
+            <Input placeholder={t('marketplace.bundle.namePlaceholder')} />
           </Form.Item>
-          <Form.Item name="description" label={t('marketplace.bundle.descLabel', '描述')}>
-            <Input.TextArea rows={2} placeholder={t('marketplace.bundle.descPlaceholder', '描述捆绑包的优势...')} />
+          <Form.Item name="description" label={t('marketplace.bundle.descLabel')}>
+            <Input.TextArea rows={2} placeholder={t('marketplace.bundle.descPlaceholder')} />
           </Form.Item>
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item name="priceModel" label={t('marketplace.bundle.priceModel', '定价模式')}>
+              <Form.Item name="priceModel" label={t('marketplace.bundle.priceModel')}>
                 <Select options={[
-                  { value: 'once', label: t('marketplace.bundle.once', '一次性购买') },
-                  { value: 'subscription', label: t('marketplace.bundle.subscription', '按月订阅') },
+                  { value: 'once', label: t('marketplace.bundle.once') },
+                  { value: 'subscription', label: t('marketplace.bundle.subscription') },
                 ]} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="priceAmount" label={t('marketplace.bundle.priceAmount', '价格 (¥)')} rules={[{ required: true }]}>
+              <Form.Item name="priceAmount" label={t('marketplace.bundle.priceAmount')} rules={[{ required: true }]}>
                 <InputNumber min={0} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label={t('marketplace.bundle.strategyIds', '策略 ID（每行一个）')} required>
+          <Form.Item label={t('marketplace.bundle.strategyIds')} required>
             <Input.TextArea
               rows={4}
               value={strategyIdsRaw}
@@ -213,7 +213,7 @@ export default function BundleTab() {
               placeholder={'uuid1\nuuid2\nuuid3'}
             />
           </Form.Item>
-          <Form.Item name="platformFeeRate" label={t('marketplace.bundle.platformFee', '平台费率')}>
+          <Form.Item name="platformFeeRate" label={t('marketplace.bundle.platformFee')}>
             <Input placeholder="0.10" />
           </Form.Item>
         </Form>

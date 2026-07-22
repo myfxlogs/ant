@@ -105,23 +105,23 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
   if (loading) return <Spin style={{ display: 'block', padding: 40 }} />;
 
   if (!hasData && !isOwner) {
-    return <Empty description={t('marketplace.live.noData', { defaultValue: 'No live performance data yet' })} style={{ padding: 40 }} />;
+    return <Empty description={t('marketplace.live.noData')} style={{ padding: 40 }} />;
   }
 
   if (!hasData && isOwner) {
     return (
       <div style={{ padding: 16 }}>
-        <Empty description={t('marketplace.live.linkAccount', { defaultValue: 'Link a live account to start tracking performance' })} />
+        <Empty description={t('marketplace.live.linkAccount')} />
         <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'center' }}>
           <Select
-            placeholder={t('marketplace.live.selectAccount', { defaultValue: 'Select account' })}
+            placeholder={t('marketplace.live.selectAccount')}
             style={{ width: 240 }}
             value={selectedAccount || undefined}
             onChange={setSelectedAccount}
             options={accounts}
           />
           <Button type="primary" loading={linking} disabled={!selectedAccount} onClick={handleLink}>
-            {t('marketplace.live.link', { defaultValue: 'Link' })}
+            {t('marketplace.live.link')}
           </Button>
         </div>
       </div>
@@ -133,21 +133,21 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
       {summary && (
         <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
           <Col span={6}>
-            <Card size="small"><Statistic title={t('marketplace.live.totalReturn', { defaultValue: 'Total Return' })} value={summary.totalReturn} valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
+            <Card size="small"><Statistic title={t('marketplace.live.totalReturn')} value={summary.totalReturn} valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
           </Col>
           <Col span={6}>
-            <Card size="small"><Statistic title={t('marketplace.live.maxDrawdown', { defaultValue: 'Max Drawdown' })} value={summary.maxDrawdown} valueStyle={{ fontSize: 16, fontFamily: 'monospace', color: '#ef5350' }} /></Card>
+            <Card size="small"><Statistic title={t('marketplace.live.maxDrawdown')} value={summary.maxDrawdown} valueStyle={{ fontSize: 16, fontFamily: 'monospace', color: '#ef5350' }} /></Card>
           </Col>
           <Col span={6}>
-            <Card size="small"><Statistic title={t('marketplace.live.sharpe', { defaultValue: 'Sharpe' })} value={summary.sharpeRatio || '-'} valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
+            <Card size="small"><Statistic title={t('marketplace.live.sharpe')} value={summary.sharpeRatio || '-'} valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
           </Col>
           <Col span={6}>
-            <Card size="small"><Statistic title={t('marketplace.live.winRate', { defaultValue: 'Win Rate' })} value={summary.winRate || '-'} valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
+            <Card size="small"><Statistic title={t('marketplace.live.winRate')} value={summary.winRate || '-'} valueStyle={{ fontSize: 16, fontFamily: 'monospace' }} /></Card>
           </Col>
         </Row>
       )}
 
-      <Card size="small" title={t('marketplace.live.equityCurve', { defaultValue: 'Equity Curve' })}>
+      <Card size="small" title={t('marketplace.live.equityCurve')}>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -161,9 +161,9 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
 
       {summary && (
         <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>
-          {t('marketplace.live.trackingSince', { defaultValue: 'Tracking since' })}: {summary.trackingSince}
+          {t('marketplace.live.trackingSince')}: {summary.trackingSince}
           {' | '}
-          {t('marketplace.live.lastUpdated', { defaultValue: 'Last updated' })}: {summary.lastUpdated}
+          {t('marketplace.live.lastUpdated')}: {summary.lastUpdated}
         </Text>
       )}
     </div>

@@ -25,14 +25,14 @@ const STATUS_COLORS: Record<string, string> = {
 
 function BacktestCompare({ original, optimized }: { original?: BacktestSnapshot; optimized?: BacktestSnapshot }) {
   const { t } = useTranslation();
-  if (!original && !optimized) return <Empty description={t('marketplace.optimization.noBacktest', '无回测数据')} />;
+  if (!original && !optimized) return <Empty description={t('marketplace.optimization.noBacktest')} />;
   const metrics: [string, string | undefined, string | undefined][] = [
-    [t('marketplace.optimization.totalReturn', '总收益'), original?.totalReturn, optimized?.totalReturn],
-    [t('marketplace.optimization.annualReturn', '年化收益'), original?.annualReturn, optimized?.annualReturn],
-    [t('marketplace.optimization.maxDrawdown', '最大回撤'), original?.maxDrawdown, optimized?.maxDrawdown],
-    [t('marketplace.optimization.sharpe', '夏普比率'), original?.sharpeRatio, optimized?.sharpeRatio],
-    [t('marketplace.optimization.winRate', '胜率'), original?.winRate, optimized?.winRate],
-    [t('marketplace.optimization.totalTrades', '总交易数'), original?.totalTrades?.toString(), optimized?.totalTrades?.toString()],
+    [t('marketplace.optimization.totalReturn'), original?.totalReturn, optimized?.totalReturn],
+    [t('marketplace.optimization.annualReturn'), original?.annualReturn, optimized?.annualReturn],
+    [t('marketplace.optimization.maxDrawdown'), original?.maxDrawdown, optimized?.maxDrawdown],
+    [t('marketplace.optimization.sharpe'), original?.sharpeRatio, optimized?.sharpeRatio],
+    [t('marketplace.optimization.winRate'), original?.winRate, optimized?.winRate],
+    [t('marketplace.optimization.totalTrades'), original?.totalTrades?.toString(), optimized?.totalTrades?.toString()],
   ];
   return (
     <Row gutter={[8, 8]}>
@@ -47,7 +47,7 @@ function BacktestCompare({ original, optimized }: { original?: BacktestSnapshot;
                 prefix={improved ? <CheckOutlined style={{ color: '#52c41a' }} /> : undefined}
               />
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {t('marketplace.optimization.original', '原版')}: {orig || '-'}
+                {t('marketplace.optimization.original')}: {orig || '-'}
               </Text>
             </Card>
           </Col>
@@ -95,7 +95,7 @@ export default function OptimizationTab() {
       const resp = await marketplaceClient.previewOptimization(create(PreviewOptimizationRequestSchema, { taskId }));
       setPreviewData(resp);
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.previewFailed', '预览失败'));
+      message.error(e?.message || t('marketplace.optimization.previewFailed'));
       setPreviewData(null);
     } finally {
       setPreviewLoading(false);
@@ -106,10 +106,10 @@ export default function OptimizationTab() {
     setActionLoading(taskId);
     try {
       await marketplaceClient.rejectOptimizationTask(create(RejectOptimizationTaskRequestSchema, { taskId }));
-      message.success(t('marketplace.optimization.rejected', '已拒绝'));
+      message.success(t('marketplace.optimization.rejected'));
       fetchTasks();
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.rejectFailed', '操作失败'));
+      message.error(e?.message || t('marketplace.optimization.rejectFailed'));
     } finally {
       setActionLoading(null);
     }
@@ -122,7 +122,7 @@ export default function OptimizationTab() {
       message.success(t('marketplace.optimization.published', `已发布新版本 v${resp.versionId}`));
       fetchTasks();
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.publishFailed', '发布失败'));
+      message.error(e?.message || t('marketplace.optimization.publishFailed'));
     } finally {
       setActionLoading(null);
     }
@@ -141,12 +141,12 @@ export default function OptimizationTab() {
         score: resp.decayScore,
       });
       if (resp.isDecaying) {
-        message.warning(t('marketplace.optimization.decayDetected', '检测到策略衰减！'));
+        message.warning(t('marketplace.optimization.decayDetected'));
       } else {
-        message.success(t('marketplace.optimization.noDecay', '策略表现正常'));
+        message.success(t('marketplace.optimization.noDecay'));
       }
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.detectFailed', '检测失败'));
+      message.error(e?.message || t('marketplace.optimization.detectFailed'));
     } finally {
       setDecayLoading(false);
     }
@@ -157,15 +157,15 @@ export default function OptimizationTab() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Text strong style={{ fontSize: 15 }}>
           <ThunderboltOutlined style={{ marginRight: 8 }} />
-          {t('marketplace.optimization.title', 'AI 策略优化')}
+          {t('marketplace.optimization.title')}
         </Text>
       </div>
 
       {/* ── Decay Detection ── */}
-      <Card size="small" style={{ marginBottom: 16 }} title={t('marketplace.optimization.decayDetection', '衰减检测')}>
+      <Card size="small" style={{ marginBottom: 16 }} title={t('marketplace.optimization.decayDetection')}>
         <Space>
           <Input
-            placeholder={t('marketplace.optimization.strategyIdPlaceholder', '输入策略 ID')}
+            placeholder={t('marketplace.optimization.strategyIdPlaceholder')}
             value={decayStrategyId}
             onChange={e => setDecayStrategyId(e.target.value)}
             style={{ width: 360 }}
@@ -176,7 +176,7 @@ export default function OptimizationTab() {
             onClick={handleDetectDecay}
             icon={<ExperimentOutlined />}
           >
-            {t('marketplace.optimization.detect', '检测衰减')}
+            {t('marketplace.optimization.detect')}
           </Button>
         </Space>
         {decayResult && (
@@ -186,17 +186,17 @@ export default function OptimizationTab() {
             showIcon
             icon={decayResult.isDecaying ? <WarningOutlined /> : <CheckOutlined />}
             message={decayResult.isDecaying
-              ? t('marketplace.optimization.decayDetected', '检测到策略衰减！')
-              : t('marketplace.optimization.noDecay', '策略表现正常')}
+              ? t('marketplace.optimization.decayDetected')
+              : t('marketplace.optimization.noDecay')}
             description={decayResult.isDecaying
-              ? `${t('marketplace.optimization.decayScore', '衰减评分')}: ${decayResult.score}/3 — ${t('marketplace.optimization.decayHint', '建议创建优化任务以改进策略')}`
-              : `${t('marketplace.optimization.decayScore', '衰减评分')}: ${decayResult.score}/3`}
+              ? `${t('marketplace.optimization.decayScore')}: ${decayResult.score}/3 — ${t('marketplace.optimization.decayHint')}`
+              : `${t('marketplace.optimization.decayScore')}: ${decayResult.score}/3`}
           />
         )}
       </Card>
 
       {/* ── Optimization Tasks ── */}
-      <Card size="small" title={t('marketplace.optimization.tasks', '优化任务列表')}>
+      <Card size="small" title={t('marketplace.optimization.tasks')}>
         <Space style={{ marginBottom: 12 }}>
           {['', 'pending', 'completed', 'rejected', 'published'].map(s => (
             <Button
@@ -205,12 +205,12 @@ export default function OptimizationTab() {
               type={statusFilter === s ? 'primary' : 'default'}
               onClick={() => setStatusFilter(s)}
             >
-              {s === '' ? t('marketplace.optimization.all', '全部') : s}
+              {s === '' ? t('marketplace.optimization.all') : s}
             </Button>
           ))}
         </Space>
         {tasks.length === 0 && !loading ? (
-          <Empty description={t('marketplace.optimization.noTasks', '暂无优化任务')} />
+          <Empty description={t('marketplace.optimization.noTasks')} />
         ) : (
           <Table<OptimizationTaskInfo>
             rowKey="id"
@@ -219,33 +219,33 @@ export default function OptimizationTab() {
             pagination={{ pageSize: 10, total }}
             size="small"
             columns={[
-              { title: t('marketplace.optimization.strategyId', '策略'), dataIndex: 'strategyId', key: 'sid', width: 120, render: (v: string) => <Text copyable style={{ fontSize: 12 }}>{v?.slice(0, 8)}...</Text> },
-              { title: t('marketplace.optimization.status', '状态'), dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <Tag color={STATUS_COLORS[s] || 'default'}>{s}</Tag> },
-              { title: t('marketplace.optimization.trigger', '触发原因'), dataIndex: 'triggerReason', key: 'trigger', width: 120, ellipsis: true },
-              { title: t('marketplace.optimization.changeSummary', '变更摘要'), dataIndex: 'changeSummary', key: 'summary', ellipsis: true },
+              { title: t('marketplace.optimization.strategyId'), dataIndex: 'strategyId', key: 'sid', width: 120, render: (v: string) => <Text copyable style={{ fontSize: 12 }}>{v?.slice(0, 8)}...</Text> },
+              { title: t('marketplace.optimization.status'), dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <Tag color={STATUS_COLORS[s] || 'default'}>{s}</Tag> },
+              { title: t('marketplace.optimization.trigger'), dataIndex: 'triggerReason', key: 'trigger', width: 120, ellipsis: true },
+              { title: t('marketplace.optimization.changeSummary'), dataIndex: 'changeSummary', key: 'summary', ellipsis: true },
               {
-                title: t('marketplace.optimization.actions', '操作'), key: 'actions', width: 240,
+                title: t('marketplace.optimization.actions'), key: 'actions', width: 240,
                 render: (_: unknown, row: OptimizationTaskInfo) => (
                   <Space>
                     {row.status === 'completed' && (
                       <>
                         <Button size="small" icon={<EyeOutlined />} onClick={() => handlePreview(row.id)}>
-                          {t('marketplace.optimization.preview', '预览')}
+                          {t('marketplace.optimization.preview')}
                         </Button>
                         <Button size="small" type="primary" icon={<CheckOutlined />}
                           loading={actionLoading === row.id}
                           onClick={() => handlePublish(row.id)}>
-                          {t('marketplace.optimization.publish', '发布')}
+                          {t('marketplace.optimization.publish')}
                         </Button>
                         <Button size="small" danger icon={<CloseOutlined />}
                           loading={actionLoading === row.id}
                           onClick={() => handleReject(row.id)}>
-                          {t('marketplace.optimization.reject', '拒绝')}
+                          {t('marketplace.optimization.reject')}
                         </Button>
                       </>
                     )}
                     {row.status === 'published' && (
-                      <Tag color="green">{t('marketplace.optimization.versionId', '版本')}: {row.publishedVersionId?.slice(0, 8)}</Tag>
+                      <Tag color="green">{t('marketplace.optimization.versionId')}: {row.publishedVersionId?.slice(0, 8)}</Tag>
                     )}
                   </Space>
                 ),
@@ -257,27 +257,27 @@ export default function OptimizationTab() {
 
       {/* ── Preview Modal ── */}
       <Modal
-        title={t('marketplace.optimization.previewTitle', '优化预览对比')}
+        title={t('marketplace.optimization.previewTitle')}
         open={previewOpen}
         onCancel={() => { setPreviewOpen(false); setPreviewData(null); }}
         footer={null}
         width={900}
       >
         {previewLoading ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>{t('common.loading', '加载中...')}</div>
+          <div style={{ textAlign: 'center', padding: 40 }}>{t('common.loading')}</div>
         ) : previewData ? (
           <div>
             <Descriptions size="small" column={2} style={{ marginBottom: 16 }}>
-              <Descriptions.Item label={t('marketplace.optimization.trigger', '触发原因')}>{previewData.task?.triggerReason}</Descriptions.Item>
-              <Descriptions.Item label={t('marketplace.optimization.status', '状态')}><Tag color={STATUS_COLORS[previewData.task?.status || '']}>{previewData.task?.status}</Tag></Descriptions.Item>
-              <Descriptions.Item label={t('marketplace.optimization.changeSummary', '变更摘要')} span={2}>{previewData.changeSummary}</Descriptions.Item>
+              <Descriptions.Item label={t('marketplace.optimization.trigger')}>{previewData.task?.triggerReason}</Descriptions.Item>
+              <Descriptions.Item label={t('marketplace.optimization.status')}><Tag color={STATUS_COLORS[previewData.task?.status || '']}>{previewData.task?.status}</Tag></Descriptions.Item>
+              <Descriptions.Item label={t('marketplace.optimization.changeSummary')} span={2}>{previewData.changeSummary}</Descriptions.Item>
             </Descriptions>
 
             {previewData.decayMetrics && (
               <Alert
                 type="warning"
                 style={{ marginBottom: 16 }}
-                message={t('marketplace.optimization.decayMetrics', '衰减指标')}
+                message={t('marketplace.optimization.decayMetrics')}
                 description={
                   <Descriptions size="small" column={2} style={{ marginTop: 8 }}>
                     <Descriptions.Item label="Decay Score">{previewData.decayMetrics.decayScore}</Descriptions.Item>
@@ -291,12 +291,12 @@ export default function OptimizationTab() {
             )}
 
             <Text strong style={{ display: 'block', marginBottom: 8 }}>
-              {t('marketplace.optimization.backtestCompare', '回测对比')}
+              {t('marketplace.optimization.backtestCompare')}
             </Text>
             <BacktestCompare original={previewData.originalBacktest} optimized={previewData.optimizedBacktest} />
 
             {previewData.suggestedCodePreview && (
-              <Card size="small" style={{ marginTop: 16 }} title={t('marketplace.optimization.codePreview', '优化后代码预览')}>
+              <Card size="small" style={{ marginTop: 16 }} title={t('marketplace.optimization.codePreview')}>
                 <pre style={{ maxHeight: 300, overflow: 'auto', fontSize: 12, background: '#f5f5f5', padding: 12, borderRadius: 8 }}>
                   {previewData.suggestedCodePreview}
                 </pre>

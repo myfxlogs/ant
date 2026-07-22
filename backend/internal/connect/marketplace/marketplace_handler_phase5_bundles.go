@@ -43,10 +43,6 @@ func (s *MarketplaceServer) ListBundles(
 	ctx context.Context,
 	req *connect.Request[antv1.ListBundlesRequest],
 ) (*connect.Response[antv1.ListBundlesResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
 	m := req.Msg
 	bundles, total, err := s.svc.ListBundles(ctx, m.GetPublisherId(), int(m.GetLimit()), int(m.GetOffset()))
 	if err != nil {
@@ -68,11 +64,6 @@ func (s *MarketplaceServer) GetBundle(
 	ctx context.Context,
 	req *connect.Request[antv1.GetBundleRequest],
 ) (*connect.Response[antv1.GetBundleResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-
 	b, err := s.svc.GetBundle(ctx, req.Msg.GetBundleId())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, err)

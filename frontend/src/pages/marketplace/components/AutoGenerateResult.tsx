@@ -1,6 +1,6 @@
 import { Alert, Button, Space, Row, Col, Statistic, Tag } from 'antd';
 import { DollarOutlined } from '@ant-design/icons';
-import type { TFunction } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 interface AutoGenerateResultProps {
   stage: 'completed' | 'failed';
@@ -33,13 +33,13 @@ export default function AutoGenerateResult({
         <Alert
           type="error"
           showIcon
-          message={`${t('marketplace.autogen.failedAt', { defaultValue: 'Failed at' })}: ${errorStage}`}
+          message={`${t('marketplace.autogen.failedAt')}: ${errorStage}`}
           description={errorDetail}
           style={{ marginBottom: 16 }}
         />
         <Space>
-          {retryable && <Button type="primary" onClick={onRetry}>{t('marketplace.autogen.retry', { defaultValue: 'Retry' })}</Button>}
-          <Button onClick={onReset}>{t('marketplace.autogen.modify', { defaultValue: 'Modify Request' })}</Button>
+          {retryable && <Button type="primary" onClick={onRetry}>{t('marketplace.autogen.retry')}</Button>}
+          <Button onClick={onReset}>{t('marketplace.autogen.modify')}</Button>
         </Space>
       </div>
     );
@@ -51,13 +51,13 @@ export default function AutoGenerateResult({
         <Alert
           type="warning"
           showIcon
-          message={t('marketplace.autogen.qualityFailed', { defaultValue: 'Strategy generated but did not pass quality gates' })}
+          message={t('marketplace.autogen.qualityFailed')}
           description={
             <div>
               {violations.map((v, i) => (
                 <div key={i}>
                   <Tag color="orange">{v.metric}</Tag>
-                  <span>{t('marketplace.autogen.actual', { defaultValue: 'Actual' })}: {v.actual} / {t('marketplace.autogen.threshold', { defaultValue: 'Threshold' })}: {v.threshold}</span>
+                  <span>{t('marketplace.autogen.actual')}: {v.actual} / {t('marketplace.autogen.threshold')}: {v.threshold}</span>
                 </div>
               ))}
             </div>
@@ -68,7 +68,7 @@ export default function AutoGenerateResult({
         <Alert
           type="success"
           showIcon
-          message={t('marketplace.autogen.success', { defaultValue: 'Strategy generated and published successfully!' })}
+          message={t('marketplace.autogen.success')}
           style={{ marginBottom: 16 }}
         />
       )}
@@ -86,12 +86,12 @@ export default function AutoGenerateResult({
       {result?.strategyId && (
         <Space>
           <Button type="primary" href={`#/marketplace?strategy=${result.strategyId}`}>
-            {t('marketplace.autogen.viewDetail', { defaultValue: 'View Strategy' })}
+            {t('marketplace.autogen.viewDetail')}
           </Button>
           <Button icon={<DollarOutlined />} onClick={onEditPricing}>
-            {t('marketplace.autogen.editPricing', { defaultValue: 'Edit Pricing' })}
+            {t('marketplace.autogen.editPricing')}
           </Button>
-          <Button onClick={onReset}>{t('marketplace.autogen.generateAnother', { defaultValue: 'Generate Another' })}</Button>
+          <Button onClick={onReset}>{t('marketplace.autogen.generateAnother')}</Button>
         </Space>
       )}
     </div>

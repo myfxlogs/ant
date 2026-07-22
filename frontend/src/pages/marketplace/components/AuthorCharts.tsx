@@ -16,7 +16,7 @@ function formatDate(ms: number | bigint): string {
 export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
   const { t } = useTranslation();
   if (!data || data.length === 0) {
-    return <Empty description={t('marketplace.author.noRevenueData', 'No revenue data yet')} />;
+    return <Empty description={t('marketplace.author.noRevenueData')} />;
   }
   const chartData = data.map(p => ({
     date: formatDate(p.dateMs),
@@ -31,8 +31,8 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
         <YAxis tick={{ fontSize: 11 }} />
         <Tooltip />
         <Legend />
-        <Bar dataKey="sale" name={t('marketplace.author.saleRevenue', 'Sale')} fill="#52c41a" />
-        <Bar dataKey="subscription" name={t('marketplace.author.subRevenue', 'Subscription')} fill="#1890ff" />
+        <Bar dataKey="sale" name={t('marketplace.author.saleRevenue')} fill="#52c41a" />
+        <Bar dataKey="subscription" name={t('marketplace.author.subRevenue')} fill="#1890ff" />
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -41,7 +41,7 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
 export function SubscriberTrendChart({ data }: { data: SubscriberTrendPoint[] }) {
   const { t } = useTranslation();
   if (!data || data.length === 0) {
-    return <Empty description={t('marketplace.author.noSubscriberData', 'No subscriber data yet')} />;
+    return <Empty description={t('marketplace.author.noSubscriberData')} />;
   }
   const chartData = data.map(p => ({
     date: formatDate(p.dateMs),
@@ -57,9 +57,9 @@ export function SubscriberTrendChart({ data }: { data: SubscriberTrendPoint[] })
         <YAxis tick={{ fontSize: 11 }} />
         <Tooltip />
         <Legend />
-        <Area dataKey="active" name={t('marketplace.author.activeSubs', 'Active')} fill="#1890ff" fillOpacity={0.1} stroke="#1890ff" />
-        <Bar dataKey="new" name={t('marketplace.author.newSubs', 'New')} fill="#52c41a" />
-        <Bar dataKey="churned" name={t('marketplace.author.churned', 'Churned')} fill="#ff4d4f" />
+        <Area dataKey="active" name={t('marketplace.author.activeSubs')} fill="#1890ff" fillOpacity={0.1} stroke="#1890ff" />
+        <Bar dataKey="new" name={t('marketplace.author.newSubs')} fill="#52c41a" />
+        <Bar dataKey="churned" name={t('marketplace.author.churned')} fill="#ff4d4f" />
       </ComposedChart>
     </ResponsiveContainer>
   );

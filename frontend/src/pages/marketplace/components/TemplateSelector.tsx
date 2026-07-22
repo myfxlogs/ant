@@ -68,7 +68,7 @@ export default function TemplateSelector({
         }
       } catch {
         if (!cancelled) {
-          message.error(t('marketplace.autogen.templates.loadError', { defaultValue: 'Failed to load templates' }));
+          message.error(t('marketplace.autogen.templates.loadError'));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -102,7 +102,7 @@ export default function TemplateSelector({
       <div>
         <div style={{ marginBottom: 16 }}>
           <Button type="link" onClick={() => setSelectedTpl(null)} style={{ paddingLeft: 0 }}>
-            ← {t('marketplace.autogen.templates.backToList', { defaultValue: 'Back to templates' })}
+            ← {t('marketplace.autogen.templates.backToList')}
           </Button>
         </div>
         <Card size="small" style={{ marginBottom: 16 }}>
@@ -113,7 +113,7 @@ export default function TemplateSelector({
         {fields.length > 0 && (
           <div style={{ marginBottom: 16 }}>
             <Text strong style={{ display: 'block', marginBottom: 8 }}>
-              {t('marketplace.autogen.templates.parameters', { defaultValue: 'Parameters' })}
+              {t('marketplace.autogen.templates.parameters')}
             </Text>
             <Row gutter={[12, 12]}>
               {fields.map(f => (
@@ -151,13 +151,13 @@ export default function TemplateSelector({
         <Space size="large" wrap style={{ marginBottom: 16 }}>
           <div>
             <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
-              {t('marketplace.autogen.symbol', { defaultValue: 'Symbol' })}
+              {t('marketplace.autogen.symbol')}
             </Text>
             <Input value={symbol} onChange={e => onSymbolChange(e.target.value)} style={{ width: 120 }} />
           </div>
           <div>
             <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
-              {t('marketplace.autogen.timeframe', { defaultValue: 'Timeframe' })}
+              {t('marketplace.autogen.timeframe')}
             </Text>
             <Select value={timeframe} onChange={onTimeframeChange} style={{ width: 100 }}
               options={['M5', 'M15', 'M30', 'H1', 'H4', 'D1'].map(tf => ({ value: tf, label: tf }))}
@@ -166,7 +166,7 @@ export default function TemplateSelector({
         </Space>
 
         <Button type="primary" icon={<ThunderboltOutlined />} onClick={handleGenerate} size="large">
-          {t('marketplace.autogen.templates.generateFromTemplate', { defaultValue: 'Generate from Template' })}
+          {t('marketplace.autogen.templates.generateFromTemplate')}
         </Button>
       </div>
     );
@@ -177,14 +177,14 @@ export default function TemplateSelector({
       <div style={{ marginBottom: 12 }}>
         <Text strong>
           <AppstoreOutlined style={{ marginRight: 8 }} />
-          {t('marketplace.autogen.templates.title', { defaultValue: 'Strategy Templates' })}
+          {t('marketplace.autogen.templates.title')}
         </Text>
         <Text type="secondary" style={{ marginLeft: 8 }}>
-          {t('marketplace.autogen.templates.subtitle', { defaultValue: 'Pick a template to quickly generate a strategy with preset parameters.' })}
+          {t('marketplace.autogen.templates.subtitle')}
         </Text>
       </div>
       {templates.length === 0 ? (
-        <Text type="secondary">{t('marketplace.autogen.templates.empty', { defaultValue: 'No templates available yet.' })}</Text>
+        <Text type="secondary">{t('marketplace.autogen.templates.empty')}</Text>
       ) : (
         <Row gutter={[12, 12]}>
           {templates.map(tpl => (

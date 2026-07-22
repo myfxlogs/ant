@@ -51,14 +51,14 @@ function MarketplaceUI() {
           </div>
           <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as any)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
-            { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard', { defaultValue: 'Leaderboard' })}</span>, children: <LeaderboardTabMemo /> },
+            { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard')}</span>, children: <LeaderboardTabMemo /> },
+            { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles')}</span>, children: <BundleTabMemo /> },
+            { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees')}</span>, children: <FeeTierPanelMemo /> },
             ...(m.isAuthenticated ? [
-              { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai', { defaultValue: 'AI Generate' })}</span>, children: <AutoGenerateMemo /> },
-              { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases', 'My Purchases')}</span>, children: <PurchaseTabMemo /> },
-              { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author', 'Author Center')}</span>, children: <AuthorTabMemo /> },
-              { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles', { defaultValue: 'Bundles' })}</span>, children: <BundleTabMemo /> },
-              { key: 'optimization', label: <span><ThunderboltOutlined /> {t('marketplace.tabs.optimization', { defaultValue: 'AI Optimization' })}</span>, children: <OptimizationTabMemo /> },
-              { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees', { defaultValue: 'Fee Tiers' })}</span>, children: <FeeTierPanelMemo /> },
+              { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai')}</span>, children: <AutoGenerateMemo /> },
+              { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases')}</span>, children: <PurchaseTabMemo /> },
+              { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author')}</span>, children: <AuthorTabMemo /> },
+              { key: 'optimization', label: <span><ThunderboltOutlined /> {t('marketplace.tabs.optimization')}</span>, children: <OptimizationTabMemo /> },
             ] : []),
           ]} />
           <StrategyDetailModal
@@ -69,7 +69,7 @@ function MarketplaceUI() {
             onRunBacktest={m.handleRunBacktest}
           />
           <Drawer
-            title={t('marketplace.backtestTitle', { defaultValue: 'Strategy Backtest' })}
+            title={t('marketplace.backtestTitle')}
             open={m.backtestDrawerOpen}
             onClose={() => m.setBacktestDrawerOpen(false)}
             width={680}
@@ -102,7 +102,7 @@ function MarketplaceUI() {
               icon={<SwapOutlined />}
               onClick={() => compare.setCompareOpen(true)}
             >
-              {t('marketplace.compare.button', { defaultValue: 'Compare' })}
+              {t('marketplace.compare.button')}
             </Button>
           </Badge>
         </div>

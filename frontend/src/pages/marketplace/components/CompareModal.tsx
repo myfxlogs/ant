@@ -46,14 +46,14 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
     { key: 'price', label: t('marketplace.detail.price'), getValue: s => s.priceModel === 'free' ? '0' : (s.priceAmount || '0'), direction: 'lower' },
     { key: 'subs', label: t('marketplace.author.subscribers'), getValue: s => String(s.totalSubscribers || 0), direction: 'higher' },
     { key: 'rating', label: t('marketplace.author.avgRating'), getValue: s => Number(s.avgRating || 0).toFixed(1), direction: 'higher' },
-    { key: 'btReturn', label: t('marketplace.backtest.totalReturn', { defaultValue: 'Total Return' }), getValue: s => s.backtestTotalReturn || '-', direction: 'higher' },
-    { key: 'btDD', label: t('marketplace.backtest.maxDrawdown', { defaultValue: 'Max Drawdown' }), getValue: s => s.backtestMaxDrawdown || '-', direction: 'lower' },
-    { key: 'btSharpe', label: t('marketplace.backtest.sharpe', { defaultValue: 'Sharpe' }), getValue: s => s.backtestSharpeRatio || '-', direction: 'higher' },
-    { key: 'btWinRate', label: t('marketplace.backtest.winRate', { defaultValue: 'Win Rate' }), getValue: s => s.backtestWinRate || '-', direction: 'higher' },
-    { key: 'btTrades', label: t('marketplace.backtest.totalTrades', { defaultValue: 'Total Trades' }), getValue: s => String(s.backtestTotalTrades || 0), direction: 'higher' },
-    { key: 'liveReturn', label: t('marketplace.leaderboard.totalReturn', { defaultValue: 'Live Return' }), getValue: s => s.liveTotalReturn || '-', direction: 'higher' },
-    { key: 'liveDD', label: t('marketplace.leaderboard.maxDD', { defaultValue: 'Live Max DD' }), getValue: s => s.liveMaxDrawdown || '-', direction: 'lower' },
-    { key: 'liveSharpe', label: t('marketplace.leaderboard.sharpe', { defaultValue: 'Live Sharpe' }), getValue: s => s.liveSharpeRatio || '-', direction: 'higher' },
+    { key: 'btReturn', label: t('marketplace.backtest.totalReturn'), getValue: s => s.backtestTotalReturn || '-', direction: 'higher' },
+    { key: 'btDD', label: t('marketplace.backtest.maxDrawdown'), getValue: s => s.backtestMaxDrawdown || '-', direction: 'lower' },
+    { key: 'btSharpe', label: t('marketplace.backtest.sharpe'), getValue: s => s.backtestSharpeRatio || '-', direction: 'higher' },
+    { key: 'btWinRate', label: t('marketplace.backtest.winRate'), getValue: s => s.backtestWinRate || '-', direction: 'higher' },
+    { key: 'btTrades', label: t('marketplace.backtest.totalTrades'), getValue: s => String(s.backtestTotalTrades || 0), direction: 'higher' },
+    { key: 'liveReturn', label: t('marketplace.leaderboard.totalReturn'), getValue: s => s.liveTotalReturn || '-', direction: 'higher' },
+    { key: 'liveDD', label: t('marketplace.leaderboard.maxDD'), getValue: s => s.liveMaxDrawdown || '-', direction: 'lower' },
+    { key: 'liveSharpe', label: t('marketplace.leaderboard.sharpe'), getValue: s => s.liveSharpeRatio || '-', direction: 'higher' },
   ], [t]);
 
   // Compute best strategy ID per metric for highlighting.
@@ -79,7 +79,7 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
 
   const columns = [
     {
-      title: t('marketplace.compare.metric', { defaultValue: 'Metric' }),
+      title: t('marketplace.compare.metric'),
       dataIndex: 'metric', key: 'metric', width: 140, fixed: 'left' as const,
       render: (v: string) => <Text strong>{v}</Text>,
     },
@@ -109,7 +109,7 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
 
   return (
     <Modal
-      title={<span><SwapOutlined /> {t('marketplace.compare.title', { defaultValue: 'Compare Strategies' })}</span>}
+      title={<span><SwapOutlined /> {t('marketplace.compare.title')}</span>}
       open={open}
       onCancel={onClose}
       footer={null}
@@ -117,7 +117,7 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
       destroyOnClose
     >
       {rows.length === 0 ? (
-        <Empty description={t('marketplace.compare.empty', { defaultValue: 'Select strategies to compare' })} />
+        <Empty description={t('marketplace.compare.empty')} />
       ) : (
         <Table
           dataSource={dataSource}

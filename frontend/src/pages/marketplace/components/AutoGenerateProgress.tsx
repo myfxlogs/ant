@@ -1,6 +1,6 @@
 import { Steps, Progress, Button, Card } from 'antd';
 import { LoadingOutlined, CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import type { TFunction } from 'react-i18next';
+import type { TFunction } from 'i18next';
 
 type Stage = 'idle' | 'generating' | 'compiling' | 'backtesting' | 'evaluating' | 'publishing' | 'completed' | 'failed';
 
@@ -33,7 +33,7 @@ export default function AutoGenerateProgress({ stage, progress, delta, onCancel,
       status = 'process';
     }
     return {
-      title: t(`marketplace.autogen.stages.${s}`, { defaultValue: s }),
+      title: t(`marketplace.autogen.stages.${s}`),
       status,
     };
   });
@@ -59,7 +59,7 @@ export default function AutoGenerateProgress({ stage, progress, delta, onCancel,
           <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12, margin: 0 }}>{delta}</pre>
         </Card>
       )}
-      <Button onClick={onCancel} danger>{t('marketplace.autogen.cancel', { defaultValue: 'Cancel' })}</Button>
+      <Button onClick={onCancel} danger>{t('marketplace.autogen.cancel')}</Button>
     </div>
   );
 }

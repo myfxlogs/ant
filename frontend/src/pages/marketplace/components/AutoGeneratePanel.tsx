@@ -49,7 +49,7 @@ export default function AutoGeneratePanel() {
         priceModel,
         priceAmount,
       }));
-      message.success(t('marketplace.autogen.pricingSaved', { defaultValue: 'Pricing updated' }));
+      message.success(t('marketplace.autogen.pricingSaved'));
       setPricingModalOpen(false);
     } catch (e: any) {
       message.error(e?.message || 'Failed to update pricing');
@@ -112,7 +112,7 @@ export default function AutoGeneratePanel() {
 
   const handleGenerate = useCallback(async () => {
     if (!description.trim()) {
-      message.warning(t('marketplace.autogen.needDescription', { defaultValue: 'Please describe your strategy' }));
+      message.warning(t('marketplace.autogen.needDescription'));
       return;
     }
 
@@ -190,8 +190,8 @@ export default function AutoGeneratePanel() {
   return (
     <Card>
       <div style={{ marginBottom: 16 }}>
-        <Title level={4}><RobotOutlined style={{ marginRight: 8 }} />{t('marketplace.autogen.title', { defaultValue: 'AI Strategy Generation' })}</Title>
-        <Text type="secondary">{t('marketplace.autogen.subtitle', { defaultValue: 'Describe your strategy in natural language — AI will generate, compile, backtest, and publish it.' })}</Text>
+        <Title level={4}><RobotOutlined style={{ marginRight: 8 }} />{t('marketplace.autogen.title')}</Title>
+        <Text type="secondary">{t('marketplace.autogen.subtitle')}</Text>
       </div>
 
       {stage === 'idle' && (
@@ -200,8 +200,8 @@ export default function AutoGeneratePanel() {
             value={mode}
             onChange={v => setMode(v as 'freeform' | 'template')}
             options={[
-              { value: 'freeform', label: <><EditOutlined /> {t('marketplace.autogen.modes.freeform', { defaultValue: 'Free Description' })}</>, icon: <EditOutlined /> },
-              { value: 'template', label: <><AppstoreOutlined /> {t('marketplace.autogen.modes.template', { defaultValue: 'Templates' })}</>, icon: <AppstoreOutlined /> },
+              { value: 'freeform', label: <><EditOutlined /> {t('marketplace.autogen.modes.freeform')}</>, icon: <EditOutlined /> },
+              { value: 'template', label: <><AppstoreOutlined /> {t('marketplace.autogen.modes.template')}</>, icon: <AppstoreOutlined /> },
             ]}
             style={{ marginBottom: 16 }}
           />
@@ -218,11 +218,11 @@ export default function AutoGeneratePanel() {
           ) : (
             <>
           <div style={{ marginBottom: 12 }}>
-            <Text strong>{t('marketplace.autogen.description', { defaultValue: 'Describe your strategy' })}</Text>
+            <Text strong>{t('marketplace.autogen.description')}</Text>
             <TextArea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder={t('marketplace.autogen.placeholder', { defaultValue: 'e.g. Trend following on EURUSD H1 using EMA crossover, 50 pip stop loss, 100 pip take profit...' })}
+              placeholder={t('marketplace.autogen.placeholder')}
               rows={4}
               style={{ marginTop: 4 }}
             />
@@ -230,7 +230,7 @@ export default function AutoGeneratePanel() {
 
           <Space size="large" wrap style={{ marginBottom: 16 }}>
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.assetClass', { defaultValue: 'Asset Class' })}</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.assetClass')}</Text>
               <Select value={assetClass} onChange={setAssetClass} style={{ width: 120 }}
                 options={[
                   { value: 'forex', label: 'Forex' },
@@ -241,17 +241,17 @@ export default function AutoGeneratePanel() {
               />
             </div>
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.symbol', { defaultValue: 'Symbol' })}</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.symbol')}</Text>
               <Input value={symbol} onChange={e => setSymbol(e.target.value)} style={{ width: 120 }} />
             </div>
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.timeframe', { defaultValue: 'Timeframe' })}</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.timeframe')}</Text>
               <Select value={timeframe} onChange={setTimeframe} style={{ width: 100 }}
                 options={['M5', 'M15', 'M30', 'H1', 'H4', 'D1'].map(tf => ({ value: tf, label: tf }))}
               />
             </div>
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.risk', { defaultValue: 'Risk Level' })}</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.risk')}</Text>
               <Select value={riskLevel} onChange={setRiskLevel} style={{ width: 140 }}
                 options={[
                   { value: 'conservative', label: 'Conservative' },
@@ -261,7 +261,7 @@ export default function AutoGeneratePanel() {
               />
             </div>
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.type', { defaultValue: 'Strategy Type' })}</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.type')}</Text>
               <Select value={strategyType} onChange={setStrategyType} style={{ width: 160 }}
                 options={[
                   { value: 'auto', label: 'Auto-detect' },
@@ -275,10 +275,10 @@ export default function AutoGeneratePanel() {
 
           <Space>
             <Button type="primary" icon={<RocketOutlined />} onClick={handleGenerate} size="large">
-              {t('marketplace.autogen.start', { defaultValue: 'Start Generation' })}
+              {t('marketplace.autogen.start')}
             </Button>
             <Button onClick={() => setAutoPublish(!autoPublish)} type={autoPublish ? 'default' : 'dashed'}>
-              {autoPublish ? t('marketplace.autogen.autoPublishOn', { defaultValue: 'Auto-publish: ON' }) : t('marketplace.autogen.autoPublishOff', { defaultValue: 'Auto-publish: OFF' })}
+              {autoPublish ? t('marketplace.autogen.autoPublishOn') : t('marketplace.autogen.autoPublishOff')}
             </Button>
           </Space>
             </>
@@ -320,27 +320,27 @@ export default function AutoGeneratePanel() {
         />
       )}
       <Modal
-        title={t('marketplace.autogen.editPricing', { defaultValue: 'Edit Pricing' })}
+        title={t('marketplace.autogen.editPricing')}
         open={pricingModalOpen}
         onCancel={() => setPricingModalOpen(false)}
         onOk={handleSavePricing}
         confirmLoading={pricingSaving}
-        okText={t('marketplace.autogen.save', { defaultValue: 'Save' })}
+        okText={t('marketplace.autogen.save')}
       >
         <Space direction="vertical" style={{ width: '100%' }}>
           <div>
-            <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceModel', { defaultValue: 'Price Model' })}</Text>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceModel')}</Text>
             <Select value={priceModel} onChange={setPriceModel} style={{ width: '100%' }}
               options={[
-                { value: 'free', label: t('marketplace.autogen.pricingFree', { defaultValue: 'Free' }) },
-                { value: 'once', label: t('marketplace.autogen.pricingOnce', { defaultValue: 'One-time Purchase' }) },
-                { value: 'subscription', label: t('marketplace.autogen.pricingSubscription', { defaultValue: 'Monthly Subscription' }) },
+                { value: 'free', label: t('marketplace.autogen.pricingFree') },
+                { value: 'once', label: t('marketplace.autogen.pricingOnce') },
+                { value: 'subscription', label: t('marketplace.autogen.pricingSubscription') },
               ]}
             />
           </div>
           {priceModel !== 'free' && (
             <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceAmount', { defaultValue: 'Amount (USD)' })}</Text>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceAmount')}</Text>
               <Input value={priceAmount} onChange={e => setPriceAmount(e.target.value)} type="number" prefix="$" />
             </div>
           )}

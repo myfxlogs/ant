@@ -64,14 +64,14 @@ export default function PurchaseTab() {
             setBacktestStrategyId(row.strategyId);
             setBacktestDrawerOpen(true);
           }}>
-            {t('marketplace.purchases.runBacktest', 'Run Backtest')}
+            {t('marketplace.purchases.runBacktest')}
           </Button>
           {row.active && (
             <Button size="small" danger icon={<RollbackOutlined />} onClick={() => {
               setRefundTarget(row);
               setRefundReason('');
             }}>
-              {t('marketplace.purchases.refund', { defaultValue: 'Refund' })}
+              {t('marketplace.purchases.refund')}
             </Button>
           )}
         </Space>
@@ -91,7 +91,7 @@ export default function PurchaseTab() {
       />
 
       <Drawer
-        title={t('marketplace.backtest.title', 'Strategy Backtest')}
+        title={t('marketplace.backtest.title')}
         open={backtestDrawerOpen}
         onClose={() => setBacktestDrawerOpen(false)}
         width={640}
@@ -101,14 +101,14 @@ export default function PurchaseTab() {
       </Drawer>
 
       <Modal
-        title={t('marketplace.purchases.refundTitle', { defaultValue: 'Request Refund' })}
+        title={t('marketplace.purchases.refundTitle')}
         open={!!refundTarget}
         onCancel={() => setRefundTarget(null)}
         confirmLoading={refundLoading}
         onOk={async () => {
           if (!refundTarget) return;
           if (!refundReason.trim()) {
-            message.warning(t('marketplace.purchases.refundReasonRequired', { defaultValue: 'Please provide a reason' }));
+            message.warning(t('marketplace.purchases.refundReasonRequired'));
             return;
           }
           setRefundLoading(true);
@@ -117,10 +117,10 @@ export default function PurchaseTab() {
               subscriptionId: refundTarget.subscriptionId,
               reason: refundReason,
             });
-            message.success(t('marketplace.purchases.refundSubmitted', { defaultValue: 'Refund request submitted for review' }));
+            message.success(t('marketplace.purchases.refundSubmitted'));
             setRefundTarget(null);
           } catch {
-            message.error(t('marketplace.purchases.refundFailed', { defaultValue: 'Failed to submit refund request' }));
+            message.error(t('marketplace.purchases.refundFailed'));
           } finally {
             setRefundLoading(false);
           }
@@ -128,7 +128,7 @@ export default function PurchaseTab() {
       >
         <Input.TextArea
           rows={4}
-          placeholder={t('marketplace.purchases.refundReasonPlaceholder', { defaultValue: 'Please describe why you are requesting a refund...' })}
+          placeholder={t('marketplace.purchases.refundReasonPlaceholder')}
           value={refundReason}
           onChange={e => setRefundReason(e.target.value)}
           maxLength={500}

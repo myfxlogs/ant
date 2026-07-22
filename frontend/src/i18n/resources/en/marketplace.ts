@@ -2,7 +2,7 @@ const Marketplace = {
   "marketplace": {
     "title": "Marketplace",
     "subtitle": "Discover and subscribe to trading strategies",
-    "tabs": { "marketplace": "Market", "purchases": "My Purchases", "author": "Author Center", "bundles": "Bundles", "optimization": "AI Optimization", "fees": "Fee Tiers" },
+    "tabs": { "marketplace": "Market", "leaderboard": "Leaderboard", "ai": "AI Generate", "purchases": "My Purchases", "author": "Author Center", "bundles": "Bundles", "optimization": "AI Optimization", "fees": "Fee Tiers" },
     "searchPlaceholder": "Search strategies...",
     "empty": "No strategies found",
     "filter": { "all": "All", "free": "Free", "paid": "Paid" },
@@ -12,7 +12,10 @@ const Marketplace = {
     },
     "card": {
       "free": "Free", "owned": "Owned", "winRate": "Win Rate",
-      "pnl": "Total PnL", "users": "Subscribers", "rent": "¥{{amount}}/mo", "buy": "¥{{amount}}"
+      "pnl": "Total PnL", "users": "Subscribers", "rent": "¥{{amount}}/mo", "buy": "¥{{amount}}",
+      "yourStrategy": "Your Strategy",
+      "verified": "Verified Provider",
+      "aiProvider": "AI Generated"
     },
     "messages": {
       "loginFirst": "Please login first", "subscribed": "Subscribed successfully",
@@ -26,17 +29,41 @@ const Marketplace = {
       "comments": "Comments", "noComments": "No comments yet",
       "commentPlaceholder": "Write a comment...", "getFree": "Get Free", "buyNow": "Buy Now",
       "owned": "Owned", "freePrice": "Free", "rentPrice": "¥{{amount}} / month",
-      "buyPrice": "¥{{amount}} one-time", "runBacktest": "Run Backtest"
+      "buyPrice": "¥{{amount}} one-time", "runBacktest": "Run Backtest",
+      "riskDisclaimer": "Risk Disclaimer",
+      "backtestTab": "Backtest", "liveTab": "Live Performance",
+      "noBacktest": "No backtest snapshot available",
+      "versionHistory": "Version History",
+      "noVersions": "No versions available",
+      "newVersion": "New Version",
+      "upgradeAvailable": "Upgrade Available",
+      "upgradeHint": "A new version is available. Upgrade to get the latest improvements."
     },
     "purchases": {
       "empty": "No purchases yet", "strategy": "Strategy", "date": "Purchased",
-      "status": "Status", "actions": "Actions", "runBacktest": "Run Backtest"
+      "status": "Status", "actions": "Actions", "runBacktest": "Run Backtest",
+      "refund": "Refund", "refundTitle": "Request Refund",
+      "refundReasonPlaceholder": "Enter refund reason...",
+      "refundReasonRequired": "Please provide a refund reason",
+      "refundSubmitted": "Refund request submitted",
+      "refundFailed": "Refund request failed"
     },
     "author": {
       "empty": "No published strategies yet", "noPublished": "No published strategies",
       "published": "Published", "subscribers": "Subscribers", "avgRating": "Avg Rating",
       "myStrategies": "My Published Strategies", "publishNew": "Publish New Strategy",
-      "goToLibrary": "Go to Strategy Library"
+      "goToLibrary": "Go to Strategy Library",
+      "wallet": "Wallet & Withdraw", "today": "today",
+      "monthlyRevenue": "Monthly Revenue", "revenueTrend": "Revenue Trend (30 days)",
+      "subscriberTrend": "Subscriber Trend (30 days)",
+      "newSubs": "new", "churned": "churned",
+      "strategyBreakdown": "Per-Strategy Analysis",
+      "strategyName": "Strategy", "revenue": "Revenue",
+      "activeSubs": "Active Subscribers",
+      "saleRevenue": "Sales Revenue",
+      "subRevenue": "Subscription Revenue",
+      "noRevenueData": "No revenue data yet",
+      "noSubscriberData": "No subscriber data yet"
     },
     "payment": {
       "purchaseSuccess": "Purchase successful! Strategy added to your library.",
@@ -44,7 +71,19 @@ const Marketplace = {
       "insufficientBalance": "Insufficient balance",
       "alreadyPurchased": "You already own this strategy.",
       "title": "Confirm Purchase", "balance": "Wallet Balance",
-      "confirm": "Confirm Payment", "cancel": "Cancel"
+      "confirm": "Confirm Payment", "cancel": "Cancel",
+      "strategyName": "Strategy", "price": "Price",
+      "oneTimePurchase": "¥{{amount}} one-time",
+      "walletBalance": "Wallet Balance", "balanceAfter": "Balance After",
+      "depositPrompt": "Please deposit before purchasing.",
+      "goToDeposit": "Go to Deposit",
+      "riskWarning": "Risk Disclaimer",
+      "riskAck": "I understand the risks associated with trading strategies and accept full responsibility for my investment decisions.",
+      "purchasing": "Processing...",
+      "couponApplied": "Coupon applied! Discount: {{discount}}",
+      "couponError": "Failed to validate coupon",
+      "couponPlaceholder": "Enter coupon code...",
+      "applyCoupon": "Apply"
     },
     "publish": {
       "title": "Publish to Marketplace",
@@ -83,7 +122,97 @@ const Marketplace = {
       "title": "Strategy Backtest",
       "protected": "Strategy code is protected. Backtest runs on our servers.",
       "run": "Run Backtest",
-      "idle": "Set parameters and run a backtest"
+      "idle": "Set parameters and run a backtest",
+      "completed": "Completed",
+      "capital": "Initial Capital",
+      "symbol": "Symbol",
+      "leverage": "Leverage",
+      "commission": "Commission",
+      "totalReturn": "Total Return",
+      "maxDrawdown": "Max Drawdown",
+      "sharpe": "Sharpe Ratio",
+      "winRate": "Win Rate",
+      "totalTrades": "Total Trades",
+      "equityCurve": "Equity Curve"
+    },
+    "live": {
+      "noData": "No live data available",
+      "selectAccount": "Select an account to view live performance",
+      "linkAccount": "Link Account",
+      "link": "Link",
+      "trackingSince": "Tracking Since",
+      "lastUpdated": "Last Updated",
+      "totalReturn": "Total Return",
+      "maxDrawdown": "Max Drawdown",
+      "sharpe": "Sharpe Ratio",
+      "winRate": "Win Rate",
+      "equityCurve": "Equity Curve"
+    },
+    "share": {
+      "copyLink": "Copy Link",
+      "linkCopied": "Link copied!",
+      "copyFailed": "Copy failed",
+      "wechat": "WeChat"
+    },
+    "backtestTitle": "Strategy Backtest",
+    "compare": {
+      "title": "Strategy Comparison",
+      "button": "Compare",
+      "addToCompare": "Add to compare",
+      "remove": "Remove",
+      "close": "Close",
+      "strategy": "Strategy",
+      "winRate": "Win Rate",
+      "totalPnl": "Total PnL",
+      "maxDrawdown": "Max Drawdown",
+      "sharpe": "Sharpe Ratio",
+      "sortino": "Sortino Ratio",
+      "profitFactor": "Profit Factor",
+      "totalTrades": "Total Trades",
+      "avgRating": "Avg Rating",
+      "subscribers": "Subscribers",
+      "price": "Price",
+      "empty": "Select strategies to compare",
+      "metric": "Metric"
+    },
+    "leaderboard": {
+      "popular": "Popular",
+      "return": "Returns",
+      "new": "Rising",
+      "week": "Week",
+      "month": "Month",
+      "quarter": "Quarter",
+      "all": "All Time",
+      "strategy": "Strategy",
+      "totalReturn": "Total Return",
+      "maxDD": "Max DD",
+      "sharpe": "Sharpe",
+      "empty": "No strategies on this leaderboard yet"
+    },
+    "earnings": {
+      "loadError": "Failed to load earnings data",
+      "colType": "Type",
+      "colAmount": "Amount",
+      "colStrategy": "Strategy",
+      "colBuyer": "Buyer",
+      "colDate": "Date",
+      "total": "Total Earnings",
+      "available": "Available Balance",
+      "pendingSettlement": "Pending Settlement",
+      "pending": "Pending Withdrawal",
+      "lifetime": "Lifetime Withdrawn",
+      "history": "Transaction History",
+      "withdraw": "Withdraw",
+      "records": "records"
+    },
+    "trial": {
+      "started": "Trial started successfully!",
+      "startFailed": "Failed to start trial",
+      "alreadyTrialed": "You have already trialed this strategy",
+      "startTrial": "Start Trial",
+      "start": "Start Trial",
+      "failed": "Failed to start trial",
+      "alreadyTried": "You have already tried this strategy"
     },
     "autogen": {
       "title": "AI Strategy Generation",
@@ -121,6 +250,14 @@ const Marketplace = {
       "actual": "Actual",
       "threshold": "Threshold",
       "viewDetail": "View Strategy",
+      "editPricing": "Edit Pricing",
+      "priceModel": "Pricing Model",
+      "priceAmount": "Price Amount",
+      "pricingFree": "Free",
+      "pricingOnce": "One-Time Purchase",
+      "pricingSubscription": "Monthly Subscription",
+      "pricingSaved": "Pricing saved successfully",
+      "save": "Save",
       "generateAnother": "Generate Another",
       "stages": {
         "generating": "Generating",
@@ -130,6 +267,47 @@ const Marketplace = {
         "publishing": "Publishing",
         "completed": "Completed"
       }
+    },
+    "bundle": {
+      "title": "Strategy Bundles", "create": "Create Bundle", "createTitle": "Create Strategy Bundle",
+      "empty": "No bundles yet", "name": "Name", "strategies": "Strategies",
+      "purchases": "Purchases", "actions": "Actions", "buy": "Buy", "month": "mo",
+      "created": "Bundle created successfully", "createFailed": "Failed to create bundle",
+      "purchased": "Purchase successful! All strategies in the bundle are now subscribed.",
+      "purchaseFailed": "Purchase failed", "deleted": "Deleted", "deleteFailed": "Delete failed",
+      "confirmDelete": "Delete this bundle?", "needTwoStrategies": "Select at least 2 strategies",
+      "nameLabel": "Bundle Name", "namePlaceholder": "e.g. Trend Following Trio",
+      "descLabel": "Description", "descPlaceholder": "Describe the bundle's advantages...",
+      "priceModel": "Pricing Model", "once": "One-Time Purchase", "subscription": "Monthly Subscription",
+      "priceAmount": "Price (¥)", "strategyIds": "Strategy IDs (one per line)",
+      "platformFee": "Platform Fee Rate"
+    },
+    "optimization": {
+      "title": "AI Strategy Optimization", "decayDetection": "Decay Detection",
+      "strategyIdPlaceholder": "Enter strategy ID", "detect": "Detect Decay",
+      "decayDetected": "Strategy decay detected!", "noDecay": "Strategy performance is normal",
+      "decayScore": "Decay Score", "decayHint": "Recommend creating an optimization task to improve the strategy",
+      "detectFailed": "Detection failed", "tasks": "Optimization Tasks",
+      "all": "All", "noTasks": "No optimization tasks",
+      "strategyId": "Strategy", "status": "Status", "trigger": "Trigger Reason",
+      "changeSummary": "Change Summary", "actions": "Actions",
+      "preview": "Preview", "publish": "Publish", "reject": "Reject",
+      "rejected": "Rejected", "rejectFailed": "Operation failed",
+      "published": "New version published v{{versionId}}",
+      "publishFailed": "Publish failed",
+      "previewTitle": "Optimization Preview Comparison", "previewFailed": "Preview failed",
+      "decayMetrics": "Decay Metrics", "backtestCompare": "Backtest Comparison",
+      "codePreview": "Optimized Code Preview", "noBacktest": "No backtest data",
+      "totalReturn": "Total Return", "annualReturn": "Annual Return",
+      "maxDrawdown": "Max Drawdown", "sharpe": "Sharpe Ratio",
+      "winRate": "Win Rate", "totalTrades": "Total Trades",
+      "original": "Original", "versionId": "Version"
+    },
+    "feeTier": {
+      "myTier": "My Current Tier", "config": "Fee Tier Configuration",
+      "tierName": "Tier", "feeRate": "Platform Fee Rate", "minSales": "Min Sales",
+      "currentSales": "Current Sales", "enabled": "Enabled", "actions": "Actions",
+      "saved": "Fee tier updated", "saveFailed": "Update failed"
     }
   }
 };

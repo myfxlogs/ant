@@ -19,9 +19,9 @@ export default function ShareButtons({ strategyId, title }: Props) {
   const copyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      message.success(t('marketplace.share.linkCopied', { defaultValue: 'Link copied to clipboard' }));
+      message.success(t('marketplace.share.linkCopied'));
     } catch {
-      message.error(t('marketplace.share.copyFailed', { defaultValue: 'Failed to copy link' }));
+      message.error(t('marketplace.share.copyFailed'));
     }
   }, [shareUrl, t]);
 
@@ -30,7 +30,7 @@ export default function ShareButtons({ strategyId, title }: Props) {
 
   return (
     <Space size="small">
-      <Tooltip title={t('marketplace.share.copyLink', { defaultValue: 'Copy Link' })}>
+      <Tooltip title={t('marketplace.share.copyLink')}>
         <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyLink} />
       </Tooltip>
       <Tooltip title="Twitter">
@@ -39,7 +39,7 @@ export default function ShareButtons({ strategyId, title }: Props) {
       <Tooltip title="Telegram">
         <Button type="text" size="small" icon={<MessageOutlined />} href={telegramUrl} target="_blank" rel="noopener noreferrer" />
       </Tooltip>
-      <Tooltip title={t('marketplace.share.wechat', { defaultValue: 'WeChat (copy link)' })}>
+      <Tooltip title={t('marketplace.share.wechat')}>
         <Button type="text" size="small" icon={<ShareAltOutlined />} onClick={copyLink} />
       </Tooltip>
     </Space>

@@ -63,12 +63,12 @@ export default function FeeTierPanel() {
         minSalesCount: edit.minSales,
         enabled: edit.enabled,
       }));
-      message.success(t('marketplace.feeTier.saved', '费率已更新'));
+      message.success(t('marketplace.feeTier.saved'));
       setEditing(prev => { const next = { ...prev }; delete next[tierId]; return next; });
       fetchTiers();
       fetchMyTier();
     } catch (e: any) {
-      message.error(e?.message || t('marketplace.feeTier.saveFailed', '更新失败'));
+      message.error(e?.message || t('marketplace.feeTier.saveFailed'));
     } finally {
       setSaving(null);
     }
@@ -79,17 +79,17 @@ export default function FeeTierPanel() {
       {/* ── My Current Tier ── */}
       {myTier && (
         <Card size="small" style={{ marginBottom: 16 }}>
-          <Descriptions title={t('marketplace.feeTier.myTier', '我的当前费率')} size="small" column={4}>
-            <Descriptions.Item label={t('marketplace.feeTier.tierName', '等级')}>{myTier.tierName}</Descriptions.Item>
-            <Descriptions.Item label={t('marketplace.feeTier.feeRate', '平台费率')}><Tag color="blue">{(Number(myTier.feeRate) * 100).toFixed(1)}%</Tag></Descriptions.Item>
-            <Descriptions.Item label={t('marketplace.feeTier.currentSales', '当前销量')}>{myTier.currentSales}</Descriptions.Item>
-            <Descriptions.Item label={t('marketplace.feeTier.minSales', '升级所需')}>{myTier.minSales}</Descriptions.Item>
+          <Descriptions title={t('marketplace.feeTier.myTier')} size="small" column={4}>
+            <Descriptions.Item label={t('marketplace.feeTier.tierName')}>{myTier.tierName}</Descriptions.Item>
+            <Descriptions.Item label={t('marketplace.feeTier.feeRate')}><Tag color="blue">{(Number(myTier.feeRate) * 100).toFixed(1)}%</Tag></Descriptions.Item>
+            <Descriptions.Item label={t('marketplace.feeTier.currentSales')}>{myTier.currentSales}</Descriptions.Item>
+            <Descriptions.Item label={t('marketplace.feeTier.minSales')}>{myTier.minSales}</Descriptions.Item>
           </Descriptions>
         </Card>
       )}
 
       {/* ── Tier Configuration Table ── */}
-      <Card size="small" title={<span><SettingOutlined style={{ marginRight: 8 }} />{t('marketplace.feeTier.config', '阶梯费率配置')}</span>}>
+      <Card size="small" title={<span><SettingOutlined style={{ marginRight: 8 }} />{t('marketplace.feeTier.config')}</span>}>
         <Table<FeeTierInfo>
           rowKey="id"
           dataSource={tiers}
@@ -97,9 +97,9 @@ export default function FeeTierPanel() {
           pagination={false}
           size="small"
           columns={[
-            { title: t('marketplace.feeTier.tierName', '等级'), dataIndex: 'tierName', key: 'name', width: 120 },
+            { title: t('marketplace.feeTier.tierName'), dataIndex: 'tierName', key: 'name', width: 120 },
             {
-              title: t('marketplace.feeTier.minSales', '最低销量'), dataIndex: 'minSalesCount', key: 'minSales', width: 120,
+              title: t('marketplace.feeTier.minSales'), dataIndex: 'minSalesCount', key: 'minSales', width: 120,
               render: (v: number, row: FeeTierInfo) => {
                 const edit = editing[row.id];
                 if (edit) return <InputNumber value={edit.minSales} onChange={n => setEditing(p => ({ ...p, [row.id]: { ...p[row.id], minSales: n || 0 } }))} size="small" />;
@@ -107,7 +107,7 @@ export default function FeeTierPanel() {
               },
             },
             {
-              title: t('marketplace.feeTier.feeRate', '平台费率'), dataIndex: 'feeRate', key: 'rate', width: 140,
+              title: t('marketplace.feeTier.feeRate'), dataIndex: 'feeRate', key: 'rate', width: 140,
               render: (v: string, row: FeeTierInfo) => {
                 const edit = editing[row.id];
                 if (edit) return <InputNumber value={edit.feeRate} onChange={n => setEditing(p => ({ ...p, [row.id]: { ...p[row.id], feeRate: String(n || '0') } }))} size="small" style={{ width: 100 }} />;
@@ -115,14 +115,14 @@ export default function FeeTierPanel() {
               },
             },
             {
-              title: t('marketplace.feeTier.enabled', '启用'), dataIndex: 'enabled', key: 'enabled', width: 80,
+              title: t('marketplace.feeTier.enabled'), dataIndex: 'enabled', key: 'enabled', width: 80,
               render: (v: boolean, row: FeeTierInfo) => {
                 const edit = editing[row.id];
                 return <Switch checked={edit?.enabled ?? v} onChange={c => setEditing(p => ({ ...p, [row.id]: { feeRate: p[row.id]?.feeRate ?? row.feeRate, minSales: p[row.id]?.minSales ?? row.minSalesCount, enabled: c } }))} size="small" />;
               },
             },
             {
-              title: t('marketplace.feeTier.actions', '操作'), key: 'actions', width: 160,
+              title: t('marketplace.feeTier.actions'), key: 'actions', width: 160,
               render: (_: unknown, row: FeeTierInfo) => {
                 const edit = editing[row.id];
                 return (
@@ -130,15 +130,15 @@ export default function FeeTierPanel() {
                     {edit ? (
                       <>
                         <Button size="small" type="primary" loading={saving === row.id} onClick={() => handleSave(row.id)}>
-                          {t('common.save', '保存')}
+                          {t('common.save')}
                         </Button>
                         <Button size="small" onClick={() => setEditing(p => { const next = { ...p }; delete next[row.id]; return next; })}>
-                          {t('common.cancel', '取消')}
+                          {t('common.cancel')}
                         </Button>
                       </>
                     ) : (
                       <Button size="small" onClick={() => setEditing(p => ({ ...p, [row.id]: { feeRate: row.feeRate, minSales: row.minSalesCount, enabled: row.enabled } }))}>
-                        {t('common.edit', '编辑')}
+                        {t('common.edit')}
                       </Button>
                     )}
                   </Space>

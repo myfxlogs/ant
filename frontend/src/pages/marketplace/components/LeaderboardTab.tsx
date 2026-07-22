@@ -38,16 +38,16 @@ export default function LeaderboardTab() {
   const showPeriod = lbType === 'return';
 
   const typeOptions = [
-    { label: <span><FireOutlined /> {t('marketplace.leaderboard.popular', 'Popular')}</span>, value: 'popular' },
-    { label: <span><RiseOutlined /> {t('marketplace.leaderboard.return', 'Returns')}</span>, value: 'return' },
-    { label: <span><RocketOutlined /> {t('marketplace.leaderboard.new', 'Rising')}</span>, value: 'new' },
+    { label: <span><FireOutlined /> {t('marketplace.leaderboard.popular')}</span>, value: 'popular' },
+    { label: <span><RiseOutlined /> {t('marketplace.leaderboard.return')}</span>, value: 'return' },
+    { label: <span><RocketOutlined /> {t('marketplace.leaderboard.new')}</span>, value: 'new' },
   ];
 
   const periodOptions = [
-    { label: t('marketplace.leaderboard.week', 'Week'), value: 'week' },
-    { label: t('marketplace.leaderboard.month', 'Month'), value: 'month' },
-    { label: t('marketplace.leaderboard.quarter', 'Quarter'), value: 'quarter' },
-    { label: t('marketplace.leaderboard.all', 'All Time'), value: 'all' },
+    { label: t('marketplace.leaderboard.week'), value: 'week' },
+    { label: t('marketplace.leaderboard.month'), value: 'month' },
+    { label: t('marketplace.leaderboard.quarter'), value: 'quarter' },
+    { label: t('marketplace.leaderboard.all'), value: 'all' },
   ];
 
   const columns = [
@@ -58,7 +58,7 @@ export default function LeaderboardTab() {
       ),
     },
     {
-      title: t('marketplace.leaderboard.strategy', 'Strategy'), key: 'title',
+      title: t('marketplace.leaderboard.strategy'), key: 'title',
       render: (_: unknown, row: LeaderboardEntry) => (
         <Space direction="vertical" size={0}>
           <Text strong>{row.title || '-'}</Text>
@@ -92,18 +92,18 @@ export default function LeaderboardTab() {
   if (lbType === 'return') {
     columns.splice(4, 0,
       {
-        title: t('marketplace.leaderboard.totalReturn', 'Total Return'), key: 'return', width: 110,
+        title: t('marketplace.leaderboard.totalReturn'), key: 'return', width: 110,
         render: (_: unknown, row: LeaderboardEntry) => {
           const val = Number(row.totalReturn || 0);
           return <Text type={val >= 0 ? 'success' : 'danger'} strong>{val >= 0 ? '+' : ''}{val.toFixed(2)}%</Text>;
         },
       },
       {
-        title: t('marketplace.leaderboard.maxDD', 'Max DD'), key: 'dd', width: 90,
+        title: t('marketplace.leaderboard.maxDD'), key: 'dd', width: 90,
         render: (_: unknown, row: LeaderboardEntry) => `${Number(row.maxDrawdown || 0).toFixed(2)}%`,
       },
       {
-        title: t('marketplace.leaderboard.sharpe', 'Sharpe'), key: 'sharpe', width: 80,
+        title: t('marketplace.leaderboard.sharpe'), key: 'sharpe', width: 80,
         render: (_: unknown, row: LeaderboardEntry) => row.sharpeRatio ? Number(row.sharpeRatio).toFixed(2) : '-',
       },
     );
@@ -124,7 +124,7 @@ export default function LeaderboardTab() {
         pagination={false}
         size="small"
         columns={columns}
-        locale={{ emptyText: t('marketplace.leaderboard.empty', 'No strategies on this leaderboard yet') }}
+        locale={{ emptyText: t('marketplace.leaderboard.empty') }}
       />
     </div>
   );

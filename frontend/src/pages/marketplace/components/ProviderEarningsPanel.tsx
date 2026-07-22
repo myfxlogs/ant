@@ -29,7 +29,7 @@ export default function ProviderEarningsPanel() {
       setTxTotal(tx.total || 0);
     } catch (err) {
       setError(true);
-      message.error(t('marketplace.earnings.loadError', { defaultValue: 'Failed to load earnings data' }));
+      message.error(t('marketplace.earnings.loadError'));
     } finally {
       setLoading(false);
     }
@@ -41,14 +41,14 @@ export default function ProviderEarningsPanel() {
 
   if (loading) return <Spin style={{ display: 'block', margin: '40px auto' }} />;
   if (error || !earnings) return (
-    <Empty description={t('marketplace.earnings.loadError', { defaultValue: 'Failed to load earnings data' })}>
-      <Button onClick={fetchEarnings}>{t('common.retry', { defaultValue: 'Retry' })}</Button>
+    <Empty description={t('marketplace.earnings.loadError')}>
+      <Button onClick={fetchEarnings}>{t('common.retry')}</Button>
     </Empty>
   );
 
   const cols = [
     {
-      title: t('marketplace.earnings.colType', { defaultValue: 'Type' }),
+      title: t('marketplace.earnings.colType'),
       dataIndex: 'txType', key: 'txType',
       render: (v: string) => {
         const color = v === 'settlement' ? 'green' : v === 'fee_settlement' ? 'blue' : v === 'refund_reversal' ? 'red' : 'default';
@@ -56,20 +56,20 @@ export default function ProviderEarningsPanel() {
       },
     },
     {
-      title: t('marketplace.earnings.colAmount', { defaultValue: 'Amount' }),
+      title: t('marketplace.earnings.colAmount'),
       dataIndex: 'amount', key: 'amount',
       render: (v: string) => `¥${Number(v || 0).toFixed(2)}`,
     },
     {
-      title: t('marketplace.earnings.colStrategy', { defaultValue: 'Strategy' }),
+      title: t('marketplace.earnings.colStrategy'),
       dataIndex: 'strategyTitle', key: 'strategyTitle', ellipsis: true,
     },
     {
-      title: t('marketplace.earnings.colBuyer', { defaultValue: 'Buyer' }),
+      title: t('marketplace.earnings.colBuyer'),
       dataIndex: 'buyerName', key: 'buyerName', ellipsis: true,
     },
     {
-      title: t('marketplace.earnings.colDate', { defaultValue: 'Date' }),
+      title: t('marketplace.earnings.colDate'),
       dataIndex: 'createdAt', key: 'createdAt',
     },
   ];
@@ -80,7 +80,7 @@ export default function ProviderEarningsPanel() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#f6ffed' }}>
             <Statistic
-              title={t('marketplace.earnings.total', { defaultValue: 'Total Earnings' })}
+              title={t('marketplace.earnings.total')}
               value={`¥${Number(earnings.totalEarnings || 0).toFixed(2)}`}
               prefix={<DollarOutlined />}
             />
@@ -89,7 +89,7 @@ export default function ProviderEarningsPanel() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#e6f7ff' }}>
             <Statistic
-              title={t('marketplace.earnings.available', { defaultValue: 'Available Balance' })}
+              title={t('marketplace.earnings.available')}
               value={`¥${Number(earnings.availableBalance || 0).toFixed(2)}`}
               prefix={<WalletOutlined />}
             />
@@ -98,7 +98,7 @@ export default function ProviderEarningsPanel() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#fffbe6' }}>
             <Statistic
-              title={t('marketplace.earnings.pendingSettlement', { defaultValue: 'Pending Settlement' })}
+              title={t('marketplace.earnings.pendingSettlement')}
               value={`¥${Number(earnings.pendingSettlement || 0).toFixed(2)}`}
               prefix={<ClockCircleOutlined />}
             />
@@ -107,7 +107,7 @@ export default function ProviderEarningsPanel() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#fff7e6' }}>
             <Statistic
-              title={t('marketplace.earnings.pending', { defaultValue: 'Pending Withdrawal' })}
+              title={t('marketplace.earnings.pending')}
               value={`¥${Number(earnings.pendingWithdrawal || 0).toFixed(2)}`}
               prefix={<ArrowUpOutlined />}
             />
@@ -116,7 +116,7 @@ export default function ProviderEarningsPanel() {
         <Col xs={12} sm={6}>
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#f0f5ff' }}>
             <Statistic
-              title={t('marketplace.earnings.lifetime', { defaultValue: 'Lifetime Withdrawn' })}
+              title={t('marketplace.earnings.lifetime')}
               value={`¥${Number(earnings.lifetimeWithdrawn || 0).toFixed(2)}`}
               prefix={<ShopOutlined />}
             />
@@ -125,9 +125,9 @@ export default function ProviderEarningsPanel() {
       </Row>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontWeight: 600 }}>{t('marketplace.earnings.history', { defaultValue: 'Transaction History' })}</span>
+        <span style={{ fontWeight: 600 }}>{t('marketplace.earnings.history')}</span>
         <Button type="primary" icon={<WalletOutlined />} onClick={() => navigate('/wallet')}>
-          {t('marketplace.earnings.withdraw', { defaultValue: 'Withdraw' })}
+          {t('marketplace.earnings.withdraw')}
         </Button>
       </div>
 
@@ -141,7 +141,7 @@ export default function ProviderEarningsPanel() {
           total: txTotal,
           pageSize: 10,
           onChange: setPage,
-          showTotal: (total) => `${total} ${t('marketplace.earnings.records', { defaultValue: 'records' })}`,
+          showTotal: (total) => `${total} ${t('marketplace.earnings.records')}`,
         }}
       />
     </div>

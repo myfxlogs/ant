@@ -20,7 +20,7 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
       {versionsLoading ? (
         <div style={{ textAlign: 'center', padding: 20 }}><Spin /></div>
       ) : versions.length === 0 ? (
-        <Empty description={t('marketplace.detail.noVersions', { defaultValue: 'No version history' })} />
+        <Empty description={t('marketplace.detail.noVersions')} />
       ) : (
         <List
           size="small"
@@ -36,7 +36,7 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
                   </Text>
                 </div>
                 {isPurchased && v.versionNumber > 1 && (
-                  <Tag color="cyan">{t('marketplace.detail.newVersion', { defaultValue: 'New' })}</Tag>
+                  <Tag color="cyan">{t('marketplace.detail.newVersion')}</Tag>
                 )}
               </div>
             </List.Item>
@@ -48,8 +48,8 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
           type="info"
           showIcon
           style={{ marginTop: 12 }}
-          message={t('marketplace.detail.upgradeAvailable', { defaultValue: 'New version available' })}
-          description={t('marketplace.detail.upgradeHint', { defaultValue: 'This strategy has been updated. You may upgrade to the latest version.' })}
+          message={t('marketplace.detail.upgradeAvailable')}
+          description={t('marketplace.detail.upgradeHint')}
         />
       )}
     </div>
@@ -57,5 +57,5 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
 }
 
 export function versionHistoryTabLabel(t: (key: string, opts?: any) => string) {
-  return <span><HistoryOutlined /> {t('marketplace.detail.versionHistory', { defaultValue: 'Version History' })}</span>;
+  return <span><HistoryOutlined /> {t('marketplace.detail.versionHistory')}</span>;
 }

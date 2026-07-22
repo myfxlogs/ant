@@ -30,9 +30,9 @@ interface Props {
 function priceText(s: PublishedStrategy, t: (k: string, opts?: Record<string,unknown>) => string): string {
   const model = String(s.priceModel || '').toLowerCase();
   const amount = Number(s.priceAmount || 0);
-  if (model === 'free' || !amount) return t('marketplace.card.free', { defaultValue: 'Free' });
-  if (model === 'subscription') return t('marketplace.detail.rentPrice', { amount: amount.toFixed(0), defaultValue: `¥${amount.toFixed(0)} / month` });
-  return t('marketplace.detail.buyPrice', { amount: amount.toFixed(0), defaultValue: `¥${amount.toFixed(0)} one-time` });
+  if (model === 'free' || !amount) return t('marketplace.card.free');
+  if (model === 'subscription') return t('marketplace.detail.rentPrice', { amount: amount.toFixed(0) });
+  return t('marketplace.detail.buyPrice', { amount: amount.toFixed(0) });
 }
 
 function fmtTime(ts: { seconds?: bigint | number } | undefined | null): string {
@@ -90,13 +90,13 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
     try {
       const resp = await marketplaceClient.startTrial({ strategyId: strategy.strategyId });
       if (resp.alreadyTried) {
-        message.info(t('marketplace.trial.alreadyTried', { defaultValue: 'You have already used your free trial for this strategy.' }));
+        message.info(t('marketplace.trial.alreadyTried'));
       } else {
         const expires = new Date(Number(resp.expiresAtMs));
-        message.success(t('marketplace.trial.started', { defaultValue: 'Free trial started! Expires' }) + ' ' + expires.toLocaleDateString());
+        message.success(t('marketplace.trial.started') + ' ' + expires.toLocaleDateString());
       }
     } catch {
-      message.error(t('marketplace.trial.failed', { defaultValue: 'Failed to start trial' }));
+      message.error(t('marketplace.trial.failed'));
     } finally {
       setTrialLoading(false);
     }
@@ -125,10 +125,10 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
           <Tag color={isFree ? 'green' : 'gold'}>{priceText(strategy, t)}</Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.assetClass')}>
-          {t(`marketplace.publish.assetClass.${strategy.assetClass}`, { defaultValue: strategy.assetClass || '-' })}
+          {t(`marketplace.publish.assetClass.${strategy.assetClass}`)}
         </Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.riskLevel')}>
-          {t(`marketplace.publish.riskLevel.${strategy.riskLevel}`, { defaultValue: strategy.riskLevel || '-' })}
+          {t(`marketplace.publish.riskLevel.${strategy.riskLevel}`)}
         </Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.subscribers')}>
           {String(strategy.totalSubscribers || 0)}
@@ -172,7 +172,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
           showIcon
           icon={<WarningOutlined />}
           style={{ marginBottom: 16 }}
-          message={t('marketplace.detail.riskDisclaimer', { defaultValue: 'Risk Disclaimer' })}
+          message={t('marketplace.detail.riskDisclaimer')}
           description={strategy.disclaimer}
         />
       )}
@@ -288,23 +288,23 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
 
       {/* Performance tabs */}
       <Tabs activeKey={perfTab} onChange={setPerfTab} size="small" style={{ marginBottom: 16 }} items={[
-        { key: 'backtest', label: t('marketplace.detail.backtestTab', { defaultValue: 'Backtest' }), children: (
+        { key: 'backtest', label: t('marketplace.detail.backtestTab'), children: (
           <div>
             {strategy.backtestSnapshot ? (
               <Descriptions column={3} size="small">
-                <Descriptions.Item label={t('marketplace.backtest.totalReturn', { defaultValue: 'Total Return' })}>{strategy.backtestSnapshot.totalReturn || '-'}</Descriptions.Item>
-                <Descriptions.Item label={t('marketplace.backtest.maxDrawdown', { defaultValue: 'Max Drawdown' })}>{strategy.backtestSnapshot.maxDrawdown || '-'}</Descriptions.Item>
-                <Descriptions.Item label={t('marketplace.backtest.sharpe', { defaultValue: 'Sharpe' })}>{strategy.backtestSnapshot.sharpeRatio || '-'}</Descriptions.Item>
-                <Descriptions.Item label={t('marketplace.backtest.winRate', { defaultValue: 'Win Rate' })}>{strategy.backtestSnapshot.winRate || '-'}</Descriptions.Item>
-                <Descriptions.Item label={t('marketplace.backtest.totalTrades', { defaultValue: 'Total Trades' })}>{strategy.backtestSnapshot.totalTrades || '-'}</Descriptions.Item>
-                <Descriptions.Item label={t('marketplace.backtest.symbol', { defaultValue: 'Symbol' })}>{strategy.backtestSnapshot.symbol || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.totalReturn')}>{strategy.backtestSnapshot.totalReturn || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.maxDrawdown')}>{strategy.backtestSnapshot.maxDrawdown || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.sharpe')}>{strategy.backtestSnapshot.sharpeRatio || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.winRate')}>{strategy.backtestSnapshot.winRate || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.totalTrades')}>{strategy.backtestSnapshot.totalTrades || '-'}</Descriptions.Item>
+                <Descriptions.Item label={t('marketplace.backtest.symbol')}>{strategy.backtestSnapshot.symbol || '-'}</Descriptions.Item>
               </Descriptions>
             ) : (
-              <Empty description={t('marketplace.detail.noBacktest', { defaultValue: 'No backtest snapshot available' })} />
+              <Empty description={t('marketplace.detail.noBacktest')} />
             )}
           </div>
         )},
-        { key: 'live', label: t('marketplace.detail.liveTab', { defaultValue: 'Live Performance' }), children: (
+        { key: 'live', label: t('marketplace.detail.liveTab'), children: (
           <LivePerformanceTab strategyId={strategy.strategyId} isOwner={isOwner} />
         )},
         { key: 'versions', label: versionHistoryTabLabel(t), children: (
@@ -320,16 +320,16 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         {isOwner ? (
           <>
-            <Tag color="blue" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.yourStrategy', 'Your Strategy')}</Tag>
+            <Tag color="blue" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.yourStrategy')}</Tag>
             <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>
-              {t('marketplace.detail.runBacktest', 'Run Backtest')}
+              {t('marketplace.detail.runBacktest')}
             </Button>
           </>
         ) : isPurchased ? (
           <>
             <Tag color="green" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.owned')}</Tag>
             <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>
-              {t('marketplace.detail.runBacktest', 'Run Backtest')}
+              {t('marketplace.detail.runBacktest')}
             </Button>
           </>
         ) : isFree ? (
@@ -339,7 +339,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         ) : (
           <>
             <Button icon={<ExperimentOutlined />} size="large" loading={trialLoading} onClick={handleStartTrial}>
-              {t('marketplace.trial.start', { defaultValue: 'Free Trial' })}
+              {t('marketplace.trial.start')}
             </Button>
             <Button type="primary" icon={<ShoppingCartOutlined />} size="large" onClick={() => onBuy(strategy)}>
               {t('marketplace.detail.buyNow')}

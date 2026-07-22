@@ -51,13 +51,13 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
       });
       if (resp.valid) {
         setDiscountedAmount(resp.finalAmount);
-        message.success(t('marketplace.payment.couponApplied', { defaultValue: 'Coupon applied! Discount: ' + resp.discountAmount }));
+        message.success(t('marketplace.payment.couponApplied', { discount: resp.discountAmount }));
       } else {
         setCouponError(resp.errorMessage || 'Invalid coupon');
         setDiscountedAmount(null);
       }
     } catch {
-      setCouponError(t('marketplace.payment.couponError', { defaultValue: 'Failed to validate coupon' }));
+      setCouponError(t('marketplace.payment.couponError'));
       setDiscountedAmount(null);
     } finally {
       setCouponLoading(false);
@@ -66,7 +66,7 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
 
   return (
     <Modal
-      title={t('marketplace.payment.title', '确认购买')}
+      title={t('marketplace.payment.title')}
       open={open}
       onCancel={onCancel}
       width={480}
@@ -74,14 +74,14 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
       destroyOnClose
     >
       <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
-        <Descriptions.Item label={t('marketplace.payment.strategyName', '策略')}>
+        <Descriptions.Item label={t('marketplace.payment.strategyName')}>
           <Text strong>{name}</Text>
         </Descriptions.Item>
-        <Descriptions.Item label={t('marketplace.payment.price', '价格')}>
+        <Descriptions.Item label={t('marketplace.payment.price')}>
           <Tag color={isFree ? 'green' : 'gold'} style={{ fontSize: 14, fontWeight: 600 }}>
             {isFree
-              ? t('marketplace.card.free', '免费')
-              : t('marketplace.payment.oneTimePurchase', '¥{{amount}} 一次性买断', { amount: effectivePrice.toFixed(2) })}
+              ? t('marketplace.card.free')
+              : t('marketplace.payment.oneTimePurchase', { amount: effectivePrice.toFixed(2) })}
           </Tag>
           {discountedAmount && originalPrice > effectivePrice && (
             <Text delete type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
@@ -97,13 +97,13 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
           <Space.Compact style={{ width: '100%' }}>
             <Input
               prefix={<TagOutlined />}
-              placeholder={t('marketplace.payment.couponPlaceholder', { defaultValue: 'Enter coupon code...' })}
+              placeholder={t('marketplace.payment.couponPlaceholder')}
               value={couponCode}
               onChange={e => { setCouponCode(e.target.value); setDiscountedAmount(null); setCouponError(''); }}
               onPressEnter={handleValidateCoupon}
             />
             <Button loading={couponLoading} onClick={handleValidateCoupon}>
-              {t('marketplace.payment.applyCoupon', { defaultValue: 'Apply' })}
+              {t('marketplace.payment.applyCoupon')}
             </Button>
           </Space.Compact>
           {couponError && <Text type="danger" style={{ fontSize: 12 }}>{couponError}</Text>}
@@ -111,13 +111,13 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
       )}
 
       <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
-        <Descriptions.Item label={<><WalletOutlined /> {t('marketplace.payment.walletBalance', '我的余额')}</>}>
+        <Descriptions.Item label={<><WalletOutlined /> {t('marketplace.payment.walletBalance')}</>}>
           <Text strong style={{ color: sufficient ? '#52c41a' : '#ff4d4f', fontSize: 16 }}>
             ¥{balanceNum.toFixed(2)}
           </Text>
         </Descriptions.Item>
         {sufficient && !isFree && (
-          <Descriptions.Item label={t('marketplace.payment.balanceAfter', '购买后余额')}>
+          <Descriptions.Item label={t('marketplace.payment.balanceAfter')}>
             <Text type="secondary">¥{afterBalance.toFixed(2)}</Text>
           </Descriptions.Item>
         )}
@@ -127,12 +127,12 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
         <Alert
           type="error"
           style={{ marginBottom: 16 }}
-          message={t('marketplace.payment.insufficientBalance', '余额不足')}
+          message={t('marketplace.payment.insufficientBalance')}
           description={
             <span>
-              {t('marketplace.payment.depositPrompt', '请先充值后再购买。')}{' '}
+              {t('marketplace.payment.depositPrompt')}{' '}
               <Button type="link" size="small" onClick={() => navigate('/wallet')} style={{ padding: 0 }}>
-                {t('marketplace.payment.goToDeposit', '去充值')} →
+                {t('marketplace.payment.goToDeposit')} →
               </Button>
             </span>
           }
@@ -146,7 +146,7 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
           showIcon
           icon={<WarningOutlined />}
           style={{ marginBottom: 16 }}
-          message={t('marketplace.payment.riskWarning', { defaultValue: 'Risk Disclaimer' })}
+          message={t('marketplace.payment.riskWarning')}
           description={strategy.disclaimer}
         />
       )}
@@ -157,13 +157,13 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
           checked={riskAcknowledged}
           onChange={e => setRiskAcknowledged(e.target.checked)}
         >
-          {t('marketplace.payment.riskAck', { defaultValue: 'I understand the risks associated with trading strategies and accept full responsibility for my investment decisions.' })}
+          {t('marketplace.payment.riskAck')}
         </Checkbox>
       </div>
 
       <div style={{ textAlign: 'right' }}>
         <Space>
-          <Button onClick={onCancel}>{t('marketplace.payment.cancel', '取消')}</Button>
+          <Button onClick={onCancel}>{t('marketplace.payment.cancel')}</Button>
           <Button
             type="primary"
             icon={<ShoppingCartOutlined />}
@@ -172,8 +172,8 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
             onClick={() => onConfirm(couponCode.trim() || undefined)}
           >
             {loading
-              ? t('marketplace.payment.purchasing', '处理中...')
-              : t('marketplace.payment.confirm', '确认购买')}
+              ? t('marketplace.payment.purchasing')
+              : t('marketplace.payment.confirm')}
           </Button>
         </Space>
       </div>

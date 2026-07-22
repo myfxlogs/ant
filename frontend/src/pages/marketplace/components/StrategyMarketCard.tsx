@@ -17,9 +17,9 @@ interface Props {
 function priceLabel(s: PublishedStrategy, t: (k: string) => string): { text: string; color: string } {
   const model = String(s.priceModel || '').toLowerCase();
   const amount = Number(s.priceAmount || 0);
-  if (model === 'free' || !amount) return { text: t('marketplace.card.free', '免费'), color: '#52c41a' };
-  if (model === 'subscription') return { text: t('marketplace.card.rent', '¥{{amount}}/月', { amount: amount.toFixed(0) }), color: '#fa8c16' };
-  return { text: t('marketplace.card.buy', '¥{{amount}}', { amount: amount.toFixed(0) }), color: '#D4AF37' };
+  if (model === 'free' || !amount) return { text: t('marketplace.card.free'), color: '#52c41a' };
+  if (model === 'subscription') return { text: t('marketplace.card.rent', { amount: amount.toFixed(0) }), color: '#fa8c16' };
+  return { text: t('marketplace.card.buy', { amount: amount.toFixed(0) }), color: '#D4AF37' };
 }
 
 export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onOpenDetail }: Props) {
@@ -42,7 +42,7 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
       onClick={() => onOpenDetail(strategy)}
       extra={
         <Space size={4}>
-          <Tooltip title={t('marketplace.compare.addToCompare', { defaultValue: 'Add to compare' })}>
+          <Tooltip title={t('marketplace.compare.addToCompare')}>
             <Checkbox
               checked={inCompare}
               onClick={e => e.stopPropagation()}
@@ -51,7 +51,7 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
           </Tooltip>
           {isOwner ? (
             <Tag color="blue" style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
-              {t('marketplace.card.yourStrategy', 'Your Strategy')}
+              {t('marketplace.card.yourStrategy')}
             </Tag>
           ) : (
             <Tag color={price.color} style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>
@@ -74,12 +74,12 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
           {String(strategy.publisherUserId || '').slice(0, 8)}
         </Text>
         {strategy.providerVerified && (
-          <Tooltip title={t('marketplace.card.verified', { defaultValue: 'Verified Provider' })}>
+          <Tooltip title={t('marketplace.card.verified')}>
             <CheckCircleOutlined style={{ color: '#1890ff', fontSize: 14 }} />
           </Tooltip>
         )}
         {strategy.providerType === 'ai' && (
-          <Tooltip title={t('marketplace.card.aiProvider', { defaultValue: 'AI Provider' })}>
+          <Tooltip title={t('marketplace.card.aiProvider')}>
             <RobotOutlined style={{ color: '#722ed1', fontSize: 12 }} />
           </Tooltip>
         )}
@@ -118,9 +118,9 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
       {/* Tags */}
       <div style={{ marginTop: 10 }}>
         <Space size={4} wrap>
-          {strategy.assetClass && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.assetClass.${strategy.assetClass}`, { defaultValue: String(strategy.assetClass) })}</Tag>}
-          {strategy.riskLevel && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.riskLevel.${strategy.riskLevel}`, { defaultValue: String(strategy.riskLevel) })}</Tag>}
-          {isOwner && <Tag color="blue" style={{ fontSize: 10 }}>{t('marketplace.card.yourStrategy', 'Your Strategy')}</Tag>}
+          {strategy.assetClass && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.assetClass.${strategy.assetClass}`)}</Tag>}
+          {strategy.riskLevel && <Tag style={{ fontSize: 10 }}>{t(`marketplace.publish.riskLevel.${strategy.riskLevel}`)}</Tag>}
+          {isOwner && <Tag color="blue" style={{ fontSize: 10 }}>{t('marketplace.card.yourStrategy')}</Tag>}
           {isPurchased && !isOwner && <Tag color="green" style={{ fontSize: 10 }}>{t('marketplace.card.owned')}</Tag>}
         </Space>
       </div>
