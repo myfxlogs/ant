@@ -52,12 +52,14 @@ function MarketplaceUI() {
           <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as any)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
             { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard', { defaultValue: 'Leaderboard' })}</span>, children: <LeaderboardTabMemo /> },
-            { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai', { defaultValue: 'AI Generate' })}</span>, children: <AutoGenerateMemo /> },
-            { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases', 'My Purchases')}</span>, children: <PurchaseTabMemo /> },
-            { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author', 'Author Center')}</span>, children: <AuthorTabMemo /> },
-            { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles', { defaultValue: 'Bundles' })}</span>, children: <BundleTabMemo /> },
-            { key: 'optimization', label: <span><ThunderboltOutlined /> {t('marketplace.tabs.optimization', { defaultValue: 'AI Optimization' })}</span>, children: <OptimizationTabMemo /> },
-            { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees', { defaultValue: 'Fee Tiers' })}</span>, children: <FeeTierPanelMemo /> },
+            ...(m.isAuthenticated ? [
+              { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai', { defaultValue: 'AI Generate' })}</span>, children: <AutoGenerateMemo /> },
+              { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases', 'My Purchases')}</span>, children: <PurchaseTabMemo /> },
+              { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author', 'Author Center')}</span>, children: <AuthorTabMemo /> },
+              { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles', { defaultValue: 'Bundles' })}</span>, children: <BundleTabMemo /> },
+              { key: 'optimization', label: <span><ThunderboltOutlined /> {t('marketplace.tabs.optimization', { defaultValue: 'AI Optimization' })}</span>, children: <OptimizationTabMemo /> },
+              { key: 'fees', label: <span><PercentageOutlined /> {t('marketplace.tabs.fees', { defaultValue: 'Fee Tiers' })}</span>, children: <FeeTierPanelMemo /> },
+            ] : []),
           ]} />
           <StrategyDetailModal
             strategy={m.detailStrategy} open={m.detailOpen}

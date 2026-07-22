@@ -21,7 +21,7 @@ export type TabKey = 'market' | 'leaderboard' | 'purchases' | 'author' | 'bundle
 
 export function useMarketplace(): MarketplaceCtx {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const userId = user?.id || '';
 
   const [activeTab, setActiveTab] = useState<TabKey>('market');
@@ -216,7 +216,7 @@ export function useMarketplace(): MarketplaceCtx {
       totalRevenue: '0', monthlyRevenue: '0', topStrategyTitle: '',
       revenueTrend: [], subscriberTrend: [], strategyBreakdown: [],
     },
-    activeTab, setActiveTab, searchText, setSearchText,
+    isAuthenticated, activeTab, setActiveTab, searchText, setSearchText,
     priceFilter, setPriceFilter, sortBy, setSortBy,
     page, pageSize, total, setPage, setPageSize,
     refetch, isPurchased, isOwner, handleGetFree, handleBuy, handleRunBacktest,
