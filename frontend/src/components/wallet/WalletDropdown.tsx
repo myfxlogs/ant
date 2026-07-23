@@ -82,16 +82,6 @@ export default function WalletDropdown() {
         >
           {t('wallet.deposit.title')}
         </Button>
-        <Button
-          type="default"
-          style={{ flex: 1 }}
-          onClick={() => {
-            setOpen(false);
-            navigate('/wallet/withdraw');
-          }}
-        >
-          {t('wallet.withdraw.title')}
-        </Button>
       </div>
 
       <div style={{ padding: '0 16px 12px' }}>

@@ -686,9 +686,9 @@ const Base = {
       "modalTitle": "Gửi Yêu Cầu Nạp Tiền",
       "network": "Mạng",
       "notConfigured": "Nạp USDT chưa được cấu hình. Vui lòng liên hệ hỗ trợ.",
-      "notice": "Chỉ gửi USDT qua mạng được chỉ định. Gửi token khác hoặc sử dụng mạng khác có thể gây mất vĩnh viễn. Sau khi gửi, hãy gửi yêu cầu nạp tiền với số tiền và mã giao dịch tùy chọn để quản trị viên xem xét.",
+      "notice": "Chỉ gửi USDT qua mạng được chỉ định. Gửi token khác hoặc sử dụng mạng khác có thể gây mất vĩnh viễn.",
       "submit": "Gửi",
-      "success": "Yêu cầu nạp tiền đã được gửi. Vui lòng chờ quản trị viên xem xét.",
+      "success": "Yêu cầu nạp tiền đã được gửi. Tiền nạp của bạn sẽ được xác nhận tự động.",
       "title": "Nạp Tiền",
       "txHashLabel": "Mã giao dịch (tùy chọn)",
       "willCredit": "Sẽ nhận"
@@ -879,7 +879,7 @@ const Base = {
       "bridging": "AI đang bắc cầu điểm mù...",
       "bridgeFailedMsg": "Agent không thể tự động bắc cầu tất cả điểm mù",
       "noBridgeNeeded": "Độ phủ 100%, không cần bridge",
-      "bridgeHint": "Dán mã EA MQL4/MQL5, AI sẽ tự động chuyển vùng mù thành bytecode nền tảng"
+      "bridgeHint": "Dán mã EA MQL4/MQL5, AI sẽ tự động chuyển vùng mù thành tập con Python"
     },
     "version": {
       "loadFailed": "Không tải được các phiên bản",

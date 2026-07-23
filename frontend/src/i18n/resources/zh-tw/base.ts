@@ -686,9 +686,9 @@ const Base = {
       "modalTitle": "提交充值請求",
       "network": "網路",
       "notConfigured": "USDT 充值尚未設定，請聯繫客服。",
-      "notice": "請僅透過指定網路發送 USDT。發送其他代幣或使用不同網路可能導致永久遺失。發送後，請提交充值請求並填寫金額和可選的交易雜湊，等待管理員審核。",
+      "notice": "請僅透過指定網路發送 USDT。發送其他代幣或使用不同網路可能導致永久遺失。",
       "submit": "提交",
-      "success": "充值請求已提交，請等待管理員審核。",
+      "success": "充值請求已提交，您的充值將自動確認。",
       "title": "充值",
       "txHashLabel": "交易雜湊（選填）",
       "willCredit": "預計到帳"
@@ -879,7 +879,7 @@ const Base = {
       "bridging": "AI 橋接盲區中...",
       "bridgeFailedMsg": "Agent 無法自動橋接所有盲區",
       "noBridgeNeeded": "覆蓋率 100%，無需橋接",
-      "bridgeHint": "貼上 MQL4/MQL5 EA 程式碼，AI 將自動橋接盲區為平台字節碼"
+      "bridgeHint": "貼上 MQL4/MQL5 EA 程式碼，AI 將自動翻譯盲區為 Python 子集"
     },
     "version": {
       "loadFailed": "載入版本失敗",

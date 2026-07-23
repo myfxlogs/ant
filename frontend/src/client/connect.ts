@@ -49,7 +49,6 @@ import { AdminBillingService } from "../gen/ant/v1/admin_billing_pb";
 import { AdminMonitorService } from "../gen/ant/v1/admin_monitor_pb";
 import { SubscriptionService } from "../gen/ant/v1/subscription_pb";
 import { DepositService } from "../gen/ant/v1/deposit_pb";
-import { WebAuthnService } from "../gen/ant/v1/webauthn_pb";
 import { streamTransport, transport } from "./transport";
 
 export const walletClient = createClient(WalletService, transport);
@@ -120,4 +119,3 @@ export const adminBillingClient = createClient(AdminBillingService, transport);
 export const adminMonitorStreamClient = createClient(AdminMonitorService, streamTransport);
 export const subscriptionClient = createClient(SubscriptionService, transport);
 export const depositClient = createClient(DepositService, transport);
-export const webauthnClient = createClient(WebAuthnService, transport);

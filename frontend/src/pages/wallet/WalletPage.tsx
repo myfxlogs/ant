@@ -9,9 +9,6 @@ import { queryKeys } from '@/queries/queryKeys';
 import { StatusResult } from '@/components/common/StatusResult';
 import { formatAmount } from '@/utils/amount';
 import { useMemo } from 'react';
-import { PasskeyManagement } from './PasskeyManagement';
-import { WithdrawalPanel } from './WithdrawalPanel';
-import { WhitelistManagement } from './WhitelistManagement';
 
 const { Title } = Typography;
 
@@ -228,15 +225,6 @@ export default function WalletPage() {
           />
         </Card>
       )}
-
-      {/* Passkey Management */}
-      <PasskeyManagement />
-
-      {/* Withdrawal Panel */}
-      <WithdrawalPanel balance={wallet?.balance || '0'} frozenBalance={wallet?.frozenBalance || '0'} />
-
-      {/* Whitelist Management */}
-      <WhitelistManagement />
 
       <Card
         title={<span><TransactionOutlined style={{ marginRight: 8 }} />{t('wallet.transactions')}</span>}

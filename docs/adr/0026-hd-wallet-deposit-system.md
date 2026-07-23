@@ -1264,3 +1264,32 @@ cmd/solvency-check (在管理员设备/冷机运行, 独立):
 5. **[USB]** 气隙机 → 在线机
 6. **[在线机]** Admin 导入 `ImportSignedBundle` → 自动按序广播 delegate→transfer→undelegate → Dashboard 显示进度
 7. **[异常]** FAILED→可重建 Bundle 重试；超时→Worker 自动 ReconfirmSweeping；卡死→MANUAL_REVIEW；能量不足→减少地址数降级
+
+## 15. 提现功能移除（2026-07-23）
+
+### 15.1 移除原因
+
+WebAuthn 作为提现授权方案存在以下问题：
+
+1. **设备绑定问题**：当前使用 Platform 认证器（Touch ID/Windows Hello），passkey 绑定在单台设备上。用户换设备后无法提现，无恢复机制。放开为 CrossPlatform 认证器（YubiKey）仍需用户额外购买硬件。
+2. **JSON 违规**：go-webauthn 库输出 JSON 格式给浏览器 `navigator.credentials.create()`，需要 `encoding/json`，违反项目 proto-only 规则。proto 化改造需将 `CredentialCreation` 结构体手动转换为 proto 消息再在前端重建，工作量大且脆弱。
+3. **用户体验差**：不支持漫游认证器的用户需要购买 YubiKey；无生物识别的设备无法使用 passkey。
+
+### 15.2 后续方案：TOTP 交易签名
+
+提现功能后续应采用 **TOTP 交易签名** 方案：
+
+- 用户绑定 Google Authenticator（TOTP），换机可用恢复码重新绑定
+- 提现时后端生成包含「金额+目标地址+nonce」的 TOTP challenge
+- 用户输入 6 位 TOTP 码确认交易
+- proto 原生支持，无 JSON 问题
+- 安全性足够（防重放 + 交易绑定），用户体验好
+- 冷签机验签逻辑从 WebAuthn 断言验证改为 TOTP 验证，简化气隙机代码
+
+### 15.3 移除范围
+
+- **前端**：删除 `PasskeyManagement.tsx`、`WithdrawalPanel.tsx`、`WhitelistManagement.tsx`、`webauthn.ts`；`WalletPage.tsx` 移除三个组件引用；`WalletDropdown.tsx` 移除提现按钮；`connect.ts` 移除 WebAuthnService
+- **后端**：删除 `handlers_webauthn.go`、`webauthn_handler.go`、`webauthn_service.go`、`webauthn_registration.go`、`webauthn_withdrawal.go`、`webauthn_whitelist.go`、`webauthn_test.go`；`handlers.go` 注释掉 `wireWebAuthn` 调用
+- **保留**：`gen/` 下 proto 生成代码（`webauthn.pb.go`、`webauthn.connect.go`）和 repository（`webauthn_repo.go`、`withdrawal_repo.go`）不删除，避免影响其他引用，后续恢复可直接复用
+- **i18n**：`wallet.passkey.*`/`wallet.withdraw.*`/`wallet.whitelist.*` key 保留在 textproto 中（不影响功能，后续恢复时可直接复用）
+- **DB**：migration 210（`webauthn_withdrawal`）不回滚，表数据保留

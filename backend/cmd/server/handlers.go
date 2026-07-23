@@ -116,9 +116,9 @@ func registerHandlers(
 	// Deposit + chain monitor + reconciler + sweep worker (ADR-0026 Phase C).
 	dsDeps := setupDepositAndSweep(mux, pool, cfg, walletRepo, platformSvc, log, otelInterceptor, authInterceptor)
 
-	// ADR-0026 Phase E: WebAuthn withdrawal authorization (after sweep setup for WithdrawalBuilder).
-	wireWebAuthn(mux, pool, log, cfg, walletSvc, walletRepo, emailNotifier, platformSvc,
-		dsDeps.sweepBundleRepo, dsDeps.sweepTronClient, dsDeps.adminRepo, otelInterceptor, authInterceptor)
+	// NOTE: WebAuthn withdrawal authorization temporarily disabled (see rd.md for rationale).
+	// wireWebAuthn(mux, pool, log, cfg, walletSvc, walletRepo, emailNotifier, platformSvc,
+	// 	dsDeps.sweepBundleRepo, dsDeps.sweepTronClient, dsDeps.adminRepo, otelInterceptor, authInterceptor)
 
 	// P3.1: Subscription service (Free/Pro/Enterprise plans).
 	subscriptionRepo := repository.NewSubscriptionRepository(pool)
