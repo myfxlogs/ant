@@ -41,13 +41,13 @@ export default function WalletPage() {
   const copyAddress = () => {
     if (depositAddr?.address) {
       navigator.clipboard.writeText(depositAddr.address);
-      message.success(t('wallet.deposit.addressCopied', { defaultValue: 'Address copied to clipboard' }));
+      message.success(t('wallet.deposit.addressCopied'));
     }
   };
 
   const columns = useMemo(() => [
     {
-      title: t('wallet.table.type', { defaultValue: 'Type' }),
+      title: t('wallet.table.type'),
       dataIndex: 'txType',
       key: 'txType',
       width: 100,
@@ -58,7 +58,7 @@ export default function WalletPage() {
       },
     },
     {
-      title: t('wallet.table.amount', { defaultValue: 'Amount' }),
+      title: t('wallet.table.amount'),
       dataIndex: 'amount',
       key: 'amount',
       width: 120,
@@ -68,20 +68,20 @@ export default function WalletPage() {
       },
     },
     {
-      title: t('wallet.table.balanceAfter', { defaultValue: 'Balance After' }),
+      title: t('wallet.table.balanceAfter'),
       dataIndex: 'balanceAfter',
       key: 'balanceAfter',
       width: 120,
       render: (v: string) => formatAmount(v),
     },
     {
-      title: t('wallet.table.description', { defaultValue: 'Description' }),
+      title: t('wallet.table.description'),
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
     },
     {
-      title: t('wallet.table.time', { defaultValue: 'Time' }),
+      title: t('wallet.table.time'),
       dataIndex: 'createdAtTsMs',
       key: 'createdAtTsMs',
       width: 180,
@@ -91,14 +91,14 @@ export default function WalletPage() {
 
   const depositColumns = useMemo(() => [
     {
-      title: t('wallet.deposit.table.amount', { defaultValue: 'USDT Amount' }),
+      title: t('wallet.deposit.table.amount'),
       dataIndex: 'amount',
       key: 'amount',
       width: 120,
       render: (v: string) => <span style={{ color: '#00A651', fontWeight: 500 }}>+{formatAmount(v)}</span>,
     },
     {
-      title: t('wallet.deposit.table.txHash', { defaultValue: 'Tx Hash' }),
+      title: t('wallet.deposit.table.txHash'),
       dataIndex: 'txHash',
       key: 'txHash',
       ellipsis: true,
@@ -106,13 +106,13 @@ export default function WalletPage() {
       render: (v: string) => v ? <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.slice(0, 20)}...</span> : '-',
     },
     {
-      title: t('wallet.deposit.table.confirmations', { defaultValue: 'Confirmations' }),
+      title: t('wallet.deposit.table.confirmations'),
       dataIndex: 'confirmations',
       key: 'confirmations',
       width: 120,
     },
     {
-      title: t('wallet.deposit.table.status', { defaultValue: 'Status' }),
+      title: t('wallet.deposit.table.status'),
       dataIndex: 'status',
       key: 'status',
       width: 120,
@@ -122,7 +122,7 @@ export default function WalletPage() {
       },
     },
     {
-      title: t('wallet.deposit.table.time', { defaultValue: 'Time' }),
+      title: t('wallet.deposit.table.time'),
       dataIndex: 'confirmedAt',
       key: 'confirmedAt',
       width: 180,
@@ -134,24 +134,24 @@ export default function WalletPage() {
     <div style={{ padding: '0 0 24px 0' }}>
       <Title level={4} style={{ margin: '0 0 16px 0', fontFamily: 'Poppins, sans-serif' }}>
         <WalletOutlined style={{ marginRight: 8, color: '#D4AF37' }} />
-        {t('wallet.title', { defaultValue: 'My Wallet' })}
+        {t('wallet.title')}
       </Title>
 
       <StatusResult loading={isLoading} error={error instanceof Error ? error.message : null} onRetry={refetch}>
         {wallet && (
           <Card size="small" style={{ marginBottom: 24 }}>
             <Descriptions column={3} size="small">
-              <Descriptions.Item label={t('wallet.accountNumber', { defaultValue: 'Account' })}>
+              <Descriptions.Item label={t('wallet.accountNumber')}>
                 <span style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, color: '#D4AF37' }}>
                   {wallet.accountNumber || '-'}
                 </span>
               </Descriptions.Item>
-              <Descriptions.Item label={t('wallet.balance', { defaultValue: 'Balance' })}>
+              <Descriptions.Item label={t('wallet.balance')}>
                 <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }}>
                   {formatAmount(wallet.balance)} {wallet.currency}
                 </span>
               </Descriptions.Item>
-              <Descriptions.Item label={t('wallet.frozen', { defaultValue: 'Frozen' })}>
+              <Descriptions.Item label={t('wallet.frozen')}>
                 <span style={{ fontSize: 16, color: 'var(--color-text)' }}>
                   {formatAmount(wallet.frozenBalance)} {wallet.currency}
                 </span>
@@ -165,7 +165,7 @@ export default function WalletPage() {
       <Card
         size="small"
         style={{ marginBottom: 24, borderColor: '#D4AF37', borderWidth: 1 }}
-        title={<span style={{ color: '#D4AF37' }}>USDT {t('wallet.deposit.title', { defaultValue: 'Deposit' })}</span>}
+        title={<span style={{ color: '#D4AF37' }}>USDT {t('wallet.deposit.title')}</span>}
       >
         <Spin spinning={addrLoading}>
           {depositAddr?.address ? (
@@ -180,15 +180,15 @@ export default function WalletPage() {
               </div>
               <div style={{ flex: 1, minWidth: 250 }}>
                 <Descriptions column={1} size="small">
-                  <Descriptions.Item label={t('wallet.deposit.network', { defaultValue: 'Network' })}>
+                  <Descriptions.Item label={t('wallet.deposit.network')}>
                     <Tag color="gold">{depositAddr.network || 'TRC20'}</Tag>
                   </Descriptions.Item>
-                  <Descriptions.Item label={t('wallet.deposit.address', { defaultValue: 'Your Deposit Address' })}>
+                  <Descriptions.Item label={t('wallet.deposit.address')}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ fontFamily: 'monospace', fontSize: 14, wordBreak: 'break-all' }}>
                         {depositAddr.address}
                       </span>
-                      <Tooltip title={t('wallet.deposit.copy', { defaultValue: 'Copy' })}>
+                      <Tooltip title={t('wallet.deposit.copy')}>
                         <Button type="text" size="small" icon={<CopyOutlined />} onClick={copyAddress} />
                       </Tooltip>
                     </div>
@@ -196,7 +196,7 @@ export default function WalletPage() {
                 </Descriptions>
                 <Alert
                   type="warning"
-                  message={t('wallet.deposit.notice', { defaultValue: 'Only send USDT (TRC20) to this address. Sending other tokens or using a different network may result in permanent loss. Deposits are automatically confirmed after 20 block confirmations.' })}
+                  message={t('wallet.deposit.notice')}
                   style={{ marginTop: 12 }}
                   showIcon
                 />
@@ -205,7 +205,7 @@ export default function WalletPage() {
           ) : !addrLoading && (
             <Alert
               type="info"
-              message={t('wallet.deposit.notConfigured', { defaultValue: 'Unable to assign a deposit address. Please contact support.' })}
+              message={t('wallet.deposit.notConfigured')}
               showIcon
             />
           )}
@@ -215,7 +215,7 @@ export default function WalletPage() {
       {/* Deposit History */}
       {myDeposits?.deposits?.length > 0 && (
         <Card
-          title={t('wallet.deposit.history', { defaultValue: 'Deposit History' })}
+          title={t('wallet.deposit.history')}
           size="small"
           style={{ marginBottom: 24 }}
         >
@@ -239,7 +239,7 @@ export default function WalletPage() {
       <WhitelistManagement />
 
       <Card
-        title={<span><TransactionOutlined style={{ marginRight: 8 }} />{t('wallet.transactions', { defaultValue: 'Transactions' })}</span>}
+        title={<span><TransactionOutlined style={{ marginRight: 8 }} />{t('wallet.transactions')}</span>}
         size="small"
       >
         <StatusResult loading={txLoading} empty={!txData?.transactions?.length}>

@@ -1,5 +1,5 @@
 import { Button, Tooltip } from 'antd';
-import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined, ImportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
   CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY,
@@ -25,10 +25,11 @@ interface Props {
   btModalOpen: boolean;
   setBtModalOpen: (v: boolean) => void;
   setIndicatorDrawerOpen: (v: boolean) => void;
+  setImportDrawerOpen: (v: boolean) => void;
   onShowVersionHistory?: () => void;
 }
 
-export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
+export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, setImportDrawerOpen, onShowVersionHistory }: Props) {
   const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
@@ -77,6 +78,11 @@ export default function WorkspaceCenterColumn({ ws, btModalOpen, setBtModalOpen,
             {strategyName && <span style={{ fontWeight: 600, color: 'var(--ant-color-text)' }}>{strategyName}</span>}
             {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t(COMMON_UNSAVED_KEY)}</span>}
             {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t(COMMON_SAVED_KEY)}</span>}
+            <Tooltip title={t('strategy.importEA.tooltip', { defaultValue: 'Import MQL4/MQL5 source code' })}>
+              <Button size="small" icon={<ImportOutlined />} onClick={() => setImportDrawerOpen(true)}>
+                {t('strategy.importEA.button', { defaultValue: 'Import MQL' })}
+              </Button>
+            </Tooltip>
             <Tooltip title={t(SAVE_KEY)}>
               <Button size="small" icon={<SaveOutlined />}
                 onClick={() => ws.code.setSaveModalOpen(true)}

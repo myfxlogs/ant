@@ -46,7 +46,7 @@ export default function TradingMonitor() {
       title: t('admin.trading.volume'),
       dataIndex: 'volume',
       key: 'volume',
-      render: (value: number) => value?.toFixed(2) || '0.00',
+      render: (value: number | string) => Number(value)?.toFixed(2) || '0.00',
     },
   ], [t]);
 

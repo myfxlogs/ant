@@ -542,7 +542,13 @@ const Base = {
       "systemConfig": "System Config",
       "tradingMonitor": "Trading Monitor",
       "userManagement": "User Management",
-      "walletManagement": "Wallets"
+      "walletManagement": "Wallets",
+      "sweep": "Sweep",
+      "autogenTasks": "AI Gen Tasks",
+      "marketplace": "Marketplace",
+      "refunds": "Refunds",
+      "analytics": "Analytics",
+      "coupons": "Coupons"
     },
     "trading": {
       "accounts": "Accounts",
@@ -666,7 +672,8 @@ const Base = {
         "amountUsd": "USD Credit",
         "status": "Status",
         "time": "Time",
-        "txHash": "Tx Hash"
+        "txHash": "Tx Hash",
+        "confirmations": "Confirmations"
       },
       "address": "Receiving Address",
       "addressCopied": "Address copied to clipboard",
@@ -700,6 +707,58 @@ const Base = {
       "reversal": "Reversal",
       "withdrawal": "Withdrawal"
     },
+    "passkey": {
+      "title": "Passkey Management",
+      "add": "Add Passkey",
+      "name": "Name",
+      "credentialId": "Credential ID",
+      "signCount": "Sign Count",
+      "createdAt": "Created At",
+      "confirmRemove": "Remove this passkey?",
+      "register": "Register",
+      "registered": "Passkey registered successfully",
+      "registerFailed": "Registration failed",
+      "registerHint": "Enter a name for this passkey, then click Register to start the WebAuthn flow.",
+      "namePlaceholder": "e.g. My YubiKey",
+      "removed": "Passkey removed"
+    },
+    "withdraw": {
+      "title": "Withdraw",
+      "new": "New Withdrawal",
+      "submit": "Submit",
+      "available": "Available Balance",
+      "amount": "Amount",
+      "amountLabel": "Withdrawal Amount (USDT)",
+      "amountRequired": "Please enter amount",
+      "destAddress": "Destination Address",
+      "destLabel": "Destination TRC20 Address",
+      "destRequired": "Please enter destination address",
+      "whitelist": "Whitelist (click to fill)",
+      "status": "Status",
+      "txHash": "Tx Hash",
+      "time": "Time",
+      "cancelled": "Withdrawal cancelled",
+      "confirmCancel": "Cancel this withdrawal?",
+      "success": "Withdrawal submitted successfully",
+      "failed": "Withdrawal failed",
+      "noBalance": "No available balance for withdrawal",
+      "warning": "Withdrawals require passkey verification. Please ensure your destination address is correct — blockchain transactions are irreversible."
+    },
+    "whitelist": {
+      "title": "Whitelist Management",
+      "add": "Add Address",
+      "added": "Whitelist address added",
+      "removed": "Whitelist address removed",
+      "label": "Label",
+      "address": "Address",
+      "status": "Status",
+      "confirmedAt": "Confirmed At",
+      "confirmRemove": "Remove this whitelist address?",
+      "addressLabel": "TRC20 Address",
+      "addressRequired": "Please enter address",
+      "labelLabel": "Label (optional)",
+      "labelPlaceholder": "e.g. My Binance wallet"
+    },
     "accountNumber": "Account",
     "balance": "Balance",
     "currency": "Currency",
@@ -707,8 +766,7 @@ const Base = {
     "frozenBalance": "Frozen",
     "history": "History",
     "title": "My Wallet",
-    "transactions": "Transactions",
-    "withdraw": "Withdraw"
+    "transactions": "Transactions"
   },
   "strategy": {
     "workspace": {
@@ -913,14 +971,16 @@ const Base = {
       "reasonLabel": "Reason (required)",
       "reasonPlaceholder": "e.g.: Detected abnormal market volatility, emergency stop all trading",
       "typeKill": "Type KILL to confirm",
-      "typeKillPlaceholder": "Type KILL (uppercase)"
+      "typeKillPlaceholder": "Type KILL (uppercase)",
+      "undoWindow": "Undo window: {{minutes}}m {{seconds}}s remaining",
+      "title": "Kill Switch"
     }
   },
   "marketplace": {
     "publish": {
       "priceModel": {
         "free": "Free",
-        "subscription": "Monthly Subscription",
+        "monthly": "Monthly Subscription",
         "once": "One-Time Purchase",
         "label": "Pricing"
       },
@@ -1076,41 +1136,8 @@ const Base = {
     },
     "forgotPassword": {
       "backToLogin": "Back to Login",
-      "title": "Reset Password",
-      "emailTab": "Email",
-      "mtTab": "MT Verify",
-      "adminTab": "Admin",
-      "emailSent": "If the email exists, a reset link has been sent.",
-      "sendResetLink": "Send Reset Link",
-      "platform": "Platform",
-      "brokerName": "Broker Name",
-      "brokerPlaceholder": "Enter broker name to search",
-      "company": "Company",
-      "selectCompany": "Select company",
-      "server": "Server",
-      "selectServer": "Select server",
-      "noBrokers": "No brokers found.",
-      "searchFailed": "Broker search failed.",
-      "mtLogin": "MT Account Number",
-      "mtLoginPlaceholder": "e.g. 12345678",
-      "mtPassword": "MT Password",
-      "mtPasswordPlaceholder": "MT trading password",
-      "mtHint": "Enter your bound MT account credentials to verify your identity.",
-      "verifyAndReset": "Verify & Reset Password",
-      "mtVerified": "Identity verified. Redirecting to password reset.",
-      "mtFailed": "MT credential verification failed.",
-      "adminHint": "Please contact your administrator or support to reset your password."
-    },
-    "resetPassword": {
-      "title": "Set New Password",
-      "newPassword": "New Password",
-      "confirmPassword": "Confirm Password",
-      "confirmRequired": "Please confirm your password",
-      "submit": "Reset Password",
-      "success": "Password has been reset. Please log in with your new password.",
-      "failed": "Failed to reset password.",
-      "mismatch": "Passwords do not match.",
-      "invalidToken": "Invalid or missing reset token."
+      "hint": "Please contact your administrator or support to reset your password.",
+      "title": "Reset Password"
     },
     "login": {
       "forgotPassword": "Forgot password?",
@@ -1235,10 +1262,7 @@ const Base = {
     "failed": "Failed",
     "reset": "Reset",
     "saving": "saving...",
-    "login": "Login",
-    "register": "Register",
-    "loginRequired": "Login Required",
-    "loginRequiredDesc": "Please log in or register to continue."
+    "total": "{{total}} total"
   },
   "errors": {
     "ai": {
@@ -1573,7 +1597,11 @@ const Base = {
     "bidGtAsk": "Bid>Ask",
     "nonPositive": "Non-Positive",
     "pushInterval": "Push interval: 5s",
-    "lastUpdate": "Last update"
+    "lastUpdate": "Last update",
+    "uptimeDays": "{{d}}d {{h}}h",
+    "uptimeHours": "{{h}}h {{m}}m",
+    "uptimeMinutes": "{{m}}m {{s}}s",
+    "uptimeSeconds": "{{s}}s"
   }
 } as const;
 export default Base;

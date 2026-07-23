@@ -23,7 +23,7 @@ export function PasskeyManagement() {
   const removeMutation = useMutation({
     mutationFn: (credentialId: string) => webauthnApi.removeCredential(credentialId),
     onSuccess: () => {
-      message.success(t('wallet.passkey.removed', { defaultValue: 'Passkey removed' }));
+      message.success(t('wallet.passkey.removed'));
       queryClient.invalidateQueries({ queryKey: ['webauthn', 'credentials'] });
     },
     onError: (err: Error) => message.error(err.message),
@@ -71,37 +71,37 @@ export function PasskeyManagement() {
 
       const finishPayload = new TextEncoder().encode(sessionHeader + '|' + responseJson);
       await webauthnApi.finishRegistration(finishPayload, registerName);
-      message.success(t('wallet.passkey.registered', { defaultValue: 'Passkey registered successfully' }));
+      message.success(t('wallet.passkey.registered'));
       setRegisterOpen(false);
       setRegisterName('');
       queryClient.invalidateQueries({ queryKey: ['webauthn', 'credentials'] });
     } catch (err: any) {
-      message.error(err.message || t('wallet.passkey.registerFailed', { defaultValue: 'Registration failed' }));
+      message.error(err.message || t('wallet.passkey.registerFailed'));
     }
     setRegistering(false);
   };
 
   const columns = [
     {
-      title: t('wallet.passkey.name', { defaultValue: 'Name' }),
+      title: t('wallet.passkey.name'),
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: t('wallet.passkey.credentialId', { defaultValue: 'Credential ID' }),
+      title: t('wallet.passkey.credentialId'),
       dataIndex: 'credentialId',
       key: 'credentialId',
       ellipsis: true,
       render: (v: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v?.slice(0, 24)}...</span>,
     },
     {
-      title: t('wallet.passkey.signCount', { defaultValue: 'Sign Count' }),
+      title: t('wallet.passkey.signCount'),
       dataIndex: 'signCount',
       key: 'signCount',
       width: 100,
     },
     {
-      title: t('wallet.passkey.createdAt', { defaultValue: 'Created' }),
+      title: t('wallet.passkey.createdAt'),
       dataIndex: 'createdAtTsMs',
       key: 'createdAtTsMs',
       width: 180,
@@ -113,7 +113,7 @@ export function PasskeyManagement() {
       width: 80,
       render: (_: any, record: any) => (
         <Popconfirm
-          title={t('wallet.passkey.confirmRemove', { defaultValue: 'Remove this passkey?' })}
+          title={t('wallet.passkey.confirmRemove')}
           onConfirm={() => removeMutation.mutate(record.credentialId)}
         >
           <Button type="text" danger icon={<DeleteOutlined />} size="small" />
@@ -126,8 +126,8 @@ export function PasskeyManagement() {
     <Card
       size="small"
       style={{ marginBottom: 24 }}
-      title={<span><KeyOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('wallet.passkey.title', { defaultValue: 'Passkeys (Withdrawal Authorization)' })}</span>}
-      extra={<Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setRegisterOpen(true)}>{t('wallet.passkey.add', { defaultValue: 'Add Passkey' })}</Button>}
+      title={<span><KeyOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('wallet.passkey.title')}</span>}
+      extra={<Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setRegisterOpen(true)}>{t('wallet.passkey.add')}</Button>}
     >
       <Table
         columns={columns}
@@ -138,17 +138,17 @@ export function PasskeyManagement() {
         pagination={false}
       />
       <Modal
-        title={t('wallet.passkey.register', { defaultValue: 'Register New Passkey' })}
+        title={t('wallet.passkey.register')}
         open={registerOpen}
         onCancel={() => setRegisterOpen(false)}
         onOk={handleRegister}
         confirmLoading={registering}
-        okText={t('wallet.passkey.register', { defaultValue: 'Register' })}
+        okText={t('wallet.passkey.register')}
       >
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Text type="secondary">{t('wallet.passkey.registerHint', { defaultValue: 'Name your passkey for easy identification, then authenticate with your device.' })}</Text>
+          <Text type="secondary">{t('wallet.passkey.registerHint')}</Text>
           <Input
-            placeholder={t('wallet.passkey.namePlaceholder', { defaultValue: 'e.g. iPhone Face ID' })}
+            placeholder={t('wallet.passkey.namePlaceholder')}
             value={registerName}
             onChange={(e) => setRegisterName(e.target.value)}
             onPressEnter={handleRegister}

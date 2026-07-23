@@ -32,7 +32,7 @@ export default function SweepManagement() {
       const bundle = await depositApi.exportUnsignedSweepBundle(addrId);
       downloadBlob(new Blob([bundle]), `unsigned-bundle-${addrId.slice(0, 8)}.bin`);
     },
-    onSuccess: () => message.success(t('admin.sweep.exportSuccess', { defaultValue: 'Unsigned bundle exported. Transfer to cold signing machine via USB.' })),
+    onSuccess: () => message.success(t('admin.sweep.exportSuccess')),
     onError: (err: Error) => message.error(err.message),
   });
 
@@ -42,7 +42,7 @@ export default function SweepManagement() {
       downloadBlob(new Blob([bundle]), `unsigned-batch-${Date.now()}.bin`);
     },
     onSuccess: () => {
-      message.success(t('admin.sweep.batchExportSuccess', { defaultValue: 'Batch unsigned bundle exported.' }));
+      message.success(t('admin.sweep.batchExportSuccess'));
       setSelectedIds([]);
     },
     onError: (err: Error) => message.error(err.message),
@@ -54,7 +54,7 @@ export default function SweepManagement() {
       return depositApi.importSignedSweepBundle(buf);
     },
     onSuccess: (data) => {
-      message.success(t('admin.sweep.importSuccess', { defaultValue: 'Signed bundle imported and broadcast.' }) + ` batch=${data.batchId}`);
+      message.success(t('admin.sweep.importSuccess') + ` batch=${data.batchId}`);
       setImportOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin', 'sweep'] });
     },
@@ -65,7 +65,7 @@ export default function SweepManagement() {
     mutationFn: async (addrIds: string[]) => depositApi.buildUndelegateOnlyBundle(addrIds),
     onSuccess: (bundle) => {
       downloadBlob(new Blob([bundle]), `undelegate-${Date.now()}.bin`);
-      message.success(t('admin.sweep.undelegateSuccess', { defaultValue: 'Undelegate-only bundle exported.' }));
+      message.success(t('admin.sweep.undelegateSuccess'));
     },
     onError: (err: Error) => message.error(err.message),
   });
@@ -77,9 +77,9 @@ export default function SweepManagement() {
     },
     onSuccess: (data) => {
       const fpStatus = data.fingerprintVerified
-        ? t('admin.sweep.xpubFpVerified', { defaultValue: 'fingerprint verified' })
-        : t('admin.sweep.xpubFpNotSet', { defaultValue: 'fingerprint not set in env (verification skipped)' });
-      message.success(t('admin.sweep.xpubImported', { defaultValue: 'XPUB imported and hot-reloaded' }) + ` (${fpStatus})`);
+        ? t('admin.sweep.xpubFpVerified')
+        : t('admin.sweep.xpubFpNotSet');
+      message.success(t('admin.sweep.xpubImported') + ` (${fpStatus})`);
       queryClient.invalidateQueries({ queryKey: ['admin', 'sweep'] });
     },
     onError: (err: Error) => message.error(err.message),
@@ -101,14 +101,14 @@ export default function SweepManagement() {
       ),
     },
     {
-      title: t('admin.sweep.address', { defaultValue: 'Address' }),
+      title: t('admin.sweep.address'),
       dataIndex: 'address',
       key: 'address',
       ellipsis: true,
       render: (v: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v}</span>,
     },
     {
-      title: t('admin.sweep.unswept', { defaultValue: 'Unswept USDT' }),
+      title: t('admin.sweep.unswept'),
       dataIndex: 'unsweptAmount',
       key: 'unsweptAmount',
       width: 140,
@@ -116,14 +116,14 @@ export default function SweepManagement() {
       render: (v: string) => <span style={{ fontWeight: 600, color: parseFloat(v) > 0 ? '#D4AF37' : 'var(--color-text)' }}>{formatAmount(v)}</span>,
     },
     {
-      title: t('admin.sweep.aboveThreshold', { defaultValue: 'Above Threshold' }),
+      title: t('admin.sweep.aboveThreshold'),
       dataIndex: 'aboveThreshold',
       key: 'aboveThreshold',
       width: 120,
       render: (v: boolean) => v ? <Tag color="red">YES</Tag> : <Tag>NO</Tag>,
     },
     {
-      title: t('admin.sweep.sweepStatus', { defaultValue: 'Sweep Status' }),
+      title: t('admin.sweep.sweepStatus'),
       dataIndex: 'sweepStatus',
       key: 'sweepStatus',
       width: 120,
@@ -133,7 +133,7 @@ export default function SweepManagement() {
       },
     },
     {
-      title: t('admin.sweep.derivationIndex', { defaultValue: 'Index' }),
+      title: t('admin.sweep.derivationIndex'),
       dataIndex: 'derivationIndex',
       key: 'derivationIndex',
       width: 80,
@@ -149,7 +149,7 @@ export default function SweepManagement() {
           loading={exportMutation.isPending && exportMutation.variables === record.depositAddressId}
           onClick={() => exportMutation.mutate(record.depositAddressId)}
         >
-          {t('admin.sweep.export', { defaultValue: 'Export' })}
+          {t('admin.sweep.export')}
         </Button>
       ),
     },
@@ -157,28 +157,28 @@ export default function SweepManagement() {
 
   const bundleColumns = [
     {
-      title: t('admin.sweep.bundleId', { defaultValue: 'Batch ID' }),
+      title: t('admin.sweep.bundleId'),
       dataIndex: 'batchId',
       key: 'batchId',
       ellipsis: true,
       render: (v: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v?.slice(0, 16)}...</span>,
     },
     {
-      title: t('admin.sweep.addressId', { defaultValue: 'Address ID' }),
+      title: t('admin.sweep.addressId'),
       dataIndex: 'depositAddressId',
       key: 'depositAddressId',
       ellipsis: true,
       render: (v: string) => v ? <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v?.slice(0, 16)}...</span> : <Tag>BATCH</Tag>,
     },
     {
-      title: t('admin.sweep.builtAt', { defaultValue: 'Built At' }),
+      title: t('admin.sweep.builtAt'),
       dataIndex: 'builtAtMs',
       key: 'builtAtMs',
       width: 180,
       render: (v: string) => v ? new Date(Number(v)).toLocaleString() : '-',
     },
     {
-      title: t('admin.sweep.bundleStatus', { defaultValue: 'Status' }),
+      title: t('admin.sweep.bundleStatus'),
       dataIndex: 'status',
       key: 'status',
       width: 120,
@@ -190,14 +190,14 @@ export default function SweepManagement() {
     <div>
       <Title level={4} style={{ margin: '0 0 16px 0', fontFamily: 'Poppins, sans-serif' }}>
         <ThunderboltOutlined style={{ marginRight: 8, color: '#D4AF37' }} />
-        {t('admin.sweep.title', { defaultValue: 'Sweep Management' })}
+        {t('admin.sweep.title')}
       </Title>
 
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={8}>
           <Card size="small">
             <Statistic
-              title={t('admin.sweep.totalUnswept', { defaultValue: 'Total Unswept' })}
+              title={t('admin.sweep.totalUnswept')}
               value={formatAmount(dashboard?.totalUnswept || '0')}
               suffix="USDT"
               valueStyle={{ color: '#D4AF37' }}
@@ -207,7 +207,7 @@ export default function SweepManagement() {
         <Col span={8}>
           <Card size="small">
             <Statistic
-              title={t('admin.sweep.threshold', { defaultValue: 'Sweep Threshold' })}
+              title={t('admin.sweep.threshold')}
               value={formatAmount(dashboard?.threshold || '0')}
               suffix="USDT"
             />
@@ -216,7 +216,7 @@ export default function SweepManagement() {
         <Col span={8}>
           <Card size="small">
             <Statistic
-              title={t('admin.sweep.pendingBundles', { defaultValue: 'Pending Sign Bundles' })}
+              title={t('admin.sweep.pendingBundles')}
               value={pendingBundles?.length || 0}
             />
           </Card>
@@ -226,7 +226,7 @@ export default function SweepManagement() {
       <Card
         size="small"
         style={{ marginBottom: 24 }}
-        title={<span><KeyOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('admin.sweep.xpubTitle', { defaultValue: 'HD Wallet XPUB' })}</span>}
+        title={<span><KeyOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('admin.sweep.xpubTitle')}</span>}
         extra={
           <Upload
             accept=".bin"
@@ -238,14 +238,14 @@ export default function SweepManagement() {
             }}
           >
             <Button icon={<UploadOutlined />} loading={importXpubMutation.isPending}>
-              {t('admin.sweep.uploadXpub', { defaultValue: 'Upload xpub-export.bin' })}
+              {t('admin.sweep.uploadXpub')}
             </Button>
           </Upload>
         }
       >
         <Alert
           type="info"
-          message={t('admin.sweep.xpubHint', { defaultValue: 'Upload the xpub-export.bin file generated by hdgen on the air-gapped machine. The xpub will be stored in system_config and hot-reloaded — no server restart required.' })}
+          message={t('admin.sweep.xpubHint')}
           showIcon
         />
       </Card>
@@ -253,11 +253,11 @@ export default function SweepManagement() {
       <Card
         size="small"
         style={{ marginBottom: 24 }}
-        title={t('admin.sweep.dashboard', { defaultValue: 'Sweep Dashboard' })}
+        title={t('admin.sweep.dashboard')}
         extra={
           <Space>
             <Button icon={<ReloadOutlined />} onClick={() => queryClient.invalidateQueries({ queryKey: ['admin', 'sweep'] })}>
-              {t('common.refresh', { defaultValue: 'Refresh' })}
+              {t('common.refresh')}
             </Button>
             <Button
               type="primary"
@@ -266,7 +266,7 @@ export default function SweepManagement() {
               loading={exportBatchMutation.isPending}
               onClick={() => exportBatchMutation.mutate(selectedIds)}
             >
-              {t('admin.sweep.batchExport', { defaultValue: 'Batch Export' })} ({selectedIds.length})
+              {t('admin.sweep.batchExport')} ({selectedIds.length})
             </Button>
             <Button
               icon={<ThunderboltOutlined />}
@@ -274,10 +274,10 @@ export default function SweepManagement() {
               loading={undelegateMutation.isPending}
               onClick={() => undelegateMutation.mutate(selectedIds)}
             >
-              {t('admin.sweep.undelegate', { defaultValue: 'Undelegate Only' })}
+              {t('admin.sweep.undelegate')}
             </Button>
             <Button icon={<UploadOutlined />} onClick={() => setImportOpen(true)}>
-              {t('admin.sweep.import', { defaultValue: 'Import Signed' })}
+              {t('admin.sweep.import')}
             </Button>
           </Space>
         }
@@ -300,7 +300,7 @@ export default function SweepManagement() {
 
       <Card
         size="small"
-        title={t('admin.sweep.pendingSignBundles', { defaultValue: 'Pending Sign Bundles' })}
+        title={t('admin.sweep.pendingSignBundles')}
       >
         <Table
           columns={bundleColumns}
@@ -312,7 +312,7 @@ export default function SweepManagement() {
       </Card>
 
       <Modal
-        title={t('admin.sweep.importTitle', { defaultValue: 'Import Signed Bundle' })}
+        title={t('admin.sweep.importTitle')}
         open={importOpen}
         onCancel={() => setImportOpen(false)}
         footer={null}
@@ -320,7 +320,7 @@ export default function SweepManagement() {
         <Space direction="vertical" style={{ width: '100%' }}>
           <Alert
             type="info"
-            message={t('admin.sweep.importHint', { defaultValue: 'Upload the signed bundle from the cold signing machine. It will be automatically broadcast.' })}
+            message={t('admin.sweep.importHint')}
             showIcon
           />
           <Upload.Dragger
@@ -331,7 +331,7 @@ export default function SweepManagement() {
               return false;
             }}
           >
-            <p style={{ fontSize: 14 }}>{t('admin.sweep.uploadHint', { defaultValue: 'Click or drag signed bundle .bin file here' })}</p>
+            <p style={{ fontSize: 14 }}>{t('admin.sweep.uploadHint')}</p>
           </Upload.Dragger>
         </Space>
       </Modal>

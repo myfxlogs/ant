@@ -72,14 +72,14 @@ export function useUserManagement() {
       const resp: any = await adminApi.deleteUsers(ids);
       if (resp?.failedCount > 0) {
         message.warning(
-          t('admin.userManagement.messages.batchDeletePartial', {
+          t('admin.userManagement.deleteConfirm.batchDeletePartial', {
             deleted: resp.deletedCount,
             failed: resp.failedCount,
           }),
         );
       } else {
         message.success(
-          t('admin.userManagement.messages.batchDeleteSuccess', { count: resp?.deletedCount || ids.length }),
+          t('admin.userManagement.deleteConfirm.batchDeleteSuccess', { count: resp?.deletedCount || ids.length }),
         );
       }
       fetchUsers();

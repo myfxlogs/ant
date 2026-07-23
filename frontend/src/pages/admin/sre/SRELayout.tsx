@@ -9,9 +9,9 @@ export default function SRELayout() {
   const { t } = useTranslation();
 
   const items = [
-    { key: '/admin/sre/killswitch', label: <span><StopOutlined /> {t('sre.killSwitch', { defaultValue: 'Kill Switch' })}</span> },
-    { key: '/admin/sre/breakers', label: <span><ThunderboltOutlined /> {t('sre.breakers', { defaultValue: 'Breakers' })}</span> },
-    { key: '/admin/sre/canary', label: <span><ExperimentOutlined /> {t('sre.canary', { defaultValue: 'Canary' })}</span> },
+    { key: '/admin/sre/killswitch', label: <span><StopOutlined /> {t('sre.killSwitch.title', { defaultValue: 'Kill Switch' })}</span> },
+    { key: '/admin/sre/breakers', label: <span><ThunderboltOutlined /> {t('sre.breakers.title', { defaultValue: 'Breakers' })}</span> },
+    { key: '/admin/sre/canary', label: <span><ExperimentOutlined /> {t('sre.canary.title', { defaultValue: 'Canary' })}</span> },
   ];
 
   const activeKey = (() => {

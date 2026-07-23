@@ -707,8 +707,7 @@ const Base = {
     "frozenBalance": "凍結",
     "history": "履歴",
     "title": "マイウォレット",
-    "transactions": "取引履歴",
-    "withdraw": "出金"
+    "transactions": "取引履歴"
   },
   "strategy": {
     "workspace": {
@@ -1075,42 +1074,9 @@ const Base = {
       "login": "メールアドレス / 口座番号"
     },
     "forgotPassword": {
-      "backToLogin": "ログインに戻る",
-      "title": "パスワードリセット",
-      "emailTab": "メール",
-      "mtTab": "MT認証",
-      "adminTab": "管理者",
-      "emailSent": "メールアドレスが存在する場合、リセットリンクが送信されました。",
-      "sendResetLink": "リセットリンクを送信",
-      "platform": "プラットフォーム",
-      "brokerName": "ブローカー名",
-      "brokerPlaceholder": "ブローカー名を入力して検索",
-      "company": "会社",
-      "selectCompany": "会社を選択",
-      "server": "サーバー",
-      "selectServer": "サーバーを選択",
-      "noBrokers": "ブローカーが見つかりません。",
-      "searchFailed": "ブローカー検索に失敗しました。",
-      "mtLogin": "MT 口座番号",
-      "mtLoginPlaceholder": "例 12345678",
-      "mtPassword": "MT パスワード",
-      "mtPasswordPlaceholder": "MT 取引パスワード",
-      "mtHint": "バインドされた MT アカウントの認証情報を入力して本人確認を行います。",
-      "verifyAndReset": "認証してパスワードをリセット",
-      "mtVerified": "本人確認が完了しました。パスワードリセットページに移動します。",
-      "mtFailed": "MT 認証情報の確認に失敗しました。",
-      "adminHint": "管理者またはサポートに連絡してパスワードをリセットしてください。"
-    },
-    "resetPassword": {
-      "title": "新しいパスワードを設定",
-      "newPassword": "新しいパスワード",
-      "confirmPassword": "パスワード確認",
-      "confirmRequired": "パスワードを確認してください",
-      "submit": "パスワードをリセット",
-      "success": "パスワードがリセットされました。新しいパスワードでログインしてください。",
-      "failed": "パスワードのリセットに失敗しました。",
-      "mismatch": "パスワードが一致しません。",
-      "invalidToken": "無効または欠落しているリセットトークン。"
+      "backToLogin": "返回登录",
+      "hint": "管理者またはサポートに連絡してパスワードをリセットしてください。",
+      "title": "パスワードリセット"
     },
     "login": {
       "forgotPassword": "パスワードをお忘れですか？",
@@ -1234,11 +1200,7 @@ const Base = {
     "success": "成功",
     "failed": "失敗",
     "reset": "リセット",
-    "saving": "保存中...",
-    "login": "ログイン",
-    "register": "登録",
-    "loginRequired": "ログインが必要です",
-    "loginRequiredDesc": "続行するにはログインまたは登録してください。"
+    "saving": "保存中..."
   },
   "errors": {
     "ai": {

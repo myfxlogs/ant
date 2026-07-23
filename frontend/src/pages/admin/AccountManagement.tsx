@@ -86,7 +86,7 @@ export default function AccountManagement() {
       const color = v === 'online' ? 'success' : v === 'offline' ? 'error' : 'warning';
       return <Tag color={color}>{v}</Tag>;
     }},
-    { title: t('admin.account.columns.balance', { defaultValue: 'Balance' }), dataIndex: 'balance', key: 'balance', width: 100, render: (v: number) => v?.toFixed(2) },
+    { title: t('admin.account.columns.balance', { defaultValue: 'Balance' }), dataIndex: 'balance', key: 'balance', width: 100, render: (v: number | string) => { const n = Number(v); return isNaN(n) ? '-' : n.toFixed(2); } },
     { title: t('admin.account.columns.createdAt', { defaultValue: 'Created At' }), dataIndex: 'createdAt', key: 'createdAt', width: 150, render: (_v: unknown, record: AccountWithUser) => formatDateTime(record.createdAt) },
     {
       title: t('admin.account.columns.action', { defaultValue: 'Action' }),

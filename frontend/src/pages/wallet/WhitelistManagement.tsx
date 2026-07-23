@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, Button, Table, Tag, Modal, Form, Input, message, Space, Popconfirm } from 'antd';
+import { Card, Button, Table, Tag, Modal, Form, Input, message, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { webauthnApi } from '@/client/webauthn';
@@ -20,7 +20,7 @@ export function WhitelistManagement() {
     mutationFn: (values: { address: string; label: string }) =>
       webauthnApi.addWhitelistAddress(values.address, values.label),
     onSuccess: () => {
-      message.success(t('wallet.whitelist.added', { defaultValue: 'Whitelist address added (pending confirmation)' }));
+      message.success(t('wallet.whitelist.added'));
       setAddOpen(false);
       form.resetFields();
       queryClient.invalidateQueries({ queryKey: ['webauthn', 'whitelist'] });
@@ -31,7 +31,7 @@ export function WhitelistManagement() {
   const removeMutation = useMutation({
     mutationFn: (id: string) => webauthnApi.removeWhitelistAddress(id),
     onSuccess: () => {
-      message.success(t('wallet.whitelist.removed', { defaultValue: 'Whitelist address removed' }));
+      message.success(t('wallet.whitelist.removed'));
       queryClient.invalidateQueries({ queryKey: ['webauthn', 'whitelist'] });
     },
     onError: (err: Error) => message.error(err.message),
@@ -45,27 +45,27 @@ export function WhitelistManagement() {
 
   const columns = [
     {
-      title: t('wallet.whitelist.label', { defaultValue: 'Label' }),
+      title: t('wallet.whitelist.label'),
       dataIndex: 'label',
       key: 'label',
       width: 120,
     },
     {
-      title: t('wallet.whitelist.address', { defaultValue: 'Address' }),
+      title: t('wallet.whitelist.address'),
       dataIndex: 'address',
       key: 'address',
       ellipsis: true,
       render: (v: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v}</span>,
     },
     {
-      title: t('wallet.whitelist.status', { defaultValue: 'Status' }),
+      title: t('wallet.whitelist.status'),
       dataIndex: 'status',
       key: 'status',
       width: 160,
       render: (v: string) => <Tag color={statusColors[v] || 'default'}>{v}</Tag>,
     },
     {
-      title: t('wallet.whitelist.confirmedAt', { defaultValue: 'Confirmed' }),
+      title: t('wallet.whitelist.confirmedAt'),
       dataIndex: 'confirmedAtTsMs',
       key: 'confirmedAtTsMs',
       width: 180,
@@ -78,7 +78,7 @@ export function WhitelistManagement() {
       render: (_: any, record: any) =>
         record.status !== 'REMOVED' && (
           <Popconfirm
-            title={t('wallet.whitelist.confirmRemove', { defaultValue: 'Remove this address?' })}
+            title={t('wallet.whitelist.confirmRemove')}
             onConfirm={() => removeMutation.mutate(record.id)}
           >
             <Button type="text" danger icon={<DeleteOutlined />} size="small" />
@@ -91,8 +91,8 @@ export function WhitelistManagement() {
     <Card
       size="small"
       style={{ marginBottom: 24 }}
-      title={<span><SafetyOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('wallet.whitelist.title', { defaultValue: 'Withdrawal Whitelist' })}</span>}
-      extra={<Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>{t('wallet.whitelist.add', { defaultValue: 'Add Address' })}</Button>}
+      title={<span><SafetyOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('wallet.whitelist.title')}</span>}
+      extra={<Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>{t('wallet.whitelist.add')}</Button>}
     >
       <Table
         columns={columns}
@@ -103,23 +103,23 @@ export function WhitelistManagement() {
         pagination={false}
       />
       <Modal
-        title={t('wallet.whitelist.add', { defaultValue: 'Add Whitelist Address' })}
+        title={t('wallet.whitelist.add')}
         open={addOpen}
         onCancel={() => setAddOpen(false)}
         onOk={() => form.validateFields().then(v => addMutation.mutate(v))}
         confirmLoading={addMutation.isPending}
-        okText={t('common.add', { defaultValue: 'Add' })}
+        okText={t('common.add')}
       >
         <Form form={form} layout="vertical">
           <Form.Item
             name="address"
-            label={t('wallet.whitelist.addressLabel', { defaultValue: 'TRC20 Address' })}
-            rules={[{ required: true, message: t('wallet.whitelist.addressRequired', { defaultValue: 'Please enter address' }) }]}
+            label={t('wallet.whitelist.addressLabel')}
+            rules={[{ required: true, message: t('wallet.whitelist.addressRequired') }]}
           >
             <Input placeholder="T..." style={{ fontFamily: 'monospace' }} />
           </Form.Item>
-          <Form.Item name="label" label={t('wallet.whitelist.labelLabel', { defaultValue: 'Label (optional)' })}>
-            <Input placeholder={t('wallet.whitelist.labelPlaceholder', { defaultValue: 'e.g. My Binance wallet' })} />
+          <Form.Item name="label" label={t('wallet.whitelist.labelLabel')}>
+            <Input placeholder={t('wallet.whitelist.labelPlaceholder')} />
           </Form.Item>
         </Form>
       </Modal>

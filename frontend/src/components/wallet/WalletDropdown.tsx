@@ -80,7 +80,7 @@ export default function WalletDropdown() {
             navigate('/wallet/deposit');
           }}
         >
-          {t('wallet.deposit')}
+          {t('wallet.deposit.title')}
         </Button>
         <Button
           type="default"
@@ -90,7 +90,7 @@ export default function WalletDropdown() {
             navigate('/wallet/withdraw');
           }}
         >
-          {t('wallet.withdraw')}
+          {t('wallet.withdraw.title')}
         </Button>
       </div>
 

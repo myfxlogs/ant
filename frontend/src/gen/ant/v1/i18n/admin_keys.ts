@@ -190,6 +190,450 @@ export const STRATEGY_TABS_PRESET_KEY = 'admin.strategy.tabs.preset' as const;
 /** strategy.title */
 export const STRATEGY_TITLE_KEY = 'admin.strategy.title' as const;
 
+/** aiGateway.modelList */
+export const AIGATEWAY_MODELLIST_KEY = 'admin.aiGateway.modelList' as const;
+
+/** analytics.activeBuyers */
+export const ANALYTICS_ACTIVEBUYERS_KEY = 'admin.analytics.activeBuyers' as const;
+
+/** analytics.name */
+export const ANALYTICS_NAME_KEY = 'admin.analytics.name' as const;
+
+/** analytics.newStrategies */
+export const ANALYTICS_NEWSTRATEGIES_KEY = 'admin.analytics.newStrategies' as const;
+
+/** analytics.newSubs */
+export const ANALYTICS_NEWSUBS_KEY = 'admin.analytics.newSubs' as const;
+
+/** analytics.platformRev */
+export const ANALYTICS_PLATFORMREV_KEY = 'admin.analytics.platformRev' as const;
+
+/** analytics.providerRev */
+export const ANALYTICS_PROVIDERREV_KEY = 'admin.analytics.providerRev' as const;
+
+/** analytics.refundRate */
+export const ANALYTICS_REFUNDRATE_KEY = 'admin.analytics.refundRate' as const;
+
+/** analytics.topByRevenue */
+export const ANALYTICS_TOPBYREVENUE_KEY = 'admin.analytics.topByRevenue' as const;
+
+/** analytics.topBySubs */
+export const ANALYTICS_TOPBYSUBS_KEY = 'admin.analytics.topBySubs' as const;
+
+/** analytics.topProvidersRev */
+export const ANALYTICS_TOPPROVIDERSREV_KEY = 'admin.analytics.topProvidersRev' as const;
+
+/** analytics.topProvidersStrat */
+export const ANALYTICS_TOPPROVIDERSSTRAT_KEY = 'admin.analytics.topProvidersStrat' as const;
+
+/** analytics.totalStrategies */
+export const ANALYTICS_TOTALSTRATEGIES_KEY = 'admin.analytics.totalStrategies' as const;
+
+/** analytics.totalTx */
+export const ANALYTICS_TOTALTX_KEY = 'admin.analytics.totalTx' as const;
+
+/** analytics.value */
+export const ANALYTICS_VALUE_KEY = 'admin.analytics.value' as const;
+
+/** autogen.actions */
+export const AUTOGEN_ACTIONS_KEY = 'admin.autogen.actions' as const;
+
+/** autogen.allStatus */
+export const AUTOGEN_ALLSTATUS_KEY = 'admin.autogen.allStatus' as const;
+
+/** autogen.approve */
+export const AUTOGEN_APPROVE_KEY = 'admin.autogen.approve' as const;
+
+/** autogen.approved */
+export const AUTOGEN_APPROVED_KEY = 'admin.autogen.approved' as const;
+
+/** autogen.confirmApprove */
+export const AUTOGEN_CONFIRMAPPROVE_KEY = 'admin.autogen.confirmApprove' as const;
+
+/** autogen.confirmReject */
+export const AUTOGEN_CONFIRMREJECT_KEY = 'admin.autogen.confirmReject' as const;
+
+/** autogen.enqueue */
+export const AUTOGEN_ENQUEUE_KEY = 'admin.autogen.enqueue' as const;
+
+/** autogen.enqueued */
+export const AUTOGEN_ENQUEUED_KEY = 'admin.autogen.enqueued' as const;
+
+/** autogen.error */
+export const AUTOGEN_ERROR_KEY = 'admin.autogen.error' as const;
+
+/** autogen.quality */
+export const AUTOGEN_QUALITY_KEY = 'admin.autogen.quality' as const;
+
+/** autogen.refresh */
+export const AUTOGEN_REFRESH_KEY = 'admin.autogen.refresh' as const;
+
+/** autogen.reject */
+export const AUTOGEN_REJECT_KEY = 'admin.autogen.reject' as const;
+
+/** autogen.rejected */
+export const AUTOGEN_REJECTED_KEY = 'admin.autogen.rejected' as const;
+
+/** autogen.status */
+export const AUTOGEN_STATUS_KEY = 'admin.autogen.status' as const;
+
+/** autogen.strategyType */
+export const AUTOGEN_STRATEGYTYPE_KEY = 'admin.autogen.strategyType' as const;
+
+/** autogen.strategyTypes */
+export const AUTOGEN_STRATEGYTYPES_KEY = 'admin.autogen.strategyTypes' as const;
+
+/** autogen.symbol */
+export const AUTOGEN_SYMBOL_KEY = 'admin.autogen.symbol' as const;
+
+/** autogen.symbols */
+export const AUTOGEN_SYMBOLS_KEY = 'admin.autogen.symbols' as const;
+
+/** autogen.timeframe */
+export const AUTOGEN_TIMEFRAME_KEY = 'admin.autogen.timeframe' as const;
+
+/** autogen.timeframes */
+export const AUTOGEN_TIMEFRAMES_KEY = 'admin.autogen.timeframes' as const;
+
+/** autogen.title */
+export const AUTOGEN_TITLE_KEY = 'admin.autogen.title' as const;
+
+/** autogen.triggerBatch */
+export const AUTOGEN_TRIGGERBATCH_KEY = 'admin.autogen.triggerBatch' as const;
+
+/** coupon.codePlaceholder */
+export const COUPON_CODEPLACEHOLDER_KEY = 'admin.coupon.codePlaceholder' as const;
+
+/** coupon.colActions */
+export const COUPON_COLACTIONS_KEY = 'admin.coupon.colActions' as const;
+
+/** coupon.colCode */
+export const COUPON_COLCODE_KEY = 'admin.coupon.colCode' as const;
+
+/** coupon.colExpires */
+export const COUPON_COLEXPIRES_KEY = 'admin.coupon.colExpires' as const;
+
+/** coupon.colMinPurchase */
+export const COUPON_COLMINPURCHASE_KEY = 'admin.coupon.colMinPurchase' as const;
+
+/** coupon.colStatus */
+export const COUPON_COLSTATUS_KEY = 'admin.coupon.colStatus' as const;
+
+/** coupon.colType */
+export const COUPON_COLTYPE_KEY = 'admin.coupon.colType' as const;
+
+/** coupon.colUsage */
+export const COUPON_COLUSAGE_KEY = 'admin.coupon.colUsage' as const;
+
+/** coupon.colValue */
+export const COUPON_COLVALUE_KEY = 'admin.coupon.colValue' as const;
+
+/** coupon.create */
+export const COUPON_CREATE_KEY = 'admin.coupon.create' as const;
+
+/** coupon.createFailed */
+export const COUPON_CREATEFAILED_KEY = 'admin.coupon.createFailed' as const;
+
+/** coupon.createTitle */
+export const COUPON_CREATETITLE_KEY = 'admin.coupon.createTitle' as const;
+
+/** coupon.created */
+export const COUPON_CREATED_KEY = 'admin.coupon.created' as const;
+
+/** coupon.disable */
+export const COUPON_DISABLE_KEY = 'admin.coupon.disable' as const;
+
+/** coupon.disableFailed */
+export const COUPON_DISABLEFAILED_KEY = 'admin.coupon.disableFailed' as const;
+
+/** coupon.disabled */
+export const COUPON_DISABLED_KEY = 'admin.coupon.disabled' as const;
+
+/** coupon.expiresPlaceholder */
+export const COUPON_EXPIRESPLACEHOLDER_KEY = 'admin.coupon.expiresPlaceholder' as const;
+
+/** coupon.fillRequired */
+export const COUPON_FILLREQUIRED_KEY = 'admin.coupon.fillRequired' as const;
+
+/** coupon.loadFailed */
+export const COUPON_LOADFAILED_KEY = 'admin.coupon.loadFailed' as const;
+
+/** coupon.maxUsesPlaceholder */
+export const COUPON_MAXUSESPLACEHOLDER_KEY = 'admin.coupon.maxUsesPlaceholder' as const;
+
+/** coupon.minPurchasePlaceholder */
+export const COUPON_MINPURCHASEPLACEHOLDER_KEY = 'admin.coupon.minPurchasePlaceholder' as const;
+
+/** coupon.valuePlaceholder */
+export const COUPON_VALUEPLACEHOLDER_KEY = 'admin.coupon.valuePlaceholder' as const;
+
+/** deposit.table.block */
+export const DEPOSIT_TABLE_BLOCK_KEY = 'admin.deposit.table.block' as const;
+
+/** deposit.table.confirmations */
+export const DEPOSIT_TABLE_CONFIRMATIONS_KEY = 'admin.deposit.table.confirmations' as const;
+
+/** depositAddresses.address */
+export const DEPOSITADDRESSES_ADDRESS_KEY = 'admin.depositAddresses.address' as const;
+
+/** depositAddresses.all */
+export const DEPOSITADDRESSES_ALL_KEY = 'admin.depositAddresses.all' as const;
+
+/** depositAddresses.assignedAt */
+export const DEPOSITADDRESSES_ASSIGNEDAT_KEY = 'admin.depositAddresses.assignedAt' as const;
+
+/** depositAddresses.availablePool */
+export const DEPOSITADDRESSES_AVAILABLEPOOL_KEY = 'admin.depositAddresses.availablePool' as const;
+
+/** depositAddresses.import */
+export const DEPOSITADDRESSES_IMPORT_KEY = 'admin.depositAddresses.import' as const;
+
+/** depositAddresses.importFailed */
+export const DEPOSITADDRESSES_IMPORTFAILED_KEY = 'admin.depositAddresses.importFailed' as const;
+
+/** depositAddresses.importHint */
+export const DEPOSITADDRESSES_IMPORTHINT_KEY = 'admin.depositAddresses.importHint' as const;
+
+/** depositAddresses.importSuccess */
+export const DEPOSITADDRESSES_IMPORTSUCCESS_KEY = 'admin.depositAddresses.importSuccess' as const;
+
+/** depositAddresses.index */
+export const DEPOSITADDRESSES_INDEX_KEY = 'admin.depositAddresses.index' as const;
+
+/** depositAddresses.network */
+export const DEPOSITADDRESSES_NETWORK_KEY = 'admin.depositAddresses.network' as const;
+
+/** depositAddresses.received */
+export const DEPOSITADDRESSES_RECEIVED_KEY = 'admin.depositAddresses.received' as const;
+
+/** depositAddresses.status */
+export const DEPOSITADDRESSES_STATUS_KEY = 'admin.depositAddresses.status' as const;
+
+/** depositAddresses.total */
+export const DEPOSITADDRESSES_TOTAL_KEY = 'admin.depositAddresses.total' as const;
+
+/** depositAddresses.totalItems */
+export const DEPOSITADDRESSES_TOTALITEMS_KEY = 'admin.depositAddresses.totalItems' as const;
+
+/** depositAddresses.user */
+export const DEPOSITADDRESSES_USER_KEY = 'admin.depositAddresses.user' as const;
+
+/** marketplace.colActions */
+export const MARKETPLACE_COLACTIONS_KEY = 'admin.marketplace.colActions' as const;
+
+/** marketplace.colFeatured */
+export const MARKETPLACE_COLFEATURED_KEY = 'admin.marketplace.colFeatured' as const;
+
+/** marketplace.colPrice */
+export const MARKETPLACE_COLPRICE_KEY = 'admin.marketplace.colPrice' as const;
+
+/** marketplace.colPublisher */
+export const MARKETPLACE_COLPUBLISHER_KEY = 'admin.marketplace.colPublisher' as const;
+
+/** marketplace.colRevenue */
+export const MARKETPLACE_COLREVENUE_KEY = 'admin.marketplace.colRevenue' as const;
+
+/** marketplace.colSales */
+export const MARKETPLACE_COLSALES_KEY = 'admin.marketplace.colSales' as const;
+
+/** marketplace.colStatus */
+export const MARKETPLACE_COLSTATUS_KEY = 'admin.marketplace.colStatus' as const;
+
+/** marketplace.colTitle */
+export const MARKETPLACE_COLTITLE_KEY = 'admin.marketplace.colTitle' as const;
+
+/** marketplace.feature */
+export const MARKETPLACE_FEATURE_KEY = 'admin.marketplace.feature' as const;
+
+/** marketplace.featureDesc */
+export const MARKETPLACE_FEATUREDESC_KEY = 'admin.marketplace.featureDesc' as const;
+
+/** marketplace.featureFailed */
+export const MARKETPLACE_FEATUREFAILED_KEY = 'admin.marketplace.featureFailed' as const;
+
+/** marketplace.featureSuccess */
+export const MARKETPLACE_FEATURESUCCESS_KEY = 'admin.marketplace.featureSuccess' as const;
+
+/** marketplace.featureTitle */
+export const MARKETPLACE_FEATURETITLE_KEY = 'admin.marketplace.featureTitle' as const;
+
+/** marketplace.filterStatus */
+export const MARKETPLACE_FILTERSTATUS_KEY = 'admin.marketplace.filterStatus' as const;
+
+/** marketplace.loadFailed */
+export const MARKETPLACE_LOADFAILED_KEY = 'admin.marketplace.loadFailed' as const;
+
+/** marketplace.searchPlaceholder */
+export const MARKETPLACE_SEARCHPLACEHOLDER_KEY = 'admin.marketplace.searchPlaceholder' as const;
+
+/** marketplace.unfeature */
+export const MARKETPLACE_UNFEATURE_KEY = 'admin.marketplace.unfeature' as const;
+
+/** marketplace.unfeatureFailed */
+export const MARKETPLACE_UNFEATUREFAILED_KEY = 'admin.marketplace.unfeatureFailed' as const;
+
+/** marketplace.unfeatureSuccess */
+export const MARKETPLACE_UNFEATURESUCCESS_KEY = 'admin.marketplace.unfeatureSuccess' as const;
+
+/** refund.approve */
+export const REFUND_APPROVE_KEY = 'admin.refund.approve' as const;
+
+/** refund.approveTitle */
+export const REFUND_APPROVETITLE_KEY = 'admin.refund.approveTitle' as const;
+
+/** refund.approved */
+export const REFUND_APPROVED_KEY = 'admin.refund.approved' as const;
+
+/** refund.colActions */
+export const REFUND_COLACTIONS_KEY = 'admin.refund.colActions' as const;
+
+/** refund.colAmount */
+export const REFUND_COLAMOUNT_KEY = 'admin.refund.colAmount' as const;
+
+/** refund.colDate */
+export const REFUND_COLDATE_KEY = 'admin.refund.colDate' as const;
+
+/** refund.colReason */
+export const REFUND_COLREASON_KEY = 'admin.refund.colReason' as const;
+
+/** refund.colStatus */
+export const REFUND_COLSTATUS_KEY = 'admin.refund.colStatus' as const;
+
+/** refund.colStrategy */
+export const REFUND_COLSTRATEGY_KEY = 'admin.refund.colStrategy' as const;
+
+/** refund.colUser */
+export const REFUND_COLUSER_KEY = 'admin.refund.colUser' as const;
+
+/** refund.filterStatus */
+export const REFUND_FILTERSTATUS_KEY = 'admin.refund.filterStatus' as const;
+
+/** refund.loadFailed */
+export const REFUND_LOADFAILED_KEY = 'admin.refund.loadFailed' as const;
+
+/** refund.processFailed */
+export const REFUND_PROCESSFAILED_KEY = 'admin.refund.processFailed' as const;
+
+/** refund.reject */
+export const REFUND_REJECT_KEY = 'admin.refund.reject' as const;
+
+/** refund.rejectTitle */
+export const REFUND_REJECTTITLE_KEY = 'admin.refund.rejectTitle' as const;
+
+/** refund.rejected */
+export const REFUND_REJECTED_KEY = 'admin.refund.rejected' as const;
+
+/** refund.reviewNotePlaceholder */
+export const REFUND_REVIEWNOTEPLACEHOLDER_KEY = 'admin.refund.reviewNotePlaceholder' as const;
+
+/** settings.editSetting */
+export const SETTINGS_EDITSETTING_KEY = 'admin.settings.editSetting' as const;
+
+/** wallet.tabDepositAddresses */
+export const WALLET_TABDEPOSITADDRESSES_KEY = 'admin.wallet.tabDepositAddresses' as const;
+
+/** wallet.tabWallets */
+export const WALLET_TABWALLETS_KEY = 'admin.wallet.tabWallets' as const;
+
+/** wallet.totalUsers */
+export const WALLET_TOTALUSERS_KEY = 'admin.wallet.totalUsers' as const;
+
+/** sweep.aboveThreshold */
+export const SWEEP_ABOVETHRESHOLD_KEY = 'admin.sweep.aboveThreshold' as const;
+
+/** sweep.address */
+export const SWEEP_ADDRESS_KEY = 'admin.sweep.address' as const;
+
+/** sweep.addressId */
+export const SWEEP_ADDRESSID_KEY = 'admin.sweep.addressId' as const;
+
+/** sweep.batchExport */
+export const SWEEP_BATCHEXPORT_KEY = 'admin.sweep.batchExport' as const;
+
+/** sweep.batchExportSuccess */
+export const SWEEP_BATCHEXPORTSUCCESS_KEY = 'admin.sweep.batchExportSuccess' as const;
+
+/** sweep.builtAt */
+export const SWEEP_BUILTAT_KEY = 'admin.sweep.builtAt' as const;
+
+/** sweep.bundleId */
+export const SWEEP_BUNDLEID_KEY = 'admin.sweep.bundleId' as const;
+
+/** sweep.bundleStatus */
+export const SWEEP_BUNDLESTATUS_KEY = 'admin.sweep.bundleStatus' as const;
+
+/** sweep.dashboard */
+export const SWEEP_DASHBOARD_KEY = 'admin.sweep.dashboard' as const;
+
+/** sweep.derivationIndex */
+export const SWEEP_DERIVATIONINDEX_KEY = 'admin.sweep.derivationIndex' as const;
+
+/** sweep.export */
+export const SWEEP_EXPORT_KEY = 'admin.sweep.export' as const;
+
+/** sweep.exportSuccess */
+export const SWEEP_EXPORTSUCCESS_KEY = 'admin.sweep.exportSuccess' as const;
+
+/** sweep.import */
+export const SWEEP_IMPORT_KEY = 'admin.sweep.import' as const;
+
+/** sweep.importHint */
+export const SWEEP_IMPORTHINT_KEY = 'admin.sweep.importHint' as const;
+
+/** sweep.importSuccess */
+export const SWEEP_IMPORTSUCCESS_KEY = 'admin.sweep.importSuccess' as const;
+
+/** sweep.importTitle */
+export const SWEEP_IMPORTTITLE_KEY = 'admin.sweep.importTitle' as const;
+
+/** sweep.pendingBundles */
+export const SWEEP_PENDINGBUNDLES_KEY = 'admin.sweep.pendingBundles' as const;
+
+/** sweep.pendingSignBundles */
+export const SWEEP_PENDINGSIGNBUNDLES_KEY = 'admin.sweep.pendingSignBundles' as const;
+
+/** sweep.sweepStatus */
+export const SWEEP_SWEEPSTATUS_KEY = 'admin.sweep.sweepStatus' as const;
+
+/** sweep.threshold */
+export const SWEEP_THRESHOLD_KEY = 'admin.sweep.threshold' as const;
+
+/** sweep.title */
+export const SWEEP_TITLE_KEY = 'admin.sweep.title' as const;
+
+/** sweep.totalUnswept */
+export const SWEEP_TOTALUNSWEPT_KEY = 'admin.sweep.totalUnswept' as const;
+
+/** sweep.undelegate */
+export const SWEEP_UNDELEGATE_KEY = 'admin.sweep.undelegate' as const;
+
+/** sweep.undelegateSuccess */
+export const SWEEP_UNDELEGATESUCCESS_KEY = 'admin.sweep.undelegateSuccess' as const;
+
+/** sweep.unswept */
+export const SWEEP_UNSWEPT_KEY = 'admin.sweep.unswept' as const;
+
+/** sweep.uploadHint */
+export const SWEEP_UPLOADHINT_KEY = 'admin.sweep.uploadHint' as const;
+
+/** sweep.uploadXpub */
+export const SWEEP_UPLOADXPUB_KEY = 'admin.sweep.uploadXpub' as const;
+
+/** sweep.xpubFpNotSet */
+export const SWEEP_XPUBFPNOTSET_KEY = 'admin.sweep.xpubFpNotSet' as const;
+
+/** sweep.xpubFpVerified */
+export const SWEEP_XPUBFPVERIFIED_KEY = 'admin.sweep.xpubFpVerified' as const;
+
+/** sweep.xpubHint */
+export const SWEEP_XPUBHINT_KEY = 'admin.sweep.xpubHint' as const;
+
+/** sweep.xpubImported */
+export const SWEEP_XPUBIMPORTED_KEY = 'admin.sweep.xpubImported' as const;
+
+/** sweep.xpubTitle */
+export const SWEEP_XPUBTITLE_KEY = 'admin.sweep.xpubTitle' as const;
+
 export const ADMIN_KEYS = {
   strategy_actions_archive: 'admin.strategy.actions.archive',
   strategy_actions_archive_confirm: 'admin.strategy.actions.archiveConfirm',
@@ -254,6 +698,154 @@ export const ADMIN_KEYS = {
   strategy_tabs_all_strategies: 'admin.strategy.tabs.allStrategies',
   strategy_tabs_preset: 'admin.strategy.tabs.preset',
   strategy_title: 'admin.strategy.title',
+  aiGateway_modelList: 'admin.aiGateway.modelList',
+  analytics_activeBuyers: 'admin.analytics.activeBuyers',
+  analytics_name: 'admin.analytics.name',
+  analytics_newStrategies: 'admin.analytics.newStrategies',
+  analytics_newSubs: 'admin.analytics.newSubs',
+  analytics_platformRev: 'admin.analytics.platformRev',
+  analytics_providerRev: 'admin.analytics.providerRev',
+  analytics_refundRate: 'admin.analytics.refundRate',
+  analytics_topByRevenue: 'admin.analytics.topByRevenue',
+  analytics_topBySubs: 'admin.analytics.topBySubs',
+  analytics_topProvidersRev: 'admin.analytics.topProvidersRev',
+  analytics_topProvidersStrat: 'admin.analytics.topProvidersStrat',
+  analytics_totalStrategies: 'admin.analytics.totalStrategies',
+  analytics_totalTx: 'admin.analytics.totalTx',
+  analytics_value: 'admin.analytics.value',
+  autogen_actions: 'admin.autogen.actions',
+  autogen_allStatus: 'admin.autogen.allStatus',
+  autogen_approve: 'admin.autogen.approve',
+  autogen_approved: 'admin.autogen.approved',
+  autogen_confirmApprove: 'admin.autogen.confirmApprove',
+  autogen_confirmReject: 'admin.autogen.confirmReject',
+  autogen_enqueue: 'admin.autogen.enqueue',
+  autogen_enqueued: 'admin.autogen.enqueued',
+  autogen_error: 'admin.autogen.error',
+  autogen_quality: 'admin.autogen.quality',
+  autogen_refresh: 'admin.autogen.refresh',
+  autogen_reject: 'admin.autogen.reject',
+  autogen_rejected: 'admin.autogen.rejected',
+  autogen_status: 'admin.autogen.status',
+  autogen_strategyType: 'admin.autogen.strategyType',
+  autogen_strategyTypes: 'admin.autogen.strategyTypes',
+  autogen_symbol: 'admin.autogen.symbol',
+  autogen_symbols: 'admin.autogen.symbols',
+  autogen_timeframe: 'admin.autogen.timeframe',
+  autogen_timeframes: 'admin.autogen.timeframes',
+  autogen_title: 'admin.autogen.title',
+  autogen_triggerBatch: 'admin.autogen.triggerBatch',
+  coupon_codePlaceholder: 'admin.coupon.codePlaceholder',
+  coupon_colActions: 'admin.coupon.colActions',
+  coupon_colCode: 'admin.coupon.colCode',
+  coupon_colExpires: 'admin.coupon.colExpires',
+  coupon_colMinPurchase: 'admin.coupon.colMinPurchase',
+  coupon_colStatus: 'admin.coupon.colStatus',
+  coupon_colType: 'admin.coupon.colType',
+  coupon_colUsage: 'admin.coupon.colUsage',
+  coupon_colValue: 'admin.coupon.colValue',
+  coupon_create: 'admin.coupon.create',
+  coupon_createFailed: 'admin.coupon.createFailed',
+  coupon_createTitle: 'admin.coupon.createTitle',
+  coupon_created: 'admin.coupon.created',
+  coupon_disable: 'admin.coupon.disable',
+  coupon_disableFailed: 'admin.coupon.disableFailed',
+  coupon_disabled: 'admin.coupon.disabled',
+  coupon_expiresPlaceholder: 'admin.coupon.expiresPlaceholder',
+  coupon_fillRequired: 'admin.coupon.fillRequired',
+  coupon_loadFailed: 'admin.coupon.loadFailed',
+  coupon_maxUsesPlaceholder: 'admin.coupon.maxUsesPlaceholder',
+  coupon_minPurchasePlaceholder: 'admin.coupon.minPurchasePlaceholder',
+  coupon_valuePlaceholder: 'admin.coupon.valuePlaceholder',
+  deposit_table_block: 'admin.deposit.table.block',
+  deposit_table_confirmations: 'admin.deposit.table.confirmations',
+  depositAddresses_address: 'admin.depositAddresses.address',
+  depositAddresses_all: 'admin.depositAddresses.all',
+  depositAddresses_assignedAt: 'admin.depositAddresses.assignedAt',
+  depositAddresses_availablePool: 'admin.depositAddresses.availablePool',
+  depositAddresses_import: 'admin.depositAddresses.import',
+  depositAddresses_importFailed: 'admin.depositAddresses.importFailed',
+  depositAddresses_importHint: 'admin.depositAddresses.importHint',
+  depositAddresses_importSuccess: 'admin.depositAddresses.importSuccess',
+  depositAddresses_index: 'admin.depositAddresses.index',
+  depositAddresses_network: 'admin.depositAddresses.network',
+  depositAddresses_received: 'admin.depositAddresses.received',
+  depositAddresses_status: 'admin.depositAddresses.status',
+  depositAddresses_total: 'admin.depositAddresses.total',
+  depositAddresses_totalItems: 'admin.depositAddresses.totalItems',
+  depositAddresses_user: 'admin.depositAddresses.user',
+  marketplace_colActions: 'admin.marketplace.colActions',
+  marketplace_colFeatured: 'admin.marketplace.colFeatured',
+  marketplace_colPrice: 'admin.marketplace.colPrice',
+  marketplace_colPublisher: 'admin.marketplace.colPublisher',
+  marketplace_colRevenue: 'admin.marketplace.colRevenue',
+  marketplace_colSales: 'admin.marketplace.colSales',
+  marketplace_colStatus: 'admin.marketplace.colStatus',
+  marketplace_colTitle: 'admin.marketplace.colTitle',
+  marketplace_feature: 'admin.marketplace.feature',
+  marketplace_featureDesc: 'admin.marketplace.featureDesc',
+  marketplace_featureFailed: 'admin.marketplace.featureFailed',
+  marketplace_featureSuccess: 'admin.marketplace.featureSuccess',
+  marketplace_featureTitle: 'admin.marketplace.featureTitle',
+  marketplace_filterStatus: 'admin.marketplace.filterStatus',
+  marketplace_loadFailed: 'admin.marketplace.loadFailed',
+  marketplace_searchPlaceholder: 'admin.marketplace.searchPlaceholder',
+  marketplace_unfeature: 'admin.marketplace.unfeature',
+  marketplace_unfeatureFailed: 'admin.marketplace.unfeatureFailed',
+  marketplace_unfeatureSuccess: 'admin.marketplace.unfeatureSuccess',
+  refund_approve: 'admin.refund.approve',
+  refund_approveTitle: 'admin.refund.approveTitle',
+  refund_approved: 'admin.refund.approved',
+  refund_colActions: 'admin.refund.colActions',
+  refund_colAmount: 'admin.refund.colAmount',
+  refund_colDate: 'admin.refund.colDate',
+  refund_colReason: 'admin.refund.colReason',
+  refund_colStatus: 'admin.refund.colStatus',
+  refund_colStrategy: 'admin.refund.colStrategy',
+  refund_colUser: 'admin.refund.colUser',
+  refund_filterStatus: 'admin.refund.filterStatus',
+  refund_loadFailed: 'admin.refund.loadFailed',
+  refund_processFailed: 'admin.refund.processFailed',
+  refund_reject: 'admin.refund.reject',
+  refund_rejectTitle: 'admin.refund.rejectTitle',
+  refund_rejected: 'admin.refund.rejected',
+  refund_reviewNotePlaceholder: 'admin.refund.reviewNotePlaceholder',
+  settings_editSetting: 'admin.settings.editSetting',
+  wallet_tabDepositAddresses: 'admin.wallet.tabDepositAddresses',
+  wallet_tabWallets: 'admin.wallet.tabWallets',
+  wallet_totalUsers: 'admin.wallet.totalUsers',
+  sweep_aboveThreshold: 'admin.sweep.aboveThreshold',
+  sweep_address: 'admin.sweep.address',
+  sweep_addressId: 'admin.sweep.addressId',
+  sweep_batchExport: 'admin.sweep.batchExport',
+  sweep_batchExportSuccess: 'admin.sweep.batchExportSuccess',
+  sweep_builtAt: 'admin.sweep.builtAt',
+  sweep_bundleId: 'admin.sweep.bundleId',
+  sweep_bundleStatus: 'admin.sweep.bundleStatus',
+  sweep_dashboard: 'admin.sweep.dashboard',
+  sweep_derivationIndex: 'admin.sweep.derivationIndex',
+  sweep_export: 'admin.sweep.export',
+  sweep_exportSuccess: 'admin.sweep.exportSuccess',
+  sweep_import: 'admin.sweep.import',
+  sweep_importHint: 'admin.sweep.importHint',
+  sweep_importSuccess: 'admin.sweep.importSuccess',
+  sweep_importTitle: 'admin.sweep.importTitle',
+  sweep_pendingBundles: 'admin.sweep.pendingBundles',
+  sweep_pendingSignBundles: 'admin.sweep.pendingSignBundles',
+  sweep_sweepStatus: 'admin.sweep.sweepStatus',
+  sweep_threshold: 'admin.sweep.threshold',
+  sweep_title: 'admin.sweep.title',
+  sweep_totalUnswept: 'admin.sweep.totalUnswept',
+  sweep_undelegate: 'admin.sweep.undelegate',
+  sweep_undelegateSuccess: 'admin.sweep.undelegateSuccess',
+  sweep_unswept: 'admin.sweep.unswept',
+  sweep_uploadHint: 'admin.sweep.uploadHint',
+  sweep_uploadXpub: 'admin.sweep.uploadXpub',
+  sweep_xpubFpNotSet: 'admin.sweep.xpubFpNotSet',
+  sweep_xpubFpVerified: 'admin.sweep.xpubFpVerified',
+  sweep_xpubHint: 'admin.sweep.xpubHint',
+  sweep_xpubImported: 'admin.sweep.xpubImported',
+  sweep_xpubTitle: 'admin.sweep.xpubTitle',
 } as const;
 
 export type AdminKey = typeof ADMIN_KEYS[keyof typeof ADMIN_KEYS];

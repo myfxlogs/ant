@@ -1882,14 +1882,8 @@ export const THEME_SWITCH_TO_LIGHT_KEY = 'theme.switchToLight' as const;
 /** sre.killSwitch */
 export const SRE_KILL_SWITCH_KEY = 'sre.killSwitch' as const;
 
-/** sre.breakers */
-export const SRE_BREAKERS_KEY = 'sre.breakers' as const;
-
 /** sre.breakers.title */
 export const SRE_BREAKERS_TITLE_KEY = 'sre.breakers.title' as const;
-
-/** sre.canary */
-export const SRE_CANARY_KEY = 'sre.canary' as const;
 
 /** wallet.accountNumber */
 export const WALLET_ACCOUNT_NUMBER_KEY = 'wallet.accountNumber' as const;
@@ -1899,9 +1893,6 @@ export const WALLET_BALANCE_KEY = 'wallet.balance' as const;
 
 /** wallet.currency */
 export const WALLET_CURRENCY_KEY = 'wallet.currency' as const;
-
-/** wallet.deposit */
-export const WALLET_DEPOSIT_KEY = 'wallet.deposit' as const;
 
 /** wallet.deposit.address */
 export const WALLET_DEPOSIT_ADDRESS_KEY = 'wallet.deposit.address' as const;
@@ -2013,9 +2004,6 @@ export const WALLET_TX_TYPE_REVERSAL_KEY = 'wallet.txType.reversal' as const;
 
 /** wallet.txType.withdrawal */
 export const WALLET_TX_TYPE_WITHDRAWAL_KEY = 'wallet.txType.withdrawal' as const;
-
-/** wallet.withdraw */
-export const WALLET_WITHDRAW_KEY = 'wallet.withdraw' as const;
 
 /** subscription.title */
 export const SUBSCRIPTION_TITLE_KEY = 'subscription.title' as const;
@@ -3670,6 +3658,186 @@ export const COMMON_SAVING_KEY = 'common.saving' as const;
 /** strategy.validate.passed */
 export const STRATEGY_VALIDATE_PASSED_KEY = 'strategy.validate.passed' as const;
 
+/** common.total */
+export const COMMON_TOTAL_KEY = 'common.total' as const;
+
+/** monitoring.uptimeDays */
+export const MONITORING_UPTIMEDAYS_KEY = 'monitoring.uptimeDays' as const;
+
+/** monitoring.uptimeHours */
+export const MONITORING_UPTIMEHOURS_KEY = 'monitoring.uptimeHours' as const;
+
+/** monitoring.uptimeMinutes */
+export const MONITORING_UPTIMEMINUTES_KEY = 'monitoring.uptimeMinutes' as const;
+
+/** monitoring.uptimeSeconds */
+export const MONITORING_UPTIMESECONDS_KEY = 'monitoring.uptimeSeconds' as const;
+
+/** sre.killSwitch.undoWindow */
+export const SRE_KILLSWITCH_UNDOWINDOW_KEY = 'sre.killSwitch.undoWindow' as const;
+
+/** sre.killSwitch.title */
+export const SRE_KILLSWITCH_TITLE_KEY = 'sre.killSwitch.title' as const;
+
+/** admin.sidebar.sweep */
+export const ADMIN_SIDEBAR_SWEEP_KEY = 'admin.sidebar.sweep' as const;
+
+/** admin.sidebar.autogenTasks */
+export const ADMIN_SIDEBAR_AUTOGEN_TASKS_KEY = 'admin.sidebar.autogenTasks' as const;
+
+/** admin.sidebar.marketplace */
+export const ADMIN_SIDEBAR_MARKETPLACE_KEY = 'admin.sidebar.marketplace' as const;
+
+/** admin.sidebar.refunds */
+export const ADMIN_SIDEBAR_REFUNDS_KEY = 'admin.sidebar.refunds' as const;
+
+/** admin.sidebar.analytics */
+export const ADMIN_SIDEBAR_ANALYTICS_KEY = 'admin.sidebar.analytics' as const;
+
+/** admin.sidebar.coupons */
+export const ADMIN_SIDEBAR_COUPONS_KEY = 'admin.sidebar.coupons' as const;
+
+/** wallet.deposit.table.confirmations */
+export const WALLET_DEPOSIT_TABLE_CONFIRMATIONS_KEY = 'wallet.deposit.table.confirmations' as const;
+
+/** wallet.passkey.title */
+export const WALLET_PASSKEY_TITLE_KEY = 'wallet.passkey.title' as const;
+
+/** wallet.passkey.add */
+export const WALLET_PASSKEY_ADD_KEY = 'wallet.passkey.add' as const;
+
+/** wallet.passkey.name */
+export const WALLET_PASSKEY_NAME_KEY = 'wallet.passkey.name' as const;
+
+/** wallet.passkey.credentialId */
+export const WALLET_PASSKEY_CREDENTIAL_ID_KEY = 'wallet.passkey.credentialId' as const;
+
+/** wallet.passkey.signCount */
+export const WALLET_PASSKEY_SIGN_COUNT_KEY = 'wallet.passkey.signCount' as const;
+
+/** wallet.passkey.createdAt */
+export const WALLET_PASSKEY_CREATED_AT_KEY = 'wallet.passkey.createdAt' as const;
+
+/** wallet.passkey.confirmRemove */
+export const WALLET_PASSKEY_CONFIRM_REMOVE_KEY = 'wallet.passkey.confirmRemove' as const;
+
+/** wallet.passkey.register */
+export const WALLET_PASSKEY_REGISTER_KEY = 'wallet.passkey.register' as const;
+
+/** wallet.passkey.registered */
+export const WALLET_PASSKEY_REGISTERED_KEY = 'wallet.passkey.registered' as const;
+
+/** wallet.passkey.registerFailed */
+export const WALLET_PASSKEY_REGISTER_FAILED_KEY = 'wallet.passkey.registerFailed' as const;
+
+/** wallet.passkey.registerHint */
+export const WALLET_PASSKEY_REGISTER_HINT_KEY = 'wallet.passkey.registerHint' as const;
+
+/** wallet.passkey.namePlaceholder */
+export const WALLET_PASSKEY_NAME_PLACEHOLDER_KEY = 'wallet.passkey.namePlaceholder' as const;
+
+/** wallet.passkey.removed */
+export const WALLET_PASSKEY_REMOVED_KEY = 'wallet.passkey.removed' as const;
+
+/** wallet.withdraw.title */
+export const WALLET_WITHDRAW_TITLE_KEY = 'wallet.withdraw.title' as const;
+
+/** wallet.withdraw.new */
+export const WALLET_WITHDRAW_NEW_KEY = 'wallet.withdraw.new' as const;
+
+/** wallet.withdraw.submit */
+export const WALLET_WITHDRAW_SUBMIT_KEY = 'wallet.withdraw.submit' as const;
+
+/** wallet.withdraw.available */
+export const WALLET_WITHDRAW_AVAILABLE_KEY = 'wallet.withdraw.available' as const;
+
+/** wallet.withdraw.amount */
+export const WALLET_WITHDRAW_AMOUNT_KEY = 'wallet.withdraw.amount' as const;
+
+/** wallet.withdraw.amountLabel */
+export const WALLET_WITHDRAW_AMOUNT_LABEL_KEY = 'wallet.withdraw.amountLabel' as const;
+
+/** wallet.withdraw.amountRequired */
+export const WALLET_WITHDRAW_AMOUNT_REQUIRED_KEY = 'wallet.withdraw.amountRequired' as const;
+
+/** wallet.withdraw.destAddress */
+export const WALLET_WITHDRAW_DEST_ADDRESS_KEY = 'wallet.withdraw.destAddress' as const;
+
+/** wallet.withdraw.destLabel */
+export const WALLET_WITHDRAW_DEST_LABEL_KEY = 'wallet.withdraw.destLabel' as const;
+
+/** wallet.withdraw.destRequired */
+export const WALLET_WITHDRAW_DEST_REQUIRED_KEY = 'wallet.withdraw.destRequired' as const;
+
+/** wallet.withdraw.whitelist */
+export const WALLET_WITHDRAW_WHITELIST_KEY = 'wallet.withdraw.whitelist' as const;
+
+/** wallet.withdraw.status */
+export const WALLET_WITHDRAW_STATUS_KEY = 'wallet.withdraw.status' as const;
+
+/** wallet.withdraw.txHash */
+export const WALLET_WITHDRAW_TX_HASH_KEY = 'wallet.withdraw.txHash' as const;
+
+/** wallet.withdraw.time */
+export const WALLET_WITHDRAW_TIME_KEY = 'wallet.withdraw.time' as const;
+
+/** wallet.withdraw.cancelled */
+export const WALLET_WITHDRAW_CANCELLED_KEY = 'wallet.withdraw.cancelled' as const;
+
+/** wallet.withdraw.confirmCancel */
+export const WALLET_WITHDRAW_CONFIRM_CANCEL_KEY = 'wallet.withdraw.confirmCancel' as const;
+
+/** wallet.withdraw.success */
+export const WALLET_WITHDRAW_SUCCESS_KEY = 'wallet.withdraw.success' as const;
+
+/** wallet.withdraw.failed */
+export const WALLET_WITHDRAW_FAILED_KEY = 'wallet.withdraw.failed' as const;
+
+/** wallet.withdraw.noBalance */
+export const WALLET_WITHDRAW_NO_BALANCE_KEY = 'wallet.withdraw.noBalance' as const;
+
+/** wallet.withdraw.warning */
+export const WALLET_WITHDRAW_WARNING_KEY = 'wallet.withdraw.warning' as const;
+
+/** wallet.whitelist.title */
+export const WALLET_WHITELIST_TITLE_KEY = 'wallet.whitelist.title' as const;
+
+/** wallet.whitelist.add */
+export const WALLET_WHITELIST_ADD_KEY = 'wallet.whitelist.add' as const;
+
+/** wallet.whitelist.added */
+export const WALLET_WHITELIST_ADDED_KEY = 'wallet.whitelist.added' as const;
+
+/** wallet.whitelist.removed */
+export const WALLET_WHITELIST_REMOVED_KEY = 'wallet.whitelist.removed' as const;
+
+/** wallet.whitelist.label */
+export const WALLET_WHITELIST_LABEL_KEY = 'wallet.whitelist.label' as const;
+
+/** wallet.whitelist.address */
+export const WALLET_WHITELIST_ADDRESS_KEY = 'wallet.whitelist.address' as const;
+
+/** wallet.whitelist.status */
+export const WALLET_WHITELIST_STATUS_KEY = 'wallet.whitelist.status' as const;
+
+/** wallet.whitelist.confirmedAt */
+export const WALLET_WHITELIST_CONFIRMED_AT_KEY = 'wallet.whitelist.confirmedAt' as const;
+
+/** wallet.whitelist.confirmRemove */
+export const WALLET_WHITELIST_CONFIRM_REMOVE_KEY = 'wallet.whitelist.confirmRemove' as const;
+
+/** wallet.whitelist.addressLabel */
+export const WALLET_WHITELIST_ADDRESS_LABEL_KEY = 'wallet.whitelist.addressLabel' as const;
+
+/** wallet.whitelist.addressRequired */
+export const WALLET_WHITELIST_ADDRESS_REQUIRED_KEY = 'wallet.whitelist.addressRequired' as const;
+
+/** wallet.whitelist.labelLabel */
+export const WALLET_WHITELIST_LABEL_LABEL_KEY = 'wallet.whitelist.labelLabel' as const;
+
+/** wallet.whitelist.labelPlaceholder */
+export const WALLET_WHITELIST_LABEL_PLACEHOLDER_KEY = 'wallet.whitelist.labelPlaceholder' as const;
+
 export const BASE_KEYS = {
   admin_config_ai_provider_catalog: '__root__.admin.config.aiProviderCatalog',
   onboarding_step1_title: '__root__.onboarding.step1.title',
@@ -4298,13 +4466,10 @@ export const BASE_KEYS = {
   theme_switch_to_dark: '__root__.theme.switchToDark',
   theme_switch_to_light: '__root__.theme.switchToLight',
   sre_kill_switch: '__root__.sre.killSwitch',
-  sre_breakers: '__root__.sre.breakers',
   sre_breakers_title: '__root__.sre.breakers.title',
-  sre_canary: '__root__.sre.canary',
   wallet_account_number: '__root__.wallet.accountNumber',
   wallet_balance: '__root__.wallet.balance',
   wallet_currency: '__root__.wallet.currency',
-  wallet_deposit: '__root__.wallet.deposit',
   wallet_deposit_address: '__root__.wallet.deposit.address',
   wallet_deposit_address_copied: '__root__.wallet.deposit.addressCopied',
   wallet_deposit_amount_label: '__root__.wallet.deposit.amountLabel',
@@ -4342,7 +4507,6 @@ export const BASE_KEYS = {
   wallet_tx_type_fee: '__root__.wallet.txType.fee',
   wallet_tx_type_reversal: '__root__.wallet.txType.reversal',
   wallet_tx_type_withdrawal: '__root__.wallet.txType.withdrawal',
-  wallet_withdraw: '__root__.wallet.withdraw',
   subscription_title: '__root__.subscription.title',
   subscription_subscribe_success: '__root__.subscription.subscribeSuccess',
   subscription_charged: '__root__.subscription.charged',
@@ -4894,6 +5058,66 @@ export const BASE_KEYS = {
   strategy_version_history: '__root__.strategy.version.history',
   common_saving: '__root__.common.saving',
   strategy_validate_passed: '__root__.strategy.validate.passed',
+  common_total: '__root__.common.total',
+  monitoring_uptimeDays: '__root__.monitoring.uptimeDays',
+  monitoring_uptimeHours: '__root__.monitoring.uptimeHours',
+  monitoring_uptimeMinutes: '__root__.monitoring.uptimeMinutes',
+  monitoring_uptimeSeconds: '__root__.monitoring.uptimeSeconds',
+  sre_killSwitch_undoWindow: '__root__.sre.killSwitch.undoWindow',
+  sre_killSwitch_title: '__root__.sre.killSwitch.title',
+  admin_sidebar_sweep: '__root__.admin.sidebar.sweep',
+  admin_sidebar_autogen_tasks: '__root__.admin.sidebar.autogenTasks',
+  admin_sidebar_marketplace: '__root__.admin.sidebar.marketplace',
+  admin_sidebar_refunds: '__root__.admin.sidebar.refunds',
+  admin_sidebar_analytics: '__root__.admin.sidebar.analytics',
+  admin_sidebar_coupons: '__root__.admin.sidebar.coupons',
+  wallet_deposit_table_confirmations: '__root__.wallet.deposit.table.confirmations',
+  wallet_passkey_title: '__root__.wallet.passkey.title',
+  wallet_passkey_add: '__root__.wallet.passkey.add',
+  wallet_passkey_name: '__root__.wallet.passkey.name',
+  wallet_passkey_credential_id: '__root__.wallet.passkey.credentialId',
+  wallet_passkey_sign_count: '__root__.wallet.passkey.signCount',
+  wallet_passkey_created_at: '__root__.wallet.passkey.createdAt',
+  wallet_passkey_confirm_remove: '__root__.wallet.passkey.confirmRemove',
+  wallet_passkey_register: '__root__.wallet.passkey.register',
+  wallet_passkey_registered: '__root__.wallet.passkey.registered',
+  wallet_passkey_register_failed: '__root__.wallet.passkey.registerFailed',
+  wallet_passkey_register_hint: '__root__.wallet.passkey.registerHint',
+  wallet_passkey_name_placeholder: '__root__.wallet.passkey.namePlaceholder',
+  wallet_passkey_removed: '__root__.wallet.passkey.removed',
+  wallet_withdraw_title: '__root__.wallet.withdraw.title',
+  wallet_withdraw_new: '__root__.wallet.withdraw.new',
+  wallet_withdraw_submit: '__root__.wallet.withdraw.submit',
+  wallet_withdraw_available: '__root__.wallet.withdraw.available',
+  wallet_withdraw_amount: '__root__.wallet.withdraw.amount',
+  wallet_withdraw_amount_label: '__root__.wallet.withdraw.amountLabel',
+  wallet_withdraw_amount_required: '__root__.wallet.withdraw.amountRequired',
+  wallet_withdraw_dest_address: '__root__.wallet.withdraw.destAddress',
+  wallet_withdraw_dest_label: '__root__.wallet.withdraw.destLabel',
+  wallet_withdraw_dest_required: '__root__.wallet.withdraw.destRequired',
+  wallet_withdraw_whitelist: '__root__.wallet.withdraw.whitelist',
+  wallet_withdraw_status: '__root__.wallet.withdraw.status',
+  wallet_withdraw_tx_hash: '__root__.wallet.withdraw.txHash',
+  wallet_withdraw_time: '__root__.wallet.withdraw.time',
+  wallet_withdraw_cancelled: '__root__.wallet.withdraw.cancelled',
+  wallet_withdraw_confirm_cancel: '__root__.wallet.withdraw.confirmCancel',
+  wallet_withdraw_success: '__root__.wallet.withdraw.success',
+  wallet_withdraw_failed: '__root__.wallet.withdraw.failed',
+  wallet_withdraw_no_balance: '__root__.wallet.withdraw.noBalance',
+  wallet_withdraw_warning: '__root__.wallet.withdraw.warning',
+  wallet_whitelist_title: '__root__.wallet.whitelist.title',
+  wallet_whitelist_add: '__root__.wallet.whitelist.add',
+  wallet_whitelist_added: '__root__.wallet.whitelist.added',
+  wallet_whitelist_removed: '__root__.wallet.whitelist.removed',
+  wallet_whitelist_label: '__root__.wallet.whitelist.label',
+  wallet_whitelist_address: '__root__.wallet.whitelist.address',
+  wallet_whitelist_status: '__root__.wallet.whitelist.status',
+  wallet_whitelist_confirmed_at: '__root__.wallet.whitelist.confirmedAt',
+  wallet_whitelist_confirm_remove: '__root__.wallet.whitelist.confirmRemove',
+  wallet_whitelist_address_label: '__root__.wallet.whitelist.addressLabel',
+  wallet_whitelist_address_required: '__root__.wallet.whitelist.addressRequired',
+  wallet_whitelist_label_label: '__root__.wallet.whitelist.labelLabel',
+  wallet_whitelist_label_placeholder: '__root__.wallet.whitelist.labelPlaceholder',
 } as const;
 
 export type BaseKey = typeof BASE_KEYS[keyof typeof BASE_KEYS];

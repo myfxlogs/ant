@@ -542,7 +542,13 @@ const Base = {
       "systemConfig": "系统配置",
       "tradingMonitor": "交易监控",
       "userManagement": "用户管理",
-      "walletManagement": "钱包管理"
+      "walletManagement": "钱包管理",
+      "sweep": "归集管理",
+      "autogenTasks": "AI 生成任务",
+      "marketplace": "市场管理",
+      "refunds": "退款管理",
+      "analytics": "数据分析",
+      "coupons": "优惠券管理"
     },
     "trading": {
       "accounts": "账户",
@@ -666,7 +672,8 @@ const Base = {
         "amountUsd": "USD 到账",
         "status": "状态",
         "time": "时间",
-        "txHash": "交易哈希"
+        "txHash": "交易哈希",
+        "confirmations": "确认数"
       },
       "address": "收款地址",
       "addressCopied": "地址已复制到剪贴板",
@@ -700,6 +707,58 @@ const Base = {
       "reversal": "冲正",
       "withdrawal": "提取"
     },
+    "passkey": {
+      "title": "通行密钥管理",
+      "add": "添加通行密钥",
+      "name": "名称",
+      "credentialId": "凭证 ID",
+      "signCount": "签名次数",
+      "createdAt": "创建时间",
+      "confirmRemove": "确认删除此通行密钥？",
+      "register": "注册",
+      "registered": "通行密钥注册成功",
+      "registerFailed": "注册失败",
+      "registerHint": "为此通行密钥输入名称，然后点击注册开始 WebAuthn 流程。",
+      "namePlaceholder": "例如：我的 YubiKey",
+      "removed": "通行密钥已删除"
+    },
+    "withdraw": {
+      "title": "提取",
+      "new": "新建提取",
+      "submit": "提交",
+      "available": "可用余额",
+      "amount": "金额",
+      "amountLabel": "提取金额 (USDT)",
+      "amountRequired": "请输入金额",
+      "destAddress": "目标地址",
+      "destLabel": "目标 TRC20 地址",
+      "destRequired": "请输入目标地址",
+      "whitelist": "白名单（点击填充）",
+      "status": "状态",
+      "txHash": "交易哈希",
+      "time": "时间",
+      "cancelled": "提取已取消",
+      "confirmCancel": "确认取消此提取？",
+      "success": "提取提交成功",
+      "failed": "提取失败",
+      "noBalance": "无可用余额可提取",
+      "warning": "提取需要通行密钥验证。请确保目标地址正确 — 区块链交易不可逆。"
+    },
+    "whitelist": {
+      "title": "白名单管理",
+      "add": "添加地址",
+      "added": "白名单地址已添加",
+      "removed": "白名单地址已删除",
+      "label": "标签",
+      "address": "地址",
+      "status": "状态",
+      "confirmedAt": "确认时间",
+      "confirmRemove": "确认删除此白名单地址？",
+      "addressLabel": "TRC20 地址",
+      "addressRequired": "请输入地址",
+      "labelLabel": "标签（可选）",
+      "labelPlaceholder": "例如：我的币安钱包"
+    },
     "accountNumber": "钱包号",
     "balance": "余额",
     "currency": "币种",
@@ -707,8 +766,7 @@ const Base = {
     "frozenBalance": "冻结",
     "history": "历史记录",
     "title": "我的钱包",
-    "transactions": "交易记录",
-    "withdraw": "提取"
+    "transactions": "交易记录"
   },
   "strategy": {
     "workspace": {
@@ -913,7 +971,9 @@ const Base = {
       "reasonLabel": "原因（必填）",
       "reasonPlaceholder": "例如：检测到市场异常波动，紧急停止所有交易",
       "typeKill": "键入 KILL 确认",
-      "typeKillPlaceholder": "键入 KILL（大写）"
+      "typeKillPlaceholder": "键入 KILL（大写）",
+      "undoWindow": "撤销窗口: {{minutes}}分 {{seconds}}秒 剩余",
+      "title": "熔断开关"
     }
   },
   "marketplace": {
@@ -1076,41 +1136,8 @@ const Base = {
     },
     "forgotPassword": {
       "backToLogin": "返回登录",
-      "title": "重置密码",
-      "emailTab": "邮箱",
-      "mtTab": "MT验证",
-      "adminTab": "管理员",
-      "emailSent": "如果该邮箱存在，重置链接已发送。",
-      "sendResetLink": "发送重置链接",
-      "platform": "平台",
-      "brokerName": "经纪商名称",
-      "brokerPlaceholder": "输入经纪商名称搜索",
-      "company": "公司",
-      "selectCompany": "选择公司",
-      "server": "服务器",
-      "selectServer": "选择服务器",
-      "noBrokers": "未找到经纪商。",
-      "searchFailed": "经纪商搜索失败。",
-      "mtLogin": "MT 账户号",
-      "mtLoginPlaceholder": "例如 12345678",
-      "mtPassword": "MT 密码",
-      "mtPasswordPlaceholder": "MT 交易密码",
-      "mtHint": "输入您已绑定的 MT 账户凭据以验证身份。",
-      "verifyAndReset": "验证并重置密码",
-      "mtVerified": "身份验证成功，正在跳转到密码重置页面。",
-      "mtFailed": "MT 凭据验证失败。",
-      "adminHint": "请联系管理员或支持人员重置密码。"
-    },
-    "resetPassword": {
-      "title": "设置新密码",
-      "newPassword": "新密码",
-      "confirmPassword": "确认密码",
-      "confirmRequired": "请确认您的密码",
-      "submit": "重置密码",
-      "success": "密码已重置，请使用新密码登录。",
-      "failed": "重置密码失败。",
-      "mismatch": "两次输入的密码不一致。",
-      "invalidToken": "无效或缺失的重置令牌。"
+      "hint": "请联系管理员或支持人员重置密码。",
+      "title": "重置密码"
     },
     "login": {
       "forgotPassword": "忘记密码？",
@@ -1235,10 +1262,7 @@ const Base = {
     "failed": "失败",
     "reset": "重置",
     "saving": "保存中…",
-    "login": "登录",
-    "register": "注册",
-    "loginRequired": "需要登录",
-    "loginRequiredDesc": "请登录或注册后继续。"
+    "total": "共 {{total}}"
   },
   "errors": {
     "ai": {
@@ -1573,7 +1597,11 @@ const Base = {
     "bidGtAsk": "买价>卖价",
     "nonPositive": "非正数",
     "pushInterval": "推送间隔：5秒",
-    "lastUpdate": "最后更新"
+    "lastUpdate": "最后更新",
+    "uptimeDays": "{{d}}天 {{h}}小时",
+    "uptimeHours": "{{h}}小时 {{m}}分",
+    "uptimeMinutes": "{{m}}分 {{s}}秒",
+    "uptimeSeconds": "{{s}}秒"
   }
 } as const;
 export default Base;

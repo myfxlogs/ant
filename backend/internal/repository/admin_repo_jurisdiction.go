@@ -133,7 +133,7 @@ func (r *AdminRepository) ListUsersByKYCStatus(ctx context.Context, kycStatus st
 		query += ` WHERE COALESCE(uj.kyc_status, 'unverified') = $1`
 		queryArgs = append(queryArgs, kycStatus)
 	}
-	query += ` ORDER BY u.created_at DESC LIMIT $` + paramNum(len(queryArgs)+1) + ` OFFSET $` + paramNum(len(queryArgs)+2)
+	query += ` ORDER BY u.created_at DESC LIMIT ` + paramNum(len(queryArgs)+1) + ` OFFSET ` + paramNum(len(queryArgs)+2)
 	queryArgs = append(queryArgs, pageSize, offset)
 
 	rows, err := r.db.Query(ctx, query, queryArgs...)

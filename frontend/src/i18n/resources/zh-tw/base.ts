@@ -707,8 +707,7 @@ const Base = {
     "frozenBalance": "凍結",
     "history": "歷史記錄",
     "title": "我的錢包",
-    "transactions": "交易記錄",
-    "withdraw": "提取"
+    "transactions": "交易記錄"
   },
   "strategy": {
     "workspace": {
@@ -1075,42 +1074,9 @@ const Base = {
       "login": "電子郵件/帳號"
     },
     "forgotPassword": {
-      "backToLogin": "返回登入",
-      "title": "重設密碼",
-      "emailTab": "郵箱",
-      "mtTab": "MT驗證",
-      "adminTab": "管理員",
-      "emailSent": "如果該郵箱存在，重設連結已發送。",
-      "sendResetLink": "發送重設連結",
-      "platform": "平台",
-      "brokerName": "經紀商名稱",
-      "brokerPlaceholder": "輸入經紀商名稱搜尋",
-      "company": "公司",
-      "selectCompany": "選擇公司",
-      "server": "伺服器",
-      "selectServer": "選擇伺服器",
-      "noBrokers": "未找到經紀商。",
-      "searchFailed": "經紀商搜尋失敗。",
-      "mtLogin": "MT 帳戶號",
-      "mtLoginPlaceholder": "例如 12345678",
-      "mtPassword": "MT 密碼",
-      "mtPasswordPlaceholder": "MT 交易密碼",
-      "mtHint": "輸入您已綁定的 MT 帳戶憑據以驗證身份。",
-      "verifyAndReset": "驗證並重設密碼",
-      "mtVerified": "身份驗證成功，正在跳轉到密碼重設頁面。",
-      "mtFailed": "MT 憑據驗證失敗。",
-      "adminHint": "請聯繫管理員或支援人員重設密碼。"
-    },
-    "resetPassword": {
-      "title": "設定新密碼",
-      "newPassword": "新密碼",
-      "confirmPassword": "確認密碼",
-      "confirmRequired": "請確認您的密碼",
-      "submit": "重設密碼",
-      "success": "密碼已重設，請使用新密碼登入。",
-      "failed": "重設密碼失敗。",
-      "mismatch": "兩次輸入的密碼不一致。",
-      "invalidToken": "無效或缺失的重設令牌。"
+      "backToLogin": "返回登录",
+      "hint": "請聯繫管理員或支援人員重設密碼。",
+      "title": "重設密碼"
     },
     "login": {
       "forgotPassword": "忘記密碼？",
@@ -1234,11 +1200,7 @@ const Base = {
     "success": "成功",
     "failed": "失敗",
     "reset": "重設",
-    "saving": "儲存中...",
-    "login": "登入",
-    "register": "註冊",
-    "loginRequired": "需要登入",
-    "loginRequiredDesc": "請登入或註冊後繼續。"
+    "saving": "儲存中..."
   },
   "errors": {
     "ai": {

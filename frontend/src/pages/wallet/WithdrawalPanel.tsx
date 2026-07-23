@@ -27,7 +27,7 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
   const cancelMutation = useMutation({
     mutationFn: (withdrawalId: string) => webauthnApi.cancelWithdrawal(withdrawalId),
     onSuccess: () => {
-      message.success(t('wallet.withdraw.cancelled', { defaultValue: 'Withdrawal cancelled, funds unfrozen' }));
+      message.success(t('wallet.withdraw.cancelled'));
       queryClient.invalidateQueries({ queryKey: ['webauthn', 'withdrawals'] });
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
     },
@@ -71,13 +71,13 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
         assertion.id,
       );
 
-      message.success(t('wallet.withdraw.success', { defaultValue: 'Withdrawal submitted. Funds frozen, awaiting cold sign + broadcast.' }));
+      message.success(t('wallet.withdraw.success'));
       setWithdrawOpen(false);
       form.resetFields();
       queryClient.invalidateQueries({ queryKey: ['webauthn', 'withdrawals'] });
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
     } catch (err: any) {
-      message.error(err.message || t('wallet.withdraw.failed', { defaultValue: 'Withdrawal failed' }));
+      message.error(err.message || t('wallet.withdraw.failed'));
     }
     setWithdrawing(false);
   };
@@ -94,28 +94,28 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
 
   const columns = [
     {
-      title: t('wallet.withdraw.amount', { defaultValue: 'Amount' }),
+      title: t('wallet.withdraw.amount'),
       dataIndex: 'amount',
       key: 'amount',
       width: 120,
       render: (v: string) => <span style={{ color: '#E53935', fontWeight: 500 }}>-{formatAmount(v)}</span>,
     },
     {
-      title: t('wallet.withdraw.destAddress', { defaultValue: 'Destination' }),
+      title: t('wallet.withdraw.destAddress'),
       dataIndex: 'destAddress',
       key: 'destAddress',
       ellipsis: true,
       render: (v: string) => <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v?.slice(0, 20)}...</span>,
     },
     {
-      title: t('wallet.withdraw.status', { defaultValue: 'Status' }),
+      title: t('wallet.withdraw.status'),
       dataIndex: 'status',
       key: 'status',
       width: 160,
       render: (v: string) => <Tag color={statusColors[v] || 'default'}>{v}</Tag>,
     },
     {
-      title: t('wallet.withdraw.txHash', { defaultValue: 'Tx Hash' }),
+      title: t('wallet.withdraw.txHash'),
       dataIndex: 'txHash',
       key: 'txHash',
       ellipsis: true,
@@ -123,7 +123,7 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
       render: (v: string) => v ? <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.slice(0, 20)}...</span> : '-',
     },
     {
-      title: t('wallet.withdraw.time', { defaultValue: 'Time' }),
+      title: t('wallet.withdraw.time'),
       dataIndex: 'createdAtTsMs',
       key: 'createdAtTsMs',
       width: 180,
@@ -138,7 +138,7 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
         if (!cancellable) return null;
         return (
           <Popconfirm
-            title={t('wallet.withdraw.confirmCancel', { defaultValue: 'Cancel this withdrawal and unfreeze funds?' })}
+            title={t('wallet.withdraw.confirmCancel')}
             onConfirm={() => cancelMutation.mutate(record.id)}
           >
             <Button type="text" danger icon={<CloseCircleOutlined />} size="small" />
@@ -154,13 +154,13 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
     <Card
       size="small"
       style={{ marginBottom: 24 }}
-      title={<span><DollarOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('wallet.withdraw.title', { defaultValue: 'Withdraw USDT' })}</span>}
-      extra={<Button type="primary" size="small" icon={<DollarOutlined />} disabled={availableBalance <= 0} onClick={() => setWithdrawOpen(true)}>{t('wallet.withdraw.new', { defaultValue: 'New Withdrawal' })}</Button>}
+      title={<span><DollarOutlined style={{ marginRight: 8, color: '#D4AF37' }} />{t('wallet.withdraw.title')}</span>}
+      extra={<Button type="primary" size="small" icon={<DollarOutlined />} disabled={availableBalance <= 0} onClick={() => setWithdrawOpen(true)}>{t('wallet.withdraw.new')}</Button>}
     >
       {availableBalance <= 0 && (
         <Alert
           type="info"
-          message={t('wallet.withdraw.noBalance', { defaultValue: 'No available balance for withdrawal. Frozen funds are pending withdrawal completion.' })}
+          message={t('wallet.withdraw.noBalance')}
           style={{ marginBottom: 16 }}
           showIcon
         />
@@ -173,21 +173,21 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
         pagination={{ pageSize: 10, size: 'small' }}
       />
       <Modal
-        title={t('wallet.withdraw.new', { defaultValue: 'New Withdrawal' })}
+        title={t('wallet.withdraw.new')}
         open={withdrawOpen}
         onCancel={() => setWithdrawOpen(false)}
         onOk={handleWithdraw}
         confirmLoading={withdrawing}
-        okText={t('wallet.withdraw.submit', { defaultValue: 'Sign & Submit' })}
+        okText={t('wallet.withdraw.submit')}
       >
         <Form form={form} layout="vertical">
-          <Form.Item label={t('wallet.withdraw.available', { defaultValue: 'Available Balance' })}>
+          <Form.Item label={t('wallet.withdraw.available')}>
             <span style={{ fontWeight: 600 }}>{formatAmount(availableBalance.toString())} USDT</span>
           </Form.Item>
           <Form.Item
             name="amount"
-            label={t('wallet.withdraw.amountLabel', { defaultValue: 'Amount (USDT)' })}
-            rules={[{ required: true, message: t('wallet.withdraw.amountRequired', { defaultValue: 'Please enter amount' }) }]}
+            label={t('wallet.withdraw.amountLabel')}
+            rules={[{ required: true, message: t('wallet.withdraw.amountRequired') }]}
           >
             <InputNumber
               style={{ width: '100%' }}
@@ -199,13 +199,13 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
           </Form.Item>
           <Form.Item
             name="destAddress"
-            label={t('wallet.withdraw.destLabel', { defaultValue: 'Destination Address (TRC20)' })}
-            rules={[{ required: true, message: t('wallet.withdraw.destRequired', { defaultValue: 'Please enter destination address' }) }]}
+            label={t('wallet.withdraw.destLabel')}
+            rules={[{ required: true, message: t('wallet.withdraw.destRequired') }]}
           >
             <Input placeholder="T..." style={{ fontFamily: 'monospace' }} />
           </Form.Item>
           {whitelist && whitelist.length > 0 && (
-            <Form.Item label={t('wallet.withdraw.whitelist', { defaultValue: 'Whitelist (click to fill)' })}>
+            <Form.Item label={t('wallet.withdraw.whitelist')}>
               <Space wrap>
                 {whitelist.filter(w => w.status === 'ACTIVE').map(w => (
                   <Tag
@@ -221,7 +221,7 @@ export function WithdrawalPanel({ balance, frozenBalance }: { balance: string; f
           )}
           <Alert
             type="warning"
-            message={t('wallet.withdraw.warning', { defaultValue: 'You will be prompted to authenticate with your passkey. Funds will be frozen until the withdrawal is broadcast or cancelled.' })}
+            message={t('wallet.withdraw.warning')}
             showIcon
           />
         </Form>

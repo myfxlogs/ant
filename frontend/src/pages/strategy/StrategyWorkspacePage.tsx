@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Grid, Drawer } from 'antd';
+import { ImportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
@@ -13,6 +14,7 @@ import { SaveTemplateWrapper } from './WorkspaceLayout';
 import { BacktestParamsModal, type BacktestModalResult } from './components/workspace/BacktestParamsModal';
 import WorkspaceCenterColumn from './components/workspace/WorkspaceCenterColumn';
 import IndicatorCatalogContent from './components/workspace/IndicatorCatalogContent';
+import ImportEAPanel from './components/editor/ImportEAPanel';
 
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
@@ -23,6 +25,7 @@ export default function StrategyWorkspacePage() {
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const [btModalOpen, setBtModalOpen] = useState(false);
   const [indicatorDrawerOpen, setIndicatorDrawerOpen] = useState(false);
+  const [importDrawerOpen, setImportDrawerOpen] = useState(false);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
 
   const startResize = useCallback((e: React.MouseEvent) => {
@@ -66,6 +69,7 @@ export default function StrategyWorkspacePage() {
           btModalOpen={btModalOpen}
           setBtModalOpen={setBtModalOpen}
           setIndicatorDrawerOpen={setIndicatorDrawerOpen}
+          setImportDrawerOpen={setImportDrawerOpen}
           onShowVersionHistory={() => setVersionHistoryOpen(true)}
         />
 
@@ -121,6 +125,18 @@ export default function StrategyWorkspacePage() {
       <SaveTemplateWrapper ws={ws} />
       <Drawer title={t(INDICATOR_CATALOG_TITLE_KEY)} open={indicatorDrawerOpen} onClose={() => setIndicatorDrawerOpen(false)} width={640} styles={{ body: { overflowY: 'auto' } }}>
         <IndicatorCatalogContent />
+      </Drawer>
+      <Drawer
+        title={<span><ImportOutlined style={{ marginRight: 8 }} />{t('strategy.importEA.title', { defaultValue: 'Import MQL Strategy' })}</span>}
+        open={importDrawerOpen}
+        onClose={() => setImportDrawerOpen(false)}
+        width={680}
+        destroyOnClose
+      >
+        <ImportEAPanel
+          onApplyCode={(code) => { ws.code.setCode(code); setImportDrawerOpen(false); setCenterTab('code'); }}
+          onStrategyIdChange={(id) => { if (id) ws.code.setStrategyId(id); }}
+        />
       </Drawer>
       <BacktestHistoryDrawer
         open={ws.history.modalOpen || ws.history.drawerOpen}

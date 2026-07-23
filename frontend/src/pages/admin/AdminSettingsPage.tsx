@@ -174,7 +174,7 @@ export default function AdminSettingsPage() {
       </Card>
 
       <Modal
-        title={isNew ? t('admin.settings.addManagedSetting', { defaultValue: 'Add Managed Setting' }) : t('admin.settings.editSetting', { setting: SETTING_LABELS[editKey] || editKey, defaultValue: `Edit: ${SETTING_LABELS[editKey] || editKey}` })}
+        title={isNew ? t('admin.settings.addManagedSetting', { defaultValue: 'Add Managed Setting' }) : t('admin.settings.editSetting', { setting: SETTING_LABEL_KEYS[editKey]?.defaultValue || editKey, defaultValue: `Edit: ${SETTING_LABEL_KEYS[editKey]?.defaultValue || editKey}` })}
         open={modalOpen}
         onOk={handleSave}
         onCancel={() => setModalOpen(false)}

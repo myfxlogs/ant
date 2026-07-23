@@ -707,8 +707,7 @@ const Base = {
     "frozenBalance": "Đóng Băng",
     "history": "Lịch Sử",
     "title": "Ví Của Tôi",
-    "transactions": "Giao Dịch",
-    "withdraw": "Rút Tiền"
+    "transactions": "Giao Dịch"
   },
   "strategy": {
     "workspace": {
@@ -1075,42 +1074,9 @@ const Base = {
       "login": "Email/Tài khoản"
     },
     "forgotPassword": {
-      "backToLogin": "Quay lại đăng nhập",
-      "title": "Đặt lại Mật khẩu",
-      "emailTab": "Email",
-      "mtTab": "Xác minh MT",
-      "adminTab": "Quản trị viên",
-      "emailSent": "Nếu email tồn tại, liên kết đặt lại đã được gửi.",
-      "sendResetLink": "Gửi liên kết đặt lại",
-      "platform": "Nền tảng",
-      "brokerName": "Tên môi giới",
-      "brokerPlaceholder": "Nhập tên môi giới để tìm kiếm",
-      "company": "Công ty",
-      "selectCompany": "Chọn công ty",
-      "server": "Máy chủ",
-      "selectServer": "Chọn máy chủ",
-      "noBrokers": "Không tìm thấy môi giới.",
-      "searchFailed": "Tìm kiếm môi giới thất bại.",
-      "mtLogin": "Số tài khoản MT",
-      "mtLoginPlaceholder": "VD 12345678",
-      "mtPassword": "Mật khẩu MT",
-      "mtPasswordPlaceholder": "Mật khẩu giao dịch MT",
-      "mtHint": "Nhập thông tin đăng nhập tài khoản MT đã liên kết để xác minh danh tính.",
-      "verifyAndReset": "Xác minh & Đặt lại Mật khẩu",
-      "mtVerified": "Danh tính đã được xác minh. Đang chuyển đến trang đặt lại mật khẩu.",
-      "mtFailed": "Xác minh thông tin đăng nhập MT thất bại.",
-      "adminHint": "Vui lòng liên hệ quản trị viên hoặc hỗ trợ để đặt lại mật khẩu."
-    },
-    "resetPassword": {
-      "title": "Đặt Mật khẩu Mới",
-      "newPassword": "Mật khẩu mới",
-      "confirmPassword": "Xác nhận mật khẩu",
-      "confirmRequired": "Vui lòng xác nhận mật khẩu của bạn",
-      "submit": "Đặt lại Mật khẩu",
-      "success": "Mật khẩu đã được đặt lại. Vui lòng đăng nhập với mật khẩu mới.",
-      "failed": "Đặt lại mật khẩu thất bại.",
-      "mismatch": "Mật khẩu không khớp.",
-      "invalidToken": "Token đặt lại không hợp lệ hoặc bị thiếu."
+      "backToLogin": "返回登录",
+      "hint": "Vui lòng liên hệ quản trị viên hoặc hỗ trợ để đặt lại mật khẩu.",
+      "title": "Đặt lại Mật khẩu"
     },
     "login": {
       "forgotPassword": "Quên mật khẩu?",
@@ -1234,11 +1200,7 @@ const Base = {
     "success": "Thành công",
     "failed": "Thất bại",
     "reset": "Đặt lại",
-    "saving": "Đang lưu...",
-    "login": "Đăng nhập",
-    "register": "Đăng ký",
-    "loginRequired": "Cần đăng nhập",
-    "loginRequiredDesc": "Vui lòng đăng nhập hoặc đăng ký để tiếp tục."
+    "saving": "Đang lưu..."
   },
   "errors": {
     "ai": {

@@ -10,7 +10,7 @@ import {
   Tabs,
   Typography,
 } from 'antd';
-import { adminApi } from '@/client/admin';
+import { adminJurisdictionApi } from '@/client/admin-jurisdiction';
 import { showError, showSuccess } from '@/utils/message';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
@@ -37,7 +37,7 @@ export default function JurisdictionGate() {
     isLoading: countriesLoading,
     error: countriesError,
     refetch: refetchCountries,
-  } = useRpcQuery(['admin', 'sanctioned-countries'], () => adminApi.listSanctionedCountries());
+  } = useRpcQuery(['admin', 'sanctioned-countries'], () => adminJurisdictionApi.listSanctionedCountries());
 
   const {
     data: kycData,
@@ -45,7 +45,7 @@ export default function JurisdictionGate() {
     error: kycError,
     refetch: refetchKYC,
   } = useRpcQuery(['admin', 'kyc-users', kycFilter, kycPage], () =>
-    adminApi.listUsersByKYCStatus({ kycStatus: kycFilter, page: kycPage, pageSize: 20 }),
+    adminJurisdictionApi.listUsersByKYCStatus({ kycStatus: kycFilter, page: kycPage, pageSize: 20 }),
   );
 
   const kycUsers = kycData?.users ?? [];
@@ -53,7 +53,7 @@ export default function JurisdictionGate() {
 
   const handleAddCountry = async (values: { countryCode: string; label: string }) => {
     try {
-      await adminApi.addSanctionedCountry(values.countryCode.toUpperCase(), values.label);
+      await adminJurisdictionApi.addSanctionedCountry(values.countryCode.toUpperCase(), values.label);
       showSuccess(t('admin.jurisdiction.messages.countryAdded'));
       setAddModalOpen(false);
       form.resetFields();
@@ -65,7 +65,7 @@ export default function JurisdictionGate() {
 
   const handleRemoveCountry = async (code: string) => {
     try {
-      await adminApi.removeSanctionedCountry(code);
+      await adminJurisdictionApi.removeSanctionedCountry(code);
       showSuccess(t('admin.jurisdiction.messages.countryRemoved'));
       refetchCountries();
     } catch {
@@ -76,7 +76,7 @@ export default function JurisdictionGate() {
   const handleSetKYC = async (values: { kycStatus: string }) => {
     if (!selectedUser) return;
     try {
-      await adminApi.setKYCStatus(selectedUser.userId, values.kycStatus);
+      await adminJurisdictionApi.setKYCStatus(selectedUser.userId, values.kycStatus);
       showSuccess(t('admin.jurisdiction.messages.kycUpdated'));
       setKycModalOpen(false);
       refetchKYC();
@@ -87,7 +87,7 @@ export default function JurisdictionGate() {
 
   const handleOverride = async (user: UserKYCItem) => {
     try {
-      await adminApi.setSanctionedOverride(user.userId, !user.sanctionedOverride);
+      await adminJurisdictionApi.setSanctionedOverride(user.userId, !user.sanctionedOverride);
       showSuccess(t('admin.jurisdiction.messages.overrideUpdated'));
       refetchKYC();
     } catch {
