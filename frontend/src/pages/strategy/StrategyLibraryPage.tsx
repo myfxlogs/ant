@@ -25,12 +25,12 @@ export default function StrategyLibraryPage() {
   const [filter, setFilter] = useState<FilterKey>('all');
 
   const { data: templates = [], isLoading } = useQuery({
-    queryKey: queryKeys.strategy.templates,
+    queryKey: queryKeys.templates.list(),
     queryFn: () => strategyApi.listTemplates() as Promise<StrategyTemplate[]>,
   });
 
   const { data: schedules = [] } = useQuery({
-    queryKey: queryKeys.strategy.schedules,
+    queryKey: queryKeys.schedules.list(),
     queryFn: () => strategyApi.listSchedules() as Promise<StrategySchedule[]>,
   });
 
@@ -61,7 +61,7 @@ export default function StrategyLibraryPage() {
     try {
       await strategyApi.deleteTemplate(id);
       message.success(t('common.deleted', { defaultValue: 'Deleted' }));
-      queryClient.invalidateQueries({ queryKey: queryKeys.strategy.templates });
+      queryClient.invalidateQueries({ queryKey: queryKeys.templates.list() });
     } catch {
       message.error(t('common.deleteFailed', { defaultValue: 'Delete failed' }));
     }
