@@ -574,6 +574,87 @@ export const VISIBILITY_PRIVATE_KEY = 'strategy.templates.visibility.private' as
 /** visibility.public */
 export const VISIBILITY_PUBLIC_KEY = 'strategy.templates.visibility.public' as const;
 
+/** gallery.title */
+export const GALLERY_TITLE_KEY = 'strategy.templates.gallery.title' as const;
+
+/** gallery.aiGenerate */
+export const GALLERY_AI_GENERATE_KEY = 'strategy.templates.gallery.aiGenerate' as const;
+
+/** gallery.searchPlaceholder */
+export const GALLERY_SEARCH_PLACEHOLDER_KEY = 'strategy.templates.gallery.searchPlaceholder' as const;
+
+/** gallery.filterAll */
+export const GALLERY_FILTER_ALL_KEY = 'strategy.templates.gallery.filterAll' as const;
+
+/** gallery.filterMine */
+export const GALLERY_FILTER_MINE_KEY = 'strategy.templates.gallery.filterMine' as const;
+
+/** gallery.filterSystem */
+export const GALLERY_FILTER_SYSTEM_KEY = 'strategy.templates.gallery.filterSystem' as const;
+
+/** gallery.sortRecent */
+export const GALLERY_SORT_RECENT_KEY = 'strategy.templates.gallery.sortRecent' as const;
+
+/** gallery.sortReturn */
+export const GALLERY_SORT_RETURN_KEY = 'strategy.templates.gallery.sortReturn' as const;
+
+/** gallery.sortRisk */
+export const GALLERY_SORT_RISK_KEY = 'strategy.templates.gallery.sortRisk' as const;
+
+/** gallery.sortUsage */
+export const GALLERY_SORT_USAGE_KEY = 'strategy.templates.gallery.sortUsage' as const;
+
+/** gallery.empty */
+export const GALLERY_EMPTY_KEY = 'strategy.templates.gallery.empty' as const;
+
+/** gallery.system */
+export const GALLERY_SYSTEM_KEY = 'strategy.templates.gallery.system' as const;
+
+/** gallery.shared */
+export const GALLERY_SHARED_KEY = 'strategy.templates.gallery.shared' as const;
+
+/** gallery.deploy */
+export const GALLERY_DEPLOY_KEY = 'strategy.templates.gallery.deploy' as const;
+
+/** gallery.fork */
+export const GALLERY_FORK_KEY = 'strategy.templates.gallery.fork' as const;
+
+/** gallery.publish */
+export const GALLERY_PUBLISH_KEY = 'strategy.templates.gallery.publish' as const;
+
+/** gallery.unpublish */
+export const GALLERY_UNPUBLISH_KEY = 'strategy.templates.gallery.unpublish' as const;
+
+/** gallery.unpublishSuccess */
+export const GALLERY_UNPUBLISH_SUCCESS_KEY = 'strategy.templates.gallery.unpublishSuccess' as const;
+
+/** gallery.unpublishFailed */
+export const GALLERY_UNPUBLISH_FAILED_KEY = 'strategy.templates.gallery.unpublishFailed' as const;
+
+/** gallery.deleteFailed */
+export const GALLERY_DELETE_FAILED_KEY = 'strategy.templates.gallery.deleteFailed' as const;
+
+/** detail.notFound */
+export const DETAIL_NOT_FOUND_KEY = 'strategy.templates.detail.notFound' as const;
+
+/** detail.overview */
+export const DETAIL_OVERVIEW_KEY = 'strategy.templates.detail.overview' as const;
+
+/** detail.noDescription */
+export const DETAIL_NO_DESCRIPTION_KEY = 'strategy.templates.detail.noDescription' as const;
+
+/** detail.equityCurve */
+export const DETAIL_EQUITY_CURVE_KEY = 'strategy.templates.detail.equityCurve' as const;
+
+/** detail.tradeStats */
+export const DETAIL_TRADE_STATS_KEY = 'strategy.templates.detail.tradeStats' as const;
+
+/** detail.profitFactor */
+export const DETAIL_PROFIT_FACTOR_KEY = 'strategy.templates.detail.profitFactor' as const;
+
+/** detail.parameters */
+export const DETAIL_PARAMETERS_KEY = 'strategy.templates.detail.parameters' as const;
+
 export const STRATEGYTEMPLATES_KEYS = {
   actions_backtest: 'strategy.templates.actions.backtest',
   actions_copy: 'strategy.templates.actions.copy',
@@ -766,6 +847,33 @@ export const STRATEGYTEMPLATES_KEYS = {
   title: 'strategy.templates.title',
   visibility_private: 'strategy.templates.visibility.private',
   visibility_public: 'strategy.templates.visibility.public',
+  gallery_title: 'strategy.templates.gallery.title',
+  gallery_ai_generate: 'strategy.templates.gallery.aiGenerate',
+  gallery_search_placeholder: 'strategy.templates.gallery.searchPlaceholder',
+  gallery_filter_all: 'strategy.templates.gallery.filterAll',
+  gallery_filter_mine: 'strategy.templates.gallery.filterMine',
+  gallery_filter_system: 'strategy.templates.gallery.filterSystem',
+  gallery_sort_recent: 'strategy.templates.gallery.sortRecent',
+  gallery_sort_return: 'strategy.templates.gallery.sortReturn',
+  gallery_sort_risk: 'strategy.templates.gallery.sortRisk',
+  gallery_sort_usage: 'strategy.templates.gallery.sortUsage',
+  gallery_empty: 'strategy.templates.gallery.empty',
+  gallery_system: 'strategy.templates.gallery.system',
+  gallery_shared: 'strategy.templates.gallery.shared',
+  gallery_deploy: 'strategy.templates.gallery.deploy',
+  gallery_fork: 'strategy.templates.gallery.fork',
+  gallery_publish: 'strategy.templates.gallery.publish',
+  gallery_unpublish: 'strategy.templates.gallery.unpublish',
+  gallery_unpublish_success: 'strategy.templates.gallery.unpublishSuccess',
+  gallery_unpublish_failed: 'strategy.templates.gallery.unpublishFailed',
+  gallery_delete_failed: 'strategy.templates.gallery.deleteFailed',
+  detail_not_found: 'strategy.templates.detail.notFound',
+  detail_overview: 'strategy.templates.detail.overview',
+  detail_no_description: 'strategy.templates.detail.noDescription',
+  detail_equity_curve: 'strategy.templates.detail.equityCurve',
+  detail_trade_stats: 'strategy.templates.detail.tradeStats',
+  detail_profit_factor: 'strategy.templates.detail.profitFactor',
+  detail_parameters: 'strategy.templates.detail.parameters',
 } as const;
 
 export type StrategyTemplatesKey = typeof STRATEGYTEMPLATES_KEYS[keyof typeof STRATEGYTEMPLATES_KEYS];

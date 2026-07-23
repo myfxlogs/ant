@@ -5,6 +5,14 @@ import { initReactI18next } from 'react-i18next';
 export const SUPPORTED_LANGUAGES = ['zh-cn', 'zh-tw', 'en', 'ja', 'vi'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
+export const LANGUAGE_NATIVE_NAMES: Record<SupportedLanguage, string> = {
+  'zh-cn': '简体中文',
+  'zh-tw': '繁體中文',
+  'en': 'English',
+  'ja': '日本語',
+  'vi': 'Tiếng Việt',
+};
+
 export const LANGUAGE_STORAGE_KEY = 'alphaforge_lang';
 
 export function normalizeLanguage(input?: string | null): SupportedLanguage {

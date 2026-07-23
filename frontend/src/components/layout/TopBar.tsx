@@ -13,7 +13,7 @@ const { Header } = Layout;
 
 interface LanguageOption {
   key: SupportedLanguage;
-  labelKey: string;
+  nativeName: string;
 }
 
 interface Props {

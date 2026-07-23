@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
-import i18n, { normalizeLanguage, setLanguage, type SupportedLanguage } from '@/i18n';
+import i18n, { normalizeLanguage, setLanguage, LANGUAGE_NATIVE_NAMES, type SupportedLanguage } from '@/i18n';
 import Seo from '@/components/common/Seo';
 
 export default function Register() {
@@ -12,19 +12,19 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
 
-  const languages: { key: SupportedLanguage; labelKey: string }[] = [
-    { key: 'zh-cn', labelKey: 'language.simplifiedChinese' },
-    { key: 'zh-tw', labelKey: 'language.traditionalChinese' },
-    { key: 'en', labelKey: 'language.english' },
-    { key: 'ja', labelKey: 'language.japanese' },
-    { key: 'vi', labelKey: 'language.vietnamese' },
+  const languages: { key: SupportedLanguage; nativeName: string }[] = [
+    { key: 'zh-cn', nativeName: LANGUAGE_NATIVE_NAMES['zh-cn'] },
+    { key: 'zh-tw', nativeName: LANGUAGE_NATIVE_NAMES['zh-tw'] },
+    { key: 'en', nativeName: LANGUAGE_NATIVE_NAMES['en'] },
+    { key: 'ja', nativeName: LANGUAGE_NATIVE_NAMES['ja'] },
+    { key: 'vi', nativeName: LANGUAGE_NATIVE_NAMES['vi'] },
   ];
 
   const currentLang = normalizeLanguage(i18n.language);
   const languageMenu = {
     items: languages.map((lang) => ({
       key: lang.key,
-      label: t(lang.labelKey),
+      label: lang.nativeName,
     })),
     onClick: ({ key }: { key: string }) => setLanguage(normalizeLanguage(key)),
     selectedKeys: [currentLang],
@@ -56,7 +56,7 @@ export default function Register() {
             className="px-3 py-2 rounded-lg text-sm"
             style={{ background: 'var(--color-bg-card)', border: '1px solid rgba(0, 0, 0, 0.08)', color: 'var(--color-text-secondary)' }}
           >
-            {t(languages.find((l) => l.key === currentLang)?.labelKey || 'language.english')}
+            {languages.find((l) => l.key === currentLang)?.nativeName || 'English'}
           </button>
         </Dropdown>
       </div>

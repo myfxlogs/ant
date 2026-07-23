@@ -9,6 +9,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { strategyApi } from '@/client/strategy';
 import { queryKeys } from '@/queries/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 import Seo from '@/components/common/Seo';
 
 const { Title, Paragraph } = Typography;
@@ -24,6 +25,11 @@ export default function StrategyDetailPage() {
     enabled: !!id,
   });
 
+  const currentUserId = useAuthStore(s => s.user?.id);
+  const isOwner = !!template && !!currentUserId && template.userId === currentUserId;
+  const isSystem = !!template?.isSystem;
+  const canEdit = isOwner || isSystem;
+
   const handleEdit = () => navigate(`/strategy/${id}/edit`);
 
   const handleForkAndEdit = async () => {
@@ -32,7 +38,7 @@ export default function StrategyDetailPage() {
       const draftId = await strategyApi.forkTemplate(id, `${template?.name || 'Strategy'} (Fork)`);
       navigate(`/strategy/${draftId}/edit`);
     } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : t('strategy.gallery.forkFailed', { defaultValue: 'Fork failed' }));
+      message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.unpublishFailed', { defaultValue: 'Fork failed' }));
     }
   };
 
@@ -46,10 +52,10 @@ export default function StrategyDetailPage() {
   const statsRows = useMemo(() => {
     if (!template) return [];
     const rows: { key: string; label: string; value: string }[] = [];
-    if (template.winRate) rows.push({ key: 'winRate', label: t('strategy.detail.winRate', { defaultValue: 'Win Rate' }), value: `${(parseFloat(template.winRate) * 100).toFixed(1)}%` });
-    if (template.profitFactor) rows.push({ key: 'pf', label: t('strategy.detail.profitFactor', { defaultValue: 'Profit Factor' }), value: parseFloat(template.profitFactor).toFixed(2) });
-    if (template.maxDrawdown) rows.push({ key: 'dd', label: t('strategy.detail.maxDrawdown', { defaultValue: 'Max Drawdown' }), value: `${(parseFloat(template.maxDrawdown) * 100).toFixed(1)}%` });
-    if (template.sharpeRatio) rows.push({ key: 'sharpe', label: t('strategy.detail.sharpe', { defaultValue: 'Sharpe Ratio' }), value: parseFloat(template.sharpeRatio).toFixed(2) });
+    if (template.winRate) rows.push({ key: 'winRate', label: t('strategy.templates.scheduleLaunch.metrics.winRate', { defaultValue: 'Win Rate' }), value: `${(parseFloat(template.winRate) * 100).toFixed(1)}%` });
+    if (template.profitFactor) rows.push({ key: 'pf', label: t('strategy.templates.detail.profitFactor', { defaultValue: 'Profit Factor' }), value: parseFloat(template.profitFactor).toFixed(2) });
+    if (template.maxDrawdown) rows.push({ key: 'dd', label: t('strategy.templates.scheduleLaunch.metrics.maxDrawdown', { defaultValue: 'Max Drawdown' }), value: `${(parseFloat(template.maxDrawdown) * 100).toFixed(1)}%` });
+    if (template.sharpeRatio) rows.push({ key: 'sharpe', label: t('strategy.templates.scheduleLaunch.metrics.sharpe', { defaultValue: 'Sharpe Ratio' }), value: parseFloat(template.sharpeRatio).toFixed(2) });
     return rows;
   }, [template, t]);
 
@@ -58,7 +64,7 @@ export default function StrategyDetailPage() {
   }
 
   if (!template) {
-    return <Empty description={t('strategy.detail.notFound', { defaultValue: 'Strategy not found' })} />;
+    return <Empty description={t('strategy.templates.detail.notFound', { defaultValue: 'Strategy not found' })} />;
   }
 
   return (
@@ -70,17 +76,19 @@ export default function StrategyDetailPage() {
             <div>
               <Title level={3} style={{ margin: 0 }}>{template.name}</Title>
               <Space size={8} style={{ marginTop: 8 }}>
-                {template.isSystem && <Tag color="blue">{t('strategy.gallery.system', { defaultValue: 'System' })}</Tag>}
-                {template.isPublic && !template.isSystem && <Tag color="green">{t('strategy.gallery.shared', { defaultValue: 'Shared' })}</Tag>}
+                {template.isSystem && <Tag color="blue">{t('strategy.templates.gallery.system', { defaultValue: 'System' })}</Tag>}
+                {template.isPublic && !template.isSystem && <Tag color="green">{t('strategy.templates.gallery.shared', { defaultValue: 'Shared' })}</Tag>}
                 {tags.map(tag => <Tag key={tag}>{tag}</Tag>)}
               </Space>
             </div>
             <Space>
-              <Button type="primary" icon={<EditOutlined />} onClick={template.isSystem ? handleForkAndEdit : handleEdit}>
-                {template.isSystem
-                  ? t('strategy.detail.forkAndEdit', { defaultValue: 'Fork & Edit' })
-                  : t('strategy.gallery.edit', { defaultValue: 'Edit' })}
-              </Button>
+              {canEdit && (
+                <Button type="primary" icon={<EditOutlined />} onClick={isSystem ? handleForkAndEdit : handleEdit}>
+                  {isSystem
+                    ? t('strategy.templates.gallery.fork', { defaultValue: 'Fork & Edit' })
+                    : t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
+                </Button>
+              )}
             </Space>
           </div>
 
@@ -89,16 +97,16 @@ export default function StrategyDetailPage() {
             items={[
               {
                 key: 'overview',
-                label: t('strategy.detail.overview', { defaultValue: 'Overview' }),
+                label: t('strategy.templates.detail.overview', { defaultValue: 'Overview' }),
                 children: (
                   <div style={{ padding: '8px 0' }}>
                     <Paragraph type="secondary">
-                      {template.description || t('strategy.detail.noDescription', { defaultValue: 'No description' })}
+                      {template.description || t('strategy.templates.detail.noDescription', { defaultValue: 'No description' })}
                     </Paragraph>
 
                     {sparklineData.length > 0 && (
                       <div style={{ marginTop: 16, marginBottom: 24 }}>
-                        <Title level={5}>{t('strategy.detail.equityCurve', { defaultValue: 'Equity Curve' })}</Title>
+                        <Title level={5}>{t('strategy.templates.detail.equityCurve', { defaultValue: 'Equity Curve' })}</Title>
                         <ResponsiveContainer width="100%" height={240}>
                           <LineChart data={sparklineData}>
                             <YAxis domain={['auto', 'auto']} style={{ fontSize: 11 }} />
@@ -111,7 +119,7 @@ export default function StrategyDetailPage() {
 
                     {statsRows.length > 0 && (
                       <div style={{ marginBottom: 24 }}>
-                        <Title level={5}>{t('strategy.detail.tradeStats', { defaultValue: 'Trade Statistics' })}</Title>
+                        <Title level={5}>{t('strategy.templates.detail.tradeStats', { defaultValue: 'Trade Statistics' })}</Title>
                         <Descriptions column={2} bordered size="small"
                           items={statsRows.map(r => ({ key: r.key, label: r.label, children: r.value }))}
                         />
@@ -123,15 +131,15 @@ export default function StrategyDetailPage() {
                       bordered
                       size="small"
                       items={[
-                        { key: 'useCount', label: t('strategy.detail.useCount', { defaultValue: 'Use Count' }), children: template.useCount },
-                        { key: 'created', label: t('strategy.detail.created', { defaultValue: 'Created' }), children: template.createdAt ? new Date(template.createdAt.toDate()).toLocaleDateString() : '-' },
-                        { key: 'visibility', label: t('strategy.detail.visibility', { defaultValue: 'Visibility' }), children: template.isSystem ? 'System' : template.isPublic ? 'Public' : 'Private' },
-                        { key: 'status', label: t('strategy.detail.status', { defaultValue: 'Status' }), children: template.status || '-' },
+                        { key: 'useCount', label: t('strategy.templates.table.useCount', { defaultValue: 'Use Count' }), children: template.useCount },
+                        { key: 'created', label: t('strategy.templates.table.createdAt', { defaultValue: 'Created' }), children: template.createdAt ? new Date(template.createdAt as unknown as string).toLocaleDateString() : '-' },
+                        { key: 'visibility', label: t('strategy.templates.table.visibility', { defaultValue: 'Visibility' }), children: template.isSystem ? t('strategy.templates.gallery.system', { defaultValue: 'System' }) : template.isPublic ? t('strategy.templates.visibility.public', { defaultValue: 'Public' }) : t('strategy.templates.visibility.private', { defaultValue: 'Private' }) },
+                        { key: 'status', label: t('strategy.templates.table.status', { defaultValue: 'Status' }), children: template.status || '-' },
                       ]}
                     />
                     {template.parameters && template.parameters.length > 0 && (
                       <div style={{ marginTop: 24 }}>
-                        <Title level={5}>{t('strategy.detail.parameters', { defaultValue: 'Parameters' })}</Title>
+                        <Title level={5}>{t('strategy.templates.detail.parameters', { defaultValue: 'Parameters' })}</Title>
                         <Descriptions
                           column={1}
                           bordered
@@ -147,9 +155,9 @@ export default function StrategyDetailPage() {
                   </div>
                 ),
               },
-              {
+              ...(canEdit || template.code ? [{
                 key: 'code',
-                label: t('strategy.detail.code', { defaultValue: 'Code' }),
+                label: t('strategy.templates.codeModal.title', { defaultValue: 'Code' }),
                 children: (
                   <div style={{ padding: '8px 0' }}>
                     <SyntaxHighlighter
@@ -162,7 +170,7 @@ export default function StrategyDetailPage() {
                     </SyntaxHighlighter>
                   </div>
                 ),
-              },
+              }] : []),
             ]}
           />
         </div>
@@ -176,11 +184,13 @@ export default function StrategyDetailPage() {
           zIndex: 10,
         }}>
           <Space>
-            <Button type="primary" icon={<EditOutlined />} onClick={template.isSystem ? handleForkAndEdit : handleEdit}>
-              {template.isSystem
-                ? t('strategy.detail.forkAndEdit', { defaultValue: 'Fork & Edit' })
-                : t('strategy.gallery.edit', { defaultValue: 'Edit' })}
-            </Button>
+            {canEdit && (
+              <Button type="primary" icon={<EditOutlined />} onClick={isSystem ? handleForkAndEdit : handleEdit}>
+                {isSystem
+                  ? t('strategy.templates.gallery.fork', { defaultValue: 'Fork & Edit' })
+                  : t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
+              </Button>
+            )}
           </Space>
         </div>
       </div>

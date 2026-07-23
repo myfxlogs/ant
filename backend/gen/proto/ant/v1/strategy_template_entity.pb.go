@@ -292,25 +292,26 @@ func (x *TemplateParameter) GetOptions() []string {
 // Aggregates template metadata + latest successful backtest KPIs + running schedule count.
 type StrategyCard struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
-	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // template id
-	Name        string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Tags        []string               `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty"`
-	IsSystem    bool                   `protobuf:"varint,5,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
-	IsPublic    bool                   `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
-	UseCount    int32                  `protobuf:"varint,7,opt,name=use_count,json=useCount,proto3" json:"use_count,omitempty"`
-	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                       // template id
+	UserId      string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // template owner user id
+	Name        string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Tags        []string               `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty"`
+	IsSystem    bool                   `protobuf:"varint,6,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
+	IsPublic    bool                   `protobuf:"varint,7,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	UseCount    int32                  `protobuf:"varint,8,opt,name=use_count,json=useCount,proto3" json:"use_count,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// Sparkline: equity curve from the latest successful backtest (decimal strings).
-	Sparkline []string `protobuf:"bytes,9,rep,name=sparkline,proto3" json:"sparkline,omitempty"`
+	Sparkline []string `protobuf:"bytes,10,rep,name=sparkline,proto3" json:"sparkline,omitempty"`
 	// KPIs from the latest successful backtest (decimal strings for precision).
-	WinRate      string `protobuf:"bytes,10,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	MaxDrawdown  string `protobuf:"bytes,11,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	ProfitFactor string `protobuf:"bytes,12,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	SharpeRatio  string `protobuf:"bytes,13,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate      string `protobuf:"bytes,11,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	MaxDrawdown  string `protobuf:"bytes,12,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	ProfitFactor string `protobuf:"bytes,13,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	SharpeRatio  string `protobuf:"bytes,14,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
 	// Count of active schedules for this template.
-	RunningSchedules int32 `protobuf:"varint,14,opt,name=running_schedules,json=runningSchedules,proto3" json:"running_schedules,omitempty"`
+	RunningSchedules int32 `protobuf:"varint,15,opt,name=running_schedules,json=runningSchedules,proto3" json:"running_schedules,omitempty"`
 	// ID of the backtest run that produced the sparkline/KPIs (empty if none).
-	BacktestRunId string `protobuf:"bytes,15,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
+	BacktestRunId string `protobuf:"bytes,16,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -348,6 +349,13 @@ func (*StrategyCard) Descriptor() ([]byte, []int) {
 func (x *StrategyCard) GetId() string {
 	if x != nil {
 		return x.Id
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -532,25 +540,26 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\x04step\x18\x06 \x01(\tR\x04step\x12\x14\n" +
 	"\x05label\x18\a \x01(\tR\x05label\x12 \n" +
 	"\vdescription\x18\b \x01(\tR\vdescription\x12\x18\n" +
-	"\aoptions\x18\t \x03(\tR\aoptions\"\xf3\x03\n" +
+	"\aoptions\x18\t \x03(\tR\aoptions\"\x8c\x04\n" +
 	"\fStrategyCard\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04tags\x18\x04 \x03(\tR\x04tags\x12\x1b\n" +
-	"\tis_system\x18\x05 \x01(\bR\bisSystem\x12\x1b\n" +
-	"\tis_public\x18\x06 \x01(\bR\bisPublic\x12\x1b\n" +
-	"\tuse_count\x18\a \x01(\x05R\buseCount\x129\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x12\n" +
+	"\x04tags\x18\x05 \x03(\tR\x04tags\x12\x1b\n" +
+	"\tis_system\x18\x06 \x01(\bR\bisSystem\x12\x1b\n" +
+	"\tis_public\x18\a \x01(\bR\bisPublic\x12\x1b\n" +
+	"\tuse_count\x18\b \x01(\x05R\buseCount\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1c\n" +
-	"\tsparkline\x18\t \x03(\tR\tsparkline\x12\x19\n" +
-	"\bwin_rate\x18\n" +
-	" \x01(\tR\awinRate\x12!\n" +
-	"\fmax_drawdown\x18\v \x01(\tR\vmaxDrawdown\x12#\n" +
-	"\rprofit_factor\x18\f \x01(\tR\fprofitFactor\x12!\n" +
-	"\fsharpe_ratio\x18\r \x01(\tR\vsharpeRatio\x12+\n" +
-	"\x11running_schedules\x18\x0e \x01(\x05R\x10runningSchedules\x12&\n" +
-	"\x0fbacktest_run_id\x18\x0f \x01(\tR\rbacktestRunId\"\x9e\x01\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1c\n" +
+	"\tsparkline\x18\n" +
+	" \x03(\tR\tsparkline\x12\x19\n" +
+	"\bwin_rate\x18\v \x01(\tR\awinRate\x12!\n" +
+	"\fmax_drawdown\x18\f \x01(\tR\vmaxDrawdown\x12#\n" +
+	"\rprofit_factor\x18\r \x01(\tR\fprofitFactor\x12!\n" +
+	"\fsharpe_ratio\x18\x0e \x01(\tR\vsharpeRatio\x12+\n" +
+	"\x11running_schedules\x18\x0f \x01(\x05R\x10runningSchedules\x12&\n" +
+	"\x0fbacktest_run_id\x18\x10 \x01(\tR\rbacktestRunId\"\x9e\x01\n" +
 	"\fTemplateI18n\x12;\n" +
 	"\alocales\x18\x01 \x03(\v2!.ant.v1.TemplateI18n.LocalesEntryR\alocales\x1aQ\n" +
 	"\fLocalesEntry\x12\x10\n" +

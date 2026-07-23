@@ -75,7 +75,16 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(templateRowToProto(row)), nil
+	pb := templateRowToProto(row)
+	// Strip code for non-owners without marketplace access (paid subscription/purchase/trial).
+	// This allows subscribers to view code for deploy/backtest, but fork is blocked at UI level.
+	if s.codeAccess != nil && row.UserID != nil && row.UserID.String() != uid.String() && !row.IsSystem {
+		allowed, _ := s.codeAccess.CanAccessCode(ctx, uid.String(), id.String())
+		if !allowed {
+			pb.Code = ""
+		}
+	}
+	return connect.NewResponse(pb), nil
 }
 
 func (s *StrategyServer) ListStrategyCards(ctx context.Context, req *connect.Request[antv1.ListStrategyCardsRequest]) (*connect.Response[antv1.ListStrategyCardsResponse], error) {
@@ -94,6 +103,7 @@ func (s *StrategyServer) ListStrategyCards(ctx context.Context, req *connect.Req
 	for i, r := range rows {
 		cards[i] = &antv1.StrategyCard{
 			Id:               r.ID.String(),
+			UserId:           r.UserID.String(),
 			Name:             r.Name,
 			Description:      r.Description,
 			Tags:             r.Tags,

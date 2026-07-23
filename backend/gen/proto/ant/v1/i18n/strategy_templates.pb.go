@@ -214,6 +214,33 @@ type TemplatesI18N struct {
 	Title                                            string                 `protobuf:"bytes,189,opt,name=title,proto3" json:"title,omitempty"`                                                                                                                                                         // Templates
 	VisibilityPrivate                                string                 `protobuf:"bytes,190,opt,name=visibility_private,json=visibilityPrivate,proto3" json:"visibility_private,omitempty"`                                                                                                        // Private
 	VisibilityPublic                                 string                 `protobuf:"bytes,191,opt,name=visibility_public,json=visibilityPublic,proto3" json:"visibility_public,omitempty"`                                                                                                           // Public
+	GalleryTitle                                     string                 `protobuf:"bytes,192,opt,name=gallery_title,json=galleryTitle,proto3" json:"gallery_title,omitempty"`                                                                                                                       // Strategies
+	GalleryAiGenerate                                string                 `protobuf:"bytes,193,opt,name=gallery_ai_generate,json=galleryAiGenerate,proto3" json:"gallery_ai_generate,omitempty"`                                                                                                      // AI Generate
+	GallerySearchPlaceholder                         string                 `protobuf:"bytes,194,opt,name=gallery_search_placeholder,json=gallerySearchPlaceholder,proto3" json:"gallery_search_placeholder,omitempty"`                                                                                 // Search strategies...
+	GalleryFilterAll                                 string                 `protobuf:"bytes,195,opt,name=gallery_filter_all,json=galleryFilterAll,proto3" json:"gallery_filter_all,omitempty"`                                                                                                         // All
+	GalleryFilterMine                                string                 `protobuf:"bytes,196,opt,name=gallery_filter_mine,json=galleryFilterMine,proto3" json:"gallery_filter_mine,omitempty"`                                                                                                      // Mine
+	GalleryFilterSystem                              string                 `protobuf:"bytes,197,opt,name=gallery_filter_system,json=galleryFilterSystem,proto3" json:"gallery_filter_system,omitempty"`                                                                                                // System
+	GallerySortRecent                                string                 `protobuf:"bytes,198,opt,name=gallery_sort_recent,json=gallerySortRecent,proto3" json:"gallery_sort_recent,omitempty"`                                                                                                      // Recent
+	GallerySortReturn                                string                 `protobuf:"bytes,199,opt,name=gallery_sort_return,json=gallerySortReturn,proto3" json:"gallery_sort_return,omitempty"`                                                                                                      // Return
+	GallerySortRisk                                  string                 `protobuf:"bytes,200,opt,name=gallery_sort_risk,json=gallerySortRisk,proto3" json:"gallery_sort_risk,omitempty"`                                                                                                            // Risk
+	GallerySortUsage                                 string                 `protobuf:"bytes,201,opt,name=gallery_sort_usage,json=gallerySortUsage,proto3" json:"gallery_sort_usage,omitempty"`                                                                                                         // Usage
+	GalleryEmpty                                     string                 `protobuf:"bytes,202,opt,name=gallery_empty,json=galleryEmpty,proto3" json:"gallery_empty,omitempty"`                                                                                                                       // No strategies found
+	GallerySystem                                    string                 `protobuf:"bytes,203,opt,name=gallery_system,json=gallerySystem,proto3" json:"gallery_system,omitempty"`                                                                                                                    // System
+	GalleryShared                                    string                 `protobuf:"bytes,204,opt,name=gallery_shared,json=galleryShared,proto3" json:"gallery_shared,omitempty"`                                                                                                                    // Shared
+	GalleryDeploy                                    string                 `protobuf:"bytes,205,opt,name=gallery_deploy,json=galleryDeploy,proto3" json:"gallery_deploy,omitempty"`                                                                                                                    // Deploy
+	GalleryFork                                      string                 `protobuf:"bytes,206,opt,name=gallery_fork,json=galleryFork,proto3" json:"gallery_fork,omitempty"`                                                                                                                          // Fork
+	GalleryPublish                                   string                 `protobuf:"bytes,207,opt,name=gallery_publish,json=galleryPublish,proto3" json:"gallery_publish,omitempty"`                                                                                                                 // Publish
+	GalleryUnpublish                                 string                 `protobuf:"bytes,208,opt,name=gallery_unpublish,json=galleryUnpublish,proto3" json:"gallery_unpublish,omitempty"`                                                                                                           // Unpublish
+	GalleryUnpublishSuccess                          string                 `protobuf:"bytes,209,opt,name=gallery_unpublish_success,json=galleryUnpublishSuccess,proto3" json:"gallery_unpublish_success,omitempty"`                                                                                    // Unpublished
+	GalleryUnpublishFailed                           string                 `protobuf:"bytes,210,opt,name=gallery_unpublish_failed,json=galleryUnpublishFailed,proto3" json:"gallery_unpublish_failed,omitempty"`                                                                                       // Unpublish failed
+	GalleryDeleteFailed                              string                 `protobuf:"bytes,211,opt,name=gallery_delete_failed,json=galleryDeleteFailed,proto3" json:"gallery_delete_failed,omitempty"`                                                                                                // Delete failed
+	DetailNotFound                                   string                 `protobuf:"bytes,212,opt,name=detail_not_found,json=detailNotFound,proto3" json:"detail_not_found,omitempty"`                                                                                                               // Strategy not found
+	DetailOverview                                   string                 `protobuf:"bytes,213,opt,name=detail_overview,json=detailOverview,proto3" json:"detail_overview,omitempty"`                                                                                                                 // Overview
+	DetailNoDescription                              string                 `protobuf:"bytes,214,opt,name=detail_no_description,json=detailNoDescription,proto3" json:"detail_no_description,omitempty"`                                                                                                // No description
+	DetailEquityCurve                                string                 `protobuf:"bytes,215,opt,name=detail_equity_curve,json=detailEquityCurve,proto3" json:"detail_equity_curve,omitempty"`                                                                                                      // Equity Curve
+	DetailTradeStats                                 string                 `protobuf:"bytes,216,opt,name=detail_trade_stats,json=detailTradeStats,proto3" json:"detail_trade_stats,omitempty"`                                                                                                         // Trade Statistics
+	DetailProfitFactor                               string                 `protobuf:"bytes,217,opt,name=detail_profit_factor,json=detailProfitFactor,proto3" json:"detail_profit_factor,omitempty"`                                                                                                   // Profit Factor
+	DetailParameters                                 string                 `protobuf:"bytes,218,opt,name=detail_parameters,json=detailParameters,proto3" json:"detail_parameters,omitempty"`                                                                                                           // Parameters
 	unknownFields                                    protoimpl.UnknownFields
 	sizeCache                                        protoimpl.SizeCache
 }
@@ -1585,11 +1612,200 @@ func (x *TemplatesI18N) GetVisibilityPublic() string {
 	return ""
 }
 
+func (x *TemplatesI18N) GetGalleryTitle() string {
+	if x != nil {
+		return x.GalleryTitle
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryAiGenerate() string {
+	if x != nil {
+		return x.GalleryAiGenerate
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGallerySearchPlaceholder() string {
+	if x != nil {
+		return x.GallerySearchPlaceholder
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryFilterAll() string {
+	if x != nil {
+		return x.GalleryFilterAll
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryFilterMine() string {
+	if x != nil {
+		return x.GalleryFilterMine
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryFilterSystem() string {
+	if x != nil {
+		return x.GalleryFilterSystem
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGallerySortRecent() string {
+	if x != nil {
+		return x.GallerySortRecent
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGallerySortReturn() string {
+	if x != nil {
+		return x.GallerySortReturn
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGallerySortRisk() string {
+	if x != nil {
+		return x.GallerySortRisk
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGallerySortUsage() string {
+	if x != nil {
+		return x.GallerySortUsage
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryEmpty() string {
+	if x != nil {
+		return x.GalleryEmpty
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGallerySystem() string {
+	if x != nil {
+		return x.GallerySystem
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryShared() string {
+	if x != nil {
+		return x.GalleryShared
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryDeploy() string {
+	if x != nil {
+		return x.GalleryDeploy
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryFork() string {
+	if x != nil {
+		return x.GalleryFork
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryPublish() string {
+	if x != nil {
+		return x.GalleryPublish
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryUnpublish() string {
+	if x != nil {
+		return x.GalleryUnpublish
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryUnpublishSuccess() string {
+	if x != nil {
+		return x.GalleryUnpublishSuccess
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryUnpublishFailed() string {
+	if x != nil {
+		return x.GalleryUnpublishFailed
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetGalleryDeleteFailed() string {
+	if x != nil {
+		return x.GalleryDeleteFailed
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailNotFound() string {
+	if x != nil {
+		return x.DetailNotFound
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailOverview() string {
+	if x != nil {
+		return x.DetailOverview
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailNoDescription() string {
+	if x != nil {
+		return x.DetailNoDescription
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailEquityCurve() string {
+	if x != nil {
+		return x.DetailEquityCurve
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailTradeStats() string {
+	if x != nil {
+		return x.DetailTradeStats
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailProfitFactor() string {
+	if x != nil {
+		return x.DetailProfitFactor
+	}
+	return ""
+}
+
+func (x *TemplatesI18N) GetDetailParameters() string {
+	if x != nil {
+		return x.DetailParameters
+	}
+	return ""
+}
+
 var File_i18n_strategy_templates_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_templates_proto_rawDesc = "" +
 	"\n" +
-	"\x1di18n/strategy_templates.proto\x12\vant.v1.i18n\"\xf9g\n" +
+	"\x1di18n/strategy_templates.proto\x12\vant.v1.i18n\"\xf4q\n" +
 	"\rTemplatesI18n\x12)\n" +
 	"\x10actions_backtest\x18\x01 \x01(\tR\x0factionsBacktest\x12!\n" +
 	"\factions_copy\x18\x02 \x01(\tR\vactionsCopy\x12%\n" +
@@ -1786,7 +2002,34 @@ const file_i18n_strategy_templates_proto_rawDesc = "" +
 	"\ttabs_user\x18\xbc\x01 \x01(\tR\btabsUser\x12\x15\n" +
 	"\x05title\x18\xbd\x01 \x01(\tR\x05title\x12.\n" +
 	"\x12visibility_private\x18\xbe\x01 \x01(\tR\x11visibilityPrivate\x12,\n" +
-	"\x11visibility_public\x18\xbf\x01 \x01(\tR\x10visibilityPublicB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x11visibility_public\x18\xbf\x01 \x01(\tR\x10visibilityPublic\x12$\n" +
+	"\rgallery_title\x18\xc0\x01 \x01(\tR\fgalleryTitle\x12/\n" +
+	"\x13gallery_ai_generate\x18\xc1\x01 \x01(\tR\x11galleryAiGenerate\x12=\n" +
+	"\x1agallery_search_placeholder\x18\xc2\x01 \x01(\tR\x18gallerySearchPlaceholder\x12-\n" +
+	"\x12gallery_filter_all\x18\xc3\x01 \x01(\tR\x10galleryFilterAll\x12/\n" +
+	"\x13gallery_filter_mine\x18\xc4\x01 \x01(\tR\x11galleryFilterMine\x123\n" +
+	"\x15gallery_filter_system\x18\xc5\x01 \x01(\tR\x13galleryFilterSystem\x12/\n" +
+	"\x13gallery_sort_recent\x18\xc6\x01 \x01(\tR\x11gallerySortRecent\x12/\n" +
+	"\x13gallery_sort_return\x18\xc7\x01 \x01(\tR\x11gallerySortReturn\x12+\n" +
+	"\x11gallery_sort_risk\x18\xc8\x01 \x01(\tR\x0fgallerySortRisk\x12-\n" +
+	"\x12gallery_sort_usage\x18\xc9\x01 \x01(\tR\x10gallerySortUsage\x12$\n" +
+	"\rgallery_empty\x18\xca\x01 \x01(\tR\fgalleryEmpty\x12&\n" +
+	"\x0egallery_system\x18\xcb\x01 \x01(\tR\rgallerySystem\x12&\n" +
+	"\x0egallery_shared\x18\xcc\x01 \x01(\tR\rgalleryShared\x12&\n" +
+	"\x0egallery_deploy\x18\xcd\x01 \x01(\tR\rgalleryDeploy\x12\"\n" +
+	"\fgallery_fork\x18\xce\x01 \x01(\tR\vgalleryFork\x12(\n" +
+	"\x0fgallery_publish\x18\xcf\x01 \x01(\tR\x0egalleryPublish\x12,\n" +
+	"\x11gallery_unpublish\x18\xd0\x01 \x01(\tR\x10galleryUnpublish\x12;\n" +
+	"\x19gallery_unpublish_success\x18\xd1\x01 \x01(\tR\x17galleryUnpublishSuccess\x129\n" +
+	"\x18gallery_unpublish_failed\x18\xd2\x01 \x01(\tR\x16galleryUnpublishFailed\x123\n" +
+	"\x15gallery_delete_failed\x18\xd3\x01 \x01(\tR\x13galleryDeleteFailed\x12)\n" +
+	"\x10detail_not_found\x18\xd4\x01 \x01(\tR\x0edetailNotFound\x12(\n" +
+	"\x0fdetail_overview\x18\xd5\x01 \x01(\tR\x0edetailOverview\x123\n" +
+	"\x15detail_no_description\x18\xd6\x01 \x01(\tR\x13detailNoDescription\x12/\n" +
+	"\x13detail_equity_curve\x18\xd7\x01 \x01(\tR\x11detailEquityCurve\x12-\n" +
+	"\x12detail_trade_stats\x18\xd8\x01 \x01(\tR\x10detailTradeStats\x121\n" +
+	"\x14detail_profit_factor\x18\xd9\x01 \x01(\tR\x12detailProfitFactor\x12,\n" +
+	"\x11detail_parameters\x18\xda\x01 \x01(\tR\x10detailParametersB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_templates_proto_rawDescOnce sync.Once

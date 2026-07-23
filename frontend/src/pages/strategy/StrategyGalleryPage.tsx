@@ -36,7 +36,7 @@ export default function StrategyGalleryPage() {
       if (!draft.id) throw new Error('Draft creation returned empty id');
       navigate(`/strategy/${draft.id}/edit`);
     } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : t('strategy.gallery.createFailed', { defaultValue: 'Failed to create strategy' }));
+      message.error(e instanceof Error ? e.message : t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: 'Failed to load template list' }));
     } finally {
       setCreating(false);
     }
@@ -44,24 +44,24 @@ export default function StrategyGalleryPage() {
 
   return (
     <>
-      <Seo title={t('strategy.gallery.title', { defaultValue: 'Strategies' })} path="/strategy" />
+      <Seo title={t('strategy.templates.gallery.title', { defaultValue: 'Strategies' })} path="/strategy" />
       <div style={{ padding: '24px 24px 80px', background: 'var(--color-bg-secondary)', minHeight: '100vh' }}>
         <div className="max-w-7xl mx-auto">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <Title level={3} style={{ margin: 0 }}>{t('strategy.gallery.title', { defaultValue: 'Strategies' })}</Title>
+            <Title level={3} style={{ margin: 0 }}>{t('strategy.templates.gallery.title', { defaultValue: 'Strategies' })}</Title>
             <Space>
               <Button type="primary" icon={<PlusOutlined />} loading={creating} onClick={handleNew}>
-                {t('strategy.gallery.create', { defaultValue: 'New Strategy' })}
+                {t('strategy.templates.actions.create', { defaultValue: 'New Strategy' })}
               </Button>
               <Button icon={<RobotOutlined />} onClick={() => navigate('/strategy/workspace?ai=1')}>
-                {t('strategy.gallery.aiGenerate', { defaultValue: 'AI Generate' })}
+                {t('strategy.templates.gallery.aiGenerate', { defaultValue: 'AI Generate' })}
               </Button>
             </Space>
           </div>
 
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <Input
-              placeholder={t('strategy.gallery.searchPlaceholder', { defaultValue: 'Search strategies...' })}
+              placeholder={t('strategy.templates.gallery.searchPlaceholder', { defaultValue: 'Search strategies...' })}
               allowClear
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -71,9 +71,9 @@ export default function StrategyGalleryPage() {
               value={filter}
               onChange={v => setFilter(v as FilterKey)}
               options={[
-                { value: 'all', label: t('strategy.gallery.filterAll', { defaultValue: 'All' }) },
-                { value: 'mine', label: t('strategy.gallery.filterMine', { defaultValue: 'Mine' }) },
-                { value: 'preset', label: t('strategy.gallery.filterSystem', { defaultValue: 'System' }) },
+                { value: 'all', label: t('strategy.templates.gallery.filterAll', { defaultValue: 'All' }) },
+                { value: 'mine', label: t('strategy.templates.gallery.filterMine', { defaultValue: 'Mine' }) },
+                { value: 'preset', label: t('strategy.templates.gallery.filterSystem', { defaultValue: 'System' }) },
               ]}
             />
             <Select
@@ -81,20 +81,20 @@ export default function StrategyGalleryPage() {
               onChange={v => setSort(v)}
               style={{ width: 140 }}
               options={[
-                { value: 'recent', label: t('strategy.gallery.sortRecent', { defaultValue: 'Recent' }) },
-                { value: 'return', label: t('strategy.gallery.sortReturn', { defaultValue: 'Return' }) },
-                { value: 'risk', label: t('strategy.gallery.sortRisk', { defaultValue: 'Risk' }) },
-                { value: 'usage', label: t('strategy.gallery.sortUsage', { defaultValue: 'Usage' }) },
+                { value: 'recent', label: t('strategy.templates.gallery.sortRecent', { defaultValue: 'Recent' }) },
+                { value: 'return', label: t('strategy.templates.gallery.sortReturn', { defaultValue: 'Return' }) },
+                { value: 'risk', label: t('strategy.templates.gallery.sortRisk', { defaultValue: 'Risk' }) },
+                { value: 'usage', label: t('strategy.templates.gallery.sortUsage', { defaultValue: 'Usage' }) },
               ]}
             />
           </div>
 
           {isError ? (
-            <Alert type="error" showIcon message={t('strategy.gallery.loadError', { defaultValue: 'Failed to load strategies' })} />
+            <Alert type="error" showIcon message={t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: 'Failed to load strategies' })} />
           ) : isLoading ? (
             <div style={{ textAlign: 'center', padding: 80 }}><Spin size="large" /></div>
           ) : cards.length === 0 ? (
-            <Empty description={t('strategy.gallery.empty', { defaultValue: 'No strategies found' })} />
+            <Empty description={t('strategy.templates.gallery.empty', { defaultValue: 'No strategies found' })} />
           ) : (
             <Row gutter={[16, 16]}>
               {cards.map(card => (

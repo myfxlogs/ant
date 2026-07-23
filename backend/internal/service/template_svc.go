@@ -113,6 +113,19 @@ func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) 
 	return nil
 }
 
+func (s *StrategySvc) UnpublishUserTemplate(ctx context.Context, id, userID uuid.UUID) error {
+	ct, err := s.pg.Exec(ctx,
+		`UPDATE strategy_templates SET is_public=false, updated_at=$3 WHERE id=$1 AND user_id=$2 AND is_system=false`,
+		id, userID, time.Now())
+	if err != nil {
+		return fmt.Errorf("UnpublishUserTemplate: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return ErrTemplateNotFound
+	}
+	return nil
+}
+
 func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
 	ct, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1 AND user_id=$4`, id, status, time.Now(), userID)
 	if err != nil {
@@ -127,6 +140,7 @@ func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUI
 // StrategyCardRow is a denormalized row for Gallery card display (ADR-0027).
 type StrategyCardRow struct {
 	ID              uuid.UUID
+	UserID          uuid.UUID
 	Name            string
 	Description     string
 	Tags            []string
@@ -196,7 +210,7 @@ func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, p
 	offsetIdx := argIdx + 1
 	args = append(args, params.Limit, params.Offset)
 	rows, err := s.pg.Query(ctx,
-		`SELECT id, name, COALESCE(description, ''), tags, is_system, is_public, use_count, created_at
+		`SELECT id, user_id, name, COALESCE(description, ''), tags, is_system, is_public, use_count, created_at
 		 FROM strategy_templates
 		 `+where+`
 		 ORDER BY `+sqlOrder+`
@@ -209,7 +223,7 @@ func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, p
 	tids := make([]uuid.UUID, 0)
 	for rows.Next() {
 		var r StrategyCardRow
-		if err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Tags, &r.IsSystem, &r.IsPublic, &r.UseCount, &r.CreatedAt); err != nil {
+		if err := rows.Scan(&r.ID, &r.UserID, &r.Name, &r.Description, &r.Tags, &r.IsSystem, &r.IsPublic, &r.UseCount, &r.CreatedAt); err != nil {
 			return nil, 0, fmt.Errorf("ListStrategyCards scan: %w", err)
 		}
 		out = append(out, r)
@@ -246,7 +260,7 @@ func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, p
 	// Batch: active schedule counts
 	scRows, err := s.pg.Query(ctx,
 		`SELECT template_id, COUNT(*)::int FROM strategy_schedules
-		 WHERE template_id = ANY($1) AND status = 'ACTIVE' GROUP BY template_id`, tids)
+		 WHERE template_id = ANY($1) AND is_active = true GROUP BY template_id`, tids)
 	if err != nil {
 		return nil, 0, fmt.Errorf("ListStrategyCards schedules: %w", err)
 	}

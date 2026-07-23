@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyCard as StrategyCardType, StrategyTemplate } from '@/client/strategy';
 import { strategyApi } from '@/client/strategy';
 import { queryKeys } from '@/queries/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 import DeployScheduleModal from './DeployScheduleModal';
 import PublishToMarketModal from './PublishToMarketModal';
 
@@ -26,7 +27,7 @@ function Sparkline({ data }: { data: number[] }) {
   const isUp = nums[nums.length - 1] >= nums[0];
   const color = isUp ? '#52c41a' : '#ff4d4f';
   return (
-    <svg width={w} height={h} style={{ display: 'block' }}>
+    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ display: 'block' }}>
       <polyline points={points} fill="none" stroke={color} strokeWidth={1.5} />
     </svg>
   );
@@ -52,7 +53,7 @@ function StrategyCardImpl({ card }: Props) {
       const draftId = await strategyApi.forkTemplate(card.id, `${card.name} (Fork)`);
       navigate(`/strategy/${draftId}/edit`);
     } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : t('strategy.gallery.forkFailed', { defaultValue: 'Fork failed' }));
+      message.error(e instanceof Error ? e.message : t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: 'Fork failed' }));
     }
   };
 
@@ -63,7 +64,7 @@ function StrategyCardImpl({ card }: Props) {
       setPublishTemplate(tpl);
       setPublishOpen(true);
     } catch (e) {
-      message.error(e instanceof Error ? e.message : t('strategy.gallery.publishFailed', { defaultValue: 'Publish failed' }));
+      message.error(e instanceof Error ? e.message : t('strategy.templates.messages.publishFailed', { defaultValue: 'Publish failed' }));
     } finally {
       setPublishLoading(false);
     }
@@ -72,27 +73,30 @@ function StrategyCardImpl({ card }: Props) {
   const handleUnpublish = async () => {
     try {
       await strategyApi.cancelTemplateDraft(card.id);
-      message.success(t('strategy.gallery.unpublishSuccess', { defaultValue: 'Unpublished' }));
+      message.success(t('strategy.templates.gallery.unpublishSuccess', { defaultValue: 'Unpublished' }));
       queryClient.invalidateQueries({ queryKey: queryKeys.strategyCards.all });
     } catch (e) {
-      message.error(e instanceof Error ? e.message : t('strategy.gallery.unpublishFailed', { defaultValue: 'Unpublish failed' }));
+      message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.unpublishFailed', { defaultValue: 'Unpublish failed' }));
     }
   };
 
   const handleDelete = async () => {
     try {
       await strategyApi.deleteTemplate(card.id);
-      message.success(t('strategy.gallery.deleteSuccess', { defaultValue: 'Deleted' }));
+      message.success(t('strategy.templates.messages.templateDeleted', { defaultValue: 'Deleted' }));
       queryClient.invalidateQueries({ queryKey: queryKeys.strategyCards.all });
     } catch (e) {
-      message.error(e instanceof Error ? e.message : t('strategy.gallery.deleteFailed', { defaultValue: 'Delete failed' }));
+      message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.deleteFailed', { defaultValue: 'Delete failed' }));
     }
   };
 
   const isSystem = card.isSystem;
   const isPublished = card.isPublic;
+  const currentUserId = useAuthStore(s => s.user?.id);
+  const isOwner = !isSystem && currentUserId === card.userId;
 
   return (
+    <>
     <Card
       hoverable
       size="small"
@@ -100,11 +104,11 @@ function StrategyCardImpl({ card }: Props) {
       bodyStyle={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 16 }}
       onClick={handleDetail}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-        <Text strong ellipsis style={{ fontSize: 15, maxWidth: 200 }}>{card.name || 'Untitled'}</Text>
-        <Space size={4}>
-          {isSystem && <Tag color="blue">{t('strategy.gallery.system')}</Tag>}
-          {isPublished && !isSystem && <Tag color="green">{t('strategy.gallery.shared')}</Tag>}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 8, minWidth: 0 }}>
+        <Text strong ellipsis style={{ fontSize: 15, flex: '1 1 auto', minWidth: 0 }}>{card.name || 'Untitled'}</Text>
+        <Space size={4} style={{ flexShrink: 0 }}>
+          {isSystem && <Tag color="blue">{t('strategy.templates.gallery.system', { defaultValue: 'System' })}</Tag>}
+          {isPublished && !isSystem && <Tag color="green">{t('strategy.templates.gallery.shared', { defaultValue: 'Shared' })}</Tag>}
           {card.runningSchedules > 0 && (
             <Tag color="orange"><RocketOutlined /> {card.runningSchedules}</Tag>
           )}
@@ -117,60 +121,61 @@ function StrategyCardImpl({ card }: Props) {
 
       {card.sparkline.length > 0 && (
         <div style={{ marginBottom: 8 }}>
-          <Sparkline data={card.sparkline} />
+          <Sparkline data={card.sparkline.map(v => parseFloat(v) || 0)} />
         </div>
       )}
 
       <div style={{ display: 'flex', gap: 16, marginBottom: 12, marginTop: 'auto' }}>
         {card.winRate && (
-          <div>
-            <Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.gallery.winRate')}</Text>
+          <div style={{ minWidth: 0 }}>
+            <Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.templates.scheduleLaunch.metrics.winRate', { defaultValue: 'Win Rate' })}</Text>
             <div><Text strong>{(parseFloat(card.winRate) * 100).toFixed(1)}%</Text></div>
           </div>
         )}
         {card.maxDrawdown && (
-          <div>
-            <Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.gallery.maxDrawdown')}</Text>
+          <div style={{ minWidth: 0 }}>
+            <Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.templates.scheduleLaunch.metrics.maxDrawdown', { defaultValue: 'Max DD' })}</Text>
             <div><Text strong style={{ color: '#ff4d4f' }}>{(parseFloat(card.maxDrawdown) * 100).toFixed(1)}%</Text></div>
           </div>
         )}
         {card.sharpeRatio && (
-          <div>
-            <Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.gallery.sharpe')}</Text>
+          <div style={{ minWidth: 0 }}>
+            <Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.templates.scheduleLaunch.metrics.sharpe', { defaultValue: 'Sharpe' })}</Text>
             <div><Text strong>{parseFloat(card.sharpeRatio).toFixed(2)}</Text></div>
           </div>
         )}
       </div>
 
-      <Space size={4} onClick={e => e.stopPropagation()}>
+      <Space size={4} wrap onClick={e => e.stopPropagation()}>
         {!isSystem && (
           <Button size="small" icon={<RocketOutlined />} onClick={() => setDeployOpen(true)}>
-            {t('strategy.gallery.deploy', { defaultValue: 'Deploy' })}
+            {t('strategy.templates.gallery.deploy', { defaultValue: 'Deploy' })}
           </Button>
         )}
-        {!isSystem && (
+        {(isOwner || isSystem) && (
           <Button size="small" icon={<ForkOutlined />} onClick={handleFork}>
-            {t('strategy.gallery.fork', { defaultValue: 'Fork' })}
+            {t('strategy.templates.gallery.fork', { defaultValue: 'Fork' })}
           </Button>
         )}
-        {!isSystem && !isPublished && (
+        {isOwner && !isPublished && (
           <Button size="small" icon={<ShareAltOutlined />} loading={publishLoading} onClick={handlePublish}>
-            {t('strategy.gallery.publish', { defaultValue: 'Publish' })}
+            {t('strategy.templates.gallery.publish', { defaultValue: 'Publish' })}
           </Button>
         )}
-        {!isSystem && isPublished && (
+        {isOwner && isPublished && (
           <Button size="small" icon={<ShareAltOutlined />} onClick={handleUnpublish}>
-            {t('strategy.gallery.unpublish', { defaultValue: 'Unpublish' })}
+            {t('strategy.templates.gallery.unpublish', { defaultValue: 'Unpublish' })}
           </Button>
         )}
-        {!isSystem && (
-          <Popconfirm title={t('strategy.gallery.deleteConfirm', { defaultValue: 'Delete this strategy?' })} onConfirm={handleDelete}>
+        {isOwner && (
+          <Popconfirm title={t('strategy.templates.deleteConfirm', { defaultValue: 'Delete this strategy?' })} onConfirm={handleDelete}>
             <Button size="small" danger icon={<DeleteOutlined />}>
-              {t('strategy.gallery.delete', { defaultValue: 'Delete' })}
+              {t('strategy.templates.actions.delete', { defaultValue: 'Delete' })}
             </Button>
           </Popconfirm>
         )}
       </Space>
+    </Card>
       <DeployScheduleModal
         open={deployOpen}
         templateId={card.id}
@@ -187,7 +192,7 @@ function StrategyCardImpl({ card }: Props) {
           setPublishTemplate(null);
         }}
       />
-    </Card>
+    </>
   );
 }
 

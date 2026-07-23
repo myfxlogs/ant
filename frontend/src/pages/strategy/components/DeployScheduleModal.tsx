@@ -5,6 +5,8 @@ import { useAccount } from '@/hooks/useAccount';
 import { strategyScheduleApi } from '@/client/strategy-schedules';
 import type { ScheduleConfig } from '@/gen/ant/v1/strategy_schedule_entity_pb';
 import type { PartialMessage } from '@bufbuild/protobuf';
+import SymbolPicker from '@/components/chart/SymbolPicker';
+import { TIMEFRAMES } from '@/constants/timeframes';
 import {
   SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_KEY,
   SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_PLACEHOLDER_KEY,
@@ -14,6 +16,14 @@ import {
   SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_KLINE_CLOSE_KEY,
   SCHEDULE_LAUNCH_FORM_INTERVAL_MS_KEY,
   SCHEDULE_LAUNCH_FORM_HF_COOLDOWN_MS_KEY,
+  SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY,
+  SCHEDULE_LAUNCH_FORM_ACCOUNT_PLACEHOLDER_KEY,
+  SCHEDULE_LAUNCH_FORM_SYMBOL_KEY,
+  SCHEDULE_LAUNCH_FORM_TIMEFRAME_KEY,
+  SCHEDULE_LAUNCH_TITLE_KEY,
+  SCHEDULE_LAUNCH_ACTIONS_CREATE_KEY,
+  SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY,
+  MESSAGES_SCHEDULE_CREATED_KEY,
 } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 
 interface Props {
@@ -31,6 +41,8 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
   const { accounts, fetchAccounts } = useAccount();
   const activeAccounts = useMemo(() => (accounts || []).filter(a => !a.isDisabled), [accounts]);
   const scheduleType = Form.useWatch('scheduleType', form);
+  const accountIdWatch = Form.useWatch('accountId', form);
+  const symbolWatch = Form.useWatch('symbol', form);
 
   useEffect(() => { if (open) fetchAccounts(); }, [open, fetchAccounts]);
 
@@ -71,13 +83,13 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
         scheduleType: backendType,
         scheduleConfig,
       });
-      message.success(t('strategy.deploy.success', { defaultValue: 'Schedule created successfully' }));
+      message.success(t(MESSAGES_SCHEDULE_CREATED_KEY));
       onCreated?.();
       onClose();
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'errorFields' in e) return;
       const msg = e instanceof Error ? e.message : String(e);
-      message.error(msg || t('strategy.deploy.failed', { defaultValue: 'Failed to create schedule' }));
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -85,40 +97,32 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
 
   return (
     <Modal
-      title={t('strategy.deploy.title', { defaultValue: 'Deploy Strategy' })}
+      title={t(SCHEDULE_LAUNCH_TITLE_KEY)}
       open={open}
       onOk={handleSubmit}
       onCancel={onClose}
       confirmLoading={loading}
-      okText={t('strategy.deploy.confirm', { defaultValue: 'Create Schedule' })}
+      okText={t(SCHEDULE_LAUNCH_ACTIONS_CREATE_KEY)}
       destroyOnClose
     >
       <Form form={form} layout="vertical">
         <Form.Item name="name" label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_KEY)} rules={[{ required: true }]}>
           <Input placeholder={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_PLACEHOLDER_KEY)} />
         </Form.Item>
-        <Form.Item name="accountId" label={t('strategy.deploy.account', { defaultValue: 'Account' })} rules={[{ required: true }]}>
+        <Form.Item name="accountId" label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY)} rules={[{ required: true }]}>
           <Select
-            placeholder={t('strategy.deploy.selectAccount', { defaultValue: 'Select account' })}
-            notFoundContent={t('strategy.deploy.noAccounts', { defaultValue: 'No active accounts' })}
+            placeholder={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_PLACEHOLDER_KEY)}
+            notFoundContent={t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY)}
             showSearch optionFilterProp="label"
             options={activeAccounts.map(a => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
           />
         </Form.Item>
-        <Form.Item name="symbol" label={t('strategy.deploy.symbol', { defaultValue: 'Symbol' })} rules={[{ required: true }]}>
-          <Input placeholder="EURUSD" />
+        <Form.Item name="symbol" label={t(SCHEDULE_LAUNCH_FORM_SYMBOL_KEY)} rules={[{ required: true }]}>
+          <SymbolPicker accountId={accountIdWatch} value={symbolWatch} onChange={(v) => form.setFieldValue('symbol', v)} style={{ width: '100%' }} />
         </Form.Item>
-        <Form.Item name="timeframe" label={t('strategy.deploy.timeframe', { defaultValue: 'Timeframe' })} rules={[{ required: true }]}>
+        <Form.Item name="timeframe" label={t(SCHEDULE_LAUNCH_FORM_TIMEFRAME_KEY)} rules={[{ required: true }]}>
           <Select
-            options={[
-              { value: '1m', label: '1m' },
-              { value: '5m', label: '5m' },
-              { value: '15m', label: '15m' },
-              { value: '30m', label: '30m' },
-              { value: '1h', label: '1h' },
-              { value: '4h', label: '4h' },
-              { value: '1d', label: '1d' },
-            ]}
+            options={TIMEFRAMES.map(tf => ({ value: tf, label: tf }))}
           />
         </Form.Item>
         <Form.Item name="scheduleType" label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPE_KEY)}>

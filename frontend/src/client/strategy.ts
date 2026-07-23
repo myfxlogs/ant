@@ -130,6 +130,9 @@ export const strategyApi = {
 
   forkTemplate: async (sourceId: string, forkName: string) => {
     const source = await strategyClient.getTemplate({ id: sourceId });
+    if (!source.code) {
+      throw new Error('Fork is only available for your own strategies or system presets');
+    }
     const draft = await strategyClient.createTemplateDraft({ name: forkName });
     if (!draft.id) throw new Error('Draft creation returned empty id');
     await strategyClient.updateTemplateDraft({

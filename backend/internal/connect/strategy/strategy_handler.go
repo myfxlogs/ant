@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"connectrpc.com/connect"
@@ -38,13 +39,16 @@ func NewStrategyServer(svc *service.StrategySvc, log *zap.Logger) *StrategyServe
 	return &StrategyServer{svc: svc, log: log}
 }
 
-// CancelTemplateDraft reverts a draft template back to published status.
+// CancelTemplateDraft unpublishes a user's template (sets is_public=false).
 func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.Request[antv1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error) {
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "published"); err != nil {
+	if err := s.svc.UnpublishUserTemplate(ctx, id, s.userID(ctx)); err != nil {
+		if errors.Is(err, service.ErrTemplateNotFound) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil

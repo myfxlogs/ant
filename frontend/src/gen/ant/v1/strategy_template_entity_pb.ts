@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_template_entity.proto.
  */
 export const file_strategy_template_entity: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSL/AgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEiIKBGkxOG4YDiABKAsyFC5hbnQudjEuVGVtcGxhdGVJMThuEhMKC3N0cmF0ZWd5X2lkGA8gASgJIp0BChFUZW1wbGF0ZVBhcmFtZXRlchIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoCRILCgNtaW4YBCABKAkSCwoDbWF4GAUgASgJEgwKBHN0ZXAYBiABKAkSDQoFbGFiZWwYByABKAkSEwoLZGVzY3JpcHRpb24YCCABKAkSDwoHb3B0aW9ucxgJIAMoCSLQAgoMU3RyYXRlZ3lDYXJkEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEwoLZGVzY3JpcHRpb24YAyABKAkSDAoEdGFncxgEIAMoCRIRCglpc19zeXN0ZW0YBSABKAgSEQoJaXNfcHVibGljGAYgASgIEhEKCXVzZV9jb3VudBgHIAEoBRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglzcGFya2xpbmUYCSADKAkSEAoId2luX3JhdGUYCiABKAkSFAoMbWF4X2RyYXdkb3duGAsgASgJEhUKDXByb2ZpdF9mYWN0b3IYDCABKAkSFAoMc2hhcnBlX3JhdGlvGA0gASgJEhkKEXJ1bm5pbmdfc2NoZWR1bGVzGA4gASgFEhcKD2JhY2t0ZXN0X3J1bl9pZBgPIAEoCSKJAQoMVGVtcGxhdGVJMThuEjIKB2xvY2FsZXMYASADKAsyIS5hbnQudjEuVGVtcGxhdGVJMThuLkxvY2FsZXNFbnRyeRpFCgxMb2NhbGVzRW50cnkSCwoDa2V5GAEgASgJEiQKBXZhbHVlGAIgASgLMhUuYW50LnYxLlBhcmFtTGFiZWxNYXA6AjgBQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_parameter_entry]);
+  fileDesc("Ch5zdHJhdGVneV90ZW1wbGF0ZV9lbnRpdHkucHJvdG8SBmFudC52MSL/AgoQU3RyYXRlZ3lUZW1wbGF0ZRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSDAoEY29kZRgFIAEoCRItCgpwYXJhbWV0ZXJzGAYgAygLMhkuYW50LnYxLlRlbXBsYXRlUGFyYW1ldGVyEhEKCWlzX3B1YmxpYxgHIAEoCBIMCgR0YWdzGAggAygJEhEKCXVzZV9jb3VudBgJIAEoBRIOCgZzdGF0dXMYDCABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJaXNfc3lzdGVtGA0gASgIEiIKBGkxOG4YDiABKAsyFC5hbnQudjEuVGVtcGxhdGVJMThuEhMKC3N0cmF0ZWd5X2lkGA8gASgJIp0BChFUZW1wbGF0ZVBhcmFtZXRlchIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoCRILCgNtaW4YBCABKAkSCwoDbWF4GAUgASgJEgwKBHN0ZXAYBiABKAkSDQoFbGFiZWwYByABKAkSEwoLZGVzY3JpcHRpb24YCCABKAkSDwoHb3B0aW9ucxgJIAMoCSLhAgoMU3RyYXRlZ3lDYXJkEgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRIMCgR0YWdzGAUgAygJEhEKCWlzX3N5c3RlbRgGIAEoCBIRCglpc19wdWJsaWMYByABKAgSEQoJdXNlX2NvdW50GAggASgFEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCXNwYXJrbGluZRgKIAMoCRIQCgh3aW5fcmF0ZRgLIAEoCRIUCgxtYXhfZHJhd2Rvd24YDCABKAkSFQoNcHJvZml0X2ZhY3RvchgNIAEoCRIUCgxzaGFycGVfcmF0aW8YDiABKAkSGQoRcnVubmluZ19zY2hlZHVsZXMYDyABKAUSFwoPYmFja3Rlc3RfcnVuX2lkGBAgASgJIokBCgxUZW1wbGF0ZUkxOG4SMgoHbG9jYWxlcxgBIAMoCzIhLmFudC52MS5UZW1wbGF0ZUkxOG4uTG9jYWxlc0VudHJ5GkUKDExvY2FsZXNFbnRyeRILCgNrZXkYASABKAkSJAoFdmFsdWUYAiABKAsyFS5hbnQudjEuUGFyYW1MYWJlbE1hcDoCOAFCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_parameter_entry]);
 
 /**
  * @generated from message ant.v1.StrategyTemplate
@@ -179,80 +179,87 @@ export type StrategyCard = Message<"ant.v1.StrategyCard"> & {
   id: string;
 
   /**
-   * @generated from field: string name = 2;
+   * template owner user id
+   *
+   * @generated from field: string user_id = 2;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string name = 3;
    */
   name: string;
 
   /**
-   * @generated from field: string description = 3;
+   * @generated from field: string description = 4;
    */
   description: string;
 
   /**
-   * @generated from field: repeated string tags = 4;
+   * @generated from field: repeated string tags = 5;
    */
   tags: string[];
 
   /**
-   * @generated from field: bool is_system = 5;
+   * @generated from field: bool is_system = 6;
    */
   isSystem: boolean;
 
   /**
-   * @generated from field: bool is_public = 6;
+   * @generated from field: bool is_public = 7;
    */
   isPublic: boolean;
 
   /**
-   * @generated from field: int32 use_count = 7;
+   * @generated from field: int32 use_count = 8;
    */
   useCount: number;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 8;
+   * @generated from field: google.protobuf.Timestamp created_at = 9;
    */
   createdAt?: Timestamp | undefined;
 
   /**
    * Sparkline: equity curve from the latest successful backtest (decimal strings).
    *
-   * @generated from field: repeated string sparkline = 9;
+   * @generated from field: repeated string sparkline = 10;
    */
   sparkline: string[];
 
   /**
    * KPIs from the latest successful backtest (decimal strings for precision).
    *
-   * @generated from field: string win_rate = 10;
+   * @generated from field: string win_rate = 11;
    */
   winRate: string;
 
   /**
-   * @generated from field: string max_drawdown = 11;
+   * @generated from field: string max_drawdown = 12;
    */
   maxDrawdown: string;
 
   /**
-   * @generated from field: string profit_factor = 12;
+   * @generated from field: string profit_factor = 13;
    */
   profitFactor: string;
 
   /**
-   * @generated from field: string sharpe_ratio = 13;
+   * @generated from field: string sharpe_ratio = 14;
    */
   sharpeRatio: string;
 
   /**
    * Count of active schedules for this template.
    *
-   * @generated from field: int32 running_schedules = 14;
+   * @generated from field: int32 running_schedules = 15;
    */
   runningSchedules: number;
 
   /**
    * ID of the backtest run that produced the sparkline/KPIs (empty if none).
    *
-   * @generated from field: string backtest_run_id = 15;
+   * @generated from field: string backtest_run_id = 16;
    */
   backtestRunId: string;
 };

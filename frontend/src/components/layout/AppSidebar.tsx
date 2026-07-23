@@ -25,7 +25,7 @@ function leafKeys(item: MenuItem): string[] {
 
 interface LanguageOption {
   key: SupportedLanguage;
-  labelKey: string;
+  nativeName: string;
 }
 
 interface Props {
@@ -116,7 +116,7 @@ export default function AppSidebar({
     <Dropdown menu={languageMenu} placement="topLeft" trigger={['click']}>
       <div className="flex items-center gap-2 p-3 rounded-lg cursor-pointer" style={{ background: 'var(--color-bg-secondary)' }}>
         <GlobalOutlined size={18} stroke={1.5} />
-        <span style={{ color: 'var(--color-text)' }}>{t(languages.find(l => l.key === language)?.labelKey || 'language.english')}</span>
+        <span style={{ color: 'var(--color-text)' }}>{languages.find(l => l.key === language)?.nativeName || 'English'}</span>
       </div>
     </Dropdown>
   );
