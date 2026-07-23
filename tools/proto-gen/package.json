@@ -3,6 +3,6 @@
     "@bufbuild/buf": "^1.67.0"
   },
   "devDependencies": {
-    "@bufbuild/protoc-gen-es": "^2.12.0"
+    "@bufbuild/protoc-gen-es": "2.13.0"
   }
 }
