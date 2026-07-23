@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined, CrownOutlined } from '@ant-design/icons';
+import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined, CrownOutlined, BookOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +43,7 @@ export default function MainLayout() {
       key: '/strategy', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategy'),
       children: [
         { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
+        { key: '/strategy/library', icon: <BookOutlined size={20} stroke={1.5} />, label: t('strategy.library.title', { defaultValue: 'Strategy Library' }) },
         { key: '/strategy/live', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.strategyLive', { defaultValue: 'Live Monitor' }) },
         { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} stroke={1.5} />, label: t('menu.marketTools') },
       ],

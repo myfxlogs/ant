@@ -879,7 +879,7 @@ const Base = {
       "bridging": "AI 正在桥接盲区…",
       "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
       "noBridgeNeeded": "覆盖率 100%，无需桥接",
-      "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集"
+      "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将自动桥接盲区为平台字节码"
     },
     "version": {
       "loadFailed": "失败 to load versions",

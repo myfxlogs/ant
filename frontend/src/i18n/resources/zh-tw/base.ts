@@ -542,7 +542,13 @@ const Base = {
       "systemConfig": "系统配置",
       "tradingMonitor": "交易監控",
       "userManagement": "用戶管理",
-      "walletManagement": "钱包管理"
+      "walletManagement": "钱包管理",
+      "sweep": "歸集管理",
+      "autogenTasks": "AI 生成任務",
+      "marketplace": "市場管理",
+      "refunds": "退款管理",
+      "analytics": "數據分析",
+      "coupons": "優惠券管理"
     },
     "trading": {
       "accounts": "账戶",
@@ -666,7 +672,8 @@ const Base = {
         "amountUsd": "USD 到帳",
         "status": "狀態",
         "time": "時間",
-        "txHash": "交易雜湊"
+        "txHash": "交易雜湊",
+        "confirmations": "確認數"
       },
       "address": "收款地址",
       "addressCopied": "地址已複製到剪貼簿",
@@ -699,6 +706,58 @@ const Base = {
       "fee": "手續費",
       "reversal": "沖正",
       "withdrawal": "提取"
+    },
+    "passkey": {
+      "title": "通行密鑰管理",
+      "add": "添加通行密鑰",
+      "name": "名稱",
+      "credentialId": "憑證 ID",
+      "signCount": "簽名次數",
+      "createdAt": "創建時間",
+      "confirmRemove": "確認刪除此通行密鑰？",
+      "register": "註冊",
+      "registered": "通行密鑰註冊成功",
+      "registerFailed": "註冊失敗",
+      "registerHint": "為此通行密鑰輸入名稱，然後點擊註冊開始 WebAuthn 流程。",
+      "namePlaceholder": "例如：我的 YubiKey",
+      "removed": "通行密鑰已刪除"
+    },
+    "withdraw": {
+      "title": "提取",
+      "new": "新建提取",
+      "submit": "提交",
+      "available": "可用餘額",
+      "amount": "金額",
+      "amountLabel": "提取金額 (USDT)",
+      "amountRequired": "請輸入金額",
+      "destAddress": "目標地址",
+      "destLabel": "目標 TRC20 地址",
+      "destRequired": "請輸入目標地址",
+      "whitelist": "白名單（點擊填充）",
+      "status": "狀態",
+      "txHash": "交易哈希",
+      "time": "時間",
+      "cancelled": "提取已取消",
+      "confirmCancel": "確認取消此提取？",
+      "success": "提取提交成功",
+      "failed": "提取失敗",
+      "noBalance": "無可用餘額可提取",
+      "warning": "提取需要通行密鑰驗證。請確保目標地址正確 — 區塊鏈交易不可逆。"
+    },
+    "whitelist": {
+      "title": "白名單管理",
+      "add": "添加地址",
+      "added": "白名單地址已添加",
+      "removed": "白名單地址已刪除",
+      "label": "標籤",
+      "address": "地址",
+      "status": "狀態",
+      "confirmedAt": "確認時間",
+      "confirmRemove": "確認刪除此白名單地址？",
+      "addressLabel": "TRC20 地址",
+      "addressRequired": "請輸入地址",
+      "labelLabel": "標籤（可選）",
+      "labelPlaceholder": "例如：我的幣安錢包"
     },
     "accountNumber": "錢包號",
     "balance": "餘額",
@@ -820,7 +879,7 @@ const Base = {
       "bridging": "AI 橋接盲區中...",
       "bridgeFailedMsg": "Agent 無法自動橋接所有盲區",
       "noBridgeNeeded": "覆蓋率 100%，無需橋接",
-      "bridgeHint": "貼上 MQL4/MQL5 EA 程式碼，AI 將自動翻譯盲區為 Python 子集"
+      "bridgeHint": "貼上 MQL4/MQL5 EA 程式碼，AI 將自動橋接盲區為平台字節碼"
     },
     "version": {
       "loadFailed": "載入版本失敗",
@@ -912,7 +971,9 @@ const Base = {
       "reasonLabel": "原因（必填）",
       "reasonPlaceholder": "例如：偵測到市場異常波動，緊急停止所有交易",
       "typeKill": "請輸入 KILL 以確認",
-      "typeKillPlaceholder": "輸入 KILL（大寫）"
+      "typeKillPlaceholder": "輸入 KILL（大寫）",
+      "undoWindow": "撤銷窗口: {{minutes}}分 {{seconds}}秒 剩餘",
+      "title": "熔斷開關"
     }
   },
   "marketplace": {

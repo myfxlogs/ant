@@ -180,7 +180,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
                 ) : (
                   <Alert type="info" showIcon message={t('strategy.importEA.noBridgeNeeded', { defaultValue: '覆盖率 100%，无需桥接' })} style={{ margin: '8px 0' }} />
                 )}
-              </> : <div style={{ textAlign: 'center', padding: 24 }}><Text type="secondary">{t('strategy.importEA.bridgeHint', { defaultValue: '粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集' })}</Text></div>
+              </> : <div style={{ textAlign: 'center', padding: 24 }}><Text type="secondary">{t('strategy.importEA.bridgeHint', { defaultValue: 'Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode' })}</Text></div>
             }
           </div>
         </>

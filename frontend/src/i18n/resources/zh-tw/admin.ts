@@ -78,6 +78,40 @@ const Admin = {
         "preset": "預設策略"
       },
       "title": "策略管理"
+    },
+    "sweep": {
+      "aboveThreshold": "超過閾值",
+      "address": "地址",
+      "addressId": "地址 ID",
+      "batchExport": "批量導出",
+      "batchExportSuccess": "批量導出完成",
+      "builtAt": "構建時間",
+      "bundleId": "批次 ID",
+      "bundleStatus": "狀態",
+      "dashboard": "儀表盤",
+      "derivationIndex": "派生索引",
+      "export": "導出",
+      "exportSuccess": "導出完成",
+      "import": "導入",
+      "importHint": "上傳已簽名的歸集包 (.bin) 以導入並廣播。",
+      "importSuccess": "導入完成",
+      "importTitle": "導入已簽名批次",
+      "pendingBundles": "待簽名批次",
+      "pendingSignBundles": "待簽名批次",
+      "sweepStatus": "歸集狀態",
+      "threshold": "閾值",
+      "title": "歸集管理",
+      "totalUnswept": "未歸集總量",
+      "undelegate": "取消委託",
+      "undelegateSuccess": "取消委託批次已導出",
+      "unswept": "未歸集",
+      "uploadHint": "點擊或拖拽文件上傳",
+      "uploadXpub": "上傳 XPUB",
+      "xpubFpNotSet": "指紋未驗證",
+      "xpubFpVerified": "指紋已驗證",
+      "xpubHint": "上傳 XPUB 文件以派生充值地址。導入時將驗證指紋。",
+      "xpubImported": "XPUB 已導入",
+      "xpubTitle": "XPUB 管理"
     }
   }
 } as const;

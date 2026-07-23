@@ -542,7 +542,13 @@ const Base = {
       "systemConfig": "Cấu Hình Hệ Thống",
       "tradingMonitor": "Giám Sát Giao Dịch",
       "userManagement": "Quản Lý Người Dùng",
-      "walletManagement": "Quản Lý Ví"
+      "walletManagement": "Quản Lý Ví",
+      "sweep": "Quản lý Sweep",
+      "autogenTasks": "Tác vụ AI Gen",
+      "marketplace": "Marketplace",
+      "refunds": "Hoàn tiền",
+      "analytics": "Phân tích",
+      "coupons": "Quản lý mã giảm giá"
     },
     "trading": {
       "accounts": "Tài Khoản",
@@ -666,7 +672,8 @@ const Base = {
         "amountUsd": "USD Nhận",
         "status": "Trạng Thái",
         "time": "Thời Gian",
-        "txHash": "Mã GD"
+        "txHash": "Mã GD",
+        "confirmations": "Xác nhận"
       },
       "address": "Địa Chỉ Nhận",
       "addressCopied": "Đã sao chép địa chỉ vào clipboard",
@@ -699,6 +706,58 @@ const Base = {
       "fee": "Phí",
       "reversal": "Hoàn Tác",
       "withdrawal": "Rút Tiền"
+    },
+    "passkey": {
+      "title": "Quản lý Passkey",
+      "add": "Thêm Passkey",
+      "name": "Tên",
+      "credentialId": "ID Chứng chỉ",
+      "signCount": "Số lần ký",
+      "createdAt": "Thời gian tạo",
+      "confirmRemove": "Xóa passkey này?",
+      "register": "Đăng ký",
+      "registered": "Đã đăng ký passkey thành công",
+      "registerFailed": "Đăng ký thất bại",
+      "registerHint": "Nhập tên cho passkey này, sau đó nhấn Đăng ký để bắt đầu quy trình WebAuthn.",
+      "namePlaceholder": "VD: YubiKey của tôi",
+      "removed": "Đã xóa passkey"
+    },
+    "withdraw": {
+      "title": "Rút tiền",
+      "new": "Rút tiền mới",
+      "submit": "Gửi",
+      "available": "Số dư khả dụng",
+      "amount": "Số tiền",
+      "amountLabel": "Số tiền rút (USDT)",
+      "amountRequired": "Vui lòng nhập số tiền",
+      "destAddress": "Địa chỉ đích",
+      "destLabel": "Địa chỉ TRC20 đích",
+      "destRequired": "Vui lòng nhập địa chỉ đích",
+      "whitelist": "Danh sách trắng (nhấp để điền)",
+      "status": "Trạng thái",
+      "txHash": "Mã giao dịch",
+      "time": "Thời gian",
+      "cancelled": "Đã hủy rút tiền",
+      "confirmCancel": "Hủy lệnh rút tiền này?",
+      "success": "Đã gửi yêu cầu rút tiền thành công",
+      "failed": "Rút tiền thất bại",
+      "noBalance": "Không có số dư khả dụng để rút",
+      "warning": "Rút tiền cần xác thực passkey. Vui lòng đảm bảo địa chỉ đích chính xác — giao dịch blockchain không thể hoàn tác."
+    },
+    "whitelist": {
+      "title": "Quản lý danh sách trắng",
+      "add": "Thêm địa chỉ",
+      "added": "Đã thêm địa chỉ danh sách trắng",
+      "removed": "Đã xóa địa chỉ danh sách trắng",
+      "label": "Nhãn",
+      "address": "Địa chỉ",
+      "status": "Trạng thái",
+      "confirmedAt": "Thời gian xác nhận",
+      "confirmRemove": "Xóa địa chỉ danh sách trắng này?",
+      "addressLabel": "Địa chỉ TRC20",
+      "addressRequired": "Vui lòng nhập địa chỉ",
+      "labelLabel": "Nhãn (tùy chọn)",
+      "labelPlaceholder": "VD: Ví Binance của tôi"
     },
     "accountNumber": "Số TK",
     "balance": "Số Dư",
@@ -820,7 +879,7 @@ const Base = {
       "bridging": "AI đang bắc cầu điểm mù...",
       "bridgeFailedMsg": "Agent không thể tự động bắc cầu tất cả điểm mù",
       "noBridgeNeeded": "Độ phủ 100%, không cần bridge",
-      "bridgeHint": "Dán mã EA MQL4/MQL5, AI sẽ tự động chuyển vùng mù thành tập con Python"
+      "bridgeHint": "Dán mã EA MQL4/MQL5, AI sẽ tự động chuyển vùng mù thành bytecode nền tảng"
     },
     "version": {
       "loadFailed": "Không tải được các phiên bản",
@@ -912,7 +971,9 @@ const Base = {
       "reasonLabel": "Lý do (bắt buộc)",
       "reasonPlaceholder": "v.d.: Phát hiện biến động thị trường bất thường, dừng khẩn cấp tất cả giao dịch",
       "typeKill": "Gõ KILL để xác nhận",
-      "typeKillPlaceholder": "Gõ KILL (chữ hoa)"
+      "typeKillPlaceholder": "Gõ KILL (chữ hoa)",
+      "undoWindow": "Cửa sổ hoàn tác: còn {{minutes}}m {{seconds}}s",
+      "title": "Kill Switch"
     }
   },
   "marketplace": {

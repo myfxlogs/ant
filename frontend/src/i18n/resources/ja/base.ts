@@ -542,7 +542,13 @@ const Base = {
       "systemConfig": "システム設定",
       "tradingMonitor": "取引監視",
       "userManagement": "ユーザー管理",
-      "walletManagement": "ウォレット管理"
+      "walletManagement": "ウォレット管理",
+      "sweep": "スイープ管理",
+      "autogenTasks": "AI生成タスク",
+      "marketplace": "マーケットプレース",
+      "refunds": "返金管理",
+      "analytics": "分析",
+      "coupons": "クーポン管理"
     },
     "trading": {
       "accounts": "アカウント",
@@ -666,7 +672,8 @@ const Base = {
         "amountUsd": "USD クレジット",
         "status": "ステータス",
         "time": "時間",
-        "txHash": "TXハッシュ"
+        "txHash": "TXハッシュ",
+        "confirmations": "確認数"
       },
       "address": "受取アドレス",
       "addressCopied": "アドレスをコピーしました",
@@ -699,6 +706,58 @@ const Base = {
       "fee": "手数料",
       "reversal": "取消",
       "withdrawal": "出金"
+    },
+    "passkey": {
+      "title": "パスキー管理",
+      "add": "パスキー追加",
+      "name": "名前",
+      "credentialId": "クレデンシャル ID",
+      "signCount": "署名回数",
+      "createdAt": "作成日時",
+      "confirmRemove": "このパスキーを削除しますか？",
+      "register": "登録",
+      "registered": "パスキーが登録されました",
+      "registerFailed": "登録に失敗しました",
+      "registerHint": "パスキーの名前を入力し、登録をクリックして WebAuthn フローを開始します。",
+      "namePlaceholder": "例：マイ YubiKey",
+      "removed": "パスキーが削除されました"
+    },
+    "withdraw": {
+      "title": "出金",
+      "new": "新規出金",
+      "submit": "送信",
+      "available": "利用可能残高",
+      "amount": "金額",
+      "amountLabel": "出金金額 (USDT)",
+      "amountRequired": "金額を入力してください",
+      "destAddress": "送金先アドレス",
+      "destLabel": "送金先 TRC20 アドレス",
+      "destRequired": "送金先アドレスを入力してください",
+      "whitelist": "ホワイトリスト（クリックで入力）",
+      "status": "ステータス",
+      "txHash": "トランザクションハッシュ",
+      "time": "時間",
+      "cancelled": "出金がキャンセルされました",
+      "confirmCancel": "この出金をキャンセルしますか？",
+      "success": "出金が送信されました",
+      "failed": "出金に失敗しました",
+      "noBalance": "出金可能な残高がありません",
+      "warning": "出金にはパスキー認証が必要です。送金先アドレスが正しいことを確認してください — ブロックチェーン取引は取り消せません。"
+    },
+    "whitelist": {
+      "title": "ホワイトリスト管理",
+      "add": "アドレス追加",
+      "added": "ホワイトリストアドレスが追加されました",
+      "removed": "ホワイトリストアドレスが削除されました",
+      "label": "ラベル",
+      "address": "アドレス",
+      "status": "ステータス",
+      "confirmedAt": "確認日時",
+      "confirmRemove": "このホワイトリストアドレスを削除しますか？",
+      "addressLabel": "TRC20 アドレス",
+      "addressRequired": "アドレスを入力してください",
+      "labelLabel": "ラベル（任意）",
+      "labelPlaceholder": "例：私の Binance ウォレット"
     },
     "accountNumber": "口座番号",
     "balance": "残高",
@@ -820,7 +879,7 @@ const Base = {
       "bridging": "AIが盲点をブリッジ中...",
       "bridgeFailedMsg": "エージェントが全ての盲点を自動でブリッジできません",
       "noBridgeNeeded": "カバレッジ100%、ブリッジ不要",
-      "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIが盲点を自動的にPythonサブセットに翻訳します"
+      "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIが盲点を自動的にプラットフォームバイトコードに変換します"
     },
     "version": {
       "loadFailed": "バージョンの読み込みに失敗しました",
@@ -912,7 +971,9 @@ const Base = {
       "reasonLabel": "理由（必須）",
       "reasonPlaceholder": "例：異常な市場変動を検出し、全取引を緊急停止",
       "typeKill": "確認のために「KILL」と入力",
-      "typeKillPlaceholder": "KILL と入力（大文字）"
+      "typeKillPlaceholder": "KILL と入力（大文字）",
+      "undoWindow": "取り消し期間: 残り {{minutes}}分 {{seconds}}秒",
+      "title": "キルスイッチ"
     }
   },
   "marketplace": {

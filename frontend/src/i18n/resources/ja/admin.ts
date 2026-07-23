@@ -78,6 +78,40 @@ const Admin = {
         "preset": "プリセット戦略"
       },
       "title": "戦略管理"
+    },
+    "sweep": {
+      "aboveThreshold": "閾値超過",
+      "address": "アドレス",
+      "addressId": "アドレス ID",
+      "batchExport": "一括エクスポート",
+      "batchExportSuccess": "一括エクスポート完了",
+      "builtAt": "構築日時",
+      "bundleId": "バンドル ID",
+      "bundleStatus": "ステータス",
+      "dashboard": "ダッシュボード",
+      "derivationIndex": "導出インデックス",
+      "export": "エクスポート",
+      "exportSuccess": "エクスポート完了",
+      "import": "インポート",
+      "importHint": "署名済みスイープバンドル (.bin) をアップロードしてインポート・ブロードキャスト。",
+      "importSuccess": "インポート完了",
+      "importTitle": "署名済みバンドルをインポート",
+      "pendingBundles": "保留中バンドル",
+      "pendingSignBundles": "署名待ちバンドル",
+      "sweepStatus": "スイープステータス",
+      "threshold": "閾値",
+      "title": "スイープ管理",
+      "totalUnswept": "未スイープ総量",
+      "undelegate": "委任解除",
+      "undelegateSuccess": "委任解除バンドルをエクスポート",
+      "unswept": "未スイープ",
+      "uploadHint": "クリックまたはドラッグしてアップロード",
+      "uploadXpub": "XPUB アップロード",
+      "xpubFpNotSet": "フィンガープリント未確認",
+      "xpubFpVerified": "フィンガープリント確認済み",
+      "xpubHint": "XPUB ファイルをアップロードして入金アドレスを導出。インポート時にフィンガープリントを検証します。",
+      "xpubImported": "XPUB をインポートしました",
+      "xpubTitle": "XPUB 管理"
     }
   }
 } as const;

@@ -78,6 +78,40 @@ const Admin = {
         "preset": "Chiến lược Cài sẵn"
       },
       "title": "Quản lý Chiến lược"
+    },
+    "sweep": {
+      "aboveThreshold": "Vượt ngưỡng",
+      "address": "Địa chỉ",
+      "addressId": "ID địa chỉ",
+      "batchExport": "Xuất hàng loạt",
+      "batchExportSuccess": "Xuất hàng loạt hoàn tất",
+      "builtAt": "Thời gian xây dựng",
+      "bundleId": "ID gói",
+      "bundleStatus": "Trạng thái",
+      "dashboard": "Bảng điều khiển",
+      "derivationIndex": "Chỉ mục dẫn xuất",
+      "export": "Xuất",
+      "exportSuccess": "Xuất hoàn tất",
+      "import": "Nhập",
+      "importHint": "Tải lên gói sweep đã ký (.bin) để nhập và phát.",
+      "importSuccess": "Nhập hoàn tất",
+      "importTitle": "Nhập gói đã ký",
+      "pendingBundles": "Gói đang chờ",
+      "pendingSignBundles": "Gói chờ ký",
+      "sweepStatus": "Trạng thái sweep",
+      "threshold": "Ngưỡng",
+      "title": "Quản lý Sweep",
+      "totalUnswept": "Tổng chưa sweep",
+      "undelegate": "Hủy ủy quyền",
+      "undelegateSuccess": "Đã xuất gói hủy ủy quyền",
+      "unswept": "Chưa sweep",
+      "uploadHint": "Nhấp hoặc kéo tệp để tải lên",
+      "uploadXpub": "Tải lên XPUB",
+      "xpubFpNotSet": "Chưa xác minh dấu vân tay",
+      "xpubFpVerified": "Đã xác minh dấu vân tay",
+      "xpubHint": "Tải lên tệp XPUB để dẫn xuất địa chỉ nạp tiền. Dấu vân tay sẽ được xác minh khi nhập.",
+      "xpubImported": "Đã nhập XPUB",
+      "xpubTitle": "Quản lý XPUB"
     }
   }
 } as const;
