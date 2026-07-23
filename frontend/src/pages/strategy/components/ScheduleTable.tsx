@@ -11,6 +11,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next"
 import { FORMAT_CRON_KEY, FORMAT_INTERVAL_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+import type { ScheduleRow, TemplateOption, AccountRow, TriggerContext } from '../hooks/libraryTypes';
 
 ;
 import { useNavigate } from "react-router-dom";
@@ -18,18 +19,18 @@ import { useNavigate } from "react-router-dom";
 const { Text } = Typography;
 
 type Props = {
-  schedules: any[];
-  templates: any[];
-  accounts: any[];
+  schedules: ScheduleRow[];
+  templates: TemplateOption[];
+  accounts: AccountRow[];
   loading: boolean;
   triggering: boolean;
-  triggerContext: { schedule: any; accountId: string } | null;
-  formatTime: (v: any) => string;
-  onEdit: (row: any) => void;
-  onToggleActive: (row: any, next: boolean) => void;
-  onHealthCheck: (row: any) => void;
-  onManualTrigger: (row: any) => void;
-  onDelete: (row: any) => void;
+  triggerContext: TriggerContext | null;
+  formatTime: (v: unknown) => string;
+  onEdit: (row: ScheduleRow) => void;
+  onToggleActive: (row: ScheduleRow, next: boolean) => void;
+  onHealthCheck: (row: ScheduleRow) => void;
+  onManualTrigger: (row: ScheduleRow) => void;
+  onDelete: (row: ScheduleRow) => void;
 };
 
 export default function ScheduleTable({

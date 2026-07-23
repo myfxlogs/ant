@@ -4,25 +4,24 @@ import (
 	"context"
 	"fmt"
 	"time"
-	"google.golang.org/protobuf/proto"
-
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/interceptor"
-	"alphaforge/internal/repository"
 	"alphaforge/internal/pglisten"
+	"alphaforge/internal/repository"
 )
 
 // StrategyExperimentServer implements ant.v1.StrategyExperimentServiceHandler.
 type StrategyExperimentServer struct {
-	repo *repository.StrategyExperimentRepository
-	log  *zap.Logger
+	repo     *repository.StrategyExperimentRepository
+	log      *zap.Logger
 	pgListen *pglisten.Listener
 }
 
@@ -37,16 +36,24 @@ func (s *StrategyExperimentServer) userID(ctx context.Context) uuid.UUID {
 	return id
 }
 
+func (s *StrategyExperimentServer) userIDRequire(ctx context.Context) (uuid.UUID, error) {
+	id, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil || id == uuid.Nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	return id, nil
+}
+
 func expToProto(e *repository.StrategyExperiment) *antv1.StrategyExperiment {
 	p := &antv1.StrategyExperiment{
-		Id:             e.ID.String(),
-		UserId:         e.UserID.String(),
-		Status:         e.Status,
-		SearchMethod:   e.SearchMethod,
-		MaxCandidates:  int32(e.MaxCandidates),
-		Objective:      e.Objective,
+		Id:              e.ID.String(),
+		UserId:          e.UserID.String(),
+		Status:          e.Status,
+		SearchMethod:    e.SearchMethod,
+		MaxCandidates:   int32(e.MaxCandidates),
+		Objective:       e.Objective,
 		MarketRegimeRef: e.MarketRegimeRef,
-		CreatedAt:      timestamppb.New(e.CreatedAt),
+		CreatedAt:       timestamppb.New(e.CreatedAt),
 	}
 	if e.BaseTemplateID != nil {
 		p.BaseTemplateId = e.BaseTemplateID.String()
@@ -66,15 +73,15 @@ func expToProto(e *repository.StrategyExperiment) *antv1.StrategyExperiment {
 
 func candidateToProto(c *repository.StrategyExperimentCandidate) *antv1.StrategyExperimentCandidate {
 	p := &antv1.StrategyExperimentCandidate{
-		Id:            c.ID.String(),
-		ExperimentId:  c.ExperimentID.String(),
-		DraftCodeRef:  c.DraftCodeRef,
-		Score:         c.Score,
-		Grade:         c.Grade,
-		Rank:          int32(c.Rank),
-		Summary:       c.Summary,
+		Id:             c.ID.String(),
+		ExperimentId:   c.ExperimentID.String(),
+		DraftCodeRef:   c.DraftCodeRef,
+		Score:          c.Score,
+		Grade:          c.Grade,
+		Rank:           int32(c.Rank),
+		Summary:        c.Summary,
 		Recommendation: c.Recommendation,
-		CreatedAt:     timestamppb.New(c.CreatedAt),
+		CreatedAt:      timestamppb.New(c.CreatedAt),
 	}
 	if c.BacktestRunID != nil {
 		p.BacktestRunId = c.BacktestRunID.String()
@@ -231,24 +238,35 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 
 	prevStatus := ""
 	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "experiment_status")
-	if listenCancel != nil { defer listenCancel() }
+	if listenCancel != nil {
+		defer listenCancel()
+	}
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done(): return nil
+		case <-ctx.Done():
+			return nil
 		case <-notifCh:
 		case <-ticker.C:
 		}
 		exp, err := s.repo.Get(ctx, uid, expID)
-		if err != nil || exp == nil { continue }
-		if exp.Status == prevStatus { continue }
+		if err != nil || exp == nil {
+			continue
+		}
+		if exp.Status == prevStatus {
+			continue
+		}
 		prevStatus = exp.Status
 
 		event := s.buildWatchEvent(ctx, uid, expID, exp.Status)
-		if err := stream.Send(event); err != nil { return err }
-		if exp.Status == StatusCompleted || exp.Status == StatusFailed { return nil }
+		if err := stream.Send(event); err != nil {
+			return err
+		}
+		if exp.Status == StatusCompleted || exp.Status == StatusFailed {
+			return nil
+		}
 	}
 }
 

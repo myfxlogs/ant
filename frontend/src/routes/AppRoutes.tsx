@@ -23,7 +23,8 @@ const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategySch
 const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
 const LiveStrategyPage = lazy(() => import('@/pages/strategy/LiveStrategyPage'));
 const MarketplacePage = lazy(() => import('@/pages/marketplace/MarketplacePage'));
-const StrategyLibraryPage = lazy(() => import('@/pages/strategy/StrategyLibraryPage'));
+const StrategyGalleryPage = lazy(() => import('@/pages/strategy/StrategyGalleryPage'));
+const StrategyDetailPage = lazy(() => import('@/pages/strategy/StrategyDetailPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage'));
@@ -89,8 +90,12 @@ const mainRoutes = (
     <Route path="strategy/templates" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="strategy/schedules" element={<Navigate to="/strategy/live" replace />} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
-    <Route path="strategy/library" element={wrap(<StrategyLibraryPage />)} />
+    <Route path="strategy" element={wrap(<StrategyGalleryPage />)} />
+    <Route path="strategy/gallery" element={<Navigate to="/strategy" replace />} />
+    <Route path="strategy/library" element={<Navigate to="/strategy" replace />} />
+    <Route path="strategy/view/:id" element={wrap(<StrategyDetailPage />)} />
     <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
+    <Route path="strategy/:id/edit" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/live" element={wrap(<LiveStrategyPage />)} />
     <Route path="strategy/indicator-catalog" element={<Navigate to="/strategy/workspace" replace />} />
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />

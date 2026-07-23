@@ -26,7 +26,7 @@ type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 interface Props {
   status: BacktestStatus;
   metrics: BacktestMetrics | null;
-  executionAssumptions?: any;
+  executionAssumptions?: Record<string, unknown>;
   errorMessage?: string;
   onAIOptimize?: () => void;
   code?: string;

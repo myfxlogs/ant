@@ -55,11 +55,11 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 			bars := make([]sdk.Bar, n)
 			for i := 0; i < n; i++ {
 				bars[i] = sdk.Bar{
-					Open:      parseDecimal(ss.Open[i]),
-					High:      parseDecimal(ss.High[i]),
-					Low:       parseDecimal(ss.Low[i]),
-					Close:     parseDecimal(ss.Close[i]),
-					Volume:    parseInt64(ss.Volume[i]),
+					Open:   parseDecimal(ss.Open[i]),
+					High:   parseDecimal(ss.High[i]),
+					Low:    parseDecimal(ss.Low[i]),
+					Close:  parseDecimal(ss.Close[i]),
+					Volume: parseInt64(ss.Volume[i]),
 				}
 			}
 			extra[ss.Symbol] = bars

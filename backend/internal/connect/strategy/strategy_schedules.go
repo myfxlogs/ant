@@ -3,14 +3,15 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"time"
-	"google.golang.org/protobuf/proto"
 	"strings"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/service"
@@ -205,7 +206,11 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 		var sb strings.Builder
 		for _, r := range rows {
 			sb.WriteString(r.ID.String())
-			if r.IsActive { sb.WriteByte('1') } else { sb.WriteByte('0') }
+			if r.IsActive {
+				sb.WriteByte('1')
+			} else {
+				sb.WriteByte('0')
+			}
 		}
 		hash := sb.String()
 		if hash == prevHash {
@@ -224,20 +229,71 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 	}
 }
 
-// --- Schedule proto converters (stubs) ---
+// --- Schedule proto converters ---
 
 func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
 	if r == nil {
 		return nil
 	}
 	s := &antv1.StrategySchedule{
-		Id:        r.ID.String(),
-		AccountId: r.AccountID.String(),
-		Symbol:    r.Symbol,
-		Timeframe: r.Timeframe,
+		Id:           r.ID.String(),
+		UserId:       r.UserID.String(),
+		AccountId:    r.AccountID.String(),
+		Name:         r.Name,
+		Symbol:       r.Symbol,
+		Timeframe:    r.Timeframe,
+		ScheduleType: r.ScheduleType,
+		IsActive:     r.IsActive,
+		RunCount:     r.RunCount,
+		LastError:    r.LastError,
+		EnableCount:  r.EnableCount,
+		CreatedAt:    timestamppb.New(r.CreatedAt),
+		UpdatedAt:    timestamppb.New(r.UpdatedAt),
 	}
 	if r.TemplateID != uuid.Nil {
 		s.TemplateId = r.TemplateID.String()
+	}
+	if r.RiskScore != nil {
+		s.RiskScore = *r.RiskScore
+	}
+	if r.RiskLevel != "" {
+		s.RiskLevel = r.RiskLevel
+	}
+	if len(r.Parameters) > 0 {
+		var params antv1.StrategyParams
+		if err := proto.Unmarshal(r.Parameters, &params); err == nil {
+			s.Parameters = params.Values
+		}
+	}
+	if len(r.ScheduleConfig) > 0 {
+		var cfg antv1.ScheduleConfig
+		if err := proto.Unmarshal(r.ScheduleConfig, &cfg); err == nil {
+			s.ScheduleConfig = &cfg
+		}
+	}
+	if len(r.BacktestMetrics) > 0 {
+		var metrics antv1.BacktestMetrics
+		if err := proto.Unmarshal(r.BacktestMetrics, &metrics); err == nil {
+			s.BacktestMetrics = &metrics
+		}
+	}
+	if len(r.RiskReasons) > 0 {
+		var risk antv1.BacktestRisk
+		if err := proto.Unmarshal(r.RiskReasons, &risk); err == nil {
+			s.RiskReasons = risk.Reasons
+		}
+	}
+	if len(r.RiskWarnings) > 0 {
+		var risk antv1.BacktestRisk
+		if err := proto.Unmarshal(r.RiskWarnings, &risk); err == nil {
+			s.RiskWarnings = risk.Warnings
+		}
+	}
+	if r.LastRunAt != nil {
+		s.LastRunAt = timestamppb.New(*r.LastRunAt)
+	}
+	if r.NextRunAt != nil {
+		s.NextRunAt = timestamppb.New(*r.NextRunAt)
 	}
 	return s
 }

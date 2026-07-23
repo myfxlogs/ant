@@ -16,17 +16,33 @@ type stubExecutor struct {
 	orders []*mthub.OrderRecord
 }
 
-func (e *stubExecutor) Platform() string                        { return "test" }
-func (e *stubExecutor) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, error) { return e.orders, nil }
-func (e *stubExecutor) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*mthub.OrderRecord, error) { return nil, nil }
-func (e *stubExecutor) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) { return nil, nil }
+func (e *stubExecutor) Platform() string { return "test" }
+func (e *stubExecutor) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, error) {
+	return e.orders, nil
+}
+func (e *stubExecutor) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*mthub.OrderRecord, error) {
+	return nil, nil
+}
+func (e *stubExecutor) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {
+	return nil, nil
+}
 func (e *stubExecutor) FetchAllSymbols(ctx context.Context) ([]string, error) { return nil, nil }
-func (e *stubExecutor) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*mthub.Bar, error) { return nil, nil }
+func (e *stubExecutor) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*mthub.Bar, error) {
+	return nil, nil
+}
 func (e *stubExecutor) AddSymbols(ctx context.Context, symbols []string) error { return nil }
-func (e *stubExecutor) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHandler) error { return nil }
-func (e *stubExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) { return 0, nil }
-func (e *stubExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error { return nil }
-func (e *stubExecutor) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error { return nil }
+func (e *stubExecutor) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHandler) error {
+	return nil
+}
+func (e *stubExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+	return 0, nil
+}
+func (e *stubExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
+	return nil
+}
+func (e *stubExecutor) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
+	return nil
+}
 
 // ── Tests ──────────────────────────────────────────────────────────────
 
@@ -49,10 +65,10 @@ func TestProviderWithOpenPositions(t *testing.T) {
 		&stubExecutor{orders: []*mthub.OrderRecord{
 			{Ticket: 1, SymbolRaw: "EURUSD", Volume: decimal.NewFromFloat(0.10),
 				OpenPrice: decimal.NewFromFloat(1.08500),
-				Profit: decimal.NewFromFloat(50.0), Commission: decimal.Zero, Swap: decimal.Zero},
+				Profit:    decimal.NewFromFloat(50.0), Commission: decimal.Zero, Swap: decimal.Zero},
 			{Ticket: 2, SymbolRaw: "GBPUSD", Volume: decimal.NewFromFloat(0.20),
 				OpenPrice: decimal.NewFromFloat(1.30000),
-				Profit: decimal.NewFromFloat(-20.0), Commission: decimal.Zero, Swap: decimal.Zero},
+				Profit:    decimal.NewFromFloat(-20.0), Commission: decimal.Zero, Swap: decimal.Zero},
 		}})
 
 	provider := NewMTAccountStateProvider(hub, nil)

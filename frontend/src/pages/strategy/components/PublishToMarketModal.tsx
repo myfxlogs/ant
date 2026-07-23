@@ -73,11 +73,12 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
         backtestSnapshot: includeSnapshot && backtestSnapshot ? backtestSnapshot : undefined,
       });
       await marketplaceClient.publishStrategy(msg);
-      message.success(t('marketplace.messages.published', 'Strategy published to marketplace!'));
+      message.success(t('marketplace.messages.published', { defaultValue: 'Strategy published to marketplace!' }));
       onPublished();
       onClose();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.messages.publishFailed', 'Failed to publish strategy'));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      message.error(msg || t('marketplace.messages.publishFailed', { defaultValue: 'Failed to publish strategy' }));
     } finally {
       setSubmitting(false);
     }
@@ -85,7 +86,7 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
 
   return (
     <Modal
-      title={t('marketplace.publish.title', 'Publish to Marketplace')}
+      title={t('marketplace.publish.title', { defaultValue: 'Publish to Marketplace' })}
       open={open}
       onCancel={onClose}
       onOk={handleSubmit}
@@ -94,54 +95,54 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
       destroyOnClose
     >
       <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
-        <Form.Item name="title" label={t('marketplace.publish.titleLabel', 'Title')} rules={[{ required: true }]}>
-          <Input maxLength={120} placeholder={t('marketplace.publish.titlePlaceholder', 'e.g. Golden Cross Strategy')} />
+        <Form.Item name="title" label={t('marketplace.publish.titleLabel', { defaultValue: 'Title' })} rules={[{ required: true }]}>
+          <Input maxLength={120} placeholder={t('marketplace.publish.titlePlaceholder', { defaultValue: 'e.g. Golden Cross Strategy' })} />
         </Form.Item>
 
-        <Form.Item name="description" label={t('marketplace.publish.descriptionLabel', 'Description')} rules={[{ required: true }]}>
-          <TextArea rows={3} maxLength={1000} placeholder={t('marketplace.publish.descriptionPlaceholder', 'Describe your strategy logic, entry/exit rules...')} />
+        <Form.Item name="description" label={t('marketplace.publish.descriptionLabel', { defaultValue: 'Description' })} rules={[{ required: true }]}>
+          <TextArea rows={3} maxLength={1000} placeholder={t('marketplace.publish.descriptionPlaceholder', { defaultValue: 'Describe your strategy logic, entry/exit rules...' })} />
         </Form.Item>
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <Form.Item name="assetClass" label={t('marketplace.publish.assetClass.label', 'Asset Class')} style={{ flex: 1 }}>
+          <Form.Item name="assetClass" label={t('marketplace.publish.assetClass.label', { defaultValue: 'Asset Class' })} style={{ flex: 1 }}>
             <Select options={assetClassOptions} />
           </Form.Item>
-          <Form.Item name="riskLevel" label={t('marketplace.publish.riskLevel.label', 'Risk Level')} style={{ flex: 1 }}>
+          <Form.Item name="riskLevel" label={t('marketplace.publish.riskLevel.label', { defaultValue: 'Risk Level' })} style={{ flex: 1 }}>
             <Select options={riskLevelOptions} />
           </Form.Item>
         </div>
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <Form.Item name="priceModel" label={t('marketplace.publish.priceModel.label', 'Pricing')} style={{ flex: 1 }}>
+          <Form.Item name="priceModel" label={t('marketplace.publish.priceModel.label', { defaultValue: 'Pricing' })} style={{ flex: 1 }}>
             <Select options={priceModelOptions} />
           </Form.Item>
-          <Form.Item name="priceAmount" label={t('marketplace.publish.priceAmount', 'Amount')} style={{ flex: 1 }}
+          <Form.Item name="priceAmount" label={t('marketplace.publish.priceAmount', { defaultValue: 'Amount' })} style={{ flex: 1 }}
             dependencies={['priceModel']}>
             <InputNumber min={0} step={1} style={{ width: '100%' }}
               disabled={Form.useWatch('priceModel', form) === 'free'} />
           </Form.Item>
         </div>
 
-        <Form.Item label={t('marketplace.publish.tags', 'Tags')}>
+        <Form.Item label={t('marketplace.publish.tags', { defaultValue: 'Tags' })}>
           <Select
             mode="tags"
-            placeholder={t('marketplace.publish.tagsPlaceholder', 'Type and press enter to add tags')}
+            placeholder={t('marketplace.publish.tagsPlaceholder', { defaultValue: 'Type and press enter to add tags' })}
             value={tags}
             onChange={setTags}
             style={{ width: '100%' }}
           />
         </Form.Item>
 
-        <Form.Item name="codeSnippet" label={t('marketplace.publish.codeSnippet', 'Strategy Preview (public)')}>
+        <Form.Item name="codeSnippet" label={t('marketplace.publish.codeSnippet', { defaultValue: 'Strategy Preview (public)' })}>
           <TextArea rows={2} maxLength={500}
-            placeholder={t('marketplace.publish.codeSnippetPlaceholder', 'Optional: share a snippet or high-level idea of your strategy (visible to all)')} />
+            placeholder={t('marketplace.publish.codeSnippetPlaceholder', { defaultValue: 'Optional: share a snippet or high-level idea of your strategy (visible to all)' })} />
         </Form.Item>
 
         {backtestSnapshot && (
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Switch checked={includeSnapshot} onChange={setIncludeSnapshot} size="small" />
-              <Text>{t('marketplace.publish.includeBacktestSnapshot', 'Include latest backtest results')}</Text>
+              <Text>{t('marketplace.publish.includeBacktestSnapshot', { defaultValue: 'Include latest backtest results' })}</Text>
             </div>
             {includeSnapshot && (
               <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>

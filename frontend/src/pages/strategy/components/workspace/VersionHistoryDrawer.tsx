@@ -135,7 +135,7 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 150,
-      render: (ts: any) => {
+      render: (ts: unknown) => {
         if (!ts) return <Text type="secondary">—</Text>;
         const d = ts instanceof Date ? ts : new Date(ts);
         return dayjs(d).format('YYYY-MM-DD HH:mm');
@@ -145,7 +145,7 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
       title: t('strategy.version.colActions', { defaultValue: 'Actions' }),
       key: 'actions',
       width: 120,
-      render: (_: any, record: StrategyVersionInfo) => (
+      render: (_: unknown, record: StrategyVersionInfo) => (
         <Space size={4}>
           <Button size="small" icon={<EyeOutlined />} loading={viewLoading} onClick={() => handleView(record.versionNumber)} />
           <Popconfirm
@@ -195,7 +195,7 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
           dataSource={versions}
           columns={columns}
           rowKey="versionNumber"
-          rowSelection={rowSelection as any}
+          rowSelection={rowSelection}
           loading={loading}
           size="small"
           pagination={{

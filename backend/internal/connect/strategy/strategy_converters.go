@@ -1,7 +1,6 @@
 package strategy
 
 import (
-
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -116,59 +115,52 @@ func parseProtoResponse(raw []byte) *antv1.ExecuteBacktestResponse {
 	return &resp
 }
 
-func parseMetrics(raw []byte) *antv1.BacktestMetrics {
-	resp := parseProtoResponse(raw)
-	if resp == nil || !resp.GetSuccess() {
-		return nil
-	}
-	m := resp.GetMetrics()
-	return &antv1.BacktestMetrics{
-		TotalReturn:   m.GetTotalReturn(),
-		AnnualReturn:  m.GetAnnualReturn(),
-		MaxDrawdown:   m.GetMaxDrawdown(),
-		SharpeRatio:   m.GetSharpeRatio(),
-		WinRate:       m.GetWinRate(),
-		ProfitFactor:  m.GetProfitFactor(),
-		TotalTrades:   m.GetTotalTrades(),
-		WinningTrades: m.GetWinningTrades(),
-		LosingTrades:  m.GetLosingTrades(),
-		AverageProfit: m.GetAverageProfit(),
-		AverageLoss:   m.GetAverageLoss(),
-	}
+// backtestParsed holds the result of a single unmarshal of ExecuteBacktestResponse.
+type backtestParsed struct {
+	Metrics              *antv1.BacktestMetrics
+	EquityCurve          []string
+	Risk                 *antv1.BacktestRisk
+	ExecutionAssumptions *antv1.ExecutionAssumptions
 }
 
-func parseRisk(raw []byte) *antv1.BacktestRisk {
-	resp := parseProtoResponse(raw)
-	if resp == nil || !resp.GetSuccess() {
-		return nil
-	}
-	r := resp.GetRisk()
-	return &antv1.BacktestRisk{
-		Score:      r.GetScore(),
-		Level:      r.GetLevel(),
-		Reasons:    r.GetReasons(),
-		Warnings:   r.GetWarnings(),
-		IsReliable: r.GetIsReliable(),
-	}
-}
-
-func parseEquityCurve(raw []byte) []string {
+// parseBacktestResult unmarshals the proto response once and extracts all fields.
+// Replaces the previous pattern of calling parseMetrics + parseRisk + parseEquityCurve
+// + parseExecutionAssumptions, each of which unmarshaled independently (4× overhead).
+func parseBacktestResult(raw []byte) backtestParsed {
 	resp := parseProtoResponse(raw)
 	if resp == nil {
-		return nil
+		return backtestParsed{}
 	}
-	return resp.GetEquityCurve()
-}
-
-func parseExecutionAssumptions(raw []byte) *antv1.ExecutionAssumptions {
-	resp := parseProtoResponse(raw)
-	if resp == nil {
-		return nil
+	p := backtestParsed{
+		EquityCurve:          resp.GetEquityCurve(),
+		ExecutionAssumptions: resp.GetExecutionAssumptions(),
 	}
-	return resp.GetExecutionAssumptions()
+	if resp.GetSuccess() {
+		m := resp.GetMetrics()
+		p.Metrics = &antv1.BacktestMetrics{
+			TotalReturn:   m.GetTotalReturn(),
+			AnnualReturn:  m.GetAnnualReturn(),
+			MaxDrawdown:   m.GetMaxDrawdown(),
+			SharpeRatio:   m.GetSharpeRatio(),
+			WinRate:       m.GetWinRate(),
+			ProfitFactor:  m.GetProfitFactor(),
+			TotalTrades:   m.GetTotalTrades(),
+			WinningTrades: m.GetWinningTrades(),
+			LosingTrades:  m.GetLosingTrades(),
+			AverageProfit: m.GetAverageProfit(),
+			AverageLoss:   m.GetAverageLoss(),
+		}
+		r := resp.GetRisk()
+		p.Risk = &antv1.BacktestRisk{
+			Score:      r.GetScore(),
+			Level:      r.GetLevel(),
+			Reasons:    r.GetReasons(),
+			Warnings:   r.GetWarnings(),
+			IsReliable: r.GetIsReliable(),
+		}
+	}
+	return p
 }
-
-
 
 // tradeDirectionToString converts proto TradeDirection enum to DB string.
 func tradeDirectionToString(d antv1.TradeDirection) string {

@@ -111,7 +111,7 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
         setTrades(result.trades);
         setTradeSummary(result.summary);
       })
-      .catch((e: any) => { if (!cancelled) setTradesError(e?.message || String(e)); })
+      .catch((e: unknown) => { if (!cancelled) setTradesError(e instanceof Error ? e.message : String(e)); })
       .finally(() => { if (!cancelled) setTradesLoading(false); });
     return () => { cancelled = true; };
   }, [open, runId, isCompleted]);
@@ -177,7 +177,7 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
     { title: t(BACKTEST_RUNS_TABLE_CREATED_AT_KEY, 'Created'), dataIndex: 'createdAt', key: 'createdAt', width: 170,
       render: (v: string | undefined) => <Text>{v ? formatDateTime(v) : '-'}</Text> },
     { title: t(BACKTEST_RUNS_TABLE_ACTIONS_KEY, 'Actions'), key: 'actions', width: 140,
-      render: (_: unknown, record: any) => (
+      render: (_: unknown, record: { id: string }) => (
         <Space size="small">
           <Button type="link" size="small" onClick={() => onViewRun(record.id)}>
             {t(BACKTEST_RUNS_ACTIONS_VIEW_KEY, 'View')}

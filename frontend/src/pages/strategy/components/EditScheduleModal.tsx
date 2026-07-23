@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { Alert, Button, Collapse, Form, Input, Modal } from 'antd';
+import { Alert, Button, Collapse, Form, Input, Modal, type FormInstance } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { SCHEDULE_LAUNCH_ACTIONS_ADD_ACCOUNT_KEY, SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY, SCHEDULE_LAUNCH_NO_ACCOUNT_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 import { EDIT_MODAL_ADVANCED_PARAMETERS_JSON_EXTRA_KEY, EDIT_MODAL_ADVANCED_PARAMETERS_JSON_KEY, EDIT_MODAL_ADVANCED_TITLE_KEY, EDIT_MODAL_TITLE_CREATE_KEY, EDIT_MODAL_TITLE_EDIT_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+import type { ScheduleRow, TemplateOption, AccountRow } from '../hooks/libraryTypes';
 
 ;
 import { buildAccountOptions } from './EditScheduleBasicFields';
@@ -38,12 +39,12 @@ type ScheduleFormValues = {
 };
 
 type Props = {
-  editing: any | null;
+  editing: ScheduleRow | null;
   open: boolean;
   loading: boolean;
-  form: any;
-  templates: any[];
-  accounts: any[];
+  form: FormInstance<ScheduleFormValues>;
+  templates: TemplateOption[];
+  accounts: AccountRow[];
   symbols: { value: string; label: string }[];
   symbolsLoading: boolean;
   accountIdWatch: string | undefined;

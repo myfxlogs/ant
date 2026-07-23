@@ -41,11 +41,11 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
 
   const signalColumns = [
     {
-      title: t('strategy.live.time', 'Time'), dataIndex: 'timestamp', width: 160,
-      render: (v: any) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text>,
+      title: t('strategy.live.time', { defaultValue: 'Time' }), dataIndex: 'timestamp', width: 160,
+      render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text>,
     },
     {
-      title: t('strategy.live.signalType', 'Type'), dataIndex: 'signalType', width: 100,
+      title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'signalType', width: 100,
       render: (v: string) => {
         const color = v === 'buy' || v === 'buy_limit' || v === 'buy_stop' ? 'green'
           : v === 'sell' || v === 'sell_limit' || v === 'sell_stop' ? 'red'
@@ -55,21 +55,21 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
       },
     },
     {
-      title: t('strategy.live.volume', 'Volume'), dataIndex: 'volume', width: 80,
+      title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 80,
     },
     {
-      title: t('strategy.live.price', 'Price'), dataIndex: 'price', width: 90,
+      title: t('strategy.live.price', { defaultValue: 'Price' }), dataIndex: 'price', width: 90,
     },
     {
-      title: t('strategy.live.sl', 'SL'), dataIndex: 'stopLoss', width: 90,
+      title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 90,
       render: (v: string) => v || '-',
     },
     {
-      title: t('strategy.live.tp', 'TP'), dataIndex: 'takeProfit', width: 90,
+      title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 90,
       render: (v: string) => v || '-',
     },
     {
-      title: t('strategy.live.reason', 'Reason'), dataIndex: 'reason', ellipsis: true,
+      title: t('strategy.live.reason', { defaultValue: 'Reason' }), dataIndex: 'reason', ellipsis: true,
       render: (v: string) => v ? <Text style={{ fontSize: 12 }}>{v}</Text> : <Text type="secondary">-</Text>,
     },
   ];
@@ -81,7 +81,7 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
       title={
         <Space>
           <MonitorOutlined />
-          <span>{t('strategy.live.signalLog', 'Signal Log')}</span>
+          <span>{t('strategy.live.signalLog', { defaultValue: 'Signal Log' })}</span>
           {watchingRunId && <Text code style={{ fontSize: 12 }}>{shortId(watchingRunId)}</Text>}
         </Space>
       }
@@ -91,18 +91,18 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
     >
       {watchingRunId && watching && (
         <Descriptions size="small" column={4} style={{ marginBottom: 12 }}>
-          <Descriptions.Item label={t('strategy.live.symbol', 'Symbol')}>
+          <Descriptions.Item label={t('strategy.live.symbol', { defaultValue: 'Symbol' })}>
             {watching.symbol}
           </Descriptions.Item>
-          <Descriptions.Item label={t('strategy.live.mode', 'Mode')}>
+          <Descriptions.Item label={t('strategy.live.mode', { defaultValue: 'Mode' })}>
             <Tag color={MODE_COLORS[watching.mode || ''] || 'default'}>
               {watching.mode}
             </Tag>
           </Descriptions.Item>
-          <Descriptions.Item label={t('strategy.live.signals', 'Signals')}>
+          <Descriptions.Item label={t('strategy.live.signals', { defaultValue: 'Signals' })}>
             {watching.signalCount}
           </Descriptions.Item>
-          <Descriptions.Item label={t('strategy.live.errors', 'Errors')}>
+          <Descriptions.Item label={t('strategy.live.errors', { defaultValue: 'Errors' })}>
             {watching.errorCount}
           </Descriptions.Item>
         </Descriptions>
@@ -113,7 +113,7 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
         rowKey={(r, i) => String(i)}
         columns={signalColumns}
         pagination={{ pageSize: 50, showSizeChanger: false }}
-        locale={{ emptyText: <Empty description={t('strategy.live.waitingSignals', 'Waiting for signals...')} /> }}
+        locale={{ emptyText: <Empty description={t('strategy.live.waitingSignals', { defaultValue: 'Waiting for signals...' })} /> }}
       />
     </Drawer>
   );

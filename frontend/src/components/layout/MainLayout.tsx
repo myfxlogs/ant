@@ -40,10 +40,10 @@ export default function MainLayout() {
   const menuItems = useMemo(() => [
     { key: '/', icon: <HomeOutlined size={20} stroke={1.5} />, label: t('menu.dashboard') },
     {
-      key: '/strategy', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategy'),
+      key: 'strategy-group', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategy'),
       children: [
+        { key: '/strategy', icon: <BookOutlined size={20} stroke={1.5} />, label: t('strategy.gallery.title', { defaultValue: 'Strategies' }) },
         { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
-        { key: '/strategy/library', icon: <BookOutlined size={20} stroke={1.5} />, label: t('strategy.library.title', { defaultValue: 'Strategy Library' }) },
         { key: '/strategy/live', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.strategyLive', { defaultValue: 'Live Monitor' }) },
         { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} stroke={1.5} />, label: t('menu.marketTools') },
       ],

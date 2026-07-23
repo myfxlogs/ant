@@ -95,7 +95,7 @@ func TestE2EGateBlocksOversizedOrder(t *testing.T) {
 	mock := &mockMtHub{}
 
 	intent := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "buy", Volume: "100.0", Type: "buy", Price: "1.08500",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
@@ -125,7 +125,7 @@ func TestE2EGateFailClosedNilState(t *testing.T) {
 	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(10)})
 
 	intent := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "buy", Volume: "0.01", Type: "buy",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
@@ -153,7 +153,7 @@ func TestE2EKillSwitchCycle(t *testing.T) {
 		SymbolLeverage: 100,
 	}
 	intent := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "buy", Volume: "0.01", Type: "buy",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
@@ -172,7 +172,7 @@ func TestE2EKillSwitchCycle(t *testing.T) {
 	// Kill-switch off, different intent (avoid duplicate protection R8).
 	ks.Store(false)
 	intent2 := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "sell", Volume: "0.02", Type: "sell", Price: "1.09000",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}

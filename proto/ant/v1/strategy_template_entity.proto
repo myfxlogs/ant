@@ -39,6 +39,30 @@ message TemplateParameter {
   repeated string options = 9;
 }
 
+// StrategyCard is a denormalized card for Gallery display (ADR-0027).
+// Aggregates template metadata + latest successful backtest KPIs + running schedule count.
+message StrategyCard {
+  string id = 1;                    // template id
+  string name = 2;
+  string description = 3;
+  repeated string tags = 4;
+  bool is_system = 5;
+  bool is_public = 6;
+  int32 use_count = 7;
+  google.protobuf.Timestamp created_at = 8;
+  // Sparkline: equity curve from the latest successful backtest (decimal strings).
+  repeated string sparkline = 9;
+  // KPIs from the latest successful backtest (decimal strings for precision).
+  string win_rate = 10;
+  string max_drawdown = 11;
+  string profit_factor = 12;
+  string sharpe_ratio = 13;
+  // Count of active schedules for this template.
+  int32 running_schedules = 14;
+  // ID of the backtest run that produced the sparkline/KPIs (empty if none).
+  string backtest_run_id = 15;
+}
+
 // TemplateI18n holds parameter label translations per locale.
 message TemplateI18n {
   // Map of locale code → (param name → translated label)

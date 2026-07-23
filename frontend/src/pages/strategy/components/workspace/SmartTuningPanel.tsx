@@ -229,7 +229,7 @@ export default function SmartTuningPanel({
                 render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 9, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 10 }}>-</span> },
               ...(onApplyToCode ? [{
                 title: '', width: 60,
-                render: (_: any, record: StrategyExperimentCandidate) => (
+                render: (_: unknown, record: StrategyExperimentCandidate) => (
                   <Button size="small" type="link" style={{ fontSize: 10 }}
                     onClick={() => applyParamsToCode(record)}>{t(APPLY_KEY)}</Button>
                 ),

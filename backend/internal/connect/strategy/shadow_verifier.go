@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"strconv"
 	"sync"
 	"time"
 
@@ -189,43 +190,21 @@ func compareSignals(live, backtest []shadowSignal) []string {
 		b := backtest[i]
 		if l.action != b.action {
 			mismatches = append(mismatches,
-				"signal["+itoa(i)+"]: action live="+l.action+" vs backtest="+b.action)
+				"signal["+strconv.Itoa(i)+"]: action live="+l.action+" vs backtest="+b.action)
 			continue
 		}
 		lv, _ := decimal.NewFromString(l.volume)
 		bv, _ := decimal.NewFromString(b.volume)
 		if !lv.Equal(bv) {
 			mismatches = append(mismatches,
-				"signal["+itoa(i)+"]: volume live="+l.volume+" vs backtest="+b.volume)
+				"signal["+strconv.Itoa(i)+"]: volume live="+l.volume+" vs backtest="+b.volume)
 		}
 	}
 
 	if len(live) != len(backtest) {
 		mismatches = append(mismatches,
-			"count: live="+itoa(len(live))+" vs backtest="+itoa(len(backtest)))
+			"count: live="+strconv.Itoa(len(live))+" vs backtest="+strconv.Itoa(len(backtest)))
 	}
 
 	return mismatches
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := n < 0
-	if neg {
-		n = -n
-	}
-	var buf [20]byte
-	i := len(buf)
-	for n > 0 {
-		i--
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	if neg {
-		i--
-		buf[i] = '-'
-	}
-	return string(buf[i:])
 }

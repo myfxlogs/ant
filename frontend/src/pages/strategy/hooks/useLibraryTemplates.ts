@@ -126,7 +126,7 @@ export function useLibraryTemplates() {
       // Build i18n from extracted params (best-effort, never blocks save).
       const i18n = paramEntries.length > 0 ? await buildParamI18n(paramEntries) : null;
 
-      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: paramEntries.map(e => ({ key: e.name, type: e.type as any || 'string', defaultValue: e.default })) as any[], isPublic: Boolean(values.isPublic) || false, tags: [], i18n: i18n || undefined };
+      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: paramEntries.map(e => ({ key: e.name, type: (e.type || 'string') as string, defaultValue: e.default })), isPublic: Boolean(values.isPublic) || false, tags: [], i18n: i18n || undefined };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
       else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();

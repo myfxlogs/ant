@@ -69,3 +69,16 @@ message UpdateTemplateRequest {
 message DeleteTemplateRequest {
   string id = 1;
 }
+
+message ListStrategyCardsRequest {
+  string filter = 1;  // "all" | "mine" | "preset"
+  string sort = 2;    // "recent" | "return" | "risk" | "usage"
+  string search = 3;  // name/description fuzzy match
+  int32 limit = 4;    // page size (default 50, max 200)
+  int32 offset = 5;   // page offset
+}
+
+message ListStrategyCardsResponse {
+  repeated StrategyCard cards = 1;
+  int32 total = 2;    // total count matching the query (for pagination UI)
+}

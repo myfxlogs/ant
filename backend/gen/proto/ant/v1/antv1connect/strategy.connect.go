@@ -49,6 +49,9 @@ const (
 	// StrategyServiceDeleteTemplateProcedure is the fully-qualified name of the StrategyService's
 	// DeleteTemplate RPC.
 	StrategyServiceDeleteTemplateProcedure = "/ant.v1.StrategyService/DeleteTemplate"
+	// StrategyServiceListStrategyCardsProcedure is the fully-qualified name of the StrategyService's
+	// ListStrategyCards RPC.
+	StrategyServiceListStrategyCardsProcedure = "/ant.v1.StrategyService/ListStrategyCards"
 	// StrategyServiceCreateTemplateDraftProcedure is the fully-qualified name of the StrategyService's
 	// CreateTemplateDraft RPC.
 	StrategyServiceCreateTemplateDraftProcedure = "/ant.v1.StrategyService/CreateTemplateDraft"
@@ -106,6 +109,7 @@ type StrategyServiceClient interface {
 	CreateTemplate(context.Context, *connect.Request[v1.CreateTemplateRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	UpdateTemplate(context.Context, *connect.Request[v1.UpdateTemplateRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	DeleteTemplate(context.Context, *connect.Request[v1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error)
+	ListStrategyCards(context.Context, *connect.Request[v1.ListStrategyCardsRequest]) (*connect.Response[v1.ListStrategyCardsResponse], error)
 	CreateTemplateDraft(context.Context, *connect.Request[v1.CreateTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	UpdateTemplateDraft(context.Context, *connect.Request[v1.UpdateTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	PublishTemplateDraft(context.Context, *connect.Request[v1.PublishTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error)
@@ -163,6 +167,12 @@ func NewStrategyServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			httpClient,
 			baseURL+StrategyServiceDeleteTemplateProcedure,
 			connect.WithSchema(strategyServiceMethods.ByName("DeleteTemplate")),
+			connect.WithClientOptions(opts...),
+		),
+		listStrategyCards: connect.NewClient[v1.ListStrategyCardsRequest, v1.ListStrategyCardsResponse](
+			httpClient,
+			baseURL+StrategyServiceListStrategyCardsProcedure,
+			connect.WithSchema(strategyServiceMethods.ByName("ListStrategyCards")),
 			connect.WithClientOptions(opts...),
 		),
 		createTemplateDraft: connect.NewClient[v1.CreateTemplateDraftRequest, v1.StrategyTemplate](
@@ -271,6 +281,7 @@ type strategyServiceClient struct {
 	createTemplate       *connect.Client[v1.CreateTemplateRequest, v1.StrategyTemplate]
 	updateTemplate       *connect.Client[v1.UpdateTemplateRequest, v1.StrategyTemplate]
 	deleteTemplate       *connect.Client[v1.DeleteTemplateRequest, emptypb.Empty]
+	listStrategyCards    *connect.Client[v1.ListStrategyCardsRequest, v1.ListStrategyCardsResponse]
 	createTemplateDraft  *connect.Client[v1.CreateTemplateDraftRequest, v1.StrategyTemplate]
 	updateTemplateDraft  *connect.Client[v1.UpdateTemplateDraftRequest, v1.StrategyTemplate]
 	publishTemplateDraft *connect.Client[v1.PublishTemplateDraftRequest, v1.StrategyTemplate]
@@ -312,6 +323,11 @@ func (c *strategyServiceClient) UpdateTemplate(ctx context.Context, req *connect
 // DeleteTemplate calls ant.v1.StrategyService.DeleteTemplate.
 func (c *strategyServiceClient) DeleteTemplate(ctx context.Context, req *connect.Request[v1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.deleteTemplate.CallUnary(ctx, req)
+}
+
+// ListStrategyCards calls ant.v1.StrategyService.ListStrategyCards.
+func (c *strategyServiceClient) ListStrategyCards(ctx context.Context, req *connect.Request[v1.ListStrategyCardsRequest]) (*connect.Response[v1.ListStrategyCardsResponse], error) {
+	return c.listStrategyCards.CallUnary(ctx, req)
 }
 
 // CreateTemplateDraft calls ant.v1.StrategyService.CreateTemplateDraft.
@@ -401,6 +417,7 @@ type StrategyServiceHandler interface {
 	CreateTemplate(context.Context, *connect.Request[v1.CreateTemplateRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	UpdateTemplate(context.Context, *connect.Request[v1.UpdateTemplateRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	DeleteTemplate(context.Context, *connect.Request[v1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error)
+	ListStrategyCards(context.Context, *connect.Request[v1.ListStrategyCardsRequest]) (*connect.Response[v1.ListStrategyCardsResponse], error)
 	CreateTemplateDraft(context.Context, *connect.Request[v1.CreateTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	UpdateTemplateDraft(context.Context, *connect.Request[v1.UpdateTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error)
 	PublishTemplateDraft(context.Context, *connect.Request[v1.PublishTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error)
@@ -454,6 +471,12 @@ func NewStrategyServiceHandler(svc StrategyServiceHandler, opts ...connect.Handl
 		StrategyServiceDeleteTemplateProcedure,
 		svc.DeleteTemplate,
 		connect.WithSchema(strategyServiceMethods.ByName("DeleteTemplate")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyServiceListStrategyCardsHandler := connect.NewUnaryHandler(
+		StrategyServiceListStrategyCardsProcedure,
+		svc.ListStrategyCards,
+		connect.WithSchema(strategyServiceMethods.ByName("ListStrategyCards")),
 		connect.WithHandlerOptions(opts...),
 	)
 	strategyServiceCreateTemplateDraftHandler := connect.NewUnaryHandler(
@@ -564,6 +587,8 @@ func NewStrategyServiceHandler(svc StrategyServiceHandler, opts ...connect.Handl
 			strategyServiceUpdateTemplateHandler.ServeHTTP(w, r)
 		case StrategyServiceDeleteTemplateProcedure:
 			strategyServiceDeleteTemplateHandler.ServeHTTP(w, r)
+		case StrategyServiceListStrategyCardsProcedure:
+			strategyServiceListStrategyCardsHandler.ServeHTTP(w, r)
 		case StrategyServiceCreateTemplateDraftProcedure:
 			strategyServiceCreateTemplateDraftHandler.ServeHTTP(w, r)
 		case StrategyServiceUpdateTemplateDraftProcedure:
@@ -623,6 +648,10 @@ func (UnimplementedStrategyServiceHandler) UpdateTemplate(context.Context, *conn
 
 func (UnimplementedStrategyServiceHandler) DeleteTemplate(context.Context, *connect.Request[v1.DeleteTemplateRequest]) (*connect.Response[emptypb.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyService.DeleteTemplate is not implemented"))
+}
+
+func (UnimplementedStrategyServiceHandler) ListStrategyCards(context.Context, *connect.Request[v1.ListStrategyCardsRequest]) (*connect.Response[v1.ListStrategyCardsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyService.ListStrategyCards is not implemented"))
 }
 
 func (UnimplementedStrategyServiceHandler) CreateTemplateDraft(context.Context, *connect.Request[v1.CreateTemplateDraftRequest]) (*connect.Response[v1.StrategyTemplate], error) {

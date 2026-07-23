@@ -15,7 +15,7 @@ import (
 // VMLiveSession (in-process Bytecode VM) implements it.
 type Session interface {
 	Start(ctx context.Context, reqBytes []byte) ([]byte, error)
-	SendBar(ctx context.Context, reqBytes []byte) ([]byte, error)
+	SendEvent(ctx context.Context, reqBytes []byte) ([]byte, error)
 	Close() error
 }
 
@@ -85,7 +85,7 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 	return proto.Marshal(resp)
 }
 
-func (s *VMLiveSession) SendBar(ctx context.Context, reqBytes []byte) ([]byte, error) {
+func (s *VMLiveSession) SendEvent(ctx context.Context, reqBytes []byte) ([]byte, error) {
 	if !s.started {
 		return nil, fmt.Errorf("vm live session not started")
 	}

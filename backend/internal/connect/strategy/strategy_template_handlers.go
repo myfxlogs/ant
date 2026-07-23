@@ -78,6 +78,43 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 	return connect.NewResponse(templateRowToProto(row)), nil
 }
 
+func (s *StrategyServer) ListStrategyCards(ctx context.Context, req *connect.Request[antv1.ListStrategyCardsRequest]) (*connect.Response[antv1.ListStrategyCardsResponse], error) {
+	uid := s.userID(ctx)
+	rows, total, err := s.svc.ListStrategyCards(ctx, uid, service.ListStrategyCardsParams{
+		Filter: req.Msg.GetFilter(),
+		Sort:   req.Msg.GetSort(),
+		Search: req.Msg.GetSearch(),
+		Limit:  int(req.Msg.GetLimit()),
+		Offset: int(req.Msg.GetOffset()),
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	cards := make([]*antv1.StrategyCard, len(rows))
+	for i, r := range rows {
+		cards[i] = &antv1.StrategyCard{
+			Id:               r.ID.String(),
+			Name:             r.Name,
+			Description:      r.Description,
+			Tags:             r.Tags,
+			IsSystem:         r.IsSystem,
+			IsPublic:         r.IsPublic,
+			UseCount:         r.UseCount,
+			CreatedAt:        timestamppb.New(r.CreatedAt),
+			Sparkline:        r.Sparkline,
+			WinRate:          r.WinRate,
+			MaxDrawdown:      r.MaxDrawdown,
+			ProfitFactor:     r.ProfitFactor,
+			SharpeRatio:      r.SharpeRatio,
+			RunningSchedules: r.RunningSchedules,
+		}
+		if r.BacktestRunID != nil {
+			cards[i].BacktestRunId = r.BacktestRunID.String()
+		}
+	}
+	return connect.NewResponse(&antv1.ListStrategyCardsResponse{Cards: cards, Total: int32(total)}), nil
+}
+
 func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
 	uid := s.userID(ctx)
 	row := &service.TemplateRow{
@@ -169,10 +206,10 @@ func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Reques
 func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
 	uid := s.userID(ctx)
 	row := &service.TemplateRow{
-		UserID:   &uid,
-		Name:     req.Msg.GetName(),
-		Status:   "draft",
-		Tags:     []string{},
+		UserID: &uid,
+		Name:   req.Msg.GetName(),
+		Status: "draft",
+		Tags:   []string{},
 	}
 	if err := s.svc.CreateTemplate(ctx, row); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)

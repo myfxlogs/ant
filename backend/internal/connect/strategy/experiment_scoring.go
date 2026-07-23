@@ -131,7 +131,8 @@ func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
 	if err := proto.Unmarshal(protoResp, &resp); err != nil {
 		return &ai.BacktestMetrics{TotalTrades: 0}
 	}
-	m := resp.GetMetrics(); eq := resp.GetEquityCurve()
+	m := resp.GetMetrics()
+	eq := resp.GetEquityCurve()
 	return &ai.BacktestMetrics{
 		TotalReturn:  parseFloat(m.GetTotalReturn()),
 		AnnualReturn: parseFloat(m.GetAnnualReturn()),
@@ -204,4 +205,3 @@ func selectTopK(candidates []candidateResult, k int) []int {
 	}
 	return indices
 }
-

@@ -26,11 +26,17 @@ func strategyTestPG(t *testing.T) *pgxpool.Pool {
 	dsn := os.Getenv("TEST_PG_DSN")
 	if dsn == "" {
 		password := os.Getenv("DB_PASSWORD")
-		if password == "" { password = "ant" }
+		if password == "" {
+			password = "ant"
+		}
 		user := os.Getenv("DB_USER")
-		if user == "" { user = "ant" }
+		if user == "" {
+			user = "ant"
+		}
 		dbname := os.Getenv("DB_NAME")
-		if dbname == "" { dbname = "ant" }
+		if dbname == "" {
+			dbname = "ant"
+		}
 		dsn = "postgres://" + user + ":" + password + "@localhost:5433/" + dbname + "?sslmode=disable"
 	}
 	pool, err := pgxpool.New(context.Background(), dsn)
@@ -379,11 +385,11 @@ func TestStrategy_ScheduleValidation(t *testing.T) {
 
 	// Missing symbol
 	_, err = srv.CreateSchedule(ctx, connect.NewRequest(&antv1.CreateScheduleRequest{
-		TemplateId:   tplResp.Msg.Id,
-		AccountId:    accID.String(),
-		Name:         "Bad Schedule",
-		Symbol:       "",
-		ScheduleType: "interval",
+		TemplateId:     tplResp.Msg.Id,
+		AccountId:      accID.String(),
+		Name:           "Bad Schedule",
+		Symbol:         "",
+		ScheduleType:   "interval",
 		ScheduleConfig: &antv1.ScheduleConfig{IntervalMs: 60000},
 	}))
 	if err == nil {
@@ -430,11 +436,11 @@ func TestStrategy_DeleteTemplateWithSchedule(t *testing.T) {
 	}
 
 	_, err = srv.CreateSchedule(ctx, connect.NewRequest(&antv1.CreateScheduleRequest{
-		TemplateId:   tplResp.Msg.Id,
-		AccountId:    accID.String(),
-		Name:         "Attached Schedule",
-		Symbol:       "EURUSD",
-		ScheduleType: "interval",
+		TemplateId:     tplResp.Msg.Id,
+		AccountId:      accID.String(),
+		Name:           "Attached Schedule",
+		Symbol:         "EURUSD",
+		ScheduleType:   "interval",
 		ScheduleConfig: &antv1.ScheduleConfig{IntervalMs: 30000},
 	}))
 	if err != nil {

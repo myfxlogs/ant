@@ -13,22 +13,22 @@ import (
 
 // ActiveSession holds metadata about a running live strategy session.
 type ActiveSession struct {
-	RunID         uuid.UUID
-	UserID        uuid.UUID
-	AccountID     string
-	Symbol        string
-	Timeframe     string
-	Mode          string
-	StartedAt     time.Time
-	LastSignalAt  time.Time
-	SignalCount   int
-	ErrorCount    int
-	LastError     string
-	StderrTail    string
-	cancel        context.CancelFunc
-	signalSubs    []chan *SignalEvent
-	signalSubsMu  sync.Mutex
-	registry      *SessionRegistry // back-pointer for watcher notification
+	RunID        uuid.UUID
+	UserID       uuid.UUID
+	AccountID    string
+	Symbol       string
+	Timeframe    string
+	Mode         string
+	StartedAt    time.Time
+	LastSignalAt time.Time
+	SignalCount  int
+	ErrorCount   int
+	LastError    string
+	StderrTail   string
+	cancel       context.CancelFunc
+	signalSubs   []chan *SignalEvent
+	signalSubsMu sync.Mutex
+	registry     *SessionRegistry // back-pointer for watcher notification
 }
 
 // SignalEvent is pushed to SSE subscribers when a signal is dispatched.

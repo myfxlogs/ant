@@ -60,8 +60,8 @@ export function useTuning(t: TFunction) {
       });
       message.success(t(STARTED_KEY));
       return result.experiment?.id || result.jobId || '';
-    } catch (e: any) {
-      message.error(e?.message || 'Tuning failed');
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : 'Tuning failed');
       return '';
     } finally { setTuningRunning(false); }
   }, [sweepDimensions, tuneMethod, cartesianSize, t]);

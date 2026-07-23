@@ -15,7 +15,7 @@ func tplMACrossover() *antv1.StrategyTemplateInfo {
 	return &antv1.StrategyTemplateInfo{
 		Name:        "MA Crossover",
 		Description: "双均线交叉策略 — Go SDK",
-	Code: `package main
+		Code: `package main
 
 import (
 	"alphaforge/strategy/sdk"
@@ -113,7 +113,7 @@ func tplRSIMeanReversion() *antv1.StrategyTemplateInfo {
 	return &antv1.StrategyTemplateInfo{
 		Name:        "RSI Mean Reversion",
 		Description: "RSI超买超卖反转策略 — Go SDK",
-	Code: `package main
+		Code: `package main
 
 import (
 	"alphaforge/strategy/sdk"
@@ -209,7 +209,7 @@ func tplBollingerBreakout() *antv1.StrategyTemplateInfo {
 	return &antv1.StrategyTemplateInfo{
 		Name:        "Bollinger Breakout",
 		Description: "布林带突破策略 — Go SDK",
-	Code: `package main
+		Code: `package main
 
 import (
 	"alphaforge/strategy/sdk"

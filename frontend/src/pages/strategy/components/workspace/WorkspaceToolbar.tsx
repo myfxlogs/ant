@@ -85,7 +85,7 @@ export default function WorkspaceToolbar({
 
       {/* Strategy name + save status */}
       {strategyName && (
-        <div style={{ ...groupStyle, flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div data-tour="save" style={{ ...groupStyle, flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
           {saveStatus === 'modified' && <span style={{ color: '#f0a020', fontSize: 14 }}>●</span>}
           {saveStatus === 'saved' && <span style={{ color: '#3fb950', fontSize: 14 }}>✓</span>}
           <span style={{ fontSize: 14, fontWeight: 600, color: '#262626' }}>{strategyName}</span>

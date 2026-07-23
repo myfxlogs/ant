@@ -6,12 +6,11 @@ import (
 	"strings"
 	"sync"
 
-	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
@@ -160,11 +159,10 @@ func userIDRequire(ctx context.Context) (uuid.UUID, error) {
 }
 
 func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
-	uid, err := userIDRequire(ctx)
+	_, err := userIDRequire(ctx)
 	if err != nil {
 		return nil, err
 	}
-	_ = uid
 
 	// Go-native path: execute generated Go strategies via proto binary.
 	if isGoStrategy(req.Msg.Code) {
@@ -192,11 +190,10 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 }
 
 func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
-	uid, err := userIDRequire(ctx)
+	_, err := userIDRequire(ctx)
 	if err != nil {
 		return nil, err
 	}
-	_ = uid
 
 	code := req.Msg.GetCode()
 	if code == "" {
@@ -225,10 +222,10 @@ func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, err
 	}
-	_ = uid
 
 	// Synchronous backtest is deprecated.
 	// Use StartBacktestRun for async execution via the Go-native backtest engine.
+	s.log.Debug("Backtest: deprecated sync endpoint called", zap.String("userID", uid.String()))
 	return connect.NewResponse(&antv1.BacktestStrategyResponse{
 		Success: false,
 		Error:   "use StartBacktestRun for async backtesting via the Go-native engine",
@@ -280,8 +277,8 @@ func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.
 	var cachedBytecode []byte
 	if req.StrategyId != "" && s.importedRepo != nil {
 		if sid, parseErr := uuid.Parse(req.StrategyId); parseErr == nil {
-		cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
-	}
+			cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
+		}
 	}
 
 	strategy, bcData, err := mql2go.CompileMQLCached(req.StrategyCode, cachedBytecode)
@@ -368,9 +365,4 @@ func isGoStrategy(code string) bool {
 // isMQLStrategy returns true if the code looks like MQL source (not Go, not Python).
 func isMQLStrategy(code string) bool {
 	return sdk.IsMQL(code)
-}
-
-// isPythonStrategy returns true if the code is Python subset source.
-func isPythonStrategy(code string) bool {
-	return sdk.IsPython(code)
 }

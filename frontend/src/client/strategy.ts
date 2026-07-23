@@ -5,6 +5,7 @@ import type { BacktestMetrics } from '../gen/ant/v1/common_pb';
 import type { TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 
 export type { StrategyTemplate, TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
+export type { StrategyCard } from '../gen/ant/v1/strategy_template_entity_pb';
 export type { StrategySchedule, ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
 export type { StrategySignal } from '../gen/ant/v1/strategy_signal_messages_pb';
 export type { BacktestMetrics };
@@ -34,6 +35,17 @@ export const strategyApi = {
   listTemplates: async () => {
     const response = await strategyClient.listTemplates({});
     return response.templates;
+  },
+
+  listStrategyCards: async (params?: { filter?: string; sort?: string; search?: string; limit?: number; offset?: number }) => {
+    const response = await strategyClient.listStrategyCards({
+      filter: params?.filter ?? '',
+      sort: params?.sort ?? '',
+      search: params?.search ?? '',
+      limit: params?.limit ?? 0,
+      offset: params?.offset ?? 0,
+    });
+    return { cards: response.cards, total: response.total };
   },
 
   getTemplate: async (id: string) => {
@@ -114,6 +126,20 @@ export const strategyApi = {
 
   cancelTemplateDraft: async (id: string) => {
     await strategyClient.cancelTemplateDraft({ id });
+  },
+
+  forkTemplate: async (sourceId: string, forkName: string) => {
+    const source = await strategyClient.getTemplate({ id: sourceId });
+    const draft = await strategyClient.createTemplateDraft({ name: forkName });
+    if (!draft.id) throw new Error('Draft creation returned empty id');
+    await strategyClient.updateTemplateDraft({
+      id: draft.id,
+      description: source.description,
+      code: source.code,
+      parameters: source.parameters,
+      tags: source.tags,
+    });
+    return draft.id;
   },
 
   listSchedules: async () => {

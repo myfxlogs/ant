@@ -1,16 +1,19 @@
 import { lazy, Suspense } from 'react';
+import type { useStrategyCode } from './hooks/useStrategyCode';
 
 const SaveTemplateModal = lazy(() => import('@/components/strategy/SaveTemplateModal'));
 
+type CodeCtx = ReturnType<typeof useStrategyCode>;
+
 interface SaveTemplateWrapperProps {
-  ws: any;
+  code: CodeCtx;
 }
 
-export function SaveTemplateWrapper({ ws }: SaveTemplateWrapperProps) {
+export function SaveTemplateWrapper({ code }: SaveTemplateWrapperProps) {
   return (
     <Suspense fallback={null}>
-      <SaveTemplateModal open={ws.code.saveModalOpen} confirmLoading={ws.code.saveLoading} form={ws.code.saveForm}
-        onCancel={() => ws.code.setSaveModalOpen(false)} onOk={ws.code.handleSaveModalOk} />
+      <SaveTemplateModal open={code.saveModalOpen} confirmLoading={code.saveLoading} form={code.saveForm}
+        onCancel={() => code.setSaveModalOpen(false)} onOk={code.handleSaveModalOk} />
     </Suspense>
   );
 }

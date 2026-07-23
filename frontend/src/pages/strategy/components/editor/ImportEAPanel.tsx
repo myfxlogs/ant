@@ -54,7 +54,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
         setEaResult(res.goCode || '');
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
       })
-      .catch((e) => { message.error(String(e?.message || t('common.unknownError', 'Unknown error'))); })
+      .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setEaTranslating(false); });
   };
 
@@ -67,7 +67,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
         if (res.generatedCode) setEaResult(res.generatedCode);
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
       })
-      .catch((e) => { message.error(String(e?.message || t('common.unknownError', 'Unknown error'))); })
+      .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setBridging(false); });
   };
 
@@ -75,8 +75,8 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
     if (!eaCode.trim()) return;
     setEaTranslating(true);
     codeAssistClient.translateCode({ source: eaCode.trim() })
-      .then((res) => { setEaResult(res.code || ''); if ((res as any).strategyId) onStrategyIdChange?.((res as any).strategyId); })
-      .catch((e) => { message.error(String(e?.message || t('common.unknownError', 'Unknown error'))); })
+      .then((res) => { setEaResult(res.code || ''); if ('strategyId' in res && res.strategyId) onStrategyIdChange?.(res.strategyId as string); })
+      .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setEaTranslating(false); });
   };
 

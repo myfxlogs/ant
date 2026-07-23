@@ -240,8 +240,8 @@ export default function WorkspaceCodePanel({
               showSearch
               filterOption={(input, option) => {
                 if (!option) return false;
-                const label = option.label as any;
-                const text = typeof label === 'string' ? label : (label?.props?.children?.[1] || label?.props?.children || '');
+                const label = option.label as string | { props?: { children?: unknown } };
+                const text = typeof label === 'string' ? label : (label?.props?.children as unknown) || '';
                 return String(text).toLowerCase().includes(input.toLowerCase());
               }}
               notFoundContent={t(AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, { defaultValue: 'No model — configure in AI Settings' })}

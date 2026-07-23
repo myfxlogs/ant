@@ -288,6 +288,168 @@ func (x *TemplateParameter) GetOptions() []string {
 	return nil
 }
 
+// StrategyCard is a denormalized card for Gallery display (ADR-0027).
+// Aggregates template metadata + latest successful backtest KPIs + running schedule count.
+type StrategyCard struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // template id
+	Name        string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Tags        []string               `protobuf:"bytes,4,rep,name=tags,proto3" json:"tags,omitempty"`
+	IsSystem    bool                   `protobuf:"varint,5,opt,name=is_system,json=isSystem,proto3" json:"is_system,omitempty"`
+	IsPublic    bool                   `protobuf:"varint,6,opt,name=is_public,json=isPublic,proto3" json:"is_public,omitempty"`
+	UseCount    int32                  `protobuf:"varint,7,opt,name=use_count,json=useCount,proto3" json:"use_count,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Sparkline: equity curve from the latest successful backtest (decimal strings).
+	Sparkline []string `protobuf:"bytes,9,rep,name=sparkline,proto3" json:"sparkline,omitempty"`
+	// KPIs from the latest successful backtest (decimal strings for precision).
+	WinRate      string `protobuf:"bytes,10,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	MaxDrawdown  string `protobuf:"bytes,11,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	ProfitFactor string `protobuf:"bytes,12,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	SharpeRatio  string `protobuf:"bytes,13,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	// Count of active schedules for this template.
+	RunningSchedules int32 `protobuf:"varint,14,opt,name=running_schedules,json=runningSchedules,proto3" json:"running_schedules,omitempty"`
+	// ID of the backtest run that produced the sparkline/KPIs (empty if none).
+	BacktestRunId string `protobuf:"bytes,15,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StrategyCard) Reset() {
+	*x = StrategyCard{}
+	mi := &file_strategy_template_entity_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StrategyCard) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StrategyCard) ProtoMessage() {}
+
+func (x *StrategyCard) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_template_entity_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StrategyCard.ProtoReflect.Descriptor instead.
+func (*StrategyCard) Descriptor() ([]byte, []int) {
+	return file_strategy_template_entity_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *StrategyCard) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *StrategyCard) GetIsSystem() bool {
+	if x != nil {
+		return x.IsSystem
+	}
+	return false
+}
+
+func (x *StrategyCard) GetIsPublic() bool {
+	if x != nil {
+		return x.IsPublic
+	}
+	return false
+}
+
+func (x *StrategyCard) GetUseCount() int32 {
+	if x != nil {
+		return x.UseCount
+	}
+	return 0
+}
+
+func (x *StrategyCard) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *StrategyCard) GetSparkline() []string {
+	if x != nil {
+		return x.Sparkline
+	}
+	return nil
+}
+
+func (x *StrategyCard) GetWinRate() string {
+	if x != nil {
+		return x.WinRate
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetMaxDrawdown() string {
+	if x != nil {
+		return x.MaxDrawdown
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetProfitFactor() string {
+	if x != nil {
+		return x.ProfitFactor
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetSharpeRatio() string {
+	if x != nil {
+		return x.SharpeRatio
+	}
+	return ""
+}
+
+func (x *StrategyCard) GetRunningSchedules() int32 {
+	if x != nil {
+		return x.RunningSchedules
+	}
+	return 0
+}
+
+func (x *StrategyCard) GetBacktestRunId() string {
+	if x != nil {
+		return x.BacktestRunId
+	}
+	return ""
+}
+
 // TemplateI18n holds parameter label translations per locale.
 type TemplateI18N struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -299,7 +461,7 @@ type TemplateI18N struct {
 
 func (x *TemplateI18N) Reset() {
 	*x = TemplateI18N{}
-	mi := &file_strategy_template_entity_proto_msgTypes[2]
+	mi := &file_strategy_template_entity_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -311,7 +473,7 @@ func (x *TemplateI18N) String() string {
 func (*TemplateI18N) ProtoMessage() {}
 
 func (x *TemplateI18N) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_template_entity_proto_msgTypes[2]
+	mi := &file_strategy_template_entity_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +486,7 @@ func (x *TemplateI18N) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateI18N.ProtoReflect.Descriptor instead.
 func (*TemplateI18N) Descriptor() ([]byte, []int) {
-	return file_strategy_template_entity_proto_rawDescGZIP(), []int{2}
+	return file_strategy_template_entity_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TemplateI18N) GetLocales() map[string]*ParamLabelMap {
@@ -370,7 +532,25 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\x04step\x18\x06 \x01(\tR\x04step\x12\x14\n" +
 	"\x05label\x18\a \x01(\tR\x05label\x12 \n" +
 	"\vdescription\x18\b \x01(\tR\vdescription\x12\x18\n" +
-	"\aoptions\x18\t \x03(\tR\aoptions\"\x9e\x01\n" +
+	"\aoptions\x18\t \x03(\tR\aoptions\"\xf3\x03\n" +
+	"\fStrategyCard\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x12\n" +
+	"\x04tags\x18\x04 \x03(\tR\x04tags\x12\x1b\n" +
+	"\tis_system\x18\x05 \x01(\bR\bisSystem\x12\x1b\n" +
+	"\tis_public\x18\x06 \x01(\bR\bisPublic\x12\x1b\n" +
+	"\tuse_count\x18\a \x01(\x05R\buseCount\x129\n" +
+	"\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1c\n" +
+	"\tsparkline\x18\t \x03(\tR\tsparkline\x12\x19\n" +
+	"\bwin_rate\x18\n" +
+	" \x01(\tR\awinRate\x12!\n" +
+	"\fmax_drawdown\x18\v \x01(\tR\vmaxDrawdown\x12#\n" +
+	"\rprofit_factor\x18\f \x01(\tR\fprofitFactor\x12!\n" +
+	"\fsharpe_ratio\x18\r \x01(\tR\vsharpeRatio\x12+\n" +
+	"\x11running_schedules\x18\x0e \x01(\x05R\x10runningSchedules\x12&\n" +
+	"\x0fbacktest_run_id\x18\x0f \x01(\tR\rbacktestRunId\"\x9e\x01\n" +
 	"\fTemplateI18n\x12;\n" +
 	"\alocales\x18\x01 \x03(\v2!.ant.v1.TemplateI18n.LocalesEntryR\alocales\x1aQ\n" +
 	"\fLocalesEntry\x12\x10\n" +
@@ -389,27 +569,29 @@ func file_strategy_template_entity_proto_rawDescGZIP() []byte {
 	return file_strategy_template_entity_proto_rawDescData
 }
 
-var file_strategy_template_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_strategy_template_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_strategy_template_entity_proto_goTypes = []any{
 	(*StrategyTemplate)(nil),      // 0: ant.v1.StrategyTemplate
 	(*TemplateParameter)(nil),     // 1: ant.v1.TemplateParameter
-	(*TemplateI18N)(nil),          // 2: ant.v1.TemplateI18n
-	nil,                           // 3: ant.v1.TemplateI18n.LocalesEntry
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
-	(*ParamLabelMap)(nil),         // 5: ant.v1.ParamLabelMap
+	(*StrategyCard)(nil),          // 2: ant.v1.StrategyCard
+	(*TemplateI18N)(nil),          // 3: ant.v1.TemplateI18n
+	nil,                           // 4: ant.v1.TemplateI18n.LocalesEntry
+	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*ParamLabelMap)(nil),         // 6: ant.v1.ParamLabelMap
 }
 var file_strategy_template_entity_proto_depIdxs = []int32{
 	1, // 0: ant.v1.StrategyTemplate.parameters:type_name -> ant.v1.TemplateParameter
-	4, // 1: ant.v1.StrategyTemplate.created_at:type_name -> google.protobuf.Timestamp
-	4, // 2: ant.v1.StrategyTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	2, // 3: ant.v1.StrategyTemplate.i18n:type_name -> ant.v1.TemplateI18n
-	3, // 4: ant.v1.TemplateI18n.locales:type_name -> ant.v1.TemplateI18n.LocalesEntry
-	5, // 5: ant.v1.TemplateI18n.LocalesEntry.value:type_name -> ant.v1.ParamLabelMap
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	5, // 1: ant.v1.StrategyTemplate.created_at:type_name -> google.protobuf.Timestamp
+	5, // 2: ant.v1.StrategyTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	3, // 3: ant.v1.StrategyTemplate.i18n:type_name -> ant.v1.TemplateI18n
+	5, // 4: ant.v1.StrategyCard.created_at:type_name -> google.protobuf.Timestamp
+	4, // 5: ant.v1.TemplateI18n.locales:type_name -> ant.v1.TemplateI18n.LocalesEntry
+	6, // 6: ant.v1.TemplateI18n.LocalesEntry.value:type_name -> ant.v1.ParamLabelMap
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_strategy_template_entity_proto_init() }
@@ -424,7 +606,7 @@ func file_strategy_template_entity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_template_entity_proto_rawDesc), len(file_strategy_template_entity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

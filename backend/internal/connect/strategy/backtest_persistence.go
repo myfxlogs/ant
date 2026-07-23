@@ -45,9 +45,15 @@ func (s *StrategyExecutionServer) persistBacktestTrades(ctx context.Context, run
 }
 
 func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
-	if !result.GetSuccess() { s.failRun(ctx, run, result.GetError()); return }
+	if !result.GetSuccess() {
+		s.failRun(ctx, run, result.GetError())
+		return
+	}
 	protoResp, err := proto.Marshal(result)
-	if err != nil { s.failRun(ctx, run, fmt.Sprintf("proto marshal failed: %v", err)); return }
+	if err != nil {
+		s.failRun(ctx, run, fmt.Sprintf("proto marshal failed: %v", err))
+		return
+	}
 	now := time.Now()
 	BacktestRunsTotal.WithLabelValues(StatusSucceeded).Inc()
 	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusSucceeded, "", &now, &now, protoResp); err != nil {

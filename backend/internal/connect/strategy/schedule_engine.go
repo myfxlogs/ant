@@ -94,7 +94,10 @@ func (e *ScheduleEngine) Start(ctx context.Context) error {
 		}
 		if cur != nil {
 			if !cur.Stop() {
-				select { case <-cur.C: default: }
+				select {
+				case <-cur.C:
+				default:
+				}
 			}
 		}
 		cur = timer

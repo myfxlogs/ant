@@ -14,9 +14,9 @@ import (
 // to PositionSnapshotBroker (push-first).  Eliminates per-bar OpenedOrders
 // polling from backfillContextStrings and MTAccountStateProvider.
 type PositionCache struct {
-	mu       sync.RWMutex
+	mu        sync.RWMutex
 	snapshots map[string]*mthub.PositionSnapshot // accountID → latest snapshot
-	log      *zap.Logger
+	log       *zap.Logger
 }
 
 // NewPositionCache creates a PositionCache.  Call Start to begin subscribing.
@@ -26,7 +26,7 @@ func NewPositionCache(log *zap.Logger) *PositionCache {
 	}
 	return &PositionCache{
 		snapshots: make(map[string]*mthub.PositionSnapshot),
-		log:      log,
+		log:       log,
 	}
 }
 

@@ -44,7 +44,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   const loadScheduleHealth = useCallback(async (row: ScheduleRow) => {
     if (!row?.id) return; setHealthLoading(true);
     try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id) as ScheduleHealthSummary); }
-    catch (e: any) { message.error(e?.message || t(HEALTH_MESSAGES_LOAD_FAILED_KEY)); setHealthSummary(null); }
+    catch (e: unknown) { message.error(e instanceof Error ? e.message : t(HEALTH_MESSAGES_LOAD_FAILED_KEY)); setHealthSummary(null); }
     finally { setHealthLoading(false); }
   }, [t]);
 
@@ -63,9 +63,9 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       if (!code) throw new Error(t(MESSAGES_TEMPLATE_CODE_EMPTY_CANNOT_EXECUTE_KEY));
       const exec = await strategyRuntimeApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
       if (!exec.success) throw new Error(exec.error || t(MESSAGES_STRATEGY_EXECUTE_FAILED_KEY));
-      setTriggerResult({ logs: exec.logs || [], signal: exec.signal as any, meta: { templateId: row.templateId, scheduleId: row.id } });
-    } catch (e: any) {
-      setTriggerResult({ logs: [], signal: null, meta: { error: e?.message || t(MESSAGES_EXECUTE_FAILED_KEY) } });
+      setTriggerResult({ logs: exec.logs || [], signal: exec.signal ?? null, meta: { templateId: row.templateId, scheduleId: row.id } });
+    } catch (e: unknown) {
+      setTriggerResult({ logs: [], signal: null, meta: { error: e instanceof Error ? e.message : t(MESSAGES_EXECUTE_FAILED_KEY) } });
     }
     finally { setTriggering(false); }
   }, [t]);
@@ -76,13 +76,13 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     const raw = triggerResult?.signal;
     if (!raw) { message.error(t(MESSAGES_NO_ORDERABLE_SIGNAL_KEY)); return; }
     const signal = raw;
-    const rawAction = String(signal?.type ?? signal?.signalType ?? signal?.signal ?? '').trim().toLowerCase();
+    const rawAction = String(signal?.type ?? signal?.signalType ?? '').trim().toLowerCase();
     const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
     const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
     const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
-    if (!action || action === 'hold') { message.error(t(MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY)); return; }
+    if (!action || rawAction === 'hold') { message.error(t(MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY)); return; }
     if (!(volume > 0)) { message.error(t(MESSAGES_VOLUME_INVALID_KEY)); return; }
-    const payload: any = {
+    const payload = {
       accountId: schedule.accountId, symbol: signal.symbol || schedule.symbol, type: action, volume,
       price: typeof signal?.price === 'number' ? signal.price : Number(signal?.price || 0),
       stopLoss: typeof signal?.stopLoss === 'number' ? signal.stopLoss : Number(signal?.stopLoss || 0),
@@ -94,7 +94,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t(MESSAGES_ORDER_FAILED_KEY) })); return; }
       message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
-    } catch (e: any) { message.error(e?.message || t(MESSAGES_ORDER_FAILED_KEY)); }
+    } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(MESSAGES_ORDER_FAILED_KEY)); }
   }, [triggerContext, triggerResult, t]);
 
   // ── Schedule CRUD ──
@@ -108,9 +108,9 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     try {
       const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list()]);
       setTemplates(tpls || []); setSchedules(schs as ScheduleRow[]); void fetchAccounts();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('fetchSchedules failed', e);
-      setError(e?.message || t('common.loadingFailed'));
+      setError(e instanceof Error ? e.message : t('common.loadingFailed'));
     } finally { setLoading(false); }
   }, [t, fetchAccounts]);
 
@@ -123,6 +123,8 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     if (!sseReady) return;
     let active = true;
     const RECONNECT_MS = 90_000; // reconnect before Cloudflare 100s timeout
+    let backoffMs = 2000;
+    const MAX_BACKOFF_MS = 30_000;
 
     const connect = async () => {
       while (active) {
@@ -138,9 +140,11 @@ export function useLibrarySchedules(selectedTemplateId: string) {
           const timerDone = new Promise(r => setTimeout(r, RECONNECT_MS));
           await Promise.race([streamDone, timerDone]);
           ctrl.abort(); // proactively abort before Cloudflare kills it
-        } catch { /* stream error — reconnect immediately */ }
+          backoffMs = 2000; // reset backoff on clean disconnect
+        } catch { /* stream error — reconnect with backoff */ }
         if (!active) break;
-        await new Promise(r => setTimeout(r, 2000)); // brief pause before reconnect
+        await new Promise(r => setTimeout(r, backoffMs));
+        backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
       }
     };
     connect();
@@ -220,14 +224,14 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       if (editing?.id) {
         await strategyScheduleV2Api.update({
           id: editing.id, name: v.name, symbol: v.symbol, timeframe: v.timeframe,
-          scheduleType: backendScheduleType, scheduleConfig: scheduleConfig as any, parameters: merged,
+          scheduleType: backendScheduleType, scheduleConfig, parameters: merged,
         });
         message.success(t('common.updated'));
       } else {
-        const created: any = await strategyScheduleV2Api.create({
+        const created = await strategyScheduleV2Api.create({
           templateId: v.templateId, accountId: v.accountId, name: v.name,
           symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendScheduleType,
-          scheduleConfig: scheduleConfig as any, parameters: merged,
+          scheduleConfig, parameters: merged,
         });
         if (v.isActive && created?.id) {
           await strategyScheduleV2Api.toggle(created.id, true);
@@ -235,7 +239,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
         message.success(t('common.created'));
       }
       setOpenEdit(false); setEditing(null); form.resetFields(); await refresh();
-    } catch (e: any) { message.error(e?.message || t('common.saveFailed')); }
+    } catch (e: unknown) { message.error(e instanceof Error ? e.message : t('common.saveFailed')); }
     finally { setLoading(false); }
   }, [editing, form, refresh, t]);
 
@@ -244,7 +248,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       await strategyScheduleV2Api.toggle(row.id, next);
       message.success(next ? t('common.enabled') : t('common.disabled'));
       await refresh();
-    } catch (e: any) { console.error('toggleSchedule failed', e); message.error(e?.message || t('common.operationFailed')); }
+    } catch (e: unknown) { console.error('toggleSchedule failed', e); message.error(e instanceof Error ? e.message : t('common.operationFailed')); }
   }, [refresh, t]);
 
   const onDelete = useCallback(async (row: ScheduleRow) => {
@@ -252,7 +256,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       await strategyScheduleV2Api.delete(row.id);
       message.success(t('common.deleted'));
       await refresh();
-    } catch (e: any) { console.error('deleteSchedule failed', e); message.error(e?.message || t('common.deleteFailed')); }
+    } catch (e: unknown) { console.error('deleteSchedule failed', e); message.error(e instanceof Error ? e.message : t('common.deleteFailed')); }
   }, [refresh, t]);
 
   useEffect(() => {

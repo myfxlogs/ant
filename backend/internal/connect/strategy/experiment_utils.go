@@ -45,7 +45,10 @@ func computeStability(equity []float64) float64 {
 	n := len(equity)
 	// Compute ranks of equity values
 	ranks := make([]float64, n)
-	type pair struct{ val float64; idx int }
+	type pair struct {
+		val float64
+		idx int
+	}
 	pairs := make([]pair, n)
 	for i, v := range equity {
 		pairs[i] = pair{v, i}

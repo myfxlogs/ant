@@ -4,10 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"google.golang.org/protobuf/proto"
+
+	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 type TemplateRow struct {
@@ -117,6 +122,184 @@ func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUI
 		return ErrTemplateNotFound
 	}
 	return nil
+}
+
+// StrategyCardRow is a denormalized row for Gallery card display (ADR-0027).
+type StrategyCardRow struct {
+	ID              uuid.UUID
+	Name            string
+	Description     string
+	Tags            []string
+	IsSystem        bool
+	IsPublic        bool
+	UseCount        int32
+	CreatedAt       time.Time
+	Sparkline       []string // equity curve from latest successful backtest
+	WinRate         string
+	MaxDrawdown     string
+	ProfitFactor    string
+	SharpeRatio     string
+	RunningSchedules int32
+	BacktestRunID   *uuid.UUID
+}
+
+// ListStrategyCardsParams controls filtering, sorting, and searching.
+type ListStrategyCardsParams struct {
+	Filter string // "all" | "mine" | "preset"
+	Sort   string // "recent" | "return" | "risk" | "usage"
+	Search string // name/description ILIKE
+	Limit  int    // page size (default 50, max 200)
+	Offset int    // page offset
+}
+
+// ListStrategyCards returns templates with aggregated backtest KPIs and schedule counts.
+// Uses 3 batched queries to avoid N+1 (ADR-0027 §4.7). Protobuf parsing in Go.
+func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, params ListStrategyCardsParams) ([]StrategyCardRow, int, error) {
+	// Apply pagination defaults
+	if params.Limit <= 0 {
+		params.Limit = 50
+	}
+	if params.Limit > 200 {
+		params.Limit = 200
+	}
+	// Build WHERE clause
+	where := "WHERE status != 'canceled'"
+	args := []any{userID}
+	argIdx := 2
+	switch params.Filter {
+	case "mine":
+		where += " AND user_id = $1 AND NOT is_system"
+	case "preset":
+		where += " AND is_system = true"
+	default: // "all"
+		where += " AND (user_id = $1 OR is_public = true OR is_system = true)"
+	}
+	if params.Search != "" {
+		where += fmt.Sprintf(" AND (name ILIKE $%d OR description ILIKE $%d)", argIdx, argIdx)
+		args = append(args, "%"+params.Search+"%")
+		argIdx++
+	}
+	// Build ORDER BY clause (SQL-side for recent/usage; Go-side for return/risk after KPI parse)
+	sqlOrder := "created_at DESC"
+	switch params.Sort {
+	case "usage":
+		sqlOrder = "use_count DESC"
+	}
+	// Count total matching rows (for pagination)
+	var total int
+	countQ := `SELECT count(*) FROM strategy_templates ` + where
+	if err := s.pg.QueryRow(ctx, countQ, args...).Scan(&total); err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards count: %w", err)
+	}
+	// Add LIMIT/OFFSET
+	limitIdx := argIdx
+	offsetIdx := argIdx + 1
+	args = append(args, params.Limit, params.Offset)
+	rows, err := s.pg.Query(ctx,
+		`SELECT id, name, COALESCE(description, ''), tags, is_system, is_public, use_count, created_at
+		 FROM strategy_templates
+		 `+where+`
+		 ORDER BY `+sqlOrder+`
+		 LIMIT $`+strconv.Itoa(limitIdx)+` OFFSET $`+strconv.Itoa(offsetIdx), args...)
+	if err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards templates: %w", err)
+	}
+	defer rows.Close()
+	var out []StrategyCardRow
+	tids := make([]uuid.UUID, 0)
+	for rows.Next() {
+		var r StrategyCardRow
+		if err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Tags, &r.IsSystem, &r.IsPublic, &r.UseCount, &r.CreatedAt); err != nil {
+			return nil, 0, fmt.Errorf("ListStrategyCards scan: %w", err)
+		}
+		out = append(out, r)
+		tids = append(tids, r.ID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	if len(out) == 0 {
+		return out, total, nil
+	}
+	// Batch: latest successful backtest per template
+	btRows, err := s.pg.Query(ctx,
+		`SELECT DISTINCT ON (template_id) template_id, id, proto_response
+		 FROM backtest_runs WHERE template_id = ANY($1) AND status = 'succeeded'
+		 ORDER BY template_id, created_at DESC`, tids)
+	if err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards backtests: %w", err)
+	}
+	defer btRows.Close()
+	type btInfo struct{ runID uuid.UUID; raw []byte }
+	btMap := make(map[uuid.UUID]btInfo)
+	for btRows.Next() {
+		var tid uuid.UUID
+		var info btInfo
+		if err := btRows.Scan(&tid, &info.runID, &info.raw); err != nil {
+			return nil, 0, fmt.Errorf("ListStrategyCards bt scan: %w", err)
+		}
+		btMap[tid] = info
+	}
+	if err := btRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards backtests: %w", err)
+	}
+	// Batch: active schedule counts
+	scRows, err := s.pg.Query(ctx,
+		`SELECT template_id, COUNT(*)::int FROM strategy_schedules
+		 WHERE template_id = ANY($1) AND status = 'ACTIVE' GROUP BY template_id`, tids)
+	if err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards schedules: %w", err)
+	}
+	defer scRows.Close()
+	schedMap := make(map[uuid.UUID]int32)
+	for scRows.Next() {
+		var tid uuid.UUID
+		var n int32
+		if err := scRows.Scan(&tid, &n); err != nil {
+			return nil, 0, fmt.Errorf("ListStrategyCards sched scan: %w", err)
+		}
+		schedMap[tid] = n
+	}
+	if err := scRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards schedules: %w", err)
+	}
+	// Assemble: parse proto_response for KPIs + sparkline
+	for i := range out {
+		tid := out[i].ID
+		out[i].RunningSchedules = schedMap[tid]
+		info, ok := btMap[tid]
+		if !ok || len(info.raw) == 0 {
+			continue
+		}
+		out[i].BacktestRunID = &info.runID
+		var resp antv1.ExecuteBacktestResponse
+		if err := proto.Unmarshal(info.raw, &resp); err != nil {
+			continue
+		}
+		out[i].Sparkline = resp.GetEquityCurve()
+		m := resp.GetMetrics()
+		out[i].WinRate = m.GetWinRate()
+		out[i].MaxDrawdown = m.GetMaxDrawdown()
+		out[i].ProfitFactor = m.GetProfitFactor()
+		out[i].SharpeRatio = m.GetSharpeRatio()
+	}
+	// Go-side sort for KPI-based orderings (values come from proto_response, not SQL columns)
+	switch params.Sort {
+	case "return":
+		sort.SliceStable(out, func(i, j int) bool {
+			return parseCardFloat(out[i].ProfitFactor) > parseCardFloat(out[j].ProfitFactor)
+		})
+	case "risk":
+		sort.SliceStable(out, func(i, j int) bool {
+			return parseCardFloat(out[i].MaxDrawdown) < parseCardFloat(out[j].MaxDrawdown)
+		})
+	}
+	return out, total, nil
+}
+
+func parseCardFloat(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 }
 
 func scanTemplateRows(rows pgx.Rows) ([]TemplateRow, error) {

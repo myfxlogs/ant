@@ -66,8 +66,8 @@ func (s *StrategyExecutionServer) GetStrategyVersion(ctx context.Context, req *c
 	}
 
 	return connect.NewResponse(&antv1.GetStrategyVersionResponse{
-		Version:     versionToProto(v),
-		SourceCode:  v.SourceCode,
+		Version:    versionToProto(v),
+		SourceCode: v.SourceCode,
 	}), nil
 }
 
@@ -94,8 +94,8 @@ func (s *StrategyExecutionServer) RollbackStrategyVersion(ctx context.Context, r
 	}
 
 	return connect.NewResponse(&antv1.RollbackStrategyVersionResponse{
-		NewVersion:          versionToProto(newVer),
-		RestoredSourceCode:  newVer.SourceCode,
+		NewVersion:         versionToProto(newVer),
+		RestoredSourceCode: newVer.SourceCode,
 	}), nil
 }
 
@@ -123,10 +123,10 @@ func (s *StrategyExecutionServer) DiffStrategyVersions(ctx context.Context, req 
 	}
 
 	return connect.NewResponse(&antv1.DiffStrategyVersionsResponse{
-		FromVersion:     versionToProto(from),
-		FromSourceCode:  from.SourceCode,
-		ToVersion:       versionToProto(to),
-		ToSourceCode:    to.SourceCode,
+		FromVersion:    versionToProto(from),
+		FromSourceCode: from.SourceCode,
+		ToVersion:      versionToProto(to),
+		ToSourceCode:   to.SourceCode,
 	}), nil
 }
 
@@ -164,11 +164,11 @@ func (s *StrategyExecutionServer) UpdateStrategyCode(ctx context.Context, req *c
 
 func versionToProto(v *repository.StrategyVersion) *antv1.StrategyVersionInfo {
 	info := &antv1.StrategyVersionInfo{
-		VersionId:      v.ID.String(),
-		VersionNumber:  int32(v.VersionNumber),
-		SourceLang:     v.SourceLang,
-		ChangeSummary:  v.ChangeSummary,
-		CodeHash:       v.CodeHash,
+		VersionId:     v.ID.String(),
+		VersionNumber: int32(v.VersionNumber),
+		SourceLang:    v.SourceLang,
+		ChangeSummary: v.ChangeSummary,
+		CodeHash:      v.CodeHash,
 	}
 	if !v.CreatedAt.IsZero() {
 		info.CreatedAt = timestamppb.New(v.CreatedAt)
@@ -178,11 +178,11 @@ func versionToProto(v *repository.StrategyVersion) *antv1.StrategyVersionInfo {
 
 func metaToProto(m *repository.StrategyVersionMeta) *antv1.StrategyVersionInfo {
 	info := &antv1.StrategyVersionInfo{
-		VersionId:      m.ID.String(),
-		VersionNumber:  int32(m.VersionNumber),
-		SourceLang:     m.SourceLang,
-		ChangeSummary:  m.ChangeSummary,
-		CodeHash:       m.CodeHash,
+		VersionId:     m.ID.String(),
+		VersionNumber: int32(m.VersionNumber),
+		SourceLang:    m.SourceLang,
+		ChangeSummary: m.ChangeSummary,
+		CodeHash:      m.CodeHash,
 	}
 	if !m.CreatedAt.IsZero() {
 		info.CreatedAt = timestamppb.New(m.CreatedAt)

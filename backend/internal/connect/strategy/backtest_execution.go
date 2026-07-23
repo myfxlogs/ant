@@ -150,8 +150,12 @@ func (s *StrategyExecutionServer) fetchSymbolInfo(ctx context.Context, run *repo
 
 func buildBacktestRequest(run *repository.BacktestRun, params backtestParams, klines []*antv1.ExecuteKlineBar, symbolInfo *antv1.SymbolInfo) *antv1.ExecuteBacktestRequest {
 	fromMs, toMs := int64(0), int64(0)
-	if run.FromTs != nil { fromMs = run.FromTs.UnixMilli() }
-	if run.ToTs != nil { toMs = run.ToTs.UnixMilli() }
+	if run.FromTs != nil {
+		fromMs = run.FromTs.UnixMilli()
+	}
+	if run.ToTs != nil {
+		toMs = run.ToTs.UnixMilli()
+	}
 	return &antv1.ExecuteBacktestRequest{
 		StrategyId: run.ID.String(), StrategyCode: params.code,
 		Symbol: run.Symbol, Timeframe: run.Timeframe,

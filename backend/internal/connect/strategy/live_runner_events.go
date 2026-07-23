@@ -91,7 +91,7 @@ func (s *StrategyExecutionServer) handleBar(
 			s.log.Error("LiveStrategyRunner: session lost before bar event")
 			return
 		}
-		respBytes, err = (*session).SendBar(ctx, reqBytes)
+		respBytes, err = (*session).SendEvent(ctx, reqBytes)
 	}
 	if err != nil {
 		s.log.Error("LiveStrategyRunner: bar request failed", zap.Error(err))
@@ -124,7 +124,7 @@ func (s *StrategyExecutionServer) handleTick(
 		TickContext:  tctx,
 	}
 	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := (*session).SendBar(ctx, reqBytes)
+	respBytes, err := (*session).SendEvent(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
 		if activeSess != nil {
@@ -148,13 +148,13 @@ func (s *StrategyExecutionServer) handleTrade(
 	tctx := s.buildTradeContext(ctx, cfg, evt)
 
 	req := &antv1.ExecuteLiveRequest{
-		StrategyCode:  cfg.Code,
-		StrategyId:    cfg.StrategyID,
-		RequestType:   antv1.RequestType_REQUEST_TYPE_TRADE,
-		TradeContext:  tctx,
+		StrategyCode: cfg.Code,
+		StrategyId:   cfg.StrategyID,
+		RequestType:  antv1.RequestType_REQUEST_TYPE_TRADE,
+		TradeContext: tctx,
 	}
 	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := (*session).SendBar(ctx, reqBytes)
+	respBytes, err := (*session).SendEvent(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))
 		if activeSess != nil {

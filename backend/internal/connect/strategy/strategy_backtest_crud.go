@@ -5,20 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"go.uber.org/zap"
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/backtest"
-	"alphaforge/internal/interceptor"
 	"alphaforge/internal/pkg/ptr"
 	"alphaforge/internal/repository"
 	"alphaforge/tools/mql2go/interp"
 )
-
 
 // validateBacktestRun delegates to the shared backtest.ApplyDefaults.
 func validateBacktestRun(run *repository.BacktestRun) {
@@ -26,9 +24,9 @@ func validateBacktestRun(run *repository.BacktestRun) {
 }
 
 func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
-	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 
 	// Verify account ownership — prevent cross-user backtest execution.
@@ -101,8 +99,12 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 		Mode: backtestModeToString(msg.Mode), Status: StatusPending,
 		StrategyCode: ptr.Str(msg.Code), InitialCapital: ptr.Decimal(parseDecimal(msg.InitialCapital)),
 	}
-	if run.Mode == "" { run.Mode = "KLINE_RANGE" }
-	if parseDecimal(msg.InitialCapital).LessThanOrEqual(decimal.Zero) { run.InitialCapital = ptr.Decimal(decimal.NewFromInt(10000)) }
+	if run.Mode == "" {
+		run.Mode = "KLINE_RANGE"
+	}
+	if parseDecimal(msg.InitialCapital).LessThanOrEqual(decimal.Zero) {
+		run.InitialCapital = ptr.Decimal(decimal.NewFromInt(10000))
+	}
 	if cfg := msg.GetExecutionConfig(); cfg != nil {
 		run.Commission = ptr.Decimal(parseDecimal(cfg.GetCommission()))
 		run.Slippage = ptr.Decimal(parseDecimal(cfg.GetSlippage()))
@@ -111,21 +113,31 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 		sMode := cfg.GetStrictMode()
 		run.StrictMode = &sMode
 	}
-	if msg.From != nil { t := msg.From.AsTime(); run.FromTs = &t }
-	if msg.To != nil { t := msg.To.AsTime(); run.ToTs = &t }
+	if msg.From != nil {
+		t := msg.From.AsTime()
+		run.FromTs = &t
+	}
+	if msg.To != nil {
+		t := msg.To.AsTime()
+		run.ToTs = &t
+	}
 	if msg.DatasetId != nil {
-		if id, _ := uuid.Parse(*msg.DatasetId); id != uuid.Nil { run.DatasetID = &id }
+		if id, _ := uuid.Parse(*msg.DatasetId); id != uuid.Nil {
+			run.DatasetID = &id
+		}
 	}
 	if msg.TemplateId != nil {
-		if id, _ := uuid.Parse(*msg.TemplateId); id != uuid.Nil { run.TemplateID = &id }
+		if id, _ := uuid.Parse(*msg.TemplateId); id != uuid.Nil {
+			run.TemplateID = &id
+		}
 	}
 	return run
 }
 
 func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
-	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
@@ -135,19 +147,20 @@ func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *conne
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
+	bp := parseBacktestResult(run.ProtoResponse)
 	return connect.NewResponse(&antv1.GetBacktestRunResponse{
-		Run:                   toProtoBacktestRun(run),
-		Metrics:               parseMetrics(run.ProtoResponse),
-		EquityCurve:           parseEquityCurve(run.ProtoResponse),
-		Risk:                  parseRisk(run.ProtoResponse),
-		ExecutionAssumptions:  parseExecutionAssumptions(run.ProtoResponse),
+		Run:                  toProtoBacktestRun(run),
+		Metrics:              bp.Metrics,
+		EquityCurve:          bp.EquityCurve,
+		Risk:                 bp.Risk,
+		ExecutionAssumptions: bp.ExecutionAssumptions,
 	}), nil
 }
 
 func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
-	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 	var accountID *uuid.UUID
 	if req.Msg.AccountId != nil && *req.Msg.AccountId != "" {
@@ -185,9 +198,9 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 	if err != nil {
 		return err
 	}
-	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return err
 	}
 
 	// Send current state immediately so the client doesn't time out waiting
@@ -199,12 +212,13 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 	if run == nil {
 		return connect.NewError(connect.CodeNotFound, fmt.Errorf("backtest run %s not found", runID))
 	}
+	bp := parseBacktestResult(run.ProtoResponse)
 	if err := stream.Send(&antv1.BacktestRunUpdate{
 		Run:                  toProtoBacktestRun(run),
-		Metrics:              parseMetrics(run.ProtoResponse),
-		EquityCurve:          parseEquityCurve(run.ProtoResponse),
-		Risk:                 parseRisk(run.ProtoResponse),
-		ExecutionAssumptions: parseExecutionAssumptions(run.ProtoResponse),
+		Metrics:              bp.Metrics,
+		EquityCurve:          bp.EquityCurve,
+		Risk:                 bp.Risk,
+		ExecutionAssumptions: bp.ExecutionAssumptions,
 	}); err != nil {
 		return err
 	}
@@ -240,12 +254,13 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 			continue
 		}
 		prevStatus = run.Status
+		bp := parseBacktestResult(run.ProtoResponse)
 		if err := stream.Send(&antv1.BacktestRunUpdate{
 			Run:                  toProtoBacktestRun(run),
-			Metrics:              parseMetrics(run.ProtoResponse),
-			EquityCurve:          parseEquityCurve(run.ProtoResponse),
-			Risk:                 parseRisk(run.ProtoResponse),
-			ExecutionAssumptions: parseExecutionAssumptions(run.ProtoResponse),
+			Metrics:              bp.Metrics,
+			EquityCurve:          bp.EquityCurve,
+			Risk:                 bp.Risk,
+			ExecutionAssumptions: bp.ExecutionAssumptions,
 		}); err != nil {
 			return err
 		}
@@ -256,9 +271,9 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 }
 
 func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
-	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
@@ -278,11 +293,9 @@ func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *co
 }
 
 func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
-	uid := interceptor.GetUserID(ctx)
-	s.log.Info("DeleteBacktestRun called", zap.String("raw_user_id", uid), zap.String("run_id", req.Msg.RunId))
-	userID, err := uuid.Parse(uid)
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 	runID, err := uuid.Parse(req.Msg.RunId)
 	if err != nil {
@@ -299,9 +312,9 @@ func (s *StrategyExecutionServer) DeleteBacktestRun(ctx context.Context, req *co
 
 // DeleteBacktestRuns implements the batch-delete RPC for backtest runs.
 func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
-	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := userIDRequire(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user ID"))
+		return nil, err
 	}
 	ids := req.Msg.RunIds
 	if len(ids) == 0 {

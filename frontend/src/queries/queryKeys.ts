@@ -34,6 +34,12 @@ export const queryKeys = {
   templates: {
     all: ['templates'] as const,
     list: () => [...queryKeys.templates.all, 'list'] as const,
+    detail: (id: string) => [...queryKeys.templates.all, 'detail', id] as const,
+  },
+  strategyCards: {
+    all: ['strategyCards'] as const,
+    list: (params?: { filter?: string; sort?: string; search?: string }) =>
+      [...queryKeys.strategyCards.all, 'list', params?.filter ?? '', params?.sort ?? '', params?.search ?? ''] as const,
   },
   schedules: {
     all: ['schedules'] as const,

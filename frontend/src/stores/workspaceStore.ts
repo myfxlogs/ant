@@ -1,6 +1,6 @@
 /**
  * workspaceStore — persists workspace UI state across sessions.
- * Uses Zustand persist middleware (matching authStore pattern).
+ * Uses Zustand persist middleware with slice-creator pattern (ADR-0027 Phase C).
  * Only persists layout/navigation state; never persists code or results.
  */
 import { create } from 'zustand';
@@ -9,67 +9,100 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export type CenterTab = 'design' | 'code' | 'backtest';
 export type RightTab = 'chat' | 'code';
 
-// Persisted to localStorage so code survives page refresh during a session.
+// ── Slice interfaces ──────────────────────────────────────────────
 
-interface WorkspaceState {
+export interface AccountSlice {
   accountId: string;
   symbol: string;
   timeframe: string;
+  setAccountId: (v: string) => void;
+  setSymbol: (v: string) => void;
+  setTimeframe: (v: string) => void;
+}
+
+export interface LayoutSlice {
   centerTab: CenterTab;
   rightTab: RightTab;
   leftSidebarCollapsed: boolean;
   bottomPanelCollapsed: boolean;
   quickTradeCollapsed: boolean;
   positionsPanelVisible: boolean;
-  currentCode: string;
-  currentCodeName: string;
   rightPanelWidth: number;
-  _hasHydrated: boolean;
-  setAccountId: (v: string) => void;
-  setSymbol: (v: string) => void;
-  setTimeframe: (v: string) => void;
   setCenterTab: (v: CenterTab) => void;
   setRightTab: (v: RightTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
   setBottomPanelCollapsed: (v: boolean) => void;
   setQuickTradeCollapsed: (v: boolean) => void;
   setPositionsPanelVisible: (v: boolean) => void;
-  setCurrentCode: (v: string) => void;
-  setCurrentCodeName: (v: string) => void;
   setRightPanelWidth: (v: number) => void;
 }
+
+export interface CodeSlice {
+  currentCode: string;
+  currentCodeName: string;
+  setCurrentCode: (v: string) => void;
+  setCurrentCodeName: (v: string) => void;
+}
+
+export interface HydrationSlice {
+  _hasHydrated: boolean;
+}
+
+type WorkspaceState = AccountSlice & LayoutSlice & CodeSlice & HydrationSlice;
+
+// ── Slice creators ────────────────────────────────────────────────
+
+function createAccountSlice(set: (partial: Partial<WorkspaceState>) => void): AccountSlice {
+  return {
+    accountId: '',
+    symbol: '',
+    timeframe: '1h',
+    setAccountId: (v) => set({ accountId: v }),
+    setSymbol: (v) => set({ symbol: v }),
+    setTimeframe: (v) => set({ timeframe: v }),
+  };
+}
+
+function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): LayoutSlice {
+  return {
+    centerTab: 'design',
+    rightTab: 'chat',
+    leftSidebarCollapsed: true,
+    bottomPanelCollapsed: true,
+    quickTradeCollapsed: true,
+    positionsPanelVisible: false,
+    rightPanelWidth: 380,
+    setCenterTab: (v) => set({ centerTab: v }),
+    setRightTab: (v) => set({ rightTab: v }),
+    setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
+    setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
+    setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
+    setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
+    setRightPanelWidth: (v) => set({ rightPanelWidth: Math.max(280, Math.min(600, v)) }),
+  };
+}
+
+function createCodeSlice(set: (partial: Partial<WorkspaceState>) => void): CodeSlice {
+  return {
+    currentCode: '',
+    currentCodeName: '',
+    setCurrentCode: (v) => set({ currentCode: v }),
+    setCurrentCodeName: (v) => set({ currentCodeName: v }),
+  };
+}
+
+// ── Combined store ────────────────────────────────────────────────
 
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
-      accountId: '',
-      symbol: '',
-      timeframe: '1h',
-      centerTab: 'design',
-      rightTab: 'chat',
-      leftSidebarCollapsed: true,
-      bottomPanelCollapsed: true,
-      quickTradeCollapsed: true,
-      positionsPanelVisible: false,
-      currentCode: '',
-      currentCodeName: '',
-      rightPanelWidth: 380,
+      ...createAccountSlice(set),
+      ...createLayoutSlice(set),
+      ...createCodeSlice(set),
       _hasHydrated: false,
-      setAccountId: (v) => set({ accountId: v }),
-      setSymbol: (v) => set({ symbol: v }),
-      setTimeframe: (v) => set({ timeframe: v }),
-      setCenterTab: (v) => set({ centerTab: v }),
-      setRightTab: (v) => set({ rightTab: v }),
-      setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
-      setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
-      setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
-      setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
-      setCurrentCode: (v) => set({ currentCode: v }),
-      setCurrentCodeName: (v) => set({ currentCodeName: v }),
-      setRightPanelWidth: (v) => set({ rightPanelWidth: Math.max(280, Math.min(600, v)) }),
     }),
     {
-      name: 'ant-workspace-v5',
+      name: 'ant-workspace-v6',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         accountId: state.accountId,

@@ -126,4 +126,3 @@ func TestStrategyServer_SetPgListen(t *testing.T) {
 	}
 	srv.SetPgListen(nil)
 }
-

@@ -36,7 +36,7 @@ export default function AuthorTab() {
           <Button icon={<WalletOutlined />} onClick={() => navigate('/wallet')}>
             {t('marketplace.author.wallet')}
           </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/strategy/library')}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/strategy')}>
             {t('marketplace.author.publishNew')}
           </Button>
         </Space>
@@ -122,7 +122,7 @@ export default function AuthorTab() {
       {/* ── Published strategies list ── */}
       {myPublished.length === 0 ? (
         <Empty description={t('marketplace.author.empty')}>
-          <Button type="primary" onClick={() => navigate('/strategy/library')}>
+          <Button type="primary" onClick={() => navigate('/strategy')}>
             {t('marketplace.author.goToLibrary')}
           </Button>
         </Empty>

@@ -3,9 +3,9 @@
 // strategy via in-process Bytecode VM, and dispatches signals to OMS.
 //
 // Multi-model architecture:
-//   BAR   → barBroker channel   → session.SendBar() → strategy.OnBar
-//   TICK  → tickBroker channel  → session.SendBar() → strategy.OnTick
-//   TRADE → tradeBroker channel → session.SendBar() → strategy.OnTrade
+//   BAR   → barBroker channel   → session.SendEvent() → strategy.OnBar
+//   TICK  → tickBroker channel  → session.SendEvent() → strategy.OnTick
+//   TRADE → tradeBroker channel → session.SendEvent() → strategy.OnTrade
 //
 // Follows push-first architecture: events drive the loop; no polling.
 
@@ -31,7 +31,7 @@ type ExecutionModels int
 
 const (
 	ExecModelTick  ExecutionModels = 1 << iota // OnTick
-	ExecModelTrade                              // OnTrade
+	ExecModelTrade                             // OnTrade
 )
 
 type liveBar struct {
@@ -293,4 +293,3 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 }
-

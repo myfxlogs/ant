@@ -626,6 +626,134 @@ func (x *DeleteTemplateRequest) GetId() string {
 	return ""
 }
 
+type ListStrategyCardsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Filter        string                 `protobuf:"bytes,1,opt,name=filter,proto3" json:"filter,omitempty"`  // "all" | "mine" | "preset"
+	Sort          string                 `protobuf:"bytes,2,opt,name=sort,proto3" json:"sort,omitempty"`      // "recent" | "return" | "risk" | "usage"
+	Search        string                 `protobuf:"bytes,3,opt,name=search,proto3" json:"search,omitempty"`  // name/description fuzzy match
+	Limit         int32                  `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`   // page size (default 50, max 200)
+	Offset        int32                  `protobuf:"varint,5,opt,name=offset,proto3" json:"offset,omitempty"` // page offset
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStrategyCardsRequest) Reset() {
+	*x = ListStrategyCardsRequest{}
+	mi := &file_strategy_template_requests_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStrategyCardsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStrategyCardsRequest) ProtoMessage() {}
+
+func (x *ListStrategyCardsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_template_requests_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStrategyCardsRequest.ProtoReflect.Descriptor instead.
+func (*ListStrategyCardsRequest) Descriptor() ([]byte, []int) {
+	return file_strategy_template_requests_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListStrategyCardsRequest) GetFilter() string {
+	if x != nil {
+		return x.Filter
+	}
+	return ""
+}
+
+func (x *ListStrategyCardsRequest) GetSort() string {
+	if x != nil {
+		return x.Sort
+	}
+	return ""
+}
+
+func (x *ListStrategyCardsRequest) GetSearch() string {
+	if x != nil {
+		return x.Search
+	}
+	return ""
+}
+
+func (x *ListStrategyCardsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListStrategyCardsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type ListStrategyCardsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cards         []*StrategyCard        `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"` // total count matching the query (for pagination UI)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStrategyCardsResponse) Reset() {
+	*x = ListStrategyCardsResponse{}
+	mi := &file_strategy_template_requests_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStrategyCardsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStrategyCardsResponse) ProtoMessage() {}
+
+func (x *ListStrategyCardsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_template_requests_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStrategyCardsResponse.ProtoReflect.Descriptor instead.
+func (*ListStrategyCardsResponse) Descriptor() ([]byte, []int) {
+	return file_strategy_template_requests_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListStrategyCardsResponse) GetCards() []*StrategyCard {
+	if x != nil {
+		return x.Cards
+	}
+	return nil
+}
+
+func (x *ListStrategyCardsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
 var File_strategy_template_requests_proto protoreflect.FileDescriptor
 
 const file_strategy_template_requests_proto_rawDesc = "" +
@@ -690,7 +818,16 @@ const file_strategy_template_requests_proto_rawDesc = "" +
 	"\x05_i18nB\x0e\n" +
 	"\f_strategy_id\"'\n" +
 	"\x15DeleteTemplateRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02idB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x8c\x01\n" +
+	"\x18ListStrategyCardsRequest\x12\x16\n" +
+	"\x06filter\x18\x01 \x01(\tR\x06filter\x12\x12\n" +
+	"\x04sort\x18\x02 \x01(\tR\x04sort\x12\x16\n" +
+	"\x06search\x18\x03 \x01(\tR\x06search\x12\x14\n" +
+	"\x05limit\x18\x04 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x05 \x01(\x05R\x06offset\"]\n" +
+	"\x19ListStrategyCardsResponse\x12*\n" +
+	"\x05cards\x18\x01 \x03(\v2\x14.ant.v1.StrategyCardR\x05cards\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05totalB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_template_requests_proto_rawDescOnce sync.Once
@@ -704,7 +841,7 @@ func file_strategy_template_requests_proto_rawDescGZIP() []byte {
 	return file_strategy_template_requests_proto_rawDescData
 }
 
-var file_strategy_template_requests_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_strategy_template_requests_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_strategy_template_requests_proto_goTypes = []any{
 	(*ListTemplatesRequest)(nil),        // 0: ant.v1.ListTemplatesRequest
 	(*ListTemplatesResponse)(nil),       // 1: ant.v1.ListTemplatesResponse
@@ -716,22 +853,26 @@ var file_strategy_template_requests_proto_goTypes = []any{
 	(*CancelTemplateDraftRequest)(nil),  // 7: ant.v1.CancelTemplateDraftRequest
 	(*UpdateTemplateRequest)(nil),       // 8: ant.v1.UpdateTemplateRequest
 	(*DeleteTemplateRequest)(nil),       // 9: ant.v1.DeleteTemplateRequest
-	(*StrategyTemplate)(nil),            // 10: ant.v1.StrategyTemplate
-	(*TemplateParameter)(nil),           // 11: ant.v1.TemplateParameter
-	(*TemplateI18N)(nil),                // 12: ant.v1.TemplateI18n
+	(*ListStrategyCardsRequest)(nil),    // 10: ant.v1.ListStrategyCardsRequest
+	(*ListStrategyCardsResponse)(nil),   // 11: ant.v1.ListStrategyCardsResponse
+	(*StrategyTemplate)(nil),            // 12: ant.v1.StrategyTemplate
+	(*TemplateParameter)(nil),           // 13: ant.v1.TemplateParameter
+	(*TemplateI18N)(nil),                // 14: ant.v1.TemplateI18n
+	(*StrategyCard)(nil),                // 15: ant.v1.StrategyCard
 }
 var file_strategy_template_requests_proto_depIdxs = []int32{
-	10, // 0: ant.v1.ListTemplatesResponse.templates:type_name -> ant.v1.StrategyTemplate
-	11, // 1: ant.v1.CreateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
-	12, // 2: ant.v1.CreateTemplateRequest.i18n:type_name -> ant.v1.TemplateI18n
-	11, // 3: ant.v1.UpdateTemplateDraftRequest.parameters:type_name -> ant.v1.TemplateParameter
-	11, // 4: ant.v1.UpdateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
-	12, // 5: ant.v1.UpdateTemplateRequest.i18n:type_name -> ant.v1.TemplateI18n
-	6,  // [6:6] is the sub-list for method output_type
-	6,  // [6:6] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	12, // 0: ant.v1.ListTemplatesResponse.templates:type_name -> ant.v1.StrategyTemplate
+	13, // 1: ant.v1.CreateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
+	14, // 2: ant.v1.CreateTemplateRequest.i18n:type_name -> ant.v1.TemplateI18n
+	13, // 3: ant.v1.UpdateTemplateDraftRequest.parameters:type_name -> ant.v1.TemplateParameter
+	13, // 4: ant.v1.UpdateTemplateRequest.parameters:type_name -> ant.v1.TemplateParameter
+	14, // 5: ant.v1.UpdateTemplateRequest.i18n:type_name -> ant.v1.TemplateI18n
+	15, // 6: ant.v1.ListStrategyCardsResponse.cards:type_name -> ant.v1.StrategyCard
+	7,  // [7:7] is the sub-list for method output_type
+	7,  // [7:7] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_strategy_template_requests_proto_init() }
@@ -748,7 +889,7 @@ func file_strategy_template_requests_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_template_requests_proto_rawDesc), len(file_strategy_template_requests_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

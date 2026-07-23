@@ -13,6 +13,7 @@ service StrategyService {
   rpc CreateTemplate(CreateTemplateRequest) returns (StrategyTemplate);
   rpc UpdateTemplate(UpdateTemplateRequest) returns (StrategyTemplate);
   rpc DeleteTemplate(DeleteTemplateRequest) returns (google.protobuf.Empty);
+  rpc ListStrategyCards(ListStrategyCardsRequest) returns (ListStrategyCardsResponse);
 
   rpc CreateTemplateDraft(CreateTemplateDraftRequest) returns (StrategyTemplate);
   rpc UpdateTemplateDraft(UpdateTemplateDraftRequest) returns (StrategyTemplate);

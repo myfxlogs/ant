@@ -21,8 +21,8 @@ type ExperimentWorker struct {
 	backtestRepo   *repository.BacktestRunRepository
 	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
-	systemAISvc    *systemai.Service    // optional: enables AI multi-round proposal
-	pgListen       *pglisten.Listener   // optional: push-first experiment dispatch
+	systemAISvc    *systemai.Service  // optional: enables AI multi-round proposal
+	pgListen       *pglisten.Listener // optional: push-first experiment dispatch
 	stopCh         chan struct{}
 }
 
@@ -44,15 +44,21 @@ func NewExperimentWorker(
 func (w *ExperimentWorker) Start(ctx context.Context) {
 	go func() {
 		notifCh, listenCancel, _ := w.pgListen.Listen(ctx, "experiment_status")
-		if listenCancel != nil { defer listenCancel() }
+		if listenCancel != nil {
+			defer listenCancel()
+		}
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
-			case <-w.stopCh: return
-			case <-ctx.Done(): return
-			case <-notifCh: w.processOneSafe(ctx)
-			case <-ticker.C: w.processOneSafe(ctx)
+			case <-w.stopCh:
+				return
+			case <-ctx.Done():
+				return
+			case <-notifCh:
+				w.processOneSafe(ctx)
+			case <-ticker.C:
+				w.processOneSafe(ctx)
 			}
 		}
 	}()
@@ -107,9 +113,9 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	params := ai.ExtractParams(code)
 	if len(params) == 0 {
 		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusCompleted); err != nil {
-		w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
-	}
-	ExperimentRunsTotal.WithLabelValues(StatusCompleted).Inc()
+			w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
+		}
+		ExperimentRunsTotal.WithLabelValues(StatusCompleted).Inc()
 		w.log.Info("No @params found", zap.String("id", exp.ID.String()))
 		return nil
 	}
@@ -133,49 +139,49 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		return err
 	}
 
-		// ── OOS validation for top-K candidates ──
-		const oosTopK = 5
-		oosVal := ai.DefaultOOSValidator()
-		symbol := exp.Symbol
-		if symbol == "" {
-			symbol = "XAUUSDm"
-		}
-		tf := exp.Timeframe
-		if tf == "" {
-			tf = "1h"
-		}
-		fromTs := time.UnixMilli(exp.FromTsUnixMs)
-		toTs := time.UnixMilli(exp.ToTsUnixMs)
-		if exp.FromTsUnixMs == 0 {
-			fromTs = time.Now().AddDate(0, -1, 0)
-		}
-		if exp.ToTsUnixMs == 0 {
-			toTs = time.Now()
-		}
-		windows := oosVal.ComputeWindows(fromTs, toTs)
-		if windows != nil && len(candidates) > 0 {
-			topIndices := selectTopK(candidates, oosTopK)
-			for _, idx := range topIndices {
-				c := &candidates[idx]
-				oosScored, err := w.runSingleBacktest(
-					ctx, code, c.Overrides, exp.UserID, symbol, tf,
-					windows.OOSStart, windows.OOSEnd, regime,
-				)
-				if err != nil {
-					w.log.Warn("OOS backtest failed",
-						zap.Error(err),
-						zap.Int("candidateIdx", idx),
-						zap.Float64("isScore", c.Score))
-					continue
-				}
-				validation := oosVal.Validate(c.Score, oosScored.Score)
-				c.OOSScore = &oosScored.Score
-				c.OOSTotalReturn = &oosScored.TotalReturn
-				c.OOSSharpeRatio = &oosScored.SharpeRatio
-				c.DegradationPct = &validation.Degradation
-				c.IsOverfit = validation.IsOverfit
+	// ── OOS validation for top-K candidates ──
+	const oosTopK = 5
+	oosVal := ai.DefaultOOSValidator()
+	symbol := exp.Symbol
+	if symbol == "" {
+		symbol = "XAUUSDm"
+	}
+	tf := exp.Timeframe
+	if tf == "" {
+		tf = "1h"
+	}
+	fromTs := time.UnixMilli(exp.FromTsUnixMs)
+	toTs := time.UnixMilli(exp.ToTsUnixMs)
+	if exp.FromTsUnixMs == 0 {
+		fromTs = time.Now().AddDate(0, -1, 0)
+	}
+	if exp.ToTsUnixMs == 0 {
+		toTs = time.Now()
+	}
+	windows := oosVal.ComputeWindows(fromTs, toTs)
+	if windows != nil && len(candidates) > 0 {
+		topIndices := selectTopK(candidates, oosTopK)
+		for _, idx := range topIndices {
+			c := &candidates[idx]
+			oosScored, err := w.runSingleBacktest(
+				ctx, code, c.Overrides, exp.UserID, symbol, tf,
+				windows.OOSStart, windows.OOSEnd, regime,
+			)
+			if err != nil {
+				w.log.Warn("OOS backtest failed",
+					zap.Error(err),
+					zap.Int("candidateIdx", idx),
+					zap.Float64("isScore", c.Score))
+				continue
 			}
+			validation := oosVal.Validate(c.Score, oosScored.Score)
+			c.OOSScore = &oosScored.Score
+			c.OOSTotalReturn = &oosScored.TotalReturn
+			c.OOSSharpeRatio = &oosScored.SharpeRatio
+			c.DegradationPct = &validation.Degradation
+			c.IsOverfit = validation.IsOverfit
 		}
+	}
 
 	// Create candidate records with scores
 	for i, c := range candidates {
@@ -198,11 +204,11 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 			Grade:           c.Grade,
 			ScoreComponents: scoreProto,
 			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
-				OOSScore:        c.OOSScore,
-				OOSTotalReturn:  c.OOSTotalReturn,
-				OOSSharpeRatio:  c.OOSSharpeRatio,
-				DegradationPct:  c.DegradationPct,
-				IsOverfit:       c.IsOverfit,
+			OOSScore:        c.OOSScore,
+			OOSTotalReturn:  c.OOSTotalReturn,
+			OOSSharpeRatio:  c.OOSSharpeRatio,
+			DegradationPct:  c.DegradationPct,
+			IsOverfit:       c.IsOverfit,
 		}
 		if err := w.repo.CreateCandidate(ctx, record); err != nil {
 			w.log.Warn("create candidate failed", zap.Error(err), zap.Int("idx", i))
@@ -224,11 +230,11 @@ type candidateResult struct {
 	ScoreComponents map[string]float64
 	Summary         string
 	// OOS validation (nil when not in top-K or window too short)
-	OOSScore        *float64
-	OOSTotalReturn  *float64
-	OOSSharpeRatio  *float64
-	DegradationPct  *float64
-	IsOverfit       bool
+	OOSScore       *float64
+	OOSTotalReturn *float64
+	OOSSharpeRatio *float64
+	DegradationPct *float64
+	IsOverfit      bool
 }
 
 func (w *ExperimentWorker) runOptimizer(

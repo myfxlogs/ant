@@ -191,13 +191,13 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 	}
 
 	resp.ExecutionAssumptions = &antv1.ExecutionAssumptions{
-		SimulationMode:  "KLINE_RANGE",
-		SignalTiming:    "next_bar_open",
-		FillRule:        "bar_close",
+		SimulationMode:   "KLINE_RANGE",
+		SignalTiming:     "next_bar_open",
+		FillRule:         "bar_close",
 		ActualCommission: cfg.Commission.String(),
-		ActualSlippage:  cfg.Slippage.String(),
-		ActualLeverage:  fmt.Sprintf("%d", cfg.Leverage),
-		TradeDirection:  tradeDirectionToString(params.tradeDir),
+		ActualSlippage:   cfg.Slippage.String(),
+		ActualLeverage:   fmt.Sprintf("%d", cfg.Leverage),
+		TradeDirection:   tradeDirectionToString(params.tradeDir),
 	}
 	if cfg.StrictMode {
 		resp.ExecutionAssumptions.SignalTiming = "next_bar_open"

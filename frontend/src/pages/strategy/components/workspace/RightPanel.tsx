@@ -23,7 +23,7 @@ export default function RightPanel(props: Props) {
   const [memoryOpen, setMemoryOpen] = useState(false);
 
   return (
-    <div style={{
+    <div data-tour="ai-panel" style={{
       width, minWidth: width, flexShrink: 0,
       background: 'var(--ant-color-bg-container)',
       borderLeft: '1px solid var(--ant-color-border)',

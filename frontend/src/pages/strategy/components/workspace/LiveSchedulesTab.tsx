@@ -61,7 +61,7 @@ export default function LiveSchedulesTab() {
       const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list()]);
       const tplsOpts: TemplateOption[] = [];
       const seen = new Set<string>();
-      (tpls || []).forEach((t: any) => { if (t?.id) { seen.add(String(t.id)); tplsOpts.push({ id: t.id, name: t.name, isPublic: t.isPublic }); } });
+      (tpls || []).forEach((t: { id?: string; name?: string; isPublic?: boolean; isSystem?: boolean }) => { if (t?.id) { seen.add(String(t.id)); tplsOpts.push({ id: t.id, name: t.name || '', isPublic: t.isPublic }); } });
       (DEFAULT_TEMPLATES as DefaultTemplateItem[]).forEach(t => { if (t?.id && !seen.has(String(t.id))) tplsOpts.push({ id: String(t.id), name: t.name, isPublic: t.isSystem }); });
       setTemplates(tplsOpts);
       setSchedules(schs as ScheduleRow[]);
@@ -112,8 +112,8 @@ export default function LiveSchedulesTab() {
       if (!code) throw new Error('Template code empty');
       const exec = await strategyRuntimeApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
       if (!exec.success) throw new Error(exec.error || 'Execute failed');
-      setTriggerResult({ logs: exec.logs || [], signal: exec.signal as any, meta: { templateId: row.templateId, scheduleId: row.id } });
-    } catch (e: any) { setTriggerResult({ logs: [], signal: null, meta: { error: e?.message } }); }
+      setTriggerResult({ logs: exec.logs || [], signal: exec.signal ?? null, meta: { templateId: row.templateId, scheduleId: row.id } });
+    } catch (e: unknown) { setTriggerResult({ logs: [], signal: null, meta: { error: e instanceof Error ? e.message : String(e) } }); }
     finally { setTriggering(false); }
   }, []);
 
@@ -135,7 +135,7 @@ export default function LiveSchedulesTab() {
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error })); return; }
       message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
-    } catch (e: any) { message.error(e?.message || t(MESSAGES_ORDER_FAILED_KEY)); }
+    } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(MESSAGES_ORDER_FAILED_KEY)); }
   }, [triggerContext, triggerResult, t]);
 
   const openCreate = useCallback(() => {
@@ -182,25 +182,25 @@ export default function LiveSchedulesTab() {
     setLoading(true);
     try {
       if (editing?.id) {
-        await strategyScheduleV2Api.update({ id: editing.id, name: v.name, symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendType, scheduleConfig: scheduleConfig as any, parameters: merged });
+        await strategyScheduleV2Api.update({ id: editing.id, name: v.name, symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendType, scheduleConfig, parameters: merged });
         message.success(t(COMMON_UPDATED_KEY));
       } else {
-        const created: any = await strategyScheduleV2Api.create({ templateId: v.templateId, accountId: v.accountId, name: v.name, symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendType, scheduleConfig: scheduleConfig as any, parameters: merged });
+        const created = await strategyScheduleV2Api.create({ templateId: v.templateId, accountId: v.accountId, name: v.name, symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendType, scheduleConfig, parameters: merged });
         if (v.isActive && created?.id) await strategyScheduleV2Api.toggle(created.id, true);
         message.success(t(COMMON_CREATED_KEY));
       }
       setOpenEdit(false); setEditing(null); form.resetFields(); await refresh();
-    } catch (e: any) { message.error(e?.message || t(COMMON_SAVE_FAILED_KEY)); } finally { setLoading(false); }
+    } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(COMMON_SAVE_FAILED_KEY)); } finally { setLoading(false); }
   }, [editing, form, refresh, t]);
 
   const onToggleActive = useCallback(async (row: ScheduleRow, next: boolean) => {
     try { await strategyScheduleV2Api.toggle(row.id, next); message.success(next ? t(COMMON_ENABLED_KEY) : t(COMMON_DISABLED_KEY)); await refresh(); }
-    catch (e: any) { message.error(e?.message || t(COMMON_OPERATION_FAILED_KEY)); }
+    catch (e: unknown) { message.error(e instanceof Error ? e.message : t(COMMON_OPERATION_FAILED_KEY)); }
   }, [refresh, t]);
 
   const onDelete = useCallback(async (row: ScheduleRow) => {
     try { await strategyScheduleV2Api.delete(row.id); message.success(t(COMMON_DELETED_KEY)); await refresh(); }
-    catch (e: any) { message.error(e?.message || t(COMMON_DELETE_FAILED_KEY)); }
+    catch (e: unknown) { message.error(e instanceof Error ? e.message : t(COMMON_DELETE_FAILED_KEY)); }
   }, [refresh, t]);
 
   useEffect(() => {

@@ -3,16 +3,14 @@ package strategy
 import (
 	"context"
 
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
-	"connectrpc.com/connect"
-
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
-	"alphaforge/internal/interceptor"
 	"alphaforge/internal/repository"
 )
 
@@ -61,7 +59,13 @@ func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *c
 		}), nil
 	}
 
-	uid, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	uid, err := userIDRequire(ctx)
+	if err != nil {
+		return connect.NewResponse(&antv1.ListBacktestRunTradesResponse{
+			Trades:  []*antv1.BacktestTrade{},
+			Summary: &antv1.BacktestTradeSummary{},
+		}), nil
+	}
 	run, err := s.backtestRepo.GetByID(ctx, uid, runID)
 	if err != nil {
 		s.log.Warn("BacktestTrades: get run", zap.Error(err), zap.String("run_id", req.Msg.RunId))
