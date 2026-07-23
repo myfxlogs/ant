@@ -1,162 +1,256 @@
 # ADR-0027 落地实施指南
 
-- **状态**：三方共识已达成（见 `0027-decision-matrix.md`），按本文施工。
-- **总原则**：每 Phase 可独立上线、可独立回滚。Gallery 先上线，Workspace 重构最后做。
+- **状态**：三方共识已达成（见 `0027-decision-matrix.md`）
+- **策略**：一步到位，不做过渡。Gallery 首版即用 `ListStrategyCards`，Library 同日删除。所有工作在最终形态上一次完成。
 
----
+## 并行策略
 
-## Phase A — Gallery + Detail（用户可见，高收益优先）
+两组人可并行推进，互不阻塞：
 
-### A1. 后端：`ListStrategyCards` RPC
-
-| 文件 | 操作 |
-|------|------|
-| `proto/ant/v1/strategy.proto` | 新增 `StrategyCard`、`ListStrategyCardsRequest/Response`、`rpc ListStrategyCards` |
-| `backend/internal/connect/strategy/` | 新增 handler：JOIN templates + 最近回测摘要 + running_schedules 计数 |
-
-**契约**：sparkline = 最近一次成功回测的 `equity` 数组；KPI = win_rate/max_drawdown/profit_factor/sharpe（一律 decimal→string）。无 N+1，单次 RPC 返回全部卡片数据。
-
-**验收**：`grpcurl ListStrategyCards` 返回 12 个系统模板 + 用户模板，每张卡有 sparkline 和 KPI。
-
-### A2. 前端：Gallery 页面
-
-| 文件 | 操作 |
-|------|------|
-| `StrategyGalleryPage.tsx` | **新建**。拿 `StrategyLibraryPage.tsx` 当骨架：保留搜索/筛选（All/My/Preset）/分页。把 `<Table>` 替换为 `<Row gutter={[16,16]}>` 卡片网格。数据源先用 `listTemplates`+前端聚合，后切 `ListStrategyCards` |
-| `StrategyCard.tsx` | **新建**。单张策略卡片：名称+标签+描述、sparkline（recharts mini chart）、KPI 行（胜率/回撤/PF/夏普）、running_schedules 数、actions：[Detail] [Quick Deploy] [Fork] [Publish/Unpublish] [Delete] |
-| `StrategyLibraryPage.tsx` | **改为骨架**。搜索/筛选/分页逻辑提取为 `useStrategyFilter` hook，被 Gallery 复用。后续 Phase D 可考虑删除 |
-
-**卡片 actions 规则**：
-- 系统模板：`[Detail]` 仅此一个按钮
-- 我的模板（未发布）：`[Detail] [Quick Deploy] [Fork] [Publish] [Delete]`
-- 我的模板（已发布）：`[Detail] [Quick Deploy] [Fork] [Unpublish] [Delete]`
-- [Quick Deploy] → 拉起 `ScheduleLaunchModal`（选账户 → 上线）
-- [Publish] → 拉起 `PublishToMarketModal`
-
-**响应式**：桌面 4 列、平板 2 列、手机 1 列。
-
-**验收**：Gallery 显示所有模板为卡片，sparkline 和 KPI 正确，点击 [Detail] 跳转 `/strategy/view/:id`。
-
-### A3. 前端：Detail 页面
-
-| 文件 | 操作 |
-|------|------|
-| `StrategyDetailPage.tsx` | **新建**。2 个 Tab：Overview + Code（只读） |
-| `OverviewTab.tsx` | **新建**。完整权益曲线（recharts）+ 交易统计表（胜率/盈亏比/回撤/PF/夏普）+ 参数说明 |
-
-**Overview Tab**：权益曲线 + KPI 完整版 + 参数表。不需要后端新 RPC——从 `getTemplate` + 查询最新回测摘要即可。
-
-**Code Tab**：`<pre>` + highlight.js（~20KB）做语法高亮，**不 import Monaco**。系统模板纯只读；用户模板显示 [Fork & Edit] 按钮 → `/strategy/:id/edit`。
-
-**页面底部**：`[Open in Workspace]` 按钮（统一入口）。
-
-**验收**：Detail 显示完整权益曲线和代码，点击 Fork & Edit 跳转 Workspace 并加载代码。
-
-### A4. 路由 & 导航
-
-| 文件 | 操作 |
-|------|------|
-| `AppRoutes.tsx` | `/strategy/library` → `<Navigate to="/strategy">`；新增 `/strategy/view/:id` → `<StrategyDetailPage>`；新增 `/strategy/:id/edit` → `<StrategyWorkspacePage>`；`/strategy` → `<StrategyGalleryPage>` |
-| `MainLayout.tsx` | 侧边栏第 2 项 "Strategy Library" → "Strategies"，路由 `/strategy/library` → `/strategy` |
-
-**路由表（最终）**：
 ```
-/strategy                  → Gallery（卡片网格）
-/strategy/view/:id         → Detail（Overview + Code 只读）
-/strategy/:id/edit         → Workspace（编辑模式，加载指定模板）
-/strategy/live             → Live Monitor（不变）
-/strategy/market-tools     → Market Tools（不变）
-/strategy/library          → 301 → /strategy
-/strategy/workspace        → 301 → /strategy（无参数 = New）
+后端（1 人）               前端（1 人）
+────────                   ────────
+ListStrategyCards RPC      StrategyCard + Detail（独立，mock 数据）
+                           等 RPC 联调 → Gallery
+                           路由 + 导航
+                           删除 Library + 旧文件
+                           Workspace feature-slice 拆分
 ```
 
-**验收**：旧链接不 404，新路由全部可用。
+---
 
-### A5. 修复参数 bug
+## 第一步：修 bug（1 行，立刻做）
 
-`StrategyLibraryPage.tsx` 传 `?template=`, Workspace 读 `?templateId=`。统一为 `templateId`。
+| 文件 | 行 | 改法 |
+|------|-----|------|
+| `StrategyLibraryPage.tsx` | L69 | `?template=` → `?templateId=` |
+
+**验收**：Library 页面 [Open in Workspace] 点后 Workspace 正确加载模板。
 
 ---
 
-## Phase B — 创建流（Gallery 即入口）
+## 第二步：后端 — `ListStrategyCards` RPC
 
 | 文件 | 操作 |
 |------|------|
-| `StrategyGalleryPage.tsx` | 工具栏加 [AI Generate] 按钮 → 跳转 `/strategy/:id/edit?ai=1`（Workspace 自动打开 AI 面板） |
-| `StrategyWorkspacePage.tsx` | 接收 `?ai=1` 参数 → 自动打开 AI 面板；接收 `templateId` 参数 → 加载模板 |
-| `StrategyGalleryPage.tsx` | [New] 按钮 → 跳转 `/strategy/:id/edit`（新模板 draft）|
-| 卡片 [Fork] | → 调用 `createTemplateDraft` 复制模板 → 跳转 `/strategy/:newId/edit` |
-| `StartPointModal.tsx` | **不建**（三方否决） |
+| `proto/ant/v1/strategy.proto` | 新增 `StrategyCard` message + `ListStrategyCards` RPC |
 
-**首访引导浮层**：新用户首次进 Workspace → 3-4 个 tooltip 指向代码编辑器、AI 面板、回测按钮、保存按钮。可跳过。
+```proto
+message StrategyCard {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string tags = 4;
+  bool is_system = 5;
+  bool is_public = 6;
+  bool is_published_to_market = 7;
+  string asset_class = 8;
+  string risk_level = 9;
+  // 反范式化摘要（最近一次成功回测）
+  repeated double equity_sparkline = 10;  // 归一化点（0-1），画迷你曲线
+  string win_rate = 11;     // decimal string
+  string max_drawdown = 12;
+  string profit_factor = 13;
+  string sharpe = 14;
+  string total_return = 15;
+  int32 total_trades = 16;
+  int32 running_schedules = 17;
+  int64 updated_at_ms = 18;
+}
+message ListStrategyCardsRequest {
+  string filter = 1;   // "all" / "mine" / "preset"
+  string sort = 2;     // "return" / "risk" / "usage" / "recent"
+  string search = 3;
+}
+message ListStrategyCardsResponse {
+  repeated StrategyCard cards = 1;
+}
+```
+
+**Handler 实现**：单次 SQL JOIN `strategy_templates` + 最近成功回测 + `schedules` 计数。Decimal 一律走 string。无 N+1。
+
+**验收**：`grpcurl ListStrategyCards` 返回全部模板，每张卡有 sparkline、KPI、running_schedules。
 
 ---
 
-## Phase C — L2 状态重构（内部，UI 不变）
+## 第三步：前端 — 最终形态一次性到位
 
-### C1. 拆分上帝 hook
+### 3a. 新建 StrategyCard 组件
 
-| 当前（283行单体） | 目标（各域独立 hook） |
-|-------------------|----------------------|
-| `useStrategyWorkspaceState()` | `useCodeSlice()` / `useBacktestSlice()` / `useTuningSlice()` / `useAISlice()` / `useChartSlice()` / `useQuickTradeSlice()` / `useLayoutSlice()` / `useHistorySlice()` |
+| 文件 | 操作 |
+|------|------|
+| `StrategyCard.tsx` | **新建** |
 
-**迁移顺序（拓扑序）**：
-1. `useCodeSlice` — 最独立，无跨域依赖
-2. `useBacktestSlice` — 依赖 Code（code 变 → reset status）
-3. `useAISlice` — 依赖 Code + Backtest（AI context）
-4. `useTuningSlice` — 依赖 Backtest
+```
+卡片内容：
+┌─────────────────────────────────┐
+│ [tag] Name                      │
+│ description (1 行省略)           │
+│ ═══════════════════════════════ │
+│ ▁▂▃▄▅▆▇ sparkline (recharts)   │
+│                                 │
+│ Win 72%  DD -8%  PF 2.1  SR 1.5│
+│ 3 running                       │
+│                                 │
+│ [Detail] [Deploy] [Fork] [...]  │
+└─────────────────────────────────┘
+```
 
-**迁移方法**：Zustand slice-creator 模式。跨域协调用 selector 订阅（`useWorkspace(s => s.code)`），取代现在的 `useEffect` rewire。每迁一个 slice，跑 Playwright e2e 冒烟。
+- sparkline：归一化 equity 点，recharts `<Area>` 或 `<Line>`，颜色跟随总收益正负
+- KPI 行：4 个指标，紧凑排列
+- Actions 行：按模板类型裁剪（见下表）
 
-### C2. Workspace 页面退化
+**卡片 actions 矩阵**：
 
-`StrategyWorkspacePage.tsx` → 纯组合根（~50 行）：渲染 7 个 `<SliceComponent/>`，不做任何业务逻辑。
+| 模板类型 | 按钮 |
+|---------|------|
+| 系统 | `[Detail]` |
+| 我的·未发布 | `[Detail] [Deploy] [Fork] [Publish] [Delete]` |
+| 我的·已发布 | `[Detail] [Deploy] [Fork] [Unpublish] [Delete]` |
 
-### C3. 懒加载分包
+- `[Deploy]` → `ScheduleLaunchModal`，选账户直接上线
+- `[Publish]` → `PublishToMarketModal`
+- `[Fork]` → `createTemplateDraft` 复制 + 跳转 `/:newId/edit`
+- `[Delete]` → `Popconfirm` → `deleteTemplate`
+
+### 3b. 新建 Gallery 页面
+
+| 文件 | 操作 |
+|------|------|
+| `StrategyGalleryPage.tsx` | **新建** |
+
+```
+顶部工具栏：[🔍 搜索] [All | My | Preset] [排序 ▾]      [+ New] [AI Generate]
+卡片区：  <Row gutter={[16,16]}>  {cards.map(StrategyCard)}  </Row>
+响应式：  <Col xs={24} sm={12} md={8} lg={6}>
+```
+
+- 数据源：`useQuery(queryKeys.strategyCards.list, () => strategyApi.listStrategyCards({filter, sort, search}))`
+- 搜索/筛选/排序逻辑直接在新页面实现（不继承 LibraryPage，不引入中间抽象层）
+- `[+ New]` → 调 `createTemplateDraft` → 跳转 `/:newId/edit`
+- `[AI Generate]` → 跳转 `/strategy/workspace?ai=1`（Workspace 自动打开 AI 面板）
+
+### 3c. 新建 Detail 页面
+
+| 文件 | 操作 |
+|------|------|
+| `StrategyDetailPage.tsx` | **新建** |
+
+**2 个 Tab**：
+
+| Tab | 内容 | 说明 |
+|-----|------|------|
+| Overview | 完整权益曲线（recharts）+ 交易统计表（胜率/盈亏比/回撤/PF/夏普/年化收益/总交易）+ 参数说明 | `getTemplate` + 最近回测摘要 |
+| Code | `<pre>` + highlight.js（~20KB）语法高亮。系统模板只读；用户模板 [Fork & Edit] | **不 import Monaco** |
+
+底部固定栏：`[Open in Workspace]` 按钮 → `/strategy/:id/edit`
+
+### 3d. 路由替换
+
+| 旧路由 | 新路由 | 操作 |
+|--------|--------|------|
+| `/strategy/library` | — | 删除路由 + `Navigate` 301 → `/strategy` |
+| `/strategy/workspace` | — | 删除路由 + `Navigate` 301 → `/strategy`（无参数 = new） |
+| — | `/strategy` | **新增** → `StrategyGalleryPage` |
+| — | `/strategy/view/:id` | **新增** → `StrategyDetailPage`（`view` 静态段避让 `:strategyId`） |
+| — | `/strategy/:id/edit` | **新增** → `StrategyWorkspacePage`（加载 `templateId`） |
+| `/strategy/live` | `/strategy/live` | 不变 |
+| `/strategy/market-tools` | `/strategy/market-tools` | 不变 |
+
+### 3e. 侧边栏
+
+```
+Strategy
+├── Strategies           ← /strategy（Gallery，改名）
+├── Strategy Workspace  ← /strategy/workspace（保留入口，无参=新建）
+├── Live Monitor        ← 不变
+├── Market Tools        ← 不变
+```
+
+### 3f. 删除
+
+| 文件 | 理由 |
+|------|------|
+| `StrategyLibraryPage.tsx` | Gallery 替代，不复用（3b 直接内联实现搜索/筛选逻辑，不引入中间抽象） |
+| `StrategyTemplateColumns.tsx` | Table 列定义不再需要 |
+| `StrategyTemplateEditModal.tsx` | Detail + Workspace 替代 |
+
+---
+
+## 第四步：Workspace 增强 + Feature-slice 拆分
+
+### 4a. 路由参数支持
+
+`StrategyWorkspacePage` 接收两个参数：
+- `?templateId=X` → 加载指定模板（替换旧 `?template=` bug）
+- `?ai=1` → 自动打开右侧 AI 面板
+
+### 4b. 首访引导浮层
+
+新用户首次进 Workspace → 3-4 个 tooltip（Ant `Tour` 组件），指向代码编辑器、AI 面板、回测按钮、保存按钮。可跳过。`localStorage` 记 `workspace_tour_seen=true`。
+
+### 4c. Feature-slice 拆分
+
+**目标**：283 行 `useStrategyWorkspaceState` → 各域独立 hook + Zustand slice。
+
+| 当前 | 目标 |
+|------|------|
+| `useStrategyWorkspaceState()`（10 域大对象）| `useCodeSlice()` `useBacktestSlice()` `useTuningSlice()` `useAISlice()` `useChartSlice()` `useQuickTradeSlice()` `useLayoutSlice()` `useHistorySlice()` |
+
+**迁移顺序**：Code（无上游依赖）→ Backtest（依赖 Code）→ AI（依赖 Code+Backtest）→ Tuning（依赖 Backtest）。每迁一个 slice 跑 Playwright e2e 冒烟。
+
+**Store 结构**（Zustand slice-creator）：
+```ts
+// stores/workspace/index.ts
+export const useWorkspace = create<CodeSlice & LayoutSlice & BacktestSlice & /*...*/>()(
+  persist(
+    (...a) => ({ ...createCodeSlice(...a), ...createLayoutSlice(...a), /*...*/ }),
+    { name: 'ant-workspace-v6', partialize: s => ({ centerTab: s.centerTab, rightPanelWidth: s.rightPanelWidth }) },
+  ),
+);
+```
+
+**跨域协调**：selector 订阅取代 useEffect。例：`useWorkspace(s => s.code)` 变化时，backtest slice 自动 `resetStatus()`。
+
+Workspace 页面退化为组合根（~50 行）：
+```tsx
+export default function StrategyWorkspacePage() {
+  return (
+    <div>
+      <WorkspaceToolbar />
+      <InnerLayout>
+        <WorkspaceCenterColumn />
+        <ResizeHandle />
+        <RightPanel />
+      </InnerLayout>
+      <ModalsAndDrawers />
+    </div>
+  );
+}
+```
+
+### 4d. 懒加载
 
 ```tsx
-const StrategyWorkspacePage = React.lazy(() => import('./StrategyWorkspacePage'));
+// AppRoutes.tsx
+const StrategyWorkspacePage = lazy(() => import('./StrategyWorkspacePage'));
 ```
 
-Gallery/Detail 的入口 chunk **不 import** Monaco editor（~600KB）、回测引擎、SSE 管线。仅 `/strategy/:id/edit` 路由才加载重包。交易员首屏预计 ~300KB。
+Gallery/Detail 的入口 chunk **不 import** Monaco（~600KB）、回测引擎、SSE 管线。仅 `/:id/edit` 路由加载 Workspace 重包。
 
 ---
 
-## Phase D — 清理
+## 验收清单
 
-| 文件 | 操作 |
-|------|------|
-| `StrategyLibraryPage.tsx` | 评估是否可完全删除（Gallery 已替代）|
-| `StrategyTemplateEditModal.tsx` | **删除**（被 Detail + Workspace 替代）|
-| `StrategyTemplateColumns.tsx` | **删除**（Table 列定义不再需要）|
-| `TemplateManagerContent.tsx` | **删除**（旧 Workspace 侧边栏模板管理）|
-| i18n | `strategy.library.*` → `strategy.gallery.*` 迁移；废弃 key 清理 |
-
----
-
-## 分阶段依赖
-
-```
-Phase A（Gallery + Detail）
-  ├── A1 后端 RPC ─────── 可并行
-  ├── A2 Gallery 前端 ─── 依赖 A1 或降级
-  ├── A3 Detail 前端 ──── 独立
-  ├── A4 路由 ─────────── 依赖 A2+A3
-  └── A5 bug fix ──────── 独立
-
-Phase B（创建流）
-  └── 依赖 Phase A2（Gallery 已上线）
-
-Phase C（L2 重构）
-  └── 不依赖 A/B，可独立开始
-
-Phase D（清理）
-  └── 依赖 A+B+C 全部上线
-```
-
----
-
-## 回滚策略
-
-- **Phase A/B**：Gallery/Detail 与 Library 可并存（feature flag `USE_GALLERY`）。出问题切回 Library。
-- **Phase C**：按 slice 逐个迁移。每迁一个跑 e2e，单个 slice 可独立回退。
+| # | 验收项 | 方式 |
+|---|--------|------|
+| 1 | `ListStrategyCards` 返回全部模板，含 sparkline 和 KPI | `grpcurl` |
+| 2 | Gallery 卡片正确渲染 sparkline/KPI/actions | Playwright |
+| 3 | 点击 [Detail] 跳转 `/strategy/view/:id`，Overview+Code Tab 正常 | Playwright |
+| 4 | 点击 [Deploy] 拉起 ScheduleLaunchModal | Playwright |
+| 5 | 点击 [Fork & Edit] 跳转 Workspace 并加载代码 | Playwright |
+| 6 | `/strategy/library` → 301 `/strategy` | curl |
+| 7 | 旧链接不 404 | Playwright |
+| 8 | Workspace 懒加载——Gallery 首屏不加载 Monaco | Lighthouse |
+| 9 | Feature-slice 拆分后 Playwright 回测流程通过 | Playwright |
+| 10 | 删除 Library/TemplateColumns/EditModal 后编译通过 | `npm run build` |
