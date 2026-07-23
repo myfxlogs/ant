@@ -1,11 +1,34 @@
 # ADR-0027 策略模块重构 · 三方讨论对照表
 
-- **用途**：Cascade / Claude / GLM 三方评审用。逐条对齐「GLM 版」与「Cascade v2 版」的立场，收敛出最终决策。
-- **三份提案**：
-  - GLM 版：`0027-strategy-gallery-redesign.md`
-  - Cascade v2：`0027-v2-strategy-module-redesign.md`
-  - **Claude 意见**：已填入本文各行的「决策理由/附加意见」列（标注 [Claude]），并在 §F 补充了三项两份文档均未覆盖的问题。
-- **填写方式**：每行在「最终决策」列填结论，「决策理由/附加意见」列记录三方发言。
+- **用途**：Cascade（Opus）/ Claude / GLM 三方评审。逐条对齐立场，收敛出最终决策。
+- **状态**：Claude 已完成投票；**等待 Opus 和 GLM 在各自列填入意见后，三方讨论收敛**。
+
+## 前置阅读（按顺序）
+
+1. **先读 GLM 版**：`0027-strategy-gallery-redesign.md` — Gallery + Detail + Guided Create 宏观方案
+2. **再读 Cascade v2 版**：`0027-v2-strategy-module-redesign.md` — 对 GLM 版的修订 + 架构补强
+3. **最后读本文**：对照矩阵 + Claude 投票 + 补充问题
+
+## 当前代码库真实现状（2026-07-23，请以此为准）
+
+| 页面 | 文件 | 状态 |
+|------|------|------|
+| **Workspace** | `StrategyWorkspacePage.tsx` | ✅ 成熟。一体化 IDE：K线图表 Tab + 代码编辑器 Tab + 回测 Tab + 右侧 AI 面板 |
+| **Library** | `StrategyLibraryPage.tsx` | 🆕 **今天刚建**（187 行）。Table 列表：搜索/筛选(All/My/Preset)/Open in Workspace/删除。已跑通 |
+| **MQL Import** | `ImportEAPanel.tsx` + Drawer | 🆕 **今天刚接入** Workspace Code Tab。点击 [Import MQL] → Drawer 滑出 → 粘贴 MQL → 分析/翻译/桥接 → Apply 写入编辑器 |
+| **Live Monitor** | `LiveStrategyPage.tsx` | ✅ 成熟 |
+| **Market Tools** | `MarketToolsPage.tsx` | ✅ 成熟 |
+| **State hook** | `useStrategyWorkspaceState.ts` | ⚠️ 283 行上帝 hook，返回 10 域大对象；域间用 useEffect 手动 rewire |
+| **State store** | `workspaceStore.ts` | ⚠️ Zustand 单体 store，`centerTab`/`rightPanelWidth`/`currentCode` 混在一起 |
+| **Routes** | `AppRoutes.tsx` | ⚠️ `/strategy/:strategyId` 已被 `StrategySharePage` 公开分享页占用；`/strategy/library` 今天刚指向新页面；旧 `/strategy/workspace` 仍存在 |
+
+## 协议
+
+- [Claude] 标注 = Claude 的投票和推理
+- [Opus] 标注 = 待 Opus 填写
+- [GLM] 标注 = 待 GLM 填写
+- ☐ = 待投票，☑ = 已投票
+- **讨论目标**：逐行收敛到「最终决策」列有唯一的 ☑
 
 ---
 
@@ -76,18 +99,21 @@
 
 ### F2. 侧边栏导航
 
-Gallery 替代 Library 后：
+Gallery 替代 Library 后，侧边栏需更新。
+
+**当前状态（2026-07-23）**：侧边栏 Strategy 菜单组下有 4 项：
 
 ```
 Strategy
-├── Strategy Workspace    ← 编辑+回测+AI（开发者）
+├── Strategy Workspace    ← 代码编辑+回测+AI
+├── Strategy Library 🆕   ← 今天加的，指向 /strategy/library（Table 列表）
 ├── Live Monitor          ← 实盘监控
 ├── Market Tools          ← 行情分析
 ```
 
-**[Claude] 建议**：Gallery 作为 `/strategy` 的默认首页，不在侧边栏单独列出。理由：它是"浏览入口"，不是"工具"。Workspace/Live/Market Tools 是工具。Gallery 是到达这些工具的路径。
+**Gallery 上线后的变更**：第 2 项从 "Strategy Library" → "Strategies"，指向 `/strategy`（Gallery）。
 
-或者保留一个导航项 "Strategies"——指向 Gallery——表示"策略库"。命名用 "Strategies" 而非 "Gallery"（Gallery 是 UI 模式，不是用户语言）。
+**[Claude] 建议**：命名用 "Strategies" 而非 "Gallery"——Gallery 是 UI 模式，不是用户语言。如果你主张 Gallery 作为 `/strategy` 默认首页、不单列导航项——这也在讨论范围内，见决策表 A2。
 
 ### F3. Marketplace 发布入口
 
