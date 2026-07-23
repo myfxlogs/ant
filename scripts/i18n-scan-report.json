@@ -1,0 +1,4769 @@
+[
+  {
+    "file": "client/ai/api.ts",
+    "line": 134,
+    "type": "throw Error",
+    "text": "createConversation: empty response",
+    "context": "throw new Error('createConversation: empty response');"
+  },
+  {
+    "file": "client/strategy.ts",
+    "line": 134,
+    "type": "throw Error",
+    "text": "Fork is only available for your own strategies or system presets",
+    "context": "throw new Error('Fork is only available for your own strategies or system presets');"
+  },
+  {
+    "file": "client/strategy.ts",
+    "line": 137,
+    "type": "throw Error",
+    "text": "Draft creation returned empty id",
+    "context": "if (!draft.id) throw new Error('Draft creation returned empty id');"
+  },
+  {
+    "file": "client/transport.ts",
+    "line": 112,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Insufficient Balance",
+    "context": "title: i18n.t('errors.ai.insufficient_balance_title', { defaultValue: 'Insufficient Balance' }),"
+  },
+  {
+    "file": "client/transport.ts",
+    "line": 113,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Your AI wallet balance is insufficient. Please top up before continuing.",
+    "context": "content: i18n.t('errors.ai.insufficient_balance', { defaultValue: 'Your AI wallet balance is insufficient. Please top up"
+  },
+  {
+    "file": "client/transport.ts",
+    "line": 176,
+    "type": "message call",
+    "text": "${procName}: ${content}",
+    "context": "message.error(procName ? `${procName}: ${content}` : content);"
+  },
+  {
+    "file": "components/backtest/useBacktestRunner.ts",
+    "line": 188,
+    "type": "throw Error",
+    "text": "No run ID",
+    "context": "if (!result.runId) throw new Error('No run ID');"
+  },
+  {
+    "file": "components/backtest/useBacktestRunner.ts",
+    "line": 235,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Backtest canceled",
+    "context": "message.info(t('strategy.backtest.canceled', { defaultValue: 'Backtest canceled' }));"
+  },
+  {
+    "file": "components/backtest/useBacktestRunner.ts",
+    "line": 237,
+    "type": "message call",
+    "text": "Cancel failed",
+    "context": "message.error(e?.message || 'Cancel failed');"
+  },
+  {
+    "file": "components/chart/IndicatorPicker.tsx",
+    "line": 17,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Overlay (main chart)",
+    "context": "{ key: 'overlay-header', label: t('strategy.workspace.chartIndicators.overlay', { defaultValue: 'Overlay (main chart)' }"
+  },
+  {
+    "file": "components/chart/IndicatorPicker.tsx",
+    "line": 27,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Sub-pane indicators",
+    "context": "{ key: 'sub-header', label: t('strategy.workspace.chartIndicators.subPane', { defaultValue: 'Sub-pane indicators' }), ty"
+  },
+  {
+    "file": "components/chart/SymbolPicker.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All Symbols",
+    "context": "label: t('market.allSymbols', { defaultValue: 'All Symbols' }),"
+  },
+  {
+    "file": "components/chart/SymbolPicker.tsx",
+    "line": 118,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Select symbol",
+    "context": "placeholder={placeholder || t('market.selectSymbol', { defaultValue: 'Select symbol' })}"
+  },
+  {
+    "file": "components/chart/SymbolPicker.tsx",
+    "line": 125,
+    "type": "t() defaultValue (should be real key)",
+    "text": "⚠ MT session lost — reconnecting…",
+    "context": "notFoundContent={loading ? t('market.loadingSymbols', { defaultValue: 'Loading...' }) : mtError ? t('market.mtSessionLos"
+  },
+  {
+    "file": "components/chart/SymbolPicker.tsx",
+    "line": 125,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No symbols found",
+    "context": "notFoundContent={loading ? t('market.loadingSymbols', { defaultValue: 'Loading...' }) : mtError ? t('market.mtSessionLos"
+  },
+  {
+    "file": "components/layout/MainLayout.tsx",
+    "line": 47,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Live Monitor",
+    "context": "{ key: '/strategy/live', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.strategyLive', { defaultVa"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 46,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to save preferences",
+    "context": "message.error(t('notifications.prefs.saveFailed', { defaultValue: 'Failed to save preferences' }));"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 53,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New strategy published",
+    "context": "{ key: 'newStrategyEnabled', label: t('notifications.prefs.newStrategy', { defaultValue: 'New strategy published' }) },"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy price changed",
+    "context": "{ key: 'priceChangeEnabled', label: t('notifications.prefs.priceChange', { defaultValue: 'Strategy price changed' }) },"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 55,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Subscription expiring soon",
+    "context": "{ key: 'subExpiringEnabled', label: t('notifications.prefs.subExpiring', { defaultValue: 'Subscription expiring soon' })"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy performance anomaly",
+    "context": "{ key: 'performanceAlertEnabled', label: t('notifications.prefs.performance', { defaultValue: 'Strategy performance anom"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New rating or comment received",
+    "context": "{ key: 'newRatingEnabled', label: t('notifications.prefs.newRating', { defaultValue: 'New rating or comment received' })"
+  },
+  {
+    "file": "components/notification/NotificationPrefs.tsx",
+    "line": 62,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Notification Preferences",
+    "context": "title={<span><SettingOutlined /> {t('notifications.prefs.title', { defaultValue: 'Notification Preferences' })}</span>}"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Connect Your Account",
+    "context": "title: t('onboarding.step1.title', { defaultValue: 'Connect Your Account' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 38,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Link your MT4/MT5 trading account to start.",
+    "context": "description: t('onboarding.step1.desc', { defaultValue: 'Link your MT4/MT5 trading account to start.' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Bind Account",
+    "context": "actionLabel: t('onboarding.step1.action', { defaultValue: 'Bind Account' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 45,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Create Your First Strategy",
+    "context": "title: t('onboarding.step2.title', { defaultValue: 'Create Your First Strategy' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 46,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Use AI to generate a trading strategy from natural language.",
+    "context": "description: t('onboarding.step2.desc', { defaultValue: 'Use AI to generate a trading strategy from natural language.' }"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Open Workspace",
+    "context": "actionLabel: t('onboarding.step2.action', { defaultValue: 'Open Workspace' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 53,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Upgrade Your Plan",
+    "context": "title: t('onboarding.step3.title', { defaultValue: 'Upgrade Your Plan' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unlock more AI tokens, strategies, and live trading with Pro.",
+    "context": "description: t('onboarding.step3.desc', { defaultValue: 'Unlock more AI tokens, strategies, and live trading with Pro.' "
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "View Plans",
+    "context": "actionLabel: t('onboarding.step3.action', { defaultValue: 'View Plans' }),"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 75,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Welcome to AlphaForge, {{name}}!",
+    "context": "{t('onboarding.welcome', { defaultValue: 'Welcome to AlphaForge, {{name}}!', name: user?.email?.split('@')[0] || user?.n"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Get started in 3 simple steps",
+    "context": "{t('onboarding.subtitle', { defaultValue: 'Get started in 3 simple steps' })}"
+  },
+  {
+    "file": "components/onboarding/WelcomeModal.tsx",
+    "line": 115,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Got it, dismiss",
+    "context": "{t('onboarding.dismiss', { defaultValue: 'Got it, dismiss' })}"
+  },
+  {
+    "file": "components/paper/PaperAccountPanel.tsx",
+    "line": 220,
+    "type": "JSX attr: placeholder",
+    "text": "class MyStrategy(StrategyBase):&#10;    def on_bar(self):&#10;        ...",
+    "context": "placeholder=\"class MyStrategy(StrategyBase):&#10;    def on_bar(self):&#10;        ...\""
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 39,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please describe what you want to change.",
+    "context": "message.warning(t(ENTER_INSTRUCTION_KEY, { defaultValue: 'Please describe what you want to change.' }));"
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 68,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Code updated.",
+    "context": "message.success(t(CODE_UPDATED_KEY, { defaultValue: 'Code updated.' }));"
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unknown error",
+    "context": "message.error(String((e as Error)?.message || e || t('common.unknownError', { defaultValue: 'Unknown error' })));"
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI assistant",
+    "context": "<span>{t(AI_REVISE_TITLE_KEY, { defaultValue: 'AI assistant' })}</span>"
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 99,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Describe the changes you want, e.g.",
+    "context": "{t('strategy.codeAssist.aiHint', { defaultValue: 'Describe the changes you want, e.g. \"Add a 2% stop-loss\" or \"Replace S"
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 127,
+    "type": "t() defaultValue (should be real key)",
+    "text": "e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.",
+    "context": "? t(REVISE_INPUT_PLACEHOLDER_KEY, { defaultValue: 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.' })"
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 128,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Describe a strategy, e.g. Bollinger Bands mean-reversion for EURUSD with 2% stop-loss",
+    "context": ": t(GENERATE_PLACEHOLDER_KEY, { defaultValue: 'Describe a strategy, e.g. Bollinger Bands mean-reversion for EURUSD with "
+  },
+  {
+    "file": "components/strategy/AICodeReviseChat.tsx",
+    "line": 132,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Send to AI",
+    "context": "{t(REVISE_SEND_KEY, { defaultValue: 'Send to AI' })}"
+  },
+  {
+    "file": "components/strategy/ChatHistory.tsx",
+    "line": 240,
+    "type": "JSX children",
+    "text": "Entry:",
+    "context": "{turn.profile.entryLogic && <div><strong>Entry:</strong> {turn.profile.entryLogic}</div>}"
+  },
+  {
+    "file": "components/strategy/ChatHistory.tsx",
+    "line": 241,
+    "type": "JSX children",
+    "text": "Exit:",
+    "context": "{turn.profile.exitLogic && <div><strong>Exit:</strong> {turn.profile.exitLogic}</div>}"
+  },
+  {
+    "file": "components/strategy/ChatHistory.tsx",
+    "line": 242,
+    "type": "JSX children",
+    "text": "Risk:",
+    "context": "{turn.profile.riskManagement && <div><strong>Risk:</strong> {turn.profile.riskManagement}</div>}"
+  },
+  {
+    "file": "components/strategy/ChatHistory.tsx",
+    "line": 244,
+    "type": "JSX children",
+    "text": "Indicators:",
+    "context": "<div><strong>Indicators:</strong> {turn.profile.indicatorsUsed.join(', ')}</div>"
+  },
+  {
+    "file": "components/strategy/ChatMessageItem.tsx",
+    "line": 30,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Execution Plan",
+    "context": "<div style={{ fontSize: 12, color: '#52c41a', marginBottom: 4, fontWeight: 600 }}>📋 {t('strategy.chat.executionPlan', {"
+  },
+  {
+    "file": "components/strategy/ChatMessageItem.tsx",
+    "line": 45,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Code generated. Use the buttons below to run strategy review and backtest.",
+    "context": "✅ {t('strategy.chat.codeGenerated', { defaultValue: 'Code generated. Use the buttons below to run strategy review and ba"
+  },
+  {
+    "file": "components/strategy/CodeAssist.tsx",
+    "line": 111,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Required parameters",
+    "context": "message={t(REQUIRED_PARAMS_TITLE_KEY, { defaultValue: 'Required parameters' })}"
+  },
+  {
+    "file": "components/strategy/CodeAssist.tsx",
+    "line": 120,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Apply suggested defaults",
+    "context": "{t(APPLY_ALL_SUGGESTIONS_KEY, { defaultValue: 'Apply suggested defaults' })}"
+  },
+  {
+    "file": "components/strategy/CodeAssist.tsx",
+    "line": 152,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Optional parameters",
+    "context": "message={t(OPTIONAL_PARAMS_TITLE_KEY, { defaultValue: 'Optional parameters' })}"
+  },
+  {
+    "file": "components/strategy/CodeAssist.tsx",
+    "line": 225,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Explain code",
+    "context": "{t(EXPLAIN_KEY, { defaultValue: 'Explain code' })}"
+  },
+  {
+    "file": "components/strategy/CoverageReportView.tsx",
+    "line": 29,
+    "type": "JSX children",
+    "text": "Compilation failed",
+    "context": "<CloseCircleOutlined style={{ color: '#ff4d4f' }} /> <b>Compilation failed</b>"
+  },
+  {
+    "file": "components/strategy/CoverageReportView.tsx",
+    "line": 85,
+    "type": "JSX children",
+    "text": "Indicators:",
+    "context": "<Text type=\"secondary\" style={{ fontSize: 10 }}>Indicators: </Text>"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 79,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Bar close event-driven",
+    "context": "case 'on_bar': return t('importAnalysis.execution.onBar', { defaultValue: 'Bar close event-driven' });"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 81,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Init grid",
+    "context": "case 'on_init_grid': return t('importAnalysis.execution.onInitGrid', { defaultValue: 'Init grid' });"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Fixed lots",
+    "context": "case 'fixed': return t('importAnalysis.sizing.fixed', { defaultValue: 'Fixed lots' });"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 90,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Percent of balance",
+    "context": "case 'percent_balance': return t('importAnalysis.sizing.percentBalance', { defaultValue: 'Percent of balance' });"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 100,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Analyzing strategy structure...",
+    "context": "<Spin tip={t('importAnalysis.analyzing', { defaultValue: 'Analyzing strategy structure...' })} />"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 125,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trading logic fully recognized",
+    "context": "message={t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' })}"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 126,
+    "type": "t() defaultValue (should be real key)",
+    "text": "The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.",
+    "context": "description={t('importAnalysis.guiNoiseDesc', { defaultValue: 'The following blind spots are chart display/button featur"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 131,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Cannot auto-import",
+    "context": "message={t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' })}"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 137,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trading logic coverage incomplete",
+    "context": "message={t('importAnalysis.incompleteCoverage', { defaultValue: 'Trading logic coverage incomplete' })}"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 143,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import coverage is good",
+    "context": "message={t('importAnalysis.goodCoverage', { defaultValue: 'Import coverage is good' })}"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 144,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy main logic recognized. Safe to import. Check parameter list before use.",
+    "context": "description={t('importAnalysis.goodCoverageDesc', { defaultValue: 'Strategy main logic recognized. Safe to import. Check"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 151,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import Coverage",
+    "context": "<Text strong>{t('importAnalysis.coverageTitle', { defaultValue: 'Import Coverage' })}</Text>"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 155,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trading logic fully recognized",
+    "context": "format={(p) => isPureGuiNoise ? t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' "
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 233,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Your action required",
+    "context": "{b.userActionRequired && ` | ⚠️ ${t('importAnalysis.userActionRequired', { defaultValue: 'Your action required' })}`}"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 286,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No logic needs confirmation",
+    "context": "message={t('importAnalysis.noBlindSpots', { defaultValue: 'No logic needs confirmation' })}"
+  },
+  {
+    "file": "components/strategy/ImportAnalysisReport.tsx",
+    "line": 287,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All strategy logic auto-recognized. Safe to import.",
+    "context": "description={t('importAnalysis.noBlindSpotsDesc', { defaultValue: 'All strategy logic auto-recognized. Safe to import.' "
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Templates",
+    "context": "<FileTextOutlined style={{ marginRight: 6 }} />{t('strategy.templates.title', { defaultValue: 'Strategy Templates' })}"
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 39,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Save Current Strategy",
+    "context": "{hasCode && <Button size=\"small\" type=\"primary\" onClick={onSave}>{t('strategy.templates.saveCurrent', { defaultValue: 'S"
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 80,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Chat Edit",
+    "context": "style={{ fontSize: 10, padding: '0 4px', height: 20 }}>{t('strategy.templates.chatEdit', { defaultValue: 'Chat Edit' })}"
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 87,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete this strategy?",
+    "context": "<Popconfirm title={t('strategy.templates.confirmDelete', { defaultValue: 'Delete this strategy?' })} okText={t('common.d"
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 98,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No saved strategy templates",
+    "context": "{t('strategy.templates.noTemplates', { defaultValue: 'No saved strategy templates' })}"
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 103,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Source",
+    "context": "<Modal title={viewCode?.name || t('strategy.templates.sourceCode', { defaultValue: 'Strategy Source' })} open={!!viewCod"
+  },
+  {
+    "file": "components/strategy/StrategyList.tsx",
+    "line": 104,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Copy All",
+    "context": "footer={<Button onClick={() => { copy(viewCode?.code || ''); }} icon={<CopyOutlined />}>{copied ? t('common.copied', { d"
+  },
+  {
+    "file": "components/theme/ThemeToggle.tsx",
+    "line": 17,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Switch to light mode",
+    "context": "title={isDark ? t('theme.switchToLight', { defaultValue: 'Switch to light mode' }) : t('theme.switchToDark', { defaultVa"
+  },
+  {
+    "file": "components/theme/ThemeToggle.tsx",
+    "line": 17,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Switch to dark mode",
+    "context": "title={isDark ? t('theme.switchToLight', { defaultValue: 'Switch to light mode' }) : t('theme.switchToDark', { defaultVa"
+  },
+  {
+    "file": "components/trade/AlgoSubmitForm.tsx",
+    "line": 77,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unknown error",
+    "context": "message.error(String((e as { message?: string })?.message || t('common.unknownError', { defaultValue: 'Unknown error' })"
+  },
+  {
+    "file": "pages/accounts/BindAccountSteps.tsx",
+    "line": 150,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Alias",
+    "context": "<label className=\"block mb-2 font-medium\" style={{ color: 'var(--color-text)' }}>{t('accounts.bind.fields.alias', { defa"
+  },
+  {
+    "file": "pages/accounts/BindAccountSteps.tsx",
+    "line": 152,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Optional custom name",
+    "context": "placeholder={t('accounts.bind.placeholders.alias', { defaultValue: 'Optional custom name' })} className=\"w-full outline-"
+  },
+  {
+    "file": "pages/accounts/BindAccountSteps.tsx",
+    "line": 201,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Change credentials",
+    "context": "{t('accounts.bind.messages.changeCredentials', { defaultValue: 'Change credentials' })}"
+  },
+  {
+    "file": "pages/accounts/components/AccountAnalyticsStats.tsx",
+    "line": 156,
+    "type": "JSX children",
+    "text": "P&L:",
+    "context": "<div>P&L: <strong style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{profit >= 0 ? '+' : '"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Share link copied to clipboard",
+    "context": "message.success(t('accounts.messages.shareLinkCopied', { defaultValue: 'Share link copied to clipboard' }));"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to create share link",
+    "context": "message.error(t('accounts.messages.shareLinkFailed', { defaultValue: 'Failed to create share link' }));"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 72,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete failed",
+    "context": "message.error(t('common.deleteFailed', { defaultValue: 'Delete failed' }));"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 81,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Operation failed",
+    "context": "message.error(t('common.operationFailed', { defaultValue: 'Operation failed' }));"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 86,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Share Link",
+    "context": "{ title: t('share.token', { defaultValue: 'Share Link' }), dataIndex: 'shareUrl', key: 'url',"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 115,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete this share link?",
+    "context": "title={t('share.deleteConfirm', { defaultValue: 'Delete this share link?' })}"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Share Management",
+    "context": "title={t('share.title', { defaultValue: 'Share Management' })}"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 142,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Create New Share Link",
+    "context": "{t('share.createNew', { defaultValue: 'Create New Share Link' })}"
+  },
+  {
+    "file": "pages/accounts/components/ShareAccountButton.tsx",
+    "line": 152,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No share links yet",
+    "context": "locale={{ emptyText: t('share.empty', { defaultValue: 'No share links yet' }) }}"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 29,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load providers",
+    "context": "message.error(t('admin.aiGateway.errors.loadProviders', { defaultValue: 'Failed to load providers' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 59,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Saved successfully",
+    "context": "message.success(t('common.saveSuccess', { defaultValue: 'Saved successfully' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 61,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add provider feature pending backend support",
+    "context": "message.info(t('admin.aiGateway.addProviderPending', { defaultValue: 'Add provider feature pending backend support' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 77,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Toggle failed",
+    "context": "message.error(t('admin.aiGateway.errors.toggleFailed', { defaultValue: 'Toggle failed' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load models",
+    "context": "message.error(t('admin.aiGateway.errors.loadModels', { defaultValue: 'Failed to load models' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Saved successfully",
+    "context": "message.success(t('common.saveSuccess', { defaultValue: 'Saved successfully' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 132,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete failed",
+    "context": "message.error(t('common.deleteFailed', { defaultValue: 'Delete failed' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 147,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Toggle failed",
+    "context": "message.error(t('admin.aiGateway.errors.toggleFailed', { defaultValue: 'Toggle failed' }));"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 157,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Gateway Management",
+    "context": "{t('admin.aiGateway.title', { defaultValue: 'AI Gateway Management' })}"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 160,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Manage AI providers, models, and pricing. Users select from available models, billed by token from wallet.",
+    "context": "{t('admin.aiGateway.description', { defaultValue: 'Manage AI providers, models, and pricing. Users select from available"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 165,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add Provider",
+    "context": "<Button type=\"primary\" icon={<PlusOutlined />} onClick={handleAddProvider}>{t('admin.aiGateway.addProvider', { defaultVa"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 178,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Base URL",
+    "context": "{ title: t('admin.aiGateway.columns.baseUrl', { defaultValue: 'Base URL' }), dataIndex: 'baseUrl', key: 'baseUrl', ellip"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 180,
+    "type": "t() defaultValue (should be real key)",
+    "text": "API Key",
+    "context": "{ title: t('admin.aiGateway.columns.apiKey', { defaultValue: 'API Key' }), dataIndex: 'hasApiKey', key: 'hasApiKey', wid"
+  },
+  {
+    "file": "pages/admin/AIGatewayManagement.tsx",
+    "line": 181,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Not configured",
+    "context": "render: (v: boolean) => v ? <Tag color=\"green\">{t('admin.aiGateway.configured', { defaultValue: 'Configured' })}</Tag> :"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Edit Provider",
+    "context": "title={editingProvider ? t('admin.aiGateway.editProvider', { defaultValue: 'Edit Provider' }) : t('admin.aiGateway.addPr"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add Provider",
+    "context": "title={editingProvider ? t('admin.aiGateway.editProvider', { defaultValue: 'Edit Provider' }) : t('admin.aiGateway.addPr"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 46,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Provider ID",
+    "context": "<Form.Item name=\"providerId\" label={t('admin.aiGateway.providerId', { defaultValue: 'Provider ID' })} rules={[{ required"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 46,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please enter provider ID",
+    "context": "<Form.Item name=\"providerId\" label={t('admin.aiGateway.providerId', { defaultValue: 'Provider ID' })} rules={[{ required"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 47,
+    "type": "JSX attr: placeholder",
+    "text": "deepseek / openai / qwen ...",
+    "context": "<Input placeholder=\"deepseek / openai / qwen ...\" />"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Display Name",
+    "context": "<Form.Item name=\"name\" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })} rules={[{ required: tr"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please enter display name",
+    "context": "<Form.Item name=\"name\" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })} rules={[{ required: tr"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 53,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Base URL",
+    "context": "<Form.Item name=\"baseUrl\" label={t('admin.aiGateway.baseUrl', { defaultValue: 'Base URL' })} rules={[{ required: true, m"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 53,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please enter Base URL",
+    "context": "<Form.Item name=\"baseUrl\" label={t('admin.aiGateway.baseUrl', { defaultValue: 'Base URL' })} rules={[{ required: true, m"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "API Key",
+    "context": "<Form.Item name=\"apiKey\" label={t('admin.aiGateway.apiKeyLabel', { defaultValue: 'API Key' })} extra={editingProvider ? "
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Leave empty to keep existing key",
+    "context": "<Form.Item name=\"apiKey\" label={t('admin.aiGateway.apiKeyLabel', { defaultValue: 'API Key' })} extra={editingProvider ? "
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "API key, encrypted at rest",
+    "context": "<Form.Item name=\"apiKey\" label={t('admin.aiGateway.apiKeyLabel', { defaultValue: 'API Key' })} extra={editingProvider ? "
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Leave empty to keep",
+    "context": "<Input placeholder={editingProvider ? t('admin.aiGateway.apiKeyEditPlaceholder', { defaultValue: 'Leave empty to keep' }"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 63,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Edit Model",
+    "context": "title={editingModel ? t('admin.aiGateway.editModel', { defaultValue: 'Edit Model' }) : t('admin.aiGateway.addModel', { d"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 63,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add Model",
+    "context": "title={editingModel ? t('admin.aiGateway.editModel', { defaultValue: 'Edit Model' }) : t('admin.aiGateway.addModel', { d"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 71,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Model Name",
+    "context": "<Form.Item name=\"modelName\" label={t('admin.aiGateway.modelName', { defaultValue: 'Model Name' })} rules={[{ required: t"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 71,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please enter model name",
+    "context": "<Form.Item name=\"modelName\" label={t('admin.aiGateway.modelName', { defaultValue: 'Model Name' })} rules={[{ required: t"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 74,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Display Name",
+    "context": "<Form.Item name=\"displayName\" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })}>"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 75,
+    "type": "JSX attr: placeholder",
+    "text": "DeepSeek Chat",
+    "context": "<Input placeholder=\"DeepSeek Chat\" />"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Input Price ($/1M)",
+    "context": "<Form.Item name=\"pricePer1mInput\" label={t('admin.aiGateway.priceInput', { defaultValue: 'Input Price ($/1M)' })} rules="
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 81,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Output Price ($/1M)",
+    "context": "<Form.Item name=\"pricePer1mOutput\" label={t('admin.aiGateway.priceOutput', { defaultValue: 'Output Price ($/1M)' })} rul"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 113,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add Model",
+    "context": "{t('admin.aiGateway.addModel', { defaultValue: 'Add Model' })}"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 120,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Model Name",
+    "context": "{ title: t('admin.aiGateway.modelName', { defaultValue: 'Model Name' }), dataIndex: 'modelName', key: 'modelName', width"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 121,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Display Name",
+    "context": "{ title: t('admin.aiGateway.displayName', { defaultValue: 'Display Name' }), dataIndex: 'displayName', key: 'displayName"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 122,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Input Price ($/1M)",
+    "context": "{ title: t('admin.aiGateway.priceInput', { defaultValue: 'Input Price ($/1M)' }), dataIndex: 'pricePer1mInput', key: 'pi"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 124,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Output Price ($/1M)",
+    "context": "{ title: t('admin.aiGateway.priceOutput', { defaultValue: 'Output Price ($/1M)' }), dataIndex: 'pricePer1mOutput', key: "
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 136,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete this model?",
+    "context": "<Popconfirm title={t('admin.aiGateway.confirmDeleteModel', { defaultValue: 'Delete this model?' })} onConfirm={() => onD"
+  },
+  {
+    "file": "pages/admin/AIGatewayModals.tsx",
+    "line": 146,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No models",
+    "context": "locale={{ emptyText: t('admin.aiGateway.noModels', { defaultValue: 'No models' }) }}"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 46,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load accounts",
+    "context": "const msg = getErrorMessage(err, t('admin.account.errors.loadFailed', { defaultValue: 'Failed to load accounts' }));"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 62,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account frozen",
+    "context": "message.success(t('admin.account.frozen', { defaultValue: 'Account frozen' }));"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 65,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Freeze failed",
+    "context": "message.error(getErrorMessage(error, t('admin.account.errors.freezeFailed', { defaultValue: 'Freeze failed' })));"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 72,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account unfrozen",
+    "context": "message.success(t('admin.account.unfrozen', { defaultValue: 'Account unfrozen' }));"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 75,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unfreeze failed",
+    "context": "message.error(getErrorMessage(error, t('admin.account.errors.unfreezeFailed', { defaultValue: 'Unfreeze failed' })));"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 90,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Created At",
+    "context": "{ title: t('admin.account.columns.createdAt', { defaultValue: 'Created At' }), dataIndex: 'createdAt', key: 'createdAt',"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 103,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Freeze this account?",
+    "context": "<Popconfirm title={t('admin.account.confirmFreeze', { defaultValue: 'Freeze this account?' })} onConfirm={() => handleFr"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 113,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Management",
+    "context": "<Card title={t('admin.account.title', { defaultValue: 'Account Management' })}>"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 117,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Search accounts",
+    "context": "placeholder={t('admin.account.searchPlaceholder', { defaultValue: 'Search accounts' })}"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 148,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Detail",
+    "context": "title={t('admin.account.detail', { defaultValue: 'Account Detail' })}"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 165,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Created At",
+    "context": "<Descriptions.Item label={t('admin.account.columns.createdAt', { defaultValue: 'Created At' })}>{formatDateTime(currentA"
+  },
+  {
+    "file": "pages/admin/AccountManagement.tsx",
+    "line": 170,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Audit Logs",
+    "context": "<h4 style={{ marginBottom: 8 }}>{t('admin.account.auditLogs', { defaultValue: 'Audit Logs' })}</h4>"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 66,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Saved successfully",
+    "context": "message.success(t('admin.settings.saveSuccess', { defaultValue: 'Saved successfully' }));"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Save failed",
+    "context": "message.error(t('admin.settings.saveFailed', { defaultValue: 'Save failed' }));"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 73,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Save failed",
+    "context": "message.error(t('admin.settings.saveFailed', { defaultValue: 'Save failed' }));"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 83,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete failed",
+    "context": "message.error(t('admin.settings.deleteFailed', { defaultValue: 'Delete failed' }));"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Action failed",
+    "context": "message.error(t('admin.settings.actionFailed', { defaultValue: 'Action failed' }));"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 99,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Setting Key",
+    "context": "title: t('admin.settings.columns.key', { defaultValue: 'Setting Key' }),"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 134,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Confirm delete?",
+    "context": "<Popconfirm title={t('admin.settings.confirmDelete', { defaultValue: 'Confirm delete?' })} onConfirm={() => handleDelete"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 148,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Agent Management Settings",
+    "context": "<SafetyOutlined /> {t('admin.settings.title', { defaultValue: 'Agent Management Settings' })}"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 151,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add Setting",
+    "context": "{t('admin.settings.addSetting', { defaultValue: 'Add Setting' })}"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 166,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Permission Rules (permission.rule.N)",
+    "context": "<Card title={t('admin.settings.permissionRules', { defaultValue: 'Permission Rules (permission.rule.N)' })} size=\"small\""
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 168,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Format:",
+    "context": "{t('admin.settings.permissionFormat', { defaultValue: 'Format: ' })}<code>ALLOW|DENY action(resource:selector)</code>"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 170,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Example:",
+    "context": "{t('admin.settings.permissionExample', { defaultValue: 'Example: ' })}<code>DENY live_trading(*:leverage&gt;100)</code>"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 172,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add rule: create setting with key",
+    "context": "{t('admin.settings.permissionAddRule', { defaultValue: 'Add rule: create setting with key ' })}<code>permission.rule.1</"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 177,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Add Managed Setting",
+    "context": "title={isNew ? t('admin.settings.addManagedSetting', { defaultValue: 'Add Managed Setting' }) : t('admin.settings.editSe"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 186,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Setting Key",
+    "context": "<Text type=\"secondary\">{t('admin.settings.settingKey', { defaultValue: 'Setting Key' })}</Text>"
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 191,
+    "type": "t() defaultValue (should be real key)",
+    "text": "e.g.: allowed_models, disable_live_trading, permission.rule.1",
+    "context": "placeholder={t('admin.settings.keyPlaceholder', { defaultValue: 'e.g.: allowed_models, disable_live_trading, permission."
+  },
+  {
+    "file": "pages/admin/AdminSettingsPage.tsx",
+    "line": 211,
+    "type": "t() defaultValue (should be real key)",
+    "text": "e.g.: claude-sonnet-5,deepseek-v4",
+    "context": "placeholder={t('admin.settings.valuePlaceholder', { defaultValue: 'e.g.: claude-sonnet-5,deepseek-v4' })}"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 48,
+    "type": "message call",
+    "text": "Failed to load tasks",
+    "context": "message.error(e?.message || 'Failed to load tasks');"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 61,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Task approved and published",
+    "context": "message.success(t('admin.autogen.approved', { defaultValue: 'Task approved and published' }));"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 64,
+    "type": "message call",
+    "text": "Approve failed",
+    "context": "message.error(e?.message || 'Approve failed');"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 73,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Task rejected",
+    "context": "message.success(t('admin.autogen.rejected', { defaultValue: 'Task rejected' }));"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 76,
+    "type": "message call",
+    "text": "Reject failed",
+    "context": "message.error(e?.message || 'Reject failed');"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 90,
+    "type": "t() defaultValue (should be real key)",
+    "text": "{{count}} tasks enqueued",
+    "context": "message.success(t('admin.autogen.enqueued', { defaultValue: '{{count}} tasks enqueued', count: resp.enqueued }));"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 94,
+    "type": "message call",
+    "text": "Trigger failed",
+    "context": "message.error(e?.message || 'Trigger failed');"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 148,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Approve and publish?",
+    "context": "<Popconfirm title={t('admin.autogen.confirmApprove', { defaultValue: 'Approve and publish?' })} onConfirm={() => handleA"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 151,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Reject this task?",
+    "context": "<Popconfirm title={t('admin.autogen.confirmReject', { defaultValue: 'Reject this task?' })} onConfirm={() => handleRejec"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 164,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Strategy Generation Tasks",
+    "context": "<Title level={4} style={{ margin: 0 }}>{t('admin.autogen.title', { defaultValue: 'AI Strategy Generation Tasks' })}</Tit"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 171,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All Status",
+    "context": "{ value: '', label: t('admin.autogen.allStatus', { defaultValue: 'All Status' }) },"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 181,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trigger Batch",
+    "context": "{t('admin.autogen.triggerBatch', { defaultValue: 'Trigger Batch' })}"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 196,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trigger Batch Generation",
+    "context": "title={t('admin.autogen.triggerBatch', { defaultValue: 'Trigger Batch Generation' })}"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 205,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Symbols (comma-separated)",
+    "context": "<Text type=\"secondary\" style={{ display: 'block', marginBottom: 4 }}>{t('admin.autogen.symbols', { defaultValue: 'Symbol"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 209,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Timeframes (comma-separated)",
+    "context": "<Text type=\"secondary\" style={{ display: 'block', marginBottom: 4 }}>{t('admin.autogen.timeframes', { defaultValue: 'Tim"
+  },
+  {
+    "file": "pages/admin/AutoGenTaskReview.tsx",
+    "line": 213,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Types (comma-separated)",
+    "context": "<Text type=\"secondary\" style={{ display: 'block', marginBottom: 4 }}>{t('admin.autogen.strategyTypes', { defaultValue: '"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 42,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Auto Renew",
+    "context": "{ title: t('admin.billing.columns.autoRenew', { defaultValue: 'Auto Renew' }), dataIndex: 'autoRenew', key: 'autoRenew',"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 44,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Period Start",
+    "context": "{ title: t('admin.billing.columns.periodStart', { defaultValue: 'Period Start' }), key: 'periodStart', width: 160,"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 46,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Period End",
+    "context": "{ title: t('admin.billing.columns.periodEnd', { defaultValue: 'Period End' }), key: 'periodEnd', width: 160,"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 48,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Created At",
+    "context": "{ title: t('admin.billing.columns.createdAt', { defaultValue: 'Created At' }), key: 'createdAt', width: 160,"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 61,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Balance Before",
+    "context": "{ title: t('admin.billing.columns.balanceBefore', { defaultValue: 'Balance Before' }), dataIndex: 'balanceBefore', key: "
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 62,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Balance After",
+    "context": "{ title: t('admin.billing.columns.balanceAfter', { defaultValue: 'Balance After' }), dataIndex: 'balanceAfter', key: 'ba"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Billing Management",
+    "context": "<h1 className=\"text-2xl font-bold\" style={{ color: 'var(--color-text)' }}>{t('admin.billing.title', { defaultValue: 'Bil"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Monthly Revenue",
+    "context": "title={t('admin.billing.monthlyRevenue', { defaultValue: 'Monthly Revenue' })}"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 85,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Revenue",
+    "context": "title={t('admin.billing.totalRevenue', { defaultValue: 'Total Revenue' })}"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 94,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Active Subscriptions",
+    "context": "title={t('admin.billing.activeSubs', { defaultValue: 'Active Subscriptions' })}"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 111,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Plan Revenue Details",
+    "context": "<Card title={t('admin.billing.planRevenue', { defaultValue: 'Plan Revenue Details' })} size=\"small\">"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 120,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Monthly Revenue",
+    "context": "{ title: t('admin.billing.monthlyRevenue', { defaultValue: 'Monthly Revenue' }), dataIndex: 'monthlyRevenue', key: 'mont"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 121,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Revenue",
+    "context": "{ title: t('admin.billing.totalRevenue', { defaultValue: 'Total Revenue' }), dataIndex: 'totalRevenue', key: 'totalReven"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Filter by plan",
+    "context": "placeholder={t('admin.billing.filterByPlan', { defaultValue: 'Filter by plan' })}"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 147,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Filter by status",
+    "context": "placeholder={t('admin.billing.filterByStatus', { defaultValue: 'Filter by status' })}"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 177,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Wallet Transactions",
+    "context": "<TabPane tab={t('admin.billing.walletTransactions', { defaultValue: 'Wallet Transactions' })} key=\"transactions\">"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 182,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Filter by type",
+    "context": "placeholder={t('admin.billing.filterByType', { defaultValue: 'Filter by type' })}"
+  },
+  {
+    "file": "pages/admin/BillingManagement.tsx",
+    "line": 190,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Platform Fee",
+    "context": "{ value: 'platform_fee', label: t('admin.billing.txPlatformFee', { defaultValue: 'Platform Fee' }) },"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 29,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load coupons",
+    "context": "message.error(t('admin.coupon.loadFailed', { defaultValue: 'Failed to load coupons' }));"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please fill required fields",
+    "context": "message.warning(t('admin.coupon.fillRequired', { defaultValue: 'Please fill required fields' }));"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 51,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Coupon created",
+    "context": "message.success(t('admin.coupon.created', { defaultValue: 'Coupon created' }));"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 55,
+    "type": "message call",
+    "text": "Failed to create coupon",
+    "context": "message.error(resp.error || 'Failed to create coupon');"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 58,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to create coupon",
+    "context": "message.error(t('admin.coupon.createFailed', { defaultValue: 'Failed to create coupon' }));"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Coupon disabled",
+    "context": "message.success(t('admin.coupon.disabled', { defaultValue: 'Coupon disabled' }));"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to disable coupon",
+    "context": "message.error(t('admin.coupon.disableFailed', { defaultValue: 'Failed to disable coupon' }));"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 86,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Min Purchase",
+    "context": "{ title: t('admin.coupon.colMinPurchase', { defaultValue: 'Min Purchase' }), dataIndex: 'minPurchaseAmount', key: 'minPu"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 117,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Create Coupon",
+    "context": "{t('admin.coupon.create', { defaultValue: 'Create Coupon' })}"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 130,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Create Coupon",
+    "context": "title={t('admin.coupon.createTitle', { defaultValue: 'Create Coupon' })}"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 138,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Coupon code (e.g. SUMMER20)",
+    "context": "placeholder={t('admin.coupon.codePlaceholder', { defaultValue: 'Coupon code (e.g. SUMMER20)' })}"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 152,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Discount value (e.g. 20 for 20% or 50 for ¥50)",
+    "context": "placeholder={t('admin.coupon.valuePlaceholder', { defaultValue: 'Discount value (e.g. 20 for 20% or 50 for ¥50)' })}"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 157,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Minimum purchase amount (0 = none)",
+    "context": "placeholder={t('admin.coupon.minPurchasePlaceholder', { defaultValue: 'Minimum purchase amount (0 = none)' })}"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 162,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Max uses (0 = unlimited)",
+    "context": "placeholder={t('admin.coupon.maxUsesPlaceholder', { defaultValue: 'Max uses (0 = unlimited)' })}"
+  },
+  {
+    "file": "pages/admin/CouponManagement.tsx",
+    "line": 169,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Expires at (ISO 8601, empty = never)",
+    "context": "placeholder={t('admin.coupon.expiresPlaceholder', { defaultValue: 'Expires at (ISO 8601, empty = never)' })}"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 38,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load dashboard data",
+    "context": "const msg = getErrorMessage(err, t('admin.dashboard.errors.loadFailed', { defaultValue: 'Failed to load dashboard data' "
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Admin Dashboard",
+    "context": "<h1 className=\"text-2xl font-bold\" style={{ color: 'var(--color-text)' }}>{t('admin.dashboard.title', { defaultValue: 'A"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 53,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Users",
+    "context": "[t('admin.dashboard.totalUsers', { defaultValue: 'Total Users' }), stats?.totalUsers || 0, TeamOutlined, '#D4AF37'],"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Active Users",
+    "context": "[t('admin.dashboard.activeUsers', { defaultValue: 'Active Users' }), stats?.activeUsers || 0, AuditOutlined, '#52c41a'],"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 55,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Verified Users",
+    "context": "[t('admin.dashboard.verifiedUsers', { defaultValue: 'Verified Users' }), stats?.verifiedUsers || 0, CheckCircleOutlined,"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "MT Accounts",
+    "context": "[t('admin.dashboard.mtAccounts', { defaultValue: 'MT Accounts' }), stats?.totalAccounts || 0, BankOutlined, '#1890ff'],"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Online Accounts",
+    "context": "[t('admin.dashboard.onlineAccounts', { defaultValue: 'Online Accounts' }), stats?.onlineAccounts || 0, LineChartOutlined"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 58,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Today Trades",
+    "context": "[t('admin.dashboard.todayTrades', { defaultValue: 'Today Trades' }), stats?.todayTrades || 0, RiseOutlined, '#13c2c2'],"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 66,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Today P&L",
+    "context": "<Statistic title={t('admin.dashboard.todayProfit', { defaultValue: 'Today P&L' })} value={toNumber(stats?.todayProfit)} "
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 75,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Active Subs",
+    "context": "[t('admin.dashboard.activeSubs', { defaultValue: 'Active Subs' }), stats?.activeSubscriptions || 0, CrownOutlined, '#D4A"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Monthly Revenue",
+    "context": "[t('admin.dashboard.monthlyRevenue', { defaultValue: 'Monthly Revenue' }), toNumber(stats?.monthlyRevenue).toFixed(2), D"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 77,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Revenue",
+    "context": "[t('admin.dashboard.totalRevenue', { defaultValue: 'Total Revenue' }), toNumber(stats?.totalRevenue).toFixed(2), DollarO"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Market Strategies",
+    "context": "[t('admin.dashboard.marketStrategies', { defaultValue: 'Market Strategies' }), stats?.marketplaceStrategies || 0, Shoppi"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 79,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Market Sales",
+    "context": "[t('admin.dashboard.marketSales', { defaultValue: 'Market Sales' }), stats?.marketplaceSales || 0, ShoppingOutlined, '#1"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 80,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Market Revenue",
+    "context": "[t('admin.dashboard.marketRevenue', { defaultValue: 'Market Revenue' }), toNumber(stats?.marketplaceRevenue).toFixed(2),"
+  },
+  {
+    "file": "pages/admin/Dashboard.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Recent Logs",
+    "context": "<Card title={t('admin.dashboard.recentLogs', { defaultValue: 'Recent Logs' })}>"
+  },
+  {
+    "file": "pages/admin/DashboardLogColumns.tsx",
+    "line": 14,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User Management",
+    "context": "user_management: t('admin.logs.modules.userManagement', { defaultValue: 'User Management' }),"
+  },
+  {
+    "file": "pages/admin/DashboardLogColumns.tsx",
+    "line": 15,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Management",
+    "context": "account_management: t('admin.logs.modules.accountManagement', { defaultValue: 'Account Management' }),"
+  },
+  {
+    "file": "pages/admin/DashboardLogColumns.tsx",
+    "line": 17,
+    "type": "t() defaultValue (should be real key)",
+    "text": "System Config",
+    "context": "system_config: t('admin.logs.modules.systemConfig', { defaultValue: 'System Config' }),"
+  },
+  {
+    "file": "pages/admin/DashboardLogColumns.tsx",
+    "line": 21,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Action Type",
+    "context": "{ title: t('admin.logs.columns.actionType', { defaultValue: 'Action Type' }), dataIndex: 'actionType', key: 'actionType'"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 32,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import failed",
+    "context": "message.error(err?.message || t('admin.depositAddresses.importFailed', { defaultValue: 'Import failed' }));"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User ID",
+    "context": "title: t('admin.depositAddresses.user', { defaultValue: 'User ID' }),"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 73,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Received USDT",
+    "context": "title: t('admin.depositAddresses.received', { defaultValue: 'Received USDT' }),"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 87,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Assigned At",
+    "context": "title: t('admin.depositAddresses.assignedAt', { defaultValue: 'Assigned At' }),"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 100,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
+    "context": "message={t('admin.depositAddresses.importHint', { defaultValue: 'Use hdgen tool on an offline machine to generate deposi"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 110,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All Status",
+    "context": "{ label: t('admin.depositAddresses.all', { defaultValue: 'All Status' }), value: '' },"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 123,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import Addresses",
+    "context": "{t('admin.depositAddresses.import', { defaultValue: 'Import Addresses' })}"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Available in Pool",
+    "context": "title={t('admin.depositAddresses.availablePool', { defaultValue: 'Available in Pool' })}"
+  },
+  {
+    "file": "pages/admin/DepositAddressesTab.tsx",
+    "line": 138,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Addresses",
+    "context": "title={t('admin.depositAddresses.total', { defaultValue: 'Total Addresses' })}"
+  },
+  {
+    "file": "pages/admin/DepositManagement.tsx",
+    "line": 23,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User ID",
+    "context": "title: t('admin.deposit.table.user', { defaultValue: 'User ID' }),"
+  },
+  {
+    "file": "pages/admin/DepositManagement.tsx",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
+    "text": "USDT Amount",
+    "context": "title: t('admin.deposit.table.amount', { defaultValue: 'USDT Amount' }),"
+  },
+  {
+    "file": "pages/admin/DepositManagement.tsx",
+    "line": 38,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Tx Hash",
+    "context": "title: t('admin.deposit.table.txHash', { defaultValue: 'Tx Hash' }),"
+  },
+  {
+    "file": "pages/admin/DepositManagement.tsx",
+    "line": 79,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Deposit Management",
+    "context": "{t('admin.deposit.title', { defaultValue: 'Deposit Management' })}"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 68,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Platform Rev",
+    "context": "<Statistic title={t('admin.analytics.platformRev', { defaultValue: 'Platform Rev' })} value={analytics.platformRevenue} "
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 73,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Provider Rev",
+    "context": "<Statistic title={t('admin.analytics.providerRev', { defaultValue: 'Provider Rev' })} value={analytics.providerRevenue} "
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Active Buyers",
+    "context": "<Statistic title={t('admin.analytics.activeBuyers', { defaultValue: 'Active Buyers' })} value={analytics.activeBuyers} /"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Refund Rate",
+    "context": "<Statistic title={t('admin.analytics.refundRate', { defaultValue: 'Refund Rate' })} value={(parseFloat(analytics.refundR"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New Subscribers",
+    "context": "<Statistic title={t('admin.analytics.newSubs', { defaultValue: 'New Subscribers' })} value={analytics.newSubscribers} />"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 106,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Strategies",
+    "context": "<Statistic title={t('admin.analytics.totalStrategies', { defaultValue: 'Total Strategies' })} value={analytics.totalStra"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 111,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New Strategies",
+    "context": "<Statistic title={t('admin.analytics.newStrategies', { defaultValue: 'New Strategies' })} value={analytics.newStrategies"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 118,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Top Strategies by Revenue",
+    "context": "<Card title={t('admin.analytics.topByRevenue', { defaultValue: 'Top Strategies by Revenue' })} size=\"small\">"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 123,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Top Strategies by Subscribers",
+    "context": "<Card title={t('admin.analytics.topBySubs', { defaultValue: 'Top Strategies by Subscribers' })} size=\"small\">"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 131,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Top Providers by Revenue",
+    "context": "<Card title={t('admin.analytics.topProvidersRev', { defaultValue: 'Top Providers by Revenue' })} size=\"small\">"
+  },
+  {
+    "file": "pages/admin/MarketplaceAnalytics.tsx",
+    "line": 136,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Top Providers by Strategies",
+    "context": "<Card title={t('admin.analytics.topProvidersStrat', { defaultValue: 'Top Providers by Strategies' })} size=\"small\">"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 35,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load strategies",
+    "context": "message.error(t('admin.marketplace.loadFailed', { defaultValue: 'Failed to load strategies' }));"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy featured",
+    "context": "message.success(t('admin.marketplace.featureSuccess', { defaultValue: 'Strategy featured' }));"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to feature strategy",
+    "context": "message.error(t('admin.marketplace.featureFailed', { defaultValue: 'Failed to feature strategy' }));"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Removed featured",
+    "context": "message.success(t('admin.marketplace.unfeatureSuccess', { defaultValue: 'Removed featured' }));"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to unfeature",
+    "context": "message.error(t('admin.marketplace.unfeatureFailed', { defaultValue: 'Failed to unfeature' }));"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 149,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Remove featured",
+    "context": "<Tooltip title={t('admin.marketplace.unfeature', { defaultValue: 'Remove featured' })}>"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 166,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All statuses",
+    "context": "placeholder={t('admin.marketplace.filterStatus', { defaultValue: 'All statuses' })}"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 181,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Search by title...",
+    "context": "placeholder={t('admin.marketplace.searchPlaceholder', { defaultValue: 'Search by title...' })}"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 210,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Feature Strategy",
+    "context": "title={t('admin.marketplace.featureTitle', { defaultValue: 'Feature Strategy' })}"
+  },
+  {
+    "file": "pages/admin/MarketplaceManagement.tsx",
+    "line": 217,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Set priority for featured placement. Higher = more prominent.",
+    "context": "{t('admin.marketplace.featureDesc', { defaultValue: 'Set priority for featured placement. Higher = more prominent.' })}"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 90,
+    "type": "t() defaultValue (should be real key)",
+    "text": "System Monitoring",
+    "context": "{t('monitoring.title', { defaultValue: 'System Monitoring' })}"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "SSE Connected",
+    "context": "{connected ? t('monitoring.sseConnected', { defaultValue: 'SSE Connected' }) : t('monitoring.disconnected', { defaultVal"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 98,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Stream Error",
+    "context": "<Alert type=\"error\" message={t('monitoring.streamError', { defaultValue: 'Stream Error' })} description={error} showIcon"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 102,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Waiting for data...",
+    "context": "<Card><div className=\"text-center py-8\" style={{ color: 'var(--color-text-secondary)' }}>{t('monitoring.waitingData', { "
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Service Health",
+    "context": "<Card title={<span><CloudServerOutlined /> {t('monitoring.serviceHealth', { defaultValue: 'Service Health' })}</span>} s"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Disk Usage",
+    "context": "<span>{t('monitoring.diskUsage', { defaultValue: 'Disk Usage' })}</span>"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 127,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Go Runtime",
+    "context": "<Card title={<span><ThunderboltOutlined /> {t('monitoring.goRuntime', { defaultValue: 'Go Runtime' })}</span>} size=\"sma"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "GC Count",
+    "context": "<Statistic title={t('monitoring.gcCount', { defaultValue: 'GC Count' })} value={Number(snap.numGc)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 136,
+    "type": "t() defaultValue (should be real key)",
+    "text": "GC Pause Avg",
+    "context": "<Statistic title={t('monitoring.gcPauseAvg', { defaultValue: 'GC Pause Avg' })} value={formatNs(snap.gcPauseAvgNs)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 139,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Stack Usage",
+    "context": "<Statistic title={t('monitoring.stackUsage', { defaultValue: 'Stack Usage' })} value={formatBytes(snap.stackInuseBytes)}"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 142,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Heap Memory",
+    "context": "<div className=\"mb-1\" style={{ color: 'var(--color-text-secondary)', fontSize: 12 }}>{t('monitoring.heapMemory', { defau"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 151,
+    "type": "t() defaultValue (should be real key)",
+    "text": "DB Connection Pool",
+    "context": "<Card title={<span><DatabaseOutlined /> {t('monitoring.dbPool', { defaultValue: 'DB Connection Pool' })}</span>} size=\"s"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 165,
+    "type": "t() defaultValue (should be real key)",
+    "text": "MD Gateway",
+    "context": "<Card title={<span><ApiOutlined /> {t('monitoring.mdGateway', { defaultValue: 'MD Gateway' })}</span>} size=\"small\">"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 168,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Spill Files",
+    "context": "<Statistic title={t('monitoring.spillFiles', { defaultValue: 'Spill Files' })} value={Number(snap.spillPendingFiles)} va"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 171,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Dropped Bars",
+    "context": "<Statistic title={t('monitoring.droppedBars', { defaultValue: 'Dropped Bars' })} value={Number(snap.barDroppedTotal)} va"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 174,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Dropped Signals",
+    "context": "<Statistic title={t('monitoring.droppedSignals', { defaultValue: 'Dropped Signals' })} value={Number(snap.signalDroppedT"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 177,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Consumer Lag",
+    "context": "<Statistic title={t('monitoring.consumerLag', { defaultValue: 'Consumer Lag' })} value={Number(snap.consumerLag)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 180,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Stale Accounts",
+    "context": "<Statistic title={t('monitoring.staleAccounts', { defaultValue: 'Stale Accounts' })} value={Number(snap.staleAccounts)} "
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 183,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Dead Accounts",
+    "context": "<Statistic title={t('monitoring.deadAccounts', { defaultValue: 'Dead Accounts' })} value={Number(snap.deadAccounts)} val"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 186,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Avg Gap (s)",
+    "context": "<Statistic title={t('monitoring.avgGapSec', { defaultValue: 'Avg Gap (s)' })} value={snap.mdGapAvgSeconds.toFixed(2)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 189,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Max Gap (s)",
+    "context": "<Statistic title={t('monitoring.maxGapSec', { defaultValue: 'Max Gap (s)' })} value={snap.mdGapMaxSeconds.toFixed(2)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 194,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Dead Letter Queue (DLQ)",
+    "context": "<Card title={<span><WarningOutlined /> {t('monitoring.dlq', { defaultValue: 'Dead Letter Queue (DLQ)' })}</span>} size=\""
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 197,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Parse Errors",
+    "context": "<Statistic title={t('monitoring.parseErrors', { defaultValue: 'Parse Errors' })} value={Number(snap.dlqParseErrors)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 200,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Bid>Ask",
+    "context": "<Statistic title={t('monitoring.bidGtAsk', { defaultValue: 'Bid>Ask' })} value={Number(snap.dlqBidGtAsk)} />"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 209,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Push interval: 5s",
+    "context": "{t('monitoring.pushInterval', { defaultValue: 'Push interval: 5s' })} · {t('monitoring.lastUpdate', { defaultValue: 'Las"
+  },
+  {
+    "file": "pages/admin/MonitoringPage.tsx",
+    "line": 209,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Last update",
+    "context": "{t('monitoring.pushInterval', { defaultValue: 'Push interval: 5s' })} · {t('monitoring.lastUpdate', { defaultValue: 'Las"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 27,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load logs",
+    "context": "const msg = getErrorMessage(err, t('admin.logs.errors.loadFailed', { defaultValue: 'Failed to load logs' }));"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User Management",
+    "context": "user_management: t('admin.logs.modules.userManagement', { defaultValue: 'User Management' }),"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 51,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Management",
+    "context": "account_management: t('admin.logs.modules.accountManagement', { defaultValue: 'Account Management' }),"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 53,
+    "type": "t() defaultValue (should be real key)",
+    "text": "System Config",
+    "context": "system_config: t('admin.logs.modules.systemConfig', { defaultValue: 'System Config' }),"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 65,
+    "type": "t() defaultValue (should be real key)",
+    "text": "IP Address",
+    "context": "title: t('admin.logs.columns.ip', { defaultValue: 'IP Address' }),"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Operation Logs",
+    "context": "<h1 className=\"text-2xl font-bold\" style={{ color: 'var(--color-text)' }}>{t('admin.logs.title', { defaultValue: 'Operat"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 95,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Filter by module",
+    "context": "placeholder={t('admin.logs.filterModule', { defaultValue: 'Filter by module' })}"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 100,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User Management",
+    "context": "{ label: t('admin.logs.modules.userManagement', { defaultValue: 'User Management' }), value: 'user_management' },"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Management",
+    "context": "{ label: t('admin.logs.modules.accountManagement', { defaultValue: 'Account Management' }), value: 'account_management' "
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 103,
+    "type": "t() defaultValue (should be real key)",
+    "text": "System Config",
+    "context": "{ label: t('admin.logs.modules.systemConfig', { defaultValue: 'System Config' }), value: 'system_config' },"
+  },
+  {
+    "file": "pages/admin/OperationLogs.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Filter by action",
+    "context": "placeholder={t('admin.logs.filterAction', { defaultValue: 'Filter by action' })}"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 32,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load refund requests",
+    "context": "message.error(t('admin.refund.loadFailed', { defaultValue: 'Failed to load refund requests' }));"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Refund approved and executed",
+    "context": "? t('admin.refund.approved', { defaultValue: 'Refund approved and executed' })"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Refund request rejected",
+    "context": ": t('admin.refund.rejected', { defaultValue: 'Refund request rejected' }));"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 54,
+    "type": "message call",
+    "text": "Failed to process refund",
+    "context": "message.error(resp.error || 'Failed to process refund');"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to process refund",
+    "context": "message.error(t('admin.refund.processFailed', { defaultValue: 'Failed to process refund' }));"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Approve & Execute",
+    "context": "<Tooltip title={t('admin.refund.approve', { defaultValue: 'Approve & Execute' })}>"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 144,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All statuses",
+    "context": "placeholder={t('admin.refund.filterStatus', { defaultValue: 'All statuses' })}"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 180,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Approve Refund",
+    "context": "? t('admin.refund.approveTitle', { defaultValue: 'Approve Refund' })"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 181,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Reject Refund",
+    "context": ": t('admin.refund.rejectTitle', { defaultValue: 'Reject Refund' })}"
+  },
+  {
+    "file": "pages/admin/RefundManagement.tsx",
+    "line": 195,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Review note (optional for reject, recommended for approve)...",
+    "context": "placeholder={t('admin.refund.reviewNotePlaceholder', { defaultValue: 'Review note (optional for reject, recommended for "
+  },
+  {
+    "file": "pages/admin/ShareManagement.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Share Link",
+    "context": "title: t('share.token', { defaultValue: 'Share Link' }),"
+  },
+  {
+    "file": "pages/admin/ShareManagement.tsx",
+    "line": 80,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Share Analytics",
+    "context": "{t('admin.sidebar.shareManagement', { defaultValue: 'Share Analytics' })}"
+  },
+  {
+    "file": "pages/admin/WalletCalculator.tsx",
+    "line": 71,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Token ↔ USD Calculator",
+    "context": "<CalculatorOutlined /> {t('admin.walletCalculator.title', { defaultValue: 'Token ↔ USD Calculator' })}"
+  },
+  {
+    "file": "pages/admin/WalletCalculator.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Select model (pricing basis)",
+    "context": "placeholder={t('admin.walletCalculator.selectModel', { defaultValue: 'Select model (pricing basis)' })}"
+  },
+  {
+    "file": "pages/admin/WalletCalculator.tsx",
+    "line": 87,
+    "type": "t() defaultValue (should be real key)",
+    "text": "USD Amount",
+    "context": "<Text type=\"secondary\" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>{t('admin.walletCalculator.usdAmount'"
+  },
+  {
+    "file": "pages/admin/WalletCalculator.tsx",
+    "line": 102,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Token Amount",
+    "context": "<Text type=\"secondary\" style={{ fontSize: 11, display: 'block', marginBottom: 4 }}>{t('admin.walletCalculator.tokenAmoun"
+  },
+  {
+    "file": "pages/admin/WalletCalculator.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Fill Result",
+    "context": "{t('admin.walletCalculator.fillResult', { defaultValue: 'Fill Result' })}"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 47,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No user selected",
+    "context": "if (!selectedUserId) throw new Error(t('admin.wallet.errors.noUserSelected', { defaultValue: 'No user selected' }));"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 52,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Balance adjusted successfully",
+    "context": "message.success(t('admin.wallet.messages.adjustSuccess', { defaultValue: 'Balance adjusted successfully' }));"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 59,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Adjustment failed",
+    "context": "message.error(err.message || t('admin.wallet.messages.adjustFailed', { defaultValue: 'Adjustment failed' }));"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Wallet No.",
+    "context": "title: t('admin.wallet.columns.walletNumber', { defaultValue: 'Wallet No.' }),"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 109,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Balance After",
+    "context": "{ title: t('admin.wallet.columns.balanceAfter', { defaultValue: 'Balance After' }), dataIndex: 'balanceAfter', key: 'bal"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 119,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Wallet Management",
+    "context": "<WalletOutlined /> {t('admin.wallet.title', { defaultValue: 'Wallet Management' })}"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 127,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User Wallets",
+    "context": "label: t('admin.wallet.tabWallets', { defaultValue: 'User Wallets' }),"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 130,
+    "type": "t() defaultValue (should be real key)",
+    "text": "User List",
+    "context": "<Card size=\"small\" title={t('admin.wallet.userList', { defaultValue: 'User List' })}>"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Search wallet / email / nickname",
+    "context": "placeholder={t('admin.wallet.searchPlaceholder', { defaultValue: 'Search wallet / email / nickname' })}"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 153,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No matching users",
+    "context": "locale={{ emptyText: search ? t('admin.wallet.noMatch', { defaultValue: 'No matching users' }) : t('admin.wallet.noUsers"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 153,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No users",
+    "context": "locale={{ emptyText: search ? t('admin.wallet.noMatch', { defaultValue: 'No matching users' }) : t('admin.wallet.noUsers"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 161,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Wallet Detail",
+    "context": "title={t('admin.wallet.walletDetail', { defaultValue: 'Wallet Detail' }) + `: ${selectedUserInfo.accountNumber ? selecte"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 165,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Wallet No.",
+    "context": "<Descriptions.Item label={t('admin.wallet.columns.walletNumber', { defaultValue: 'Wallet No.' })}>"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 184,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Adjust Balance (Add / Deduct)",
+    "context": "{t('admin.wallet.adjustBalance', { defaultValue: 'Adjust Balance (Add / Deduct)' })}"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 203,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Adjust Balance",
+    "context": "title={t('admin.wallet.adjustBalance', { defaultValue: 'Adjust Balance' })}"
+  },
+  {
+    "file": "pages/admin/WalletManagement.tsx",
+    "line": 245,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Deposit Addresses",
+    "context": "label: t('admin.wallet.tabDepositAddresses', { defaultValue: 'Deposit Addresses' }),"
+  },
+  {
+    "file": "pages/admin/components/SystemConfigEditModal.tsx",
+    "line": 63,
+    "type": "t() defaultValue (should be real key)",
+    "text": "API Key",
+    "context": "<Form.Item name=\"api_key\" label={t('admin.config.apiKey', { defaultValue: 'API Key' })} rules={[{ required: true }]}>"
+  },
+  {
+    "file": "pages/admin/components/UserEditModal.tsx",
+    "line": 40,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Account Number",
+    "context": "label={t('admin.userManagement.form.accountNumber', { defaultValue: 'Account Number' })}"
+  },
+  {
+    "file": "pages/admin/components/UserEditModal.tsx",
+    "line": 42,
+    "type": "t() defaultValue (should be real key)",
+    "text": "5-6 digits, no leading 0, no 4 or 7",
+    "context": "{ pattern: ACCOUNT_NUMBER_PATTERN, message: t('admin.userManagement.form.accountNumberInvalid', { defaultValue: '5-6 dig"
+  },
+  {
+    "file": "pages/admin/components/UserEditModal.tsx",
+    "line": 45,
+    "type": "JSX attr: placeholder",
+    "text": "e.g. 123568",
+    "context": "<Input placeholder=\"e.g. 123568\" maxLength={6} />"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 16,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Half-Open (probing)",
+    "context": "half_open: t('sre.breakers.stateHalfOpen', { defaultValue: 'Half-Open (probing)' }),"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 35,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy ID",
+    "context": "{ title: t('sre.breakers.columns.strategyId', { defaultValue: 'Strategy ID' }), dataIndex: 'strategy_id', key: 'id', wid"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 40,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total P&L",
+    "context": "{ title: t('sre.breakers.columns.totalPnl', { defaultValue: 'Total P&L' }), dataIndex: 'total_pnl', key: 'pnl', width: 1"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Loss %",
+    "context": "{ title: t('sre.breakers.columns.lossPercent', { defaultValue: 'Loss %' }), dataIndex: 'loss_percent', key: 'loss', widt"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 43,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Tripped At",
+    "context": "{ title: t('sre.breakers.columns.trippedAt', { defaultValue: 'Tripped At' }), dataIndex: 'tripped_at', key: 'tripped', w"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 44,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trip Reason",
+    "context": "{ title: t('sre.breakers.columns.tripReason', { defaultValue: 'Trip Reason' }), dataIndex: 'trip_reason', key: 'reason',"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Reset this breaker?",
+    "context": "<Popconfirm title={t('sre.breakers.confirmReset', { defaultValue: 'Reset this breaker?' })} onConfirm={() => handleReset"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 58,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Breakers",
+    "context": "<Title level={4}><ThunderboltOutlined style={{ marginRight: 8 }} />{t('sre.breakers.title', { defaultValue: 'Strategy Br"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 60,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy breaker status overview — auto-detects abnormal losses and trips",
+    "context": "{t('sre.breakers.description', { defaultValue: 'Strategy breaker status overview — auto-detects abnormal losses and trip"
+  },
+  {
+    "file": "pages/admin/sre/BreakersPage.tsx",
+    "line": 66,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No registered breakers",
+    "context": "locale={{ emptyText: t('sre.breakers.noBreakers', { defaultValue: 'No registered breakers' }) }}"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy ID",
+    "context": "{ title: t('sre.canary.columns.strategyId', { defaultValue: 'Strategy ID' }), dataIndex: 'strategy_id', key: 'id', width"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 42,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Version Tag",
+    "context": "{ title: t('sre.canary.columns.versionTag', { defaultValue: 'Version Tag' }), dataIndex: 'version_tag', key: 'version', "
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 44,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Canary Accounts",
+    "context": "title: t('sre.canary.columns.accounts', { defaultValue: 'Canary Accounts' }), dataIndex: 'account_ids', key: 'accounts',"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 47,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Start At",
+    "context": "{ title: t('sre.canary.columns.startAt', { defaultValue: 'Start At' }), dataIndex: 'start_at', key: 'start', width: 160 "
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete this canary config?",
+    "context": "<Popconfirm title={t('sre.canary.confirmDelete', { defaultValue: 'Delete this canary config?' })} onConfirm={() => handl"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 65,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Canary Configuration",
+    "context": "<Title level={4}><ExperimentOutlined style={{ marginRight: 8 }} />{t('sre.canary.title', { defaultValue: 'Canary Configu"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New strategy versions run on a few accounts for N days before promotion to all",
+    "context": "{t('sre.canary.description', { defaultValue: 'New strategy versions run on a few accounts for N days before promotion to"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 73,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New Canary",
+    "context": "<Button type=\"primary\" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>{t('sre.canary.newCanary', { defaultVa"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No canary configs",
+    "context": "locale={{ emptyText: t('sre.canary.noCanaries', { defaultValue: 'No canary configs' }) }}"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 82,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New Canary",
+    "context": "<Modal title={t('sre.canary.newCanaryTitle', { defaultValue: 'New Canary' })} open={modalOpen}"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 86,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy ID",
+    "context": "<Form.Item name=\"strategy_id\" label={t('sre.canary.columns.strategyId', { defaultValue: 'Strategy ID' })} rules={[{ requ"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 89,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Version Tag",
+    "context": "<Form.Item name=\"version_tag\" label={t('sre.canary.columns.versionTag', { defaultValue: 'Version Tag' })} rules={[{ requ"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 92,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Canary Account IDs (comma or newline separated)",
+    "context": "<Form.Item name=\"accountIds\" label={t('sre.canary.accountIdsLabel', { defaultValue: 'Canary Account IDs (comma or newlin"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 93,
+    "type": "JSX attr: placeholder",
+    "text": "account-1, account-2",
+    "context": "<Input.TextArea rows={2} placeholder=\"account-1, account-2\" />"
+  },
+  {
+    "file": "pages/admin/sre/CanaryPage.tsx",
+    "line": 95,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Canary Days",
+    "context": "<Form.Item name=\"duration_days\" label={t('sre.canary.durationDays', { defaultValue: 'Canary Days' })} rules={[{ required"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 74,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Kill Switch",
+    "context": "<Title level={4}><StopOutlined style={{ marginRight: 8 }} />{t('sre.killSwitch.title', { defaultValue: 'Kill Switch' })}"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "One-click stop all trading — requires KILL confirmation; undo within 5 minutes",
+    "context": "{t('sre.killSwitch.description', { defaultValue: 'One-click stop all trading — requires KILL confirmation; undo within 5"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 83,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Kill Switch engaged — all trading stopped",
+    "context": "? <Alert type=\"error\" message={t('sre.killSwitch.engaged', { defaultValue: 'Kill Switch engaged — all trading stopped' }"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 84,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Kill Switch disarmed — trading normal",
+    "context": ": <Alert type=\"success\" message={t('sre.killSwitch.disarmed', { defaultValue: 'Kill Switch disarmed — trading normal' })"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 94,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Engaged At",
+    "context": "<Descriptions.Item label={t('sre.killSwitch.engagedAt', { defaultValue: 'Engaged At' })}>{status.engaged_at}</Descriptio"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 106,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Undo Kill Switch",
+    "context": "{t('sre.killSwitch.undo', { defaultValue: 'Undo Kill Switch' })}"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 117,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Disengage Kill Switch",
+    "context": "{t('sre.killSwitch.disengage', { defaultValue: 'Disengage Kill Switch' })}"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 121,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Engage Kill Switch",
+    "context": "{t('sre.killSwitch.engage', { defaultValue: 'Engage Kill Switch' })}"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 128,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Engage Kill Switch — Confirmation",
+    "context": "title={t('sre.killSwitch.confirmTitle', { defaultValue: 'Engage Kill Switch — Confirmation' })}"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Confirm Engage",
+    "context": "okText={t('sre.killSwitch.confirmEngage', { defaultValue: 'Confirm Engage' })}"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 140,
+    "type": "t() defaultValue (should be real key)",
+    "text": "This will immediately stop all trading activity for all accounts, including pending and submitted orders. Enter a reason and type KILL to confirm.",
+    "context": "message={t('sre.killSwitch.confirmWarning', { defaultValue: 'This will immediately stop all trading activity for all acc"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 142,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Reason (required)",
+    "context": "<Text strong style={{ display: 'block', marginBottom: 8 }}>{t('sre.killSwitch.reasonLabel', { defaultValue: 'Reason (req"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 147,
+    "type": "t() defaultValue (should be real key)",
+    "text": "e.g.: Detected abnormal market volatility, emergency stop all trading",
+    "context": "placeholder={t('sre.killSwitch.reasonPlaceholder', { defaultValue: 'e.g.: Detected abnormal market volatility, emergency"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 150,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Type KILL to confirm",
+    "context": "<Text strong style={{ display: 'block', marginBottom: 8 }}>{t('sre.killSwitch.typeKill', { defaultValue: 'Type KILL to c"
+  },
+  {
+    "file": "pages/admin/sre/KillSwitchPage.tsx",
+    "line": 154,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Type KILL (uppercase)",
+    "context": "placeholder={t('sre.killSwitch.typeKillPlaceholder', { defaultValue: 'Type KILL (uppercase)' })}"
+  },
+  {
+    "file": "pages/admin/sre/SRELayout.tsx",
+    "line": 12,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Kill Switch",
+    "context": "{ key: '/admin/sre/killswitch', label: <span><StopOutlined /> {t('sre.killSwitch.title', { defaultValue: 'Kill Switch' }"
+  },
+  {
+    "file": "pages/admin/useUserManagement.ts",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load users",
+    "context": "const msg = getErrorMessage(err, t('admin.userManagement.messages.loadUsersFailed', { defaultValue: 'Failed to load user"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "尚未选择厂商",
+    "context": "if (!draft) return { tone: 'info', title: t(SYSTEM_A_I_STATUS_NO_PROVIDER_KEY, { defaultValue: '尚未选择厂商' }), desc: t(SYST"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "请从下方卡片挑选一个模型厂商开始配置",
+    "context": "if (!draft) return { tone: 'info', title: t(SYSTEM_A_I_STATUS_NO_PROVIDER_KEY, { defaultValue: '尚未选择厂商' }), desc: t(SYST"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 108,
+    "type": "t() defaultValue (should be real key)",
+    "text": "存在异常",
+    "context": "if (error) return { tone: 'error', title: t(SYSTEM_A_I_STATUS_ERROR_KEY, { defaultValue: '存在异常' }), desc: error };"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 112,
+    "type": "t() defaultValue (should be real key)",
+    "text": "个模型",
+    "context": "? `${providerLabel(draft.provider_id, draft.name)} · ${modelCount} ${t(PROVIDERS_MODELS_UNIT_KEY, { defaultValue: '个模型' "
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 114,
+    "type": "t() defaultValue (should be real key)",
+    "text": "运行就绪",
+    "context": "return { tone: 'success', title: t(SYSTEM_A_I_STATUS_READY_KEY, { defaultValue: '运行就绪' }), desc: `${summary} ${t(SYSTEM_"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 114,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已启用并连接正常",
+    "context": "return { tone: 'success', title: t(SYSTEM_A_I_STATUS_READY_KEY, { defaultValue: '运行就绪' }), desc: `${summary} ${t(SYSTEM_"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "连接正常，尚未启用",
+    "context": "if (validated) return { tone: 'warning', title: t(SYSTEM_A_I_STATUS_NOT_ENABLED_KEY, { defaultValue: '连接正常，尚未启用' }), des"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "打开「启用」开关即可投入使用",
+    "context": "if (validated) return { tone: 'warning', title: t(SYSTEM_A_I_STATUS_NOT_ENABLED_KEY, { defaultValue: '连接正常，尚未启用' }), des"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 117,
+    "type": "t() defaultValue (should be real key)",
+    "text": "配置已就绪",
+    "context": "if (hasSecret && urlDiagnostics.ok) return { tone: 'info', title: t(SYSTEM_A_I_STATUS_CONFIG_READY_KEY, { defaultValue: "
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 117,
+    "type": "t() defaultValue (should be real key)",
+    "text": "添加可用模型后系统将自动完成连通性检测",
+    "context": "if (hasSecret && urlDiagnostics.ok) return { tone: 'info', title: t(SYSTEM_A_I_STATUS_CONFIG_READY_KEY, { defaultValue: "
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 118,
+    "type": "t() defaultValue (should be real key)",
+    "text": "请检查 Base URL",
+    "context": "if (hasSecret) return { tone: 'warning', title: t(SYSTEM_A_I_STATUS_CHECK_URL_KEY, { defaultValue: '请检查 Base URL' }), de"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 118,
+    "type": "t() defaultValue (should be real key)",
+    "text": "API Key 已就绪，但地址似乎无效",
+    "context": "if (hasSecret) return { tone: 'warning', title: t(SYSTEM_A_I_STATUS_CHECK_URL_KEY, { defaultValue: '请检查 Base URL' }), de"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 119,
+    "type": "t() defaultValue (should be real key)",
+    "text": "请完成密钥配置",
+    "context": "return { tone: 'info', title: t(SYSTEM_A_I_STATUS_NEED_KEY_KEY, { defaultValue: '请完成密钥配置' }), desc: t(SYSTEM_A_I_STATUS_"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 119,
+    "type": "t() defaultValue (should be real key)",
+    "text": "填写 API Key 后将自动发现模型列表",
+    "context": "return { tone: 'info', title: t(SYSTEM_A_I_STATUS_NEED_KEY_KEY, { defaultValue: '请完成密钥配置' }), desc: t(SYSTEM_A_I_STATUS_"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 147,
+    "type": "t() defaultValue (should be real key)",
+    "text": "系统 AI 配置",
+    "context": "<RobotOutlined className=\"w-6 h-6 text-slate-700\" /> {t(SYSTEM_A_I_PAGE_TITLE_KEY, { defaultValue: '系统 AI 配置' })}"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 149,
+    "type": "t() defaultValue (should be real key)",
+    "text": "统一管理大模型服务商、API 密钥与可用模型；支持 OpenAI 协议兼容端点。",
+    "context": "<p className=\"text-sm text-gray-500 mt-1\">{t(SYSTEM_A_I_PAGE_SUBTITLE_KEY, { defaultValue: '统一管理大模型服务商、API 密钥与可用模型；支持 Op"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 152,
+    "type": "t() defaultValue (should be real key)",
+    "text": "刷新",
+    "context": "{t('common.refresh', { defaultValue: '刷新' })}"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 175,
+    "type": "t() defaultValue (should be real key)",
+    "text": "加载中...",
+    "context": "<p className=\"text-gray-500 mt-3\">{t('common.loading', { defaultValue: '加载中...' })}</p>"
+  },
+  {
+    "file": "pages/ai/SystemAI.tsx",
+    "line": 181,
+    "type": "t() defaultValue (should be real key)",
+    "text": "暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）",
+    "context": "<Empty description={t(SYSTEM_A_I_EMPTY_CONFIGS_KEY, { defaultValue: '暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）' })} />"
+  },
+  {
+    "file": "pages/ai/components/DefaultPrimaryModelCard.tsx",
+    "line": 97,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Save failed",
+    "context": "message.error(e?.message || t('common.saveFailed', { defaultValue: 'Save failed' }));"
+  },
+  {
+    "file": "pages/ai/components/DefaultPrimaryModelCard.tsx",
+    "line": 108,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Default Primary Model",
+    "context": "title={t(PRIMARY_TITLE_KEY, { defaultValue: 'Default Primary Model' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 22,
+    "type": "t() defaultValue (should be real key)",
+    "text": "高级参数",
+    "context": "title={t(SECTIONS_ADVANCED_KEY, { defaultValue: '高级参数' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 23,
+    "type": "t() defaultValue (should be real key)",
+    "text": "仅在了解含义时调整；默认值已适配大多数场景",
+    "context": "subtitle={t(SECTIONS_ADVANCED_HINT_KEY, { defaultValue: '仅在了解含义时调整；默认值已适配大多数场景' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 27,
+    "type": "t() defaultValue (should be real key)",
+    "text": "启用状态",
+    "context": "<Label text={t(FIELDS_ENABLED_STATUS_KEY, { defaultValue: '启用状态' })} hint={t(SYSTEM_A_I_FIELDS_ENABLED_HINT_KEY, { defau"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 27,
+    "type": "t() defaultValue (should be real key)",
+    "text": "关闭后该厂商不参与系统路由",
+    "context": "<Label text={t(FIELDS_ENABLED_STATUS_KEY, { defaultValue: '启用状态' })} hint={t(SYSTEM_A_I_FIELDS_ENABLED_HINT_KEY, { defau"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 32,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已启用 → 点击关闭",
+    "context": "<span className=\"text-slate-700 font-medium\">{t(FIELDS_ENABLED_ON_KEY, { defaultValue: '已启用 → 点击关闭' })}</span>"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 34,
+    "type": "t() defaultValue (should be real key)",
+    "text": "未启用 → 点击开启",
+    "context": "<span className=\"text-gray-500\">{t(FIELDS_ENABLED_OFF_KEY, { defaultValue: '未启用 → 点击开启' })}</span>"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 42,
+    "type": "t() defaultValue (should be real key)",
+    "text": "越高越发散，越低越稳定",
+    "context": "<Label text={`${t(FIELDS_TEMPERATURE_KEY, { defaultValue: 'Temperature' })}（${draft.temperature}）`} hint={t(SYSTEM_A_I_F"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 52,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Timeout（秒）",
+    "context": "<Label text={t(FIELDS_TIMEOUT_SECONDS_KEY, { defaultValue: 'Timeout（秒）' })} hint={t(SYSTEM_A_I_FIELDS_TIMEOUT_HINT_KEY, "
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 52,
+    "type": "t() defaultValue (should be real key)",
+    "text": "单次请求最长等待时间",
+    "context": "<Label text={t(FIELDS_TIMEOUT_SECONDS_KEY, { defaultValue: 'Timeout（秒）' })} hint={t(SYSTEM_A_I_FIELDS_TIMEOUT_HINT_KEY, "
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 61,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Max Tokens",
+    "context": "<Label text={t(FIELDS_MAX_TOKENS_KEY, { defaultValue: 'Max Tokens' })} hint={t(SYSTEM_A_I_FIELDS_MAX_TOKENS_HINT_KEY, { "
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 61,
+    "type": "t() defaultValue (should be real key)",
+    "text": "单次响应最大 token 数",
+    "context": "<Label text={t(FIELDS_MAX_TOKENS_KEY, { defaultValue: 'Max Tokens' })} hint={t(SYSTEM_A_I_FIELDS_MAX_TOKENS_HINT_KEY, { "
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 73,
+    "type": "t() defaultValue (should be real key)",
+    "text": "主要用途（Primary For）",
+    "context": "text={t(SYSTEM_A_I_FIELDS_PRIMARY_FOR_KEY, { defaultValue: '主要用途（Primary For）' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 74,
+    "type": "t() defaultValue (should be real key)",
+    "text": "仅用于服务内部路由：chat / embedding / summarizer / reasoning",
+    "context": "hint={t(SYSTEM_A_I_FIELDS_PRIMARY_FOR_HINT_KEY, { defaultValue: '仅用于服务内部路由：chat / embedding / summarizer / reasoning' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "保存配置",
+    "context": "title={t(ACTIONS_SAVE_CONFIG_KEY, { defaultValue: '保存配置' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 106,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已启用",
+    "context": "? <SoftTag>{t(SYSTEM_A_I_STATUS_BAR_ENABLED_KEY, { defaultValue: '已启用' })}</SoftTag>"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "未启用",
+    "context": ": <SoftTag>{t(SYSTEM_A_I_STATUS_BAR_DISABLED_KEY, { defaultValue: '未启用' })}</SoftTag>}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 108,
+    "type": "t() defaultValue (should be real key)",
+    "text": "密钥就绪",
+    "context": "{draft.has_secret && <SoftTag>{t(SYSTEM_A_I_STATUS_BAR_KEY_READY_KEY, { defaultValue: '密钥就绪' })}</SoftTag>}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 109,
+    "type": "t() defaultValue (should be real key)",
+    "text": "连通性检测中…",
+    "context": "{validating && <SoftTag>{t(SYSTEM_A_I_STATUS_BAR_CHECKING_KEY, { defaultValue: '连通性检测中…' })}</SoftTag>}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 110,
+    "type": "t() defaultValue (should be real key)",
+    "text": "连接正常",
+    "context": "{!validating && validated && <SoftTag>{t(SYSTEM_A_I_STATUS_BAR_CONNECTED_KEY, { defaultValue: '连接正常' })}</SoftTag>}"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 112,
+    "type": "t() defaultValue (should be real key)",
+    "text": "连接异常，请检查上方提示",
+    "context": "<span className=\"text-xs text-slate-600\">{t(SYSTEM_A_I_STATUS_CONNECTION_FAILED_KEY, { defaultValue: '连接异常，请检查上方提示' })}<"
+  },
+  {
+    "file": "pages/ai/systemai/components/AdvancedForm.tsx",
+    "line": 122,
+    "type": "t() defaultValue (should be real key)",
+    "text": "保存配置",
+    "context": "{t(ACTIONS_SAVE_CONFIG_KEY, { defaultValue: '保存配置' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 45,
+    "type": "t() defaultValue (should be real key)",
+    "text": "连接配置",
+    "context": "title={`${t(SECTIONS_CONNECTION_KEY, { defaultValue: '连接配置' })} · ${providerLabel(draft.provider_id, draft.name)}`}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "前往申请 / 管理该厂商 API Key",
+    "context": "<ExportOutlined className=\"w-3 h-3\" /> {t(SECTIONS_CONNECTION_API_KEY_LINK_KEY, { defaultValue: '前往申请 / 管理该厂商 API Key' }"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 63,
+    "type": "t() defaultValue (should be real key)",
+    "text": "厂商名称",
+    "context": "text={t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_LABEL_KEY, { defaultValue: '厂商名称' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 64,
+    "type": "t() defaultValue (should be real key)",
+    "text": "用于在厂商卡片、模型选择和路由配置中识别这个自定义模型服务。",
+    "context": "hint={t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_HINT_KEY, { defaultValue: '用于在厂商卡片、模型选择和路由配置中识别这个自定义模型服务。' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "例如：OpenRouter / SiliconFlow / 公司内网模型",
+    "context": "placeholder={t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_PLACEHOLDER_KEY, { defaultValue: '例如：OpenRouter / SiliconFlow / 公司内网模型' }"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Base URL",
+    "context": "text={`${t(FIELDS_BASE_URL_KEY, { defaultValue: 'Base URL' })}${t(FIELDS_BASE_URL_HINT_KEY, { defaultValue: '（模型服务地址）' }"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "（模型服务地址）",
+    "context": "text={`${t(FIELDS_BASE_URL_KEY, { defaultValue: 'Base URL' })}${t(FIELDS_BASE_URL_HINT_KEY, { defaultValue: '（模型服务地址）' }"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 79,
+    "type": "t() defaultValue (should be real key)",
+    "text": "输入 OpenAI 兼容端点，例如 https://model.example.com/v1",
+    "context": "? t(SYSTEM_A_I_FIELDS_BASE_URL_CUSTOM_HINT_KEY, { defaultValue: '输入 OpenAI 兼容端点，例如 https://model.example.com/v1' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 80,
+    "type": "t() defaultValue (should be real key)",
+    "text": "官方地址由系统维护，不可修改",
+    "context": ": t(SYSTEM_A_I_FIELDS_BASE_URL_READONLY_HINT_KEY, { defaultValue: '官方地址由系统维护，不可修改' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 92,
+    "type": "t() defaultValue (should be real key)",
+    "text": "例如: https://model.example.com/v1",
+    "context": "? t(SYSTEM_A_I_FIELDS_BASE_URL_CUSTOM_PLACEHOLDER_KEY, { defaultValue: '例如: https://model.example.com/v1' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "官方地址（只读）",
+    "context": ": t(SYSTEM_A_I_FIELDS_BASE_URL_READONLY_PLACEHOLDER_KEY, { defaultValue: '官方地址（只读）' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 99,
+    "type": "t() defaultValue (should be real key)",
+    "text": "当前为 HTTP，生产环境建议使用 HTTPS",
+    "context": "<ExclamationCircleOutlined className=\"w-3.5 h-3.5\" /> {t(SYSTEM_A_I_FIELDS_HTTP_WARNING_KEY, { defaultValue: '当前为 HTTP，生"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 106,
+    "type": "t() defaultValue (should be real key)",
+    "text": "API Key",
+    "context": "text={t(FIELDS_API_KEY_KEY, { defaultValue: 'API Key' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "输入后将自动加密保存，无需手动提交",
+    "context": "hint={t(SYSTEM_A_I_FIELDS_API_KEY_HINT_KEY, { defaultValue: '输入后将自动加密保存，无需手动提交' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 108,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已配置",
+    "context": "badge={draft.has_secret ? <SoftTag>{t(FIELDS_API_KEY_CONFIGURED_KEY, { defaultValue: '已配置' })}</SoftTag> : undefined}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "如需更换密钥，请重新输入",
+    "context": "? t(FIELDS_API_KEY_REPLACE_HINT_KEY, { defaultValue: '如需更换密钥，请重新输入' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 117,
+    "type": "t() defaultValue (should be real key)",
+    "text": "粘贴 API Key，将自动预保存",
+    "context": ": t(SYSTEM_A_I_FIELDS_API_KEY_PASTE_PLACEHOLDER_KEY, { defaultValue: '粘贴 API Key，将自动预保存' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 126,
+    "type": "t() defaultValue (should be real key)",
+    "text": "删除密钥",
+    "context": "{t(FIELDS_DELETE_API_KEY_KEY, { defaultValue: '删除密钥' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 133,
+    "type": "t() defaultValue (should be real key)",
+    "text": "可用模型",
+    "context": "text={t(FIELDS_AVAILABLE_MODELS_KEY, { defaultValue: '可用模型' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 134,
+    "type": "t() defaultValue (should be real key)",
+    "text": "同一 API Key 下可同时启用多个 model；这里的清单会出现在 /ai/agents 的下拉里。默认空白，从下拉选择或手动输入 model id 后回车添加；只加入显式选过的，不会自动并入全部已发现模型。",
+    "context": "hint={t(FIELDS_AVAILABLE_MODELS_HINT_KEY, { defaultValue: '同一 API Key 下可同时启用多个 model；这里的清单会出现在 /ai/agents 的下拉里。默认空白，从下拉选"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 139,
+    "type": "t() defaultValue (should be real key)",
+    "text": "自动拉取中",
+    "context": "<ReloadOutlined className=\"w-3 h-3 animate-spin\" /> {t(SYSTEM_A_I_FIELDS_AUTO_FETCHING_KEY, { defaultValue: '自动拉取中' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 148,
+    "type": "t() defaultValue (should be real key)",
+    "text": "清空",
+    "context": "{t(FIELDS_CLEAR_KEY, { defaultValue: '清空' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 165,
+    "type": "t() defaultValue (should be real key)",
+    "text": "选择或手动输入 model id 后回车添加（默认空白）",
+    "context": "placeholder={t(FIELDS_AVAILABLE_MODELS_PLACEHOLDER_KEY, { defaultValue: '选择或手动输入 model id 后回车添加（默认空白）' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 168,
+    "type": "t() defaultValue (should be real key)",
+    "text": "直接输入 model id 后回车即可加入",
+    "context": "<span className=\"text-xs text-gray-500\">{t(FIELDS_AVAILABLE_MODELS_EMPTY_KEY, { defaultValue: '直接输入 model id 后回车即可加入' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ConnectionForm.tsx",
+    "line": 172,
+    "type": "t() defaultValue (should be real key)",
+    "text": "提示：删除某个模型不会立即清空 /ai/agents 中已绑定它的 Agent，但会将它从下拉建议中移除。",
+    "context": "{t(FIELDS_AVAILABLE_MODELS_TIP_KEY, { defaultValue: '提示：删除某个模型不会立即清空 /ai/agents 中已绑定它的 Agent，但会将它从下拉建议中移除。' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 33,
+    "type": "t() defaultValue (should be real key)",
+    "text": "选择模型厂商",
+    "context": "title={t(SYSTEM_A_I_SECTION1_TITLE_KEY, { defaultValue: '选择模型厂商' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 34,
+    "type": "t() defaultValue (should be real key)",
+    "text": "卡片直接展示每个厂商的配置与就绪状态，点击选择",
+    "context": "subtitle={t(SYSTEM_A_I_SECTION1_SUBTITLE_KEY, { defaultValue: '卡片直接展示每个厂商的配置与就绪状态，点击选择' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 45,
+    "type": "t() defaultValue (should be real key)",
+    "text": "未配置",
+    "context": "? t(SYSTEM_A_I_CARD_STATE_NO_KEY_KEY, { defaultValue: '未配置' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 47,
+    "type": "t() defaultValue (should be real key)",
+    "text": "待选模型",
+    "context": "? t(SYSTEM_A_I_CARD_STATE_NO_MODEL_KEY, { defaultValue: '待选模型' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已启用",
+    "context": "? t(SYSTEM_A_I_CARD_STATE_ENABLED_KEY, { defaultValue: '已启用' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 50,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已就绪 · 未启用",
+    "context": ": t(SYSTEM_A_I_CARD_STATE_READY_DISABLED_KEY, { defaultValue: '已就绪 · 未启用' });"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 84,
+    "type": "t() defaultValue (should be real key)",
+    "text": "当前",
+    "context": "{isSelected && !isNewCustomCard && <SoftTag>{t(SYSTEM_A_I_CARD_TAGS_CURRENT_KEY, { defaultValue: '当前' })}</SoftTag>}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "未配置",
+    "context": "<SoftTag>{isNewCustomCard ? t(SYSTEM_A_I_CARD_STATE_NO_KEY_KEY, { defaultValue: '未配置' }) : stateLabel}</SoftTag>"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "已配密钥",
+    "context": "? t(SYSTEM_A_I_CARD_TAGS_HAS_KEY_KEY, { defaultValue: '已配密钥' })"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 94,
+    "type": "t() defaultValue (should be real key)",
+    "text": "未配密钥",
+    "context": ": t(SYSTEM_A_I_CARD_TAGS_NO_KEY_KEY, { defaultValue: '未配密钥' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 98,
+    "type": "t() defaultValue (should be real key)",
+    "text": "可用模型",
+    "context": "? `${t(FIELDS_AVAILABLE_MODELS_KEY, { defaultValue: '可用模型' })}: ${cfgModelCount}`"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 99,
+    "type": "t() defaultValue (should be real key)",
+    "text": "未配置可用模型",
+    "context": ": t(SYSTEM_A_I_CARD_TAGS_NO_MODELS_KEY, { defaultValue: '未配置可用模型' })}"
+  },
+  {
+    "file": "pages/ai/systemai/components/ProviderCards.tsx",
+    "line": 102,
+    "type": "t() defaultValue (should be real key)",
+    "text": "启用但不可用",
+    "context": "<SoftTag>{t(SYSTEM_A_I_CARD_TAGS_ENABLED_BUT_UNAVAILABLE_KEY, { defaultValue: '启用但不可用' })}</SoftTag>"
+  },
+  {
+    "file": "pages/ai/systemai/hooks/useProviderActions.ts",
+    "line": 102,
+    "type": "t() defaultValue (should be real key)",
+    "text": "请先填写厂商名称，再保存这个自定义模型服务。",
+    "context": "setNotice(t(SYSTEM_A_I_CUSTOM_PROVIDER_FILL_NAME_FIRST_KEY, { defaultValue: '请先填写厂商名称，再保存这个自定义模型服务。' }));"
+  },
+  {
+    "file": "pages/ai/systemai/hooks/useProviderActions.ts",
+    "line": 141,
+    "type": "t() defaultValue (should be real key)",
+    "text": "自定义厂商已删除",
+    "context": "setNotice(t(SYSTEM_A_I_CUSTOM_PROVIDER_DELETED_KEY, { defaultValue: '自定义厂商已删除' }));"
+  },
+  {
+    "file": "pages/ai/systemai/hooks/useProviderSync.ts",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "请先填写自定义厂商名称",
+    "context": "setError(t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, { defaultValue: '请先填写自定义厂商名称' }));"
+  },
+  {
+    "file": "pages/ai/systemai/hooks.ts",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "请先填写自定义厂商名称",
+    "context": "throw new Error(t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, { defaultValue: '请先填写自定义厂商名称' }));"
+  },
+  {
+    "file": "pages/auth/ForgotPassword.tsx",
+    "line": 181,
+    "type": "JSX attr: title",
+    "text": "Forgot Password",
+    "context": "<Seo title=\"Forgot Password\" description=\"Reset your AlphaForge account password.\" path=\"/forgot-password\" />"
+  },
+  {
+    "file": "pages/auth/ForgotPassword.tsx",
+    "line": 181,
+    "type": "JSX attr: description",
+    "text": "Reset your AlphaForge account password.",
+    "context": "<Seo title=\"Forgot Password\" description=\"Reset your AlphaForge account password.\" path=\"/forgot-password\" />"
+  },
+  {
+    "file": "pages/auth/Login.tsx",
+    "line": 49,
+    "type": "JSX attr: description",
+    "text": "Log in to AlphaForge to manage your MT4/MT5 trading strategies.",
+    "context": "<Seo title=\"Login\" description=\"Log in to AlphaForge to manage your MT4/MT5 trading strategies.\" path=\"/login\" />"
+  },
+  {
+    "file": "pages/auth/Login.tsx",
+    "line": 100,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please enter your email or account number",
+    "context": "{ required: true, message: t('auth.validation.loginRequired', { defaultValue: 'Please enter your email or account number"
+  },
+  {
+    "file": "pages/auth/Login.tsx",
+    "line": 104,
+    "type": "t() defaultValue (should be real key)",
+    "text": "邮箱/账号",
+    "context": "placeholder={t('auth.fields.login', { defaultValue: '邮箱/账号' })}"
+  },
+  {
+    "file": "pages/auth/Register.tsx",
+    "line": 47,
+    "type": "JSX attr: description",
+    "text": "Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strategies.",
+    "context": "<Seo title=\"Register\" description=\"Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strate"
+  },
+  {
+    "file": "pages/auth/ResetPassword.tsx",
+    "line": 44,
+    "type": "JSX attr: title",
+    "text": "Reset Password",
+    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
+  },
+  {
+    "file": "pages/auth/ResetPassword.tsx",
+    "line": 44,
+    "type": "JSX attr: description",
+    "text": "Reset your AlphaForge account password.",
+    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
+  },
+  {
+    "file": "pages/auth/ResetPassword.tsx",
+    "line": 63,
+    "type": "JSX attr: title",
+    "text": "Reset Password",
+    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
+  },
+  {
+    "file": "pages/auth/ResetPassword.tsx",
+    "line": 63,
+    "type": "JSX attr: description",
+    "text": "Reset your AlphaForge account password.",
+    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
+  },
+  {
+    "file": "pages/auth/VerifyEmail.tsx",
+    "line": 152,
+    "type": "JSX attr: title",
+    "text": "Verify Email",
+    "context": "<Seo title=\"Verify Email\" description=\"Verify your email address\" path=\"/verify-email\" />"
+  },
+  {
+    "file": "pages/auth/VerifyEmail.tsx",
+    "line": 152,
+    "type": "JSX attr: description",
+    "text": "Verify your email address",
+    "context": "<Seo title=\"Verify Email\" description=\"Verify your email address\" path=\"/verify-email\" />"
+  },
+  {
+    "file": "pages/dashboard/quickActions.tsx",
+    "line": 20,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Strategy",
+    "context": "{ key: 'ai', label: t('dashboard.quickActions.aiStrategy', { defaultValue: 'AI Strategy' }), path: '/strategy/workspace'"
+  },
+  {
+    "file": "pages/landing/BrokersPage.tsx",
+    "line": 56,
+    "type": "JSX attr: title",
+    "text": "Supported MT4/MT5 Brokers",
+    "context": "title=\"Supported MT4/MT5 Brokers\""
+  },
+  {
+    "file": "pages/landing/BrokersPage.tsx",
+    "line": 57,
+    "type": "JSX attr: description",
+    "text": "AlphaForge supports 30+ MT4/MT5 brokers including IC Markets, Pepperstone, XM, Exness, OANDA, and more. Connect your broker account and start automated trading today.",
+    "context": "description=\"AlphaForge supports 30+ MT4/MT5 brokers including IC Markets, Pepperstone, XM, Exness, OANDA, and more. Con"
+  },
+  {
+    "file": "pages/landing/BrokersPage.tsx",
+    "line": 92,
+    "type": "JSX children",
+    "text": "Compatible with AlphaForge",
+    "context": "<Text style={{ fontSize: 11, color: '#8c8c8c' }}>Compatible with AlphaForge</Text>"
+  },
+  {
+    "file": "pages/landing/BrokersPage.tsx",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Explore Strategies",
+    "context": "{t('marketplace.title', { defaultValue: 'Explore Strategies' })}"
+  },
+  {
+    "file": "pages/landing/LandingPage.tsx",
+    "line": 162,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Compatible with 30+ MT4/MT5 Brokers",
+    "context": "{t('landing.brokersTitle', { defaultValue: 'Compatible with 30+ MT4/MT5 Brokers' })}"
+  },
+  {
+    "file": "pages/landing/LandingPage.tsx",
+    "line": 165,
+    "type": "t() defaultValue (should be real key)",
+    "text": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
+    "context": "{t('landing.brokersDesc', { defaultValue: 'IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpa"
+  },
+  {
+    "file": "pages/landing/LandingPage.tsx",
+    "line": 168,
+    "type": "t() defaultValue (should be real key)",
+    "text": "View all supported brokers",
+    "context": "{t('landing.brokersLink', { defaultValue: 'View all supported brokers' })} <RightOutlined />"
+  },
+  {
+    "file": "pages/logs/LogManagement.tsx",
+    "line": 145,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No logs found",
+    "context": "emptyText={t('common.noData', { defaultValue: 'No logs found' })} onRetry={() => refetch()}>"
+  },
+  {
+    "file": "pages/marketplace/MarketplaceContext.tsx",
+    "line": 63,
+    "type": "throw Error",
+    "text": "useMarketplaceCtx must be used within MarketplaceProvider",
+    "context": "if (!c) throw new Error('useMarketplaceCtx must be used within MarketplaceProvider');"
+  },
+  {
+    "file": "pages/marketplace/MarketplacePage.tsx",
+    "line": 58,
+    "type": "JSX attr: title",
+    "text": "Strategy Marketplace",
+    "context": "<Seo title=\"Strategy Marketplace\" description=\"Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pe"
+  },
+  {
+    "file": "pages/marketplace/MarketplacePage.tsx",
+    "line": 58,
+    "type": "JSX attr: description",
+    "text": "Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked.",
+    "context": "<Seo title=\"Strategy Marketplace\" description=\"Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pe"
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 38,
+    "type": "JSX attr: description",
+    "text": "Strategy not found or no longer available",
+    "context": "<Empty description=\"Strategy not found or no longer available\" />"
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 95,
+    "type": "JSX attr: title",
+    "text": "Backtest Return",
+    "context": "title=\"Backtest Return\""
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 101,
+    "type": "JSX attr: title",
+    "text": "Max Drawdown",
+    "context": "title=\"Max Drawdown\""
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 112,
+    "type": "JSX children",
+    "text": "Live Performance",
+    "context": "<Title level={5}>Live Performance</Title>"
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 115,
+    "type": "JSX attr: title",
+    "text": "Live Return",
+    "context": "<Statistic title=\"Live Return\" value={data.liveTotalReturn} />"
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 118,
+    "type": "JSX attr: title",
+    "text": "Live Max DD",
+    "context": "<Statistic title=\"Live Max DD\" value={data.liveMaxDrawdown} />"
+  },
+  {
+    "file": "pages/marketplace/StrategySharePage.tsx",
+    "line": 133,
+    "type": "JSX children",
+    "text": "Code Preview",
+    "context": "<Title level={5}>Code Preview</Title>"
+  },
+  {
+    "file": "pages/marketplace/components/AutoGeneratePanel.tsx",
+    "line": 55,
+    "type": "message call",
+    "text": "Failed to update pricing",
+    "context": "message.error(e?.message || 'Failed to update pricing');"
+  },
+  {
+    "file": "pages/marketplace/components/AutoGenerateResult.tsx",
+    "line": 78,
+    "type": "JSX attr: title",
+    "text": "Total Return",
+    "context": "<Col span={4}><Statistic title=\"Total Return\" value={result.backtest.totalReturn} /></Col>"
+  },
+  {
+    "file": "pages/marketplace/components/AutoGenerateResult.tsx",
+    "line": 79,
+    "type": "JSX attr: title",
+    "text": "Max DD",
+    "context": "<Col span={4}><Statistic title=\"Max DD\" value={result.backtest.maxDrawdown} /></Col>"
+  },
+  {
+    "file": "pages/marketplace/components/AutoGenerateResult.tsx",
+    "line": 81,
+    "type": "JSX attr: title",
+    "text": "Win Rate",
+    "context": "<Col span={4}><Statistic title=\"Win Rate\" value={result.backtest.winRate} /></Col>"
+  },
+  {
+    "file": "pages/marketplace/components/OptimizationTab.tsx",
+    "line": 283,
+    "type": "JSX attr: label",
+    "text": "Decay Score",
+    "context": "<Descriptions.Item label=\"Decay Score\">{previewData.decayMetrics.decayScore}</Descriptions.Item>"
+  },
+  {
+    "file": "pages/marketplace/components/OptimizationTab.tsx",
+    "line": 285,
+    "type": "JSX attr: label",
+    "text": "Sharpe Decline",
+    "context": "<Descriptions.Item label=\"Sharpe Decline\">{previewData.decayMetrics.sharpeDeclinePct}</Descriptions.Item>"
+  },
+  {
+    "file": "pages/marketplace/components/OptimizationTab.tsx",
+    "line": 286,
+    "type": "JSX attr: label",
+    "text": "Win Rate Decline",
+    "context": "<Descriptions.Item label=\"Win Rate Decline\">{previewData.decayMetrics.winrateDeclinePct}</Descriptions.Item>"
+  },
+  {
+    "file": "pages/marketplace/components/OptimizationTab.tsx",
+    "line": 287,
+    "type": "JSX attr: label",
+    "text": "Return Delta",
+    "context": "<Descriptions.Item label=\"Return Delta\">{previewData.decayMetrics.returnDelta}</Descriptions.Item>"
+  },
+  {
+    "file": "pages/share/SharePerformancePage.tsx",
+    "line": 203,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Open Positions",
+    "context": "<Card size=\"small\" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}><EyeOutlined /> {t('sharePage.positions"
+  },
+  {
+    "file": "pages/share/SharePerformancePage.tsx",
+    "line": 224,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No open positions",
+    "context": "<div style={{ fontSize: 12, color: '#8c8c8c' }}>{t('sharePage.noPositions', { defaultValue: 'No open positions' })}</div"
+  },
+  {
+    "file": "pages/share/SharePerformancePage.tsx",
+    "line": 230,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Positions hidden by creator",
+    "context": "<div style={{ fontSize: 12, color: '#bbb' }}>{t('sharePage.positionsLocked', { defaultValue: 'Positions hidden by creato"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 62,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy stopped",
+    "context": "message.success(t('strategy.live.stopSuccess', { defaultValue: 'Strategy stopped' }));"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 64,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to stop",
+    "context": "message.error(r.error || t('strategy.live.stopFailed', { defaultValue: 'Failed to stop' }));"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to stop",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.live.stopFailed', { defaultValue: 'Failed to stop' }));"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Run ID",
+    "context": "title: t('strategy.live.runId', { defaultValue: 'Run ID' }), dataIndex: 'runId', width: 100,"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 134,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Watch Signals",
+    "context": "<Tooltip title={t('strategy.live.watchSignals', { defaultValue: 'Watch Signals' })}>"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 137,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Stop this strategy?",
+    "context": "<Popconfirm title={t('strategy.live.confirmStop', { defaultValue: 'Stop this strategy?' })} onConfirm={() => handleStop("
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 147,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Run ID",
+    "context": "title: t('strategy.live.runId', { defaultValue: 'Run ID' }), dataIndex: 'id', width: 100,"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 169,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Total Signals",
+    "context": "title: t('strategy.live.totalSignals', { defaultValue: 'Total Signals' }), dataIndex: 'totalSignals', width: 90,"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 189,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Live Strategy Monitor",
+    "context": "<h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{t('strategy.live.title', { defaultValue: 'Live Strategy Monito"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 203,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Active Runs",
+    "context": "label: <span><ClockCircleOutlined /> {t('strategy.live.activeTab', { defaultValue: 'Active Runs' })}</span>,"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 213,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No active strategies",
+    "context": "locale={{ emptyText: <Empty description={t('strategy.live.noActive', { defaultValue: 'No active strategies' })} /> }}"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 220,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Run History",
+    "context": "label: <span><EyeOutlined /> {t('strategy.live.historyTab', { defaultValue: 'Run History' })}</span>,"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPage.tsx",
+    "line": 230,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No strategy runs",
+    "context": "locale={{ emptyText: <Empty description={t('strategy.live.noRuns', { defaultValue: 'No strategy runs' })} /> }}"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPageSignalDrawer.tsx",
+    "line": 84,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Signal Log",
+    "context": "<span>{t('strategy.live.signalLog', { defaultValue: 'Signal Log' })}</span>"
+  },
+  {
+    "file": "pages/strategy/LiveStrategyPageSignalDrawer.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Waiting for signals...",
+    "context": "locale={{ emptyText: <Empty description={t('strategy.live.waitingSignals', { defaultValue: 'Waiting for signals...' })} "
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Fork failed",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.unpublishFailed', { defaultValue: 'Fork fai"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 55,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Win Rate",
+    "context": "if (template.winRate) rows.push({ key: 'winRate', label: t('strategy.templates.scheduleLaunch.metrics.winRate', { defaul"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Profit Factor",
+    "context": "if (template.profitFactor) rows.push({ key: 'pf', label: t('strategy.templates.detail.profitFactor', { defaultValue: 'Pr"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Max Drawdown",
+    "context": "if (template.maxDrawdown) rows.push({ key: 'dd', label: t('strategy.templates.scheduleLaunch.metrics.maxDrawdown', { def"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 58,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Sharpe Ratio",
+    "context": "if (template.sharpeRatio) rows.push({ key: 'sharpe', label: t('strategy.templates.scheduleLaunch.metrics.sharpe', { defa"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy not found",
+    "context": "return <Empty description={t('strategy.templates.detail.notFound', { defaultValue: 'Strategy not found' })} />;"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Fork & Edit",
+    "context": "? t('strategy.templates.gallery.fork', { defaultValue: 'Fork & Edit' })"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 104,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No description",
+    "context": "{template.description || t('strategy.templates.detail.noDescription', { defaultValue: 'No description' })}"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 109,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Equity Curve",
+    "context": "<Title level={5}>{t('strategy.templates.detail.equityCurve', { defaultValue: 'Equity Curve' })}</Title>"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 122,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Trade Statistics",
+    "context": "<Title level={5}>{t('strategy.templates.detail.tradeStats', { defaultValue: 'Trade Statistics' })}</Title>"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 134,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Use Count",
+    "context": "{ key: 'useCount', label: t('strategy.templates.table.useCount', { defaultValue: 'Use Count' }), children: template.useC"
+  },
+  {
+    "file": "pages/strategy/StrategyDetailPage.tsx",
+    "line": 190,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Fork & Edit",
+    "context": "? t('strategy.templates.gallery.fork', { defaultValue: 'Fork & Edit' })"
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 36,
+    "type": "throw Error",
+    "text": "Draft creation returned empty id",
+    "context": "if (!draft.id) throw new Error('Draft creation returned empty id');"
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 39,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load template list",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: "
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "New Strategy",
+    "context": "{t('strategy.templates.actions.create', { defaultValue: 'New Strategy' })}"
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Generate",
+    "context": "{t('strategy.templates.gallery.aiGenerate', { defaultValue: 'AI Generate' })}"
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 64,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Search strategies...",
+    "context": "placeholder={t('strategy.templates.gallery.searchPlaceholder', { defaultValue: 'Search strategies...' })}"
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 93,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load strategies",
+    "context": "<Alert type=\"error\" showIcon message={t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: 'Failed t"
+  },
+  {
+    "file": "pages/strategy/StrategyGalleryPage.tsx",
+    "line": 97,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No strategies found",
+    "context": "<Empty description={t('strategy.templates.gallery.empty', { defaultValue: 'No strategies found' })} />"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 33,
+    "type": "t() defaultValue (should be real key)",
+    "text": "One-Time Purchase",
+    "context": "{ value: 'once', label: t('marketplace.publish.priceModel.once', { defaultValue: 'One-Time Purchase' }) },"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 76,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy published to marketplace!",
+    "context": "message.success(t('marketplace.messages.published', { defaultValue: 'Strategy published to marketplace!' }));"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 81,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to publish strategy",
+    "context": "message.error(msg || t('marketplace.messages.publishFailed', { defaultValue: 'Failed to publish strategy' }));"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 89,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Publish to Marketplace",
+    "context": "title={t('marketplace.publish.title', { defaultValue: 'Publish to Marketplace' })}"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 99,
+    "type": "t() defaultValue (should be real key)",
+    "text": "e.g. Golden Cross Strategy",
+    "context": "<Input maxLength={120} placeholder={t('marketplace.publish.titlePlaceholder', { defaultValue: 'e.g. Golden Cross Strateg"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 103,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Describe your strategy logic, entry/exit rules...",
+    "context": "<TextArea rows={3} maxLength={1000} placeholder={t('marketplace.publish.descriptionPlaceholder', { defaultValue: 'Descri"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 107,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Asset Class",
+    "context": "<Form.Item name=\"assetClass\" label={t('marketplace.publish.assetClass.label', { defaultValue: 'Asset Class' })} style={{"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 110,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Risk Level",
+    "context": "<Form.Item name=\"riskLevel\" label={t('marketplace.publish.riskLevel.label', { defaultValue: 'Risk Level' })} style={{ fl"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 129,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Type and press enter to add tags",
+    "context": "placeholder={t('marketplace.publish.tagsPlaceholder', { defaultValue: 'Type and press enter to add tags' })}"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 136,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Preview (public)",
+    "context": "<Form.Item name=\"codeSnippet\" label={t('marketplace.publish.codeSnippet', { defaultValue: 'Strategy Preview (public)' })"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 138,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Optional: share a snippet or high-level idea of your strategy (visible to all)",
+    "context": "placeholder={t('marketplace.publish.codeSnippetPlaceholder', { defaultValue: 'Optional: share a snippet or high-level id"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 145,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Include latest backtest results",
+    "context": "<Text>{t('marketplace.publish.includeBacktestSnapshot', { defaultValue: 'Include latest backtest results' })}</Text>"
+  },
+  {
+    "file": "pages/strategy/components/PublishToMarketModal.tsx",
+    "line": 150,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Win Rate",
+    "context": "<Tag>{t('marketplace.publish.winRate', { defaultValue: 'Win Rate' })}: {(Number(backtestSnapshot.winRate ?? 0) * 100).to"
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 56,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Fork failed",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: "
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Publish failed",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.templates.messages.publishFailed', { defaultValue: 'Publish f"
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 79,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unpublish failed",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.unpublishFailed', { defaultValue: 'Unpublis"
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 89,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete failed",
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.deleteFailed', { defaultValue: 'Delete fail"
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 131,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Win Rate",
+    "context": "<Text type=\"secondary\" style={{ fontSize: 11 }}>{t('strategy.templates.scheduleLaunch.metrics.winRate', { defaultValue: "
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 137,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Max DD",
+    "context": "<Text type=\"secondary\" style={{ fontSize: 11 }}>{t('strategy.templates.scheduleLaunch.metrics.maxDrawdown', { defaultVal"
+  },
+  {
+    "file": "pages/strategy/components/StrategyCard.tsx",
+    "line": 171,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Delete this strategy?",
+    "context": "<Popconfirm title={t('strategy.templates.deleteConfirm', { defaultValue: 'Delete this strategy?' })} onConfirm={handleDe"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
+    "text": "密码验证失败，请检查是否正确",
+    "context": "message.error(res.message || t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_FAILED_KEY, { defaultValue: '密码验证失败，请检查是否正确' }));"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 35,
+    "type": "t() defaultValue (should be real key)",
+    "text": "登录成功，但该账户仍是投资者只读模式，无法下单。",
+    "context": "message.warning(t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_STILL_INVESTOR_KEY, { defaultValue: '登录成功，但该账户仍是投资者只读模式，无法下单。' }));"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "交易密码已更新，账户具备交易权限",
+    "context": "message.success(t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_OK_KEY, { defaultValue: '交易密码已更新，账户具备交易权限' }));"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unknown error",
+    "context": "message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' }));"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "填写交易密码",
+    "context": "title={t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_TITLE_KEY, { defaultValue: '填写交易密码' })}"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 54,
+    "type": "t() defaultValue (should be real key)",
+    "text": "确认",
+    "context": "okText={t('common.confirm', { defaultValue: '确认' })}"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 55,
+    "type": "t() defaultValue (should be real key)",
+    "text": "取消",
+    "context": "cancelText={t('common.cancel', { defaultValue: '取消' })}"
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 59,
+    "type": "t() defaultValue (should be real key)",
+    "text": "后端会用新密码做一次 Connect 测试，成功后覆盖当前存储的密码。MT5 账户会同时识别出是否为投资者模式。",
+    "context": "{t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_HINT_KEY, { defaultValue: '后端会用新密码做一次 Connect 测试，成功后覆盖当前存储的密码。MT5 账户会同时识别出是否为投资者模式。' "
+  },
+  {
+    "file": "pages/strategy/components/TradePasswordModal.tsx",
+    "line": 63,
+    "type": "t() defaultValue (should be real key)",
+    "text": "新的交易密码",
+    "context": "placeholder={t(SCHEDULE_LAUNCH_NEW_PASSWORD_PLACEHOLDER_KEY, { defaultValue: '新的交易密码' })}"
+  },
+  {
+    "file": "pages/strategy/components/editor/AIPanel.tsx",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Revise",
+    "context": "label: <span><BulbOutlined /> {t(TAB_A_I_KEY, { defaultValue: 'AI Revise' })}</span>,"
+  },
+  {
+    "file": "pages/strategy/components/editor/AIPanel.tsx",
+    "line": 36,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Write code first, then ask AI to improve it.",
+    "context": "{t('strategy.ai.reviseHint', { defaultValue: 'Write code first, then ask AI to improve it.' })}"
+  },
+  {
+    "file": "pages/strategy/components/editor/AIPanel.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Write code to see AI explanation.",
+    "context": "{t('strategy.ai.explainHint', { defaultValue: 'Write code to see AI explanation.' })}"
+  },
+  {
+    "file": "pages/strategy/components/editor/AIPanel.tsx",
+    "line": 63,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Running validation...",
+    "context": "<Text type=\"secondary\" style={{ display: 'block', marginTop: 12 }}>{t('strategy.validate.running', { defaultValue: 'Runn"
+  },
+  {
+    "file": "pages/strategy/components/editor/CodeEditorPanel.tsx",
+    "line": 30,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Code",
+    "context": "{ value: 'write', icon: <CodeOutlined />, label: t('strategy.importEA.writeTab', { defaultValue: 'Strategy Code' }) },"
+  },
+  {
+    "file": "pages/strategy/components/editor/CodeEditorPanel.tsx",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import EA",
+    "context": "{ value: 'import', icon: <ImportOutlined />, label: t('strategy.importEA.importTab', { defaultValue: 'Import EA' }) },"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 39,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Please paste complete EA/indicator source code.",
+    "context": "message.warning(t('strategy.importEA.codeTooShort', { defaultValue: 'Please paste complete EA/indicator source code.' })"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unknown error",
+    "context": ".catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknow"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unknown error",
+    "context": ".catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknow"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 79,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Unknown error",
+    "context": ".catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknow"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Paste MQL4/MQL5 EA code...",
+    "context": "placeholder={t('strategy.importEA.pastePlaceholder', { defaultValue: 'Paste MQL4/MQL5 EA code...' })}"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 94,
+    "type": "t() defaultValue (should be real key)",
+    "text": "策略导入",
+    "context": "<Radio.Button value=\"migration\"><ThunderboltOutlined /> {t('strategy.importEA.migration', { defaultValue: '策略导入' })}</Ra"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 95,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI 翻译",
+    "context": "<Radio.Button value=\"ai\"><RobotOutlined /> {t('strategy.importEA.aiTranslate', { defaultValue: 'AI 翻译' })}</Radio.Button"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 96,
+    "type": "t() defaultValue (should be real key)",
+    "text": "盲区桥接",
+    "context": "<Radio.Button value=\"bridge\"><RobotOutlined /> {t('strategy.importEA.bridge', { defaultValue: '盲区桥接' })}</Radio.Button>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 106,
+    "type": "t() defaultValue (should be real key)",
+    "text": "分析策略结构",
+    "context": "{t('strategy.importEA.analyze', { defaultValue: '分析策略结构' })}</Button>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 111,
+    "type": "t() defaultValue (should be real key)",
+    "text": "确认导入",
+    "context": "{t('strategy.importEA.confirmImport', { defaultValue: '确认导入' })}</Button>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 116,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI 翻译补充",
+    "context": "<RobotOutlined /> {t('strategy.importEA.tryAI', { defaultValue: 'AI 翻译补充' })}</Button>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 120,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Apply to Editor",
+    "context": "{eaResult && <Button size=\"small\" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 125,
+    "type": "t() defaultValue (should be real key)",
+    "text": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+    "context": "{eaResult && <Alert type=\"success\" showIcon message={t('strategy.importEA.importSuccess', { defaultValue: 'MQL 源码已导入，点击「"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 127,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Paste MQL4/MQL5 code and click Analyze",
+    "context": "<div style={{ textAlign: 'center', padding: 24 }}><Text type=\"secondary\">{t('strategy.importEA.hint', { defaultValue: 'P"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 138,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Translate to Go",
+    "context": "{t('strategy.importEA.translate', { defaultValue: 'Translate to Go' })}</Button>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 139,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Apply to Editor",
+    "context": "{eaResult && <Button size=\"small\" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 146,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI translating...",
+    "context": "{eaTranslating ? <Spin tip={t('strategy.importEA.translating', { defaultValue: 'AI translating...' })} /> : <Text type=\""
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 146,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Paste MQL4/MQL5 code and click Translate",
+    "context": "{eaTranslating ? <Spin tip={t('strategy.importEA.translating', { defaultValue: 'AI translating...' })} /> : <Text type=\""
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 158,
+    "type": "t() defaultValue (should be real key)",
+    "text": "盲区桥接翻译",
+    "context": "{t('strategy.importEA.bridgeBtn', { defaultValue: '盲区桥接翻译' })}</Button>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 162,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Apply to Editor",
+    "context": "{eaResult && <Button size=\"small\" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 163,
+    "type": "t() defaultValue (should be real key)",
+    "text": "桥接成功",
+    "context": "{bridgeResult && bridgeResult.bridgeStatus === 'success' && <Tag color=\"success\" style={{ marginLeft: 'auto' }}>{t('stra"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 164,
+    "type": "t() defaultValue (should be real key)",
+    "text": "桥接失败",
+    "context": "{bridgeResult && bridgeResult.bridgeStatus === 'bridge_failed' && <Tag color=\"error\" style={{ marginLeft: 'auto' }}>{t('"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 167,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI bridging blind spots...",
+    "context": "{bridging ? <div style={{ textAlign: 'center', padding: 24 }}><Spin tip={t('strategy.importEA.bridging', { defaultValue:"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 179,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Agent 无法自动桥接所有盲区",
+    "context": "<Alert type=\"warning\" showIcon message={t('strategy.importEA.bridgeFailedMsg', { defaultValue: 'Agent 无法自动桥接所有盲区' })} de"
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 181,
+    "type": "t() defaultValue (should be real key)",
+    "text": "覆盖率 100%，无需桥接",
+    "context": "<Alert type=\"info\" showIcon message={t('strategy.importEA.noBridgeNeeded', { defaultValue: '覆盖率 100%，无需桥接' })} style={{ "
+  },
+  {
+    "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+    "line": 183,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
+    "context": "</> : <div style={{ textAlign: 'center', padding: 24 }}><Text type=\"secondary\">{t('strategy.importEA.bridgeHint', { defa"
+  },
+  {
+    "file": "pages/strategy/components/editor/MetadataHeader.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Configure AI provider and model",
+    "context": "<Tooltip title={t('strategy.ai.settingsHint', { defaultValue: 'Configure AI provider and model' })}>"
+  },
+  {
+    "file": "pages/strategy/components/editor/ValidationResults.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Send errors to AI Revise",
+    "context": "{t('strategy.validate.fixWithAI', { defaultValue: 'Send errors to AI Revise' })}"
+  },
+  {
+    "file": "pages/strategy/components/editor/ValidationResults.tsx",
+    "line": 82,
+    "type": "t() defaultValue (should be real key)",
+    "text": "All checks passed — no issues found.",
+    "context": "{t('strategy.validate.allClear', { defaultValue: 'All checks passed — no issues found.' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/BacktestParamsExpanded.tsx",
+    "line": 104,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Lot Size",
+    "context": "<div style={fieldLabel}>{t('strategy.backtest.lotSize', { defaultValue: 'Lot Size' })}</div>"
+  },
+  {
+    "file": "pages/strategy/components/workspace/BacktestParamsExpanded.tsx",
+    "line": 179,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Strategy Parameters",
+    "context": "<div style={sectionLabel}>{t('strategy.backtest.strategyParameters', { defaultValue: 'Strategy Parameters' })}</div>"
+  },
+  {
+    "file": "pages/strategy/components/workspace/GatePanel.tsx",
+    "line": 101,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed at ${summary.firstFail}",
+    "context": ": t(GATE_FAILED_KEY, { defaultValue: `Failed at ${summary.firstFail}` })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/LiveSchedulesTab.tsx",
+    "line": 112,
+    "type": "throw Error",
+    "text": "Template code empty",
+    "context": "if (!code) throw new Error('Template code empty');"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load versions",
+    "context": "message.error(String((e as Error)?.message || t('strategy.version.loadFailed', { defaultValue: 'Failed to load versions'"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 64,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Rolled back to version {{n}}",
+    "context": "message.success(t('strategy.version.rollbackSuccess', { defaultValue: 'Rolled back to version {{n}}', n: versionNumber }"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Rollback failed",
+    "context": "message.error(String((e as Error)?.message || t('strategy.version.rollbackFailed', { defaultValue: 'Rollback failed' }))"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 83,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load version",
+    "context": "message.error(String((e as Error)?.message || t('strategy.version.loadVersionFailed', { defaultValue: 'Failed to load ve"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 98,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to load diff",
+    "context": "message.error(String((e as Error)?.message || t('strategy.version.loadDiffFailed', { defaultValue: 'Failed to load diff'"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 113,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Change Summary",
+    "context": "title: t('strategy.version.colSummary', { defaultValue: 'Change Summary' }),"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 152,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Rollback to v{{n}}?",
+    "context": "title={t('strategy.version.rollbackConfirm', { defaultValue: 'Rollback to v{{n}}?', n: record.versionNumber })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 175,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Version History",
+    "context": "title={t('strategy.version.title', { defaultValue: 'Version History' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+    "line": 209,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No version history yet",
+    "context": "locale={{ emptyText: <Empty description={t('strategy.version.empty', { defaultValue: 'No version history yet' })} /> }}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCenterColumn.tsx",
+    "line": 88,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import MQL4/MQL5 source code",
+    "context": "<Tooltip title={t('strategy.importEA.tooltip', { defaultValue: 'Import MQL4/MQL5 source code' })}>"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCenterColumn.tsx",
+    "line": 90,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import MQL",
+    "context": "{t('strategy.importEA.button', { defaultValue: 'Import MQL' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCenterColumn.tsx",
+    "line": 120,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Version History",
+    "context": "<Tooltip title={t('strategy.version.history', { defaultValue: 'Version History' })}>"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+    "line": 210,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Version History",
+    "context": "<Tooltip title={t('strategy.version.history', { defaultValue: 'Version History' })}>"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+    "line": 229,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Loading models...",
+    "context": "{t(PRIMARY_PLACEHOLDER_KEY, { defaultValue: 'Loading models...' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+    "line": 237,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Default AI model...",
+    "context": "placeholder={t(PRIMARY_PLACEHOLDER_KEY, { defaultValue: 'Default AI model...' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+    "line": 247,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No model — configure in AI Settings",
+    "context": "notFoundContent={t(AGENT_FIELDS_MODEL_PROFILE_EMPTY_KEY, { defaultValue: 'No model — configure in AI Settings' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+    "line": 260,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Model list refresh failed for",
+    "context": "⚠ {t(REFRESH_FAILED_KEY, { defaultValue: 'Model list refresh failed for' })}:{' '}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+    "line": 264,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Check AI Settings →",
+    "context": "{t(CHECK_SETTINGS_KEY, { defaultValue: 'Check AI Settings →' })}"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceDrawers.tsx",
+    "line": 64,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Import MQL Strategy",
+    "context": "title={<span><ImportOutlined style={{ marginRight: 8 }} />{t('strategy.importEA.title', { defaultValue: 'Import MQL Stra"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 26,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Code Editor",
+    "context": "title: t('strategy.workspace.tour.code', { defaultValue: 'Code Editor' }),"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 27,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.",
+    "context": "description: t('strategy.workspace.tour.codeDesc', { defaultValue: 'Write or paste your MQL strategy code here. You can "
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Assistant",
+    "context": "title: t('strategy.workspace.tour.ai', { defaultValue: 'AI Assistant' }),"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 32,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
+    "context": "description: t('strategy.workspace.tour.aiDesc', { defaultValue: 'Ask AI to generate, optimize, or debug your strategy. "
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
+    "context": "description: t('strategy.workspace.tour.backtestDesc', { defaultValue: 'Run backtests with configurable parameters. View"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Save & Publish",
+    "context": "title: t('strategy.workspace.tour.save', { defaultValue: 'Save & Publish' }),"
+  },
+  {
+    "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+    "line": 42,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule.",
+    "context": "description: t('strategy.workspace.tour.saveDesc', { defaultValue: 'Save your strategy as a template, publish to marketp"
+  },
+  {
+    "file": "pages/strategy/hooks/useAIWorkflow.ts",
+    "line": 178,
+    "type": "throw Error",
+    "text": "AI returned no code",
+    "context": "if (!result.text) throw new Error('AI returned no code');"
+  },
+  {
+    "file": "pages/strategy/hooks/useAIWorkflow.ts",
+    "line": 189,
+    "type": "message call",
+    "text": "Auto-fix passed after ${iter} iteration${iter > 1 ?",
+    "context": "message.success(`Auto-fix passed after ${iter} iteration${iter > 1 ? 's' : ''}`);"
+  },
+  {
+    "file": "pages/strategy/hooks/useAIWorkflow.ts",
+    "line": 204,
+    "type": "message call",
+    "text": "Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations",
+    "context": "message.warning(`Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations`);"
+  },
+  {
+    "file": "pages/strategy/hooks/useAIWorkflow.ts",
+    "line": 212,
+    "type": "message call",
+    "text": "Auto-fix failed",
+    "context": "message.error((e as Error)?.message || 'Auto-fix failed');"
+  },
+  {
+    "file": "pages/strategy/hooks/useLibraryTemplates.ts",
+    "line": 106,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Validation passed — Save is now unlocked.",
+    "context": "message.success(t('strategy.validate.passed', { defaultValue: 'Validation passed — Save is now unlocked.' }));"
+  },
+  {
+    "file": "pages/strategy/hooks/useLibraryTemplates.ts",
+    "line": 110,
+    "type": "message call",
+    "text": "Validation failed",
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }"
+  },
+  {
+    "file": "pages/strategy/hooks/useQuickTradeData.ts",
+    "line": 65,
+    "type": "message call",
+    "text": "Position closed",
+    "context": "message.success(result.message || 'Position closed');"
+  },
+  {
+    "file": "pages/strategy/hooks/useQuickTradeData.ts",
+    "line": 68,
+    "type": "message call",
+    "text": "Close failed",
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Close failed'); }"
+  },
+  {
+    "file": "pages/strategy/hooks/useStrategyCode.ts",
+    "line": 42,
+    "type": "message call",
+    "text": "Validation failed",
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }"
+  },
+  {
+    "file": "pages/strategy/hooks/useStrategyCode.ts",
+    "line": 70,
+    "type": "message call",
+    "text": "Failed to load templates",
+    "context": "catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load templates'); }"
+  },
+  {
+    "file": "pages/strategy/hooks/useStrategyCode.ts",
+    "line": 81,
+    "type": "message call",
+    "text": "Failed to load template",
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return null; }"
+  },
+  {
+    "file": "pages/strategy/hooks/useStrategyCode.ts",
+    "line": 105,
+    "type": "message call",
+    "text": "Save failed",
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }"
+  },
+  {
+    "file": "pages/strategy/hooks/useTuning.ts",
+    "line": 64,
+    "type": "message call",
+    "text": "Tuning failed",
+    "context": "message.error(e instanceof Error ? e.message : 'Tuning failed');"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 37,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Subscription activated successfully!",
+    "context": "message.success(t('subscription.subscribeSuccess', { defaultValue: 'Subscription activated successfully!' }));"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 41,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Charged: ${res.amountCharged}, Balance: ${res.balanceAfter}",
+    "context": "message.info(t('subscription.charged', { defaultValue: `Charged: ${res.amountCharged}, Balance: ${res.balanceAfter}` }))"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 47,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Insufficient wallet balance. Please top up your wallet first.",
+    "context": "message.error(t('subscription.insufficientBalance', { defaultValue: 'Insufficient wallet balance. Please top up your wal"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 49,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Subscription failed. Please try again.",
+    "context": "message.error(t('subscription.subscribeFailed', { defaultValue: 'Subscription failed. Please try again.' }));"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 57,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Auto-renewal cancelled. Your subscription remains active until the period ends.",
+    "context": "message.success(t('subscription.cancelSuccess', { defaultValue: 'Auto-renewal cancelled. Your subscription remains activ"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 61,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Failed to cancel. Please try again.",
+    "context": "message.error(t('subscription.cancelFailed', { defaultValue: 'Failed to cancel. Please try again.' }));"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 68,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Plan changed successfully!",
+    "context": "message.success(t('subscription.changeSuccess', { defaultValue: 'Plan changed successfully!' }));"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 72,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Charged: ${res.amountCharged}, Balance: ${res.balanceAfter}",
+    "context": "message.info(t('subscription.charged', { defaultValue: `Charged: ${res.amountCharged}, Balance: ${res.balanceAfter}` }))"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 78,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Insufficient wallet balance. Please top up your wallet first.",
+    "context": "message.error(t('subscription.insufficientBalance', { defaultValue: 'Insufficient wallet balance. Please top up your wal"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 80,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Plan change failed. Please try again.",
+    "context": "message.error(t('subscription.changeFailed', { defaultValue: 'Plan change failed. Please try again.' }));"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 122,
+    "type": "JSX attr: description",
+    "text": "Manage your subscription plan",
+    "context": "<Seo title=\"Subscription\" description=\"Manage your subscription plan\" path=\"/subscription\" />"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 125,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Subscription Plans",
+    "context": "{t('subscription.title', { defaultValue: 'Subscription Plans' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 146,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Current period",
+    "context": "{t('subscription.period', { defaultValue: 'Current period' })}: {formatDateTime(currentSub.currentPeriodStart)} → {forma"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 156,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Cancel Auto-renew",
+    "context": "{t('subscription.cancelAutoRenew', { defaultValue: 'Cancel Auto-renew' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 166,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Current Month Usage",
+    "context": "<Card title={t('subscription.usageTitle', { defaultValue: 'Current Month Usage' })} size=\"small\">"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 170,
+    "type": "t() defaultValue (should be real key)",
+    "text": "AI Tokens",
+    "context": "title={t('subscription.aiTokens', { defaultValue: 'AI Tokens' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 184,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Active Strategies",
+    "context": "title={t('subscription.activeStrategies', { defaultValue: 'Active Strategies' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 191,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Runtime (min)",
+    "context": "title={t('subscription.runtimeMinutes', { defaultValue: 'Runtime (min)' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 197,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Wallet Balance",
+    "context": "title={t('subscription.walletBalance', { defaultValue: 'Wallet Balance' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 269,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Free forever",
+    "context": "{t('subscription.freeForever', { defaultValue: 'Free forever' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 285,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Current Plan",
+    "context": "? t('subscription.currentPlan', { defaultValue: 'Current Plan' })"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 286,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Choose Plan",
+    "context": ": t('subscription.choosePlan', { defaultValue: 'Choose Plan' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 294,
+    "type": "t() defaultValue (should be real key)",
+    "text": "No plans available",
+    "context": "<Empty description={t('subscription.noPlans', { defaultValue: 'No plans available' })} />"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 301,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Change Plan",
+    "context": "? t('subscription.changePlanTitle', { defaultValue: 'Change Plan' })"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 302,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Subscribe to Plan",
+    "context": ": t('subscription.subscribeTitle', { defaultValue: 'Subscribe to Plan' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 312,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Billing Cycle",
+    "context": "{t('subscription.selectBillingCycle', { defaultValue: 'Billing Cycle' })}"
+  },
+  {
+    "file": "pages/subscription/SubscriptionPage.tsx",
+    "line": 323,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Your wallet will be charged for paid plans. Free plans have no charge.",
+    "context": "{t('subscription.chargeNotice', { defaultValue: 'Your wallet will be charged for paid plans. Free plans have no charge.'"
+  },
+  {
+    "file": "providers/useConnect.ts",
+    "line": 6,
+    "type": "throw Error",
+    "text": "useConnect must be used within StreamProvider",
+    "context": "if (!context) throw new Error('useConnect must be used within StreamProvider');"
+  },
+  {
+    "file": "test/smoke.test.tsx",
+    "line": 10,
+    "type": "JSX children",
+    "text": "Hello, ant",
+    "context": "const { container } = render(<div data-testid=\"hello\">Hello, ant</div>)"
+  }
+]

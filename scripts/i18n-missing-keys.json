@@ -1,0 +1,2706 @@
+{
+  "errors": [
+    {
+      "key": "errors.ai.insufficient_balance_title",
+      "dv": "Insufficient Balance",
+      "file": "client/transport.ts",
+      "line": 112
+    },
+    {
+      "key": "errors.ai.insufficient_balance",
+      "dv": "Your AI wallet balance is insufficient. Please top up before continuing.",
+      "file": "client/transport.ts",
+      "line": 113
+    }
+  ],
+  "strategy": [
+    {
+      "key": "strategy.backtest.canceled",
+      "dv": "Backtest canceled",
+      "file": "components/backtest/useBacktestRunner.ts",
+      "line": 235
+    },
+    {
+      "key": "strategy.workspace.chartIndicators.overlay",
+      "dv": "Overlay (main chart)",
+      "file": "components/chart/IndicatorPicker.tsx",
+      "line": 17
+    },
+    {
+      "key": "strategy.workspace.chartIndicators.subPane",
+      "dv": "Sub-pane indicators",
+      "file": "components/chart/IndicatorPicker.tsx",
+      "line": 27
+    },
+    {
+      "key": "strategy.codeAssist.aiHint",
+      "dv": "Describe the changes you want, e.g.",
+      "file": "components/strategy/AICodeReviseChat.tsx",
+      "line": 99
+    },
+    {
+      "key": "strategy.chat.executionPlan",
+      "dv": "Execution Plan",
+      "file": "components/strategy/ChatMessageItem.tsx",
+      "line": 30
+    },
+    {
+      "key": "strategy.chat.codeGenerated",
+      "dv": "Code generated. Use the buttons below to run strategy review and backtest.",
+      "file": "components/strategy/ChatMessageItem.tsx",
+      "line": 45
+    },
+    {
+      "key": "strategy.templates.title",
+      "dv": "Strategy Templates",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 37
+    },
+    {
+      "key": "strategy.templates.saveCurrent",
+      "dv": "Save Current Strategy",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 39
+    },
+    {
+      "key": "strategy.templates.chatEdit",
+      "dv": "Chat Edit",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 80
+    },
+    {
+      "key": "strategy.templates.confirmDelete",
+      "dv": "Delete this strategy?",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 87
+    },
+    {
+      "key": "strategy.templates.noTemplates",
+      "dv": "No saved strategy templates",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 98
+    },
+    {
+      "key": "strategy.templates.sourceCode",
+      "dv": "Strategy Source",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 103
+    },
+    {
+      "key": "strategy.live.stopSuccess",
+      "dv": "Strategy stopped",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 62
+    },
+    {
+      "key": "strategy.live.stopFailed",
+      "dv": "Failed to stop",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 67
+    },
+    {
+      "key": "strategy.live.runId",
+      "dv": "Run ID",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 147
+    },
+    {
+      "key": "strategy.live.watchSignals",
+      "dv": "Watch Signals",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 134
+    },
+    {
+      "key": "strategy.live.confirmStop",
+      "dv": "Stop this strategy?",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 137
+    },
+    {
+      "key": "strategy.live.totalSignals",
+      "dv": "Total Signals",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 169
+    },
+    {
+      "key": "strategy.live.title",
+      "dv": "Live Strategy Monitor",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 189
+    },
+    {
+      "key": "strategy.live.activeTab",
+      "dv": "Active Runs",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 203
+    },
+    {
+      "key": "strategy.live.noActive",
+      "dv": "No active strategies",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 213
+    },
+    {
+      "key": "strategy.live.historyTab",
+      "dv": "Run History",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 220
+    },
+    {
+      "key": "strategy.live.noRuns",
+      "dv": "No strategy runs",
+      "file": "pages/strategy/LiveStrategyPage.tsx",
+      "line": 230
+    },
+    {
+      "key": "strategy.live.signalLog",
+      "dv": "Signal Log",
+      "file": "pages/strategy/LiveStrategyPageSignalDrawer.tsx",
+      "line": 84
+    },
+    {
+      "key": "strategy.live.waitingSignals",
+      "dv": "Waiting for signals...",
+      "file": "pages/strategy/LiveStrategyPageSignalDrawer.tsx",
+      "line": 116
+    },
+    {
+      "key": "strategy.templates.gallery.unpublishFailed",
+      "dv": "Unpublish failed",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 79
+    },
+    {
+      "key": "strategy.templates.scheduleLaunch.metrics.winRate",
+      "dv": "Win Rate",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 131
+    },
+    {
+      "key": "strategy.templates.detail.profitFactor",
+      "dv": "Profit Factor",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 56
+    },
+    {
+      "key": "strategy.templates.scheduleLaunch.metrics.maxDrawdown",
+      "dv": "Max DD",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 137
+    },
+    {
+      "key": "strategy.templates.scheduleLaunch.metrics.sharpe",
+      "dv": "Sharpe Ratio",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 58
+    },
+    {
+      "key": "strategy.templates.detail.notFound",
+      "dv": "Strategy not found",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 67
+    },
+    {
+      "key": "strategy.templates.gallery.fork",
+      "dv": "Fork & Edit",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 190
+    },
+    {
+      "key": "strategy.templates.detail.noDescription",
+      "dv": "No description",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 104
+    },
+    {
+      "key": "strategy.templates.detail.equityCurve",
+      "dv": "Equity Curve",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 109
+    },
+    {
+      "key": "strategy.templates.detail.tradeStats",
+      "dv": "Trade Statistics",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 122
+    },
+    {
+      "key": "strategy.templates.table.useCount",
+      "dv": "Use Count",
+      "file": "pages/strategy/StrategyDetailPage.tsx",
+      "line": 134
+    },
+    {
+      "key": "strategy.templates.messages.fetchTemplateListFailed",
+      "dv": "Fork failed",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 56
+    },
+    {
+      "key": "strategy.templates.actions.create",
+      "dv": "New Strategy",
+      "file": "pages/strategy/StrategyGalleryPage.tsx",
+      "line": 54
+    },
+    {
+      "key": "strategy.templates.gallery.aiGenerate",
+      "dv": "AI Generate",
+      "file": "pages/strategy/StrategyGalleryPage.tsx",
+      "line": 57
+    },
+    {
+      "key": "strategy.templates.gallery.searchPlaceholder",
+      "dv": "Search strategies...",
+      "file": "pages/strategy/StrategyGalleryPage.tsx",
+      "line": 64
+    },
+    {
+      "key": "strategy.templates.gallery.empty",
+      "dv": "No strategies found",
+      "file": "pages/strategy/StrategyGalleryPage.tsx",
+      "line": 97
+    },
+    {
+      "key": "strategy.templates.messages.publishFailed",
+      "dv": "Publish failed",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 67
+    },
+    {
+      "key": "strategy.templates.gallery.deleteFailed",
+      "dv": "Delete failed",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 89
+    },
+    {
+      "key": "strategy.templates.deleteConfirm",
+      "dv": "Delete this strategy?",
+      "file": "pages/strategy/components/StrategyCard.tsx",
+      "line": 171
+    },
+    {
+      "key": "strategy.ai.reviseHint",
+      "dv": "Write code first, then ask AI to improve it.",
+      "file": "pages/strategy/components/editor/AIPanel.tsx",
+      "line": 36
+    },
+    {
+      "key": "strategy.ai.explainHint",
+      "dv": "Write code to see AI explanation.",
+      "file": "pages/strategy/components/editor/AIPanel.tsx",
+      "line": 49
+    },
+    {
+      "key": "strategy.validate.running",
+      "dv": "Running validation...",
+      "file": "pages/strategy/components/editor/AIPanel.tsx",
+      "line": 63
+    },
+    {
+      "key": "strategy.importEA.writeTab",
+      "dv": "Strategy Code",
+      "file": "pages/strategy/components/editor/CodeEditorPanel.tsx",
+      "line": 30
+    },
+    {
+      "key": "strategy.importEA.importTab",
+      "dv": "Import EA",
+      "file": "pages/strategy/components/editor/CodeEditorPanel.tsx",
+      "line": 31
+    },
+    {
+      "key": "strategy.importEA.codeTooShort",
+      "dv": "Please paste complete EA/indicator source code.",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 39
+    },
+    {
+      "key": "strategy.importEA.pastePlaceholder",
+      "dv": "Paste MQL4/MQL5 EA code...",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 88
+    },
+    {
+      "key": "strategy.importEA.migration",
+      "dv": "策略导入",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 94
+    },
+    {
+      "key": "strategy.importEA.aiTranslate",
+      "dv": "AI 翻译",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 95
+    },
+    {
+      "key": "strategy.importEA.bridge",
+      "dv": "盲区桥接",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 96
+    },
+    {
+      "key": "strategy.importEA.analyze",
+      "dv": "分析策略结构",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 106
+    },
+    {
+      "key": "strategy.importEA.confirmImport",
+      "dv": "确认导入",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 111
+    },
+    {
+      "key": "strategy.importEA.tryAI",
+      "dv": "AI 翻译补充",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 116
+    },
+    {
+      "key": "strategy.importEA.apply",
+      "dv": "Apply to Editor",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 162
+    },
+    {
+      "key": "strategy.importEA.importSuccess",
+      "dv": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 125
+    },
+    {
+      "key": "strategy.importEA.hint",
+      "dv": "Paste MQL4/MQL5 code and click Analyze",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 127
+    },
+    {
+      "key": "strategy.importEA.translate",
+      "dv": "Translate to Go",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 138
+    },
+    {
+      "key": "strategy.importEA.translating",
+      "dv": "Paste MQL4/MQL5 code and click Translate",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 146
+    },
+    {
+      "key": "strategy.importEA.bridgeBtn",
+      "dv": "盲区桥接翻译",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 158
+    },
+    {
+      "key": "strategy.importEA.bridging",
+      "dv": "AI bridging blind spots...",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 167
+    },
+    {
+      "key": "strategy.importEA.bridgeFailedMsg",
+      "dv": "Agent 无法自动桥接所有盲区",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 179
+    },
+    {
+      "key": "strategy.importEA.noBridgeNeeded",
+      "dv": "覆盖率 100%，无需桥接",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 181
+    },
+    {
+      "key": "strategy.importEA.bridgeHint",
+      "dv": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 183
+    },
+    {
+      "key": "strategy.ai.settingsHint",
+      "dv": "Configure AI provider and model",
+      "file": "pages/strategy/components/editor/MetadataHeader.tsx",
+      "line": 41
+    },
+    {
+      "key": "strategy.validate.fixWithAI",
+      "dv": "Send errors to AI Revise",
+      "file": "pages/strategy/components/editor/ValidationResults.tsx",
+      "line": 57
+    },
+    {
+      "key": "strategy.validate.allClear",
+      "dv": "All checks passed — no issues found.",
+      "file": "pages/strategy/components/editor/ValidationResults.tsx",
+      "line": 82
+    },
+    {
+      "key": "strategy.backtest.lotSize",
+      "dv": "Lot Size",
+      "file": "pages/strategy/components/workspace/BacktestParamsExpanded.tsx",
+      "line": 104
+    },
+    {
+      "key": "strategy.backtest.strategyParameters",
+      "dv": "Strategy Parameters",
+      "file": "pages/strategy/components/workspace/BacktestParamsExpanded.tsx",
+      "line": 179
+    },
+    {
+      "key": "strategy.version.loadFailed",
+      "dv": "Failed to load versions",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 41
+    },
+    {
+      "key": "strategy.version.rollbackSuccess",
+      "dv": "Rolled back to version {{n}}",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 64
+    },
+    {
+      "key": "strategy.version.rollbackFailed",
+      "dv": "Rollback failed",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 70
+    },
+    {
+      "key": "strategy.version.loadVersionFailed",
+      "dv": "Failed to load version",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 83
+    },
+    {
+      "key": "strategy.version.loadDiffFailed",
+      "dv": "Failed to load diff",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 98
+    },
+    {
+      "key": "strategy.version.colSummary",
+      "dv": "Change Summary",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 113
+    },
+    {
+      "key": "strategy.version.rollbackConfirm",
+      "dv": "Rollback to v{{n}}?",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 152
+    },
+    {
+      "key": "strategy.version.title",
+      "dv": "Version History",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 175
+    },
+    {
+      "key": "strategy.version.empty",
+      "dv": "No version history yet",
+      "file": "pages/strategy/components/workspace/VersionHistoryDrawer.tsx",
+      "line": 209
+    },
+    {
+      "key": "strategy.importEA.tooltip",
+      "dv": "Import MQL4/MQL5 source code",
+      "file": "pages/strategy/components/workspace/WorkspaceCenterColumn.tsx",
+      "line": 88
+    },
+    {
+      "key": "strategy.importEA.button",
+      "dv": "Import MQL",
+      "file": "pages/strategy/components/workspace/WorkspaceCenterColumn.tsx",
+      "line": 90
+    },
+    {
+      "key": "strategy.version.history",
+      "dv": "Version History",
+      "file": "pages/strategy/components/workspace/WorkspaceCodePanel.tsx",
+      "line": 210
+    },
+    {
+      "key": "strategy.importEA.title",
+      "dv": "Import MQL Strategy",
+      "file": "pages/strategy/components/workspace/WorkspaceDrawers.tsx",
+      "line": 64
+    },
+    {
+      "key": "strategy.workspace.tour.code",
+      "dv": "Code Editor",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 26
+    },
+    {
+      "key": "strategy.workspace.tour.codeDesc",
+      "dv": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 27
+    },
+    {
+      "key": "strategy.workspace.tour.ai",
+      "dv": "AI Assistant",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 31
+    },
+    {
+      "key": "strategy.workspace.tour.aiDesc",
+      "dv": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 32
+    },
+    {
+      "key": "strategy.workspace.tour.backtestDesc",
+      "dv": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 37
+    },
+    {
+      "key": "strategy.workspace.tour.save",
+      "dv": "Save & Publish",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 41
+    },
+    {
+      "key": "strategy.workspace.tour.saveDesc",
+      "dv": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule.",
+      "file": "pages/strategy/components/workspace/WorkspaceTour.tsx",
+      "line": 42
+    },
+    {
+      "key": "strategy.validate.passed",
+      "dv": "Validation passed — Save is now unlocked.",
+      "file": "pages/strategy/hooks/useLibraryTemplates.ts",
+      "line": 106
+    }
+  ],
+  "market": [
+    {
+      "key": "market.allSymbols",
+      "dv": "All Symbols",
+      "file": "components/chart/SymbolPicker.tsx",
+      "line": 93
+    },
+    {
+      "key": "market.selectSymbol",
+      "dv": "Select symbol",
+      "file": "components/chart/SymbolPicker.tsx",
+      "line": 118
+    },
+    {
+      "key": "market.loadingSymbols",
+      "dv": "No symbols found",
+      "file": "components/chart/SymbolPicker.tsx",
+      "line": 125
+    }
+  ],
+  "menu": [
+    {
+      "key": "menu.strategyLive",
+      "dv": "Live Monitor",
+      "file": "components/layout/MainLayout.tsx",
+      "line": 47
+    }
+  ],
+  "notifications": [
+    {
+      "key": "notifications.prefs.saveFailed",
+      "dv": "Failed to save preferences",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 46
+    },
+    {
+      "key": "notifications.prefs.newStrategy",
+      "dv": "New strategy published",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 53
+    },
+    {
+      "key": "notifications.prefs.priceChange",
+      "dv": "Strategy price changed",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 54
+    },
+    {
+      "key": "notifications.prefs.subExpiring",
+      "dv": "Subscription expiring soon",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 55
+    },
+    {
+      "key": "notifications.prefs.performance",
+      "dv": "Strategy performance anomaly",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 56
+    },
+    {
+      "key": "notifications.prefs.newRating",
+      "dv": "New rating or comment received",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 57
+    },
+    {
+      "key": "notifications.prefs.title",
+      "dv": "Notification Preferences",
+      "file": "components/notification/NotificationPrefs.tsx",
+      "line": 62
+    }
+  ],
+  "onboarding": [
+    {
+      "key": "onboarding.step1.title",
+      "dv": "Connect Your Account",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 37
+    },
+    {
+      "key": "onboarding.step1.desc",
+      "dv": "Link your MT4/MT5 trading account to start.",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 38
+    },
+    {
+      "key": "onboarding.step1.action",
+      "dv": "Bind Account",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 41
+    },
+    {
+      "key": "onboarding.step2.title",
+      "dv": "Create Your First Strategy",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 45
+    },
+    {
+      "key": "onboarding.step2.desc",
+      "dv": "Use AI to generate a trading strategy from natural language.",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 46
+    },
+    {
+      "key": "onboarding.step2.action",
+      "dv": "Open Workspace",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 49
+    },
+    {
+      "key": "onboarding.step3.title",
+      "dv": "Upgrade Your Plan",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 53
+    },
+    {
+      "key": "onboarding.step3.desc",
+      "dv": "Unlock more AI tokens, strategies, and live trading with Pro.",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 54
+    },
+    {
+      "key": "onboarding.step3.action",
+      "dv": "View Plans",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 57
+    },
+    {
+      "key": "onboarding.welcome",
+      "dv": "Welcome to AlphaForge, {{name}}!",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 75
+    },
+    {
+      "key": "onboarding.subtitle",
+      "dv": "Get started in 3 simple steps",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 78
+    },
+    {
+      "key": "onboarding.dismiss",
+      "dv": "Got it, dismiss",
+      "file": "components/onboarding/WelcomeModal.tsx",
+      "line": 115
+    }
+  ],
+  "common": [
+    {
+      "key": "common.unknownError",
+      "dv": "Unknown error",
+      "file": "pages/strategy/components/editor/ImportEAPanel.tsx",
+      "line": 79
+    },
+    {
+      "key": "common.copied",
+      "dv": "Copy All",
+      "file": "components/strategy/StrategyList.tsx",
+      "line": 104
+    },
+    {
+      "key": "common.deleteFailed",
+      "dv": "Delete failed",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 132
+    },
+    {
+      "key": "common.operationFailed",
+      "dv": "Operation failed",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 81
+    },
+    {
+      "key": "common.saveSuccess",
+      "dv": "Saved successfully",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 116
+    },
+    {
+      "key": "common.refresh",
+      "dv": "刷新",
+      "file": "pages/ai/SystemAI.tsx",
+      "line": 152
+    },
+    {
+      "key": "common.loading",
+      "dv": "加载中...",
+      "file": "pages/ai/SystemAI.tsx",
+      "line": 175
+    },
+    {
+      "key": "common.saveFailed",
+      "dv": "Save failed",
+      "file": "pages/ai/components/DefaultPrimaryModelCard.tsx",
+      "line": 97
+    },
+    {
+      "key": "common.noData",
+      "dv": "No logs found",
+      "file": "pages/logs/LogManagement.tsx",
+      "line": 145
+    },
+    {
+      "key": "common.confirm",
+      "dv": "确认",
+      "file": "pages/strategy/components/TradePasswordModal.tsx",
+      "line": 54
+    },
+    {
+      "key": "common.cancel",
+      "dv": "取消",
+      "file": "pages/strategy/components/TradePasswordModal.tsx",
+      "line": 55
+    }
+  ],
+  "importAnalysis": [
+    {
+      "key": "importAnalysis.execution.onBar",
+      "dv": "Bar close event-driven",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 79
+    },
+    {
+      "key": "importAnalysis.execution.onInitGrid",
+      "dv": "Init grid",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 81
+    },
+    {
+      "key": "importAnalysis.sizing.fixed",
+      "dv": "Fixed lots",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 88
+    },
+    {
+      "key": "importAnalysis.sizing.percentBalance",
+      "dv": "Percent of balance",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 90
+    },
+    {
+      "key": "importAnalysis.analyzing",
+      "dv": "Analyzing strategy structure...",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 100
+    },
+    {
+      "key": "importAnalysis.tradeLogicComplete",
+      "dv": "Trading logic fully recognized",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 155
+    },
+    {
+      "key": "importAnalysis.guiNoiseDesc",
+      "dv": "The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 126
+    },
+    {
+      "key": "importAnalysis.cannotImport",
+      "dv": "Cannot auto-import",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 131
+    },
+    {
+      "key": "importAnalysis.incompleteCoverage",
+      "dv": "Trading logic coverage incomplete",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 137
+    },
+    {
+      "key": "importAnalysis.goodCoverage",
+      "dv": "Import coverage is good",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 143
+    },
+    {
+      "key": "importAnalysis.goodCoverageDesc",
+      "dv": "Strategy main logic recognized. Safe to import. Check parameter list before use.",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 144
+    },
+    {
+      "key": "importAnalysis.coverageTitle",
+      "dv": "Import Coverage",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 151
+    },
+    {
+      "key": "importAnalysis.userActionRequired",
+      "dv": "Your action required",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 233
+    },
+    {
+      "key": "importAnalysis.noBlindSpots",
+      "dv": "No logic needs confirmation",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 286
+    },
+    {
+      "key": "importAnalysis.noBlindSpotsDesc",
+      "dv": "All strategy logic auto-recognized. Safe to import.",
+      "file": "components/strategy/ImportAnalysisReport.tsx",
+      "line": 287
+    }
+  ],
+  "theme": [
+    {
+      "key": "theme.switchToLight",
+      "dv": "Switch to dark mode",
+      "file": "components/theme/ThemeToggle.tsx",
+      "line": 17
+    }
+  ],
+  "accounts": [
+    {
+      "key": "accounts.bind.fields.alias",
+      "dv": "Account Alias",
+      "file": "pages/accounts/BindAccountSteps.tsx",
+      "line": 150
+    },
+    {
+      "key": "accounts.bind.placeholders.alias",
+      "dv": "Optional custom name",
+      "file": "pages/accounts/BindAccountSteps.tsx",
+      "line": 152
+    },
+    {
+      "key": "accounts.bind.messages.changeCredentials",
+      "dv": "Change credentials",
+      "file": "pages/accounts/BindAccountSteps.tsx",
+      "line": 201
+    },
+    {
+      "key": "accounts.messages.shareLinkCopied",
+      "dv": "Share link copied to clipboard",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 54
+    },
+    {
+      "key": "accounts.messages.shareLinkFailed",
+      "dv": "Failed to create share link",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 57
+    }
+  ],
+  "share": [
+    {
+      "key": "share.token",
+      "dv": "Share Link",
+      "file": "pages/admin/ShareManagement.tsx",
+      "line": 50
+    },
+    {
+      "key": "share.deleteConfirm",
+      "dv": "Delete this share link?",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 115
+    },
+    {
+      "key": "share.title",
+      "dv": "Share Management",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 133
+    },
+    {
+      "key": "share.createNew",
+      "dv": "Create New Share Link",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 142
+    },
+    {
+      "key": "share.empty",
+      "dv": "No share links yet",
+      "file": "pages/accounts/components/ShareAccountButton.tsx",
+      "line": 152
+    }
+  ],
+  "admin": [
+    {
+      "key": "admin.aiGateway.errors.loadProviders",
+      "dv": "Failed to load providers",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 29
+    },
+    {
+      "key": "admin.aiGateway.addProviderPending",
+      "dv": "Add provider feature pending backend support",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 61
+    },
+    {
+      "key": "admin.aiGateway.errors.toggleFailed",
+      "dv": "Toggle failed",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 147
+    },
+    {
+      "key": "admin.aiGateway.errors.loadModels",
+      "dv": "Failed to load models",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 88
+    },
+    {
+      "key": "admin.aiGateway.title",
+      "dv": "AI Gateway Management",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 157
+    },
+    {
+      "key": "admin.aiGateway.description",
+      "dv": "Manage AI providers, models, and pricing. Users select from available models, billed by token from wallet.",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 160
+    },
+    {
+      "key": "admin.aiGateway.addProvider",
+      "dv": "Add Provider",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 165
+    },
+    {
+      "key": "admin.aiGateway.columns.baseUrl",
+      "dv": "Base URL",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 178
+    },
+    {
+      "key": "admin.aiGateway.columns.apiKey",
+      "dv": "API Key",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 180
+    },
+    {
+      "key": "admin.aiGateway.configured",
+      "dv": "Not configured",
+      "file": "pages/admin/AIGatewayManagement.tsx",
+      "line": 181
+    },
+    {
+      "key": "admin.aiGateway.editProvider",
+      "dv": "Add Provider",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 37
+    },
+    {
+      "key": "admin.aiGateway.providerId",
+      "dv": "Please enter provider ID",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 46
+    },
+    {
+      "key": "admin.aiGateway.displayName",
+      "dv": "Display Name",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 121
+    },
+    {
+      "key": "admin.aiGateway.baseUrl",
+      "dv": "Please enter Base URL",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 53
+    },
+    {
+      "key": "admin.aiGateway.apiKeyLabel",
+      "dv": "API key, encrypted at rest",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 56
+    },
+    {
+      "key": "admin.aiGateway.apiKeyEditPlaceholder",
+      "dv": "Leave empty to keep",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 57
+    },
+    {
+      "key": "admin.aiGateway.editModel",
+      "dv": "Add Model",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 63
+    },
+    {
+      "key": "admin.aiGateway.modelName",
+      "dv": "Model Name",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 120
+    },
+    {
+      "key": "admin.aiGateway.priceInput",
+      "dv": "Input Price ($/1M)",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 122
+    },
+    {
+      "key": "admin.aiGateway.priceOutput",
+      "dv": "Output Price ($/1M)",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 124
+    },
+    {
+      "key": "admin.aiGateway.addModel",
+      "dv": "Add Model",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 113
+    },
+    {
+      "key": "admin.aiGateway.confirmDeleteModel",
+      "dv": "Delete this model?",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 136
+    },
+    {
+      "key": "admin.aiGateway.noModels",
+      "dv": "No models",
+      "file": "pages/admin/AIGatewayModals.tsx",
+      "line": 146
+    },
+    {
+      "key": "admin.account.errors.loadFailed",
+      "dv": "Failed to load accounts",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 46
+    },
+    {
+      "key": "admin.account.frozen",
+      "dv": "Account frozen",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 62
+    },
+    {
+      "key": "admin.account.errors.freezeFailed",
+      "dv": "Freeze failed",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 65
+    },
+    {
+      "key": "admin.account.unfrozen",
+      "dv": "Account unfrozen",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 72
+    },
+    {
+      "key": "admin.account.errors.unfreezeFailed",
+      "dv": "Unfreeze failed",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 75
+    },
+    {
+      "key": "admin.account.columns.createdAt",
+      "dv": "Created At",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 165
+    },
+    {
+      "key": "admin.account.confirmFreeze",
+      "dv": "Freeze this account?",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 103
+    },
+    {
+      "key": "admin.account.title",
+      "dv": "Account Management",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 113
+    },
+    {
+      "key": "admin.account.searchPlaceholder",
+      "dv": "Search accounts",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 117
+    },
+    {
+      "key": "admin.account.detail",
+      "dv": "Account Detail",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 148
+    },
+    {
+      "key": "admin.account.auditLogs",
+      "dv": "Audit Logs",
+      "file": "pages/admin/AccountManagement.tsx",
+      "line": 170
+    },
+    {
+      "key": "admin.settings.saveSuccess",
+      "dv": "Saved successfully",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 66
+    },
+    {
+      "key": "admin.settings.saveFailed",
+      "dv": "Save failed",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 73
+    },
+    {
+      "key": "admin.settings.deleteFailed",
+      "dv": "Delete failed",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 83
+    },
+    {
+      "key": "admin.settings.actionFailed",
+      "dv": "Action failed",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 93
+    },
+    {
+      "key": "admin.settings.columns.key",
+      "dv": "Setting Key",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 99
+    },
+    {
+      "key": "admin.settings.confirmDelete",
+      "dv": "Confirm delete?",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 134
+    },
+    {
+      "key": "admin.settings.title",
+      "dv": "Agent Management Settings",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 148
+    },
+    {
+      "key": "admin.settings.addSetting",
+      "dv": "Add Setting",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 151
+    },
+    {
+      "key": "admin.settings.permissionRules",
+      "dv": "Permission Rules (permission.rule.N)",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 166
+    },
+    {
+      "key": "admin.settings.permissionFormat",
+      "dv": "Format:",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 168
+    },
+    {
+      "key": "admin.settings.permissionExample",
+      "dv": "Example:",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 170
+    },
+    {
+      "key": "admin.settings.permissionAddRule",
+      "dv": "Add rule: create setting with key",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 172
+    },
+    {
+      "key": "admin.settings.addManagedSetting",
+      "dv": "Add Managed Setting",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 177
+    },
+    {
+      "key": "admin.settings.settingKey",
+      "dv": "Setting Key",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 186
+    },
+    {
+      "key": "admin.settings.keyPlaceholder",
+      "dv": "e.g.: allowed_models, disable_live_trading, permission.rule.1",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 191
+    },
+    {
+      "key": "admin.settings.valuePlaceholder",
+      "dv": "e.g.: claude-sonnet-5,deepseek-v4",
+      "file": "pages/admin/AdminSettingsPage.tsx",
+      "line": 211
+    },
+    {
+      "key": "admin.autogen.approved",
+      "dv": "Task approved and published",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 61
+    },
+    {
+      "key": "admin.autogen.rejected",
+      "dv": "Task rejected",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 73
+    },
+    {
+      "key": "admin.autogen.enqueued",
+      "dv": "{{count}} tasks enqueued",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 90
+    },
+    {
+      "key": "admin.autogen.confirmApprove",
+      "dv": "Approve and publish?",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 148
+    },
+    {
+      "key": "admin.autogen.confirmReject",
+      "dv": "Reject this task?",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 151
+    },
+    {
+      "key": "admin.autogen.title",
+      "dv": "AI Strategy Generation Tasks",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 164
+    },
+    {
+      "key": "admin.autogen.allStatus",
+      "dv": "All Status",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 171
+    },
+    {
+      "key": "admin.autogen.triggerBatch",
+      "dv": "Trigger Batch Generation",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 196
+    },
+    {
+      "key": "admin.autogen.symbols",
+      "dv": "Symbols (comma-separated)",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 205
+    },
+    {
+      "key": "admin.autogen.timeframes",
+      "dv": "Timeframes (comma-separated)",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 209
+    },
+    {
+      "key": "admin.autogen.strategyTypes",
+      "dv": "Strategy Types (comma-separated)",
+      "file": "pages/admin/AutoGenTaskReview.tsx",
+      "line": 213
+    },
+    {
+      "key": "admin.billing.columns.autoRenew",
+      "dv": "Auto Renew",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 42
+    },
+    {
+      "key": "admin.billing.columns.periodStart",
+      "dv": "Period Start",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 44
+    },
+    {
+      "key": "admin.billing.columns.periodEnd",
+      "dv": "Period End",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 46
+    },
+    {
+      "key": "admin.billing.columns.createdAt",
+      "dv": "Created At",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 48
+    },
+    {
+      "key": "admin.billing.columns.balanceBefore",
+      "dv": "Balance Before",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 61
+    },
+    {
+      "key": "admin.billing.columns.balanceAfter",
+      "dv": "Balance After",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 62
+    },
+    {
+      "key": "admin.billing.title",
+      "dv": "Billing Management",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 70
+    },
+    {
+      "key": "admin.billing.monthlyRevenue",
+      "dv": "Monthly Revenue",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 120
+    },
+    {
+      "key": "admin.billing.totalRevenue",
+      "dv": "Total Revenue",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 121
+    },
+    {
+      "key": "admin.billing.activeSubs",
+      "dv": "Active Subscriptions",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 94
+    },
+    {
+      "key": "admin.billing.planRevenue",
+      "dv": "Plan Revenue Details",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 111
+    },
+    {
+      "key": "admin.billing.filterByPlan",
+      "dv": "Filter by plan",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 133
+    },
+    {
+      "key": "admin.billing.filterByStatus",
+      "dv": "Filter by status",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 147
+    },
+    {
+      "key": "admin.billing.walletTransactions",
+      "dv": "Wallet Transactions",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 177
+    },
+    {
+      "key": "admin.billing.filterByType",
+      "dv": "Filter by type",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 182
+    },
+    {
+      "key": "admin.billing.txPlatformFee",
+      "dv": "Platform Fee",
+      "file": "pages/admin/BillingManagement.tsx",
+      "line": 190
+    },
+    {
+      "key": "admin.coupon.loadFailed",
+      "dv": "Failed to load coupons",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 29
+    },
+    {
+      "key": "admin.coupon.fillRequired",
+      "dv": "Please fill required fields",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 37
+    },
+    {
+      "key": "admin.coupon.created",
+      "dv": "Coupon created",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 51
+    },
+    {
+      "key": "admin.coupon.createFailed",
+      "dv": "Failed to create coupon",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 58
+    },
+    {
+      "key": "admin.coupon.disabled",
+      "dv": "Coupon disabled",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 67
+    },
+    {
+      "key": "admin.coupon.disableFailed",
+      "dv": "Failed to disable coupon",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 70
+    },
+    {
+      "key": "admin.coupon.colMinPurchase",
+      "dv": "Min Purchase",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 86
+    },
+    {
+      "key": "admin.coupon.create",
+      "dv": "Create Coupon",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 117
+    },
+    {
+      "key": "admin.coupon.createTitle",
+      "dv": "Create Coupon",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 130
+    },
+    {
+      "key": "admin.coupon.codePlaceholder",
+      "dv": "Coupon code (e.g. SUMMER20)",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 138
+    },
+    {
+      "key": "admin.coupon.valuePlaceholder",
+      "dv": "Discount value (e.g. 20 for 20% or 50 for ¥50)",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 152
+    },
+    {
+      "key": "admin.coupon.minPurchasePlaceholder",
+      "dv": "Minimum purchase amount (0 = none)",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 157
+    },
+    {
+      "key": "admin.coupon.maxUsesPlaceholder",
+      "dv": "Max uses (0 = unlimited)",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 162
+    },
+    {
+      "key": "admin.coupon.expiresPlaceholder",
+      "dv": "Expires at (ISO 8601, empty = never)",
+      "file": "pages/admin/CouponManagement.tsx",
+      "line": 169
+    },
+    {
+      "key": "admin.dashboard.errors.loadFailed",
+      "dv": "Failed to load dashboard data",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 38
+    },
+    {
+      "key": "admin.dashboard.title",
+      "dv": "Admin Dashboard",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 49
+    },
+    {
+      "key": "admin.dashboard.totalUsers",
+      "dv": "Total Users",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 53
+    },
+    {
+      "key": "admin.dashboard.activeUsers",
+      "dv": "Active Users",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 54
+    },
+    {
+      "key": "admin.dashboard.verifiedUsers",
+      "dv": "Verified Users",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 55
+    },
+    {
+      "key": "admin.dashboard.mtAccounts",
+      "dv": "MT Accounts",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 56
+    },
+    {
+      "key": "admin.dashboard.onlineAccounts",
+      "dv": "Online Accounts",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 57
+    },
+    {
+      "key": "admin.dashboard.todayTrades",
+      "dv": "Today Trades",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 58
+    },
+    {
+      "key": "admin.dashboard.todayProfit",
+      "dv": "Today P&L",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 66
+    },
+    {
+      "key": "admin.dashboard.activeSubs",
+      "dv": "Active Subs",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 75
+    },
+    {
+      "key": "admin.dashboard.monthlyRevenue",
+      "dv": "Monthly Revenue",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 76
+    },
+    {
+      "key": "admin.dashboard.totalRevenue",
+      "dv": "Total Revenue",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 77
+    },
+    {
+      "key": "admin.dashboard.marketStrategies",
+      "dv": "Market Strategies",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 78
+    },
+    {
+      "key": "admin.dashboard.marketSales",
+      "dv": "Market Sales",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 79
+    },
+    {
+      "key": "admin.dashboard.marketRevenue",
+      "dv": "Market Revenue",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 80
+    },
+    {
+      "key": "admin.dashboard.recentLogs",
+      "dv": "Recent Logs",
+      "file": "pages/admin/Dashboard.tsx",
+      "line": 88
+    },
+    {
+      "key": "admin.logs.modules.userManagement",
+      "dv": "User Management",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 100
+    },
+    {
+      "key": "admin.logs.modules.accountManagement",
+      "dv": "Account Management",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 101
+    },
+    {
+      "key": "admin.logs.modules.systemConfig",
+      "dv": "System Config",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 103
+    },
+    {
+      "key": "admin.logs.columns.actionType",
+      "dv": "Action Type",
+      "file": "pages/admin/DashboardLogColumns.tsx",
+      "line": 21
+    },
+    {
+      "key": "admin.depositAddresses.importFailed",
+      "dv": "Import failed",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 32
+    },
+    {
+      "key": "admin.depositAddresses.user",
+      "dv": "User ID",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 49
+    },
+    {
+      "key": "admin.depositAddresses.received",
+      "dv": "Received USDT",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 73
+    },
+    {
+      "key": "admin.depositAddresses.assignedAt",
+      "dv": "Assigned At",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 87
+    },
+    {
+      "key": "admin.depositAddresses.importHint",
+      "dv": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 100
+    },
+    {
+      "key": "admin.depositAddresses.all",
+      "dv": "All Status",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 110
+    },
+    {
+      "key": "admin.depositAddresses.import",
+      "dv": "Import Addresses",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 123
+    },
+    {
+      "key": "admin.depositAddresses.availablePool",
+      "dv": "Available in Pool",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 133
+    },
+    {
+      "key": "admin.depositAddresses.total",
+      "dv": "Total Addresses",
+      "file": "pages/admin/DepositAddressesTab.tsx",
+      "line": 138
+    },
+    {
+      "key": "admin.deposit.table.user",
+      "dv": "User ID",
+      "file": "pages/admin/DepositManagement.tsx",
+      "line": 23
+    },
+    {
+      "key": "admin.deposit.table.amount",
+      "dv": "USDT Amount",
+      "file": "pages/admin/DepositManagement.tsx",
+      "line": 31
+    },
+    {
+      "key": "admin.deposit.table.txHash",
+      "dv": "Tx Hash",
+      "file": "pages/admin/DepositManagement.tsx",
+      "line": 38
+    },
+    {
+      "key": "admin.deposit.title",
+      "dv": "Deposit Management",
+      "file": "pages/admin/DepositManagement.tsx",
+      "line": 79
+    },
+    {
+      "key": "admin.analytics.platformRev",
+      "dv": "Platform Rev",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 68
+    },
+    {
+      "key": "admin.analytics.providerRev",
+      "dv": "Provider Rev",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 73
+    },
+    {
+      "key": "admin.analytics.activeBuyers",
+      "dv": "Active Buyers",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 78
+    },
+    {
+      "key": "admin.analytics.refundRate",
+      "dv": "Refund Rate",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 88
+    },
+    {
+      "key": "admin.analytics.newSubs",
+      "dv": "New Subscribers",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 101
+    },
+    {
+      "key": "admin.analytics.totalStrategies",
+      "dv": "Total Strategies",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 106
+    },
+    {
+      "key": "admin.analytics.newStrategies",
+      "dv": "New Strategies",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 111
+    },
+    {
+      "key": "admin.analytics.topByRevenue",
+      "dv": "Top Strategies by Revenue",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 118
+    },
+    {
+      "key": "admin.analytics.topBySubs",
+      "dv": "Top Strategies by Subscribers",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 123
+    },
+    {
+      "key": "admin.analytics.topProvidersRev",
+      "dv": "Top Providers by Revenue",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 131
+    },
+    {
+      "key": "admin.analytics.topProvidersStrat",
+      "dv": "Top Providers by Strategies",
+      "file": "pages/admin/MarketplaceAnalytics.tsx",
+      "line": 136
+    },
+    {
+      "key": "admin.marketplace.loadFailed",
+      "dv": "Failed to load strategies",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 35
+    },
+    {
+      "key": "admin.marketplace.featureSuccess",
+      "dv": "Strategy featured",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 50
+    },
+    {
+      "key": "admin.marketplace.featureFailed",
+      "dv": "Failed to feature strategy",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 54
+    },
+    {
+      "key": "admin.marketplace.unfeatureSuccess",
+      "dv": "Removed featured",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 67
+    },
+    {
+      "key": "admin.marketplace.unfeatureFailed",
+      "dv": "Failed to unfeature",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 70
+    },
+    {
+      "key": "admin.marketplace.unfeature",
+      "dv": "Remove featured",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 149
+    },
+    {
+      "key": "admin.marketplace.filterStatus",
+      "dv": "All statuses",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 166
+    },
+    {
+      "key": "admin.marketplace.searchPlaceholder",
+      "dv": "Search by title...",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 181
+    },
+    {
+      "key": "admin.marketplace.featureTitle",
+      "dv": "Feature Strategy",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 210
+    },
+    {
+      "key": "admin.marketplace.featureDesc",
+      "dv": "Set priority for featured placement. Higher = more prominent.",
+      "file": "pages/admin/MarketplaceManagement.tsx",
+      "line": 217
+    },
+    {
+      "key": "admin.logs.errors.loadFailed",
+      "dv": "Failed to load logs",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 27
+    },
+    {
+      "key": "admin.logs.columns.ip",
+      "dv": "IP Address",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 65
+    },
+    {
+      "key": "admin.logs.title",
+      "dv": "Operation Logs",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 88
+    },
+    {
+      "key": "admin.logs.filterModule",
+      "dv": "Filter by module",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 95
+    },
+    {
+      "key": "admin.logs.filterAction",
+      "dv": "Filter by action",
+      "file": "pages/admin/OperationLogs.tsx",
+      "line": 107
+    },
+    {
+      "key": "admin.refund.loadFailed",
+      "dv": "Failed to load refund requests",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 32
+    },
+    {
+      "key": "admin.refund.approved",
+      "dv": "Refund approved and executed",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 49
+    },
+    {
+      "key": "admin.refund.rejected",
+      "dv": "Refund request rejected",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 50
+    },
+    {
+      "key": "admin.refund.processFailed",
+      "dv": "Failed to process refund",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 57
+    },
+    {
+      "key": "admin.refund.approve",
+      "dv": "Approve & Execute",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 107
+    },
+    {
+      "key": "admin.refund.filterStatus",
+      "dv": "All statuses",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 144
+    },
+    {
+      "key": "admin.refund.approveTitle",
+      "dv": "Approve Refund",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 180
+    },
+    {
+      "key": "admin.refund.rejectTitle",
+      "dv": "Reject Refund",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 181
+    },
+    {
+      "key": "admin.refund.reviewNotePlaceholder",
+      "dv": "Review note (optional for reject, recommended for approve)...",
+      "file": "pages/admin/RefundManagement.tsx",
+      "line": 195
+    },
+    {
+      "key": "admin.sidebar.shareManagement",
+      "dv": "Share Analytics",
+      "file": "pages/admin/ShareManagement.tsx",
+      "line": 80
+    },
+    {
+      "key": "admin.walletCalculator.title",
+      "dv": "Token ↔ USD Calculator",
+      "file": "pages/admin/WalletCalculator.tsx",
+      "line": 71
+    },
+    {
+      "key": "admin.walletCalculator.selectModel",
+      "dv": "Select model (pricing basis)",
+      "file": "pages/admin/WalletCalculator.tsx",
+      "line": 78
+    },
+    {
+      "key": "admin.walletCalculator.usdAmount",
+      "dv": "USD Amount",
+      "file": "pages/admin/WalletCalculator.tsx",
+      "line": 87
+    },
+    {
+      "key": "admin.walletCalculator.fillResult",
+      "dv": "Fill Result",
+      "file": "pages/admin/WalletCalculator.tsx",
+      "line": 116
+    },
+    {
+      "key": "admin.wallet.errors.noUserSelected",
+      "dv": "No user selected",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 47
+    },
+    {
+      "key": "admin.wallet.messages.adjustSuccess",
+      "dv": "Balance adjusted successfully",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 52
+    },
+    {
+      "key": "admin.wallet.messages.adjustFailed",
+      "dv": "Adjustment failed",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 59
+    },
+    {
+      "key": "admin.wallet.columns.walletNumber",
+      "dv": "Wallet No.",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 165
+    },
+    {
+      "key": "admin.wallet.columns.balanceAfter",
+      "dv": "Balance After",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 109
+    },
+    {
+      "key": "admin.wallet.title",
+      "dv": "Wallet Management",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 119
+    },
+    {
+      "key": "admin.wallet.tabWallets",
+      "dv": "User Wallets",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 127
+    },
+    {
+      "key": "admin.wallet.userList",
+      "dv": "User List",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 130
+    },
+    {
+      "key": "admin.wallet.searchPlaceholder",
+      "dv": "Search wallet / email / nickname",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 133
+    },
+    {
+      "key": "admin.wallet.noMatch",
+      "dv": "No users",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 153
+    },
+    {
+      "key": "admin.wallet.walletDetail",
+      "dv": "Wallet Detail",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 161
+    },
+    {
+      "key": "admin.wallet.adjustBalance",
+      "dv": "Adjust Balance",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 203
+    },
+    {
+      "key": "admin.wallet.tabDepositAddresses",
+      "dv": "Deposit Addresses",
+      "file": "pages/admin/WalletManagement.tsx",
+      "line": 245
+    },
+    {
+      "key": "admin.config.apiKey",
+      "dv": "API Key",
+      "file": "pages/admin/components/SystemConfigEditModal.tsx",
+      "line": 63
+    },
+    {
+      "key": "admin.userManagement.form.accountNumber",
+      "dv": "Account Number",
+      "file": "pages/admin/components/UserEditModal.tsx",
+      "line": 40
+    },
+    {
+      "key": "admin.userManagement.form.accountNumberInvalid",
+      "dv": "5-6 digits, no leading 0, no 4 or 7",
+      "file": "pages/admin/components/UserEditModal.tsx",
+      "line": 42
+    },
+    {
+      "key": "admin.userManagement.messages.loadUsersFailed",
+      "dv": "Failed to load users",
+      "file": "pages/admin/useUserManagement.ts",
+      "line": 31
+    }
+  ],
+  "monitoring": [
+    {
+      "key": "monitoring.title",
+      "dv": "System Monitoring",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 90
+    },
+    {
+      "key": "monitoring.sseConnected",
+      "dv": "SSE Connected",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 93
+    },
+    {
+      "key": "monitoring.streamError",
+      "dv": "Stream Error",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 98
+    },
+    {
+      "key": "monitoring.waitingData",
+      "dv": "Waiting for data...",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 102
+    },
+    {
+      "key": "monitoring.serviceHealth",
+      "dv": "Service Health",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 107
+    },
+    {
+      "key": "monitoring.diskUsage",
+      "dv": "Disk Usage",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 116
+    },
+    {
+      "key": "monitoring.goRuntime",
+      "dv": "Go Runtime",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 127
+    },
+    {
+      "key": "monitoring.gcCount",
+      "dv": "GC Count",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 133
+    },
+    {
+      "key": "monitoring.gcPauseAvg",
+      "dv": "GC Pause Avg",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 136
+    },
+    {
+      "key": "monitoring.stackUsage",
+      "dv": "Stack Usage",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 139
+    },
+    {
+      "key": "monitoring.heapMemory",
+      "dv": "Heap Memory",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 142
+    },
+    {
+      "key": "monitoring.dbPool",
+      "dv": "DB Connection Pool",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 151
+    },
+    {
+      "key": "monitoring.mdGateway",
+      "dv": "MD Gateway",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 165
+    },
+    {
+      "key": "monitoring.spillFiles",
+      "dv": "Spill Files",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 168
+    },
+    {
+      "key": "monitoring.droppedBars",
+      "dv": "Dropped Bars",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 171
+    },
+    {
+      "key": "monitoring.droppedSignals",
+      "dv": "Dropped Signals",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 174
+    },
+    {
+      "key": "monitoring.consumerLag",
+      "dv": "Consumer Lag",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 177
+    },
+    {
+      "key": "monitoring.staleAccounts",
+      "dv": "Stale Accounts",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 180
+    },
+    {
+      "key": "monitoring.deadAccounts",
+      "dv": "Dead Accounts",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 183
+    },
+    {
+      "key": "monitoring.avgGapSec",
+      "dv": "Avg Gap (s)",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 186
+    },
+    {
+      "key": "monitoring.maxGapSec",
+      "dv": "Max Gap (s)",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 189
+    },
+    {
+      "key": "monitoring.dlq",
+      "dv": "Dead Letter Queue (DLQ)",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 194
+    },
+    {
+      "key": "monitoring.parseErrors",
+      "dv": "Parse Errors",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 197
+    },
+    {
+      "key": "monitoring.bidGtAsk",
+      "dv": "Bid>Ask",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 200
+    },
+    {
+      "key": "monitoring.pushInterval",
+      "dv": "Last update",
+      "file": "pages/admin/MonitoringPage.tsx",
+      "line": 209
+    }
+  ],
+  "sre": [
+    {
+      "key": "sre.breakers.stateHalfOpen",
+      "dv": "Half-Open (probing)",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 16
+    },
+    {
+      "key": "sre.breakers.columns.strategyId",
+      "dv": "Strategy ID",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 35
+    },
+    {
+      "key": "sre.breakers.columns.totalPnl",
+      "dv": "Total P&L",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 40
+    },
+    {
+      "key": "sre.breakers.columns.lossPercent",
+      "dv": "Loss %",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 41
+    },
+    {
+      "key": "sre.breakers.columns.trippedAt",
+      "dv": "Tripped At",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 43
+    },
+    {
+      "key": "sre.breakers.columns.tripReason",
+      "dv": "Trip Reason",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 44
+    },
+    {
+      "key": "sre.breakers.confirmReset",
+      "dv": "Reset this breaker?",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 49
+    },
+    {
+      "key": "sre.breakers.title",
+      "dv": "Strategy Breakers",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 58
+    },
+    {
+      "key": "sre.breakers.description",
+      "dv": "Strategy breaker status overview — auto-detects abnormal losses and trips",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 60
+    },
+    {
+      "key": "sre.breakers.noBreakers",
+      "dv": "No registered breakers",
+      "file": "pages/admin/sre/BreakersPage.tsx",
+      "line": 66
+    },
+    {
+      "key": "sre.canary.columns.strategyId",
+      "dv": "Strategy ID",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 86
+    },
+    {
+      "key": "sre.canary.columns.versionTag",
+      "dv": "Version Tag",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 89
+    },
+    {
+      "key": "sre.canary.columns.accounts",
+      "dv": "Canary Accounts",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 44
+    },
+    {
+      "key": "sre.canary.columns.startAt",
+      "dv": "Start At",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 47
+    },
+    {
+      "key": "sre.canary.confirmDelete",
+      "dv": "Delete this canary config?",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 56
+    },
+    {
+      "key": "sre.canary.title",
+      "dv": "Canary Configuration",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 65
+    },
+    {
+      "key": "sre.canary.description",
+      "dv": "New strategy versions run on a few accounts for N days before promotion to all",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 67
+    },
+    {
+      "key": "sre.canary.newCanary",
+      "dv": "New Canary",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 73
+    },
+    {
+      "key": "sre.canary.noCanaries",
+      "dv": "No canary configs",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 78
+    },
+    {
+      "key": "sre.canary.newCanaryTitle",
+      "dv": "New Canary",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 82
+    },
+    {
+      "key": "sre.canary.accountIdsLabel",
+      "dv": "Canary Account IDs (comma or newline separated)",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 92
+    },
+    {
+      "key": "sre.canary.durationDays",
+      "dv": "Canary Days",
+      "file": "pages/admin/sre/CanaryPage.tsx",
+      "line": 95
+    },
+    {
+      "key": "sre.killSwitch.title",
+      "dv": "Kill Switch",
+      "file": "pages/admin/sre/SRELayout.tsx",
+      "line": 12
+    },
+    {
+      "key": "sre.killSwitch.description",
+      "dv": "One-click stop all trading — requires KILL confirmation; undo within 5 minutes",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 76
+    },
+    {
+      "key": "sre.killSwitch.engaged",
+      "dv": "Kill Switch engaged — all trading stopped",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 83
+    },
+    {
+      "key": "sre.killSwitch.disarmed",
+      "dv": "Kill Switch disarmed — trading normal",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 84
+    },
+    {
+      "key": "sre.killSwitch.engagedAt",
+      "dv": "Engaged At",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 94
+    },
+    {
+      "key": "sre.killSwitch.undo",
+      "dv": "Undo Kill Switch",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 106
+    },
+    {
+      "key": "sre.killSwitch.disengage",
+      "dv": "Disengage Kill Switch",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 117
+    },
+    {
+      "key": "sre.killSwitch.engage",
+      "dv": "Engage Kill Switch",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 121
+    },
+    {
+      "key": "sre.killSwitch.confirmTitle",
+      "dv": "Engage Kill Switch — Confirmation",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 128
+    },
+    {
+      "key": "sre.killSwitch.confirmEngage",
+      "dv": "Confirm Engage",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 133
+    },
+    {
+      "key": "sre.killSwitch.confirmWarning",
+      "dv": "This will immediately stop all trading activity for all accounts, including pending and submitted orders. Enter a reason and type KILL to confirm.",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 140
+    },
+    {
+      "key": "sre.killSwitch.reasonLabel",
+      "dv": "Reason (required)",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 142
+    },
+    {
+      "key": "sre.killSwitch.reasonPlaceholder",
+      "dv": "e.g.: Detected abnormal market volatility, emergency stop all trading",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 147
+    },
+    {
+      "key": "sre.killSwitch.typeKill",
+      "dv": "Type KILL to confirm",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 150
+    },
+    {
+      "key": "sre.killSwitch.typeKillPlaceholder",
+      "dv": "Type KILL (uppercase)",
+      "file": "pages/admin/sre/KillSwitchPage.tsx",
+      "line": 154
+    }
+  ],
+  "auth": [
+    {
+      "key": "auth.validation.loginRequired",
+      "dv": "Please enter your email or account number",
+      "file": "pages/auth/Login.tsx",
+      "line": 100
+    },
+    {
+      "key": "auth.fields.login",
+      "dv": "邮箱/账号",
+      "file": "pages/auth/Login.tsx",
+      "line": 104
+    }
+  ],
+  "dashboard": [
+    {
+      "key": "dashboard.quickActions.aiStrategy",
+      "dv": "AI Strategy",
+      "file": "pages/dashboard/quickActions.tsx",
+      "line": 20
+    }
+  ],
+  "marketplace": [
+    {
+      "key": "marketplace.title",
+      "dv": "Explore Strategies",
+      "file": "pages/landing/BrokersPage.tsx",
+      "line": 101
+    },
+    {
+      "key": "marketplace.publish.priceModel.once",
+      "dv": "One-Time Purchase",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 33
+    },
+    {
+      "key": "marketplace.messages.published",
+      "dv": "Strategy published to marketplace!",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 76
+    },
+    {
+      "key": "marketplace.messages.publishFailed",
+      "dv": "Failed to publish strategy",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 81
+    },
+    {
+      "key": "marketplace.publish.title",
+      "dv": "Publish to Marketplace",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 89
+    },
+    {
+      "key": "marketplace.publish.titlePlaceholder",
+      "dv": "e.g. Golden Cross Strategy",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 99
+    },
+    {
+      "key": "marketplace.publish.descriptionPlaceholder",
+      "dv": "Describe your strategy logic, entry/exit rules...",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 103
+    },
+    {
+      "key": "marketplace.publish.assetClass.label",
+      "dv": "Asset Class",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 107
+    },
+    {
+      "key": "marketplace.publish.riskLevel.label",
+      "dv": "Risk Level",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 110
+    },
+    {
+      "key": "marketplace.publish.tagsPlaceholder",
+      "dv": "Type and press enter to add tags",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 129
+    },
+    {
+      "key": "marketplace.publish.codeSnippet",
+      "dv": "Strategy Preview (public)",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 136
+    },
+    {
+      "key": "marketplace.publish.codeSnippetPlaceholder",
+      "dv": "Optional: share a snippet or high-level idea of your strategy (visible to all)",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 138
+    },
+    {
+      "key": "marketplace.publish.includeBacktestSnapshot",
+      "dv": "Include latest backtest results",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 145
+    },
+    {
+      "key": "marketplace.publish.winRate",
+      "dv": "Win Rate",
+      "file": "pages/strategy/components/PublishToMarketModal.tsx",
+      "line": 150
+    }
+  ],
+  "landing": [
+    {
+      "key": "landing.brokersTitle",
+      "dv": "Compatible with 30+ MT4/MT5 Brokers",
+      "file": "pages/landing/LandingPage.tsx",
+      "line": 162
+    },
+    {
+      "key": "landing.brokersDesc",
+      "dv": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
+      "file": "pages/landing/LandingPage.tsx",
+      "line": 165
+    },
+    {
+      "key": "landing.brokersLink",
+      "dv": "View all supported brokers",
+      "file": "pages/landing/LandingPage.tsx",
+      "line": 168
+    }
+  ],
+  "sharePage": [
+    {
+      "key": "sharePage.noPositions",
+      "dv": "No open positions",
+      "file": "pages/share/SharePerformancePage.tsx",
+      "line": 224
+    },
+    {
+      "key": "sharePage.positionsLocked",
+      "dv": "Positions hidden by creator",
+      "file": "pages/share/SharePerformancePage.tsx",
+      "line": 230
+    }
+  ],
+  "subscription": [
+    {
+      "key": "subscription.subscribeSuccess",
+      "dv": "Subscription activated successfully!",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 37
+    },
+    {
+      "key": "subscription.charged",
+      "dv": "Charged: ${res.amountCharged}, Balance: ${res.balanceAfter}",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 72
+    },
+    {
+      "key": "subscription.insufficientBalance",
+      "dv": "Insufficient wallet balance. Please top up your wallet first.",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 78
+    },
+    {
+      "key": "subscription.subscribeFailed",
+      "dv": "Subscription failed. Please try again.",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 49
+    },
+    {
+      "key": "subscription.cancelSuccess",
+      "dv": "Auto-renewal cancelled. Your subscription remains active until the period ends.",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 57
+    },
+    {
+      "key": "subscription.cancelFailed",
+      "dv": "Failed to cancel. Please try again.",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 61
+    },
+    {
+      "key": "subscription.changeSuccess",
+      "dv": "Plan changed successfully!",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 68
+    },
+    {
+      "key": "subscription.changeFailed",
+      "dv": "Plan change failed. Please try again.",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 80
+    },
+    {
+      "key": "subscription.title",
+      "dv": "Subscription Plans",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 125
+    },
+    {
+      "key": "subscription.period",
+      "dv": "Current period",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 146
+    },
+    {
+      "key": "subscription.cancelAutoRenew",
+      "dv": "Cancel Auto-renew",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 156
+    },
+    {
+      "key": "subscription.usageTitle",
+      "dv": "Current Month Usage",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 166
+    },
+    {
+      "key": "subscription.aiTokens",
+      "dv": "AI Tokens",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 170
+    },
+    {
+      "key": "subscription.activeStrategies",
+      "dv": "Active Strategies",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 184
+    },
+    {
+      "key": "subscription.runtimeMinutes",
+      "dv": "Runtime (min)",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 191
+    },
+    {
+      "key": "subscription.walletBalance",
+      "dv": "Wallet Balance",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 197
+    },
+    {
+      "key": "subscription.freeForever",
+      "dv": "Free forever",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 269
+    },
+    {
+      "key": "subscription.currentPlan",
+      "dv": "Current Plan",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 285
+    },
+    {
+      "key": "subscription.choosePlan",
+      "dv": "Choose Plan",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 286
+    },
+    {
+      "key": "subscription.noPlans",
+      "dv": "No plans available",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 294
+    },
+    {
+      "key": "subscription.changePlanTitle",
+      "dv": "Change Plan",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 301
+    },
+    {
+      "key": "subscription.subscribeTitle",
+      "dv": "Subscribe to Plan",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 302
+    },
+    {
+      "key": "subscription.selectBillingCycle",
+      "dv": "Billing Cycle",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 312
+    },
+    {
+      "key": "subscription.chargeNotice",
+      "dv": "Your wallet will be charged for paid plans. Free plans have no charge.",
+      "file": "pages/subscription/SubscriptionPage.tsx",
+      "line": 323
+    }
+  ]
+}

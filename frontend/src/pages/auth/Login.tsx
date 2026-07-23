@@ -46,7 +46,7 @@ export default function Login() {
 
   return (
     <>
-    <Seo title="Login" description="Log in to AlphaForge to manage your MT4/MT5 trading strategies." path="/login" />
+    <Seo title={t('auth.seo.login.title')} description={t('auth.seo.login.description')} path="/login" />
     <div
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{ background: 'var(--color-bg-secondary)' }}

@@ -53,6 +53,26 @@ import landing from './landing';
 import IndicatorCatalog from './indicator_catalog';
 import { mergeResources } from '../merge';
 
+import Menu from './menu';
+import Notifications from './notifications';
+import Onboarding from './onboarding';
+import Common from './common';
+import ImportAnalysis from './importAnalysis';
+import Theme from './theme';
+import Share from './share';
+import Monitoring from './monitoring';
+import Sre from './sre';
+import Auth from './auth';
+import SharePage from './sharePage';
+import Subscription from './subscription';
+import ErrorsExtra from './errors_extra';
+import StrategyExtra from './strategy_extra';
+import AccountsExtra from './accounts_extra';
+import AdminExtra from './admin_extra';
+import DashboardExtra from './dashboard_extra';
+import MarketplaceExtra from './marketplace_extra';
+import LandingExtra from './landing_extra';
+
 const en = mergeResources(
   base,
   dashboard,
@@ -94,7 +114,25 @@ const en = mergeResources(
   AiCore,
   Marketplace,
   IndicatorCatalog,
-  landing,
+  landing,  Menu,
+  Notifications,
+  Onboarding,
+  Common,
+  ImportAnalysis,
+  Theme,
+  Share,
+  Monitoring,
+  Sre,
+  Auth,
+  SharePage,
+  Subscription,
+  ErrorsExtra,
+  StrategyExtra,
+  AccountsExtra,
+  AdminExtra,
+  DashboardExtra,
+  MarketplaceExtra,
+  LandingExtra,
 ) as const;
 
 export default en;
