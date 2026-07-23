@@ -135,6 +135,58 @@ GLM 和 Cascade 版都未提及策略「发布到市场」的操作。`strategy_
 
 ---
 
+## G. Claude 补充 #2：策略代码访问控制（三方均遗漏，事后补）
+
+### 背景
+
+"代码不出平台"是项目经营层的核心原则（`docs/roadmaps/business-direction.md` §1），但 ADR-0027 三方讨论聚焦在 UX 分工（Gallery/Detail/Workspace），**权限模型是三方共同的遗漏**。
+
+2026-07-23 审计发现：`StrategyDetailPage.tsx` 的 Code Tab 和 [Edit] 按钮对任何人开放，`StrategyCard.tsx` 的 [Deploy] 按钮仅检查 `!isSystem`（所有人可点），`/strategy/:id/edit` 可加载任意模板。这三个漏洞合起来允许任何登录用户查看、编辑、部署任何其他用户的策略代码。
+
+### 访问控制矩阵
+
+| 操作 | 系统模板 | 我的模板 | 别人的已发布模板 | 别人的未发布模板 |
+|------|---------|---------|---------------|---------------|
+| **Gallery 中可见** | ✅ 所有人 | ✅ 仅我（或"我的"筛选） | ✅ 所有人 | ❌ 不出现 |
+| **查看 Overview Tab** | ✅ 任何人 | ✅ 仅我 | ✅ 任何人 | ❌ 不适用 |
+| **查看 Code Tab** | ✅ 任何人（开源） | ✅ 仅我 | ❌ **隐藏 Code Tab** | ❌ 不适用 |
+| **[Edit] 按钮** | ❌ 无（改为 [Fork & Edit]） | ✅ 仅我 | ❌ 隐藏 | ❌ 不适用 |
+| **[Fork]** | ✅ 任何人 | ✅ 仅我 | ❌ 禁止（已发布策略不可 Fork） | ❌ 不适用 |
+| **[Deploy]** | ✅ 任何人 | ✅ 仅我 | ✅ **仅购买者**（通过 marketplace 购买后） | ❌ 不适用 |
+| **[Publish]** | ❌ 不适用 | ✅ 仅我（从未发布→已发布） | ❌ 不适用 | ❌ 不适用 |
+| **[Delete]** | ❌ 不适用 | ✅ 仅我 | ❌ | ❌ 不适用 |
+| **Workspace 编辑** | ❌（不可编辑系统模板） | ✅ 仅我 | ❌ 禁止 | ❌ 不适用 |
+
+### 实现要求
+
+**StrategyDetailPage**：
+- 从 `useAuthStore` 获取当前用户 ID
+- 计算 `isOwner = template.userId === currentUserId`
+- Code Tab：仅 `isOwner || template.isSystem` 时渲染
+- [Edit] 按钮：`isSystem` → 改为 [Fork & Edit]；`isOwner` → [Edit]；其他 → 不渲染
+
+**StrategyCard**：
+- [Deploy]：`isOwner || (isPublished && hasPurchased)` — 已修复部分（Card 已有 `isOwner` 检查）
+- [Fork]：仅 `isOwner || isSystem`
+
+**StrategyWorkspacePage**：
+- 加载模板时检查 `isOwner || isSystem`，非 owner 且非系统模板 → 拒绝加载，redirect 回 Gallery
+
+**后端防护（纵深防御）**：
+- `getTemplate` RPC：非 owner 且非公开模板 → 返回错误
+- `updateTemplate` RPC：非 owner → 返回 `PermissionDenied`
+- `deleteTemplate` RPC：非 owner 且非 admin → 返回 `PermissionDenied`
+
+### 表决
+
+**[Claude]** 这是三方共同的遗漏。上面的矩阵是 2026-07-23 代码审计发现的，直接确认。
+
+**[GLM]** ☐ 待确认
+
+**[Opus]** ☐ 待确认
+
+---
+
 ## 决策汇总（三方共识，23/23 项一致）
 
 | 层 | 最终决策 | 负责人 | 备注 |
