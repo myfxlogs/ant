@@ -11,7 +11,7 @@ import type { SubmitStrategyResponse } from '@/gen/ant/v1/agent_gateway_pb';
 
 const { TextArea } = Input;
 const { Text } = Typography;
-type ImportMethod = 'ai' | 'bridge';
+type ImportMethod = 'analyze' | 'ai' | 'bridge';
 
 interface Props {
   onApplyCode: (code: string) => void;
@@ -24,7 +24,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
   const [eaTranslating, setEaTranslating] = useState(false);
   const [eaResult, setEaResult] = useState('');
   const [eaStrategyId, setEaStrategyId] = useState('');
-  const [importMethod, setImportMethod] = useState<ImportMethod>('ai');
+  const [importMethod, setImportMethod] = useState<ImportMethod>('analyze');
   const [analysis, setAnalysis] = useState<AnalyzeImportCodeResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [bridgeResult, setBridgeResult] = useState<SubmitStrategyResponse | null>(null);
@@ -57,10 +57,11 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       .finally(() => { setEaTranslating(false); });
   };
 
-  const handleSwitchToAI = () => {
+  const handleAITranslate = () => {
+    if (!eaCode.trim()) return;
     setEaResult('');
     setEaTranslating(true);
-    strategyImportApi.generateCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: analysis?.mqlVersion || 'mql4' })
+    strategyImportApi.generateCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: 'mql4' })
       .then((res) => { setEaResult(res.goCode || ''); if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); } })
       .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setEaTranslating(false); });
@@ -90,13 +91,14 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       <div style={{ padding: '4px 14px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <Radio.Group size="small" value={importMethod} onChange={e => { setImportMethod(e.target.value); setEaResult(''); setAnalysis(null); setBridgeResult(null); }}
           optionType="button" buttonStyle="solid">
+          <Radio.Button value="analyze"><ThunderboltOutlined /> {t('strategy.importEA.analyze', { defaultValue: '分析策略结构' })}</Radio.Button>
           <Radio.Button value="ai"><RobotOutlined /> {t('strategy.importEA.aiTranslate', { defaultValue: 'AI 翻译' })}</Radio.Button>
           <Radio.Button value="bridge"><RobotOutlined /> {t('strategy.importEA.bridge', { defaultValue: '盲区桥接' })}</Radio.Button>
         </Radio.Group>
       </div>
 
-      {/* AI translation flow: analyze first, then import or AI translate */}
-      {importMethod === 'ai' && (
+      {/* Analyze flow: analyze → confirm import or switch to AI */}
+      {importMethod === 'analyze' && (
         <>
           <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
             {!analysis && (
@@ -108,7 +110,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
                 {t('strategy.importEA.confirmImport', { defaultValue: '确认导入' })}</Button>
             )}
             {analysis && !eaResult && analysis.coverageScore < 0.4 && (
-              <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleSwitchToAI} loading={eaTranslating}>
+              <Button type="primary" size="small" icon={<RobotOutlined />} onClick={() => { setImportMethod('ai'); handleAITranslate(); }} loading={eaTranslating}>
                 {t('strategy.importEA.tryAI', { defaultValue: 'AI 翻译' })}</Button>
             )}
             {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
@@ -119,6 +121,26 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
             {eaResult && <Alert type="success" showIcon message={t('strategy.importEA.importSuccess', { defaultValue: 'MQL 源码已导入，点击「Apply to Editor」写入编辑器' })} style={{ margin: '8px 0' }} />}
             {!analysis && !eaResult && !analyzing && (
               <div style={{ textAlign: 'center', padding: 24 }}><Text type="secondary">{t('strategy.importEA.hint', { defaultValue: 'Paste MQL4/MQL5 code and click Analyze' })}</Text></div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* AI translation flow */}
+      {importMethod === 'ai' && (
+        <>
+          <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleAITranslate} loading={eaTranslating}>
+              {t('strategy.importEA.translate', { defaultValue: 'Translate to Go' })}</Button>
+            {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
+          </div>
+          <div style={{ flex: 1, overflow: 'auto', padding: '0 14px' }}>
+            {eaResult ? (
+              <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{eaResult}</pre>
+            ) : (
+              <div style={{ textAlign: 'center', padding: 24 }}>
+                {eaTranslating ? <Spin tip={t('strategy.importEA.translating', { defaultValue: 'AI translating...' })} /> : <Text type="secondary">{t('strategy.importEA.hint', { defaultValue: 'Paste MQL4/MQL5 code and click Translate' })}</Text>}
+              </div>
             )}
           </div>
         </>
