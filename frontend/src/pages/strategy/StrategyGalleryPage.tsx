@@ -32,7 +32,7 @@ export default function StrategyGalleryPage() {
   const handleNew = useCallback(async () => {
     setCreating(true);
     try {
-      const draft = await strategyApi.createTemplateDraft({ name: 'Untitled Strategy' });
+      const draft = await strategyApi.createTemplateDraft({ name: t('strategy.templates.untitled', { defaultValue: 'Untitled Strategy' }) });
       if (!draft.id) throw new Error('Draft creation returned empty id');
       navigate(`/strategy/${draft.id}/edit`);
     } catch (e: unknown) {

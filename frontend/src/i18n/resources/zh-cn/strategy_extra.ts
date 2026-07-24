@@ -65,6 +65,7 @@ const StrategyExtra = {
         "publishFailed": "发布失败"
       },
       "actions": {
+        "untitled": "未命名策略",
         "create": "新建策略"
       },
       "deleteConfirm": "删除此策略？"

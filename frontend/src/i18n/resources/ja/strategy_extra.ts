@@ -65,6 +65,7 @@ const StrategyExtra = {
         "publishFailed": "公開に失敗"
       },
       "actions": {
+        "untitled": "無題戦略",
         "create": "新規戦略"
       },
       "deleteConfirm": "この戦略を削除しますか？"

@@ -65,6 +65,7 @@ const StrategyExtra = {
         "publishFailed": "Xuất bản thất bại"
       },
       "actions": {
+        "untitled": "Chiến lược chưa đặt tên",
         "create": "Chiến lược mới"
       },
       "deleteConfirm": "Xóa chiến lược này?"

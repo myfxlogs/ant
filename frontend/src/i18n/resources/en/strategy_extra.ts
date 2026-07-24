@@ -66,6 +66,7 @@ const StrategyExtra = {
         "publishFailed": "Publish failed"
       },
       "actions": {
+        "untitled": "Untitled Strategy",
         "create": "New Strategy"
       },
       "deleteConfirm": "Delete this strategy?"
