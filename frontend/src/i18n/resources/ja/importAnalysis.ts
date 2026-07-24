@@ -12,6 +12,7 @@ const ImportAnalysis = {
     "analyzing": "戦略構造を分析中...",
     "tradeLogicComplete": "取引ロジック完全認識",
     "guiNoiseDesc": "以下のブラインドスポットはチャート表示/ボタン機能であり、サーバー側実行時はスキップされ、取引結果に影響しません。インポート可能です。",
+    "emptyAnalysisDesc": "ストラテジーロジックが認識されませんでした。ソースコードが不完全か、別の言語を使用している可能性があります。AI翻訳をお試しください。",
     "cannotImport": "自動インポート不可",
     "incompleteCoverage": "取引ロジックのカバレッジ不完全",
     "goodCoverage": "インポートカバレッジ良好",

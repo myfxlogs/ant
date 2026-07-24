@@ -12,6 +12,7 @@ const ImportAnalysis = {
     "analyzing": "Đang phân tích cấu trúc chiến lược...",
     "tradeLogicComplete": "Logic giao dịch đã nhận diện đầy đủ",
     "guiNoiseDesc": "Các điểm mù sau là tính năng hiển thị chart/nút bấm bị bỏ qua khi thực thi server-side, không ảnh hưởng kết quả giao dịch. An toàn để nhập.",
+    "emptyAnalysisDesc": "Không nhận diện được logic chiến lược. Mã nguồn có thể không đầy đủ, dùng ngôn ngữ khác, hoặc thử AI dịch.",
     "cannotImport": "Không thể tự động nhập",
     "incompleteCoverage": "Phạm vi logic giao dịch chưa đầy đủ",
     "goodCoverage": "Phạm vi nhập tốt",

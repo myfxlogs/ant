@@ -12,6 +12,7 @@ const ImportAnalysis = {
     "analyzing": "正在分析策略结构...",
     "tradeLogicComplete": "交易逻辑已完全识别",
     "guiNoiseDesc": "以下盲区为图表显示/按钮功能，服务端执行时跳过，不影响交易结果。可安全导入。",
+    "emptyAnalysisDesc": "未识别到任何策略逻辑。源码可能不完整、使用了不同语言，请尝试 AI 翻译。",
     "cannotImport": "无法自动导入",
     "incompleteCoverage": "交易逻辑覆盖不完整",
     "goodCoverage": "导入覆盖良好",

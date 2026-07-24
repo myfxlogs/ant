@@ -13,6 +13,7 @@ const ImportAnalysis = {
     "analyzing": "Analyzing strategy structure...",
     "tradeLogicComplete": "Trading logic fully recognized",
     "guiNoiseDesc": "The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.",
+    "emptyAnalysisDesc": "No strategy logic was recognized. The source code may be incomplete, use a different language, or try AI translation.",
     "cannotImport": "Cannot auto-import",
     "incompleteCoverage": "Trading logic coverage incomplete",
     "goodCoverage": "Import coverage is good",
