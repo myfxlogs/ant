@@ -71,12 +71,6 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 	}), nil
 }
 
-// GenerateImportCode is superseded by ADR-0023 (Bytecode VM execution).
-// MQL source is the single source of truth — no Go code generation needed.
-func (s *StrategyExecutionServer) GenerateImportCode(_ context.Context, _ *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("GenerateImportCode is superseded by ADR-0023 Bytecode VM — use ImportStrategy instead"))
-}
-
 func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
 	source := req.Msg.GetSourceCode()
 	if source == "" {

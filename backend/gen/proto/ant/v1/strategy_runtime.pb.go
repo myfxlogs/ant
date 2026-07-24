@@ -2245,134 +2245,6 @@ func (x *AnalyzeImportCodeResponse) GetIndicatorNames() []string {
 	return nil
 }
 
-type GenerateImportCodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	SourceCode    string                 `protobuf:"bytes,1,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`
-	SourceName    string                 `protobuf:"bytes,2,opt,name=source_name,json=sourceName,proto3" json:"source_name,omitempty"`
-	SourceLang    string                 `protobuf:"bytes,3,opt,name=source_lang,json=sourceLang,proto3" json:"source_lang,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GenerateImportCodeRequest) Reset() {
-	*x = GenerateImportCodeRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[25]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GenerateImportCodeRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GenerateImportCodeRequest) ProtoMessage() {}
-
-func (x *GenerateImportCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[25]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GenerateImportCodeRequest.ProtoReflect.Descriptor instead.
-func (*GenerateImportCodeRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *GenerateImportCodeRequest) GetSourceCode() string {
-	if x != nil {
-		return x.SourceCode
-	}
-	return ""
-}
-
-func (x *GenerateImportCodeRequest) GetSourceName() string {
-	if x != nil {
-		return x.SourceName
-	}
-	return ""
-}
-
-func (x *GenerateImportCodeRequest) GetSourceLang() string {
-	if x != nil {
-		return x.SourceLang
-	}
-	return ""
-}
-
-type GenerateImportCodeResponse struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	GoCode              string                 `protobuf:"bytes,1,opt,name=go_code,json=goCode,proto3" json:"go_code,omitempty"`
-	CodeLines           int32                  `protobuf:"varint,2,opt,name=code_lines,json=codeLines,proto3" json:"code_lines,omitempty"`
-	Compiles            bool                   `protobuf:"varint,3,opt,name=compiles,proto3" json:"compiles,omitempty"`
-	QualityGateFailures []string               `protobuf:"bytes,10,rep,name=quality_gate_failures,json=qualityGateFailures,proto3" json:"quality_gate_failures,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
-}
-
-func (x *GenerateImportCodeResponse) Reset() {
-	*x = GenerateImportCodeResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[26]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GenerateImportCodeResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GenerateImportCodeResponse) ProtoMessage() {}
-
-func (x *GenerateImportCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[26]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GenerateImportCodeResponse.ProtoReflect.Descriptor instead.
-func (*GenerateImportCodeResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *GenerateImportCodeResponse) GetGoCode() string {
-	if x != nil {
-		return x.GoCode
-	}
-	return ""
-}
-
-func (x *GenerateImportCodeResponse) GetCodeLines() int32 {
-	if x != nil {
-		return x.CodeLines
-	}
-	return 0
-}
-
-func (x *GenerateImportCodeResponse) GetCompiles() bool {
-	if x != nil {
-		return x.Compiles
-	}
-	return false
-}
-
-func (x *GenerateImportCodeResponse) GetQualityGateFailures() []string {
-	if x != nil {
-		return x.QualityGateFailures
-	}
-	return nil
-}
-
 type ParamField struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -2386,7 +2258,7 @@ type ParamField struct {
 
 func (x *ParamField) Reset() {
 	*x = ParamField{}
-	mi := &file_strategy_runtime_proto_msgTypes[27]
+	mi := &file_strategy_runtime_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2398,7 +2270,7 @@ func (x *ParamField) String() string {
 func (*ParamField) ProtoMessage() {}
 
 func (x *ParamField) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[27]
+	mi := &file_strategy_runtime_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2411,7 +2283,7 @@ func (x *ParamField) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParamField.ProtoReflect.Descriptor instead.
 func (*ParamField) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{27}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ParamField) GetName() string {
@@ -2458,7 +2330,7 @@ type ParamGroupInfo struct {
 
 func (x *ParamGroupInfo) Reset() {
 	*x = ParamGroupInfo{}
-	mi := &file_strategy_runtime_proto_msgTypes[28]
+	mi := &file_strategy_runtime_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2470,7 +2342,7 @@ func (x *ParamGroupInfo) String() string {
 func (*ParamGroupInfo) ProtoMessage() {}
 
 func (x *ParamGroupInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[28]
+	mi := &file_strategy_runtime_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2483,7 +2355,7 @@ func (x *ParamGroupInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ParamGroupInfo.ProtoReflect.Descriptor instead.
 func (*ParamGroupInfo) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{28}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ParamGroupInfo) GetName() string {
@@ -2508,7 +2380,7 @@ type BlindSpot struct {
 
 func (x *BlindSpot) Reset() {
 	*x = BlindSpot{}
-	mi := &file_strategy_runtime_proto_msgTypes[29]
+	mi := &file_strategy_runtime_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2520,7 +2392,7 @@ func (x *BlindSpot) String() string {
 func (*BlindSpot) ProtoMessage() {}
 
 func (x *BlindSpot) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[29]
+	mi := &file_strategy_runtime_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2533,7 +2405,7 @@ func (x *BlindSpot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BlindSpot.ProtoReflect.Descriptor instead.
 func (*BlindSpot) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{29}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *BlindSpot) GetId() string {
@@ -2597,7 +2469,7 @@ type ImportStrategyRequest struct {
 
 func (x *ImportStrategyRequest) Reset() {
 	*x = ImportStrategyRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[30]
+	mi := &file_strategy_runtime_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2609,7 +2481,7 @@ func (x *ImportStrategyRequest) String() string {
 func (*ImportStrategyRequest) ProtoMessage() {}
 
 func (x *ImportStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[30]
+	mi := &file_strategy_runtime_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2622,7 +2494,7 @@ func (x *ImportStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportStrategyRequest.ProtoReflect.Descriptor instead.
 func (*ImportStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{30}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *ImportStrategyRequest) GetSourceCode() string {
@@ -2666,7 +2538,7 @@ type ImportStrategyResponse struct {
 
 func (x *ImportStrategyResponse) Reset() {
 	*x = ImportStrategyResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[31]
+	mi := &file_strategy_runtime_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2678,7 +2550,7 @@ func (x *ImportStrategyResponse) String() string {
 func (*ImportStrategyResponse) ProtoMessage() {}
 
 func (x *ImportStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[31]
+	mi := &file_strategy_runtime_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2691,7 +2563,7 @@ func (x *ImportStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportStrategyResponse.ProtoReflect.Descriptor instead.
 func (*ImportStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{31}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ImportStrategyResponse) GetStrategyId() string {
@@ -2740,7 +2612,7 @@ type ListStrategyRunsRequest struct {
 
 func (x *ListStrategyRunsRequest) Reset() {
 	*x = ListStrategyRunsRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[32]
+	mi := &file_strategy_runtime_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2752,7 +2624,7 @@ func (x *ListStrategyRunsRequest) String() string {
 func (*ListStrategyRunsRequest) ProtoMessage() {}
 
 func (x *ListStrategyRunsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[32]
+	mi := &file_strategy_runtime_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2765,7 +2637,7 @@ func (x *ListStrategyRunsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStrategyRunsRequest.ProtoReflect.Descriptor instead.
 func (*ListStrategyRunsRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{32}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ListStrategyRunsRequest) GetAccountId() string {
@@ -2798,7 +2670,7 @@ type ListStrategyRunsResponse struct {
 
 func (x *ListStrategyRunsResponse) Reset() {
 	*x = ListStrategyRunsResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[33]
+	mi := &file_strategy_runtime_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2810,7 +2682,7 @@ func (x *ListStrategyRunsResponse) String() string {
 func (*ListStrategyRunsResponse) ProtoMessage() {}
 
 func (x *ListStrategyRunsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[33]
+	mi := &file_strategy_runtime_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2823,7 +2695,7 @@ func (x *ListStrategyRunsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStrategyRunsResponse.ProtoReflect.Descriptor instead.
 func (*ListStrategyRunsResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{33}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListStrategyRunsResponse) GetRuns() []*StrategyRun {
@@ -2842,7 +2714,7 @@ type GetStrategyRunRequest struct {
 
 func (x *GetStrategyRunRequest) Reset() {
 	*x = GetStrategyRunRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[34]
+	mi := &file_strategy_runtime_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2854,7 +2726,7 @@ func (x *GetStrategyRunRequest) String() string {
 func (*GetStrategyRunRequest) ProtoMessage() {}
 
 func (x *GetStrategyRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[34]
+	mi := &file_strategy_runtime_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2867,7 +2739,7 @@ func (x *GetStrategyRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStrategyRunRequest.ProtoReflect.Descriptor instead.
 func (*GetStrategyRunRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{34}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetStrategyRunRequest) GetRunId() string {
@@ -2886,7 +2758,7 @@ type GetStrategyRunResponse struct {
 
 func (x *GetStrategyRunResponse) Reset() {
 	*x = GetStrategyRunResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[35]
+	mi := &file_strategy_runtime_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2898,7 +2770,7 @@ func (x *GetStrategyRunResponse) String() string {
 func (*GetStrategyRunResponse) ProtoMessage() {}
 
 func (x *GetStrategyRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[35]
+	mi := &file_strategy_runtime_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2911,7 +2783,7 @@ func (x *GetStrategyRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStrategyRunResponse.ProtoReflect.Descriptor instead.
 func (*GetStrategyRunResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{35}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetStrategyRunResponse) GetRun() *StrategyRun {
@@ -2940,7 +2812,7 @@ type StrategyRun struct {
 
 func (x *StrategyRun) Reset() {
 	*x = StrategyRun{}
-	mi := &file_strategy_runtime_proto_msgTypes[36]
+	mi := &file_strategy_runtime_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2952,7 +2824,7 @@ func (x *StrategyRun) String() string {
 func (*StrategyRun) ProtoMessage() {}
 
 func (x *StrategyRun) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[36]
+	mi := &file_strategy_runtime_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2965,7 +2837,7 @@ func (x *StrategyRun) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StrategyRun.ProtoReflect.Descriptor instead.
 func (*StrategyRun) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{36}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *StrategyRun) GetId() string {
@@ -3054,7 +2926,7 @@ type ListActiveStrategiesRequest struct {
 
 func (x *ListActiveStrategiesRequest) Reset() {
 	*x = ListActiveStrategiesRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[37]
+	mi := &file_strategy_runtime_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3066,7 +2938,7 @@ func (x *ListActiveStrategiesRequest) String() string {
 func (*ListActiveStrategiesRequest) ProtoMessage() {}
 
 func (x *ListActiveStrategiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[37]
+	mi := &file_strategy_runtime_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3079,7 +2951,7 @@ func (x *ListActiveStrategiesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListActiveStrategiesRequest.ProtoReflect.Descriptor instead.
 func (*ListActiveStrategiesRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{37}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *ListActiveStrategiesRequest) GetAccountId() string {
@@ -3098,7 +2970,7 @@ type ListActiveStrategiesResponse struct {
 
 func (x *ListActiveStrategiesResponse) Reset() {
 	*x = ListActiveStrategiesResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[38]
+	mi := &file_strategy_runtime_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3110,7 +2982,7 @@ func (x *ListActiveStrategiesResponse) String() string {
 func (*ListActiveStrategiesResponse) ProtoMessage() {}
 
 func (x *ListActiveStrategiesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[38]
+	mi := &file_strategy_runtime_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3123,7 +2995,7 @@ func (x *ListActiveStrategiesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListActiveStrategiesResponse.ProtoReflect.Descriptor instead.
 func (*ListActiveStrategiesResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{38}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ListActiveStrategiesResponse) GetStrategies() []*ActiveStrategy {
@@ -3142,7 +3014,7 @@ type GetActiveStrategyRequest struct {
 
 func (x *GetActiveStrategyRequest) Reset() {
 	*x = GetActiveStrategyRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[39]
+	mi := &file_strategy_runtime_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3154,7 +3026,7 @@ func (x *GetActiveStrategyRequest) String() string {
 func (*GetActiveStrategyRequest) ProtoMessage() {}
 
 func (x *GetActiveStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[39]
+	mi := &file_strategy_runtime_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3167,7 +3039,7 @@ func (x *GetActiveStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetActiveStrategyRequest.ProtoReflect.Descriptor instead.
 func (*GetActiveStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{39}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GetActiveStrategyRequest) GetRunId() string {
@@ -3186,7 +3058,7 @@ type GetActiveStrategyResponse struct {
 
 func (x *GetActiveStrategyResponse) Reset() {
 	*x = GetActiveStrategyResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[40]
+	mi := &file_strategy_runtime_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3198,7 +3070,7 @@ func (x *GetActiveStrategyResponse) String() string {
 func (*GetActiveStrategyResponse) ProtoMessage() {}
 
 func (x *GetActiveStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[40]
+	mi := &file_strategy_runtime_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3211,7 +3083,7 @@ func (x *GetActiveStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetActiveStrategyResponse.ProtoReflect.Descriptor instead.
 func (*GetActiveStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{40}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetActiveStrategyResponse) GetStrategy() *ActiveStrategy {
@@ -3230,7 +3102,7 @@ type StopStrategyRequest struct {
 
 func (x *StopStrategyRequest) Reset() {
 	*x = StopStrategyRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[41]
+	mi := &file_strategy_runtime_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3242,7 +3114,7 @@ func (x *StopStrategyRequest) String() string {
 func (*StopStrategyRequest) ProtoMessage() {}
 
 func (x *StopStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[41]
+	mi := &file_strategy_runtime_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3255,7 +3127,7 @@ func (x *StopStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopStrategyRequest.ProtoReflect.Descriptor instead.
 func (*StopStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{41}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *StopStrategyRequest) GetRunId() string {
@@ -3275,7 +3147,7 @@ type StopStrategyResponse struct {
 
 func (x *StopStrategyResponse) Reset() {
 	*x = StopStrategyResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[42]
+	mi := &file_strategy_runtime_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3287,7 +3159,7 @@ func (x *StopStrategyResponse) String() string {
 func (*StopStrategyResponse) ProtoMessage() {}
 
 func (x *StopStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[42]
+	mi := &file_strategy_runtime_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3300,7 +3172,7 @@ func (x *StopStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopStrategyResponse.ProtoReflect.Descriptor instead.
 func (*StopStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{42}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *StopStrategyResponse) GetSuccess() bool {
@@ -3337,7 +3209,7 @@ type ActiveStrategy struct {
 
 func (x *ActiveStrategy) Reset() {
 	*x = ActiveStrategy{}
-	mi := &file_strategy_runtime_proto_msgTypes[43]
+	mi := &file_strategy_runtime_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3349,7 +3221,7 @@ func (x *ActiveStrategy) String() string {
 func (*ActiveStrategy) ProtoMessage() {}
 
 func (x *ActiveStrategy) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[43]
+	mi := &file_strategy_runtime_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3362,7 +3234,7 @@ func (x *ActiveStrategy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ActiveStrategy.ProtoReflect.Descriptor instead.
 func (*ActiveStrategy) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{43}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ActiveStrategy) GetRunId() string {
@@ -3458,7 +3330,7 @@ type WatchStrategySignalsRequest struct {
 
 func (x *WatchStrategySignalsRequest) Reset() {
 	*x = WatchStrategySignalsRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[44]
+	mi := &file_strategy_runtime_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3470,7 +3342,7 @@ func (x *WatchStrategySignalsRequest) String() string {
 func (*WatchStrategySignalsRequest) ProtoMessage() {}
 
 func (x *WatchStrategySignalsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[44]
+	mi := &file_strategy_runtime_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3483,7 +3355,7 @@ func (x *WatchStrategySignalsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchStrategySignalsRequest.ProtoReflect.Descriptor instead.
 func (*WatchStrategySignalsRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{44}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *WatchStrategySignalsRequest) GetRunId() string {
@@ -3511,7 +3383,7 @@ type StrategySignalEvent struct {
 
 func (x *StrategySignalEvent) Reset() {
 	*x = StrategySignalEvent{}
-	mi := &file_strategy_runtime_proto_msgTypes[45]
+	mi := &file_strategy_runtime_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3523,7 +3395,7 @@ func (x *StrategySignalEvent) String() string {
 func (*StrategySignalEvent) ProtoMessage() {}
 
 func (x *StrategySignalEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[45]
+	mi := &file_strategy_runtime_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3536,7 +3408,7 @@ func (x *StrategySignalEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StrategySignalEvent.ProtoReflect.Descriptor instead.
 func (*StrategySignalEvent) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{45}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *StrategySignalEvent) GetRunId() string {
@@ -3624,7 +3496,7 @@ type StartStrategyRequest struct {
 
 func (x *StartStrategyRequest) Reset() {
 	*x = StartStrategyRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[46]
+	mi := &file_strategy_runtime_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3636,7 +3508,7 @@ func (x *StartStrategyRequest) String() string {
 func (*StartStrategyRequest) ProtoMessage() {}
 
 func (x *StartStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[46]
+	mi := &file_strategy_runtime_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3649,7 +3521,7 @@ func (x *StartStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartStrategyRequest.ProtoReflect.Descriptor instead.
 func (*StartStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{46}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *StartStrategyRequest) GetAccountId() string {
@@ -3712,7 +3584,7 @@ type StartStrategyResponse struct {
 
 func (x *StartStrategyResponse) Reset() {
 	*x = StartStrategyResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[47]
+	mi := &file_strategy_runtime_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3724,7 +3596,7 @@ func (x *StartStrategyResponse) String() string {
 func (*StartStrategyResponse) ProtoMessage() {}
 
 func (x *StartStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[47]
+	mi := &file_strategy_runtime_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3737,7 +3609,7 @@ func (x *StartStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartStrategyResponse.ProtoReflect.Descriptor instead.
 func (*StartStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{47}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *StartStrategyResponse) GetSuccess() bool {
@@ -3770,7 +3642,7 @@ type WatchActiveStrategiesRequest struct {
 
 func (x *WatchActiveStrategiesRequest) Reset() {
 	*x = WatchActiveStrategiesRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[48]
+	mi := &file_strategy_runtime_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3782,7 +3654,7 @@ func (x *WatchActiveStrategiesRequest) String() string {
 func (*WatchActiveStrategiesRequest) ProtoMessage() {}
 
 func (x *WatchActiveStrategiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[48]
+	mi := &file_strategy_runtime_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3795,7 +3667,7 @@ func (x *WatchActiveStrategiesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchActiveStrategiesRequest.ProtoReflect.Descriptor instead.
 func (*WatchActiveStrategiesRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{48}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *WatchActiveStrategiesRequest) GetAccountId() string {
@@ -3814,7 +3686,7 @@ type WatchActiveStrategiesEvent struct {
 
 func (x *WatchActiveStrategiesEvent) Reset() {
 	*x = WatchActiveStrategiesEvent{}
-	mi := &file_strategy_runtime_proto_msgTypes[49]
+	mi := &file_strategy_runtime_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3826,7 +3698,7 @@ func (x *WatchActiveStrategiesEvent) String() string {
 func (*WatchActiveStrategiesEvent) ProtoMessage() {}
 
 func (x *WatchActiveStrategiesEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[49]
+	mi := &file_strategy_runtime_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3839,7 +3711,7 @@ func (x *WatchActiveStrategiesEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchActiveStrategiesEvent.ProtoReflect.Descriptor instead.
 func (*WatchActiveStrategiesEvent) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{49}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *WatchActiveStrategiesEvent) GetStrategies() []*ActiveStrategy {
@@ -3863,7 +3735,7 @@ type StrategyVersionInfo struct {
 
 func (x *StrategyVersionInfo) Reset() {
 	*x = StrategyVersionInfo{}
-	mi := &file_strategy_runtime_proto_msgTypes[50]
+	mi := &file_strategy_runtime_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3875,7 +3747,7 @@ func (x *StrategyVersionInfo) String() string {
 func (*StrategyVersionInfo) ProtoMessage() {}
 
 func (x *StrategyVersionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[50]
+	mi := &file_strategy_runtime_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3888,7 +3760,7 @@ func (x *StrategyVersionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StrategyVersionInfo.ProtoReflect.Descriptor instead.
 func (*StrategyVersionInfo) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{50}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *StrategyVersionInfo) GetVersionId() string {
@@ -3944,7 +3816,7 @@ type ListStrategyVersionsRequest struct {
 
 func (x *ListStrategyVersionsRequest) Reset() {
 	*x = ListStrategyVersionsRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[51]
+	mi := &file_strategy_runtime_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3956,7 +3828,7 @@ func (x *ListStrategyVersionsRequest) String() string {
 func (*ListStrategyVersionsRequest) ProtoMessage() {}
 
 func (x *ListStrategyVersionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[51]
+	mi := &file_strategy_runtime_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3969,7 +3841,7 @@ func (x *ListStrategyVersionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStrategyVersionsRequest.ProtoReflect.Descriptor instead.
 func (*ListStrategyVersionsRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{51}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *ListStrategyVersionsRequest) GetStrategyId() string {
@@ -4003,7 +3875,7 @@ type ListStrategyVersionsResponse struct {
 
 func (x *ListStrategyVersionsResponse) Reset() {
 	*x = ListStrategyVersionsResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[52]
+	mi := &file_strategy_runtime_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4015,7 +3887,7 @@ func (x *ListStrategyVersionsResponse) String() string {
 func (*ListStrategyVersionsResponse) ProtoMessage() {}
 
 func (x *ListStrategyVersionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[52]
+	mi := &file_strategy_runtime_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4028,7 +3900,7 @@ func (x *ListStrategyVersionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListStrategyVersionsResponse.ProtoReflect.Descriptor instead.
 func (*ListStrategyVersionsResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{52}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *ListStrategyVersionsResponse) GetVersions() []*StrategyVersionInfo {
@@ -4055,7 +3927,7 @@ type GetStrategyVersionRequest struct {
 
 func (x *GetStrategyVersionRequest) Reset() {
 	*x = GetStrategyVersionRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[53]
+	mi := &file_strategy_runtime_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4067,7 +3939,7 @@ func (x *GetStrategyVersionRequest) String() string {
 func (*GetStrategyVersionRequest) ProtoMessage() {}
 
 func (x *GetStrategyVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[53]
+	mi := &file_strategy_runtime_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4080,7 +3952,7 @@ func (x *GetStrategyVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStrategyVersionRequest.ProtoReflect.Descriptor instead.
 func (*GetStrategyVersionRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{53}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *GetStrategyVersionRequest) GetStrategyId() string {
@@ -4107,7 +3979,7 @@ type GetStrategyVersionResponse struct {
 
 func (x *GetStrategyVersionResponse) Reset() {
 	*x = GetStrategyVersionResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[54]
+	mi := &file_strategy_runtime_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4119,7 +3991,7 @@ func (x *GetStrategyVersionResponse) String() string {
 func (*GetStrategyVersionResponse) ProtoMessage() {}
 
 func (x *GetStrategyVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[54]
+	mi := &file_strategy_runtime_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4132,7 +4004,7 @@ func (x *GetStrategyVersionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetStrategyVersionResponse.ProtoReflect.Descriptor instead.
 func (*GetStrategyVersionResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{54}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *GetStrategyVersionResponse) GetVersion() *StrategyVersionInfo {
@@ -4159,7 +4031,7 @@ type RollbackStrategyVersionRequest struct {
 
 func (x *RollbackStrategyVersionRequest) Reset() {
 	*x = RollbackStrategyVersionRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[55]
+	mi := &file_strategy_runtime_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4171,7 +4043,7 @@ func (x *RollbackStrategyVersionRequest) String() string {
 func (*RollbackStrategyVersionRequest) ProtoMessage() {}
 
 func (x *RollbackStrategyVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[55]
+	mi := &file_strategy_runtime_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4184,7 +4056,7 @@ func (x *RollbackStrategyVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RollbackStrategyVersionRequest.ProtoReflect.Descriptor instead.
 func (*RollbackStrategyVersionRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{55}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *RollbackStrategyVersionRequest) GetStrategyId() string {
@@ -4211,7 +4083,7 @@ type RollbackStrategyVersionResponse struct {
 
 func (x *RollbackStrategyVersionResponse) Reset() {
 	*x = RollbackStrategyVersionResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[56]
+	mi := &file_strategy_runtime_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4223,7 +4095,7 @@ func (x *RollbackStrategyVersionResponse) String() string {
 func (*RollbackStrategyVersionResponse) ProtoMessage() {}
 
 func (x *RollbackStrategyVersionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[56]
+	mi := &file_strategy_runtime_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4236,7 +4108,7 @@ func (x *RollbackStrategyVersionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RollbackStrategyVersionResponse.ProtoReflect.Descriptor instead.
 func (*RollbackStrategyVersionResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{56}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *RollbackStrategyVersionResponse) GetNewVersion() *StrategyVersionInfo {
@@ -4264,7 +4136,7 @@ type DiffStrategyVersionsRequest struct {
 
 func (x *DiffStrategyVersionsRequest) Reset() {
 	*x = DiffStrategyVersionsRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[57]
+	mi := &file_strategy_runtime_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4276,7 +4148,7 @@ func (x *DiffStrategyVersionsRequest) String() string {
 func (*DiffStrategyVersionsRequest) ProtoMessage() {}
 
 func (x *DiffStrategyVersionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[57]
+	mi := &file_strategy_runtime_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4289,7 +4161,7 @@ func (x *DiffStrategyVersionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiffStrategyVersionsRequest.ProtoReflect.Descriptor instead.
 func (*DiffStrategyVersionsRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{57}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *DiffStrategyVersionsRequest) GetStrategyId() string {
@@ -4325,7 +4197,7 @@ type DiffStrategyVersionsResponse struct {
 
 func (x *DiffStrategyVersionsResponse) Reset() {
 	*x = DiffStrategyVersionsResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[58]
+	mi := &file_strategy_runtime_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4337,7 +4209,7 @@ func (x *DiffStrategyVersionsResponse) String() string {
 func (*DiffStrategyVersionsResponse) ProtoMessage() {}
 
 func (x *DiffStrategyVersionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[58]
+	mi := &file_strategy_runtime_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4350,7 +4222,7 @@ func (x *DiffStrategyVersionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiffStrategyVersionsResponse.ProtoReflect.Descriptor instead.
 func (*DiffStrategyVersionsResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{58}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *DiffStrategyVersionsResponse) GetFromVersion() *StrategyVersionInfo {
@@ -4392,7 +4264,7 @@ type UpdateStrategyCodeRequest struct {
 
 func (x *UpdateStrategyCodeRequest) Reset() {
 	*x = UpdateStrategyCodeRequest{}
-	mi := &file_strategy_runtime_proto_msgTypes[59]
+	mi := &file_strategy_runtime_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4404,7 +4276,7 @@ func (x *UpdateStrategyCodeRequest) String() string {
 func (*UpdateStrategyCodeRequest) ProtoMessage() {}
 
 func (x *UpdateStrategyCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[59]
+	mi := &file_strategy_runtime_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4417,7 +4289,7 @@ func (x *UpdateStrategyCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateStrategyCodeRequest.ProtoReflect.Descriptor instead.
 func (*UpdateStrategyCodeRequest) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{59}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *UpdateStrategyCodeRequest) GetStrategyId() string {
@@ -4450,7 +4322,7 @@ type UpdateStrategyCodeResponse struct {
 
 func (x *UpdateStrategyCodeResponse) Reset() {
 	*x = UpdateStrategyCodeResponse{}
-	mi := &file_strategy_runtime_proto_msgTypes[60]
+	mi := &file_strategy_runtime_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4462,7 +4334,7 @@ func (x *UpdateStrategyCodeResponse) String() string {
 func (*UpdateStrategyCodeResponse) ProtoMessage() {}
 
 func (x *UpdateStrategyCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_strategy_runtime_proto_msgTypes[60]
+	mi := &file_strategy_runtime_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4475,7 +4347,7 @@ func (x *UpdateStrategyCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateStrategyCodeResponse.ProtoReflect.Descriptor instead.
 func (*UpdateStrategyCodeResponse) Descriptor() ([]byte, []int) {
-	return file_strategy_runtime_proto_rawDescGZIP(), []int{60}
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *UpdateStrategyCodeResponse) GetNewVersion() *StrategyVersionInfo {
@@ -4700,21 +4572,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06groups\x18= \x03(\v2\x16.ant.v1.ParamGroupInfoR\x06groups\x122\n" +
 	"\vblind_spots\x18F \x03(\v2\x11.ant.v1.BlindSpotR\n" +
 	"blindSpots\x12'\n" +
-	"\x0findicator_names\x18P \x03(\tR\x0eindicatorNames\"~\n" +
-	"\x19GenerateImportCodeRequest\x12\x1f\n" +
-	"\vsource_code\x18\x01 \x01(\tR\n" +
-	"sourceCode\x12\x1f\n" +
-	"\vsource_name\x18\x02 \x01(\tR\n" +
-	"sourceName\x12\x1f\n" +
-	"\vsource_lang\x18\x03 \x01(\tR\n" +
-	"sourceLang\"\xa4\x01\n" +
-	"\x1aGenerateImportCodeResponse\x12\x17\n" +
-	"\ago_code\x18\x01 \x01(\tR\x06goCode\x12\x1d\n" +
-	"\n" +
-	"code_lines\x18\x02 \x01(\x05R\tcodeLines\x12\x1a\n" +
-	"\bcompiles\x18\x03 \x01(\bR\bcompiles\x122\n" +
-	"\x15quality_gate_failures\x18\n" +
-	" \x03(\tR\x13qualityGateFailures\"\x85\x01\n" +
+	"\x0findicator_names\x18P \x03(\tR\x0eindicatorNames\"\x85\x01\n" +
 	"\n" +
 	"ParamField\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
@@ -4912,7 +4770,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x10REQUEST_TYPE_BAR\x10\x01\x12\x15\n" +
 	"\x11REQUEST_TYPE_TICK\x10\x02\x12\x16\n" +
 	"\x12REQUEST_TYPE_TRADE\x10\x03\x12\x16\n" +
-	"\x12REQUEST_TYPE_TIMER\x10\x042\x8d\x14\n" +
+	"\x12REQUEST_TYPE_TIMER\x10\x042\xb0\x13\n" +
 	"\x16StrategyRuntimeService\x12J\n" +
 	"\aExecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n" +
 	"\bValidate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n" +
@@ -4926,8 +4784,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x12DeleteBacktestRuns\x12!.ant.v1.DeleteBacktestRunsRequest\x1a\".ant.v1.DeleteBacktestRunsResponse\x12L\n" +
 	"\fGetTemplates\x12\x16.google.protobuf.Empty\x1a$.ant.v1.GetStrategyTemplatesResponse\x12F\n" +
 	"\vExecuteLive\x12\x1a.ant.v1.ExecuteLiveRequest\x1a\x1b.ant.v1.ExecuteLiveResponse\x12X\n" +
-	"\x11AnalyzeImportCode\x12 .ant.v1.AnalyzeImportCodeRequest\x1a!.ant.v1.AnalyzeImportCodeResponse\x12[\n" +
-	"\x12GenerateImportCode\x12!.ant.v1.GenerateImportCodeRequest\x1a\".ant.v1.GenerateImportCodeResponse\x12O\n" +
+	"\x11AnalyzeImportCode\x12 .ant.v1.AnalyzeImportCodeRequest\x1a!.ant.v1.AnalyzeImportCodeResponse\x12O\n" +
 	"\x0eImportStrategy\x12\x1d.ant.v1.ImportStrategyRequest\x1a\x1e.ant.v1.ImportStrategyResponse\x12^\n" +
 	"\x13GetImportedStrategy\x12\".ant.v1.GetImportedStrategyRequest\x1a#.ant.v1.GetImportedStrategyResponse\x12U\n" +
 	"\x10ListStrategyRuns\x12\x1f.ant.v1.ListStrategyRunsRequest\x1a .ant.v1.ListStrategyRunsResponse\x12O\n" +
@@ -4957,7 +4814,7 @@ func file_strategy_runtime_proto_rawDescGZIP() []byte {
 }
 
 var file_strategy_runtime_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_strategy_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 62)
+var file_strategy_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 60)
 var file_strategy_runtime_proto_goTypes = []any{
 	(RequestType)(0),                        // 0: ant.v1.RequestType
 	(*GetImportedStrategyRequest)(nil),      // 1: ant.v1.GetImportedStrategyRequest
@@ -4985,78 +4842,76 @@ var file_strategy_runtime_proto_goTypes = []any{
 	(*TimerContext)(nil),                    // 23: ant.v1.TimerContext
 	(*AnalyzeImportCodeRequest)(nil),        // 24: ant.v1.AnalyzeImportCodeRequest
 	(*AnalyzeImportCodeResponse)(nil),       // 25: ant.v1.AnalyzeImportCodeResponse
-	(*GenerateImportCodeRequest)(nil),       // 26: ant.v1.GenerateImportCodeRequest
-	(*GenerateImportCodeResponse)(nil),      // 27: ant.v1.GenerateImportCodeResponse
-	(*ParamField)(nil),                      // 28: ant.v1.ParamField
-	(*ParamGroupInfo)(nil),                  // 29: ant.v1.ParamGroupInfo
-	(*BlindSpot)(nil),                       // 30: ant.v1.BlindSpot
-	(*ImportStrategyRequest)(nil),           // 31: ant.v1.ImportStrategyRequest
-	(*ImportStrategyResponse)(nil),          // 32: ant.v1.ImportStrategyResponse
-	(*ListStrategyRunsRequest)(nil),         // 33: ant.v1.ListStrategyRunsRequest
-	(*ListStrategyRunsResponse)(nil),        // 34: ant.v1.ListStrategyRunsResponse
-	(*GetStrategyRunRequest)(nil),           // 35: ant.v1.GetStrategyRunRequest
-	(*GetStrategyRunResponse)(nil),          // 36: ant.v1.GetStrategyRunResponse
-	(*StrategyRun)(nil),                     // 37: ant.v1.StrategyRun
-	(*ListActiveStrategiesRequest)(nil),     // 38: ant.v1.ListActiveStrategiesRequest
-	(*ListActiveStrategiesResponse)(nil),    // 39: ant.v1.ListActiveStrategiesResponse
-	(*GetActiveStrategyRequest)(nil),        // 40: ant.v1.GetActiveStrategyRequest
-	(*GetActiveStrategyResponse)(nil),       // 41: ant.v1.GetActiveStrategyResponse
-	(*StopStrategyRequest)(nil),             // 42: ant.v1.StopStrategyRequest
-	(*StopStrategyResponse)(nil),            // 43: ant.v1.StopStrategyResponse
-	(*ActiveStrategy)(nil),                  // 44: ant.v1.ActiveStrategy
-	(*WatchStrategySignalsRequest)(nil),     // 45: ant.v1.WatchStrategySignalsRequest
-	(*StrategySignalEvent)(nil),             // 46: ant.v1.StrategySignalEvent
-	(*StartStrategyRequest)(nil),            // 47: ant.v1.StartStrategyRequest
-	(*StartStrategyResponse)(nil),           // 48: ant.v1.StartStrategyResponse
-	(*WatchActiveStrategiesRequest)(nil),    // 49: ant.v1.WatchActiveStrategiesRequest
-	(*WatchActiveStrategiesEvent)(nil),      // 50: ant.v1.WatchActiveStrategiesEvent
-	(*StrategyVersionInfo)(nil),             // 51: ant.v1.StrategyVersionInfo
-	(*ListStrategyVersionsRequest)(nil),     // 52: ant.v1.ListStrategyVersionsRequest
-	(*ListStrategyVersionsResponse)(nil),    // 53: ant.v1.ListStrategyVersionsResponse
-	(*GetStrategyVersionRequest)(nil),       // 54: ant.v1.GetStrategyVersionRequest
-	(*GetStrategyVersionResponse)(nil),      // 55: ant.v1.GetStrategyVersionResponse
-	(*RollbackStrategyVersionRequest)(nil),  // 56: ant.v1.RollbackStrategyVersionRequest
-	(*RollbackStrategyVersionResponse)(nil), // 57: ant.v1.RollbackStrategyVersionResponse
-	(*DiffStrategyVersionsRequest)(nil),     // 58: ant.v1.DiffStrategyVersionsRequest
-	(*DiffStrategyVersionsResponse)(nil),    // 59: ant.v1.DiffStrategyVersionsResponse
-	(*UpdateStrategyCodeRequest)(nil),       // 60: ant.v1.UpdateStrategyCodeRequest
-	(*UpdateStrategyCodeResponse)(nil),      // 61: ant.v1.UpdateStrategyCodeResponse
-	nil,                                     // 62: ant.v1.StartStrategyRequest.ParamsEntry
-	(*StrategySignal)(nil),                  // 63: ant.v1.StrategySignal
-	(*ParameterEntry)(nil),                  // 64: ant.v1.ParameterEntry
-	(*BacktestMetrics)(nil),                 // 65: ant.v1.BacktestMetrics
-	(*timestamppb.Timestamp)(nil),           // 66: google.protobuf.Timestamp
-	(*StartBacktestRunRequest)(nil),         // 67: ant.v1.StartBacktestRunRequest
-	(*GetBacktestRunRequest)(nil),           // 68: ant.v1.GetBacktestRunRequest
-	(*ListBacktestRunsRequest)(nil),         // 69: ant.v1.ListBacktestRunsRequest
-	(*WatchBacktestRunRequest)(nil),         // 70: ant.v1.WatchBacktestRunRequest
-	(*CancelBacktestRunRequest)(nil),        // 71: ant.v1.CancelBacktestRunRequest
-	(*DeleteBacktestRunRequest)(nil),        // 72: ant.v1.DeleteBacktestRunRequest
-	(*DeleteBacktestRunsRequest)(nil),       // 73: ant.v1.DeleteBacktestRunsRequest
-	(*emptypb.Empty)(nil),                   // 74: google.protobuf.Empty
-	(*StartBacktestRunResponse)(nil),        // 75: ant.v1.StartBacktestRunResponse
-	(*GetBacktestRunResponse)(nil),          // 76: ant.v1.GetBacktestRunResponse
-	(*ListBacktestRunsResponse)(nil),        // 77: ant.v1.ListBacktestRunsResponse
-	(*BacktestRunUpdate)(nil),               // 78: ant.v1.BacktestRunUpdate
-	(*CancelBacktestRunResponse)(nil),       // 79: ant.v1.CancelBacktestRunResponse
-	(*DeleteBacktestRunResponse)(nil),       // 80: ant.v1.DeleteBacktestRunResponse
-	(*DeleteBacktestRunsResponse)(nil),      // 81: ant.v1.DeleteBacktestRunsResponse
+	(*ParamField)(nil),                      // 26: ant.v1.ParamField
+	(*ParamGroupInfo)(nil),                  // 27: ant.v1.ParamGroupInfo
+	(*BlindSpot)(nil),                       // 28: ant.v1.BlindSpot
+	(*ImportStrategyRequest)(nil),           // 29: ant.v1.ImportStrategyRequest
+	(*ImportStrategyResponse)(nil),          // 30: ant.v1.ImportStrategyResponse
+	(*ListStrategyRunsRequest)(nil),         // 31: ant.v1.ListStrategyRunsRequest
+	(*ListStrategyRunsResponse)(nil),        // 32: ant.v1.ListStrategyRunsResponse
+	(*GetStrategyRunRequest)(nil),           // 33: ant.v1.GetStrategyRunRequest
+	(*GetStrategyRunResponse)(nil),          // 34: ant.v1.GetStrategyRunResponse
+	(*StrategyRun)(nil),                     // 35: ant.v1.StrategyRun
+	(*ListActiveStrategiesRequest)(nil),     // 36: ant.v1.ListActiveStrategiesRequest
+	(*ListActiveStrategiesResponse)(nil),    // 37: ant.v1.ListActiveStrategiesResponse
+	(*GetActiveStrategyRequest)(nil),        // 38: ant.v1.GetActiveStrategyRequest
+	(*GetActiveStrategyResponse)(nil),       // 39: ant.v1.GetActiveStrategyResponse
+	(*StopStrategyRequest)(nil),             // 40: ant.v1.StopStrategyRequest
+	(*StopStrategyResponse)(nil),            // 41: ant.v1.StopStrategyResponse
+	(*ActiveStrategy)(nil),                  // 42: ant.v1.ActiveStrategy
+	(*WatchStrategySignalsRequest)(nil),     // 43: ant.v1.WatchStrategySignalsRequest
+	(*StrategySignalEvent)(nil),             // 44: ant.v1.StrategySignalEvent
+	(*StartStrategyRequest)(nil),            // 45: ant.v1.StartStrategyRequest
+	(*StartStrategyResponse)(nil),           // 46: ant.v1.StartStrategyResponse
+	(*WatchActiveStrategiesRequest)(nil),    // 47: ant.v1.WatchActiveStrategiesRequest
+	(*WatchActiveStrategiesEvent)(nil),      // 48: ant.v1.WatchActiveStrategiesEvent
+	(*StrategyVersionInfo)(nil),             // 49: ant.v1.StrategyVersionInfo
+	(*ListStrategyVersionsRequest)(nil),     // 50: ant.v1.ListStrategyVersionsRequest
+	(*ListStrategyVersionsResponse)(nil),    // 51: ant.v1.ListStrategyVersionsResponse
+	(*GetStrategyVersionRequest)(nil),       // 52: ant.v1.GetStrategyVersionRequest
+	(*GetStrategyVersionResponse)(nil),      // 53: ant.v1.GetStrategyVersionResponse
+	(*RollbackStrategyVersionRequest)(nil),  // 54: ant.v1.RollbackStrategyVersionRequest
+	(*RollbackStrategyVersionResponse)(nil), // 55: ant.v1.RollbackStrategyVersionResponse
+	(*DiffStrategyVersionsRequest)(nil),     // 56: ant.v1.DiffStrategyVersionsRequest
+	(*DiffStrategyVersionsResponse)(nil),    // 57: ant.v1.DiffStrategyVersionsResponse
+	(*UpdateStrategyCodeRequest)(nil),       // 58: ant.v1.UpdateStrategyCodeRequest
+	(*UpdateStrategyCodeResponse)(nil),      // 59: ant.v1.UpdateStrategyCodeResponse
+	nil,                                     // 60: ant.v1.StartStrategyRequest.ParamsEntry
+	(*StrategySignal)(nil),                  // 61: ant.v1.StrategySignal
+	(*ParameterEntry)(nil),                  // 62: ant.v1.ParameterEntry
+	(*BacktestMetrics)(nil),                 // 63: ant.v1.BacktestMetrics
+	(*timestamppb.Timestamp)(nil),           // 64: google.protobuf.Timestamp
+	(*StartBacktestRunRequest)(nil),         // 65: ant.v1.StartBacktestRunRequest
+	(*GetBacktestRunRequest)(nil),           // 66: ant.v1.GetBacktestRunRequest
+	(*ListBacktestRunsRequest)(nil),         // 67: ant.v1.ListBacktestRunsRequest
+	(*WatchBacktestRunRequest)(nil),         // 68: ant.v1.WatchBacktestRunRequest
+	(*CancelBacktestRunRequest)(nil),        // 69: ant.v1.CancelBacktestRunRequest
+	(*DeleteBacktestRunRequest)(nil),        // 70: ant.v1.DeleteBacktestRunRequest
+	(*DeleteBacktestRunsRequest)(nil),       // 71: ant.v1.DeleteBacktestRunsRequest
+	(*emptypb.Empty)(nil),                   // 72: google.protobuf.Empty
+	(*StartBacktestRunResponse)(nil),        // 73: ant.v1.StartBacktestRunResponse
+	(*GetBacktestRunResponse)(nil),          // 74: ant.v1.GetBacktestRunResponse
+	(*ListBacktestRunsResponse)(nil),        // 75: ant.v1.ListBacktestRunsResponse
+	(*BacktestRunUpdate)(nil),               // 76: ant.v1.BacktestRunUpdate
+	(*CancelBacktestRunResponse)(nil),       // 77: ant.v1.CancelBacktestRunResponse
+	(*DeleteBacktestRunResponse)(nil),       // 78: ant.v1.DeleteBacktestRunResponse
+	(*DeleteBacktestRunsResponse)(nil),      // 79: ant.v1.DeleteBacktestRunsResponse
 }
 var file_strategy_runtime_proto_depIdxs = []int32{
-	63, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
+	61, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
 	7,  // 1: ant.v1.ValidateStrategyResponse.quality_hints:type_name -> ant.v1.CodeQualityHint
 	8,  // 2: ant.v1.ValidateStrategyResponse.sweep_dimensions:type_name -> ant.v1.SweepDimension
 	9,  // 3: ant.v1.ValidateStrategyResponse.strategy_directives:type_name -> ant.v1.StrategyDirective
-	64, // 4: ant.v1.ValidateStrategyResponse.parameters:type_name -> ant.v1.ParameterEntry
-	65, // 5: ant.v1.BacktestStrategyResponse.metrics:type_name -> ant.v1.BacktestMetrics
+	62, // 4: ant.v1.ValidateStrategyResponse.parameters:type_name -> ant.v1.ParameterEntry
+	63, // 5: ant.v1.BacktestStrategyResponse.metrics:type_name -> ant.v1.BacktestMetrics
 	13, // 6: ant.v1.GetStrategyTemplatesResponse.templates:type_name -> ant.v1.StrategyTemplateInfo
 	0,  // 7: ant.v1.ExecuteLiveRequest.request_type:type_name -> ant.v1.RequestType
 	16, // 8: ant.v1.ExecuteLiveRequest.bar_context:type_name -> ant.v1.LiveStrategyContext
 	21, // 9: ant.v1.ExecuteLiveRequest.tick_context:type_name -> ant.v1.TickContext
 	22, // 10: ant.v1.ExecuteLiveRequest.trade_context:type_name -> ant.v1.TradeContext
 	23, // 11: ant.v1.ExecuteLiveRequest.timer_context:type_name -> ant.v1.TimerContext
-	63, // 12: ant.v1.ExecuteLiveResponse.signal:type_name -> ant.v1.StrategySignal
-	63, // 13: ant.v1.ExecuteLiveResponse.signals:type_name -> ant.v1.StrategySignal
+	61, // 12: ant.v1.ExecuteLiveResponse.signal:type_name -> ant.v1.StrategySignal
+	61, // 13: ant.v1.ExecuteLiveResponse.signals:type_name -> ant.v1.StrategySignal
 	17, // 14: ant.v1.LiveStrategyContext.position:type_name -> ant.v1.LivePosition
 	17, // 15: ant.v1.LiveStrategyContext.positions:type_name -> ant.v1.LivePosition
 	18, // 16: ant.v1.LiveStrategyContext.params:type_name -> ant.v1.LiveParam
@@ -5067,88 +4922,86 @@ var file_strategy_runtime_proto_depIdxs = []int32{
 	17, // 21: ant.v1.TradeContext.positions:type_name -> ant.v1.LivePosition
 	18, // 22: ant.v1.TimerContext.params:type_name -> ant.v1.LiveParam
 	17, // 23: ant.v1.TimerContext.positions:type_name -> ant.v1.LivePosition
-	28, // 24: ant.v1.AnalyzeImportCodeResponse.params:type_name -> ant.v1.ParamField
-	29, // 25: ant.v1.AnalyzeImportCodeResponse.groups:type_name -> ant.v1.ParamGroupInfo
-	30, // 26: ant.v1.AnalyzeImportCodeResponse.blind_spots:type_name -> ant.v1.BlindSpot
-	30, // 27: ant.v1.ImportStrategyResponse.blind_spots:type_name -> ant.v1.BlindSpot
-	37, // 28: ant.v1.ListStrategyRunsResponse.runs:type_name -> ant.v1.StrategyRun
-	37, // 29: ant.v1.GetStrategyRunResponse.run:type_name -> ant.v1.StrategyRun
-	66, // 30: ant.v1.StrategyRun.started_at:type_name -> google.protobuf.Timestamp
-	66, // 31: ant.v1.StrategyRun.stopped_at:type_name -> google.protobuf.Timestamp
-	44, // 32: ant.v1.ListActiveStrategiesResponse.strategies:type_name -> ant.v1.ActiveStrategy
-	44, // 33: ant.v1.GetActiveStrategyResponse.strategy:type_name -> ant.v1.ActiveStrategy
-	66, // 34: ant.v1.ActiveStrategy.started_at:type_name -> google.protobuf.Timestamp
-	66, // 35: ant.v1.ActiveStrategy.last_signal_at:type_name -> google.protobuf.Timestamp
-	66, // 36: ant.v1.StrategySignalEvent.timestamp:type_name -> google.protobuf.Timestamp
-	62, // 37: ant.v1.StartStrategyRequest.params:type_name -> ant.v1.StartStrategyRequest.ParamsEntry
-	44, // 38: ant.v1.WatchActiveStrategiesEvent.strategies:type_name -> ant.v1.ActiveStrategy
-	66, // 39: ant.v1.StrategyVersionInfo.created_at:type_name -> google.protobuf.Timestamp
-	51, // 40: ant.v1.ListStrategyVersionsResponse.versions:type_name -> ant.v1.StrategyVersionInfo
-	51, // 41: ant.v1.GetStrategyVersionResponse.version:type_name -> ant.v1.StrategyVersionInfo
-	51, // 42: ant.v1.RollbackStrategyVersionResponse.new_version:type_name -> ant.v1.StrategyVersionInfo
-	51, // 43: ant.v1.DiffStrategyVersionsResponse.from_version:type_name -> ant.v1.StrategyVersionInfo
-	51, // 44: ant.v1.DiffStrategyVersionsResponse.to_version:type_name -> ant.v1.StrategyVersionInfo
-	51, // 45: ant.v1.UpdateStrategyCodeResponse.new_version:type_name -> ant.v1.StrategyVersionInfo
+	26, // 24: ant.v1.AnalyzeImportCodeResponse.params:type_name -> ant.v1.ParamField
+	27, // 25: ant.v1.AnalyzeImportCodeResponse.groups:type_name -> ant.v1.ParamGroupInfo
+	28, // 26: ant.v1.AnalyzeImportCodeResponse.blind_spots:type_name -> ant.v1.BlindSpot
+	28, // 27: ant.v1.ImportStrategyResponse.blind_spots:type_name -> ant.v1.BlindSpot
+	35, // 28: ant.v1.ListStrategyRunsResponse.runs:type_name -> ant.v1.StrategyRun
+	35, // 29: ant.v1.GetStrategyRunResponse.run:type_name -> ant.v1.StrategyRun
+	64, // 30: ant.v1.StrategyRun.started_at:type_name -> google.protobuf.Timestamp
+	64, // 31: ant.v1.StrategyRun.stopped_at:type_name -> google.protobuf.Timestamp
+	42, // 32: ant.v1.ListActiveStrategiesResponse.strategies:type_name -> ant.v1.ActiveStrategy
+	42, // 33: ant.v1.GetActiveStrategyResponse.strategy:type_name -> ant.v1.ActiveStrategy
+	64, // 34: ant.v1.ActiveStrategy.started_at:type_name -> google.protobuf.Timestamp
+	64, // 35: ant.v1.ActiveStrategy.last_signal_at:type_name -> google.protobuf.Timestamp
+	64, // 36: ant.v1.StrategySignalEvent.timestamp:type_name -> google.protobuf.Timestamp
+	60, // 37: ant.v1.StartStrategyRequest.params:type_name -> ant.v1.StartStrategyRequest.ParamsEntry
+	42, // 38: ant.v1.WatchActiveStrategiesEvent.strategies:type_name -> ant.v1.ActiveStrategy
+	64, // 39: ant.v1.StrategyVersionInfo.created_at:type_name -> google.protobuf.Timestamp
+	49, // 40: ant.v1.ListStrategyVersionsResponse.versions:type_name -> ant.v1.StrategyVersionInfo
+	49, // 41: ant.v1.GetStrategyVersionResponse.version:type_name -> ant.v1.StrategyVersionInfo
+	49, // 42: ant.v1.RollbackStrategyVersionResponse.new_version:type_name -> ant.v1.StrategyVersionInfo
+	49, // 43: ant.v1.DiffStrategyVersionsResponse.from_version:type_name -> ant.v1.StrategyVersionInfo
+	49, // 44: ant.v1.DiffStrategyVersionsResponse.to_version:type_name -> ant.v1.StrategyVersionInfo
+	49, // 45: ant.v1.UpdateStrategyCodeResponse.new_version:type_name -> ant.v1.StrategyVersionInfo
 	3,  // 46: ant.v1.StrategyRuntimeService.Execute:input_type -> ant.v1.ExecuteStrategyRequest
 	5,  // 47: ant.v1.StrategyRuntimeService.Validate:input_type -> ant.v1.ValidateStrategyRequest
 	10, // 48: ant.v1.StrategyRuntimeService.Backtest:input_type -> ant.v1.BacktestStrategyRequest
-	67, // 49: ant.v1.StrategyRuntimeService.StartBacktestRun:input_type -> ant.v1.StartBacktestRunRequest
-	68, // 50: ant.v1.StrategyRuntimeService.GetBacktestRun:input_type -> ant.v1.GetBacktestRunRequest
-	69, // 51: ant.v1.StrategyRuntimeService.ListBacktestRuns:input_type -> ant.v1.ListBacktestRunsRequest
-	70, // 52: ant.v1.StrategyRuntimeService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
-	71, // 53: ant.v1.StrategyRuntimeService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
-	72, // 54: ant.v1.StrategyRuntimeService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
-	73, // 55: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
-	74, // 56: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
+	65, // 49: ant.v1.StrategyRuntimeService.StartBacktestRun:input_type -> ant.v1.StartBacktestRunRequest
+	66, // 50: ant.v1.StrategyRuntimeService.GetBacktestRun:input_type -> ant.v1.GetBacktestRunRequest
+	67, // 51: ant.v1.StrategyRuntimeService.ListBacktestRuns:input_type -> ant.v1.ListBacktestRunsRequest
+	68, // 52: ant.v1.StrategyRuntimeService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
+	69, // 53: ant.v1.StrategyRuntimeService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
+	70, // 54: ant.v1.StrategyRuntimeService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
+	71, // 55: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
+	72, // 56: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
 	14, // 57: ant.v1.StrategyRuntimeService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
 	24, // 58: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
-	26, // 59: ant.v1.StrategyRuntimeService.GenerateImportCode:input_type -> ant.v1.GenerateImportCodeRequest
-	31, // 60: ant.v1.StrategyRuntimeService.ImportStrategy:input_type -> ant.v1.ImportStrategyRequest
-	1,  // 61: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
-	33, // 62: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
-	35, // 63: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
-	38, // 64: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
-	40, // 65: ant.v1.StrategyRuntimeService.GetActiveStrategy:input_type -> ant.v1.GetActiveStrategyRequest
-	42, // 66: ant.v1.StrategyRuntimeService.StopStrategy:input_type -> ant.v1.StopStrategyRequest
-	45, // 67: ant.v1.StrategyRuntimeService.WatchStrategySignals:input_type -> ant.v1.WatchStrategySignalsRequest
-	47, // 68: ant.v1.StrategyRuntimeService.StartStrategy:input_type -> ant.v1.StartStrategyRequest
-	49, // 69: ant.v1.StrategyRuntimeService.WatchActiveStrategies:input_type -> ant.v1.WatchActiveStrategiesRequest
-	52, // 70: ant.v1.StrategyRuntimeService.ListStrategyVersions:input_type -> ant.v1.ListStrategyVersionsRequest
-	54, // 71: ant.v1.StrategyRuntimeService.GetStrategyVersion:input_type -> ant.v1.GetStrategyVersionRequest
-	56, // 72: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:input_type -> ant.v1.RollbackStrategyVersionRequest
-	58, // 73: ant.v1.StrategyRuntimeService.DiffStrategyVersions:input_type -> ant.v1.DiffStrategyVersionsRequest
-	60, // 74: ant.v1.StrategyRuntimeService.UpdateStrategyCode:input_type -> ant.v1.UpdateStrategyCodeRequest
-	4,  // 75: ant.v1.StrategyRuntimeService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
-	6,  // 76: ant.v1.StrategyRuntimeService.Validate:output_type -> ant.v1.ValidateStrategyResponse
-	11, // 77: ant.v1.StrategyRuntimeService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
-	75, // 78: ant.v1.StrategyRuntimeService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
-	76, // 79: ant.v1.StrategyRuntimeService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
-	77, // 80: ant.v1.StrategyRuntimeService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
-	78, // 81: ant.v1.StrategyRuntimeService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
-	79, // 82: ant.v1.StrategyRuntimeService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
-	80, // 83: ant.v1.StrategyRuntimeService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
-	81, // 84: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
-	12, // 85: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
-	15, // 86: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
-	25, // 87: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
-	27, // 88: ant.v1.StrategyRuntimeService.GenerateImportCode:output_type -> ant.v1.GenerateImportCodeResponse
-	32, // 89: ant.v1.StrategyRuntimeService.ImportStrategy:output_type -> ant.v1.ImportStrategyResponse
-	2,  // 90: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
-	34, // 91: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
-	36, // 92: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
-	39, // 93: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse
-	41, // 94: ant.v1.StrategyRuntimeService.GetActiveStrategy:output_type -> ant.v1.GetActiveStrategyResponse
-	43, // 95: ant.v1.StrategyRuntimeService.StopStrategy:output_type -> ant.v1.StopStrategyResponse
-	46, // 96: ant.v1.StrategyRuntimeService.WatchStrategySignals:output_type -> ant.v1.StrategySignalEvent
-	48, // 97: ant.v1.StrategyRuntimeService.StartStrategy:output_type -> ant.v1.StartStrategyResponse
-	50, // 98: ant.v1.StrategyRuntimeService.WatchActiveStrategies:output_type -> ant.v1.WatchActiveStrategiesEvent
-	53, // 99: ant.v1.StrategyRuntimeService.ListStrategyVersions:output_type -> ant.v1.ListStrategyVersionsResponse
-	55, // 100: ant.v1.StrategyRuntimeService.GetStrategyVersion:output_type -> ant.v1.GetStrategyVersionResponse
-	57, // 101: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:output_type -> ant.v1.RollbackStrategyVersionResponse
-	59, // 102: ant.v1.StrategyRuntimeService.DiffStrategyVersions:output_type -> ant.v1.DiffStrategyVersionsResponse
-	61, // 103: ant.v1.StrategyRuntimeService.UpdateStrategyCode:output_type -> ant.v1.UpdateStrategyCodeResponse
-	75, // [75:104] is the sub-list for method output_type
-	46, // [46:75] is the sub-list for method input_type
+	29, // 59: ant.v1.StrategyRuntimeService.ImportStrategy:input_type -> ant.v1.ImportStrategyRequest
+	1,  // 60: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
+	31, // 61: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
+	33, // 62: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
+	36, // 63: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
+	38, // 64: ant.v1.StrategyRuntimeService.GetActiveStrategy:input_type -> ant.v1.GetActiveStrategyRequest
+	40, // 65: ant.v1.StrategyRuntimeService.StopStrategy:input_type -> ant.v1.StopStrategyRequest
+	43, // 66: ant.v1.StrategyRuntimeService.WatchStrategySignals:input_type -> ant.v1.WatchStrategySignalsRequest
+	45, // 67: ant.v1.StrategyRuntimeService.StartStrategy:input_type -> ant.v1.StartStrategyRequest
+	47, // 68: ant.v1.StrategyRuntimeService.WatchActiveStrategies:input_type -> ant.v1.WatchActiveStrategiesRequest
+	50, // 69: ant.v1.StrategyRuntimeService.ListStrategyVersions:input_type -> ant.v1.ListStrategyVersionsRequest
+	52, // 70: ant.v1.StrategyRuntimeService.GetStrategyVersion:input_type -> ant.v1.GetStrategyVersionRequest
+	54, // 71: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:input_type -> ant.v1.RollbackStrategyVersionRequest
+	56, // 72: ant.v1.StrategyRuntimeService.DiffStrategyVersions:input_type -> ant.v1.DiffStrategyVersionsRequest
+	58, // 73: ant.v1.StrategyRuntimeService.UpdateStrategyCode:input_type -> ant.v1.UpdateStrategyCodeRequest
+	4,  // 74: ant.v1.StrategyRuntimeService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
+	6,  // 75: ant.v1.StrategyRuntimeService.Validate:output_type -> ant.v1.ValidateStrategyResponse
+	11, // 76: ant.v1.StrategyRuntimeService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
+	73, // 77: ant.v1.StrategyRuntimeService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
+	74, // 78: ant.v1.StrategyRuntimeService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
+	75, // 79: ant.v1.StrategyRuntimeService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
+	76, // 80: ant.v1.StrategyRuntimeService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
+	77, // 81: ant.v1.StrategyRuntimeService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
+	78, // 82: ant.v1.StrategyRuntimeService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
+	79, // 83: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
+	12, // 84: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
+	15, // 85: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
+	25, // 86: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
+	30, // 87: ant.v1.StrategyRuntimeService.ImportStrategy:output_type -> ant.v1.ImportStrategyResponse
+	2,  // 88: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
+	32, // 89: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
+	34, // 90: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
+	37, // 91: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse
+	39, // 92: ant.v1.StrategyRuntimeService.GetActiveStrategy:output_type -> ant.v1.GetActiveStrategyResponse
+	41, // 93: ant.v1.StrategyRuntimeService.StopStrategy:output_type -> ant.v1.StopStrategyResponse
+	44, // 94: ant.v1.StrategyRuntimeService.WatchStrategySignals:output_type -> ant.v1.StrategySignalEvent
+	46, // 95: ant.v1.StrategyRuntimeService.StartStrategy:output_type -> ant.v1.StartStrategyResponse
+	48, // 96: ant.v1.StrategyRuntimeService.WatchActiveStrategies:output_type -> ant.v1.WatchActiveStrategiesEvent
+	51, // 97: ant.v1.StrategyRuntimeService.ListStrategyVersions:output_type -> ant.v1.ListStrategyVersionsResponse
+	53, // 98: ant.v1.StrategyRuntimeService.GetStrategyVersion:output_type -> ant.v1.GetStrategyVersionResponse
+	55, // 99: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:output_type -> ant.v1.RollbackStrategyVersionResponse
+	57, // 100: ant.v1.StrategyRuntimeService.DiffStrategyVersions:output_type -> ant.v1.DiffStrategyVersionsResponse
+	59, // 101: ant.v1.StrategyRuntimeService.UpdateStrategyCode:output_type -> ant.v1.UpdateStrategyCodeResponse
+	74, // [74:102] is the sub-list for method output_type
+	46, // [46:74] is the sub-list for method input_type
 	46, // [46:46] is the sub-list for extension type_name
 	46, // [46:46] is the sub-list for extension extendee
 	0,  // [0:46] is the sub-list for field type_name
@@ -5167,14 +5020,14 @@ func file_strategy_runtime_proto_init() {
 	file_parameter_entry_proto_init()
 	file_strategy_runtime_proto_msgTypes[9].OneofWrappers = []any{}
 	file_strategy_runtime_proto_msgTypes[10].OneofWrappers = []any{}
-	file_strategy_runtime_proto_msgTypes[30].OneofWrappers = []any{}
+	file_strategy_runtime_proto_msgTypes[28].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_runtime_proto_rawDesc), len(file_strategy_runtime_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   62,
+			NumMessages:   60,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

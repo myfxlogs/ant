@@ -183,20 +183,6 @@ export const strategyImportApi = {
     });
   },
 
-  importStrategy: async (params: {
-    sourceCode: string;
-    sourceName: string;
-    sourceLang?: string;
-    workspaceId?: string;
-  }) => {
-    return await strategyRuntimeClient.importStrategy({
-      sourceCode: params.sourceCode,
-      sourceName: params.sourceName,
-      sourceLang: params.sourceLang || 'mql4',
-      workspaceId: params.workspaceId,
-    });
-  },
-
   getImportedStrategy: async (strategyId: string) => {
     return await strategyRuntimeClient.getImportedStrategy({ strategyId });
   },

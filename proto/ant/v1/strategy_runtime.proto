@@ -30,9 +30,7 @@ service StrategyRuntimeService {
   rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
   // AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
   rpc AnalyzeImportCode(AnalyzeImportCodeRequest) returns (AnalyzeImportCodeResponse);
-  // GenerateImportCode generates Go SDK code from analyzed MQL source.
-  rpc GenerateImportCode(GenerateImportCodeRequest) returns (GenerateImportCodeResponse);
-  // ImportStrategy runs the full import pipeline: analyze → generate → return code.
+  // ImportStrategy runs the full import pipeline: analyze → persist → return strategy ID.
   rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
   // GetImportedStrategy retrieves a previously imported strategy by ID.
   rpc GetImportedStrategy(GetImportedStrategyRequest) returns (GetImportedStrategyResponse);
@@ -350,19 +348,6 @@ message AnalyzeImportCodeResponse {
   repeated ParamGroupInfo groups = 61;
   repeated BlindSpot blind_spots = 70;
   repeated string indicator_names = 80;
-}
-
-message GenerateImportCodeRequest {
-  string source_code = 1;
-  string source_name = 2;
-  string source_lang = 3;
-}
-
-message GenerateImportCodeResponse {
-  string go_code = 1;
-  int32 code_lines = 2;
-  bool compiles = 3;
-  repeated string quality_gate_failures = 10;
 }
 
 message ParamField {
