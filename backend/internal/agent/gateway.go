@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -250,22 +251,26 @@ func (s *GatewayServer) SubmitStrategy(
 	// ── Step 7: Persist to imported_strategies ──
 	if s.importedRepo != nil {
 		uid, _ := uuid.Parse(userID)
-		paramsRaw := interp.SerializeParams(runner.Bytecode().Params)
-		row := &repository.ImportedStrategy{
-			UserID:        uid,
-			Name:          fmt.Sprintf("Imported %s", language),
-			SourceLang:    language,
-			SourceCode:    sourceCode,
-			Params:        paramsRaw,
-			CoverageScore: coverage.Score,
-		}
-		if err := s.importedRepo.Create(ctx, row); err != nil {
-			s.log.Warn("SubmitStrategy: persist failed", zap.Error(err))
+		if uid == uuid.Nil {
+			s.log.Warn("SubmitStrategy: skip persist, invalid userID", zap.String("userID", userID))
 		} else {
-			strategyID = row.ID.String()
-			if s.versionRepo != nil {
-				if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, sourceCode, language, "Agent import"); vErr != nil {
-					s.log.Warn("SubmitStrategy: create version snapshot failed", zap.Error(vErr))
+			paramsRaw := interp.SerializeParams(runner.Bytecode().Params)
+			row := &repository.ImportedStrategy{
+				UserID:        uid,
+				Name:          deriveStrategyNameFromSource(sourceCode, coverage.Version),
+				SourceLang:    coverage.Version,
+				SourceCode:    sourceCode,
+				Params:        paramsRaw,
+				CoverageScore: coverage.Score,
+			}
+			if err := s.importedRepo.Create(ctx, row); err != nil {
+				s.log.Warn("SubmitStrategy: persist failed", zap.Error(err))
+			} else {
+				strategyID = row.ID.String()
+				if s.versionRepo != nil {
+					if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, sourceCode, coverage.Version, "Agent import"); vErr != nil {
+						s.log.Warn("SubmitStrategy: create version snapshot failed", zap.Error(vErr))
+					}
 				}
 			}
 		}
@@ -369,3 +374,20 @@ func (s *GatewayServer) HookEngine() *HookEngine { return s.hooks }
 
 // Generator returns the strategy generator for Phase 2 marketplace integration.
 func (s *GatewayServer) Generator() *Generator { return s.generator }
+
+var (
+	propertyNameRe = regexp.MustCompile(`#property\s+(?:indicator_name|expert|description)\s+"([^"]+)"`)
+	classNameRe    = regexp.MustCompile(`class\s+(\w+)\s*(?::\s*public\s+\w+)?\s*\{`)
+)
+
+// deriveStrategyNameFromSource extracts a human-friendly strategy name from MQL source.
+// Priority: #property indicator_name/expert > class name > fallback "Imported <lang>".
+func deriveStrategyNameFromSource(source, lang string) string {
+	if m := propertyNameRe.FindStringSubmatch(source); len(m) > 1 {
+		return m[1]
+	}
+	if m := classNameRe.FindStringSubmatch(source); len(m) > 1 {
+		return m[1]
+	}
+	return fmt.Sprintf("Imported %s", lang)
+}
