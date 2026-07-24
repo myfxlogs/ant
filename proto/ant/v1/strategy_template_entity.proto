@@ -62,6 +62,8 @@ message StrategyCard {
   int32 running_schedules = 15;
   // ID of the backtest run that produced the sparkline/KPIs (empty if none).
   string backtest_run_id = 16;
+  // True if this strategy has an active marketplace listing (status='published').
+  bool is_marketplace_published = 17;
 }
 
 // TemplateI18n holds parameter label translations per locale.

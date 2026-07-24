@@ -91,7 +91,7 @@ function StrategyCardImpl({ card }: Props) {
   };
 
   const isSystem = card.isSystem;
-  const isPublished = card.isPublic;
+  const isPublished = card.isMarketplacePublished;
   const currentUserId = useAuthStore(s => s.user?.id);
   const isOwner = !isSystem && currentUserId === card.userId;
 

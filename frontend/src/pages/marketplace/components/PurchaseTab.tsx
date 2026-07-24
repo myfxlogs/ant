@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Table, Tag, Typography, Button, Space, Empty, Drawer, Modal, Input, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { EyeOutlined, ThunderboltOutlined, RollbackOutlined } from '@ant-design/icons';
+import { EyeOutlined, ThunderboltOutlined, RollbackOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 
 ;
@@ -9,6 +9,7 @@ import { formatDateTime } from '@/utils/date';
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import type { PurchasedItem } from '../hooks/useMarketplace';
 import ProtectedBacktestPanel from './ProtectedBacktestPanel';
+import DeployScheduleModal from '@/pages/strategy/components/DeployScheduleModal';
 import { marketplaceClient } from '@/client/connect';
 
 const { Text } = Typography;
@@ -21,6 +22,8 @@ export default function PurchaseTab() {
   const [refundTarget, setRefundTarget] = useState<PurchasedItem | null>(null);
   const [refundReason, setRefundReason] = useState('');
   const [refundLoading, setRefundLoading] = useState(false);
+  const [deployOpen, setDeployOpen] = useState(false);
+  const [deployTarget, setDeployTarget] = useState<{ id: string; name: string } | null>(null);
 
   if (!m.purchasesLoading && m.purchases.length === 0) {
     return <Empty description={t('marketplace.purchases.empty')} />;
@@ -65,6 +68,13 @@ export default function PurchaseTab() {
             setBacktestDrawerOpen(true);
           }}>
             {t('marketplace.purchases.runBacktest')}
+          </Button>
+          <Button size="small" icon={<RocketOutlined />} onClick={() => {
+            const s = m.strategies.find(s => s.strategyId === row.strategyId);
+            setDeployTarget({ id: row.strategyId, name: s?.title || s?.strategyName || row.strategyId.slice(0, 12) });
+            setDeployOpen(true);
+          }}>
+            {t('strategy.templates.actions.deploy', { defaultValue: 'Deploy' })}
           </Button>
           {row.active && (
             <Button size="small" danger icon={<RollbackOutlined />} onClick={() => {
@@ -135,6 +145,15 @@ export default function PurchaseTab() {
           showCount
         />
       </Modal>
+
+      {deployTarget && (
+        <DeployScheduleModal
+          open={deployOpen}
+          templateId={deployTarget.id}
+          templateName={deployTarget.name}
+          onClose={() => setDeployOpen(false)}
+        />
+      )}
     </>
   );
 }

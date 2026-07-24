@@ -312,8 +312,10 @@ type StrategyCard struct {
 	RunningSchedules int32 `protobuf:"varint,15,opt,name=running_schedules,json=runningSchedules,proto3" json:"running_schedules,omitempty"`
 	// ID of the backtest run that produced the sparkline/KPIs (empty if none).
 	BacktestRunId string `protobuf:"bytes,16,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// True if this strategy has an active marketplace listing (status='published').
+	IsMarketplacePublished bool `protobuf:"varint,17,opt,name=is_marketplace_published,json=isMarketplacePublished,proto3" json:"is_marketplace_published,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *StrategyCard) Reset() {
@@ -458,6 +460,13 @@ func (x *StrategyCard) GetBacktestRunId() string {
 	return ""
 }
 
+func (x *StrategyCard) GetIsMarketplacePublished() bool {
+	if x != nil {
+		return x.IsMarketplacePublished
+	}
+	return false
+}
+
 // TemplateI18n holds parameter label translations per locale.
 type TemplateI18N struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -540,7 +549,7 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\x04step\x18\x06 \x01(\tR\x04step\x12\x14\n" +
 	"\x05label\x18\a \x01(\tR\x05label\x12 \n" +
 	"\vdescription\x18\b \x01(\tR\vdescription\x12\x18\n" +
-	"\aoptions\x18\t \x03(\tR\aoptions\"\x8c\x04\n" +
+	"\aoptions\x18\t \x03(\tR\aoptions\"\xc6\x04\n" +
 	"\fStrategyCard\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
@@ -559,7 +568,8 @@ const file_strategy_template_entity_proto_rawDesc = "" +
 	"\rprofit_factor\x18\r \x01(\tR\fprofitFactor\x12!\n" +
 	"\fsharpe_ratio\x18\x0e \x01(\tR\vsharpeRatio\x12+\n" +
 	"\x11running_schedules\x18\x0f \x01(\x05R\x10runningSchedules\x12&\n" +
-	"\x0fbacktest_run_id\x18\x10 \x01(\tR\rbacktestRunId\"\x9e\x01\n" +
+	"\x0fbacktest_run_id\x18\x10 \x01(\tR\rbacktestRunId\x128\n" +
+	"\x18is_marketplace_published\x18\x11 \x01(\bR\x16isMarketplacePublished\"\x9e\x01\n" +
 	"\fTemplateI18n\x12;\n" +
 	"\alocales\x18\x01 \x03(\v2!.ant.v1.TemplateI18n.LocalesEntryR\alocales\x1aQ\n" +
 	"\fLocalesEntry\x12\x10\n" +

@@ -102,21 +102,22 @@ func (s *StrategyServer) ListStrategyCards(ctx context.Context, req *connect.Req
 	cards := make([]*antv1.StrategyCard, len(rows))
 	for i, r := range rows {
 		cards[i] = &antv1.StrategyCard{
-			Id:               r.ID.String(),
-			UserId:           r.UserID.String(),
-			Name:             r.Name,
-			Description:      r.Description,
-			Tags:             r.Tags,
-			IsSystem:         r.IsSystem,
-			IsPublic:         r.IsPublic,
-			UseCount:         r.UseCount,
-			CreatedAt:        timestamppb.New(r.CreatedAt),
-			Sparkline:        r.Sparkline,
-			WinRate:          r.WinRate,
-			MaxDrawdown:      r.MaxDrawdown,
-			ProfitFactor:     r.ProfitFactor,
-			SharpeRatio:      r.SharpeRatio,
-			RunningSchedules: r.RunningSchedules,
+			Id:                    r.ID.String(),
+			UserId:                r.UserID.String(),
+			Name:                  r.Name,
+			Description:           r.Description,
+			Tags:                  r.Tags,
+			IsSystem:              r.IsSystem,
+			IsPublic:              r.IsPublic,
+			UseCount:              r.UseCount,
+			CreatedAt:             timestamppb.New(r.CreatedAt),
+			Sparkline:             r.Sparkline,
+			WinRate:               r.WinRate,
+			MaxDrawdown:           r.MaxDrawdown,
+			ProfitFactor:          r.ProfitFactor,
+			SharpeRatio:           r.SharpeRatio,
+			RunningSchedules:      r.RunningSchedules,
+			IsMarketplacePublished: r.IsMarketplacePublished,
 		}
 		if r.BacktestRunID != nil {
 			cards[i].BacktestRunId = r.BacktestRunID.String()

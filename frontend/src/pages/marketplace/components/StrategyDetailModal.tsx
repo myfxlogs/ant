@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs, Alert, Empty, message } from 'antd';
-import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined, WarningOutlined, ExperimentOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined, WarningOutlined, ExperimentOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
 import { marketplaceClient } from '@/client/connect';
@@ -54,6 +54,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
   const [trialLoading, setTrialLoading] = useState(false);
   const [versions, setVersions] = useState<StrategyVersionInfo[]>([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
+  const [deployOpen, setDeployOpen] = useState(false);
 
   // Load discussion data when a new strategy is opened
   useEffect(() => {
@@ -328,8 +329,11 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         ) : isPurchased ? (
           <>
             <Tag color="green" style={{ padding: '4px 16px', fontSize: 14 }}>{t('marketplace.card.owned')}</Tag>
-            <Button type="primary" icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>
+            <Button icon={<ThunderboltOutlined />} onClick={() => onRunBacktest?.(strategy)}>
               {t('marketplace.detail.runBacktest')}
+            </Button>
+            <Button type="primary" icon={<RocketOutlined />} onClick={() => setDeployOpen(true)}>
+              {t('strategy.templates.actions.deploy', { defaultValue: 'Deploy' })}
             </Button>
           </>
         ) : isFree ? (
@@ -348,6 +352,13 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         )}
         </div>
       </div>
+
+      <DeployScheduleModal
+        open={deployOpen}
+        templateId={strategy.strategyId}
+        templateName={name}
+        onClose={() => setDeployOpen(false)}
+      />
     </Modal>
   );
 }

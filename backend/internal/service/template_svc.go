@@ -155,6 +155,7 @@ type StrategyCardRow struct {
 	SharpeRatio     string
 	RunningSchedules int32
 	BacktestRunID   *uuid.UUID
+	IsMarketplacePublished bool // H3: true if has active marketplace listing
 }
 
 // ListStrategyCardsParams controls filtering, sorting, and searching.
@@ -277,10 +278,30 @@ func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, p
 	if err := scRows.Err(); err != nil {
 		return nil, 0, fmt.Errorf("ListStrategyCards schedules: %w", err)
 	}
+	// Batch: marketplace published status (H3)
+	marketRows, err := s.pg.Query(ctx,
+		`SELECT strategy_id FROM marketplace_strategies
+		 WHERE strategy_id = ANY($1) AND status = 'published'`, tids)
+	if err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards marketplace: %w", err)
+	}
+	defer marketRows.Close()
+	marketMap := make(map[uuid.UUID]bool)
+	for marketRows.Next() {
+		var tid uuid.UUID
+		if err := marketRows.Scan(&tid); err != nil {
+			return nil, 0, fmt.Errorf("ListStrategyCards market scan: %w", err)
+		}
+		marketMap[tid] = true
+	}
+	if err := marketRows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("ListStrategyCards marketplace: %w", err)
+	}
 	// Assemble: parse proto_response for KPIs + sparkline
 	for i := range out {
 		tid := out[i].ID
 		out[i].RunningSchedules = schedMap[tid]
+		out[i].IsMarketplacePublished = marketMap[tid]
 		info, ok := btMap[tid]
 		if !ok || len(info.raw) == 0 {
 			continue
