@@ -51,7 +51,7 @@ export default function RefundManagement() {
         setReviewModalOpen(false);
         fetchRequests(page, statusFilter);
       } else {
-        message.error(resp.error || 'Failed to process refund');
+        message.error(resp.error || t('admin.refund.processFailed', { defaultValue: 'Failed to process refund' }));
       }
     } catch {
       message.error(t('admin.refund.processFailed', { defaultValue: 'Failed to process refund' }));

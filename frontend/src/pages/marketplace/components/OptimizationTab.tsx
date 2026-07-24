@@ -280,11 +280,11 @@ export default function OptimizationTab() {
                 message={t('marketplace.optimization.decayMetrics')}
                 description={
                   <Descriptions size="small" column={2} style={{ marginTop: 8 }}>
-                    <Descriptions.Item label="Decay Score">{previewData.decayMetrics.decayScore}</Descriptions.Item>
-                    <Descriptions.Item label="Trigger">{previewData.decayMetrics.triggerReason}</Descriptions.Item>
-                    <Descriptions.Item label="Sharpe Decline">{previewData.decayMetrics.sharpeDeclinePct}</Descriptions.Item>
-                    <Descriptions.Item label="Win Rate Decline">{previewData.decayMetrics.winrateDeclinePct}</Descriptions.Item>
-                    <Descriptions.Item label="Return Delta">{previewData.decayMetrics.returnDelta}</Descriptions.Item>
+                    <Descriptions.Item label={t('marketplace.optimization.decayScore', { defaultValue: 'Decay Score' })}>{previewData.decayMetrics.decayScore}</Descriptions.Item>
+                    <Descriptions.Item label={t('marketplace.optimization.trigger', { defaultValue: 'Trigger' })}>{previewData.decayMetrics.triggerReason}</Descriptions.Item>
+                    <Descriptions.Item label={t('marketplace.optimization.sharpeDecline', { defaultValue: 'Sharpe Decline' })}>{previewData.decayMetrics.sharpeDeclinePct}</Descriptions.Item>
+                    <Descriptions.Item label={t('marketplace.optimization.winRateDecline', { defaultValue: 'Win Rate Decline' })}>{previewData.decayMetrics.winrateDeclinePct}</Descriptions.Item>
+                    <Descriptions.Item label={t('marketplace.optimization.returnDelta', { defaultValue: 'Return Delta' })}>{previewData.decayMetrics.returnDelta}</Descriptions.Item>
                   </Descriptions>
                 }
               />

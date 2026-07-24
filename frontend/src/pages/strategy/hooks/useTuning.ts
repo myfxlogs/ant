@@ -61,7 +61,7 @@ export function useTuning(t: TFunction) {
       message.success(t(STARTED_KEY));
       return result.experiment?.id || result.jobId || '';
     } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : 'Tuning failed');
+      message.error(e instanceof Error ? e.message : t('strategy.tuning.failed', { defaultValue: 'Tuning failed' }));
       return '';
     } finally { setTuningRunning(false); }
   }, [sweepDimensions, tuneMethod, cartesianSize, t]);

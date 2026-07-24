@@ -178,7 +178,7 @@ export default function ForgotPassword() {
 
   return (
     <>
-      <Seo title="Forgot Password" description="Reset your AlphaForge account password." path="/forgot-password" />
+      <Seo title={t('auth.seo.forgotPassword.title')} description={t('auth.seo.forgotPassword.description')} path="/forgot-password" />
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg-secondary)' }}>
         <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           <div className="py-6 px-6 text-center" style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>

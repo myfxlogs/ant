@@ -52,7 +52,7 @@ export default function AutoGeneratePanel() {
       message.success(t('marketplace.autogen.pricingSaved'));
       setPricingModalOpen(false);
     } catch (e: any) {
-      message.error(e?.message || 'Failed to update pricing');
+      message.error(e?.message || t('marketplace.autogen.pricingFailed', { defaultValue: 'Failed to update pricing' }));
     } finally {
       setPricingSaving(false);
     }

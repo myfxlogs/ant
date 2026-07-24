@@ -149,7 +149,7 @@ export default function VerifyEmail() {
 
   return (
     <>
-      <Seo title="Verify Email" description="Verify your email address" path="/verify-email" />
+      <Seo title={t('auth.seo.verifyEmail.title')} description={t('auth.seo.verifyEmail.description')} path="/verify-email" />
       <div
         className="min-h-screen flex flex-col items-center justify-center p-4"
         style={{ background: 'var(--color-bg-secondary)' }}

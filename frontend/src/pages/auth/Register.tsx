@@ -44,7 +44,7 @@ export default function Register() {
 
   return (
     <>
-    <Seo title="Register" description="Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strategies." path="/register" />
+    <Seo title={t('auth.seo.register.title')} description={t('auth.seo.register.description')} path="/register" />
     <div
       className="min-h-screen flex flex-col items-center justify-center p-4"
       style={{ background: 'var(--color-bg-secondary)' }}

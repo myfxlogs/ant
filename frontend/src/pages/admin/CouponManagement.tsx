@@ -52,7 +52,7 @@ export default function CouponManagement() {
         setCreateOpen(false);
         fetchCoupons();
       } else {
-        message.error(resp.error || 'Failed to create coupon');
+        message.error(resp.error || t('admin.coupon.createFailed', { defaultValue: 'Failed to create coupon' }));
       }
     } catch {
       message.error(t('admin.coupon.createFailed', { defaultValue: 'Failed to create coupon' }));

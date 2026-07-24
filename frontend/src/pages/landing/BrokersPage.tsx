@@ -53,8 +53,8 @@ export default function BrokersPage() {
   return (
     <>
       <Seo
-        title="Supported MT4/MT5 Brokers"
-        description="AlphaForge supports 30+ MT4/MT5 brokers including IC Markets, Pepperstone, XM, Exness, OANDA, and more. Connect your broker account and start automated trading today."
+        title={t('landing.brokersSeoTitle')}
+        description={t('landing.brokersSeoDesc')}
         path="/brokers"
         keywords={[
           'MT4 broker', 'MT5 broker', 'MetaTrader broker', 'IC Markets', 'Pepperstone', 'XM',
@@ -89,7 +89,7 @@ export default function BrokersPage() {
                   <Text type="secondary" style={{ fontSize: 12 }}>{b.description}</Text>
                   <div style={{ marginTop: 8 }}>
                     <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 12, marginRight: 4 }} />
-                    <Text style={{ fontSize: 11, color: '#8c8c8c' }}>Compatible with AlphaForge</Text>
+                    <Text style={{ fontSize: 11, color: '#8c8c8c' }}>{t('landing.brokersCompatible')}</Text>
                   </div>
                 </Card>
               </Col>

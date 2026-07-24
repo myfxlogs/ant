@@ -119,7 +119,7 @@ export default function SubscriptionPage() {
 
   return (
     <>
-      <Seo title="Subscription" description="Manage your subscription plan" path="/subscription" />
+      <Seo title={t('subscription.seoTitle')} description={t('subscription.seoDesc')} path="/subscription" />
       <div className="space-y-6">
         <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
           {t('subscription.title', { defaultValue: 'Subscription Plans' })}

@@ -45,7 +45,7 @@ export default function AutoGenTaskReview() {
       );
       setTasks(resp.tasks);
     } catch (e: any) {
-      message.error(e?.message || 'Failed to load tasks');
+      message.error(e?.message || t('admin.autogen.loadFailed', { defaultValue: 'Failed to load tasks' }));
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export default function AutoGenTaskReview() {
       message.success(t('admin.autogen.approved', { defaultValue: 'Task approved and published' }));
       fetchTasks();
     } catch (e: any) {
-      message.error(e?.message || 'Approve failed');
+      message.error(e?.message || t('admin.autogen.approveFailed', { defaultValue: 'Approve failed' }));
     }
   }, [fetchTasks, t]);
 
@@ -73,7 +73,7 @@ export default function AutoGenTaskReview() {
       message.success(t('admin.autogen.rejected', { defaultValue: 'Task rejected' }));
       fetchTasks();
     } catch (e: any) {
-      message.error(e?.message || 'Reject failed');
+      message.error(e?.message || t('admin.autogen.rejectFailed', { defaultValue: 'Reject failed' }));
     }
   }, [fetchTasks, t]);
 
@@ -91,7 +91,7 @@ export default function AutoGenTaskReview() {
       setTriggerOpen(false);
       fetchTasks();
     } catch (e: any) {
-      message.error(e?.message || 'Trigger failed');
+      message.error(e?.message || t('admin.autogen.triggerFailed', { defaultValue: 'Trigger failed' }));
     } finally {
       setTriggering(false);
     }

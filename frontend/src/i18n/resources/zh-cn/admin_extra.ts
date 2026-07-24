@@ -1,5 +1,5 @@
 // Auto-generated supplementary keys for admin
-// TODO: Translate to zh-cn
+// TODO: Translate to en
 const AdminExtra = {
   "admin": {
     "aiGateway": {
@@ -19,7 +19,9 @@ const AdminExtra = {
       "configured": "Not configured",
       "editProvider": "Add Provider",
       "providerId": "Please enter provider ID",
+      "providerIdPlaceholder": "deepseek / openai / qwen ...",
       "displayName": "Display Name",
+      "displayNamePlaceholder": "DeepSeek",
       "baseUrl": "Please enter Base URL",
       "apiKeyLabel": "API key, encrypted at rest",
       "apiKeyEditPlaceholder": "Leave empty to keep",

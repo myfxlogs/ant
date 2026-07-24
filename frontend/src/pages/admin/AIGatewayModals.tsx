@@ -44,11 +44,11 @@ export function AIGatewayModals({
         <Form form={providerForm} layout="vertical">
           {!editingProvider && (
             <Form.Item name="providerId" label={t('admin.aiGateway.providerId', { defaultValue: 'Provider ID' })} rules={[{ required: true, message: t('admin.aiGateway.providerIdRequired', { defaultValue: 'Please enter provider ID' }) }]}>
-              <Input placeholder="deepseek / openai / qwen ..." />
+              <Input placeholder={t('admin.aiGateway.providerIdPlaceholder')} />
             </Form.Item>
           )}
           <Form.Item name="name" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })} rules={[{ required: true, message: t('admin.aiGateway.displayNameRequired', { defaultValue: 'Please enter display name' }) }]}>
-            <Input placeholder="DeepSeek" />
+            <Input placeholder={t('admin.aiGateway.displayNamePlaceholder')} />
           </Form.Item>
           <Form.Item name="baseUrl" label={t('admin.aiGateway.baseUrl', { defaultValue: 'Base URL' })} rules={[{ required: true, message: t('admin.aiGateway.baseUrlRequired', { defaultValue: 'Please enter Base URL' }) }]}>
             <Input placeholder="https://api.deepseek.com/v1" />
@@ -72,7 +72,7 @@ export function AIGatewayModals({
             <Input placeholder="deepseek-chat" />
           </Form.Item>
           <Form.Item name="displayName" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })}>
-            <Input placeholder="DeepSeek Chat" />
+            <Input placeholder={t('admin.aiGateway.displayNamePlaceholder', { defaultValue: 'DeepSeek Chat' })} />
           </Form.Item>
           <Space style={{ width: '100%' }}>
             <Form.Item name="pricePer1mInput" label={t('admin.aiGateway.priceInput', { defaultValue: 'Input Price ($/1M)' })} rules={[{ required: true }]}>

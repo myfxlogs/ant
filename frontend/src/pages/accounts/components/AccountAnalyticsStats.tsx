@@ -153,7 +153,7 @@ export default function AccountAnalyticsStats({
                       style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)' }}>
                       <div className="text-xs font-semibold" style={{ color }}>{label}</div>
                       <div className="text-xs" style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                        <div>P&L: <strong style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{profit >= 0 ? '+' : ''}{profit.toFixed(2)}</strong></div>
+                        <div>{t('analytics.pnl', { defaultValue: 'P&L:' })} <strong style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{profit >= 0 ? '+' : ''}{profit.toFixed(2)}</strong></div>
                         <div>{t(ANALYTICS_STATS_TOTAL_TRADES_KEY)}: {trades}</div>
                         <div>{t(ANALYTICS_STATS_WIN_RATE_KEY)}: {winRate.toFixed(1)}%</div>
                       </div>

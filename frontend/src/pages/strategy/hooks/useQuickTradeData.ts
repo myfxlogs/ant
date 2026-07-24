@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/queries/queryKeys';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
@@ -57,16 +58,17 @@ export function useQuickTradeData(accountId: string, symbol: string) {
   }, [accountId, financialsReady]);
 
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const handleClosePosition = useCallback(async (ticket: number, volume?: number) => {
     if (!accountId) return;
     try {
       const result = await tradingApi.orderClose({ accountId, ticket: BigInt(ticket), volume });
       if (result.error) { message.error(result.message || result.error); } else {
-        message.success(result.message || 'Position closed');
+        message.success(result.message || t('strategy.live.positionClosed', { defaultValue: 'Position closed' }));
         queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(accountId) });
       }
-    } catch (e: unknown) { message.error((e as Error)?.message || 'Close failed'); }
-  }, [accountId, queryClient]);
+    } catch (e: unknown) { message.error((e as Error)?.message || t('strategy.live.closeFailed', { defaultValue: 'Close failed' })); }
+  }, [accountId, queryClient, t]);
 
   return { accountInfo, financialsReady, positionCount, allPositions, qtPositions, qtRecentTrades, handleClosePosition, fetchTradeHistory };
 }

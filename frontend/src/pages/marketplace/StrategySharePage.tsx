@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Typography, Tag, Rate, Space, Button, Spin, Statistic, Row, Col, Empty, Divider } from 'antd';
 import { ShopOutlined, UserOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import Seo from '@/components/common/Seo';
 import { marketplaceClient } from '@/client/connect';
 import type { GetStrategyPublicInfoResponse } from '@/gen/ant/v1/marketplace_service_pb';
@@ -11,6 +12,7 @@ const { Title, Paragraph, Text } = Typography;
 export default function StrategySharePage() {
   const { strategyId } = useParams<{ strategyId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [data, setData] = useState<GetStrategyPublicInfoResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -35,7 +37,7 @@ export default function StrategySharePage() {
   if (error || !data) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Empty description="Strategy not found or no longer available" />
+        <Empty description={t('sharePage.notFound')} />
       </div>
     );
   }
@@ -92,13 +94,13 @@ export default function StrategySharePage() {
                 <>
                   <Col span={6}>
                     <Statistic
-                      title="Backtest Return"
+                      title={t('sharePage.backtestReturn')}
                       value={data.backtest.totalReturn || '—'}
                     />
                   </Col>
                   <Col span={6}>
                     <Statistic
-                      title="Max Drawdown"
+                      title={t('sharePage.maxDrawdown')}
                       value={data.backtest.maxDrawdown || '—'}
                     />
                   </Col>
@@ -109,13 +111,13 @@ export default function StrategySharePage() {
             {data.liveTotalReturn && (
               <>
                 <Divider />
-                <Title level={5}>Live Performance</Title>
+                <Title level={5}>{t('sharePage.livePerformance')}</Title>
                 <Row gutter={24}>
                   <Col span={8}>
-                    <Statistic title="Live Return" value={data.liveTotalReturn} />
+                    <Statistic title={t('sharePage.liveReturn')} value={data.liveTotalReturn} />
                   </Col>
                   <Col span={8}>
-                    <Statistic title="Live Max DD" value={data.liveMaxDrawdown} />
+                    <Statistic title={t('sharePage.liveMaxDD')} value={data.liveMaxDrawdown} />
                   </Col>
                   <Col span={8}>
                     <Statistic title="Sharpe" value={data.liveSharpeRatio} />
@@ -130,7 +132,7 @@ export default function StrategySharePage() {
             {data.codeSnippet && (
               <>
                 <Divider />
-                <Title level={5}>Code Preview</Title>
+                <Title level={5}>{t('sharePage.codePreview')}</Title>
                 <pre style={{
                   background: '#f5f5f5', padding: 16, borderRadius: 8,
                   fontSize: 12, overflow: 'auto', maxHeight: 300,

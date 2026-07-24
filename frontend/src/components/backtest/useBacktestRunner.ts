@@ -234,7 +234,7 @@ export function useBacktestRunner() {
       setRunId('');
       message.info(t('strategy.backtest.canceled', { defaultValue: 'Backtest canceled' }));
     } catch (e: any) {
-      message.error(e?.message || 'Cancel failed');
+      message.error(e?.message || t('strategy.backtest.cancelFailed', { defaultValue: 'Cancel failed' }));
     }
   }, [runId, t]);
 

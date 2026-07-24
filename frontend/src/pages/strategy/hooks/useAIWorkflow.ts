@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import type { BacktestMetrics } from './useBacktestParams';
 
 function isMQLCode(code: string): boolean {
@@ -91,6 +92,7 @@ export function useAIWorkflow(
   const [chatAutoApply, setChatAutoApply] = useState(true);
   const [autoFixing, setAutoFixing] = useState(false);
   const [autoFixDebug, setAutoFixDebug] = useState<AutoFixDebug | null>(null);
+  const { t } = useTranslation();
   const dismissDebug = useCallback(() => setAutoFixDebug(null), []);
 
   const handleAIOptimize = useCallback(() => {
@@ -186,7 +188,7 @@ export function useAIWorkflow(
             codeCtx.setValidationResult(recheck);
             const diff = diffIssues(preSnapshot, postSnapshot);
             setAutoFixDebug({ iterations: iter, passed: true, ...diff });
-            message.success(`Auto-fix passed after ${iter} iteration${iter > 1 ? 's' : ''}`);
+            message.success(t('strategy.validate.autoFixPassed', { defaultValue: 'Auto-fix passed after {{iter}} iteration(s)', iter, count: iter }));
             setAutoFixing(false);
             return;
           }
@@ -201,7 +203,7 @@ export function useAIWorkflow(
             codeCtx.setValidationResult(recheck);
             const diff = diffIssues(preSnapshot, postSnapshot);
             setAutoFixDebug({ iterations: maxIters, passed: false, ...diff });
-            message.warning(`Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations`);
+            message.warning(t('strategy.validate.autoFixRemaining', { defaultValue: 'Auto-fix: {{count}} issue(s) remain after {{maxIters}} iterations', count: lastErrors.length, maxIters }));
           }
         } catch (e: unknown) {
           if (iter < maxIters) continue;
@@ -209,7 +211,7 @@ export function useAIWorkflow(
         }
       }
     } catch (e: unknown) {
-      message.error((e as Error)?.message || 'Auto-fix failed');
+      message.error((e as Error)?.message || t('strategy.validate.autoFixFailed', { defaultValue: 'Auto-fix failed' }));
     } finally {
       setAutoFixing(false);
     }

@@ -39,9 +39,9 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       setValidationResult(result);
       if (result.valid) setLastValidatedCode(codeToValidate);
       if (onValidateResult) onValidateResult(result);
-    } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
+    } catch (e: unknown) { message.error((e as Error)?.message || t('strategy.validate.failed', { defaultValue: 'Validation failed' })); }
     finally { setValidating(false); }
-  }, [onValidateResult]);
+  }, [onValidateResult, t]);
 
   const handleValidate = useCallback(async () => {
     await _validate(code);
@@ -67,9 +67,9 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   const loadTemplates = useCallback(async () => {
     setTemplatesLoading(true);
     try { const list = await strategyApi.listTemplates(); setTemplates(list || []); }
-    catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load templates'); }
+    catch (e: unknown) { message.error((e as Error)?.message || t('strategy.templates.loadFailed', { defaultValue: 'Failed to load templates' })); }
     finally { setTemplatesLoading(false); }
-  }, []);
+  }, [t]);
 
   const handleLoadTemplate = useCallback(async (id: string): Promise<StrategyTemplate | null> => {
     try {
@@ -78,8 +78,8 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       if (tpl?.name) setLoadedTemplate(tpl);
       setLastValidatedCode(''); setValidationResult(null);
       return tpl;
-    } catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return null; }
-  }, []);
+    } catch (e: unknown) { message.error((e as Error)?.message || t('strategy.templates.loadOneFailed', { defaultValue: 'Failed to load template' })); return null; }
+  }, [t]);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -102,7 +102,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
           await strategyVersionApi.updateCode(strategyId, code, 'Updated from workspace');
         }
         message.success(t(SAVE_SUCCESS_KEY)); loadTemplates();
-      } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
+      } catch (e: unknown) { message.error((e as Error)?.message || t('common.saveFailed', { defaultValue: 'Save failed' })); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
   }, [code, canSave, loadedTemplate, strategyId, t, loadTemplates, _validatedParams, validationResult]);

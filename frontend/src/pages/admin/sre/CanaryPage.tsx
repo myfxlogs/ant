@@ -90,7 +90,7 @@ export default function CanaryPage() {
             <Input placeholder="v1.2.0-canary" />
           </Form.Item>
           <Form.Item name="accountIds" label={t('sre.canary.accountIdsLabel', { defaultValue: 'Canary Account IDs (comma or newline separated)' })} rules={[{ required: true }]}>
-            <Input.TextArea rows={2} placeholder="account-1, account-2" />
+            <Input.TextArea rows={2} placeholder={t('sre.canary.accountIdsPlaceholder', { defaultValue: 'account-1, account-2' })} />
           </Form.Item>
           <Form.Item name="duration_days" label={t('sre.canary.durationDays', { defaultValue: 'Canary Days' })} rules={[{ required: true }]}>
             <InputNumber min={1} max={90} style={{ width: '100%' }} />

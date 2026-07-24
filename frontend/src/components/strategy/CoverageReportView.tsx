@@ -1,5 +1,6 @@
 import { Progress, Tag, Typography, Collapse } from 'antd';
 import { CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
 
@@ -21,12 +22,13 @@ interface CoverageData {
 }
 
 export default function CoverageReportView({ json }: { json: Record<string, unknown> }) {
+  const { t } = useTranslation();
   const data = json as unknown as CoverageData;
 
   if (!data.compiles) {
     return (
       <div style={{ marginTop: 6, padding: '6px 8px', background: '#fff2f0', borderRadius: 4, fontSize: 10 }}>
-        <CloseCircleOutlined style={{ color: '#ff4d4f' }} /> <b>Compilation failed</b>
+        <CloseCircleOutlined style={{ color: '#ff4d4f' }} /> <b>{t('strategy.validate.compilationFailed', { defaultValue: 'Compilation failed' })}</b>
         {data.error && <div style={{ color: '#cf1322', marginTop: 2 }}>{data.error}</div>}
         {data.recommendation && <div style={{ color: '#8c8c8c', marginTop: 2 }}>{data.recommendation}</div>}
       </div>
@@ -82,7 +84,7 @@ export default function CoverageReportView({ json }: { json: Record<string, unkn
       {/* Indicators */}
       {data.indicators?.length > 0 && (
         <div style={{ marginBottom: 4 }}>
-          <Text type="secondary" style={{ fontSize: 10 }}>Indicators: </Text>
+          <Text type="secondary" style={{ fontSize: 10 }}>{t('strategy.chat.indicators', { defaultValue: 'Indicators:' })} </Text>
           {data.indicators.map((ind, i) => (
             <Tag key={i} style={{ fontSize: 10, margin: 1 }}>{ind}</Tag>
           ))}

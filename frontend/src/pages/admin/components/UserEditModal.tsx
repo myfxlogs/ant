@@ -42,7 +42,7 @@ export default function UserEditModal({ visible, form, onFinish, onCancel }: Pro
             { pattern: ACCOUNT_NUMBER_PATTERN, message: t('admin.userManagement.form.accountNumberInvalid', { defaultValue: '5-6 digits, no leading 0, no 4 or 7' }) },
           ]}
         >
-          <Input placeholder="e.g. 123568" maxLength={6} />
+          <Input placeholder={t('admin.userManagement.form.accountNumberPlaceholder', { defaultValue: 'e.g. 123568' })} maxLength={6} />
         </Form.Item>
         <Form.Item>
           <Space>

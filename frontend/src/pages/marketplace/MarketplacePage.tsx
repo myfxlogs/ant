@@ -55,7 +55,7 @@ function MarketplaceUI() {
 
   return (
     <MarketplaceProvider value={{ ...m, compareIds: compare.compareIds, toggleCompare: compare.toggleCompare }}>
-      <Seo title="Strategy Marketplace" description="Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked." path="/marketplace" keywords={[
+      <Seo title={t('marketplace.seoTitle')} description={t('marketplace.seoDesc')} path="/marketplace" keywords={[
         'strategy marketplace', 'buy forex EA', 'MT4 strategies', 'MT5 strategies',
         'trading robots', 'AI trading strategies', 'IC Markets', 'Pepperstone', 'XM',
         'Exness', 'OANDA', 'automated trading', 'algorithmic trading',

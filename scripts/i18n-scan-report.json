@@ -58,9 +58,9 @@
   {
     "file": "components/backtest/useBacktestRunner.ts",
     "line": 237,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Cancel failed",
-    "context": "message.error(e?.message || 'Cancel failed');"
+    "context": "message.error(e?.message || t('strategy.backtest.cancelFailed', { defaultValue: 'Cancel failed' }));"
   },
   {
     "file": "components/chart/IndicatorPicker.tsx",
@@ -310,30 +310,30 @@
   {
     "file": "components/strategy/ChatHistory.tsx",
     "line": 240,
-    "type": "JSX children",
+    "type": "t() defaultValue (should be real key)",
     "text": "Entry:",
-    "context": "{turn.profile.entryLogic && <div><strong>Entry:</strong> {turn.profile.entryLogic}</div>}"
+    "context": "{turn.profile.entryLogic && <div><strong>{t('strategy.chat.entry', { defaultValue: 'Entry:' })}</strong> {turn.profile.e"
   },
   {
     "file": "components/strategy/ChatHistory.tsx",
     "line": 241,
-    "type": "JSX children",
+    "type": "t() defaultValue (should be real key)",
     "text": "Exit:",
-    "context": "{turn.profile.exitLogic && <div><strong>Exit:</strong> {turn.profile.exitLogic}</div>}"
+    "context": "{turn.profile.exitLogic && <div><strong>{t('strategy.chat.exit', { defaultValue: 'Exit:' })}</strong> {turn.profile.exit"
   },
   {
     "file": "components/strategy/ChatHistory.tsx",
     "line": 242,
-    "type": "JSX children",
+    "type": "t() defaultValue (should be real key)",
     "text": "Risk:",
-    "context": "{turn.profile.riskManagement && <div><strong>Risk:</strong> {turn.profile.riskManagement}</div>}"
+    "context": "{turn.profile.riskManagement && <div><strong>{t('strategy.chat.risk', { defaultValue: 'Risk:' })}</strong> {turn.profile"
   },
   {
     "file": "components/strategy/ChatHistory.tsx",
     "line": 244,
-    "type": "JSX children",
+    "type": "t() defaultValue (should be real key)",
     "text": "Indicators:",
-    "context": "<div><strong>Indicators:</strong> {turn.profile.indicatorsUsed.join(', ')}</div>"
+    "context": "<div><strong>{t('strategy.chat.indicators', { defaultValue: 'Indicators:' })}</strong> {turn.profile.indicatorsUsed.join"
   },
   {
     "file": "components/strategy/ChatMessageItem.tsx",
@@ -379,17 +379,17 @@
   },
   {
     "file": "components/strategy/CoverageReportView.tsx",
-    "line": 29,
-    "type": "JSX children",
+    "line": 31,
+    "type": "t() defaultValue (should be real key)",
     "text": "Compilation failed",
-    "context": "<CloseCircleOutlined style={{ color: '#ff4d4f' }} /> <b>Compilation failed</b>"
+    "context": "<CloseCircleOutlined style={{ color: '#ff4d4f' }} /> <b>{t('strategy.validate.compilationFailed', { defaultValue: 'Compi"
   },
   {
     "file": "components/strategy/CoverageReportView.tsx",
-    "line": 85,
-    "type": "JSX children",
+    "line": 87,
+    "type": "t() defaultValue (should be real key)",
     "text": "Indicators:",
-    "context": "<Text type=\"secondary\" style={{ fontSize: 10 }}>Indicators: </Text>"
+    "context": "<Text type=\"secondary\" style={{ fontSize: 10 }}>{t('strategy.chat.indicators', { defaultValue: 'Indicators:' })} </Text>"
   },
   {
     "file": "components/strategy/ImportAnalysisReport.tsx",
@@ -597,9 +597,9 @@
   {
     "file": "pages/accounts/components/AccountAnalyticsStats.tsx",
     "line": 156,
-    "type": "JSX children",
+    "type": "t() defaultValue (should be real key)",
     "text": "P&L:",
-    "context": "<div>P&L: <strong style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{profit >= 0 ? '+' : '"
+    "context": "<div>{t('analytics.pnl', { defaultValue: 'P&L:' })} <strong style={{ color: profit >= 0 ? 'var(--color-success)' : 'var("
   },
   {
     "file": "pages/accounts/components/ShareAccountButton.tsx",
@@ -789,13 +789,6 @@
     "type": "t() defaultValue (should be real key)",
     "text": "Please enter provider ID",
     "context": "<Form.Item name=\"providerId\" label={t('admin.aiGateway.providerId', { defaultValue: 'Provider ID' })} rules={[{ required"
-  },
-  {
-    "file": "pages/admin/AIGatewayModals.tsx",
-    "line": 47,
-    "type": "JSX attr: placeholder",
-    "text": "deepseek / openai / qwen ...",
-    "context": "<Input placeholder=\"deepseek / openai / qwen ...\" />"
   },
   {
     "file": "pages/admin/AIGatewayModals.tsx",
@@ -1164,9 +1157,9 @@
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
     "line": 48,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Failed to load tasks",
-    "context": "message.error(e?.message || 'Failed to load tasks');"
+    "context": "message.error(e?.message || t('admin.autogen.loadFailed', { defaultValue: 'Failed to load tasks' }));"
   },
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
@@ -1178,9 +1171,9 @@
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
     "line": 64,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Approve failed",
-    "context": "message.error(e?.message || 'Approve failed');"
+    "context": "message.error(e?.message || t('admin.autogen.approveFailed', { defaultValue: 'Approve failed' }));"
   },
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
@@ -1192,9 +1185,9 @@
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
     "line": 76,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Reject failed",
-    "context": "message.error(e?.message || 'Reject failed');"
+    "context": "message.error(e?.message || t('admin.autogen.rejectFailed', { defaultValue: 'Reject failed' }));"
   },
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
@@ -1206,9 +1199,9 @@
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
     "line": 94,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Trigger failed",
-    "context": "message.error(e?.message || 'Trigger failed');"
+    "context": "message.error(e?.message || t('admin.autogen.triggerFailed', { defaultValue: 'Trigger failed' }));"
   },
   {
     "file": "pages/admin/AutoGenTaskReview.tsx",
@@ -1423,9 +1416,9 @@
   {
     "file": "pages/admin/CouponManagement.tsx",
     "line": 55,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Failed to create coupon",
-    "context": "message.error(resp.error || 'Failed to create coupon');"
+    "context": "message.error(resp.error || t('admin.coupon.createFailed', { defaultValue: 'Failed to create coupon' }));"
   },
   {
     "file": "pages/admin/CouponManagement.tsx",
@@ -2165,9 +2158,9 @@
   {
     "file": "pages/admin/RefundManagement.tsx",
     "line": 54,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Failed to process refund",
-    "context": "message.error(resp.error || 'Failed to process refund');"
+    "context": "message.error(resp.error || t('admin.refund.processFailed', { defaultValue: 'Failed to process refund' }));"
   },
   {
     "file": "pages/admin/RefundManagement.tsx",
@@ -2396,9 +2389,9 @@
   {
     "file": "pages/admin/components/UserEditModal.tsx",
     "line": 45,
-    "type": "JSX attr: placeholder",
+    "type": "t() defaultValue (should be real key)",
     "text": "e.g. 123568",
-    "context": "<Input placeholder=\"e.g. 123568\" maxLength={6} />"
+    "context": "<Input placeholder={t('admin.userManagement.form.accountNumberPlaceholder', { defaultValue: 'e.g. 123568' })} maxLength="
   },
   {
     "file": "pages/admin/sre/BreakersPage.tsx",
@@ -2564,9 +2557,9 @@
   {
     "file": "pages/admin/sre/CanaryPage.tsx",
     "line": 93,
-    "type": "JSX attr: placeholder",
+    "type": "t() defaultValue (should be real key)",
     "text": "account-1, account-2",
-    "context": "<Input.TextArea rows={2} placeholder=\"account-1, account-2\" />"
+    "context": "<Input.TextArea rows={2} placeholder={t('sre.canary.accountIdsPlaceholder', { defaultValue: 'account-1, account-2' })} /"
   },
   {
     "file": "pages/admin/sre/CanaryPage.tsx",
@@ -3283,27 +3276,6 @@
     "context": "throw new Error(t(SYSTEM_A_I_CUSTOM_PROVIDER_NAME_REQUIRED_KEY, { defaultValue: '请先填写自定义厂商名称' }));"
   },
   {
-    "file": "pages/auth/ForgotPassword.tsx",
-    "line": 181,
-    "type": "JSX attr: title",
-    "text": "Forgot Password",
-    "context": "<Seo title=\"Forgot Password\" description=\"Reset your AlphaForge account password.\" path=\"/forgot-password\" />"
-  },
-  {
-    "file": "pages/auth/ForgotPassword.tsx",
-    "line": 181,
-    "type": "JSX attr: description",
-    "text": "Reset your AlphaForge account password.",
-    "context": "<Seo title=\"Forgot Password\" description=\"Reset your AlphaForge account password.\" path=\"/forgot-password\" />"
-  },
-  {
-    "file": "pages/auth/Login.tsx",
-    "line": 49,
-    "type": "JSX attr: description",
-    "text": "Log in to AlphaForge to manage your MT4/MT5 trading strategies.",
-    "context": "<Seo title=\"Login\" description=\"Log in to AlphaForge to manage your MT4/MT5 trading strategies.\" path=\"/login\" />"
-  },
-  {
     "file": "pages/auth/Login.tsx",
     "line": 100,
     "type": "t() defaultValue (should be real key)",
@@ -3318,81 +3290,11 @@
     "context": "placeholder={t('auth.fields.login', { defaultValue: '邮箱/账号' })}"
   },
   {
-    "file": "pages/auth/Register.tsx",
-    "line": 47,
-    "type": "JSX attr: description",
-    "text": "Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strategies.",
-    "context": "<Seo title=\"Register\" description=\"Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strate"
-  },
-  {
-    "file": "pages/auth/ResetPassword.tsx",
-    "line": 44,
-    "type": "JSX attr: title",
-    "text": "Reset Password",
-    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
-  },
-  {
-    "file": "pages/auth/ResetPassword.tsx",
-    "line": 44,
-    "type": "JSX attr: description",
-    "text": "Reset your AlphaForge account password.",
-    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
-  },
-  {
-    "file": "pages/auth/ResetPassword.tsx",
-    "line": 63,
-    "type": "JSX attr: title",
-    "text": "Reset Password",
-    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
-  },
-  {
-    "file": "pages/auth/ResetPassword.tsx",
-    "line": 63,
-    "type": "JSX attr: description",
-    "text": "Reset your AlphaForge account password.",
-    "context": "<Seo title=\"Reset Password\" description=\"Reset your AlphaForge account password.\" path=\"/reset-password\" />"
-  },
-  {
-    "file": "pages/auth/VerifyEmail.tsx",
-    "line": 152,
-    "type": "JSX attr: title",
-    "text": "Verify Email",
-    "context": "<Seo title=\"Verify Email\" description=\"Verify your email address\" path=\"/verify-email\" />"
-  },
-  {
-    "file": "pages/auth/VerifyEmail.tsx",
-    "line": 152,
-    "type": "JSX attr: description",
-    "text": "Verify your email address",
-    "context": "<Seo title=\"Verify Email\" description=\"Verify your email address\" path=\"/verify-email\" />"
-  },
-  {
     "file": "pages/dashboard/quickActions.tsx",
     "line": 20,
     "type": "t() defaultValue (should be real key)",
     "text": "AI Strategy",
     "context": "{ key: 'ai', label: t('dashboard.quickActions.aiStrategy', { defaultValue: 'AI Strategy' }), path: '/strategy/workspace'"
-  },
-  {
-    "file": "pages/landing/BrokersPage.tsx",
-    "line": 56,
-    "type": "JSX attr: title",
-    "text": "Supported MT4/MT5 Brokers",
-    "context": "title=\"Supported MT4/MT5 Brokers\""
-  },
-  {
-    "file": "pages/landing/BrokersPage.tsx",
-    "line": 57,
-    "type": "JSX attr: description",
-    "text": "AlphaForge supports 30+ MT4/MT5 brokers including IC Markets, Pepperstone, XM, Exness, OANDA, and more. Connect your broker account and start automated trading today.",
-    "context": "description=\"AlphaForge supports 30+ MT4/MT5 brokers including IC Markets, Pepperstone, XM, Exness, OANDA, and more. Con"
-  },
-  {
-    "file": "pages/landing/BrokersPage.tsx",
-    "line": 92,
-    "type": "JSX children",
-    "text": "Compatible with AlphaForge",
-    "context": "<Text style={{ fontSize: 11, color: '#8c8c8c' }}>Compatible with AlphaForge</Text>"
   },
   {
     "file": "pages/landing/BrokersPage.tsx",
@@ -3437,123 +3339,60 @@
     "context": "if (!c) throw new Error('useMarketplaceCtx must be used within MarketplaceProvider');"
   },
   {
-    "file": "pages/marketplace/MarketplacePage.tsx",
-    "line": 58,
-    "type": "JSX attr: title",
-    "text": "Strategy Marketplace",
-    "context": "<Seo title=\"Strategy Marketplace\" description=\"Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pe"
-  },
-  {
-    "file": "pages/marketplace/MarketplacePage.tsx",
-    "line": 58,
-    "type": "JSX attr: description",
-    "text": "Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked.",
-    "context": "<Seo title=\"Strategy Marketplace\" description=\"Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pe"
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 38,
-    "type": "JSX attr: description",
-    "text": "Strategy not found or no longer available",
-    "context": "<Empty description=\"Strategy not found or no longer available\" />"
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 95,
-    "type": "JSX attr: title",
-    "text": "Backtest Return",
-    "context": "title=\"Backtest Return\""
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 101,
-    "type": "JSX attr: title",
-    "text": "Max Drawdown",
-    "context": "title=\"Max Drawdown\""
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 112,
-    "type": "JSX children",
-    "text": "Live Performance",
-    "context": "<Title level={5}>Live Performance</Title>"
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 115,
-    "type": "JSX attr: title",
-    "text": "Live Return",
-    "context": "<Statistic title=\"Live Return\" value={data.liveTotalReturn} />"
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 118,
-    "type": "JSX attr: title",
-    "text": "Live Max DD",
-    "context": "<Statistic title=\"Live Max DD\" value={data.liveMaxDrawdown} />"
-  },
-  {
-    "file": "pages/marketplace/StrategySharePage.tsx",
-    "line": 133,
-    "type": "JSX children",
-    "text": "Code Preview",
-    "context": "<Title level={5}>Code Preview</Title>"
-  },
-  {
     "file": "pages/marketplace/components/AutoGeneratePanel.tsx",
     "line": 55,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Failed to update pricing",
-    "context": "message.error(e?.message || 'Failed to update pricing');"
+    "context": "message.error(e?.message || t('marketplace.autogen.pricingFailed', { defaultValue: 'Failed to update pricing' }));"
   },
   {
     "file": "pages/marketplace/components/AutoGenerateResult.tsx",
     "line": 78,
-    "type": "JSX attr: title",
+    "type": "t() defaultValue (should be real key)",
     "text": "Total Return",
-    "context": "<Col span={4}><Statistic title=\"Total Return\" value={result.backtest.totalReturn} /></Col>"
+    "context": "<Col span={4}><Statistic title={t('marketplace.totalReturn', { defaultValue: 'Total Return' })} value={result.backtest.t"
   },
   {
     "file": "pages/marketplace/components/AutoGenerateResult.tsx",
     "line": 79,
-    "type": "JSX attr: title",
+    "type": "t() defaultValue (should be real key)",
     "text": "Max DD",
-    "context": "<Col span={4}><Statistic title=\"Max DD\" value={result.backtest.maxDrawdown} /></Col>"
+    "context": "<Col span={4}><Statistic title={t('marketplace.maxDD', { defaultValue: 'Max DD' })} value={result.backtest.maxDrawdown} "
   },
   {
     "file": "pages/marketplace/components/AutoGenerateResult.tsx",
     "line": 81,
-    "type": "JSX attr: title",
+    "type": "t() defaultValue (should be real key)",
     "text": "Win Rate",
-    "context": "<Col span={4}><Statistic title=\"Win Rate\" value={result.backtest.winRate} /></Col>"
+    "context": "<Col span={4}><Statistic title={t('marketplace.winRate', { defaultValue: 'Win Rate' })} value={result.backtest.winRate} "
   },
   {
     "file": "pages/marketplace/components/OptimizationTab.tsx",
     "line": 283,
-    "type": "JSX attr: label",
+    "type": "t() defaultValue (should be real key)",
     "text": "Decay Score",
-    "context": "<Descriptions.Item label=\"Decay Score\">{previewData.decayMetrics.decayScore}</Descriptions.Item>"
+    "context": "<Descriptions.Item label={t('marketplace.optimization.decayScore', { defaultValue: 'Decay Score' })}>{previewData.decayM"
   },
   {
     "file": "pages/marketplace/components/OptimizationTab.tsx",
     "line": 285,
-    "type": "JSX attr: label",
+    "type": "t() defaultValue (should be real key)",
     "text": "Sharpe Decline",
-    "context": "<Descriptions.Item label=\"Sharpe Decline\">{previewData.decayMetrics.sharpeDeclinePct}</Descriptions.Item>"
+    "context": "<Descriptions.Item label={t('marketplace.optimization.sharpeDecline', { defaultValue: 'Sharpe Decline' })}>{previewData."
   },
   {
     "file": "pages/marketplace/components/OptimizationTab.tsx",
     "line": 286,
-    "type": "JSX attr: label",
+    "type": "t() defaultValue (should be real key)",
     "text": "Win Rate Decline",
-    "context": "<Descriptions.Item label=\"Win Rate Decline\">{previewData.decayMetrics.winrateDeclinePct}</Descriptions.Item>"
+    "context": "<Descriptions.Item label={t('marketplace.optimization.winRateDecline', { defaultValue: 'Win Rate Decline' })}>{previewDa"
   },
   {
     "file": "pages/marketplace/components/OptimizationTab.tsx",
     "line": 287,
-    "type": "JSX attr: label",
+    "type": "t() defaultValue (should be real key)",
     "text": "Return Delta",
-    "context": "<Descriptions.Item label=\"Return Delta\">{previewData.decayMetrics.returnDelta}</Descriptions.Item>"
+    "context": "<Descriptions.Item label={t('marketplace.optimization.returnDelta', { defaultValue: 'Return Delta' })}>{previewData.deca"
   },
   {
     "file": "pages/share/SharePerformancePage.tsx",
@@ -4474,31 +4313,31 @@
   },
   {
     "file": "pages/strategy/hooks/useAIWorkflow.ts",
-    "line": 178,
+    "line": 180,
     "type": "throw Error",
     "text": "AI returned no code",
     "context": "if (!result.text) throw new Error('AI returned no code');"
   },
   {
     "file": "pages/strategy/hooks/useAIWorkflow.ts",
-    "line": 189,
-    "type": "message call",
-    "text": "Auto-fix passed after ${iter} iteration${iter > 1 ?",
-    "context": "message.success(`Auto-fix passed after ${iter} iteration${iter > 1 ? 's' : ''}`);"
+    "line": 191,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Auto-fix passed after {{iter}} iteration(s)",
+    "context": "message.success(t('strategy.validate.autoFixPassed', { defaultValue: 'Auto-fix passed after {{iter}} iteration(s)', iter"
   },
   {
     "file": "pages/strategy/hooks/useAIWorkflow.ts",
-    "line": 204,
-    "type": "message call",
-    "text": "Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations",
-    "context": "message.warning(`Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations`);"
+    "line": 206,
+    "type": "t() defaultValue (should be real key)",
+    "text": "Auto-fix: {{count}} issue(s) remain after {{maxIters}} iterations",
+    "context": "message.warning(t('strategy.validate.autoFixRemaining', { defaultValue: 'Auto-fix: {{count}} issue(s) remain after {{max"
   },
   {
     "file": "pages/strategy/hooks/useAIWorkflow.ts",
-    "line": 212,
-    "type": "message call",
+    "line": 214,
+    "type": "t() defaultValue (should be real key)",
     "text": "Auto-fix failed",
-    "context": "message.error((e as Error)?.message || 'Auto-fix failed');"
+    "context": "message.error((e as Error)?.message || t('strategy.validate.autoFixFailed', { defaultValue: 'Auto-fix failed' }));"
   },
   {
     "file": "pages/strategy/hooks/useLibraryTemplates.ts",
@@ -4510,58 +4349,58 @@
   {
     "file": "pages/strategy/hooks/useLibraryTemplates.ts",
     "line": 110,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Validation failed",
-    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }"
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || t('strategy.validate.failed', { defaultValue: 'Validation "
   },
   {
     "file": "pages/strategy/hooks/useQuickTradeData.ts",
-    "line": 65,
-    "type": "message call",
+    "line": 67,
+    "type": "t() defaultValue (should be real key)",
     "text": "Position closed",
-    "context": "message.success(result.message || 'Position closed');"
+    "context": "message.success(result.message || t('strategy.live.positionClosed', { defaultValue: 'Position closed' }));"
   },
   {
     "file": "pages/strategy/hooks/useQuickTradeData.ts",
-    "line": 68,
-    "type": "message call",
+    "line": 70,
+    "type": "t() defaultValue (should be real key)",
     "text": "Close failed",
-    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Close failed'); }"
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || t('strategy.live.closeFailed', { defaultValue: 'Close fail"
   },
   {
     "file": "pages/strategy/hooks/useStrategyCode.ts",
     "line": 42,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Validation failed",
-    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }"
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || t('strategy.validate.failed', { defaultValue: 'Validation "
   },
   {
     "file": "pages/strategy/hooks/useStrategyCode.ts",
     "line": 70,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Failed to load templates",
-    "context": "catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load templates'); }"
+    "context": "catch (e: unknown) { message.error((e as Error)?.message || t('strategy.templates.loadFailed', { defaultValue: 'Failed t"
   },
   {
     "file": "pages/strategy/hooks/useStrategyCode.ts",
     "line": 81,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Failed to load template",
-    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); return null; }"
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || t('strategy.templates.loadOneFailed', { defaultValue: 'Fai"
   },
   {
     "file": "pages/strategy/hooks/useStrategyCode.ts",
     "line": 105,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Save failed",
-    "context": "} catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }"
+    "context": "} catch (e: unknown) { message.error((e as Error)?.message || t('common.saveFailed', { defaultValue: 'Save failed' })); "
   },
   {
     "file": "pages/strategy/hooks/useTuning.ts",
     "line": 64,
-    "type": "message call",
+    "type": "t() defaultValue (should be real key)",
     "text": "Tuning failed",
-    "context": "message.error(e instanceof Error ? e.message : 'Tuning failed');"
+    "context": "message.error(e instanceof Error ? e.message : t('strategy.tuning.failed', { defaultValue: 'Tuning failed' }));"
   },
   {
     "file": "pages/subscription/SubscriptionPage.tsx",
@@ -4632,13 +4471,6 @@
     "type": "t() defaultValue (should be real key)",
     "text": "Plan change failed. Please try again.",
     "context": "message.error(t('subscription.changeFailed', { defaultValue: 'Plan change failed. Please try again.' }));"
-  },
-  {
-    "file": "pages/subscription/SubscriptionPage.tsx",
-    "line": 122,
-    "type": "JSX attr: description",
-    "text": "Manage your subscription plan",
-    "context": "<Seo title=\"Subscription\" description=\"Manage your subscription plan\" path=\"/subscription\" />"
   },
   {
     "file": "pages/subscription/SubscriptionPage.tsx",

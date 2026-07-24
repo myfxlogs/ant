@@ -41,7 +41,7 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <>
-        <Seo title="Reset Password" description="Reset your AlphaForge account password." path="/reset-password" />
+        <Seo title={t('auth.seo.resetPassword.title')} description={t('auth.seo.resetPassword.description')} path="/reset-password" />
         <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg-secondary)' }}>
           <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
             <div className="py-6 px-6 text-center">
@@ -60,7 +60,7 @@ export default function ResetPassword() {
 
   return (
     <>
-      <Seo title="Reset Password" description="Reset your AlphaForge account password." path="/reset-password" />
+      <Seo title={t('auth.seo.resetPassword.title')} description={t('auth.seo.resetPassword.description')} path="/reset-password" />
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--color-bg-secondary)' }}>
         <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           <div className="py-6 px-6 text-center" style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.06)' }}>

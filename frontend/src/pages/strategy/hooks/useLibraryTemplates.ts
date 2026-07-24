@@ -107,7 +107,7 @@ export function useLibraryTemplates() {
       } else {
         message.error(result.errors?.[0] || result.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY));
       }
-    } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
+    } catch (e: unknown) { message.error((e as Error)?.message || t('strategy.validate.failed', { defaultValue: 'Validation failed' })); }
     finally { setCodeValidating(false); }
   }, [t]);
 

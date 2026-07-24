@@ -237,11 +237,11 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
                   title={turn.profile.strategyType || t(PROFILE_KEY)}
                   subtitle={turn.profile.description}
                 >
-                  {turn.profile.entryLogic && <div><strong>Entry:</strong> {turn.profile.entryLogic}</div>}
-                  {turn.profile.exitLogic && <div><strong>Exit:</strong> {turn.profile.exitLogic}</div>}
-                  {turn.profile.riskManagement && <div><strong>Risk:</strong> {turn.profile.riskManagement}</div>}
+                  {turn.profile.entryLogic && <div><strong>{t('strategy.chat.entry', { defaultValue: 'Entry:' })}</strong> {turn.profile.entryLogic}</div>}
+                  {turn.profile.exitLogic && <div><strong>{t('strategy.chat.exit', { defaultValue: 'Exit:' })}</strong> {turn.profile.exitLogic}</div>}
+                  {turn.profile.riskManagement && <div><strong>{t('strategy.chat.risk', { defaultValue: 'Risk:' })}</strong> {turn.profile.riskManagement}</div>}
                   {turn.profile.indicatorsUsed && turn.profile.indicatorsUsed.length > 0 && (
-                    <div><strong>Indicators:</strong> {turn.profile.indicatorsUsed.join(', ')}</div>
+                    <div><strong>{t('strategy.chat.indicators', { defaultValue: 'Indicators:' })}</strong> {turn.profile.indicatorsUsed.join(', ')}</div>
                   )}
                 </CollapsibleBlock>
               )}

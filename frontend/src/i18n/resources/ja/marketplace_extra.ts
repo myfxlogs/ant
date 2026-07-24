@@ -1,8 +1,9 @@
 // Auto-generated supplementary keys for marketplace
-// TODO: Translate to ja
 const MarketplaceExtra = {
   "marketplace": {
     "title": "Explore Strategies",
+    "seoTitle": "Strategy Marketplace",
+    "seoDesc": "Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked.",
     "publish": {
       "priceModel": {
         "once": "One-Time Purchase"

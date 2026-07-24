@@ -75,11 +75,11 @@ export default function AutoGenerateResult({
 
       {result?.backtest && (
         <Row gutter={16} style={{ marginBottom: 16 }}>
-          <Col span={4}><Statistic title="Total Return" value={result.backtest.totalReturn} /></Col>
-          <Col span={4}><Statistic title="Max DD" value={result.backtest.maxDrawdown} /></Col>
+          <Col span={4}><Statistic title={t('marketplace.totalReturn', { defaultValue: 'Total Return' })} value={result.backtest.totalReturn} /></Col>
+          <Col span={4}><Statistic title={t('marketplace.maxDD', { defaultValue: 'Max DD' })} value={result.backtest.maxDrawdown} /></Col>
           <Col span={4}><Statistic title="Sharpe" value={result.backtest.sharpeRatio} /></Col>
-          <Col span={4}><Statistic title="Win Rate" value={result.backtest.winRate} /></Col>
-          <Col span={4}><Statistic title="Trades" value={result.backtest.totalTrades} /></Col>
+          <Col span={4}><Statistic title={t('marketplace.winRate', { defaultValue: 'Win Rate' })} value={result.backtest.winRate} /></Col>
+          <Col span={4}><Statistic title={t('marketplace.trades', { defaultValue: 'Trades' })} value={result.backtest.totalTrades} /></Col>
         </Row>
       )}
 
