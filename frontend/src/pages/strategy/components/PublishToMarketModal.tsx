@@ -146,7 +146,31 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
         </Form.Item>
 
         <Form.Item name="trialDays" label={t('marketplace.publish.trialDaysLabel', { defaultValue: 'Trial Period' })}>
-          <Select options={trialDaysOptions} />
+          <Select
+            showSearch
+            options={trialDaysOptions}
+            placeholder={t('marketplace.publish.trialDaysPlaceholder', { defaultValue: 'Select or enter custom days' })}
+            filterOption={(input, option) =>
+              String(option?.value ?? '').includes(input) ||
+              String(option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            dropdownRender={(menu) => (
+              <>
+                {menu}
+                <div style={{ padding: '8px 12px', borderTop: '1px solid var(--ant-color-split)' }}>
+                  <InputNumber
+                    min={1}
+                    max={365}
+                    placeholder={t('marketplace.publish.trialDaysCustom', { defaultValue: 'Custom days' })}
+                    style={{ width: '100%' }}
+                    onChange={(v) => {
+                      if (v && v > 0) form.setFieldValue('trialDays', v);
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          />
         </Form.Item>
 
         {backtestSnapshot && (
