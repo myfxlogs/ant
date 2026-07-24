@@ -76,13 +76,10 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	pb := templateRowToProto(row)
-	// Strip code for non-owners without marketplace access (paid subscription/purchase/trial).
-	// This allows subscribers to view code for deploy/backtest, but fork is blocked at UI level.
-	if s.codeAccess != nil && row.UserID != nil && row.UserID.String() != uid.String() && !row.IsSystem {
-		allowed, _ := s.codeAccess.CanAccessCode(ctx, uid.String(), id.String())
-		if !allowed {
-			pb.Code = ""
-		}
+	// Strip code for all non-owners. Subscribers can deploy/backtest via
+	// marketplace APIs, but source code is the author's IP and must not be exposed.
+	if row.UserID != nil && row.UserID.String() != uid.String() && !row.IsSystem {
+		pb.Code = ""
 	}
 	return connect.NewResponse(pb), nil
 }
