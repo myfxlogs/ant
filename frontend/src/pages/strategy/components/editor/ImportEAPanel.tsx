@@ -11,7 +11,7 @@ import type { SubmitStrategyResponse } from '@/gen/ant/v1/agent_gateway_pb';
 
 const { TextArea } = Input;
 const { Text } = Typography;
-type ImportMethod = 'migration' | 'bridge';
+type ImportMethod = 'ai' | 'bridge';
 
 interface Props {
   onApplyCode: (code: string) => void;
@@ -24,7 +24,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
   const [eaTranslating, setEaTranslating] = useState(false);
   const [eaResult, setEaResult] = useState('');
   const [eaStrategyId, setEaStrategyId] = useState('');
-  const [importMethod, setImportMethod] = useState<ImportMethod>('migration');
+  const [importMethod, setImportMethod] = useState<ImportMethod>('ai');
   const [analysis, setAnalysis] = useState<AnalyzeImportCodeResponse | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [bridgeResult, setBridgeResult] = useState<SubmitStrategyResponse | null>(null);
@@ -90,13 +90,13 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       <div style={{ padding: '4px 14px', borderTop: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <Radio.Group size="small" value={importMethod} onChange={e => { setImportMethod(e.target.value); setEaResult(''); setAnalysis(null); setBridgeResult(null); }}
           optionType="button" buttonStyle="solid">
-          <Radio.Button value="migration"><ThunderboltOutlined /> {t('strategy.importEA.migration', { defaultValue: '策略导入' })}</Radio.Button>
+          <Radio.Button value="ai"><RobotOutlined /> {t('strategy.importEA.aiTranslate', { defaultValue: 'AI 翻译' })}</Radio.Button>
           <Radio.Button value="bridge"><RobotOutlined /> {t('strategy.importEA.bridge', { defaultValue: '盲区桥接' })}</Radio.Button>
         </Radio.Group>
       </div>
 
-      {/* Migration flow */}
-      {importMethod === 'migration' && (
+      {/* AI translation flow: analyze first, then import or AI translate */}
+      {importMethod === 'ai' && (
         <>
           <div style={{ padding: '6px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center' }}>
             {!analysis && (
