@@ -8,14 +8,14 @@ const AdminExtra = {
         "loadModels": "載入模型失敗"
       },
       "addProviderPending": "新增供應商功能待後端支援",
-      "title": "AI 閘道管理",
+      "title": "AI 閘道器管理",
       "description": "管理 AI 供應商、模型和定價。使用者從可用模型中選擇，按 token 從錢包計費。",
       "addProvider": "新增供應商",
       "columns": {
         "baseUrl": "基礎 URL",
         "apiKey": "API 金鑰"
       },
-      "configured": "未設定",
+      "configured": "未配置",
       "editProvider": "新增供應商",
       "providerId": "請輸入供應商 ID",
       "providerIdPlaceholder": "deepseek / openai / qwen ...",
@@ -34,20 +34,20 @@ const AdminExtra = {
     },
     "account": {
       "errors": {
-        "loadFailed": "載入帳號失敗",
+        "loadFailed": "載入賬戶失敗",
         "freezeFailed": "凍結失敗",
         "unfreezeFailed": "解凍失敗"
       },
-      "frozen": "帳號已凍結",
-      "unfrozen": "帳號已解凍",
+      "frozen": "賬戶已凍結",
+      "unfrozen": "賬戶已解凍",
       "columns": {
         "createdAt": "建立時間"
       },
-      "confirmFreeze": "凍結此帳號？",
-      "title": "帳號管理",
-      "searchPlaceholder": "搜尋帳號",
-      "detail": "帳號詳情",
-      "auditLogs": "稽核日誌"
+      "confirmFreeze": "凍結此賬戶？",
+      "title": "賬戶管理",
+      "searchPlaceholder": "搜尋賬戶",
+      "detail": "賬戶詳情",
+      "auditLogs": "審計日誌"
     },
     "settings": {
       "saveSuccess": "儲存成功",
@@ -62,7 +62,7 @@ const AdminExtra = {
       "addSetting": "新增設定",
       "permissionRules": "許可權規則 (permission.rule.N)",
       "permissionFormat": "格式：",
-      "permissionExample": "範例：",
+      "permissionExample": "示例：",
       "permissionAddRule": "新增規則：建立設定鍵",
       "addManagedSetting": "新增託管設定",
       "settingKey": "設定鍵",
@@ -70,10 +70,10 @@ const AdminExtra = {
       "valuePlaceholder": "例如：claude-sonnet-5,deepseek-v4"
     },
     "autogen": {
-      "approved": "任務已批准並發布",
+      "approved": "任務已批准併發布",
       "rejected": "任務已拒絕",
-      "enqueued": "{{count}} 個任務已排隊",
-      "confirmApprove": "批准並發布？",
+      "enqueued": "{{count}} 個任務已入隊",
+      "confirmApprove": "批准併發布？",
       "confirmReject": "拒絕此任務？",
       "title": "AI 策略生成任務",
       "allStatus": "全部狀態",
@@ -91,12 +91,12 @@ const AdminExtra = {
         "balanceBefore": "交易前餘額",
         "balanceAfter": "交易後餘額"
       },
-      "title": "帳單管理",
+      "title": "賬單管理",
       "monthlyRevenue": "月收入",
       "totalRevenue": "總收入",
       "activeSubs": "活躍訂閱",
-      "planRevenue": "方案收入明細",
-      "filterByPlan": "按方案篩選",
+      "planRevenue": "套餐收入明細",
+      "filterByPlan": "按套餐篩選",
       "filterByStatus": "按狀態篩選",
       "walletTransactions": "錢包交易",
       "filterByType": "按型別篩選",
@@ -107,8 +107,8 @@ const AdminExtra = {
       "fillRequired": "請填寫必填欄位",
       "created": "優惠券已建立",
       "createFailed": "建立優惠券失敗",
-      "disabled": "優惠券已停用",
-      "disableFailed": "停用優惠券失敗",
+      "disabled": "優惠券已禁用",
+      "disableFailed": "禁用優惠券失敗",
       "colMinPurchase": "最低消費",
       "create": "建立優惠券",
       "createTitle": "建立優惠券",
@@ -120,14 +120,14 @@ const AdminExtra = {
     },
     "dashboard": {
       "errors": {
-        "loadFailed": "載入儀錶板資料失敗"
+        "loadFailed": "載入儀表盤資料失敗"
       },
-      "title": "管理儀錶板",
+      "title": "管理儀表盤",
       "totalUsers": "總使用者數",
       "activeUsers": "活躍使用者",
       "verifiedUsers": "已驗證使用者",
-      "mtAccounts": "MT 帳號",
-      "onlineAccounts": "線上帳號",
+      "mtAccounts": "MT 賬戶",
+      "onlineAccounts": "線上賬戶",
       "todayTrades": "今日交易",
       "todayProfit": "今日盈虧",
       "activeSubs": "活躍訂閱",
@@ -141,12 +141,12 @@ const AdminExtra = {
     "logs": {
       "modules": {
         "userManagement": "使用者管理",
-        "accountManagement": "帳號管理",
-        "systemConfig": "系統設定"
+        "accountManagement": "賬戶管理",
+        "systemConfig": "系統配置"
       },
       "columns": {
         "actionType": "操作型別",
-        "ip": "IP 位址"
+        "ip": "IP 地址"
       },
       "errors": {
         "loadFailed": "載入日誌失敗"
@@ -208,7 +208,7 @@ const AdminExtra = {
       "filterStatus": "全部狀態",
       "approveTitle": "批准退款",
       "rejectTitle": "拒絕退款",
-      "reviewNotePlaceholder": "審核備註（拒絕時可選，批准時建議填寫）..."
+      "reviewNotePlaceholder": "稽核備註（拒絕時可選，批准時建議填寫）..."
     },
     "sidebar": {
       "shareManagement": "分享分析"
@@ -217,7 +217,7 @@ const AdminExtra = {
       "title": "Token ↔ USD 計算器",
       "selectModel": "選擇模型（計價基準）",
       "usdAmount": "USD 金額",
-      "fillResult": "填入結果"
+      "fillResult": "填充結果"
     },
     "wallet": {
       "errors": {
@@ -234,7 +234,7 @@ const AdminExtra = {
       "title": "錢包管理",
       "tabWallets": "使用者錢包",
       "userList": "使用者列表",
-      "searchPlaceholder": "搜尋錢包/電子郵件/暱稱",
+      "searchPlaceholder": "搜尋錢包/郵箱/暱稱",
       "noMatch": "無使用者",
       "walletDetail": "錢包詳情",
       "adjustBalance": "調整餘額",
@@ -245,7 +245,7 @@ const AdminExtra = {
     },
     "userManagement": {
       "form": {
-        "accountNumber": "帳號編號",
+        "accountNumber": "賬戶編號",
         "accountNumberInvalid": "5-6 位數字，不以 0 開頭，不含 4 或 7"
       },
       "messages": {

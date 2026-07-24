@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/ai_wizard_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/ai_wizard_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const AiWizard = {
   "ai": {
@@ -6,7 +6,7 @@ const AiWizard = {
       "generate": {
         "modals": {
           "final": {
-            "title": "程式碼已生成，建議點選「驗證程式碼」確認透過校驗"
+            "title": "程式碼已生成，建議點選\"驗證程式碼\"確認透過校驗"
           }
         },
         "status": {
@@ -80,14 +80,14 @@ const AiWizard = {
       "setup": {
         "modals": {
           "deleteDataset": {
-            "content": "確定刪除目前選中的凍結資料集嗎？",
+            "content": "確定刪除當前選中的凍結資料集嗎？",
             "ok": "刪除",
             "title": "刪除資料集"
           }
         },
         "actions": {
-          "deleteCurrentDataset": "刪除目前資料集",
-          "freezeFromCurrentRange": "從目前範圍凍結",
+          "deleteCurrentDataset": "刪除當前資料集",
+          "freezeFromCurrentRange": "從當前範圍凍結",
           "refreshDataset": "重新整理"
         },
         "cards": {
@@ -102,10 +102,10 @@ const AiWizard = {
         },
         "hints": {
           "nextWillGenerateCode": "下一步將開始生成策略程式碼。",
-          "tradeDataNextStep": "填寫完成後點選「下一步」，進入約束與目標設定。"
+          "tradeDataNextStep": "填寫完成後點選\"下一步\"，進入約束與目標設定。"
         },
         "labels": {
-          "account": "帳號",
+          "account": "賬號",
           "backtestRange": "回測範圍",
           "dataset": "凍結資料集",
           "historicalData": "歷史資料",
@@ -126,16 +126,16 @@ const AiWizard = {
           "datasetDeleted": "資料集已刪除"
         },
         "placeholders": {
-          "intentExample": "範例：突破趨勢跟隨；避開高波動；偏好更高勝率...",
+          "intentExample": "示例：突破趨勢跟隨；避開高波動；偏好更高勝率...",
           "macroExample": "示例：\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC 會議紀要\\\\\\\\\\\\\\\\n2024-01-05 20:30 非農就業資料",
-          "selectAccount": "選擇帳號",
+          "selectAccount": "選擇賬號",
           "selectFrozenDataset": "選擇凍結資料集",
           "selectSymbol": "選擇品種",
           "selectTimeframe": "選擇週期"
         },
         "validations": {
           "enterIntent": "請輸入策略目標/想法",
-          "selectAccount": "請選擇帳號",
+          "selectAccount": "請選擇賬號",
           "selectDataset": "請選擇資料集",
           "selectSymbol": "請選擇品種",
           "selectTimeframe": "請選擇週期"
@@ -143,7 +143,7 @@ const AiWizard = {
       },
       "prompts": {
         "base": {
-          "account": "帳號: {{accountId}}",
+          "account": "賬號: {{accountId}}",
           "constraints": "約束: 最大回撤={{maxDrawdownPct}}% 單筆風險={{riskPerTradePct}}% 日內最多交易={{maxTradesPerDay}} 次",
           "data": "資料: {{dataSpec}}",
           "empty": "(空)",
@@ -160,10 +160,10 @@ const AiWizard = {
         },
         "summary": {
           "codeTitle": "程式碼如下：",
-          "intro": "你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋這段 AlphaForge Python 策略程式碼的核心思路。",
-          "mustInclude1": "1) 策略型別/正規化",
-          "mustInclude2": "2) 主要入場條件（2~4 條要點）",
-          "mustInclude3": "3) 主要出場/止損止盈/風控約束（2~4 條要點）",
+          "intro": "你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋下面這段 AlphaForge Python 策略程式碼的核心思路，幫助使用者判斷是否符合預期。",
+          "mustInclude1": "1) 策略型別/正規化（趨勢/均值/突破/動量/網格等，若無法判斷則寫\"無法確定\"）",
+          "mustInclude2": "2) 主要入場條件（用 2~4 條要點）",
+          "mustInclude3": "3) 主要出場/止損止盈/風控約束（用 2~4 條要點）",
           "mustInclude4": "4) 適用/不適用場景各 1 條",
           "mustIncludeTitle": "必須包含：",
           "userIntent": "使用者期望（自然語言）：\\\\\\\\\\\\\\\\n{{intent}}"
@@ -177,7 +177,7 @@ const AiWizard = {
       },
       "publish": {
         "actions": {
-          "publishTemplate": "發布樣板",
+          "publishTemplate": "釋出模板",
           "startBacktest": "回測（非同步任務）",
           "validateCode": "驗證程式碼"
         },
@@ -203,13 +203,13 @@ const AiWizard = {
         },
         "hints": {
           "intro": "這些引數會：",
-          "line1": "1) 儲存到樣板 parameters",
-          "line2": "2) 建立排程時寫入 schedule.parameters",
+          "line1": "1) 儲存到模板 parameters",
+          "line2": "2) 建立排程時寫入 schedule.parameters（map<string,string>）",
           "line3Prefix": "3) 執行時系統會把引數注入到 Python 策略的"
         },
         "labels": {
           "default": "預設值",
-          "description": "說明",
+          "description": "描述",
           "label": "標籤",
           "max": "最大值",
           "min": "最小值",
@@ -217,12 +217,12 @@ const AiWizard = {
           "options": "options（select 可用，逗號分隔）",
           "step": "步長",
           "type": "型別",
-          "value": "value（排程目前值）"
+          "value": "value（排程當前值）"
         },
         "messages": {
           "copied": "已複製",
           "copyFailed": "複製失敗",
-          "importFormatInvalid": "匯入格式錯誤",
+          "importFormatInvalid": "匯入格式錯誤：需要是陣列，或 { \"paramDefs\": [...] }",
           "importMissingName": "匯入失敗：存在缺少 name 的引數",
           "imported": "已匯入 {{count}} 個引數",
           "jsonParseFailed": "JSON 解析失敗"
@@ -236,7 +236,7 @@ const AiWizard = {
         "placeholders": {
           "defaultExample": "例如：10",
           "description": "說明",
-          "importJson": "貼上引數 JSON",
+          "importJson": "貼上引數 JSON（陣列 或 {\"paramDefs\": [...]}）",
           "label": "展示名",
           "nameExample": "例如：fast",
           "optionsExample": "例如：low,medium,high",
@@ -252,7 +252,7 @@ const AiWizard = {
           "nameRequired": "name 必填",
           "typeRequired": "type 必填"
         },
-        "empty": "暫無引數。你可以新增如 fast/slow/risk_per_trade 等引數。",
+        "empty": "暫無引數。你可以新增如 fast/slow/risk_per_trade 等引數，讓策略更模板化。",
         "paramCardTitle": "引數 #{{index}}",
         "title": "策略引數（可選）"
       },
@@ -269,9 +269,9 @@ const AiWizard = {
       },
       "messages": {
         "agentFailed": "{{title}} 失敗",
-        "aiRequestTimeout": "AI 請求逾時（>{{seconds}}s）",
+        "aiRequestTimeout": "AI 請求超時（>{{seconds}}s）",
         "backtestCreated": "回測任務已建立",
-        "backtestNotDoneWait": "回測尚未完成，請等待評分卡狀態變為成功/失敗/已取消後再繼續",
+        "backtestNotDoneWait": "回測尚未完成，請等待評分卡狀態變為\"成功/失敗/已取消\"後再繼續",
         "chatAborted": "已中止與模型對話",
         "codeInvalidFixAndContinue": "程式碼驗證未透過，請修復後再繼續",
         "confirmScoreFirst": "請先在評分彈窗中確認評分結果",
@@ -286,24 +286,24 @@ const AiWizard = {
         "freezeDatasetFailed": "凍結 dataset 失敗",
         "generateCodeFirst": "請先生成策略程式碼",
         "inputIntentFirst": "請先輸入策略目標/想法",
-        "loadAccountsFailed": "載入帳號失敗",
+        "loadAccountsFailed": "載入賬號失敗",
         "loadDatasetFailed": "載入 dataset 失敗",
         "loadSymbolsFailed": "載入品種失敗",
         "modelReturnedEmpty": "模型返回為空",
         "noCodeToBacktest": "暫無程式碼可回測",
         "noCodeToValidate": "暫無程式碼可驗證",
         "noPythonCodeBlock": "程式碼 Agent 未輸出 ```python 程式碼塊```，請在結果中檢查",
-        "publishFailed": "發布失敗",
-        "publishTemplateFirst": "請先發布樣板",
-        "publishedNoId": "已發布，但未拿到返回 id",
+        "publishFailed": "釋出失敗",
+        "publishTemplateFirst": "請先發布模板",
+        "publishedNoId": "已釋出，但未拿到返回 id（請在策略管理中確認）",
         "saveFailed": "儲存失敗",
-        "scheduleAlreadyExists": "該帳號下已存在相同策略排程，請勿重複建立。",
+        "scheduleAlreadyExists": "該賬號下已存在相同策略排程（模板+品種+週期相同），請勿重複建立。",
         "scheduleCreated": "排程已建立",
         "scheduleCreatedAndEnabled": "排程已建立並啟用",
-        "startBacktestFirst": "請先點選「回測（非同步任務）」啟動回測",
-        "templatePublished": "樣板已發布",
+        "startBacktestFirst": "請先點選\"回測（非同步任務）\"啟動回測",
+        "templatePublished": "模板已釋出",
         "userAborted": "使用者已中止",
-        "validateCodeFirst": "請先點選「驗證程式碼」",
+        "validateCodeFirst": "請先點選\"驗證程式碼\"",
         "validateError": "驗證失敗",
         "validateFailed": "驗證未透過",
         "validateOk": "驗證透過",
@@ -327,7 +327,7 @@ const AiWizard = {
         "defaultDescription": "AI 嚮導生成",
         "defaultName": "AI 策略 {{title}}"
       },
-      "currentModel": "目前模型：{{model}}",
+      "currentModel": "當前模型：{{model}}",
       "subtitle": "每步一個頁面，可前進/後退",
       "title": "AI 策略嚮導"
     }

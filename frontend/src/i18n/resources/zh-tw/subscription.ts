@@ -3,13 +3,13 @@ const Subscription = {
   "subscription": {
     "subscribeSuccess": "訂閱啟用成功！",
     "charged": "已扣費: ${res.amountCharged}, 餘額: ${res.balanceAfter}",
-    "insufficientBalance": "錢包餘額不足，請先儲值。",
+    "insufficientBalance": "錢包餘額不足，請先充值。",
     "subscribeFailed": "訂閱失敗，請重試。",
     "cancelSuccess": "已取消自動續費。您的訂閱在當前週期結束前仍然有效。",
     "cancelFailed": "取消失敗，請重試。",
-    "changeSuccess": "方案更換成功！",
-    "changeFailed": "方案更換失敗，請重試。",
-    "title": "訂閱方案",
+    "changeSuccess": "套餐更換成功！",
+    "changeFailed": "套餐更換失敗，請重試。",
+    "title": "訂閱套餐",
     "period": "當前週期",
     "cancelAutoRenew": "取消自動續費",
     "usageTitle": "本月使用量",
@@ -18,15 +18,15 @@ const Subscription = {
     "runtimeMinutes": "執行時長（分鐘）",
     "walletBalance": "錢包餘額",
     "freeForever": "永久免費",
-    "currentPlan": "目前方案",
-    "choosePlan": "選擇方案",
-    "noPlans": "暫無可用方案",
-    "changePlanTitle": "更換方案",
-    "subscribeTitle": "訂閱方案",
+    "currentPlan": "當前套餐",
+    "choosePlan": "選擇套餐",
+    "noPlans": "暫無可用套餐",
+    "changePlanTitle": "更換套餐",
+    "subscribeTitle": "訂閱套餐",
     "selectBillingCycle": "計費週期",
-    "chargeNotice": "付費方案將從錢包扣款，免費方案不產生費用。",
+    "chargeNotice": "付費套餐將從錢包扣款，免費套餐不產生費用。",
     "seoTitle": "訂閱",
-    "seoDesc": "管理您的訂閱方案"
+    "seoDesc": "管理您的訂閱套餐"
   }
 } as const;
 export default Subscription;

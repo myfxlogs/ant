@@ -1,13 +1,13 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_asset_analysis_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_asset_analysis_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyAssetAnalysis = {
   "strategy": {
     "assetAnalysis": {
       "aiRecommendation": "AI 策略推薦",
-      "aiUnavailable": "AI 推薦不可用，請在設定中設定 AI 服務商。",
+      "aiUnavailable": "AI 推薦不可用，請在設定中配置 AI 服務商。",
       "analyze": "分析",
       "atrPct": "ATR %",
-      "configureAI": "設定 AI 服務商",
+      "configureAI": "配置 AI 服務商",
       "fetchingData": "正在獲取市場資料...",
       "mtfOutlook": "多週期展望",
       "noLevels": "未檢測到顯著支撐阻力位",

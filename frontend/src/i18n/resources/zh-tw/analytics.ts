@@ -1,18 +1,18 @@
-// Auto-generated from proto/ant/v1/i18n/analytics_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/analytics_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Analytics = {
   "analytics": {
     "summary": {
       "economicCalendar": {
         "indicators": {
-          "CPI": "通貨膨脹（CPI）",
+          "CPI": "通脹率（CPI）",
           "FEDFUNDS": "聯邦基金利率",
-          "GDP": "實際GDP",
+          "GDP": "實際 GDP",
           "UNRATE": "失業率"
         },
         "actual": "實際值",
-        "empty": "暫無經濟事件。",
-        "estimate": "預測值",
+        "empty": "暫無經濟事件資料。",
+        "estimate": "預期值",
         "keyIndicatorsTitle": "關鍵宏觀指標",
         "loading": "正在載入經濟日曆...",
         "previous": "前值"
@@ -47,7 +47,7 @@ const Analytics = {
         "year": "本年"
       },
       "placeholders": {
-        "selectAccount": "選擇帳戶"
+        "selectAccount": "選擇賬戶"
       },
       "profit": {
         "loss": "虧損",
@@ -58,7 +58,7 @@ const Analytics = {
         "maxDrawdownPct": "回撤比例",
         "sharpe": "夏普比率",
         "sortino": "索提諾比率",
-        "var95": "風險價值（95%）",
+        "var95": "VaR 95%",
         "volatility": "波動率"
       },
       "sections": {

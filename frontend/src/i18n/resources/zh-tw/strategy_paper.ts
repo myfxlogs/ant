@@ -1,11 +1,11 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_paper_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_paper_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyPaper = {
   "strategy": {
     "paper": {
       "messages": {
         "createFailed": "建立失敗",
-        "created": "紙上帳戶已建立",
+        "created": "紙上賬戶已建立",
         "enterName": "請輸入名稱",
         "pasteCode": "貼上您的策略程式碼",
         "startFailed": "啟動失敗",
@@ -13,10 +13,10 @@ const StrategyPaper = {
         "strategyStarted": "紙上策略已啟動",
         "strategyStopped": "紙上策略已停止"
       },
-      "accountName": "帳戶名稱",
+      "accountName": "賬戶名稱",
       "create": "新建排程",
-      "createAccount": "建立紙上帳戶",
-      "noAccounts": "暫無紙上帳戶，建立一個以開始模擬交易。",
+      "createAccount": "建立紙上賬戶",
+      "noAccounts": "暫無紙上賬戶，建立一個以開始模擬交易。",
       "paper": "紙上",
       "running": "執行中 {{symbol}} {{timeframe}}",
       "start": "啟動",

@@ -1,15 +1,15 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_backtest_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_backtest_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyBacktest = {
   "strategy": {
     "backtest": {
-      "annualReturn": "年化報酬",
+      "annualReturn": "年化收益",
       "equityCurve": "淨值曲線",
       "maxDrawdown": "最大回撤",
       "sharpe": "夏普比率",
-      "totalReturn": "總報酬",
+      "totalReturn": "總收益",
       "totalTrades": "總交易數",
-      "tradeLog": "交易紀錄",
+      "tradeLog": "交易記錄",
       "tradePrice": "價格",
       "tradeSide": "方向",
       "tradeTime": "時間",

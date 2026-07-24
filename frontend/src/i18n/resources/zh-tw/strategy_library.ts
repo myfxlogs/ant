@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_library_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_library_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyLibrary = {
   "strategy": {
@@ -20,8 +20,8 @@ const StrategyLibrary = {
       "private": "私有",
       "publish": "釋出到市場",
       "publishStatus": "市場狀態",
-      "publishSuccess": "已發布",
-      "published": "已發布",
+      "publishSuccess": "已釋出",
+      "published": "已釋出",
       "saveAsMine": "儲存為我的",
       "saveAsMineSuccess": "已儲存到我的策略",
       "scheduleCount": "{{count}} 個執行中",

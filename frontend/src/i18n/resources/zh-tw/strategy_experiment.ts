@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_experiment_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_experiment_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyExperiment = {
   "strategy": {
@@ -31,18 +31,18 @@ const StrategyExperiment = {
       },
       "messages": {
         "candidatesGenerated": "策略實驗候選已生成",
-        "draftGenerated": "草稿範本已生成: {{templateId}}",
+        "draftGenerated": "草稿模板已生成: {{templateId}}",
         "loadCandidatesFailed": "載入候選列表失敗",
         "loadExperimentsFailed": "載入實驗列表失敗",
-        "loadTemplatesFailed": "載入策略範本失敗",
+        "loadTemplatesFailed": "載入策略模板失敗",
         "promoteFailed": "候選升級為草稿失敗",
         "submitFailed": "提交實驗失敗，請確認引數空間為有效 JSON。",
         "subscribeJobFailed": "訂閱實驗任務事件失敗"
       },
       "submitForm": {
-        "baseTemplate": "基礎策略範本",
-        "baseTemplatePlaceholder": "選擇範本",
-        "baseTemplateRequired": "請選擇基礎策略範本",
+        "baseTemplate": "基礎策略模板",
+        "baseTemplatePlaceholder": "選擇模板",
+        "baseTemplateRequired": "請選擇基礎策略模板",
         "maxCandidates": "最大候選數",
         "objective": "最佳化目標",
         "parameterSpace": "引數空間 JSON",

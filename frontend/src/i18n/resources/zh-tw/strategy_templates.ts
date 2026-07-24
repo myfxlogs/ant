@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_templates_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_templates_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyTemplates = {
   "strategy": {
@@ -10,7 +10,7 @@ const StrategyTemplates = {
             "interval": "定時執行",
             "klineClose": "K 線收盤觸發"
           },
-          "account": "帳號",
+          "account": "賬號",
           "accountPlaceholder": "選擇賬戶",
           "defaultVolume": "預設手數",
           "defaultVolumeTip": "每個訊號的預設下單量",
@@ -19,22 +19,22 @@ const StrategyTemplates = {
           "hfCooldownMsTip": "報價驅動執行間的冷卻時間",
           "intervalMs": "間隔(毫秒)",
           "intervalMsTip": "非高頻模式最小1000ms",
-          "investorTag": "投資者(唯讀)",
+          "investorTag": "投資者(只讀)",
           "maxDrawdownPct": "最大回撤%",
           "maxDrawdownPctTip": "回撤超過此閾值自動停止",
           "maxPositions": "最大持倉數",
-          "maxPositionsTip": "同時持有的最大倉位元數量",
+          "maxPositionsTip": "同時持有的最大倉位數量",
           "riskSection": "風控設定",
           "scheduleName": "計劃名稱",
           "scheduleNameMax": "最多64字元",
           "scheduleNamePlaceholder": "例如：EURUSD M5 早盤策略",
-          "scheduleType": "排程型別",
+          "scheduleType": "計劃型別",
           "stopLossOffset": "止損偏移",
           "stopLossOffsetTip": "距入場價的止損距離(點)",
           "strategyParamsSection": "策略引數",
           "symbol": "品種",
-          "symbolPlaceholder": "選擇商品",
-          "symbolPlaceholderEmpty": "未配置商品",
+          "symbolPlaceholder": "選擇品種",
+          "symbolPlaceholderEmpty": "未配置品種",
           "takeProfitOffset": "止盈偏移",
           "takeProfitOffsetTip": "距入場價的止盈距離(點)",
           "timeframe": "週期"
@@ -44,7 +44,7 @@ const StrategyTemplates = {
           "create": "建立排程",
           "createAndEnable": "建立並啟用",
           "createScheduleNoEnable": "新建排程任務",
-          "publishTemplate": "發布模板",
+          "publishTemplate": "釋出模板",
           "updateTradingPassword": "更新交易密碼"
         },
         "metrics": {
@@ -57,7 +57,7 @@ const StrategyTemplates = {
         },
         "backtestRunningHint": "回測正在執行，請稍候。",
         "errorInvestorAccount": "無法使用投資者賬戶啟動計劃。請更新交易密碼以啟用交易。",
-        "investorWarningBody": "此賬戶為投資者(唯讀)模式，需要交易許可權才能啟動計劃。",
+        "investorWarningBody": "此賬戶為投資者(只讀)模式，需要交易許可權才能啟動計劃。",
         "investorWarningTitle": "投資者賬戶",
         "keyMetrics": "關鍵指標",
         "launchSection": "上線排程",
@@ -77,7 +77,7 @@ const StrategyTemplates = {
       },
       "backtest": {
         "fields": {
-          "account": "帳號",
+          "account": "賬號",
           "extraSymbols": "額外品種 (多選)",
           "initialCapital": "初始本金",
           "range": "範圍",
@@ -89,7 +89,7 @@ const StrategyTemplates = {
           "title": "策略引數"
         },
         "placeholders": {
-          "account": "選擇帳號",
+          "account": "選擇賬號",
           "extraSymbols": "可選，適用於配對/輪動策略",
           "range": "選擇日期範圍",
           "symbol": "選擇品種"
@@ -98,13 +98,13 @@ const StrategyTemplates = {
           "custom": "自定義"
         },
         "tooltips": {
-          "extraSymbols": "額外獲取 K 線的品種 (同帳戶、同週期)。策略可透過 context[\"closes_by_symbol\"] 訪問。"
+          "extraSymbols": "額外獲取 K 線的品種 (同賬戶、同週期)。策略可透過 context[\"closes_by_symbol\"] 訪問。"
         },
         "validation": {
-          "accountRequired": "請選擇帳號",
+          "accountRequired": "請選擇賬號",
           "initialCapitalRequired": "請輸入初始本金",
           "rangeRequired": "請選擇日期範圍",
-          "symbolRequired": "請輸入品種",
+          "symbolRequired": "請選擇品種",
           "timeframeRequired": "請選擇週期"
         },
         "accountDisabledSuffix": "（已禁用）",
@@ -122,7 +122,7 @@ const StrategyTemplates = {
           "canceling": "取消中",
           "completed": "已完成",
           "failed": "失敗",
-          "queued": "佇列中",
+          "queued": "排隊中",
           "running": "執行中"
         },
         "table": {
@@ -162,7 +162,7 @@ const StrategyTemplates = {
           "name": "例如：均線交叉策略"
         },
         "title": {
-          "create": "新建範本",
+          "create": "新建模板",
           "edit": "編輯模板"
         },
         "validation": {
@@ -174,7 +174,7 @@ const StrategyTemplates = {
         "backtest": "回測",
         "copy": "複製",
         "create": "新建模板",
-        "createTemplate": "新建範本",
+        "createTemplate": "新建模板",
         "delete": "刪除",
         "edit": "編輯",
         "launchSchedule": "上線排程",
@@ -189,7 +189,7 @@ const StrategyTemplates = {
         "backtestRangeInvalid": "回測日期範圍無效",
         "backtestReportDeleted": "回測報告已刪除",
         "backtestReportNotFound": "未找到回測報告",
-        "backtestRunNoPublishedTemplate": "回測執行沒有已發布範本",
+        "backtestRunNoPublishedTemplate": "回測執行沒有已釋出模板",
         "backtestRunningCannotPublish": "回測正在執行，無法釋出。",
         "backtestSubmitFailed": "提交回測失敗",
         "backtestSubmitted": "回測已提交",
@@ -200,41 +200,41 @@ const StrategyTemplates = {
         "codeValidationPassed": "程式碼驗證透過",
         "copyFailed": "複製失敗，請手動複製",
         "createScheduleFailed": "建立排程失敗",
-        "deepLinkNavigate": "已從外部連結開啟範本及最新執行詳情",
+        "deepLinkNavigate": "已從外部連結開啟模板及最新執行詳情",
         "enterStrategyCode": "請輸入策略程式碼",
-        "fetchTemplateListFailed": "載入範本列表失敗",
+        "fetchTemplateListFailed": "載入模板列表失敗",
         "missingDraftIdCannotPublish": "缺少草稿 ID，無法釋出。",
         "missingScheduleInfo": "缺少排程資訊",
         "publishFailed": "釋出失敗",
-        "publishedButNoTemplateId": "已發布，但缺少範本 ID。",
+        "publishedButNoTemplateId": "已釋出，但缺少模板 ID。",
         "readStrategyCodeFailed": "讀取策略程式碼失敗",
-        "readTemplateStatusFailed": "讀取範本狀態失敗",
-        "republishedButNoTemplateId": "已重新發布，但缺少範本 ID。",
+        "readTemplateStatusFailed": "讀取模板狀態失敗",
+        "republishedButNoTemplateId": "已重新發布，但缺少模板 ID。",
         "scheduleCreated": "排程已建立",
         "scheduleCreatedAndEnabled": "排程已建立並啟用",
         "selectBacktestRange": "請選擇回測日期範圍",
         "strategyCodeEmptyCannotBacktest": "策略程式碼為空，無法回測。",
         "strategyCodeEmptyCannotPublish": "策略程式碼為空，請先儲存程式碼再發布。",
-        "systemTemplateReadOnly": "系統範本為只讀，請克隆後編輯。",
-        "templateAlreadyPublished": "範本已發布",
-        "templateCreated": "範本已建立",
-        "templateDeleted": "範本已刪除",
-        "templateNotDraftUnknownPublishStatus": "範本非草稿，釋出狀態未知。",
-        "templateNotPublishedCannotCreateSchedule": "範本未釋出，無法建立排程。",
-        "templatePublished": "範本已發布",
-        "templateRepublished": "範本已重新發布",
-        "templateUpdated": "範本已更新"
+        "systemTemplateReadOnly": "系統模板為只讀，請克隆後編輯。",
+        "templateAlreadyPublished": "模板已釋出",
+        "templateCreated": "模板已建立",
+        "templateDeleted": "模板已刪除",
+        "templateNotDraftUnknownPublishStatus": "模板非草稿，釋出狀態未知。",
+        "templateNotPublishedCannotCreateSchedule": "模板未釋出，無法建立排程。",
+        "templatePublished": "模板已釋出",
+        "templateRepublished": "模板已重新發布",
+        "templateUpdated": "模板已更新"
       },
       "status": {
         "draft": "草稿",
-        "published": "已發布"
+        "published": "已釋出"
       },
       "table": {
         "actions": "操作",
         "createdAt": "建立時間",
         "defaultHint": "預設值",
         "description": "描述",
-        "emptyUser": "暫無使用者範本，點選上方“新建範本”開始。",
+        "emptyUser": "暫無使用者模板，點選上方“新建模板”開始。",
         "loadingDefault": "正在載入預設模板...",
         "name": "名稱",
         "status": "狀態",
@@ -245,7 +245,7 @@ const StrategyTemplates = {
       },
       "tabs": {
         "system": "系統模板",
-        "user": "使用者範本"
+        "user": "使用者模板"
       },
       "visibility": {
         "private": "私有",
@@ -267,10 +267,10 @@ const StrategyTemplates = {
         "shared": "共享",
         "deploy": "部署",
         "fork": "分支",
-        "publish": "發布",
-        "unpublish": "取消發布",
-        "unpublishSuccess": "已取消發布",
-        "unpublishFailed": "取消發布失敗",
+        "publish": "釋出",
+        "unpublish": "取消釋出",
+        "unpublishSuccess": "已取消釋出",
+        "unpublishFailed": "取消釋出失敗",
         "deleteFailed": "刪除失敗"
       },
       "detail": {
@@ -283,8 +283,8 @@ const StrategyTemplates = {
         "parameters": "引數"
       },
       "copySuffix": " (副本)",
-      "defaultDraftName": "草稿範本",
-      "deleteConfirm": "刪除此範本？",
+      "defaultDraftName": "草稿模板",
+      "deleteConfirm": "刪除此模板？",
       "scheduleName": "{{symbol}} {{timeframe}} {{name}}",
       "title": "策略模板"
     }

@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/admin_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/admin_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Admin = {
   "admin": {
@@ -11,9 +11,9 @@ const Admin = {
         "disableConfirm": "停止所有排程？",
         "enable": "啟用",
         "flag": "標記",
-        "publish": "發布",
+        "publish": "釋出",
         "unflag": "取消標記",
-        "unpublish": "取消發布"
+        "unpublish": "取消釋出"
       },
       "all": {
         "allActive": "全部活躍",
@@ -38,7 +38,7 @@ const Admin = {
         "status": "狀態",
         "system": "— 系統 —",
         "tags": "標籤",
-        "tagsPlaceholder": "趨勢追蹤, MA",
+        "tagsPlaceholder": "趨勢跟蹤, MA",
         "type": "型別",
         "user": "使用者",
         "uses": "使用次數",
@@ -78,6 +78,144 @@ const Admin = {
         "preset": "預設策略"
       },
       "title": "策略管理"
+    },
+    "deposit": {
+      "table": {
+        "block": "區塊",
+        "confirmations": "確認數"
+      }
+    },
+    "aiGateway": {
+      "modelList": "模型 ({{count}})"
+    },
+    "analytics": {
+      "activeBuyers": "活躍買家",
+      "name": "名稱",
+      "newStrategies": "新策略",
+      "newSubs": "新訂閱",
+      "platformRev": "平臺收入",
+      "providerRev": "提供者收入",
+      "refundRate": "退款率",
+      "topByRevenue": "收入最高的策略",
+      "topBySubs": "訂閱最多的策略",
+      "topProvidersRev": "收入最高的提供者",
+      "topProvidersStrat": "策略數最多的提供者",
+      "totalStrategies": "策略總數",
+      "totalTx": "交易數",
+      "value": "數值"
+    },
+    "autogen": {
+      "actions": "操作",
+      "allStatus": "全部狀態",
+      "approve": "批准",
+      "approved": "任務已批准併發布",
+      "confirmApprove": "批准併發布？",
+      "confirmReject": "拒絕此任務？",
+      "enqueue": "入隊",
+      "enqueued": "{{count}} 個任務已入隊",
+      "error": "錯誤",
+      "quality": "質量",
+      "refresh": "重新整理",
+      "reject": "拒絕",
+      "rejected": "任務已拒絕",
+      "status": "狀態",
+      "strategyType": "型別",
+      "strategyTypes": "策略型別（逗號分隔）",
+      "symbol": "品種",
+      "symbols": "品種（逗號分隔）",
+      "timeframe": "週期",
+      "timeframes": "週期（逗號分隔）",
+      "title": "AI 策略生成任務",
+      "triggerBatch": "觸發批次生成"
+    },
+    "coupon": {
+      "codePlaceholder": "優惠券碼（例如 SUMMER20）",
+      "colActions": "操作",
+      "colCode": "碼",
+      "colExpires": "過期時間",
+      "colMinPurchase": "最低消費",
+      "colStatus": "狀態",
+      "colType": "型別",
+      "colUsage": "使用量",
+      "colValue": "面值",
+      "create": "建立優惠券",
+      "createFailed": "建立優惠券失敗",
+      "createTitle": "建立優惠券",
+      "created": "優惠券已建立",
+      "disable": "禁用",
+      "disableFailed": "禁用優惠券失敗",
+      "disabled": "優惠券已禁用",
+      "expiresPlaceholder": "過期時間（ISO 8601，留空=永不過期）",
+      "fillRequired": "請填寫必填欄位",
+      "loadFailed": "載入優惠券失敗",
+      "maxUsesPlaceholder": "最大使用次數（0=不限）",
+      "minPurchasePlaceholder": "最低消費金額（0=無限制）",
+      "valuePlaceholder": "折扣值（例如 20 表示 20% 或 50 表示 ¥50）"
+    },
+    "depositAddresses": {
+      "address": "地址",
+      "all": "全部狀態",
+      "assignedAt": "分配時間",
+      "availablePool": "可用地址池",
+      "import": "匯入地址",
+      "importFailed": "匯入失敗",
+      "importHint": "在離線機器上使用 hdgen 工具生成 deposit_addresses.bin，然後在此上傳。",
+      "importSuccess": "已匯入 {{imported}} 個地址",
+      "index": "索引",
+      "network": "網路",
+      "received": "已收到 USDT",
+      "status": "狀態",
+      "total": "地址總數",
+      "totalItems": "{{total}} 個地址",
+      "user": "使用者 ID"
+    },
+    "marketplace": {
+      "colActions": "操作",
+      "colFeatured": "推薦",
+      "colPrice": "價格",
+      "colPublisher": "釋出者",
+      "colRevenue": "收入",
+      "colSales": "銷量",
+      "colStatus": "狀態",
+      "colTitle": "標題",
+      "feature": "推薦",
+      "featureDesc": "設定推薦展示優先順序，數值越高越顯眼。",
+      "featureFailed": "設定推薦失敗",
+      "featureSuccess": "策略已設為推薦",
+      "featureTitle": "推薦策略",
+      "filterStatus": "全部狀態",
+      "loadFailed": "載入策略失敗",
+      "searchPlaceholder": "按標題搜尋...",
+      "unfeature": "取消推薦",
+      "unfeatureFailed": "取消推薦失敗",
+      "unfeatureSuccess": "已取消推薦"
+    },
+    "refund": {
+      "approve": "批准並執行",
+      "approveTitle": "批准退款",
+      "approved": "退款已批准並執行",
+      "colActions": "操作",
+      "colAmount": "金額",
+      "colDate": "日期",
+      "colReason": "原因",
+      "colStatus": "狀態",
+      "colStrategy": "策略",
+      "colUser": "使用者",
+      "filterStatus": "全部狀態",
+      "loadFailed": "載入退款請求失敗",
+      "processFailed": "處理退款失敗",
+      "reject": "拒絕",
+      "rejectTitle": "拒絕退款",
+      "rejected": "退款請求已拒絕",
+      "reviewNotePlaceholder": "稽核備註（拒絕時可選，批准時建議填寫）..."
+    },
+    "settings": {
+      "editSetting": "編輯: {{setting}}"
+    },
+    "wallet": {
+      "tabDepositAddresses": "充值地址",
+      "tabWallets": "使用者錢包",
+      "totalUsers": "{{total}} 使用者"
     },
     "sweep": {
       "aboveThreshold": "超過閾值",

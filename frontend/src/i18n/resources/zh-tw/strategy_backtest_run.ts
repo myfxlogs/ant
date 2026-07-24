@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_backtest_run_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_backtest_run_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyBacktestRun = {
   "strategy": {
@@ -15,7 +15,7 @@ const StrategyBacktestRun = {
         "closePrice": "平倉價",
         "closeTime": "平倉時間",
         "commission": "手續費",
-        "empty": "無交易紀錄",
+        "empty": "無交易記錄",
         "loadFailed": "載入訂單明細失敗",
         "openPrice": "開倉價",
         "openTime": "開倉時間",
@@ -58,7 +58,7 @@ const StrategyBacktestRun = {
         "completed": "已完成",
         "ended": "已結束",
         "failed": "失敗",
-        "queued": "佇列中",
+        "queued": "排隊中",
         "running": "執行中"
       },
       "title": "回測執行"

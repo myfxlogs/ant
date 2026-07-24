@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_default_templates_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_default_templates_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyDefaultTemplates = {
   "strategy": {

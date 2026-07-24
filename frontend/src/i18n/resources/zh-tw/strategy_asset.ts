@@ -1,18 +1,18 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_asset_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_asset_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyAsset = {
   "strategy": {
     "asset": {
       "messages": {
         "cloneFailed": "克隆策略資產失敗",
-        "cloneSuccess": "已克隆為範本: {{templateId}}",
+        "cloneSuccess": "已克隆為模板: {{templateId}}",
         "loadFailed": "載入策略資產失敗",
         "submitFailed": "提交策略資產失敗",
         "submitSuccess": "策略資產已提交"
       },
       "validation": {
         "enterName": "請輸入資產名稱",
-        "selectTemplate": "請選擇源範本"
+        "selectTemplate": "請選擇源模板"
       },
       "actions": "操作",
       "assetList": "資產列表",
@@ -23,10 +23,10 @@ const StrategyAsset = {
       "empty": "暫無策略資產",
       "name": "名稱",
       "reviewStatus": "稽核狀態",
-      "sourceTemplate": "源範本",
+      "sourceTemplate": "源模板",
       "submit": "提交",
       "submitAsset": "提交資產",
-      "subtitle": "資產釋出、稽核狀態和克隆由系統維護。克隆結果為獨立的使用者範本。",
+      "subtitle": "資產釋出、稽核狀態和克隆由系統維護。克隆結果為獨立的使用者模板。",
       "title": "策略資產",
       "version": "版本",
       "visibility": "可見性"

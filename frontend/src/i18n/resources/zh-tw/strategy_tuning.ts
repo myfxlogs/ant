@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_tuning_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_tuning_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyTuning = {
   "strategy": {
@@ -11,13 +11,13 @@ const StrategyTuning = {
         "de": "差分進化",
         "deDesc": "rand/1/bin 變異。在平滑曲面上收斂快。",
         "grid": "網格搜尋",
-        "gridDesc": "窮舉笛卡爾乘積。適合 ≤3 個引數。",
+        "gridDesc": "窮舉笛卡爾積。適合 ≤3 個引數。",
         "random": "隨機搜尋",
         "randomDesc": "均勻隨機取樣。適合探索。",
         "tpe": "TPE (核密度估計)",
         "tpeDesc": "樹結構 Parzen 估計器。KDE 建模好/壞分佈。"
       },
-      "apply": "套用",
+      "apply": "應用",
       "degradation": "衰減",
       "enabledCombinations": "{{enabled}} 個啟用 · {{combos}} 個組合",
       "grade": "評級",
@@ -26,22 +26,22 @@ const StrategyTuning = {
       "oosFootnote": "對前5個候選 (按樣本內評分) 進行樣本外驗證。綠色衰減 <20%, 橙色 20-40%, 紅色 >40%。",
       "oosScore": "樣本外評分",
       "optimizerMethod": "最佳化方法",
-      "overfit": "過度擬合",
-      "overfitWarning": "⚠ 過度擬合",
+      "overfit": "過擬合",
+      "overfitWarning": "⚠ 過擬合",
       "parameterDimensions": "引數維度",
       "parameters": "引數",
       "preview": "預覽訊號",
       "previewTitle": "預覽 ({{shown}} / {{total}})",
       "rank": "#",
-      "requiresAI": "需要設定 AI 服務商",
+      "requiresAI": "需要配置 AI 服務商",
       "results": "結果 ({{count}})",
       "run": "執行 ({{count}})",
       "score": "評分",
-      "started": "智慧調校已啟動",
+      "started": "智慧調優已啟動",
       "summary": "摘要",
       "switchToDE": "切換到差分進化",
       "truncated": "已截斷",
-      "tuning": "調校中…",
+      "tuning": "調優中…",
       "waiting": "等待實驗... (SSE 自動重新整理)"
     }
   }

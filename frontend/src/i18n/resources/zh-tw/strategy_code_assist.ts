@@ -1,10 +1,10 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_code_assist_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_code_assist_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyCodeAssist = {
   "strategy": {
     "codeAssist": {
       "paramDescriptions": {
-        "confidence": "訊號信心度閾值 (0-1)。低於此值的訊號將被忽略。",
+        "confidence": "訊號置信度閾值 (0-1)。低於此值的訊號將被忽略。",
         "emaPeriod": "EMA (指數移動平均) 回溯週期。",
         "fastPeriod": "快週期 (K線數)。用於 MACD / 雙均線，越小越靈敏。",
         "genericPercent": "百分比 / 比例引數 (例如 1 表示 1%)。",
@@ -21,23 +21,23 @@ const StrategyCodeAssist = {
         "threshold": "觸發訊號的閾值，具體含義取決於策略邏輯。"
       },
       "aiReviseTitle": "AI 助手 — 修改程式碼",
-      "applyAllSuggestions": "套用建議預設值",
+      "applyAllSuggestions": "應用建議預設值",
       "codeEmpty": "尚無程式碼可修改。",
       "codeUpdated": "程式碼已更新。儲存前請重新驗證。",
       "defaultLabel": "預設值",
-      "enterInstruction": "請說明您要修改的內容。",
+      "enterInstruction": "請描述您要修改的內容。",
       "explain": "解釋程式碼",
-      "fillRequiredParams": "請填寫必要引數: {{keys}}",
-      "generatePlaceholder": "說明您的策略需求...",
-      "noPython": "AI 未返回 Python 程式碼區塊。請嘗試重新說明。",
+      "fillRequiredParams": "請填寫必填引數: {{keys}}",
+      "generatePlaceholder": "描述您的策略需求...",
+      "noPython": "AI 未返回 Python 程式碼塊。請嘗試重新描述。",
       "optionalParamsDesc": "這些引數已有程式碼預設值。留空則使用預設值；填入的值僅對本次執行生效，不會修改已儲存的策略。",
       "optionalParamsTitle": "可選引數",
-      "required": "必要",
+      "required": "必填",
       "requiredParamsDesc": "策略讀取了這些引數但未提供預設值，請在儲存前填寫。",
-      "requiredParamsTitle": "必要引數",
-      "reviseInputPlaceholder": "例如: 把 SMA(20) 替換為 EMA(50)，並加入 1% 止損。",
+      "requiredParamsTitle": "必填引數",
+      "reviseInputPlaceholder": "例如: 把 SMA(20) 替換為 EMA(50)，並新增 1% 止損。",
       "reviseSend": "發給AI修改",
-      "saveBlockedNotValidated": "請先點選「驗證程式碼」。驗證透過後才能儲存。",
+      "saveBlockedNotValidated": "請先點選\"驗證程式碼\"。驗證透過後才能儲存。",
       "suggested": "建議",
       "tabAI": "AI 修改",
       "validateToSeeParams": "驗證程式碼以檢視策略引數",

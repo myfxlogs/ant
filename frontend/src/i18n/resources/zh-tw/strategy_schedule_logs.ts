@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_schedule_logs_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_schedule_logs_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyScheduleLogs = {
   "strategy": {
@@ -13,7 +13,7 @@ const StrategyScheduleLogs = {
         "failed": "失敗",
         "pending": "待檢測",
         "running": "執行中",
-        "skipped": "已略過"
+        "skipped": "已跳過"
       },
       "execTable": {
         "action": "操作",

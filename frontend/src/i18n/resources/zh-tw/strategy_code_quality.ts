@@ -1,10 +1,10 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_code_quality_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_code_quality_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyCodeQuality = {
   "strategy": {
     "codeQuality": {
       "category": {
-        "FUTURE_DATA_LEAK": "未來資料洩漏",
+        "FUTURE_DATA_LEAK": "未來資料洩露",
         "MISSING_PARAM": "缺少引數",
         "NDARRAY_PANDAS_MISUSE": "ndarray/pandas 誤用",
         "NO_ENTRY_PCT": "缺少入場百分比",

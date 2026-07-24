@@ -34,6 +34,7 @@ import StrategyScheduleLogs from './strategy_schedule_logs';
 import StrategyGen from './strategy_gen';
 import StrategyAiChat from './strategy_ai_chat';
 import StrategyPaper from './strategy_paper';
+import strategyImport from './strategy_import';
 import StrategyDefaultTemplates from './strategy_default_templates';
 import Accounts from './accounts';
 import AiCore from './ai_core';
@@ -72,7 +73,7 @@ import DashboardExtra from './dashboard_extra';
 import MarketplaceExtra from './marketplace_extra';
 import LandingExtra from './landing_extra';
 
-const zhtw = mergeResources(
+const zhcn = mergeResources(
   base,
   dashboard,
   trading,
@@ -84,6 +85,7 @@ const zhtw = mergeResources(
   analytics,
   logs,
   strategy,
+  strategyImport,
   StrategyDefaultTemplates,
   StrategyPaper,
   StrategyAiChat,
@@ -133,4 +135,4 @@ const zhtw = mergeResources(
   LandingExtra,
 ) as const;
 
-export default zhtw;
+export default zhcn;

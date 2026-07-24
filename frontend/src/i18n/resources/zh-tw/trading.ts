@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/trading_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/trading_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Trading = {
   "trading": {
@@ -6,7 +6,7 @@ const Trading = {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
           "action": "檢查賬戶狀態和許可權後重試。",
-          "title": "當前帳戶被禁止交易。"
+          "title": "當前賬戶被禁止交易。"
         },
         "RISK_INTERNAL_RULE_UNAVAILABLE": {
           "action": "稍後重試；如問題持續請聯絡客服。",
@@ -18,7 +18,7 @@ const Trading = {
         },
         "RISK_MARKET_SESSION_CLOSED": {
           "action": "等待下一個交易時段後重試。",
-          "title": "當前商品處於休市時段。"
+          "title": "當前品種處於休市時段。"
         },
         "RISK_MAX_OPEN_POSITIONS_EXCEEDED": {
           "action": "平掉現有持倉或提高上限。",
@@ -34,15 +34,15 @@ const Trading = {
         },
         "RISK_ORDER_TYPE_UNSUPPORTED": {
           "action": "選擇支援的訂單型別後重試。",
-          "title": "當前商品不支援該訂單型別。"
+          "title": "當前品種不支援該訂單型別。"
         },
         "RISK_STOP_DISTANCE_TOO_CLOSE": {
           "action": "增加止損/止盈距離後重試。",
-          "title": "停損或停利距離當前價格過近。"
+          "title": "止損或止盈距離當前價格過近。"
         },
         "RISK_SYMBOL_TRADE_DISABLED": {
           "action": "切換到可交易品種或稍後重試。",
-          "title": "當前商品暫不可交易。"
+          "title": "當前品種暫不可交易。"
         },
         "RISK_VOLUME_INVALID": {
           "action": "調整手數以匹配最小/最大/步長要求。",
@@ -57,16 +57,16 @@ const Trading = {
     "autoTrade": {
       "confirm": {
         "disableConfirm": "確認關閉",
-        "disableInfoDescription": "關閉後，系統將停止自動交易，但已啟用的策略仍可能繼續監控市場。",
+        "disableInfoDescription": "關閉後，系統將停止自動執行交易，但已開啟的策略仍會繼續監控市場。",
         "disableInfoTitle": "關閉自動交易",
         "disableQuestion": "確定要關閉自動交易？",
         "disableTitle": "關閉自動交易",
         "enableBullet1": "系統將自動執行符合策略條件的交易",
-        "enableBullet2": "請確認風險配置已正確設定",
-        "enableBullet3": "建議先在模擬帳戶測試",
+        "enableBullet2": "請確保風險配置已正確設定",
+        "enableBullet3": "建議先在模擬賬戶測試",
         "enableConfirm": "確認開啟",
         "enableQuestion": "確認開啟自動交易功能？",
-        "enableRiskDescription": "開啟自動交易後，系統將依策略自動執行交易。請確認你已充分了解相關風險。",
+        "enableRiskDescription": "開啟自動交易後，系統將根據策略自動執行交易操作。請確保您已充分了解相關風險。",
         "enableRiskTitle": "風險提示",
         "enableTitle": "開啟自動交易"
       }
@@ -92,11 +92,11 @@ const Trading = {
       "confirm": {
         "action": "方向",
         "buy": "買入",
-        "confirmText": "確認執行",
+        "confirmText": "執行",
         "sell": "賣出",
         "strategyName": "策略名稱",
-        "symbol": "商品",
-        "title": "確認執行交易",
+        "symbol": "品種",
+        "title": "確認交易執行",
         "volume": "數量",
         "warningDescription": "此操作將立即執行真實交易，請仔細核對交易引數。",
         "warningTitle": "交易執行確認"
@@ -104,8 +104,8 @@ const Trading = {
     },
     "messages": {
       "fetchOrderHistoryFailed": "載入訂單歷史失敗",
-      "fetchPendingOrdersFailed": "取得掛單失敗",
-      "fetchPositionsFailed": "取得持倉失敗",
+      "fetchPendingOrdersFailed": "獲取掛單失敗",
+      "fetchPositionsFailed": "獲取持倉失敗",
       "orderCloseFailed": "平倉失敗",
       "orderCloseSuccess": "平倉成功",
       "orderModifyFailed": "修改訂單失敗",
@@ -117,42 +117,42 @@ const Trading = {
     "balance": "餘額",
     "buy": "買入",
     "closePosition": "平倉",
-    "closePositionConfirm": "確定平倉此持倉？",
+    "closePositionConfirm": "確認平倉？",
     "closePositionTitle": "平倉",
     "equity": "淨值",
     "freeMargin": "可用保證金",
     "limit": "限價",
-    "margin": "保證金",
+    "margin": "已用保證金",
     "marginLevel": "保證金比例",
-    "markPrice": "標記價格",
+    "markPrice": "標記價",
     "market": "市價",
-    "noAccount": "未選擇帳戶",
+    "noAccount": "未選擇賬戶",
     "noOrders": "暫無訂單",
     "noPositions": "暫無持倉",
     "openPositionsTitle": "持倉",
     "openTime": "開倉時間",
-    "orderHistory": "訂單歷史",
-    "ordersCount": "{{count}} 筆訂單",
+    "orderHistory": "歷史訂單",
+    "ordersCount": "{{count}} 條訂單",
     "placeOrder": "下單",
     "pnl": "盈虧",
-    "positionEntryPrice": "進場價格",
+    "positionEntryPrice": "入場價",
     "positionLeverage": "槓桿",
-    "positionLong": "做多",
-    "positionMarkPrice": "標記價格",
-    "positionShort": "做空",
+    "positionLong": "多頭",
+    "positionMarkPrice": "標記價",
+    "positionShort": "空頭",
     "positionSide": "方向",
     "positionSize": "數量",
     "positionUnrealizedPnL": "未實現盈虧",
     "positions": "持倉",
     "price": "價格",
     "profit": "盈虧",
-    "recentTrades": "近期交易",
+    "recentTrades": "最近交易",
     "selectSymbol": "選擇品種",
     "sell": "賣出",
     "side": "方向",
     "stop": "止損",
     "stopLoss": "止損",
-    "symbol": "商品",
+    "symbol": "品種",
     "takeProfit": "止盈",
     "time": "時間",
     "title": "交易",
@@ -174,16 +174,16 @@ const Trading = {
     "dashboard": {
       "activeExecutions": "執行中",
       "noActive": "暫無活躍執行",
-      "title": "演演算法面板"
+      "title": "演算法面板"
     },
     "fields": {
       "account": "賬戶",
-      "algo": "演演算法",
+      "algo": "演算法",
       "limitPrice": "限價",
       "participationRate": "參與率",
       "side": "方向",
       "sliceInterval": "切片間隔",
-      "symbol": "商品",
+      "symbol": "品種",
       "timeRange": "時間範圍",
       "urgency": "緊急度",
       "volume": "數量"
@@ -204,12 +204,12 @@ const Trading = {
     },
     "table": {
       "actions": "操作",
-      "algo": "演演算法",
+      "algo": "演算法",
       "executionId": "執行ID",
       "progress": "進度",
       "side": "方向",
       "state": "狀態",
-      "symbol": "商品",
+      "symbol": "品種",
       "volume": "數量"
     },
     "timePresets": {
@@ -225,7 +225,7 @@ const Trading = {
     },
     "pov": {
       "name": "POV (參與率)",
-      "description": "參與率演演算法 — 以固定比例參與市場成交量。"
+      "description": "參與率演算法 — 以固定比例參與市場成交量。"
     },
     "shortfall": {
       "name": "Shortfall (最小缺口)",

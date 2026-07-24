@@ -43,8 +43,8 @@ const Marketplace = {
       "loginFirst": "請先登入",
       "subscribed": "訂閱成功",
       "subscribeFailed": "訂閱失敗",
-      "published": "策略已發布到市場",
-      "publishFailed": "發布失敗",
+      "published": "策略已釋出到市場",
+      "publishFailed": "釋出失敗",
       "rated": "已評分！"
     },
     "detail": {
@@ -75,7 +75,7 @@ const Marketplace = {
       "noVersions": "暫無版本",
       "newVersion": "新版本",
       "upgradeAvailable": "可升級",
-      "upgradeHint": "有新版本可用，升級以取得最新改進。"
+      "upgradeHint": "有新版本可用，升級以獲取最新改進。"
     },
     "purchases": {
       "empty": "暫無購買",
@@ -92,13 +92,13 @@ const Marketplace = {
       "refundFailed": "退款申請失敗"
     },
     "author": {
-      "empty": "暫無已發布策略",
-      "noPublished": "暫無已發布策略",
-      "published": "已發布",
+      "empty": "暫無已釋出策略",
+      "noPublished": "暫無已釋出策略",
+      "published": "已釋出",
       "subscribers": "訂閱者",
       "avgRating": "平均評分",
-      "myStrategies": "我的已發布策略",
-      "publishNew": "發布新策略",
+      "myStrategies": "我的已釋出策略",
+      "publishNew": "釋出新策略",
       "goToLibrary": "前往策略庫",
       "wallet": "錢包與提現",
       "today": "今日",
@@ -141,7 +141,7 @@ const Marketplace = {
       "applyCoupon": "應用"
     },
     "publish": {
-      "title": "發布到市場",
+      "title": "釋出到市場",
       "titleLabel": "標題",
       "titlePlaceholder": "如：金叉策略",
       "descriptionLabel": "描述",
@@ -215,7 +215,7 @@ const Marketplace = {
       "popular": "熱門",
       "return": "收益",
       "new": "新星",
-      "week": "週",
+      "week": "周",
       "month": "月",
       "quarter": "季度",
       "all": "全部",
@@ -353,12 +353,12 @@ const Marketplace = {
       "changeSummary": "變更摘要",
       "actions": "操作",
       "preview": "預覽",
-      "publish": "發布",
+      "publish": "釋出",
       "reject": "拒絕",
       "rejected": "已拒絕",
       "rejectFailed": "操作失敗",
-      "published": "已發布新版本 v{{versionId}}",
-      "publishFailed": "發布失敗",
+      "published": "已釋出新版本 v{{versionId}}",
+      "publishFailed": "釋出失敗",
       "previewTitle": "最佳化預覽對比",
       "previewFailed": "預覽失敗",
       "decayMetrics": "衰減指標",
@@ -388,10 +388,10 @@ const Marketplace = {
     },
     "live": {
       "noData": "暫無實盤資料",
-      "selectAccount": "選擇帳戶檢視實盤表現",
-      "linkAccount": "關聯帳戶",
+      "selectAccount": "選擇賬戶檢視實盤表現",
+      "linkAccount": "關聯賬戶",
       "link": "關聯",
-      "trackingSince": "追蹤起始",
+      "trackingSince": "跟蹤起始",
       "lastUpdated": "最後更新",
       "totalReturn": "總收益",
       "maxDrawdown": "最大回撤",

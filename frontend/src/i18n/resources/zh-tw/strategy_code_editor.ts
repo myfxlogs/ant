@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_code_editor_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_code_editor_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyCodeEditor = {
   "strategy": {
@@ -29,7 +29,7 @@ const StrategyCodeEditor = {
         "previewInfo": "預覽將使用示例市場資料執行。"
       },
       "labels": {
-        "account": "帳號",
+        "account": "賬號",
         "code": "策略程式碼",
         "disabledSuffix": "（已禁用）",
         "symbol": "品種",
@@ -44,7 +44,7 @@ const StrategyCodeEditor = {
         "previewOk": "預覽完成",
         "previewSuccess": "預覽成功",
         "savedAsTemplate": "已儲存為模板",
-        "selectAccount": "請選擇帳號",
+        "selectAccount": "請選擇賬號",
         "validateError": "驗證失敗",
         "validateFailed": "程式碼驗證失敗",
         "validateOk": "程式碼驗證透過"
@@ -53,8 +53,8 @@ const StrategyCodeEditor = {
         "code": "輸入Python策略程式碼...",
         "loadingSymbols": "可用品種載入中…",
         "noSymbols": "暫無可用品種",
-        "selectAccount": "選擇帳號",
-        "selectAccountFirst": "先選帳號",
+        "selectAccount": "選擇賬號",
+        "selectAccountFirst": "先選賬號",
         "selectSymbol": "選擇品種"
       },
       "title": "策略編輯器"

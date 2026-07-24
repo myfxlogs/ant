@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyBacktestParams = {
   "strategy": {
@@ -14,7 +14,7 @@ const StrategyBacktestParams = {
       "currentDraft": "📝 當前草稿",
       "dateRange": "日期範圍",
       "defaultsLoaded": "預設值已載入",
-      "defaultsReset": "已復原出廠預設值",
+      "defaultsReset": "已恢復出廠預設值",
       "defaultsSaved": "預設值已儲存",
       "direction": "方向",
       "endDate": "結束日期",
@@ -28,12 +28,12 @@ const StrategyBacktestParams = {
       "run": "▶ 執行",
       "runtimeMode": "執行模式",
       "settingsLoad": "載入我的預設值",
-      "settingsReset": "復原出廠預設",
+      "settingsReset": "恢復出廠預設",
       "settingsSave": "儲存為我的預設值",
       "short": "↓ 做空",
       "strategy": "策略",
       "strategyParams": "策略引數",
-      "slippage": "滑價",
+      "slippage": "滑點",
       "startDate": "開始日期",
       "strictMode": "嚴格模式",
       "strictModeOff": "關閉",

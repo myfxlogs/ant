@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_chart_tools_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_chart_tools_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyChartTools = {
   "strategy": {
@@ -7,7 +7,7 @@ const StrategyChartTools = {
         "extendedLine": "延長線",
         "fibonacci": "斐波那契回撤",
         "horizontalLine": "水平線",
-        "measure": "測量 (Shift+拖曳)",
+        "measure": "測量 (Shift+拖拽)",
         "parallelChannel": "平行通道",
         "priceChannel": "價格通道",
         "priceLine": "價格線",

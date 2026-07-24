@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_schedules_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_schedules_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategySchedules = {
   "strategy": {
@@ -10,7 +10,7 @@ const StrategySchedules = {
             "stable": "穩定（K線/週期）"
           },
           "fixedIntervalSeconds": "固定間隔(秒)",
-          "fixedIntervalSecondsExtra": "可選。填寫後將按固定間隔執行（不會再自動跟隨週期）。例如：60 表示每 60 秒執行一次",
+          "fixedIntervalSecondsExtra": "可選。填寫後將按固定間隔執行（不再自動跟隨週期）。例如：60 表示每 60 秒執行一次",
           "hfCooldownMs": "高頻模式：最小觸發間隔(ms)",
           "hfCooldownMsExtra": "用於去抖：兩次評估/下單之間的最小間隔",
           "parametersJson": "引數(JSON物件)",
@@ -18,18 +18,18 @@ const StrategySchedules = {
           "stableOverrideIntervalSeconds": "穩定模式高階：間隔(秒)",
           "stableOverrideIntervalSecondsExtra": "可選。預設繫結週期(timeframe)。填寫後將覆蓋穩定模式的觸發間隔",
           "timeframe": "週期",
-          "timeframeExtra": "預設即可。僅用於K線與指標計算，不影響EA本質（策略驅動交易）",
+          "timeframeExtra": "預設即可。僅用於K線與指標計算",
           "title": "高階設定",
           "triggerMode": "觸發模式",
-          "triggerModeExtra": "穩定：按K線/週期觸發（訊號更穩但有延遲）；高頻：報價流觸發（更快但噪聲大，需要去抖）"
+          "triggerModeExtra": "穩定：按K線/週期觸發（更穩但有延遲）；高頻：報價流觸發（更快但噪聲大，需要去抖）"
         },
         "autoName": {
           "strategy": "策略"
         },
         "fields": {
-          "account": "帳號",
+          "account": "賬號",
           "cronExpression": "Cron 表示式",
-          "cronExtra": "標準 5 段：分鐘 小時 日 月 週。例如：*/5 * * * * 每5分鐘；0 9 * * 1-5 工作日9點",
+          "cronExtra": "標準 5 段：分鐘 小時 日 月 周。例如：*/5 * * * * 每5分鐘；0 9 * * 1-5 工作日9點",
           "enableExtra": "建立後啟用排程",
           "intervalSeconds": "間隔(秒)",
           "intervalSecondsExtra": "自動跟隨週期(timeframe)，無需修改",
@@ -43,7 +43,7 @@ const StrategySchedules = {
         },
         "placeholders": {
           "name": "例如：EURUSD M5 早盤策略",
-          "selectAccountFirst": "先選帳號",
+          "selectAccountFirst": "先選賬號",
           "symbol": "選擇品種"
         },
         "runFrequencyExtra": {
@@ -59,12 +59,12 @@ const StrategySchedules = {
           "edit": "編輯排程任務"
         },
         "validation": {
-          "accountRequired": "請選擇帳號",
+          "accountRequired": "請選擇賬號",
           "cronRequired": "請輸入 cron",
           "lotRequired": "請輸入手數",
           "nameRequired": "請輸入名稱",
           "runFrequencyRequired": "請選擇執行頻率",
-          "symbolRequired": "請輸入品種",
+          "symbolRequired": "請選擇品種",
           "templateRequired": "請選擇模板",
           "timeframeRequired": "請選擇週期",
           "triggerModeRequired": "請選擇觸發模式"
@@ -72,7 +72,7 @@ const StrategySchedules = {
       },
       "health": {
         "fields": {
-          "configKey": "設定鍵",
+          "configKey": "配置鍵",
           "failedRuns": "執行失敗次數",
           "grade": "健康級別",
           "lastRunAt": "最後執行時間",
@@ -81,7 +81,7 @@ const StrategySchedules = {
           "latestTicket": "最近成交 Ticket",
           "rule": "判定依據",
           "successOverTotal": "執行成功/總次數",
-          "thresholds": "當前門檻"
+          "thresholds": "當前閾值"
         },
         "grade": {
           "alert": "警報",
@@ -95,11 +95,11 @@ const StrategySchedules = {
           "loadFailed": "載入健康檢查資料失敗"
         },
         "notes": {
-          "alert": "成功率低。請立即檢查策略/帳戶狀況。",
+          "alert": "成功率低。請立即檢查策略/賬戶狀況。",
           "healthy": "成功率高且失敗次數可控。",
-          "noSample": "樣本不足，至少需要 {{minSampleSize}} 筆執行記錄。",
+          "noSample": "樣本不足，至少需要 {{minSampleSize}} 條執行記錄。",
           "pending": "請先執行健康檢查。",
-          "watch": "成功率達到關注門檻（>= {{yellowSuccessRate}}%），建議持續觀察。"
+          "watch": "成功率達到關注閾值（>= {{yellowSuccessRate}}%），建議持續觀察。"
         },
         "runLogs": {
           "signalType": "訊號(用於下單)"
@@ -129,7 +129,7 @@ const StrategySchedules = {
           "signalNotOrderable": "訊號不可下單"
         },
         "summary": {
-          "account": "帳號",
+          "account": "賬號",
           "scheduleName": "排程名稱",
           "symbol": "品種",
           "timeframe": "週期"
@@ -165,11 +165,11 @@ const StrategySchedules = {
         "volumeInvalid": "下單手數無效（volume 必須 > 0）"
       },
       "status": {
-        "disabled": "已停用",
+        "disabled": "已禁用",
         "running": "執行中"
       },
       "table": {
-        "account": "帳號",
+        "account": "賬號",
         "actions": "操作",
         "lastRun": "最後執行時間",
         "name": "名稱",

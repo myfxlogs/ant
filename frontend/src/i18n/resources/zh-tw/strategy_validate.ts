@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_validate_zh-tw.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_validate_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyValidate = {
   "strategy": {

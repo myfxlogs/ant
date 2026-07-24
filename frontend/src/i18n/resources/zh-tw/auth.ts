@@ -2,10 +2,10 @@
 const Auth = {
   "auth": {
     "validation": {
-      "loginRequired": "請輸入電子郵件或帳號編號"
+      "loginRequired": "請輸入郵箱或賬號編號"
     },
     "fields": {
-      "login": "電子郵件/帳號"
+      "login": "郵箱/賬號"
     },
     "seo": {
       "login": {
@@ -14,19 +14,19 @@ const Auth = {
       },
       "register": {
         "title": "註冊",
-        "description": "建立免費的 AlphaForge 帳號，開始回測和自動交易 MT4/MT5 策略。"
+        "description": "建立免費的 AlphaForge 賬戶，開始回測和自動交易 MT4/MT5 策略。"
       },
       "forgotPassword": {
         "title": "忘記密碼",
-        "description": "重設您的 AlphaForge 帳號密碼。"
+        "description": "重置您的 AlphaForge 賬戶密碼。"
       },
       "resetPassword": {
-        "title": "重設密碼",
-        "description": "重設您的 AlphaForge 帳號密碼。"
+        "title": "重置密碼",
+        "description": "重置您的 AlphaForge 賬戶密碼。"
       },
       "verifyEmail": {
-        "title": "驗證電子郵件",
-        "description": "驗證您的電子郵件地址"
+        "title": "驗證郵箱",
+        "description": "驗證您的郵箱地址"
       }
     }
   }
