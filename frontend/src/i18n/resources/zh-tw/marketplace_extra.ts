@@ -1,31 +1,31 @@
 // Auto-generated supplementary keys for marketplace
 const MarketplaceExtra = {
   "marketplace": {
-    "title": "Explore Strategies",
-    "seoTitle": "Strategy Marketplace",
-    "seoDesc": "Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked.",
+    "title": "探索策略",
+    "seoTitle": "策略市場",
+    "seoDesc": "發現並購買 MT4/MT5 交易策略。支援 IC Markets、Pepperstone、XM 等 30+ 經紀商。AI 輔助策略生成與最佳化。回測驗證，實盤表現追蹤。",
     "publish": {
       "priceModel": {
-        "once": "One-Time Purchase"
+        "once": "一次性購買"
       },
-      "title": "Publish to Marketplace",
-      "titlePlaceholder": "e.g. Golden Cross Strategy",
-      "descriptionPlaceholder": "Describe your strategy logic, entry/exit rules...",
+      "title": "發布到市場",
+      "titlePlaceholder": "例如：金叉策略",
+      "descriptionPlaceholder": "描述您的策略邏輯、進場/出場規則...",
       "assetClass": {
-        "label": "Asset Class"
+        "label": "資產類別"
       },
       "riskLevel": {
-        "label": "Risk Level"
+        "label": "風險等級"
       },
-      "tagsPlaceholder": "Type and press enter to add tags",
-      "codeSnippet": "Strategy Preview (public)",
-      "codeSnippetPlaceholder": "Optional: share a snippet or high-level idea of your strategy (visible to all)",
-      "includeBacktestSnapshot": "Include latest backtest results",
-      "winRate": "Win Rate"
+      "tagsPlaceholder": "輸入並按 Enter 新增標籤",
+      "codeSnippet": "策略預覽（公開）",
+      "codeSnippetPlaceholder": "可選：分享策略片段或概要（所有人可見）",
+      "includeBacktestSnapshot": "包含最新回測結果",
+      "winRate": "勝率"
     },
     "messages": {
-      "published": "Strategy published to marketplace!",
-      "publishFailed": "Failed to publish strategy"
+      "published": "策略已發布到市場！",
+      "publishFailed": "發布策略失敗"
     }
   }
 } as const;

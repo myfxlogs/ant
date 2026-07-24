@@ -1,31 +1,31 @@
 // Auto-generated supplementary keys for marketplace
 const MarketplaceExtra = {
   "marketplace": {
-    "title": "Explore Strategies",
-    "seoTitle": "Strategy Marketplace",
-    "seoDesc": "Discover and purchase MT4/MT5 trading strategies. Supports IC Markets, Pepperstone, XM and 30+ brokers. AI-assisted strategy generation and optimization. Backtest verified, live performance tracked.",
+    "title": "Khám phá chiến lược",
+    "seoTitle": "Thị trường chiến lược",
+    "seoDesc": "Khám phá và mua chiến lược giao dịch MT4/MT5. Hỗ trợ IC Markets, Pepperstone, XM và 30+ broker. Tạo và tối ưu chiến lược bằng AI. Đã xác minh bằng backtest, theo dõi hiệu suất thực tế.",
     "publish": {
       "priceModel": {
-        "once": "One-Time Purchase"
+        "once": "Mua một lần"
       },
-      "title": "Publish to Marketplace",
-      "titlePlaceholder": "e.g. Golden Cross Strategy",
-      "descriptionPlaceholder": "Describe your strategy logic, entry/exit rules...",
+      "title": "Đăng lên thị trường",
+      "titlePlaceholder": "Ví dụ: Chiến lược Golden Cross",
+      "descriptionPlaceholder": "Mô tả logic chiến lược, quy tắc vào/ra lệnh...",
       "assetClass": {
-        "label": "Asset Class"
+        "label": "Loại tài sản"
       },
       "riskLevel": {
-        "label": "Risk Level"
+        "label": "Mức rủi ro"
       },
-      "tagsPlaceholder": "Type and press enter to add tags",
-      "codeSnippet": "Strategy Preview (public)",
-      "codeSnippetPlaceholder": "Optional: share a snippet or high-level idea of your strategy (visible to all)",
-      "includeBacktestSnapshot": "Include latest backtest results",
-      "winRate": "Win Rate"
+      "tagsPlaceholder": "Nhập và nhấn Enter để thêm thẻ",
+      "codeSnippet": "Xem trước chiến lược (công khai)",
+      "codeSnippetPlaceholder": "Tùy chọn: chia sẻ đoạn mã hoặc tóm tắt chiến lược (ai cũng thấy)",
+      "includeBacktestSnapshot": "Bao gồm kết quả backtest mới nhất",
+      "winRate": "Tỷ lệ thắng"
     },
     "messages": {
-      "published": "Strategy published to marketplace!",
-      "publishFailed": "Failed to publish strategy"
+      "published": "Chiến lược đã đăng lên thị trường!",
+      "publishFailed": "Đăng chiến lược thất bại"
     }
   }
 } as const;

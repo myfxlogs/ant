@@ -1,256 +1,255 @@
 // Auto-generated supplementary keys for admin
-// TODO: Translate to en
 const AdminExtra = {
   "admin": {
     "aiGateway": {
       "errors": {
-        "loadProviders": "Failed to load providers",
-        "toggleFailed": "Toggle failed",
-        "loadModels": "Failed to load models"
+        "loadProviders": "加载供应商失败",
+        "toggleFailed": "切换失败",
+        "loadModels": "加载模型失败"
       },
-      "addProviderPending": "Add provider feature pending backend support",
-      "title": "AI Gateway Management",
-      "description": "Manage AI providers, models, and pricing. Users select from available models, billed by token from wallet.",
-      "addProvider": "Add Provider",
+      "addProviderPending": "添加供应商功能待后端支持",
+      "title": "AI 网关管理",
+      "description": "管理 AI 供应商、模型和定价。用户从可用模型中选择，按 token 从钱包计费。",
+      "addProvider": "添加供应商",
       "columns": {
-        "baseUrl": "Base URL",
-        "apiKey": "API Key"
+        "baseUrl": "基础 URL",
+        "apiKey": "API 密钥"
       },
-      "configured": "Not configured",
-      "editProvider": "Add Provider",
-      "providerId": "Please enter provider ID",
+      "configured": "未配置",
+      "editProvider": "添加供应商",
+      "providerId": "请输入供应商 ID",
       "providerIdPlaceholder": "deepseek / openai / qwen ...",
-      "displayName": "Display Name",
+      "displayName": "显示名称",
       "displayNamePlaceholder": "DeepSeek",
-      "baseUrl": "Please enter Base URL",
-      "apiKeyLabel": "API key, encrypted at rest",
-      "apiKeyEditPlaceholder": "Leave empty to keep",
-      "editModel": "Add Model",
-      "modelName": "Model Name",
-      "priceInput": "Input Price ($/1M)",
-      "priceOutput": "Output Price ($/1M)",
-      "addModel": "Add Model",
-      "confirmDeleteModel": "Delete this model?",
-      "noModels": "No models"
+      "baseUrl": "请输入基础 URL",
+      "apiKeyLabel": "API 密钥，加密存储",
+      "apiKeyEditPlaceholder": "留空则保持不变",
+      "editModel": "添加模型",
+      "modelName": "模型名称",
+      "priceInput": "输入价格（$/1M）",
+      "priceOutput": "输出价格（$/1M）",
+      "addModel": "添加模型",
+      "confirmDeleteModel": "删除此模型？",
+      "noModels": "暂无模型"
     },
     "account": {
       "errors": {
-        "loadFailed": "Failed to load accounts",
-        "freezeFailed": "Freeze failed",
-        "unfreezeFailed": "Unfreeze failed"
+        "loadFailed": "加载账户失败",
+        "freezeFailed": "冻结失败",
+        "unfreezeFailed": "解冻失败"
       },
-      "frozen": "Account frozen",
-      "unfrozen": "Account unfrozen",
+      "frozen": "账户已冻结",
+      "unfrozen": "账户已解冻",
       "columns": {
-        "createdAt": "Created At"
+        "createdAt": "创建时间"
       },
-      "confirmFreeze": "Freeze this account?",
-      "title": "Account Management",
-      "searchPlaceholder": "Search accounts",
-      "detail": "Account Detail",
-      "auditLogs": "Audit Logs"
+      "confirmFreeze": "冻结此账户？",
+      "title": "账户管理",
+      "searchPlaceholder": "搜索账户",
+      "detail": "账户详情",
+      "auditLogs": "审计日志"
     },
     "settings": {
-      "saveSuccess": "Saved successfully",
-      "saveFailed": "Save failed",
-      "deleteFailed": "Delete failed",
-      "actionFailed": "Action failed",
+      "saveSuccess": "保存成功",
+      "saveFailed": "保存失败",
+      "deleteFailed": "删除失败",
+      "actionFailed": "操作失败",
       "columns": {
-        "key": "Setting Key"
+        "key": "设置键"
       },
-      "confirmDelete": "Confirm delete?",
-      "title": "Agent Management Settings",
-      "addSetting": "Add Setting",
-      "permissionRules": "Permission Rules (permission.rule.N)",
-      "permissionFormat": "Format:",
-      "permissionExample": "Example:",
-      "permissionAddRule": "Add rule: create setting with key",
-      "addManagedSetting": "Add Managed Setting",
-      "settingKey": "Setting Key",
-      "keyPlaceholder": "e.g.: allowed_models, disable_live_trading, permission.rule.1",
-      "valuePlaceholder": "e.g.: claude-sonnet-5,deepseek-v4"
+      "confirmDelete": "确认删除？",
+      "title": "Agent 管理设置",
+      "addSetting": "添加设置",
+      "permissionRules": "权限规则 (permission.rule.N)",
+      "permissionFormat": "格式：",
+      "permissionExample": "示例：",
+      "permissionAddRule": "添加规则：创建设置键",
+      "addManagedSetting": "添加托管设置",
+      "settingKey": "设置键",
+      "keyPlaceholder": "例如：allowed_models, disable_live_trading, permission.rule.1",
+      "valuePlaceholder": "例如：claude-sonnet-5,deepseek-v4"
     },
     "autogen": {
-      "approved": "Task approved and published",
-      "rejected": "Task rejected",
-      "enqueued": "{{count}} tasks enqueued",
-      "confirmApprove": "Approve and publish?",
-      "confirmReject": "Reject this task?",
-      "title": "AI Strategy Generation Tasks",
-      "allStatus": "All Status",
-      "triggerBatch": "Trigger Batch Generation",
-      "symbols": "Symbols (comma-separated)",
-      "timeframes": "Timeframes (comma-separated)",
-      "strategyTypes": "Strategy Types (comma-separated)"
+      "approved": "任务已批准并发布",
+      "rejected": "任务已拒绝",
+      "enqueued": "{{count}} 个任务已入队",
+      "confirmApprove": "批准并发布？",
+      "confirmReject": "拒绝此任务？",
+      "title": "AI 策略生成任务",
+      "allStatus": "全部状态",
+      "triggerBatch": "触发批量生成",
+      "symbols": "品种（逗号分隔）",
+      "timeframes": "时间周期（逗号分隔）",
+      "strategyTypes": "策略类型（逗号分隔）"
     },
     "billing": {
       "columns": {
-        "autoRenew": "Auto Renew",
-        "periodStart": "Period Start",
-        "periodEnd": "Period End",
-        "createdAt": "Created At",
-        "balanceBefore": "Balance Before",
-        "balanceAfter": "Balance After"
+        "autoRenew": "自动续费",
+        "periodStart": "周期开始",
+        "periodEnd": "周期结束",
+        "createdAt": "创建时间",
+        "balanceBefore": "交易前余额",
+        "balanceAfter": "交易后余额"
       },
-      "title": "Billing Management",
-      "monthlyRevenue": "Monthly Revenue",
-      "totalRevenue": "Total Revenue",
-      "activeSubs": "Active Subscriptions",
-      "planRevenue": "Plan Revenue Details",
-      "filterByPlan": "Filter by plan",
-      "filterByStatus": "Filter by status",
-      "walletTransactions": "Wallet Transactions",
-      "filterByType": "Filter by type",
-      "txPlatformFee": "Platform Fee"
+      "title": "账单管理",
+      "monthlyRevenue": "月收入",
+      "totalRevenue": "总收入",
+      "activeSubs": "活跃订阅",
+      "planRevenue": "套餐收入明细",
+      "filterByPlan": "按套餐筛选",
+      "filterByStatus": "按状态筛选",
+      "walletTransactions": "钱包交易",
+      "filterByType": "按类型筛选",
+      "txPlatformFee": "平台手续费"
     },
     "coupon": {
-      "loadFailed": "Failed to load coupons",
-      "fillRequired": "Please fill required fields",
-      "created": "Coupon created",
-      "createFailed": "Failed to create coupon",
-      "disabled": "Coupon disabled",
-      "disableFailed": "Failed to disable coupon",
-      "colMinPurchase": "Min Purchase",
-      "create": "Create Coupon",
-      "createTitle": "Create Coupon",
-      "codePlaceholder": "Coupon code (e.g. SUMMER20)",
-      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for ¥50)",
-      "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
-      "maxUsesPlaceholder": "Max uses (0 = unlimited)",
-      "expiresPlaceholder": "Expires at (ISO 8601, empty = never)"
+      "loadFailed": "加载优惠券失败",
+      "fillRequired": "请填写必填字段",
+      "created": "优惠券已创建",
+      "createFailed": "创建优惠券失败",
+      "disabled": "优惠券已禁用",
+      "disableFailed": "禁用优惠券失败",
+      "colMinPurchase": "最低消费",
+      "create": "创建优惠券",
+      "createTitle": "创建优惠券",
+      "codePlaceholder": "优惠券码（如 SUMMER20）",
+      "valuePlaceholder": "折扣值（如 20 表示 20% 或 50 表示 ¥50）",
+      "minPurchasePlaceholder": "最低消费金额（0 = 无限制）",
+      "maxUsesPlaceholder": "最大使用次数（0 = 无限）",
+      "expiresPlaceholder": "过期时间（ISO 8601，空 = 永不过期）"
     },
     "dashboard": {
       "errors": {
-        "loadFailed": "Failed to load dashboard data"
+        "loadFailed": "加载仪表盘数据失败"
       },
-      "title": "Admin Dashboard",
-      "totalUsers": "Total Users",
-      "activeUsers": "Active Users",
-      "verifiedUsers": "Verified Users",
-      "mtAccounts": "MT Accounts",
-      "onlineAccounts": "Online Accounts",
-      "todayTrades": "Today Trades",
-      "todayProfit": "Today P&L",
-      "activeSubs": "Active Subs",
-      "monthlyRevenue": "Monthly Revenue",
-      "totalRevenue": "Total Revenue",
-      "marketStrategies": "Market Strategies",
-      "marketSales": "Market Sales",
-      "marketRevenue": "Market Revenue",
-      "recentLogs": "Recent Logs"
+      "title": "管理仪表盘",
+      "totalUsers": "总用户数",
+      "activeUsers": "活跃用户",
+      "verifiedUsers": "已验证用户",
+      "mtAccounts": "MT 账户",
+      "onlineAccounts": "在线账户",
+      "todayTrades": "今日交易",
+      "todayProfit": "今日盈亏",
+      "activeSubs": "活跃订阅",
+      "monthlyRevenue": "月收入",
+      "totalRevenue": "总收入",
+      "marketStrategies": "市场策略",
+      "marketSales": "市场销售",
+      "marketRevenue": "市场收入",
+      "recentLogs": "最近日志"
     },
     "logs": {
       "modules": {
-        "userManagement": "User Management",
-        "accountManagement": "Account Management",
-        "systemConfig": "System Config"
+        "userManagement": "用户管理",
+        "accountManagement": "账户管理",
+        "systemConfig": "系统配置"
       },
       "columns": {
-        "actionType": "Action Type",
-        "ip": "IP Address"
+        "actionType": "操作类型",
+        "ip": "IP 地址"
       },
       "errors": {
-        "loadFailed": "Failed to load logs"
+        "loadFailed": "加载日志失败"
       },
-      "title": "Operation Logs",
-      "filterModule": "Filter by module",
-      "filterAction": "Filter by action"
+      "title": "操作日志",
+      "filterModule": "按模块筛选",
+      "filterAction": "按操作筛选"
     },
     "depositAddresses": {
-      "importFailed": "Import failed",
-      "user": "User ID",
-      "received": "Received USDT",
-      "assignedAt": "Assigned At",
-      "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
-      "all": "All Status",
-      "import": "Import Addresses",
-      "availablePool": "Available in Pool",
-      "total": "Total Addresses"
+      "importFailed": "导入失败",
+      "user": "用户 ID",
+      "received": "已收到 USDT",
+      "assignedAt": "分配时间",
+      "importHint": "在离线机器上使用 hdgen 工具生成 deposit_addresses.bin，然后在此上传。",
+      "all": "全部状态",
+      "import": "导入地址",
+      "availablePool": "池中可用",
+      "total": "总地址数"
     },
     "deposit": {
       "table": {
-        "user": "User ID",
-        "amount": "USDT Amount",
-        "txHash": "Tx Hash"
+        "user": "用户 ID",
+        "amount": "USDT 金额",
+        "txHash": "交易哈希"
       },
-      "title": "Deposit Management"
+      "title": "充值管理"
     },
     "analytics": {
-      "platformRev": "Platform Rev",
-      "providerRev": "Provider Rev",
-      "activeBuyers": "Active Buyers",
-      "refundRate": "Refund Rate",
-      "newSubs": "New Subscribers",
-      "totalStrategies": "Total Strategies",
-      "newStrategies": "New Strategies",
-      "topByRevenue": "Top Strategies by Revenue",
-      "topBySubs": "Top Strategies by Subscribers",
-      "topProvidersRev": "Top Providers by Revenue",
-      "topProvidersStrat": "Top Providers by Strategies"
+      "platformRev": "平台收入",
+      "providerRev": "供应商收入",
+      "activeBuyers": "活跃买家",
+      "refundRate": "退款率",
+      "newSubs": "新订阅者",
+      "totalStrategies": "总策略数",
+      "newStrategies": "新增策略",
+      "topByRevenue": "收入最高策略",
+      "topBySubs": "订阅最多策略",
+      "topProvidersRev": "收入最高供应商",
+      "topProvidersStrat": "策略最多供应商"
     },
     "marketplace": {
-      "loadFailed": "Failed to load strategies",
-      "featureSuccess": "Strategy featured",
-      "featureFailed": "Failed to feature strategy",
-      "unfeatureSuccess": "Removed featured",
-      "unfeatureFailed": "Failed to unfeature",
-      "unfeature": "Remove featured",
-      "filterStatus": "All statuses",
-      "searchPlaceholder": "Search by title...",
-      "featureTitle": "Feature Strategy",
-      "featureDesc": "Set priority for featured placement. Higher = more prominent."
+      "loadFailed": "加载策略失败",
+      "featureSuccess": "策略已设为推荐",
+      "featureFailed": "设置推荐失败",
+      "unfeatureSuccess": "已取消推荐",
+      "unfeatureFailed": "取消推荐失败",
+      "unfeature": "取消推荐",
+      "filterStatus": "全部状态",
+      "searchPlaceholder": "按标题搜索...",
+      "featureTitle": "推荐策略",
+      "featureDesc": "设置推荐展示优先级。数值越高越显著。"
     },
     "refund": {
-      "loadFailed": "Failed to load refund requests",
-      "approved": "Refund approved and executed",
-      "rejected": "Refund request rejected",
-      "processFailed": "Failed to process refund",
-      "approve": "Approve & Execute",
-      "filterStatus": "All statuses",
-      "approveTitle": "Approve Refund",
-      "rejectTitle": "Reject Refund",
-      "reviewNotePlaceholder": "Review note (optional for reject, recommended for approve)..."
+      "loadFailed": "加载退款请求失败",
+      "approved": "退款已批准并执行",
+      "rejected": "退款请求已拒绝",
+      "processFailed": "处理退款失败",
+      "approve": "批准并执行",
+      "filterStatus": "全部状态",
+      "approveTitle": "批准退款",
+      "rejectTitle": "拒绝退款",
+      "reviewNotePlaceholder": "审核备注（拒绝时可选，批准时建议填写）..."
     },
     "sidebar": {
-      "shareManagement": "Share Analytics"
+      "shareManagement": "分享分析"
     },
     "walletCalculator": {
-      "title": "Token ↔ USD Calculator",
-      "selectModel": "Select model (pricing basis)",
-      "usdAmount": "USD Amount",
-      "fillResult": "Fill Result"
+      "title": "Token ↔ USD 计算器",
+      "selectModel": "选择模型（计价基准）",
+      "usdAmount": "USD 金额",
+      "fillResult": "填充结果"
     },
     "wallet": {
       "errors": {
-        "noUserSelected": "No user selected"
+        "noUserSelected": "未选择用户"
       },
       "messages": {
-        "adjustSuccess": "Balance adjusted successfully",
-        "adjustFailed": "Adjustment failed"
+        "adjustSuccess": "余额调整成功",
+        "adjustFailed": "调整失败"
       },
       "columns": {
-        "walletNumber": "Wallet No.",
-        "balanceAfter": "Balance After"
+        "walletNumber": "钱包编号",
+        "balanceAfter": "交易后余额"
       },
-      "title": "Wallet Management",
-      "tabWallets": "User Wallets",
-      "userList": "User List",
-      "searchPlaceholder": "Search wallet / email / nickname",
-      "noMatch": "No users",
-      "walletDetail": "Wallet Detail",
-      "adjustBalance": "Adjust Balance",
-      "tabDepositAddresses": "Deposit Addresses"
+      "title": "钱包管理",
+      "tabWallets": "用户钱包",
+      "userList": "用户列表",
+      "searchPlaceholder": "搜索钱包/邮箱/昵称",
+      "noMatch": "无用户",
+      "walletDetail": "钱包详情",
+      "adjustBalance": "调整余额",
+      "tabDepositAddresses": "充值地址"
     },
     "config": {
-      "apiKey": "API Key"
+      "apiKey": "API 密钥"
     },
     "userManagement": {
       "form": {
-        "accountNumber": "Account Number",
-        "accountNumberInvalid": "5-6 digits, no leading 0, no 4 or 7"
+        "accountNumber": "账户编号",
+        "accountNumberInvalid": "5-6 位数字，不以 0 开头，不含 4 或 7"
       },
       "messages": {
-        "loadUsersFailed": "Failed to load users"
+        "loadUsersFailed": "加载用户失败"
       }
     }
   }

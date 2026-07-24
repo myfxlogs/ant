@@ -2,31 +2,31 @@
 const Auth = {
   "auth": {
     "validation": {
-      "loginRequired": "Please enter your email or account number"
+      "loginRequired": "請輸入電子郵件或帳號編號"
     },
     "fields": {
-      "login": "Email/Account"
+      "login": "電子郵件/帳號"
     },
     "seo": {
       "login": {
-        "title": "Login",
-        "description": "Log in to AlphaForge to manage your MT4/MT5 trading strategies."
+        "title": "登入",
+        "description": "登入 AlphaForge 管理您的 MT4/MT5 交易策略。"
       },
       "register": {
-        "title": "Register",
-        "description": "Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strategies."
+        "title": "註冊",
+        "description": "建立免費的 AlphaForge 帳號，開始回測和自動交易 MT4/MT5 策略。"
       },
       "forgotPassword": {
-        "title": "Forgot Password",
-        "description": "Reset your AlphaForge account password."
+        "title": "忘記密碼",
+        "description": "重設您的 AlphaForge 帳號密碼。"
       },
       "resetPassword": {
-        "title": "Reset Password",
-        "description": "Reset your AlphaForge account password."
+        "title": "重設密碼",
+        "description": "重設您的 AlphaForge 帳號密碼。"
       },
       "verifyEmail": {
-        "title": "Verify Email",
-        "description": "Verify your email address"
+        "title": "驗證電子郵件",
+        "description": "驗證您的電子郵件地址"
       }
     }
   }

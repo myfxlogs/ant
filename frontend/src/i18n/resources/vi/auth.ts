@@ -2,31 +2,31 @@
 const Auth = {
   "auth": {
     "validation": {
-      "loginRequired": "Please enter your email or account number"
+      "loginRequired": "Vui lòng nhập email hoặc số tài khoản"
     },
     "fields": {
-      "login": "Email/Account"
+      "login": "Email/Tài khoản"
     },
     "seo": {
       "login": {
-        "title": "Login",
-        "description": "Log in to AlphaForge to manage your MT4/MT5 trading strategies."
+        "title": "Đăng nhập",
+        "description": "Đăng nhập AlphaForge để quản lý chiến lược giao dịch MT4/MT5 của bạn."
       },
       "register": {
-        "title": "Register",
-        "description": "Create a free AlphaForge account to start backtesting and auto-trading MT4/MT5 strategies."
+        "title": "Đăng ký",
+        "description": "Tạo tài khoản AlphaForge miễn phí để bắt đầu backtest và tự động giao dịch chiến lược MT4/MT5."
       },
       "forgotPassword": {
-        "title": "Forgot Password",
-        "description": "Reset your AlphaForge account password."
+        "title": "Quên mật khẩu",
+        "description": "Đặt lại mật khẩu tài khoản AlphaForge của bạn."
       },
       "resetPassword": {
-        "title": "Reset Password",
-        "description": "Reset your AlphaForge account password."
+        "title": "Đặt lại mật khẩu",
+        "description": "Đặt lại mật khẩu tài khoản AlphaForge của bạn."
       },
       "verifyEmail": {
-        "title": "Verify Email",
-        "description": "Verify your email address"
+        "title": "Xác thực email",
+        "description": "Xác thực địa chỉ email của bạn"
       }
     }
   }
