@@ -115,11 +115,18 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
   const realBlindSpots = a.blindSpots.filter(b => b.severity !== '信息');
   const isPureGuiNoise = realBlindSpots.length === 0 && guiNoiseSpots.length > 0;
   const hasRealGaps = realBlindSpots.length > 0;
-  const triageLevel = hasRealGaps ? (coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block') : 'pass';
+  const isEmpty = a.totalBlocks === 0 && a.recognizedBlocks === 0 && a.coverageScore === 0;
+  const triageLevel = isEmpty ? 'block' : hasRealGaps ? (coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block') : 'pass';
 
   return (
     <div style={{ padding: '12px 0' }}>
       {/* ── Triage Verdict ── */}
+      {isEmpty && (
+        <Alert type="error" showIcon icon={<CloseCircleOutlined />}
+          message={t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' })}
+          description={t('importAnalysis.emptyAnalysisDesc', { defaultValue: 'No strategy logic was recognized. The source code may be incomplete, use a different language, or try AI translation.' })}
+          style={{ marginBottom: 12 }} />
+      )}
       {isPureGuiNoise && (
         <Alert type="success" showIcon icon={<CheckCircleOutlined />}
           message={t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' })}
@@ -278,7 +285,7 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
       )}
 
       {/* ── All Clear ── */}
-      {a.blindSpots.length === 0 && (
+      {a.blindSpots.length === 0 && !isEmpty && (
         <Alert
           type="success"
           showIcon
