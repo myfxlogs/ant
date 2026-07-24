@@ -73,9 +73,6 @@ const (
 	// StrategyRuntimeServiceAnalyzeImportCodeProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's AnalyzeImportCode RPC.
 	StrategyRuntimeServiceAnalyzeImportCodeProcedure = "/ant.v1.StrategyRuntimeService/AnalyzeImportCode"
-	// StrategyRuntimeServiceImportStrategyProcedure is the fully-qualified name of the
-	// StrategyRuntimeService's ImportStrategy RPC.
-	StrategyRuntimeServiceImportStrategyProcedure = "/ant.v1.StrategyRuntimeService/ImportStrategy"
 	// StrategyRuntimeServiceGetImportedStrategyProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's GetImportedStrategy RPC.
 	StrategyRuntimeServiceGetImportedStrategyProcedure = "/ant.v1.StrategyRuntimeService/GetImportedStrategy"
@@ -138,8 +135,6 @@ type StrategyRuntimeServiceClient interface {
 	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
 	// AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
 	AnalyzeImportCode(context.Context, *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error)
-	// ImportStrategy runs the full import pipeline: analyze → persist → return strategy ID.
-	ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error)
 	// GetImportedStrategy retrieves a previously imported strategy by ID.
 	GetImportedStrategy(context.Context, *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error)
 	// ListStrategyRuns returns recent live/paper strategy run records.
@@ -260,12 +255,6 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("AnalyzeImportCode")),
 			connect.WithClientOptions(opts...),
 		),
-		importStrategy: connect.NewClient[v1.ImportStrategyRequest, v1.ImportStrategyResponse](
-			httpClient,
-			baseURL+StrategyRuntimeServiceImportStrategyProcedure,
-			connect.WithSchema(strategyRuntimeServiceMethods.ByName("ImportStrategy")),
-			connect.WithClientOptions(opts...),
-		),
 		getImportedStrategy: connect.NewClient[v1.GetImportedStrategyRequest, v1.GetImportedStrategyResponse](
 			httpClient,
 			baseURL+StrategyRuntimeServiceGetImportedStrategyProcedure,
@@ -368,7 +357,6 @@ type strategyRuntimeServiceClient struct {
 	getTemplates            *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
 	executeLive             *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
 	analyzeImportCode       *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
-	importStrategy          *connect.Client[v1.ImportStrategyRequest, v1.ImportStrategyResponse]
 	getImportedStrategy     *connect.Client[v1.GetImportedStrategyRequest, v1.GetImportedStrategyResponse]
 	listStrategyRuns        *connect.Client[v1.ListStrategyRunsRequest, v1.ListStrategyRunsResponse]
 	getStrategyRun          *connect.Client[v1.GetStrategyRunRequest, v1.GetStrategyRunResponse]
@@ -448,11 +436,6 @@ func (c *strategyRuntimeServiceClient) ExecuteLive(ctx context.Context, req *con
 // AnalyzeImportCode calls ant.v1.StrategyRuntimeService.AnalyzeImportCode.
 func (c *strategyRuntimeServiceClient) AnalyzeImportCode(ctx context.Context, req *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error) {
 	return c.analyzeImportCode.CallUnary(ctx, req)
-}
-
-// ImportStrategy calls ant.v1.StrategyRuntimeService.ImportStrategy.
-func (c *strategyRuntimeServiceClient) ImportStrategy(ctx context.Context, req *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error) {
-	return c.importStrategy.CallUnary(ctx, req)
 }
 
 // GetImportedStrategy calls ant.v1.StrategyRuntimeService.GetImportedStrategy.
@@ -543,8 +526,6 @@ type StrategyRuntimeServiceHandler interface {
 	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
 	// AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
 	AnalyzeImportCode(context.Context, *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error)
-	// ImportStrategy runs the full import pipeline: analyze → persist → return strategy ID.
-	ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error)
 	// GetImportedStrategy retrieves a previously imported strategy by ID.
 	GetImportedStrategy(context.Context, *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error)
 	// ListStrategyRuns returns recent live/paper strategy run records.
@@ -661,12 +642,6 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("AnalyzeImportCode")),
 		connect.WithHandlerOptions(opts...),
 	)
-	strategyRuntimeServiceImportStrategyHandler := connect.NewUnaryHandler(
-		StrategyRuntimeServiceImportStrategyProcedure,
-		svc.ImportStrategy,
-		connect.WithSchema(strategyRuntimeServiceMethods.ByName("ImportStrategy")),
-		connect.WithHandlerOptions(opts...),
-	)
 	strategyRuntimeServiceGetImportedStrategyHandler := connect.NewUnaryHandler(
 		StrategyRuntimeServiceGetImportedStrategyProcedure,
 		svc.GetImportedStrategy,
@@ -779,8 +754,6 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceExecuteLiveHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceAnalyzeImportCodeProcedure:
 			strategyRuntimeServiceAnalyzeImportCodeHandler.ServeHTTP(w, r)
-		case StrategyRuntimeServiceImportStrategyProcedure:
-			strategyRuntimeServiceImportStrategyHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceGetImportedStrategyProcedure:
 			strategyRuntimeServiceGetImportedStrategyHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceListStrategyRunsProcedure:
@@ -868,10 +841,6 @@ func (UnimplementedStrategyRuntimeServiceHandler) ExecuteLive(context.Context, *
 
 func (UnimplementedStrategyRuntimeServiceHandler) AnalyzeImportCode(context.Context, *connect.Request[v1.AnalyzeImportCodeRequest]) (*connect.Response[v1.AnalyzeImportCodeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.AnalyzeImportCode is not implemented"))
-}
-
-func (UnimplementedStrategyRuntimeServiceHandler) ImportStrategy(context.Context, *connect.Request[v1.ImportStrategyRequest]) (*connect.Response[v1.ImportStrategyResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.ImportStrategy is not implemented"))
 }
 
 func (UnimplementedStrategyRuntimeServiceHandler) GetImportedStrategy(context.Context, *connect.Request[v1.GetImportedStrategyRequest]) (*connect.Response[v1.GetImportedStrategyResponse], error) {

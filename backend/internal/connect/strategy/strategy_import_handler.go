@@ -71,59 +71,6 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 	}), nil
 }
 
-func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {
-	source := req.Msg.GetSourceCode()
-	if source == "" {
-		return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
-	}
-
-	ir, err := mql2go.CompileToIR(source)
-	if err != nil {
-		s.log.Warn("ImportStrategy: compile to IR failed", zap.Error(err))
-		return connect.NewResponse(&antv1.ImportStrategyResponse{}), nil
-	}
-
-	rep := interp.Analyze(ir)
-
-	strategyName := deriveStrategyName(req.Msg.GetSourceName())
-
-	// Persist raw MQL as source of truth (if repo is configured).
-	strategyID := uuid.New().String()
-	if s.importedRepo != nil {
-		uid, uidErr := userIDRequire(ctx)
-		if uidErr != nil {
-			return nil, uidErr
-		}
-		row := &repository.ImportedStrategy{
-			UserID:        uid,
-			Name:          strategyName,
-			SourceLang:    rep.Version,
-			SourceCode:    source,
-			Params:        interp.SerializeParams(ir.Params),
-			CoverageScore: rep.Coverage,
-		}
-		if err := s.importedRepo.Create(ctx, row); err != nil {
-			s.log.Warn("ImportStrategy: persist failed", zap.Error(err))
-		} else {
-			strategyID = row.ID.String()
-			// Create initial version snapshot
-			if s.versionRepo != nil {
-				if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, source, rep.Version, "Initial import"); vErr != nil {
-					s.log.Warn("ImportStrategy: create version snapshot failed", zap.Error(vErr))
-				}
-			}
-		}
-	}
-
-	return connect.NewResponse(&antv1.ImportStrategyResponse{
-		StrategyId:    strategyID,
-		StrategyName:  strategyName,
-		GoCode:        source, // ADR-0023: return MQL source, not generated Go
-		CoverageScore: rep.Coverage,
-		BlindSpots:    irBlindSpotProtos(rep.BlindSpots),
-	}), nil
-}
-
 // GetImportedStrategy retrieves a previously imported strategy by ID.
 func (s *StrategyExecutionServer) GetImportedStrategy(ctx context.Context, req *connect.Request[antv1.GetImportedStrategyRequest]) (*connect.Response[antv1.GetImportedStrategyResponse], error) {
 	strategyID := req.Msg.GetStrategyId()

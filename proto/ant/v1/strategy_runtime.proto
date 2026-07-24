@@ -30,8 +30,6 @@ service StrategyRuntimeService {
   rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
   // AnalyzeCode analyzes MQL source and returns strategy intent summary + param panel + blind spots.
   rpc AnalyzeImportCode(AnalyzeImportCodeRequest) returns (AnalyzeImportCodeResponse);
-  // ImportStrategy runs the full import pipeline: analyze → persist → return strategy ID.
-  rpc ImportStrategy(ImportStrategyRequest) returns (ImportStrategyResponse);
   // GetImportedStrategy retrieves a previously imported strategy by ID.
   rpc GetImportedStrategy(GetImportedStrategyRequest) returns (GetImportedStrategyResponse);
   // ListStrategyRuns returns recent live/paper strategy run records.
@@ -370,21 +368,6 @@ message BlindSpot {
   string location = 5;
   string handling = 6;
   bool user_action_required = 7;
-}
-
-message ImportStrategyRequest {
-  string source_code = 1;
-  string source_name = 2;
-  string source_lang = 3;
-  optional string workspace_id = 20;
-}
-
-message ImportStrategyResponse {
-  string strategy_id = 1;
-  string strategy_name = 2;
-  string go_code = 3;
-  double coverage_score = 4;
-  repeated BlindSpot blind_spots = 10;
 }
 
 // ── Strategy Run lifecycle queries ───────────────────────────────────
