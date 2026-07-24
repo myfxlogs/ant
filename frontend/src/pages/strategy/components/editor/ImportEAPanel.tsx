@@ -30,6 +30,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
   const [bridgeSymbol, setBridgeSymbol] = useState('EURUSD');
   const [bridgeTimeframe, setBridgeTimeframe] = useState('H1');
   const [bridgeLanguage, setBridgeLanguage] = useState<'mql4' | 'mql5'>('mql4');
+  const [showBridgeParams, setShowBridgeParams] = useState(false);
 
   const handleAnalyze = () => {
     if (!eaCode.trim() || eaCode.trim().length < 20) {
@@ -50,6 +51,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       .then((res) => {
         setEaResult(res.goCode || '');
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
+        if (res.goCode) onApplyCode(res.goCode);
       })
       .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setEaTranslating(false); });
@@ -60,31 +62,38 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
     setEaResult('');
     setEaTranslating(true);
     strategyImportApi.generateCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: 'mql4' })
-      .then((res) => { setEaResult(res.goCode || ''); if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); } })
+      .then((res) => {
+        setEaResult(res.goCode || '');
+        if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
+        if (res.goCode) onApplyCode(res.goCode);
+      })
       .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setEaTranslating(false); });
   };
 
-  const handleBridge = () => {
+  const handleBridgeClick = () => {
+    if (!eaCode.trim()) return;
+    setShowBridgeParams(true);
+  };
+
+  const handleBridgeExecute = () => {
     if (!eaCode.trim()) return;
     setBridging(true);
     submitStrategy({ source: eaCode.trim(), language: bridgeLanguage, symbol: bridgeSymbol, timeframe: bridgeTimeframe })
       .then((res) => {
         setBridgeResult(res);
-        if (res.generatedCode) setEaResult(res.generatedCode);
+        if (res.generatedCode) { setEaResult(res.generatedCode); onApplyCode(res.generatedCode); }
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
       })
       .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setBridging(false); });
   };
 
-  const applyEaResult = () => { if (eaResult) onApplyCode(eaResult); };
-
   const busy = analyzing || eaTranslating || bridging;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 420, overflow: 'auto' }}>
-      <TextArea value={eaCode} onChange={e => setEaCode(e.target.value)} rows={8}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 600, overflow: 'hidden' }}>
+      <TextArea value={eaCode} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEaCode(e.target.value)} rows={5}
         placeholder={t('strategy.importEA.pastePlaceholder', { defaultValue: 'Paste MQL4/MQL5 EA code...' })}
         style={{ fontFamily: '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace', fontSize: 13, lineHeight: 1.6, border: 'none', borderRadius: 0, resize: 'none', flex: 'none' }} />
 
@@ -95,15 +104,22 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
         <Button size="small" icon={<RobotOutlined />} onClick={handleAITranslate} loading={eaTranslating} disabled={busy}>
           {t('strategy.importEA.aiTranslate', { defaultValue: 'AI 翻译' })}
         </Button>
-        <Button size="small" icon={<RobotOutlined />} onClick={handleBridge} loading={bridging} disabled={busy}>
+        <Button size="small" icon={<RobotOutlined />} onClick={handleBridgeClick} disabled={busy}>
           {t('strategy.importEA.bridge', { defaultValue: '盲区桥接' })}
         </Button>
-        <Segmented size="small" value={bridgeLanguage} onChange={(v) => setBridgeLanguage(v as 'mql4' | 'mql5')} options={[{ label: 'MQL4', value: 'mql4' }, { label: 'MQL5', value: 'mql5' }]} />
-        <Input size="small" style={{ width: 90 }} value={bridgeSymbol} onChange={e => setBridgeSymbol(e.target.value)} placeholder="Symbol" />
-        <Input size="small" style={{ width: 60 }} value={bridgeTimeframe} onChange={e => setBridgeTimeframe(e.target.value)} placeholder="TF" />
-        {eaResult && <Button size="small" onClick={applyEaResult}>{t('strategy.importEA.apply', { defaultValue: 'Apply to Editor' })}</Button>}
         {eaStrategyId && <Tag color="blue" style={{ marginLeft: 'auto' }}>ID: {eaStrategyId.slice(0, 8)}</Tag>}
       </div>
+
+      {showBridgeParams && !bridgeResult && (
+        <div style={{ padding: '4px 14px', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Segmented size="small" value={bridgeLanguage} onChange={(v) => setBridgeLanguage(v as 'mql4' | 'mql5')} options={[{ label: 'MQL4', value: 'mql4' }, { label: 'MQL5', value: 'mql5' }]} />
+          <Input size="small" style={{ width: 90 }} value={bridgeSymbol} onChange={e => setBridgeSymbol(e.target.value)} placeholder="Symbol" />
+          <Input size="small" style={{ width: 60 }} value={bridgeTimeframe} onChange={e => setBridgeTimeframe(e.target.value)} placeholder="TF" />
+          <Button size="small" type="primary" icon={<RobotOutlined />} onClick={handleBridgeExecute} loading={bridging} disabled={busy}>
+            {t('strategy.importEA.bridgeBtn', { defaultValue: '执行桥接' })}
+          </Button>
+        </div>
+      )}
 
       {analysis && !eaResult && analysis.coverageScore >= 0.4 && (
         <div style={{ padding: '4px 14px', borderBottom: '1px solid var(--color-border)' }}>
@@ -128,10 +144,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
         {!busy && analysis && <ImportAnalysisReport analysis={analysis} loading={false} />}
 
         {!busy && eaResult && !bridgeResult && (
-          <>
-            <Alert type="success" showIcon message={t('strategy.importEA.importSuccess', { defaultValue: 'MQL 源码已导入，点击「Apply to Editor」写入编辑器' })} style={{ margin: '8px 0' }} />
-            <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{eaResult}</pre>
-          </>
+          <Alert type="success" showIcon message={t('strategy.importEA.importSuccess', { defaultValue: '代码已生成并应用到编辑器' })} style={{ margin: '8px 0' }} />
         )}
 
         {!busy && bridgeResult && (
