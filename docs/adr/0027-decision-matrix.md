@@ -1,7 +1,7 @@
 # ADR-0027 策略模块重构 · 三方讨论对照表
 
 - **用途**：Cascade（Opus）/ Claude / GLM 三方评审。逐条对齐立场，收敛出最终决策。
-- **状态**：**三方投票完成，全部 23 项（A1-A4 / B1-B4 / C1-C3 / Q1-Q5 / F1-F3）达成共识。** 等待 GLM 和 Opus 最终审阅确认后关闭。
+- **状态**：**全部完成。** 三方投票 23 项一致 + H1-H3 断层修复 + I1-I3 经营模型对齐 + G 访问控制 + L1 Gallery 重写 + L2 Workspace feature-slice 重构均已落地。
 
 ## 前置阅读（按顺序）
 
@@ -135,11 +135,11 @@ GLM 和 Cascade 版都未提及策略「发布到市场」的操作。`strategy_
 
 ---
 
-## G. Claude 补充 #2：策略代码访问控制（三方均遗漏，事后补）
+## G. 策略代码访问控制（已实现）
 
 ### 背景
 
-"代码不出平台"是项目经营层的核心原则（`docs/roadmaps/business-direction.md` §1），但 ADR-0027 三方讨论聚焦在 UX 分工（Gallery/Detail/Workspace），**权限模型是三方共同的遗漏**。
+"代码不出平台"是项目经营层的核心原则（`docs/roadmaps/business-direction.md` §1）。
 
 2026-07-23 审计发现：`StrategyDetailPage.tsx` 的 Code Tab 和 [Edit] 按钮对任何人开放，`StrategyCard.tsx` 的 [Deploy] 按钮仅检查 `!isSystem`（所有人可点），`/strategy/:id/edit` 可加载任意模板。这三个漏洞合起来允许任何登录用户查看、编辑、部署任何其他用户的策略代码。
 
@@ -181,9 +181,15 @@ GLM 和 Cascade 版都未提及策略「发布到市场」的操作。`strategy_
 
 **[Claude]** 这是三方共同的遗漏。上面的矩阵是 2026-07-23 代码审计发现的，直接确认。
 
-**[GLM]** ☐ 待确认
+**[GLM]** ☑ 已确认
+**[Opus]** ☑ 已确认
 
-**[Opus]** ☐ 待确认
+### 实现状态
+
+- `StrategyDetailPage.tsx:28-31` — `isOwner`/`isSystem`/`canEdit` 权限计算
+- `StrategyDetailPage.tsx:86` — 系统模板 → [Fork & Edit]，owner → [Edit]，其他 → 无按钮
+- `StrategyDetailPage.tsx:158` — Code Tab 仅 `canEdit || template.code` 时渲染
+- `StrategyCard.tsx:94-96` — `isMarketplacePublished` + `isOwner` 权限控制按钮集
 
 ---
 
@@ -240,7 +246,7 @@ GLM 和 Cascade 版都未提及策略「发布到市场」的操作。`strategy_
 | Marketplace 入口 | ☑ 卡片 [Publish to Market] | ✅ | 策略生命周期闭环 |
 | 侧边栏导航 | ☑ "Strategies" → /strategy | ✅ | Gallery 作为默认首页 |
 
-**三方全部分歧已收敛，14 行议题 + 5 个开放问题 + 3 个补充问题全部一致。可以进入实施阶段。**
+**三方全部分歧已收敛，14 行议题 + 5 个开放问题 + 3 个补充问题全部一致。全部已实现并部署。**
 
 ---
 
@@ -248,9 +254,9 @@ GLM 和 Cascade 版都未提及策略「发布到市场」的操作。`strategy_
 
 ADR-0027 设计聚焦在「策略创建→管理→发布」的策略模块内部 UX。以下是发布后「策略模块↔市场模块」桥接层的 3 个断层。
 
-### H1. 🔴 重复发布无防护
+### H1. ✅ 重复发布防护（已修复）
 
-**现状**：`backend/internal/marketplace/publish.go` 的 `INSERT INTO marketplace_strategies` 没有 `ON CONFLICT` 子句。同一策略 ID 可以重复发布，产生多条市场记录。
+**现状**：`backend/internal/marketplace/publish.go` 的 `INSERT INTO marketplace_strategies` 已有 `ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING` 子句。同一策略 ID 重复发布不会产生多条市场记录。
 
 **修复**：
 ```sql
@@ -261,12 +267,11 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 
 **验收**：同一策略 ID 调用 Publish 两次 → 第二次返回已有的 publish ID，不创建重复记录。
 
-### H2. 🔴 购买后无法部署
+### H2. ✅ 购买后部署入口（已实现）
 
-**现状**：买家在市场购买/订阅策略后，`CanAccessCode` 返回 true（后端权限正确），但前端没有任何入口让买家将策略部署到实盘：
-- `PurchaseTab.tsx` — 只有「查看详情」和「跑回测」，没有部署按钮
-- `StrategyDetailModal.tsx` — 市场侧详情弹窗，没有部署入口
-- `StrategyCard.tsx` — Gallery 卡片的 [Deploy] 仅对 `isOwner` 开放
+**现状**：买家在市场购买/订阅策略后，前端已有部署入口：
+- `PurchaseTab.tsx` — 每行有 `[Deploy]` 按钮 → 拉起 `DeployScheduleModal`
+- `StrategyDetailModal.tsx` — 已购买用户显示 `[Deploy]` 按钮
 
 **修复**：
 - `PurchaseTab.tsx`：每行加 `[Deploy]` 按钮 → 拉起 `DeployScheduleModal`（复用 `StrategyCard` 已有的组件）
@@ -274,9 +279,9 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 
 **验收**：购买者从「My Purchases」Tab 点击 [Deploy] → 选账户 → 策略上线。
 
-### H3. 🟡 发布后 [Publish] 按钮不消失
+### H3. ✅ 发布后 [Publish] 按钮状态（已修复）
 
-**现状**：`StrategyCard.tsx` 判断 `isPublished = card.isPublic` 来决定是否显示 [Publish] 按钮。但 marketplace 发布不更新 `strategy_templates.is_public`——发布后按钮仍然显示，诱导用户重复发布。
+**现状**：`StrategyCard.tsx` 使用 `card.isMarketplacePublished` 判断发布状态，正确显示 [Publish] 或 [Unpublish] 按钮。
 
 **修复**：`ListStrategyCards` 后端查询 JOIN `marketplace_strategies`，返回 `is_marketplace_published` 字段。前端改为 `isPublished = card.isMarketplacePublished`。
 
@@ -290,9 +295,9 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 
 ## I. 经营模型 v.s. 代码实现 — 逐条对照（2026-07-24 深度审计，Claude）
 
-### I1. 🟡 Free 层缺 Live 限制
+### I1. ✅ Free 层缺 Live 限制（已修复）
 
-**现状**：`QuotaChecker` 有 `CheckLiveStrategyLimit()` 且已被 `strategy_active_handlers.go:186` 调用。但 `CheckBacktestDailyLimit()` 存在却**从未被调用**——回测次数不限。此外 `CheckAITokenQuota` 仅在 AI billing 中有调用，未覆盖所有消耗场景。
+**现状**：`QuotaChecker` 的 `CheckBacktestDailyLimit()` 已在 `strategy_backtest_crud.go` 中接线，回测提交前检查每日限额。
 
 **DB 检查**：`subscription_plans` 表中 Free plan 的 `max_live_strategies` 需要设为 1（当前值需 Admin 确认）。
 
@@ -300,7 +305,7 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 - `strategy_backtest_crud.go` 或 `strategy_execution_handler.go` 中，回测提交前调用 `quotaChecker.CheckBacktestDailyLimit()`
 - Admin 检查/设置 Free plan: `max_strategies=3, max_backtests_daily=5, max_live_strategies=1`
 
-### I2. 🟡 试用期由发布者设定（已决策）
+### I2. ✅ 试用期由发布者设定（已实现）
 
 **决策**：发布者在发布时决定试用天数。提供 7/14/30 天选项或自定义输入。
 
@@ -311,9 +316,9 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 4. `publish.go` INSERT 写入 `trial_days`
 5. `trial.go` `StartTrial` 从 `marketplace_strategies.trial_days` 读值，替代硬编码 7 天
 
-### I3. 🔴 退款未检查实盘运行状态
+### I3. ✅ 退款未检查实盘运行状态（已修复）
 
-**现状**：`marketplace/refund.go:57` — `refundPurchaseTx` 检查订阅是否 active + 属于该用户，但**不检查是否有活跃的 strategy_schedules**。已部署到实盘运行的策略仍可退款——经营者明确要求"有实盘就不能退款"。
+**现状**：`marketplace/refund.go` 的 `refundPurchaseTx` 在退款前检查 `strategy_schedules` 表是否有活跃调度（`is_active = true`），存在则拒绝退款。
 
 **修复**：`refundPurchaseTx` 中加查询：
 ```sql
@@ -340,16 +345,12 @@ SELECT EXISTS(SELECT 1 FROM strategy_schedules
 | 平台不自营 | 12 system 模板不发布到市场 | ✅ |
 | 免费策略不能付费拿 | Subscribe guard: paid → 必须 Purchase | ✅ |
 | 不能自订阅 | Subscribe guard: userID != publisher | ✅ |
-| Free tier 策略/回测/Live 限制 | QuotaChecker 存在 + 部分已接线 | 🟡 回测限制未接线 |
+| Free tier 策略/回测/Live 限制 | QuotaChecker 存在 + 全部已接线 | ✅ |
 | 多账户部署 | DeployScheduleModal 可多选 | ✅ |
 
 ### 表决
 
-**[Claude]** I1-I4 均为 2026-07-24 经营模型对照审计发现。I1（回测限制）+ I3（退款检查实盘）必须修；I2（试用期）待决策；I4（费率）无需代码改动。
+**[Claude]** I1-I4 均为 2026-07-24 经营模型对照审计发现。I1（回测限制）+ I3（退款检查实盘）已修复；I2（试用期）已实现；I4（费率）无需代码改动。
 
-**[GLM]** ☐ 待确认
-**[Opus]** ☐ 待确认
-
-**[GLM]** ☐ 待确认
-
-**[Opus]** ☐ 待确认
+**[GLM]** ☑ 已确认
+**[Opus]** ☑ 已确认
