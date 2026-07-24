@@ -8,9 +8,10 @@ import (
 	"github.com/google/uuid"
 )
 
-const trialDuration = 7 * 24 * time.Hour
+const defaultTrialDays = 7
 
-// StartTrial creates a 7-day free trial for a strategy.
+// StartTrial creates a free trial for a strategy. Trial duration is publisher-configured
+// via marketplace_strategies.trial_days (default 7 days).
 // One trial per user per strategy — if already trialed, returns already_tried=true.
 func (s *Service) StartTrial(ctx context.Context, userID, strategyID string) (trialID string, expiresAt time.Time, alreadyTried bool, err error) {
 	uid, err := uuid.Parse(userID)
@@ -23,20 +24,25 @@ func (s *Service) StartTrial(ctx context.Context, userID, strategyID string) (tr
 	}
 
 	// Verify strategy is published and paid (free strategies don't need trials).
+	// I2: Read trial_days from DB (publisher-configurable, default 7).
 	var priceModel string
+	var trialDays int
 	err = s.pg.QueryRow(ctx,
-		`SELECT price_model FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
+		`SELECT price_model, COALESCE(trial_days, 7) FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		sid,
-	).Scan(&priceModel)
+	).Scan(&priceModel, &trialDays)
 	if err != nil {
 		return "", time.Time{}, false, fmt.Errorf("marketplace: strategy not found or not published")
 	}
 	if priceModel == PriceModelFree {
 		return "", time.Time{}, false, fmt.Errorf("marketplace: free strategies do not offer trials")
 	}
+	if trialDays <= 0 {
+		trialDays = defaultTrialDays
+	}
 
 	now := time.Now().UTC()
-	exp := now.Add(trialDuration)
+	exp := now.Add(time.Duration(trialDays) * 24 * time.Hour)
 
 	// Atomic insert with ON CONFLICT to handle race condition (unique index on user_id + strategy_id).
 	newID := uuid.New()

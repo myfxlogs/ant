@@ -32,6 +32,11 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
     { value: 'subscription', label: t('marketplace.publish.priceModel.subscription', { defaultValue: 'Subscription' }) },
     { value: 'once', label: t('marketplace.publish.priceModel.once', { defaultValue: 'One-Time Purchase' }) },
   ];
+  const trialDaysOptions = [
+    { value: 7, label: t('marketplace.publish.trialDays.7', { defaultValue: '7 days' }) },
+    { value: 14, label: t('marketplace.publish.trialDays.14', { defaultValue: '14 days' }) },
+    { value: 30, label: t('marketplace.publish.trialDays.30', { defaultValue: '30 days' }) },
+  ];
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [includeSnapshot, setIncludeSnapshot] = useState(false);
@@ -47,6 +52,7 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
         priceModel: 'free',
         priceAmount: undefined as number | undefined,
         codeSnippet: '',
+        trialDays: 7,
       });
       setTags([]);
       setIncludeSnapshot(!!backtestSnapshot);
@@ -71,6 +77,7 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
         tags,
         codeSnippet: values.codeSnippet || '',
         backtestSnapshot: includeSnapshot && backtestSnapshot ? backtestSnapshot : undefined,
+        trialDays: values.trialDays || 7,
       });
       await marketplaceClient.publishStrategy(msg);
       message.success(t('marketplace.messages.published', { defaultValue: 'Strategy published to marketplace!' }));
@@ -136,6 +143,10 @@ export default function PublishToMarketModal({ open, template, backtestSnapshot,
         <Form.Item name="codeSnippet" label={t('marketplace.publish.codeSnippet', { defaultValue: 'Strategy Preview (public)' })}>
           <TextArea rows={2} maxLength={500}
             placeholder={t('marketplace.publish.codeSnippetPlaceholder', { defaultValue: 'Optional: share a snippet or high-level idea of your strategy (visible to all)' })} />
+        </Form.Item>
+
+        <Form.Item name="trialDays" label={t('marketplace.publish.trialDaysLabel', { defaultValue: 'Trial Period' })}>
+          <Select options={trialDaysOptions} />
         </Form.Item>
 
         {backtestSnapshot && (

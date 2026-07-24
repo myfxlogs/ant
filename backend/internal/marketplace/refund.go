@@ -75,6 +75,20 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		return nil, fmt.Errorf("marketplace: subscription missing idempotency key")
 	}
 
+	// I3: Reject refund if the buyer has active live schedules for this strategy.
+	var activeSchedules int
+	err = tx.QueryRow(ctx,
+		`SELECT count(*) FROM strategy_schedules
+		 WHERE template_id = $1 AND user_id = $2 AND is_active = true`,
+		subStrategyID, uid,
+	).Scan(&activeSchedules)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: check active schedules: %w", err)
+	}
+	if activeSchedules > 0 {
+		return nil, fmt.Errorf("marketplace: strategy has active live schedules")
+	}
+
 	buyKey := IdemKeyBuy + idemKey
 
 	// 2. Find the original purchase transaction by its unique idem_key.

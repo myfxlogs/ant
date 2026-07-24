@@ -45,6 +45,20 @@ func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *con
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account not found or not owned by user"))
 	}
 
+	// I1: Enforce daily backtest quota before creating the run.
+	if s.quotaChecker != nil {
+		var todayCount int
+		if err := s.backtestRepo.DB().QueryRow(ctx,
+			"SELECT count(*) FROM backtest_runs WHERE user_id = $1 AND created_at >= CURRENT_DATE",
+			userID,
+		).Scan(&todayCount); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("backtest quota count: %w", err))
+		}
+		if !s.quotaChecker.CheckBacktestDailyLimit(userID, todayCount) {
+			return nil, connect.NewError(connect.CodeResourceExhausted, fmt.Errorf("daily backtest limit reached"))
+		}
+	}
+
 	run := buildBacktestRunFromRequest(userID, req.Msg)
 
 	// If strategy_id is provided, fetch source code + params from imported_strategies.

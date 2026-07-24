@@ -120,6 +120,7 @@ func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCac
 type QuotaChecker interface {
 	CheckStrategyLimit(userID uuid.UUID, currentCount int) bool
 	CheckLiveStrategyLimit(userID uuid.UUID, currentLive int) bool
+	CheckBacktestDailyLimit(userID uuid.UUID, todayCount int) bool
 }
 
 func (s *StrategyExecutionServer) SetQuotaChecker(qc QuotaChecker) { s.quotaChecker = qc }
