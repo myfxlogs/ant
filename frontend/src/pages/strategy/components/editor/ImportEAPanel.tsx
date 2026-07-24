@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button, Tag, Segmented, Typography, Spin, message, Radio, Alert, Input } from 'antd';
 import { ImportOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { codeAssistClient } from '@/client/connect';
 import { strategyImportApi } from '@/client/strategy';
 import { submitStrategy } from '@/client/agentGateway';
 import { ImportAnalysisReport } from '@/components/strategy/ImportAnalysisReport';
@@ -40,7 +39,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       return;
     }
     setAnalyzing(true);
-    codeAssistClient.analyzeImportCode({ source: eaCode.trim() })
+    strategyImportApi.analyzeCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: 'mql4' })
       .then((res) => { setAnalysis(res); })
       .catch((e) => { message.error(String(e?.message || t('common.unknownError', 'Unknown error'))); })
       .finally(() => { setAnalyzing(false); });
@@ -74,8 +73,8 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
   const handleImportEA = () => {
     if (!eaCode.trim()) return;
     setEaTranslating(true);
-    codeAssistClient.translateCode({ source: eaCode.trim() })
-      .then((res) => { setEaResult(res.code || ''); if ('strategyId' in res && res.strategyId) onStrategyIdChange?.(res.strategyId as string); })
+    strategyImportApi.generateCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: 'mql4' })
+      .then((res) => { setEaResult(res.goCode || ''); if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); } })
       .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setEaTranslating(false); });
   };
