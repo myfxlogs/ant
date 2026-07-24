@@ -241,3 +241,51 @@ GLM 和 Cascade 版都未提及策略「发布到市场」的操作。`strategy_
 | 侧边栏导航 | ☑ "Strategies" → /strategy | ✅ | Gallery 作为默认首页 |
 
 **三方全部分歧已收敛，14 行议题 + 5 个开放问题 + 3 个补充问题全部一致。可以进入实施阶段。**
+
+---
+
+## H. 业务流审计发现的断层（2026-07-24 交付前审计，Claude）
+
+ADR-0027 设计聚焦在「策略创建→管理→发布」的策略模块内部 UX。以下是发布后「策略模块↔市场模块」桥接层的 3 个断层。
+
+### H1. 🔴 重复发布无防护
+
+**现状**：`backend/internal/marketplace/publish.go` 的 `INSERT INTO marketplace_strategies` 没有 `ON CONFLICT` 子句。同一策略 ID 可以重复发布，产生多条市场记录。
+
+**修复**：
+```sql
+-- publish.go 中 INSERT 改为：
+INSERT INTO marketplace_strategies (...) VALUES (...)
+ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
+```
+
+**验收**：同一策略 ID 调用 Publish 两次 → 第二次返回已有的 publish ID，不创建重复记录。
+
+### H2. 🔴 购买后无法部署
+
+**现状**：买家在市场购买/订阅策略后，`CanAccessCode` 返回 true（后端权限正确），但前端没有任何入口让买家将策略部署到实盘：
+- `PurchaseTab.tsx` — 只有「查看详情」和「跑回测」，没有部署按钮
+- `StrategyDetailModal.tsx` — 市场侧详情弹窗，没有部署入口
+- `StrategyCard.tsx` — Gallery 卡片的 [Deploy] 仅对 `isOwner` 开放
+
+**修复**：
+- `PurchaseTab.tsx`：每行加 `[Deploy]` 按钮 → 拉起 `DeployScheduleModal`（复用 `StrategyCard` 已有的组件）
+- `StrategyDetailModal.tsx`：已购买用户显示 `[Deploy]` 按钮
+
+**验收**：购买者从「My Purchases」Tab 点击 [Deploy] → 选账户 → 策略上线。
+
+### H3. 🟡 发布后 [Publish] 按钮不消失
+
+**现状**：`StrategyCard.tsx` 判断 `isPublished = card.isPublic` 来决定是否显示 [Publish] 按钮。但 marketplace 发布不更新 `strategy_templates.is_public`——发布后按钮仍然显示，诱导用户重复发布。
+
+**修复**：`ListStrategyCards` 后端查询 JOIN `marketplace_strategies`，返回 `is_marketplace_published` 字段。前端改为 `isPublished = card.isMarketplacePublished`。
+
+**验收**：发布后 StrategyCard 显示 [Unpublish] 替代 [Publish]。
+
+### 表决
+
+**[Claude]** 三项均为 2026-07-24 交付前深度审计发现。确认必须修。
+
+**[GLM]** ☐ 待确认
+
+**[Opus]** ☐ 待确认
