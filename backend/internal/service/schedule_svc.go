@@ -136,7 +136,7 @@ func (s *StrategySvc) UpdateSchedule(ctx context.Context, r *ScheduleRow) error 
 }
 
 func (s *StrategySvc) DeleteSchedule(ctx context.Context, id, userID uuid.UUID) error {
-	s.pg.Exec(ctx, `DELETE FROM strategy_execution_logs WHERE schedule_id = $1`, id)
+	_, _ = s.pg.Exec(ctx, `DELETE FROM strategy_execution_logs WHERE schedule_id = $1`, id)
 	tag, err := s.pg.Exec(ctx, `DELETE FROM strategy_schedules WHERE id = $1 AND user_id = $2`, id, userID)
 	if err != nil {
 		return fmt.Errorf("DeleteSchedule: %w", err)

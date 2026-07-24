@@ -68,7 +68,7 @@ func (s *CHMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 	if err != nil {
 		return nil, fmt.Errorf("ch get klines: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	return scanKlineBars(rows, s.log)
 }
 
@@ -122,7 +122,7 @@ func (s *CHMarketDataStore) LoadFinalizedBars(ctx context.Context, since time.Ti
 		s.log.Error("ch: load finalized bars FAILED", zap.Error(err))
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var broker, canonical, period string
 		var closeTs int64
@@ -149,6 +149,30 @@ func (s *CHMarketDataStore) MaxCloseTs(ctx context.Context, broker, canonical, p
 		return 0, nil
 	}
 	return ts, nil
+}
+
+func (s *CHMarketDataStore) GetLatestBars(ctx context.Context, since time.Time) ([]KlineBar, error) {
+	rows, err := s.conn.Query(ctx,
+		`SELECT
+			broker, canonical, period,
+			argMax(open_ts_unix_ms, close_ts_unix_ms) AS open_ts,
+			argMax(close_ts_unix_ms, close_ts_unix_ms) AS close_ts,
+			argMax(open, close_ts_unix_ms) AS open,
+			argMax(high, close_ts_unix_ms) AS high,
+			argMax(low, close_ts_unix_ms) AS low,
+			argMax(close, close_ts_unix_ms) AS close,
+			argMax(volume, close_ts_unix_ms) AS volume,
+			argMax(tick_count, close_ts_unix_ms) AS tick_count
+		FROM md_bars
+		WHERE close_ts_unix_ms >= $1
+		GROUP BY broker, canonical, period`,
+		since.UnixMilli(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("ch get latest bars: %w", err)
+	}
+	defer func() { _ = rows.Close() }()
+	return scanKlineBars(rows, s.log)
 }
 
 func (s *CHMarketDataStore) FetchActualReturn(ctx context.Context, symbol string, predictedAt time.Time) (float64, error) {
@@ -190,7 +214,7 @@ func (s *CHMarketDataStore) InsertBars(ctx context.Context, bars []KlineBar) err
 	if err != nil {
 		return fmt.Errorf("ch insert bars: prepare: %w", err)
 	}
-	defer batch.Abort()
+	defer func() { _ = batch.Abort() }()
 	for _, b := range bars {
 		if err := batch.Append(b.Broker, b.Canonical, b.Canonical, b.Period, b.OpenTsUnixMs, b.CloseTsUnixMs,
 			b.Open, b.High, b.Low, b.Close,
@@ -210,7 +234,7 @@ func (s *CHMarketDataStore) InsertTicks(ctx context.Context, ticks []TickRecord)
 	if err != nil {
 		return fmt.Errorf("ch insert ticks: prepare: %w", err)
 	}
-	defer batch.Abort()
+	defer func() { _ = batch.Abort() }()
 	for _, t := range ticks {
 		replay := uint8(0)
 		if t.IsReplay {

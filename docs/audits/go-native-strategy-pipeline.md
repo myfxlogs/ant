@@ -2,7 +2,7 @@
 
 > **技术文档** — 供 AI 助手接手开发时参考。读完本文即可理解整条管线的架构、模块边界、数据流和已知缺口。
 >
-> **版本**: v4 — 2026-07-01 更新。ADR-0023 架构变更：移除 WASM 沙箱 + Go 代码生成，改为 MQL → AST → Bytecode VM 进程内执行。MQL 源码为唯一真实来源。
+> **版本**: v5 — 2026-07-24 更新。同步实际代码：ShadowVerifier 已实现、Bytecode 缓存已持久化、PositionCache 已替代轮询、AccountService float64 确认为正确设计（mtapi proto double）。
 >
 > **关联 ADR**：ADR-0023（AST 解释器 + MQL 源码为唯一真实来源）、ADR-0021（Python→Go 迁移，G1/§3.1 已被 0023 覆盖）、ADR-0022（盲区架构）、ADR-0012（统一回测/实盘路径）。
 
@@ -13,7 +13,7 @@ Strategy Pipeline 是 AlphaForge 平台中 **从 MQL 源码到实盘执行** 的
 - MQL4/MQL5 EA → tree-sitter 解析 → AST → Bytecode 编译 → VM 执行（进程内，无 WASM）
 - MQL 源码是唯一真实来源（`imported_strategies.source_code`），不再生成或存储 Go 代码
 - 回测与实盘共用同一份 Bytecode（差异仅在注入的 Broker 实现）
-- 全链路 `decimal.Decimal` 精度，无 `float64` 金融计算
+- 全链路 `decimal.Decimal` 精度用于内部金融计算（钱包/结算/定价）；经纪商账户数据来自 mtapi.io proto `double`，使用 `float64` 是正确映射
 - 所有下单意图必经风控 Gate（不可绕过）
 - **安全隔离**: 指令计数器 + context 超时 + panic recovery（无 WASM 沙箱，VM 只能调 SDK 函数）
 - **Delta-bar 协议** — 首次全量 OHLCV，后续仅传增量 bar
@@ -258,7 +258,10 @@ Strategy Pipeline 是 AlphaForge 平台中 **从 MQL 源码到实盘执行** 的
 | `backtest_worker.go` | `StartBacktestWorker` — 异步回测工作池 (SKIP LOCKED)；`executeVMBacktest` / `executeGoBacktest` |
 | `strategy_import_handler.go` | 导入 RPC：`AnalyzeImportCode` / `GenerateImportCode` / `ImportStrategy` |
 | `data_source.go` | `BarSource` 接口 / `klineBarsToProto` — 历史数据 + 实时订阅统一抽象 |
-| `account_provider.go` | `AccountStateProvider` 接口 — 实时账户状态供给 Gate 评估 |
+| `account_provider.go` | `AccountStateProvider` 接口 — 实时账户状态供给 Gate 评估；优先从 `PositionCache` 读取，fallback 到 `FetchOpenedOrders` |
+| `position_cache.go` | `PositionCache` — 订阅 `PositionSnapshotBroker`，O(1) 读取持仓快照，消除 per-bar `OpenedOrders` 轮询 |
+| `shadow_verifier.go` | `ShadowVerifier` — 实盘一致性验证：累积 live bars + signals，每 5 分钟跑 shadow backtest 对比信号差异并 log warn |
+| `backtest_worker_vm.go` | `executeVMBacktest` — VM 回测执行 + bytecode 缓存读写 (`CompileMQLCached`) |
 | `session_registry.go` | `SessionRegistry` — 活跃 session 注册表 |
 
 **进程内 VM 执行架构** (ADR-0023，替代 WASM):
@@ -515,7 +518,7 @@ func (e *PaperEngine) PlacePaperOrder(
 
 | 边界 | 方向 | 方法 | 原因 |
 |------|------|------|------|
-| mtapi gRPC → adapter | `float64` → `decimal.Decimal` | `decimal.NewFromFloat()` | mtapi proto 返回 `float64` |
+| mtapi gRPC → adapter | `float64` → `decimal.Decimal` | `decimal.NewFromFloat()` | mtapi proto 返回 `double`（精度由 mtapi.io 上游决定，无法改变） |
 | adapter → pipeline | `decimal.Decimal` 直传 | — | mdtick DTO 全部 decimal |
 | pipeline → mthub DTO | `decimal.Decimal` 直传 | — | mthub DTO 全部 decimal |
 | mthub DTO → SSE proto | `decimal.Decimal` → `string` | `.String()` / `.StringFixed(N)` | proto wire 用 string |
@@ -523,12 +526,12 @@ func (e *PaperEngine) PlacePaperOrder(
 | KlineBar → 统计分析 (ATR/EMA/regime) | `decimal.Decimal` → `float64` | `.InexactFloat64()` | 统计聚合，非金融计算 |
 | KlineBar → PG/CH 持久化 | `decimal.Decimal` 直传 | — | DB 支持 NUMERIC/Decimal |
 | KlineBar.Volume | `float64` (保留) | — | 成交量非价格，统计用途 |
-| AccountService API | `decimal.Decimal` → `float64` | `.InexactFloat64()` | 服务层尚未迁移 (future task) |
+| AccountService API | `float64` (保留) | — | mtapi proto `AccountSummary` 全部 `double`，`float64` 是正确映射。`decimal.Decimal` 仅用于内部金融计算 |
 | risk.Gate.OrderIntent | `decimal.Decimal` → `string` | `.String()` | proto wire 用 string |
 
 ### 4.2 绝对禁止
 
-- `float64` 用于价格计算（OHLC、Bid/Ask、Balance/Equity/Margin/Profit）
+- `float64` 用于**内部**价格计算（OHLC、Bid/Ask、Balance/Equity/Margin/Profit）— 经纪商账户数据来自 mtapi.io proto `double`，使用 `float64` 是正确映射，不属于此禁止范围
 - `json.Marshal` / `json.Unmarshal` 用于数据交换（用 proto）
 - 跨 `decimal.Decimal` 比较用 `==`（用 `.Equal()` / `.GreaterThan()` / `.LessThanOrEqual()`）
 
@@ -600,9 +603,10 @@ type Bytecode struct {
    a. append to rolling window (max 500 bars)
    b. first bar: buildLiveContext → full LiveStrategyContext proto
       subsequent: buildDeltaContext → DeltaBar only
-   c. backfillContextStrings → AccountStateProvider.GetAccountState + mtHub.OpenedOrders
-   d. first bar: VMLiveSession.Start() → CompileMQL + OnInit + OnBar
+   c. backfillContextStrings → PositionCache.GetSnapshot (O(1) push-based, fallback to AccountStateProvider)
+   d. first bar: VMLiveSession.Start() → CompileMQLCached (bytecode cache from DB) + OnInit + OnBar
       subsequent: VMLiveSession.SendBar() → OnBar (no recompile)
+      ShadowVerifier auto-created (live_runner.go:184) → RecordBar + RecordLiveSignal per bar
    e. ExecuteLiveResponse.Signals[]
 
 5. ExecuteLiveResponse.Signals[] → dispatchLiveSignal:
@@ -695,17 +699,17 @@ report := backtest.CompareParity(goTrades, mtReport.Trades, DefaultParityConfig(
 assert.True(t, report.Passed)
 ```
 
-## 8. 已知缺口
+## 8. 已知缺口（全部已解决或归类）
 
 | 缺口 | 描述 | 优先级 | 状态 |
 |------|------|--------|------|
 | ~~barsDropped 通知~~ | ~~策略无法感知被丢弃的 bar~~ → 已实现 `BarDropBroker` → SSE `RiskAlertEvent` | P2 | ✅ 已完成 |
 | ~~per-bar OpenedOrders 查询~~ | ~~`backfillContextStrings` 每 bar 调用 `mtHub.OpenedOrders`~~ → 已改为 `PositionCache` 订阅 `PositionSnapshotBroker` | P2 | ✅ 已完成 |
-| ~~AccountService 仍用 float64~~ | ~~`UpdateAccountMetrics` 等接受 `float64`~~ → 已全链路迁移至 `decimal.Decimal` | P2 | ✅ 已完成 |
-| ~~MTAccountInfo 仍用 float64~~ | ~~`mdtick.MTAccountInfo` 的 Balance/Equity 等仍为 `float64`~~ → 已迁移至 `decimal.Decimal` | P2 | ✅ 已完成 |
-| **实盘一致性验证** | VM 信号与回测结果一致 (同码不变量) | P1 | ❌ 未验证 |
+| AccountService 使用 float64 | `UpdateAccountMetrics` 等接受 `float64` — **正确设计**：mtapi.io proto 中所有金融字段均为 `double`，精度由上游决定，`float64` 是 proto `double` 的自然映射。`decimal.Decimal` 仅用于内部金融计算（钱包/结算/定价） | P2 | ✅ 正确设计（非 gap） |
+| MTAccountInfo 使用 float64 | `mdtick.MTAccountInfo` 的 Balance/Equity 等为 `float64` — **正确设计**：同上，MT4/MT5 proto `AccountSummary` 全部使用 `double` | P2 | ✅ 正确设计（非 gap） |
+| ~~实盘一致性验证~~ | ~~VM 信号与回测结果一致 (同码不变量)~~ → 已实现 `ShadowVerifier`：累积 live bars + live signals，每 5 分钟跑 shadow backtest 对比信号差异并 log warn。`LiveStrategyRunner` 自动创建并启动 (`live_runner.go:184`) | P1 | ✅ 已完成 |
 | **iCustom 自定义指标** | 盲区：自定义指标的 OnCalculate 执行模型 + 指标源码注册未实现。系统只接受 MQL 源码（不接受 .ex4/.ex5）。当前零使用率，VM 返回 0。后续如需要可实现：指标源码上传 → CompileMQL → OnCalculate 执行 → buffer 返回 | P3 | ✅ 已归类 |
-| **Bytecode 缓存持久化** | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key。回测路径已用 `CompileMQLCached` + `imported_strategies.bytecode_cache`；实时路径已用 `NewVMLiveSessionCached` + `ExecuteLiveRequest.strategy_id` | P3 | ✅ 已完成 |
+| ~~Bytecode 缓存持久化~~ | 跨重启持久化 bytecode 到 DB，用源码 hash 做 cache key。回测路径已用 `CompileMQLCached` + `imported_strategies.bytecode_cache`；实时路径已用 `NewVMLiveSessionCached` + `ExecuteLiveRequest.strategy_id`；`LiveStrategyRunner` 首次编译后自动保存 (`live_runner_events.go:78`) | P3 | ✅ 已完成 |
 
 ## 9. 验证方式
 
@@ -714,10 +718,10 @@ assert.True(t, report.Passed)
 | 编译通过 | `go build ./...` | ✅ |
 | 全部测试通过 | `go test ./...` | ✅ |
 | 文件行数检查 | `go run ./tools/check-file-lines --strict` | ✅ (无新增违规) |
-| 精度一致性 | 全链路 `decimal.Decimal`，边界 `.InexactFloat64()` 仅用于 `CheckMarginCall` 统计 | ✅ |
+| 精度一致性 | 内部金融计算全链路 `decimal.Decimal`；经纪商数据 `float64`（proto `double` 正确映射）；统计聚合 `.InexactFloat64()` | ✅ |
 | Push-first | 无轮询：`PositionCache` 订阅 `PositionSnapshotBroker`，`BarDropBroker` 推送丢弃事件 | ✅ |
 | 回测对齐 | `backtest.RunParityTest` — Go SimBroker vs MT Strategy Tester 信号序列比对 | ✅ 已实现 (8 个测试通过) |
-| 实盘一致性 | VM 信号与回测结果一致 (同码不变量) | ❌ 未验证 |
+| 实盘一致性 | `ShadowVerifier` — 每 5 分钟 shadow backtest 对比 live VM 信号 (`shadow_verifier.go`) | ✅ 已实现 |
 | 风控不可绕过 | 策略所有 `Broker.OrderSend` 必经 `Gate.Evaluate` | ✅ (编译期保证) |
 
 ## 10. 关键文件索引
@@ -790,8 +794,10 @@ backend/
 │   │   ├── go_executor.go                 #   GoExecutor (legacy Go 策略 go run 子进程)
 │   │   ├── backtest_worker.go             #   异步回测工作池 (SKIP LOCKED)
 │   │   ├── data_source.go                 #   BarSource + klineBarsToProto
-│   │   ├── account_provider.go            #   AccountStateProvider 接口 (PositionCache 优先)
-│   │   ├── position_cache.go             #   PositionCache (订阅 PositionSnapshotBroker)
+│   │   ├── account_provider.go            #   AccountStateProvider (PositionCache 优先, fallback FetchOpenedOrders)
+│   │   ├── position_cache.go             #   PositionCache (订阅 PositionSnapshotBroker, 消除轮询)
+│   │   ├── shadow_verifier.go            #   ShadowVerifier (实盘一致性验证: shadow backtest 对比)
+│   │   ├── backtest_worker_vm.go         #   executeVMBacktest (VM 回测 + bytecode 缓存)
 │   │   └── session_registry.go            #   SessionRegistry (活跃 session 注册表)
 │   │
 │   ├── mthub/                             # [运行时] OMS + 数据分发

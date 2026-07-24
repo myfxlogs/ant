@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"context"
-	"fmt"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -31,14 +30,6 @@ func NewStrategyAssetServer(repo *repository.StrategyAssetRepository, userRepo *
 func (s *StrategyAssetServer) userID(ctx context.Context) uuid.UUID {
 	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
 	return id
-}
-
-func (s *StrategyAssetServer) userIDRequire(ctx context.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(interceptor.GetUserID(ctx))
-	if err != nil || id == uuid.Nil {
-		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-	return id, nil
 }
 
 func assetToProto(a *repository.StrategyAsset) *antv1.StrategyAsset {

@@ -99,11 +99,11 @@ func registerSREHandlers(
 		if r.URL.Path != "/" {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"code":"not_found"}`))
+			_, _ = w.Write([]byte(`{"code":"not_found"}`))
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"status":"ant-v2"}`))
+		_, _ = w.Write([]byte(`{"status":"ant-v2"}`))
 	})
 
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).
@@ -114,27 +114,27 @@ func registerSREHandlers(
 		w.Header().Set("Content-Type", "text/plain")
 		if err := pool.Ping(context.Background()); err != nil {
 			w.WriteHeader(503)
-			w.Write([]byte("pg unreachable"))
+			_, _ = w.Write([]byte("pg unreachable"))
 			return
 		}
 		if !nc.IsConnected() {
 			w.WriteHeader(503)
-			w.Write([]byte("nats disconnected"))
+			_, _ = w.Write([]byte("nats disconnected"))
 			return
 		}
 		if err := rdb.Ping(context.Background()); err != nil {
 			w.WriteHeader(503)
-			w.Write([]byte("redis unreachable"))
+			_, _ = w.Write([]byte("redis unreachable"))
 			return
 		}
-		w.Write([]byte("ant ok"))
+		_, _ = w.Write([]byte("ant ok"))
 	})
 
 	// /readyz — lightweight readiness probe (K8s standard). Does NOT check DB dependencies;
 	// unlike /healthz, returning 503 here tells K8s to stop routing traffic without killing the pod.
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("ready"))
+		_, _ = w.Write([]byte("ready"))
 	})
 
 	workerCleanup := func() {

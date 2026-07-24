@@ -59,10 +59,10 @@ func TestFileMasterKey_Valid(t *testing.T) {
 	assert.NoError(t, err)
 	f, err := os.CreateTemp("", "ant-key-*")
 	assert.NoError(t, err)
-	defer os.Remove(f.Name())
+	defer func() { _ = os.Remove(f.Name()) }()
 	_, err = f.WriteString(key)
 	assert.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	t.Setenv("ANT_MASTER_KEY_FILE", f.Name())
 	k, err := secrets.FileMasterKey{}.MasterKey(context.Background())

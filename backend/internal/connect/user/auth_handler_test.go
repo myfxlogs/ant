@@ -46,7 +46,7 @@ func TestLogin_NilUsersRepo(t *testing.T) {
 			t.Fatal("expected panic when users repo is nil")
 		}
 	}()
-	srv.Login(t.Context(), req)
+	_, _ = srv.Login(t.Context(), req)
 }
 
 func TestLogout_Success(t *testing.T) {

@@ -170,10 +170,10 @@ func TestGoDSLAlignment(t *testing.T) {
 
 	// Write to research/tests/alignment_data.json
 	outPath := filepath.Join("..", "..", "..", "..", "research", "tests", "alignment_data.json")
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outPath), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(outPath, jsonBytes, 0o644); err != nil {
+	if err := os.WriteFile(outPath, jsonBytes, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("alignment data written to %s (%d records, %d bars each)", outPath, len(records), len(bars))

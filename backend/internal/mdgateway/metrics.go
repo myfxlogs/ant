@@ -150,6 +150,6 @@ func MetricsHandler() http.Handler {
 		promhttp.Handler().ServeHTTP(cw, r2)
 		b.Write(buf.Bytes())
 
-		w.Write([]byte(b.String()))
+		_, _ = w.Write([]byte(b.String()))
 	})
 }

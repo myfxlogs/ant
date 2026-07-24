@@ -240,7 +240,7 @@ func (c *checker) verifyChainHistory(resp *antv1.GetLedgerSummaryResponse) error
 		}
 		return fmt.Errorf("open chain history: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var lastSeq int64
 	var lastHash string
@@ -253,7 +253,7 @@ func (c *checker) verifyChainHistory(resp *antv1.GetLedgerSummaryResponse) error
 		parts := strings.Fields(line)
 		if len(parts) >= 2 {
 			var s int64
-			fmt.Sscanf(parts[0], "%d", &s)
+			_, _ = fmt.Sscanf(parts[0], "%d", &s)
 			lastSeq = s
 			lastHash = parts[1]
 		}
@@ -278,7 +278,7 @@ func (c *checker) appendChainHistory(resp *antv1.GetLedgerSummaryResponse) error
 	if err != nil {
 		return fmt.Errorf("open chain history for append: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	timestamp := time.Now().Format(time.RFC3339)
 	_, err = fmt.Fprintf(f, "%d %s %s\n", resp.LatestSeq, resp.LatestEntryHash, timestamp)

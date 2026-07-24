@@ -41,7 +41,7 @@ export default function AccountDetail() {
   } = useAccountDetailData(id);
 
   const s = (currentAccount?.status || currentAccount?.accountStatus || '').toLowerCase();
-  const disabled = s === 'disconnected' || s === 'frozen' || currentAccount?.isDisabled === true;
+  const disabled = s === 'disconnected' || s === 'frozen' || s === 'circuit_open' || currentAccount?.isDisabled === true;
   const { balance, equity, margin, freeMargin, marginLevel, profit, profitPercent, credit } = financials;
 
   const formatCurrency = useCallback((value: number) => {
@@ -58,6 +58,8 @@ export default function AccountDetail() {
       case 'connecting': return { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', text: t(DETAIL_STATUS_CONNECTING_KEY) };
       case 'disconnected': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t(DETAIL_STATUS_DISCONNECTED_KEY) };
       case 'error': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t(DETAIL_STATUS_ERROR_KEY) };
+      case 'circuit_open': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t('accounts.status.circuit_open', 'Circuit Open') };
+      case 'circuit_half_open': return { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', text: t('accounts.status.circuit_half_open', 'Circuit Testing') };
       default: return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('common.unknown') };
     }
   }, [currentAccount, t]);

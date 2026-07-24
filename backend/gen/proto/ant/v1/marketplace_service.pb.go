@@ -38,10 +38,11 @@ type PublishStrategyRequest struct {
 	RiskLevel   string   `protobuf:"bytes,10,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`
 	Tags        []string `protobuf:"bytes,11,rep,name=tags,proto3" json:"tags,omitempty"`
 	// Code protection: publisher-visible only.
-	CodeSnippet      string            `protobuf:"bytes,16,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"`                // optional public code preview set by publisher
-	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,17,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"` // snapshot of backtest results at publish time
-	Disclaimer       string            `protobuf:"bytes,18,opt,name=disclaimer,proto3" json:"disclaimer,omitempty"`                                     // optional risk disclaimer shown to buyers
-	TrialDays        int32             `protobuf:"varint,19,opt,name=trial_days,json=trialDays,proto3" json:"trial_days,omitempty"`                     // publisher-configurable trial period (default 7)
+	CodeSnippet      string            `protobuf:"bytes,16,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"`                   // optional public code preview set by publisher
+	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,17,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"`    // snapshot of backtest results at publish time
+	Disclaimer       string            `protobuf:"bytes,18,opt,name=disclaimer,proto3" json:"disclaimer,omitempty"`                                        // optional risk disclaimer shown to buyers
+	TrialDays        int32             `protobuf:"varint,19,opt,name=trial_days,json=trialDays,proto3" json:"trial_days,omitempty"`                        // publisher-configurable trial period (default 7)
+	RefundWindowDays int32             `protobuf:"varint,20,opt,name=refund_window_days,json=refundWindowDays,proto3" json:"refund_window_days,omitempty"` // publisher-configurable refund window in days (default 7)
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -177,6 +178,13 @@ func (x *PublishStrategyRequest) GetDisclaimer() string {
 func (x *PublishStrategyRequest) GetTrialDays() int32 {
 	if x != nil {
 		return x.TrialDays
+	}
+	return 0
+}
+
+func (x *PublishStrategyRequest) GetRefundWindowDays() int32 {
+	if x != nil {
+		return x.RefundWindowDays
 	}
 	return 0
 }
@@ -9260,7 +9268,7 @@ var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fbacktest_execution_config.proto\x1a\x18backtest_run_query.proto\"\x83\x04\n" +
+	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fbacktest_execution_config.proto\x1a\x18backtest_run_query.proto\"\xb1\x04\n" +
 	"\x16PublishStrategyRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +
@@ -9284,7 +9292,8 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"disclaimer\x18\x12 \x01(\tR\n" +
 	"disclaimer\x12\x1d\n" +
 	"\n" +
-	"trial_days\x18\x13 \x01(\x05R\ttrialDays\"\x9b\x04\n" +
+	"trial_days\x18\x13 \x01(\x05R\ttrialDays\x12,\n" +
+	"\x12refund_window_days\x18\x14 \x01(\x05R\x10refundWindowDays\"\x9b\x04\n" +
 	"\x10BacktestSnapshot\x12!\n" +
 	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
 	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +

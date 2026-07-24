@@ -19,7 +19,6 @@ import (
 type mockMtHub struct {
 	placed  atomic.Int32
 	closed  atomic.Int32
-	blocked atomic.Int32
 }
 
 func (m *mockMtHub) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {

@@ -36,6 +36,7 @@ type RunnerDeps struct {
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
 	OnBar               func(bar *mdtick.Bar)                                               // called when a bar is finalized (for realtime SSE push)
 	OnAccountStatus     func(accountID, userID, status, message string)                      // called when gateway connection state changes (connected/reconnecting/disconnected)
+	OnBreakerTrip       func(accountID, userID, status, message string)                      // called when circuit breaker state changes (circuit_open/circuit_half_open/circuit_closed)
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
 	FactorPusher        func(bar *mdtick.Bar)   // M10-BASE-B6: push finalized bars to factor subscriber
@@ -49,7 +50,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 	// --- OTel trace (ADR-0010 §2.3) ---
 	tracer := anttrace.New()
-	defer tracer.Shutdown(context.Background())
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 	log.Info("mdgateway: trace", zap.Bool("enabled", tracer.Enabled()))
 
 	// --- Publisher ---
@@ -70,6 +71,17 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		return fmt.Errorf("load finalized bars: %w", err)
 	}
 	aggregator.LoadFinalizedBars(finalized)
+
+	// --- Restore in-progress bar state (R1a: bar_aggregator restart recovery) ---
+	latestBars, err := deps.Store.GetLatestBars(ctx, time.Now().Add(-30*24*time.Hour))
+	if err != nil {
+		log.Warn("mdgateway: load latest bars for open bar restore FAILED", zap.Error(err))
+	} else {
+		restored := aggregator.RestoreOpenBars(latestBars, time.Now().UnixMilli())
+		if restored > 0 {
+			log.Info("mdgateway: restored open bars after restart", zap.Int("bars", restored))
+		}
+	}
 
 	// --- PgWriter (sole writer — PG is the only storage backend) ---
 	pgCfg := DefaultPgWriterConfig()
@@ -108,14 +120,15 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		}
 	}
 	mgr := NewManager(ManagerDeps{
-		Normalizer:  normalizer,
-		Quality:     quality,
-		Dedup:       dedup,
-		Aggregator:  aggregator,
-		Publisher:   publisher,
-		PgWriter:    pgWriter,
-		OnBar:       onBar,
-		Log:         log,
+		Normalizer:    normalizer,
+		Quality:       quality,
+		Dedup:         dedup,
+		Aggregator:    aggregator,
+		Publisher:     publisher,
+		PgWriter:      pgWriter,
+		OnBar:         onBar,
+		OnBreakerTrip: deps.OnBreakerTrip,
+		Log:           log,
 	})
 	mgr.SetOTelTracer(tracer)
 	mgr.SetBaseContext(ctx)

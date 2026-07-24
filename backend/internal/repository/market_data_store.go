@@ -38,6 +38,11 @@ type MarketDataStore interface {
 	// Returns 0 if no bars found.
 	MaxCloseTs(ctx context.Context, broker, canonical, period string) (int64, error)
 
+	// GetLatestBars returns the most recent finalized bar per (broker, canonical, period)
+	// within the lookback window. Used by BarAggregator to restore in-progress bar state
+	// after a process restart.
+	GetLatestBars(ctx context.Context, since time.Time) ([]KlineBar, error)
+
 	// FetchActualReturn computes the 7-day price return after predicted_at.
 	// Returns (closePrice - openPrice) / openPrice, or an error if no price data.
 	FetchActualReturn(ctx context.Context, symbol string, predictedAt time.Time) (float64, error)

@@ -67,6 +67,8 @@ func setupStrategyAndTrading(
 	strategyServer.SetPgListen(pgListen)
 	mktplaceHandler.SetPgListen(pgListen)
 	mktplaceHandler.SetPgPool(pool)
+	quotaChecker.SetPgListen(pgListen)
+	quotaChecker.StartRefreshLoop(ctx)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, withSency(otelInterceptor, authInterceptor)))
 
 	paperRepo := repository.NewPaperRepo(pool)

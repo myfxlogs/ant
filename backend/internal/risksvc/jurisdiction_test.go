@@ -10,7 +10,7 @@ func TestJurisdictionGate(t *testing.T) {
 	t.Parallel()
 	t.Run("all clear with verified KYC and clean IP", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
-		store.SetKYCStatus(context.Background(), "user-1", "verified", "")
+		_ = store.SetKYCStatus(context.Background(), "user-1", "verified", "")
 		store.Disclaimers["user-1"] = true
 		store.Questionnaires["user-1"] = true
 
@@ -91,7 +91,7 @@ func TestJurisdictionGate(t *testing.T) {
 
 	t.Run("block missing disclaimer", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
-		store.SetKYCStatus(context.Background(), "user-5", "verified", "")
+		_ = store.SetKYCStatus(context.Background(), "user-5", "verified", "")
 
 		gate := &JurisdictionGate{
 			Store:             store,
@@ -110,7 +110,7 @@ func TestJurisdictionGate(t *testing.T) {
 
 	t.Run("block missing questionnaire", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
-		store.SetKYCStatus(context.Background(), "user-6", "verified", "")
+		_ = store.SetKYCStatus(context.Background(), "user-6", "verified", "")
 		store.Disclaimers["user-6"] = true
 
 		gate := &JurisdictionGate{
@@ -149,7 +149,7 @@ func TestJurisdictionGate(t *testing.T) {
 
 	t.Run("no client IP — skip geoip, check KYC only", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
-		store.SetKYCStatus(context.Background(), "user-8", "verified", "")
+		_ = store.SetKYCStatus(context.Background(), "user-8", "verified", "")
 
 		gate := &JurisdictionGate{
 			Store:      store,
@@ -164,7 +164,7 @@ func TestJurisdictionGate(t *testing.T) {
 
 	t.Run("non-sanctioned country with clean status", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
-		store.SetKYCStatus(context.Background(), "user-9", "verified", "")
+		_ = store.SetKYCStatus(context.Background(), "user-9", "verified", "")
 		store.Disclaimers["user-9"] = true
 		store.Questionnaires["user-9"] = true
 
@@ -194,7 +194,7 @@ func TestJurisdictionGate(t *testing.T) {
 
 	t.Run("KYC rejected status blocks", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
-		store.SetKYCStatus(context.Background(), "user-10", "rejected", "")
+		_ = store.SetKYCStatus(context.Background(), "user-10", "rejected", "")
 
 		gate := &JurisdictionGate{
 			Store:      store,

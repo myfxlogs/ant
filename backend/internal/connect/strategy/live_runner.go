@@ -232,7 +232,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 
 	defer func() {
 		if session != nil {
-			session.Close()
+			_ = session.Close()
 		}
 	}()
 

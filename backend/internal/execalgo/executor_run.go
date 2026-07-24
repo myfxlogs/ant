@@ -51,7 +51,7 @@ func (e *Executor) run(ctx context.Context) {
 			}
 		}
 
-		// Market state check with retry.
+		// Market state check with blocking wait.
 		if e.cfg.MarketState != nil {
 			tradeable, reason := e.cfg.MarketState.IsTradeable(e.cfg.Schedule.Parent.Symbol)
 			if !tradeable {
@@ -59,16 +59,9 @@ func (e *Executor) run(ctx context.Context) {
 					State: ExecPaused, SliceIndex: i, TotalSlices: total,
 					Error: fmt.Errorf("market not tradeable: %s", reason), Timestamp: time.Now(),
 				})
-				retryTicker := time.NewTicker(5 * time.Second)
-				defer retryTicker.Stop()
-				for !tradeable {
-					select {
-					case <-ctx.Done():
-						e.transitionTo(ExecCancelled)
-						return
-					case <-retryTicker.C:
-						tradeable, _ = e.cfg.MarketState.IsTradeable(e.cfg.Schedule.Parent.Symbol)
-					}
+				if err := e.cfg.MarketState.WaitTradeable(ctx, e.cfg.Schedule.Parent.Symbol); err != nil {
+					e.transitionTo(ExecCancelled)
+					return
 				}
 				e.emit(ExecEvent{State: ExecRunning, SliceIndex: i, TotalSlices: total, Timestamp: time.Now()})
 			}

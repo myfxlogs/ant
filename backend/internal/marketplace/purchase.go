@@ -71,16 +71,17 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		}
 	}
 
-	// 1. Look up strategy price, publisher, and platform fee (source of truth from DB).
+	// 1. Look up strategy price, publisher, platform fee, and refund window (source of truth from DB).
 	var priceModel string
 	var priceAmountStr string
 	var strategyTitle string
 	var dbPublisherID string
+	var dbRefundWindowDays int
 	err = tx.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text
+		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text, COALESCE(refund_window_days, 7)
 		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		sid,
-	).Scan(&priceModel, &priceAmountStr, &strategyTitle, &dbPublisherID)
+	).Scan(&priceModel, &priceAmountStr, &strategyTitle, &dbPublisherID, &dbRefundWindowDays)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: strategy not published")
 	}
@@ -208,7 +209,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	}
 
 	// 8. Create frozen settlement record — replaces direct publisher/platform credits.
-	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, pid, amountStr, feeStr, pubAmountStr)
+	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, pid, amountStr, feeStr, pubAmountStr, dbRefundWindowDays)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: create settlement: %w", err)
 	}

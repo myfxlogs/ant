@@ -96,7 +96,7 @@ func (s *Searcher) searchMT4(ctx context.Context, company string) ([]*antv1.Brok
 	if err != nil {
 		return nil, fmt.Errorf("brokersearch mt4 dial: %w", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	client := mt4pb.NewServiceClient(conn)
 	reply, err := client.Search(ctx, &mt4pb.SearchRequest{Company: company})
@@ -113,7 +113,7 @@ func (s *Searcher) searchMT5(ctx context.Context, company string) ([]*antv1.Brok
 	if err != nil {
 		return nil, fmt.Errorf("brokersearch mt5 dial: %w", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	client := mt5pb.NewServiceClient(conn)
 	reply, err := client.Search(ctx, &mt5pb.SearchRequest{Company: company})

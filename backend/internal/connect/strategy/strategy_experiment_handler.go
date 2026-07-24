@@ -36,14 +36,6 @@ func (s *StrategyExperimentServer) userID(ctx context.Context) uuid.UUID {
 	return id
 }
 
-func (s *StrategyExperimentServer) userIDRequire(ctx context.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(interceptor.GetUserID(ctx))
-	if err != nil || id == uuid.Nil {
-		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-	return id, nil
-}
-
 func expToProto(e *repository.StrategyExperiment) *antv1.StrategyExperiment {
 	p := &antv1.StrategyExperiment{
 		Id:              e.ID.String(),

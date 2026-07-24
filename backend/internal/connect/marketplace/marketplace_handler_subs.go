@@ -43,6 +43,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		PlatformFeeRate:      s.svc.GetPlatformFeeRate(ctx),
 		Disclaimer:           m.Disclaimer,
 		TrialDays:            int(m.TrialDays),
+		RefundWindowDays:     int(m.RefundWindowDays),
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))

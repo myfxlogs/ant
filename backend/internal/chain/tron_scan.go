@@ -65,7 +65,7 @@ func (c *TronScanClient) VerifyTransaction(ctx context.Context, txHash, expected
 		return false, fmt.Errorf("tronscan: request: %w", err)
 	}
 	body, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if err != nil {
 		return false, fmt.Errorf("tronscan: read body: %w", err)
 	}

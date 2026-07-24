@@ -94,7 +94,7 @@ func (n *EmailNotifier) sendToRecipients(to []string, subject, body string) erro
 	if err != nil {
 		return fmt.Errorf("smtp dial: %w", err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	if ok, _ := conn.Extension("STARTTLS"); ok {
 		if err := conn.StartTLS(tlsConfig); err != nil {

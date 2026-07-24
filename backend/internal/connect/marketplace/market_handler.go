@@ -124,7 +124,7 @@ func (s *MarketServer) StreamTicks(ctx context.Context, req *connect.Request[ant
 		s.log.Error("StreamTicks: subscribe failed", zap.String("subject", subject), zap.Error(err))
 		return connect.NewError(connect.CodeInternal, err)
 	}
-	defer sub.Unsubscribe()
+	defer func() { _ = sub.Unsubscribe() }()
 
 	for {
 		select {

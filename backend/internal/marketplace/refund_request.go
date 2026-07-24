@@ -28,7 +28,8 @@ type RefundRequestRow struct {
 }
 
 // CreateRefundRequest creates a pending refund request for a subscription.
-// Validates that the subscription belongs to the user and is within 7 days of purchase.
+// Validates that the subscription belongs to the user and is within the
+// publisher-configured refund window (default 7 days, read from settlement row).
 // The entire operation runs in a single transaction with FOR UPDATE on the subscription
 // row to prevent races between the active-status check and the insert.
 func (s *Service) CreateRefundRequest(ctx context.Context, userID, subscriptionID, reason string) (string, error) {
@@ -62,9 +63,22 @@ func (s *Service) CreateRefundRequest(ctx context.Context, userID, subscriptionI
 		return "", fmt.Errorf("marketplace: subscription is not active")
 	}
 
-	// Check 7-day refund window.
-	if time.Since(createdAt) > 7*24*time.Hour {
-		return "", fmt.Errorf("marketplace: refund window (7 days) has expired")
+	// Read refund_window_days from the settlement row (publisher-configurable).
+	// Falls back to DefaultRefundWindowDays if no settlement exists.
+	refundWindowDays := DefaultRefundWindowDays
+	var dbRefundWindowDays int
+	err = tx.QueryRow(ctx,
+		`SELECT COALESCE(refund_window_days, $2) FROM marketplace_settlements
+		 WHERE purchase_id = $1 LIMIT 1`,
+		sid, DefaultRefundWindowDays,
+	).Scan(&dbRefundWindowDays)
+	if err == nil && dbRefundWindowDays > 0 {
+		refundWindowDays = dbRefundWindowDays
+	}
+
+	// Check refund window.
+	if time.Since(createdAt) > time.Duration(refundWindowDays)*24*time.Hour {
+		return "", fmt.Errorf("marketplace: refund window (%d days) has expired", refundWindowDays)
 	}
 
 	// Atomic check-then-insert: prevents concurrent duplicate pending requests.

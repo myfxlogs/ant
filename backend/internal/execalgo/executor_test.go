@@ -39,6 +39,7 @@ func (m *mockBroker) submittedOrders() int {
 type mockMarketState struct{}
 
 func (mockMarketState) IsTradeable(_ string) (bool, string) { return true, "" }
+func (mockMarketState) WaitTradeable(_ context.Context, _ string) error { return nil }
 
 func TestExecutorFullSchedule(t *testing.T) {
 	broker := &mockBroker{}

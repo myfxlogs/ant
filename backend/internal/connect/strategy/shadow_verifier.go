@@ -14,6 +14,8 @@ import (
 	"alphaforge/tools/mql2go"
 )
 
+const verifyInterval = 50 // run shadow verification every N bars
+
 // ShadowVerifier runs a shadow backtest alongside a live strategy session
 // to verify that the VM produces consistent signals in both modes.
 //
@@ -22,8 +24,8 @@ import (
 // compared with the last live signal. Discrepancies are logged as warnings.
 //
 // This is a read-only verification layer — it never interferes with live
-// order dispatch. It runs on a background goroutine with a configurable
-// interval (default: every 50 bars or 5 minutes, whichever comes first).
+// order dispatch. It runs on a background goroutine triggered by bar events
+// (every verifyInterval bars) rather than a timer.
 type ShadowVerifier struct {
 	code     string
 	cfg      backtest.Config
@@ -32,6 +34,7 @@ type ShadowVerifier struct {
 	bars     []sdk.Bar
 	liveSigs []shadowSignal
 	runner   *mql2go.VMRunner
+	verifyCh chan struct{}
 	stopCh   chan struct{}
 }
 
@@ -45,10 +48,11 @@ type shadowSignal struct {
 // NewShadowVerifier creates a verifier for the given strategy code and backtest config.
 func NewShadowVerifier(code string, cfg backtest.Config, log *zap.Logger) *ShadowVerifier {
 	return &ShadowVerifier{
-		code:   code,
-		cfg:    cfg,
-		log:    log,
-		stopCh: make(chan struct{}),
+		code:     code,
+		cfg:      cfg,
+		log:      log,
+		verifyCh: make(chan struct{}, 1),
+		stopCh:   make(chan struct{}),
 	}
 }
 
@@ -66,14 +70,22 @@ func (sv *ShadowVerifier) Stop() {
 	}
 }
 
-// RecordBar adds a live bar to the shadow window.
+// RecordBar adds a live bar to the shadow window and triggers verification
+// when enough bars have accumulated.
 func (sv *ShadowVerifier) RecordBar(bar sdk.Bar) {
 	sv.mu.Lock()
 	sv.bars = append(sv.bars, bar)
 	if len(sv.bars) > maxContextBars {
 		sv.bars = sv.bars[len(sv.bars)-maxContextBars:]
 	}
+	shouldVerify := len(sv.bars) >= verifyInterval && len(sv.bars)%verifyInterval == 0
 	sv.mu.Unlock()
+	if shouldVerify {
+		select {
+		case sv.verifyCh <- struct{}{}:
+		default:
+		}
+	}
 }
 
 // RecordLiveSignal records a signal dispatched by the live runner.
@@ -92,16 +104,13 @@ func (sv *ShadowVerifier) RecordLiveSignal(barTime int64, action, volume, price 
 }
 
 func (sv *ShadowVerifier) loop(ctx context.Context) {
-	ticker := time.NewTicker(5 * time.Minute)
-	defer ticker.Stop()
-
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-sv.stopCh:
 			return
-		case <-ticker.C:
+		case <-sv.verifyCh:
 			sv.verify(ctx)
 		}
 	}

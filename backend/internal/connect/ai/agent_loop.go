@@ -138,7 +138,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		convergences := 0
 		for (roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(toolCalls) == 0)) && convergences < 2 {
 			convergences++
-			messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call [TOOL: compile_python]. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
+			messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call write_strategy with your code. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
 			roundBuf.Reset()
 			reasoningBuf.Reset()
 			toolCalls = nil

@@ -8,7 +8,6 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -79,26 +78,12 @@ func (s *MarketplaceServer) streamBacktestProgress(ctx context.Context, runID uu
 		}
 	}
 
-	// Fallback: pure polling if pgListen is unavailable.
-	s.log.Warn("marketplace stream: pgListen unavailable, falling back to polling",
-		zap.String("runID", runID.String()))
-	ticker := time.NewTicker(800 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-			terminal, err := s.pollAndSend(ctx, stream, runID)
-			if err != nil {
-				return err
-			}
-			if terminal {
-				return nil
-			}
-		}
+	// pgListen is required — no polling fallback.
+	if listenCancel == nil {
+		return fmt.Errorf("marketplace stream: pgListen unavailable for channel %s", statusNotifyChannel)
 	}
+
+	return nil
 }
 
 // matchRun checks whether a notification payload belongs to the given runID.

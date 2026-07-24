@@ -71,3 +71,65 @@ func requireDecimal(t *testing.T, s string) decimal.Decimal {
 	}
 	return d
 }
+
+func TestRestoreOpenBars(t *testing.T) {
+	t.Parallel()
+	agg := NewBarAggregator()
+
+	// Simulate a finalized 1m bar that closed at ts=60_000 (bucket 1).
+	// The next bucket (bucket 2) spans [120_000, 180_000).
+	// If now is within bucket 2 (e.g. 150_000), the open bar should be restored.
+	bars := []repository.KlineBar{
+		{
+			Broker: "test-broker", Canonical: "EURUSD", Period: "1m",
+			OpenTsUnixMs:  0,
+			CloseTsUnixMs: 60_000,
+			Open:          requireDecimal(t, "1.08000"),
+			High:          requireDecimal(t, "1.08010"),
+			Low:           requireDecimal(t, "1.07990"),
+			Close:         requireDecimal(t, "1.08005"),
+		},
+	}
+
+	// nowMs = 150_000 → bucket 2 → should restore
+	restored := agg.RestoreOpenBars(bars, 150_000)
+	if restored != 1 {
+		t.Fatalf("expected 1 restored bar, got %d", restored)
+	}
+
+	// Verify the open bar was created with the finalized bar's close as initial OHLC.
+	openBars := agg.GetOpenBars()
+	var found bool
+	for _, ob := range openBars {
+		if ob.Broker == "test-broker" && ob.Canonical == "EURUSD" && ob.Period == "1m" {
+			found = true
+			if !ob.Open.Equal(requireDecimal(t, "1.08005")) {
+				t.Errorf("expected open=1.08005, got %s", ob.Open)
+			}
+			if !ob.Close.Equal(requireDecimal(t, "1.08005")) {
+				t.Errorf("expected close=1.08005, got %s", ob.Close)
+			}
+			if ob.OpenTsUnixMs != 120_000 {
+				t.Errorf("expected startTs=120000, got %d", ob.OpenTsUnixMs)
+			}
+		}
+	}
+	if !found {
+		t.Error("restored open bar not found in GetOpenBars")
+	}
+
+	// nowMs = 300_000 → bucket 5 → too far from finalized bucket 1 → should NOT restore
+	agg2 := NewBarAggregator()
+	restored2 := agg2.RestoreOpenBars(bars, 300_000)
+	if restored2 != 0 {
+		t.Errorf("expected 0 restored bars (bucket gap too large), got %d", restored2)
+	}
+
+	// Double restore should not duplicate
+	restored3 := agg.RestoreOpenBars(bars, 150_000)
+	if restored3 != 0 {
+		t.Errorf("expected 0 restored on second call (already exists), got %d", restored3)
+	}
+
+	t.Log("RestoreOpenBars: correctly restores in-progress bar state on restart")
+}

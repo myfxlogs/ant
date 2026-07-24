@@ -31,11 +31,12 @@ type CircuitBreaker struct {
 	successThreshold int
 	cooldown         time.Duration
 
-	mu        sync.Mutex
-	state     State
-	failures  int
-	successes int
-	openedAt  time.Time
+	mu            sync.Mutex
+	state         State
+	failures      int
+	successes     int
+	openedAt      time.Time
+	onStateChange func(from, to State)
 }
 
 func NewCircuitBreaker(failureThreshold, successThreshold int, cooldown time.Duration) *CircuitBreaker {
@@ -57,8 +58,10 @@ func (c *CircuitBreaker) Allow() bool {
 	case StateClosed: return true
 	case StateOpen:
 		if time.Since(c.openedAt) >= c.cooldown {
+			prev := c.state
 			c.state = StateHalfOpen
 			c.successes = 0
+			c.fireStateChange(prev, StateHalfOpen)
 			return true
 		}
 		return false
@@ -73,8 +76,10 @@ func (c *CircuitBreaker) OnSuccess() {
 	if c.state == StateHalfOpen {
 		c.successes++
 		if c.successes >= c.successThreshold {
+			prev := c.state
 			c.state = StateClosed
 			c.failures = 0
+			c.fireStateChange(prev, StateClosed)
 		}
 	}
 }
@@ -84,11 +89,15 @@ func (c *CircuitBreaker) OnFailure() {
 	defer c.mu.Unlock()
 	c.failures++
 	if c.state == StateHalfOpen {
+		prev := c.state
 		c.state = StateOpen
 		c.openedAt = Clk.Now()
+		c.fireStateChange(prev, StateOpen)
 	} else if c.failures >= c.failureThreshold && c.state == StateClosed {
+		prev := c.state
 		c.state = StateOpen
 		c.openedAt = Clk.Now()
+		c.fireStateChange(prev, StateOpen)
 	}
 }
 
@@ -96,6 +105,22 @@ func (c *CircuitBreaker) State() State {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.state
+}
+
+// SetOnStateChange registers a callback fired on state transitions.
+// Called outside the lock to avoid deadlocks.
+func (c *CircuitBreaker) SetOnStateChange(fn func(from, to State)) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.onStateChange = fn
+}
+
+// fireStateChange invokes the state-change callback. Must be called while holding c.mu.
+func (c *CircuitBreaker) fireStateChange(from, to State) {
+	if c.onStateChange != nil && from != to {
+		cb := c.onStateChange
+		go cb(from, to)
+	}
 }
 
 // BrokerKey constructs the circuit breaker key from broker identity.

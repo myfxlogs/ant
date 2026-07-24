@@ -4,24 +4,25 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/model"
+	"alphaforge/internal/pglisten"
 	"alphaforge/internal/repository"
 )
 
 // QuotaChecker provides fast in-memory lookups of user subscription plan quotas.
-// Cache is loaded at startup and refreshed periodically.
+// Cache is loaded at startup and refreshed via PG LISTEN on quota_change channel.
 type QuotaChecker struct {
 	mu          sync.RWMutex
 	cache       map[uuid.UUID]*model.SubscriptionPlan
 	defaultPlan *model.SubscriptionPlan
 	pg          *pgxpool.Pool
 	repo        *repository.SubscriptionRepository
+	pgListen    *pglisten.Listener
 	log         *zap.Logger
 }
 
@@ -144,19 +145,38 @@ func (q *QuotaChecker) GetCapabilityTier(userID uuid.UUID) int {
 	return plan.CapabilityTier
 }
 
-// StartRefreshLoop starts a background goroutine that periodically refreshes the cache.
-// This ensures eventual consistency even without PG NOTIFY wiring.
-func (q *QuotaChecker) StartRefreshLoop(ctx context.Context, interval time.Duration) {
+// SetPgListen injects the PG LISTEN listener for event-driven cache refresh.
+func (q *QuotaChecker) SetPgListen(l *pglisten.Listener) {
+	q.pgListen = l
+}
+
+// StartRefreshLoop starts a background goroutine that refreshes the cache
+// when PG LISTEN notifications arrive on the quota_change channel.
+// Falls back to no refresh if pgListen is not set.
+func (q *QuotaChecker) StartRefreshLoop(ctx context.Context) {
+	if q.pgListen == nil {
+		q.log.Warn("QuotaChecker: pgListen not set, cache will not auto-refresh")
+		return
+	}
+
 	go func() {
-		ticker := time.NewTicker(interval)
-		defer ticker.Stop()
+		notifCh, cancel, err := q.pgListen.Listen(ctx, "quota_change")
+		if err != nil {
+			q.log.Error("QuotaChecker: LISTEN quota_change failed", zap.Error(err))
+			return
+		}
+		defer cancel()
+
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
+			case _, ok := <-notifCh:
+				if !ok {
+					return
+				}
 				if err := q.LoadAll(ctx); err != nil {
-					q.log.Warn("QuotaChecker: periodic refresh failed", zap.Error(err))
+					q.log.Warn("QuotaChecker: LISTEN-driven refresh failed", zap.Error(err))
 				}
 			}
 		}

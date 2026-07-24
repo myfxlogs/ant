@@ -25,6 +25,7 @@ type ActiveSession struct {
 	ErrorCount   int
 	LastError    string
 	StderrTail   string
+	circuitOpen  bool
 	cancel       context.CancelFunc
 	signalSubs   []chan *SignalEvent
 	signalSubsMu sync.Mutex
@@ -237,6 +238,21 @@ func (s *ActiveSession) RecordError(err string) {
 	if s.registry != nil {
 		s.registry.notifyWatchers()
 	}
+}
+
+// SetCircuitOpen marks the session as having a tripped circuit breaker.
+// When true, new order signals are suppressed to avoid flooding a broken broker.
+func (s *ActiveSession) SetCircuitOpen(open bool) {
+	s.signalSubsMu.Lock()
+	s.circuitOpen = open
+	s.signalSubsMu.Unlock()
+}
+
+// IsCircuitOpen returns whether the broker circuit breaker is currently open.
+func (s *ActiveSession) IsCircuitOpen() bool {
+	s.signalSubsMu.Lock()
+	defer s.signalSubsMu.Unlock()
+	return s.circuitOpen
 }
 
 // SetStderrTail updates the captured stderr tail from the live session.

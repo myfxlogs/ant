@@ -50,7 +50,7 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 					if cerr := testGW.Connect(ctx); cerr != nil {
 						return cerr
 					}
-					testGW.Disconnect(ctx)
+					_ = testGW.Disconnect(ctx)
 					return nil
 				},
 			)

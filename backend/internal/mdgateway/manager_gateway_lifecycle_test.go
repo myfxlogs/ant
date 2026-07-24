@@ -94,7 +94,7 @@ func TestManagerRemoveGateway(t *testing.T) {
 	t.Parallel()
 	mgr := NewManager(ManagerDeps{})
 	gw := &fakeGateway{platform: "mt5", accountID: "acc-2"}
-	mgr.AddGateway(context.Background(), gw, nil)
+	_ = mgr.AddGateway(context.Background(), gw, nil)
 
 	if err := mgr.RemoveGateway(context.Background(), "acc-2"); err != nil {
 		t.Fatalf("RemoveGateway: %v", err)
@@ -120,8 +120,8 @@ func TestManagerHealthStates(t *testing.T) {
 	mgr := NewManager(ManagerDeps{})
 	gw1 := &fakeGateway{platform: "mt4", accountID: "acc-a"}
 	gw2 := &fakeGateway{platform: "mt5", accountID: "acc-b"}
-	mgr.AddGateway(context.Background(), gw1, nil)
-	mgr.AddGateway(context.Background(), gw2, nil)
+	_ = mgr.AddGateway(context.Background(), gw1, nil)
+	_ = mgr.AddGateway(context.Background(), gw2, nil)
 
 	// No ticks → no_data.
 	for _, h := range mgr.Health() {

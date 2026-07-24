@@ -174,6 +174,7 @@ type PublishParams struct {
 	PlatformFeeRate       string // decimal string, platform commission rate (0.0–1.0)
 	Disclaimer            string // optional risk disclaimer
 	TrialDays             int    // publisher-configurable trial period (default 7)
+	RefundWindowDays      int    // publisher-configurable refund window in days (default 7)
 }
 
 // PublishedStrategy represents a strategy listed in the marketplace

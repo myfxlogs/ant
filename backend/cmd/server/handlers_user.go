@@ -35,7 +35,7 @@ func registerAuthHandler(
 	otelInterceptor, rateLimitInterceptor, authInterceptor connectrpc.Interceptor,
 ) *user.AuthServer {
 	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
-	authServer.SetInsecureCookies(true) // no TLS in Docker deployment
+	authServer.SetInsecureCookies(!cfg.CookieSecure)
 	authServer.WithRegistration(registrationSvc)
 	if emailNotifier != nil {
 		emailVerifSvc := service.NewEmailVerificationService(pool, emailNotifier, cfg.AppURL, log)

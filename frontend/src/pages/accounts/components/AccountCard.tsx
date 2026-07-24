@@ -35,7 +35,7 @@ const getStatusIndicator = (account: Account, t: (key: string) => string) => {
   if (status === 'disconnected' || status === 'frozen' || account.isDisabled === true) {
     return { icon: '⚪', color: 'var(--color-text-muted)', text: t(CARD_STATUS_DISABLED_KEY) };
   }
-  switch (account.status) {
+  switch (status) {
     case 'connected':
       return { icon: '🟢', color: '#00A651', text: t(CARD_STATUS_CONNECTED_KEY) };
     case 'connecting':
@@ -44,6 +44,10 @@ const getStatusIndicator = (account: Account, t: (key: string) => string) => {
       return { icon: '🔴', color: '#E53935', text: t(CARD_STATUS_DISCONNECTED_KEY) };
     case 'error':
       return { icon: '🔴', color: '#E53935', text: t(CARD_STATUS_ERROR_KEY) };
+    case 'circuit_open':
+      return { icon: '🔴', color: '#E53935', text: t('accounts.status.circuit_open', 'Circuit Open') };
+    case 'circuit_half_open':
+      return { icon: '🟡', color: '#FF9800', text: t('accounts.status.circuit_half_open', 'Circuit Testing') };
     default:
       return { icon: '⚪', color: 'var(--color-text-muted)', text: t('common.unknown') };
   }

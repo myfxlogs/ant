@@ -54,7 +54,7 @@ func TestCanaryActivationRequiresAccounts(t *testing.T) {
 func TestCanaryActivationRequiresStageOff(t *testing.T) {
 	ctrl := NewCanaryController(DefaultCanaryConfig())
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	// Second activation should fail.
 	err := ctrl.ActivateCanary()
@@ -70,7 +70,7 @@ func TestCanaryAccountWhitelist(t *testing.T) {
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
 	ctrl.AddAccount("acct-2")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	if !ctrl.IsCanaryAccount("acct-1") {
 		t.Error("acct-1 should be canary")
@@ -91,8 +91,8 @@ func TestFullStageAllowsAllAccounts(t *testing.T) {
 	cfg.TradesPerStep = 1
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
-	ctrl.PromoteToFull()
+	_ = ctrl.ActivateCanary()
+	_ = ctrl.PromoteToFull()
 
 	if !ctrl.IsCanaryAccount("acct-999") {
 		t.Error("StageFull should allow all accounts")
@@ -110,7 +110,7 @@ func TestLotSizeStepUp(t *testing.T) {
 	cfg.MinHoursPerStage = 0
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	// Step 1: 0.01 → 0.02.
 	ctrl.RecordSuccessfulTrade()
@@ -132,8 +132,8 @@ func TestLotSizeCappedAtMax(t *testing.T) {
 	cfg.MaxLotSize = decimal.NewFromFloat(10.0)
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
-	ctrl.PromoteToFull()
+	_ = ctrl.ActivateCanary()
+	_ = ctrl.PromoteToFull()
 
 	if !ctrl.AllowedLotSize().Equal(cfg.MaxLotSize) {
 		t.Errorf("expected max lot %s, got %s", cfg.MaxLotSize, ctrl.AllowedLotSize())
@@ -146,7 +146,7 @@ func TestKillSwitchEngage(t *testing.T) {
 	cfg := DefaultCanaryConfig()
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	// Before kill-switch: lots allowed.
 	if ctrl.AllowedLotSize().IsZero() {
@@ -168,7 +168,7 @@ func TestKillSwitchDisengage(t *testing.T) {
 	cfg := DefaultCanaryConfig()
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 	ctrl.EngageKillSwitch("drill")
 	ctrl.DisengageKillSwitch()
 
@@ -184,7 +184,7 @@ func TestKillSwitchAuditLogged(t *testing.T) {
 	cfg := DefaultCanaryConfig()
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 	ctrl.EngageKillSwitch("max drawdown exceeded")
 
 	history := ctrl.History()
@@ -208,7 +208,7 @@ func TestRollback(t *testing.T) {
 	cfg.MinHoursPerStage = 0
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	// Step up once.
 	ctrl.RecordSuccessfulTrade()
@@ -245,10 +245,10 @@ func TestRollbackPreservesAccountWhitelist(t *testing.T) {
 	cfg.MinHoursPerStage = 0
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 	ctrl.RecordSuccessfulTrade() // step-up creates rollback state
 	ctrl.RecordSuccessfulTrade() // another step-up
-	ctrl.Rollback()
+	_ = ctrl.Rollback()
 
 	// Account whitelist should be preserved.
 	if !ctrl.IsCanaryAccount("acct-1") {
@@ -262,7 +262,7 @@ func TestPromoteToFull(t *testing.T) {
 	cfg := DefaultCanaryConfig()
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	if err := ctrl.PromoteToFull(); err != nil {
 		t.Fatalf("PromoteToFull: %v", err)
@@ -276,8 +276,8 @@ func TestPromoteToFullIdempotent(t *testing.T) {
 	cfg := DefaultCanaryConfig()
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
-	ctrl.PromoteToFull()
+	_ = ctrl.ActivateCanary()
+	_ = ctrl.PromoteToFull()
 	if err := ctrl.PromoteToFull(); err != nil {
 		t.Errorf("PromoteToFull should be idempotent: %v", err)
 	}
@@ -293,8 +293,8 @@ func TestAuditTrail(t *testing.T) {
 	ctrl.AddAccount("acct-1")
 
 	// Initial state: StageOff.
-	ctrl.ActivateCanary()
-	ctrl.PromoteToFull()
+	_ = ctrl.ActivateCanary()
+	_ = ctrl.PromoteToFull()
 	ctrl.EngageKillSwitch("test drill")
 	ctrl.DisengageKillSwitch()
 
@@ -323,7 +323,7 @@ func TestCanaryConcurrent(t *testing.T) {
 	cfg.MinHoursPerStage = 0
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	done := make(chan bool)
 	for i := 0; i < 10; i++ {
@@ -388,7 +388,7 @@ func TestKillSwitchZeroLots(t *testing.T) {
 	cfg.InitialLotSize = decimal.NewFromFloat(1.0)
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	if ctrl.AllowedLotSize().IsZero() {
 		t.Error("should have non-zero lots before kill-switch")
@@ -415,7 +415,7 @@ func TestMinHoursEnforcement(t *testing.T) {
 	cfg.MinHoursPerStage = 999999 // effectively never
 	ctrl := NewCanaryController(cfg)
 	ctrl.AddAccount("acct-1")
-	ctrl.ActivateCanary()
+	_ = ctrl.ActivateCanary()
 
 	// Record many successful trades — should NOT step up because min hours not met.
 	initialLots := ctrl.AllowedLotSize()

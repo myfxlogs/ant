@@ -143,3 +143,45 @@ func (a *BarAggregator) GetOpenBars() []*mdtick.Bar {
 	}
 	return out
 }
+
+// RestoreOpenBars restores in-progress bar state after a process restart.
+// For each latest finalized bar, if the current time bucket is the one immediately
+// after the finalized bar's bucket, an openBar is recreated using the finalized
+// bar's close as the initial OHLC. This minimizes the data gap caused by restart.
+// Subsequent ticks will update the restored bar normally.
+func (a *BarAggregator) RestoreOpenBars(bars []repository.KlineBar, nowMs int64) int {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	restored := 0
+	for _, b := range bars {
+		for _, p := range Periods {
+			if p.Name != b.Period {
+				continue
+			}
+			finalizedBucket := int64(b.CloseTsUnixMs) / p.Ms
+			currentBucket := nowMs / p.Ms
+			// Only restore if the current bucket is exactly the next one after
+			// the finalized bar. If more buckets have passed, the gap is too large
+			// and the next tick will start a fresh bar anyway.
+			if currentBucket != finalizedBucket+1 {
+				continue
+			}
+			key := b.Broker + ":" + b.Canonical + ":" + p.Name
+			if a.bars[key] != nil {
+				continue // already has an open bar (e.g. from a prior restore)
+			}
+			a.bars[key] = &openBar{
+				bucket:    currentBucket,
+				open:      b.Close,
+				high:      b.Close,
+				low:       b.Close,
+				close:     b.Close,
+				startTs:   currentBucket * p.Ms,
+				endTs:     currentBucket * p.Ms,
+				accountID: "", // will be updated by the first tick
+			}
+			restored++
+		}
+	}
+	return restored
+}

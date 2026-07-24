@@ -1,9 +1,11 @@
-# ADR-0024 · Agent-Native 策略平台 — 双前端编译 + Python Agent 层
+# ADR-0024 · Agent-Native 策略平台 — 双前端编译 + Go 进程内 Agent
 
 - **状态**：Accepted
 - **日期**：2026-07-02
 - **决策者**：人类负责人
 - **关联 ADR**：ADR-0021（策略运行时迁移，部分保留）、ADR-0022（盲区架构，本 ADR 扩展）、ADR-0023（Bytecode VM，本 ADR 复用并扩展）
+
+> **实现说明（2026-07-24 更新）**：本 ADR 设计时规划了独立的 Python Agent 进程（K8s Pod / Docker container）。实际实现中，Agent 层完全在 Go 进程内运行（`internal/agent/` + `internal/connect/ai/`），通过 `systemai.Service` 调用外部 LLM API，不涉及独立 Python 进程。Python 仅作为策略编写语言（Python subset），通过 `compile_py.go` 编译为 Bytecode VM 执行。原 ADR 中的架构决策（双编译前端、单一 VM、Python 子集作为 Agent 与 VM 的接口契约）仍然有效，但进程模型部分（§5.1）已被实际实现取代。
 
 ---
 
@@ -43,9 +45,9 @@ Agent 的核心特征：
 - 积累经验，改进策略（跨策略学习）
 - 分析回测结果，发现模式（pandas/numpy/optuna）
 
-**Agent 的思考环境必须是 Python**——pandas/numpy/optuna/pgvector/LLM 框架生态全在 Python。Go 的 Agent 生态为零。
+**Agent 的思考环境**——设计时规划 Python（pandas/numpy/optuna/pgvector/LLM 框架生态）。实际实现为 Go 进程内 Agent，通过 `systemai.Service` 调用外部 LLM API，知识库检索复用 Go PG 连接池。Python 仅作为策略编写语言（Python subset → Bytecode VM）。
 
-**Agent 的执行环境必须是 Go VM**——回测在 Agent 循环的内层，per-bar RPC 不可行（200x 性能差距）。Agent 每次迭代只有一次 RPC 往返（提交源码 + 取回结果），回测在 Go VM 内执行（100ms 级）。
+**Agent 的执行环境必须是 Go VM**——回测在 Agent 循环的内层，per-bar RPC 不可行（200x 性能差距）。Agent 每次迭代在进程内提交源码 → 编译 → 回测，回测在 Go VM 内执行（100ms 级）。
 
 ---
 
@@ -53,18 +55,20 @@ Agent 的核心特征：
 
 ### D1: 三层架构
 
+> **实现说明**：设计时规划独立 Python Agent 层，实际实现为 Go 进程内 Agent。以下为设计原图，实际架构见 §5.1。
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Python Agent 层 (新建)                                      │
+│  Go Agent 层 (实际实现, internal/agent/)                      │
 │                                                              │
 │  策略生成 Agent │ 盲区桥接 Agent │ 策略进化 Agent             │
-│  知识库 (pgvector) │ pandas │ numpy │ optuna │ LLM           │
+│  知识库 (pgvector) │ LLM (via systemai.Service)               │
 │                                                              │
 │  职责: 生成策略 / 分析结果 / 优化参数 / 学习进化              │
 │  不做: 执行策略 / 访问 MT / 撮合                              │
 └──────────────────────────┬──────────────────────────────────┘
-                           │ ConnectRPC + SSE (protobuf)
-                           │ Agent 提交源码 → Go 编译执行 → 结果返回
+                           │ in-process 函数调用
+                           │ Agent 提交源码 → 编译执行 → 结果返回
 ┌──────────────────────────┴──────────────────────────────────┐
 │  Go API 层 (现有，扩展)                                      │
 │                                                              │
@@ -221,38 +225,33 @@ Python 子集中的 `ctx.*` 调用映射到 VM 内置函数，与 MQL 路径共�
 
 #### 5.1 Agent 进程模型
 
+> **实际实现（2026-07-24 更新）**：Agent 层完全在 Go 进程内运行，无独立 Python 进程。以下为实际架构。
+
 ```
-┌─ Python Agent 服务 (K8s Pod / Docker container) ──────────┐
+┌─ Go 进程内 Agent (internal/agent/ + internal/connect/ai/) ─┐
 │                                                            │
-│  ConnectRPC Client ──── Go API 层                          │
-│  (protobuf, 无 JSON)                                       │
+│  systemai.Service ──── 外部 LLM API (OpenAI 兼容)          │
+│  (Go HTTP client, 无 Python 依赖)                          │
 │                                                            │
-│  ┌─ 策略生成 Agent ──────────────────────────────────┐     │
-│  │ 输入: 自然语言描述 + 策略画像请求                  │     │
-│  │ 循环: LLM 生成 Python → 提交回测 → 分析 → 改进     │     │
-│  │ 输出: 最终 Python 策略 + 回测报告 + 策略画像       │     │
-│  └───────────────────────────────────────────────────┘     │
+│  ┌─ 策略生成 Agent (Generator) ─────────────────────┐      │
+│  │ 输入: 自然语言描述 + 策略画像请求                 │      │
+│  │ 循环: LLM 生成 Python → 编译 → 回测 → 分析 → 改进 │      │
+│  │ 输出: 最终 Python 策略 + 回测报告 + 策略画像      │      │
+│  └──────────────────────────────────────────────────┘      │
 │                                                            │
-│  ┌─ 盲区桥接 Agent ─────────────────────────────────┐     │
-│  │ 输入: MQL 源码 + 覆盖率报告 + 盲区列表            │     │
-│  │ 循环: LLM 翻译为 Python → 提交回测 → 分析 → 改进   │     │
-│  │ 输出: Python 策略 + 变更说明 + 覆盖率对比          │     │
-│  └───────────────────────────────────────────────────┘     │
+│  ┌─ 盲区桥接 Agent (Bridge) ───────────────────────┐      │
+│  │ 输入: MQL 源码 + 覆盖率报告 + 盲区列表           │      │
+│  │ 循环: LLM 翻译为 Python → 编译 → 回测 → 分析     │      │
+│  │ 输出: Python 策略 + 变更说明 + 覆盖率对比         │      │
+│  └──────────────────────────────────────────────────┘      │
 │                                                            │
-│  ┌─ 策略进化 Agent ─────────────────────────────────┐     │
-│  │ 输入: 实盘绩效数据 + 策略源码 + 市场状态           │     │
-│  │ 循环: 检测退化 → LLM 推理改进 → 回测验证 → 建议    │     │
-│  │ 输出: 改进建议 + 改进后策略 + 对比报告             │     │
-│  └───────────────────────────────────────────────────┘     │
+│  ┌─ 知识库检索 (Go 侧) ────────────────────────────┐      │
+│  │ Go API 层负责 pgvector 检索 (tenant_id 隔离)     │      │
+│  │ Agent 请求时附带相似经验 → 注入 LLM prompt        │      │
+│  └──────────────────────────────────────────────────┘      │
 │                                                            │
-│  ┌─ 知识库检索 (Go 侧) ─────────────────────────────┐     │
-│  │ Go API 层负责 pgvector 检索 (tenant_id 隔离)       │     │
-│  │ Agent 请求时附带相似经验 → 注入 LLM prompt          │     │
-│  │ Agent 不直接访问 PG / pgvector                      │     │
-│  └───────────────────────────────────────────────────┘     │
-│                                                            │
-│  工具: pandas (数据分析) │ numpy (数值计算)               │
-│        optuna (参数搜索) │ LLM (推理/生成)                 │
+│  工具: write_strategy (编译+回测) │ read_kline (行情)       │
+│        read_backtest_log (回测日志) │ LLM (推理/生成)        │
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -429,9 +428,9 @@ Agent 遇到新策略时，执行**双路径检索**：
 5. Agent 注入 LLM prompt："历史上类似策略的经验：..."，优先引用 `both` 和 `structural` 匹配的结果
 6. 生成初始策略时主动加入已知优化
 
-**设计决策：知识库检索放在 Go API 层而非 Python Agent 层。**
+**设计决策：知识库检索放在 Go API 层而非 Agent 层。**
 
-理由：Phase 1 Agent 是无状态子进程（启动→完成→销毁），子进程内做 pgvector 检索意味着每次调用都要重新建立 PG 连接 + 检索。将检索放在 Go API 层：(1) 复用现有 PG 连接池；(2) `tenant_id` 隔离在 Go 层统一处理；(3) Agent 子进程保持无状态，不需要 PG 依赖；(4) Phase 2 长驻 Agent 仍可通过 Go Gateway 检索，不需要改为直连 PG。
+理由：Agent 在 Go 进程内运行，知识库检索直接复用 Go API 层的 PG 连接池 + `tenant_id` 隔离。无需跨进程通信，检索结果直接注入 LLM prompt。
 
 ### D6: ConnectRPC Agent Gateway
 
@@ -503,12 +502,13 @@ message SubmitStrategyResponse {
 |---|---|
 | Go 执行层 | VM 进程内隔离 + 指令计数器 + 超时 + MaxSourceSize |
 | Go API 层 | `tenant_id` 上下文传播 + PG RLS |
-| Python Agent 层 | 每 tenant 独立 Agent 进程（K8s Pod）或进程内 tenant 隔离 |
+| Go Agent 层 | 进程内 `tenant_id` 上下文隔离（无独立进程） |
 | 知识库 | `tenant_id` 列 + RLS |
 
-**Agent 进程模型演进：**
-- Phase 1: Go API 收到 Agent 请求 → 启动 Python 子进程 → 完成后销毁（无状态，简单）
-- Phase 2: 长驻 Python Agent 服务 → K8s 部署，按 tenant 分 Pod（有状态，知识库缓存）
+**Agent 进程模型（实际实现）：**
+- Go 进程内 Agent：`internal/agent/` + `internal/connect/ai/` 通过 `systemai.Service` 调用外部 LLM API
+- 无独立 Python 进程，无 K8s Pod 隔离
+- 多租户通过 Go 层 `tenant_id` 上下文传播 + PG RLS 实现
 
 **计费：** Agent 每次调用有 LLM 成本，可按 LLM token 用量 + VM 执行时间计费。
 
@@ -605,16 +605,18 @@ LLM 输出结构化策略声明（protobuf），而非代码。Go 端用通用�
 
 否决的核心逻辑：**用户上传 MQL 是硬需求，VM 已经存在且必须维护。在这个前提下，不应再建第二个执行引擎。** compile_py.go 让 AI 生成路径复用已有 VM，而非另起炉灶。若无 MQL 上传需求，方案 E 更优——但这不是我们的场景。
 
-### 选定方案: 双编译前端 + Python Agent 层（§2 D1-D8）
+### 选定方案: 双编译前端 + Go 进程内 Agent（§2 D1-D8）
+
+> **实现说明**：设计时规划 Python Agent 层（LangChain/CrewAI），实际实现为 Go 进程内 Agent。Python 仅作为策略编写语言，不作为 Agent 实现语言。
 
 | 维度 | 决策 |
 |------|------|
 | 策略语言 | MQL（现有管线） + Python 子集（新增，Agent 生成目标） |
 | 编译 | compile_mql.go + compile_py.go → 共用 interp.IR → Bytecode → VM |
 | 执行 | 单一 Bytecode VM（回测 SimBroker / 实盘 LiveRunner） |
-| Agent 层 | Python（LangChain/CrewAI + pandas/optuna/pgvector），通过 ConnectRPC 调用 Go Gateway |
-| Agent ↔ Go 通信 | ConnectRPC + SSE（protobuf），每迭代一次 RPC 往返 |
-| 安全 | 四层：Python 子集验证 → Bytecode VM 沙箱 → SDK 风控 Gate → Agent 进程隔离 |
+| Agent 层 | Go 进程内（`internal/agent/` + `internal/connect/ai/`），通过 `systemai.Service` 调用外部 LLM API |
+| Agent ↔ VM 通信 | 进程内函数调用（无跨进程通信） |
+| 安全 | 三层：Python 子集验证 → Bytecode VM 沙箱 → SDK 风控 Gate |
 
 选取理由：方案 A（MQL）LLM 生成质量不足，方案 B（Go SDK）Agent 生态为零，方案 C（per-bar RPC）性能不可接受，方案 D（Python 回测）破坏回测即实盘原则。双编译前端 + 单 VM 是唯一同时满足 LLM 生成质量、Agent 生态需求和回测性能约束的架构。
 
@@ -635,14 +637,14 @@ LLM 输出结构化策略声明（protobuf），而非代码。Go 端用通用�
 ### 负面
 
 - **compile_py.go 开发成本**：3-4 周（tree-sitter Python grammar Go binding + CST → IR + 类型检查 + 子集验证器 + 测试）
-- **Python Agent 服务运维成本**：额外语言栈、K8s Pod 管理、LLM API 成本
+- **LLM API 成本**：Agent 每次调用有 LLM token 费用
 - **LLM 非确定性风险**：同一输入可能产生不同输出，需要缓存（source hash → 结果）和重试机制
 - **LLM 输出格式可靠性**：LLM 对完整 protobuf text format 的训练语料少于 JSON。缓解：复杂嵌套结构用真 protobuf + 验证门；简单分析输出（策略画像、回测解读）用 `KEY: "value"` 行格式——LLM 对此格式正确率接近 100%（训练语料中有无尽 YAML/frontmatter/INI），Go 端用行解析器消费，几十行代码。原则：LLM 输出格式越简单，可靠性越高；Go 端解析多做一点，LLM 自由度少给一点。
 - **Python 子集不是标准 Python**：LLM 需要被约束在子集内，可能生成被拒绝的语法（list comprehension 等），需要 prompt 工程和重试
 
 ### 中性
 
-- Go 层和 Python 层通过 ConnectRPC 解耦，各自独立演进
+- Agent 层和执行层在 Go 进程内通过函数调用解耦，各自独立演进
 - ADR-0023 的 Bytecode VM 不变，本 ADR 只新增编译前端和 Agent 层
 - ADR-0022 的盲区分级原则不变，本 ADR 用 Agent 桥接替代"人工评估后实现"
 
@@ -918,7 +920,7 @@ Claude 生成语义 diff 比生成代码更可靠——本质是自然语言总�
 |---|---|
 | ADR-0012 (回测即实盘) | **保留**。Python 策略走同一 VM + SimBroker，回测/实盘代码路径统一 |
 | ADR-0020 (EA 替代 SDK) | **保留**。Go SDK 接口不变，Python 子集通过 VM 内置函数间接使用 |
-| ADR-0021 (Python→Go 迁移) | **部分保留**。Go 仍是执行层，Python 作为 Agent 层回归（不同角色） |
+| ADR-0021 (Python→Go 迁移) | **部分保留**。Go 仍是执行层和 Agent 层，Python 子集仅作为策略编写语言（通过 compile_py.go 编译到 VM） |
 | ADR-0022 (盲区架构) | **扩展**。三层盲区处理原则不变，Agent 桥接替代"人工评估后实现" |
 | ADR-0023 (Bytecode VM) | **复用并扩展**。VM 不变，新增 compile_py.go 编译前端 |
 | ADR-0025 (Agent 交互与自进化) | **扩展 Phase 4**。0025 定义三层记忆系统、策略回溯 Agent、Plan Mode 交互、分层权限和 Admin 管理端的详细实施方案 |

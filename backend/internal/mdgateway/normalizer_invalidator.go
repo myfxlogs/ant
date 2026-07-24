@@ -118,7 +118,7 @@ func parseNotifyPayload(payload string) notifyPayload {
 
 func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGListener) {
 	ni.log.Info("normalizer_invalidator: PG LISTEN active")
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 
 	for {
 		payload, err := listener.WaitForNotification(ctx)

@@ -105,7 +105,7 @@
   **文件**：`backend/internal/connect/gateway/ai_gateway_handler.go`（已有，扩展）
 
   ```go
-  // AgentGateway 是 Python Agent 层与 Go 编译执行层的桥梁。
+  // AgentGateway 是 Go Agent 层与编译执行层的桥梁。
   // 现有接口（保留）：
   //   - GenerateCode(description) → (source_code, language)
   //   - CompileAndBacktest(source_code, params) → (backtest_result)
@@ -141,13 +141,13 @@
   }
   ```
 
-  **架构决策 — 为什么不在 Python Agent 层做发布？**
+  **架构决策 — 为什么不在 Agent 层做发布？**
 
-  发布涉及 DB 写入、钱包操作、权限校验。这些必须在 Go API 层完成（Python Agent 层不持有 DB 连接、不持有钱包密钥）。所以发布步骤由 Go `marketplace_handler_autogen.go` 在收到 Agent Gateway 的 `completed` 结果后执行。
+  发布涉及 DB 写入、钱包操作、权限校验。这些必须在 Go API 层完成（Agent 层不持有 DB 连接、不持有钱包密钥）。所以发布步骤由 Go `marketplace_handler_autogen.go` 在收到 Agent Gateway 的 `completed` 结果后执行。
 
   ```
-  Python Agent (策略生成)
-      │ ConnectRPC
+  Go Agent (策略生成, internal/agent/)
+      │ in-process
       ▼
   Go Agent Gateway (编译调度)
       │ in-process

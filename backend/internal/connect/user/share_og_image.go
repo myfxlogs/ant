@@ -105,7 +105,7 @@ func (s *ogImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
-	w.Write(pngData)
+	_, _ = w.Write(pngData)
 }
 
 // computeSharpe calculates annualized Sharpe ratio from equity curve points.
@@ -199,7 +199,7 @@ func renderOGImagePNG(userName, totalReturn, winRate, maxDrawdown, totalTrades, 
 	drawText(img, 60, 605, "Verified on AlphaForge — alfq.org", footerGray, 1)
 
 	var buf bytes.Buffer
-	png.Encode(&buf, img)
+	_ = png.Encode(&buf, img)
 	return buf.Bytes()
 }
 

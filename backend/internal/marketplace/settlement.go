@@ -154,16 +154,20 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 func (s *Service) createFrozenSettlementTx(ctx context.Context, tx pgx.Tx,
 	purchaseID, buyerID, providerID uuid.UUID,
 	amount, platformFee, providerAmount string,
+	refundWindowDays int,
 ) error {
+	if refundWindowDays <= 0 {
+		refundWindowDays = DefaultRefundWindowDays
+	}
 	now := time.Now()
-	settlesAt := now.Add(time.Duration(DefaultRefundWindowDays) * 24 * time.Hour)
+	settlesAt := now.Add(time.Duration(refundWindowDays) * 24 * time.Hour)
 	_, err := tx.Exec(ctx,
 		`INSERT INTO marketplace_settlements
 		 (purchase_id, buyer_id, provider_id, amount, platform_fee, provider_amount,
 		  status, refund_window_days, freezes_at, settles_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, 'frozen', $7, $8, $9)`,
 		purchaseID, buyerID, providerID, amount, platformFee, providerAmount,
-		DefaultRefundWindowDays, now, settlesAt,
+		refundWindowDays, now, settlesAt,
 	)
 	return err
 }

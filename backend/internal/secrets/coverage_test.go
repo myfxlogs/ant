@@ -441,7 +441,7 @@ key, err := secrets.GenerateMasterKey()
 		go func() {
 			plaintext := []byte("concurrent-test-data")
 			ciphertext, _ := client.Encrypt(context.Background(), secrets.PurposeMTPassword, plaintext)
-			client.Decrypt(context.Background(), secrets.PurposeMTPassword, ciphertext)
+			_, _ = client.Decrypt(context.Background(), secrets.PurposeMTPassword, ciphertext)
 			done <- struct{}{}
 		}()
 	}

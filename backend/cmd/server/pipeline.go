@@ -239,6 +239,12 @@ func startMdGatewayPipeline(
 				}
 			}
 		},
+		OnBreakerTrip: func(accountID, userID, status, message string) {
+			mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
+				AccountID: accountID, UserID: userID, Status: status,
+				Message: message, Timestamp: time.Now(),
+			})
+		},
 		OnAccountStatus: func(accountID, userID, status, message string) {
 			// "reconnecting" is a transient partial state — don't persist or push SSE.
 			// Stream recovery is handled by startGatewayForAccount (→ "connected").

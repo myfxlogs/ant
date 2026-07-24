@@ -39,7 +39,7 @@ func (e *GoExecutor) Run(ctx context.Context, code string, req *antv1.ExecuteStr
 	if err != nil {
 		return nil, fmt.Errorf("create temp dir: %w", err)
 	}
-	defer os.RemoveAll(runDir)
+	defer func() { _ = os.RemoveAll(runDir) }()
 
 	strategyFile := filepath.Join(runDir, "strategy.go")
 	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
@@ -83,7 +83,7 @@ func (e *GoExecutor) RunBacktest(ctx context.Context, code string, req *antv1.Ex
 	if err != nil {
 		return nil, fmt.Errorf("create temp dir: %w", err)
 	}
-	defer os.RemoveAll(runDir)
+	defer func() { _ = os.RemoveAll(runDir) }()
 
 	strategyFile := filepath.Join(runDir, "strategy.go")
 	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
@@ -127,7 +127,7 @@ func (e *GoExecutor) CompileCheck(ctx context.Context, code string) (bool, strin
 	if err != nil {
 		return false, fmt.Sprintf("create temp dir: %v", err)
 	}
-	defer os.RemoveAll(runDir)
+	defer func() { _ = os.RemoveAll(runDir) }()
 
 	strategyFile := filepath.Join(runDir, "strategy.go")
 	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {
@@ -147,7 +147,7 @@ func (e *GoExecutor) CompileCheck(ctx context.Context, code string) (bool, strin
 }
 
 func (e *GoExecutor) Cleanup() {
-	os.RemoveAll(e.tmpDir)
+	_ = os.RemoveAll(e.tmpDir)
 }
 
 // RunLive compiles strategy code + live harness and runs a single-bar live evaluation.
@@ -162,7 +162,7 @@ func (e *GoExecutor) RunLive(ctx context.Context, code string, req *antv1.Execut
 	if err != nil {
 		return nil, fmt.Errorf("create temp dir: %w", err)
 	}
-	defer os.RemoveAll(runDir)
+	defer func() { _ = os.RemoveAll(runDir) }()
 
 	strategyFile := filepath.Join(runDir, "strategy.go")
 	if err := os.WriteFile(strategyFile, []byte(code), 0600); err != nil {

@@ -37,7 +37,7 @@ func (r *BacktestRunRepository) BatchCreateTrades(ctx context.Context, trades []
 		)
 	}
 	br := r.db.SendBatch(ctx, batch)
-	defer br.Close()
+	defer func() { _ = br.Close() }()
 	for i := 0; i < len(trades); i++ {
 		if _, err := br.Exec(); err != nil {
 			return fmt.Errorf("backtest run trade batch insert row %d: %w", i, err)

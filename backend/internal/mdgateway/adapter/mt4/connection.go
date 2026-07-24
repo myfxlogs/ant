@@ -129,7 +129,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	if err != nil {
 		g.mu.Lock()
 		if g.conn != nil {
-			g.conn.Close()
+			_ = g.conn.Close()
 			g.conn = nil
 		}
 		g.client = nil
@@ -153,7 +153,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		}
 		g.mu.Lock()
 		if g.conn != nil {
-			g.conn.Close()
+			_ = g.conn.Close()
 			g.conn = nil
 		}
 		g.client = nil
@@ -195,7 +195,7 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 		g.cancelHubOrderSub = nil
 	}
 	if g.conn != nil {
-		g.conn.Close()
+		_ = g.conn.Close()
 		g.conn = nil
 	}
 	g.client = nil

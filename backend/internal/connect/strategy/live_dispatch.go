@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -25,7 +26,7 @@ import (
 //	Close:     close, close_all  → CloseOrder
 //	Modify:    modify            → ModifyOrder
 //	Cancel:    cancel            → CancelPending
-func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	action := sig.GetSignalType()
 	s.log.Info("LiveStrategyRunner: signal",
 		zap.String("account", cfg.AccountID),
@@ -52,10 +53,26 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 	// T3.1: dispatch based on expanded action set.
 	switch action {
 	case "buy", "sell":
-		s.dispatchMarketOrder(ctx, cfg, sig)
+		if activeSess != nil && activeSess.IsCircuitOpen() {
+			s.log.Warn("LiveStrategyRunner: suppressing order — circuit breaker open",
+				zap.String("account", cfg.AccountID),
+				zap.String("symbol", cfg.Symbol),
+				zap.String("action", action),
+			)
+			return
+		}
+		s.dispatchMarketOrder(ctx, cfg, sig, activeSess)
 	case "buy_limit", "sell_limit", "buy_stop", "sell_stop",
 		"buy_stop_limit", "sell_stop_limit":
-		s.dispatchPendingOrder(ctx, cfg, sig)
+		if activeSess != nil && activeSess.IsCircuitOpen() {
+			s.log.Warn("LiveStrategyRunner: suppressing pending order — circuit breaker open",
+				zap.String("account", cfg.AccountID),
+				zap.String("symbol", cfg.Symbol),
+				zap.String("action", action),
+			)
+			return
+		}
+		s.dispatchPendingOrder(ctx, cfg, sig, activeSess)
 	case "close":
 		s.dispatchCloseOrder(ctx, cfg, sig)
 	case "close_all":
@@ -71,15 +88,15 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 
 // ── T3.1 action dispatchers ──────────────────────────────────────────
 
-func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
 		return
 	}
-	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, sig)
+	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, sig, activeSess)
 }
 
-func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
 		return
@@ -95,7 +112,7 @@ func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg 
 	default:
 		orderType = mthub.OrderLimit
 	}
-	s.submitOrder(ctx, cfg, side, orderType, sig)
+	s.submitOrder(ctx, cfg, side, orderType, sig, activeSess)
 }
 
 // dispatchCloseAll closes all open positions for the account.
@@ -224,7 +241,7 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 
 // submitOrder is the common order submission helper (T3.1 / D6-A).
 // Every order MUST pass through Gate.Evaluate() before reaching mthub.
-func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	req := &mthub.OrderRequest{
 		AccountID: cfg.AccountID,
 		Canonical: cfg.Symbol,
@@ -256,12 +273,27 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 	go func() {
 		record, err := s.mtHub.PlaceOrder(placeCtx, req)
 		if err != nil {
+			if errors.Is(err, mthub.ErrCircuitOpen) {
+				if activeSess != nil {
+					activeSess.SetCircuitOpen(true)
+				}
+				s.log.Warn("LiveStrategyRunner: order rejected — circuit breaker open",
+					zap.String("account", cfg.AccountID),
+					zap.String("symbol", cfg.Symbol),
+					zap.String("side", sideStr),
+				)
+				return
+			}
 			s.log.Error("LiveStrategyRunner: order submission failed",
 				zap.String("symbol", cfg.Symbol),
 				zap.String("side", sideStr),
 				zap.Error(err),
 			)
 			return
+		}
+		// Order succeeded — clear circuit open flag if it was set.
+		if activeSess != nil {
+			activeSess.SetCircuitOpen(false)
 		}
 		s.log.Info("LiveStrategyRunner: order submitted",
 			zap.Int64("ticket", record.Ticket),

@@ -93,14 +93,14 @@ func (t *mtConnectionTester) VerifyPassword(ctx context.Context, platform, broke
 						if cerr := rgw.Connect(ctx); cerr != nil {
 							return cerr
 						}
-						rgw.Disconnect(ctx)
+						_ = rgw.Disconnect(ctx)
 						return nil
 					})
 				return rerr
 			}
 			continue
 		}
-		gw.Disconnect(ctx)
+		_ = gw.Disconnect(ctx)
 		return nil
 	}
 	if lastErr != nil {
@@ -133,7 +133,7 @@ func (t *mtConnectionTester) testMT(ctx context.Context, cfg mdtick.AccountConfi
 			continue
 		}
 		info, err := gw.FetchAccountInfo(ctx)
-		gw.Disconnect(ctx)
+		_ = gw.Disconnect(ctx)
 		if err != nil {
 			lastErr = err
 			continue

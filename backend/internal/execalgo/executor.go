@@ -72,6 +72,9 @@ type ExecutorConfig struct {
 // MarketStateChecker abstracts the mdgateway MarketState for executor use.
 type MarketStateChecker interface {
 	IsTradeable(symbol string) (bool, string)
+	// WaitTradeable blocks until the symbol becomes tradeable or ctx is cancelled.
+	// Implementations should use push-based notification (e.g. channel/cond) not polling.
+	WaitTradeable(ctx context.Context, symbol string) error
 }
 
 // Executor runs an algo execution schedule.

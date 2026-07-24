@@ -2,7 +2,9 @@ package mdgateway
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	"encoding/binary"
+	"math"
 
 	"go.uber.org/zap"
 
@@ -15,7 +17,6 @@ import (
 // CH removal: writes structured log entries instead of inserting into md_ticks_dlq.
 type DLQWriter struct {
 	log  *zap.Logger
-	rng  *rand.Rand
 	dlqQ chan dlqEntry // buffered async write queue
 }
 
@@ -29,8 +30,7 @@ type dlqEntry struct {
 // NewDLQWriter creates a DLQ writer that logs to structured logger.
 func NewDLQWriter(log *zap.Logger) *DLQWriter {
 	d := &DLQWriter{
-		log: log,
-		rng: rand.New(rand.NewSource(Clk.Now().UnixNano())),
+		log:  log,
 		dlqQ: make(chan dlqEntry, 1000),
 	}
 	go d.flushLoop()
@@ -72,7 +72,10 @@ func (d *DLQWriter) shouldSample(pct float32) bool {
 	if pct >= 100.0 {
 		return true
 	}
-	return d.rng.Float32()*100 < pct
+	var buf [4]byte
+	_, _ = rand.Read(buf[:])
+	v := float32(math.Mod(float64(binary.LittleEndian.Uint32(buf[:])), 100.0))
+	return v < pct
 }
 
 func (d *DLQWriter) writeTick(t *mdtick.Tick, reason string, pct float32, raw string) {

@@ -8,18 +8,6 @@ import (
 	"alphaforge/internal/repository"
 )
 
-func makeBars(prices ...[2]float64) []repository.KlineBar {
-	bars := make([]repository.KlineBar, len(prices))
-	for i, p := range prices {
-		bars[i] = repository.KlineBar{
-			High:  decimal.NewFromFloat(p[0]),
-			Low:   decimal.NewFromFloat(p[1]),
-			Close: decimal.NewFromFloat((p[0] + p[1]) / 2),
-		}
-	}
-	return bars
-}
-
 func makeTrendBars(n int, startPrice, stepHigh, stepLow float64) []repository.KlineBar {
 	bars := make([]repository.KlineBar, n)
 	price := startPrice

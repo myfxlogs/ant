@@ -190,6 +190,27 @@ func (s *PgMarketDataStore) MaxCloseTs(ctx context.Context, broker, canonical, p
 	return ts, nil
 }
 
+// GetLatestBars returns the most recent finalized bar per (broker, canonical, period).
+// Uses DISTINCT ON to pick the latest close_ts per key. Only considers bars within
+// the lookback window (typically 30 days). Used by BarAggregator to restore
+// in-progress bar state after a process restart.
+func (s *PgMarketDataStore) GetLatestBars(ctx context.Context, since time.Time) ([]KlineBar, error) {
+	rows, err := s.pool.Query(ctx,
+		`SELECT DISTINCT ON (broker, canonical, period)
+			broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
+			open, high, low, close, volume, tick_count
+		FROM md_bars
+		WHERE close_ts_unix_ms >= $1 AND is_replay = 0
+		ORDER BY broker, canonical, period, close_ts_unix_ms DESC`,
+		since.UnixMilli(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("pg get latest bars: %w", err)
+	}
+	defer rows.Close()
+	return scanKlineBars(rows, s.log)
+}
+
 // FetchActualReturn computes the 7-day price return after predictedAt.
 func (s *PgMarketDataStore) FetchActualReturn(ctx context.Context, symbol string, predictedAt time.Time) (float64, error) {
 	start := predictedAt

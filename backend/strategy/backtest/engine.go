@@ -211,12 +211,12 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 			Magic:      sig.Magic,
 		})
 	case sdk.ActionClose:
-		e.broker.PositionClose(sig.OrderTicket, decimal.Zero)
+		_, _ = e.broker.PositionClose(sig.OrderTicket, decimal.Zero)
 	case sdk.ActionCancel:
 		_, _ = e.broker.OrderDelete(sig.OrderTicket)
 	case sdk.ActionCloseAll:
 		for _, p := range e.broker.Positions(sig.Magic) {
-			e.broker.PositionClose(p.Ticket, decimal.Zero)
+			_, _ = e.broker.PositionClose(p.Ticket, decimal.Zero)
 		}
 	}
 }

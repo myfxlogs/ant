@@ -105,7 +105,7 @@ func (s *VMLiveSession) Close() error {
 	}
 	s.started = false
 	if s.runner != nil {
-		s.runner.Deinit(context.Background(), "session_close")
+		_ = s.runner.Deinit(context.Background(), "session_close")
 	}
 	return nil
 }

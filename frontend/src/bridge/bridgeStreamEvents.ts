@@ -121,6 +121,12 @@ export function handleAccountStatus(queryClient: QueryClient, status: AccountSta
   const isDisabled = s === 'disabled' ? true : s === 'enabled' ? false : undefined;
   const patch: Partial<Account> = { status: mapped };
   if (isDisabled !== undefined) patch.isDisabled = isDisabled;
+  // Circuit breaker events carry a diagnostic message — store it in lastError.
+  if (s === 'circuit_open' || s === 'circuit_half_open') {
+    patch.lastError = String(status.message || '');
+  } else if (s === 'circuit_closed') {
+    patch.lastError = '';
+  }
 
   queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old = []) =>
     old.map((a) => (a.id === status.accountId ? { ...a, ...patch } : a)),

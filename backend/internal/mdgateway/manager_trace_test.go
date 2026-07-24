@@ -25,7 +25,7 @@ func TestHandleTickCreatesSixSpans(t *testing.T) {
 		trace.WithBatcher(exp),
 		trace.WithSampler(trace.AlwaysSample()),
 	)
-	defer tp.Shutdown(context.Background())
+	defer func() { _ = tp.Shutdown(context.Background()) }()
 
 	tr := anttrace.NewWithProvider(tp)
 	if !tr.Enabled() {
@@ -135,7 +135,7 @@ func TestTraceSamplingHonored(t *testing.T) {
 		trace.WithBatcher(exp),
 		trace.WithSampler(trace.NeverSample()),
 	)
-	defer tp.Shutdown(context.Background())
+	defer func() { _ = tp.Shutdown(context.Background()) }()
 
 	tr := anttrace.NewWithProvider(tp)
 	if !tr.Enabled() {

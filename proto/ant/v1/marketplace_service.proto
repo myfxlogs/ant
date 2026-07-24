@@ -113,6 +113,7 @@ message PublishStrategyRequest {
   BacktestSnapshot backtest_snapshot = 17;  // snapshot of backtest results at publish time
   string disclaimer = 18;  // optional risk disclaimer shown to buyers
   int32 trial_days = 19;  // publisher-configurable trial period (default 7)
+  int32 refund_window_days = 20;  // publisher-configurable refund window in days (default 7)
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.

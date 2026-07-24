@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
@@ -28,7 +27,7 @@ func initRiskPipeline(
 	jurisGate := buildJurisdictionGate(pool, cfg)
 	capStore := loadCapabilityStore(pool, log)
 	platformAgg := risksvc.NewPlatformAggregator()
-	platformAgg.StartRefreshLoop(5 * time.Second)
+	platformAgg.StartRefreshLoop()
 
 	// D6-A: risksvc pipeline replaced by risk.Gate (single chokepoint).
 	wireMthubServices(pool, log, mthubSvc, hub, eventStore, guard)

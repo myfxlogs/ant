@@ -95,7 +95,7 @@ func (c *TronGridClient) GetBlockEvents(ctx context.Context, contractAddress str
 			return nil, fmt.Errorf("trongrid: request: %w", err)
 		}
 		body, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("trongrid: read body: %w", err)
 		}
@@ -175,7 +175,7 @@ func (c *TronGridClient) HasOutgoingTRC20Transfer(ctx context.Context, from, to,
 			return false, fmt.Errorf("trongrid: request: %w", err)
 		}
 		body, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if err != nil {
 			return false, fmt.Errorf("trongrid: read body: %w", err)
 		}
@@ -223,7 +223,7 @@ func (c *TronGridClient) GetLatestBlock(ctx context.Context) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("trongrid: request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -267,7 +267,7 @@ func (c *TronGridClient) GetTRC20Balance(ctx context.Context, address string) (s
 		return "", fmt.Errorf("trongrid: balance request: %w", err)
 	}
 	body, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if err != nil {
 		return "", fmt.Errorf("trongrid: read balance body: %w", err)
 	}

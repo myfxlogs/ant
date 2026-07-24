@@ -71,7 +71,7 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	if err != nil || st == nil || time.Now().After(st.ExpiresAt) {
 		return connect.NewResponse(&antv1.GetSharedPerformanceResponse{Expired: true}), nil
 	}
-	s.repo.IncrementView(ctx, st.Token)
+	_ = s.repo.IncrementView(ctx, st.Token)
 
 	user, _ := s.userRepo.GetByID(ctx, st.UserID)
 	userName := "匿名用户"

@@ -67,5 +67,5 @@ func startBackgroundServices(
 		log.Fatal("failed to create xpub auditor", zap.Error(err))
 	}
 	depositSvc.SetCompromisedChecker(auditor)
-	go auditor.Run(ctx)
+	go func() { _ = auditor.Run(ctx) }()
 }

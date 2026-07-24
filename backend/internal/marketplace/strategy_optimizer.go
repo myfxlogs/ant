@@ -91,10 +91,12 @@ func (s *Service) CreateOptimizationTask(ctx context.Context, strategyID, publis
 
 	// Notify the publisher about the optimization suggestion.
 	if s.notifSender != nil {
-		go s.notifSender.Send(context.WithoutCancel(ctx), pid, "optimization_suggested",
-			"Strategy Optimization Suggested",
-			fmt.Sprintf("We detected potential alpha decay in \"%s\". An optimization task has been created.", title),
-			nil)
+		go func() {
+			_, _ = s.notifSender.Send(context.WithoutCancel(ctx), pid, "optimization_suggested",
+				"Strategy Optimization Suggested",
+				fmt.Sprintf("We detected potential alpha decay in \"%s\". An optimization task has been created.", title),
+				nil)
+		}()
 	}
 
 	// Start the AI optimization worker in the background if an optimizer is wired.

@@ -26,6 +26,7 @@ func SSEKeepaliveMiddleware(interval time.Duration) func(http.Handler) http.Hand
 				interval:       interval,
 				done:           make(chan struct{}),
 			}
+			defer func() { _ = kw.Close() }()
 			next.ServeHTTP(kw, r)
 		})
 	}
@@ -85,7 +86,7 @@ func (w *keepaliveWriter) keepaliveLoop() {
 func (w *keepaliveWriter) writeKeepalive() {
 	// Write an SSE comment. Browsers and proxies ignore lines starting with ':'.
 	// We use ": kp\n\n" — the double newline delimits an SSE event.
-	w.ResponseWriter.Write([]byte(": kp\n\n"))
+	_, _ = w.ResponseWriter.Write([]byte(": kp\n\n"))
 	if f, ok := w.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	}

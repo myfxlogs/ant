@@ -87,7 +87,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		}
 		return &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		ae := readAPIErrorBody(resp)

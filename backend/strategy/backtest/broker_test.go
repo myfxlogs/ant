@@ -157,7 +157,7 @@ func TestSimBroker_HistoryOrders_TimeFilter(t *testing.T) {
 		}
 	}
 
-	broker.PositionClose(res.Ticket, decimal.Zero)
+	_, _ = broker.PositionClose(res.Ticket, decimal.Zero)
 
 	// Query with wide time range
 	hist := broker.HistoryOrders(0, time.Now().UnixMilli()+1000)

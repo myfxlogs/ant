@@ -32,21 +32,6 @@ func (s *stubStrategyRunner) RunLiveStrategy(_ context.Context, cfg strategy.Liv
 	return s.err
 }
 
-func (s *stubStrategyRunner) callCount() int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return len(s.calls)
-}
-
-func (s *stubStrategyRunner) lastCall() *strategy.LiveStrategyConfig {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if len(s.calls) == 0 {
-		return nil
-	}
-	return &s.calls[len(s.calls)-1]
-}
-
 // stubPaperRepo implements paperRepository for handler tests.
 type stubPaperRepo struct {
 	accounts map[string]*repository.PaperAccount
@@ -293,7 +278,7 @@ func TestHandler_ListPaperAccounts_Success(t *testing.T) {
 		Name:           "A1",
 		InitialBalance: "1000",
 	})
-	h.CreatePaperAccount(authCtx("u1"), createReq)
+	_, _ = h.CreatePaperAccount(authCtx("u1"), createReq)
 
 	listReq := connect.NewRequest(&antv1.ListPaperAccountsRequest{})
 	resp, err := h.ListPaperAccounts(authCtx("u1"), listReq)

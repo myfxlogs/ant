@@ -2,7 +2,7 @@ import type { Account } from '@/types/account';
 
 // Migration 187 replaced the is_disabled column with the account_status state machine.
 // An account is disabled when its status is disconnected or frozen.
-const disabledStatusValues = new Set(['disconnected', 'frozen']);
+const disabledStatusValues = new Set(['disconnected', 'frozen', 'circuit_open']);
 
 export function isTradingAccountEnabled(account: Account | null | undefined): boolean {
   if (!account) return false;

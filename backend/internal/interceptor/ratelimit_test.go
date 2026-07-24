@@ -165,7 +165,7 @@ func TestWrapUnary_LoginPathRateLimits(t *testing.T) {
 	mux.HandleFunc("/ant.v1.AuthService/Login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	})
 	srv := httptest.NewServer(mux)
 	defer srv.Close()
@@ -179,7 +179,7 @@ func TestWrapUnary_LoginPathRateLimits(t *testing.T) {
 		if resp.StatusCode != http.StatusOK {
 			t.Fatalf("request %d: expected 200, got %d", i+1, resp.StatusCode)
 		}
-		resp.Body.Close()
+		_ = resp.Body.Close()
 	}
 }
 

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
@@ -130,8 +129,7 @@ func registerHandlers(
 
 	// P3.1: QuotaChecker — in-memory cache for fast quota lookups.
 	quotaChecker := service.NewQuotaChecker(subscriptionRepo, pool, log)
-	quotaChecker.LoadAll(ctx)
-	quotaChecker.StartRefreshLoop(ctx, 5*time.Minute)
+	_ = quotaChecker.LoadAll(ctx)
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 

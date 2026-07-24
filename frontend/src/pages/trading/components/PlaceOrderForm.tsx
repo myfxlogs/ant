@@ -7,6 +7,9 @@ import { TRADING_BUY_KEY, TRADING_LIMIT_KEY, TRADING_MARKET_KEY, TRADING_PLACE_O
 import { useTradingStore } from '@/stores/tradingStore';
 import { useTrading } from '@/hooks/useTrading';
 import SymbolPicker from '@/components/chart/SymbolPicker';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/queries/queryKeys';
+import type { Account } from '@/types/account';
 
 interface PlaceOrderFormProps {
   onSymbolChange?: (symbol: string) => void;
@@ -16,6 +19,12 @@ export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) 
   const { t } = useTranslation();
   const currentAccountId = useTradingStore((s) => s.currentAccountId);
   const loading = useTradingStore((s) => s.loading);
+  const queryClient = useQueryClient();
+  const account = currentAccountId
+    ? queryClient.getQueryData<Account>(queryKeys.accounts.detail(currentAccountId))
+    : undefined;
+  const accountStatus = (account?.status || account?.accountStatus || '').toLowerCase();
+  const circuitOpen = accountStatus === 'circuit_open';
   const { sendOrder } = useTrading();
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [orderType, setOrderType] = useState<'market' | 'limit' | 'stop'>('market');
@@ -98,7 +107,7 @@ export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) 
               icon={<SendOutlined />}
               onClick={handleSubmit}
               loading={loading}
-              disabled={!currentAccountId}
+              disabled={!currentAccountId || circuitOpen}
               danger={side === 'sell'}
             >
               {side === 'buy' ? t(TRADING_BUY_KEY, 'Buy') : t(TRADING_SELL_KEY, 'Sell')}

@@ -3,7 +3,6 @@ package strategy
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -68,15 +67,6 @@ func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 		return uuid.Nil
 	}
 	return id
-}
-
-// userIDRequire extracts and validates the authenticated user ID from context.
-func (s *StrategyServer) userIDRequire(ctx context.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(interceptor.GetUserID(ctx))
-	if err != nil || id == uuid.Nil {
-		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
-	return id, nil
 }
 
 func (s *StrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }

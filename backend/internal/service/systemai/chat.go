@@ -264,7 +264,7 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 			continue
 		}
 		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
-		resp.Body.Close()
+		_ = resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
 			var cr ChatCompletionResponse

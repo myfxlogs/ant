@@ -46,6 +46,7 @@ type ManagerDeps struct {
 	MarketState      *MarketStateTracker
 	StuffingDetector *StuffingDetector
 	OnBar            func(*mdtick.Bar)
+	OnBreakerTrip    func(accountID, userID, status, message string) // called when circuit breaker state changes
 	Log              *zap.Logger
 }
 
@@ -59,6 +60,7 @@ type Manager struct {
 	marketState      *MarketStateTracker
 	stuffingDetector *StuffingDetector
 	onBar            func(*mdtick.Bar)
+	onBreakerTrip    func(accountID, userID, status, message string)
 	breakers         map[string]*CircuitBreaker
 	otelTracer       *anttrace.Tracer
 	log              *zap.Logger
@@ -82,6 +84,7 @@ func NewManager(deps ManagerDeps) *Manager {
 		marketState:      deps.MarketState,
 		stuffingDetector: deps.StuffingDetector,
 		onBar:            deps.OnBar,
+		onBreakerTrip:    deps.OnBreakerTrip,
 		breakers:         make(map[string]*CircuitBreaker),
 		gateways:         make(map[string]Gateway),
 		lastTickAt:       make(map[string]int64),
@@ -120,9 +123,43 @@ func (m *Manager) GetOrCreateBreaker(cfg mdtick.AccountConfig) *CircuitBreaker {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.breakers[key] == nil {
-		m.breakers[key] = NewCircuitBreaker(0, 0, 0)
+		cb := NewCircuitBreaker(0, 0, 0)
+		cb.SetOnStateChange(m.makeBreakerCallback(key))
+		m.breakers[key] = cb
 	}
 	return m.breakers[key]
+}
+
+// makeBreakerCallback returns a state-change handler that publishes SSE status
+// events for all accounts sharing the given breaker key.
+func (m *Manager) makeBreakerCallback(key string) func(from, to State) {
+	return func(from, to State) {
+		if m.onBreakerTrip == nil {
+			return
+		}
+		var status, message string
+		switch to {
+		case StateOpen:
+			status = "circuit_open"
+			message = "broker circuit breaker tripped — order path temporarily unavailable"
+		case StateHalfOpen:
+			status = "circuit_half_open"
+			message = "broker circuit breaker testing recovery"
+		case StateClosed:
+			status = "circuit_closed"
+			message = "broker circuit breaker recovered"
+		default:
+			return
+		}
+		m.mu.RLock()
+		for _, gw := range m.gateways {
+			if m.breakerKey(gw.Config()) != key {
+				continue
+			}
+			m.onBreakerTrip(gw.AccountID(), gw.Config().UserID, status, message)
+		}
+		m.mu.RUnlock()
+	}
 }
 
 func (m *Manager) breakerKey(cfg mdtick.AccountConfig) string {
@@ -240,7 +277,7 @@ func (m *Manager) ReconnectGateway(ctx context.Context, accountID string) error 
 						if cerr := testGW.Connect(ctx); cerr != nil {
 							return cerr
 						}
-						testGW.Disconnect(ctx)
+						_ = testGW.Disconnect(ctx)
 						return nil
 					},
 				)

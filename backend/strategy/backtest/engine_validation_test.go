@@ -92,7 +92,6 @@ type ticketCapturingStrategy struct {
 	buyAtBar    int
 	closeAtBar  int
 	closeTicket int64
-	broker      sdk.Broker
 }
 
 func (s *ticketCapturingStrategy) OnInit(ctx sdk.Context) error { return nil }
@@ -194,7 +193,7 @@ func TestEngine_SLTPCloseRecordsTrade(t *testing.T) {
 	engine := New(cfg, strategy, bars)
 	// Manually set TP on the position after buy
 	// We'll use a strategy that sets TP
-	engine.Run(context.Background())
+	_, _ = engine.Run(context.Background())
 
 	// Check if any positions were opened
 	broker := engine.Broker()
@@ -333,7 +332,7 @@ func TestEngine_AccountFloatingProfit(t *testing.T) {
 	}
 
 	engine := New(cfg, checkStrategy, bars)
-	engine.Run(context.Background())
+	_, _ = engine.Run(context.Background())
 
 	if !checkStrategy.equityChecked {
 		t.Skip("strategy did not reach the check bar")

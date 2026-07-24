@@ -20,13 +20,14 @@ import (
 )
 
 const (
-	reflectionInterval = 24 * time.Hour
-	reflectionMinAge   = 7 * 24 * time.Hour
-	reflectionBatch    = 100
+	reflectionMinAge = 7 * 24 * time.Hour
+	reflectionBatch  = 100
+	reflectionIdle   = 1 * time.Hour // idle wait when no predictions are due
 )
 
-// ReflectionWorker periodically validates past AI predictions and
-// triggers confidence recalibration.
+// ReflectionWorker validates past AI predictions and
+// triggers confidence recalibration. It uses an event-driven timer
+// that waits for the next due prediction rather than polling on a ticker.
 type ReflectionWorker struct {
 	calibration *CalibrationService
 	store       repository.MarketDataStore
@@ -45,17 +46,29 @@ func NewReflectionWorker(cal *CalibrationService, store repository.MarketDataSto
 
 func (w *ReflectionWorker) Start(ctx context.Context) {
 	go func() {
-		// Run once at startup, then periodically.
+		// Run once at startup.
 		w.run(ctx)
-		ticker := time.NewTicker(reflectionInterval)
-		defer ticker.Stop()
 		for {
+			// Compute wait duration until next due prediction.
+			next, err := w.calibration.repo.GetEarliestUnvalidatedAge(ctx, reflectionMinAge)
+			var wait time.Duration
+			if err != nil || next.IsZero() {
+				wait = reflectionIdle
+			} else {
+				wait = time.Until(next)
+				if wait < 0 {
+					wait = 0
+				}
+			}
+			timer := time.NewTimer(wait)
 			select {
 			case <-w.stopCh:
+				timer.Stop()
 				return
 			case <-ctx.Done():
+				timer.Stop()
 				return
-			case <-ticker.C:
+			case <-timer.C:
 				w.run(ctx)
 			}
 		}

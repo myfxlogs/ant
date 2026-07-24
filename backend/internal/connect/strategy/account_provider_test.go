@@ -151,7 +151,7 @@ func TestProviderResetPeakEquity(t *testing.T) {
 		}})
 
 	provider := NewMTAccountStateProvider(hub, nil)
-	provider.GetAccountState(context.Background(), "acct-4")
+	_, _ = provider.GetAccountState(context.Background(), "acct-4")
 	provider.ResetPeakEquity("acct-4")
 
 	peak := provider.GetPeakEquity("acct-4")

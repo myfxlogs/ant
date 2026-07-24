@@ -44,7 +44,7 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("CreateAccount: begin tx failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	defer tx.Rollback(context.Background()) // use Background — user ctx may be cancelled
+	defer func() { _ = tx.Rollback(context.Background()) }() // use Background — user ctx may be cancelled
 
 	firstHost := r.BrokerHost
 	if idx := strings.IndexByte(firstHost, ','); idx > 0 {

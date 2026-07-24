@@ -81,6 +81,23 @@ func (r *CalibrationRepository) GetUnvalidatedPredictions(ctx context.Context, m
 	return out, rows.Err()
 }
 
+// GetEarliestUnvalidatedAge returns the time at which the earliest unvalidated
+// prediction becomes eligible for validation (predicted_at + minAge).
+// Returns time.Time{} if no unvalidated predictions exist.
+func (r *CalibrationRepository) GetEarliestUnvalidatedAge(ctx context.Context, minAge time.Duration) (time.Time, error) {
+	var earliest time.Time
+	err := r.db.QueryRow(ctx,
+		`SELECT predicted_at + $1::interval
+		   FROM ai_predictions
+		  WHERE validated_at IS NULL
+		  ORDER BY predicted_at ASC
+		  LIMIT 1`, minAge).Scan(&earliest)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return earliest, nil
+}
+
 // ValidatePrediction marks a prediction as validated with its outcome.
 func (r *CalibrationRepository) ValidatePrediction(ctx context.Context, id uuid.UUID, actualReturn float64, correct bool) error {
 	now := time.Now()

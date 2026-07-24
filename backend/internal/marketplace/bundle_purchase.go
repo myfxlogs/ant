@@ -181,7 +181,7 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 	// Create frozen settlement — purchase_id must be a user_subscriptions.id
 	// for subJoinOnClause and refund logic to work correctly.
 	if !isFree && firstSubID != uuid.Nil {
-		err = s.createFrozenSettlementTx(ctx, tx, firstSubID, uid, publisherID, amountStr, feeStr, pubAmountStr)
+		err = s.createFrozenSettlementTx(ctx, tx, firstSubID, uid, publisherID, amountStr, feeStr, pubAmountStr, DefaultRefundWindowDays)
 		if err != nil {
 			return nil, fmt.Errorf("marketplace: purchase bundle: create settlement: %w", err)
 		}

@@ -50,7 +50,7 @@ func (t *PGTrigger) Run(ctx context.Context, notifier PGNotifier) error {
 	if notifier == nil {
 		return nil
 	}
-	defer notifier.Close()
+	defer func() { _ = notifier.Close() }()
 	t.log.Info("backfiller: PG NOTIFY listener active")
 	for {
 		_, payload, err := notifier.WaitForNotification(ctx)

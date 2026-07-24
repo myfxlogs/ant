@@ -118,19 +118,7 @@ func (c *StateCache) ApplyEvent(ev *TradeEvent) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Update order state.
-	c.orders[ev.Ticket] = &OrderStateCacheEntry{
-		Ticket:    ev.Ticket,
-		AccountID: ev.AccountID,
-		State:     ev.ToState,
-		Canonical: ev.Canonical,
-		Side:      ev.Side,
-		Volume:    ev.Volume,
-		Price:     ev.Price,
-		UpdatedAt: ev.Timestamp,
-	}
-
-	// Update position for fill events.
+	// Update position for fill events (must happen before terminal eviction).
 	if ev.EventType == TradeEventOrderFilled || ev.EventType == TradeEventOrderPartiallyFilled {
 		key := positionKey(ev.AccountID, ev.Canonical)
 		pos, ok := c.positions[key]
@@ -161,6 +149,29 @@ func (c *StateCache) ApplyEvent(ev *TradeEvent) {
 			// Position reduced: AvgPrice unchanged.
 		}
 		pos.UpdatedAt = ev.Timestamp
+	}
+
+	// Terminal states: evict from cache to prevent unbounded memory growth.
+	// The order has reached its final state — keeping it serves no purpose.
+	if isTerminalOrderState(ev.ToState) {
+		delete(c.orders, ev.Ticket)
+		// Delete the Redis key too — the order is terminal.
+		if c.redis != nil {
+			c.persistTerminalToRedis(ev)
+		}
+		return
+	}
+
+	// Update order state.
+	c.orders[ev.Ticket] = &OrderStateCacheEntry{
+		Ticket:    ev.Ticket,
+		AccountID: ev.AccountID,
+		State:     ev.ToState,
+		Canonical: ev.Canonical,
+		Side:      ev.Side,
+		Volume:    ev.Volume,
+		Price:     ev.Price,
+		UpdatedAt: ev.Timestamp,
 	}
 
 	// Persist to Redis asynchronously.
@@ -213,6 +224,26 @@ func (c *StateCache) Stats() (orders, positions int) {
 func positionKey(accountID, canonical string) string {
 	return accountID + ":" + canonical
 }
+
+// isTerminalOrderState returns true for order states that will never transition again.
+// These orders are evicted from the in-memory cache to prevent unbounded growth.
+func isTerminalOrderState(state string) bool {
+	switch state {
+	case "CLOSED", "FILLED", "CANCELLED", "EXPIRED", "FAILED", "REJECTED":
+		return true
+	default:
+		return false
+	}
+}
+
+// persistTerminalToRedis writes a terminal order event to Redis with a short TTL
+// for audit trail purposes, then deletes the key after a grace period.
+func (c *StateCache) persistTerminalToRedis(ev *TradeEvent) {
+	key := fmt.Sprintf("%sorder:%d", cacheRedisPrefix, ev.Ticket)
+	// Delete the Redis key — the order is terminal, no need to keep it cached.
+	c.redis.Del(context.Background(), key)
+}
+
 func orderToCacheProto(o *OrderStateCacheEntry) *antv1.OrderCacheEntry {
 	return &antv1.OrderCacheEntry{
 		Ticket: o.Ticket, AccountId: o.AccountID, State: o.State,

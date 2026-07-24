@@ -6,8 +6,8 @@
 
 **Why**：进程重启后内存中未完成的 bar 丢失，导致重启时刻前后 K 线数据有缺口。
 
-- [ ] **R1a** 启动时从 PG 读最近 N 根已持久化的 bar，恢复内存聚合状态
-- [ ] **R1b** 如 PG 中的 bar 不完整（重启时正在进行中的那根 bar），从 tick 重建该 bar
+- [x] **R1a** 启动时从 PG 读最近 N 根已持久化的 bar，恢复内存聚合状态 — `MarketDataStore.GetLatestBars` + `BarAggregator.RestoreOpenBars` + `runner.go` 启动调用
+- [ ] **R1b** 如 PG 中的 bar 不完整（重启时正在进行中的那根 bar），从 tick 重建该 bar — R1a 已用 finalized bar close 作为 baseline，后续 tick 持续更新；PG 中 tick 已持久化不丢失
 - [ ] **验收**：进程重启 → 检查重启时刻前后 bar 数据连续无缺口
 
 ## 模块 R2 · tick 去重窗口验证

@@ -166,6 +166,9 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	if existing.UserID != nil && existing.UserID.String() != uid.String() && !existing.IsSystem {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("not the template owner"))
+	}
 	if v := req.Msg.Name; v != nil {
 		existing.Name = *v
 	}

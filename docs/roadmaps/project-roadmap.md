@@ -36,13 +36,14 @@
 ### M11：MQL→VM 单一执行管线
 
 - ✅ 清除旧解释器执行路径
-- ✅ 清除 Go 代码生成路径
+- ✅ 清除 Go 代码生成路径（gen.go 仅保留 CLI 调试用）
 - ✅ VM 内置函数完善（328 + 24 MQL5 指标）
+- ✅ 新增 compile_py.go：Python 子集 → IR → Bytecode VM（Agent 生成路径）
 - ✅ 前端修复
 
 ### M12：Agent-Native 策略平台
 
-- ✅ AI 策略生成 Agent（双编译前端：Python Agent 层 + Go VM 执行层）
+- ✅ AI 策略生成 Agent（Go 进程内 Agent + 双编译前端：MQL/Python 子集 → Bytecode VM）
 - ✅ Agent 循环（观察 → 思考 → 行动 → 迭代）
 - ✅ 多语言 Agent 提示词（en, zh-cn, zh-tw, ja, vi）
 - ✅ Plan Mode 交互（先出方案 → 用户确认 → 生成代码）
@@ -105,7 +106,7 @@
 
 | 任务 | 优先级 | 说明 |
 |------|--------|------|
-| Python 策略 SDK 完善 | 高 | ✅ 完成 |
+| Python 子集策略语言完善 | 高 | ✅ 完成 — compile_py.go 将 Python subset 编译为 Bytecode VM 执行，非独立 Python 运行时 |
 | 策略回测增强 | 中 | ✅ 完成 |
 | 多品种策略支持 | 中 | ✅ 完成 |
 | 策略版本管理 | 低 | ✅ 完成 |

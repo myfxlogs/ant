@@ -71,6 +71,15 @@ func (s *MultiMarketDataStore) MaxCloseTs(ctx context.Context, broker, canonical
 	return ts, err
 }
 
+func (s *MultiMarketDataStore) GetLatestBars(ctx context.Context, since time.Time) ([]KlineBar, error) {
+	bars, err := s.analytical().GetLatestBars(ctx, since)
+	if err != nil && s.ch != nil {
+		s.log.Warn("multi: CH GetLatestBars failed, falling back to PG", zap.Error(err))
+		return s.pg.GetLatestBars(ctx, since)
+	}
+	return bars, err
+}
+
 // ── Light reads (always PG — no analytical benefit from CH) ──────────────────
 
 func (s *MultiMarketDataStore) FetchActualReturn(ctx context.Context, symbol string, predictedAt time.Time) (float64, error) {

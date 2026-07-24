@@ -175,7 +175,7 @@ func (e *HookEngine) execWebhook(ctx context.Context, cfg HookConfig, hc *HookCo
 		e.log.Warn("hook: webhook call failed", zap.Error(err))
 		return HookResult{}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		e.log.Warn("hook: webhook returned error status", zap.Int("status", resp.StatusCode))

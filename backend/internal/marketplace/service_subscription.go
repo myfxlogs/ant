@@ -147,7 +147,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 	rows, qErr := s.pg.Query(ctx, `
 		SELECT us.id, us.subscriber_user_id::text, us.target_user_id::text,
 		       us.target_strategy_id::text, ms.price_amount::text, ms.title,
-		       ms.platform_fee_rate::text
+		       ms.platform_fee_rate::text, COALESCE(ms.refund_window_days, 7)
 		FROM user_subscriptions us
 		JOIN marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id
 		WHERE us.kind = $1 AND us.active = true
@@ -161,11 +161,12 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 	type renewalItem struct {
 		subID, userID, publisherID, strategyID, title string
 		priceAmount, platformFeeRate                  string
+		refundWindowDays                             int
 	}
 	var renewals []renewalItem
 	for rows.Next() {
 		var r renewalItem
-		if err := rows.Scan(&r.subID, &r.userID, &r.publisherID, &r.strategyID, &r.priceAmount, &r.title, &r.platformFeeRate); err != nil {
+		if err := rows.Scan(&r.subID, &r.userID, &r.publisherID, &r.strategyID, &r.priceAmount, &r.title, &r.platformFeeRate, &r.refundWindowDays); err != nil {
 			continue
 		}
 		renewals = append(renewals, r)
@@ -255,7 +256,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			failed++
 			continue
 		}
-		if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr); err != nil {
+		if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr, p.refundWindowDays); err != nil {
 			s.log.Warn("renewal: create settlement failed", zap.String("subID", p.subID), zap.Error(err))
 			_ = tx.Rollback(ctx)
 			failed++

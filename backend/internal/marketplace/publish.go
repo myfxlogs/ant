@@ -214,16 +214,20 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	// H1: ON CONFLICT — if a published row already exists for this strategy_id,
 	// do nothing and return the existing publish ID.
 	var existingPublishID string
+	refundWindowDays := params.RefundWindowDays
+	if refundWindowDays <= 0 {
+		refundWindowDays = DefaultRefundWindowDays
+	}
 	err = tx.QueryRow(ctx, `
-		INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, disclaimer, trial_days, status, created_at, updated_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7::numeric,$8,$9,$10,$11,$12,$13,$14,$15::numeric,$16,$17,'published',now(),now())
+		INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, code_snippet, backtest_snapshot, platform_fee_rate, disclaimer, trial_days, refund_window_days, status, created_at, updated_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7::numeric,$8,$9,$10,$11,$12,$13,$14,$15::numeric,$16,$17,$18,'published',now(),now())
 		ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 		RETURNING id`,
 		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
 		params.Symbols, params.Timeframe, params.RiskLevel, params.Tags,
 		params.CodeSnippet, params.BacktestSnapshotProto, params.PlatformFeeRate, params.Disclaimer,
-		params.TrialDays,
+		params.TrialDays, refundWindowDays,
 	).Scan(&existingPublishID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

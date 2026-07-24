@@ -141,7 +141,7 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 			}
 			cfg.ShadowVerifier.RecordLiveSignal(barTime, sig.GetSignalType(), sig.GetVolume(), sig.GetPrice())
 		}
-		s.dispatchLiveSignal(ctx, cfg, bar, sig)
+		s.dispatchLiveSignal(ctx, cfg, bar, sig, activeSess)
 	}
 }
 

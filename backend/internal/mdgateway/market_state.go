@@ -6,6 +6,8 @@
 package mdgateway
 
 import (
+	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -75,6 +77,7 @@ type MarketStateTracker struct {
 	cfg    MarketStateConfig
 	mu     sync.RWMutex
 	states map[string]*MarketState // key: "broker:canonical"
+	conds  map[string]*sync.Cond   // key: "broker:canonical" — signaled on tradability change
 }
 
 // NewMarketStateTracker creates a new tracker.
@@ -82,15 +85,16 @@ func NewMarketStateTracker(cfg MarketStateConfig) *MarketStateTracker {
 	return &MarketStateTracker{
 		cfg:    cfg,
 		states: make(map[string]*MarketState),
+		conds:  make(map[string]*sync.Cond),
 	}
 }
 
 // Update applies a tick to the market state for its symbol.
+// Signals any waiters blocked on WaitTradeable if tradability changed.
 func (t *MarketStateTracker) Update(tick *mdtick.Tick) *MarketState {
 	key := tick.Broker + ":" + tick.Canonical
 
 	t.mu.Lock()
-	defer t.mu.Unlock()
 
 	ms, ok := t.states[key]
 	if !ok {
@@ -99,7 +103,10 @@ func (t *MarketStateTracker) Update(tick *mdtick.Tick) *MarketState {
 			Broker: tick.Broker,
 		}
 		t.states[key] = ms
+		t.conds[key] = sync.NewCond(&sync.Mutex{})
 	}
+
+	prevTradeable := ms.IsTradeable
 
 	ms.LastQuote = Clk.Now()
 	ms.QuoteAgeMs = 0
@@ -113,6 +120,17 @@ func (t *MarketStateTracker) Update(tick *mdtick.Tick) *MarketState {
 
 	// Evaluate tradability.
 	ms.IsTradeable = t.evaluateTradeable(ms)
+
+	t.mu.Unlock()
+
+	// Signal waiters if tradability flipped from false to true.
+	if !prevTradeable && ms.IsTradeable {
+		if cond, ok := t.conds[key]; ok {
+			cond.L.Lock()
+			cond.Broadcast()
+			cond.L.Unlock()
+		}
+	}
 
 	return ms
 }
@@ -137,12 +155,62 @@ func (t *MarketStateTracker) All() []*MarketState {
 }
 
 // RefreshAges updates QuoteAgeMs for all tracked symbols and re-evaluates tradability.
+// Signals any waiters if tradability flips to true.
 func (t *MarketStateTracker) RefreshAges(now time.Time) {
 	t.mu.Lock()
-	defer t.mu.Unlock()
 	for _, ms := range t.states {
+		prev := ms.IsTradeable
 		ms.QuoteAgeMs = now.Sub(ms.LastQuote).Milliseconds()
 		ms.IsTradeable = t.evaluateTradeable(ms)
+		if !prev && ms.IsTradeable {
+			key := ms.Broker + ":" + ms.Symbol
+			if cond, ok := t.conds[key]; ok {
+				cond.L.Lock()
+				cond.Broadcast()
+				cond.L.Unlock()
+			}
+		}
+	}
+	t.mu.Unlock()
+}
+
+// WaitTradeable blocks until the symbol (broker:canonical) becomes tradeable or ctx is cancelled.
+// Uses a condition variable signaled by Update/RefreshAges — no polling.
+func (t *MarketStateTracker) WaitTradeable(ctx context.Context, broker, canonical string) error {
+	key := broker + ":" + canonical
+
+	t.mu.RLock()
+	cond, ok := t.conds[key]
+	ms := t.states[key]
+	t.mu.RUnlock()
+
+	if !ok || ms == nil {
+		return fmt.Errorf("market state not tracked: %s", key)
+	}
+
+	// Fast path: already tradeable.
+	if ms.IsTradeable {
+		return nil
+	}
+
+	// Wait on condition variable, with context cancellation via goroutine.
+	done := make(chan struct{})
+	go func() {
+		cond.L.Lock()
+		cond.Wait()
+		cond.L.Unlock()
+		close(done)
+	}()
+
+	select {
+	case <-ctx.Done():
+		// Wake the goroutine so it doesn't leak.
+		cond.L.Lock()
+		cond.Broadcast()
+		cond.L.Unlock()
+		return ctx.Err()
+	case <-done:
+		return nil
 	}
 }
 

@@ -18,14 +18,14 @@ func TestStateCache_GetSetOrder(t *testing.T) {
 	c := NewStateCache(nil, testLogger())
 
 	ev := &TradeEvent{
-		EventType: TradeEventOrderFilled,
+		EventType: TradeEventOrderWorking,
 		AccountID: "acc-1",
 		Ticket:    100,
 		Canonical: "EURUSD",
 		Side:      "BUY",
 		Volume:    decimal.NewFromFloat(0.1),
 		Price:     decimal.NewFromFloat(1.0850),
-		ToState:   "FILLED",
+		ToState:   "WORKING",
 		Timestamp: time.Now(),
 	}
 	c.ApplyEvent(ev)
@@ -34,8 +34,8 @@ func TestStateCache_GetSetOrder(t *testing.T) {
 	if order == nil {
 		t.Fatal("order should exist")
 	}
-	if order.State != "FILLED" {
-		t.Fatalf("want FILLED, got %s", order.State)
+	if order.State != "WORKING" {
+		t.Fatalf("want WORKING, got %s", order.State)
 	}
 	if order.Canonical != "EURUSD" {
 		t.Fatalf("want EURUSD, got %s", order.Canonical)
@@ -46,9 +46,9 @@ func TestStateCache_GetOrdersByAccount(t *testing.T) {
 	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", ToState: "FILLED", Timestamp: time.Now()})
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", ToState: "FILLED", Timestamp: time.Now()})
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-2", Ticket: 3, Canonical: "USDJPY", ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderWorking, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", ToState: "WORKING", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderWorking, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", ToState: "WORKING", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderWorking, AccountID: "acc-2", Ticket: 3, Canonical: "USDJPY", ToState: "WORKING", Timestamp: time.Now()})
 
 	orders := c.GetOrdersByAccount("acc-1")
 	if len(orders) != 2 {
@@ -113,15 +113,15 @@ func TestStateCache_Stats(t *testing.T) {
 	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.1), ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderWorking, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.1), ToState: "WORKING", Timestamp: time.Now()})
 	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", Side: "SELL", Volume: decimal.NewFromFloat(0.2), ToState: "FILLED", Timestamp: time.Now()})
 
 	orders, positions := c.Stats()
-	if orders != 2 {
-		t.Fatalf("want 2 orders, got %d", orders)
+	if orders != 1 {
+		t.Fatalf("want 1 order (FILLED evicted), got %d", orders)
 	}
-	if positions != 2 {
-		t.Fatalf("want 2 positions, got %d", positions)
+	if positions != 1 {
+		t.Fatalf("want 1 position, got %d", positions)
 	}
 }
 
@@ -139,6 +139,23 @@ func TestStateCache_PositionKey(t *testing.T) {
 	key := positionKey("acc-1", "EURUSD")
 	if key != "acc-1:EURUSD" {
 		t.Fatalf("unexpected position key: %s", key)
+	}
+}
+
+func TestStateCache_TerminalOrderEvicted(t *testing.T) {
+	t.Parallel()
+	c := NewStateCache(nil, testLogger())
+
+	// Non-terminal: order stays in cache.
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderWorking, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", ToState: "WORKING", Timestamp: time.Now()})
+	if c.GetOrder(1) == nil {
+		t.Fatal("WORKING order should be in cache")
+	}
+
+	// Terminal: order evicted from cache.
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderCancelled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", ToState: "CANCELLED", Timestamp: time.Now()})
+	if c.GetOrder(1) != nil {
+		t.Fatal("CANCELLED order should be evicted from cache")
 	}
 }
 

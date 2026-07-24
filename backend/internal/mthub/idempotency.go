@@ -40,7 +40,7 @@ func NewThreeLayerGuard(pg *pgxpool.Pool, redis *goredis.Client) *ThreeLayerGuar
 // This is Layer 3: broker-side dedup using a deterministic hash.
 func BrokerMagic(clientID string) int32 {
 	h := fnv.New64a()
-	h.Write([]byte(clientID))
+	_, _ = h.Write([]byte(clientID)) // hash.Write never returns error per Go spec
 	// NOTE: FNV64a truncated to 32 bits. Expected 50% collision probability
 	// after ~77K unique clientIDs. Acceptable for a defensive third layer
 	// (broker-side dedup) but not suitable as the primary idempotency mechanism.
@@ -95,9 +95,9 @@ func (g *ThreeLayerGuard) Confirm(ctx context.Context, accountID, clientID strin
 // suitable for pg_try_advisory_lock(int4, int4).
 func advisoryLockKey(accountID, clientID string) (int32, int32) {
 	h := fnv.New64a()
-	h.Write([]byte(accountID))
-	h.Write([]byte{0})
-	h.Write([]byte(clientID))
+	_, _ = h.Write([]byte(accountID))   // hash.Write never returns error per Go spec
+	_, _ = h.Write([]byte{0})
+	_, _ = h.Write([]byte(clientID))
 	v := h.Sum64()
 	return int32(v >> 32), int32(v & 0xFFFFFFFF)
 }

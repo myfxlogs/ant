@@ -68,7 +68,7 @@ func TestCancelTemplateDraft_NilSvc(t *testing.T) {
 			t.Fatal("expected panic when svc is nil")
 		}
 	}()
-	srv.CancelTemplateDraft(t.Context(), req)
+	_, _ = srv.CancelTemplateDraft(t.Context(), req)
 }
 
 func TestStrategyServer_UserID_EmptyContext(t *testing.T) {

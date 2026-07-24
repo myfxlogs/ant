@@ -37,7 +37,7 @@ func TestTronGridClient_GetBlockEvents(t *testing.T) {
 			"success": true,
 			"meta":    map[string]any{},
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -81,7 +81,7 @@ func TestTronGridClient_GetBlockEvents_Pagination(t *testing.T) {
 				"meta":    map[string]any{"fingerprint": "fp123"},
 				"success": true,
 			}
-			json.NewEncoder(w).Encode(resp)
+			_ = json.NewEncoder(w).Encode(resp)
 		} else {
 			if q.Get("fingerprint") != "fp123" {
 				t.Errorf("expected fingerprint=fp123, got %s", q.Get("fingerprint"))
@@ -99,7 +99,7 @@ func TestTronGridClient_GetBlockEvents_Pagination(t *testing.T) {
 				"meta":    map[string]any{},
 				"success": true,
 			}
-			json.NewEncoder(w).Encode(resp)
+			_ = json.NewEncoder(w).Encode(resp)
 		}
 	}))
 	defer srv.Close()
@@ -133,7 +133,7 @@ func TestTronGridClient_GetLatestBlock(t *testing.T) {
 				},
 			},
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -167,7 +167,7 @@ func TestTronScanClient_VerifyTransaction(t *testing.T) {
 			},
 			"revert": false,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -219,7 +219,7 @@ func TestTronScanClient_VerifyTransaction_NonContract(t *testing.T) {
 			},
 			"revert": false,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -271,7 +271,7 @@ func TestTronGridClient_GetTRC20Balance(t *testing.T) {
 			},
 			"success": true,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -299,7 +299,7 @@ func TestTronGridClient_GetTRC20Balance_NoUSDT(t *testing.T) {
 			},
 			"success": true,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -321,7 +321,7 @@ func TestTronGridClient_GetTRC20Balance_EmptyAccount(t *testing.T) {
 			"data":    []map[string]any{},
 			"success": true,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 
@@ -343,7 +343,7 @@ func TestTronGridClient_GetTRC20Balance_APIFailure(t *testing.T) {
 			"data":    []map[string]any{},
 			"success": false,
 		}
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	}))
 	defer srv.Close()
 

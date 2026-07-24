@@ -43,12 +43,6 @@ func intentBuy(vol string) *antv1.OrderIntent {
 	}
 }
 
-func intentSell(vol string) *antv1.OrderIntent {
-	i := intentBuy(vol)
-	i.Side = "sell"
-	return i
-}
-
 func intentSim(vol string) *antv1.OrderIntent {
 	i := intentBuy(vol)
 	i.Source = antv1.OrderIntentSource_ORDER_INTENT_SOURCE_SIM

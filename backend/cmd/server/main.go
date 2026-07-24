@@ -58,7 +58,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	// ── Sentry: error tracking for production observability ──
 	sentryCleanup := alphasentry.Init(log)
@@ -133,7 +133,7 @@ func main() {
 		if chErr != nil {
 			log.Warn("ClickHouse unavailable — running PG-only", zap.Error(chErr))
 		} else {
-			defer chConn.Close()
+			defer func() { _ = chConn.Close() }()
 			chStore = repository.NewCHMarketDataStore(chConn, log)
 			log.Info("ClickHouse read replica enabled for analytical queries")
 		}
@@ -166,13 +166,13 @@ func main() {
 		ReadTimeout:  3 * time.Second,
 	}
 	if p := cfg.RedisPort; p != "" {
-		fmt.Sscanf(p, "%d", &redisCfg.Port)
+		_, _ = fmt.Sscanf(p, "%d", &redisCfg.Port)
 	}
 	rdb, err := antredis.Connect(context.Background(), redisCfg)
 	if err != nil {
 		log.Fatal("redis connect failed", zap.Error(err))
 	}
-	defer rdb.Close()
+	defer func() { _ = rdb.Close() }()
 
 	// --- Secrets client (decrypts account passwords and mtapi tokens) ---
 	var secClient secrets.Client
@@ -270,7 +270,7 @@ func main() {
 
 	livePerfCollector := marketplace.NewLivePerformanceCollector(mktplaceSvc, log)
 	mktplaceSvc.SetLivePerfCollector(livePerfCollector)
-	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher, livePerfCollector)
+	go func() { _ = startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher, livePerfCollector) }()
 
 	// Graceful shutdown context — created before registerHandlers so background
 	// goroutines spawned there can observe shutdown.
@@ -300,21 +300,21 @@ func main() {
 	accountSyncSvc.SetNotificationSender(notifSender)
 	mktplaceSvc.SetNotificationSender(notifSender)
 
-	go scheduleEngine.Start(ctx)
+	go func() { _ = scheduleEngine.Start(ctx) }()
 	defer workerCleanup()
 
 	// Start reconciliation loop (cancelled on shutdown)
 	go reconLoop.Start(ctx)
 
 	// Start chain monitor for USDT deposit detection (cancelled on shutdown).
-	go chainMonitor.Run(ctx)
+	go func() { _ = chainMonitor.Run(ctx) }()
 
 	// Start deposit reconciler (cancelled on shutdown).
-	go reconcilerInst.Run(ctx)
+	go func() { _ = reconcilerInst.Run(ctx) }()
 
 	// Start sweep worker for fund consolidation (cancelled on shutdown).
 	if sweepWorker != nil {
-		go sweepWorker.Run(ctx)
+		go func() { _ = sweepWorker.Run(ctx) }()
 	}
 
 	// Daily data retention cleanup — prevents unbounded disk growth.
@@ -325,7 +325,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				cleanCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-				accountSvc.CleanupOldSnapshots(cleanCtx, log)
+				_ = accountSvc.CleanupOldSnapshots(cleanCtx, log)
 				cancel()
 			case <-ctx.Done():
 				return
@@ -375,7 +375,7 @@ func connectClickHouse(cfg *config.Config, log *zap.Logger) (clickhouse.Conn, er
 		return nil, fmt.Errorf("clickhouse open: %w", err)
 	}
 	if err := ch.Ping(context.Background()); err != nil {
-		ch.Close()
+		_ = ch.Close()
 		return nil, fmt.Errorf("clickhouse ping: %w", err)
 	}
 	return ch, nil

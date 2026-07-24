@@ -109,7 +109,7 @@ func fetchModelsPage(ctx context.Context, baseURL, secret, after string) ([]stri
 		}
 		return nil, "", false, fmt.Errorf("upstream unreachable: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if msg := classifyHTTPError(resp); msg != "" {
 		return nil, "", false, errors.New(msg)
@@ -202,7 +202,7 @@ func fetchZhipuModels(ctx context.Context, baseURL, secret string) ([]string, er
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if msg := classifyHTTPError(resp); msg != "" {
 		return nil, fmt.Errorf("zhipu models: %s", msg)
 	}

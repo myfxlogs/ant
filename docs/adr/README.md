@@ -28,7 +28,7 @@
 | 0021 | 策略运行时从 Python 迁移到 Go | Partially superseded by 0023 |
 | 0022 | MQL 盲区架构 — 静态分析 + 运行时追踪 + 致命阻断 | Accepted |
 | 0023 | AST 树遍历解释器 + MQL 源码为唯一真实来源 | Accepted |
-| 0024 | Agent-Native 策略平台 — 双前端编译 + Python Agent 层 | Accepted |
+| 0024 | Agent-Native 策略平台 — 双前端编译 + Go 进程内 Agent | Accepted |
 | 0025 | Agent-Native 交互体验与自我进化设计 | Accepted |
 | 0026 | HD 钱包充值系统 — 每用户独立地址 + 自动到账确认 | Proposed |
 

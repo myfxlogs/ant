@@ -93,6 +93,10 @@ type Config struct {
 	// WebAuthn withdrawal authorization (ADR-0026 Phase E)
 	WebAuthnRPID    string
 	WebAuthnRPOrigin string
+
+	// Cookie security: set Secure flag on refresh_token cookies.
+	// Default true for production; set false only for local dev without TLS.
+	CookieSecure bool
 }
 
 // Load reads all configuration from environment variables with defaults.
@@ -159,6 +163,8 @@ func Load() *Config {
 
 		WebAuthnRPID:    getenv("WEBAUTHN_RP_ID", "alfq.org"),
 		WebAuthnRPOrigin: getenv("WEBAUTHN_RP_ORIGIN", "https://alfq.org"),
+
+		CookieSecure: getenvBool("COOKIE_SECURE", true),
 
 		RiskGateEnabled:          getenvBool("ALPHAFORGE_RISK_GATE_ENABLED", true),
 		RiskGateKillSwitch:       getenvBool("ALPHAFORGE_RISK_GATE_KILLSWITCH_DEFAULT", false),

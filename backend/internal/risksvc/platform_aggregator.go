@@ -5,8 +5,8 @@
 //   - TotalMarginUsed: sum of margin across all accounts
 //   - BrokerLimitUsage: margin usage as fraction of broker limit
 //
-// Refresh loop (B-1.4): UpdatePosition / ClearAccount mark dirty=true;
-// a 5s ticker goroutine checks dirty and runs Recalculate, then atomically
+// Refresh loop (B-1.4): UpdatePosition / ClearAccount signal via dirtyCh;
+// the refresh goroutine runs Recalculate on signal, then atomically
 // swaps the snapshot.  This avoids O(N*M) recalculation on every position
 // change.
 
@@ -35,13 +35,13 @@ type PlatformExposure struct {
 // PlatformAggregator computes platform-wide risk from per-account positions.
 type PlatformAggregator struct {
 	mu        sync.RWMutex
-	dirty     bool
 	exposure  *PlatformExposure
 	positions map[string]map[string]*AggregatorPosition // accountID -> canonical -> position
 
 	snapshot unsafe.Pointer // *PlatformExposure — atomically swapped by refresh loop
 
 	brokerLimits map[string]decimal.Decimal
+	dirtyCh      chan struct{} // signaled when positions change
 	stopCh       chan struct{}
 }
 
@@ -64,6 +64,7 @@ func NewPlatformAggregator() *PlatformAggregator {
 		exposure:     initial,
 		positions:    map[string]map[string]*AggregatorPosition{},
 		brokerLimits: map[string]decimal.Decimal{},
+		dirtyCh:      make(chan struct{}, 1),
 		stopCh:       make(chan struct{}),
 	}
 	atomic.StorePointer(&a.snapshot, unsafe.Pointer(initial))
@@ -71,32 +72,32 @@ func NewPlatformAggregator() *PlatformAggregator {
 }
 
 // UpdatePosition sets the position for an account+symbol.
-// Marks dirty; the next refresh tick will recalculate.
+// Signals the refresh goroutine to recalculate.
 func (a *PlatformAggregator) UpdatePosition(accountID string, pos *AggregatorPosition) {
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	if _, ok := a.positions[accountID]; !ok {
 		a.positions[accountID] = map[string]*AggregatorPosition{}
 	}
 	a.positions[accountID][pos.Canonical] = pos
-	a.dirty = true
+	a.mu.Unlock()
+	a.signalDirty()
 }
 
 // ClearAccount removes all positions for an account (disconnect/close).
-// Marks dirty; the next refresh tick will recalculate.
+// Signals the refresh goroutine to recalculate.
 func (a *PlatformAggregator) ClearAccount(accountID string) {
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	delete(a.positions, accountID)
-	a.dirty = true
+	a.mu.Unlock()
+	a.signalDirty()
 }
 
 // SetBrokerLimits replaces the broker limit map used by the refresh loop.
 func (a *PlatformAggregator) SetBrokerLimits(limits map[string]decimal.Decimal) {
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	a.brokerLimits = limits
-	a.dirty = true
+	a.mu.Unlock()
+	a.signalDirty()
 }
 
 // Recalculate rebuilds the platform-wide exposure snapshot.
@@ -132,7 +133,6 @@ func (a *PlatformAggregator) Recalculate() *PlatformExposure {
 
 	a.exposure = exposure
 	atomic.StorePointer(&a.snapshot, unsafe.Pointer(exposure))
-	a.dirty = false
 	return exposure
 }
 
@@ -150,25 +150,30 @@ func (a *PlatformAggregator) NetExposureForSymbol(canonical string) decimal.Deci
 	return snap.NetExposureBySymbol[canonical]
 }
 
-// StartRefreshLoop begins a background goroutine that checks dirty every
-// interval and runs Recalculate when needed.  Call Shutdown to stop.
-func (a *PlatformAggregator) StartRefreshLoop(interval time.Duration) {
+// StartRefreshLoop begins a background goroutine that recalculates when
+// signaled by position changes.  Call Shutdown to stop.
+func (a *PlatformAggregator) StartRefreshLoop() {
 	go func() {
-		ticker := time.NewTicker(interval)
-		defer ticker.Stop()
 		for {
 			select {
-			case <-ticker.C:
+			case <-a.dirtyCh:
 				a.mu.Lock()
-				if a.dirty {
-					a.Recalculate()
-				}
+				a.Recalculate()
 				a.mu.Unlock()
 			case <-a.stopCh:
 				return
 			}
 		}
 	}()
+}
+
+// signalDirty sends a non-blocking signal to the refresh goroutine.
+func (a *PlatformAggregator) signalDirty() {
+	select {
+	case a.dirtyCh <- struct{}{}:
+	default:
+		// Already pending — coalesce multiple signals into one recalculation.
+	}
 }
 
 // Shutdown stops the refresh loop. After Shutdown, callers should not

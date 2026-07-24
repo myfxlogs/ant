@@ -99,7 +99,7 @@ func (s *StrategyExecutionServer) handleBar(
 			activeSess.RecordError(err.Error())
 		}
 		if *session != nil {
-			(*session).Close()
+			_ = (*session).Close()
 		}
 		*session = nil
 		*firstBar = true
@@ -130,7 +130,7 @@ func (s *StrategyExecutionServer) handleTick(
 		if activeSess != nil {
 			activeSess.RecordError(err.Error())
 		}
-		(*session).Close()
+		_ = (*session).Close()
 		*session = nil
 		*firstBar = true
 		return
@@ -160,7 +160,7 @@ func (s *StrategyExecutionServer) handleTrade(
 		if activeSess != nil {
 			activeSess.RecordError(err.Error())
 		}
-		(*session).Close()
+		_ = (*session).Close()
 		*session = nil
 		*firstBar = true
 		return
