@@ -286,6 +286,69 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 
 **[Claude]** 三项均为 2026-07-24 交付前深度审计发现。确认必须修。
 
+---
+
+## I. 经营模型 v.s. 代码实现 — 逐条对照（2026-07-24 深度审计，Claude）
+
+### I1. 🟡 Free 层缺 Live 限制
+
+**现状**：`QuotaChecker` 有 `CheckLiveStrategyLimit()` 且已被 `strategy_active_handlers.go:186` 调用。但 `CheckBacktestDailyLimit()` 存在却**从未被调用**——回测次数不限。此外 `CheckAITokenQuota` 仅在 AI billing 中有调用，未覆盖所有消耗场景。
+
+**DB 检查**：`subscription_plans` 表中 Free plan 的 `max_live_strategies` 需要设为 1（当前值需 Admin 确认）。
+
+**修复**：
+- `strategy_backtest_crud.go` 或 `strategy_execution_handler.go` 中，回测提交前调用 `quotaChecker.CheckBacktestDailyLimit()`
+- Admin 检查/设置 Free plan: `max_strategies=3, max_backtests_daily=5, max_live_strategies=1`
+
+### I2. 🟡 试用期硬编码 7 天，非发布者设定
+
+**现状**：`marketplace/trial.go:13` — `StartTrial creates a 7-day free trial`。试用期长度硬编码在代码中，不是发布者在 PublishToMarketModal 中设定的。
+
+**修复选项**：
+- A：`marketplace_strategies` 表加 `trial_days INT DEFAULT 7`；`PublishToMarketModal` 加试用期字段；`StartTrial` 读该字段
+- B：保持 7 天硬编码，简化 MVP——发布者不需要设定
+
+**决策**：☐ A（发布者设定） / ☐ B（保持硬编码 7 天，MVP 简化）
+
+### I3. 🔴 退款未检查实盘运行状态
+
+**现状**：`marketplace/refund.go:57` — `refundPurchaseTx` 检查订阅是否 active + 属于该用户，但**不检查是否有活跃的 strategy_schedules**。已部署到实盘运行的策略仍可退款——经营者明确要求"有实盘就不能退款"。
+
+**修复**：`refundPurchaseTx` 中加查询：
+```sql
+SELECT EXISTS(SELECT 1 FROM strategy_schedules
+  WHERE template_id = (SELECT target_strategy_id FROM user_subscriptions WHERE id = $1)
+  AND status = 'ACTIVE')
+```
+若存在 → 拒绝退款，返回 "strategy has active live schedules"。
+
+### I4. 🟡 平台费率默认 0
+
+**现状**：`system_config` 中 `marketplace.platform_fee_rate` 默认值为 `'0'`，DB column `platform_fee_rate NUMERIC(5,4) DEFAULT 0`。平台当前不收佣金——符合"初期免费"策略。
+
+**需要确认**：Admin 在决定开始收费时，将 `marketplace.platform_fee_rate` 设为目标值（如 `0.15` = 15%）。
+
+### I5. ✅ 已对齐项（无需改动）
+
+| 经营要求 | 代码实现 | 判定 |
+|---------|---------|------|
+| 代码不出平台 | `CanAccessCode`，后端剥代码，Fork 拦截 | ✅ |
+| 订阅制（非买断） | Subscribe / PurchaseStrategy → user_subscriptions | ✅ |
+| 订阅过期 + 自动续费 | RenewSubscriptions | ✅ |
+| 退款流程 | RefundPurchase + CreateRefundRequest | ✅ |
+| 平台不自营 | 12 system 模板不发布到市场 | ✅ |
+| 免费策略不能付费拿 | Subscribe guard: paid → 必须 Purchase | ✅ |
+| 不能自订阅 | Subscribe guard: userID != publisher | ✅ |
+| Free tier 策略/回测/Live 限制 | QuotaChecker 存在 + 部分已接线 | 🟡 回测限制未接线 |
+| 多账户部署 | DeployScheduleModal 可多选 | ✅ |
+
+### 表决
+
+**[Claude]** I1-I4 均为 2026-07-24 经营模型对照审计发现。I1（回测限制）+ I3（退款检查实盘）必须修；I2（试用期）待决策；I4（费率）无需代码改动。
+
+**[GLM]** ☐ 待确认
+**[Opus]** ☐ 待确认
+
 **[GLM]** ☐ 待确认
 
 **[Opus]** ☐ 待确认
