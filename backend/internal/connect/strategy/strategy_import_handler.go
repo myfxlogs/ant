@@ -71,32 +71,10 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 	}), nil
 }
 
-func (s *StrategyExecutionServer) GenerateImportCode(ctx context.Context, req *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
-	source := req.Msg.GetSourceCode()
-	if source == "" {
-		return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
-	}
-
-	// IR path: coverage/blind-spot report
-	ir, err := mql2go.CompileToIR(source)
-	if err != nil {
-		s.log.Warn("GenerateImportCode: compile to IR failed", zap.Error(err))
-		return connect.NewResponse(&antv1.GenerateImportCodeResponse{Compiles: false}), nil
-	}
-	rep := interp.Analyze(ir)
-
-	lines := int32(strings.Count(source, "\n") + 1)
-
-	resp := &antv1.GenerateImportCodeResponse{
-		GoCode:    source, // ADR-0023: MQL is the single source of truth
-		CodeLines: lines,
-		Compiles:  true,
-	}
-	for _, bs := range rep.BlindSpots {
-		resp.QualityGateFailures = append(resp.QualityGateFailures,
-			bs.Severity+": "+bs.Builtin+" not supported by interpreter")
-	}
-	return connect.NewResponse(resp), nil
+// GenerateImportCode is superseded by ADR-0023 (Bytecode VM execution).
+// MQL source is the single source of truth — no Go code generation needed.
+func (s *StrategyExecutionServer) GenerateImportCode(_ context.Context, _ *connect.Request[antv1.GenerateImportCodeRequest]) (*connect.Response[antv1.GenerateImportCodeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("GenerateImportCode is superseded by ADR-0023 Bytecode VM — use ImportStrategy instead"))
 }
 
 func (s *StrategyExecutionServer) ImportStrategy(ctx context.Context, req *connect.Request[antv1.ImportStrategyRequest]) (*connect.Response[antv1.ImportStrategyResponse], error) {

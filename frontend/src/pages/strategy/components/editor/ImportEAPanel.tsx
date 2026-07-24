@@ -57,20 +57,6 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       .finally(() => { setEaTranslating(false); });
   };
 
-  const handleAITranslate = () => {
-    if (!eaCode.trim()) return;
-    setEaResult('');
-    setEaTranslating(true);
-    strategyImportApi.generateCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: 'mql4' })
-      .then((res) => {
-        setEaResult(res.goCode || '');
-        if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
-        if (res.goCode) onApplyCode(res.goCode);
-      })
-      .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
-      .finally(() => { setEaTranslating(false); });
-  };
-
   const handleBridgeClick = () => {
     if (!eaCode.trim()) return;
     setShowBridgeParams(true);
@@ -101,9 +87,6 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
         <Button size="small" type="primary" icon={<ThunderboltOutlined />} onClick={handleAnalyze} loading={analyzing} disabled={busy}>
           {t('strategy.importEA.analyze', { defaultValue: '分析策略结构' })}
         </Button>
-        <Button size="small" icon={<RobotOutlined />} onClick={handleAITranslate} loading={eaTranslating} disabled={busy}>
-          {t('strategy.importEA.aiTranslate', { defaultValue: 'AI 翻译' })}
-        </Button>
         <Button size="small" icon={<RobotOutlined />} onClick={handleBridgeClick} disabled={busy}>
           {t('strategy.importEA.bridge', { defaultValue: '盲区桥接' })}
         </Button>
@@ -130,15 +113,15 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
       )}
       {analysis && !eaResult && analysis.coverageScore < 0.4 && (
         <div style={{ padding: '4px 14px', borderBottom: '1px solid var(--color-border)' }}>
-          <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleAITranslate} loading={eaTranslating} disabled={busy}>
-            {t('strategy.importEA.tryAI', { defaultValue: 'AI 翻译' })}
+          <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleBridgeClick} disabled={busy}>
+            {t('strategy.importEA.tryAI', { defaultValue: '盲区桥接' })}
           </Button>
         </div>
       )}
 
       <div style={{ flex: 1, overflow: 'auto', padding: '0 14px' }}>
         {analyzing && <div style={{ textAlign: 'center', padding: 24 }}><Spin tip={t('importAnalysis.analyzing', { defaultValue: 'Analyzing strategy structure...' })} /></div>}
-        {eaTranslating && !analyzing && <div style={{ textAlign: 'center', padding: 24 }}><Spin tip={t('strategy.importEA.translating', { defaultValue: 'AI translating...' })} /></div>}
+        {eaTranslating && !analyzing && <div style={{ textAlign: 'center', padding: 24 }}><Spin tip={t('strategy.importEA.importing', { defaultValue: 'Importing...' })} /></div>}
         {bridging && !analyzing && !eaTranslating && <div style={{ textAlign: 'center', padding: 24 }}><Spin tip={t('strategy.importEA.bridging', { defaultValue: 'AI bridging blind spots...' })} /></div>}
 
         {!busy && analysis && <ImportAnalysisReport analysis={analysis} loading={false} />}
