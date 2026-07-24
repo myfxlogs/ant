@@ -33,7 +33,7 @@ export default function EditScheduleBasicFields({
   const symbolDisabled = isCreate && (!accountIdWatch || symbolsLoading);
   const symbolPlaceholder = symbolDisabled
     ? t(symbolsLoading ? 'strategy.schedules.editModal.placeholders.symbolsLoading' : 'strategy.schedules.editModal.placeholders.selectAccountFirst')
-    : t(SCHEDULE_LAUNCH_FORM_SYMBOL_PLACEHOLDER_KEY, '搜索品种，如 EURUSD');
+    : t(SCHEDULE_LAUNCH_FORM_SYMBOL_PLACEHOLDER_KEY, { defaultValue: 'Search symbol, e.g. EURUSD' });
 
   return (
     <>
@@ -48,48 +48,48 @@ export default function EditScheduleBasicFields({
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY, '交易账户')} name="accountId"
-              rules={[{ required: true, message: t('common.required', '必填') }]}>
+            <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY, { defaultValue: 'Trading Account' })} name="accountId"
+              rules={[{ required: true, message: t('common.required') }]}>
               <Select showSearch optionFilterProp="label" options={accountOptions} />
             </Form.Item>
           </Col>
         </Row>
       )}
 
-      <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_KEY, '调度名称')} name="name"
+      <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_KEY, { defaultValue: 'Schedule Name' })} name="name"
         rules={[{ required: true, message: t(EDIT_MODAL_VALIDATION_NAME_REQUIRED_KEY) }, { max: 100 }]}>
-        <Input placeholder={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_PLACEHOLDER_KEY, '可选，用于在调度列表中区分')} />
+        <Input placeholder={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_PLACEHOLDER_KEY, { defaultValue: 'Optional, used to distinguish in schedule list' })} />
       </Form.Item>
 
       <Row gutter={12}>
         <Col span={12}>
-          <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SYMBOL_KEY, '交易品种')} name="symbol"
-            rules={[{ required: true, message: t('common.required', '必填') }]}>
+          <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SYMBOL_KEY, { defaultValue: 'Symbol' })} name="symbol"
+            rules={[{ required: true, message: t('common.required') }]}>
             <Select showSearch allowClear loading={symbolsLoading} options={symbols}
               optionFilterProp="label" placeholder={symbolPlaceholder} disabled={symbolDisabled} />
           </Form.Item>
         </Col>
         <Col span={12}>
-          <Form.Item label={t(SCHEDULE_LAUNCH_FORM_TIMEFRAME_KEY, '周期')} name="timeframe"
-            rules={[{ required: true, message: t('common.required', '必填') }]}>
+          <Form.Item label={t(SCHEDULE_LAUNCH_FORM_TIMEFRAME_KEY, { defaultValue: 'Timeframe' })} name="timeframe"
+            rules={[{ required: true, message: t('common.required') }]}>
             <Select options={TIMEFRAMES.map((tf) => ({ value: tf, label: tf }))} />
           </Form.Item>
         </Col>
       </Row>
 
-      <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPE_KEY, '调度类型')} name="scheduleType"
+      <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPE_KEY, { defaultValue: 'Schedule Type' })} name="scheduleType"
         rules={[{ required: true }]}>
         <Select options={[
-          { value: 'interval', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_INTERVAL_KEY, '固定间隔') },
-          { value: 'kline_close', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_KLINE_CLOSE_KEY, 'K线收盘触发') },
-          { value: 'hf_quote', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_HF_QUOTE_KEY, '逐笔报价（高频）') },
+          { value: 'interval', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_INTERVAL_KEY, { defaultValue: 'Fixed Interval' }) },
+          { value: 'kline_close', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_KLINE_CLOSE_KEY, { defaultValue: 'Kline Close Trigger' }) },
+          { value: 'hf_quote', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_HF_QUOTE_KEY, { defaultValue: 'Tick-by-tick Quote (HF)' }) },
         ]} />
       </Form.Item>
 
       {scheduleTypeWatch === 'interval' && (
         <Form.Item
-          label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_INTERVAL_MS_TIP_KEY, '策略重新评估的周期，单位 ms。默认 5 分钟 = 300000')}>
-            <span>{t(SCHEDULE_LAUNCH_FORM_INTERVAL_MS_KEY, '间隔（ms）')}</span>
+          label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_INTERVAL_MS_TIP_KEY, { defaultValue: 'Strategy re-evaluation period in ms. Default 5 min = 300000' })}>
+            <span>{t(SCHEDULE_LAUNCH_FORM_INTERVAL_MS_KEY, { defaultValue: 'Interval (ms)' })}</span>
           </Tooltip>}
           name="intervalMs"
           rules={[{ required: true, type: 'number', min: 1000, message: '>= 1000' }]}>
@@ -99,8 +99,8 @@ export default function EditScheduleBasicFields({
 
       {scheduleTypeWatch === 'hf_quote' && (
         <Form.Item
-          label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_HF_COOLDOWN_MS_TIP_KEY, '逐笔报价模式下连续两次 evaluate 的最短间隔，避免算力浪费。')}>
-            <span>{t(SCHEDULE_LAUNCH_FORM_HF_COOLDOWN_MS_KEY, '冷却时间（ms）')}</span>
+          label={<Tooltip title={t(SCHEDULE_LAUNCH_FORM_HF_COOLDOWN_MS_TIP_KEY, { defaultValue: 'Minimum interval between evaluations in tick mode to avoid waste.' })}>
+            <span>{t(SCHEDULE_LAUNCH_FORM_HF_COOLDOWN_MS_KEY, { defaultValue: 'Cooldown (ms)' })}</span>
           </Tooltip>}
           name="hfCooldownMs"
           rules={[{ required: true, type: 'number', min: 100, message: '>= 100' }]}>
@@ -109,7 +109,7 @@ export default function EditScheduleBasicFields({
       )}
 
       {isCreate && (
-        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ENABLE_AFTER_CREATE_KEY, '创建后立即启用')}
+        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ENABLE_AFTER_CREATE_KEY, { defaultValue: 'Enable after creation' })}
           name="isActive" valuePropName="checked">
           <Switch />
         </Form.Item>

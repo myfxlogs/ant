@@ -80,13 +80,13 @@ export default function EditScheduleModal({
     >
       {noAccount && (
         <Alert type="warning" showIcon icon={<ExclamationCircleOutlined />} className="mb-3"
-          message={t(SCHEDULE_LAUNCH_NO_ACCOUNT_TITLE_KEY, '还没有可用的交易账号')}
+          message={t(SCHEDULE_LAUNCH_NO_ACCOUNT_TITLE_KEY, { defaultValue: 'No trading account available' })}
           description={
             <div>
-              {t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY, '请先在"账户管理"中添加并绑定 MT4/MT5 账号，账号联机成功后才能上线调度。')}
+              {t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY, { defaultValue: 'Please add and bind an MT4/MT5 account in Account Management first. Schedules can only be launched after the account is online.' })}
               <div className="mt-2">
                 <Button size="small" type="primary" onClick={() => window.open('/accounts/bind', '_blank')}>
-                  {t(SCHEDULE_LAUNCH_ACTIONS_ADD_ACCOUNT_KEY, '去添加交易账号')}
+                  {t(SCHEDULE_LAUNCH_ACTIONS_ADD_ACCOUNT_KEY, { defaultValue: 'Add Trading Account' })}
                 </Button>
               </div>
             </div>

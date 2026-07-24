@@ -9,14 +9,14 @@ export default function EditScheduleRiskFields() {
   return (
     <>
       <Divider orientation="left" plain>
-        {t(SCHEDULE_LAUNCH_FORM_RISK_SECTION_KEY, '风控参数（可选）')}
+        {t(SCHEDULE_LAUNCH_FORM_RISK_SECTION_KEY, { defaultValue: 'Risk Parameters (Optional)' })}
       </Divider>
       <Row gutter={12}>
         <Col span={8}>
           <Form.Item
             label={
-              <Tooltip title={t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_TIP_KEY, '策略信号里 volume=0 时默认下单量。手数单位。')}>
-                <span>{t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_KEY, '默认手数')}</span>
+              <Tooltip title={t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_TIP_KEY, { defaultValue: 'Default order volume when strategy signal has volume=0. In lots.' })}>
+                <span>{t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_KEY, { defaultValue: 'Default Volume' })}</span>
               </Tooltip>
             }
             name="defaultVolume"
@@ -27,8 +27,8 @@ export default function EditScheduleRiskFields() {
         <Col span={8}>
           <Form.Item
             label={
-              <Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_TIP_KEY, '同一品种上允许同时持有的最多持仓数；达到后本次信号跳过。')}>
-                <span>{t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_KEY, '最大持仓数')}</span>
+              <Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_TIP_KEY, { defaultValue: 'Max simultaneous positions per symbol; signal is skipped when reached.' })}>
+                <span>{t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_KEY, { defaultValue: 'Max Positions' })}</span>
               </Tooltip>
             }
             name="maxPositions"
@@ -39,8 +39,8 @@ export default function EditScheduleRiskFields() {
         <Col span={8}>
           <Form.Item
             label={
-              <Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_DRAWDOWN_PCT_TIP_KEY, '自峰值权益的最大回撤比例，0.2 = 20%；触发后调度自动停用。')}>
-                <span>{t(SCHEDULE_LAUNCH_FORM_MAX_DRAWDOWN_PCT_KEY, '最大回撤比例（0~1）')}</span>
+              <Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_DRAWDOWN_PCT_TIP_KEY, { defaultValue: 'Max drawdown ratio from peak equity, 0.2 = 20%; auto-disables schedule when triggered.' })}>
+                <span>{t(SCHEDULE_LAUNCH_FORM_MAX_DRAWDOWN_PCT_KEY, { defaultValue: 'Max Drawdown (0~1)' })}</span>
               </Tooltip>
             }
             name="maxDrawdownPct"
@@ -52,14 +52,14 @@ export default function EditScheduleRiskFields() {
       </Row>
       <Space style={{ width: '100%' }} size="large">
         <Form.Item
-          label={t(SCHEDULE_LAUNCH_FORM_STOP_LOSS_OFFSET_KEY, '止损距离（价格）')}
+          label={t(SCHEDULE_LAUNCH_FORM_STOP_LOSS_OFFSET_KEY, { defaultValue: 'Stop Loss Offset (price)' })}
           name="stopLossPriceOffset"
           style={{ flex: 1 }}
         >
           <InputNumber style={{ width: '100%' }} min={0} step={0.0001} placeholder="0.0020" />
         </Form.Item>
         <Form.Item
-          label={t(SCHEDULE_LAUNCH_FORM_TAKE_PROFIT_OFFSET_KEY, '止盈距离（价格）')}
+          label={t(SCHEDULE_LAUNCH_FORM_TAKE_PROFIT_OFFSET_KEY, { defaultValue: 'Take Profit Offset (price)' })}
           name="takeProfitPriceOffset"
           style={{ flex: 1 }}
         >
