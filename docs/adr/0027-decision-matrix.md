@@ -300,15 +300,16 @@ ON CONFLICT (strategy_id) WHERE status = 'published' DO NOTHING
 - `strategy_backtest_crud.go` 或 `strategy_execution_handler.go` 中，回测提交前调用 `quotaChecker.CheckBacktestDailyLimit()`
 - Admin 检查/设置 Free plan: `max_strategies=3, max_backtests_daily=5, max_live_strategies=1`
 
-### I2. 🟡 试用期硬编码 7 天，非发布者设定
+### I2. 🟡 试用期由发布者设定（已决策）
 
-**现状**：`marketplace/trial.go:13` — `StartTrial creates a 7-day free trial`。试用期长度硬编码在代码中，不是发布者在 PublishToMarketModal 中设定的。
+**决策**：发布者在发布时决定试用天数。提供 7/14/30 天选项或自定义输入。
 
-**修复选项**：
-- A：`marketplace_strategies` 表加 `trial_days INT DEFAULT 7`；`PublishToMarketModal` 加试用期字段；`StartTrial` 读该字段
-- B：保持 7 天硬编码，简化 MVP——发布者不需要设定
-
-**决策**：☐ A（发布者设定） / ☐ B（保持硬编码 7 天，MVP 简化）
+**实现**：
+1. `marketplace_strategies` 表加 `trial_days INT NOT NULL DEFAULT 7`
+2. proto `PublishStrategyRequest` 加 `int32 trial_days = 10`
+3. `PublishToMarketModal.tsx` 加试用期选择器（Select: 7/14/30 天 或 InputNumber）
+4. `publish.go` INSERT 写入 `trial_days`
+5. `trial.go` `StartTrial` 从 `marketplace_strategies.trial_days` 读值，替代硬编码 7 天
 
 ### I3. 🔴 退款未检查实盘运行状态
 
