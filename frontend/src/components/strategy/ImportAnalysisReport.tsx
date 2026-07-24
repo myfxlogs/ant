@@ -1,9 +1,7 @@
 import React from 'react';
-import { Progress, Tag, Alert, Descriptions, Spin, Typography, Space, Card } from 'antd';
+import { Progress, Tag, Alert, Spin, Typography, Space, Card } from 'antd';
 import {
-  CheckCircleOutlined,
   WarningOutlined,
-  CloseCircleOutlined,
   InfoCircleOutlined,
   ThunderboltOutlined,
   SwapOutlined,
@@ -13,7 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { AnalyzeImportCodeResponse, BlindSpot, ParamField, ParamGroupInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface ParsedAnalysis {
   strategyName: string;
@@ -56,24 +54,6 @@ interface Props {
   loading: boolean;
 }
 
-const severityColor = (s: string): string => {
-  switch (s) {
-    case '致命': return '#ff4d4f';
-    case '警告': return '#faad14';
-    case '信息': return '#1890ff';
-    default: return '#999';
-  }
-};
-
-const severityIcon = (s: string) => {
-  switch (s) {
-    case '致命': return <CloseCircleOutlined style={{ color: '#ff4d4f' }} />;
-    case '警告': return <WarningOutlined style={{ color: '#faad14' }} />;
-    case '信息': return <InfoCircleOutlined style={{ color: '#1890ff' }} />;
-    default: return <InfoCircleOutlined />;
-  }
-};
-
 const executionLabel = (kind: string, t: (k: string, o?: any) => string): string => {
   switch (kind) {
     case 'on_bar': return t('importAnalysis.execution.onBar', { defaultValue: 'Bar close event-driven' });
@@ -106,51 +86,31 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
 
   const a = parseAnalysis(analysis);
   const coverage = Math.round(a.coverageScore * 100);
-  const criticalBlindSpots = a.blindSpots.filter(b => b.severity === '致命');
-  const warningBlindSpots = a.blindSpots.filter(b => b.severity === '警告');
-  const infoBlindSpots = a.blindSpots.filter(b => b.severity === '信息');
-
-  // Triage: backend marks GUI noise as severity=信息, real gaps as 警告/致命.
-  const guiNoiseSpots = a.blindSpots.filter(b => b.severity === '信息');
   const realBlindSpots = a.blindSpots.filter(b => b.severity !== '信息');
-  const isPureGuiNoise = realBlindSpots.length === 0 && guiNoiseSpots.length > 0;
-  const hasRealGaps = realBlindSpots.length > 0;
+  const infoBlindSpots = a.blindSpots.filter(b => b.severity === '信息');
   const isEmpty = a.totalBlocks === 0 && a.recognizedBlocks === 0 && a.coverageScore === 0;
-  const triageLevel = isEmpty ? 'block' : hasRealGaps ? (coverage >= 70 ? 'pass' : coverage >= 40 ? 'warn' : 'block') : 'pass';
+  const isPureGuiNoise = realBlindSpots.length === 0 && infoBlindSpots.length > 0;
+
+  // Single triage verdict
+  const triage = isEmpty
+    ? { type: 'error' as const, title: t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' }),
+        desc: t('importAnalysis.emptyAnalysisDesc', { defaultValue: 'No strategy logic was recognized. The source code may be incomplete or use a different language.' }) }
+    : isPureGuiNoise
+    ? { type: 'success' as const, title: t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' }),
+        desc: t('importAnalysis.guiNoiseDesc', { defaultValue: 'Chart display/button features are skipped during server-side execution. Safe to import.' }) }
+    : realBlindSpots.length > 0 && coverage < 40
+    ? { type: 'error' as const, title: t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' }),
+        desc: t('importAnalysis.cannotImportDesc', { coverage, defaultValue: `Core trading logic only ${coverage}% recognized. Use 盲区桥接 to handle unrecognized functions.` }) }
+    : realBlindSpots.length > 0 && coverage < 70
+    ? { type: 'warning' as const, title: t('importAnalysis.incompleteCoverage', { defaultValue: 'Trading logic coverage incomplete' }),
+        desc: t('importAnalysis.incompleteCoverageDesc', { coverage, defaultValue: `${coverage}% code logic recognized. Unrecognized parts may affect trading behavior. Consider 盲区桥接 or manual review.` }) }
+    : { type: 'success' as const, title: t('importAnalysis.goodCoverage', { defaultValue: 'Import coverage is good' }),
+        desc: t('importAnalysis.goodCoverageDesc', { defaultValue: 'Strategy main logic recognized. Safe to import. Check parameter list before use.' }) };
 
   return (
     <div style={{ padding: '12px 0' }}>
-      {/* ── Triage Verdict ── */}
-      {isEmpty && (
-        <Alert type="error" showIcon icon={<CloseCircleOutlined />}
-          message={t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' })}
-          description={t('importAnalysis.emptyAnalysisDesc', { defaultValue: 'No strategy logic was recognized. The source code may be incomplete, use a different language, or try AI translation.' })}
-          style={{ marginBottom: 12 }} />
-      )}
-      {isPureGuiNoise && (
-        <Alert type="success" showIcon icon={<CheckCircleOutlined />}
-          message={t('importAnalysis.tradeLogicComplete', { defaultValue: 'Trading logic fully recognized' })}
-          description={t('importAnalysis.guiNoiseDesc', { defaultValue: 'The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.' })}
-          style={{ marginBottom: 12 }} />
-      )}
-      {hasRealGaps && triageLevel === 'block' && (
-        <Alert type="error" showIcon icon={<CloseCircleOutlined />}
-          message={t('importAnalysis.cannotImport', { defaultValue: 'Cannot auto-import' })}
-          description={t('importAnalysis.cannotImportDesc', { coverage, defaultValue: `Core trading logic only ${coverage}% recognized. Unrecognized parts include entry/exit/risk logic. Try AI translation or simplify the EA and resubmit.` })}
-          style={{ marginBottom: 12 }} />
-      )}
-      {hasRealGaps && triageLevel === 'warn' && (
-        <Alert type="warning" showIcon icon={<WarningOutlined />}
-          message={t('importAnalysis.incompleteCoverage', { defaultValue: 'Trading logic coverage incomplete' })}
-          description={t('importAnalysis.incompleteCoverageDesc', { coverage, defaultValue: `${coverage}% code logic recognized (excluding GUI display). Unrecognized parts may affect trading behavior. Consider AI translation or manual review.` })}
-          style={{ marginBottom: 12 }} />
-      )}
-      {!hasRealGaps && !isPureGuiNoise && triageLevel === 'pass' && (
-        <Alert type="success" showIcon icon={<CheckCircleOutlined />}
-          message={t('importAnalysis.goodCoverage', { defaultValue: 'Import coverage is good' })}
-          description={t('importAnalysis.goodCoverageDesc', { defaultValue: 'Strategy main logic recognized. Safe to import. Check parameter list before use.' })}
-          style={{ marginBottom: 12 }} />
-      )}
+      <Alert type={triage.type} showIcon style={{ marginBottom: 12 }}
+        message={triage.title} description={triage.desc} />
 
       {/* ── Coverage ── */}
       <Card size="small" style={{ marginBottom: 12 }}>
@@ -213,51 +173,18 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
         </Card>
       )}
 
-      {/* ── Blind Spots (real gaps only, not GUI noise) ── */}
+      {/* ── Blind Spots (real gaps only) ── */}
       {realBlindSpots.length > 0 && (
         <Card
           size="small"
-          title={
-            <Space>
-              <WarningOutlined />
-              <span>{t('importAnalysis.needsConfirmation', { count: realBlindSpots.length, defaultValue: `Logic needs confirmation (${realBlindSpots.length})` })}</span>
-            </Space>
-          }
-          style={{ marginBottom: 12, borderColor: criticalBlindSpots.length > 0 ? '#ff4d4f' : '#faad14' }}
+          title={<span><WarningOutlined /> {t('importAnalysis.needsConfirmation', { count: realBlindSpots.length, defaultValue: `Logic needs confirmation (${realBlindSpots.length})` })}</span>}
+          style={{ marginBottom: 12 }}
         >
-          {criticalBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpot) => (
-            <Alert
-              key={b.id || b.description}
-              type="error"
-              showIcon
-              icon={severityIcon(b.severity)}
-              message={
-                <Space direction="vertical" size={0}>
-                  <Text strong style={{ color: '#ff4d4f' }}>{b.category}</Text>
-                  <Text>{b.description}</Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {t('importAnalysis.location', { defaultValue: 'Location' })}: {b.location} | {t('importAnalysis.handling', { defaultValue: 'Handling' })}: {b.handling}
-                    {b.userActionRequired && ` | ⚠️ ${t('importAnalysis.userActionRequired', { defaultValue: 'Your action required' })}`}
-                  </Text>
-                </Space>
-              }
-              style={{ marginBottom: 8 }}
-            />
-          ))}
-          {warningBlindSpots.filter(b => b.severity !== '信息').map((b: BlindSpot) => (
-            <Alert
-              key={b.id || b.description}
-              type="warning"
-              showIcon
-              icon={severityIcon(b.severity)}
-              message={
-                <Space direction="vertical" size={0}>
-                  <Text>{b.category}</Text>
-                  <Text type="secondary">{b.description}</Text>
-                </Space>
-              }
-              style={{ marginBottom: 8 }}
-            />
+          {realBlindSpots.map((b: BlindSpot) => (
+            <Alert key={b.id || b.description}
+              type={b.severity === '致命' ? 'error' : 'warning'} showIcon
+              message={<span><Text strong>{b.category}</Text> — <Text type="secondary">{b.description}</Text></span>}
+              style={{ marginBottom: 8 }} />
           ))}
         </Card>
       )}
@@ -286,14 +213,10 @@ export const ImportAnalysisReport: React.FC<Props> = ({ analysis, loading }) => 
 
       {/* ── All Clear ── */}
       {a.blindSpots.length === 0 && !isEmpty && (
-        <Alert
-          type="success"
-          showIcon
-          icon={<CheckCircleOutlined />}
+        <Alert type="success" showIcon
           message={t('importAnalysis.noBlindSpots', { defaultValue: 'No logic needs confirmation' })}
           description={t('importAnalysis.noBlindSpotsDesc', { defaultValue: 'All strategy logic auto-recognized. Safe to import.' })}
-          style={{ marginBottom: 12 }}
-        />
+          style={{ marginBottom: 12 }} />
       )}
     </div>
   );

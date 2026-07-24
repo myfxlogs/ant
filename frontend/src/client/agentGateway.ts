@@ -1,43 +1,34 @@
 import { agentGatewayClient } from "./connect";
-import type { SubmitStrategyRequest, AgentBacktestConfig } from "../gen/ant/v1/agent_gateway_pb";
-import { SubmitMode } from "../gen/ant/v1/agent_gateway_pb";
+import { create } from "@bufbuild/protobuf";
+import { SubmitStrategyRequestSchema, AgentBacktestConfigSchema, SubmitMode } from "../gen/ant/v1/agent_gateway_pb";
 
-export interface SubmitStrategyInput {
+export async function submitStrategy(input: {
   sourceCode: string;
   language: string;
-  params?: Record<string, string>;
-  backtestConfig: {
-    symbol: string;
-    timeframe: string;
-    startDateMs: number;
-    endDateMs: number;
-    initialCapital?: string;
-    commission?: string;
-    slippage?: string;
-    leverage?: string;
-    strictMode?: boolean;
-  };
-}
-
-export async function submitStrategy(input: SubmitStrategyInput) {
-  const btCfg = new AgentBacktestConfig({
-    symbol: input.backtestConfig.symbol,
-    timeframe: input.backtestConfig.timeframe,
-    startDateMs: input.backtestConfig.startDateMs,
-    endDateMs: input.backtestConfig.endDateMs,
-    initialCapital: input.backtestConfig.initialCapital || "10000",
-    commission: input.backtestConfig.commission || "0.0003",
-    slippage: input.backtestConfig.slippage || "0.00001",
-    leverage: input.backtestConfig.leverage || "100",
-    strictMode: input.backtestConfig.strictMode ?? true,
+  symbol: string;
+  timeframe: string;
+  startDateMs?: number;
+  endDateMs?: number;
+}) {
+  const now = Date.now();
+  const btCfg = create(AgentBacktestConfigSchema, {
+    symbol: input.symbol,
+    timeframe: input.timeframe,
+    startDateMs: BigInt(input.startDateMs || now - 365 * 24 * 60 * 60 * 1000),
+    endDateMs: BigInt(input.endDateMs || now),
+    initialCapital: "10000",
+    commission: "0.0003",
+    slippage: "0.00001",
+    leverage: "100",
+    strictMode: true,
   });
 
-  const req = new SubmitStrategyRequest({
+  const req = create(SubmitStrategyRequestSchema, {
     sourceCode: input.sourceCode,
     language: input.language,
-    params: input.params || {},
+    params: {},
     backtestConfig: btCfg,
-    mode: SubmitMode.SUBMIT_MODE_SYNC,
+    mode: SubmitMode.SYNC,
   });
 
   const resp = await agentGatewayClient.submitStrategy(req);
