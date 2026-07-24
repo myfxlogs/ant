@@ -3,24 +3,24 @@
 const ImportAnalysis = {
   "importAnalysis": {
     "execution": {
-      "onBar": "Bar close event-driven",
-      "onInitGrid": "Init grid"
+      "onInitGrid": "初始化網格"
+    },
     },
     "sizing": {
-      "fixed": "Fixed lots",
-      "percentBalance": "Percent of balance"
+      "percentBalance": "餘額百分比"
     },
-    "analyzing": "Analyzing strategy structure...",
-    "tradeLogicComplete": "Trading logic fully recognized",
-    "guiNoiseDesc": "The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.",
-    "cannotImport": "Cannot auto-import",
-    "incompleteCoverage": "Trading logic coverage incomplete",
-    "goodCoverage": "Import coverage is good",
-    "goodCoverageDesc": "Strategy main logic recognized. Safe to import. Check parameter list before use.",
-    "coverageTitle": "Import Coverage",
-    "userActionRequired": "Your action required",
-    "noBlindSpots": "No logic needs confirmation",
-    "noBlindSpotsDesc": "All strategy logic auto-recognized. Safe to import."
+    },
+    "tradeLogicComplete": "交易邏輯已完全識別",
+    "guiNoiseDesc": "以下盲區為圖表顯示/按鈕功能，服務端執行時跳過，不影響交易結果。可安全匯入。",
+    "cannotImport": "無法自動匯入",
+    "incompleteCoverage": "交易邏輯覆蓋不完整",
+    "goodCoverage": "匯入覆蓋良好",
+    "goodCoverageDesc": "策略主要邏輯已識別。可安全匯入。使用前請檢查引數列表。",
+    "coverageTitle": "匯入覆蓋率",
+    "userActionRequired": "需要您手動確認",
+    "noBlindSpots": "無需確認的邏輯",
+    "noBlindSpotsDesc": "所有策略邏輯已自動識別。可安全匯入。"
+  }
   }
 } as const;
 export default ImportAnalysis;

@@ -3,13 +3,13 @@
 const Notifications = {
   "notifications": {
     "prefs": {
-      "saveFailed": "Failed to save preferences",
-      "newStrategy": "New strategy published",
-      "priceChange": "Strategy price changed",
-      "subExpiring": "Subscription expiring soon",
-      "performance": "Strategy performance anomaly",
-      "newRating": "New rating or comment received",
-      "title": "Notification Preferences"
+      "newStrategy": "新策略已釋出",
+      "priceChange": "策略價格已變更",
+      "subExpiring": "訂閱即將到期",
+      "performance": "策略表現異常",
+      "newRating": "收到新評分或評論",
+      "title": "通知偏好設定"
+    }
     }
   }
 } as const;

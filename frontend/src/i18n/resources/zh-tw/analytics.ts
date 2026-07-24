@@ -18,12 +18,12 @@ const Analytics = {
         "previous": "前值"
       },
       "cards": {
-        "directionShare": "買賣方向占比",
+        "directionShare": "買賣方向佔比",
         "economicCalendar": "經濟日曆",
-        "pnlShare": "盈虧占比",
+        "pnlShare": "盈虧佔比",
         "riskMetrics": "風險指標",
         "symbolPnlCompare": "品種盈虧對比",
-        "symbolTradeShare": "品種交易占比",
+        "symbolTradeShare": "品種交易佔比",
         "tradeStats": "交易統計"
       },
       "direction": {

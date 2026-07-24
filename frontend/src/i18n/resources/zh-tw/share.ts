@@ -2,11 +2,11 @@
 // TODO: Translate to zh-tw
 const Share = {
   "share": {
-    "token": "Share Link",
-    "deleteConfirm": "Delete this share link?",
-    "title": "Share Management",
-    "createNew": "Create New Share Link",
-    "empty": "No share links yet"
+    "deleteConfirm": "刪除此分享連結？",
+    "title": "分享管理",
+    "createNew": "建立新分享連結",
+    "empty": "暫無分享連結"
+  }
   }
 } as const;
 export default Share;

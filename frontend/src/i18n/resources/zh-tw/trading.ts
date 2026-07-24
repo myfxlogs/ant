@@ -5,51 +5,51 @@ const Trading = {
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
-          "action": "检查账户状态和权限后重试。",
+          "action": "檢查賬戶狀態和許可權後重試。",
           "title": "當前帳戶被禁止交易。"
         },
         "RISK_INTERNAL_RULE_UNAVAILABLE": {
-          "action": "稍后重试；如问题持续请联系客服。",
+          "action": "稍後重試；如問題持續請聯絡客服。",
           "title": "風控規則暫不可用。"
         },
         "RISK_MARGIN_INSUFFICIENT": {
-          "action": "减少手数、平仓或充值。",
+          "action": "減少手數、平倉或充值。",
           "title": "可用保證金不足，無法下單。"
         },
         "RISK_MARKET_SESSION_CLOSED": {
-          "action": "等待下一个交易时段后重试。",
+          "action": "等待下一個交易時段後重試。",
           "title": "當前商品處於休市時段。"
         },
         "RISK_MAX_OPEN_POSITIONS_EXCEEDED": {
-          "action": "平掉现有持仓或提高上限。",
+          "action": "平掉現有持倉或提高上限。",
           "title": "已達到最大持倉數量限制。"
         },
         "RISK_MAX_PENDING_ORDERS_EXCEEDED": {
-          "action": "取消现有挂单或提高上限。",
+          "action": "取消現有掛單或提高上限。",
           "title": "已達到最大掛單數量限制。"
         },
         "RISK_ORDER_FROZEN_ZONE": {
-          "action": "等待价格离开冻结区域后重试。",
+          "action": "等待價格離開凍結區域後重試。",
           "title": "訂單處於凍結區，當前不可修改。"
         },
         "RISK_ORDER_TYPE_UNSUPPORTED": {
-          "action": "选择支持的订单类型后重试。",
-          "title": "當前商品不支援該訂單類型。"
+          "action": "選擇支援的訂單型別後重試。",
+          "title": "當前商品不支援該訂單型別。"
         },
         "RISK_STOP_DISTANCE_TOO_CLOSE": {
-          "action": "增加止损/止盈距离后重试。",
+          "action": "增加止損/止盈距離後重試。",
           "title": "停損或停利距離當前價格過近。"
         },
         "RISK_SYMBOL_TRADE_DISABLED": {
-          "action": "切换到可交易品种或稍后重试。",
+          "action": "切換到可交易品種或稍後重試。",
           "title": "當前商品暫不可交易。"
         },
         "RISK_VOLUME_INVALID": {
-          "action": "调整手数以匹配最小/最大/步长要求。",
+          "action": "調整手數以匹配最小/最大/步長要求。",
           "title": "下單手數不合法。"
         },
         "unknown": {
-          "action": "请检查订单参数后重试。",
+          "action": "請檢查訂單引數後重試。",
           "title": "交易請求被拒絕。"
         }
       }
@@ -59,7 +59,7 @@ const Trading = {
         "disableConfirm": "確認關閉",
         "disableInfoDescription": "關閉後，系統將停止自動交易，但已啟用的策略仍可能繼續監控市場。",
         "disableInfoTitle": "關閉自動交易",
-        "disableQuestion": "确定要关闭自动交易？",
+        "disableQuestion": "確定要關閉自動交易？",
         "disableTitle": "關閉自動交易",
         "enableBullet1": "系統將自動執行符合策略條件的交易",
         "enableBullet2": "請確認風險配置已正確設定",
@@ -73,10 +73,10 @@ const Trading = {
     },
     "riskConfig": {
       "confirm": {
-        "confirmText": "確認保存",
+        "confirmText": "確認儲存",
         "description": "請確認以下風險配置：",
-        "info": "保存后，所有自动交易将遵循新的风险限额。",
-        "title": "確認保存風險配置"
+        "info": "儲存後，所有自動交易將遵循新的風險限額。",
+        "title": "確認儲存風險配置"
       },
       "fields": {
         "maxDailyLoss": "每日最大虧損",
@@ -85,7 +85,7 @@ const Trading = {
         "maxPositions": "最大持倉數量",
         "maxRiskPercent": "單筆最大風險",
         "trailingStopEnabled": "移動止損",
-        "trailingStopPips": "移动止损 (点)"
+        "trailingStopPips": "移動止損 (點)"
       }
     },
     "strategyExecute": {
@@ -98,12 +98,12 @@ const Trading = {
         "symbol": "商品",
         "title": "確認執行交易",
         "volume": "數量",
-        "warningDescription": "此操作將立即執行真實交易，請仔細核對交易參數。",
+        "warningDescription": "此操作將立即執行真實交易，請仔細核對交易引數。",
         "warningTitle": "交易執行確認"
       }
     },
     "messages": {
-      "fetchOrderHistoryFailed": "加载订单历史失败",
+      "fetchOrderHistoryFailed": "載入訂單歷史失敗",
       "fetchPendingOrdersFailed": "取得掛單失敗",
       "fetchPositionsFailed": "取得持倉失敗",
       "orderCloseFailed": "平倉失敗",
@@ -113,7 +113,7 @@ const Trading = {
       "orderSendFailed": "下單失敗",
       "orderSendSuccess": "下單成功"
     },
-    "account": "账戶",
+    "account": "賬戶",
     "balance": "餘額",
     "buy": "買入",
     "closePosition": "平倉",
@@ -147,7 +147,7 @@ const Trading = {
     "price": "價格",
     "profit": "盈虧",
     "recentTrades": "近期交易",
-    "selectSymbol": "选择品种",
+    "selectSymbol": "選擇品種",
     "sell": "賣出",
     "side": "方向",
     "stop": "止損",
@@ -156,12 +156,12 @@ const Trading = {
     "takeProfit": "止盈",
     "time": "時間",
     "title": "交易",
-    "type": "類型",
+    "type": "型別",
     "volume": "數量",
-    "platform": "平台",
+    "platform": "平臺",
     "broker": "經紀商",
     "server": "伺服器",
-    "permission": "權限",
+    "permission": "許可權",
     "investor": "觀察者",
     "master": "交易者",
     "leverage": "槓桿"
@@ -173,14 +173,14 @@ const Trading = {
     },
     "dashboard": {
       "activeExecutions": "執行中",
-      "noActive": "暂无活跃执行",
-      "title": "演算法面板"
+      "noActive": "暫無活躍執行",
+      "title": "演演算法面板"
     },
     "fields": {
-      "account": "账戶",
-      "algo": "演算法",
+      "account": "賬戶",
+      "algo": "演演算法",
       "limitPrice": "限價",
-      "participationRate": "参与率",
+      "participationRate": "參與率",
       "side": "方向",
       "sliceInterval": "切片間隔",
       "symbol": "商品",
@@ -193,18 +193,18 @@ const Trading = {
       "name": "名稱"
     },
     "messages": {
-      "started": "算法已启动"
+      "started": "演算法已啟動"
     },
     "side": {
       "buy": "買入",
       "sell": "賣出"
     },
     "submitForm": {
-      "title": "启动算法"
+      "title": "啟動演算法"
     },
     "table": {
       "actions": "操作",
-      "algo": "演算法",
+      "algo": "演演算法",
       "executionId": "執行ID",
       "progress": "進度",
       "side": "方向",
@@ -213,7 +213,7 @@ const Trading = {
       "volume": "數量"
     },
     "timePresets": {
-      "EOD": "当日结束"
+      "EOD": "當日結束"
     },
     "twap": {
       "name": "TWAP (時間加權均價)",
@@ -225,16 +225,16 @@ const Trading = {
     },
     "pov": {
       "name": "POV (參與率)",
-      "description": "參與率演算法 — 以固定比例參與市場成交量。"
+      "description": "參與率演演算法 — 以固定比例參與市場成交量。"
     },
     "shortfall": {
       "name": "Shortfall (最小缺口)",
       "description": "實現缺口最小化 — 最小化決策價格與執行價格之間的差異。"
     },
     "label": {
-      "twap": "TWAP (时间加权均价)",
-      "vwap": "VWAP (成交量加权均价)",
-      "pov": "POV (参与率算法)",
+      "twap": "TWAP (時間加權均價)",
+      "vwap": "VWAP (成交量加權均價)",
+      "pov": "POV (參與率演算法)",
       "shortfall": "Shortfall (最小缺口)"
     }
   }

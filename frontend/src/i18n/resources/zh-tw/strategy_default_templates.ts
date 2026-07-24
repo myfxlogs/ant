@@ -4,20 +4,20 @@ const StrategyDefaultTemplates = {
   "strategy": {
     "defaultTemplates": {
       "forceBuy": {
-        "description": "用于驗證訂單管道：每次执行始终返回买入信号，从 context/params 读取手數",
-        "name": "强制买入测试"
+        "description": "用於驗證訂單管道：每次執行始終返回買入訊號，從 context/params 讀取手數",
+        "name": "強制買入測試"
       },
       "maCross": {
-        "description": "快线上穿慢线时买入，下穿时卖出",
-        "name": "双均线交叉策略"
+        "description": "快線上穿慢線時買入，下穿時賣出",
+        "name": "雙均線交叉策略"
       },
       "macd": {
-        "description": "MACD 金叉买入，死叉卖出",
+        "description": "MACD 金叉買入，死叉賣出",
         "name": "MACD 策略"
       },
       "rsi": {
-        "description": "RSI < 30 (超卖) 时买入，RSI > 70 (超买) 时卖出",
-        "name": "RSI 超买超卖策略"
+        "description": "RSI < 30 (超賣) 時買入，RSI > 70 (超買) 時賣出",
+        "name": "RSI 超買超賣策略"
       }
     }
   }

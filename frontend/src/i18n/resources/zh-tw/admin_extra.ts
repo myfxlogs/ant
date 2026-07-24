@@ -60,7 +60,7 @@ const AdminExtra = {
       "confirmDelete": "確認刪除？",
       "title": "Agent 管理設定",
       "addSetting": "新增設定",
-      "permissionRules": "權限規則 (permission.rule.N)",
+      "permissionRules": "許可權規則 (permission.rule.N)",
       "permissionFormat": "格式：",
       "permissionExample": "範例：",
       "permissionAddRule": "新增規則：建立設定鍵",
@@ -77,10 +77,10 @@ const AdminExtra = {
       "confirmReject": "拒絕此任務？",
       "title": "AI 策略生成任務",
       "allStatus": "全部狀態",
-      "triggerBatch": "觸發批量生成",
+      "triggerBatch": "觸發批次生成",
       "symbols": "品種（逗號分隔）",
       "timeframes": "時間週期（逗號分隔）",
-      "strategyTypes": "策略類型（逗號分隔）"
+      "strategyTypes": "策略型別（逗號分隔）"
     },
     "billing": {
       "columns": {
@@ -99,8 +99,8 @@ const AdminExtra = {
       "filterByPlan": "按方案篩選",
       "filterByStatus": "按狀態篩選",
       "walletTransactions": "錢包交易",
-      "filterByType": "按類型篩選",
-      "txPlatformFee": "平台手續費"
+      "filterByType": "按型別篩選",
+      "txPlatformFee": "平臺手續費"
     },
     "coupon": {
       "loadFailed": "載入優惠券失敗",
@@ -120,9 +120,9 @@ const AdminExtra = {
     },
     "dashboard": {
       "errors": {
-        "loadFailed": "載入儀表板資料失敗"
+        "loadFailed": "載入儀錶板資料失敗"
       },
-      "title": "管理儀表板",
+      "title": "管理儀錶板",
       "totalUsers": "總使用者數",
       "activeUsers": "活躍使用者",
       "verifiedUsers": "已驗證使用者",
@@ -145,7 +145,7 @@ const AdminExtra = {
         "systemConfig": "系統設定"
       },
       "columns": {
-        "actionType": "操作類型",
+        "actionType": "操作型別",
         "ip": "IP 位址"
       },
       "errors": {
@@ -175,7 +175,7 @@ const AdminExtra = {
       "title": "充值管理"
     },
     "analytics": {
-      "platformRev": "平台收入",
+      "platformRev": "平臺收入",
       "providerRev": "供應商收入",
       "activeBuyers": "活躍買家",
       "refundRate": "退款率",
@@ -197,7 +197,7 @@ const AdminExtra = {
       "filterStatus": "全部狀態",
       "searchPlaceholder": "按標題搜尋...",
       "featureTitle": "推薦策略",
-      "featureDesc": "設定推薦展示優先級。數值越高越顯著。"
+      "featureDesc": "設定推薦展示優先順序。數值越高越顯著。"
     },
     "refund": {
       "loadFailed": "載入退款請求失敗",

@@ -1,74 +1,73 @@
 // Auto-generated supplementary keys for strategy
-// TODO: Translate to zh-cn
 const StrategyExtra = {
   "strategy": {
     "backtest": {
-      "canceled": "Backtest canceled",
-      "lotSize": "Lot Size",
-      "strategyParameters": "Strategy Parameters"
+      "canceled": "回测已取消",
+      "lotSize": "手数",
+      "strategyParameters": "策略参数"
     },
     "workspace": {
       "chartIndicators": {
-        "overlay": "Overlay (main chart)",
-        "subPane": "Sub-pane indicators"
+        "overlay": "主图叠加",
+        "subPane": "副图指标"
       },
       "tour": {
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.",
-        "ai": "AI Assistant",
-        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
-        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "code": "代码编辑器",
+        "codeDesc": "在此编写或粘贴 MQL 策略代码，也可导入 .mq4/.mq5 文件。",
+        "ai": "AI 助手",
+        "aiDesc": "让 AI 生成、优化或调试策略，生成的代码会即时显示在编辑器中。",
+        "backtestDesc": "使用可配置参数运行回测，查看资金曲线、交易统计和风险指标。",
+        "save": "保存并发布",
+        "saveDesc": "将策略保存为模板、发布到市场或部署到实盘调度。"
       }
     },
     "codeAssist": {
-      "aiHint": "Describe the changes you want, e.g."
+      "aiHint": "描述你想要的修改，例如"
     },
     "chat": {
-      "executionPlan": "Execution Plan",
-      "codeGenerated": "Code generated. Use the buttons below to run strategy review and backtest."
+      "executionPlan": "执行计划",
+      "codeGenerated": "代码已生成，使用下方按钮运行策略审查和回测。"
     },
     "templates": {
-      "title": "Strategy Templates",
-      "saveCurrent": "Save Current Strategy",
-      "chatEdit": "Chat Edit",
-      "confirmDelete": "Delete this strategy?",
-      "noTemplates": "No saved strategy templates",
-      "sourceCode": "Strategy Source",
+      "title": "策略模板",
+      "saveCurrent": "保存当前策略",
+      "chatEdit": "对话编辑",
+      "confirmDelete": "删除此策略？",
+      "noTemplates": "暂无保存的策略模板",
+      "sourceCode": "策略源码",
       "gallery": {
-        "unpublishFailed": "Unpublish failed",
-        "fork": "Fork & Edit",
-        "aiGenerate": "AI Generate",
-        "searchPlaceholder": "Search strategies...",
-        "empty": "No strategies found",
-        "deleteFailed": "Delete failed"
+        "unpublishFailed": "取消发布失败",
+        "fork": "复刻并编辑",
+        "aiGenerate": "AI 生成",
+        "searchPlaceholder": "搜索策略...",
+        "empty": "未找到策略",
+        "deleteFailed": "删除失败"
       },
       "scheduleLaunch": {
         "metrics": {
-          "winRate": "Win Rate",
-          "maxDrawdown": "Max DD",
-          "sharpe": "Sharpe Ratio"
+          "winRate": "胜率",
+          "maxDrawdown": "最大回撤",
+          "sharpe": "夏普比率"
         }
       },
       "detail": {
-        "profitFactor": "Profit Factor",
-        "notFound": "Strategy not found",
-        "noDescription": "No description",
-        "equityCurve": "Equity Curve",
-        "tradeStats": "Trade Statistics"
+        "profitFactor": "盈利因子",
+        "notFound": "未找到策略",
+        "noDescription": "暂无描述",
+        "equityCurve": "资金曲线",
+        "tradeStats": "交易统计"
       },
       "table": {
-        "useCount": "Use Count"
+        "useCount": "使用次数"
       },
       "messages": {
-        "fetchTemplateListFailed": "Fork failed",
-        "publishFailed": "Publish failed"
+        "fetchTemplateListFailed": "复刻失败",
+        "publishFailed": "发布失败"
       },
       "actions": {
-        "create": "New Strategy"
+        "create": "新建策略"
       },
-      "deleteConfirm": "Delete this strategy?"
+      "deleteConfirm": "删除此策略？"
     },
     "live": {
       "stopSuccess": "策略已停止",
@@ -104,52 +103,52 @@ const StrategyExtra = {
       "reason": "原因"
     },
     "ai": {
-      "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation.",
-      "settingsHint": "Configure AI provider and model"
+      "reviseHint": "先编写代码，再让 AI 改进。",
+      "explainHint": "编写代码后查看 AI 解释。",
+      "settingsHint": "配置 AI 提供商和模型"
     },
     "validate": {
-      "running": "Running validation...",
-      "fixWithAI": "Send errors to AI Revise",
-      "allClear": "All checks passed — no issues found.",
-      "passed": "Validation passed — Save is now unlocked."
+      "running": "正在验证...",
+      "fixWithAI": "发送错误到 AI 修订",
+      "allClear": "所有检查通过 — 未发现问题。",
+      "passed": "验证通过 — 现在可以保存。"
     },
     "importEA": {
-      "writeTab": "Strategy Code",
-      "importTab": "Import EA",
-      "codeTooShort": "Please paste complete EA/indicator source code.",
-      "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
+      "writeTab": "策略代码",
+      "importTab": "导入 EA",
+      "codeTooShort": "请粘贴完整的 EA/指标源码。",
+      "pastePlaceholder": "粘贴 MQL4/MQL5 EA 代码...",
       "migration": "策略导入",
       "aiTranslate": "AI 翻译",
       "bridge": "盲区桥接",
       "analyze": "分析策略结构",
       "confirmImport": "确认导入",
       "tryAI": "AI 翻译补充",
-      "apply": "Apply to Editor",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
-      "hint": "Paste MQL4/MQL5 code and click Analyze",
-      "translate": "Translate to Go",
-      "translating": "Paste MQL4/MQL5 code and click Translate",
+      "apply": "应用到编辑器",
+      "importSuccess": "MQL 源码已导入，点击「应用到编辑器」写入编辑器",
+      "hint": "粘贴 MQL4/MQL5 代码并点击分析",
+      "translate": "翻译为 Go",
+      "translating": "粘贴 MQL4/MQL5 代码并点击翻译",
       "bridgeBtn": "盲区桥接翻译",
-      "bridging": "AI bridging blind spots...",
+      "bridging": "AI 正在桥接盲区...",
       "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
       "noBridgeNeeded": "覆盖率 100%，无需桥接",
-      "bridgeHint": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
-      "tooltip": "Import MQL4/MQL5 source code",
-      "button": "Import MQL",
-      "title": "Import MQL Strategy"
+      "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将桥接盲区到平台字节码",
+      "tooltip": "导入 MQL4/MQL5 源码",
+      "button": "导入 MQL",
+      "title": "导入 MQL 策略"
     },
     "version": {
-      "loadFailed": "Failed to load versions",
-      "rollbackSuccess": "Rolled back to version {{n}}",
-      "rollbackFailed": "Rollback failed",
-      "loadVersionFailed": "Failed to load version",
-      "loadDiffFailed": "Failed to load diff",
-      "colSummary": "Change Summary",
-      "rollbackConfirm": "Rollback to v{{n}}?",
-      "title": "Version History",
-      "empty": "No version history yet",
-      "history": "Version History"
+      "loadFailed": "加载版本失败",
+      "rollbackSuccess": "已回滚到版本 {{n}}",
+      "rollbackFailed": "回滚失败",
+      "loadVersionFailed": "加载版本失败",
+      "loadDiffFailed": "加载差异失败",
+      "colSummary": "变更摘要",
+      "rollbackConfirm": "回滚到 v{{n}}？",
+      "title": "版本历史",
+      "empty": "暂无版本历史",
+      "history": "版本历史"
     }
   }
 } as const;

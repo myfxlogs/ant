@@ -4,30 +4,30 @@ const StrategyAsset = {
   "strategy": {
     "asset": {
       "messages": {
-        "cloneFailed": "克隆策略资产失敗",
-        "cloneSuccess": "已克隆为範本: {{templateId}}",
-        "loadFailed": "載入策略资产失敗",
-        "submitFailed": "提交策略资产失敗",
-        "submitSuccess": "策略资产已提交"
+        "cloneFailed": "克隆策略資產失敗",
+        "cloneSuccess": "已克隆為範本: {{templateId}}",
+        "loadFailed": "載入策略資產失敗",
+        "submitFailed": "提交策略資產失敗",
+        "submitSuccess": "策略資產已提交"
       },
       "validation": {
-        "enterName": "請輸入资产名称",
+        "enterName": "請輸入資產名稱",
         "selectTemplate": "請選擇源範本"
       },
       "actions": "操作",
-      "assetList": "资产列表",
-      "assetName": "资产名称",
-      "cloneAsDraft": "克隆为草稿",
-      "cloneCount": "克隆数",
+      "assetList": "資產列表",
+      "assetName": "資產名稱",
+      "cloneAsDraft": "克隆為草稿",
+      "cloneCount": "克隆數",
       "description": "描述",
-      "empty": "暫無策略资产",
+      "empty": "暫無策略資產",
       "name": "名稱",
-      "reviewStatus": "审核狀態",
+      "reviewStatus": "稽核狀態",
       "sourceTemplate": "源範本",
       "submit": "提交",
-      "submitAsset": "提交资产",
-      "subtitle": "资产发布、审核狀態和克隆由系统维护。克隆结果为独立的用户範本。",
-      "title": "策略资产",
+      "submitAsset": "提交資產",
+      "subtitle": "資產釋出、稽核狀態和克隆由系統維護。克隆結果為獨立的使用者範本。",
+      "title": "策略資產",
       "version": "版本",
       "visibility": "可見性"
     }

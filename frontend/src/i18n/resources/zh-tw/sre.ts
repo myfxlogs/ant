@@ -3,51 +3,51 @@
 const Sre = {
   "sre": {
     "breakers": {
-      "stateHalfOpen": "Half-Open (probing)",
       "columns": {
-        "strategyId": "Strategy ID",
-        "totalPnl": "Total P&L",
-        "lossPercent": "Loss %",
-        "trippedAt": "Tripped At",
-        "tripReason": "Trip Reason"
+      "columns": {
+        "totalPnl": "總盈虧",
+        "lossPercent": "虧損 %",
+        "trippedAt": "熔斷時間",
+        "tripReason": "熔斷原因"
       },
-      "confirmReset": "Reset this breaker?",
-      "title": "Strategy Breakers",
-      "description": "Strategy breaker status overview — auto-detects abnormal losses and trips",
-      "noBreakers": "No registered breakers"
+      },
+      "title": "策略熔斷器",
+      "description": "策略熔斷器狀態總覽 — 自動檢測異常虧損並熔斷",
+      "noBreakers": "無已註冊熔斷器"
+    },
     },
     "canary": {
       "columns": {
-        "strategyId": "Strategy ID",
-        "versionTag": "Version Tag",
-        "accounts": "Canary Accounts",
-        "startAt": "Start At"
+        "versionTag": "版本標籤",
+        "accounts": "金絲雀賬號",
+        "startAt": "開始時間"
       },
-      "confirmDelete": "Delete this canary config?",
-      "title": "Canary Configuration",
-      "description": "New strategy versions run on a few accounts for N days before promotion to all",
-      "newCanary": "New Canary",
-      "noCanaries": "No canary configs",
-      "newCanaryTitle": "New Canary",
-      "accountIdsLabel": "Canary Account IDs (comma or newline separated)",
-      "durationDays": "Canary Days"
+      },
+      "title": "金絲雀配置",
+      "description": "新策略版本先在少數賬號上執行 N 天，再推廣到全部賬號",
+      "newCanary": "新建金絲雀",
+      "noCanaries": "無金絲雀配置",
+      "newCanaryTitle": "新建金絲雀",
+      "accountIdsLabel": "金絲雀賬號 ID（逗號或換行分隔）",
+      "durationDays": "金絲雀天數"
+    },
     },
     "killSwitch": {
-      "title": "Kill Switch",
-      "description": "One-click stop all trading — requires KILL confirmation; undo within 5 minutes",
-      "engaged": "Kill Switch engaged — all trading stopped",
-      "disarmed": "Kill Switch disarmed — trading normal",
-      "engagedAt": "Engaged At",
-      "undo": "Undo Kill Switch",
-      "disengage": "Disengage Kill Switch",
-      "engage": "Engage Kill Switch",
-      "confirmTitle": "Engage Kill Switch — Confirmation",
-      "confirmEngage": "Confirm Engage",
-      "confirmWarning": "This will immediately stop all trading activity for all accounts, including pending and submitted orders. Enter a reason and type KILL to confirm.",
-      "reasonLabel": "Reason (required)",
-      "reasonPlaceholder": "e.g.: Detected abnormal market volatility, emergency stop all trading",
-      "typeKill": "Type KILL to confirm",
-      "typeKillPlaceholder": "Type KILL (uppercase)"
+      "description": "一鍵停止所有交易 — 需輸入 KILL 確認；5 分鐘內可撤銷",
+      "engaged": "一鍵停止已觸發 — 所有交易已停止",
+      "disarmed": "一鍵停止已解除 — 交易正常",
+      "engagedAt": "觸發時間",
+      "undo": "撤銷一鍵停止",
+      "disengage": "解除一鍵停止",
+      "engage": "觸發一鍵停止",
+      "confirmTitle": "觸發一鍵停止 — 確認",
+      "confirmEngage": "確認觸發",
+      "confirmWarning": "這將立即停止所有賬號的所有交易活動，包括待提交和已提交的訂單。請輸入原因並輸入 KILL 確認。",
+      "reasonLabel": "原因（必填）",
+      "reasonPlaceholder": "例如：檢測到異常市場波動，緊急停止所有交易",
+      "typeKill": "輸入 KILL 確認",
+      "typeKillPlaceholder": "輸入 KILL（大寫）"
+    }
     }
   }
 } as const;

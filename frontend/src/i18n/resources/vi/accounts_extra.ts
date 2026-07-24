@@ -1,21 +1,20 @@
 // Auto-generated supplementary keys for accounts
-// TODO: Translate to vi
 const AccountsExtra = {
   "accounts": {
     "bind": {
       "fields": {
-        "alias": "Account Alias"
+        "alias": "Bí danh tài khoản"
       },
       "placeholders": {
-        "alias": "Optional custom name"
+        "alias": "Tên tùy chọn (không bắt buộc)"
       },
       "messages": {
-        "changeCredentials": "Change credentials"
+        "changeCredentials": "Đổi thông tin đăng nhập"
       }
     },
     "messages": {
-      "shareLinkCopied": "Share link copied to clipboard",
-      "shareLinkFailed": "Failed to create share link"
+      "shareLinkCopied": "Đã sao chép liên kết chia sẻ",
+      "shareLinkFailed": "Tạo liên kết chia sẻ thất bại"
     }
   }
 } as const;

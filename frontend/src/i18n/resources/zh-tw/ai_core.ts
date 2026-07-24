@@ -25,7 +25,7 @@ const AiCore = {
       "fields": {
         "account": "帳戶",
         "symbol": "品種",
-        "timeframe": "周期"
+        "timeframe": "週期"
       },
       "panel": {
         "decision": "決策",
@@ -40,23 +40,23 @@ const AiCore = {
         "title": "程式碼生成 Agent"
       },
       "risk": {
-        "title": "风控与执行约束"
+        "title": "風控與執行約束"
       },
       "signals": {
-        "title": "信号与指标设计"
+        "title": "訊號與指標設計"
       },
       "style": {
-        "title": "市场狀態/风格推荐"
+        "title": "市場狀態/風格推薦"
       }
     },
     "assistant": {
       "messages": {
-        "noCodeBlockFound": "No code block found (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
+        "noCodeBlockFound": "未找到程式碼塊 (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
       }
     },
     "backtestScoreCard": {
       "backendRiskScore": {
-        "empty": "无（先儲存模板，回测完成後自動計算）",
+        "empty": "無（先儲存模板，回測完成後自動計算）",
         "loading": "計算中...",
         "reasons": "原因",
         "reliable": "可靠",
@@ -66,7 +66,7 @@ const AiCore = {
         "warnings": "警告"
       },
       "chart": {
-        "title": "净值曲线"
+        "title": "淨值曲線"
       },
       "level": {
         "excellent": "優秀",
@@ -76,7 +76,7 @@ const AiCore = {
       },
       "metrics": {
         "annualReturn": "年化收益率",
-        "equityPoints": "净值点数",
+        "equityPoints": "淨值點數",
         "maxDrawdown": "最大回撤",
         "sharpe": "夏普比率",
         "totalReturn": "總收益率",
@@ -86,7 +86,7 @@ const AiCore = {
       "recommendation": {
         "cautious": "謹慎上線：建議先小資金/手動驗證一段時間。",
         "loading": "風險評估進行中，請等待完成後再上線。",
-        "notRecommended": "Not recommended for direct live: high risk or unreliable, optimize before trying.",
+        "notRecommended": "不建議直接上線：高風險或不可靠，請先最佳化後再試。",
         "recommended": "建議上線：風險可控，指標健康。"
       },
       "score": {
@@ -109,27 +109,27 @@ const AiCore = {
         "contentBlocked": "供應商安全過濾器已阻止回應。請重新措辭提示後重試。",
         "contextTooLong": "請求超過模型上下文視窗大小。請縮短對話/輸入內容，或選擇上下文更大的模型。",
         "edgeGatewayTimeout": "網站最外層閘道逾時（常見為 Cloudflare 524）：請求未到應用程式即被中斷，「產生程式碼」等長步驟較易觸發。請在辯論程式碼步驟按「重新嘗試產生程式碼」，或先返回上一步再進入產生程式碼；仍失敗時需請維運調大閘道／來源站逾時。",
-        "forbidden": "供應商拒絕請求（403）。請檢查金鑰權限、IP白名單及帳戶狀態。",
+        "forbidden": "供應商拒絕請求（403）。請檢查金鑰許可權、IP白名單及帳戶狀態。",
         "gatewayForbidden403": "閘道禁止存取（403）。",
-        "gatewayRateLimited429": "網關速率受限 (429)。",
+        "gatewayRateLimited429": "閘道器速率受限 (429)。",
         "gatewayTimeoutOrUnreachable": "閘道逾時或無法連線。",
         "gatewayUnauthorized401": "閘道未經授權（401）。",
-        "insufficientBalance": "供應商回報餘額不足/逾期付款。請在供應商控制台充值後重試。",
-        "invalidModelId": "模型{{model}}不可用——可能名稱錯誤、已棄用或超出您的權限範圍。請從下拉選單中選擇其他模型，或從供應商控制台複製標準ID。",
+        "insufficientBalance": "供應商回報餘額不足/逾期付款。請在供應商控制檯充值後重試。",
+        "invalidModelId": "模型{{model}}不可用——可能名稱錯誤、已棄用或超出您的許可權範圍。請從下拉選單中選擇其他模型，或從供應商控制檯複製標準ID。",
         "networkUnreachable": "閘道逾時或無法連線。請檢查基礎URL、網路連線，或稍後重試。",
         "providerInternalError": "供應商返回伺服器端錯誤（5xx）。請稍候或切換至其他供應商。",
         "rateLimited": "供應商正在對您的請求進行速率限制。請稍候再試。",
         "regionNotSupported": "所選供應商在您的地區/國家不可用。請切換至其他供應商。",
         "requestFailed": "請求失敗，請重試。",
-        "unauthorized": "供應商拒絕API金鑰（401）。請檢查金鑰值及其對所選模型的存取權限。"
+        "unauthorized": "供應商拒絕API金鑰（401）。請檢查金鑰值及其對所選模型的存取許可權。"
       }
     },
     "gate": {
       "descriptions": {
-        "compliance": "DSL表達式非空驗證",
-        "correlation": "与现有策略的訊號相關性檢查",
+        "compliance": "DSL表示式非空驗證",
+        "correlation": "與現有策略的訊號相關性檢查",
         "deflated_sharpe": "Lopez de Prado縮減夏普比率",
-        "lookahead": "未來函數引用掃描（close[t+N]、ref負偏移）",
+        "lookahead": "未來函式引用掃描（close[t+N]、ref負偏移）",
         "paper": "≥14天紙交易驗證",
         "walkforward": "淨化前進式交叉驗證"
       },
@@ -144,32 +144,32 @@ const AiCore = {
       "status": {
         "evaluating": "評估中..."
       },
-      "allPassed": "全部6個閘道已通過——策略符合推廣至上線評估條件",
+      "allPassed": "全部6個閘道已透過——策略符合推廣至上線評估條件",
       "backtestGrossReturn": "回測總收益率",
       "backtestNetReturn": "回測淨收益率",
       "dailyReturns": "每日收益率（逗號或換行分隔）",
       "details": "詳情",
-      "dslExpression": "DSL表達式",
+      "dslExpression": "DSL表示式",
       "evaluating": "評估中...",
       "fail": "失敗",
       "failed": "失敗：{{gate}}",
       "gateProgress": "閘道評估進度",
-      "noData": "無數據",
+      "noData": "無資料",
       "numAttempts": "策略嘗試次數",
       "paperDays": "紙交易天數",
       "paperMetrics": "紙交易指標",
       "paperNetPnL": "紙交易淨損益",
       "paperNetReturn": "紙交易淨收益率",
       "paperTradeCount": "紙交易次數",
-      "pass": "通过",
+      "pass": "透過",
       "pipelineDesc": "6階段閘道管線：合規性 → 前瞻偏差 → 前進式驗證 → 縮減夏普 → 紙交易 → 相關性",
       "pipelineResult": "管線結果",
       "retry": "重試",
-      "runHint": "请先執行回测，然后點選\"執行质量门\"評估策略质量。",
+      "runHint": "請先執行回測，然後點選\"執行質量門\"評估策略質量。",
       "runPipeline": "執行閘道管線",
-      "selectRun": "選擇回測運行...",
-      "skipped": "已跳过",
-      "strategyParams": "策略參數",
+      "selectRun": "選擇回測執行...",
+      "skipped": "已跳過",
+      "strategyParams": "策略引數",
       "title": "AI閘道進度",
       "unknown": "未知"
     },
@@ -193,10 +193,10 @@ const AiCore = {
         "executeTrade": "執行交易"
       },
       "confirmCancel": {
-        "title": "确定要取消此訊號？"
+        "title": "確定要取消此訊號？"
       },
       "confirmExecute": {
-        "description": "将立即下单",
+        "description": "將立即下單",
         "title": "確定要執行此交易訊號嗎？"
       },
       "labels": {
@@ -227,7 +227,7 @@ const AiCore = {
         "stop": "停止"
       },
       "confirmDelete": {
-        "description": "刪除后無法恢复",
+        "description": "刪除後無法恢復",
         "title": "確定要刪除此策略嗎？"
       },
       "labels": {
@@ -264,11 +264,11 @@ const AiCore = {
       },
       "customProvider": {
         "deleted": "自訂提供者已刪除",
-        "fillNameFirst": "请先填写名稱",
-        "nameHint": "用于识别此提供者的唯一名稱",
+        "fillNameFirst": "請先填寫名稱",
+        "nameHint": "用於識別此提供者的唯一名稱",
         "nameLabel": "提供者名稱",
         "namePlaceholder": "我的自訂提供者",
-        "nameRequired": "服务商名称不能為空"
+        "nameRequired": "服務商名稱不能為空"
       },
       "fields": {
         "apiKeyHint": "輸入後將自動加密儲存，無需手動提交",
@@ -282,7 +282,7 @@ const AiCore = {
         "httpWarning": "目前為 HTTP，生產環境建議使用 HTTPS",
         "maxTokensHint": "單次回應最大權杖數",
         "primaryFor": "主要用途",
-        "primaryForHint": "用于內部分发：對話/嵌入/摘要/推理",
+        "primaryForHint": "用於內部分發：對話/嵌入/摘要/推理",
         "temperatureHint": "越高越發散，越低越穩定",
         "timeoutHint": "單次請求最長等待時間"
       },
@@ -298,10 +298,10 @@ const AiCore = {
         "secretSavedAutoDiscover": "金鑰已儲存，正在自動探索模型...",
         "toggleEnabledFailed": "切換啟用狀態失敗",
         "validationFailedNeedApiKey": "驗證失敗：此服務商通常需要 API Key，請先填寫並儲存 Key 後重試。",
-        "validationPassedModels": "驗證通過：找到{{count}}個模型"
+        "validationPassedModels": "驗證透過：找到{{count}}個模型"
       },
       "section1": {
-        "subtitle": "Cards show each provider's configuration and readiness; click to select",
+        "subtitle": "卡片展示每個提供商的配置和就緒狀態，點選選擇",
         "title": "選擇模型廠商"
       },
       "status": {
@@ -309,27 +309,27 @@ const AiCore = {
         "checkUrlDesc": "API 金鑰已就緒，但地址似乎無效",
         "configReady": "設定已就緒",
         "configReadyDesc": "新增可用模型後系統將自動完成連線檢測",
-        "connectionFailed": "連接錯誤，请檢查上方提示",
+        "connectionFailed": "連線錯誤，請檢查上方提示",
         "error": "存在異常",
         "needKey": "請完成金鑰設定",
         "needKeyDesc": "填寫 API 金鑰後將自動發現模型清單",
         "noProvider": "尚未選擇供應商",
         "noProviderDesc": "請從下方卡片挑選一個模型廠商開始設定",
         "notEnabled": "連線正常，尚未啟用",
-        "notEnabledDesc": "打開「啟用」開關即可投入使用",
-        "ready": "運行就緒",
+        "notEnabledDesc": "開啟「啟用」開關即可投入使用",
+        "ready": "執行就緒",
         "readyDesc": "已啟用並連線正常"
       },
       "statusBar": {
         "checking": "連線檢測中…",
-        "connected": "已連接",
+        "connected": "已連線",
         "disabled": "未啟用",
         "enabled": "已啟用",
         "keyReady": "金鑰就緒"
       },
       "taglines": {
         "anthropic": "Claude 系列",
-        "deepseek": "DeepSeek · 高性價比",
+        "deepseek": "DeepSeek · 高價效比",
         "moonshot": "Kimi · 長上下文",
         "openai": "GPT 系列 · 官方",
         "openai_compatible": "任意相容端點",
@@ -342,7 +342,7 @@ const AiCore = {
     },
     "workflowRuns": {
       "hints": {
-        "selectToViewDetail": "从左侧選擇執行记录查看詳情"
+        "selectToViewDetail": "從左側選擇執行記錄檢視詳情"
       },
       "messages": {
         "loadDetailFailed": "載入詳情失敗",
@@ -368,9 +368,9 @@ const AiCore = {
       "monthlyTokens": "本月 Token",
       "noModels": "暫無可用模型",
       "selectModel": "選擇模型",
-      "title": "AI 網關",
+      "title": "AI 閘道器",
       "usageByFeature": "按功能用量",
-      "useGateway": "AI 網關",
+      "useGateway": "AI 閘道器",
       "useGatewayDesc": "扣錢包餘額 · 按 Token 計費",
       "useOwnKey": "我的 API Key",
       "useOwnKeyDesc": "直付廠商 · 自行管理",
@@ -384,7 +384,7 @@ const AiCore = {
     },
     "tabs": {
       "agentSettings": "專家設定",
-      "gate": "AI 质量门",
+      "gate": "AI 質量門",
       "settings": "設定"
     }
   }

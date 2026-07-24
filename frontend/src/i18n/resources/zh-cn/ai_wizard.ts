@@ -31,7 +31,7 @@ const AiWizard = {
           "runAgents": "多个专家分析 + 代码生成"
         },
         "cards": {
-          "resultsTitle": "Multiple experts\\\\\\\\\\\\\\\\"
+          "resultsTitle": "多位专家\\\\\\\\\\\\\\\\"
         },
         "hints": {
           "afterGenerated": "生成完成后进入下一步进行验证/回测/上线"
@@ -127,7 +127,7 @@ const AiWizard = {
         },
         "placeholders": {
           "intentExample": "示例：突破趋势跟随；避开高波动；偏好更高胜率...",
-          "macroExample": "Example:\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
+          "macroExample": "示例：\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC 会议纪要\\\\\\\\\\\\\\\\n2024-01-05 20:30 非农就业数据",
           "selectAccount": "选择账号",
           "selectFrozenDataset": "选择冻结数据集",
           "selectSymbol": "选择品种",
@@ -148,11 +148,11 @@ const AiWizard = {
           "data": "数据: {{dataSpec}}",
           "empty": "(空)",
           "macroDisabled": "宏观事件: 不使用",
-          "macroEnabled": "Macro events (user-provided):\\\\\\\\\\\\\\\\n{{text}}",
-          "params": "Parameters (defs+current values; injected into context[\"params\"] at runtime):\\\\\\\\\\\\\\\\n{{params}}",
+          "macroEnabled": "宏观事件（用户提供）：\\\\\\\\\\\\\\\\n{{text}}",
+          "params": "参数（定义+当前值；运行时注入 context[\"params\"]）：\\\\\\\\\\\\\\\\n{{params}}",
           "symbol": "品种: {{symbol}}",
           "timeframe": "周期: {{timeframe}}",
-          "userIntent": "User strategy goal (natural language):\\\\\\\\\\\\\\\\n{{intent}}"
+          "userIntent": "用户策略目标（自然语言）：\\\\\\\\\\\\\\\\n{{intent}}"
         },
         "dataSpec": {
           "dataset": "使用冻结数据集 datasetId={{datasetId}}",
@@ -166,13 +166,13 @@ const AiWizard = {
           "mustInclude3": "3) 主要出场/止损止盈/风控约束（用 2~4 条要点）",
           "mustInclude4": "4) 适用/不适用场景各 1 条",
           "mustIncludeTitle": "必须包含：",
-          "userIntent": "User expectation (natural language):\\\\\\\\\\\\\\\\n{{intent}}"
+          "userIntent": "用户期望（自然语言）：\\\\\\\\\\\\\\\\n{{intent}}"
         },
         "upstream": {
-          "risk": "【Risk control conclusion】\\\\\\\\\\\\\\\\n{{text}}",
+          "risk": "【风控结论】\\\\\\\\\\\\\\\\n{{text}}",
           "sectionTitle": "【上游 Agent 结论（原样提供）】",
-          "signals": "【Signal design conclusion】\\\\\\\\\\\\\\\\n{{text}}",
-          "style": "【Market condition/style conclusion】\\\\\\\\\\\\\\\\n{{text}}"
+          "signals": "【信号设计结论】\\\\\\\\\\\\\\\\n{{text}}",
+          "style": "【市场状态/风格结论】\\\\\\\\\\\\\\\\n{{text}}"
         }
       },
       "publish": {

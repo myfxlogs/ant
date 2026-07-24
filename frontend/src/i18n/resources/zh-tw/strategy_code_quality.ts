@@ -5,11 +5,11 @@ const StrategyCodeQuality = {
     "codeQuality": {
       "category": {
         "FUTURE_DATA_LEAK": "未來資料洩漏",
-        "MISSING_PARAM": "缺少參數",
+        "MISSING_PARAM": "缺少引數",
         "NDARRAY_PANDAS_MISUSE": "ndarray/pandas 誤用",
         "NO_ENTRY_PCT": "缺少入場百分比",
         "NO_STOP_AND_TAKE_PROFIT": "缺少止損/止盈",
-        "UNREAD_PARAM": "未讀取參數"
+        "UNREAD_PARAM": "未讀取引數"
       }
     }
   }

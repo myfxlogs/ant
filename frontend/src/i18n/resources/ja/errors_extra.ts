@@ -1,10 +1,9 @@
 // Auto-generated supplementary keys for errors
-// TODO: Translate to ja
 const ErrorsExtra = {
   "errors": {
     "ai": {
-      "insufficient_balance_title": "Insufficient Balance",
-      "insufficient_balance": "Your AI wallet balance is insufficient. Please top up before continuing."
+      "insufficient_balance_title": "残高不足",
+      "insufficient_balance": "AIウォレット残高が不足しています。続行前にチャージしてください。"
     }
   }
 } as const;

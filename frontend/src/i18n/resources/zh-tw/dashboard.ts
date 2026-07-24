@@ -6,12 +6,12 @@ const Dashboard = {
       "connected": "已連線",
       "connecting": "連線中",
       "disabled": "已停用",
-      "disconnected": "已断开"
+      "disconnected": "已斷開"
     },
     "fields": {
       "balance": "餘額",
       "equity": "淨值",
-      "floating": "浮動盈亏"
+      "floating": "浮動盈虧"
     },
     "quickActions": {
       "accounts": "帳戶",
@@ -30,19 +30,19 @@ const Dashboard = {
       "connected": "已連線",
       "totalBalance": "總餘額",
       "totalEquity": "總淨值",
-      "totalProfit": "总浮動盈亏"
+      "totalProfit": "總浮動盈虧"
     },
     "accountList": "帳戶列表",
     "accountOverview": "帳戶總覽",
-    "bindAccount": "綁定帳戶",
-    "defaultName": "我的儀表板",
+    "bindAccount": "繫結帳戶",
+    "defaultName": "我的儀錶板",
     "logs": "日誌",
-    "noAccounts": "暫無帳戶，點擊右上角綁定",
-    "streamLive": "即時連接",
+    "noAccounts": "暫無帳戶，點選右上角繫結",
+    "streamLive": "即時連線",
     "streamOffline": "即時離線",
-    "subtitle": "查看您的帳戶總覽",
+    "subtitle": "檢視您的帳戶總覽",
     "templates": "策略模板",
-    "viewAll": "查看全部",
+    "viewAll": "檢視全部",
     "welcome": "歡迎回來, {{name}}"
   }
 } as const;

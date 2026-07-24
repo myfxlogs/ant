@@ -8,12 +8,12 @@ const StrategyExperiment = {
           "actions": "操作",
           "generateDraft": "生成草稿",
           "grade": "評級",
-          "parameters": "參數",
+          "parameters": "引數",
           "rank": "排名",
           "recommendation": "推薦",
           "score": "評分",
           "summary": "摘要",
-          "viewCandidates": "查看候選"
+          "viewCandidates": "檢視候選"
         },
         "title": "候選策略",
         "titleWithId": "候選: {{id}}"
@@ -21,11 +21,11 @@ const StrategyExperiment = {
       "list": {
         "column": {
           "actions": "操作",
-          "maxCandidates": "最大候選数",
-          "objective": "最佳化目标",
-          "searchMethod": "搜索方法",
+          "maxCandidates": "最大候選數",
+          "objective": "最佳化目標",
+          "searchMethod": "搜尋方法",
           "status": "狀態",
-          "viewCandidates": "查看候選"
+          "viewCandidates": "檢視候選"
         },
         "title": "實驗列表"
       },
@@ -35,27 +35,27 @@ const StrategyExperiment = {
         "loadCandidatesFailed": "載入候選列表失敗",
         "loadExperimentsFailed": "載入實驗列表失敗",
         "loadTemplatesFailed": "載入策略範本失敗",
-        "promoteFailed": "候選升级为草稿失敗",
-        "submitFailed": "提交實驗失敗，請確認參數空间为有效 JSON。",
-        "subscribeJobFailed": "订阅實驗任务事件失敗"
+        "promoteFailed": "候選升級為草稿失敗",
+        "submitFailed": "提交實驗失敗，請確認引數空間為有效 JSON。",
+        "subscribeJobFailed": "訂閱實驗任務事件失敗"
       },
       "submitForm": {
-        "baseTemplate": "基础策略範本",
+        "baseTemplate": "基礎策略範本",
         "baseTemplatePlaceholder": "選擇範本",
-        "baseTemplateRequired": "請選擇基础策略範本",
-        "maxCandidates": "最大候選数",
-        "objective": "最佳化目标",
-        "parameterSpace": "參數空间 JSON",
-        "parameterSpaceRequired": "請輸入參數空间 JSON",
-        "searchMethod": "搜索方法",
+        "baseTemplateRequired": "請選擇基礎策略範本",
+        "maxCandidates": "最大候選數",
+        "objective": "最佳化目標",
+        "parameterSpace": "引數空間 JSON",
+        "parameterSpaceRequired": "請輸入引數空間 JSON",
+        "searchMethod": "搜尋方法",
         "submit": "提交實驗",
         "title": "提交實驗"
       },
-      "jobEventStream": "任务事件流",
+      "jobEventStream": "任務事件流",
       "noEvents": "暫無事件",
-      "ruleVersionAlert": "当前最小回路：确定性參數實驗。候選仅生成草稿，不会自动发布、排程或交易。",
-      "selectJobToView": "選擇带有任务的實驗以查看事件。",
-      "subtitle": "提交參數组合以自动執行實驗、評分候選策略并生成草稿。",
+      "ruleVersionAlert": "當前最小回路：確定性引數實驗。候選僅生成草稿，不會自動釋出、排程或交易。",
+      "selectJobToView": "選擇帶有任務的實驗以檢視事件。",
+      "subtitle": "提交引數組合以自動執行實驗、評分候選策略並生成草稿。",
       "title": "策略實驗"
     }
   }

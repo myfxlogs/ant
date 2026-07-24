@@ -7,22 +7,22 @@ const Accounts = {
         "bonus": {
           "chartHoldingTitle": "{{month}} 平均持仓时间",
           "chartPopularTitle": "{{month}} 货币热度",
-          "chartRiskTitle": "Bonus: Ty so loi nhuan (profit factor) theo symbol — {{month}}.",
-          "emptyCharts": "Khong co lenh trong thang",
+          "chartRiskTitle": "Bonus: Tỷ số lợi nhuận (profit factor) theo symbol — {{month}}.",
+          "emptyCharts": "Không có lệnh trong tháng",
           "legendBulls": "Mua",
           "legendShortTerm": "Ban",
           "popularityShare": "手数份额",
-          "sliceOther": "Khac"
+          "sliceOther": "Khác"
         },
         "metrics": {
-          "change": "Thay doi",
+          "change": "Thay đổi",
           "lots": "Lot",
           "pips": "点",
           "profit": "Lợi nhuận"
         },
-        "chartMainTitle": "Loi nhuan theo thang ({{metric}})",
+        "chartMainTitle": "Lợi nhuận theo tháng ({{metric}})",
         "focusedValue": "{{period}} · {{metric}}：{{value}}",
-        "title": "Phan tich theo thang"
+        "title": "Phân tích theo tháng"
       },
       "monthlyDetail": {
         "fields": {

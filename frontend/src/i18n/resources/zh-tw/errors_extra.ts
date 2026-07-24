@@ -3,8 +3,8 @@
 const ErrorsExtra = {
   "errors": {
     "ai": {
-      "insufficient_balance_title": "Insufficient Balance",
-      "insufficient_balance": "Your AI wallet balance is insufficient. Please top up before continuing."
+      "insufficient_balance": "您的 AI 錢包餘額不足，請先充值後再繼續。"
+    }
     }
   }
 } as const;

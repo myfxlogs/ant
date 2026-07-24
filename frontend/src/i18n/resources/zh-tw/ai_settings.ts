@@ -6,13 +6,13 @@ const AiSettings = {
       "agent": {
         "defaults": {
           "code": {
-            "inputHint": "範例：目標範式=趨勢跟隨；指標=EMA(fast)/EMA(slow)+ATR 過濾"
+            "inputHint": "範例：目標正規化=趨勢跟隨；指標=EMA(fast)/EMA(slow)+ATR 過濾"
           },
           "execution": {
             "inputHint": "範例：訂單=做多 EURUSD 10 手；目前點差=0.6 pip"
           },
           "executor": {
-            "identity": "交易執行優化專家 — 最小化滑點和執行成本。"
+            "identity": "交易執行最佳化專家 — 最小化滑點和執行成本。"
           },
           "macro": {
             "inputHint": "範例：本週關鍵事件=美國 CPI（週四 20:30）"
@@ -33,10 +33,10 @@ const AiSettings = {
             "inputHint": "範例：近 1 週 VIX 從 14 升至 22"
           },
           "signals": {
-            "inputHint": "範例：範式=趨勢跟隨；週期=H1；可用指標=EMA/ATR/ADX"
+            "inputHint": "範例：正規化=趨勢跟隨；週期=H1；可用指標=EMA/ATR/ADX"
           },
           "strategist": {
-            "identity": "資深量化交易策略師 — 根據帳戶和市場狀況推薦策略範式。"
+            "identity": "資深量化交易策略師 — 根據帳戶和市場狀況推薦策略正規化。"
           },
           "style": {
             "inputHint": "範例：帳戶=EURUSD 零售；週期=H1；目標=月均收益 3%、最大回撤 <10%"
@@ -44,10 +44,10 @@ const AiSettings = {
         },
         "actions": {
           "add": "新增",
-          "loadDefaults": "載入預設 8 個 智能體",
+          "loadDefaults": "載入預設 8 個 智慧體",
           "remove": "刪除",
           "restoreDefaults": "恢復預設",
-          "restoreDefaultsConfirmContent": "將把 8 個系統 智能體 重置為預設身份定義。",
+          "restoreDefaultsConfirmContent": "將把 8 個系統 智慧體 重置為預設身份定義。",
           "restoreDefaultsConfirmTitle": "恢復系統預設身份？",
           "save": "儲存"
         },
@@ -57,14 +57,14 @@ const AiSettings = {
           "inputHintPlaceholder": "輸入提示（可選）",
           "modelProfileEmpty": "請先在「AI 設定」啟用至少一個 廠商/模型",
           "modelProfilePlaceholder": "預設（沿用目前設定檔）",
-          "namePlaceholder": "智能體 名稱"
+          "namePlaceholder": "智慧體 名稱"
         },
         "messages": {
-          "defaultsLoaded": "已載入系統預設 智能體 模板",
-          "empty": "暫無自定義 智能體，點選\"新增\"開始設定",
+          "defaultsLoaded": "已載入系統預設 智慧體 模板",
+          "empty": "暫無自定義 智慧體，點選\"新增\"開始設定",
           "loading": "載入中...",
-          "saveFailed": "智能體 儲存失敗",
-          "saveSuccess": "智能體 已儲存",
+          "saveFailed": "智慧體 儲存失敗",
+          "saveSuccess": "智慧體 已儲存",
           "selectProfileFirst": "請先在左側選擇一個設定"
         },
         "types": {
@@ -79,12 +79,12 @@ const AiSettings = {
           "sentiment": "情緒",
           "signals": "訊號/指標",
           "strategist": "策略分析師",
-          "style": "風格/範式"
+          "style": "風格/正規化"
         },
-        "defaultName": "自定義 智能體",
-        "removeConfirmContent": "確定要刪除該 智能體 嗎？",
-        "removeConfirmTitle": "刪除 智能體",
-        "title": "智能體 身份定義"
+        "defaultName": "自定義 智慧體",
+        "removeConfirmContent": "確定要刪除該 智慧體 嗎？",
+        "removeConfirmTitle": "刪除 智慧體",
+        "title": "智慧體 身份定義"
       },
       "apiKeyGuide": {
         "deepseek": {
@@ -97,7 +97,7 @@ const AiSettings = {
           "step2": "登入/註冊後進入控制檯，建立並複製 API 金鑰",
           "title": "如何獲取智譜 API 金鑰"
         },
-        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\",
+        "default": "當前提供商：{{provider}}。前往該提供商\\\\\\\\\\\\\\\\",
         "modelSuggestionDeepSeek": "模型建議: 在\"模型\"下拉中選擇 `deepseek-chat`",
         "modelSuggestionZhipu": "模型建議: 在\"模型\"下拉中選擇 `glm-4-flash` / `glm-4`",
         "selectProviderHint": "選擇一個 AI 提供商後，會在這裡顯示如何申請 API 金鑰。",
@@ -121,12 +121,12 @@ const AiSettings = {
         "baseUrlInvalid": "Base URL 格式無效：請填寫完整位址，例如 https://model.example.com 或 https://model.example.com/v1",
         "baseUrlRequired": "請先填寫 Base URL（模型服務位址）。",
         "endpoint404": "模型端點不存在：請確認 Base URL 與服務協定相符（部分服務需要 /v1）。",
-        "freeTierExhausted": "免費額度已耗盡：請在廠商控制台關閉「僅使用免費檔」或更換付費 Key。",
+        "freeTierExhausted": "免費額度已耗盡：請在廠商控制檯關閉「僅使用免費檔」或更換付費 Key。",
         "generic": "拉取模型失敗，請檢查 Base URL 與金鑰設定。",
         "genericDetail": "拉取模型失敗：{{detail}}",
         "invalidModelsResponse": "模型服務回傳格式不相容 /models 協定。",
-        "noModelsReturned": "模型服務未回傳可用模型，請檢查帳號權限或服務設定。",
-        "quotaForbidden403": "呼叫被拒（配額受限）：請檢查廠商控制台的計費/配額狀態。",
+        "noModelsReturned": "模型服務未回傳可用模型，請檢查帳號許可權或服務設定。",
+        "quotaForbidden403": "呼叫被拒（配額受限）：請檢查廠商控制檯的計費/配額狀態。",
         "quotaOrRateLimit": "配額受限或被限流：廠商已拒絕呼叫，請檢查計費/速率限制或稍後重試。",
         "timeout": "請求逾時：請檢查網路連通性或稍後重試。",
         "unauthorized": "鑑權失敗：請檢查 API Key/Secret 是否正確。",
@@ -134,8 +134,8 @@ const AiSettings = {
       },
       "errors": {
         "arrearage": "服務商返回：帳號欠費/餘額不足。請到服務商控制檯檢查。",
-        "forbidden": "服務商返回：訪問被拒絕（403）。請檢查 Key 權限。",
-        "invalidModelId": "服務商返回：模型不可用{{model}}。請從下拉列表選擇。",
+        "forbidden": "服務商返回：訪問被拒絕（403）。請檢查 Key 許可權。",
+        "invalidModelId": "服務商返回：模型不可用{{model}}。請從下拉選單選擇。",
         "timeout": "連線逾時。請檢查 基礎網址 是否可訪問。",
         "unauthorized": "服務商返回：API 金鑰無效（401）。請檢查 Key 是否正確。"
       },
@@ -147,7 +147,7 @@ const AiSettings = {
         "availableModelsEmpty": "直接輸入 模型 ID",
         "availableModelsHint": "同一 API 金鑰 下可同時啟用多個 模型。",
         "availableModelsPlaceholder": "選擇或手動輸入 模型 ID",
-        "availableModelsTip": "提示：刪除某個模型不會立即清空已繫結的 智能體。",
+        "availableModelsTip": "提示：刪除某個模型不會立即清空已繫結的 智慧體。",
         "baseUrl": "基礎網址",
         "baseUrlHint": "（模型服務位址）",
         "clear": "清空",
@@ -164,7 +164,7 @@ const AiSettings = {
         "timeoutSeconds": "逾時秒數"
       },
       "inferenceParams": {
-        "title": "推理參數"
+        "title": "推理引數"
       },
       "messages": {
         "apiKeyValidated": "API 金鑰 驗證成功",
@@ -218,14 +218,14 @@ const AiSettings = {
         "zhipu": "智譜 AI"
       },
       "sections": {
-        "advanced": "高階參數",
+        "advanced": "高階引數",
         "advancedHint": "僅在瞭解含義時調整；預設值已適配大多數場景",
         "basic": "基礎資訊",
         "connection": "連線設定",
         "connectionApiKeyLink": "前往申請 / 管理該廠商 API 金鑰"
       },
       "tabs": {
-        "agents": "智能體 設定",
+        "agents": "智慧體 設定",
         "config": "模型設定"
       },
       "validation": {

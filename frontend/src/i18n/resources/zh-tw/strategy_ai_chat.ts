@@ -41,7 +41,7 @@ const StrategyAiChat = {
       "continueMessage": "收到，請繼續。",
       "complianceCheck": "合規檢查",
       "backtestLabel": "回測",
-      "passed": "通過"
+      "passed": "透過"
     }
   }
 } as const;

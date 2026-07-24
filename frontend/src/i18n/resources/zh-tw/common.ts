@@ -2,16 +2,16 @@
 // TODO: Translate to zh-tw
 const Common = {
   "common": {
-    "unknownError": "Unknown error",
-    "copied": "Copy All",
-    "deleteFailed": "Delete failed",
-    "operationFailed": "Operation failed",
-    "saveSuccess": "Saved successfully",
-    "refresh": "刷新",
-    "loading": "加载中...",
-    "saveFailed": "Save failed",
-    "noData": "No logs found",
-    "confirm": "确认",
+    "copied": "複製全部",
+    "deleteFailed": "刪除失敗",
+    "operationFailed": "操作失敗",
+    "saveSuccess": "儲存成功",
+    "refresh": "重新整理",
+    "refresh": "重新整理",
+    "loading": "載入中...",
+    "noData": "未找到日誌",
+    "confirm": "確認",
+    "confirm": "確認",
     "cancel": "取消"
   }
 } as const;

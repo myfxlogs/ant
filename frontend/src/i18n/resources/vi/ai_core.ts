@@ -51,7 +51,7 @@ const AiCore = {
     },
     "assistant": {
       "messages": {
-        "noCodeBlockFound": "No code block found (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
+        "noCodeBlockFound": "Không tìm thấy khối mã (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
       }
     },
     "backtestScoreCard": {
@@ -86,7 +86,7 @@ const AiCore = {
       "recommendation": {
         "cautious": "Triển khai thận trọng: bắt đầu nhỏ / theo dõi thủ công một thời gian.",
         "loading": "Đang đánh giá rủi ro. Vui lòng chờ xong trước khi triển khai.",
-        "notRecommended": "Not recommended for direct live: high risk or unreliable, optimize before trying.",
+        "notRecommended": "Không khuyến nghị giao dịch trực tiếp: rủi ro cao hoặc không đáng tin, tối ưu trước khi thử.",
         "recommended": "Khuyến nghị triển khai: rủi ro trong mức kiểm soát, chỉ số nhìn chung tốt."
       },
       "score": {
@@ -301,7 +301,7 @@ const AiCore = {
         "validationPassedModels": "Xác thực thành công: tìm thấy {{count}} mô hình"
       },
       "section1": {
-        "subtitle": "Cards show each provider's configuration and readiness; click to select",
+        "subtitle": "Thẻ hiển thị cấu hình và trạng thái sẵn sàng của từng nhà cung cấp; nhấn để chọn",
         "title": "Chọn nhà cung cấp model"
       },
       "status": {

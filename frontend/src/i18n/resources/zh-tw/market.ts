@@ -2,9 +2,9 @@
 // TODO: Translate to zh-tw
 const Market = {
   "market": {
-    "allSymbols": "All Symbols",
-    "selectSymbol": "Select symbol",
-    "loadingSymbols": "No symbols found"
+    "selectSymbol": "選擇品種",
+    "loadingSymbols": "未找到品種"
+  }
   }
 } as const;
 export default Market;

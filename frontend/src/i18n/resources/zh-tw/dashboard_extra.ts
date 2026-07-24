@@ -3,7 +3,7 @@
 const DashboardExtra = {
   "dashboard": {
     "quickActions": {
-      "aiStrategy": "AI Strategy"
+    }
     }
   }
 } as const;

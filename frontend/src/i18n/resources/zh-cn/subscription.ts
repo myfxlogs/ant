@@ -13,7 +13,7 @@ const Subscription = {
     "period": "当前周期",
     "cancelAutoRenew": "取消自动续费",
     "usageTitle": "本月使用量",
-    "aiTokens": "AI Token",
+    "aiTokens": "AI 代币",
     "activeStrategies": "活跃策略",
     "runtimeMinutes": "运行时长（分钟）",
     "walletBalance": "钱包余额",

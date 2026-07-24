@@ -3,72 +3,72 @@
 const StrategyExtra = {
   "strategy": {
     "backtest": {
-      "canceled": "Backtest canceled",
-      "lotSize": "Lot Size",
-      "strategyParameters": "Strategy Parameters"
+      "lotSize": "手數",
+      "strategyParameters": "策略引數"
+    },
     },
     "workspace": {
       "chartIndicators": {
-        "overlay": "Overlay (main chart)",
-        "subPane": "Sub-pane indicators"
+        "subPane": "副圖指標"
+      },
       },
       "tour": {
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.",
-        "ai": "AI Assistant",
-        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
-        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "codeDesc": "在此編寫或貼上 MQL 策略程式碼，也可匯入 .mq4/.mq5 檔案。",
+        "ai": "AI 助手",
+        "aiDesc": "讓 AI 生成、最佳化或除錯策略，生成的程式碼會即時顯示在編輯器中。",
+        "backtestDesc": "使用可配置引數執行回測，檢視資金曲線、交易統計和風險指標。",
+        "save": "儲存併發布",
+        "saveDesc": "將策略儲存為模板、釋出到市場或部署到實盤排程。"
+      }
       }
     },
     "codeAssist": {
-      "aiHint": "Describe the changes you want, e.g."
+    },
     },
     "chat": {
-      "executionPlan": "Execution Plan",
-      "codeGenerated": "Code generated. Use the buttons below to run strategy review and backtest."
+      "codeGenerated": "程式碼已生成，使用下方按鈕執行策略審查和回測。"
+    },
     },
     "templates": {
-      "title": "Strategy Templates",
-      "saveCurrent": "Save Current Strategy",
-      "chatEdit": "Chat Edit",
-      "confirmDelete": "Delete this strategy?",
-      "noTemplates": "No saved strategy templates",
-      "sourceCode": "Strategy Source",
+      "saveCurrent": "儲存當前策略",
+      "chatEdit": "對話編輯",
+      "confirmDelete": "刪除此策略？",
+      "noTemplates": "暫無儲存的策略模板",
+      "sourceCode": "策略原始碼",
       "gallery": {
-        "unpublishFailed": "Unpublish failed",
-        "fork": "Fork & Edit",
-        "aiGenerate": "AI Generate",
-        "searchPlaceholder": "Search strategies...",
-        "empty": "No strategies found",
-        "deleteFailed": "Delete failed"
+      "gallery": {
+        "fork": "復刻並編輯",
+        "aiGenerate": "AI 生成",
+        "searchPlaceholder": "搜尋策略...",
+        "empty": "未找到策略",
+        "deleteFailed": "刪除失敗"
+      },
       },
       "scheduleLaunch": {
         "metrics": {
-          "winRate": "Win Rate",
-          "maxDrawdown": "Max DD",
-          "sharpe": "Sharpe Ratio"
+          "maxDrawdown": "最大回撤",
+          "sharpe": "夏普比率"
+        }
         }
       },
       "detail": {
-        "profitFactor": "Profit Factor",
-        "notFound": "Strategy not found",
-        "noDescription": "No description",
-        "equityCurve": "Equity Curve",
-        "tradeStats": "Trade Statistics"
+        "notFound": "未找到策略",
+        "noDescription": "暫無描述",
+        "equityCurve": "資金曲線",
+        "tradeStats": "交易統計"
+      },
       },
       "table": {
-        "useCount": "Use Count"
+      },
       },
       "messages": {
-        "fetchTemplateListFailed": "Fork failed",
-        "publishFailed": "Publish failed"
+        "publishFailed": "釋出失敗"
+      },
       },
       "actions": {
-        "create": "New Strategy"
       },
-      "deleteConfirm": "Delete this strategy?"
+      },
+    },
     },
     "live": {
       "stopSuccess": "策略已停止",
@@ -81,7 +81,7 @@ const StrategyExtra = {
       "signals": "訊號",
       "errors": "錯誤",
       "startedAt": "開始時間",
-      "watchSignals": "查看訊號",
+      "watchSignals": "檢視訊號",
       "confirmStop": "確認停止此策略？",
       "status": "狀態",
       "totalSignals": "總訊號數",
@@ -96,7 +96,7 @@ const StrategyExtra = {
       "signalLog": "訊號日誌",
       "waitingSignals": "等待訊號...",
       "time": "時間",
-      "signalType": "類型",
+      "signalType": "型別",
       "volume": "手數",
       "price": "價格",
       "sl": "止損",
@@ -104,52 +104,52 @@ const StrategyExtra = {
       "reason": "原因"
     },
     "ai": {
-      "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation.",
-      "settingsHint": "Configure AI provider and model"
+      "explainHint": "編寫程式碼後檢視 AI 解釋。",
+      "settingsHint": "配置 AI 提供商和模型"
+    },
     },
     "validate": {
-      "running": "Running validation...",
-      "fixWithAI": "Send errors to AI Revise",
-      "allClear": "All checks passed — no issues found.",
-      "passed": "Validation passed — Save is now unlocked."
+      "fixWithAI": "傳送錯誤到 AI 修訂",
+      "allClear": "所有檢查透過 — 未發現問題。",
+      "passed": "驗證透過 — 現在可以儲存。"
+    },
     },
     "importEA": {
-      "writeTab": "Strategy Code",
-      "importTab": "Import EA",
-      "codeTooShort": "Please paste complete EA/indicator source code.",
-      "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
-      "migration": "策略导入",
-      "aiTranslate": "AI 翻译",
-      "bridge": "盲区桥接",
-      "analyze": "分析策略结构",
-      "confirmImport": "确认导入",
-      "tryAI": "AI 翻译补充",
-      "apply": "Apply to Editor",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
-      "hint": "Paste MQL4/MQL5 code and click Analyze",
-      "translate": "Translate to Go",
-      "translating": "Paste MQL4/MQL5 code and click Translate",
-      "bridgeBtn": "盲区桥接翻译",
+      "importTab": "匯入 EA",
+      "codeTooShort": "請貼上完整的 EA/指標原始碼。",
+      "pastePlaceholder": "貼上 MQL4/MQL5 EA 程式碼...",
+      "migration": "策略匯入",
+      "migration": "策略匯入",
+      "aiTranslate": "AI 翻譯",
+      "bridge": "盲區橋接",
+      "analyze": "分析策略結構",
+      "confirmImport": "確認匯入",
+      "tryAI": "AI 翻譯補充",
+      "importSuccess": "MQL 原始碼已匯入，點選「應用到編輯器」寫入編輯器",
+      "importSuccess": "MQL 原始碼已匯入，點選「Apply to Editor」寫入編輯器",
+      "translate": "翻譯為 Go",
+      "translating": "貼上 MQL4/MQL5 程式碼並點選翻譯",
+      "bridgeBtn": "盲區橋接翻譯",
+      "bridgeBtn": "盲區橋接翻譯",
       "bridging": "AI bridging blind spots...",
-      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
-      "noBridgeNeeded": "覆盖率 100%，无需桥接",
-      "bridgeHint": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
-      "tooltip": "Import MQL4/MQL5 source code",
-      "button": "Import MQL",
-      "title": "Import MQL Strategy"
+      "bridgeFailedMsg": "Agent 無法自動橋接所有盲區",
+      "noBridgeNeeded": "覆蓋率 100%，無需橋接",
+      "tooltip": "匯入 MQL4/MQL5 原始碼",
+      "button": "匯入 MQL",
+      "title": "匯入 MQL 策略"
+    },
     },
     "version": {
-      "loadFailed": "Failed to load versions",
-      "rollbackSuccess": "Rolled back to version {{n}}",
-      "rollbackFailed": "Rollback failed",
-      "loadVersionFailed": "Failed to load version",
-      "loadDiffFailed": "Failed to load diff",
-      "colSummary": "Change Summary",
-      "rollbackConfirm": "Rollback to v{{n}}?",
-      "title": "Version History",
-      "empty": "No version history yet",
-      "history": "Version History"
+      "rollbackSuccess": "已回滾到版本 {{n}}",
+      "rollbackFailed": "回滾失敗",
+      "loadVersionFailed": "載入版本失敗",
+      "loadDiffFailed": "載入差異失敗",
+      "colSummary": "變更摘要",
+      "rollbackConfirm": "回滾到 v{{n}}？",
+      "title": "版本歷史",
+      "empty": "暫無版本歷史",
+      "history": "版本歷史"
+    }
     }
   }
 } as const;

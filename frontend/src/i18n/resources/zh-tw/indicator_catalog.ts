@@ -5,12 +5,12 @@ const IndicatorCatalog = {
     "title": "指標目錄",
     "paramKey": "鍵",
     "paramLabel": "標籤",
-    "paramType": "類型",
+    "paramType": "型別",
     "paramDefault": "預設值",
     "paramRange": "範圍",
     "paramDescription": "描述",
-    "riskParamsTitle": "風險參數",
-    "riskParamsDesc": "內建風險控制參數",
+    "riskParamsTitle": "風險引數",
+    "riskParamsDesc": "內建風險控制引數",
     "indicatorsTitle": "指標",
     "riskSectionTitle": "風險控制"
   }

@@ -4,7 +4,7 @@ const StrategyScheduleLogs = {
   "strategy": {
     "scheduleLogs": {
       "action": {
-        "restart": "重启",
+        "restart": "重啟",
         "start": "啟動",
         "stop": "停止"
       },
@@ -12,7 +12,7 @@ const StrategyScheduleLogs = {
         "completed": "已完成",
         "failed": "失敗",
         "pending": "待檢測",
-        "running": "運行中",
+        "running": "執行中",
         "skipped": "已略過"
       },
       "execTable": {
@@ -28,7 +28,7 @@ const StrategyScheduleLogs = {
       },
       "operationStatus": {
         "failed": "失敗",
-        "running": "運行中",
+        "running": "執行中",
         "success": "成功"
       },
       "orderSide": {
@@ -40,7 +40,7 @@ const StrategyScheduleLogs = {
         "sell": "市價賣出",
         "sellLimit": "限價賣出",
         "sellStop": "突破賣出",
-        "sellStopLimit": "卖出止損限价"
+        "sellStopLimit": "賣出止損限價"
       },
       "ordersTable": {
         "closePrice": "平倉價",
@@ -59,15 +59,15 @@ const StrategyScheduleLogs = {
       "summary": {
         "enableCount": "啟用次數",
         "lastError": "最近錯誤",
-        "lastRun": "最後運行時間",
+        "lastRun": "最後執行時間",
         "name": "名稱",
         "status": "狀態",
         "trade": "交易"
       },
       "tabs": {
-        "exec": "運行記錄",
-        "execLogs": "执行日誌",
-        "orderLogs": "訂單日志",
+        "exec": "執行記錄",
+        "execLogs": "執行日誌",
+        "orderLogs": "訂單日誌",
         "orders": "交易記錄"
       },
       "scheduleIdLabel": "排程ID:",

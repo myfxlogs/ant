@@ -3,23 +3,23 @@
 const Onboarding = {
   "onboarding": {
     "step1": {
-      "title": "Connect Your Account",
-      "desc": "Link your MT4/MT5 trading account to start.",
-      "action": "Bind Account"
+      "desc": "繫結您的 MT4/MT5 交易賬戶以開始。",
+      "action": "繫結賬戶"
+    },
     },
     "step2": {
-      "title": "Create Your First Strategy",
-      "desc": "Use AI to generate a trading strategy from natural language.",
-      "action": "Open Workspace"
+      "desc": "使用 AI 從自然語言生成交易策略。",
+      "action": "開啟工作區"
+    },
     },
     "step3": {
-      "title": "Upgrade Your Plan",
-      "desc": "Unlock more AI tokens, strategies, and live trading with Pro.",
-      "action": "View Plans"
+      "desc": "解鎖更多 AI 代幣、策略和實盤交易功能。",
+      "action": "檢視套餐"
     },
-    "welcome": "Welcome to AlphaForge, {{name}}!",
-    "subtitle": "Get started in 3 simple steps",
-    "dismiss": "Got it, dismiss"
+    },
+    "subtitle": "3 個簡單步驟即可開始",
+    "dismiss": "知道了，關閉"
+  }
   }
 } as const;
 export default Onboarding;

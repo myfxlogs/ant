@@ -1,74 +1,73 @@
 // Auto-generated supplementary keys for strategy
-// TODO: Translate to ja
 const StrategyExtra = {
   "strategy": {
     "backtest": {
-      "canceled": "Backtest canceled",
-      "lotSize": "Lot Size",
-      "strategyParameters": "Strategy Parameters"
+      "canceled": "バックテストがキャンセルされました",
+      "lotSize": "ロットサイズ",
+      "strategyParameters": "戦略パラメータ"
     },
     "workspace": {
       "chartIndicators": {
-        "overlay": "Overlay (main chart)",
-        "subPane": "Sub-pane indicators"
+        "overlay": "メインチャートに重ねて表示",
+        "subPane": "サブパネル指標"
       },
       "tour": {
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.",
-        "ai": "AI Assistant",
-        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
-        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "code": "コードエディタ",
+        "codeDesc": "ここにMQL戦略コードを書くか貼り付けてください。.mq4/.mq5ファイルのインポートも可能です。",
+        "ai": "AIアシスタント",
+        "aiDesc": "AIに戦略の生成、最適化、デバッグを依頼できます。適用されたコードは即座にエディタに表示されます。",
+        "backtestDesc": "設定可能なパラメータでバックテストを実行。資金カーブ、取引統計、リスク指標を表示。",
+        "save": "保存して公開",
+        "saveDesc": "戦略をテンプレートとして保存、マーケットプレイスに公開、または実盤スケジュールにデプロイ。"
       }
     },
     "codeAssist": {
-      "aiHint": "Describe the changes you want, e.g."
+      "aiHint": "希望する変更を説明してください。例："
     },
     "chat": {
-      "executionPlan": "Execution Plan",
-      "codeGenerated": "Code generated. Use the buttons below to run strategy review and backtest."
+      "executionPlan": "実行計画",
+      "codeGenerated": "コードが生成されました。下のボタンから戦略レビューとバックテストを実行してください。"
     },
     "templates": {
-      "title": "Strategy Templates",
-      "saveCurrent": "Save Current Strategy",
-      "chatEdit": "Chat Edit",
-      "confirmDelete": "Delete this strategy?",
-      "noTemplates": "No saved strategy templates",
-      "sourceCode": "Strategy Source",
+      "title": "戦略テンプレート",
+      "saveCurrent": "現在の戦略を保存",
+      "chatEdit": "チャット編集",
+      "confirmDelete": "この戦略を削除しますか？",
+      "noTemplates": "保存された戦略テンプレートがありません",
+      "sourceCode": "戦略ソース",
       "gallery": {
-        "unpublishFailed": "Unpublish failed",
-        "fork": "Fork & Edit",
-        "aiGenerate": "AI Generate",
-        "searchPlaceholder": "Search strategies...",
-        "empty": "No strategies found",
-        "deleteFailed": "Delete failed"
+        "unpublishFailed": "公開取り消しに失敗",
+        "fork": "フォークして編集",
+        "aiGenerate": "AI生成",
+        "searchPlaceholder": "戦略を検索...",
+        "empty": "戦略が見つかりません",
+        "deleteFailed": "削除に失敗"
       },
       "scheduleLaunch": {
         "metrics": {
-          "winRate": "Win Rate",
-          "maxDrawdown": "Max DD",
-          "sharpe": "Sharpe Ratio"
+          "winRate": "勝率",
+          "maxDrawdown": "最大ドローダウン",
+          "sharpe": "シャープレシオ"
         }
       },
       "detail": {
-        "profitFactor": "Profit Factor",
-        "notFound": "Strategy not found",
-        "noDescription": "No description",
-        "equityCurve": "Equity Curve",
-        "tradeStats": "Trade Statistics"
+        "profitFactor": "プロフィットファクター",
+        "notFound": "戦略が見つかりません",
+        "noDescription": "説明なし",
+        "equityCurve": "資金カーブ",
+        "tradeStats": "取引統計"
       },
       "table": {
-        "useCount": "Use Count"
+        "useCount": "使用回数"
       },
       "messages": {
-        "fetchTemplateListFailed": "Fork failed",
-        "publishFailed": "Publish failed"
+        "fetchTemplateListFailed": "フォークに失敗",
+        "publishFailed": "公開に失敗"
       },
       "actions": {
-        "create": "New Strategy"
+        "create": "新規戦略"
       },
-      "deleteConfirm": "Delete this strategy?"
+      "deleteConfirm": "この戦略を削除しますか？"
     },
     "live": {
       "stopSuccess": "戦略を停止しました",
@@ -104,52 +103,52 @@ const StrategyExtra = {
       "reason": "理由"
     },
     "ai": {
-      "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation.",
-      "settingsHint": "Configure AI provider and model"
+      "reviseHint": "まずコードを書いてから、AIに改善を依頼してください。",
+      "explainHint": "コードを書くとAIの説明が表示されます。",
+      "settingsHint": "AIプロバイダとモデルを設定"
     },
     "validate": {
-      "running": "Running validation...",
-      "fixWithAI": "Send errors to AI Revise",
-      "allClear": "All checks passed — no issues found.",
-      "passed": "Validation passed — Save is now unlocked."
+      "running": "検証中...",
+      "fixWithAI": "エラーをAI修正に送信",
+      "allClear": "すべてのチェックが合格 — 問題なし。",
+      "passed": "検証合格 — 保存が可能になりました。"
     },
     "importEA": {
-      "writeTab": "Strategy Code",
-      "importTab": "Import EA",
-      "codeTooShort": "Please paste complete EA/indicator source code.",
-      "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
+      "writeTab": "戦略コード",
+      "importTab": "EAをインポート",
+      "codeTooShort": "完全なEA/インジケータのソースコードを貼り付けてください。",
+      "pastePlaceholder": "MQL4/MQL5 EAコードを貼り付け...",
       "migration": "策略导入",
       "aiTranslate": "AI 翻译",
       "bridge": "盲区桥接",
       "analyze": "分析策略结构",
       "confirmImport": "确认导入",
       "tryAI": "AI 翻译补充",
-      "apply": "Apply to Editor",
+      "apply": "エディタに適用",
       "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
-      "hint": "Paste MQL4/MQL5 code and click Analyze",
-      "translate": "Translate to Go",
-      "translating": "Paste MQL4/MQL5 code and click Translate",
+      "hint": "MQL4/MQL5コードを貼り付けて分析をクリック",
+      "translate": "Goに翻訳",
+      "translating": "MQL4/MQL5コードを貼り付けて翻訳をクリック",
       "bridgeBtn": "盲区桥接翻译",
-      "bridging": "AI bridging blind spots...",
+      "bridging": "AIがブラインドスポットをブリッジ中...",
       "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
       "noBridgeNeeded": "覆盖率 100%，无需桥接",
-      "bridgeHint": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
-      "tooltip": "Import MQL4/MQL5 source code",
-      "button": "Import MQL",
-      "title": "Import MQL Strategy"
+      "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIがブラインドスポットをプラットフォームバイトコードにブリッジします",
+      "tooltip": "MQL4/MQL5ソースコードをインポート",
+      "button": "MQLをインポート",
+      "title": "MQL戦略をインポート"
     },
     "version": {
-      "loadFailed": "Failed to load versions",
-      "rollbackSuccess": "Rolled back to version {{n}}",
-      "rollbackFailed": "Rollback failed",
-      "loadVersionFailed": "Failed to load version",
-      "loadDiffFailed": "Failed to load diff",
-      "colSummary": "Change Summary",
-      "rollbackConfirm": "Rollback to v{{n}}?",
-      "title": "Version History",
-      "empty": "No version history yet",
-      "history": "Version History"
+      "loadFailed": "バージョンの読み込みに失敗",
+      "rollbackSuccess": "バージョン{{n}}にロールバックしました",
+      "rollbackFailed": "ロールバックに失敗",
+      "loadVersionFailed": "バージョンの読み込みに失敗",
+      "loadDiffFailed": "差分の読み込みに失敗",
+      "colSummary": "変更概要",
+      "rollbackConfirm": "v{{n}}にロールバックしますか？",
+      "title": "バージョン履歴",
+      "empty": "バージョン履歴がまだありません",
+      "history": "バージョン履歴"
     }
   }
 } as const;

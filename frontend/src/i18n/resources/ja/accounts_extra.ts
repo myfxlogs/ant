@@ -1,21 +1,20 @@
 // Auto-generated supplementary keys for accounts
-// TODO: Translate to ja
 const AccountsExtra = {
   "accounts": {
     "bind": {
       "fields": {
-        "alias": "Account Alias"
+        "alias": "アカウントエイリアス"
       },
       "placeholders": {
-        "alias": "Optional custom name"
+        "alias": "任意のカスタム名"
       },
       "messages": {
-        "changeCredentials": "Change credentials"
+        "changeCredentials": "認証情報を変更"
       }
     },
     "messages": {
-      "shareLinkCopied": "Share link copied to clipboard",
-      "shareLinkFailed": "Failed to create share link"
+      "shareLinkCopied": "共有リンクをクリップボードにコピー",
+      "shareLinkFailed": "共有リンクの作成に失敗"
     }
   }
 } as const;

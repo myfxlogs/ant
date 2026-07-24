@@ -1,21 +1,20 @@
 // Auto-generated supplementary keys for accounts
-// TODO: Translate to zh-cn
 const AccountsExtra = {
   "accounts": {
     "bind": {
       "fields": {
-        "alias": "Account Alias"
+        "alias": "账户别名"
       },
       "placeholders": {
-        "alias": "Optional custom name"
+        "alias": "可选自定义名称"
       },
       "messages": {
-        "changeCredentials": "Change credentials"
+        "changeCredentials": "修改凭据"
       }
     },
     "messages": {
-      "shareLinkCopied": "Share link copied to clipboard",
-      "shareLinkFailed": "Failed to create share link"
+      "shareLinkCopied": "分享链接已复制到剪贴板",
+      "shareLinkFailed": "创建分享链接失败"
     }
   }
 } as const;

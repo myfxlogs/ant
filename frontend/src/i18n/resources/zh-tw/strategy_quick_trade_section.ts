@@ -6,13 +6,13 @@ const StrategyQuickTradeSection = {
       "amountLots": "手數",
       "cross": "全倉",
       "isolated": "逐倉",
-      "marginMode": "保证金模式",
+      "marginMode": "保證金模式",
       "mt4CrossOnly": "MT4 僅支援全倉模式",
       "orderFailed": "下單失敗",
       "orderPlaced": "訂單已提交",
       "priceRequired": "請輸入價格",
       "selectSymbol": "請選擇品種",
-      "validVolume": "手數须 ≥ 0.01 手"
+      "validVolume": "手數須 ≥ 0.01 手"
     }
   }
 } as const;

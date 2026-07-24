@@ -5,8 +5,8 @@ const Accounts = {
     "analytics": {
       "monthlyAnalysis": {
         "bonus": {
-          "chartHoldingTitle": "{{month}} 平均持仓时间",
-          "chartPopularTitle": "{{month}} 货币热度",
+          "chartHoldingTitle": "{{month}} 平均持倉時間",
+          "chartPopularTitle": "{{month}} 貨幣熱度",
           "chartRiskTitle": "Bonus：{{month}} 各品種風險報酬比（盈利因子）。",
           "emptyCharts": "該月無成交",
           "legendBulls": "買入側",
@@ -17,7 +17,7 @@ const Accounts = {
         "metrics": {
           "change": "變化",
           "lots": "手數",
-          "pips": "点",
+          "pips": "點",
           "profit": "盈虧"
         },
         "chartMainTitle": "每月收益（{{metric}}）",
@@ -110,38 +110,38 @@ const Accounts = {
       "dailyPnLTitle": "📅 每日盈虧",
       "hourlyTitle": "⏰ 時段分析",
       "monthlyProfitTitle": "月度盈虧",
-      "symbolDistributionTitle": "品種分布"
+      "symbolDistributionTitle": "品種分佈"
     },
     "bind": {
       "actions": {
-        "confirmBind": "確認綁定",
-        "retryVerify": "重试",
+        "confirmBind": "確認繫結",
+        "retryVerify": "重試",
         "search": "搜尋",
         "verifyAccount": "驗證帳戶"
       },
       "errorModal": {
-        "title": "绑定失敗"
+        "title": "繫結失敗"
       },
       "errors": {
         "brokerUnavailable": "連線伺服器錯誤或密碼不正確",
         "connectionFailed": "無法連線到經紀商伺服器，請檢查網路",
         "invalidCredentials": "帳號或密碼錯誤，未找到該交易帳戶",
-        "timeout": "連接逾時，请稍后重试"
+        "timeout": "連線逾時，請稍後重試"
       },
       "fields": {
         "brokerName": "經紀商名稱",
         "company": "選擇公司",
         "password": "密碼",
-        "platform": "交易平台",
+        "platform": "交易平臺",
         "server": "伺服器",
         "tradingAccount": "交易帳號"
       },
       "labels": {
-        "serverCount": "{{count}} 台伺服器"
+        "serverCount": "{{count}} 臺伺服器"
       },
       "messages": {
-        "bindFailed": "帳戶綁定失敗",
-        "bindSuccess": "帳戶綁定成功",
+        "bindFailed": "帳戶繫結失敗",
+        "bindSuccess": "帳戶繫結成功",
         "enterBrokerName": "請輸入經紀商名稱",
         "enterPassword": "請輸入密碼",
         "enterTradingAccount": "請輸入交易帳號",
@@ -161,33 +161,33 @@ const Accounts = {
         "tradingAccount": "輸入交易帳號"
       },
       "step1": {
-        "subtitle": "選擇您的交易平台并搜尋经纪商",
-        "title": "選擇平台與經紀商"
+        "subtitle": "選擇您的交易平臺並搜尋經紀商",
+        "title": "選擇平臺與經紀商"
       },
       "step2": {
         "subtitle": "輸入您的交易帳戶和密碼",
         "title": "輸入帳戶資訊"
       },
       "step3": {
-        "subtitle": "驗證凭据并確認完成",
-        "title": "確認綁定"
+        "subtitle": "驗證憑據並確認完成",
+        "title": "確認繫結"
       },
       "summary": {
         "balance": "餘額",
         "broker": "經紀商",
-        "currency": "货币",
+        "currency": "貨幣",
         "equity": "淨值",
         "freeMargin": "可用保證金",
         "leverage": "槓桿",
         "margin": "保證金",
         "password": "密碼",
-        "platform": "交易平台",
+        "platform": "交易平臺",
         "server": "伺服器",
         "tradingAccount": "交易帳號",
         "verified": "帳戶已驗證"
       },
       "passwordHint": "密碼將透過 HTTPS 加密傳輸，後端使用 Argon2id 雜湊儲存不可回逆",
-      "title": "綁定 MT 帳戶"
+      "title": "繫結 MT 帳戶"
     },
     "card": {
       "actions": {
@@ -206,7 +206,7 @@ const Accounts = {
         "server": "伺服器"
       },
       "status": {
-        "connected": "已連接",
+        "connected": "已連線",
         "connecting": "連線中",
         "disabled": "已停用",
         "disconnected": "已斷線",
@@ -246,21 +246,21 @@ const Accounts = {
       },
       "messages": {
         "fetchAccountFailed": "獲取帳戶資訊失敗，請稍後重試",
-        "syncHistoryFailed": "同步訂單歷史失敗，请確保帳戶已連接到 MT 伺服器。",
+        "syncHistoryFailed": "同步訂單歷史失敗，請確保帳戶已連線到 MT 伺服器。",
         "syncHistorySuccess": "同步歷史訂單成功"
       },
       "mode": {
         "investor": "投資者模式",
-        "trader": "交易员模式"
+        "trader": "交易員模式"
       },
       "orderTypes": {
         "buyLimit": "買入限價",
         "buyStop": "買入止損",
         "sellLimit": "賣出限價",
-        "sellStop": "卖出止損"
+        "sellStop": "賣出止損"
       },
       "status": {
-        "connected": "已連接",
+        "connected": "已連線",
         "connecting": "連線中",
         "disabled": "已停用",
         "disconnected": "已斷線",
@@ -271,7 +271,7 @@ const Accounts = {
         "ok": "同步",
         "title": "同步歷史訂單"
       },
-      "connected": "已連接",
+      "connected": "已連線",
       "lastConnected": "{{time}}",
       "leverage": "槓桿 {{leverage}}x"
     },
@@ -282,7 +282,7 @@ const Accounts = {
       },
       "mobile": {
         "balanceLabel": "餘額: ",
-        "equityLabel": "净值: "
+        "equityLabel": "淨值: "
       },
       "table": {
         "account": "帳號",
@@ -290,7 +290,7 @@ const Accounts = {
         "balance": "餘額",
         "broker": "經紀商",
         "equity": "淨值",
-        "type": "類型"
+        "type": "型別"
       },
       "title": "已停用的帳戶"
     },
@@ -342,11 +342,11 @@ const Accounts = {
     },
     "tradeTabs": {
       "pagination": {
-        "total": "共 {{total}} 条"
+        "total": "共 {{total}} 條"
       },
       "table": {
         "closePrice": "平倉價",
-        "closeTime": "平倉时间",
+        "closeTime": "平倉時間",
         "currentPrice": "當前價",
         "openPrice": "開倉價",
         "openTime": "開倉時間",
@@ -356,7 +356,7 @@ const Accounts = {
         "profit": "盈虧",
         "side": "方向",
         "symbol": "品種",
-        "type": "類型",
+        "type": "型別",
         "volume": "手數"
       },
       "emptyHistory": "暫無歷史訂單",
@@ -364,14 +364,14 @@ const Accounts = {
       "historyWithCount": "歷史訂單 ({{count}})",
       "pendingWithCount": "掛單 ({{count}})",
       "positionsWithCount": "持倉訂單 ({{count}})",
-      "syncHistory": "同步历史"
+      "syncHistory": "同步歷史"
     },
     "empty": {
-      "subtitle": "點選下方按钮绑定您的 MT4/MT5 交易帳戶",
-      "title": "暫無綁定帳戶"
+      "subtitle": "點選下方按鈕繫結您的 MT4/MT5 交易帳戶",
+      "title": "暫無繫結帳戶"
     },
     "legend": {
-      "connected": "已連接",
+      "connected": "已連線",
       "connecting": "連線中",
       "disabled": "已停用",
       "disconnectedOrError": "已斷線/錯誤",
@@ -388,12 +388,12 @@ const Accounts = {
       "disableFailed": "停用帳戶失敗",
       "disabledSuccess": "帳戶停用成功",
       "disconnectFailed": "斷開連線失敗",
-      "enableFailed": "启用帳戶失敗",
+      "enableFailed": "啟用帳戶失敗",
       "enabledSuccess": "帳戶啟用成功",
       "fetchAccountFailed": "取得帳戶資訊失敗",
       "fetchListFailed": "取得帳戶列表失敗"
     },
-    "bindNew": "綁定新帳戶",
+    "bindNew": "繫結新帳戶",
     "subtitle": "管理您的 MT4/MT5 交易帳戶",
     "title": "我的帳戶"
   }

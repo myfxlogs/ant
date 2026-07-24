@@ -7,7 +7,7 @@ const Logs = {
       "lots": "手數",
       "open": "開盤",
       "ticket": "訂單號",
-      "type": "類型"
+      "type": "型別"
     },
     "accountId": "帳戶ID",
     "action": "操作",
@@ -17,7 +17,7 @@ const Logs = {
     "details": "詳情",
     "duration": "持續時間",
     "error": "錯誤",
-    "eventType": "事件類型",
+    "eventType": "事件型別",
     "exampleSymbolPlaceholder": "例如: XAUUSD",
     "executionLogs": "執行日誌",
     "executionPrice": "執行價格",
@@ -35,7 +35,7 @@ const Logs = {
     "requestId": "請求ID",
     "reset": "重置",
     "result": "結果",
-    "riskCode": "風險代碼",
+    "riskCode": "風險程式碼",
     "riskLogQuickFilter": "風險日誌快速篩選",
     "search": "搜尋",
     "server": "伺服器",

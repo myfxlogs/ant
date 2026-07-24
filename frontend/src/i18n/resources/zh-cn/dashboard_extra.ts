@@ -1,9 +1,8 @@
 // Auto-generated supplementary keys for dashboard
-// TODO: Translate to zh-cn
 const DashboardExtra = {
   "dashboard": {
     "quickActions": {
-      "aiStrategy": "AI Strategy"
+      "aiStrategy": "AI 策略"
     }
   }
 } as const;

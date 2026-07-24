@@ -4,9 +4,9 @@ const Errors = {
   "errors": {
     "ai": {
       "internal_error": "AI 服務異常，請稍後重試。",
-      "not_configured": "尚未設定 AI 廠商，請點擊 ⚙ 在 AI 設定中填寫 API Key。"
+      "not_configured": "尚未設定 AI 廠商，請點選 ⚙ 在 AI 設定中填寫 API Key。"
     },
-    "account_already_bound": "該交易帳戶已被綁定",
+    "account_already_bound": "該交易帳戶已被繫結",
     "account_auth_failed": "交易帳戶驗證失敗",
     "account_connection_failed": "無法連線到交易伺服器",
     "account_disconnected": "交易帳戶已中斷連線",
@@ -14,7 +14,7 @@ const Errors = {
     "account_not_connected": "交易帳戶未連線",
     "account_not_found": "交易帳戶未找到",
     "account_timeout": "連線交易伺服器逾時",
-    "admin_access_denied": "需要管理員權限",
+    "admin_access_denied": "需要管理員許可權",
     "analytics_not_available": "分析資料不可用",
     "audit_log_not_found": "稽核記錄未找到",
     "broker_not_found": "券商未找到",
@@ -28,10 +28,10 @@ const Errors = {
     "insufficient_data": "資料不足，無法分析",
     "insufficient_margin": "保證金不足",
     "internal": "伺服器內部錯誤",
-    "invalid_account_type": "不支援的帳戶類型",
+    "invalid_account_type": "不支援的帳戶型別",
     "invalid_date_range": "無效的日期範圍",
-    "invalid_order_type": "無效的訂單類型",
-    "invalid_parameter": "參數無效",
+    "invalid_order_type": "無效的訂單型別",
+    "invalid_parameter": "引數無效",
     "invalid_password": "信箱或密碼錯誤",
     "invalid_price": "無效的訂單價格",
     "invalid_time_range": "無效的時間範圍",
@@ -48,7 +48,7 @@ const Errors = {
     "order_rejected": "訂單被拒絕",
     "order_timeout": "訂單執行逾時",
     "password_too_weak": "密碼長度不能少於8位",
-    "platform_not_supported": "不支援該交易平台",
+    "platform_not_supported": "不支援該交易平臺",
     "position_not_found": "持倉未找到",
     "quote_not_available": "報價不可用",
     "rate_limited": "請求過於頻繁，請稍後再試",

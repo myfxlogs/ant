@@ -1,74 +1,73 @@
 // Auto-generated supplementary keys for strategy
-// TODO: Translate to vi
 const StrategyExtra = {
   "strategy": {
     "backtest": {
-      "canceled": "Backtest canceled",
-      "lotSize": "Lot Size",
-      "strategyParameters": "Strategy Parameters"
+      "canceled": "Backtest đã hủy",
+      "lotSize": "Khối lượng lô",
+      "strategyParameters": "Tham số chiến lược"
     },
     "workspace": {
       "chartIndicators": {
-        "overlay": "Overlay (main chart)",
-        "subPane": "Sub-pane indicators"
+        "overlay": "Lớp phủ (chart chính)",
+        "subPane": "Chỉ báo khung phụ"
       },
       "tour": {
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.",
-        "ai": "AI Assistant",
-        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
-        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "code": "Trình soạn thảo mã",
+        "codeDesc": "Viết hoặc dán mã chiến lược MQL tại đây. Bạn cũng có thể nhập tệp .mq4/.mq5.",
+        "ai": "Trợ lý AI",
+        "aiDesc": "Yêu cầu AI tạo, tối ưu hoặc gỡ lỗi chiến lược. Mã được áp dụng hiển thị ngay trong trình soạn thảo.",
+        "backtestDesc": "Chạy backtest với tham số tùy chỉnh. Xem đường cong vốn, thống kê giao dịch và chỉ số rủi ro.",
+        "save": "Lưu & Xuất bản",
+        "saveDesc": "Lưu chiến lược làm mẫu, xuất bản lên marketplace, hoặc triển khai lên lịch giao dịch trực tiếp."
       }
     },
     "codeAssist": {
-      "aiHint": "Describe the changes you want, e.g."
+      "aiHint": "Mô tả thay đổi bạn muốn, ví dụ"
     },
     "chat": {
-      "executionPlan": "Execution Plan",
-      "codeGenerated": "Code generated. Use the buttons below to run strategy review and backtest."
+      "executionPlan": "Kế hoạch thực thi",
+      "codeGenerated": "Mã đã tạo. Sử dụng nút bên dưới để chạy xem xét chiến lược và backtest."
     },
     "templates": {
-      "title": "Strategy Templates",
-      "saveCurrent": "Save Current Strategy",
-      "chatEdit": "Chat Edit",
-      "confirmDelete": "Delete this strategy?",
-      "noTemplates": "No saved strategy templates",
-      "sourceCode": "Strategy Source",
+      "title": "Mẫu chiến lược",
+      "saveCurrent": "Lưu chiến lược hiện tại",
+      "chatEdit": "Sửa qua chat",
+      "confirmDelete": "Xóa chiến lược này?",
+      "noTemplates": "Chưa có mẫu chiến lược nào",
+      "sourceCode": "Mã nguồn chiến lược",
       "gallery": {
-        "unpublishFailed": "Unpublish failed",
-        "fork": "Fork & Edit",
-        "aiGenerate": "AI Generate",
-        "searchPlaceholder": "Search strategies...",
-        "empty": "No strategies found",
-        "deleteFailed": "Delete failed"
+        "unpublishFailed": "Hủy xuất bản thất bại",
+        "fork": "Sao chép & Sửa",
+        "aiGenerate": "Tạo bằng AI",
+        "searchPlaceholder": "Tìm kiếm chiến lược...",
+        "empty": "Không tìm thấy chiến lược",
+        "deleteFailed": "Xóa thất bại"
       },
       "scheduleLaunch": {
         "metrics": {
-          "winRate": "Win Rate",
-          "maxDrawdown": "Max DD",
-          "sharpe": "Sharpe Ratio"
+          "winRate": "Tỷ lệ thắng",
+          "maxDrawdown": "Sụt giảm tối đa",
+          "sharpe": "Tỷ lệ Sharpe"
         }
       },
       "detail": {
-        "profitFactor": "Profit Factor",
-        "notFound": "Strategy not found",
-        "noDescription": "No description",
-        "equityCurve": "Equity Curve",
-        "tradeStats": "Trade Statistics"
+        "profitFactor": "Hệ số lợi nhuận",
+        "notFound": "Không tìm thấy chiến lược",
+        "noDescription": "Không có mô tả",
+        "equityCurve": "Đường cong vốn",
+        "tradeStats": "Thống kê giao dịch"
       },
       "table": {
-        "useCount": "Use Count"
+        "useCount": "Số lượt sử dụng"
       },
       "messages": {
-        "fetchTemplateListFailed": "Fork failed",
-        "publishFailed": "Publish failed"
+        "fetchTemplateListFailed": "Sao chép thất bại",
+        "publishFailed": "Xuất bản thất bại"
       },
       "actions": {
-        "create": "New Strategy"
+        "create": "Chiến lược mới"
       },
-      "deleteConfirm": "Delete this strategy?"
+      "deleteConfirm": "Xóa chiến lược này?"
     },
     "live": {
       "stopSuccess": "Đã dừng chiến lược",
@@ -104,52 +103,52 @@ const StrategyExtra = {
       "reason": "Lý do"
     },
     "ai": {
-      "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation.",
-      "settingsHint": "Configure AI provider and model"
+      "reviseHint": "Viết mã trước, sau đó yêu cầu AI cải thiện.",
+      "explainHint": "Viết mã để xem giải thích AI.",
+      "settingsHint": "Cấu hình nhà cung cấp AI và mô hình"
     },
     "validate": {
-      "running": "Running validation...",
-      "fixWithAI": "Send errors to AI Revise",
-      "allClear": "All checks passed — no issues found.",
-      "passed": "Validation passed — Save is now unlocked."
+      "running": "Đang xác thực...",
+      "fixWithAI": "Gửi lỗi cho AI sửa",
+      "allClear": "Tất cả kiểm tra đạt — không phát hiện vấn đề.",
+      "passed": "Xác thực đạt — Đã có thể lưu."
     },
     "importEA": {
-      "writeTab": "Strategy Code",
-      "importTab": "Import EA",
-      "codeTooShort": "Please paste complete EA/indicator source code.",
-      "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
+      "writeTab": "Mã chiến lược",
+      "importTab": "Nhập EA",
+      "codeTooShort": "Vui lòng dán mã nguồn EA/indicator hoàn chỉnh.",
+      "pastePlaceholder": "Dán mã MQL4/MQL5 EA...",
       "migration": "策略导入",
       "aiTranslate": "AI 翻译",
       "bridge": "盲区桥接",
       "analyze": "分析策略结构",
       "confirmImport": "确认导入",
       "tryAI": "AI 翻译补充",
-      "apply": "Apply to Editor",
+      "apply": "Áp dụng vào trình soạn thảo",
       "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
-      "hint": "Paste MQL4/MQL5 code and click Analyze",
-      "translate": "Translate to Go",
-      "translating": "Paste MQL4/MQL5 code and click Translate",
+      "hint": "Dán mã MQL4/MQL5 và nhấn Phân tích",
+      "translate": "Dịch sang Go",
+      "translating": "Dán mã MQL4/MQL5 và nhấn Dịch",
       "bridgeBtn": "盲区桥接翻译",
-      "bridging": "AI bridging blind spots...",
+      "bridging": "AI đang bắc cầu điểm mù...",
       "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
       "noBridgeNeeded": "覆盖率 100%，无需桥接",
-      "bridgeHint": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
-      "tooltip": "Import MQL4/MQL5 source code",
-      "button": "Import MQL",
-      "title": "Import MQL Strategy"
+      "bridgeHint": "Dán mã MQL4/MQL5 EA, AI sẽ bắc cầu điểm mù sang bytecode nền tảng",
+      "tooltip": "Nhập mã nguồn MQL4/MQL5",
+      "button": "Nhập MQL",
+      "title": "Nhập chiến lược MQL"
     },
     "version": {
-      "loadFailed": "Failed to load versions",
-      "rollbackSuccess": "Rolled back to version {{n}}",
-      "rollbackFailed": "Rollback failed",
-      "loadVersionFailed": "Failed to load version",
-      "loadDiffFailed": "Failed to load diff",
-      "colSummary": "Change Summary",
-      "rollbackConfirm": "Rollback to v{{n}}?",
-      "title": "Version History",
-      "empty": "No version history yet",
-      "history": "Version History"
+      "loadFailed": "Tải phiên bản thất bại",
+      "rollbackSuccess": "Đã hoàn hồi về phiên bản {{n}}",
+      "rollbackFailed": "Hoàn hồi thất bại",
+      "loadVersionFailed": "Tải phiên bản thất bại",
+      "loadDiffFailed": "Tải diff thất bại",
+      "colSummary": "Tóm tắt thay đổi",
+      "rollbackConfirm": "Hoàn hồi về v{{n}}?",
+      "title": "Lịch sử phiên bản",
+      "empty": "Chưa có lịch sử phiên bản",
+      "history": "Lịch sử phiên bản"
     }
   }
 } as const;

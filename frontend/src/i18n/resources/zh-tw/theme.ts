@@ -2,7 +2,7 @@
 // TODO: Translate to zh-tw
 const Theme = {
   "theme": {
-    "switchToLight": "Switch to dark mode"
+  }
   }
 } as const;
 export default Theme;

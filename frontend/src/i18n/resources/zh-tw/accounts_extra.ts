@@ -4,18 +4,18 @@ const AccountsExtra = {
   "accounts": {
     "bind": {
       "fields": {
-        "alias": "Account Alias"
+      },
       },
       "placeholders": {
-        "alias": "Optional custom name"
+      },
       },
       "messages": {
-        "changeCredentials": "Change credentials"
+      }
       }
     },
     "messages": {
-      "shareLinkCopied": "Share link copied to clipboard",
-      "shareLinkFailed": "Failed to create share link"
+      "shareLinkFailed": "建立分享連結失敗"
+    }
     }
   }
 } as const;
