@@ -128,23 +128,6 @@ export const strategyApi = {
     await strategyClient.cancelTemplateDraft({ id });
   },
 
-  forkTemplate: async (sourceId: string, forkName: string) => {
-    const source = await strategyClient.getTemplate({ id: sourceId });
-    if (!source.code) {
-      throw new Error('Fork is only available for your own strategies or system presets');
-    }
-    const draft = await strategyClient.createTemplateDraft({ name: forkName });
-    if (!draft.id) throw new Error('Draft creation returned empty id');
-    await strategyClient.updateTemplateDraft({
-      id: draft.id,
-      description: source.description,
-      code: source.code,
-      parameters: source.parameters,
-      tags: source.tags,
-    });
-    return draft.id;
-  },
-
   listSchedules: async () => {
     const response = await strategyClient.listSchedules({});
     return response.schedules;

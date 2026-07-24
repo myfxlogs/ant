@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Card, Tag, Typography, Space, Button, Popconfirm, message } from 'antd';
-import { RocketOutlined, ForkOutlined, ShareAltOutlined, DeleteOutlined } from '@ant-design/icons';
+import { RocketOutlined, ShareAltOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -47,15 +47,6 @@ function StrategyCardImpl({ card }: Props) {
   const [publishLoading, setPublishLoading] = useState(false);
 
   const handleDetail = () => navigate(`/strategy/view/${card.id}`);
-
-  const handleFork = async () => {
-    try {
-      const draftId = await strategyApi.forkTemplate(card.id, `${card.name} (Fork)`);
-      navigate(`/strategy/${draftId}/edit`);
-    } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: 'Fork failed' }));
-    }
-  };
 
   const handlePublish = async () => {
     try {
@@ -150,11 +141,6 @@ function StrategyCardImpl({ card }: Props) {
         {!isSystem && (
           <Button size="small" icon={<RocketOutlined />} onClick={() => setDeployOpen(true)}>
             {t('strategy.templates.gallery.deploy', { defaultValue: 'Deploy' })}
-          </Button>
-        )}
-        {(isOwner || isSystem) && (
-          <Button size="small" icon={<ForkOutlined />} onClick={handleFork}>
-            {t('strategy.templates.gallery.fork', { defaultValue: 'Fork' })}
           </Button>
         )}
         {isOwner && !isPublished && (

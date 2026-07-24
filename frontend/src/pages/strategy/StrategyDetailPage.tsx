@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Typography, Tabs, Tag, Space, Button, Descriptions, Spin, Empty, message } from 'antd';
+import { Typography, Tabs, Tag, Space, Button, Descriptions, Spin, Empty } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -31,16 +31,6 @@ export default function StrategyDetailPage() {
   const canEdit = isOwner || isSystem;
 
   const handleEdit = () => navigate(`/strategy/${id}/edit`);
-
-  const handleForkAndEdit = async () => {
-    if (!id) return;
-    try {
-      const draftId = await strategyApi.forkTemplate(id, `${template?.name || 'Strategy'} (Fork)`);
-      navigate(`/strategy/${draftId}/edit`);
-    } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.unpublishFailed', { defaultValue: 'Fork failed' }));
-    }
-  };
 
   const tags = useMemo(() => template?.tags || [], [template]);
 
@@ -82,11 +72,9 @@ export default function StrategyDetailPage() {
               </Space>
             </div>
             <Space>
-              {canEdit && (
-                <Button type="primary" icon={<EditOutlined />} onClick={isSystem ? handleForkAndEdit : handleEdit}>
-                  {isSystem
-                    ? t('strategy.templates.gallery.fork', { defaultValue: 'Fork & Edit' })
-                    : t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
+              {canEdit && !isSystem && (
+                <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
+                  {t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
                 </Button>
               )}
             </Space>
@@ -184,11 +172,9 @@ export default function StrategyDetailPage() {
           zIndex: 10,
         }}>
           <Space>
-            {canEdit && (
-              <Button type="primary" icon={<EditOutlined />} onClick={isSystem ? handleForkAndEdit : handleEdit}>
-                {isSystem
-                  ? t('strategy.templates.gallery.fork', { defaultValue: 'Fork & Edit' })
-                  : t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
+            {canEdit && !isSystem && (
+              <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
+                {t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
               </Button>
             )}
           </Space>
