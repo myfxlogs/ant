@@ -9,7 +9,6 @@ import (
 	connectai "alphaforge/internal/connect/ai"
 	"alphaforge/internal/repository"
 	systemai "alphaforge/internal/service/systemai"
-	sdk "alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go"
 )
 
@@ -52,9 +51,6 @@ func (t *writeStrategyTool) Schema() systemai.ToolDefinition {
 
 func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) connectai.ToolOutput {
 	code, _ := in.RawArgs["code"].(string)
-	if code == "" {
-		code = in.Code
-	}
 	if code == "" {
 		return connectai.ToolOutput{Success: false, Error: "code is required — pass the complete Python strategy as the 'code' parameter"}
 	}
@@ -124,7 +120,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 // Returns smoke tier (I2a) when config is partial, performance tier (I2b) when full.
 func (t *writeStrategyTool) runBacktest(ctx context.Context, runner *mql2go.VMRunner) (*backtestSummary, string, error) {
 	// Step 2a: Fetch bars (REUSE: gateway.go:141-153).
-	bars, err := fetchBarsForBacktest(ctx, t.mkt, t.cfg)
+	bars, err := FetchBarsForBacktest(ctx, t.mkt, t.cfg)
 	if err != nil {
 		return nil, "", fmt.Errorf("fetch bars: %w", err)
 	}
@@ -155,39 +151,6 @@ func (t *writeStrategyTool) runBacktest(ctx context.Context, runner *mql2go.VMRu
 		SharpeRatio: btProto.SharpeRatio,
 	}
 	return summary, tier, nil
-}
-
-// fetchBarsForBacktest REUSEs the pattern from gateway.go:298-327.
-func fetchBarsForBacktest(ctx context.Context, mkt repository.MarketDataStore, cfg *antv1.AgentBacktestConfig) ([]sdk.Bar, error) {
-	if mkt == nil {
-		return nil, fmt.Errorf("market data store not available")
-	}
-	var from, to *time.Time
-	if cfg.StartDateMs > 0 {
-		t := time.UnixMilli(cfg.StartDateMs)
-		from = &t
-	}
-	if cfg.EndDateMs > 0 {
-		t := time.UnixMilli(cfg.EndDateMs)
-		to = &t
-	}
-	chBars, err := mkt.GetKlines(ctx, cfg.Symbol, "", cfg.Timeframe, from, to, 100000)
-	if err != nil {
-		return nil, err
-	}
-	bars := make([]sdk.Bar, 0, len(chBars))
-	for i := len(chBars) - 1; i >= 0; i-- {
-		b := chBars[i]
-		bars = append(bars, sdk.Bar{
-			Open:      b.Open,
-			High:      b.High,
-			Low:       b.Low,
-			Close:     b.Close,
-			Volume:    int64(b.Volume),
-			Timestamp: int64(b.OpenTsUnixMs),
-		})
-	}
-	return bars, nil
 }
 
 type backtestSummary struct {

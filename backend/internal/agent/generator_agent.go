@@ -84,7 +84,10 @@ func (g *Generator) runAgentLoop(
 					g.log.Warn("generator: auto-create conversation failed", zap.Error(createErr))
 				}
 			}
-			msgs, _ := g.conversationRepo.GetMessages(ctx, userID, cid)
+			msgs, err := g.conversationRepo.GetMessages(ctx, userID, cid)
+			if err != nil {
+				g.log.Warn("generator: failed to load conversation history", zap.Error(err))
+			}
 			for _, m := range msgs {
 				history = append(history, systemai.ChatMessage{
 					Role:    m.Role,

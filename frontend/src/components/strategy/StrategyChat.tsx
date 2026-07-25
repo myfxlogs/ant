@@ -17,6 +17,12 @@ import type { ValidateExtendedResult } from '@/client/codeAssist';
 
 interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; currentCode?: string; }
 
+function extractCodeFromContent(content: string): string | undefined {
+  const m = content.match(/```python[\s\S]*?```/);
+  if (!m) return undefined;
+  return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
+}
+
 export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus, currentCode }: Props) {
   const { t } = useTranslation();
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
@@ -114,17 +120,11 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
           turns.push(turn);
         }
       }
-    } catch {}
+    } catch (e) { console.error('Failed to load conversation:', e); }
     initialTurnsRef.current = turns;
     setActiveConvId(id);
     setHistoryOpen(false);
   };
-
-function extractCodeFromContent(content: string): string | undefined {
-  const m = content.match(/```python[\s\S]*?```/);
-  if (!m) return undefined;
-  return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
-}
 
   const handleNewConvWrapper = () => {
     initialTurnsRef.current = [];

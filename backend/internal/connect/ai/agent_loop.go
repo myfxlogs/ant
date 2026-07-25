@@ -14,6 +14,8 @@ import (
 	systemai "alphaforge/internal/service/systemai"
 )
 
+const maxAgentRounds = 1000
+
 // ── Agent Loop ──
 // Think→Act→Observe→Repeat pattern using the LLM's native tool_use protocol
 // (OpenAI function calling). The LLM receives tool definitions as JSON Schema,
@@ -29,6 +31,7 @@ type AgentLoop struct {
 	toolStream      func(tc *antv1.ToolCall, tr *antv1.ToolResult) error     // forward tool events to frontend
 	currentCode     string // workspace code injected into ToolInput.Code
 	toolDefs        []systemai.ToolDefinition // cached tool schemas built from registry
+	timeBudget      time.Duration // max wall-clock time for the loop
 }
 
 // NewAgentLoop creates an AgentLoop with the given tools and LLM streaming function.
@@ -47,6 +50,7 @@ func NewAgentLoop(
 		toolStream:      toolStream,
 		reasoningStream: reasoningStream,
 		toolDefs:     registry.BuildToolSchemas(),
+		timeBudget:   10 * time.Minute,
 	}
 }
 
@@ -73,25 +77,26 @@ func (a *AgentLoop) Run(ctx context.Context, systemPrompt, userPrompt string, us
 
 func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	var fullBuf strings.Builder
-	deadline := time.Now().Add(10 * time.Minute)
+	deadline := time.Now().Add(a.timeBudget)
+	codeConvergences := 0 // F3: separate from length convergences — persists across rounds
 
-	for round := 0; round < 1000; round++ { // no practical hard limit — aligned with Claude Code
+	for round := 0; round < maxAgentRounds; round++ {
 		if time.Now().After(deadline) {
-			return fullBuf.String(), fmt.Errorf("agent: total time budget exceeded (10m)")
+			return fullBuf.String(), fmt.Errorf("agent: total time budget exceeded (%v)", a.timeBudget)
 		}
 		// Context compression: if total estimated tokens exceed budget,
-		// keep system + first user + last 12 messages, drop middle.
-		if len(messages) > 16 {
+		// keep system + first user + last 20 messages, drop middle.
+		if len(messages) > 24 {
 			totalChars := 0
 			for _, m := range messages {
 				totalChars += len(m.Content)
 			}
 			if totalChars/4 > 8000 {
-				keep := make([]systemai.ChatMessage, 0, 14)
+				keep := make([]systemai.ChatMessage, 0, 22)
 				keep = append(keep, messages[0]) // system
 				keep = append(keep, messages[1]) // first user
-				if len(messages) > 12 {
-					keep = append(keep, messages[len(messages)-12:]...)
+				if len(messages) > 20 {
+					keep = append(keep, messages[len(messages)-20:]...)
 				}
 				messages = keep
 			}
@@ -101,33 +106,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		var roundFinishReason string
 		var toolCalls []systemai.ToolCall // accumulated from stream chunks
 
-		err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChunk) error {
-			if chunk.Content != "" {
-				roundBuf.WriteString(chunk.Content)
-				if a.streamChunk != nil { _ = a.streamChunk(chunk.Content) }
-			}
-			if chunk.Reasoning != "" {
-				reasoningBuf.WriteString(chunk.Reasoning)
-				if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) }
-			}
-			if chunk.FinishReason != "" {
-				roundFinishReason = chunk.FinishReason
-			}
-			// Collect any tool calls from the final chunk.
-			if len(chunk.ToolCalls) > 0 {
-				for _, stc := range chunk.ToolCalls {
-					toolCalls = append(toolCalls, systemai.ToolCall{
-						ID:   stc.ID,
-						Type: stc.Type,
-						Function: systemai.ToolCallFunction{
-							Name:      stc.Function.Name,
-							Arguments: stc.Function.Arguments,
-						},
-					})
-				}
-			}
-			return nil
-		})
+		err := a.llmStream(ctx, messages, a.toolDefs, a.makeOnChunk(&roundBuf, &reasoningBuf, &roundFinishReason, &toolCalls))
 		if err != nil {
 			return "", err
 		}
@@ -135,23 +114,15 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		// Convergence guard: thinking drained budget without producing code.
 		// Inject correction and retry (max 2 convergence retries per round).
 		reasoningText := strings.TrimSpace(reasoningBuf.String())
-		convergences := 0
-		for (roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(toolCalls) == 0)) && convergences < 2 {
-			convergences++
+		lengthConvergences := 0
+		for (roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(toolCalls) == 0)) && lengthConvergences < 2 {
+			lengthConvergences++
 			messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call write_strategy with your code. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
 			roundBuf.Reset()
 			reasoningBuf.Reset()
 			toolCalls = nil
 			roundFinishReason = ""
-			if err := a.llmStream(ctx, messages, a.toolDefs, func(chunk systemai.ChatStreamChunk) error {
-				if chunk.Content != "" { roundBuf.WriteString(chunk.Content); if a.streamChunk != nil { _ = a.streamChunk(chunk.Content) } }
-				if chunk.Reasoning != "" { reasoningBuf.WriteString(chunk.Reasoning); if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) } }
-				if chunk.FinishReason != "" { roundFinishReason = chunk.FinishReason }
-				if len(chunk.ToolCalls) > 0 {
-					for _, stc := range chunk.ToolCalls { toolCalls = append(toolCalls, systemai.ToolCall{ID: stc.ID, Type: stc.Type, Function: systemai.ToolCallFunction{Name: stc.Function.Name, Arguments: stc.Function.Arguments}}) }
-				}
-				return nil
-			}); err != nil {
+			if err := a.llmStream(ctx, messages, a.toolDefs, a.makeOnChunk(&roundBuf, &reasoningBuf, &roundFinishReason, &toolCalls)); err != nil {
 				return "", err
 			}
 		}
@@ -174,8 +145,8 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		// §3.1b前提2: Guard against code-in-free-text without write_strategy.
 		// If LLM output contains Python code but didn't call write_strategy,
 		// inject correction and retry (≤2 per round). Never fall back to ExtractCode.
-		if code := ExtractCode(roundText); code != "" && !hasWriteStrategyCall(toolCalls, roundText) && convergences < 2 {
-			convergences++
+		if code := ExtractCode(roundText); code != "" && !hasWriteStrategyCall(toolCalls, roundText) && codeConvergences < 2 {
+			codeConvergences++
 			messages = append(messages, systemai.ChatMessage{
 				Role:    "user",
 				Content: "Do NOT put code in chat text. Use the write_strategy tool to submit your code. Call [TOOL: write_strategy code=\"...\"] with your complete strategy code.",
@@ -232,10 +203,16 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 			}
 
 			// Build tool result message (OpenAI protocol: role="tool").
-			resultJSON, _ := json.Marshal(result.Output)
-			resultContent := string(resultJSON)
+			var resultContent string
 			if !result.Success {
 				resultContent = fmt.Sprintf(`{"error": %q}`, result.Error)
+			} else if result.Output != nil {
+				if s, ok := result.Output.(string); ok {
+					resultContent = fmt.Sprintf(`{"output": %q}`, s)
+				} else {
+					resultJSON, _ := json.Marshal(result.Output)
+					resultContent = string(resultJSON)
+				}
 			}
 			messages = append(messages, systemai.ChatMessage{
 				Role:       "tool",
@@ -262,132 +239,36 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		// Loop continues — LLM sees tool results and decides next action.
 	}
-	// Fallback: loop exhausted without LLM convergence.
-	return fullBuf.String(), nil
+	return fullBuf.String(), fmt.Errorf("agent: round budget exhausted (%d rounds)", maxAgentRounds)
 }
 
-// parseToolArguments parses the JSON arguments string from an LLM tool call
-// and maps known fields into a ToolInput struct.
-// Standard fields (symbol, timeframe, code) are mapped directly.
-// Legacy memory tools use key/value which map to Symbol/Timeframe — these
-// never overlap with standard fields in practice, but standard fields win on conflict.
-func parseToolArguments(toolName, argsJSON string) ToolInput {
-	in := ToolInput{}
-	if argsJSON == "" {
-		return in
-	}
-	var args map[string]any
-	if err := json.Unmarshal([]byte(argsJSON), &args); err != nil {
-		return in
-	}
-	in.RawArgs = args // Full args for tools to access custom fields
-	if v, ok := args["symbol"].(string); ok {
-		in.Symbol = v
-	}
-	if v, ok := args["timeframe"].(string); ok {
-		in.Timeframe = v
-	}
-	if v, ok := args["code"].(string); ok {
-		in.Code = v
-	}
-	// Memory tool fields (remember, recall, save_strategy, load_strategy)
-	// map key/name → Symbol and value → Timeframe. Only applied when the
-	// standard field wasn't already set (standard fields win on conflict).
-	if in.Symbol == "" {
-		if v, ok := args["key"].(string); ok {
-			in.Symbol = v
+// makeOnChunk creates a streaming callback that accumulates content, reasoning,
+// finish reason, and tool calls into the provided pointers.
+func (a *AgentLoop) makeOnChunk(roundBuf, reasoningBuf *strings.Builder, finishReason *string, toolCalls *[]systemai.ToolCall) func(systemai.ChatStreamChunk) error {
+	return func(chunk systemai.ChatStreamChunk) error {
+		if chunk.Content != "" {
+			roundBuf.WriteString(chunk.Content)
+			if a.streamChunk != nil { _ = a.streamChunk(chunk.Content) }
 		}
-		if v, ok := args["name"].(string); ok {
-			in.Symbol = v
+		if chunk.Reasoning != "" {
+			reasoningBuf.WriteString(chunk.Reasoning)
+			if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) }
 		}
-	}
-	if in.Timeframe == "" {
-		if v, ok := args["value"].(string); ok {
-			in.Timeframe = v
+		if chunk.FinishReason != "" {
+			*finishReason = chunk.FinishReason
 		}
-	}
-	return in
-}
-
-// ── Text-based tool call fallback (for models without native tool_use) ──
-
-type textToolCall struct {
-	Name     string
-	ArgsJSON string
-}
-
-// parseTextToolCalls extracts [TOOL: name key=val ...] patterns from text.
-// Fallback for models (DeepSeek, GLM, Qwen) that don't support native function calling.
-func parseTextToolCalls(text string) []textToolCall {
-	var calls []textToolCall
-	rest := text
-	for {
-		start := strings.Index(rest, "[TOOL:")
-		if start < 0 {
-			break
-		}
-		rest = rest[start+6:]
-		end := strings.Index(rest, "]")
-		if end < 0 {
-			break
-		}
-		content := strings.TrimSpace(rest[:end])
-		rest = rest[end+1:]
-
-		parts := strings.Fields(content)
-		if len(parts) == 0 {
-			continue
-		}
-		tc := textToolCall{Name: parts[0]}
-
-		// Build JSON args from positional or key=value arguments.
-		args := make(map[string]string)
-		for _, p := range parts[1:] {
-			if kv := strings.SplitN(p, "=", 2); len(kv) == 2 {
-				args[kv[0]] = kv[1]
+		if len(chunk.ToolCalls) > 0 {
+			for _, stc := range chunk.ToolCalls {
+				*toolCalls = append(*toolCalls, systemai.ToolCall{
+					ID:   stc.ID,
+					Type: stc.Type,
+					Function: systemai.ToolCallFunction{
+						Name:      stc.Function.Name,
+						Arguments: stc.Function.Arguments,
+					},
+				})
 			}
 		}
-		// If no key=value pairs, use positional: arg1=symbol, arg2=timeframe
-		if len(args) == 0 && len(parts) >= 2 {
-			args["symbol"] = parts[1]
-		}
-		if len(args) == 0 && len(parts) >= 3 {
-			args["timeframe"] = parts[2]
-		}
-
-		jsonBytes, _ := json.Marshal(args)
-		tc.ArgsJSON = string(jsonBytes)
-		calls = append(calls, tc)
-	}
-	return calls
-}
-
-// parseJSONToMap parses a JSON string into a map[string]any.
-// Used to convert LLM JSON output to structpb.Struct for proto fields.
-func parseJSONToMap(s string) map[string]any {
-	if s == "" {
 		return nil
 	}
-	var m map[string]any
-	if err := json.Unmarshal([]byte(s), &m); err != nil {
-		return nil
-	}
-	return m
-}
-
-// hasWriteStrategyCall checks whether the LLM invoked write_strategy,
-// either via native tool calls or text-based [TOOL: write_strategy ...].
-func hasWriteStrategyCall(nativeCalls []systemai.ToolCall, roundText string) bool {
-	for _, tc := range nativeCalls {
-		if tc.Function.Name == "write_strategy" {
-			return true
-		}
-	}
-	textCalls := parseTextToolCalls(roundText)
-	for _, tc := range textCalls {
-		if tc.Name == "write_strategy" {
-			return true
-		}
-	}
-	return false
 }

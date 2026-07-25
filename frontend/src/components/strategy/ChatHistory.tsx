@@ -195,7 +195,7 @@ export default function ChatHistory({ turns, onPlanConfirm, onPlanRefine, planRe
                         {copiedId === turn.id ? '✓' : t(COPY_KEY)}
                       </Button>
                       <Button size="small" type="primary"
-                        disabled={turn.phase !== 'done' || !!(turn.compileError || turn.backtestError || turn.error)}
+                        disabled={turn.phase !== 'done' || !!(turn.compileError || turn.error)}
                         onClick={() => onApplyCode?.(turn.generatedCode!)}>
                         {t(APPLY_TO_EDITOR_KEY)}
                       </Button>

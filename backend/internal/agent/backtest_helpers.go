@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 	"alphaforge/strategy/backtest"
 	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go"
@@ -98,4 +99,38 @@ func buildBacktestResultProto(r *backtest.Result) *antv1.AgentBacktestResult {
 		})
 	}
 	return resp
+}
+
+// FetchBarsForBacktest fetches klines from the market data store and converts
+// them to sdk.Bar in chronological order. Shared by gateway.go and agent_tools_write.go.
+func FetchBarsForBacktest(ctx context.Context, mkt repository.MarketDataStore, cfg *antv1.AgentBacktestConfig) ([]sdk.Bar, error) {
+	if mkt == nil {
+		return nil, fmt.Errorf("market data store not available")
+	}
+	var from, to *time.Time
+	if cfg.StartDateMs > 0 {
+		t := time.UnixMilli(cfg.StartDateMs)
+		from = &t
+	}
+	if cfg.EndDateMs > 0 {
+		t := time.UnixMilli(cfg.EndDateMs)
+		to = &t
+	}
+	chBars, err := mkt.GetKlines(ctx, cfg.Symbol, "", cfg.Timeframe, from, to, 100000)
+	if err != nil {
+		return nil, err
+	}
+	bars := make([]sdk.Bar, 0, len(chBars))
+	for i := len(chBars) - 1; i >= 0; i-- {
+		b := chBars[i]
+		bars = append(bars, sdk.Bar{
+			Open:      b.Open,
+			High:      b.High,
+			Low:       b.Low,
+			Close:     b.Close,
+			Volume:    int64(b.Volume),
+			Timestamp: int64(b.OpenTsUnixMs),
+		})
+	}
+	return bars, nil
 }

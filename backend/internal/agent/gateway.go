@@ -261,36 +261,7 @@ func (s *GatewayServer) GenerateStrategy(
 // ── Internal helpers ──────────────────────────────────────────────────
 
 func (s *GatewayServer) fetchBars(ctx context.Context, cfg *antv1.AgentBacktestConfig) ([]sdk.Bar, error) {
-	if s.marketDataRepo == nil {
-		return nil, fmt.Errorf("market data store not configured")
-	}
-	var from, to *time.Time
-	if cfg.StartDateMs > 0 {
-		t := time.UnixMilli(cfg.StartDateMs)
-		from = &t
-	}
-	if cfg.EndDateMs > 0 {
-		t := time.UnixMilli(cfg.EndDateMs)
-		to = &t
-	}
-	chBars, err := s.marketDataRepo.GetKlines(ctx, cfg.Symbol, "", cfg.Timeframe, from, to, 100000)
-	if err != nil {
-		return nil, err
-	}
-	// Convert to sdk.Bar (reverse to chronological order)
-	bars := make([]sdk.Bar, 0, len(chBars))
-	for i := len(chBars) - 1; i >= 0; i-- {
-		b := chBars[i]
-		bars = append(bars, sdk.Bar{
-			Open:      b.Open,
-			High:      b.High,
-			Low:       b.Low,
-			Close:     b.Close,
-			Volume:    int64(b.Volume),
-			Timestamp: int64(b.OpenTsUnixMs),
-		})
-	}
-	return bars, nil
+	return FetchBarsForBacktest(ctx, s.marketDataRepo, cfg)
 }
 
 // SettingsStore returns the shared settings store instance.

@@ -30,8 +30,8 @@ func (t *rememberTool) Schema() systemai.ToolDefinition {
 }
 func (t *rememberTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	if t.execFn == nil { return ToolOutput{Success: false, Error: "db not wired"} }
-	key := in.Symbol
-	val := in.Timeframe
+	key := in.Key
+	val := in.Value
 	err := t.execFn(ctx,
 		"INSERT INTO ai_memory (user_id, key, value, updated_at) VALUES ($1,$2,$3,NOW()) ON CONFLICT (user_id,key) DO UPDATE SET value=$3, updated_at=NOW()",
 		in.UserID, key, val)
@@ -64,7 +64,7 @@ func (t *recallTool) Schema() systemai.ToolDefinition {
 }
 func (t *recallTool) Run(ctx context.Context, in ToolInput) ToolOutput {
 	if t.queryFn == nil { return ToolOutput{Success: false, Error: "db not wired"} }
-	key := in.Symbol
+	key := in.Key
 	val, err := t.queryFn(ctx, "SELECT value FROM ai_memory WHERE user_id=$1 AND key=$2 ORDER BY updated_at DESC LIMIT 1", in.UserID, key)
 	if err != nil || val == "" {
 		return ToolOutput{Success: false, Error: "not found"}
@@ -124,7 +124,7 @@ func (t *saveStrategyTool) Schema() systemai.ToolDefinition {
 	}
 }
 func (t *saveStrategyTool) Run(ctx context.Context, in ToolInput) ToolOutput {
-	name := in.Symbol
+	name := in.Key
 	code := in.Code
 	if name == "" || code == "" {
 		return ToolOutput{Success: false, Error: "用法: [TOOL: save_strategy 策略名称]. 例如: [TOOL: save_strategy BTCUSD均线策略]"}
@@ -160,7 +160,7 @@ func (t *loadStrategyTool) Schema() systemai.ToolDefinition {
 	}
 }
 func (t *loadStrategyTool) Run(ctx context.Context, in ToolInput) ToolOutput {
-	name := in.Symbol
+	name := in.Key
 	if name == "" {
 		return ToolOutput{Success: false, Error: "用法: [TOOL: load_strategy 策略名称]"}
 	}
