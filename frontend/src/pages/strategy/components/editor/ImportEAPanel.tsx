@@ -77,7 +77,9 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
     submitStrategy({ sourceCode: eaCode.trim(), language: mqlVersion })
       .then((res) => {
         setImportResult(res);
-        if (res.bridgedPythonSource) onApplyCode(res.bridgedPythonSource);
+        if (res.compileSuccess !== false) {
+          onApplyCode(eaCode.trim());
+        }
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
       })
       .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
