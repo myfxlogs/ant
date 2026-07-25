@@ -56,7 +56,7 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 	blindSpots := irBlindSpotProtos(rep.BlindSpots)
 
 	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
-		StrategyName:     deriveStrategyName(req.Msg.GetSourceName()),
+		StrategyName:     deriveNameFromFileName(req.Msg.GetSourceName()),
 		MqlVersion:       rep.Version,
 		CoverageScore:    rep.Coverage,
 		TotalBlocks:      int32(rep.TotalCalls),
@@ -171,7 +171,7 @@ func classifyBlindSpotCategory(name string) string {
 	return "other"
 }
 
-func deriveStrategyName(sourceName string) string {
+func deriveNameFromFileName(sourceName string) string {
 	if sourceName == "" {
 		return ""
 	}

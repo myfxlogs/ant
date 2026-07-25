@@ -20,6 +20,7 @@ export default function CodeEditorPanel({ form, code, onStrategyIdChange }: Prop
 
   const handleApplyCode = (newCode: string) => {
     form.setFieldsValue({ code: newCode });
+    setMode('write');
   };
 
   return (

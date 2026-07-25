@@ -34,6 +34,9 @@ func NewImportedStrategyRepository(db *pgxpool.Pool) *ImportedStrategyRepository
 }
 
 func (r *ImportedStrategyRepository) Create(ctx context.Context, row *ImportedStrategy) error {
+	if r.db == nil {
+		return fmt.Errorf("imported strategy repository: db not configured")
+	}
 	if row.ID == uuid.Nil {
 		row.ID = uuid.New()
 	}
@@ -54,6 +57,9 @@ func (r *ImportedStrategyRepository) Create(ctx context.Context, row *ImportedSt
 }
 
 func (r *ImportedStrategyRepository) GetByID(ctx context.Context, id uuid.UUID) (*ImportedStrategy, error) {
+	if r.db == nil {
+		return nil, fmt.Errorf("imported strategy repository: db not configured")
+	}
 	var row ImportedStrategy
 	err := r.db.QueryRow(ctx,
 		`SELECT id,user_id,name,source_lang,source_code,params,coverage_score,created_at,updated_at
@@ -66,6 +72,9 @@ func (r *ImportedStrategyRepository) GetByID(ctx context.Context, id uuid.UUID) 
 }
 
 func (r *ImportedStrategyRepository) GetByIDAndUser(ctx context.Context, id, userID uuid.UUID) (*ImportedStrategy, error) {
+	if r.db == nil {
+		return nil, fmt.Errorf("imported strategy repository: db not configured")
+	}
 	var row ImportedStrategy
 	err := r.db.QueryRow(ctx,
 		`SELECT id,user_id,name,source_lang,source_code,params,coverage_score,created_at,updated_at
@@ -78,6 +87,9 @@ func (r *ImportedStrategyRepository) GetByIDAndUser(ctx context.Context, id, use
 }
 
 func (r *ImportedStrategyRepository) ListByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]ImportedStrategy, error) {
+	if r.db == nil {
+		return nil, fmt.Errorf("imported strategy repository: db not configured")
+	}
 	if limit <= 0 || limit > 200 {
 		limit = 50
 	}
@@ -104,6 +116,9 @@ func (r *ImportedStrategyRepository) ListByUser(ctx context.Context, userID uuid
 }
 
 func (r *ImportedStrategyRepository) UpdateCoverage(ctx context.Context, id uuid.UUID, coverage float64) error {
+	if r.db == nil {
+		return fmt.Errorf("imported strategy repository: db not configured")
+	}
 	_, err := r.db.Exec(ctx,
 		`UPDATE imported_strategies SET coverage_score = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
 		id, coverage)
@@ -111,6 +126,9 @@ func (r *ImportedStrategyRepository) UpdateCoverage(ctx context.Context, id uuid
 }
 
 func (r *ImportedStrategyRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
+	if r.db == nil {
+		return fmt.Errorf("imported strategy repository: db not configured")
+	}
 	ct, err := r.db.Exec(ctx, `DELETE FROM imported_strategies WHERE id = $1 AND user_id = $2`, id, userID)
 	if err != nil {
 		return err
@@ -124,6 +142,9 @@ func (r *ImportedStrategyRepository) Delete(ctx context.Context, id, userID uuid
 // GetBytecode retrieves the cached bytecode for a strategy.
 // Returns nil, nil if no cache exists (not an error).
 func (r *ImportedStrategyRepository) GetBytecode(ctx context.Context, id uuid.UUID) ([]byte, error) {
+	if r.db == nil {
+		return nil, fmt.Errorf("imported strategy repository: db not configured")
+	}
 	var bytecode []byte
 	err := r.db.QueryRow(ctx,
 		`SELECT bytecode_cache FROM imported_strategies WHERE id = $1`, id).Scan(&bytecode)
@@ -135,6 +156,9 @@ func (r *ImportedStrategyRepository) GetBytecode(ctx context.Context, id uuid.UU
 
 // SaveBytecode stores compiled bytecode for a strategy.
 func (r *ImportedStrategyRepository) SaveBytecode(ctx context.Context, id uuid.UUID, bytecode []byte) error {
+	if r.db == nil {
+		return fmt.Errorf("imported strategy repository: db not configured")
+	}
 	_, err := r.db.Exec(ctx,
 		`UPDATE imported_strategies SET bytecode_cache = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
 		id, bytecode)

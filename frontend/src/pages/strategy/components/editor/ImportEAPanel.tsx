@@ -67,7 +67,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
     setImportResult(null);
     strategyImportApi.analyzeCode({ sourceCode: eaCode.trim(), sourceName: 'Imported EA', sourceLang: detectMQLVersion(eaCode) })
       .then((res) => { setAnalysis(res); })
-      .catch((e) => { message.error(String(e?.message || t('common.unknownError', 'Unknown error'))); })
+      .catch((e: unknown) => { message.error(e instanceof Error ? e.message : t('common.unknownError', { defaultValue: 'Unknown error' })); })
       .finally(() => { setAnalyzing(false); });
   };
 
@@ -77,7 +77,7 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
     submitStrategy({ sourceCode: eaCode.trim(), language: mqlVersion })
       .then((res) => {
         setImportResult(res);
-        if (res.compileSuccess !== false) {
+        if (res.compileSuccess === true) {
           onApplyCode(eaCode.trim());
         }
         if (res.strategyId) { setEaStrategyId(res.strategyId); onStrategyIdChange?.(res.strategyId); }
@@ -130,7 +130,10 @@ export default function ImportEAPanel({ onApplyCode, onStrategyIdChange }: Props
                 )}
                 {importResult.semanticDiff && <SemanticDiffInline diff={importResult.semanticDiff} />}
                 {importResult.bridgeStatus === 'success' && importResult.bridgedPythonSource ? (
-                  <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{importResult.bridgedPythonSource}</pre>
+                  <>
+                    <div style={{ marginBottom: 4 }}><Text type="secondary" style={{ fontSize: 11 }}>{t('strategy.importEA.bridgeReference', { defaultValue: 'AI 桥接参考（不可执行）' })}</Text></div>
+                    <pre style={{ margin: 0, padding: '10px 0', fontFamily: '"Fira Code", monospace', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{importResult.bridgedPythonSource}</pre>
+                  </>
                 ) : importResult.bridgeStatus === 'bridge_failed' ? (
                   <Alert type="warning" showIcon message={t('strategy.importEA.bridgeFailedMsg', { defaultValue: 'Agent 无法自动桥接所有盲区' })} description={importResult.bridgeCompileError || ''} style={{ margin: '8px 0' }} />
                 ) : importResult.bridgeStatus === 'not_attempted' ? null : null}

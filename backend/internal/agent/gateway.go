@@ -146,109 +146,8 @@ func (s *GatewayServer) SubmitStrategy(
 		}), nil
 	}
 
-	// ── Steps 2-6: Backtest + LLM analysis + bridging (only when backtest_config provided) ──
-	var profile *antv1.StrategyProfile
-	var analysis *antv1.BacktestAnalysis
-	var semanticDiff *antv1.SemanticDiff
-	var btProto *antv1.AgentBacktestResult
-	bridgeStatus := "not_attempted"
-	var bridgedPython string
-	var bridgeCompileErr string
-
-	btCfg := msg.BacktestConfig
-	if btCfg != nil {
-		// ── Step 2: Fetch market data bars ──
-		bars, err := s.fetchBars(ctx, btCfg)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("fetch market data: %w", err))
-		}
-		if len(bars) < 2 {
-			return nil, connect.NewError(connect.CodeFailedPrecondition,
-				fmt.Errorf("insufficient market data: %d bars (need ≥2)", len(bars)))
-		}
-
-		// ── Step 3: Run backtest via VM + SimBroker ──
-		btResult, btErr := runVMBacktest(ctx, runner, btCfg, bars, msg.Params)
-
-		// Convert to proto for response + LLM analysis.
-		if btErr != nil {
-			btProto = &antv1.AgentBacktestResult{Success: false, Error: btErr.Error()}
-		} else {
-			btProto = buildBacktestResultProto(btResult)
-		}
-
-		// ── ADR-0025 §8: PostBacktest hook ──
-		if s.hooks != nil && s.hooks.HasHandlers(HookPostBacktest) {
-			uid, _ := uuid.Parse(userID)
-			s.hooks.Fire(ctx, &HookContext{
-				Event:          HookPostBacktest,
-				UserID:         uid,
-				StrategyID:     strategyID,
-				BacktestResult: btProto,
-			})
-		}
-
-		// ── Step 4: Generate strategy profile (LLM injection point [1]) ──
-		var profErr error
-		profile, profErr = s.profiler.GenerateProfile(ctx, userID, sourceCode, coverage)
-		if profErr != nil {
-			s.log.Warn("AgentGateway: profile generation failed", zap.Error(profErr))
-		}
-
-		// ── Step 5: Generate backtest analysis (LLM injection point [4]) ──
-		if btErr == nil {
-			analysis, err = s.interpreter.AnalyzeBacktest(ctx, userID, btProto, profile)
-			if err != nil {
-				s.log.Warn("AgentGateway: analysis generation failed", zap.Error(err))
-			}
-		}
-
-		// ── Step 6: Blind-spot bridge (ADR-0024) ──
-		// When MQL has blind spots (coverage < 1.0), trigger LLM translation to Python subset.
-		// Retry loop: LLM translate → compile → coverage check → backtest → error feedback → retry (max 3).
-		if language != "python" && coverage.Score < 1.0 && len(coverage.BlindSpots) > 0 {
-			validateBacktest := func(pyRunner *mql2go.VMRunner) error {
-				_, btErr := runVMBacktest(ctx, pyRunner, btCfg, bars, msg.Params)
-				return btErr
-			}
-
-			bridgeResult, bridgeErr := s.bridge.TranslateWithRetry(ctx, userID, sourceCode, coverage, profile, validateBacktest)
-			if bridgeErr != nil {
-				s.log.Warn("AgentGateway: bridge translation failed", zap.Error(bridgeErr))
-				bridgeStatus = "bridge_failed"
-				bridgeCompileErr = bridgeErr.Error()
-				semanticDiff = buildBridgeFailureReport(coverage)
-			} else {
-				bridgeStatus = bridgeResult.Status
-				bridgeCompileErr = bridgeResult.CompileError
-				if bridgeResult.BacktestError != "" {
-					bridgeCompileErr = bridgeResult.BacktestError
-				}
-				if bridgeResult.Status == "success" {
-					bridgedPython = bridgeResult.PythonSource
-					pyCov := bridgeResult.BridgedCov
-					s.log.Info("AgentGateway: bridge translation successful",
-						zap.Int("attempts", bridgeResult.Attempts),
-						zap.Float64("original_coverage", coverage.Score),
-						zap.Float64("bridged_coverage", pyCov.Score))
-					if pyCov != nil {
-						semanticDiff = &antv1.SemanticDiff{
-							Changes:      buildBridgeChanges(coverage, pyCov),
-							EffectSummary: fmt.Sprintf("覆盖率 %.0f%% → %.0f%%", coverage.Score*100, pyCov.Score*100),
-						}
-					}
-				} else {
-					// Degradation path — generate blind spot report + MT hosted suggestion
-					s.log.Warn("AgentGateway: bridge failed after retries",
-						zap.Int("attempts", bridgeResult.Attempts),
-						zap.String("last_error", truncate(bridgeCompileErr, 200)))
-					semanticDiff = buildBridgeFailureReport(coverage)
-				}
-			}
-		}
-	}
-
-	// ── Step 7: Persist to imported_strategies ──
+	// ── Step 2: Persist to imported_strategies (before backtest — O1: backtest failure must not lose strategy) ──
+	persisted := false
 	if s.importedRepo != nil {
 		uid, _ := uuid.Parse(userID)
 		if uid == uuid.Nil {
@@ -257,7 +156,7 @@ func (s *GatewayServer) SubmitStrategy(
 			paramsRaw := interp.SerializeParams(runner.Bytecode().Params)
 			row := &repository.ImportedStrategy{
 				UserID:        uid,
-				Name:          deriveStrategyNameFromSource(sourceCode, coverage.Version),
+				Name:          deriveNameFromSourceCode(sourceCode, coverage.Version),
 				SourceLang:    coverage.Version,
 				SourceCode:    sourceCode,
 				Params:        paramsRaw,
@@ -267,6 +166,7 @@ func (s *GatewayServer) SubmitStrategy(
 				s.log.Warn("SubmitStrategy: persist failed", zap.Error(err))
 			} else {
 				strategyID = row.ID.String()
+				persisted = true
 				if s.versionRepo != nil {
 					if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, sourceCode, coverage.Version, "Agent import"); vErr != nil {
 						s.log.Warn("SubmitStrategy: create version snapshot failed", zap.Error(vErr))
@@ -275,20 +175,38 @@ func (s *GatewayServer) SubmitStrategy(
 			}
 		}
 	}
+	// F1: if persist failed, clear strategyID so frontend doesn't get an invalid ID
+	if !persisted {
+		strategyID = ""
+	}
+
+	// ── Steps 3-7: Backtest + LLM analysis + bridging (only when backtest_config provided) ──
+	var btResult *backtestPipelineResult
+	btCfg := msg.BacktestConfig
+	if btCfg != nil {
+		btResult, err = s.runBacktestPipeline(ctx, runner, btCfg, msg.Params, userID, strategyID, sourceCode, coverage, language)
+		if err != nil {
+			s.log.Warn("SubmitStrategy: backtest pipeline failed", zap.Error(err))
+		}
+	}
 
 	// ── Build response ──
 	resp := &antv1.SubmitStrategyResponse{
-		StrategyId:          strategyID,
-		CompileSuccess:      true,
-		Mode:                antv1.SubmitMode_SUBMIT_MODE_SYNC,
-		Profile:             profile,
-		Analysis:            analysis,
-		CoverageScore:       coverage.Score,
-		Result:              btProto,
-		SemanticDiff:        semanticDiff,
-		BridgeStatus:        bridgeStatus,
-		BridgedPythonSource: bridgedPython,
-		BridgeCompileError:  bridgeCompileErr,
+		StrategyId:     strategyID,
+		CompileSuccess: true,
+		Mode:           antv1.SubmitMode_SUBMIT_MODE_SYNC,
+		CoverageScore:  coverage.Score,
+	}
+	if btResult != nil {
+		resp.Profile = btResult.profile
+		resp.Analysis = btResult.analysis
+		resp.Result = btResult.btProto
+		resp.SemanticDiff = btResult.semanticDiff
+		resp.BridgeStatus = btResult.bridgeStatus
+		resp.BridgedPythonSource = btResult.bridgedPython
+		resp.BridgeCompileError = btResult.bridgeErr
+	} else {
+		resp.BridgeStatus = "not_attempted"
 	}
 	for _, bs := range coverage.BlindSpots {
 		resp.BlindSpots = append(resp.BlindSpots, &antv1.AgentBlindSpot{
@@ -380,9 +298,9 @@ var (
 	classNameRe    = regexp.MustCompile(`class\s+(\w+)\s*(?::\s*public\s+\w+)?\s*\{`)
 )
 
-// deriveStrategyNameFromSource extracts a human-friendly strategy name from MQL source.
+// deriveNameFromSourceCode extracts a human-friendly strategy name from MQL source.
 // Priority: #property indicator_name/expert > class name > fallback "Imported <lang>".
-func deriveStrategyNameFromSource(source, lang string) string {
+func deriveNameFromSourceCode(source, lang string) string {
 	if m := propertyNameRe.FindStringSubmatch(source); len(m) > 1 {
 		return m[1]
 	}
