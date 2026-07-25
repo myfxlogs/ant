@@ -230,16 +230,15 @@ func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg L
 		}
 		return
 	}
-	// MT5 OrderClose handles both market positions AND pending orders.
-	// With lots=decimal.Zero (no volume), the gateway cancels the pending
-	// order instead of closing a position. See mt5.proto OrderClose docs.
+	// L10: Use DeleteOrder — MT4 adapter calls OrderDelete, MT5 adapter
+	// calls OrderClose(lots=0). Both are platform-correct cancel paths.
 	bgCtx := context.WithoutCancel(ctx)
 	go func() {
-		if err := s.mtHub.CloseOrder(bgCtx, cfg.AccountID, ticket, decimal.Zero); err != nil {
-			s.log.Error("LiveStrategyRunner: CancelOrder failed",
+		if err := s.mtHub.DeleteOrder(bgCtx, cfg.AccountID, ticket); err != nil {
+			s.log.Error("LiveStrategyRunner: DeleteOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
 			if activeSess != nil {
-				activeSess.RecordError(fmt.Sprintf("CancelOrder ticket=%d: %s", ticket, err.Error()))
+				activeSess.RecordError(fmt.Sprintf("DeleteOrder ticket=%d: %s", ticket, err.Error()))
 			}
 			return
 		}

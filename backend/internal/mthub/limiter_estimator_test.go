@@ -99,6 +99,7 @@ type mockExecutor struct{}
 func (m *mockExecutor) Platform() string                        { return "mock" }
 func (m *mockExecutor) PlaceOrder(_ context.Context, _ *OrderRequest) (int64, error) { return 99999, nil }
 func (m *mockExecutor) CloseOrder(_ context.Context, _ int64, _ decimal.Decimal) error { return nil }
+func (m *mockExecutor) DeleteOrder(_ context.Context, _ int64) error                   { return nil }
 func (m *mockExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ decimal.Decimal) error { return nil }
 func (m *mockExecutor) FetchOpenedOrders(_ context.Context) ([]*OrderRecord, error)  { return nil, nil }
 func (m *mockExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*OrderRecord, error) { return nil, nil }

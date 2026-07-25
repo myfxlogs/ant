@@ -115,6 +115,38 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	return nil
 }
 
+// DeleteOrder cancels a pending order using MT4 OrderDelete.
+// MT4 has a dedicated OrderDelete RPC — OrderClose only works for open positions.
+func (g *Gateway) DeleteOrder(ctx context.Context, ticket int64) error {
+	g.mu.RLock()
+	tc := g.tradingCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if tc == nil || sid == "" {
+		g.log.Warn("mt4 DeleteOrder: not connected", zap.Bool("hasCli", tc != nil), zap.Bool("hasSid", sid != ""))
+		return fmt.Errorf("mt4 DeleteOrder: not connected")
+	}
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
+	g.log.Info("mt4 DeleteOrder: sending", zap.Int64("ticket", ticket), zap.String("sid", truncSid(sid)))
+	resp, err := tc.OrderDelete(callCtx, &pb.OrderDeleteRequest{Id: sid, Ticket: int32(ticket)})
+	if err != nil {
+		g.log.Error("mt4 OrderDelete: gRPC error", zap.Error(err))
+		return fmt.Errorf("mt4 OrderDelete: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		g.log.Error("mt4 OrderDelete: broker error", zap.Int32("code", int32(resp.GetError().GetCode())), zap.String("msg", resp.GetError().GetMessage()))
+		return fmt.Errorf("mt4 OrderDelete: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	g.log.Info("mt4 DeleteOrder: success", zap.Int64("ticket", ticket))
+	return nil
+}
+
 func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
 	g.mu.RLock()
 	tc := g.tradingCli

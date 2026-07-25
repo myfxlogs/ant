@@ -85,6 +85,7 @@ type OrderExecutor interface {
 	Platform() string
 	PlaceOrder(ctx context.Context, req *OrderRequest) (int64, error)
 	CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error
+	DeleteOrder(ctx context.Context, ticket int64) error
 	ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error
 	FetchOpenedOrders(ctx context.Context) ([]*OrderRecord, error)
 	FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*OrderRecord, error)

@@ -158,6 +158,40 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	return nil
 }
 
+// DeleteOrder cancels a pending order.
+// MT5 has no dedicated OrderDelete RPC — OrderClose with lots=0 handles
+// both pending order cancellation and position close on MT5.
+func (g *Gateway) DeleteOrder(ctx context.Context, ticket int64) error {
+	g.mu.RLock()
+	tc := g.tradingCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if tc == nil || sid == "" {
+		g.log.Warn("mt5 DeleteOrder: not connected", zap.Bool("hasCli", tc != nil), zap.Bool("hasSid", sid != ""))
+		return fmt.Errorf("mt5 DeleteOrder: not connected")
+	}
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
+	g.log.Info("mt5 DeleteOrder: sending", zap.Int64("ticket", ticket), zap.String("sid", truncSid(sid)))
+	l := 0.0
+	resp, err := tc.OrderClose(callCtx, &pb.OrderCloseRequest{Id: sid, Ticket: ticket, Lots: &l})
+	if err != nil {
+		g.log.Error("mt5 OrderClose (delete): gRPC error", zap.Error(err))
+		return fmt.Errorf("mt5 DeleteOrder: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		g.log.Error("mt5 OrderClose (delete): broker error", zap.Int32("code", int32(resp.GetError().GetCode())), zap.String("msg", resp.GetError().GetMessage()))
+		return fmt.Errorf("mt5 DeleteOrder: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	g.log.Info("mt5 DeleteOrder: success", zap.Int64("ticket", ticket))
+	return nil
+}
+
 func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
 	g.mu.RLock()
 	tc := g.tradingCli

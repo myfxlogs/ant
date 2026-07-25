@@ -40,6 +40,9 @@ func (e *stubExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) 
 func (e *stubExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
 	return nil
 }
+func (e *stubExecutor) DeleteOrder(ctx context.Context, ticket int64) error {
+	return nil
+}
 func (e *stubExecutor) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
 	return nil
 }

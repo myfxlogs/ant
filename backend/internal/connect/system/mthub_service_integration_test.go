@@ -111,6 +111,13 @@ func (e *trackedExecutor) CloseOrder(_ context.Context, ticket int64, _ decimal.
 	return nil
 }
 
+func (e *trackedExecutor) DeleteOrder(_ context.Context, ticket int64) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	delete(e.orders, ticket)
+	return nil
+}
+
 func (e *trackedExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ decimal.Decimal) error {
 	return nil
 }
