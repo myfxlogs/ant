@@ -189,30 +189,40 @@ func extractBacktestSignals(trades []backtest.Trade) []shadowSignal {
 
 func compareSignals(live, backtest []shadowSignal) []string {
 	var mismatches []string
-	maxLen := len(live)
-	if len(backtest) < maxLen {
-		maxLen = len(backtest)
+
+	// L9: Align by barTime instead of index to avoid false positives after
+	// session restarts where liveSigs continues accumulating but backtest
+	// restarts from scratch.
+	btByTime := make(map[int64]shadowSignal, len(backtest))
+	for _, b := range backtest {
+		btByTime[b.barTime] = b
 	}
 
-	for i := 0; i < maxLen; i++ {
-		l := live[i]
-		b := backtest[i]
+	matched := 0
+	for _, l := range live {
+		b, ok := btByTime[l.barTime]
+		if !ok {
+			continue
+		}
+		matched++
 		if l.action != b.action {
 			mismatches = append(mismatches,
-				"signal["+strconv.Itoa(i)+"]: action live="+l.action+" vs backtest="+b.action)
+				"signal[barTime="+strconv.FormatInt(l.barTime, 10)+"]: action live="+l.action+" vs backtest="+b.action)
 			continue
 		}
 		lv, _ := decimal.NewFromString(l.volume)
 		bv, _ := decimal.NewFromString(b.volume)
 		if !lv.Equal(bv) {
 			mismatches = append(mismatches,
-				"signal["+strconv.Itoa(i)+"]: volume live="+l.volume+" vs backtest="+b.volume)
+				"signal[barTime="+strconv.FormatInt(l.barTime, 10)+"]: volume live="+l.volume+" vs backtest="+b.volume)
 		}
 	}
 
-	if len(live) != len(backtest) {
+	liveCount := len(live)
+	btCount := len(backtest)
+	if matched < liveCount || matched < btCount {
 		mismatches = append(mismatches,
-			"count: live="+strconv.Itoa(len(live))+" vs backtest="+strconv.Itoa(len(backtest)))
+			"count: live="+strconv.Itoa(liveCount)+" vs backtest="+strconv.Itoa(btCount)+" matched="+strconv.Itoa(matched))
 	}
 
 	return mismatches

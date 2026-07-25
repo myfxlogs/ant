@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -74,13 +75,13 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 		}
 		s.dispatchPendingOrder(ctx, cfg, sig, activeSess)
 	case "close":
-		s.dispatchCloseOrder(ctx, cfg, sig)
+		s.dispatchCloseOrder(ctx, cfg, sig, activeSess)
 	case "close_all":
-		s.dispatchCloseAll(ctx, cfg)
+		s.dispatchCloseAll(ctx, cfg, activeSess)
 	case "modify":
-		s.dispatchModifyOrder(ctx, cfg, sig)
+		s.dispatchModifyOrder(ctx, cfg, sig, activeSess)
 	case "cancel":
-		s.dispatchCancelOrder(ctx, cfg, sig)
+		s.dispatchCancelOrder(ctx, cfg, sig, activeSess)
 	default:
 		// hold, unknown — no-op.
 	}
@@ -115,10 +116,13 @@ func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg 
 	s.submitOrder(ctx, cfg, side, orderType, sig, activeSess)
 }
 
-// dispatchCloseAll closes all open positions for the account.
-func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig) {
+// dispatchCloseAll closes all open positions for the account matching cfg.Symbol.
+func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) {
 	if s.mtHub == nil {
 		s.log.Warn("LiveStrategyRunner: dispatchCloseAll: no MtHubService")
+		if activeSess != nil {
+			activeSess.RecordError("dispatchCloseAll: no MtHubService")
+		}
 		return
 	}
 	// Detach from parent cancellation but preserve values (userID, auth).
@@ -128,47 +132,78 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 		if err != nil {
 			s.log.Error("LiveStrategyRunner: dispatchCloseAll: OpenedOrders failed",
 				zap.String("account", cfg.AccountID), zap.Error(err))
+			if activeSess != nil {
+				activeSess.RecordError("dispatchCloseAll: OpenedOrders: " + err.Error())
+			}
 			return
 		}
 		closed := 0
+		skipped := 0
 		for _, o := range orders {
+			// L1: Only close positions matching this strategy's symbol.
+			if o.Canonical != cfg.Symbol && o.SymbolRaw != cfg.Symbol {
+				skipped++
+				continue
+			}
 			if err := s.mtHub.CloseOrder(bgCtx, cfg.AccountID, o.Ticket, o.Volume); err != nil {
 				s.log.Warn("LiveStrategyRunner: dispatchCloseAll: CloseOrder failed",
 					zap.Int64("ticket", o.Ticket), zap.Error(err))
+				if activeSess != nil {
+					activeSess.RecordError(fmt.Sprintf("CloseOrder ticket=%d: %s", o.Ticket, err.Error()))
+				}
 				continue
 			}
 			closed++
 		}
 		s.log.Info("LiveStrategyRunner: dispatchCloseAll complete",
 			zap.String("account", cfg.AccountID),
+			zap.String("symbol", cfg.Symbol),
 			zap.Int("closed", closed),
+			zap.Int("skipped", skipped),
 			zap.Int("total", len(orders)),
 		)
 	}()
 }
 
-func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: close order without ticket")
+		if activeSess != nil {
+			activeSess.RecordError("close order without ticket")
+		}
 		return
 	}
 	// D6-A: gate moved to MtHubService.CloseOrder (single chokepoint).
 	volume := parseDecimal(sig.GetVolume())
+	if volume.LessThanOrEqual(decimal.Zero) {
+		s.log.Warn("LiveStrategyRunner: close order with zero volume, skipping",
+			zap.Int64("ticket", ticket))
+		if activeSess != nil {
+			activeSess.RecordError(fmt.Sprintf("close order ticket=%d: zero volume", ticket))
+		}
+		return
+	}
 	go func() {
 		if err := s.mtHub.CloseOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, volume); err != nil {
 			s.log.Error("LiveStrategyRunner: CloseOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
+			if activeSess != nil {
+				activeSess.RecordError(fmt.Sprintf("CloseOrder ticket=%d: %s", ticket, err.Error()))
+			}
 			return
 		}
 		s.log.Info("LiveStrategyRunner: position closed", zap.Int64("ticket", ticket))
 	}()
 }
 
-func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: modify order without ticket")
+		if activeSess != nil {
+			activeSess.RecordError("modify order without ticket")
+		}
 		return
 	}
 	sl := parseDecimal(sig.GetStopLoss())
@@ -179,14 +214,20 @@ func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg L
 		if err := s.mtHub.ModifyOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, sl, tp, price); err != nil {
 			s.log.Error("LiveStrategyRunner: ModifyOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
+			if activeSess != nil {
+				activeSess.RecordError(fmt.Sprintf("ModifyOrder ticket=%d: %s", ticket, err.Error()))
+			}
 		}
 	}()
 }
 
-func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: cancel order without ticket")
+		if activeSess != nil {
+			activeSess.RecordError("cancel order without ticket")
+		}
 		return
 	}
 	// MT5 OrderClose handles both market positions AND pending orders.
@@ -197,6 +238,9 @@ func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg L
 		if err := s.mtHub.CloseOrder(bgCtx, cfg.AccountID, ticket, decimal.Zero); err != nil {
 			s.log.Error("LiveStrategyRunner: CancelOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
+			if activeSess != nil {
+				activeSess.RecordError(fmt.Sprintf("CancelOrder ticket=%d: %s", ticket, err.Error()))
+			}
 			return
 		}
 		s.log.Info("LiveStrategyRunner: pending order cancelled", zap.Int64("ticket", ticket))
@@ -289,6 +333,9 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 				zap.String("side", sideStr),
 				zap.Error(err),
 			)
+			if activeSess != nil {
+				activeSess.RecordError(fmt.Sprintf("order %s %s: %s", sideStr, cfg.Symbol, err.Error()))
+			}
 			return
 		}
 		// Order succeeded — clear circuit open flag if it was set.

@@ -199,6 +199,7 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		Params:       req.Msg.GetParams(),
 		UserID:       uid.String(),
 		ExtraSymbols: req.Msg.GetExtraSymbols(),
+		StrategyID:   req.Msg.GetStrategyId(),
 	}
 
 	// Live mode: use MT4 account ID for order routing.
@@ -231,11 +232,19 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 			Status:       "running",
 		}
 		if err := s.runRepo.Create(ctx, run); err != nil {
-			s.log.Warn("StartStrategy: failed to create run record", zap.Error(err))
-		} else {
-			runID = run.ID
-			cfg.RunID = runID
+			s.log.Error("StartStrategy: failed to create run record", zap.Error(err))
+			return connect.NewResponse(&antv1.StartStrategyResponse{
+				Success: false,
+				Error:   "failed to create run record: " + err.Error(),
+			}), nil
 		}
+		runID = run.ID
+		cfg.RunID = runID
+	} else {
+		return connect.NewResponse(&antv1.StartStrategyResponse{
+			Success: false,
+			Error:   "run repository not configured",
+		}), nil
 	}
 
 	// Synchronously register session — atomic conflict detection.

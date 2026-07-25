@@ -71,6 +71,9 @@ func (s *StrategyExecutionServer) handleBar(
 		vmSess, vmErr := NewVMLiveSessionCached(cfg.Code, cachedBytecode)
 		if vmErr != nil {
 			s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
+			if activeSess != nil {
+				activeSess.RecordError("compile MQL: " + vmErr.Error())
+			}
 			return
 		}
 		// Persist newly compiled bytecode.

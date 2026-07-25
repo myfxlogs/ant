@@ -475,6 +475,7 @@ message StartStrategyRequest {
   string mode = 5;                 // "live" | "paper"
   map<string, string> params = 6;  // strategy params
   repeated string extra_symbols = 7;  // secondary symbols for multi-symbol strategies
+  string strategy_id = 8;          // imported strategy ID for bytecode cache (optional)
 }
 
 message StartStrategyResponse {

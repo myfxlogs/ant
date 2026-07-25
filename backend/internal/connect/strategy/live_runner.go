@@ -22,6 +22,7 @@ import (
 
 	"alphaforge/internal/mthub"
 	"alphaforge/strategy/backtest"
+	"alphaforge/tools/mql2go"
 )
 
 const maxContextBars = 500
@@ -122,6 +123,24 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 
 	needsTick := cfg.Models&ExecModelTick != 0
 	needsTrade := cfg.Models&ExecModelTrade != 0
+
+	// L4: When Models is not explicitly set, auto-detect from bytecode.
+	// Compile once upfront to check OnTick/OnTrade entry points, then subscribe
+	// to the appropriate streams. This is a lightweight compile (cached bytecode
+	// when strategy_id is available) and the result is reused on the first bar.
+	if cfg.Models == 0 && cfg.Code != "" {
+		var cachedBytecode []byte
+		if cfg.StrategyID != "" && s.importedRepo != nil {
+			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
+				cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
+			}
+		}
+		probe, _, probeErr := mql2go.CompileMQLCached(cfg.Code, cachedBytecode)
+		if probeErr == nil {
+			needsTick = probe.HasOnTick()
+			needsTrade = probe.Bytecode().OnTrade >= 0
+		}
+	}
 
 	s.log.Info("LiveStrategyRunner: starting",
 		zap.String("trading_account", cfg.AccountID),

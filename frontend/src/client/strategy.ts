@@ -216,6 +216,7 @@ export const strategyActiveApi = {
     mode?: string;
     params?: Record<string, string>;
     extraSymbols?: string[];
+    strategyId?: string;
   }) => {
     return await strategyRuntimeClient.startStrategy({
       accountId: params.accountId,
@@ -225,6 +226,7 @@ export const strategyActiveApi = {
       mode: params.mode || 'paper',
       params: params.params || {},
       extraSymbols: params.extraSymbols ?? [],
+      strategyId: params.strategyId ?? '',
     });
   },
 

@@ -3346,6 +3346,7 @@ type StartStrategyRequest struct {
 	Mode          string                 `protobuf:"bytes,5,opt,name=mode,proto3" json:"mode,omitempty"`                                                                               // "live" | "paper"
 	Params        map[string]string      `protobuf:"bytes,6,rep,name=params,proto3" json:"params,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // strategy params
 	ExtraSymbols  []string               `protobuf:"bytes,7,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`                                           // secondary symbols for multi-symbol strategies
+	StrategyId    string                 `protobuf:"bytes,8,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`                                                 // imported strategy ID for bytecode cache (optional)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3427,6 +3428,13 @@ func (x *StartStrategyRequest) GetExtraSymbols() []string {
 		return x.ExtraSymbols
 	}
 	return nil
+}
+
+func (x *StartStrategyRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
 }
 
 type StartStrategyResponse struct {
@@ -4524,7 +4532,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"takeProfit\x12\x16\n" +
 	"\x06reason\x18\t \x01(\tR\x06reason\x128\n" +
 	"\ttimestamp\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"\xc6\x02\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"\xe7\x02\n" +
 	"\x14StartStrategyRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12#\n" +
@@ -4533,7 +4541,9 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12\x12\n" +
 	"\x04mode\x18\x05 \x01(\tR\x04mode\x12@\n" +
 	"\x06params\x18\x06 \x03(\v2(.ant.v1.StartStrategyRequest.ParamsEntryR\x06params\x12#\n" +
-	"\rextra_symbols\x18\a \x03(\tR\fextraSymbols\x1a9\n" +
+	"\rextra_symbols\x18\a \x03(\tR\fextraSymbols\x12\x1f\n" +
+	"\vstrategy_id\x18\b \x01(\tR\n" +
+	"strategyId\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"^\n" +
