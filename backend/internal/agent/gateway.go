@@ -184,7 +184,16 @@ func (s *GatewayServer) SubmitStrategy(
 	var btResult *backtestPipelineResult
 	btCfg := msg.BacktestConfig
 	if btCfg != nil {
-		btResult, err = s.runBacktestPipeline(ctx, runner, btCfg, msg.Params, userID, strategyID, sourceCode, coverage, language)
+		btResult, err = s.runBacktestPipeline(ctx, backtestPipelineInput{
+			Runner:     runner,
+			BtCfg:      btCfg,
+			Params:     msg.Params,
+			UserID:     userID,
+			StrategyID: strategyID,
+			SourceCode: sourceCode,
+			Coverage:   coverage,
+			Language:   language,
+		})
 		if err != nil {
 			s.log.Warn("SubmitStrategy: backtest pipeline failed", zap.Error(err))
 		}
