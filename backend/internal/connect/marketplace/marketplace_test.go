@@ -101,7 +101,7 @@ func (s *stubMarketplaceSvc) PurchaseStrategy(_ context.Context, _, _, _, _ stri
 func (s *stubMarketplaceSvc) ListSubscriptions(_ context.Context, _ string) ([]marketplace.SubscriptionItem, error) {
 	return s.subs, s.err
 }
-func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _, _, _ string) error {
+func (s *stubMarketplaceSvc) SetPricing(_ context.Context, _, _, _, _, _ string) error {
 	if s.setPricingErr != nil {
 		return s.setPricingErr
 	}

@@ -151,10 +151,13 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 
 // createFrozenSettlementTx inserts a frozen settlement row within an existing
 // transaction. Shared by PurchaseStrategy, PurchaseBundle, and subscription renewal.
+// M6: bundleID is set for bundle purchases so refund logic can find the settlement
+// regardless of which subscription in the bundle is being refunded.
 func (s *Service) createFrozenSettlementTx(ctx context.Context, tx pgx.Tx,
 	purchaseID, buyerID, providerID uuid.UUID,
 	amount, platformFee, providerAmount string,
 	refundWindowDays int,
+	bundleID *uuid.UUID,
 ) error {
 	if refundWindowDays <= 0 {
 		refundWindowDays = DefaultRefundWindowDays
@@ -164,10 +167,10 @@ func (s *Service) createFrozenSettlementTx(ctx context.Context, tx pgx.Tx,
 	_, err := tx.Exec(ctx,
 		`INSERT INTO marketplace_settlements
 		 (purchase_id, buyer_id, provider_id, amount, platform_fee, provider_amount,
-		  status, refund_window_days, freezes_at, settles_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, 'frozen', $7, $8, $9)`,
+		  status, refund_window_days, freezes_at, settles_at, bundle_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, 'frozen', $7, $8, $9, $10)`,
 		purchaseID, buyerID, providerID, amount, platformFee, providerAmount,
-		refundWindowDays, now, settlesAt,
+		refundWindowDays, now, settlesAt, bundleID,
 	)
 	return err
 }

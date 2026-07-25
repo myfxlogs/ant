@@ -92,7 +92,7 @@ func (s *MarketplaceServer) SetStrategyPricing(ctx context.Context, req *connect
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
 	}
 	m := req.Msg
-	if err := s.svc.SetPricing(ctx, m.StrategyId, m.PriceModel, m.PriceAmount, strconv.FormatFloat(m.PlatformFeeRate, 'f', -1, 64)); err != nil {
+	if err := s.svc.SetPricing(ctx, uid.String(), m.StrategyId, m.PriceModel, m.PriceAmount, strconv.FormatFloat(m.PlatformFeeRate, 'f', -1, 64)); err != nil {
 		s.log.Error("SetStrategyPricing", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

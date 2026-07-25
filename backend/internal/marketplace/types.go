@@ -2,10 +2,11 @@ package marketplace
 
 import (
 	"context"
-	"strings"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -301,10 +302,8 @@ type CommentItem struct {
 	CreatedAt time.Time
 }
 
-// isUniqueViolation checks whether err is a PostgreSQL unique constraint violation.
+// isUniqueViolation checks whether err is a PostgreSQL unique constraint violation (SQLSTATE 23505).
 func isUniqueViolation(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique")
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

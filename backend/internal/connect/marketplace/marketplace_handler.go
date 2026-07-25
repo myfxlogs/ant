@@ -2,9 +2,11 @@ package marketplace
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -29,7 +31,7 @@ type marketplaceSvc interface {
 	Unsubscribe(ctx context.Context, userID, subscriptionID string) error
 	PurchaseStrategy(ctx context.Context, userID, strategyID, couponCode, idempotencyKey string) (*marketplace.PurchaseResult, error)
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
-	SetPricing(ctx context.Context, strategyID, priceModel, priceAmount, platformFeeRate string) error
+	SetPricing(ctx context.Context, userID, strategyID, priceModel, priceAmount, platformFeeRate string) error
 	Unpublish(ctx context.Context, strategyID, userID string, isAdmin bool) error
 	GetPublisherStats(ctx context.Context, userID string) (*marketplace.PublisherStats, error)
 	StartMarketBacktest(ctx context.Context, params marketplace.StartBacktestParams) (string, error)
@@ -97,6 +99,21 @@ var _ antv1c.MarketplaceServiceHandler = (*MarketplaceServer)(nil)
 
 func NewMarketplaceServer(svc marketplaceSvc, admin interceptor.AdminChecker, log *zap.Logger) *MarketplaceServer {
 	return &MarketplaceServer{svc: svc, admin: admin, log: log}
+}
+
+// checkAdmin safely parses the user ID from context and verifies admin status.
+// Returns the parsed UUID and nil error if admin, or nil UUID and a ConnectRPC error otherwise.
+// M12: Replaces uuid.MustParse which can panic on invalid/empty user IDs.
+func (s *MarketplaceServer) checkAdmin(ctx context.Context) (uuid.UUID, error) {
+	uid, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	isAdmin, err := s.admin.IsAdmin(ctx, uid)
+	if err != nil || !isAdmin {
+		return uuid.Nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	}
+	return uid, nil
 }
 
 // SetPgListen injects the PG listener for push-first SSE streaming.

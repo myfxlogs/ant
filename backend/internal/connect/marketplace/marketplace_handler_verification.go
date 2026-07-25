@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
+
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/interceptor"
 )
@@ -34,13 +34,12 @@ func (s *MarketplaceServer) AdminProcessVerification(
 	ctx context.Context,
 	req *connect.Request[antv1.AdminProcessVerificationRequest],
 ) (*connect.Response[antv1.AdminProcessVerificationResponse], error) {
-	adminID := interceptor.GetUserID(ctx)
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(adminID))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	adminUID, err := s.checkAdmin(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := s.svc.ProcessVerification(ctx, adminID, req.Msg.RequestId, req.Msg.Approve, req.Msg.Note); err != nil {
+	if err := s.svc.ProcessVerification(ctx, adminUID.String(), req.Msg.RequestId, req.Msg.Approve, req.Msg.Note); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 

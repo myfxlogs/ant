@@ -5,10 +5,8 @@ import (
 	"fmt"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
-	"alphaforge/internal/interceptor"
 )
 
 func (s *MarketplaceServer) ValidateCoupon(
@@ -38,11 +36,11 @@ func (s *MarketplaceServer) CreateCoupon(
 	ctx context.Context,
 	req *connect.Request[antv1.CreateCouponRequest],
 ) (*connect.Response[antv1.CreateCouponResponse], error) {
-	adminID := interceptor.GetUserID(ctx)
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(adminID))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	adminUID, err := s.checkAdmin(ctx)
+	if err != nil {
+		return nil, err
 	}
+	adminID := adminUID.String()
 
 	m := req.Msg
 	if m.Code == "" {
@@ -67,9 +65,8 @@ func (s *MarketplaceServer) ListCoupons(
 	ctx context.Context,
 	req *connect.Request[antv1.ListCouponsRequest],
 ) (*connect.Response[antv1.ListCouponsResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	rows, err := s.svc.ListCoupons(ctx, req.Msg.EnabledOnly)
@@ -105,9 +102,8 @@ func (s *MarketplaceServer) DisableCoupon(
 	ctx context.Context,
 	req *connect.Request[antv1.DisableCouponRequest],
 ) (*connect.Response[antv1.DisableCouponResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	if err := s.svc.DisableCoupon(ctx, req.Msg.CouponId); err != nil {

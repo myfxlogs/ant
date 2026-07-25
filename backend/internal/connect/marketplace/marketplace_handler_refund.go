@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/interceptor"
@@ -43,10 +42,11 @@ func (s *MarketplaceServer) AdminListRefundRequests(
 	ctx context.Context,
 	req *connect.Request[antv1.AdminListRefundRequestsRequest],
 ) (*connect.Response[antv1.AdminListRefundRequestsResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	adminUID, err := s.checkAdmin(ctx)
+	if err != nil {
+		return nil, err
 	}
+	_ = adminUID
 
 	m := req.Msg
 	rows, total, err := s.svc.ListRefundRequests(ctx, m.Status, int(m.Limit), int(m.Offset))
@@ -81,11 +81,11 @@ func (s *MarketplaceServer) AdminProcessRefund(
 	ctx context.Context,
 	req *connect.Request[antv1.AdminProcessRefundRequest],
 ) (*connect.Response[antv1.AdminProcessRefundResponse], error) {
-	adminID := interceptor.GetUserID(ctx)
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(adminID))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	adminUID, err := s.checkAdmin(ctx)
+	if err != nil {
+		return nil, err
 	}
+	adminID := adminUID.String()
 
 	m := req.Msg
 	if m.RefundId == "" {
@@ -93,10 +93,7 @@ func (s *MarketplaceServer) AdminProcessRefund(
 	}
 
 	if err := s.svc.ProcessRefundRequest(ctx, adminID, m.RefundId, m.Approve, m.ReviewNote); err != nil {
-		return connect.NewResponse(&antv1.AdminProcessRefundResponse{
-			Success: false,
-			Error:   err.Error(),
-		}), nil
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return connect.NewResponse(&antv1.AdminProcessRefundResponse{

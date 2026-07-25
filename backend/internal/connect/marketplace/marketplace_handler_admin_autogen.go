@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
-	"alphaforge/internal/interceptor"
 )
 
 // ── Admin: Batch Generation RPCs (Phase 2.2d) ────────────────────────────────
@@ -21,9 +20,8 @@ func (s *MarketplaceServer) ListAutoGenTasks(
 	if s.batch == nil {
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("batch generator not configured"))
 	}
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	limit := int(req.Msg.Limit)
@@ -74,9 +72,8 @@ func (s *MarketplaceServer) ApproveAutoGenTask(
 	if s.batch == nil {
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("batch generator not configured"))
 	}
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	taskID, err := uuid.Parse(req.Msg.TaskId)
@@ -101,9 +98,8 @@ func (s *MarketplaceServer) RejectAutoGenTask(
 	if s.batch == nil {
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("batch generator not configured"))
 	}
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	taskID, err := uuid.Parse(req.Msg.TaskId)
@@ -125,9 +121,8 @@ func (s *MarketplaceServer) TriggerBatchGeneration(
 	if s.batch == nil {
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("batch generator not configured"))
 	}
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	msg := req.Msg

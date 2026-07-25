@@ -59,15 +59,47 @@ func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strate
 		return "", fmt.Errorf("marketplace: cannot subscribe to your own strategy")
 	}
 
+	// M2: Use ON CONFLICT to handle re-subscription after unsubscribe.
+	// The UNIQUE(subscriber_user_id, target_strategy_id, kind) constraint
+	// would block re-subscribe since the old row still exists with active=false.
+	// M5: Wrap in transaction to atomically increment total_subscribers.
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: subscribe: begin tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
 	id := uuid.New().String()
-	_, err = s.pg.Exec(ctx, `
+	var subID string
+	err = tx.QueryRow(ctx, `
 		INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active)
 		VALUES ($1, $2, $3, $4, $5, true)
-	`, id, userID, publisherUserID, strategyID, kind)
+		ON CONFLICT (subscriber_user_id, target_strategy_id, kind)
+		DO UPDATE SET active = true, created_at = now()
+		RETURNING id::text
+	`, id, userID, publisherUserID, strategyID, kind).Scan(&subID)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: subscribe: %w", err)
 	}
-	return id, nil
+
+	// M5: Increment subscriber counter only for marketplace strategies.
+	if dbPublisherID != "" {
+		sid, perr := uuid.Parse(strategyID)
+		if perr == nil {
+			if _, err := tx.Exec(ctx,
+				`UPDATE marketplace_strategies SET total_subscribers = total_subscribers + 1 WHERE strategy_id = $1`,
+				sid,
+			); err != nil {
+				return "", fmt.Errorf("marketplace: subscribe: increment subscribers: %w", err)
+			}
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("marketplace: subscribe: commit: %w", err)
+	}
+	s.pubCache.clear()
+	return subID, nil
 }
 
 // Unsubscribe deactivates a subscription and decrements the subscriber counter.
@@ -120,9 +152,9 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	rows, err := s.pg.Query(ctx, `
 		SELECT id, target_user_id, target_strategy_id, kind, active, created_at, expires_at
 		FROM user_subscriptions
-		WHERE subscriber_user_id::text = $1 AND active = true
+		WHERE subscriber_user_id = $1 AND active = true
 		ORDER BY created_at DESC
-	`, userID)
+	`, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -187,9 +219,11 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			failed++
 			continue
 		}
-		feeRateDec, err := decimal.NewFromString(p.platformFeeRate)
+		// M7: Use tiered fee rate instead of flat platform_fee_rate from publish time.
+		// This ensures publishers who have earned lower fee tiers get the correct rate on renewals.
+		feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, p.publisherID)
 		if err != nil {
-			s.log.Warn("renewal: invalid platform_fee_rate", zap.String("subID", p.subID), zap.String("feeRate", p.platformFeeRate), zap.Error(err))
+			s.log.Warn("renewal: get effective fee rate failed", zap.String("subID", p.subID), zap.Error(err))
 			_ = tx.Rollback(ctx)
 			failed++
 			continue
@@ -256,7 +290,7 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 			failed++
 			continue
 		}
-		if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr, p.refundWindowDays); err != nil {
+		if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr, p.refundWindowDays, nil); err != nil {
 			s.log.Warn("renewal: create settlement failed", zap.String("subID", p.subID), zap.Error(err))
 			_ = tx.Rollback(ctx)
 			failed++
@@ -330,11 +364,21 @@ func (s *Service) StartRenewalLoop(ctx context.Context, log *zap.Logger) {
 // Access is granted if the user is the template owner, has an active
 // subscription/purchase to the published strategy, or has an active free trial.
 func (s *Service) CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error) {
+	// M8: Parse UUIDs for index-friendly queries.
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return false, nil
+	}
+	sid, err := uuid.Parse(strategyID)
+	if err != nil {
+		return false, nil
+	}
+
 	// Check if user is the template owner.
 	var ownerID string
-	err := s.pg.QueryRow(ctx,
-		`SELECT user_id::text FROM strategy_templates WHERE id::text = $1`,
-		strategyID,
+	err = s.pg.QueryRow(ctx,
+		`SELECT user_id::text FROM strategy_templates WHERE id = $1`,
+		sid,
 	).Scan(&ownerID)
 	if err != nil {
 		return false, nil // template not found → deny
@@ -347,9 +391,9 @@ func (s *Service) CanAccessCode(ctx context.Context, userID, strategyID string) 
 	var exists bool
 	err = s.pg.QueryRow(ctx,
 		`SELECT EXISTS(SELECT 1 FROM user_subscriptions
-		 WHERE subscriber_user_id::text = $1 AND target_strategy_id = $2 AND active = true
+		 WHERE subscriber_user_id = $1 AND target_strategy_id = $2 AND active = true
 		   AND (expires_at IS NULL OR expires_at > now()))`,
-		userID, strategyID,
+		uid, sid,
 	).Scan(&exists)
 	if err != nil {
 		return false, nil

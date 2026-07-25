@@ -2,23 +2,19 @@ package marketplace
 
 import (
 	"context"
-	"fmt"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
-	"alphaforge/internal/interceptor"
 )
 
 func (s *MarketplaceServer) GetMarketplaceAnalytics(
 	ctx context.Context,
 	req *connect.Request[antv1.GetMarketplaceAnalyticsRequest],
 ) (*connect.Response[antv1.MarketplaceAnalytics], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	result, err := s.svc.GetMarketplaceAnalytics(ctx, req.Msg.Period)
@@ -55,9 +51,8 @@ func (s *MarketplaceServer) GetTopStrategies(
 	ctx context.Context,
 	req *connect.Request[emptypb.Empty],
 ) (*connect.Response[antv1.TopStrategiesResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	byRev, bySub, err := s.svc.GetTopStrategies(ctx)
@@ -88,9 +83,8 @@ func (s *MarketplaceServer) GetTopProviders(
 	ctx context.Context,
 	req *connect.Request[emptypb.Empty],
 ) (*connect.Response[antv1.TopProvidersResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	byRev, byStrat, err := s.svc.GetTopProviders(ctx)

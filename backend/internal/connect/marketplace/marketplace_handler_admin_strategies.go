@@ -2,22 +2,18 @@ package marketplace
 
 import (
 	"context"
-	"fmt"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
-	"alphaforge/internal/interceptor"
 )
 
 func (s *MarketplaceServer) AdminListStrategies(
 	ctx context.Context,
 	req *connect.Request[antv1.AdminListStrategiesRequest],
 ) (*connect.Response[antv1.AdminListStrategiesResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	m := req.Msg
@@ -62,9 +58,8 @@ func (s *MarketplaceServer) AdminFeatureStrategy(
 	ctx context.Context,
 	req *connect.Request[antv1.AdminFeatureStrategyRequest],
 ) (*connect.Response[antv1.AdminFeatureStrategyResponse], error) {
-	isAdmin, err := s.admin.IsAdmin(ctx, uuid.MustParse(interceptor.GetUserID(ctx)))
-	if err != nil || !isAdmin {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin only"))
+	if _, err := s.checkAdmin(ctx); err != nil {
+		return nil, err
 	}
 
 	m := req.Msg

@@ -189,12 +189,18 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	feeStr := feeDec.StringFixed(2)
 
 	// 7. Insert subscription row (target_user_id = publisher from DB).
+	// M4: Convert empty idempotencyKey to nil — the partial unique index
+	// idx_subscriptions_idempotency only covers non-NULL keys, so NULL is safe.
 	subID := uuid.New()
+	var idemKey *string
+	if idempotencyKey != "" {
+		idemKey = &idempotencyKey
+	}
 	err = tx.QueryRow(ctx,
 		`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
 			 VALUES ($1, $2, $3, $4, $5, true, $6, $7)
 			 RETURNING id`,
-		subID, uid, pid, sid, subKind, idempotencyKey, expiresAt,
+		subID, uid, pid, sid, subKind, idemKey, expiresAt,
 	).Scan(&subID)
 	if err != nil {
 		// If unique violation on idempotency_key, another request won the race.
@@ -209,7 +215,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	}
 
 	// 8. Create frozen settlement record — replaces direct publisher/platform credits.
-	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, pid, amountStr, feeStr, pubAmountStr, dbRefundWindowDays)
+	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, pid, amountStr, feeStr, pubAmountStr, dbRefundWindowDays, nil)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: create settlement: %w", err)
 	}
@@ -254,7 +260,8 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 // ── Admin Pricing ─────────────────────────────────────────────────────────────
 
 // SetPricing updates the pricing model, amount, and platform fee rate for a published strategy.
-func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceAmount, platformFeeRate string) error {
+// M3: Verifies caller is the strategy publisher (defense-in-depth, handler already checks admin).
+func (s *Service) SetPricing(ctx context.Context, userID, strategyID, priceModel, priceAmount, platformFeeRate string) error {
 	switch priceModel {
 	case PriceModelFree, PriceModelOnce, PriceModelSubscription:
 	default:
@@ -263,6 +270,19 @@ func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel, priceA
 	sid, err := uuid.Parse(strategyID)
 	if err != nil {
 		return fmt.Errorf("marketplace: invalid strategy_id: %w", err)
+	}
+
+	// M3: Verify ownership — only the publisher can change pricing.
+	var dbPublisherID string
+	err = s.pg.QueryRow(ctx,
+		`SELECT publisher_id::text FROM marketplace_strategies WHERE strategy_id = $1`,
+		sid,
+	).Scan(&dbPublisherID)
+	if err != nil {
+		return fmt.Errorf("marketplace: strategy not found: %w", err)
+	}
+	if dbPublisherID != userID {
+		return fmt.Errorf("marketplace: not the strategy owner")
 	}
 
 	// Read old price for notification.

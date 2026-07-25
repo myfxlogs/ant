@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -132,6 +133,8 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 
 	// 4. Handle settlement — if frozen, simply mark as refunded (no publisher debit needed).
 	//    If already settled, reverse the publisher and platform credits.
+	//    M6: Fall back to bundle_id lookup for bundle purchases where the settlement's
+	//    purchase_id is the first subscription, not necessarily the one being refunded.
 	var settlementStatus, settlementID, providerAmount, platformFee string
 	err = tx.QueryRow(ctx,
 		`SELECT status, id::text, provider_amount::text, platform_fee::text
@@ -139,9 +142,30 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		sid,
 	).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
 	if err != nil {
-		s.log.Warn("marketplace: settlement not found for subscription, skipping settlement reversal",
-			zap.String("subID", sid.String()), zap.Error(err))
-	} else {
+		// M6: Try bundle_id lookup — the subscription's idempotency_key has
+		// the pattern "{idempotencyKey}-{strategyID}" for bundle purchases.
+		// We search for a settlement whose bundle_id matches the idempotency key prefix.
+		if idemKey != "" && strings.Contains(idemKey, "-") {
+			parts := strings.SplitN(idemKey, "-", 2)
+			bundleKeyPrefix := parts[0]
+			err = tx.QueryRow(ctx,
+				`SELECT ms.status, ms.id::text, ms.provider_amount::text, ms.platform_fee::text
+				 FROM marketplace_settlements ms
+				 WHERE ms.bundle_id IS NOT NULL
+				   AND ms.bundle_id::text LIKE $1 || '%'
+				   AND ms.buyer_id = $2
+				 ORDER BY ms.created_at DESC LIMIT 1 FOR UPDATE`,
+				bundleKeyPrefix, uid,
+			).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
+		}
+		if err != nil {
+			s.log.Warn("marketplace: settlement not found for subscription, skipping settlement reversal",
+				zap.String("subID", sid.String()), zap.Error(err))
+			settlementID = "" // ensure no reversal attempted
+		}
+	}
+
+	if settlementID != "" {
 		switch settlementStatus {
 		case SettlementStatusFrozen:
 			// Settlement still frozen — just mark as refunded. No wallet debits needed.
@@ -156,6 +180,9 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		case SettlementStatusSettled:
 			// Already settled — reverse publisher and platform credits.
 			// providerAmount and platformFee already fetched above.
+			// M9: Track failed reversals on the settlement row for reconciliation.
+			var reversalFailed bool
+			var reversalNote string
 
 			// Debit publisher.
 			pubUUID, perr := uuid.Parse(subTargetUserID)
@@ -173,6 +200,8 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 				_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubUUID,
 					negPub, TxTypeRefundReversal, revDesc, nil, IdemKeyRev+sid.String())
 				if err != nil {
+					reversalFailed = true
+					reversalNote += fmt.Sprintf("publisher reversal failed: %s; ", err.Error())
 					s.log.Warn("marketplace: refund reversal failed (insufficient publisher balance)",
 						zap.String("subID", sid.String()), zap.Error(err))
 				}
@@ -193,17 +222,27 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 					_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
 						negFee, TxTypeRefundReversal, feeRevDesc, nil, IdemKeyFeeRev+sid.String())
 					if err != nil {
+						reversalFailed = true
+						reversalNote += fmt.Sprintf("platform fee reversal failed: %s; ", err.Error())
 						s.log.Warn("marketplace: platform fee reversal failed",
 							zap.String("subID", sid.String()), zap.Error(err))
 					}
 				}
 			}
 
-			// Mark settlement as refunded.
-			_, err = tx.Exec(ctx,
-				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
-				settlementID, time.Now(),
-			)
+			// Mark settlement as refunded, recording any reversal failures.
+			if reversalFailed {
+				_, err = tx.Exec(ctx,
+					`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2,
+					 reversal_failed = true, reversal_failure_note = $3 WHERE id = $1`,
+					settlementID, time.Now(), reversalNote,
+				)
+			} else {
+				_, err = tx.Exec(ctx,
+					`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
+					settlementID, time.Now(),
+				)
+			}
 			if err != nil {
 				return nil, fmt.Errorf("marketplace: mark settled refund: %w", err)
 			}

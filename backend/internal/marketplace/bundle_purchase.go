@@ -107,6 +107,50 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 	}
 	itemRows.Close()
 
+	// M11: Filter out strategies the buyer already has active subscriptions to.
+	// This prevents charging for already-owned strategies and prorates the bundle price.
+	if len(items) > 0 {
+		parsedItemIDs := make([]uuid.UUID, 0, len(items))
+		for _, sidStr := range items {
+			parsedID, perr := uuid.Parse(sidStr)
+			if perr == nil {
+				parsedItemIDs = append(parsedItemIDs, parsedID)
+			}
+		}
+		existingRows, eerr := tx.Query(ctx,
+			`SELECT target_strategy_id::text FROM user_subscriptions
+			 WHERE subscriber_user_id = $1 AND target_strategy_id = ANY($2) AND active = true`,
+			uid, parsedItemIDs)
+		if eerr == nil {
+			owned := make(map[string]bool)
+			for existingRows.Next() {
+				var ownedSID string
+				if err := existingRows.Scan(&ownedSID); err == nil {
+					owned[ownedSID] = true
+				}
+			}
+			existingRows.Close()
+			if len(owned) > 0 {
+				filtered := items[:0]
+				for _, sidStr := range items {
+					if !owned[sidStr] {
+						filtered = append(filtered, sidStr)
+					}
+				}
+				items = filtered
+			}
+		}
+	}
+
+	// If all strategies already owned, return early as a no-op.
+	if len(items) == 0 {
+		_ = tx.Rollback(ctx)
+		return &PurchaseResult{
+			SubscriptionID: bid.String(),
+			AmountCharged:  "0",
+		}, nil
+	}
+
 	isFree := priceModel == PriceModelFree || !priceAmount.IsPositive()
 
 	// Paid path: charge buyer, credit publisher and platform.
@@ -178,10 +222,10 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 		}
 	}
 
-	// Create frozen settlement — purchase_id must be a user_subscriptions.id
-	// for subJoinOnClause and refund logic to work correctly.
+	// Create frozen settlement — purchase_id is the first subscription ID for
+	// join compatibility, and bundle_id enables refund lookup for any sub in the bundle.
 	if !isFree && firstSubID != uuid.Nil {
-		err = s.createFrozenSettlementTx(ctx, tx, firstSubID, uid, publisherID, amountStr, feeStr, pubAmountStr, DefaultRefundWindowDays)
+		err = s.createFrozenSettlementTx(ctx, tx, firstSubID, uid, publisherID, amountStr, feeStr, pubAmountStr, DefaultRefundWindowDays, &bid)
 		if err != nil {
 			return nil, fmt.Errorf("marketplace: purchase bundle: create settlement: %w", err)
 		}
