@@ -69,6 +69,7 @@ frontend/e2e/
 frontend/playwright-report/
 frontend/playwright-traces/
 frontend/test-results/
+test-results/
 tmp/
 
 # Local credentials
