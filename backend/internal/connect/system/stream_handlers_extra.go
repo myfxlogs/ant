@@ -26,10 +26,21 @@ func (s *StreamServer) SubscribeOrderUpdates(
 	if userID == "" {
 		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
+	accountID := req.Msg.AccountId
+	if accountID == "" {
+		return connect.NewError(connect.CodeInvalidArgument, errors.New("account_id is required"))
+	}
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
+	if err != nil {
+		s.log.Error("SubscribeOrderUpdates: UserOwnsAccount DB error", zap.String("account", accountID), zap.Error(err))
+		return connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
+		return connect.NewError(connect.CodePermissionDenied, errors.New("account does not belong to user"))
+	}
 
 	ch, cancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
 	defer cancel()
-	accountID := req.Msg.AccountId
 
 	for {
 		select {

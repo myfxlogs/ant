@@ -133,3 +133,37 @@ No migrations required.
 - **ModifyOrder no gate**: Gate rules (MaxLotSize, MaxPositionCount, etc.) are designed for position opening. SL/TP modification doesn't change exposure/margin/concentration. Documented in code comment.
 - **FNV64a → int32 magic collision**: 50% collision probability after ~77K unique clientIDs. Acceptable as Layer 3 (broker-side dedup) — primary protection is Layer 1+2. Documented in code.
 - **Derived state VaR**: Parametric estimate (not historical simulation). Uses 1% daily vol assumption. Full historical VaR is M10-BASE-D7 (future work). Documented in code.
+
+## W1 Findings (2026-07-26 re-audit for minimal viable launch)
+
+### W1-1 — SubscribeOrderUpdates missing account ownership check 🟡 MEDIUM
+
+**File**: `backend/internal/connect/system/stream_handlers_extra.go:20-54`
+
+**Problem**: `SubscribeOrderUpdates` authenticated the user but did not verify they owned the requested `account_id`. When `account_id` was empty (proto3 default), the handler streamed ALL users' order events — including symbol, volume, price, and P/L — to any authenticated user. This is a cross-user data leakage vulnerability.
+
+**Fix**: Made `account_id` required and added `platform.UserOwnsAccount` check, matching the pattern already used by `SubscribeProfitUpdates`.
+
+### W1-2 — OrderEventBroker.PublishEvent broadcasts to ALL subscribers 🟡 MEDIUM
+
+**File**: `backend/internal/mthub/types.go:195`, `backend/internal/mthub/oms_writer.go:170`
+
+**Problem**: `PublishEvent` ignored its first parameter (`_ string`) and broadcast every order event to ALL subscribers regardless of userID. Combined with W1-1, this meant any authenticated user could receive any other user's order events. Even with W1-1 fixed, the broadcast was wasteful and leaked data to the channel buffer.
+
+**Fix**: Changed `PublishEvent` to accept `userID` (instead of ignoring `accountID`) and only send to that user's subscribers. Updated `oms_writer.go` to pass `usermgr.GetUserID(ctx)` instead of `oev.AccountID`.
+
+### W1-3 — Session token logged at INFO level 🟢 LOW
+
+**File**: `backend/internal/mdgateway/adapter/mt4/connection.go:146`, `backend/internal/mdgateway/adapter/mt5/connection.go:149`
+
+**Problem**: Both MT4 and MT5 gateway adapters logged the mtapi session token at INFO level: `zap.String("token", token)`. This token is a sensitive credential used for all subsequent gRPC calls to the mtapi gateway. Production logs would contain plaintext session tokens.
+
+**Fix**: Replaced `zap.String("token", token)` with `zap.Bool("has_token", token != "")` in both adapters.
+
+### W1-4 — StartStrategy live mode falls back to user-supplied accountID 🟡 MEDIUM
+
+**File**: `backend/internal/connect/strategy/strategy_active_handlers.go:225-232`
+
+**Problem**: In live mode, `StartStrategy` called `accountLookup` to resolve the user's MT account. If `accountLookup` returned `""` (user has no connected MT account), `cfg.AccountID` retained the user-supplied value from `req.Msg.GetAccountId()`. This allowed a user to potentially specify another user's account ID for strategy execution. While `MtHubService.PlaceOrder` would reject the actual order via `accountOwnerVerifier`, the strategy could still subscribe to bar/tick streams for the unauthorized account (information leakage).
+
+**Fix**: Reject live mode with `CodeFailedPrecondition` if `accountLookup` returns empty. Also reject if `accountLookup` is nil (not configured).

@@ -30,6 +30,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"alphaforge/internal/usermgr"
 )
 
 // OMSState represents an order state in the 16-state machine.
@@ -165,7 +167,7 @@ func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, c
 			EventType: fmt.Sprintf("%s→%s", string(current), string(next)),
 			Timestamp: Clk.Now(),
 		}
-		w.orderEventBroker.PublishEvent(oev.AccountID, oev)
+		w.orderEventBroker.PublishEvent(usermgr.GetUserID(ctx), oev)
 	}
 	return nil
 }

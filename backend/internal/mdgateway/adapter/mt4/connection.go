@@ -144,8 +144,8 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	token := loginResp.GetResult()
 	respErr := loginResp.GetError()
 	g.log.Info("mt4 connect response",
-		zap.String("token", token), zap.Any("error", respErr),
-		zap.String("host", brokerHost), zap.String("gateway", gateway))
+		zap.String("host", brokerHost), zap.String("gateway", gateway),
+		zap.Bool("has_token", token != ""), zap.Any("error", respErr))
 	if token == "" {
 		errMsg := "empty token"
 		if respErr != nil {

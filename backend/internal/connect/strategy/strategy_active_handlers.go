@@ -225,10 +225,16 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 	// Live mode: use MT4 account ID for order routing.
 	if mode == "live" {
 		if s.accountLookup != nil {
-			if mt4ID := s.accountLookup(ctx, uid.String()); mt4ID != "" {
-				cfg.DataSourceAccountID = mt4ID
-				cfg.AccountID = mt4ID // route orders to real MT4 account
+			mt4ID := s.accountLookup(ctx, uid.String())
+			if mt4ID == "" {
+				return nil, connect.NewError(connect.CodeFailedPrecondition,
+					fmt.Errorf("no connected MT account found — please bind an MT account before starting a live strategy"))
 			}
+			cfg.DataSourceAccountID = mt4ID
+			cfg.AccountID = mt4ID // route orders to real MT4 account
+		} else {
+			return nil, connect.NewError(connect.CodeUnavailable,
+				fmt.Errorf("account lookup not configured"))
 		}
 	} else {
 		// Paper mode: use linked MT4 account for bar data subscription only.

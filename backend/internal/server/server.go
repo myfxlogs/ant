@@ -13,11 +13,12 @@ import (
 // Run starts the ant v2 HTTP server and blocks until ctx is cancelled or a listen error occurs.
 func Run(ctx context.Context, handler http.Handler, port string, log *zap.Logger) error {
 	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 0, // disabled: streaming endpoints (SSE/ConnectRPC server-stream) hold writes open indefinitely
-		IdleTimeout:  0, // disabled: streaming connections (SSE/ConnectRPC) must stay open indefinitely
+		Addr:              ":" + port,
+		Handler:           handler,
+		ReadTimeout:       15 * time.Second,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      0, // disabled: streaming endpoints (SSE/ConnectRPC server-stream) hold writes open indefinitely
+		IdleTimeout:       0, // disabled: streaming connections (SSE/ConnectRPC) must stay open indefinitely
 	}
 
 	errCh := make(chan error, 1)
