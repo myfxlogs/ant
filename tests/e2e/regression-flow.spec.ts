@@ -197,69 +197,12 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
   });
 
   // ════════════════════════════════════════════════════════════════════════
-  // 8. Admin publishes strategy to marketplace (free)
+  // 8. Run backtest with real market data (async via StartBacktestRun)
+  // Must run before publishing — marketplace requires backtest snapshot.
   // ════════════════════════════════════════════════════════════════════════
-  test('8. Publish strategy to marketplace', async () => {
-    const resp = await rpc('/ant.v1.MarketplaceService/PublishStrategy', {
-      userId: state.userId, // not used by server (reads from auth context)
-      strategyId: state.templateId,
-      title: 'E2E Test MA Crossover',
-      description: 'Free strategy for E2E testing — MA crossover',
-      priceModel: 'free',
-      priceAmount: '0',
-      assetClass: 'forex',
-      symbols: ['XAUUSDm'],
-      timeframe: '5m',
-      riskLevel: 'low',
-      tags: ['e2e', 'test'],
-    }, state.adminToken);
-    expect(resp.ok, `PublishStrategy should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
-    state.publishId = resp.data.publishId as string;
-    expect(state.publishId).toBeTruthy();
-    console.log(`Published OK, publishId=${state.publishId}`);
-  });
-
-  // ════════════════════════════════════════════════════════════════════════
-  // 9. New user sees published strategy in marketplace
-  // ════════════════════════════════════════════════════════════════════════
-  test('9. Marketplace lists published strategy', async () => {
-    const resp = await rpc('/ant.v1.MarketplaceService/ListPublished', {
-      limit: 50,
-      offset: 0,
-    }, state.token);
-    expect(resp.ok, `ListPublished should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
-    const strategies = (resp.data.strategies as Array<Record<string, unknown>>) ?? [];
-    expect(strategies.length).toBeGreaterThanOrEqual(1);
-    const found = strategies.find(s => s.publishId === state.publishId);
-    expect(found, 'Published strategy should be visible').toBeDefined();
-    expect(found!.priceModel).toBe('free');
-    console.log(`Marketplace OK, found published strategy: ${found!.title}`);
-  });
-
-  // ════════════════════════════════════════════════════════════════════════
-  // 10. New user subscribes to the free strategy
-  // ════════════════════════════════════════════════════════════════════════
-  test('10. Subscribe to free strategy', async () => {
-    const resp = await rpc('/ant.v1.MarketplaceService/Subscribe', {
-      userId: state.userId,
-      publisherUserId: '', // server reads from marketplace_strategies
-      strategyId: state.templateId,
-      kind: 'copy_trade',
-    }, state.token);
-    expect(resp.ok, `Subscribe should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
-    expect(resp.data.subscriptionId).toBeTruthy();
-    console.log(`Subscribed OK, subscriptionId=${resp.data.subscriptionId}`);
-  });
-
-  // ════════════════════════════════════════════════════════════════════════
-  // 11. Run backtest with real market data (async via StartBacktestRun)
-  // ════════════════════════════════════════════════════════════════════════
-  test('11. Start backtest with real market data', async () => {
+  test('8. Start backtest with real market data', async () => {
     test.setTimeout(180_000);
 
-    // Use admin's MT4 account which has XAUUSDm market data
-    // ConnectRPC expects google.protobuf.Timestamp as ISO 8601 string in JSON
-    // executionConfig is required — DB has NOT NULL on slippage/commission/leverage
     const resp = await rpc('/ant.v1.StrategyRuntimeService/StartBacktestRun', {
       code: MQL_SOURCE,
       accountId: ADMIN_ACCOUNT_ID,
@@ -286,9 +229,9 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
   });
 
   // ════════════════════════════════════════════════════════════════════════
-  // 12. Poll backtest until completed and verify results
+  // 9. Poll backtest until completed and verify results
   // ════════════════════════════════════════════════════════════════════════
-  test('12. Backtest completes with valid metrics', async () => {
+  test('9. Backtest completes with valid metrics', async () => {
     test.setTimeout(180_000);
     expect(state.backtestRunId, 'RunId must be set from previous test').toBeTruthy();
 
@@ -305,7 +248,6 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
         fullRespData = resp.data;
         run = resp.data.run as Record<string, unknown>;
         const status = run?.status as string;
-        // ConnectRPC returns enum as string name
         if (status === 'BACKTEST_RUN_STATUS_SUCCEEDED' ||
             status === 'BACKTEST_RUN_STATUS_FAILED' ||
             status === 'BACKTEST_RUN_STATUS_CANCELED') {
@@ -325,12 +267,10 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
     console.log(`Backtest final status=${finalStatus}`);
 
     if (finalStatus === 'BACKTEST_RUN_STATUS_SUCCEEDED') {
-      // Verify metrics exist
       const metrics = fullRespData?.metrics as Record<string, unknown> | undefined;
       if (metrics) {
         console.log(`Metrics: totalReturn=${metrics.totalReturn}, maxDrawdown=${metrics.maxDrawdown}, totalTrades=${metrics.totalTrades}`);
       }
-      // Verify equity curve exists
       const equityCurve = fullRespData?.equityCurve as string[] | undefined;
       if (equityCurve && equityCurve.length > 0) {
         console.log(`Equity curve points: ${equityCurve.length}`);
@@ -343,6 +283,62 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
     } else {
       console.warn(`Backtest did not complete (status=${finalStatus}) after ${attempts * 3}s`);
     }
+  });
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 10. Admin publishes strategy to marketplace (free)
+  // Now that backtest snapshot exists, quality gate should pass.
+  // ════════════════════════════════════════════════════════════════════════
+  test('10. Publish strategy to marketplace', async () => {
+    const resp = await rpc('/ant.v1.MarketplaceService/PublishStrategy', {
+      userId: state.userId,
+      strategyId: state.templateId,
+      title: 'E2E Test MA Crossover',
+      description: 'Free strategy for E2E testing — MA crossover',
+      priceModel: 'free',
+      priceAmount: '0',
+      assetClass: 'forex',
+      symbols: ['XAUUSDm'],
+      timeframe: '5m',
+      riskLevel: 'low',
+      tags: ['e2e', 'test'],
+    }, state.adminToken);
+    expect(resp.ok, `PublishStrategy should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
+    state.publishId = resp.data.publishId as string;
+    expect(state.publishId).toBeTruthy();
+    console.log(`Published OK, publishId=${state.publishId}`);
+  });
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 11. New user sees published strategy in marketplace
+  // ════════════════════════════════════════════════════════════════════════
+  test('11. Marketplace lists published strategy', async () => {
+    const resp = await rpc('/ant.v1.MarketplaceService/ListPublished', {
+      limit: 50,
+      offset: 0,
+    }, state.token);
+    expect(resp.ok, `ListPublished should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
+    const strategies = (resp.data.strategies as Array<Record<string, unknown>>) ?? [];
+    expect(strategies.length).toBeGreaterThanOrEqual(1);
+    const found = strategies.find(s => s.publishId === state.publishId);
+    expect(found, 'Published strategy should be visible').toBeDefined();
+    expect(found!.priceModel).toBe('free');
+    console.log(`Marketplace OK, found published strategy: ${found!.title}`);
+  });
+
+  // ════════════════════════════════════════════════════════════════════════
+  // 12. New user subscribes to the free strategy
+  // ════════════════════════════════════════════════════════════════════════
+  test('12. Subscribe to free strategy', async () => {
+    const resp = await rpc('/ant.v1.MarketplaceService/Subscribe', {
+      userId: state.userId,
+      publisherUserId: '',
+      strategyId: state.templateId,
+      kind: 'copy_trade',
+    }, state.token);
+    expect(resp.ok, `Subscribe should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
+    expect(resp.data.subscriptionId).toBeTruthy();
+    console.log(`Subscribed OK, subscriptionId=${resp.data.subscriptionId}`);
   });
 
   // ════════════════════════════════════════════════════════════════════════
