@@ -61,7 +61,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       - DB_PORT=5432
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env (32+ chars)}
-      - NATS_URL=nats://nats:4222
+      - NATS_URL=nats://${NATS_USER:-ant}:${NATS_PASSWORD:-ant}@nats:4222
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
@@ -202,6 +202,9 @@ services:
         reservations:
           memory: 48M
     command: ["-c", "/etc/nats/nats.conf", "-js"]
+    environment:
+      - NATS_USER=${NATS_USER:-ant}
+      - NATS_PASSWORD=${NATS_PASSWORD:-ant}
     ports:
       - "127.0.0.1:${NATS_PORT:-4222}:4222"
       - "127.0.0.1:${NATS_HTTP_PORT:-8222}:8222"

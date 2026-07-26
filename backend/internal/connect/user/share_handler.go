@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"math"
 	"strconv"
 	"time"
 
@@ -113,40 +112,8 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 
 	// Sharpe ratio from equity curve.
 	sharpeStr := "0"
-	if len(equityVals) > 1 {
-		var sum, sumSq decimal.Decimal
-		dailyReturns := make([]decimal.Decimal, 0, len(equityVals)-1)
-		for i := 1; i < len(equityVals); i++ {
-			prev, err := decimal.NewFromString(equityVals[i-1])
-			if err != nil || prev.IsZero() {
-				continue
-			}
-			curr, err := decimal.NewFromString(equityVals[i])
-			if err != nil {
-				continue
-			}
-			r := curr.Sub(prev).Div(prev)
-			dailyReturns = append(dailyReturns, r)
-			sum = sum.Add(r)
-		}
-		if len(dailyReturns) > 1 {
-			n := decimal.NewFromInt(int64(len(dailyReturns)))
-			mean := sum.Div(n)
-			for _, r := range dailyReturns {
-				diff := r.Sub(mean)
-				sumSq = sumSq.Add(diff.Mul(diff))
-			}
-			variance := sumSq.Div(n.Sub(decimal.NewFromInt(1)))
-			if variance.IsPositive() {
-				vFloat, _ := variance.Float64()
-				std := math.Sqrt(vFloat)
-				if std > 0 {
-					meanFloat, _ := mean.Float64()
-					sharpe := meanFloat / std * math.Sqrt(252)
-					sharpeStr = strconv.FormatFloat(sharpe, 'f', 4, 64)
-				}
-			}
-		}
+	if sharpeVal := computeSharpe(equityPoints); sharpeVal != 0 {
+		sharpeStr = strconv.FormatFloat(sharpeVal, 'f', 4, 64)
 	}
 
 	// Positions — only if the share token allows it.

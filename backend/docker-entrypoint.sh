@@ -50,7 +50,7 @@ for file in $(ls /app/migrations/*.up.sql 2>/dev/null | sort); do
     fi
 
     echo "Applying migration: $version"
-    apply_output=$(PGPASSWORD=$DB_PASSWORD psql -v ON_ERROR_STOP=1 -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -f "$file" 2>&1) || apply_rc=$?
+    apply_output=$(PGPASSWORD=$DB_PASSWORD psql -v ON_ERROR_STOP=1 -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "BEGIN;" -f "$file" -c "COMMIT;" 2>&1) || apply_rc=$?
     apply_rc=${apply_rc:-0}
 
     if [ "$apply_rc" -ne 0 ]; then
