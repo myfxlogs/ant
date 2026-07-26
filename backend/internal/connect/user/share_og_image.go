@@ -8,18 +8,15 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
-	"math"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
 
-	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
 )
 
@@ -85,67 +82,23 @@ func (s *ogImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Fetch performance data (reuse same logic as GetSharedPerformance).
-	aid, _ := uuid.Parse(st.AccountID)
-	start := time.Now().AddDate(-1, 0, 0)
-	end := time.Now()
-	equityPoints, err := s.eqRepo.GetEquityCurve(ctx, aid, start, end)
-	if err != nil {
-		s.log.Warn("og-image: GetEquityCurve", zap.String("account_id", st.AccountID), zap.Error(err))
+	// Fetch performance data via shared service.
+	st2 := &repository.ShareToken{
+		Token:     token,
+		UserID:    st.UserID,
+		AccountID: st.AccountID,
 	}
-
-	trades, err := s.tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
+	perf, err := BuildSharePerformance(ctx, st2, s.userRepo, s.eqRepo, s.tradeRecords, nil)
 	if err != nil {
-		s.log.Warn("og-image: GetByAccountID", zap.String("account_id", st.AccountID), zap.Error(err))
+		s.log.Warn("og-image: BuildSharePerformance", zap.String("token", token), zap.Error(err))
 	}
-	stats := summarizeTrades(trades)
 
 	// Build PNG.
-	pngData := renderOGImagePNG(userName, stats.totalReturnStr(), stats.winRateStr(), stats.maxDrawdownStr(), fmt.Sprintf("%d", len(trades)), fmt.Sprintf("%.4f", computeSharpe(equityPoints)))
+	pngData := renderOGImagePNG(userName, perf.TotalReturn, perf.WinRate+"%", perf.MaxDrawdown, fmt.Sprintf("%d", perf.TotalTrades), perf.SharpeRatio)
 
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	_, _ = w.Write(pngData)
-}
-
-// computeSharpe calculates annualized Sharpe ratio from equity curve points.
-func computeSharpe(equityPoints []*model.EquityPoint) float64 {
-	if len(equityPoints) < 2 {
-		return 0
-	}
-	var sum, sumSq float64
-	var returns []float64
-	for i := 1; i < len(equityPoints); i++ {
-		prev, ok1 := equityPoints[i-1].Equity.Float64()
-		if !ok1 || prev == 0 {
-			continue
-		}
-		curr, ok2 := equityPoints[i].Equity.Float64()
-		if !ok2 {
-			continue
-		}
-		r := (curr - prev) / prev
-		returns = append(returns, r)
-		sum += r
-	}
-	if len(returns) < 2 {
-		return 0
-	}
-	n := float64(len(returns))
-	mean := sum / n
-	for _, r := range returns {
-		diff := r - mean
-		sumSq += diff * diff
-	}
-	variance := sumSq / (n - 1)
-	if variance <= 0 {
-		return 0
-	}
-	std := math.Sqrt(variance)
-	if std == 0 {
-		return 0
-	}
-	return mean / std * math.Sqrt(252)
 }
 
 // renderOGImagePNG generates a 1200×630 PNG with performance metrics.

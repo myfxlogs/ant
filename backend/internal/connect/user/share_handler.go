@@ -5,19 +5,16 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/interceptor"
-	"alphaforge/internal/model"
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/repository"
 )
@@ -60,7 +57,7 @@ func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.CreateShareTokenResponse{
-		Token: token, ShareUrl: fmt.Sprintf("/share/%s", token),
+		Token: token, ShareUrl: fmtShareURL(token),
 		ExpiresAt: st.ExpiresAt.Format(time.RFC3339),
 	}), nil
 }
@@ -72,48 +69,19 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	}
 	_ = s.repo.IncrementView(ctx, st.Token)
 
-	user, _ := s.userRepo.GetByID(ctx, st.UserID)
-	userName := "匿名用户"
-	if user != nil {
-		if user.Email != "" {
-			userName = user.Email
-		}
-		if user.Nickname != nil && *user.Nickname != "" {
-			userName = *user.Nickname
-		}
+	perf, err := BuildSharePerformance(ctx, st, s.userRepo, s.eqRepo, s.tradeRecords, s.mthub)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	aid, _ := uuid.Parse(st.AccountID)
-	// Equity curve
-	start := time.Now().AddDate(-1, 0, 0)
-	end := time.Now()
-	equityPoints, _ := s.eqRepo.GetEquityCurve(ctx, aid, start, end)
-	equityVals := make([]string, 0, len(equityPoints))
-	equityTimesMs := make([]int64, 0, len(equityPoints))
-	for _, p := range equityPoints {
-		equityVals = append(equityVals, p.Equity.String())
-		if t, err := time.Parse("2006-01-02", p.Date); err == nil {
-			equityTimesMs = append(equityTimesMs, t.UnixMilli())
-		} else {
-			equityTimesMs = append(equityTimesMs, 0)
-		}
-	}
-
-	// Recent trades + stats from trade_records.
-	trades, _ := s.tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
-	stats := summarizeTrades(trades)
-	pbTrades := make([]*antv1.SharedTrade, 0, len(trades))
-	for _, t := range trades {
+	// Format trades for proto.
+	sharedTrades := FormatSharedTrades(perf.Trades)
+	pbTrades := make([]*antv1.SharedTrade, 0, len(sharedTrades))
+	for _, t := range sharedTrades {
 		pbTrades = append(pbTrades, &antv1.SharedTrade{
-			Symbol: t.Symbol, Side: t.OrderType, Volume: t.Volume.String(), Profit: t.Profit.String(),
-			CloseTimeMs: t.CloseTime.UnixMilli(),
+			Symbol: t.Symbol, Side: t.Side, Volume: t.Volume, Profit: t.Profit,
+			CloseTimeMs: t.CloseTimeMs,
 		})
-	}
-
-	// Sharpe ratio from equity curve.
-	sharpeStr := "0"
-	if sharpeVal := computeSharpe(equityPoints); sharpeVal != 0 {
-		sharpeStr = strconv.FormatFloat(sharpeVal, 'f', 4, 64)
 	}
 
 	// Positions — only if the share token allows it.
@@ -121,17 +89,14 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 	if st.ShowPositions {
 		if cached, _ := s.repo.GetPositionsSnapshot(ctx, st.Token); cached != nil {
 			pbPositions = cached
-		} else if s.mthub != nil {
-			if orders, err := s.mthub.OpenedOrders(ctx, st.AccountID); err == nil {
-				pbPositions = make([]*antv1.SharedPosition, 0, len(orders))
-				for _, o := range orders {
-					side := "BUY"
-					if o.Side == -1 {
-						side = "SELL"
-					}
+		} else {
+			positions := FormatSharedPositions(ctx, s.mthub, st.AccountID)
+			if len(positions) > 0 {
+				pbPositions = make([]*antv1.SharedPosition, 0, len(positions))
+				for _, p := range positions {
 					pbPositions = append(pbPositions, &antv1.SharedPosition{
-						Symbol: o.SymbolRaw, Type: side,
-						Volume: o.Volume.String(), OpenPrice: o.OpenPrice.String(), Profit: o.Profit.String(),
+						Symbol: p.Symbol, Type: p.Type,
+						Volume: p.Volume, OpenPrice: p.OpenPrice, Profit: p.Profit,
 					})
 				}
 				_ = s.repo.SetPositionsSnapshot(ctx, st.Token, pbPositions)
@@ -139,77 +104,15 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		}
 	}
 
-	resp := connect.NewResponse(&antv1.GetSharedPerformanceResponse{
-		UserName: userName, TotalTrades: int32(len(trades)),
-		TotalReturn: stats.totalReturnStr(), WinRate: stats.winRateStr(), MaxDrawdown: stats.maxDrawdownStr(),
-		SharpeRatio: sharpeStr,
-		EquityCurve: equityVals, EquityTimesMs: equityTimesMs, Trades: pbTrades,
-		TotalVolume: stats.totalVolStr(), ProfitFactor: stats.profitFactorStr(),
-		AvgHoldingMs: stats.avgHoldingMs(), ShowPositions: st.ShowPositions,
+	return connect.NewResponse(&antv1.GetSharedPerformanceResponse{
+		UserName: perf.UserName, TotalTrades: int32(perf.TotalTrades),
+		TotalReturn: perf.TotalReturn, WinRate: perf.WinRate, MaxDrawdown: perf.MaxDrawdown,
+		SharpeRatio: perf.SharpeRatio,
+		EquityCurve: perf.EquityCurve, EquityTimesMs: perf.EquityTimesMs, Trades: pbTrades,
+		TotalVolume: perf.TotalVolume, ProfitFactor: perf.ProfitFactor,
+		AvgHoldingMs: perf.AvgHoldingMs, ShowPositions: st.ShowPositions,
 		Positions: pbPositions,
-	})
-	return resp, nil
-}
-
-// tradeSummary holds computed metrics from a set of trades.
-// Used by both the ConnectRPC and HTTP share handlers.
-type tradeSummary struct {
-	totalProfit, totalVolume, grossProfit, grossLoss, maxDD decimal.Decimal
-	wins, losses                                            int
-	openTimeSum                                             int64
-}
-
-func summarizeTrades(trades []*model.TradeRecord) tradeSummary {
-	var s tradeSummary
-	for _, t := range trades {
-		s.totalProfit = s.totalProfit.Add(t.Profit)
-		s.totalVolume = s.totalVolume.Add(t.Volume)
-		if t.Profit.IsPositive() {
-			s.wins++
-			s.grossProfit = s.grossProfit.Add(t.Profit)
-		} else {
-			s.losses++
-			s.grossLoss = s.grossLoss.Add(t.Profit.Abs())
-		}
-		if t.Profit.LessThan(s.maxDD) {
-			s.maxDD = t.Profit
-		}
-		s.openTimeSum += t.CloseTime.Sub(t.OpenTime).Milliseconds()
-	}
-	return s
-}
-
-func (s tradeSummary) totalReturnStr() string {
-	return s.totalProfit.String()
-}
-
-func (s tradeSummary) winRateStr() string {
-	if s.wins+s.losses == 0 {
-		return "0"
-	}
-	return decimal.NewFromInt(int64(s.wins)).Div(decimal.NewFromInt(int64(s.wins + s.losses))).Mul(decimal.NewFromInt(100)).String()
-}
-
-func (s tradeSummary) maxDrawdownStr() string {
-	return s.maxDD.String()
-}
-
-func (s tradeSummary) profitFactorStr() string {
-	if !s.grossLoss.IsPositive() {
-		return "0"
-	}
-	return s.grossProfit.Div(s.grossLoss).String()
-}
-
-func (s tradeSummary) totalVolStr() string {
-	return s.totalVolume.String()
-}
-
-func (s tradeSummary) avgHoldingMs() int64 {
-	if n := s.wins + s.losses; n > 0 {
-		return s.openTimeSum / int64(n)
-	}
-	return 0
+	}), nil
 }
 
 func (s *ShareServer) UpdateShareToken(ctx context.Context, req *connect.Request[antv1.UpdateShareTokenRequest]) (*connect.Response[antv1.UpdateShareTokenResponse], error) {
@@ -235,7 +138,7 @@ func (s *ShareServer) ListShareTokens(ctx context.Context, req *connect.Request[
 	items := make([]*antv1.ShareTokenItem, 0, len(tokens))
 	for _, t := range tokens {
 		items = append(items, &antv1.ShareTokenItem{
-			Token: t.Token, ShareUrl: fmt.Sprintf("/share/%s", t.Token),
+			Token: t.Token, ShareUrl: fmtShareURL(t.Token),
 			Description: t.Description, ShowPositions: t.ShowPositions,
 			ViewCount: int32(t.ViewCount),
 			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
@@ -280,7 +183,7 @@ func (s *ShareServer) ListAllShareTokens(ctx context.Context, req *connect.Reque
 	items := make([]*antv1.AdminShareTokenItem, 0, len(tokens))
 	for _, t := range tokens {
 		items = append(items, &antv1.AdminShareTokenItem{
-			Token: t.Token, ShareUrl: fmt.Sprintf("/share/%s", t.Token),
+			Token: t.Token, ShareUrl: fmtShareURL(t.Token),
 			UserId: t.UserID.String(), Description: t.Description,
 			ShowPositions: t.ShowPositions, ViewCount: int32(t.ViewCount),
 			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
