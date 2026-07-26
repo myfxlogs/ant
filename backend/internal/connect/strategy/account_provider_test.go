@@ -62,6 +62,25 @@ func TestProviderNoExecutor(t *testing.T) {
 	}
 }
 
+func TestProviderNoBalanceFailClosed(t *testing.T) {
+	hub := mthub.NewHub()
+	hub.Register("acct-nb", &mthub.Session{AccountID: "acct-nb", CreatedAt: time.Now(), MaxAge: 4 * time.Hour},
+		&stubExecutor{orders: []*mthub.OrderRecord{
+			{Ticket: 1, SymbolRaw: "EURUSD", Volume: decimal.NewFromFloat(0.10),
+				OpenPrice: decimal.NewFromFloat(1.08500), Profit: decimal.NewFromFloat(50.0)},
+		}})
+
+	provider := NewMTAccountStateProvider(hub, nil)
+	// No SetBalance call — should fail-closed.
+	state, err := provider.GetAccountState(context.Background(), "acct-nb")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if state != nil {
+		t.Error("expected nil state when no balance data (fail-closed)")
+	}
+}
+
 func TestProviderWithOpenPositions(t *testing.T) {
 	hub := mthub.NewHub()
 	hub.Register("acct-1", &mthub.Session{AccountID: "acct-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour},
@@ -75,6 +94,7 @@ func TestProviderWithOpenPositions(t *testing.T) {
 		}})
 
 	provider := NewMTAccountStateProvider(hub, nil)
+	provider.SetBalance("acct-1", decimal.NewFromInt(10000))
 	state, err := provider.GetAccountState(context.Background(), "acct-1")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -102,6 +122,7 @@ func TestProviderEmptyPositions(t *testing.T) {
 		&stubExecutor{orders: nil})
 
 	provider := NewMTAccountStateProvider(hub, nil)
+	provider.SetBalance("acct-2", decimal.NewFromInt(5000))
 	state, err := provider.GetAccountState(context.Background(), "acct-2")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -123,6 +144,7 @@ func TestProviderPeakEquityTracking(t *testing.T) {
 		}})
 
 	provider := NewMTAccountStateProvider(hub, nil)
+	provider.SetBalance("acct-3", decimal.NewFromInt(10000))
 
 	// First call: peak = 10100.
 	state1, _ := provider.GetAccountState(context.Background(), "acct-3")
@@ -154,6 +176,7 @@ func TestProviderResetPeakEquity(t *testing.T) {
 		}})
 
 	provider := NewMTAccountStateProvider(hub, nil)
+	provider.SetBalance("acct-4", decimal.NewFromInt(10000))
 	_, _ = provider.GetAccountState(context.Background(), "acct-4")
 	provider.ResetPeakEquity("acct-4")
 
@@ -173,6 +196,7 @@ func TestProviderWithGateIntegration(t *testing.T) {
 		}})
 
 	provider := NewMTAccountStateProvider(hub, nil)
+	provider.SetBalance("acct-5", decimal.NewFromInt(10000))
 	state, err := provider.GetAccountState(context.Background(), "acct-5")
 	if err != nil || state == nil {
 		t.Fatal("provider must return state")

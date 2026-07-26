@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,7 +47,28 @@ func validateBaseURL(s string) error {
 	if u.Host == "" {
 		return errBaseURLBad
 	}
+	if isPrivateOrLoopbackHost(u.Hostname()) {
+		return errBaseURLPrivate
+	}
 	return nil
+}
+
+var errBaseURLPrivate = errors.New("base_url must not point to a private or loopback address")
+
+var privateHostnames = map[string]bool{
+	"localhost": true, "postgres": true, "redis": true, "nats": true,
+	"backend": true, "clickhouse": true, "umami": true, "frontend": true,
+}
+
+func isPrivateOrLoopbackHost(host string) bool {
+	if privateHostnames[host] {
+		return true
+	}
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return false
+	}
+	return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsUnspecified()
 }
 
 func authHeader(req *http.Request, secret string) {

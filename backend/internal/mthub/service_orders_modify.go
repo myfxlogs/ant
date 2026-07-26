@@ -58,14 +58,12 @@ func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket
 		return ErrSessionNotFound
 	}
 
-	slFloat, _ := sl.Float64()
-	tpFloat, _ := tp.Float64()
 	_ = price // passed to executor, used when modifying pending order limit price
 
 	if s.logger != nil {
 		s.logger.Info("ModifyOrder: calling executor",
 			zap.String("accountID", accountID), zap.Int64("ticket", ticket),
-			zap.Float64("sl", slFloat), zap.Float64("tp", tpFloat))
+			zap.String("sl", sl.String()), zap.String("tp", tp.String()))
 	}
 
 	if err := exec.ModifyOrder(ctx, ticket, sl, tp, price); err != nil {

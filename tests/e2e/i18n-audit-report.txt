@@ -1,7 +1,7 @@
 ========== i18n AUDIT REPORT ==========
-Date: 2026-07-15T02:38:27.264Z
+Date: 2026-07-26T14:45:09.326Z
 Pages scanned: 31
-Issues found: 2
+Issues found: 5
 ========================================
 
 Hardcoded English strings found in zh-cn mode:
@@ -12,4 +12,8 @@ Hardcoded English strings found in zh-cn mode:
 Free
 0.00 / 月
 10,000 AI"
+  [Admin Users] "System" — context: "phaforge.internal	—	System	system		正常	2026-07-"
+  [Admin Wallet Mgmt] "System" — context: "alphaforge.internal	System
+206882	46924867@qq."
+  [Admin Accounts] "Trading" — context: "om	80057439	MT4	Raw Trading Ltd	connected	0.00"
   [Admin System Config] "Strategy" — context: "min_sample_size":1}	Strategy health grading thre"

@@ -52,6 +52,13 @@ func NewMTAccountStateProvider(hub *mthub.Hub, log *zap.Logger) *MTAccountStateP
 // SetPositionCache injects the push-based position cache.
 func (p *MTAccountStateProvider) SetPositionCache(pc *PositionCache) { p.posCache = pc }
 
+// SetBalance injects balance data (called by ProfitUpdate subscription handler).
+func (p *MTAccountStateProvider) SetBalance(accountID string, balance decimal.Decimal) {
+	p.mu.Lock()
+	p.balanceCache[accountID] = balance
+	p.mu.Unlock()
+}
+
 // GetAccountState fetches live account state for gate evaluation.
 // Uses push-based PositionCache when available (no polling).
 // Returns (nil, nil) on error — gate fail-closed per D6-A.
@@ -87,6 +94,9 @@ func (p *MTAccountStateProvider) GetAccountState(ctx context.Context, accountID 
 	}
 
 	state := p.buildStateFromOrders(accountID, orders)
+	if state == nil {
+		return nil, nil
+	}
 	p.log.Debug("MTAccountStateProvider: state computed (legacy poll)",
 		zap.String("account", accountID),
 		zap.String("equity", state.Equity.String()),
@@ -115,7 +125,9 @@ func (p *MTAccountStateProvider) buildStateFromSnapshot(accountID string, snap *
 		if hasBalance {
 			balance = cachedBalance
 		} else {
-			balance = decimal.NewFromInt(10000)
+			p.log.Warn("MTAccountStateProvider: no balance data — returning nil (gate fail-closed)",
+				zap.String("account", accountID))
+			return nil
 		}
 	}
 
@@ -155,11 +167,7 @@ func (p *MTAccountStateProvider) buildStateFromSnapshot(accountID string, snap *
 // MT gateways stream ProfitUpdate events (Balance/Equity/Margin/FreeMargin
 // per tick) via the AccountProfitBroker.  In the absence of a live
 // subscription, we approximate from open positions:
-//   - Balance: default 10000 (overridden when ProfitUpdate subscription is active)
-//   - Equity: balance + sum(position.Profit)
-//   - Margin: sum(notional / leverage), approximate
-//   - Daily PnL: sum(position.Profit) — reset at broker day rollover
-//   - PeakEquity: tracked in-memory (high-water mark since provider start)
+//   - Balance: from ProfitUpdate cache (fail-closed if no data — returns nil → gate blocks)
 func (p *MTAccountStateProvider) buildStateFromOrders(accountID string, orders []*mthub.OrderRecord) *risk.AccountState {
 	totalProfit := decimal.Zero
 	totalMargin := decimal.Zero
@@ -172,15 +180,17 @@ func (p *MTAccountStateProvider) buildStateFromOrders(accountID string, orders [
 	}
 
 	// Use cached balance from ProfitUpdate events when available.
-	// Falls back to 10000 if no real balance has been received yet.
+	// Fail-closed: returns nil if no balance data → gate blocks trading.
 	p.mu.RLock()
 	cachedBalance, hasBalance := p.balanceCache[accountID]
 	p.mu.RUnlock()
 
-	balance := decimal.NewFromInt(10000)
-	if hasBalance {
-		balance = cachedBalance
+	if !hasBalance {
+		p.log.Warn("MTAccountStateProvider: no balance data — returning nil (gate fail-closed)",
+			zap.String("account", accountID))
+		return nil
 	}
+	balance := cachedBalance
 	equity := balance.Add(totalProfit)
 	freeMargin := equity.Sub(totalMargin)
 	if freeMargin.LessThan(decimal.Zero) {
