@@ -3,7 +3,6 @@ package marketplace
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,11 +57,12 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 	// 1. Look up subscription — must be an active purchase belonging to this user.
 	var subTargetUserID, subStrategyID, subKind, idemKey string
 	var subActive bool
+	var subBundleID *uuid.UUID
 	err := tx.QueryRow(ctx,
-		`SELECT target_user_id::text, target_strategy_id::text, kind, active, idempotency_key
+		`SELECT target_user_id::text, target_strategy_id::text, kind, active, idempotency_key, bundle_id
 		 FROM user_subscriptions WHERE id = $1 AND subscriber_user_id = $2 FOR UPDATE`,
 		sid, uid,
-	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &idemKey)
+	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &idemKey, &subBundleID)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: subscription not found")
 	}
@@ -142,20 +142,15 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		sid,
 	).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
 	if err != nil {
-		// M6: Try bundle_id lookup — the subscription's idempotency_key has
-		// the pattern "{idempotencyKey}-{strategyID}" for bundle purchases.
-		// We search for a settlement whose bundle_id matches the idempotency key prefix.
-		if idemKey != "" && strings.Contains(idemKey, "-") {
-			parts := strings.SplitN(idemKey, "-", 2)
-			bundleKeyPrefix := parts[0]
+		// R1: Use exact bundle_id from the subscription row for settlement lookup.
+		// This replaces the fragile LIKE prefix matching on idempotency_key.
+		if subBundleID != nil {
 			err = tx.QueryRow(ctx,
-				`SELECT ms.status, ms.id::text, ms.provider_amount::text, ms.platform_fee::text
-				 FROM marketplace_settlements ms
-				 WHERE ms.bundle_id IS NOT NULL
-				   AND ms.bundle_id::text LIKE $1 || '%'
-				   AND ms.buyer_id = $2
-				 ORDER BY ms.created_at DESC LIMIT 1 FOR UPDATE`,
-				bundleKeyPrefix, uid,
+				`SELECT status, id::text, provider_amount::text, platform_fee::text
+				 FROM marketplace_settlements
+				 WHERE bundle_id = $1 AND buyer_id = $2
+				 ORDER BY created_at DESC LIMIT 1 FOR UPDATE`,
+				*subBundleID, uid,
 			).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
 		}
 		if err != nil {

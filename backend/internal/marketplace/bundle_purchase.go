@@ -108,7 +108,8 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 	itemRows.Close()
 
 	// M11: Filter out strategies the buyer already has active subscriptions to.
-	// This prevents charging for already-owned strategies and prorates the bundle price.
+	// R2: Prorate the bundle price based on remaining vs total strategies.
+	totalItemCount := len(items)
 	if len(items) > 0 {
 		parsedItemIDs := make([]uuid.UUID, 0, len(items))
 		for _, sidStr := range items {
@@ -153,6 +154,15 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 
 	isFree := priceModel == PriceModelFree || !priceAmount.IsPositive()
 
+	// R2: Prorate bundle price — charge only for the remaining strategies.
+	// effectivePrice = bundlePrice * (remainingCount / totalCount)
+	// This uses decimal arithmetic for precision.
+	effectivePrice := priceAmount
+	if !isFree && totalItemCount > 0 && len(items) < totalItemCount {
+		ratio := decimal.NewFromInt(int64(len(items))).Div(decimal.NewFromInt(int64(totalItemCount)))
+		effectivePrice = priceAmount.Mul(ratio)
+	}
+
 	// Paid path: charge buyer, credit publisher and platform.
 	var amountStr, balanceAfter, txIDStr, feeStr, pubAmountStr string
 	if !isFree {
@@ -172,7 +182,7 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 		}
 
 		// Charge buyer.
-		amountStr = priceAmount.StringFixed(2)
+		amountStr = effectivePrice.StringFixed(2)
 		negAmountStr := "-" + amountStr
 		buyerDesc := fmt.Sprintf("Bundle purchase: %s", title)
 		buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
@@ -186,8 +196,8 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 		}
 
 		// Credit publisher and platform via frozen settlement (Phase 5.4).
-		feeDec := priceAmount.Mul(feeRate)
-		pubDec := priceAmount.Sub(feeDec)
+		feeDec := effectivePrice.Mul(feeRate)
+		pubDec := effectivePrice.Sub(feeDec)
 		pubAmountStr = pubDec.StringFixed(2)
 		feeStr = feeDec.StringFixed(2)
 	}
@@ -198,10 +208,10 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 		sid, _ := uuid.Parse(sidStr)
 		subID := uuid.New()
 		tag, err := tx.Exec(ctx,
-			`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key)
-			 VALUES ($1, $2, $3, $4, 'purchase', true, $5)
+			`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, bundle_id)
+			 VALUES ($1, $2, $3, $4, 'purchase', true, $5, $6)
 			 ON CONFLICT DO NOTHING`,
-			subID, uid, publisherID, sid, idempotencyKey+"-"+sidStr,
+			subID, uid, publisherID, sid, idempotencyKey+"-"+sidStr, bid,
 		)
 		if err != nil {
 			s.log.Warn("bundle: subscription creation failed",

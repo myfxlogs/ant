@@ -60,8 +60,14 @@ docker compose build backend      — PASS
 docker compose up -d backend      — PASS (container started)
 ```
 
-## Residual Risk
+## Residual Risk — All Resolved (R1-R3)
 
-- **M6 bundle_id lookup**: Uses `LIKE` prefix match on `bundle_id::text` as fallback. This is a heuristic — if idempotency key format changes, the fallback may not match. Mitigated by `buyer_id` filter and `ORDER BY created_at DESC LIMIT 1`.
-- **M11 prorate**: Currently skips already-owned strategies but does not prorate the bundle price (charges full price for remaining strategies). Full proration would require per-strategy pricing, which bundles don't currently support.
-- **M9 reversal tracking**: Records failure but does not retry. Manual reconciliation needed via `SELECT * FROM marketplace_settlements WHERE reversal_failed = true`.
+- ~~**M6 bundle_id lookup**: Uses `LIKE` prefix match~~ → **R1 Fixed**: Added `bundle_id UUID` column to `user_subscriptions` (migration 242). Refund now uses exact `WHERE bundle_id = $1` lookup instead of fragile LIKE prefix matching.
+- ~~**M11 prorate**: Charges full price for remaining strategies~~ → **R2 Fixed**: Bundle price is now prorated as `bundlePrice * (remainingCount / totalCount)` using `decimal.Decimal` arithmetic. Buyer only pays for strategies they don't already own.
+- ~~**M9 reversal tracking**: Records failure but does not retry~~ → **R3 Fixed**: Added `retryFailedReversals()` method called lazily from `SettleExpired()`. Retries failed publisher/platform debits with new idempotency keys (`IdemKeyRevRetry`/`IdemKeyFeeRevRetry`). Clears `reversal_failed` flag on success. No cron/timer needed — piggybacks on existing lazy settlement trigger.
+
+### Additional Migrations (R1-R3)
+
+| Migration | Purpose | Reversible |
+|-----------|---------|------------|
+| `242_subscriptions_bundle_id` | Add `bundle_id UUID` to `user_subscriptions` for exact settlement lookup | ✅ down.sql |

@@ -143,10 +143,146 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 		return nil, fmt.Errorf("marketplace: settle: commit: %w", err)
 	}
 
+	// R3: Lazily retry failed refund reversals for this provider.
+	// This runs in a separate transaction after settlement completes,
+	// so a retry failure doesn't roll back the settlement.
+	if retried, rerr := s.retryFailedReversals(ctx, providerID); rerr != nil {
+		s.log.Warn("settle: retry failed reversals error",
+			zap.String("providerID", providerID), zap.Error(rerr))
+	} else if retried > 0 {
+		s.log.Info("settle: retried failed reversals",
+			zap.String("providerID", providerID), zap.Int("retried", retried))
+	}
+
 	return &SettlementResult{
 		SettledCount: settledCount,
 		TotalAmount:  totalSettled.StringFixed(2),
 	}, nil
+}
+
+// retryFailedReversals retries debit operations on settlements marked with
+// reversal_failed = true for the given provider. Called lazily from SettleExpired.
+// R3: Replaces the previous "record but never retry" behavior.
+func (s *Service) retryFailedReversals(ctx context.Context, providerID string) (int, error) {
+	pid, err := uuid.Parse(providerID)
+	if err != nil {
+		return 0, fmt.Errorf("marketplace: retry reversals: invalid provider_id: %w", err)
+	}
+
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("marketplace: retry reversals: begin tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	// Select settlements with failed reversals for this provider.
+	rows, err := tx.Query(ctx,
+		`SELECT id, provider_amount::text, platform_fee::text, reversal_failure_note
+		 FROM marketplace_settlements
+		 WHERE provider_id = $1 AND reversal_failed = true AND status = 'refunded'
+		 FOR UPDATE SKIP LOCKED`,
+		pid,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("marketplace: retry reversals: query: %w", err)
+	}
+
+	type failed struct {
+		id          uuid.UUID
+		providerAmt string
+		platformFee string
+		note        string
+	}
+	var batch []failed
+	for rows.Next() {
+		var f failed
+		if err := rows.Scan(&f.id, &f.providerAmt, &f.platformFee, &f.note); err != nil {
+			rows.Close()
+			return 0, fmt.Errorf("marketplace: retry reversals: scan: %w", err)
+		}
+		batch = append(batch, f)
+	}
+	rows.Close()
+
+	if len(batch) == 0 {
+		_ = tx.Commit(ctx)
+		return 0, nil
+	}
+
+	// Lock provider wallet.
+	var pubWalletID uuid.UUID
+	err = tx.QueryRow(ctx,
+		`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+		pid,
+	).Scan(&pubWalletID)
+	if err != nil {
+		return 0, fmt.Errorf("marketplace: retry reversals: provider wallet: %w", err)
+	}
+
+	retried := 0
+	for _, f := range batch {
+		settleID := f.id.String()
+
+		// Retry publisher debit.
+		negPub := "-" + f.providerAmt
+		_, err := s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pid,
+			negPub, TxTypeRefundReversal,
+			fmt.Sprintf("Refund reversal retry for settlement %s", settleID),
+			nil, IdemKeyRevRetry+settleID)
+		if err != nil {
+			s.log.Warn("retry reversals: publisher debit still failing",
+				zap.String("settlementID", settleID), zap.Error(err))
+			continue
+		}
+
+		// Retry platform fee debit.
+		if f.platformFee != "0.00" && f.platformFee != "" {
+			var sysWalletID uuid.UUID
+			err = tx.QueryRow(ctx,
+				`INSERT INTO user_wallets (user_id) VALUES ($1)
+				 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+				 RETURNING id`,
+				SystemUserID,
+			).Scan(&sysWalletID)
+			if err == nil {
+				negFee := "-" + f.platformFee
+				_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
+					negFee, TxTypeRefundReversal,
+					fmt.Sprintf("Platform fee reversal retry for settlement %s", settleID),
+					nil, IdemKeyFeeRevRetry+settleID)
+				if err != nil {
+					s.log.Warn("retry reversals: platform fee debit still failing",
+						zap.String("settlementID", settleID), zap.Error(err))
+					// Publisher debit succeeded, but fee failed — partial retry.
+					// Keep reversal_failed = true with updated note.
+					_, _ = tx.Exec(ctx,
+						`UPDATE marketplace_settlements
+						 SET reversal_failure_note = $2 WHERE id = $1`,
+						f.id, fmt.Sprintf("platform fee retry failed: %s; ", err.Error()))
+					continue
+				}
+			}
+		}
+
+		// Both debits succeeded — clear the failure flag.
+		_, err = tx.Exec(ctx,
+			`UPDATE marketplace_settlements
+			 SET reversal_failed = false, reversal_failure_note = NULL
+			 WHERE id = $1`,
+			f.id,
+		)
+		if err != nil {
+			s.log.Warn("retry reversals: clear flag failed",
+				zap.String("settlementID", settleID), zap.Error(err))
+			continue
+		}
+		retried++
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return 0, fmt.Errorf("marketplace: retry reversals: commit: %w", err)
+	}
+	return retried, nil
 }
 
 // createFrozenSettlementTx inserts a frozen settlement row within an existing
