@@ -178,7 +178,10 @@ func (s *SubscriptionService) subscribeFree(ctx context.Context, userID uuid.UUI
 
 	// If already on free plan, return it.
 	if existing != nil {
-		existingPlan, _ := s.repo.GetPlanByID(ctx, existing.PlanID)
+		existingPlan, err := s.repo.GetPlanByID(ctx, existing.PlanID)
+		if err != nil {
+			return nil, fmt.Errorf("subscription: get existing plan: %w", err)
+		}
 		if existingPlan != nil && existingPlan.Name == "free" {
 			return &SubscribeResult{Subscription: existing, Plan: existingPlan}, nil
 		}
