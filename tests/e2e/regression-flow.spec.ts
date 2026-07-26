@@ -188,7 +188,6 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
       parameters: [],
       isPublic: false,
       tags: [],
-      i18n: '',
     }, state.adminToken);
     expect(resp.ok, `CreateTemplate should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
     const id = (resp.data.id as string) || ((resp.data as Record<string, unknown>).template as Record<string, unknown>)?.id as string;
