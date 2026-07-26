@@ -25,21 +25,20 @@
 
 无 REST endpoint（除 healthz/readyz），无 WebSocket，无 JSON 持久化。所有跨进程通信走 ConnectRPC + SSE。
 
-### A1-3 🟡 MEDIUM — connect 层包含业务逻辑
+### A1-3 ✅ FIXED — connect 层业务逻辑已提取到 service 层
 
-**文件**: `backend/internal/connect/user/share_handler.go:69-185`
+**修复**: 提取 `share_service.go`，包含 `BuildSharePerformance`、`FormatSharedTrades`、`FormatSharedPositions`、`summarizeTrades`、`computeSharpe`。
 
-`GetSharedPerformance` handler 包含大量业务逻辑：Sharpe ratio 计算、交易统计、持仓快照管理。这些应提取到 `service/` 层。
+`share_handler.go` 从 294→196 行，handler 现在只做请求/响应映射。
+`share_og_image.go` 从 260→212 行，使用共享 `BuildSharePerformance`。
 
-**影响**: handler 职责过重，难以测试和复用。如果另一个 handler 需要相同的统计逻辑，会导致代码重复。
-
-**建议**: 提取 `SharePerformanceService`，handler 只做请求/响应映射。
-
-### A1-4 🟡 MEDIUM — connect/strategy 包过大
+### A1-4 🟡 MEDIUM — connect/strategy 包过大（待处理）
 
 `backend/internal/connect/strategy/` 包含 20+ 文件，涵盖回测、实盘执行、实验、CRUD、调度。虽然每个文件在 300 行以内，但包内耦合度高。
 
 **建议**: 考虑按功能域拆分为 `strategy/backtest/`、`strategy/live/`、`strategy/experiment/`、`strategy/crud/` 子包。
+
+**状态**: 暂缓 — 大重构，高回归风险，建议在专门重构窗口处理。
 
 ### A1-5 ✅ Push-first 架构
 
@@ -49,15 +48,9 @@ SSE 流 + PG LISTEN 推送是默认模式。无轮询、无 cron、无 `time.Tic
 
 ## 2. 最优性
 
-### O2-1 🟡 MEDIUM — 硬编码 balance fallback 10000
+### O2-1 ✅ FIXED — 硬编码 balance fallback 10000 已移除
 
-**文件**: `backend/internal/connect/strategy/account_provider.go:118, 180`
-
-当 `PositionCache` 和 `balanceCache` 都没有数据时，balance 默认为 10000。这个值会影响 risk gate 的决策（max lot size、margin check）。
-
-**风险**: 如果用户账户实际余额远小于 10000（如 500），risk gate 会允许超出实际承受能力的仓位。反之如果远大于 10000（如 100万），gate 会过度限制。
-
-**建议**: 当无真实 balance 数据时，应 fail-closed（返回 nil → gate 阻止交易），而非使用虚假 balance。已有 fail-closed 逻辑（`exec == nil` 时返回 nil），但 `buildStateFromSnapshot` 和 `buildStateFromOrders` 中的 10000 fallback 绕过了它。
+**修复**: `buildStateFromSnapshot` 和 `buildStateFromOrders` 中移除 10000 fallback，改为 fail-closed（返回 nil → gate 阻止交易）。新增 `SetBalance` 方法供 ProfitUpdate 事件注入真实 balance。
 
 ### O2-2 🟢 LOW — float64 用于统计计算
 
@@ -101,11 +94,9 @@ W1-2 修复了 `OrderEventBroker.PublishEvent` 的跨用户广播问题，改为
 - 主动刷新（tokenLifecycle）+ 被动刷新（401 interceptor）→ 双保险
 - `SameSite=Strict` → CSRF 防护
 
-### F3-4 🟢 LOW — 策略执行 context.WithoutCancel
+### F3-4 ✅ NON-ISSUE — 策略执行 context.WithoutCancel
 
-`live_dispatch.go` 中 `dispatchCloseAll` 和 `dispatchCloseOrder` 使用 `context.WithoutCancel(ctx)` 来分离订单执行与请求生命周期。这是正确的——订单提交不应因客户端断开而取消。但 `dispatchMarketOrder` 和 `dispatchPendingOrder` 没有使用 `WithoutCancel`，存在不一致。
-
-**建议**: 统一所有订单提交路径使用 `WithoutCancel`，或明确文档化为何市价单需要跟随请求生命周期。
+经核实，`submitOrder`（被 `dispatchMarketOrder` 和 `dispatchPendingOrder` 调用）已在 `live_dispatch.go:312` 使用 `context.WithoutCancel(ctx)`。所有订单提交路径均正确分离了请求生命周期。
 
 ---
 
@@ -119,11 +110,9 @@ W1-2 修复了 `OrderEventBroker.PublishEvent` 的跨用户广播问题，改为
 
 `check-file-lines --strict` 通过：0 errors, 29 warnings, 74 info。无文件超过 450 行硬性红线。
 
-### C4-3 🟢 LOW — 重复的 Sharpe ratio 计算
+### C4-3 ✅ FIXED — 重复的 Sharpe ratio 计算已合并
 
-`share_handler.go:116-150` 和 `share_og_image.go:112-130` 都有 Sharpe ratio 计算逻辑，实现方式不同（一个用 `decimal.Decimal`，一个用 `float64`）。
-
-**建议**: 提取到 `service/analytics/` 包，统一实现。
+**修复**: `share_handler.go` 和 `share_og_image.go` 现在共享 `computeSharpe` 函数（位于 `share_service.go`）。
 
 ### C4-4 ✅ 命名一致性
 
@@ -137,16 +126,11 @@ W1-2 修复了 `OrderEventBroker.PublishEvent` 的跨用户广播问题，改为
 
 ## 5. 技术债
 
-### T5-1 🟡 MEDIUM — float64 在 MT proto 边界
+### T5-1 ✅ FIXED — float64 在 MT proto 边界
 
 `mthub/types.go:131` 的 `ProfitPercent float64` 和 `broker_types.go:100` 的 `Volume float64` 是 MT API proto 要求的 float64。这是外部约束，非技术债。
 
-但 `service_orders_modify.go:61-62` 将 `decimal.Decimal` 转为 `float64` 仅用于日志：
-```go
-slFloat, _ := sl.Float64()
-tpFloat, _ := tp.Float64()
-```
-应直接用 `zap.String("sl", sl.String())` 避免不必要的精度损失。
+**修复**: `service_orders_modify.go` 日志已改为 `zap.String("sl", sl.String())` 和 `zap.String("tp", tp.String())`，避免不必要的精度损失。
 
 ### T5-2 🟢 LOW — 已知缺口（来自 go-native-strategy-pipeline.md §8）
 
@@ -159,13 +143,13 @@ tpFloat, _ := tp.Float64()
 - Bytecode cache persistence to DB (P3)
 - Live consistency verification (VM signals vs backtest results) — 未验证
 
-### T5-3 🟢 LOW — NATS 无认证（W3-2 已记录）
+### T5-3 ✅ FIXED — NATS 认证已启用
 
-Docker 网络内无 NATS 认证。纵深防御缺口，非直接漏洞。
+**修复**: `nats.conf` 添加 `authorization` 块，docker-compose 传递 `NATS_USER`/`NATS_PASSWORD` 环境变量，后端 `NATS_URL` 包含凭据。
 
-### T5-4 🟢 LOW — migration 未包装事务（W3-1 已记录）
+### T5-4 ✅ FIXED — migration 已包装事务
 
-多语句 migration 可能部分应用。建议引入 `golang-migrate` 或在 entrypoint 中包装 `BEGIN/COMMIT`。
+**修复**: `docker-entrypoint.sh` 中每个 migration 文件包装 `BEGIN/COMMIT`，防部分应用。
 
 ### T5-5 ✅ 无 deprecated/legacy 代码标记
 
@@ -173,19 +157,25 @@ Docker 网络内无 NATS 认证。纵深防御缺口，非直接漏洞。
 
 ---
 
-## 修复优先级
+## 修复状态
 
-| ID | 严重度 | 描述 | 建议操作 |
+| ID | 严重度 | 描述 | 状态 |
 |---|---|---|---|
-| O2-1 | 🟡 MEDIUM | 硬编码 balance 10000 fallback 可能导致 risk gate 误判 | 改为 fail-closed |
-| A1-3 | 🟡 MEDIUM | share_handler 业务逻辑过重 | 提取到 service 层 |
-| A1-4 | 🟡 MEDIUM | connect/strategy 包过大 | 按功能域拆子包 |
-| F3-4 | 🟢 LOW | dispatchMarketOrder 未用 WithoutCancel | 统一或文档化 |
-| C4-3 | 🟢 LOW | 重复的 Sharpe ratio 计算 | 提取公共函数 |
-| T5-1 | 🟢 LOW | service_orders_modify.go float64 仅用于日志 | 改用 String() |
+| O2-1 | 🟡 MEDIUM | 硬编码 balance 10000 fallback | ✅ FIXED — fail-closed |
+| W4-1 | 🟡 MEDIUM | SSRF — AI provider base_url 无私有 IP 过滤 | ✅ FIXED — isPrivateOrLoopbackHost |
+| W3-2 | 🟡 MEDIUM | NATS 无认证 | ✅ FIXED — authorization 配置 |
+| A1-3 | 🟡 MEDIUM | share_handler 业务逻辑过重 | ✅ FIXED — 提取 share_service.go |
+| A1-4 | 🟡 MEDIUM | connect/strategy 包过大 | ⏸️ DEFERRED — 高回归风险 |
+| F3-4 | 🟢 LOW | dispatchMarketOrder 未用 WithoutCancel | ✅ NON-ISSUE — submitOrder 已使用 |
+| C4-3 | 🟢 LOW | 重复的 Sharpe ratio 计算 | ✅ FIXED — 合并到 share_service.go |
+| T5-1 | 🟢 LOW | service_orders_modify.go float64 日志 | ✅ FIXED — 改用 String() |
+| W3-1 | 🟢 LOW | migration 未包装事务 | ✅ FIXED — BEGIN/COMMIT |
 
 ## Reuse Preflight
 
 - **O2-1**: REUSE: `AccountStateProvider` interface @ `account_provider.go:83-85` (修改现有实现)
-- **A1-3**: NEW: 无现成能力（已搜: share performance service, analytics service）
-- **C4-3**: REUSE: `computeRiskMetrics` @ `analytics_compute.go:142` (可统一到此处)
+- **A1-3**: REUSE: `computeSharpe` @ `share_og_image.go:112` → 提取到 `share_service.go`
+- **C4-3**: REUSE: `computeSharpe` @ `share_service.go` (统一实现)
+- **W4-1**: NEW: 无现成能力（已搜: SSRF protection, private IP check）
+- **W3-1**: NEW: 无现成能力（已搜: migration transaction wrapper）
+- **W3-2**: NEW: 无现成能力（已搜: NATS auth）
