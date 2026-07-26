@@ -85,11 +85,16 @@ func (s *NotificationServer) MarkRead(
 	ctx context.Context,
 	req *connect.Request[antv1.MarkReadRequest],
 ) (*connect.Response[antv1.MarkReadResponse], error) {
+	uid := s.userID(ctx)
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated,
+			fmt.Errorf("authentication required"))
+	}
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.repo.MarkRead(ctx, id); err != nil {
+	if err := s.repo.MarkReadForUser(ctx, id, uid); err != nil {
 		s.log.Error("mark read failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -157,11 +162,25 @@ func (s *NotificationServer) StreamNotifications(
 }
 
 // SendNotification creates a notification for a user and broadcasts it via SSE.
-// Called internally by other services (backtest, tuning, gate) when events complete.
+// Admin-only: called by internal services via the Sender, not directly by users.
 func (s *NotificationServer) SendNotification(
 	ctx context.Context,
 	req *connect.Request[antv1.SendNotificationRequest],
 ) (*connect.Response[antv1.SendNotificationResponse], error) {
+	callerUID := s.userID(ctx)
+	if callerUID == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated,
+			fmt.Errorf("authentication required"))
+	}
+
+	// Verify caller is admin.
+	var isAdmin bool
+	_ = s.pg.QueryRow(ctx, `SELECT is_admin FROM users WHERE id = $1`, callerUID).Scan(&isAdmin)
+	if !isAdmin {
+		return nil, connect.NewError(connect.CodePermissionDenied,
+			fmt.Errorf("admin required"))
+	}
+
 	uid, err := uuid.Parse(req.Msg.UserId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)

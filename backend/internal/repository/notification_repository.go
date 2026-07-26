@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -85,11 +86,19 @@ func (r *NotificationRepository) ListByUser(
 	return out, unread, nil
 }
 
-// MarkRead sets is_read = true for a single notification.
-func (r *NotificationRepository) MarkRead(ctx context.Context, id uuid.UUID) error {
-	_, err := r.pool.Exec(ctx,
-		`UPDATE notifications SET is_read = true WHERE id = $1`, id)
-	return err
+// MarkReadForUser sets is_read = true for a single notification, scoped to the
+// authenticated user. Returns an error if the notification does not belong to
+// the user (no rows affected → pgx.ErrNoRows via RowsAffected check).
+func (r *NotificationRepository) MarkReadForUser(ctx context.Context, id, userID uuid.UUID) error {
+	tag, err := r.pool.Exec(ctx,
+		`UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2`, id, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("notification not found or not owned by user")
+	}
+	return nil
 }
 
 // MarkAllRead sets is_read = true for all notifications belonging to a user.
