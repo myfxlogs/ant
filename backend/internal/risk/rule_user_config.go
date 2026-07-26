@@ -57,7 +57,7 @@ func (r *UserRiskConfigRule) Check(ctx context.Context, intent *antv1.OrderInten
 		}
 	}
 
-	if rc.MaxDailyLoss.GreaterThan(decimal.Zero) {
+	if rc.MaxDailyLoss.GreaterThan(decimal.Zero) && state != nil {
 		if state.DailyPnL.LessThan(rc.MaxDailyLoss.Neg()) {
 			return &RuleResult{Allowed: false, Reason: fmt.Sprintf(
 				"daily loss %s exceeds limit %s", state.DailyPnL.String(), rc.MaxDailyLoss.String())}

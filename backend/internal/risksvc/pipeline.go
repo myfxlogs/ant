@@ -115,7 +115,7 @@ func (p *SignalPipeline) checkHardLimit(ctx context.Context, sig *SignalRequest)
 		UserID: sig.UserID, AccountID: sig.AccountID, Symbol: sig.Symbol,
 		Side: sig.Side, Volume: decimal.NewFromFloat(sig.SignalStrength), Price: sig.Price,
 		Balance: sig.Balance, Equity: sig.Equity, FreeMargin: sig.FreeMargin,
-		ContractExpiry: sig.ContractExpiry, ClientIP: sig.ClientIP,
+		ContractSize: sig.ContractSize, ContractExpiry: sig.ContractExpiry, ClientIP: sig.ClientIP,
 	}
 	if err := p.hardLimit.Evaluate(ctx, req); err != nil {
 		return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "hardlimit"}

@@ -60,7 +60,8 @@ func TestContractExpiryRule_NilProviderPasses(t *testing.T) {
 func TestMarginFloorRule_PassesWhenMarginOk(t *testing.T) {
 	rule := &MarginFloorRule{FloorRatio: 1.0}
 	state := &AccountState{
-		FreeMargin: newDec("50000"),
+		FreeMargin:   newDec("50000"),
+		ContractSize: newDec("1"),
 	}
 	result := rule.Check(context.Background(),
 		&antv1.OrderIntent{Volume: "1.0", Price: "1000"}, state)
@@ -72,7 +73,8 @@ func TestMarginFloorRule_PassesWhenMarginOk(t *testing.T) {
 func TestMarginFloorRule_BlocksWhenMarginLow(t *testing.T) {
 	rule := &MarginFloorRule{FloorRatio: 1.0}
 	state := &AccountState{
-		FreeMargin: newDec("500"),
+		FreeMargin:   newDec("500"),
+		ContractSize: newDec("1"),
 	}
 	result := rule.Check(context.Background(),
 		&antv1.OrderIntent{Volume: "1.0", Price: "1000"}, state)

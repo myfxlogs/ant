@@ -41,6 +41,7 @@ type HardLimitRequest struct {
 	Balance        decimal.Decimal
 	Equity         decimal.Decimal
 	FreeMargin     decimal.Decimal
+	ContractSize   decimal.Decimal // per-symbol contract multiplier (e.g. 100000 for standard FX)
 	ContractExpiry time.Time // zero if not applicable
 	ClientIP       string    // extracted from X-Forwarded-For / X-Real-IP
 }
@@ -86,6 +87,9 @@ func (r *MarginFloorRule) Check(_ context.Context, req *HardLimitRequest) error 
 	}
 
 	required := req.Volume.Mul(req.Price)
+	if req.ContractSize.GreaterThan(decimal.Zero) {
+		required = required.Mul(req.ContractSize)
+	}
 	floor := required.Mul(decimal.NewFromFloat(ratio))
 	if req.FreeMargin.LessThan(floor) {
 		return &HardLimitError{
