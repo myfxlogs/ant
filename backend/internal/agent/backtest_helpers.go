@@ -121,7 +121,7 @@ func FetchBarsForBacktest(ctx context.Context, mkt repository.MarketDataStore, c
 		return nil, err
 	}
 	bars := make([]sdk.Bar, 0, len(chBars))
-	for i := len(chBars) - 1; i >= 0; i-- {
+	for i := 0; i < len(chBars); i++ {
 		b := chBars[i]
 		bars = append(bars, sdk.Bar{
 			Open:      b.Open,

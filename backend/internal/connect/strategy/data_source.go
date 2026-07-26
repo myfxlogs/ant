@@ -70,10 +70,10 @@ func (s *LiveSource) Subscribe(accountID string) (<-chan *mthub.BarUpdate, func(
 }
 
 // klineBarsToProto converts repository KlineBars to proto ExecuteKlineBars.
-// Bars are reversed to chronological order (oldest first).
+// GetKlines returns bars in ASC order (oldest first) — no reversal needed.
 func klineBarsToProto(chBars []repository.KlineBar) []*antv1.ExecuteKlineBar {
 	klines := make([]*antv1.ExecuteKlineBar, 0, len(chBars))
-	for i := len(chBars) - 1; i >= 0; i-- {
+	for i := 0; i < len(chBars); i++ {
 		b := chBars[i]
 		klines = append(klines, &antv1.ExecuteKlineBar{
 			OpenTimeMs:  int64(b.OpenTsUnixMs),
