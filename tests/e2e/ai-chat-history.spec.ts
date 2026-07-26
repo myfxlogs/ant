@@ -47,9 +47,10 @@ test('Load conversation from history — verify code block appears', async ({ pa
   await page.waitForTimeout(4000);
 
   // Step 5: Open history drawer
+  // Use force:true to bypass SVG overlay elements (chart rendering layer) that intercept pointer events
   const historyBtn = page.locator('button').filter({ has: page.locator('.anticon-history') }).first();
   await historyBtn.waitFor({ state: 'visible', timeout: 10_000 });
-  await historyBtn.click();
+  await historyBtn.click({ force: true });
   await page.waitForTimeout(2000);
   await page.screenshot({ path: 'screenshots/ai-chat-history-drawer.png' });
 

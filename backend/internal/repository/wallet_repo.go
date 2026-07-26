@@ -256,12 +256,18 @@ func (r *WalletRepository) ledgerChainInsert(
 	}
 
 	// 6. Write to ledger_outbox for external notification (R8).
+	// Split INSERT and NOTIFY into separate calls — pgx prepared statements
+	// do not support multiple SQL commands in a single Exec (SQLSTATE 42601).
 	_, err = tx.Exec(ctx,
-		`INSERT INTO ledger_outbox (seq, entry_hash) VALUES ($1, $2); NOTIFY ledger_outbox`,
+		`INSERT INTO ledger_outbox (seq, entry_hash) VALUES ($1, $2)`,
 		seq, entryHash,
 	)
 	if err != nil {
-		return uuid.Nil, 0, fmt.Errorf("ledger: outbox: %w", err)
+		return uuid.Nil, 0, fmt.Errorf("ledger: outbox insert: %w", err)
+	}
+	_, err = tx.Exec(ctx, `NOTIFY ledger_outbox`)
+	if err != nil {
+		return uuid.Nil, 0, fmt.Errorf("ledger: outbox notify: %w", err)
 	}
 
 	return txID, seq, nil

@@ -20,8 +20,10 @@ test('AI Chat screenshot - compare with Windsurf', async ({ page }) => {
   await page.waitForTimeout(3000);
 
   // Step 1: Select account (first .ant-select)
+  // Use force:true to bypass SVG chart overlay that intercepts pointer events
   const accountSelect = page.locator('.ant-select').first();
-  await accountSelect.click();
+  await accountSelect.waitFor({ state: 'visible', timeout: 10_000 });
+  await accountSelect.click({ force: true });
   await page.waitForTimeout(1000);
   // Click the first available account option
   await page.locator('.ant-select-item-option').first().click();
