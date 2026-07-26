@@ -204,7 +204,8 @@ func (s *DepositService) ConfirmDeposit(ctx context.Context, userID, addrID uuid
 		Status:           "CONFIRMED",
 		ConfirmedAt:      &now,
 	}
-	if err := s.depRepo.Create(ctx, dep); err != nil {
+	depositRepoTx := repository.NewDepositRepository(tx)
+	if err := depositRepoTx.Create(ctx, dep); err != nil {
 		return fmt.Errorf("deposit service: create deposit: %w", err)
 	}
 

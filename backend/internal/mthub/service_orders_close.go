@@ -60,6 +60,8 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 			Type:      "close",
 			Volume:    lots.String(),
 			Magic:     ticket,
+			UserId:    usermgr.GetUserID(ctx),
+			Source:    antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 		}
 		state, stateErr := s.accountStateProvider(ctx, accountID)
 		if stateErr != nil && s.logger != nil {

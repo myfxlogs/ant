@@ -144,9 +144,6 @@ func (s *WalletServer) AdjustBalance(ctx context.Context, req *connect.Request[a
 	}
 
 	txType := "adjustment"
-	if len(r.Amount) > 0 && r.Amount[0] == '-' {
-		txType = "withdrawal"
-	}
 
 	w, err := s.svc.AdjustBalance(ctx, userID, r.Amount, txType, r.Description, &operatorID, "admin-"+uuid.New().String())
 	if err != nil {

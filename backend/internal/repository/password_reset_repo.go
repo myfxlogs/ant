@@ -66,25 +66,21 @@ func (r *PasswordResetRepo) CreateResetToken(ctx context.Context, userID uuid.UU
 }
 
 // ValidateResetToken returns the user ID if the token is valid and unused.
+// It atomically marks the token as consumed to prevent TOCTOU race —
+// two concurrent requests with the same token cannot both succeed.
 func (r *PasswordResetRepo) ValidateResetToken(ctx context.Context, token string) (uuid.UUID, error) {
-	var userID uuid.UUID
-	var consumed bool
-	var expiresAt time.Time
-	// Compare against stored hash.
 	hashed := sha256.Sum256([]byte(token))
 	hashedHex := hex.EncodeToString(hashed[:])
+	var userID uuid.UUID
 	err := r.db.QueryRow(ctx,
-		`SELECT user_id, consumed, expires_at FROM password_reset_tokens WHERE token = $1`,
+		`UPDATE password_reset_tokens
+		 SET consumed = TRUE
+		 WHERE token = $1 AND consumed = FALSE AND expires_at > NOW()
+		 RETURNING user_id`,
 		hashedHex,
-	).Scan(&userID, &consumed, &expiresAt)
+	).Scan(&userID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("validate reset token: %w", err)
-	}
-	if consumed {
-		return uuid.Nil, fmt.Errorf("reset token already used")
-	}
-	if time.Now().After(expiresAt) {
-		return uuid.Nil, fmt.Errorf("reset token expired")
 	}
 	return userID, nil
 }

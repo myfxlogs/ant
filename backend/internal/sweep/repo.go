@@ -28,12 +28,17 @@ func NewBundleRepository(db repository.DBTX) *BundleRepository {
 // This ensures crash recovery: if the server dies after creating sweep_log legs
 // but before cold signing, the unsigned bundle can be re-exported on restart.
 func (r *BundleRepository) SaveUnsignedBundle(ctx context.Context, batchID, addrID uuid.UUID, unsigned *antv1.UnsignedSweepBundle, builtAtMs int64) error {
+	return r.SaveUnsignedBundleTx(ctx, r.db, batchID, addrID, unsigned, builtAtMs)
+}
+
+// SaveUnsignedBundleTx persists an UnsignedSweepBundle within an existing transaction.
+func (r *BundleRepository) SaveUnsignedBundleTx(ctx context.Context, db repository.DBTX, batchID, addrID uuid.UUID, unsigned *antv1.UnsignedSweepBundle, builtAtMs int64) error {
 	data, err := proto.Marshal(unsigned)
 	if err != nil {
 		return fmt.Errorf("sweep bundle repo: marshal unsigned: %w", err)
 	}
 
-	_, err = r.db.Exec(ctx, `
+	_, err = db.Exec(ctx, `
 		INSERT INTO sweep_bundles (batch_id, deposit_address_id, unsigned_bundle, built_at_ms, status)
 		VALUES ($1, $2, $3, $4, 'PENDING_SIGN')
 		ON CONFLICT (batch_id) DO UPDATE SET unsigned_bundle = $3, updated_at = NOW()

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -25,6 +26,7 @@ type WithdrawalBuilder struct {
 	bundleSaver  BundleSaver
 	adminRepo    *repository.AdminRepository
 	tron         TronTxBuilder
+	pool         *pgxpool.Pool
 	log          *zap.Logger
 
 	cfgMu     sync.Mutex
@@ -35,6 +37,7 @@ type WithdrawalBuilder struct {
 // BundleSaver persists unsigned bundles (implemented by sweep.BundleRepository).
 type BundleSaver interface {
 	SaveUnsignedBundle(ctx context.Context, batchID, addrID uuid.UUID, unsigned *antv1.UnsignedSweepBundle, builtAtMs int64) error
+	SaveUnsignedBundleTx(ctx context.Context, db repository.DBTX, batchID, addrID uuid.UUID, unsigned *antv1.UnsignedSweepBundle, builtAtMs int64) error
 }
 
 // TronTxBuilder is the interface for building unsigned TRON transactions.
@@ -48,6 +51,7 @@ func NewWithdrawalBuilder(
 	bundleSaver BundleSaver,
 	adminRepo *repository.AdminRepository,
 	tron TronTxBuilder,
+	pool *pgxpool.Pool,
 	log *zap.Logger,
 ) *WithdrawalBuilder {
 	return &WithdrawalBuilder{
@@ -55,6 +59,7 @@ func NewWithdrawalBuilder(
 		bundleSaver:  bundleSaver,
 		adminRepo:    adminRepo,
 		tron:         tron,
+		pool:         pool,
 		log:          log,
 	}
 }
@@ -183,12 +188,8 @@ func (b *WithdrawalBuilder) buildOne(ctx context.Context, wr *model.WithdrawalRe
 		Txs:             []*antv1.UnsignedTx{unsignedTx},
 	}
 
-	if err := b.bundleSaver.SaveUnsignedBundle(ctx, batchID, uuid.Nil, bundle, time.Now().UnixMilli()); err != nil {
-		return fmt.Errorf("save bundle: %w", err)
-	}
-
-	if err := b.withdrawRepo.UpdateWithdrawalBundle(ctx, wr.ID, batchID); err != nil {
-		return fmt.Errorf("link withdrawal to bundle: %w", err)
+	if err := b.saveBundleAndLinkWithdrawal(ctx, batchID, bundle, wr.ID); err != nil {
+		return fmt.Errorf("save bundle and link withdrawal: %w", err)
 	}
 
 	b.log.Info("withdrawal bundle built for coldsign",
@@ -198,4 +199,26 @@ func (b *WithdrawalBuilder) buildOne(ctx context.Context, wr *model.WithdrawalRe
 		zap.String("amount", wr.Amount))
 
 	return nil
+}
+
+// saveBundleAndLinkWithdrawal atomically saves the unsigned bundle and links the
+// withdrawal to it in a single DB transaction. This prevents orphaned PENDING_SIGN
+// bundles if either operation fails.
+func (b *WithdrawalBuilder) saveBundleAndLinkWithdrawal(ctx context.Context, batchID uuid.UUID, bundle *antv1.UnsignedSweepBundle, withdrawalID uuid.UUID) error {
+	tx, err := b.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if err := b.bundleSaver.SaveUnsignedBundleTx(ctx, tx, batchID, uuid.Nil, bundle, time.Now().UnixMilli()); err != nil {
+		return fmt.Errorf("save unsigned bundle: %w", err)
+	}
+
+	withdrawRepoTx := repository.NewWithdrawalRepository(tx)
+	if err := withdrawRepoTx.UpdateWithdrawalBundle(ctx, withdrawalID, batchID); err != nil {
+		return fmt.Errorf("link withdrawal to bundle: %w", err)
+	}
+
+	return tx.Commit(ctx)
 }

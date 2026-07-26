@@ -78,8 +78,14 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 	if claims.TokenVersion != user.TokenVersion {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("token revoked"))
 	}
-	accessToken, _ := s.issueAccessToken(claims.UserID, user.Email)
-	refreshToken, _ := s.issueRefreshToken(claims.UserID, user.Email, user.TokenVersion)
+	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to issue access token"))
+	}
+	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email, user.TokenVersion)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to issue refresh token"))
+	}
 	resp := connect.NewResponse(&antv1.RefreshTokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
 	resp.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
 	return resp, nil
@@ -114,8 +120,14 @@ func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Re
 	if claims.TokenVersion != user.TokenVersion {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("token revoked"))
 	}
-	accessToken, _ := s.issueAccessToken(claims.UserID, user.Email)
-	refreshToken, _ := s.issueRefreshToken(claims.UserID, user.Email, user.TokenVersion)
+	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to issue access token"))
+	}
+	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email, user.TokenVersion)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to issue refresh token"))
+	}
 	resp := connect.NewResponse(&antv1.RefreshTokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

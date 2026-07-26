@@ -307,8 +307,8 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 			e.broker.history = append(e.broker.history, pos)
 			e.broker.recordDeal(pos, pos.Volume, pos.Profit, pos.CloseTime)
 			e.broker.recordTrade(pos)
-			e.broker.equity = e.broker.equity.Add(pos.Profit).Sub(pos.Swap)
-			e.broker.balance = e.broker.balance.Add(pos.Profit).Sub(pos.Swap)
+			e.broker.equity = e.broker.equity.Add(pos.Profit)
+			e.broker.balance = e.broker.balance.Add(pos.Profit)
 			e.broker.positions = append(e.broker.positions[:i], e.broker.positions[i+1:]...)
 			i--
 		}

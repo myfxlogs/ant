@@ -67,7 +67,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, email_verified_at, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, token_version, created_at, updated_at
 		FROM users WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -81,6 +81,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 		&user.AccountNumber,
 		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
+		&user.TokenVersion,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -95,7 +96,7 @@ func (r *UserRepository) GetByLogin(ctx context.Context, login string) (*model.U
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, email_verified_at, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, token_version, created_at, updated_at
 		FROM users WHERE (LOWER(email) = LOWER($1) OR account_number = $1) AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, login).Scan(
@@ -109,6 +110,7 @@ func (r *UserRepository) GetByLogin(ctx context.Context, login string) (*model.U
 		&user.AccountNumber,
 		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
+		&user.TokenVersion,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -123,7 +125,7 @@ func (r *UserRepository) GetByAccountNumber(ctx context.Context, accountNumber s
 	user := &model.User{}
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
-		       account_number, email_verified_at, last_login_at, created_at, updated_at
+		       account_number, email_verified_at, last_login_at, token_version, created_at, updated_at
 		FROM users WHERE account_number = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, accountNumber).Scan(
@@ -137,6 +139,7 @@ func (r *UserRepository) GetByAccountNumber(ctx context.Context, accountNumber s
 		&user.AccountNumber,
 		&user.EmailVerifiedAt,
 		&user.LastLoginAt,
+		&user.TokenVersion,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)

@@ -93,6 +93,26 @@ func (r *WalletRepository) freezeOp(ctx context.Context, tx pgx.Tx, walletID, us
 	txID, _, err := r.ledgerChainInsert(ctx, tx, walletID, userID, amount, txType, description,
 		nil, idemKey, balanceBefore, balanceAfter)
 	if err != nil {
+		if errors.Is(err, model.ErrIdempotentReplay) {
+			// Undo the balance/frozen update to prevent inconsistency.
+			// The caller's defer rollback will also undo, but this keeps the
+			// transaction state consistent if the caller continues using it.
+			if freeze {
+				_, _ = tx.Exec(ctx,
+					`UPDATE user_wallets SET balance = balance + ($1)::numeric, frozen_balance = frozen_balance - ($1)::numeric WHERE id = $2`,
+					amount, walletID)
+			} else if txType == "withdrawal_cancel" {
+				_, _ = tx.Exec(ctx,
+					`UPDATE user_wallets SET frozen_balance = frozen_balance + ($1)::numeric, balance = balance - ($1)::numeric WHERE id = $2`,
+					amount, walletID)
+			} else {
+				// withdrawal_complete: only frozen was decremented
+				_, _ = tx.Exec(ctx,
+					`UPDATE user_wallets SET frozen_balance = frozen_balance + ($1)::numeric WHERE id = $2`,
+					amount, walletID)
+			}
+			return r.walletAfterUpdate(ctx, tx, walletID, uuid.Nil)
+		}
 		return nil, err
 	}
 

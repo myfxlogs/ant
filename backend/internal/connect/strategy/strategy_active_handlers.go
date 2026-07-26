@@ -40,7 +40,8 @@ func (s *StrategyExecutionServer) ListActiveStrategies(ctx context.Context, req 
 
 // GetActiveStrategy returns a single active strategy session by run ID.
 func (s *StrategyExecutionServer) GetActiveStrategy(ctx context.Context, req *connect.Request[antv1.GetActiveStrategyRequest]) (*connect.Response[antv1.GetActiveStrategyResponse], error) {
-	if _, err := userIDRequire(ctx); err != nil {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
 		return nil, err
 	}
 	if s.sessionRegistry == nil {
@@ -56,13 +57,17 @@ func (s *StrategyExecutionServer) GetActiveStrategy(ctx context.Context, req *co
 	if !ok {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("active strategy %s not found", runID))
 	}
+	if sess.UserID != uid {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("strategy %s not found", runID))
+	}
 
 	return connect.NewResponse(&antv1.GetActiveStrategyResponse{Strategy: activeSessionToProto(sess)}), nil
 }
 
 // StopStrategy cancels a running strategy session by run ID.
 func (s *StrategyExecutionServer) StopStrategy(ctx context.Context, req *connect.Request[antv1.StopStrategyRequest]) (*connect.Response[antv1.StopStrategyResponse], error) {
-	if _, err := userIDRequire(ctx); err != nil {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
 		return nil, err
 	}
 	if s.sessionRegistry == nil {
@@ -72,6 +77,17 @@ func (s *StrategyExecutionServer) StopStrategy(ctx context.Context, req *connect
 	runID, err := uuid.Parse(req.Msg.GetRunId())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid run_id: %w", err))
+	}
+
+	sess, ok := s.sessionRegistry.Get(runID)
+	if !ok {
+		return connect.NewResponse(&antv1.StopStrategyResponse{
+			Success: false,
+			Error:   fmt.Sprintf("active strategy %s not found", runID),
+		}), nil
+	}
+	if sess.UserID != uid {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("strategy %s not found", runID))
 	}
 
 	if err := s.sessionRegistry.Stop(runID); err != nil {
@@ -87,7 +103,8 @@ func (s *StrategyExecutionServer) StopStrategy(ctx context.Context, req *connect
 
 // WatchStrategySignals streams real-time signals from a running strategy via SSE.
 func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req *connect.Request[antv1.WatchStrategySignalsRequest], stream *connect.ServerStream[antv1.StrategySignalEvent]) error {
-	if _, err := userIDRequire(ctx); err != nil {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
 		return err
 	}
 	if s.sessionRegistry == nil {
@@ -102,6 +119,9 @@ func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req 
 	sess, ok := s.sessionRegistry.Get(runID)
 	if !ok {
 		return connect.NewError(connect.CodeNotFound, fmt.Errorf("active strategy %s not found", runID))
+	}
+	if sess.UserID != uid {
+		return connect.NewError(connect.CodePermissionDenied, fmt.Errorf("strategy %s not found", runID))
 	}
 
 	sigCh := sess.SubscribeSignals()

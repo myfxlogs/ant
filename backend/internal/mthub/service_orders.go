@@ -84,8 +84,9 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	// D6-A: single-chokepoint risk gate evaluated for every order path.
 	if s.gate != nil && s.accountStateProvider != nil {
 		intent := orderRequestToIntent(req)
+		intent.UserId = usermgr.GetUserID(ctx)
 		state, stateErr := s.accountStateProvider(ctx, req.AccountID)
-		if stateErr != nil {
+		if stateErr != nil && s.logger != nil {
 			s.logger.Warn("gate: account state fetch failed — fail-closed",
 				zap.String("accountID", req.AccountID), zap.Error(stateErr))
 		}
@@ -111,11 +112,13 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	// Update the idempotency key with the real ticket after successful placement.
 	if s.idem != nil && req.ClientID != "" {
 		if err := s.idem.SetTicket(ctx, req.AccountID, req.ClientID, ticket); err != nil {
-			s.logger.Error("idempotency set ticket failed",
-				zap.Error(err),
-				zap.String("accountID", req.AccountID),
-				zap.String("clientID", req.ClientID),
-				zap.Int64("ticket", ticket))
+			if s.logger != nil {
+				s.logger.Error("idempotency set ticket failed",
+					zap.Error(err),
+					zap.String("accountID", req.AccountID),
+					zap.String("clientID", req.ClientID),
+					zap.Int64("ticket", ticket))
+			}
 		}
 	}
 
@@ -155,11 +158,11 @@ func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, or
 					s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
 					return 0, fmt.Errorf("precheck rejected: %s", result.Reason)
 				}
-			} else {
+			} else if s.logger != nil {
 				s.logger.Warn("RequiredMargin RPC failed, skipping broker margin precheck",
 					zap.String("account", req.AccountID), zap.Error(rmErr))
 			}
-		} else if stateErr != nil {
+		} else if stateErr != nil && s.logger != nil {
 			s.logger.Warn("account state fetch failed for margin precheck",
 				zap.String("account", req.AccountID), zap.Error(stateErr))
 		}
@@ -187,6 +190,7 @@ func orderRequestToIntent(req *OrderRequest) *antv1.OrderIntent {
 		Sl:        req.StopLoss.String(),
 		Tp:        req.TakeProfit.String(),
 		Magic:     int64(req.Magic),
+		Source:    antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
 }
 
@@ -252,7 +256,7 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 		Version:      1,
 		CostEstimate: costEstimate,
 	}
-	if err := s.eventStore.Publish(ctx, ev); err != nil {
+	if err := s.eventStore.Publish(ctx, ev); err != nil && s.logger != nil {
 		s.logger.Error("event store publish failed",
 			zap.Error(err),
 			zap.String("eventID", ev.EventID),
