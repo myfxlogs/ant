@@ -198,6 +198,19 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 		return "", fmt.Errorf("marketplace: backtest quality gate failed: %s", strings.Join(msgs, "; "))
 	}
 
+	// Verify the caller owns the strategy template before publishing.
+	var templateOwnerID string
+	err = s.pg.QueryRow(ctx,
+		`SELECT user_id::text FROM strategy_templates WHERE id = $1`,
+		params.StrategyID,
+	).Scan(&templateOwnerID)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: strategy template not found: %w", err)
+	}
+	if templateOwnerID != params.UserID {
+		return "", fmt.Errorf("marketplace: not the strategy owner")
+	}
+
 	tx, err := s.pg.Begin(ctx)
 	if err != nil {
 		return "", fmt.Errorf("marketplace: publish begin tx: %w", err)

@@ -176,8 +176,9 @@ func (s *Service) retryFailedReversals(ctx context.Context, providerID string) (
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Select settlements with failed reversals for this provider.
+	// purchase_id is needed to construct the original idem keys for correct idempotency.
 	rows, err := tx.Query(ctx,
-		`SELECT id, provider_amount::text, platform_fee::text, reversal_failure_note
+		`SELECT id, purchase_id, provider_amount::text, platform_fee::text, reversal_failure_note
 		 FROM marketplace_settlements
 		 WHERE provider_id = $1 AND reversal_failed = true AND status = 'refunded'
 		 FOR UPDATE SKIP LOCKED`,
@@ -189,6 +190,7 @@ func (s *Service) retryFailedReversals(ctx context.Context, providerID string) (
 
 	type failed struct {
 		id          uuid.UUID
+		purchaseID  uuid.UUID
 		providerAmt string
 		platformFee string
 		note        string
@@ -196,7 +198,7 @@ func (s *Service) retryFailedReversals(ctx context.Context, providerID string) (
 	var batch []failed
 	for rows.Next() {
 		var f failed
-		if err := rows.Scan(&f.id, &f.providerAmt, &f.platformFee, &f.note); err != nil {
+		if err := rows.Scan(&f.id, &f.purchaseID, &f.providerAmt, &f.platformFee, &f.note); err != nil {
 			rows.Close()
 			return 0, fmt.Errorf("marketplace: retry reversals: scan: %w", err)
 		}
@@ -223,12 +225,14 @@ func (s *Service) retryFailedReversals(ctx context.Context, providerID string) (
 	for _, f := range batch {
 		settleID := f.id.String()
 
-		// Retry publisher debit.
+		// Retry publisher debit using the ORIGINAL idem key so that
+		// already-debited reversals are rejected as idempotent replays.
+		purchaseIDStr := f.purchaseID.String()
 		negPub := "-" + f.providerAmt
 		_, err := s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pid,
 			negPub, TxTypeRefundReversal,
 			fmt.Sprintf("Refund reversal retry for settlement %s", settleID),
-			nil, IdemKeyRevRetry+settleID)
+			nil, IdemKeyRev+purchaseIDStr)
 		if err != nil {
 			s.log.Warn("retry reversals: publisher debit still failing",
 				zap.String("settlementID", settleID), zap.Error(err))
@@ -249,7 +253,7 @@ func (s *Service) retryFailedReversals(ctx context.Context, providerID string) (
 				_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
 					negFee, TxTypeRefundReversal,
 					fmt.Sprintf("Platform fee reversal retry for settlement %s", settleID),
-					nil, IdemKeyFeeRevRetry+settleID)
+					nil, IdemKeyFeeRev+purchaseIDStr)
 				if err != nil {
 					s.log.Warn("retry reversals: platform fee debit still failing",
 						zap.String("settlementID", settleID), zap.Error(err))
