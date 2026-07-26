@@ -210,8 +210,8 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
       timeframe: '5m',
       initialCapital: '10000',
       mode: 1, // BACKTEST_RUN_MODE_KLINE_RANGE
-      from: '2024-04-08T00:00:00Z',
-      to: '2024-07-08T00:00:00Z',
+      from: '2026-06-18T00:00:00Z',
+      to: '2026-07-23T00:00:00Z',
       templateId: state.templateId,
       executionConfig: {
         commission: '0.001',
