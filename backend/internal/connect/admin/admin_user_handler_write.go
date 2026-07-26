@@ -115,6 +115,8 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 	if err != nil {
 		return nil, err
 	}
+	prevStatus := existing.Status
+	prevRole := existing.Role
 	if req.Msg.Email != "" {
 		existing.Email = req.Msg.Email
 	}
@@ -125,6 +127,9 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 		existing.Role = req.Msg.Role
 	}
 	if req.Msg.Status != "" {
+		if !validStatus(req.Msg.Status) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid status: %s", req.Msg.Status))
+		}
 		existing.Status = req.Msg.Status
 	}
 	if req.Msg.Nickname != "" {
@@ -150,6 +155,18 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 	if err := s.repo.UpdateUser(ctx, existing); err != nil {
 		return nil, err
 	}
+	if prevStatus != existing.Status && existing.Status != "active" {
+		if err := s.repo.IncrementTokenVersion(ctx, id); err != nil {
+			s.log.Warn("admin: update user — increment token version failed",
+				zap.String("target", id.String()), zap.Error(err))
+		}
+	}
+	if prevRole != existing.Role {
+		if err := s.repo.IncrementTokenVersion(ctx, id); err != nil {
+			s.log.Warn("admin: update user role — increment token version failed",
+				zap.String("target", id.String()), zap.Error(err))
+		}
+	}
 	s.log.Info("admin: user updated",
 		zap.String("actor", getActorID(ctx).String()),
 		zap.String("target", id.String()),
@@ -166,6 +183,7 @@ func (s *AdminUserServer) DeleteUser(ctx context.Context, req *connect.Request[a
 	actorID := getActorID(ctx)
 	switch err := s.deletionSvc.SoftDeleteUser(ctx, actorID, id); {
 	case err == nil:
+		_ = s.repo.IncrementTokenVersion(ctx, id)
 	case errors.Is(err, service.ErrCannotDeleteSelf):
 		return nil, connect.NewError(connect.CodePermissionDenied, err)
 	case errors.Is(err, service.ErrCannotDeleteLastAdmin):
@@ -183,6 +201,11 @@ func (s *AdminUserServer) DeleteUsers(ctx context.Context, req *connect.Request[
 		return connect.NewResponse(&antv1.DeleteUsersResponse{}), nil
 	}
 	deleted, failed, errors := s.deletionSvc.SoftDeleteUsers(ctx, actorID, req.Msg.Ids)
+	for _, rawID := range req.Msg.Ids {
+		if uid, err := uuid.Parse(rawID); err == nil {
+			_ = s.repo.IncrementTokenVersion(ctx, uid)
+		}
+	}
 	return connect.NewResponse(&antv1.DeleteUsersResponse{
 		DeletedCount: int32(deleted),
 		FailedCount:  int32(failed),
@@ -214,6 +237,10 @@ func (s *AdminUserServer) DisableUser(ctx context.Context, req *connect.Request[
 	}
 	if err := s.repo.SetUserStatus(ctx, id, "disabled"); err != nil {
 		return nil, err
+	}
+	if err := s.repo.IncrementTokenVersion(ctx, id); err != nil {
+		s.log.Warn("admin: disable user — increment token version failed",
+			zap.String("target", id.String()), zap.Error(err))
 	}
 	s.log.Info("admin: user disabled",
 		zap.String("actor", getActorID(ctx).String()),

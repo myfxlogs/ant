@@ -78,6 +78,9 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 	if claims.TokenVersion != user.TokenVersion {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("token revoked"))
 	}
+	if user.Status != "active" {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account is disabled"))
+	}
 	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to issue access token"))
@@ -119,6 +122,9 @@ func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Re
 	}
 	if claims.TokenVersion != user.TokenVersion {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("token revoked"))
+	}
+	if user.Status != "active" {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account is disabled"))
 	}
 	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
 	if err != nil {

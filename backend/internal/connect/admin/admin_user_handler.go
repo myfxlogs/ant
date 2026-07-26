@@ -114,6 +114,15 @@ func validRole(role string) bool {
 	return false
 }
 
+// validStatus returns true if the status string is a recognized user status.
+func validStatus(status string) bool {
+	switch status {
+	case "active", "disabled", "suspended", "pending":
+		return true
+	}
+	return false
+}
+
 // getActorID extracts the authenticated user ID from the request context.
 func getActorID(ctx context.Context) uuid.UUID {
 	raw := antinterceptor.GetUserID(ctx)

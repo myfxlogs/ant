@@ -121,3 +121,9 @@ func (r *AdminRepository) CountAdmins(ctx context.Context) (int32, error) {
 	return count, err
 }
 
+// IncrementTokenVersion bumps the user's token_version, invalidating all existing JWT refresh tokens.
+func (r *AdminRepository) IncrementTokenVersion(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.Exec(ctx, `UPDATE users SET token_version = token_version + 1 WHERE id = $1`, id)
+	return err
+}
+
