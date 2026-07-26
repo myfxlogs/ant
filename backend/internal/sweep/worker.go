@@ -189,8 +189,16 @@ func (w *Worker) resumeBroadcasting(ctx context.Context) error {
 		return fmt.Errorf("resume broadcasting: list: %w", err)
 	}
 
+	// Load configurable raw_tx expiry for IsExpired check.
+	rawTxExpiryHours := 23
+	if cfg, err := w.adminRepo.GetConfig(ctx, "sweep_raw_tx_expiry_hours"); err == nil && cfg != nil && cfg.Value != "" {
+		if n, err := strconv.Atoi(cfg.Value); err == nil && n > 0 {
+			rawTxExpiryHours = n
+		}
+	}
+
 	for _, bb := range bundles {
-		if bb.IsExpired() {
+		if bb.IsExpired(rawTxExpiryHours) {
 			w.log.Warn("sweep worker: bundle expired, marking EXPIRED",
 				zap.String("batch_id", bb.BatchID.String()))
 			_ = w.bundleRepo.MarkBundleExpired(ctx, bb.BatchID)

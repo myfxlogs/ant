@@ -243,8 +243,11 @@ type BroadcastingBundle struct {
 	Status    string
 }
 
-// IsExpired checks if the bundle's raw_tx has expired (built_at_ms + ~24h).
-func (b *BroadcastingBundle) IsExpired() bool {
-	expiryMs := b.BuiltAtMs + (23 * time.Hour).Milliseconds()
+// IsExpired checks if the bundle's raw_tx has expired (built_at_ms + expiryHours).
+func (b *BroadcastingBundle) IsExpired(expiryHours int) bool {
+	if expiryHours <= 0 {
+		expiryHours = 23
+	}
+	expiryMs := b.BuiltAtMs + (time.Duration(expiryHours) * time.Hour).Milliseconds()
 	return time.Now().UnixMilli() > expiryMs
 }

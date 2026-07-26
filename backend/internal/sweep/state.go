@@ -146,6 +146,11 @@ func (s *StateMachine) CheckDoubleSpend(ctx context.Context, addrID uuid.UUID, f
 	// Check if there's a DONE transfer leg — means a previous sweep succeeded.
 	// The outgoing transfer on chain is expected and should not block re-sweeping.
 	doneLeg, err := s.sweepRepo.GetLatestDoneTransferLeg(ctx, addrID)
+	if err != nil {
+		s.log.Warn("sweep state: failed to query DONE transfer leg, proceeding to chain check",
+			zap.String("from", fromAddr),
+			zap.Error(err))
+	}
 	if err == nil && doneLeg != nil {
 		doneAt := time.Time{}
 		if doneLeg.CompletedAt != nil {
