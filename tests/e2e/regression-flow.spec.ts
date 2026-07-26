@@ -206,12 +206,12 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
     const resp = await rpc('/ant.v1.StrategyRuntimeService/StartBacktestRun', {
       code: MQL_SOURCE,
       accountId: ADMIN_ACCOUNT_ID,
-      symbol: 'XAUUSDm',
-      timeframe: '5m',
+      symbol: 'ETHBTCm',
+      timeframe: '15m',
       initialCapital: '10000',
       mode: 1, // BACKTEST_RUN_MODE_KLINE_RANGE
-      from: '2026-06-18T00:00:00Z',
-      to: '2026-07-23T00:00:00Z',
+      from: '2026-07-01T00:00:00Z',
+      to: '2026-07-24T00:00:00Z',
       templateId: state.templateId,
       executionConfig: {
         commission: '0.001',
@@ -298,8 +298,8 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
       priceModel: 'free',
       priceAmount: '0',
       assetClass: 'forex',
-      symbols: ['XAUUSDm'],
-      timeframe: '5m',
+      symbols: ['ETHBTCm'],
+      timeframe: '15m',
       riskLevel: 'low',
       tags: ['e2e', 'test'],
     }, state.adminToken);
