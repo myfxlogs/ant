@@ -54,9 +54,14 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 		s.failRun(ctx, run, fmt.Sprintf("proto marshal failed: %v", err))
 		return
 	}
+
+	// Build server-generated BacktestSnapshot from actual backtest metrics.
+	// This is the tamper-proof source for marketplace quality gate validation.
+	snapshotBytes := buildBacktestSnapshot(run, result)
+
 	now := time.Now()
 	BacktestRunsTotal.WithLabelValues(StatusSucceeded).Inc()
-	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusSucceeded, "", &now, &now, protoResp); err != nil {
+	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusSucceeded, "", &now, &now, protoResp, snapshotBytes); err != nil {
 		s.log.Error("backtest worker: UpdateAsyncFields failed", zap.String("runID", run.ID.String()), zap.Error(err))
 		return
 	}
@@ -97,7 +102,7 @@ func (s *StrategyExecutionServer) failRun(ctx context.Context, run *repository.B
 	now := time.Now()
 	BacktestRunsTotal.WithLabelValues(StatusFailed).Inc()
 	status := StatusFailed
-	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil); err != nil {
+	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil, nil); err != nil {
 		s.log.Error("backtest worker: failRun UpdateAsyncFields",
 			zap.String("run_id", run.ID.String()), zap.Error(err))
 	}
@@ -146,4 +151,26 @@ func (s *StrategyExecutionServer) syncMarketplacePerformance(ctx context.Context
 		s.log.Debug("marketplace sync: template not published or update failed",
 			zap.String("template_id", run.TemplateID.String()), zap.Error(err))
 	}
+}
+
+// buildBacktestSnapshot constructs a tamper-proof BacktestSnapshot proto from
+// the actual backtest run metrics. Called on success, stored in backtest_runs.backtest_snapshot.
+// The marketplace quality gate reads this snapshot instead of trusting client-supplied data.
+func buildBacktestSnapshot(run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) []byte {
+	m := result.GetMetrics()
+	snap := &antv1.BacktestSnapshot{
+		TotalReturn:  m.GetTotalReturn(),
+		AnnualReturn: m.GetAnnualReturn(),
+		MaxDrawdown:  m.GetMaxDrawdown(),
+		SharpeRatio:  m.GetSharpeRatio(),
+		WinRate:      m.GetWinRate(),
+		TotalTrades:  m.GetTotalTrades(),
+		Symbol:       run.Symbol,
+		Timeframe:    run.Timeframe,
+	}
+	b, err := proto.Marshal(snap)
+	if err != nil {
+		return nil
+	}
+	return b
 }

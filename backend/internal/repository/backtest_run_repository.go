@@ -48,6 +48,7 @@ type BacktestRun struct {
 	StrictMode           *bool            `db:"strict_mode"`
 	ConfigSnapshot       []byte           `db:"config_snapshot"`
 	StrategyID           *uuid.UUID       `db:"strategy_id"`
+	BacktestSnapshot     []byte           `db:"backtest_snapshot"`
 }
 
 func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
@@ -132,7 +133,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
 			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-			strategy_id,
+			strategy_id, backtest_snapshot,
 			created_at
 		FROM backtest_runs
 		WHERE id = $1 AND user_id = $2`,
@@ -146,7 +147,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 		&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
-		&out.StrategyID,
+		&out.StrategyID, &out.BacktestSnapshot,
 		&out.CreatedAt,
 	)
 	if err != nil {
@@ -176,7 +177,7 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 		status, error, started_at, finished_at, strategy_code, initial_capital,
 		extra_symbols, parameter_overrides, proto_response,
 		commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-		strategy_id,
+		strategy_id, backtest_snapshot,
 		created_at
 	FROM backtest_runs
 	WHERE user_id = $1`
@@ -218,7 +219,7 @@ func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query s
 			&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 			&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 			&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
-			&out.StrategyID,
+			&out.StrategyID, &out.BacktestSnapshot,
 			&out.CreatedAt,
 		); err != nil {
 			return nil, err

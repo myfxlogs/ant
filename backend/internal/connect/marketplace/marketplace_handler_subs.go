@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,32 +18,58 @@ import (
 
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
 	m := req.Msg
-	var snapshotProto []byte
-	if m.BacktestSnapshot != nil {
-		snapshotProto, _ = proto.Marshal(m.BacktestSnapshot)
-	}
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
 	}
+
+	// Read tamper-proof snapshot from DB by backtest_run_id.
+	// Falls back to latest successful run for the strategy if not specified.
+	var snapshotProto []byte
+	if m.BacktestRunId != "" {
+		runID, err := uuid.Parse(m.BacktestRunId)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid backtest_run_id: %w", err))
+		}
+		uid, err := uuid.Parse(userID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
+		}
+		snapshotProto, err = s.fetchSnapshotByRunID(ctx, uid, runID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("marketplace: backtest snapshot: %w", err))
+		}
+	} else {
+		// Fallback: find latest successful backtest run for this strategy template.
+		strategyID, err := uuid.Parse(m.StrategyId)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid strategy_id"))
+		}
+		uid, _ := uuid.Parse(userID)
+		snapshotProto, err = s.fetchLatestSnapshotForStrategy(ctx, uid, strategyID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("marketplace: no backtest snapshot: %w", err))
+		}
+	}
+
 	id, err := s.svc.Publish(ctx, marketplace.PublishParams{
-		UserID:               userID,
-		StrategyID:           m.StrategyId,
-		Title:                m.Title,
-		Description:          m.Description,
-		PriceModel:           m.PriceModel,
-		PriceAmount:          m.PriceAmount,
-		AssetClass:           m.AssetClass,
-		Symbols:              m.Symbols,
-		Timeframe:            m.Timeframe,
-		RiskLevel:            m.RiskLevel,
-		Tags:                 m.Tags,
-		CodeSnippet:          m.CodeSnippet,
+		UserID:                userID,
+		StrategyID:            m.StrategyId,
+		Title:                 m.Title,
+		Description:           m.Description,
+		PriceModel:            m.PriceModel,
+		PriceAmount:           m.PriceAmount,
+		AssetClass:            m.AssetClass,
+		Symbols:               m.Symbols,
+		Timeframe:             m.Timeframe,
+		RiskLevel:             m.RiskLevel,
+		Tags:                  m.Tags,
+		CodeSnippet:           m.CodeSnippet,
 		BacktestSnapshotProto: snapshotProto,
-		PlatformFeeRate:      s.svc.GetPlatformFeeRate(ctx),
-		Disclaimer:           m.Disclaimer,
-		TrialDays:            int(m.TrialDays),
-		RefundWindowDays:     int(m.RefundWindowDays),
+		PlatformFeeRate:       s.svc.GetPlatformFeeRate(ctx),
+		Disclaimer:            m.Disclaimer,
+		TrialDays:             int(m.TrialDays),
+		RefundWindowDays:      int(m.RefundWindowDays),
 	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
@@ -54,6 +80,44 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.PublishStrategyResponse{PublishId: id}), nil
+}
+
+// fetchSnapshotByRunID reads the server-generated backtest_snapshot from a specific run.
+// Returns error if the run doesn't exist, doesn't belong to the user, or has no snapshot.
+func (s *MarketplaceServer) fetchSnapshotByRunID(ctx context.Context, userID, runID uuid.UUID) ([]byte, error) {
+	var snapshot []byte
+	var status string
+	err := s.pgPool.QueryRow(ctx,
+		`SELECT backtest_snapshot, status FROM backtest_runs WHERE id = $1 AND user_id = $2`,
+		runID, userID,
+	).Scan(&snapshot, &status)
+	if err != nil {
+		return nil, fmt.Errorf("backtest run not found: %w", err)
+	}
+	if status != "SUCCEEDED" {
+		return nil, fmt.Errorf("backtest run status is %s, must be SUCCEEDED", status)
+	}
+	if len(snapshot) == 0 {
+		return nil, fmt.Errorf("backtest run has no snapshot")
+	}
+	return snapshot, nil
+}
+
+// fetchLatestSnapshotForStrategy finds the most recent successful backtest run
+// for a given strategy template and returns its server-generated snapshot.
+func (s *MarketplaceServer) fetchLatestSnapshotForStrategy(ctx context.Context, userID, templateID uuid.UUID) ([]byte, error) {
+	var snapshot []byte
+	err := s.pgPool.QueryRow(ctx,
+		`SELECT backtest_snapshot FROM backtest_runs
+		 WHERE user_id = $1 AND template_id = $2 AND status = 'SUCCEEDED'
+		   AND backtest_snapshot IS NOT NULL
+		 ORDER BY created_at DESC LIMIT 1`,
+		userID, templateID,
+	).Scan(&snapshot)
+	if err != nil {
+		return nil, fmt.Errorf("no successful backtest with snapshot found for this strategy")
+	}
+	return snapshot, nil
 }
 
 func (s *MarketplaceServer) Subscribe(ctx context.Context, req *connect.Request[antv1.SubscribeRequest]) (*connect.Response[antv1.SubscribeResponse], error) {

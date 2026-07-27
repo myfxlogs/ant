@@ -110,10 +110,13 @@ message PublishStrategyRequest {
   repeated string tags = 11;
   // Code protection: publisher-visible only.
   string code_snippet = 16;  // optional public code preview set by publisher
-  BacktestSnapshot backtest_snapshot = 17;  // snapshot of backtest results at publish time
+  BacktestSnapshot backtest_snapshot = 17 [deprecated = true];  // deprecated: use backtest_run_id instead
   string disclaimer = 18;  // optional risk disclaimer shown to buyers
   int32 trial_days = 19;  // publisher-configurable trial period (default 7)
   int32 refund_window_days = 20;  // publisher-configurable refund window in days (default 7)
+  // Server reads the tamper-proof snapshot from this backtest run.
+  // The run must belong to the calling user and have SUCCEEDED status.
+  string backtest_run_id = 21;
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.

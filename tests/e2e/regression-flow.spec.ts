@@ -29,6 +29,29 @@ async function rpc(path: string, body: Record<string, unknown>, token?: string) 
   return { status: resp.status, data, ok: resp.ok };
 }
 
+// Quality gate keys that must be disabled for E2E test publishing
+// (the test strategy is a simple MA crossover, not expected to pass quality thresholds)
+const QUALITY_GATE_KEYS = [
+  'marketplace.quality.enforce_backtest_snapshot',
+  'marketplace.quality.min_sharpe_ratio',
+  'marketplace.quality.min_win_rate',
+  'marketplace.quality.max_drawdown_pct',
+  'marketplace.quality.min_total_trades',
+  'marketplace.quality.max_is_oos_degradation',
+];
+
+async function disableQualityGates(token: string) {
+  for (const key of QUALITY_GATE_KEYS) {
+    await rpc('/ant.v1.AdminConfigService/ToggleConfigEnabled', { key, enabled: false }, token);
+  }
+}
+
+async function enableQualityGates(token: string) {
+  for (const key of QUALITY_GATE_KEYS) {
+    await rpc('/ant.v1.AdminConfigService/ToggleConfigEnabled', { key, enabled: true }, token);
+  }
+}
+
 // Shared state across serial tests
 const state: {
   email: string;
@@ -40,7 +63,6 @@ const state: {
   templateId: string;
   publishId: string;
   backtestRunId: string;
-  backtestSnapshot: Record<string, unknown>;
 } = {
   email: `e2e-reg-${Date.now()}@test.alfq.org`,
   pass: 'Test123456!',
@@ -51,7 +73,6 @@ const state: {
   templateId: '',
   publishId: '',
   backtestRunId: '',
-  backtestSnapshot: {},
 };
 
 // Minimal MQL4 strategy for backtest — simple MA crossover
@@ -272,16 +293,6 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
       const metrics = fullRespData?.metrics as Record<string, unknown> | undefined;
       if (metrics) {
         console.log(`Metrics: totalReturn=${metrics.totalReturn}, maxDrawdown=${metrics.maxDrawdown}, totalTrades=${metrics.totalTrades}`);
-        state.backtestSnapshot = {
-          totalReturn: metrics.totalReturn,
-          annualReturn: metrics.annualReturn,
-          maxDrawdown: metrics.maxDrawdown,
-          sharpeRatio: '0.6',
-          winRate: '0.4',
-          totalTrades: metrics.totalTrades,
-          symbol: 'ETHBTCm',
-          timeframe: '15m',
-        };
       }
       const equityCurve = fullRespData?.equityCurve as string[] | undefined;
       if (equityCurve && equityCurve.length > 0) {
@@ -302,22 +313,29 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
   // Now that backtest snapshot exists, quality gate should pass.
   // ════════════════════════════════════════════════════════════════════════
   test('10. Publish strategy to marketplace', async () => {
-    const resp = await rpc('/ant.v1.MarketplaceService/PublishStrategy', {
-      userId: state.userId,
-      strategyId: state.templateId,
-      title: 'E2E Test MA Crossover',
-      description: 'Free strategy for E2E testing — MA crossover',
-      priceModel: 'free',
-      priceAmount: '0',
-      assetClass: 'forex',
-      symbols: ['ETHBTCm'],
-      timeframe: '15m',
-      riskLevel: 'low',
-      tags: ['e2e', 'test'],
-      backtestSnapshot: state.backtestSnapshot,
-    }, state.adminToken);
-    expect(resp.ok, `PublishStrategy should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
-    state.publishId = resp.data.publishId as string;
+    // E2E tests the publish flow, not strategy quality.
+    // Disable quality gates temporarily so the test strategy can publish.
+    await disableQualityGates(state.adminToken);
+    try {
+      const resp = await rpc('/ant.v1.MarketplaceService/PublishStrategy', {
+        userId: state.userId,
+        strategyId: state.templateId,
+        title: 'E2E Test MA Crossover',
+        description: 'Free strategy for E2E testing — MA crossover',
+        priceModel: 'free',
+        priceAmount: '0',
+        assetClass: 'forex',
+        symbols: ['ETHBTCm'],
+        timeframe: '15m',
+        riskLevel: 'low',
+        tags: ['e2e', 'test'],
+        backtestRunId: state.backtestRunId,
+      }, state.adminToken);
+      expect(resp.ok, `PublishStrategy should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
+      state.publishId = resp.data.publishId as string;
+    } finally {
+      await enableQualityGates(state.adminToken);
+    }
   });
 
   // ════════════════════════════════════════════════════════════════════════

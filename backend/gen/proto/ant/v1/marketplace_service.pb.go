@@ -38,13 +38,17 @@ type PublishStrategyRequest struct {
 	RiskLevel   string   `protobuf:"bytes,10,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`
 	Tags        []string `protobuf:"bytes,11,rep,name=tags,proto3" json:"tags,omitempty"`
 	// Code protection: publisher-visible only.
-	CodeSnippet      string            `protobuf:"bytes,16,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"`                   // optional public code preview set by publisher
-	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,17,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"`    // snapshot of backtest results at publish time
+	CodeSnippet string `protobuf:"bytes,16,opt,name=code_snippet,json=codeSnippet,proto3" json:"code_snippet,omitempty"` // optional public code preview set by publisher
+	// Deprecated: Marked as deprecated in marketplace_service.proto.
+	BacktestSnapshot *BacktestSnapshot `protobuf:"bytes,17,opt,name=backtest_snapshot,json=backtestSnapshot,proto3" json:"backtest_snapshot,omitempty"`    // deprecated: use backtest_run_id instead
 	Disclaimer       string            `protobuf:"bytes,18,opt,name=disclaimer,proto3" json:"disclaimer,omitempty"`                                        // optional risk disclaimer shown to buyers
 	TrialDays        int32             `protobuf:"varint,19,opt,name=trial_days,json=trialDays,proto3" json:"trial_days,omitempty"`                        // publisher-configurable trial period (default 7)
 	RefundWindowDays int32             `protobuf:"varint,20,opt,name=refund_window_days,json=refundWindowDays,proto3" json:"refund_window_days,omitempty"` // publisher-configurable refund window in days (default 7)
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Server reads the tamper-proof snapshot from this backtest run.
+	// The run must belong to the calling user and have SUCCEEDED status.
+	BacktestRunId string `protobuf:"bytes,21,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PublishStrategyRequest) Reset() {
@@ -161,6 +165,7 @@ func (x *PublishStrategyRequest) GetCodeSnippet() string {
 	return ""
 }
 
+// Deprecated: Marked as deprecated in marketplace_service.proto.
 func (x *PublishStrategyRequest) GetBacktestSnapshot() *BacktestSnapshot {
 	if x != nil {
 		return x.BacktestSnapshot
@@ -187,6 +192,13 @@ func (x *PublishStrategyRequest) GetRefundWindowDays() int32 {
 		return x.RefundWindowDays
 	}
 	return 0
+}
+
+func (x *PublishStrategyRequest) GetBacktestRunId() string {
+	if x != nil {
+		return x.BacktestRunId
+	}
+	return ""
 }
 
 // BacktestSnapshot holds key backtest metrics at publish time.
@@ -9268,7 +9280,7 @@ var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fbacktest_execution_config.proto\x1a\x18backtest_run_query.proto\"\xb1\x04\n" +
+	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fbacktest_execution_config.proto\x1a\x18backtest_run_query.proto\"\xdd\x04\n" +
 	"\x16PublishStrategyRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +
@@ -9286,14 +9298,15 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"risk_level\x18\n" +
 	" \x01(\tR\triskLevel\x12\x12\n" +
 	"\x04tags\x18\v \x03(\tR\x04tags\x12!\n" +
-	"\fcode_snippet\x18\x10 \x01(\tR\vcodeSnippet\x12E\n" +
-	"\x11backtest_snapshot\x18\x11 \x01(\v2\x18.ant.v1.BacktestSnapshotR\x10backtestSnapshot\x12\x1e\n" +
+	"\fcode_snippet\x18\x10 \x01(\tR\vcodeSnippet\x12I\n" +
+	"\x11backtest_snapshot\x18\x11 \x01(\v2\x18.ant.v1.BacktestSnapshotB\x02\x18\x01R\x10backtestSnapshot\x12\x1e\n" +
 	"\n" +
 	"disclaimer\x18\x12 \x01(\tR\n" +
 	"disclaimer\x12\x1d\n" +
 	"\n" +
 	"trial_days\x18\x13 \x01(\x05R\ttrialDays\x12,\n" +
-	"\x12refund_window_days\x18\x14 \x01(\x05R\x10refundWindowDays\"\x9b\x04\n" +
+	"\x12refund_window_days\x18\x14 \x01(\x05R\x10refundWindowDays\x12&\n" +
+	"\x0fbacktest_run_id\x18\x15 \x01(\tR\rbacktestRunId\"\x9b\x04\n" +
 	"\x10BacktestSnapshot\x12!\n" +
 	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
 	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +

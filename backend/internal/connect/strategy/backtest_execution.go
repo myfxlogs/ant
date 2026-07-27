@@ -174,7 +174,7 @@ func (s *StrategyExecutionServer) handleBacktestError(ctx context.Context, run *
 	if execCtx.Err() != nil {
 		s.log.Info("backtest worker: run cancelled", zap.String("runID", run.ID.String()))
 		now := time.Now()
-		if uerr := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusCanceled, "cancelled by user", nil, &now, nil); uerr != nil {
+		if uerr := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusCanceled, "cancelled by user", nil, &now, nil, nil); uerr != nil {
 			s.log.Error("update backtest run to CANCELED failed", zap.Error(uerr), zap.String("runID", run.ID.String()))
 		}
 		return

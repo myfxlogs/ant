@@ -185,7 +185,8 @@ func (r *BacktestRunRepository) GetStatusAndCancelRequestedAt(ctx context.Contex
 
 // UpdateAsyncFields updates status, error, timestamps, and optional columns atomically.
 // protoResponse is the serialized ant.v1.ExecuteBacktestResponse proto binary (canonical wire format).
-func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, runID uuid.UUID, status string, errMsg string, startedAt, finishedAt *time.Time, protoResponse []byte) error {
+// backtestSnapshot is the serialized ant.v1.BacktestSnapshot proto binary (server-generated, tamper-proof).
+func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, runID uuid.UUID, status string, errMsg string, startedAt, finishedAt *time.Time, protoResponse []byte, backtestSnapshot []byte) error {
 	if r == nil || r.db == nil {
 		return errors.New("repository not initialized")
 	}
@@ -200,10 +201,11 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 				WHEN COALESCE(NULLIF($3, ''), status) IN ('SUCCEEDED','FAILED','CANCELED') THEN NULL
 				ELSE lease_until
 			END,
-			proto_response = COALESCE($7, proto_response)
+			proto_response = COALESCE($7, proto_response),
+			backtest_snapshot = COALESCE($8, backtest_snapshot)
 		WHERE id = $1 AND user_id = $2
 	`
-	_, err := r.db.Exec(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, protoResponse)
+	_, err := r.db.Exec(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, protoResponse, backtestSnapshot)
 	if err != nil {
 		return fmt.Errorf("update async fields: %w", err)
 	}
