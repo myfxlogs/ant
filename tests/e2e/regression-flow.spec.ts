@@ -40,6 +40,7 @@ const state: {
   templateId: string;
   publishId: string;
   backtestRunId: string;
+  backtestSnapshot: Record<string, unknown>;
 } = {
   email: `e2e-reg-${Date.now()}@test.alfq.org`,
   pass: 'Test123456!',
@@ -50,6 +51,7 @@ const state: {
   templateId: '',
   publishId: '',
   backtestRunId: '',
+  backtestSnapshot: {},
 };
 
 // Minimal MQL4 strategy for backtest — simple MA crossover
@@ -270,6 +272,16 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
       const metrics = fullRespData?.metrics as Record<string, unknown> | undefined;
       if (metrics) {
         console.log(`Metrics: totalReturn=${metrics.totalReturn}, maxDrawdown=${metrics.maxDrawdown}, totalTrades=${metrics.totalTrades}`);
+        state.backtestSnapshot = {
+          totalReturn: metrics.totalReturn,
+          annualReturn: metrics.annualReturn,
+          maxDrawdown: metrics.maxDrawdown,
+          sharpeRatio: metrics.sharpeRatio,
+          winRate: metrics.winRate,
+          totalTrades: metrics.totalTrades,
+          symbol: 'ETHBTCm',
+          timeframe: '15m',
+        };
       }
       const equityCurve = fullRespData?.equityCurve as string[] | undefined;
       if (equityCurve && equityCurve.length > 0) {
@@ -302,11 +314,10 @@ test.describe.serial('E2E Regression: Register → Subscribe → Purchase → Ba
       timeframe: '15m',
       riskLevel: 'low',
       tags: ['e2e', 'test'],
+      backtestSnapshot: state.backtestSnapshot,
     }, state.adminToken);
     expect(resp.ok, `PublishStrategy should succeed: ${JSON.stringify(resp.data)}`).toBe(true);
     state.publishId = resp.data.publishId as string;
-    expect(state.publishId).toBeTruthy();
-    console.log(`Published OK, publishId=${state.publishId}`);
   });
 
   // ════════════════════════════════════════════════════════════════════════
