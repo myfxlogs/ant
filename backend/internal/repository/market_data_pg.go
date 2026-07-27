@@ -34,16 +34,22 @@ func NewPgMarketDataStore(pool *pgxpool.Pool, log *zap.Logger) *PgMarketDataStor
 
 // ── Read paths ──────────────────────────────────────────────────────────────
 
-// GetKlines returns OHLCV bars from md_bars.
-// Replaces CH LIMIT 1 BY with DISTINCT ON for dedup.
+// GetKlines returns OHLCV bars from md_bars, deduplicated and chronologically
+// ordered by open_ts_unix_ms (oldest first).
+//
+// A bar is semantically identified by its open time — two bars with the same
+// (broker, canonical, period, open_ts) are the same bar even if their close_ts
+// differs by a few milliseconds due to clock skew between accounts. Dedup by
+// open_ts ensures one bar per timestamp, and ORDER BY open_ts guarantees the
+// chronological ordering that the backtest engine requires.
 //
 // When broker is specified, the query filters to that broker and deduplicates
-// by (canonical, period, close_ts) only — broker is a constant filter so it
+// by (canonical, period, open_ts) only — broker is a constant filter so it
 // doesn't belong in the distinct key. When broker is empty, the distinct key
 // includes broker so each broker's bars are preserved separately.
 //
 // Tiebreaker: tick_count DESC ensures that when multiple accounts write the
-// same bar (same broker, canonical, period, close_ts), the bar with the most
+// same bar (same broker, canonical, period, open_ts), the bar with the most
 // underlying ticks is selected — a quality-driven choice rather than arbitrary.
 func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, period string, from, to *time.Time, limit int32) ([]KlineBar, error) {
 	if limit <= 0 {
@@ -59,14 +65,14 @@ func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 	var distinctKey, orderClause string
 	if broker != "" {
 		// Broker is a filter constant — don't include it in the distinct key.
-		distinctKey = "canonical, period, close_ts_unix_ms"
-		orderClause = "canonical, period, close_ts_unix_ms, tick_count DESC"
+		distinctKey = "canonical, period, open_ts_unix_ms"
+		orderClause = "canonical, period, open_ts_unix_ms, tick_count DESC"
 	} else {
 		// No broker filter — distinct key includes broker to keep per-broker
 		// time series separate. This is a legacy fallback; new code should
 		// always specify a broker for deterministic results.
-		distinctKey = "broker, canonical, period, close_ts_unix_ms"
-		orderClause = "broker, canonical, period, close_ts_unix_ms, tick_count DESC"
+		distinctKey = "broker, canonical, period, open_ts_unix_ms"
+		orderClause = "broker, canonical, period, open_ts_unix_ms, tick_count DESC"
 	}
 
 	query := fmt.Sprintf(`SELECT DISTINCT ON (%s)
@@ -76,15 +82,15 @@ func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 		WHERE canonical = $1 AND period = $2 AND is_replay = 0`, distinctKey)
 
 	if from != nil {
-		query += fmt.Sprintf(` AND close_ts_unix_ms >= %s`, argN())
+		query += fmt.Sprintf(` AND open_ts_unix_ms >= %s`, argN())
 		args = append(args, from.UnixMilli())
 	} else {
 		cutoffMs := time.Now().AddDate(0, -lookbackMonths, 0).UnixMilli()
-		query += fmt.Sprintf(` AND close_ts_unix_ms >= %s`, argN())
+		query += fmt.Sprintf(` AND open_ts_unix_ms >= %s`, argN())
 		args = append(args, cutoffMs)
 	}
 	if to != nil {
-		query += fmt.Sprintf(` AND close_ts_unix_ms <= %s`, argN())
+		query += fmt.Sprintf(` AND open_ts_unix_ms <= %s`, argN())
 		args = append(args, to.UnixMilli())
 	}
 	if broker != "" {
