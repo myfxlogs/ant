@@ -55,7 +55,7 @@ func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
 	defer a.mu.Unlock()
 	fk := repository.FinalizedKey{Broker: b.Broker, Canonical: b.Canonical, Period: b.Period}
 	if set, ok := a.finalizedBars[fk]; ok {
-		if _, exists := set[b.CloseTsUnixMs]; exists {
+		if _, exists := set[b.OpenTsUnixMs]; exists {
 			barSkippedFinalized.Add(1)
 			return false
 		}
@@ -63,7 +63,7 @@ func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
 	if a.finalizedBars[fk] == nil {
 		a.finalizedBars[fk] = make(map[int64]struct{})
 	}
-	a.finalizedBars[fk][b.CloseTsUnixMs] = struct{}{}
+	a.finalizedBars[fk][b.OpenTsUnixMs] = struct{}{}
 	return true
 }
 
@@ -79,13 +79,13 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 
 		ob := a.bars[key]
 		if ob == nil {
-			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, bid: t.Bid, ask: t.Ask, startTs: t.ArrivedUnixMs, accountID: t.AccountID}
+			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, bid: t.Bid, ask: t.Ask, startTs: bucket * p.Ms, accountID: t.AccountID}
 			a.bars[key] = ob
 		} else if ob.bucket != bucket {
 			bar := &mdtick.Bar{
 				AccountID: ob.accountID,
 				Broker: t.Broker, Canonical: t.Canonical, Period: p.Name,
-				OpenTsUnixMs: ob.startTs, CloseTsUnixMs: ob.endTs,
+				OpenTsUnixMs: ob.bucket * p.Ms, CloseTsUnixMs: (ob.bucket + 1) * p.Ms,
 				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
 				Bid: ob.bid, Ask: ob.ask,
 				Volume: ob.volume, TickCount: ob.count,
@@ -95,12 +95,12 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 			if a.finalizedBars[fk] == nil {
 				a.finalizedBars[fk] = make(map[int64]struct{})
 			}
-			a.finalizedBars[fk][bar.CloseTsUnixMs] = struct{}{}
+			a.finalizedBars[fk][bar.OpenTsUnixMs] = struct{}{}
 			onBar(bar)
 			ob.bucket = bucket
 			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid; ob.bid = t.Bid; ob.ask = t.Ask; ob.accountID = t.AccountID
 			ob.volume = 0; ob.count = 0
-			ob.startTs = t.ArrivedUnixMs
+			ob.startTs = bucket * p.Ms
 		}
 		if mid.Cmp(ob.high) > 0 { ob.high = mid }
 		if mid.Cmp(ob.low) < 0 { ob.low = mid }
@@ -129,8 +129,8 @@ func (a *BarAggregator) GetOpenBars() []*mdtick.Bar {
 			Broker:        parts[0],
 			Canonical:     parts[1],
 			Period:        parts[2],
-			OpenTsUnixMs:  ob.startTs,
-			CloseTsUnixMs: ob.endTs,
+			OpenTsUnixMs:  ob.bucket * mdtick.PeriodMs(parts[2]),
+			CloseTsUnixMs: (ob.bucket + 1) * mdtick.PeriodMs(parts[2]),
 			Open:          ob.open,
 			High:          ob.high,
 			Low:           ob.low,

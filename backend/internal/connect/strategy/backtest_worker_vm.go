@@ -164,7 +164,11 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		},
 	}
 	if result.Metrics != nil {
-		totalPnl := cfg.InitialCapital.Mul(decimal.RequireFromString(result.Metrics.TotalReturn))
+		totalReturn, err := decimal.NewFromString(result.Metrics.TotalReturn)
+		if err != nil {
+			totalReturn = decimal.Zero
+		}
+		totalPnl := cfg.InitialCapital.Mul(totalReturn)
 		resp.Metrics.TotalPnlAbsolute = totalPnl.String()
 	}
 	for _, ep := range result.Equity {

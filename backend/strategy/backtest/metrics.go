@@ -8,6 +8,16 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
+// safeDecimal converts a float64 to decimal, returning "0" for NaN/Inf.
+// This prevents the panic "Cannot create a Decimal from NaN" when metrics
+// computation produces non-finite values (e.g., std=0 → sharpe=NaN).
+func safeDecimal(f float64) decimal.Decimal {
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return decimal.Zero
+	}
+	return decimal.NewFromFloat(f)
+}
+
 // CalculateMetrics produces antv1.BacktestMetrics from equity curve and trades.
 // Reuses the existing proto type defined in strategy_runtime.proto.
 func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trades []Trade) *antv1.BacktestMetrics {
@@ -25,7 +35,7 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 	// Total return
 	if initial.IsPositive() {
 		tr, _ := final.Sub(initial).Div(initial).Float64()
-		m.TotalReturn = decimal.NewFromFloat(tr).String()
+		m.TotalReturn = safeDecimal(tr).String()
 		// Annualize: (1 + total_return)^(365/days) - 1
 		duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
 		days := duration.Hours() / 24
@@ -35,7 +45,7 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 		} else {
 			annualReturn = tr
 		}
-		m.AnnualReturn = decimal.NewFromFloat(annualReturn).String()
+		m.AnnualReturn = safeDecimal(annualReturn).String()
 	}
 
 	// Max drawdown
@@ -74,14 +84,14 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 	_ = totalSwap
 
 	if m.TotalTrades > 0 {
-		m.WinRate = decimal.NewFromFloat(float64(m.WinningTrades) / float64(m.TotalTrades)).String()
+		m.WinRate = safeDecimal(float64(m.WinningTrades) / float64(m.TotalTrades)).String()
 	}
 
 	// Profit factor
 	if totalLoss.IsPositive() {
 		m.ProfitFactor = totalProfit.Div(totalLoss).String()
 	} else if totalProfit.IsPositive() {
-		m.ProfitFactor = "Infinity"
+		m.ProfitFactor = "999" // no losing trades — use large finite value, not "Infinity"
 	}
 
 	// Average profit/loss
@@ -102,7 +112,7 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 		}
 		mean := meanFloat(returns)
 		std := stdFloat(returns, mean)
-		if std > 0 {
+		if std > 0 && !math.IsNaN(mean) && !math.IsInf(mean, 0) {
 			// Annualize: Sharpe = mean/std * sqrt(trades_per_year)
 			duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
 			days := duration.Hours() / 24
@@ -113,7 +123,7 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 			} else {
 				sharpe = mean / std * math.Sqrt(float64(len(trades)))
 			}
-			m.SharpeRatio = decimal.NewFromFloat(sharpe).String()
+			m.SharpeRatio = safeDecimal(sharpe).String()
 		}
 	}
 

@@ -105,8 +105,36 @@ func (s *MarketplaceServer) fetchSnapshotByRunID(ctx context.Context, userID, ru
 
 // fetchLatestSnapshotForStrategy finds the most recent successful backtest run
 // for a given strategy template and returns its server-generated snapshot.
+// It matches by strategy_code_hash to ensure the snapshot corresponds to the
+// current version of the strategy code, preventing stale snapshots from
+// code changes.
 func (s *MarketplaceServer) fetchLatestSnapshotForStrategy(ctx context.Context, userID, templateID uuid.UUID) ([]byte, error) {
+	// Get the current code_hash from the strategy template.
+	var codeHash *string
+	if err := s.pgPool.QueryRow(ctx,
+		`SELECT code_hash FROM strategy_templates WHERE id = $1`,
+		templateID,
+	).Scan(&codeHash); err != nil {
+		return nil, fmt.Errorf("strategy template not found: %w", err)
+	}
+
 	var snapshot []byte
+	if codeHash != nil && *codeHash != "" {
+		// Match by code_hash for precise version alignment.
+		err := s.pgPool.QueryRow(ctx,
+			`SELECT backtest_snapshot FROM backtest_runs
+			 WHERE user_id = $1 AND template_id = $2 AND status = 'SUCCEEDED'
+			   AND strategy_code_hash = $3
+			   AND backtest_snapshot IS NOT NULL
+			 ORDER BY created_at DESC LIMIT 1`,
+			userID, templateID, *codeHash,
+		).Scan(&snapshot)
+		if err == nil && len(snapshot) > 0 {
+			return snapshot, nil
+		}
+	}
+
+	// Fallback: any successful run for this template (less precise but usable).
 	err := s.pgPool.QueryRow(ctx,
 		`SELECT backtest_snapshot FROM backtest_runs
 		 WHERE user_id = $1 AND template_id = $2 AND status = 'SUCCEEDED'

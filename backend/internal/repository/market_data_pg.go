@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -248,23 +249,54 @@ func (s *PgMarketDataStore) FetchActualReturn(ctx context.Context, symbol string
 
 // ── Write paths ──────────────────────────────────────────────────────────────
 
-// InsertBars batch-inserts kline bars via COPY protocol.
+// InsertBars batch-inserts kline bars with upsert (ON CONFLICT DO UPDATE).
+// With period-aligned timestamps, the same bar from different accounts has
+// identical (broker, canonical, period, open_ts, close_ts). The upsert merges
+// bars, keeping the highest tick_count and the best OHLC values.
 func (s *PgMarketDataStore) InsertBars(ctx context.Context, bars []KlineBar) error {
 	if len(bars) == 0 {
 		return nil
 	}
-	cols := []string{"broker", "symbol_raw", "canonical", "period", "open_ts_unix_ms", "close_ts_unix_ms",
-		"open", "high", "low", "close", "volume", "tick_count", "is_replay", "account_id"}
-	rows := make([][]any, len(bars))
-	for i, b := range bars {
-		rows[i] = []any{
-			b.Broker, b.Canonical, b.Canonical, b.Period,
-			int64(b.OpenTsUnixMs), int64(b.CloseTsUnixMs),
-			b.Open, b.High, b.Low, b.Close, b.Volume, int32(b.TickCount),
-			int16(0), "",
+	// Build a multi-row INSERT with ON CONFLICT DO UPDATE.
+	// Batches of 500 rows to avoid query length limits.
+	const batchSize = 500
+	for start := 0; start < len(bars); start += batchSize {
+		end := start + batchSize
+		if end > len(bars) {
+			end = len(bars)
+		}
+		batch := bars[start:end]
+		var sb strings.Builder
+		sb.WriteString(`INSERT INTO md_bars (broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
+			open, high, low, close, volume, tick_count, is_replay, account_id) VALUES `)
+		args := make([]any, 0, len(batch)*14)
+		for i, b := range batch {
+			if i > 0 {
+				sb.WriteByte(',')
+			}
+			base := i * 14
+			fmt.Fprintf(&sb, `($%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d,$%d)`,
+				base+1, base+2, base+3, base+4, base+5, base+6,
+				base+7, base+8, base+9, base+10, base+11, base+12, base+13, base+14)
+			args = append(args,
+				b.Broker, b.Canonical, b.Canonical, b.Period,
+				int64(b.OpenTsUnixMs), int64(b.CloseTsUnixMs),
+				b.Open, b.High, b.Low, b.Close, b.Volume, int32(b.TickCount),
+				int16(0), "",
+			)
+		}
+		sb.WriteString(` ON CONFLICT (broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms) DO UPDATE SET
+			tick_count = GREATEST(md_bars.tick_count, EXCLUDED.tick_count),
+			high = GREATEST(md_bars.high, EXCLUDED.high),
+			low = LEAST(md_bars.low, EXCLUDED.low),
+			volume = GREATEST(md_bars.volume, EXCLUDED.volume),
+			open = CASE WHEN EXCLUDED.tick_count >= md_bars.tick_count THEN EXCLUDED.open ELSE md_bars.open END,
+			close = CASE WHEN EXCLUDED.tick_count >= md_bars.tick_count THEN EXCLUDED.close ELSE md_bars.close END`)
+		if _, err := s.pool.Exec(ctx, sb.String(), args...); err != nil {
+			return fmt.Errorf("pg insert bars upsert: %w", err)
 		}
 	}
-	return s.copyFrom(ctx, "md_bars", cols, rows)
+	return nil
 }
 
 // InsertTicks batch-inserts ticks via COPY protocol.

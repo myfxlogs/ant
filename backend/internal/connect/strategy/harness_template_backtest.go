@@ -121,7 +121,8 @@ func main() {
 		},
 	}
 	if result.Metrics != nil {
-		totalPnl := mustDecimal(req.InitialCapital).Mul(decimal.NewFromFloat(result.Metrics.TotalReturn))
+		tr, _ := decimal.NewFromString(result.Metrics.TotalReturn)
+		totalPnl := mustDecimal(req.InitialCapital).Mul(tr)
 		resp.Metrics.TotalPnlAbsolute = totalPnl.String()
 	}
 
