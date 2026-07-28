@@ -27,9 +27,11 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
   useEffect(() => () => stopRef.current?.(), []);
 
   // Sync initialInstruction into draft when prop changes (e.g. validation errors → AI fix).
-  useEffect(() => {
-    if (initialInstruction) setDraft(initialInstruction);
-  }, [initialInstruction]);
+  const [prevInstruction, setPrevInstruction] = useState(initialInstruction);
+  if (initialInstruction !== prevInstruction) {
+    setPrevInstruction(initialInstruction);
+    setDraft(initialInstruction || '');
+  }
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 

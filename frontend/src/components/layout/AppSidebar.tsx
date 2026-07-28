@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Layout, Menu, Drawer, Dropdown } from 'antd';
 import { GlobalOutlined, LineChartOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -70,16 +70,18 @@ function SidebarMenu({ items }: { items: MenuItem[] }) {
 
   // Auto-expand submenus when navigating to a child route (e.g. browser back/forward).
   // Preserves submenus the user manually opened.
-  useEffect(() => {
+  const [prevDerivedKeys, setPrevDerivedKeys] = useState(derivedOpenKeys);
+  if (derivedOpenKeys !== prevDerivedKeys) {
+    setPrevDerivedKeys(derivedOpenKeys);
     setOpenKeys(prev => {
       const merged = new Set([...prev, ...derivedOpenKeys]);
       const next = [...merged];
       if (next.length === prev.length && next.every((k, i) => k === prev[i])) {
-        return prev; // no change → avoid re-render
+        return prev;
       }
       return next;
     });
-  }, [derivedOpenKeys]);
+  }
 
   const handleClick = ({ key }: { key: string }) => {
     // Navigate only when the clicked item itself has no children.

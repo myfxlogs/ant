@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal, Button, Steps, Typography } from 'antd';
 import { CloudServerOutlined, RobotOutlined, CrownOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -18,14 +18,14 @@ export default function WelcomeModal({ hasAccounts, hasStrategies }: Props) {
   const [open, setOpen] = useState(false);
   const { user } = useAuthStore();
 
-  useEffect(() => {
+  const [prevFlags, setPrevFlags] = useState({ hasAccounts, hasStrategies });
+  if (hasAccounts !== prevFlags.hasAccounts || hasStrategies !== prevFlags.hasStrategies) {
+    setPrevFlags({ hasAccounts, hasStrategies });
     try {
       const dismissed = localStorage.getItem(DISMISS_KEY);
-      if (dismissed) return;
-      const isNew = !hasAccounts && !hasStrategies;
-      if (isNew) setOpen(true);
+      if (!dismissed && !hasAccounts && !hasStrategies) setOpen(true);
     } catch { /* ignore */ }
-  }, [hasAccounts, hasStrategies]);
+  }
 
   const dismiss = () => {
     try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }

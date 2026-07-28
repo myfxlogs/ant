@@ -3,8 +3,15 @@ import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useAuthStore } from '@/stores/authStore';
 
+interface LoadedTemplate {
+  userId?: string;
+  isSystem?: boolean;
+  parameters?: Array<{ name?: string; type?: string; default?: string; label?: string }>;
+  code?: string;
+}
+
 interface TemplateSliceDeps {
-  handleLoadTemplate: (id: string) => Promise<unknown>;
+  handleLoadTemplate: (id: string) => Promise<LoadedTemplate | null>;
   validateCode: (code: string) => void;
   updateExtractedParams: (params: unknown[] | null) => void;
 }

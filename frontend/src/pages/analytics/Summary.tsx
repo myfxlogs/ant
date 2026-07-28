@@ -38,11 +38,14 @@ export default function Summary() {
     fetchAccounts();
   }, [fetchAccounts]);
 
-  useEffect(() => {
+  // Auto-select first account when none is selected.
+  const [prevAccounts, setPrevAccounts] = useState(accounts);
+  if (accounts !== prevAccounts) {
+    setPrevAccounts(accounts);
     if (!selectedAccount && accounts.length > 0) {
       setSelectedAccount(accounts[0].id);
     }
-  }, [accounts, selectedAccount]);
+  }
 
   const { data: analytics, isLoading: loading, error: queryError, refetch: refetchAnalytics } = useRpcQuery(
     ['analytics', 'summary', selectedAccount || '', selectedPeriod],

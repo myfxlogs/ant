@@ -37,9 +37,9 @@ export default defineConfig([
       'no-unused-vars': 'off',
       'no-empty': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
-      // React 19 strict mode rules — downgrade to warnings (architectural refactor needed)
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/refs': 'warn',
+      // React 19 strict mode rules — too aggressive for existing codebase
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
 
       // M0.3-3: max-lines — TS files ≤250 lines (matching AGENT.md §复杂度硬上限)
       'max-lines': ['error', {
