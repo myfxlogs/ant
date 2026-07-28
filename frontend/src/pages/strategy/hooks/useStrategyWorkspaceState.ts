@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useStrategyCode } from './useStrategyCode';
 import { useBacktestRunner } from '@/components/backtest/useBacktestRunner';
 import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab } from '@/components/backtest/useBacktestRunner';
@@ -9,6 +8,7 @@ import { useAIWorkflow } from './useAIWorkflow';
 import { useHistoryState } from './useHistoryState';
 import { useAccountSlice } from './useAccountSlice';
 import { useTemplateSlice } from './useTemplateSlice';
+import { useLayoutSlice } from './useLayoutSlice';
 import { useWorkspaceEffects } from './useWorkspaceEffects';
 
 export type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab, QuickTradePosition, RecentTrade };
@@ -16,16 +16,7 @@ export { DATE_PRESETS } from '@/components/backtest/useBacktestRunner';
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 
 export function useStrategyWorkspaceState() {
-  const rightTab = useWorkspaceStore(s => s.rightTab);
-  const setRightTab = useWorkspaceStore(s => s.setRightTab);
-  const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
-  const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
-  const bottomPanelCollapsed = useWorkspaceStore(s => s.bottomPanelCollapsed);
-  const setBottomPanelCollapsed = useWorkspaceStore(s => s.setBottomPanelCollapsed);
-  const quickTradeCollapsed = useWorkspaceStore(s => s.quickTradeCollapsed);
-  const setQuickTradeCollapsed = useWorkspaceStore(s => s.setQuickTradeCollapsed);
-  const positionsPanelVisible = useWorkspaceStore(s => s.positionsPanelVisible);
-  const setPositionsPanelVisible = useWorkspaceStore(s => s.setPositionsPanelVisible);
+  const layout = useLayoutSlice();
   const account = useAccountSlice();
   const btCtx = useBacktestRunner();
   const onValidateResult = useCallback(
@@ -43,7 +34,7 @@ export function useStrategyWorkspaceState() {
   const qt = useQuickTradeData(account.accountId, account.symbol);
   const [btCollapsed, setBtCollapsed] = useState(false);
   const history = useHistoryState(account.accountId);
-  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setRightTab('chat'));
+  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => layout.setRightTab('chat'));
   useWorkspaceEffects({ code: codeCtx.code, setCode: codeCtx.setCode, loadedTemplate: codeCtx.loadedTemplate, resetBacktestStatus: btCtx.resetStatus, activeAccounts: account.activeAccounts, accountId: account.accountId, setAccountId: account.setAccountId, setSymbol: account.setSymbol, fetchAccounts: account.fetchAccounts, loadTemplates: codeCtx.loadTemplates, datePreset: btCtx.datePreset, applyDatePreset: btCtx.applyDatePreset, financialsReady: qt.financialsReady, fetchTradeHistory: qt.fetchTradeHistory });
   const accountSlice = useMemo(() => ({ ...account, accountInfo: qt.accountInfo }), [account, qt.accountInfo]);
   const templatesSlice = useMemo(() => ({ list: codeCtx.templates, loading: codeCtx.templatesLoading, ...templates }), [codeCtx.templates, codeCtx.templatesLoading, templates]);
@@ -51,7 +42,7 @@ export function useStrategyWorkspaceState() {
   const tuningSlice = useMemo(() => ({ subTab: btCtx.tuning.subTab, setSubTab: btCtx.tuning.setSubTab, method: btCtx.tuning.tuneMethod, setMethod: btCtx.tuning.setTuneMethod, sweepDimensions: btCtx.tuning.sweepDimensions, toggleDimension: btCtx.tuning.toggleDimension, enabledDims: btCtx.tuning.enabledSweepDims, cartesianSize: btCtx.tuning.cartesianSize, running: btCtx.tuning.tuningRunning, run: handleRunTuning }), [btCtx.tuning, handleRunTuning]);
   const gateSlice = useMemo(() => ({ loading: btCtx.gate.gateLoading, gates: btCtx.gate.gateGates, summary: btCtx.gate.gateSummary, error: btCtx.gate.gateError, run: btCtx.gate.runGate }), [btCtx.gate]);
   const quickTradeSlice = useMemo(() => ({ positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition }), [qt.positionCount, qt.allPositions, qt.qtPositions, qt.qtRecentTrades, qt.handleClosePosition]);
-  const layoutSlice = useMemo(() => ({ rightTab, setRightTab, leftSidebarCollapsed, setLeftSidebarCollapsed, bottomPanelCollapsed, setBottomPanelCollapsed, quickTradeCollapsed, setQuickTradeCollapsed, positionsPanelVisible, setPositionsPanelVisible }), [rightTab, setRightTab, leftSidebarCollapsed, setLeftSidebarCollapsed, bottomPanelCollapsed, setBottomPanelCollapsed, quickTradeCollapsed, setQuickTradeCollapsed, positionsPanelVisible, setPositionsPanelVisible]);
+  const layoutSlice = layout;
   const aiSlice = useMemo(() => ({ optimize: ai.handleAIOptimize, optimizePrompt: ai.aiOptimizePrompt, askForValidation: ai.handleAskAIForValidation, chatAutoApply: ai.chatAutoApply, autoFixing: ai.autoFixing, autoFix: ai.handleAutoFix, autoFixDebug: ai.autoFixDebug, dismissDebug: ai.dismissDebug, applyTunedParams: (code: string) => { codeCtx.setCode(code); } }), [ai, codeCtx.setCode]);
 
   return {

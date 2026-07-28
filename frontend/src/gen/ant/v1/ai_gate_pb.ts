@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ai_gate.proto.
  */
 export const file_ai_gate: GenFile = /*@__PURE__*/
-  fileDesc("Cg1haV9nYXRlLnByb3RvEgZhbnQudjEi2gEKGFJ1bkdhdGVFdmFsdWF0aW9uUmVxdWVzdBIXCg9iYWNrdGVzdF9ydW5faWQYASABKAkSEgoKZXhwcmVzc2lvbhgCIAEoCRIUCgxudW1fYXR0ZW1wdHMYAyABKAUSEgoKcGFwZXJfZGF5cxgEIAEoBRIVCg1wYXBlcl9uZXRfcG5sGAUgASgJEhgKEHBhcGVyX25ldF9yZXR1cm4YBiABKAESGwoTYmFja3Rlc3RfbmV0X3JldHVybhgHIAEoARIZChFwYXBlcl90cmFkZV9jb3VudBgIIAEoBSJoChRHYXRlRXZhbHVhdGlvblVwZGF0ZRIgCgRnYXRlGAEgASgLMhIuYW50LnYxLkdhdGVSZXN1bHQSLgoJY29tcGxldGVkGAIgASgLMhsuYW50LnYxLkdhdGVQaXBlbGluZVN1bW1hcnkibwoKR2F0ZVJlc3VsdBIMCgRnYXRlGAEgASgJEg4KBnBhc3NlZBgCIAEoCBIOCgZyZWFzb24YAyABKAkSDQoFc2NvcmUYBCABKAESEwoLZHVyYXRpb25fbXMYBSABKAMSDwoHc2tpcHBlZBgGIAEoCCJlChNHYXRlUGlwZWxpbmVTdW1tYXJ5Eg4KBnBhc3NlZBgBIAEoCBISCgpmaXJzdF9mYWlsGAIgASgJEg8KB3N1bW1hcnkYAyABKAkSGQoRdG90YWxfZHVyYXRpb25fbXMYBCABKAMyYAoLR2F0ZVNlcnZpY2USUQoNUnVuRXZhbHVhdGlvbhIgLmFudC52MS5SdW5HYXRlRXZhbHVhdGlvblJlcXVlc3QaHC5hbnQudjEuR2F0ZUV2YWx1YXRpb25VcGRhdGUwAUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("Cg1haV9nYXRlLnByb3RvEgZhbnQudjEi2gEKGFJ1bkdhdGVFdmFsdWF0aW9uUmVxdWVzdBIXCg9iYWNrdGVzdF9ydW5faWQYASABKAkSEgoKZXhwcmVzc2lvbhgCIAEoCRIUCgxudW1fYXR0ZW1wdHMYAyABKAUSEgoKcGFwZXJfZGF5cxgEIAEoBRIVCg1wYXBlcl9uZXRfcG5sGAUgASgJEhgKEHBhcGVyX25ldF9yZXR1cm4YBiABKAESGwoTYmFja3Rlc3RfbmV0X3JldHVybhgHIAEoARIZChFwYXBlcl90cmFkZV9jb3VudBgIIAEoBSJoChRHYXRlRXZhbHVhdGlvblVwZGF0ZRIgCgRnYXRlGAEgASgLMhIuYW50LnYxLkdhdGVSZXN1bHQSLgoJY29tcGxldGVkGAIgASgLMhsuYW50LnYxLkdhdGVQaXBlbGluZVN1bW1hcnkibwoKR2F0ZVJlc3VsdBIMCgRnYXRlGAEgASgJEg4KBnBhc3NlZBgCIAEoCBIOCgZyZWFzb24YAyABKAkSDQoFc2NvcmUYBCABKAESEwoLZHVyYXRpb25fbXMYBSABKAMSDwoHc2tpcHBlZBgGIAEoCCJlChNHYXRlUGlwZWxpbmVTdW1tYXJ5Eg4KBnBhc3NlZBgBIAEoCBISCgpmaXJzdF9mYWlsGAIgASgJEg8KB3N1bW1hcnkYAyABKAkSGQoRdG90YWxfZHVyYXRpb25fbXMYBCABKAMiMwoOR2F0ZVJlc3VsdExpc3QSIQoFZ2F0ZXMYASADKAsyEi5hbnQudjEuR2F0ZVJlc3VsdDJgCgtHYXRlU2VydmljZRJRCg1SdW5FdmFsdWF0aW9uEiAuYW50LnYxLlJ1bkdhdGVFdmFsdWF0aW9uUmVxdWVzdBocLmFudC52MS5HYXRlRXZhbHVhdGlvblVwZGF0ZTABQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.RunGateEvaluationRequest
@@ -197,6 +197,26 @@ export type GatePipelineSummary = Message<"ant.v1.GatePipelineSummary"> & {
  */
 export const GatePipelineSummarySchema: GenMessage<GatePipelineSummary> = /*@__PURE__*/
   messageDesc(file_ai_gate, 3);
+
+/**
+ * GateResultList is a wrapper for persisting all individual gate results.
+ * Used by gate_evaluations.gate_results BYTEA column for reconnect replay.
+ *
+ * @generated from message ant.v1.GateResultList
+ */
+export type GateResultList = Message<"ant.v1.GateResultList"> & {
+  /**
+   * @generated from field: repeated ant.v1.GateResult gates = 1;
+   */
+  gates: GateResult[];
+};
+
+/**
+ * Describes the message ant.v1.GateResultList.
+ * Use `create(GateResultListSchema)` to create a new message.
+ */
+export const GateResultListSchema: GenMessage<GateResultList> = /*@__PURE__*/
+  messageDesc(file_ai_gate, 4);
 
 /**
  * GateService evaluates AI-generated strategies through the 7-gate pipeline.

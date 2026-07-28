@@ -655,7 +655,9 @@ const Base = {
       "signal": "Signal",
       "strategy_execution": "Execution",
       "system": "System",
-      "trade": "Trade"
+      "trade": "Trade",
+      "auto_fix_started": "Auto-Fix",
+      "auto_fix_stopped": "Auto-Fix Stopped"
     },
     "all": "All",
     "clearAll": "Clear all",
@@ -980,7 +982,7 @@ const Base = {
     "publish": {
       "priceModel": {
         "free": "Free",
-        "monthly": "Monthly Subscription",
+        "subscription": "Monthly Subscription",
         "once": "One-Time Purchase",
         "label": "Pricing"
       },

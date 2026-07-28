@@ -53,3 +53,9 @@ message GatePipelineSummary {
   string summary = 3;        // human-readable summary
   int64 total_duration_ms = 4;
 }
+
+// GateResultList is a wrapper for persisting all individual gate results.
+// Used by gate_evaluations.gate_results BYTEA column for reconnect replay.
+message GateResultList {
+  repeated GateResult gates = 1;
+}

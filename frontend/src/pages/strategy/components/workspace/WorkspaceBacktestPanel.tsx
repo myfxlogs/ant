@@ -42,6 +42,7 @@ interface Props {
   gateLoading: boolean; gateGates: GateResult[];
   gateSummary: GatePipelineSummary | null; gateError: string;
   onRunGate: () => void;
+  fixDepth?: number;
 }
 
 function pct(v: number | undefined): string {
@@ -69,7 +70,7 @@ export default function WorkspaceBacktestPanel({
   enabledSweepDims, cartesianSize,
   code, onApplyTunedParams,
   tuningRunning, canRunTuning, onRunTuning,
-  gateLoading, gateGates, gateSummary, gateError, onRunGate,
+  gateLoading, gateGates, gateSummary, gateError, onRunGate, fixDepth,
 }: Props) {
   const { t } = useTranslation();
 
@@ -247,6 +248,7 @@ export default function WorkspaceBacktestPanel({
           loading={gateLoading} gates={gateGates} summary={gateSummary}
           error={gateError} status={status} canRun={status === 'completed'}
           onRun={onRunGate}
+          fixDepth={fixDepth}
         />
       )}
     </div>

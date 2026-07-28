@@ -43,21 +43,21 @@ var GateOrder = []GateName{
 
 // GateStatus represents a single gate's evaluation result.
 type GateStatus struct {
-	Gate     GateName `json:"gate"`
-	Passed   bool     `json:"passed"`
-	Skipped  bool     `json:"skipped,omitempty"`   // true when gate is skipped (no data)
-	Reason   string   `json:"reason,omitempty"`
-	Score    float64  `json:"score,omitempty"`
-	Duration int64    `json:"duration_ms"`
+	Gate     GateName
+	Passed   bool
+	Skipped  bool   // true when gate is skipped (no data)
+	Reason   string
+	Score    float64
+	Duration int64
 }
 
 // PipelineResult is the aggregate result of running the full 7-gate pipeline.
 type PipelineResult struct {
-	Passed        bool         `json:"passed"`
-	Gates         []GateStatus `json:"gates"`
-	FirstFail     GateName     `json:"first_fail,omitempty"`
-	Summary       string       `json:"summary"`
-	TotalDuration int64        `json:"total_duration_ms"`
+	Passed        bool
+	Gates         []GateStatus
+	FirstFail     GateName
+	Summary       string
+	TotalDuration int64
 }
 
 // PipelineInput bundles all the data needed for gate evaluation.
@@ -70,8 +70,9 @@ type PipelineInput struct {
 	ExistingSignals map[string][]SignalDirection  // existing live strategies' signals
 }
 
-// Pipeline evaluates a strategy through all 7 gates in order.
-// Stops at the first failing (non-skipped) gate.
+// Pipeline evaluates a strategy through all 7 gates.
+// All gates are evaluated (no short-circuit) so the user sees the complete picture.
+// result.Passed is false if any non-skipped gate fails; FirstFail records the first failure.
 func Pipeline(input PipelineInput) PipelineResult {
 	startedAt := time.Now()
 	result := PipelineResult{Passed: true}
@@ -100,17 +101,17 @@ func Pipeline(input PipelineInput) PipelineResult {
 		status.Duration = time.Since(gateStart).Milliseconds()
 		result.Gates = append(result.Gates, status)
 
-		// Skipped gates don't cause pipeline failure.
-		if !status.Passed && !status.Skipped {
+		// Record first failure but continue evaluating remaining gates.
+		if !status.Passed && !status.Skipped && result.Passed {
 			result.Passed = false
 			result.FirstFail = gate
 			result.Summary = status.Reason
-			result.TotalDuration = time.Since(startedAt).Milliseconds()
-			return result
 		}
 	}
 
-	result.Summary = "all 7 gates passed"
+	if result.Passed {
+		result.Summary = "all 7 gates passed"
+	}
 	result.TotalDuration = time.Since(startedAt).Milliseconds()
 	return result
 }
@@ -148,7 +149,7 @@ func hasOperator(expr string) bool {
 func evalCompliance(input PipelineInput) GateStatus {
 	expr := strings.TrimSpace(input.Expression)
 	if expr == "" {
-		return GateStatus{Gate: GateCompliance, Passed: false, Reason: "empty DSL expression"}
+		return GateStatus{Gate: GateCompliance, Passed: true, Skipped: true, Reason: "no DSL expression — skipped for MQL/code strategy"}
 	}
 	if !hasBalancedBrackets(expr) {
 		return GateStatus{Gate: GateCompliance, Passed: false, Reason: "unbalanced brackets in expression"}
@@ -160,6 +161,10 @@ func evalCompliance(input PipelineInput) GateStatus {
 }
 
 func evalLookAhead(expression string) GateStatus {
+	expr := strings.TrimSpace(expression)
+	if expr == "" {
+		return GateStatus{Gate: GateLookAhead, Passed: true, Skipped: true, Reason: "no DSL expression — skipped for MQL/code strategy"}
+	}
 	s := NewLookAheadScanner()
 	scanResult := s.Scan(expression)
 	if !scanResult.Passed {

@@ -83,7 +83,7 @@ func setupStrategyAndTrading(
 
 	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg, guard)
 	strategyExecServer := configureStrategyExecution(pool, backtestRunRepo, marketDataRepo, mthubSvc, hub,
-		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, quotaChecker, cfg, log)
+		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, quotaChecker, mktplaceSvc, cfg, log)
 	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
 		withSency(otelInterceptor, authInterceptor)))
 

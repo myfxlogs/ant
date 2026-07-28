@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS marketplace_strategies (
     publisher_id    UUID NOT NULL REFERENCES users(id),
     title           TEXT NOT NULL,
     description     TEXT NOT NULL,
-    price_model     VARCHAR(16) NOT NULL DEFAULT 'free', -- free, monthly, once
+    price_model     VARCHAR(16) NOT NULL DEFAULT 'free', -- free, subscription, once
     price_amount    NUMERIC(10,2),                        -- NULL for free
     asset_class     TEXT NOT NULL,                        -- forex, crypto, commodity, index
     symbols         TEXT[] NOT NULL DEFAULT '{}',         -- canonical symbols

@@ -52,6 +52,7 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 	if r.StrategyID != nil {
 		out.StrategyId = proto.String(r.StrategyID.String())
 	}
+	out.FixDepth = int32(r.FixDepth)
 	// Deserialize config snapshot to proto.
 	// DiscardUnknown prevents stale fields from older proto schemas
 	// (e.g. commission/leverage as double) from being preserved as

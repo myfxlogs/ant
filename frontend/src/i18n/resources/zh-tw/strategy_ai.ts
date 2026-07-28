@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_ai_zh-cn.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_ai_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyAi = {
   "strategy": {

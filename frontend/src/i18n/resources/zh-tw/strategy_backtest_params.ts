@@ -1,4 +1,4 @@
-// Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_zh-cn.textproto
+// Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyBacktestParams = {
   "strategy": {
@@ -8,19 +8,19 @@ const StrategyBacktestParams = {
         "liveAligned": "實盤對齊"
       },
       "backtestFailed": "回測失敗",
-      "both": "雙向",
+      "both": "双向",
       "capital": "本金",
       "commission": "手續費",
-      "currentDraft": "📝 當前草稿",
+      "currentDraft": "📝 当前草稿",
       "dateRange": "日期範圍",
       "defaultsLoaded": "預設值已載入",
-      "defaultsReset": "已恢復出廠預設值",
+      "defaultsReset": "已復原出廠預設值",
       "defaultsSaved": "預設值已儲存",
       "direction": "方向",
       "endDate": "結束日期",
       "enterCodeAndSymbol": "請輸入策略程式碼並選擇品種",
       "eventDrivenMode": "Run(context) 事件驅動",
-      "execution": "執行引數",
+      "execution": "執行參數",
       "history": "回測歷史",
       "leverage": "槓桿",
       "long": "↑ 做多",
@@ -28,12 +28,12 @@ const StrategyBacktestParams = {
       "run": "▶ 執行",
       "runtimeMode": "執行模式",
       "settingsLoad": "載入我的預設值",
-      "settingsReset": "恢復出廠預設",
+      "settingsReset": "復原出廠預設",
       "settingsSave": "儲存為我的預設值",
       "short": "↓ 做空",
       "strategy": "策略",
-      "strategyParams": "策略引數",
-      "slippage": "滑點",
+      "strategyParams": "策略參數",
+      "slippage": "滑價",
       "startDate": "開始日期",
       "strictMode": "嚴格模式",
       "strictModeOff": "關閉",

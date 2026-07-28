@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { Card, Tag, Typography, Space, Button, Popconfirm, message } from 'antd';
-import { RocketOutlined, ShareAltOutlined, DeleteOutlined } from '@ant-design/icons';
+import { RocketOutlined, ShareAltOutlined, DeleteOutlined, ForkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -47,6 +47,27 @@ function StrategyCardImpl({ card }: Props) {
   const [publishLoading, setPublishLoading] = useState(false);
 
   const handleDetail = () => navigate(`/strategy/view/${card.id}`);
+
+  const handleFork = async () => {
+    try {
+      const tpl = await strategyApi.getTemplate(card.id);
+      const draft = await strategyApi.createTemplateDraft({
+        name: `${tpl.name || 'Strategy'} (Fork)`,
+      });
+      if (!draft.id) throw new Error('Draft creation returned empty id');
+      await strategyApi.updateTemplateDraft({
+        id: draft.id,
+        name: `${tpl.name || 'Strategy'} (Fork)`,
+        description: tpl.description,
+        code: tpl.code,
+        tags: tpl.tags,
+      });
+      message.success(t('strategy.templates.gallery.forkSuccess', { defaultValue: 'Forked to new strategy' }));
+      navigate(`/strategy/${draft.id}/edit`);
+    } catch (e) {
+      message.error(e instanceof Error ? e.message : t('strategy.templates.gallery.forkFailed', { defaultValue: 'Fork failed' }));
+    }
+  };
 
   const handlePublish = async () => {
     try {
@@ -151,6 +172,11 @@ function StrategyCardImpl({ card }: Props) {
         {isOwner && isPublished && (
           <Button size="small" icon={<ShareAltOutlined />} onClick={handleUnpublish}>
             {t('strategy.templates.gallery.unpublish', { defaultValue: 'Unpublish' })}
+          </Button>
+        )}
+        {(isOwner || isSystem) && (
+          <Button size="small" icon={<ForkOutlined />} onClick={handleFork}>
+            {t('strategy.templates.gallery.fork', { defaultValue: 'Fork' })}
           </Button>
         )}
         {isOwner && (

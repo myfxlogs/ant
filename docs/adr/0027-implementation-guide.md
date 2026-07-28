@@ -1,6 +1,6 @@
 # ADR-0027 落地实施指南
 
-- **状态**：三方共识已达成（见 `0027-decision-matrix.md`）
+- **状态**：**已完成**（2026-07-27）。Phase A-D + E1/E2 全部落地。三方共识见 `0027-decision-matrix.md`，设计依据见 `0027-v2-strategy-module-redesign.md`。
 - **策略**：一步到位，不做过渡。Gallery 首版即用 `ListStrategyCards`，Library 同日删除。所有工作在最终形态上一次完成。
 
 ## 并行策略

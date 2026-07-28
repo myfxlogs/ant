@@ -1147,7 +1147,7 @@
     "strategy_live_waiting_signals": "strategy.live.waitingSignals",
     "strategy_schedule_max_positions_placeholder": "strategy.schedule.maxPositionsPlaceholder",
     "marketplace_publish_price_model_free": "marketplace.publish.priceModel.free",
-    "marketplace_publish_price_model_monthly": "marketplace.publish.priceModel.monthly",
+    "marketplace_publish_price_model_subscription": "marketplace.publish.priceModel.subscription",
     "marketplace_publish_price_model_once": "marketplace.publish.priceModel.once",
     "marketplace_publish_return": "marketplace.publish.return",
     "marketplace_publish_win_rate": "marketplace.publish.winRate",

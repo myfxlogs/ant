@@ -136,6 +136,7 @@ export const strategyRuntimeApi = {
     templateDraftId?: string;
     extraSymbols?: string[];
     strategyId?: string;
+    autoGate?: boolean;
     executionConfig?: {
       commission: number;
       slippage: number;
@@ -161,6 +162,7 @@ export const strategyRuntimeApi = {
       templateDraftId: params.templateDraftId,
       extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),
       strategyId: params.strategyId,
+      autoGate: params.autoGate ?? false,
       executionConfig: params.executionConfig ? {
         commission: params.executionConfig.commission,
         slippage: params.executionConfig.slippage,

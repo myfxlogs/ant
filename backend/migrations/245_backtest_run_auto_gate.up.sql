@@ -1,0 +1,1 @@
+ALTER TABLE backtest_runs ADD COLUMN IF NOT EXISTS auto_gate BOOLEAN NOT NULL DEFAULT false;

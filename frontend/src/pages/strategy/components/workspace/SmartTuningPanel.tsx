@@ -228,10 +228,18 @@ export default function SmartTuningPanel({
               { title: t(OVERFIT_KEY), dataIndex: 'isOverfit', width: 70,
                 render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 9, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 10 }}>-</span> },
               ...(onApplyToCode ? [{
-                title: '', width: 60,
+                title: '', width: 120,
                 render: (_: unknown, record: StrategyExperimentCandidate) => (
-                  <Button size="small" type="link" style={{ fontSize: 10 }}
-                    onClick={() => applyParamsToCode(record)}>{t(APPLY_KEY)}</Button>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <Button size="small" type="link" style={{ fontSize: 10 }}
+                      onClick={() => applyParamsToCode(record)}>{t(APPLY_KEY)}</Button>
+                    {record.backtestRunId && (
+                      <Button size="small" type="link" style={{ fontSize: 10 }}
+                        onClick={() => window.open(`/strategy?runId=${record.backtestRunId}`, '_blank')}>
+                        {t('strategy.tuning.qualityGate', { defaultValue: 'Gate' })}
+                      </Button>
+                    )}
+                  </div>
                 ),
               }] : []),
             ]} />

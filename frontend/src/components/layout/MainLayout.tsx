@@ -43,7 +43,7 @@ export default function MainLayout() {
       key: 'strategy-group', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategy'),
       children: [
         { key: '/strategy', icon: <BookOutlined size={20} stroke={1.5} />, label: t('strategy.templates.gallery.title', { defaultValue: 'Strategies' }) },
-        { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
+        { key: '/strategy/new', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
         { key: '/strategy/live', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.strategyLive', { defaultValue: 'Live Monitor' }) },
         { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} stroke={1.5} />, label: t('menu.marketTools') },
       ],

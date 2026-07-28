@@ -157,6 +157,7 @@ type BacktestRun struct {
 	IsSucceeded     bool                     `protobuf:"varint,19,opt,name=is_succeeded,json=isSucceeded,proto3" json:"is_succeeded,omitempty"`
 	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,20,opt,name=execution_config,json=executionConfig,proto3,oneof" json:"execution_config,omitempty"`
 	StrategyId      *string                  `protobuf:"bytes,21,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"` // imported_strategies.id (nullable)
+	FixDepth        int32                    `protobuf:"varint,22,opt,name=fix_depth,json=fixDepth,proto3" json:"fix_depth,omitempty"`            // auto-fix iteration depth (0 = original run, 1+ = auto-fixed)
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -338,11 +339,18 @@ func (x *BacktestRun) GetStrategyId() string {
 	return ""
 }
 
+func (x *BacktestRun) GetFixDepth() int32 {
+	if x != nil {
+		return x.FixDepth
+	}
+	return 0
+}
+
 var File_backtest_run_proto protoreflect.FileDescriptor
 
 const file_backtest_run_proto_rawDesc = "" +
 	"\n" +
-	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\xc5\b\n" +
+	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\xe2\b\n" +
 	"\vBacktestRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -373,7 +381,8 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\fis_succeeded\x18\x13 \x01(\bR\visSucceeded\x12O\n" +
 	"\x10execution_config\x18\x14 \x01(\v2\x1f.ant.v1.BacktestExecutionConfigH\bR\x0fexecutionConfig\x88\x01\x01\x12$\n" +
 	"\vstrategy_id\x18\x15 \x01(\tH\tR\n" +
-	"strategyId\x88\x01\x01B\r\n" +
+	"strategyId\x88\x01\x01\x12\x1b\n" +
+	"\tfix_depth\x18\x16 \x01(\x05R\bfixDepthB\r\n" +
 	"\v_dataset_idB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\x19\n" +

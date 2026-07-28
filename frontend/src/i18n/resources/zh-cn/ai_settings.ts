@@ -97,7 +97,7 @@ const AiSettings = {
           "step2": "登录/注册后进入控制台，创建并复制 API Key",
           "title": "如何获取智谱 API Key"
         },
-        "default": "当前提供商：{{provider}}。前往该提供商\\\\\\\\\\\\\\\\",
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
         "modelSuggestionDeepSeek": "模型建议: 在\"模型\"下拉中选择 `deepseek-chat`",
         "modelSuggestionZhipu": "模型建议: 在\"模型\"下拉中选择 `glm-4-flash` / `glm-4`",
         "selectProviderHint": "选择一个 AI 提供商后，会在这里显示如何申请 API Key。",

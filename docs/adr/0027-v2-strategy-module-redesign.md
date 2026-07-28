@@ -1,6 +1,6 @@
 # ADR-0027 v2 · 策略模块前端重构（修订版 — Cascade 提案）
 
-- **状态**：Proposed（与 `0027-strategy-gallery-redesign.md`「GLM 版」并列，供三方评审）
+- **状态**：**Implemented** — 2026-07-27。Phase A-D + E1/E2 全部完成部署。定稿决议见 §14；本文取代 `0027-strategy-gallery-redesign.md`（GLM 版）为实施依据。
 - **日期**：2026-07-23
 - **决策者**：Team（Cascade / Claude / GLM 三方讨论）
 - **关联**：本文件是 `0027-strategy-gallery-redesign.md` 的修订提案，保留其宏观骨架，修正三处设计并补齐其未覆盖的架构层。
@@ -179,26 +179,39 @@ export const useWorkspace = create<CodeSlice & LayoutSlice /* & ... */>()(
 
 ### 4.7 后端新增：`ListStrategyCards` 聚合 RPC
 
-```proto
-// proto/ant/v1/strategy.proto (新增)
-message StrategyCard {
-  string id = 1;
-  string name = 2;
-  repeated string tags = 3;
-  bool is_system = 4;
-  bool is_public = 5;
-  // 反范式化摘要（来自最近一次成功回测）
-  repeated double equity_sparkline = 6; // 归一化点，画迷你曲线
-  string win_rate = 7;    // decimal string
-  string max_drawdown = 8;
-  string profit_factor = 9;
-  string sharpe = 10;
-  int32 running_schedules = 11;
-  int64 updated_at_ms = 12;
-}
-message ListStrategyCardsRequest { string filter = 1; string sort = 2; string search = 3; }
-message ListStrategyCardsResponse { repeated StrategyCard cards = 1; }
+> **已实现** — 以下 proto 为实际实现版本（2026-07-27），取代原始设计草稿。实现修正了原草稿中 `repeated double equity_sparkline` 违反项目精度红线的问题，改为 `repeated string`（decimal string）。
 
+```proto
+// proto/ant/v1/strategy_template_entity.proto (已实现)
+message StrategyCard {
+  string id = 1;                    // template id
+  string user_id = 2;               // template owner user id
+  string name = 3;
+  string description = 4;
+  repeated string tags = 5;
+  bool is_system = 6;
+  bool is_public = 7;
+  int32 use_count = 8;
+  google.protobuf.Timestamp created_at = 9;
+  repeated string sparkline = 10;   // equity curve decimal strings (≤32 points)
+  string win_rate = 11;             // decimal string
+  string max_drawdown = 12;
+  string profit_factor = 13;
+  string sharpe_ratio = 14;
+  int32 running_schedules = 15;
+  string backtest_run_id = 16;      // empty if no successful backtest
+  bool is_marketplace_published = 17;
+}
+// proto/ant/v1/strategy_template_requests.proto (已实现)
+message ListStrategyCardsRequest {
+  string filter = 1;  // "all" | "mine" | "preset"
+  string sort = 2;    // "recent" | "return" | "risk" | "usage"
+  string search = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+message ListStrategyCardsResponse { repeated StrategyCard cards = 1; int32 total = 2; }
+// proto/ant/v1/strategy.proto (已实现)
 service StrategyService {
   rpc ListStrategyCards(ListStrategyCardsRequest) returns (ListStrategyCardsResponse);
 }
@@ -286,4 +299,385 @@ Owner 态度是「最优则推倒亦可」。诚实的最优答案是**分层不
 2. 创建流：起点 Modal（本 v2）vs 4 步向导（GLM）——哪个对真实新手更友好？是否需要 A/B？
 3. Detail 的回测/部署「轻量默认档」边界：默认档到什么程度就该强制跳 Workspace？
 4. 路由：`/strategy/view/:id` vs 直接复用/合并 `StrategySharePage`（Detail 与公开分享页是否应统一为同一页的登录/未登录两态）？
-5. `ListStrategyCards` 的 sparkline 数据来源：取「最近一次成功回测」还是「用户置顶的基准回测」？
+5. ~~`ListStrategyCards` 的 sparkline 数据来源~~ → **已裁决（§12 A4）**：Phase A = 「最近一次成功回测」；「用户置顶基准回测」延后为后续增强，不进 Phase A。
+6. **L3 回测→质量门管线的编排**：维持客户端编排（灵活）还是引入服务端自动链接 / `EvaluationSession`（自动、可审计）？见 §11。
+
+---
+
+## 11. L3 深潜：回测 → 质量门管线的架构评估
+
+本节精确定义 §2.5 中「L3 复用」的范围，并评估这条管线的编排是否最优。**结论：功能块切分正确，但编排层不是最优。** 与 L2 同源——零件对，编排糙。
+
+### 11.1 管线的 5 个功能块（前端 `useBacktestRunner` 编排）
+
+| # | 功能块 | 后端调用 | 交互模型 | 产出 |
+|---|--------|----------|----------|------|
+| 1 | 代码验证 & 参数/维度抽取 | `codeAssistApi.validateExtended` | 请求/响应 | `parameterEntries` / `sweepDimensions` / `strategyDirectives` |
+| 2 | 参数配置 | 本地 | — | 标准参数 + 日期区间 + 策略参数值 |
+| 3 | 回测执行 | `StrategyRuntimeService.StartBacktestRun` + `watchBacktestRun` | SSE watch | `backtest_run_id` + metrics + trades + 防篡改快照 |
+| 4 | 参数寻优 | `StrategyExperimentService.Submit` | 异步 job | experiment id（内部批量跑回测） |
+| 5 | 质量门评估 | `GateService.RunEvaluation`（**服务端 7 门内部管线**） | SSE stream | 逐门 `GateResult` + `GatePipelineSummary` |
+
+数据流：`1 → 2 → 3 → 5`（主线，5 依赖 3 的 `backtest_run_id`）；`4` 为并行支线（吃 1/2 的输出，内部反复触发 3）。
+
+### 11.2 已经做对的（最优部分，须保留）
+
+- **块职责清晰、后端服务边界合理**（`codeAssist` / `strategyRuntime` / `strategyExperiment` / `gate` 四个独立领域服务）。
+- **质量门本身是服务端 7 门管线 + SSE 流式**，编排内聚在服务端，客户端只订阅——这一段是最优形态。
+- **`backtest_run_id` + 防篡改快照 = 事实上的共享工件**：不仅质量门按它取快照（要求 `SUCCEEDED`），**Marketplace 发布 `PublishStrategyRequest` 也复用同一 `backtest_run_id` 读同一快照**。即「一次可信回测」已是跨 回测/质量门/发布 三处的共享、可审计锚点。**这是既有的良好设计，L3 复用必须保留它。**
+- 全推送（块 3/5 SSE，块 4 异步 job），符合 push-first。
+
+### 11.3 不最优的 3 处（编排层，改进目标）
+
+1. **「回测成功 → 质量门」的因果链只活在客户端胶水里。** 服务端不自动串联：前端须等回测 SSE 到达 terminal，再手动 `runGate(backtest_run_id)`。用户在两步之间离开页面则链断。管线语义托管在客户端，脆。
+2. **寻优（块 4）是孤岛。** experiment 结果不回流到主线的 `metrics`/gate 视图，也不产出一个可直接被质量门/发布消费的 `backtest_run_id`。「寻优 → 选最优 → 对最优跑质量门 / 发布」这个本该闭环的流程被切成三段，靠人肉搬运。
+3. **前端 `useBacktestRunner`（270 行）把编排与纯 UI 状态混在一起**（`panelHeight`/`dragging`/`activeTab`/`modalOpen`），且接缝处类型松（`result: any`、`executionAssumptions: any`、`updateExtractedParams` 里 `typeof pj === 'string'` 再 `JSON.parse`）。
+
+> 注：§2.5 曾说「缺统一评估身份」——经核查需**修正**：run 级身份已由 `backtest_run_id` + 快照提供（且被 gate 与 marketplace 复用）。真正缺的不是身份，而是 **(a) 服务端自动链接** 与 **(b) 寻优结果晋升为可 gate/publish 的 run**。
+
+### 11.4 更优编排（分两层，按收益/成本排序）
+
+**A. 前端重构（低成本，随 L2 Phase C 一起做）**
+- 拆 `useBacktestRunner` → `useBacktestParams`（配参）+ `useBacktestRun`（执行+SSE）+ 既有 `useTuning`/`useGateEvaluation`；UI 状态（`panelHeight`/`dragging`/`activeTab`）挪进 store slice。
+- runner 退化为薄编排器，对外暴露单一 `pipeline` 对象；接缝处用 proto DTO 取代 `any`/`JSON.parse`。
+
+**B. 协议/后端（高收益，需产品拍板 — §10 Q6）**
+- **服务端自动链接**：`StartBacktestRun` 增加可选 `auto_gate` 标志；回测成功后服务端直接续跑质量门，并在**同一条 SSE 流**上先推 metrics、后推逐门结果。消除客户端胶水与断链。
+- **寻优结果晋升**：experiment 完成后，把「最优候选」落成一个正式 `backtest_run_id`（带防篡改快照），使其可直接进入质量门 / marketplace 发布，闭合支线。
+- **不要过度设计**：块保持可独立调用（保留「用户自主决定何时 gate / 重复 gate / 独立寻优」的灵活性）。B 只是为**常规路径**加服务端自动链接 + 复用既有 run 工件身份，**不是**把整条管线焊死成刚性后端流程。
+
+### 11.5 L3 复用范围裁决
+
+- **保留复用（不动）**：`GateService` 7 门管线、`StrategyRuntimeService` 回测、`backtest_run_id` + 防篡改快照工件、SSE 管线。
+- **前端重构（随 Phase C）**：`useBacktestRunner` 拆分。
+- **待拍板（§10 Q6）**：服务端 `auto_gate` 自动链接 + 寻优结果晋升为 run。若采纳，属 L3 的**增量增强**，非推倒。
+
+---
+
+## 12. 待 Opus 澄清的架构盲点（2026-07-27 Cascade 补充）
+
+以下 4 个问题在 §11 中未覆盖或未定论，需 Opus 明确后方可进入实施。
+
+### Q1. Marketplace 质量门 vs 7-Gate Pipeline 的关系——全文未提及
+
+§11 通篇只讨论 7-gate pipeline（`ai/gate_pipeline.go`），**完全未提 marketplace 质量门**（`marketplace/quality.go` 中检查 sharpe/drawdown/trades/winRate 阈值）。两套系统独立存在，检查项不同：
+
+| | 7-Gate Pipeline | Marketplace 质量门 |
+|---|---|---|
+| 文件 | `ai/gate_pipeline.go` | `marketplace/quality.go` |
+| 检查项 | Compliance/LookAhead/WalkForward/DeflatedSharpe/MonteCarlo/Paper/Correlation | sharpe/drawdown/totalTrades/winRate 阈值 |
+| 用途 | PromoteToLive | PublishStrategy |
+| 触发 | 手动 `RunEvaluation` | `Publish` 时自动 |
+| 输入 | `backtest_run_id` → equity curve | DB 中的 BacktestSnapshot proto |
+
+**需澄清**：
+- 用户通过 7-gate 后想发布到市场，还要再过一遍 marketplace 质量门吗？
+- 如果是，两套系统是否应该统一为一条管线？
+- 如果否，§11.4 B 的 `auto_gate` 是否应该同时预检 marketplace 质量门，让用户回测完就知道「能不能发布」？
+
+### Q2. `auto_gate` 的 SSE 流合并方式
+
+§11.4 B 说「同一条 SSE 流上先推 metrics、后推逐门结果」，但当前 `WatchBacktestRun`（`BacktestRunUpdate`）和 `RunEvaluation`（`GateEvaluationUpdate`）是两个独立 SSE 流，消息类型完全不同。
+
+**需澄清**：
+- 是新建一个统一流类型（如 `BacktestPipelineUpdate`），还是扩展 `BacktestRunUpdate` 加 gate 结果字段？
+- 前者更干净但 breaking change，后者兼容但消息类型膨胀。倾向哪个？
+
+### Q3. 寻优结果晋升的具体机制
+
+§11.4 B 说「把最优候选落成一个正式 `backtest_run_id`」，但未定义具体实现路径。
+
+**需澄清**：
+- 方案 A：experiment 完成后自动调 `StartBacktestRun` 用最优参数跑一次——简单但多跑一次回测，结果可能因时间窗口不同而有偏差。
+- 方案 B：新增 RPC 让 experiment 直接产出 run——复杂但确定性更好，不重复计算。
+- 倾向哪个？或有第三方案？
+
+### Q4. `ListStrategyCards` 的 sparkline 数据源——已定还是未定？
+
+§4.7 proto 注释写「来自最近一次成功回测」，但 §10 Q5 又列为开放问题「取最近一次成功回测还是用户置顶的基准回测」。
+
+**需澄清**：
+- 这到底定了没有？如果未定，Phase A 实施时按哪个做？
+- 如果是「用户置顶的基准回测」，需要新增「置顶回测」的 UI 和后端逻辑，Phase A 范围是否要扩大？
+
+---
+
+## 13. 答复（Cascade，2026-07-27，均经后端代码核查）
+
+**先更正 §12 一处前提**：核查 `marketplace/publish.go` 后确认——当前 `PublishStrategy` **只调 `ValidateBacktestQuality`（marketplace 质量门），不要求过 7-gate**；7-gate 仅把关 `PromoteToLive`。故两者是**两个正交转换（上架 vs 上实盘）上的两道独立闸**，非重复。
+
+### A1（答 Q1）— 不合并，分层
+
+| | 7-Gate Pipeline | Marketplace 质量门 |
+|---|---|---|
+| 把关转换 | PromoteToLive（上实盘） | PublishStrategy（上架） |
+| 语义 | 统计稳健性/防过拟合/前视/相关性，安全导向，**不可豁免**，需 paper 数据 | 配置化指标阈值，**admin 可豁免**，无需 paper |
+
+合并会两头错（逼发布跑 14 天 paper，或让上实盘可豁免）。裁决：
+- **保持两服务独立**（不同转换、不同严格度、相反豁免语义）。
+- `auto_gate`（§11.4 B）跑的是 **7-gate**；回测刚完成时 Paper/Correlation 两门自然 skip，实际覆盖 5 道统计门 = 即时"过拟合/前视"体检。
+- 「过了 7-gate 想发布还要过 marketplace 质量门吗」→ **要**，二者正交；反之发布也不要求 7-gate。
+- **优化**：`auto_gate` 可顺带以只读方式调 `ValidateBacktestQuality` 做**发布可行性预览**，但权威判定仍留在 `Publish()`，不强制合并。
+
+### A2（答 Q2）— 扩展 `BacktestRunUpdate`，不新建流
+
+在 `BacktestRunUpdate` 上加**可选字段 `GateEvaluationUpdate gate_update`**，回测成功后在**同一订阅**续推。理由：客户端已持有一条 `watchBacktestRun` 订阅，新建统一流类型等于再开一条流；加 optional 字段**向后兼容**（旧客户端忽略未知字段）、无新 RPC、膨胀极小。→ **选「扩展」。**
+
+### A3（答 Q3）— 定稿：接回已断的链路，不重跑、不新增 RPC
+
+**已核查 experiment worker（`experiment_scoring.go` + `strategy_experiment_repository.go`），事实如下**：
+1. 每个候选在 `runSingleBacktest` 里**已经**通过 `backtestRepo.Create` 落成一条真实 `backtest_runs` 行并拿到 `runID`，走常规回测执行路径（快照由同一路径生成）。
+2. `strategy_experiment_candidates` 表**本就设计了 `backtest_run_id` 列**（见 `CreateCandidate` 的 INSERT 语句）。
+3. **但链路当前是断的**：`runSingleBacktest` 只返回 `*ai.ScoredResult`，把 `runID` 丢弃 → `candidateResult` 不带 runID → 落库候选的 `backtest_run_id` 为空。
+
+**故最优解既非 A（重跑）也非 B（新 RPC），而是「接回断链」**——零重算、零新增快照：
+1. `runSingleBacktest` / `backtestAndScore` 把 in-sample 那次的 `runID` 透传进 `candidateResult`（新增字段 `BacktestRunID`）。
+2. `CreateCandidate` 落库时填入该 `backtest_run_id`（列已存在，无需迁移）。
+3. **晋升 = 纯查表**：`best_candidate_id` → 其 `backtest_run_id` → 即可直接进入质量门 / marketplace 发布。
+
+**GLM 施工时须验证的唯一点**：experiment 子跑（`AccountID = uuid.Nil`，但 `UserID` 已设）在回测完成路径里**确实写入了 `backtest_snapshot`**。若快照写入被某条件（如 `account_id != nil` 或"用户发起"来源）门控，则移除该门控，使实验子跑与用户回测一视同仁地生成快照。`fetchSnapshotByRunID` 只按 `run_id + user_id + status=SUCCEEDED` 校验，`UserID` 已满足，故所有权无碍。
+
+### A4（答 Q4）— Phase A = 「最近一次成功回测」，置顶基准延后
+
+矛盾由 Cascade 造成，现已裁决并同步修正 §10 Q5：**Phase A 用「最近一次成功回测」**（数据现成、零新增 UI/后端）；「用户置顶基准回测」延后为后续增强，**不扩大 Phase A 范围**。
+
+---
+
+## 14. 定稿决议（Cascade，2026-07-27）— GLM 施工依据
+
+§10 的 6 个开放问题在此逐条定稿。**GLM 按本节实施，无需再等三方讨论**；如实施中发现本节与代码事实冲突，回报 Cascade 复核，不得自行降级方案。
+
+> **⚠ 版本对齐（2026-07-24 三方最终共识 + 已实现）**：本 §14/§15 的部分早期规格已被三方最终共识取代并**已实现部署**。凡本 ADR 与 `0027-decision-matrix.md`（§决策汇总 / §F / §G / §H / §I）冲突处，**一律以 decision-matrix 为权威**。已根据最终共识订正的关键点：
+> 1. **创建流去 Modal**：不做 `StartPointModal`。创建 = Gallery/Workspace 直接入口（[New]/[Fork]/[AI Generate] → Workspace；Import EA → Drawer）+ 可跳过首访浮层。
+> 2. **Detail 收窄**：仅 Overview + Code（只读）+ 一个 [Open in Workspace]，**不做回测/部署 Tab**。
+> 3. **L1 复用而非删除**：Gallery = 演进 `StrategyLibraryPage` 骨架（Table→Card Grid），**不新建后删除**（`StrategyLibraryPage.tsx` 已并入 `StrategyGalleryPage.tsx`）。
+> 4. **补充**：Gallery 卡片含 [Publish to Market]；侧边栏 "Strategies" → `/strategy`；`ListStrategyCards` 增 `owner_id`/`is_marketplace_published`；访问控制见 §15.10。
+
+### 14.1 §10 开放问题终裁
+
+| # | 问题 | 终裁 | 约束 |
+|---|------|------|------|
+| 1 | L2 重构 vs 重写 | **重构**（feature-slice） | 终点即最优；禁止推倒 37 组件/17 hooks |
+| 2 | 创建流 | **无 Modal**：Gallery/Workspace 直接入口（[New]/[Fork]/[AI Generate] → Workspace；Import EA → Drawer） | 可跳过首访浮层；砍向导也砍 StartPointModal（三方 2026-07-24 共识） |
+| 3 | Detail 边界 | **Overview + Code 只读 + 一个 [Open in Workspace]**；不做回测/部署 | 任何回测/调参/部署统一在 Workspace（Detail 不内嵌） |
+| 4 | 路由 | Phase A 用 **`/strategy/view/:id`**，与 `StrategySharePage` 保持独立 | 「Detail 与分享页统一」延后评估，不进 Phase A |
+| 5 | sparkline 数据源 | **最近一次成功回测**（见 A4） | 置顶基准延后 |
+| 6 | 回测→质量门编排 | **采纳服务端 `auto_gate`**（见 A2/§11.4 B），列为 L3 增量增强 | 排在 Phase A-D 之后，见 14.2 |
+
+### 14.2 实施顺序
+
+> **实施状态（2026-07-27 核查）**：Phase A-D + E1/E2 均已完成部署。以下为原始计划，保留作为历史记录。
+
+- **Phase A（✅ 已完成）**：`ListStrategyCards` RPC + Gallery（**演进 `StrategyLibraryPage` 骨架**，Table→Card Grid）+ Detail（Overview+Code只读）+ 路由改造 + 修复 `template→templateId` 参数 bug（§2.3）+ 访问控制（§15.10）。
+- **Phase B（✅ 已完成）**：创建入口接线（Gallery [New]/[Fork]/[AI Generate] → Workspace，Import EA Drawer）+ 可跳过首访浮层。**不做 StartPointModal。**
+- **Phase C（✅ 已完成）**：L2 feature-slice 重构（拆 `useStrategyWorkspaceState` → 61 行组合根，`workspaceStore` → slice-creator `v6`，路由级懒加载）。`StrategyWorkspacePage` 73 行（≤80 目标）。
+- **Phase D（✅ 已完成）**：清理 `StrategyTemplateColumns` / `StrategyTemplateEditModal` + i18n 迁移。**`StrategyLibraryPage` 不删**——其骨架已并入 `StrategyGalleryPage`。
+- **L3 增量增强（✅ 已完成）**：
+  - E1：`StartBacktestRun` 加 `auto_gate` 标志 + `BacktestRunUpdate` 加可选 `gate_update` 字段（A2）+ marketplace 质量门发布可行性预览（§15.7 E1）。MQL 策略 Compliance/LookAhead 显示 Skipped。
+  - E2：接回寻优 `backtest_run_id` 断链 + 验证实验子跑写快照（A3）。`runSingleBacktest` 返回 `runID`，`backtestAndScore` 写入 `candidateResult.BacktestRunID`，`CreateCandidate` 落库。
+
+### 14.3 施工纪律（复用既有代码，勿重造）
+
+- **必复用**：`useBacktestRunner`（唯一回测实现）、`ScheduleLaunchModal`（部署）、`ImportEAPanel`、`StrategyChat`/`CodeAssist`、`PriceChart`、marketplace `CompareModal`（对比）。
+- **必保留（L3 不动）**：`GateService` 7 门管线、`StrategyRuntimeService` 回测、`backtest_run_id` + 防篡改快照工件、SSE 管线、`marketplace/quality.go`（与 7-gate 保持独立，见 A1）。
+- **红线**：proto-only（无 REST）；Decimal 走 string（禁 float64 参与金额/指标）；旧路径 `<Navigate replace>` 保外链不断；每个 slice 迁移后跑 Playwright 回测冒烟再合并。
+
+---
+
+## 15. 施工规格明细（消除歧义 — 施工方照此实现，不做决策）
+
+本节把所有仍需判断的点定死。**凡本节已给出的，一律照做；凡本节标注「⚠ 须回报 Cascade」的，停并回报，不得自行选择。**
+
+### 15.1 路由改造清单（`frontend/src/routes/AppRoutes.tsx`）
+
+以现有 `mainRoutes` 为基准，做且仅做以下改动：
+
+| 动作 | 路径 | element | 说明 |
+|------|------|---------|------|
+| 新增 | `strategy` | `<StrategyGalleryPage/>`（lazy） | Gallery 首页 |
+| 新增 | `strategy/view/:id` | `<StrategyDetailPage/>`（lazy） | Detail 枢纽 |
+| 新增 | `strategy/:id/edit` | `<StrategyWorkspacePage/>`（lazy） | 编辑模式，读 `:id` 自动加载 |
+| 新增 | `strategy/new` | `<StrategyWorkspacePage/>`（lazy，空白起点） | 创建入口；**不弹 Modal**（见 §15.5） |
+| 改为重定向 | `strategy/library` | `<Navigate to="/strategy" replace/>` | Gallery 取代 |
+| 改为重定向 | `strategy/workspace` | `<Navigate to="/strategy/new" replace/>` | 兼容旧书签 |
+| 保留不动 | `strategy/live`、`strategy/market-tools`、`strategy/schedules/:id/logs` | 原样 | |
+| 保留不动 | `/strategy/:strategyId` → `<StrategySharePage/>` | **必须仍在所有 `strategy/*` 静态段之后匹配** | 避让冲突 |
+
+- `:id/edit` 与 `:strategyId` 消歧：`strategy/:id/edit` 是两段路径，`strategy/:strategyId` 是一段，React Router 精确匹配即可区分；但 `strategy/view/:id`、`strategy/new` 等**必须声明在 `strategy/:strategyId` 之前**。
+- ⚠ 若发现 `:id/edit` 被 `:strategyId` 抢匹配，回报 Cascade（不得改用 query param 绕过）。
+- **侧边栏导航**：Strategy 菜单组第 2 项由 "Strategy Library"（`/strategy/library`）改为 **"Strategies"（`/strategy`）**；4 项保持不变（Strategies / Workspace / Live / Market Tools）。
+
+### 15.2 `ListStrategyCards` 完整契约
+
+> **已实现**（2026-07-27）— 以下为实际落地版本。原始设计使用 enum 类型和 `repeated double` sparkline，实现中修正为 string filter/sort（更灵活）和 `repeated string` sparkline（遵循精度红线）。
+
+**Proto（实际实现，见 `strategy_template_entity.proto` + `strategy_template_requests.proto`）**：
+
+```proto
+message StrategyCard {
+  string id = 1;                    // template id
+  string user_id = 2;               // template owner user id
+  string name = 3;
+  string description = 4;
+  repeated string tags = 5;
+  bool is_system = 6;
+  bool is_public = 7;
+  int32 use_count = 8;
+  google.protobuf.Timestamp created_at = 9;
+  repeated string sparkline = 10;   // equity curve decimal strings (≤32 points)
+  string win_rate = 11;             // decimal string
+  string max_drawdown = 12;
+  string profit_factor = 13;
+  string sharpe_ratio = 14;
+  int32 running_schedules = 15;
+  string backtest_run_id = 16;      // empty if no successful backtest
+  bool is_marketplace_published = 17;
+}
+message ListStrategyCardsRequest {
+  string filter = 1;  // "all" | "mine" | "preset"
+  string sort = 2;    // "recent" | "return" | "risk" | "usage"
+  string search = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+message ListStrategyCardsResponse { repeated StrategyCard cards = 1; int32 total = 2; }
+```
+
+**与原始设计的偏差（均为改进）**：
+- `filter`/`sort` 用 `string` 而非 enum — 更灵活，后端按字符串匹配，前端无需导入 enum
+- `sparkline` 用 `repeated string` 而非 `repeated double` — 遵循项目精度红线（禁 float64 参与指标运算）
+- `user_id` 替代 `owner_id` — 与 DB 列名一致
+- `backtest_run_id` 字段（空串=未回测）替代 `has_backtest` bool — 信息量更大，可直接用于发起质量门
+- 无 `updated_at_ms`，用 `created_at` Timestamp — 与模板实体一致
+
+**后端实现（`internal/connect/strategy/` 内新增 handler，复用现有 `StrategyService`）**：
+- 单查询 join：`strategy_templates` + 每模板「最近一次 `SUCCEEDED` 的 `backtest_runs`」（按 `finished_at DESC LIMIT 1`）+ 在跑 `strategy_schedules`（`status=ACTIVE`）计数。
+- KPI 取自该 run 的 `backtest_snapshot`（`BacktestSnapshot` proto）字段映射：`win_rate←WinRate`、`max_drawdown←MaxDrawdown`、`profit_factor←ProfitFactor`（若快照无该字段则空串）、`sharpe←SharpeRatio`。**全部以 decimal string 原样透传，禁止 float64 运算。**
+- `equity_sparkline`：取该 run 已计算的权益曲线序列（与 `AccountAnalytics`/`EquityPoint` 同源），**服务端等距降采样到 ≤32 点**；无曲线 → 返回空数组且 `has_backtest` 仍可为 true（卡片只画 KPI）。
+- `sort`：`RETURN`/`DRAWDOWN` 按快照对应指标排序（NULL 值排最后）；`USAGE` 按 `running_schedules DESC`；`UPDATED` 按 `updated_at_ms DESC`。
+- ⚠ 若 `backtest_runs` 未存权益曲线序列（只存 `proto_response`/`backtest_snapshot`），回报 Cascade 定 sparkline 来源，勿自行造数据。
+
+### 15.3 Gallery 页规格（`StrategyGalleryPage.tsx` + `StrategyCard.tsx`）
+
+- 数据：`useQuery(['strategyCards', filter, sort, search], listStrategyCards)`。搜索输入 300ms debounce。
+- 卡片内容与顺序：名称（粗体）→ tags（≤3 个 `Tag`，多余显示 `+N`）→ sparkline（`has_backtest=false` 时替换为灰底"未回测"占位）→ 一行 KPI（胜率 / 回撤 / PF / 夏普，数值缺失显示 `—`）→ 底部 `running_schedules>0` 时绿色徽标。
+- **卡片 actions（按 §15.10 访问控制矩阵裁剪按钮集）**：`[详情]`（`navigate('/strategy/view/'+id)`，所有可见卡片都有）、`[部署]`（`ScheduleLaunchModal`，仅 `isOwner || (已发布 && 已购买)`）、`[Fork]`（仅 `isOwner || isSystem`）、`[Publish to Market]`/`[Unpublish]`（仅 `isOwner` 非系统；复用 `PublishToMarketModal`，按 `is_marketplace_published` 切换）、`[Delete]`（仅 `isOwner`）。系统模板仅 `[详情]`+`[Fork]`。
+- 工具栏：`Input`（搜索）+ `Segmented`（filter 四值）+ `Select`（sort 四值）+ 右侧 `[创建]`（`navigate('/strategy/new')`）。
+- 响应式：`Row gutter=[16,16]`，`Col` `xs=24 sm=12 lg=8 xxl=6`（手机1/平板2/桌面3/大屏4）。
+- 状态：loading→骨架卡 ×8；empty→复用 `strategy.gallery.empty`；error→重试按钮。
+
+### 15.4 Detail 页规格（`StrategyDetailPage.tsx`）
+
+**三方最终共识：Detail 只做「浏览深入」，不做回测/部署**（回测/调参/部署统一在 Workspace）。
+
+- 数据：`getTemplate(id)` + 该模板最近成功 run 的 metrics（复用 `strategyRuntimeApi`，只读展示）。
+- 权限：从 `useAuthStore` 取当前用户 → `isOwner = template.userId === currentUserId`；`canEdit = isOwner || isSystem`（详见 §15.10）。
+- **两 Tab（`概览 / 代码`）**：
+  - **概览**：描述 + 完整权益曲线（复用现有权益曲线组件）+ 交易统计表 + 参数说明表（只读，来自 `template.parameters`）。
+  - **代码**：`StrategyCodeEditor` 只读，含 `CodeExplainPanel`。**Code Tab 仅 `isOwner || isSystem` 时渲染**（别人的已发布模板隐藏 Code，代码不出平台）。
+- **头部按钮**（单一动作入口）：`isSystem` → `[Fork & Edit]`（→ `/strategy/:id/edit`）；`isOwner` → `[Open in Workspace]`（→ `/strategy/:id/edit`）；别人的已发布模板 → 无编辑/Fork 入口。
+- Detail **无回测面板、无部署表单、无可编辑参数**；一切迭代动作跳 Workspace。
+
+### 15.5 创建入口规格（**无 Modal** — 三方最终共识）
+
+**不实现 `StartPointModal`。** 创建是 Gallery/Workspace 的直接入口，各入口进入 Workspace 后设置对应初始态：
+
+| 入口 | 位置 | 行为 |
+|------|------|------|
+| `[New]` | Gallery 工具栏 / 侧边栏 | `navigate('/strategy/new')` → Workspace 空白（`code=''`，落在 code tab） |
+| `[Fork]` | Gallery 卡片（`isOwner\|\|isSystem`） | 复制该模板代码进 Workspace，`strategyId` 置空（另存为新模板） |
+| `[AI Generate]` | Gallery 工具栏 / Workspace | 进 Workspace 并展开右侧 `StrategyChat`，聚焦输入框 |
+| Import EA | Workspace 内 | 打开 `ImportEAPanel` **Drawer**（非独立页/Modal），导入结果写入 `code` |
+
+- 首访引导浮层（复用现有 `WorkspaceTour`）在首次进入 Workspace 时触发，可跳过并记 localStorage `alphaforge_ws_tour_done`。
+
+### 15.6 feature-slice 边界映射（Phase C）
+
+拆 `useStrategyWorkspaceState`（现返回 10 域大对象）为独立 slice，映射如下，**行为不变、仅搬迁**：
+
+| 新 slice hook | 吸收现有 | 归属 store slice（`workspace` v6） |
+|---------------|----------|-----------------------------------|
+| `useAccountSlice`（已存在） | account/symbol/timeframe/accountInfo | `accountId/symbol/timeframe` |
+| `useCodeSlice` | `useStrategyCode` + save/draft | `code/codeName/strategyId`（不持久化 code，同现规则） |
+| `useBacktestRun` | `useBacktestRunner` 的 run/status/metrics/trades 部分 | — |
+| `useBacktestParams` | `useBacktestRunner` 的 params/date/strategyParams 部分 | — |
+| `useTuning`（已存在）/`useGateEvaluation`（已存在） | 原样 | — |
+| `useQuickTradeData`（已存在）/`useHistoryState`（已存在）/`useAIWorkflow`（已存在） | 原样 | — |
+| `useLayoutSlice` | 现 `workspaceStore` 全部 UI 字段 + `useBacktestRunner` 的 `panelHeight/dragging/activeTab` | `centerTab/rightTab/*Collapsed/rightPanelWidth/panelHeight` |
+
+- `StrategyWorkspacePage` 退化为组合根（≤80 行），按 §4.6 组装。跨 slice 用选择器读取，删除现有 `useWorkspaceEffects` 里的手动 rewire `useEffect`，改为 slice 内 `subscribe`。
+- 接缝去 `any`：`handleValidationResult`/`executionAssumptions` 用 `ValidateExtendedResult` 与对应 proto 类型；`updateExtractedParams` 只接受 `ExtractedParam[]`，删除 `JSON.parse(string)` 分支（调用方统一传数组）。
+
+### 15.7 L3 增量增强 proto 与代码改动点
+
+**E1 — `auto_gate`（`proto/ant/v1/backtest_run_*.proto` + gate 复用 + marketplace 质量门预览）**
+- `StartBacktestRunRequest` 加 `bool auto_gate = N;`（下一个可用号）。
+- `BacktestRunUpdate` 加两个可选字段（向后兼容，旧客户端忽略）：
+  - `optional GateEvaluationUpdate gate_update = N;` — 7-gate 逐门结果。
+  - `optional MarketplaceQualityPreview quality_preview = N;` — marketplace 质量门发布可行性预览。
+- 新增 proto message：
+  ```proto
+  message MarketplaceQualityPreview {
+    bool publishable = 1;              // true = 当前 snapshot 能通过 marketplace 质量门
+    repeated QualityViolation violations = 2;  // 不通过的原因（空=通过）
+  }
+  message QualityViolation {
+    string metric = 1;    // e.g. "sharpe_ratio"
+    string actual = 2;    // e.g. "0.3"
+    string threshold = 3; // e.g. "1.0"
+  }
+  ```
+- 服务端：run 到达 `SUCCEEDED` 且 `auto_gate=true` 时：
+  1. 从该 run 的权益曲线**推导 `DailyReturns`**，喂入 `ai.Pipeline`，逐门结果经 `gate_update` 续推到同一流。
+  2. 从该 run 的 `backtest_snapshot`（BYTEA）unmarshal 出 `BacktestSnapshot` proto，调 `marketplace.ValidateBacktestQuality`（只读，不写 DB），结果经 `quality_preview` 续推到同一流。
+  - 这样用户回测完立刻知道：7-gate 过没过 + 能不能发布，无需手动尝试 Publish。
+  - 权威判定仍在 `Publish()`，预览仅做展示。
+- **⚠ 关键规则（消歧）——无 DSL 表达式时的 gate 处理**：本模块为 MQL/代码策略，无 DSL `expression`。改 `ai/gate_pipeline.go`：当 `input.Expression == ""` 时，`evalCompliance` 与 `evalLookAhead` 返回 `Skipped:true`（**跳过而非失败**，与 `evalPaper`/`evalCorrelation` 的 skip 语义一致）。故 `auto_gate` 对 MQL 策略实际评估 WalkForward/DeflatedSharpe/MonteCarlo 三门，其余 skip。此改动不影响 agent 生成的带表达式策略（仍全量评估）。
+- 前端 `useGateEvaluation` 增加消费 `gate_update` 的分支；不再需要回测完成后手动 `runGate`（手动入口保留供重复评估）。前端在回测结果面板展示 `quality_preview`（通过→绿色「可发布」徽标；不通过→列出 violations）。
+
+**E2 — 寻优 run 断链接回（见 A3）**
+- `experiment_scoring.go`：`runSingleBacktest` 返回值增加 `runID`；`backtestAndScore` 写入 `candidateResult.BacktestRunID`。
+- `strategy_experiment_worker.go` 落库处：把 `candidateResult.BacktestRunID` 传入 `CreateCandidate`（列已存在）。
+- 验证实验子跑写 `backtest_snapshot`（见 A3 末尾）；若未写则移除门控。
+- 晋升读取：`best_candidate_id → candidate.backtest_run_id`，前端在寻优结果面板对该 run 提供 `[跑质量门]`/`[发布]` 按钮。
+
+### 15.8 i18n
+
+- 新增 key 组：`strategy.gallery.*`（title/搜索占位/筛选四值/排序四值/empty/未回测/创建；卡片 actions：详情·部署·Fork·发布·下架·删除）、`strategy.detail.*`（两 Tab 名 概览/代码、Fork&Edit、Open in Workspace）。**无 `strategy.start.*`**（创建无 Modal）。
+- 走现有 textproto + gen keys 流程（`gen/ant/v1/i18n/`）；旧 `strategy.library.*` 保留至 Phase D 再清。**新增 key 必须中英双语齐全**，不得留 `defaultValue` 兜底作为最终态。
+
+### 15.9 各 Phase 验收标准（Definition of Done）
+
+- **Phase A DoD**：`/strategy` 显示卡片（Gallery 由 LibraryPage 骨架演进）；`/strategy/view/:id` 可分享直达；`/strategy/library`、`/strategy/workspace` 重定向生效；侧边栏第 2 项为 "Strategies"；`template→templateId` bug 修复；访问控制生效（§15.10）；`go build ./...` + `check-file-lines --strict` 通过；Playwright 冒烟（登录→Gallery→Detail）绿。
+- **Phase B DoD**：Gallery [New]/[Fork]/[AI Generate] 进 Workspace 各自初始态正确；Import EA Drawer 可用；引导浮层可跳过并记忆。**确认无 StartPointModal。**
+- **Phase C DoD**：`useStrategyWorkspaceState` 删除，各 slice 独立；`StrategyWorkspacePage ≤80 行`；Gallery/Detail 不打包 Monaco（构建产物验证 chunk 分离）；Workspace 全功能回归（Playwright 覆盖回测/调参/质量门/AI/保存）。
+- **Phase D DoD**：`StrategyTemplateColumns`/`StrategyTemplateEditModal` 删除（**保留 `StrategyGalleryPage`**）；`strategy.library.*` 废弃 key 清理；无死引用（`tsc` + 构建通过）。
+- **E1/E2 DoD**：`auto_gate=true` 的回测在同一流推出 7-gate 结果 + marketplace 质量门预览（`quality_preview`）；MQL 策略 Compliance/LookAhead 显示 Skipped 而非 Failed；前端展示「可发布/不可发布」及 violations；寻优候选 `backtest_run_id` 落库非空，胜出候选可直接发起质量门与发布。
+
+### 15.10 策略代码访问控制（强制 — “代码不出平台”）
+
+三方审计（matrix §G）发现：Detail Code Tab / [Edit] / [Deploy] / `:id/edit` 若不鉴权，任何登录用户可查看/编辑/部署他人策略代码。**本节为强制需求，前后端纵深防御。**
+
+**访问控制矩阵**（`isOwner = template.userId === currentUserId`）：
+
+| 操作 | 系统模板 | 我的模板 | 别人已发布 | 别人未发布 |
+|------|---------|---------|-----------|-----------|
+| Gallery 可见 | ✅ 所有人 | ✅ 仅我（“我的”筛） | ✅ 所有人 | ❌ 不出现 |
+| 看 Overview | ✅ | ✅ 仅我 | ✅ | — |
+| 看 Code Tab | ✅（开源） | ✅ 仅我 | ❌ **隐藏 Code Tab** | — |
+| [Edit]/[Open in WS] | ❌（→[Fork & Edit]） | ✅ 仅我 | ❌ 隐藏 | — |
+| [Fork] | ✅ | ✅ | ❌ 已发布不可 Fork | — |
+| [Deploy] | ✅ | ✅ | ✅ **仅购买者** | — |
+| [Publish] | ❌ | ✅ 仅我 | — | — |
+| [Delete] | ❌ | ✅ 仅我 | ❌ | — |
+| Workspace 编辑 | ❌ | ✅ 仅我 | ❌ | — |
+
+**前端实现**：
+- `StrategyDetailPage`：`useAuthStore` 取 userId；`isOwner`；Code Tab 仅 `isOwner || isSystem` 渲染；头部按钮 `isSystem→[Fork & Edit]` / `isOwner→[Open in Workspace]` / 其他→无。
+- `StrategyCard`：`[Deploy]` 仅 `isOwner || (isPublished && hasPurchased)`；`[Fork]` 仅 `isOwner || isSystem`（按 §15.3）。
+- `StrategyWorkspacePage`：加载模板时校验 `isOwner || isSystem`，否则拒加载并 redirect 回 Gallery。
+
+**后端纵深防御（不可省）**：
+- `getTemplate`：非 owner 且非公开 → 错误；`updateTemplate`/`deleteTemplate`：非 owner（delete 含非 admin）→ `PermissionDenied`。
+
+> 实现状态（matrix §G 已标记已实现）：`StrategyDetailPage.tsx:28-31/86/158`、`StrategyCard.tsx:94-96`。GLM 新增代码需与此矩阵一致；若发现不一致以本节为准。

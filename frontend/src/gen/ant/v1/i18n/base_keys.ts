@@ -3439,8 +3439,8 @@ export const STRATEGY_SCHEDULE_MAX_POSITIONS_PLACEHOLDER_KEY = 'strategy.schedul
 /** marketplace.publish.priceModel.free */
 export const MARKETPLACE_PUBLISH_PRICE_MODEL_FREE_KEY = 'marketplace.publish.priceModel.free' as const;
 
-/** marketplace.publish.priceModel.monthly */
-export const MARKETPLACE_PUBLISH_PRICE_MODEL_MONTHLY_KEY = 'marketplace.publish.priceModel.monthly' as const;
+/** marketplace.publish.priceModel.subscription */
+export const MARKETPLACE_PUBLISH_PRICE_MODEL_SUBSCRIPTION_KEY = 'marketplace.publish.priceModel.subscription' as const;
 
 /** marketplace.publish.priceModel.once */
 export const MARKETPLACE_PUBLISH_PRICE_MODEL_ONCE_KEY = 'marketplace.publish.priceModel.once' as const;
@@ -4985,7 +4985,7 @@ export const BASE_KEYS = {
   strategy_live_waiting_signals: '__root__.strategy.live.waitingSignals',
   strategy_schedule_max_positions_placeholder: '__root__.strategy.schedule.maxPositionsPlaceholder',
   marketplace_publish_price_model_free: '__root__.marketplace.publish.priceModel.free',
-  marketplace_publish_price_model_monthly: '__root__.marketplace.publish.priceModel.monthly',
+  marketplace_publish_price_model_subscription: '__root__.marketplace.publish.priceModel.subscription',
   marketplace_publish_price_model_once: '__root__.marketplace.publish.priceModel.once',
   marketplace_publish_return: '__root__.marketplace.publish.return',
   marketplace_publish_win_rate: '__root__.marketplace.publish.winRate',

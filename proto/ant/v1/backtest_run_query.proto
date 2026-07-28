@@ -7,6 +7,7 @@ option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 import "common.proto";
 import "backtest_run.proto";
 import "backtest_execution_config.proto";
+import "ai_gate.proto";
 
 message GetBacktestRunRequest {
   string run_id = 1;
@@ -31,6 +32,21 @@ message BacktestRunUpdate {
   repeated string equity_curve = 3;
   BacktestRisk risk = 4;
   ExecutionAssumptions execution_assumptions = 5;
+  // 7-gate evaluation result (sent when auto_gate=true and run succeeds).
+  GateEvaluationUpdate gate_update = 6;
+  // Marketplace quality gate preview (sent when auto_gate=true and run succeeds).
+  MarketplaceQualityPreview quality_preview = 7;
+}
+
+message MarketplaceQualityPreview {
+  bool publishable = 1;
+  repeated QualityViolation violations = 2;
+}
+
+message QualityViolation {
+  string metric = 1;
+  string actual = 2;
+  string threshold = 3;
 }
 
 message ListBacktestRunsRequest {

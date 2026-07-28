@@ -97,7 +97,7 @@ const AiSettings = {
           "step2": "ログイン/登録後、コンソールでAPI キー作成。",
           "title": "Zhipu API キー取得方法"
         },
-        "default": "現在のプロバイダ：{{provider}}。プロバイダの\\\\\\\\\\\\\\\\",
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
         "modelSuggestionDeepSeek": "モデル提案: deepseek-chat",
         "modelSuggestionZhipu": "モデル提案: glm-4-flash / glm-4",
         "selectProviderHint": "プロバイダー選択後、申請方法を表示。",

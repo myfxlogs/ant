@@ -1,6 +1,6 @@
 export interface Notification {
   id: string;
-  type: 'trade' | 'signal' | 'risk_alert' | 'strategy_execution' | 'strategy_version_update' | 'system';
+  type: 'trade' | 'signal' | 'risk_alert' | 'strategy_execution' | 'strategy_version_update' | 'auto_fix_started' | 'auto_fix_stopped' | 'system';
   title: string;
   message: string;
   data?: Record<string, unknown>;

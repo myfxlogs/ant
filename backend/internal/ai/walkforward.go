@@ -34,24 +34,24 @@ func DefaultWalkForwardConfig() WalkForwardConfig {
 
 // FoldResult contains the validation metrics for a single walk-forward fold.
 type FoldResult struct {
-	FoldIndex       int     `json:"fold"`
-	TrainSharpe     float64 `json:"train_sharpe"`
-	TestSharpe      float64 `json:"test_sharpe"`
-	TrainMaxDD      float64 `json:"train_max_dd"`
-	TestMaxDD       float64 `json:"test_max_dd"`
-	TradeCount      int     `json:"trade_count"`
-	Passed          bool    `json:"passed"`
-	RejectionReason string  `json:"rejection_reason,omitempty"`
+	FoldIndex       int
+	TrainSharpe     float64
+	TestSharpe      float64
+	TrainMaxDD      float64
+	TestMaxDD       float64
+	TradeCount      int
+	Passed          bool
+	RejectionReason string
 }
 
 // WalkForwardResult is the outcome of walk-forward cross-validation.
 type WalkForwardResult struct {
-	Passed     bool         `json:"passed"`
-	Folds      []FoldResult `json:"folds"`
-	SharpeDiff float64      `json:"avg_sharpe_diff"`
-	MaxFoldDD  float64      `json:"max_fold_dd"`
-	MinTrades  int          `json:"min_trades"`
-	Reason     string       `json:"reason,omitempty"`
+	Passed     bool
+	Folds      []FoldResult
+	SharpeDiff float64
+	MaxFoldDD  float64
+	MinTrades  int
+	Reason     string
 }
 
 // DailyReturn is a single day's P&L return (can be simulated or real).
@@ -188,7 +188,8 @@ func calcPurgeGroups(groupSize, purgeDays int) int {
 }
 
 // collectCPCVSharpe collects out-of-sample Sharpe ratios across CPCV groups.
-func collectCPCVSharpe(dailyReturns []float64, nGroups, groupSize, purgeGroups int, cfg WalkForwardConfig) []float64 {
+// Reports raw OOS Sharpe — overfitting is already checked by the Walk-Forward gate.
+func collectCPCVSharpe(dailyReturns []float64, nGroups, groupSize, purgeGroups int) []float64 {
 	n := len(dailyReturns)
 	var oosSharpes []float64
 	for g := 1; g < nGroups; g++ {
@@ -204,12 +205,7 @@ func collectCPCVSharpe(dailyReturns []float64, nGroups, groupSize, purgeGroups i
 		if testEnd-testStart < 5 {
 			continue
 		}
-		testSharpe := computeSharpe(dailyReturns[testStart:testEnd])
-		trainSharpe := computeSharpe(dailyReturns[:trainEnd])
-		if trainSharpe-testSharpe > cfg.MaxSharpeDiff {
-			testSharpe *= 0.5
-		}
-		oosSharpes = append(oosSharpes, testSharpe)
+		oosSharpes = append(oosSharpes, computeSharpe(dailyReturns[testStart:testEnd]))
 	}
 	return oosSharpes
 }
@@ -229,9 +225,6 @@ func CPCV(dailyReturns []float64, nGroups int, cfg WalkForwardConfig) float64 {
 	if nGroups < 2 {
 		nGroups = 6
 	}
-	if cfg.MaxSharpeDiff <= 0 {
-		cfg.MaxSharpeDiff = 1.0
-	}
 	n := len(dailyReturns)
 	if n < nGroups*2 {
 		return 0
@@ -239,7 +232,7 @@ func CPCV(dailyReturns []float64, nGroups int, cfg WalkForwardConfig) float64 {
 
 	groupSize := n / nGroups
 	purgeGroups := calcPurgeGroups(groupSize, cfg.PurgeDays)
-	oosSharpes := collectCPCVSharpe(dailyReturns, nGroups, groupSize, purgeGroups, cfg)
+	oosSharpes := collectCPCVSharpe(dailyReturns, nGroups, groupSize, purgeGroups)
 
 	if len(oosSharpes) == 0 {
 		return 0

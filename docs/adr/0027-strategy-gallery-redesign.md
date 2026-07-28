@@ -1,6 +1,6 @@
 # ADR-0027 · 策略模块前端重构 — Gallery + Detail + Guided Create
 
-- **状态**：Proposed
+- **状态**：**Superseded** by `0027-v2-strategy-module-redesign.md`（Cascade 修订版，已实现）。本文件保留作为历史参考。
 - **日期**：2026-07-23
 - **决策者**：Team
 - **关联**：ADR-0024，ADR-0021
@@ -12,6 +12,7 @@
 策略模块四个二级页面：Workspace（编辑+回测+AI）、Library（模板表格，今天刚实现）、Live（实盘）、Market Tools。
 
 **今日新增**：
+
 - `StrategyLibraryPage.tsx`（187 行 Table 列表：搜索/筛选/Open/删除）——此为 Library 的首次实现
 - MQL Import Drawer 已接入 Workspace Code Tab（`ImportEAPanel` — 粘贴 MQL → 分析/翻译/桥接 → Apply 写入编辑器）
 
@@ -20,7 +21,7 @@ Workspace 侧边栏已无 `TemplateManagerContent`（此前移除），Library �
 ### 1.2 问题
 
 | 问题 | 严重度 | 说明 |
-|------|--------|------|
+| ---- | ------ | ---- |
 | 模板管理分裂 | 🔴 | Library 页面和 Workspace 侧边栏同时管理模板 |
 | 表格不适合浏览 | 🔴 | 纯文字表格，无性能数据、无可视化 |
 | 巨型 Modal 编辑 | 🟡 | 1280px Modal 塞 Metadata+Code+AI+Validation |
@@ -40,7 +41,7 @@ Workspace 侧边栏已无 `TemplateManagerContent`（此前移除），Library �
 
 ### 2.1 路由结构
 
-```
+```text
 /strategy              → Gallery（卡片网格）
 /strategy/:id          → Detail（Tab：概览/代码/回测/部署）
 /strategy/create       → Guided Create（Stepper 引导）
@@ -97,7 +98,7 @@ Workspace 侧边栏已无 `TemplateManagerContent`（此前移除），Library �
 ## 3. 备选方案
 
 | 方案 | 优点 | 缺点 | 否决理由 |
-|------|------|------|---------|
+| ---- | ---- | ---- | -------- |
 | 保持单页 Tab 整合 | 路由简单 | 单页过重，无法分享链接，状态管理复杂 | 职责不清晰 |
 | 仅优化表格 | 改动小 | 表格本质不适合策略浏览 | 治标不治本 |
 | 完全推倒重做 Workspace | 彻底 | 风险大，Workspace 编辑功能成熟 | 保留 Workspace 编辑能力 |

@@ -24,6 +24,11 @@ import (
 // autoFixCode generates improved strategy code via LLM when a gate evaluation fails,
 // creates a new backtest run, and sends a notification. It is designed to be called
 // asynchronously (via goroutine) from the auto-gate callback.
+//
+// Termination: the auto-fix loop stops after maxFixDepth iterations to prevent
+// unbounded LLM API consumption and infinite backtest cycles.
+const maxFixDepth = 3
+
 func autoFixCode(
 	ctx context.Context,
 	run *repository.BacktestRun,
@@ -34,6 +39,26 @@ func autoFixCode(
 	log *zap.Logger,
 ) {
 	if run.StrategyCode == nil || *run.StrategyCode == "" {
+		return
+	}
+
+	// Termination: stop after maxFixDepth auto-fix iterations.
+	if run.FixDepth >= maxFixDepth {
+		log.Info("auto-fix: max fix depth reached, stopping",
+			zap.String("run_id", run.ID.String()),
+			zap.Int("fix_depth", run.FixDepth),
+			zap.String("failed_gate", string(gateResult.FirstFail)))
+		if notifSender != nil {
+			data, _ := structpb.NewStruct(map[string]interface{}{
+				"original_run_id": run.ID.String(),
+				"failed_gate":     string(gateResult.FirstFail),
+				"fix_depth":       run.FixDepth,
+			})
+			_, _ = notifSender.Send(ctx, run.UserID, "auto_fix_stopped",
+				"Auto-Fix: Max Retries Reached",
+				fmt.Sprintf("Strategy failed after %d auto-fix attempts. Last failure: %s — %s", run.FixDepth, gateResult.FirstFail, gateResult.Summary),
+				data)
+		}
 		return
 	}
 
@@ -88,6 +113,8 @@ func autoFixCode(
 		StrictMode:     run.StrictMode,
 		FromTs:         run.FromTs,
 		ToTs:           run.ToTs,
+		AutoGate:       true,
+		FixDepth:       run.FixDepth + 1,
 	}
 	if _, err := backtestRepo.Create(ctx, newRun); err != nil {
 		log.Warn("auto-fix: create backtest run failed",

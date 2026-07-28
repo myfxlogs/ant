@@ -1,4 +1,5 @@
 import { TIMEFRAME_MAX_MONTHS } from '@/pages/strategy/hooks/backtestParamHelpers';
+import type { BacktestMetrics as ProtoBacktestMetrics } from '@/gen/ant/v1/common_pb';
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 
@@ -18,6 +19,29 @@ export interface BacktestMetrics {
   profitFactor?: number;
   winningTrades?: number; losingTrades?: number;
   averageProfit?: number; averageLoss?: number;
+}
+
+function toNum(v: string | undefined): number | undefined {
+  if (v == null || v === '') return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+}
+
+export function protoToMetrics(p: ProtoBacktestMetrics | undefined | null): BacktestMetrics | null {
+  if (!p) return null;
+  return {
+    totalReturn: toNum(p.totalReturn),
+    annualReturn: toNum(p.annualReturn),
+    maxDrawdown: toNum(p.maxDrawdown),
+    sharpeRatio: toNum(p.sharpeRatio),
+    winRate: toNum(p.winRate),
+    totalTrades: p.totalTrades || undefined,
+    profitFactor: toNum(p.profitFactor),
+    winningTrades: p.winningTrades || undefined,
+    losingTrades: p.losingTrades || undefined,
+    averageProfit: toNum(p.averageProfit),
+    averageLoss: toNum(p.averageLoss),
+  };
 }
 
 export interface ExtractedParam {

@@ -31,7 +31,7 @@ const AiWizard = {
           "runAgents": "Phân tích chuyên gia + sinh mã"
         },
         "cards": {
-          "resultsTitle": "Nhiều chuyên gia\\\\\\\\\\\\\\\\"
+          "resultsTitle": "Multiple experts\\\\\\\\\\\\\\\\"
         },
         "hints": {
           "afterGenerated": "Sau khi tạo xong, sang bước tiếp theo để xác thực/backtest/triển khai."
@@ -127,7 +127,7 @@ const AiWizard = {
         },
         "placeholders": {
           "intentExample": "Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...",
-          "macroExample": "Ví dụ:\\\\\\\\\\\\\\\\n2024-01-03 21:15 biên bản FOMC\\\\\\\\\\\\\\\\n2024-01-05 20:30 việc làm phi nông nghiệp",
+          "macroExample": "Example:\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
           "selectAccount": "Chọn tài khoản",
           "selectFrozenDataset": "Chọn dataset đóng băng",
           "selectSymbol": "Chọn mã",
@@ -148,11 +148,11 @@ const AiWizard = {
           "data": "Dữ liệu: {{dataSpec}}",
           "empty": "(trống)",
           "macroDisabled": "Sự kiện vĩ mô: không dùng",
-          "macroEnabled": "Sự kiện vĩ mô (người dùng cung cấp):\\\\\\\\\\\\\\\\n{{text}}",
-          "params": "Tham số (định nghĩa+giá trị hiện tại; injected vào context[\"params\"] lúc runtime):\\\\\\\\\\\\\\\\n{{params}}",
+          "macroEnabled": "Macro events (user-provided):\\\\\\\\\\\\\\\\n{{text}}",
+          "params": "Parameters (defs+current values; injected into context[\"params\"] at runtime):\\\\\\\\\\\\\\\\n{{params}}",
           "symbol": "Mã: {{symbol}}",
           "timeframe": "Khung thời gian: {{timeframe}}",
-          "userIntent": "Mục tiêu chiến lược (ngôn ngữ tự nhiên):\\\\\\\\\\\\\\\\n{{intent}}"
+          "userIntent": "User strategy goal (natural language):\\\\\\\\\\\\\\\\n{{intent}}"
         },
         "dataSpec": {
           "dataset": "Sử dụng dataset đã đóng băng datasetId={{datasetId}}",
@@ -166,13 +166,13 @@ const AiWizard = {
           "mustInclude3": "3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)",
           "mustInclude4": "4) 1 bối cảnh phù hợp và 1 bối cảnh không phù hợp",
           "mustIncludeTitle": "Bắt buộc gồm:",
-          "userIntent": "Kỳ vọng người dùng (ngôn ngữ tự nhiên):\\\\\\\\\\\\\\\\n{{intent}}"
+          "userIntent": "User expectation (natural language):\\\\\\\\\\\\\\\\n{{intent}}"
         },
         "upstream": {
-          "risk": "【Kết luận quản lý rủi ro】\\\\\\\\\\\\\\\\n{{text}}",
+          "risk": "【Risk control conclusion】\\\\\\\\\\\\\\\\n{{text}}",
           "sectionTitle": "[Kết luận agent phía trên (nguyên văn)]",
-          "signals": "【Kết luận thiết kế tín hiệu】\\\\\\\\\\\\\\\\n{{text}}",
-          "style": "【Kết luận điều kiện thị trường/phong cách】\\\\\\\\\\\\\\\\n{{text}}"
+          "signals": "【Signal design conclusion】\\\\\\\\\\\\\\\\n{{text}}",
+          "style": "【Market condition/style conclusion】\\\\\\\\\\\\\\\\n{{text}}"
         }
       },
       "publish": {

@@ -214,7 +214,7 @@ const Base = {
         "yellowSuccessRateRange": "黄色成功率需在0-100之间"
       },
       "aiProviderCatalog": "AI提供商目录",
-      "baseUrlLabel": "基础 URL",
+      "baseUrlLabel": "Base URL",
       "configItem": "配置项",
       "description": "描述",
       "econAIConfig": "经济日历AI配置",
@@ -655,7 +655,9 @@ const Base = {
       "signal": "信号",
       "strategy_execution": "策略执行",
       "system": "系统",
-      "trade": "交易"
+      "trade": "交易",
+      "auto_fix_started": "自动修复",
+      "auto_fix_stopped": "自动修复已停止"
     },
     "all": "全部",
     "clearAll": "清空全部",
@@ -980,8 +982,8 @@ const Base = {
     "publish": {
       "priceModel": {
         "free": "免费",
-        "monthly": "按月订阅",
-        "once": "One-时间 Purchase",
+        "subscription": "按月订阅",
+        "once": "一次性购买",
         "label": "定价方式"
       },
       "assetClass": {
@@ -1341,7 +1343,7 @@ const Base = {
     "period": "当前周期",
     "cancelAutoRenew": "取消自动续订",
     "usageTitle": "本月使用量",
-    "aiTokens": "AI 代币",
+    "aiTokens": "AI Token",
     "activeStrategies": "活跃策略",
     "runtimeMinutes": "运行时长（分钟）",
     "walletBalance": "钱包余额",
@@ -1574,7 +1576,7 @@ const Base = {
     "database": "数据库",
     "diskUsage": "磁盘使用",
     "goRuntime": "Go运行时",
-    "goroutines": "协程数",
+    "goroutines": "Goroutines",
     "gcCount": "GC次数",
     "gcPauseAvg": "GC平均暂停",
     "stackUsage": "栈使用",

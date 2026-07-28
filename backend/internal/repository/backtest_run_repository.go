@@ -49,6 +49,8 @@ type BacktestRun struct {
 	ConfigSnapshot       []byte           `db:"config_snapshot"`
 	StrategyID           *uuid.UUID       `db:"strategy_id"`
 	BacktestSnapshot     []byte           `db:"backtest_snapshot"`
+	AutoGate             bool             `db:"auto_gate"`
+	FixDepth             int              `db:"fix_depth"`
 }
 
 func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
@@ -71,10 +73,10 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
 			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-			strategy_id,
+			strategy_id, auto_gate, fix_depth,
 			created_at
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,CURRENT_TIMESTAMP)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,CURRENT_TIMESTAMP)
 		RETURNING id
 	`
 	id := run.ID
@@ -114,6 +116,8 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		run.StrictMode,
 		run.ConfigSnapshot,
 		run.StrategyID,
+		run.AutoGate,
+		run.FixDepth,
 	).Scan(&out)
 	return out, err
 }
@@ -133,7 +137,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
 			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-			strategy_id, backtest_snapshot,
+			strategy_id, backtest_snapshot, auto_gate, fix_depth,
 			created_at
 		FROM backtest_runs
 		WHERE id = $1 AND user_id = $2`,
@@ -147,7 +151,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 		&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
-		&out.StrategyID, &out.BacktestSnapshot,
+		&out.StrategyID, &out.BacktestSnapshot, &out.AutoGate, &out.FixDepth,
 		&out.CreatedAt,
 	)
 	if err != nil {
@@ -177,7 +181,7 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 		status, error, started_at, finished_at, strategy_code, initial_capital,
 		extra_symbols, parameter_overrides, proto_response,
 		commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-		strategy_id, backtest_snapshot,
+		strategy_id, backtest_snapshot, auto_gate, fix_depth,
 		created_at
 	FROM backtest_runs
 	WHERE user_id = $1`
@@ -219,7 +223,7 @@ func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query s
 			&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 			&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 			&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
-			&out.StrategyID, &out.BacktestSnapshot,
+			&out.StrategyID, &out.BacktestSnapshot, &out.AutoGate, &out.FixDepth,
 			&out.CreatedAt,
 		); err != nil {
 			return nil, err

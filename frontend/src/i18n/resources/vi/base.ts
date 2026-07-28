@@ -214,7 +214,7 @@ const Base = {
         "yellowSuccessRateRange": "黄色成功率需在0-100之间"
       },
       "aiProviderCatalog": "AI提供商目录",
-      "baseUrlLabel": "URL cơ sở",
+      "baseUrlLabel": "Base URL",
       "configItem": "配置项",
       "description": "Mô Tả",
       "econAIConfig": "经济日历AI配置",
@@ -973,14 +973,14 @@ const Base = {
       "typeKill": "Gõ KILL để xác nhận",
       "typeKillPlaceholder": "Gõ KILL (chữ hoa)",
       "undoWindow": "Cửa sổ hoàn tác: còn {{minutes}}m {{seconds}}s",
-      "title": "Công tắc dừng khẩn cấp"
+      "title": "Kill Switch"
     }
   },
   "marketplace": {
     "publish": {
       "priceModel": {
         "free": "Miễn phí",
-        "monthly": "Đăng ký hàng tháng",
+        "subscription": "Đăng ký hàng tháng",
         "once": "Mua một lần",
         "label": "Giá cả"
       },
@@ -1573,7 +1573,7 @@ const Base = {
     "database": "Cơ sở dữ liệu",
     "diskUsage": "Dung lượng đĩa",
     "goRuntime": "Go Runtime",
-    "goroutines": "Số goroutine",
+    "goroutines": "Goroutines",
     "gcCount": "Số lần GC",
     "gcPauseAvg": "Thời gian dừng GC TB",
     "stackUsage": "Sử dụng Stack",
@@ -1583,7 +1583,7 @@ const Base = {
     "idle": "Nhàn rỗi",
     "acquired": "Đang dùng",
     "mdGateway": "MD Gateway",
-    "spillFiles": "Tệp spill",
+    "spillFiles": "Spill Files",
     "droppedBars": "Nến bị bỏ lỡ",
     "droppedSignals": "Tín hiệu bị bỏ lỡ",
     "consumerLag": "Độ trễ Consumer",

@@ -9,18 +9,20 @@
 2. **再读 Cascade v2 版**：`0027-v2-strategy-module-redesign.md` — 对 GLM 版的修订 + 架构补强
 3. **最后读本文**：对照矩阵 + Claude 投票 + 补充问题
 
-## 当前代码库真实现状（2026-07-23，请以此为准）
+## 当前代码库真实现状（2026-07-27 核查更新）
 
 | 页面 | 文件 | 状态 |
 |------|------|------|
-| **Workspace** | `StrategyWorkspacePage.tsx` | ✅ 成熟。一体化 IDE：K线图表 Tab + 代码编辑器 Tab + 回测 Tab + 右侧 AI 面板 |
-| **Library** | `StrategyLibraryPage.tsx` | 🆕 **今天刚建**（187 行）。Table 列表：搜索/筛选(All/My/Preset)/Open in Workspace/删除。已跑通 |
-| **MQL Import** | `ImportEAPanel.tsx` + Drawer | 🆕 **今天刚接入** Workspace Code Tab。点击 [Import MQL] → Drawer 滑出 → 粘贴 MQL → 分析/翻译/桥接 → Apply 写入编辑器 |
+| **Gallery** | `StrategyGalleryPage.tsx` | ✅ 已完成。卡片网格 + 搜索/筛选/排序 + Compare + Publish/Deploy/Fork/Delete |
+| **Detail** | `StrategyDetailPage.tsx` | ✅ 已完成。Overview + Code 只读 + [Open in Workspace] |
+| **Workspace** | `StrategyWorkspacePage.tsx` | ✅ 成熟，73 行组合根。一体化 IDE：K线图表 Tab + 代码编辑器 Tab + 回测 Tab + 右侧 AI 面板 |
+| **MQL Import** | `ImportEAPanel.tsx` + Drawer | ✅ 已接入 Workspace Code Tab |
 | **Live Monitor** | `LiveStrategyPage.tsx` | ✅ 成熟 |
 | **Market Tools** | `MarketToolsPage.tsx` | ✅ 成熟 |
-| **State hook** | `useStrategyWorkspaceState.ts` | ⚠️ 283 行上帝 hook，返回 10 域大对象；域间用 useEffect 手动 rewire |
-| **State store** | `workspaceStore.ts` | ⚠️ Zustand 单体 store，`centerTab`/`rightPanelWidth`/`currentCode` 混在一起 |
-| **Routes** | `AppRoutes.tsx` | ⚠️ `/strategy/:strategyId` 已被 `StrategySharePage` 公开分享页占用；`/strategy/library` 今天刚指向新页面；旧 `/strategy/workspace` 仍存在 |
+| **State hook** | `useStrategyWorkspaceState.ts` | ✅ 已重构为 61 行组合根（feature-slice 模式） |
+| **State store** | `workspaceStore.ts` | ✅ Zustand slice-creator 模式，`ant-workspace-v6` |
+| **Routes** | `AppRoutes.tsx` | ✅ `/strategy` Gallery + `/strategy/view/:id` Detail + `/strategy/new` + `/strategy/:id/edit` + 旧路径重定向 + `/strategy/:strategyId` 分享页兜底 |
+| **StrategyCard** | `StrategyCard.tsx` | ✅ 已完成。卡片组件含 sparkline/KPI/actions |
 
 ## 协议
 

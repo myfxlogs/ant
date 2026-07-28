@@ -214,7 +214,7 @@ const Base = {
         "yellowSuccessRateRange": "黄色成功率需在0-100之间"
       },
       "aiProviderCatalog": "AI提供商目录",
-      "baseUrlLabel": "ベースURL",
+      "baseUrlLabel": "Base URL",
       "configItem": "配置项",
       "description": "説明",
       "econAIConfig": "经济日历AI配置",
@@ -980,7 +980,7 @@ const Base = {
     "publish": {
       "priceModel": {
         "free": "無料",
-        "monthly": "月額サブスクリプション",
+        "subscription": "月額サブスクリプション",
         "once": "買い切り",
         "label": "価格設定"
       },
@@ -1573,7 +1573,7 @@ const Base = {
     "database": "データベース",
     "diskUsage": "ディスク使用量",
     "goRuntime": "Goランタイム",
-    "goroutines": "ゴルーチン数",
+    "goroutines": "Goroutine",
     "gcCount": "GC回数",
     "gcPauseAvg": "GC停止平均",
     "stackUsage": "スタック使用量",

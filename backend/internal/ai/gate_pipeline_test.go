@@ -58,15 +58,25 @@ func TestAIGatePipeline_LookAheadFails(t *testing.T) {
 	}
 }
 
-func TestAIGatePipeline_EmptyExpressionFails(t *testing.T) {
+func TestAIGatePipeline_EmptyExpressionSkipsCompliance(t *testing.T) {
 	t.Parallel()
 	input := PipelineInput{Expression: ""}
 	result := Pipeline(input)
+	// Empty expression → compliance + lookahead skipped, walkforward fails (no data).
 	if result.Passed {
-		t.Fatal("empty expression should fail at compliance gate")
+		t.Fatal("pipeline should fail when no daily returns data")
 	}
-	if result.FirstFail != GateCompliance {
-		t.Fatalf("should fail at compliance, not %s", result.FirstFail)
+	if result.FirstFail != GateWalkForward {
+		t.Fatalf("first fail should be walkforward (no data), not %s", result.FirstFail)
+	}
+	// Compliance and lookahead should be skipped, not failed.
+	for _, g := range result.Gates {
+		if g.Gate == GateCompliance && !g.Skipped {
+			t.Fatal("compliance should be skipped for empty expression")
+		}
+		if g.Gate == GateLookAhead && !g.Skipped {
+			t.Fatal("lookahead should be skipped for empty expression")
+		}
 	}
 }
 
@@ -78,14 +88,21 @@ func TestAIGatePipeline_OrderIsCorrect(t *testing.T) {
 		DailyReturns: returns,
 	}
 	result := Pipeline(input)
-	if len(result.Gates) != 2 {
-		t.Fatalf("should stop after 2 gates, got %d", len(result.Gates))
+	// All 7 gates are now evaluated (no short-circuit).
+	if len(result.Gates) != 7 {
+		t.Fatalf("should evaluate all 7 gates, got %d", len(result.Gates))
 	}
 	if result.Gates[0].Gate != GateCompliance {
 		t.Fatalf("first gate should be compliance, got %s", result.Gates[0].Gate)
 	}
 	if result.Gates[1].Gate != GateLookAhead {
 		t.Fatalf("second gate should be lookahead, got %s", result.Gates[1].Gate)
+	}
+	if result.Passed {
+		t.Fatal("lookahead failure should cause pipeline to fail")
+	}
+	if result.FirstFail != GateLookAhead {
+		t.Fatalf("first fail should be lookahead, got %s", result.FirstFail)
 	}
 }
 

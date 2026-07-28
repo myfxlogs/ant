@@ -27,16 +27,16 @@ func DefaultCorrelationGateConfig() CorrelationGateConfig {
 // SignalDirection represents the direction of a strategy's signal at a point in time.
 // +1 = long, -1 = short, 0 = neutral/no signal.
 type SignalDirection struct {
-	Timestamp int64   `json:"ts_unix_ms"`
-	Direction float64 `json:"direction"` // +1, -1, or 0
+	Timestamp int64
+	Direction float64 // +1, -1, or 0
 }
 
 // CorrelationGateResult is the outcome of the correlation gate check.
 type CorrelationGateResult struct {
-	Passed             bool    `json:"passed"`
-	MaxCorrelation     float64 `json:"max_correlation"`     // highest correlation found
-	CorrelatedStrategy string  `json:"correlated_strategy,omitempty"` // which existing strategy
-	Reason             string  `json:"reason,omitempty"`
+	Passed             bool
+	MaxCorrelation     float64
+	CorrelatedStrategy string
+	Reason             string
 }
 
 // CorrelationGate checks if a new strategy's signals are too correlated with existing ones.

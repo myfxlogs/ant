@@ -47,4 +47,5 @@ message BacktestRun {
   bool is_succeeded = 19;
   optional BacktestExecutionConfig execution_config = 20;
   optional string strategy_id = 21; // imported_strategies.id (nullable)
+  int32 fix_depth = 22; // auto-fix iteration depth (0 = original run, 1+ = auto-fixed)
 }

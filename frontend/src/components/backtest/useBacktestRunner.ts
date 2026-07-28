@@ -10,7 +10,8 @@ import { BACKTEST_COMPLETED_KEY, BACKTEST_ERROR_KEY } from '@/gen/ant/v1/i18n/st
 import { TOTAL_RETURN_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
-import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
+import type { BacktestRunUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
+import type { GateEvaluationUpdate, GateResult } from '@/gen/ant/v1/ai_gate_pb';
 import { isTerminalRun, isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import {
   backendDirectivesToStrategyDirectives,
@@ -23,7 +24,7 @@ import {
   type BacktestStatus, type ChartTrade, type BacktestMetrics,
   type ExtractedParam, type StandardParams, type BacktestRunnerInputs,
   FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults,
-  getTimeframeWarning,
+  getTimeframeWarning, protoToMetrics,
 } from './backtestRunnerTypes';
 
 export type { StrategyDirective, PresetKey };
@@ -58,7 +59,7 @@ export function useBacktestRunner() {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<BacktestStatus>('idle');
   const [metrics, setMetrics] = useState<BacktestMetrics | null>(null);
-  const [executionAssumptions, setExecutionAssumptions] = useState<any>(null);
+  const [executionAssumptions, setExecutionAssumptions] = useState<import('@/gen/ant/v1/backtest_execution_config_pb').ExecutionAssumptions | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   // ── Chart trades ──────────────────────────────────────────────────────
@@ -75,6 +76,10 @@ export function useBacktestRunner() {
 
   // ── Internal ──────────────────────────────────────────────────────────
   const [runId, setRunId] = useState('');
+  const [fixDepth, setFixDepth] = useState(0);
+  const [gateUpdate, setGateUpdate] = useState<GateEvaluationUpdate | null>(null);
+  const [gateResults, setGateResults] = useState<GateResult[]>([]);
+  const [qualityPreview, setQualityPreview] = useState<MarketplaceQualityPreview | null>(null);
   const watchRef = useRef<(() => void) | null>(null);
 
   // Sub-hooks
@@ -109,7 +114,7 @@ export function useBacktestRunner() {
     setStrategyDirectives(backendDirectivesToStrategyDirectives(dirs));
   }, []);
 
-  const handleValidationResult = useCallback((result: any) => {
+  const handleValidationResult = useCallback((result: import('@/client/codeAssist').ValidateExtendedResult) => {
     if (result.sweepDimensions?.length > 0) tuning.updateSweepFromCode(result.sweepDimensions);
     if (result.strategyDirectives?.length > 0) updateDirectivesFromCode(result.strategyDirectives);
     updateExtractedParams(
@@ -144,7 +149,7 @@ export function useBacktestRunner() {
   const resetStatus = useCallback(() => {
     setStatus('idle'); setErrorMsg(''); setMetrics(null);
     setExecutionAssumptions(null); setChartTrades([]);
-    setRunId('');
+    setRunId(''); setGateUpdate(null); setGateResults([]); setQualityPreview(null); setFixDepth(0);
   }, []);
 
   // ── Settings menu ─────────────────────────────────────────────────────
@@ -179,6 +184,7 @@ export function useBacktestRunner() {
         to: endDate ? new Date(endDate) : undefined,
         templateId: templateId || undefined,
         strategyId: strategyId || undefined,
+        autoGate: true,
         executionConfig: {
           commission, slippage, leverage,
           tradeDirection: tradeDirection as 'long' | 'short' | 'both',
@@ -189,18 +195,27 @@ export function useBacktestRunner() {
       setRunId(result.runId);
       setStatus('running');
       setExecutionAssumptions(null);
+      setGateUpdate(null);
+      setGateResults([]);
+      setQualityPreview(null);
+      setFixDepth(0);
       watchRef.current?.();
       const stopWatching = await strategyRuntimeApi.watchBacktestRun(result.runId, (update: BacktestRunUpdate) => {
         const run = update.run;
+        if (run?.fixDepth) setFixDepth(run.fixDepth);
+        if (update.gateUpdate?.gate) setGateResults(prev => [...prev, update.gateUpdate!.gate!]);
+        if (update.gateUpdate?.completed) setGateUpdate(update.gateUpdate);
+        if (update.qualityPreview) setQualityPreview(update.qualityPreview);
         if (run && isTerminalRun(run)) {
           const ok = isSucceededRun(run);
           setStatus(ok ? 'completed' : 'error');
-          setMetrics(update.metrics ?? null);
+          setMetrics(protoToMetrics(update.metrics));
           setExecutionAssumptions(update.executionAssumptions ?? null);
           setErrorMsg(update.run?.error ?? ''); stopWatching();
           watchRef.current = null;
           if (ok) {
-            notification.success({ message: t(BACKTEST_COMPLETED_KEY), description: t(TOTAL_RETURN_KEY) + ': ' + ((update.metrics?.totalReturn ?? 0) * 100).toFixed(2) + '%', placement: 'bottomRight', duration: 4 });
+            const m = protoToMetrics(update.metrics);
+            notification.success({ message: t(BACKTEST_COMPLETED_KEY), description: t(TOTAL_RETURN_KEY) + ': ' + ((m?.totalReturn ?? 0) * 100).toFixed(2) + '%', placement: 'bottomRight', duration: 4 });
             backtestRunsApi.getTrades(result.runId).then((tr) => {
               setChartTrades(tr.trades.map((t: BacktestTrade) => ({
                 side: t.side,
@@ -213,12 +228,13 @@ export function useBacktestRunner() {
           if (!ok) {
             notification.error({ message: t(BACKTEST_ERROR_KEY), description: update.run?.error || '', placement: 'bottomRight', duration: 6 });
           }
-        } else { setMetrics(update.metrics || null); }
+        } else { setMetrics(protoToMetrics(update.metrics)); }
       });
       watchRef.current = stopWatching;
-    } catch (e: any) {
-      message.error(e?.message || t(BACKTEST_FAILED_KEY));
-      setStatus('error'); setErrorMsg(e?.message || 'Unknown error');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      message.error(msg || t(BACKTEST_FAILED_KEY));
+      setStatus('error'); setErrorMsg(msg || 'Unknown error');
     } finally { setSubmitting(false); }
   }, [initialCapital, commission, slippage, leverage, lotSize, tradeDirection, strictMode, startDate, endDate, t]);
 
@@ -233,8 +249,9 @@ export function useBacktestRunner() {
       setStatus('idle');
       setRunId('');
       message.info(t('strategy.backtest.canceled', { defaultValue: 'Backtest canceled' }));
-    } catch (e: any) {
-      message.error(e?.message || t('strategy.backtest.cancelFailed', { defaultValue: 'Cancel failed' }));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      message.error(msg || t('strategy.backtest.cancelFailed', { defaultValue: 'Cancel failed' }));
     }
   }, [runId, t]);
 
@@ -252,8 +269,9 @@ export function useBacktestRunner() {
     updateExtractedParams, updateDirectivesFromCode,
     // Run
     run, submitting, status, metrics, executionAssumptions, errorMsg,
-    runId, chartTrades, resetStatus,
+    runId, fixDepth, chartTrades, resetStatus,
     cancelRun,
+    gateUpdate, gateResults, qualityPreview,
     // Directives
     strategyDirectives,
     // UI

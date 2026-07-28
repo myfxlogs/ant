@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface TemplateSliceDeps {
   handleLoadTemplate: (id: string) => Promise<any>;
@@ -16,6 +17,8 @@ export interface TemplateSlice {
 export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
   const [searchParams] = useSearchParams();
   const { id: routeId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const currentUserId = useAuthStore(s => s.user?.id);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const setRightTab = useWorkspaceStore(s => s.setRightTab);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
@@ -27,9 +30,15 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
       return;
     }
     setSelectedTemplateId(templateId);
-    setCenterTab('code');
     const tpl = await deps.handleLoadTemplate(templateId);
     if (!tpl) { setSelectedTemplateId(''); return; }
+    const isOwner = tpl.userId && tpl.userId === currentUserId;
+    const isSystem = !!tpl.isSystem;
+    if (!isOwner && !isSystem) {
+      navigate('/strategy');
+      return;
+    }
+    setCenterTab('code');
     if (tpl.parameters?.length) {
       const params = tpl.parameters.map((p: any) => ({
         name: p.name || '', type: p.type || 'string',
@@ -39,7 +48,7 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
     } else if (tpl.code?.trim()) {
       deps.validateCode(tpl.code);
     }
-  }, [deps.handleLoadTemplate, deps.validateCode, deps.updateExtractedParams, setCenterTab]);
+  }, [deps.handleLoadTemplate, deps.validateCode, deps.updateExtractedParams, setCenterTab, navigate, currentUserId]);
 
   // Load template from URL on mount — supports both ?templateId=X and /:id/edit route param.
   useEffect(() => {

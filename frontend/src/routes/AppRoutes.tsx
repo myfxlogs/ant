@@ -87,23 +87,24 @@ const mainRoutes = (
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="wallet" element={wrap(<WalletPage />)} />
     <Route path="subscription" element={wrap(<SubscriptionPage />)} />
-    <Route path="strategy/templates" element={<Navigate to="/strategy/workspace" replace />} />
+    <Route path="strategy/templates" element={<Navigate to="/strategy/new" replace />} />
     <Route path="strategy/schedules" element={<Navigate to="/strategy/live" replace />} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
     <Route path="strategy" element={wrap(<StrategyGalleryPage />)} />
     <Route path="strategy/gallery" element={<Navigate to="/strategy" replace />} />
     <Route path="strategy/library" element={<Navigate to="/strategy" replace />} />
     <Route path="strategy/view/:id" element={wrap(<StrategyDetailPage />)} />
-    <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
+    <Route path="strategy/new" element={wrap(<StrategyWorkspacePage />)} />
+    <Route path="strategy/workspace" element={<Navigate to="/strategy/new" replace />} />
     <Route path="strategy/:id/edit" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/live" element={wrap(<LiveStrategyPage />)} />
-    <Route path="strategy/indicator-catalog" element={<Navigate to="/strategy/workspace" replace />} />
+    <Route path="strategy/indicator-catalog" element={<Navigate to="/strategy/new" replace />} />
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />
-    <Route path="strategy/experiments" element={<Navigate to="/strategy/workspace" replace />} />
+    <Route path="strategy/experiments" element={<Navigate to="/strategy/new" replace />} />
     <Route path="strategy/market-tools" element={wrap(<MarketToolsPage />)} />
     <Route path="strategy/analysis" element={<Navigate to="/strategy/market-tools?tab=symbol" replace />} />
     <Route path="strategy/market-regime" element={<Navigate to="/strategy/market-tools?tab=regime" replace />} />
-    <Route path="strategy/memory" element={<Navigate to="/strategy/workspace" replace />} />
+    <Route path="strategy/memory" element={<Navigate to="/strategy/new" replace />} />
     <Route path="logs" element={wrap(<LogManagement />)} />
     <Route path="auto-trading" element={wrap(<AutoTradingSettings />)} />
     <Route path="trading/algos" element={wrap(<AlgoDashboard />)} />

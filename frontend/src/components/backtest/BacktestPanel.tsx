@@ -155,6 +155,9 @@ export default function BacktestPanel(props: Props) {
             trades={runner.chartTrades}
             panelHeight={runner.panelHeight}
             onCancel={runner.cancelRun}
+            gateUpdate={runner.gateUpdate}
+            gateResults={runner.gateResults}
+            qualityPreview={runner.qualityPreview}
           />
         )}
 
@@ -206,6 +209,7 @@ export default function BacktestPanel(props: Props) {
             loading={runner.gate.loading || false} gates={runner.gate.gates || []} summary={runner.gate.summary || null}
             error={runner.gate.error || ''} status={runner.status} canRun={runner.status === 'completed'}
             onRun={runner.gate.run || (() => {})}
+            fixDepth={runner.fixDepth || 0}
           />
         )}
 

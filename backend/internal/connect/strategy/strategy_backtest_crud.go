@@ -145,6 +145,7 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 			run.TemplateID = &id
 		}
 	}
+	run.AutoGate = msg.GetAutoGate()
 	return run
 }
 
@@ -237,6 +238,9 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 		return err
 	}
 	if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
+		if run.Status == "SUCCEEDED" && run.AutoGate {
+			restoreGateEvaluation(ctx, s, run, stream)
+		}
 		return nil
 	}
 
@@ -279,6 +283,9 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 			return err
 		}
 		if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
+			if run.Status == "SUCCEEDED" && run.AutoGate {
+				restoreGateEvaluation(ctx, s, run, stream)
+			}
 			return nil
 		}
 	}

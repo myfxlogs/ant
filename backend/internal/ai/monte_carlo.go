@@ -14,6 +14,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"time"
 )
 
 // MonteCarloConfig holds parameters for Monte Carlo simulation.
@@ -21,7 +22,7 @@ type MonteCarloConfig struct {
 	NumSimulations  int     // number of bootstrap resamples (default 1000)
 	ConfidenceLevel float64 // confidence level for CI (default 0.95)
 	MaxDDLimit      float64 // ruin threshold for max drawdown (default 0.30 = 30%)
-	Seed            int64   // RNG seed for reproducibility (default 42)
+	Seed            int64   // RNG seed; 0 = random (production), non-zero = reproducible (tests)
 }
 
 // DefaultMonteCarloConfig returns standard parameters.
@@ -30,7 +31,7 @@ func DefaultMonteCarloConfig() MonteCarloConfig {
 		NumSimulations:  1000,
 		ConfidenceLevel: 0.95,
 		MaxDDLimit:      0.30,
-		Seed:            42,
+		Seed:            0, // 0 = random seed (production); tests set explicit seed
 	}
 }
 
@@ -73,7 +74,11 @@ func MonteCarlo(dailyReturns []float64, cfg MonteCarloConfig) MonteCarloResult {
 		cfg.MaxDDLimit = 0.30
 	}
 
-	rng := rand.New(rand.NewSource(cfg.Seed))
+	seed := cfg.Seed
+	if seed == 0 {
+		seed = time.Now().UnixNano()
+	}
+	rng := rand.New(rand.NewSource(seed))
 	n := len(dailyReturns)
 
 	sharpeSamples := make([]float64, 0, cfg.NumSimulations)

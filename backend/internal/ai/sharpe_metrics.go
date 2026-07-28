@@ -35,8 +35,8 @@ func computeSharpe(dailyReturns []float64) float64 {
 
 // computeMaxDD calculates the maximum drawdown as a fraction of peak equity.
 // Returns a value in [0, 1] where 0.30 = 30% drawdown.
-// For underwater strategies (cumulative return never positive), returns
-// the absolute cumulative loss.
+// For underwater strategies (cumulative return never positive), returns 1.0
+// (100% drawdown — the strategy never recovered above its starting point).
 func computeMaxDD(returns []float64) float64 {
 	if len(returns) == 0 {
 		return 0
@@ -56,9 +56,9 @@ func computeMaxDD(returns []float64) float64 {
 			}
 		}
 	}
-	// Underwater strategy: cumulative return never positive.
+	// Underwater strategy: cumulative return never positive → 100% drawdown.
 	if peak == 0 {
-		return math.Abs(cumulative)
+		return 1.0
 	}
 	return maxDD
 }

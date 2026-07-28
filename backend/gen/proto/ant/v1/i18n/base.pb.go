@@ -653,6 +653,8 @@ type BaseI18N struct {
 	WalletWithdraw                                                                string                 `protobuf:"bytes,628,opt,name=wallet_withdraw,json=walletWithdraw,proto3" json:"wallet_withdraw,omitempty"`                                                                                                                                                                                                                  // Withdraw
 	CommonUnsaved                                                                 string                 `protobuf:"bytes,629,opt,name=common_unsaved,json=commonUnsaved,proto3" json:"common_unsaved,omitempty"`                                                                                                                                                                                                                     // Unsaved
 	CommonSaved                                                                   string                 `protobuf:"bytes,630,opt,name=common_saved,json=commonSaved,proto3" json:"common_saved,omitempty"`                                                                                                                                                                                                                           // Saved
+	NotificationsTypesAutoFixStarted                                              string                 `protobuf:"bytes,631,opt,name=notifications_types_auto_fix_started,json=notificationsTypesAutoFixStarted,proto3" json:"notifications_types_auto_fix_started,omitempty"`                                                                                                                                                      // Auto-Fix
+	NotificationsTypesAutoFixStopped                                              string                 `protobuf:"bytes,632,opt,name=notifications_types_auto_fix_stopped,json=notificationsTypesAutoFixStopped,proto3" json:"notifications_types_auto_fix_stopped,omitempty"`                                                                                                                                                      // Auto-Fix Stopped
 	unknownFields                                                                 protoimpl.UnknownFields
 	sizeCache                                                                     protoimpl.SizeCache
 }
@@ -5097,11 +5099,25 @@ func (x *BaseI18N) GetCommonSaved() string {
 	return ""
 }
 
+func (x *BaseI18N) GetNotificationsTypesAutoFixStarted() string {
+	if x != nil {
+		return x.NotificationsTypesAutoFixStarted
+	}
+	return ""
+}
+
+func (x *BaseI18N) GetNotificationsTypesAutoFixStopped() string {
+	if x != nil {
+		return x.NotificationsTypesAutoFixStopped
+	}
+	return ""
+}
+
 var File_i18n_base_proto protoreflect.FileDescriptor
 
 const file_i18n_base_proto_rawDesc = "" +
 	"\n" +
-	"\x0fi18n/base.proto\x12\vant.v1.i18n\"\xd8\xc4\x02\n" +
+	"\x0fi18n/base.proto\x12\vant.v1.i18n\"\xfa\xc5\x02\n" +
 	"\bBaseI18n\x12F\n" +
 	" admin_config_ai_provider_catalog\x18\x01 \x01(\tR\x1cadminConfigAiProviderCatalog\x12<\n" +
 	"\x1badmin_config_base_url_label\x18\x02 \x01(\tR\x17adminConfigBaseUrlLabel\x127\n" +
@@ -5753,7 +5769,9 @@ const file_i18n_base_proto_rawDesc = "" +
 	"\x19wallet_tx_type_withdrawal\x18\xf3\x04 \x01(\tR\x16walletTxTypeWithdrawal\x12(\n" +
 	"\x0fwallet_withdraw\x18\xf4\x04 \x01(\tR\x0ewalletWithdraw\x12&\n" +
 	"\x0ecommon_unsaved\x18\xf5\x04 \x01(\tR\rcommonUnsaved\x12\"\n" +
-	"\fcommon_saved\x18\xf6\x04 \x01(\tR\vcommonSavedB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\fcommon_saved\x18\xf6\x04 \x01(\tR\vcommonSaved\x12O\n" +
+	"$notifications_types_auto_fix_started\x18\xf7\x04 \x01(\tR notificationsTypesAutoFixStarted\x12O\n" +
+	"$notifications_types_auto_fix_stopped\x18\xf8\x04 \x01(\tR notificationsTypesAutoFixStoppedB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_base_proto_rawDescOnce sync.Once

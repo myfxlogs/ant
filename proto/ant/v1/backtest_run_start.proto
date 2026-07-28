@@ -30,6 +30,9 @@ message StartBacktestRunRequest {
   // from the imported strategy instead of using the code field.
   // If both strategy_id and code are set, strategy_id takes precedence.
   optional string strategy_id = 14;
+  // auto_gate: when true, server automatically runs 7-gate pipeline + marketplace
+  // quality preview after backtest succeeds, streaming results via WatchBacktestRun.
+  bool auto_gate = 15;
 }
 
 message StartBacktestRunResponse {

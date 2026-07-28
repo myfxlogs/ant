@@ -336,6 +336,52 @@ func (x *GatePipelineSummary) GetTotalDurationMs() int64 {
 	return 0
 }
 
+// GateResultList is a wrapper for persisting all individual gate results.
+// Used by gate_evaluations.gate_results BYTEA column for reconnect replay.
+type GateResultList struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Gates         []*GateResult          `protobuf:"bytes,1,rep,name=gates,proto3" json:"gates,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GateResultList) Reset() {
+	*x = GateResultList{}
+	mi := &file_ai_gate_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GateResultList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GateResultList) ProtoMessage() {}
+
+func (x *GateResultList) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_gate_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GateResultList.ProtoReflect.Descriptor instead.
+func (*GateResultList) Descriptor() ([]byte, []int) {
+	return file_ai_gate_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GateResultList) GetGates() []*GateResult {
+	if x != nil {
+		return x.Gates
+	}
+	return nil
+}
+
 var File_ai_gate_proto protoreflect.FileDescriptor
 
 const file_ai_gate_proto_rawDesc = "" +
@@ -370,7 +416,9 @@ const file_ai_gate_proto_rawDesc = "" +
 	"\n" +
 	"first_fail\x18\x02 \x01(\tR\tfirstFail\x12\x18\n" +
 	"\asummary\x18\x03 \x01(\tR\asummary\x12*\n" +
-	"\x11total_duration_ms\x18\x04 \x01(\x03R\x0ftotalDurationMs2`\n" +
+	"\x11total_duration_ms\x18\x04 \x01(\x03R\x0ftotalDurationMs\":\n" +
+	"\x0eGateResultList\x12(\n" +
+	"\x05gates\x18\x01 \x03(\v2\x12.ant.v1.GateResultR\x05gates2`\n" +
 	"\vGateService\x12Q\n" +
 	"\rRunEvaluation\x12 .ant.v1.RunGateEvaluationRequest\x1a\x1c.ant.v1.GateEvaluationUpdate0\x01B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
@@ -386,23 +434,25 @@ func file_ai_gate_proto_rawDescGZIP() []byte {
 	return file_ai_gate_proto_rawDescData
 }
 
-var file_ai_gate_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_ai_gate_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_ai_gate_proto_goTypes = []any{
 	(*RunGateEvaluationRequest)(nil), // 0: ant.v1.RunGateEvaluationRequest
 	(*GateEvaluationUpdate)(nil),     // 1: ant.v1.GateEvaluationUpdate
 	(*GateResult)(nil),               // 2: ant.v1.GateResult
 	(*GatePipelineSummary)(nil),      // 3: ant.v1.GatePipelineSummary
+	(*GateResultList)(nil),           // 4: ant.v1.GateResultList
 }
 var file_ai_gate_proto_depIdxs = []int32{
 	2, // 0: ant.v1.GateEvaluationUpdate.gate:type_name -> ant.v1.GateResult
 	3, // 1: ant.v1.GateEvaluationUpdate.completed:type_name -> ant.v1.GatePipelineSummary
-	0, // 2: ant.v1.GateService.RunEvaluation:input_type -> ant.v1.RunGateEvaluationRequest
-	1, // 3: ant.v1.GateService.RunEvaluation:output_type -> ant.v1.GateEvaluationUpdate
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	2, // 2: ant.v1.GateResultList.gates:type_name -> ant.v1.GateResult
+	0, // 3: ant.v1.GateService.RunEvaluation:input_type -> ant.v1.RunGateEvaluationRequest
+	1, // 4: ant.v1.GateService.RunEvaluation:output_type -> ant.v1.GateEvaluationUpdate
+	4, // [4:5] is the sub-list for method output_type
+	3, // [3:4] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_ai_gate_proto_init() }
@@ -416,7 +466,7 @@ func file_ai_gate_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_gate_proto_rawDesc), len(file_ai_gate_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

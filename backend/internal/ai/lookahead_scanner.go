@@ -18,9 +18,9 @@ type LookAheadViolation struct {
 
 // LookAheadResult is the outcome of scanning an expression for lookahead bias.
 type LookAheadResult struct {
-	Passed     bool                 `json:"passed"`
-	Violations []LookAheadViolation `json:"violations,omitempty"`
-	Expression string               `json:"expression"`
+	Passed     bool
+	Violations []LookAheadViolation
+	Expression string
 }
 
 // LookAheadScanner detects future references in DSL expressions.

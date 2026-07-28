@@ -24,11 +24,11 @@ func (w *ExperimentWorker) runSingleBacktest(
 	ctx context.Context, code string, overrides map[string]interface{},
 	userID uuid.UUID, symbol, timeframe string, fromTs, toTs time.Time,
 	regime ai.MarketRegime,
-) (*ai.ScoredResult, error) {
+) (*ai.ScoredResult, uuid.UUID, error) {
 	modifiedCode := code
 	overridesBytes, err := marshalOverrides(overrides)
 	if err != nil {
-		return nil, fmt.Errorf("marshal overrides: %w", err)
+		return nil, uuid.Nil, fmt.Errorf("marshal overrides: %w", err)
 	}
 	run := &repository.BacktestRun{
 		ID:                 uuid.New(),
@@ -55,30 +55,30 @@ func (w *ExperimentWorker) runSingleBacktest(
 
 	runID, err := w.backtestRepo.Create(ctx, run)
 	if err != nil {
-		return nil, fmt.Errorf("create backtest: %w", err)
+		return nil, uuid.Nil, fmt.Errorf("create backtest: %w", err)
 	}
 
 	// Poll for completion
 	for i := 0; i < 120; i++ { // 10 minutes max timeout
 		select {
 		case <-ctx.Done():
-			return nil, fmt.Errorf("backtest %s cancelled: %w", runID, ctx.Err())
+			return nil, uuid.Nil, fmt.Errorf("backtest %s cancelled: %w", runID, ctx.Err())
 		case <-time.After(5 * time.Second):
 		}
 		bt, err := w.backtestRepo.GetByID(ctx, userID, runID)
 		if err != nil {
-			return nil, fmt.Errorf("get backtest: %w", err)
+			return nil, uuid.Nil, fmt.Errorf("get backtest: %w", err)
 		}
 		if bt.Status == StatusSucceeded || bt.Status == StatusFailed {
 			if bt.Status == StatusFailed {
-				return nil, fmt.Errorf("backtest failed: %s", bt.Error)
+				return nil, uuid.Nil, fmt.Errorf("backtest failed: %s", bt.Error)
 			}
 			btMetrics := extractBacktestMetrics(bt.ProtoResponse)
 			scored := ai.Score(btMetrics, regime)
-			return scored, nil
+			return scored, runID, nil
 		}
 	}
-	return nil, fmt.Errorf("backtest %s timed out", runID)
+	return nil, uuid.Nil, fmt.Errorf("backtest %s timed out", runID)
 }
 
 // backtestAndScore executes an in-sample backtest on the full experiment time window.
@@ -103,7 +103,7 @@ func (w *ExperimentWorker) backtestAndScore(
 		toTs = time.Now()
 	}
 
-	scored, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime)
+	scored, runID, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime)
 	if err != nil {
 		return candidateResult{}, err
 	}
@@ -119,6 +119,7 @@ func (w *ExperimentWorker) backtestAndScore(
 		Grade:           scored.Grade,
 		ScoreComponents: scored.Components,
 		Summary:         summary,
+		BacktestRunID:   &runID,
 	}, nil
 }
 

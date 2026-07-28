@@ -1,5 +1,5 @@
 import { useState, useCallback, useDeferredValue } from 'react';
-import { Typography, Button, Input, Segmented, Select, Row, Col, Spin, Empty, Alert, Space, message } from 'antd';
+import { Typography, Button, Input, Segmented, Select, Row, Col, Spin, Empty, Alert, Space } from 'antd';
 import { PlusOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,6 @@ export default function StrategyGalleryPage() {
   const deferredSearch = useDeferredValue(search);
   const [filter, setFilter] = useState<FilterKey>('all');
   const [sort, setSort] = useState<SortKey>('recent');
-  const [creating, setCreating] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.strategyCards.list({ filter, sort, search: deferredSearch }),
@@ -29,18 +28,9 @@ export default function StrategyGalleryPage() {
   });
   const cards = data?.cards ?? [];
 
-  const handleNew = useCallback(async () => {
-    setCreating(true);
-    try {
-      const draft = await strategyApi.createTemplateDraft({ name: t('strategy.templates.untitled', { defaultValue: 'Untitled Strategy' }) });
-      if (!draft.id) throw new Error('Draft creation returned empty id');
-      navigate(`/strategy/${draft.id}/edit`);
-    } catch (e: unknown) {
-      message.error(e instanceof Error ? e.message : t('strategy.templates.messages.fetchTemplateListFailed', { defaultValue: 'Failed to load template list' }));
-    } finally {
-      setCreating(false);
-    }
-  }, [navigate, t]);
+  const handleNew = useCallback(() => {
+    navigate('/strategy/new');
+  }, [navigate]);
 
   return (
     <>
@@ -50,10 +40,10 @@ export default function StrategyGalleryPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <Title level={3} style={{ margin: 0 }}>{t('strategy.templates.gallery.title', { defaultValue: 'Strategies' })}</Title>
             <Space>
-              <Button type="primary" icon={<PlusOutlined />} loading={creating} onClick={handleNew}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleNew}>
                 {t('strategy.templates.actions.create', { defaultValue: 'New Strategy' })}
               </Button>
-              <Button icon={<RobotOutlined />} onClick={() => navigate('/strategy/workspace?ai=1')}>
+              <Button icon={<RobotOutlined />} onClick={() => navigate('/strategy/new?ai=1')}>
                 {t('strategy.templates.gallery.aiGenerate', { defaultValue: 'AI Generate' })}
               </Button>
             </Space>

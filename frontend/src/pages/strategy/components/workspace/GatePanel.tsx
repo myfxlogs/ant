@@ -14,6 +14,7 @@ interface Props {
   runId?: string;
   availableRunIds?: string[];
   onSelectRun?: (runId: string) => void;
+  fixDepth?: number;
 }
 
 const GATE_ORDER = ['compliance', 'lookahead', 'walkforward', 'deflated_sharpe', 'monte_carlo', 'paper', 'correlation'];
@@ -25,7 +26,7 @@ const GATE_KEY: Record<string, string> = {
   paper: 'ai.gate.labels.paper', correlation: 'ai.gate.labels.correlation',
 };
 
-export default function GatePanel({ loading, gates, summary, error, status, canRun, onRun, runId, availableRunIds, onSelectRun }: Props) {
+export default function GatePanel({ loading, gates, summary, error, status, canRun, onRun, runId, availableRunIds, onSelectRun, fixDepth }: Props) {
   const { t } = useTranslation();
 
   const gateMap = new Map(gates.map(g => [g.gate, g]));
@@ -47,6 +48,11 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
           <span style={{ marginLeft: 8, fontSize: 11, color: '#8c8c8c' }}>
             {t(GATE_RUN_HINT_KEY, 'Complete a backtest first')}
           </span>
+        )}
+        {fixDepth && fixDepth > 0 && (
+          <Tag color="blue" icon={<ThunderboltOutlined />} style={{ marginLeft: 'auto' }}>
+            Auto-Fix #{fixDepth}/3
+          </Tag>
         )}
       </div>
 

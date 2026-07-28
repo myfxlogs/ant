@@ -51,7 +51,7 @@ const AiCore = {
     },
     "assistant": {
       "messages": {
-        "noCodeBlockFound": "未找到代码块 (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
+        "noCodeBlockFound": "No code block found (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
       }
     },
     "backtestScoreCard": {
@@ -86,7 +86,7 @@ const AiCore = {
       "recommendation": {
         "cautious": "谨慎上线：建议先小资金/手动确认运行一段时间。",
         "loading": "风险评估计算中，建议先等待完成再上线。",
-        "notRecommended": "不建议直接上线：高风险或不可靠，请先优化后再试。",
+        "notRecommended": "Not recommended for direct live: high risk or unreliable, optimize before trying.",
         "recommended": "推荐上线：风险可控，指标整体健康。"
       },
       "score": {
@@ -301,7 +301,7 @@ const AiCore = {
         "validationPassedModels": "验证通过：发现 {{count}} 个模型"
       },
       "section1": {
-        "subtitle": "卡片展示每个提供商的配置和就绪状态，点击选择",
+        "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "选择模型厂商"
       },
       "status": {

@@ -1,15 +1,15 @@
-// Auto-generated from proto/ant/v1/i18n/logs_zh-cn.textproto
+// Auto-generated from proto/ant/v1/i18n/logs_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Logs = {
   "logs": {
     "orderTable": {
-      "close": "平倉價",
+      "close": "收盤",
       "lots": "手數",
-      "open": "開倉價",
+      "open": "開盤",
       "ticket": "訂單號",
-      "type": "型別"
+      "type": "類型"
     },
-    "accountId": "賬戶ID",
+    "accountId": "帳戶ID",
     "action": "操作",
     "connectionLogs": "連線日誌",
     "cost": "耗時",
@@ -17,8 +17,8 @@ const Logs = {
     "details": "詳情",
     "duration": "持續時間",
     "error": "錯誤",
-    "eventType": "事件型別",
-    "exampleSymbolPlaceholder": "如: XAUUSD",
+    "eventType": "事件類型",
+    "exampleSymbolPlaceholder": "例如: XAUUSD",
     "executionLogs": "執行日誌",
     "executionPrice": "執行價格",
     "failed": "失敗",
@@ -35,8 +35,8 @@ const Logs = {
     "requestId": "請求ID",
     "reset": "重置",
     "result": "結果",
-    "riskCode": "風險碼",
-    "riskLogQuickFilter": "風控日誌快速篩選",
+    "riskCode": "風險代碼",
+    "riskLogQuickFilter": "風險日誌快速篩選",
     "search": "搜尋",
     "server": "伺服器",
     "signal": "訊號",
@@ -45,7 +45,7 @@ const Logs = {
     "success": "成功",
     "symbol": "品種",
     "time": "時間",
-    "triggerSource": "觸發源"
+    "triggerSource": "觸發來源"
   }
 } as const;
 export default Logs;

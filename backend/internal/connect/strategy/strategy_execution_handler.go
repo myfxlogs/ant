@@ -16,6 +16,7 @@ import (
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/ai"
 	"alphaforge/internal/interceptor"
+	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/notification"
 	"alphaforge/internal/pglisten"
@@ -76,7 +77,24 @@ type StrategyExecutionServer struct {
 
 	// QuotaChecker enforces subscription plan limits (max strategies, live strategies).
 	quotaChecker QuotaChecker
+
+	// QualityValidator checks backtest snapshot against marketplace quality gates (auto_gate preview).
+	qualityValidator QualityValidator
+
+	// GateEvalRepo persists 7-gate pipeline results + marketplace quality preview.
+	gateEvalRepo *repository.GateEvaluationRepository
 }
+
+// QualityValidator validates backtest quality for marketplace publishing (read-only preview).
+type QualityValidator interface {
+	ValidateBacktestQuality(ctx context.Context, snapshotProto []byte, strategyID string) ([]marketplace.QualityViolation, error)
+}
+
+// SetQualityValidator injects the marketplace quality validator for auto_gate preview.
+func (s *StrategyExecutionServer) SetQualityValidator(v QualityValidator) { s.qualityValidator = v }
+
+// SetGateEvalRepo injects the gate evaluation repository for persistence.
+func (s *StrategyExecutionServer) SetGateEvalRepo(r *repository.GateEvaluationRepository) { s.gateEvalRepo = r }
 
 // AccountStateProvider supplies live account state for gate evaluation (T3.2b).
 // Implemented by the MT gateway account status subscription.

@@ -635,4 +635,6 @@ message BaseI18n {
   string wallet_withdraw = 628;  // Withdraw
   string common_unsaved = 629;  // Unsaved
   string common_saved = 630;  // Saved
+  string notifications_types_auto_fix_started = 631;  // Auto-Fix
+  string notifications_types_auto_fix_stopped = 632;  // Auto-Fix Stopped
 }

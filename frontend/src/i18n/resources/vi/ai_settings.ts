@@ -97,7 +97,7 @@ const AiSettings = {
           "step2": "Đăng nhập/đăng ký, sau đó tạo và sao chép API key",
           "title": "Lấy Zhipu API key"
         },
-        "default": "Nhà cung cấp hiện tại: {{provider}}. Đi đến nhà cung cấp\\\\\\\\\\\\\\\\",
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
         "modelSuggestionDeepSeek": "模型建议: 在\"模型\"下拉中选择 `deepseek-chat`",
         "modelSuggestionZhipu": "模型建议: 在\"模型\"下拉中选择 `glm-4-flash` / `glm-4`",
         "selectProviderHint": "Chọn nhà cung cấp để xem hướng dẫn lấy API key.",

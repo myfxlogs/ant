@@ -1,20 +1,24 @@
 import { useEffect } from 'react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { DATE_PRESETS } from '@/components/backtest/useBacktestRunner';
+import type { StrategyTemplate } from '@/client/strategy';
+import type { Account } from '@/types/account';
+
+type DatePreset = (typeof DATE_PRESETS)[number];
 
 interface WorkspaceEffectsDeps {
   code: string;
   setCode: (code: string) => void;
-  loadedTemplate: any;
+  loadedTemplate: StrategyTemplate | null;
   resetBacktestStatus: () => void;
-  activeAccounts: any[];
+  activeAccounts: Account[];
   accountId: string;
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
   fetchAccounts: () => void;
   loadTemplates: () => void;
   datePreset: string;
-  applyDatePreset: (preset: any) => void;
+  applyDatePreset: (preset: DatePreset) => void;
   financialsReady: boolean;
   fetchTradeHistory: () => void;
 }
@@ -24,7 +28,7 @@ function useCodeSync(code: string) {
   useEffect(() => { setCurrentCode(code); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-function useTemplateNameSync(loadedTemplate: any) {
+function useTemplateNameSync(loadedTemplate: StrategyTemplate | null) {
   const setCurrentCodeName = useWorkspaceStore(s => s.setCurrentCodeName);
   useEffect(() => {
     setCurrentCodeName(loadedTemplate?.name || '');
@@ -45,7 +49,7 @@ function useBacktestReset(code: string, resetBacktestStatus: () => void) {
 
 function useStaleAccountCleanup(
   accountId: string,
-  activeAccounts: any[],
+  activeAccounts: Account[],
   setAccountId: (v: string) => void,
   setSymbol: (v: string) => void,
 ) {
@@ -67,7 +71,7 @@ function useTradeHistory(accountId: string, financialsReady: boolean, fetchTrade
   }, [accountId, financialsReady, fetchTradeHistory]);
 }
 
-function useDatePresetInit(datePreset: string, applyDatePreset: (preset: any) => void) {
+function useDatePresetInit(datePreset: string, applyDatePreset: (preset: DatePreset) => void) {
   useEffect(() => {
     const preset = DATE_PRESETS.find(p => p.key === datePreset);
     if (preset) applyDatePreset(preset);

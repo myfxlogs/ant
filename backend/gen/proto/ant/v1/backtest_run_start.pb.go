@@ -44,7 +44,10 @@ type StartBacktestRunRequest struct {
 	// imported_strategies.id — when set, source code + params are fetched
 	// from the imported strategy instead of using the code field.
 	// If both strategy_id and code are set, strategy_id takes precedence.
-	StrategyId    *string `protobuf:"bytes,14,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
+	StrategyId *string `protobuf:"bytes,14,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
+	// auto_gate: when true, server automatically runs 7-gate pipeline + marketplace
+	// quality preview after backtest succeeds, streaming results via WatchBacktestRun.
+	AutoGate      bool `protobuf:"varint,15,opt,name=auto_gate,json=autoGate,proto3" json:"auto_gate,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -177,6 +180,13 @@ func (x *StartBacktestRunRequest) GetStrategyId() string {
 	return ""
 }
 
+func (x *StartBacktestRunRequest) GetAutoGate() bool {
+	if x != nil {
+		return x.AutoGate
+	}
+	return false
+}
+
 type StartBacktestRunResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -225,7 +235,7 @@ var File_backtest_run_start_proto protoreflect.FileDescriptor
 
 const file_backtest_run_start_proto_rawDesc = "" +
 	"\n" +
-	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\"\xa5\x05\n" +
+	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\"\xc2\x05\n" +
 	"\x17StartBacktestRunRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
@@ -245,7 +255,8 @@ const file_backtest_run_start_proto_rawDesc = "" +
 	"\rextra_symbols\x18\f \x03(\tR\fextraSymbols\x12J\n" +
 	"\x10execution_config\x18\r \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfig\x12$\n" +
 	"\vstrategy_id\x18\x0e \x01(\tH\x05R\n" +
-	"strategyId\x88\x01\x01B\a\n" +
+	"strategyId\x88\x01\x01\x12\x1b\n" +
+	"\tauto_gate\x18\x0f \x01(\bR\bautoGateB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\r\n" +
 	"\v_dataset_idB\x0e\n" +

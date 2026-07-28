@@ -3,7 +3,7 @@ import { Tour } from 'antd';
 import type { TourProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 
-const STORAGE_KEY = 'workspace_tour_seen';
+const STORAGE_KEY = 'alphaforge_ws_tour_done';
 
 export default function WorkspaceTour() {
   const { t } = useTranslation();

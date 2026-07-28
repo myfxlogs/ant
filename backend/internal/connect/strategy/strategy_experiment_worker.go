@@ -163,7 +163,7 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		topIndices := selectTopK(candidates, oosTopK)
 		for _, idx := range topIndices {
 			c := &candidates[idx]
-			oosScored, err := w.runSingleBacktest(
+			oosScored, _, err := w.runSingleBacktest(
 				ctx, code, c.Overrides, exp.UserID, symbol, tf,
 				windows.OOSStart, windows.OOSEnd, regime,
 			)
@@ -204,6 +204,7 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 			Grade:           c.Grade,
 			ScoreComponents: scoreProto,
 			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
+			BacktestRunID:   c.BacktestRunID,
 			OOSScore:        c.OOSScore,
 			OOSTotalReturn:  c.OOSTotalReturn,
 			OOSSharpeRatio:  c.OOSSharpeRatio,
@@ -229,6 +230,7 @@ type candidateResult struct {
 	Grade           string
 	ScoreComponents map[string]float64
 	Summary         string
+	BacktestRunID   *uuid.UUID
 	// OOS validation (nil when not in top-K or window too short)
 	OOSScore       *float64
 	OOSTotalReturn *float64

@@ -4,7 +4,7 @@
 > v2 维护：MT 重写（0001–0005）+ C2C 归属（0006）+ M7 复盘（0007）+ M10 硬化（0008–0011）+ EA 替代（0020–0021）。
 
 | ID | 标题 | 状态 |
-|---|---|---|
+| --- | --- | --- |
 | 0001 | MT 基础完全重写（路线 B） | Accepted |
 | 0002 | ClickHouse 作为时序存储 | Accepted |
 | 0003 | mtapi 直连，不再二次包装 | Accepted |
@@ -31,12 +31,13 @@
 | 0024 | Agent-Native 策略平台 — 双前端编译 + Go 进程内 Agent | Accepted |
 | 0025 | Agent-Native 交互体验与自我进化设计 | Accepted |
 | 0026 | HD 钱包充值系统 — 每用户独立地址 + 自动到账确认 | Proposed |
+| 0027 | 策略模块前端重构 — Gallery + Detail + Workspace feature-slice | Implemented |
 
 ## 编号规则
 
 - 单调递增，不复用、不删除
 - 文件名 `NNNN-<kebab-slug>.md`
-- 状态：`Proposed | Accepted | Rejected | Superseded`
+- 状态：`Proposed | Accepted | Rejected | Superseded | Implemented`
 - Superseded 的 ADR 在 header 注明 superseded by NNNN
 
 ## 模板

@@ -31,19 +31,19 @@ func DefaultPaperGateConfig() PaperGateConfig {
 
 // PaperGateMetrics holds the paper trading performance metrics.
 type PaperGateMetrics struct {
-	PaperDays          int     `json:"paper_days"`
-	BacktestNetReturn  float64 `json:"backtest_net_return"`
-	BacktestGrossReturn float64 `json:"backtest_gross_return"`
-	PaperNetReturn     float64 `json:"paper_net_return"`
-	PaperNetPnL        float64 `json:"paper_net_pnl"`
-	PaperTradeCount    int     `json:"paper_trade_count"`
+	PaperDays          int
+	BacktestNetReturn  float64
+	BacktestGrossReturn float64
+	PaperNetReturn     float64
+	PaperNetPnL        float64
+	PaperTradeCount    int
 }
 
 // PaperGateResult is the outcome of the paper trading gate.
 type PaperGateResult struct {
-	Passed  bool             `json:"passed"`
-	Metrics PaperGateMetrics `json:"metrics"`
-	Reason  string           `json:"reason,omitempty"`
+	Passed  bool
+	Metrics PaperGateMetrics
+	Reason  string
 }
 
 // validatePaperMetrics checks for NaN/Inf in critical paper metric fields.

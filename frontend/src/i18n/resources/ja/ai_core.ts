@@ -51,7 +51,7 @@ const AiCore = {
     },
     "assistant": {
       "messages": {
-        "noCodeBlockFound": "コードブロックが見つかりません (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
+        "noCodeBlockFound": "No code block found (\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`...\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\`)"
       }
     },
     "backtestScoreCard": {
@@ -86,7 +86,7 @@ const AiCore = {
       "recommendation": {
         "cautious": "本番注意：まずは少額または手動確認でしばらく運用してください。",
         "loading": "リスク評価中です。完了するまでお待ちください。",
-        "notRecommended": "直接ライブ推奨不可：高リスクまたは信頼性低下、試行前に最適化してください。",
+        "notRecommended": "Not recommended for direct live: high risk or unreliable, optimize before trying.",
         "recommended": "本番推奨：リスク管理可能、指標良好。"
       },
       "score": {
@@ -301,7 +301,7 @@ const AiCore = {
         "validationPassedModels": "验证通过：发现 {{count}} 个模型"
       },
       "section1": {
-        "subtitle": "各プロバイダの設定と準備状態を表示、クリックして選択",
+        "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "选择模型厂商"
       },
       "status": {

@@ -31,7 +31,7 @@ const AiWizard = {
           "runAgents": "複数専門家分析 + コード生成"
         },
         "cards": {
-          "resultsTitle": "複数エキスパート\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"
+          "resultsTitle": "Multiple experts\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"
         },
         "hints": {
           "afterGenerated": "生成後、検証/バックテスト/公開へ"
@@ -40,8 +40,8 @@ const AiWizard = {
           "elapsed": "経過"
         },
         "sections": {
-          "output": "出力",
-          "prompt": "プロンプト",
+          "output": "Output",
+          "prompt": "Prompt",
           "spec": "仕様"
         }
       },
@@ -127,7 +127,7 @@ const AiWizard = {
         },
         "placeholders": {
           "intentExample": "例: トレンドフォロー、高ボラ回避、高勝率重視",
-          "macroExample": "例：\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC議事録\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-05 20:30 非農業部門雇用者数",
+          "macroExample": "Example:\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
           "selectAccount": "アカウント選択",
           "selectFrozenDataset": "データセット選択",
           "selectSymbol": "銘柄選択",
@@ -148,11 +148,11 @@ const AiWizard = {
           "data": "データ: {{dataSpec}}",
           "empty": "(空)",
           "macroDisabled": "マクロ: 未使用",
-          "macroEnabled": "マクロイベント（ユーザー提供）：\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}",
-          "params": "パラメータ（定義+現在値; 実行時にcontext[\"params\"]に注入）：\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{params}}",
+          "macroEnabled": "Macro events (user-provided):\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}",
+          "params": "Parameters (defs+current values; injected into context[\"params\"] at runtime):\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{params}}",
           "symbol": "銘柄: {{symbol}}",
           "timeframe": "時間枠: {{timeframe}}",
-          "userIntent": "ユーザー戦略目標（自然言語）：\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{intent}}"
+          "userIntent": "User strategy goal (natural language):\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{intent}}"
         },
         "dataSpec": {
           "dataset": "データセット {{datasetId}}",
@@ -166,13 +166,13 @@ const AiWizard = {
           "mustInclude3": "3) 主要エグジット/リスク管理",
           "mustInclude4": "4) 適用/非適用シナリオ",
           "mustIncludeTitle": "必須:",
-          "userIntent": "ユーザー期待（自然言語）：\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{intent}}"
+          "userIntent": "User expectation (natural language):\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{intent}}"
         },
         "upstream": {
-          "risk": "【リスク管理結論】\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}",
+          "risk": "【Risk control conclusion】\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}",
           "sectionTitle": "【上流エージェント結論】",
-          "signals": "【シグナル設計結論】\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}",
-          "style": "【市場状況/スタイル結論】\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}"
+          "signals": "【Signal design conclusion】\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}",
+          "style": "【Market condition/style conclusion】\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n{{text}}"
         }
       },
       "publish": {

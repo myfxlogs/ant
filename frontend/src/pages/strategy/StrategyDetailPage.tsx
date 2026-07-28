@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Typography, Tabs, Tag, Space, Button, Descriptions, Spin, Empty } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, ForkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -31,6 +31,17 @@ export default function StrategyDetailPage() {
   const canEdit = isOwner || isSystem;
 
   const handleEdit = () => navigate(`/strategy/${id}/edit`);
+  const handleFork = async () => {
+    try {
+      const draft = await strategyApi.createTemplateDraft({ name: `${template.name || 'Strategy'} (Fork)` });
+      if (!draft.id) throw new Error('Draft creation returned empty id');
+      await strategyApi.updateTemplateDraft({ id: draft.id, name: `${template.name || 'Strategy'} (Fork)`, description: template.description, code: template.code, tags: template.tags });
+      navigate(`/strategy/${draft.id}/edit`);
+    } catch (e) {
+      // navigate to edit as fallback
+      navigate(`/strategy/${id}/edit`);
+    }
+  };
 
   const tags = useMemo(() => template?.tags || [], [template]);
 
@@ -72,9 +83,14 @@ export default function StrategyDetailPage() {
               </Space>
             </div>
             <Space>
-              {canEdit && !isSystem && (
+              {isSystem && (
+                <Button type="primary" icon={<ForkOutlined />} onClick={handleFork}>
+                  {t('strategy.templates.gallery.forkEdit', { defaultValue: 'Fork & Edit' })}
+                </Button>
+              )}
+              {isOwner && !isSystem && (
                 <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
-                  {t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
+                  {t('strategy.templates.detail.openInWorkspace', { defaultValue: 'Open in Workspace' })}
                 </Button>
               )}
             </Space>
@@ -143,7 +159,7 @@ export default function StrategyDetailPage() {
                   </div>
                 ),
               },
-              ...(canEdit || template.code ? [{
+              ...(canEdit ? [{
                 key: 'code',
                 label: t('strategy.templates.codeModal.title', { defaultValue: 'Code' }),
                 children: (
@@ -172,9 +188,14 @@ export default function StrategyDetailPage() {
           zIndex: 10,
         }}>
           <Space>
-            {canEdit && !isSystem && (
+            {isSystem && (
+              <Button type="primary" icon={<ForkOutlined />} onClick={handleFork}>
+                {t('strategy.templates.gallery.forkEdit', { defaultValue: 'Fork & Edit' })}
+              </Button>
+            )}
+            {isOwner && !isSystem && (
               <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
-                {t('strategy.templates.actions.edit', { defaultValue: 'Edit' })}
+                {t('strategy.templates.detail.openInWorkspace', { defaultValue: 'Open in Workspace' })}
               </Button>
             )}
           </Space>
