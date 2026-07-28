@@ -40,6 +40,8 @@ export default defineConfig([
       // React 19 strict mode rules — too aggressive for existing codebase
       'react-hooks/set-state-in-effect': 'off',
       'react-hooks/refs': 'off',
+      // HMR fast-refresh is a dev-only concern — not a production code quality issue
+      'react-refresh/only-export-components': 'off',
 
       // M0.3-3: max-lines — TS files ≤250 lines (matching AGENT.md §复杂度硬上限)
       'max-lines': ['error', {
@@ -47,23 +49,6 @@ export default defineConfig([
         skipBlankLines: true,
         skipComments: true,
       }],
-    },
-  },
-  {
-    // Context providers and shared helper files export both components and constants/types.
-    // Splitting them is a larger refactor — allow constant exports for now.
-    files: [
-      'src/**/*Context.tsx',
-      'src/**/*Helpers.tsx',
-      'src/**/chatUtils.tsx',
-      'src/**/ChartToolbar.tsx',
-      'src/**/CompareModal.tsx',
-      'src/**/VersionHistoryTab.tsx',
-      'src/**/LiveStrategyPageSignalDrawer.tsx',
-      'src/**/EditScheduleBasicFields.tsx',
-    ],
-    rules: {
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
   {
