@@ -49,7 +49,7 @@ export const depositApi = {
     }) as ListDepositAddressesResponse;
     return {
       addresses: msg.addresses || [],
-      total: msg.total || 0,
+      total: Number(msg.total || 0),
       availableCount: msg.availableCount || 0,
     };
   },

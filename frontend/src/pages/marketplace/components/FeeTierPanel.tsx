@@ -67,8 +67,8 @@ export default function FeeTierPanel() {
       setEditing(prev => { const next = { ...prev }; delete next[tierId]; return next; });
       fetchTiers();
       fetchMyTier();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.feeTier.saveFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.feeTier.saveFailed'));
     } finally {
       setSaving(null);
     }

@@ -51,8 +51,8 @@ export default function AutoGeneratePanel() {
       }));
       message.success(t('marketplace.autogen.pricingSaved'));
       setPricingModalOpen(false);
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.autogen.pricingFailed', { defaultValue: 'Failed to update pricing' }));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.autogen.pricingFailed', { defaultValue: 'Failed to update pricing' }));
     } finally {
       setPricingSaving(false);
     }
@@ -101,11 +101,11 @@ export default function AutoGeneratePanel() {
           }
         }
       }
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return;
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError') return;
       setStage('failed');
       setErrorStage('generating');
-      setErrorDetail(e?.message || 'Generation failed');
+      setErrorDetail(e instanceof Error ? e.message : String(e));
       setRetryable(true);
     }
   }, [symbol, timeframe, autoPublish]);
@@ -165,11 +165,11 @@ export default function AutoGeneratePanel() {
           }
         }
       }
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return;
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError') return;
       setStage('failed');
       setErrorStage('generating');
-      setErrorDetail(e?.message || 'Generation failed');
+      setErrorDetail(e instanceof Error ? e.message : String(e));
       setRetryable(true);
     }
   }, [description, assetClass, symbol, timeframe, riskLevel, strategyType, autoPublish, t]);

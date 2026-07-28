@@ -78,7 +78,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       if (result.error && result.error !== '0' && result.error !== '') {
         message.error(result.message || result.error);
       } else { message.success(t(ORDER_PLACED_KEY, { side: side === 'buy' ? t('trading.buy') : t('trading.sell') })); }
-    } catch (e: any) { message.error(e?.message || t(ORDER_FAILED_KEY)); }
+    } catch (e: unknown) { message.error(e instanceof Error ? e.message : String(e) || t(ORDER_FAILED_KEY)); }
     finally { setSubmitting(false); }
   }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop, marginMode, isMT5]);
 

@@ -64,8 +64,8 @@ export default function BundleTab() {
       form.resetFields();
       setStrategyIdsRaw('');
       fetchBundles();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.bundle.createFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.bundle.createFailed'));
     } finally {
       setCreating(false);
     }
@@ -78,8 +78,8 @@ export default function BundleTab() {
       const resp = await marketplaceClient.purchaseBundle(create(PurchaseBundleRequestSchema, { bundleId, idempotencyKey }));
       message.success(t('marketplace.bundle.purchased'));
       fetchBundles();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.bundle.purchaseFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.bundle.purchaseFailed'));
     } finally {
       setPurchasing(null);
     }
@@ -90,8 +90,8 @@ export default function BundleTab() {
       await marketplaceClient.deleteBundle(create(DeleteBundleRequestSchema, { bundleId }));
       message.success(t('marketplace.bundle.deleted'));
       fetchBundles();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.bundle.deleteFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.bundle.deleteFailed'));
     }
   }, [t, fetchBundles]);
 

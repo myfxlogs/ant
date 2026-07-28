@@ -94,8 +94,8 @@ export default function OptimizationTab() {
     try {
       const resp = await marketplaceClient.previewOptimization(create(PreviewOptimizationRequestSchema, { taskId }));
       setPreviewData(resp);
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.previewFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.optimization.previewFailed'));
       setPreviewData(null);
     } finally {
       setPreviewLoading(false);
@@ -108,8 +108,8 @@ export default function OptimizationTab() {
       await marketplaceClient.rejectOptimizationTask(create(RejectOptimizationTaskRequestSchema, { taskId }));
       message.success(t('marketplace.optimization.rejected'));
       fetchTasks();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.rejectFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.optimization.rejectFailed'));
     } finally {
       setActionLoading(null);
     }
@@ -121,8 +121,8 @@ export default function OptimizationTab() {
       const resp = await marketplaceClient.publishOptimization(create(PublishOptimizationRequestSchema, { taskId }));
       message.success(t('marketplace.optimization.published', `已发布新版本 v${resp.versionId}`));
       fetchTasks();
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.publishFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.optimization.publishFailed'));
     } finally {
       setActionLoading(null);
     }
@@ -145,8 +145,8 @@ export default function OptimizationTab() {
       } else {
         message.success(t('marketplace.optimization.noDecay'));
       }
-    } catch (e: any) {
-      message.error(e?.message || t('marketplace.optimization.detectFailed'));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('marketplace.optimization.detectFailed'));
     } finally {
       setDecayLoading(false);
     }

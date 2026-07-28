@@ -81,7 +81,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
       }
       setStep('check', 'done'); setStep('backtest', 'idle');
       addMsg('ai', { text: parts.join('\n') });
-    } catch (e: any) { setStep('check', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_REVIEW_ERROR_KEY)} ${e?.message || e}` }); }
+    } catch (e: unknown) { setStep('check', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_REVIEW_ERROR_KEY)} ${e instanceof Error ? e.message : String(e)}` }); }
   }, [addMsg, t, onValidateResult]);
 
   const runBacktest = useCallback(async () => {
@@ -95,7 +95,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
         setStep('backtest', 'done'); setStep('save', 'idle');
         addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_DONE_KEY)} ${r.metrics.sharpeRatio?.toFixed(2)??'-'} | DD: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | WR: ${((r.metrics.winRate??0)*100).toFixed(0)}% | Trades: ${r.metrics.totalTrades??0}` });
       } else { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_FAIL_KEY)} ${r.error || ''}` }); }
-    } catch (e: any) { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_ERROR_KEY)} ${e?.message || e}` }); }
+    } catch (e: unknown) { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_ERROR_KEY)} ${e instanceof Error ? e.message : String(e)}` }); }
   }, [accountId, hasSymbol, symbol, timeframe, addMsg, t, onRunBacktest]);
 
   // Watch BacktestPanel runner status to advance workflow state.

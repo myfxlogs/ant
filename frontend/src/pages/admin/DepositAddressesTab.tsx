@@ -28,8 +28,8 @@ export default function DepositAddressesTab() {
         defaultValue: `Imported ${result.imported} addresses${result.skipped > 0 ? `, skipped ${result.skipped} duplicates` : ''}`,
       }));
       queryClient.invalidateQueries({ queryKey: ['admin', 'deposit-addresses'] });
-    } catch (err: any) {
-      message.error(err?.message || t('admin.depositAddresses.importFailed', { defaultValue: 'Import failed' }));
+    } catch (err: unknown) {
+      message.error(err instanceof Error ? err.message : String(err) || t('admin.depositAddresses.importFailed', { defaultValue: 'Import failed' }));
     } finally {
       setImporting(false);
     }

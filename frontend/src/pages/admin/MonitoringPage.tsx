@@ -64,9 +64,9 @@ export default function MonitoringPage() {
         for await (const snap of stream) {
           setSnapshot(snap);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (ac.signal.aborted) return;
-        setError(String(err?.message ?? err));
+        setError(err instanceof Error ? err.message : String(err));
         setConnected(false);
       }
     })();

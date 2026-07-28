@@ -110,10 +110,10 @@ export default function ProtectedBacktestPanel({ strategyId, defaultSymbol = 'EU
           setProgress('Running...');
         }
       }
-    } catch (e: any) {
-      if (e?.name === 'AbortError') return;
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError') return;
       setStatus('error');
-      setErrorMsg(e?.message || 'Backtest failed');
+      setErrorMsg(e instanceof Error ? e.message : String(e));
     } finally {
       setSubmitting(false);
     }

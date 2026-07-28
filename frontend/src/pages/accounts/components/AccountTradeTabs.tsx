@@ -76,8 +76,8 @@ export default function AccountTradeTabs({
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.detail(id, 'week') });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.detail(id, 'month') });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.detail(id, 'all') });
-    } catch (err: any) {
-      showError(err?.message || t('accounts.tradeTabs.syncHistoryFailed'));
+    } catch (err: unknown) {
+      showError(err instanceof Error ? err.message : String(err) || t('accounts.tradeTabs.syncHistoryFailed'));
     } finally {
       setSyncing(false);
     }

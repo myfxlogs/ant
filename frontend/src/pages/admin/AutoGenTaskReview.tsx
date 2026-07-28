@@ -44,8 +44,8 @@ export default function AutoGenTaskReview() {
         create(ListAutoGenTasksRequestSchema, { status: statusFilter, limit: 50 })
       );
       setTasks(resp.tasks);
-    } catch (e: any) {
-      message.error(e?.message || t('admin.autogen.loadFailed', { defaultValue: 'Failed to load tasks' }));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('admin.autogen.loadFailed', { defaultValue: 'Failed to load tasks' }));
     } finally {
       setLoading(false);
     }
@@ -60,8 +60,8 @@ export default function AutoGenTaskReview() {
       );
       message.success(t('admin.autogen.approved', { defaultValue: 'Task approved and published' }));
       fetchTasks();
-    } catch (e: any) {
-      message.error(e?.message || t('admin.autogen.approveFailed', { defaultValue: 'Approve failed' }));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('admin.autogen.approveFailed', { defaultValue: 'Approve failed' }));
     }
   }, [fetchTasks, t]);
 
@@ -72,8 +72,8 @@ export default function AutoGenTaskReview() {
       );
       message.success(t('admin.autogen.rejected', { defaultValue: 'Task rejected' }));
       fetchTasks();
-    } catch (e: any) {
-      message.error(e?.message || t('admin.autogen.rejectFailed', { defaultValue: 'Reject failed' }));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('admin.autogen.rejectFailed', { defaultValue: 'Reject failed' }));
     }
   }, [fetchTasks, t]);
 
@@ -90,8 +90,8 @@ export default function AutoGenTaskReview() {
       message.success(t('admin.autogen.enqueued', { defaultValue: '{{count}} tasks enqueued', count: resp.enqueued }));
       setTriggerOpen(false);
       fetchTasks();
-    } catch (e: any) {
-      message.error(e?.message || t('admin.autogen.triggerFailed', { defaultValue: 'Trigger failed' }));
+    } catch (e: unknown) {
+      message.error(e instanceof Error ? e.message : String(e) || t('admin.autogen.triggerFailed', { defaultValue: 'Trigger failed' }));
     } finally {
       setTriggering(false);
     }

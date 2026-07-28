@@ -49,9 +49,9 @@ export function useAssetAnalysis() {
         idx = PHASES.indexOf(frame.phase as AnalysisPhase);
         setProgress(Math.round(((idx + 1) / PHASES.length) * 100));
       }
-    } catch (err: any) {
-      if (err?.name !== 'AbortError') {
-        setError(err?.message || 'Analysis failed');
+    } catch (err: unknown) {
+      if (!(err instanceof Error && err.name === 'AbortError')) {
+        setError(err instanceof Error ? err.message : String(err));
         setPhase('complete');
       }
     } finally {

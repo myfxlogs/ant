@@ -121,8 +121,8 @@ export function useAccountDetailData(id: string | undefined) {
       await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
       setDeleteModalOpen(false);
       navigate('/');
-    } catch (err: any) {
-      const msg = String(err?.message ?? '');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('password verification failed') || msg.includes('Invalid account')) {
         message.error(t(DETAIL_ACTIONS_DELETE_PASSWORD_WRONG_KEY));
       } else {
