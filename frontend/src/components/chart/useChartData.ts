@@ -88,6 +88,7 @@ export function useChartData(
       },
     });
     return () => { cancelledRef.current = true; unsubRef.current?.(); unsubRef.current = null; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- chartRef is a ref
   }, [accountId]);
 
   // ── Effect 2: subscribeBars (only on symbol or account change) ──

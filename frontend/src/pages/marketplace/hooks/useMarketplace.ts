@@ -205,7 +205,7 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
     } finally {
       setPaymentLoading(false);
     }
-  }, [paymentStrategy, userId, t, refetchPurchases, refetch]);
+  }, [paymentStrategy, userId, t, refetchPurchases]);
 
   const handleCancelPayment = useCallback(() => {
     setPaymentModalOpen(false);

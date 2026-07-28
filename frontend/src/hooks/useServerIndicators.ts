@@ -50,6 +50,7 @@ export function useServerIndicators({
     } catch { /* best-effort */ }
   }, [chartRef]);
 
+  const indicatorKey = activeIndicators.map((a) => `${a.defId}:${JSON.stringify(a.params)}`).join(',');
   useEffect(() => {
     const ids = activeIndicators.map((a) => a.defId);
     if (ids.length === 0 || !symbol || !timeframe) {
@@ -158,7 +159,8 @@ export function useServerIndicators({
         onStreamStatus?.(false);
       }
     };
-  }, [symbol, timeframe, activeIndicators.map((a) => `${a.defId}:${JSON.stringify(a.params)}`).join(','), refreshChart, onStreamStatus]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- indicatorKey is derived from activeIndicators
+  }, [symbol, timeframe, indicatorKey, refreshChart, onStreamStatus]);
 
   return { refreshChart };
 }

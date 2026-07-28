@@ -87,7 +87,7 @@ export default function Summary() {
 
   const tradeStats = analytics?.tradeStats || null;
   const riskMetrics = analytics?.riskMetrics || null;
-  const symbolStats = analytics?.symbolStats || [];
+  const symbolStats = useMemo(() => analytics?.symbolStats || [], [analytics?.symbolStats]);
 
   const equityCurveData = useMemo(() => getEquityCurveData(analytics?.equityCurve || []), [analytics?.equityCurve]);
   const monthlyData = useMemo(() => getMonthlyData(analytics?.dailyPnl || []), [analytics?.dailyPnl]);

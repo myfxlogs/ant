@@ -73,8 +73,9 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         }
       } catch { /* best-effort */ }
     });
-    ro.observe(containerRef.current);
-    return () => { ro.disconnect(); dispose(containerRef.current!); };
+    const el = containerRef.current;
+    ro.observe(el);
+    return () => { ro.disconnect(); dispose(el!); };
   }, [onChartReady]);
 
   useEffect(() => {

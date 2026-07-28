@@ -58,7 +58,7 @@ export function useAccountDetailData(id: string | undefined) {
   const [deleting, setDeleting] = useState(false);
   const isStreamLoading = !isDataReceived && financialsQ.isLoading;
   const accountLoadError = accountDetailQ.isError && !currentAccount;
-  const positions = positionsQ.data ?? [];
+  const positions = useMemo(() => positionsQ.data ?? [], [positionsQ.data]);
 
   // ── Financial values (prefer SSE over snapshot) ──
   const financials = useMemo(() => {

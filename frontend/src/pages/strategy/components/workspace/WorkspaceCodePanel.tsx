@@ -58,7 +58,7 @@ export default function WorkspaceCodePanel({
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { data, refetch } = useSystemAIConfigsQuery();
-  const configs = data?.items ?? [];
+  const configs = useMemo(() => data?.items ?? [], [data?.items]);
 
   // Refetch provider list and primary when AI Settings modal closes.
   const handleSettingsClose = () => { setSettingsOpen(false); refetch(); refreshPrimary(); };

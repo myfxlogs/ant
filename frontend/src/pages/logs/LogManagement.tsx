@@ -53,8 +53,10 @@ export default function LogManagement() {
       }
     });
 
-  const logs = (queryResult as { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number } | undefined)?.logs
-    || (queryResult as { orders?: OrderHistoryRecord[] } | undefined)?.orders || [];
+  const logs = useMemo(() =>
+    (queryResult as { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number } | undefined)?.logs
+    || (queryResult as { orders?: OrderHistoryRecord[] } | undefined)?.orders || [],
+  [queryResult]);
   const total = (queryResult as { total?: number } | undefined)?.total || 0;
   const error = queryError ? getErrorMessage(queryError, t(LOAD_FAILED_KEY)) : null;
 

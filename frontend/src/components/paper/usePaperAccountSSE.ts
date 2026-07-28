@@ -54,16 +54,19 @@ export function usePaperAccountSSE(
     }
   }, []);
 
+  const accountIds = accounts.map(a => a.id).join(',');
   useEffect(() => {
     for (const a of accounts) {
       subscribeAccount(a.id);
     }
+    const refs = streamRefs.current;
     return () => {
-      for (const [id] of streamRefs.current) {
+      for (const [id] of refs) {
         unsubscribeAccount(id);
       }
     };
-  }, [accounts.map(a => a.id).join(','), subscribeAccount, unsubscribeAccount]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- accountIds is derived, accounts accessed via closure
+  }, [accountIds, subscribeAccount, unsubscribeAccount]);
 
   useEffect(() => {
     const abort = new AbortController();

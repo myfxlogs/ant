@@ -40,7 +40,7 @@ export default function CompareModal({ open, strategyIds, onClose, onRemove }: P
     { enabled: strategyIds.length > 0 && isAuthed },
   );
 
-  const rows = strategies || [];
+  const rows = useMemo(() => strategies || [], [strategies]);
 
   const metrics: MetricDef[] = useMemo(() => [
     { key: 'price', label: t('marketplace.detail.price'), getValue: s => s.priceModel === 'free' ? '0' : (s.priceAmount || '0'), direction: 'lower' },
