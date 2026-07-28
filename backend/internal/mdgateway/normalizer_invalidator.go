@@ -132,8 +132,7 @@ func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGList
 			return
 		}
 
-		var np notifyPayload
-		np = parseNotifyPayload(payload)
+		np := parseNotifyPayload(payload)
 		if np.Broker != "" && np.SymbolRaw != "" {
 			ni.onInvalidate(np.Broker, np.SymbolRaw)
 		}

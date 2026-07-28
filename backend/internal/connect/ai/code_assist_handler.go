@@ -67,9 +67,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	var errors []string
 	var warnings []string
 
-	for _, m := range missingSigs {
-		errors = append(errors, m)
-	}
+	errors = append(errors, missingSigs...)
 	warnings = append(warnings, structWarns...)
 
 	parameterEntries := extractParams(code)

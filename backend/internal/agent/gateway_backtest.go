@@ -109,15 +109,19 @@ func (s *GatewayServer) runBacktestPipeline(
 			if bridgeResult.Status == "success" {
 				result.bridgedPython = bridgeResult.PythonSource
 				pyCov := bridgeResult.BridgedCov
-				s.log.Info("AgentGateway: bridge translation successful",
-					zap.Int("attempts", bridgeResult.Attempts),
-					zap.Float64("original_coverage", in.Coverage.Score),
-					zap.Float64("bridged_coverage", pyCov.Score))
 				if pyCov != nil {
+					s.log.Info("AgentGateway: bridge translation successful",
+						zap.Int("attempts", bridgeResult.Attempts),
+						zap.Float64("original_coverage", in.Coverage.Score),
+						zap.Float64("bridged_coverage", pyCov.Score))
 					result.semanticDiff = &antv1.SemanticDiff{
 						Changes:       buildBridgeChanges(in.Coverage, pyCov),
 						EffectSummary: fmt.Sprintf("覆盖率 %.0f%% → %.0f%%", in.Coverage.Score*100, pyCov.Score*100),
 					}
+				} else {
+					s.log.Info("AgentGateway: bridge translation successful (no coverage)",
+						zap.Int("attempts", bridgeResult.Attempts),
+						zap.Float64("original_coverage", in.Coverage.Score))
 				}
 			} else {
 				s.log.Warn("AgentGateway: bridge failed after retries",

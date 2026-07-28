@@ -63,9 +63,7 @@ func (a *AgentLoop) SetCurrentCode(code string) {
 func (a *AgentLoop) RunWithHistory(ctx context.Context, systemPrompt, userPrompt string, history []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	messages := make([]systemai.ChatMessage, 0, 2+len(history))
 	messages = append(messages, systemai.ChatMessage{Role: "system", Content: systemPrompt})
-	for _, h := range history {
-		messages = append(messages, h)
-	}
+	messages = append(messages, history...)
 	messages = append(messages, systemai.ChatMessage{Role: "user", Content: userPrompt})
 	return a.run(ctx, messages, userID)
 }

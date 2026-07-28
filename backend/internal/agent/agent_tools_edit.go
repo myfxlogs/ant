@@ -39,7 +39,7 @@ func (t *readCurrentCodeTool) Run(_ context.Context, in connectai.ToolInput) con
 	lines := strings.Split(code, "\n")
 	var sb strings.Builder
 	for i, line := range lines {
-		sb.WriteString(fmt.Sprintf("%4d | %s\n", i+1, line))
+		fmt.Fprintf(&sb, "%4d | %s\n", i+1, line)
 	}
 	return connectai.ToolOutput{Success: true, Output: sb.String()}
 }
@@ -84,7 +84,7 @@ func (t *editCodeTool) Run(_ context.Context, in connectai.ToolInput) connectai.
 
 	count := strings.Count(code, oldStr)
 	if count == 0 {
-		return connectai.ToolOutput{Success: false, Error: fmt.Sprintf("old_string not found in code. Use read_current_code to verify the exact text.")}
+		return connectai.ToolOutput{Success: false, Error: "old_string not found in code. Use read_current_code to verify the exact text."}
 	}
 	if count > 1 {
 		return connectai.ToolOutput{Success: false, Error: fmt.Sprintf("old_string appears %d times — not unique. Add more surrounding context to make it unique.", count)}

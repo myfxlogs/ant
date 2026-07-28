@@ -236,7 +236,8 @@ func (s *amaSeries) update(close float64) {
 	if volatility > 0 {
 		er = change / volatility
 	}
-	sc := math.Pow(er*(s.fastSC-s.slowSC)+s.slowSC, 2)
+	tmp := er*(s.fastSC-s.slowSC) + s.slowSC
+	sc := tmp * tmp
 	s.amaVal = newest + sc*(newest-s.amaVal)
 	s.append(s.amaVal)
 }

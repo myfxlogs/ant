@@ -49,10 +49,7 @@ func (s *Service) GetProviderFeeTierWithStats(ctx context.Context, publisherID s
 		return nil, fmt.Errorf("marketplace: fee tier: count sales: %w", err)
 	}
 
-	tier, err := s.getFeeTierForSalesCount(ctx, totalSales)
-	if err != nil {
-		return nil, err
-	}
+	tier := s.getFeeTierForSalesCount(ctx, totalSales)
 
 	// Find the next tier (first tier with min_sales_count > current sales).
 	var nextMinSales int32
@@ -71,7 +68,7 @@ func (s *Service) GetProviderFeeTierWithStats(ctx context.Context, publisherID s
 }
 
 // getFeeTierForSalesCount finds the best matching tier for a given sales count.
-func (s *Service) getFeeTierForSalesCount(ctx context.Context, salesCount int32) (*FeeTier, error) {
+func (s *Service) getFeeTierForSalesCount(ctx context.Context, salesCount int32) *FeeTier {
 	var tier FeeTier
 	err := s.pg.QueryRow(ctx,
 		`SELECT id, tier_name, min_sales_count, fee_rate, sort_order, enabled
@@ -86,9 +83,9 @@ func (s *Service) getFeeTierForSalesCount(ctx context.Context, salesCount int32)
 			TierName:      "default",
 			MinSalesCount: 0,
 			FeeRate:       decimal.NewFromFloat(0.10),
-		}, nil
+		}
 	}
-	return &tier, nil
+	return &tier
 }
 
 // ListFeeTiers returns all fee tiers ordered by sort_order.

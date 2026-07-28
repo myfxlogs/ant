@@ -39,9 +39,7 @@ func stripMarkdownFences(s string) string {
 		}
 		s = s[idx+1:]
 	}
-	if strings.HasSuffix(s, "```") {
-		s = s[:len(s)-3]
-	}
+	s = strings.TrimSuffix(s, "```")
 	return strings.TrimSpace(s)
 }
 

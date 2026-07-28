@@ -74,11 +74,10 @@ func (s *Service) chatCompletionStream(
 
 func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(p.model, messages, tools, true, endpoint, p.secret, p.maxTokens)
+	httpReq, err := doChatRequest(ctx, p.model, messages, tools, true, endpoint, p.secret, p.maxTokens)
 	if err != nil {
 		return err
 	}
-	httpReq = httpReq.WithContext(ctx)
 	client := &http.Client{Timeout: 0}
 	resp, err := client.Do(httpReq)
 	if err != nil {

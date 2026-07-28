@@ -89,13 +89,7 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	parsedUID, _ = uuid.Parse(userID)
 	for _, r := range records {
-		rec, warnings := orderRecordToTradeRecord(r, uid, parsedUID, platform)
-		if len(warnings) > 0 {
-			s.log.Warn("SyncOrderHistory: precision loss converting decimal to float64",
-				zap.String("account", accountID),
-				zap.Int64("ticket", r.Ticket),
-				zap.Strings("fields", warnings))
-		}
+		rec := orderRecordToTradeRecord(r, uid, parsedUID, platform)
 		tradeRecs = append(tradeRecs, rec)
 	}
 
@@ -137,7 +131,7 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform,
 	return s.tradeRecords.Create(ctx, rec)
 }
 
-func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) (*model.TradeRecord, []string) {
+func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) *model.TradeRecord {
 	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
 
 	rec := &model.TradeRecord{
@@ -158,7 +152,7 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID,
 		MagicNumber:  int(r.Magic),
 		Platform:     platform,
 	}
-	return rec, nil
+	return rec
 }
 
 func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {

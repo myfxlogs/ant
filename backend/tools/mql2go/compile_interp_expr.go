@@ -85,8 +85,8 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		return c.compileTernary(n)
 
 	case "parenthesized_expression":
-		for i := 0; i < int(n.NamedChildCount()); i++ {
-			return c.compileExpr(n.NamedChild(i))
+		if n.NamedChildCount() > 0 {
+			return c.compileExpr(n.NamedChild(0))
 		}
 
 	case "field_expression":
@@ -103,7 +103,6 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 			}
 		}
 		return nil
-
 	case "comma_expression":
 		// Evaluate left-to-right, return last value (C comma operator)
 		var last *interp.Expr
@@ -196,9 +195,8 @@ func (c *compiler) compileUnary(n *sitter.Node) *interp.Expr {
 		}
 	}
 	// Scan named children for the operand
-	for i := 0; i < int(n.NamedChildCount()); i++ {
-		operand = n.NamedChild(i)
-		break
+	if n.NamedChildCount() > 0 {
+		operand = n.NamedChild(0)
 	}
 	if operand == nil {
 		return nil

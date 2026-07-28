@@ -66,7 +66,7 @@ func builtinMathRand(vm *VM, args []interp.Value) (interp.Value, error) {
 
 func builtinMathSrand(vm *VM, args []interp.Value) (interp.Value, error) {
 	seed := int64(argI(args, 0))
-	rand.Seed(seed)
+	_ = rand.New(rand.NewSource(seed))
 	return interp.NoneVal(), nil
 }
 

@@ -186,7 +186,7 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 	// Go-native path: execute generated Go strategies via proto binary.
 	if isGoStrategy(req.Msg.Code) {
 		if s.goExecutor == nil {
-			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("Go strategy executor not configured"))
+			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("go strategy executor not configured"))
 		}
 		resp, err := s.goExecutor.Run(ctx, req.Msg.Code, req.Msg)
 		if err != nil {
@@ -266,7 +266,7 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 	// Go-native compilation path: generated Go strategy via go run.
 	if isGoStrategy(req.Msg.StrategyCode) {
 		if s.goExecutor == nil {
-			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("Go strategy executor not configured"))
+			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("go strategy executor not configured"))
 		}
 		resp, err := s.goExecutor.RunLive(ctx, req.Msg.StrategyCode, req.Msg)
 		if err != nil {

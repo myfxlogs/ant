@@ -18,6 +18,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 // Tracer wraps the OpenTelemetry tracer for the ant pipeline.
@@ -41,7 +42,7 @@ type Span struct {
 // the mdgateway pipeline (data-quality spans) share this single provider.
 func InitGlobalProvider(endpoint string) (func(context.Context) error, error) {
 	if endpoint == "" {
-		otel.SetTracerProvider(trace.NewNoopTracerProvider())
+		otel.SetTracerProvider(noop.NewTracerProvider())
 		return func(context.Context) error { return nil }, nil
 	}
 

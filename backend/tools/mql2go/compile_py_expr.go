@@ -353,9 +353,10 @@ func (c *pyCompiler) compilePyBoolean(n *sitter.Node) *interp.Expr {
 			break
 		}
 	}
-	if op == "and" {
+	switch op {
+	case "and":
 		op = "&&"
-	} else if op == "or" {
+	case "or":
 		op = "||"
 	}
 	if op == "" || left == nil || right == nil {

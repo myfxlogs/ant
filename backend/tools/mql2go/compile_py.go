@@ -11,7 +11,7 @@ import (
 // Safety: enforces MaxSourceSize + subset validation + panic recovery.
 func CompilePythonToIR(source string) (ir *interp.IR, err error) {
 	if len(source) > MaxSourceSize {
-		return nil, fmt.Errorf("Python source too large: %d bytes (max %d)", len(source), MaxSourceSize)
+		return nil, fmt.Errorf("python source too large: %d bytes (max %d)", len(source), MaxSourceSize)
 	}
 	defer func() {
 		if r := recover(); r != nil {

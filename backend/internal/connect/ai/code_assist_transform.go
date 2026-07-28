@@ -135,7 +135,7 @@ func extractCodeBlock(s string) string {
 			return ""
 		}
 		end := i + 3
-		for end < len(s)-2 && !(s[end] == '`' && s[end+1] == '`' && s[end+2] == '`') {
+		for end < len(s)-2 && (s[end] != '`' || s[end+1] != '`' || s[end+2] != '`') {
 			end++
 		}
 		if end+3 <= len(s) {

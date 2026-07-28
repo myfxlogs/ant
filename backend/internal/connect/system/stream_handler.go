@@ -69,10 +69,7 @@ func (s *StreamServer) SubscribeEvents(
 		s.log.Warn("GetUserAccountIDs failed in SubscribeEvents", zap.Error(err))
 	}
 
-	profitSubs, err := s.setupProfitSubscriptions(ctx, userID, accountIDs, filterAll, accountSet)
-	if err != nil {
-		return connect.NewError(connect.CodeInternal, err)
-	}
+	profitSubs := s.setupProfitSubscriptions(ctx, accountIDs, filterAll, accountSet)
 	defer func() {
 		for _, ps := range profitSubs {
 			ps.cancel()
@@ -105,20 +102,14 @@ func (s *StreamServer) SubscribeEvents(
 		s.sendInitialPositionSnapshots(ctx, stream, connectedIDs)
 	}
 
-	snapSubs, err := s.setupSnapSubscriptions(ctx, userID, accountIDs, filterAll, accountSet)
-	if err != nil {
-		s.log.Warn("snapSubs setup failed", zap.Error(err))
-	}
+	snapSubs := s.setupSnapSubscriptions(ctx, accountIDs, filterAll, accountSet)
 	defer func() {
 		for _, ss := range snapSubs {
 			ss.cancel()
 		}
 	}()
 
-	statusSubs, err := s.setupStatusSubscriptions(ctx, userID, accountIDs, filterAll, accountSet)
-	if err != nil {
-		s.log.Warn("statusSubs setup failed", zap.Error(err))
-	}
+	statusSubs := s.setupStatusSubscriptions(accountIDs, filterAll, accountSet)
 	defer func() {
 		for _, ss := range statusSubs {
 			ss.cancel()

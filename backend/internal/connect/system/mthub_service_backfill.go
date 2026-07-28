@@ -212,7 +212,7 @@ func (s *MtHubServer) brokerFallback(
 // needsBrokerFallback returns true when database data is insufficient or has
 // large discontinuities (e.g., account disconnected for days — old cached bars
 // + new bars pass the count check but span a gap). Broker fallback fills the gap.
-func (s *MtHubServer) needsBrokerFallback(bars []repository.KlineBar, period string, limit int) bool {
+func (s *MtHubServer) needsBrokerFallback(bars []repository.KlineBar, period string) bool {
 	if len(bars) < 50 {
 		return true
 	}

@@ -65,8 +65,8 @@ func BuildProposePrompt(req *ProposeRequest) (systemPrompt, userPrompt string) {
 	if len(req.Params) > 0 {
 		sb.WriteString("## Tunable Parameters\n\n")
 		for _, p := range req.Params {
-			sb.WriteString(fmt.Sprintf("- **%s** (type=%s, default=%.2f, range=%.2f:%.2f:%.2f)\n",
-				p.Name, p.Type, p.Default, p.Min, p.Max, p.Step))
+			fmt.Fprintf(&sb, "- **%s** (type=%s, default=%.2f, range=%.2f:%.2f:%.2f)\n",
+				p.Name, p.Type, p.Default, p.Min, p.Max, p.Step)
 		}
 		sb.WriteString("\n")
 	}
@@ -74,23 +74,23 @@ func BuildProposePrompt(req *ProposeRequest) (systemPrompt, userPrompt string) {
 	if len(req.RiskParams) > 0 {
 		sb.WriteString("## Risk/Position Parameters\n\n")
 		for k, v := range req.RiskParams {
-			sb.WriteString(fmt.Sprintf("- %s = %.4f\n", k, v))
+			fmt.Fprintf(&sb, "- %s = %.4f\n", k, v)
 		}
 		sb.WriteString("\n")
 	}
 
 	if req.Regime != "" {
-		sb.WriteString(fmt.Sprintf("## Market Regime: %s\n\n", req.Regime))
+		fmt.Fprintf(&sb, "## Market Regime: %s\n\n", req.Regime)
 	}
 
 	if len(req.PrevResults) > 0 {
-		sb.WriteString(fmt.Sprintf("## Previous Round Results (Round %d)\n\n", req.Round-1))
+		fmt.Fprintf(&sb, "## Previous Round Results (Round %d)\n\n", req.Round-1)
 		sb.WriteString("| Score | Grade | Return% | Drawdown% | Sharpe | Trades | Params |\n")
 		sb.WriteString("|-------|-------|---------|-----------|--------|--------|--------|\n")
 		for _, r := range req.PrevResults {
 			paramStr, _ := json.Marshal(r.Params)
-			sb.WriteString(fmt.Sprintf("| %.1f | %s | %.1f | %.1f | %.2f | %d | %s |\n",
-				r.Score, r.Grade, r.TotalReturn, r.MaxDrawdown, r.SharpeRatio, r.TotalTrades, string(paramStr)))
+			fmt.Fprintf(&sb, "| %.1f | %s | %.1f | %.1f | %.2f | %d | %s |\n",
+				r.Score, r.Grade, r.TotalReturn, r.MaxDrawdown, r.SharpeRatio, r.TotalTrades, string(paramStr))
 		}
 		sb.WriteString("\n")
 		if req.Round >= 2 {
@@ -99,7 +99,7 @@ func BuildProposePrompt(req *ProposeRequest) (systemPrompt, userPrompt string) {
 		}
 	}
 
-	sb.WriteString(fmt.Sprintf("Propose %d diverse parameter sets for Round %d.\n", req.MaxCandidates, req.Round))
+	fmt.Fprintf(&sb, "Propose %d diverse parameter sets for Round %d.\n", req.MaxCandidates, req.Round)
 	sb.WriteString("Return as JSON array: [{\"param_name\": value, ...}, ...]")
 
 	return systemPrompt, sb.String()

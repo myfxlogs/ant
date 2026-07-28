@@ -96,7 +96,7 @@ func (s *DepositServer) ListMyDeposits(ctx context.Context, req *connect.Request
 }
 
 func (s *DepositServer) ListManualReviewDeposits(ctx context.Context, req *connect.Request[antv1.ListManualReviewDepositsRequest]) (*connect.Response[antv1.ListManualReviewDepositsResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	page := int(req.Msg.Page)
@@ -120,7 +120,7 @@ func (s *DepositServer) ListManualReviewDeposits(ctx context.Context, req *conne
 }
 
 func (s *DepositServer) ListDepositAddresses(ctx context.Context, req *connect.Request[antv1.ListDepositAddressesRequest]) (*connect.Response[antv1.ListDepositAddressesResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	page := int(req.Msg.Page)
@@ -167,7 +167,7 @@ func depositAddressToProto(a *model.DepositAddress) *antv1.DepositAddress {
 }
 
 func (s *DepositServer) ImportDepositAddresses(ctx context.Context, req *connect.Request[antv1.ImportDepositAddressesRequest]) (*connect.Response[antv1.ImportDepositAddressesResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 
@@ -221,24 +221,24 @@ func (s *DepositServer) ImportDepositAddresses(ctx context.Context, req *connect
 }
 
 // requireAdmin extracts the current user ID and verifies admin status.
-func (s *DepositServer) requireAdmin(ctx context.Context) (uuid.UUID, error) {
+func (s *DepositServer) requireAdmin(ctx context.Context) error {
 	actorStr := interceptor.GetUserID(ctx)
 	actorID, err := uuid.Parse(actorStr)
 	if err != nil {
-		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid actor"))
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid actor"))
 	}
 	if s.platformSvc == nil {
 		s.log.Error("requireAdmin: platformSvc is nil — admin check fail-closed")
-		return uuid.Nil, connect.NewError(connect.CodeInternal, fmt.Errorf("admin verification unavailable"))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("admin verification unavailable"))
 	}
 	isAdmin, err := s.platformSvc.IsAdmin(ctx, actorID)
 	if err != nil {
-		return uuid.Nil, connect.NewError(connect.CodeInternal, fmt.Errorf("check admin: %w", err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("check admin: %w", err))
 	}
 	if !isAdmin {
-		return uuid.Nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
+		return connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
 	}
-	return actorID, nil
+	return nil
 }
 
 // Sweep (归集) RPC handlers are in sweep_handler.go.

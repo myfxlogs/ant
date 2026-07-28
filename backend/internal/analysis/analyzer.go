@@ -144,7 +144,7 @@ func (a *Analyzer) Analyze(
 // BuildAIPrompt constructs an LLM prompt from the computed analysis.
 func BuildAIPrompt(symbol string, result *AnalysisResult) string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Analyze %s and recommend a trading strategy.\n\n", symbol))
+	fmt.Fprintf(&b, "Analyze %s and recommend a trading strategy.\n\n", symbol)
 
 	b.WriteString("## Multi-Timeframe Outlook\n")
 	for _, tf := range []struct {
@@ -156,20 +156,20 @@ func BuildAIPrompt(symbol string, result *AnalysisResult) string {
 		{"D1", result.MTF.D1},
 		{"W1", result.MTF.W1},
 	} {
-		b.WriteString(fmt.Sprintf("- **%s**: %s (strength: %.0f%%, EMA gap: %.2f%%, change: %.2f%%)\n",
-			tf.name, tf.o.Trend, tf.o.Strength*100, tf.o.EMAGapPct, tf.o.PriceChangePct))
+		fmt.Fprintf(&b, "- **%s**: %s (strength: %.0f%%, EMA gap: %.2f%%, change: %.2f%%)\n",
+			tf.name, tf.o.Trend, tf.o.Strength*100, tf.o.EMAGapPct, tf.o.PriceChangePct)
 	}
 
 	b.WriteString("\n## Key Support / Resistance Levels\n")
 	for _, lvl := range result.KeyLevels {
-		b.WriteString(fmt.Sprintf("- **%.5f** (%s %s, %d touches)\n",
-			lvl.Price, lvl.Strength, lvl.Type, lvl.Touches))
+		fmt.Fprintf(&b, "- **%.5f** (%s %s, %d touches)\n",
+			lvl.Price, lvl.Strength, lvl.Type, lvl.Touches)
 	}
 	if len(result.KeyLevels) == 0 {
 		b.WriteString("- No significant levels detected\n")
 	}
 
-	b.WriteString(fmt.Sprintf("\n## Volatility: %s (ATR: %.2f%%)\n", result.VolatilityState, result.VolatilityValue))
+	fmt.Fprintf(&b, "\n## Volatility: %s (ATR: %.2f%%)\n", result.VolatilityState, result.VolatilityValue)
 
 	b.WriteString("\n## Task\n")
 	b.WriteString("Based on the above data, recommend:\n")

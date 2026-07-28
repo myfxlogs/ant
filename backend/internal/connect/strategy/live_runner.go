@@ -237,7 +237,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 
 	bars := make([]liveBar, 0, maxContextBars)
 	var session Session
-	var firstBar bool = true
+	var firstBar = true
 
 	// Extra symbol bar windows for multi-symbol strategies.
 	extraBars := make(map[string][]liveBar, len(cfg.ExtraSymbols))

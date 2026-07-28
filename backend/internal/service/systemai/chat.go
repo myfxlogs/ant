@@ -110,9 +110,7 @@ type StreamToolCall struct {
 func BuildChatMessages(systemPrompt, userMessage string, history []ChatMessage) []ChatMessage {
 	msgs := make([]ChatMessage, 0, 2+len(history))
 	msgs = append(msgs, ChatMessage{Role: "system", Content: systemPrompt})
-	for _, h := range history {
-		msgs = append(msgs, h)
-	}
+	msgs = append(msgs, history...)
 	msgs = append(msgs, ChatMessage{Role: "user", Content: userMessage})
 	return msgs
 }
@@ -139,7 +137,7 @@ const defaultMaxTokens = 32768 // was 8192; reasoning models need budget for thi
 // doChatRequest builds the HTTP request body and creates an authenticated request.
 // tools may be nil when the caller does not need tool calling.
 // maxTokens 0 means use defaultMaxTokens.
-func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int) (*http.Request, error) {
+func doChatRequest(ctx context.Context, model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int) (*http.Request, error) {
 	if maxTokens <= 0 {
 		maxTokens = defaultMaxTokens
 	}
@@ -163,7 +161,7 @@ func doChatRequest(model string, messages []ChatMessage, tools []ToolDefinition,
 	if err != nil {
 		return nil, fmt.Errorf("marshal chat request: %w", err)
 	}
-	httpReq, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(bodyBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("create chat request: %w", err)
 	}
@@ -241,11 +239,10 @@ func (s *Service) ChatCompletionWithUsage(
 // (429/5xx) before giving up — so a single-provider user isn't immediately failed.
 func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (string, []ToolCall, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(p.model, messages, tools, false, endpoint, p.secret, p.maxTokens)
+	httpReq, err := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens)
 	if err != nil {
 		return "", nil, nil, err
 	}
-	httpReq = httpReq.WithContext(ctx)
 	client := &http.Client{Timeout: chatTimeout}
 
 	const maxAttempts = 2

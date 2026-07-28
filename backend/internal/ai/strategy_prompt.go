@@ -72,31 +72,31 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 			sb.WriteString(p.Intent.Plan + "\n\n")
 		}
 		if p.Intent.StrategyFamily != "" && p.Intent.StrategyFamily != "unknown" {
-			sb.WriteString(fmt.Sprintf("- 策略类型: %s\n", p.Intent.StrategyFamily))
+			fmt.Fprintf(&sb, "- 策略类型: %s\n", p.Intent.StrategyFamily)
 		}
 		if p.Intent.RiskLevel != "" && p.Intent.RiskLevel != "unknown" {
-			sb.WriteString(fmt.Sprintf("- 风险偏好: %s\n", p.Intent.RiskLevel))
+			fmt.Fprintf(&sb, "- 风险偏好: %s\n", p.Intent.RiskLevel)
 		}
 		if p.Intent.TradeDirection != "" && p.Intent.TradeDirection != "unknown" {
-			sb.WriteString(fmt.Sprintf("- 交易方向: %s\n", p.Intent.TradeDirection))
+			fmt.Fprintf(&sb, "- 交易方向: %s\n", p.Intent.TradeDirection)
 		}
 		if p.Intent.HoldingPeriod != "" && p.Intent.HoldingPeriod != "unknown" {
-			sb.WriteString(fmt.Sprintf("- 持仓周期: %s\n", p.Intent.HoldingPeriod))
+			fmt.Fprintf(&sb, "- 持仓周期: %s\n", p.Intent.HoldingPeriod)
 		}
 		if len(p.Intent.EntrySignals) > 0 {
-			sb.WriteString(fmt.Sprintf("- 入场信号: %s\n", strings.Join(p.Intent.EntrySignals, ", ")))
+			fmt.Fprintf(&sb, "- 入场信号: %s\n", strings.Join(p.Intent.EntrySignals, ", "))
 		}
 		if len(p.Intent.ExitSignals) > 0 {
-			sb.WriteString(fmt.Sprintf("- 离场信号: %s\n", strings.Join(p.Intent.ExitSignals, ", ")))
+			fmt.Fprintf(&sb, "- 离场信号: %s\n", strings.Join(p.Intent.ExitSignals, ", "))
 		}
 		sb.WriteString("\n")
 	}
 
 	// Parameter hints from clarification/fallback
-	if p.ParamMap != nil && len(p.ParamMap) > 0 {
+	if len(p.ParamMap) > 0 {
 		sb.WriteString("参数偏好：\n")
 		for k, v := range p.ParamMap {
-			sb.WriteString(fmt.Sprintf("- %s: %s\n", k, v))
+			fmt.Fprintf(&sb, "- %s: %s\n", k, v)
 		}
 		sb.WriteString("\n")
 	}
@@ -172,43 +172,45 @@ func (b *StrategyPromptBuilder) BuildUserPrompt(p *PromptParams) string {
 	var sb strings.Builder
 
 	if p.History != "" {
-		sb.WriteString(fmt.Sprintf("【对话摘要】%s\n\n", p.History))
+		fmt.Fprintf(&sb, "【对话摘要】%s\n\n", p.History)
 	}
 
 	if p.Template != nil {
-		sb.WriteString(fmt.Sprintf("【策略模板参考 (%s)】\n", p.Template.Name))
-		sb.WriteString(fmt.Sprintf("类别: %s\n", p.Template.Category))
-		sb.WriteString(fmt.Sprintf("描述: %s\n", p.Template.DescriptionZh))
-		sb.WriteString(fmt.Sprintf("参数说明: %s\n\n", p.Template.ParameterSlotsString()))
+		fmt.Fprintf(&sb, "【策略模板参考 (%s)】\n", p.Template.Name)
+		fmt.Fprintf(&sb, "类别: %s\n", p.Template.Category)
+		fmt.Fprintf(&sb, "描述: %s\n", p.Template.DescriptionZh)
+		fmt.Fprintf(&sb, "参数说明: %s\n\n", p.Template.ParameterSlotsString())
 	}
 
 	if p.Symbol != "" || p.Timeframe != "" {
 		sb.WriteString("【交易配置】\n")
 		if p.Symbol != "" {
-			sb.WriteString(fmt.Sprintf("品种: %s\n", p.Symbol))
+			fmt.Fprintf(&sb, "品种: %s\n", p.Symbol)
 		}
 		if p.Timeframe != "" {
-			sb.WriteString(fmt.Sprintf("周期: %s\n", p.Timeframe))
+			fmt.Fprintf(&sb, "周期: %s\n", p.Timeframe)
 		}
 		sb.WriteString("\n")
 	}
 
 	// Intent-driven guidance
 	if p.Intent != nil && !p.Intent.NeedsClarification {
-		if p.Intent.RiskLevel == "high" {
+		switch p.Intent.RiskLevel {
+		case "high":
 			sb.WriteString("用户风险偏好较高，可接受更大回撤以换取更高收益。\n")
-		} else if p.Intent.RiskLevel == "low" {
+		case "low":
 			sb.WriteString("用户偏好低风险策略，请注重回撤控制和稳健收益。\n")
 		}
-		if p.Intent.TradeDirection == "long" {
+		switch p.Intent.TradeDirection {
+		case "long":
 			sb.WriteString("用户只想做多，不要生成做空信号。\n")
-		} else if p.Intent.TradeDirection == "short" {
+		case "short":
 			sb.WriteString("用户只想做空，不要生成做多信号。\n")
 		}
 		sb.WriteString("\n")
 	}
 
-	sb.WriteString(fmt.Sprintf("【用户需求】\n%s\n\n", p.Message))
+	fmt.Fprintf(&sb, "【用户需求】\n%s\n\n", p.Message)
 	sb.WriteString("请生成策略代码：")
 
 	return sb.String()

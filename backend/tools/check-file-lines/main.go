@@ -46,10 +46,7 @@ type fileInfo struct {
 }
 
 func main() {
-	strict := false
-	if len(os.Args) > 1 && os.Args[1] == "--strict" {
-		strict = true
-	}
+	strict := len(os.Args) > 1 && os.Args[1] == "--strict"
 
 	root, _ := os.Getwd()
 	// Find project root (where go.mod or .git is)

@@ -20,7 +20,7 @@ import (
 // deposit_handler.go.
 
 func (s *DepositServer) ListPendingSignBundles(ctx context.Context, _ *connect.Request[antv1.ListPendingSignBundlesRequest]) (*connect.Response[antv1.ListPendingSignBundlesResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	if s.sweepWorker == nil {
@@ -50,7 +50,7 @@ func (s *DepositServer) ListPendingSignBundles(ctx context.Context, _ *connect.R
 }
 
 func (s *DepositServer) ExportUnsignedSweepBundle(ctx context.Context, req *connect.Request[antv1.ExportUnsignedSweepBundleRequest]) (*connect.Response[antv1.ExportUnsignedSweepBundleResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	if s.sweepWorker == nil {
@@ -77,7 +77,7 @@ func (s *DepositServer) ExportUnsignedSweepBundle(ctx context.Context, req *conn
 }
 
 func (s *DepositServer) ExportBatchUnsignedSweepBundle(ctx context.Context, req *connect.Request[antv1.ExportBatchUnsignedSweepBundleRequest]) (*connect.Response[antv1.ExportBatchUnsignedSweepBundleResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	if s.sweepWorker == nil {
@@ -112,7 +112,7 @@ func (s *DepositServer) ExportBatchUnsignedSweepBundle(ctx context.Context, req 
 }
 
 func (s *DepositServer) ImportSignedSweepBundle(ctx context.Context, req *connect.Request[antv1.ImportSignedSweepBundleRequest]) (*connect.Response[antv1.ImportSignedSweepBundleResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	if s.sweepWorker == nil {
@@ -136,7 +136,7 @@ func (s *DepositServer) ImportSignedSweepBundle(ctx context.Context, req *connec
 }
 
 func (s *DepositServer) GetSweepDashboard(ctx context.Context, req *connect.Request[antv1.GetSweepDashboardRequest]) (*connect.Response[antv1.GetSweepDashboardResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	if s.sweepWorker == nil {
@@ -185,7 +185,7 @@ func (s *DepositServer) GetSweepDashboard(ctx context.Context, req *connect.Requ
 }
 
 func (s *DepositServer) BuildUndelegateOnlyBundle(ctx context.Context, req *connect.Request[antv1.BuildUndelegateOnlyBundleRequest]) (*connect.Response[antv1.BuildUndelegateOnlyBundleResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 	if s.sweepWorker == nil {
@@ -222,7 +222,7 @@ func (s *DepositServer) BuildUndelegateOnlyBundle(ctx context.Context, req *conn
 }
 
 func (s *DepositServer) ImportXpub(ctx context.Context, req *connect.Request[antv1.ImportXpubRequest]) (*connect.Response[antv1.ImportXpubResponse], error) {
-	if _, err := s.requireAdmin(ctx); err != nil {
+	if err := s.requireAdmin(ctx); err != nil {
 		return nil, err
 	}
 

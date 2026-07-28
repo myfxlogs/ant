@@ -188,7 +188,7 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 
 func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, error) {
 	var pos1, pos2 *OrderRecord
-	var idx1, idx2 int = -1, -1
+	var idx1, idx2 = -1, -1
 	for i, p := range b.positions {
 		if p.Ticket == ticket1 {
 			pos1 = p

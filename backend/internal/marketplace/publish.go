@@ -266,9 +266,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	s.pubCache.clear()
 
 	// Notify users who opted into new strategy notifications.
-	if sid, err := uuid.Parse(params.StrategyID); err == nil {
-		go s.notifyNewStrategy(context.WithoutCancel(ctx), sid, params.Title, params.AssetClass)
-	}
+	go s.notifyNewStrategy(context.WithoutCancel(ctx), params.Title, params.AssetClass)
 
 	return publishID.String(), nil
 }

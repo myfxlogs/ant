@@ -95,11 +95,11 @@ func buildProfileUserPrompt(source string, cov *mql2go.CoverageResult) string {
 	sb.WriteString("\n```\n\n")
 
 	sb.WriteString("## Coverage Report\n")
-	sb.WriteString(fmt.Sprintf("Coverage Score: %.2f\n", cov.Score))
-	sb.WriteString(fmt.Sprintf("Total Calls: %d, Supported: %d\n", cov.TotalCalls, cov.SupportedCalls))
-	sb.WriteString(fmt.Sprintf("Execution Model: %s\n", cov.ExecKind))
-	sb.WriteString(fmt.Sprintf("MQL Version: %s\n", cov.Version))
-	sb.WriteString(fmt.Sprintf("Entry Rules: %d, Exit Rules: %d\n", cov.EntryRules, cov.ExitRules))
+	fmt.Fprintf(&sb, "Coverage Score: %.2f\n", cov.Score)
+	fmt.Fprintf(&sb, "Total Calls: %d, Supported: %d\n", cov.TotalCalls, cov.SupportedCalls)
+	fmt.Fprintf(&sb, "Execution Model: %s\n", cov.ExecKind)
+	fmt.Fprintf(&sb, "MQL Version: %s\n", cov.Version)
+	fmt.Fprintf(&sb, "Entry Rules: %d, Exit Rules: %d\n", cov.EntryRules, cov.ExitRules)
 
 	if len(cov.Indicators) > 0 {
 		sb.WriteString("Indicators: " + strings.Join(cov.Indicators, ", ") + "\n")
@@ -107,7 +107,7 @@ func buildProfileUserPrompt(source string, cov *mql2go.CoverageResult) string {
 	if len(cov.BlindSpots) > 0 {
 		sb.WriteString("Blind Spots:\n")
 		for _, bs := range cov.BlindSpots {
-			sb.WriteString(fmt.Sprintf("  - %s (severity=%s, count=%d)\n", bs.Builtin, bs.Severity, bs.Count))
+			fmt.Fprintf(&sb, "  - %s (severity=%s, count=%d)\n", bs.Builtin, bs.Severity, bs.Count)
 		}
 	}
 

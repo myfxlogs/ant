@@ -38,7 +38,7 @@ type PnLResult struct {
 // holdingDays: how long the position was held (for swap)
 func (c *PnLCalculator) Calculate(side string, openPrice, closePrice, lots, contractSize, holdingDays decimal.Decimal) PnLResult {
 	notional := lots.Mul(contractSize)
-	grossPnL := decimal.Zero
+	var grossPnL decimal.Decimal
 	if side == "buy" {
 		grossPnL = closePrice.Sub(openPrice).Mul(notional).Div(openPrice)
 	} else {

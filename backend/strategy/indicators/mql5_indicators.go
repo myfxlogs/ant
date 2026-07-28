@@ -36,7 +36,8 @@ func AMA(src BarSource, period, fastP, slowP, shift int, appliedPrice int) decim
 		if volatility > 0 {
 			er = change / volatility
 		}
-		sc := math.Pow(er*(fastSC-slowSC)+slowSC, 2)
+		tmp := er*(fastSC-slowSC) + slowSC
+		sc := tmp * tmp
 		amaVal = price + sc*(price-amaVal)
 	}
 	return decimal.NewFromFloat(amaVal)

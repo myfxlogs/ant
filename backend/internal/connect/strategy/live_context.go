@@ -22,7 +22,7 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 		Params:       buildLiveParams(cfg.Params),
 		CurrentPrice: tick.Bid.String(),
 	}
-	s.backfillContextStrings(ctx, cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Positions)
 	return tctx
 }
 
@@ -56,13 +56,13 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 		Commission: evt.Commission.String(),
 		Swap:       evt.Swap.String(),
 	}
-	s.backfillContextStrings(ctx, cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Positions)
 	return tctx
 }
 
 // backfillContextStrings populates equity/balance/positions from the push-based
 // PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
-func (s *StrategyExecutionServer) backfillContextStrings(ctx context.Context, accountID string, equity, balance *string, positions *[]*antv1.LivePosition) {
+func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance *string, positions *[]*antv1.LivePosition) {
 	if s.posCache == nil {
 		*equity = "-1"
 		*balance = "-1"
@@ -177,7 +177,7 @@ func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg Live
 	if n > 0 {
 		lctx.CurrentPrice = closeVals[n-1]
 	}
-	s.backfillContextStrings(ctx, cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
 	lctx.Symbols = buildSymbolSeries(extraBars)
 	return lctx
 }
@@ -194,7 +194,7 @@ func (s *StrategyExecutionServer) buildDeltaContext(ctx context.Context, cfg Liv
 		Symbol:    cfg.Symbol, Timeframe: cfg.Timeframe, Mode: cfg.Mode, Params: buildLiveParams(cfg.Params),
 		CurrentPrice: last.close,
 	}
-	s.backfillContextStrings(ctx, cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
 	lctx.Symbols = buildSymbolSeries(extraBars)
 	return lctx
 }

@@ -49,7 +49,7 @@ func (s *Service) notifyTrialExpiring(ctx context.Context, userID uuid.UUID, str
 
 // notifyNewStrategy notifies all users who have matching asset class preferences
 // when a new strategy is published. Called from Publish.
-func (s *Service) notifyNewStrategy(ctx context.Context, strategyID uuid.UUID, title, assetClass string) {
+func (s *Service) notifyNewStrategy(ctx context.Context, title, assetClass string) {
 	if s.notifSender == nil {
 		return
 	}

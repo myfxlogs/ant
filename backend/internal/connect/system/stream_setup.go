@@ -15,18 +15,11 @@ import (
 // Returns the list of active subscriptions (empty if no accounts match).
 func (s *StreamServer) setupProfitSubscriptions(
 	ctx context.Context,
-	userID string,
 	accountIDs []string,
 	filterAll bool,
 	accountSet map[string]bool,
-) ([]profitSub, error) {
+) []profitSub {
 	var profitSubs []profitSub
-	var err error
-	accountIDs, err = s.platform.GetUserAccountIDs(ctx, userID)
-	if err != nil {
-		s.log.Warn("GetUserAccountIDs failed in SubscribeEvents", zap.Error(err))
-		return nil, err
-	}
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
 			continue
@@ -34,24 +27,17 @@ func (s *StreamServer) setupProfitSubscriptions(
 		ch, cancel := s.svc.SubscribeAccountProfit(ctx, aid)
 		profitSubs = append(profitSubs, profitSub{accountID: aid, ch: ch, cancel: cancel})
 	}
-	return profitSubs, nil
+	return profitSubs
 }
 
 // setupSnapSubscriptions subscribes to position snapshot updates for the user.
 func (s *StreamServer) setupSnapSubscriptions(
 	ctx context.Context,
-	userID string,
 	accountIDs []string,
 	filterAll bool,
 	accountSet map[string]bool,
-) ([]snapSub, error) {
+) []snapSub {
 	var snapSubs []snapSub
-	var err error
-	accountIDs, err = s.platform.GetUserAccountIDs(ctx, userID)
-	if err != nil {
-		s.log.Warn("GetUserAccountIDs failed for snapSubs", zap.Error(err))
-		return nil, err
-	}
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
 			continue
@@ -59,24 +45,16 @@ func (s *StreamServer) setupSnapSubscriptions(
 		ch, cancel := s.svc.SubscribePositionSnapshots(ctx, aid)
 		snapSubs = append(snapSubs, snapSub{accountID: aid, ch: ch, cancel: cancel})
 	}
-	return snapSubs, nil
+	return snapSubs
 }
 
 // setupStatusSubscriptions subscribes to account status updates for the user.
 func (s *StreamServer) setupStatusSubscriptions(
-	ctx context.Context,
-	userID string,
 	accountIDs []string,
 	filterAll bool,
 	accountSet map[string]bool,
-) ([]statusSub, error) {
+) []statusSub {
 	var statusSubs []statusSub
-	var err error
-	accountIDs, err = s.platform.GetUserAccountIDs(ctx, userID)
-	if err != nil {
-		s.log.Warn("GetUserAccountIDs failed for statusSubs", zap.Error(err))
-		return nil, err
-	}
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
 			continue
@@ -84,7 +62,7 @@ func (s *StreamServer) setupStatusSubscriptions(
 		ch, cancel := s.svc.SubscribeAccountStatus(aid)
 		statusSubs = append(statusSubs, statusSub{accountID: aid, ch: ch, cancel: cancel})
 	}
-	return statusSubs, nil
+	return statusSubs
 }
 
 // initEventChannels creates the forwarded event channels and returns them

@@ -169,10 +169,10 @@ func buildBridgeRetryPrompt(mqlSource, prevPython, errorMsg string, profile *ant
 	if profile != nil {
 		var sb strings.Builder
 		sb.WriteString("## Strategy Profile (for context)\n")
-		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
-		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
-		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
-		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
+		fmt.Fprintf(&sb, "Type: %s\n", profile.StrategyType)
+		fmt.Fprintf(&sb, "Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", "))
+		fmt.Fprintf(&sb, "Entry: %s\n", profile.EntryLogic)
+		fmt.Fprintf(&sb, "Exit: %s\n", profile.ExitLogic)
 		data.ProfileBlock = sb.String()
 	}
 	userPrompt, err := renderPrompt("bridge_retry_user", bridgeRetryUserPromptTmpl, data)
@@ -192,11 +192,11 @@ func buildBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult, pr
 		data.ProfileBlock = sb.String()
 	}
 	var covSB strings.Builder
-	covSB.WriteString(fmt.Sprintf("Coverage score: %.0f%%\n", coverage.Score*100))
+	fmt.Fprintf(&covSB, "Coverage score: %.0f%%\n", coverage.Score*100)
 	if len(coverage.BlindSpots) > 0 {
 		covSB.WriteString("Blind spots:\n")
 		for _, bs := range coverage.BlindSpots {
-			covSB.WriteString(fmt.Sprintf("- %s (severity: %s, count: %d)\n", bs.Builtin, bs.Severity, bs.Count))
+			fmt.Fprintf(&covSB, "- %s (severity: %s, count: %d)\n", bs.Builtin, bs.Severity, bs.Count)
 		}
 	}
 	data.CoverageBlock = covSB.String()
@@ -227,10 +227,10 @@ func fallbackBridgeRetryPrompt(mqlSource, prevPython, errorMsg string, profile *
 	sb.WriteString(errorMsg)
 	if profile != nil {
 		sb.WriteString("\n\n## Strategy Profile (for context)\n")
-		sb.WriteString(fmt.Sprintf("Type: %s\n", profile.StrategyType))
-		sb.WriteString(fmt.Sprintf("Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", ")))
-		sb.WriteString(fmt.Sprintf("Entry: %s\n", profile.EntryLogic))
-		sb.WriteString(fmt.Sprintf("Exit: %s\n", profile.ExitLogic))
+		fmt.Fprintf(&sb, "Type: %s\n", profile.StrategyType)
+		fmt.Fprintf(&sb, "Indicators: %s\n", strings.Join(profile.IndicatorsUsed, ", "))
+		fmt.Fprintf(&sb, "Entry: %s\n", profile.EntryLogic)
+		fmt.Fprintf(&sb, "Exit: %s\n", profile.ExitLogic)
 	}
 	sb.WriteString("\n\n## Original MQL Source\n```\n")
 	sb.WriteString(mqlSource)
@@ -251,11 +251,11 @@ func fallbackBridgeUserPrompt(mqlSource string, coverage *mql2go.CoverageResult,
 		sb.WriteString("\n")
 	}
 	sb.WriteString("## Coverage Report\n")
-	sb.WriteString(fmt.Sprintf("Coverage score: %.0f%%\n", coverage.Score*100))
+	fmt.Fprintf(&sb, "Coverage score: %.0f%%\n", coverage.Score*100)
 	if len(coverage.BlindSpots) > 0 {
 		sb.WriteString("Blind spots:\n")
 		for _, bs := range coverage.BlindSpots {
-			sb.WriteString(fmt.Sprintf("- %s (severity: %s, count: %d)\n", bs.Builtin, bs.Severity, bs.Count))
+			fmt.Fprintf(&sb, "- %s (severity: %s, count: %d)\n", bs.Builtin, bs.Severity, bs.Count)
 		}
 	}
 	sb.WriteString("\n## Task\n")

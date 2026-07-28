@@ -108,6 +108,9 @@ linters:
         path: internal/strategy/
       - linters:
           - forbidigo
+        path: strategy/backtest/
+      - linters:
+          - forbidigo
         path: internal/tenant/
       - linters:
           - forbidigo
@@ -126,6 +129,39 @@ linters:
         path: internal/ai/
       - linters:
           - forbidigo
+        path: internal/agent/
+      - linters:
+          - forbidigo
+        path: internal/audit/
+      - linters:
+          - forbidigo
+        path: internal/execalgo/
+      - linters:
+          - forbidigo
+        path: internal/interceptor/
+      - linters:
+          - forbidigo
+        path: internal/mdgateway/
+      - linters:
+          - forbidigo
+        path: internal/sweep/
+      - linters:
+          - forbidigo
+        path: internal/chain/
+      - linters:
+          - forbidigo
+        path: internal/notifier/
+      - linters:
+          - forbidigo
+        path: internal/paper/
+      - linters:
+          - forbidigo
+        path: internal/reconcile/
+      - linters:
+          - forbidigo
+        path: internal/risk/
+      - linters:
+          - forbidigo
         path: pkg/faultisol/
       - linters:
           - forbidigo
@@ -136,6 +172,9 @@ linters:
       - linters:
           - gocognit
         path: internal/risksvc/jurisdiction\.go
+      - linters:
+          - gosec
+        path: internal/agent/hooks\.go
       - linters:
           - funlen
           - gocognit

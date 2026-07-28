@@ -107,9 +107,9 @@ func buildAnalysisUserPrompt(result *antv1.AgentBacktestResult, profile *antv1.S
 		data.ProfileBlock = sb.String()
 	}
 	var btSB strings.Builder
-	btSB.WriteString(fmt.Sprintf("Success: %v\n", result.Success))
+	fmt.Fprintf(&btSB, "Success: %v\n", result.Success)
 	if result.Error != "" {
-		btSB.WriteString(fmt.Sprintf("Error: %s\n", result.Error))
+		fmt.Fprintf(&btSB, "Error: %s\n", result.Error)
 	}
 	totalReturn, _ := strconv.ParseFloat(result.TotalReturn, 64)
 	annualReturn, _ := strconv.ParseFloat(result.AnnualReturn, 64)
@@ -117,34 +117,34 @@ func buildAnalysisUserPrompt(result *antv1.AgentBacktestResult, profile *antv1.S
 	sharpeRatio, _ := strconv.ParseFloat(result.SharpeRatio, 64)
 	winRate, _ := strconv.ParseFloat(result.WinRate, 64)
 	profitFactor, _ := strconv.ParseFloat(result.ProfitFactor, 64)
-	btSB.WriteString(fmt.Sprintf("Total Return: %.2f%%\n", totalReturn*100))
-	btSB.WriteString(fmt.Sprintf("Annual Return: %.2f%%\n", annualReturn*100))
-	btSB.WriteString(fmt.Sprintf("Max Drawdown: %.2f%%\n", maxDrawdown*100))
-	btSB.WriteString(fmt.Sprintf("Sharpe Ratio: %.2f\n", sharpeRatio))
-	btSB.WriteString(fmt.Sprintf("Win Rate: %.1f%%\n", winRate*100))
-	btSB.WriteString(fmt.Sprintf("Profit Factor: %.2f\n", profitFactor))
-	btSB.WriteString(fmt.Sprintf("Total Trades: %d (Win: %d, Loss: %d)\n",
-		result.TotalTrades, result.WinningTrades, result.LosingTrades))
-	btSB.WriteString(fmt.Sprintf("Total PnL: %s\n", result.TotalPnlAbsolute))
+	fmt.Fprintf(&btSB, "Total Return: %.2f%%\n", totalReturn*100)
+	fmt.Fprintf(&btSB, "Annual Return: %.2f%%\n", annualReturn*100)
+	fmt.Fprintf(&btSB, "Max Drawdown: %.2f%%\n", maxDrawdown*100)
+	fmt.Fprintf(&btSB, "Sharpe Ratio: %.2f\n", sharpeRatio)
+	fmt.Fprintf(&btSB, "Win Rate: %.1f%%\n", winRate*100)
+	fmt.Fprintf(&btSB, "Profit Factor: %.2f\n", profitFactor)
+	fmt.Fprintf(&btSB, "Total Trades: %d (Win: %d, Loss: %d)\n",
+		result.TotalTrades, result.WinningTrades, result.LosingTrades)
+	fmt.Fprintf(&btSB, "Total PnL: %s\n", result.TotalPnlAbsolute)
 	if len(result.EquityCurve) > 0 {
-		btSB.WriteString(fmt.Sprintf("Equity Points: %d\n", len(result.EquityCurve)))
-		btSB.WriteString(fmt.Sprintf("Start Equity: %s\n", result.EquityCurve[0]))
-		btSB.WriteString(fmt.Sprintf("End Equity: %s\n", result.EquityCurve[len(result.EquityCurve)-1]))
+		fmt.Fprintf(&btSB, "Equity Points: %d\n", len(result.EquityCurve))
+		fmt.Fprintf(&btSB, "Start Equity: %s\n", result.EquityCurve[0])
+		fmt.Fprintf(&btSB, "End Equity: %s\n", result.EquityCurve[len(result.EquityCurve)-1])
 	}
 	data.BacktestBlock = btSB.String()
 	if len(result.Trades) > 0 && len(result.Trades) <= 50 {
 		var trSB strings.Builder
 		trSB.WriteString("\n## Trades\n")
 		for _, t := range result.Trades {
-			trSB.WriteString(fmt.Sprintf("  #%d %s vol=%s pnl=%s reason=%s\n",
-				t.Ticket, t.Side, t.Volume, t.Pnl, t.Reason))
+			fmt.Fprintf(&trSB, "  #%d %s vol=%s pnl=%s reason=%s\n",
+				t.Ticket, t.Side, t.Volume, t.Pnl, t.Reason)
 		}
 		data.TradesBlock = trSB.String()
 	} else if len(result.Trades) > 50 {
 		var trSB strings.Builder
-		trSB.WriteString(fmt.Sprintf("\n## Trades (showing first 10 of %d)\n", len(result.Trades)))
+		fmt.Fprintf(&trSB, "\n## Trades (showing first 10 of %d)\n", len(result.Trades))
 		for _, t := range result.Trades[:10] {
-			trSB.WriteString(fmt.Sprintf("  #%d %s vol=%s pnl=%s\n", t.Ticket, t.Side, t.Volume, t.Pnl))
+			fmt.Fprintf(&trSB, "  #%d %s vol=%s pnl=%s\n", t.Ticket, t.Side, t.Volume, t.Pnl)
 		}
 		data.TradesBlock = trSB.String()
 	}
@@ -217,19 +217,19 @@ func fallbackAnalysisUserPrompt(result *antv1.AgentBacktestResult, profile *antv
 		sb.WriteString("\n")
 	}
 	sb.WriteString("## Backtest Results\n")
-	sb.WriteString(fmt.Sprintf("Success: %v\n", result.Success))
+	fmt.Fprintf(&sb, "Success: %v\n", result.Success)
 	if result.Error != "" {
-		sb.WriteString(fmt.Sprintf("Error: %s\n", result.Error))
+		fmt.Fprintf(&sb, "Error: %s\n", result.Error)
 	}
 	tr2, _ := strconv.ParseFloat(result.TotalReturn, 64)
 	md2, _ := strconv.ParseFloat(result.MaxDrawdown, 64)
 	sr2, _ := strconv.ParseFloat(result.SharpeRatio, 64)
 	wr2, _ := strconv.ParseFloat(result.WinRate, 64)
-	sb.WriteString(fmt.Sprintf("Total Return: %.2f%%\n", tr2*100))
-	sb.WriteString(fmt.Sprintf("Max Drawdown: %.2f%%\n", md2*100))
-	sb.WriteString(fmt.Sprintf("Sharpe Ratio: %.2f\n", sr2))
-	sb.WriteString(fmt.Sprintf("Win Rate: %.1f%%\n", wr2*100))
-	sb.WriteString(fmt.Sprintf("Total Trades: %d\n", result.TotalTrades))
+	fmt.Fprintf(&sb, "Total Return: %.2f%%\n", tr2*100)
+	fmt.Fprintf(&sb, "Max Drawdown: %.2f%%\n", md2*100)
+	fmt.Fprintf(&sb, "Sharpe Ratio: %.2f\n", sr2)
+	fmt.Fprintf(&sb, "Win Rate: %.1f%%\n", wr2*100)
+	fmt.Fprintf(&sb, "Total Trades: %d\n", result.TotalTrades)
 	sb.WriteString("\nProduce the backtest analysis now.\n")
 	return sb.String()
 }
