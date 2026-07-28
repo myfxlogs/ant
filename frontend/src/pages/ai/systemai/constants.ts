@@ -23,34 +23,41 @@ export const OFFICIAL_PROVIDER_BASE_URLS: Record<string, string> = {
 
 const DK = 'ai.settings.discoverErrors'
 
+interface DiscoverPattern {
+  key: string;
+  lower?: string[];
+  raw?: string[];
+  exact?: string;
+  compound?: (lower: string, msg: string) => boolean;
+}
+
+const DISCOVER_PATTERNS: DiscoverPattern[] = [
+  { key: 'baseUrlRequired', raw: ['base_url'], exact: '__DISCOVER_BASE_URL_EMPTY__' },
+  { key: 'baseUrlInvalid', raw: ['base url format invalid'] },
+  { key: 'freeTierExhausted', lower: ['free-tier exhausted', 'freetieronly', 'free tier', 'free-tier only'] },
+  {
+    key: 'quotaForbidden403',
+    compound: (lower) => lower.includes('status 403') && (lower.includes('quota') || lower.includes('exhaust') || lower.includes('allocation')),
+  },
+  { key: 'quotaOrRateLimit', lower: ['quota exhausted', '[resource_exhausted]', 'status 429', 'too many requests', 'rate limit'] },
+  { key: 'providerRegionBlocked', lower: ['user location is not supported'] },
+  { key: 'unauthorized', raw: ['unauthorized'] },
+  { key: 'endpoint404', lower: ['endpoint not found', 'status 404'] },
+  { key: 'timeout', raw: ['timeout'] },
+  { key: 'unreachable', raw: ['unreachable'] },
+  { key: 'invalidModelsResponse', raw: ['invalid /models'] },
+  { key: 'noModelsReturned', raw: ['no models returned'] },
+];
+
 /** Map upstream / backend error text to a localized message (locale follows UI i18n). */
 export function toFriendlyDiscoverMessage(msg: string, t: TFunction): string {
   const lower = msg.toLowerCase()
-  if (msg === '__DISCOVER_BASE_URL_EMPTY__' || msg.includes('base_url')) return t(`${DK}.baseUrlRequired`)
-  if (msg.includes('base url format invalid')) return t(`${DK}.baseUrlInvalid`)
-  if (lower.includes('free-tier exhausted') || lower.includes('freetieronly') || lower.includes('free tier') || lower.includes('free-tier only')) {
-    return t(`${DK}.freeTierExhausted`)
+  for (const p of DISCOVER_PATTERNS) {
+    if (p.exact && msg === p.exact) return t(`${DK}.${p.key}`)
+    if (p.raw?.some(s => msg.includes(s))) return t(`${DK}.${p.key}`)
+    if (p.lower?.some(s => lower.includes(s))) return t(`${DK}.${p.key}`)
+    if (p.compound?.(lower, msg)) return t(`${DK}.${p.key}`)
   }
-  // Check 403+quota (more specific) before the general quota/429 bucket.
-  if (lower.includes('status 403') && (lower.includes('quota') || lower.includes('exhaust') || lower.includes('allocation'))) {
-    return t(`${DK}.quotaForbidden403`)
-  }
-  if (
-    lower.includes('quota exhausted') ||
-    lower.includes('[resource_exhausted]') ||
-    lower.includes('status 429') ||
-    lower.includes('too many requests') ||
-    lower.includes('rate limit')
-  ) {
-    return t(`${DK}.quotaOrRateLimit`)
-  }
-  if (lower.includes('user location is not supported')) return t(`${DK}.providerRegionBlocked`)
-  if (msg.includes('unauthorized')) return t(`${DK}.unauthorized`)
-  if (lower.includes('endpoint not found') || lower.includes('status 404')) return t(`${DK}.endpoint404`)
-  if (msg.includes('timeout')) return t(`${DK}.timeout`)
-  if (msg.includes('unreachable')) return t(`${DK}.unreachable`)
-  if (msg.includes('invalid /models')) return t(`${DK}.invalidModelsResponse`)
-  if (msg.includes('no models returned')) return t(`${DK}.noModelsReturned`)
   const detail = (msg || '').trim()
   return detail ? t(`${DK}.genericDetail`, { detail }) : t(`${DK}.generic`)
 }
