@@ -97,7 +97,7 @@ interface ChartIndicatorsState {
 let nextId = 1;
 function genId() { return `ind_${nextId++}`; }
 
-export const useChartIndicatorsStore = create<ChartIndicatorsState>((set, get) => ({
+export const useChartIndicatorsStore = create<ChartIndicatorsState>((set, _get) => ({
   active: [],
   registry: INDICATOR_REGISTRY,
 

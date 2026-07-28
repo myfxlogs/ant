@@ -29,7 +29,7 @@ interface Props {
 
 const readOnlyCompartment = new Compartment();
 
-export default function StrategyCodeEditor({ value, onChange, readOnly, diagnostics, style }: Props) {
+export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnostics, style }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);

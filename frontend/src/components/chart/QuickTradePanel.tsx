@@ -37,12 +37,12 @@ const ORDER_KIND_KEYS: Record<OrderKind, string> = {
   STOP: 'trading.stop',
 };
 
-const cardBox: React.CSSProperties = { background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)', borderRadius: 6, padding: '6px 10px' };
+const _cardBox: React.CSSProperties = { background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)', borderRadius: 6, padding: '6px 10px' };
 const labelSm: React.CSSProperties = { fontSize: 10, color: 'var(--ant-color-text-tertiary)', fontWeight: 600 };
 
-export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition, onToggleAllPositions, horizontal }: Props) {
+export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], _positions = [], _recentTrades = [], onClosePosition, _onToggleAllPositions, horizontal }: Props) {
   const { t } = useTranslation();
-  const totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
+  const _totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
   const [orderKind, setOrderKind] = useState<OrderKind>('MARKET');
   const [volume, setVolume] = useState<number | null>(0.01);
@@ -50,7 +50,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
   const [stopLoss, setStopLoss] = useState<number | null>(null);
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [closingTicket, setClosingTicket] = useState<number | null>(null);
+  const [_closingTicket, setClosingTicket] = useState<number | null>(null);
   const [marginMode, setMarginMode] = useState<'cross' | 'isolated'>('cross');
 
   const isLimitOrStop = orderKind === 'LIMIT' || orderKind === 'STOP';
@@ -85,7 +85,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
   const closeTimerRef = useRef<number | null>(null);
   useEffect(() => () => { if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current); }, []);
 
-  const handleClosePos = useCallback(async (ticket: number, volume?: number) => {
+  const _handleClosePos = useCallback(async (ticket: number, volume?: number) => {
     setClosingTicket(ticket);
     try {
       await onClosePosition?.(ticket, volume);

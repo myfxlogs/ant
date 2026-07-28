@@ -195,7 +195,7 @@ export function useAIWorkflow(
           lastErrors = recheck.errors || [];
           lastWarnings = recheck.warnings || [];
           lastParams = recheck.parameters || [];
-          lastQualityHints = recheck.qualityHints || [];
+          _lastQualityHints = recheck.qualityHints || [];
           codeCtx.setCode(code);
 
           // On last iteration, compute debug diff for the final state.

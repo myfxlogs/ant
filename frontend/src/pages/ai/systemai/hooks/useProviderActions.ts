@@ -46,7 +46,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
     setSecretInput, setNotice, setError, setValidated, setSelectedProviderId,
     setLastAutoSavedSecretKey, setLastAutoDiscoverKey, setDiscoveredModels,
     setValidating,
-    prevProviderIdRef, secretInput, silentReload, isCustomProvider, validateBaseURL, persistDraftConfig,
+    prevProviderIdRef, secretInput, silentReload, _isCustomProvider, validateBaseURL, persistDraftConfig,
   } = params;
 
   const saveConfig = useCallback(async () => {

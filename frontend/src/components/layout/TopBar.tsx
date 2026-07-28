@@ -24,7 +24,7 @@ interface Props {
   languageMenu: { items: { key: string; label: string; icon: React.ReactNode | null }[]; onClick: (info: { key: string }) => void };
 }
 
-export default function TopBar({ isMobile, onMenuToggle, language, languages, languageMenu }: Props) {
+export default function TopBar({ isMobile, onMenuToggle, _language, _languages, languageMenu }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();

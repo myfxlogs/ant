@@ -32,7 +32,7 @@ interface Props {
 }
 
 export default function StrategiesTab({
-  templates, loading, selectedId, hasUnsavedDraft, draftName,
+  _templates, loading, selectedId, hasUnsavedDraft, draftName,
   onSelect, onRunBacktest, onOpenHistory, onSaveAs,
 }: Props) {
   const { t } = useTranslation();

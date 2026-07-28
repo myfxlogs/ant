@@ -15,7 +15,7 @@ export const sreApi = {
     const r = await adminSREClient.getKillSwitch({});
     return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
   },
-  killSwitchEngage: async (reason: string, operator: string): Promise<KillSwitchStatus> => {
+  killSwitchEngage: async (reason: string, _operator: string): Promise<KillSwitchStatus> => {
     const r = await adminSREClient.setKillSwitch({ enabled: true, reason });
     return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
   },

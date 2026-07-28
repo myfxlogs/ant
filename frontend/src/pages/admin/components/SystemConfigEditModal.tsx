@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function SystemConfigEditModal({
-  visible, currentConfig, form, isAIProviderCatalog,
+  visible, currentConfig, form, _isAIProviderCatalog,
   isEconAIConfig, isStrategyHealthConfig, isJSONConfig,
   onSave, onCancel, onFormatJson, onUseTemplate,
 }: Props) {

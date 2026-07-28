@@ -51,7 +51,7 @@ function decodeModel(value: string): { providerId: string; model: string } {
 export default function WorkspaceCodePanel({
   code, onCodeChange,
   validating, onValidate, validationResult,
-  onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
+  _onRunBacktest, _backtestSubmitting, canSave, onSave, onCopy,
   onAskAI, onAutoFix, autoFixing, autoFixDebug, onDismissDebug,
   onShowHistory,
 }: Props) {

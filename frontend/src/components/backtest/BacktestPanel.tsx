@@ -67,8 +67,8 @@ export default function BacktestPanel(props: Props) {
   const { t } = useTranslation();
   const [tuningMode, setTuningMode] = useState<'interactive' | 'batch'>('interactive');
 
-  const handleRun = () => runner.run(inputs);
-  const canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
+  const _handleRun = () => runner.run(inputs);
+  const _canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
 
   // ── Resize handle ─────────────────────────────────────────────────────
   const resizeRef = useRef<HTMLDivElement>(null);

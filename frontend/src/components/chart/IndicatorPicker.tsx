@@ -11,7 +11,7 @@ interface Props {
 
 export default function IndicatorPicker({ style }: Props) {
   const { t } = useTranslation();
-  const { registry, active, addIndicator } = useChartIndicatorsStore();
+  const { registry, _active, addIndicator } = useChartIndicatorsStore();
 
   const menuItems: MenuProps['items'] = [
     { key: 'overlay-header', label: t('strategy.workspace.chartIndicators.overlay', { defaultValue: 'Overlay (main chart)' }), type: 'group' as const, className: 'indicator-menu-group' },

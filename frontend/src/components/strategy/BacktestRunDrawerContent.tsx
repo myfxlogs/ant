@@ -8,10 +8,10 @@ import { FIELDS_ERROR_KEY, FIELDS_MAX_DRAWDOWN_KEY, FIELDS_SHARPE_KEY, FIELDS_ST
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import type { BacktestTrade } from '@/client/backtestRuns';
 
-const fmt = (n: number | null | undefined, digits = 4): string =>
+const _fmt = (n: number | null | undefined, digits = 4): string =>
   n === null || n === undefined || Number.isNaN(n) ? '-' : Number(n).toFixed(digits);
 
-const fmtTs = (ms: number | undefined): string =>
+const _fmtTs = (ms: number | undefined): string =>
   !ms || ms <= 0 ? '-' : dayjs(ms).format('YYYY-MM-DD HH:mm:ss');
 
 interface ContentProps {

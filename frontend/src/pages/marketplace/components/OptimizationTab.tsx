@@ -13,7 +13,7 @@ import {
 } from '@/gen/ant/v1/marketplace_service_pb';
 import type { OptimizationTaskInfo, PreviewOptimizationResponse, BacktestSnapshot } from '@/gen/ant/v1/marketplace_service_pb';
 
-const { Text, Paragraph } = Typography;
+const { Text, _Paragraph } = Typography;
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'default',

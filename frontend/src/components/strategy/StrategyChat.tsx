@@ -23,12 +23,12 @@ function extractCodeFromContent(content: string): string | undefined {
   return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
 }
 
-export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, onValidateResult, onRunBacktest, backtestStatus, currentCode }: Props) {
+export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, _onValidateResult, _onRunBacktest, _backtestStatus, currentCode }: Props) {
   const { t } = useTranslation();
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [loadedTemplateId, setLoadedTemplateId] = useState('');
+  const [loadedTemplateId, _setLoadedTemplateId] = useState('');
   const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [strategiesOpen, setStrategiesOpen] = useState(false);
@@ -66,7 +66,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
   const noop = useCallback(() => {}, []);
   const {
     handleLoadTemplate, handleSendToAI, handleRenameTemplate, handleDeleteTemplate,
-    handleSaveTemplate, handleNewConv, handleLoadConv,
+    handleSaveTemplate, handleNewConv, _handleLoadConv,
     handleStartRename, handleCancelRename, handleConfirmRename, handleDeleteConv,
   } = useConversationHandlers({
     sessionId: '', onApplyCode, addMsg: noop, setMessages: noop, setTab: noop,

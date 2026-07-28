@@ -8,7 +8,7 @@ import type { BrokerSearchResult, BrokerServer } from './BindAccount';
 export function Step1SearchBroker({
   mtType, setMtType, companySearch, setCompanySearch, searching,
   searchResults, setSearchResults, selectedCompany, selectedServer,
-  setSelectedCompany, setSelectedServer, alias, setAlias,
+  setSelectedCompany, setSelectedServer, _alias, _setAlias,
   handleSearch, handleCompanyChange, handleServerChange, onNext,
 }: {
   mtType: 'MT4' | 'MT5';

@@ -12,7 +12,7 @@ import {
 import type { FeeTierInfo } from '@/gen/ant/v1/marketplace_service_pb';
 import { useAuthStore } from '@/stores/authStore';
 
-const { Text } = Typography;
+const { _Text } = Typography;
 
 export default function FeeTierPanel() {
   const { t } = useTranslation();

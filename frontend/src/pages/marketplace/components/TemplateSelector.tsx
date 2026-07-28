@@ -45,7 +45,7 @@ interface TemplateSelectorProps {
 export default function TemplateSelector({
   symbol,
   timeframe,
-  autoPublish,
+  _autoPublish,
   onGenerate,
   onSymbolChange,
   onTimeframeChange,

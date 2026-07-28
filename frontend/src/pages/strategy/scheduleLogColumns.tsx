@@ -26,7 +26,7 @@ export function formatLogTime(v: unknown) {
   return String(v);
 }
 
-export function renderExecStatus(v: unknown, t: (key: string, opts?: unknown) => string) {
+export function renderExecStatus(v: unknown, _t: (key: string, opts?: unknown) => string) {
   const s = String(v || '').toLowerCase();
   if (s === 'success' || s === 'completed' || s === 'succeeded') return <Tag color="green">{s.toUpperCase()}</Tag>;
   if (s === 'failed' || s === 'error') return <Tag color="red">{s.toUpperCase()}</Tag>;

@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, Typography, Space } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-const { Text } = Typography;
+const { _Text } = Typography;
 
 interface TradeConfirmModalProps {
   open: boolean;

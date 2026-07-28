@@ -32,7 +32,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
   const {
     phase, currentPhase, streamCode, code, prevCode, toolResults,
     error, feedback, setFeedback, analysis, discussionReply, metrics,
-    diagnosis, pendingFeedback,
+    diagnosis, _pendingFeedback,
     handleFeedback, handleConfirmDiagnosis, handleRetryFeedback,
     busy, setDiagnosis, setPendingFeedback,
   } = useExecutionPanel({ plan, symbol, timeframe, sessionId, previousCode });

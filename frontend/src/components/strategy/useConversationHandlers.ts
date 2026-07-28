@@ -34,9 +34,9 @@ interface UseConversationHandlersArgs {
 }
 
 export function useConversationHandlers({
-  sessionId, onApplyCode, addMsg, setMessages, setTab,
-  templates, setTemplates, conversations, setConversations,
-  activeConvId, setActiveConvId, editingConvId, setEditingConvId,
+  _sessionId, onApplyCode, addMsg, setMessages, setTab,
+  templates, _setTemplates, conversations, setConversations,
+  activeConvId, setActiveConvId, _editingConvId, setEditingConvId,
   editTitle, setEditTitle, planRef, codeRef, prevCodeRef,
   titleGeneratedRef, firstUserMsgRef, bumpCodeGen,
   fetchTemplates, fetchConversations,

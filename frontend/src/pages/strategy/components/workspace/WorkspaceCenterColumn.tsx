@@ -26,7 +26,7 @@ interface Props {
   onShowVersionHistory?: () => void;
 }
 
-export default function WorkspaceCenterColumn({ btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, setImportDrawerOpen, onShowVersionHistory }: Props) {
+export default function WorkspaceCenterColumn({ _btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, setImportDrawerOpen, onShowVersionHistory }: Props) {
   const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);

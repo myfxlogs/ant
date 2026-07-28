@@ -32,7 +32,7 @@ interface Props {
   };
 }
 
-export default function BacktestParamsTab({ runner, inputs, templates }: Props) {
+export default function BacktestParamsTab({ runner, _inputs, templates }: Props) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
 

@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import { strategyVersionApi } from '@/client/strategy';
 import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 
-const { Text, Paragraph } = Typography;
+const { Text, _Paragraph } = Typography;
 
 interface Props {
   open: boolean;

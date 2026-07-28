@@ -37,7 +37,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const volumeCollapsedRef = useRef(false);
 
   const { bars, loading, error, streamActive, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId, chartRef);
-  const { active: activeIndicators, getDef, addIndicator, removeIndicator } = useChartIndicatorsStore();
+  const { active: activeIndicators, getDef, _addIndicator, removeIndicator } = useChartIndicatorsStore();
   const [editingIndId, setEditingIndId] = useState<string | null>(null);
   // Track klinecharts paneIds keyed by store instanceId
   const kcIndRef = useRef<Map<string, string>>(new Map());

@@ -31,7 +31,7 @@ function fmtTime(ts?: string): string {
   return `${mm}-${dd} ${hh}:${min}`;
 }
 
-export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, backtestStatus }: Props) {
+export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, _backtestStatus }: Props) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'positions' | 'history' | 'backtest'>('positions');
 

@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import type { RevenueTrendPoint, SubscriberTrendPoint } from '@/gen/ant/v1/marketplace_service_pb';
 
-const { Text } = Typography;
+const { _Text } = Typography;
 
 function formatDate(ms: number | bigint): string {
   const d = new Date(Number(ms));

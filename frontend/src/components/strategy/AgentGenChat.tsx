@@ -27,7 +27,7 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
   const [userInput, setUserInput] = useState('');
   const [planRefining, setPlanRefining] = useState(false);
   const [hasCode, setHasCode] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [generating, _setGenerating] = useState(false);
 
   const abortRef = useRef<(() => void) | null>(null);
   const conversationIdRef = useRef(conversationId || crypto.randomUUID());

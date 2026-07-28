@@ -52,7 +52,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
     return () => { cancelled = true; };
   }, [accountId]);
 
-  const toggleWatchlist = useCallback((sym: string) => {
+  const _toggleWatchlist = useCallback((sym: string) => {
     setWatchlist((prev) => {
       const next = prev.includes(sym)
         ? prev.filter((s) => s !== sym)

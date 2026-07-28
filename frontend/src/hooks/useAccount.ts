@@ -15,14 +15,14 @@ export function useAccount() {
   const queryClient = useQueryClient();
 
   // Single source of truth: TanStack Query cache, shared with MainLayout.
-  const { data: accounts, isLoading: queryLoading } = useQuery<Account[]>({
+  const { data: accounts, isLoading: _queryLoading } = useQuery<Account[]>({
     queryKey: queryKeys.accounts.list(),
     queryFn: () => accountApi.list(),
   });
 
   // Local transient state (was Zustand store — Task C removed it).
   const [loading, setLoading] = useState(false);
-  const [enablingAccount, setEnablingAccount] = useState<string | null>(null);
+  const [_enablingAccount, setEnablingAccount] = useState<string | null>(null);
 
   const fetchAccounts = useCallback(async (force = false) => {
     const cached = queryClient.getQueryData<Account[]>(queryKeys.accounts.list());
