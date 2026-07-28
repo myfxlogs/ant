@@ -120,7 +120,7 @@ export function useBacktestRunner() {
     updateExtractedParams(
       result.parameterEntries?.map((e: { name: string; type: string; default: string; label?: string }) => ({ name: e.name, type: e.type, default: e.default, label: e.label || '' })) || null
     );
-  }, [tuning.updateSweepFromCode, updateDirectivesFromCode, updateExtractedParams]);
+  }, [tuning, tuning.updateSweepFromCode, updateDirectivesFromCode, updateExtractedParams]);
 
   const setParam = useCallback((name: string, value: string) => {
     setStrategyParamValues(prev => ({ ...prev, [name]: value }));
@@ -236,7 +236,7 @@ export function useBacktestRunner() {
       message.error(msg || t(BACKTEST_FAILED_KEY));
       setStatus('error'); setErrorMsg(msg || 'Unknown error');
     } finally { setSubmitting(false); }
-  }, [initialCapital, commission, slippage, leverage, lotSize, tradeDirection, strictMode, startDate, endDate, t]);
+  }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate, t]);
 
   // ── Return ────────────────────────────────────────────────────────────
 

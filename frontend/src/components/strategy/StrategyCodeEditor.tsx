@@ -36,7 +36,6 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnos
   onChangeRef.current = onChange;
 
   // Build extensions once. readOnly is handled via compartment reconfigure in a separate effect.
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- readOnly intentionally excluded (compartment pattern)
   const extensions = useMemo(() => [
     lineNumbers(),
     highlightActiveLine(),
@@ -72,6 +71,7 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnos
       '&.cm-editor': { maxHeight: '100%' },
       '.cm-scroller': { fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace" },
     }),
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- readOnly handled via compartment reconfigure
   ], []);
 
   // Diagnostics — reserved for future @codemirror/lint integration.

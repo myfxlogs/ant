@@ -50,9 +50,11 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
       setSelectedVersions([]);
       fetchVersions();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, mount/prop-change only
   }, [open, strategyId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, page-change only
     if (open && strategyId) fetchVersions();
   }, [page]);
 

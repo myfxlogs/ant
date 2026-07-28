@@ -61,6 +61,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
   const fetchConversations = async () => {
     try { const list = await aiApi.listConversations(); setConversations(list.filter(c => c.messageCount > 0).map(c => ({ id: c.id, title: c.title || t(NEW_CONVERSATION_KEY), created_at: c.createdAt?.toISOString() || '' }))); } catch {}
   };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only fetch
   useEffect(() => { fetchConversations(); }, []);
 
   const noop = useCallback(() => {}, []);

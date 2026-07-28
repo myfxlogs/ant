@@ -89,7 +89,7 @@ export function useTrading() {
     } finally {
       setLoading(false);
     }
-  }, [setLoading]);
+  }, [setLoading, queryClient]);
 
   const getOrderHistory = useCallback(async (params: {
     accountId: string;
