@@ -17,8 +17,8 @@ export function useAuth() {
       showSuccess(i18n.t('auth.messages.loginSuccess'));
       navigate('/');
       return true;
-    } catch (error: any) {
-      const msg = error?.message || '';
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : '';
       if (msg.includes('email not verified')) {
         showError(i18n.t('auth.verify.failedDesc'));
         navigate('/verify-email?email=' + encodeURIComponent(data.login));

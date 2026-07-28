@@ -208,7 +208,7 @@ export const strategyRuntimeApi = {
     return (await strategyRuntimeService.deleteBacktestRuns(msg));
   },
 
-  watchBacktestRun: (runId: string, onUpdate: (u: BacktestRunUpdate) => void, onError?: (e: any) => void) => {
+  watchBacktestRun: (runId: string, onUpdate: (u: BacktestRunUpdate) => void, onError?: (e: unknown) => void) => {
     const abortController = new AbortController();
     (async () => {
       try {

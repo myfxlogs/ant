@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Radio, Button, Checkbox, Tag, Table, Typography, Tooltip, Alert } from 'antd';
 import { ExperimentOutlined, TrophyOutlined, ThunderboltOutlined, RobotOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { APPLY_KEY, DEGRADATION_KEY, ENABLED_COMBINATIONS_KEY, GRADE_KEY, GRID_WARNING_KEY, HIDE_KEY, OOS_FOOTNOTE_KEY, OOS_SCORE_KEY, OPTIMIZER_METHOD_KEY, OVERFIT_KEY, OVERFIT_WARNING_KEY, PARAMETERS_KEY, PARAMETER_DIMENSIONS_KEY, PREVIEW_KEY, PREVIEW_TITLE_KEY, RANK_KEY, REQUIRES_A_I_KEY, RESULTS_KEY, RUN_KEY, SCORE_KEY, SUMMARY_KEY, SWITCH_TO_D_E_KEY, TRUNCATED_KEY, TUNING_KEY, WAITING_KEY } from '@/gen/ant/v1/i18n/strategy_tuning_keys';
 
 ;
@@ -131,8 +131,9 @@ export default function SmartTuningPanel({
         <Alert
           type="info" showIcon style={{ marginBottom: 12, padding: '6px 12px' }}
           message={
-            <span style={{ fontSize: 11 }}
-              dangerouslySetInnerHTML={{ __html: t(GRID_WARNING_KEY, { count: cartesianSize.toLocaleString() }) }} />
+            <span style={{ fontSize: 11 }}>
+              <Trans i18nKey={GRID_WARNING_KEY} components={{ b: <b /> }} values={{ count: cartesianSize.toLocaleString() }} />
+            </span>
           }
           action={
             <Button size="small" type="primary" onClick={() => onTuneMethodChange('de')}>

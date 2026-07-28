@@ -53,9 +53,9 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 				setTrades(result.trades);
 				setTradeSummary(result.summary);
 			})
-			.catch((e: any) => {
+			.catch((e: unknown) => {
 				if (cancelled) return;
-				setTradesError(e?.message || String(e));
+				setTradesError(e instanceof Error ? e.message : String(e));
 			})
 			.finally(() => {
 				if (cancelled) return;
