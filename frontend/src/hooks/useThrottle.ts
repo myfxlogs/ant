@@ -1,7 +1,7 @@
 import { useRef, useCallback } from 'react';
 
 /** Throttle a callback to at most one invocation per `delayMs` milliseconds. */
-export function useThrottle<T extends (...args: any[]) => void>(
+export function useThrottle<T extends (...args: never[]) => void>(
   fn: T,
   delayMs: number,
 ): T {
@@ -9,7 +9,7 @@ export function useThrottle<T extends (...args: any[]) => void>(
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return useCallback(
-    (...args: any[]) => {
+    (...args: Parameters<T>) => {
       const now = Date.now();
       const elapsed = now - lastCall.current;
 

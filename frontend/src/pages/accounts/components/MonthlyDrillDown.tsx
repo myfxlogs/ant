@@ -180,6 +180,9 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
     }));
   }, [holdingSplit]);
 
+  const holdingSymbols = useMemo(() => chartData.map((d) => d.symbol), [chartData]);
+  const yAxis = useAdaptiveYAxis(holdingSymbols);
+
   if (!chartData.length) {
     return (
       <div style={sectionStyle}>
@@ -192,8 +195,6 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
   }
 
   const maxVal = Math.max(...chartData.flatMap((d) => [d.long, d.short]), 1);
-  const holdingSymbols = useMemo(() => chartData.map((d) => d.symbol), [chartData]);
-  const yAxis = useAdaptiveYAxis(holdingSymbols);
 
   // Format milliseconds to human-readable
   const fmtMs = (ms: number): string => {

@@ -28,9 +28,9 @@ registerOverlay({
   needDefaultYAxisFigure: false,
 
   createPointFigures: ({ overlay, coordinates }) => {
-    const trades: any[] = (overlay as unknown).extendData || [];
+    const trades: unknown[] = (overlay as unknown).extendData || [];
     if (!trades.length || !coordinates?.length) return [];
-    const figures: any[] = [];
+    const figures: unknown[] = [];
 
     // Build timestamp → coordinate lookup.
     // klinecharts adds .timestamp (ms) to each coordinate at runtime.

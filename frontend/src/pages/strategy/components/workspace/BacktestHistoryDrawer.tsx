@@ -34,7 +34,7 @@ const { Text } = Typography;
 
 interface Props {
   open: boolean;
-  runs: any[];
+  runs: unknown[];
   loading: boolean;
   page: number;
   pageSize: number;

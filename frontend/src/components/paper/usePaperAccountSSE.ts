@@ -70,7 +70,7 @@ export function usePaperAccountSSE(
     (async () => {
       try {
         for await (const event of strategyActiveApi.watchActive('', abort.signal)) {
-          const active = (event.strategies || []) as any[];
+          const active = (event.strategies || []) as Array<{ accountId: string; mode: string; symbol: string; timeframe: string; runId: string }>;
           const recovered: Record<string, RunningStrategy> = {};
           for (const s of active) {
             if (s.accountId && s.mode === 'paper') {

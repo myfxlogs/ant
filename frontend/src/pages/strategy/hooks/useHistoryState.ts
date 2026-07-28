@@ -5,7 +5,7 @@ export interface HistoryState {
   drawerOpen: boolean;
   runId: string;
   modalOpen: boolean;
-  runs: any[];
+  runs: unknown[];
   loading: boolean;
   page: number;
   pageSize: number;
@@ -27,7 +27,7 @@ export function useHistoryState(accountId: string): HistoryState {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [runId, setRunId] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [runs, setRuns] = useState<any[]>([]);
+  const [runs, setRuns] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);

@@ -67,23 +67,17 @@ export function useAccount() {
       const account = await accountApi.create(data);
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.list() });
       return account;
-    } catch (_e) {
-      throw _e;
     } finally {
       setLoading(false);
     }
   }, [setLoading, queryClient]);
 
   const connectAccount = useCallback(async (id: string) => {
-    try {
-      await accountApi.connect(id);
-      const account = await accountApi.get(id);
-      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
-        old?.map((a) => a.id === id ? account : a));
-      return account;
-    } catch (_e) {
-      throw _e;
-    }
+    await accountApi.connect(id);
+    const account = await accountApi.get(id);
+    queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+      old?.map((a) => a.id === id ? account : a));
+    return account;
   }, [queryClient]);
 
   const disconnectAccount = useCallback(async (id: string) => {

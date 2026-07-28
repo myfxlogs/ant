@@ -13,11 +13,11 @@ interface Props {
   symbols: { value: string; label: string }[];
   symbolsLoading: boolean;
   scheduleTypeWatch: string | undefined;
-  templates: any[];
-  accounts: any[];
+  templates: unknown[];
+  accounts: unknown[];
 }
 
-export function buildAccountOptions(accounts: any[]) {
+export function buildAccountOptions(accounts: unknown[]) {
   return (accounts || []).filter(isTradingAccountEnabled).map((a: unknown) => ({
     value: a.id,
     label: a.login ? `${a.login} (${a.mtType || ''})` : a.id,

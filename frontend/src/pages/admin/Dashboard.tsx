@@ -56,7 +56,7 @@ export default function AdminDashboard() {
           [t('admin.dashboard.mtAccounts', { defaultValue: 'MT Accounts' }), stats?.totalAccounts || 0, BankOutlined, '#1890ff'],
           [t('admin.dashboard.onlineAccounts', { defaultValue: 'Online Accounts' }), stats?.onlineAccounts || 0, LineChartOutlined, '#722ed1'],
           [t('admin.dashboard.todayTrades', { defaultValue: 'Today Trades' }), stats?.todayTrades || 0, RiseOutlined, '#13c2c2'],
-        ] as any[]).map(([title, value, Icon, color]: unknown, i: number) => (
+        ] as Array<[string, string | number, React.ComponentType<{ style?: React.CSSProperties }>, string]>).map(([title, value, Icon, color], i: number) => (
           <Col xs={12} sm={8} lg={4} key={i}>
             <Card><Statistic title={title} value={value} prefix={<Icon style={{ fontSize: 20, color }} />} /></Card>
           </Col>
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
           [t('admin.dashboard.marketStrategies', { defaultValue: 'Market Strategies' }), stats?.marketplaceStrategies || 0, ShoppingOutlined, '#722ed1'],
           [t('admin.dashboard.marketSales', { defaultValue: 'Market Sales' }), stats?.marketplaceSales || 0, ShoppingOutlined, '#1890ff'],
           [t('admin.dashboard.marketRevenue', { defaultValue: 'Market Revenue' }), toNumber(stats?.marketplaceRevenue).toFixed(2), DollarOutlined, '#faad14'],
-        ] as any[]).map(([title, value, Icon, color]: unknown, i: number) => (
+        ] as Array<[string, string | number, React.ComponentType<{ style?: React.CSSProperties }>, string]>).map(([title, value, Icon, color], i: number) => (
           <Col xs={12} sm={8} lg={4} key={i}>
             <Card><Statistic title={title} value={value} prefix={<Icon style={{ fontSize: 20, color }} />} /></Card>
           </Col>

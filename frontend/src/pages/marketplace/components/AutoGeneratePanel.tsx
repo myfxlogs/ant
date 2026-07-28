@@ -31,7 +31,7 @@ export default function AutoGeneratePanel() {
   const [errorDetail, setErrorDetail] = useState('');
   const [retryable, setRetryable] = useState(false);
   const [result, setResult] = useState<{ strategyId: string; publishId: string; backtest: unknown } | null>(null);
-  const [violations, setViolations] = useState<any[]>([]);
+  const [violations, setViolations] = useState<Array<{ metric: string; actual: string | number; threshold: string | number }>>([]);
   const abortRef = useRef<AbortController | null>(null);
   const [pricingModalOpen, setPricingModalOpen] = useState(false);
   const [priceModel, setPriceModel] = useState('free');

@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 interface TemplateSliceDeps {
   handleLoadTemplate: (id: string) => Promise<unknown>;
   validateCode: (code: string) => void;
-  updateExtractedParams: (params: any[] | null) => void;
+  updateExtractedParams: (params: unknown[] | null) => void;
 }
 
 export interface TemplateSlice {

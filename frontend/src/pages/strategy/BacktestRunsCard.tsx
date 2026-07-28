@@ -11,7 +11,7 @@ import { BACKTEST_RUNS_ACTIONS_LAUNCH_SCHEDULE_KEY, BACKTEST_RUNS_ACTIONS_VIEW_K
 const { Text } = Typography;
 
 type Props = {
-  runs: any[];
+  runs: unknown[];
   loading: boolean;
   onRefresh: () => void;
   onView: (runId: string) => void;

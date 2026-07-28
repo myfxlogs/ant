@@ -91,18 +91,6 @@ export function useSystemConfig() {
           message.error(t('admin.config.validation.jsonEmpty'));
           return;
         }
-        try {
-          JSON.parse(raw);
-        } catch {
-          message.error(t('admin.config.validation.jsonInvalid'));
-          return;
-        }
-      } else if (isStrategyHealthConfig) {
-        const raw = (values.value || '').trim();
-        if (!raw) {
-          message.error(t('admin.config.validation.jsonEmpty'));
-          return;
-        }
         let parsed: unknown;
         try {
           parsed = JSON.parse(raw);

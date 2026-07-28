@@ -2,10 +2,24 @@ import { Alert, Button, Space, Row, Col, Statistic, Tag } from 'antd';
 import { DollarOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';
 
+interface Violation {
+  metric: string;
+  actual: string | number;
+  threshold: string | number;
+}
+
+interface BacktestMetrics {
+  totalReturn: number;
+  maxDrawdown: number;
+  sharpeRatio: number;
+  winRate: number;
+  totalTrades: number;
+}
+
 interface AutoGenerateResultProps {
   stage: 'completed' | 'failed';
-  result: { strategyId: string; publishId: string; backtest: unknown } | null;
-  violations: any[];
+  result: { strategyId: string; publishId: string; backtest: BacktestMetrics } | null;
+  violations: Violation[];
   errorStage: string;
   errorDetail: string;
   retryable: boolean;

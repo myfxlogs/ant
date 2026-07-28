@@ -129,7 +129,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
 
       {metrics && (
         <div style={{ padding: '6px 10px', marginBottom: 6, borderRadius: 4, background: '#f6ffed', border: '1px solid #b7eb8f', fontSize: 11 }}>
-          <b>📊 {t(FEEDBACK_HEADING_KEY, 'Backtest Results')}</b> · Sharpe {metrics.sharpeRatio?.toFixed(2)} · {(t as any)('strategy.gen.metrics.maxDrawdown', 'Max DD')}: {((metrics.maxDrawdown ?? 0) * 100).toFixed(1)}% · {(t as any)('strategy.gen.metrics.winRate', 'Win')}: {((metrics.winRate ?? 0) * 100).toFixed(0)}% · {(t as any)('strategy.gen.metrics.trades', 'Trades')}: {metrics.totalTrades}
+          <b>📊 {t(FEEDBACK_HEADING_KEY, 'Backtest Results')}</b> · Sharpe {metrics.sharpeRatio?.toFixed(2)} · {(t as (k: string, d?: string) => string)('strategy.gen.metrics.maxDrawdown', 'Max DD')}: {((metrics.maxDrawdown ?? 0) * 100).toFixed(1)}% · {(t as (k: string, d?: string) => string)('strategy.gen.metrics.winRate', 'Win')}: {((metrics.winRate ?? 0) * 100).toFixed(0)}% · {(t as (k: string, d?: string) => string)('strategy.gen.metrics.trades', 'Trades')}: {metrics.totalTrades}
         </div>
       )}
 

@@ -72,7 +72,7 @@ export default function BacktestAnalysisCard({ analysis, loading }: Props) {
         {analysis.drawdownAssessment !== 0 && (
           <Card size="small" style={{ textAlign: 'center' }} styles={{ body: { padding: '8px 4px' } }}>
             <Statistic
-              title={<span style={{ fontSize: 10 }}>{t('agent.analysis.drawdown', 'DD')}/span>}
+              title={<span style={{ fontSize: 10 }}>{t('agent.analysis.drawdown', 'DD')}</span>}
               value={analysis.drawdownAssessment}
               precision={2}
               valueStyle={{ fontSize: 16, color: analysis.drawdownAssessment >= 0.7 ? '#52c41a' : '#faad14' }}
@@ -82,7 +82,7 @@ export default function BacktestAnalysisCard({ analysis, loading }: Props) {
         {analysis.winRateAssessment !== 0 && (
           <Card size="small" style={{ textAlign: 'center' }} styles={{ body: { padding: '8px 4px' } }}>
             <Statistic
-              title={<span style={{ fontSize: 10 }}>{t('agent.analysis.winrate', 'Win Rate')}/span>}
+              title={<span style={{ fontSize: 10 }}>{t('agent.analysis.winrate', 'Win Rate')}</span>}
               value={analysis.winRateAssessment}
               precision={2}
               valueStyle={{ fontSize: 16, color: analysis.winRateAssessment >= 0.6 ? '#52c41a' : '#faad14' }}
