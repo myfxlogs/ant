@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Card, Table, Button, Tag, Typography, Space, Modal, Descriptions, Empty, message, Alert, Row, Col, Statistic, Input } from 'antd';
-import { ExperimentOutlined, CheckOutlined, CloseOutlined, EyeOutlined, ThunderboltOutlined, WarningOutlined } from '@ant-design/icons';
+import { Card, Table, Button, Tag, Typography, Space, Modal, Descriptions, Empty, message, Alert, Input } from 'antd';
+import { ExperimentOutlined, CheckOutlined, ThunderboltOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
@@ -11,51 +11,10 @@ import {
   PreviewOptimizationRequestSchema,
   DetectStrategyDecayRequestSchema,
 } from '@/gen/ant/v1/marketplace_service_pb';
-import type { OptimizationTaskInfo, PreviewOptimizationResponse, BacktestSnapshot } from '@/gen/ant/v1/marketplace_service_pb';
+import type { OptimizationTaskInfo, PreviewOptimizationResponse } from '@/gen/ant/v1/marketplace_service_pb';
+import { BacktestCompare, buildTaskColumns, STATUS_COLORS } from './OptimizationTabHelpers';
 
-const { Text, _Paragraph } = Typography;
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'default',
-  generating: 'processing',
-  completed: 'gold',
-  rejected: 'red',
-  published: 'green',
-};
-
-function BacktestCompare({ original, optimized }: { original?: BacktestSnapshot; optimized?: BacktestSnapshot }) {
-  const { t } = useTranslation();
-  if (!original && !optimized) return <Empty description={t('marketplace.optimization.noBacktest')} />;
-  const metrics: [string, string | undefined, string | undefined][] = [
-    [t('marketplace.optimization.totalReturn'), original?.totalReturn, optimized?.totalReturn],
-    [t('marketplace.optimization.annualReturn'), original?.annualReturn, optimized?.annualReturn],
-    [t('marketplace.optimization.maxDrawdown'), original?.maxDrawdown, optimized?.maxDrawdown],
-    [t('marketplace.optimization.sharpe'), original?.sharpeRatio, optimized?.sharpeRatio],
-    [t('marketplace.optimization.winRate'), original?.winRate, optimized?.winRate],
-    [t('marketplace.optimization.totalTrades'), original?.totalTrades?.toString(), optimized?.totalTrades?.toString()],
-  ];
-  return (
-    <Row gutter={[8, 8]}>
-      {metrics.map(([label, orig, opt]) => {
-        const improved = orig && opt && Number(opt) > Number(orig);
-        return (
-          <Col xs={24} sm={12} md={8} key={label}>
-            <Card size="small" style={{ borderRadius: 8 }}>
-              <Statistic
-                title={label}
-                value={opt || '-'}
-                prefix={improved ? <CheckOutlined style={{ color: '#52c41a' }} /> : undefined}
-              />
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {t('marketplace.optimization.original')}: {orig || '-'}
-              </Text>
-            </Card>
-          </Col>
-        );
-      })}
-    </Row>
-  );
-}
+const { Text } = Typography;
 
 export default function OptimizationTab() {
   const { t } = useTranslation();
@@ -152,6 +111,8 @@ export default function OptimizationTab() {
     }
   }, [decayStrategyId, t]);
 
+  const taskColumns = buildTaskColumns(t, handlePreview, handlePublish, handleReject, actionLoading);
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -218,39 +179,7 @@ export default function OptimizationTab() {
             loading={loading}
             pagination={{ pageSize: 10, total }}
             size="small"
-            columns={[
-              { title: t('marketplace.optimization.strategyId'), dataIndex: 'strategyId', key: 'sid', width: 120, render: (v: string) => <Text copyable style={{ fontSize: 12 }}>{v?.slice(0, 8)}...</Text> },
-              { title: t('marketplace.optimization.status'), dataIndex: 'status', key: 'status', width: 100, render: (s: string) => <Tag color={STATUS_COLORS[s] || 'default'}>{s}</Tag> },
-              { title: t('marketplace.optimization.trigger'), dataIndex: 'triggerReason', key: 'trigger', width: 120, ellipsis: true },
-              { title: t('marketplace.optimization.changeSummary'), dataIndex: 'changeSummary', key: 'summary', ellipsis: true },
-              {
-                title: t('marketplace.optimization.actions'), key: 'actions', width: 240,
-                render: (_: unknown, row: OptimizationTaskInfo) => (
-                  <Space>
-                    {row.status === 'completed' && (
-                      <>
-                        <Button size="small" icon={<EyeOutlined />} onClick={() => handlePreview(row.id)}>
-                          {t('marketplace.optimization.preview')}
-                        </Button>
-                        <Button size="small" type="primary" icon={<CheckOutlined />}
-                          loading={actionLoading === row.id}
-                          onClick={() => handlePublish(row.id)}>
-                          {t('marketplace.optimization.publish')}
-                        </Button>
-                        <Button size="small" danger icon={<CloseOutlined />}
-                          loading={actionLoading === row.id}
-                          onClick={() => handleReject(row.id)}>
-                          {t('marketplace.optimization.reject')}
-                        </Button>
-                      </>
-                    )}
-                    {row.status === 'published' && (
-                      <Tag color="green">{t('marketplace.optimization.versionId')}: {row.publishedVersionId?.slice(0, 8)}</Tag>
-                    )}
-                  </Space>
-                ),
-              },
-            ]}
+            columns={taskColumns}
           />
         )}
       </Card>
