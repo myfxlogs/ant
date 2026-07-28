@@ -53,6 +53,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
 
   const setStep = (k: StepKey, s: StepStatus) => setStatus(prev => ({ ...prev, [k]: s }));
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- codeRef is a ref, not a reactive dependency
   const getCode = useCallback(() => codeRef.current, []);
 
   const runCheck = useCallback(async () => {

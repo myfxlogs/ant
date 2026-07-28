@@ -35,7 +35,8 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnos
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
-  // Build extensions once.
+  // Build extensions once. readOnly is handled via compartment reconfigure in a separate effect.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- readOnly intentionally excluded (compartment pattern)
   const extensions = useMemo(() => [
     lineNumbers(),
     highlightActiveLine(),
