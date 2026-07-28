@@ -1,4 +1,4 @@
-import { Card, Tag, Typography, Space, Descriptions, Empty, Statistic } from 'antd';
+import { Card, Tag, Typography, Space, Descriptions, Statistic } from 'antd';
 import { BulbOutlined, ExperimentOutlined, TrendingUpOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';

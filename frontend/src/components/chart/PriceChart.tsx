@@ -188,6 +188,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
   const handleLoadMore = useCallback((oldest: { time: number }) => {
     if (loadingMore.current || loadedAll.current) return;
+    // eslint-disable-next-line react-hooks/immutability -- ref mutation in callback is safe (not during render)
     loadingMore.current = true;
     marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: 300, before: oldest.time, accountId })
       .then((older) => {
