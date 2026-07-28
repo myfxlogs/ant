@@ -37,7 +37,7 @@ export default function StrategyDetailPage() {
       if (!draft.id) throw new Error('Draft creation returned empty id');
       await strategyApi.updateTemplateDraft({ id: draft.id, name: `${template.name || 'Strategy'} (Fork)`, description: template.description, code: template.code, tags: template.tags });
       navigate(`/strategy/${draft.id}/edit`);
-    } catch (e) {
+    } catch (_e) {
       // navigate to edit as fallback
       navigate(`/strategy/${id}/edit`);
     }

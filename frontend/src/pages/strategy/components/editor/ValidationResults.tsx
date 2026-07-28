@@ -29,7 +29,7 @@ export default function ValidationResults({ result, onFixWithAI }: Props) {
         </Text>
       </div>
 
-      {result.errors?.length! > 0 && (
+      {(result.errors?.length ?? 0) > 0 && (
         <div style={{ marginBottom: 10 }}>
           <Text strong style={{ fontSize: 12, color: '#ff4d4f' }}>❌ {t('strategy.validate.errors', { defaultValue: 'Errors' })}</Text>
           {result.errors!.map((e, i) => (
@@ -40,7 +40,7 @@ export default function ValidationResults({ result, onFixWithAI }: Props) {
         </div>
       )}
 
-      {result.warnings?.length! > 0 && (
+      {(result.warnings?.length ?? 0) > 0 && (
         <div style={{ marginBottom: 10 }}>
           <Text strong style={{ fontSize: 12, color: '#fa8c16' }}>⚠️ {t('strategy.validate.warnings', { defaultValue: 'Warnings' })}</Text>
           {result.warnings!.map((w, i) => (
@@ -51,7 +51,7 @@ export default function ValidationResults({ result, onFixWithAI }: Props) {
         </div>
       )}
 
-      {!result.valid && (result.errors?.length! > 0 || result.warnings?.length! > 0) && (
+      {!result.valid && ((result.errors?.length ?? 0) > 0 || (result.warnings?.length ?? 0) > 0) && (
         <div style={{ textAlign: 'center', marginBottom: 12 }}>
           <Button type="primary" size="small" icon={<BulbOutlined />} onClick={onFixWithAI}>
             {t('strategy.validate.fixWithAI', { defaultValue: 'Send errors to AI Revise' })}
@@ -59,14 +59,14 @@ export default function ValidationResults({ result, onFixWithAI }: Props) {
         </div>
       )}
 
-      {result.parameters?.length! > 0 && (
+      {(result.parameters?.length ?? 0) > 0 && (
         <div style={{ marginBottom: 10 }}>
           <Text strong style={{ fontSize: 12, color: '#1677ff' }}>📋 {result.parameters!.length} {t('strategy.validate.parameters', { defaultValue: 'parameters' })}</Text>
           {result.parameters!.map((p, i) => <Tag key={i} style={{ marginTop: 2 }}>{p.key}{p.defaultValue ? ` = ${p.defaultValue}` : ''}</Tag>)}
         </div>
       )}
 
-      {result.qualityHints?.length! > 0 && (
+      {(result.qualityHints?.length ?? 0) > 0 && (
         <div style={{ marginBottom: 10 }}>
           <Text strong style={{ fontSize: 12 }}>💡 {t('strategy.validate.hints', { defaultValue: 'Suggestions' })}</Text>
           {result.qualityHints!.map((h, i) => (

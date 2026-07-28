@@ -27,7 +27,7 @@ export default function ProviderEarningsPanel() {
       setEarnings(e);
       setTransactions(tx.transactions || []);
       setTxTotal(tx.total || 0);
-    } catch (err) {
+    } catch (_err) {
       setError(true);
       message.error(t('marketplace.earnings.loadError'));
     } finally {

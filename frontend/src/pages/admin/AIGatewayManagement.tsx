@@ -25,7 +25,7 @@ export default function AIGatewayManagement() {
     try {
       const list = await aiGatewayApi.listProviders();
       setProviders(list.map(p => ({ ...p, models: undefined, modelsLoading: false })));
-    } catch (e) {
+    } catch (_e) {
       message.error(t('admin.aiGateway.errors.loadProviders', { defaultValue: 'Failed to load providers' }));
     } finally {
       setLoading(false);

@@ -62,7 +62,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
     { key: 'long_only', label: t(EXEC_CHIP_LONG_ONLY_KEY, 'Long Only') },
   ];
 
-  const planSteps = plan.split('\n').filter(line => /^\d+[\.\)]\s/.test(line.trim()));
+  const planSteps = plan.split('\n').filter(line => /^\d+[.)]\s/.test(line.trim()));
   const hasSymbol = !!(symbol && timeframe);
 
   return (
@@ -86,7 +86,7 @@ export default function ExecutionPanel({ plan, symbol, timeframe, sessionId, pre
             {planSteps.map((step, i) => (
               <div key={i} style={{ fontSize: 12, padding: '1px 0', color: '#595959' }}>
                 <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 4, fontSize: 11 }} />
-                {step.replace(/^\d+[\.\)]\s*/, '')}
+                {step.replace(/^\d+[.)]\s*/, '')}
               </div>
             ))}
           </div>
