@@ -6,9 +6,9 @@ import { APPLY_ALL_SUGGESTIONS_KEY, DEFAULT_LABEL_KEY, EXPLAIN_KEY, OPTIONAL_PAR
 
 ;
 
-import { codeAssistApi, type CodeChatMessage, type RequiredParamSpec } from '@/client/codeAssist';
+import { codeAssistApi, type RequiredParamSpec } from '@/client/codeAssist';
 
-const { _TextArea } = Input;
+const { TextArea: _TextArea } = Input;
 
 // --- 1. Required parameters form -----------------------------------------
 

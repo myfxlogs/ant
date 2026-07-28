@@ -41,16 +41,6 @@ export function clearServerIndicatorData(id?: string) {
 
 // ── Helper: read server-computed values from the shared store ──
 
-function readServerValues(antId: string, list: KLineData[], field?: string): number[] {
-  const data = serverStore.get(antId);
-  if (!data) return [];
-
-  if (field && data.series?.[field]) {
-    return data.series[field].slice(0, list.length);
-  }
-  return data.values.slice(0, list.length);
-}
-
 // ── Indicator definitions (factory) ──
 
 interface AntIndicatorDef {

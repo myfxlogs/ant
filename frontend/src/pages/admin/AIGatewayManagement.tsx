@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Table, Button, Form, Space, Tag, message, Typography, Switch } from 'antd';
 import { PlusOutlined, EditOutlined, ApiOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { aiGatewayApi, type AIProviderInfo, type AIModelConfigInfo } from '@/client/aiGateway';
+import { aiGatewayApi, type AIModelConfigInfo } from '@/client/aiGateway';
 import { AIGatewayModals, ProviderExpandedRow, type ProviderState } from './AIGatewayModals';
 
 const { Title, Text } = Typography;

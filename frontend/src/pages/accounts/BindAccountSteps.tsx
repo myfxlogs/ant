@@ -1,6 +1,6 @@
 import { Button, Input, Select, Tag } from 'antd';
 import { CloudServerOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
+import GradientButton from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next'
 import { BIND_ACTIONS_CONFIRM_BIND_KEY, BIND_ACTIONS_SEARCH_KEY, BIND_FIELDS_BROKER_NAME_KEY, BIND_FIELDS_COMPANY_KEY, BIND_FIELDS_PASSWORD_KEY, BIND_FIELDS_PLATFORM_KEY, BIND_FIELDS_SERVER_KEY, BIND_FIELDS_TRADING_ACCOUNT_KEY, BIND_LABELS_SERVER_COUNT_KEY, BIND_MESSAGES_LOGIN_DIGITS_ONLY_KEY, BIND_PASSWORD_HINT_KEY, BIND_PLACEHOLDERS_BROKER_NAME_KEY, BIND_PLACEHOLDERS_COMPANY_KEY, BIND_PLACEHOLDERS_PASSWORD_KEY, BIND_PLACEHOLDERS_SERVER_KEY, BIND_PLACEHOLDERS_TRADING_ACCOUNT_KEY, BIND_STEP1_SUBTITLE_KEY, BIND_STEP1_TITLE_KEY, BIND_STEP2_SUBTITLE_KEY, BIND_STEP2_TITLE_KEY, BIND_STEP3_SUBTITLE_KEY, BIND_STEP3_TITLE_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 import type { BrokerSearchResult, BrokerServer } from './BindAccount';
@@ -8,7 +8,7 @@ import type { BrokerSearchResult, BrokerServer } from './BindAccount';
 export function Step1SearchBroker({
   mtType, setMtType, companySearch, setCompanySearch, searching,
   searchResults, setSearchResults, selectedCompany, selectedServer,
-  setSelectedCompany, setSelectedServer, _alias, _setAlias,
+  setSelectedCompany, setSelectedServer, alias: _alias, setAlias: _setAlias,
   handleSearch, handleCompanyChange, handleServerChange, onNext,
 }: {
   mtType: 'MT4' | 'MT5';

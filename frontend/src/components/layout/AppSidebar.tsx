@@ -110,7 +110,7 @@ export default function AppSidebar({
   isMobile, drawerVisible, menuItems, language, languages, languageMenu,
   onDrawerClose, _onMenuClick,
 }: Props) {
-  const { _t } = useTranslation();
+  const { t: _t } = useTranslation();
 
   const langDropdown = (
     <Dropdown menu={languageMenu} placement="topLeft" trigger={['click']}>

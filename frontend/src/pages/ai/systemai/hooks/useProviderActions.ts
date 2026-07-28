@@ -7,7 +7,6 @@ import { SYSTEM_A_I_CUSTOM_PROVIDER_DELETED_KEY, SYSTEM_A_I_CUSTOM_PROVIDER_FILL
 ;
 import {
   clearSystemAISecret,
-  discoverSystemAIModels,
   updateSystemAIConfig,
   updateSystemAISecret,
   validateSystemAI,
@@ -46,7 +45,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
     setSecretInput, setNotice, setError, setValidated, setSelectedProviderId,
     setLastAutoSavedSecretKey, setLastAutoDiscoverKey, setDiscoveredModels,
     setValidating,
-    prevProviderIdRef, secretInput, silentReload, _isCustomProvider, validateBaseURL, persistDraftConfig,
+    prevProviderIdRef, secretInput, silentReload, isCustomProvider: _isCustomProvider, validateBaseURL, persistDraftConfig,
   } = params;
 
   const saveConfig = useCallback(async () => {

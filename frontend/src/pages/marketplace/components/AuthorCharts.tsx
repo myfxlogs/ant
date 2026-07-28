@@ -1,12 +1,12 @@
 import { Typography, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
-  ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, Area, AreaChart,
+  ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, Area,
 } from 'recharts';
 import type { RevenueTrendPoint, SubscriberTrendPoint } from '@/gen/ant/v1/marketplace_service_pb';
 
-const { _Text } = Typography;
+const { Text: _Text } = Typography;
 
 function formatDate(ms: number | bigint): string {
   const d = new Date(Number(ms));

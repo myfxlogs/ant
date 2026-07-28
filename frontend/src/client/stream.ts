@@ -6,7 +6,6 @@ import { toCamelCase } from '../adapters/dataAdapter';
 import { isLikelyStreamTransportFailure } from '../utils/streamErrors';
 import type { UserSummaryData } from '../bridge/bridgeUserSummary';
 import {
-  startSharedStream,
   subscribeShared,
   sharedProfitStreams,
   sharedOrderStreams,
@@ -28,7 +27,7 @@ export interface StreamCallbacks {
   onError?: (error: Error) => void;
 }
 
-type Listener<T> = {
+type _Listener<T> = {
   onData: (v: T) => void;
   onError?: (error: unknown) => void;
 };

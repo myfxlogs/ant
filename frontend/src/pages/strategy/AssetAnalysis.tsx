@@ -18,7 +18,7 @@ import { useAccount } from '@/hooks/useAccount';
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import AISettingsModal from '@/pages/strategy/components/workspace/AISettingsModal';
 import type { TfOutlook, SRLevel as SRLevelType } from '@/gen/ant/v1/asset_analysis_pb';
-import { useAssetAnalysis, type AnalysisPhase } from './hooks/useAssetAnalysis';
+import { useAssetAnalysis } from './hooks/useAssetAnalysis';
 
 const { Title, Text, Paragraph } = Typography;
 

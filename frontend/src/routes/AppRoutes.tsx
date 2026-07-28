@@ -147,7 +147,7 @@ const adminRoutes = (
 
 // ── App content ──
 export function AppRoutes() {
-  const { _hasHydrated, isAuthenticated } = useAuthStore();
+  const { hasHydrated: _hasHydrated, isAuthenticated } = useAuthStore();
   if (!_hasHydrated) {
     return <div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>;
   }

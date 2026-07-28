@@ -3,7 +3,7 @@ import { Button } from 'antd';
 import { showSuccess, showError, showWarning, showInfo } from '@/utils/message';
 import { ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
+import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useAccount } from '@/hooks/useAccount';
 import { accountApi } from '@/client/account';
 import { getErrorMessage } from '@/utils/error';

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { codeAssistApi } from '@/client/codeAssist';
 import {
   CAPITAL_KEY, COMMISSION_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
-  END_DATE_KEY, LEVERAGE_KEY, SLIPPAGE_KEY, START_DATE_KEY,
+  LEVERAGE_KEY, SLIPPAGE_KEY,
   STRICT_MODE_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_OFF_KEY,
   LONG_KEY, SHORT_KEY, BOTH_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';

@@ -7,8 +7,8 @@ import { AMOUNT_LOTS_KEY, CROSS_KEY, ISOLATED_KEY, MARGIN_MODE_KEY, MT4_CROSS_ON
 
 ;
 import { tradingApi } from '@/client/trading';
-import PositionSection, { type PositionItem } from './PositionSection';
-import TradeHistorySection, { type TradeItem } from './TradeHistorySection';
+import type { PositionItem } from './PositionSection';
+import type { TradeItem } from './TradeHistorySection';
 interface AccountMeta {
   brokerCompany: string;
   brokerServer: string;

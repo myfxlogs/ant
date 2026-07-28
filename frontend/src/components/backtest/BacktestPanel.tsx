@@ -11,10 +11,6 @@ import {
   BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY, TEMPLATES_KEY,
   TUNING_INTERACTIVE_KEY, TUNING_BATCH_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import {
-  MAX_DRAWDOWN_KEY, PROFIT_FACTOR_KEY, SHARPE_KEY,
-  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, WIN_RATE_KEY,
-} from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
 import BatchTuningPanel from '@/pages/strategy/components/workspace/BatchTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
@@ -42,20 +38,6 @@ interface Props {
   onSaveAs?: () => void;
   hasUnsavedDraft?: boolean;
   draftName?: string;
-}
-
-function MetricsRow({ m, t }: { m: unknown; t: unknown }) {
-  if (!m) return null;
-  return (
-    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#595959' }}>
-      <span>{t(TOTAL_RETURN_KEY)} <b style={{ color: (m.totalReturn ?? 0) >= 0 ? '#26a69a' : '#e57373' }}>{(m.totalReturn ?? 0).toFixed(2)}%</b></span>
-      <span>{t(TOTAL_TRADES_KEY)} <b>{m.totalTrades ?? 0}</b></span>
-      <span>{t(WIN_RATE_KEY)} <b>{((m.winRate ?? 0) * 100).toFixed(1)}%</b></span>
-      <span>{t(PROFIT_FACTOR_KEY)}: <b>{m.profitFactor?.toFixed(2) ?? '—'}</b></span>
-      <span>{t(SHARPE_KEY)} <b>{m.sharpeRatio?.toFixed(2) ?? '—'}</b></span>
-      <span>{t(MAX_DRAWDOWN_KEY)} <b style={{ color: '#e57373' }}>{(m.maxDrawdown ?? 0).toFixed(2)}%</b></span>
-    </div>
-  );
 }
 
 export default function BacktestPanel(props: Props) {

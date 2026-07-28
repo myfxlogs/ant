@@ -46,4 +46,21 @@ export default defineConfig([
       }],
     },
   },
+  {
+    // Context providers and shared helper files export both components and constants/types.
+    // Splitting them is a larger refactor — allow constant exports for now.
+    files: [
+      'src/**/*Context.tsx',
+      'src/**/*Helpers.tsx',
+      'src/**/chatUtils.tsx',
+      'src/**/ChartToolbar.tsx',
+      'src/**/CompareModal.tsx',
+      'src/**/VersionHistoryTab.tsx',
+      'src/**/LiveStrategyPageSignalDrawer.tsx',
+      'src/**/EditScheduleBasicFields.tsx',
+    ],
+    rules: {
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
+  },
 ])

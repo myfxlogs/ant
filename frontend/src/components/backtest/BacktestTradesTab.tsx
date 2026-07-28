@@ -5,7 +5,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { BACKTEST_EMPTY_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  BACKTEST_RECORDS_KEY, TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
+  TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import type { ChartTrade } from './useBacktestRunner';
 
