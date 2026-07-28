@@ -1,7 +1,7 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import type { AIAgentDefinition } from '../../gen/ant/v1/ai_agent_pb';
-import type { ConversationMessage as ProtoConversationMessage, ConversationSummary as ProtoConversationSummary } from '../../gen/ant/v1/ai_conversation_pb';
+import type { ConversationSummary as ProtoConversationSummary } from '../../gen/ant/v1/ai_conversation_pb';
 
 export function protoDate(ts: Timestamp | undefined): Date {
   return ts ? timestampDate(ts) : new Date();

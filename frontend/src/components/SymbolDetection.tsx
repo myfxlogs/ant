@@ -1,6 +1,6 @@
 import { Tag, Space, Tooltip } from 'antd'
 import { CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons'
-import type { ValidateResult, ResolvedSymbol } from '@/types/symbol'
+import type { ValidateResult } from '@/types/symbol'
 import { useTranslation } from 'react-i18next'
 
 interface Props {

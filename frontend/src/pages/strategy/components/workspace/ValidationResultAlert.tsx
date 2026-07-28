@@ -1,5 +1,5 @@
 import { Alert, Space, Button, Tag } from 'antd';
-import { CheckCircleOutlined, ExclamationCircleOutlined, RobotOutlined, WarningOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ExclamationCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { AUTO_FIX_ASK_A_I_KEY, AUTO_FIX_BUTTON_KEY, AUTO_FIX_DISMISS_KEY, AUTO_FIX_FAILED_KEY, AUTO_FIX_FIXED_KEY, AUTO_FIX_FIXING_KEY, AUTO_FIX_LINE_INFO_KEY, AUTO_FIX_NEW_REGRESSION_KEY, AUTO_FIX_PASSED_KEY, AUTO_FIX_REMAINING_KEY, VALIDATE_FAILED_KEY, VALIDATE_PASS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 

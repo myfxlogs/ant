@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Table, Button, Tag, Space, Input, Select, Modal, InputNumber, message, Tooltip } from 'antd';
-import { StarOutlined, StarFilled, SearchOutlined } from '@ant-design/icons';
+import { StarOutlined, StarFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import type { AdminStrategyItem } from '@/gen/ant/v1/marketplace_service_pb';

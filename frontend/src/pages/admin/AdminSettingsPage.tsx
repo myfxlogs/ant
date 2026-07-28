@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Card, Table, Button, Modal, Input, Select, Space, Tag, Switch, Typography, Popconfirm, message } from 'antd';
+import { Card, Table, Button, Modal, Input, Select, Space, Switch, Typography, Popconfirm, message } from 'antd';
 import { PlusOutlined, DeleteOutlined, SettingOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { getManagedSettings, setManagedSetting, deleteManagedSetting } from '@/client/adminAgentSettings';

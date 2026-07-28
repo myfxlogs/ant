@@ -1,5 +1,5 @@
-import { Tag, Tooltip } from 'antd';
-import { BarChartOutlined, TrophyOutlined, DownOutlined, RightOutlined, FallOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
+import { BarChartOutlined, TrophyOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bar, CartesianGrid, ComposedChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';

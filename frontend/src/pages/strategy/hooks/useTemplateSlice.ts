@@ -4,7 +4,7 @@ import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useAuthStore } from '@/stores/authStore';
 
 interface TemplateSliceDeps {
-  handleLoadTemplate: (id: string) => Promise<any>;
+  handleLoadTemplate: (id: string) => Promise<unknown>;
   validateCode: (code: string) => void;
   updateExtractedParams: (params: any[] | null) => void;
 }
@@ -40,7 +40,7 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
     }
     setCenterTab('code');
     if (tpl.parameters?.length) {
-      const params = tpl.parameters.map((p: any) => ({
+      const params = tpl.parameters.map((p: unknown) => ({
         name: p.name || '', type: p.type || 'string',
         default: p.default || '', label: p.label || p.name || '',
       }));

@@ -99,7 +99,7 @@ export default function MonthlyAnalysisMainChart({
             angle={-30}
             textAnchor="end"
             height={42}
-            tick={({ x, y, payload, index }: any) => (
+            tick={({ x, y, payload, index }: unknown) => (
               <g transform={`translate(${x},${y})`} style={{ cursor: 'pointer' }}
                 onClick={() => onCommitMonthClick(series[index], index)}>
                 <text x={0} y={0} dy={4} textAnchor="end" fill="var(--color-text-muted)" fontSize={11}

@@ -1,4 +1,4 @@
-import { Card, Typography, Empty } from 'antd';
+import { Typography, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip,

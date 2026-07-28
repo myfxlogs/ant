@@ -5,7 +5,7 @@ import type { SystemConfig as AdminConfigType } from '@/client/admin';
 interface Props {
   visible: boolean;
   currentConfig: AdminConfigType | null;
-  form: any;
+  form: unknown;
   isAIProviderCatalog: boolean;
   isEconAIConfig: boolean;
   isStrategyHealthConfig: boolean;

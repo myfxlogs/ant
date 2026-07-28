@@ -4,8 +4,8 @@ import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 import { isTerminalRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 
 export type WatchBacktestState = {
-	run: any | null;
-	metrics: any | null;
+	run: unknown | null;
+	metrics: unknown | null;
 	equityCurve: number[];
 	loading: boolean;
 	error: string | null;
@@ -13,8 +13,8 @@ export type WatchBacktestState = {
 };
 
 export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
-	const [run, setRun] = useState<any | null>(null);
-	const [metrics, setMetrics] = useState<any | null>(null);
+	const [run, setRun] = useState<unknown | null>(null);
+	const [metrics, setMetrics] = useState<unknown | null>(null);
 	const [equityCurve, setEquityCurve] = useState<number[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const stoppedRef = useRef(false);
@@ -41,7 +41,7 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 		(async () => {
 			try {
 				// First fetch current snapshot (fast first paint).
-				const snapshot: any = await strategyRuntimeApi.getBacktestRun(runId);
+				const snapshot: unknown = await strategyRuntimeApi.getBacktestRun(runId);
 				if (stoppedRef.current) return;
 				setRun(snapshot?.run ?? null);
 				setMetrics(snapshot?.metrics ?? null);

@@ -1,7 +1,6 @@
 import { tradingClient } from './connect';
 import { Side, OrderType, PlaceOrderRequestSchema, CloseOrderRequestSchema } from '@/gen/ant/v1/mthub_service_pb';
 import { create } from '@bufbuild/protobuf';
-import type { PlaceOrderResponse } from '@/gen/ant/v1/mthub_service_pb';
 import type { OrderRecord } from '@/gen/ant/v1/mthub_service_pb';
 import type { OpenedOrdersResponse } from '@/gen/ant/v1/mthub_service_pb';
 import type { OrderHistoryResponse } from '@/gen/ant/v1/mthub_service_pb';

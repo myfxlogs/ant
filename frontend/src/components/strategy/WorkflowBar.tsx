@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Modal, Input, Tooltip } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined, ThunderboltOutlined, SafetyOutlined, SaveOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';

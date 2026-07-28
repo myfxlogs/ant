@@ -41,11 +41,11 @@ describe('isTradingAccountEnabled', () => {
   })
 
   it('uses accountStatus as fallback', () => {
-    expect(isTradingAccountEnabled(makeAccount({ status: '', accountStatus: 'frozen' } as any))).toBe(false)
+    expect(isTradingAccountEnabled(makeAccount({ status: '', accountStatus: 'frozen' } as unknown))).toBe(false)
   })
 
   it('returns false when isDisabled is true (legacy)', () => {
-    expect(isTradingAccountEnabled(makeAccount({ status: 'connected', isDisabled: true } as any))).toBe(false)
+    expect(isTradingAccountEnabled(makeAccount({ status: 'connected', isDisabled: true } as unknown))).toBe(false)
   })
 
   it('is case-insensitive for status', () => {

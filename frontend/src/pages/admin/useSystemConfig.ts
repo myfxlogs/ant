@@ -48,7 +48,7 @@ export function useSystemConfig() {
     setCurrentConfig(config);
     if (config.key === 'econ.translation.ai_config') {
       const raw = (config.value || '').toString().trim();
-      let initial: any = {
+      let initial: unknown = {
         provider: 'zhipu',
         api_key: '',
         model: 'glm-4-flash',
@@ -103,7 +103,7 @@ export function useSystemConfig() {
           message.error(t('admin.config.validation.jsonEmpty'));
           return;
         }
-        let parsed: any;
+        let parsed: unknown;
         try {
           parsed = JSON.parse(raw);
         } catch {

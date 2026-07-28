@@ -30,7 +30,7 @@ export default function AutoGeneratePanel() {
   const [errorStage, setErrorStage] = useState('');
   const [errorDetail, setErrorDetail] = useState('');
   const [retryable, setRetryable] = useState(false);
-  const [result, setResult] = useState<{ strategyId: string; publishId: string; backtest: any } | null>(null);
+  const [result, setResult] = useState<{ strategyId: string; publishId: string; backtest: unknown } | null>(null);
   const [violations, setViolations] = useState<any[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const [pricingModalOpen, setPricingModalOpen] = useState(false);

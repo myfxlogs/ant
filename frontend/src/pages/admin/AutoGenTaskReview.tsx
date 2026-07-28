@@ -141,7 +141,7 @@ export default function AutoGenTaskReview() {
       title: t('admin.autogen.actions', { defaultValue: 'Actions' }),
       key: 'actions',
       width: 160,
-      render: (_: any, record: AutoGenTaskInfo) => (
+      render: (_: unknown, record: AutoGenTaskInfo) => (
         <Space>
           {record.status === 'awaiting_review' && (
             <>

@@ -17,7 +17,7 @@ interface RiskWindow {
 }
 
 interface Props {
-  metrics: Record<string, any> | null;
+  metrics: Record<string, unknown> | null;
   selectedWindow: string;
   onWindowChange: (v: string) => void;
 }

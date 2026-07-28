@@ -48,7 +48,7 @@ export default function SmartTuningPanel({
 
   const applyParamsToCode = useCallback((candidate: StrategyExperimentCandidate) => {
     if (!code || !onApplyToCode) return;
-    const params = candidate.parameters as Record<string, any> | undefined;
+    const params = candidate.parameters as Record<string, unknown> | undefined;
     if (!params) return;
     let modified = code;
     for (const [key, value] of Object.entries(params)) {

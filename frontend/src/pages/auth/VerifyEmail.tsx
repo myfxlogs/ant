@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { Button, Input, Spin, message } from 'antd';
+import { Button, Spin, message } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, MailOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '@/client/auth';

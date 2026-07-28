@@ -38,8 +38,8 @@ const BIDASK_INDICATOR: IndicatorCreate = {
   ],
   styles: {
     lines: [
-      { color: '#ef5350', size: 1.5, style: 'solid' as any, smooth: false, dashedValue: [2, 2] as any },
-      { color: '#26a69a', size: 1.5, style: 'solid' as any, smooth: false, dashedValue: [2, 2] as any },
+      { color: '#ef5350', size: 1.5, style: 'solid' as unknown, smooth: false, dashedValue: [2, 2] as unknown },
+      { color: '#26a69a', size: 1.5, style: 'solid' as unknown, smooth: false, dashedValue: [2, 2] as unknown },
     ],
   },
 
@@ -47,13 +47,13 @@ const BIDASK_INDICATOR: IndicatorCreate = {
     if (!list || list.length === 0) return [];
     const bv = latest?.bid || 0;
     const av = latest?.ask || 0;
-    return list.map((k: any) => ({
+    return list.map((k: unknown) => ({
       bid: bv > 0 ? bv : k.close,
       ask: av > 0 ? av : k.close,
     }));
   },
 
-  draw: ({ ctx, bounding, yAxis, kLineDataList }: any) => {
+  draw: ({ ctx, bounding, yAxis, kLineDataList }: unknown) => {
     const line = (price: number, color: string) => {
       if (!(price > 0)) return;
       const y = yAxis.convertToPixel(price);

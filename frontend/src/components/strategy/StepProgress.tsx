@@ -1,4 +1,4 @@
-import { Steps, Typography } from 'antd';
+import { Steps } from 'antd';
 import { LoadingOutlined, CheckCircleOutlined, BulbOutlined, CodeOutlined, SafetyOutlined, BarChartOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
@@ -43,7 +43,7 @@ export default function StepProgress({ phase, plan }: Props) {
         current={current}
         status={phase === 'done' ? 'finish' : 'process'}
         items={stepKeys.map((s, i) => ({
-          title: t(s.titleKey as any, { defaultValue: s.defaultTitle }),
+          title: t(s.titleKey as unknown, { defaultValue: s.defaultTitle }),
           icon: i < current ? <CheckCircleOutlined /> : i === current ? <LoadingOutlined /> : s.icon,
         }))}
       />

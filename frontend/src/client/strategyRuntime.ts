@@ -21,7 +21,7 @@ import type { ExecuteStrategyResponse, ValidateStrategyResponse, BacktestStrateg
 
 export interface ExecuteStrategyResult {
   success: boolean;
-  signal?: any;
+  signal?: unknown;
   logs: string[];
   error: string;
 }
@@ -34,7 +34,7 @@ export interface ValidateStrategyResult {
 
 export interface BacktestResult {
   success: boolean;
-  metrics?: any;
+  metrics?: unknown;
   equityCurve: number[];
   error: string;
 }

@@ -1,5 +1,5 @@
 import { strategyPlanClient } from './connect';
-import type { AnalyzePlanChunk, ExecutePlanChunk, ConversateChunk, ToolCall, ToolResult, BacktestMetricsMsg } from '../gen/ant/v1/strategy_execution_pb';
+import type { ExecutePlanChunk, ToolCall, ToolResult, BacktestMetricsMsg } from '../gen/ant/v1/strategy_execution_pb';
 
 export interface PlanCallbacks {
   onDelta: (delta: string) => void;

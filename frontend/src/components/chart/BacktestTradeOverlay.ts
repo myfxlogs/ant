@@ -28,15 +28,15 @@ registerOverlay({
   needDefaultYAxisFigure: false,
 
   createPointFigures: ({ overlay, coordinates }) => {
-    const trades: any[] = (overlay as any).extendData || [];
+    const trades: any[] = (overlay as unknown).extendData || [];
     if (!trades.length || !coordinates?.length) return [];
     const figures: any[] = [];
 
     // Build timestamp → coordinate lookup.
     // klinecharts adds .timestamp (ms) to each coordinate at runtime.
-    const byTs = new Map<number, any>();
+    const byTs = new Map<number, unknown>();
     for (const c of coordinates) {
-      const ts = (c as any).timestamp;
+      const ts = (c as unknown).timestamp;
       if (ts != null) byTs.set(ts, c);
     }
 
@@ -74,7 +74,7 @@ registerOverlay({
                 { x: x + ARROW_SIZE, y: y - ARROW_SIZE - 4 },
               ],
             },
-        styles: { color, style: 'fill' as any },
+        styles: { color, style: 'fill' as unknown },
         ignoreEvent: true,
       });
 
@@ -97,10 +97,10 @@ registerOverlay({
           },
           styles: {
             color: fill,
-            style: 'fill' as any,
+            style: 'fill' as unknown,
             borderColor: color,
             borderSize: 1,
-            borderStyle: 'dash' as any,
+            borderStyle: 'dash' as unknown,
           },
           ignoreEvent: true,
         });
@@ -123,7 +123,7 @@ registerOverlay({
                   { x: ex + ARROW_SIZE, y: ey + ARROW_SIZE + 4 },
                 ],
               },
-          styles: { color, style: 'fill' as any },
+          styles: { color, style: 'fill' as unknown },
           ignoreEvent: true,
         });
       }
@@ -133,13 +133,13 @@ registerOverlay({
 });
 
 /** Find the coordinate whose timestamp is closest to the target (within 1 bar). */
-function findNearest(byTs: Map<number, any>, targetMs: number): any | null {
+function findNearest(byTs: Map<number, unknown>, targetMs: number): unknown | null {
   // Exact match first.
   const exact = byTs.get(targetMs);
   if (exact) return exact;
 
   // Fallback: find nearest within 5 minutes (300,000 ms).
-  let best: any = null;
+  let best: unknown = null;
   let bestDist = Infinity;
   for (const [ts, c] of byTs) {
     const dist = Math.abs(ts - targetMs);

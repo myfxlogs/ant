@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { TRADING_BUY_KEY, TRADING_OPEN_POSITIONS_TITLE_KEY, TRADING_PRICE_KEY, TRADING_SELL_KEY, TRADING_STOP_LOSS_KEY, TRADING_TAKE_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_BUY_KEY, TRADING_PRICE_KEY, TRADING_SELL_KEY, TRADING_STOP_LOSS_KEY, TRADING_TAKE_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { AMOUNT_LOTS_KEY, CROSS_KEY, ISOLATED_KEY, MARGIN_MODE_KEY, MT4_CROSS_ONLY_KEY, ORDER_FAILED_KEY, ORDER_PLACED_KEY, PRICE_REQUIRED_KEY, SELECT_SYMBOL_KEY, VALID_VOLUME_KEY } from '@/gen/ant/v1/i18n/strategy_quick_trade_section_keys';
 
 ;

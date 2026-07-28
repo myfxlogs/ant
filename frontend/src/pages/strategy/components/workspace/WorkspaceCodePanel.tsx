@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button, Space, Tooltip, Select, message, Segmented, Tag } from 'antd';
+import { Button, Space, Tooltip, Select, message, Tag } from 'antd';
 import {
   CheckCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,

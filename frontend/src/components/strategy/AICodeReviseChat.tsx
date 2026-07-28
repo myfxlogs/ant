@@ -72,7 +72,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
           setLoading(false);
           streamingRef.current = '';
           setStreamingText('');
-          if ((e as any)?.code == null) {
+          if ((e as unknown)?.code == null) {
             message.error(String((e as Error)?.message || e || t('common.unknownError', { defaultValue: 'Unknown error' })));
           }
         },

@@ -5,7 +5,7 @@ import type { SanctionedCountry, UserKYCItem } from '@/gen/ant/v1/admin_jurisdic
 export function getJurisdictionColumns({
   t, onRemoveCountry, onSetKYC, onOverride,
 }: {
-  t: (key: string, opts?: any) => string;
+  t: (key: string, opts?: unknown) => string;
   onRemoveCountry: (code: string) => void;
   onSetKYC: (row: UserKYCItem) => void;
   onOverride: (row: UserKYCItem) => void;

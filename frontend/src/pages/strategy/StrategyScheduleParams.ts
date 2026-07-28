@@ -37,7 +37,7 @@ export function buildParametersFromForm(v: CommonFields): Record<string, string>
 }
 
 // Parse parameters map back to form-friendly fields
-export function parseParametersToForm(p: Record<string, any> | undefined): CommonFields {
+export function parseParametersToForm(p: Record<string, unknown> | undefined): CommonFields {
   const out: CommonFields = {};
   const getNum = (k: string) => {
     const raw = (p || {})[k];

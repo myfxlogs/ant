@@ -45,7 +45,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [batchDeleting, setBatchDeleting] = useState(false);
 
-  const rowSelection: TableRowSelection<any> = {
+  const rowSelection: TableRowSelection<unknown> = {
     selectedRowKeys,
     onChange: (keys) => setSelectedRowKeys(keys),
     selections: [
@@ -79,7 +79,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       setBatchDeleting(false);
     }
   };
-  const columns: ColumnsType<any> = [
+  const columns: ColumnsType<unknown> = [
     {
       title: t(BACKTEST_RUNS_TABLE_TITLE_KEY),
       dataIndex: 'title',

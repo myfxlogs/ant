@@ -17,7 +17,7 @@ export default function TradingLogsTable({ logs, loading }: Props) {
       key: 'time',
       width: 160,
       render: (v: Date | undefined) =>
-        v ? new Date(v as any).toLocaleString() : '-',
+        v ? new Date(v as unknown).toLocaleString() : '-',
     },
     {
       title: t('autoTrading.logs.columns.symbol'),

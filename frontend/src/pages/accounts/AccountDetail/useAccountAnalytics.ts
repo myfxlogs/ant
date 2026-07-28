@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { showError } from '@/utils/message';
 import { getErrorMessage } from '@/utils/error';
 import { analyticsApi } from '@/client/analytics';
 import { queryKeys } from '@/queries/queryKeys';

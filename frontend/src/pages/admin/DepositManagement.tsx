@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Card, Table, Tag, Typography, Button, Space, message } from 'antd';
+import { Card, Table, Tag, Typography, Button, Space } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { depositApi } from '@/client/deposit';
@@ -69,7 +69,7 @@ export default function DepositManagement() {
       dataIndex: 'confirmedAt',
       key: 'confirmedAt',
       width: 180,
-      render: (v: any) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
+      render: (v: unknown) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
     },
   ], [t]);
 

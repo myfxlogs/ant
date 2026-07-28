@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Card, Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Typography, Space, Popconfirm, message, Empty, Row, Col, Statistic } from 'antd';
-import { PlusOutlined, DeleteOutlined, ShoppingOutlined, GiftOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Typography, Space, Popconfirm, message, Empty, Row, Col } from 'antd';
+import { PlusOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';

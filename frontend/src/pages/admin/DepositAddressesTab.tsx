@@ -88,7 +88,7 @@ export default function DepositAddressesTab() {
       dataIndex: 'assignedAt',
       key: 'assignedAt',
       width: 180,
-      render: (v: any) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
+      render: (v: unknown) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
     },
   ], [t]);
 

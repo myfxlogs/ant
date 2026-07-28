@@ -161,13 +161,13 @@ const BacktestHistoryDrawer: React.FC<Props> = ({
       render: (v: string) => t(`strategy.backtestRun.trades.reasons.${v}`, { defaultValue: v || '-' }) },
   ], [t]);
 
-  const rowSelection: TableRowSelection<any> = {
+  const rowSelection: TableRowSelection<unknown> = {
     selectedRowKeys,
     onChange: (keys) => onSelectionChange(keys),
     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
   };
 
-  const historyColumns: ColumnsType<any> = useMemo(() => [
+  const historyColumns: ColumnsType<unknown> = useMemo(() => [
     { title: t(BACKTEST_RUNS_TABLE_STATUS_KEY, 'Status'), dataIndex: 'status', key: 'status', width: 100,
       render: (s: unknown) => <Tag color={statusColor(s)}>{statusText(s, t)}</Tag> },
     { title: t(BACKTEST_RUNS_TABLE_SYMBOL_KEY, 'Symbol'), dataIndex: 'symbol', key: 'symbol', width: 110,

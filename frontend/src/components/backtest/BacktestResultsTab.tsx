@@ -33,7 +33,7 @@ const _ASSUMPTION_MAP: Record<string, string> = {
   long: 'strategy.backtestParams.long',
   short: 'strategy.backtestParams.short',
 };
-function assumeVal(t: any, v: string | undefined): string {
+function assumeVal(t: unknown, v: string | undefined): string {
   if (!v) return '-';
   const key = _ASSUMPTION_MAP[v];
   return key ? t(key, v) : v;
@@ -47,7 +47,7 @@ const S = { metricStyle: { fontSize: 14, fontFamily: 'monospace' as const } };
 interface Props {
   status: BacktestStatus;
   metrics: BacktestMetrics | null;
-  executionAssumptions: any;
+  executionAssumptions: unknown;
   errorMsg: string;
   onAIOptimize?: () => void;
   trades: ChartTrade[];

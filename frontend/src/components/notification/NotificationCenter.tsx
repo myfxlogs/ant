@@ -13,7 +13,6 @@ import {
   SettingOutlined,
 } from '@ant-design/icons';
 import { useNotificationStore } from '@/stores/notificationStore';
-import { useNotificationListener } from '@/hooks/useNotificationListener';
 import { useTranslation } from 'react-i18next';
 import { NotificationList } from './NotificationList';
 import NotificationPrefs from './NotificationPrefs';

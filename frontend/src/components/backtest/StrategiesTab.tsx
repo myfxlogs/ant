@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { StrategyTemplate } from '@/client/strategy';
 import { useLibraryTemplates } from '@/pages/strategy/hooks/useLibraryTemplates';
 import { isSystemTemplate, isPublicTemplate } from '@/pages/strategy/hooks/libraryTypes';
-import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_UPDATED_KEY } from '@/gen/ant/v1/i18n/base_keys';
+import { COMMON_UNSAVED_KEY, COMMON_UPDATED_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { TEMPLATE_SAVE_AS_KEY, TEMPLATE_LOAD_KEY, TEMPLATES_KEY, UNTITLED_DRAFT_KEY, NAME_KEY, RUN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { HISTORY_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import {
@@ -67,7 +67,7 @@ export default function StrategiesTab({
       title: t(NAME_KEY),
       dataIndex: 'name',
       key: 'name',
-      render: (name: string, record: any) => (
+      render: (name: string, record: unknown) => (
         <Space>
           <span style={{ fontWeight: 600 }}>{name}</span>
           {record.isDraft
@@ -86,7 +86,7 @@ export default function StrategiesTab({
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 140,
-      render: (v: any) => v
+      render: (v: unknown) => v
         ? new Date(Number(v.seconds) * 1000).toLocaleString()
         : '—',
     },
@@ -94,7 +94,7 @@ export default function StrategiesTab({
       title: '',
       key: 'actions',
       width: 200,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: unknown) => (
         <Space size={0}>
           {!record.isDraft && (
             <Tooltip title={t(TEMPLATE_LOAD_KEY)}>
@@ -153,7 +153,7 @@ export default function StrategiesTab({
         </Space>
       </div>
       <Segmented block size="small" value={tpl.filter}
-        onChange={v => tpl.setFilter(v as any)}
+        onChange={v => tpl.setFilter(v as unknown)}
         options={[
           { value: 'user', label: t(FILTER_MINE_KEY) },
           { value: 'system', label: t(FILTER_SYSTEM_KEY) },
@@ -170,8 +170,8 @@ export default function StrategiesTab({
         pagination={false}
         rowKey="key"
         locale={{ emptyText: t(ASSET_EMPTY_KEY) }}
-        rowClassName={(record: any) => record.id === selectedId ? 'ant-table-row-selected' : ''}
-        onRow={(record: any) => ({
+        rowClassName={(record: unknown) => record.id === selectedId ? 'ant-table-row-selected' : ''}
+        onRow={(record: unknown) => ({
           onClick: () => !record.isDraft && onSelect(record.id),
           style: { cursor: record.isDraft ? 'default' : 'pointer' },
         })}

@@ -18,7 +18,7 @@ interface Props {
 }
 
 export function buildAccountOptions(accounts: any[]) {
-  return (accounts || []).filter(isTradingAccountEnabled).map((a: any) => ({
+  return (accounts || []).filter(isTradingAccountEnabled).map((a: unknown) => ({
     value: a.id,
     label: a.login ? `${a.login} (${a.mtType || ''})` : a.id,
   }));
@@ -44,7 +44,7 @@ export default function EditScheduleBasicFields({
               rules={[{ required: true, message: t(EDIT_MODAL_VALIDATION_TEMPLATE_REQUIRED_KEY) }]}
               extra={t(EDIT_MODAL_FIELDS_TEMPLATE_EXTRA_KEY)}>
               <Select showSearch optionFilterProp="label"
-                options={(templates || []).map((tpl: any) => ({ value: tpl.id, label: tpl.name }))} />
+                options={(templates || []).map((tpl: unknown) => ({ value: tpl.id, label: tpl.name }))} />
             </Form.Item>
           </Col>
           <Col span={12}>

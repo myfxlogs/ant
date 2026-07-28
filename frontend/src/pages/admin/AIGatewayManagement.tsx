@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Modal, Form, Input, Space, Tag, message, Typography, Switch } from 'antd';
+import { Table, Button, Form, Space, Tag, message, Typography, Switch } from 'antd';
 import { PlusOutlined, EditOutlined, ApiOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { aiGatewayApi, type AIProviderInfo, type AIModelConfigInfo } from '@/client/aiGateway';
@@ -51,7 +51,7 @@ export default function AIGatewayManagement() {
       const v = await providerForm.validateFields();
       setSaving(true);
       if (editingProvider) {
-        const payload: Record<string, any> = { id: editingProvider.id };
+        const payload: Record<string, unknown> = { id: editingProvider.id };
         if (v.name !== editingProvider.name) payload.name = v.name;
         if (v.baseUrl !== editingProvider.baseUrl) payload.baseUrl = v.baseUrl;
         if (v.apiKey && v.apiKey.trim()) payload.apiKey = v.apiKey.trim();

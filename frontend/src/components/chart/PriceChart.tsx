@@ -89,7 +89,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
       // Use DeepPartial to avoid destroying nested candle sub-objects
       const type = chartType === 'ohlc' ? 'candle_stroke' as const :
         chartType === 'area' ? 'area' as const : 'candle_solid' as const;
-      chart.setStyles({ candle: { type } } as any);
+      chart.setStyles({ candle: { type } } as unknown);
     } catch { /* chart styles best-effort */ }
   }, [chartType]);
 
@@ -124,7 +124,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         // Update existing — override params
         try {
           chart.overrideIndicator(
-            { name: km.name, calcParams, visible: ind.visible } as any,
+            { name: km.name, calcParams, visible: ind.visible } as unknown,
             existingPaneId,
           );
         } catch { /* best-effort */ }
@@ -141,7 +141,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
             // Set calcParams after creation if non-default
             if (calcParams.length > 0) {
               try {
-                chart.overrideIndicator({ name: km.name, calcParams } as any, paneId);
+                chart.overrideIndicator({ name: km.name, calcParams } as unknown, paneId);
               } catch { /* best-effort */ }
             }
           }
@@ -172,7 +172,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
           name: 'backtest_trades',
           id: btOverlayIdRef.current,
           extendData: trades,
-        } as any);
+        } as unknown);
       } catch { /* best-effort */ }
     } else {
       // Create new overlay.

@@ -13,7 +13,7 @@ interface Props {
   open: boolean;
   params: ExtractedParam[];
   values: Record<string, string>;
-  i18nData?: any;
+  i18nData?: unknown;
   onClose: () => void;
   onChange: (name: string, value: string) => void;
 }

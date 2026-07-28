@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next';
 
 interface AutoGenerateResultProps {
   stage: 'completed' | 'failed';
-  result: { strategyId: string; publishId: string; backtest: any } | null;
+  result: { strategyId: string; publishId: string; backtest: unknown } | null;
   violations: any[];
   errorStage: string;
   errorDetail: string;

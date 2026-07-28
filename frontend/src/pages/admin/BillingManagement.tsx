@@ -42,11 +42,11 @@ export default function BillingManagement() {
     { title: t('admin.billing.columns.autoRenew', { defaultValue: 'Auto Renew' }), dataIndex: 'autoRenew', key: 'autoRenew', width: 80,
       render: (v: boolean) => v ? <Tag color="blue">{t('common.yes', { defaultValue: 'Yes' })}</Tag> : <Tag>{t('common.no', { defaultValue: 'No' })}</Tag> },
     { title: t('admin.billing.columns.periodStart', { defaultValue: 'Period Start' }), key: 'periodStart', width: 160,
-      render: (_: any, r: any) => r.currentPeriodStart ? formatDateTime(r.currentPeriodStart) : '-' },
+      render: (_: unknown, r: unknown) => r.currentPeriodStart ? formatDateTime(r.currentPeriodStart) : '-' },
     { title: t('admin.billing.columns.periodEnd', { defaultValue: 'Period End' }), key: 'periodEnd', width: 160,
-      render: (_: any, r: any) => r.currentPeriodEnd ? formatDateTime(r.currentPeriodEnd) : '-' },
+      render: (_: unknown, r: unknown) => r.currentPeriodEnd ? formatDateTime(r.currentPeriodEnd) : '-' },
     { title: t('admin.billing.columns.createdAt', { defaultValue: 'Created At' }), key: 'createdAt', width: 160,
-      render: (_: any, r: any) => r.createdAt ? formatDateTime(r.createdAt) : '-' },
+      render: (_: unknown, r: unknown) => r.createdAt ? formatDateTime(r.createdAt) : '-' },
   ];
 
   const txColumns = [
@@ -62,7 +62,7 @@ export default function BillingManagement() {
     { title: t('admin.billing.columns.balanceAfter', { defaultValue: 'Balance After' }), dataIndex: 'balanceAfter', key: 'balanceAfter', width: 120 },
     { title: t('admin.billing.columns.description', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
     { title: t('admin.billing.columns.time', { defaultValue: 'Time' }), key: 'createdAt', width: 160,
-      render: (_: any, r: any) => r.createdAt ? formatDateTime(r.createdAt) : '-' },
+      render: (_: unknown, r: unknown) => r.createdAt ? formatDateTime(r.createdAt) : '-' },
   ];
 
   return (

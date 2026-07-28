@@ -42,7 +42,7 @@ export default function SubscriptionPage() {
       }
     },
     onError: (err: Error) => {
-      const msg = String((err as any)?.message || '');
+      const msg = String((err as unknown)?.message || '');
       if (msg.includes('insufficient balance')) {
         message.error(t('subscription.insufficientBalance', { defaultValue: 'Insufficient wallet balance. Please top up your wallet first.' }));
       } else {
@@ -73,7 +73,7 @@ export default function SubscriptionPage() {
       }
     },
     onError: (err: Error) => {
-      const msg = String((err as any)?.message || '');
+      const msg = String((err as unknown)?.message || '');
       if (msg.includes('insufficient balance')) {
         message.error(t('subscription.insufficientBalance', { defaultValue: 'Insufficient wallet balance. Please top up your wallet first.' }));
       } else {
@@ -204,7 +204,7 @@ export default function SubscriptionPage() {
 
         {/* Plan cards */}
         <Row gutter={[16, 16]}>
-          {plans.map((plan: any) => (
+          {plans.map((plan: unknown) => (
             <Col xs={24} sm={12} lg={8} key={plan.id}>
               <Card
                 hoverable

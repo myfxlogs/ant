@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 type Props = {
 	open: boolean;
 	confirmLoading: boolean;
-	form: any;
+	form: unknown;
 	onCancel: () => void;
 	onOk: () => void;
 	afterOpenChange?: (open: boolean) => void;

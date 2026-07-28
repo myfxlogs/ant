@@ -44,7 +44,7 @@ interface Props {
   draftName?: string;
 }
 
-function MetricsRow({ m, t }: { m: any; t: any }) {
+function MetricsRow({ m, t }: { m: unknown; t: unknown }) {
   if (!m) return null;
   return (
     <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 12, color: '#595959' }}>

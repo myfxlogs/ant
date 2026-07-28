@@ -1,5 +1,5 @@
-import { Card, Tag, Typography, Space, Progress, Descriptions, Empty } from 'antd';
-import { RobotOutlined, BulbOutlined, WarningOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Card, Tag, Typography, Space, Progress, Descriptions } from 'antd';
+import { RobotOutlined, WarningOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 

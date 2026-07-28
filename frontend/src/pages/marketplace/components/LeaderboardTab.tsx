@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Card, Table, Tag, Typography, Segmented, Space, Tooltip } from 'antd';
 import { FireOutlined, RocketOutlined, RiseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';

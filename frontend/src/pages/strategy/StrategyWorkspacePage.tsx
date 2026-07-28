@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Grid } from 'antd';
-import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import { WorkspaceProvider, useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsTuning, useWsLayout, useWsQuickTrade } from './WorkspaceContext';
 import { useWorkspaceResize } from './hooks/useWorkspaceResize';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

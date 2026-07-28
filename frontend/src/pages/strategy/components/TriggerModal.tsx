@@ -9,8 +9,8 @@ const { Text } = Typography;
 type Props = {
   open: boolean;
   triggering: boolean;
-  triggerContext: { schedule: any; accountId: string } | null;
-  triggerResult: { logs: string[]; signal: any; meta: any } | null;
+  triggerContext: { schedule: unknown; accountId: string } | null;
+  triggerResult: { logs: string[]; signal: unknown; meta: unknown } | null;
   onClose: () => void;
   onRerun: () => void;
   onConfirmOrder: () => void;
@@ -26,7 +26,7 @@ export default function TriggerModal({
   onConfirmOrder,
 }: Props) {
   const { t } = useTranslation();
-  const safeStringify = (obj: any) => {
+  const safeStringify = (obj: unknown) => {
     try {
       return JSON.stringify(
         obj,
@@ -39,7 +39,7 @@ export default function TriggerModal({
   };
 
   const canOrder = (() => {
-    const sig: any = triggerResult?.signal;
+    const sig: unknown = triggerResult?.signal;
     if (!sig) return false;
     const raw = String(sig?.type ?? sig?.signalType ?? sig?.signal ?? '').trim().toLowerCase();
     const actionOk = raw === 'buy' || raw === 'sell';

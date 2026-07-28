@@ -30,7 +30,7 @@ export default function Register() {
     selectedKeys: [currentLang],
   };
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: unknown) => {
     setLoading(true);
     try {
       await register({

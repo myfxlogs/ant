@@ -2,7 +2,7 @@ import { adminJurisdictionClient } from './connect';
 
 export const adminJurisdictionApi = {
   getJurisdictionStatus: async (userId: string) => {
-    const resp: any = await adminJurisdictionClient.getJurisdictionStatus({ userId });
+    const resp: unknown = await adminJurisdictionClient.getJurisdictionStatus({ userId });
     return resp.status;
   },
 
@@ -11,7 +11,7 @@ export const adminJurisdictionApi = {
   },
 
   listSanctionedCountries: async () => {
-    const resp: any = await adminJurisdictionClient.listSanctionedCountries({});
+    const resp: unknown = await adminJurisdictionClient.listSanctionedCountries({});
     return resp.countries ?? [];
   },
 
@@ -24,7 +24,7 @@ export const adminJurisdictionApi = {
   },
 
   listUsersByKYCStatus: async (params: { kycStatus?: string; page?: number; pageSize?: number }) => {
-    const resp: any = await adminJurisdictionClient.listUsersByKYCStatus({
+    const resp: unknown = await adminJurisdictionClient.listUsersByKYCStatus({
       kycStatus: params.kycStatus ?? '',
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 20,

@@ -71,7 +71,7 @@ function MarketplaceUI() {
             </div>
             {!m.isAuthenticated && <div>{langSelector}</div>}
           </div>
-          <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as any)} items={[
+          <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as unknown)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
             { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard')}</span>, children: <LeaderboardTabMemo /> },
             ...(m.isAuthenticated ? [

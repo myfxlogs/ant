@@ -32,7 +32,7 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
                   <Tag color="blue">v{v.versionNumber}</Tag>
                   <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>{v.changeSummary || '-'}</Text>
                   <Text type="secondary" style={{ fontSize: 11, marginLeft: 8 }}>
-                    {v.createdAt ? dayjs(typeof v.createdAt === 'object' && 'seconds' in v.createdAt ? new Date(Number((v.createdAt as any).seconds) * 1000) : v.createdAt as any).format('YYYY-MM-DD HH:mm') : ''}
+                    {v.createdAt ? dayjs(typeof v.createdAt === 'object' && 'seconds' in v.createdAt ? new Date(Number((v.createdAt as unknown).seconds) * 1000) : v.createdAt as unknown).format('YYYY-MM-DD HH:mm') : ''}
                   </Text>
                 </div>
                 {isPurchased && v.versionNumber > 1 && (
@@ -56,6 +56,6 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
   );
 }
 
-export function versionHistoryTabLabel(t: (key: string, opts?: any) => string) {
+export function versionHistoryTabLabel(t: (key: string, opts?: unknown) => string) {
   return <span><HistoryOutlined /> {t('marketplace.detail.versionHistory')}</span>;
 }

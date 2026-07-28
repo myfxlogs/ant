@@ -116,7 +116,7 @@ DEFS.forEach((def) => {
       lines: def.figures.map((_, i) => ({
         color: def.colors[i] || '#888',
         size: def.lineSize,
-        style: 'solid' as any,
+        style: 'solid' as unknown,
         smooth: false,
         ...(def.dashed ? { dashedValue: def.dashed } : {}),
       })),

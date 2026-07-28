@@ -1,4 +1,4 @@
-import { Dropdown, Button, Checkbox, Space } from 'antd';
+import { Dropdown, Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useChartIndicatorsStore } from '@/stores/chartIndicatorsStore';
 import type { MenuProps } from 'antd';

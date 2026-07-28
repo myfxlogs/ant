@@ -78,7 +78,7 @@ interface AICodeContext {
   code: string;
   setCode: (code: string) => void;
   validationResult: { valid: boolean; errors?: string[]; warnings?: string[]; parameters?: { key: string; type?: string; required?: boolean; default?: unknown; suggested?: unknown }[]; qualityHints?: { category: string; message: string; line: number }[] } | null;
-  setValidationResult: (r: any) => void;
+  setValidationResult: (r: unknown) => void;
   setLastValidatedCode: (code: string) => void;
   loadTemplates: () => Promise<void>;
 }

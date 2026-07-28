@@ -123,7 +123,7 @@ export default function WalletPage() {
       dataIndex: 'confirmedAt',
       key: 'confirmedAt',
       width: 180,
-      render: (v: any) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
+      render: (v: unknown) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
     },
   ], [t]);
 

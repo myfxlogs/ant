@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { depositApi } from '@/client/deposit';
 import { formatAmount } from '@/utils/amount';
 import { downloadBlob } from '@/utils/download';
-import type { SweepDashboardEntry, PendingSignBundleEntry } from '@/client/deposit';
+import type { SweepDashboardEntry } from '@/client/deposit';
 
 const { Title } = Typography;
 
@@ -90,7 +90,7 @@ export default function SweepManagement() {
       title: '',
       key: 'select',
       width: 40,
-      render: (_: any, record: SweepDashboardEntry) => (
+      render: (_: unknown, record: SweepDashboardEntry) => (
         <Checkbox
           checked={selectedIds.includes(record.depositAddressId)}
           onChange={(e) => {
@@ -142,7 +142,7 @@ export default function SweepManagement() {
       title: '',
       key: 'action',
       width: 100,
-      render: (_: any, record: SweepDashboardEntry) => (
+      render: (_: unknown, record: SweepDashboardEntry) => (
         <Button
           size="small"
           icon={<DownloadOutlined />}

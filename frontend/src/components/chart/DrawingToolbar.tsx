@@ -53,7 +53,7 @@ export default function DrawingToolbar({ chart }: Props) {
     // Activate drawing tool
     setActiveTool(tool.key);
     try {
-      chart.createOverlay(tool.overlayName as any);
+      chart.createOverlay(tool.overlayName as unknown);
     } catch {
       // klinecharts handles the drawing interaction internally
     }
@@ -62,7 +62,7 @@ export default function DrawingToolbar({ chart }: Props) {
   const handleClearAll = () => {
     if (!chart) return;
     try {
-      (chart as any).removeAllOverlays?.();
+      (chart as unknown).removeAllOverlays?.();
     } catch {
       // Fallback: remove one by one
     }
@@ -79,7 +79,7 @@ export default function DrawingToolbar({ chart }: Props) {
       position: 'absolute', top: 8, left: 8, zIndex: 20,
     }}>
       {DRAWING_TOOLS.map((tool) => (
-        <Tooltip key={tool.key} title={t(tool.labelKey as any, { defaultValue: tool.defaultLabel })} placement="right">
+        <Tooltip key={tool.key} title={t(tool.labelKey as unknown, { defaultValue: tool.defaultLabel })} placement="right">
           <div
             onClick={() => handleToolClick(tool)}
             style={{

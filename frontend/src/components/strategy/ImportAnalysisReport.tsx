@@ -54,7 +54,7 @@ interface Props {
   loading: boolean;
 }
 
-const executionLabel = (kind: string, t: (k: string, o?: any) => string): string => {
+const executionLabel = (kind: string, t: (k: string, o?: unknown) => string): string => {
   switch (kind) {
     case 'on_bar': return t('importAnalysis.execution.onBar', { defaultValue: 'Bar close event-driven' });
     case 'on_tick': return t('importAnalysis.execution.onTick', { defaultValue: 'Tick-driven' });
@@ -63,7 +63,7 @@ const executionLabel = (kind: string, t: (k: string, o?: any) => string): string
   }
 };
 
-const sizingLabel = (kind: string, t: (k: string, o?: any) => string): string => {
+const sizingLabel = (kind: string, t: (k: string, o?: unknown) => string): string => {
   switch (kind) {
     case 'fixed': return t('importAnalysis.sizing.fixed', { defaultValue: 'Fixed lots' });
     case 'martingale': return t('importAnalysis.sizing.martingale', { defaultValue: 'Martingale' });

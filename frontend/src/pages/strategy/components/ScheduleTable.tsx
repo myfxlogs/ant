@@ -50,25 +50,25 @@ export default function ScheduleTable({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const templateById = useMemo(() => {
-    const m = new Map<string, any>();
-    (templates || []).forEach((item: any) => {
+    const m = new Map<string, unknown>();
+    (templates || []).forEach((item: unknown) => {
       if (item?.id) m.set(item.id, item);
     });
     return m;
   }, [templates]);
   const accountById = useMemo(() => {
-    const m = new Map<string, any>();
-    (accounts || []).forEach((item: any) => {
+    const m = new Map<string, unknown>();
+    (accounts || []).forEach((item: unknown) => {
       if (item?.id) m.set(item.id, item);
     });
     return m;
   }, [accounts]);
-  const columns: ColumnsType<any> = [
+  const columns: ColumnsType<unknown> = [
     {
       title: t("strategy.schedules.table.name"),
       dataIndex: "name",
       key: "name",
-      render: (v: any, row: any) => (
+      render: (v: unknown, row: unknown) => (
         <Space orientation="vertical" size={0}>
           <Text strong>{v}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -113,7 +113,7 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.tradeParams"),
       key: "trade",
-      render: (_: any, row: any) => (
+      render: (_: unknown, row: unknown) => (
         <Space orientation="vertical" size={0}>
           <Text>{row?.symbol}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -125,12 +125,12 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.schedule"),
       key: "schedule",
-      render: (_: any, row: any) => <Text>{formatSchedule(t, row)}</Text>,
+      render: (_: unknown, row: unknown) => <Text>{formatSchedule(t, row)}</Text>,
     },
     {
       title: t("strategy.schedules.table.status"),
       key: "status",
-      render: (_: any, row: any) => (
+      render: (_: unknown, row: unknown) => (
         <Space orientation="vertical" size={0}>
           <Space>
             <Switch
@@ -153,7 +153,7 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.lastRun"),
       key: "lastRunAt",
-      render: (_: any, row: any) => (
+      render: (_: unknown, row: unknown) => (
         <Space orientation="vertical" size={0}>
           <Text>{formatTime(row?.lastRunAt)}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -166,7 +166,7 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.actions"),
       key: "actions",
-      render: (_: any, row: any) => (
+      render: (_: unknown, row: unknown) => (
         <Space>
           <Button size="small" onClick={() => onEdit(row)} disabled={loading}>
             {t("common.edit")}
@@ -218,7 +218,7 @@ export default function ScheduleTable({
   );
 }
 
-function formatSchedule(t: (key: string) => string, row: any) {
+function formatSchedule(t: (key: string) => string, row: unknown) {
   const conf = row?.scheduleConfig || {};
   if (row?.scheduleType === "interval") {
     const raw = conf?.intervalMs;

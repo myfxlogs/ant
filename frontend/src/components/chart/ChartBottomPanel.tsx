@@ -84,7 +84,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
     },
     {
       title: '', key: 'action', width: 50,
-      render: (_: any, r: any) => (
+      render: (_: unknown, r: unknown) => (
         <Button size="small" type="text" danger icon={<CloseOutlined />}
           onClick={(e) => { e.stopPropagation(); onClosePosition(r.ticket); }} />
       ),

@@ -15,7 +15,7 @@ function formatBytes(bytes: bigint | number): string {
   return b + ' B';
 }
 
-function formatUptime(seconds: number, t: (k: string, o?: any) => string): string {
+function formatUptime(seconds: number, t: (k: string, o?: unknown) => string): string {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -32,7 +32,7 @@ function formatNs(ns: number): string {
   return ns.toFixed(0) + ' ns';
 }
 
-function StatusTag({ status, t }: { status: string; t: (k: string, o?: any) => string }) {
+function StatusTag({ status, t }: { status: string; t: (k: string, o?: unknown) => string }) {
   if (!status) return <Tag>{t('monitoring.unknown', { defaultValue: 'Unknown' })}</Tag>;
   const isOk = status === 'ok';
   return (

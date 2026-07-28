@@ -11,7 +11,6 @@ import {
   sharedProfitStreams,
   sharedOrderStreams,
 } from './sharedStream';
-import type { SharedStreamState } from './sharedStream';
 
 export type { StreamEvent } from '../gen/ant/v1/stream_pb';
 export type { OrderUpdateEvent } from '../gen/ant/v1/stream_event_trade_pb';

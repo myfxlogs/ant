@@ -140,7 +140,7 @@ export function deepConvertBigIntToNumber<T>(obj: T): T {
   return obj;
 }
 
-export function toCamelCase<T>(obj: any): T {
+export function toCamelCase<T>(obj: unknown): T {
   if (obj === null || obj === undefined) {
     return obj as T;
   }
@@ -158,7 +158,7 @@ export function toCamelCase<T>(obj: any): T {
     return obj as T;
   }
 
-  const result: any = {};
+  const result: unknown = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -168,7 +168,7 @@ export function toCamelCase<T>(obj: any): T {
   return result as T;
 }
 
-export function toSnakeCase<T>(obj: any): T {
+export function toSnakeCase<T>(obj: unknown): T {
   if (obj === null || obj === undefined) {
     return obj as T;
   }
@@ -186,7 +186,7 @@ export function toSnakeCase<T>(obj: any): T {
     return obj as T;
   }
 
-  const result: any = {};
+  const result: unknown = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
