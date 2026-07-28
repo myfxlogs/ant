@@ -209,7 +209,9 @@ func (c *StateCache) LoadFromRedis(ctx context.Context) error {
 			c.log.Warn("statecache: redis unmarshal failed", zap.Error(err))
 			continue
 		}
-		c.orders[protoEntry.Ticket] = &OrderStateCacheEntry{Ticket: protoEntry.Ticket, AccountID: protoEntry.AccountId, State: protoEntry.State, Canonical: protoEntry.Canonical, Side: protoEntry.Side, Volume: decimal.RequireFromString(protoEntry.Volume), Price: decimal.RequireFromString(protoEntry.Price), UpdatedAt: time.UnixMilli(protoEntry.UpdatedAtUnixMs)}
+		vol, _ := decimal.NewFromString(protoEntry.Volume)
+		price, _ := decimal.NewFromString(protoEntry.Price)
+		c.orders[protoEntry.Ticket] = &OrderStateCacheEntry{Ticket: protoEntry.Ticket, AccountID: protoEntry.AccountId, State: protoEntry.State, Canonical: protoEntry.Canonical, Side: protoEntry.Side, Volume: vol, Price: price, UpdatedAt: time.UnixMilli(protoEntry.UpdatedAtUnixMs)}
 	}
 	return iter.Err()
 }

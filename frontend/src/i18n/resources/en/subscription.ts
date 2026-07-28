@@ -26,7 +26,12 @@ const Subscription = {
     "selectBillingCycle": "Billing Cycle",
     "chargeNotice": "Your wallet will be charged for paid plans. Free plans have no charge.",
     "seoTitle": "Subscription",
-    "seoDesc": "Manage your subscription plan"
+    "seoDesc": "Manage your subscription plan",
+    "planName": {
+      "free": "Free",
+      "pro": "Pro",
+      "enterprise": "Enterprise"
+    }
   }
 } as const;
 export default Subscription;

@@ -71,8 +71,8 @@ func (s *AutoTradingServer) CheckRiskLimits(
 		return nil, connect.NewError(connect.CodeUnavailable,
 			fmt.Errorf("risk pipeline not configured"))
 	}
-	balance := decimal.RequireFromString(m.CurrentBalance)
-	equity := decimal.RequireFromString(m.CurrentEquity)
+	balance, _ := decimal.NewFromString(m.CurrentBalance)
+	equity, _ := decimal.NewFromString(m.CurrentEquity)
 	sig := &risksvc.SignalRequest{
 		AccountID: m.AccountId,
 		Symbol:    m.Symbol,
@@ -102,16 +102,16 @@ func (s *AutoTradingServer) CalculatePositionSize(
 	req *connect.Request[antv1.CalculatePositionSizeRequest],
 ) (*connect.Response[antv1.CalculatePositionSizeResponse], error) {
 	m := req.Msg
-	balanceDec := decimal.RequireFromString(m.AccountBalance)
+	balanceDec, _ := decimal.NewFromString(m.AccountBalance)
 	if balanceDec.LessThanOrEqual(decimal.Zero) {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("account_balance must be positive"))
 	}
-	riskPctDec := decimal.RequireFromString(m.RiskPercent)
+	riskPctDec, _ := decimal.NewFromString(m.RiskPercent)
 	if riskPctDec.LessThanOrEqual(decimal.Zero) {
 		riskPctDec = decimal.NewFromFloat(2.0)
 	}
-	slPipsDec := decimal.RequireFromString(m.StopLossPips)
+	slPipsDec, _ := decimal.NewFromString(m.StopLossPips)
 	if slPipsDec.LessThanOrEqual(decimal.Zero) {
 		slPipsDec = decimal.NewFromInt(20)
 	}

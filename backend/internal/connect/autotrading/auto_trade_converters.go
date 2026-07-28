@@ -30,11 +30,11 @@ func globalSettingsToProto(gs *model.GlobalSettings) *antv1.GlobalSettings {
 
 func applyGlobalSettings(existing *model.GlobalSettings, req *antv1.UpdateGlobalSettingsRequest) {
 	existing.AutoTradeEnabled = req.GetAutoTradeEnabled()
-	existing.MaxRiskPercent = decimal.RequireFromString(req.GetMaxRiskPercent())
+	existing.MaxRiskPercent = parseDecimalSafe(req.GetMaxRiskPercent())
 	existing.MaxPositions = int(req.GetMaxPositions())
-	existing.MaxLotSize = decimal.RequireFromString(req.GetMaxLotSize())
-	existing.MaxDailyLoss = decimal.RequireFromString(req.GetMaxDailyLoss())
-	existing.MaxDrawdownPercent = decimal.RequireFromString(req.GetMaxDrawdownPercent())
+	existing.MaxLotSize = parseDecimalSafe(req.GetMaxLotSize())
+	existing.MaxDailyLoss = parseDecimalSafe(req.GetMaxDailyLoss())
+	existing.MaxDrawdownPercent = parseDecimalSafe(req.GetMaxDrawdownPercent())
 }
 
 // --- RiskConfig ---
@@ -59,10 +59,10 @@ func riskConfigToProto(rc *model.RiskConfig) *antv1.RiskConfig {
 }
 
 func applyRiskConfig(existing *model.RiskConfig, req *antv1.UpdateRiskConfigRequest) {
-	existing.MaxRiskPercent = decimal.RequireFromString(req.GetMaxRiskPercent())
-	existing.MaxLotSize = decimal.RequireFromString(req.GetMaxLotSize())
-	existing.MaxDailyLoss = decimal.RequireFromString(req.GetMaxDailyLoss())
-	existing.MaxDrawdownPercent = decimal.RequireFromString(req.GetMaxDrawdownPercent())
+	existing.MaxRiskPercent = parseDecimalSafe(req.GetMaxRiskPercent())
+	existing.MaxLotSize = parseDecimalSafe(req.GetMaxLotSize())
+	existing.MaxDailyLoss = parseDecimalSafe(req.GetMaxDailyLoss())
+	existing.MaxDrawdownPercent = parseDecimalSafe(req.GetMaxDrawdownPercent())
 	existing.MaxPositions = int(req.GetMaxPositions())
 }
 
@@ -87,4 +87,12 @@ func tradingLogToProto(l *model.TradingLog) *antv1.TradingLog {
 		Profit:     l.Profit.String(),
 		CreatedAt:  timestamppb.New(l.CreatedAt),
 	}
+}
+
+func parseDecimalSafe(s string) decimal.Decimal {
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero
+	}
+	return d
 }

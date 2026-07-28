@@ -26,7 +26,12 @@ const Subscription = {
     "selectBillingCycle": "计费周期",
     "chargeNotice": "付费套餐将从钱包扣款，免费套餐不产生费用。",
     "seoTitle": "订阅",
-    "seoDesc": "管理您的订阅套餐"
+    "seoDesc": "管理您的订阅套餐",
+    "planName": {
+      "free": "免费版",
+      "pro": "专业版",
+      "enterprise": "企业版"
+    }
   }
 } as const;
 export default Subscription;

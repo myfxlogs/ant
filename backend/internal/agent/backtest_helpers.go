@@ -72,7 +72,10 @@ func buildBacktestResultProto(r *backtest.Result) *antv1.AgentBacktestResult {
 		resp.TotalTrades = r.Metrics.TotalTrades
 		resp.WinningTrades = r.Metrics.WinningTrades
 		resp.LosingTrades = r.Metrics.LosingTrades
-		totalReturn := decimal.RequireFromString(r.Metrics.TotalReturn)
+		totalReturn, err := decimal.NewFromString(r.Metrics.TotalReturn)
+		if err != nil {
+			totalReturn = decimal.Zero
+		}
 		totalPnl := r.Config.InitialCapital.Mul(totalReturn)
 		resp.TotalPnlAbsolute = totalPnl.String()
 	}

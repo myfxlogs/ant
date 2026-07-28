@@ -216,7 +216,7 @@ export default function SubscriptionPage() {
                 <div className="text-center mb-4">
                   {getPlanIcon(plan.name)}
                   <h2 className="mt-3 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                    {plan.displayName}
+                    {t(`subscription.planName.${plan.name}`, { defaultValue: plan.displayName })}
                   </h2>
                 </div>
 

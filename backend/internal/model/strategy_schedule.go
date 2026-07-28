@@ -99,18 +99,26 @@ func (s *StrategySchedule) GetBacktestMetrics() (*BacktestMetrics, error) {
 		return nil, err
 	}
 	return &BacktestMetrics{
-		TotalReturn:   decimal.RequireFromString(m.GetTotalReturn()),
-		AnnualReturn:  decimal.RequireFromString(m.GetAnnualReturn()),
-		MaxDrawdown:   decimal.RequireFromString(m.GetMaxDrawdown()),
-		SharpeRatio:   decimal.RequireFromString(m.GetSharpeRatio()),
-		WinRate:       decimal.RequireFromString(m.GetWinRate()),
-		ProfitFactor:  decimal.RequireFromString(m.GetProfitFactor()),
+		TotalReturn:   safeDecimal(m.GetTotalReturn()),
+		AnnualReturn:  safeDecimal(m.GetAnnualReturn()),
+		MaxDrawdown:   safeDecimal(m.GetMaxDrawdown()),
+		SharpeRatio:   safeDecimal(m.GetSharpeRatio()),
+		WinRate:       safeDecimal(m.GetWinRate()),
+		ProfitFactor:  safeDecimal(m.GetProfitFactor()),
 		TotalTrades:   int(m.GetTotalTrades()),
 		WinningTrades: int(m.GetWinningTrades()),
 		LosingTrades:  int(m.GetLosingTrades()),
-		AverageProfit: decimal.RequireFromString(m.GetAverageProfit()),
-		AverageLoss:   decimal.RequireFromString(m.GetAverageLoss()),
+		AverageProfit: safeDecimal(m.GetAverageProfit()),
+		AverageLoss:   safeDecimal(m.GetAverageLoss()),
 	}, nil
+}
+
+func safeDecimal(s string) decimal.Decimal {
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero
+	}
+	return d
 }
 
 func (s *StrategySchedule) SetBacktestMetrics(metrics *BacktestMetrics) error {

@@ -57,10 +57,10 @@ func assessRisk(m *antv1.BacktestMetrics) *antv1.ExecuteRiskAssessment {
 	score := 50
 	var reasons, warnings []string
 
-	maxDD := decimal.RequireFromString(m.MaxDrawdown)
-	sharpe := decimal.RequireFromString(m.SharpeRatio)
-	winRate := decimal.RequireFromString(m.WinRate)
-	profitFactor := decimal.RequireFromString(m.ProfitFactor)
+	maxDD := parseDecimal(m.MaxDrawdown)
+	sharpe := parseDecimal(m.SharpeRatio)
+	winRate := parseDecimal(m.WinRate)
+	profitFactor := parseDecimal(m.ProfitFactor)
 
 	switch {
 	case maxDD.GreaterThan(decimal.NewFromFloat(0.5)):

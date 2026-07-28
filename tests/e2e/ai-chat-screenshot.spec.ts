@@ -25,25 +25,32 @@ test('AI Chat screenshot - compare with Windsurf', async ({ page }) => {
   await accountSelect.waitFor({ state: 'visible', timeout: 10_000 });
   await accountSelect.click({ force: true });
   await page.waitForTimeout(1000);
-  // Click the first available account option
-  await page.locator('.ant-select-item-option').first().click();
-  await page.waitForTimeout(2000);
+  // Click the first available account option, or skip if no accounts bound
+  const accountOption = page.locator('.ant-select-item-option').first();
+  if (await accountOption.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await accountOption.click();
+    await page.waitForTimeout(2000);
 
-  // Step 2: Select symbol BTCUSDm (second .ant-select in the top bar)
-  const symbolSelect = page.locator('.ant-select').nth(1);
-  await symbolSelect.click();
-  await page.waitForTimeout(500);
-  await page.keyboard.type('BTCUSD');
-  await page.waitForTimeout(1500);
-  // Try to find BTCUSDm option
-  const btcOption = page.locator('.ant-select-item-option').filter({ hasText: /BTCUSDm/i }).first();
-  if (await btcOption.isVisible({ timeout: 5000 }).catch(() => false)) {
-    await btcOption.click();
+    // Step 2: Select symbol BTCUSDm (second .ant-select in the top bar)
+    const symbolSelect = page.locator('.ant-select').nth(1);
+    await symbolSelect.click();
+    await page.waitForTimeout(500);
+    await page.keyboard.type('BTCUSD');
+    await page.waitForTimeout(1500);
+    // Try to find BTCUSDm option
+    const btcOption = page.locator('.ant-select-item-option').filter({ hasText: /BTCUSDm/i }).first();
+    if (await btcOption.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await btcOption.click();
+    } else {
+      // Just click first option available
+      await page.locator('.ant-select-item-option').first().click();
+    }
+    await page.waitForTimeout(2000);
   } else {
-    // Just click first option available
-    await page.locator('.ant-select-item-option').first().click();
+    // No accounts bound — close dropdown and continue without account/symbol selection
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
   }
-  await page.waitForTimeout(2000);
 
   // Step 3: Find the AI chat textarea (already visible on page)
   const chatInput = page.locator('textarea').last();
