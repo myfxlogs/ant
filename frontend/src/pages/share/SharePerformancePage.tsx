@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Spin, Tag, Typography, Empty, Row, Col, Table, Statistic, Select, Progress, Divider } from 'antd';
-import { RiseOutlined, FallOutlined, TrophyOutlined, ClockCircleOutlined, BarChartOutlined, GlobalOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
+import { RiseOutlined, FallOutlined, GlobalOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -9,9 +9,10 @@ import ShareChart from './ShareChart';
 import Seo from '@/components/common/Seo';
 import { sharePublicClient } from '@/client/connect';
 import {
-  LANGUAGE_LABELS, BrandLogo, toNum, fmt, avgHoldingText,
-  type ShareData, computeMaxDrawdownPct, aggregateBySymbol,
+  LANGUAGE_LABELS, BrandLogo, toNum, fmt,
+  type ShareData,
 } from './SharePerformancePageHelpers';
+import { computeTradeStats, buildKpiCards } from './SharePerformancePageStats';
 
 const { Text } = Typography;
 
@@ -89,45 +90,18 @@ export default function SharePerformancePage() {
   if (error === 'expired') return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={t('sharePage.expired')} /></div>;
   if (error || !data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={t('sharePage.notFound')} /></div>;
 
-  const trades = data.trades || [];
-  const netProfit = toNum(data.totalReturn);
-  const isPositive = netProfit >= 0;
+  const stats = computeTradeStats(data);
+  const { winningTrades, losingTrades, winPct, netProfit, isPositive, bySymbol } = stats;
   const green = '#52c41a', red = '#ff4d4f';
 
-  const profits = trades.map(tr => toNum(tr.profit));
-  const winningProfits = profits.filter(p => p > 0);
-  const losingProfits = profits.filter(p => p < 0);
-  const winningTrades = winningProfits.length;
-  const losingTrades = losingProfits.length;
-  const bestTrade = profits.length ? Math.max(...profits) : 0;
-  const worstTrade = profits.length ? Math.min(...profits) : 0;
-  const avgWin = winningTrades ? winningProfits.reduce((a, b) => a + b, 0) / winningTrades : 0;
-  const avgLoss = losingTrades ? losingProfits.reduce((a, b) => a + b, 0) / losingTrades : 0;
-  const winPct = (winningTrades + losingTrades) > 0 ? Math.round(winningTrades / (winningTrades + losingTrades) * 100) : 0;
-
   const equity = data.equityCurve || [];
-  const maxDrawdownPct = computeMaxDrawdownPct(equity, toNum(data.maxDrawdown));
-  const bySymbol = aggregateBySymbol(trades);
 
   const money = (n: number, d = 2) => Number.isFinite(n)
     ? n.toLocaleString(i18n.language, { minimumFractionDigits: d, maximumFractionDigits: d })
     : '-';
   const signed = (n: number) => `${n >= 0 ? '+' : ''}${money(n)}`;
 
-  const kpiCards = [
-    { label: t('sharePage.winRate'), value: `${fmt(toNum(data.winRate), 1)}%`, color: '#1677ff', icon: null },
-    { label: t('sharePage.profitFactor'), value: toNum(data.profitFactor) > 0 ? fmt(toNum(data.profitFactor), 2) : 'N/A', color: '#eb2f96', icon: <TrophyOutlined /> },
-    { label: t('sharePage.maxDrawdown'), value: `${fmt(maxDrawdownPct, 2)}%`, color: '#fa8c16', icon: null },
-    { label: t('sharePage.sharpeRatio'), value: fmt(toNum(data.sharpeRatio), 2), color: '#a0d911', icon: <BarChartOutlined /> },
-    { label: t('sharePage.totalTrades'), value: String(data.totalTrades || 0), color: '#722ed1', icon: null },
-    { label: t('sharePage.totalVolume'), value: fmt(toNum(data.totalVolume), 1), color: '#13c2c2', icon: null },
-    { label: t('sharePage.avgHolding'), value: avgHoldingText(toNum(data.avgHoldingMs)), color: '#2f54eb', icon: <ClockCircleOutlined /> },
-    { label: t('sharePage.bestTrade'), value: signed(bestTrade), color: green, icon: <RiseOutlined /> },
-    { label: t('sharePage.worstTrade'), value: signed(worstTrade), color: red, icon: <FallOutlined /> },
-    { label: t('sharePage.avgWin'), value: signed(avgWin), color: green, icon: null },
-    { label: t('sharePage.avgLoss'), value: signed(avgLoss), color: red, icon: null },
-    { label: `${t('sharePage.winningTrades')} / ${t('sharePage.losingTrades')}`, value: `${winningTrades} / ${losingTrades}`, color: '#1677ff', icon: null },
-  ];
+  const kpiCards = buildKpiCards(t, data, stats);
 
   const PIE_COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2', '#a0d911', '#f5222d', '#2f54eb', '#faad14'];
 
