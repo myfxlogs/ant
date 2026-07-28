@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Input, List, Spin, Rate, Tabs, Alert, Empty, message } from 'antd';
-import { ShoppingCartOutlined, DownloadOutlined, UserOutlined, ThunderboltOutlined, WarningOutlined, ExperimentOutlined, RocketOutlined } from '@ant-design/icons';
+import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Rate, Tabs, Alert, Empty, message } from 'antd';
+import { ShoppingCartOutlined, DownloadOutlined, ThunderboltOutlined, WarningOutlined, ExperimentOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
 import { marketplaceClient } from '@/client/connect';
@@ -12,9 +12,9 @@ import ShareButtons from './ShareButtons';
 import { strategyVersionApi } from '@/client/strategy';
 import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 import { VersionHistoryTab, versionHistoryTabLabel } from './VersionHistoryTab';
+import { DiscussionSection, priceText } from './StrategyDetailModalHelpers';
 
 const { Text, Paragraph } = Typography;
-const { TextArea } = Input;
 
 interface Props {
   strategy: PublishedStrategy | null;
@@ -25,21 +25,6 @@ interface Props {
   onGetFree: (s: PublishedStrategy) => void;
   onBuy: (s: PublishedStrategy) => void;
   onRunBacktest?: (s: PublishedStrategy) => void;
-}
-
-function priceText(s: PublishedStrategy, t: (k: string, opts?: Record<string,unknown>) => string): string {
-  const model = String(s.priceModel || '').toLowerCase();
-  const amount = Number(s.priceAmount || 0);
-  if (model === 'free' || !amount) return t('marketplace.card.free');
-  if (model === 'subscription') return t('marketplace.detail.rentPrice', { amount: amount.toFixed(0) });
-  return t('marketplace.detail.buyPrice', { amount: amount.toFixed(0) });
-}
-
-function fmtTime(ts: { seconds?: bigint | number } | undefined | null): string {
-  if (!ts) return '';
-  const s = typeof ts.seconds === 'bigint' ? Number(ts.seconds) : (ts.seconds ?? 0);
-  if (!s) return '';
-  return new Date(s * 1000).toLocaleString();
 }
 
 export default function StrategyDetailModal({ strategy, open, isPurchased, isOwner, onClose, onGetFree, onBuy, onRunBacktest }: Props) {
@@ -190,102 +175,21 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         </div>
       )}
 
-      <Divider />
-
-      {/* ── Rating section ── */}
-      <div style={{ marginBottom: 16 }}>
-        <Text strong>{t('marketplace.detail.yourRating')}</Text>
-        <div style={{ marginTop: 4 }}>
-          <Rate
-            value={d.userRating}
-            onChange={(val) => d.handleRate(strategy.strategyId, val)}
-            style={{ fontSize: 20 }}
-          />
-          {d.userRating > 0 && (
-            <Text type="secondary" style={{ marginLeft: 8 }}>
-              {t('marketplace.messages.rated')}
-            </Text>
-          )}
-        </div>
-        <Spin spinning={d.ratingsLoading} size="small">
-          {d.ratings.length > 0 && (
-            <div style={{ marginTop: 8, maxHeight: 120, overflowY: 'auto' }}>
-              {d.ratings.map((r) => (
-                <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 0' }}>
-                  <UserOutlined style={{ fontSize: 11, color: '#8c8c8c' }} />
-                  <Text style={{ fontSize: 11, color: '#8c8c8c' }}>{String(r.userId || '').slice(0, 8)}</Text>
-                  <Rate disabled value={r.rating} style={{ fontSize: 12 }} />
-                  <Text type="secondary" style={{ fontSize: 10 }}>{fmtTime(r.createdAt)}</Text>
-                </div>
-              ))}
-            </div>
-          )}
-        </Spin>
-      </div>
-
-      <Divider />
-
-      {/* ── Comments section ── */}
-      <div style={{ marginBottom: 16 }}>
-        <Text strong>{t('marketplace.detail.comments')} ({d.commentsTotal})</Text>
-
-        {/* Comment list */}
-        <Spin spinning={d.commentsLoading}>
-          {d.comments.length === 0 && !d.commentsLoading ? (
-            <Paragraph type="secondary" style={{ marginTop: 8, textAlign: 'center' }}>
-              {t('marketplace.detail.noComments')}
-            </Paragraph>
-          ) : (
-            <List
-              style={{ marginTop: 8 }}
-              dataSource={d.comments}
-              size="small"
-              split={false}
-              renderItem={(c) => (
-                <List.Item style={{ padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                  <div style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                      <Text strong style={{ fontSize: 12 }}>
-                        <UserOutlined style={{ marginRight: 4 }} />{c.userName || String(c.userId || '').slice(0, 8)}
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: 10 }}>{fmtTime(c.createdAt)}</Text>
-                    </div>
-                    <Text style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{c.content}</Text>
-                  </div>
-                </List.Item>
-              )}
-            />
-          )}
-        </Spin>
-
-        {/* Comment input */}
-        <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-          <TextArea
-            rows={2}
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder={t('marketplace.detail.commentPlaceholder')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                doComment();
-              }
-            }}
-            style={{ flex: 1 }}
-          />
-          <Button
-            type="primary"
-            loading={commentSubmitting}
-            disabled={!commentText.trim()}
-            onClick={doComment}
-            style={{ alignSelf: 'flex-end' }}
-          >
-            {t('marketplace.detail.comments')}
-          </Button>
-        </div>
-      </div>
-
-      <Divider />
+      <DiscussionSection
+        t={t}
+        strategyId={strategy.strategyId}
+        comments={d.comments}
+        commentsTotal={d.commentsTotal}
+        commentsLoading={d.commentsLoading}
+        ratings={d.ratings}
+        ratingsLoading={d.ratingsLoading}
+        userRating={d.userRating}
+        onRate={d.handleRate}
+        commentText={commentText}
+        setCommentText={setCommentText}
+        commentSubmitting={commentSubmitting}
+        onComment={doComment}
+      />
 
       {/* Performance tabs */}
       <Tabs activeKey={perfTab} onChange={setPerfTab} size="small" style={{ marginBottom: 16 }} items={[

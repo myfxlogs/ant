@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-import { Card, Input, Select, Button, Typography, Space, Segmented, Modal, message } from 'antd';
-import { RobotOutlined, RocketOutlined, AppstoreOutlined, EditOutlined } from '@ant-design/icons';
+import { Card, Typography, Segmented, message } from 'antd';
+import { RobotOutlined, AppstoreOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
@@ -8,11 +8,11 @@ import { GenerateAndPublishRequestSchema, GenerateFromTemplateRequestSchema, Set
 import TemplateSelector from './TemplateSelector';
 import AutoGenerateProgress from './AutoGenerateProgress';
 import AutoGenerateResult from './AutoGenerateResult';
+import FreeFormConfig from './FreeFormConfig';
+import PricingModal from './PricingModal';
+import { resetGenerationState, processStreamEvent, handleStreamError, type Stage } from './AutoGenerateStreamHelpers';
 
-const { TextArea } = Input;
 const { Text, Title } = Typography;
-
-type Stage = 'idle' | 'generating' | 'compiling' | 'backtesting' | 'evaluating' | 'publishing' | 'completed' | 'failed';
 
 export default function AutoGeneratePanel() {
   const { t } = useTranslation();
@@ -61,15 +61,7 @@ export default function AutoGeneratePanel() {
   const handleTemplateGenerate = useCallback(async (templateId: string, paramsJson: string) => {
     const ac = new AbortController();
     abortRef.current = ac;
-
-    setStage('generating');
-    setProgress(0);
-    setDelta('');
-    setErrorStage('');
-    setErrorDetail('');
-    setRetryable(false);
-    setResult(null);
-    setViolations([]);
+    resetGenerationState({ setStage, setProgress, setDelta, setErrorStage, setErrorDetail, setRetryable, setResult, setViolations });
 
     try {
       const msg = create(GenerateFromTemplateRequestSchema, {
@@ -82,31 +74,10 @@ export default function AutoGeneratePanel() {
 
       const stream = marketplaceClient.generateFromTemplate(msg, { signal: ac.signal });
       for await (const ev of stream) {
-        const s = (ev.stage || 'generating') as Stage;
-        setStage(s);
-        if (ev.progress) setProgress(ev.progress);
-        if (ev.delta) setDelta(prev => prev + ev.delta);
-        if (ev.message) setDelta(prev => prev + ev.message + '\n');
-
-        if (s === 'failed') {
-          setErrorStage(ev.errorStage || '');
-          setErrorDetail(ev.errorDetail || '');
-          setRetryable(ev.retryable);
-        } else if (s === 'completed') {
-          if (ev.strategyId || ev.publishId) {
-            setResult({ strategyId: ev.strategyId || '', publishId: ev.publishId || '', backtest: ev.backtest });
-          }
-          if (ev.violations && ev.violations.length > 0) {
-            setViolations(ev.violations);
-          }
-        }
+        processStreamEvent(ev, { setStage, setProgress, setDelta, setErrorStage, setErrorDetail, setRetryable, setResult, setViolations });
       }
     } catch (e: unknown) {
-      if (e instanceof Error && e.name === 'AbortError') return;
-      setStage('failed');
-      setErrorStage('generating');
-      setErrorDetail(e instanceof Error ? e.message : String(e));
-      setRetryable(true);
+      handleStreamError(e, { setStage, setProgress, setDelta, setErrorStage, setErrorDetail, setRetryable, setResult, setViolations });
     }
   }, [symbol, timeframe, autoPublish]);
 
@@ -118,15 +89,7 @@ export default function AutoGeneratePanel() {
 
     const ac = new AbortController();
     abortRef.current = ac;
-
-    setStage('generating');
-    setProgress(0);
-    setDelta('');
-    setErrorStage('');
-    setErrorDetail('');
-    setRetryable(false);
-    setResult(null);
-    setViolations([]);
+    resetGenerationState({ setStage, setProgress, setDelta, setErrorStage, setErrorDetail, setRetryable, setResult, setViolations });
 
     try {
       const msg = create(GenerateAndPublishRequestSchema, {
@@ -142,35 +105,10 @@ export default function AutoGeneratePanel() {
 
       const stream = marketplaceClient.generateAndPublish(msg, { signal: ac.signal });
       for await (const ev of stream) {
-        const s = (ev.stage || 'generating') as Stage;
-        setStage(s);
-        if (ev.progress) setProgress(ev.progress);
-        if (ev.delta) setDelta(prev => prev + ev.delta);
-        if (ev.message) setDelta(prev => prev + ev.message + '\n');
-
-        if (s === 'failed') {
-          setErrorStage(ev.errorStage || '');
-          setErrorDetail(ev.errorDetail || '');
-          setRetryable(ev.retryable);
-        } else if (s === 'completed') {
-          if (ev.strategyId || ev.publishId) {
-            setResult({
-              strategyId: ev.strategyId || '',
-              publishId: ev.publishId || '',
-              backtest: ev.backtest,
-            });
-          }
-          if (ev.violations && ev.violations.length > 0) {
-            setViolations(ev.violations);
-          }
-        }
+        processStreamEvent(ev, { setStage, setProgress, setDelta, setErrorStage, setErrorDetail, setRetryable, setResult, setViolations });
       }
     } catch (e: unknown) {
-      if (e instanceof Error && e.name === 'AbortError') return;
-      setStage('failed');
-      setErrorStage('generating');
-      setErrorDetail(e instanceof Error ? e.message : String(e));
-      setRetryable(true);
+      handleStreamError(e, { setStage, setProgress, setDelta, setErrorStage, setErrorDetail, setRetryable, setResult, setViolations });
     }
   }, [description, assetClass, symbol, timeframe, riskLevel, strategyType, autoPublish, t]);
 
@@ -216,72 +154,24 @@ export default function AutoGeneratePanel() {
               onTimeframeChange={setTimeframe}
             />
           ) : (
-            <>
-          <div style={{ marginBottom: 12 }}>
-            <Text strong>{t('marketplace.autogen.description')}</Text>
-            <TextArea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder={t('marketplace.autogen.placeholder')}
-              rows={4}
-              style={{ marginTop: 4 }}
+            <FreeFormConfig
+              t={t}
+              description={description}
+              setDescription={setDescription}
+              assetClass={assetClass}
+              setAssetClass={setAssetClass}
+              symbol={symbol}
+              setSymbol={setSymbol}
+              timeframe={timeframe}
+              setTimeframe={setTimeframe}
+              riskLevel={riskLevel}
+              setRiskLevel={setRiskLevel}
+              strategyType={strategyType}
+              setStrategyType={setStrategyType}
+              autoPublish={autoPublish}
+              setAutoPublish={setAutoPublish}
+              onGenerate={handleGenerate}
             />
-          </div>
-
-          <Space size="large" wrap style={{ marginBottom: 16 }}>
-            <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.assetClass')}</Text>
-              <Select value={assetClass} onChange={setAssetClass} style={{ width: 120 }}
-                options={[
-                  { value: 'forex', label: 'Forex' },
-                  { value: 'crypto', label: 'Crypto' },
-                  { value: 'commodity', label: 'Commodity' },
-                  { value: 'index', label: 'Index' },
-                ]}
-              />
-            </div>
-            <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.symbol')}</Text>
-              <Input value={symbol} onChange={e => setSymbol(e.target.value)} style={{ width: 120 }} />
-            </div>
-            <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.timeframe')}</Text>
-              <Select value={timeframe} onChange={setTimeframe} style={{ width: 100 }}
-                options={['M5', 'M15', 'M30', 'H1', 'H4', 'D1'].map(tf => ({ value: tf, label: tf }))}
-              />
-            </div>
-            <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.risk')}</Text>
-              <Select value={riskLevel} onChange={setRiskLevel} style={{ width: 140 }}
-                options={[
-                  { value: 'conservative', label: 'Conservative' },
-                  { value: 'moderate', label: 'Moderate' },
-                  { value: 'aggressive', label: 'Aggressive' },
-                ]}
-              />
-            </div>
-            <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.type')}</Text>
-              <Select value={strategyType} onChange={setStrategyType} style={{ width: 160 }}
-                options={[
-                  { value: 'auto', label: 'Auto-detect' },
-                  { value: 'trend_following', label: 'Trend Following' },
-                  { value: 'mean_reversion', label: 'Mean Reversion' },
-                  { value: 'breakout', label: 'Breakout' },
-                ]}
-              />
-            </div>
-          </Space>
-
-          <Space>
-            <Button type="primary" icon={<RocketOutlined />} onClick={handleGenerate} size="large">
-              {t('marketplace.autogen.start')}
-            </Button>
-            <Button onClick={() => setAutoPublish(!autoPublish)} type={autoPublish ? 'default' : 'dashed'}>
-              {autoPublish ? t('marketplace.autogen.autoPublishOn') : t('marketplace.autogen.autoPublishOff')}
-            </Button>
-          </Space>
-            </>
           )}
         </>
       )}
@@ -319,33 +209,17 @@ export default function AutoGeneratePanel() {
           t={t}
         />
       )}
-      <Modal
-        title={t('marketplace.autogen.editPricing')}
+      <PricingModal
+        t={t}
         open={pricingModalOpen}
+        priceModel={priceModel}
+        setPriceModel={setPriceModel}
+        priceAmount={priceAmount}
+        setPriceAmount={setPriceAmount}
+        saving={pricingSaving}
+        onSave={handleSavePricing}
         onCancel={() => setPricingModalOpen(false)}
-        onOk={handleSavePricing}
-        confirmLoading={pricingSaving}
-        okText={t('marketplace.autogen.save')}
-      >
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <div>
-            <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceModel')}</Text>
-            <Select value={priceModel} onChange={setPriceModel} style={{ width: '100%' }}
-              options={[
-                { value: 'free', label: t('marketplace.autogen.pricingFree') },
-                { value: 'once', label: t('marketplace.autogen.pricingOnce') },
-                { value: 'subscription', label: t('marketplace.autogen.pricingSubscription') },
-              ]}
-            />
-          </div>
-          {priceModel !== 'free' && (
-            <div>
-              <Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>{t('marketplace.autogen.priceAmount')}</Text>
-              <Input value={priceAmount} onChange={e => setPriceAmount(e.target.value)} type="number" prefix="$" />
-            </div>
-          )}
-        </Space>
-      </Modal>
+      />
     </Card>
   );
 }
