@@ -54,8 +54,8 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
   }, [open, strategyId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, page-change only
     if (open && strategyId) fetchVersions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, page-change only
   }, [page]);
 
   const handleRollback = async (versionNumber: number) => {

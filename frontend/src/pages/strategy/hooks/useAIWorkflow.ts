@@ -129,6 +129,7 @@ export function useAIWorkflow(
     setChatAutoApply(false);
     setAiOptimizePrompt(prompt);
     setCodePanelVisible(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- codeCtx.code accessed via closure, not reactive
   }, [codeCtx.validationResult, setCodePanelVisible]);
 
   const handleAutoFix = useCallback(async () => {
@@ -215,6 +216,7 @@ export function useAIWorkflow(
     } finally {
       setAutoFixing(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset of codeCtx to prevent infinite loop
   }, [codeCtx.code, codeCtx.validationResult, codeCtx.setCode, codeCtx.setLastValidatedCode, codeCtx.setValidationResult]);
 
   return {

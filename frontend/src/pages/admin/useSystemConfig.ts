@@ -40,9 +40,9 @@ export function useSystemConfig() {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchConfigs is stable enough (mount-only)
   useEffect(() => {
     fetchConfigs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchConfigs is stable enough (mount-only)
   }, []);
 
   const handleEdit = (config: AdminConfigType) => {

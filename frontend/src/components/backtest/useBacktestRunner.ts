@@ -120,7 +120,7 @@ export function useBacktestRunner() {
     updateExtractedParams(
       result.parameterEntries?.map((e: { name: string; type: string; default: string; label?: string }) => ({ name: e.name, type: e.type, default: e.default, label: e.label || '' })) || null
     );
-  }, [tuning, tuning.updateSweepFromCode, updateDirectivesFromCode, updateExtractedParams]);
+  }, [tuning, updateDirectivesFromCode, updateExtractedParams]);
 
   const setParam = useCallback((name: string, value: string) => {
     setStrategyParamValues(prev => ({ ...prev, [name]: value }));
