@@ -87,8 +87,13 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("CreateAccount: get account after create", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	s.svc.LogAudit(ctx, uuid.MustParse(id), userID, "create",
-		fmt.Sprintf("bound %s account %s on %s", r.MtType, r.Login, r.BrokerCompany))
+	auditAccountID, auditErr := uuid.Parse(id)
+	if auditErr != nil {
+		s.log.Warn("CreateAccount: invalid account ID from DB", zap.String("id", id), zap.Error(auditErr))
+	} else {
+		s.svc.LogAudit(ctx, auditAccountID, userID, "create",
+			fmt.Sprintf("bound %s account %s on %s", r.MtType, r.Login, r.BrokerCompany))
+	}
 	return connect.NewResponse(accountToProto(a)), nil
 }
 
@@ -207,7 +212,12 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("DeleteAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	s.svc.LogAudit(ctx, uuid.MustParse(req.Msg.Id), userID, "delete",
-		fmt.Sprintf("deleted account %s", creds.Login))
+	deleteAccountID, auditErr := uuid.Parse(req.Msg.Id)
+	if auditErr != nil {
+		s.log.Warn("DeleteAccount: invalid account ID", zap.String("id", req.Msg.Id), zap.Error(auditErr))
+	} else {
+		s.svc.LogAudit(ctx, deleteAccountID, userID, "delete",
+			fmt.Sprintf("deleted account %s", creds.Login))
+	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }

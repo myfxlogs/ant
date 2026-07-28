@@ -65,8 +65,13 @@ func (s *AnalyticsServer) GenerateReport(ctx context.Context, req *connect.Reque
 		{Role: "user", Content: userMsg},
 	}
 
+	aiUserID, parseErr := uuid.Parse(userID)
+	if parseErr != nil {
+		_ = stream.Send(&antv1.GenerateReportChunk{Phase: "done", Error: "invalid user identity", Done: true})
+		return nil
+	}
 	var fullText strings.Builder
-	err = s.aiSvc.ChatCompletionStream(ctx, uuid.MustParse(userID), messages, func(chunk systemai.ChatStreamChunk) error {
+	err = s.aiSvc.ChatCompletionStream(ctx, aiUserID, messages, func(chunk systemai.ChatStreamChunk) error {
 		fullText.WriteString(chunk.Content)
 		phase := "analyzing"
 		if chunk.Done {

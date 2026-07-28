@@ -20,14 +20,15 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 	}
 	if s.accountOwnerVerifier != nil {
 		uid := usermgr.GetUserID(ctx)
-		if uid != "" {
-			owns, err := s.accountOwnerVerifier(ctx, uid, accountID)
-			if err != nil {
-				return fmt.Errorf("account ownership check: %w", err)
-			}
-			if !owns {
-				return fmt.Errorf("%w: %s", ErrAccountNotOwned, accountID)
-			}
+		if uid == "" {
+			return fmt.Errorf("unauthenticated: user ID required for order close")
+		}
+		owns, err := s.accountOwnerVerifier(ctx, uid, accountID)
+		if err != nil {
+			return fmt.Errorf("account ownership check: %w", err)
+		}
+		if !owns {
+			return fmt.Errorf("%w: %s", ErrAccountNotOwned, accountID)
 		}
 	}
 

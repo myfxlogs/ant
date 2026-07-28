@@ -275,7 +275,10 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 		if existing.BillingCycle == "yearly" {
 			oldPriceStr = oldPlan.PriceYearly
 		}
-		oldPrice, _ := decimal.NewFromString(oldPriceStr)
+		oldPrice, err := decimal.NewFromString(oldPriceStr)
+		if err != nil {
+			return nil, fmt.Errorf("subscription: parse old plan price: %w", err)
+		}
 		creditAmount = oldPrice.Mul(prorationRatio)
 	}
 
@@ -284,7 +287,10 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 	if billingCycle == "yearly" {
 		newPriceStr = newPlan.PriceYearly
 	}
-	newPrice, _ := decimal.NewFromString(newPriceStr)
+	newPrice, err := decimal.NewFromString(newPriceStr)
+	if err != nil {
+		return nil, fmt.Errorf("subscription: parse new plan price: %w", err)
+	}
 	netCharge := newPrice.Sub(creditAmount)
 
 	// Update subscription plan.
@@ -309,7 +315,10 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 		}
 
 		if netCharge.GreaterThan(decimal.Zero) {
-			balance, _ := decimal.NewFromString(wallet.Balance)
+			balance, err := decimal.NewFromString(wallet.Balance)
+			if err != nil {
+				return nil, fmt.Errorf("subscription: parse wallet balance: %w", err)
+			}
 			if balance.LessThan(netCharge) {
 				return nil, &InsufficientBalanceError{Balance: wallet.Balance, Cost: netCharge.String()}
 			}

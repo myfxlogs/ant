@@ -37,14 +37,15 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	}
 	if s.accountOwnerVerifier != nil {
 		uid := usermgr.GetUserID(ctx)
-		if uid != "" {
-			owns, err := s.accountOwnerVerifier(ctx, uid, req.AccountID)
-			if err != nil {
-				return nil, fmt.Errorf("account ownership check: %w", err)
-			}
-			if !owns {
-				return nil, fmt.Errorf("%w: %s", ErrAccountNotOwned, req.AccountID)
-			}
+		if uid == "" {
+			return nil, fmt.Errorf("unauthenticated: user ID required for order placement")
+		}
+		owns, err := s.accountOwnerVerifier(ctx, uid, req.AccountID)
+		if err != nil {
+			return nil, fmt.Errorf("account ownership check: %w", err)
+		}
+		if !owns {
+			return nil, fmt.Errorf("%w: %s", ErrAccountNotOwned, req.AccountID)
 		}
 	}
 	if s.idem != nil && req.ClientID != "" {
