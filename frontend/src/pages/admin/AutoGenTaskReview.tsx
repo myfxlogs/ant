@@ -49,7 +49,7 @@ export default function AutoGenTaskReview() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, t]);
 
   useEffect(() => { fetchTasks(); }, [fetchTasks]);
 

@@ -147,7 +147,7 @@ export default function WorkspaceCodePanel({
       }
     }
     return groups;
-  }, [configs, primaryValue, gatewayModels]);
+  }, [configs, primaryValue, gatewayModels, t]);
 
   // Auto-refresh model lists from providers on mount + when enabled providers change.
   const refreshKey = useMemo(() =>

@@ -34,7 +34,7 @@ export function useUserManagement() {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [params, t]);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 

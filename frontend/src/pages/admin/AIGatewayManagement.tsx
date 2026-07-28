@@ -30,7 +30,7 @@ export default function AIGatewayManagement() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { loadProviders(); }, [loadProviders]);
 

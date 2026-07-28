@@ -49,7 +49,7 @@ export default function AccountManagement() {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [params, t]);
 
   useEffect(() => {
     fetchAccounts();

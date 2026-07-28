@@ -30,7 +30,7 @@ export default function OperationLogs() {
     } finally {
       setLoading(false);
     }
-  }, [params]);
+  }, [params, t]);
 
   useEffect(() => {
     fetchLogs();

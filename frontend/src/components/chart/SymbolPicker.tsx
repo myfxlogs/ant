@@ -106,7 +106,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
     }
 
     return groups;
-  }, [symbols, watchlist]);
+  }, [symbols, watchlist, t]);
 
   return (
     <Select

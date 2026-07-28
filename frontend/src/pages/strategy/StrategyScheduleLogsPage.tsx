@@ -58,8 +58,8 @@ export default function StrategyScheduleLogsPage() {
   useEffect(() => { if (activeTab === 'orders') void refreshOrders(); }, [activeTab, refreshOrders]);
 
   const colOpts = { t, formatTime: formatLogTime };
-  const execColumns = useMemo(() => buildExecColumns(colOpts), [t]);
-  const orderColumns = useMemo(() => buildOrderColumns(colOpts), [t]);
+  const execColumns = useMemo(() => buildExecColumns(colOpts), [colOpts]);
+  const orderColumns = useMemo(() => buildOrderColumns(colOpts), [colOpts]);
 
   return (
     <div className="p-6">

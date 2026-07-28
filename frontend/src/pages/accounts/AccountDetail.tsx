@@ -82,7 +82,7 @@ export default function AccountDetail() {
       onClick: () => setDeleteModalOpen(true),
       danger: true,
     },
-  ], [currentAccount?.isDisabled, togglePending, disabling, handleToggleStatus, t]);
+  ], [currentAccount?.isDisabled, togglePending, disabling, handleToggleStatus, setDeleteModalOpen, t]);
 
   const displayName = currentAccount?.alias || currentAccount?.login;
   const hasAlias = !!currentAccount?.alias;

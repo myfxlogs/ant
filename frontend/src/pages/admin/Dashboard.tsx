@@ -39,7 +39,7 @@ export default function AdminDashboard() {
         setError(msg); showError(msg);
       } finally { setLoading(false); }
     })();
-  }, []);
+  }, [t]);
 
   const logColumns = getLogColumns();
 

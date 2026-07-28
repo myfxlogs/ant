@@ -42,8 +42,6 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 	useEffect(() => {
 		if (!open || !runId || !isCompleted) return;
 		let cancelled = false;
-		// 启动一次新 fetch 前的合法 loading/错误重置；规则误报，按实际语义白名单。
-		// eslint-disable-next-line react-hooks/set-state-in-effect
 		setTradesLoading(true);
 		setTradesError(null);
 		backtestRunsApi

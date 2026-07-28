@@ -53,7 +53,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
 
   const setStep = (k: StepKey, s: StepStatus) => setStatus(prev => ({ ...prev, [k]: s }));
 
-  const getCode = () => codeRef.current;
+  const getCode = useCallback(() => codeRef.current, []);
 
   const runCheck = useCallback(async () => {
     const code = getCode(); if (!code) return;
@@ -82,7 +82,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
       setStep('check', 'done'); setStep('backtest', 'idle');
       addMsg('ai', { text: parts.join('\n') });
     } catch (e: unknown) { setStep('check', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_REVIEW_ERROR_KEY)} ${e instanceof Error ? e.message : String(e)}` }); }
-  }, [addMsg, t, onValidateResult]);
+  }, [addMsg, t, onValidateResult, getCode]);
 
   const runBacktest = useCallback(async () => {
     const code = getCode(); if (!code || !accountId || !hasSymbol) return;
@@ -96,7 +96,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
         addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_DONE_KEY)} ${r.metrics.sharpeRatio?.toFixed(2)??'-'} | DD: ${((r.metrics.maxDrawdown??0)*100).toFixed(1)}% | WR: ${((r.metrics.winRate??0)*100).toFixed(0)}% | Trades: ${r.metrics.totalTrades??0}` });
       } else { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_FAIL_KEY)} ${r.error || ''}` }); }
     } catch (e: unknown) { setStep('backtest', 'failed'); addMsg('ai', { text: `${t(WORKFLOW_BACKTEST_ERROR_KEY)} ${e instanceof Error ? e.message : String(e)}` }); }
-  }, [accountId, hasSymbol, symbol, timeframe, addMsg, t, onRunBacktest]);
+  }, [accountId, hasSymbol, symbol, timeframe, addMsg, t, onRunBacktest, getCode]);
 
   // Watch BacktestPanel runner status to advance workflow state.
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function WorkflowBar({ codeRef, busy, accountId, hasSymbol, symbo
       await fetchTemplates();
       addMsg('ai', { text: `${t(WORKFLOW_SAVED_KEY)} ${name}` });
     } catch { setStep('save', 'failed'); addMsg('ai', { text: t(WORKFLOW_SAVE_FAIL_KEY) }); }
-  }, [saveName, saveDup, addMsg, fetchTemplates, t]);
+  }, [saveName, saveDup, addMsg, fetchTemplates, t, getCode]);
 
   const disabled = busy || !getCode();
   const canBacktest = status.check === 'done' && !disabled && hasSymbol && !!accountId;
