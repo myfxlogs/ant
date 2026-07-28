@@ -43,30 +43,23 @@ export default defineConfig([
       // HMR fast-refresh is a dev-only concern — not a production code quality issue
       'react-refresh/only-export-components': 'off',
 
-      // M0.3-3: max-lines — TS files ≤250 lines (matching AGENT.md §复杂度硬上限)
+      // M0.3-3: max-lines — TS files ≤250 lines (matching AGENTS.md §复杂度硬上限)
       'max-lines': ['error', {
         max: 250,
         skipBlankLines: true,
         skipComments: true,
       }],
-    },
-  },
-  {
-    // Files exceeding 250-line limit — splitting is a deferred refactor
-    files: [
-      'src/client/analyticsMappers.ts',
-      'src/pages/admin/SweepManagement.tsx',
-      'src/pages/marketplace/components/AutoGeneratePanel.tsx',
-      'src/pages/marketplace/components/OptimizationTab.tsx',
-      'src/pages/marketplace/components/StrategyDetailModal.tsx',
-      'src/pages/share/SharePerformancePage.tsx',
-      'src/pages/strategy/components/workspace/BacktestHistoryDrawer.tsx',
-      'src/pages/strategy/components/workspace/VersionHistoryDrawer.tsx',
-      'src/pages/strategy/components/workspace/WorkspaceCodePanel.tsx',
-      'src/pages/subscription/SubscriptionPage.tsx',
-    ],
-    rules: {
-      'max-lines': ['error', { max: 350, skipBlankLines: true, skipComments: true }],
+
+      // AGENTS.md §File & Function Size: TS functions ≤50 lines (soft reference)
+      'max-lines-per-function': ['warn', {
+        max: 50,
+        skipBlankLines: true,
+        skipComments: true,
+        IIFEs: true,
+      }],
+
+      // AGENTS.md §File & Function Size: keep cyclomatic complexity manageable
+      'complexity': ['warn', { max: 10 }],
     },
   },
 ])
