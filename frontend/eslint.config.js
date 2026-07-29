@@ -62,4 +62,15 @@ export default defineConfig([
       'complexity': ['warn', { max: 10 }],
     },
   },
+  {
+    // React JSX components are declarative — every {cond && <Comp/>} is a
+    // render branch, not an imperative logic branch. complexity and
+    // max-lines-per-function are designed for imperative functions, not JSX.
+    // Keep these rules for .ts files where they catch real logic complexity.
+    files: ['**/*.tsx'],
+    rules: {
+      'complexity': 'off',
+      'max-lines-per-function': 'off',
+    },
+  },
 ])

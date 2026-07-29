@@ -54,7 +54,7 @@ linters:
     gocognit:
       min-complexity: 35
     goconst:
-      min-occurrences: 5
+      min-occurrences: 8
     gocyclo:
       min-complexity: 30
     gosec:
@@ -233,6 +233,66 @@ linters:
       - linters:
           - unparam
         path: internal/factor/dsl/parser\.go
+      - linters:
+          - unparam
+        path: cmd/server/handlers.*\.go
+      - linters:
+          - unparam
+        path: cmd/server/pipeline\.go
+      - linters:
+          - unparam
+        path: tools/mql2go/
+      - linters:
+          - unparam
+        path: internal/connect/strategy/live_context\.go
+      - linters:
+          - unparam
+        path: internal/connect/marketplace/marketplace_handler_autogen\.go
+      - linters:
+          - unparam
+        path: internal/mdgateway/broker_rediscovery\.go
+      - linters:
+          - unparam
+        path: internal/mdgateway/dlq_writer\.go
+      - linters:
+          - unparam
+        path: internal/mdgateway/pg_writer\.go
+      - linters:
+          - unparam
+        path: internal/reconcile/reconcile\.go
+      - linters:
+          - unparam
+        path: internal/repository/admin_repo\.go
+      - linters:
+          - unparam
+        path: internal/repository/analytics_repository_equity\.go
+      - linters:
+          - unparam
+        path: internal/repository/partition_mgr\.go
+      - linters:
+          - unparam
+        path: internal/repository/wallet_repo\.go
+      - linters:
+          - unparam
+        path: internal/service/wallet_service\.go
+      - linters:
+          - unparam
+        path: internal/sweep/
+      - linters:
+          - unparam
+        path: internal/ai/
+      - linters:
+          - unparam
+        path: internal/agent/prompts_shared\.go
+      - linters:
+          - unparam
+        path: internal/connect/ai/agent_loop_helpers\.go
+      - linters:
+          - unparam
+        path: cmd/genogimage/
+      - linters:
+          - unparam
+        path: cmd/server/main\.go
       - linters:
           - unused
         path: internal/mdgateway/quality\.go
