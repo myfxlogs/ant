@@ -8,7 +8,7 @@ import (
 // ── Helper functions for Python CST traversal ──────────────────────
 
 func (c *pyCompiler) findClassName(n *sitter.Node) string {
-	id := findNamedChild(n, "identifier")
+	id := findNamedChild(n, nodeIdentifier)
 	if id != nil {
 		return c.text(id)
 	}
@@ -16,7 +16,7 @@ func (c *pyCompiler) findClassName(n *sitter.Node) string {
 }
 
 func (c *pyCompiler) findFuncName(n *sitter.Node) string {
-	id := findNamedChild(n, "identifier")
+	id := findNamedChild(n, nodeIdentifier)
 	if id != nil {
 		return c.text(id)
 	}
@@ -31,10 +31,10 @@ func (c *pyCompiler) findExprChild(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "identifier", "string", "integer", "float", "true", "false", "none",
-			"call", "binary_operator", "unary_operator", "not_operator", "comparison_operator",
+		case nodeIdentifier, nodeString, "integer", nodeFloat, "true", "false", "none",
+			nodeCall, "binary_operator", "unary_operator", "not_operator", "comparison_operator",
 			"boolean_operator", "conditional_expression",
-			"parenthesized_expression", "attribute", "subscript",
+			nodeParenExpr, nodeAttribute, "subscript",
 			"assignment", "concatenated_string":
 			return child
 		}
@@ -46,10 +46,10 @@ func (c *pyCompiler) findDefaultVal(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "integer", "float", "string", "true", "false", "none",
-			"call", "binary_operator", "unary_operator", "not_operator", "comparison_operator",
+		case "integer", nodeFloat, nodeString, "true", "false", "none",
+			nodeCall, "binary_operator", "unary_operator", "not_operator", "comparison_operator",
 			"boolean_operator", "conditional_expression",
-			"parenthesized_expression", "attribute", "subscript":
+			nodeParenExpr, nodeAttribute, "subscript":
 			return child
 		}
 	}
@@ -67,17 +67,17 @@ func (c *pyCompiler) compileExprFromStmt(n *sitter.Node) *interp.Expr {
 }
 
 func (c *pyCompiler) callName(n *sitter.Node) string {
-	if n == nil || n.Type() != "call" {
+	if n == nil || n.Type() != nodeCall {
 		return ""
 	}
 	fn := n.NamedChild(0)
 	if fn == nil {
 		return ""
 	}
-	if fn.Type() == "identifier" {
+	if fn.Type() == nodeIdentifier {
 		return c.text(fn)
 	}
-	if fn.Type() == "attribute" {
+	if fn.Type() == nodeAttribute {
 		return c.text(fn)
 	}
 	return ""
@@ -113,7 +113,7 @@ func (c *pyCompiler) compileArgs(n *sitter.Node) []interp.Expr {
 		if a.Type() == "keyword_argument" {
 			for j := 0; j < int(a.NamedChildCount()); j++ {
 				kw := a.NamedChild(j)
-				if kw.Type() != "identifier" {
+				if kw.Type() != nodeIdentifier {
 					e := c.compileExpr(kw)
 					if e == nil {
 						e = &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)}
@@ -159,7 +159,7 @@ func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []int
 			var kwExpr *interp.Expr
 			for j := 0; j < int(a.NamedChildCount()); j++ {
 				kw := a.NamedChild(j)
-				if kw.Type() == "identifier" {
+				if kw.Type() == nodeIdentifier {
 					kwName = c.text(kw)
 				} else {
 					e := c.compileExpr(kw)
@@ -261,7 +261,7 @@ func (c *pyCompiler) countBases(n *sitter.Node) int {
 		if child.Type() == "argument_list" {
 			for j := 0; j < int(child.NamedChildCount()); j++ {
 				gc := child.NamedChild(j)
-				if gc.Type() == "identifier" {
+				if gc.Type() == nodeIdentifier {
 					count++
 				}
 			}

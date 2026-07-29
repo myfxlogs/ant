@@ -73,4 +73,14 @@ export default defineConfig([
       'max-lines-per-function': 'off',
     },
   },
+  {
+    // React hooks (use*.ts) are declarative state containers — useCallback
+    // and useEffect bodies naturally group related logic that exceeds 50
+    // lines. max-lines-per-function is designed for imperative functions.
+    // Keep complexity to catch genuine logic branching.
+    files: ['**/use*.ts', '**/use*.tsx', '**/hooks.ts', '**/hooks/*.ts'],
+    rules: {
+      'max-lines-per-function': 'off',
+    },
+  },
 ])

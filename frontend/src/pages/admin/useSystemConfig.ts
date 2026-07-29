@@ -3,6 +3,7 @@ import { Form, message } from 'antd';
 import { adminApi, type SystemConfig as AdminConfigType } from '@/client/admin';
 import { getErrorMessage } from '@/utils/error';
 import { useTranslation } from 'react-i18next';
+import { saveConfigValue, parseEconAIConfigValue } from './useSystemConfigHelpers';
 
 export function useSystemConfig() {
   const { t } = useTranslation();
@@ -48,24 +49,7 @@ export function useSystemConfig() {
   const handleEdit = (config: AdminConfigType) => {
     setCurrentConfig(config);
     if (config.key === 'econ.translation.ai_config') {
-      const raw = (config.value || '').toString().trim();
-      let initial: unknown = {
-        provider: 'zhipu',
-        api_key: '',
-        model: 'glm-4-flash',
-        base_url: '',
-        enabled: true,
-      };
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          if (parsed && typeof parsed === 'object') {
-            initial = { ...initial, ...parsed };
-          }
-        } catch {
-          // ignore parse error, use defaults
-        }
-      }
+      const initial = parseEconAIConfigValue(config);
       form.setFieldsValue({
         provider: initial.provider,
         api_key: initial.api_key,
@@ -75,10 +59,7 @@ export function useSystemConfig() {
         description: config.description,
       });
     } else {
-      form.setFieldsValue({
-        value: config.value,
-        description: config.description,
-      });
+      form.setFieldsValue({ value: config.value, description: config.description });
     }
     setEditModalVisible(true);
   };
@@ -86,82 +67,8 @@ export function useSystemConfig() {
   const handleSave = async (values: Record<string, unknown>) => {
     if (!currentConfig) return;
     try {
-      if (isStrategyHealthConfig) {
-        const raw = (values.value || '').trim();
-        if (!raw) {
-          message.error(t('admin.config.validation.jsonEmpty'));
-          return;
-        }
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(raw);
-        } catch {
-          message.error(t('admin.config.validation.jsonInvalid'));
-          return;
-        }
-        const greenSuccessRate = Number(parsed?.green_success_rate);
-        const yellowSuccessRate = Number(parsed?.yellow_success_rate);
-        const greenMaxFailedRuns = Number(parsed?.green_max_failed_runs);
-        const minSampleSize = Number(parsed?.min_sample_size);
-        if (!Number.isFinite(greenSuccessRate) || greenSuccessRate < 0 || greenSuccessRate > 100) {
-          message.error(t('admin.config.validation.greenSuccessRateRange'));
-          return;
-        }
-        if (!Number.isFinite(yellowSuccessRate) || yellowSuccessRate < 0 || yellowSuccessRate > 100) {
-          message.error(t('admin.config.validation.yellowSuccessRateRange'));
-          return;
-        }
-        if (yellowSuccessRate > greenSuccessRate) {
-          message.error(t('admin.config.validation.yellowNotGreaterThanGreen'));
-          return;
-        }
-        if (!Number.isFinite(greenMaxFailedRuns) || greenMaxFailedRuns < 0) {
-          message.error(t('admin.config.validation.greenMaxFailedRunsNonNegative'));
-          return;
-        }
-        if (!Number.isFinite(minSampleSize) || minSampleSize < 0) {
-          message.error(t('admin.config.validation.minSampleSizeNonNegative'));
-          return;
-        }
-      } else if (isEconAIConfig) {
-        const provider = (values.provider || 'zhipu').toString().trim();
-        const apiKey = (values.api_key || '').toString().trim();
-        const model = (values.model || '').toString().trim();
-        const baseURL = (values.base_url || '').toString().trim();
-        const enabled = values.enabled !== false;
-        if (!apiKey) {
-          message.error(t('admin.config.validation.apiKeyRequired'));
-          return;
-        }
-        if (!model) {
-          message.error(t('admin.config.validation.modelRequired'));
-          return;
-        }
-        const cfg = {
-          provider,
-          api_key: apiKey,
-          model,
-          base_url: baseURL,
-          enabled,
-        };
-        await adminApi.setConfig(currentConfig.key, {
-          value: JSON.stringify(cfg),
-          description: values.description || currentConfig.description || '',
-        });
-      } else if (isJSONConfig) {
-        const raw = (values.value || '').toString().trim();
-        if (raw) {
-          try {
-            JSON.parse(raw);
-          } catch {
-            message.error(t('admin.config.validation.jsonInvalid'));
-            return;
-          }
-        }
-        await adminApi.setConfig(currentConfig.key, values);
-      } else {
-        await adminApi.setConfig(currentConfig.key, values);
-      }
+      const ok = await saveConfigValue(currentConfig, values, { isStrategyHealthConfig, isEconAIConfig, isJSONConfig }, t);
+      if (!ok) return;
       message.success(t('admin.config.messages.updated'));
       setEditModalVisible(false);
       fetchConfigs();
@@ -184,9 +91,7 @@ export function useSystemConfig() {
 
   const handleUseStrategyHealthTemplate = () => {
     if (!isStrategyHealthConfig) return;
-    form.setFieldsValue({
-      value: JSON.stringify(strategyHealthConfigTemplate, null, 2),
-    });
+    form.setFieldsValue({ value: JSON.stringify(strategyHealthConfigTemplate, null, 2) });
   };
 
   const handleToggleEnabled = async (key: string, enabled: boolean) => {

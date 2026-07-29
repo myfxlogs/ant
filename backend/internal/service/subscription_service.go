@@ -62,13 +62,13 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID uuid.UUID, p
 		return nil, ErrPlanNotFound
 	}
 
-	if billingCycle != "monthly" && billingCycle != "yearly" {
-		billingCycle = "monthly"
+	if billingCycle != billingCycleMonthly && billingCycle != billingCycleYearly {
+		billingCycle = billingCycleMonthly
 	}
 
 	// Determine price based on billing cycle.
 	priceStr := plan.PriceMonthly
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		priceStr = plan.PriceYearly
 	}
 	price, err := decimal.NewFromString(priceStr)
@@ -127,7 +127,7 @@ func (s *SubscriptionService) Subscribe(ctx context.Context, userID uuid.UUID, p
 	// Create subscription record.
 	now := time.Now().UTC()
 	periodEnd := now.AddDate(0, 1, 0)
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		periodEnd = now.AddDate(1, 0, 0)
 	}
 	sub := &model.UserPlatformSubscription{
@@ -234,8 +234,8 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 		return nil, ErrPlanNotFound
 	}
 
-	if billingCycle != "monthly" && billingCycle != "yearly" {
-		billingCycle = "monthly"
+	if billingCycle != billingCycleMonthly && billingCycle != billingCycleYearly {
+		billingCycle = billingCycleMonthly
 	}
 
 	tx, err := s.pg.Begin(ctx)
@@ -272,7 +272,7 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 	if totalDuration > 0 {
 		prorationRatio := decimal.NewFromInt(remaining.Nanoseconds()).Div(decimal.NewFromInt(totalDuration.Nanoseconds()))
 		oldPriceStr := oldPlan.PriceMonthly
-		if existing.BillingCycle == "yearly" {
+		if existing.BillingCycle == billingCycleYearly {
 			oldPriceStr = oldPlan.PriceYearly
 		}
 		oldPrice, err := decimal.NewFromString(oldPriceStr)
@@ -284,7 +284,7 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 
 	// Calculate new plan charge.
 	newPriceStr := newPlan.PriceMonthly
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		newPriceStr = newPlan.PriceYearly
 	}
 	newPrice, err := decimal.NewFromString(newPriceStr)
@@ -295,7 +295,7 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 
 	// Update subscription plan.
 	periodEnd := now.AddDate(0, 1, 0)
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		periodEnd = now.AddDate(1, 0, 0)
 	}
 	if err := s.repo.UpdateSubscriptionPlan(ctx, tx, existing.ID, newPlan.ID, billingCycle, periodEnd); err != nil {

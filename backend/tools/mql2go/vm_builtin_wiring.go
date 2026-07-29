@@ -5,7 +5,21 @@ package mql2go
 // to keep both files under the 450-line hard limit.
 
 func init() {
-	// ── Indicator builtins (shared MQL4/MQL5 — 15 indicators) ────────
+	registerExtendedIndicators()
+	registerExtendedMath()
+	registerExtendedStrings()
+	registerExtendedTime()
+	registerExtendedArrays()
+	registerExtendedPlatform()
+	registerExtendedTimeseries()
+	registerExtendedMarketInfo()
+	registerExtendedTrade()
+	registerExtendedHistory()
+	registerExtendedAccount()
+	registerGlobalVariables()
+}
+
+func registerExtendedIndicators() {
 	builtinRegistry[id("iAlligator")].fn = builtinIAlligator
 	builtinRegistry[id("iIchimoku")].fn = builtinIIchimoku
 	builtinRegistry[id("iEnvelopes")].fn = builtinIEnvelopes
@@ -21,8 +35,6 @@ func init() {
 	builtinRegistry[id("iBearsPower")].fn = builtinIBearsPower
 	builtinRegistry[id("iBullsPower")].fn = builtinIBullsPower
 	builtinRegistry[id("iBWMFI")].fn = builtinIBWMFI
-
-	// ── Indicator builtins (MQL5-only — 9 indicators) ────────────────
 	builtinRegistry[id("iAMA")].fn = builtinIAMA
 	builtinRegistry[id("iDEMA")].fn = builtinIDEMA
 	builtinRegistry[id("iTEMA")].fn = builtinITEMA
@@ -32,8 +44,9 @@ func init() {
 	builtinRegistry[id("iADXWilder")].fn = builtinIADXWilder
 	builtinRegistry[id("iChaikin")].fn = builtinIChaikin
 	builtinRegistry[id("iVolumes")].fn = builtinIVolumes
+}
 
-	// ── Math functions (additions) ────────────────────────────────────
+func registerExtendedMath() {
 	builtinRegistry[id("MathCos")].fn = builtinMathCos
 	builtinRegistry[id("MathSin")].fn = builtinMathSin
 	builtinRegistry[id("MathTan")].fn = builtinMathTan
@@ -45,7 +58,6 @@ func init() {
 	builtinRegistry[id("MathRand")].fn = builtinMathRand
 	builtinRegistry[id("MathSrand")].fn = builtinMathSrand
 	builtinRegistry[id("MathIsValidNumber")].fn = builtinMathIsValidNumber
-	// MQL4 lowercase math aliases
 	builtinRegistry[id("ceil")].fn = builtinAliasCeil
 	builtinRegistry[id("floor")].fn = builtinAliasFloor
 	builtinRegistry[id("cos")].fn = builtinAliasCos
@@ -63,8 +75,9 @@ func init() {
 	builtinRegistry[id("rand")].fn = builtinAliasRand
 	builtinRegistry[id("srand")].fn = builtinAliasSrand
 	builtinRegistry[id("sqrt")].fn = builtinAliasSqrt
+}
 
-	// ── String functions (additions) ──────────────────────────────────
+func registerExtendedStrings() {
 	builtinRegistry[id("StringAdd")].fn = builtinStringAdd
 	builtinRegistry[id("StringCompare")].fn = builtinStringCompare
 	builtinRegistry[id("StringGetCharacter")].fn = builtinStringGetCharacter
@@ -74,8 +87,6 @@ func init() {
 	builtinRegistry[id("StringBufferLen")].fn = builtinStringBufferLen
 	builtinRegistry[id("StringInit")].fn = builtinStringInit
 	builtinRegistry[id("StringFill")].fn = builtinStringFill
-
-	// ── Conversion functions (additions) ──────────────────────────────
 	builtinRegistry[id("CharToString")].fn = builtinCharToString
 	builtinRegistry[id("CharArrayToString")].fn = builtinCharArrayToString
 	builtinRegistry[id("ShortToString")].fn = builtinShortToString
@@ -85,8 +96,9 @@ func init() {
 	builtinRegistry[id("StringToShortArray")].fn = builtinStringToShortArray
 	builtinRegistry[id("EnumToString")].fn = builtinEnumToString
 	builtinRegistry[id("TimeToString")].fn = builtinTimeToString
+}
 
-	// ── Date/Time functions (additions) ───────────────────────────────
+func registerExtendedTime() {
 	builtinRegistry[id("TimeGMT")].fn = builtinTimeGMT
 	builtinRegistry[id("TimeGMTOffset")].fn = builtinTimeGMTOffset
 	builtinRegistry[id("TimeDaylightSavings")].fn = builtinTimeDaylightSavings
@@ -94,8 +106,9 @@ func init() {
 	builtinRegistry[id("TimeToStruct")].fn = builtinTimeToStruct
 	builtinRegistry[id("StructToTime")].fn = builtinStructToTime
 	builtinRegistry[id("PeriodSeconds")].fn = builtinPeriodSeconds
+}
 
-	// ── Array functions (additions) ───────────────────────────────────
+func registerExtendedArrays() {
 	builtinRegistry[id("ArrayBsearch")].fn = builtinArrayBsearch
 	builtinRegistry[id("ArrayCompare")].fn = builtinArrayCompare
 	builtinRegistry[id("ArrayInsert")].fn = builtinArrayInsert
@@ -105,8 +118,9 @@ func init() {
 	builtinRegistry[id("ArrayPrint")].fn = builtinArrayPrint
 	builtinRegistry[id("ArrayGetAsSeries")].fn = builtinArrayGetAsSeries
 	builtinRegistry[id("ArrayIsDynamic")].fn = builtinArrayIsDynamic
+}
 
-	// ── Checkup / Platform functions (additions) ──────────────────────
+func registerExtendedPlatform() {
 	builtinRegistry[id("IsConnected")].fn = builtinIsConnected
 	builtinRegistry[id("IsDemo")].fn = builtinIsDemo
 	builtinRegistry[id("IsDllsAllowed")].fn = builtinIsDllsAllowed
@@ -127,8 +141,9 @@ func init() {
 	builtinRegistry[id("SetUserError")].fn = builtinSetUserError
 	builtinRegistry[id("SetReturnError")].fn = builtinSetReturnError
 	builtinRegistry[id("CurTime")].fn = builtinCurTime
+}
 
-	// ── MQL5 timeseries access ────────────────────────────────────────
+func registerExtendedTimeseries() {
 	builtinRegistry[id("Bars")].fn = builtinBars
 	builtinRegistry[id("iBarShift")].fn = builtinIBarShift
 	builtinRegistry[id("iHighest")].fn = builtinIHighest
@@ -149,8 +164,9 @@ func init() {
 	builtinRegistry[id("CopyTicks")].fn = builtinCopyTicks
 	builtinRegistry[id("BarsCalculated")].fn = builtinBarsCalculated
 	builtinRegistry[id("SeriesInfoInteger")].fn = builtinSeriesInfoInteger
+}
 
-	// ── MQL5 market info additions ────────────────────────────────────
+func registerExtendedMarketInfo() {
 	builtinRegistry[id("SymbolInfoTick")].fn = builtinSymbolInfoTick
 	builtinRegistry[id("SymbolName")].fn = builtinSymbolName
 	builtinRegistry[id("SymbolSelect")].fn = builtinSymbolSelect
@@ -159,21 +175,21 @@ func init() {
 	builtinRegistry[id("SymbolInfoSessionQuote")].fn = builtinSymbolInfoSessionQuote
 	builtinRegistry[id("SymbolInfoSessionTrade")].fn = builtinSymbolInfoSessionTrade
 	builtinRegistry[id("SymbolIsSynchronized")].fn = builtinSymbolIsSynchronized
+}
 
-	// ── MQL5 trade helpers ────────────────────────────────────────────
+func registerExtendedTrade() {
 	builtinRegistry[id("OrderCalcMargin")].fn = builtinOrderCalcMargin
 	builtinRegistry[id("OrderCalcProfit")].fn = builtinOrderCalcProfit
 	builtinRegistry[id("OrderCheck")].fn = builtinOrderCheck
 	builtinRegistry[id("PositionSelect")].fn = builtinPositionSelect
-
-	// ── MQL5 order functions (pending orders) ─────────────────────────
 	builtinRegistry[id("OrderGetTicket")].fn = builtinOrderGetTicket
 	builtinRegistry[id("OrderGetDouble")].fn = builtinOrderGetDouble
 	builtinRegistry[id("OrderGetInteger")].fn = builtinOrderGetInteger
 	builtinRegistry[id("OrderGetString")].fn = builtinOrderGetString
 	builtinRegistry[id("OrdersTotalMQL5")].fn = builtinOrdersTotalMQL5
+}
 
-	// ── MQL5 deal/history functions ───────────────────────────────────
+func registerExtendedHistory() {
 	builtinRegistry[id("HistorySelect")].fn = builtinHistorySelect
 	builtinRegistry[id("HistorySelectByPosition")].fn = builtinHistorySelectByPosition
 	builtinRegistry[id("HistoryDealsTotal")].fn = builtinHistoryDealsTotal
@@ -188,15 +204,17 @@ func init() {
 	builtinRegistry[id("HistoryOrderGetDouble")].fn = builtinHistoryOrderGetDouble
 	builtinRegistry[id("HistoryOrderGetInteger")].fn = builtinHistoryOrderGetInteger
 	builtinRegistry[id("HistoryOrderGetString")].fn = builtinHistoryOrderGetString
+}
 
-	// ── Account info additions (MQL5) ─────────────────────────────────
+func registerExtendedAccount() {
 	builtinRegistry[id("AccountInfoDouble")].fn = builtinAccountInfoDouble
 	builtinRegistry[id("AccountInfoInteger")].fn = builtinAccountInfoInteger
 	builtinRegistry[id("AccountInfoString")].fn = builtinAccountInfoString
 	builtinRegistry[id("AccountStopoutMode")].fn = builtinAccountStopoutMode
 	builtinRegistry[id("AccountCredit")].fn = builtinAccountCredit
+}
 
-	// ── Global Variables of the Terminal ──────────────────────────────
+func registerGlobalVariables() {
 	builtinRegistry[id("GlobalVariableSet")].fn = builtinGlobalVariableSet
 	builtinRegistry[id("GlobalVariableGet")].fn = builtinGlobalVariableGet
 	builtinRegistry[id("GlobalVariableDel")].fn = builtinGlobalVariableDel

@@ -162,7 +162,7 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 			for _, tc := range textCalls {
 				toolCalls = append(toolCalls, systemai.ToolCall{
 					ID:   "call_" + tc.Name,
-					Type: "function",
+					Type: toolTypeFunction,
 					Function: systemai.ToolCallFunction{
 						Name:      tc.Name,
 						Arguments: tc.ArgsJSON,

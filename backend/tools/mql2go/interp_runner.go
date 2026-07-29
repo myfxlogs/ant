@@ -317,7 +317,7 @@ func (r *VMRunner) injectParams(ctx sdk.Context) {
 			}
 			val = interp.IntVal(int32(ctx.ParamInt(p.Name, def)))
 
-		case "double", "float":
+		case "double", nodeFloat:
 			var def decimal.Decimal
 			if p.Default != nil {
 				if d, err := decimal.NewFromString(interp.EvalExprLiteral(p.Default)); err == nil {
@@ -326,7 +326,7 @@ func (r *VMRunner) injectParams(ctx sdk.Context) {
 			}
 			val = interp.DecimalVal(ctx.ParamDecimal(p.Name, def))
 
-		case "string":
+		case nodeString:
 			var def string
 			if p.Default != nil {
 				def = interp.EvalExprLiteral(p.Default)

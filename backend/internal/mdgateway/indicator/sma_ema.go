@@ -10,13 +10,13 @@ var DefSMA = Def{
 	Name: "Simple Moving Average",
 	Kind: KindOverlay,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 20, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 20, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 20},
+	Defaults: map[string]float64{keyLength: 20},
 }
 
 func computeSMA(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 20))
+	n := int(getParam(params, keyLength, 20))
 	closes := closeSeries(bars)
 	vals := sma(closes, n)
 	return &Result{
@@ -30,13 +30,13 @@ var DefEMA = Def{
 	Name: "Exponential Moving Average",
 	Kind: KindOverlay,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 20, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 20, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 20},
+	Defaults: map[string]float64{keyLength: 20},
 }
 
 func computeEMA(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 20))
+	n := int(getParam(params, keyLength, 20))
 	closes := closeSeries(bars)
 	vals := ema(closes, n)
 	return &Result{

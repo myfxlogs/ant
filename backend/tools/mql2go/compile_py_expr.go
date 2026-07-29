@@ -15,7 +15,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 		return nil
 	}
 	switch n.Type() {
-	case "identifier":
+	case nodeIdentifier:
 		return &interp.Expr{Kind: interp.ExprVar, Name: c.text(n)}
 
 	case "integer":
@@ -47,7 +47,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 		}
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(int32(v))}
 
-	case "float":
+	case nodeFloat:
 		txt := c.text(n)
 		txt = strings.ReplaceAll(txt, "_", "")
 		d, err := decimal.NewFromString(txt)
@@ -56,7 +56,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 		}
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(d)}
 
-	case "string":
+	case nodeString:
 		s := unquotePython(c.text(n))
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal(s)}
 
@@ -69,7 +69,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "none":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.NoneVal()}
 
-	case "call":
+	case nodeCall:
 		return c.compilePyCall(n)
 
 	case "binary_operator":
@@ -95,7 +95,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "boolean_operator":
 		return c.compilePyBoolean(n)
 
-	case "parenthesized_expression":
+	case nodeParenExpr:
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
 			if e := c.compileExpr(child); e != nil {
@@ -110,7 +110,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "augmented_assignment":
 		return c.compilePyAugmentedAssign(n)
 
-	case "attribute":
+	case nodeAttribute:
 		return c.compilePyAttribute(n)
 
 	case "subscript":
@@ -123,7 +123,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 		var sb strings.Builder
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
-			if child.Type() == "string" {
+			if child.Type() == nodeString {
 				sb.WriteString(unquotePython(c.text(child)))
 			}
 		}
@@ -137,7 +137,7 @@ func (c *pyCompiler) compilePyCall(n *sitter.Node) *interp.Expr {
 	if fnNode == nil {
 		return nil
 	}
-	if fnNode.Type() == "attribute" {
+	if fnNode.Type() == nodeAttribute {
 		return c.compilePyMethodCall(n, fnNode)
 	}
 	name := c.text(fnNode)
@@ -148,7 +148,7 @@ func (c *pyCompiler) compilePyCall(n *sitter.Node) *interp.Expr {
 			return &args[0]
 		}
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)}
-	case "float":
+	case nodeFloat:
 		if len(args) > 0 {
 			return &args[0]
 		}
@@ -245,11 +245,11 @@ func (c *pyCompiler) compilePyMethodCall(callNode, attrNode *sitter.Node) *inter
 // extractInnerCallArgs extracts the arguments from the inner call of a chained expression.
 // For ctx.bars_for_symbol("EURUSD").close(0), it returns ["EURUSD"] from the inner call.
 func (c *pyCompiler) extractInnerCallArgs(attrNode *sitter.Node) []interp.Expr {
-	if attrNode == nil || attrNode.Type() != "attribute" {
+	if attrNode == nil || attrNode.Type() != nodeAttribute {
 		return nil
 	}
 	obj := attrNode.NamedChild(0)
-	if obj == nil || obj.Type() != "call" {
+	if obj == nil || obj.Type() != nodeCall {
 		return nil
 	}
 	return c.compileArgs(obj)
@@ -261,10 +261,10 @@ func (c *pyCompiler) extractAttrChain(n *sitter.Node) string {
 	if n == nil {
 		return ""
 	}
-	if n.Type() == "identifier" {
+	if n.Type() == nodeIdentifier {
 		return c.text(n)
 	}
-	if n.Type() == "attribute" {
+	if n.Type() == nodeAttribute {
 		obj := n.NamedChild(0)
 		field := n.NamedChild(1)
 		if obj == nil || field == nil {
@@ -277,7 +277,7 @@ func (c *pyCompiler) extractAttrChain(n *sitter.Node) string {
 		}
 		return fieldName
 	}
-	if n.Type() == "call" {
+	if n.Type() == nodeCall {
 		// Strip arguments — just return the chain of the function
 		fn := n.NamedChild(0)
 		if fn == nil {

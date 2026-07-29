@@ -36,11 +36,11 @@ func (t *writeStrategyTool) Schema() systemai.ToolDefinition {
 			Name: "write_strategy",
 			Description: "提交完整的 Python 策略代码。用于生成新策略或重写现有策略。code 参数必填。内部自动编译→真实回测。不要在聊天文本中粘贴代码——代码只能通过此工具提交。",
 			Parameters: map[string]any{
-				"type":     "object",
+				schemaKeyType:     schemaTypeObject,
 				"required": []string{"code"},
-				"properties": map[string]any{
+				schemaKeyProperties: map[string]any{
 					"code": map[string]any{
-						"type":        "string",
+						schemaKeyType:        schemaTypeString,
 						"description": "完整的 Python 策略代码（class MyStrategy, on_bar 方法）",
 					},
 				},

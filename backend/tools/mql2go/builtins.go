@@ -173,7 +173,7 @@ var builtinRegistry = []builtinEntry{
 	// MQL5 position functions
 	{"PositionsTotal", nil},
 	{"PositionGetTicket", nil},
-	{"PositionGetDouble", nil},
+	{fnPositionGetDouble, nil},
 	{"PositionGetInteger", nil},
 	{"PositionGetString", nil},
 	{"PositionGetSymbol", nil},

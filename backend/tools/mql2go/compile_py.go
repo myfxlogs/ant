@@ -222,13 +222,13 @@ func (c *pyCompiler) collectParams(n *sitter.Node) []interp.ParamDecl {
 	var result []interp.ParamDecl
 	for i := 0; i < int(params.NamedChildCount()); i++ {
 		p := params.NamedChild(i)
-		if p.Type() != "identifier" && p.Type() != "default_parameter" && p.Type() != "typed_parameter" &&
+		if p.Type() != nodeIdentifier && p.Type() != "default_parameter" && p.Type() != "typed_parameter" &&
 			p.Type() != "typed_default_parameter" {
 			continue
 		}
 		pd := interp.ParamDecl{}
 		switch p.Type() {
-		case "identifier":
+		case nodeIdentifier:
 			pd.Name = c.text(p)
 		case "default_parameter":
 			pd.Name = c.text(p.NamedChild(0)) // identifier
@@ -256,7 +256,7 @@ func (c *pyCompiler) collectParams(n *sitter.Node) []interp.ParamDecl {
 func (c *pyCompiler) findParamName(p *sitter.Node) string {
 	for i := 0; i < int(p.NamedChildCount()); i++ {
 		child := p.NamedChild(i)
-		if child.Type() == "identifier" {
+		if child.Type() == nodeIdentifier {
 			return c.text(child)
 		}
 	}

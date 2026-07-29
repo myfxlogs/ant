@@ -29,8 +29,8 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 // buildTradeContext creates a TradeContext proto from a trade event.
 func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg LiveStrategyConfig, evt *mthub.BrokerTradeEvent) *antv1.TradeContext {
 	side := "buy"
-	if evt.Side == "sell" {
-		side = "sell"
+	if evt.Side == sideSell {
+		side = sideSell
 	}
 	evtType := "fill"
 	switch evt.EventType {
@@ -79,8 +79,8 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 	pos := make([]*antv1.LivePosition, 0, len(snap.Positions))
 	for _, p := range snap.Positions {
 		side := "buy"
-		if p.Type == "sell" {
-			side = "sell"
+		if p.Type == sideSell {
+			side = sideSell
 		}
 		pos = append(pos, &antv1.LivePosition{
 			Ticket:    p.Ticket,

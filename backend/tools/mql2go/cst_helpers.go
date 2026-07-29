@@ -38,14 +38,14 @@ func findNamedChild(n *sitter.Node, kinds ...string) *sitter.Node {
 }
 
 func callFuncName(source string, n *sitter.Node) string {
-	if id := childByType(n, "identifier"); id != nil {
+	if id := childByType(n, nodeIdentifier); id != nil {
 		return nodeText(source, id)
 	}
 	if fe := childByType(n, "field_expression"); fe != nil {
 		if id := childByType(fe, "field_identifier"); id != nil {
 			return nodeText(source, id)
 		}
-		if id := childByType(fe, "identifier"); id != nil {
+		if id := childByType(fe, nodeIdentifier); id != nil {
 			return nodeText(source, id)
 		}
 	}
@@ -63,7 +63,7 @@ func callFuncName(source string, n *sitter.Node) string {
 func funcName(source string, n *sitter.Node) string {
 	decl := childByType(n, "function_declarator")
 	if decl != nil {
-		id := childByType(decl, "identifier")
+		id := childByType(decl, nodeIdentifier)
 		if id == nil {
 			id = childByType(decl, "field_identifier")
 		}
@@ -72,7 +72,7 @@ func funcName(source string, n *sitter.Node) string {
 		}
 		return nodeText(source, id)
 	}
-	id := childByType(n, "identifier")
+	id := childByType(n, nodeIdentifier)
 	if id == nil {
 		id = childByType(n, "field_identifier")
 	}
@@ -85,7 +85,7 @@ func funcName(source string, n *sitter.Node) string {
 func funcBody(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.ChildCount()); i++ {
 		c := n.Child(i)
-		if c.Type() == "compound_statement" {
+		if c.Type() == nodeCompoundStatement {
 			return c
 		}
 	}
@@ -107,7 +107,7 @@ func getNamedChildren(n *sitter.Node) []*sitter.Node {
 
 func isMQLPrimitiveType(t string) bool {
 	switch t {
-	case "int", "long", "uint", "ulong", "double", "float", "string", "bool", "char", "short", "uchar", "ushort":
+	case "int", "long", "uint", "ulong", "double", nodeFloat, nodeString, "bool", "char", "short", "uchar", "ushort":
 		return true
 	}
 	return false

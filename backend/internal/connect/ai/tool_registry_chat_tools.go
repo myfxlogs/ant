@@ -19,13 +19,13 @@ func NewReadBacktestLogTool(repo *repository.BacktestRunRepository) *ReadBacktes
 func (t *ReadBacktestLogTool) Name() string { return "read_backtest_log" }
 func (t *ReadBacktestLogTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "read_backtest_log",
 			Description: "读取最近一次回测的状态和错误信息。用于回测失败后查看具体原因。无需参数。",
 			Parameters: map[string]any{
-				"type":       "object",
-				"properties": map[string]any{},
+				schemaKeyType:       schemaTypeObject,
+				schemaKeyProperties: map[string]any{},
 			},
 		},
 	}
@@ -53,13 +53,13 @@ type compilePythonChatTool struct{}
 func (t *compilePythonChatTool) Name() string { return "compile_python" }
 func (t *compilePythonChatTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "compile_python",
 			Description: "编译当前的 Python 策略代码。代码必须是符合 Python 子集规范的完整策略。编译成功返回覆盖度评分；编译失败返回具体错误信息。",
 			Parameters: map[string]any{
-				"type":       "object",
-				"properties": map[string]any{},
+				schemaKeyType:       schemaTypeObject,
+				schemaKeyProperties: map[string]any{},
 			},
 		},
 	}

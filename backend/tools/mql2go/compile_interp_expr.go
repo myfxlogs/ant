@@ -48,7 +48,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "false":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}
 
-	case "identifier":
+	case nodeIdentifier:
 		name := c.text(n)
 		// MQL constants like PRICE_CLOSE, OP_BUY may parse as identifier
 		if interp.IsMQLConstant(name) {
@@ -84,7 +84,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "conditional_expression":
 		return c.compileTernary(n)
 
-	case "parenthesized_expression":
+	case nodeParenExpr:
 		if n.NamedChildCount() > 0 {
 			return c.compileExpr(n.NamedChild(0))
 		}
@@ -213,7 +213,7 @@ func (c *compiler) compileSubscript(n *sitter.Node) *interp.Expr {
 	var idx *sitter.Node
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "identifier" && name == "" {
+		if child.Type() == nodeIdentifier && name == "" {
 			name = c.text(child)
 		} else if child.Type() != "[" && child.Type() != "]" {
 			idx = child
@@ -334,7 +334,7 @@ func (c *compiler) compileField(n *sitter.Node) *interp.Expr {
 		switch child.Type() {
 		case "field_identifier":
 			fieldName = c.text(child)
-		case "identifier":
+		case nodeIdentifier:
 			if obj == nil {
 				obj = child
 			}
@@ -391,12 +391,12 @@ func (c *compiler) text(n *sitter.Node) string {
 func (c *compiler) findIdent(n *sitter.Node) string {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "identifier" || child.Type() == "field_identifier" {
+		if child.Type() == nodeIdentifier || child.Type() == "field_identifier" {
 			return c.text(child)
 		}
 	}
 	// Direct identifier
-	if n.Type() == "identifier" || n.Type() == "field_identifier" {
+	if n.Type() == nodeIdentifier || n.Type() == "field_identifier" {
 		return c.text(n)
 	}
 	return ""
@@ -459,10 +459,10 @@ func (c *compiler) findExprChild(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "number_literal", "string_literal", "identifier",
+		case "number_literal", "string_literal", nodeIdentifier,
 			"call_expression", "binary_expression", "unary_expression",
 			"subscript_expression", "conditional_expression",
-			"parenthesized_expression", "field_expression",
+			nodeParenExpr, "field_expression",
 			"assignment_expression", "true", "false":
 			return child
 		}
@@ -477,10 +477,10 @@ func (c *compiler) findInitValue(n *sitter.Node, declName string) *sitter.Node {
 		case "number_literal", "string_literal",
 			"call_expression", "binary_expression", "unary_expression",
 			"subscript_expression", "conditional_expression",
-			"parenthesized_expression", "field_expression",
+			nodeParenExpr, "field_expression",
 			"assignment_expression", "true", "false":
 			return child
-		case "identifier":
+		case nodeIdentifier:
 			if c.text(child) != declName {
 				return child
 			}

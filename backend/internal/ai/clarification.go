@@ -136,25 +136,25 @@ func (a *IntentAnalyzer) AnalyzeForFeedback(ctx context.Context, userID uuid.UUI
 // ToParamMap converts extracted intent into a parameter map for prompt building.
 func (r *IntentResult) ToParamMap() map[string]string {
 	pm := make(map[string]string)
-	if r.StrategyFamily != "" && r.StrategyFamily != "unknown" {
+	if r.StrategyFamily != "" && r.StrategyFamily != unknownStr {
 		pm["strategy_family"] = r.StrategyFamily
 	}
-	if r.RiskLevel != "" && r.RiskLevel != "unknown" {
+	if r.RiskLevel != "" && r.RiskLevel != unknownStr {
 		pm["risk_level"] = r.RiskLevel
 	}
 	if r.MaxDrawdown != "" {
 		pm["max_drawdown"] = r.MaxDrawdown
 	}
-	if r.TradeDirection != "" && r.TradeDirection != "unknown" {
+	if r.TradeDirection != "" && r.TradeDirection != unknownStr {
 		pm["trade_direction"] = r.TradeDirection
 	}
-	if r.HoldingPeriod != "" && r.HoldingPeriod != "unknown" {
+	if r.HoldingPeriod != "" && r.HoldingPeriod != unknownStr {
 		pm["holding_period"] = r.HoldingPeriod
 	}
-	if r.StopLoss != "" && r.StopLoss != "unknown" {
+	if r.StopLoss != "" && r.StopLoss != unknownStr {
 		pm["stop_loss"] = stringToStopLossPct(r.StopLoss)
 	}
-	if r.TakeProfit != "" && r.TakeProfit != "unknown" {
+	if r.TakeProfit != "" && r.TakeProfit != unknownStr {
 		pm["take_profit"] = stringToTakeProfitPct(r.TakeProfit)
 	}
 	return pm

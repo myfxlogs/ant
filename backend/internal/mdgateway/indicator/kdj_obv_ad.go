@@ -10,9 +10,9 @@ var DefKDJ = Def{
 	Name: "Stochastic (KDJ)",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "period", Label: "Period", Type: "int", Default: 9, Min: 1, Max: 500, Step: 1},
-		{Key: "k", Label: "K Smooth", Type: "int", Default: 3, Min: 1, Max: 100, Step: 1},
-		{Key: "d", Label: "D Smooth", Type: "int", Default: 3, Min: 1, Max: 100, Step: 1},
+		{Key: "period", Label: "Period", Type: typeInt, Default: 9, Min: 1, Max: 500, Step: 1},
+		{Key: "k", Label: "K Smooth", Type: typeInt, Default: 3, Min: 1, Max: 100, Step: 1},
+		{Key: "d", Label: "D Smooth", Type: typeInt, Default: 3, Min: 1, Max: 100, Step: 1},
 	},
 	Defaults: map[string]float64{"period": 9, "k": 3, "d": 3},
 }

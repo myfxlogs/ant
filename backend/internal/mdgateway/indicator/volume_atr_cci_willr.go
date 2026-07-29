@@ -26,13 +26,13 @@ var DefATR = Def{
 	Name: "Average True Range",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 14, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 14, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 14},
+	Defaults: map[string]float64{keyLength: 14},
 }
 
 func computeATR(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 14))
+	n := int(getParam(params, keyLength, 14))
 	ohlcv := toOHLCV(bars)
 	tr := trueRange(ohlcv)
 	atrVals := ema(tr, n) // Wilder's ATR uses EMA-like smoothing
@@ -44,13 +44,13 @@ var DefCCI = Def{
 	Name: "Commodity Channel Index",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 20, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 20, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 20},
+	Defaults: map[string]float64{keyLength: 20},
 }
 
 func computeCCI(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 20))
+	n := int(getParam(params, keyLength, 20))
 	ohlcv := toOHLCV(bars)
 	cci := make([]decimal.Decimal, len(bars))
 	if len(bars) <= n {
@@ -82,13 +82,13 @@ var DefWilliamsR = Def{
 	Name: "Williams %R",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 14, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 14, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 14},
+	Defaults: map[string]float64{keyLength: 14},
 }
 
 func computeWilliamsR(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 14))
+	n := int(getParam(params, keyLength, 14))
 	ohlcv := toOHLCV(bars)
 	wr := make([]decimal.Decimal, len(bars))
 	if len(bars) <= n {

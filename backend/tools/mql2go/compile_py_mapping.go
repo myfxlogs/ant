@@ -38,207 +38,142 @@ func unquotePython(s string) string {
 	return s
 }
 
+// pyMethodMap maps "domain.method" → MQL builtin name.
+var pyMethodMap = map[string]string{
+	// broker.* → CTrade/Order builtins
+	"broker.buy": "CTrade.Buy", "broker.sell": "CTrade.Sell",
+	"broker.buy_limit": "CTrade.BuyLimit", "broker.sell_limit": "CTrade.SellLimit",
+	"broker.buy_stop": "CTrade.BuyStop", "broker.sell_stop": "CTrade.SellStop",
+	"broker.close": "CTrade.PositionClose", "broker.close_partial": "CTrade.PositionClosePartial",
+	"broker.close_by": "CTrade.PositionCloseBy", "broker.modify": "CTrade.PositionModify",
+	"broker.delete": "CTrade.OrderDelete",
+	"broker.order_send": "OrderSend", "broker.order_close": "OrderClose",
+	"broker.order_modify": "OrderModify", "broker.order_delete": "OrderDelete",
+	// positions.*
+	"positions.count": "PositionsTotal", "positions.total": "PositionsTotal",
+	// ctx.* direct
+	"ctx.ask": "Ask", "ctx.bid": "Bid", "ctx.symbol": "Symbol",
+	"ctx.point": "Point", "ctx.digits": "Digits", "ctx.spread": "Spread", "ctx.period": "Period",
+	// account.*
+	"account.balance": "AccountBalance", "account.equity": "AccountEquity",
+	"account.margin": "AccountMargin", "account.free_margin": "AccountFreeMargin",
+	"account.profit": "AccountProfit", "account.leverage": "AccountLeverage",
+	// symbol_info.* / market.*
+	"symbol_info.bid": "Bid", "symbol_info.ask": "Ask",
+	"symbol_info.point": "Point", "symbol_info.digits": "Digits",
+	"symbol_info.spread": "Spread", "symbol_info.symbol": "Symbol",
+	"market.bid": "Bid", "market.ask": "Ask",
+	"market.point": "Point", "market.digits": "Digits",
+	"market.spread": "Spread", "market.symbol": "Symbol",
+	"ctx.symbol_info.bid": "Bid", "ctx.symbol_info.ask": "Ask",
+	"ctx.symbol_info.point": "Point", "ctx.symbol_info.digits": "Digits",
+	"ctx.symbol_info.spread": "Spread", "ctx.symbol_info.symbol": "Symbol",
+	"ctx.market.bid": "Bid", "ctx.market.ask": "Ask",
+	"ctx.market.point": "Point", "ctx.market.digits": "Digits",
+	"ctx.market.spread": "Spread", "ctx.market.symbol": "Symbol",
+}
+
+// pyBarsMethods maps bar-access method names → builtin names (shared by bars/bars_tf/bars_for_symbol).
+var pyBarsMethods = map[string]string{
+	"close": "Close", "open": "Open", "high": "High",
+	"low": "Low", "volume": "Volume", "time": "Time",
+}
+
+// pyBarsTfMethods maps bar-access method names → cross-timeframe builtins.
+var pyBarsTfMethods = map[string]string{
+	"close": "iClose", "open": "iOpen", "high": "iHigh",
+	"low": "iLow", "volume": "iVolume", "time": "iTime",
+}
+
+// pyIndicatorMethods maps indicator method names → MQL indicator builtins.
+var pyIndicatorMethods = map[string]string{
+	"ima": "iMA", "irsi": "iRSI", "iatr": "iATR", "ibands": "iBands",
+	"imacd": "iMACD", "istochastic": "iStochastic", "icci": "iCCI",
+	"iadx": "iADX", "imomentum": "iMomentum", "iwpr": "iWPR",
+	"imfi": "iMFI", "iobv": "iOBV", "isar": "iSAR", "istddev": "iStdDev",
+}
+
+// pyLegacyTradeMethods maps legacy snake_case trade function names.
+var pyLegacyTradeMethods = map[string]string{
+	"order_send": "OrderSend", "order_close": "OrderClose",
+	"order_modify": "OrderModify", "order_delete": "OrderDelete",
+	"position_close": "PositionClose", "position_modify": "PositionModify",
+	"positions_total": "PositionsTotal", "orders_total": "OrdersTotal",
+}
+
 func mapPythonMethod(method, fullPath string) string {
-	// ── ctx.broker.* → CTrade method builtins ──
+	// Check domain-specific maps based on path prefix
+	if v, ok := pyMethodMap[fullPath+"."+method]; ok {
+		return v
+	}
+	// broker.* also matches "ctx.broker."
 	if strings.Contains(fullPath, "broker.") {
-		switch method {
-		case "buy":
-			return "CTrade.Buy"
-		case "sell":
-			return "CTrade.Sell"
-		case "buy_limit":
-			return "CTrade.BuyLimit"
-		case "sell_limit":
-			return "CTrade.SellLimit"
-		case "buy_stop":
-			return "CTrade.BuyStop"
-		case "sell_stop":
-			return "CTrade.SellStop"
-		case "close":
-			return "CTrade.PositionClose"
-		case "close_partial":
-			return "CTrade.PositionClosePartial"
-		case "close_by":
-			return "CTrade.PositionCloseBy"
-		case "modify":
-			return "CTrade.PositionModify"
-		case "delete":
-			return "CTrade.OrderDelete"
-		case "order_send":
-			return "OrderSend"
-		case "order_close":
-			return "OrderClose"
-		case "order_modify":
-			return "OrderModify"
-		case "order_delete":
-			return "OrderDelete"
+		if v, ok := pyMethodMap["broker."+method]; ok {
+			return v
 		}
 	}
-	// ── ctx.positions.* → position builtins ──
+	// positions.*
 	if strings.Contains(fullPath, "positions.") {
-		switch method {
-		case "count":
-			return "PositionsTotal"
-		case "total":
-			return "PositionsTotal"
+		if v, ok := pyMethodMap["positions."+method]; ok {
+			return v
 		}
 	}
-	// ── Direct ctx.* method calls ──
+	// ctx.* direct method calls
 	if strings.HasPrefix(fullPath, "ctx.") && strings.Count(fullPath, ".") == 1 {
-		switch method {
-		case "ask":
-			return "Ask"
-		case "bid":
-			return "Bid"
-		case "symbol":
-			return "Symbol"
-		case "point":
-			return "Point"
-		case "digits":
-			return "Digits"
-		case "spread":
-			return "Spread"
-		case "period":
-			return "Period"
+		if v, ok := pyMethodMap["ctx."+method]; ok {
+			return v
 		}
 	}
-	// ── Legacy snake_case trade function names ──
-	switch method {
-	case "order_send":
-		return "OrderSend"
-	case "order_close":
-		return "OrderClose"
-	case "order_modify":
-		return "OrderModify"
-	case "order_delete":
-		return "OrderDelete"
-	case "position_close":
-		return "PositionClose"
-	case "position_modify":
-		return "PositionModify"
-	case "positions_total":
-		return "PositionsTotal"
-	case "orders_total":
-		return "OrdersTotal"
+	// Legacy snake_case trade functions
+	if v, ok := pyLegacyTradeMethods[method]; ok {
+		return v
 	}
+	// indicators.*
 	if strings.Contains(fullPath, "indicators.") {
-		switch method {
-		case "ima":
-			return "iMA"
-		case "irsi":
-			return "iRSI"
-		case "iatr":
-			return "iATR"
-		case "ibands":
-			return "iBands"
-		case "imacd":
-			return "iMACD"
-		case "istochastic":
-			return "iStochastic"
-		case "icci":
-			return "iCCI"
-		case "iadx":
-			return "iADX"
-		case "imomentum":
-			return "iMomentum"
-		case "iwpr":
-			return "iWPR"
-		case "imfi":
-			return "iMFI"
-		case "iobv":
-			return "iOBV"
-		case "isar":
-			return "iSAR"
-		case "istddev":
-			return "iStdDev"
+		if v, ok := pyIndicatorMethods[method]; ok {
+			return v
 		}
 		return lookupBuiltinCaseInsensitive(method)
 	}
+	// bars.* / bars().*
 	if strings.Contains(fullPath, "bars.") || strings.Contains(fullPath, "bars()") {
-		switch method {
-		case "close":
-			return "Close"
-		case "open":
-			return "Open"
-		case "high":
-			return "High"
-		case "low":
-			return "Low"
-		case "volume":
-			return "Volume"
-		case "time":
-			return "Time"
+		if v, ok := pyBarsMethods[method]; ok {
+			return v
 		}
 	}
-	// Higher timeframe bar access: ctx.bars_tf("H4").close(0)
-	// Maps to iClose("", 240, shift) — symbol="" means primary symbol, 240=H4.
-	// The compiler injects symbol="" + converts the TF string to MQL period int.
+	// bars_tf.* → cross-timeframe
 	if strings.Contains(fullPath, "bars_tf.") {
-		switch method {
-		case "close":
-			return "iClose"
-		case "open":
-			return "iOpen"
-		case "high":
-			return "iHigh"
-		case "low":
-			return "iLow"
-		case "volume":
-			return "iVolume"
-		case "time":
-			return "iTime"
+		if v, ok := pyBarsTfMethods[method]; ok {
+			return v
 		}
 	}
-	// Multi-symbol bar access: ctx.bars_for_symbol("EURUSD").close(0)
-	// Maps to iClose(symbol, 0, shift) — timeframe=0 means PERIOD_CURRENT.
-	// The compiler prepends the inner call's symbol arg + injects timeframe=0.
+	// bars_for_symbol.* → multi-symbol (same builtins as bars_tf)
 	if strings.Contains(fullPath, "bars_for_symbol.") {
-		switch method {
-		case "close":
-			return "iClose"
-		case "open":
-			return "iOpen"
-		case "high":
-			return "iHigh"
-		case "low":
-			return "iLow"
-		case "volume":
-			return "iVolume"
-		case "time":
-			return "iTime"
+		if v, ok := pyBarsTfMethods[method]; ok {
+			return v
 		}
 	}
+	// account.*
 	if strings.Contains(fullPath, "account.") {
-		switch method {
-		case "balance":
-			return "AccountBalance"
-		case "equity":
-			return "AccountEquity"
-		case "margin":
-			return "AccountMargin"
-		case "free_margin":
-			return "AccountFreeMargin"
-		case "profit":
-			return "AccountProfit"
-		case "leverage":
-			return "AccountLeverage"
+		if v, ok := pyMethodMap["account."+method]; ok {
+			return v
 		}
 	}
+	// symbol_info.* / market.* / ctx.symbol_info.* / ctx.market.*
 	if strings.Contains(fullPath, "symbol_info.") || strings.Contains(fullPath, "market.") ||
 		strings.Contains(fullPath, "ctx.symbol_info.") || strings.Contains(fullPath, "ctx.market.") {
-		switch method {
-		case "bid":
-			return "Bid"
-		case "ask":
-			return "Ask"
-		case "point":
-			return "Point"
-		case "digits":
-			return "Digits"
-		case "spread":
-			return "Spread"
-		case "symbol":
-			return "Symbol"
+		domain := extractDomain(fullPath)
+		if v, ok := pyMethodMap[domain+"."+method]; ok {
+			return v
+		}
+	}
+	return ""
+}
+
+func extractDomain(fullPath string) string {
+	for _, prefix := range []string{"ctx.symbol_info.", "ctx.market.", "symbol_info.", "market."} {
+		if strings.HasPrefix(fullPath, prefix) {
+			return strings.TrimSuffix(prefix, ".")
 		}
 	}
 	return ""
@@ -304,11 +239,11 @@ func pythonMethodParamOrder(fullPath string) []string {
 		switch {
 		case strings.HasSuffix(fullPath, "buy") || strings.HasSuffix(fullPath, "sell"):
 			// CTrade.Buy/Sell(volume, symbol, price, sl, tp, comment)
-			return []string{"volume", "symbol", "price", "sl", "tp", "comment"}
+			return []string{nodeVolume, "symbol", "price", "sl", "tp", "comment"}
 		case strings.HasSuffix(fullPath, "buy_limit") || strings.HasSuffix(fullPath, "sell_limit") ||
 			strings.HasSuffix(fullPath, "buy_stop") || strings.HasSuffix(fullPath, "sell_stop"):
 			// CTrade.BuyLimit/SellLimit/BuyStop/SellStop(volume, price, sl, tp, comment)
-			return []string{"volume", "price", "sl", "tp", "comment"}
+			return []string{nodeVolume, "price", "sl", "tp", "comment"}
 		case strings.HasSuffix(fullPath, "modify"):
 			// CTrade.PositionModify(ticket, sl, tp)
 			return []string{"ticket", "sl", "tp"}
@@ -317,7 +252,7 @@ func pythonMethodParamOrder(fullPath string) []string {
 			return []string{"ticket"}
 		case strings.HasSuffix(fullPath, "close_partial"):
 			// CTrade.PositionClosePartial(ticket, volume)
-			return []string{"ticket", "volume"}
+			return []string{"ticket", nodeVolume}
 		case strings.HasSuffix(fullPath, "close_by"):
 			// CTrade.PositionCloseBy(ticket, by_ticket)
 			return []string{"ticket", "by_ticket"}
@@ -331,7 +266,7 @@ func pythonMethodParamOrder(fullPath string) []string {
 
 // pythonParamAliases maps alternative keyword names to canonical parameter names.
 var pythonParamAliases = map[string]string{
-	"lot": "volume",
+	"lot": nodeVolume,
 }
 
 // resolveParamName converts a keyword argument name to its canonical name.

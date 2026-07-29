@@ -44,14 +44,14 @@ func (c *pyCompiler) compilePyAssignment(n *sitter.Node) *interp.Expr {
 			return subExpr
 		}
 	}
-	if lhs.Type() == "attribute" {
+	if lhs.Type() == nodeAttribute {
 		// Check if this is a position field write (pos.sl = x) — not allowed
 		objNode := lhs.NamedChild(0)
-		if objNode != nil && objNode.Type() == "identifier" {
+		if objNode != nil && objNode.Type() == nodeIdentifier {
 			objName := c.text(objNode)
 			if c.posLoopVars != nil && c.posLoopVars[objName] {
 				fieldName := ""
-				if fieldNode := lhs.NamedChild(1); fieldNode != nil && fieldNode.Type() == "identifier" {
+				if fieldNode := lhs.NamedChild(1); fieldNode != nil && fieldNode.Type() == nodeIdentifier {
 					fieldName = c.text(fieldNode)
 				}
 				c.errorf(lhs, "cannot assign to position field '%s.%s' — use ctx.broker.modify() instead",
@@ -138,13 +138,13 @@ func (c *pyCompiler) compilePyAugmentedAssign(n *sitter.Node) *interp.Expr {
 			Args: []interp.Expr{*c.mustPyExpr(rhs)},
 		}
 	}
-	if lhs.Type() == "attribute" {
+	if lhs.Type() == nodeAttribute {
 		objNode := lhs.NamedChild(0)
-		if objNode != nil && objNode.Type() == "identifier" {
+		if objNode != nil && objNode.Type() == nodeIdentifier {
 			objName := c.text(objNode)
 			if c.posLoopVars != nil && c.posLoopVars[objName] {
 				fieldName := ""
-				if fieldNode := lhs.NamedChild(1); fieldNode != nil && fieldNode.Type() == "identifier" {
+				if fieldNode := lhs.NamedChild(1); fieldNode != nil && fieldNode.Type() == nodeIdentifier {
 					fieldName = c.text(fieldNode)
 				}
 				c.errorf(lhs, "cannot assign to position field '%s.%s' — use ctx.broker.modify() instead",
@@ -165,7 +165,7 @@ func (c *pyCompiler) compilePyAttribute(n *sitter.Node) *interp.Expr {
 	var fieldName string
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "identifier" {
+		if child.Type() == nodeIdentifier {
 			if obj == nil {
 				obj = child
 			} else {
@@ -200,13 +200,13 @@ func (c *pyCompiler) compilePySubscript(n *sitter.Node) *interp.Expr {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "identifier", "attribute", "call":
+		case nodeIdentifier, nodeAttribute, nodeCall:
 			if obj == nil {
 				obj = child
 			} else {
 				idx = child
 			}
-		case "integer", "binary_operator", "parenthesized_expression":
+		case "integer", "binary_operator", nodeParenExpr:
 			idx = child
 		}
 	}
@@ -221,7 +221,7 @@ func (c *pyCompiler) compilePySubscript(n *sitter.Node) *interp.Expr {
 		}
 	}
 	if objName == "" {
-		if obj.Type() == "attribute" {
+		if obj.Type() == nodeAttribute {
 			return &interp.Expr{
 				Kind:  interp.ExprSubscript,
 				Name:  c.text(obj),
@@ -241,17 +241,17 @@ func (c *pyCompiler) findIdentPy(n *sitter.Node) string {
 	if n == nil {
 		return ""
 	}
-	if n.Type() == "identifier" {
+	if n.Type() == nodeIdentifier {
 		return c.text(n)
 	}
 	// Don't recurse into attribute nodes — their first identifier is the object,
 	// not the variable being assigned to. e.g. pos.sl should NOT return "pos".
-	if n.Type() == "attribute" {
+	if n.Type() == nodeAttribute {
 		return ""
 	}
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "identifier" {
+		if child.Type() == nodeIdentifier {
 			return c.text(child)
 		}
 	}
@@ -269,15 +269,15 @@ func (c *pyCompiler) mustPyExpr(n *sitter.Node) *interp.Expr {
 // selfFieldName returns the field name if n is a `self.field` attribute, else "".
 // Also records the field in selfVars for global allocation.
 func (c *pyCompiler) selfFieldName(n *sitter.Node) string {
-	if n == nil || n.Type() != "attribute" {
+	if n == nil || n.Type() != nodeAttribute {
 		return ""
 	}
 	obj := n.NamedChild(0)
-	if obj == nil || obj.Type() != "identifier" || c.text(obj) != "self" {
+	if obj == nil || obj.Type() != nodeIdentifier || c.text(obj) != "self" {
 		return ""
 	}
 	field := n.NamedChild(1)
-	if field == nil || field.Type() != "identifier" {
+	if field == nil || field.Type() != nodeIdentifier {
 		return ""
 	}
 	name := c.text(field)

@@ -13,15 +13,15 @@ type rememberTool struct{ execFn func(ctx context.Context, sql string, args ...a
 func (t *rememberTool) Name() string { return "remember" }
 func (t *rememberTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "remember",
 			Description: "存储一条用户偏好或经验到记忆中。后续对话中可以通过 recall 召回。",
 			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"key":   map[string]any{"type": "string", "description": "记忆的键名，例如 risk_preference, favorite_indicators"},
-					"value": map[string]any{"type": "string", "description": "记忆的内容"},
+				schemaKeyType: schemaTypeObject,
+				schemaKeyProperties: map[string]any{
+					"key":   map[string]any{schemaKeyType: "string", "description": "记忆的键名，例如 risk_preference, favorite_indicators"},
+					"value": map[string]any{schemaKeyType: "string", "description": "记忆的内容"},
 				},
 				"required": []string{"key", "value"},
 			},
@@ -48,14 +48,14 @@ type recallTool struct{ queryFn func(ctx context.Context, sql string, args ...an
 func (t *recallTool) Name() string { return "recall" }
 func (t *recallTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "recall",
 			Description: "从记忆中召回之前存储的用户偏好或经验。",
 			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"key": map[string]any{"type": "string", "description": "要召回的记忆键名"},
+				schemaKeyType: schemaTypeObject,
+				schemaKeyProperties: map[string]any{
+					"key": map[string]any{schemaKeyType: "string", "description": "要召回的记忆键名"},
 				},
 				"required": []string{"key"},
 			},
@@ -79,13 +79,13 @@ type listStrategiesTool struct{ queryFn func(ctx context.Context, sql string, ar
 func (t *listStrategiesTool) Name() string { return "list_strategies" }
 func (t *listStrategiesTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "list_strategies",
 			Description: "列出用户保存的所有策略模板及其回测状态。",
 			Parameters: map[string]any{
-				"type":       "object",
-				"properties": map[string]any{},
+				schemaKeyType:       schemaTypeObject,
+				schemaKeyProperties: map[string]any{},
 			},
 		},
 	}
@@ -109,14 +109,14 @@ type saveStrategyTool struct{ execFn func(ctx context.Context, sql string, args 
 func (t *saveStrategyTool) Name() string { return "save_strategy" }
 func (t *saveStrategyTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "save_strategy",
 			Description: "将当前的策略代码保存到模板库。需要提供策略名称。",
 			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"name": map[string]any{"type": "string", "description": "策略名称，用于在模板库中标识"},
+				schemaKeyType: schemaTypeObject,
+				schemaKeyProperties: map[string]any{
+					"name": map[string]any{schemaKeyType: "string", "description": "策略名称，用于在模板库中标识"},
 				},
 				"required": []string{"name"},
 			},
@@ -145,14 +145,14 @@ type loadStrategyTool struct{ queryFn func(ctx context.Context, sql string, args
 func (t *loadStrategyTool) Name() string { return "load_strategy" }
 func (t *loadStrategyTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "load_strategy",
 			Description: "从模板库中加载指定名称的策略代码。",
 			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"name": map[string]any{"type": "string", "description": "要加载的策略名称"},
+				schemaKeyType: schemaTypeObject,
+				schemaKeyProperties: map[string]any{
+					"name": map[string]any{schemaKeyType: "string", "description": "要加载的策略名称"},
 				},
 				"required": []string{"name"},
 			},

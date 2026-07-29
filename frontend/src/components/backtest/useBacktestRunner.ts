@@ -1,18 +1,14 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { message, notification } from 'antd';
+import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
-  BACKTEST_FAILED_KEY, ENTER_CODE_AND_SYMBOL_KEY,
+  ENTER_CODE_AND_SYMBOL_KEY,
   DEFAULTS_SAVED_KEY, DEFAULTS_LOADED_KEY, DEFAULTS_RESET_KEY,
   SETTINGS_SAVE_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
-import { BACKTEST_COMPLETED_KEY, BACKTEST_ERROR_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import { TOTAL_RETURN_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
-import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
 import type { BacktestRunUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
 import type { GateEvaluationUpdate, GateResult } from '@/gen/ant/v1/ai_gate_pb';
-import { isTerminalRun, isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import {
   backendDirectivesToStrategyDirectives,
   PRESETS, DATE_PRESETS, dateFromPreset,
@@ -24,8 +20,9 @@ import {
   type BacktestStatus, type ChartTrade, type BacktestMetrics,
   type ExtractedParam, type StandardParams, type BacktestRunnerInputs,
   FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults,
-  getTimeframeWarning, protoToMetrics,
+  getTimeframeWarning,
 } from './backtestRunnerTypes';
+import { handleBacktestUpdate, handleBacktestError } from './backtestRunnerWatch';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
@@ -201,40 +198,16 @@ export function useBacktestRunner() {
       setFixDepth(0);
       watchRef.current?.();
       const stopWatching = await strategyRuntimeApi.watchBacktestRun(result.runId, (update: BacktestRunUpdate) => {
-        const run = update.run;
-        if (run?.fixDepth) setFixDepth(run.fixDepth);
-        if (update.gateUpdate?.gate) setGateResults(prev => [...prev, update.gateUpdate!.gate!]);
-        if (update.gateUpdate?.completed) setGateUpdate(update.gateUpdate);
-        if (update.qualityPreview) setQualityPreview(update.qualityPreview);
-        if (run && isTerminalRun(run)) {
-          const ok = isSucceededRun(run);
-          setStatus(ok ? 'completed' : 'error');
-          setMetrics(protoToMetrics(update.metrics));
-          setExecutionAssumptions(update.executionAssumptions ?? null);
-          setErrorMsg(update.run?.error ?? ''); stopWatching();
-          watchRef.current = null;
-          if (ok) {
-            const m = protoToMetrics(update.metrics);
-            notification.success({ message: t(BACKTEST_COMPLETED_KEY), description: t(TOTAL_RETURN_KEY) + ': ' + ((m?.totalReturn ?? 0) * 100).toFixed(2) + '%', placement: 'bottomRight', duration: 4 });
-            backtestRunsApi.getTrades(result.runId).then((tr) => {
-              setChartTrades(tr.trades.map((t: BacktestTrade) => ({
-                side: t.side,
-                openTime: t.open_ts, openPrice: t.open_price,
-                closeTime: t.close_ts, closePrice: t.close_price,
-                pnl: t.pnl, volume: t.volume,
-              })));
-            }).catch(() => setChartTrades([]));
-          } else { setChartTrades([]); }
-          if (!ok) {
-            notification.error({ message: t(BACKTEST_ERROR_KEY), description: update.run?.error || '', placement: 'bottomRight', duration: 6 });
-          }
-        } else { setMetrics(protoToMetrics(update.metrics)); }
+        handleBacktestUpdate(update, result.runId, t, {
+          setFixDepth, setGateResults, setGateUpdate, setQualityPreview,
+          setStatus, setMetrics, setExecutionAssumptions, setErrorMsg, setChartTrades,
+          stopWatching: () => { stopWatching(); watchRef.current = null; },
+        });
       });
       watchRef.current = stopWatching;
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      message.error(msg || t(BACKTEST_FAILED_KEY));
-      setStatus('error'); setErrorMsg(msg || 'Unknown error');
+      const { status, msg } = handleBacktestError(e, t);
+      setStatus(status); setErrorMsg(msg);
     } finally { setSubmitting(false); }
   }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate, t]);
 

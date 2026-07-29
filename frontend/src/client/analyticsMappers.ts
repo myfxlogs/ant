@@ -143,23 +143,42 @@ export function mapRollingMetrics(r: GetRollingMetricsResponse): RollingMetricsD
   };
 }
 
+function mapMonthlyMetrics(c: ReturnType<typeof deepConvertBigIntToNumber>): MonthlyDetailData['metrics'] {
+  const m = c.metrics;
+  return {
+    netReturn: toNum(m?.netReturn),
+    returnPercent: m?.returnPercent ?? 0,
+    totalTrades: Number(m?.totalTrades ?? 0),
+    winRate: m?.winRate ?? 0,
+    profitFactor: m?.profitFactor ?? 0,
+    bestTrade: toNum(m?.bestTrade),
+    worstTrade: toNum(m?.worstTrade),
+  };
+}
+
+function mapMonthlyBonus(c: ReturnType<typeof deepConvertBigIntToNumber>): MonthlyDetailData['bonus'] {
+  if (!c.bonus) return undefined;
+  return {
+    riskRatio: c.bonus.riskRatio,
+    symbolPopularity: (c.bonus.symbolPopularity ?? []).map((s) => ({
+      symbol: s.symbol, trades: Number(s.trades), sharePercent: s.sharePercent,
+    })),
+    symbolRisks: (c.bonus.symbolRisks ?? []).map((r) => ({
+      symbol: r.symbol, riskRatio: r.riskRatio,
+    })),
+    symbolHoldingSplit: (c.bonus.symbolHoldingSplit ?? []).map((h) => ({
+      symbol: h.symbol, bullsSeconds: h.bullsSeconds, shortTermSeconds: h.shortTermSeconds,
+    })),
+  };
+}
+
 export function mapMonthlyDetail(r: GetMonthlyDetailResponse): MonthlyDetailData {
   const c = deepConvertBigIntToNumber(r);
   return {
-    metrics: {
-      netReturn: toNum(c.metrics?.netReturn),
-      returnPercent: c.metrics?.returnPercent ?? 0,
-      totalTrades: Number(c.metrics?.totalTrades ?? 0),
-      winRate: c.metrics?.winRate ?? 0,
-      profitFactor: c.metrics?.profitFactor ?? 0,
-      bestTrade: toNum(c.metrics?.bestTrade),
-      worstTrade: toNum(c.metrics?.worstTrade),
-    },
+    metrics: mapMonthlyMetrics(c),
     symbolPnls: (c.symbolPnls ?? []).map((s) => ({
-      symbol: s.symbol,
-      netProfit: toNum(s.netProfit),
-      trades: Number(s.trades),
-      winRate: s.winRate,
+      symbol: s.symbol, netProfit: toNum(s.netProfit),
+      trades: Number(s.trades), winRate: s.winRate,
     })),
     holdingStats: {
       averageHours: c.holdingStats?.averageHours ?? 0,
@@ -167,22 +186,6 @@ export function mapMonthlyDetail(r: GetMonthlyDetailResponse): MonthlyDetailData
       maxHours: c.holdingStats?.maxHours ?? 0,
       minHours: c.holdingStats?.minHours ?? 0,
     },
-    bonus: c.bonus ? {
-      riskRatio: c.bonus.riskRatio,
-      symbolPopularity: (c.bonus.symbolPopularity ?? []).map((s) => ({
-        symbol: s.symbol,
-        trades: Number(s.trades),
-        sharePercent: s.sharePercent,
-      })),
-      symbolRisks: (c.bonus.symbolRisks ?? []).map((r) => ({
-        symbol: r.symbol,
-        riskRatio: r.riskRatio,
-      })),
-      symbolHoldingSplit: (c.bonus.symbolHoldingSplit ?? []).map((h) => ({
-        symbol: h.symbol,
-        bullsSeconds: h.bullsSeconds,
-        shortTermSeconds: h.shortTermSeconds,
-      })),
-    } : undefined,
+    bonus: mapMonthlyBonus(c),
   };
 }

@@ -32,6 +32,36 @@ type _Listener<T> = {
   onError?: (error: unknown) => void;
 };
 
+function dispatchStreamEvent(e: StreamEvent, callbacks: StreamCallbacks): void {
+  switch (e.payload.case) {
+    case 'orderUpdate':
+      callbacks.onOrder?.(toCamelCase(e.payload.value));
+      break;
+    case 'profitUpdate':
+      callbacks.onProfit?.(toCamelCase<ProfitUpdate>(e.payload.value));
+      break;
+    case 'accountStatus':
+      callbacks.onStatus?.(toCamelCase<AccountStatusEvent>(e.payload.value));
+      break;
+    case 'positionSnapshot': {
+      const snap = toCamelCase<{ accountId: string; positions: Record<string, unknown>[] }>(e.payload.value);
+      const orders = (snap.positions || []).map((o) => toCamelCase<OrderUpdate>(o));
+      callbacks.onPositionSnapshot?.(snap.accountId, orders);
+      break;
+    }
+    case 'barUpdate':
+      callbacks.onBar?.(toCamelCase<BarUpdateEvent>(e.payload.value));
+      break;
+    default:
+      break;
+  }
+}
+
+function isAbortError(error: unknown): boolean {
+  const errorStr = String(error);
+  return (error as Error).name === 'AbortError' || errorStr.includes('canceled') || errorStr.includes('aborted');
+}
+
 export const streamApi = {
   subscribeEvents: (accountIds: string[], callbacks: StreamCallbacks) => {
     let isAborted = false;
@@ -44,9 +74,6 @@ export const streamApi = {
       currentAbort = abortController;
 
       try {
-        // Note: Last-Event-ID is not sent because the backend SSE handler
-        // does not support event replay. When it does, read the event ID
-        // from the stream's `id:` field and pass it on reconnect.
         const stream = streamClient.subscribeEvents(
           { accountIds },
           { signal: abortController.signal },
@@ -56,35 +83,7 @@ export const streamApi = {
           if (isAborted) break;
           transportFailStreak = 0;
           retryCount = 0;
-
-          const e = event as StreamEvent;
-
-          switch (e.payload.case) {
-            case 'orderUpdate':
-              callbacks.onOrder?.(toCamelCase(e.payload.value));
-              break;
-            case 'profitUpdate': {
-              const profit = toCamelCase<ProfitUpdate>(e.payload.value);
-              callbacks.onProfit?.(profit);
-              break;
-            }
-            case 'accountStatus':
-              callbacks.onStatus?.(toCamelCase<AccountStatusEvent>(e.payload.value));
-              break;
-            case 'positionSnapshot': {
-              const snap = toCamelCase<{ accountId: string; positions: Record<string, unknown>[] }>(e.payload.value);
-              const orders = (snap.positions || []).map((o) => toCamelCase<OrderUpdate>(o));
-              callbacks.onPositionSnapshot?.(snap.accountId, orders);
-              break;
-            }
-            case 'barUpdate': {
-              const bar = toCamelCase<BarUpdateEvent>(e.payload.value);
-              callbacks.onBar?.(bar);
-              break;
-            }
-            default:
-              break;
-          }
+          dispatchStreamEvent(event as StreamEvent, callbacks);
         }
 
         if (!isAborted) {
@@ -92,15 +91,7 @@ export const streamApi = {
           setTimeout(() => runStream(retryCount + 1), delay);
         }
       } catch (error) {
-        if (isAborted) return;
-        const errorStr = String(error);
-        if (
-          (error as Error).name === 'AbortError' ||
-          errorStr.includes('canceled') ||
-          errorStr.includes('aborted')
-        ) {
-          return;
-        }
+        if (isAborted || isAbortError(error)) return;
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
           if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {
@@ -181,15 +172,7 @@ export const streamApi = {
           setTimeout(() => runStream(retryCount + 1), delay);
         }
       } catch (error) {
-        if (isAborted) return;
-        const errorStr = String(error);
-        if (
-          (error as Error).name === 'AbortError' ||
-          errorStr.includes('canceled') ||
-          errorStr.includes('aborted')
-        ) {
-          return;
-        }
+        if (isAborted || isAbortError(error)) return;
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
           if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {

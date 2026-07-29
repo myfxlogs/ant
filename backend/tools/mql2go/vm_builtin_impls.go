@@ -19,7 +19,17 @@ import (
 //   - vm_builtin_account.go  — Account*, SymbolInfo*, MarketInfo, StringFormat, Array*
 
 func init() {
-	// Math functions
+	registerMathBuiltins()
+	registerPlatformBuiltins()
+	registerIndicatorBuiltins()
+	registerUtilityBuiltins()
+	registerAccountBuiltins()
+	registerStringBuiltins()
+	registerTradeBuiltins()
+	registerArrayBuiltins()
+}
+
+func registerMathBuiltins() {
 	builtinRegistry[id("MathAbs")].fn = builtinMathAbs
 	builtinRegistry[id("MathMax")].fn = builtinMathMax
 	builtinRegistry[id("MathMin")].fn = builtinMathMin
@@ -30,29 +40,34 @@ func init() {
 	builtinRegistry[id("MathFloor")].fn = builtinMathFloor
 	builtinRegistry[id("MathCeil")].fn = builtinMathCeil
 	builtinRegistry[id("MathExp")].fn = builtinMathExp
+}
 
-	// Platform functions
+func registerPlatformBuiltins() {
 	builtinRegistry[id("Print")].fn = builtinPrint
 	builtinRegistry[id("Alert")].fn = builtinPrint
 	builtinRegistry[id("Comment")].fn = builtinPrint
-
-	// Market data — series access via builtins (Close(), Open(), etc. without subscript)
 	builtinRegistry[id("Close")].fn = builtinSeriesClose
 	builtinRegistry[id("Open")].fn = builtinSeriesOpen
 	builtinRegistry[id("High")].fn = builtinSeriesHigh
 	builtinRegistry[id("Low")].fn = builtinSeriesLow
 	builtinRegistry[id("Volume")].fn = builtinSeriesVolume
 	builtinRegistry[id("Time")].fn = builtinSeriesTime
-
-	// Price data
 	builtinRegistry[id("Bid")].fn = builtinBid
 	builtinRegistry[id("Ask")].fn = builtinAsk
 	builtinRegistry[id("Point")].fn = builtinPoint
 	builtinRegistry[id("Digits")].fn = builtinDigits
 	builtinRegistry[id("Symbol")].fn = builtinSymbol
 	builtinRegistry[id("Period")].fn = builtinPeriod
+	builtinRegistry[id("RefreshRates")].fn = builtinNoopBool
+	builtinRegistry[id("GetLastError")].fn = builtinNoopInt
+	builtinRegistry[id("ResetLastError")].fn = builtinNoop
+	builtinRegistry[id("ExpertRemove")].fn = builtinNoop
+	builtinRegistry[id("IsTesting")].fn = builtinIsTesting
+	builtinRegistry[id("IsOptimization")].fn = builtinNoopInt
+	builtinRegistry[id("IsVisualMode")].fn = builtinNoopInt
+}
 
-	// Indicators — fully implemented
+func registerIndicatorBuiltins() {
 	builtinRegistry[id("iMA")].fn = builtinIMA
 	builtinRegistry[id("iRSI")].fn = builtinIRSI
 	builtinRegistry[id("iATR")].fn = builtinIATR
@@ -68,8 +83,6 @@ func init() {
 	builtinRegistry[id("iOBV")].fn = builtinIOBV
 	builtinRegistry[id("iSAR")].fn = builtinISAR
 	builtinRegistry[id("iStdDev")].fn = builtinIStdDev
-
-	// *OnArray indicator variants
 	builtinRegistry[id("iMAOnArray")].fn = builtinIMAOnArray
 	builtinRegistry[id("iRSIOnArray")].fn = builtinIRSIOnArray
 	builtinRegistry[id("iATROnArray")].fn = builtinIATROnArray
@@ -78,16 +91,15 @@ func init() {
 	builtinRegistry[id("iMomentumOnArray")].fn = builtinIMomentumOnArray
 	builtinRegistry[id("iCCIOnArray")].fn = builtinICCIOnArray
 	builtinRegistry[id("iMACDOnArray")].fn = builtinIMACDOnArray
-
-	// Cross-timeframe market data
 	builtinRegistry[id("iClose")].fn = builtinIClose
 	builtinRegistry[id("iOpen")].fn = builtinIOpen
 	builtinRegistry[id("iHigh")].fn = builtinIHigh
 	builtinRegistry[id("iLow")].fn = builtinILow
 	builtinRegistry[id("iTime")].fn = builtinITime
 	builtinRegistry[id("iVolume")].fn = builtinIVolume
+}
 
-	// Utility
+func registerUtilityBuiltins() {
 	builtinRegistry[id("NormalizeDouble")].fn = builtinNormalizeDouble
 	builtinRegistry[id("DoubleToString")].fn = builtinDoubleToString
 	builtinRegistry[id("IntegerToString")].fn = builtinIntegerToString
@@ -100,8 +112,6 @@ func init() {
 	builtinRegistry[id("EventSetTimer")].fn = builtinEventSetTimer
 	builtinRegistry[id("EventKillTimer")].fn = builtinEventKillTimer
 	builtinRegistry[id("EventSetMillisecondTimer")].fn = builtinEventSetTimer
-
-	// Datetime functions
 	builtinRegistry[id("Day")].fn = builtinDay
 	builtinRegistry[id("DayOfWeek")].fn = builtinDayOfWeek
 	builtinRegistry[id("Hour")].fn = builtinHour
@@ -110,20 +120,10 @@ func init() {
 	builtinRegistry[id("Month")].fn = builtinMonth
 	builtinRegistry[id("StrToTime")].fn = builtinStrToTime
 	builtinRegistry[id("TimeToStr")].fn = builtinTimeToStr
-
-	// Platform functions
-	builtinRegistry[id("RefreshRates")].fn = builtinNoopBool
-	builtinRegistry[id("GetLastError")].fn = builtinNoopInt
-	builtinRegistry[id("ResetLastError")].fn = builtinNoop
-	builtinRegistry[id("ExpertRemove")].fn = builtinNoop
-	builtinRegistry[id("IsTesting")].fn = builtinIsTesting
-	builtinRegistry[id("IsOptimization")].fn = builtinNoopInt
-	builtinRegistry[id("IsVisualMode")].fn = builtinNoopInt
-
-	// DoubleToStr alias
 	builtinRegistry[id("DoubleToStr")].fn = builtinDoubleToString
+}
 
-	// Account functions
+func registerAccountBuiltins() {
 	builtinRegistry[id("AccountBalance")].fn = builtinAccountBalance
 	builtinRegistry[id("AccountEquity")].fn = builtinAccountEquity
 	builtinRegistry[id("AccountFreeMargin")].fn = builtinAccountFreeMargin
@@ -138,14 +138,13 @@ func init() {
 	builtinRegistry[id("AccountServer")].fn = builtinNoopString
 	builtinRegistry[id("AccountFreeMarginCheck")].fn = builtinNoopDecimal
 	builtinRegistry[id("AccountFreeMarginMode")].fn = builtinNoopInt
-
-	// Symbol info
 	builtinRegistry[id("SymbolInfoDouble")].fn = builtinSymbolInfoDouble
 	builtinRegistry[id("SymbolInfoInteger")].fn = builtinSymbolInfoInteger
 	builtinRegistry[id("SymbolInfoString")].fn = builtinSymbolInfoString
 	builtinRegistry[id("MarketInfo")].fn = builtinMarketInfo
+}
 
-	// String format
+func registerStringBuiltins() {
 	builtinRegistry[id("StringFormat")].fn = builtinStringFormat
 	builtinRegistry[id("StringFind")].fn = builtinStringFind
 	builtinRegistry[id("StringSubstr")].fn = builtinStringSubstr
@@ -156,8 +155,9 @@ func init() {
 	builtinRegistry[id("StringTrimRight")].fn = builtinStringTrimRight
 	builtinRegistry[id("StringConcatenate")].fn = builtinStringConcatenate
 	builtinRegistry[id("StringToDouble")].fn = builtinStringToDouble
+}
 
-	// MQL4 trade functions
+func registerTradeBuiltins() {
 	builtinRegistry[id("OrderSend")].fn = builtinOrderSend
 	builtinRegistry[id("OrderClose")].fn = builtinOrderClose
 	builtinRegistry[id("OrderModify")].fn = builtinOrderModify
@@ -182,8 +182,6 @@ func init() {
 	builtinRegistry[id("OrderPrint")].fn = builtinNoop
 	builtinRegistry[id("OrderCommission")].fn = builtinNoopDecimal
 	builtinRegistry[id("OrderSwap")].fn = builtinNoopDecimal
-
-	// MQL5 position functions
 	builtinRegistry[id("PositionsTotal")].fn = builtinPositionsTotal
 	builtinRegistry[id("PositionGetTicket")].fn = builtinPositionGetTicket
 	builtinRegistry[id("PositionGetDouble")].fn = builtinPositionGetDouble
@@ -191,8 +189,6 @@ func init() {
 	builtinRegistry[id("PositionGetString")].fn = builtinPositionGetString
 	builtinRegistry[id("PositionGetSymbol")].fn = builtinPositionGetSymbol
 	builtinRegistry[id("PositionSelectByTicket")].fn = builtinPositionSelectByTicket
-
-	// MQL5 CTrade methods
 	builtinRegistry[id("CTrade.Buy")].fn = builtinCTradeBuy
 	builtinRegistry[id("CTrade.Sell")].fn = builtinCTradeSell
 	builtinRegistry[id("CTrade.BuyLimit")].fn = builtinCTradeBuyLimit
@@ -206,8 +202,9 @@ func init() {
 	builtinRegistry[id("CTrade.OrderDelete")].fn = builtinCTradeOrderDelete
 	builtinRegistry[id("CTrade.SetExpertMagicNumber")].fn = builtinNoop
 	builtinRegistry[id("CTrade.SetDeviationInPoints")].fn = builtinNoop
+}
 
-	// Array functions — real implementations
+func registerArrayBuiltins() {
 	builtinRegistry[id("ArraySize")].fn = builtinArraySize
 	builtinRegistry[id("ArrayResize")].fn = builtinArrayResize
 	builtinRegistry[id("ArrayCopy")].fn = builtinArrayCopy

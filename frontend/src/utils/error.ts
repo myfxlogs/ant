@@ -151,12 +151,25 @@ export function isConnectionError(error: unknown): boolean {
   return false;
 }
 
+const ERROR_PATTERNS: Array<{ match: (lower: string) => boolean; key: string }> = [
+  { match: l => l.includes('allocationquota.freetieronly') || l.includes('free tier') || l.includes('free-tier only'), key: 'errors.ai.free_tier_exhausted' },
+  { match: l => l.includes('[resource_exhausted]') || l.includes('status 429') || l.includes('too many requests'), key: 'errors.ai.rate_limited' },
+  { match: l => l.includes('status 403') && (l.includes('quota') || l.includes('exhaust') || l.includes('allocation')), key: 'errors.ai.forbidden_quota' },
+];
+
+function matchErrorPattern(errorMsg: string): string | null {
+  const lower = errorMsg.toLowerCase();
+  for (const p of ERROR_PATTERNS) {
+    if (p.match(lower)) return i18n.t(p.key);
+  }
+  return null;
+}
+
 export function getErrorMessage(error: unknown, defaultMsg: string): string {
   if (error && typeof error === 'object') {
     const responseError = error as LegacyResponseError;
     if (responseError.response?.data) {
       const data = responseError.response.data;
-      // Prefer code-based translation when the backend sends a numeric error code.
       if (typeof data.code === 'number' && data.code > 0) {
         return getErrorMessageByCode(data.code, defaultMsg);
       }
@@ -172,22 +185,11 @@ export function getErrorMessage(error: unknown, defaultMsg: string): string {
       if (errorMsg.includes('Failed to fetch')) {
         return i18n.t('errors.connection_failed.title');
       }
-
-      const lower = errorMsg.toLowerCase();
-      if (lower.includes('allocationquota.freetieronly') || lower.includes('free tier') || lower.includes('free-tier only')) {
-        return i18n.t('errors.ai.free_tier_exhausted');
-      }
-      if (lower.includes('[resource_exhausted]') || lower.includes('status 429') || lower.includes('too many requests')) {
-        return i18n.t('errors.ai.rate_limited');
-      }
-      if (lower.includes('status 403') && (lower.includes('quota') || lower.includes('exhaust') || lower.includes('allocation'))) {
-        return i18n.t('errors.ai.forbidden_quota');
-      }
-
+      const matched = matchErrorPattern(errorMsg);
+      if (matched) return matched;
       if (error instanceof ConnectError && connectCodeToI18nKey[error.code]) {
         return getConnectErrorMessage(error.code, defaultMsg);
       }
-
       return errorMsg;
     }
   }

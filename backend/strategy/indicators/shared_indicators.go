@@ -14,11 +14,11 @@ func Alligator(src BarSource, jawPeriod, jawShift, teethPeriod, teethShift, lips
 	switch method {
 	case "SMA", "sma":
 		maFunc = sma
-	case "EMA", "ema":
+	case maEMA, maEma:
 		maFunc = ema
-	case "SMMA", "smma", "":
+	case maSMMA, maSmma, "":
 		maFunc = smma
-	case "LWMA", "lwma":
+	case maLWMA, maLwma:
 		maFunc = lwma
 	default:
 		maFunc = smma
@@ -60,11 +60,11 @@ func Envelopes(src BarSource, period int, deviation decimal.Decimal, method stri
 	}
 	var mid float64
 	switch method {
-	case "EMA", "ema":
+	case maEMA, maEma:
 		mid = ema(src, period, shift)
-	case "SMMA", "smma":
+	case maSMMA, maSmma:
 		mid = smma(src, period, shift)
-	case "LWMA", "lwma":
+	case maLWMA, maLwma:
 		mid = lwma(src, period, shift)
 	default:
 		mid = sma(src, period, shift)
@@ -158,11 +158,11 @@ func Force(src BarSource, period int, method string, appliedPrice int, shift int
 	}
 	tmpSrc := &sliceBarSource{closes: forceVals}
 	switch method {
-	case "EMA", "ema":
+	case maEMA, maEma:
 		return decimal.NewFromFloat(ema(tmpSrc, period, shift))
-	case "SMMA", "smma":
+	case maSMMA, maSmma:
 		return decimal.NewFromFloat(smma(tmpSrc, period, shift))
-	case "LWMA", "lwma":
+	case maLWMA, maLwma:
 		return decimal.NewFromFloat(lwma(tmpSrc, period, shift))
 	default:
 		return decimal.NewFromFloat(sma(tmpSrc, period, shift))

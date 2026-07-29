@@ -10,13 +10,13 @@ var DefMFI = Def{
 	Name: "Money Flow Index",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 14, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 14, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 14},
+	Defaults: map[string]float64{keyLength: 14},
 }
 
 func computeMFI(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 14))
+	n := int(getParam(params, keyLength, 14))
 	mfi := make([]decimal.Decimal, len(bars))
 	if len(bars) <= n {
 		return &Result{DefID: "MFI", Lines: map[string][]decimal.Decimal{"mfi": mfi}}, nil
@@ -51,13 +51,13 @@ var DefADX = Def{
 	Name: "Average Directional Index",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 14, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: labelPeriod, Type: typeInt, Default: 14, Min: 1, Max: 500, Step: 1},
 	},
-	Defaults: map[string]float64{"length": 14},
+	Defaults: map[string]float64{keyLength: 14},
 }
 
 func computeADX(bars []mdtick.Bar, params map[string]float64) (*Result, error) {
-	n := int(getParam(params, "length", 14))
+	n := int(getParam(params, keyLength, 14))
 	ohlcv := toOHLCV(bars)
 	adx := make([]decimal.Decimal, len(bars))
 	pdi := make([]decimal.Decimal, len(bars))
@@ -104,8 +104,8 @@ var DefADOSC = Def{
 	Name: "Accumulation/Distribution Oscillator",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "fast", Label: "Fast Period", Type: "int", Default: 3, Min: 1, Max: 100, Step: 1},
-		{Key: "slow", Label: "Slow Period", Type: "int", Default: 10, Min: 1, Max: 100, Step: 1},
+		{Key: "fast", Label: "Fast Period", Type: typeInt, Default: 3, Min: 1, Max: 100, Step: 1},
+		{Key: "slow", Label: "Slow Period", Type: typeInt, Default: 10, Min: 1, Max: 100, Step: 1},
 	},
 	Defaults: map[string]float64{"fast": 3, "slow": 10},
 }

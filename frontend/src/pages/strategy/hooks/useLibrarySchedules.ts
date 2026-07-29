@@ -1,25 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, message } from 'antd';
 import { useTranslation } from 'react-i18next'
-import { HEALTH_MESSAGES_LOAD_FAILED_KEY, MESSAGES_EXECUTE_FAILED_KEY, MESSAGES_NO_ORDERABLE_SIGNAL_KEY, MESSAGES_ORDER_FAILED_KEY, MESSAGES_ORDER_SUBMITTED_KEY, MESSAGES_PARAMETERS_PARSE_FAILED_KEY, MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY, MESSAGES_STRATEGY_EXECUTE_FAILED_KEY, MESSAGES_TEMPLATE_CODE_EMPTY_CANNOT_EXECUTE_KEY, MESSAGES_VOLUME_INVALID_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+import { MESSAGES_PARAMETERS_PARSE_FAILED_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 
 ;
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
-import { strategyRuntimeApi } from '@/client/strategyRuntime';
-import { tradingApi } from '@/client/trading';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
-import { scheduleHealthApi } from '@/client/scheduleHealth';
 import { useAccountsAndSymbols } from './useAccountsAndSymbols';
 import { buildSymbolOptions, formatTime } from '../scheduleUtils';
 import { buildParametersFromForm, parseParametersToForm } from '../StrategyScheduleParams';
 import { DEFAULT_TEMPLATES } from '../StrategyLibrary.defaults';
 import type { DefaultTemplateItem } from '../StrategyLibrary.defaults';
-import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
 import type { ScheduleFormValues } from '../components/EditScheduleModal';
-import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption } from './libraryTypes';
+import type { ScheduleRow, TemplateOption } from './libraryTypes';
 import type { StrategyTemplate } from '@/client/strategy';
+import { useScheduleTrigger, useScheduleHealth, useScheduleSSE } from './useLibrarySchedulesSub';
 
 type ScheduleType = 'interval' | 'kline_close' | 'hf_quote';
+
+function resolveScheduleType(rawType: string, triggerMode: string): ScheduleType {
+  if (rawType === 'interval') return 'interval';
+  if (rawType === 'event' || rawType === 'cron') {
+    return triggerMode === 'hf_quote_stream' ? 'hf_quote' : 'kline_close';
+  }
+  if (rawType === 'hf_quote') return 'hf_quote';
+  return 'kline_close';
+}
 
 export function useLibrarySchedules(selectedTemplateId: string) {
   const { t } = useTranslation();
@@ -35,69 +41,9 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   const symbolsOpts = useMemo(() => buildSymbolOptions(symbols), [symbols]);
   const accountIdWatch = Form.useWatch('accountId', form);
 
-  // ── Health state (lazy-loaded per schedule) ──
-  const [healthOpen, setHealthOpen] = useState(false);
-  const [healthLoading, setHealthLoading] = useState(false);
-  const [healthTarget, setHealthTarget] = useState<ScheduleRow | null>(null);
-  const [healthSummary, setHealthSummary] = useState<ScheduleHealthSummary | null>(null);
+  const health = useScheduleHealth();
+  const trigger = useScheduleTrigger();
 
-  const loadScheduleHealth = useCallback(async (row: ScheduleRow) => {
-    if (!row?.id) return; setHealthLoading(true);
-    try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id) as ScheduleHealthSummary); }
-    catch (e: unknown) { message.error(e instanceof Error ? e.message : t(HEALTH_MESSAGES_LOAD_FAILED_KEY)); setHealthSummary(null); }
-    finally { setHealthLoading(false); }
-  }, [t]);
-
-  // ── Trigger state ──
-  const [triggering, setTriggering] = useState(false);
-  const [openTrigger, setOpenTrigger] = useState(false);
-  const [triggerResult, setTriggerResult] = useState<TriggerResult | null>(null);
-  const [triggerContext, setTriggerContext] = useState<TriggerContext | null>(null);
-
-  const onManualTrigger = useCallback(async (row: ScheduleRow) => {
-    setTriggering(true); setTriggerResult(null);
-    setTriggerContext({ schedule: row, accountId: row.accountId }); setOpenTrigger(true);
-    try {
-      const tpl = await strategyTemplateApi.get(row.templateId);
-      const code = String(tpl?.code || '');
-      if (!code) throw new Error(t(MESSAGES_TEMPLATE_CODE_EMPTY_CANNOT_EXECUTE_KEY));
-      const exec = await strategyRuntimeApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
-      if (!exec.success) throw new Error(exec.error || t(MESSAGES_STRATEGY_EXECUTE_FAILED_KEY));
-      setTriggerResult({ logs: exec.logs || [], signal: exec.signal ?? null, meta: { templateId: row.templateId, scheduleId: row.id } });
-    } catch (e: unknown) {
-      setTriggerResult({ logs: [], signal: null, meta: { error: e instanceof Error ? e.message : t(MESSAGES_EXECUTE_FAILED_KEY) } });
-    }
-    finally { setTriggering(false); }
-  }, [t]);
-
-  const doOrderSend = useCallback(async () => {
-    if (!triggerContext?.schedule) return;
-    const { schedule } = triggerContext;
-    const raw = triggerResult?.signal;
-    if (!raw) { message.error(t(MESSAGES_NO_ORDERABLE_SIGNAL_KEY)); return; }
-    const signal = raw;
-    const rawAction = String(signal?.type ?? signal?.signalType ?? '').trim().toLowerCase();
-    const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
-    const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
-    const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
-    if (!action || rawAction === 'hold') { message.error(t(MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY)); return; }
-    if (!(volume > 0)) { message.error(t(MESSAGES_VOLUME_INVALID_KEY)); return; }
-    const payload = {
-      accountId: schedule.accountId, symbol: signal.symbol || schedule.symbol, type: action, volume,
-      price: typeof signal?.price === 'number' ? signal.price : Number(signal?.price || 0),
-      stopLoss: typeof signal?.stopLoss === 'number' ? signal.stopLoss : Number(signal?.stopLoss || 0),
-      takeProfit: typeof signal?.takeProfit === 'number' ? signal.takeProfit : Number(signal?.takeProfit || 0),
-      comment: String(signal?.comment || ''),
-    };
-    try {
-      const res = await tradingApi.orderSend(payload);
-      if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t(MESSAGES_ORDER_FAILED_KEY) })); return; }
-      message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
-      setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
-    } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(MESSAGES_ORDER_FAILED_KEY)); }
-  }, [triggerContext, triggerResult, t]);
-
-  // ── Schedule CRUD ──
   const filteredSchedules = useMemo(() => {
     if (!selectedTemplateId) return schedules;
     return schedules.filter(s => String(s.templateId || '') === selectedTemplateId);
@@ -116,42 +62,8 @@ export function useLibrarySchedules(selectedTemplateId: string) {
 
   useEffect(() => { void refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // SSE — start after initial fetch, proactive reconnect before Cloudflare 100s timeout.
-  const [sseReady, setSseReady] = useState(false);
-  useEffect(() => { if (!loading) setSseReady(true); }, [loading]);
-  useEffect(() => {
-    if (!sseReady) return;
-    let active = true;
-    const RECONNECT_MS = 90_000; // reconnect before Cloudflare 100s timeout
-    let backoffMs = 2000;
-    const MAX_BACKOFF_MS = 30_000;
+  useScheduleSSE(loading, setSchedules);
 
-    const connect = async () => {
-      while (active) {
-        const ctrl = new AbortController();
-        try {
-          // Race: stream vs proactive reconnect timer.
-          const streamDone = (async () => {
-            for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
-              if (!active) break;
-              setSchedules((event.schedules || []) as ScheduleRow[]);
-            }
-          })();
-          const timerDone = new Promise(r => setTimeout(r, RECONNECT_MS));
-          await Promise.race([streamDone, timerDone]);
-          ctrl.abort(); // proactively abort before Cloudflare kills it
-          backoffMs = 2000; // reset backoff on clean disconnect
-        } catch { /* stream error — reconnect with backoff */ }
-        if (!active) break;
-        await new Promise(r => setTimeout(r, backoffMs));
-        backoffMs = Math.min(backoffMs * 2, MAX_BACKOFF_MS);
-      }
-    };
-    connect();
-    return () => { active = false; };
-  }, [sseReady]);
-
-  // Re-fetch on template change
   useEffect(() => { if (selectedTemplateId) void refresh(); }, [selectedTemplateId, refresh]);
 
   const templatesForSelect = useMemo((): TemplateOption[] => {
@@ -176,19 +88,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     const conf = row?.scheduleConfig || {};
     const rawType = String(row?.scheduleType || '').toLowerCase();
     const triggerMode = String(conf?.triggerMode || 'stable_kline');
-    let scheduleType: ScheduleType;
-    if (rawType === 'interval') scheduleType = 'interval';
-    else if (rawType === 'event') {
-      if (triggerMode === 'hf_quote_stream') scheduleType = 'hf_quote';
-      else scheduleType = 'kline_close';
-    }
-    // Backward compat: old records stored kline_close/hf_quote as "cron" with triggerMode.
-    else if (rawType === 'cron') {
-      if (triggerMode === 'hf_quote_stream') scheduleType = 'hf_quote';
-      else scheduleType = 'kline_close';
-    }
-    else if (rawType === 'hf_quote') scheduleType = 'hf_quote';
-    else scheduleType = 'kline_close';
+    const scheduleType = resolveScheduleType(rawType, triggerMode);
     const intervalMs = typeof conf?.intervalMs === 'number' ? conf.intervalMs : typeof conf?.intervalMs === 'bigint' ? Number(conf.intervalMs) : 300_000;
     const hfCooldownMs = typeof conf?.hfCooldownMs === 'number' ? conf.hfCooldownMs : typeof conf?.hfCooldownMs === 'bigint' ? Number(conf.hfCooldownMs) : 1_000;
     const parametersJson = row?.parameters ? JSON.stringify(row.parameters, null, 2) : '{}';
@@ -269,10 +169,8 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     loading, error, templates: templatesForSelect,
     accounts, symbols: symbolsOpts, symbolsLoading,
     openEdit, setOpenEdit, editing, setEditing, form, accountIdWatch,
-    healthOpen, setHealthOpen, healthLoading, healthTarget, setHealthTarget, healthSummary, setHealthSummary,
-    triggering, openTrigger, setOpenTrigger, triggerResult, triggerContext, setTriggerContext, setTriggerResult,
+    ...health, ...trigger,
     formatTime, loadSymbols,
-    refresh, openCreate, openUpdate, submitEdit, onToggleActive, onDelete, onManualTrigger, loadScheduleHealth,
-    doOrderSend,
+    refresh, openCreate, openUpdate, submitEdit, onToggleActive, onDelete,
   };
 }

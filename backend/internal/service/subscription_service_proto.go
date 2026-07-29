@@ -110,7 +110,7 @@ func (s *SubscriptionService) EnsureFreeSubscription(ctx context.Context, userID
 	if freePlan == nil {
 		return nil
 	}
-	_, err = s.subscribeFree(ctx, userID, freePlan, "monthly")
+	_, err = s.subscribeFree(ctx, userID, freePlan, billingCycleMonthly)
 	return err
 }
 

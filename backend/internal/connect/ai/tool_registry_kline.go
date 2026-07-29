@@ -20,15 +20,15 @@ func NewReadKlineTool(repo repository.MarketDataStore) *ReadKlineTool {
 func (t *ReadKlineTool) Name() string { return "read_kline" }
 func (t *ReadKlineTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
-		Type: "function",
+		Type: toolTypeFunction,
 		Function: systemai.ToolDefFunction{
 			Name:        "read_kline",
 Description: "读取K线数据并返回市场分析（bar数/日期/价格/EMA/趋势/波动率/近期OHLC）。当你需要了解当前市场状况、分析行情趋势、查看价格形态时调用此工具。",
 			Parameters: map[string]any{
-				"type": "object",
-				"properties": map[string]any{
-					"symbol":    map[string]any{"type": "string", "description": "交易品种代码，例如 BTCUSDm, XAUUSDm"},
-					"timeframe": map[string]any{"type": "string", "enum": []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}},
+				schemaKeyType: schemaTypeObject,
+				schemaKeyProperties: map[string]any{
+					"symbol":    map[string]any{schemaKeyType: "string", "description": "交易品种代码，例如 BTCUSDm, XAUUSDm"},
+					"timeframe": map[string]any{schemaKeyType: "string", "enum": []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}},
 				},
 				"required": []string{"symbol", "timeframe"},
 			},

@@ -9,7 +9,7 @@ import (
 // isSeriesName returns true for MQL predefined time-series names.
 func isSeriesName(name string) bool {
 	switch strings.ToLower(name) {
-	case "close", "open", "high", "low", "volume", "time":
+	case "close", "open", "high", "low", nodeVolume, "time":
 		return true
 	}
 	return false

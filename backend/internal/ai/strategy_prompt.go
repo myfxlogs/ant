@@ -71,16 +71,16 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 			sb.WriteString("## AI 分析的计划\n")
 			sb.WriteString(p.Intent.Plan + "\n\n")
 		}
-		if p.Intent.StrategyFamily != "" && p.Intent.StrategyFamily != "unknown" {
+		if p.Intent.StrategyFamily != "" && p.Intent.StrategyFamily != unknownStr {
 			fmt.Fprintf(&sb, "- 策略类型: %s\n", p.Intent.StrategyFamily)
 		}
-		if p.Intent.RiskLevel != "" && p.Intent.RiskLevel != "unknown" {
+		if p.Intent.RiskLevel != "" && p.Intent.RiskLevel != unknownStr {
 			fmt.Fprintf(&sb, "- 风险偏好: %s\n", p.Intent.RiskLevel)
 		}
-		if p.Intent.TradeDirection != "" && p.Intent.TradeDirection != "unknown" {
+		if p.Intent.TradeDirection != "" && p.Intent.TradeDirection != unknownStr {
 			fmt.Fprintf(&sb, "- 交易方向: %s\n", p.Intent.TradeDirection)
 		}
-		if p.Intent.HoldingPeriod != "" && p.Intent.HoldingPeriod != "unknown" {
+		if p.Intent.HoldingPeriod != "" && p.Intent.HoldingPeriod != unknownStr {
 			fmt.Fprintf(&sb, "- 持仓周期: %s\n", p.Intent.HoldingPeriod)
 		}
 		if len(p.Intent.EntrySignals) > 0 {

@@ -17,7 +17,7 @@ func builtinSymbolInfoTick(vm *VM, args []interp.Value) (interp.Value, error) {
 		"bid":   interp.DecimalVal(vm.ctx.Bid()),
 		"ask":   interp.DecimalVal(vm.ctx.Ask()),
 		"last":  interp.DecimalVal(vm.ctx.Bid()),
-		"volume": interp.IntVal(0),
+		nodeVolume: interp.IntVal(0),
 	}
 	return interp.Value{Kind: interp.ValClass, Class: &interp.ClassInstance{Fields: fields}}, nil
 }

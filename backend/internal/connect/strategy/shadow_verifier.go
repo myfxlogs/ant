@@ -175,7 +175,7 @@ func extractBacktestSignals(trades []backtest.Trade) []shadowSignal {
 	for _, t := range trades {
 		action := "buy"
 		if t.Side == sdk.SideSell {
-			action = "sell"
+			action = sideSell
 		}
 		out = append(out, shadowSignal{
 			barTime: t.EntryTime.UnixMilli(),

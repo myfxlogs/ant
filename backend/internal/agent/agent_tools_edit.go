@@ -23,7 +23,7 @@ func (t *readCurrentCodeTool) Schema() systemai.ToolDefinition {
 		Function: systemai.ToolDefFunction{
 			Name:        "read_current_code",
 			Description: "读取当前workspace中的策略代码（带行号）。修改代码前必须先调用此工具。",
-			Parameters:  map[string]any{"type": "object", "properties": map[string]any{}},
+			Parameters:  map[string]any{schemaKeyType: schemaTypeObject, schemaKeyProperties: map[string]any{}},
 		},
 	}
 }
@@ -59,11 +59,11 @@ func (t *editCodeTool) Schema() systemai.ToolDefinition {
 			Name: "edit_code",
 			Description: "精确编辑策略代码（old_string→new_string）。小改动用此工具；大改动请用write_strategy。old_string必须唯一匹配。",
 			Parameters: map[string]any{
-				"type":     "object",
+				schemaKeyType:     schemaTypeObject,
 				"required": []string{"old_string", "new_string"},
-				"properties": map[string]any{
-					"old_string": map[string]any{"type": "string", "description": "要替换的原始代码片段（必须唯一匹配）"},
-					"new_string": map[string]any{"type": "string", "description": "替换后的新代码片段"},
+				schemaKeyProperties: map[string]any{
+					"old_string": map[string]any{schemaKeyType: schemaTypeString, "description": "要替换的原始代码片段（必须唯一匹配）"},
+					"new_string": map[string]any{schemaKeyType: schemaTypeString, "description": "替换后的新代码片段"},
 				},
 			},
 		},

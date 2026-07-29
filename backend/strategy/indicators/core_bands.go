@@ -51,11 +51,11 @@ func StdDev(src BarSource, period, shift int, method string, appliedPrice int) d
 	// Compute MA values for each bar in the window using the given method
 	maFunc := sma
 	switch method {
-	case "EMA", "ema":
+	case maEMA, maEma:
 		maFunc = ema
-	case "SMMA", "smma":
+	case maSMMA, maSmma:
 		maFunc = smma
-	case "LWMA", "lwma":
+	case maLWMA, maLwma:
 		maFunc = lwma
 	}
 	var variance float64

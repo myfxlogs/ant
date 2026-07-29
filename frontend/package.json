@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint src/ --max-warnings 117",
+    "lint": "eslint src/ --max-warnings 73",
     "test": "vitest run",
     "preview": "vite preview",
     "gen:proto": "cd .. && buf generate"

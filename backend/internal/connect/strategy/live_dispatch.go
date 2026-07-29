@@ -53,7 +53,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 
 	// T3.1: dispatch based on expanded action set.
 	switch action {
-	case "buy", "sell":
+	case "buy", sideSell:
 		if activeSess != nil && activeSess.IsCircuitOpen() {
 			s.log.Warn("LiveStrategyRunner: suppressing order — circuit breaker open",
 				zap.String("account", cfg.AccountID),
@@ -355,7 +355,7 @@ func signalToSide(action string) mthub.Side {
 	switch action {
 	case "buy", "buy_limit", "buy_stop", "buy_stop_limit":
 		return mthub.SideBuy
-	case "sell", "sell_limit", "sell_stop", "sell_stop_limit":
+	case sideSell, "sell_limit", "sell_stop", "sell_stop_limit":
 		return mthub.SideSell
 	default:
 		return 0
@@ -368,7 +368,7 @@ func sideToString(side mthub.Side) string {
 	case mthub.SideBuy:
 		return "buy"
 	case mthub.SideSell:
-		return "sell"
+		return sideSell
 	default:
 		return "unknown"
 	}

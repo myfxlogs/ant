@@ -169,7 +169,7 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 				gv.ArraySize = arrSize
 			}
 			ir.Globals = append(ir.Globals, gv)
-		} else if child.Type() == "identifier" && typeName != "" {
+		} else if child.Type() == nodeIdentifier && typeName != "" {
 			// Direct declaration: CTrade trade; (no init_declarator wrapper)
 			// Avoid double-adding if already handled by init_declarator above
 			name := c.text(child)
@@ -239,7 +239,7 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 // ── Statement compilation ───────────────────────────────────────────
 
 func (c *compiler) compileBlock(n *sitter.Node) []interp.Statement {
-	if n == nil || n.Type() != "compound_statement" {
+	if n == nil || n.Type() != nodeCompoundStatement {
 		return nil
 	}
 	var stmts []interp.Statement
@@ -290,7 +290,7 @@ func (c *compiler) compileStmt(n *sitter.Node) *interp.Statement {
 		}
 		return &interp.Statement{Kind: interp.StmtReturn, Expr: e}
 
-	case "compound_statement":
+	case nodeCompoundStatement:
 		body := c.compileBlock(n)
 		return &interp.Statement{Kind: interp.StmtBlock, Body: body}
 
@@ -331,7 +331,7 @@ func (c *compiler) compileIf(n *sitter.Node) *interp.Statement {
 	// Find body (compound_statement or single statement) and else clause
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "compound_statement" {
+		if child.Type() == nodeCompoundStatement {
 			stmt.Body = c.compileBlock(child)
 		} else if child.Type() == "if_statement" {
 			// else if → nested if in ElseBody
@@ -339,7 +339,7 @@ func (c *compiler) compileIf(n *sitter.Node) *interp.Statement {
 		} else if child.Type() == "else_clause" {
 			for j := 0; j < int(child.NamedChildCount()); j++ {
 				ec := child.NamedChild(j)
-				if ec.Type() == "compound_statement" {
+				if ec.Type() == nodeCompoundStatement {
 					stmt.ElseBody = c.compileBlock(ec)
 				} else if ec.Type() == "if_statement" {
 					stmt.ElseBody = []interp.Statement{*c.compileIf(ec)}
@@ -377,7 +377,7 @@ func (c *compiler) compileFor(n *sitter.Node) *interp.Statement {
 					stmt.Cond = expr
 				}
 			}
-		case "binary_expression", "call_expression", "identifier", "number_literal":
+		case "binary_expression", "call_expression", nodeIdentifier, "number_literal":
 			if stmt.Cond == nil {
 				stmt.Cond = c.compileExpr(child)
 			}
@@ -390,7 +390,7 @@ func (c *compiler) compileFor(n *sitter.Node) *interp.Statement {
 					stmt.Update = &interp.Statement{Kind: interp.StmtExpr, Expr: expr}
 				}
 			}
-		case "compound_statement":
+		case nodeCompoundStatement:
 			stmt.Body = c.compileBlock(child)
 		}
 	}
@@ -401,9 +401,9 @@ func (c *compiler) compileWhile(n *sitter.Node) *interp.Statement {
 	stmt := &interp.Statement{Kind: interp.StmtWhile}
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "parenthesized_expression" {
+		if child.Type() == nodeParenExpr {
 			stmt.Cond = c.compileExpr(child)
-		} else if child.Type() == "compound_statement" {
+		} else if child.Type() == nodeCompoundStatement {
 			stmt.Body = c.compileBlock(child)
 		}
 	}
@@ -414,7 +414,7 @@ func (c *compiler) compileSwitch(n *sitter.Node) *interp.Statement {
 	stmt := &interp.Statement{Kind: interp.StmtSwitch}
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "parenthesized_expression" {
+		if child.Type() == nodeParenExpr {
 			stmt.Expr = c.compileExpr(child)
 		} else if child.Type() == "case_statement" {
 			sc := interp.SwitchCase{}
@@ -424,8 +424,8 @@ func (c *compiler) compileSwitch(n *sitter.Node) *interp.Statement {
 					sc.Expr = nil
 				} else if cc.Type() == "case_label" {
 					sc.Expr = c.compileExpr(cc)
-				} else if cc.Type() == "expression_statement" || cc.Type() == "compound_statement" || cc.Type() == "break_statement" {
-					if cc.Type() == "compound_statement" {
+				} else if cc.Type() == "expression_statement" || cc.Type() == nodeCompoundStatement || cc.Type() == "break_statement" {
+					if cc.Type() == nodeCompoundStatement {
 						sc.Body = c.compileBlock(cc)
 					} else if cc.Type() != "break_statement" {
 						if s := c.compileStmt(cc); s != nil {
@@ -515,7 +515,7 @@ func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
 					var val *int32
 					for k := 0; k < int(ec.NamedChildCount()); k++ {
 						ecChild := ec.NamedChild(k)
-						if ecChild.Type() == "identifier" {
+						if ecChild.Type() == nodeIdentifier {
 							name = c.text(ecChild)
 						} else if ecChild.Type() == "number_literal" {
 							nVal := interp.ParseNumberLiteral(c.text(ecChild))
@@ -545,9 +545,9 @@ func (c *compiler) compileDoWhile(n *sitter.Node) *interp.Statement {
 	stmt := &interp.Statement{Kind: interp.StmtDoWhile}
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "compound_statement" {
+		if child.Type() == nodeCompoundStatement {
 			stmt.Body = c.compileBlock(child)
-		} else if child.Type() == "parenthesized_expression" {
+		} else if child.Type() == nodeParenExpr {
 			stmt.Cond = c.compileExpr(child)
 		}
 	}

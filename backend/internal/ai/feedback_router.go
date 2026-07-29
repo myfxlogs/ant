@@ -22,7 +22,7 @@ func (t FeedbackTarget) String() string {
 	case FeedbackPhase2:
 		return "Phase2_reoptimize"
 	default:
-		return "unknown"
+		return unknownStr
 	}
 }
 

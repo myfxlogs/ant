@@ -21,11 +21,11 @@ func (t *updatePlanTool) Schema() systemai.ToolDefinition {
 			Name: "update_plan",
 			Description: "复杂策略的分步计划工具（JSON [{step, status}]）。仅多步策略使用，简单策略请直接调用write_strategy。",
 			Parameters: map[string]any{
-				"type":     "object",
+				schemaKeyType:     schemaTypeObject,
 				"required": []string{"plan"},
-				"properties": map[string]any{
+				schemaKeyProperties: map[string]any{
 					"plan": map[string]any{
-						"type": "string",
+						schemaKeyType: schemaTypeString,
 						"description": "JSON数组字符串，每项 {step, status}。例如: [{\"step\":\"EMA入场\",\"status\":\"done\"},{\"step\":\"ATR止损\",\"status\":\"doing\"}]",
 					},
 				},

@@ -71,7 +71,7 @@ func checkForbiddenNodes(n *sitter.Node, src string) error {
 		return fmt.Errorf("line %d: '%s' is not allowed in Python subset", n.StartPoint().Row+1, nodeType)
 	}
 
-	if nodeType == "identifier" {
+	if nodeType == nodeIdentifier {
 		name := src[n.StartByte():n.EndByte()]
 		if strings.HasPrefix(name, "__") && strings.HasSuffix(name, "__") && len(name) > 4 {
 			if !allowedDunders[name] {
@@ -80,7 +80,7 @@ func checkForbiddenNodes(n *sitter.Node, src string) error {
 		}
 	}
 
-	if nodeType == "string" {
+	if nodeType == nodeString {
 		raw := src[n.StartByte():n.EndByte()]
 		if len(raw) > 1 && (raw[0] == 'f' || raw[0] == 'F') && (raw[1] == '"' || raw[1] == '\'') {
 			return fmt.Errorf("line %d: f-strings are not allowed in Python subset", n.StartPoint().Row+1)
@@ -126,7 +126,7 @@ func validateTypeAnnotations(root *sitter.Node, source string) error {
 			for k := 0; k < int(params.NamedChildCount()); k++ {
 				p := params.NamedChild(k)
 				switch p.Type() {
-				case "identifier":
+				case nodeIdentifier:
 					name := source[p.StartByte():p.EndByte()]
 					if name == "self" {
 						continue
@@ -158,7 +158,7 @@ func walkPyCST(n *sitter.Node, source string, fn func(*sitter.Node, string) erro
 }
 
 func findFuncNameFromNode(n *sitter.Node, source string) string {
-	id := findNamedChild(n, "identifier")
+	id := findNamedChild(n, nodeIdentifier)
 	if id != nil {
 		return source[id.StartByte():id.EndByte()]
 	}

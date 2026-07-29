@@ -124,15 +124,15 @@ func (c *pyCompiler) compileFor(n *sitter.Node) *interp.Statement {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "identifier":
+		case nodeIdentifier:
 			if targetNode == nil {
 				targetNode = child
 			} else if iterNode == nil {
 				iterNode = child
 			}
-		case "call":
+		case nodeCall:
 			iterNode = child
-		case "attribute":
+		case nodeAttribute:
 			iterNode = child
 		case "block":
 			bodyNode = child
@@ -235,15 +235,15 @@ var positionFieldMap = map[string]struct {
 	"magic":       {"PositionGetInteger", 1},  // POSITION_MAGIC
 	"side":        {"PositionGetInteger", 2},  // POSITION_TYPE
 	"open_time":   {"PositionGetInteger", 3},  // POSITION_TIME
-	"volume":      {"PositionGetDouble", 0},   // POSITION_VOLUME
-	"open_price":  {"PositionGetDouble", 1},   // POSITION_PRICE_OPEN
-	"sl":          {"PositionGetDouble", 2},   // POSITION_SL
-	"stop_loss":   {"PositionGetDouble", 2},   // POSITION_SL
-	"tp":          {"PositionGetDouble", 3},   // POSITION_TP
-	"take_profit": {"PositionGetDouble", 3},   // POSITION_TP
-	"swap":        {"PositionGetDouble", 5},   // POSITION_SWAP
-	"commission":  {"PositionGetDouble", 6},   // POSITION_COMMISSION
-	"profit":      {"PositionGetDouble", 7},   // POSITION_PROFIT
+	nodeVolume:      {fnPositionGetDouble, 0},   // POSITION_VOLUME
+	"open_price":  {fnPositionGetDouble, 1},   // POSITION_PRICE_OPEN
+	"sl":          {fnPositionGetDouble, 2},   // POSITION_SL
+	"stop_loss":   {fnPositionGetDouble, 2},   // POSITION_SL
+	"tp":          {fnPositionGetDouble, 3},   // POSITION_TP
+	"take_profit": {fnPositionGetDouble, 3},   // POSITION_TP
+	"swap":        {fnPositionGetDouble, 5},   // POSITION_SWAP
+	"commission":  {fnPositionGetDouble, 6},   // POSITION_COMMISSION
+	"profit":      {fnPositionGetDouble, 7},   // POSITION_PROFIT
 	"symbol":      {"PositionGetSymbol", 0},   // POSITION_SYMBOL
 	"comment":     {"PositionGetString", 1},   // POSITION_COMMENT
 }

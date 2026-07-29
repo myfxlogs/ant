@@ -10,7 +10,7 @@ var DefBollinger = Def{
 	Name: "Bollinger Bands",
 	Kind: KindOverlay,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 20, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: "Period", Type: typeInt, Default: 20, Min: 1, Max: 500, Step: 1},
 		{Key: "mult", Label: "Multiplier", Type: "float", Default: 2, Min: 0.1, Max: 10, Step: 0.1},
 	},
 	Defaults: map[string]float64{"length": 20, "mult": 2},
@@ -48,7 +48,7 @@ var DefRSI = Def{
 	Name: "Relative Strength Index",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "length", Label: "Period", Type: "int", Default: 14, Min: 1, Max: 500, Step: 1},
+		{Key: keyLength, Label: "Period", Type: typeInt, Default: 14, Min: 1, Max: 500, Step: 1},
 	},
 	Defaults: map[string]float64{"length": 14},
 }
@@ -99,9 +99,9 @@ var DefMACD = Def{
 	Name: "MACD",
 	Kind: KindSubPane,
 	Params: []Param{
-		{Key: "fast", Label: "Fast Period", Type: "int", Default: 12, Min: 1, Max: 500, Step: 1},
-		{Key: "slow", Label: "Slow Period", Type: "int", Default: 26, Min: 1, Max: 500, Step: 1},
-		{Key: "signal", Label: "Signal Period", Type: "int", Default: 9, Min: 1, Max: 500, Step: 1},
+		{Key: "fast", Label: "Fast Period", Type: typeInt, Default: 12, Min: 1, Max: 500, Step: 1},
+		{Key: "slow", Label: "Slow Period", Type: typeInt, Default: 26, Min: 1, Max: 500, Step: 1},
+		{Key: "signal", Label: "Signal Period", Type: typeInt, Default: 9, Min: 1, Max: 500, Step: 1},
 	},
 	Defaults: map[string]float64{"fast": 12, "slow": 26, "signal": 9},
 }

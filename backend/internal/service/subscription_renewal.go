@@ -85,7 +85,7 @@ func (s *SubscriptionService) renewOnePlatformSubscription(ctx context.Context, 
 	}
 
 	priceStr := plan.PriceMonthly
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		priceStr = plan.PriceYearly
 	}
 	price, err := decimal.NewFromString(priceStr)
@@ -130,7 +130,7 @@ func (s *SubscriptionService) renewOnePlatformSubscription(ctx context.Context, 
 
 	now := time.Now().UTC()
 	periodEnd := now.AddDate(0, 1, 0)
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		periodEnd = now.AddDate(1, 0, 0)
 	}
 	_, err = tx.Exec(ctx,
@@ -148,7 +148,7 @@ func (s *SubscriptionService) renewOnePlatformSubscription(ctx context.Context, 
 func (s *SubscriptionService) extendPlatformSubscription(ctx context.Context, subID uuid.UUID, billingCycle string) error {
 	now := time.Now().UTC()
 	periodEnd := now.AddDate(0, 1, 0)
-	if billingCycle == "yearly" {
+	if billingCycle == billingCycleYearly {
 		periodEnd = now.AddDate(1, 0, 0)
 	}
 	_, err := s.pg.Exec(ctx,

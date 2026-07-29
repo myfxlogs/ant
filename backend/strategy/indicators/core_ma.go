@@ -6,18 +6,18 @@ import (
 
 // ── Moving average and MACD indicators ──────────────────────────────
 
-// MA returns the moving average. method: "SMA", "EMA", "SMMA", "LWMA".
+// MA returns the moving average. method: "SMA", maEMA, maSMMA, maLWMA.
 // appliedPrice: 1=close, 2=open, 3=high, 4=low, 5=median, 6=typical, 7=weighted.
 func MA(src BarSource, period, shift int, method string, appliedPrice int) decimal.Decimal {
 	src = withAppliedPrice(src, appliedPrice)
 	switch method {
 	case "SMA", "sma", "":
 		return decimal.NewFromFloat(sma(src, period, shift))
-	case "EMA", "ema":
+	case maEMA, maEma:
 		return decimal.NewFromFloat(ema(src, period, shift))
-	case "SMMA", "smma":
+	case maSMMA, maSmma:
 		return decimal.NewFromFloat(smma(src, period, shift))
-	case "LWMA", "lwma":
+	case maLWMA, maLwma:
 		return decimal.NewFromFloat(lwma(src, period, shift))
 	default:
 		return decimal.NewFromFloat(sma(src, period, shift))

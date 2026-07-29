@@ -46,7 +46,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iMA(prices, period, shift=0, method='sma') -> float",
 		Description:   "Moving average. Returns the LATEST scalar value (NOT an array). Do NOT subscript like `ma[-1]` — `iMA(...)` IS the value. `method` is one of 'sma' | 'ema' | 'smma' | 'lwma'.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "ma_period", Label: "MA period", Type: "int", Default: 20, Min: 2, Max: 500},
+			{Key: "ma_period", Label: "MA period", Type: paramTypeInt, Default: 20, Min: 2, Max: 500},
 		},
 	},
 	{
@@ -54,7 +54,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iRSI(prices, period, shift=0) -> float",
 		Description:   "Relative Strength Index in [0,100]. Returns a SCALAR (latest value). Do NOT subscript with `[-1]` — compare directly: `if iRSI(close, 14) < 30: ...`.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "rsi_period", Label: "RSI period", Type: "int", Default: 14, Min: 2, Max: 200},
+			{Key: "rsi_period", Label: "RSI period", Type: paramTypeInt, Default: 14, Min: 2, Max: 200},
 			{Key: "rsi_overbought", Label: "RSI overbought", Type: "float", Default: 70, Min: 50, Max: 100},
 			{Key: "rsi_oversold", Label: "RSI oversold", Type: "float", Default: 30, Min: 0, Max: 50},
 		},
@@ -64,7 +64,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iBands(prices, period, deviation) -> (upper, middle, lower)",
 		Description:   "Bollinger Bands. Returns a 3-tuple of SCALARS (latest upper / middle / lower). Do NOT subscript with `[-1]`: use `upper, middle, lower = iBands(close, 20, 2.0)` directly.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "bb_period", Label: "Bollinger period", Type: "int", Default: 20, Min: 2, Max: 500},
+			{Key: "bb_period", Label: "Bollinger period", Type: paramTypeInt, Default: 20, Min: 2, Max: 500},
 			{Key: "bb_deviation", Label: "Bollinger std-dev", Type: "float", Default: 2.0, Min: 0.1, Max: 10.0},
 		},
 	},
@@ -73,9 +73,9 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iMACD(prices, fast, slow, signal) -> (macd, signal, hist)",
 		Description:   "MACD. Returns a 3-tuple of SCALARS (latest macd line / signal line / histogram). Do NOT subscript with `[-1]`: use `macd, sig, hist = iMACD(close, 12, 26, 9)` directly.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "macd_fast", Label: "MACD fast period", Type: "int", Default: 12, Min: 2, Max: 200},
-			{Key: "macd_slow", Label: "MACD slow period", Type: "int", Default: 26, Min: 3, Max: 400},
-			{Key: "macd_signal", Label: "MACD signal period", Type: "int", Default: 9, Min: 2, Max: 200},
+			{Key: "macd_fast", Label: "MACD fast period", Type: paramTypeInt, Default: 12, Min: 2, Max: 200},
+			{Key: "macd_slow", Label: "MACD slow period", Type: paramTypeInt, Default: 26, Min: 3, Max: 400},
+			{Key: "macd_signal", Label: "MACD signal period", Type: paramTypeInt, Default: 9, Min: 2, Max: 200},
 		},
 	},
 	{
@@ -83,9 +83,9 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iStochastic(high, low, close, kperiod, dperiod, slowing) -> (%K, %D)",
 		Description:   "Stochastic oscillator. Returns a 2-tuple of SCALARS (latest %K, %D in [0,100]). Do NOT subscript with `[-1]`: use `k, d = iStochastic(...)` directly.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "stoch_k", Label: "%K period", Type: "int", Default: 14, Min: 2, Max: 200},
-			{Key: "stoch_d", Label: "%D period", Type: "int", Default: 3, Min: 1, Max: 100},
-			{Key: "stoch_slowing", Label: "Slowing", Type: "int", Default: 3, Min: 1, Max: 100},
+			{Key: "stoch_k", Label: "%K period", Type: paramTypeInt, Default: 14, Min: 2, Max: 200},
+			{Key: "stoch_d", Label: "%D period", Type: paramTypeInt, Default: 3, Min: 1, Max: 100},
+			{Key: "stoch_slowing", Label: "Slowing", Type: paramTypeInt, Default: 3, Min: 1, Max: 100},
 			{Key: "stoch_overbought", Label: "Stoch overbought", Type: "float", Default: 80, Min: 50, Max: 100},
 			{Key: "stoch_oversold", Label: "Stoch oversold", Type: "float", Default: 20, Min: 0, Max: 50},
 		},
@@ -95,7 +95,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iATR(high, low, close, period) -> float",
 		Description:   "Average True Range. Returns a SCALAR (latest ATR). Do NOT subscript. Use it directly for position sizing / adaptive stops.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "atr_period", Label: "ATR period", Type: "int", Default: 14, Min: 2, Max: 200},
+			{Key: "atr_period", Label: "ATR period", Type: paramTypeInt, Default: 14, Min: 2, Max: 200},
 		},
 	},
 	{
@@ -103,7 +103,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iCCI(high, low, close, period) -> float",
 		Description:   "Commodity Channel Index. Returns a SCALAR (latest value). Do NOT subscript with `[-1]`.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "cci_period", Label: "CCI period", Type: "int", Default: 20, Min: 2, Max: 200},
+			{Key: "cci_period", Label: "CCI period", Type: paramTypeInt, Default: 20, Min: 2, Max: 200},
 			{Key: "cci_overbought", Label: "CCI overbought", Type: "float", Default: 100, Min: 50, Max: 500},
 			{Key: "cci_oversold", Label: "CCI oversold", Type: "float", Default: -100, Min: -500, Max: -50},
 		},
@@ -113,7 +113,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iMomentum(prices, period) -> float",
 		Description:   "Momentum oscillator. Returns a SCALAR (latest close / close[-period] * 100). Do NOT subscript with `[-1]`.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "momentum_period", Label: "Momentum period", Type: "int", Default: 14, Min: 2, Max: 200},
+			{Key: "momentum_period", Label: "Momentum period", Type: paramTypeInt, Default: 14, Min: 2, Max: 200},
 		},
 	},
 	{
@@ -121,7 +121,7 @@ var StrategyIndicators = []StrategyIndicator{
 		CallSignature: "iWPR(high, low, close, period) -> float",
 		Description:   "Williams %R in [-100, 0]. Returns a SCALAR (latest value). Do NOT subscript with `[-1]`.",
 		ParamKeys: []StrategyParamSpec{
-			{Key: "wpr_period", Label: "Williams %R period", Type: "int", Default: 14, Min: 2, Max: 200},
+			{Key: "wpr_period", Label: "Williams %R period", Type: paramTypeInt, Default: 14, Min: 2, Max: 200},
 		},
 	},
 }
@@ -134,7 +134,7 @@ var StrategyRiskParams = []StrategyParamSpec{
 	{Key: "stop_loss_pct", Label: "Stop-loss %", Type: "percent", Default: 1.0, Min: 0.0, Max: 50.0, Description: "Close the trade when the adverse move from entry reaches this percent of price. 0 = disabled."},
 	{Key: "take_profit_pct", Label: "Take-profit %", Type: "percent", Default: 2.0, Min: 0.0, Max: 100.0, Description: "Close the trade when the favourable move from entry reaches this percent of price. 0 = disabled."},
 	{Key: "risk_per_trade_pct", Label: "Risk per trade %", Type: "percent", Default: 1.0, Min: 0.01, Max: 10.0, Description: "Fraction of account equity to risk on a single trade; feed into `risk_size(...)` / `atr_size(...)`."},
-	{Key: "max_positions", Label: "Max concurrent positions", Type: "int", Default: 1, Min: 1, Max: 20, Description: "Strategy must skip new entries when `context['positions_total']` already reaches this."},
+	{Key: "max_positions", Label: "Max concurrent positions", Type: paramTypeInt, Default: 1, Min: 1, Max: 20, Description: "Strategy must skip new entries when `context['positions_total']` already reaches this."},
 }
 
 // IndicatorCatalog is the shape returned by the REST handler for the

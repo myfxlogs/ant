@@ -45,6 +45,33 @@ export interface AgentGenCallbacks {
   onDone?: () => void;
 }
 
+function buildAgentRequest(input: AgentGenInput) {
+  return create(AgentGenerateStrategyRequestSchema, {
+    message: input.message,
+    symbol: input.symbol || '',
+    timeframe: input.timeframe || '',
+    params: input.params || {},
+    planMode: input.planMode || '',
+    planFeedback: input.planFeedback || '',
+    confirmedPlan: input.confirmedPlan,
+    conversationId: input.conversationId || '',
+    accountId: input.accountId || '',
+    currentCode: input.currentCode || '',
+    locale: i18n.language || 'en',
+    backtestConfig: input.backtestConfig ? {
+      symbol: input.backtestConfig.symbol || '',
+      timeframe: input.backtestConfig.timeframe || '',
+      startDateMs: input.backtestConfig.startDateMs || 0n,
+      endDateMs: input.backtestConfig.endDateMs || 0n,
+      initialCapital: input.backtestConfig.initialCapital || '',
+      commission: input.backtestConfig.commission || '',
+      slippage: input.backtestConfig.slippage || '',
+      leverage: input.backtestConfig.leverage || '',
+      strictMode: input.backtestConfig.strictMode || false,
+    } : undefined,
+  });
+}
+
 export function agentGenerateStrategyStream(
   input: AgentGenInput,
   callbacks: AgentGenCallbacks,
@@ -53,31 +80,7 @@ export function agentGenerateStrategyStream(
 
   (async () => {
     try {
-      const req = create(AgentGenerateStrategyRequestSchema, {
-        message: input.message,
-        symbol: input.symbol || '',
-        timeframe: input.timeframe || '',
-        params: input.params || {},
-        planMode: input.planMode || '',
-        planFeedback: input.planFeedback || '',
-        confirmedPlan: input.confirmedPlan,
-        conversationId: input.conversationId || '',
-        accountId: input.accountId || '',
-        currentCode: input.currentCode || '',
-        locale: i18n.language || 'en',
-        backtestConfig: input.backtestConfig ? {
-          symbol: input.backtestConfig.symbol || '',
-          timeframe: input.backtestConfig.timeframe || '',
-          startDateMs: input.backtestConfig.startDateMs || 0n,
-          endDateMs: input.backtestConfig.endDateMs || 0n,
-          initialCapital: input.backtestConfig.initialCapital || '',
-          commission: input.backtestConfig.commission || '',
-          slippage: input.backtestConfig.slippage || '',
-          leverage: input.backtestConfig.leverage || '',
-          strictMode: input.backtestConfig.strictMode || false,
-        } : undefined,
-      });
-
+      const req = buildAgentRequest(input);
       const stream = agentGatewayClient.generateStrategy(req, {
         signal: abortController.signal,
       });
@@ -98,41 +101,21 @@ export function agentGenerateStrategyStream(
 
 function handleAgentChunk(chunk: AgentGenerateStrategyChunk, cbs: AgentGenCallbacks): void {
   cbs.onPhase(chunk.phase);
-
-  if (chunk.delta) {
-    cbs.onDelta(chunk.delta);
-  }
-  if (chunk.reasoning) {
-    cbs.onReasoning(chunk.reasoning);
-  }
-  if (chunk.pythonSource) {
-    cbs.onPythonSource(chunk.pythonSource);
-  }
-  if (chunk.compileError) {
-    cbs.onCompileError(chunk.compileError);
-  }
-  if (chunk.backtestError) {
-    cbs.onBacktestError(chunk.backtestError);
-  }
-  if (chunk.coverageScore) {
-    cbs.onCoverageScore(chunk.coverageScore);
-  }
-  if (chunk.result) {
-    cbs.onResult(chunk.result);
-  }
-  if (chunk.profile) {
-    cbs.onProfile(chunk.profile);
-  }
-  if (chunk.analysis) {
-    cbs.onAnalysis(chunk.analysis);
-  }
-  if (chunk.attempts) {
-    cbs.onAttempts(chunk.attempts);
-  }
-  if (chunk.error) {
-    cbs.onError(chunk.error);
-  }
-  if (chunk.plan) {
-    cbs.onPlan(chunk.plan);
+  const dispatch: Array<[unknown, ((v: never) => void) | undefined]> = [
+    [chunk.delta, cbs.onDelta as ((v: never) => void) | undefined],
+    [chunk.reasoning, cbs.onReasoning as ((v: never) => void) | undefined],
+    [chunk.pythonSource, cbs.onPythonSource as ((v: never) => void) | undefined],
+    [chunk.compileError, cbs.onCompileError as ((v: never) => void) | undefined],
+    [chunk.backtestError, cbs.onBacktestError as ((v: never) => void) | undefined],
+    [chunk.coverageScore, cbs.onCoverageScore as ((v: never) => void) | undefined],
+    [chunk.result, cbs.onResult as ((v: never) => void) | undefined],
+    [chunk.profile, cbs.onProfile as ((v: never) => void) | undefined],
+    [chunk.analysis, cbs.onAnalysis as ((v: never) => void) | undefined],
+    [chunk.attempts, cbs.onAttempts as ((v: never) => void) | undefined],
+    [chunk.error, cbs.onError as ((v: never) => void) | undefined],
+    [chunk.plan, cbs.onPlan as ((v: never) => void) | undefined],
+  ];
+  for (const [val, fn] of dispatch) {
+    if (val && fn) fn(val as never);
   }
 }

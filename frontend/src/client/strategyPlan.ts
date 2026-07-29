@@ -1,5 +1,5 @@
 import { strategyPlanClient } from './connect';
-import type { ExecutePlanChunk, ToolCall, ToolResult, BacktestMetricsMsg } from '../gen/ant/v1/strategy_execution_pb';
+import type { ExecutePlanChunk, ConversateChunk, AnalyzePlanChunk, ToolCall, ToolResult, BacktestMetricsMsg } from '../gen/ant/v1/strategy_execution_pb';
 
 export interface PlanCallbacks {
   onDelta: (delta: string) => void;
@@ -45,22 +45,36 @@ export function conversate(
         backtestMetrics: input.backtestMetrics,
       }, { signal: abort.signal });
       for await (const chunk of stream) {
-        if (chunk.delta) callbacks.onDelta(chunk.delta);
-        if (chunk.plan) callbacks.onPlan(chunk.plan);
-        if (chunk.code) callbacks.onCode(chunk.code);
-        if (chunk.previousCode) callbacks.onPreviousCode(chunk.previousCode);
-        if (chunk.toolCall) callbacks.onToolCall(chunk.toolCall);
-        if (chunk.toolResult) callbacks.onToolResult(chunk.toolResult);
-        if (chunk.error) callbacks.onError(chunk.error);
+        dispatchConversateChunk(chunk, callbacks);
       }
       callbacks.onDone();
     } catch (e: unknown) {
-      const s = String(e);
-      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
-      callbacks.onError(s);
+      if (isAbortError(e)) return;
+      callbacks.onError(String(e));
     }
   })();
   return () => abort.abort();
+}
+
+function dispatchConversateChunk(chunk: ConversateChunk, cbs: ConversateCallbacks): void {
+  if (chunk.delta) cbs.onDelta(chunk.delta);
+  if (chunk.plan) cbs.onPlan(chunk.plan);
+  if (chunk.code) cbs.onCode(chunk.code);
+  if (chunk.previousCode) cbs.onPreviousCode(chunk.previousCode);
+  if (chunk.toolCall) cbs.onToolCall(chunk.toolCall);
+  if (chunk.toolResult) cbs.onToolResult(chunk.toolResult);
+  if (chunk.error) cbs.onError(chunk.error);
+}
+
+function dispatchPlanChunk(chunk: AnalyzePlanChunk, cbs: PlanCallbacks): void {
+  if (chunk.delta) cbs.onDelta(chunk.delta);
+  if (chunk.plan) cbs.onPlan(chunk.plan);
+  if (chunk.error) cbs.onError(chunk.error);
+}
+
+function isAbortError(e: unknown): boolean {
+  const s = String(e);
+  return (e as { name?: string })?.name === 'AbortError' || s.includes('canceled');
 }
 
 export function analyzePlan(
@@ -77,15 +91,12 @@ export function analyzePlan(
         timeframe: input.timeframe || '',
       }, { signal: abort.signal });
       for await (const chunk of stream) {
-        if (chunk.delta) callbacks.onDelta(chunk.delta);
-        if (chunk.plan) callbacks.onPlan(chunk.plan);
-        if (chunk.error) callbacks.onError(chunk.error);
+        dispatchPlanChunk(chunk, callbacks);
       }
       callbacks.onDone();
     } catch (e: unknown) {
-      const s = String(e);
-      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
-      callbacks.onError(s);
+      if (isAbortError(e)) return;
+      callbacks.onError(String(e));
     }
   })();
   return () => abort.abort();
@@ -104,15 +115,12 @@ export function diagnosePlan(
         backtestMetrics: input.backtestMetrics,
       }, { signal: abort.signal });
       for await (const chunk of stream) {
-        if (chunk.delta) callbacks.onDelta(chunk.delta);
-        if (chunk.plan) callbacks.onPlan(chunk.plan);
-        if (chunk.error) callbacks.onError(chunk.error);
+        dispatchPlanChunk(chunk, callbacks);
       }
       callbacks.onDone();
     } catch (e: unknown) {
-      const s = String(e);
-      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
-      callbacks.onError(s);
+      if (isAbortError(e)) return;
+      callbacks.onError(String(e));
     }
   })();
   return () => abort.abort();
