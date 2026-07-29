@@ -20,69 +20,79 @@ import (
 func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps RunnerDeps, mgr *Manager, log *zap.Logger) (Gateway, error) {
 	accID := cfg.AccountID
 
-	var gw Gateway
-	switch strings.ToLower(cfg.Platform) {
-	case "mt4":
-		gw = mt4.New(cfg, log)
-	case "mt5":
-		gw = mt5.New(cfg, log)
-	default:
+	gw := newGateway(cfg, log)
+	if gw == nil {
 		return nil, fmt.Errorf("unknown platform: %s", cfg.Platform)
 	}
 	gw.SetBreaker(mgr.GetOrCreateBreaker(cfg))
 
-	if err := gw.Connect(ctx); err != nil {
-		// §0: On host errors (connection refused / DNS failure), attempt
-		// broker host rediscovery before giving up.
-		if mgr.rediscoverer != nil {
-			newHost, rerr := mgr.rediscoverer.MaybeRediscover(
-				ctx, err, cfg.Broker, cfg.Platform, accID,
-				func(host string) error {
-					testCfg := cfg
-					testCfg.BrokerHost = host
-					var testGW Gateway
-					switch strings.ToLower(cfg.Platform) {
-					case "mt4":
-						testGW = mt4.New(testCfg, log)
-					case "mt5":
-						testGW = mt5.New(testCfg, log)
-					}
-					if cerr := testGW.Connect(ctx); cerr != nil {
-						return cerr
-					}
-					_ = testGW.Disconnect(ctx)
-					return nil
-				},
-			)
-			if rerr == nil && newHost != "" {
-				// Rediscovery succeeded — reconnect with the new host.
-				cfg.BrokerHost = newHost
-				gw = mt4.New(cfg, log)
-				if strings.ToLower(cfg.Platform) == "mt5" {
-					gw = mt5.New(cfg, log)
-				}
-				gw.SetBreaker(mgr.GetOrCreateBreaker(cfg))
-				if err := gw.Connect(ctx); err != nil {
-					return nil, fmt.Errorf("connect after rediscovery: %w", err)
-				}
-				log.Info("mdgateway: gateway connected after host rediscovery",
-					zap.String("account", accID), zap.String("newHost", newHost))
-			} else {
-				return nil, fmt.Errorf("connect: %w", err)
-			}
-		} else {
-			return nil, fmt.Errorf("connect: %w", err)
-		}
+	if err := connectWithRediscovery(ctx, &cfg, gw, mgr, log); err != nil {
+		return nil, err
 	}
 
-	// Wire gateway connection state changes → OnAccountStatus callback.
+	if err := postConnectSetup(ctx, cfg, gw, deps, mgr, log); err != nil {
+		return gw, err
+	}
+
+	log.Info("mdgateway: gateway active", zap.String("account", accID), zap.String("platform", cfg.Platform))
+	return gw, nil
+}
+
+func newGateway(cfg mdtick.AccountConfig, log *zap.Logger) Gateway {
+	switch strings.ToLower(cfg.Platform) {
+	case "mt4":
+		return mt4.New(cfg, log)
+	case "mt5":
+		return mt5.New(cfg, log)
+	}
+	return nil
+}
+
+func connectWithRediscovery(ctx context.Context, cfg *mdtick.AccountConfig, gw Gateway, mgr *Manager, log *zap.Logger) error {
+	if err := gw.Connect(ctx); err != nil {
+		if mgr.rediscoverer == nil {
+			return fmt.Errorf("connect: %w", err)
+		}
+		newHost, rerr := mgr.rediscoverer.MaybeRediscover(
+			ctx, err, cfg.Broker, cfg.Platform, cfg.AccountID,
+			func(host string) error {
+				testCfg := *cfg
+				testCfg.BrokerHost = host
+				testGW := newGateway(testCfg, log)
+				if testGW == nil {
+					return fmt.Errorf("unknown platform: %s", cfg.Platform)
+				}
+				if cerr := testGW.Connect(ctx); cerr != nil {
+					return cerr
+				}
+				_ = testGW.Disconnect(ctx)
+				return nil
+			},
+		)
+		if rerr != nil || newHost == "" {
+			return fmt.Errorf("connect: %w", err)
+		}
+		cfg.BrokerHost = newHost
+		gw = newGateway(*cfg, log)
+		gw.SetBreaker(mgr.GetOrCreateBreaker(*cfg))
+		if err := gw.Connect(ctx); err != nil {
+			return fmt.Errorf("connect after rediscovery: %w", err)
+		}
+		log.Info("mdgateway: gateway connected after host rediscovery",
+			zap.String("account", cfg.AccountID), zap.String("newHost", newHost))
+	}
+	return nil
+}
+
+func postConnectSetup(ctx context.Context, cfg mdtick.AccountConfig, gw Gateway, deps RunnerDeps, mgr *Manager, log *zap.Logger) error {
+	accID := cfg.AccountID
+
 	gw.SetStatusCallback(func(status, message string) {
 		if deps.OnAccountStatus != nil {
 			deps.OnAccountStatus(accID, cfg.UserID, status, message)
 		}
 	})
 
-	// Persist connected status + account metadata (investor flag, method).
 	if deps.PG != nil {
 		isInvestor := false
 		if infoProvider, ok := gw.(mdtick.AccountInfoProvider); ok {
@@ -106,10 +116,9 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 
 	if err := mgr.AddGateway(ctx, gw, nil); err != nil {
 		_ = gw.Disconnect(ctx)
-		return gw, fmt.Errorf("add gateway: %w", err)
+		return fmt.Errorf("add gateway: %w", err)
 	}
 
-	// Register with Hub BEFORE FetchBrokerInfo so syncHistory can find the session.
 	if deps.Hub != nil {
 		if exec, ok := gw.(mthub.OrderExecutor); ok {
 			deps.Hub.Register(accID,
@@ -117,7 +126,6 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		}
 	}
 
-	// Fetch broker-level margin thresholds after Hub registration.
 	if deps.OnBrokerInfo != nil {
 		if fetcher, ok := gw.(mdtick.BrokerInfoFetcher); ok {
 			info, ferr := fetcher.FetchBrokerInfo(ctx)
@@ -131,7 +139,6 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		}
 	}
 
-	// Subscribe to tick stream.
 	syms := cfg.Symbols
 	if len(syms) == 0 {
 		syms = defaultQuoteSymbols()
@@ -139,10 +146,9 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	if err := gw.Subscribe(ctx, syms, mgr.HandleTick); err != nil {
 		_ = mgr.RemoveGateway(ctx, accID)
 		_ = gw.Disconnect(ctx)
-		return gw, fmt.Errorf("tick subscribe: %w", err)
+		return fmt.Errorf("tick subscribe: %w", err)
 	}
 
-	// Subscribe to profit and order-update streams.
 	if deps.OnAccountProfit != nil {
 		uid, aid := cfg.UserID, accID
 		if err := gw.SubscribeProfit(ctx, func(p *mdtick.ProfitUpdate) { deps.OnAccountProfit(aid, uid, p) }); err != nil {
@@ -157,7 +163,5 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 				zap.String("account", accID), zap.Error(err))
 		}
 	}
-
-	log.Info("mdgateway: gateway active", zap.String("account", accID), zap.String("platform", cfg.Platform))
-	return gw, nil
+	return nil
 }

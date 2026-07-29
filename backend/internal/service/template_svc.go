@@ -236,66 +236,9 @@ func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, p
 	if len(out) == 0 {
 		return out, total, nil
 	}
-	// Batch: latest successful backtest per template
-	btRows, err := s.pg.Query(ctx,
-		`SELECT DISTINCT ON (template_id) template_id, id, proto_response
-		 FROM backtest_runs WHERE template_id = ANY($1) AND status = 'succeeded'
-		 ORDER BY template_id, created_at DESC`, tids)
+	btMap, schedMap, marketMap, err := s.batchListStrategyCardsQueries(ctx, tids)
 	if err != nil {
-		return nil, 0, fmt.Errorf("ListStrategyCards backtests: %w", err)
-	}
-	defer btRows.Close()
-	type btInfo struct{ runID uuid.UUID; raw []byte }
-	btMap := make(map[uuid.UUID]btInfo)
-	for btRows.Next() {
-		var tid uuid.UUID
-		var info btInfo
-		if err := btRows.Scan(&tid, &info.runID, &info.raw); err != nil {
-			return nil, 0, fmt.Errorf("ListStrategyCards bt scan: %w", err)
-		}
-		btMap[tid] = info
-	}
-	if err := btRows.Err(); err != nil {
-		return nil, 0, fmt.Errorf("ListStrategyCards backtests: %w", err)
-	}
-	// Batch: active schedule counts
-	scRows, err := s.pg.Query(ctx,
-		`SELECT template_id, COUNT(*)::int FROM strategy_schedules
-		 WHERE template_id = ANY($1) AND is_active = true GROUP BY template_id`, tids)
-	if err != nil {
-		return nil, 0, fmt.Errorf("ListStrategyCards schedules: %w", err)
-	}
-	defer scRows.Close()
-	schedMap := make(map[uuid.UUID]int32)
-	for scRows.Next() {
-		var tid uuid.UUID
-		var n int32
-		if err := scRows.Scan(&tid, &n); err != nil {
-			return nil, 0, fmt.Errorf("ListStrategyCards sched scan: %w", err)
-		}
-		schedMap[tid] = n
-	}
-	if err := scRows.Err(); err != nil {
-		return nil, 0, fmt.Errorf("ListStrategyCards schedules: %w", err)
-	}
-	// Batch: marketplace published status (H3)
-	marketRows, err := s.pg.Query(ctx,
-		`SELECT strategy_id FROM marketplace_strategies
-		 WHERE strategy_id = ANY($1) AND status = 'published'`, tids)
-	if err != nil {
-		return nil, 0, fmt.Errorf("ListStrategyCards marketplace: %w", err)
-	}
-	defer marketRows.Close()
-	marketMap := make(map[uuid.UUID]bool)
-	for marketRows.Next() {
-		var tid uuid.UUID
-		if err := marketRows.Scan(&tid); err != nil {
-			return nil, 0, fmt.Errorf("ListStrategyCards market scan: %w", err)
-		}
-		marketMap[tid] = true
-	}
-	if err := marketRows.Err(); err != nil {
-		return nil, 0, fmt.Errorf("ListStrategyCards marketplace: %w", err)
+		return nil, 0, err
 	}
 	// Assemble: parse proto_response for KPIs + sparkline
 	for i := range out {
@@ -335,6 +278,71 @@ func (s *StrategySvc) ListStrategyCards(ctx context.Context, userID uuid.UUID, p
 func parseCardFloat(s string) float64 {
 	f, _ := strconv.ParseFloat(s, 64)
 	return f
+}
+
+type btInfo struct{ runID uuid.UUID; raw []byte }
+
+func (s *StrategySvc) batchListStrategyCardsQueries(ctx context.Context, tids []uuid.UUID) (map[uuid.UUID]btInfo, map[uuid.UUID]int32, map[uuid.UUID]bool, error) {
+	btRows, err := s.pg.Query(ctx,
+		`SELECT DISTINCT ON (template_id) template_id, id, proto_response
+		 FROM backtest_runs WHERE template_id = ANY($1) AND status = 'succeeded'
+		 ORDER BY template_id, created_at DESC`, tids)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("ListStrategyCards backtests: %w", err)
+	}
+	defer btRows.Close()
+	btMap := make(map[uuid.UUID]btInfo)
+	for btRows.Next() {
+		var tid uuid.UUID
+		var info btInfo
+		if err := btRows.Scan(&tid, &info.runID, &info.raw); err != nil {
+			return nil, nil, nil, fmt.Errorf("ListStrategyCards bt scan: %w", err)
+		}
+		btMap[tid] = info
+	}
+	if err := btRows.Err(); err != nil {
+		return nil, nil, nil, fmt.Errorf("ListStrategyCards backtests: %w", err)
+	}
+
+	scRows, err := s.pg.Query(ctx,
+		`SELECT template_id, COUNT(*)::int FROM strategy_schedules
+		 WHERE template_id = ANY($1) AND is_active = true GROUP BY template_id`, tids)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("ListStrategyCards schedules: %w", err)
+	}
+	defer scRows.Close()
+	schedMap := make(map[uuid.UUID]int32)
+	for scRows.Next() {
+		var tid uuid.UUID
+		var n int32
+		if err := scRows.Scan(&tid, &n); err != nil {
+			return nil, nil, nil, fmt.Errorf("ListStrategyCards sched scan: %w", err)
+		}
+		schedMap[tid] = n
+	}
+	if err := scRows.Err(); err != nil {
+		return nil, nil, nil, fmt.Errorf("ListStrategyCards schedules: %w", err)
+	}
+
+	marketRows, err := s.pg.Query(ctx,
+		`SELECT strategy_id FROM marketplace_strategies
+		 WHERE strategy_id = ANY($1) AND status = 'published'`, tids)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("ListStrategyCards marketplace: %w", err)
+	}
+	defer marketRows.Close()
+	marketMap := make(map[uuid.UUID]bool)
+	for marketRows.Next() {
+		var tid uuid.UUID
+		if err := marketRows.Scan(&tid); err != nil {
+			return nil, nil, nil, fmt.Errorf("ListStrategyCards market scan: %w", err)
+		}
+		marketMap[tid] = true
+	}
+	if err := marketRows.Err(); err != nil {
+		return nil, nil, nil, fmt.Errorf("ListStrategyCards marketplace: %w", err)
+	}
+	return btMap, schedMap, marketMap, nil
 }
 
 func scanTemplateRows(rows pgx.Rows) ([]TemplateRow, error) {

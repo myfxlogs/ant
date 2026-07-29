@@ -58,7 +58,6 @@ func configureStrategyExecution(
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
 	srv.SetQuotaChecker(quotaChecker)
 
-	// Clean up runs orphaned by a previous crash/restart.
 	if n, err := strategyRunRepo.CleanupStaleRuns(context.Background()); err != nil {
 		log.Warn("startup: failed to cleanup stale strategy runs", zap.Error(err))
 	} else if n > 0 {
@@ -80,12 +79,27 @@ func configureStrategyExecution(
 	srv.SetPaperEngine(paperEngine)
 	srv.SetNotificationSender(notifSender)
 
-	// D6-A: risk Gate — system rules only. User trading constraints are opt-in.
+	gate := setupRiskGate(cfg, jurisGate, capStore)
+	srv.SetGate(gate)
+	mthubSvc.SetGate(gate)
+	posCache := strategy.NewPositionCache(log)
+	srv.SetPositionCache(posCache)
+	accountProvider := strategy.NewMTAccountStateProvider(hub, log)
+	accountProvider.SetPositionCache(posCache)
+	srv.SetAccountProvider(accountProvider)
+	log.Info("D6-A: risk.Gate + AccountStateProvider + PositionCache injected into StrategyExecutionServer")
+
+	gateEvalRepo := repository.NewGateEvaluationRepository(pool)
+	srv.SetOnBacktestComplete(makeOnBacktestComplete(gateEvalRepo, mktplaceSvc, notifSender, aiSvc, backtestRunRepo, log))
+	srv.SetQualityValidator(mktplaceSvc)
+	srv.SetGateEvalRepo(gateEvalRepo)
+	return srv
+}
+
+func setupRiskGate(cfg *config.Config, jurisGate *risksvc.JurisdictionGate, capStore *risksvc.CapabilityStore) *risk.Gate {
 	gate := risk.NewGateWithSystemRules()
 	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
-
-	// Wire KYC/Jurisdiction (legal compliance — non-optional when configured).
 	if jurisGate != nil {
 		gate.AddRule(&risk.KycJurisdictionGateRule{
 			Gate:       jurisGate,
@@ -93,32 +107,21 @@ func configureStrategyExecution(
 			ClientIPFn: func(ctx context.Context) string { return "" },
 		})
 	}
-	// Wire capability tier (per-user trading limits from DB).
 	if capStore != nil {
 		gate.AddRule(risk.NewCapabilityTierRule(capStore))
 	}
-	srv.SetGate(gate)      // live_runner startup guard only (gate runs in mthub now)
-	mthubSvc.SetGate(gate) // D6-A single chokepoint: all orders through mthub
-	// Push-first: PositionCache subscribes to PositionSnapshotBroker (no per-bar polling).
-	posCache := strategy.NewPositionCache(log)
-	srv.SetPositionCache(posCache)
-	// T3.2b: Inject AccountStateProvider for live trading.
-	// Uses push-based PositionCache when available, falls back to FetchOpenedOrders.
-	accountProvider := strategy.NewMTAccountStateProvider(hub, log)
-	accountProvider.SetPositionCache(posCache)
-	srv.SetAccountProvider(accountProvider)
-	log.Info("D6-A: risk.Gate + AccountStateProvider + PositionCache injected into StrategyExecutionServer")
+	return gate
+}
 
-	// Auto-gate: runs gate evaluation after every backtest completion.
-	// On failure, spawns async auto-fix (LLM code repair → new backtest).
-	// This callback is the SINGLE source of truth for pipeline computation:
-	// it always computes the 7-gate pipeline, persists results for auto_gate runs
-	// (so restoreGateEvaluation can read from DB), and sends notification + auto-fix.
-	// If a concurrent restoreGateEvaluation already persisted results, it reads from DB
-	// to avoid duplicate computation.
-	gateEvalRepo := repository.NewGateEvaluationRepository(pool)
-	onBacktestComplete := func(ctx context.Context, run *repository.BacktestRun) {
-		// For auto_gate runs: check if restoreGateEvaluation already persisted.
+func makeOnBacktestComplete(
+	gateEvalRepo *repository.GateEvaluationRepository,
+	mktplaceSvc *marketplace.Service,
+	notifSender *notifpubsub.Sender,
+	aiSvc *systemai.Service,
+	backtestRunRepo *repository.BacktestRunRepository,
+	log *zap.Logger,
+) func(ctx context.Context, run *repository.BacktestRun) {
+	return func(ctx context.Context, run *repository.BacktestRun) {
 		if run.AutoGate {
 			ge, err := gateEvalRepo.GetByRunID(ctx, run.ID)
 			if err == nil && ge != nil {
@@ -135,8 +138,6 @@ func configureStrategyExecution(
 			}
 		}
 
-		// Compute pipeline (always — for both auto_gate and non-auto-gate runs).
-		// Use the same buildPipelineInput as sendAutoGateUpdate for consistency.
 		dailyReturns := internalai.EquityCurveToDailyReturns(run.ProtoResponse)
 		if len(dailyReturns) < 10 {
 			return
@@ -144,43 +145,8 @@ func configureStrategyExecution(
 		input := strategy.BuildPipelineInputFromRepo(ctx, gateEvalRepo, run, dailyReturns)
 		result := internalai.Pipeline(input)
 
-		// For auto_gate runs: persist gate results so restoreGateEvaluation reads from DB.
 		if run.AutoGate {
-			// Compute quality preview (same as sendAutoGateUpdate).
-			var qualityPreview *antv1.MarketplaceQualityPreview
-			if mktplaceSvc != nil && len(run.BacktestSnapshot) > 0 {
-				strategyID := ""
-				if run.TemplateID != nil {
-					strategyID = run.TemplateID.String()
-				}
-				violations, err := mktplaceSvc.ValidateBacktestQuality(ctx, run.BacktestSnapshot, strategyID)
-				if err != nil {
-					log.Warn("onBacktestComplete: marketplace quality preview failed", zap.Error(err))
-				} else {
-					qualityPreview = strategy.ViolationsToPreview(violations)
-				}
-			}
-			// Unify publishability: 7-gate pass AND no marketplace violations.
-			if qualityPreview != nil && !result.Passed {
-				qualityPreview.Publishable = false
-			}
-
-			gateSummary := strategy.BuildGateSummaryProto(&result)
-			gateBytes, _ := proto.Marshal(gateSummary)
-			gateList := strategy.BuildGateListProto(&result)
-			var gateResultsBytes []byte
-			if gateList != nil {
-				gateResultsBytes, _ = proto.Marshal(gateList)
-			}
-			var qualityBytes []byte
-			publishable := false
-			if qualityPreview != nil {
-				qualityBytes, _ = proto.Marshal(qualityPreview)
-				publishable = qualityPreview.Publishable
-			}
-			if err := gateEvalRepo.Upsert(ctx, run.UserID, run.ID, gateBytes, gateResultsBytes, qualityBytes, result.Passed, string(result.FirstFail), result.Summary, publishable); err != nil {
-				log.Warn("onBacktestComplete: failed to persist gate evaluation", zap.Error(err))
-			}
+			persistAutoGateResults(ctx, gateEvalRepo, mktplaceSvc, run, result, log)
 		}
 
 		ai.SendGateNotification(ctx, notifSender, run.UserID, run, result)
@@ -189,8 +155,47 @@ func configureStrategyExecution(
 		}
 		go autoFixCode(context.WithoutCancel(ctx), run, result, aiSvc, backtestRunRepo, notifSender, log)
 	}
-	srv.SetOnBacktestComplete(onBacktestComplete)
-	srv.SetQualityValidator(mktplaceSvc)
-	srv.SetGateEvalRepo(repository.NewGateEvaluationRepository(pool))
-	return srv
+}
+
+func persistAutoGateResults(
+	ctx context.Context,
+	gateEvalRepo *repository.GateEvaluationRepository,
+	mktplaceSvc *marketplace.Service,
+	run *repository.BacktestRun,
+	result internalai.PipelineResult,
+	log *zap.Logger,
+) {
+	var qualityPreview *antv1.MarketplaceQualityPreview
+	if mktplaceSvc != nil && len(run.BacktestSnapshot) > 0 {
+		strategyID := ""
+		if run.TemplateID != nil {
+			strategyID = run.TemplateID.String()
+		}
+		violations, err := mktplaceSvc.ValidateBacktestQuality(ctx, run.BacktestSnapshot, strategyID)
+		if err != nil {
+			log.Warn("onBacktestComplete: marketplace quality preview failed", zap.Error(err))
+		} else {
+			qualityPreview = strategy.ViolationsToPreview(violations)
+		}
+	}
+	if qualityPreview != nil && !result.Passed {
+		qualityPreview.Publishable = false
+	}
+
+	gateSummary := strategy.BuildGateSummaryProto(&result)
+	gateBytes, _ := proto.Marshal(gateSummary)
+	gateList := strategy.BuildGateListProto(&result)
+	var gateResultsBytes []byte
+	if gateList != nil {
+		gateResultsBytes, _ = proto.Marshal(gateList)
+	}
+	var qualityBytes []byte
+	publishable := false
+	if qualityPreview != nil {
+		qualityBytes, _ = proto.Marshal(qualityPreview)
+		publishable = qualityPreview.Publishable
+	}
+	if err := gateEvalRepo.Upsert(ctx, run.UserID, run.ID, gateBytes, gateResultsBytes, qualityBytes, result.Passed, string(result.FirstFail), result.Summary, publishable); err != nil {
+		log.Warn("onBacktestComplete: failed to persist gate evaluation", zap.Error(err))
+	}
 }

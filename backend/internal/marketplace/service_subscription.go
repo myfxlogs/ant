@@ -175,6 +175,12 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 // a 30-day extension; failed ones (insufficient balance) are deactivated.
 // Revenue is split between publisher and platform, mirroring PurchaseStrategy.
 // Returns the number of renewed and failed subscriptions.
+type renewalItem struct {
+	subID, userID, publisherID, strategyID, title string
+	priceAmount, platformFeeRate                  string
+	refundWindowDays                             int
+}
+
 func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, err error) {
 	rows, qErr := s.pg.Query(ctx, `
 		SELECT us.id, us.subscriber_user_id::text, us.target_user_id::text,
@@ -190,11 +196,6 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 	}
 	defer rows.Close()
 
-	type renewalItem struct {
-		subID, userID, publisherID, strategyID, title string
-		priceAmount, platformFeeRate                  string
-		refundWindowDays                             int
-	}
 	var renewals []renewalItem
 	for rows.Next() {
 		var r renewalItem
@@ -206,117 +207,102 @@ func (s *Service) RenewSubscriptions(ctx context.Context) (renewed, failed int, 
 	rows.Close()
 
 	for _, p := range renewals {
-		tx, txErr := s.pg.Begin(ctx)
-		if txErr != nil {
-			failed++
-			continue
-		}
-
-		// Parse amounts as decimal for precise arithmetic.
-		priceDec, decErr := decimal.NewFromString(p.priceAmount)
-		if decErr != nil {
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-		// M7: Use tiered fee rate instead of flat platform_fee_rate from publish time.
-		// This ensures publishers who have earned lower fee tiers get the correct rate on renewals.
-		feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, p.publisherID)
-		if err != nil {
-			s.log.Warn("renewal: get effective fee rate failed", zap.String("subID", p.subID), zap.Error(err))
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-		feeDec := priceDec.Mul(feeRateDec)
-		pubDec := priceDec.Sub(feeDec)
-
-		amountStr := priceDec.StringFixed(2)
-		negAmountStr := "-" + amountStr
-
-		// 1. Lock buyer wallet and deduct.
-		uid, err := uuid.Parse(p.userID)
-		if err != nil {
-			s.log.Warn("renewal: invalid user_id", zap.String("subID", p.subID), zap.String("userID", p.userID), zap.Error(err))
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-		var buyerWalletID uuid.UUID
-		if err := tx.QueryRow(ctx,
-			`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
-			uid,
-		).Scan(&buyerWalletID); err != nil {
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-
-		// 2. Charge buyer via AdjustBalanceTx (hash chain + idempotency).
-		buyerDesc := fmt.Sprintf("Subscription renewal: %s", p.title)
-		_, chargeErr := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
-			negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyRenewBuy+p.subID)
-
-		if chargeErr != nil {
-			// Insufficient balance — deactivate and commit (not rollback,
-			// otherwise the deactivation is lost and we retry forever).
-			if _, dErr := tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID); dErr != nil {
-				s.log.Warn("renewal: deactivate failed", zap.String("subID", p.subID), zap.Error(dErr))
-				_ = tx.Rollback(ctx)
-				failed++
-				continue
-			}
-			if cErr := tx.Commit(ctx); cErr != nil {
-				s.log.Warn("renewal: deactivate commit failed", zap.String("subID", p.subID), zap.Error(cErr))
-			}
-			failed++
-			continue
-		}
-
-		// 3. Create frozen settlement for renewal (Phase 5.4).
-		pubID, err := uuid.Parse(p.publisherID)
-		if err != nil {
-			s.log.Warn("renewal: invalid publisher_id", zap.String("subID", p.subID), zap.String("publisherID", p.publisherID), zap.Error(err))
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-		pubAmountStr := pubDec.StringFixed(2)
-		feeStr := feeDec.StringFixed(2)
-		subUUID, err := uuid.Parse(p.subID)
-		if err != nil {
-			s.log.Warn("renewal: invalid sub_id", zap.String("subID", p.subID), zap.Error(err))
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-		if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr, p.refundWindowDays, nil); err != nil {
-			s.log.Warn("renewal: create settlement failed", zap.String("subID", p.subID), zap.Error(err))
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-
-		// 4. Extend subscription by 30 days.
-		if _, eErr := tx.Exec(ctx,
-			`UPDATE user_subscriptions SET expires_at = now() + INTERVAL '30 days' WHERE id = $1`,
-			p.subID,
-		); eErr != nil {
-			s.log.Warn("renewal: extend failed", zap.String("subID", p.subID), zap.Error(eErr))
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-
-		if cErr := tx.Commit(ctx); cErr != nil {
-			s.log.Warn("renewal: commit failed", zap.String("subID", p.subID), zap.Error(cErr))
-			failed++
-			continue
-		}
-		renewed++
+		r, f := s.processRenewal(ctx, p)
+		renewed += r
+		failed += f
 	}
 
 	return renewed, failed, nil
+}
+
+func (s *Service) processRenewal(ctx context.Context, p renewalItem) (renewed, failed int) {
+	tx, txErr := s.pg.Begin(ctx)
+	if txErr != nil {
+		return 0, 1
+	}
+
+	priceDec, decErr := decimal.NewFromString(p.priceAmount)
+	if decErr != nil {
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+	feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, p.publisherID)
+	if err != nil {
+		s.log.Warn("renewal: get effective fee rate failed", zap.String("subID", p.subID), zap.Error(err))
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+	feeDec := priceDec.Mul(feeRateDec)
+	pubDec := priceDec.Sub(feeDec)
+
+	amountStr := priceDec.StringFixed(2)
+	negAmountStr := "-" + amountStr
+
+	uid, err := uuid.Parse(p.userID)
+	if err != nil {
+		s.log.Warn("renewal: invalid user_id", zap.String("subID", p.subID), zap.String("userID", p.userID), zap.Error(err))
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+	var buyerWalletID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+		uid,
+	).Scan(&buyerWalletID); err != nil {
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+
+	buyerDesc := fmt.Sprintf("Subscription renewal: %s", p.title)
+	_, chargeErr := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
+		negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyRenewBuy+p.subID)
+
+	if chargeErr != nil {
+		if _, dErr := tx.Exec(ctx, `UPDATE user_subscriptions SET active = false WHERE id = $1`, p.subID); dErr != nil {
+			s.log.Warn("renewal: deactivate failed", zap.String("subID", p.subID), zap.Error(dErr))
+			_ = tx.Rollback(ctx)
+			return 0, 1
+		}
+		if cErr := tx.Commit(ctx); cErr != nil {
+			s.log.Warn("renewal: deactivate commit failed", zap.String("subID", p.subID), zap.Error(cErr))
+		}
+		return 0, 1
+	}
+
+	pubID, err := uuid.Parse(p.publisherID)
+	if err != nil {
+		s.log.Warn("renewal: invalid publisher_id", zap.String("subID", p.subID), zap.String("publisherID", p.publisherID), zap.Error(err))
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+	pubAmountStr := pubDec.StringFixed(2)
+	feeStr := feeDec.StringFixed(2)
+	subUUID, err := uuid.Parse(p.subID)
+	if err != nil {
+		s.log.Warn("renewal: invalid sub_id", zap.String("subID", p.subID), zap.Error(err))
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+	if err := s.createFrozenSettlementTx(ctx, tx, subUUID, uid, pubID, amountStr, feeStr, pubAmountStr, p.refundWindowDays, nil); err != nil {
+		s.log.Warn("renewal: create settlement failed", zap.String("subID", p.subID), zap.Error(err))
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+
+	if _, eErr := tx.Exec(ctx,
+		`UPDATE user_subscriptions SET expires_at = now() + INTERVAL '30 days' WHERE id = $1`,
+		p.subID,
+	); eErr != nil {
+		s.log.Warn("renewal: extend failed", zap.String("subID", p.subID), zap.Error(eErr))
+		_ = tx.Rollback(ctx)
+		return 0, 1
+	}
+
+	if cErr := tx.Commit(ctx); cErr != nil {
+		s.log.Warn("renewal: commit failed", zap.String("subID", p.subID), zap.Error(cErr))
+		return 0, 1
+	}
+	return 1, 0
 }
 
 // StartRenewalLoop runs a daily subscription renewal ticker in a background

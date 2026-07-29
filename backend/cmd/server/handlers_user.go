@@ -20,33 +20,42 @@ import (
 	connectrpc "connectrpc.com/connect"
 )
 
+// authHandlerParams holds parameters for registerAuthHandler.
+type authHandlerParams struct {
+	Mux                  *http.ServeMux
+	Pool                 *pgxpool.Pool
+	Cfg                  *config.Config
+	JWTSecret            string
+	UserRepo             *repository.UserRepository
+	RegistrationSvc      *service.RegistrationService
+	EmailNotifier        *notifier.EmailNotifier
+	MTTester             user.MTConnectionTester
+	Log                  *zap.Logger
+	OtelInterceptor      connectrpc.Interceptor
+	RateLimitInterceptor connectrpc.Interceptor
+	AuthInterceptor      connectrpc.Interceptor
+}
+
 // registerAuthHandler wires the auth ConnectRPC handler and returns the AuthServer
 // for modules that need to reference it (SRE, admin, etc).
-func registerAuthHandler(
-	mux *http.ServeMux,
-	pool *pgxpool.Pool,
-	cfg *config.Config,
-	jwtSecret string,
-	userRepo *repository.UserRepository,
-	registrationSvc *service.RegistrationService,
-	emailNotifier *notifier.EmailNotifier,
-	mtTester user.MTConnectionTester,
-	log *zap.Logger,
-	otelInterceptor, rateLimitInterceptor, authInterceptor connectrpc.Interceptor,
-) *user.AuthServer {
-	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
+func registerAuthHandler(p authHandlerParams) *user.AuthServer {
+	mux := p.Mux
+	pool := p.Pool
+	cfg := p.Cfg
+	log := p.Log
+	authServer := user.NewAuthServer(p.UserRepo, p.JWTSecret, log)
 	authServer.SetInsecureCookies(!cfg.CookieSecure)
-	authServer.WithRegistration(registrationSvc)
-	if emailNotifier != nil {
-		emailVerifSvc := service.NewEmailVerificationService(pool, emailNotifier, cfg.AppURL, log)
+	authServer.WithRegistration(p.RegistrationSvc)
+	if p.EmailNotifier != nil {
+		emailVerifSvc := service.NewEmailVerificationService(pool, p.EmailNotifier, cfg.AppURL, log)
 		authServer.WithEmailVerification(emailVerifSvc)
-		registrationSvc.SetEmailVerification(emailVerifSvc)
+		p.RegistrationSvc.SetEmailVerification(emailVerifSvc)
 	}
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
-	authServer.WithPasswordReset(passwordResetRepo, emailNotifier, cfg.AppURL)
-	authServer.WithMTIdentityVerification(pool, mtTester)
+	authServer.WithPasswordReset(passwordResetRepo, p.EmailNotifier, cfg.AppURL)
+	authServer.WithMTIdentityVerification(pool, p.MTTester)
 	authServer.SetRequireEmailVerification(cfg.RequireEmailVerification)
-	mux.Handle(antv1c.NewAuthServiceHandler(authServer, withSency(otelInterceptor, rateLimitInterceptor, authInterceptor)))
+	mux.Handle(antv1c.NewAuthServiceHandler(authServer, withSency(p.OtelInterceptor, p.RateLimitInterceptor, p.AuthInterceptor)))
 	return authServer
 }
 

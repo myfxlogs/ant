@@ -140,23 +140,59 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 	}
 
 	bc := &Bytecode{
-		OnInit:              -1,
-		OnBar:               -1,
-		OnTick:              -1,
-		OnTrade:             -1,
-		OnTimer:             -1,
-		OnDeinit:            -1,
-		OnTradeTransaction:  -1,
-		OnBookEvent:         -1,
-		EventLocals: make(map[int32]int),
+		OnInit:             -1,
+		OnBar:              -1,
+		OnTick:             -1,
+		OnTrade:            -1,
+		OnTimer:            -1,
+		OnDeinit:           -1,
+		OnTradeTransaction: -1,
+		OnBookEvent:        -1,
+		EventLocals:        make(map[int32]int),
 	}
 
-	// Consts
+	if bc.Consts, err = unmarshalConsts(r); err != nil {
+		return nil, err
+	}
+	if bc.Code, err = unmarshalCode(r); err != nil {
+		return nil, err
+	}
+	if bc.GlobalSlots, err = unmarshalGlobalSlots(r); err != nil {
+		return nil, err
+	}
+	if bc.GlobalDecls, err = unmarshalGlobalDecls(r); err != nil {
+		return nil, err
+	}
+	if bc.Funcs, err = unmarshalFuncs(r); err != nil {
+		return nil, err
+	}
+	if bc.Builtins, err = unmarshalBuiltins(r); err != nil {
+		return nil, err
+	}
+	if err = unmarshalEvents(r, bc); err != nil {
+		return nil, err
+	}
+	if err = unmarshalEventLocals(r, bc); err != nil {
+		return nil, err
+	}
+	if err = unmarshalParams(r, bc); err != nil {
+		return nil, err
+	}
+	if bc.Version, err = r.readString(); err != nil {
+		return nil, fmt.Errorf("bytecode: read version: %w", err)
+	}
+	if bc.Enums, err = unmarshalEnums(r); err != nil {
+		return nil, err
+	}
+	return bc, nil
+}
+
+func unmarshalConsts(r *bytecodeReader) ([]ConstValue, error) {
 	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read consts count: %w", err)
 	}
-	bc.Consts = make([]ConstValue, n)
+	consts := make([]ConstValue, n)
 	for i := uint32(0); i < n; i++ {
 		kind, err := r.readU8()
 		if err != nil {
@@ -179,15 +215,17 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 			return nil, fmt.Errorf("bytecode: read const[%d] bool: %w", i, err)
 		}
 		dec, _ := decimal.NewFromString(decStr)
-		bc.Consts[i] = ConstValue{Kind: interp.ValueKind(kind), Int: intVal, Dec: dec, Str: str, Bool: b}
+		consts[i] = ConstValue{Kind: interp.ValueKind(kind), Int: intVal, Dec: dec, Str: str, Bool: b}
 	}
+	return consts, nil
+}
 
-	// Code
-	n, err = r.readU32()
+func unmarshalCode(r *bytecodeReader) ([]Instruction, error) {
+	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read code count: %w", err)
 	}
-	bc.Code = make([]Instruction, n)
+	code := make([]Instruction, n)
 	for i := uint32(0); i < n; i++ {
 		op, err := r.readU8()
 		if err != nil {
@@ -205,15 +243,17 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read code[%d] line: %w", i, err)
 		}
-		bc.Code[i] = Instruction{Op: Opcode(op), A: a, B: b, Line: line}
+		code[i] = Instruction{Op: Opcode(op), A: a, B: b, Line: line}
 	}
+	return code, nil
+}
 
-	// GlobalSlots
-	n, err = r.readU32()
+func unmarshalGlobalSlots(r *bytecodeReader) (map[string]VarID, error) {
+	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read globalSlots count: %w", err)
 	}
-	bc.GlobalSlots = make(map[string]VarID, n)
+	slots := make(map[string]VarID, n)
 	for i := uint32(0); i < n; i++ {
 		name, err := r.readString()
 		if err != nil {
@@ -223,15 +263,17 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read globalSlot[%d] id: %w", i, err)
 		}
-		bc.GlobalSlots[name] = VarID(id)
+		slots[name] = VarID(id)
 	}
+	return slots, nil
+}
 
-	// GlobalDecls
-	n, err = r.readU32()
+func unmarshalGlobalDecls(r *bytecodeReader) ([]interp.GlobalVar, error) {
+	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read globalDecls count: %w", err)
 	}
-	bc.GlobalDecls = make([]interp.GlobalVar, n)
+	decls := make([]interp.GlobalVar, n)
 	for i := uint32(0); i < n; i++ {
 		name, err := r.readString()
 		if err != nil {
@@ -249,15 +291,17 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read globalDecl[%d] arrSize: %w", i, err)
 		}
-		bc.GlobalDecls[i] = interp.GlobalVar{Name: name, Type: typ, IsArray: isArray, ArraySize: int(arrSize)}
+		decls[i] = interp.GlobalVar{Name: name, Type: typ, IsArray: isArray, ArraySize: int(arrSize)}
 	}
+	return decls, nil
+}
 
-	// Funcs
-	n, err = r.readU32()
+func unmarshalFuncs(r *bytecodeReader) (map[string]FuncEntry, error) {
+	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read funcs count: %w", err)
 	}
-	bc.Funcs = make(map[string]FuncEntry, n)
+	funcs := make(map[string]FuncEntry, n)
 	for i := uint32(0); i < n; i++ {
 		name, err := r.readString()
 		if err != nil {
@@ -287,19 +331,21 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 			}
 			paramNames[j] = pn
 		}
-		bc.Funcs[name] = FuncEntry{
+		funcs[name] = FuncEntry{
 			Name: name, EntryPC: entryPC,
 			NumParams: int(numParams), NumLocals: int(numLocals),
 			ParamName: paramNames,
 		}
 	}
+	return funcs, nil
+}
 
-	// Builtins
-	n, err = r.readU32()
+func unmarshalBuiltins(r *bytecodeReader) (map[string]BuiltinID, error) {
+	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read builtins count: %w", err)
 	}
-	bc.Builtins = make(map[string]BuiltinID, n)
+	builtins := make(map[string]BuiltinID, n)
 	for i := uint32(0); i < n; i++ {
 		name, err := r.readString()
 		if err != nil {
@@ -309,74 +355,78 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read builtin[%d] id: %w", i, err)
 		}
-		bc.Builtins[name] = BuiltinID(id)
+		builtins[name] = BuiltinID(id)
 	}
+	return builtins, nil
+}
 
-	// Events
+func unmarshalEvents(r *bytecodeReader, bc *Bytecode) error {
+	var err error
 	if bc.OnInit, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnInit: %w", err)
+		return fmt.Errorf("bytecode: read OnInit: %w", err)
 	}
 	if bc.OnBar, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnBar: %w", err)
+		return fmt.Errorf("bytecode: read OnBar: %w", err)
 	}
 	if bc.OnTick, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnTick: %w", err)
+		return fmt.Errorf("bytecode: read OnTick: %w", err)
 	}
 	if bc.OnTrade, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnTrade: %w", err)
+		return fmt.Errorf("bytecode: read OnTrade: %w", err)
 	}
 	if bc.OnTimer, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnTimer: %w", err)
+		return fmt.Errorf("bytecode: read OnTimer: %w", err)
 	}
 	if bc.OnDeinit, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnDeinit: %w", err)
+		return fmt.Errorf("bytecode: read OnDeinit: %w", err)
 	}
 	if bc.OnTradeTransaction, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnTradeTransaction: %w", err)
+		return fmt.Errorf("bytecode: read OnTradeTransaction: %w", err)
 	}
 	if bc.OnBookEvent, err = r.readI32(); err != nil {
-		return nil, fmt.Errorf("bytecode: read OnBookEvent: %w", err)
+		return fmt.Errorf("bytecode: read OnBookEvent: %w", err)
 	}
+	return nil
+}
 
-	// EventLocals
-	n, err = r.readU32()
+func unmarshalEventLocals(r *bytecodeReader, bc *Bytecode) error {
+	n, err := r.readU32()
 	if err != nil {
-		return nil, fmt.Errorf("bytecode: read eventLocals count: %w", err)
+		return fmt.Errorf("bytecode: read eventLocals count: %w", err)
 	}
 	for i := uint32(0); i < n; i++ {
 		pc, err := r.readI32()
 		if err != nil {
-			return nil, fmt.Errorf("bytecode: read eventLocal[%d] pc: %w", i, err)
+			return fmt.Errorf("bytecode: read eventLocal[%d] pc: %w", i, err)
 		}
 		count, err := r.readI32()
 		if err != nil {
-			return nil, fmt.Errorf("bytecode: read eventLocal[%d] count: %w", i, err)
+			return fmt.Errorf("bytecode: read eventLocal[%d] count: %w", i, err)
 		}
 		bc.EventLocals[pc] = int(count)
 	}
+	return nil
+}
 
-	// Params
+func unmarshalParams(r *bytecodeReader, bc *Bytecode) error {
 	paramsLen, err := r.readU32()
 	if err != nil {
-		return nil, fmt.Errorf("bytecode: read params length: %w", err)
+		return fmt.Errorf("bytecode: read params length: %w", err)
 	}
 	paramsRaw := make([]byte, paramsLen)
 	if _, err := r.readBytes(paramsRaw); err != nil {
-		return nil, fmt.Errorf("bytecode: read params data: %w", err)
+		return fmt.Errorf("bytecode: read params data: %w", err)
 	}
 	bc.Params = interp.DeserializeParams(paramsRaw)
+	return nil
+}
 
-	// Version
-	if bc.Version, err = r.readString(); err != nil {
-		return nil, fmt.Errorf("bytecode: read version: %w", err)
-	}
-
-	// Enums
-	n, err = r.readU32()
+func unmarshalEnums(r *bytecodeReader) (map[string]int32, error) {
+	n, err := r.readU32()
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read enums count: %w", err)
 	}
-	bc.Enums = make(map[string]int32, n)
+	enums := make(map[string]int32, n)
 	for i := uint32(0); i < n; i++ {
 		name, err := r.readString()
 		if err != nil {
@@ -386,10 +436,9 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read enum[%d] val: %w", i, err)
 		}
-		bc.Enums[name] = val
+		enums[name] = val
 	}
-
-	return bc, nil
+	return enums, nil
 }
 
 // ── binary writer ────────────────────────────────────────────────────

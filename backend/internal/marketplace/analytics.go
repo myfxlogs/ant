@@ -146,6 +146,27 @@ func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*
 	}
 
 	// Daily breakdown.
+	daily, err := s.queryDailyAnalytics(ctx, since)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AnalyticsResult{
+		TotalGMV:        totalGMV,
+		PlatformRevenue: platformRev,
+		ProviderRevenue: providerRev,
+		TotalTx:         totalTx,
+		ActiveBuyers:    activeBuyers,
+		NewSubscribers:  newSubs,
+		ARPU:            arpu,
+		TotalStrategies: totalStrategies,
+		NewStrategies:   newStrategies,
+		RefundRate:      refundRate,
+		Daily:           daily,
+	}, nil
+}
+
+func (s *Service) queryDailyAnalytics(ctx context.Context, since time.Time) ([]DailyAnalyticsRow, error) {
 	dailyRows, err := s.pg.Query(ctx,
 		`SELECT DATE(wt.created_at)::text as d,
 		        COALESCE(SUM(ABS(CASE WHEN wt.tx_type='purchase' THEN wt.amount ELSE 0 END)),0),
@@ -178,20 +199,7 @@ func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*
 	if err := dailyRows.Err(); err != nil {
 		return nil, err
 	}
-
-	return &AnalyticsResult{
-		TotalGMV:        totalGMV,
-		PlatformRevenue: platformRev,
-		ProviderRevenue: providerRev,
-		TotalTx:         totalTx,
-		ActiveBuyers:    activeBuyers,
-		NewSubscribers:  newSubs,
-		ARPU:            arpu,
-		TotalStrategies: totalStrategies,
-		NewStrategies:   newStrategies,
-		RefundRate:      refundRate,
-		Daily:           daily,
-	}, nil
+	return daily, nil
 }
 
 // GetTopStrategies returns top strategies by revenue and subscribers.

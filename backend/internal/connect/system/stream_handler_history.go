@@ -30,7 +30,6 @@ func (s *StreamServer) SubscribeHistory(
 
 	accountIDs := req.Msg.AccountIds
 	if len(accountIDs) == 0 {
-		// No accounts requested — fetch all user accounts.
 		var err error
 		accountIDs, err = s.platform.GetUserAccountIDs(ctx, userID)
 		if err != nil {
@@ -41,7 +40,7 @@ func (s *StreamServer) SubscribeHistory(
 
 	limit := int(req.Msg.Limit)
 	if limit <= 0 || limit > 200 {
-		limit = 50 // default cap
+		limit = 50
 	}
 
 	since := time.Now().Add(-24 * time.Hour)
@@ -57,68 +56,8 @@ func (s *StreamServer) SubscribeHistory(
 		if totalSent >= limit {
 			break
 		}
-
-		// Per-account timeout prevents a dead/non-responsive broker from blocking
-		// history replay for all subsequent accounts.
-		acctCtx, cancel := context.WithTimeout(ctx, accountTimeout)
-		orders, err := s.svc.OrderHistory(acctCtx, accountID, since, to)
-		cancel()
-		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) {
-				s.log.Warn("SubscribeHistory: OrderHistory timed out",
-					zap.String("account", accountID), zap.Duration("timeout", accountTimeout))
-			} else {
-				s.log.Warn("SubscribeHistory: OrderHistory failed",
-					zap.String("account", accountID), zap.Error(err))
-			}
-			continue
-		}
-
-		for _, rec := range orders {
-			if totalSent >= limit {
-				break
-			}
-			eventType := "history"
-			if rec.CloseTime.IsZero() {
-				eventType = "open"
-			}
-			protoEv := orderRecordToUpdateEvent(rec, accountID, eventType, rec.Ticket)
-			if err := stream.Send(&antv1.StreamEvent{
-				Type:      "order_update",
-				AccountId: accountID,
-				Timestamp: timestamppb.Now(),
-				Payload:   &antv1.StreamEvent_OrderUpdate{OrderUpdate: protoEv},
-			}); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send history event: %w", err))
-			}
-			totalSent++
-		}
-
-		// Append current open positions as a position_snapshot for this account.
-		acctCtx2, cancel2 := context.WithTimeout(ctx, accountTimeout)
-		opened, err := s.svc.OpenedOrders(acctCtx2, accountID)
-		cancel2()
-		if err == nil && len(opened) > 0 {
-			now := timestamppb.Now()
-			positions := make([]*antv1.OrderUpdateEvent, 0, len(opened))
-			for _, rec := range opened {
-				positions = append(positions, orderRecordToUpdateEvent(rec, accountID, "open", rec.Ticket))
-			}
-			if err := stream.Send(&antv1.StreamEvent{
-				Type:      "position_snapshot",
-				AccountId: accountID,
-				Timestamp: now,
-				Payload: &antv1.StreamEvent_PositionSnapshot{
-					PositionSnapshot: &antv1.PositionSnapshotEvent{
-						AccountId: accountID,
-						Positions: positions,
-					},
-				},
-			}); err != nil {
-				s.log.Warn("SubscribeHistory: send position_snapshot failed",
-					zap.String("account", accountID), zap.Error(err))
-			}
-		}
+		totalSent += s.sendAccountHistory(ctx, accountID, since, to, limit-totalSent, accountTimeout, stream)
+		s.sendPositionSnapshot(ctx, accountID, accountTimeout, stream)
 	}
 
 	s.log.Info("SubscribeHistory: replay complete",
@@ -128,4 +67,72 @@ func (s *StreamServer) SubscribeHistory(
 	)
 
 	return nil
+}
+
+func (s *StreamServer) sendAccountHistory(ctx context.Context, accountID string, since, to time.Time, remaining int, timeout time.Duration, stream *connect.ServerStream[antv1.StreamEvent]) int {
+	acctCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	orders, err := s.svc.OrderHistory(acctCtx, accountID, since, to)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			s.log.Warn("SubscribeHistory: OrderHistory timed out",
+				zap.String("account", accountID), zap.Duration("timeout", timeout))
+		} else {
+			s.log.Warn("SubscribeHistory: OrderHistory failed",
+				zap.String("account", accountID), zap.Error(err))
+		}
+		return 0
+	}
+
+	sent := 0
+	for _, rec := range orders {
+		if sent >= int(remaining) {
+			break
+		}
+		eventType := "history"
+		if rec.CloseTime.IsZero() {
+			eventType = "open"
+		}
+		protoEv := orderRecordToUpdateEvent(rec, accountID, eventType, rec.Ticket)
+		if err := stream.Send(&antv1.StreamEvent{
+			Type:      "order_update",
+			AccountId: accountID,
+			Timestamp: timestamppb.Now(),
+			Payload:   &antv1.StreamEvent_OrderUpdate{OrderUpdate: protoEv},
+		}); err != nil {
+			s.log.Warn("SubscribeHistory: send history event failed",
+				zap.String("account", accountID), zap.Error(err))
+			return sent
+		}
+		sent++
+	}
+	return sent
+}
+
+func (s *StreamServer) sendPositionSnapshot(ctx context.Context, accountID string, timeout time.Duration, stream *connect.ServerStream[antv1.StreamEvent]) {
+	acctCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	opened, err := s.svc.OpenedOrders(acctCtx, accountID)
+	if err != nil || len(opened) == 0 {
+		return
+	}
+	now := timestamppb.Now()
+	positions := make([]*antv1.OrderUpdateEvent, 0, len(opened))
+	for _, rec := range opened {
+		positions = append(positions, orderRecordToUpdateEvent(rec, accountID, "open", rec.Ticket))
+	}
+	if err := stream.Send(&antv1.StreamEvent{
+		Type:      "position_snapshot",
+		AccountId: accountID,
+		Timestamp: now,
+		Payload: &antv1.StreamEvent_PositionSnapshot{
+			PositionSnapshot: &antv1.PositionSnapshotEvent{
+				AccountId: accountID,
+				Positions: positions,
+			},
+		},
+	}); err != nil {
+		s.log.Warn("SubscribeHistory: send position_snapshot failed",
+			zap.String("account", accountID), zap.Error(err))
+	}
 }

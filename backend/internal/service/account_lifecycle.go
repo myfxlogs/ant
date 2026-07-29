@@ -34,16 +34,31 @@ func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.
 	}, nil
 }
 
+// AccountInfoUpdate holds parameters for updating MT account info.
+type AccountInfoUpdate struct {
+	Tx         pgx.Tx
+	UserID     uuid.UUID
+	ID         string
+	Balance    decimal.Decimal
+	Equity     decimal.Decimal
+	Credit     decimal.Decimal
+	Margin     decimal.Decimal
+	FreeMargin decimal.Decimal
+	Leverage   int64
+	Currency   string
+	IsInvestor bool
+}
+
 // UpdateAccountInfoTx updates balance/equity/margin/leverage/currency within a transaction.
 // Does NOT touch account_status — that is owned by the gateway lifecycle.
-func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string, isInvestor bool) error {
-	_, err := tx.Exec(ctx, `
+func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, p AccountInfoUpdate) error {
+	_, err := p.Tx.Exec(ctx, `
 		UPDATE mt_accounts SET
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
 			is_investor = $10, updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
-	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency, isInvestor)
+	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.IsInvestor)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
 	}
@@ -51,14 +66,14 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, use
 }
 
 // UpdateAccountInfo updates balance/equity/margin/leverage/currency after MT verification.
-func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin decimal.Decimal, leverage int64, currency string) error {
+func (s *AccountService) UpdateAccountInfo(ctx context.Context, p AccountInfoUpdate) error {
 	_, err := s.db.Exec(ctx, `
 		UPDATE mt_accounts SET
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
-	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
+	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
 	}

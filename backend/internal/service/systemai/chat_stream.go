@@ -73,10 +73,23 @@ func (s *Service) chatCompletionStream(
 }
 
 func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
+	resp, err := s.doStreamHTTPRequest(ctx, p, messages, tools)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if err := s.handleStreamResponse(resp, p, messages, tools, onChunk); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (*http.Response, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
 	httpReq, err := doChatRequest(ctx, p.model, messages, tools, true, endpoint, p.secret, p.maxTokens)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	client := &http.Client{Timeout: 0}
 	resp, err := client.Do(httpReq)
@@ -84,10 +97,8 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		if isTransientChatErr(err) {
 			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
-		return &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
+		return nil, &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
 	}
-	defer func() { _ = resp.Body.Close() }()
-
 	if resp.StatusCode != http.StatusOK {
 		ae := readAPIErrorBody(resp)
 		transient := isFailoverStatus(resp.StatusCode)
@@ -100,20 +111,23 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		} else if ae.Raw != "" {
 			msg += " (" + ae.Raw + ")"
 		}
+		_ = resp.Body.Close()
 		if resp.StatusCode == 400 && !isAuthErrorBody(ae.Raw) {
-			return s.fallbackNonStream(ctx, p, messages, tools, onChunk)
+			return nil, s.fallbackNonStream(ctx, p, messages, tools, nil)
 		}
 		if transient {
 			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
-		return &failoverErr{msg: msg, transient: transient}
+		return nil, &failoverErr{msg: msg, transient: transient}
 	}
+	return resp, nil
+}
 
+func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 
 	var streamUsage *ChatUsage
-	// Accumulate streaming tool_call deltas keyed by index.
 	toolCallAcc := make(map[int]*StreamToolCall)
 	totalContentLen := 0
 	totalReasoningLen := 0
@@ -157,43 +171,14 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 			totalReasoningLen += len(c.Delta.ReasoningContent)
 		}
 
-		// Accumulate tool_call deltas (OpenAI streams them incrementally).
-		for _, tc := range c.Delta.ToolCalls {
-			acc, ok := toolCallAcc[tc.Index]
-			if !ok {
-				acc = &StreamToolCall{Index: tc.Index}
-				toolCallAcc[tc.Index] = acc
-			}
-			if tc.ID != "" {
-				acc.ID = tc.ID
-			}
-			if tc.Type != "" {
-				acc.Type = tc.Type
-			}
-			if tc.Function.Name != "" {
-				acc.Function.Name = tc.Function.Name
-			}
-			acc.Function.Arguments += tc.Function.Arguments
-		}
+		accumulateToolCallDeltas(c.Delta.ToolCalls, toolCallAcc)
 
 		finishReason := ""
 		if c.FinishReason != nil && *c.FinishReason != "" && *c.FinishReason != "null" {
 			finishReason = *c.FinishReason
 		}
 
-		// Only emit tool calls on the final chunk (finish_reason set).
-		var finalToolCalls []StreamToolCall
-		if finishReason != "" && len(toolCallAcc) > 0 {
-			// Sort by index for deterministic order.
-			idxs := make([]int, 0, len(toolCallAcc))
-			for idx := range toolCallAcc {
-				idxs = append(idxs, idx)
-			}
-			sort.Ints(idxs)
-			for _, idx := range idxs {
-				finalToolCalls = append(finalToolCalls, *toolCallAcc[idx])
-			}
-		}
+		finalToolCalls := finalizeToolCalls(finishReason, toolCallAcc)
 
 		if err := onChunk(ChatStreamChunk{
 			Content:      c.Delta.Content,
@@ -213,22 +198,58 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	if err := scanner.Err(); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("read stream: %w", err)
 	}
-	// Empty response from provider: trigger failover to next provider.
 	if totalContentLen == 0 && totalReasoningLen == 0 && len(toolCallAcc) == 0 {
 		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream empty (finish_reason=%q)", p.providerID, lastFinishReason), transient: true}
 	}
-	// Bill after successful stream — content already delivered, so log billing failures
-	// instead of returning an error (can't un-deliver streamed content).
-	if s.postCallBiller != nil && streamUsage != nil {
-		feature := aiFeatureFromCtx(ctx)
-		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, streamUsage.PromptTokens, streamUsage.CompletionTokens); billErr != nil {
-			// Log to stderr — the stream is already delivered, but billing failed.
-			// The wallet may be overdrawn; next call's pre-check will block.
-			fmt.Fprintf(os.Stderr, "[systemai] post-stream billing failed: user=%s provider=%s err=%v\n",
-				p.userID, p.providerID, billErr)
-		}
-	}
+	s.billStreamPostCall(context.Background(), p, streamUsage)
 	return nil
+}
+
+func accumulateToolCallDeltas(toolCalls []StreamToolCall, acc map[int]*StreamToolCall) {
+	for _, tc := range toolCalls {
+		entry, ok := acc[tc.Index]
+		if !ok {
+			entry = &StreamToolCall{Index: tc.Index}
+			acc[tc.Index] = entry
+		}
+		if tc.ID != "" {
+			entry.ID = tc.ID
+		}
+		if tc.Type != "" {
+			entry.Type = tc.Type
+		}
+		if tc.Function.Name != "" {
+			entry.Function.Name = tc.Function.Name
+		}
+		entry.Function.Arguments += tc.Function.Arguments
+	}
+}
+
+func finalizeToolCalls(finishReason string, acc map[int]*StreamToolCall) []StreamToolCall {
+	if finishReason == "" || len(acc) == 0 {
+		return nil
+	}
+	idxs := make([]int, 0, len(acc))
+	for idx := range acc {
+		idxs = append(idxs, idx)
+	}
+	sort.Ints(idxs)
+	out := make([]StreamToolCall, 0, len(idxs))
+	for _, idx := range idxs {
+		out = append(out, *acc[idx])
+	}
+	return out
+}
+
+func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage) {
+	if s.postCallBiller == nil || usage == nil {
+		return
+	}
+	feature := aiFeatureFromCtx(ctx)
+	if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+		fmt.Fprintf(os.Stderr, "[systemai] post-stream billing failed: user=%s provider=%s err=%v\n",
+			p.userID, p.providerID, billErr)
+	}
 }
 
 // fallbackNonStream retries the chat completion on the same provider with

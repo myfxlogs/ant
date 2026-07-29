@@ -3,6 +3,7 @@ package mql2go
 import (
 	"strings"
 
+	"github.com/shopspring/decimal"
 	"alphaforge/tools/mql2go/interp"
 )
 
@@ -77,32 +78,7 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		c.compileCall(e)
 
 	case interp.ExprSubscript:
-		// Check if this is an array write: arr[i] = value
-		// compileAssignment sets Args[0] = value for subscript assignments
-		if len(e.Args) > 0 {
-			// Array write: push value, push index, then STORE_ARRAY
-			c.compileExpr(&e.Args[0]) // value to store
-			c.compileExpr(e.Index)     // array index
-			slot, isGlobal := c.resolveVar(e.Name)
-			if !isGlobal {
-				c.bc.Coverage.AddBlindSpot("local array write: " + e.Name)
-			}
-			c.emit(OP_STORE_ARRAY, int32(slot), 0, 0)
-			return
-		}
-		// Array read: check if it's a predefined series or user array
-		if isSeriesName(e.Name) {
-			c.compileExpr(e.Index)
-			c.emit(OP_PUSH_SERIES, 0, int32(c.addSeriesName(e.Name)), 0)
-		} else {
-			// User array read: push index, PUSH_ARRAY with global slot
-			c.compileExpr(e.Index)
-			slot, isGlobal := c.resolveVar(e.Name)
-			if !isGlobal {
-				c.bc.Coverage.AddBlindSpot("local array read: " + e.Name)
-			}
-			c.emit(OP_PUSH_ARRAY, int32(slot), 0, 0)
-		}
+		c.compileSubscript(e)
 
 	case interp.ExprField:
 		c.compileField(e)
@@ -117,24 +93,7 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		c.patchJump(jmpEnd)
 
 	case interp.ExprUpdate:
-		// i++ / i--
-		slot, isGlobal := c.resolveVar(e.Name)
-		if isGlobal {
-			c.emit(OP_PUSH_GLOBAL, int32(slot), 0, 0)
-		} else {
-			c.emit(OP_PUSH_VAR, int32(slot), 0, 0)
-		}
-		c.emit(OP_PUSH_CONST, int32(c.addConst(interp.IntVal(1))), 0, 0)
-		if e.Op == "++" {
-			c.emit(OP_ADD, 0, 0, 0)
-		} else {
-			c.emit(OP_SUB, 0, 0, 0)
-		}
-		if isGlobal {
-			c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
-		} else {
-			c.emit(OP_STORE_VAR, int32(slot), 0, 0)
-		}
+		c.compileUpdate(e)
 
 	case interp.ExprAssignment:
 		c.compileExpr(&e.Args[0])
@@ -146,36 +105,10 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		}
 
 	case interp.ExprCompoundAssign:
-		// a += b → a = a + b
-		slot, isGlobal := c.resolveVar(e.Name)
-		if isGlobal {
-			c.emit(OP_PUSH_GLOBAL, int32(slot), 0, 0)
-		} else {
-			c.emit(OP_PUSH_VAR, int32(slot), 0, 0)
-		}
-		c.compileExpr(&e.Args[0])
-		c.emit(c.compoundAssignOp(e.Op), 0, 0, 0)
-		if isGlobal {
-			c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
-		} else {
-			c.emit(OP_STORE_VAR, int32(slot), 0, 0)
-		}
+		c.compileCompoundAssign(e)
 
 	case interp.ExprDecl:
-		// Variable declaration with initializer: name := value
-		c.compileExpr(&e.Args[0])
-		// Allocate a local slot from the flat function-local space
-		if len(c.localScopes) > 0 {
-			scope := c.localScopes[len(c.localScopes)-1]
-			scope[e.Name] = VarID(c.nextLocalSlot)
-			c.nextLocalSlot++
-		}
-		slot, isGlobal := c.resolveVar(e.Name)
-		if isGlobal {
-			c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
-		} else {
-			c.emit(OP_STORE_VAR, int32(slot), 0, 0)
-		}
+		c.compileDecl(e)
 
 	case interp.ExprSeq:
 		// Evaluate all children in order; only the last leaves a value on stack.
@@ -190,6 +123,81 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 				c.compileExpr(&e.Args[i])
 			}
 		}
+	}
+}
+
+func (c *astCompiler) compileSubscript(e *interp.Expr) {
+	if len(e.Args) > 0 {
+		c.compileExpr(&e.Args[0])
+		c.compileExpr(e.Index)
+		slot, isGlobal := c.resolveVar(e.Name)
+		if !isGlobal {
+			c.bc.Coverage.AddBlindSpot("local array write: " + e.Name)
+		}
+		c.emit(OP_STORE_ARRAY, int32(slot), 0, 0)
+		return
+	}
+	if isSeriesName(e.Name) {
+		c.compileExpr(e.Index)
+		c.emit(OP_PUSH_SERIES, 0, int32(c.addSeriesName(e.Name)), 0)
+	} else {
+		c.compileExpr(e.Index)
+		slot, isGlobal := c.resolveVar(e.Name)
+		if !isGlobal {
+			c.bc.Coverage.AddBlindSpot("local array read: " + e.Name)
+		}
+		c.emit(OP_PUSH_ARRAY, int32(slot), 0, 0)
+	}
+}
+
+func (c *astCompiler) compileUpdate(e *interp.Expr) {
+	slot, isGlobal := c.resolveVar(e.Name)
+	if isGlobal {
+		c.emit(OP_PUSH_GLOBAL, int32(slot), 0, 0)
+	} else {
+		c.emit(OP_PUSH_VAR, int32(slot), 0, 0)
+	}
+	c.emit(OP_PUSH_CONST, int32(c.addConst(interp.IntVal(1))), 0, 0)
+	if e.Op == "++" {
+		c.emit(OP_ADD, 0, 0, 0)
+	} else {
+		c.emit(OP_SUB, 0, 0, 0)
+	}
+	if isGlobal {
+		c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
+	} else {
+		c.emit(OP_STORE_VAR, int32(slot), 0, 0)
+	}
+}
+
+func (c *astCompiler) compileCompoundAssign(e *interp.Expr) {
+	slot, isGlobal := c.resolveVar(e.Name)
+	if isGlobal {
+		c.emit(OP_PUSH_GLOBAL, int32(slot), 0, 0)
+	} else {
+		c.emit(OP_PUSH_VAR, int32(slot), 0, 0)
+	}
+	c.compileExpr(&e.Args[0])
+	c.emit(c.compoundAssignOp(e.Op), 0, 0, 0)
+	if isGlobal {
+		c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
+	} else {
+		c.emit(OP_STORE_VAR, int32(slot), 0, 0)
+	}
+}
+
+func (c *astCompiler) compileDecl(e *interp.Expr) {
+	c.compileExpr(&e.Args[0])
+	if len(c.localScopes) > 0 {
+		scope := c.localScopes[len(c.localScopes)-1]
+		scope[e.Name] = VarID(c.nextLocalSlot)
+		c.nextLocalSlot++
+	}
+	slot, isGlobal := c.resolveVar(e.Name)
+	if isGlobal {
+		c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
+	} else {
+		c.emit(OP_STORE_VAR, int32(slot), 0, 0)
 	}
 }
 
@@ -245,59 +253,63 @@ func (c *astCompiler) foldConstBinary(e *interp.Expr) (interp.Value, bool) {
 	}
 	a, b := e.Args[0].Val, e.Args[1].Val
 
-	// String concatenation: "a" + "b" → "ab"
 	if e.Op == "+" && a.Kind == interp.ValString && b.Kind == interp.ValString {
 		return interp.StringVal(a.Str + b.Str), true
 	}
 
-	// Preserve int type when both operands are int
-	bothInt := a.Kind == interp.ValInt && b.Kind == interp.ValInt
-	if bothInt {
-		ai, bi := a.ToInt(), b.ToInt()
-		switch e.Op {
-		case "+":
-			return interp.IntVal(ai + bi), true
-		case "-":
-			return interp.IntVal(ai - bi), true
-		case "*":
-			return interp.IntVal(ai * bi), true
-		case "/":
-			if bi == 0 {
-				return interp.NoneVal(), false
-			}
-			return interp.IntVal(ai / bi), true
-		case "%":
-			if bi == 0 {
-				return interp.NoneVal(), false
-			}
-			return interp.IntVal(ai % bi), true
-		case "//":
-			if bi == 0 {
-				return interp.NoneVal(), false
-			}
-			q := ai / bi
-			if (ai < 0) != (bi < 0) && ai%bi != 0 {
-				q--
-			}
-			return interp.IntVal(q), true
-		case "==":
-			return interp.BoolVal(ai == bi), true
-		case "!=":
-			return interp.BoolVal(ai != bi), true
-		case "<":
-			return interp.BoolVal(ai < bi), true
-		case "<=":
-			return interp.BoolVal(ai <= bi), true
-		case ">":
-			return interp.BoolVal(ai > bi), true
-		case ">=":
-			return interp.BoolVal(ai >= bi), true
-		}
+	if a.Kind == interp.ValInt && b.Kind == interp.ValInt {
+		return foldIntBinary(e.Op, a.ToInt(), b.ToInt())
 	}
 
-	// Decimal arithmetic for mixed/decimal operands
 	ad, bd := a.ToDecimal(), b.ToDecimal()
-	switch e.Op {
+	return foldDecimalBinary(e.Op, ad, bd, a, b)
+}
+
+func foldIntBinary(op string, ai, bi int32) (interp.Value, bool) {
+	switch op {
+	case "+":
+		return interp.IntVal(ai + bi), true
+	case "-":
+		return interp.IntVal(ai - bi), true
+	case "*":
+		return interp.IntVal(ai * bi), true
+	case "/":
+		if bi == 0 {
+			return interp.NoneVal(), false
+		}
+		return interp.IntVal(ai / bi), true
+	case "%":
+		if bi == 0 {
+			return interp.NoneVal(), false
+		}
+		return interp.IntVal(ai % bi), true
+	case "//":
+		if bi == 0 {
+			return interp.NoneVal(), false
+		}
+		q := ai / bi
+		if (ai < 0) != (bi < 0) && ai%bi != 0 {
+			q--
+		}
+		return interp.IntVal(q), true
+	case "==":
+		return interp.BoolVal(ai == bi), true
+	case "!=":
+		return interp.BoolVal(ai != bi), true
+	case "<":
+		return interp.BoolVal(ai < bi), true
+	case "<=":
+		return interp.BoolVal(ai <= bi), true
+	case ">":
+		return interp.BoolVal(ai > bi), true
+	case ">=":
+		return interp.BoolVal(ai >= bi), true
+	}
+	return interp.NoneVal(), false
+}
+
+func foldDecimalBinary(op string, ad, bd decimal.Decimal, a, b interp.Value) (interp.Value, bool) {
+	switch op {
 	case "+":
 		return interp.DecimalVal(ad.Add(bd)), true
 	case "-":

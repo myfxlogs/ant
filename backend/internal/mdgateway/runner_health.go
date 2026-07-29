@@ -20,43 +20,8 @@ func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Lo
 			return
 		case <-ticker.C():
 			var stale, dead int64
-			handleDeadAccount := func(h AccountHealth) {
-				dead++
-				log.Error("mdgateway: dead account — attempting reconnect",
-					zap.String("account", h.AccountID),
-					zap.String("platform", h.Platform))
+			hd := deadAccountHandler{ctx, mgr, log, onDisconnect, &dead}
 
-				// Attempt reconnect before removing. This covers transient
-				// failures (e.g. mtapi proxy restart, network blip) without
-				// losing the gateway and its subscriptions.
-				if err := mgr.ReconnectGateway(ctx, h.AccountID); err != nil {
-					log.Error("mdgateway: reconnect failed, removing dead gateway",
-						zap.String("account", h.AccountID), zap.Error(err))
-					mgr.MarkDisconnecting(h.AccountID)
-					if onDisconnect != nil {
-						onDisconnect(h.AccountID)
-					}
-					if err := mgr.RemoveGateway(ctx, h.AccountID); err != nil {
-						log.Warn("mdgateway: remove dead gateway failed",
-							zap.String("account", h.AccountID), zap.Error(err))
-					}
-					mgr.UnmarkDisconnecting(h.AccountID)
-					time.Sleep(100 * time.Millisecond)
-				} else {
-					log.Info("mdgateway: dead account reconnected successfully",
-						zap.String("account", h.AccountID),
-						zap.String("platform", h.Platform))
-					mgr.ResetLastTickAt(h.AccountID)
-				}
-			}
-
-			// Collect stale accounts for parallel Ping/Health checks.
-			// Running them sequentially could block the health loop for
-			// N * 3s (timeout) when multiple accounts are stale.
-			type staleEntry struct {
-				h  AccountHealth
-				gw Gateway
-			}
 			var stales []staleEntry
 			for _, h := range mgr.Health() {
 				switch h.State {
@@ -67,7 +32,7 @@ func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Lo
 						stale++
 					}
 				case "dead":
-					handleDeadAccount(h)
+					hd.handle(h)
 				case "no_data":
 					log.Debug("mdgateway: no data yet",
 						zap.String("account", h.AccountID))
@@ -79,37 +44,81 @@ func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Lo
 			}
 
 			if len(stales) > 0 {
-				var wg sync.WaitGroup
-				failures := make(chan AccountHealth, len(stales))
-				for _, se := range stales {
-					stale++
-					wg.Add(1)
-					go func(e staleEntry) {
-						defer wg.Done()
-						if err := e.gw.HealthCheck(ctx); err != nil {
-							failures <- e.h
-						}
-					}(se)
-				}
-				wg.Wait()
-				close(failures)
-
-				for _, se := range stales {
-					log.Warn("mdgateway: stale account — no ticks for >5 min",
-						zap.String("account", se.h.AccountID),
-						zap.String("platform", se.h.Platform))
-				}
-				for h := range failures {
-					log.Warn("mdgateway: stale account failed health check — promoting to dead",
-						zap.String("account", h.AccountID),
-						zap.String("platform", h.Platform))
-					handleDeadAccount(h)
-				}
+				stale += checkStaleAccounts(ctx, stales, log, hd)
 			}
 			SetStaleAccountCount(stale, dead)
-
 		}
 	}
+}
+
+type deadAccountHandler struct {
+	ctx         context.Context
+	mgr         *Manager
+	log         *zap.Logger
+	onDisconnect func(string)
+	dead        *int64
+}
+
+func (hd *deadAccountHandler) handle(h AccountHealth) {
+	*hd.dead++
+	hd.log.Error("mdgateway: dead account — attempting reconnect",
+		zap.String("account", h.AccountID),
+		zap.String("platform", h.Platform))
+	if err := hd.mgr.ReconnectGateway(hd.ctx, h.AccountID); err != nil {
+		hd.log.Error("mdgateway: reconnect failed, removing dead gateway",
+			zap.String("account", h.AccountID), zap.Error(err))
+		hd.mgr.MarkDisconnecting(h.AccountID)
+		if hd.onDisconnect != nil {
+			hd.onDisconnect(h.AccountID)
+		}
+		if err := hd.mgr.RemoveGateway(hd.ctx, h.AccountID); err != nil {
+			hd.log.Warn("mdgateway: remove dead gateway failed",
+				zap.String("account", h.AccountID), zap.Error(err))
+		}
+		hd.mgr.UnmarkDisconnecting(h.AccountID)
+		time.Sleep(100 * time.Millisecond)
+	} else {
+		hd.log.Info("mdgateway: dead account reconnected successfully",
+			zap.String("account", h.AccountID),
+			zap.String("platform", h.Platform))
+		hd.mgr.ResetLastTickAt(h.AccountID)
+	}
+}
+
+type staleEntry struct {
+	h  AccountHealth
+	gw Gateway
+}
+
+func checkStaleAccounts(ctx context.Context, stales []staleEntry, log *zap.Logger, hd deadAccountHandler) int64 {
+	var stale int64
+	var wg sync.WaitGroup
+	failures := make(chan AccountHealth, len(stales))
+	for _, se := range stales {
+		stale++
+		wg.Add(1)
+		go func(e staleEntry) {
+			defer wg.Done()
+			if err := e.gw.HealthCheck(ctx); err != nil {
+				failures <- e.h
+			}
+		}(se)
+	}
+	wg.Wait()
+	close(failures)
+
+	for _, se := range stales {
+		log.Warn("mdgateway: stale account — no ticks for >5 min",
+			zap.String("account", se.h.AccountID),
+			zap.String("platform", se.h.Platform))
+	}
+	for h := range failures {
+		log.Warn("mdgateway: stale account failed health check — promoting to dead",
+			zap.String("account", h.AccountID),
+			zap.String("platform", h.Platform))
+		hd.handle(h)
+	}
+	return stale
 }
 
 // defaultQuoteSymbols returns a broad set of symbols for mtapi SymbolSubscribe

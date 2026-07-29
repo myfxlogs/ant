@@ -109,7 +109,6 @@ func validateTypeAnnotations(root *sitter.Node, source string) error {
 			}
 			funcName := findFuncNameFromNode(child, source)
 
-			// Check return type annotation on all methods
 			retType := findNamedChild(child, "type")
 			if retType == nil {
 				return fmt.Errorf("line %d: method '%s' missing return type annotation (use 'def %s(...) -> Type:')",
@@ -119,27 +118,34 @@ func validateTypeAnnotations(root *sitter.Node, source string) error {
 			if funcName != "__init__" {
 				continue
 			}
-			params := findNamedChild(child, "parameters")
-			if params == nil {
+			if err := validateInitParams(child, source); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func validateInitParams(child *sitter.Node, source string) error {
+	params := findNamedChild(child, "parameters")
+	if params == nil {
+		return nil
+	}
+	for k := 0; k < int(params.NamedChildCount()); k++ {
+		p := params.NamedChild(k)
+		switch p.Type() {
+		case nodeIdentifier:
+			name := source[p.StartByte():p.EndByte()]
+			if name == "self" {
 				continue
 			}
-			for k := 0; k < int(params.NamedChildCount()); k++ {
-				p := params.NamedChild(k)
-				switch p.Type() {
-				case nodeIdentifier:
-					name := source[p.StartByte():p.EndByte()]
-					if name == "self" {
-						continue
-					}
-					return fmt.Errorf("line %d: parameter '%s' in __init__ missing type annotation", p.StartPoint().Row+1, name)
-				case "default_parameter":
-					name := source[p.NamedChild(0).StartByte():p.NamedChild(0).EndByte()]
-					if name == "self" {
-						continue
-					}
-					return fmt.Errorf("line %d: parameter '%s' in __init__ missing type annotation (use 'name: type = default')", p.StartPoint().Row+1, name)
-				}
+			return fmt.Errorf("line %d: parameter '%s' in __init__ missing type annotation", p.StartPoint().Row+1, name)
+		case "default_parameter":
+			name := source[p.NamedChild(0).StartByte():p.NamedChild(0).EndByte()]
+			if name == "self" {
+				continue
 			}
+			return fmt.Errorf("line %d: parameter '%s' in __init__ missing type annotation (use 'name: type = default')", p.StartPoint().Row+1, name)
 		}
 	}
 	return nil

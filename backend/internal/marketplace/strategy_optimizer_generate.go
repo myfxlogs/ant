@@ -35,46 +35,11 @@ func (s *Service) runOptimizationGeneration(ctx context.Context, taskID, publish
 		return
 	}
 
-	// Fetch task details.
-	var strategyID uuid.UUID
-	var triggerReason string
-	err = s.pg.QueryRow(ctx,
-		`SELECT strategy_id, trigger_reason
-		 FROM marketplace_strategy_optimization_tasks
-		 WHERE id = $1 AND publisher_id = $2`,
-		taskID, publisherID,
-	).Scan(&strategyID, &triggerReason)
+	// Fetch task details + source code + metadata.
+	_, triggerReason, sourceCode, symbol, timeframe, err := s.fetchOptimizationTask(ctx, taskID, publisherID, log)
 	if err != nil {
-		log.Warn("optimization generation: failed to fetch task", zap.Error(err))
-		_ = s.markOptimizationFailed(ctx, taskID, publisherID, "failed to fetch task")
+		_ = s.markOptimizationFailed(ctx, taskID, publisherID, err.Error())
 		return
-	}
-
-	// Fetch the original source code.
-	var sourceCode string
-	err = s.pg.QueryRow(ctx,
-		`SELECT source_code FROM imported_strategies WHERE id = $1`,
-		strategyID,
-	).Scan(&sourceCode)
-	if err != nil {
-		log.Warn("optimization generation: failed to load source code", zap.Error(err))
-		_ = s.markOptimizationFailed(ctx, taskID, publisherID, "source code not found")
-		return
-	}
-
-	// Fetch marketplace metadata for backtest config.
-	var symbols []string
-	var timeframe string
-	_ = s.pg.QueryRow(ctx,
-		`SELECT symbols, timeframe FROM marketplace_strategies WHERE strategy_id = $1`,
-		strategyID,
-	).Scan(&symbols, &timeframe)
-	symbol := "EURUSD"
-	if len(symbols) > 0 && symbols[0] != "" {
-		symbol = symbols[0]
-	}
-	if timeframe == "" {
-		timeframe = "H1"
 	}
 
 	if s.optimizer == nil {
@@ -127,7 +92,47 @@ func (s *Service) runOptimizationGeneration(ctx context.Context, taskID, publish
 		return
 	}
 
-	// Build optimized BacktestSnapshot from the generator's backtest result.
+	// Store the completed result.
+	s.storeOptimizationResult(ctx, taskID, publisherID, pythonSource, symbol, timeframe, backtestResult, log)
+}
+
+func (s *Service) fetchOptimizationTask(ctx context.Context, taskID, publisherID uuid.UUID, log *zap.Logger) (strategyID uuid.UUID, triggerReason, sourceCode, symbol, timeframe string, err error) {
+	err = s.pg.QueryRow(ctx,
+		`SELECT strategy_id, trigger_reason
+		 FROM marketplace_strategy_optimization_tasks
+		 WHERE id = $1 AND publisher_id = $2`,
+		taskID, publisherID,
+	).Scan(&strategyID, &triggerReason)
+	if err != nil {
+		log.Warn("optimization generation: failed to fetch task", zap.Error(err))
+		return uuid.Nil, "", "", "", "", fmt.Errorf("failed to fetch task")
+	}
+
+	err = s.pg.QueryRow(ctx,
+		`SELECT source_code FROM imported_strategies WHERE id = $1`,
+		strategyID,
+	).Scan(&sourceCode)
+	if err != nil {
+		log.Warn("optimization generation: failed to load source code", zap.Error(err))
+		return uuid.Nil, "", "", "", "", fmt.Errorf("source code not found")
+	}
+
+	var symbols []string
+	_ = s.pg.QueryRow(ctx,
+		`SELECT symbols, timeframe FROM marketplace_strategies WHERE strategy_id = $1`,
+		strategyID,
+	).Scan(&symbols, &timeframe)
+	symbol = "EURUSD"
+	if len(symbols) > 0 && symbols[0] != "" {
+		symbol = symbols[0]
+	}
+	if timeframe == "" {
+		timeframe = "H1"
+	}
+	return strategyID, triggerReason, sourceCode, symbol, timeframe, nil
+}
+
+func (s *Service) storeOptimizationResult(ctx context.Context, taskID, publisherID uuid.UUID, pythonSource, symbol, timeframe string, backtestResult *antv1.AgentBacktestResult, log *zap.Logger) {
 	var snapshotBytes []byte
 	if backtestResult != nil {
 		snap := &antv1.BacktestSnapshot{
@@ -151,8 +156,7 @@ func (s *Service) runOptimizationGeneration(ctx context.Context, taskID, publish
 		)
 	}
 
-	// Store the completed result.
-	_, err = s.pg.Exec(ctx,
+	_, err := s.pg.Exec(ctx,
 		`UPDATE marketplace_strategy_optimization_tasks
 		 SET status = 'completed', suggested_code = $3, suggested_params = $4,
 		     change_summary = $5, backtest_snapshot = $6,

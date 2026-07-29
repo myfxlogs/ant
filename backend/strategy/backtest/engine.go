@@ -42,7 +42,6 @@ func (e *Engine) Broker() *SimBroker {
 func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	startedAt := time.Now()
 
-	// Build context
 	btCtx := &backtestContext{
 		broker: e.broker,
 		symbol: e.config.Symbol,
@@ -52,7 +51,6 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		point:  e.config.SymbolPoint,
 		digits: e.config.SymbolDigits,
 	}
-	// Initialize multi-symbol bar data
 	if len(e.config.ExtraSymbolBars) > 0 {
 		btCtx.extraBars = make(map[string][]sdk.Bar, len(e.config.ExtraSymbolBars))
 		btCtx.extraBarIndex = make(map[string]int, len(e.config.ExtraSymbolBars))
@@ -63,7 +61,6 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	}
 	btCtx.ind = &btIndicators{bars: e.bars, barIdx: &btCtx.barIndex}
 
-	// Validate bar ordering — unsorted bars produce silent garbage.
 	for i := 1; i < len(e.bars); i++ {
 		if e.bars[i].Timestamp < e.bars[i-1].Timestamp {
 			return nil, fmt.Errorf("bars are not chronologically ordered at index %d: %d < %d",
@@ -71,12 +68,10 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		}
 	}
 
-	// OnInit
 	if err := e.strategy.OnInit(btCtx); err != nil {
 		return nil, err
 	}
 
-	// Walk through bars
 	for i := 1; i < len(e.bars); i++ {
 		if err := ctx.Err(); err != nil {
 			break
@@ -86,50 +81,14 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		e.broker.SetBarTime(time.UnixMilli(bar.Timestamp))
 		e.broker.SetBarPrice(bar.Close)
 
-		// Update context with current bar slice
 		btCtx.barIndex = i
 		btCtx.currentBar = bar
 
-		// Advance extra symbol bar indices to the bar closest to (but not after) the current bar's timestamp.
-		// This ensures no future data leakage — secondary symbols only see bars up to the current time.
-		currentTs := bar.Timestamp
-		for sym, symBars := range btCtx.extraBars {
-			idx := btCtx.extraBarIndex[sym]
-			for idx+1 < len(symBars) && symBars[idx+1].Timestamp <= currentTs {
-				idx++
-			}
-			btCtx.extraBarIndex[sym] = idx
-		}
-
-		// Check pending orders for fills
+		e.advanceExtraBars(btCtx, bar.Timestamp)
 		e.checkPendingOrders(bar)
-
-		// Check stop loss / take profit
 		e.checkSLTP(bar)
 
-		// Call strategy — check for TickStrategy interface first
-		var sig *sdk.Signal
-		var err error
-		useTick := false
-		if _, ok := e.strategy.(sdk.TickStrategy); ok {
-			if tc, ok2 := e.strategy.(sdk.TickCapable); ok2 {
-				useTick = tc.HasOnTick()
-			} else {
-				useTick = true // implements TickStrategy but not TickCapable — assume OnTick
-			}
-		}
-		if useTick {
-			ts := e.strategy.(sdk.TickStrategy)
-			spread := e.broker.config.Spread
-			if spread.IsZero() {
-				spread = e.broker.config.Slippage
-			}
-			bid := bar.Close
-			ask := bar.Close.Add(spread)
-			sig, err = ts.OnTick(btCtx, bid, ask)
-		} else {
-			sig, err = e.strategy.OnBar(btCtx, e.config.Timeframe)
-		}
+		sig, err := e.runStrategySignal(btCtx, bar)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "backtest: OnBar error at bar %d: %v\n", i, err)
 			continue
@@ -138,20 +97,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 			e.dispatchSignal(sig, bar)
 		}
 
-		// Update equity with floating P&L from open positions
-		equity := e.broker.balance
-		closePrice := bar.Close
-		contractSize := e.config.ContractSize
-		if contractSize.IsZero() {
-			contractSize = decimal.NewFromInt(100000)
-		}
-		for _, pos := range e.broker.positions {
-			floating := closePrice.Sub(pos.Price).Mul(pos.Volume).Mul(contractSize)
-			if pos.Side == sdk.SideSell {
-				floating = floating.Neg()
-			}
-			equity = equity.Add(floating)
-		}
+		equity := e.computeEquity(bar)
 		e.equity = append(e.equity, EquityPoint{
 			Time:   time.UnixMilli(bar.Timestamp),
 			Equity: equity,
@@ -159,15 +105,11 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		})
 	}
 
-	// OnDeinit
 	if err := e.strategy.OnDeinit(btCtx, "backtest_complete"); err != nil {
 		return nil, err
 	}
 
-	// Merge trades from broker (strategy-closed) and engine (SL/TP-closed)
 	allTrades := append(e.trades, e.broker.Trades()...)
-
-	// Calculate metrics (uses existing antv1.BacktestMetrics)
 	metrics := CalculateMetrics(e.config.InitialCapital, e.equity, allTrades)
 
 	return &Result{
@@ -178,6 +120,54 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		StartedAt:  startedAt,
 		FinishedAt: time.Now(),
 	}, nil
+}
+
+func (e *Engine) advanceExtraBars(btCtx *backtestContext, currentTs int64) {
+	for sym, symBars := range btCtx.extraBars {
+		idx := btCtx.extraBarIndex[sym]
+		for idx+1 < len(symBars) && symBars[idx+1].Timestamp <= currentTs {
+			idx++
+		}
+		btCtx.extraBarIndex[sym] = idx
+	}
+}
+
+func (e *Engine) runStrategySignal(btCtx *backtestContext, bar sdk.Bar) (*sdk.Signal, error) {
+	useTick := false
+	if _, ok := e.strategy.(sdk.TickStrategy); ok {
+		if tc, ok2 := e.strategy.(sdk.TickCapable); ok2 {
+			useTick = tc.HasOnTick()
+		} else {
+			useTick = true
+		}
+	}
+	if useTick {
+		ts := e.strategy.(sdk.TickStrategy)
+		spread := e.broker.config.Spread
+		if spread.IsZero() {
+			spread = e.broker.config.Slippage
+		}
+		bid := bar.Close
+		ask := bar.Close.Add(spread)
+		return ts.OnTick(btCtx, bid, ask)
+	}
+	return e.strategy.OnBar(btCtx, e.config.Timeframe)
+}
+
+func (e *Engine) computeEquity(bar sdk.Bar) decimal.Decimal {
+	equity := e.broker.balance
+	contractSize := e.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	for _, pos := range e.broker.positions {
+		floating := bar.Close.Sub(pos.Price).Mul(pos.Volume).Mul(contractSize)
+		if pos.Side == sdk.SideSell {
+			floating = floating.Neg()
+		}
+		equity = equity.Add(floating)
+	}
+	return equity
 }
 
 func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {

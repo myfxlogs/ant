@@ -143,11 +143,33 @@ func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []int
 		return nil
 	}
 
-	type argSlot struct {
-		name string // keyword name, "" = positional
-		expr interp.Expr
+	slots := c.parseArgSlots(args)
+
+	hasKeyword := false
+	for _, s := range slots {
+		if s.name != "" {
+			hasKeyword = true
+			break
+		}
+	}
+	if !hasKeyword {
+		return slotsToExprs(slots)
 	}
 
+	paramOrder := pythonMethodParamOrder(methodPath)
+	if paramOrder == nil {
+		return slotsToExprs(slots)
+	}
+
+	return reorderKeywordArgs(slots, paramOrder)
+}
+
+type argSlot struct {
+	name string
+	expr interp.Expr
+}
+
+func (c *pyCompiler) parseArgSlots(args *sitter.Node) []argSlot {
 	var slots []argSlot
 	for i := 0; i < int(args.NamedChildCount()); i++ {
 		a := args.NamedChild(i)
@@ -180,35 +202,18 @@ func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []int
 		}
 		slots = append(slots, argSlot{expr: *e})
 	}
+	return slots
+}
 
-	// If no keyword arguments, return as-is
-	hasKeyword := false
-	for _, s := range slots {
-		if s.name != "" {
-			hasKeyword = true
-			break
-		}
+func slotsToExprs(slots []argSlot) []interp.Expr {
+	result := make([]interp.Expr, len(slots))
+	for i, s := range slots {
+		result[i] = s.expr
 	}
-	if !hasKeyword {
-		result := make([]interp.Expr, len(slots))
-		for i, s := range slots {
-			result[i] = s.expr
-		}
-		return result
-	}
+	return result
+}
 
-	// Reorder based on canonical parameter order
-	paramOrder := pythonMethodParamOrder(methodPath)
-	if paramOrder == nil {
-		// Unknown method — can't reorder, return in original order
-		result := make([]interp.Expr, len(slots))
-		for i, s := range slots {
-			result[i] = s.expr
-		}
-		return result
-	}
-
-	// Build position map: param name → index
+func reorderKeywordArgs(slots []argSlot, paramOrder []string) []interp.Expr {
 	posMap := make(map[string]int)
 	for i, p := range paramOrder {
 		posMap[p] = i
@@ -219,7 +224,6 @@ func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []int
 		result[i] = interp.Expr{Kind: interp.ExprLiteral, Val: interp.NoneVal()}
 	}
 
-	// Place positional args first (fill from left)
 	posIdx := 0
 	for _, s := range slots {
 		if s.name == "" {
@@ -229,7 +233,6 @@ func (c *pyCompiler) compileArgsOrdered(n *sitter.Node, methodPath string) []int
 			posIdx++
 			continue
 		}
-		// Keyword arg — resolve alias then place at canonical position
 		canonical := resolveParamName(s.name)
 		if idx, ok := posMap[canonical]; ok {
 			result[idx] = s.expr

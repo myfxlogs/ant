@@ -18,56 +18,10 @@ import (
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
 // Implements OMS state machine integration (S1.2) and pre-trade risk pipeline (S1.1).
 func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
-	// Pre-trade gates.
-	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
-		return nil, ErrKillSwitchEngaged
-	}
-	// Guard: mandatory 3-rule safety net (kill switch, duplicate, max lot size).
-	if s.guard != nil {
-		side := "buy"
-		if req.Side == SideSell {
-			side = "sell"
-		}
-		if result := s.guard.Check(ctx, &risk.GuardRequest{
-			Symbol: req.Canonical, Side: side,
-			Volume: req.Volume, OrderType: "market", Price: req.Price,
-		}); !result.Allowed {
-			return nil, fmt.Errorf("guard: %s", result.Reason)
-		}
-	}
-	if s.accountOwnerVerifier != nil {
-		uid := usermgr.GetUserID(ctx)
-		if uid == "" {
-			return nil, fmt.Errorf("unauthenticated: user ID required for order placement")
-		}
-		owns, err := s.accountOwnerVerifier(ctx, uid, req.AccountID)
-		if err != nil {
-			return nil, fmt.Errorf("account ownership check: %w", err)
-		}
-		if !owns {
-			return nil, fmt.Errorf("%w: %s", ErrAccountNotOwned, req.AccountID)
-		}
-	}
-	if s.idem != nil && req.ClientID != "" {
-		isDup, existingTicket, err := s.idem.CheckAndSet(ctx, req.AccountID, req.ClientID, 0)
-		if err != nil {
-			return nil, err
-		}
-		if isDup {
-			return &OrderRecord{Ticket: existingTicket, AccountID: req.AccountID, State: OrderStatePending}, ErrDuplicateOrder
-		}
-	}
-	if s.reconcileGate != nil && !s.reconcileGate.CanAccept(req.AccountID) {
-		return nil, fmt.Errorf("%w: %s", ErrReconciling, req.AccountID)
-	}
-	if s.userLimiter != nil {
-		uid := usermgr.GetUserID(ctx)
-		if uid != "" && !s.userLimiter.AllowOrder(uid) {
-			return nil, ErrRateLimited
-		}
+	if err := s.preTradeChecks(ctx, req); err != nil {
+		return nil, err
 	}
 
-	// OMS: insert order with state=NEW before risk checks.
 	var orderID string
 	if s.omsWriter != nil {
 		orderID = IdempotencyKey(req.AccountID, req.ClientID)
@@ -78,39 +32,23 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
-	// OMS: advance state before gate evaluation.
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateNew, OMSStateValidated)
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRiskApproved)
 
-	// D6-A: single-chokepoint risk gate evaluated for every order path.
-	if s.gate != nil && s.accountStateProvider != nil {
-		intent := orderRequestToIntent(req)
-		intent.UserId = usermgr.GetUserID(ctx)
-		state, stateErr := s.accountStateProvider(ctx, req.AccountID)
-		if stateErr != nil && s.logger != nil {
-			s.logger.Warn("gate: account state fetch failed — fail-closed",
-				zap.String("accountID", req.AccountID), zap.Error(stateErr))
-		}
-		decision := s.gate.Evaluate(ctx, intent, state)
-		if !decision.GetAllow() {
-			s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
-			return nil, fmt.Errorf("gate rejected: %s", decision.GetReason())
-		}
+	if err := s.evaluatePlaceGate(ctx, req, orderID); err != nil {
+		return nil, err
 	}
 
-	// Pre-trade cost estimation (M10-BASE-D2).
 	var costEstimate *antv1.CostEstimate
 	if s.costEstimator != nil {
 		costEstimate = s.estimateOrderCost(ctx, req)
 	}
 
-	// Submit to broker executor.
 	ticket, err := s.submitToBroker(ctx, req, orderID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Update the idempotency key with the real ticket after successful placement.
 	if s.idem != nil && req.ClientID != "" {
 		if err := s.idem.SetTicket(ctx, req.AccountID, req.ClientID, ticket); err != nil {
 			if s.logger != nil {
@@ -123,10 +61,78 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
-	// Write ORDER_CREATED event to NATS JetStream (Tier-0).
 	s.publishOrderCreatedEvent(ctx, req, ticket, costEstimate)
 
 	return &OrderRecord{Ticket: ticket, AccountID: req.AccountID, State: OrderStatePending}, nil
+}
+
+func (s *MtHubService) preTradeChecks(ctx context.Context, req *OrderRequest) error {
+	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
+		return ErrKillSwitchEngaged
+	}
+	if s.guard != nil {
+		side := "buy"
+		if req.Side == SideSell {
+			side = "sell"
+		}
+		if result := s.guard.Check(ctx, &risk.GuardRequest{
+			Symbol: req.Canonical, Side: side,
+			Volume: req.Volume, OrderType: "market", Price: req.Price,
+		}); !result.Allowed {
+			return fmt.Errorf("guard: %s", result.Reason)
+		}
+	}
+	if s.accountOwnerVerifier != nil {
+		uid := usermgr.GetUserID(ctx)
+		if uid == "" {
+			return fmt.Errorf("unauthenticated: user ID required for order placement")
+		}
+		owns, err := s.accountOwnerVerifier(ctx, uid, req.AccountID)
+		if err != nil {
+			return fmt.Errorf("account ownership check: %w", err)
+		}
+		if !owns {
+			return fmt.Errorf("%w: %s", ErrAccountNotOwned, req.AccountID)
+		}
+	}
+	if s.idem != nil && req.ClientID != "" {
+		isDup, _, err := s.idem.CheckAndSet(ctx, req.AccountID, req.ClientID, 0)
+		if err != nil {
+			return err
+		}
+		if isDup {
+			return ErrDuplicateOrder
+		}
+	}
+	if s.reconcileGate != nil && !s.reconcileGate.CanAccept(req.AccountID) {
+		return fmt.Errorf("%w: %s", ErrReconciling, req.AccountID)
+	}
+	if s.userLimiter != nil {
+		uid := usermgr.GetUserID(ctx)
+		if uid != "" && !s.userLimiter.AllowOrder(uid) {
+			return ErrRateLimited
+		}
+	}
+	return nil
+}
+
+func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest, orderID string) error {
+	if s.gate == nil || s.accountStateProvider == nil {
+		return nil
+	}
+	intent := orderRequestToIntent(req)
+	intent.UserId = usermgr.GetUserID(ctx)
+	state, stateErr := s.accountStateProvider(ctx, req.AccountID)
+	if stateErr != nil && s.logger != nil {
+		s.logger.Warn("gate: account state fetch failed — fail-closed",
+			zap.String("accountID", req.AccountID), zap.Error(stateErr))
+	}
+	decision := s.gate.Evaluate(ctx, intent, state)
+	if !decision.GetAllow() {
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
+		return fmt.Errorf("gate rejected: %s", decision.GetReason())
+	}
+	return nil
 }
 
 // submitToBroker resolves the account's executor and submits the order.

@@ -221,18 +221,27 @@ type chatProvider struct {
 // The primary provider comes first; then other user-configured providers; finally
 // Gateway system providers as a fallback when the user has no configs at all.
 func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID) ([]chatProvider, error) {
-	// ── Determine the user's explicit primary choice ──
 	primaryPID, primaryModel := s.getAIPrimaryGateway(ctx, userID)
 
-	// ── Collect user-configured providers ──
 	rows, err := s.List(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("list AI providers: %w", err)
 	}
 
-	var primary, rest []chatProvider
-	seenPID := map[string]bool{}
+	primary, rest, seenPID := s.resolveUserProviders(ctx, userID, rows, primaryPID, primaryModel)
+	out := append(primary, rest...)
 
+	if len(out) == 0 && s.gatewayProviderRepo != nil {
+		out = s.resolveGatewayProviders(ctx, userID, seenPID, primaryPID, primaryModel, out)
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("errors.ai.not_configured")
+	}
+	return out, nil
+}
+
+func (s *Service) resolveUserProviders(ctx context.Context, userID uuid.UUID, rows []*repository.SystemAIConfigRow, primaryPID, primaryModel string) (primary, rest []chatProvider, seenPID map[string]bool) {
+	seenPID = map[string]bool{}
 	for _, row := range rows {
 		if row == nil || !row.Enabled {
 			continue
@@ -249,7 +258,6 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 		if m == "" {
 			continue
 		}
-		// ADR-0025 §5.2: model whitelist filter — skip providers whose model is not allowed.
 		if s.modelFilter != nil && !s.modelFilter(ctx, userID, m) {
 			continue
 		}
@@ -268,48 +276,44 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 			rest = append(rest, cp)
 		}
 	}
-	out := append(primary, rest...)
+	return
+}
 
-	// ── Gateway system providers (fallback when user has no own configs) ──
-	if len(out) == 0 && s.gatewayProviderRepo != nil {
-		sysProviders, sysErr := s.gatewayProviderRepo.ListEnabled(ctx)
-		if sysErr == nil {
-			for _, sp := range sysProviders {
-				if seenPID[sp.ProviderID] {
-					continue // user already has a config for this provider
-				}
-				if len(sp.APIKeyEncrypted) == 0 || len(sp.Models) == 0 {
-					continue
-				}
-				pt, openErr := repository.OpenAPIKey(sp.APIKeyEncrypted, s.box)
-				if openErr != nil || pt == "" {
-					continue
-				}
-				base := strings.TrimRight(strings.TrimSpace(sp.BaseURL), "/")
-				if base == "" {
-					continue
-				}
-				m := resolveModel(sp.DefaultModel, sp.Models, sp.ProviderID, primaryPID, primaryModel)
-				if s.modelFilter != nil && !s.modelFilter(ctx, userID, m) {
-					continue
-				}
-				cp := chatProvider{
-					userID: userID, providerID: sp.ProviderID,
-					model: m, baseURL: base, secret: pt,
-					// gateway providers have no per-config maxTokens; use default
-				}
-				if sp.ProviderID == primaryPID {
-					out = append([]chatProvider{cp}, out...)
-				} else {
-					out = append(out, cp)
-				}
-			}
+func (s *Service) resolveGatewayProviders(ctx context.Context, userID uuid.UUID, seenPID map[string]bool, primaryPID, primaryModel string, out []chatProvider) []chatProvider {
+	sysProviders, sysErr := s.gatewayProviderRepo.ListEnabled(ctx)
+	if sysErr != nil {
+		return out
+	}
+	for _, sp := range sysProviders {
+		if seenPID[sp.ProviderID] {
+			continue
+		}
+		if len(sp.APIKeyEncrypted) == 0 || len(sp.Models) == 0 {
+			continue
+		}
+		pt, openErr := repository.OpenAPIKey(sp.APIKeyEncrypted, s.box)
+		if openErr != nil || pt == "" {
+			continue
+		}
+		base := strings.TrimRight(strings.TrimSpace(sp.BaseURL), "/")
+		if base == "" {
+			continue
+		}
+		m := resolveModel(sp.DefaultModel, sp.Models, sp.ProviderID, primaryPID, primaryModel)
+		if s.modelFilter != nil && !s.modelFilter(ctx, userID, m) {
+			continue
+		}
+		cp := chatProvider{
+			userID: userID, providerID: sp.ProviderID,
+			model: m, baseURL: base, secret: pt,
+		}
+		if sp.ProviderID == primaryPID {
+			out = append([]chatProvider{cp}, out...)
+		} else {
+			out = append(out, cp)
 		}
 	}
-	if len(out) == 0 {
-		return nil, fmt.Errorf("errors.ai.not_configured")
-	}
-	return out, nil
+	return out
 }
 
 // getAIPrimaryGateway reads the user's saved Gateway model preference.

@@ -154,8 +154,11 @@ func (r *WalletRepository) AdjustBalanceTx(ctx context.Context, tx pgx.Tx, walle
 	}
 
 	// 3. Insert transaction with hash chain + idempotency + outbox (shared helper).
-	txID, _, err := r.ledgerChainInsert(ctx, tx, walletID, userID, amount, txType, description,
-		operatorID, idemKey, balanceBefore, balanceAfter)
+	txID, _, err := r.ledgerChainInsert(ctx, ledgerInsertParams{
+		Tx: tx, WalletID: walletID, UserID: userID, Amount: amount,
+		TxType: txType, Description: description, OperatorID: operatorID,
+		IdemKey: idemKey, BalanceBefore: balanceBefore, BalanceAfter: balanceAfter,
+	})
 	if err != nil {
 		// Concurrent race: another transaction inserted the same idem_key
 		// between our idempotency check and INSERT. Undo the balance update
@@ -195,16 +198,27 @@ func isCheckViolation(err error) bool {
 // Returns (prevHash, txID, seq, error) from the chain tail lock + insert.
 // If idemKey already exists, returns ErrIdempotentReplay.
 // If a concurrent insert races on idem_key unique index, returns ErrIdempotentReplay.
+// ledgerInsertParams holds parameters for ledgerChainInsert.
+type ledgerInsertParams struct {
+	Tx            pgx.Tx
+	WalletID      uuid.UUID
+	UserID        uuid.UUID
+	Amount        string
+	TxType        string
+	Description   string
+	OperatorID    *uuid.UUID
+	IdemKey       string
+	BalanceBefore string
+	BalanceAfter  string
+}
+
 func (r *WalletRepository) ledgerChainInsert(
-	ctx context.Context, tx pgx.Tx,
-	walletID, userID uuid.UUID, amount, txType, description string,
-	operatorID *uuid.UUID, idemKey string,
-	balanceBefore, balanceAfter string,
+	ctx context.Context, p ledgerInsertParams,
 ) (txID uuid.UUID, seq int64, err error) {
 	// 1. Idempotency check (R7).
 	var existing uuid.UUID
-	err = tx.QueryRow(ctx,
-		`SELECT wallet_id FROM wallet_transactions WHERE idem_key = $1`, idemKey,
+	err = p.Tx.QueryRow(ctx,
+		`SELECT wallet_id FROM wallet_transactions WHERE idem_key = $1`, p.IdemKey,
 	).Scan(&existing)
 	if err == nil {
 		return uuid.Nil, 0, model.ErrIdempotentReplay
@@ -218,12 +232,12 @@ func (r *WalletRepository) ledgerChainInsert(
 	// have no row to lock, preventing a race where two concurrent first-ever
 	// transactions both get prev_hash = nil.
 	const chainLockKey = 20826
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, chainLockKey); err != nil {
+	if _, err := p.Tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, chainLockKey); err != nil {
 		return uuid.Nil, 0, fmt.Errorf("ledger: advisory lock: %w", err)
 	}
 
 	var prevHash []byte
-	err = tx.QueryRow(ctx,
+	err = p.Tx.QueryRow(ctx,
 		`SELECT entry_hash FROM wallet_transactions ORDER BY seq DESC LIMIT 1`,
 	).Scan(&prevHash)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -231,11 +245,11 @@ func (r *WalletRepository) ledgerChainInsert(
 	}
 
 	// 3. Insert transaction with hash chain.
-	err = tx.QueryRow(ctx, `
+	err = p.Tx.QueryRow(ctx, `
 		INSERT INTO wallet_transactions (wallet_id, user_id, tx_type, amount, balance_before, balance_after, description, operator_id, prev_hash, idem_key)
 		VALUES ($1, $2, $3, $4::numeric, $5::numeric, $6::numeric, $7, $8, $9, $10)
 		RETURNING id, seq
-	`, walletID, userID, txType, amount, balanceBefore, balanceAfter, description, operatorID, prevHash, idemKey).Scan(&txID, &seq)
+	`, p.WalletID, p.UserID, p.TxType, p.Amount, p.BalanceBefore, p.BalanceAfter, p.Description, p.OperatorID, prevHash, p.IdemKey).Scan(&txID, &seq)
 	if err != nil {
 		// Concurrent race on idem_key unique index → idempotent replay (R7).
 		if isUniqueViolation(err) {
@@ -245,10 +259,10 @@ func (r *WalletRepository) ledgerChainInsert(
 	}
 
 	// 4. Compute entry_hash = SHA256(prev_hash || seq || wallet_id || tx_type || amount || balance_before || balance_after || idem_key).
-	entryHash := computeEntryHash(prevHash, seq, walletID, txType, amount, balanceBefore, balanceAfter, idemKey)
+	entryHash := computeEntryHash(prevHash, seq, p.WalletID, p.TxType, p.Amount, p.BalanceBefore, p.BalanceAfter, p.IdemKey)
 
 	// 5. Update entry_hash (separate UPDATE because seq is GENERATED ALWAYS AS IDENTITY).
-	_, err = tx.Exec(ctx,
+	_, err = p.Tx.Exec(ctx,
 		`UPDATE wallet_transactions SET entry_hash = $1 WHERE id = $2`, entryHash, txID,
 	)
 	if err != nil {
@@ -258,14 +272,14 @@ func (r *WalletRepository) ledgerChainInsert(
 	// 6. Write to ledger_outbox for external notification (R8).
 	// Split INSERT and NOTIFY into separate calls — pgx prepared statements
 	// do not support multiple SQL commands in a single Exec (SQLSTATE 42601).
-	_, err = tx.Exec(ctx,
+	_, err = p.Tx.Exec(ctx,
 		`INSERT INTO ledger_outbox (seq, entry_hash) VALUES ($1, $2)`,
 		seq, entryHash,
 	)
 	if err != nil {
 		return uuid.Nil, 0, fmt.Errorf("ledger: outbox insert: %w", err)
 	}
-	_, err = tx.Exec(ctx, `NOTIFY ledger_outbox`)
+	_, err = p.Tx.Exec(ctx, `NOTIFY ledger_outbox`)
 	if err != nil {
 		return uuid.Nil, 0, fmt.Errorf("ledger: outbox notify: %w", err)
 	}
@@ -365,8 +379,11 @@ func (r *WalletRepository) WriteCredentialChangeLedger(
 		return fmt.Errorf("credential change ledger: get wallet: %w", err)
 	}
 
-	_, _, err = r.ledgerChainInsert(ctx, tx, wallet.ID, userID, "0", txType, description,
-		nil, idemKey, wallet.Balance, wallet.Balance)
+	_, _, err = r.ledgerChainInsert(ctx, ledgerInsertParams{
+		Tx: tx, WalletID: wallet.ID, UserID: userID, Amount: "0",
+		TxType: txType, Description: description, IdemKey: idemKey,
+		BalanceBefore: wallet.Balance, BalanceAfter: wallet.Balance,
+	})
 	if err != nil {
 		if errors.Is(err, model.ErrIdempotentReplay) {
 			return nil

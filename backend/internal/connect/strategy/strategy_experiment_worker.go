@@ -140,48 +140,7 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	}
 
 	// ── OOS validation for top-K candidates ──
-	const oosTopK = 5
-	oosVal := ai.DefaultOOSValidator()
-	symbol := exp.Symbol
-	if symbol == "" {
-		symbol = "XAUUSDm"
-	}
-	tf := exp.Timeframe
-	if tf == "" {
-		tf = "1h"
-	}
-	fromTs := time.UnixMilli(exp.FromTsUnixMs)
-	toTs := time.UnixMilli(exp.ToTsUnixMs)
-	if exp.FromTsUnixMs == 0 {
-		fromTs = time.Now().AddDate(0, -1, 0)
-	}
-	if exp.ToTsUnixMs == 0 {
-		toTs = time.Now()
-	}
-	windows := oosVal.ComputeWindows(fromTs, toTs)
-	if windows != nil && len(candidates) > 0 {
-		topIndices := selectTopK(candidates, oosTopK)
-		for _, idx := range topIndices {
-			c := &candidates[idx]
-			oosScored, _, err := w.runSingleBacktest(
-				ctx, code, c.Overrides, exp.UserID, symbol, tf,
-				windows.OOSStart, windows.OOSEnd, regime,
-			)
-			if err != nil {
-				w.log.Warn("OOS backtest failed",
-					zap.Error(err),
-					zap.Int("candidateIdx", idx),
-					zap.Float64("isScore", c.Score))
-				continue
-			}
-			validation := oosVal.Validate(c.Score, oosScored.Score)
-			c.OOSScore = &oosScored.Score
-			c.OOSTotalReturn = &oosScored.TotalReturn
-			c.OOSSharpeRatio = &oosScored.SharpeRatio
-			c.DegradationPct = &validation.Degradation
-			c.IsOverfit = validation.IsOverfit
-		}
-	}
+	w.runOOSValidation(ctx, exp, code, candidates, regime)
 
 	// Create candidate records with scores
 	for i, c := range candidates {
@@ -222,6 +181,52 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	w.log.Info("Experiment completed", zap.String("id", exp.ID.String()),
 		zap.Int("candidates", len(candidates)))
 	return nil
+}
+
+func (w *ExperimentWorker) runOOSValidation(ctx context.Context, exp *repository.StrategyExperiment, code string, candidates []candidateResult, regime ai.MarketRegime) {
+	const oosTopK = 5
+	oosVal := ai.DefaultOOSValidator()
+	symbol := exp.Symbol
+	if symbol == "" {
+		symbol = "XAUUSDm"
+	}
+	tf := exp.Timeframe
+	if tf == "" {
+		tf = "1h"
+	}
+	fromTs := time.UnixMilli(exp.FromTsUnixMs)
+	toTs := time.UnixMilli(exp.ToTsUnixMs)
+	if exp.FromTsUnixMs == 0 {
+		fromTs = time.Now().AddDate(0, -1, 0)
+	}
+	if exp.ToTsUnixMs == 0 {
+		toTs = time.Now()
+	}
+	windows := oosVal.ComputeWindows(fromTs, toTs)
+	if windows == nil || len(candidates) == 0 {
+		return
+	}
+	topIndices := selectTopK(candidates, oosTopK)
+	for _, idx := range topIndices {
+		c := &candidates[idx]
+		oosScored, _, err := w.runSingleBacktest(
+			ctx, code, c.Overrides, exp.UserID, symbol, tf,
+			windows.OOSStart, windows.OOSEnd, regime,
+		)
+		if err != nil {
+			w.log.Warn("OOS backtest failed",
+				zap.Error(err),
+				zap.Int("candidateIdx", idx),
+				zap.Float64("isScore", c.Score))
+			continue
+		}
+		validation := oosVal.Validate(c.Score, oosScored.Score)
+		c.OOSScore = &oosScored.Score
+		c.OOSTotalReturn = &oosScored.TotalReturn
+		c.OOSSharpeRatio = &oosScored.SharpeRatio
+		c.DegradationPct = &validation.Degradation
+		c.IsOverfit = validation.IsOverfit
+	}
 }
 
 type candidateResult struct {

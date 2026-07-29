@@ -32,53 +32,62 @@ import (
 	connectrpc "connectrpc.com/connect"
 )
 
-func registerSREHandlers(
-	userRepo *repository.UserRepository,
-	mux *http.ServeMux,
-	log *zap.Logger,
-	pool *pgxpool.Pool,
-	store repository.MarketDataStore,
-	nc *nats.Conn,
-	rdb *antredis.Client,
-	cfg *config.Config,
-	authInterceptor *interceptor.AuthInterceptor,
-	otelInterceptor connectrpc.Interceptor,
-	platformSvc *service.PlatformService,
-	mthubSvc *mthub.MtHubService,
-	authServer *user.AuthServer,
-	strategyExperimentRepo *repository.StrategyExperimentRepository,
-	strategyAssetRepo *repository.StrategyAssetRepository,
-	schedHealthRepo *repository.ScheduleHealthRepository,
-	analyticsCache *service.AnalyticsCache,
-	aiSvc *systemai.Service,
-	backtestRunRepo *repository.BacktestRunRepository,
-	pgListen *pglisten.Listener,
-	emailNotifier *notifier.EmailNotifier,
-) (*notifier.EmailNotifier, func()) {
+// sreHandlerParams holds parameters for registerSREHandlers.
+type sreHandlerParams struct {
+	UserRepo             *repository.UserRepository
+	Mux                  *http.ServeMux
+	Log                  *zap.Logger
+	Pool                 *pgxpool.Pool
+	Store                repository.MarketDataStore
+	NC                   *nats.Conn
+	RDB                  *antredis.Client
+	Cfg                  *config.Config
+	AuthInterceptor      *interceptor.AuthInterceptor
+	OtelInterceptor      connectrpc.Interceptor
+	PlatformSvc          *service.PlatformService
+	MthubSvc             *mthub.MtHubService
+	AuthServer           *user.AuthServer
+	StrategyExperimentRepo *repository.StrategyExperimentRepository
+	StrategyAssetRepo    *repository.StrategyAssetRepository
+	SchedHealthRepo      *repository.ScheduleHealthRepository
+	AnalyticsCache       *service.AnalyticsCache
+	AISvc                *systemai.Service
+	BacktestRunRepo      *repository.BacktestRunRepository
+	PgListen             *pglisten.Listener
+	EmailNotifier        *notifier.EmailNotifier
+}
+
+func registerSREHandlers(p sreHandlerParams) (*notifier.EmailNotifier, func()) {
+	mux := p.Mux
+	log := p.Log
+	pool := p.Pool
+	store := p.Store
+	nc := p.NC
+	rdb := p.RDB
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
-	mthubSvc.SetKillSwitch(sreKillSwitch) // V3-R-5: PlaceOrder blocked when kill switch engaged
+	p.MthubSvc.SetKillSwitch(sreKillSwitch) // V3-R-5: PlaceOrder blocked when kill switch engaged
 	sreBreakers := controlplane.NewBreakerRegistry(controlplane.DefaultBreakerConfig())
 	sreCanary := controlplane.NewCanaryManager()
-	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
+	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, p.PlatformSvc, p.EmailNotifier, log)
 	// AdminSRE — ConnectRPC (proto binary)
-	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, withSency(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, withSency(p.OtelInterceptor,p.AuthInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, aiSvc, log)
-	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, withSency(otelInterceptor,authInterceptor)))
+	analyticsServer := system.NewAnalyticsServer(analyticsRepo, p.PlatformSvc, p.AnalyticsCache, p.AISvc, log)
+	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
-	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, platformSvc, log)
-	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, withSency(otelInterceptor,authInterceptor)))
+	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, p.PlatformSvc, log)
+	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
 
-	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
-	strategyExperimentServer.SetPgListen(pgListen)
-	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, withSency(otelInterceptor,authInterceptor)))
-	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, store, log)
-	experimentWorker.SetPgListen(pgListen)
-	if aiSvc != nil {
-		experimentWorker.SetAIService(aiSvc)
+	strategyExperimentServer := strategy.NewStrategyExperimentServer(p.StrategyExperimentRepo, log)
+	strategyExperimentServer.SetPgListen(p.PgListen)
+	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	experimentWorker := strategy.NewExperimentWorker(p.StrategyExperimentRepo, p.BacktestRunRepo, store, log)
+	experimentWorker.SetPgListen(p.PgListen)
+	if p.AISvc != nil {
+		experimentWorker.SetAIService(p.AISvc)
 	}
 	experimentWorker.Start(context.Background())
 
@@ -87,12 +96,12 @@ func registerSREHandlers(
 	calSvc := ai.NewCalibrationService(calRepo)
 	reflectionWorker := ai.NewReflectionWorker(calSvc, store, log)
 	reflectionWorker.Start(context.Background())
-	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, userRepo, log)
-	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, withSency(otelInterceptor,authInterceptor)))
-	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
-	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, withSency(otelInterceptor,authInterceptor)))
+	strategyAssetServer := strategy.NewStrategyAssetServer(p.StrategyAssetRepo, p.UserRepo, log)
+	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	scheduleHealthServer := system.NewScheduleHealthServer(p.SchedHealthRepo, log)
+	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
 	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
-	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, withSency(otelInterceptor,authInterceptor)))
+	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
 
 	// Catch-all: return 404 for unknown routes.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -141,5 +150,5 @@ func registerSREHandlers(
 		experimentWorker.Stop()
 		reflectionWorker.Stop()
 	}
-	return emailNotifier, workerCleanup
+	return p.EmailNotifier, workerCleanup
 }

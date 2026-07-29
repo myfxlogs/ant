@@ -39,27 +39,47 @@ type strategyRuntimeDeps struct {
 	platformAgg        *risksvc.PlatformAggregator
 }
 
+// strategyTradingParams holds parameters for setupStrategyAndTrading.
+type strategyTradingParams struct {
+	Ctx             context.Context
+	Mux             *http.ServeMux
+	Pool            *pgxpool.Pool
+	Cfg             *config.Config
+	MarketDataRepo  repository.MarketDataStore
+	MthubSvc        *mthub.MtHubService
+	Hub             *mthub.Hub
+	EventStore      *mthub.TradeEventStore
+	AISvc           *systemai.Service
+	MktplaceSvc     *marketplace.Service
+	MktplaceHandler *mktplace.MarketplaceServer
+	QuotaChecker    *service.QuotaChecker
+	TemplatesRepo   *repository.AIStrategyTemplatesRepository
+	BacktestRunRepo *repository.BacktestRunRepository
+	Log             *zap.Logger
+	OtelInterceptor connectrpc.Interceptor
+	AuthInterceptor connectrpc.Interceptor
+}
+
 // setupStrategyAndTrading wires strategy service, paper trading, risk pipeline,
 // autotrading, and schedule engine. Returns deps needed by downstream handlers.
-func setupStrategyAndTrading(
-	ctx context.Context,
-	mux *http.ServeMux,
-	pool *pgxpool.Pool,
-	cfg *config.Config,
-	marketDataRepo repository.MarketDataStore,
-	mthubSvc *mthub.MtHubService,
-	hub *mthub.Hub,
-	eventStore *mthub.TradeEventStore,
-	aiSvc *systemai.Service,
-	mktplaceSvc *marketplace.Service,
-	mktplaceHandler *mktplace.MarketplaceServer,
-	quotaChecker *service.QuotaChecker,
-	templatesRepo *repository.AIStrategyTemplatesRepository,
-	backtestRunRepo *repository.BacktestRunRepository,
-	log *zap.Logger,
-	otelInterceptor connectrpc.Interceptor,
-	authInterceptor connectrpc.Interceptor,
-) strategyRuntimeDeps {
+func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
+	ctx := p.Ctx
+	mux := p.Mux
+	pool := p.Pool
+	cfg := p.Cfg
+	log := p.Log
+	marketDataRepo := p.MarketDataRepo
+	mthubSvc := p.MthubSvc
+	hub := p.Hub
+	eventStore := p.EventStore
+	aiSvc := p.AISvc
+	mktplaceSvc := p.MktplaceSvc
+	mktplaceHandler := p.MktplaceHandler
+	quotaChecker := p.QuotaChecker
+	templatesRepo := p.TemplatesRepo
+	backtestRunRepo := p.BacktestRunRepo
+	otelInterceptor := p.OtelInterceptor
+	authInterceptor := p.AuthInterceptor
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
 	strategyServer.SetCodeAccessChecker(mktplaceSvc)

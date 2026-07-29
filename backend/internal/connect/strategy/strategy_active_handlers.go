@@ -194,20 +194,8 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		mode = "paper"
 	}
 
-	// P3.2: Enforce subscription plan strategy limits.
-	if s.quotaChecker != nil && s.runRepo != nil {
-		activeCount, _ := s.runRepo.CountActiveByUser(ctx, uid)
-		if !s.quotaChecker.CheckStrategyLimit(uid, activeCount) {
-			return nil, connect.NewError(connect.CodeResourceExhausted,
-				fmt.Errorf("strategy limit reached for your plan (%d active)", activeCount))
-		}
-		if mode == "live" {
-			liveCount, _ := s.runRepo.CountActiveLiveByUser(ctx, uid)
-			if !s.quotaChecker.CheckLiveStrategyLimit(uid, liveCount) {
-				return nil, connect.NewError(connect.CodeResourceExhausted,
-					fmt.Errorf("live strategy limit reached for your plan"))
-			}
-		}
+	if err := s.checkStrategyQuota(ctx, uid, mode); err != nil {
+		return nil, err
 	}
 
 	cfg := LiveStrategyConfig{
@@ -222,65 +210,24 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		StrategyID:   req.Msg.GetStrategyId(),
 	}
 
-	// Live mode: use MT4 account ID for order routing.
-	if mode == "live" {
-		if s.accountLookup != nil {
-			mt4ID := s.accountLookup(ctx, uid.String())
-			if mt4ID == "" {
-				return nil, connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("no connected MT account found — please bind an MT account before starting a live strategy"))
-			}
-			cfg.DataSourceAccountID = mt4ID
-			cfg.AccountID = mt4ID // route orders to real MT4 account
-		} else {
-			return nil, connect.NewError(connect.CodeUnavailable,
-				fmt.Errorf("account lookup not configured"))
-		}
-	} else {
-		// Paper mode: use linked MT4 account for bar data subscription only.
-		if s.accountLookup != nil {
-			if mt4ID := s.accountLookup(ctx, uid.String()); mt4ID != "" {
-				cfg.DataSourceAccountID = mt4ID
-			}
-		}
+	if err := s.resolveModeAndAccount(ctx, uid, mode, &cfg); err != nil {
+		return nil, err
 	}
 
-	// Pre-create the run record synchronously so we can return run_id immediately.
-	runID := uuid.Nil
-	if s.runRepo != nil {
-		run := &repository.StrategyRun{
-			UserID:       uid,
-			AccountID:    cfg.AccountID,
-			Symbol:       cfg.Symbol,
-			Timeframe:    cfg.Timeframe,
-			Mode:         cfg.Mode,
-			StrategyCode: cfg.Code,
-			Status:       "running",
-		}
-		if err := s.runRepo.Create(ctx, run); err != nil {
-			s.log.Error("StartStrategy: failed to create run record", zap.Error(err))
-			return connect.NewResponse(&antv1.StartStrategyResponse{
-				Success: false,
-				Error:   "failed to create run record: " + err.Error(),
-			}), nil
-		}
-		runID = run.ID
-		cfg.RunID = runID
-	} else {
+	runID, err := s.createStrategyRun(ctx, uid, cfg)
+	if err != nil {
 		return connect.NewResponse(&antv1.StartStrategyResponse{
 			Success: false,
-			Error:   "run repository not configured",
+			Error:   err.Error(),
 		}), nil
 	}
+	cfg.RunID = runID
 
-	// Synchronously register session — atomic conflict detection.
-	// If account already has a running session, Register returns nil.
 	runCtx, cancel := context.WithCancel(context.Background())
 	if s.sessionRegistry != nil && runID != uuid.Nil {
 		sess := s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cancel)
 		if sess == nil {
 			cancel()
-			// Mark the pre-created run record as error.
 			if s.runRepo != nil {
 				_ = s.runRepo.UpdateStopped(context.Background(), runID, "error", "duplicate strategy for account")
 			}
@@ -319,6 +266,67 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 			return ""
 		}(),
 	}), nil
+}
+
+func (s *StrategyExecutionServer) checkStrategyQuota(ctx context.Context, uid uuid.UUID, mode string) error {
+	if s.quotaChecker == nil || s.runRepo == nil {
+		return nil
+	}
+	activeCount, _ := s.runRepo.CountActiveByUser(ctx, uid)
+	if !s.quotaChecker.CheckStrategyLimit(uid, activeCount) {
+		return connect.NewError(connect.CodeResourceExhausted,
+			fmt.Errorf("strategy limit reached for your plan (%d active)", activeCount))
+	}
+	if mode == "live" {
+		liveCount, _ := s.runRepo.CountActiveLiveByUser(ctx, uid)
+		if !s.quotaChecker.CheckLiveStrategyLimit(uid, liveCount) {
+			return connect.NewError(connect.CodeResourceExhausted,
+				fmt.Errorf("live strategy limit reached for your plan"))
+		}
+	}
+	return nil
+}
+
+func (s *StrategyExecutionServer) resolveModeAndAccount(ctx context.Context, uid uuid.UUID, mode string, cfg *LiveStrategyConfig) error {
+	if mode == "live" {
+		if s.accountLookup == nil {
+			return connect.NewError(connect.CodeUnavailable, fmt.Errorf("account lookup not configured"))
+		}
+		mt4ID := s.accountLookup(ctx, uid.String())
+		if mt4ID == "" {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("no connected MT account found — please bind an MT account before starting a live strategy"))
+		}
+		cfg.DataSourceAccountID = mt4ID
+		cfg.AccountID = mt4ID
+		return nil
+	}
+	if s.accountLookup != nil {
+		if mt4ID := s.accountLookup(ctx, uid.String()); mt4ID != "" {
+			cfg.DataSourceAccountID = mt4ID
+		}
+	}
+	return nil
+}
+
+func (s *StrategyExecutionServer) createStrategyRun(ctx context.Context, uid uuid.UUID, cfg LiveStrategyConfig) (uuid.UUID, error) {
+	if s.runRepo == nil {
+		return uuid.Nil, fmt.Errorf("run repository not configured")
+	}
+	run := &repository.StrategyRun{
+		UserID:       uid,
+		AccountID:    cfg.AccountID,
+		Symbol:       cfg.Symbol,
+		Timeframe:    cfg.Timeframe,
+		Mode:         cfg.Mode,
+		StrategyCode: cfg.Code,
+		Status:       "running",
+	}
+	if err := s.runRepo.Create(ctx, run); err != nil {
+		s.log.Error("StartStrategy: failed to create run record", zap.Error(err))
+		return uuid.Nil, fmt.Errorf("failed to create run record: %w", err)
+	}
+	return run.ID, nil
 }
 
 // WatchActiveStrategies streams the active strategy list via SSE.

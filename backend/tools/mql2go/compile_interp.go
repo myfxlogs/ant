@@ -507,37 +507,45 @@ func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
 			ir.EnumTypes[enumName] = true
 		}
 		if child.Type() == "enumerator_list" {
-			counter := int32(0)
-			for j := 0; j < int(child.NamedChildCount()); j++ {
-				ec := child.NamedChild(j)
-				if ec.Type() == "enumerator" {
-					var name string
-					var val *int32
-					for k := 0; k < int(ec.NamedChildCount()); k++ {
-						ecChild := ec.NamedChild(k)
-						if ecChild.Type() == nodeIdentifier {
-							name = c.text(ecChild)
-						} else if ecChild.Type() == "number_literal" {
-							nVal := interp.ParseNumberLiteral(c.text(ecChild))
-							v := nVal.ToInt()
-							val = &v
-							counter = v
-						}
-					}
-					if name != "" {
-						if val != nil {
-							counter = *val
-						}
-						ir.Enums[name] = counter
-						if enumName != "" {
-							ir.Enums[enumName+"::"+name] = counter
-						}
-						counter++
-					}
-				}
-			}
+			c.processEnumeratorList(ir, child, enumName)
 		}
 	}
+}
+
+func (c *compiler) processEnumeratorList(ir *interp.IR, list *sitter.Node, enumName string) {
+	counter := int32(0)
+	for j := 0; j < int(list.NamedChildCount()); j++ {
+		ec := list.NamedChild(j)
+		if ec.Type() != "enumerator" {
+			continue
+		}
+		name, val := c.parseEnumerator(ec)
+		if name == "" {
+			continue
+		}
+		if val != nil {
+			counter = *val
+		}
+		ir.Enums[name] = counter
+		if enumName != "" {
+			ir.Enums[enumName+"::"+name] = counter
+		}
+		counter++
+	}
+}
+
+func (c *compiler) parseEnumerator(ec *sitter.Node) (name string, val *int32) {
+	for k := 0; k < int(ec.NamedChildCount()); k++ {
+		ecChild := ec.NamedChild(k)
+		if ecChild.Type() == nodeIdentifier {
+			name = c.text(ecChild)
+		} else if ecChild.Type() == "number_literal" {
+			nVal := interp.ParseNumberLiteral(c.text(ecChild))
+			v := nVal.ToInt()
+			val = &v
+		}
+	}
+	return
 }
 
 // compileDoWhile compiles a do { } while(cond) statement.

@@ -88,13 +88,11 @@ type LiveTradeSubscriber interface {
 //
 // Blocks until ctx is cancelled. Callers should run this in a goroutine.
 func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
-	// Callers must pre-create the run record and set cfg.RunID.
 	if cfg.RunID == uuid.Nil {
 		return fmt.Errorf("live strategy runner: cfg.RunID must be set by caller")
 	}
 	runID := cfg.RunID
 
-	// cleanupOrphan marks the run record as failed on early return.
 	cleanupOrphan := func(errMsg string) {
 		if s.runRepo != nil {
 			_ = s.runRepo.UpdateStopped(context.Background(), runID, "error", errMsg)
@@ -121,26 +119,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		barAccountID = cfg.DataSourceAccountID
 	}
 
-	needsTick := cfg.Models&ExecModelTick != 0
-	needsTrade := cfg.Models&ExecModelTrade != 0
-
-	// L4: When Models is not explicitly set, auto-detect from bytecode.
-	// Compile once upfront to check OnTick/OnTrade entry points, then subscribe
-	// to the appropriate streams. This is a lightweight compile (cached bytecode
-	// when strategy_id is available) and the result is reused on the first bar.
-	if cfg.Models == 0 && cfg.Code != "" {
-		var cachedBytecode []byte
-		if cfg.StrategyID != "" && s.importedRepo != nil {
-			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
-				cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
-			}
-		}
-		probe, _, probeErr := mql2go.CompileMQLCached(cfg.Code, cachedBytecode)
-		if probeErr == nil {
-			needsTick = probe.HasOnTick()
-			needsTrade = probe.Bytecode().OnTrade >= 0
-		}
-	}
+	needsTick, needsTrade := s.detectExecModels(ctx, cfg)
 
 	s.log.Info("LiveStrategyRunner: starting",
 		zap.String("trading_account", cfg.AccountID),
@@ -155,51 +134,190 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	barCh, barCancel := source.Subscribe(barAccountID)
 	defer barCancel()
 
-	var tickCh <-chan *mthub.TickUpdate
-	var tickCancel func()
-	if needsTick && s.mtHub != nil {
-		if ts, ok := interface{}(s.mtHub).(LiveTickSubscriber); ok {
-			tickCh, tickCancel = ts.SubscribeTickUpdates(cfg.AccountID)
-			defer tickCancel()
-		}
+	tickCh, tickCancel := s.subscribeTickUpdates(cfg.AccountID, needsTick)
+	if tickCancel != nil {
+		defer tickCancel()
 	}
 
-	var tradeCh <-chan *mthub.BrokerTradeEvent
-	var tradeCancel func()
-	if needsTrade && s.mtHub != nil {
-		if ts, ok := interface{}(s.mtHub).(LiveTradeSubscriber); ok {
-			tradeCh, tradeCancel = ts.SubscribeTradeEvents(cfg.AccountID)
-			defer tradeCancel()
-		}
+	tradeCh, tradeCancel := s.subscribeTradeEvents(cfg.AccountID, needsTrade)
+	if tradeCancel != nil {
+		defer tradeCancel()
 	}
 
-	// Make context cancellable so StopStrategy RPC can stop this run.
 	runCtx, runCancel := context.WithCancel(ctx)
 	defer runCancel()
 
-	// Push-first: subscribe to PositionSnapshotBroker for this account.
-	// backfillContextStrings reads from posCache (O(1) read, no per-bar polling).
 	if s.posCache != nil && s.mtHub != nil {
 		s.posCache.Subscribe(runCtx, s.mtHub, cfg.AccountID)
 	}
 
-	// Register in session registry for monitoring + control.
-	// If caller pre-registered (synchronous conflict check), use that session.
+	activeSess := s.registerLiveSession(runCtx, &cfg, runID, runCancel, cleanupOrphan)
+	if activeSess == nil && cfg.PreRegisteredSession == nil && s.sessionRegistry != nil {
+		return fmt.Errorf("live strategy runner: another strategy is already running for account %s", cfg.AccountID)
+	}
+
+	s.setupShadowVerifier(runCtx, &cfg)
+	defer s.cleanupLiveSession(runID, cfg, activeSess)
+
+	bars := make([]liveBar, 0, maxContextBars)
+	var session Session
+	var firstBar = true
+
+	extraBars, extraSymbolSet := initExtraBars(cfg)
+
+	defer func() {
+		if session != nil {
+			_ = session.Close()
+		}
+	}()
+
+	return s.runLiveEventLoop(runCtx, cfg, barCh, tickCh, tradeCh, &bars, &session, &firstBar, activeSess, extraBars, extraSymbolSet)
+}
+
+func (s *StrategyExecutionServer) runLiveEventLoop(
+	runCtx context.Context,
+	cfg LiveStrategyConfig,
+	barCh <-chan *mthub.BarUpdate,
+	tickCh <-chan *mthub.TickUpdate,
+	tradeCh <-chan *mthub.BrokerTradeEvent,
+	bars *[]liveBar,
+	session *Session,
+	firstBar *bool,
+	activeSess *ActiveSession,
+	extraBars map[string][]liveBar,
+	extraSymbolSet map[string]bool,
+) error {
+	for {
+		select {
+		case <-runCtx.Done():
+			s.log.Info("LiveStrategyRunner: context cancelled, exiting")
+			return nil
+
+		case bar, ok := <-barCh:
+			if !ok {
+				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
+				return nil
+			}
+			if extraSymbolSet[bar.Symbol] && bar.Period == cfg.Timeframe {
+				handleExtraSymbolBar(bar, extraBars)
+				continue
+			}
+			if bar.Symbol != cfg.Symbol || bar.Period != cfg.Timeframe {
+				continue
+			}
+			s.handleBar(runCtx, cfg, bar, bars, session, firstBar, activeSess, extraBars)
+
+		case tick, ok := <-tickCh:
+			if !ok {
+				s.log.Warn("LiveStrategyRunner: tick channel closed")
+				tickCh = nil
+				continue
+			}
+			if tick.Symbol != cfg.Symbol {
+				continue
+			}
+			s.handleTick(runCtx, cfg, tick, session, firstBar, activeSess)
+
+		case evt, ok := <-tradeCh:
+			if !ok {
+				s.log.Warn("LiveStrategyRunner: trade channel closed")
+				tradeCh = nil
+				continue
+			}
+			if evt.Symbol != cfg.Symbol {
+				continue
+			}
+			s.handleTrade(runCtx, cfg, evt, session, firstBar, activeSess)
+		}
+	}
+}
+
+func (s *StrategyExecutionServer) detectExecModels(ctx context.Context, cfg LiveStrategyConfig) (needsTick, needsTrade bool) {
+	needsTick = cfg.Models&ExecModelTick != 0
+	needsTrade = cfg.Models&ExecModelTrade != 0
+	if cfg.Models == 0 && cfg.Code != "" {
+		var cachedBytecode []byte
+		if cfg.StrategyID != "" && s.importedRepo != nil {
+			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
+				cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
+			}
+		}
+		probe, _, probeErr := mql2go.CompileMQLCached(cfg.Code, cachedBytecode)
+		if probeErr == nil {
+			needsTick = probe.HasOnTick()
+			needsTrade = probe.Bytecode().OnTrade >= 0
+		}
+	}
+	return
+}
+
+func (s *StrategyExecutionServer) subscribeTickUpdates(accountID string, needsTick bool) (<-chan *mthub.TickUpdate, func()) {
+	if !needsTick || s.mtHub == nil {
+		return nil, nil
+	}
+	ts, ok := interface{}(s.mtHub).(LiveTickSubscriber)
+	if !ok {
+		return nil, nil
+	}
+	return ts.SubscribeTickUpdates(accountID)
+}
+
+func (s *StrategyExecutionServer) subscribeTradeEvents(accountID string, needsTrade bool) (<-chan *mthub.BrokerTradeEvent, func()) {
+	if !needsTrade || s.mtHub == nil {
+		return nil, nil
+	}
+	ts, ok := interface{}(s.mtHub).(LiveTradeSubscriber)
+	if !ok {
+		return nil, nil
+	}
+	return ts.SubscribeTradeEvents(accountID)
+}
+
+func initExtraBars(cfg LiveStrategyConfig) (map[string][]liveBar, map[string]bool) {
+	extraBars := make(map[string][]liveBar, len(cfg.ExtraSymbols))
+	extraSymbolSet := make(map[string]bool, len(cfg.ExtraSymbols))
+	for _, sym := range cfg.ExtraSymbols {
+		if sym != "" && sym != cfg.Symbol {
+			extraSymbolSet[sym] = true
+			extraBars[sym] = make([]liveBar, 0, maxContextBars)
+		}
+	}
+	return extraBars, extraSymbolSet
+}
+
+func handleExtraSymbolBar(bar *mthub.BarUpdate, extraBars map[string][]liveBar) {
+	ew := extraBars[bar.Symbol]
+	ew = append(ew, liveBar{
+		open:     bar.Open.String(),
+		high:     bar.High.String(),
+		low:      bar.Low.String(),
+		close:    bar.Close.String(),
+		volume:   strconv.FormatFloat(bar.Volume, 'f', -1, 64),
+		openTime: bar.OpenTime,
+	})
+	if len(ew) > maxContextBars {
+		ew = ew[len(ew)-maxContextBars:]
+	}
+	extraBars[bar.Symbol] = ew
+}
+
+func (s *StrategyExecutionServer) registerLiveSession(runCtx context.Context, cfg *LiveStrategyConfig, runID uuid.UUID, runCancel func(), cleanupOrphan func(string)) *ActiveSession {
 	activeSess := cfg.PreRegisteredSession
 	if activeSess == nil && s.sessionRegistry != nil {
 		uid, _ := uuid.Parse(cfg.UserID)
 		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, runCancel)
 		if activeSess == nil {
 			cleanupOrphan("another strategy is already running for this account")
-			return fmt.Errorf("live strategy runner: another strategy is already running for account %s", cfg.AccountID)
+			return nil
 		}
 	}
 	if activeSess != nil {
 		s.log.Info("LiveStrategyRunner: session registered", zap.String("run_id", runID.String()))
 	}
+	return activeSess
+}
 
-	// Auto-create shadow verifier for live consistency checking.
-	// Compares live VM signals with shadow backtest signals every 5 minutes.
+func (s *StrategyExecutionServer) setupShadowVerifier(runCtx context.Context, cfg *LiveStrategyConfig) {
 	if cfg.ShadowVerifier == nil && cfg.Code != "" {
 		btCfg := backtest.Config{
 			Symbol:         cfg.Symbol,
@@ -212,103 +330,26 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	if cfg.ShadowVerifier != nil {
 		cfg.ShadowVerifier.Start(runCtx)
 	}
+}
 
-	defer func() {
-		if cfg.ShadowVerifier != nil {
-			cfg.ShadowVerifier.Stop()
-		}
-		if s.sessionRegistry != nil && runID != uuid.Nil {
-			s.sessionRegistry.Deregister(runID)
-		}
-		if s.runRepo != nil && runID != uuid.Nil {
-			status := "stopped"
-			if activeSess != nil && activeSess.ErrorCount > 0 {
-				status = "error"
-			}
-			errMsg := ""
-			if activeSess != nil {
-				errMsg = activeSess.LastError
-			}
-			if err := s.runRepo.UpdateStopped(context.Background(), runID, status, errMsg); err != nil {
-				s.log.Warn("LiveStrategyRunner: failed to update run record on stop", zap.Error(err))
-			}
-		}
-	}()
-
-	bars := make([]liveBar, 0, maxContextBars)
-	var session Session
-	var firstBar = true
-
-	// Extra symbol bar windows for multi-symbol strategies.
-	extraBars := make(map[string][]liveBar, len(cfg.ExtraSymbols))
-	extraSymbolSet := make(map[string]bool, len(cfg.ExtraSymbols))
-	for _, sym := range cfg.ExtraSymbols {
-		if sym != "" && sym != cfg.Symbol {
-			extraSymbolSet[sym] = true
-			extraBars[sym] = make([]liveBar, 0, maxContextBars)
-		}
+func (s *StrategyExecutionServer) cleanupLiveSession(runID uuid.UUID, cfg LiveStrategyConfig, activeSess *ActiveSession) {
+	if cfg.ShadowVerifier != nil {
+		cfg.ShadowVerifier.Stop()
 	}
-
-	defer func() {
-		if session != nil {
-			_ = session.Close()
+	if s.sessionRegistry != nil && runID != uuid.Nil {
+		s.sessionRegistry.Deregister(runID)
+	}
+	if s.runRepo != nil && runID != uuid.Nil {
+		status := "stopped"
+		if activeSess != nil && activeSess.ErrorCount > 0 {
+			status = "error"
 		}
-	}()
-
-	for {
-		select {
-		case <-runCtx.Done():
-			s.log.Info("LiveStrategyRunner: context cancelled, exiting")
-			return nil
-
-		case bar, ok := <-barCh:
-			if !ok {
-				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
-				return nil
-			}
-			// Accept bars for extra symbols (same timeframe) — accumulate without triggering.
-			if extraSymbolSet[bar.Symbol] && bar.Period == cfg.Timeframe {
-				ew := extraBars[bar.Symbol]
-				ew = append(ew, liveBar{
-					open:     bar.Open.String(),
-					high:     bar.High.String(),
-					low:      bar.Low.String(),
-					close:    bar.Close.String(),
-					volume:   strconv.FormatFloat(bar.Volume, 'f', -1, 64),
-					openTime: bar.OpenTime,
-				})
-				if len(ew) > maxContextBars {
-					ew = ew[len(ew)-maxContextBars:]
-				}
-				extraBars[bar.Symbol] = ew
-				continue
-			}
-			if bar.Symbol != cfg.Symbol || bar.Period != cfg.Timeframe {
-				continue
-			}
-			s.handleBar(runCtx, cfg, bar, &bars, &session, &firstBar, activeSess, extraBars)
-
-		case tick, ok := <-tickCh:
-			if !ok {
-				s.log.Warn("LiveStrategyRunner: tick channel closed")
-				tickCh = nil
-				continue
-			}
-			if tick.Symbol != cfg.Symbol {
-				continue
-			}
-			s.handleTick(runCtx, cfg, tick, &session, &firstBar, activeSess)
-
-		case evt, ok := <-tradeCh:
-			if !ok {
-				s.log.Warn("LiveStrategyRunner: trade channel closed")
-				tradeCh = nil
-				continue
-			}
-			if evt.Symbol != cfg.Symbol {
-				continue
-			}
-			s.handleTrade(runCtx, cfg, evt, &session, &firstBar, activeSess)
+		errMsg := ""
+		if activeSess != nil {
+			errMsg = activeSess.LastError
+		}
+		if err := s.runRepo.UpdateStopped(context.Background(), runID, status, errMsg); err != nil {
+			s.log.Warn("LiveStrategyRunner: failed to update run record on stop", zap.Error(err))
 		}
 	}
 }

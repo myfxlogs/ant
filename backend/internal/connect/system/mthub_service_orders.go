@@ -104,29 +104,37 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&antv1.SyncOrderHistoryResponse{SyncedRecords: int64(len(tradeRecs))}), nil
 }
 
-func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform, updateOrderType, updateSymbol, updateComment string, updateTicket int64, updateVolume, updateOpenPrice, updateClosePrice, updateProfit, updateSwap, updateCommission, updateSL, updateTP decimal.Decimal, updateOpenTime, updateCloseTime int64) error {
-	uid, err := uuid.Parse(accountID)
+// ClosedTradeParams holds parameters for WriteClosedTrade.
+type ClosedTradeParams struct {
+	AccountID, Platform, OrderType, Symbol, Comment string
+	Ticket                                          int64
+	Volume, OpenPrice, ClosePrice, Profit, Swap, Commission, SL, TP decimal.Decimal
+	OpenTime, CloseTime                                            int64
+}
+
+func (s *MtHubServer) WriteClosedTrade(ctx context.Context, p ClosedTradeParams) error {
+	uid, err := uuid.Parse(p.AccountID)
 	if err != nil {
 		return err
 	}
 	rec := &model.TradeRecord{
 		UserID:     uuid.Nil,
 		AccountID:    uid,
-		Ticket:       updateTicket,
-		Symbol:       updateSymbol,
-		OrderType:    updateOrderType,
-		Volume:       updateVolume,
-		OpenPrice:    updateOpenPrice,
-		ClosePrice:   updateClosePrice,
-		Profit:       updateProfit,
-		Swap:         updateSwap,
-		Commission:   updateCommission,
-		OpenTime:     time.Unix(updateOpenTime, 0),
-		CloseTime:    time.Unix(updateCloseTime, 0),
-		StopLoss:     updateSL,
-		TakeProfit:   updateTP,
-		OrderComment: updateComment,
-		Platform:     platform,
+		Ticket:       p.Ticket,
+		Symbol:       p.Symbol,
+		OrderType:    p.OrderType,
+		Volume:       p.Volume,
+		OpenPrice:    p.OpenPrice,
+		ClosePrice:   p.ClosePrice,
+		Profit:       p.Profit,
+		Swap:         p.Swap,
+		Commission:   p.Commission,
+		OpenTime:     time.Unix(p.OpenTime, 0),
+		CloseTime:    time.Unix(p.CloseTime, 0),
+		StopLoss:     p.SL,
+		TakeProfit:   p.TP,
+		OrderComment: p.Comment,
+		Platform:     p.Platform,
 	}
 	return s.tradeRecords.Create(ctx, rec)
 }

@@ -153,91 +153,7 @@ func CompareParity(goTrades []Trade, mtTrades []MTReportTrade, cfg ParityConfig)
 		usedMT[bestMT] = true
 		mt := sortedMT[bestMT]
 		report.MatchedCount++
-
-		// Compare side. sdk.SideBuy=1, sdk.SideSell=-1.
-		goSide := "buy"
-		if gt.Side == sdk.SideSell {
-			goSide = "sell"
-		}
-		if goSide != mt.Side {
-			report.Mismatches = append(report.Mismatches, ParityMismatch{
-				Type:     MismatchSide,
-				GoTrade:  &sortedGo[i],
-				MTTrade:  &mt,
-				GoIndex:  i,
-				MTIndex:  bestMT,
-				GoValue:  goSide,
-				MTValue:  mt.Side,
-				Severity: "fatal",
-			})
-		}
-
-		// Compare volume.
-		volDiff := gt.Volume.Sub(mt.Volume).Abs()
-		if volDiff.GreaterThan(cfg.VolumeTolerance) {
-			report.Mismatches = append(report.Mismatches, ParityMismatch{
-				Type:     MismatchVolume,
-				GoTrade:  &sortedGo[i],
-				MTTrade:  &mt,
-				GoIndex:  i,
-				MTIndex:  bestMT,
-				GoValue:  gt.Volume.String(),
-				MTValue:  mt.Volume.String(),
-				Diff:     volDiff.String(),
-				Severity: "warning",
-			})
-		}
-
-		// Compare open price.
-		priceDiff := gt.EntryPrice.Sub(mt.OpenPrice).Abs()
-		if priceDiff.GreaterThan(cfg.PriceTolerance) {
-			report.Mismatches = append(report.Mismatches, ParityMismatch{
-				Type:     MismatchOpenPrice,
-				GoTrade:  &sortedGo[i],
-				MTTrade:  &mt,
-				GoIndex:  i,
-				MTIndex:  bestMT,
-				GoValue:  gt.EntryPrice.String(),
-				MTValue:  mt.OpenPrice.String(),
-				Diff:     priceDiff.String(),
-				Severity: "warning",
-			})
-		}
-
-		// Compare close price (if MT report has it).
-		if !mt.ClosePrice.IsZero() && !gt.ExitPrice.IsZero() {
-			closeDiff := gt.ExitPrice.Sub(mt.ClosePrice).Abs()
-			if closeDiff.GreaterThan(cfg.PriceTolerance) {
-				report.Mismatches = append(report.Mismatches, ParityMismatch{
-					Type:     MismatchClosePrice,
-					GoTrade:  &sortedGo[i],
-					MTTrade:  &mt,
-					GoIndex:  i,
-					MTIndex:  bestMT,
-					GoValue:  gt.ExitPrice.String(),
-					MTValue:  mt.ClosePrice.String(),
-					Diff:     closeDiff.String(),
-					Severity: "warning",
-				})
-			}
-		}
-
-		// Compare profit.
-		profitDiff := gt.Profit.Sub(mt.Profit).Abs()
-		profitTolerance := cfg.PriceTolerance.Mul(gt.Volume).Mul(decimal.NewFromInt(100))
-		if profitDiff.GreaterThan(profitTolerance) {
-			report.Mismatches = append(report.Mismatches, ParityMismatch{
-				Type:     MismatchProfit,
-				GoTrade:  &sortedGo[i],
-				MTTrade:  &mt,
-				GoIndex:  i,
-				MTIndex:  bestMT,
-				GoValue:  gt.Profit.String(),
-				MTValue:  mt.Profit.String(),
-				Diff:     profitDiff.String(),
-				Severity: "warning",
-			})
-		}
+		report.Mismatches = append(report.Mismatches, compareTradeFields(sortedGo[i], mt, i, bestMT, cfg)...)
 	}
 
 	// Check for MT trades not matched to Go trades.
@@ -265,6 +181,62 @@ func CompareParity(goTrades []Trade, mtTrades []MTReportTrade, cfg ParityConfig)
 
 	report.Passed = !report.HasFatalMismatches()
 	return report
+}
+
+func compareTradeFields(gt Trade, mt MTReportTrade, goIdx, mtIdx int, cfg ParityConfig) []ParityMismatch {
+	var mismatches []ParityMismatch
+
+	goSide := "buy"
+	if gt.Side == sdk.SideSell {
+		goSide = "sell"
+	}
+	if goSide != mt.Side {
+		mismatches = append(mismatches, ParityMismatch{
+			Type: MismatchSide, GoTrade: &gt, MTTrade: &mt,
+			GoIndex: goIdx, MTIndex: mtIdx, GoValue: goSide, MTValue: mt.Side, Severity: "fatal",
+		})
+	}
+
+	volDiff := gt.Volume.Sub(mt.Volume).Abs()
+	if volDiff.GreaterThan(cfg.VolumeTolerance) {
+		mismatches = append(mismatches, ParityMismatch{
+			Type: MismatchVolume, GoTrade: &gt, MTTrade: &mt,
+			GoIndex: goIdx, MTIndex: mtIdx, GoValue: gt.Volume.String(), MTValue: mt.Volume.String(),
+			Diff: volDiff.String(), Severity: "warning",
+		})
+	}
+
+	priceDiff := gt.EntryPrice.Sub(mt.OpenPrice).Abs()
+	if priceDiff.GreaterThan(cfg.PriceTolerance) {
+		mismatches = append(mismatches, ParityMismatch{
+			Type: MismatchOpenPrice, GoTrade: &gt, MTTrade: &mt,
+			GoIndex: goIdx, MTIndex: mtIdx, GoValue: gt.EntryPrice.String(), MTValue: mt.OpenPrice.String(),
+			Diff: priceDiff.String(), Severity: "warning",
+		})
+	}
+
+	if !mt.ClosePrice.IsZero() && !gt.ExitPrice.IsZero() {
+		closeDiff := gt.ExitPrice.Sub(mt.ClosePrice).Abs()
+		if closeDiff.GreaterThan(cfg.PriceTolerance) {
+			mismatches = append(mismatches, ParityMismatch{
+				Type: MismatchClosePrice, GoTrade: &gt, MTTrade: &mt,
+				GoIndex: goIdx, MTIndex: mtIdx, GoValue: gt.ExitPrice.String(), MTValue: mt.ClosePrice.String(),
+				Diff: closeDiff.String(), Severity: "warning",
+			})
+		}
+	}
+
+	profitDiff := gt.Profit.Sub(mt.Profit).Abs()
+	profitTolerance := cfg.PriceTolerance.Mul(gt.Volume).Mul(decimal.NewFromInt(100))
+	if profitDiff.GreaterThan(profitTolerance) {
+		mismatches = append(mismatches, ParityMismatch{
+			Type: MismatchProfit, GoTrade: &gt, MTTrade: &mt,
+			GoIndex: goIdx, MTIndex: mtIdx, GoValue: gt.Profit.String(), MTValue: mt.Profit.String(),
+			Diff: profitDiff.String(), Severity: "warning",
+		})
+	}
+
+	return mismatches
 }
 
 // FormatReport produces a human-readable summary of the parity report.

@@ -149,21 +149,51 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	go healthMonitor(ctx, mgr, nil, log, deps.OnAccountDisconnect)
 
 	// --- Load active accounts and start gateways ---
-	var cfgs []mdtick.AccountConfig
-	var loadErr error
+	cfgs, err := loadAccountConfigsWithRetry(ctx, deps, log)
+	if err != nil {
+		return fmt.Errorf("load account configs after retries: %w", err)
+	}
+	firstMT4, firstMT5 := startAllGateways(ctx, cfgs, deps, mgr, log, srcMap)
+
+	// M12-C2: register collected gateways in the multi-broker registry.
+	if deps.BrokerRegistry != nil {
+		if err := adapter.RegisterDefaults(deps.BrokerRegistry, firstMT4, firstMT5); err != nil {
+			log.Error("mdgateway: failed to register broker defaults", zap.Error(err))
+		} else {
+			log.Info("mdgateway: broker registry populated",
+				zap.Bool("mt4", firstMT4 != nil),
+				zap.Bool("mt5", firstMT5 != nil))
+		}
+	}
+
+	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
+	startAccountEventSubscriber(ctx, deps, mgr, log)
+
+	// --- Wait for shutdown ---
+	<-ctx.Done()
+	log.Info("mdgateway: shutting down")
+
+	pticks, pbars := pgWriter.Drain()
+	pgWriter.Flush(ctx, pticks, pbars)
+	log.Info("mdgateway: stopped")
+	return nil
+}
+
+func loadAccountConfigsWithRetry(ctx context.Context, deps RunnerDeps, log *zap.Logger) ([]mdtick.AccountConfig, error) {
 	for attempt := 0; attempt < 5; attempt++ {
-		cfgs, loadErr = loadAccountConfigs(ctx, deps)
-		if loadErr == nil {
-			break
+		cfgs, err := loadAccountConfigs(ctx, deps)
+		if err == nil {
+			return cfgs, nil
 		}
 		log.Warn("mdgateway: load account configs failed, retrying",
 			zap.Int("attempt", attempt+1),
-			zap.Error(loadErr))
+			zap.Error(err))
 		time.Sleep(time.Duration(1<<attempt) * time.Second)
 	}
-	if loadErr != nil {
-		return fmt.Errorf("load account configs after retries: %w", loadErr)
-	}
+	return nil, fmt.Errorf("load account configs failed after 5 retries")
+}
+
+func startAllGateways(ctx context.Context, cfgs []mdtick.AccountConfig, deps RunnerDeps, mgr *Manager, log *zap.Logger, srcMap *gatewaySourceMap) (*mt4.Gateway, *mt5.Gateway) {
 	var firstMT4 *mt4.Gateway
 	var firstMT5 *mt5.Gateway
 	for _, cfg := range cfgs {
@@ -193,29 +223,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 			}
 		}
 	}
-
-	// M12-C2: register collected gateways in the multi-broker registry.
-	if deps.BrokerRegistry != nil {
-		if err := adapter.RegisterDefaults(deps.BrokerRegistry, firstMT4, firstMT5); err != nil {
-			log.Error("mdgateway: failed to register broker defaults", zap.Error(err))
-		} else {
-			log.Info("mdgateway: broker registry populated",
-				zap.Bool("mt4", firstMT4 != nil),
-				zap.Bool("mt5", firstMT5 != nil))
-		}
-	}
-
-	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
-	startAccountEventSubscriber(ctx, deps, mgr, log)
-
-	// --- Wait for shutdown ---
-	<-ctx.Done()
-	log.Info("mdgateway: shutting down")
-
-	pticks, pbars := pgWriter.Drain()
-	pgWriter.Flush(ctx, pticks, pbars)
-	log.Info("mdgateway: stopped")
-	return nil
+	return firstMT4, firstMT5
 }
 
 // startGatewayForAccount connects a single account's gateway to the broker,

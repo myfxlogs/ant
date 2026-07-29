@@ -32,7 +32,6 @@ func (s *StrategyExecutionServer) handleBar(
 		*bars = (*bars)[len(*bars)-maxContextBars:]
 	}
 
-	// Feed bar to shadow verifier if enabled.
 	if cfg.ShadowVerifier != nil {
 		cfg.ShadowVerifier.RecordBar(sdk.Bar{
 			Open:      bar.Open,
@@ -62,29 +61,9 @@ func (s *StrategyExecutionServer) handleBar(
 	var respBytes []byte
 	var err error
 	if *firstBar {
-		var cachedBytecode []byte
-		if cfg.StrategyID != "" && s.importedRepo != nil {
-			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
-				cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
-			}
-		}
-		vmSess, vmErr := NewVMLiveSessionCached(cfg.Code, cachedBytecode)
+		vmSess, vmErr := s.initVMSession(ctx, cfg, activeSess)
 		if vmErr != nil {
-			s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
-			if activeSess != nil {
-				activeSess.RecordError("compile MQL: " + vmErr.Error())
-			}
 			return
-		}
-		// Persist newly compiled bytecode.
-		if cfg.StrategyID != "" && s.importedRepo != nil {
-			if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil && sid != uuid.Nil {
-				if bcData, mErr := mql2go.MarshalBytecode(vmSess.strategy.Bytecode()); mErr == nil {
-					if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
-						s.log.Warn("LiveStrategyRunner: save bytecode cache failed", zap.Error(saveErr))
-					}
-				}
-			}
 		}
 		*session = vmSess
 		respBytes, err = (*session).Start(ctx, reqBytes)
@@ -109,6 +88,33 @@ func (s *StrategyExecutionServer) handleBar(
 		return
 	}
 	s.dispatchFromBytes(ctx, cfg, bar, respBytes, activeSess)
+}
+
+func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) (Session, error) {
+	var cachedBytecode []byte
+	if cfg.StrategyID != "" && s.importedRepo != nil {
+		if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
+			cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
+		}
+	}
+	vmSess, vmErr := NewVMLiveSessionCached(cfg.Code, cachedBytecode)
+	if vmErr != nil {
+		s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
+		if activeSess != nil {
+			activeSess.RecordError("compile MQL: " + vmErr.Error())
+		}
+		return nil, vmErr
+	}
+	if cfg.StrategyID != "" && s.importedRepo != nil {
+		if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil && sid != uuid.Nil {
+			if bcData, mErr := mql2go.MarshalBytecode(vmSess.strategy.Bytecode()); mErr == nil {
+				if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
+					s.log.Warn("LiveStrategyRunner: save bytecode cache failed", zap.Error(saveErr))
+				}
+			}
+		}
+	}
+	return vmSess, nil
 }
 
 func (s *StrategyExecutionServer) handleTick(

@@ -87,27 +87,11 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			return
 		}
 
-		// Re-subscribe symbols after a reconnect. ensureConnected may have
-		// performed a fresh Connect (new session), which loses prior subscriptions.
-		g.mu.RLock()
-		syms := append([]string{}, g.subscribedSymbols...)
-		sub := g.subCli
-		sid := g.sessionID
-		g.mu.RUnlock()
-		if sub != nil && len(syms) > 0 {
-			subMd := metadata.New(map[string]string{"id": sid})
-			if tok := g.token(); tok != "" {
-				subMd.Set("authorization", "Bearer "+tok)
-			}
-			subCtx := metadata.NewOutgoingContext(ctx, subMd)
-			if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
-				g.log.Warn("mt5: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
-			}
-		}
+		g.reSubscribeSymbols(ctx)
 
 		g.mu.RLock()
 		sc := g.streamCli
-		sid = g.sessionID
+		sid := g.sessionID
 		g.mu.RUnlock()
 
 		subCtx, cancel := context.WithCancel(ctx)
@@ -124,18 +108,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		if err != nil {
 			g.log.Warn("mt5 subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			// Force disconnect so ensureConnected will do a fresh Connect
-			// with a new session on the next iteration.
-			// Skip on context cancellation — normal teardown, not a stream error.
-			if err != context.Canceled && err != context.DeadlineExceeded {
-				g.reportStatus("reconnecting", err.Error())
-				_ = g.Disconnect(ctx)
-				if g.breaker != nil {
-					g.breaker.OnFailure()
-				}
-			}
-			g.sleep(ctx, backoff)
-			backoff = minDuration(backoff*2, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff, maxBackoff)
 			continue
 		}
 
@@ -147,16 +120,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			if err != nil {
 				g.log.Warn("mt5 recv", zap.Error(err))
 				cancel()
-				// Force disconnect so ensureConnected will do a fresh Connect
-				// with a new session on the next iteration.
-				// Skip on context cancellation — normal teardown, not a stream error.
-				if err != context.Canceled && err != context.DeadlineExceeded {
-					g.reportStatus("reconnecting", err.Error())
-					_ = g.Disconnect(ctx)
-					if g.breaker != nil {
-						g.breaker.OnFailure()
-					}
-				}
+				g.handleStreamError(ctx, err, &backoff, maxBackoff)
 				break
 			}
 			q := tick.GetResult()
@@ -177,6 +141,25 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 				BidVolume:     float64(q.GetVolume()),
 			})
 		}
+	}
+}
+
+func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
+	g.mu.RLock()
+	syms := append([]string{}, g.subscribedSymbols...)
+	sub := g.subCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if sub == nil || len(syms) == 0 {
+		return
+	}
+	subMd := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		subMd.Set("authorization", "Bearer "+tok)
+	}
+	subCtx := metadata.NewOutgoingContext(ctx, subMd)
+	if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
+		g.log.Warn("mt5: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
 	}
 }
 
@@ -299,18 +282,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		if err != nil {
 			g.log.Warn("mt5 profit subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			// Force disconnect so ensureConnected will do a fresh Connect
-			// with a new session on the next iteration.
-			// Skip on context cancellation — normal teardown, not a stream error.
-			if err != context.Canceled && err != context.DeadlineExceeded {
-				g.reportStatus("reconnecting", err.Error())
-				_ = g.Disconnect(ctx)
-				if g.breaker != nil {
-					g.breaker.OnFailure()
-				}
-			}
-			g.sleep(ctx, backoff)
-			backoff = minDuration(backoff*2, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff, maxBackoff)
 			continue
 		}
 
@@ -318,10 +290,6 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.reportStatus("connected", "")
 		g.log.Info("mt5: profit stream active")
 
-		// Call AccountSummary once for initial snapshot. MT5 OnOrderProfit
-		// only fires when positions change, so without this the frontend
-		// would see stale data for idle accounts. AccountSummary is the
-		// canonical source (MQL5 AccountInfoDouble).
 		g.fetchAndPublish(ctx, sid, nil, handler)
 
 		for {
@@ -329,25 +297,13 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			if err != nil {
 				g.log.Warn("mt5 profit recv", zap.Error(err))
 				cancel()
-				// Force disconnect so ensureConnected will do a fresh Connect
-				// with a new session on the next iteration.
-				// Skip on context cancellation — normal teardown, not a stream error.
-				if err != context.Canceled && err != context.DeadlineExceeded {
-					g.reportStatus("reconnecting", err.Error())
-					_ = g.Disconnect(ctx)
-					if g.breaker != nil {
-						g.breaker.OnFailure()
-					}
-				}
+				g.handleStreamError(ctx, err, &backoff, maxBackoff)
 				break
 			}
 			p := resp.GetResult()
 			if p == nil {
 				continue
 			}
-
-			// On each stream frame, fetch canonical AccountSummary.
-			// Falls back to stream-derived values on RPC failure.
 			g.fetchAndPublish(ctx, sid, p, handler)
 		}
 	}

@@ -87,27 +87,11 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			return
 		}
 
-		// Re-subscribe symbols after a reconnect. ensureConnected may have
-		// performed a fresh Connect (new session), which loses prior subscriptions.
-		g.mu.RLock()
-		syms := append([]string{}, g.subscribedSymbols...)
-		sub := g.subCli
-		sid := g.sessionID
-		g.mu.RUnlock()
-		if sub != nil && len(syms) > 0 {
-			subMd := metadata.New(map[string]string{"id": sid})
-			if tok := g.token(); tok != "" {
-				subMd.Set("authorization", "Bearer "+tok)
-			}
-			subCtx := metadata.NewOutgoingContext(ctx, subMd)
-			if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
-				g.log.Warn("mt4: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
-			}
-		}
+		g.reSubscribeSymbols(ctx)
 
 		g.mu.RLock()
 		sc := g.streamCli
-		sid = g.sessionID
+		sid := g.sessionID
 		g.mu.RUnlock()
 
 		subCtx, cancel := context.WithCancel(ctx)
@@ -124,18 +108,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		if err != nil {
 			g.log.Warn("mt4 subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			// Force disconnect so ensureConnected will do a fresh Connect
-			// with a new session on the next iteration.
-			// Skip on context cancellation — normal teardown, not a stream error.
-			if err != context.Canceled && err != context.DeadlineExceeded {
-				g.reportStatus("reconnecting", err.Error())
-				_ = g.Disconnect(ctx)
-				if g.breaker != nil {
-					g.breaker.OnFailure()
-				}
-			}
-			g.sleep(ctx, backoff)
-			backoff = minDuration(backoff*2, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff, maxBackoff)
 			continue
 		}
 
@@ -147,16 +120,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			if err != nil {
 				g.log.Warn("mt4 recv", zap.Error(err))
 				cancel()
-				// Force disconnect so ensureConnected will do a fresh Connect
-				// with a new session on the next iteration.
-				// Skip on context cancellation — normal teardown, not a stream error.
-				if err != context.Canceled && err != context.DeadlineExceeded {
-					g.reportStatus("reconnecting", err.Error())
-					_ = g.Disconnect(ctx)
-					if g.breaker != nil {
-						g.breaker.OnFailure()
-					}
-				}
+				g.handleStreamError(ctx, err, &backoff, maxBackoff)
 				break
 			}
 			q := quote.GetResult()
@@ -176,6 +140,25 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 				Ask:           decimal.NewFromFloat(q.GetAsk()),
 			})
 		}
+	}
+}
+
+func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
+	g.mu.RLock()
+	syms := append([]string{}, g.subscribedSymbols...)
+	sub := g.subCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if sub == nil || len(syms) == 0 {
+		return
+	}
+	subMd := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		subMd.Set("authorization", "Bearer "+tok)
+	}
+	subCtx := metadata.NewOutgoingContext(ctx, subMd)
+	if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
+		g.log.Warn("mt4: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
 	}
 }
 
@@ -224,18 +207,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		if err != nil {
 			g.log.Warn("mt4 profit subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			// Force disconnect so ensureConnected will do a fresh Connect
-			// with a new session on the next iteration.
-			// Skip on context cancellation — normal teardown, not a stream error.
-			if err != context.Canceled && err != context.DeadlineExceeded {
-				g.reportStatus("reconnecting", err.Error())
-				_ = g.Disconnect(ctx)
-				if g.breaker != nil {
-					g.breaker.OnFailure()
-				}
-			}
-			g.sleep(ctx, backoff)
-			backoff = minDuration(backoff*2, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff, maxBackoff)
 			continue
 		}
 
@@ -247,53 +219,47 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			if err != nil {
 				g.log.Warn("mt4 profit recv", zap.Error(err))
 				cancel()
-				// Force disconnect so ensureConnected will do a fresh Connect
-				// with a new session on the next iteration.
-				// Skip on context cancellation — normal teardown, not a stream error.
-				if err != context.Canceled && err != context.DeadlineExceeded {
-					g.reportStatus("reconnecting", err.Error())
-					_ = g.Disconnect(ctx)
-					if g.breaker != nil {
-						g.breaker.OnFailure()
-					}
-				}
+				g.handleStreamError(ctx, err, &backoff, maxBackoff)
 				break
 			}
 			p := resp.GetResult()
 			if p == nil {
 				continue
 			}
-			// Use Decimal for financial arithmetic to avoid float64 rounding.
-			equityD := decimal.NewFromFloat(p.GetEquity())
-			balanceD := decimal.NewFromFloat(p.GetBalance())
-			profitD := equityD.Sub(balanceD)
-			var profitPercent float64
-			if !balanceD.IsZero() {
-				profitPercent = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()
-			}
-			positions := make([]mdtick.ProfitPosition, 0, len(p.GetOrders()))
-			for _, o := range p.GetOrders() {
-				positions = append(positions, mdtick.ProfitPosition{
-					Ticket:       int64(o.GetTicket()),
-					Symbol:       o.GetSymbol(),
-					Profit:       decimal.NewFromFloat(o.GetProfit()),
-					Volume:       decimal.NewFromFloat(o.GetLots()),
-					CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
-				})
-			}
-			handler(&mdtick.ProfitUpdate{
-				AccountID:     g.cfg.AccountID,
-				Platform:      "mt4",
-				Balance:       decimal.NewFromFloat(p.GetBalance()),
-				Credit:        decimal.NewFromFloat(p.GetCredit()),
-				Equity:        decimal.NewFromFloat(p.GetEquity()),
-				Margin:        decimal.NewFromFloat(p.GetMargin()),
-				FreeMargin:    decimal.NewFromFloat(p.GetFreeMargin()),
-				MarginLevel:   decimal.NewFromFloat(p.GetMarginLevel()),
-				Profit:        profitD,
-				ProfitPercent: profitPercent,
-				Positions:     positions,
-			})
+			handler(parseMt4ProfitUpdate(p, g.cfg.AccountID))
 		}
+	}
+}
+
+func parseMt4ProfitUpdate(p *pb.ProfitUpdate, accountID string) *mdtick.ProfitUpdate {
+	equityD := decimal.NewFromFloat(p.GetEquity())
+	balanceD := decimal.NewFromFloat(p.GetBalance())
+	profitD := equityD.Sub(balanceD)
+	var profitPercent float64
+	if !balanceD.IsZero() {
+		profitPercent = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()
+	}
+	positions := make([]mdtick.ProfitPosition, 0, len(p.GetOrders()))
+	for _, o := range p.GetOrders() {
+		positions = append(positions, mdtick.ProfitPosition{
+			Ticket:       int64(o.GetTicket()),
+			Symbol:       o.GetSymbol(),
+			Profit:       decimal.NewFromFloat(o.GetProfit()),
+			Volume:       decimal.NewFromFloat(o.GetLots()),
+			CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
+		})
+	}
+	return &mdtick.ProfitUpdate{
+		AccountID:     accountID,
+		Platform:      "mt4",
+		Balance:       balanceD,
+		Credit:        decimal.NewFromFloat(p.GetCredit()),
+		Equity:        equityD,
+		Margin:        decimal.NewFromFloat(p.GetMargin()),
+		FreeMargin:    decimal.NewFromFloat(p.GetFreeMargin()),
+		MarginLevel:   decimal.NewFromFloat(p.GetMarginLevel()),
+		Profit:        profitD,
+		ProfitPercent: profitPercent,
+		Positions:     positions,
 	}
 }

@@ -29,15 +29,48 @@ func (g *Generator) runAgentLoop(
 ) error {
 	result := &generateState{}
 
-	// ── Full tool registry ──
 	registry := buildPythonToolRegistry(result, g.mkt, msg.BacktestConfig)
-	// read_kline and read_backtest_log are Chat agent tools, not Generator tools.
-	// Strategy logic doesn't depend on current market data.
 	if g.dbExec != nil && g.dbQuery != nil {
 		registry.WireMemoryDB(g.dbExec, g.dbQuery)
 	}
 
-	// ── Unified system prompt ──
+	sysPrompt := g.buildGeneratorSysPrompt(ctx, userID, msg)
+
+	userPrompt := msg.Message
+	if msg.CurrentCode != "" {
+		userPrompt += "\n\n## Current Strategy Code\n```\n" + msg.CurrentCode + "\n```"
+	}
+
+	convID, history := g.loadConversationHistory(ctx, userID, msg, userPrompt)
+
+	streamChunk, reasoningStream, toolStream := g.buildStreamCallbacks(result, streamOrAbort)
+
+	loop := connectai.NewAgentLoop(registry,
+		func(llmCtx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
+			return g.aiSvc.ChatCompletionStreamWithTools(llmCtx, userID, messages, tools, onChunk)
+		},
+		streamChunk, toolStream, reasoningStream,
+	)
+
+	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
+	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
+
+	turnDataBytes := g.buildFinalTurnChunk(result, raw)
+
+	g.persistConversation(ctx, userID, convID, userPrompt, raw, turnDataBytes)
+	g.persistGeneratorMemory(ctx, userID, msg, result)
+
+	if loopErr != nil {
+		g.log.Warn("generator: agent loop ended", zap.Error(loopErr))
+		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource, Error: loopErr.Error()})
+		return nil
+	}
+
+	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource})
+	return nil
+}
+
+func (g *Generator) buildGeneratorSysPrompt(ctx context.Context, userID uuid.UUID, msg *antv1.AgentGenerateStrategyRequest) string {
 	lang := ai.NormalizeLocale(msg.Locale)
 	sysPrompt := ai.PythonAgentPrompt(lang)
 	if msg.Symbol != "" || msg.Timeframe != "" || msg.AccountId != "" {
@@ -46,8 +79,6 @@ func (g *Generator) runAgentLoop(
 			sysPrompt += fmt.Sprintf("\nAccount: %s", msg.AccountId)
 		}
 	}
-
-	// ── Structured memory injection (§4 Layer 2) ──
 	if g.memory != nil {
 		session, err := g.memory.LoadSessionMemory(ctx, userID, msg.Symbol, msg.Timeframe)
 		if err != nil {
@@ -60,21 +91,16 @@ func (g *Generator) runAgentLoop(
 			}
 		}
 	}
+	return sysPrompt
+}
 
-	// ── User prompt ──
-	userPrompt := msg.Message
-	if msg.CurrentCode != "" {
-		userPrompt += "\n\n## Current Strategy Code\n```\n" + msg.CurrentCode + "\n```"
-	}
-
-	// ── Conversation history ──
+func (g *Generator) loadConversationHistory(ctx context.Context, userID uuid.UUID, msg *antv1.AgentGenerateStrategyRequest, userPrompt string) (uuid.UUID, []systemai.ChatMessage) {
 	var convID uuid.UUID
 	var history []systemai.ChatMessage
 	if msg.ConversationId != "" && g.conversationRepo != nil {
 		cid, err := uuid.Parse(msg.ConversationId)
 		if err == nil {
 			convID = cid
-			// Ensure conversation row exists (frontend may send fresh UUID not yet persisted).
 			if _, getErr := g.conversationRepo.GetByID(ctx, cid, userID); getErr != nil {
 				title := userPrompt
 				if runes := []rune(title); len(runes) > 80 {
@@ -96,7 +122,6 @@ func (g *Generator) runAgentLoop(
 			}
 		}
 	}
-	// Auto-create conversation if no ID was provided at all.
 	if convID == uuid.Nil && g.conversationRepo != nil {
 		title := userPrompt
 		if runes := []rune(title); len(runes) > 80 {
@@ -109,14 +134,14 @@ func (g *Generator) runAgentLoop(
 			convID = conv.ID
 		}
 	}
+	return convID, history
+}
 
-	// ── Stream callbacks ──
+func (g *Generator) buildStreamCallbacks(result *generateState, streamOrAbort func(*antv1.AgentGenerateStrategyChunk) error) (func(string) error, func(string) error, func(*antv1.ToolCall, *antv1.ToolResult) error) {
 	streamChunk := func(delta string) error {
-		// Strip [THINK] blocks from streamed content — DeepSeek models output them
-		// regardless of prompt instructions. User never sees reasoning traces.
 		cleaned := stripThinkBlocks(delta)
 		if cleaned == "" {
-			return nil // nothing visible to stream
+			return nil
 		}
 		return streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "generating", Delta: cleaned})
 	}
@@ -144,92 +169,79 @@ func (g *Generator) runAgentLoop(
 		}
 		return nil
 	}
+	return streamChunk, reasoningStream, toolStream
+}
 
-	// ── Run the AgentLoop ──
-	loop := connectai.NewAgentLoop(registry,
-		func(llmCtx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
-			return g.aiSvc.ChatCompletionStreamWithTools(llmCtx, userID, messages, tools, onChunk)
-		},
-		streamChunk, toolStream, reasoningStream,
-	)
-
-	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
-	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
-
-	// Serialize the final turn chunk for full replay on resume.
-	var turnDataBytes []byte
-	if result.PythonSource != "" {
-		finalChunk := &antv1.AgentGenerateStrategyChunk{
-			Phase:        "done",
-			Delta:        raw,
-			PythonSource: result.PythonSource,
-		}
-		if result.LastBacktest != nil {
-			finalChunk.Result = &antv1.AgentBacktestResult{
-				Success:      true,
-				TotalTrades:  int32(result.LastBacktest.TotalTrades),
-				WinRate:      result.LastBacktest.WinRate,
-				TotalReturn:  result.LastBacktest.TotalReturn,
-				MaxDrawdown:  result.LastBacktest.MaxDrawdown,
-				SharpeRatio:  result.LastBacktest.SharpeRatio,
-			}
-		}
-		if result.CompileError != "" {
-			finalChunk.CompileError = result.CompileError
-		}
-		if result.BacktestError != "" {
-			finalChunk.BacktestError = result.BacktestError
-		}
-		if data, err := proto.Marshal(finalChunk); err == nil {
-			turnDataBytes = data
-		}
-	}
-
-	// Persist conversation messages for multi-turn context.
-	if convID != uuid.Nil && g.conversationRepo != nil {
-		if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "user", userPrompt, nil); err != nil {
-			g.log.Warn("generator: failed to save user message", zap.Error(err))
-		}
-		if raw != "" {
-			if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "assistant", raw, turnDataBytes); err != nil {
-				g.log.Warn("generator: failed to save assistant message", zap.Error(err))
-			}
-		}
-		_ = g.conversationRepo.Touch(ctx, convID, userID)
-	}
-
-	// Persist structured memory when a strategy was successfully delivered (deterministic, zero LLM call).
-	if result.LastBacktest != nil && result.PythonSource != "" && g.memory != nil {
-		symbol := msg.Symbol
-		if symbol == "" && msg.BacktestConfig != nil {
-			symbol = msg.BacktestConfig.Symbol
-		}
-		tf := msg.Timeframe
-		if tf == "" && msg.BacktestConfig != nil {
-			tf = msg.BacktestConfig.Timeframe
-		}
-		summary := fmt.Sprintf("%s %s: %d trades, %s%% win, %s%% return",
-			symbol, tf,
-			result.LastBacktest.TotalTrades,
-			result.LastBacktest.WinRate,
-			result.LastBacktest.TotalReturn)
-		fp := fmt.Sprintf("%x", sha256.Sum256([]byte(result.PythonSource)))
-		_, err := g.memory.StoreExperience(ctx, userID, "strategy",
-			summary, fp, nil, symbol+" "+tf)
-		if err != nil {
-			g.log.Warn("generator: failed to store experience", zap.Error(err))
-		}
-	}
-
-	// I1: PythonSource is ONLY set by write_strategy tool. Never overwrite it here (§3.1b前提2).
-	if loopErr != nil {
-		g.log.Warn("generator: agent loop ended", zap.Error(loopErr))
-		_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource, Error: loopErr.Error()})
+func (g *Generator) buildFinalTurnChunk(result *generateState, raw string) []byte {
+	if result.PythonSource == "" {
 		return nil
 	}
+	finalChunk := &antv1.AgentGenerateStrategyChunk{
+		Phase:        "done",
+		Delta:        raw,
+		PythonSource: result.PythonSource,
+	}
+	if result.LastBacktest != nil {
+		finalChunk.Result = &antv1.AgentBacktestResult{
+			Success:      true,
+			TotalTrades:  int32(result.LastBacktest.TotalTrades),
+			WinRate:      result.LastBacktest.WinRate,
+			TotalReturn:  result.LastBacktest.TotalReturn,
+			MaxDrawdown:  result.LastBacktest.MaxDrawdown,
+			SharpeRatio:  result.LastBacktest.SharpeRatio,
+		}
+	}
+	if result.CompileError != "" {
+		finalChunk.CompileError = result.CompileError
+	}
+	if result.BacktestError != "" {
+		finalChunk.BacktestError = result.BacktestError
+	}
+	data, err := proto.Marshal(finalChunk)
+	if err != nil {
+		return nil
+	}
+	return data
+}
 
-	_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{Phase: "done", PythonSource: result.PythonSource})
-	return nil
+func (g *Generator) persistConversation(ctx context.Context, userID uuid.UUID, convID uuid.UUID, userPrompt, raw string, turnDataBytes []byte) {
+	if convID == uuid.Nil || g.conversationRepo == nil {
+		return
+	}
+	if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "user", userPrompt, nil); err != nil {
+		g.log.Warn("generator: failed to save user message", zap.Error(err))
+	}
+	if raw != "" {
+		if _, err := g.conversationRepo.AddMessage(ctx, userID, convID, "assistant", raw, turnDataBytes); err != nil {
+			g.log.Warn("generator: failed to save assistant message", zap.Error(err))
+		}
+	}
+	_ = g.conversationRepo.Touch(ctx, convID, userID)
+}
+
+func (g *Generator) persistGeneratorMemory(ctx context.Context, userID uuid.UUID, msg *antv1.AgentGenerateStrategyRequest, result *generateState) {
+	if result.LastBacktest == nil || result.PythonSource == "" || g.memory == nil {
+		return
+	}
+	symbol := msg.Symbol
+	if symbol == "" && msg.BacktestConfig != nil {
+		symbol = msg.BacktestConfig.Symbol
+	}
+	tf := msg.Timeframe
+	if tf == "" && msg.BacktestConfig != nil {
+		tf = msg.BacktestConfig.Timeframe
+	}
+	summary := fmt.Sprintf("%s %s: %d trades, %s%% win, %s%% return",
+		symbol, tf,
+		result.LastBacktest.TotalTrades,
+		result.LastBacktest.WinRate,
+		result.LastBacktest.TotalReturn)
+	fp := fmt.Sprintf("%x", sha256.Sum256([]byte(result.PythonSource)))
+	_, err := g.memory.StoreExperience(ctx, userID, "strategy",
+		summary, fp, nil, symbol+" "+tf)
+	if err != nil {
+		g.log.Warn("generator: failed to store experience", zap.Error(err))
+	}
 }
 
 // structToJSON converts a *structpb.Struct to a JSON string for display.

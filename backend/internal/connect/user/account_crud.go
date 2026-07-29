@@ -65,7 +65,11 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 
 	// 3. Update with verified account info (within transaction).
 	if info != nil {
-		if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency, info.IsInvestor); err != nil {
+		if err := s.svc.UpdateAccountInfoTx(ctx, service.AccountInfoUpdate{
+			Tx: tx, UserID: userID, ID: id, Balance: info.Balance, Equity: info.Equity,
+			Credit: info.Credit, Margin: info.Margin, FreeMargin: info.FreeMargin,
+			Leverage: int64(info.Leverage), Currency: info.Currency, IsInvestor: info.IsInvestor,
+		}); err != nil {
 			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
 		}

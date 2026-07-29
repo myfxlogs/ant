@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"connectrpc.com/connect"
@@ -77,23 +78,7 @@ func (s *StreamServer) SubscribeEvents(
 	}()
 
 	if filterAll && len(profitSubs) == 0 {
-		// No accounts — stream has no subscriptions. Send StreamEvent
-		// {Type:"ping"} to prevent Cloudflare/proxy idle timeout (100s).
-		// The frontend skips events with Type=="ping", so these keepalives
-		// are zero-cost. When len(profitSubs) > 0, subscription events
-		// provide natural keepalive.
-		ticker := time.NewTicker(15 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-ticker.C:
-				if err := sendEvent(&antv1.StreamEvent{Type: "ping"}); err != nil {
-					return err
-				}
-			}
-		}
+		return s.runKeepaliveOnly(ctx, sendEvent)
 	}
 
 	var connectedIDs []string
@@ -126,89 +111,165 @@ func (s *StreamServer) SubscribeEvents(
 	snapCount := make(map[string]int)
 	recentlyClosed := make(map[string]map[int64]bool)
 
+	return s.runEventLoop(ctx, sendEvent, barCh, barDropCh, orderCh, statusCh, profitCh, snapCh,
+		filterAll, accountSet, snapKnownTickets, snapCount, recentlyClosed)
+}
+
+func (s *StreamServer) runEventLoop(
+	ctx context.Context,
+	sendEvent func(*antv1.StreamEvent) error,
+	barCh <-chan *mthub.BarUpdate,
+	barDropCh <-chan *mthub.BarDropEvent,
+	orderCh <-chan *mthub.OrderEvent,
+	statusCh <-chan *mthub.AccountStatusEvent,
+	profitCh <-chan *mthub.AccountProfitEvent,
+	snapCh <-chan *mthub.PositionSnapshot,
+	filterAll bool,
+	accountSet map[string]bool,
+	snapKnownTickets map[string]map[int64]bool,
+	snapCount map[string]int,
+	recentlyClosed map[string]map[int64]bool,
+) error {
+	h := &eventLoopHandlers{s: s, filterAll: filterAll, accountSet: accountSet,
+		snapKnownTickets: snapKnownTickets, snapCount: snapCount, recentlyClosed: recentlyClosed, sendEvent: sendEvent}
+
 	keepalive := time.NewTicker(15 * time.Second)
 	defer keepalive.Stop()
 
+	cases := []reflect.SelectCase{
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(ctx.Done())},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(keepalive.C)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(barCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(barDropCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(orderCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(statusCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(profitCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(snapCh)},
+	}
+
+	for {
+		chosen, val, ok := reflect.Select(cases)
+		done, err := h.dispatch(chosen, val, ok, cases)
+		if done {
+			return err
+		}
+		if err != nil {
+			return err
+		}
+	}
+}
+
+func (h *eventLoopHandlers) dispatch(chosen int, val reflect.Value, ok bool, cases []reflect.SelectCase) (done bool, err error) {
+	switch chosen {
+	case 0:
+		return true, nil
+	case 1:
+		return false, h.sendEvent(&antv1.StreamEvent{Type: "ping"})
+	case 2:
+		if !ok {
+			return false, nil
+		}
+		return false, h.handleBar(val.Interface().(*mthub.BarUpdate))
+	case 3:
+		if !ok {
+			cases[3].Chan = reflect.Value{}
+			return false, nil
+		}
+		return false, h.handleBarDrop(val.Interface().(*mthub.BarDropEvent))
+	case 4:
+		if !ok {
+			return true, nil
+		}
+		return false, h.handleOrder(val.Interface().(*mthub.OrderEvent))
+	case 5:
+		if !ok {
+			cases[5].Chan = reflect.Value{}
+			return false, nil
+		}
+		return false, h.handleStatus(val.Interface().(*mthub.AccountStatusEvent))
+	case 6:
+		if !ok {
+			cases[6].Chan = reflect.Value{}
+			return false, nil
+		}
+		return false, h.handleProfit(val.Interface().(*mthub.AccountProfitEvent))
+	case 7:
+		if !ok {
+			cases[7].Chan = reflect.Value{}
+			return false, nil
+		}
+		return false, h.handleSnap(val.Interface().(*mthub.PositionSnapshot))
+	}
+	return false, nil
+}
+
+type eventLoopHandlers struct {
+	s                *StreamServer
+	filterAll        bool
+	accountSet       map[string]bool
+	snapKnownTickets map[string]map[int64]bool
+	snapCount        map[string]int
+	recentlyClosed   map[string]map[int64]bool
+	sendEvent        func(*antv1.StreamEvent) error
+}
+
+func (h *eventLoopHandlers) handleBar(b *mthub.BarUpdate) error {
+	return h.s.handleBarEvent(b, h.filterAll, h.accountSet, h.sendEvent)
+}
+
+func (h *eventLoopHandlers) handleBarDrop(drop *mthub.BarDropEvent) error {
+	return handleBarDropEvent(drop, h.filterAll, h.accountSet, h.sendEvent)
+}
+
+func (h *eventLoopHandlers) handleOrder(ev *mthub.OrderEvent) error {
+	return h.s.handleOrderEvent(ev, h.filterAll, h.accountSet, h.recentlyClosed, h.sendEvent)
+}
+
+func (h *eventLoopHandlers) handleStatus(sev *mthub.AccountStatusEvent) error {
+	return h.s.handleStatusEvent(sev, h.sendEvent)
+}
+
+func (h *eventLoopHandlers) handleProfit(pev *mthub.AccountProfitEvent) error {
+	return h.s.handleProfitEvent(pev, h.sendEvent)
+}
+
+func (h *eventLoopHandlers) handleSnap(snap *mthub.PositionSnapshot) error {
+	return h.s.handleSnapEvent(snap, h.filterAll, h.accountSet,
+		h.snapKnownTickets, h.snapCount, h.recentlyClosed, h.sendEvent)
+}
+
+func (s *StreamServer) runKeepaliveOnly(ctx context.Context, sendEvent func(*antv1.StreamEvent) error) error {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
-
-		case <-keepalive.C:
-			// Keepalive ping prevents Cloudflare/proxy from closing idle HTTP/2 streams.
+		case <-ticker.C:
 			if err := sendEvent(&antv1.StreamEvent{Type: "ping"}); err != nil {
-				return err
-			}
-
-		case b, ok := <-barCh:
-			if !ok {
-				continue
-			}
-			if err := s.handleBarEvent(b, filterAll, accountSet, sendEvent); err != nil {
-				return err
-			}
-
-		case drop, ok := <-barDropCh:
-			if !ok {
-				barDropCh = nil
-				continue
-			}
-			if !filterAll && !accountSet[drop.AccountID] {
-				continue
-			}
-			if err := sendEvent(&antv1.StreamEvent{
-				Type:      "risk_alert",
-				AccountId: drop.AccountID,
-				Timestamp: timestamppb.Now(),
-				Payload: &antv1.StreamEvent_RiskAlert{
-					RiskAlert: &antv1.RiskAlertEvent{
-						AccountId: drop.AccountID,
-						AlertType: "bars_dropped",
-						Message:   "Real-time bars are being dropped due to slow processing. Strategy execution may be delayed.",
-						Value:     fmt.Sprintf("%d", drop.TotalDrops),
-					},
-				},
-			}); err != nil {
-				return err
-			}
-
-		case ev, ok := <-orderCh:
-			if !ok {
-				return nil
-			}
-			if err := s.handleOrderEvent(ev, filterAll, accountSet, recentlyClosed, sendEvent); err != nil {
-				return err
-			}
-
-		case sev, ok := <-statusCh:
-			if !ok {
-				statusCh = nil
-				continue
-			}
-			if err := s.handleStatusEvent(sev, sendEvent); err != nil {
-				return err
-			}
-
-		case pev, ok := <-profitCh:
-			if !ok {
-				profitCh = nil
-				continue
-			}
-			if err := s.handleProfitEvent(pev, sendEvent); err != nil {
-				return err
-			}
-
-		case snap, ok := <-snapCh:
-			if !ok {
-				snapCh = nil
-				continue
-			}
-			if err := s.handleSnapEvent(snap, filterAll, accountSet,
-				snapKnownTickets, snapCount, recentlyClosed, sendEvent); err != nil {
 				return err
 			}
 		}
 	}
+}
+
+func handleBarDropEvent(drop *mthub.BarDropEvent, filterAll bool, accountSet map[string]bool, sendEvent func(*antv1.StreamEvent) error) error {
+	if !filterAll && !accountSet[drop.AccountID] {
+		return nil
+	}
+	return sendEvent(&antv1.StreamEvent{
+		Type:      "risk_alert",
+		AccountId: drop.AccountID,
+		Timestamp: timestamppb.Now(),
+		Payload: &antv1.StreamEvent_RiskAlert{
+			RiskAlert: &antv1.RiskAlertEvent{
+				AccountId: drop.AccountID,
+				AlertType: "bars_dropped",
+				Message:   "Real-time bars are being dropped due to slow processing. Strategy execution may be delayed.",
+				Value:     fmt.Sprintf("%d", drop.TotalDrops),
+			},
+		},
+	})
 }
 
 // --- Bar subscription and event handling ---

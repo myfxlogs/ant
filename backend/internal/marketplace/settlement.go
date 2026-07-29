@@ -69,28 +69,10 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 		return &SettlementResult{SettledCount: 0, TotalAmount: "0.00"}, nil
 	}
 
-	// 2. Ensure provider wallet exists and lock it.
-	var pubWalletID uuid.UUID
-	err = tx.QueryRow(ctx,
-		`INSERT INTO user_wallets (user_id) VALUES ($1)
-		 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-		 RETURNING id`,
-		pid,
-	).Scan(&pubWalletID)
+	// 2. Ensure provider + system wallets exist and lock them.
+	pubWalletID, sysWalletID, err := s.ensureSettlementWallets(ctx, tx, pid)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: settle: provider wallet: %w", err)
-	}
-
-	// 3. Ensure system wallet exists.
-	var sysWalletID uuid.UUID
-	err = tx.QueryRow(ctx,
-		`INSERT INTO user_wallets (user_id) VALUES ($1)
-		 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-		 RETURNING id`,
-		SystemUserID,
-	).Scan(&sysWalletID)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: settle: system wallet: %w", err)
+		return nil, err
 	}
 
 	// 4. Credit each settlement individually for idempotency + hash chain integrity.
@@ -158,6 +140,28 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 		SettledCount: settledCount,
 		TotalAmount:  totalSettled.StringFixed(2),
 	}, nil
+}
+
+func (s *Service) ensureSettlementWallets(ctx context.Context, tx pgx.Tx, pid uuid.UUID) (pubWalletID, sysWalletID uuid.UUID, err error) {
+	err = tx.QueryRow(ctx,
+		`INSERT INTO user_wallets (user_id) VALUES ($1)
+		 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+		 RETURNING id`,
+		pid,
+	).Scan(&pubWalletID)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, fmt.Errorf("marketplace: settle: provider wallet: %w", err)
+	}
+	err = tx.QueryRow(ctx,
+		`INSERT INTO user_wallets (user_id) VALUES ($1)
+		 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+		 RETURNING id`,
+		SystemUserID,
+	).Scan(&sysWalletID)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, fmt.Errorf("marketplace: settle: system wallet: %w", err)
+	}
+	return pubWalletID, sysWalletID, nil
 }
 
 // retryFailedReversals retries debit operations on settlements marked with

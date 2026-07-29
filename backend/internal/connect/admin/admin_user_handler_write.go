@@ -40,27 +40,8 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		Email: email,
 		Role:  role,
 	}
-	if acctNum := req.Msg.AccountNumber; acctNum != "" {
-		if err := usersvc.ValidateAccountNumber(acctNum); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
-		}
-		if s.acctSvc != nil {
-			avail, err := s.acctSvc.IsAccountNumberAvailable(ctx, acctNum)
-			if err != nil {
-				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("check account_number availability: %w", err))
-			}
-			if !avail {
-				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number %s is already taken", acctNum))
-			}
-		}
-		user.AccountNumber = &acctNum
-	} else if s.acctSvc != nil {
-		num, err := s.acctSvc.GenerateAccountNumber(ctx)
-		if err != nil {
-			s.log.Warn("admin: auto-generate account number failed, continuing without one", zap.Error(err))
-		} else {
-			user.AccountNumber = &num
-		}
+	if err := s.resolveAccountNumber(ctx, req.Msg.AccountNumber, user); err != nil {
+		return nil, err
 	}
 	hashed, err := hash.HashPassword(password)
 	if err != nil {
@@ -68,28 +49,7 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 	}
 	user.PasswordHash = hashed
 
-	const maxRetries = 3
-	for attempt := 0; ; attempt++ {
-		err := s.repo.CreateUser(ctx, user)
-		if err == nil {
-			break
-		}
-		if usersvc.IsAccountNumberViolation(err) {
-			if attempt >= maxRetries {
-				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number collision after %d retries", maxRetries))
-			}
-			if s.acctSvc != nil {
-				num, genErr := s.acctSvc.GenerateAccountNumber(ctx)
-				if genErr != nil {
-					return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("regenerate account number: %w", genErr))
-				}
-				user.AccountNumber = &num
-			}
-			continue
-		}
-		if usersvc.IsUniqueViolation(err) {
-			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
-		}
+	if err := s.createUserWithRetry(ctx, user); err != nil {
 		return nil, err
 	}
 	if s.walletSvc != nil {
@@ -104,6 +64,61 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		zap.String("email", email),
 		zap.String("role", role))
 	return connect.NewResponse(&antv1.CreateUserResponse{Id: user.ID.String()}), nil
+}
+
+func (s *AdminUserServer) resolveAccountNumber(ctx context.Context, acctNum string, user *model.User) error {
+	if acctNum != "" {
+		if err := usersvc.ValidateAccountNumber(acctNum); err != nil {
+			return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
+		}
+		if s.acctSvc != nil {
+			avail, err := s.acctSvc.IsAccountNumberAvailable(ctx, acctNum)
+			if err != nil {
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("check account_number availability: %w", err))
+			}
+			if !avail {
+				return connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number %s is already taken", acctNum))
+			}
+		}
+		user.AccountNumber = &acctNum
+		return nil
+	}
+	if s.acctSvc != nil {
+		num, err := s.acctSvc.GenerateAccountNumber(ctx)
+		if err != nil {
+			s.log.Warn("admin: auto-generate account number failed, continuing without one", zap.Error(err))
+			return nil
+		}
+		user.AccountNumber = &num
+	}
+	return nil
+}
+
+func (s *AdminUserServer) createUserWithRetry(ctx context.Context, user *model.User) error {
+	const maxRetries = 3
+	for attempt := 0; ; attempt++ {
+		err := s.repo.CreateUser(ctx, user)
+		if err == nil {
+			return nil
+		}
+		if usersvc.IsAccountNumberViolation(err) {
+			if attempt >= maxRetries {
+				return connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number collision after %d retries", maxRetries))
+			}
+			if s.acctSvc != nil {
+				num, genErr := s.acctSvc.GenerateAccountNumber(ctx)
+				if genErr != nil {
+					return connect.NewError(connect.CodeInternal, fmt.Errorf("regenerate account number: %w", genErr))
+				}
+				user.AccountNumber = &num
+			}
+			continue
+		}
+		if usersvc.IsUniqueViolation(err) {
+			return connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
+		}
+		return err
+	}
 }
 
 func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[antv1.UpdateUserRequest]) (*connect.Response[antv1.UpdateUserResponse], error) {

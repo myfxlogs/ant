@@ -19,33 +19,7 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 		return &interp.Expr{Kind: interp.ExprVar, Name: c.text(n)}
 
 	case "integer":
-		txt := c.text(n)
-		txt = strings.ReplaceAll(txt, "_", "")
-		if strings.HasPrefix(txt, "0x") || strings.HasPrefix(txt, "0X") {
-			var v int64
-			for _, ch := range txt[2:] {
-				if ch >= '0' && ch <= '9' {
-					v = v*16 + int64(ch-'0')
-				} else if ch >= 'a' && ch <= 'f' {
-					v = v*16 + int64(ch-'a'+10)
-				} else if ch >= 'A' && ch <= 'F' {
-					v = v*16 + int64(ch-'A'+10)
-				}
-			}
-			return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(int32(v))}
-		}
-		v, err := strconv.ParseInt(txt, 10, 64)
-		if err != nil {
-			d, derr := decimal.NewFromString(txt)
-			if derr != nil {
-				d = decimal.Zero
-			}
-			return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(d)}
-		}
-		if v > 2147483647 || v < -2147483648 {
-			return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(decimal.NewFromInt(v))}
-		}
-		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(int32(v))}
+		return c.compileIntegerLiteral(n)
 
 	case nodeFloat:
 		txt := c.text(n)
@@ -132,6 +106,36 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 	return nil
 }
 
+func (c *pyCompiler) compileIntegerLiteral(n *sitter.Node) *interp.Expr {
+	txt := c.text(n)
+	txt = strings.ReplaceAll(txt, "_", "")
+	if strings.HasPrefix(txt, "0x") || strings.HasPrefix(txt, "0X") {
+		var v int64
+		for _, ch := range txt[2:] {
+			if ch >= '0' && ch <= '9' {
+				v = v*16 + int64(ch-'0')
+			} else if ch >= 'a' && ch <= 'f' {
+				v = v*16 + int64(ch-'a'+10)
+			} else if ch >= 'A' && ch <= 'F' {
+				v = v*16 + int64(ch-'A'+10)
+			}
+		}
+		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(int32(v))}
+	}
+	v, err := strconv.ParseInt(txt, 10, 64)
+	if err != nil {
+		d, derr := decimal.NewFromString(txt)
+		if derr != nil {
+			d = decimal.Zero
+		}
+		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(d)}
+	}
+	if v > 2147483647 || v < -2147483648 {
+		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(decimal.NewFromInt(v))}
+	}
+	return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(int32(v))}
+}
+
 func (c *pyCompiler) compilePyCall(n *sitter.Node) *interp.Expr {
 	fnNode := n.NamedChild(0)
 	if fnNode == nil {
@@ -187,7 +191,6 @@ func (c *pyCompiler) compilePyMethodCall(callNode, attrNode *sitter.Node) *inter
 	args := c.compileArgsOrdered(callNode, fullPath)
 	parts := strings.Split(fullPath, ".")
 	methodName := parts[len(parts)-1]
-	// self.method() → method()
 	if len(parts) == 2 && parts[0] == "self" {
 		return &interp.Expr{Kind: interp.ExprCall, Name: methodName, Args: args}
 	}
@@ -195,51 +198,56 @@ func (c *pyCompiler) compilePyMethodCall(callNode, attrNode *sitter.Node) *inter
 	if mappedName != "" {
 		return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: args}
 	}
-	// Try clean chain path for chained calls like ctx.bars_for_symbol("X").close(0)
 	cleanPath := c.extractAttrChain(attrNode)
 	if cleanPath != fullPath && cleanPath != "" {
 		mappedName = mapPythonMethod(methodName, cleanPath)
 		if mappedName != "" {
-			// For multi-symbol bar access via bars_for_symbol, prepend symbol arg
-			// and inject timeframe=0 (PERIOD_CURRENT) between symbol and shift.
-			// iClose(symbol, timeframe, shift) ← ctx.bars_for_symbol("EURUSD").close(0)
-			if strings.HasPrefix(mappedName, "iClose") ||
-				strings.HasPrefix(mappedName, "iOpen") ||
-				strings.HasPrefix(mappedName, "iHigh") ||
-				strings.HasPrefix(mappedName, "iLow") ||
-				strings.HasPrefix(mappedName, "iVolume") ||
-				strings.HasPrefix(mappedName, "iTime") {
-				if strings.Contains(cleanPath, "bars_for_symbol.") {
-					innerArgs := c.extractInnerCallArgs(attrNode)
-					if len(innerArgs) > 0 {
-						combined := make([]interp.Expr, 0, len(innerArgs)+1+len(args))
-						combined = append(combined, innerArgs...)
-						combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)})
-						combined = append(combined, args...)
-						return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
-					}
-				}
-				// Higher timeframe: ctx.bars_tf("H4").close(0)
-				// iClose("", 240, shift) — symbol="" (primary), timeframe from TF string
-				if strings.Contains(cleanPath, "bars_tf.") {
-					innerArgs := c.extractInnerCallArgs(attrNode)
-					if len(innerArgs) > 0 {
-						tfInt := int32(0)
-						if innerArgs[0].Kind == interp.ExprLiteral && innerArgs[0].Val.Kind == interp.ValString {
-							tfInt = tfStringToInt(innerArgs[0].Val.Str)
-						}
-						combined := make([]interp.Expr, 0, 2+len(args))
-						combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal("")})
-						combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(tfInt)})
-						combined = append(combined, args...)
-						return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
-					}
+			if isIBarFunc(mappedName) {
+				if expr := c.buildChainedBarCall(mappedName, cleanPath, attrNode, args); expr != nil {
+					return expr
 				}
 			}
 			return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: args}
 		}
 	}
 	return &interp.Expr{Kind: interp.ExprCall, Name: fullPath, Args: args}
+}
+
+func isIBarFunc(name string) bool {
+	return strings.HasPrefix(name, "iClose") ||
+		strings.HasPrefix(name, "iOpen") ||
+		strings.HasPrefix(name, "iHigh") ||
+		strings.HasPrefix(name, "iLow") ||
+		strings.HasPrefix(name, "iVolume") ||
+		strings.HasPrefix(name, "iTime")
+}
+
+func (c *pyCompiler) buildChainedBarCall(mappedName, cleanPath string, attrNode *sitter.Node, args []interp.Expr) *interp.Expr {
+	if strings.Contains(cleanPath, "bars_for_symbol.") {
+		innerArgs := c.extractInnerCallArgs(attrNode)
+		if len(innerArgs) > 0 {
+			combined := make([]interp.Expr, 0, len(innerArgs)+1+len(args))
+			combined = append(combined, innerArgs...)
+			combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)})
+			combined = append(combined, args...)
+			return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
+		}
+	}
+	if strings.Contains(cleanPath, "bars_tf.") {
+		innerArgs := c.extractInnerCallArgs(attrNode)
+		if len(innerArgs) > 0 {
+			tfInt := int32(0)
+			if innerArgs[0].Kind == interp.ExprLiteral && innerArgs[0].Val.Kind == interp.ValString {
+				tfInt = tfStringToInt(innerArgs[0].Val.Str)
+			}
+			combined := make([]interp.Expr, 0, 2+len(args))
+			combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal("")})
+			combined = append(combined, interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(tfInt)})
+			combined = append(combined, args...)
+			return &interp.Expr{Kind: interp.ExprCall, Name: mappedName, Args: combined}
+		}
+	}
+	return nil
 }
 
 // extractInnerCallArgs extracts the arguments from the inner call of a chained expression.

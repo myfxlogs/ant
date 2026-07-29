@@ -147,38 +147,7 @@ func (s *GatewayServer) SubmitStrategy(
 	}
 
 	// ── Step 2: Persist to imported_strategies (before backtest — O1: backtest failure must not lose strategy) ──
-	persisted := false
-	if s.importedRepo != nil {
-		uid, _ := uuid.Parse(userID)
-		if uid == uuid.Nil {
-			s.log.Warn("SubmitStrategy: skip persist, invalid userID", zap.String("userID", userID))
-		} else {
-			paramsRaw := interp.SerializeParams(runner.Bytecode().Params)
-			row := &repository.ImportedStrategy{
-				UserID:        uid,
-				Name:          deriveNameFromSourceCode(sourceCode, coverage.Version),
-				SourceLang:    coverage.Version,
-				SourceCode:    sourceCode,
-				Params:        paramsRaw,
-				CoverageScore: coverage.Score,
-			}
-			if err := s.importedRepo.Create(ctx, row); err != nil {
-				s.log.Warn("SubmitStrategy: persist failed", zap.Error(err))
-			} else {
-				strategyID = row.ID.String()
-				persisted = true
-				if s.versionRepo != nil {
-					if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, sourceCode, coverage.Version, "Agent import"); vErr != nil {
-						s.log.Warn("SubmitStrategy: create version snapshot failed", zap.Error(vErr))
-					}
-				}
-			}
-		}
-	}
-	// F1: if persist failed, clear strategyID so frontend doesn't get an invalid ID
-	if !persisted {
-		strategyID = ""
-	}
+	strategyID = s.persistImportedStrategy(ctx, userID, strategyID, sourceCode, runner, coverage)
 
 	// ── Steps 3-7: Backtest + LLM analysis + bridging (only when backtest_config provided) ──
 	var btResult *backtestPipelineResult
@@ -226,6 +195,36 @@ func (s *GatewayServer) SubmitStrategy(
 	}
 
 	return connect.NewResponse(resp), nil
+}
+
+func (s *GatewayServer) persistImportedStrategy(ctx context.Context, userID, strategyID, sourceCode string, runner *mql2go.VMRunner, coverage *mql2go.CoverageResult) string {
+	if s.importedRepo == nil {
+		return ""
+	}
+	uid, _ := uuid.Parse(userID)
+	if uid == uuid.Nil {
+		s.log.Warn("SubmitStrategy: skip persist, invalid userID", zap.String("userID", userID))
+		return ""
+	}
+	paramsRaw := interp.SerializeParams(runner.Bytecode().Params)
+	row := &repository.ImportedStrategy{
+		UserID:        uid,
+		Name:          deriveNameFromSourceCode(sourceCode, coverage.Version),
+		SourceLang:    coverage.Version,
+		SourceCode:    sourceCode,
+		Params:        paramsRaw,
+		CoverageScore: coverage.Score,
+	}
+	if err := s.importedRepo.Create(ctx, row); err != nil {
+		s.log.Warn("SubmitStrategy: persist failed", zap.Error(err))
+		return ""
+	}
+	if s.versionRepo != nil {
+		if _, vErr := s.versionRepo.CreateVersion(ctx, row.ID, uid, sourceCode, coverage.Version, "Agent import"); vErr != nil {
+			s.log.Warn("SubmitStrategy: create version snapshot failed", zap.Error(vErr))
+		}
+	}
+	return row.ID.String()
 }
 
 // GenerateStrategy generates a Python subset strategy from natural language via LLM,

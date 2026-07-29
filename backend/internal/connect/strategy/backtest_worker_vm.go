@@ -49,6 +49,30 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 // Shared by both MQL (executeVMBacktest) and Python (executePythonVMBacktest) paths.
 func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql2go.VMRunner, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
 
+	bars := klinesToBars(klines)
+	cfg := s.buildBacktestConfig(params, run, bars)
+
+	if len(run.ExtraSymbols) > 0 && s.marketDataRepo != nil {
+		s.loadExtraSymbolBars(ctx, run, &cfg)
+	}
+
+	s.applySymbolInfo(ctx, run, &cfg, bars)
+
+	engine := backtest.New(cfg, vmRunner, bars)
+	result, err := engine.Run(ctx)
+	if err != nil {
+		s.log.Error("executeVMBacktest: engine.Run failed", zap.Error(err), zap.Int("bars", len(bars)))
+		return &antv1.ExecuteBacktestResponse{Success: false, Error: err.Error()}, nil
+	}
+	s.log.Info("executeVMBacktest: engine.Run completed",
+		zap.Int("trades", len(result.Trades)),
+		zap.Int("equity_points", len(result.Equity)),
+		zap.Int("bars_processed", len(bars)))
+
+	return buildBacktestResponse(result, cfg, params), nil
+}
+
+func klinesToBars(klines []*antv1.ExecuteKlineBar) []sdk.Bar {
 	bars := make([]sdk.Bar, len(klines))
 	for i, k := range klines {
 		bars[i] = sdk.Bar{
@@ -60,7 +84,10 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 			Timestamp: k.OpenTimeMs,
 		}
 	}
+	return bars
+}
 
+func (s *StrategyExecutionServer) buildBacktestConfig(params backtestParams, run *repository.BacktestRun, bars []sdk.Bar) backtest.Config {
 	cfg := backtest.Config{
 		Symbol:         run.Symbol,
 		Timeframe:      run.Timeframe,
@@ -72,46 +99,37 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		StrictMode:     params.strictMode,
 		Params:         paramsProtoToMap(run.ParameterOverrides),
 	}
-
-	// Fetch klines for extra symbols (multi-symbol strategies)
-	if len(run.ExtraSymbols) > 0 && s.marketDataRepo != nil {
-		cfg.ExtraSymbolBars = make(map[string][]sdk.Bar, len(run.ExtraSymbols))
-		for _, sym := range run.ExtraSymbols {
-			if sym == "" || sym == run.Symbol {
-				continue
-			}
-			extraKlines, err := s.fetchExtraSymbolKlines(ctx, sym, run)
-			if err != nil {
-				s.log.Warn("fetch extra symbol klines failed",
-					zap.String("symbol", sym), zap.Error(err))
-				continue
-			}
-			if len(extraKlines) == 0 {
-				continue
-			}
-			symBars := make([]sdk.Bar, len(extraKlines))
-			for i, k := range extraKlines {
-				symBars[i] = sdk.Bar{
-					Open:      parseDecimal(k.Open),
-					High:      parseDecimal(k.High),
-					Low:       parseDecimal(k.Low),
-					Close:     parseDecimal(k.Close),
-					Volume:    parseInt64(k.Volume),
-					Timestamp: k.OpenTimeMs,
-				}
-			}
-			cfg.ExtraSymbolBars[sym] = symBars
-			s.log.Info("loaded extra symbol bars",
-				zap.String("symbol", sym), zap.Int("bars", len(symBars)))
-		}
-	}
 	if run.FromTs != nil {
 		cfg.StartDate = *run.FromTs
 	}
 	if run.ToTs != nil {
 		cfg.EndDate = *run.ToTs
 	}
+	return cfg
+}
 
+func (s *StrategyExecutionServer) loadExtraSymbolBars(ctx context.Context, run *repository.BacktestRun, cfg *backtest.Config) {
+	cfg.ExtraSymbolBars = make(map[string][]sdk.Bar, len(run.ExtraSymbols))
+	for _, sym := range run.ExtraSymbols {
+		if sym == "" || sym == run.Symbol {
+			continue
+		}
+		extraKlines, err := s.fetchExtraSymbolKlines(ctx, sym, run)
+		if err != nil {
+			s.log.Warn("fetch extra symbol klines failed",
+				zap.String("symbol", sym), zap.Error(err))
+			continue
+		}
+		if len(extraKlines) == 0 {
+			continue
+		}
+		cfg.ExtraSymbolBars[sym] = klinesToBars(extraKlines)
+		s.log.Info("loaded extra symbol bars",
+			zap.String("symbol", sym), zap.Int("bars", len(cfg.ExtraSymbolBars[sym])))
+	}
+}
+
+func (s *StrategyExecutionServer) applySymbolInfo(ctx context.Context, run *repository.BacktestRun, cfg *backtest.Config, bars []sdk.Bar) {
 	symbolInfo := s.fetchSymbolInfo(ctx, run)
 	if symbolInfo != nil {
 		cfg.SymbolDigits = symbolInfo.Digits
@@ -131,30 +149,21 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 			cfg.ContractSize = v
 		}
 	} else if len(bars) > 0 {
-		backtest.DeriveSymbolInfoFromBars(&cfg, bars)
+		backtest.DeriveSymbolInfoFromBars(cfg, bars)
 		s.log.Info("executeVMBacktest: derived symbol info from K-lines",
 			zap.Int32("digits", cfg.SymbolDigits),
 			zap.String("point", cfg.SymbolPoint.String()),
 			zap.String("spread", cfg.Spread.String()))
 	}
+}
 
-	engine := backtest.New(cfg, vmRunner, bars)
-	result, err := engine.Run(ctx)
-	if err != nil {
-		s.log.Error("executeVMBacktest: engine.Run failed", zap.Error(err), zap.Int("bars", len(bars)))
-		return &antv1.ExecuteBacktestResponse{Success: false, Error: err.Error()}, nil
-	}
-	s.log.Info("executeVMBacktest: engine.Run completed",
-		zap.Int("trades", len(result.Trades)),
-		zap.Int("equity_points", len(result.Equity)),
-		zap.Int("bars_processed", len(bars)))
-
+func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams) *antv1.ExecuteBacktestResponse {
 	resp := &antv1.ExecuteBacktestResponse{
 		Success: true,
 		Metrics: &antv1.ExecuteBacktestMetrics{
 			TotalReturn:   result.Metrics.TotalReturn,
 			AnnualReturn:  result.Metrics.AnnualReturn,
-			MaxDrawdown:   result.Metrics.MaxDrawdown,
+			MaxDrawdown:    result.Metrics.MaxDrawdown,
 			SharpeRatio:   result.Metrics.SharpeRatio,
 			WinRate:       result.Metrics.WinRate,
 			ProfitFactor:  result.Metrics.ProfitFactor,
@@ -211,6 +220,5 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 	}
 
 	resp.Risk = assessRisk(result.Metrics)
-
-	return resp, nil
+	return resp
 }

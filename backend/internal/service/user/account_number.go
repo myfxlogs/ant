@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"iter"
 	"math/big"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -153,30 +154,16 @@ const batchSize = 2000
 func (s *AccountNumberService) scanAll(ctx context.Context) (string, error) {
 	batch := make([]string, 0, batchSize)
 
-	// 6 nested loops over valid digit sets → 229,376 total candidates.
-	for _, a := range validFirst {
-		for _, b := range validRest {
-			for _, c := range validRest {
-				for _, d := range validRest {
-					for _, e := range validRest {
-						for _, f := range validRest {
-							num := string([]byte{a, b, c, d, e, f})
-							batch = append(batch, num)
-
-							if len(batch) >= batchSize {
-								if found := s.findFirstAvailable(ctx, batch); found != "" {
-									return found, nil
-								}
-								batch = batch[:0]
-							}
-						}
-					}
-				}
+	for num := range generateCandidates() {
+		batch = append(batch, num)
+		if len(batch) >= batchSize {
+			if found := s.findFirstAvailable(ctx, batch); found != "" {
+				return found, nil
 			}
+			batch = batch[:0]
 		}
 	}
 
-	// Final partial batch.
 	if len(batch) > 0 {
 		if found := s.findFirstAvailable(ctx, batch); found != "" {
 			return found, nil
@@ -184,6 +171,28 @@ func (s *AccountNumberService) scanAll(ctx context.Context) (string, error) {
 	}
 
 	return "", ErrAccountNumberExhausted
+}
+
+// generateCandidates yields all 6-digit account numbers from valid digit sets.
+// 6 nested loops over validFirst × validRest^5 → 229,376 total candidates.
+func generateCandidates() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for _, a := range validFirst {
+			for _, b := range validRest {
+				for _, c := range validRest {
+					for _, d := range validRest {
+						for _, e := range validRest {
+							for _, f := range validRest {
+								if !yield(string([]byte{a, b, c, d, e, f})) {
+									return
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 // findFirstAvailable returns the first candidate that is not in the users table.

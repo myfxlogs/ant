@@ -76,89 +76,55 @@ func (a *AgentLoop) Run(ctx context.Context, systemPrompt, userPrompt string, us
 func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, userID uuid.UUID) (string, error) {
 	var fullBuf strings.Builder
 	deadline := time.Now().Add(a.timeBudget)
-	codeConvergences := 0 // F3: separate from length convergences — persists across rounds
+	codeConvergences := 0
 
 	for round := 0; round < maxAgentRounds; round++ {
 		if time.Now().After(deadline) {
 			return fullBuf.String(), fmt.Errorf("agent: total time budget exceeded (%v)", a.timeBudget)
 		}
-		// Context compression: if total estimated tokens exceed budget,
-		// keep system + first user + last 20 messages, drop middle.
-		if len(messages) > 24 {
-			totalChars := 0
-			for _, m := range messages {
-				totalChars += len(m.Content)
-			}
-			if totalChars/4 > 8000 {
-				keep := make([]systemai.ChatMessage, 0, 22)
-				keep = append(keep, messages[0]) // system
-				keep = append(keep, messages[1]) // first user
-				if len(messages) > 20 {
-					keep = append(keep, messages[len(messages)-20:]...)
-				}
-				messages = keep
-			}
-		}
+		messages = compressContext(messages)
+
 		var roundBuf strings.Builder
 		var reasoningBuf strings.Builder
 		var roundFinishReason string
-		var toolCalls []systemai.ToolCall // accumulated from stream chunks
+		var toolCalls []systemai.ToolCall
 
 		err := a.llmStream(ctx, messages, a.toolDefs, a.makeOnChunk(&roundBuf, &reasoningBuf, &roundFinishReason, &toolCalls))
 		if err != nil {
 			return "", err
 		}
 
-		// Convergence guard: thinking drained budget without producing code.
-		// Inject correction and retry (max 2 convergence retries per round).
 		reasoningText := strings.TrimSpace(reasoningBuf.String())
-		lengthConvergences := 0
-		for (roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(toolCalls) == 0)) && lengthConvergences < 2 {
-			lengthConvergences++
-			messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call write_strategy with your code. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
-			roundBuf.Reset()
-			reasoningBuf.Reset()
-			toolCalls = nil
-			roundFinishReason = ""
-			if err := a.llmStream(ctx, messages, a.toolDefs, a.makeOnChunk(&roundBuf, &reasoningBuf, &roundFinishReason, &toolCalls)); err != nil {
-				return "", err
-			}
+		messages, err = a.handleConvergenceRetry(ctx, messages, &roundBuf, &reasoningBuf, &roundFinishReason, &toolCalls, reasoningText)
+		if err != nil {
+			return "", err
 		}
 
 		roundText := strings.TrimSpace(roundBuf.String())
-		// I3: reasoning is NEVER used as answer. No fallback.
 		if roundText == "" && len(toolCalls) == 0 {
 			return "", fmt.Errorf("agent: LLM returned empty response on round %d", round+1)
 		}
 
-		// Already streamed incrementally in onChunk. Just accumulate for ExtractCode.
 		fullBuf.WriteString(roundText)
 
-		// Update currentCode if this round contains Python code — so subsequent
-		// tool calls (save_strategy, compile_python) see the latest code.
 		if code := ExtractCode(roundText); code != "" {
 			a.currentCode = code
 		}
 
-		// §3.1b前提2: Guard against code-in-free-text without write_strategy.
-		// If LLM output contains Python code but didn't call write_strategy,
-		// inject correction and retry (≤2 per round). Never fall back to ExtractCode.
 		if code := ExtractCode(roundText); code != "" && !hasWriteStrategyCall(toolCalls, roundText) && codeConvergences < 2 {
 			codeConvergences++
 			messages = append(messages, systemai.ChatMessage{
 				Role:    "user",
 				Content: "Do NOT put code in chat text. Use the write_strategy tool to submit your code. Call [TOOL: write_strategy code=\"...\"] with your complete strategy code.",
 			})
-			continue // retry this round
+			continue
 		}
 
-		// No native tool calls → check for text-based [TOOL: name args] fallback.
 		if len(toolCalls) == 0 {
 			textCalls := parseTextToolCalls(roundText)
 			if len(textCalls) == 0 {
 				return fullBuf.String(), nil
 			}
-			// Convert text-based calls to structured tool calls.
 			for _, tc := range textCalls {
 				toolCalls = append(toolCalls, systemai.ToolCall{
 					ID:   "call_" + tc.Name,
@@ -171,7 +137,6 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 			}
 		}
 
-		// Build the assistant message with tool calls.
 		assistantMsg := systemai.ChatMessage{
 			Role:      "assistant",
 			Content:   roundText,
@@ -179,65 +144,109 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		}
 		messages = append(messages, assistantMsg)
 
-		// Execute each tool call and collect results.
-		for _, tc := range toolCalls {
-			callID := tc.ID
-			if callID == "" {
-				callID = "call_" + tc.Function.Name
-			}
-
-			input := parseToolArguments(tc.Function.Name, tc.Function.Arguments)
-			input.UserID = userID
-			if input.Code == "" && a.currentCode != "" {
-				input.Code = a.currentCode
-			}
-
-			tool := a.toolRegistry.FindPreTool(tc.Function.Name)
-			var result ToolOutput
-			if tool == nil {
-				result = ToolOutput{Success: false, Error: fmt.Sprintf("unknown tool: %s", tc.Function.Name)}
-			} else {
-				result = tool.Run(ctx, input)
-			}
-
-			// Build tool result message (OpenAI protocol: role="tool").
-			var resultContent string
-			if !result.Success {
-				resultContent = fmt.Sprintf(`{"error": %q}`, result.Error)
-			} else if result.Output != nil {
-				if s, ok := result.Output.(string); ok {
-					resultContent = fmt.Sprintf(`{"output": %q}`, s)
-				} else {
-					resultJSON, _ := json.Marshal(result.Output)
-					resultContent = string(resultJSON)
-				}
-			}
-			messages = append(messages, systemai.ChatMessage{
-				Role:       "tool",
-				ToolCallID: callID,
-				Name:       tc.Function.Name,
-				Content:    resultContent,
-			})
-
-			// Stream tool event to frontend.
-			if a.toolStream != nil {
-				var paramsStruct *structpb.Struct
-				if s, err := structpb.NewStruct(parseJSONToMap(tc.Function.Arguments)); err == nil {
-					paramsStruct = s
-				}
-				var outputStruct *structpb.Struct
-				if s, err := structpb.NewStruct(parseJSONToMap(resultContent)); err == nil {
-					outputStruct = s
-				}
-				_ = a.toolStream(
-					&antv1.ToolCall{CallId: callID, Name: tc.Function.Name, Params: paramsStruct},
-					&antv1.ToolResult{CallId: callID, Name: tc.Function.Name, Success: result.Success, Output: outputStruct, Error: result.Error},
-				)
-			}
-		}
-		// Loop continues — LLM sees tool results and decides next action.
+		messages = a.executeToolCalls(ctx, messages, toolCalls, userID)
 	}
 	return fullBuf.String(), fmt.Errorf("agent: round budget exhausted (%d rounds)", maxAgentRounds)
+}
+
+func compressContext(messages []systemai.ChatMessage) []systemai.ChatMessage {
+	if len(messages) <= 24 {
+		return messages
+	}
+	totalChars := 0
+	for _, m := range messages {
+		totalChars += len(m.Content)
+	}
+	if totalChars/4 <= 8000 {
+		return messages
+	}
+	keep := make([]systemai.ChatMessage, 0, 22)
+	keep = append(keep, messages[0])
+	keep = append(keep, messages[1])
+	if len(messages) > 20 {
+		keep = append(keep, messages[len(messages)-20:]...)
+	}
+	return keep
+}
+
+func (a *AgentLoop) handleConvergenceRetry(
+	ctx context.Context,
+	messages []systemai.ChatMessage,
+	roundBuf, reasoningBuf *strings.Builder,
+	roundFinishReason *string,
+	toolCalls *[]systemai.ToolCall,
+	reasoningText string,
+) ([]systemai.ChatMessage, error) {
+	lengthConvergences := 0
+	for (*roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(*toolCalls) == 0)) && lengthConvergences < 2 {
+		lengthConvergences++
+		messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call write_strategy with your code. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
+		roundBuf.Reset()
+		reasoningBuf.Reset()
+		*toolCalls = nil
+		*roundFinishReason = ""
+		if err := a.llmStream(ctx, messages, a.toolDefs, a.makeOnChunk(roundBuf, reasoningBuf, roundFinishReason, toolCalls)); err != nil {
+			return nil, err
+		}
+	}
+	return messages, nil
+}
+
+func (a *AgentLoop) executeToolCalls(ctx context.Context, messages []systemai.ChatMessage, toolCalls []systemai.ToolCall, userID uuid.UUID) []systemai.ChatMessage {
+	for _, tc := range toolCalls {
+		callID := tc.ID
+		if callID == "" {
+			callID = "call_" + tc.Function.Name
+		}
+
+		input := parseToolArguments(tc.Function.Name, tc.Function.Arguments)
+		input.UserID = userID
+		if input.Code == "" && a.currentCode != "" {
+			input.Code = a.currentCode
+		}
+
+		tool := a.toolRegistry.FindPreTool(tc.Function.Name)
+		var result ToolOutput
+		if tool == nil {
+			result = ToolOutput{Success: false, Error: fmt.Sprintf("unknown tool: %s", tc.Function.Name)}
+		} else {
+			result = tool.Run(ctx, input)
+		}
+
+		var resultContent string
+		if !result.Success {
+			resultContent = fmt.Sprintf(`{"error": %q}`, result.Error)
+		} else if result.Output != nil {
+			if s, ok := result.Output.(string); ok {
+				resultContent = fmt.Sprintf(`{"output": %q}`, s)
+			} else {
+				resultJSON, _ := json.Marshal(result.Output)
+				resultContent = string(resultJSON)
+			}
+		}
+		messages = append(messages, systemai.ChatMessage{
+			Role:       "tool",
+			ToolCallID: callID,
+			Name:       tc.Function.Name,
+			Content:    resultContent,
+		})
+
+		if a.toolStream != nil {
+			var paramsStruct *structpb.Struct
+			if s, err := structpb.NewStruct(parseJSONToMap(tc.Function.Arguments)); err == nil {
+				paramsStruct = s
+			}
+			var outputStruct *structpb.Struct
+			if s, err := structpb.NewStruct(parseJSONToMap(resultContent)); err == nil {
+				outputStruct = s
+			}
+			_ = a.toolStream(
+				&antv1.ToolCall{CallId: callID, Name: tc.Function.Name, Params: paramsStruct},
+				&antv1.ToolResult{CallId: callID, Name: tc.Function.Name, Success: result.Success, Output: outputStruct, Error: result.Error},
+			)
+		}
+	}
+	return messages
 }
 
 // makeOnChunk creates a streaming callback that accumulates content, reasoning,

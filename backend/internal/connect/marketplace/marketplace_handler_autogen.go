@@ -150,7 +150,6 @@ func (s *MarketplaceServer) runGeneratePipeline(
 		})
 	}
 
-	// ── Stage 1: AI generation ──
 	if err := send("generating", "AI is generating strategy code...", 0.05); err != nil {
 		return nil
 	}
@@ -160,39 +159,7 @@ func (s *MarketplaceServer) runGeneratePipeline(
 	var genErr error
 
 	genStream := func(chunk *antv1.AgentGenerateStrategyChunk) error {
-		if chunk.Delta != "" && (chunk.Phase == "generating" || chunk.Phase == "thinking") {
-			if err := stream.Send(&antv1.GenerateAndPublishEvent{
-				Stage:    "generating",
-				Delta:    chunk.Delta,
-				Progress: 0.1,
-			}); err != nil {
-				return err
-			}
-		}
-		if chunk.Phase == "backtesting" && chunk.Result != nil {
-			finalResult = chunk.Result
-		}
-		if chunk.CompileError != "" {
-			genErr = fmt.Errorf("compile failed: %s", chunk.CompileError)
-		}
-		if chunk.BacktestError != "" {
-			genErr = fmt.Errorf("backtest failed: %s", chunk.BacktestError)
-		}
-		if chunk.PythonSource != "" {
-			finalSource = chunk.PythonSource
-		}
-		if chunk.Phase == "done" {
-			if chunk.PythonSource != "" {
-				finalSource = chunk.PythonSource
-			}
-			if chunk.Result != nil {
-				finalResult = chunk.Result
-			}
-			if chunk.Error != "" {
-				genErr = fmt.Errorf("%s", chunk.Error)
-			}
-		}
-		return nil
+		return genStreamChunk(chunk, stream, &finalSource, &finalResult, &genErr)
 	}
 
 	if err := s.gen.Generate(ctx, uid, agentReq, genStream); err != nil {
@@ -211,24 +178,14 @@ func (s *MarketplaceServer) runGeneratePipeline(
 		return nil
 	}
 
-	// ── Stage 1b: Persist source code ──
-	// Always save the generated code to strategy_templates so it survives
-	// across page refreshes and is available for pricing/publish later.
 	title := generateTitle(description)
 
-	var templateID string
-	if qErr := s.pgPool.QueryRow(ctx,
-		`INSERT INTO strategy_templates (user_id, name, description, code, is_public, is_system, tags, use_count)
-		 VALUES ($1, $2, $3, $4, false, false, '{}', 0)
-		 RETURNING id`,
-		uid, title, description, finalSource,
-	).Scan(&templateID); qErr != nil {
-		s.log.Warn("autogen: create strategy_template failed", zap.Error(qErr))
-		_ = sendErr("generating", fmt.Sprintf("failed to save strategy code: %v", qErr), true)
+	templateID, err := s.saveGeneratedStrategy(ctx, uid, title, description, finalSource)
+	if err != nil {
+		_ = sendErr("generating", fmt.Sprintf("failed to save strategy code: %v", err), true)
 		return nil
 	}
 
-	// ── Stage 2: Quality evaluation ──
 	if err := send("evaluating", "Evaluating backtest quality...", 0.85); err != nil {
 		return nil
 	}
@@ -260,7 +217,6 @@ func (s *MarketplaceServer) runGeneratePipeline(
 		return nil
 	}
 
-	// ── Stage 3: Auto-publish ──
 	if !autoPublish {
 		_ = stream.Send(&antv1.GenerateAndPublishEvent{
 			Stage:        "completed",
@@ -273,7 +229,71 @@ func (s *MarketplaceServer) runGeneratePipeline(
 		return nil
 	}
 
-	if err := send("publishing", "Publishing to marketplace...", 0.95); err != nil {
+	return s.publishGeneratedStrategy(ctx, stream, sendErr, uid, templateID, title, description, symbol, timeframe, riskLevel, snapshotProto, finalSource, finalResult)
+}
+
+func genStreamChunk(chunk *antv1.AgentGenerateStrategyChunk, stream *connect.ServerStream[antv1.GenerateAndPublishEvent], finalSource *string, finalResult **antv1.AgentBacktestResult, genErr *error) error {
+	if chunk.Delta != "" && (chunk.Phase == "generating" || chunk.Phase == "thinking") {
+		if err := stream.Send(&antv1.GenerateAndPublishEvent{
+			Stage:    "generating",
+			Delta:    chunk.Delta,
+			Progress: 0.1,
+		}); err != nil {
+			return err
+		}
+	}
+	if chunk.Phase == "backtesting" && chunk.Result != nil {
+		*finalResult = chunk.Result
+	}
+	if chunk.CompileError != "" {
+		*genErr = fmt.Errorf("compile failed: %s", chunk.CompileError)
+	}
+	if chunk.BacktestError != "" {
+		*genErr = fmt.Errorf("backtest failed: %s", chunk.BacktestError)
+	}
+	if chunk.PythonSource != "" {
+		*finalSource = chunk.PythonSource
+	}
+	if chunk.Phase == "done" {
+		if chunk.PythonSource != "" {
+			*finalSource = chunk.PythonSource
+		}
+		if chunk.Result != nil {
+			*finalResult = chunk.Result
+		}
+		if chunk.Error != "" {
+			*genErr = fmt.Errorf("%s", chunk.Error)
+		}
+	}
+	return nil
+}
+
+func (s *MarketplaceServer) saveGeneratedStrategy(ctx context.Context, uid uuid.UUID, title, description, source string) (string, error) {
+	var templateID string
+	err := s.pgPool.QueryRow(ctx,
+		`INSERT INTO strategy_templates (user_id, name, description, code, is_public, is_system, tags, use_count)
+		 VALUES ($1, $2, $3, $4, false, false, '{}', 0)
+		 RETURNING id`,
+		uid, title, description, source,
+	).Scan(&templateID)
+	if err != nil {
+		s.log.Warn("autogen: create strategy_template failed", zap.Error(err))
+	}
+	return templateID, err
+}
+
+func (s *MarketplaceServer) publishGeneratedStrategy(
+	ctx context.Context,
+	stream *connect.ServerStream[antv1.GenerateAndPublishEvent],
+	sendErr func(string, string, bool) error,
+	uid uuid.UUID, templateID, title, description, symbol, timeframe, riskLevel string,
+	snapshotProto []byte, finalSource string, finalResult *antv1.AgentBacktestResult,
+) error {
+	if err := stream.Send(&antv1.GenerateAndPublishEvent{
+		Stage:    "publishing",
+		Message:  "Publishing to marketplace...",
+		Progress: 0.95,
+	}); err != nil {
 		return nil
 	}
 

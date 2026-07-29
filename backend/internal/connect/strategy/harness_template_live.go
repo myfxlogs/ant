@@ -7,7 +7,10 @@ package strategy
 // Compiled path: strategy := &TypeName{}
 // VM path:        strategy := mql2go.NewVMRunner(bc)
 func generateLiveHarnessBase(strategyCreation, extraImport string) string {
-	return `package main
+	return liveHarnessPrelude + extraImport + liveHarnessImports + strategyCreation + liveHarnessMain + liveHarnessFuncs
+}
+
+const liveHarnessPrelude = `package main
 
 import (
 	"context"
@@ -23,8 +26,9 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
 	"alphaforge/strategy/sdk"
-	` + extraImport + `
-)
+	`
+
+const liveHarnessImports = `)
 
 const maxBarWindow = 500
 
@@ -47,7 +51,9 @@ func mustInt64(s string) int64 {
 }
 
 func main() {
-	` + strategyCreation + `
+	`
+
+const liveHarnessMain = `
 
 	req, err := readRequest(os.Stdin)
 	if err != nil {
@@ -82,8 +88,9 @@ func main() {
 
 	_ = r.Deinit(context.Background(), "stream_end")
 }
+`
 
-func initRunner(strategy sdk.Strategy, req *antv1.ExecuteLiveRequest) (*runner.Runner, *antv1.ExecuteLiveResponse) {
+const liveHarnessFuncs = `func initRunner(strategy sdk.Strategy, req *antv1.ExecuteLiveRequest) (*runner.Runner, *antv1.ExecuteLiveResponse) {
 	bctx := req.GetBarContext()
 	if bctx == nil {
 		return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "first request must have bar_context for initialization"}
@@ -368,4 +375,3 @@ func signalToProto(sig *sdk.Signal, symbol string) *antv1.StrategySignal {
 	}
 }
 `
-}

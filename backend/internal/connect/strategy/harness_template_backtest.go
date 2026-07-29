@@ -7,7 +7,10 @@ package strategy
 // Compiled path: strategy := &TypeName{}
 // ADR-0023: WASM interp path removed — all MQL strategies use VMRunner.
 func generateBacktestHarnessBase(strategyCreation, extraImport string) string {
-	return `package main
+	return backtestHarnessPrelude + extraImport + backtestHarnessImports + strategyCreation + backtestHarnessBody
+}
+
+const backtestHarnessPrelude = `package main
 
 import (
 	"context"
@@ -23,7 +26,9 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/backtest"
 	"alphaforge/strategy/sdk"
-	` + extraImport + `
+	`
+
+const backtestHarnessImports = `
 )
 
 func mustDecimal(s string) decimal.Decimal {
@@ -51,7 +56,9 @@ func mustInt32(s string) int32 {
 }
 
 func main() {
-	` + strategyCreation + `
+	`
+
+const backtestHarnessBody = `
 
 	input, err := io.ReadAll(os.Stdin)
 	if err != nil {
@@ -172,4 +179,3 @@ func main() {
 	os.Stdout.Write(out)
 }
 `
-}

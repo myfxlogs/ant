@@ -248,7 +248,7 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 	const maxAttempts = 2
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
-			time.Sleep(time.Duration(attempt) * time.Second) // 0s, 1s backoff
+			time.Sleep(time.Duration(attempt) * time.Second)
 		}
 		resp, doErr := client.Do(httpReq)
 		if doErr != nil {
@@ -264,44 +264,53 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		_ = resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			var cr ChatCompletionResponse
-			if err := json.Unmarshal(bodyBytes, &cr); err != nil {
-				return "", nil, nil, fmt.Errorf("decode chat response: %w", err)
-			}
-			if cr.Error != nil {
-				s.recordProviderFailure(ctx, p.userID, p.providerID)
-				return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
-			}
-			if len(cr.Choices) == 0 {
-				return "", nil, nil, fmt.Errorf("chat completion: empty choices")
-			}
-			s.recordProviderSuccess(ctx, p.userID, p.providerID)
-			msg := cr.Choices[0].Message
-			content := strings.TrimSpace(msg.Content)
-			return content, msg.ToolCalls, cr.Usage, nil
+			return s.parseChatResponse(ctx, p, bodyBytes)
 		}
 
-		// Non-2xx: parse error, decide whether to retry or fail.
-		ae := readAPIErrorBodyFromBytes(bodyBytes)
-		transient := isFailoverStatus(resp.StatusCode)
-		if resp.StatusCode == 400 && isAuthErrorBody(ae.Raw) {
-			transient = false
+		if ret := s.handleChatHTTPError(ctx, p, resp, bodyBytes, attempt, maxAttempts); ret != nil {
+			return "", nil, nil, ret
 		}
-		if !transient || attempt == maxAttempts-1 {
-			msg := fmt.Sprintf("[%s] chat completion: status %d", ae.Type, resp.StatusCode)
-			if ae.Message != "" {
-				msg += " (" + ae.Message + ")"
-			} else if ae.Raw != "" {
-				msg += " (" + ae.Raw + ")"
-			}
-			if transient {
-				s.recordProviderFailure(ctx, p.userID, p.providerID)
-			}
-			return "", nil, nil, &failoverErr{msg: msg, transient: transient}
-		}
-		// Transient status — retry after backoff.
 	}
 	return "", nil, nil, fmt.Errorf("chat completion: exhausted retries")
+}
+
+func (s *Service) parseChatResponse(ctx context.Context, p chatProvider, bodyBytes []byte) (string, []ToolCall, *ChatUsage, error) {
+	var cr ChatCompletionResponse
+	if err := json.Unmarshal(bodyBytes, &cr); err != nil {
+		return "", nil, nil, fmt.Errorf("decode chat response: %w", err)
+	}
+	if cr.Error != nil {
+		s.recordProviderFailure(ctx, p.userID, p.providerID)
+		return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
+	}
+	if len(cr.Choices) == 0 {
+		return "", nil, nil, fmt.Errorf("chat completion: empty choices")
+	}
+	s.recordProviderSuccess(ctx, p.userID, p.providerID)
+	msg := cr.Choices[0].Message
+	content := strings.TrimSpace(msg.Content)
+	return content, msg.ToolCalls, cr.Usage, nil
+}
+
+func (s *Service) handleChatHTTPError(ctx context.Context, p chatProvider, resp *http.Response, bodyBytes []byte, attempt, maxAttempts int) error {
+	ae := readAPIErrorBodyFromBytes(bodyBytes)
+	transient := isFailoverStatus(resp.StatusCode)
+	if resp.StatusCode == 400 && isAuthErrorBody(ae.Raw) {
+		transient = false
+	}
+	if !transient || attempt == maxAttempts-1 {
+		msg := fmt.Sprintf("[%s] chat completion: status %d", ae.Type, resp.StatusCode)
+		if ae.Message != "" {
+			msg += " (" + ae.Message + ")"
+		} else if ae.Raw != "" {
+			msg += " (" + ae.Raw + ")"
+		}
+		if transient {
+			s.recordProviderFailure(ctx, p.userID, p.providerID)
+		}
+		return &failoverErr{msg: msg, transient: transient}
+	}
+	return nil
 }
 
 func isTransientChatErr(err error) bool {

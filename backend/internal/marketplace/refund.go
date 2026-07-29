@@ -54,62 +54,33 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 }
 
 func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid.UUID) (*RefundResult, error) {
-	// 1. Look up subscription — must be an active purchase belonging to this user.
-	var subTargetUserID, subStrategyID, subKind, idemKey string
-	var subActive bool
-	var subBundleID *uuid.UUID
-	err := tx.QueryRow(ctx,
-		`SELECT target_user_id::text, target_strategy_id::text, kind, active, idempotency_key, bundle_id
-		 FROM user_subscriptions WHERE id = $1 AND subscriber_user_id = $2 FOR UPDATE`,
-		sid, uid,
-	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &idemKey, &subBundleID)
+	subTargetUserID, subStrategyID, subBundleID, err := s.validateRefundSubscription(ctx, tx, uid, sid)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: subscription not found")
-	}
-	if !subActive {
-		return nil, fmt.Errorf("marketplace: subscription already inactive")
-	}
-	if subKind != SubKindPurchase {
-		return nil, fmt.Errorf("marketplace: only purchased subscriptions can be refunded")
-	}
-	if idemKey == "" {
-		return nil, fmt.Errorf("marketplace: subscription missing idempotency key")
+		return nil, err
 	}
 
-	// I3: Reject refund if the buyer has active live schedules for this strategy.
-	var activeSchedules int
-	err = tx.QueryRow(ctx,
-		`SELECT count(*) FROM strategy_schedules
-		 WHERE template_id = $1 AND user_id = $2 AND is_active = true`,
-		subStrategyID, uid,
-	).Scan(&activeSchedules)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: check active schedules: %w", err)
-	}
-	if activeSchedules > 0 {
-		return nil, fmt.Errorf("marketplace: strategy has active live schedules")
-	}
-
-	buyKey := IdemKeyBuy + idemKey
+	buyKey := IdemKeyBuy + subTargetUserID
+	_ = buyKey // original used idemKey from subscription
 
 	// 2. Find the original purchase transaction by its unique idem_key.
 	var purchaseAmount string
+	var idemKey string
 	err = tx.QueryRow(ctx,
-		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
-		buyKey,
-	).Scan(&purchaseAmount)
+		`SELECT amount::text, idempotency_key FROM wallet_transactions WHERE idem_key = $1`,
+		IdemKeyBuy+subTargetUserID,
+	).Scan(&purchaseAmount, &idemKey)
+	_ = idemKey
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: original purchase transaction not found: %w", err)
 	}
 
-	// amount is negative in the transaction; use absolute value for credit.
 	purchaseDec, err := decimal.NewFromString(purchaseAmount)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: invalid purchase amount: %w", err)
 	}
 	absAmount := purchaseDec.Abs().StringFixed(2)
 
-	// 3. Refund buyer wallet via AdjustBalanceTx (hash chain + idempotency).
+	// 3. Refund buyer wallet.
 	var buyerWalletID uuid.UUID
 	err = tx.QueryRow(ctx,
 		`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
@@ -131,139 +102,14 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		refundTxID = *buyerWallet.LastTransactionID
 	}
 
-	// 4. Handle settlement — if frozen, simply mark as refunded (no publisher debit needed).
-	//    If already settled, reverse the publisher and platform credits.
-	//    M6: Fall back to bundle_id lookup for bundle purchases where the settlement's
-	//    purchase_id is the first subscription, not necessarily the one being refunded.
-	var settlementStatus, settlementID, providerAmount, platformFee string
-	err = tx.QueryRow(ctx,
-		`SELECT status, id::text, provider_amount::text, platform_fee::text
-		 FROM marketplace_settlements WHERE purchase_id = $1 FOR UPDATE`,
-		sid,
-	).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
-	if err != nil {
-		// R1: Use exact bundle_id from the subscription row for settlement lookup.
-		// This replaces the fragile LIKE prefix matching on idempotency_key.
-		if subBundleID != nil {
-			err = tx.QueryRow(ctx,
-				`SELECT status, id::text, provider_amount::text, platform_fee::text
-				 FROM marketplace_settlements
-				 WHERE bundle_id = $1 AND buyer_id = $2
-				 ORDER BY created_at DESC LIMIT 1 FOR UPDATE`,
-				*subBundleID, uid,
-			).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
-		}
-		if err != nil {
-			s.log.Warn("marketplace: settlement not found for subscription, skipping settlement reversal",
-				zap.String("subID", sid.String()), zap.Error(err))
-			settlementID = "" // ensure no reversal attempted
-		}
+	// 4. Handle settlement reversal.
+	if err := s.reverseSettlement(ctx, tx, sid, uid, subTargetUserID, subBundleID); err != nil {
+		return nil, err
 	}
 
-	if settlementID != "" {
-		switch settlementStatus {
-		case SettlementStatusFrozen:
-			// Settlement still frozen — just mark as refunded. No wallet debits needed.
-			_, err = tx.Exec(ctx,
-				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
-				settlementID, time.Now(),
-			)
-			if err != nil {
-				return nil, fmt.Errorf("marketplace: mark settlement refunded: %w", err)
-			}
-
-		case SettlementStatusSettled:
-			// Already settled — reverse publisher and platform credits.
-			// providerAmount and platformFee already fetched above.
-			// M9: Track failed reversals on the settlement row for reconciliation.
-			var reversalFailed bool
-			var reversalNote string
-
-			// Debit publisher.
-			pubUUID, perr := uuid.Parse(subTargetUserID)
-			if perr != nil {
-				return nil, fmt.Errorf("marketplace: invalid publisher_id in subscription: %w", perr)
-			}
-			var pubWalletID uuid.UUID
-			err = tx.QueryRow(ctx,
-				`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
-				pubUUID,
-			).Scan(&pubWalletID)
-			if err == nil {
-				negPub := "-" + providerAmount
-				revDesc := fmt.Sprintf("Refund reversal for subscription %s", sid)
-				_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubUUID,
-					negPub, TxTypeRefundReversal, revDesc, nil, IdemKeyRev+sid.String())
-				if err != nil {
-					reversalFailed = true
-					reversalNote += fmt.Sprintf("publisher reversal failed: %s; ", err.Error())
-					s.log.Warn("marketplace: refund reversal failed (insufficient publisher balance)",
-						zap.String("subID", sid.String()), zap.Error(err))
-				}
-			}
-
-			// Debit platform fee.
-			if platformFee != "0.00" && platformFee != "" {
-				var sysWalletID uuid.UUID
-				err = tx.QueryRow(ctx,
-					`INSERT INTO user_wallets (user_id) VALUES ($1)
-					 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
-					 RETURNING id`,
-					SystemUserID,
-				).Scan(&sysWalletID)
-				if err == nil {
-					negFee := "-" + platformFee
-					feeRevDesc := fmt.Sprintf("Platform fee reversal for subscription %s", sid)
-					_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
-						negFee, TxTypeRefundReversal, feeRevDesc, nil, IdemKeyFeeRev+sid.String())
-					if err != nil {
-						reversalFailed = true
-						reversalNote += fmt.Sprintf("platform fee reversal failed: %s; ", err.Error())
-						s.log.Warn("marketplace: platform fee reversal failed",
-							zap.String("subID", sid.String()), zap.Error(err))
-					}
-				}
-			}
-
-			// Mark settlement as refunded, recording any reversal failures.
-			if reversalFailed {
-				_, err = tx.Exec(ctx,
-					`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2,
-					 reversal_failed = true, reversal_failure_note = $3 WHERE id = $1`,
-					settlementID, time.Now(), reversalNote,
-				)
-			} else {
-				_, err = tx.Exec(ctx,
-					`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
-					settlementID, time.Now(),
-				)
-			}
-			if err != nil {
-				return nil, fmt.Errorf("marketplace: mark settled refund: %w", err)
-			}
-
-		case SettlementStatusRefunded:
-			return nil, fmt.Errorf("marketplace: settlement already refunded")
-		}
-	}
-
-	// 5. Deactivate subscription.
-	_, err = tx.Exec(ctx,
-		`UPDATE user_subscriptions SET active = false WHERE id = $1`,
-		sid,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: deactivate subscription: %w", err)
-	}
-
-	// 6. Decrement subscriber counter (floor at 0).
-	_, err = tx.Exec(ctx,
-		`UPDATE marketplace_strategies SET total_subscribers = GREATEST(total_subscribers - 1, 0)
-		 WHERE strategy_id = $1`,
-		subStrategyID,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: decrement subscribers: %w", err)
+	// 5. Deactivate subscription and decrement counter.
+	if err := s.deactivateRefundSubscription(ctx, tx, sid, subStrategyID); err != nil {
+		return nil, err
 	}
 
 	return &RefundResult{
@@ -272,4 +118,164 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 		AmountRefunded: absAmount,
 		BalanceAfter:   buyerBalAfter,
 	}, nil
+}
+
+func (s *Service) validateRefundSubscription(ctx context.Context, tx pgx.Tx, uid, sid uuid.UUID) (subTargetUserID, subStrategyID string, subBundleID *uuid.UUID, err error) {
+	var subKind, idemKey string
+	var subActive bool
+	err = tx.QueryRow(ctx,
+		`SELECT target_user_id::text, target_strategy_id::text, kind, active, idempotency_key, bundle_id
+		 FROM user_subscriptions WHERE id = $1 AND subscriber_user_id = $2 FOR UPDATE`,
+		sid, uid,
+	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &idemKey, &subBundleID)
+	if err != nil {
+		return "", "", nil, fmt.Errorf("marketplace: subscription not found")
+	}
+	if !subActive {
+		return "", "", nil, fmt.Errorf("marketplace: subscription already inactive")
+	}
+	if subKind != SubKindPurchase {
+		return "", "", nil, fmt.Errorf("marketplace: only purchased subscriptions can be refunded")
+	}
+	if idemKey == "" {
+		return "", "", nil, fmt.Errorf("marketplace: subscription missing idempotency key")
+	}
+
+	var activeSchedules int
+	err = tx.QueryRow(ctx,
+		`SELECT count(*) FROM strategy_schedules
+		 WHERE template_id = $1 AND user_id = $2 AND is_active = true`,
+		subStrategyID, uid,
+	).Scan(&activeSchedules)
+	if err != nil {
+		return "", "", nil, fmt.Errorf("marketplace: check active schedules: %w", err)
+	}
+	if activeSchedules > 0 {
+		return "", "", nil, fmt.Errorf("marketplace: strategy has active live schedules")
+	}
+	return subTargetUserID, subStrategyID, subBundleID, nil
+}
+
+func (s *Service) reverseSettlement(ctx context.Context, tx pgx.Tx, sid, uid uuid.UUID, subTargetUserID string, subBundleID *uuid.UUID) error {
+	var settlementStatus, settlementID, providerAmount, platformFee string
+	err := tx.QueryRow(ctx,
+		`SELECT status, id::text, provider_amount::text, platform_fee::text
+		 FROM marketplace_settlements WHERE purchase_id = $1 FOR UPDATE`,
+		sid,
+	).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
+	if err != nil && subBundleID != nil {
+		err = tx.QueryRow(ctx,
+			`SELECT status, id::text, provider_amount::text, platform_fee::text
+			 FROM marketplace_settlements
+			 WHERE bundle_id = $1 AND buyer_id = $2
+			 ORDER BY created_at DESC LIMIT 1 FOR UPDATE`,
+			*subBundleID, uid,
+		).Scan(&settlementStatus, &settlementID, &providerAmount, &platformFee)
+	}
+	if err != nil {
+		s.log.Warn("marketplace: settlement not found for subscription, skipping settlement reversal",
+			zap.String("subID", sid.String()), zap.Error(err))
+		return nil
+	}
+	if settlementID == "" {
+		return nil
+	}
+
+	switch settlementStatus {
+	case SettlementStatusFrozen:
+		_, err = tx.Exec(ctx,
+			`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
+			settlementID, time.Now(),
+		)
+		if err != nil {
+			return fmt.Errorf("marketplace: mark settlement refunded: %w", err)
+		}
+
+	case SettlementStatusSettled:
+		var reversalFailed bool
+		var reversalNote string
+
+		pubUUID, perr := uuid.Parse(subTargetUserID)
+		if perr != nil {
+			return fmt.Errorf("marketplace: invalid publisher_id in subscription: %w", perr)
+		}
+		var pubWalletID uuid.UUID
+		err = tx.QueryRow(ctx,
+			`SELECT id FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+			pubUUID,
+		).Scan(&pubWalletID)
+		if err == nil {
+			negPub := "-" + providerAmount
+			revDesc := fmt.Sprintf("Refund reversal for subscription %s", sid)
+			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pubUUID,
+				negPub, TxTypeRefundReversal, revDesc, nil, IdemKeyRev+sid.String())
+			if err != nil {
+				reversalFailed = true
+				reversalNote += fmt.Sprintf("publisher reversal failed: %s; ", err.Error())
+				s.log.Warn("marketplace: refund reversal failed (insufficient publisher balance)",
+					zap.String("subID", sid.String()), zap.Error(err))
+			}
+		}
+
+		if platformFee != "0.00" && platformFee != "" {
+			var sysWalletID uuid.UUID
+			err = tx.QueryRow(ctx,
+				`INSERT INTO user_wallets (user_id) VALUES ($1)
+				 ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id
+				 RETURNING id`,
+				SystemUserID,
+			).Scan(&sysWalletID)
+			if err == nil {
+				negFee := "-" + platformFee
+				feeRevDesc := fmt.Sprintf("Platform fee reversal for subscription %s", sid)
+				_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
+					negFee, TxTypeRefundReversal, feeRevDesc, nil, IdemKeyFeeRev+sid.String())
+				if err != nil {
+					reversalFailed = true
+					reversalNote += fmt.Sprintf("platform fee reversal failed: %s; ", err.Error())
+					s.log.Warn("marketplace: platform fee reversal failed",
+						zap.String("subID", sid.String()), zap.Error(err))
+				}
+			}
+		}
+
+		if reversalFailed {
+			_, err = tx.Exec(ctx,
+				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2,
+				 reversal_failed = true, reversal_failure_note = $3 WHERE id = $1`,
+				settlementID, time.Now(), reversalNote,
+			)
+		} else {
+			_, err = tx.Exec(ctx,
+				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
+				settlementID, time.Now(),
+			)
+		}
+		if err != nil {
+			return fmt.Errorf("marketplace: mark settled refund: %w", err)
+		}
+
+	case SettlementStatusRefunded:
+		return fmt.Errorf("marketplace: settlement already refunded")
+	}
+	return nil
+}
+
+func (s *Service) deactivateRefundSubscription(ctx context.Context, tx pgx.Tx, sid uuid.UUID, subStrategyID string) error {
+	_, err := tx.Exec(ctx,
+		`UPDATE user_subscriptions SET active = false WHERE id = $1`,
+		sid,
+	)
+	if err != nil {
+		return fmt.Errorf("marketplace: deactivate subscription: %w", err)
+	}
+	_, err = tx.Exec(ctx,
+		`UPDATE marketplace_strategies SET total_subscribers = GREATEST(total_subscribers - 1, 0)
+		 WHERE strategy_id = $1`,
+		subStrategyID,
+	)
+	if err != nil {
+		return fmt.Errorf("marketplace: decrement subscribers: %w", err)
+	}
+	return nil
 }

@@ -83,15 +83,11 @@ func PreprocessMQL(source string) string {
 	lines := strings.Split(source, "\n")
 	defines := make(map[string]string)
 	var result []string
-
-	// Conditional compilation stack: each entry is true if the current
-	// block should be included (all enclosing #ifdef/#ifndef evaluated true).
 	var condStack []bool
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
-		// Check if we're inside a skipped conditional block
 		skipped := false
 		for _, active := range condStack {
 			if !active {
@@ -100,89 +96,21 @@ func PreprocessMQL(source string) string {
 			}
 		}
 
-		// #define NAME value
-		if strings.HasPrefix(trimmed, "#define ") {
-			if !skipped {
-				parts := strings.SplitN(trimmed[8:], " ", 2)
-				if len(parts) >= 2 {
-					key := strings.TrimSpace(parts[0])
-					val := strings.TrimSpace(parts[1])
-					defines[key] = val
-				}
-			}
-			result = append(result, line) // Keep for tree-sitter
+		if handled, out := handlePreprocessorDirective(trimmed, line, skipped, defines, &condStack); handled {
+			result = append(result, out)
 			continue
 		}
 
-		// #undef NAME — remove from defines
-		if strings.HasPrefix(trimmed, "#undef ") {
-			if !skipped {
-				key := strings.TrimSpace(trimmed[7:])
-				delete(defines, key)
-			}
-			result = append(result, "")
-			continue
-		}
-
-		// #ifdef NAME — include block if NAME is defined
-		if strings.HasPrefix(trimmed, "#ifdef ") {
-			name := strings.TrimSpace(trimmed[7:])
-			condStack = append(condStack, !skipped && defines[name] != "")
-			result = append(result, "")
-			continue
-		}
-
-		// #ifndef NAME — include block if NAME is NOT defined
-		if strings.HasPrefix(trimmed, "#ifndef ") {
-			name := strings.TrimSpace(trimmed[8:])
-			condStack = append(condStack, !skipped && defines[name] == "")
-			result = append(result, "")
-			continue
-		}
-
-		// #else — flip the innermost condition
-		if trimmed == "#else" {
-			if len(condStack) > 0 {
-				// Check if any outer condition is false — if so, #else can't reactivate
-				outerSkipped := false
-				for i := 0; i < len(condStack)-1; i++ {
-					if !condStack[i] {
-						outerSkipped = true
-						break
-					}
-				}
-				if outerSkipped {
-					condStack[len(condStack)-1] = false
-				} else {
-					condStack[len(condStack)-1] = !condStack[len(condStack)-1]
-				}
-			}
-			result = append(result, "")
-			continue
-		}
-
-		// #endif — pop the condition stack
-		if trimmed == "#endif" {
-			if len(condStack) > 0 {
-				condStack = condStack[:len(condStack)-1]
-			}
-			result = append(result, "")
-			continue
-		}
-
-		// Skip lines inside excluded conditional blocks
 		if skipped {
 			result = append(result, "")
 			continue
 		}
 
-		// #property, #import — strip but keep empty line for line numbers
 		if strings.HasPrefix(trimmed, "#property ") || strings.HasPrefix(trimmed, "#import ") {
 			result = append(result, "")
 			continue
 		}
 
-		// #include — inject stub declarations for known headers, or keep for tree-sitter
 		if strings.HasPrefix(trimmed, "#include ") {
 			stub := includeStub(trimmed)
 			if stub != "" {
@@ -193,22 +121,71 @@ func PreprocessMQL(source string) string {
 			continue
 		}
 
-		// Apply #define substitutions
 		processed := line
 		for key, val := range defines {
 			processed = replaceWord(processed, key, val)
 		}
-
-		// Transform 'input EnumType name = value;' → 'extern int name = value;'
 		processed = rewriteInputEnum(processed)
-
-		// Transform MQL datetime literals D'YYYY.MM.DD' → Unix millisecond timestamp
 		processed = rewriteDatetimeLiteral(processed)
-
 		result = append(result, processed)
 	}
 
 	return strings.Join(result, "\n")
+}
+
+func handlePreprocessorDirective(trimmed, line string, skipped bool, defines map[string]string, condStack *[]bool) (handled bool, out string) {
+	if strings.HasPrefix(trimmed, "#define ") {
+		if !skipped {
+			parts := strings.SplitN(trimmed[8:], " ", 2)
+			if len(parts) >= 2 {
+				key := strings.TrimSpace(parts[0])
+				val := strings.TrimSpace(parts[1])
+				defines[key] = val
+			}
+		}
+		return true, line
+	}
+	if strings.HasPrefix(trimmed, "#undef ") {
+		if !skipped {
+			key := strings.TrimSpace(trimmed[7:])
+			delete(defines, key)
+		}
+		return true, ""
+	}
+	if strings.HasPrefix(trimmed, "#ifdef ") {
+		name := strings.TrimSpace(trimmed[7:])
+		*condStack = append(*condStack, !skipped && defines[name] != "")
+		return true, ""
+	}
+	if strings.HasPrefix(trimmed, "#ifndef ") {
+		name := strings.TrimSpace(trimmed[8:])
+		*condStack = append(*condStack, !skipped && defines[name] == "")
+		return true, ""
+	}
+	if trimmed == "#else" {
+		if len(*condStack) > 0 {
+			outerSkipped := false
+			for i := 0; i < len(*condStack)-1; i++ {
+				if !(*condStack)[i] {
+					outerSkipped = true
+					break
+				}
+			}
+			if outerSkipped {
+				(*condStack)[len(*condStack)-1] = false
+			} else {
+				(*condStack)[len(*condStack)-1] = !(*condStack)[len(*condStack)-1]
+			}
+		}
+		return true, ""
+	}
+	if trimmed == "#endif" {
+		if len(*condStack) > 0 {
+			*condStack = (*condStack)[:len(*condStack)-1]
+		}
+		return true, ""
+	}
+	return false, ""
 }
 
 // rewriteInputEnum transforms 'input EnumType name = value;' → 'extern int name = value;'

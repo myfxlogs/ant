@@ -62,7 +62,6 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	// 0. Idempotency check inside transaction — serialized to prevent races.
 	if idempotencyKey != "" {
 		existing, err := s.lookupExistingPurchase(ctx, tx, idempotencyKey, uid)
 		if err == nil {
@@ -71,76 +70,41 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		}
 	}
 
-	// 1. Look up strategy price, publisher, platform fee, and refund window (source of truth from DB).
-	var priceModel string
-	var priceAmountStr string
-	var strategyTitle string
-	var dbPublisherID string
-	var dbRefundWindowDays int
-	err = tx.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text, COALESCE(refund_window_days, 7)
-		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
-		sid,
-	).Scan(&priceModel, &priceAmountStr, &strategyTitle, &dbPublisherID, &dbRefundWindowDays)
+	strat, err := s.fetchStrategyForPurchase(ctx, tx, sid)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: strategy not published")
-	}
-	priceDec, err := decimal.NewFromString(priceAmountStr)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: invalid price_amount in DB: %w", err)
-	}
-	// Use tiered fee rate based on publisher's sales volume.
-	// Read inside the transaction for snapshot consistency.
-	pid, err := uuid.Parse(dbPublisherID)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: invalid publisher_id in DB: %w", err)
+		return nil, err
 	}
 
-	// Phase 5.4: Lazy settlement — settle publisher's expired frozen balances
-	// before fee tier calculation so settled sales count is up-to-date.
-	if _, err := s.SettleExpired(ctx, pid.String()); err != nil {
+	if _, err := s.SettleExpired(ctx, strat.publisherID.String()); err != nil {
 		s.log.Warn("purchase: lazy settlement failed for publisher",
-			zap.String("publisherID", pid.String()), zap.Error(err))
+			zap.String("publisherID", strat.publisherID.String()), zap.Error(err))
 	}
 
-	feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, pid.String())
+	feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, strat.publisherID.String())
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: get effective fee rate: %w", err)
 	}
-	if (priceModel != PriceModelOnce && priceModel != PriceModelSubscription) || !priceDec.IsPositive() {
+	if (strat.priceModel != PriceModelOnce && strat.priceModel != PriceModelSubscription) || !strat.price.IsPositive() {
 		return nil, fmt.Errorf("marketplace: strategy is not purchasable")
 	}
 
-	// Apply coupon if provided (validated inside the transaction to prevent TOCTOU race).
-	finalAmount := priceDec
-	var couponID string
-	if couponCode != "" {
-		cp, err := s.validateCouponTx(ctx, tx, couponCode, sid, priceDec)
-		if err != nil {
-			return nil, fmt.Errorf("marketplace: validate coupon: %w", err)
-		}
-		if !cp.Valid {
-			return nil, fmt.Errorf("marketplace: %s", cp.ErrorMessage)
-		}
-		finalAmount = cp.FinalAmount
-		couponID = cp.ID
+	finalAmount, couponID, err := s.applyCoupon(ctx, tx, couponCode, sid, strat.price)
+	if err != nil {
+		return nil, err
 	}
 
-	// Determine subscription kind and expiry.
 	subKind := SubKindPurchase
-	var expiresAt *time.Time // nil = permanent
-	if priceModel == PriceModelSubscription {
+	var expiresAt *time.Time
+	if strat.priceModel == PriceModelSubscription {
 		subKind = SubKindSubscription
 		exp := time.Now().Add(30 * 24 * time.Hour)
 		expiresAt = &exp
 	}
 
-	// 2. Guard: cannot purchase your own strategy.
-	if uid == pid {
+	if uid == strat.publisherID {
 		return nil, fmt.Errorf("marketplace: cannot purchase your own strategy")
 	}
 
-	// 3. Check for existing active subscription.
 	var existing string
 	_ = tx.QueryRow(ctx,
 		`SELECT id::text FROM user_subscriptions WHERE subscriber_user_id = $1 AND target_strategy_id = $2 AND active = true`,
@@ -150,7 +114,6 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		return nil, fmt.Errorf("marketplace: already subscribed")
 	}
 
-	// 4. Lock buyer wallet and read balance.
 	var buyerWalletID uuid.UUID
 	var buyerBalanceBefore string
 	err = tx.QueryRow(ctx,
@@ -167,8 +130,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	amountStr := finalAmount.StringFixed(2)
 	negAmountStr := "-" + amountStr
 
-	// 5. Deduct buyer balance via AdjustBalanceTx (hash chain + idempotency + ledger_outbox).
-	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strategyTitle)
+	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strat.title)
 	buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
 		negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyBuy+idempotencyKey)
 	if err != nil {
@@ -180,31 +142,13 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		buyerTxID = *buyerWallet.LastTransactionID
 	}
 
-	// 6. Compute fee split — publisher and platform amounts are recorded in a
-	//    frozen settlement row, NOT credited to wallets yet. Settlement happens
-	//    lazily after the refund window expires (see settlement.go SettleExpired).
 	feeDec := finalAmount.Mul(feeRateDec)
 	pubDec := finalAmount.Sub(feeDec)
 	pubAmountStr := pubDec.StringFixed(2)
 	feeStr := feeDec.StringFixed(2)
 
-	// 7. Insert subscription row (target_user_id = publisher from DB).
-	// M4: Convert empty idempotencyKey to nil — the partial unique index
-	// idx_subscriptions_idempotency only covers non-NULL keys, so NULL is safe.
-	subID := uuid.New()
-	var idemKey *string
-	if idempotencyKey != "" {
-		idemKey = &idempotencyKey
-	}
-	err = tx.QueryRow(ctx,
-		`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
-			 VALUES ($1, $2, $3, $4, $5, true, $6, $7)
-			 RETURNING id`,
-		subID, uid, pid, sid, subKind, idemKey, expiresAt,
-	).Scan(&subID)
+	subID, err := s.insertSubscription(ctx, tx, uid, strat.publisherID, sid, subKind, idempotencyKey, expiresAt)
 	if err != nil {
-		// If unique violation on idempotency_key, another request won the race.
-		// Return the now-existing subscription gracefully.
 		if idempotencyKey != "" && isUniqueViolation(err) {
 			_ = tx.Rollback(ctx)
 			if dup, err2 := s.lookupExistingPurchase(ctx, s.pg, idempotencyKey, uid); err2 == nil {
@@ -214,13 +158,11 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		return nil, fmt.Errorf("marketplace: create subscription: %w", err)
 	}
 
-	// 8. Create frozen settlement record — replaces direct publisher/platform credits.
-	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, pid, amountStr, feeStr, pubAmountStr, dbRefundWindowDays, nil)
+	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, strat.publisherID, amountStr, feeStr, pubAmountStr, strat.refundWindowDays, nil)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: create settlement: %w", err)
 	}
 
-	// 9. Increment total_subscribers counter.
 	_, err = tx.Exec(ctx,
 		`UPDATE marketplace_strategies SET total_subscribers = total_subscribers + 1 WHERE strategy_id = $1`,
 		sid,
@@ -229,19 +171,8 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		return nil, fmt.Errorf("marketplace: update subscriber count: %w", err)
 	}
 
-	// 10. If a coupon was applied, atomically consume it.
-	if couponID != "" {
-		var consumed bool
-		err = tx.QueryRow(ctx,
-			`UPDATE marketplace_coupons
-			 SET used_count = used_count + 1
-			 WHERE id = $1 AND (max_uses = 0 OR used_count < max_uses)
-			 RETURNING true`,
-			couponID,
-		).Scan(&consumed)
-		if err != nil {
-			return nil, fmt.Errorf("marketplace: coupon exhausted: %w", err)
-		}
+	if err := s.consumeCoupon(ctx, tx, couponID); err != nil {
+		return nil, err
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -255,6 +186,89 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		AmountCharged:  amountStr,
 		BalanceAfter:   buyerBalanceAfter,
 	}, nil
+}
+
+type strategyPurchaseInfo struct {
+	priceModel        string
+	price             decimal.Decimal
+	title             string
+	publisherID       uuid.UUID
+	refundWindowDays  int
+}
+
+func (s *Service) fetchStrategyForPurchase(ctx context.Context, tx pgx.Tx, sid uuid.UUID) (*strategyPurchaseInfo, error) {
+	var priceModel, priceAmountStr, title, dbPublisherID string
+	var refundWindowDays int
+	err := tx.QueryRow(ctx,
+		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text, COALESCE(refund_window_days, 7)
+		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
+		sid,
+	).Scan(&priceModel, &priceAmountStr, &title, &dbPublisherID, &refundWindowDays)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: strategy not published")
+	}
+	priceDec, err := decimal.NewFromString(priceAmountStr)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid price_amount in DB: %w", err)
+	}
+	pid, err := uuid.Parse(dbPublisherID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid publisher_id in DB: %w", err)
+	}
+	return &strategyPurchaseInfo{
+		priceModel:       priceModel,
+		price:            priceDec,
+		title:            title,
+		publisherID:      pid,
+		refundWindowDays: refundWindowDays,
+	}, nil
+}
+
+func (s *Service) applyCoupon(ctx context.Context, tx pgx.Tx, couponCode string, sid uuid.UUID, price decimal.Decimal) (decimal.Decimal, string, error) {
+	if couponCode == "" {
+		return price, "", nil
+	}
+	cp, err := s.validateCouponTx(ctx, tx, couponCode, sid, price)
+	if err != nil {
+		return decimal.Zero, "", fmt.Errorf("marketplace: validate coupon: %w", err)
+	}
+	if !cp.Valid {
+		return decimal.Zero, "", fmt.Errorf("marketplace: %s", cp.ErrorMessage)
+	}
+	return cp.FinalAmount, cp.ID, nil
+}
+
+func (s *Service) insertSubscription(ctx context.Context, tx pgx.Tx, uid, pid, sid uuid.UUID, subKind, idempotencyKey string, expiresAt *time.Time) (uuid.UUID, error) {
+	subID := uuid.New()
+	var idemKey *string
+	if idempotencyKey != "" {
+		idemKey = &idempotencyKey
+	}
+	err := tx.QueryRow(ctx,
+		`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active, idempotency_key, expires_at)
+		 VALUES ($1, $2, $3, $4, $5, true, $6, $7)
+		 RETURNING id`,
+		subID, uid, pid, sid, subKind, idemKey, expiresAt,
+	).Scan(&subID)
+	return subID, err
+}
+
+func (s *Service) consumeCoupon(ctx context.Context, tx pgx.Tx, couponID string) error {
+	if couponID == "" {
+		return nil
+	}
+	var consumed bool
+	err := tx.QueryRow(ctx,
+		`UPDATE marketplace_coupons
+		 SET used_count = used_count + 1
+		 WHERE id = $1 AND (max_uses = 0 OR used_count < max_uses)
+		 RETURNING true`,
+		couponID,
+	).Scan(&consumed)
+	if err != nil {
+		return fmt.Errorf("marketplace: coupon exhausted: %w", err)
+	}
+	return nil
 }
 
 // ── Admin Pricing ─────────────────────────────────────────────────────────────

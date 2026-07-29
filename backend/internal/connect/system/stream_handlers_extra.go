@@ -128,34 +128,37 @@ func (s *StreamServer) SubscribeUserSummary(
 	}
 
 	if len(accountIDs) == 0 {
-		// No accounts — stream has no data source. Send periodic empty
-		// UserSummaryEvent to prevent Cloudflare/proxy idle timeout (100s).
-		// An empty event (all zeros) IS the correct state when there are no
-		// accounts — it cannot corrupt frontend data because the keepalive
-		// only fires when accountIDs is empty. When len(accountIDs) > 0,
-		// profit subscription events provide natural keepalive.
-		ticker := time.NewTicker(15 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-ticker.C:
-				if err := stream.Send(&antv1.UserSummaryEvent{}); err != nil {
-					return connect.NewError(connect.CodeInternal, fmt.Errorf("keepalive: %w", err))
-				}
-			}
-		}
+		return s.runSummaryKeepaliveOnly(ctx, stream)
 	}
 
-	profitCh := make(chan *mthub.AccountProfitEvent, len(accountIDs)*2)
-	cancels := make([]func(), 0, len(accountIDs))
+	profitCh, cancels := s.setupProfitForwarding(ctx, accountIDs)
 	defer func() {
 		for _, c := range cancels {
 			c()
 		}
 	}()
 
+	return s.runSummaryLoop(ctx, stream, userID, profitCh)
+}
+
+func (s *StreamServer) runSummaryKeepaliveOnly(ctx context.Context, stream *connect.ServerStream[antv1.UserSummaryEvent]) error {
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			if err := stream.Send(&antv1.UserSummaryEvent{}); err != nil {
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("keepalive: %w", err))
+			}
+		}
+	}
+}
+
+func (s *StreamServer) setupProfitForwarding(ctx context.Context, accountIDs []string) (<-chan *mthub.AccountProfitEvent, []func()) {
+	profitCh := make(chan *mthub.AccountProfitEvent, len(accountIDs)*2)
+	cancels := make([]func(), 0, len(accountIDs))
 	for _, aid := range accountIDs {
 		ch, cancel := s.svc.SubscribeAccountProfit(ctx, aid)
 		cancels = append(cancels, cancel)
@@ -169,7 +172,10 @@ func (s *StreamServer) SubscribeUserSummary(
 			}
 		}(ch)
 	}
+	return profitCh, cancels
+}
 
+func (s *StreamServer) runSummaryLoop(ctx context.Context, stream *connect.ServerStream[antv1.UserSummaryEvent], userID string, profitCh <-chan *mthub.AccountProfitEvent) error {
 	var lastSummary time.Time
 	keepalive := time.NewTicker(30 * time.Second)
 	defer keepalive.Stop()
@@ -188,7 +194,6 @@ func (s *StreamServer) SubscribeUserSummary(
 			if !ok {
 				continue
 			}
-			// Throttle: recompute summary at most once every 5 seconds.
 			if time.Since(lastSummary) < 5*time.Second {
 				continue
 			}

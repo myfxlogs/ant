@@ -111,28 +111,7 @@ func goStrategyContractText() string {
 
 	sb.WriteString("## ⛔ 代码生成铁律 — 违反任何一条输出都会被拒绝 ⛔\n\n")
 
-	sb.WriteString("### 铁律 1：每个参数必须在 OnInit 中通过 ctx.Param() 读取，禁止硬编码\n")
-	sb.WriteString("```go\n")
-	sb.WriteString("import (\n")
-	sb.WriteString("    \"alphaforge/strategy/sdk\"\n")
-	sb.WriteString("    \"github.com/shopspring/decimal\"\n")
-	sb.WriteString(")\n\n")
-	sb.WriteString("type MyStrategy struct {\n")
-	sb.WriteString("    fastPeriod   int\n")
-	sb.WriteString("    slowPeriod   int\n")
-	sb.WriteString("    entryPct     float64\n")
-	sb.WriteString("    slPct        float64\n")
-	sb.WriteString("    tpPct        float64\n")
-	sb.WriteString("}\n\n")
-	sb.WriteString("func (s *MyStrategy) OnInit(ctx sdk.Context) error {\n")
-	sb.WriteString("    s.fastPeriod = ctx.Param(\"fast_period\", 20)\n")
-	sb.WriteString("    s.slowPeriod = ctx.Param(\"slow_period\", 50)\n")
-	sb.WriteString("    s.entryPct = ctx.Param(\"entryPct\", 0.25)\n")
-	sb.WriteString("    s.slPct = ctx.Param(\"stopLossPct\", 0.02)\n")
-	sb.WriteString("    s.tpPct = ctx.Param(\"takeProfitPct\", 0.04)\n")
-	sb.WriteString("    return nil\n")
-	sb.WriteString("}\n")
-	sb.WriteString("```\n\n")
+	sb.WriteString(goStrategyRule1Text)
 
 	sb.WriteString("### 铁律 2：持仓查询通过 ctx.Broker().Positions() — 返回 []sdk.Position\n")
 	sb.WriteString("```go\n")
@@ -193,6 +172,32 @@ func goStrategyContractText() string {
 
 	return sb.String()
 }
+
+// feedbackSystemTemplateZH is the Chinese system prompt template for feedback iteration mode.
+
+const goStrategyRule1Text = `### 铁律 1：每个参数必须在 OnInit 中通过 ctx.Param() 读取，禁止硬编码
+` + "```go\n" + `import (
+    "alphaforge/strategy/sdk"
+    "github.com/shopspring/decimal"
+)
+
+type MyStrategy struct {
+    fastPeriod   int
+    slowPeriod   int
+    entryPct     float64
+    slPct        float64
+    tpPct        float64
+}
+
+func (s *MyStrategy) OnInit(ctx sdk.Context) error {
+    s.fastPeriod = ctx.Param("fast_period", 20)
+    s.slowPeriod = ctx.Param("slow_period", 50)
+    s.entryPct = ctx.Param("entryPct", 0.25)
+    s.slPct = ctx.Param("stopLossPct", 0.02)
+    s.tpPct = ctx.Param("takeProfitPct", 0.04)
+    return nil
+}
+` + "```\n\n"
 
 // feedbackSystemTemplateZH is the Chinese system prompt template for feedback iteration mode.
 const feedbackSystemTemplateZH = `你是量化策略迭代助手。用户已查看回测结果并给出反馈，你需要：

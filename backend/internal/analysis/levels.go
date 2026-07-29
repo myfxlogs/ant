@@ -9,6 +9,16 @@ import (
 
 // detectSRLevels finds support and resistance levels using swing-point clustering.
 // Uses a window-based peak/trough detection followed by proximity clustering.
+type swingPoint struct {
+	price  float64
+	isHigh bool
+}
+
+type swingCluster struct {
+	levels []float64
+	isHigh bool
+}
+
 func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 	if len(bars) < 20 {
 		return nil
@@ -19,13 +29,40 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 		window = 2
 	}
 
-	type swingPoint struct {
-		price  float64
-		isHigh bool
+	swings := detectSwingPoints(bars, window)
+	if len(swings) < 2 {
+		return nil
 	}
-	var swings []swingPoint
 
-	// Detect swing highs and lows.
+	closes, highs, lows := extractOHLC(bars, n)
+	atrVal := atrPct(highs, lows, closes, 14)
+	avgPrice := closes[n-1]
+	clusterThreshold := avgPrice * atrVal / 100 * 0.5
+	if clusterThreshold < avgPrice*0.001 {
+		clusterThreshold = avgPrice * 0.001
+	}
+
+	clusters := clusterSwings(swings, clusterThreshold)
+	levels := clustersToLevels(clusters)
+
+	sort.Slice(levels, func(i, j int) bool {
+		return levels[i].Price > levels[j].Price
+	})
+	if len(levels) > 8 {
+		sort.Slice(levels, func(i, j int) bool {
+			return levels[i].Touches > levels[j].Touches
+		})
+		levels = levels[:8]
+		sort.Slice(levels, func(i, j int) bool {
+			return levels[i].Price > levels[j].Price
+		})
+	}
+	return levels
+}
+
+func detectSwingPoints(bars []repository.KlineBar, window int) []swingPoint {
+	n := len(bars)
+	var swings []swingPoint
 	for i := window; i < n-window; i++ {
 		isHigh := true
 		isLow := true
@@ -47,40 +84,28 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 			swings = append(swings, swingPoint{price: bars[i].Low.InexactFloat64(), isHigh: false})
 		}
 	}
+	return swings
+}
 
-	if len(swings) < 2 {
-		return nil
-	}
-
-	// Compute ATR for clustering threshold.
-	closes := make([]float64, n)
-	highs := make([]float64, n)
-	lows := make([]float64, n)
+func extractOHLC(bars []repository.KlineBar, n int) (closes, highs, lows []float64) {
+	closes = make([]float64, n)
+	highs = make([]float64, n)
+	lows = make([]float64, n)
 	for i, b := range bars {
 		closes[i] = b.Close.InexactFloat64()
 		highs[i] = b.High.InexactFloat64()
 		lows[i] = b.Low.InexactFloat64()
 	}
-	// Reverse to chronological.
 	for i, j := 0, n-1; i < j; i, j = i+1, j-1 {
 		closes[i], closes[j] = closes[j], closes[i]
 		highs[i], highs[j] = highs[j], highs[i]
 		lows[i], lows[j] = lows[j], lows[i]
 	}
-	atrVal := atrPct(highs, lows, closes, 14)
-	avgPrice := closes[n-1]
-	clusterThreshold := avgPrice * atrVal / 100 * 0.5
-	if clusterThreshold < avgPrice*0.001 {
-		clusterThreshold = avgPrice * 0.001
-	}
+	return
+}
 
-	// Cluster swing points by proximity.
-	type cluster struct {
-		levels []float64
-		isHigh bool
-	}
-	var clusters []cluster
-
+func clusterSwings(swings []swingPoint, threshold float64) []swingCluster {
+	var clusters []swingCluster
 	for _, sp := range swings {
 		merged := false
 		for ci := range clusters {
@@ -88,7 +113,7 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 				continue
 			}
 			for _, lvl := range clusters[ci].levels {
-				if math.Abs(lvl-sp.price) <= clusterThreshold {
+				if math.Abs(lvl-sp.price) <= threshold {
 					clusters[ci].levels = append(clusters[ci].levels, sp.price)
 					merged = true
 					break
@@ -99,14 +124,16 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 			}
 		}
 		if !merged {
-			clusters = append(clusters, cluster{
+			clusters = append(clusters, swingCluster{
 				levels: []float64{sp.price},
 				isHigh: sp.isHigh,
 			})
 		}
 	}
+	return clusters
+}
 
-	// Convert clusters to SRLevels.
+func clustersToLevels(clusters []swingCluster) []SRLevel {
 	var levels []SRLevel
 	for _, c := range clusters {
 		if len(c.levels) < 2 {
@@ -117,7 +144,6 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 			sum += p
 		}
 		avg := sum / float64(len(c.levels))
-
 		lvl := SRLevel{
 			Price:   math.Round(avg*1e5) / 1e5,
 			Touches: int32(len(c.levels)),
@@ -134,23 +160,6 @@ func detectSRLevels(bars []repository.KlineBar) []SRLevel {
 		}
 		levels = append(levels, lvl)
 	}
-
-	// Sort by price descending.
-	sort.Slice(levels, func(i, j int) bool {
-		return levels[i].Price > levels[j].Price
-	})
-
-	// Cap at 8 levels to avoid overwhelming output.
-	if len(levels) > 8 {
-		sort.Slice(levels, func(i, j int) bool {
-			return levels[i].Touches > levels[j].Touches
-		})
-		levels = levels[:8]
-		sort.Slice(levels, func(i, j int) bool {
-			return levels[i].Price > levels[j].Price
-		})
-	}
-
 	return levels
 }
 

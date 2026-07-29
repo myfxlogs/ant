@@ -57,18 +57,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		if err != nil {
 			g.log.Warn("mt4 order update subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			// Force disconnect so ensureConnected will do a fresh Connect
-			// with a new session on the next iteration.
-			// Skip on context cancellation — normal teardown, not a stream error.
-			if err != context.Canceled && err != context.DeadlineExceeded {
-				g.reportStatus("reconnecting", err.Error())
-				_ = g.Disconnect(ctx)
-				if g.breaker != nil {
-					g.breaker.OnFailure()
-				}
-			}
-			g.sleep(ctx, backoff)
-			backoff = minDuration(backoff*2, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff, maxBackoff)
 			continue
 		}
 
@@ -80,115 +69,121 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			if err != nil {
 				g.log.Warn("mt4 order update recv", zap.Error(err))
 				cancel()
-				// Force disconnect so ensureConnected will do a fresh Connect
-				// with a new session on the next iteration.
-				// Skip on context cancellation — normal teardown, not a stream error.
-				if err != context.Canceled && err != context.DeadlineExceeded {
-					g.reportStatus("reconnecting", err.Error())
-					_ = g.Disconnect(ctx)
-					if g.breaker != nil {
-						g.breaker.OnFailure()
-					}
-				}
+				g.handleStreamError(ctx, err, &backoff, maxBackoff)
 				break
 			}
 			s := resp.GetResult()
 			if s == nil {
 				continue
 			}
-
-			update := s.GetUpdate()
-			var updateTicket int64
-			var updateType string
-			var updateSymbol string
-			var updateVolume decimal.Decimal
-			var updateOpenPrice decimal.Decimal
-			var updateClosePrice decimal.Decimal
-			var updateProfit decimal.Decimal
-			var updateSwap decimal.Decimal
-			var updateCommission decimal.Decimal
-			var updateComment string
-			var updateOpenTime int64
-			var updateCloseTime int64
-			var updateSL decimal.Decimal
-			var updateTP decimal.Decimal
-			var updateOrderType string
-			if update != nil && update.GetOrder() != nil {
-				o := update.GetOrder()
-				updateTicket = int64(o.GetTicket())
-				updateType = mt4UpdateActionLabel(update.GetAction())
-				updateOrderType = mt4OrderOpLabel(o.GetType())
-				updateSymbol = o.GetSymbol()
-				updateVolume = decimal.NewFromFloat(o.GetLots())
-				updateOpenPrice = decimal.NewFromFloat(o.GetOpenPrice())
-				updateClosePrice = decimal.NewFromFloat(o.GetClosePrice())
-				updateProfit = decimal.NewFromFloat(o.GetProfit())
-				updateSwap = decimal.NewFromFloat(o.GetSwap())
-				updateCommission = decimal.NewFromFloat(o.GetCommission())
-				updateComment = o.GetComment()
-				updateOpenTime = o.GetOpenTime().GetSeconds()
-				updateCloseTime = o.GetCloseTime().GetSeconds()
-				updateSL = decimal.NewFromFloat(o.GetStopLoss())
-				updateTP = decimal.NewFromFloat(o.GetTakeProfit())
-			}
-
-			positions := make([]mdtick.OrderUpdatePosition, 0, len(s.GetOpenedOrders()))
-			for _, o := range s.GetOpenedOrders() {
-				positions = append(positions, mdtick.OrderUpdatePosition{
-					Ticket:       int64(o.GetTicket()),
-					Symbol:       o.GetSymbol(),
-					Type:         mt4OrderOpLabel(o.GetType()),
-					Volume:       decimal.NewFromFloat(o.GetLots()),
-					OpenPrice:    decimal.NewFromFloat(o.GetOpenPrice()),
-					CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
-					StopLoss:     decimal.NewFromFloat(o.GetStopLoss()),
-					TakeProfit:   decimal.NewFromFloat(o.GetTakeProfit()),
-					Profit:       decimal.NewFromFloat(o.GetProfit()),
-					Swap:         decimal.NewFromFloat(o.GetSwap()),
-					Commission:   decimal.NewFromFloat(o.GetCommission()),
-					Comment:      o.GetComment(),
-					OpenTime:     o.GetOpenTime().GetSeconds(),
-				})
-			}
-
-			balance := s.GetBalance()
-			// Use Decimal for financial arithmetic to avoid float64 rounding.
-			equityD := decimal.NewFromFloat(s.GetEquity())
-			balanceD := decimal.NewFromFloat(balance)
-			profitD := equityD.Sub(balanceD)
-			var profitPct float64
-			if balance > 0 {
-				profitPct = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()
-			}
-			handler(&mdtick.OrderUpdate{
-				AccountID:        g.cfg.AccountID,
-				Platform:         "mt4",
-				UpdateTicket:     updateTicket,
-				UpdateType:       updateType,
-				UpdateOrderType:  updateOrderType,
-				UpdateSymbol:     updateSymbol,
-				UpdateVolume:     updateVolume,
-				UpdateOpenPrice:  updateOpenPrice,
-				UpdateClosePrice: updateClosePrice,
-				UpdateProfit:     updateProfit,
-				UpdateSwap:       updateSwap,
-				UpdateCommission: updateCommission,
-				UpdateComment:    updateComment,
-				UpdateOpenTime:   updateOpenTime,
-				UpdateCloseTime:  updateCloseTime,
-				UpdateSL:         updateSL,
-				UpdateTP:         updateTP,
-				Balance:          balanceD,
-				Credit:           decimal.NewFromFloat(s.GetCredit()),
-				Equity:           equityD,
-				Margin:           decimal.NewFromFloat(s.GetMargin()),
-				FreeMargin:       decimal.NewFromFloat(s.GetFreeMargin()),
-				MarginLevel:      decimal.NewFromFloat(s.GetMarginLevel()),
-				Profit:           profitD,
-				ProfitPercent:    profitPct,
-				Positions:        positions,
-			})
+			handler(parseMt4OrderUpdate(s, g.cfg.AccountID))
 		}
+	}
+}
+
+func (g *Gateway) handleStreamError(ctx context.Context, err error, backoff *time.Duration, maxBackoff time.Duration) {
+	if err != context.Canceled && err != context.DeadlineExceeded {
+		g.reportStatus("reconnecting", err.Error())
+		_ = g.Disconnect(ctx)
+		if g.breaker != nil {
+			g.breaker.OnFailure()
+		}
+	}
+	g.sleep(ctx, *backoff)
+	*backoff = minDuration(*backoff*2, maxBackoff)
+}
+
+func parseMt4OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.OrderUpdate {
+	var updateTicket int64
+	var updateType string
+	var updateSymbol string
+	var updateVolume decimal.Decimal
+	var updateOpenPrice decimal.Decimal
+	var updateClosePrice decimal.Decimal
+	var updateProfit decimal.Decimal
+	var updateSwap decimal.Decimal
+	var updateCommission decimal.Decimal
+	var updateComment string
+	var updateOpenTime int64
+	var updateCloseTime int64
+	var updateSL decimal.Decimal
+	var updateTP decimal.Decimal
+	var updateOrderType string
+
+	update := s.GetUpdate()
+	if update != nil && update.GetOrder() != nil {
+		o := update.GetOrder()
+		updateTicket = int64(o.GetTicket())
+		updateType = mt4UpdateActionLabel(update.GetAction())
+		updateOrderType = mt4OrderOpLabel(o.GetType())
+		updateSymbol = o.GetSymbol()
+		updateVolume = decimal.NewFromFloat(o.GetLots())
+		updateOpenPrice = decimal.NewFromFloat(o.GetOpenPrice())
+		updateClosePrice = decimal.NewFromFloat(o.GetClosePrice())
+		updateProfit = decimal.NewFromFloat(o.GetProfit())
+		updateSwap = decimal.NewFromFloat(o.GetSwap())
+		updateCommission = decimal.NewFromFloat(o.GetCommission())
+		updateComment = o.GetComment()
+		updateOpenTime = o.GetOpenTime().GetSeconds()
+		updateCloseTime = o.GetCloseTime().GetSeconds()
+		updateSL = decimal.NewFromFloat(o.GetStopLoss())
+		updateTP = decimal.NewFromFloat(o.GetTakeProfit())
+	}
+
+	positions := make([]mdtick.OrderUpdatePosition, 0, len(s.GetOpenedOrders()))
+	for _, o := range s.GetOpenedOrders() {
+		positions = append(positions, mdtick.OrderUpdatePosition{
+			Ticket:       int64(o.GetTicket()),
+			Symbol:       o.GetSymbol(),
+			Type:         mt4OrderOpLabel(o.GetType()),
+			Volume:       decimal.NewFromFloat(o.GetLots()),
+			OpenPrice:    decimal.NewFromFloat(o.GetOpenPrice()),
+			CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
+			StopLoss:     decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit:   decimal.NewFromFloat(o.GetTakeProfit()),
+			Profit:       decimal.NewFromFloat(o.GetProfit()),
+			Swap:         decimal.NewFromFloat(o.GetSwap()),
+			Commission:   decimal.NewFromFloat(o.GetCommission()),
+			Comment:      o.GetComment(),
+			OpenTime:     o.GetOpenTime().GetSeconds(),
+		})
+	}
+
+	balance := s.GetBalance()
+	equityD := decimal.NewFromFloat(s.GetEquity())
+	balanceD := decimal.NewFromFloat(balance)
+	profitD := equityD.Sub(balanceD)
+	var profitPct float64
+	if balance > 0 {
+		profitPct = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()
+	}
+	return &mdtick.OrderUpdate{
+		AccountID:        accountID,
+		Platform:         "mt4",
+		UpdateTicket:     updateTicket,
+		UpdateType:       updateType,
+		UpdateOrderType:  updateOrderType,
+		UpdateSymbol:     updateSymbol,
+		UpdateVolume:     updateVolume,
+		UpdateOpenPrice:  updateOpenPrice,
+		UpdateClosePrice: updateClosePrice,
+		UpdateProfit:     updateProfit,
+		UpdateSwap:       updateSwap,
+		UpdateCommission: updateCommission,
+		UpdateComment:    updateComment,
+		UpdateOpenTime:   updateOpenTime,
+		UpdateCloseTime:  updateCloseTime,
+		UpdateSL:         updateSL,
+		UpdateTP:         updateTP,
+		Balance:          balanceD,
+		Credit:           decimal.NewFromFloat(s.GetCredit()),
+		Equity:           equityD,
+		Margin:           decimal.NewFromFloat(s.GetMargin()),
+		FreeMargin:       decimal.NewFromFloat(s.GetFreeMargin()),
+		MarginLevel:      decimal.NewFromFloat(s.GetMarginLevel()),
+		Profit:           profitD,
+		ProfitPercent:    profitPct,
+		Positions:        positions,
 	}
 }
 

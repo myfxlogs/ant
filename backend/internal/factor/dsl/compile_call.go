@@ -7,38 +7,41 @@ import (
 
 // compileCall compiles a function call expression into an evaluable Op.
 // Moved from compile.go for size compliance.
+var windowOpFactories = map[string]func(int) Op{
+	"sma":        func(n int) Op { return NewSMA(n) },
+	"ema":        func(n int) Op { return NewEMA(n) },
+	"wma":        func(n int) Op { return NewWMA(n) },
+	"std":        func(n int) Op { return NewSTD(n) },
+	"var":        func(n int) Op { return NewVAR(n) },
+	"min":        func(n int) Op { return NewMin(n) },
+	"max":        func(n int) Op { return NewMax(n) },
+	"sum":        func(n int) Op { return NewSum(n) },
+	"ref":        func(n int) Op { return NewRef(n) },
+	"delta":      func(n int) Op { return NewDelta(n) },
+	"pct_change": func(n int) Op { return NewPctChange(n) },
+	"zscore":     func(n int) Op { return NewZScore(n) },
+	"rank":       func(n int) Op { return NewRank(n) },
+	"rsi":        func(n int) Op { return NewRSI(n) },
+	"atr":        func(n int) Op { return NewATR(n) },
+}
+
+func (c *Compiler) compileWindowOp(n *CallExpr) (Op, bool) {
+	factory, ok := windowOpFactories[strings.ToLower(n.Name)]
+	if !ok {
+		return nil, false
+	}
+	op, err := c.newWindowOp(n.Args, factory)
+	if err != nil {
+		return nil, false
+	}
+	return op, true
+}
+
 func (c *Compiler) compileCall(n *CallExpr) (Op, error) {
+	if op, ok := c.compileWindowOp(n); ok {
+		return op, nil
+	}
 	switch strings.ToLower(n.Name) {
-	case "sma":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewSMA(n) })
-	case "ema":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewEMA(n) })
-	case "wma":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewWMA(n) })
-	case "std":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewSTD(n) })
-	case "var":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewVAR(n) })
-	case "min":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewMin(n) })
-	case "max":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewMax(n) })
-	case "sum":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewSum(n) })
-	case "ref":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewRef(n) })
-	case "delta":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewDelta(n) })
-	case "pct_change":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewPctChange(n) })
-	case "zscore":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewZScore(n) })
-	case "rank":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewRank(n) })
-	case "rsi":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewRSI(n) })
-	case "atr":
-		return c.newWindowOp(n.Args, func(n int) Op { return NewATR(n) })
 	case "abs", "sign", "log", "exp", "sqrt":
 		inner, err := c.compileNode(n.Args[0])
 		if err != nil {

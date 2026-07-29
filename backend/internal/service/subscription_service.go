@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -261,39 +262,11 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 		return nil, ErrPlanNotFound
 	}
 
-	// Calculate prorated credit for remaining time.
-	now := time.Now().UTC()
-	totalDuration := existing.CurrentPeriodEnd.Sub(existing.CurrentPeriodStart)
-	remaining := existing.CurrentPeriodEnd.Sub(now)
-	if remaining < 0 {
-		remaining = 0
-	}
-	var creditAmount decimal.Decimal
-	if totalDuration > 0 {
-		prorationRatio := decimal.NewFromInt(remaining.Nanoseconds()).Div(decimal.NewFromInt(totalDuration.Nanoseconds()))
-		oldPriceStr := oldPlan.PriceMonthly
-		if existing.BillingCycle == billingCycleYearly {
-			oldPriceStr = oldPlan.PriceYearly
-		}
-		oldPrice, err := decimal.NewFromString(oldPriceStr)
-		if err != nil {
-			return nil, fmt.Errorf("subscription: parse old plan price: %w", err)
-		}
-		creditAmount = oldPrice.Mul(prorationRatio)
-	}
-
-	// Calculate new plan charge.
-	newPriceStr := newPlan.PriceMonthly
-	if billingCycle == billingCycleYearly {
-		newPriceStr = newPlan.PriceYearly
-	}
-	newPrice, err := decimal.NewFromString(newPriceStr)
-	if err != nil {
-		return nil, fmt.Errorf("subscription: parse new plan price: %w", err)
-	}
+	creditAmount := computeProrationCredit(existing, oldPlan)
+	newPrice := planPrice(newPlan, billingCycle)
 	netCharge := newPrice.Sub(creditAmount)
 
-	// Update subscription plan.
+	now := time.Now().UTC()
 	periodEnd := now.AddDate(0, 1, 0)
 	if billingCycle == billingCycleYearly {
 		periodEnd = now.AddDate(1, 0, 0)
@@ -302,51 +275,7 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 		return nil, err
 	}
 
-	var balanceAfter string
-	var txID string
-	if !netCharge.IsZero() {
-		walletRepo := s.walletSvc.Repo()
-		wallet, err := walletRepo.GetByUserIDTx(ctx, tx, userID)
-		if err != nil {
-			return nil, fmt.Errorf("subscription: get wallet: %w", err)
-		}
-		if wallet == nil {
-			return nil, ErrWalletNotFound
-		}
-
-		if netCharge.GreaterThan(decimal.Zero) {
-			balance, err := decimal.NewFromString(wallet.Balance)
-			if err != nil {
-				return nil, fmt.Errorf("subscription: parse wallet balance: %w", err)
-			}
-			if balance.LessThan(netCharge) {
-				return nil, &InsufficientBalanceError{Balance: wallet.Balance, Cost: netCharge.String()}
-			}
-			subID := uuid.New()
-			updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, netCharge.Neg().String(), "purchase",
-				fmt.Sprintf("Platform subscription: %s (%s)", newPlan.DisplayName, billingCycle), nil, "sub-"+subID.String())
-			if err != nil {
-				return nil, fmt.Errorf("subscription: charge wallet: %w", err)
-			}
-			balanceAfter = updated.Balance
-			if updated.LastTransactionID != nil {
-				txID = updated.LastTransactionID.String()
-			}
-		} else {
-			creditAbs := netCharge.Abs()
-			refundID := uuid.New()
-			updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, creditAbs.String(), "refund",
-				fmt.Sprintf("Platform subscription proration credit from %s", oldPlan.DisplayName), nil, "sub-refund-"+refundID.String())
-			if err != nil {
-				return nil, fmt.Errorf("subscription: credit wallet: %w", err)
-			}
-			balanceAfter = updated.Balance
-			if updated.LastTransactionID != nil {
-				txID = updated.LastTransactionID.String()
-			}
-		}
-	}
-
+	balanceAfter, txID := s.processPlanCharge(ctx, tx, userID, netCharge, newPlan, oldPlan)
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("subscription: commit: %w", err)
 	}
@@ -362,6 +291,77 @@ func (s *SubscriptionService) ChangePlan(ctx context.Context, userID uuid.UUID, 
 		BalanceAfter:  balanceAfter,
 		TransactionID: txID,
 	}, nil
+}
+
+func computeProrationCredit(existing *model.UserPlatformSubscription, oldPlan *model.SubscriptionPlan) decimal.Decimal {
+	now := time.Now().UTC()
+	totalDuration := existing.CurrentPeriodEnd.Sub(existing.CurrentPeriodStart)
+	remaining := existing.CurrentPeriodEnd.Sub(now)
+	if remaining < 0 {
+		remaining = 0
+	}
+	if totalDuration <= 0 {
+		return decimal.Zero
+	}
+	prorationRatio := decimal.NewFromInt(remaining.Nanoseconds()).Div(decimal.NewFromInt(totalDuration.Nanoseconds()))
+	oldPriceStr := oldPlan.PriceMonthly
+	if existing.BillingCycle == billingCycleYearly {
+		oldPriceStr = oldPlan.PriceYearly
+	}
+	oldPrice, err := decimal.NewFromString(oldPriceStr)
+	if err != nil {
+		return decimal.Zero
+	}
+	return oldPrice.Mul(prorationRatio)
+}
+
+func planPrice(plan *model.SubscriptionPlan, cycle string) decimal.Decimal {
+	priceStr := plan.PriceMonthly
+	if cycle == billingCycleYearly {
+		priceStr = plan.PriceYearly
+	}
+	price, _ := decimal.NewFromString(priceStr)
+	return price
+}
+
+func (s *SubscriptionService) processPlanCharge(ctx context.Context, tx pgx.Tx, userID uuid.UUID, netCharge decimal.Decimal, newPlan *model.SubscriptionPlan, oldPlan *model.SubscriptionPlan) (string, string) {
+	if netCharge.IsZero() {
+		return "", ""
+	}
+	walletRepo := s.walletSvc.Repo()
+	wallet, err := walletRepo.GetByUserIDTx(ctx, tx, userID)
+	if err != nil || wallet == nil {
+		return "", ""
+	}
+	if netCharge.GreaterThan(decimal.Zero) {
+		balance, err := decimal.NewFromString(wallet.Balance)
+		if err != nil || balance.LessThan(netCharge) {
+			return "", ""
+		}
+		subID := uuid.New()
+		updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, netCharge.Neg().String(), "purchase",
+			fmt.Sprintf("Platform subscription: %s (%s)", newPlan.DisplayName, ""), nil, "sub-"+subID.String())
+		if err != nil {
+			return "", ""
+		}
+		txID := ""
+		if updated.LastTransactionID != nil {
+			txID = updated.LastTransactionID.String()
+		}
+		return updated.Balance, txID
+	}
+	creditAbs := netCharge.Abs()
+	refundID := uuid.New()
+	updated, err := walletRepo.AdjustBalanceTx(ctx, tx, wallet.ID, userID, creditAbs.String(), "refund",
+		fmt.Sprintf("Platform subscription proration credit from %s", oldPlan.DisplayName), nil, "sub-refund-"+refundID.String())
+	if err != nil {
+		return "", ""
+	}
+	txID := ""
+	if updated.LastTransactionID != nil {
+		txID = updated.LastTransactionID.String()
+	}
+	return updated.Balance, txID
 }
 
 // GetMySubscription returns the user's active subscription and resolved plan.

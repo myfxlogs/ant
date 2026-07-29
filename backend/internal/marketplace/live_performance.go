@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
@@ -247,10 +248,27 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	}
 
 	// Recompute summary from all daily records.
+	if err := s.recomputePerformanceSummary(ctx, tx, sid, aid, today, prevEquity); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("marketplace: upsert daily perf commit: %w", err)
+	}
+
+	// Notify subscribers of performance anomalies (push-first, no cron).
+	var title string
+	_ = s.pg.QueryRow(context.Background(), `SELECT COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id = $1`, sid).Scan(&title)
+	go s.notifyPerformanceAnomaly(context.WithoutCancel(ctx), sid, title, dailyReturn, drawdown)
+
+	return nil
+}
+
+func (s *Service) recomputePerformanceSummary(ctx context.Context, tx pgx.Tx, sid, aid uuid.UUID, today time.Time, prevEquity decimal.Decimal) error {
 	var totalReturn, maxDrawdown decimal.Decimal
 	var allTrades, allWins int32
 	var firstDate, lastDate time.Time
-	err = tx.QueryRow(ctx,
+	err := tx.QueryRow(ctx,
 		`SELECT
 			   COALESCE(SUM(daily_pnl), 0),
 			   COALESCE(MAX(drawdown), 0),
@@ -265,21 +283,18 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 		return fmt.Errorf("marketplace: recompute summary: %w", err)
 	}
 
-	// Compute win rate.
 	var winRate *decimal.Decimal
 	if allTrades > 0 {
 		wr := decimal.NewFromInt(int64(allWins)).Div(decimal.NewFromInt(int64(allTrades)))
 		winRate = &wr
 	}
 
-	// Compute annualized return and Sharpe ratio if we have enough data.
 	var annualReturn, sharpeRatio *decimal.Decimal
 	daysTracked := int64(lastDate.Sub(firstDate).Hours() / 24)
 	if daysTracked > 30 && prevEquity.GreaterThan(decimal.Zero) {
 		ar := totalReturn.Div(decimal.NewFromInt(daysTracked)).Mul(decimal.NewFromInt(365))
 		annualReturn = &ar
 
-		// Sharpe: mean(dailyReturn) / stddev(dailyReturn) * sqrt(252)
 		var meanRet, stdRet decimal.Decimal
 		err = tx.QueryRow(ctx,
 			`SELECT COALESCE(AVG(daily_return), 0), COALESCE(STDDEV(daily_return), 0)
@@ -289,7 +304,7 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 		).Scan(&meanRet, &stdRet)
 		if err == nil {
 			if stdRet.GreaterThan(decimal.Zero) {
-				sr := meanRet.Div(stdRet).Mul(decimal.NewFromFloat(15.8745)) // sqrt(252)
+				sr := meanRet.Div(stdRet).Mul(decimal.NewFromFloat(15.8745))
 				sharpeRatio = &sr
 			}
 		}
@@ -310,16 +325,6 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	if err != nil {
 		return fmt.Errorf("marketplace: upsert summary: %w", err)
 	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("marketplace: upsert daily perf commit: %w", err)
-	}
-
-	// Notify subscribers of performance anomalies (push-first, no cron).
-	var title string
-	_ = s.pg.QueryRow(context.Background(), `SELECT COALESCE(title,'') FROM marketplace_strategies WHERE strategy_id = $1`, sid).Scan(&title)
-	go s.notifyPerformanceAnomaly(context.WithoutCancel(ctx), sid, title, dailyReturn, drawdown)
-
 	return nil
 }
 

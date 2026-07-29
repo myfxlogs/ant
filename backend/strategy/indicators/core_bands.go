@@ -102,16 +102,11 @@ func SAR(src BarSource, step, maximum decimal.Decimal, shift int) decimal.Decima
 	accel, _ := step.Float64()
 	maxVal, _ := maximum.Float64()
 
-	// Start from the oldest bar and iterate forward to the requested shift.
-	// We need to track trend direction, SAR, EP, and AF.
-
-	// Determine initial direction from the two oldest bars in our window.
 	oldest := n - 1
 	if oldest < 1 {
 		return decimal.Zero
 	}
 
-	// Start with an uptrend (SAR below price)
 	isUp := true
 	prevHigh, _ := src.High(oldest).Float64()
 	prevLow, _ := src.Low(oldest).Float64()
@@ -119,85 +114,84 @@ func SAR(src BarSource, step, maximum decimal.Decimal, shift int) decimal.Decima
 	ep := prevHigh
 	af := accel
 
-	// Iterate from oldest-1 down to shift
 	for i := oldest - 1; i >= shift; i-- {
 		high, _ := src.High(i).Float64()
 		low, _ := src.Low(i).Float64()
 
 		if isUp {
-			// SAR for this bar
-			newSAR := sar + af*(ep-sar)
-
-			// SAR cannot exceed the previous two bars' lows
-			if i+1 < n {
-				prevLow2, _ := src.Low(i + 1).Float64()
-				if newSAR > prevLow2 {
-					newSAR = prevLow2
-				}
-			}
-			if i+2 < n {
-				prevLow3, _ := src.Low(i + 2).Float64()
-				if newSAR > prevLow3 {
-					newSAR = prevLow3
-				}
-			}
-
-			// Check for reversal
-			if low < newSAR {
-				// Reverse to downtrend
-				isUp = false
-				sar = ep // SAR jumps to the old EP
-				ep = low
-				af = accel
-			} else {
-				sar = newSAR
-				if high > ep {
-					ep = high
-					if af+accel <= maxVal {
-						af += accel
-					} else {
-						af = maxVal
-					}
-				}
-			}
+			isUp, sar, ep, af = sarUptrendStep(src, i, n, sar, ep, af, accel, maxVal, high, low)
 		} else {
-			// Downtrend: SAR above price
-			newSAR := sar + af*(ep-sar)
-
-			// SAR cannot be below the previous two bars' highs
-			if i+1 < n {
-				prevHigh2, _ := src.High(i + 1).Float64()
-				if newSAR < prevHigh2 {
-					newSAR = prevHigh2
-				}
-			}
-			if i+2 < n {
-				prevHigh3, _ := src.High(i + 2).Float64()
-				if newSAR < prevHigh3 {
-					newSAR = prevHigh3
-				}
-			}
-
-			// Check for reversal
-			if high > newSAR {
-				// Reverse to uptrend
-				isUp = true
-				sar = ep
-				ep = high
-				af = accel
-			} else {
-				sar = newSAR
-				if low < ep {
-					ep = low
-					if af+accel <= maxVal {
-						af += accel
-					} else {
-						af = maxVal
-					}
-				}
-			}
+			isUp, sar, ep, af = sarDowntrendStep(src, i, n, sar, ep, af, accel, maxVal, high, low)
 		}
 	}
 
 	return decimal.NewFromFloat(sar)
+}
+
+func sarUptrendStep(src BarSource, i, n int, sar, ep, af, accel, maxVal, high, low float64) (isUp bool, newSAR, newEP, newAF float64) {
+	newSAR = sar + af*(ep-sar)
+	if i+1 < n {
+		prevLow2, _ := src.Low(i + 1).Float64()
+		if newSAR > prevLow2 {
+			newSAR = prevLow2
+		}
+	}
+	if i+2 < n {
+		prevLow3, _ := src.Low(i + 2).Float64()
+		if newSAR > prevLow3 {
+			newSAR = prevLow3
+		}
+	}
+	if low < newSAR {
+		return false, ep, low, accel
+	}
+	if high > ep {
+		newEP = high
+	} else {
+		newEP = ep
+	}
+	if newEP != ep || high > ep {
+		if af+accel <= maxVal {
+			newAF = af + accel
+		} else {
+			newAF = maxVal
+		}
+	} else {
+		newAF = af
+	}
+	return true, newSAR, newEP, newAF
+}
+
+func sarDowntrendStep(src BarSource, i, n int, sar, ep, af, accel, maxVal, high, low float64) (isUp bool, newSAR, newEP, newAF float64) {
+	newSAR = sar + af*(ep-sar)
+	if i+1 < n {
+		prevHigh2, _ := src.High(i + 1).Float64()
+		if newSAR < prevHigh2 {
+			newSAR = prevHigh2
+		}
+	}
+	if i+2 < n {
+		prevHigh3, _ := src.High(i + 2).Float64()
+		if newSAR < prevHigh3 {
+			newSAR = prevHigh3
+		}
+	}
+	if high > newSAR {
+		return true, ep, high, accel
+	}
+	if low < ep {
+		newEP = low
+	} else {
+		newEP = ep
+	}
+	if newEP != ep || low < ep {
+		if af+accel <= maxVal {
+			newAF = af + accel
+		} else {
+			newAF = maxVal
+		}
+	} else {
+		newAF = af
+	}
+	return false, newSAR, newEP, newAF
 }

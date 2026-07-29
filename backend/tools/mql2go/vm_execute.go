@@ -188,68 +188,9 @@ func (vm *VM) execute(ins Instruction) error {
 		vm.push(result)
 
 	case OP_CALL_USER:
-		nArgs := int(ins.B)
-		entryPC := ins.A
-		args := vm.popN(nArgs)
-
-		// Check call depth to prevent Go stack overflow
-		if vm.callDepth >= MaxCallDepth {
-			return fmt.Errorf("strategy exceeded max call depth (%d)", MaxCallDepth)
+		if err := vm.executeCallUser(ins); err != nil {
+			return err
 		}
-		vm.callDepth++
-
-		// Save current frame state
-		oldLocals := vm.locals
-		// Create new frame: params + local slots
-		var numLocals int
-		if fn, ok := vm.funcByEntryPC[entryPC]; ok {
-			numLocals = fn.NumLocals
-		}
-		newLocals := make([]interp.Value, numLocals)
-		copy(newLocals, args)
-
-		vm.locals = newLocals
-		// Save return PC
-		returnPC := vm.pc
-		// Set PC to function entry (skip ENTER_FUNC)
-		vm.pc = entryPC + 1
-
-		// Run until RETURN
-		for vm.pc < int32(len(vm.bc.Code)) {
-			if vm.ticks%10000 == 0 && vm.runCtx != nil {
-				select {
-				case <-vm.runCtx.Done():
-					vm.locals = oldLocals
-					vm.callDepth--
-					return vm.runCtx.Err()
-				default:
-				}
-			}
-			ins2 := vm.bc.Code[vm.pc]
-			vm.pc++
-			if ins2.Op == OP_RETURN {
-				break
-			}
-			if ins2.Op == OP_HALT {
-				break
-			}
-			vm.ticks++
-			if vm.ticks > MaxTicks {
-				vm.locals = oldLocals
-				vm.callDepth--
-				return errors.New("strategy exceeded instruction limit")
-			}
-			if err := vm.execute(ins2); err != nil {
-				vm.locals = oldLocals
-				vm.callDepth--
-				return err
-			}
-		}
-
-		// Restore frame
-		vm.locals = oldLocals
-		vm.pc = returnPC
-		vm.callDepth--
 
 	case OP_ENTER_FUNC:
 		// No-op: local frame is set up by CALL_USER
@@ -274,30 +215,12 @@ func (vm *VM) execute(ins Instruction) error {
 	// ── User array access ──
 	case OP_PUSH_ARRAY:
 		idx := vm.pop()
-		if int(ins.A) < len(vm.globals) {
-			arrVal := vm.globals[ins.A]
-			if arrVal.Kind == interp.ValArray {
-				i := int(idx.ToInt())
-				if i >= 0 && i < len(arrVal.Array) {
-					vm.push(arrVal.Array[i])
-					break
-				}
-			}
-		}
-		vm.push(interp.NoneVal())
+		vm.push(vm.executePushArray(ins, idx))
 
 	case OP_STORE_ARRAY:
 		idx := vm.pop()
 		val := vm.pop()
-		if int(ins.A) < len(vm.globals) {
-			arrVal := vm.globals[ins.A]
-			if arrVal.Kind == interp.ValArray {
-				i := int(idx.ToInt())
-				if i >= 0 && i < len(arrVal.Array) {
-					arrVal.Array[i] = val
-				}
-			}
-		}
+		vm.executeStoreArray(ins, idx, val)
 
 	// ── Field access ──
 	case OP_GET_FIELD:
@@ -315,5 +238,88 @@ func (vm *VM) execute(ins Instruction) error {
 		vm.pc = int32(len(vm.bc.Code))
 	}
 
+	return nil
+}
+
+func (vm *VM) executePushArray(ins Instruction, idx interp.Value) interp.Value {
+	if int(ins.A) < len(vm.globals) {
+		arrVal := vm.globals[ins.A]
+		if arrVal.Kind == interp.ValArray {
+			i := int(idx.ToInt())
+			if i >= 0 && i < len(arrVal.Array) {
+				return arrVal.Array[i]
+			}
+		}
+	}
+	return interp.NoneVal()
+}
+
+func (vm *VM) executeStoreArray(ins Instruction, idx, val interp.Value) {
+	if int(ins.A) >= len(vm.globals) {
+		return
+	}
+	arrVal := vm.globals[ins.A]
+	if arrVal.Kind != interp.ValArray {
+		return
+	}
+	i := int(idx.ToInt())
+	if i >= 0 && i < len(arrVal.Array) {
+		arrVal.Array[i] = val
+	}
+}
+
+func (vm *VM) executeCallUser(ins Instruction) error {
+	nArgs := int(ins.B)
+	entryPC := ins.A
+	args := vm.popN(nArgs)
+
+	if vm.callDepth >= MaxCallDepth {
+		return fmt.Errorf("strategy exceeded max call depth (%d)", MaxCallDepth)
+	}
+	vm.callDepth++
+
+	oldLocals := vm.locals
+	var numLocals int
+	if fn, ok := vm.funcByEntryPC[entryPC]; ok {
+		numLocals = fn.NumLocals
+	}
+	newLocals := make([]interp.Value, numLocals)
+	copy(newLocals, args)
+
+	vm.locals = newLocals
+	returnPC := vm.pc
+	vm.pc = entryPC + 1
+
+	for vm.pc < int32(len(vm.bc.Code)) {
+		if vm.ticks%10000 == 0 && vm.runCtx != nil {
+			select {
+			case <-vm.runCtx.Done():
+				vm.locals = oldLocals
+				vm.callDepth--
+				return vm.runCtx.Err()
+			default:
+			}
+		}
+		ins2 := vm.bc.Code[vm.pc]
+		vm.pc++
+		if ins2.Op == OP_RETURN || ins2.Op == OP_HALT {
+			break
+		}
+		vm.ticks++
+		if vm.ticks > MaxTicks {
+			vm.locals = oldLocals
+			vm.callDepth--
+			return errors.New("strategy exceeded instruction limit")
+		}
+		if err := vm.execute(ins2); err != nil {
+			vm.locals = oldLocals
+			vm.callDepth--
+			return err
+		}
+	}
+
+	vm.locals = oldLocals
+	vm.pc = returnPC
+	vm.callDepth--
 	return nil
 }

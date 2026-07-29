@@ -35,59 +35,67 @@ type aiServicesDeps struct {
 	gateEvalServer *ai.GateEvalServer
 }
 
+// aiServicesParams holds parameters for setupAIServices.
+type aiServicesParams struct {
+	Ctx              context.Context
+	Mux              *http.ServeMux
+	Pool             *pgxpool.Pool
+	Cfg              *config.Config
+	UserRepo         *repository.UserRepository
+	MarketDataRepo   repository.MarketDataStore
+	PlatformSvc      *service.PlatformService
+	MktplaceSvc      *marketplace.Service
+	MktplaceHandler  *mktplace.MarketplaceServer
+	QuotaChecker     *service.QuotaChecker
+	WalletSvc        *service.WalletService
+	ConvRepo         *repository.AIConversationRepository
+	Session          *internalai.ConversationSession
+	BacktestRunRepo  *repository.BacktestRunRepository
+	Log              *zap.Logger
+	OtelInterceptor  connectrpc.Interceptor
+	AuthInterceptor  connectrpc.Interceptor
+}
+
 // setupAIServices wires all AI-related services and returns the shared AI service
 // and agent gateway for use by downstream handlers.
-func setupAIServices(
-	ctx context.Context,
-	mux *http.ServeMux,
-	pool *pgxpool.Pool,
-	cfg *config.Config,
-	userRepo *repository.UserRepository,
-	marketDataRepo repository.MarketDataStore,
-	platformSvc *service.PlatformService,
-	mktplaceSvc *marketplace.Service,
-	mktplaceHandler *mktplace.MarketplaceServer,
-	quotaChecker *service.QuotaChecker,
-	walletSvc *service.WalletService,
-	convRepo *repository.AIConversationRepository,
-	session *internalai.ConversationSession,
-	backtestRunRepo *repository.BacktestRunRepository,
-	log *zap.Logger,
-	otelInterceptor connectrpc.Interceptor,
-	authInterceptor connectrpc.Interceptor,
-) aiServicesDeps {
+func setupAIServices(p aiServicesParams) aiServicesDeps {
+	ctx := p.Ctx
+	mux := p.Mux
+	pool := p.Pool
+	cfg := p.Cfg
+	log := p.Log
 	aiRepo := repository.NewSystemAIConfigRepository(pool)
 	var aiBox *secretbox.Box
 	if mk := cfg.AntMasterKey; mk != "" {
 		aiBox = secretbox.New([]byte(mk))
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
-	aiSvc.SetUserRepo(userRepo)
+	aiSvc.SetUserRepo(p.UserRepo)
 	aiSvc.SetCircuitBreakerDB(&pgxCB{p: pool})
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
-	aiServer := ai.NewAIServer(aiSvc, convRepo, session, log)
+	aiServer := ai.NewAIServer(aiSvc, p.ConvRepo, p.Session, log)
 	aiServer.SetAgentDefRepo(agentDefRepo)
-	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(otelInterceptor, authInterceptor)))
-	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(otelInterceptor, authInterceptor)))
+	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
-	assetAnalyzer := analysis.NewAnalyzer(marketDataRepo, log)
-	assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, platformSvc, log)
-	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(otelInterceptor, authInterceptor)))
+	assetAnalyzer := analysis.NewAnalyzer(p.MarketDataRepo, log)
+	assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, p.PlatformSvc, log)
+	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	gatewayProviderRepo := repository.NewSystemAIProviderRepository(pool)
 	gatewayModelRepo := repository.NewAIModelRepository(pool)
 	gatewayTokenUsageRepo := repository.NewAITokenUsageRepository(pool)
-	gatewayServer := gateway.NewAIGatewayServer(gatewayProviderRepo, gatewayModelRepo, gatewayTokenUsageRepo, walletSvc, aiBox, log)
-	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(otelInterceptor, authInterceptor)))
+	gatewayServer := gateway.NewAIGatewayServer(gatewayProviderRepo, gatewayModelRepo, gatewayTokenUsageRepo, p.WalletSvc, aiBox, log)
+	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
-	wireAIBilling(aiSvc, walletSvc, gatewayServer, gatewayModelRepo, quotaChecker, gatewayTokenUsageRepo)
+	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo)
 
-	agentGateway := agent.NewGatewayServer(pool, marketDataRepo, aiSvc, log)
-	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(otelInterceptor, authInterceptor)))
+	agentGateway := agent.NewGatewayServer(pool, p.MarketDataRepo, aiSvc, log)
+	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
-	mktplaceHandler.SetGenerator(agentGateway.Generator())
+	p.MktplaceHandler.SetGenerator(agentGateway.Generator())
 	if agentGateway.Generator() != nil {
-		mktplaceSvc.SetOptimizer(agentGateway.Generator())
+		p.MktplaceSvc.SetOptimizer(agentGateway.Generator())
 	}
 
 	if pool != nil && agentGateway.HookEngine() != nil {
@@ -118,17 +126,17 @@ func setupAIServices(
 	}
 
 	// Remaining AI service registrations.
-	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
-	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, withSency(otelInterceptor, authInterceptor)))
+	codeAssistServer := ai.NewCodeAssistServer(aiSvc, p.Session, log)
+	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
-	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, withSency(otelInterceptor, authInterceptor)))
+	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	aiPrimaryServer := ai.NewAIPrimaryServer(aiSvc, log)
-	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, withSency(otelInterceptor, authInterceptor)))
-	backtestTradesServer := strategy.NewBacktestTradesServer(backtestRunRepo, log)
-	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, withSency(otelInterceptor, authInterceptor)))
-	gateEvalServer := ai.NewGateEvalServer(backtestRunRepo, log)
-	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, withSency(otelInterceptor, authInterceptor)))
-	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, backtestRunRepo, convRepo, marketDataRepo, log)
+	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	backtestTradesServer := strategy.NewBacktestTradesServer(p.BacktestRunRepo, log)
+	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	gateEvalServer := ai.NewGateEvalServer(p.BacktestRunRepo, log)
+	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, p.BacktestRunRepo, p.ConvRepo, p.MarketDataRepo, log)
 	strategyPlanServer.SetPoolAdapter(
 		func(ctx context.Context, sql string, args ...any) error {
 			_, e := pool.Exec(ctx, sql, args...)
@@ -141,7 +149,7 @@ func setupAIServices(
 			return v, err
 		},
 	)
-	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, withSency(otelInterceptor, authInterceptor)))
+	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	return aiServicesDeps{
 		aiSvc:          aiSvc,

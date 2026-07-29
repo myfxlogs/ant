@@ -92,115 +92,11 @@ func main() {
 		log.Warn("otelconnect interceptor creation failed", zap.Error(err))
 	}
 
-	// Connect to PostgreSQL
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		cfg.DBUser,
-		cfg.DBPassword,
-		cfg.DBHost,
-		cfg.DBPort,
-		cfg.DBName,
-		cfg.DBSSLMode,
-	)
-	poolCfg, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		log.Fatal("pg parse config failed", zap.Error(err))
-	}
-	if cfg.DBMaxConns > 0 {
-		poolCfg.MaxConns = int32(cfg.DBMaxConns)
-	}
-	pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
-	if err != nil {
-		log.Fatal("pg connect failed", zap.Error(err))
-	}
+	// Connect to PostgreSQL, NATS, Redis, secrets, and core services.
+	pool, nc, rdb, secClient, accountSvc, platformSvc, jwtSecret, mdStore, chStore := initInfrastructure(cfg, log)
 	defer pool.Close()
-	log.Info("pg pool configured", zap.Int32("max_conns", poolCfg.MaxConns))
-
-	// One-time migration: convert legacy JSON BYTEA columns to proto binary.
-	if err := repository.MigrateScheduleProtoColumns(context.Background(), pool); err != nil {
-		log.Warn("schedule proto migration skipped", zap.Error(err))
-	}
-	if err := repository.MigrateNotificationDataProto(context.Background(), pool); err != nil {
-		log.Warn("notification data proto migration skipped", zap.Error(err))
-	}
-
-	// PG is the system of record for market data.
-	pgStore := repository.NewPgMarketDataStore(pool, log)
-
-	// Optional ClickHouse read replica for analytical queries (200+ accounts).
-	var chStore repository.MarketDataStore
-	if cfg.CHHost != "" {
-		chConn, chErr := connectClickHouse(cfg, log)
-		if chErr != nil {
-			log.Warn("ClickHouse unavailable — running PG-only", zap.Error(chErr))
-		} else {
-			defer func() { _ = chConn.Close() }()
-			chStore = repository.NewCHMarketDataStore(chConn, log)
-			log.Info("ClickHouse read replica enabled for analytical queries")
-		}
-	}
-
-	// Multi-store: routes analytical reads to CH (if available), writes to PG.
-	mdStore := repository.NewMultiMarketDataStore(pgStore, chStore, log)
-
-	// Ensure PG market data partitions exist for current and future months.
-	repository.EnsureMarketDataPartitions(context.Background(), pool, log)
-
-	// Connect to NATS
-	natsURL := cfg.NATSURL
-	nc, err := nats.Connect(natsURL)
-	if err != nil {
-		log.Fatal("nats connect failed", zap.Error(err))
-	}
 	defer nc.Close()
-
-	// Connect to Redis
-	redisCfg := antredis.Config{
-		Host:         cfg.RedisHost,
-		Port:         6379,
-		Password:     cfg.RedisPassword,
-		DB:           0,
-		PoolSize:     10,
-		MinIdleConns: 3,
-		MaxRetries:   3,
-		DialTimeout:  5 * time.Second,
-		ReadTimeout:  3 * time.Second,
-	}
-	if p := cfg.RedisPort; p != "" {
-		_, _ = fmt.Sscanf(p, "%d", &redisCfg.Port)
-	}
-	rdb, err := antredis.Connect(context.Background(), redisCfg)
-	if err != nil {
-		log.Fatal("redis connect failed", zap.Error(err))
-	}
 	defer func() { _ = rdb.Close() }()
-
-	// --- Secrets client (decrypts account passwords and mtapi tokens) ---
-	var secClient secrets.Client
-	if mk := cfg.AntMasterKey; mk != "" {
-		var err error
-		secClient, err = secrets.New(mk, 1)
-		if err != nil {
-			log.Fatal("secrets: cannot create client from ANT_MASTER_KEY", zap.Error(err))
-		}
-		log.Info("secrets: client initialized")
-	} else {
-		log.Fatal("ANT_MASTER_KEY is required — generate one with: go run cmd/ant-vault/main.go")
-	}
-
-	// Services
-	accountSvc := service.NewAccountService(pool, secClient)
-	accountSvc.SetLogger(log)
-	if n, err := accountSvc.BackfillPlaintextCredentials(context.Background()); err != nil {
-		log.Warn("account backfill failed", zap.Error(err))
-	} else if n > 0 {
-		log.Info("account backfill migrated plaintext credentials", zap.Int("count", n))
-	}
-	platformSvc := service.NewPlatformService(pool, accountSvc)
-	platformSvc.SetLogger(log)
-	jwtSecret := cfg.JWTSecret
-	if jwtSecret == "" {
-		log.Fatal("JWT_SECRET is required")
-	}
 
 	authInterceptor := interceptor.NewAuthInterceptor(jwtSecret, nil)
 	adminInterceptor := interceptor.NewAdminInterceptor(platformSvc, log)
@@ -296,7 +192,15 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, reconcilerInst, sweepWorker = registerHandlers(ctx, mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg, secClient, mktplaceSvc)
+	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup, chainMonitor, reconcilerInst, sweepWorker = registerHandlers(ctx, handlerDeps{
+		Mux: mux, Log: log, Pool: pool, Store: mdStore, NC: nc, RDB: rdb, Cfg: cfg,
+		JWTSecret: jwtSecret, AccountSvc: accountSvc, PlatformSvc: platformSvc,
+		AuthInterceptor: authInterceptor, AdminInterceptor: adminInterceptor,
+		RateLimitInterceptor: rateLimitInterceptor, OtelInterceptor: otelInterceptor,
+		MthubSvc: mthubSvc, Hub: hub, TradeRecordRepo: tradeRecordRepo, JS: js,
+		EventStore: eventStore, ReconcileGate: reconcileGate, AnalyticsCache: analyticsCache,
+		BrokerReg: brokerReg, SecClient: secClient, MktplaceSvc: mktplaceSvc,
+	})
 	accountSyncSvc.SetNotificationSender(notifSender)
 	mktplaceSvc.SetNotificationSender(notifSender)
 
@@ -334,7 +238,7 @@ func main() {
 	}()
 
 	port := cfg.Port
-	log.Info("ant v2 starting", zap.String("port", port), zap.String("nats", natsURL))
+	log.Info("ant v2 starting", zap.String("port", port), zap.String("nats", cfg.NATSURL))
 
 	go func() {
 		<-ctx.Done()
@@ -358,6 +262,93 @@ func main() {
 
 }
 
+
+func initInfrastructure(cfg *config.Config, log *zap.Logger) (
+	pool *pgxpool.Pool, nc *nats.Conn, rdb *antredis.Client,
+	secClient secrets.Client, accountSvc *service.AccountService,
+	platformSvc *service.PlatformService, jwtSecret string,
+	mdStore, chStore repository.MarketDataStore,
+) {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
+	poolCfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		log.Fatal("pg parse config failed", zap.Error(err))
+	}
+	if cfg.DBMaxConns > 0 {
+		poolCfg.MaxConns = int32(cfg.DBMaxConns)
+	}
+	pool, err = pgxpool.NewWithConfig(context.Background(), poolCfg)
+	if err != nil {
+		log.Fatal("pg connect failed", zap.Error(err))
+	}
+	log.Info("pg pool configured", zap.Int32("max_conns", poolCfg.MaxConns))
+
+	if err := repository.MigrateScheduleProtoColumns(context.Background(), pool); err != nil {
+		log.Warn("schedule proto migration skipped", zap.Error(err))
+	}
+	if err := repository.MigrateNotificationDataProto(context.Background(), pool); err != nil {
+		log.Warn("notification data proto migration skipped", zap.Error(err))
+	}
+
+	pgStore := repository.NewPgMarketDataStore(pool, log)
+
+	if cfg.CHHost != "" {
+		chConn, chErr := connectClickHouse(cfg, log)
+		if chErr != nil {
+			log.Warn("ClickHouse unavailable — running PG-only", zap.Error(chErr))
+		} else {
+			defer func() { _ = chConn.Close() }()
+			chStore = repository.NewCHMarketDataStore(chConn, log)
+			log.Info("ClickHouse read replica enabled for analytical queries")
+		}
+	}
+	mdStore = repository.NewMultiMarketDataStore(pgStore, chStore, log)
+	repository.EnsureMarketDataPartitions(context.Background(), pool, log)
+
+	nc, err = nats.Connect(cfg.NATSURL)
+	if err != nil {
+		log.Fatal("nats connect failed", zap.Error(err))
+	}
+
+	redisCfg := antredis.Config{
+		Host: cfg.RedisHost, Port: 6379, Password: cfg.RedisPassword,
+		DB: 0, PoolSize: 10, MinIdleConns: 3, MaxRetries: 3,
+		DialTimeout: 5 * time.Second, ReadTimeout: 3 * time.Second,
+	}
+	if p := cfg.RedisPort; p != "" {
+		_, _ = fmt.Sscanf(p, "%d", &redisCfg.Port)
+	}
+	rdb, err = antredis.Connect(context.Background(), redisCfg)
+	if err != nil {
+		log.Fatal("redis connect failed", zap.Error(err))
+	}
+
+	if mk := cfg.AntMasterKey; mk != "" {
+		secClient, err = secrets.New(mk, 1)
+		if err != nil {
+			log.Fatal("secrets: cannot create client from ANT_MASTER_KEY", zap.Error(err))
+		}
+		log.Info("secrets: client initialized")
+	} else {
+		log.Fatal("ANT_MASTER_KEY is required — generate one with: go run cmd/ant-vault/main.go")
+	}
+
+	accountSvc = service.NewAccountService(pool, secClient)
+	accountSvc.SetLogger(log)
+	if n, err := accountSvc.BackfillPlaintextCredentials(context.Background()); err != nil {
+		log.Warn("account backfill failed", zap.Error(err))
+	} else if n > 0 {
+		log.Info("account backfill migrated plaintext credentials", zap.Int("count", n))
+	}
+	platformSvc = service.NewPlatformService(pool, accountSvc)
+	platformSvc.SetLogger(log)
+	jwtSecret = cfg.JWTSecret
+	if jwtSecret == "" {
+		log.Fatal("JWT_SECRET is required")
+	}
+	return
+}
 
 // connectClickHouse attempts to connect to ClickHouse for analytical read replica.
 // Returns an error if CH is unreachable — caller should gracefully degrade to PG-only.
