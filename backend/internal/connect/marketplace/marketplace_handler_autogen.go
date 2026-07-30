@@ -3,7 +3,6 @@ package marketplace
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/interceptor"
@@ -191,6 +189,40 @@ func (s *MarketplaceServer) runGeneratePipeline(
 	}
 
 	snapshotProto := buildSnapshotProto(finalResult)
+	if s.handleQualityViolations(ctx, stream, finalResult, finalSource, templateID, snapshotProto) {
+		return nil
+	}
+
+	if !autoPublish {
+		_ = stream.Send(&antv1.GenerateAndPublishEvent{
+			Stage:        "completed",
+			Message:      "Strategy generated successfully, ready for review",
+			Progress:     1.0,
+			StrategyId:   templateID,
+			PythonSource: finalSource,
+			Backtest:     buildSnapshot(finalResult),
+		})
+		return nil
+	}
+
+	return s.publishGeneratedStrategy(publishGeneratedParams{
+		ctx:           ctx,
+		stream:        stream,
+		sendErr:       sendErr,
+		uid:           uid,
+		templateID:    templateID,
+		title:         title,
+		description:   description,
+		symbol:        symbol,
+		timeframe:     timeframe,
+		riskLevel:     riskLevel,
+		snapshotProto: snapshotProto,
+		finalSource:   finalSource,
+		finalResult:   finalResult,
+	})
+}
+
+func (s *MarketplaceServer) handleQualityViolations(ctx context.Context, stream *connect.ServerStream[antv1.GenerateAndPublishEvent], finalResult *antv1.AgentBacktestResult, finalSource, templateID string, snapshotProto []byte) bool {
 	violations, qErr := s.svc.ValidateBacktestQuality(ctx, snapshotProto, templateID)
 	if qErr != nil {
 		s.log.Warn("autogen: quality validation error", zap.Error(qErr))
@@ -214,22 +246,9 @@ func (s *MarketplaceServer) runGeneratePipeline(
 			PythonSource: finalSource,
 			Violations:   violationInfos,
 		})
-		return nil
+		return true
 	}
-
-	if !autoPublish {
-		_ = stream.Send(&antv1.GenerateAndPublishEvent{
-			Stage:        "completed",
-			Message:      "Strategy generated successfully, ready for review",
-			Progress:     1.0,
-			StrategyId:   templateID,
-			PythonSource: finalSource,
-			Backtest:     buildSnapshot(finalResult),
-		})
-		return nil
-	}
-
-	return s.publishGeneratedStrategy(ctx, stream, sendErr, uid, templateID, title, description, symbol, timeframe, riskLevel, snapshotProto, finalSource, finalResult)
+	return false
 }
 
 func genStreamChunk(chunk *antv1.AgentGenerateStrategyChunk, stream *connect.ServerStream[antv1.GenerateAndPublishEvent], finalSource *string, finalResult **antv1.AgentBacktestResult, genErr *error) error {
@@ -282,14 +301,24 @@ func (s *MarketplaceServer) saveGeneratedStrategy(ctx context.Context, uid uuid.
 	return templateID, err
 }
 
-func (s *MarketplaceServer) publishGeneratedStrategy(
-	ctx context.Context,
-	stream *connect.ServerStream[antv1.GenerateAndPublishEvent],
-	sendErr func(string, string, bool) error,
-	uid uuid.UUID, templateID, title, description, symbol, timeframe, riskLevel string,
-	snapshotProto []byte, finalSource string, finalResult *antv1.AgentBacktestResult,
-) error {
-	if err := stream.Send(&antv1.GenerateAndPublishEvent{
+type publishGeneratedParams struct {
+	ctx           context.Context
+	stream        *connect.ServerStream[antv1.GenerateAndPublishEvent]
+	sendErr       func(string, string, bool) error
+	uid           uuid.UUID
+	templateID    string
+	title         string
+	description   string
+	symbol        string
+	timeframe     string
+	riskLevel     string
+	snapshotProto []byte
+	finalSource   string
+	finalResult   *antv1.AgentBacktestResult
+}
+
+func (s *MarketplaceServer) publishGeneratedStrategy(p publishGeneratedParams) error {
+	if err := p.stream.Send(&antv1.GenerateAndPublishEvent{
 		Stage:    "publishing",
 		Message:  "Publishing to marketplace...",
 		Progress: 0.95,
@@ -298,145 +327,34 @@ func (s *MarketplaceServer) publishGeneratedStrategy(
 	}
 
 	publishParams := marketplace.PublishParams{
-		UserID:               uid.String(),
-		StrategyID:           templateID,
-		Title:                title,
-		Description:          description,
+		UserID:               p.uid.String(),
+		StrategyID:           p.templateID,
+		Title:                p.title,
+		Description:          p.description,
 		PriceModel:           marketplace.PriceModelFree,
 		PriceAmount:          "0",
 		AssetClass:           "forex",
-		Symbols:              []string{symbol},
-		Timeframe:            timeframe,
-		RiskLevel:            riskLevel,
-		BacktestSnapshotProto: snapshotProto,
+		Symbols:              []string{p.symbol},
+		Timeframe:            p.timeframe,
+		RiskLevel:            p.riskLevel,
+		BacktestSnapshotProto: p.snapshotProto,
 	}
 
-	publishID, pErr := s.svc.Publish(ctx, publishParams)
+	publishID, pErr := s.svc.Publish(p.ctx, publishParams)
 	if pErr != nil {
 		s.log.Warn("autogen: publish failed", zap.Error(pErr))
-		_ = sendErr("publishing", pErr.Error(), true)
+		_ = p.sendErr("publishing", pErr.Error(), true)
 		return nil
 	}
 
-	_ = stream.Send(&antv1.GenerateAndPublishEvent{
+	_ = p.stream.Send(&antv1.GenerateAndPublishEvent{
 		Stage:        "completed",
 		Message:      "Strategy generated and published successfully",
 		Progress:     1.0,
-		StrategyId:   templateID,
+		StrategyId:   p.templateID,
 		PublishId:    publishID,
-		PythonSource: finalSource,
-		Backtest:     buildSnapshot(finalResult),
+		PythonSource: p.finalSource,
+		Backtest:     buildSnapshot(p.finalResult),
 	})
 	return nil
-}
-
-// ── GenerateFromTemplate handler ─────────────────────────────────────────────
-
-func (s *MarketplaceServer) GenerateFromTemplate(
-	ctx context.Context,
-	req *connect.Request[antv1.GenerateFromTemplateRequest],
-	stream *connect.ServerStream[antv1.GenerateAndPublishEvent],
-) error {
-	if s.gen == nil {
-		return connect.NewError(connect.CodeUnavailable, fmt.Errorf("AI strategy generation is not available"))
-	}
-	if s.pgPool == nil {
-		return connect.NewError(connect.CodeUnavailable, fmt.Errorf("database not configured"))
-	}
-
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	uid, err := uuid.Parse(userID)
-	if err != nil {
-		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id: %w", err))
-	}
-
-	msg := req.Msg
-	if msg.TemplateId == "" {
-		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("template_id is required"))
-	}
-
-	// Look up template.
-	var templateKey, templateType, nameI18n, descI18n, riskLevel string
-	err = s.pgPool.QueryRow(ctx,
-		`SELECT template_key, template_type, name_i18n, description_i18n, default_risk_level
-		 FROM strategy_parameter_templates WHERE id=$1 AND enabled=true`,
-		msg.TemplateId).Scan(&templateKey, &templateType, &nameI18n, &descI18n, &riskLevel)
-	if err != nil {
-		return connect.NewError(connect.CodeNotFound, fmt.Errorf("template not found: %w", err))
-	}
-
-	lang := langFromAccept(req.Header().Get("Accept-Language"))
-	tmplName := pickLocalized(nameI18n, lang)
-	tmplDesc := pickLocalized(descI18n, lang)
-
-	// Build natural language description from template + parameters.
-	description := fmt.Sprintf("Generate a %s strategy using the '%s' template (%s). Parameters: %s. Symbol: %s, Timeframe: %s.",
-		templateType, tmplName, tmplDesc, msg.ParametersJson, msg.Symbol, msg.Timeframe)
-
-	// Rate limit.
-	if !s.limiter().acquire(userID) {
-		return connect.NewError(connect.CodeResourceExhausted, fmt.Errorf("rate limit exceeded"))
-	}
-	defer s.limiter().release()
-
-	// Build agent request.
-	agentReq := &antv1.AgentGenerateStrategyRequest{
-		Message:   description,
-		Symbol:    msg.Symbol,
-		Timeframe: msg.Timeframe,
-		Locale:    lang,
-		BacktestConfig: &antv1.AgentBacktestConfig{
-			Symbol:    msg.Symbol,
-			Timeframe: msg.Timeframe,
-		},
-	}
-
-	// Reuse the same generation → quality → publish pipeline.
-	return s.runGeneratePipeline(ctx, uid, agentReq, description, riskLevel, msg.Symbol, msg.Timeframe, msg.AutoPublish, stream)
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-func buildSnapshotProto(result *antv1.AgentBacktestResult) []byte {
-	if result == nil {
-		return nil
-	}
-	snap := &antv1.BacktestSnapshot{
-		TotalReturn:   result.TotalReturn,
-		AnnualReturn:  result.AnnualReturn,
-		MaxDrawdown:   result.MaxDrawdown,
-		SharpeRatio:   result.SharpeRatio,
-		WinRate:       result.WinRate,
-		TotalTrades:   result.TotalTrades,
-	}
-	data, err := proto.Marshal(snap)
-	if err != nil {
-		return nil
-	}
-	return data
-}
-
-func buildSnapshot(result *antv1.AgentBacktestResult) *antv1.BacktestSnapshot {
-	if result == nil {
-		return nil
-	}
-	return &antv1.BacktestSnapshot{
-		TotalReturn:   result.TotalReturn,
-		AnnualReturn:  result.AnnualReturn,
-		MaxDrawdown:   result.MaxDrawdown,
-		SharpeRatio:   result.SharpeRatio,
-		WinRate:       result.WinRate,
-		TotalTrades:   result.TotalTrades,
-	}
-}
-
-func generateTitle(description string) string {
-	words := strings.Fields(description)
-	if len(words) > 8 {
-		words = words[:8]
-	}
-	return strings.Join(words, " ")
 }

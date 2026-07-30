@@ -50,7 +50,7 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql2go.VMRunner, params backtestParams, klines []*antv1.ExecuteKlineBar, run *repository.BacktestRun) (*antv1.ExecuteBacktestResponse, error) {
 
 	bars := klinesToBars(klines)
-	cfg := s.buildBacktestConfig(params, run, bars)
+	cfg := s.buildBacktestConfig(params, run)
 
 	if len(run.ExtraSymbols) > 0 && s.marketDataRepo != nil {
 		s.loadExtraSymbolBars(ctx, run, &cfg)
@@ -87,7 +87,7 @@ func klinesToBars(klines []*antv1.ExecuteKlineBar) []sdk.Bar {
 	return bars
 }
 
-func (s *StrategyExecutionServer) buildBacktestConfig(params backtestParams, run *repository.BacktestRun, bars []sdk.Bar) backtest.Config {
+func (s *StrategyExecutionServer) buildBacktestConfig(params backtestParams, run *repository.BacktestRun) backtest.Config {
 	cfg := backtest.Config{
 		Symbol:         run.Symbol,
 		Timeframe:      run.Timeframe,

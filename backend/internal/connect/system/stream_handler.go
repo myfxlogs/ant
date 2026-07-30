@@ -111,40 +111,55 @@ func (s *StreamServer) SubscribeEvents(
 	snapCount := make(map[string]int)
 	recentlyClosed := make(map[string]map[int64]bool)
 
-	return s.runEventLoop(ctx, sendEvent, barCh, barDropCh, orderCh, statusCh, profitCh, snapCh,
-		filterAll, accountSet, snapKnownTickets, snapCount, recentlyClosed)
+	return s.runEventLoop(eventLoopConfig{
+		ctx:          ctx,
+		sendEvent:    sendEvent,
+		barCh:        barCh,
+		barDropCh:    barDropCh,
+		orderCh:      orderCh,
+		statusCh:     statusCh,
+		profitCh:     profitCh,
+		snapCh:       snapCh,
+		filterAll:    filterAll,
+		accountSet:   accountSet,
+		snapKnown:    snapKnownTickets,
+		snapCount:    snapCount,
+		recentClosed: recentlyClosed,
+	})
 }
 
-func (s *StreamServer) runEventLoop(
-	ctx context.Context,
-	sendEvent func(*antv1.StreamEvent) error,
-	barCh <-chan *mthub.BarUpdate,
-	barDropCh <-chan *mthub.BarDropEvent,
-	orderCh <-chan *mthub.OrderEvent,
-	statusCh <-chan *mthub.AccountStatusEvent,
-	profitCh <-chan *mthub.AccountProfitEvent,
-	snapCh <-chan *mthub.PositionSnapshot,
-	filterAll bool,
-	accountSet map[string]bool,
-	snapKnownTickets map[string]map[int64]bool,
-	snapCount map[string]int,
-	recentlyClosed map[string]map[int64]bool,
-) error {
-	h := &eventLoopHandlers{s: s, filterAll: filterAll, accountSet: accountSet,
-		snapKnownTickets: snapKnownTickets, snapCount: snapCount, recentlyClosed: recentlyClosed, sendEvent: sendEvent}
+type eventLoopConfig struct {
+	ctx          context.Context
+	sendEvent    func(*antv1.StreamEvent) error
+	barCh        <-chan *mthub.BarUpdate
+	barDropCh    <-chan *mthub.BarDropEvent
+	orderCh      <-chan *mthub.OrderEvent
+	statusCh     <-chan *mthub.AccountStatusEvent
+	profitCh     <-chan *mthub.AccountProfitEvent
+	snapCh       <-chan *mthub.PositionSnapshot
+	filterAll    bool
+	accountSet   map[string]bool
+	snapKnown    map[string]map[int64]bool
+	snapCount    map[string]int
+	recentClosed map[string]map[int64]bool
+}
+
+func (s *StreamServer) runEventLoop(cfg eventLoopConfig) error {
+	h := &eventLoopHandlers{s: s, filterAll: cfg.filterAll, accountSet: cfg.accountSet,
+		snapKnownTickets: cfg.snapKnown, snapCount: cfg.snapCount, recentlyClosed: cfg.recentClosed, sendEvent: cfg.sendEvent}
 
 	keepalive := time.NewTicker(15 * time.Second)
 	defer keepalive.Stop()
 
 	cases := []reflect.SelectCase{
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(ctx.Done())},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.ctx.Done())},
 		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(keepalive.C)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(barCh)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(barDropCh)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(orderCh)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(statusCh)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(profitCh)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(snapCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.barCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.barDropCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.orderCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.statusCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.profitCh)},
+		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.snapCh)},
 	}
 
 	for {

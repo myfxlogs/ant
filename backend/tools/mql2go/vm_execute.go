@@ -50,119 +50,20 @@ func (vm *VM) runLoop(ctx context.Context) error {
 func (vm *VM) execute(ins Instruction) error {
 	switch ins.Op {
 	// ── Stack operations ──
-	case OP_PUSH_CONST:
-		vm.push(constToValue(vm.bc.Consts[ins.A]))
-
-	case OP_PUSH_VAR:
-		if int(ins.A) < len(vm.locals) {
-			vm.push(vm.locals[ins.A])
-		} else {
-			vm.push(interp.NoneVal())
-		}
-
-	case OP_PUSH_GLOBAL:
-		if int(ins.A) < len(vm.globals) {
-			vm.push(vm.globals[ins.A])
-		} else {
-			vm.push(interp.NoneVal())
-		}
-
-	case OP_STORE_VAR:
-		if int(ins.A) < len(vm.locals) {
-			vm.locals[ins.A] = vm.pop()
-		}
-
-	case OP_STORE_GLOBAL:
-		if int(ins.A) < len(vm.globals) {
-			vm.globals[ins.A] = vm.pop()
-		} else {
-			vm.pop()
-		}
-
-	case OP_POP:
-		vm.pop()
-
-	case OP_DUP:
-		if len(vm.stack) > 0 {
-			vm.push(vm.stack[len(vm.stack)-1])
-		}
-
-	case OP_SWAP:
-		if len(vm.stack) >= 2 {
-			n := len(vm.stack)
-			vm.stack[n-1], vm.stack[n-2] = vm.stack[n-2], vm.stack[n-1]
-		}
+	case OP_PUSH_CONST, OP_PUSH_VAR, OP_PUSH_GLOBAL, OP_STORE_VAR, OP_STORE_GLOBAL, OP_POP, OP_DUP, OP_SWAP:
+		vm.executeStack(ins)
 
 	// ── Arithmetic ──
-	case OP_ADD:
-		b, a := vm.pop2()
-		vm.push(vm.arith(a, b, "+"))
-
-	case OP_SUB:
-		b, a := vm.pop2()
-		vm.push(vm.arith(a, b, "-"))
-
-	case OP_MUL:
-		b, a := vm.pop2()
-		vm.push(vm.arith(a, b, "*"))
-
-	case OP_DIV:
-		b, a := vm.pop2()
-		vm.push(vm.arith(a, b, "/"))
-
-	case OP_MOD:
-		b, a := vm.pop2()
-		vm.push(vm.arith(a, b, "%"))
-
-	case OP_FLOOR_DIV:
-		b, a := vm.pop2()
-		vm.push(vm.floorDiv(a, b))
-
-	case OP_NEG:
-		a := vm.pop()
-		if a.Kind == ValDecimal {
-			vm.push(interp.DecimalVal(a.Decimal.Neg()))
-		} else {
-			vm.push(interp.IntVal(-a.ToInt()))
-		}
+	case OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_MOD, OP_FLOOR_DIV, OP_NEG:
+		vm.executeArith(ins)
 
 	// ── Comparison ──
-	case OP_EQ:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(a.Equal(b)))
-
-	case OP_NE:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(!a.Equal(b)))
-
-	case OP_LT:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(vm.compare(a, b) < 0))
-
-	case OP_LE:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(vm.compare(a, b) <= 0))
-
-	case OP_GT:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(vm.compare(a, b) > 0))
-
-	case OP_GE:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(vm.compare(a, b) >= 0))
+	case OP_EQ, OP_NE, OP_LT, OP_LE, OP_GT, OP_GE:
+		vm.executeCompare(ins)
 
 	// ── Logical ──
-	case OP_AND:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(a.IsTrue() && b.IsTrue()))
-
-	case OP_OR:
-		b, a := vm.pop2()
-		vm.push(interp.BoolVal(a.IsTrue() || b.IsTrue()))
-
-	case OP_NOT:
-		a := vm.pop()
-		vm.push(interp.BoolVal(!a.IsTrue()))
+	case OP_AND, OP_OR, OP_NOT:
+		vm.executeLogical(ins)
 
 	// ── Control flow ──
 	case OP_JMP:
@@ -239,6 +140,108 @@ func (vm *VM) execute(ins Instruction) error {
 	}
 
 	return nil
+}
+
+func (vm *VM) executeStack(ins Instruction) {
+	switch ins.Op {
+	case OP_PUSH_CONST:
+		vm.push(constToValue(vm.bc.Consts[ins.A]))
+	case OP_PUSH_VAR:
+		if int(ins.A) < len(vm.locals) {
+			vm.push(vm.locals[ins.A])
+		} else {
+			vm.push(interp.NoneVal())
+		}
+	case OP_PUSH_GLOBAL:
+		if int(ins.A) < len(vm.globals) {
+			vm.push(vm.globals[ins.A])
+		} else {
+			vm.push(interp.NoneVal())
+		}
+	case OP_STORE_VAR:
+		if int(ins.A) < len(vm.locals) {
+			vm.locals[ins.A] = vm.pop()
+		}
+	case OP_STORE_GLOBAL:
+		if int(ins.A) < len(vm.globals) {
+			vm.globals[ins.A] = vm.pop()
+		} else {
+			vm.pop()
+		}
+	case OP_POP:
+		vm.pop()
+	case OP_DUP:
+		if len(vm.stack) > 0 {
+			vm.push(vm.stack[len(vm.stack)-1])
+		}
+	case OP_SWAP:
+		if len(vm.stack) >= 2 {
+			n := len(vm.stack)
+			vm.stack[n-1], vm.stack[n-2] = vm.stack[n-2], vm.stack[n-1]
+		}
+	}
+}
+
+func (vm *VM) executeArith(ins Instruction) {
+	switch ins.Op {
+	case OP_ADD:
+		b, a := vm.pop2()
+		vm.push(vm.arith(a, b, "+"))
+	case OP_SUB:
+		b, a := vm.pop2()
+		vm.push(vm.arith(a, b, "-"))
+	case OP_MUL:
+		b, a := vm.pop2()
+		vm.push(vm.arith(a, b, "*"))
+	case OP_DIV:
+		b, a := vm.pop2()
+		vm.push(vm.arith(a, b, "/"))
+	case OP_MOD:
+		b, a := vm.pop2()
+		vm.push(vm.arith(a, b, "%"))
+	case OP_FLOOR_DIV:
+		b, a := vm.pop2()
+		vm.push(vm.floorDiv(a, b))
+	case OP_NEG:
+		a := vm.pop()
+		if a.Kind == ValDecimal {
+			vm.push(interp.DecimalVal(a.Decimal.Neg()))
+		} else {
+			vm.push(interp.IntVal(-a.ToInt()))
+		}
+	}
+}
+
+func (vm *VM) executeCompare(ins Instruction) {
+	b, a := vm.pop2()
+	switch ins.Op {
+	case OP_EQ:
+		vm.push(interp.BoolVal(a.Equal(b)))
+	case OP_NE:
+		vm.push(interp.BoolVal(!a.Equal(b)))
+	case OP_LT:
+		vm.push(interp.BoolVal(vm.compare(a, b) < 0))
+	case OP_LE:
+		vm.push(interp.BoolVal(vm.compare(a, b) <= 0))
+	case OP_GT:
+		vm.push(interp.BoolVal(vm.compare(a, b) > 0))
+	case OP_GE:
+		vm.push(interp.BoolVal(vm.compare(a, b) >= 0))
+	}
+}
+
+func (vm *VM) executeLogical(ins Instruction) {
+	switch ins.Op {
+	case OP_AND:
+		b, a := vm.pop2()
+		vm.push(interp.BoolVal(a.IsTrue() && b.IsTrue()))
+	case OP_OR:
+		b, a := vm.pop2()
+		vm.push(interp.BoolVal(a.IsTrue() || b.IsTrue()))
+	case OP_NOT:
+		a := vm.pop()
+		vm.push(interp.BoolVal(!a.IsTrue()))
+	}
 }
 
 func (vm *VM) executePushArray(ins Instruction, idx interp.Value) interp.Value {

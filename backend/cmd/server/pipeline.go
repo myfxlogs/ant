@@ -24,62 +24,64 @@ import (
 	"alphaforge/internal/service"
 )
 
-func startMdGatewayPipeline(
-	pipelineCtx context.Context,
-	log *zap.Logger,
-	pool *pgxpool.Pool,
-	store repository.MarketDataStore,
-	chStore repository.MarketDataStore,
-	nc *nats.Conn,
-	spillDir string,
-	secClient secrets.Client,
-	hub *mthub.Hub,
-	accountSvc *service.AccountService,
-	mthubSvc *mthub.MtHubService,
-	accountSyncSvc *service.AccountSyncService,
-	tradeRecordRepo *repository.TradeRecordRepository,
-	snapshotBroker *mthub.PositionSnapshotBroker,
-	accountBroker *mthub.AccountProfitBroker,
-	barBroker *mthub.BarBroker,
-	eventStore *mthub.TradeEventStore,
-	emailNotifier **notifier.EmailNotifier,
-	platformAgg **risksvc.PlatformAggregator,
-	reconLoop **mthub.ReconciliationLoop,
-	brokerReg *adapter.BrokerRegistry,
-	factorPusher func(bar *mdtick.Bar),
-	livePerfCollector *marketplace.LivePerformanceCollector,
-) error {
-	pst := newPipelineState(pool, log)
+type mdGatewayPipelineDeps struct {
+	pipelineCtx       context.Context
+	log               *zap.Logger
+	pool              *pgxpool.Pool
+	store             repository.MarketDataStore
+	chStore           repository.MarketDataStore
+	nc                *nats.Conn
+	spillDir          string
+	secClient         secrets.Client
+	hub               *mthub.Hub
+	accountSvc        *service.AccountService
+	mthubSvc          *mthub.MtHubService
+	accountSyncSvc    *service.AccountSyncService
+	tradeRecordRepo   *repository.TradeRecordRepository
+	snapshotBroker    *mthub.PositionSnapshotBroker
+	accountBroker     *mthub.AccountProfitBroker
+	barBroker         *mthub.BarBroker
+	eventStore        *mthub.TradeEventStore
+	emailNotifier     **notifier.EmailNotifier
+	platformAgg       **risksvc.PlatformAggregator
+	reconLoop         **mthub.ReconciliationLoop
+	brokerReg         *adapter.BrokerRegistry
+	factorPusher      func(bar *mdtick.Bar)
+	livePerfCollector *marketplace.LivePerformanceCollector
+}
+
+func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
+	pst := newPipelineState(d.pool, d.log)
 
 	pst.loadMarginThresholds()
-	log.Info("mdgateway pipeline starting", zap.String("spill_dir", spillDir))
-	mthubSvc.SetBarBroker(barBroker)
+	d.log.Info("mdgateway pipeline starting", zap.String("spill_dir", d.spillDir))
+	d.mthubSvc.SetBarBroker(d.barBroker)
 
 	deps := mdgateway.RunnerDeps{
-		Log:      log,
-		PG:       pool,
-		Store:    store,
-		ChStore:  chStore,
-		NATSConn: nc,
-		SpillDir: spillDir,
-		Secrets:  secClient,
-		Hub:            hub,
-		BrokerRegistry: brokerReg,
-		FactorPusher:   factorPusher,
+		Log:      d.log,
+		PG:       d.pool,
+		Store:    d.store,
+		ChStore:  d.chStore,
+		NATSConn: d.nc,
+		SpillDir: d.spillDir,
+		Secrets:  d.secClient,
+		Hub:            d.hub,
+		BrokerRegistry: d.brokerReg,
+		FactorPusher:   d.factorPusher,
 		Searcher:       brokersearch.New("", ""),
-		OnAccountProfit: pst.makeOnAccountProfit(accountSvc, mthubSvc, accountSyncSvc, eventStore, emailNotifier, livePerfCollector),
-		OnOrderUpdate:   buildOnOrderUpdate(log, snapshotBroker, tradeRecordRepo),
-		OnAccountDisconnect: makeOnAccountDisconnect(log, pool, accountSvc, accountSyncSvc, platformAgg, hub, mthubSvc),
-		OnBrokerInfo:         pst.makeOnBrokerInfo(accountSvc, accountSyncSvc, mthubSvc, snapshotBroker, reconLoop),
+		OnAccountProfit: pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector),
+		OnOrderUpdate:   buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo),
+		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),
+		OnBrokerInfo:         pst.makeOnBrokerInfo(d.accountSvc, d.accountSyncSvc, d.mthubSvc, d.snapshotBroker, d.reconLoop),
 		OnBreakerTrip: func(accountID, userID, status, message string) {
-			mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
+			d.mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
 				AccountID: accountID, UserID: userID, Status: status,
 				Message: message, Timestamp: time.Now(),
 			})
 		},
-		OnAccountStatus: makeOnAccountStatus(log, pool, mthubSvc),
+		OnAccountStatus: makeOnAccountStatus(d.log, d.pool, d.mthubSvc),
 		OnBar: func(b *mdtick.Bar) {
-			mthubSvc.PublishBar(&mthub.BarUpdate{
+			d.mthubSvc.PublishBar(&mthub.BarUpdate{
 				AccountID: b.AccountID,
 				Symbol:    b.Canonical,
 				Period:    b.Period,
@@ -96,8 +98,8 @@ func startMdGatewayPipeline(
 		},
 	}
 
-	if err := mdgateway.Run(pipelineCtx, deps); err != nil {
-		log.Error("mdgateway pipeline exited with error", zap.Error(err))
+	if err := mdgateway.Run(d.pipelineCtx, deps); err != nil {
+		d.log.Error("mdgateway pipeline exited with error", zap.Error(err))
 		return err
 	}
 	return nil

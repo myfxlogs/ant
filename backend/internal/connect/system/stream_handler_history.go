@@ -86,7 +86,7 @@ func (s *StreamServer) sendAccountHistory(ctx context.Context, accountID string,
 
 	sent := 0
 	for _, rec := range orders {
-		if sent >= int(remaining) {
+		if sent >= remaining {
 			break
 		}
 		eventType := "history"

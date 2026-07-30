@@ -147,7 +147,7 @@ func (s *GatewayServer) SubmitStrategy(
 	}
 
 	// ── Step 2: Persist to imported_strategies (before backtest — O1: backtest failure must not lose strategy) ──
-	strategyID = s.persistImportedStrategy(ctx, userID, strategyID, sourceCode, runner, coverage)
+	strategyID = s.persistImportedStrategy(ctx, userID, sourceCode, runner, coverage)
 
 	// ── Steps 3-7: Backtest + LLM analysis + bridging (only when backtest_config provided) ──
 	var btResult *backtestPipelineResult
@@ -197,7 +197,7 @@ func (s *GatewayServer) SubmitStrategy(
 	return connect.NewResponse(resp), nil
 }
 
-func (s *GatewayServer) persistImportedStrategy(ctx context.Context, userID, strategyID, sourceCode string, runner *mql2go.VMRunner, coverage *mql2go.CoverageResult) string {
+func (s *GatewayServer) persistImportedStrategy(ctx context.Context, userID, sourceCode string, runner *mql2go.VMRunner, coverage *mql2go.CoverageResult) string {
 	if s.importedRepo == nil {
 		return ""
 	}

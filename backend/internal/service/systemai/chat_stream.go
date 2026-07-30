@@ -79,7 +79,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if err := s.handleStreamResponse(resp, p, messages, tools, onChunk); err != nil {
+	if err := s.handleStreamResponse(resp, p, onChunk); err != nil {
 		return err
 	}
 	return nil
@@ -123,7 +123,7 @@ func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messa
 	return resp, nil
 }
 
-func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
+func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, onChunk func(chunk ChatStreamChunk) error) error {
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 

@@ -15,7 +15,7 @@ import (
 // CloseOrder closes an existing position.
 // Gate order matches PlaceOrder: killSwitch → ownership → idempotency → reconcile → rateLimit.
 func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
-	if err := s.preCloseChecks(ctx, accountID, ticket, lots); err != nil {
+	if err := s.preCloseChecks(ctx, accountID); err != nil {
 		return err
 	}
 
@@ -80,7 +80,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 	return nil
 }
 
-func (s *MtHubService) preCloseChecks(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
+func (s *MtHubService) preCloseChecks(ctx context.Context, accountID string) error {
 	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
 		return ErrKillSwitchEngaged
 	}

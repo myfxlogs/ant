@@ -28,44 +28,46 @@ import (
 // configureStrategyExecution creates the StrategyExecutionServer with all dependencies
 // wired in — bar source, paper engine, notification sender, gate, and auto-gate
 // callback. Returns the fully configured server ready for handler registration.
-func configureStrategyExecution(
-	pool *pgxpool.Pool,
-	backtestRunRepo *repository.BacktestRunRepository,
-	marketDataRepo repository.MarketDataStore,
-	mthubSvc *mthub.MtHubService,
-	hub *mthub.Hub,
-	paperEngine *paper.PaperEngine,
-	notifSender *notifpubsub.Sender,
-	aiSvc *systemai.Service,
-	pgListen *pglisten.Listener,
-	jurisGate *risksvc.JurisdictionGate,
-	capStore *risksvc.CapabilityStore,
-	quotaChecker *service.QuotaChecker,
-	mktplaceSvc *marketplace.Service,
-	cfg *config.Config,
-	log *zap.Logger,
-) *strategy.StrategyExecutionServer {
-	srv := strategy.NewStrategyExecutionServer(backtestRunRepo, log)
-	srv.SetPgListen(pgListen)
-	srv.SetMarketDataRepo(marketDataRepo)
-	srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
-	srv.SetMtHub(mthubSvc)
-	srv.SetGoExecutor(strategy.NewGoExecutor(".", log))
-	strategyRunRepo := repository.NewStrategyRunRepository(pool)
+type strategyExecDeps struct {
+	pool            *pgxpool.Pool
+	backtestRunRepo *repository.BacktestRunRepository
+	marketDataRepo  repository.MarketDataStore
+	mthubSvc        *mthub.MtHubService
+	hub             *mthub.Hub
+	paperEngine     *paper.PaperEngine
+	notifSender     *notifpubsub.Sender
+	aiSvc           *systemai.Service
+	pgListen        *pglisten.Listener
+	jurisGate       *risksvc.JurisdictionGate
+	capStore        *risksvc.CapabilityStore
+	quotaChecker    *service.QuotaChecker
+	mktplaceSvc     *marketplace.Service
+	cfg             *config.Config
+	log             *zap.Logger
+}
+
+func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionServer {
+	srv := strategy.NewStrategyExecutionServer(d.backtestRunRepo, d.log)
+	srv.SetPgListen(d.pgListen)
+	srv.SetMarketDataRepo(d.marketDataRepo)
+	srv.SetBarSource(strategy.NewLiveSource(d.mthubSvc, d.marketDataRepo))
+	srv.SetMtHub(d.mthubSvc)
+	srv.SetGoExecutor(strategy.NewGoExecutor(".", d.log))
+	strategyRunRepo := repository.NewStrategyRunRepository(d.pool)
 	srv.SetRunRepo(strategyRunRepo)
-	srv.SetImportedRepo(repository.NewImportedStrategyRepository(pool))
-	srv.SetVersionRepo(repository.NewStrategyVersionRepository(pool))
+	srv.SetImportedRepo(repository.NewImportedStrategyRepository(d.pool))
+	srv.SetVersionRepo(repository.NewStrategyVersionRepository(d.pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
-	srv.SetQuotaChecker(quotaChecker)
+	srv.SetQuotaChecker(d.quotaChecker)
 
 	if n, err := strategyRunRepo.CleanupStaleRuns(context.Background()); err != nil {
-		log.Warn("startup: failed to cleanup stale strategy runs", zap.Error(err))
+		d.log.Warn("startup: failed to cleanup stale strategy runs", zap.Error(err))
 	} else if n > 0 {
-		log.Info("startup: cleaned up stale strategy runs", zap.Int64("count", n))
+		d.log.Info("startup: cleaned up stale strategy runs", zap.Int64("count", n))
 	}
 	srv.SetAccountLookup(func(ctx context.Context, userID string) string {
 		var mt4ID string
-		err := pool.QueryRow(ctx,
+		err := d.pool.QueryRow(ctx,
 			`SELECT id::text FROM mt_accounts
 			 WHERE user_id = $1::uuid AND account_status != 'frozen'
 			 ORDER BY created_at LIMIT 1`,
@@ -76,22 +78,22 @@ func configureStrategyExecution(
 		return mt4ID
 	})
 	srv.StartBacktestWorker(context.Background())
-	srv.SetPaperEngine(paperEngine)
-	srv.SetNotificationSender(notifSender)
+	srv.SetPaperEngine(d.paperEngine)
+	srv.SetNotificationSender(d.notifSender)
 
-	gate := setupRiskGate(cfg, jurisGate, capStore)
+	gate := setupRiskGate(d.cfg, d.jurisGate, d.capStore)
 	srv.SetGate(gate)
-	mthubSvc.SetGate(gate)
-	posCache := strategy.NewPositionCache(log)
+	d.mthubSvc.SetGate(gate)
+	posCache := strategy.NewPositionCache(d.log)
 	srv.SetPositionCache(posCache)
-	accountProvider := strategy.NewMTAccountStateProvider(hub, log)
+	accountProvider := strategy.NewMTAccountStateProvider(d.hub, d.log)
 	accountProvider.SetPositionCache(posCache)
 	srv.SetAccountProvider(accountProvider)
-	log.Info("D6-A: risk.Gate + AccountStateProvider + PositionCache injected into StrategyExecutionServer")
+	d.log.Info("D6-A: risk.Gate + AccountStateProvider + PositionCache injected into StrategyExecutionServer")
 
-	gateEvalRepo := repository.NewGateEvaluationRepository(pool)
-	srv.SetOnBacktestComplete(makeOnBacktestComplete(gateEvalRepo, mktplaceSvc, notifSender, aiSvc, backtestRunRepo, log))
-	srv.SetQualityValidator(mktplaceSvc)
+	gateEvalRepo := repository.NewGateEvaluationRepository(d.pool)
+	srv.SetOnBacktestComplete(makeOnBacktestComplete(gateEvalRepo, d.mktplaceSvc, d.notifSender, d.aiSvc, d.backtestRunRepo, d.log))
+	srv.SetQualityValidator(d.mktplaceSvc)
 	srv.SetGateEvalRepo(gateEvalRepo)
 	return srv
 }

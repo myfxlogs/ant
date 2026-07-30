@@ -102,8 +102,23 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 
 	jurisGate, capStore, platformAgg := initRiskPipeline(pool, log, mthubSvc, hub, eventStore, cfg, guard)
-	strategyExecServer := configureStrategyExecution(pool, backtestRunRepo, marketDataRepo, mthubSvc, hub,
-		paperEngine, notifSender, aiSvc, pgListen, jurisGate, capStore, quotaChecker, mktplaceSvc, cfg, log)
+	strategyExecServer := configureStrategyExecution(strategyExecDeps{
+		pool:            pool,
+		backtestRunRepo: backtestRunRepo,
+		marketDataRepo:  marketDataRepo,
+		mthubSvc:        mthubSvc,
+		hub:             hub,
+		paperEngine:     paperEngine,
+		notifSender:     notifSender,
+		aiSvc:           aiSvc,
+		pgListen:        pgListen,
+		jurisGate:       jurisGate,
+		capStore:        capStore,
+		quotaChecker:    quotaChecker,
+		mktplaceSvc:     mktplaceSvc,
+		cfg:             cfg,
+		log:             log,
+	})
 	mux.Handle(antv1c.NewStrategyRuntimeServiceHandler(strategyExecServer,
 		withSency(otelInterceptor, authInterceptor)))
 
@@ -123,6 +138,32 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
 		withSency(otelInterceptor, authInterceptor)))
 
+	autoTradingRepo := setupAutoTrading(pool, mux, strategyExecServer, log, otelInterceptor, authInterceptor)
+
+	scheduleRepo := repository.NewStrategyScheduleRepository(pool)
+	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, templatesRepo,
+		strategyExecServer,
+		func(userID uuid.UUID) bool {
+			settings, err := autoTradingRepo.GetGlobalSettingsByUserID(context.Background(), userID)
+			if err != nil {
+				return true
+			}
+			return settings.AutoTradeEnabled
+		},
+		log)
+	strategyServer.SetEngine(scheduleEngine)
+
+	return strategyRuntimeDeps{
+		strategyServer:     strategyServer,
+		strategyExecServer: strategyExecServer,
+		notifSender:        notifSender,
+		pgListen:           pgListen,
+		scheduleEngine:     scheduleEngine,
+		platformAgg:        platformAgg,
+	}
+}
+
+func setupAutoTrading(pool *pgxpool.Pool, mux *http.ServeMux, strategyExecServer *strategy.StrategyExecutionServer, log *zap.Logger, otelInterceptor, authInterceptor connectrpc.Interceptor) *repository.AutoTradingRepository {
 	autoTradingRepo := repository.NewAutoTradingRepository(pool)
 	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, nil, log)
 	strategyExecServer.AddGateRule(&risk.UserRiskConfigRule{Store: func(ctx context.Context, accountID string) (*risk.UserRiskConfig, error) {
@@ -153,26 +194,5 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	}})
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 		withSency(otelInterceptor, authInterceptor)))
-
-	scheduleRepo := repository.NewStrategyScheduleRepository(pool)
-	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, templatesRepo,
-		strategyExecServer,
-		func(userID uuid.UUID) bool {
-			settings, err := autoTradingRepo.GetGlobalSettingsByUserID(context.Background(), userID)
-			if err != nil {
-				return true
-			}
-			return settings.AutoTradeEnabled
-		},
-		log)
-	strategyServer.SetEngine(scheduleEngine)
-
-	return strategyRuntimeDeps{
-		strategyServer:     strategyServer,
-		strategyExecServer: strategyExecServer,
-		notifSender:        notifSender,
-		pgListen:           pgListen,
-		scheduleEngine:     scheduleEngine,
-		platformAgg:        platformAgg,
-	}
+	return autoTradingRepo
 }

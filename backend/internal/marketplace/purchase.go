@@ -70,38 +70,38 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		}
 	}
 
-	strat, err := s.fetchStrategyForPurchase(ctx, tx, sid)
+	stratInfo, err := s.fetchStrategyForPurchase(ctx, tx, sid)
 	if err != nil {
 		return nil, err
 	}
 
-	if _, err := s.SettleExpired(ctx, strat.publisherID.String()); err != nil {
+	if _, err := s.SettleExpired(ctx, stratInfo.publisherID.String()); err != nil {
 		s.log.Warn("purchase: lazy settlement failed for publisher",
-			zap.String("publisherID", strat.publisherID.String()), zap.Error(err))
+			zap.String("publisherID", stratInfo.publisherID.String()), zap.Error(err))
 	}
 
-	feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, strat.publisherID.String())
+	feeRateDec, err := s.getEffectiveFeeRateTx(ctx, tx, stratInfo.publisherID.String())
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: get effective fee rate: %w", err)
 	}
-	if (strat.priceModel != PriceModelOnce && strat.priceModel != PriceModelSubscription) || !strat.price.IsPositive() {
+	if (stratInfo.priceModel != PriceModelOnce && stratInfo.priceModel != PriceModelSubscription) || !stratInfo.price.IsPositive() {
 		return nil, fmt.Errorf("marketplace: strategy is not purchasable")
 	}
 
-	finalAmount, couponID, err := s.applyCoupon(ctx, tx, couponCode, sid, strat.price)
+	finalAmount, couponID, err := s.applyCoupon(ctx, tx, couponCode, sid, stratInfo.price)
 	if err != nil {
 		return nil, err
 	}
 
 	subKind := SubKindPurchase
 	var expiresAt *time.Time
-	if strat.priceModel == PriceModelSubscription {
+	if stratInfo.priceModel == PriceModelSubscription {
 		subKind = SubKindSubscription
 		exp := time.Now().Add(30 * 24 * time.Hour)
 		expiresAt = &exp
 	}
 
-	if uid == strat.publisherID {
+	if uid == stratInfo.publisherID {
 		return nil, fmt.Errorf("marketplace: cannot purchase your own strategy")
 	}
 
@@ -114,40 +114,12 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		return nil, fmt.Errorf("marketplace: already subscribed")
 	}
 
-	var buyerWalletID uuid.UUID
-	var buyerBalanceBefore string
-	err = tx.QueryRow(ctx,
-		`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
-		uid,
-	).Scan(&buyerWalletID, &buyerBalanceBefore)
+	amountStr, _, buyerBalanceAfter, buyerTxID, feeStr, pubAmountStr, err := s.chargeBuyerAndCalcFees(ctx, tx, uid, finalAmount, feeRateDec, stratInfo.title, idempotencyKey)
 	if err != nil {
-		return nil, fmt.Errorf("marketplace: wallet not found")
-	}
-	if buyerBalanceBefore == "" {
-		return nil, fmt.Errorf("marketplace: wallet balance unavailable")
+		return nil, err
 	}
 
-	amountStr := finalAmount.StringFixed(2)
-	negAmountStr := "-" + amountStr
-
-	buyerDesc := fmt.Sprintf("Purchase strategy: %s", strat.title)
-	buyerWallet, err := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
-		negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyBuy+idempotencyKey)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: charge buyer: %w", err)
-	}
-	buyerBalanceAfter := buyerWallet.Balance
-	buyerTxID := uuid.Nil
-	if buyerWallet.LastTransactionID != nil {
-		buyerTxID = *buyerWallet.LastTransactionID
-	}
-
-	feeDec := finalAmount.Mul(feeRateDec)
-	pubDec := finalAmount.Sub(feeDec)
-	pubAmountStr := pubDec.StringFixed(2)
-	feeStr := feeDec.StringFixed(2)
-
-	subID, err := s.insertSubscription(ctx, tx, uid, strat.publisherID, sid, subKind, idempotencyKey, expiresAt)
+	subID, err := s.insertSubscription(ctx, tx, uid, stratInfo.publisherID, sid, subKind, idempotencyKey, expiresAt)
 	if err != nil {
 		if idempotencyKey != "" && isUniqueViolation(err) {
 			_ = tx.Rollback(ctx)
@@ -158,7 +130,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 		return nil, fmt.Errorf("marketplace: create subscription: %w", err)
 	}
 
-	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, strat.publisherID, amountStr, feeStr, pubAmountStr, strat.refundWindowDays, nil)
+	err = s.createFrozenSettlementTx(ctx, tx, subID, uid, stratInfo.publisherID, amountStr, feeStr, pubAmountStr, stratInfo.refundWindowDays, nil)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: create settlement: %w", err)
 	}
@@ -182,10 +154,50 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 
 	return &PurchaseResult{
 		SubscriptionID: subID.String(),
-		TransactionID:  buyerTxID.String(),
+		TransactionID:  buyerTxID,
 		AmountCharged:  amountStr,
 		BalanceAfter:   buyerBalanceAfter,
 	}, nil
+}
+
+func (s *Service) chargeBuyerAndCalcFees(ctx context.Context, tx pgx.Tx, uid uuid.UUID, finalAmount, feeRateDec decimal.Decimal, title, idempotencyKey string) (amountStr, negAmountStr, balanceAfter, txIDStr, feeStr, pubAmountStr string, err error) {
+	var buyerWalletID uuid.UUID
+	var buyerBalanceBefore string
+	err = tx.QueryRow(ctx,
+		`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+		uid,
+	).Scan(&buyerWalletID, &buyerBalanceBefore)
+	if err != nil {
+		err = fmt.Errorf("marketplace: wallet not found")
+		return
+	}
+	if buyerBalanceBefore == "" {
+		err = fmt.Errorf("marketplace: wallet balance unavailable")
+		return
+	}
+
+	amountStr = finalAmount.StringFixed(2)
+	negAmountStr = "-" + amountStr
+
+	buyerDesc := fmt.Sprintf("Purchase strategy: %s", title)
+	buyerWallet, e := s.walletRepo.AdjustBalanceTx(ctx, tx, buyerWalletID, uid,
+		negAmountStr, TxTypePurchase, buyerDesc, nil, IdemKeyBuy+idempotencyKey)
+	if e != nil {
+		err = fmt.Errorf("marketplace: charge buyer: %w", e)
+		return
+	}
+	balanceAfter = buyerWallet.Balance
+	buyerTxID := uuid.Nil
+	if buyerWallet.LastTransactionID != nil {
+		buyerTxID = *buyerWallet.LastTransactionID
+	}
+	txIDStr = buyerTxID.String()
+
+	feeDec := finalAmount.Mul(feeRateDec)
+	pubDec := finalAmount.Sub(feeDec)
+	pubAmountStr = pubDec.StringFixed(2)
+	feeStr = feeDec.StringFixed(2)
+	return
 }
 
 type strategyPurchaseInfo struct {

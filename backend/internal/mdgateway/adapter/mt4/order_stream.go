@@ -57,7 +57,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		if err != nil {
 			g.log.Warn("mt4 order update subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			g.handleStreamError(ctx, err, &backoff, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff)
 			continue
 		}
 
@@ -69,7 +69,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			if err != nil {
 				g.log.Warn("mt4 order update recv", zap.Error(err))
 				cancel()
-				g.handleStreamError(ctx, err, &backoff, maxBackoff)
+				g.handleStreamError(ctx, err, &backoff)
 				break
 			}
 			s := resp.GetResult()
@@ -81,7 +81,9 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 	}
 }
 
-func (g *Gateway) handleStreamError(ctx context.Context, err error, backoff *time.Duration, maxBackoff time.Duration) {
+const streamMaxBackoff = 5 * time.Minute
+
+func (g *Gateway) handleStreamError(ctx context.Context, err error, backoff *time.Duration) {
 	if err != context.Canceled && err != context.DeadlineExceeded {
 		g.reportStatus("reconnecting", err.Error())
 		_ = g.Disconnect(ctx)
@@ -90,7 +92,7 @@ func (g *Gateway) handleStreamError(ctx context.Context, err error, backoff *tim
 		}
 	}
 	g.sleep(ctx, *backoff)
-	*backoff = minDuration(*backoff*2, maxBackoff)
+	*backoff = minDuration(*backoff*2, streamMaxBackoff)
 }
 
 func parseMt4OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.OrderUpdate {

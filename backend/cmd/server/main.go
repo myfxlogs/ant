@@ -166,7 +166,33 @@ func main() {
 
 	livePerfCollector := marketplace.NewLivePerformanceCollector(mktplaceSvc, log)
 	mktplaceSvc.SetLivePerfCollector(livePerfCollector)
-	go func() { _ = startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg, factorPusher, livePerfCollector) }()
+	go func() {
+		_ = startMdGatewayPipeline(mdGatewayPipelineDeps{
+			pipelineCtx:       pipelineCtx,
+			log:               log,
+			pool:              pool,
+			store:             mdStore,
+			chStore:           chStore,
+			nc:                nc,
+			spillDir:          spillDir,
+			secClient:         secClient,
+			hub:               hub,
+			accountSvc:        accountSvc,
+			mthubSvc:          mthubSvc,
+			accountSyncSvc:    accountSyncSvc,
+			tradeRecordRepo:   tradeRecordRepo,
+			snapshotBroker:    snapshotBroker,
+			accountBroker:     accountBroker,
+			barBroker:         barBroker,
+			eventStore:        eventStore,
+			emailNotifier:     &emailNotifier,
+			platformAgg:       &platformAgg,
+			reconLoop:         &reconLoop,
+			brokerReg:         brokerReg,
+			factorPusher:      factorPusher,
+			livePerfCollector: livePerfCollector,
+		})
+	}()
 
 	// Graceful shutdown context — created before registerHandlers so background
 	// goroutines spawned there can observe shutdown.

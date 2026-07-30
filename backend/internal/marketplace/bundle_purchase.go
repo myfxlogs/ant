@@ -71,10 +71,7 @@ func (s *Service) PurchaseBundle(ctx context.Context, userID, bundleID, idempote
 		return nil, err
 	}
 
-	firstSubID, err := s.createBundleSubscriptions(ctx, tx, uid, publisherID, bid, items, idempotencyKey)
-	if err != nil {
-		return nil, err
-	}
+	firstSubID := s.createBundleSubscriptions(ctx, tx, uid, publisherID, bid, items, idempotencyKey)
 
 	if !isFree && firstSubID != uuid.Nil {
 		err = s.createFrozenSettlementTx(ctx, tx, firstSubID, uid, publisherID, amountStr, feeStr, pubAmountStr, DefaultRefundWindowDays, &bid)
@@ -252,7 +249,7 @@ func (s *Service) chargeBundleBuyer(ctx context.Context, tx pgx.Tx, uid, publish
 	return
 }
 
-func (s *Service) createBundleSubscriptions(ctx context.Context, tx pgx.Tx, uid, publisherID, bid uuid.UUID, items []string, idempotencyKey string) (uuid.UUID, error) {
+func (s *Service) createBundleSubscriptions(ctx context.Context, tx pgx.Tx, uid, publisherID, bid uuid.UUID, items []string, idempotencyKey string) uuid.UUID {
 	var firstSubID uuid.UUID
 	for _, sidStr := range items {
 		sid, _ := uuid.Parse(sidStr)
@@ -281,7 +278,7 @@ func (s *Service) createBundleSubscriptions(ctx context.Context, tx pgx.Tx, uid,
 				zap.String("strategy_id", sidStr), zap.Error(err))
 		}
 	}
-	return firstSubID, nil
+	return firstSubID
 }
 
 // DeleteBundle hides a bundle (soft delete by setting status to 'hidden').

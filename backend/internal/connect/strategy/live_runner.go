@@ -151,7 +151,7 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		s.posCache.Subscribe(runCtx, s.mtHub, cfg.AccountID)
 	}
 
-	activeSess := s.registerLiveSession(runCtx, &cfg, runID, runCancel, cleanupOrphan)
+	activeSess := s.registerLiveSession(&cfg, runID, runCancel, cleanupOrphan)
 	if activeSess == nil && cfg.PreRegisteredSession == nil && s.sessionRegistry != nil {
 		return fmt.Errorf("live strategy runner: another strategy is already running for account %s", cfg.AccountID)
 	}
@@ -171,63 +171,78 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}()
 
-	return s.runLiveEventLoop(runCtx, cfg, barCh, tickCh, tradeCh, &bars, &session, &firstBar, activeSess, extraBars, extraSymbolSet)
+	s.runLiveEventLoop(liveEventLoopParams{
+		runCtx:         runCtx,
+		cfg:            cfg,
+		barCh:          barCh,
+		tickCh:         tickCh,
+		tradeCh:        tradeCh,
+		bars:           &bars,
+		session:        &session,
+		firstBar:       &firstBar,
+		activeSess:     activeSess,
+		extraBars:      extraBars,
+		extraSymbolSet: extraSymbolSet,
+	})
+	return nil
 }
 
-func (s *StrategyExecutionServer) runLiveEventLoop(
-	runCtx context.Context,
-	cfg LiveStrategyConfig,
-	barCh <-chan *mthub.BarUpdate,
-	tickCh <-chan *mthub.TickUpdate,
-	tradeCh <-chan *mthub.BrokerTradeEvent,
-	bars *[]liveBar,
-	session *Session,
-	firstBar *bool,
-	activeSess *ActiveSession,
-	extraBars map[string][]liveBar,
-	extraSymbolSet map[string]bool,
-) error {
+type liveEventLoopParams struct {
+	runCtx         context.Context
+	cfg            LiveStrategyConfig
+	barCh          <-chan *mthub.BarUpdate
+	tickCh         <-chan *mthub.TickUpdate
+	tradeCh        <-chan *mthub.BrokerTradeEvent
+	bars           *[]liveBar
+	session        *Session
+	firstBar       *bool
+	activeSess     *ActiveSession
+	extraBars      map[string][]liveBar
+	extraSymbolSet map[string]bool
+}
+
+func (s *StrategyExecutionServer) runLiveEventLoop(p liveEventLoopParams) {
 	for {
 		select {
-		case <-runCtx.Done():
+		case <-p.runCtx.Done():
 			s.log.Info("LiveStrategyRunner: context cancelled, exiting")
-			return nil
+			return
 
-		case bar, ok := <-barCh:
+		case bar, ok := <-p.barCh:
 			if !ok {
 				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
-				return nil
+				return
 			}
-			if extraSymbolSet[bar.Symbol] && bar.Period == cfg.Timeframe {
-				handleExtraSymbolBar(bar, extraBars)
+			if p.extraSymbolSet[bar.Symbol] && bar.Period == p.cfg.Timeframe {
+				handleExtraSymbolBar(bar, p.extraBars)
 				continue
 			}
-			if bar.Symbol != cfg.Symbol || bar.Period != cfg.Timeframe {
+			if bar.Symbol != p.cfg.Symbol || bar.Period != p.cfg.Timeframe {
 				continue
 			}
-			s.handleBar(runCtx, cfg, bar, bars, session, firstBar, activeSess, extraBars)
+			s.handleBar(p.runCtx, p.cfg, bar, p.bars, p.session, p.firstBar, p.activeSess, p.extraBars)
 
-		case tick, ok := <-tickCh:
+		case tick, ok := <-p.tickCh:
 			if !ok {
 				s.log.Warn("LiveStrategyRunner: tick channel closed")
-				tickCh = nil
+				p.tickCh = nil
 				continue
 			}
-			if tick.Symbol != cfg.Symbol {
+			if tick.Symbol != p.cfg.Symbol {
 				continue
 			}
-			s.handleTick(runCtx, cfg, tick, session, firstBar, activeSess)
+			s.handleTick(p.runCtx, p.cfg, tick, p.session, p.firstBar, p.activeSess)
 
-		case evt, ok := <-tradeCh:
+		case evt, ok := <-p.tradeCh:
 			if !ok {
 				s.log.Warn("LiveStrategyRunner: trade channel closed")
-				tradeCh = nil
+				p.tradeCh = nil
 				continue
 			}
-			if evt.Symbol != cfg.Symbol {
+			if evt.Symbol != p.cfg.Symbol {
 				continue
 			}
-			s.handleTrade(runCtx, cfg, evt, session, firstBar, activeSess)
+			s.handleTrade(p.runCtx, p.cfg, evt, p.session, p.firstBar, p.activeSess)
 		}
 	}
 }
@@ -301,7 +316,7 @@ func handleExtraSymbolBar(bar *mthub.BarUpdate, extraBars map[string][]liveBar) 
 	extraBars[bar.Symbol] = ew
 }
 
-func (s *StrategyExecutionServer) registerLiveSession(runCtx context.Context, cfg *LiveStrategyConfig, runID uuid.UUID, runCancel func(), cleanupOrphan func(string)) *ActiveSession {
+func (s *StrategyExecutionServer) registerLiveSession(cfg *LiveStrategyConfig, runID uuid.UUID, runCancel func(), cleanupOrphan func(string)) *ActiveSession {
 	activeSess := cfg.PreRegisteredSession
 	if activeSess == nil && s.sessionRegistry != nil {
 		uid, _ := uuid.Parse(cfg.UserID)

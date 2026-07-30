@@ -108,7 +108,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		if err != nil {
 			g.log.Warn("mt5 subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			g.handleStreamError(ctx, err, &backoff, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff)
 			continue
 		}
 
@@ -120,7 +120,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			if err != nil {
 				g.log.Warn("mt5 recv", zap.Error(err))
 				cancel()
-				g.handleStreamError(ctx, err, &backoff, maxBackoff)
+				g.handleStreamError(ctx, err, &backoff)
 				break
 			}
 			q := tick.GetResult()
@@ -282,7 +282,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		if err != nil {
 			g.log.Warn("mt5 profit subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
-			g.handleStreamError(ctx, err, &backoff, maxBackoff)
+			g.handleStreamError(ctx, err, &backoff)
 			continue
 		}
 
@@ -297,7 +297,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			if err != nil {
 				g.log.Warn("mt5 profit recv", zap.Error(err))
 				cancel()
-				g.handleStreamError(ctx, err, &backoff, maxBackoff)
+				g.handleStreamError(ctx, err, &backoff)
 				break
 			}
 			p := resp.GetResult()
