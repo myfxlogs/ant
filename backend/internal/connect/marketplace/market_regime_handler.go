@@ -128,12 +128,16 @@ func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connec
 }
 
 func (s *MarketRegimeServer) GetMarketRegime(ctx context.Context, req *connect.Request[antv1.GetMarketRegimeRequest]) (*connect.Response[antv1.GetMarketRegimeResponse], error) {
+	uid, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
+	}
 	regimeID, err := uuid.Parse(req.Msg.RegimeId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid regime_id: %w", err))
 	}
 
-	row, err := s.repo.GetByID(ctx, regimeID)
+	row, err := s.repo.Get(ctx, uid, regimeID)
 	if err != nil {
 		if errors.Is(err, repository.ErrMarketRegimeNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)

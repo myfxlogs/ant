@@ -63,14 +63,14 @@ func (r *StrategyRunRepository) IncrementSignalCount(ctx context.Context, id uui
 	return err
 }
 
-// GetByID returns a single strategy run.
-func (r *StrategyRunRepository) GetByID(ctx context.Context, id uuid.UUID) (*StrategyRun, error) {
+// GetByID returns a single strategy run, scoped to the given user.
+func (r *StrategyRunRepository) GetByID(ctx context.Context, userID, id uuid.UUID) (*StrategyRun, error) {
 	var run StrategyRun
 	err := r.db.QueryRow(ctx, `
 		SELECT id, user_id, account_id, symbol, timeframe, mode, strategy_code,
 		       status, COALESCE(error, ''), total_signals, started_at, stopped_at
-		FROM strategy_runs WHERE id = $1
-	`, id).Scan(
+		FROM strategy_runs WHERE id = $1 AND user_id = $2
+	`, id, userID).Scan(
 		&run.ID, &run.UserID, &run.AccountID, &run.Symbol, &run.Timeframe, &run.Mode,
 		&run.StrategyCode, &run.Status, &run.Error, &run.TotalSignals, &run.StartedAt, &run.StoppedAt,
 	)
@@ -114,18 +114,18 @@ func (r *StrategyRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 	return out, rows.Err()
 }
 
-// ListByAccount returns recent strategy runs for a specific account.
-func (r *StrategyRunRepository) ListByAccount(ctx context.Context, accountID string, limit int) ([]*StrategyRun, error) {
+// ListByAccount returns recent strategy runs for a specific account, scoped to the given user.
+func (r *StrategyRunRepository) ListByAccount(ctx context.Context, userID uuid.UUID, accountID string, limit int) ([]*StrategyRun, error) {
 	if limit <= 0 || limit > 200 {
 		limit = 50
 	}
 	rows, err := r.db.Query(ctx, `
 		SELECT id, user_id, account_id, symbol, timeframe, mode, strategy_code,
 		       status, COALESCE(error, ''), total_signals, started_at, stopped_at
-		FROM strategy_runs WHERE account_id = $1
+		FROM strategy_runs WHERE account_id = $1 AND user_id = $2
 		ORDER BY started_at DESC
-		LIMIT $2
-	`, accountID, limit)
+		LIMIT $3
+	`, accountID, userID, limit)
 	if err != nil {
 		return nil, fmt.Errorf("list strategy runs by account: %w", err)
 	}

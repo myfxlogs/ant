@@ -27,7 +27,7 @@ func (s *StrategyExecutionServer) ListStrategyRuns(ctx context.Context, req *con
 
 	var runs []*repository.StrategyRun
 	if req.Msg.GetAccountId() != "" {
-		runs, err = s.runRepo.ListByAccount(ctx, req.Msg.GetAccountId(), limit)
+		runs, err = s.runRepo.ListByAccount(ctx, uid, req.Msg.GetAccountId(), limit)
 	} else {
 		runs, err = s.runRepo.ListByUser(ctx, uid, limit, offset)
 	}
@@ -44,7 +44,8 @@ func (s *StrategyExecutionServer) ListStrategyRuns(ctx context.Context, req *con
 
 // GetStrategyRun returns a single strategy run by ID.
 func (s *StrategyExecutionServer) GetStrategyRun(ctx context.Context, req *connect.Request[antv1.GetStrategyRunRequest]) (*connect.Response[antv1.GetStrategyRunResponse], error) {
-	if _, err := userIDRequire(ctx); err != nil {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
 		return nil, err
 	}
 	if s.runRepo == nil {
@@ -56,7 +57,7 @@ func (s *StrategyExecutionServer) GetStrategyRun(ctx context.Context, req *conne
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid run_id: %w", err))
 	}
 
-	run, err := s.runRepo.GetByID(ctx, runID)
+	run, err := s.runRepo.GetByID(ctx, uid, runID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("strategy run not found: %w", err))
 	}
