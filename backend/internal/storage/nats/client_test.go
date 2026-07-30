@@ -14,9 +14,13 @@ import (
 
 func skipIfNoNATS(t *testing.T) {
 	t.Helper()
-	if os.Getenv("CI") != "" && os.Getenv("NATS_URL") == "" {
-		t.Skip("skipping NATS integration test in CI without NATS service")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	client, err := nats.Connect(ctx, testConfig())
+	if err != nil {
+		t.Skipf("skipping NATS integration test: NATS not reachable (%v)", err)
 	}
+	client.Close()
 }
 
 func testConfig() nats.Config {

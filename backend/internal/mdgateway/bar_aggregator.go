@@ -55,7 +55,7 @@ func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
 	defer a.mu.Unlock()
 	fk := repository.FinalizedKey{Broker: b.Broker, Canonical: b.Canonical, Period: b.Period}
 	if set, ok := a.finalizedBars[fk]; ok {
-		if _, exists := set[b.OpenTsUnixMs]; exists {
+		if _, exists := set[b.CloseTsUnixMs]; exists {
 			barSkippedFinalized.Add(1)
 			return false
 		}
@@ -63,7 +63,7 @@ func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
 	if a.finalizedBars[fk] == nil {
 		a.finalizedBars[fk] = make(map[int64]struct{})
 	}
-	a.finalizedBars[fk][b.OpenTsUnixMs] = struct{}{}
+	a.finalizedBars[fk][b.CloseTsUnixMs] = struct{}{}
 	return true
 }
 
@@ -95,7 +95,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 			if a.finalizedBars[fk] == nil {
 				a.finalizedBars[fk] = make(map[int64]struct{})
 			}
-			a.finalizedBars[fk][bar.OpenTsUnixMs] = struct{}{}
+			a.finalizedBars[fk][bar.CloseTsUnixMs] = struct{}{}
 			onBar(bar)
 			ob.bucket = bucket
 			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid; ob.bid = t.Bid; ob.ask = t.Ask; ob.accountID = t.AccountID

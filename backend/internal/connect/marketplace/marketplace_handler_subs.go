@@ -39,7 +39,7 @@ func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Re
 		if err != nil {
 			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("marketplace: backtest snapshot: %w", err))
 		}
-	} else {
+	} else if s.pgPool != nil {
 		// Fallback: find latest successful backtest run for this strategy template.
 		strategyID, err := uuid.Parse(m.StrategyId)
 		if err != nil {
