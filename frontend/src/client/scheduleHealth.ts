@@ -1,4 +1,5 @@
 import { scheduleHealthClient } from "./connect";
+import type { GetScheduleHealthResponse } from "@/gen/ant/v1/schedule_health_pb";
 
 function num<T>(v: T | undefined | null, fallback: number): number {
   return (v ?? fallback) as number;
@@ -15,25 +16,29 @@ export const scheduleHealthApi = {
       runLimit: 30,
       orderLimit: 20,
     });
-    const s = response.summary;
-    return {
-      totalRuns: num(s?.totalRuns, 0),
-      successRuns: num(s?.successRuns, 0),
-      failedRuns: num(s?.failedRuns, 0),
-      successRate: num(s?.successRate, 0),
-      lastRunAt: s?.lastRunAt,
-      latestError: str(s?.latestError, ""),
-      latestOrderTicket: str(s?.latestOrderTicket, "-"),
-      latestOrderProfit: s?.hasLatestOrderProfit ? s.latestOrderProfit : null,
-      gradeLevel: str(s?.gradeLevel, "unknown"),
-      gradeColor: str(s?.gradeColor, "default"),
-      gradeNoteCode: str(s?.gradeNoteCode, "pending"),
-      greenSuccessRate: num(s?.greenSuccessRate, 90),
-      greenMaxFailedRuns: num(s?.greenMaxFailedRuns, 1),
-      yellowSuccessRate: num(s?.yellowSuccessRate, 60),
-      minSampleSize: num(s?.minSampleSize, 1),
-      runLogs: response.runLogs || [],
-      orders: response.orders || [],
-    };
+    return mapScheduleHealthResponse(response);
   },
 };
+
+function mapScheduleHealthResponse(response: GetScheduleHealthResponse) {
+  const s = response.summary ?? {};
+  return {
+    totalRuns: num(s.totalRuns, 0),
+    successRuns: num(s.successRuns, 0),
+    failedRuns: num(s.failedRuns, 0),
+    successRate: num(s.successRate, 0),
+    lastRunAt: s.lastRunAt,
+    latestError: str(s.latestError, ""),
+    latestOrderTicket: str(s.latestOrderTicket, "-"),
+    latestOrderProfit: s.hasLatestOrderProfit ? s.latestOrderProfit : null,
+    gradeLevel: str(s.gradeLevel, "unknown"),
+    gradeColor: str(s.gradeColor, "default"),
+    gradeNoteCode: str(s.gradeNoteCode, "pending"),
+    greenSuccessRate: num(s.greenSuccessRate, 90),
+    greenMaxFailedRuns: num(s.greenMaxFailedRuns, 1),
+    yellowSuccessRate: num(s.yellowSuccessRate, 60),
+    minSampleSize: num(s.minSampleSize, 1),
+    runLogs: response.runLogs ?? [],
+    orders: response.orders ?? [],
+  };
+}

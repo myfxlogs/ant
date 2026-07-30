@@ -178,20 +178,24 @@ export function getErrorMessage(error: unknown, defaultMsg: string): string {
       }
     }
     if ('message' in error && typeof (error as Error).message === 'string') {
-      const errorMsg = (error as Error).message;
-      const trimmed = String(errorMsg || '').trim();
-      const maybeTranslated = translateMaybeI18nKey(trimmed, defaultMsg);
-      if (maybeTranslated !== trimmed) return maybeTranslated;
-      if (errorMsg.includes('Failed to fetch')) {
-        return i18n.t('errors.connection_failed.title');
-      }
-      const matched = matchErrorPattern(errorMsg);
-      if (matched) return matched;
-      if (error instanceof ConnectError && connectCodeToI18nKey[error.code]) {
-        return getConnectErrorMessage(error.code, defaultMsg);
-      }
-      return errorMsg;
+      return getErrorMessageFromMessage(error as Error, defaultMsg);
     }
   }
   return defaultMsg;
+}
+
+function getErrorMessageFromMessage(error: Error, defaultMsg: string): string {
+  const errorMsg = error.message;
+  const trimmed = String(errorMsg || '').trim();
+  const maybeTranslated = translateMaybeI18nKey(trimmed, defaultMsg);
+  if (maybeTranslated !== trimmed) return maybeTranslated;
+  if (errorMsg.includes('Failed to fetch')) {
+    return i18n.t('errors.connection_failed.title');
+  }
+  const matched = matchErrorPattern(errorMsg);
+  if (matched) return matched;
+  if (error instanceof ConnectError && connectCodeToI18nKey[error.code]) {
+    return getConnectErrorMessage(error.code, defaultMsg);
+  }
+  return errorMsg;
 }

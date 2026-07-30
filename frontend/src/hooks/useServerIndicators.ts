@@ -72,18 +72,9 @@ export function useServerIndicators({
       if (abortedRef.current) return;
 
       try {
-        const params: Record<string, string> = {};
-        for (const ind of activeIndicators) {
-          for (const [key, val] of Object.entries(ind.params)) {
-            params[`${ind.defId}.${key}`] = String(val);
-          }
-        }
-
+        const params = buildIndicatorParams(activeIndicators);
         const stream = streamClient.subscribeIndicators({
-          symbol,
-          timeframe,
-          indicatorIds: ids,
-          params,
+          symbol, timeframe, indicatorIds: ids, params,
         }, { signal: ctrl.signal });
 
         if (!streamingRef.current) {
@@ -95,26 +86,10 @@ export function useServerIndicators({
         for await (const event of stream) {
           if (abortedRef.current) break;
           transportFailStreak = 0;
-
-          const e = event as IndicatorUpdateEvent;
           received++;
-
-          const data: ServerIndicatorData = {
-            values: e.values || [],
-            series: {},
-            pane: e.pane || 'sub',
-          };
-
-          if (e.series) {
-            for (const [name, s] of Object.entries(e.series)) {
-              if (s) data.series[name] = s.values || [];
-            }
-          }
-
-          setServerIndicatorData(e.indicatorId, data);
+          processIndicatorEvent(event as IndicatorUpdateEvent, setServerIndicatorData);
         }
 
-        // All indicators received — refresh chart.
         if (received > 0) refreshChart();
 
         if (streamingRef.current) {
@@ -122,10 +97,7 @@ export function useServerIndicators({
           onStreamStatus?.(false);
         }
       } catch (error) {
-        if (abortedRef.current) return;
-        if ((error as Error).name === 'AbortError') return;
-        if (String(error).includes('canceled') || String(error).includes('aborted')) return;
-
+        if (isStreamAborted(error, abortedRef)) return;
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
           if (transportFailStreak >= TRANSPORT_FAILURE_CAP) {
@@ -163,4 +135,35 @@ export function useServerIndicators({
   }, [symbol, timeframe, indicatorKey, refreshChart, onStreamStatus]);
 
   return { refreshChart };
+}
+
+function buildIndicatorParams(activeIndicators: { defId: string; params: Record<string, unknown> }[]): Record<string, string> {
+  const params: Record<string, string> = {};
+  for (const ind of activeIndicators) {
+    for (const [key, val] of Object.entries(ind.params)) {
+      params[`${ind.defId}.${key}`] = String(val);
+    }
+  }
+  return params;
+}
+
+function processIndicatorEvent(e: IndicatorUpdateEvent, setServerIndicatorData: (id: string, data: ServerIndicatorData) => void): void {
+  const data: ServerIndicatorData = {
+    values: e.values ?? [],
+    series: {},
+    pane: e.pane || 'sub',
+  };
+  if (e.series) {
+    for (const [name, s] of Object.entries(e.series)) {
+      if (s) data.series[name] = s.values ?? [];
+    }
+  }
+  setServerIndicatorData(e.indicatorId, data);
+}
+
+function isStreamAborted(error: unknown, abortedRef: React.MutableRefObject<boolean>): boolean {
+  if (abortedRef.current) return true;
+  if ((error as Error)?.name === 'AbortError') return true;
+  const s = String(error);
+  return s.includes('canceled') || s.includes('aborted');
 }

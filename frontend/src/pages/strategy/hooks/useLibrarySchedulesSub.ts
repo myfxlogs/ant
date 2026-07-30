@@ -45,20 +45,11 @@ export function useScheduleTrigger() {
     const { schedule } = triggerContext;
     const raw = triggerResult?.signal;
     if (!raw) { message.error(t(MESSAGES_NO_ORDERABLE_SIGNAL_KEY)); return; }
-    const signal = raw;
-    const rawAction = String(signal?.type ?? signal?.signalType ?? '').trim().toLowerCase();
-    const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
-    const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
-    const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
-    if (!action || rawAction === 'hold') { message.error(t(MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY)); return; }
-    if (!(volume > 0)) { message.error(t(MESSAGES_VOLUME_INVALID_KEY)); return; }
-    const payload = {
-      accountId: schedule.accountId, symbol: signal.symbol || schedule.symbol, type: action, volume,
-      price: typeof signal?.price === 'number' ? signal.price : Number(signal?.price || 0),
-      stopLoss: typeof signal?.stopLoss === 'number' ? signal.stopLoss : Number(signal?.stopLoss || 0),
-      takeProfit: typeof signal?.takeProfit === 'number' ? signal.takeProfit : Number(signal?.takeProfit || 0),
-      comment: String(signal?.comment || ''),
-    };
+
+    const parsed = parseOrderSignal(raw, t);
+    if (!parsed) return;
+
+    const payload = buildOrderPayload(schedule, raw, parsed);
     try {
       const res = await tradingApi.orderSend(payload);
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t(MESSAGES_ORDER_FAILED_KEY) })); return; }
@@ -122,4 +113,45 @@ export function useScheduleSSE(loading: boolean, setSchedules: Dispatch<SetState
     // eslint-disable-next-line react-hooks/exhaustive-deps -- setSchedules is a useState setter, stable across renders
   }, [sseReady]);
   return { sseReady };
+}
+
+interface OrderSignal {
+  type?: string;
+  signalType?: string;
+  volume?: number | string;
+  symbol?: string;
+  price?: number | string;
+  stopLoss?: number | string;
+  takeProfit?: number | string;
+  comment?: string;
+}
+
+interface ScheduleRef {
+  accountId: string;
+  symbol: string;
+}
+
+function parseOrderSignal(signal: OrderSignal, t: (k: string) => string): { action: string; volume: number } | null {
+  const rawAction = String(signal?.type ?? signal?.signalType ?? '').trim().toLowerCase();
+  const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
+  const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
+  const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
+  if (!action || rawAction === 'hold') { message.error(t(MESSAGES_SIGNAL_HOLD_CANNOT_ORDER_KEY)); return null; }
+  if (!(volume > 0)) { message.error(t(MESSAGES_VOLUME_INVALID_KEY)); return null; }
+  return { action, volume };
+}
+
+function numOrZero(v: unknown): number {
+  return typeof v === 'number' ? v : Number(v || 0);
+}
+
+function buildOrderPayload(schedule: ScheduleRef, raw: OrderSignal, parsed: { action: string; volume: number }) {
+  return {
+    accountId: schedule.accountId, symbol: raw.symbol || schedule.symbol,
+    type: parsed.action, volume: parsed.volume,
+    price: numOrZero(raw?.price),
+    stopLoss: numOrZero(raw?.stopLoss),
+    takeProfit: numOrZero(raw?.takeProfit),
+    comment: String(raw?.comment || ''),
+  };
 }

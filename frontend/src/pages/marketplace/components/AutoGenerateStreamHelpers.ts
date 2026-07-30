@@ -39,12 +39,16 @@ export async function processStreamEvent(
     h.setErrorDetail(ev.errorDetail || '');
     h.setRetryable(ev.retryable ?? false);
   } else if (s === 'completed') {
-    if (ev.strategyId || ev.publishId) {
-      h.setResult({ strategyId: ev.strategyId || '', publishId: ev.publishId || '', backtest: ev.backtest });
-    }
-    if (ev.violations && ev.violations.length > 0) {
-      h.setViolations(ev.violations);
-    }
+    handleCompletedStage(ev, h);
+  }
+}
+
+function handleCompletedStage(ev: { strategyId?: string; publishId?: string; backtest?: unknown; violations?: Array<{ metric: string; actual: string | number; threshold: string | number }> }, h: StreamHandlers) {
+  if (ev.strategyId || ev.publishId) {
+    h.setResult({ strategyId: ev.strategyId || '', publishId: ev.publishId || '', backtest: ev.backtest });
+  }
+  if (ev.violations && ev.violations.length > 0) {
+    h.setViolations(ev.violations);
   }
 }
 

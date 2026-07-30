@@ -61,21 +61,7 @@ export function useAccountDetailData(id: string | undefined) {
   const positions = useMemo(() => positionsQ.data ?? [], [positionsQ.data]);
 
   // ── Financial values (prefer SSE over snapshot) ──
-  const financials = useMemo(() => {
-    const sse = financialsQ.data;
-    const acc = currentAccount;
-    const useSse = Boolean(id && hasReceivedData && sse);
-    return {
-      balance: useSse ? (sse?.balance ?? 0) : (acc?.balance ?? 0),
-      equity: useSse ? (sse?.equity ?? 0) : (acc?.equity ?? 0),
-      margin: useSse ? (sse?.margin ?? 0) : (acc?.margin ?? 0),
-      freeMargin: useSse ? (sse?.freeMargin ?? 0) : (acc?.freeMargin ?? 0),
-      marginLevel: useSse ? (sse?.marginLevel ?? 0) : (acc?.marginLevel ?? 0),
-      profit: useSse ? (sse?.profit ?? 0) : (acc?.profit ?? 0),
-      profitPercent: useSse ? (sse?.profitPercent ?? 0) : (acc?.profitPercent ?? 0),
-      credit: useSse ? (sse?.credit ?? 0) : (acc?.credit ?? 0),
-    };
-  }, [id, hasReceivedData, financialsQ.data, currentAccount]);
+  const financials = useMemo(() => computeFinancials(id, hasReceivedData, financialsQ.data, currentAccount), [id, hasReceivedData, financialsQ.data, currentAccount]);
 
   // ── Account actions ──
   const handleConnect = useCallback(async () => {
@@ -164,4 +150,17 @@ export function useAccountDetailData(id: string | undefined) {
     monthlyAnalysisYears: analytics.monthlyAnalysisYears,
     monthlyAnalysisData: analytics.monthlyAnalysisData,
   };
+}
+
+const FINANCIAL_KEYS = ['balance', 'equity', 'margin', 'freeMargin', 'marginLevel', 'profit', 'profitPercent', 'credit'] as const;
+
+type Financials = { balance: number; equity: number; margin: number; freeMargin: number; marginLevel: number; profit: number; profitPercent: number; credit: number };
+
+function computeFinancials(id: string | undefined, hasReceivedData: boolean, sse: Record<string, unknown> | null, acc: Record<string, unknown> | null) {
+  const src = (id && hasReceivedData && sse) ? sse : acc;
+  const result: Record<string, number> = {};
+  for (const key of FINANCIAL_KEYS) {
+    result[key] = src?.[key] ?? 0;
+  }
+  return result as Financials;
 }

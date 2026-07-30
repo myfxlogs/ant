@@ -58,18 +58,22 @@ function buildAgentRequest(input: AgentGenInput) {
     accountId: input.accountId || '',
     currentCode: input.currentCode || '',
     locale: i18n.language || 'en',
-    backtestConfig: input.backtestConfig ? {
-      symbol: input.backtestConfig.symbol || '',
-      timeframe: input.backtestConfig.timeframe || '',
-      startDateMs: input.backtestConfig.startDateMs || 0n,
-      endDateMs: input.backtestConfig.endDateMs || 0n,
-      initialCapital: input.backtestConfig.initialCapital || '',
-      commission: input.backtestConfig.commission || '',
-      slippage: input.backtestConfig.slippage || '',
-      leverage: input.backtestConfig.leverage || '',
-      strictMode: input.backtestConfig.strictMode || false,
-    } : undefined,
+    backtestConfig: input.backtestConfig ? buildBacktestConfig(input.backtestConfig) : undefined,
   });
+}
+
+function buildBacktestConfig(bc: NonNullable<AgentGenInput['backtestConfig']>) {
+  return {
+    symbol: bc.symbol || '',
+    timeframe: bc.timeframe || '',
+    startDateMs: bc.startDateMs || 0n,
+    endDateMs: bc.endDateMs || 0n,
+    initialCapital: bc.initialCapital || '',
+    commission: bc.commission || '',
+    slippage: bc.slippage || '',
+    leverage: bc.leverage || '',
+    strictMode: bc.strictMode || false,
+  };
 }
 
 export function agentGenerateStrategyStream(

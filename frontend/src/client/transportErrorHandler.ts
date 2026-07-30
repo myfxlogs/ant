@@ -76,13 +76,19 @@ export function handleTransportError(error: unknown, proc: string, procLabel: st
   if (error instanceof Error && error.message.includes('Failed to fetch')) {
     handleConnectionError(error);
   } else {
-    if (isStreamServiceProcedure(proc) && isLikelyStreamTransportFailure(error)) throw error;
-    if (isStreamServiceProcedure(proc) && isStreamAuthFailure(error)) {
-      message.error(i18n.t(TOKEN_EXPIRED_KEY));
-      throw error;
-    }
+    if (handleStreamError(error, proc)) throw error;
     if (error instanceof ConnectError && (error.code === Code.InvalidArgument || error.code === Code.AlreadyExists)) throw error;
     showBizError(error, procLabel);
   }
   throw error;
+}
+
+function handleStreamError(error: unknown, proc: string): boolean {
+  if (!isStreamServiceProcedure(proc)) return false;
+  if (isLikelyStreamTransportFailure(error)) return true;
+  if (isStreamAuthFailure(error)) {
+    message.error(i18n.t(TOKEN_EXPIRED_KEY));
+    return true;
+  }
+  return false;
 }

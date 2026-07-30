@@ -30,6 +30,52 @@ function mergeBar(prev: KlineData[], bar: KlineData): { merged: KlineData[]; cha
   return { merged, changed: bar };
 }
 
+function shouldProcessEvent(ev: BarUpdateEvent, accountId: string, cancelledRef: React.MutableRefObject<boolean>, symbolRef: React.MutableRefObject<string>, timeframeRef: React.MutableRefObject<string>, loadingMore: React.MutableRefObject<boolean>): boolean {
+  if (cancelledRef.current) return false;
+  if (ev.accountId !== accountId || ev.symbol !== symbolRef.current || ev.period !== timeframeRef.current) return false;
+  if (loadingMore.current) return false;
+  const barTime = ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0;
+  return barTime !== 0;
+}
+
+function updateBidAsk(ev: BarUpdateEvent, barTime: number, precisionRef: React.MutableRefObject<number>, setBidAsk: (t: number, b: number, a: number) => void, setLatestBid: (s: string) => void, setLatestAsk: (s: string) => void) {
+  const b = Number(ev.bid || '0'), a = Number(ev.ask || '0');
+  if (b > 0 || a > 0) {
+    setBidAsk(barTime * 1000, b, a);
+    const d = precisionRef.current;
+    setLatestBid(b > 0 ? b.toFixed(d) : '');
+    setLatestAsk(a > 0 ? a.toFixed(d) : '');
+  }
+}
+
+function processBarEvent(
+  ev: BarUpdateEvent, accountId: string,
+  cancelledRef: React.MutableRefObject<boolean>,
+  symbolRef: React.MutableRefObject<string>,
+  timeframeRef: React.MutableRefObject<string>,
+  loadingMore: React.MutableRefObject<boolean>,
+  precisionRef: React.MutableRefObject<number>,
+  barsRef: React.MutableRefObject<KlineData[]>,
+  chartRef: React.MutableRefObject<Chart | null>,
+  setBidAsk: (t: number, b: number, a: number) => void,
+  setLatestBid: (s: string) => void,
+  setLatestAsk: (s: string) => void,
+) {
+  if (!shouldProcessEvent(ev, accountId, cancelledRef, symbolRef, timeframeRef, loadingMore)) return;
+
+  const barTime = ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0;
+
+  updateBidAsk(ev, barTime, precisionRef, setBidAsk, setLatestBid, setLatestAsk);
+
+  const bar: KlineData = {
+    time: barTime, open: Number(ev.open ?? '0'), high: Number(ev.high ?? '0'),
+    low: Number(ev.low ?? '0'), close: Number(ev.close ?? '0'), volume: Number(ev.volume ?? 0),
+  };
+  const { merged, changed } = mergeBar(barsRef.current, bar);
+  barsRef.current = merged;
+  chartRef.current?.updateData(toChartBar(changed));
+}
+
 export function useChartData(
   symbol: string, timeframe: string, accountId: string | undefined,
   chartRef: React.MutableRefObject<Chart | null>,
@@ -60,32 +106,7 @@ export function useChartData(
     cancelledRef.current = false;
     unsubRef.current?.();
     unsubRef.current = subscribeEvents([], {
-      onBar: (ev: BarUpdateEvent) => {
-        if (cancelledRef.current) return;
-        // Use refs (not closure) to always filter against the latest symbol/timeframe
-        if (ev.accountId !== accountId || ev.symbol !== symbolRef.current || ev.period !== timeframeRef.current) return;
-        // Guard against interleaving with handleLoadMore (applyNewData may replace dataset)
-        if (loadingMore.current) return;
-
-        const barTime = ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0;
-        if (barTime === 0) return;
-
-        const b = Number(ev.bid || '0'), a = Number(ev.ask || '0');
-        if (b > 0 || a > 0) {
-          setBidAsk(barTime * 1000, b, a);
-          const d = precisionRef.current;
-          setLatestBid(b > 0 ? b.toFixed(d) : '');
-          setLatestAsk(a > 0 ? a.toFixed(d) : '');
-        }
-
-        const bar: KlineData = {
-          time: barTime, open: Number(ev.open ?? '0'), high: Number(ev.high ?? '0'),
-          low: Number(ev.low ?? '0'), close: Number(ev.close ?? '0'), volume: Number(ev.volume ?? 0),
-        };
-        const { merged, changed } = mergeBar(barsRef.current, bar);
-        barsRef.current = merged;
-        chartRef.current?.updateData(toChartBar(changed));
-      },
+      onBar: (ev: BarUpdateEvent) => processBarEvent(ev, accountId, cancelledRef, symbolRef, timeframeRef, loadingMore, precisionRef, barsRef, chartRef, setBidAsk, setLatestBid, setLatestAsk),
     });
     return () => { cancelledRef.current = true; unsubRef.current?.(); unsubRef.current = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- chartRef is a ref

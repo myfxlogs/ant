@@ -35,27 +35,31 @@ export function handleBacktestUpdate(
   if (update.gateUpdate?.completed) cb.setGateUpdate(update.gateUpdate);
   if (update.qualityPreview) cb.setQualityPreview(update.qualityPreview);
   if (run && isTerminalRun(run)) {
-    const ok = isSucceededRun(run);
-    cb.setStatus(ok ? 'completed' : 'error');
-    cb.setMetrics(protoToMetrics(update.metrics));
-    cb.setExecutionAssumptions(update.executionAssumptions ?? null);
-    cb.setErrorMsg(update.run?.error ?? '');
-    cb.stopWatching();
-    if (ok) {
-      const m = protoToMetrics(update.metrics);
-      notification.success({ message: t(BACKTEST_COMPLETED_KEY), description: t(TOTAL_RETURN_KEY) + ': ' + ((m?.totalReturn ?? 0) * 100).toFixed(2) + '%', placement: 'bottomRight', duration: 4 });
-      backtestRunsApi.getTrades(runId).then((tr) => {
-        cb.setChartTrades(tr.trades.map((t: BacktestTrade) => ({
-          side: t.side, openTime: t.open_ts, openPrice: t.open_price,
-          closeTime: t.close_ts, closePrice: t.close_price, pnl: t.pnl, volume: t.volume,
-        })));
-      }).catch(() => cb.setChartTrades([]));
-    } else {
-      cb.setChartTrades([]);
-      notification.error({ message: t(BACKTEST_ERROR_KEY), description: update.run?.error || '', placement: 'bottomRight', duration: 6 });
-    }
+    handleTerminalRun(update, run, runId, t, cb);
   } else {
     cb.setMetrics(protoToMetrics(update.metrics));
+  }
+}
+
+function handleTerminalRun(update: BacktestRunUpdate, run: NonNullable<BacktestRunUpdate['run']>, runId: string, t: TFunction, cb: WatchCallbacks): void {
+  const ok = isSucceededRun(run);
+  cb.setStatus(ok ? 'completed' : 'error');
+  cb.setMetrics(protoToMetrics(update.metrics));
+  cb.setExecutionAssumptions(update.executionAssumptions ?? null);
+  cb.setErrorMsg(update.run?.error ?? '');
+  cb.stopWatching();
+  if (ok) {
+    const m = protoToMetrics(update.metrics);
+    notification.success({ message: t(BACKTEST_COMPLETED_KEY), description: t(TOTAL_RETURN_KEY) + ': ' + ((m?.totalReturn ?? 0) * 100).toFixed(2) + '%', placement: 'bottomRight', duration: 4 });
+    backtestRunsApi.getTrades(runId).then((tr) => {
+      cb.setChartTrades(tr.trades.map((t: BacktestTrade) => ({
+        side: t.side, openTime: t.open_ts, openPrice: t.open_price,
+        closeTime: t.close_ts, closePrice: t.close_price, pnl: t.pnl, volume: t.volume,
+      })));
+    }).catch(() => cb.setChartTrades([]));
+  } else {
+    cb.setChartTrades([]);
+    notification.error({ message: t(BACKTEST_ERROR_KEY), description: update.run?.error || '', placement: 'bottomRight', duration: 6 });
   }
 }
 

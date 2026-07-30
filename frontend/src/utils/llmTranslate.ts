@@ -63,6 +63,16 @@ export interface TranslateWithLLMParams {
   purpose?: 'error_detail';
 }
 
+function getLangName(target: string): string {
+  const langMap: Record<string, string> = {
+    'zh-cn': i18n.t('language.simplifiedChinese'),
+    'zh-tw': i18n.t('language.traditionalChinese'),
+    'ja': i18n.t('language.japanese'),
+    'vi': i18n.t('language.vietnamese'),
+  };
+  return langMap[target] || i18n.t('language.english');
+}
+
 export async function translateTextWithLLM(params: TranslateWithLLMParams): Promise<string> {
   const raw = String(params.text || '').trim();
   if (!raw) return '';
@@ -85,16 +95,7 @@ export async function translateTextWithLLM(params: TranslateWithLLMParams): Prom
     // ignore
   }
 
-  const langName =
-    target === 'zh-cn'
-      ? i18n.t('language.simplifiedChinese')
-      : target === 'zh-tw'
-        ? i18n.t('language.traditionalChinese')
-        : target === 'ja'
-          ? i18n.t('language.japanese')
-          : target === 'vi'
-            ? i18n.t('language.vietnamese')
-            : i18n.t('language.english');
+  const langName = getLangName(target);
 
   const prompt = [
     `You are a professional translator. Translate the following text into ${langName}.`,
@@ -138,10 +139,13 @@ export function extractErrorDetail(err: unknown): string {
   for (const c of candidates) {
     const s = String(c || '').trim();
     if (!s) continue;
-    // Avoid showing messageKey as "detail".
     if (s.startsWith('errors.')) continue;
     return s;
   }
+  return tryJsonStringify(err);
+}
+
+function tryJsonStringify(err: unknown): string {
   try {
     const json = JSON.stringify(err);
     if (json && json !== '{}' && !json.includes('errors.')) return json;

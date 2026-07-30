@@ -33,22 +33,25 @@ export function backendDirectivesToStrategyDirectives(
   for (const [key, raw] of seen) {
     const label = labels[key] || key;
     const isSet = raw !== undefined && raw !== '';
-    let display = raw;
-    const n = parseFloat(raw);
-    if (key === 'trailingEnabled') {
-      display = raw.toLowerCase() === 'true' || raw === '1' ? 'On' : 'Off';
-    } else if (!isNaN(n)) {
-      if (key === 'entryPct' || key === 'stopLossPct' || key === 'takeProfitPct' ||
-          key === 'trailingStopPct' || key === 'trailingActivationPct') {
-        const pct = n <= 1 && n > 0 ? n * 100 : n;
-        display = `${pct.toFixed(pct < 1 ? 2 : 1)}%`;
-      } else {
-        display = String(n);
-      }
-    }
+    const display = formatDirectiveDisplay(key, raw);
     out.push({ key, label, value: raw, isSet, display });
   }
   return out;
+}
+
+const PCT_KEYS = new Set(['entryPct', 'stopLossPct', 'takeProfitPct', 'trailingStopPct', 'trailingActivationPct']);
+
+function formatDirectiveDisplay(key: string, raw: string): string {
+  if (key === 'trailingEnabled') {
+    return raw.toLowerCase() === 'true' || raw === '1' ? 'On' : 'Off';
+  }
+  const n = parseFloat(raw);
+  if (isNaN(n)) return raw;
+  if (PCT_KEYS.has(key)) {
+    const pct = n <= 1 && n > 0 ? n * 100 : n;
+    return `${pct.toFixed(pct < 1 ? 2 : 1)}%`;
+  }
+  return String(n);
 }
 
 export interface SweepDimension {

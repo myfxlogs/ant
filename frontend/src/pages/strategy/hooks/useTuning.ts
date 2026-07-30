@@ -37,12 +37,7 @@ export function useTuning(t: TFunction) {
   }): Promise<string> => {
     setTuningRunning(true);
     try {
-      const paramSpace: Record<string, number[]> = {};
-      const enabled = sweepDimensions.filter(d => d.enabled);
-      for (const dim of enabled) {
-        if (dim.values && dim.values.length > 0) paramSpace[dim.key] = dim.values as number[];
-        else paramSpace[dim.key] = [0.01, 0.02, 0.03, 0.05, 0.10];
-      }
+      const paramSpace = buildParamSpace(sweepDimensions);
       const { strategyExperimentApi } = await import('@/client/strategyExperiment');
       const fromMs = params.startDate ? new Date(params.startDate).getTime() : 0;
       const toMs = params.endDate ? new Date(params.endDate).getTime() : 0;
@@ -73,4 +68,14 @@ export function useTuning(t: TFunction) {
     toggleDimension, enabledSweepDims, cartesianSize,
     tuningRunning, runTuning,
   };
+}
+
+function buildParamSpace(sweepDimensions: { enabled: boolean; key: string; values?: number[] }[]): Record<string, number[]> {
+  const paramSpace: Record<string, number[]> = {};
+  const enabled = sweepDimensions.filter(d => d.enabled);
+  for (const dim of enabled) {
+    if (dim.values && dim.values.length > 0) paramSpace[dim.key] = dim.values as number[];
+    else paramSpace[dim.key] = [0.01, 0.02, 0.03, 0.05, 0.10];
+  }
+  return paramSpace;
 }

@@ -53,7 +53,13 @@ const defaultAccountInfo: AccountInfo = {
   marginLevel: 0,
 };
 
-export const useTradingStore = create<TradingState>((set, get) => ({
+export const useTradingStore = create<TradingState>((set, get) => createTradingState(set, get));
+
+function createTradingState(
+  set: (partial: TradingState | Partial<TradingState> | ((state: TradingState) => TradingState | Partial<TradingState>)) => void,
+  get: () => TradingState,
+): TradingState {
+  return {
   positions: [],
   positionsMap: new Map(),
   tradeLogs: [],
@@ -199,4 +205,5 @@ export const useTradingStore = create<TradingState>((set, get) => ({
     };
   }),
   setLoading: (loading) => set({ loading: loading }),
-}));
+  };
+}

@@ -8,13 +8,19 @@ export function unwrapProviderMessage(raw: string): string {
   const body = raw.slice(start);
   try {
     const obj = JSON.parse(body) as { error?: { message?: unknown } | unknown; message?: unknown };
-    const errObj = typeof obj?.error === 'object' && obj?.error !== null ? obj.error as { message?: unknown } : null;
-    const inner = errObj?.message ?? obj?.message ?? obj?.error ?? '';
-    const innerStr = typeof inner === 'string' ? inner : typeof inner === 'object' && inner !== null ? JSON.stringify(inner) : '';
+    const innerStr = resolveInnerMessage(obj);
     return innerStr.trim() || raw;
   } catch {
     return raw;
   }
+}
+
+function resolveInnerMessage(obj: { error?: { message?: unknown } | unknown; message?: unknown }): string {
+  const errObj = typeof obj?.error === 'object' && obj?.error !== null ? obj.error as { message?: unknown } : null;
+  const inner = errObj?.message ?? obj?.message ?? obj?.error ?? '';
+  if (typeof inner === 'string') return inner;
+  if (typeof inner === 'object' && inner !== null) return JSON.stringify(inner);
+  return '';
 }
 
 export function pickErrorText(raw: unknown): string {

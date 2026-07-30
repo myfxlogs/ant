@@ -11,17 +11,21 @@ interface ConfigFlags {
 
 export function validateStrategyHealthConfig(raw: string, t: TFunction): boolean {
   if (!raw) { message.error(t('admin.config.validation.jsonEmpty')); return false; }
-  let parsed: unknown;
+  let parsed: Record<string, unknown>;
   try { parsed = JSON.parse(raw); } catch { message.error(t('admin.config.validation.jsonInvalid')); return false; }
-  const greenSuccessRate = Number(parsed?.green_success_rate);
-  const yellowSuccessRate = Number(parsed?.yellow_success_rate);
-  const greenMaxFailedRuns = Number(parsed?.green_max_failed_runs);
-  const minSampleSize = Number(parsed?.min_sample_size);
-  if (!Number.isFinite(greenSuccessRate) || greenSuccessRate < 0 || greenSuccessRate > 100) { message.error(t('admin.config.validation.greenSuccessRateRange')); return false; }
-  if (!Number.isFinite(yellowSuccessRate) || yellowSuccessRate < 0 || yellowSuccessRate > 100) { message.error(t('admin.config.validation.yellowSuccessRateRange')); return false; }
-  if (yellowSuccessRate > greenSuccessRate) { message.error(t('admin.config.validation.yellowNotGreaterThanGreen')); return false; }
-  if (!Number.isFinite(greenMaxFailedRuns) || greenMaxFailedRuns < 0) { message.error(t('admin.config.validation.greenMaxFailedRunsNonNegative')); return false; }
-  if (!Number.isFinite(minSampleSize) || minSampleSize < 0) { message.error(t('admin.config.validation.minSampleSizeNonNegative')); return false; }
+  const checks: [number, string, (n: number) => boolean][] = [
+    [Number(parsed?.green_success_rate), 'admin.config.validation.greenSuccessRateRange', (n) => !Number.isFinite(n) || n < 0 || n > 100],
+    [Number(parsed?.yellow_success_rate), 'admin.config.validation.yellowSuccessRateRateRange', (n) => !Number.isFinite(n) || n < 0 || n > 100],
+    [Number(parsed?.green_max_failed_runs), 'admin.config.validation.greenMaxFailedRunsNonNegative', (n) => !Number.isFinite(n) || n < 0],
+    [Number(parsed?.min_sample_size), 'admin.config.validation.minSampleSizeNonNegative', (n) => !Number.isFinite(n) || n < 0],
+  ];
+  for (const [val, key, isInvalid] of checks) {
+    if (isInvalid(val)) { message.error(t(key)); return false; }
+  }
+  if (Number(parsed?.yellow_success_rate) > Number(parsed?.green_success_rate)) {
+    message.error(t('admin.config.validation.yellowNotGreaterThanGreen'));
+    return false;
+  }
   return true;
 }
 

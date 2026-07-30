@@ -21,19 +21,22 @@ export type CommonFields = RiskFields & {
 // Build parameters map<string,string> for create/update schedule
 export function buildParametersFromForm(v: CommonFields): Record<string, string> {
   const out: Record<string, string> = {};
-  if (v.scheduleName && String(v.scheduleName).trim()) out['__schedule.name'] = String(v.scheduleName).trim();
-  if (v.defaultVolume && v.defaultVolume > 0) out['__risk.default_volume'] = String(v.defaultVolume);
-  if (v.maxPositions && v.maxPositions >= 1) out['__risk.max_positions'] = String(Math.floor(v.maxPositions));
-  if (v.stopLossPriceOffset && v.stopLossPriceOffset > 0) out['__risk.stop_loss_price_offset'] = String(v.stopLossPriceOffset);
-  if (v.takeProfitPriceOffset && v.takeProfitPriceOffset > 0) out['__risk.take_profit_price_offset'] = String(v.takeProfitPriceOffset);
+  setIfPositive(out, '__schedule.name', v.scheduleName, (val) => String(val).trim());
+  setIfPositive(out, '__risk.default_volume', v.defaultVolume, String);
+  setIfPositive(out, '__risk.max_positions', v.maxPositions, (val) => String(Math.floor(val)));
+  setIfPositive(out, '__risk.stop_loss_price_offset', v.stopLossPriceOffset, String);
+  setIfPositive(out, '__risk.take_profit_price_offset', v.takeProfitPriceOffset, String);
   if (v.maxDrawdownPct && v.maxDrawdownPct > 0 && v.maxDrawdownPct <= 1) out['__risk.max_drawdown_pct'] = String(v.maxDrawdownPct);
-  // common strategy params (flat)
-  if (v.lot && v.lot > 0) out['lot'] = String(v.lot);
-  if (v.grid_count && v.grid_count > 0) out['grid_count'] = String(Math.floor(v.grid_count));
+  setIfPositive(out, 'lot', v.lot, String);
+  setIfPositive(out, 'grid_count', v.grid_count, (val) => String(Math.floor(val)));
   if (typeof v.lower_price === 'number') out['lower_price'] = String(v.lower_price);
   if (typeof v.upper_price === 'number') out['upper_price'] = String(v.upper_price);
-  if (v.interval_hours && v.interval_hours > 0) out['interval_hours'] = String(Math.floor(v.interval_hours));
+  setIfPositive(out, 'interval_hours', v.interval_hours, (val) => String(Math.floor(val)));
   return out;
+}
+
+function setIfPositive(out: Record<string, string>, key: string, val: unknown, fmt: (v: unknown) => string): void {
+  if (val && (typeof val === 'number' ? val > 0 : String(val).trim())) out[key] = fmt(val);
 }
 
 // Parse parameters map back to form-friendly fields

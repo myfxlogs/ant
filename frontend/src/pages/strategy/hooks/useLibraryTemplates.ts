@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
+import type { ParameterEntry } from '@/gen/ant/v1/parameter_entry_pb';
 import { buildParamI18n } from '@/utils/paramLabel';
 import { useAuthStore } from '@/stores/authStore';
 import { isSystemTemplate } from './libraryTypes';
@@ -115,18 +116,15 @@ export function useLibraryTemplates() {
     try {
       setCodeValidating(true);
       const code = String(values.code || '');
-      // Re-validate if code changed; otherwise reuse stored validation result.
-      let paramEntries = validationResult?.parameterEntries || [];
-      if (code !== lastValidatedCode) {
-        const ext = await codeAssistApi.validateExtended(code);
-        if (!ext.valid) { message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY)); return; }
-        setLastValidatedCode(code);
-        if (ext.parameterEntries) { paramEntries = ext.parameterEntries; }
-      }
-      // Build i18n from extracted params (best-effort, never blocks save).
-      const i18n = paramEntries.length > 0 ? await buildParamI18n(paramEntries) : null;
+      const paramEntries = await ensureValidated(code, lastValidatedCode, validationResult, setLastValidatedCode, t);
+      if (paramEntries === null) return;
 
-      const data: CreateTemplateRequest = { name: String(values.name || ''), description: String(values.description || ''), code, parameters: paramEntries.map(e => ({ key: e.name, type: (e.type || 'string') as string, defaultValue: e.default })), isPublic: Boolean(values.isPublic) || false, tags: [], i18n: i18n || undefined };
+      const i18n = paramEntries.length > 0 ? await buildParamI18n(paramEntries) : null;
+      const data: CreateTemplateRequest = {
+        name: String(values.name || ''), description: String(values.description || ''), code,
+        parameters: paramEntries.map(e => ({ key: e.name, type: (e.type || 'string') as string, defaultValue: e.default })),
+        isPublic: Boolean(values.isPublic) || false, tags: [], i18n: i18n || undefined,
+      };
       if (editing) { await strategyTemplateApi.update({ id: editing.id, ...data }); message.success(t(MESSAGES_TEMPLATE_UPDATED_KEY)); }
       else { await strategyTemplateApi.create(data); message.success(t(MESSAGES_TEMPLATE_CREATED_KEY)); setFilter('user'); }
       setEditOpen(false); fetchTemplates();
@@ -192,4 +190,22 @@ export function useLibraryTemplates() {
     publishModalOpen, setPublishModalOpen, publishingTemplate,
     openPublishModal, closePublishModal,
   };
+}
+
+async function ensureValidated(
+  code: string,
+  lastValidatedCode: string | undefined,
+  validationResult: { parameterEntries?: ParameterEntry[] } | null,
+  setLastValidatedCode: (s: string) => void,
+  t: (k: string) => string,
+): Promise<ParameterEntry[] | null> {
+  const paramEntries = validationResult?.parameterEntries ?? [];
+  if (code === lastValidatedCode) return paramEntries;
+  const ext = await codeAssistApi.validateExtended(code);
+  if (!ext.valid) {
+    message.error(ext.errors?.[0] || ext.warnings?.[0] || t(MESSAGES_CODE_VALIDATION_NOT_PASSED_KEY));
+    return null;
+  }
+  setLastValidatedCode(code);
+  return ext.parameterEntries ?? paramEntries;
 }
