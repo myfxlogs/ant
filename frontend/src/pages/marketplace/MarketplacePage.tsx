@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { Tabs, Typography, Drawer, Button, Badge, Select } from 'antd';
-import { ShopOutlined, BookOutlined, UserOutlined, RobotOutlined, TrophyOutlined, SwapOutlined, GiftOutlined, ThunderboltOutlined, PercentageOutlined, GlobalOutlined } from '@ant-design/icons';
+import { ShopOutlined, BookOutlined, UserOutlined, TrophyOutlined, SwapOutlined, GiftOutlined, ThunderboltOutlined, PercentageOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import i18n, { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import Seo from '@/components/common/Seo';
@@ -9,7 +9,6 @@ import { MarketplaceProvider } from './MarketplaceContext';
 import MarketTab from './components/MarketTab';
 import PurchaseTab from './components/PurchaseTab';
 import AuthorTab from './components/AuthorTab';
-import AutoGeneratePanel from './components/AutoGeneratePanel';
 import LeaderboardTab from './components/LeaderboardTab';
 import StrategyDetailModal from './components/StrategyDetailModal';
 import PaymentModal from './components/PaymentModal';
@@ -24,7 +23,6 @@ const { Title, Text } = Typography;
 const MarketTabMemo = memo(MarketTab);
 const PurchaseTabMemo = memo(PurchaseTab);
 const AuthorTabMemo = memo(AuthorTab);
-const AutoGenerateMemo = memo(AutoGeneratePanel);
 const LeaderboardTabMemo = memo(LeaderboardTab);
 const BundleTabMemo = memo(BundleTab);
 const OptimizationTabMemo = memo(OptimizationTab);
@@ -75,7 +73,6 @@ function MarketplaceUI() {
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
             { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard')}</span>, children: <LeaderboardTabMemo /> },
             ...(m.isAuthenticated ? [
-              { key: 'ai', label: <span><RobotOutlined /> {t('marketplace.tabs.ai')}</span>, children: <AutoGenerateMemo /> },
               { key: 'purchases', label: <span><BookOutlined /> {t('marketplace.tabs.purchases')}</span>, children: <PurchaseTabMemo /> },
               { key: 'author', label: <span><UserOutlined /> {t('marketplace.tabs.author')}</span>, children: <AuthorTabMemo /> },
               { key: 'bundles', label: <span><GiftOutlined /> {t('marketplace.tabs.bundles')}</span>, children: <BundleTabMemo /> },
