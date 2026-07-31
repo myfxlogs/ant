@@ -123,6 +123,28 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
 		}
 	}
+	if m.AccountId != nil && *m.AccountId != existing.AccountID.String() {
+		newAccountID, err := uuid.Parse(*m.AccountId)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
+		}
+		// Verify the new account belongs to the user and is not frozen.
+		var status string
+		err = s.svc.DB().QueryRow(ctx,
+			`SELECT account_status FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
+			newAccountID, s.userID(ctx)).Scan(&status)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found or not owned by user"))
+		}
+		if status == "frozen" {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("target account is frozen"))
+		}
+		// Stop any running session for the old account before switching.
+		if s.engine != nil {
+			s.engine.StopSchedule(id)
+		}
+		existing.AccountID = newAccountID
+	}
 	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

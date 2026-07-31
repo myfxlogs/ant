@@ -25,6 +25,7 @@ message UpdateScheduleRequest {
   map<string, string> parameters = 5;
   optional string schedule_type = 6;
   ScheduleConfig schedule_config = 7;
+  optional string account_id = 8;  // change the bound MT account
 }
 
 message DeleteScheduleRequest {

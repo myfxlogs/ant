@@ -68,6 +68,7 @@ export const strategyScheduleApi = {
     parameters?: Record<string, string>;
     scheduleType?: string;
     scheduleConfig?: PartialMessage<ScheduleConfig>;
+    accountId?: string;
   }) => {
     const scheduleConfig = params.scheduleConfig ? normalizeScheduleConfig(params.scheduleConfig) : undefined;
     return await strategyClient.updateSchedule({
@@ -78,6 +79,7 @@ export const strategyScheduleApi = {
       parameters: params.parameters,
       scheduleType: params.scheduleType,
       scheduleConfig,
+      accountId: params.accountId,
     });
   },
 

@@ -125,10 +125,11 @@ func (s *StrategySvc) UpdateSchedule(ctx context.Context, r *ScheduleRow) error 
 	_, err := s.pg.Exec(ctx,
 		`UPDATE strategy_schedules SET name=$2, symbol=$3, timeframe=$4, parameters=$5, schedule_type=$6, schedule_config=$7,
 		 backtest_metrics=$8, risk_score=$9, risk_level=$10, risk_reasons=$11, risk_warnings=$12, last_backtest_at=$13,
-		 is_active=$14, last_run_at=$15, next_run_at=$16, run_count=$17, last_error=$18, updated_at=$19 WHERE id=$1 AND user_id=$20`,
+		 is_active=$14, last_run_at=$15, next_run_at=$16, run_count=$17, last_error=$18, account_id=$19, updated_at=$20
+		 WHERE id=$1 AND user_id=$21`,
 		r.ID, r.Name, r.Symbol, r.Timeframe, r.Parameters, r.ScheduleType, r.ScheduleConfig,
 		r.BacktestMetrics, r.RiskScore, r.RiskLevel, r.RiskReasons, r.RiskWarnings, r.LastBacktestAt,
-		r.IsActive, r.LastRunAt, r.NextRunAt, r.RunCount, r.LastError, r.UpdatedAt, r.UserID)
+		r.IsActive, r.LastRunAt, r.NextRunAt, r.RunCount, r.LastError, r.AccountID, r.UpdatedAt, r.UserID)
 	if err != nil {
 		return fmt.Errorf("UpdateSchedule: %w", err)
 	}

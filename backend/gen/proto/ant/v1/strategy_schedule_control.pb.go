@@ -130,6 +130,7 @@ type UpdateScheduleRequest struct {
 	Parameters     map[string]string      `protobuf:"bytes,5,rep,name=parameters,proto3" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	ScheduleType   *string                `protobuf:"bytes,6,opt,name=schedule_type,json=scheduleType,proto3,oneof" json:"schedule_type,omitempty"`
 	ScheduleConfig *ScheduleConfig        `protobuf:"bytes,7,opt,name=schedule_config,json=scheduleConfig,proto3" json:"schedule_config,omitempty"`
+	AccountId      *string                `protobuf:"bytes,8,opt,name=account_id,json=accountId,proto3,oneof" json:"account_id,omitempty"` // change the bound MT account
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -211,6 +212,13 @@ func (x *UpdateScheduleRequest) GetScheduleConfig() *ScheduleConfig {
 		return x.ScheduleConfig
 	}
 	return nil
+}
+
+func (x *UpdateScheduleRequest) GetAccountId() string {
+	if x != nil && x.AccountId != nil {
+		return *x.AccountId
+	}
+	return ""
 }
 
 type DeleteScheduleRequest struct {
@@ -329,7 +337,7 @@ const file_strategy_schedule_control_proto_rawDesc = "" +
 	"\x0fschedule_config\x18\b \x01(\v2\x16.ant.v1.ScheduleConfigR\x0escheduleConfig\x1a=\n" +
 	"\x0fParametersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xad\x03\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe0\x03\n" +
 	"\x15UpdateScheduleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x1b\n" +
@@ -339,7 +347,9 @@ const file_strategy_schedule_control_proto_rawDesc = "" +
 	"parameters\x18\x05 \x03(\v2-.ant.v1.UpdateScheduleRequest.ParametersEntryR\n" +
 	"parameters\x12(\n" +
 	"\rschedule_type\x18\x06 \x01(\tH\x03R\fscheduleType\x88\x01\x01\x12?\n" +
-	"\x0fschedule_config\x18\a \x01(\v2\x16.ant.v1.ScheduleConfigR\x0escheduleConfig\x1a=\n" +
+	"\x0fschedule_config\x18\a \x01(\v2\x16.ant.v1.ScheduleConfigR\x0escheduleConfig\x12\"\n" +
+	"\n" +
+	"account_id\x18\b \x01(\tH\x04R\taccountId\x88\x01\x01\x1a=\n" +
 	"\x0fParametersEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
@@ -347,7 +357,8 @@ const file_strategy_schedule_control_proto_rawDesc = "" +
 	"\a_symbolB\f\n" +
 	"\n" +
 	"_timeframeB\x10\n" +
-	"\x0e_schedule_type\"'\n" +
+	"\x0e_schedule_typeB\r\n" +
+	"\v_account_id\"'\n" +
 	"\x15DeleteScheduleRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"?\n" +
 	"\x15ToggleScheduleRequest\x12\x0e\n" +

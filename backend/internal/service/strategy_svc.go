@@ -19,3 +19,7 @@ type StrategySvc struct {
 func NewStrategySvc(pg *pgxpool.Pool) *StrategySvc {
 	return &StrategySvc{pg: pg}
 }
+
+// DB returns the underlying connection pool for queries that span service boundaries
+// (e.g. validating MT account ownership in schedule updates).
+func (s *StrategySvc) DB() *pgxpool.Pool { return s.pg }

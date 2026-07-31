@@ -105,6 +105,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
         await strategyScheduleV2Api.update({
           id: editing.id, name: v.name, symbol: v.symbol, timeframe: v.timeframe,
           scheduleType: backendScheduleType, scheduleConfig, parameters: merged,
+          accountId: v.accountId,
         });
         message.success(t('common.updated'));
       } else {
@@ -140,9 +141,9 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   }, [refresh, t]);
 
   useEffect(() => {
-    if (!openEdit || editing?.id || !accountIdWatch) return;
+    if (!openEdit || !accountIdWatch) return;
     void loadSymbols(accountIdWatch);
-  }, [accountIdWatch, openEdit, editing?.id, loadSymbols]);
+  }, [accountIdWatch, openEdit, loadSymbols]);
 
   return {
     schedules: filteredSchedules, allSchedules: schedules,

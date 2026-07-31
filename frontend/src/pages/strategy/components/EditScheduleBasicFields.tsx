@@ -55,6 +55,12 @@ export default function EditScheduleBasicFields({
           </Col>
         </Row>
       )}
+      {!isCreate && (
+        <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY, { defaultValue: 'Trading Account' })} name="accountId"
+          rules={[{ required: true, message: t('common.required') }]}>
+          <Select showSearch optionFilterProp="label" options={accountOptions} />
+        </Form.Item>
+      )}
 
       <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_KEY, { defaultValue: 'Schedule Name' })} name="name"
         rules={[{ required: true, message: t(EDIT_MODAL_VALIDATION_NAME_REQUIRED_KEY) }, { max: 100 }]}>
