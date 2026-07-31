@@ -13,6 +13,7 @@ import { strategyVersionApi } from '@/client/strategy';
 import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 import { VersionHistoryTab, versionHistoryTabLabel } from './VersionHistoryTab';
 import { DiscussionSection, priceText } from './StrategyDetailModalHelpers';
+import DeployScheduleModal from '@/pages/strategy/components/DeployScheduleModal';
 
 const { Text, Paragraph } = Typography;
 
