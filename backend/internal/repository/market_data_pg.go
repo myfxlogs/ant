@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
@@ -283,38 +282,7 @@ func (s *PgMarketDataStore) InsertBars(ctx context.Context, bars []KlineBar) err
 	return nil
 }
 
-// InsertTicks batch-inserts ticks via COPY protocol.
+// InsertTicks is a legacy interface method. ADR-0012: tick persistence disabled (no-op).
 func (s *PgMarketDataStore) InsertTicks(ctx context.Context, ticks []TickRecord) error {
-	if len(ticks) == 0 {
-		return nil
-	}
-	cols := []string{"user_id", "account_id", "broker", "symbol_raw", "canonical",
-		"ts_unix_ms", "arrived_unix_ms", "bid", "ask", "bid_volume", "ask_volume", "is_replay"}
-	rows := make([][]any, len(ticks))
-	for i, t := range ticks {
-		replay := int16(0)
-		if t.IsReplay {
-			replay = 1
-		}
-		rows[i] = []any{
-			t.UserID, t.AccountID, t.Broker, t.SymbolRaw, t.Canonical,
-			t.TsUnixMs, t.ArrivedUnixMs, t.Bid, t.Ask, t.BidVolume, t.AskVolume,
-			replay,
-		}
-	}
-	return s.copyFrom(ctx, "md_ticks", cols, rows)
-}
-
-// copyFrom executes a pgx CopyFrom for batch insertion.
-func (s *PgMarketDataStore) copyFrom(ctx context.Context, table string, columns []string, rows [][]any) error {
-	_, err := s.pool.CopyFrom(
-		ctx,
-		pgx.Identifier{table},
-		columns,
-		pgx.CopyFromRows(rows),
-	)
-	if err != nil {
-		return fmt.Errorf("pg copyfrom %s: %w", table, err)
-	}
 	return nil
 }

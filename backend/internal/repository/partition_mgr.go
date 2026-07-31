@@ -16,10 +16,8 @@ import (
 var validPartitionName = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
 
 const (
-	mdTicksRetentionDays = 90
-	mdBarsRetentionDays  = 730 // 2 years
-	mdTicksLookAhead     = 3   // pre-create 3 months of partitions
-	mdBarsLookAhead      = 6
+	mdBarsRetentionDays = 730 // 2 years
+	mdBarsLookAhead     = 6
 )
 
 // EnsureMarketDataPartitions creates missing monthly partitions for md_bars,

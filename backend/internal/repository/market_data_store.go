@@ -14,8 +14,7 @@ import (
 )
 
 // MarketDataStore is the unified interface for market data access.
-// It covers all read and write paths previously scattered across
-// MarketDataRepository, CHWriter, and raw ClickHouse queries.
+// It covers all read and write paths for PG-backed market data.
 type MarketDataStore interface {
 	// ── Read paths ──
 
@@ -25,7 +24,7 @@ type MarketDataStore interface {
 	GetKlines(ctx context.Context, canonical, broker, period string, from, to *time.Time, limit int32) ([]KlineBar, error)
 
 	// GetLatestTick returns the most recent bid/ask for a symbol.
-	// lookback is bounded to 24h by the implementation.
+	// ADR-0012: Sourced from Redis (latest_quote:{canonical}).
 	GetLatestTick(ctx context.Context, canonical, broker string) (*LatestTick, error)
 
 	// LoadFinalizedBars returns all existing close_ts values per (broker, canonical, period)
@@ -52,7 +51,7 @@ type MarketDataStore interface {
 	// InsertBars batch-inserts kline bars. Used by backfill and broker history sync.
 	InsertBars(ctx context.Context, bars []KlineBar) error
 
-	// InsertTicks batch-inserts raw ticks from the mdgateway pipeline.
+	// InsertTicks is a legacy interface method. ADR-0012: tick persistence disabled (no-op).
 	InsertTicks(ctx context.Context, ticks []TickRecord) error
 }
 

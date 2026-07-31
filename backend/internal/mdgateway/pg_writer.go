@@ -1,5 +1,5 @@
-// pg_writer.go — PostgreSQL batch writer replacing CHWriter.
-// Same channel-buffered pattern, but writes to PG native partitioned tables via CopyFrom.
+// pg_writer.go — PostgreSQL batch writer for market data.
+// Channel-buffered pattern, writes to PG native partitioned tables.
 
 package mdgateway
 
@@ -15,7 +15,7 @@ import (
 	"alphaforge/internal/usermgr"
 )
 
-// PgWriterConfig mirrors CHWriterConfig for drop-in replacement.
+// PgWriterConfig controls batch sizes and queue capacity.
 type PgWriterConfig struct {
 	MaxBatchSize int // default 2000
 	QueueSize    int // default 10000
