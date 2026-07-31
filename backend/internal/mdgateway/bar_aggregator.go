@@ -28,6 +28,7 @@ type openBar struct {
 	count  uint32
 	startTs, endTs int64
 	accountID string
+	symbolRaw string
 }
 
 func NewBarAggregator() *BarAggregator {
@@ -79,17 +80,18 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 
 		ob := a.bars[key]
 		if ob == nil {
-			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, bid: t.Bid, ask: t.Ask, startTs: bucket * p.Ms, accountID: t.AccountID}
+			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, bid: t.Bid, ask: t.Ask, startTs: bucket * p.Ms, accountID: t.AccountID, symbolRaw: t.SymbolRaw}
 			a.bars[key] = ob
 		} else if ob.bucket != bucket {
 			bar := &mdtick.Bar{
 				AccountID: ob.accountID,
-				Broker: t.Broker, Canonical: t.Canonical, Period: p.Name,
+				Broker: t.Broker, SymbolRaw: t.SymbolRaw, Canonical: t.Canonical, Period: p.Name,
 				OpenTsUnixMs: ob.bucket * p.Ms, CloseTsUnixMs: (ob.bucket + 1) * p.Ms,
 				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
 				Bid: ob.bid, Ask: ob.ask,
 				Volume: ob.volume, TickCount: ob.count,
 				IsClosed: true,
+				IsReplay: t.IsReplay,
 			}
 			fk := repository.FinalizedKey{Broker: t.Broker, Canonical: t.Canonical, Period: p.Name}
 			if a.finalizedBars[fk] == nil {
@@ -98,7 +100,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 			a.finalizedBars[fk][bar.CloseTsUnixMs] = struct{}{}
 			onBar(bar)
 			ob.bucket = bucket
-			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid; ob.bid = t.Bid; ob.ask = t.Ask; ob.accountID = t.AccountID
+			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid; ob.bid = t.Bid; ob.ask = t.Ask; ob.accountID = t.AccountID; ob.symbolRaw = t.SymbolRaw
 			ob.volume = 0; ob.count = 0
 			ob.startTs = bucket * p.Ms
 		}
@@ -108,6 +110,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 		ob.bid = t.Bid
 		ob.ask = t.Ask
 		ob.accountID = t.AccountID
+		ob.symbolRaw = t.SymbolRaw
 		ob.volume += float64(t.BidVolume + t.AskVolume)
 		ob.count++
 		ob.endTs = t.ArrivedUnixMs
@@ -127,6 +130,7 @@ func (a *BarAggregator) GetOpenBars() []*mdtick.Bar {
 		out = append(out, &mdtick.Bar{
 			AccountID:     ob.accountID,
 			Broker:        parts[0],
+			SymbolRaw:     ob.symbolRaw,
 			Canonical:     parts[1],
 			Period:        parts[2],
 			OpenTsUnixMs:  ob.bucket * mdtick.PeriodMs(parts[2]),

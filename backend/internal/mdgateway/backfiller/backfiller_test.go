@@ -90,7 +90,7 @@ func TestNewSourceMTAPI(t *testing.T) {
 
 func TestNewTarget(t *testing.T) {
 	t.Parallel()
-	tgt := NewTarget(nil, nil, nil, nil)
+	tgt := NewTarget(nil, nil, nil)
 	if tgt == nil {
 		t.Fatal("NewTarget returned nil")
 	}
@@ -257,7 +257,7 @@ func (m *mockBarSource) GetPriceHistory(ctx context.Context, accountID, symbolRa
 func TestTargetAdapter_IngestBar_SkippedByAgg(t *testing.T) {
 	t.Parallel()
 	agg := &mockAggregator{accept: false}
-	ta := NewTarget(agg, nil, nil, nil)
+	ta := NewTarget(agg, nil, nil)
 	err := ta.IngestBar(context.Background(), &mdtick.Bar{CloseTsUnixMs: 1000})
 	if err != nil {
 		t.Errorf("IngestBar should not error when skipped by aggregator: %v", err)
@@ -268,8 +268,8 @@ func TestTargetAdapter_IngestBar_Accepted(t *testing.T) {
 	t.Parallel()
 	agg := &mockAggregator{accept: true}
 	pub := &mockPublisher{}
-	chw := &mockBarEnqueuer{}
-	ta := NewTarget(agg, pub, chw, nil)
+	pgw := &mockBarEnqueuer{}
+	ta := NewTarget(agg, pub, pgw)
 	bar := &mdtick.Bar{CloseTsUnixMs: 1000}
 	err := ta.IngestBar(context.Background(), bar)
 	if err != nil {
@@ -278,8 +278,8 @@ func TestTargetAdapter_IngestBar_Accepted(t *testing.T) {
 	if !pub.called {
 		t.Error("publisher should have been called")
 	}
-	if !chw.called {
-		t.Error("CH writer should have been called")
+	if !pgw.called {
+		t.Error("PG writer should have been called")
 	}
 }
 
@@ -287,8 +287,8 @@ func TestTargetAdapter_IngestBar_PublishError(t *testing.T) {
 	t.Parallel()
 	agg := &mockAggregator{accept: true}
 	pub := &mockErrorPublisher{}
-	chw := &mockBarEnqueuer{}
-	ta := NewTarget(agg, pub, chw, nil)
+	pgw := &mockBarEnqueuer{}
+	ta := NewTarget(agg, pub, pgw)
 	bar := &mdtick.Bar{CloseTsUnixMs: 1000}
 	err := ta.IngestBar(context.Background(), bar)
 	if err == nil {
@@ -409,7 +409,7 @@ func TestRun_WithAccounts(t *testing.T) {
 			{CloseTsUnixMs: time.Now().UnixMilli()},
 		},
 	})
-	tgt := NewTarget(&mockAggregator{accept: true}, &mockPublisher{}, &mockBarEnqueuer{}, nil)
+	tgt := NewTarget(&mockAggregator{accept: true}, &mockPublisher{}, &mockBarEnqueuer{})
 	chMax := &mockCHMaxCloseTs{ts: 0}
 	pgAcc := &staticAccounts{accounts: []ActiveAccount{
 		{AccountID: "acct-1", Broker: "broker", Symbols: []string{"EURUSD"}},
@@ -431,7 +431,7 @@ func TestBackfillAccount_WithMatch(t *testing.T) {
 			{CloseTsUnixMs: time.Now().UnixMilli()},
 		},
 	})
-	tgt := NewTarget(&mockAggregator{accept: true}, &mockPublisher{}, &mockBarEnqueuer{}, nil)
+	tgt := NewTarget(&mockAggregator{accept: true}, &mockPublisher{}, &mockBarEnqueuer{})
 	chMax := &mockCHMaxCloseTs{ts: 0}
 	pgAcc := &staticAccounts{accounts: []ActiveAccount{
 		{AccountID: "acct-1", Broker: "broker", Symbols: []string{"EURUSD"}},
@@ -453,7 +453,7 @@ func TestBackfillSymbol_WithMatch(t *testing.T) {
 			{CloseTsUnixMs: time.Now().UnixMilli()},
 		},
 	})
-	tgt := NewTarget(&mockAggregator{accept: true}, &mockPublisher{}, &mockBarEnqueuer{}, nil)
+	tgt := NewTarget(&mockAggregator{accept: true}, &mockPublisher{}, &mockBarEnqueuer{})
 	chMax := &mockCHMaxCloseTs{ts: 0}
 	pgAcc := &staticAccounts{accounts: []ActiveAccount{
 		{AccountID: "acct-1", Broker: "broker", Symbols: []string{"EURUSD"}},

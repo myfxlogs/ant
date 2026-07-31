@@ -9,8 +9,6 @@ package repository
 import (
 	"context"
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
 // MarketDataStore is the unified interface for market data access.
@@ -50,26 +48,6 @@ type MarketDataStore interface {
 
 	// InsertBars batch-inserts kline bars. Used by backfill and broker history sync.
 	InsertBars(ctx context.Context, bars []KlineBar) error
-
-	// InsertTicks is a legacy interface method. ADR-0012: tick persistence disabled (no-op).
-	InsertTicks(ctx context.Context, ticks []TickRecord) error
-}
-
-// TickRecord represents a single tick for batch insertion.
-// Bid/Ask use decimal.Decimal per project precision standard.
-type TickRecord struct {
-	UserID        string
-	AccountID     string
-	Broker        string
-	SymbolRaw     string
-	Canonical     string
-	TsUnixMs      int64
-	ArrivedUnixMs int64
-	Bid           decimal.Decimal
-	Ask           decimal.Decimal
-	BidVolume     float64
-	AskVolume     float64
-	IsReplay      bool
 }
 
 // FinalizedKey uniquely identifies a bar series for dedup.

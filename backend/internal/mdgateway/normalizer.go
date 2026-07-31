@@ -2,6 +2,7 @@ package mdgateway
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,6 +12,7 @@ import (
 // Implements mdtick.CanonicalResolver.
 type Normalizer struct {
 	pg    *pgxpool.Pool
+	mu    sync.RWMutex
 	cache map[string]string // key: broker:raw
 }
 
@@ -24,15 +26,26 @@ func NewNormalizer(pg *pgxpool.Pool) *Normalizer {
 // Order: 1. in-memory cache  2. PG broker_symbols  3. algorithmic fallback.
 func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 	key := broker + ":" + raw
+
+	n.mu.RLock()
 	if v, ok := n.cache[key]; ok {
+		n.mu.RUnlock()
 		return v
 	}
+	n.mu.RUnlock()
 
+	n.mu.Lock()
+	// Double-check after acquiring write lock.
+	if v, ok := n.cache[key]; ok {
+		n.mu.Unlock()
+		return v
+	}
 	// Guard against unbounded cache growth: reset if exceeding 100k entries.
 	const maxCacheSize = 100_000
 	if len(n.cache) > maxCacheSize {
 		n.cache = make(map[string]string, maxCacheSize)
 	}
+	n.mu.Unlock()
 
 	// Try PG lookup
 	if n.pg != nil {
@@ -44,7 +57,9 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 			broker, raw,
 		).Scan(&canonical)
 		if err == nil && canonical != "" {
+			n.mu.Lock()
 			n.cache[key] = canonical
+			n.mu.Unlock()
 			return canonical
 		}
 	}
@@ -53,7 +68,9 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 	// Suffix stripping caused mismatches: brokers use symbols like "XAUUSDm"
 	// and don't recognize the stripped form "XAUUSD" for historical queries.
 	canonical := raw
+	n.mu.Lock()
 	n.cache[key] = canonical
+	n.mu.Unlock()
 	return canonical
 }
 
@@ -61,5 +78,7 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 // Called by NormalizerInvalidator on PG NOTIFY events (ADR-0011 §2.3).
 func (n *Normalizer) InvalidateCache(broker, symbolRaw string) {
 	key := broker + ":" + symbolRaw
+	n.mu.Lock()
 	delete(n.cache, key)
+	n.mu.Unlock()
 }

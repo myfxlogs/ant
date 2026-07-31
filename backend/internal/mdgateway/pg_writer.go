@@ -29,19 +29,18 @@ func DefaultPgWriterConfig() PgWriterConfig {
 	}
 }
 
-// PgWriter buffers ticks and bars and flushes them to PostgreSQL via CopyFrom.
+// PgWriter buffers bars and flushes them to PostgreSQL via batch INSERT.
 type PgWriter struct {
 	cfg     PgWriterConfig
-	store   repository.MarketDataStore // PG primary
+	store   repository.MarketDataStore // PG sole storage (ADR-0012)
 	log     *zap.Logger
 
-	tickQ chan *mdtick.Tick
-	barQ  chan *mdtick.Bar
+	barQ chan *mdtick.Bar
 
 	userLimiter *usermgr.UserLimiter
 }
 
-// NewPgWriter creates a PG-backed writer with the same channel pattern as CHWriter.
+// NewPgWriter creates a PG-backed writer with channel-buffered batch flushing.
 func NewPgWriter(cfg PgWriterConfig, store repository.MarketDataStore, log *zap.Logger) *PgWriter {
 	if cfg.QueueSize <= 0 {
 		cfg.QueueSize = 5000
@@ -50,28 +49,12 @@ func NewPgWriter(cfg PgWriterConfig, store repository.MarketDataStore, log *zap.
 		cfg:   cfg,
 		store: store,
 		log:   log,
-		tickQ: make(chan *mdtick.Tick, cfg.QueueSize),
 		barQ:  make(chan *mdtick.Bar, cfg.QueueSize),
 	}
 }
 
 // SetUserLimiter injects the per-user write rate limiter (nil-safe).
 func (w *PgWriter) SetUserLimiter(l *usermgr.UserLimiter) { w.userLimiter = l }
-
-// EnqueueTick adds a tick to the write buffer. Non-blocking; drops if channel full.
-func (w *PgWriter) EnqueueTick(t *mdtick.Tick) {
-	if w.userLimiter != nil && t.UserID != "" && !w.userLimiter.AllowCHWrite(t.UserID, 256) {
-		RecordChanFull()
-		return
-	}
-	select {
-	case w.tickQ <- t:
-	default:
-		RecordChanFull()
-		// No spill writer — NATS replay provides durability.
-		w.log.Warn("pgwriter: tick queue full, dropping", zap.String("symbol", t.Canonical))
-	}
-}
 
 // EnqueueBar adds a bar to the write buffer. Non-blocking; drops if channel full.
 func (w *PgWriter) EnqueueBar(b *mdtick.Bar) {
@@ -90,20 +73,13 @@ func (w *PgWriter) EnqueueBar(b *mdtick.Bar) {
 // Start begins the flush loop. Blocks until ctx.Done.
 // Flush is event-driven: when a batch reaches MaxBatchSize, or on shutdown.
 func (w *PgWriter) Start(ctx context.Context) {
-	var tickBatch []*mdtick.Tick
 	var barBatch []*mdtick.Bar
 
 	for {
 		select {
 		case <-ctx.Done():
-			w.flush(context.Background(), tickBatch, barBatch)
+			w.flushBars(ctx, barBatch)
 			return
-		case t := <-w.tickQ:
-			tickBatch = append(tickBatch, t)
-			if len(tickBatch) >= w.cfg.MaxBatchSize {
-				w.flushTicks(ctx, tickBatch)
-				tickBatch = tickBatch[:0]
-			}
 		case b := <-w.barQ:
 			barBatch = append(barBatch, b)
 			if len(barBatch) >= w.cfg.MaxBatchSize {
@@ -114,24 +90,9 @@ func (w *PgWriter) Start(ctx context.Context) {
 	}
 }
 
-// Flush drains the given batches to PG. Called during graceful shutdown.
-func (w *PgWriter) Flush(ctx context.Context, ticks []*mdtick.Tick, bars []*mdtick.Bar) {
-	w.flushTicks(ctx, ticks)
+// Flush drains the given bars to PG. Called during graceful shutdown.
+func (w *PgWriter) Flush(ctx context.Context, bars []*mdtick.Bar) {
 	w.flushBars(ctx, bars)
-}
-
-func (w *PgWriter) flush(ctx context.Context, ticks []*mdtick.Tick, bars []*mdtick.Bar) {
-	w.flushTicks(ctx, ticks)
-	w.flushBars(ctx, bars)
-}
-
-func (w *PgWriter) flushTicks(ctx context.Context, batch []*mdtick.Tick) {
-	if len(batch) == 0 {
-		return
-	}
-	// ADR-0012: Tick persistence disabled. Ticks are transient via NATS.
-	// Latest quote is cached in Redis (see manager_tick.go HandleTick).
-	w.log.Warn("pgwriter: tick persistence disabled, dropping ticks", zap.Int("count", len(batch)))
 }
 
 func (w *PgWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
@@ -142,6 +103,7 @@ func (w *PgWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 	for i, b := range batch {
 		bars[i] = repository.KlineBar{
 			Broker:        b.Broker,
+			SymbolRaw:     b.SymbolRaw,
 			Canonical:     b.Canonical,
 			Period:        b.Period,
 			OpenTsUnixMs:  uint64(b.OpenTsUnixMs),
@@ -152,6 +114,8 @@ func (w *PgWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 			Close:         b.Close,
 			Volume:        b.Volume,
 			TickCount:     b.TickCount,
+			IsReplay:      b.IsReplay,
+			AccountID:     b.AccountID,
 		}
 	}
 	if err := w.retryInsert(ctx, func() error { return w.store.InsertBars(ctx, bars) }); err != nil {
@@ -176,26 +140,15 @@ func (w *PgWriter) retryInsert(ctx context.Context, fn func() error) error {
 	return fmt.Errorf("pgwriter: insert failed after 3 attempts: %w", err)
 }
 
-// Drain non-blockingly reads all remaining items from the queues.
-func (w *PgWriter) Drain() (ticks []*mdtick.Tick, bars []*mdtick.Bar) {
-	for {
-		select {
-		case t := <-w.tickQ:
-			ticks = append(ticks, t)
-		default:
-			goto doneTicks
-		}
-	}
-doneTicks:
+// Drain non-blockingly reads all remaining bars from the queue.
+func (w *PgWriter) Drain() []*mdtick.Bar {
+	var bars []*mdtick.Bar
 	for {
 		select {
 		case b := <-w.barQ:
 			bars = append(bars, b)
 		default:
-			goto doneBars
+			return bars
 		}
 	}
-doneBars:
-	return ticks, bars
 }
-

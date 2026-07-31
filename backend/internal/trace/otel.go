@@ -1,5 +1,5 @@
 // Package trace provides OpenTelemetry initialization for the ant platform.
-// ADR-0010 §2.3: spans cover normalize → quality → dedup → aggregate → publish → chwrite.
+// ADR-0010 §2.3: spans cover normalize → quality → dedup → aggregate → publish → enqueue.
 // Enabled via OTEL_EXPORTER_OTLP_ENDPOINT env var; disabled by default.
 //
 // Architecture:

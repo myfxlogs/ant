@@ -1,11 +1,10 @@
 // market_data_pg.go — PostgreSQL implementation of MarketDataStore.
 // Uses native PG partitioned tables (md_bars) with pgx.
 //
-// Query patterns:
-//   argMax(bid, ts)        → ORDER BY ts DESC LIMIT 1
-//   LIMIT 1 BY (a,b,c)     → DISTINCT ON (a,b,c)
-//   toFloat64(decimal_col) → direct scan (pgx converts NUMERIC→float64)
-//   PrepareBatch           → pgx.CopyFrom
+// Key query patterns:
+//   DISTINCT ON (cols) ORDER BY  → dedup + pick best row per key
+//   ON CONFLICT DO UPDATE        → upsert bars (merge OHLC by tick_count)
+//   NUMERIC columns scanned as decimal.Decimal via pgx
 
 package repository
 
@@ -262,10 +261,10 @@ func (s *PgMarketDataStore) InsertBars(ctx context.Context, bars []KlineBar) err
 				base+1, base+2, base+3, base+4, base+5, base+6,
 				base+7, base+8, base+9, base+10, base+11, base+12, base+13, base+14)
 			args = append(args,
-				b.Broker, b.Canonical, b.Canonical, b.Period,
+				b.Broker, b.SymbolRaw, b.Canonical, b.Period,
 				int64(b.OpenTsUnixMs), int64(b.CloseTsUnixMs),
 				b.Open, b.High, b.Low, b.Close, b.Volume, int32(b.TickCount),
-				int16(0), "",
+				isReplayToInt16(b.IsReplay), b.AccountID,
 			)
 		}
 		sb.WriteString(` ON CONFLICT (broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms) DO UPDATE SET
@@ -279,10 +278,5 @@ func (s *PgMarketDataStore) InsertBars(ctx context.Context, bars []KlineBar) err
 			return fmt.Errorf("pg insert bars upsert: %w", err)
 		}
 	}
-	return nil
-}
-
-// InsertTicks is a legacy interface method. ADR-0012: tick persistence disabled (no-op).
-func (s *PgMarketDataStore) InsertTicks(ctx context.Context, ticks []TickRecord) error {
 	return nil
 }

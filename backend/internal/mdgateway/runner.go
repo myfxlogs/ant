@@ -172,8 +172,8 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	<-ctx.Done()
 	log.Info("mdgateway: shutting down")
 
-	pticks, pbars := pgWriter.Drain()
-	pgWriter.Flush(ctx, pticks, pbars)
+	pbars := pgWriter.Drain()
+	pgWriter.Flush(ctx, pbars)
 	log.Info("mdgateway: stopped")
 	return nil
 }

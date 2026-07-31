@@ -88,7 +88,6 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 			m.log.Debug("mdgateway: redis set latest_quote failed", zap.String("symbol", t.Canonical), zap.Error(err))
 		}
 	}
-	m.pgWriter.EnqueueTick(t)
 	for _, b := range bars {
 		m.pgWriter.EnqueueBar(b)
 	}

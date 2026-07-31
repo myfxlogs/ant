@@ -11,7 +11,7 @@ import (
 
 func TestDLQParseError(t *testing.T) {
 	t.Parallel()
-	// DLQ with nil CH conn — writes should be no-ops (spill fallback or skip).
+	// DLQ writes structured log entries (ADR-0012: no DB insertion).
 	dlq := NewDLQWriter(zap.NewNop())
 	if dlq == nil {
 		t.Fatal("NewDLQWriter returned nil")

@@ -13,6 +13,7 @@ import (
 // KlineBar represents a single OHLCV bar.
 type KlineBar struct {
 	Broker        string
+	SymbolRaw     string
 	Canonical     string
 	Period        string
 	OpenTsUnixMs  uint64
@@ -23,6 +24,8 @@ type KlineBar struct {
 	Close         decimal.Decimal
 	Volume        float64
 	TickCount     uint32
+	IsReplay      bool
+	AccountID     string
 }
 
 // LatestTick holds the latest bid/ask for a symbol.
@@ -49,7 +52,6 @@ func normalizeTimeframe(period string) string {
 }
 
 // scanKlineBars scans a row iterator into a slice of KlineBar.
-// Used by both CH (legacy) and PG implementations.
 func scanKlineBars(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }, log *zap.Logger) ([]KlineBar, error) {
 	var bars []KlineBar
 	for rows.Next() {
@@ -80,4 +82,11 @@ func (b *KlineBar) OpenTime() time.Time {
 // CloseTime converts the close unix millisecond timestamp to time.Time.
 func (b *KlineBar) CloseTime() time.Time {
 	return time.UnixMilli(int64(b.CloseTsUnixMs))
+}
+
+func isReplayToInt16(b bool) int16 {
+	if b {
+		return 1
+	}
+	return 0
 }

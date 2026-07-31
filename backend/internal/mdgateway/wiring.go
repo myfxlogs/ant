@@ -100,9 +100,9 @@ func startBackfiller(ctx context.Context, deps RunnerDeps, agg *BarAggregator, p
 	src := backfiller.NewSourceMTAPI(srcMap)
 
 	// Target: aggregator finality check → NATS publish → PG enqueue.
-	tgt := backfiller.NewTarget(agg, pub, pgw, nil)
+	tgt := backfiller.NewTarget(agg, pub, pgw)
 
-	// CHMaxCloseTs: uses MarketDataStore (PG-primary, CH during transition).
+	// MaxCloseTs: uses MarketDataStore (PG sole storage per ADR-0012).
 	chMax := &storeMaxCloseTs{store: deps.Store}
 
 	// PGActiveAccounts: queries pg for active accounts + subscribed symbols.

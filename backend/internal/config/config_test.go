@@ -12,7 +12,6 @@ func TestLoadDefaults(t *testing.T) {
 	// Clear CI-injected env vars so defaults are tested, not CI config.
 	for _, key := range []string{
 		"DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_SSLMODE",
-		"CH_HOST", "CH_PORT", "CH_USER", "CH_PASSWORD", "CH_DATABASE",
 		"NATS_URL", "REDIS_HOST", "REDIS_PORT", "REDIS_PASSWORD",
 		"ANT_MASTER_KEY", "JWT_SECRET", "PORT", "SPILL_DIR", "GEOIP_DB_PATH",
 		"RATE_LIMIT_LOGIN_PER_MINUTE", "RATE_LIMIT_ENABLED",

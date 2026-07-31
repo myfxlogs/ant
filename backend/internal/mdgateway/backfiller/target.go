@@ -25,17 +25,16 @@ type BarEnqueuer interface {
 
 // TargetAdapter composes the downstream targets for backfilled bars.
 // Each bar is: 1) finality-checked by aggregator, 2) published to NATS,
-// 3) enqueued for storage (CH + PG during migration).
+// 3) enqueued for PG storage.
 type TargetAdapter struct {
 	agg       BarAggregatorTarget
 	publisher PublisherTarget
-	chWriter  BarEnqueuer
-	pgWriter  BarEnqueuer // nil if PG not configured
+	pgWriter  BarEnqueuer
 }
 
 // NewTarget creates a TargetAdapter.
-func NewTarget(agg BarAggregatorTarget, pub PublisherTarget, chw BarEnqueuer, pgw BarEnqueuer) *TargetAdapter {
-	return &TargetAdapter{agg: agg, publisher: pub, chWriter: chw, pgWriter: pgw}
+func NewTarget(agg BarAggregatorTarget, pub PublisherTarget, pgw BarEnqueuer) *TargetAdapter {
+	return &TargetAdapter{agg: agg, publisher: pub, pgWriter: pgw}
 }
 
 // IngestBar routes a backfilled bar through the targets.
@@ -51,10 +50,7 @@ func (ta *TargetAdapter) IngestBar(ctx context.Context, bar *mdtick.Bar) error {
 		return fmt.Errorf("publish backfilled bar to NATS: %w", err)
 	}
 
-	// 3. Enqueue for storage (CH + PG during migration).
-	ta.chWriter.EnqueueBar(bar)
-	if ta.pgWriter != nil {
-		ta.pgWriter.EnqueueBar(bar)
-	}
+	// 3. Enqueue for PG storage.
+	ta.pgWriter.EnqueueBar(bar)
 	return nil
 }

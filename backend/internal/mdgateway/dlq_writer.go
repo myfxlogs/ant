@@ -14,7 +14,7 @@ import (
 // DLQWriter logs dropped ticks with reason-based sampling.
 // ADR-0010 §2.2: parse_error=100%, bid_gt_ask/non_positive=1%.
 // M10.5-10: writes are async via buffered channel + background goroutine.
-// CH removal: writes structured log entries instead of inserting into md_ticks_dlq.
+// ADR-0012: writes structured log entries (no DB insertion).
 type DLQWriter struct {
 	log  *zap.Logger
 	dlqQ chan dlqEntry // buffered async write queue

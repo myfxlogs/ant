@@ -48,7 +48,7 @@ func (h *histogram) percentile(p float64) float64 {
 // --- E2e latency ---
 
 // e2eLatency records tick end-to-end latency buckets (seconds).
-// Observed in clickhouse_writer.go after successful flush.
+// Observed in pg_writer.go after successful flush.
 var e2eLatency = newHistogram([]float64{0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5})
 
 // ObserveE2eLatency records a latency observation.

@@ -748,17 +748,14 @@ func TestPgWriter_Flush_Empty(t *testing.T) {
 	t.Parallel()
 	w := NewPgWriter(DefaultPgWriterConfig(), nil, zap.NewNop())
 	ctx := context.Background()
-	// Flush with empty batches should be safe.
-	w.Flush(ctx, nil, nil)
+	// Flush with empty batch should be safe.
+	w.Flush(ctx, nil)
 }
 
 func TestPgWriterDrain_Empty(t *testing.T) {
 	t.Parallel()
 	w := NewPgWriter(DefaultPgWriterConfig(), nil, zap.NewNop())
-	ticks, bars := w.Drain()
-	if len(ticks) != 0 {
-		t.Errorf("drain ticks should be empty, got %d", len(ticks))
-	}
+	bars := w.Drain()
 	if len(bars) != 0 {
 		t.Errorf("drain bars should be empty, got %d", len(bars))
 	}

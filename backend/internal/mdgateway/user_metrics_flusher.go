@@ -1,9 +1,9 @@
 // Package mdgateway provides per-user 5-minute metric aggregation (M10-BASE-A4).
 //
 // UserMetricsFlusher runs a background goroutine that periodically flushes
-// per-user aggregated metrics to the ClickHouse user_metrics_5m SummingMergeTree.
+// per-user aggregated metrics via the provided write callback.
 // Key constraint: Prometheus metrics do NOT carry user_id label (cardinality).
-// CH stores user_id for offline analysis; Prometheus only carries aggregate counters.
+// The write callback stores user_id for offline analysis; Prometheus only carries aggregate counters.
 package mdgateway
 
 import (
@@ -84,7 +84,7 @@ func (c *UserMetricsCollector) Flush() []UserMetricSample {
 }
 
 // UserMetricsFlusher runs a background goroutine that periodically flushes
-// per-user metrics to CH via the provided write callback.
+// per-user metrics via the provided write callback.
 type UserMetricsFlusher struct {
 	collector *UserMetricsCollector
 	interval  time.Duration
@@ -98,7 +98,7 @@ type UserMetricsFlusher struct {
 	flushErrors  atomic.Int64
 }
 
-// NewUserMetricsFlusher creates a flusher with the given interval and CH write callback.
+// NewUserMetricsFlusher creates a flusher with the given interval and write callback.
 func NewUserMetricsFlusher(interval time.Duration, writeFn func(context.Context, []UserMetricSample) error) *UserMetricsFlusher {
 	if interval <= 0 {
 		interval = 5 * time.Minute
