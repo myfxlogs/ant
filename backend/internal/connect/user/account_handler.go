@@ -35,6 +35,12 @@ type SessionReadyWaiter interface {
 	WaitSession(accountID string) <-chan struct{}
 }
 
+// AccountQuotaChecker checks subscription plan limits for account operations.
+// Implemented by service.QuotaChecker.
+type AccountQuotaChecker interface {
+	CheckAccountLimit(userID uuid.UUID, currentCount int) bool
+}
+
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
 	svc           *service.AccountService
@@ -43,6 +49,7 @@ type AccountServer struct {
 	mtTester      MTConnectionTester
 	sessionWaiter SessionReadyWaiter                                // may be nil
 	stopGateway   func(ctx context.Context, accountID string) error // may be nil
+	quotaChecker  AccountQuotaChecker                               // may be nil
 	log           *zap.Logger
 }
 
@@ -61,6 +68,12 @@ func (s *AccountServer) WithStopGateway(fn func(ctx context.Context, accountID s
 // WithSessionWaiter sets an optional readiness waiter used by ConnectAccount.
 func (s *AccountServer) WithSessionWaiter(w SessionReadyWaiter) *AccountServer {
 	s.sessionWaiter = w
+	return s
+}
+
+// WithQuotaChecker sets the subscription plan quota checker for account slot limits.
+func (s *AccountServer) WithQuotaChecker(qc AccountQuotaChecker) *AccountServer {
+	s.quotaChecker = qc
 	return s
 }
 

@@ -25,6 +25,17 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
+	// 0. Check account slot limit from subscription plan (GAP-3).
+	if s.quotaChecker != nil {
+		accounts, err := s.svc.ListAccounts(ctx, userID)
+		if err != nil {
+			s.log.Error("CreateAccount: list accounts for quota check", zap.Error(err))
+		} else if !s.quotaChecker.CheckAccountLimit(userID, len(accounts)) {
+			return nil, connect.NewError(connect.CodeResourceExhausted,
+				fmt.Errorf("MT account limit reached for your plan (%d accounts)", len(accounts)))
+		}
+	}
+
 	// 1. Verify MT credentials BEFORE opening a PG transaction — holding a TX
 	//    open across a network round-trip exhausts the connection pool under load.
 	var info *mdtick.MTAccountInfo

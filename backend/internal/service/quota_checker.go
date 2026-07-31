@@ -50,7 +50,7 @@ func (q *QuotaChecker) LoadAll(ctx context.Context) error {
 	rows, err := q.pg.Query(ctx,
 		`SELECT ups.user_id, sp.id, sp.name, sp.display_name, sp.price_monthly::text, sp.price_yearly::text,
 		        sp.max_ai_tokens_monthly, sp.max_strategies, sp.max_backtests_daily, sp.max_live_strategies,
-		        sp.max_symbols_per_strategy, sp.capability_tier, sp.features::text, sp.sort_order, sp.is_active,
+		        sp.max_symbols_per_strategy, sp.max_mt_accounts, sp.capability_tier, sp.features::text, sp.sort_order, sp.is_active,
 		        sp.created_at, sp.updated_at
 		 FROM user_platform_subscriptions ups
 		 JOIN subscription_plans sp ON sp.id = ups.plan_id
@@ -69,7 +69,7 @@ func (q *QuotaChecker) LoadAll(ctx context.Context) error {
 		var p model.SubscriptionPlan
 		if err := rows.Scan(&uid, &p.ID, &p.Name, &p.DisplayName, &p.PriceMonthly, &p.PriceYearly,
 			&p.MaxAITokensMonthly, &p.MaxStrategies, &p.MaxBacktestsDaily, &p.MaxLiveStrategies,
-			&p.MaxSymbolsPerStrategy, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
+			&p.MaxSymbolsPerStrategy, &p.MaxMTAccounts, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
 			&p.CreatedAt, &p.UpdatedAt); err != nil {
 			return err
 		}
@@ -137,6 +137,15 @@ func (q *QuotaChecker) CheckSymbolLimit(userID uuid.UUID, currentSymbols int) bo
 		return true // unlimited
 	}
 	return currentSymbols < plan.MaxSymbolsPerStrategy
+}
+
+// CheckAccountLimit returns true if the user can bind more MT accounts.
+func (q *QuotaChecker) CheckAccountLimit(userID uuid.UUID, currentCount int) bool {
+	plan := q.GetPlan(userID)
+	if plan.MaxMTAccounts == 0 {
+		return true // unlimited
+	}
+	return currentCount < plan.MaxMTAccounts
 }
 
 // GetCapabilityTier returns the user's capability tier from their plan.

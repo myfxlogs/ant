@@ -96,7 +96,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
 
 	accountEventPub := mdgateway.NewAccountEventPublisher(d.JS, log)
-	registerAccountHandler(mux, cfg, d.AccountSvc, accountEventPub, d.Hub, mtTester, searcher, log, d.OtelInterceptor, d.AuthInterceptor)
+	registerAccountHandler(mux, cfg, d.AccountSvc, accountEventPub, d.Hub, mtTester, searcher, quotaChecker, log, d.OtelInterceptor, d.AuthInterceptor)
 
 	mktplaceHandler := registerMarketplaceHandlers(ctx, mux, d.NC, log, marketDataRepo, d.MktplaceSvc, walletRepo, d.PlatformSvc, d.OtelInterceptor, d.AuthInterceptor)
 

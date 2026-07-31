@@ -54,12 +54,12 @@ func (r *SubscriptionRepository) GetPlanByName(ctx context.Context, name string)
 	err := r.pg.QueryRow(ctx,
 		`SELECT id, name, display_name, price_monthly::text, price_yearly::text,
 		        max_ai_tokens_monthly, max_strategies, max_backtests_daily, max_live_strategies,
-		        max_symbols_per_strategy, capability_tier, features::text, sort_order, is_active,
+		        max_symbols_per_strategy, max_mt_accounts, capability_tier, features::text, sort_order, is_active,
 		        created_at, updated_at
 		 FROM subscription_plans WHERE name = $1 AND is_active = true`, name).
 		Scan(&p.ID, &p.Name, &p.DisplayName, &p.PriceMonthly, &p.PriceYearly,
 			&p.MaxAITokensMonthly, &p.MaxStrategies, &p.MaxBacktestsDaily, &p.MaxLiveStrategies,
-			&p.MaxSymbolsPerStrategy, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
+			&p.MaxSymbolsPerStrategy, &p.MaxMTAccounts, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
 			&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -76,12 +76,12 @@ func (r *SubscriptionRepository) GetPlanByID(ctx context.Context, id uuid.UUID) 
 	err := r.pg.QueryRow(ctx,
 		`SELECT id, name, display_name, price_monthly::text, price_yearly::text,
 		        max_ai_tokens_monthly, max_strategies, max_backtests_daily, max_live_strategies,
-		        max_symbols_per_strategy, capability_tier, features::text, sort_order, is_active,
+		        max_symbols_per_strategy, max_mt_accounts, capability_tier, features::text, sort_order, is_active,
 		        created_at, updated_at
 		 FROM subscription_plans WHERE id = $1`, id).
 		Scan(&p.ID, &p.Name, &p.DisplayName, &p.PriceMonthly, &p.PriceYearly,
 			&p.MaxAITokensMonthly, &p.MaxStrategies, &p.MaxBacktestsDaily, &p.MaxLiveStrategies,
-			&p.MaxSymbolsPerStrategy, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
+			&p.MaxSymbolsPerStrategy, &p.MaxMTAccounts, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
 			&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

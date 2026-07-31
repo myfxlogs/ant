@@ -18,6 +18,7 @@ type SubscriptionPlan struct {
 	MaxBacktestsDaily     int       `db:"max_backtests_daily"`
 	MaxLiveStrategies     int       `db:"max_live_strategies"`
 	MaxSymbolsPerStrategy int       `db:"max_symbols_per_strategy"`
+	MaxMTAccounts         int       `db:"max_mt_accounts"`
 	CapabilityTier        int       `db:"capability_tier"`
 	Features              string    `db:"features"`
 	SortOrder             int       `db:"sort_order"`

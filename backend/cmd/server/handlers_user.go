@@ -95,11 +95,13 @@ func registerAccountHandler(
 	hub *mthub.Hub,
 	mtTester user.MTConnectionTester,
 	searcher *brokersearch.Searcher,
+	quotaChecker *service.QuotaChecker,
 	log *zap.Logger,
 	otelInterceptor, authInterceptor connectrpc.Interceptor,
 ) {
 	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
 		WithSessionWaiter(hub).
-		WithStopGateway(hub.RemoveGateway)
+		WithStopGateway(hub.RemoveGateway).
+		WithQuotaChecker(quotaChecker)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, withSency(otelInterceptor, authInterceptor)))
 }
