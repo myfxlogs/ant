@@ -160,7 +160,6 @@ Content-Type: application/json
   "status": "ready",
   "checks": {
     "postgres": "ok",
-    "clickhouse": "ok",
     "redis": "ok",
     "nats": "ok",
     "mdgateway": {
@@ -180,7 +179,7 @@ HTTP 503 Service Unavailable
   "status": "not_ready",
   "checks": {
     "postgres": "ok",
-    "clickhouse": "FAIL: connection refused",
+    "redis": "FAIL: connection refused",
     ...
   }
 }
@@ -277,11 +276,11 @@ groups:
     annotations:
       summary: "CircuitBreaker open for account {{ $labels.account_id }}"
 
-  - alert: MdGatewayCHWriteErrors
-    expr: rate(md_ch_write_errors_total[1m]) > 0.1
+  - alert: MdGatewayPGWriteErrors
+    expr: rate(md_pg_write_errors_total[1m]) > 0.1
     for: 1m
     annotations:
-      summary: "CH write errors >0.1/s, spill is active"
+      summary: "PG write errors >0.1/s"
 
 - name: mthub
   rules:
@@ -314,16 +313,8 @@ groups:
     for: 5m
     annotations: { summary: "Tick e2e P99 > 500ms" }
 
-  - alert: SpillBacklog
-    expr: md_spill_pending_files > 0
-    for: 5m
-    annotations: { summary: "Spill backlog > 5min ({{ $value }} files)" }
-
-  - alert: SpillUnwritable
-    expr: rate(md_tick_dropped_total{reason="spill_failed"}[5m]) > 0
-    for: 1m
-    labels: { severity: page }
-    annotations: { summary: "Spill writer failing — data loss" }
+  # alert removed: SpillBacklog (ADR-0012 removed spill mechanism)
+  # alert removed: SpillUnwritable (ADR-0012 removed spill mechanism)
 
   - alert: DLQSpike
     expr: rate(md_dlq_sampled_total{reason="parse_error"}[5m]) > 1
@@ -341,7 +332,7 @@ groups:
 | 指标名 | 类型 | Labels | 用途 |
 |---|---|---|---|
 | `md_e2e_latency_seconds` | Histogram | kind={tick,bar} | SLO-MD-2 端到端延迟 |
-| `md_spill_pending_files` | Gauge | — | SLO-MD-4 降级 |
+| `md_pg_writer_queue_depth` | Gauge | — | SLO-MD-4 降级（PgWriter 队列深度）|
 | `md_dlq_sampled_total` | Counter | reason | DLQ 采样写入量 |
 | `md_bar_skipped_finalized_total` | Counter | broker, canonical, period | bar finality 跳过计数 |
 | `md_backfill_*` | 多 | — | 见 spec/18 §7 |

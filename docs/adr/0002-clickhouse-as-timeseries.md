@@ -1,6 +1,6 @@
 # ADR-0002 · ClickHouse 作为时序存储
 
-- **状态**：Accepted
+- **状态**：Superseded by ADR-0012 (ClickHouse removed, PG is sole persistent store)
 - **日期**：2026-05-23
 - **关联 spec**：`docs/spec/13-clickhouse-schema.md`
 

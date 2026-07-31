@@ -24,8 +24,8 @@ graph TB
         dedup["Tick Dedup"]
         agg["Bar Aggregator"]
         pub["Publisher"]
-        chw["CH Writer"]
-        spill["Spill Writer"]
+        pgw["Pg Writer"]
+        rds["Redis Cache"]
         cb["Circuit Breaker"]
     end
 
@@ -51,8 +51,7 @@ graph TB
     end
 
     subgraph storage["Storage (cross-cutting)"]
-        pg["PostgreSQL<br/>business data"]
-        ch["ClickHouse<br/>timeseries"]
+        pg["PostgreSQL<br/>business + bars"]
         redis["Redis<br/>cache / locks"]
         nats["NATS JetStream<br/>fan-out"]
     end
@@ -69,8 +68,8 @@ graph TB
     quality --> dedup
     dedup --> agg
     agg --> pub
-    agg --> chw
-    chw -.->|"CH down"| spill
+    agg --> pgw
+    agg --> rds
 
     pub -->|"md.tick.* / md.bar.*"| nats
     nats -->|"md.bar.*"| factor
@@ -89,17 +88,17 @@ graph TB
     connect -->|"RPC"| oms
     connect -->|"RPC"| mkt
 
-    chw -->|"batch INSERT"| ch
-    factor -->|"factor_values"| ch
-    qe -->|"signals (audit)"| ch
+    pgw -->|"batch INSERT"| pg
+    factor -->|"factor_values"| pg
+    qe -->|"signals (audit)"| pg
     oms -->|"orders / positions"| pg
     mthub -->|"sessions / idempotency"| redis
     pub -->|"fan-out"| nats
 
     cb -.- normalizer
-    cb -.- chw
+    cb -.- pgw
 ```
-Edges are labeled with data types. Transport: gRPC (mtapi.io, browser), Go chan (internal hot path), NATS JetStream (fan-out), PG/CH/Redis (storage).
+Edges are labeled with data types. Transport: gRPC (mtapi.io, browser), Go chan (internal hot path), NATS JetStream (fan-out), PG/Redis (storage).
 
 ## 2. Seven-Layer Architecture
 
@@ -107,9 +106,9 @@ Edges are labeled with data types. Transport: gRPC (mtapi.io, browser), Go chan 
 
 **L2 -- MT Adapter** (``adapter/mt4/``, ``adapter/mt5/``). Pure translation: mtapi proto to ant internal DTOs (``Tick``, ``Bar``, ``OrderInfo``). No normalization, quality, or storage. ~80 lines each. See [10-mt-adapter.md](10-mt-adapter.md).
 
-**L3 -- Market Data Gateway** (``mdgateway/``). Reliability bedrock: normalize symbols to canonical form, quality checks (bid>ask, outlier, gap, clock skew), 100-tick dedup, tick-to-bar OHLCV aggregation (6 periods), NATS publish, ClickHouse write (spill-to-disk fallback), per-account circuit breaker. See [11-mdgateway.md](11-mdgateway.md).
+**L3 -- Market Data Gateway** (``mdgateway/``). Reliability bedrock: normalize symbols to canonical form, quality checks (bid>ask, outlier, gap, clock skew), 100-tick dedup, tick-to-bar OHLCV aggregation (6 periods), NATS publish, Redis latest-quote cache, PG bar persistence (PgWriter async batch), per-broker circuit breaker. See [11-mdgateway.md](11-mdgateway.md).
 
-**L4 -- Factor Service** (``factorsvc/``). Subscribes to NATS ``md.bar.*``, maintains rolling window buffers per (canonical, period, factor), evaluates DSL expressions, writes to CH ``factor_values``, publishes to NATS ``md.factor.*``. See [11-mdgateway.md](11-mdgateway.md).
+**L4 -- Factor Service** (``factorsvc/``). Subscribes to NATS ``md.bar.*``, maintains rolling window buffers per (canonical, period, factor), evaluates DSL expressions, writes to PG ``factor_values``, publishes to NATS ``md.factor.*``. See [11-mdgateway.md](11-mdgateway.md).
 
 **L5 -- Quant Engine + Session Hub** (``quantengine/`` + ``mthub/``). Quantengine: ONNX/DSL inference from factor values to trading signals. mthub: MT session registry, unified ``OrderExecutor``, 10-state order state machine, Redis-based idempotency (24h TTL), reconciliation loop (startup + every 30s). See [12-mthub.md](12-mthub.md), [22-order-state-machine.md](22-order-state-machine.md).
 
@@ -148,9 +147,8 @@ Never replicate official/platform data inside user-scoped tables. Source: [ADR-0
 
 | Store | What it holds | Key characteristics |
 |---|---|---|
-| **PostgreSQL 18** | Business data: users, accounts, strategies, orders, positions, trades, risk configs, AI agents, subscriptions | ACID, ``NUMERIC(20,8)`` for prices, RLS on ``user_*`` tables |
-| **ClickHouse 24** | Timeseries: ``md_ticks``, ``md_bars``, ``factor_values``, ``signals`` | Columnar, ``Decimal(18,6)`` for prices, append-only (no UPDATE of historical rows), bar ``version`` for revisions |
-| **Redis 8** | Session cache, idempotency keys (24h TTL), distributed locks, SSE pub-sub | Volatile; idempotency keys survive process restart within TTL |
+| **PostgreSQL 18** | Business data + timeseries: users, accounts, strategies, orders, positions, trades, risk configs, AI agents, subscriptions, ``md_bars``, ``factor_values``, ``signals`` | ACID, ``NUMERIC(20,8)`` for prices, RLS on ``user_*`` tables |
+| **Redis 8** | Latest quote cache (``latest_quote:{canonical}`` TTL 3600s), session cache, idempotency keys (24h TTL), distributed locks, SSE pub-sub | Volatile; idempotency keys survive process restart within TTL |
 | **NATS JetStream** | Real-time fan-out: ``md.tick.*``, ``md.bar.*``, ``md.factor.*``, ``oms.events.*``, ``bar.revision.*`` | At-least-once, < 100us in-process latency via goroutine channels preferred for hot path |
 
 ## 5. Key Invariants
@@ -159,8 +157,8 @@ These are the "constitution" of ant v2. See [02-overview.md](../architecture/02-
 
 1. **Canonical at L3 entry.** Adapter (L2) produces ticks with empty ``Canonical``. ``Normalizer.Resolve`` (L3, step 1) fills it. All downstream code sees non-empty canonical.
 2. **Python has been fully removed from the stack. All strategy execution is Go (ADR-0021).**
-3. **Price type discipline.** PG ``NUMERIC(20,8)``, Go ``decimal.Decimal``, CH ``Decimal(18,6)``. Never ``float64``.
-4. **CH write never blocks the hot path.** CHWriter channel full triggers SpillWriter (jsonl rotation). CH down for minutes is survivable.
+3. **Price type discipline.** PG ``NUMERIC(20,8)``, Go ``decimal.Decimal``. Never ``float64``.
+4. **PG write never blocks the hot path.** PgWriter channel full drops + metric. NATS JetStream provides bar durability.
 5. **Circuit breaker is per-account.** One broker failure does not affect other accounts. Sliding window: 5 failures opens breaker for 30s, 2 consecutive successes closes it.
 6. **Platform shared vs user private (ADR-0006).** ``platform_*`` tables have no ``user_id`` and are readable by all. ``user_*`` tables require ``user_id`` + RLS. No per-user duplication of official data.
 7. **Backtest and live share one code path (ADR-0012).** ``factorsvc`` and ``quantengine`` depend only on ``Source`` interface (``LiveSource`` / ``ReplaySource``). Zero ``if isBacktest`` branches in business logic.
@@ -177,7 +175,7 @@ CI enforces 1, 2, 3 via lint; remainder via code review.
 | [10-mt-adapter.md](10-mt-adapter.md) | MT4/MT5 adapter layer (L2) |
 | [11-mdgateway.md](11-mdgateway.md) | Market data gateway (L3) |
 | [12-mthub.md](12-mthub.md) | Session hub + order execution (L5) |
-| [13-clickhouse-schema.md](13-clickhouse-schema.md) | ClickHouse table schemas |
+| [09-postgres-schema-catalog.md](09-postgres-schema-catalog.md) | PostgreSQL table schemas |
 | [14-rpc-contracts.md](14-rpc-contracts.md) | ConnectRPC service contracts (L7) |
 | [15-observability.md](15-observability.md) | Metrics, logging, tracing, health checks |
 | [16-mtapi-quirks-register.md](16-mtapi-quirks-register.md) | Known mtapi behavioral quirks |

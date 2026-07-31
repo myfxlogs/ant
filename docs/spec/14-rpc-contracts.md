@@ -11,7 +11,7 @@
 ```
 proto/ant/v1/
 ├── mthub_service.proto      会话与下单
-├── market_service.proto     行情查询（CH 读路径）
+├── market_service.proto     行情查询（PG 读路径）
 ├── common.proto             共享类型（已有，扩展即可）
 └── ...（其他已有）
 ```
@@ -224,7 +224,7 @@ import "ant/v1/common.proto";
 import "google/protobuf/timestamp.proto";
 
 service MarketService {
-  // 从 ClickHouse md_bars 读取（取代 v1 的 kline_service）
+  // 从 PG md_bars 读取（取代 v1 的 kline_service）
   rpc GetKlines(GetKlinesRequest) returns (GetKlinesResponse);
 
   // 聚合统计：tick rate / 涨跌幅 / spread

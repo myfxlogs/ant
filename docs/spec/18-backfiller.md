@@ -3,13 +3,13 @@
 > 路径：`backend/internal/mdgateway/backfiller/`
 > 目标 LOC：≤ 350（非测试）
 > 关联 ADR：ADR-0009
-> 上游：mtapi `GetPriceHistory` RPC；下游：`bar_aggregator` finality → CH `md_bars` + NATS `md.bar.>`
+> 上游：mtapi `GetPriceHistory` RPC；下游：`bar_aggregator` finality → PG `md_bars` + NATS `md.bar.>`
 
 ## 1. 目标
 
 补齐三类数据缺口：
 1. **新订阅 symbol**：账户首次订阅某 canonical → 回填 30 天 1m + 90 天 1h + 365 天 1d
-2. **broker 离线窗口**：mdgateway 启动时检测 CH `md_bars` 与 now 的 gap，补齐
+2. **broker 离线窗口**：mdgateway 启动时检测 PG `md_bars` 与 now 的 gap，补齐
 3. **新接入账户**：账户 `is_active` 从 false → true → 回填该账户全部已订阅 canonical
 
 ## 2. 文件清单
@@ -53,7 +53,6 @@ type Backfiller struct {
     src     Source
     tgt     Target
     pg      *pgxpool.Pool
-    ch      clickhouse.Conn
     log     *zap.Logger
     limiter *rate.Limiter  // 6 req/min/account
     metrics *Metrics
@@ -138,7 +137,7 @@ md_backfill_lag_seconds                                               Gauge   ma
 
 - backfiller `IngestBar` 内部调用 `bar_aggregator.IngestExternalBar(bar, IsReplay=true)`
 - aggregator 检查 `finalizedBars[key]`：若 `bar.close_ts <= finalized` → 丢弃 + `md_bar_skipped_finalized_total++`
-- 否则：写 CH（INSERT 走 `md_bars_buffer`）+ NATS PublishBar（带 X-Ant-Replay header）+ 更新 `finalizedBars[key] = bar.close_ts`
+- 否则：写 PG（INSERT `md_bars` ON CONFLICT DO NOTHING）+ NATS PublishBar（带 X-Ant-Replay header）+ 更新 `finalizedBars[key] = bar.close_ts`
 
 ## 9. 触发时机
 
@@ -167,8 +166,8 @@ test "$LOC" -le 350
 go test -tags=integration ./internal/mdgateway/backfiller/ -run TestBackfillGap -timeout 5m
 # 测试逻辑：
 #   - 启动 mock mtapi 提供 1h 历史 bar
-#   - CH 故意空 md_bars
-#   - Run() 后断言 CH md_bars 行数 == 60（1m × 60）
+#   - PG 故意空 md_bars
+#   - Run() 后断言 PG md_bars 行数 == 60（1m × 60）
 #   - 同 close_ts 再次 Run() → 0 行新增（finality）
 
 # 4. 限速生效

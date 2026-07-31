@@ -60,7 +60,7 @@ Redis（最新报价缓存） ← GetLatestTick 替代方案
    - NATS 消费端（`mdgateway` pipeline）：每次收到报价 → `SETEX latest_quote:{canonical} 3600 {bid,ask}`
 
 4. **DROP md_ticks 分区表**
-   - 新建迁移 `backend/migrations/159_drop_md_ticks.up.sql`
+   - 新建迁移 `backend/migrations/250_drop_md_ticks.up.sql`
    - `DROP TABLE IF EXISTS md_ticks CASCADE;`
    - 对应的 down.sql：无（不可逆操作）
 

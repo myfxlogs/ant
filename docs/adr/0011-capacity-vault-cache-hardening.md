@@ -1,6 +1,6 @@
 # ADR-0011 · 容量调优 + Vault 轮换 + Normalizer 缓存失效
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (CH capacity tuning removed; Vault/Normalizer parts remain)
 - **日期**：2026-05-24
 - **决策者**：架构组
 - **关联 spec**：`docs/spec/11-mdgateway.md` §4 §9 §13.6 / `docs/spec/17-secrets-and-errors.md`

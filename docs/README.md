@@ -11,7 +11,7 @@
 | **新工程师 onboarding** | `architecture/01-vision.md` → `architecture/02-overview.md` → `architecture/03-data-flow.md` |
 | **策略管线理解** | `go-native-strategy-pipeline.md` → `adr/0023` → `adr/0022` → `adr/0021` |
 | **MT 适配实现者** | `spec/10-mt-adapter.md` → `spec/16-mtapi-quirks-register.md` → `adr/0003` |
-| **行情网关实现者** | `spec/11-mdgateway.md` → `spec/13-clickhouse-schema.md` → `adr/0004` `0005` |
+| **行情网关实现者** | `spec/11-mdgateway.md` → `spec/09-postgres-schema-catalog.md` → `adr/0004` `0005` |
 | **会话/下单实现者** | `spec/12-mthub.md` → `spec/14-rpc-contracts.md` |
 | **运维/SRE** | `spec/15-observability.md` → `spec/20-slo.md` → `runbook/mt-incidents.md` |
 | **数据归属（C2C 多租户）** | `adr/0006-platform-shared-vs-user-private.md` |
@@ -36,7 +36,7 @@ docs/
 │   ├── 10-mt-adapter.md         mtapi gRPC → Gateway 接口契约
 │   ├── 11-mdgateway.md          网关内部设计
 │   ├── 12-mthub.md              会话注册中心 + OrderEventBroker
-│   ├── 13-clickhouse-schema.md  CH 表设计、TTL、分区
+│   ├── 13-clickhouse-schema.md  [DEPRECATED] CH 表设计（ADR-0012 已移除 ClickHouse）
 │   ├── 14-rpc-contracts.md      ConnectRPC proto 契约
 │   ├── 15-observability.md      Prometheus 指标、健康检查
 │   ├── 16-mtapi-quirks-register.md  mtapi 暗坑清单

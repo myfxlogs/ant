@@ -214,6 +214,63 @@ services:
     networks:
       - alphaforge-network
 
+  prometheus:
+    container_name: alphaforge-prometheus
+    image: prom/prometheus:latest
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 48M
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    depends_on:
+      - backend
+    networks:
+      - alphaforge-network
+
+  alertmanager:
+    container_name: alphaforge-alertmanager
+    image: prom/alertmanager:latest
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+        reservations:
+          memory: 32M
+    ports:
+      - "127.0.0.1:${ALERTMANAGER_PORT:-9093}:9093"
+    volumes:
+      - ./deploy/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    networks:
+      - alphaforge-network
+
 networks:
   alphaforge-network:
     driver: bridge
@@ -225,3 +282,7 @@ volumes:
     name: ant_redis_data
   nats_data:
     name: ant_nats_data
+  prometheus_data:
+    name: alphaforge_prometheus_data
+  alertmanager_data:
+    name: alphaforge_alertmanager_data

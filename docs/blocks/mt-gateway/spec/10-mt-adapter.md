@@ -17,7 +17,7 @@
 - ❌ Quality 检查（在 mdgateway/quality.go 做）
 - ❌ Bar 聚合（在 mdgateway/bar_aggregator.go 做）
 - ❌ Tick 去重（在 mdgateway/tick_dedup.go 做）
-- ❌ NATS 发布、CH 写入（在 mdgateway/publisher/clickhouse_writer 做）
+- ❌ NATS 发布、PG 写入（在 mdgateway/pg_writer 做）
 - ❌ 业务逻辑（订单状态机、风控）
 
 ## 2. 文件结构

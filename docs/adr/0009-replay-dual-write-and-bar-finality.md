@@ -1,6 +1,6 @@
 # ADR-0009 · Spill Replay 双写 NATS + Bar 不可变性 + 历史回填
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (Spill replay removed; Bar finality + Backfiller remain)
 - **日期**：2026-05-24
 - **决策者**：架构组
 - **关联 spec**：`docs/spec/11-mdgateway.md` §10 / `docs/spec/18-backfiller.md`（新建）

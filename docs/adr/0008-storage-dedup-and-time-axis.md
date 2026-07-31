@@ -1,9 +1,9 @@
 # ADR-0008 · 存储层去重键对齐 + 时间轴纪律
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (CH dedup parts removed; PG dedup remains)
 - **日期**：2026-05-24
 - **决策者**：架构组
-- **关联 spec**：`docs/spec/11-mdgateway.md` §6 §7 / `docs/spec/13-clickhouse-schema.md` §2.1 §2.2
+- **关联 spec**：`docs/spec/11-mdgateway.md` §6 §7 / `docs/spec/09-postgres-schema-catalog.md`
 - **关联 ADR**：ADR-0004（tick 去重与质量分级）
 
 ## 1. 背景

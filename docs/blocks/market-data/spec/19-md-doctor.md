@@ -8,7 +8,7 @@
 
 提供**单条命令**回答四个生产问题：
 
-1. **NATS 与 CH 是否对账一致？**（端到端正确性）
+1. **NATS 与 PG 是否对账一致？**（端到端正确性）
 2. **bar 是否连续？**（数据完整性）
 3. **canonical 是否漂移？**（订阅活性）
 4. **DLQ 中是否有需要排查的 parse_error 样本？**（数据健康）
@@ -24,10 +24,10 @@ Global Flags:
   --strict             任一不通过 → exit 1
 
 Commands:
-  reconcile            # NATS publish count vs CH row count（最近 window）
+  reconcile            # NATS publish count vs PG row count（最近 window）
   bar-continuity       # md_bars 时间序列缺口扫描
   canonical-liveness   # broker_symbols 中 canonical 是否最近活跃
-  dlq-tail             # md_ticks_dlq 最近 N 条 parse_error
+  dlq-tail             # md_dlq 最近 N 条 parse_error
   all                  # 跑全部并汇总
 ```
 
@@ -35,7 +35,7 @@ Commands:
 
 ### 3.1 `reconcile`
 
-**目的**：发现 H-1（CH dedup 与应用层不一致）类问题。
+**目的**：发现 H-1（PG dedup 与应用层不一致）类问题。
 
 ```bash
 md-doctor reconcile --window 10m
@@ -43,9 +43,9 @@ md-doctor reconcile --window 10m
 
 逻辑：
 - 取 NATS `MD_EVENTS` stream 在 [now-window, now] 内 `md.tick.>` 消息计数（`nats stream info MD_EVENTS --json`）
-- 取 CH `md_ticks` 同窗口（`arrived_unix_ms`）行数
-- 计算差异比 = |nats - ch| / max(nats, ch)
-- 输出表格 by (broker, canonical)：nats_count / ch_count / diff_pct
+- 取 PG `md_bars` 同窗口（`close_ts_unix_ms`）行数
+- 计算差异比 = |nats - pg| / max(nats, pg)
+- 输出表格 by (broker, canonical)：nats_count / pg_count / diff_pct
 
 通过条件：差异比 < 0.1%。
 
@@ -58,7 +58,7 @@ md-doctor bar-continuity --window 24h --period 1m
 ```
 
 逻辑：
-- 对每 (broker, canonical, period='1m')：CH 查 `arrayJoin(arrayDistinct(...))` 得到所有 close_ts
+- 对每 (broker, canonical, period='1m')：PG 查 `md_bars` 得到所有 close_ts
 - 计算相邻 close_ts 差值，> period * 1.5 即记一个 gap
 - 排除已知节假日窗口（周末 = Sat 22:00 ~ Sun 22:00 UTC）
 
@@ -80,7 +80,7 @@ md-doctor canonical-liveness --window 1h
 
 逻辑：
 - PG `broker_symbols` 列出所有 canonical
-- 检查 CH `md_ticks` 最近 window 内每个 (broker, canonical) 是否有 tick
+- 检查 Redis `latest_quote:{broker}:{canonical}` 最近 window 内是否有 tick
 - 排除：周末 + 已知低流动性品种（PG `broker_symbols.trade_mode IN (0,3)`）
 
 输出："已配置但 N 小时无 tick"列表。
@@ -91,7 +91,7 @@ md-doctor canonical-liveness --window 1h
 md-doctor dlq-tail --reason parse_error --limit 50
 ```
 
-直接 `SELECT * FROM md_ticks_dlq WHERE reason=? ORDER BY arrived_unix_ms DESC LIMIT ?`，pretty-print。便于工程师定位损坏数据样本。
+直接 `SELECT * FROM md_dlq WHERE reason=? ORDER BY arrived_unix_ms DESC LIMIT ?`，pretty-print。便于工程师定位损坏数据样本。
 
 ### 3.5 `all`
 
@@ -114,7 +114,7 @@ backend/cmd/md-doctor/
 依赖：
 - `github.com/spf13/cobra` 已在仓库
 - `github.com/nats-io/nats.go` JetStream API
-- `clickhouse.Conn` / `pgx.Pool` 复用 `internal/storage/`
+- `pgx.Pool` 复用 `internal/storage/`
 
 ## 5. 验收命令
 

@@ -6,7 +6,7 @@
 > **架构基线**（2026-05-25 验收，**已落地的事实**）：
 > - **身份模型**：`user_id`（业务）+ `account_id`（MT 账户，1 user N account）+ `broker`（数据源）。**无 tenant 概念**。
 > - **Context 传播**：`backend/internal/interceptor/auth.go` 的 `UserIDKey` + `GetUserID(ctx) string` **已建**——本 spec 不重复造轮子。
-> - **CH 表 user 列**：`md_ticks/factor_values/signals` 已有 `user_id LowCardinality(String)`；`md_bars` 故意无 user_id（市场数据共享）；PARTITION 仅按时间，无需 user 维度分区。
+> - **PG 表 user 列**：`factor_values/signals` 已有 `user_id`；`md_bars` 故意无 user_id（市场数据共享）；PARTITION 仅按时间，无需 user 维度分区。
 > - **User 配置表**：`user_risk_profiles`（migration 093）已建，含 12 字段（max_positions / daily_loss_limit / killswitch_enabled / symbol_whitelist 等）。
 > - **本 spec 范围**：仅补**已建身份体系之上**的运行时基础设施（限速、容量、生命周期、背压、能力扩展）。
 
@@ -21,9 +21,9 @@ ant 的运行时数据流有 3 个隔离维度，**对不同关注点应用不�
 | 数据 / 操作 | 隔离维度 | 理由 |
 |---|---|---|
 | 计费 / 配额 / 风控限额 | **user_id** | 商业身份单位 |
-| broker 连接 / spill 文件 | **account_id** | 一个 user 可有多个 MT 账户在不同 broker |
+| broker 连接 / PgWriter 队列 | **account_id** | 一个 user 可有多个 MT 账户在不同 broker |
 | Symbol params / 标准化映射 | **broker** | broker 级共享 |
-| **行情存储（md_ticks/md_bars）** | **broker（事实上）** | 见下文"行情存储维度澄清" |
+| **行情存储（md_bars）** | **broker（事实上）** | 见下文"行情存储维度澄清" |
 | 平台总量限额 | **global** | 跨 user 聚合 |
 | Audit log / tracing | **user_id + account_id 双标** | 完整溯源 |
 
@@ -31,10 +31,10 @@ ant 的运行时数据流有 3 个隔离维度，**对不同关注点应用不�
 
 #### 行情存储维度澄清（防止误读"按账户隔离"）
 
-`md_ticks` schema 包含 `user_id` 和 `account_id` 列，但**这两列不在 ORDER BY 也不在 PARTITION BY**：
+`md_bars` schema 包含 `broker` 列，但**该列不在 PRIMARY KEY 也不在 PARTITION BY**：
 
 ```sql
--- 已落地（chmigrate/006_md_ticks_v2.sql）：
+-- 已落地（PG migration）：
 ENGINE = ReplacingMergeTree(arrived_unix_ms)
 PARTITION BY toYYYYMM(toDateTime(arrived_unix_ms / 1000))
 ORDER BY (broker, canonical, ts_unix_ms, bid, ask, bid_volume, ask_volume)
@@ -85,10 +85,10 @@ type LimiterRegistry struct {
     signalGenPerUser  *lru.Cache[string, *rate.Limiter]
     // user_id → 每分钟下单数上限（默认 20）
     orderPerUser      *lru.Cache[string, *rate.Limiter]
-    // account_id → CH 写带宽（默认 5MB/s，防止跑飞策略撑爆 CH）
-    chWritePerAccount *lru.Cache[string, *rate.Limiter]
-    // global → 平台总量（保护 CH 集群）
-    globalCHWrite     *rate.Limiter
+    // account_id → PG 写带宽（默认 5MB/s，防止跑飞策略撑爆 PG）
+    pgWritePerAccount *lru.Cache[string, *rate.Limiter]
+    // global → 平台总量（保护 PG 连接池）
+    globalPGWrite     *rate.Limiter
 }
 ```
 
@@ -143,7 +143,7 @@ COMMENT ON COLUMN user_risk_profiles.capability_tier IS
 | **structured log**（zap fields） | ✅ 必须带 | 字段不限基数；retention 按 PG/loki 策略 |
 | **OTel tracing span attribute** | ✅ 必须带 | tracing attr 不影响 metric cardinality |
 | **Prometheus metric label** | ❌ **绝不能带** | 50K 用户 × 5 broker × 50 symbol = 1250 万 series → Prometheus OOM |
-| **CH 用户级聚合表** | ✅ 用 user_id 行 | 50K 行/分钟，CH 健康范围 |
+| **PG 用户级聚合表** | ✅ 用 user_id 行 | 50K 行/分钟，PG 健康范围 |
 
 **实现**：
 
@@ -165,22 +165,21 @@ func SpanWithUser(ctx context.Context, span trace.Span) {
 }
 ```
 
-**用户级 metric 走 CH 而非 Prometheus**：
+**用户级 metric 走 PG 而非 Prometheus**：
 
 ```sql
--- chmigrate/016_user_metrics_5m.sql
+-- PG migration: user_metrics_5m
 CREATE TABLE IF NOT EXISTS user_metrics_5m (
-    bucket_5m_ts UInt64,                       -- 5min bucket close ts
-    user_id      LowCardinality(String),
-    metric_name  LowCardinality(String),       -- signal_gen / order_placed / ch_write_bytes
-    value        Float64
-) ENGINE = SummingMergeTree()
-PARTITION BY toYYYYMM(toDateTime(bucket_5m_ts / 1000))
-ORDER BY (bucket_5m_ts, user_id, metric_name)
-TTL toDateTime(bucket_5m_ts / 1000) + INTERVAL 90 DAY;
+    bucket_5m_ts BIGINT,                       -- 5min bucket close ts
+    user_id      VARCHAR(64) NOT NULL,
+    metric_name  VARCHAR(64) NOT NULL,       -- signal_gen / order_placed / pg_write_bytes
+    value        DOUBLE PRECISION,
+    PRIMARY KEY (bucket_5m_ts, user_id, metric_name)
+);
+-- TTL: 90 days (via pg_partman or manual partitioning)
 ```
 
-每 5min 由后台 goroutine 从 NATS event stream 流式聚合写入。用户级仪表盘走 CH，平台级仪表盘走 Prometheus + SSE 监控页。
+每 5min 由后台 goroutine 从 NATS event stream 流式聚合写入。用户级仪表盘走 PG `user_metrics_5m`，平台级仪表盘走 Prometheus + SSE 监控页。
 
 ---
 
@@ -332,8 +331,8 @@ new_strategy.OnStart(ctx, snapshot)  // 同一 state 接续
 
 | 段 | 满载策略 | metric |
 |---|---|---|
-| broker → mdgateway tick chan | bounded(50000)，满 → spill | `md_chan_full_total` |
-| mdgateway → CH writer | bounded(50000)，满 → spill 到 jsonl | `md_spill_writes_total` |
+| broker → mdgateway tick chan | bounded(50000)，满 → drop + metric | `md_chan_full_total` |
+| mdgateway → PgWriter | bounded(50000)，满 → drop + metric | `md_pg_writer_dropped_total` |
 | mdgateway → NATS publish | JetStream 满 → drop oldest tick + metric | `md_nats_publish_dropped_total` |
 | NATS → factorsvc consumer | consumer lag > 10000 → 告警 + 限流入口 tick rate | `md_consumer_lag` |
 | factorsvc → quantengine | bounded chan，满 → drop factor + metric | `md_factor_dropped_total` |
@@ -397,7 +396,7 @@ func (e *Engine) PreCheck(ctx context.Context, req *CheckRequest) (*Decision, er
 | 身份维度 | tenant_id 独立概念 | user_id（业务）+ account_id（MT）+ broker（数据源） |
 | ctx propagation | 新建 `internal/tenant/context.go` | 复用 `internal/interceptor/auth.go` 已有 `UserIDKey` |
 | User 配置表 | 新建 `tenant_config` JSONB key/value | 扩展现有 `user_risk_profiles`（已有 12 字段，新增 5 字段） |
-| CH 分区 | `PARTITION BY (month, tenant_id)` | `PARTITION BY toYYYYMM(...)` 仅按时间，已对 |
-| Metric label | 自动 propagate tenant_id | **不打 user label**（cardinality）；改 log/trace + CH `user_metrics_5m` |
+| PG 分区 | `PARTITION BY (month, tenant_id)` | 按月分区，已对 |
+| Metric label | 自动 propagate tenant_id | **不打 user label**（cardinality）；改 log/trace + PG `user_metrics_5m` |
 | Rate limiter LRU | 1000 tenant | 50000 user + idle 驱逐 |
 | 工日 | +10 | **+8**（A4 / C1 已部分落地） |

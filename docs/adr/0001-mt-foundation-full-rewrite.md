@@ -1,6 +1,6 @@
 # ADR-0001 · MT 基础完全重写（路线 B）
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (CH storage replaced by PG; MT rewrite foundation remains)
 - **日期**：2026-05-23
 - **关联 spec**：`docs/architecture/02-overview.md`、`docs/spec/10-16`
 

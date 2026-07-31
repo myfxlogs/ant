@@ -43,10 +43,6 @@ func (s *MarketplaceServer) ListBundles(
 	ctx context.Context,
 	req *connect.Request[antv1.ListBundlesRequest],
 ) (*connect.Response[antv1.ListBundlesResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
-	}
 	m := req.Msg
 	bundles, total, err := s.svc.ListBundles(ctx, m.GetPublisherId(), int(m.GetLimit()), int(m.GetOffset()))
 	if err != nil {

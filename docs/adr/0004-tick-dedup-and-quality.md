@@ -1,6 +1,6 @@
 # ADR-0004 · Tick 去重与质量分级
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (CH md_ticks references removed; Quality + Dedup logic remain)
 - **日期**：2026-05-23
 - **关联 spec**：`docs/spec/11-mdgateway.md` §"quality.go" + §"tick_dedup.go"
 

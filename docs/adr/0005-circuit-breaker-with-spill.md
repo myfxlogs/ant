@@ -1,8 +1,12 @@
 # ADR-0005 · CircuitBreaker + Spill 故障恢复
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (Spill/CH parts removed; CircuitBreaker remains)
 - **日期**：2026-05-23
-- **关联 spec**：`docs/spec/11-mdgateway.md` §"circuit_breaker.go" + §"spill_writer.go"
+- **关联 spec**：`docs/spec/11-mdgateway.md` §"circuit_breaker.go"
+
+> **ADR-0012 变更**（2026-07）：ClickHouse 已移除，tick 不再落盘。SpillWriter/SpillReplay 已删除。
+> CircuitBreaker 仍然保留，但触发条件从"CH 写入失败"改为"PG 写入失败"。
+> 以下 §2.2 SpillWriter、§5.1 spill 相关代码、§5.4 spill alerts、§5.5 D-3 升级链路、§6.2-6.3 验证均已被 ADR-0012 取代。
 
 ## 1. 背景
 

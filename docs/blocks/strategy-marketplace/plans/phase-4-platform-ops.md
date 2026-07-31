@@ -242,7 +242,7 @@
   - 退款率：`COUNT(tx_type='refund') / COUNT(tx_type='purchase')`
   - 续费率：`COUNT(subscriptions renewed) / COUNT(subscriptions expired)`
 
-  **设计决策**：不做实时聚合。Admin Dashboard 查询频率极低（每天几次），直接查 PG 即可，无需 ClickHouse 或缓存。
+  **设计决策**：不做实时聚合。Admin Dashboard 查询频率极低（每天几次），直接查 PG 即可，无需额外缓存。
 
 - [ ] **4.3c 前端 Admin 收入面板**
 

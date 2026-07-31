@@ -1,7 +1,11 @@
 # 13 · ClickHouse 时序 schema 规范
 
-> 路径：`backend/internal/mdgateway/chmigrate/`
-> 配套迁移：`make migrate-ch`
+> **DEPRECATED (ADR-0012, 2026-07)**：ClickHouse 已从系统中完全移除。
+> Tick 不再落盘；Bar 存储在 PG `md_bars`；最新报价缓存在 Redis `latest_quote:{canonical}`。
+> 本文档保留作为历史参考，不再维护。
+>
+> 路径：`backend/internal/mdgateway/chmigrate/`（已删除）
+> 配套迁移：`make migrate-ch`（已移除）
 > 数据库名：`ant`（与 PG 同名，不冲突）
 
 ## 1. 表清单

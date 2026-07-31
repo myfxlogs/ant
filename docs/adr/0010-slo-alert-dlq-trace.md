@@ -1,6 +1,6 @@
 # ADR-0010 · SLO + Alert + DLQ + Trace 框架
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (CH DLQ + spill parts removed; SLO + Trace remain)
 - **日期**：2026-05-24
 - **决策者**：架构组
 - **关联 spec**：`docs/spec/15-observability.md` `docs/spec/20-slo.md`（新建）

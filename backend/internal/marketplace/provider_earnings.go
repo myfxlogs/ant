@@ -70,7 +70,7 @@ func (s *Service) GetProviderEarnings(ctx context.Context, userID string) (*Prov
 	// Pending withdrawal = frozen amount in wallet.
 	var pendingWithdrawal decimal.Decimal
 	err = s.pg.QueryRow(ctx,
-		`SELECT COALESCE(frozen,0) FROM user_wallets WHERE user_id = $1`,
+		`SELECT COALESCE(frozen_balance,0) FROM user_wallets WHERE user_id = $1`,
 		uid,
 	).Scan(&pendingWithdrawal)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {

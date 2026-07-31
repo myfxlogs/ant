@@ -14,7 +14,7 @@
 | Q-004 | 跨 broker symbol 别名混合 → SubscribeMany 静默丢弃 | MT4/5 | 🔴 高 | alfq `b388618` |
 | Q-005 | broker symbol 后缀差异（.m/.pro/.x/.c/_i 等） | MT4/5 | 🟠 中 | alfq `b8c3cb8` `8387153` |
 | Q-006 | broker symbol 大小写不一致 | MT4/5 | 🟠 中 | 经验 |
-| Q-007 | OHLCV 数值写 ClickHouse Decimal 必须包装 | MT4/5 | 🟠 中 | alfq `c859b65` |
+| Q-007 | OHLCV 数值写 PG Decimal 必须包装 | MT4/5 | 🟠 中 | alfq `c859b65` |
 | Q-008 | MT4 OnQuote 时间戳是秒，MT5 是毫秒 | MT4/5 | 🟠 中 | mtapi 文档 |
 | Q-009 | MT5 QuoteHistory TimeFrame 用分钟数而非 PERIOD enum | MT5 | 🟠 中 | mtapi 文档 |
 | Q-010 | broker 重连后会重发最近 N 条历史 quote | MT4/5 | 🟠 中 | 经验 |
@@ -171,11 +171,11 @@ for _, acc := range accounts {
 
 ---
 
-## Q-007 · OHLCV 数值写 ClickHouse Decimal 必须包装 🟠
+## Q-007 · OHLCV 数值写 PG Decimal 必须包装 🟠
 
-**症状**：`clickhouse: code 53: cannot cast Float64 to Decimal(18, 6)`
+**症状**：PG INSERT 对 Decimal 列不接受 `float64`，必须传 `decimal.Decimal`。
 
-**根因**：clickhouse-go v2 的批量 INSERT 对 Decimal 列不接受 `float64`，必须传 `decimal.Decimal`。
+**根因**：pgx 驱动对 NUMERIC 列要求 `decimal.Decimal` 或字符串，不接受 `float64` 直接写入。
 
 **解决**：
 
@@ -229,7 +229,7 @@ var periodToMinutes = map[string]int32{
 **症状**：网络抖动后 mtapi 重连，`OnQuote` stream 收到 N 条**已经处理过**的 tick。
 
 **影响**：
-- CH `md_ticks` 出现重复行（即使 ReplacingMergeTree 也增加 merge 压力）
+- PG `md_bars` 出现重复行（ON CONFLICT DO NOTHING 去重）
 - bar 聚合器把同一 tick 算两次
 
 **解决**：`mdgateway/tick_dedup.go` 100 条窗口去重（hash by `ts_ms || bid || ask`）。

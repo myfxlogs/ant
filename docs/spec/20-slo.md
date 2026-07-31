@@ -13,13 +13,13 @@
 | **SLO-MD-1** | 可用性 | (1 - downtime_minutes/total_minutes) | 99.9% | 30 天滚动 | 43.2 min/月 |
 | **SLO-MD-2** | tick e2e 延迟 P99 | `histogram_quantile(0.99, rate(md_e2e_latency_seconds_bucket[5m]))` | < 0.5 s | 5min 滚动 | P99 超阈值时长 / 30d ≤ 0.1% |
 | **SLO-MD-3** | 数据完整性 | `1 - rate(md_tick_dropped_total[5m]) / rate(md_tick_total[5m])` | ≥ 99.9% | 5min 滚动 | drop 率 > 0.1% 时长 ≤ 1h/月 |
-| **SLO-MD-4** | 降级窗口 | `md_spill_pending_files` | < 1 | 持续时间 | spill 持续 > 5min 次数 ≤ 3/月 |
+| **SLO-MD-4** | 降级窗口 | `md_pg_writer_queue_depth` | < 100 | 持续时间 | 队列持续 > 100 超过 5min 次 ≤ 3/月 |
 
 ## 2. SLO 实现细节
 
 ### 2.1 SLO-MD-1（可用性）
 
-"down" 定义：连续 60s 无任何 tick 写入 CH（across all accounts）。
+"down" 定义：连续 60s 无任何 tick 写入 PG（across all accounts）。
 
 实现：Prometheus recording rule（存入 `deploy/prometheus/rules.yml`，与 alert rules 文件 `deploy/prometheus/alerts.yml` 分文件管理；alerts.yml 详见 spec/15 §6 / §6.x）：
 ```yaml
@@ -31,7 +31,7 @@
 
 ### 2.2 SLO-MD-2（延迟）
 
-`md_e2e_latency_seconds`：在 `clickhouse_writer.go` flush 成功时记录 `now - tick.ArrivedUnixMs`：
+`md_e2e_latency_seconds`：在 `pgwriter.go` flush 成功时记录 `now - tick.ArrivedUnixMs`：
 
 ```go
 hist.Observe(float64(time.Now().UnixMilli() - tick.ArrivedUnixMs) / 1000)
@@ -41,17 +41,16 @@ buckets：`[0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5]`（覆盖 SLO 阈值 0.5）
 
 ### 2.3 SLO-MD-3（完整性）
 
-drop 率 = drop tick / total tick。**`reason="spill_failed"` 计入 drop**（这是真正的丢数据）；`outlier` `gap` 等不算 drop（不丢，只 metric）。
+drop 率 = drop tick / total tick。**`reason="pg_write_failed"` 计入 drop**（这是真正的丢数据）；`outlier` `gap` 等不算 drop（不丢，只 metric）。
 
 ### 2.4 SLO-MD-4（降级）
 
-`md_spill_pending_files` 由 spill_replay goroutine 每 30s 扫目录更新：
+`md_pg_writer_queue_depth` 由 PgWriter goroutine 每 30s 更新：
 ```go
-files, _ := filepath.Glob(spillDir + "/*.jsonl")
-gauge.Set(float64(len(files)))
+gauge.Set(float64(len(b.queue)))
 ```
 
-正常稳态 = 0；CH 中断时上升；recover 后归零。
+正常稳态 = 0；PG 写入变慢时上升；恢复后归零。
 
 ## 3. SLO 监控与告警
 
@@ -213,8 +212,8 @@ grep -q 'md:availability:30d' deploy/prometheus/rules.yml
 # 3. md_e2e_latency_seconds metric 暴露
 curl -s localhost:8080/metrics | grep -q '^md_e2e_latency_seconds_bucket'
 
-# 4. md_spill_pending_files gauge 存在
-curl -s localhost:8080/metrics | grep -q '^md_spill_pending_files'
+# 4. md_pg_writer_queue_depth gauge 存在
+curl -s localhost:8080/metrics | grep -q '^md_pg_writer_queue_depth'
 
 # 5. signal_to_execution_latency_seconds 暴露
 curl -s localhost:8080/metrics | grep -q 'signal_to_execution_latency_seconds_bucket'

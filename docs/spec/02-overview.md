@@ -27,7 +27,7 @@
            │                                       │
 ┌──────────┴───────────────────────────────────────┴──────────┐
 │  L4  因子计算                                                │
-│  internal/factorsvc  (NATS sub → DSL eval → CH write)       │
+│  internal/factorsvc  (NATS sub → DSL eval → PG write)       │
 └──────────────┬───────────────────────────────────────┬──────┘
                │                                       │
 ┌──────────────┴──────────┐                ┌───────────┴──────┐
@@ -35,7 +35,7 @@
 │  internal/mdgateway      │                │  internal/oms     │
 │  (normalizer/quality/    │                │  (broker/risk hook│
 │   aggregator/publisher/  │                │   /executor)      │
-│   chwriter/spill/circuit)│                │                   │
+│   pgwriter/redis/circuit)│                │                   │
 └──────────────┬──────────┘                └───────────────────┘
                │
 ┌──────────────┴──────────────────────────────────────────────┐
@@ -50,9 +50,8 @@
 └─────────────────────────────────────────────────────────────┘
 
 存储层（横切）：
-  PostgreSQL 18  → 业务数据（user/account_binding/order/risk/ai/market）
-  ClickHouse 24  → 时序数据（md_ticks/md_bars/factor_values/signals）
-  Redis 8        → 缓存/分布式锁/SSE pub-sub
+  PostgreSQL 18  → 业务数据 + 时序数据（md_bars/factor_values/signals）
+  Redis 8        → 最新报价缓存/分布式锁/SSE pub-sub
   NATS JetStream → 行情/因子/信号 fan-out
 ```
 
@@ -77,9 +76,7 @@
   | `quality.go` | bid>ask 丢弃 / 5σ 离群 / gap / clock skew |
   | `bar_aggregator.go` | tick → 6 周期 OHLCV |
   | `publisher.go` | NATS JetStream 发布 md.tick.* / md.bar.* |
-  | `clickhouse_writer.go` | 异步 batch 写 CH md_ticks/md_bars |
-  | `spill_writer.go` | CH 不通时落本地 jsonl，带旋转 |
-  | `spill_replay.go` | 启动时回放 spill |
+  | `pg_writer.go` | 异步 batch 写 PG md_bars（ON CONFLICT upsert） |
   | `circuit_breaker.go` | broker 故障熔断（滑动窗口） |
   | `tick_dedup.go` | 100 条窗口去重（broker 重发保护） |
   | `runner.go` | 装配入口（从 PG 加载账户 → 启动全链路） |
@@ -95,13 +92,13 @@
 - **不依赖**直接 MT 调用（统一经 mthub）
 
 ### L4 · 因子计算（`factorsvc/`）
-- 订阅 NATS `md.bar.*` → DSL 引擎求值 → 写 CH `factor_values`
+- 订阅 NATS `md.bar.*` → DSL 引擎求值 → 写 PG `factor_values`
 - 滚动窗口缓冲（per symbol+period+factor）
 - 详见 `docs/spec/11-mdgateway.md` §"factorsvc 集成"
 
 ### L5 · 量化引擎（`quantengine/`）
 - 加载 ONNX 模型 + DSL 表达式
-- 订阅 CH `factor_values` 流（或 NATS `md.factor.*`）→ 推理 → 输出 signal
+- 订阅 NATS `md.factor.*` → 推理 → 输出 signal
 - **生产路径零 Python 执行**
 
 ### L5 · 会话/下单中心（`mthub/`）
@@ -140,8 +137,8 @@ mtapi.OnQuote
       ├─ BarAggregator.AddTick  emit Bar on period boundary
       ├─ Publisher.PublishTick  → NATS md.tick.<broker>.<canonical>
       ├─ Publisher.PublishBar   → NATS md.bar.<broker>.<canonical>.<period>
-      └─ CHWriter.Enqueue       → batch flush 1s/1000 → CH md_ticks
-                                                      → CH md_bars
+      ├─ Redis SETEX            → latest_quote:{canonical} TTL 3600s
+      └─ PgWriter.EnqueueBar    → batch flush → PG md_bars (ON CONFLICT upsert)
 ```
 
 ### 3.2 因子计算流
@@ -151,19 +148,19 @@ NATS md.bar.<broker>.<canonical>.<period>
   → factorsvc.Subscriber.OnBar
   → WindowBuffer.Append (per canonical+period)
   → DSL.Eval  (使用 buffer 窗口)
-  → factorCHWriter → CH factor_values
+  → PG factor_values
   → Publisher → NATS md.factor.<canonical>.<factor_name>
 ```
 
 ### 3.3 信号 / 下单流
 
 ```
-NATS md.factor.* (or CH factor_values poll)
+NATS md.factor.*
   → quantengine.OnFactor
       ├─ ONNX 推理 (if model bound)
       └─ DSL 信号规则评估
   → Signal{symbol, side, target_qty}
-  → CH signals (审计)
+  → PG signals (审计)
   → oms.SignalRouter
       ├─ risk.PreCheck
       └─ mthub.OrderExecutor.Place
@@ -181,8 +178,7 @@ NATS md.factor.* (or CH factor_values poll)
 前端 ConnectRPC call
   → connect/market_service.go
   → service/kline_query.go (新)
-  → CH md_bars (主路径)
-     fallback → PG kline_data (兼容期；M9 删除)
+  → PG md_bars (主路径)
   → return proto
 ```
 
@@ -190,13 +186,13 @@ NATS md.factor.* (or CH factor_values poll)
 
 ```
 回测模式:
-  CH md_bars (历史)
+  PG md_bars (历史)
     → ReplaySource (实现 BarSource/FactorSource interface)
     → factorsvc.Subscriber.OnBar
     → DSL.Eval
     → quantengine.OnFactor
     → Signal{Symbol, Side, TargetQty, Source="replay"}
-    → CH signals (审计)
+    → PG signals (审计)
     → oms.SignalRouter
         └─ signal.Source == "replay" → paper.PaperExecutor.Place
             ├─ FillModel.SimulateFill
@@ -209,7 +205,7 @@ NATS md.factor.* (or CH factor_values poll)
     → DSL.Eval
     → quantengine.OnFactor
     → Signal{Symbol, Side, TargetQty, Source="live"}
-    → CH signals (审计)
+    → PG signals (审计)
     → oms.SignalRouter
         ├─ risk.PreCheck (4 项同步阻断)
         └─ mthub.OrderExecutor.Place
@@ -228,13 +224,13 @@ BarAggregator 检测修订 (md_bars.version > 1)
       ├─ 窗口重置 (丢弃旧 bar 版本，用新 bar 重新计算)
       ├─ DSL.Eval (使用新窗口)
       ├─ factor_value.version = bar.version  (同步版本号)
-      └─ CH factor_values (INSERT 新版本，非 UPDATE)
+      └─ PG factor_values (INSERT 新版本，非 UPDATE)
   → quantengine.OnFactorRevision
       ├─ 信号重算
       ├─ 信号未执行 (PG signals.state == "pending")
       │     → 更新信号 (PG signals UPDATE target_qty, trigger_price)
       └─ 信号已执行 (PG signals.state ∈ {submitted, filled, partial})
-            → 记录偏差 (CH bar_revision_log)
+            → 记录偏差 (PG bar_revision_log)
             → 不修改订单 (订单不可变原则)
 ```
 
@@ -332,7 +328,6 @@ ant-server (单进程)
 | alphaforge-backend | 8080 | — | ConnectRPC + SSE |
 | alphaforge-postgres | 5432 | — | PG |
 | alphaforge-redis | 6379 | — | Redis |
-| alphaforge-clickhouse | 9000 / 8123 | — | CH native + HTTP |
 | alphaforge-nats | 4222 | — | NATS |
 
 所有内部通信走 `alphaforge-network` Docker bridge。**只有 frontend 暴露宿主端口**。
@@ -355,12 +350,12 @@ ant v2 **不是 alfq 的克隆**。差异：
 
 > 这些不变量是 v2 设计的"宪法"。任何 PR 不得违反。
 
-1. **canonical 在 L3 入口完成**：adapter（L2）产出的 Tick `Canonical` 字段为空字符串；mdgateway.Manager.HandleTick 第一步调用 `Normalizer.Resolve(broker, symbol_raw)` 填充。理由：normalizer 依赖 PG `broker_symbols` + LRU cache，不应注入 adapter（破坏"纯翻译"职责）。**进入 L3 之后**的所有处理（quality/dedup/aggregator/publisher/chwriter）一定看到非空 `Canonical`。
+1. **canonical 在 L3 入口完成**：adapter（L2）产出的 Tick `Canonical` 字段为空字符串；mdgateway.Manager.HandleTick 第一步调用 `Normalizer.Resolve(broker, symbol_raw)` 填充。理由：normalizer 依赖 PG `broker_symbols` + LRU cache，不应注入 adapter（破坏"纯翻译"职责）。**进入 L3 之后**的所有处理（quality/dedup/aggregator/publisher/pgwriter）一定看到非空 `Canonical`。
 2. **生产路径零 Python**：从 NATS factor 到 OMS 下单，全链路 Go
-3. **价格类型**：PG `NUMERIC(20,8)` ↔ Go `decimal.Decimal` ↔ CH `Decimal(18,6)`，禁 float
+3. **价格类型**：PG `NUMERIC(20,8)` ↔ Go `decimal.Decimal`，禁 float
 4. **时间统一**：UTC，毫秒精度（`int64`）
 5. **每个 Tick 必经过 Quality.Check**：drop 也要计数
-6. **CH 写入不阻塞订阅**：CHWriter chan 满 → SpillWriter
+6. **PG 写入不阻塞订阅**：PgWriter chan 满 → drop + metric
 7. **CircuitBreaker 不影响其他账户**：单账户故障不传播
 8. **业务代码 0 处直调 mt4client/mt5client**（v2 完成后）
 9. **业务代码 0 处直读 PG 行情表**（v2 完成后）

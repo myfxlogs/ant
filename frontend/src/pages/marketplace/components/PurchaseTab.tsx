@@ -41,7 +41,7 @@ export default function PurchaseTab() {
     {
       title: t('marketplace.purchases.date'),
       key: 'date',
-      render: (_: unknown, row: PurchasedItem) => <Text>{formatDateTime(String(row.createdAt || row.purchasedAt || ''))}</Text>,
+      render: (_: unknown, row: PurchasedItem) => <Text>{formatDateTime(row.createdAt || row.purchasedAt || null)}</Text>,
     },
     {
       title: t('marketplace.purchases.status'),

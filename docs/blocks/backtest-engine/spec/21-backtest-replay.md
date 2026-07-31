@@ -70,18 +70,18 @@ func (s *LiveSource) StreamBars(ctx context.Context, p StreamParams) (<-chan *md
 // internal/factorsvc/replay_source.go
 
 type ReplaySource struct {
-    chConn *clickhouse.Conn
+    pgPool *pgxpool.Pool
 }
 
 func (s *ReplaySource) StreamBars(ctx context.Context, p StreamParams) (<-chan *mdtick.Bar, error) {
     query := `
         SELECT broker, canonical, period, close_ts_unix_ms, open, high, low, close, volume
-        FROM md_bars FINAL
-        WHERE broker = ? AND canonical = ? AND period = ?
-          AND close_ts_unix_ms >= ? AND close_ts_unix_ms <= ?
+        FROM md_bars
+        WHERE broker = $1 AND canonical = $2 AND period = $3
+          AND close_ts_unix_ms >= $4 AND close_ts_unix_ms <= $5
         ORDER BY close_ts_unix_ms ASC
     `
-    rows, _ := s.chConn.Query(ctx, query, p.Broker, p.Canonical, p.Period, p.From, p.To)
+    rows, _ := s.pgPool.Query(ctx, query, p.Broker, p.Canonical, p.Period, p.From, p.To)
     ch := make(chan *mdtick.Bar, 256)
     go func() {
         defer close(ch)
@@ -111,7 +111,7 @@ func (s *FactorService) OnBar(ctx context.Context, bar *mdtick.Bar) {
     value := s.dsl.Eval(ctx, bar, s.window.Get(bar.Canonical, bar.Period))
     if !math.IsNaN(value) {
         s.publisher.Publish(ctx, &FactorValue{...})
-        s.chWriter.Enqueue(ctx, &FactorValue{...})
+        s.pgWriter.Enqueue(ctx, &FactorValue{...})
     }
 }
 ```

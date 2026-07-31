@@ -1,8 +1,8 @@
 # 09 · PostgreSQL Schema Catalog
 
 > Comprehensive table catalog derived from 88 `.up.sql` migration files.
-> Dual-storage boundary: PG is the system-of-record for business entities;
-> ClickHouse (`docs/spec/13-clickhouse-schema.md`) handles time-series (ticks, bars, factors, signals).
+> PG is the sole persistent store: business entities + time-series (bars, factors, signals).
+> ClickHouse has been removed (ADR-0012). Latest quotes cached in Redis.
 > Path: `backend/migrations/`
 
 ---
@@ -118,7 +118,7 @@ Tables for MT4/MT5 account management, broker configuration, and symbol normaliz
 | Property | Value |
 |---|---|
 | Migration | `001_init.up.sql` |
-| Purpose | Legacy real-time quote cache (PG-based). Superseded by ClickHouse `md_ticks` / `md_bars`. |
+| Purpose | Legacy real-time quote cache (PG-based). Superseded by Redis `latest_quote:{canonical}` (ADR-0012). |
 | Key columns | `id` (UUID PK), `symbol` (unique), `bid`, `ask`, `last`, `volume`, `high`, `low` |
 | Indexes | `idx_quotes_symbol` |
 
@@ -217,14 +217,14 @@ Tables for position tracking, order lifecycle, trade history, and paper trading.
 
 ## 4. Market Data (PG-hosted)
 
-Business-metadata and caching tables for market data. Time-series OHLCV/tick data lives in ClickHouse (`md_ticks`, `md_bars`), not PG.
+Business-metadata and caching tables for market data. Time-series OHLCV bar data lives in PG `md_bars` (ADR-0012). Tick data is transient via NATS; latest quote cached in Redis.
 
 ### `kline_data`
 
 | Property | Value |
 |---|---|
 | Migration | `003_kline_data.up.sql` |
-| Purpose | Legacy OHLCV bar storage (PG). Marked for deprecation -- M9 target to DROP after verifying zero business reads. Time-series bars now in ClickHouse `md_bars`. |
+| Purpose | Legacy OHLCV bar storage (PG). Marked for deprecation -- M9 target to DROP after verifying zero business reads. Time-series bars now in PG `md_bars`. |
 | Key columns | `id` (UUID PK), `symbol`, `timeframe`, `open_time`, `close_time`, `open_price`, `high_price`, `low_price`, `close_price`, `tick_volume`, `real_volume`, `spread` |
 | Indexes | `idx_kline_symbol`, `idx_kline_timeframe`, `idx_kline_open_time`, `idx_kline_symbol_tf_time`, `idx_kline_symbol_tf_open_time_desc` (014) |
 | Constraints | `uk_kline_symbol_tf_time UNIQUE(symbol, timeframe, open_time)` |
@@ -744,7 +744,7 @@ Tables for the strategy marketplace.
 
 ## 10. Factor / Signal
 
-Tables for factor definitions and signal tracking. Factor values and signals are stored in ClickHouse (`factor_values`, `signals`); PG stores definitions and configurations only.
+Tables for factor definitions and signal tracking. Factor values and signals are stored in PG (`factor_values`, `signals`); PG stores definitions and configurations.
 
 ### `factor_definitions`
 
@@ -758,7 +758,7 @@ Tables for factor definitions and signal tracking. Factor values and signals are
 
 ### `strategy_signals`
 
-See Section 5 (Strategies and AI). Strategy-generated trading signals stored in PG for relational queries; ClickHouse `signals` table stores the time-series audit trail.
+See Section 5 (Strategies and AI). Strategy-generated trading signals stored in PG for relational queries; PG `signals` table stores the time-series audit trail.
 
 ---
 
@@ -939,19 +939,19 @@ Maps every migration file to the tables it creates or alters. ALTER-only migrati
 
 ---
 
-## 13. Cross-Reference: ClickHouse Schema
+## 13. Storage Architecture (ADR-0012)
 
-ClickHouse stores time-series data that PG is not suited for. See `docs/spec/13-clickhouse-schema.md` for full DDL.
+ClickHouse has been removed. PG is the sole persistent store. Latest quotes cached in Redis.
 
-| Data Category | PostgreSQL (this doc) | ClickHouse | Rationale |
+| Data Category | PostgreSQL (this doc) | Redis | Rationale |
 |---|---|---|---|
 | Users, accounts, orders | `users`, `mt_accounts`, `orders` | -- | Relational integrity, FK constraints |
-| Ticks | -- | `md_ticks` | 5M+ rows/account/day, 90-day TTL |
-| OHLCV Bars | `kline_data` (legacy, M9 deprecation) | `md_bars` | Long-term retention, no TTL |
-| Factor Values | -- | `factor_values` | 50K rows/account/day, 2-year TTL |
+| Ticks | -- | `latest_quote:{canonical}` (TTL 3600s) | Transient via NATS; no persistence |
+| OHLCV Bars | `md_bars` | -- | Long-term retention, ON CONFLICT upsert |
+| Factor Values | `factor_values` | -- | Relational queries, DSL evaluation |
 | Factor Definitions | `factor_definitions` | -- | Business editable, relational queries |
-| Signals (audit) | `strategy_signals` (PG business logic) | `signals` (CH time-series) | PG for relational; CH for high-frequency audit trail |
+| Signals (audit) | `strategy_signals`, `signals` | -- | PG for relational queries and time-series audit trail |
 | Broker Symbols | `broker_symbols`, `canonical_symbols` | -- | Configuration, FK relationships |
 | AI Configs | `ai_configs`, `ai_config_profiles`, `system_ai_configs` | -- | Relational, encrypted secrets |
 | Debates, Conversations | `debate_sessions`, `ai_conversations` | -- | Relational, JSONB content |
-| Backtest Data | `backtest_datasets`, `backtest_runs` | -- | Metadata; actual bar data in `backtest_dataset_bars` (PG) or re-fetched from CH |
+| Backtest Data | `backtest_datasets`, `backtest_runs` | -- | Metadata; actual bar data in `backtest_dataset_bars` (PG) |

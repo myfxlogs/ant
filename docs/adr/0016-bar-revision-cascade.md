@@ -1,6 +1,6 @@
 # ADR-0016 · Bar 修订级联处理
 
-- **状态**：Accepted
+- **状态**：Partially superseded by ADR-0012 (CH bar_revision_log removed; PG bar versioning remains)
 - **日期**：2026-05-24
 - **决策者**：架构组
 - **关联 spec**：`docs/spec/25-bar-revision-cascade.md`、`docs/spec/11-mdgateway.md`

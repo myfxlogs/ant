@@ -24,7 +24,7 @@
 ### M7-M10：基础设施 + 金融语义
 
 - ✅ MT4/MT5 gRPC 适配层（mtapi.io 双层代理）
-- ✅ 行情网关（tick dedup、CircuitBreaker、SpillWriter、ClickHouse 存储）
+- ✅ 行情网关（tick dedup、CircuitBreaker、PgWriter、PostgreSQL 存储）
 - ✅ 策略执行引擎（MQL → AST → Bytecode VM，328 个内置函数）
 - ✅ 回测引擎（SimBroker，统一回测/实盘代码路径）
 - ✅ 风控引擎（RiskGate，6 条预检规则 + Capability 模型）
@@ -184,8 +184,8 @@
 │  └──────────────────────────────────────────────────┘            │
 └───────┬──────────────┬──────────────┬──────────────┬─────────────┘
         │              │              │              │
-   PostgreSQL     ClickHouse       Redis         NATS JS
-   (业务数据)      (行情时序)      (缓存)        (事件流)
+   PostgreSQL                     Redis         NATS JS
+   (业务+行情数据)                 (缓存)        (事件流)
 ```
 
 ---

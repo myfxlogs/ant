@@ -28,14 +28,14 @@ AI 策略生成不是附加功能——它是 ant 区别于传统量化平台的
 
 ### 准则 1 · 单一数据路径（One Source of Truth）
 
-所有业务读 K 线/tick 必须走 ClickHouse `md_bars/md_ticks`。**禁止任何业务代码直接调用 mt4client/mt5client/kline_service**。
+所有业务读 K 线/tick 必须走 PG `md_bars` + Redis `latest_quote`。**禁止任何业务代码直接调用 mt4client/mt5client/kline_service**。
 
 → 反模式（v1 现状）：`connect/market_service.go` 直接 import `service/kline_service` 直接 import `internal/mt4client` → 三层耦合，canonical 不一致。
 
 ### 准则 2 · 可观测性是一等公民
 
 每一层都必须暴露：
-- **Prometheus 指标**：tick rate、drop count by reason、ch write latency、circuit state、account state、signal-to-execution latency
+- **Prometheus 指标**：tick rate、drop count by reason、pg write latency、circuit state、account state、signal-to-execution latency
 - **健康端点**：`/healthz`（进程活）、`/readyz`（关键依赖就绪）；单账户状态走 ConnectRPC `MtHubService.GetAccountStatus` + Prom Gauge `mt_account_connected`（决策 RV-C4）
 - **结构化日志**：每条 ERROR/WARN 必带 `account_id`/`broker`/`symbol`/`trace_id` 四字段
 
@@ -45,8 +45,8 @@ AI 策略生成不是附加功能——它是 ant 区别于传统量化平台的
 
 行情链路必须默认能扛住：
 - 单个 broker 不可达（其他账户照常）→ **CircuitBreaker**
-- ClickHouse 短暂宕机（30s-5min）→ **SpillWriter + Replay**
-- 进程意外重启 → 启动时 replay 未提交 spill + **订单状态对账恢复**
+- PG 短暂写超时（30s-5min）→ **PgWriter 队列缓冲 + 重试**
+- 进程意外重启 → 启动时 backfiller 检测 gap 并补齐 + **订单状态对账恢复**
 - broker 重连后重发历史 tick → **Tick dedup window**
 
 每一种故障必须有：测试用例 + Prometheus 计数 + runbook 条目。
@@ -55,7 +55,7 @@ AI 策略生成不是附加功能——它是 ant 区别于传统量化平台的
 
 `(broker_X, "BTCUSDm")` 与 `(broker_Y, "BTCUSD.pro")` 在**进入 ant 系统的第一行代码**就规范化为 `BTCUSD`。下游全部用 canonical。
 
-→ Normalizer 在 adapter 出口、mdgateway 入口运行，写入 CH 时同时保留 `symbol_raw` 与 `canonical` 两列做审计。
+→ Normalizer 在 adapter 出口、mdgateway 入口运行，写入 PG 时同时保留 `symbol_raw` 与 `canonical` 两列做审计。
 
 ### 准则 5 · 代码量是质量指标
 
@@ -90,7 +90,7 @@ ant v2 **不是 alfq 的克隆**。设计采纳 alfq 的层次划分（这是经
 
 而**坚决不偏离** alfq 的：
 - 7 层架构（adapter → mdgateway → mthub → factorsvc → quantengine → oms → ai）
-- ClickHouse 4 表 schema
+- PostgreSQL 时序存储（md_bars）+ Redis 最新报价缓存
 - 因子 DSL Go 引擎
 - DSL+ONNX 替代 Python 沙箱（生产路径）
 
@@ -102,6 +102,8 @@ ant v2 **不是 alfq 的克隆**。设计采纳 alfq 的层次划分（这是经
 | 不做行情聚合服务（bar 重组） | broker 提供的 1m/5m bar 不可信但可作 hint；以本地 tick→bar 为准 |
 | 不做"撮合模拟"在 mdgateway | 撮合属于 paper/ 仿真交易模块职责 |
 | 不做 PG 时序存储 | PG 不是时序库，硬上撑不过 1000 acct × 1m sample |
+
+> **ADR-0012 变更**：ClickHouse 已移除，PG 作为唯一持久化存储。上表中 "不做 PG 时序存储" 的限制已被 ADR-0012 重新评估——PG 足以支撑当前规模，且消除了 CH 运维复杂度。
 | 不在生产路径跑 Python | 见 ADR（沙箱降级） |
 | 不做回测专用代码路径 | 回测与实盘必须走同一 Factor/Quant/OMS 管线 |
 | 不做策略市场变现（M11 前） | 核心量化系统上线稳定后再启动 |

@@ -2,13 +2,13 @@
 
 > 路径：`backend/internal/mdgateway/`
 > 目标 LOC：≤ 1500 行（含测试）；非测试文件 ≤ 800 行（不含 backfiller 子包，见 spec/18）
-> 上游：`adapter/mt[45]/`（L2）；下游：`factorsvc/`（L4）+ ClickHouse（存储）+ NATS（fan-out）
+> 上游：`adapter/mt[45]/`（L2）；下游：`factorsvc/`（L4）+ PostgreSQL（bars 持久化）+ Redis（latest quote 缓存）+ NATS（fan-out）
 >
-> **M10 强化叠加**（2026-05-24）：
-> - ADR-0008：md_ticks/md_bars ORDER BY 与应用层 dedup hash 对齐；TTL/分桶强制使用 `arrived_unix_ms`
-> - ADR-0009：spill_replay 双写 NATS；bar finality 不可变；historical backfill（spec/18）
-> - ADR-0010：DLQ + e2e latency histogram + OTel trace + 6 条新 alert
-> - ADR-0011：CHWriter 容量调优（QueueSize 50000）+ Buffer engine + envelope encryption + normalizer cache PG NOTIFY 失效
+> **ADR-0012 变更**（2026-07）：Tick 不再落盘。ClickHouse 已移除。
+> - 最新报价缓存到 Redis（`latest_quote:{canonical}` TTL 3600s）
+> - Bar 批量写入 PG `md_bars`（ON CONFLICT upsert）
+> - `clickhouse_writer.go` / `spill_writer.go` / `spill_replay.go` / `chmigrate/` 已删除
+> - `pg_writer.go` 替代 CHWriter，仅处理 bars
 
 ## 1. 文件清单（必须全部存在）
 
@@ -21,22 +21,9 @@ backend/internal/mdgateway/
 ├── tick_dedup.go           ≤80  lines  滑动窗口去重
 ├── bar_aggregator.go       ≤180 lines  tick → 6 周期 bar
 ├── publisher.go            ≤180 lines  NATS JetStream
-├── clickhouse_writer.go    ≤180 lines  异步 batch 写 CH
-├── spill_writer.go         ≤200 lines  本地 jsonl 旋转
-├── spill_replay.go         ≤120 lines  启动回放
+├── pg_writer.go             ≤180 lines  异步 batch 写 PG md_bars
 ├── circuit_breaker.go      ≤140 lines  滑动窗口熔断
 ├── metrics.go              ≤100 lines  Prometheus 指标定义
-├── chmigrate/
-│   ├── migrate.go
-│   ├── 001_md_ticks.sql
-│   ├── 002_md_bars.sql
-│   ├── 003_factor_values.sql
-│   ├── 004_signals.sql
-│   ├── 005_schema_version.sql
-│   ├── 006_md_ticks_v2.sql       # M10 ADR-0008 ORDER BY + TTL 切到 arrived_unix_ms
-│   ├── 007_md_bars_v2.sql        # M10 ADR-0008
-│   ├── 008_md_ticks_dlq.sql      # M10 ADR-0010 DLQ 表
-│   └── 009_md_buffer_tables.sql  # M10 ADR-0011 Buffer engine
 ├── backfiller/                   # M10 ADR-0009，详见 spec/18
 ├── normalizer_invalidator.go ≤80 lines   M10 ADR-0011 PG LISTEN
 ├── dlq_writer.go             ≤80 lines   M10 ADR-0010 采样写 DLQ
@@ -57,8 +44,8 @@ type Manager struct {
     dedup       *TickDedup
     aggregator  *BarAggregator
     publisher   *Publisher
-    chWriter    *CHWriter
-    spillWriter *SpillWriter
+    pgWriter     *PgWriter
+    redis        *goredis.Client
     breakers    map[string]*CircuitBreaker  // brokerKey ("broker|host:port") → breaker（per-broker，非 per-account；见 §11）
 
     mu       sync.RWMutex
@@ -76,7 +63,7 @@ func (m *Manager) AddGateway(ctx context.Context, gw Gateway, syms []string) err
 func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error
 
 // HandleTick 是 adapter 调用的入口（TickHandler 类型）。
-// 串接 normalizer → quality → dedup → aggregator → publisher → chWriter。
+// 串接 normalizer → quality → dedup → aggregator → publisher → Redis cache → pgWriter。
 func (m *Manager) HandleTick(t *mdtick.Tick)
 
 // Health 返回所有账户健康摘要。
@@ -113,10 +100,12 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
         m.publisher.PublishBar(b)
     }
 
-    // 7. ch write (async; chan-based)
-    m.chWriter.EnqueueTick(t)
+    // 7. Redis cache latest quote (fire-and-forget; TTL 3600s)
+    m.cacheLatestQuote(t)
+
+    // 8. pg write bars (async; chan-based)
     for _, b := range bars {
-        m.chWriter.EnqueueBar(b)
+        m.pgWriter.EnqueueBar(b)
     }
 }
 ```
@@ -131,26 +120,24 @@ package mdgateway
 // Run 装配并启动 mdgateway。阻塞直到 ctx.Done。
 //
 // 流程：
-//   1. SpillReplay 回放未提交 jsonl
-//   2. 从 PG 加载 active 账户（mt_accounts.is_active=true）
-//   3. 为每个账户构造 adapter Gateway 并 AddGateway
-//   4. 启动 CHWriter 异步 loop
-//   5. 启动 health monitor goroutine（每 30s 检查所有 gateway）
+//   1. 从 PG 加载 active 账户（mt_accounts.is_active=true）
+//   2. 为每个账户构造 adapter Gateway 并 AddGateway
+//   3. 启动 PgWriter 异步 loop
+//   4. 启动 health monitor goroutine（每 30s 检查所有 gateway）
 func Run(ctx context.Context, deps RunnerDeps) error
 
 type RunnerDeps struct {
     Log       *zap.Logger
     PG        *pgxpool.Pool
-    CH        clickhouse.Conn
+    Redis     *goredis.Client
     NATSConn  *nats.Conn
-    SpillDir  string  // 默认 /var/lib/ant/spill
     Vault     vault.Client  // 解密 mt_account.password
 }
 ```
 
 ### 3.2 加载账户 SQL
 
-实际查询走 `mt_accounts_v2` 视图（见 `docs/spec/13-clickhouse-schema.md` §4.1），把 v1 列名映射到 v2 命名：
+实际查询走 `mt_accounts_v2` 视图（见 PG schema），把 v1 列名映射到 v2 命名：
 
 ```sql
 SELECT
@@ -171,7 +158,7 @@ WHERE is_active = true;
 **M7.1-2 实施前**：`mt_accounts_v2` 视图未建。runner.go 必须先检查视图存在，否则 fatal。
 
 **ETL 路径**（M7.1-2 卡片同步执行）：
-1. `chmigrate` 创建 `mt_accounts_v2` 视图
+1. `chmigrate` 创建 `mt_accounts_v2` 视图（已移除，改用 PG 迁移）
 2. 写一次性 ETL：把 v1 `password` `mt_token` 通过 vault 加密 → 填入 `password_encrypted` `mtapi_token_encrypted`
 3. 验证 100% 行已 ETL → 标记 v1 列为 deprecated（注释，不删除）
 
@@ -279,7 +266,7 @@ type ringHash struct {
 func (d *TickDedup) Seen(t *mdtick.Tick) bool
 ```
 
-**触发场景**：broker 重连后会重发最近 N 条历史 quote，若不去重会污染 `md_ticks`。
+**触发场景**：broker 重连后会重发最近 N 条历史 quote，若不去重会污染下游。
 
 ## 7. bar_aggregator.go
 
@@ -363,100 +350,44 @@ StreamConfig{
 }
 ```
 
-## 9. clickhouse_writer.go
+## 9. pg_writer.go
 
 ```go
-type CHWriterConfig struct {
-    // M10 默认值（ADR-0011 §2.1）；env 可覆盖
-    FlushInterval time.Duration  // 默认 500ms（M7 旧值 1s）
-    MaxBatchSize  int            // 默认 10000（M7 旧值 1000）
-    QueueSize     int            // 默认 50000（M7 旧值 5000）；满则走 spill
+type PgWriterConfig struct {
+    FlushInterval time.Duration  // 默认 1s
+    MaxBatchSize  int            // 默认 1000
+    QueueSize     int            // 默认 50000
 }
 
-type CHWriter struct {
-    cfg    CHWriterConfig
-    conn   clickhouse.Conn
+type PgWriter struct {
+    cfg    PgWriterConfig
+    pool   *pgxpool.Pool
     log    *zap.Logger
-    spill  *SpillWriter
 
-    tickQ  chan *mdtick.Tick
     barQ   chan *mdtick.Bar
 }
 
-func (w *CHWriter) EnqueueTick(t *mdtick.Tick)
-func (w *CHWriter) EnqueueBar(b *mdtick.Bar)
-func (w *CHWriter) Start(ctx context.Context)
-func (w *CHWriter) Flush(ctx context.Context) error  // shutdown 时
+func (w *PgWriter) EnqueueBar(b *mdtick.Bar)
+func (w *PgWriter) Start(ctx context.Context)
+func (w *PgWriter) Flush(ctx context.Context) error  // shutdown 时
 ```
 
 行为契约：
-- `EnqueueTick` chan 满 → **立即** 写 SpillWriter，不阻塞调用方
+- `EnqueueBar` chan 满 → drop + metric `md_chan_full_total`
 - 后台 goroutine 每 `FlushInterval` 或 `MaxBatchSize` 触发批量 INSERT
-- INSERT 失败 → 整批写 SpillWriter；不重试（spill_replay 启动时回放）
-- **SpillWriter 也失败时的升级路径（决策 D-3，2026-05-23）**：
-  1. `spill.WriteTick/WriteBar` 连续失败 ≥ 3 次（计数器 `spillFailStreak`）
-  2. CHWriter 通过注入的 `OnSpillFail func(brokerKey string, err error)` 回调上报 Manager
-  3. Manager 对该 brokerKey 的 CircuitBreaker 调 `OnFailure()`（与 broker 不可达同等故障）
-  4. metric `md_tick_dropped_total{reason="spill_failed"}` 递增；alert `SpillUnwritable` 触发
-  5. 一次成功写入即重置 streak
-- 触发场景：磁盘满、目录权限漂移（容器重启 UID 变化）、云盘短暂只读
-- 哲学一致：**任何"行情链路最后一道防线"故障都必须熔断而不是静默丢数据**（01-vision §准则 3）
+- INSERT 失败 → 指数退避重试 3 次（200ms/400ms/800ms）；仍失败 → 记 Error 日志 + 丢弃该批次
+- NATS JetStream 提供 bar 持久化兑底（消费者可重放）
 
-INSERT 模板（用 ClickHouse client `PrepareBatch`）：
+INSERT 模板（PG `ON CONFLICT` upsert）：
 
 ```sql
--- M10 ADR-0011：写入 Buffer engine 表，CH 内部异步 flush 到 md_ticks
--- 详见 spec/13 §2.7
-INSERT INTO md_ticks_buffer (
-    user_id, account_id, broker, symbol_raw, canonical,
-    ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume,
-    is_replay
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-```
-
-bar 同理 `INSERT INTO md_bars_buffer (...)`。
-
-## 10. spill_writer.go + spill_replay.go
-
-### 10.1 spill_writer
-
-```go
-type SpillWriterConfig struct {
-    Dir            string         // 默认 /var/lib/ant/spill
-    MaxFileBytes   int64          // 默认 100 MB
-    MaxFileAge     time.Duration  // 默认 1h
-}
-
-type SpillWriter struct {
-    cfg     SpillWriterConfig
-    log     *zap.Logger
-
-    mu      sync.Mutex
-    cur     *os.File
-    curBytes int64
-    curStart time.Time
-}
-
-// WriteTick 把 tick 序列化为 jsonl 一行写入当前 spill 文件。
-// 文件超过 MaxFileBytes 或 MaxFileAge → rotate。
-// rotate 命名：spill-{ts}.jsonl
-func (s *SpillWriter) WriteTick(t *mdtick.Tick) error
-func (s *SpillWriter) WriteBar(b *mdtick.Bar) error
-```
-
-jsonl 行格式（一行一对象）：
-
-```json
-{"_kind":"tick","user_id":"...","account_id":"...","broker":"...","ts_unix_ms":1234567890123, "bid":"108234.56", ...}
-```
-
-### 10.2 spill_replay
-
-```go
-// Run 扫描 spill 目录的所有 *.jsonl，逐行重放到 CHWriter。
-// 成功后移到 dir/processed/{ts}/{filename}。
-// 失败行写入 dir/failed/{ts}/{filename}.errors.jsonl。
-func (r *SpillReplay) Run(ctx context.Context) error
+INSERT INTO md_bars (
+    broker, canonical, period, bar_start_unix_ms,
+    open, high, low, close, volume, tick_count,
+    arrived_unix_ms, version
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+ON CONFLICT (broker, canonical, period, bar_start_unix_ms, version)
+DO NOTHING
 ```
 
 ## 11. circuit_breaker.go
@@ -509,9 +440,6 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 | `md_publish_total` | Counter | kind={tick,bar}, status={ok,err} |
 | `md_publish_latency_seconds` | Histogram | kind |
 | `md_ch_write_total` | Counter | kind={tick,bar}, status |
-| `md_ch_write_latency_seconds` | Histogram | kind |
-| `md_spill_writes_total` | Counter | reason={ch_error,queue_full} |
-| `md_spill_replay_total` | Counter | status={ok,err} |
 | `md_circuit_state` | Gauge | broker, mtapi_endpoint（per-broker，非 per-account；见 §11）|
 | `md_tick_anomaly_total` | Counter | broker, canonical, kind={outlier,gap,clock_skew}（见 §5）|
 | `md_gateway_connected` | Gauge | account_id, broker, platform |
@@ -524,7 +452,7 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 `factorsvc/subscriber.go` 订阅 NATS subject `md.bar.>`，每条 bar：
 1. 找出适用的 FactorDef（按 canonical + period 匹配）
 2. WindowBuffer.Append → DSL.Eval
-3. 写 CH `factor_values` + 发布 `md.factor.{canonical}.{factor_name}`
+3. 写 PG `factor_values` + 发布 `md.factor.{canonical}.{factor_name}`
 
 详见 `docs/spec/12-mthub.md`（占位）+ 后续 `docs/spec/20-factorsvc.md`（M8 撰写）。
 
@@ -543,8 +471,7 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 
 | 队列 | 满了怎么办 | metric | 上限/默认 |
 |---|---|---|---|
-| `CHWriter.tickQ` | 直接 SpillWriter（不阻塞） | `md_chan_full_total` | 50000 |
-| `CHWriter.barQ` | 同上 | `md_chan_full_total` | 50000 |
+| `PgWriter.barQ` | drop + metric | `md_chan_full_total` | 50000 |
 | `Publisher` NATS | JetStream Discard=OldFirst + metric increment | `md_nats_publish_dropped_total` | stream MaxBytes |
 | `Manager.HandleTick` pipeline | 各阶段 bounded chan 满载 drop | `md_chan_full_total` | per-stage |
 | NATS consumer | 消费滞后监控 | `md_consumer_lag` | gauge |
@@ -574,11 +501,10 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 1. HTTP server.Shutdown(ctx, 5s)           // 停接新请求；正在跑的 RPC 自然结束
 2. for each gateway: g.Disconnect(ctx)     // 不再产生新 tick
 3. wait 100ms                              // 让 in-flight tick 跑完 HandleTick
-4. CHWriter.Flush(ctx, 10s)                // drain tickQ/barQ → CH（CH 不通则 spill）
+4. PgWriter.Flush(ctx, 10s)                // drain barQ → PG md_bars
 5. Publisher.Drain(ctx, 5s)                // NATS publish ack 等待
-6. SpillWriter.Close()                     // fsync 当前 jsonl
-7. close storage (NATS, CH, Redis, PG)
-8. logger.Sync()
+6. close storage (NATS, Redis, PG)
+7. logger.Sync()
 ```
 
 每步带超时；总预算 ≤ 30s（k8s/systemd 默认 stopGracePeriod 内）。任一步超时 → `log.Warn` 并继续；不阻断后续步骤。
@@ -634,8 +560,8 @@ test "$LOC" -le 800 || { echo "LOC=$LOC > 800"; exit 1; }
 
 # 必有文件检查
 for f in manager.go runner.go normalizer.go quality.go tick_dedup.go \
-         bar_aggregator.go publisher.go clickhouse_writer.go \
-         spill_writer.go spill_replay.go circuit_breaker.go metrics.go; do
+         bar_aggregator.go publisher.go pg_writer.go \
+         circuit_breaker.go metrics.go; do
   test -f "backend/internal/mdgateway/$f" || { echo "MISSING $f"; exit 1; }
 done
 
@@ -644,7 +570,7 @@ done
   || { echo "FAIL: mdgateway imports legacy mt[45]client"; exit 1; }
 
 # 启动 docker 后跑数据流端到端
-docker exec alphaforge-clickhouse clickhouse-client --query \
-  "SELECT count() FROM md_ticks WHERE arrived_unix_ms > $(date -d '5 minutes ago' +%s%3N)" \
-  | awk '$1<10{exit 1}'  # 5 分钟内至少 10 条 tick
+docker exec alphaforge-backend psql -U alphaforge -d alphaforge -c \
+  "SELECT count(*) FROM md_bars WHERE arrived_unix_ms > $(date -d '5 minutes ago' +%s%3N)" \
+  | awk '$1>=1{exit 0}{exit 1}'  # 5 分钟内至少 1 条 bar
 ```

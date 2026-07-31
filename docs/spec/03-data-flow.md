@@ -2,45 +2,41 @@
 
 > **本文档展示 12 条核心数据流的时序细节。每个箭头都有对应的代码位置与可观测信号。**
 
-## 1. 行情接入流（Tick → CH/NATS）
+## 1. 行情接入流（Tick → NATS/Redis/PG）
+
+> ADR-0012: Tick 不落盘。最新报价缓存到 Redis，Bar 批量写入 PG md_bars。
 
 ### 1.1 时序图
 
 ```
-mtapi.io     adapter/mt4    Manager       Normalizer  Quality   Dedup    BarAgg   Publisher  CHWriter  SpillW   ClickHouse  NATS
-   │            │              │              │          │        │        │         │          │         │           │       │
-   │ OnQuote    │              │              │          │        │        │         │          │         │           │       │
-   ├───────────►│              │              │          │        │        │         │          │         │           │       │
-   │            │ proto→Tick   │              │          │        │        │         │          │         │           │       │
-   │            ├─────────────►│              │          │        │        │         │          │         │           │       │
-   │            │              │ Resolve      │          │        │        │         │          │         │           │       │
-   │            │              ├─────────────►│          │        │        │         │          │         │           │       │
-   │            │              │ canonical    │          │        │        │         │          │         │           │       │
-   │            │              │◄─────────────┤          │        │        │         │          │         │           │       │
-   │            │              │ Check        │          │        │        │         │          │         │           │       │
-   │            │              ├─────────────────────────►        │        │         │          │         │           │       │
-   │            │              │ pass/drop    │          │        │        │         │          │         │           │       │
-   │            │              │◄─────────────────────────        │        │         │          │         │           │       │
-   │            │              │ Seen?        │          │        │        │         │          │         │           │       │
-   │            │              ├──────────────────────────────────►        │         │          │         │           │       │
-   │            │              │ false→continue          │        │        │         │          │         │           │       │
-   │            │              │◄──────────────────────────────────        │         │          │         │           │       │
-   │            │              │ AddTick      │          │        │        │         │          │         │           │       │
-   │            │              ├───────────────────────────────────────────►         │          │         │           │       │
-   │            │              │ Bar?(可能)    │          │        │        │         │          │         │           │       │
-   │            │              │◄───────────────────────────────────────────         │          │         │           │       │
-   │            │              │ PublishTick                                          │          │         │           │       │
-   │            │              ├──────────────────────────────────────────────────────►          │         │           │       │
-   │            │              │                                                      │          │ md.tick.<broker>.<canonical>
-   │            │              │                                                      ├─────────────────────────────────►       │
-   │            │              │ EnqueueTick                                                     │         │           │       │
-   │            │              ├─────────────────────────────────────────────────────────────────►         │           │       │
-   │            │              │                                                                            │ batch flush 1s/1000
-   │            │              │                                                                            ├──────────►│       │
-   │            │              │                                                                            │ INSERT INTO md_ticks
-   │            │              │                                                                            │           │       │
-   │            │              │                                                                            │ on error → SpillW
-   │            │              │                                                                            ├───────────────────►│ jsonl rotate
+mtapi.io  adapter/mt4  Manager  Normalizer  Quality  Dedup  BarAgg  Publisher  Redis  PgWriter  NATS
+   │         │           │         │          │       │       │        │         │        │      │
+   │ OnQuote │           │         │          │       │       │        │         │        │      │
+   ├────────►│           │         │          │       │       │        │         │        │      │
+   │         │ proto→Tick│         │          │       │       │        │         │        │      │
+   │         ├──────────►│         │          │       │       │        │         │        │      │
+   │         │           │ Resolve │          │       │       │        │         │        │      │
+   │         │           ├────────►│          │       │       │        │         │        │      │
+   │         │           │◄────────│          │       │       │        │         │        │      │
+   │         │           │ Check              │       │       │        │         │        │      │
+   │         │           ├───────────────────►│       │       │        │         │        │      │
+   │         │           │◄───────────────────│       │       │        │         │        │      │
+   │         │           │ Seen?                      │       │        │         │        │      │
+   │         │           ├───────────────────────────►│       │        │         │        │      │
+   │         │           │◄───────────────────────────│       │        │         │        │      │
+   │         │           │ AddTick                            │        │         │        │      │
+   │         │           ├───────────────────────────────────►│        │         │        │      │
+   │         │           │ Bar?(可能)                         │        │         │        │      │
+   │         │           │◄───────────────────────────────────│        │         │        │      │
+   │         │           │ PublishTick/Bar                             │         │        │      │
+   │         │           ├──────────────────────────────────────────────►│        │        │      │
+   │         │           │              md.tick/md.bar → NATS            ├──────────────────────►│
+   │         │           │ SETEX latest_quote:{canonical} 3600s         │        │        │      │
+   │         │           ├──────────────────────────────────────────────►│        │        │      │
+   │         │           │ EnqueueBar                                          │        │        │      │
+   │         │           ├─────────────────────────────────────────────────────────►│        │      │
+   │         │           │                                                    │ batch flush → PG md_bars │
+   │         │           │                                                    │ ON CONFLICT upsert      │
 ```
 
 ### 1.2 关键决策点
@@ -52,24 +48,22 @@ mtapi.io     adapter/mt4    Manager       Normalizer  Quality   Dedup    BarAgg 
 | TickDedup | `mdgateway/tick_dedup.go:Seen` | drop 但不计入 dropped（重发是已知正常）| `md_tick_dedup_total` |
 | BarAggregator | `mdgateway/bar_aggregator.go:AddTick` | 用 ArrivedUnixMs 而非 broker TsUnixMs | `md_bar_flushed_total` |
 | Publisher | `mdgateway/publisher.go:PublishTick` | 失败计数；不阻塞 | `md_publish_total{kind,status}` |
-| CHWriter | `mdgateway/clickhouse_writer.go:Enqueue` | chan 满 → SpillWriter | `md_ch_write_errors_total`, `md_spill_writes_total` |
+| Redis cache | `mdgateway/manager_tick.go:HandleTick` | SETEX 失败记 Debug 日志；不阻塞 | — |
+| PgWriter | `mdgateway/pg_writer.go:EnqueueBar` | chan 满 → drop + 计数 | `md_chan_full_total` |
 | CircuitBreaker | `mdgateway/circuit_breaker.go:OnFailure` | 半开/全开 → 新连接被拒 | `md_circuit_state{account,broker}` |
 
 ### 1.3 错误恢复路径
 
 ```
-CH 写入失败
-  → CHWriter 计数 md_ch_write_errors_total
-  → CircuitBreaker.OnFailure
-  → 失败次数 ≥ 5 → 熔断打开 30s
-  → 熔断期间 CHWriter.Enqueue 直接走 SpillWriter
-  → SpillWriter 按时间/大小旋转 jsonl
-  → 30s 后 CircuitBreaker 半开
-  → 单笔 CH 写入成功 → CircuitBreaker.OnSuccess (count++)
-  → 连续 2 次成功 → 关闭熔断
-  → 启动时 SpillReplay 读取 spill 目录所有 jsonl
-  → 重放到 CHWriter
-  → 成功 → 移到 spill/processed/
+PG bar 写入失败
+  → PgWriter.retryInsert 指数退避重试 3 次 (200ms/400ms/800ms)
+  → 仍失败 → 记 Error 日志 + 丢弃该批次
+  → NATS JetStream 提供 bar 持久化兜底（消费者可重放）
+
+Redis SETEX 失败
+  → 记 Debug 日志；不阻塞管线
+  → 下次 tick 覆盖写入时自动恢复
+  → TTL 3600s 过期后 GetLatestTick 返回 error（调用方降级处理）
 ```
 
 ## 2. 因子计算流（Bar → Factor）
@@ -77,7 +71,7 @@ CH 写入失败
 ### 2.1 时序图
 
 ```
-NATS                  factorsvc.Subscriber  WindowBuffer  DSL.Eval      CH         Publisher  NATS
+NATS                  factorsvc.Subscriber  WindowBuffer  DSL.Eval      PG         Publisher  NATS
  │ md.bar.<>.<>.<>             │                 │            │           │            │         │
  ├───────────────────────────►│                  │            │           │            │         │
  │                            │ Append           │            │           │            │         │
@@ -101,7 +95,7 @@ NATS                  factorsvc.Subscriber  WindowBuffer  DSL.Eval      CH      
 - **窗口大小**：每个 (canonical, period, factor) 维护 `max(factor.lookback) + 50` bars
 - **FactorDef** 来自 PG `factor_definitions` 表（v2 新建，dynamic）
 - **多周期**：同一 factor 可订阅多 period（如 `ma20` 同时算 `1m/5m/1h`）
-- **NaN 处理**：DSL eval 返回 NaN 表示窗口未填满；不写 CH 不发 NATS
+- **NaN 处理**：DSL eval 返回 NaN 表示窗口未填满；不写 PG 不发 NATS
 
 ## 3. 信号 → 下单流（Factor → OMS → MT）
 
@@ -112,7 +106,7 @@ NATS md.factor   quantengine    risk.PreCheck   mthub.Exec   adapter/mt[45]   mt
  │ ────────────►│                   │              │             │             │          │             │
  │              │ ONNX/DSL infer    │              │             │             │          │             │
  │              │ Signal{...}       │              │             │             │          │             │
- │              ├──── CH signals (audit) ─────────────────────────────────────────────────►            │
+ │              ├──── PG signals (audit) ─────────────────────────────────────────────────►            │
  │              ├──────────────────►│              │             │             │          │             │
  │              │                   │ allow/deny   │             │             │          │             │
  │              │◄──────────────────┤              │             │             │          │             │
@@ -143,17 +137,17 @@ NATS md.factor   quantengine    risk.PreCheck   mthub.Exec   adapter/mt[45]   mt
 
 ### 3.2 关键不变量
 
-- **每个 Signal 必写 CH `signals`**（审计），无论是否最终下单
+- **每个 Signal 必写 PG `signals`**（审计），无论是否最终下单
 - **risk.PreCheck 失败 → 信号被丢弃 + audit 日志记录拒因**
 - **broker_ticket 必须从 mtapi 返回，不许伪造**
 - **state 转换** 走显式状态机（详见 `docs/spec/12-mthub.md`）
 
-## 4. 用户查询流（前端 → CH）
+## 4. 用户查询流（前端 → PG）
 
 ### 4.1 时序图
 
 ```
-前端                ConnectRPC handler  KlineService    CH查询    CH         PG (fallback)
+前端                ConnectRPC handler  KlineService    PG查询    PG
  │ GetKline(req)        │                   │              │       │             │
  ├────────────────────►│                    │              │       │             │
  │                     │ validate           │              │       │             │
@@ -179,10 +173,9 @@ NATS md.factor   quantengine    risk.PreCheck   mthub.Exec   adapter/mt[45]   mt
 ### 4.2 切流策略（M7-rewrite 期间）
 
 ```
-config.LegacyFallback = true（默认 ON，M9 删除）
-  → CH 查询 0 行 + 时间窗在 M7 启动前 → 退到 PG
-  → CH 查询 0 行 + 时间窗在 M7 启动后 → 返回 0 行（不退 PG，避免误导）
-  → CH 查询 N 行 → 直接返回（覆盖率 ≥ 90% 即 M7.8 验收通过）
+config.LegacyFallback = false（ADR-0012 后 PG 为唯一存储，无 fallback）
+  → PG 查询 0 行 → 返回 0 行
+  → PG 查询 N 行 → 直接返回
 ```
 
 ## 5. 健康检查流
@@ -192,7 +185,7 @@ config.LegacyFallback = true（默认 ON，M9 删除）
 | 端点 | 含义 | 失败条件 |
 |---|---|---|
 | `/healthz` | 进程活 | 进程僵死 |
-| `/readyz` | 准备好接流量 | PG/CH/Redis/NATS 任一不通 |
+| `/readyz` | 准备好接流量 | PG/Redis/NATS 任一不通 |
 | `/metrics` | Prometheus 抓取 | — |
 
 **已废弃**：原计划的 `/livez/account/{id}` per-account 端点 — k8s liveness 哲学只关心进程级；账户级健康是观测问题（Prometheus），非健康检查问题。改为 `mt_account_connected{account_id, broker}` Gauge，由 AlertManager 告警（决策见 BACKLOG RV-C4）。
@@ -202,7 +195,6 @@ config.LegacyFallback = true（默认 ON，M9 删除）
 ```
 GET /readyz
 ├─ check PG: SELECT 1
-├─ check CH: SELECT 1
 ├─ check Redis: PING
 ├─ check NATS: connection.IsConnected()
 └─ check accounts: 至少 50% accounts state ∈ {connected, degraded}
@@ -214,21 +206,19 @@ GET /readyz
 ant-server main()
   1. load config (env + yaml)
   2. setup logger (zap)
-  3. connect storage (PG, CH, Redis, NATS) — 任一失败 → fatal
+  3. connect storage (PG, Redis, NATS) — 任一失败 → fatal
   4. run migrations
-     - chmigrate.Run(ch)
      - PG migrate (golang-migrate)
   5. init mdgateway components (normalizer, quality, ...)
-  6. SpillReplay.Run()  ← 启动时优先回放未提交的 spill
-  7. mdgateway.RunGateway()  ← 从 PG 加载账户 → 启动 gateways
-  8. factorsvc.Start()  ← 订阅 NATS md.bar.*
-  9. quantengine.Start()  ← 加载 ONNX + DSL
- 10. oms.Start()  ← 订阅 NATS md.factor.*
- 11. start HTTP server (ConnectRPC + SSE) on :8080
- 12. start /metrics, /healthz, /readyz
- 13. graceful shutdown signals (SIGTERM)
+  6. mdgateway.RunGateway()  ← 从 PG 加载账户 → 启动 gateways
+  7. factorsvc.Start()  ← 订阅 NATS md.bar.*
+  8. quantengine.Start()  ← 加载 ONNX + DSL
+  9. oms.Start()  ← 订阅 NATS md.factor.*
+ 10. start HTTP server (ConnectRPC + SSE) on :8080
+ 11. start /metrics, /healthz, /readyz
+ 12. graceful shutdown signals (SIGTERM)
      → drain ConnectRPC
-     → flush mdgateway CHWriter
+     → flush mdgateway PgWriter
      → close gateways
      → close storage
 ```
@@ -239,18 +229,17 @@ ant-server main()
 
 | 失败 | 立即降级 | 持续 X 后 | 完全恢复 |
 |---|---|---|---|
-| CH 不可达 | SpillWriter 接管 | jsonl 旋转持续；告警 | 启动 SpillReplay |
+| PG 不可达 | PgWriter 重试 3 次后丢弃批次；NATS JetStream 兜底 | 持续失败 → 告警 | 自动恢复 |
 | NATS 不可达 | Publisher 计数失败；不阻塞 | 30s 重连尝试 | 自动续 |
 | 单 broker 不可达 | CircuitBreaker 打开；其他账户照常 | 30s 后半开尝试 | 连续 2 次成功 → 关 |
 | Redis 不可达 | 缓存穿透到 PG；性能下降 | 60s 持续 → 告警 | 自动续 |
-| PG 不可达 | API 503；新订单拒绝；行情链路照常 | 即时告警 | restart 后续 |
 
 每条降级路径必须有：测试用例（chaos/）+ Prometheus 指标 + runbook 条目（`docs/runbook/mt-incidents.md`）。
 
 ## 8. 统一回测/实盘路径时序（ADR-0012）
 
 ```
-CH (历史) / NATS (实时)    Source iface    factorsvc    quantengine    OMS          PaperExecutor / mthub
+PG (历史) / NATS (实时)    Source iface    factorsvc    quantengine    OMS          PaperExecutor / mthub
  │                              │               │             │            │                │
  │ bars                         │               │             │            │                │
  ├─────────────►                │               │             │            │                │
@@ -266,7 +255,7 @@ CH (历史) / NATS (实时)    Source iface    factorsvc    quantengine    OMS  
  │              │               │               ├────────────►│            │                │
  │              │               │               │ Signal{Source}           │                │
  │              │               │               │◄────────────┤            │                │
- │              │               │               │ CH signals (audit)       │                │
+ │              │               │               │ PG signals (audit)       │                │
  │              │               │               ├─────────────────────────►│                │
  │              │               │               │             │ Signal     │                │
  │              │               │               ├─────────────────────────►│                │
@@ -291,7 +280,7 @@ type FactorSource interface {
     Subscribe(ctx context.Context, canonical string) (<-chan *FactorValue, error)
 }
 // LiveSource: NATS JetStream 订阅
-// ReplaySource: CH SELECT 历史查询 + 时间推进
+// ReplaySource: PG SELECT 历史查询 + 时间推进
 ```
 
 ## 9. 信号→执行延迟预算时序（ADR-0018）
@@ -387,7 +376,7 @@ BarAggregator     NATS              factorsvc       quantengine      OMS        
  │                  │                    │ 窗口重置       │              │                │
  │                  │                    │ DSL.Eval       │              │                │
  │                  │                    │ (新 bar 窗口)  │              │                │
- │                  │                    │ CH INSERT       │              │                │
+ │                  │                    │ PG INSERT       │              │                │
  │                  │                    │ factor_values   │              │                │
  │                  │                    │ (version=bar.version)          │                │
  │                  │                    │                │              │                │
@@ -402,7 +391,7 @@ BarAggregator     NATS              factorsvc       quantengine      OMS        
  │                  │                    │                │ state==pending?               │
  │                  │                    │                │ ──→ UPDATE signal             │
  │                  │                    │                │ state∈{submitted,filled}?      │
- │                  │                    │                │ ──→ CH bar_revision_log        │
+ │                  │                    │                │ ──→ PG bar_revision_log        │
  │                  │                    │                │     (记录偏差，不修改订单)      │
 ```
 

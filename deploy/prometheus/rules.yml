@@ -1,0 +1,50 @@
+groups:
+  - name: alphaforge-backend
+    rules:
+      - alert: BackendDown
+        expr: up{job="alphaforge-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend is down"
+          description: "Backend has been down for more than 1 minute."
+
+      - alert: BackendHighMemory
+        expr: process_resident_memory_bytes{job="alphaforge-backend"} > 180 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend high memory usage"
+          description: "Backend memory usage exceeds 180MB (limit 192MB)."
+
+      - alert: MDDlqSampledHigh
+        expr: rate(md_dlq_sampled_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Market data DLQ rate high"
+          description: "More than 10 ticks/sec being dropped to DLQ."
+
+      - alert: MDGapExceededHigh
+        expr: rate(md_gap_exceeded_total[5m]) > 50
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Market data gap rate high"
+          description: "More than 50 gap exceeded events per 5min."
+
+      - alert: PgConnectionPoolExhausted
+        expr: pgxpool_pool_total_conns{job="alphaforge-backend"} >= 24
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PG connection pool nearly exhausted"
+          description: "Pool conns >= 24 (max 25). Risk of request starvation."
+
+  - name: infrastructure
+    rules: []

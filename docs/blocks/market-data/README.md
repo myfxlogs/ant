@@ -13,7 +13,7 @@ backend/internal/repository/     ← market_data_pg.go、ch_market_data_store.go
 
 ## 关键设计
 
-- 双存储：PG（业务数据）+ ClickHouse（时序 K 线/Tick）
+- 单存储：PG（业务数据 + 时序 K 线）+ Redis（最新报价缓存）
 - NATS JetStream 推送实时 bar
 - 在线指标（SMA/EMA/Bollinger/RSI/MACD…）——流式计算，不停机
 - 回填系统（backfiller/）：source → target → trigger → clock
@@ -36,6 +36,6 @@ market-data → frontend(行情展示)
 ## 关联文档
 
 - [spec/11-mdgateway.md](spec/11-mdgateway.md)
-- [spec/13-clickhouse-schema.md](spec/13-clickhouse-schema.md)
+- [spec/13-clickhouse-schema.md](spec/13-clickhouse-schema.md) [DEPRECATED — ADR-0012 已移除 ClickHouse]
 - [spec/19-md-doctor.md](spec/19-md-doctor.md)
 - [plans/resilience-gaps.md](plans/resilience-gaps.md) — bar_aggregator 重启恢复 + tick 去重验证

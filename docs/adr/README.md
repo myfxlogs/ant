@@ -5,22 +5,22 @@
 
 | ID | 标题 | 状态 |
 | --- | --- | --- |
-| 0001 | MT 基础完全重写（路线 B） | Accepted |
-| 0002 | ClickHouse 作为时序存储 | Accepted |
+| 0001 | MT 基础完全重写（路线 B） | Partially superseded by 0012 |
+| 0002 | ClickHouse 作为时序存储 | Superseded by 0012 |
 | 0003 | mtapi 直连，不再二次包装 | Accepted |
-| 0004 | Tick 去重与质量分级 | Accepted |
-| 0005 | CircuitBreaker + Spill 故障恢复 | Accepted |
+| 0004 | Tick 去重与质量分级 | Partially superseded by 0012 |
+| 0005 | CircuitBreaker + Spill 故障恢复 | Partially superseded by 0012 |
 | 0006 | 平台共享层 vs 用户私有层（C2C 架构）| Accepted |
 | 0007 | M7-M9 执行回顾：B 方案叙事与实际结果的偏离 | Accepted |
 | 0008 | 存储层去重键对齐 + 时间轴纪律 | Accepted |
-| 0009 | Spill Replay 双写 + Bar 不可变性 + 历史回填 | Accepted |
-| 0010 | SLO + Alert + DLQ + Trace 框架 | Accepted |
-| 0011 | 容量调优 + Vault 轮换 + Normalizer 缓存失效 | Accepted |
+| 0009 | Spill Replay 双写 + Bar 不可变性 + 历史回填 | Partially superseded by 0012 |
+| 0010 | SLO + Alert + DLQ + Trace 框架 | Partially superseded by 0012 |
+| 0011 | 容量调优 + Vault 轮换 + Normalizer 缓存失效 | Partially superseded by 0012 |
 | 0012 | 统一回测/实盘代码路径 | Accepted |
 | 0013 | 订单状态机 + 崩溃恢复 + 幂等性 | Accepted |
 | 0014 | 持仓级风控 | Accepted |
 | 0015 | 仿真交易（Paper Trading）| Accepted |
-| 0016 | Bar 修订级联处理 | Accepted |
+| 0016 | Bar 修订级联处理 | Partially superseded by 0012 |
 | 0017 | AI 会话记忆 + 意图澄清 + 回测反馈 | Accepted |
 | 0018 | 信号→执行延迟 SLO | Accepted |
 | 0019 | M11 前端架构（增量重构，React/Zustand/TanStack Query） | Accepted |
