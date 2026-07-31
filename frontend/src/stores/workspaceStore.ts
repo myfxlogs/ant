@@ -116,8 +116,10 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         positionsPanelVisible: state.positionsPanelVisible,
         rightPanelWidth: state.rightPanelWidth,
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state) state._hasHydrated = true;
+      onRehydrateStorage: () => () => {
+        queueMicrotask(() => {
+          useWorkspaceStore.setState({ _hasHydrated: true });
+        });
       },
     },
   ),

@@ -45,10 +45,10 @@ export const useAuthStore = create<AuthState>()(
           if (error) {
             console.error('[AuthStore] Rehydration error:', error);
           }
-          if (state) {
-            state._hasHydrated = true;
-            state.isAuthenticated = !!state.user;
-          }
+          const isAuth = !!(state as AuthState | undefined)?.user;
+          queueMicrotask(() => {
+            useAuthStore.setState({ _hasHydrated: true, isAuthenticated: isAuth });
+          });
         };
       },
     }

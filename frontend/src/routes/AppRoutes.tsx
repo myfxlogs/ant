@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { useAuthStore } from '@/stores/authStore';
@@ -7,6 +7,17 @@ import { PageWrapper } from '@/components/common/PageWrapper';
 import { PrivateRoute, PublicRoute, AdminRoute } from '@/components/auth/RouteGuards';
 import MainLayout from '@/components/layout/MainLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
+
+function useHydrated(): boolean {
+  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated());
+  useEffect(() => {
+    if (hydrated) return;
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+    return unsub;
+  }, [hydrated]);
+  return hydrated;
+}
 
 // ── Lazy page imports ──
 const Login = lazy(() => import('@/pages/auth/Login'));
@@ -147,8 +158,9 @@ const adminRoutes = (
 
 // ── App content ──
 export function AppRoutes() {
-  const { hasHydrated: _hasHydrated, isAuthenticated } = useAuthStore();
-  if (!_hasHydrated) {
+  const hydrated = useHydrated();
+  const { isAuthenticated } = useAuthStore();
+  if (!hydrated) {
     return <div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>;
   }
   return (
