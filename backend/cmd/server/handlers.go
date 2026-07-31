@@ -12,6 +12,7 @@ import (
 	"alphaforge/internal/chain"
 	"alphaforge/internal/config"
 	algo "alphaforge/internal/connect/algo"
+	mktplace "alphaforge/internal/connect/marketplace"
 	"alphaforge/internal/connect/notification"
 	strategy "alphaforge/internal/connect/strategy"
 	subscriptionhdr "alphaforge/internal/connect/subscription"
@@ -58,7 +59,6 @@ func registerHandlers(
 	convRepo := repository.NewAIConversationRepository(pool)
 	session := internalai.NewConversationSession(convRepo)
 	templatesRepo := repository.NewAIStrategyTemplatesRepository(pool)
-	jobRepo := repository.NewJobRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
 	marketDataRepo := d.Store
 	walletRepo := repository.NewWalletRepository(pool)
@@ -96,58 +96,112 @@ func registerHandlers(
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
 
 	accountEventPub := mdgateway.NewAccountEventPublisher(d.JS, log)
-	registerAccountHandler(mux, cfg, d.AccountSvc, accountEventPub, d.Hub, mtTester, searcher, quotaChecker, log, d.OtelInterceptor, d.AuthInterceptor)
+	registerAccountHandler(accountHandlerParams{
+		Mux:             mux,
+		Cfg:             cfg,
+		AccountSvc:      d.AccountSvc,
+		AccountEventPub: accountEventPub,
+		Hub:             d.Hub,
+		MTTester:        mtTester,
+		Searcher:        searcher,
+		QuotaChecker:    quotaChecker,
+		Log:             log,
+		OtelInterceptor: d.OtelInterceptor,
+		AuthInterceptor: d.AuthInterceptor,
+	})
 
 	mktplaceHandler := registerMarketplaceHandlers(ctx, mux, d.NC, log, marketDataRepo, d.MktplaceSvc, walletRepo, d.PlatformSvc, d.OtelInterceptor, d.AuthInterceptor)
 
 	subscriptionSvc.StartPlatformRenewalLoop(ctx) // daily platform subscription auto-renewal/expiry
 
+	return registerPostAccountHandlers(ctx, registerPostAccountDeps{
+		Mux: mux, Pool: pool, Cfg: cfg, Log: log, D: d,
+		UserRepo: userRepo, ConvRepo: convRepo, Session: session,
+		TemplatesRepo: templatesRepo, SchedHealthRepo: schedHealthRepo,
+		MarketDataRepo: marketDataRepo, WalletRepo: walletRepo, WalletSvc: walletSvc,
+		RegistrationSvc: registrationSvc, EmailNotifier: emailNotifier,
+		Searcher: searcher, MTTester: mtTester, AuthServer: authServer,
+		SubscriptionSvc: subscriptionSvc, QuotaChecker: quotaChecker,
+		ReconLoop: reconLoop, MktplaceHandler: mktplaceHandler,
+		AccountEventPub: accountEventPub, DsDeps: dsDeps,
+	})
+}
+
+// registerPostAccountDeps holds parameters for registerPostAccountHandlers.
+type registerPostAccountDeps struct {
+	Mux             *http.ServeMux
+	Pool            *pgxpool.Pool
+	Cfg             *config.Config
+	Log             *zap.Logger
+	D               handlerDeps
+	UserRepo        *repository.UserRepository
+	ConvRepo        *repository.AIConversationRepository
+	Session         *internalai.ConversationSession
+	TemplatesRepo   *repository.AIStrategyTemplatesRepository
+	SchedHealthRepo *repository.ScheduleHealthRepository
+	MarketDataRepo  repository.MarketDataStore
+	WalletRepo      *repository.WalletRepository
+	WalletSvc       *service.WalletService
+	RegistrationSvc *service.RegistrationService
+	EmailNotifier   *notifier.EmailNotifier
+	Searcher        *brokersearch.Searcher
+	MTTester        user.MTConnectionTester
+	AuthServer      *user.AuthServer
+	SubscriptionSvc *service.SubscriptionService
+	QuotaChecker    *service.QuotaChecker
+	ReconLoop       *mthub.ReconciliationLoop
+	MktplaceHandler *mktplace.MarketplaceServer
+	AccountEventPub *mdgateway.AccountEventPublisher
+	DsDeps          depositSweepDeps
+}
+
+func registerPostAccountHandlers(ctx context.Context, p registerPostAccountDeps) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func(), *chain.Monitor, *reconcile.Reconciler, *sweep.Worker) {
+	mux := p.Mux
+	log := p.Log
+	pool := p.Pool
+	cfg := p.Cfg
+	d := p.D
+
 	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).
-	// brokerReg is created in main.go before the pipeline starts; gateways register
-	// via adapter.RegisterDefaults inside the mdgateway runner after connection.
 	algoServer := algo.NewExecutionAlgoServer(d.BrokerReg, log)
 	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
 
+	jobRepo := repository.NewJobRepository(pool)
 	logRepo := repository.NewLogRepository(pool)
 	logSvc := service.NewLogService(logRepo)
 	strategyExperimentRepo := repository.NewStrategyExperimentRepository(pool)
 	strategyAssetRepo := repository.NewStrategyAssetRepository(pool)
 	backtestRunRepo := repository.NewBacktestRunRepository(pool)
 
-	// AI services: system AI, asset analysis, AI gateway, agent gateway, code assist, strategy plan.
 	aiDeps := setupAIServices(aiServicesParams{
-		Ctx: ctx, Mux: mux, Pool: pool, Cfg: cfg, UserRepo: userRepo,
-		MarketDataRepo: marketDataRepo, PlatformSvc: d.PlatformSvc, MktplaceSvc: d.MktplaceSvc,
-		MktplaceHandler: mktplaceHandler, QuotaChecker: quotaChecker, WalletSvc: walletSvc,
-		ConvRepo: convRepo, Session: session, BacktestRunRepo: backtestRunRepo,
+		Ctx: ctx, Mux: mux, Pool: pool, Cfg: cfg, UserRepo: p.UserRepo,
+		MarketDataRepo: p.MarketDataRepo, PlatformSvc: d.PlatformSvc, MktplaceSvc: d.MktplaceSvc,
+		MktplaceHandler: p.MktplaceHandler, QuotaChecker: p.QuotaChecker, WalletSvc: p.WalletSvc,
+		ConvRepo: p.ConvRepo, Session: p.Session, BacktestRunRepo: backtestRunRepo,
 		Log: log, OtelInterceptor: d.OtelInterceptor, AuthInterceptor: d.AuthInterceptor,
 	})
 
-	// Share performance: generate expiring public links for trading results.
-	registerShareHandlers(mux, pool, log, d.TradeRecordRepo, userRepo, d.MthubSvc,
+	registerShareHandlers(mux, pool, log, d.TradeRecordRepo, p.UserRepo, d.MthubSvc,
 		d.JWTSecret, d.OtelInterceptor, d.AuthInterceptor)
 
 	streamServer := system.NewStreamServer(d.MthubSvc, d.PlatformSvc, log)
-	streamServer.SetMarketDataRepo(marketDataRepo)
+	streamServer.SetMarketDataRepo(p.MarketDataRepo)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
 
-	// Strategy + paper + risk + autotrading + schedule engine.
 	stratDeps := setupStrategyAndTrading(strategyTradingParams{
-		Ctx: ctx, Mux: mux, Pool: pool, Cfg: cfg, MarketDataRepo: marketDataRepo,
+		Ctx: ctx, Mux: mux, Pool: pool, Cfg: cfg, MarketDataRepo: p.MarketDataRepo,
 		MthubSvc: d.MthubSvc, Hub: d.Hub, EventStore: d.EventStore,
-		AISvc: aiDeps.aiSvc, MktplaceSvc: d.MktplaceSvc, MktplaceHandler: mktplaceHandler,
-		QuotaChecker: quotaChecker, TemplatesRepo: templatesRepo, BacktestRunRepo: backtestRunRepo,
+		AISvc: aiDeps.aiSvc, MktplaceSvc: d.MktplaceSvc, MktplaceHandler: p.MktplaceHandler,
+		QuotaChecker: p.QuotaChecker, TemplatesRepo: p.TemplatesRepo, BacktestRunRepo: backtestRunRepo,
 		Log: log, OtelInterceptor: d.OtelInterceptor, AuthInterceptor: d.AuthInterceptor,
 	})
 
-	// Phase 2.2: Batch generator — PG NOTIFY-driven AI strategy generation queue.
 	if aiDeps.agentGateway.Generator() != nil {
 		batchGen := marketplace.NewBatchGenerator(pool, log, aiDeps.agentGateway.Generator(), stratDeps.pgListen, d.MktplaceSvc)
-		mktplaceHandler.SetBatchGenerator(batchGen)
+		p.MktplaceHandler.SetBatchGenerator(batchGen)
 		batchGen.Start(ctx)
 	}
 
-	// System service registrations.
 	registerSystemServices(mux, pool, log, jobRepo, logSvc, stratDeps.pgListen, d.OtelInterceptor, d.AuthInterceptor)
 	aiDeps.gateEvalServer.SetNotificationSender(stratDeps.notifSender)
 
@@ -155,27 +209,28 @@ func registerHandlers(
 	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
 	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
+	accountNumberSvc := usersvc.NewAccountNumberService(pool)
 	registerAdminHandlers(adminHandlerDeps{
-		Mux: mux, Pool: pool, Log: log, WalletSvc: walletSvc,
+		Mux: mux, Pool: pool, Log: log, WalletSvc: p.WalletSvc,
 		AccountNumberSvc: accountNumberSvc, StrategySvc: service.NewStrategySvc(pool),
 		SettingsStore: aiDeps.agentGateway.SettingsStore(), HookEngine: aiDeps.agentGateway.HookEngine(),
-		AccountEventPub: accountEventPub, RDB: d.RDB, NC: d.NC,
+		AccountEventPub: p.AccountEventPub, RDB: d.RDB, NC: d.NC,
 		Interceptors: interceptorSet{otel: d.OtelInterceptor, auth: d.AuthInterceptor, admin: d.AdminInterceptor},
 	})
 
 	emailNotifier, workerCleanup := registerSREHandlers(sreHandlerParams{
-		UserRepo: userRepo, Mux: mux, Log: log, Pool: pool, Store: d.Store,
+		UserRepo: p.UserRepo, Mux: mux, Log: log, Pool: pool, Store: d.Store,
 		NC: d.NC, RDB: d.RDB, Cfg: cfg, AuthInterceptor: d.AuthInterceptor,
 		OtelInterceptor: d.OtelInterceptor, PlatformSvc: d.PlatformSvc, MthubSvc: d.MthubSvc,
-		AuthServer: authServer, StrategyExperimentRepo: strategyExperimentRepo,
-		StrategyAssetRepo: strategyAssetRepo, SchedHealthRepo: schedHealthRepo,
+		AuthServer: p.AuthServer, StrategyExperimentRepo: strategyExperimentRepo,
+		StrategyAssetRepo: strategyAssetRepo, SchedHealthRepo: p.SchedHealthRepo,
 		AnalyticsCache: d.AnalyticsCache, AISvc: aiDeps.aiSvc, BacktestRunRepo: backtestRunRepo,
-		PgListen: stratDeps.pgListen, EmailNotifier: emailNotifier,
+		PgListen: stratDeps.pgListen, EmailNotifier: p.EmailNotifier,
 	})
 
-	startBackgroundServices(ctx, pool, emailNotifier, dsDeps.depositAddrRepo, dsDeps.adminRepo, dsDeps.depositSvc, cfg, log)
+	startBackgroundServices(ctx, pool, emailNotifier, p.DsDeps.depositAddrRepo, p.DsDeps.adminRepo, p.DsDeps.depositSvc, cfg, log)
 
-	return reconLoop, emailNotifier, stratDeps.platformAgg, stratDeps.notifSender, stratDeps.scheduleEngine, workerCleanup, dsDeps.chainMonitor, dsDeps.reconcilerInst, dsDeps.sweepWorker
+	return p.ReconLoop, emailNotifier, stratDeps.platformAgg, stratDeps.notifSender, stratDeps.scheduleEngine, workerCleanup, p.DsDeps.chainMonitor, p.DsDeps.reconcilerInst, p.DsDeps.sweepWorker
 }
 
 func newEmailNotifier(cfg *config.Config, log *zap.Logger) *notifier.EmailNotifier {

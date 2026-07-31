@@ -86,22 +86,26 @@ func registerDepositHandler(
 	mux.Handle(antv1c.NewDepositServiceHandler(depositServer, withSency(otelInterceptor, authInterceptor)))
 }
 
+// accountHandlerParams holds parameters for registerAccountHandler.
+type accountHandlerParams struct {
+	Mux              *http.ServeMux
+	Cfg              *config.Config
+	AccountSvc       *service.AccountService
+	AccountEventPub  *mdgateway.AccountEventPublisher
+	Hub              *mthub.Hub
+	MTTester         user.MTConnectionTester
+	Searcher         *brokersearch.Searcher
+	QuotaChecker     *service.QuotaChecker
+	Log              *zap.Logger
+	OtelInterceptor  connectrpc.Interceptor
+	AuthInterceptor  connectrpc.Interceptor
+}
+
 // registerAccountHandler wires the account ConnectRPC handler.
-func registerAccountHandler(
-	mux *http.ServeMux,
-	cfg *config.Config,
-	accountSvc *service.AccountService,
-	accountEventPub *mdgateway.AccountEventPublisher,
-	hub *mthub.Hub,
-	mtTester user.MTConnectionTester,
-	searcher *brokersearch.Searcher,
-	quotaChecker *service.QuotaChecker,
-	log *zap.Logger,
-	otelInterceptor, authInterceptor connectrpc.Interceptor,
-) {
-	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
-		WithSessionWaiter(hub).
-		WithStopGateway(hub.RemoveGateway).
-		WithQuotaChecker(quotaChecker)
-	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, withSency(otelInterceptor, authInterceptor)))
+func registerAccountHandler(p accountHandlerParams) {
+	accountServer := user.NewAccountServer(p.AccountSvc, p.Searcher, p.AccountEventPub, p.MTTester, p.Log).
+		WithSessionWaiter(p.Hub).
+		WithStopGateway(p.Hub.RemoveGateway).
+		WithQuotaChecker(p.QuotaChecker)
+	p.Mux.Handle(antv1c.NewAccountServiceHandler(accountServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 }
