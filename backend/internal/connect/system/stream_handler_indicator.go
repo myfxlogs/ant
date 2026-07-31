@@ -43,7 +43,7 @@ func (s *StreamServer) SubscribeIndicators(
 			fmt.Errorf("market data not available"))
 	}
 
-	// Fetch historical bars from ClickHouse.
+	// Fetch historical bars from PG.
 	const defaultLimit = 500
 	bars, err := s.marketDataRepo.GetKlines(ctx, m.Symbol, "" /*broker*/, m.Timeframe, nil, nil, defaultLimit)
 	if err != nil {

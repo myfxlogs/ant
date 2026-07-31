@@ -22,13 +22,11 @@ const (
 	mdBarsLookAhead      = 6
 )
 
-// EnsureMarketDataPartitions creates missing monthly partitions for md_ticks and md_bars,
+// EnsureMarketDataPartitions creates missing monthly partitions for md_bars,
 // and detaches partitions older than the retention period.
+// ADR-0012: md_ticks partitions removed — table dropped.
 func EnsureMarketDataPartitions(ctx context.Context, pool *pgxpool.Pool, log *zap.Logger) {
 	now := time.Now().UTC()
-
-	// md_ticks: current month + 2 future months
-	ensurePartitionsForTable(ctx, pool, log, "md_ticks", "arrived_unix_ms", now, mdTicksLookAhead, mdTicksRetentionDays)
 
 	// md_bars: current month + 5 future months (bars are sparse, pre-create more)
 	ensurePartitionsForTable(ctx, pool, log, "md_bars", "close_ts_unix_ms", now, mdBarsLookAhead, mdBarsRetentionDays)

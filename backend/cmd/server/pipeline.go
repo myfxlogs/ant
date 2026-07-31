@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
+	goredis "github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -29,8 +30,8 @@ type mdGatewayPipelineDeps struct {
 	log               *zap.Logger
 	pool              *pgxpool.Pool
 	store             repository.MarketDataStore
-	chStore           repository.MarketDataStore
 	nc                *nats.Conn
+	rdb               *goredis.Client
 	spillDir          string
 	secClient         secrets.Client
 	hub               *mthub.Hub
@@ -61,8 +62,8 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		Log:      d.log,
 		PG:       d.pool,
 		Store:    d.store,
-		ChStore:  d.chStore,
 		NATSConn: d.nc,
+		RedisClient: d.rdb,
 		SpillDir: d.spillDir,
 		Secrets:  d.secClient,
 		Hub:            d.hub,

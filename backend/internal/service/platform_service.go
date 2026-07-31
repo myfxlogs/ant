@@ -133,7 +133,7 @@ func (s *PlatformService) GetAccountBroker(ctx context.Context, accountID string
 	return broker, err
 }
 
-// ResolveSymbol returns the symbol to use for ClickHouse queries.
+// ResolveSymbol returns the symbol to use for PG queries.
 // Raw broker symbol IS the canonical — no suffix stripping.
 // Only uses broker_symbols mapping if explicitly defined, otherwise passthrough.
 func (s *PlatformService) ResolveSymbol(ctx context.Context, accountID, rawSymbol string) string {

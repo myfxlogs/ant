@@ -13,7 +13,7 @@ import (
 )
 
 // LiveSource implements BarSource via NATS JetStream subscriptions.
-// NATS bar messages carry Close price + metadata headers; full OHLC is in ClickHouse.
+// NATS bar messages carry Close price + metadata headers; full OHLC is in PG.
 type LiveSource struct {
 	js  natsgo.JetStreamContext
 	log *zap.Logger

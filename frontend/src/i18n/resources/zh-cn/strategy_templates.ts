@@ -178,7 +178,8 @@ const StrategyTemplates = {
         "delete": "删除",
         "edit": "编辑",
         "launchSchedule": "上线调度",
-        "viewCode": "查看代码"
+        "viewCode": "查看代码",
+        "deploy": "部署"
       },
       "badges": {
         "preset": "预设"

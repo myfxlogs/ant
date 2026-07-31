@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	sentryhttp "github.com/getsentry/sentry-go/http"
@@ -93,7 +92,7 @@ func main() {
 	}
 
 	// Connect to PostgreSQL, NATS, Redis, secrets, and core services.
-	pool, nc, rdb, secClient, accountSvc, platformSvc, jwtSecret, mdStore, chStore := initInfrastructure(cfg, log)
+	pool, nc, rdb, secClient, accountSvc, platformSvc, jwtSecret, mdStore := initInfrastructure(cfg, log)
 	defer pool.Close()
 	defer nc.Close()
 	defer func() { _ = rdb.Close() }()
@@ -172,8 +171,8 @@ func main() {
 			log:               log,
 			pool:              pool,
 			store:             mdStore,
-			chStore:           chStore,
 			nc:                nc,
+			rdb:               rdb.Client(),
 			spillDir:          spillDir,
 			secClient:         secClient,
 			hub:               hub,
@@ -293,7 +292,7 @@ func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 	pool *pgxpool.Pool, nc *nats.Conn, rdb *antredis.Client,
 	secClient secrets.Client, accountSvc *service.AccountService,
 	platformSvc *service.PlatformService, jwtSecret string,
-	mdStore, chStore repository.MarketDataStore,
+	mdStore repository.MarketDataStore,
 ) {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
@@ -318,18 +317,7 @@ func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 	}
 
 	pgStore := repository.NewPgMarketDataStore(pool, log)
-
-	if cfg.CHHost != "" {
-		chConn, chErr := connectClickHouse(cfg, log)
-		if chErr != nil {
-			log.Warn("ClickHouse unavailable — running PG-only", zap.Error(chErr))
-		} else {
-			defer func() { _ = chConn.Close() }()
-			chStore = repository.NewCHMarketDataStore(chConn, log)
-			log.Info("ClickHouse read replica enabled for analytical queries")
-		}
-	}
-	mdStore = repository.NewMultiMarketDataStore(pgStore, chStore, log)
+	mdStore = pgStore
 	repository.EnsureMarketDataPartitions(context.Background(), pool, log)
 
 	nc, err = nats.Connect(cfg.NATSURL)
@@ -349,6 +337,7 @@ func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 	if err != nil {
 		log.Fatal("redis connect failed", zap.Error(err))
 	}
+	pgStore.SetRedisClient(rdb.Client())
 
 	if mk := cfg.AntMasterKey; mk != "" {
 		secClient, err = secrets.New(mk, 1)
@@ -374,26 +363,4 @@ func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 		log.Fatal("JWT_SECRET is required")
 	}
 	return
-}
-
-// connectClickHouse attempts to connect to ClickHouse for analytical read replica.
-// Returns an error if CH is unreachable — caller should gracefully degrade to PG-only.
-func connectClickHouse(cfg *config.Config, log *zap.Logger) (clickhouse.Conn, error) {
-	ch, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{fmt.Sprintf("%s:%s", cfg.CHHost, cfg.CHPort)},
-		Auth: clickhouse.Auth{
-			Database: cfg.CHDatabase,
-			Username: cfg.CHUser,
-			Password: cfg.CHPassword,
-		},
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("clickhouse open: %w", err)
-	}
-	if err := ch.Ping(context.Background()); err != nil {
-		_ = ch.Close()
-		return nil, fmt.Errorf("clickhouse ping: %w", err)
-	}
-	return ch, nil
 }

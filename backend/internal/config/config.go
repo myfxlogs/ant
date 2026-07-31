@@ -24,14 +24,6 @@ type Config struct {
 	DBSSLMode  string
 	DBMaxConns int
 
-	// ClickHouse
-	CHHost          string
-	CHPort          string
-	CHUser          string
-	CHPassword      string
-	CHDatabase      string
-	CHBufferEnabled bool
-
 	// NATS
 	NATSURL string
 
@@ -114,13 +106,6 @@ func Load() *Config {
 		// exhaust the pool and every HTTP request blocks on Acquire. 25 leaves
 		// ample headroom for listeners + concurrent request handling.
 		DBMaxConns: getenvInt("DB_MAX_CONNS", 25),
-
-		CHHost:          getenv("CH_HOST", "clickhouse"),
-		CHPort:          getenv("CH_PORT", "9000"),
-		CHUser:          getenv("CH_USER", "default"),
-		CHPassword:      getenv("CH_PASSWORD", ""),
-		CHDatabase:      getenv("CH_DATABASE", "ant"),
-		CHBufferEnabled: getenvBool("ANT_CH_BUFFER_ENABLED", true),
 
 		NATSURL: getenv("NATS_URL", nats.DefaultURL),
 

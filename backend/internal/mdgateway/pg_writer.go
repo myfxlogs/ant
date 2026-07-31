@@ -30,11 +30,9 @@ func DefaultPgWriterConfig() PgWriterConfig {
 }
 
 // PgWriter buffers ticks and bars and flushes them to PostgreSQL via CopyFrom.
-// Optionally dual-writes to a CH read replica asynchronously (best-effort).
 type PgWriter struct {
 	cfg     PgWriterConfig
 	store   repository.MarketDataStore // PG primary
-	chStore repository.MarketDataStore // CH read replica (nil if not configured)
 	log     *zap.Logger
 
 	tickQ chan *mdtick.Tick
@@ -56,9 +54,6 @@ func NewPgWriter(cfg PgWriterConfig, store repository.MarketDataStore, log *zap.
 		barQ:  make(chan *mdtick.Bar, cfg.QueueSize),
 	}
 }
-
-// SetCHStore sets an optional CH read replica for async dual-write.
-func (w *PgWriter) SetCHStore(ch repository.MarketDataStore) { w.chStore = ch }
 
 // SetUserLimiter injects the per-user write rate limiter (nil-safe).
 func (w *PgWriter) SetUserLimiter(l *usermgr.UserLimiter) { w.userLimiter = l }
@@ -134,35 +129,9 @@ func (w *PgWriter) flushTicks(ctx context.Context, batch []*mdtick.Tick) {
 	if len(batch) == 0 {
 		return
 	}
-	records := make([]repository.TickRecord, len(batch))
-	for i, t := range batch {
-		records[i] = repository.TickRecord{
-			UserID:        t.UserID,
-			AccountID:     t.AccountID,
-			Broker:        t.Broker,
-			SymbolRaw:     t.SymbolRaw,
-			Canonical:     t.Canonical,
-			TsUnixMs:      t.TsUnixMs,
-			ArrivedUnixMs: t.ArrivedUnixMs,
-			Bid:           t.Bid,
-			Ask:           t.Ask,
-			BidVolume:     t.BidVolume,
-			AskVolume:     t.AskVolume,
-			IsReplay:      t.IsReplay,
-		}
-	}
-	if err := w.retryInsert(ctx, func() error { return w.store.InsertTicks(ctx, records) }); err != nil {
-		w.log.Error("pgwriter: tick flush failed after retries", zap.Int("count", len(batch)), zap.Error(err))
-		return
-	}
-	// Async dual-write to CH read replica (best-effort, non-blocking).
-	if w.chStore != nil {
-		go func(ctx context.Context) {
-			if err := w.chStore.InsertTicks(ctx, records); err != nil {
-				w.log.Warn("pgwriter: ch dual-write ticks failed", zap.Int("count", len(records)), zap.Error(err))
-			}
-		}(ctx)
-	}
+	// ADR-0012: Tick persistence disabled. Ticks are transient via NATS.
+	// Latest quote is cached in Redis (see manager_tick.go HandleTick).
+	w.log.Warn("pgwriter: tick persistence disabled, dropping ticks", zap.Int("count", len(batch)))
 }
 
 func (w *PgWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
@@ -188,14 +157,6 @@ func (w *PgWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 	if err := w.retryInsert(ctx, func() error { return w.store.InsertBars(ctx, bars) }); err != nil {
 		w.log.Error("pgwriter: bar flush failed after retries", zap.Int("count", len(batch)), zap.Error(err))
 		return
-	}
-	// Async dual-write to CH read replica (best-effort, non-blocking).
-	if w.chStore != nil {
-		go func(ctx context.Context) {
-			if err := w.chStore.InsertBars(ctx, bars); err != nil {
-				w.log.Warn("pgwriter: ch dual-write bars failed", zap.Int("count", len(bars)), zap.Error(err))
-			}
-		}(ctx)
 	}
 }
 

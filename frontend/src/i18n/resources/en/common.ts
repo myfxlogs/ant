@@ -7,12 +7,14 @@ const Common = {
     "deleteFailed": "Delete failed",
     "operationFailed": "Operation failed",
     "saveSuccess": "Saved successfully",
-    "refresh": "刷新",
-    "loading": "加载中...",
+    "refresh": "Refresh",
+    "loading": "Loading...",
     "saveFailed": "Save failed",
     "noData": "No logs found",
-    "confirm": "确认",
-    "cancel": "取消"
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "active": "Active",
+    "inactive": "Inactive"
   }
 } as const;
 export default Common;

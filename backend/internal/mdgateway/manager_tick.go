@@ -1,6 +1,8 @@
 package mdgateway
 
 import (
+	"time"
+
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
@@ -78,6 +80,14 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 	span5.End()
 
 	_, span6 := m.startTrace(ctx, "enqueue")
+	// ADR-0012: Cache latest quote in Redis for GetLatestTick.
+	if m.redis != nil {
+		key := "latest_quote:" + t.Canonical
+		val := t.Bid.String() + "," + t.Ask.String() + "," + t.Broker
+		if err := m.redis.Set(ctx, key, val, 3600*time.Second).Err(); err != nil && m.log != nil {
+			m.log.Debug("mdgateway: redis set latest_quote failed", zap.String("symbol", t.Canonical), zap.Error(err))
+		}
+	}
 	m.pgWriter.EnqueueTick(t)
 	for _, b := range bars {
 		m.pgWriter.EnqueueBar(b)

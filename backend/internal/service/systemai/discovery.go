@@ -57,7 +57,7 @@ var errBaseURLPrivate = errors.New("base_url must not point to a private or loop
 
 var privateHostnames = map[string]bool{
 	"localhost": true, "postgres": true, "redis": true, "nats": true,
-	"backend": true, "clickhouse": true, "umami": true, "frontend": true,
+	"backend": true, "umami": true, "frontend": true,
 }
 
 func isPrivateOrLoopbackHost(host string) bool {

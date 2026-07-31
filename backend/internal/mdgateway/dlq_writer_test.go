@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
@@ -54,8 +53,6 @@ func TestDLQSampling(t *testing.T) {
 
 	t.Log("DLQSampling: 1500 writes attempted at 1% rate (nil conn — no crash)")
 }
-
-var _ clickhouse.Conn = nil
 
 func TestDLQAsync(t *testing.T) {
 	t.Parallel()

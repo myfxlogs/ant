@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
+	goredis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
 	anttrace "alphaforge/internal/trace"
@@ -26,8 +27,8 @@ type RunnerDeps struct {
 	Log            *zap.Logger
 	PG             *pgxpool.Pool
 	Store          repository.MarketDataStore         // PG market data store
-	ChStore        repository.MarketDataStore         // optional CH read replica (nil if not configured)
 	NATSConn       *nats.Conn
+	RedisClient    *goredis.Client                    // ADR-0012: latest quote cache
 	SpillDir       string          // default /var/lib/ant/spill
 	Secrets        secrets.Client  // decrypts account passwords and mtapi tokens
 	OnAccountProfit     func(accountID, userID string, p *mdtick.ProfitUpdate)    // receives real-time balance/equity from mtapi OnOrderProfit
@@ -86,9 +87,6 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	// --- PgWriter (sole writer — PG is the only storage backend) ---
 	pgCfg := DefaultPgWriterConfig()
 	pgWriter := NewPgWriter(pgCfg, deps.Store, log)
-	if deps.ChStore != nil {
-		pgWriter.SetCHStore(deps.ChStore)
-	}
 	go func(ctx context.Context) { pgWriter.Start(ctx) }(ctx)
 
 	// --- Normalizer + Quality + Dedup ---
@@ -129,6 +127,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		OnBar:         onBar,
 		OnBreakerTrip: deps.OnBreakerTrip,
 		Log:           log,
+		RedisClient:   deps.RedisClient,
 	})
 	mgr.SetOTelTracer(tracer)
 	mgr.SetBaseContext(ctx)

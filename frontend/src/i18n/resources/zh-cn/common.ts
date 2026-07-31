@@ -11,7 +11,9 @@ const Common = {
     "saveFailed": "保存失败",
     "noData": "未找到日志",
     "confirm": "确认",
-    "cancel": "取消"
+    "cancel": "取消",
+    "active": "活跃",
+    "inactive": "未激活"
   }
 } as const;
 export default Common;

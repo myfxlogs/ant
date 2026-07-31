@@ -16,7 +16,7 @@ import (
 	"alphaforge/internal/interceptor"
 )
 
-// PriceHistory returns K-line data from ClickHouse — the single source of truth.
+// PriceHistory returns K-line data from PG — the single source of truth.
 // Broker symbol is resolved to canonical before querying.
 func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[antv1.PriceHistoryRequest]) (*connect.Response[antv1.PriceHistoryResponse], error) {
 	userID := interceptor.GetUserID(ctx)
@@ -112,7 +112,7 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 }
 
 // SubscribeBars dynamically subscribes the gateway to a symbol's ticks and triggers
-// a historical backfill from the broker into ClickHouse so the symbol has immediate
+// a historical backfill from the broker into PG so the symbol has immediate
 // K-line data.
 func (s *MtHubServer) SubscribeBars(ctx context.Context, req *connect.Request[antv1.SubscribeBarsRequest]) (*connect.Response[antv1.SubscribeBarsResponse], error) {
 	userID := interceptor.GetUserID(ctx)

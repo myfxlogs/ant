@@ -40,7 +40,7 @@ type ActiveAccount struct {
 	Symbols   []string // canonical symbols
 }
 
-// CHMaxCloseTs queries ClickHouse for the maximum close_ts_unix_ms.
+// CHMaxCloseTs queries PG for the maximum close_ts_unix_ms.
 type CHMaxCloseTs interface {
 	MaxCloseTs(ctx context.Context, broker, canonical, period string) (int64, error)
 }

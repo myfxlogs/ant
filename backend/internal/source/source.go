@@ -1,5 +1,5 @@
 // Package source provides unified interfaces for bar and factor data consumption.
-// LiveSource uses NATS JetStream; ReplaySource uses ClickHouse (backfill/backtest).
+// LiveSource uses NATS JetStream; ReplaySource uses PG (backfill/backtest).
 package source
 
 import (

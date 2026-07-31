@@ -1,7 +1,7 @@
 // market_data_pg.go — PostgreSQL implementation of MarketDataStore.
-// Uses native PG partitioned tables (md_ticks, md_bars) with pgx.
+// Uses native PG partitioned tables (md_bars) with pgx.
 //
-// CH→PG query translations:
+// Query patterns:
 //   argMax(bid, ts)        → ORDER BY ts DESC LIMIT 1
 //   LIMIT 1 BY (a,b,c)     → DISTINCT ON (a,b,c)
 //   toFloat64(decimal_col) → direct scan (pgx converts NUMERIC→float64)
@@ -12,25 +12,31 @@ package repository
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	goredis "github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
 // PgMarketDataStore implements MarketDataStore backed by PostgreSQL.
 type PgMarketDataStore struct {
-	pool *pgxpool.Pool
-	log  *zap.Logger
+	pool  *pgxpool.Pool
+	redis *goredis.Client // ADR-0012: latest quote cache
+	log   *zap.Logger
 }
 
 // NewPgMarketDataStore creates a PG-backed market data store.
 func NewPgMarketDataStore(pool *pgxpool.Pool, log *zap.Logger) *PgMarketDataStore {
 	return &PgMarketDataStore{pool: pool, log: log}
+}
+
+// SetRedisClient injects Redis client for GetLatestTick (ADR-0012).
+func (s *PgMarketDataStore) SetRedisClient(rdb *goredis.Client) {
+	s.redis = rdb
 }
 
 // ── Read paths ──────────────────────────────────────────────────────────────
@@ -110,47 +116,25 @@ func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 }
 
 // GetLatestTick returns the most recent bid/ask for a symbol.
-// Replaces CH argMax() with ORDER BY arrived_unix_ms DESC LIMIT 1.
+// ADR-0012: Reads from Redis (latest_quote:{canonical}) — sole source after md_ticks dropped.
 func (s *PgMarketDataStore) GetLatestTick(ctx context.Context, canonical, broker string) (*LatestTick, error) {
-	const lookbackHours = 24
-	cutoffMs := time.Now().Add(-lookbackHours * time.Hour).UnixMilli()
-
-	var t LatestTick
-	var bidF, askF float64
-	var err error
-
-	if broker != "" {
-		err = s.pool.QueryRow(ctx,
-			`SELECT bid, ask, broker
-			 FROM md_ticks
-			 WHERE canonical = $1 AND broker = $2 AND is_replay = 0
-			   AND arrived_unix_ms >= $3
-			 ORDER BY arrived_unix_ms DESC
-			 LIMIT 1`,
-			canonical, broker, cutoffMs,
-		).Scan(&bidF, &askF, &t.Broker)
-	} else {
-		err = s.pool.QueryRow(ctx,
-			`SELECT bid, ask, broker
-			 FROM md_ticks
-			 WHERE canonical = $1 AND is_replay = 0
-			   AND arrived_unix_ms >= $2
-			 ORDER BY arrived_unix_ms DESC
-			 LIMIT 1`,
-			canonical, cutoffMs,
-		).Scan(&bidF, &askF, &t.Broker)
+	if s.redis == nil {
+		return nil, fmt.Errorf("GetLatestTick: redis client not configured")
 	}
+	key := "latest_quote:" + canonical
+	val, err := s.redis.Get(ctx, key).Result()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetLatestTick: redis miss for %s: %w", canonical, err)
 	}
-	if bidF == 0 && askF == 0 {
-		return nil, fmt.Errorf("no recent ticks for %s (last %dh)", canonical, lookbackHours)
+	parts := strings.SplitN(val, ",", 3)
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("GetLatestTick: malformed redis value for %s: %q", canonical, val)
 	}
-
-	// Match CH format: strconv.FormatFloat with -1 precision (no trailing zeros).
-	t.Bid = strconv.FormatFloat(bidF, 'f', -1, 64)
-	t.Ask = strconv.FormatFloat(askF, 'f', -1, 64)
-	return &t, nil
+	t := &LatestTick{Bid: parts[0], Ask: parts[1]}
+	if len(parts) >= 3 {
+		t.Broker = parts[2]
+	}
+	return t, nil
 }
 
 // LoadFinalizedBars returns all existing close_ts values per key within the lookback.

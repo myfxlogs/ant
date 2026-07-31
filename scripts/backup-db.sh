@@ -28,6 +28,7 @@ echo "[$(date -Iseconds)] Starting backup → $BACKUP_FILE"
 
 docker compose -f "$COMPOSE_FILE" exec -T "$CONTAINER" \
     pg_dump -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl \
+    --exclude-table='md_ticks_*' \
     | gzip > "$BACKUP_FILE"
 
 if [[ -s "$BACKUP_FILE" ]]; then

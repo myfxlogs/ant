@@ -2,6 +2,11 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const StrategyLibrary = {
   "strategy": {
+    "backtestHistory": {
+      "actions": {
+        "view": "View"
+      }
+    },
     "library": {
       "backtestHistory": "Backtest History",
       "codePreview": "Code Preview",

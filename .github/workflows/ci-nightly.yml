@@ -35,18 +35,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      clickhouse:
-        image: clickhouse/clickhouse-server:24
-        ports: ['9000:9000', '8123:8123']
-        env:
-          CLICKHOUSE_USER: default
-          CLICKHOUSE_PASSWORD: ''
-          CLICKHOUSE_DB: ant
-        options: >-
-          --health-cmd "clickhouse-client --query 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
       nats:
         image: nats:2.10-alpine
         ports: ['4222:4222']
@@ -74,11 +62,6 @@ jobs:
           DB_NAME: ant
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-          CH_HOST: localhost
-          CH_PORT: 9000
-          CH_USER: default
-          CH_PASSWORD: ''
-          CH_DATABASE: ant
           NATS_URL: nats://localhost:4222
       - name: Coverage summary
         run: |
@@ -103,18 +86,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
-      clickhouse:
-        image: clickhouse/clickhouse-server:24
-        ports: ['9000:9000', '8123:8123']
-        env:
-          CLICKHOUSE_USER: default
-          CLICKHOUSE_PASSWORD: ''
-          CLICKHOUSE_DB: ant
-        options: >-
-          --health-cmd "clickhouse-client --query 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
       nats:
         image: nats:2.10-alpine
         ports: ['4222:4222']
@@ -133,9 +104,4 @@ jobs:
       - name: ci-nightly
         run: make ci-nightly
         env:
-          CH_HOST: localhost
-          CH_PORT: 9000
-          CH_USER: default
-          CH_PASSWORD: ''
-          CH_DATABASE: ant
           NATS_URL: nats://localhost:4222

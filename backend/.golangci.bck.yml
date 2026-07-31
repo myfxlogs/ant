@@ -40,9 +40,7 @@ linters-settings:
       - (*database/sql.Tx).Rollback
       - (*github.com/jackc/pgx/v5.Tx).Rollback
       - (*github.com/jackc/pgx/v5.Tx).Commit
-      - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Abort
       - (io.Writer).Write
-      - (github.com/ClickHouse/clickhouse-go/v2/lib/driver.Batch).Send
       - (connectrpc.com/connect.Stream).Send
       - (*alphaforge/internal/trace.Tracer).Shutdown
       - (*go.opentelemetry.io/otel/sdk/trace.TracerProvider).Shutdown

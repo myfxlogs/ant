@@ -34,7 +34,7 @@ func NewMarketServer(svc *service.PlatformService, marketData repository.MarketD
 	return &MarketServer{platform: svc, marketData: marketData, nc: nc, log: log}
 }
 
-// GetKlines returns OHLCV kline data from ClickHouse.
+// GetKlines returns OHLCV kline data from PG.
 func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1.GetKlinesRequest]) (*connect.Response[antv1.GetKlinesResponse], error) {
 	m := req.Msg
 	limit := int32(500)
@@ -74,7 +74,7 @@ func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1
 			TickCount: b.TickCount,
 		})
 	}
-	// ClickHouse returns bars in DESC order (newest first); lightweight-charts
+	// PG returns bars in DESC order (newest first); lightweight-charts
 	// requires ASC order (oldest first). Reverse so consumers get chronological.
 	for i, j := 0, len(out)-1; i < j; i, j = i+1, j-1 {
 		out[i], out[j] = out[j], out[i]

@@ -29,7 +29,7 @@
 | 5 | `backtest-engine` | 回测引擎 | `backend/internal/backtest/` `backend/strategy/backtest/` | SimBroker, 撮合, 滑点, 手续费, 净值曲线 |
 | 6 | `risk-gate` | 实盘风控 | `backend/internal/{risk,risksvc,paper,oms}/` | 6门管线, 仿真交易, 订单管理, 熔断 |
 | 7 | `account-mgmt` | 账户管理 | `backend/internal/connect/{gateway,user}/` | MT账户CRUD, 经纪商搜索, 用户体系 |
-| 8 | `market-data` | 市场数据 | `backend/internal/{mdgateway,source,symbol}/` | K线/Tick存储(CH+PG), 实时报价流 |
+| 8 | `market-data` | 市场数据 | `backend/internal/{mdgateway,source,symbol}/` | K线/Tick存储(PG), 实时报价流 |
 | 9 | `frontend` | 前端界面 | `frontend/src/` | React, 策略工作区, 回测面板, Agent聊天 |
 | 10 | `api-gateway` | API层 | `backend/internal/connect/*/` `proto/ant/v1/` | ConnectRPC handlers, SSE, proto定义 |
 | 11 | `strategy-marketplace` | 策略市场 | `backend/internal/marketplace/` `backend/internal/connect/marketplace/` `frontend/src/pages/marketplace/` | 策略发布/发现/购买/冻结结算/AI迭代, 双边市场 |
@@ -40,7 +40,7 @@
 
 | 管线 | 路径 |
 |------|------|
-| 行情引入 | `mt-gateway(MT4/5) → market-data(去重/质量/归一化) → NATS + CH/PG` |
+| 行情引入 | `mt-gateway(MT4/5) → market-data(去重/质量/归一化) → NATS + PG` |
 | 策略执行 | `market-data(bar源) → strategy-runtime(runner) → risk-gate(信号管线) → oms(16状态机) → mt-gateway(下单)` |
 | 订单对账 | `mt-gateway(订单事件) → mthub(幂等门/对账门) → oms(状态更新) → NATS(实时PnL)` |
 | Agent循环 | `frontend(用户输入) → api-gateway(SSE) → agent-engine(generate/revise) → mql-compiler(compile) → backtest-engine(SimBroker) → agent-engine(分析/迭代)` |
@@ -48,7 +48,7 @@
 | 实盘调度 | `frontend(计划) → api-gateway → strategy-runtime(LiveRunner) → market-data(实时bar) → mt-gateway(下单)` |
 | 策略市场 | `frontend(市场页) → api-gateway → strategy-marketplace(发布/购买/冻结结算) → backtest-engine(回测验证) ‖ agent-engine(AI生成/迭代策略)` |
 
-**常用调试入口**："净值曲线为空" → 追 策略执行 线，从 `frontend` filter 到 `CH` 逐层查。"Agent生成超时" → 追 Agent循环 线，看是 LLM 推理卡了还是回测卡了。
+**常用调试入口**："净值曲线为空" → 追 策略执行 线，从 `frontend` filter 到 `PG` 逐层查。"Agent生成超时" → 追 Agent循环 线，看是 LLM 推理卡了还是回测卡了。
 
 ---
 
@@ -135,7 +135,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 ## Data Precision
 
-- Prices: `NUMERIC(20,8)` PG / `Decimal(18,6)` CH / `decimal.Decimal` Go
+- Prices: `NUMERIC(20,8)` PG / `decimal.Decimal` Go
 - Time: UTC, millisecond precision (`int64 ts_unix_ms`)
 - Symbol: raw broker symbol = canonical (no suffix stripping)
 

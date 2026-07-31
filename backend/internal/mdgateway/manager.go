@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	goredis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
@@ -48,6 +49,7 @@ type ManagerDeps struct {
 	OnBar            func(*mdtick.Bar)
 	OnBreakerTrip    func(accountID, userID, status, message string) // called when circuit breaker state changes
 	Log              *zap.Logger
+	RedisClient      *goredis.Client // ADR-0012: latest quote cache
 }
 
 type Manager struct {
@@ -64,6 +66,7 @@ type Manager struct {
 	breakers         map[string]*CircuitBreaker
 	otelTracer       *anttrace.Tracer
 	log              *zap.Logger
+	redis            *goredis.Client // ADR-0012: latest quote cache
 
 	mu            sync.RWMutex
 	gateways      map[string]Gateway
@@ -90,6 +93,7 @@ func NewManager(deps ManagerDeps) *Manager {
 		lastTickAt:       make(map[string]int64),
 		disconnecting:    make(map[string]bool),
 		log:              deps.Log,
+		redis:            deps.RedisClient,
 	}
 }
 

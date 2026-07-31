@@ -1,7 +1,7 @@
 // market_data_store.go — interface for market data read/write operations.
-// Provides a single abstraction over PostgreSQL (primary) and ClickHouse (legacy/deprecated).
+// Provides a single abstraction over PostgreSQL.
 //
-// All market data — ticks, bars, klines — flows through this interface so the
+// All market data — bars, klines — flows through this interface so the
 // underlying storage can be swapped without touching consumers.
 
 package repository

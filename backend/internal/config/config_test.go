@@ -30,12 +30,6 @@ func TestLoadDefaults(t *testing.T) {
 	assert.Equal(t, "ant", cfg.DBName)
 	assert.Equal(t, "disable", cfg.DBSSLMode)
 
-	assert.Equal(t, "clickhouse", cfg.CHHost)
-	assert.Equal(t, "9000", cfg.CHPort)
-	assert.Equal(t, "default", cfg.CHUser)
-	assert.Equal(t, "", cfg.CHPassword)
-	assert.Equal(t, "ant", cfg.CHDatabase)
-
 	assert.NotEmpty(t, cfg.NATSURL)
 
 	assert.Equal(t, "redis", cfg.RedisHost)
@@ -65,12 +59,6 @@ func TestLoadFromEnv(t *testing.T) {
 	t.Setenv("DB_NAME", "customdb")
 	t.Setenv("DB_SSLMODE", "require")
 
-	t.Setenv("CH_HOST", "ch-custom")
-	t.Setenv("CH_PORT", "8123")
-	t.Setenv("CH_USER", "chuser")
-	t.Setenv("CH_PASSWORD", "chpass")
-	t.Setenv("CH_DATABASE", "analytics")
-
 	t.Setenv("NATS_URL", "nats://nats:4222")
 	t.Setenv("REDIS_HOST", "redis-custom")
 	t.Setenv("REDIS_PORT", "6380")
@@ -98,12 +86,6 @@ func TestLoadFromEnv(t *testing.T) {
 	assert.Equal(t, "secret", cfg.DBPassword)
 	assert.Equal(t, "customdb", cfg.DBName)
 	assert.Equal(t, "require", cfg.DBSSLMode)
-
-	assert.Equal(t, "ch-custom", cfg.CHHost)
-	assert.Equal(t, "8123", cfg.CHPort)
-	assert.Equal(t, "chuser", cfg.CHUser)
-	assert.Equal(t, "chpass", cfg.CHPassword)
-	assert.Equal(t, "analytics", cfg.CHDatabase)
 
 	assert.Equal(t, "nats://nats:4222", cfg.NATSURL)
 	assert.Equal(t, "redis-custom", cfg.RedisHost)

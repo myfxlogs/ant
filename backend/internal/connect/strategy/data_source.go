@@ -6,7 +6,7 @@
 //
 // Architecture:
 //   - LiveSource: unified bar source implementing both BarSource and LiveBarSubscriber.
-//     Fetch() loads historical bars from ClickHouse via MarketDataRepository.
+//     Fetch() loads historical bars from PG via MarketDataRepository.
 //     Subscribe() streams real-time bars via MtHubService.
 //   - LiveBarSubscriber: streaming interface for live/paper modes.
 
@@ -26,7 +26,7 @@ import (
 type BarSource interface {
 	// Name returns a human-readable identifier ("backtest", "live") for logging/metrics.
 	Name() string
-	// Fetch returns historical bars from ClickHouse via MarketDataRepository.
+	// Fetch returns historical bars from PG via MarketDataRepository.
 	Fetch(ctx context.Context, symbol, timeframe string, from, to *time.Time) ([]*antv1.ExecuteKlineBar, error)
 }
 
@@ -41,7 +41,7 @@ type LiveBarSubscriber interface {
 // ── LiveSource: unified bar source for live + backtest execution ──
 //
 // Implements both BarSource (Fetch for backtest) and LiveBarSubscriber (Subscribe for live).
-// Fetch delegates to MarketDataRepository (ClickHouse), Subscribe delegates to MtHubService.
+// Fetch delegates to MarketDataRepository (PG), Subscribe delegates to MtHubService.
 
 type LiveSource struct {
 	hub     *mthub.MtHubService

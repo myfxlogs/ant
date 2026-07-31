@@ -1,5 +1,7 @@
 # Project "ant" — Mandatory Constraints
 
+> 🔴 **ACTIVE TASK**: 市场数据架构简化 — 详见 [`docs/adr/0012-remove-tick-persistence.md`](docs/adr/0012-remove-tick-persistence.md)
+
 These constraints are enforced at implementation time. Violation = fix before commit.
 
 ## File & Function Size
