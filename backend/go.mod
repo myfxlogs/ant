@@ -2,6 +2,8 @@ module alphaforge
 
 go 1.26.0
 
+toolchain go1.26.5
+
 replace (
 	alphaforge/mt4 => ./mt4
 	alphaforge/mt5 => ./mt5
