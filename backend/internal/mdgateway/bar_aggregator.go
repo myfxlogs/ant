@@ -24,11 +24,22 @@ type openBar struct {
 	bucket int64
 	open, high, low, close decimal.Decimal
 	bid, ask               decimal.Decimal
-	volume float64
-	count  uint32
-	startTs, endTs int64
-	accountID string
-	symbolRaw string
+	volume                 decimal.Decimal
+	count                  uint32
+	startTs, endTs         int64
+	accountID              string
+	symbolRaw              string
+}
+
+func (ob *openBar) reset(bucket int64, mid decimal.Decimal, t *mdtick.Tick, periodMs int64) {
+	ob.bucket = bucket
+	ob.open, ob.high, ob.low, ob.close = mid, mid, mid, mid
+	ob.bid, ob.ask = t.Bid, t.Ask
+	ob.volume = decimal.Zero
+	ob.count = 0
+	ob.accountID = t.AccountID
+	ob.symbolRaw = t.SymbolRaw
+	ob.startTs = bucket * periodMs
 }
 
 func NewBarAggregator() *BarAggregator {
@@ -80,7 +91,8 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 
 		ob := a.bars[key]
 		if ob == nil {
-			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, bid: t.Bid, ask: t.Ask, startTs: bucket * p.Ms, accountID: t.AccountID, symbolRaw: t.SymbolRaw}
+			ob = &openBar{}
+			ob.reset(bucket, mid, t, p.Ms)
 			a.bars[key] = ob
 		} else if ob.bucket != bucket {
 			bar := &mdtick.Bar{
@@ -89,7 +101,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 				OpenTsUnixMs: ob.bucket * p.Ms, CloseTsUnixMs: (ob.bucket + 1) * p.Ms,
 				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
 				Bid: ob.bid, Ask: ob.ask,
-				Volume: ob.volume, TickCount: ob.count,
+				Volume: ob.volume.InexactFloat64(), TickCount: ob.count,
 				IsClosed: true,
 				IsReplay: t.IsReplay,
 			}
@@ -99,10 +111,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 			}
 			a.finalizedBars[fk][bar.CloseTsUnixMs] = struct{}{}
 			onBar(bar)
-			ob.bucket = bucket
-			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid; ob.bid = t.Bid; ob.ask = t.Ask; ob.accountID = t.AccountID; ob.symbolRaw = t.SymbolRaw
-			ob.volume = 0; ob.count = 0
-			ob.startTs = bucket * p.Ms
+			ob.reset(bucket, mid, t, p.Ms)
 		}
 		if mid.Cmp(ob.high) > 0 { ob.high = mid }
 		if mid.Cmp(ob.low) < 0 { ob.low = mid }
@@ -111,7 +120,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 		ob.ask = t.Ask
 		ob.accountID = t.AccountID
 		ob.symbolRaw = t.SymbolRaw
-		ob.volume += float64(t.BidVolume + t.AskVolume)
+		ob.volume = ob.volume.Add(decimal.NewFromFloat(float64(t.BidVolume + t.AskVolume)))
 		ob.count++
 		ob.endTs = t.ArrivedUnixMs
 	}
@@ -141,7 +150,7 @@ func (a *BarAggregator) GetOpenBars() []*mdtick.Bar {
 			Close:         ob.close,
 			Bid:           ob.bid,
 			Ask:           ob.ask,
-			Volume:        ob.volume,
+			Volume:        ob.volume.InexactFloat64(),
 			TickCount:     ob.count,
 		})
 	}

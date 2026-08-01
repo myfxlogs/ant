@@ -51,7 +51,7 @@ func (b *TickBroker) Subscribe(accountID string) (<-chan *TickUpdate, func()) {
 		for i, c := range subs {
 			if c == ch {
 				b.subs[accountID] = append(subs[:i], subs[i+1:]...)
-				close(c)
+				// Do NOT close the channel — Publish() may still be sending on it after RUnlock
 				return
 			}
 		}

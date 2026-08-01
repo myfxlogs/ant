@@ -36,7 +36,7 @@ export function monthFromBarClick(data: unknown, index: number, rows: MonthlyBar
   return null;
 }
 
-export type MonthlyWinRatePoint = { month: string; winRate: number; totalTrades: number };
+type MonthlyWinRatePoint = { month: string; winRate: number; totalTrades: number };
 
 export type MonthlyAnalysisCardProps = {
   accountId?: string;

@@ -104,6 +104,11 @@ func (sv *ShadowVerifier) RecordLiveSignal(barTime int64, action, volume, price 
 }
 
 func (sv *ShadowVerifier) loop(ctx context.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			sv.log.Error("ShadowVerifier: loop panic", zap.Any("panic", r))
+		}
+	}()
 	for {
 		select {
 		case <-ctx.Done():

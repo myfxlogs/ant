@@ -40,7 +40,7 @@ func runVMBacktest(
 		Leverage:       leverage,
 		Commission:     commission,
 		Slippage:       slippage,
-		SwapRate:       decimal.RequireFromString("0.00001"),
+		SwapRate:       decimal.NewFromFloat(0.00001),
 		StrictMode:     cfg.StrictMode,
 		Params:         params,
 	}

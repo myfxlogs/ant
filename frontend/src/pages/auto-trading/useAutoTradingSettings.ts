@@ -5,15 +5,6 @@ import { autoTradingApi } from '@/client/autoTrading';
 import type { GlobalSettings, AutoTradingStatus } from '@/gen/ant/v1/auto_trading_pb';
 import type { TradingLog } from '@/gen/ant/v1/auto_trading_logs_pb';
 
-export interface AutoTradingState {
-  settings: GlobalSettings | null;
-  status: AutoTradingStatus | null;
-  logs: TradingLog[];
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-}
-
 export function useAutoTradingSettings() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<GlobalSettings | null>(null);

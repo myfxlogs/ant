@@ -48,12 +48,12 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
       setSelectedVersions([]);
       fetchVersions();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, mount/prop-change only
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, mount/prop-change only  | REF: rd.md#part-0.2-hooks-deps
   }, [open, strategyId]);
 
   useEffect(() => {
     if (open && strategyId) fetchVersions();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, page-change only
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchVersions not memoized, page-change only  | REF: rd.md#part-0.2-hooks-deps
   }, [page]);
 
   const handleRollback = async (versionNumber: number) => {

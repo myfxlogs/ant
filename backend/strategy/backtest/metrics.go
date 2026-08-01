@@ -32,17 +32,21 @@ func CalculateMetrics(initialCapital decimal.Decimal, equity []EquityPoint, trad
 	initial := equity[0].Equity
 	final := equity[len(equity)-1].Equity
 
-	// Total return
+	// Total return: exact decimal — no float64 round-trip.
 	if initial.IsPositive() {
-		tr, _ := final.Sub(initial).Div(initial).Float64()
-		m.TotalReturn = safeDecimal(tr).String()
-		// Annualize: (1 + total_return)^(365/days) - 1
+		totalReturn := final.Sub(initial).Div(initial)
+		m.TotalReturn = totalReturn.String()
+		// Annualize: (1 + totalReturn)^(365/days) - 1.
+		// Fractional exponentiation has no exact decimal representation; float64
+		// is used only for the exponent step. Total return is stored exactly.
 		duration := equity[len(equity)-1].Time.Sub(equity[0].Time)
 		days := duration.Hours() / 24
 		var annualReturn float64
 		if days > 0 {
+			tr, _ := totalReturn.Float64()
 			annualReturn = math.Pow(1+tr, 365.0/days) - 1
 		} else {
+			tr, _ := totalReturn.Float64()
 			annualReturn = tr
 		}
 		m.AnnualReturn = safeDecimal(annualReturn).String()

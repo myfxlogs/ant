@@ -66,8 +66,12 @@ type textToolCall struct {
 	ArgsJSON string
 }
 
-// parseTextToolCalls extracts [TOOL: name key=val ...] patterns from text.
+// parseTextToolCalls extracts [TOOL: name key="val" ...] patterns from text.
 // Fallback for models (DeepSeek, GLM, Qwen) that don't support native function calling.
+//
+// Format: [TOOL: tool_name key="value with spaces" key2="v2"]
+// Quoted values may contain spaces, newlines, and escaped quotes (\").
+// Unquoted bare values are also accepted: [TOOL: read_kline EURUSD H1]
 func parseTextToolCalls(text string) []textToolCall {
 	var calls []textToolCall
 	rest := text
@@ -84,23 +88,23 @@ func parseTextToolCalls(text string) []textToolCall {
 		content := strings.TrimSpace(rest[:end])
 		rest = rest[end+1:]
 
-		parts := strings.Fields(content)
-		if len(parts) == 0 {
+		if content == "" {
 			continue
 		}
-		tc := textToolCall{Name: parts[0]}
 
-		args := make(map[string]string)
-		for _, p := range parts[1:] {
-			if kv := strings.SplitN(p, "=", 2); len(kv) == 2 {
-				args[kv[0]] = kv[1]
+		name, argsStr := splitToolName(content)
+		tc := textToolCall{Name: name}
+
+		args := parseToolArgs(argsStr)
+		if len(args) == 0 {
+			// Fallback: treat remaining words as positional (symbol, timeframe).
+			positional := strings.Fields(argsStr)
+			if len(positional) >= 1 {
+				args["symbol"] = positional[0]
 			}
-		}
-		if len(args) == 0 && len(parts) >= 2 {
-			args["symbol"] = parts[1]
-		}
-		if len(args) == 0 && len(parts) >= 3 {
-			args["timeframe"] = parts[2]
+			if len(positional) >= 2 {
+				args["timeframe"] = positional[1]
+			}
 		}
 
 		jsonBytes, _ := json.Marshal(args)
@@ -108,6 +112,92 @@ func parseTextToolCalls(text string) []textToolCall {
 		calls = append(calls, tc)
 	}
 	return calls
+}
+
+// splitToolName returns the tool name and the remaining argument string.
+func splitToolName(content string) (name, args string) {
+	// Tool name is the first word before any space.
+	idx := strings.IndexAny(content, " \t")
+	if idx < 0 {
+		return content, ""
+	}
+	return content[:idx], strings.TrimSpace(content[idx+1:])
+}
+
+// parseToolArgs parses key="value" pairs with quote-aware scanning.
+// Values in double quotes may contain spaces, newlines, and escaped quotes.
+func parseToolArgs(argsStr string) map[string]string {
+	args := make(map[string]string)
+	if argsStr == "" {
+		return args
+	}
+
+	i := 0
+	n := len(argsStr)
+	for i < n {
+		// Skip whitespace.
+		for i < n && (argsStr[i] == ' ' || argsStr[i] == '\t') {
+			i++
+		}
+		if i >= n {
+			break
+		}
+
+		// Read key until '='.
+		eq := strings.IndexByte(argsStr[i:], '=')
+		if eq < 0 {
+			// No '=' means this is not a key=val pair — stop parsing.
+			break
+		}
+		key := strings.TrimSpace(argsStr[i : i+eq])
+		i += eq + 1 // skip '='
+
+		if i >= n {
+			args[key] = ""
+			break
+		}
+
+		if argsStr[i] == '"' {
+			// Quoted value — scan until closing unescaped quote.
+			i++ // skip opening quote
+			var buf strings.Builder
+			for i < n {
+				if argsStr[i] == '\\' && i+1 < n {
+					// Escape sequence.
+					i++
+					switch argsStr[i] {
+					case '"':
+						buf.WriteByte('"')
+					case 'n':
+						buf.WriteByte('\n')
+					case '\\':
+						buf.WriteByte('\\')
+					default:
+						buf.WriteByte('\\')
+						buf.WriteByte(argsStr[i])
+					}
+					i++
+				} else if argsStr[i] == '"' {
+					i++ // skip closing quote
+					break
+				} else {
+					buf.WriteByte(argsStr[i])
+					i++
+				}
+			}
+			args[key] = buf.String()
+		} else {
+			// Unquoted value — read until next space.
+			end := strings.IndexAny(argsStr[i:], " \t")
+			if end < 0 {
+				args[key] = argsStr[i:]
+				break
+			}
+			args[key] = argsStr[i : i+end]
+			i += end
+		}
+	}
+	return args
 }
 
 // hasWriteStrategyCall checks whether the LLM invoked write_strategy,

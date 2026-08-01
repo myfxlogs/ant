@@ -66,7 +66,11 @@ func (b *TradeBroker) Subscribe(accountID string) (<-chan *BrokerTradeEvent, fun
 		for i, c := range subs {
 			if c == ch {
 				b.subs[accountID] = append(subs[:i], subs[i+1:]...)
-				close(c)
+				// Do NOT close the channel — Publish() may still be sending on it
+				// after snapshotting the subscriber list under RLock. Removing from
+				// the list is sufficient; the channel will be GC'd when no longer
+				// referenced. Subscribers should select on ctx.Done() for liveness.
+				_ = c
 				return
 			}
 		}

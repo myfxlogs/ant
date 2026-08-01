@@ -34,21 +34,6 @@ export interface ScheduleRow {
   createdAt?: string;
 }
 
-// ── Backtest run entity ──
-export interface BacktestRunRow {
-  id: string;
-  templateId: string;
-  templateDraftId?: string;
-  symbol: string;
-  timeframe: string;
-  status: number;
-  createdAt: string;
-  metrics?: Record<string, unknown>;
-  equityCurve?: unknown[];
-  title?: string;
-  error?: string;
-}
-
 // ── Account entity ──
 export interface AccountRow {
   id: string;

@@ -88,7 +88,7 @@ func (s *GatewayServer) runBacktestPipeline(
 	}
 
 	// Step 7: Blind-spot bridge (ADR-0024)
-	if in.Language != "python" && in.Coverage.Score < 1.0 && len(in.Coverage.BlindSpots) > 0 {
+	if in.Language != "python" && in.Coverage.Score < 0.999 && len(in.Coverage.BlindSpots) > 0 {
 		validateBacktest := func(pyRunner *mql2go.VMRunner) error {
 			_, btErr := runVMBacktest(ctx, pyRunner, in.BtCfg, bars, in.Params)
 			return btErr

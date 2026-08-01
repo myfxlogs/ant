@@ -25,6 +25,8 @@ func buildOnOrderUpdate(
 	tradeRecordRepo *repository.TradeRecordRepository,
 ) func(accountID, userID string, o *mdtick.OrderUpdate) {
 	return func(accountID, userID string, o *mdtick.OrderUpdate) {
+			// Use a detached context with timeout — the gRPC stream context may expire
+		// before the DB write completes, but the trade record must be persisted.
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
@@ -69,6 +71,14 @@ func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordReposit
 		OrderComment: o.UpdateComment, Platform: o.Platform,
 	}
 	if err := repo.Create(ctx, rec); err != nil {
-		log.Warn("OnOrderUpdate: write closed trade failed", zap.String("account", accountID), zap.Int64("ticket", o.UpdateTicket), zap.Error(err))
+		// Retry once with a fresh timeout — transient PG errors (pool exhaustion,
+		// brief network flaps) should not lose trade records.
+		retryCtx, retryCancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer retryCancel()
+		if retryErr := repo.Create(retryCtx, rec); retryErr != nil {
+			log.Error("OnOrderUpdate: write closed trade failed after retry",
+				zap.String("account", accountID), zap.Int64("ticket", o.UpdateTicket),
+				zap.NamedError("first", err), zap.NamedError("retry", retryErr))
+		}
 	}
 }

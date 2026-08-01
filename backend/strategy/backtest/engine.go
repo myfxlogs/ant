@@ -189,7 +189,7 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 		if sig.Price.IsPositive() {
 			price = sig.Price
 		}
-		_, _ = e.broker.OrderSend(sdk.OrderRequest{
+		if _, err := e.broker.OrderSend(sdk.OrderRequest{
 			Symbol:     sig.Symbol,
 			Side:       side,
 			Type:       ot,
@@ -199,14 +199,22 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 			TakeProfit: sig.TakeProfit,
 			Comment:    sig.Comment,
 			Magic:      sig.Magic,
-		})
+		}); err != nil {
+			fmt.Fprintf(os.Stderr, "backtest: OrderSend error at bar %d: %v\n", e.broker.currentBar, err)
+		}
 	case sdk.ActionClose:
-		_, _ = e.broker.PositionClose(sig.OrderTicket, decimal.Zero)
+		if _, err := e.broker.PositionClose(sig.OrderTicket, decimal.Zero); err != nil {
+			fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+		}
 	case sdk.ActionCancel:
-		_, _ = e.broker.OrderDelete(sig.OrderTicket)
+		if _, err := e.broker.OrderDelete(sig.OrderTicket); err != nil {
+			fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+		}
 	case sdk.ActionCloseAll:
 		for _, p := range e.broker.Positions(sig.Magic) {
-			_, _ = e.broker.PositionClose(p.Ticket, decimal.Zero)
+			if _, err := e.broker.PositionClose(p.Ticket, decimal.Zero); err != nil {
+				fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+			}
 		}
 	}
 }

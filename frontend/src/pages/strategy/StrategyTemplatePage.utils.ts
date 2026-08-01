@@ -1,7 +1,7 @@
 
 import { BACKTEST_QUICK_RANGE_CUSTOM_KEY } from '@/gen/ant/v1/i18n/strategy_templates_keys';
 
-export type QuickRangeKey = 'CUSTOM' | '1D' | '3D' | '1W' | '1Y';
+type QuickRangeKey = 'CUSTOM' | '1D' | '3D' | '1W' | '1Y';
 
 export const clamp01 = (x: number) => {
   if (x < 0) return 0;

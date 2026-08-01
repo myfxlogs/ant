@@ -76,6 +76,7 @@ func (hd *deadAccountHandler) handle(h AccountHealth) {
 				zap.String("account", h.AccountID), zap.Error(err))
 		}
 		hd.mgr.UnmarkDisconnecting(h.AccountID)
+		// Brief pause to allow in-flight requests on the removed gateway to drain.
 		time.Sleep(100 * time.Millisecond)
 	} else {
 		hd.log.Info("mdgateway: dead account reconnected successfully",
@@ -99,7 +100,14 @@ func checkStaleAccounts(ctx context.Context, stales []staleEntry, log *zap.Logge
 		wg.Add(1)
 		go func(e staleEntry) {
 			defer wg.Done()
-			if err := e.gw.HealthCheck(ctx); err != nil {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Error("mdgateway: stale check panic", zap.String("account", e.h.AccountID), zap.Any("panic", r))
+				}
+			}()
+			hcCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+			if err := e.gw.HealthCheck(hcCtx); err != nil {
 				failures <- e.h
 			}
 		}(se)

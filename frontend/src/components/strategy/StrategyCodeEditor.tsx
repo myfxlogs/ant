@@ -71,7 +71,7 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnos
       '&.cm-editor': { maxHeight: '100%' },
       '.cm-scroller': { fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace" },
     }),
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- readOnly handled via compartment reconfigure
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- readOnly handled via compartment reconfigure  | REF: rd.md#part-0.2-hooks-deps
   ], []);
 
   // Diagnostics — reserved for future @codemirror/lint integration.

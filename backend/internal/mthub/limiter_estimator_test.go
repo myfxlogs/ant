@@ -93,20 +93,40 @@ func TestUserLimiter_RateLimitKicksIn(t *testing.T) {
 	}
 }
 
-// mockExecutor is a minimal OrderExecutor stub for unit tests.
-type mockExecutor struct{}
+	// mockExecutor is a configurable OrderExecutor stub for unit tests.
+	// All fn fields are optional — nil means use the default success behavior.
+	type mockExecutor struct {
+		platform              string
+		placeOrderFn          func(context.Context, *OrderRequest) (int64, error)
+		closeOrderFn          func(context.Context, int64, decimal.Decimal) error
+		deleteOrderFn         func(context.Context, int64) error
+		modifyOrderFn         func(context.Context, int64, decimal.Decimal, decimal.Decimal, decimal.Decimal) error
+		fetchSymbolParamsFn   func(context.Context, []string) ([]*SymbolParam, error)
+	}
 
-func (m *mockExecutor) Platform() string                        { return "mock" }
-func (m *mockExecutor) PlaceOrder(_ context.Context, _ *OrderRequest) (int64, error) { return 99999, nil }
-func (m *mockExecutor) CloseOrder(_ context.Context, _ int64, _ decimal.Decimal) error { return nil }
-func (m *mockExecutor) DeleteOrder(_ context.Context, _ int64) error                   { return nil }
-func (m *mockExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ decimal.Decimal) error { return nil }
+func (m *mockExecutor) Platform() string {
+	if m.platform != "" { return m.platform }; return "mock"
+}
+func (m *mockExecutor) PlaceOrder(ctx context.Context, req *OrderRequest) (int64, error) {
+	if m.placeOrderFn != nil { return m.placeOrderFn(ctx, req) }; return 99999, nil
+}
+func (m *mockExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
+	if m.closeOrderFn != nil { return m.closeOrderFn(ctx, ticket, lots) }; return nil
+}
+func (m *mockExecutor) DeleteOrder(ctx context.Context, ticket int64) error {
+	if m.deleteOrderFn != nil { return m.deleteOrderFn(ctx, ticket) }; return nil
+}
+func (m *mockExecutor) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
+	if m.modifyOrderFn != nil { return m.modifyOrderFn(ctx, ticket, sl, tp, price) }; return nil
+}
 func (m *mockExecutor) FetchOpenedOrders(_ context.Context) ([]*OrderRecord, error)  { return nil, nil }
 func (m *mockExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*OrderRecord, error) { return nil, nil }
-func (m *mockExecutor) FetchSymbolParams(_ context.Context, _ []string) ([]*SymbolParam, error) { return nil, nil }
+func (m *mockExecutor) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*SymbolParam, error) {
+	if m.fetchSymbolParamsFn != nil { return m.fetchSymbolParamsFn(ctx, canonicals) }; return nil, nil
+}
 func (m *mockExecutor) FetchAllSymbols(_ context.Context) ([]string, error)               { return nil, nil }
 func (m *mockExecutor) FetchPriceHistory(_ context.Context, _, _ string, _, _ int64, _ int) ([]*Bar, error) {
-	return nil, nil
-}
+		return nil, nil
+	}
 func (m *mockExecutor) AddSymbols(_ context.Context, _ []string) error                  { return nil }
 func (m *mockExecutor) SubscribeOrderEvents(_ context.Context, _ OrderEventHandler) error { return nil }

@@ -40,10 +40,18 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 		n.mu.Unlock()
 		return v
 	}
-	// Guard against unbounded cache growth: reset if exceeding 100k entries.
+	// Guard against unbounded cache growth: evict oldest half when exceeding 100k.
+	// Avoids thundering herd of PG queries that a full reset would cause.
 	const maxCacheSize = 100_000
 	if len(n.cache) > maxCacheSize {
-		n.cache = make(map[string]string, maxCacheSize)
+		evictCount := len(n.cache) / 2
+		for k := range n.cache {
+			delete(n.cache, k)
+			evictCount--
+			if evictCount <= 0 {
+				break
+			}
+		}
 	}
 	n.mu.Unlock()
 

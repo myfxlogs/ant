@@ -103,7 +103,7 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
       setPlanRefining(false);
     },
     onDone: onDone || (() => {}),
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- metricsFromResult is not memoized
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- metricsFromResult is not memoized  | REF: rd.md#part-0.2-hooks-deps
   }), [onApply, updateCurrentTurn, onDone]);
 
   const startStream = useCallback((input: {

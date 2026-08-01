@@ -109,7 +109,7 @@ export function useChartData(
       onBar: (ev: BarUpdateEvent) => processBarEvent(ev, accountId, cancelledRef, symbolRef, timeframeRef, loadingMore, precisionRef, barsRef, chartRef, setBidAsk, setLatestBid, setLatestAsk),
     });
     return () => { cancelledRef.current = true; unsubRef.current?.(); unsubRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- chartRef is a ref
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- chartRef is a ref  | REF: rd.md#part-0.2-hooks-deps
   }, [accountId]);
 
   // ── Effect 2: subscribeBars (only on symbol or account change) ──

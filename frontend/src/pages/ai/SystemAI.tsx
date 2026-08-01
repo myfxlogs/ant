@@ -127,7 +127,7 @@ export default function SystemAI() {
       cfg.provider_id !== 'openai_compatible' // never show the empty base template
     );
     return [...cards, newCustomCard];
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- newCustomCard is a static literal
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- newCustomCard is a static literal  | REF: rd.md#part-0.2-hooks-deps
   }, [configs]);
 
   const handleSelectProvider = (id: string) => { setSelectedProviderId(id); setValidated(false); };

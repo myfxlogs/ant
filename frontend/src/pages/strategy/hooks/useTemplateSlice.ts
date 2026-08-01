@@ -55,7 +55,7 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
     } else if (tpl.code?.trim()) {
       deps.validateCode(tpl.code);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- deps properties individually listed
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- deps properties individually listed  | REF: rd.md#part-0.2-hooks-deps
   }, [deps.handleLoadTemplate, deps.validateCode, deps.updateExtractedParams, setCenterTab, navigate, currentUserId]);
 
   // Load template from URL on mount — supports both ?templateId=X and /:id/edit route param.

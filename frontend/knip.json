@@ -3,9 +3,11 @@
     "src/gen/**",
     "public/**",
     "src/App.css",
-    "src/index.css",
     "src/i18n/resources/**"
   ],
   "ignoreBinaries": [],
-  "ignoreDependencies": []
+  "ignoreDependencies": [],
+  "ignoreExports": {
+    "src/client/ai/errorPatterns.ts": ["toFriendlyAIChatError"]
+  }
 }

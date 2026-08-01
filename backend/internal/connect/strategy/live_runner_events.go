@@ -56,7 +56,11 @@ func (s *StrategyExecutionServer) handleBar(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   lctx,
 	}
-	reqBytes, _ := proto.Marshal(req)
+	reqBytes, marshalErr := proto.Marshal(req)
+	if marshalErr != nil {
+		s.log.Error("LiveStrategyRunner: proto marshal failed", zap.Error(marshalErr))
+		return
+	}
 
 	var respBytes []byte
 	var err error
@@ -132,7 +136,7 @@ func (s *StrategyExecutionServer) handleTick(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TICK,
 		TickContext:  tctx,
 	}
-	reqBytes, _ := proto.Marshal(req)
+	reqBytes, marshalErr := proto.Marshal(req); if marshalErr != nil { s.log.Warn("LiveStrategyRunner: tick proto marshal failed", zap.Error(marshalErr)); return }
 	respBytes, err := (*session).SendEvent(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
@@ -162,7 +166,7 @@ func (s *StrategyExecutionServer) handleTrade(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TRADE,
 		TradeContext: tctx,
 	}
-	reqBytes, _ := proto.Marshal(req)
+	reqBytes, marshalErr := proto.Marshal(req); if marshalErr != nil { s.log.Warn("LiveStrategyRunner: trade proto marshal failed", zap.Error(marshalErr)); return }
 	respBytes, err := (*session).SendEvent(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))

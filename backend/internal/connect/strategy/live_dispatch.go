@@ -128,6 +128,7 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 	// Detach from parent cancellation but preserve values (userID, auth).
 	bgCtx := context.WithoutCancel(ctx)
 	go func() {
+			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchCloseAll", zap.Any("panic", r)) } }()
 		orders, err := s.mtHub.OpenedOrders(bgCtx, cfg.AccountID)
 		if err != nil {
 			s.log.Error("LiveStrategyRunner: dispatchCloseAll: OpenedOrders failed",
@@ -185,6 +186,7 @@ func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg Li
 		return
 	}
 	go func() {
+			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchCloseOrder", zap.Any("panic", r)) } }()
 		if err := s.mtHub.CloseOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, volume); err != nil {
 			s.log.Error("LiveStrategyRunner: CloseOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
@@ -211,6 +213,7 @@ func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg L
 	price := parseDecimal(sig.GetPrice())
 
 	go func() {
+			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchModifyOrder", zap.Any("panic", r)) } }()
 		if err := s.mtHub.ModifyOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, sl, tp, price); err != nil {
 			s.log.Error("LiveStrategyRunner: ModifyOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
@@ -234,6 +237,7 @@ func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg L
 	// calls OrderClose(lots=0). Both are platform-correct cancel paths.
 	bgCtx := context.WithoutCancel(ctx)
 	go func() {
+			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchCancelOrder", zap.Any("panic", r)) } }()
 		if err := s.mtHub.DeleteOrder(bgCtx, cfg.AccountID, ticket); err != nil {
 			s.log.Error("LiveStrategyRunner: DeleteOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
@@ -314,6 +318,7 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 		placeCtx = context.WithValue(placeCtx, interceptor.UserIDKey, cfg.UserID)
 	}
 	go func() {
+			defer func() { if r := recover(); r != nil { s.log.Error("panic in submitOrder", zap.Any("panic", r)) } }()
 		record, err := s.mtHub.PlaceOrder(placeCtx, req)
 		if err != nil {
 			if errors.Is(err, mthub.ErrCircuitOpen) {

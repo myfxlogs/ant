@@ -76,7 +76,14 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			if s == nil {
 				continue
 			}
-			handler(parseMt4OrderUpdate(s, g.cfg.AccountID))
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						g.log.Error("mt4 order update handler panic", zap.Any("panic", r))
+					}
+				}()
+				handler(parseMt4OrderUpdate(s, g.cfg.AccountID))
+			}()
 		}
 	}
 }

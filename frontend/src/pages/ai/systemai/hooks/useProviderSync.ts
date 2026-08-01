@@ -86,7 +86,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       setValidated(false);
       setLastAutoSavedSecretKey('');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop  | REF: rd.md#part-0.2-hooks-deps
   }, [selectedConfig, selectedProviderId]);
 
   // Auto-save secret effect
@@ -120,7 +120,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       }
     }, 700);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop  | REF: rd.md#part-0.2-hooks-deps
   }, [draft?.provider_id, secretInput, lastAutoSavedSecretKey, isCustomProvider, silentReload, t]);
 
   // Auto-discover effect
@@ -174,7 +174,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       }
     }, 700);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop  | REF: rd.md#part-0.2-hooks-deps
   }, [draft?.provider_id, draft?.base_url, draft?.has_secret, secretInput, lastAutoDiscoverKey, validateBaseURL, persistDraftConfig, t]);
 
   // Auto-validate effect
@@ -209,7 +209,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       }
     }, 500);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional subset to prevent infinite loop  | REF: rd.md#part-0.2-hooks-deps
   }, [draft?.provider_id, draft?.base_url, draft?.default_model, draft?.has_secret, secretInput, lastAutoValidateKey, validateBaseURL, persistDraftConfig, t]);
 
   return { prevProviderIdRef };

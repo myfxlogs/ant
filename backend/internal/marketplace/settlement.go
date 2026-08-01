@@ -77,7 +77,9 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 
 	// 4. Credit each settlement individually for idempotency + hash chain integrity.
 	settledCount := 0
+	failedCount := 0
 	totalSettled := decimal.Zero
+	var failedIDs []string
 	for _, p := range batch {
 		settleID := p.id.String()
 
@@ -87,8 +89,10 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 			fmt.Sprintf("Settlement for purchase %s", settleID),
 			nil, IdemKeySettle+settleID)
 		if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
-			s.log.Warn("settle: credit provider failed, skipping",
+			s.log.Error("settle: credit provider failed, skipping",
 				zap.String("settlementID", settleID), zap.Error(err))
+			failedCount++
+			failedIDs = append(failedIDs, settleID)
 			continue
 		}
 
@@ -99,8 +103,10 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 				fmt.Sprintf("Platform fee settlement for purchase %s", settleID),
 				nil, IdemKeyFeeSettle+settleID)
 			if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
-				s.log.Warn("settle: credit platform fee failed, skipping",
+				s.log.Error("settle: credit platform fee failed, skipping",
 					zap.String("settlementID", settleID), zap.Error(err))
+				failedCount++
+				failedIDs = append(failedIDs, settleID)
 				continue
 			}
 		}
@@ -111,14 +117,31 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 			p.id, time.Now(),
 		)
 		if err != nil {
-			s.log.Warn("settle: mark settled failed",
+			s.log.Error("settle: mark settled failed — credit already applied, manual review needed",
 				zap.String("settlementID", settleID), zap.Error(err))
+			failedCount++
+			failedIDs = append(failedIDs, settleID)
 			continue
 		}
 
-		providerAmt, _ := decimal.NewFromString(p.providerAmt)
+		providerAmt, err := decimal.NewFromString(p.providerAmt)
+		if err != nil {
+			s.log.Error("settle: invalid provider amount",
+				zap.String("settlementID", settleID),
+				zap.String("rawAmount", p.providerAmt), zap.Error(err))
+			failedCount++
+			failedIDs = append(failedIDs, settleID)
+			continue
+		}
 		totalSettled = totalSettled.Add(providerAmt)
 		settledCount++
+	}
+
+	if failedCount > 0 {
+		s.log.Error("settle: batch completed with failures — items skipped",
+			zap.Int("settled", settledCount),
+			zap.Int("failed", failedCount),
+			zap.Strings("failedSettlementIDs", failedIDs))
 	}
 
 	if err := tx.Commit(ctx); err != nil {

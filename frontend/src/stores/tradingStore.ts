@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { Position, TradeLog } from '@/types/trading';
 import { toCamelCase } from '../adapters/dataAdapter';
 
-export type SetPositionsOptions = { preferRpcProfit?: boolean };
+type SetPositionsOptions = { preferRpcProfit?: boolean };
 
 export interface AccountInfo {
   balance: number;

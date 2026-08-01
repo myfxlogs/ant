@@ -110,7 +110,7 @@ export function useScheduleSSE(loading: boolean, setSchedules: Dispatch<SetState
     };
     connect();
     return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- setSchedules is a useState setter, stable across renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setSchedules is a useState setter, stable across renders  | REF: rd.md#part-0.2-hooks-deps
   }, [sseReady]);
   return { sseReady };
 }

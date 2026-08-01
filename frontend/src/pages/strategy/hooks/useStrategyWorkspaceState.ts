@@ -21,7 +21,7 @@ export function useStrategyWorkspaceState() {
   const btCtx = useBacktestRunner();
   const onValidateResult = useCallback(
     (result: import('@/client/codeAssist').ValidateExtendedResult) => { btCtx.handleValidationResult(result); },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- btCtx.handleValidationResult is stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- btCtx.handleValidationResult is stable  | REF: rd.md#part-0.2-hooks-deps
     [btCtx.handleValidationResult],
   );
   const codeCtx = useStrategyCode({ onValidateResult });
@@ -44,7 +44,7 @@ export function useStrategyWorkspaceState() {
   const gateSlice = useMemo(() => ({ loading: btCtx.gate.gateLoading, gates: btCtx.gate.gateGates, summary: btCtx.gate.gateSummary, error: btCtx.gate.gateError, run: btCtx.gate.runGate }), [btCtx.gate]);
   const quickTradeSlice = useMemo(() => ({ positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition }), [qt.positionCount, qt.allPositions, qt.qtPositions, qt.qtRecentTrades, qt.handleClosePosition]);
   const layoutSlice = layout;
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- codeCtx.setCode is stable, full codeCtx not needed
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- codeCtx.setCode is stable, full codeCtx not needed  | REF: rd.md#part-0.2-hooks-deps
   const aiSlice = useMemo(() => ({ optimize: ai.handleAIOptimize, optimizePrompt: ai.aiOptimizePrompt, askForValidation: ai.handleAskAIForValidation, chatAutoApply: ai.chatAutoApply, autoFixing: ai.autoFixing, autoFix: ai.handleAutoFix, autoFixDebug: ai.autoFixDebug, dismissDebug: ai.dismissDebug, applyTunedParams: (code: string) => { codeCtx.setCode(code); } }), [ai, codeCtx.setCode]);
 
   return {

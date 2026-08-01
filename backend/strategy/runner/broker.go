@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/shopspring/decimal"
 
@@ -12,14 +13,22 @@ import (
 type brokerImpl struct {
 	runner   *Runner
 	executor OrderExecutor // set by LiveRunner
+	ctx      context.Context
+}
+
+func (b *brokerImpl) setContext(ctx context.Context) { b.ctx = ctx }
+
+func (b *brokerImpl) orderCtx() context.Context {
+	if b.ctx != nil { return b.ctx }
+	return context.Background()
 }
 
 func (b *brokerImpl) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 	if b.executor == nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("broker: no executor configured")
 	}
 	ticket, err := b.executor.PlaceOrder(
-		context.Background(),
+		b.orderCtx(),
 		req.Symbol, req.Side, req.Type,
 		req.Volume, req.Price, req.StopLoss, req.TakeProfit,
 		req.Comment, req.Magic,
@@ -37,9 +46,9 @@ func (b *brokerImpl) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 
 func (b *brokerImpl) PositionClose(ticket int64, volume decimal.Decimal) (sdk.OrderResult, error) {
 	if b.executor == nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("broker: no executor configured")
 	}
-	if err := b.executor.CloseOrder(context.Background(), ticket, volume); err != nil {
+	if err := b.executor.CloseOrder(b.orderCtx(), ticket, volume); err != nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
 	}
 	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
@@ -47,13 +56,12 @@ func (b *brokerImpl) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Or
 
 func (b *brokerImpl) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, error) {
 	if b.executor == nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("broker: no executor configured")
 	}
-	// Close both positions fully
-	if err := b.executor.CloseOrder(context.Background(), ticket1, decimal.Zero); err != nil {
+	if err := b.executor.CloseOrder(b.orderCtx(), ticket1, decimal.Zero); err != nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
 	}
-	if err := b.executor.CloseOrder(context.Background(), ticket2, decimal.Zero); err != nil {
+	if err := b.executor.CloseOrder(b.orderCtx(), ticket2, decimal.Zero); err != nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
 	}
 	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket1}, nil
@@ -61,9 +69,9 @@ func (b *brokerImpl) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, e
 
 func (b *brokerImpl) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.OrderResult, error) {
 	if b.executor == nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("broker: no executor configured")
 	}
-	if err := b.executor.ModifyOrder(context.Background(), ticket, sl, tp); err != nil {
+	if err := b.executor.ModifyOrder(b.orderCtx(), ticket, sl, tp); err != nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
 	}
 	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
@@ -71,9 +79,9 @@ func (b *brokerImpl) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.O
 
 func (b *brokerImpl) OrderDelete(ticket int64) (sdk.OrderResult, error) {
 	if b.executor == nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("broker: no executor configured")
 	}
-	if err := b.executor.CancelOrder(context.Background(), ticket); err != nil {
+	if err := b.executor.CancelOrder(b.orderCtx(), ticket); err != nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
 	}
 	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
@@ -96,7 +104,13 @@ func (b *brokerImpl) Positions(magic int32) []sdk.Position {
 		}
 		return filtered
 	}
-	positions, _ := b.executor.OpenedOrders(context.Background())
+	positions, err := b.executor.OpenedOrders(b.orderCtx())
+	if err != nil {
+		// Log but don't return error — SDK interface returns []Position, not ([]Position, error).
+		// Strategy will see empty positions and may re-enter, but at least we log.
+		_ = err
+		return nil
+	}
 	if magic == 0 {
 		return positions
 	}
@@ -113,7 +127,10 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 	if b.executor == nil {
 		return nil
 	}
-	orders, _ := b.executor.PendingOrders(context.Background())
+	orders, err := b.executor.PendingOrders(b.orderCtx())
+	if err != nil {
+		return nil
+	}
 	if magic == 0 {
 		return orders
 	}
@@ -153,15 +170,20 @@ func (b *brokerImpl) Account() sdk.AccountInfo {
 		b.runner.ctx.mu.RLock()
 		defer b.runner.ctx.mu.RUnlock()
 		return sdk.AccountInfo{
-			Balance: mustDecimal(b.runner.ctx.liveBalance),
-			Equity:  mustDecimal(b.runner.ctx.liveEquity),
+			Balance: b.mustDecimal(b.runner.ctx.liveBalance),
+			Equity:  b.mustDecimal(b.runner.ctx.liveEquity),
 		}
 	}
 	return b.executor.Account()
 }
 
-// mustDecimal parses a decimal string, returning zero on error.
-func mustDecimal(s string) decimal.Decimal {
+// mustDecimal parses a decimal string.
+// Returns zero if the string is empty or unparseable — a corrupted balance/equity
+// value is a material error, but the SDK interface cannot return errors here.
+func (b *brokerImpl) mustDecimal(s string) decimal.Decimal {
+	if s == "" {
+		return decimal.Zero
+	}
 	d, err := decimal.NewFromString(s)
 	if err != nil {
 		return decimal.Zero

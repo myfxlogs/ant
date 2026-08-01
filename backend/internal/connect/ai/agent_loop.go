@@ -107,15 +107,16 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 
 		fullBuf.WriteString(roundText)
 
-		if code := ExtractCode(roundText); code != "" {
+		code := ExtractCode(roundText)
+		if code != "" {
 			a.currentCode = code
 		}
 
-		if code := ExtractCode(roundText); code != "" && !hasWriteStrategyCall(toolCalls, roundText) && codeConvergences < 2 {
+		if code != "" && !hasWriteStrategyCall(toolCalls, roundText) && codeConvergences < 2 {
 			codeConvergences++
 			messages = append(messages, systemai.ChatMessage{
 				Role:    "user",
-				Content: "Do NOT put code in chat text. Use the write_strategy tool to submit your code. Call [TOOL: write_strategy code=\"...\"] with your complete strategy code.",
+				Content: "I notice you included code directly in your response instead of using the submission tool.\n\nPlease call the appropriate tool to submit your strategy code. The code in your chat text was extracted, but for proper compilation and backtesting, you must use the available tools.\n\nIf you're unsure which tool to use, review the tool descriptions in the system prompt. Do not paste code in text again.",
 			})
 			continue
 		}
@@ -180,7 +181,7 @@ func (a *AgentLoop) handleConvergenceRetry(
 	lengthConvergences := 0
 	for (*roundFinishReason == "length" || (roundBuf.Len() == 0 && len(reasoningText) > 500 && len(*toolCalls) == 0)) && lengthConvergences < 2 {
 		lengthConvergences++
-		messages = append(messages, systemai.ChatMessage{Role: "user", Content: "Stop thinking. Output the complete Python strategy code NOW in a markdown block (class MyStrategy, on_bar method), then call write_strategy with your code. Use professional defaults for any ambiguous parameters and note them in ONE comment. Do not re-analyze."})
+		messages = append(messages, systemai.ChatMessage{Role: "user", Content: "You've spent enough time analyzing. Now is the time to produce the deliverable.\n\nOutput the complete strategy code. For any parameters you're uncertain about:\n- Use industry-standard defaults (e.g. RSI period=14, MA period=20, ATR multiplier=2)\n- Document your choices in brief comments\n- Focus on correctness over optimization\n\nDo not continue analyzing. Produce the code now."})
 		roundBuf.Reset()
 		reasoningBuf.Reset()
 		*toolCalls = nil

@@ -44,7 +44,7 @@ export interface CodeSlice {
   setCurrentCodeName: (v: string) => void;
 }
 
-export interface HydrationSlice {
+interface HydrationSlice {
   _hasHydrated: boolean;
 }
 

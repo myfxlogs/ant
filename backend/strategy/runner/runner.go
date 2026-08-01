@@ -83,6 +83,7 @@ func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string
 		return nil, nil
 	}
 	r.ctx.setGoContext(ctx)
+	r.broker.setContext(ctx)
 	r.mu.Lock()
 	r.ctx.setBars(bars)
 	r.mu.Unlock()
@@ -99,6 +100,7 @@ func (r *Runner) OnTick(ctx context.Context, bid, ask decimal.Decimal) (*sdk.Sig
 		return nil, nil
 	}
 	r.ctx.setGoContext(ctx)
+	r.broker.setContext(ctx)
 	r.ctx.setTick(bid, ask)
 	return ts.OnTick(r.ctx, bid, ask)
 }
@@ -113,6 +115,7 @@ func (r *Runner) OnTrade(ctx context.Context, event sdk.TradeEvent) (*sdk.Signal
 		return nil, nil
 	}
 	r.ctx.setGoContext(ctx)
+	r.broker.setContext(ctx)
 	return ts.OnTrade(r.ctx, event)
 }
 
@@ -126,6 +129,7 @@ func (r *Runner) OnTimerTick(ctx context.Context) (*sdk.Signal, error) {
 		return nil, nil
 	}
 	r.ctx.setGoContext(ctx)
+	r.broker.setContext(ctx)
 	return ts.OnTimer(r.ctx)
 }
 
@@ -139,6 +143,7 @@ func (r *Runner) OnTradeTransaction(ctx context.Context) (*sdk.Signal, error) {
 		return nil, nil
 	}
 	r.ctx.setGoContext(ctx)
+	r.broker.setContext(ctx)
 	return ts.OnTradeTransaction(r.ctx)
 }
 
@@ -152,6 +157,7 @@ func (r *Runner) OnBookEvent(ctx context.Context) (*sdk.Signal, error) {
 		return nil, nil
 	}
 	r.ctx.setGoContext(ctx)
+	r.broker.setContext(ctx)
 	return ts.OnBookEvent(r.ctx)
 }
 

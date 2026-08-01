@@ -43,7 +43,7 @@ export function useSystemConfig() {
 
   useEffect(() => {
     fetchConfigs();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchConfigs is stable enough (mount-only)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchConfigs is stable enough (mount-only)  | REF: rd.md#part-0.2-hooks-deps
   }, []);
 
   const handleEdit = (config: AdminConfigType) => {

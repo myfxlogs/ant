@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	antv1 "alphaforge/gen/proto/ant/v1"
 	connectai "alphaforge/internal/connect/ai"
 	"alphaforge/internal/repository"
@@ -34,7 +36,7 @@ func (t *writeStrategyTool) Schema() systemai.ToolDefinition {
 		Type: "function",
 		Function: systemai.ToolDefFunction{
 			Name: "write_strategy",
-			Description: "提交完整的 Python 策略代码。用于生成新策略或重写现有策略。code 参数必填。内部自动编译→真实回测。不要在聊天文本中粘贴代码——代码只能通过此工具提交。",
+			Description: "提交完整的交易策略代码。这是提交策略的唯一方式——不要在聊天文本中粘贴代码。\n\n此工具自动执行：\n1. 编译验证（语法检查）\n2. 真实市场数据回测\n3. 返回编译状态 + 回测指标（胜率、收益率、最大回撤、夏普比率）\n\n提交前请确认：代码完整可运行、无语法错误、无未来函数、仓位管理合理。",
 			Parameters: map[string]any{
 				schemaKeyType:     schemaTypeObject,
 				"required": []string{"code"},
@@ -50,9 +52,9 @@ func (t *writeStrategyTool) Schema() systemai.ToolDefinition {
 }
 
 func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) connectai.ToolOutput {
-	code, _ := in.RawArgs["code"].(string)
-	if code == "" {
-		return connectai.ToolOutput{Success: false, Error: "code is required — pass the complete Python strategy as the 'code' parameter"}
+	code, ok := in.RawArgs["code"].(string)
+	if !ok || code == "" {
+		return connectai.ToolOutput{Success: false, Error: "code is required — pass the complete strategy code as a string 'code' parameter"}
 	}
 
 	// I1: write_strategy is the ONLY source of truth for the deliverable code.
@@ -133,8 +135,10 @@ func (t *writeStrategyTool) runBacktest(ctx context.Context, runner *mql2go.VMRu
 
 	// I2a vs I2b: determine tier.
 	tier := "smoke"
-	if t.cfg.Symbol != "" && t.cfg.InitialCapital != "" {
-		tier = "performance"
+	if t.cfg.Symbol != "" {
+		if initialCap, err := decimal.NewFromString(t.cfg.InitialCapital); err == nil && initialCap.IsPositive() {
+			tier = "performance"
+		}
 	}
 
 	if btErr != nil {

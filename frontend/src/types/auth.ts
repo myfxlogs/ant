@@ -3,12 +3,6 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  nickname?: string;
-}
-
 export interface User {
   id: string;
   email: string;
@@ -36,10 +30,4 @@ export interface RegisterResponse {
   email: string;
   nickname: string;
   created_at: string;
-}
-
-export interface TokenPair {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
 }

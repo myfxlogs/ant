@@ -22,11 +22,11 @@ func TestSandboxScanLengthAligned(t *testing.T) {
 func TestTransformCodePromptRejectsPythonAPI(t *testing.T) {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		t.Skip("could not get test file path")
+		t.Fatalf("could not get test file path")
 	}
 	source, err := os.ReadFile(filepath.Join(filepath.Dir(filename), "code_assist_transform.go"))
 	if err != nil {
-		t.Skip("could not read source file:", err)
+		t.Fatalf("could not read source file: %v", err)
 	}
 
 	banned := []string{

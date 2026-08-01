@@ -549,32 +549,11 @@ cd frontend && npx eslint .
 ## B.9 Implementation Roadmap
 
 ```
-Phase R: 止损（Week 0 — 验收前置硬门槛）
-  - 修复 internal/interceptor 失败测试（X-Forwarded-For 优先级，按根因）
-  - main 全绿：go test -short 0 FAIL、CI 全 job 绿
-  - 实现 scripts/check_handler_registry.sh 并接入 CI
-  - 本文档（rd.md v2）落地，🔧 项进入跟踪
-
-Phase 1: 门禁对齐（Week 1-2）
-  - Layer 0 全量化：golangci-lint / eslint 改全量并清零存量
-  - check-file-lines 补 --strict；接入 deadcode / knip / govulncheck / 密钥扫描
-  - 集成测试约定统一为 -tags=integration
-  - per-block 覆盖率门禁以 B.3.2 现状快照为下限接入（防回退）
-
-Phase 2: P0 密度（Week 2-4）
-  - risk-gate / mt-gateway（risksvc/mthub/oms）覆盖率提至 ≥80%
-  - marketplace（0.1%）/ agent（5.7%）补至 ≥60%
-  - 补齐 P1/P3/P5/P6 管线冒烟（B.4.1 契约断言）
-  - 输入边界参数化测试框架落地 P0 块 handler
-
-Phase 3: 首次全项目审计（Week 4-5）
-  - 按 Part A 六步执行，报告落 docs/audits/
-  - 每个发现 → Part B 预防规则（闭环核验）
-
-Phase 4: E2E + 安全 + 终验（Week 5-6）
-  - 核心 E2E 接入 pre-merge；全量 nightly 绿
-  - 手动安全审计（鉴权覆盖 / SQL 注入 / proto 校验 / 许可证）
-  - 按 B.11 出口标准逐项核验，签字验收
+Phase R: 止损（Week 0）        ✅ 2026-08-01 完成
+Phase 1: 门禁对齐（Week 1-2）   ✅ 2026-08-01 完成
+Phase 2: P0 密度（Week 2-4）   🔄 mthub✅ risksvc✅ oms✅ | marketplace⏳ agent⏳ mdgateway⏳
+Phase 3: 首次全项目审计         ✅ 2026-08-01 完成 — 报告 docs/audits/2026-08-01-full-project.md
+Phase 4: E2E + 安全 + 终验     🔜 当前 — 按 B.12 Gate 逐项核验 + B.11 积压修复
 ```
 
 ---
@@ -604,7 +583,109 @@ Phase 4: E2E + 安全 + 终验（Week 5-6）
 
 ---
 
-## B.11 验收出口标准（Acceptance Exit Criteria）
+## B.11 审计发现积压（Audit Findings Backlog）
+
+> 来源：2026-08-01 全项目审计（`docs/audits/2026-08-01-full-project.md`）。
+> 每个发现必须在此跟踪至关闭——不得散落在聊天记录或临时文件中。
+> 修复完成后标注 ✅ + 日期，Part B 预防规则落地后标注 🛡️。
+
+### CRITICAL（3/3 已修复）
+
+| ID | 状态 | 修复日期 | 预防规则 |
+|----|------|----------|----------|
+| A-001 Agent 文本工具调用截断策略代码 | ✅ | 2026-08-01 | 🛡️ 已添加 `parseTextToolCalls` 单元测试 7 个 |
+| A-002 分账失败静默提交 | ✅ | 2026-08-01 | 🛡️ `settlement.go` 失败计数 + Error 日志 + `decimal.NewFromString` 错误检查 |
+| A-003 `015_ai_gateway.sql` 缺 .up.sql 后缀 | ✅ | 2026-08-01 | 🛡️ 重命名 + 待接入 CI migration 文件名规范检查 |
+
+### HIGH（10 项，按优先级排）
+
+| ID | 问题 | 块 | 目标 Phase | 预计工作量 |
+|----|------|-----|-----------|-----------|
+| A-004 | 10 处 goroutine 缺 panic recover（含 tick_broker send-on-closed-channel panic） | mdgateway | Phase 4 第一优先 | 2h |
+| A-005 | marketplace 0.1% 覆盖率——金额操作无测试 | marketplace | Phase 2 续 | 3d |
+| A-006 | agent-engine 分层倒置（agent → connect/ai） | agent-engine | 下个架构迭代 | 2d |
+| A-007 | WebAuthn 提现授权被注释掉 | server | Phase 4 | 4h |
+| A-008 | 双执行引擎并存（GoExecutor go run + Bytecode VM） | strategy-runtime | 下个架构迭代 | 3d |
+| A-009 | 双风控引擎每笔订单各跑一次 | mthub | Phase 4 | 1d |
+| A-010 | ADR-0003 LOC 超标 10 倍 + CI 检查未接入 | mt-gateway | 下个架构迭代 | 2d |
+| A-011 | 588 deadcode 函数（含整包死代码：pkg/logger, factor/dsl, clock/simulated） | 多块 | Phase 2 续 | 3d |
+| A-012 | marketplace_live_performance + summary 零索引 | marketplace | Phase 4 | 30min |
+| A-013 | knip 配置 broken（ignoreExports→ignoreExportsUsedInFile 迁移） | frontend | Phase 2 续 | 30min |
+
+### MEDIUM（22 项，按块分组，待排期）
+
+**marketplace（金额相关，优先）：**
+| ID | 问题 |
+|----|------|
+| A-014 | Subscribe 无幂等键——total_subscribers 重试时重复 +1 |
+| A-015 | Rating 输入无范围校验 |
+| A-016 | settlement.go:68 空批次 commit 错误被忽略 |
+
+**mdgateway / adapter：**
+| ID | 问题 |
+|----|------|
+| A-017 | MT4/MT5 adapter clock.go 逐字节重复 |
+| A-018 | derived_state.go recalculate() O(A×P) 双重扫描 |
+| A-019 | analytics_repository_trades.go SELECT * 无 LIMIT + 缺复合索引 |
+| A-020 | manager.go ReconnectGateway 嵌套 7 层 |
+| A-021 | 每 tick 6 个 OTel span——无采样 |
+| A-022 | broker_rediscovery.go 嵌套 7 层 + DB 更新嵌入循环 |
+
+**agent-engine / AI：**
+| ID | 问题 |
+|----|------|
+| A-023 | Cron 调度降级为 Interval（silently ignored） |
+| A-024 | Normalizer cache 注释声称 LRU 但实际是 map + 全量 reset |
+| A-025 | Experience search 声明为 ILIKE placeholder |
+| A-026 | Dual-path PG LISTEN + poll ticker 重复 4 次 |
+
+**前端：**
+| ID | 问题 |
+|----|------|
+| A-027 | 15 个 i18n en 文件含未翻译中文 |
+| A-028 | 20 个 eslint-disable 无 REF 追踪 |
+| A-029 | 12+ 死前端文件/组件 |
+
+**其他：**
+| ID | 问题 |
+|----|------|
+| A-030 | math/rand v1（Go 1.22+ 应升级 v2）在 Monte Carlo/optimizer 路径 |
+| A-031 | 171 处 bare `return err`——错误上下文丢失 |
+| A-032 | Proto RPC 删除无 deprecation 期（ImportStrategy, GenerateImportCode） |
+| A-033 | `context.Background()` 在请求服务路径中（live_performance.go 等） |
+| A-034 | Bootstrap 迁移失败掩码——docker-entrypoint 标记失败为已应用 |
+| A-035 | `toFriendlyAIChatError` 死导出 + knip 配置 broken |
+
+### LOW（16 项）
+
+| ID | 问题 |
+|----|------|
+| A-036 | controlplane/breaker.go float64 PnL 熔断决策 |
+| A-037 | 190 `time.Now()` vs 26 `time.Now().UTC()` 不一致 |
+| A-038 | oms/statemachine.go 与 mthub/oms_writer.go 状态机表重复维护 |
+| A-039 | `APP_URL` 默认生产域名 https://alfq.org |
+| A-040 | hardcoded tron/LLM 第三方 API endpoint |
+| A-041 | check_handler_registry.sh 路径假设（必须 repo root 运行） |
+| A-042 | migration 文件名重复数字前缀 + orphan down 文件 |
+| A-043 | `lossyFloat64` 注释："precision loss detected but not rejected" |
+| A-044 | settlement.go:257 ignored error on title SELECT |
+| A-045 | 6 `SELECT *` with LIMIT（repository 层） |
+| A-046 | 30+ 单实现接口（DI ceremony） |
+| A-047 | `VolumeProfile` 永远传 nil → VWAP 降级为 TWAP |
+| A-048 | `SUBMIT_MODE_ASYNC` 暴露在 proto 但返回 Unimplemented |
+| A-049 | mdgateway 启动逻辑分散 6 文件 |
+| A-050 | legacy polling path 与 push-based PositionCache 并存 |
+| A-051 | GoExecutor `go run` per request——任意代码执行面 |
+
+### 关闭跟踪
+
+- 每个发现关闭时标注 `✅ YYYY-MM-DD` + 修复 commit hash
+- HIGH 项必须在验收签字前全部关闭或降级（附书面理由）
+- 关闭标准：修复已合并 + 预防规则已接入 CI（或已记录不接入的理由）
+
+---
+
+## B.12 验收出口标准（Acceptance Exit Criteria）  <!-- 原 B.11，因插入审计积压 B.11 而重新编号 -->
 
 以下 8 道 Gate **全部通过 = 验收通过**。任一不满足 = 验收不通过，无例外、不谈判。
 

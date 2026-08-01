@@ -32,38 +32,6 @@ export interface Position {
   expirationTime?: number;
 }
 
-export interface OrderSendRequest {
-  accountId: string;
-  symbol: string;
-  type: 'buy' | 'sell' | 'buy_limit' | 'sell_limit' | 'buy_stop' | 'sell_stop';
-  volume: number;
-  price?: number;
-  slippage?: number;
-  stoploss?: number;
-  takeprofit?: number;
-  comment?: string;
-  magicNumber?: number;
-}
-
-export interface OrderModifyRequest {
-  accountId: string;
-  ticket: number;
-  stoploss?: number;
-  takeprofit?: number;
-  price?: number;
-}
-
-export interface OrderResponse {
-  ticket: number;
-  symbol: string;
-  type: string;
-  volume: number;
-  openPrice: number;
-  sl: number;
-  tp: number;
-  profit: number;
-}
-
 export interface TradeLog {
   id: string;
   userId: string;

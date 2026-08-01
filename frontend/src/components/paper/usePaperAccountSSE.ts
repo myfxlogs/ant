@@ -65,7 +65,7 @@ export function usePaperAccountSSE(
         unsubscribeAccount(id);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- accountIds is derived, accounts accessed via closure
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- accountIds is derived, accounts accessed via closure  | REF: rd.md#part-0.2-hooks-deps
   }, [accountIds, subscribeAccount, unsubscribeAccount]);
 
   useEffect(() => {

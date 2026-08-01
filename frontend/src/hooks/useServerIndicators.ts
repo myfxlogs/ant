@@ -131,7 +131,7 @@ export function useServerIndicators({
         onStreamStatus?.(false);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- indicatorKey is derived from activeIndicators
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- indicatorKey is derived from activeIndicators  | REF: rd.md#part-0.2-hooks-deps
   }, [symbol, timeframe, indicatorKey, refreshChart, onStreamStatus]);
 
   return { refreshChart };

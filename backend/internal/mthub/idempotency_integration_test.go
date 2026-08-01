@@ -33,7 +33,8 @@ func getTestRedis(t *testing.T) *goredis.Client {
 	if addr == "" {
 		addr = "localhost:6379"
 	}
-	rc := goredis.NewClient(&goredis.Options{Addr: addr})
+	password := os.Getenv("TEST_REDIS_PASSWORD")
+	rc := goredis.NewClient(&goredis.Options{Addr: addr, Password: password})
 	if err := rc.Ping(context.Background()).Err(); err != nil {
 		t.Skipf("skipping integration test: redis ping: %v", err)
 	}

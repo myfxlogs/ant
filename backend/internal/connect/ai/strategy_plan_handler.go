@@ -165,8 +165,8 @@ func (s *StrategyPlanServer) Conversate(
 
 	// Extract Python code from the response.
 	code := ExtractCode(raw)
-	if code != "" && len(code) < len(raw)/3 {
-		code = "" // discussion, not code output
+	if code != "" && float64(len(code)) < float64(len(raw))*0.25 {
+		code = "" // code is too small relative to total output — likely discussion, not a strategy submission
 	}
 
 	s.persistExchange(ctx, userID, m.ConversationId, "", code, m.Message)
