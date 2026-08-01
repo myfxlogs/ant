@@ -234,17 +234,17 @@ Step 6: 交付闭环
 
 检查项:
   Go:
-    - golangci-lint run ./...                  # 🔧 现为 --new-from-rev 增量，须改全量并清零存量
+    - golangci-lint run ./...                  # ✅ 全量执行，存量已清零（0 issues）
     - go build ./...                           # ✅
     - go vet ./...                             # ✅
-    - deadcode ./...                           # 🔧 函数级未接入；包级死代码已由 R0 detect-deadcode 覆盖 ✅
-    - govulncheck ./...                        # 🔧 未接入
-    - go run ./tools/check-file-lines --strict # 🔧 已接入但缺 --strict（ci.yml 未带该参数）
+    - deadcode ./...                           # ✅ 函数级已接入 CI（deadcode job）；包级由 R0 detect-deadcode 覆盖
+    - govulncheck ./...                        # ✅ 已接入 security-scan.yml
+    - go run ./tools/check-file-lines --strict # ✅ ci.yml 已带 --strict
 
   TypeScript:
-    - npx eslint .                             # 🔧 现为增量 lint（只查改动文件），须改全量
-    - npx tsc --noEmit                         # 🔧 npm run build 仅 vite build 不含 tsc；CI 须单独接入
-    - npx knip --no-progress                   # 🔧 依赖已装，CI 未接入
+    - npx eslint src/ --max-warnings 0         # ✅ 全量执行
+    - npx tsc --noEmit                         # ✅ CI 单独 step
+    - npx knip --no-progress                   # ✅ CI 已接入（非阻塞报告，存量 80 files + 96 exports 待清零）
 
   Proto:
     - buf lint                                 # ✅
@@ -252,8 +252,8 @@ Step 6: 交付闭环
     - proto codegen drift 检查                 # ✅（proto-drift job）
 
   General:
-    - 密钥扫描（trivy secret 或 gitleaks）      # 🔧 trivy 已接入，确认 secret 扫描开启或补 gitleaks
-    - bash scripts/check_handler_registry.sh   # 🔧 脚本不存在，Phase 1 实现（规格见 B.5）
+    - 密钥扫描（gitleaks）                      # ✅ gitleaks 已接入 security-scan.yml；trivy vuln 也已接入
+    - bash scripts/check_handler_registry.sh   # ✅ 已实现并接入 CI（handler-registry job）
     - migration .down.sql 配对检查              # ✅
     - gosec（安全静态扫描）                     # ✅（security-scan.yml）
 ```
@@ -268,7 +268,7 @@ Step 6: 交付闭环
   P3 (account-mgmt, frontend, api-gateway):   ≥ 50%
 
 门禁机制:
-  - 🔧 per-block 覆盖率门禁待接入 CI（当前仅全局 12% 防呆门槛，与上表严重脱节）
+  - ✅ per-block 覆盖率门禁已接入 CI（scripts/check_coverage_per_block.sh，复用 backend-test 的 coverage.out）
   - 接入方式：以 2026-08-01 现状快照为下限先行阻断回退（见 B.3.2），
     再按 B.9 Phase 2 逐块提标至上表目标。门槛只升不降（B.1.7）
 
@@ -431,16 +431,14 @@ per-block 门禁接入前，上表现状值为回退下限；接入后按 B.9 Ph
 - `authenticated` — 经过 auth interceptor（默认）
 - `public` — 明确声明公开（login, refreshtoken, healthz），需注释说明理由
 
-CI 脚本 `scripts/check_handler_registry.sh`（🔧 **当前不存在，B.9 Phase 1 必须实现**）：
+CI 脚本 `scripts/check_handler_registry.sh`（✅ **已实现并接入 CI**）：
 1. 扫描所有 `NewXxxServiceHandler` 调用
 2. 检查第三个参数是否包含 `authInterceptor`
 3. 列出未认证的 handler → ❌ 阻断（或人工标注 public）
 4. 公开端点白名单与后端 interceptor 豁免清单双向核对，漂移即阻断
 
-⚠️ **验收前置**：`internal/interceptor` 当前存在失败测试
-（`TestExtractClientIPFromHeader/x-forwarded-for_takes_priority`，期望 `1.2.3.4` 实得 `5.6.7.8`）。
-客户端 IP 提取优先级涉及限流与审计正确性，必须按根因修复并确认语义，
-main 恢复全绿后方可谈验收（B.11 Gate 1）。
+✅ **已修复**：`internal/interceptor` 测试已修正——实现正确地优先 `X-Real-IP`（nginx `$remote_addr`），
+测试期望已与实现对齐。main 全绿。
 
 ### 输入边界参数化测试
 

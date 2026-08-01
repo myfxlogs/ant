@@ -99,6 +99,8 @@ jobs:
             exit 1
           fi
           echo "Coverage ${COV}% ≥ ${THRESHOLD}% (unit tests, -short) — PASS"
+      - name: Per-block coverage gate (B.3.2 baseline)
+        run: bash ../scripts/check_coverage_per_block.sh coverage.out .
       - name: go build
         run: go build ./...
       - name: go build cmd/server
