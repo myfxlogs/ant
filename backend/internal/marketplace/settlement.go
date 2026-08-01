@@ -14,6 +14,13 @@ import (
 	"alphaforge/internal/model"
 )
 
+// settlementItem represents a frozen settlement row from the batch query.
+type settlementItem struct {
+	id          uuid.UUID
+	providerAmt string
+	platformFee string
+}
+
 // SettlementResult holds the outcome of a lazy settlement batch.
 type SettlementResult struct {
 	SettledCount int
@@ -48,14 +55,9 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 		return nil, fmt.Errorf("marketplace: settle: query frozen: %w", err)
 	}
 
-	type pending struct {
-		id          uuid.UUID
-		providerAmt string
-		platformFee string
-	}
-	var batch []pending
+	batch := make([]settlementItem, 0)
 	for rows.Next() {
-		var p pending
+		var p settlementItem
 		if err := rows.Scan(&p.id, &p.providerAmt, &p.platformFee); err != nil {
 			rows.Close()
 			return nil, fmt.Errorf("marketplace: settle: scan: %w", err)
@@ -76,74 +78,7 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 	}
 
 	// 4. Credit each settlement individually for idempotency + hash chain integrity.
-	settledCount := 0
-	failedCount := 0
-	totalSettled := decimal.Zero
-	var failedIDs []string
-	for _, p := range batch {
-		settleID := p.id.String()
-
-		// Credit provider.
-		_, err := s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pid,
-			p.providerAmt, TxTypeSettlement,
-			fmt.Sprintf("Settlement for purchase %s", settleID),
-			nil, IdemKeySettle+settleID)
-		if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
-			s.log.Error("settle: credit provider failed, skipping",
-				zap.String("settlementID", settleID), zap.Error(err))
-			failedCount++
-			failedIDs = append(failedIDs, settleID)
-			continue
-		}
-
-		// Credit platform fee.
-		if p.platformFee != "0.00" && p.platformFee != "" {
-			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
-				p.platformFee, TxTypeFeeSettlement,
-				fmt.Sprintf("Platform fee settlement for purchase %s", settleID),
-				nil, IdemKeyFeeSettle+settleID)
-			if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
-				s.log.Error("settle: credit platform fee failed, skipping",
-					zap.String("settlementID", settleID), zap.Error(err))
-				failedCount++
-				failedIDs = append(failedIDs, settleID)
-				continue
-			}
-		}
-
-		// Mark settlement as settled.
-		_, err = tx.Exec(ctx,
-			`UPDATE marketplace_settlements SET status = 'settled', settled_at = $2 WHERE id = $1 AND status = 'frozen'`,
-			p.id, time.Now(),
-		)
-		if err != nil {
-			s.log.Error("settle: mark settled failed — credit already applied, manual review needed",
-				zap.String("settlementID", settleID), zap.Error(err))
-			failedCount++
-			failedIDs = append(failedIDs, settleID)
-			continue
-		}
-
-		providerAmt, err := decimal.NewFromString(p.providerAmt)
-		if err != nil {
-			s.log.Error("settle: invalid provider amount",
-				zap.String("settlementID", settleID),
-				zap.String("rawAmount", p.providerAmt), zap.Error(err))
-			failedCount++
-			failedIDs = append(failedIDs, settleID)
-			continue
-		}
-		totalSettled = totalSettled.Add(providerAmt)
-		settledCount++
-	}
-
-	if failedCount > 0 {
-		s.log.Error("settle: batch completed with failures — items skipped",
-			zap.Int("settled", settledCount),
-			zap.Int("failed", failedCount),
-			zap.Strings("failedSettlementIDs", failedIDs))
-	}
-
+	settledCount, _, totalSettled := s.settleBatch(ctx, tx, batch, pubWalletID, sysWalletID, pid)
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("marketplace: settle: commit: %w", err)
 	}
@@ -340,4 +275,49 @@ func (s *Service) createFrozenSettlementTx(ctx context.Context, tx pgx.Tx,
 		refundWindowDays, now, settlesAt, bundleID,
 	)
 	return err
+}
+
+// settleBatch processes a batch of frozen settlements and credits providers/platform.
+func (s *Service) settleBatch(ctx context.Context, tx pgx.Tx, batch []settlementItem, pubWalletID, sysWalletID, pid uuid.UUID) (settledCount, failedCount int, totalSettled decimal.Decimal) {
+	var failedIDs []string
+	for _, p := range batch {
+		settleID := p.id.String()
+		_, err := s.walletRepo.AdjustBalanceTx(ctx, tx, pubWalletID, pid,
+			p.providerAmt, TxTypeSettlement,
+			fmt.Sprintf("Settlement for purchase %s", settleID),
+			nil, IdemKeySettle+settleID)
+		if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
+			s.log.Error("settle: credit provider failed, skipping", zap.String("settlementID", settleID), zap.Error(err))
+			failedCount++; failedIDs = append(failedIDs, settleID); continue
+		}
+		if p.platformFee != "0.00" && p.platformFee != "" {
+			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
+				p.platformFee, TxTypeFeeSettlement,
+				fmt.Sprintf("Platform fee settlement for purchase %s", settleID),
+				nil, IdemKeyFeeSettle+settleID)
+			if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
+				s.log.Error("settle: credit platform fee failed, skipping", zap.String("settlementID", settleID), zap.Error(err))
+				failedCount++; failedIDs = append(failedIDs, settleID); continue
+			}
+		}
+		_, err = tx.Exec(ctx,
+			`UPDATE marketplace_settlements SET status = 'settled', settled_at = $2 WHERE id = $1 AND status = 'frozen'`,
+			p.id, time.Now())
+		if err != nil {
+			s.log.Error("settle: mark settled failed", zap.String("settlementID", settleID), zap.Error(err))
+			failedCount++; failedIDs = append(failedIDs, settleID); continue
+		}
+		providerAmt, err := decimal.NewFromString(p.providerAmt)
+		if err != nil {
+			s.log.Error("settle: invalid provider amount", zap.String("settlementID", settleID), zap.String("rawAmount", p.providerAmt), zap.Error(err))
+			failedCount++; failedIDs = append(failedIDs, settleID); continue
+		}
+		totalSettled = totalSettled.Add(providerAmt)
+		settledCount++
+	}
+	if failedCount > 0 {
+		s.log.Error("settle: batch completed with failures",
+			zap.Int("settled", settledCount), zap.Int("failed", failedCount), zap.Strings("failedSettlementIDs", failedIDs))
+	}
+	return
 }
