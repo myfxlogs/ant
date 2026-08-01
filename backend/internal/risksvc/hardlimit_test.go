@@ -156,3 +156,52 @@ func TestHardLimit_KillSwitch_Name(t *testing.T) {
 		t.Fatalf("expected kill_switch, got %s", rule.Name())
 	}
 }
+
+func TestHardLimit_KycJurisdiction_NilGate(t *testing.T) {
+	t.Parallel()
+	rule := &KycJurisdictionRule{Gate: nil}
+	if err := rule.Check(context.Background(), &HardLimitRequest{UserID: "u1", ClientIP: "1.2.3.4"}); err != nil {
+		t.Fatalf("nil gate should allow, got: %v", err)
+	}
+}
+
+func TestHardLimit_KillSwitch_Disabled(t *testing.T) {
+	t.Parallel()
+	rule := &KillSwitchRule{Enabled: func() bool { return false }}
+	if err := rule.Check(context.Background(), &HardLimitRequest{AccountID: "acc-1"}); err != nil {
+		t.Fatalf("disabled kill switch should allow, got: %v", err)
+	}
+}
+
+func TestHardLimit_KillSwitch_Enabled(t *testing.T) {
+	t.Parallel()
+	rule := &KillSwitchRule{Enabled: func() bool { return true }}
+	err := rule.Check(context.Background(), &HardLimitRequest{AccountID: "acc-1"})
+	if err == nil {
+		t.Fatal("enabled kill switch should block")
+	}
+	if he, ok := err.(*HardLimitError); ok {
+		if he.Rule != "kill_switch" {
+			t.Fatalf("expected rule=kill_switch, got %s", he.Rule)
+		}
+	} else {
+		t.Fatalf("expected *HardLimitError, got %T", err)
+	}
+}
+
+func TestHardLimit_KillSwitch_NilFunc(t *testing.T) {
+	t.Parallel()
+	rule := &KillSwitchRule{Enabled: nil}
+	if err := rule.Check(context.Background(), &HardLimitRequest{AccountID: "acc-1"}); err != nil {
+		t.Fatalf("nil Enabled func should allow, got: %v", err)
+	}
+}
+
+func TestHardLimitError_Error(t *testing.T) {
+	t.Parallel()
+	he := &HardLimitError{Rule: "test_rule", Reason: "test reason", Details: "detail info"}
+	s := he.Error()
+	if s == "" {
+		t.Fatal("Error() should return non-empty string")
+	}
+}

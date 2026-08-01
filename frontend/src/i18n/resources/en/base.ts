@@ -1178,7 +1178,17 @@ const Base = {
   "common": {
     "months": {
       "jan": "Jan",
-      "jul": "Jul"
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
     },
     "time": {
       "day": "{{n}}d",

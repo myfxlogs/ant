@@ -1,0 +1,21 @@
+========== FULL PAGE SCAN REPORT ==========
+Date: 2026-08-01T03:50:44.083Z
+Pages scanned: 38
+Total issues: 11
+  Crashes: 0
+  Errors: 0
+  Raw i18n keys: 11
+============================================
+
+--- RAW I18N KEYS ---
+  [Market Tools] /strategy/market-tools: Raw key: "XAUUSD"
+  [Admin Users] /admin/users: Raw key: "test.alfq.org"
+  [Admin Wallet Mgmt] /admin/wallet: Raw key: "test.alfq.org"
+  [Admin Billing] /admin/billing: Raw key: "test.alfq.org"
+  [Admin AI Gateway] /admin/ai-gateway: Raw key: "api.anthropic.com"
+  [Admin AI Gateway] /admin/ai-gateway: Raw key: "api.deepseek.com"
+  [Admin AI Gateway] /admin/ai-gateway: Raw key: "api.openai.com"
+  [Admin AI Gateway] /admin/ai-gateway: Raw key: "open.bigmodel.cn"
+  [Admin AI Gateway] /admin/ai-gateway: Raw key: "api.moonshot.cn"
+  [Admin AI Gateway] /admin/ai-gateway: Raw key: "dashscope.aliyuncs.com"
+  [SRE Kill Switch] /admin/sre/killswitch: Raw key: "DISARMED"

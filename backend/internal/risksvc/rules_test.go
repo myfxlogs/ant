@@ -3,6 +3,9 @@ package risksvc
 import (
 	"context"
 	"testing"
+	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestEngine_AllPass(t *testing.T) {
@@ -106,4 +109,53 @@ func TestEngine_SessionWeekend(t *testing.T) {
 	result := engine.Evaluate(context.Background(), req)
 	// May pass or fail depending on actual time — just verify no panic
 	_ = result
+}
+
+func TestDailyLoss_Name(t *testing.T) {
+	t.Parallel()
+	r := &DailyLoss{}
+	if r.Name() != "daily_loss" {
+		t.Fatalf("expected daily_loss, got %s", r.Name())
+	}
+}
+
+func TestDailyLoss_WithinLimit(t *testing.T) {
+	t.Parallel()
+	r := &DailyLoss{Limit: decF(1000), DailyPL: decF(-500), DayStart: time.Now()}
+	result := r.Check(context.Background(), &CheckRequest{})
+	if !result.Passed {
+		t.Fatalf("loss within limit should pass, got %s: %s", result.Rule, result.Reason)
+	}
+}
+
+func TestDailyLoss_ExceedsLimit(t *testing.T) {
+	t.Parallel()
+	r := &DailyLoss{Limit: decF(1000), DailyPL: decF(-1500), DayStart: time.Now()}
+	result := r.Check(context.Background(), &CheckRequest{})
+	if result.Passed {
+		t.Fatal("loss exceeding limit should block")
+	}
+	if result.Rule != "daily_loss" {
+		t.Fatalf("expected rule=daily_loss, got %s", result.Rule)
+	}
+}
+
+func TestDailyLoss_ZeroLimit(t *testing.T) {
+	t.Parallel()
+	r := &DailyLoss{Limit: decimal.Zero, DailyPL: decF(-999999), DayStart: time.Now()}
+	result := r.Check(context.Background(), &CheckRequest{})
+	if !result.Passed {
+		t.Fatal("zero limit should always pass")
+	}
+}
+
+func TestEngine_SetUserLimiter(t *testing.T) {
+	t.Parallel()
+	engine := NewEngine(&MaxPosition{Max: 10})
+	engine.SetUserLimiter(nil) // should not panic
+	// Verify evaluate still works with nil limiter
+	result := engine.Evaluate(context.Background(), &CheckRequest{Symbol: "EURUSD", Positions: 1})
+	if !result.Passed {
+		t.Fatalf("expected pass with nil limiter, got %s", result.Rule)
+	}
 }

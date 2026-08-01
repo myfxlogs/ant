@@ -1175,8 +1175,18 @@ const Base = {
   },
   "common": {
     "months": {
-      "jan": "1月",
-      "jul": "7月"
+      "jan": "Th1",
+      "feb": "Th2",
+      "mar": "Th3",
+      "apr": "Th4",
+      "may": "Th5",
+      "jun": "Th6",
+      "jul": "Th7",
+      "aug": "Th8",
+      "sep": "Th9",
+      "oct": "Th10",
+      "nov": "Th11",
+      "dec": "Th12"
     },
     "time": {
       "day": "{{n}}ngày",

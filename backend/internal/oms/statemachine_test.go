@@ -3,6 +3,8 @@ package oms
 import (
 	"testing"
 	"time"
+
+	"alphaforge/internal/mthub"
 )
 
 func TestOrderStateMachine_All15States(t *testing.T) {
@@ -243,5 +245,46 @@ func TestShouldTimeout(t *testing.T) {
 	}
 	if !ShouldTimeout(time.Now().Add(-31 * time.Second)) {
 		t.Fatal("ShouldTimeout should be true for >30s ago")
+	}
+}
+
+func TestCanTransition_Valid(t *testing.T) {
+	t.Parallel()
+	if !CanTransition(StateNew, StateValidated) {
+		t.Error("New→Validated should be allowed")
+	}
+	if !CanTransition(StateSubmitted, StateWorking) {
+		t.Error("Submitted→Working should be allowed")
+	}
+}
+
+func TestCanTransition_Invalid(t *testing.T) {
+	t.Parallel()
+	if CanTransition(StateNew, StateFilled) {
+		t.Error("New→Filled should be blocked")
+	}
+	if CanTransition(StateFilled, StateCancelled) {
+		t.Error("Filled→Cancelled (terminal) should be blocked")
+	}
+}
+
+func TestMtStateToOMS(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		input    mthub.OrderState
+		expected OrderState
+	}{
+		{mthub.OrderStatePending, StateSubmitted},
+		{mthub.OrderStateOpen, StateWorking},
+		{mthub.OrderStateClosed, StateFilled},
+		{mthub.OrderStateCancelled, StateCancelled},
+		{mthub.OrderStateRejected, StateRejected},
+		{mthub.OrderState(99), StateFailed}, // unknown → Failed
+	}
+	for _, tc := range cases {
+		got := mtStateToOMS(tc.input)
+		if got != tc.expected {
+			t.Errorf("mtStateToOMS(%v) = %s, want %s", tc.input, got, tc.expected)
+		}
 	}
 }

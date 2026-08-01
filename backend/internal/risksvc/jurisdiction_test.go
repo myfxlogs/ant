@@ -207,3 +207,46 @@ func TestJurisdictionGate(t *testing.T) {
 		}
 	})
 }
+
+func TestMaxMindGeoIPResolver_EmptyPath(t *testing.T) {
+	t.Parallel()
+	r := NewMaxMindGeoIPResolver("")
+	_, err := r.CountryCode("1.2.3.4")
+	if !errors.Is(err, ErrGeoIPUnavailable) {
+		t.Fatalf("expected ErrGeoIPUnavailable, got %v", err)
+	}
+}
+
+func TestMaxMindGeoIPResolver_Nil(t *testing.T) {
+	t.Parallel()
+	var r *MaxMindGeoIPResolver
+	_, err := r.CountryCode("1.2.3.4")
+	if !errors.Is(err, ErrGeoIPUnavailable) {
+		t.Fatalf("expected ErrGeoIPUnavailable for nil resolver, got %v", err)
+	}
+}
+
+func TestKycJurisdictionRule_WithGate(t *testing.T) {
+	t.Parallel()
+	store := NewStubJurisdictionStore()
+	store.SanctionedCountries["IR"] = true
+	geo := &StubGeoIPResolver{Countries: map[string]string{"5.6.7.8": "IR"}}
+	gate := &JurisdictionGate{Store: store, GeoIP: geo}
+
+	rule := &KycJurisdictionRule{Gate: gate}
+	err := rule.Check(context.Background(), &HardLimitRequest{UserID: "u1", ClientIP: "5.6.7.8"})
+	if err == nil {
+		t.Fatal("expected sanctioned country block")
+	}
+	if !errors.Is(err, ErrSanctionedCountry) {
+		t.Fatalf("expected ErrSanctionedCountry, got %v", err)
+	}
+}
+
+func TestNewPgJurisdictionStore(t *testing.T) {
+	t.Parallel()
+	s := NewPgJurisdictionStore(nil)
+	if s == nil {
+		t.Fatal("expected non-nil store")
+	}
+}
