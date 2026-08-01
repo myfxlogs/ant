@@ -22,7 +22,7 @@ jobs:
         with:
           go-version: '1.26.0'
       - name: Check source and generated line limits
-        run: cd backend && go run ./tools/check-file-lines
+        run: cd backend && go run ./tools/check-file-lines --strict
 
   # ── M0.1-3: backend lint ──
   backend-lint:
@@ -190,6 +190,16 @@ jobs:
             exit 1
           fi
           echo "All PR-added .up.sql files have matching .down.sql ✅"
+
+  # ── B.5: handler registry audit ──
+  handler-registry:
+    name: Handler registry (auth audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check handler auth coverage
+        run: bash scripts/check_handler_registry.sh backend
 
   # ── M0.1-3: frontend ──
   frontend:

@@ -97,10 +97,10 @@ func TestExtractClientIPFromHeader(t *testing.T) {
 		{"x-forwarded-for single", http.Header{"X-Forwarded-For": []string{"1.2.3.4"}}, "1.2.3.4"},
 		{"x-forwarded-for chain", http.Header{"X-Forwarded-For": []string{"1.2.3.4, 10.0.0.1"}}, "1.2.3.4"},
 		{"x-real-ip", http.Header{"X-Real-Ip": []string{"5.6.7.8"}}, "5.6.7.8"},
-		{"x-forwarded-for takes priority", http.Header{
+		{"x-real-ip takes priority over x-forwarded-for", http.Header{
 			"X-Forwarded-For": []string{"1.2.3.4"},
 			"X-Real-Ip":       []string{"5.6.7.8"},
-		}, "1.2.3.4"},
+		}, "5.6.7.8"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

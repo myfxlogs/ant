@@ -15,12 +15,17 @@ const THROTTLE_MS = 300;
 let profitTimeout: number | null = null;
 let profitLastFlush = 0;
 const pendingProfit = new Map<string, ProfitUpdate>();
+let accountsCacheUnsub: (() => void) | null = null;
 
 /** Release module-scoped state. Call when SSE stream stops / reconnects. */
 export function cleanupProfitBridge() {
   if (profitTimeout !== null) {
     window.clearTimeout(profitTimeout);
     profitTimeout = null;
+  }
+  if (accountsCacheUnsub !== null) {
+    accountsCacheUnsub();
+    accountsCacheUnsub = null;
   }
   profitLastFlush = 0;
   pendingProfit.clear();
@@ -35,6 +40,9 @@ function flushProfitUpdates(queryClient: QueryClient) {
     if (typeof v === 'string' && v !== '') { const n = Number(v); return Number.isFinite(n) ? n : undefined; }
     return undefined;
   };
+
+  const accountsCache = queryClient.getQueryData<Account[]>(queryKeys.accounts.list());
+  const accountsReady = Array.isArray(accountsCache) && accountsCache.length > 0;
 
   for (const [accId, profit] of pendingProfit) {
     queryClient.setQueryData<Record<string, unknown>>(
@@ -61,18 +69,21 @@ function flushProfitUpdates(queryClient: QueryClient) {
       },
     );
 
-    queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
-      (old ?? []).map((a) =>
-        a.id === accId
-          ? {
-              ...a,
-              ...(pick(profit.balance) !== undefined ? { balance: pick(profit.balance) } : {}),
-              ...(pick(profit.equity) !== undefined ? { equity: pick(profit.equity) } : {}),
-              ...(pick(profit.profit) !== undefined ? { profit: pick(profit.profit) } : {}),
-            }
-          : a,
-      ),
-    );
+    if (accountsReady) {
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        (old ?? []).map((a) =>
+          a.id === accId
+            ? {
+                ...a,
+                ...(pick(profit.balance) !== undefined ? { balance: pick(profit.balance) } : {}),
+                ...(pick(profit.equity) !== undefined ? { equity: pick(profit.equity) } : {}),
+                ...(pick(profit.profit) !== undefined ? { profit: pick(profit.profit) } : {}),
+              }
+            : a,
+        ),
+      );
+      pendingProfit.delete(accId);
+    }
 
     const orders: OrderProfitItem[] = Array.isArray(profit.orders) ? profit.orders : [];
     if (orders.length > 0) {
@@ -93,7 +104,24 @@ function flushProfitUpdates(queryClient: QueryClient) {
       );
     }
   }
-  pendingProfit.clear();
+
+  // If accounts cache wasn't ready, retain pending entries and subscribe
+  // to accounts.list() cache population (event-driven, not polling).
+  if (!accountsReady && pendingProfit.size > 0 && accountsCacheUnsub === null) {
+    const listKey = JSON.stringify(queryKeys.accounts.list());
+    accountsCacheUnsub = queryClient.getQueryCache().subscribe((event) => {
+      if (JSON.stringify(event.query.queryKey) === listKey && event.type === 'updated') {
+        const data = event.query.state.data;
+        if (Array.isArray(data) && data.length > 0) {
+          if (accountsCacheUnsub !== null) {
+            accountsCacheUnsub();
+            accountsCacheUnsub = null;
+          }
+          flushProfitUpdates(queryClient);
+        }
+      }
+    });
+  }
 }
 
 export function handleProfitUpdate(queryClient: QueryClient, profit: ProfitUpdate) {
