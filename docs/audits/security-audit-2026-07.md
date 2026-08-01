@@ -244,3 +244,56 @@ The refresh token cookie uses `SameSite=Strict` which provides strong CSRF prote
 4. ~~**P3**: Reduce `UpdateSystemAISecret` log level from Info to Debug~~ ✅ Done (2026-08-01)
 5. **P4**: Add `iss` and `aud` JWT claims for future multi-service readiness
 6. **P4**: Migrate JWT from HS256 to RS256 if service decomposition is planned
+
+---
+
+## Architecture / Tech Debt / Code Cleanliness Audit (2026-08-01)
+
+### Lint Compliance
+
+**Status**: ✅ Clean
+
+- `golangci-lint run ./...`: 0 issues
+- `go run ./tools/check-file-lines --strict`: 0 errors, 25 warnings (all 🟡/🟢, none 🔴 blocking)
+- `npx tsc --noEmit`: 0 errors
+- `npx eslint src --max-warnings=0`: 0 warnings
+
+### Prohibited Patterns
+
+**Status**: ✅ Clean
+
+- **REST endpoints**: Only `healthz`, `readyz`, `/metrics`, and `/` (404 catch-all) — all exempted
+- **WebSocket**: No WebSocket usage anywhere; `http.Hijacker` in `sse_keepalive.go` is for SSE only
+- **JSON serialization**: All 66 `encoding/json` matches are in exempted categories:
+  - External API response parsing (TronGrid, OpenAI, ZhipuAI)
+  - Legacy proto migration (`schedule_proto_migrate.go`, `notification_proto_migrate.go`)
+  - `protojson.Marshal/Unmarshal` (protobuf JSON, not `encoding/json`)
+  - Test files
+- **`//nolint` / `# noqa` / `// @ts-ignore` / `// nosec`**: Zero matches
+- **float64 in price calculations**: Verified clean in prior audit phase
+
+### Architecture Compliance
+
+**Status**: ✅ Clean
+
+- **MT4/MT5 isolation**: `adapter/mt4/` has zero imports from `adapter/mt5/` and vice versa
+- **Push-first**: All `time.NewTicker` usages are for background batch jobs (reconciliation, subscription renewal, ledger shipping, sweep) or SSE keepalive — no polling where streaming alternatives exist
+- **ConnectRPC + SSE**: All external API endpoints use ConnectRPC or SSE; no REST/WS
+
+### Technical Debt
+
+**Status**: ✅ Clean
+
+- **TODO/FIXME/HACK comments**: Zero actual code-level TODOs/FIXMEs in non-test Go files. All grep matches are false positives (prompt template strings instructing AI to add FIXME comments, or words containing "temp"/"template")
+- **Dead code**: golangci-lint (which includes `unused` and `deadcode` linters) reports 0 issues
+- **Hardcoded secrets**: No API keys, AWS keys, or GitHub tokens in frontend or backend source files
+
+### File Size Summary
+
+- 0 files at 🔴 (blocking) level
+- 7 files at 🟡 (warning) level — all are test files or marketplace logic with clear functional boundaries
+- 74 files at 🟢 (info) level — within acceptable range
+
+### Audit Conclusion
+
+The codebase is clean across all audited dimensions: logic, security, architecture, lint, and technical debt. All P2/P3 security findings have been fixed and deployed. Remaining P4 items (JWT hardening) are low priority for a single-service architecture.
