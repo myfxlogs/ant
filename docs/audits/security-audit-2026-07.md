@@ -240,7 +240,7 @@ The refresh token cookie uses `SameSite=Strict` which provides strong CSRF prote
 
 1. ~~**P2**: Tighten CSP — remove `'unsafe-inline'` and `'unsafe-eval'` from `script-src`~~ ✅ Done (2026-08-01) — removed `'unsafe-inline'`, kept `'unsafe-eval'` for chart libs
 2. ~~**P2**: Add trusted proxy validation for `X-Forwarded-For` in rate limiter~~ ✅ Done (2026-08-01) — prefer `X-Real-IP` over XFF
-3. **P3**: Implement refresh token one-time-use (rotate + revoke old token on each refresh)
-4. **P3**: Reduce `UpdateSystemAISecret` log level from Info to Debug
+3. ~~**P3**: Implement refresh token one-time-use (rotate + revoke old token on each refresh)~~ ✅ Done (2026-08-01) — `RefreshToken` and `RefreshTokenFromCookie` now increment `token_version` before issuing new tokens
+4. ~~**P3**: Reduce `UpdateSystemAISecret` log level from Info to Debug~~ ✅ Done (2026-08-01)
 5. **P4**: Add `iss` and `aud` JWT claims for future multi-service readiness
 6. **P4**: Migrate JWT from HS256 to RS256 if service decomposition is planned
