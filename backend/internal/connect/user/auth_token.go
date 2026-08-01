@@ -65,6 +65,7 @@ func (s *AuthServer) clearRefreshCookie() string {
 }
 
 // RefreshToken validates the refresh token, checks token_version, and issues new tokens.
+// The old refresh token is revoked (one-time-use) by incrementing token_version.
 func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv1.RefreshTokenRequest]) (*connect.Response[antv1.RefreshTokenResponse], error) {
 	claims, err := interceptor.ValidateToken(req.Msg.RefreshToken, s.jwtSecret)
 	if err != nil {
@@ -81,6 +82,13 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 	if user.Status != "active" {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account is disabled"))
 	}
+	if err := s.users.IncrementTokenVersion(ctx, uid); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to rotate token"))
+	}
+	user, err = s.users.GetByID(ctx, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to reload user"))
+	}
 	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to issue access token"))
@@ -95,6 +103,7 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 }
 
 // RefreshTokenFromCookie reads the refresh_token from cookie and issues new tokens.
+// The old refresh token is revoked (one-time-use) by incrementing token_version.
 func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[antv1.RefreshTokenResponse], error) {
 	cookieStr := req.Header().Get("Cookie")
 	if cookieStr == "" {
@@ -125,6 +134,13 @@ func (s *AuthServer) RefreshTokenFromCookie(ctx context.Context, req *connect.Re
 	}
 	if user.Status != "active" {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account is disabled"))
+	}
+	if err := s.users.IncrementTokenVersion(ctx, uid); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to rotate token"))
+	}
+	user, err = s.users.GetByID(ctx, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to reload user"))
 	}
 	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
 	if err != nil {

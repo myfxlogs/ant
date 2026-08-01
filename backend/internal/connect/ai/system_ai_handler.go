@@ -121,7 +121,7 @@ func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.
 		suffixLen := visible - prefixLen
 		maskedSecret = req.Msg.Secret[:prefixLen] + strings.Repeat("*", masked) + req.Msg.Secret[n-suffixLen:]
 	}
-	s.log.Info("UpdateSystemAISecret", zap.String("provider_id", req.Msg.ProviderId), zap.String("secret", maskedSecret))
+	s.log.Debug("UpdateSystemAISecret", zap.String("provider_id", req.Msg.ProviderId), zap.String("secret", maskedSecret))
 	if err := s.systemSvc.UpdateSecret(ctx, uid, req.Msg.ProviderId, req.Msg.Secret, uid.String()); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
