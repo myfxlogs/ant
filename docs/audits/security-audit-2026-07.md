@@ -193,6 +193,46 @@ The refresh token cookie uses `SameSite=Strict` which provides strong CSRF prote
 | H-1 | `order_history_repository.go` | Same fix for `open_time >=` / `open_time <=` |
 | H-1 | `operation_log_repository.go` | Same fix for `created_at >=` / `created_at <=` |
 | H-1 | `auto_trading_settings.go` | Same fix for `created_at >=` / `created_at <=` |
+| H-1 | `admin_repo_logs.go` | Same fix — `applyFilter("created_at >=", ...)` produced double-equals; added `applyRangeFilter` with direct `>=`/`<=` operators (2026-08-01) |
+
+---
+
+## Comprehensive Code Audit (2026-08-01)
+
+### float64 Price Calculation Compliance
+
+**Status**: ✅ Clean
+
+- mtapi.io gRPC proto defines financial fields as `float64` (external constraint, cannot change)
+- All adapter code (`mt4/`, `mt5/`) immediately converts to `decimal.Decimal` at the boundary via `decimal.NewFromFloat()`
+- All internal types (`MTAccountInfo`, `ProfitUpdate`, `OrderUpdate`, `OrderRecord`) use `decimal.Decimal`
+- All proto API types use `string` for monetary values (balance, equity, profit, margin, etc.)
+- `InexactFloat64()` calls in analytics are for statistical ratios (Sharpe, win rate, profit factor) — acceptable, no monetary calculation
+
+### SQL Injection
+
+**Status**: ✅ Clean
+
+- All user-supplied values use parameterized queries (`$1`, `$2`, ...)
+- `buildAffectedCountQuery` in `admin_repo_users_delete.go` interpolates table/column names from `information_schema` (DB internal metadata, not user input) — safe
+- `partition_mgr.go` uses hardcoded table names (`"md_bars"`, `"close_ts_unix_ms"`) and validates dynamic partition names with `validPartitionName` regex before DDL — safe
+- `market_data_pg.go` dynamic `DISTINCT ON` clause uses hardcoded column lists, not user input — safe
+
+### Authorization
+
+**Status**: ✅ Clean
+
+- Admin RPCs protected by `AdminInterceptor` which checks `IsAdmin()` for every request (both unary and streaming)
+- User RPCs consistently call `parseUserID()` to extract and validate user identity
+- `WalletServer.resolveTargetUser()` correctly enforces admin check before allowing cross-user access
+- `DepositServer.requireAdmin()` follows fail-closed pattern when `platformSvc` is nil
+- Account CRUD operations verify user ownership via `UserOwnsAccount()`
+
+### Logic Bugs
+
+**Status**: ✅ Fixed
+
+- **H-1 in `admin_repo_logs.go`**: Same double-equals SQL syntax bug as the original 4 files. `applyFilter("created_at >=", val)` produced `AND created_at >= = $N` (invalid SQL). Fixed by adding `applyRangeFilter` with direct `>=`/`<=` operators. Verified with 24/24 admin page E2E tests + 8/8 date-range filter regression tests.
 
 ---
 
