@@ -80,10 +80,15 @@ func buildLogQueries(p *model.LogListParams) (countQ, query string, args []inter
 		query += fmt.Sprintf(" AND %s = $%d", cond, idx+1)
 		args = append(args, val); idx++
 	}
+	applyRangeFilter := func(op, val string) {
+		countQ += fmt.Sprintf(" AND created_at %s $%d", op, idx+1)
+		query += fmt.Sprintf(" AND created_at %s $%d", op, idx+1)
+		args = append(args, val); idx++
+	}
 	if p.Module != "" { applyFilter("module", p.Module) }
 	if p.ActionType != "" { applyFilter("action_type", p.ActionType) }
-	if p.StartDate != "" { applyFilter("created_at >=", p.StartDate+" 00:00:00") }
-	if p.EndDate != "" { applyFilter("created_at <=", p.EndDate+" 23:59:59") }
+	if p.StartDate != "" { applyRangeFilter(">=", p.StartDate+" 00:00:00") }
+	if p.EndDate != "" { applyRangeFilter("<=", p.EndDate+" 23:59:59") }
 	if p.AdminID != "" { applyFilter("admin_id", p.AdminID) }
 	return
 }
