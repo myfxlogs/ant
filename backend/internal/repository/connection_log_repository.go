@@ -51,7 +51,7 @@ func buildConnLogFilters(userID uuid.UUID, params *model.LogQueryParams) (baseQ 
 	addFilter := func(cond, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, cond, idx); args = append(args, val); idx++ }
 	if params.AccountID != "" { aid, _ := uuid.Parse(params.AccountID); addFilter("account_id", ""); args[len(args)-1] = aid }
 	if params.Status != "" { addFilter("status", params.Status) }
-	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
-	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	if params.StartDate != "" { baseQ += fmt.Sprintf(` AND created_at >= $%d`, idx); args = append(args, params.StartDate); idx++ }
+	if params.EndDate != "" { baseQ += fmt.Sprintf(` AND created_at <= $%d`, idx); args = append(args, params.EndDate); idx++ }
 	return
 }

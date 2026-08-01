@@ -129,8 +129,8 @@ func buildTradingLogFilters(userID uuid.UUID, params *model.LogListParams) (base
 	if params == nil { return }
 	addFilter := func(col, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
 	if params.Module != "" { addFilter("order_type", params.Module) }
-	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
-	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	if params.StartDate != "" { baseQ += fmt.Sprintf(` AND created_at >= $%d`, idx); args = append(args, params.StartDate); idx++ }
+	if params.EndDate != "" { baseQ += fmt.Sprintf(` AND created_at <= $%d`, idx); args = append(args, params.EndDate); idx++ }
 	return
 }
 

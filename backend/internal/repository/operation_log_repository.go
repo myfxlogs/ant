@@ -63,8 +63,8 @@ func buildOpLogFilters(userID uuid.UUID, params *model.LogQueryParams) (string, 
 	if params.ResourceType != "" { addFilter("resource_type", params.ResourceType) }
 	if params.ResourceID != "" { rid, _ := uuid.Parse(params.ResourceID); addFilter("resource_id", ""); args[len(args)-1] = rid }
 	if params.Status != "" { addFilter("status", params.Status) }
-	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
-	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	if params.StartDate != "" { base += fmt.Sprintf(` AND created_at >= $%d`, idx); args = append(args, params.StartDate); idx++ }
+	if params.EndDate != "" { base += fmt.Sprintf(` AND created_at <= $%d`, idx); args = append(args, params.EndDate); idx++ }
 	return base, args, idx
 }
 

@@ -83,7 +83,7 @@ func buildOrderHistoryFilters(userID uuid.UUID, params *model.LogQueryParams) (b
 	}
 	if params.Symbol != "" { addFilter("symbol", params.Symbol) }
 	if params.Type != "" { addFilter("order_type", params.Type) }
-	if params.StartDate != "" { addFilter("open_time >=", params.StartDate) }
-	if params.EndDate != "" { addFilter("open_time <=", params.EndDate) }
+	if params.StartDate != "" { baseQ += fmt.Sprintf(` AND open_time >= $%d`, idx); args = append(args, params.StartDate); idx++ }
+	if params.EndDate != "" { baseQ += fmt.Sprintf(` AND open_time <= $%d`, idx); args = append(args, params.EndDate); idx++ }
 	return
 }
