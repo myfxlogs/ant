@@ -53,24 +53,13 @@ if t := strings.TrimSpace(r.URL.Query().Get("access_token")); t != "" {
 
 ---
 
-### 🟡 M-2: Rate Limiter Trusts X-Forwarded-For Without Validation
+### 🟡 ~~M-2: Rate Limiter Trusts X-Forwarded-For Without Validation~~ (Fixed)
 
-**File**: `backend/internal/interceptor/ratelimit.go:116-122`
+**File**: `backend/internal/interceptor/ratelimit.go:119-131`
 
-```go
-func extractClientIPFromHeader(header http.Header) string {
-    if xff := header.Get("X-Forwarded-For"); xff != "" {
-        // takes first IP in the list
-    }
-}
-```
+**Status**: ✅ Fixed (2026-08-01)
 
-**Risk**: A client can spoof `X-Forwarded-For` to bypass per-IP rate limiting. Each request with a different spoofed XFF gets a new rate limiter entry.
-
-**Mitigation**: In production, nginx sets `X-Forwarded-For` from `$proxy_add_x_forwarded_for` which appends the real client IP. However, if the backend is directly accessible (bypassing nginx), the header can be forged. Consider:
-1. Trusting XFF only when the request comes from a known proxy IP.
-2. Using `X-Real-IP` (set by nginx) as the primary source.
-3. Adding a `trusted_proxies` config list.
+**Fix**: Changed `extractClientIPFromHeader` to prefer `X-Real-IP` (set by nginx to `$remote_addr`, the actual TCP peer IP, overwriting any client-supplied value) over `X-Forwarded-For` (which uses `$proxy_add_x_forwarded_for` that appends to client-supplied values). This prevents rate limiter bypass via XFF header forgery.
 
 ---
 
@@ -209,8 +198,8 @@ The refresh token cookie uses `SameSite=Strict` which provides strong CSRF prote
 
 ## Recommendations (Prioritized)
 
-1. **P2**: Tighten CSP — remove `'unsafe-inline'` and `'unsafe-eval'` from `script-src` by configuring Vite for nonce-based CSP
-2. **P2**: Add trusted proxy validation for `X-Forwarded-For` in rate limiter
+1. ~~**P2**: Tighten CSP — remove `'unsafe-inline'` and `'unsafe-eval'` from `script-src`~~ ✅ Done (2026-08-01) — removed `'unsafe-inline'`, kept `'unsafe-eval'` for chart libs
+2. ~~**P2**: Add trusted proxy validation for `X-Forwarded-For` in rate limiter~~ ✅ Done (2026-08-01) — prefer `X-Real-IP` over XFF
 3. **P3**: Implement refresh token one-time-use (rotate + revoke old token on each refresh)
 4. **P3**: Reduce `UpdateSystemAISecret` log level from Info to Debug
 5. **P4**: Add `iss` and `aud` JWT claims for future multi-service readiness
