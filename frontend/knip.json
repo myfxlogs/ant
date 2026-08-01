@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "src/gen/**",
+    "public/**",
+    "src/App.css",
+    "src/index.css",
+    "src/i18n/resources/**"
+  ],
+  "ignoreBinaries": [],
+  "ignoreDependencies": []
+}
