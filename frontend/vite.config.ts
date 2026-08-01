@@ -37,6 +37,7 @@ export default defineConfig({
         drop_console: false,
       },
     },
+    modulePreload: { polyfill: false },
     rollupOptions: {
       output: {
         manualChunks: {

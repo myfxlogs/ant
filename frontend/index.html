@@ -53,18 +53,7 @@
     }
     </script>
 
-    <script>
-      // Apply theme before first paint to prevent FOUC.
-      (function () {
-        var theme = 'light';
-        try {
-          var stored = localStorage.getItem('ant-theme');
-          if (stored === 'light' || stored === 'dark') theme = stored;
-        } catch (_) {}
-        if (theme === 'dark') document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

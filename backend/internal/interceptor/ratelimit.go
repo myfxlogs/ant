@@ -112,7 +112,14 @@ func (i *RateLimitInterceptor) cleanup() {
 }
 
 // extractClientIPFromHeader extracts the client IP from HTTP headers.
+// X-Real-IP is preferred over X-Forwarded-For because nginx sets it to
+// $remote_addr (the actual TCP peer IP), overwriting any client-supplied
+// value. X-Forwarded-For can contain client-supplied spoofed IPs since
+// $proxy_add_x_forwarded_for appends rather than replaces.
 func extractClientIPFromHeader(header http.Header) string {
+	if xri := header.Get("X-Real-IP"); xri != "" {
+		return strings.TrimSpace(xri)
+	}
 	if xff := header.Get("X-Forwarded-For"); xff != "" {
 		for i := 0; i < len(xff); i++ {
 			if xff[i] == ',' {
@@ -120,9 +127,6 @@ func extractClientIPFromHeader(header http.Header) string {
 			}
 		}
 		return strings.TrimSpace(xff)
-	}
-	if xri := header.Get("X-Real-IP"); xri != "" {
-		return strings.TrimSpace(xri)
 	}
 	return ""
 }
