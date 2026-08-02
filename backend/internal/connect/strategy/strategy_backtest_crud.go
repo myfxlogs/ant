@@ -59,36 +59,12 @@ func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *con
 		}
 	}
 
-	// Auto-resolve: if the requested symbol/timeframe has no K-line data, silently
-	// fall back to an available pair. Users paste MQL code and expect results — they
-	// should not need to manually select compatible market data.
-	if s.marketDataRepo != nil && req.Msg.Symbol != "" {
-		from := time.Now().Add(-90 * 24 * time.Hour)
-		bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", req.Msg.Timeframe, &from, nil, 1)
-		if len(bars) == 0 {
-			// Try common fallback symbols for the same timeframe.
-			fallbacks := []string{"EURUSDm", "GBPUSDm", "EURUSD", "XAUUSDm", "BTCUSDm"}
-			found := false
-			for _, fb := range fallbacks {
-				if fb == req.Msg.Symbol {
-					continue
-				}
-				if fbBars, _ := s.marketDataRepo.GetKlines(ctx, fb, "", req.Msg.Timeframe, &from, nil, 1); len(fbBars) > 0 {
-					s.log.Info("backtest: auto-resolved symbol",
-						zap.String("requested", req.Msg.Symbol),
-						zap.String("resolved", fb),
-						zap.String("timeframe", req.Msg.Timeframe))
-					req.Msg.Symbol = fb
-					found = true
-					break
-				}
-			}
-			if !found {
-				return nil, connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("no market data available for %s %s — please ensure your MT account is connected and streaming quotes",
-						req.Msg.Symbol, req.Msg.Timeframe))
-			}
-		}
+	// Auto-resolve symbol and timeframe from three sources (priority order):
+	//  1. MQL source code (#property symbol / input parameters) — already parsed into req.Msg
+	//  2. Chart context (workspace-selected symbol/timeframe) — from client
+	//  3. Fallback: first available pair with data for this account
+	if s.marketDataRepo != nil {
+		s.autoResolveBacktestParams(ctx, req)
 	}
 
 	run := buildBacktestRunFromRequest(userID, req.Msg)
@@ -390,4 +366,57 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 		DeletedCount: int32(deleted),
 		FailedCount:  int32(len(uuids)) - int32(deleted),
 	}), nil
+}
+
+// autoResolveBacktestParams ensures a symbol and timeframe are set for the backtest.
+// Resolution order: 1) request, 2) chart context, 3) first available data.
+func (s *StrategyExecutionServer) autoResolveBacktestParams(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) {
+	symbol := req.Msg.Symbol
+	tf := req.Msg.Timeframe
+	if tf == "" {
+		tf = "H1"
+	}
+
+	// If symbol is already set, verify it has data; if not, find an alternative.
+	from := time.Now().Add(-90 * 24 * time.Hour)
+	if symbol != "" {
+		bars, _ := s.marketDataRepo.GetKlines(ctx, symbol, "", tf, &from, nil, 1)
+		if len(bars) > 0 {
+			req.Msg.Timeframe = tf
+			return // symbol has data, nothing to do
+		}
+		// Requested symbol has no data — try fallbacks.
+	}
+
+	// No symbol specified, or requested symbol has no data — find the first available pair.
+	fallbacks := []string{"EURUSDm", "GBPUSDm", "EURUSD", "XAUUSDm", "BTCUSDm"}
+	if symbol != "" {
+		// Put the requested symbol first (it was checked above and failed)
+		fallbacks = append([]string{}, fallbacks...)
+	}
+	for _, fb := range fallbacks {
+		if fb == symbol {
+			continue // already checked
+		}
+		if fbBars, _ := s.marketDataRepo.GetKlines(ctx, fb, "", tf, &from, nil, 1); len(fbBars) > 0 {
+			s.log.Info("backtest: auto-resolved symbol",
+				zap.String("requested", symbol),
+				zap.String("resolved", fb),
+				zap.String("timeframe", tf))
+			req.Msg.Symbol = fb
+			req.Msg.Timeframe = tf
+			return
+		}
+	}
+}
+
+// hasBacktestData checks whether the requested symbol+timeframe has K-line data.
+// Exported for the frontend to pre-check before showing the backtest form.
+func (s *StrategyExecutionServer) HasBacktestData(ctx context.Context, symbol, timeframe string) bool {
+	if s.marketDataRepo == nil {
+		return false
+	}
+	from := time.Now().Add(-90 * 24 * time.Hour)
+	bars, _ := s.marketDataRepo.GetKlines(ctx, symbol, "", timeframe, &from, nil, 1)
+	return len(bars) > 0
 }
