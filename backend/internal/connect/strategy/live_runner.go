@@ -100,8 +100,8 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	}
 
 	if cfg.Symbol == "" {
-		cleanupOrphan("no symbol selected")
-		return fmt.Errorf("live strategy runner: please select a symbol from the chart before starting live trading")
+		cleanupOrphan("no symbol specified")
+		return fmt.Errorf("live strategy runner: symbol is required — specify which instrument to trade")
 	}
 
 	if s.barSource == nil {
