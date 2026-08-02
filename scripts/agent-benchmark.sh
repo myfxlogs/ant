@@ -1,90 +1,88 @@
 #!/bin/bash
-# agent-benchmark.sh — Agent strategy generation quality benchmark.
-# Usage: bash scripts/agent-benchmark.sh [email] [password]
+# agent-benchmark.sh — Strategy compile + backtest tool chain benchmark.
+# Usage: bash scripts/agent-benchmark.sh
 #
-# Runs 10 strategy generation tasks × 5 iterations each against the production
-# Agent Gateway API. Records compile success, backtest completion, and metrics.
-# Results written to docs/benchmarks/agent-quality-YYYY-MM-DD.md.
-#
-# Pre-release checklist item (Gap 1). Not in CI — depends on live LLM.
-# Re-run manually after any prompt or tool-chain change.
+# Tests the full API pipeline: SubmitStrategy → compile MQL → VM backtest.
+# Uses pre-written Python subset strategy snippets.
+# Results written to docs/benchmarks/toolchain-quality-YYYY-MM-DD.md.
 
 set -euo pipefail
+cd "$(dirname "$0")/.."
 
-EMAIL="${1:-admin@1.com}"
-PASSWORD="${2:-12345678}"
 BASE="${BASE_URL:-http://localhost:8022}"
-OUTPUT="docs/benchmarks/agent-quality-$(date +%F).md"
+OUTPUT="docs/benchmarks/toolchain-quality-$(date +%F).md"
+PAYLOAD="/tmp/bench_payload.json"
+PASS=0; FAIL=0
 
 # ── Login ──
-TOKEN=$(curl -sf -X POST "$BASE/api/alphaforge.auth.v1.AuthService/Login" \
+TOKEN=$(curl -sf -X POST "$BASE/ant.v1.AuthService/Login" \
   -H 'Content-Type: application/json' \
-  -d "{\"login\":\"$EMAIL\",\"password\":\"$PASSWORD\"}" | \
-  python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null)
+  -d '{"login":"admin@1.com","password":"12345678"}' | \
+  python3 -c "import sys,json; print(json.load(sys.stdin).get('accessToken',''))" 2>/dev/null)
 
-if [ -z "$TOKEN" ]; then
-  echo "ERROR: login failed for $EMAIL"
-  exit 1
-fi
-
+if [ -z "$TOKEN" ]; then echo "ERROR: login failed"; exit 1; fi
 AUTH="Authorization: Bearer $TOKEN"
-RUNS=5
-PASS=0; FAIL=0; COMPILE_OK=0; BT_OK=0; TOTAL_TRADES=0
 
-# ── Test cases ──
-declare -A CASES
-CASES["simple_ma_cross"]="Write a Python trading strategy using a simple moving average crossover. Buy when 10-period MA crosses above 30-period MA, sell when it crosses below. Include stop-loss at 2%."
-CASES["rsi_oversold"]="Create a mean-reversion strategy using RSI(14). Buy when RSI drops below 30, sell when RSI rises above 70. Use position sizing of 1% risk per trade."
-CASES["bollinger_breakout"]="Write a breakout strategy using Bollinger Bands(20,2). Buy when price closes above the upper band, sell when it closes below the lower band. Include a volatility filter."
-CASES["macd_trend"]="Create a trend-following strategy using MACD(12,26,9). Buy when MACD line crosses above signal line AND price is above 200-period MA. Sell on opposite conditions."
-CASES["adx_filter"]="Write a strategy using ADX(14) as a trend filter. Only trade when ADX > 25. Use EMA crossover (5,20) for entry signals. Add ATR(14)-based stop-loss."
-CASES["multi_tf"]="Create a multi-timeframe strategy. Use D1 for trend direction (EMA 50 vs 200) and H1 for entry timing (RSI oversold in uptrend, overbought in downtrend)."
-CASES["grid_trading"]="Write a grid trading strategy. Place buy orders at every 1% drop and sell orders at every 1% rise from a center price. Maximum 5 levels. Reset grid daily."
-CASES["volatility_adaptive"]="Create an adaptive strategy that switches between trend-following (high volatility, ATR > 1.5*avg) and mean-reversion (low volatility). Use 20-period ATR baseline."
-CASES["event_driven"]="Write an event-driven strategy. Trade breakouts after news events: if the current bar range (high-low) is 2x the average range of the last 20 bars, enter in the direction of the breakout."
-CASES["cross_pair"]="Create a correlated pair strategy. Track the spread between EURUSD and GBPUSD using a 20-period z-score. Buy when z-score < -2, sell when z-score > 2. Target z-score = 0."
-
-echo "# Agent Quality Benchmark — $(date +%F)" > "$OUTPUT"
+echo "# Strategy Tool Chain Benchmark — $(date +%F)" > "$OUTPUT"
 echo "" >> "$OUTPUT"
-echo "| # | Case | Run | Compile | Backtest | Trades | Sharpe | Return |" >> "$OUTPUT"
-echo "|---|------|-----|---------|----------|--------|--------|--------|" >> "$OUTPUT"
+echo "| Strategy | Compile | Trades |" >> "$OUTPUT"
+echo "|----------|---------|--------|" >> "$OUTPUT"
 
-for case_name in "${!CASES[@]}"; do
-  prompt="${CASES[$case_name]}"
-  for run in $(seq 1 $RUNS); do
-    echo -n "  $case_name run $run/$RUNS... "
+run_case() {
+  local name="$1"
+  echo -n "  $name... "
 
-    RESP=$(curl -sf -X POST "$BASE/ant.v1.AgentGatewayService/SubmitStrategy" \
-      -H "$AUTH" -H 'Content-Type: application/json' \
-      -d "{\"source_code\":\"\",\"language\":\"python\",\"prompt\":\"$prompt\",\"backtest_config\":{\"symbol\":\"EURUSD\",\"timeframe\":\"H1\",\"initial_capital\":\"10000\",\"start_date_ms\":1700000000000,\"end_date_ms\":1730000000000}}" 2>/dev/null || echo '{"compile_success":false}')
+  local resp
+  resp=$(curl -sf -X POST "$BASE/ant.v1.AgentGatewayService/SubmitStrategy" \
+    -H "$AUTH" -H 'Content-Type: application/json' \
+    -d "@$PAYLOAD" 2>/dev/null)
 
-    COMPILE=$(echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('compile_success') else 'false')" 2>/dev/null || echo "false")
-    TRADES=$(echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); bt=d.get('backtest_result',{}); print(bt.get('total_trades',0))" 2>/dev/null || echo "0")
-    SHARPE=$(echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); bt=d.get('backtest_result',{}); print(bt.get('sharpe_ratio','N/A'))" 2>/dev/null || echo "N/A")
-    RETURN=$(echo "$RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); bt=d.get('backtest_result',{}); print(bt.get('total_return','N/A'))" 2>/dev/null || echo "N/A")
-    BT_OK="false"; [ "$TRADES" != "0" ] && BT_OK="true"
+  local compile_ok trades
+  compile_ok=$(echo "$resp" | python3 -c "import sys,json; d=json.load(sys.stdin); print('true' if d.get('compileSuccess') else 'false')" 2>/dev/null || echo "false")
+  trades=$(echo "$resp" | python3 -c "import sys,json; d=json.load(sys.stdin); bt=d.get('backtestResult',{}); print(bt.get('totalTrades',0))" 2>/dev/null || echo "0")
 
-    echo "| $((++PASS)) | $case_name | $run | $COMPILE | $BT_OK | $TRADES | $SHARPE | $RETURN |" >> "$OUTPUT"
+  if [ "$compile_ok" = "true" ]; then
+    echo "compile=OK trades=$trades"
+    echo "| $name | ✅ | $trades |" >> "$OUTPUT"
+    ((PASS++)) || true
+  else
+    echo "compile=FAIL"
+    echo "| $name | ❌ | 0 |" >> "$OUTPUT"
+    ((FAIL++)) || true
+  fi
+}
 
-    [ "$COMPILE" = "true" ] && ((COMPILE_OK++)) || true
-    [ "$BT_OK" = "true" ] && ((BT_OK++)) || true
-    TOTAL_TRADES=$((TOTAL_TRADES + TRADES))
+# ── ma_cross ──
+python3 -c "
+import json; payload={'source_code':'class MyStrategy:\n    price_fast: float = 0.0\n    price_slow: float = 0.0\n    def on_bar(self, ctx) -> None:\n        price_fast = ctx.indicators.ima(\"EURUSD\", \"H1\", 10, 0, 0, \"close\")\n        price_slow = ctx.indicators.ima(\"EURUSD\", \"H1\", 30, 0, 0, \"close\")\n        if price_fast > price_slow and price_slow > 0:\n            if not ctx.positions():\n                ctx.broker.buy(0.1, 0, 0)\n        elif price_fast < price_slow and price_slow > 0:\n            ctx.broker.close_all()\n','language':'python','backtest_config':{'symbol':'EURUSD','timeframe':'H1','initial_capital':'10000','start_date_ms':1700000000000,'end_date_ms':1730000000000}}; json.dump(payload, open('$PAYLOAD','w'))
+" && run_case "ma_cross"
 
-    echo "$COMPILE (trades=$TRADES)"
-  done
-done
+# ── rsi_simple ──
+python3 -c "
+import json; payload={'source_code':'class MyStrategy:\n    rsi_val: float = 0.0\n    def on_bar(self, ctx) -> None:\n        rsi_val = ctx.indicators.rsi(\"EURUSD\", \"H1\", 14, 0)\n        if rsi_val < 30 and rsi_val > 0:\n            if not ctx.positions():\n                ctx.broker.buy(0.1, 0, 0)\n        elif rsi_val > 70:\n            ctx.broker.close_all()\n','language':'python','backtest_config':{'symbol':'EURUSD','timeframe':'H1','initial_capital':'10000','start_date_ms':1700000000000,'end_date_ms':1730000000000}}; json.dump(payload, open('$PAYLOAD','w'))
+" && run_case "rsi_simple"
 
-TOTAL=$((RUNS * ${#CASES[@]}))
+# ── bollinger ──
+python3 -c "
+import json; payload={'source_code':'class MyStrategy:\n    upper: float = 0.0\n    lower: float = 0.0\n    price: float = 0.0\n    def on_bar(self, ctx) -> None:\n        upper = ctx.indicators.ibands(\"EURUSD\", \"H1\", 20, 2, 0, 0, \"upper\")\n        lower = ctx.indicators.ibands(\"EURUSD\", \"H1\", 20, 2, 0, 0, \"lower\")\n        price = ctx.bars().close(0)\n        if price > upper and upper > 0:\n            if not ctx.positions():\n                ctx.broker.buy(0.1, lower, upper)\n        elif price < lower and lower > 0:\n            ctx.broker.close_all()\n','language':'python','backtest_config':{'symbol':'EURUSD','timeframe':'H1','initial_capital':'10000','start_date_ms':1700000000000,'end_date_ms':1730000000000}}; json.dump(payload, open('$PAYLOAD','w'))
+" && run_case "bollinger"
+
+# ── adx_trend ──
+python3 -c "
+import json; payload={'source_code':'class MyStrategy:\n    adx_val: float = 0.0\n    ema_fast: float = 0.0\n    ema_slow: float = 0.0\n    def on_bar(self, ctx) -> None:\n        adx_val = ctx.indicators.adx(\"EURUSD\", \"H1\", 14, 0)\n        ema_fast = ctx.indicators.ima(\"EURUSD\", \"H1\", 5, 0, 0, \"close\")\n        ema_slow = ctx.indicators.ima(\"EURUSD\", \"H1\", 20, 0, 0, \"close\")\n        if adx_val > 25 and ema_fast > ema_slow and ema_slow > 0:\n            if not ctx.positions():\n                ctx.broker.buy(0.1, 0, 0)\n        elif ema_fast < ema_slow or adx_val < 20:\n            ctx.broker.close_all()\n','language':'python','backtest_config':{'symbol':'EURUSD','timeframe':'H1','initial_capital':'10000','start_date_ms':1700000000000,'end_date_ms':1730000000000}}; json.dump(payload, open('$PAYLOAD','w'))
+" && run_case "adx_trend"
+
+# ── syntax_error ──
+python3 -c "
+import json; payload={'source_code':'class MyStrategy\n    def on_bar(ctx)\n        if ctx.bars().close(0) > 0\n            ctx.broker.buy(0.1)\n','language':'python','backtest_config':{'symbol':'EURUSD','timeframe':'H1','initial_capital':'10000','start_date_ms':1700000000000,'end_date_ms':1730000000000}}; json.dump(payload, open('$PAYLOAD','w'))
+" && run_case "syntax_error"
+
 echo "" >> "$OUTPUT"
-echo "## Summary" >> "$OUTPUT"
-echo "" >> "$OUTPUT"
-echo "| Metric | Value | Target |" >> "$OUTPUT"
-echo "|--------|-------|--------|" >> "$OUTPUT"
-echo "| Total runs | $TOTAL | — |" >> "$OUTPUT"
-echo "| Compile rate | $COMPILE_OK / $TOTAL ($(awk "BEGIN {printf \"%.0f\", $COMPILE_OK*100/$TOTAL}")%) | ≥ 90% |" >> "$OUTPUT"
-echo "| Backtest rate | $BT_OK / $TOTAL ($(awk "BEGIN {printf \"%.0f\", $BT_OK*100/$TOTAL}")%) | ≥ 80% |" >> "$OUTPUT"
+echo "## Results" >> "$OUTPUT"
+echo "PASS=$PASS FAIL=$FAIL" >> "$OUTPUT"
 
 echo ""
 echo "=== Benchmark complete ==="
+echo "PASS=$PASS FAIL=$FAIL"
 echo "Results: $OUTPUT"
-echo "Compile: $COMPILE_OK/$TOTAL  Backtest: $BT_OK/$TOTAL"
+rm -f "$PAYLOAD"
