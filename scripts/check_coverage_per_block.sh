@@ -21,12 +21,12 @@ fi
 # B.3.2 baseline snapshot (2026-08-01) — per-block floor.
 declare -A BASELINES=(
   ["alphaforge/internal/risk"]=83.7
-  ["alphaforge/internal/risksvc"]=70.8
-  ["alphaforge/internal/mthub"]=21.1
-  ["alphaforge/internal/oms"]=58.2
-  ["alphaforge/internal/mdgateway"]=45.2
-  ["alphaforge/internal/marketplace"]=0.1
-  ["alphaforge/internal/agent"]=5.7
+  ["alphaforge/internal/risksvc"]=79.8
+  ["alphaforge/internal/mthub"]=80.0
+  ["alphaforge/internal/oms"]=81.8
+  ["alphaforge/internal/mdgateway"]=46.7
+  ["alphaforge/internal/marketplace"]=3.8
+  ["alphaforge/internal/agent"]=20.7
 )
 
 cd "$BACKEND_DIR"
