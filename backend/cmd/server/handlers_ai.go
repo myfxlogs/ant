@@ -71,6 +71,7 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
 	aiSvc.SetUserRepo(p.UserRepo)
+	aiSvc.SetLogger(log)
 	aiSvc.SetCircuitBreakerDB(&pgxCB{p: pool})
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
 	aiServer := ai.NewAIServer(aiSvc, p.ConvRepo, p.Session, log)
