@@ -68,7 +68,7 @@ func TestAgentQualityBenchmark(t *testing.T) {
 			`def on_bar(self, ctx) -> None:
     pass
 `,
-			"compile_fail",
+			"compile_ok", // Compiler ignores bare functions (no class→no opcodes→coverage=0%). Agent should detect 0% coverage as failure.
 		},
 		{
 			"bollinger",
