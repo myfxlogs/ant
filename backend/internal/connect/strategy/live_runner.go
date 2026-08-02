@@ -99,6 +99,11 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 
+	if cfg.Symbol == "" {
+		cleanupOrphan("no symbol selected")
+		return fmt.Errorf("live strategy runner: please select a symbol from the chart before starting live trading")
+	}
+
 	if s.barSource == nil {
 		cleanupOrphan("no BarSource configured")
 		return fmt.Errorf("live strategy runner: no BarSource configured")

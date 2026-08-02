@@ -59,12 +59,30 @@ func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *con
 		}
 	}
 
-	// Auto-resolve symbol and timeframe from three sources (priority order):
-	//  1. MQL source code (#property symbol / input parameters) — already parsed into req.Msg
-	//  2. Chart context (workspace-selected symbol/timeframe) — from client
-	//  3. Fallback: first available pair with data for this account
+	// The chart's selected symbol/timeframe IS the user's intent. The MQL source
+	// is strategy logic that can be applied to any instrument — the user chose
+	// which instrument by selecting it in the chart.
+	if req.Msg.Symbol == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("please select a symbol and timeframe from the chart before starting a backtest"))
+	}
 	if s.marketDataRepo != nil {
-		s.autoResolveBacktestParams(ctx, req)
+		tf := req.Msg.Timeframe
+		if tf == "" {
+			tf = "H1"
+		}
+		from := time.Now().Add(-90 * 24 * time.Hour)
+		bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, &from, nil, 1)
+		if len(bars) == 0 {
+			available := s.availableSymbols(ctx, tf, &from)
+			if available != "" {
+				return nil, connect.NewError(connect.CodeFailedPrecondition,
+					fmt.Errorf("no market data for %s %s — available: %s. Select one from the chart to continue.",
+						req.Msg.Symbol, tf, available))
+			}
+			return nil, connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("no market data available — please connect your MT account to stream quotes first"))
+		}
 	}
 
 	run := buildBacktestRunFromRequest(userID, req.Msg)
@@ -368,49 +386,33 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 	}), nil
 }
 
-// autoResolveBacktestParams ensures a symbol and timeframe are set for the backtest.
-// Resolution order: 1) request, 2) chart context, 3) first available data.
-func (s *StrategyExecutionServer) autoResolveBacktestParams(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) {
-	symbol := req.Msg.Symbol
-	tf := req.Msg.Timeframe
-	if tf == "" {
-		tf = "H1"
-	}
-
-	// If symbol is already set, verify it has data; if not, find an alternative.
-	from := time.Now().Add(-90 * 24 * time.Hour)
-	if symbol != "" {
-		bars, _ := s.marketDataRepo.GetKlines(ctx, symbol, "", tf, &from, nil, 1)
-		if len(bars) > 0 {
-			req.Msg.Timeframe = tf
-			return // symbol has data, nothing to do
+// availableSymbols returns a comma-separated list of pairs that have K-line data
+// for the given timeframe, to help the user choose a valid symbol.
+func (s *StrategyExecutionServer) availableSymbols(ctx context.Context, timeframe string, from *time.Time) string {
+	candidates := []string{"EURUSDm", "GBPUSDm", "EURUSD", "XAUUSDm", "BTCUSDm", "USDJPYm"}
+	var found []string
+	for _, sym := range candidates {
+		if bars, _ := s.marketDataRepo.GetKlines(ctx, sym, "", timeframe, from, nil, 1); len(bars) > 0 {
+			found = append(found, sym)
 		}
-		// Requested symbol has no data — try fallbacks.
-	}
-
-	// No symbol specified, or requested symbol has no data — find the first available pair.
-	fallbacks := []string{"EURUSDm", "GBPUSDm", "EURUSD", "XAUUSDm", "BTCUSDm"}
-	if symbol != "" {
-		// Put the requested symbol first (it was checked above and failed)
-		fallbacks = append([]string{}, fallbacks...)
-	}
-	for _, fb := range fallbacks {
-		if fb == symbol {
-			continue // already checked
-		}
-		if fbBars, _ := s.marketDataRepo.GetKlines(ctx, fb, "", tf, &from, nil, 1); len(fbBars) > 0 {
-			s.log.Info("backtest: auto-resolved symbol",
-				zap.String("requested", symbol),
-				zap.String("resolved", fb),
-				zap.String("timeframe", tf))
-			req.Msg.Symbol = fb
-			req.Msg.Timeframe = tf
-			return
+		if len(found) >= 5 {
+			break
 		}
 	}
+	if len(found) == 0 {
+		return ""
+	}
+	result := ""
+	for i, s := range found {
+		if i > 0 {
+			result += ", "
+		}
+		result += s
+	}
+	return result
 }
 
-// hasBacktestData checks whether the requested symbol+timeframe has K-line data.
+// HasBacktestData checks whether the requested symbol+timeframe has K-line data.
 // Exported for the frontend to pre-check before showing the backtest form.
 func (s *StrategyExecutionServer) HasBacktestData(ctx context.Context, symbol, timeframe string) bool {
 	if s.marketDataRepo == nil {
