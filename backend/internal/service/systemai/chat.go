@@ -215,9 +215,17 @@ func (s *Service) ChatCompletionWithUsage(
 		result, _, usage, err := s.tryChatCompletion(ctx, p, messages, nil)
 		if err == nil {
 			// Bill before returning — user must pay to receive the result.
-			if s.postCallBiller != nil && usage != nil {
+			// When the provider doesn't return token counts (e.g., DeepSeek Anthropic API),
+			// estimate from character length. Underestimating is acceptable; zero billing is not.
+			if s.postCallBiller != nil {
+				var inTokens, outTokens int
+				if usage != nil {
+					inTokens, outTokens = usage.PromptTokens, usage.CompletionTokens
+				} else {
+					inTokens, outTokens = estimateTokens(messages, result)
+				}
 				feature := aiFeatureFromCtx(ctx)
-				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, feature, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
 					return nil, billErr
 				}
 			}
@@ -311,6 +319,27 @@ func (s *Service) handleChatHTTPError(ctx context.Context, p chatProvider, resp 
 		return &failoverErr{msg: msg, transient: transient}
 	}
 	return nil
+}
+
+// estimateTokens estimates token counts from character length when the LLM provider
+// doesn't return usage metadata (e.g., DeepSeek Anthropic-compatible API).
+// Heuristic: ~4 characters per token for English, ~2 for CJK.
+// Underestimating is acceptable; billing nothing is not.
+func estimateTokens(messages []ChatMessage, response string) (inputTokens, outputTokens int) {
+	charCount := 0
+	for _, m := range messages {
+		charCount += len(m.Role) + len(m.Content)
+	}
+	inputTokens = charCount / 4
+	if inputTokens < 1 {
+		inputTokens = 1
+	}
+	charCount = len(response)
+	outputTokens = charCount / 4
+	if outputTokens < 1 {
+		outputTokens = 1
+	}
+	return
 }
 
 func isTransientChatErr(err error) bool {

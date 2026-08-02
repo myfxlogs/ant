@@ -79,7 +79,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if err := s.handleStreamResponse(resp, p, onChunk); err != nil {
+	if err := s.handleStreamResponse(resp, p, messages, onChunk); err != nil {
 		return err
 	}
 	return nil
@@ -123,7 +123,7 @@ func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messa
 	return resp, nil
 }
 
-func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, onChunk func(chunk ChatStreamChunk) error) error {
+func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, messages []ChatMessage, onChunk func(chunk ChatStreamChunk) error) error {
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 
@@ -201,7 +201,7 @@ func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, onCh
 	if totalContentLen == 0 && totalReasoningLen == 0 && len(toolCallAcc) == 0 {
 		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream empty (finish_reason=%q)", p.providerID, lastFinishReason), transient: true}
 	}
-	s.billStreamPostCall(context.Background(), p, streamUsage)
+	s.billStreamPostCall(context.Background(), p, streamUsage, messages, totalContentLen)
 	return nil
 }
 
@@ -241,12 +241,22 @@ func finalizeToolCalls(finishReason string, acc map[int]*StreamToolCall) []Strea
 	return out
 }
 
-func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage) {
-	if s.postCallBiller == nil || usage == nil {
+func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage, messages []ChatMessage, streamedChars int) {
+	if s.postCallBiller == nil {
 		return
 	}
+	var inTokens, outTokens int
+	if usage != nil {
+		inTokens, outTokens = usage.PromptTokens, usage.CompletionTokens
+	} else {
+		inTokens, outTokens = estimateTokens(messages, "")
+		outTokens = streamedChars / 4
+		if outTokens < 1 {
+			outTokens = 1
+		}
+	}
 	feature := aiFeatureFromCtx(ctx)
-	if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+	if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
 		fmt.Fprintf(os.Stderr, "[systemai] post-stream billing failed: user=%s provider=%s err=%v\n",
 			p.userID, p.providerID, billErr)
 	}
@@ -277,9 +287,15 @@ func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, message
 		return err
 	}
 	// Bill after successful fallback — content already delivered via onChunk.
-	if s.postCallBiller != nil && usage != nil {
+	if s.postCallBiller != nil {
+		var inTokens, outTokens int
+		if usage != nil {
+			inTokens, outTokens = usage.PromptTokens, usage.CompletionTokens
+		} else {
+			inTokens, outTokens = estimateTokens(messages, result)
+		}
 		feature := aiFeatureFromCtx(ctx)
-		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, usage.PromptTokens, usage.CompletionTokens); billErr != nil {
+		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
 			fmt.Fprintf(os.Stderr, "[systemai] post-fallback billing failed: user=%s provider=%s err=%v\n",
 				p.userID, p.providerID, billErr)
 		}
