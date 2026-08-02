@@ -60,6 +60,10 @@ const interceptors: Interceptor[] = [
         if (isAuthFreeProcedure(proc)) {
           throw error;
         }
+        // Skip refresh retry if user is already not authenticated (refresh just failed).
+        if (!useAuthStore.getState().isAuthenticated) {
+          throw error;
+        }
         const newToken = await refreshAccessToken();
         if (newToken) {
           req.header.set('Authorization', `Bearer ${newToken}`);

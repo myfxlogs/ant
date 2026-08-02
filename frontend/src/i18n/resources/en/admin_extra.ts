@@ -114,7 +114,7 @@ const AdminExtra = {
       "create": "Create Coupon",
       "createTitle": "Create Coupon",
       "codePlaceholder": "Coupon code (e.g. SUMMER20)",
-      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for ¥50)",
+      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)",
       "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
       "maxUsesPlaceholder": "Max uses (0 = unlimited)",
       "expiresPlaceholder": "Expires at (ISO 8601, empty = never)"

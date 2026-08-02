@@ -113,7 +113,7 @@ const AdminExtra = {
       "create": "クーポン作成",
       "createTitle": "クーポン作成",
       "codePlaceholder": "クーポンコード（例 SUMMER20）",
-      "valuePlaceholder": "割引値（例 20=20% or 50=¥50）",
+      "valuePlaceholder": "割引値（例 20=20% or 50=$50）",
       "minPurchasePlaceholder": "最低購入金額（0=制限なし）",
       "maxUsesPlaceholder": "最大使用回数（0=無制限）",
       "expiresPlaceholder": "有効期限（ISO 8601、空=期限なし）"

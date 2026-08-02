@@ -1030,7 +1030,7 @@ const Base = {
       "comments": "Bình Luận",
       "description": "Mô Tả",
       "getFree": "Nhận Miễn Phí",
-      "rentPrice": "¥{{amount}} / tháng",
+      "rentPrice": "${{amount}} / tháng",
       "subscribers": "Người Đăng Ký",
       "yourRating": "Đánh Giá Của Bạn",
       "runBacktest": "Chạy Backtest"
@@ -1055,7 +1055,7 @@ const Base = {
       "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
       "goToDeposit": "Nạp Tiền",
       "insufficientBalance": "Số dư không đủ",
-      "oneTimePurchase": "¥{{amount}} mua đứt",
+      "oneTimePurchase": "${{amount}} mua đứt",
       "price": "Giá",
       "purchaseFailed": "Mua thất bại. Vui lòng thử lại.",
       "purchaseSuccess": "Mua thành công! Chiến lược đã được thêm vào thư viện.",

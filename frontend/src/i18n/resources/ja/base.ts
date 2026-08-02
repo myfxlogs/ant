@@ -1030,7 +1030,7 @@ const Base = {
       "comments": "コメント",
       "description": "説明",
       "getFree": "無料で入手",
-      "rentPrice": "¥{{amount}} / 月",
+      "rentPrice": "${{amount}} / 月",
       "subscribers": "購読者",
       "yourRating": "あなたの評価",
       "runBacktest": "バックテスト実行"
@@ -1055,7 +1055,7 @@ const Base = {
       "depositPrompt": "続行するには入金してください。",
       "goToDeposit": "入金",
       "insufficientBalance": "残高不足",
-      "oneTimePurchase": "¥{{amount}} 買い切り",
+      "oneTimePurchase": "${{amount}} 買い切り",
       "price": "価格",
       "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
       "purchaseSuccess": "購入完了！戦略がライブラリに追加されました。",

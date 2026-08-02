@@ -22,7 +22,22 @@
  */
 
 import { useAuthStore } from '@/stores/authStore';
-import { authClient } from '@/client/connect';
+import { Modal } from 'antd';
+import i18n from '@/i18n';
+import { createConnectTransport } from '@connectrpc/connect-web';
+import { createClient } from '@connectrpc/connect';
+import { AuthService } from '@/gen/ant/v1/auth_pb';
+import { TOKEN_EXPIRED_KEY } from '@/gen/ant/v1/i18n/errors_keys';
+
+// Bare transport with NO interceptors — avoids toast/retry/recursion when
+// the refresh call itself fails. The refresh client must not go through
+// ensureFreshToken (would recurse) or handleTransportError (would toast).
+const bareTransport = createConnectTransport({
+  baseUrl: (import.meta.env.VITE_API_URL as string | undefined) ||
+    (typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1:8080'),
+  useBinaryFormat: true,
+});
+const refreshClient = createClient(AuthService, bareTransport);
 
 // Refresh as soon as the access token has less than this many ms left.
 const EARLY_REFRESH_MS = 2 * 60 * 1000; // 2 minutes
@@ -37,6 +52,7 @@ let refreshPromise: Promise<string | null> | null = null;
 let schedulerTimer: number | null = null;
 let lastUserActivity = Date.now();
 let listenersAttached = false;
+let sessionExpiredModalShown = false;
 
 /** Wait for Zustand persist middleware to finish rehydrating from localStorage. */
 function waitForHydration(): Promise<void> {
@@ -77,12 +93,28 @@ export function refreshAccessToken(): Promise<string | null> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = (async () => {
     try {
-      const res = await authClient.refreshTokenFromCookie({});
+      const res = await refreshClient.refreshTokenFromCookie({});
       const newAccess: string | undefined = res?.accessToken;
       if (!newAccess) return null;
       useAuthStore.getState().setAccessToken(newAccess);
       return newAccess;
     } catch {
+      // Refresh failed — cookie expired/missing. If user was authenticated,
+      // show a localized modal and redirect to login on confirm.
+      const { isAuthenticated, logout } = useAuthStore.getState();
+      if (isAuthenticated && !sessionExpiredModalShown) {
+        sessionExpiredModalShown = true;
+        logout();
+        Modal.warning({
+          title: i18n.t(TOKEN_EXPIRED_KEY),
+          centered: true,
+          okText: i18n.t('common.confirm', { defaultValue: 'OK' }),
+          onOk: () => {
+            sessionExpiredModalShown = false;
+            window.location.href = '/login';
+          },
+        });
+      }
       return null;
     } finally {
       refreshPromise = null;

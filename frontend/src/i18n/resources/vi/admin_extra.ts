@@ -113,7 +113,7 @@ const AdminExtra = {
       "create": "Tạo mã giảm giá",
       "createTitle": "Tạo mã giảm giá",
       "codePlaceholder": "Mã giảm giá (vd SUMMER20)",
-      "valuePlaceholder": "Giá trị giảm (vd 20=20% hoặc 50=¥50)",
+      "valuePlaceholder": "Giá trị giảm (vd 20=20% hoặc 50=$50)",
       "minPurchasePlaceholder": "Số tiền mua tối thiểu (0=không giới hạn)",
       "maxUsesPlaceholder": "Số lần dùng tối đa (0=không giới hạn)",
       "expiresPlaceholder": "Hết hạn (ISO 8601, trống=không hết hạn)"

@@ -1030,7 +1030,7 @@ const Base = {
       "comments": "評論",
       "description": "描述",
       "getFree": "免費獲取",
-      "rentPrice": "¥{{amount}} / 月",
+      "rentPrice": "${{amount}} / 月",
       "subscribers": "訂閱者",
       "yourRating": "我的評分",
       "runBacktest": "執行回測"
@@ -1055,7 +1055,7 @@ const Base = {
       "depositPrompt": "請先充值後再繼續。",
       "goToDeposit": "充值",
       "insufficientBalance": "餘額不足",
-      "oneTimePurchase": "¥{{amount}} 一次性買斷",
+      "oneTimePurchase": "${{amount}} 一次性買斷",
       "price": "價格",
       "purchaseFailed": "購買失敗，請重試。",
       "purchaseSuccess": "購買成功！策略已加入您的庫中。",

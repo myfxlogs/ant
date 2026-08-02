@@ -66,7 +66,7 @@ export default function AuthorTab() {
         </Col>
         <Col xs={12} sm={6}>
           <Card size="small" style={{ background: '#f0f5ff', borderRadius: 12, border: 'none' }}>
-            <Statistic title={t('marketplace.author.monthlyRevenue')} value={`¥${Number(authorStats.monthlyRevenue || 0).toFixed(2)}`} prefix={<DollarOutlined />} />
+            <Statistic title={t('marketplace.author.monthlyRevenue')} value={`$${Number(authorStats.monthlyRevenue || 0).toFixed(2)}`} prefix={<DollarOutlined />} />
           </Card>
         </Col>
       </Row>
@@ -104,11 +104,11 @@ export default function AuthorTab() {
               { title: t('marketplace.author.strategyName'), dataIndex: 'title', key: 'title', render: (v: string) => <Text strong>{v || '-'}</Text> },
               { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: StrategyBreakdown) => (
                 <Tag color={row.priceModel === 'free' ? 'green' : 'gold'}>
-                  {row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount || '0'}`}
+                  {row.priceModel === 'free' ? t('marketplace.card.free') : `$${row.priceAmount || '0'}`}
                 </Tag>
               )},
               { title: t('marketplace.author.subscribers'), dataIndex: 'totalSubscribers', key: 'subs', width: 100 },
-              { title: t('marketplace.author.revenue'), dataIndex: 'revenue', key: 'revenue', width: 100, render: (v: string) => `¥${Number(v || 0).toFixed(2)}` },
+              { title: t('marketplace.author.revenue'), dataIndex: 'revenue', key: 'revenue', width: 100, render: (v: string) => `$${Number(v || 0).toFixed(2)}` },
               { title: t('marketplace.author.avgRating'), key: 'rating', width: 80, render: (_: unknown, row: StrategyBreakdown) => (
                 <Tooltip title={`${row.ratingCount || 0} ratings`}>
                   <span>{Number(row.avgRating || 0).toFixed(1)}</span>
@@ -134,7 +134,7 @@ export default function AuthorTab() {
           size="small"
           columns={[
             { title: t(TABLE_NAME_KEY), dataIndex: 'strategyName', key: 'name', render: (n: string, row: PublishedStrategy) => <Text strong>{n || row.title || 'Unknown'}</Text> },
-            { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: PublishedStrategy) => (<Tag color={!row.priceAmount || row.priceModel === 'free' ? 'green' : 'gold'}>{!row.priceAmount || row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount}`}</Tag>) },
+            { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: PublishedStrategy) => (<Tag color={!row.priceAmount || row.priceModel === 'free' ? 'green' : 'gold'}>{!row.priceAmount || row.priceModel === 'free' ? t('marketplace.card.free') : `$${row.priceAmount}`}</Tag>) },
             { title: t('marketplace.card.winRate'), key: 'winRate', render: (_: unknown, row: PublishedStrategy) => row.winRate != null ? `${(row.winRate * 100).toFixed(0)}%` : '-' },
             { title: t('marketplace.author.subscribers'), dataIndex: 'totalSubscribers', key: 'subscribers' },
             { title: t('marketplace.author.avgRating'), key: 'rating', render: (_: unknown, row: PublishedStrategy) => Number(row.avgRating || 0).toFixed(1) },

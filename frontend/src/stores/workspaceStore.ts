@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-export type CenterTab = 'design' | 'code' | 'backtest';
+export type CenterTab = 'design' | 'code' | 'backtest' | 'chat';
 export type RightTab = 'chat' | 'code';
 
 // ── Slice interfaces ──────────────────────────────────────────────

@@ -70,7 +70,7 @@ export default function LeaderboardTab() {
       title: t('marketplace.detail.price'), key: 'price', width: 100,
       render: (_: unknown, row: LeaderboardEntry) => (
         <Tag color={row.priceModel === 'free' ? 'green' : 'gold'}>
-          {row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount || '0'}`}
+          {row.priceModel === 'free' ? t('marketplace.card.free') : `$${row.priceAmount || '0'}`}
         </Tag>
       ),
     },

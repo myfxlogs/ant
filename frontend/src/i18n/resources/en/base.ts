@@ -1032,7 +1032,7 @@ const Base = {
       "comments": "Comments",
       "description": "Description",
       "getFree": "Get Free",
-      "rentPrice": "¥{{amount}} / month",
+      "rentPrice": "${{amount}} / month",
       "subscribers": "Subscribers",
       "yourRating": "Your Rating",
       "runBacktest": "Run Backtest"
@@ -1057,7 +1057,7 @@ const Base = {
       "depositPrompt": "Please deposit funds to continue.",
       "goToDeposit": "Deposit",
       "insufficientBalance": "Insufficient balance",
-      "oneTimePurchase": "¥{{amount}} one-time",
+      "oneTimePurchase": "${{amount}} one-time",
       "price": "Price",
       "purchaseFailed": "Purchase failed. Please try again.",
       "purchaseSuccess": "Purchase successful! Strategy added to your library.",

@@ -55,12 +55,12 @@ export default function PlanCards({ plans, currentPlanName, t, onSubscribe }: Pr
 
               <div className="text-center mb-4">
                 <span className="text-3xl font-bold" style={{ color: '#D4AF37' }}>
-                  {plan.priceMonthly}
+                  ${plan.priceMonthly}
                 </span>
                 <span style={{ color: 'var(--color-text-muted)' }}> / {t('subscription.month', { defaultValue: 'mo' })}</span>
                 {Number(plan.priceYearly) > 0 && (
                   <div className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                    {plan.priceYearly} / {t('subscription.year', { defaultValue: 'yr' })}
+                    ${plan.priceYearly} / {t('subscription.year', { defaultValue: 'yr' })}
                   </div>
                 )}
               </div>

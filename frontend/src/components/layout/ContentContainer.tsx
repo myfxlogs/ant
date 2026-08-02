@@ -1,10 +1,11 @@
 import { useLocation } from 'react-router-dom';
 
-const FLUID_ROUTES = ['/strategy/workspace'];
+const FLUID_ROUTES = ['/strategy/workspace', '/strategy/new'];
 
 export default function ContentContainer({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const isFluid = FLUID_ROUTES.some(route => location.pathname.startsWith(route));
+  const isFluid = FLUID_ROUTES.some(route => location.pathname.startsWith(route)) ||
+    /^\/strategy\/[^/]+\/edit$/.test(location.pathname);
 
   return (
     <div

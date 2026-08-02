@@ -76,6 +76,7 @@ export default function BillingManagement() {
               title={t('admin.billing.monthlyRevenue', { defaultValue: 'Monthly Revenue' })}
               value={revenueData?.totalMonthlyRevenue || '0'}
               prefix={<DollarOutlined style={{ color: '#52c41a' }} />}
+              formatter={(v) => `$${v}`}
             />
           </Card>
         </Col>
@@ -85,6 +86,7 @@ export default function BillingManagement() {
               title={t('admin.billing.totalRevenue', { defaultValue: 'Total Revenue' })}
               value={revenueData?.totalRevenue || '0'}
               prefix={<DollarOutlined style={{ color: '#13c2c2' }} />}
+              formatter={(v) => `$${v}`}
             />
           </Card>
         </Col>

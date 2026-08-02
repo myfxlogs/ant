@@ -12,7 +12,7 @@ const Marketplace = {
     },
     "card": {
       "free": "Free", "owned": "Owned", "winRate": "Win Rate",
-      "pnl": "Total PnL", "users": "Subscribers", "rent": "¥{{amount}}/mo", "buy": "¥{{amount}}",
+      "pnl": "Total PnL", "users": "Subscribers", "rent": "${{amount}}/mo", "buy": "${{amount}}",
       "yourStrategy": "Your Strategy",
       "verified": "Verified Provider",
       "aiProvider": "AI Generated"
@@ -28,8 +28,8 @@ const Marketplace = {
       "description": "Description", "tags": "Tags", "yourRating": "Your Rating",
       "comments": "Comments", "noComments": "No comments yet",
       "commentPlaceholder": "Write a comment...", "getFree": "Get Free", "buyNow": "Buy Now",
-      "owned": "Owned", "freePrice": "Free", "rentPrice": "¥{{amount}} / month",
-      "buyPrice": "¥{{amount}} one-time", "runBacktest": "Run Backtest",
+      "owned": "Owned", "freePrice": "Free", "rentPrice": "${{amount}} / month",
+      "buyPrice": "${{amount}} one-time", "runBacktest": "Run Backtest",
       "riskDisclaimer": "Risk Disclaimer",
       "backtestTab": "Backtest", "liveTab": "Live Performance",
       "noBacktest": "No backtest snapshot available",
@@ -73,7 +73,7 @@ const Marketplace = {
       "title": "Confirm Purchase", "balance": "Wallet Balance",
       "confirm": "Confirm Payment", "cancel": "Cancel",
       "strategyName": "Strategy", "price": "Price",
-      "oneTimePurchase": "¥{{amount}} one-time",
+      "oneTimePurchase": "${{amount}} one-time",
       "walletBalance": "Wallet Balance", "balanceAfter": "Balance After",
       "depositPrompt": "Please deposit before purchasing.",
       "goToDeposit": "Go to Deposit",
@@ -279,7 +279,7 @@ const Marketplace = {
       "nameLabel": "Bundle Name", "namePlaceholder": "e.g. Trend Following Trio",
       "descLabel": "Description", "descPlaceholder": "Describe the bundle's advantages...",
       "priceModel": "Pricing Model", "once": "One-Time Purchase", "subscription": "Monthly Subscription",
-      "priceAmount": "Price (¥)", "strategyIds": "Strategy IDs (one per line)",
+      "priceAmount": "Price ($)", "strategyIds": "Strategy IDs (one per line)",
       "platformFee": "Platform Fee Rate"
     },
     "optimization": {

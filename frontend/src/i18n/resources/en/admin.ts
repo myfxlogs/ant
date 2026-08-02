@@ -150,7 +150,7 @@ const Admin = {
       "loadFailed": "Failed to load coupons",
       "maxUsesPlaceholder": "Max uses (0 = unlimited)",
       "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
-      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for ¥50)"
+      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)"
     },
     "depositAddresses": {
       "address": "Address",

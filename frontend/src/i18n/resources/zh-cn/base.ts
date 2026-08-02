@@ -1032,7 +1032,7 @@ const Base = {
       "comments": "评论",
       "description": "描述",
       "getFree": "免费获取",
-      "rentPrice": "¥{{amount}} / 月",
+      "rentPrice": "${{amount}} / 月",
       "subscribers": "订阅者",
       "yourRating": "我的评分",
       "runBacktest": "运行回测"
@@ -1057,7 +1057,7 @@ const Base = {
       "depositPrompt": "请先充值后再继续。",
       "goToDeposit": "充值",
       "insufficientBalance": "余额不足",
-      "oneTimePurchase": "¥{{amount}} 一次性买断",
+      "oneTimePurchase": "${{amount}} 一次性买断",
       "price": "价格",
       "purchaseFailed": "购买失败，请重试。",
       "purchaseSuccess": "购买成功！策略已添加到您的库中。",

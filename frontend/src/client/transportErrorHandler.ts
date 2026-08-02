@@ -5,6 +5,7 @@ import { isLikelyStreamTransportFailure, isStreamAuthFailure, isStreamServicePro
 import { AI_INSUFFICIENT_BALANCE } from '@/utils/aiErrorCodes';
 import { translateMaybeI18nKey, getConnectErrorMessage, connectCodeToI18nKey } from '@/utils/error';
 import { TOKEN_EXPIRED_KEY } from '@/gen/ant/v1/i18n/errors_keys';
+import { useAuthStore } from '@/stores/authStore';
 
 let hasShownConnectionError = false;
 let hasShownBalanceError = false;
@@ -78,6 +79,11 @@ export function handleTransportError(error: unknown, proc: string, procLabel: st
   } else {
     if (handleStreamError(error, proc)) throw error;
     if (error instanceof ConnectError && (error.code === Code.InvalidArgument || error.code === Code.AlreadyExists)) throw error;
+    // Suppress toast for auth-free procedures (refreshTokenFromCookie, login, etc.) —
+    // these are internal calls or have their own error handling in callers.
+    if (isAuthFreeProcedure(proc)) throw error;
+    // Suppress auth error toast when user is already not authenticated (being logged out).
+    if (error instanceof ConnectError && error.code === Code.Unauthenticated && !useAuthStore.getState().isAuthenticated) throw error;
     showBizError(error, procLabel);
   }
   throw error;

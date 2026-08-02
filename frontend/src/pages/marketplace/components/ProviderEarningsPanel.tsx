@@ -58,7 +58,7 @@ export default function ProviderEarningsPanel() {
     {
       title: t('marketplace.earnings.colAmount'),
       dataIndex: 'amount', key: 'amount',
-      render: (v: string) => `¥${Number(v || 0).toFixed(2)}`,
+      render: (v: string) => `$${Number(v || 0).toFixed(2)}`,
     },
     {
       title: t('marketplace.earnings.colStrategy'),
@@ -81,7 +81,7 @@ export default function ProviderEarningsPanel() {
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#f6ffed' }}>
             <Statistic
               title={t('marketplace.earnings.total')}
-              value={`¥${Number(earnings.totalEarnings || 0).toFixed(2)}`}
+              value={`$${Number(earnings.totalEarnings || 0).toFixed(2)}`}
               prefix={<DollarOutlined />}
             />
           </Card>
@@ -90,7 +90,7 @@ export default function ProviderEarningsPanel() {
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#e6f7ff' }}>
             <Statistic
               title={t('marketplace.earnings.available')}
-              value={`¥${Number(earnings.availableBalance || 0).toFixed(2)}`}
+              value={`$${Number(earnings.availableBalance || 0).toFixed(2)}`}
               prefix={<WalletOutlined />}
             />
           </Card>
@@ -99,7 +99,7 @@ export default function ProviderEarningsPanel() {
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#fffbe6' }}>
             <Statistic
               title={t('marketplace.earnings.pendingSettlement')}
-              value={`¥${Number(earnings.pendingSettlement || 0).toFixed(2)}`}
+              value={`$${Number(earnings.pendingSettlement || 0).toFixed(2)}`}
               prefix={<ClockCircleOutlined />}
             />
           </Card>
@@ -108,7 +108,7 @@ export default function ProviderEarningsPanel() {
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#fff7e6' }}>
             <Statistic
               title={t('marketplace.earnings.pending')}
-              value={`¥${Number(earnings.pendingWithdrawal || 0).toFixed(2)}`}
+              value={`$${Number(earnings.pendingWithdrawal || 0).toFixed(2)}`}
               prefix={<ArrowUpOutlined />}
             />
           </Card>
@@ -117,7 +117,7 @@ export default function ProviderEarningsPanel() {
           <Card size="small" style={{ borderRadius: 12, border: 'none', background: '#f0f5ff' }}>
             <Statistic
               title={t('marketplace.earnings.lifetime')}
-              value={`¥${Number(earnings.lifetimeWithdrawn || 0).toFixed(2)}`}
+              value={`$${Number(earnings.lifetimeWithdrawn || 0).toFixed(2)}`}
               prefix={<ShopOutlined />}
             />
           </Card>

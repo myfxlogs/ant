@@ -85,7 +85,7 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
           </Tag>
           {discountedAmount && originalPrice > effectivePrice && (
             <Text delete type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
-              ¥{originalPrice.toFixed(2)}
+              ${originalPrice.toFixed(2)}
             </Text>
           )}
         </Descriptions.Item>
@@ -113,12 +113,12 @@ export default function PaymentModal({ strategy, walletBalance, open, loading, o
       <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
         <Descriptions.Item label={<><WalletOutlined /> {t('marketplace.payment.walletBalance')}</>}>
           <Text strong style={{ color: sufficient ? '#52c41a' : '#ff4d4f', fontSize: 16 }}>
-            ¥{balanceNum.toFixed(2)}
+            ${balanceNum.toFixed(2)}
           </Text>
         </Descriptions.Item>
         {sufficient && !isFree && (
           <Descriptions.Item label={t('marketplace.payment.balanceAfter')}>
-            <Text type="secondary">¥{afterBalance.toFixed(2)}</Text>
+            <Text type="secondary">${afterBalance.toFixed(2)}</Text>
           </Descriptions.Item>
         )}
       </Descriptions>

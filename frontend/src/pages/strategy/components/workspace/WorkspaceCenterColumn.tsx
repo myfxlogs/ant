@@ -5,7 +5,7 @@ import {
   CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY,
   SEND_TO_AI_KEY, BROWSE_INDICATORS_KEY,
   CHART_WINDOW_KEY, CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
-  BACKTEST_KEY as WS_BACKTEST_KEY, QUICK_TRADE_KEY,
+  BACKTEST_KEY as WS_BACKTEST_KEY, QUICK_TRADE_KEY, AI_ASSISTANT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { BACKTEST_KEY as GEN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
@@ -15,10 +15,12 @@ import BacktestPanel from '@/components/backtest/BacktestPanel';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
+import StrategyChat from '@/components/strategy/StrategyChat';
 import WorkspaceErrorBoundary from './WorkspaceErrorBoundary';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
 interface Props {
+  isMobile?: boolean;
   btModalOpen: boolean;
   setBtModalOpen: (v: boolean) => void;
   setIndicatorDrawerOpen: (v: boolean) => void;
@@ -26,7 +28,7 @@ interface Props {
   onShowVersionHistory?: () => void;
 }
 
-export default function WorkspaceCenterColumn({ _btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, setImportDrawerOpen, onShowVersionHistory }: Props) {
+export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, setImportDrawerOpen, onShowVersionHistory }: Props) {
   const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
@@ -43,11 +45,17 @@ export default function WorkspaceCenterColumn({ _btModalOpen, setBtModalOpen, se
   const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || '';
   const saveStatus: 'modified' | 'saved' | 'none' = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode ? 'modified' : code.lastSavedId ? 'saved' : 'none';
 
-  const CTABS: { key: CenterTab; icon: string; label: string }[] = [
-    { key: 'design', icon: '📈', label: t(CHART_WINDOW_KEY) },
-    { key: 'code', icon: '📄', label: t(CODE_KEY) },
-    { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
-  ];
+  const CTABS: { key: CenterTab; icon: string; label: string }[] = isMobile
+    ? [
+        { key: 'code', icon: '📄', label: t(CODE_KEY) },
+        { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
+        { key: 'chat', icon: '🤖', label: t(AI_ASSISTANT_KEY) },
+      ]
+    : [
+        { key: 'design', icon: '📈', label: t(CHART_WINDOW_KEY) },
+        { key: 'code', icon: '📄', label: t(CODE_KEY) },
+        { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
+      ];
 
   const handleCopy = () => {
     if (!code.code) return;
@@ -108,7 +116,7 @@ export default function WorkspaceCenterColumn({ _btModalOpen, setBtModalOpen, se
               <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
             </Tooltip>
             <Tooltip title={t(SEND_TO_AI_KEY)}>
-              <Button size="small" icon={<RobotOutlined />} onClick={() => layout.setRightTab('chat')}
+              <Button size="small" icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : layout.setRightTab('chat')}
                 style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
                 {t(SEND_TO_AI_KEY)}
               </Button>
@@ -125,22 +133,24 @@ export default function WorkspaceCenterColumn({ _btModalOpen, setBtModalOpen, se
         )}
       </div>
 
-      {/* Design = Chart */}
-      <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'design' ? 'flex' : 'none', flexDirection: 'column' }}>
-        {account.symbol ? (
-          <WorkspaceErrorBoundary fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-tertiary)' }}>{t(CHART_ERROR_KEY)}</div>}>
-            <PriceChart
-              symbol={account.symbol} timeframe={account.timeframe} onTimeframeChange={account.setTimeframe}
-              accountId={account.accountId}
-              trades={backtest.chartTrades}
-            />
-          </WorkspaceErrorBoundary>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-secondary)', fontSize: 14 }}>
-            {t(SELECT_SYMBOL_HINT_KEY)}
-          </div>
-        )}
-      </div>
+      {/* Design = Chart (desktop only) */}
+      {!isMobile && (
+        <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'design' ? 'flex' : 'none', flexDirection: 'column' }}>
+          {account.symbol ? (
+            <WorkspaceErrorBoundary fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-tertiary)' }}>{t(CHART_ERROR_KEY)}</div>}>
+              <PriceChart
+                symbol={account.symbol} timeframe={account.timeframe} onTimeframeChange={account.setTimeframe}
+                accountId={account.accountId}
+                trades={backtest.chartTrades}
+              />
+            </WorkspaceErrorBoundary>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-secondary)', fontSize: 14 }}>
+              {t(SELECT_SYMBOL_HINT_KEY)}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Code */}
       <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'column' }}>
@@ -180,61 +190,76 @@ export default function WorkspaceCenterColumn({ _btModalOpen, setBtModalOpen, se
         />
       </div>
 
-      {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right */}
-      {layout.bottomPanelCollapsed ? (
-        <ChartBottomPanel
-          positions={quickTrade.allPositions}
-          recentTrades={quickTrade.qtRecentTrades}
-          onClosePosition={quickTrade.handleClosePosition}
-          collapsed={true}
-          onToggleCollapsed={() => layout.setBottomPanelCollapsed(false)}
-          backtestMetrics={backtest.metrics}
-          backtestStatus={backtest.status}
-        />
-      ) : (
-        <div style={{ flexShrink: 0, display: 'flex', borderTop: '1px solid var(--ant-color-border)' }}>
-          <div style={{ flex: '1 1 0', minWidth: 0 }}>
-            <ChartBottomPanel
-              positions={quickTrade.allPositions}
-              recentTrades={quickTrade.qtRecentTrades}
-              onClosePosition={quickTrade.handleClosePosition}
-              collapsed={false}
-              onToggleCollapsed={() => layout.setBottomPanelCollapsed(true)}
-              backtestMetrics={backtest.metrics}
-              backtestStatus={backtest.status}
-            />
-          </div>
-          {account.symbol && (
-            <div style={{
-              width: 420, flexShrink: 0,
-              borderLeft: '1px solid var(--ant-color-border)',
-              background: 'var(--ant-color-bg-elevated)',
-              display: 'flex', flexDirection: 'column',
-              maxHeight: 200, overflow: 'hidden',
-            }}>
-              <div style={{
-                padding: '4px 10px', fontSize: 11, fontWeight: 700,
-                borderBottom: '1px solid var(--ant-color-border)',
-                background: 'var(--ant-color-bg-layout)',
-                display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
-              }}>
-                ⚡ {t(QUICK_TRADE_KEY)}
-              </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
-                <QuickTradePanel
-                  accountId={account.accountId}
-                  symbol={account.symbol}
-                  accountMeta={account.selectedAccountMeta}
-                  allPositions={quickTrade.allPositions}
-                  positions={quickTrade.qtPositions}
-                  recentTrades={quickTrade.qtRecentTrades}
-                  onClosePosition={quickTrade.handleClosePosition}
-                  horizontal
-                />
-              </div>
-            </div>
-          )}
+      {/* AI Chat (mobile only — desktop uses RightPanel) */}
+      {isMobile && (
+        <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
+          <StrategyChat
+            symbol={account.symbol}
+            timeframe={account.timeframe}
+            accountId={account.accountId}
+            onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
+            currentCode={code.code}
+          />
         </div>
+      )}
+
+      {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right (desktop only) */}
+      {!isMobile && (
+        layout.bottomPanelCollapsed ? (
+          <ChartBottomPanel
+            positions={quickTrade.allPositions}
+            recentTrades={quickTrade.qtRecentTrades}
+            onClosePosition={quickTrade.handleClosePosition}
+            collapsed={true}
+            onToggleCollapsed={() => layout.setBottomPanelCollapsed(false)}
+            backtestMetrics={backtest.metrics}
+            backtestStatus={backtest.status}
+          />
+        ) : (
+          <div style={{ flexShrink: 0, display: 'flex', borderTop: '1px solid var(--ant-color-border)' }}>
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <ChartBottomPanel
+                positions={quickTrade.allPositions}
+                recentTrades={quickTrade.qtRecentTrades}
+                onClosePosition={quickTrade.handleClosePosition}
+                collapsed={false}
+                onToggleCollapsed={() => layout.setBottomPanelCollapsed(true)}
+                backtestMetrics={backtest.metrics}
+                backtestStatus={backtest.status}
+              />
+            </div>
+            {account.symbol && (
+              <div style={{
+                width: 420, flexShrink: 0,
+                borderLeft: '1px solid var(--ant-color-border)',
+                background: 'var(--ant-color-bg-elevated)',
+                display: 'flex', flexDirection: 'column',
+                maxHeight: 200, overflow: 'hidden',
+              }}>
+                <div style={{
+                  padding: '4px 10px', fontSize: 11, fontWeight: 700,
+                  borderBottom: '1px solid var(--ant-color-border)',
+                  background: 'var(--ant-color-bg-layout)',
+                  display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
+                }}>
+                  ⚡ {t(QUICK_TRADE_KEY)}
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
+                  <QuickTradePanel
+                    accountId={account.accountId}
+                    symbol={account.symbol}
+                    accountMeta={account.selectedAccountMeta}
+                    allPositions={quickTrade.allPositions}
+                    positions={quickTrade.qtPositions}
+                    recentTrades={quickTrade.qtRecentTrades}
+                    onClosePosition={quickTrade.handleClosePosition}
+                    horizontal
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )
       )}
     </div>
   );

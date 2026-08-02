@@ -149,7 +149,7 @@ export default function CouponManagement() {
             ]}
           />
           <Input
-            placeholder={t('admin.coupon.valuePlaceholder', { defaultValue: 'Discount value (e.g. 20 for 20% or 50 for ¥50)' })}
+            placeholder={t('admin.coupon.valuePlaceholder', { defaultValue: 'Discount value (e.g. 20 for 20% or 50 for $50)' })}
             value={createForm.discountValue}
             onChange={e => setCreateForm({ ...createForm, discountValue: e.target.value })}
           />

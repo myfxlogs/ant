@@ -139,8 +139,8 @@ export default function BundleTab() {
               render: (_: unknown, row: BundleInfo) => (
                 <Tag color={row.priceModel === 'once' ? 'gold' : 'blue'}>
                   {row.priceModel === 'once'
-                    ? `¥${row.priceAmount}`
-                    : `¥${row.priceAmount}/${t('marketplace.bundle.month')}`}
+                    ? `$${row.priceAmount}`
+                    : `$${row.priceAmount}/${t('marketplace.bundle.month')}`}
                 </Tag>
               ),
               width: 120,

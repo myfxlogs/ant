@@ -113,7 +113,7 @@ const AdminExtra = {
       "create": "建立優惠券",
       "createTitle": "建立優惠券",
       "codePlaceholder": "優惠券碼（如 SUMMER20）",
-      "valuePlaceholder": "折扣值（如 20 表示 20% 或 50 表示 ¥50）",
+      "valuePlaceholder": "折扣值（如 20 表示 20% 或 50 表示 $50）",
       "minPurchasePlaceholder": "最低消費金額（0 = 無限制）",
       "maxUsesPlaceholder": "最大使用次數（0 = 無限）",
       "expiresPlaceholder": "過期時間（ISO 8601，空 = 永不過期）"
