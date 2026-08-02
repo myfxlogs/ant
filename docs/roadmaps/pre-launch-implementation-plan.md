@@ -36,7 +36,21 @@
 - 代码修复后重新跑该步，直到通过
 - 全部 8 步通过 → Gap 0 关闭
 
-### 预计时间: 2 小时
+### Step 9: 关键步骤转 Playwright E2E 测试
+
+通过手动验证的步骤，将可自动化的部分转为 Playwright spec（项目已有 `tests/e2e/` 19 个 spec）：
+
+| 步骤 | 自动化方式 |
+|------|-----------|
+| 登录 + Dashboard 数据正确 | Playwright: 登录 → 等待 SSE 推送 → 断言 Account Overview 卡片有数据 |
+| 策略生成 + 回测 | Playwright: 输入 prompt → 等待 Agent 返回 → 断言回测结果显示 |
+| 购买 + 钱包扣款 | Playwright: 浏览 marketplace → 购买 → 断言钱包余额变化 |
+
+> 不追求全自动化——Agent 生成质量和 MT 连接依赖外部服务。只自动化不依赖外部状态的步骤。
+
+**新文件**: `tests/e2e/happy-path-pre-launch.spec.ts`
+
+### 预计时间: 4 小时（2h 手动 + 2h Playwright）
 
 ---
 
@@ -52,12 +66,12 @@
 
 **新文件**: `backend/internal/agent/quality_benchmark_test.go` (build tag: `benchmark`)
 
-定义 20 个策略需求，覆盖不同难度和风格：
+定义 10 个策略需求，覆盖不同难度和风格。每个需求跑 5 次（LLM 非确定性）：
 
 ```
-难度 简单: 单均线交叉、双均线、RSI超买超卖、布林带、ATR止损
-难度 中等: MACD+均线、KDJ+布林带、ADX趋势过滤、多时间框架、网格
-难度 困难: 市场状态自适应、波动率断点、多品种套利、因子模型、事件驱动
+难度 简单(3): 单均线交叉、RSI超买超卖、布林带突破
+难度 中等(4): MACD+均线、ADX趋势过滤、多时间框架、网格交易
+难度 困难(3): 波动率自适应、多品种联动、事件驱动
 ```
 
 每个需求为一个 struct：
@@ -113,19 +127,28 @@ func TestAgentQualityBenchmark(t *testing.T) {
 | `internal/ai/locale_agent_en.go` | 可能修改 | Prompt 调整（如果不达标） |
 | `internal/agent/agent_tools_write.go` | 可能修改 | 工具 Schema 调整 |
 
-### CI 集成
+### 运行方式
 
-```yaml
-# .github/workflows/ci.yml 新增 job
-agent-benchmark:
-  runs-on: ubuntu-latest
-  steps:
-    - run: go test -tags=benchmark -run TestAgentQualityBenchmark ./internal/agent/
+**不入 CI**——基准测试依赖外部 LLM（非确定性、有成本）。作为**上线前手动检查清单**：
+
+```bash
+# 上线前执行一次，结果写入 docs/benchmarks/agent-quality-YYYY-MM-DD.md
+go test -tags=benchmark -count=1 -run TestAgentQualityBenchmark ./internal/agent/ | tee docs/benchmarks/agent-quality-$(date +%F).md
 ```
 
-不阻断 CI（基准测试有外部 LLM 依赖），但结果写入 artifact 供 review。
+每次改 prompt 或工具链后手动重跑，对比历史结果。
 
-### 预计时间: 3 天（1 天写框架 + 1 天写用例 + 1 天调 prompt）
+### 涉及文件
+
+| 文件 | 动作 | 说明 |
+|------|------|------|
+| `internal/agent/quality_benchmark_test.go` | 新建 | 基准测试 Runner |
+| `internal/agent/benchmark_cases.go` | 新建 | 10 个测试用例定义 |
+| `internal/ai/locale_agent_en.go` | 可能修改 | Prompt 调整 |
+| `internal/agent/agent_tools_write.go` | 可能修改 | 工具 Schema 调整 |
+| `docs/benchmarks/` | 新建目录 | 存放历史基准结果 |
+
+### 预计时间: 2 天（1 天写框架 + 1 天调 prompt）
 
 ---
 
@@ -226,6 +249,26 @@ balanceAfter := getWalletBalance(t, buyerID)
 assert.Equal(t, expectedBalance, balanceAfter)
 ```
 
+#### 2.4 分账流程测试（补 A-002 CRITICAL 回归）
+
+**文件**: `internal/marketplace/settlement_integration_test.go`
+
+```go
+// TestSettlement_HappyPath: 购买后自动分账
+//  1. 完成一次购买（产生 frozen settlement）
+//  2. 调用 SettleExpired API
+//  3. 断言：provider wallet 增加 provider_amount
+//  4. 断言：platform wallet 增加 platform_fee
+//  5. 断言：settlement 状态 = 'settled'
+//  6. 断言：provider_amount + platform_fee = purchase_amount（精度验证）
+
+// TestSettlement_PartialFailure: 批次中部分失败
+//  1. 创建 3 笔购买（其中 1 笔的 provider wallet 不存在）
+//  2. 调用 SettleExpired
+//  3. 断言：2 笔成功、1 笔失败（failedIDs 包含失败项）
+//  4. 断言：成功项的 provider 收到钱、失败项保持 frozen
+```
+
 ### 涉及文件
 
 | 文件 | 动作 | 说明 |
@@ -233,7 +276,7 @@ assert.Equal(t, expectedBalance, balanceAfter)
 | `internal/marketplace/purchase_integration_test.go` | 新建 | 购买 happy + error + 幂等 |
 | `internal/marketplace/refund_integration_test.go` | 新建 | 退款 happy + 窗口过期 |
 | `internal/marketplace/subscription_integration_test.go` | 新建 | 订阅 happy + 付费升级 |
-| `internal/marketplace/settlement_integration_test.go` | 新建 | 分账精度 + 幂等 |
+| `internal/marketplace/settlement_integration_test.go` | 新建 | **分账 happy + 部分失败（A-002 回归）** |
 
 ### 验收标准
 
@@ -253,6 +296,23 @@ assert.Equal(t, expectedBalance, balanceAfter)
 保留 `go_executor.go` 文件但标记为禁止编译，以备回滚。
 
 ### 实施步骤
+
+#### Step 0: VM vs GoExecutor 对比验证（先验证再切）
+
+取 10 个现有策略（Go 语法的高覆盖率策略），分别用 GoExecutor 和 Bytecode VM 跑回测，
+用 `strategy/backtest/parity.go` 的 diff 工具对比结果：
+
+```bash
+# 对每个策略:
+# 1. GoExecutor 回测 → 保存结果 A
+# 2. VM 回测 → 保存结果 B
+# 3. 对比 A vs B：净値曲线差异 < 0.1%、交易列表一致
+```
+
+验收标准：
+- 10/10 策略对比通过（净値曲线差异 < 0.1%）
+- 如有差异 → 先修 VM 兼容性，再切
+- 全部通过 → 进入 Step 1
 
 #### Step 1: 切断生产注入点
 
@@ -326,17 +386,17 @@ go test -short ./strategy/backtest/
 - Workspace 中现有策略回测结果与移除前一致
 - `go_executor.go` 仍存在于 repo 中（可回滚）
 
-### 预计时间: 4 小时
+### 预计时间: 8 小时（4h 对比验证 + 4h 代码修改）
 
 ---
 
 ## 总时间线
 
 ```
-Gap 0:  端到端验证  2h   ← 先做，发现最多问题
-Gap 3:  GoExecutor  4h   ← 简单直接，改 3 个文件
-Gap 1:  Agent 基准  3d   ← 工作量大，但 CI 自动化后长期受益
-Gap 2:  资金链测试  2d   ← 最后做，因为之前修复已大幅改善了 settlement
+Gap 0:  端到端验证  4h   ← 2h 手动 + 2h Playwright
+Gap 3:  GoExecutor  8h   ← 4h VM 对比验证 + 4h 代码修改
+Gap 1:  Agent 基准  2d   ← 1d 框架 + 1d 调 prompt（不入 CI）
+Gap 2:  资金链测试  2d   ← 购买/退款/订阅/分账 4 个文件
 ```
 
 总计: 约 6 个工作日。
