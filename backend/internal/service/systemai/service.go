@@ -13,6 +13,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"alphaforge/internal/pkg/secretbox"
 	"alphaforge/internal/repository"
@@ -71,7 +72,11 @@ type Service struct {
 	gatewayProviderRepo *repository.SystemAIProviderRepository                         // optional: fallback for AI Gateway
 	cbDB                cbExecutor                                                     // optional: PG pool for persistent circuit breaker
 	modelFilter         func(ctx context.Context, userID uuid.UUID, model string) bool // optional: ADR-0025 §5.2 model whitelist
+	log                 *zap.Logger
 }
+
+// SetLogger injects a logger for billing diagnostics.
+func (s *Service) SetLogger(l *zap.Logger) { s.log = l }
 
 // SetUserRepo sets the user repository for AI primary model queries.
 func (s *Service) SetUserRepo(r *repository.UserRepository) {
