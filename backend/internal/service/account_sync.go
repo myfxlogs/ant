@@ -158,21 +158,33 @@ func computeUserAccountsSummary(accounts map[string]accountSummaryItem) UserAcco
 
 // GetUserAccountsSummary returns the aggregated summary for a user, using the cache when available.
 func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
+	// Always query DB for account/connected counts — the cache only tracks accounts
+	// with active profit streams and may be missing disconnected or newly added accounts.
+	var dbConnected, dbTotal int32
+	if err := s.db.QueryRow(ctx, `
+		SELECT COUNT(*) FILTER (WHERE account_status = 'connected'), COUNT(*)
+		FROM mt_accounts
+		WHERE user_id = $1::uuid AND deleted_at IS NULL
+	`, userID).Scan(&dbConnected, &dbTotal); err != nil {
+		return nil, fmt.Errorf("service: get user accounts summary: %w", err)
+	}
+
 	s.summaryMu.RLock()
 	entry, ok := s.summaryCache[userID]
 	s.summaryMu.RUnlock()
 	if ok {
-		return &entry.summary, nil
+		s := entry.summary
+		s.AccountCount = dbTotal
+		s.ConnectedCount = dbConnected
+		return &s, nil
 	}
+
 	var totalBalance, totalEquity pgtype.Numeric
-	var connected, total int32
-	err := s.db.QueryRow(ctx, `
-		SELECT COALESCE(SUM(balance),0), COALESCE(SUM(equity),0),
-		       COUNT(*) FILTER (WHERE account_status = 'connected'), COUNT(*)
+	if err := s.db.QueryRow(ctx, `
+		SELECT COALESCE(SUM(balance),0), COALESCE(SUM(equity),0)
 		FROM mt_accounts
 		WHERE user_id = $1::uuid AND deleted_at IS NULL
-	`, userID).Scan(&totalBalance, &totalEquity, &connected, &total)
-	if err != nil {
+	`, userID).Scan(&totalBalance, &totalEquity); err != nil {
 		return nil, fmt.Errorf("service: get user accounts summary: %w", err)
 	}
 	bal := pgNumericToDecimal(totalBalance)
@@ -181,8 +193,8 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 		TotalBalance:   bal,
 		TotalEquity:    eq,
 		TotalProfit:    eq.Sub(bal),
-		AccountCount:   total,
-		ConnectedCount: connected,
+		AccountCount:   dbTotal,
+		ConnectedCount: dbConnected,
 	}
 	s.summaryMu.Lock()
 	s.summaryCache[userID] = &userSummaryCacheEntry{
