@@ -737,6 +737,7 @@ Found: proto 字段被删               → CI 加入 buf breaking
 | 文档 | 路径 |
 |------|------|
 | 业务方向 | `docs/roadmaps/business-direction.md` |
+| 上线前架构评估 | `docs/roadmaps/pre-launch-assessment.md` |
 | 架构总览 | `docs/spec/00-architecture-overview.md` |
 | 数据流 | `docs/spec/03-data-flow.md` |
 | RPC 契约 | `docs/spec/14-rpc-contracts.md` |

@@ -113,6 +113,10 @@
 策略市场 Phase 1-5 全上线。第一笔收入。100+ 策略，1000+ 活跃用户。
 不做跟单、不拿牌照、不碰资金。
 
+> **上线前评估**: 详见 `docs/roadmaps/pre-launch-assessment.md`（2026-08-02）。
+> 三个 launch-blocking 缺口：Agent 策略生成质量、Marketplace 资金链路、GoExecutor 移除。
+> 堵住这三个缺口 = 够好就上。上线后真实反馈驱动优先级。
+
 **Year 2 — 跑起来**
 
 月 GMV $50K+，活跃提供者 200+。AI 迭代功能上线——策略不再是死的。
