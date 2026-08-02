@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 func (s *Service) ChatCompletionStream(
@@ -243,13 +244,14 @@ func finalizeToolCalls(finishReason string, acc map[int]*StreamToolCall) []Strea
 
 func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage, messages []ChatMessage, streamedChars int) {
 	if s.postCallBiller == nil {
+		s.log.Warn("chat stream billing skipped: postCallBiller not configured")
 		return
 	}
 	var inTokens, outTokens int
 	if usage != nil {
 		inTokens, outTokens = usage.PromptTokens, usage.CompletionTokens
 	} else {
-		inTokens, outTokens = estimateTokens(messages, "")
+		inTokens, _ = estimateTokens(messages, "")
 		outTokens = streamedChars / 4
 		if outTokens < 1 {
 			outTokens = 1
@@ -257,9 +259,19 @@ func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage 
 	}
 	feature := aiFeatureFromCtx(ctx)
 	if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
-		fmt.Fprintf(os.Stderr, "[systemai] post-stream billing failed: user=%s provider=%s err=%v\n",
-			p.userID, p.providerID, billErr)
+		s.log.Error("chat stream billing failed",
+			zap.String("userID", p.userID.String()),
+			zap.String("provider", p.providerID),
+			zap.Int("inTokens", inTokens),
+			zap.Int("outTokens", outTokens),
+			zap.Error(billErr))
+		return
 	}
+	s.log.Info("chat stream billed",
+		zap.String("userID", p.userID.String()),
+		zap.String("provider", p.providerID),
+		zap.Int("inTokens", inTokens),
+		zap.Int("outTokens", outTokens))
 }
 
 // fallbackNonStream retries the chat completion on the same provider with
