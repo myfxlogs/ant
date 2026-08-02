@@ -44,6 +44,8 @@ func (s *Service) chatCompletionStream(
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
 	// Pre-check wallet balance before making any API call.
+	// Industry standard for streaming micro-billing: allow a small negative balance
+	// (wallet CHECK constraint allows -$0.10). Future calls are blocked until positive.
 	if s.walletChecker != nil {
 		if err := s.walletChecker(ctx, userID); err != nil {
 			return err
