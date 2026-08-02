@@ -69,6 +69,13 @@ function showBizError(error: unknown, procName: string): void {
   }
 }
 
+function shouldSuppressError(error: unknown, proc: string): boolean {
+  if (error instanceof ConnectError && (error.code === Code.InvalidArgument || error.code === Code.AlreadyExists)) return true;
+  if (isAuthFreeProcedure(proc)) return true;
+  if (error instanceof ConnectError && error.code === Code.Unauthenticated && !useAuthStore.getState().isAuthenticated) return true;
+  return false;
+}
+
 export function handleTransportError(error: unknown, proc: string, procLabel: string): void {
   if (error instanceof ConnectError && handleInsufficientBalance(error)) throw error;
   if (error instanceof ConnectError && error.code === 12) throw error;
@@ -78,12 +85,7 @@ export function handleTransportError(error: unknown, proc: string, procLabel: st
     handleConnectionError(error);
   } else {
     if (handleStreamError(error, proc)) throw error;
-    if (error instanceof ConnectError && (error.code === Code.InvalidArgument || error.code === Code.AlreadyExists)) throw error;
-    // Suppress toast for auth-free procedures (refreshTokenFromCookie, login, etc.) —
-    // these are internal calls or have their own error handling in callers.
-    if (isAuthFreeProcedure(proc)) throw error;
-    // Suppress auth error toast when user is already not authenticated (being logged out).
-    if (error instanceof ConnectError && error.code === Code.Unauthenticated && !useAuthStore.getState().isAuthenticated) throw error;
+    if (shouldSuppressError(error, proc)) throw error;
     showBizError(error, procLabel);
   }
   throw error;

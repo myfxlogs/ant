@@ -5,7 +5,7 @@ import {
   CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY,
   SEND_TO_AI_KEY, BROWSE_INDICATORS_KEY,
   CHART_WINDOW_KEY, CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
-  BACKTEST_KEY as WS_BACKTEST_KEY, QUICK_TRADE_KEY, AI_ASSISTANT_KEY,
+  BACKTEST_KEY as WS_BACKTEST_KEY, AI_ASSISTANT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { BACKTEST_KEY as GEN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
@@ -13,10 +13,10 @@ import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
 import PriceChart from '@/components/chart/PriceChart';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
-import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import WorkspaceErrorBoundary from './WorkspaceErrorBoundary';
+import QuickTradeSidePanel from './QuickTradeSidePanel';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
 interface Props {
@@ -229,34 +229,15 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
               />
             </div>
             {account.symbol && (
-              <div style={{
-                width: 420, flexShrink: 0,
-                borderLeft: '1px solid var(--ant-color-border)',
-                background: 'var(--ant-color-bg-elevated)',
-                display: 'flex', flexDirection: 'column',
-                maxHeight: 200, overflow: 'hidden',
-              }}>
-                <div style={{
-                  padding: '4px 10px', fontSize: 11, fontWeight: 700,
-                  borderBottom: '1px solid var(--ant-color-border)',
-                  background: 'var(--ant-color-bg-layout)',
-                  display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
-                }}>
-                  ⚡ {t(QUICK_TRADE_KEY)}
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
-                  <QuickTradePanel
-                    accountId={account.accountId}
-                    symbol={account.symbol}
-                    accountMeta={account.selectedAccountMeta}
-                    allPositions={quickTrade.allPositions}
-                    positions={quickTrade.qtPositions}
-                    recentTrades={quickTrade.qtRecentTrades}
-                    onClosePosition={quickTrade.handleClosePosition}
-                    horizontal
-                  />
-                </div>
-              </div>
+              <QuickTradeSidePanel
+                accountId={account.accountId}
+                symbol={account.symbol}
+                accountMeta={account.selectedAccountMeta}
+                allPositions={quickTrade.allPositions}
+                positions={quickTrade.qtPositions}
+                recentTrades={quickTrade.qtRecentTrades}
+                onClosePosition={quickTrade.handleClosePosition}
+              />
             )}
           </div>
         )
