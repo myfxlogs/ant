@@ -71,13 +71,14 @@ func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *con
 		if tf == "" {
 			tf = "H1"
 		}
-		from := time.Now().Add(-90 * 24 * time.Hour)
-		bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, &from, nil, 1)
-		if len(bars) == 0 {
-			available := s.availableSymbols(ctx, tf, &from)
+		// Use the backtest's date range if set, otherwise check recent data.
+		from, to := backtestDateRange(req.Msg)
+		bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, from, to, 2)
+		if len(bars) < 2 {
+			available := s.availableSymbols(ctx, tf, nil)
 			if available != "" {
 				return nil, connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("no market data for %s %s — available: %s. Select one from the chart to continue.",
+					fmt.Errorf("no market data for %s %s in the selected date range — available pairs with data: %s",
 						req.Msg.Symbol, tf, available))
 			}
 			return nil, connect.NewError(connect.CodeFailedPrecondition,
@@ -386,6 +387,20 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 	}), nil
 }
 
+// backtestDateRange extracts the date range from the request, or returns nil,nil
+// if not set (meaning the backtest worker will use the full available range).
+func backtestDateRange(msg *antv1.StartBacktestRunRequest) (from, to *time.Time) {
+	if msg.From != nil {
+		t := msg.From.AsTime()
+		from = &t
+	}
+	if msg.To != nil {
+		t := msg.To.AsTime()
+		to = &t
+	}
+	return
+}
+
 // availableSymbols returns a comma-separated list of pairs that have K-line data
 // for the given timeframe, to help the user choose a valid symbol.
 func (s *StrategyExecutionServer) availableSymbols(ctx context.Context, timeframe string, from *time.Time) string {
@@ -418,7 +433,6 @@ func (s *StrategyExecutionServer) HasBacktestData(ctx context.Context, symbol, t
 	if s.marketDataRepo == nil {
 		return false
 	}
-	from := time.Now().Add(-90 * 24 * time.Hour)
-	bars, _ := s.marketDataRepo.GetKlines(ctx, symbol, "", timeframe, &from, nil, 1)
+	bars, _ := s.marketDataRepo.GetKlines(ctx, symbol, "", timeframe, nil, nil, 1)
 	return len(bars) > 0
 }
