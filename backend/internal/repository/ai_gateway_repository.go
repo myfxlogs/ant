@@ -291,11 +291,14 @@ func NewAITokenUsageRepository(db *pgxpool.Pool) *AITokenUsageRepository {
 }
 
 func (r *AITokenUsageRepository) Insert(ctx context.Context, u *AITokenUsage) error {
-	return r.db.QueryRow(ctx,
-		`INSERT INTO ai_token_usage (user_id, wallet_transaction_id, paid_by, provider_id, model_name, feature, input_tokens, output_tokens, cost)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-		u.UserID, u.WalletTransactionID, u.PaidBy, u.ProviderID, u.ModelName, u.Feature, u.InputTokens, u.OutputTokens, u.Cost,
-	).Scan(&u.ID)
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
+	_, err := r.db.Exec(ctx,
+		`INSERT INTO ai_token_usage (id, user_id, wallet_transaction_id, paid_by, provider_id, model_name, feature, input_tokens, output_tokens, cost)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+		u.ID, u.UserID, u.WalletTransactionID, u.PaidBy, u.ProviderID, u.ModelName, u.Feature, u.InputTokens, u.OutputTokens, u.Cost)
+	return err
 }
 
 func (r *AITokenUsageRepository) ListByUser(ctx context.Context, userID uuid.UUID, limit int) ([]*AITokenUsage, error) {
