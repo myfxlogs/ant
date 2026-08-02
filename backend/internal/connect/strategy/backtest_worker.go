@@ -167,13 +167,8 @@ func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *re
 		return s.executeVMBacktest(ctx, params, klines, run)
 	}
 
-	// Go-native compilation path: generated Go strategy via go run.
-	if s.goExecutor == nil {
-		return nil, fmt.Errorf("GoExecutor not configured — cannot run Go-native backtest")
-	}
-	symbolInfo := s.fetchSymbolInfo(ctx, run)
-	req := buildBacktestRequest(run, params, klines, symbolInfo)
-	return s.goExecutor.RunBacktest(ctx, params.code, req)
+		// GoExecutor removed (Gap 3). Go strategies must be converted to MQL.
+	return nil, fmt.Errorf("Go strategy backtest has been retired — please convert your strategy to MQL")
 }
 
 // StartBacktestWorker launches a pool of background workers that poll for PENDING backtest

@@ -52,7 +52,7 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	srv.SetMarketDataRepo(d.marketDataRepo)
 	srv.SetBarSource(strategy.NewLiveSource(d.mthubSvc, d.marketDataRepo))
 	srv.SetMtHub(d.mthubSvc)
-	srv.SetGoExecutor(strategy.NewGoExecutor(".", d.log))
+	// GoExecutor removed per Gap 3 — all strategies route through Bytecode VM.
 	strategyRunRepo := repository.NewStrategyRunRepository(d.pool)
 	srv.SetRunRepo(strategyRunRepo)
 	srv.SetImportedRepo(repository.NewImportedStrategyRepository(d.pool))

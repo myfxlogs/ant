@@ -183,17 +183,10 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 		return nil, err
 	}
 
-	// Go-native path: execute generated Go strategies via proto binary.
+	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
 	if isGoStrategy(req.Msg.Code) {
-		if s.goExecutor == nil {
-			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("go strategy executor not configured"))
-		}
-		resp, err := s.goExecutor.Run(ctx, req.Msg.Code, req.Msg)
-		if err != nil {
-			s.log.Warn("go executor failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("strategy execution failed: %w", err))
-		}
-		return connect.NewResponse(resp), nil
+		return nil, connect.NewError(connect.CodeUnimplemented,
+			fmt.Errorf("Go strategy execution has been retired — please convert your strategy to MQL"))
 	}
 
 	// MQL source requires bar data to produce signals — use StartBacktestRun or ExecuteLive.
@@ -264,16 +257,10 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 	}
 
 	// Go-native compilation path: generated Go strategy via go run.
+	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
 	if isGoStrategy(req.Msg.StrategyCode) {
-		if s.goExecutor == nil {
-			return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("go strategy executor not configured"))
-		}
-		resp, err := s.goExecutor.RunLive(ctx, req.Msg.StrategyCode, req.Msg)
-		if err != nil {
-			s.log.Warn("go executor live failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("live execution failed: %w", err))
-		}
-		return connect.NewResponse(resp), nil
+		return nil, connect.NewError(connect.CodeUnimplemented,
+			fmt.Errorf("Go strategy live execution has been retired — please convert your strategy to MQL"))
 	}
 
 	// MQL path: in-process Bytecode VM execution.
