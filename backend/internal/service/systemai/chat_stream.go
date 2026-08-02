@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"sort"
 	"strings"
 
@@ -202,7 +201,14 @@ func (s *Service) handleStreamResponse(resp *http.Response, p chatProvider, mess
 	if totalContentLen == 0 && totalReasoningLen == 0 && len(toolCallAcc) == 0 {
 		return &failoverErr{msg: fmt.Sprintf("[%s] chat stream empty (finish_reason=%q)", p.providerID, lastFinishReason), transient: true}
 	}
-	s.billStreamPostCall(context.Background(), p, streamUsage, messages, totalContentLen)
+	if billErr := s.billStreamPostCall(context.Background(), p, streamUsage, messages, totalContentLen); billErr != nil {
+		// Content already streamed to user — cannot undo delivery.
+		// Log as CRITICAL: ops must investigate and manually charge.
+		s.log.Error("STREAM BILLING FAILED — content delivered without payment",
+			zap.String("userID", p.userID.String()),
+			zap.String("provider", p.providerID),
+			zap.Error(billErr))
+	}
 	return nil
 }
 
@@ -242,10 +248,9 @@ func finalizeToolCalls(finishReason string, acc map[int]*StreamToolCall) []Strea
 	return out
 }
 
-func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage, messages []ChatMessage, streamedChars int) {
+func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage, messages []ChatMessage, streamedChars int) error {
 	if s.postCallBiller == nil {
-		s.log.Warn("chat stream billing skipped: postCallBiller not configured")
-		return
+		return fmt.Errorf("postCallBiller not configured — billing infrastructure missing")
 	}
 	var inTokens, outTokens int
 	if usage != nil {
@@ -265,13 +270,14 @@ func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage 
 			zap.Int("inTokens", inTokens),
 			zap.Int("outTokens", outTokens),
 			zap.Error(billErr))
-		return
+		return billErr
 	}
 	s.log.Info("chat stream billed",
 		zap.String("userID", p.userID.String()),
 		zap.String("provider", p.providerID),
 		zap.Int("inTokens", inTokens),
 		zap.Int("outTokens", outTokens))
+	return nil
 }
 
 // fallbackNonStream retries the chat completion on the same provider with
@@ -299,7 +305,10 @@ func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, message
 		return err
 	}
 	// Bill after successful fallback — content already delivered via onChunk.
-	if s.postCallBiller != nil {
+	if s.postCallBiller == nil {
+		s.log.Error("FALLBACK BILLING FAILED — postCallBiller not configured, content delivered without payment",
+			zap.String("userID", p.userID.String()), zap.String("provider", p.providerID))
+	} else {
 		var inTokens, outTokens int
 		if usage != nil {
 			inTokens, outTokens = usage.PromptTokens, usage.CompletionTokens
@@ -308,8 +317,8 @@ func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, message
 		}
 		feature := aiFeatureFromCtx(ctx)
 		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
-			fmt.Fprintf(os.Stderr, "[systemai] post-fallback billing failed: user=%s provider=%s err=%v\n",
-				p.userID, p.providerID, billErr)
+			s.log.Error("FALLBACK BILLING FAILED — content delivered without payment",
+				zap.String("userID", p.userID.String()), zap.String("provider", p.providerID), zap.Error(billErr))
 		}
 	}
 	return nil
