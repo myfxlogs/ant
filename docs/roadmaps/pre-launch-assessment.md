@@ -181,6 +181,8 @@
 
 ---
 
+> **详细实施计划**: `docs/roadmaps/pre-launch-implementation-plan.md`（文件级、函数级的步骤拆解）
+
 ## 上线前优先级路线图
 
 ```
