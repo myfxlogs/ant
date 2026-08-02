@@ -42,7 +42,6 @@ export default function UserManagement() {
   };
 
   const columns = [
-    { title: t('admin.userManagement.table.id'), dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
     { title: t('admin.userManagement.table.email'), dataIndex: 'email', key: 'email', width: 200 },
     {
       title: t('admin.userManagement.form.accountNumber'), dataIndex: 'accountNumber', key: 'accountNumber', width: 100,

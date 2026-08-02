@@ -55,6 +55,7 @@ func userWithAccountsToProto(u *repository.UserWithAccounts) *antv1.UserWithAcco
 	if u.DeletedAt != nil {
 		p.DeletedAt = timestamppb.New(*u.DeletedAt)
 	}
+	p.MtAccountCount = int32(u.MTAccountCount)
 	return p
 }
 

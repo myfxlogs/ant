@@ -66,6 +66,7 @@ message UserWithAccounts {
   repeated UserAccountSummary accounts = 11;
   string account_number = 12;
   google.protobuf.Timestamp deleted_at = 13;
+  int32 mt_account_count = 14;
 }
 
 message ListUsersRequest {

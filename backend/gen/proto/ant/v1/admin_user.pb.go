@@ -336,22 +336,23 @@ func (x *UserAccountSummary) GetAccountStatus() string {
 }
 
 type UserWithAccounts struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Nickname      string                 `protobuf:"bytes,4,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
-	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
-	EmailVerified bool                   `protobuf:"varint,7,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	LastLoginAt   *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
-	Accounts      []*UserAccountSummary  `protobuf:"bytes,11,rep,name=accounts,proto3" json:"accounts,omitempty"`
-	AccountNumber string                 `protobuf:"bytes,12,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"`
-	DeletedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username       string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Email          string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Nickname       string                 `protobuf:"bytes,4,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Role           string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
+	Status         string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	EmailVerified  bool                   `protobuf:"varint,7,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	LastLoginAt    *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
+	Accounts       []*UserAccountSummary  `protobuf:"bytes,11,rep,name=accounts,proto3" json:"accounts,omitempty"`
+	AccountNumber  string                 `protobuf:"bytes,12,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"`
+	DeletedAt      *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
+	MtAccountCount int32                  `protobuf:"varint,14,opt,name=mt_account_count,json=mtAccountCount,proto3" json:"mt_account_count,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *UserWithAccounts) Reset() {
@@ -473,6 +474,13 @@ func (x *UserWithAccounts) GetDeletedAt() *timestamppb.Timestamp {
 		return x.DeletedAt
 	}
 	return nil
+}
+
+func (x *UserWithAccounts) GetMtAccountCount() int32 {
+	if x != nil {
+		return x.MtAccountCount
+	}
+	return 0
 }
 
 type ListUsersRequest struct {
@@ -1403,7 +1411,7 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x05login\x18\x02 \x01(\tR\x05login\x12\x17\n" +
 	"\amt_type\x18\x03 \x01(\tR\x06mtType\x12%\n" +
 	"\x0ebroker_company\x18\x04 \x01(\tR\rbrokerCompany\x12%\n" +
-	"\x0eaccount_status\x18\x05 \x01(\tR\raccountStatus\"\x93\x04\n" +
+	"\x0eaccount_status\x18\x05 \x01(\tR\raccountStatus\"\xbd\x04\n" +
 	"\x10UserWithAccounts\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -1421,7 +1429,8 @@ const file_admin_user_proto_rawDesc = "" +
 	"\baccounts\x18\v \x03(\v2\x1a.ant.v1.UserAccountSummaryR\baccounts\x12%\n" +
 	"\x0eaccount_number\x18\f \x01(\tR\raccountNumber\x129\n" +
 	"\n" +
-	"deleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\"\xae\x01\n" +
+	"deleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\x12(\n" +
+	"\x10mt_account_count\x18\x0e \x01(\x05R\x0emtAccountCount\"\xae\x01\n" +
 	"\x10ListUsersRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
