@@ -190,6 +190,7 @@ func (p *pipelineState) makeOnAccountProfit(
 				p.log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 			}
 		}()
+		accountSvc.UpdateSummaryCache(userID, accountID, pr.Balance, pr.Equity, "connected")
 		mthubSvc.PublishAccountProfit(&mthub.AccountProfitEvent{
 			AccountID: accountID, UserID: userID, Platform: pr.Platform,
 			Balance: pr.Balance, Credit: pr.Credit, Equity: pr.Equity,
@@ -198,7 +199,6 @@ func (p *pipelineState) makeOnAccountProfit(
 			Status: "connected", Timestamp: time.Now(),
 			Positions: convertProfitPositions(pr.Positions),
 		})
-		accountSvc.UpdateSummaryCache(userID, accountID, pr.Balance, pr.Equity, "connected")
 		if pr.MarginLevel.GreaterThan(decimal.Zero) {
 			p.thresholdMu.RLock()
 			callPct := p.marginCallThresholds[accountID]
