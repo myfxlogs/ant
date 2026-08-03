@@ -114,18 +114,24 @@ export function useAIWorkflow(
 
   const handleAskAIForValidation = useCallback(() => {
     const vr = codeCtx.validationResult;
-    if (!vr || vr.valid) return;
-    const errors = (vr.errors || []).map(e => `- ${e}`).join('\n');
-    const warnings = (vr.warnings || []).map(w => `- ${w}`).join('\n');
     const strategyLang = isMQLCode(codeCtx.code) ? 'MQL' : 'Go';
-    const prompt = [
-      `I need help understanding and fixing validation issues in my ${strategyLang} trading strategy.`,
-      'Please analyze these issues and ask me clarifying questions about my trading logic,',
-      'so I can explain what I intended. Help me fix them step by step.',
-      '', '**Validation errors:**', errors || '(none)', '',
-      warnings ? '**Warnings:**' : '', warnings || '',
-      '', 'Please ask me one question at a time. Do not rewrite the code yet — help me understand the problems first.',
-    ].filter(Boolean).join('\n');
+    let prompt: string;
+    if (vr && !vr.valid) {
+      const errors = (vr.errors || []).map(e => `- ${e}`).join('\n');
+      const warnings = (vr.warnings || []).map(w => `- ${w}`).join('\n');
+      prompt = [
+        `I need help fixing validation issues in my ${strategyLang} strategy.`,
+        '', '**Errors:**', errors || '(none)', '',
+        warnings ? '**Warnings:**\n' + warnings : '',
+        '', 'Ask me one question at a time.',
+      ].filter(Boolean).join('\n');
+    } else {
+      prompt = [
+        `Please review my ${strategyLang} trading strategy below.`,
+        'Analyze the logic, check for common pitfalls (look-ahead bias, overfitting, position sizing),',
+        'and suggest improvements. Be specific and actionable.',
+      ].join('\n');
+    }
     setChatAutoApply(false);
     setAiOptimizePrompt(prompt);
     setCodePanelVisible(true);
