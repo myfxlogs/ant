@@ -137,6 +137,8 @@ type AIModel struct {
 	DisplayName     string    `db:"display_name"`
 	PricePer1MInput  string   `db:"price_per_1m_input"`
 	PricePer1MOutput string   `db:"price_per_1m_output"`
+	MarkupRate      string    `db:"markup_rate"`
+	ModelTier       string    `db:"model_tier"`
 	Enabled         bool      `db:"enabled"`
 	SortOrder       int       `db:"sort_order"`
 	CreatedAt       time.Time `db:"created_at"`
@@ -180,7 +182,7 @@ func (r *SystemAIProviderRepository) GetByID(ctx context.Context, id uuid.UUID) 
 func (r *AIModelRepository) ListEnabled(ctx context.Context) ([]*AIModel, error) {
 	rows, err := r.db.Query(ctx,
 		`SELECT m.id, m.provider_id, m.model_name, m.display_name, m.price_per_1m_input, m.price_per_1m_output,
-		        m.enabled, m.sort_order, m.created_at
+		        m.markup_rate, m.model_tier, m.enabled, m.sort_order, m.created_at
 		 FROM ai_models m JOIN system_ai_providers p ON m.provider_id = p.id
 		 WHERE m.enabled = true AND p.enabled = true ORDER BY p.name, m.sort_order`)
 	if err != nil {
@@ -193,7 +195,7 @@ func (r *AIModelRepository) ListEnabled(ctx context.Context) ([]*AIModel, error)
 func (r *AIModelRepository) ListAll(ctx context.Context) ([]*AIModel, error) {
 	rows, err := r.db.Query(ctx,
 		`SELECT m.id, m.provider_id, m.model_name, m.display_name, m.price_per_1m_input, m.price_per_1m_output,
-		        m.enabled, m.sort_order, m.created_at
+		        m.markup_rate, m.model_tier, m.enabled, m.sort_order, m.created_at
 		 FROM ai_models m ORDER BY sort_order`)
 	if err != nil {
 		return nil, err
@@ -207,7 +209,7 @@ func scanAIModelRows(rows interface{ Next() bool; Scan(...interface{}) error; Er
 	for rows.Next() {
 		var m AIModel
 		var dn *string
-		if err := rows.Scan(&m.ID, &m.ProviderID, &m.ModelName, &dn, &m.PricePer1MInput, &m.PricePer1MOutput, &m.Enabled, &m.SortOrder, &m.CreatedAt); err != nil {
+		if err := rows.Scan(&m.ID, &m.ProviderID, &m.ModelName, &dn, &m.PricePer1MInput, &m.PricePer1MOutput, &m.MarkupRate, &m.ModelTier, &m.Enabled, &m.SortOrder, &m.CreatedAt); err != nil {
 			return nil, err
 		}
 		if dn != nil {
@@ -222,15 +224,15 @@ func (r *AIModelRepository) Upsert(ctx context.Context, m *AIModel) (uuid.UUID, 
 	if m.ID != uuid.Nil {
 		_, err := r.db.Exec(ctx,
 			`UPDATE ai_models SET model_name=$1, display_name=$2, price_per_1m_input=$3, price_per_1m_output=$4,
-			 enabled=$5, sort_order=$6 WHERE id=$7`,
-			m.ModelName, m.DisplayName, m.PricePer1MInput, m.PricePer1MOutput, m.Enabled, m.SortOrder, m.ID)
+			 markup_rate=$5, model_tier=$6, enabled=$7, sort_order=$8 WHERE id=$9`,
+			m.ModelName, m.DisplayName, m.PricePer1MInput, m.PricePer1MOutput, m.MarkupRate, m.ModelTier, m.Enabled, m.SortOrder, m.ID)
 		return m.ID, err
 	}
 	id := uuid.New()
 	_, err := r.db.Exec(ctx,
-		`INSERT INTO ai_models (id, provider_id, model_name, display_name, price_per_1m_input, price_per_1m_output, enabled, sort_order)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-		id, m.ProviderID, m.ModelName, m.DisplayName, m.PricePer1MInput, m.PricePer1MOutput, m.Enabled, m.SortOrder)
+		`INSERT INTO ai_models (id, provider_id, model_name, display_name, price_per_1m_input, price_per_1m_output, markup_rate, model_tier, enabled, sort_order)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+		id, m.ProviderID, m.ModelName, m.DisplayName, m.PricePer1MInput, m.PricePer1MOutput, m.MarkupRate, m.ModelTier, m.Enabled, m.SortOrder)
 	return id, err
 }
 
@@ -243,11 +245,11 @@ func (r *AIModelRepository) GetByProviderAndModel(ctx context.Context, providerI
 	m := &AIModel{}
 	err := r.db.QueryRow(ctx,
 		`SELECT m.id, m.provider_id, m.model_name, m.display_name, m.price_per_1m_input, m.price_per_1m_output,
-		        m.enabled, m.sort_order, m.created_at
+		        m.markup_rate, m.model_tier, m.enabled, m.sort_order, m.created_at
 		 FROM ai_models m JOIN system_ai_providers p ON m.provider_id = p.id
 		 WHERE p.provider_id = $1 AND m.model_name = $2`, providerID, modelName,
 	).Scan(&m.ID, &m.ProviderID, &m.ModelName, &m.DisplayName,
-		&m.PricePer1MInput, &m.PricePer1MOutput,
+		&m.PricePer1MInput, &m.PricePer1MOutput, &m.MarkupRate, &m.ModelTier,
 		&m.Enabled, &m.SortOrder, &m.CreatedAt)
 	if err != nil {
 		return nil, err
@@ -257,7 +259,7 @@ func (r *AIModelRepository) GetByProviderAndModel(ctx context.Context, providerI
 
 func (r *AIModelRepository) ListByProvider(ctx context.Context, providerID uuid.UUID) ([]*AIModel, error) {
 	rows, err := r.db.Query(ctx,
-		`SELECT id, provider_id, model_name, display_name, price_per_1m_input, price_per_1m_output, enabled, sort_order, created_at
+		`SELECT id, provider_id, model_name, display_name, price_per_1m_input, price_per_1m_output, markup_rate, model_tier, enabled, sort_order, created_at
 		 FROM ai_models WHERE provider_id=$1 ORDER BY sort_order`, providerID)
 	if err != nil {
 		return nil, err
@@ -279,6 +281,7 @@ type AITokenUsage struct {
 	InputTokens         int        `db:"input_tokens"`
 	OutputTokens        int        `db:"output_tokens"`
 	Cost                string     `db:"cost"`
+	SessionID           *uuid.UUID `db:"session_id"`
 	CreatedAt           time.Time  `db:"created_at"`
 }
 
@@ -295,9 +298,9 @@ func (r *AITokenUsageRepository) Insert(ctx context.Context, u *AITokenUsage) er
 		u.ID = uuid.New()
 	}
 	_, err := r.db.Exec(ctx,
-		`INSERT INTO ai_token_usage (id, user_id, wallet_transaction_id, paid_by, provider_id, model_name, feature, input_tokens, output_tokens, cost)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-		u.ID, u.UserID, u.WalletTransactionID, u.PaidBy, u.ProviderID, u.ModelName, u.Feature, u.InputTokens, u.OutputTokens, u.Cost)
+		`INSERT INTO ai_token_usage (id, user_id, wallet_transaction_id, paid_by, provider_id, model_name, feature, input_tokens, output_tokens, cost, session_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+		u.ID, u.UserID, u.WalletTransactionID, u.PaidBy, u.ProviderID, u.ModelName, u.Feature, u.InputTokens, u.OutputTokens, u.Cost, u.SessionID)
 	return err
 }
 
@@ -321,6 +324,34 @@ func (r *AITokenUsageRepository) MonthlyCost(ctx context.Context, userID uuid.UU
 		`SELECT COALESCE(SUM(cost::numeric), 0)::text
 		 FROM ai_token_usage
 		 WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`, userID).Scan(&cost)
+	return cost, err
+}
+
+func (r *AITokenUsageRepository) DailyTokenUsage(ctx context.Context, userID uuid.UUID) (int, error) {
+	var total int
+	err := r.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(input_tokens + output_tokens), 0)::int
+		 FROM ai_token_usage
+		 WHERE user_id = $1 AND created_at >= date_trunc('day', NOW())`, userID).Scan(&total)
+	return total, err
+}
+
+func (r *AITokenUsageRepository) DailySessionCount(ctx context.Context, userID uuid.UUID) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx,
+		`SELECT COUNT(DISTINCT session_id)::int
+		 FROM ai_token_usage
+		 WHERE user_id = $1 AND created_at >= date_trunc('day', NOW())
+		   AND session_id IS NOT NULL`, userID).Scan(&count)
+	return count, err
+}
+
+func (r *AITokenUsageRepository) DailyPlatformCost(ctx context.Context) (string, error) {
+	var cost string
+	err := r.db.QueryRow(ctx,
+		`SELECT COALESCE(SUM(cost::numeric), 0)::text
+		 FROM ai_token_usage
+		 WHERE paid_by = 'system' AND created_at >= date_trunc('day', NOW())`).Scan(&cost)
 	return cost, err
 }
 

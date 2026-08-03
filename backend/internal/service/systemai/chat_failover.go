@@ -231,7 +231,12 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID)
 	primary, rest, seenPID := s.resolveUserProviders(ctx, userID, rows, primaryPID, primaryModel)
 	out := append(primary, rest...)
 
+	// Cost breaker: when tripped, block system-paid Gateway fallback.
+	// BYO-key users (out > 0) continue to work; only users with no own providers are blocked.
 	if len(out) == 0 && s.gatewayProviderRepo != nil {
+		if s.costBreaker != nil && s.costBreaker.IsTripped(ctx) {
+			return nil, fmt.Errorf("platform daily cost limit reached — configure your own API key to continue")
+		}
 		out = s.resolveGatewayProviders(ctx, userID, seenPID, primaryPID, primaryModel, out)
 	}
 	if len(out) == 0 {

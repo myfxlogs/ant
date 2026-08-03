@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { authApi, type User } from '@/client/auth';
 import { getErrorMessage } from '@/utils/error';
 import { showError, showSuccess, showWarning } from '@/utils/message';
+import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import i18n from '@/i18n';
 
 export function useAuth() {
@@ -32,6 +33,7 @@ export function useAuth() {
   const register = useCallback(async (data: { email: string; password: string; username?: string }) => {
     try {
       const result = await authApi.register(data.email, data.password, data.username);
+      trackFunnelEvent(FunnelEvents.REGISTER);
       if (result.emailVerificationSent) {
         showSuccess(i18n.t('auth.messages.registerSuccess'));
         navigate('/verify-email?email=' + encodeURIComponent(data.email));

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -17,6 +18,12 @@ import (
 // SpillPendingFiles is the count of unreplayed spill JSONL files.
 // Updated every 30s by spill_replay goroutine.
 var spillPendingFiles atomic.Int64
+
+// --- Circuit breaker state tracking ---
+
+// breakerStates tracks the current state of each broker circuit breaker
+// keyed by broker key. Updated by Manager.makeBreakerCallback.
+var breakerStates sync.Map // map[string]State
 
 // UpdateSpillPendingFiles scans the spill directory and updates the gauge.
 func UpdateSpillPendingFiles(spillDir string) {
@@ -130,6 +137,13 @@ func writeLegacyMetrics(b *strings.Builder) {
 	fmt.Fprintf(b, "md_stuffing_detected_total %d\n", StuffingDetectedTotal())
 	b.WriteString("# TYPE md_spread_anomaly_total counter\n")
 	fmt.Fprintf(b, "md_spread_anomaly_total %d\n", SpreadAnomalyTotal())
+
+	// Circuit breaker states (Phase 0.2)
+	b.WriteString("# TYPE md_circuit_breaker_state gauge\n")
+	breakerStates.Range(func(key, val any) bool {
+		fmt.Fprintf(b, "md_circuit_breaker_state{breaker_key=%q} %d\n", key, val.(State))
+		return true
+	})
 }
 
 // MetricsHandler returns an http.Handler that serves mdgateway custom metrics

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// SubmitSessionFeedback records a user's good/bad rating for an AI generation session.
+message SubmitSessionFeedbackRequest {
+  string session_id = 1;
+  string rating = 2;   // "good" or "bad"
+  string reason = 3;   // optional free-text reason
+}
+
+message SubmitSessionFeedbackResponse {
+  bool success = 1;
+}
+
+// GetSessionFeedback returns the user's feedback for a session, if any.
+message GetSessionFeedbackRequest {
+  string session_id = 1;
+}
+
+message GetSessionFeedbackResponse {
+  string rating = 1;
+  string reason = 2;
+  int64 created_at_ts_ms = 3;
+}

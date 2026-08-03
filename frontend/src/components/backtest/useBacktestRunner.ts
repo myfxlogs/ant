@@ -7,6 +7,7 @@ import {
   SETTINGS_SAVE_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
+import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { BacktestRunUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
 import type { GateEvaluationUpdate, GateResult } from '@/gen/ant/v1/ai_gate_pb';
 import {
@@ -174,6 +175,7 @@ export function useBacktestRunner() {
     setSubmitting(true);
     setActiveTab('results');
     try {
+      trackFunnelEvent(FunnelEvents.FIRST_BACKTEST);
       const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,
         mode: 'KLINE_RANGE',

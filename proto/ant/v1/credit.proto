@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// CreditService provides user-facing credit balance and transaction history.
+service CreditService {
+  rpc GetCreditBalance(GetCreditBalanceRequest) returns (GetCreditBalanceResponse);
+  rpc ListCreditTransactions(ListCreditTransactionsRequest) returns (ListCreditTransactionsResponse);
+}
+
+// AdminCreditService provides admin-facing credit management.
+service AdminCreditService {
+  // Admin manually adds credits to a user's account.
+  rpc AddCredits(AddCreditsRequest) returns (AddCreditsResponse);
+  // Admin refunds credits (unused within 7 days).
+  rpc RefundCredits(RefundCreditsRequest) returns (RefundCreditsResponse);
+  // List all credit transactions platform-wide.
+  rpc ListAllCreditTransactions(ListAllCreditTransactionsRequest) returns (ListAllCreditTransactionsResponse);
+}
+
+message CreditTransaction {
+  string id = 1;
+  string tx_type = 2;
+  string amount = 3;
+  string balance_before = 4;
+  string balance_after = 5;
+  string source = 6;
+  string description = 7;
+  int64 created_at_ts_ms = 8;
+}
+
+message GetCreditBalanceRequest {}
+
+message GetCreditBalanceResponse {
+  string balance = 1;
+  string frozen_balance = 2;
+}
+
+message ListCreditTransactionsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message ListCreditTransactionsResponse {
+  repeated CreditTransaction transactions = 1;
+  int64 total = 2;
+}
+
+message AddCreditsRequest {
+  string user_id = 1;
+  string amount = 2;       // in credits, positive
+  string description = 3;
+}
+
+message AddCreditsResponse {
+  string new_balance = 1;
+}
+
+message RefundCreditsRequest {
+  string user_id = 1;
+  string amount = 2;
+  string description = 3;
+}
+
+message RefundCreditsResponse {
+  string new_balance = 1;
+}
+
+message ListAllCreditTransactionsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string user_id = 3;
+  string tx_type = 4;
+}
+
+message ListAllCreditTransactionsResponse {
+  repeated CreditTransaction transactions = 1;
+  int64 total = 2;
+  string user_email = 3;
+}

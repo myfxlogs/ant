@@ -6,6 +6,7 @@ option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import public "ai_chat.proto";
 import public "ai_agent.proto";
+import public "ai_session_feedback.proto";
 
 service AIService {
   rpc Chat(ChatRequest) returns (ChatResponse);
@@ -20,4 +21,6 @@ service AIService {
   rpc BatchSetAgents(BatchSetAgentsRequest) returns (BatchSetAgentsResponse);
   rpc ResolveSession(ResolveSessionRequest) returns (ResolveSessionResponse);
   rpc UpdateSessionStrategyKey(UpdateSessionStrategyKeyRequest) returns (UpdateSessionStrategyKeyResponse);
+  rpc SubmitSessionFeedback(SubmitSessionFeedbackRequest) returns (SubmitSessionFeedbackResponse);
+  rpc GetSessionFeedback(GetSessionFeedbackRequest) returns (GetSessionFeedbackResponse);
 }

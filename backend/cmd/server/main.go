@@ -125,6 +125,7 @@ func main() {
 	mthubSvc.SetTickBroker(tickBroker)
 	mthubSvc.SetTradeBroker(tradeBroker)
 	mthubSvc.SetStatusBroker(statusBroker)
+
 	// --- Analytics cache ---
 	analyticsCache := service.NewAnalyticsCache(rdb.Client(), log)
 
@@ -135,6 +136,10 @@ func main() {
 	spillDir := cfg.SpillDir
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
 	defer pipelineCancel()
+
+	// Phase 0.2: Position snapshot persistence for mtapi disconnection display.
+	snapshotPersister := mthub.NewSnapshotPersister(snapshotBroker, pool, log)
+	go snapshotPersister.Start(pipelineCtx)
 
 	var emailNotifier *notifier.EmailNotifier             // set after creation; referenced by OnAccountProfit closure
 	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure

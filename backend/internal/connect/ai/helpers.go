@@ -6,6 +6,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/interceptor"
 )
@@ -17,4 +18,8 @@ func userIDFromCtx(ctx context.Context) (uuid.UUID, error) {
 		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
 	}
 	return id, nil
+}
+
+func parseDecimal(s string) (decimal.Decimal, error) {
+	return decimal.NewFromString(s)
 }

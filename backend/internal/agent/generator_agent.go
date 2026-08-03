@@ -28,6 +28,22 @@ func (g *Generator) runAgentLoop(
 	streamOrAbort func(*antv1.AgentGenerateStrategyChunk) error,
 ) error {
 	result := &generateState{}
+	sessionID := msg.ConversationId
+	if sessionID == "" {
+		sessionID = uuid.New().String()
+	}
+
+	// Phase 2: credit pre-hold at session start.
+	if g.creditSvc != nil {
+		if err := g.creditSvc.PreHold(ctx, userID, sessionID, "", ""); err != nil {
+			g.log.Warn("generator: credit pre-hold failed", zap.Error(err))
+			_ = streamOrAbort(&antv1.AgentGenerateStrategyChunk{
+				Phase: "error",
+				Error: "insufficient credits — please top up your account",
+			})
+			return nil
+		}
+	}
 
 	registry := buildPythonToolRegistry(result, g.mkt, msg.BacktestConfig)
 	if g.dbExec != nil && g.dbQuery != nil {
@@ -59,6 +75,23 @@ func (g *Generator) runAgentLoop(
 
 	g.persistConversation(ctx, userID, convID, userPrompt, raw, turnDataBytes)
 	g.persistGeneratorMemory(ctx, userID, msg, result)
+
+	// Phase 2: credit settlement at session end.
+	if g.creditSvc != nil {
+		if loopErr != nil {
+			// Session failed — release the hold.
+			if err := g.creditSvc.ReleaseHold(ctx, userID, sessionID); err != nil {
+				g.log.Warn("generator: credit release failed", zap.Error(err))
+			}
+		} else {
+			// Session succeeded — settle actual cost.
+			// Token counts are tracked by the post-call biller; here we settle the hold with zero
+			// since actual token costs are already deducted via the billing wire.
+			if err := g.creditSvc.Settle(ctx, userID, sessionID, "", "", 0, 0); err != nil {
+				g.log.Warn("generator: credit settle failed", zap.Error(err))
+			}
+		}
+	}
 
 	if loopErr != nil {
 		g.log.Warn("generator: agent loop ended", zap.Error(loopErr))

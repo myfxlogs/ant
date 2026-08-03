@@ -6,6 +6,8 @@ import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
 import ChatHistory, { type ChatTurn, type Phase } from './ChatHistory';
 import ChatInput from './ChatInput';
+import { SessionFeedback } from './SessionFeedback';
+import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 interface Props {
@@ -131,6 +133,7 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
     const msg = userInput.trim();
     if (!msg) return;
 
+    trackFunnelEvent(FunnelEvents.FIRST_GENERATION);
     abortRef.current?.();
     setPlanRefining(false);
 
@@ -191,6 +194,11 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
         disabled={generating}
         hasResult={hasCode}
       />
+
+      {/* ── Session feedback (visible after first turn) ── */}
+      {turns.length > 0 && (
+        <SessionFeedback sessionId={conversationIdRef.current} />
+      )}
     </div>
   );
 }

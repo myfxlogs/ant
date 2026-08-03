@@ -45,6 +45,7 @@ type PositionSnapshotItem struct {
 type PositionSnapshotBroker struct {
 	mu          sync.RWMutex
 	subscribers map[string][]chan *PositionSnapshot
+	allSubs     []chan *PositionSnapshot
 }
 
 func NewPositionSnapshotBroker() *PositionSnapshotBroker {
@@ -54,9 +55,11 @@ func NewPositionSnapshotBroker() *PositionSnapshotBroker {
 func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 	b.mu.RLock()
 	src := b.subscribers[ev.AccountID]
+	all := b.allSubs
 	b.mu.RUnlock()
-	chs := make([]chan *PositionSnapshot, len(src))
-	copy(chs, src)
+	chs := make([]chan *PositionSnapshot, 0, len(src)+len(all))
+	chs = append(chs, src...)
+	chs = append(chs, all...)
 	for _, ch := range chs {
 		select {
 		case ch <- ev:
@@ -76,6 +79,26 @@ func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSn
 		for i, c := range b.subscribers[accountID] {
 			if c == ch {
 				b.subscribers[accountID] = append(b.subscribers[accountID][:i], b.subscribers[accountID][i+1:]...)
+				close(ch)
+				return
+			}
+		}
+	}
+}
+
+// SubscribeAll returns a channel receiving all snapshots regardless of accountID.
+// Used by the SnapshotPersister for throttled PG persistence.
+func (b *PositionSnapshotBroker) SubscribeAll() (<-chan *PositionSnapshot, func()) {
+	ch := make(chan *PositionSnapshot, 64)
+	b.mu.Lock()
+	b.allSubs = append(b.allSubs, ch)
+	b.mu.Unlock()
+	return ch, func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for i, c := range b.allSubs {
+			if c == ch {
+				b.allSubs = append(b.allSubs[:i], b.allSubs[i+1:]...)
 				close(ch)
 				return
 			}

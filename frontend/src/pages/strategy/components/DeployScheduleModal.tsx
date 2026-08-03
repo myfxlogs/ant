@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, InputNumber, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAccount } from '@/hooks/useAccount';
 import { strategyScheduleApi } from '@/client/strategy-schedules';
+import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { ScheduleConfig } from '@/gen/ant/v1/strategy_schedule_entity_pb';
 import type { PartialMessage } from '@bufbuild/protobuf';
 import SymbolPicker from '@/components/chart/SymbolPicker';
@@ -83,6 +84,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
         scheduleType: backendType,
         scheduleConfig,
       });
+      trackFunnelEvent(FunnelEvents.FIRST_LIVE);
       message.success(t(MESSAGES_SCHEDULE_CREATED_KEY));
       onCreated?.();
       onClose();

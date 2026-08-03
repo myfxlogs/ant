@@ -23,6 +23,7 @@ func wireAIBilling(
 	gatewayModelRepo *repository.AIModelRepository,
 	quotaChecker *service.QuotaChecker,
 	tokenUsageRepo *repository.AITokenUsageRepository,
+	dailyQuota *service.DailyQuotaChecker,
 ) {
 	// Wire wallet pre-check: block AI calls when balance is insufficient OR quota exceeded.
 	aiMinBalance := decimal.NewFromFloat(1.0)
@@ -32,7 +33,13 @@ func wireAIBilling(
 		}
 	}
 	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) error {
-		// 1. Check subscription AI token quota.
+		// 1. Per-user daily quota (sessions + tokens).
+		if dailyQuota != nil {
+			if err := dailyQuota.CheckQuota(ctx, userID); err != nil {
+				return err
+			}
+		}
+		// 2. Check subscription AI token quota (monthly).
 		if quotaChecker != nil {
 			usedThisMonth := 0
 			if summary, err := tokenUsageRepo.MonthlySummary(ctx, userID); err == nil {
@@ -45,7 +52,7 @@ func wireAIBilling(
 				return systemai.ErrInsufficientBalance
 			}
 		}
-		// 2. Check wallet balance.
+		// 3. Check wallet balance.
 		w, err := walletSvc.GetOrCreateWallet(ctx, userID)
 		if err != nil {
 			return nil // don't block on wallet lookup errors

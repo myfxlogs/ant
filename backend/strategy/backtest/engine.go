@@ -216,6 +216,12 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 				fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
 			}
 		}
+	case sdk.ActionCancelAll:
+		for _, o := range e.broker.Orders(sig.Magic) {
+			if _, err := e.broker.OrderDelete(o.Ticket); err != nil {
+				fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+			}
+		}
 	}
 }
 

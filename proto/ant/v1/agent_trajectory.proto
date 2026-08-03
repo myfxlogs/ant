@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// AgentTrajectoryEvent records a single step in an agent execution loop.
+// Used for data collection, replay, quality analysis, and cost tracking.
+message AgentTrajectoryEventRecord {
+  string id = 1;
+  string session_id = 2;
+  string user_id = 3;
+  int32 event_seq = 4;
+  string event_type = 5;
+  string content = 6;
+  bytes metadata = 7;
+  int32 token_input = 8;
+  int32 token_output = 9;
+  string cost = 10;
+  int32 duration_ms = 11;
+  int64 created_at_ts_ms = 12;
+}
+
+// ListTrajectoryEvents requests all events for a session.
+message ListTrajectoryEventsRequest {
+  string session_id = 1;
+}
+
+message ListTrajectoryEventsResponse {
+  repeated AgentTrajectoryEventRecord events = 1;
+}

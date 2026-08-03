@@ -15,6 +15,7 @@ backend/cmd/server/server
 backend/migrate-ch
 backend/ant
 backend/ant-vault
+backend/hdgen
 backend/md-doctor
 backend/slo-report
 backend/*.test
@@ -64,6 +65,7 @@ Emulator/
 mtproto/
 test/
 frontend/e2e/
+reference/
 
 # Local test reports / traces
 frontend/playwright-report/

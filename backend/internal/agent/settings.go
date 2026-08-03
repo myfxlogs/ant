@@ -314,3 +314,17 @@ func (s *SettingsStore) ListManagedSettings(ctx context.Context) ([]AgentSetting
 	return result, nil
 }
 
+// GetManagedSetting returns the value of a single managed setting key, or empty string if not set.
+func (s *SettingsStore) GetManagedSetting(ctx context.Context, key string) (string, error) {
+	if s.pool == nil {
+		return "", nil
+	}
+	var val string
+	err := s.pool.QueryRow(ctx,
+		`SELECT value FROM agent_managed_settings WHERE key = $1`, key).Scan(&val)
+	if err != nil {
+		return "", nil // not found = use default
+	}
+	return val, nil
+}
+

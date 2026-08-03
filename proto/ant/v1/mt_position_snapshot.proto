@@ -1,0 +1,37 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+import "google/protobuf/timestamp.proto";
+
+// MtPositionSnapshotRecord is the persistence format for the last-known
+// position snapshot of an MT account. Stored as BYTEA in mt_position_snapshots.
+message MtPositionSnapshotRecord {
+  string account_id = 1;
+  string user_id = 2;
+  string platform = 3;
+  string balance = 4;
+  string credit = 5;
+  string equity = 6;
+  string margin = 7;
+  string free_margin = 8;
+  string margin_level = 9;
+  string profit = 10;
+  repeated MtPositionSnapshotItem positions = 11;
+  google.protobuf.Timestamp captured_at = 12;
+}
+
+message MtPositionSnapshotItem {
+  int64 ticket = 1;
+  string symbol = 2;
+  string type = 3;
+  string volume = 4;
+  string open_price = 5;
+  string current_price = 6;
+  string stop_loss = 7;
+  string take_profit = 8;
+  string profit = 9;
+  string swap = 10;
+  string commission = 11;
+  string comment = 12;
+  int64 open_time = 13;
+}

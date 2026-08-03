@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
@@ -76,6 +79,7 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
 	aiServer := ai.NewAIServer(aiSvc, p.ConvRepo, p.Session, log)
 	aiServer.SetAgentDefRepo(agentDefRepo)
+	aiServer.SetFeedbackRepo(repository.NewSessionFeedbackRepository(pool))
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
@@ -89,9 +93,42 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	gatewayServer := gateway.NewAIGatewayServer(gatewayProviderRepo, gatewayModelRepo, gatewayTokenUsageRepo, p.WalletSvc, aiBox, log)
 	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
-	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo)
+
+	// Phase 1.1: per-user daily quota + platform-wide daily cost circuit breaker.
+	dailyQuotaCfg := service.DailyQuotaConfig{
+		MaxSessionsPerDay: envInt("AI_DAILY_MAX_SESSIONS", 5),
+		MaxTokensPerDay:   envInt("AI_DAILY_MAX_TOKENS", 200_000),
+	}
+	dailyQuota := service.NewDailyQuotaChecker(gatewayTokenUsageRepo, dailyQuotaCfg, log)
+	costThreshold := decimal.NewFromInt(int64(envInt("AI_DAILY_COST_LIMIT_USD", 50)))
+	if v := os.Getenv("AI_DAILY_COST_LIMIT_USD"); v != "" {
+		if parsed, err := decimal.NewFromString(v); err == nil && parsed.IsPositive() {
+			costThreshold = parsed
+		}
+	}
+	costBreaker := service.NewPlatformCostBreaker(gatewayTokenUsageRepo, costThreshold, log)
+
+	// Wire runtime config from agent_managed_settings (admin UI adjustable without restart).
+	settingsStore := agent.NewSettingsStore(pool)
+	dailyQuota.SetManagedSettingProvider(settingsStore)
+	costBreaker.SetManagedSettingProvider(settingsStore)
+
+	// BYO-only degradation: when cost breaker trips, system-paid Gateway fallback is blocked,
+	// but BYO-key users continue to work.
+	aiSvc.SetCostBreaker(costBreaker)
+
+	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo, dailyQuota)
+
+	// Phase 2: credit-based AI billing.
+	creditRepo := repository.NewCreditRepository(pool)
+	creditSvc := service.NewCreditService(creditRepo, gatewayModelRepo, log)
+	creditServer := ai.NewCreditServer(creditSvc, creditRepo, log)
+	mux.Handle(antv1c.NewCreditServiceHandler(creditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	adminCreditServer := ai.NewAdminCreditServer(creditRepo, log)
+	mux.Handle(antv1c.NewAdminCreditServiceHandler(adminCreditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	agentGateway := agent.NewGatewayServer(pool, p.MarketDataRepo, aiSvc, log)
+	agentGateway.Generator().SetCreditSvc(creditSvc)
 	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	p.MktplaceHandler.SetGenerator(agentGateway.Generator())
@@ -157,4 +194,13 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 		agentGateway:   agentGateway,
 		gateEvalServer: gateEvalServer,
 	}
+}
+
+func envInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			return n
+		}
+	}
+	return def
 }

@@ -63,6 +63,12 @@ const (
 	// AIServiceUpdateSessionStrategyKeyProcedure is the fully-qualified name of the AIService's
 	// UpdateSessionStrategyKey RPC.
 	AIServiceUpdateSessionStrategyKeyProcedure = "/ant.v1.AIService/UpdateSessionStrategyKey"
+	// AIServiceSubmitSessionFeedbackProcedure is the fully-qualified name of the AIService's
+	// SubmitSessionFeedback RPC.
+	AIServiceSubmitSessionFeedbackProcedure = "/ant.v1.AIService/SubmitSessionFeedback"
+	// AIServiceGetSessionFeedbackProcedure is the fully-qualified name of the AIService's
+	// GetSessionFeedback RPC.
+	AIServiceGetSessionFeedbackProcedure = "/ant.v1.AIService/GetSessionFeedback"
 )
 
 // AIServiceClient is a client for the ant.v1.AIService service.
@@ -79,6 +85,8 @@ type AIServiceClient interface {
 	BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error)
 	ResolveSession(context.Context, *connect.Request[v1.ResolveSessionRequest]) (*connect.Response[v1.ResolveSessionResponse], error)
 	UpdateSessionStrategyKey(context.Context, *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error)
+	SubmitSessionFeedback(context.Context, *connect.Request[v1.SubmitSessionFeedbackRequest]) (*connect.Response[v1.SubmitSessionFeedbackResponse], error)
+	GetSessionFeedback(context.Context, *connect.Request[v1.GetSessionFeedbackRequest]) (*connect.Response[v1.GetSessionFeedbackResponse], error)
 }
 
 // NewAIServiceClient constructs a client for the ant.v1.AIService service. By default, it uses the
@@ -158,6 +166,18 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 			connect.WithSchema(aIServiceMethods.ByName("UpdateSessionStrategyKey")),
 			connect.WithClientOptions(opts...),
 		),
+		submitSessionFeedback: connect.NewClient[v1.SubmitSessionFeedbackRequest, v1.SubmitSessionFeedbackResponse](
+			httpClient,
+			baseURL+AIServiceSubmitSessionFeedbackProcedure,
+			connect.WithSchema(aIServiceMethods.ByName("SubmitSessionFeedback")),
+			connect.WithClientOptions(opts...),
+		),
+		getSessionFeedback: connect.NewClient[v1.GetSessionFeedbackRequest, v1.GetSessionFeedbackResponse](
+			httpClient,
+			baseURL+AIServiceGetSessionFeedbackProcedure,
+			connect.WithSchema(aIServiceMethods.ByName("GetSessionFeedback")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -174,6 +194,8 @@ type aIServiceClient struct {
 	batchSetAgents           *connect.Client[v1.BatchSetAgentsRequest, v1.BatchSetAgentsResponse]
 	resolveSession           *connect.Client[v1.ResolveSessionRequest, v1.ResolveSessionResponse]
 	updateSessionStrategyKey *connect.Client[v1.UpdateSessionStrategyKeyRequest, v1.UpdateSessionStrategyKeyResponse]
+	submitSessionFeedback    *connect.Client[v1.SubmitSessionFeedbackRequest, v1.SubmitSessionFeedbackResponse]
+	getSessionFeedback       *connect.Client[v1.GetSessionFeedbackRequest, v1.GetSessionFeedbackResponse]
 }
 
 // Chat calls ant.v1.AIService.Chat.
@@ -231,6 +253,16 @@ func (c *aIServiceClient) UpdateSessionStrategyKey(ctx context.Context, req *con
 	return c.updateSessionStrategyKey.CallUnary(ctx, req)
 }
 
+// SubmitSessionFeedback calls ant.v1.AIService.SubmitSessionFeedback.
+func (c *aIServiceClient) SubmitSessionFeedback(ctx context.Context, req *connect.Request[v1.SubmitSessionFeedbackRequest]) (*connect.Response[v1.SubmitSessionFeedbackResponse], error) {
+	return c.submitSessionFeedback.CallUnary(ctx, req)
+}
+
+// GetSessionFeedback calls ant.v1.AIService.GetSessionFeedback.
+func (c *aIServiceClient) GetSessionFeedback(ctx context.Context, req *connect.Request[v1.GetSessionFeedbackRequest]) (*connect.Response[v1.GetSessionFeedbackResponse], error) {
+	return c.getSessionFeedback.CallUnary(ctx, req)
+}
+
 // AIServiceHandler is an implementation of the ant.v1.AIService service.
 type AIServiceHandler interface {
 	Chat(context.Context, *connect.Request[v1.ChatRequest]) (*connect.Response[v1.ChatResponse], error)
@@ -245,6 +277,8 @@ type AIServiceHandler interface {
 	BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error)
 	ResolveSession(context.Context, *connect.Request[v1.ResolveSessionRequest]) (*connect.Response[v1.ResolveSessionResponse], error)
 	UpdateSessionStrategyKey(context.Context, *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error)
+	SubmitSessionFeedback(context.Context, *connect.Request[v1.SubmitSessionFeedbackRequest]) (*connect.Response[v1.SubmitSessionFeedbackResponse], error)
+	GetSessionFeedback(context.Context, *connect.Request[v1.GetSessionFeedbackRequest]) (*connect.Response[v1.GetSessionFeedbackResponse], error)
 }
 
 // NewAIServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -320,6 +354,18 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 		connect.WithSchema(aIServiceMethods.ByName("UpdateSessionStrategyKey")),
 		connect.WithHandlerOptions(opts...),
 	)
+	aIServiceSubmitSessionFeedbackHandler := connect.NewUnaryHandler(
+		AIServiceSubmitSessionFeedbackProcedure,
+		svc.SubmitSessionFeedback,
+		connect.WithSchema(aIServiceMethods.ByName("SubmitSessionFeedback")),
+		connect.WithHandlerOptions(opts...),
+	)
+	aIServiceGetSessionFeedbackHandler := connect.NewUnaryHandler(
+		AIServiceGetSessionFeedbackProcedure,
+		svc.GetSessionFeedback,
+		connect.WithSchema(aIServiceMethods.ByName("GetSessionFeedback")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AIServiceChatProcedure:
@@ -344,6 +390,10 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 			aIServiceResolveSessionHandler.ServeHTTP(w, r)
 		case AIServiceUpdateSessionStrategyKeyProcedure:
 			aIServiceUpdateSessionStrategyKeyHandler.ServeHTTP(w, r)
+		case AIServiceSubmitSessionFeedbackProcedure:
+			aIServiceSubmitSessionFeedbackHandler.ServeHTTP(w, r)
+		case AIServiceGetSessionFeedbackProcedure:
+			aIServiceGetSessionFeedbackHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -395,4 +445,12 @@ func (UnimplementedAIServiceHandler) ResolveSession(context.Context, *connect.Re
 
 func (UnimplementedAIServiceHandler) UpdateSessionStrategyKey(context.Context, *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.UpdateSessionStrategyKey is not implemented"))
+}
+
+func (UnimplementedAIServiceHandler) SubmitSessionFeedback(context.Context, *connect.Request[v1.SubmitSessionFeedbackRequest]) (*connect.Response[v1.SubmitSessionFeedbackResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.SubmitSessionFeedback is not implemented"))
+}
+
+func (UnimplementedAIServiceHandler) GetSessionFeedback(context.Context, *connect.Request[v1.GetSessionFeedbackRequest]) (*connect.Response[v1.GetSessionFeedbackResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.GetSessionFeedback is not implemented"))
 }

@@ -61,6 +61,13 @@ func WrapAIError(err error) error {
 // If it returns an error, the result is discarded — ensuring users cannot use AI without paying.
 type PostCallBiller func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error
 
+// CostBreakerChecker is checked before falling back to system-paid Gateway providers.
+// When tripped, BYO-key users continue to work; only system-paid fallback is blocked.
+// Implemented by *service.PlatformCostBreaker.
+type CostBreakerChecker interface {
+	IsTripped(ctx context.Context) bool
+}
+
 // Service exposes high-level operations consumed by the connect handler.
 type Service struct {
 	repo                *repository.SystemAIConfigRepository
@@ -72,6 +79,7 @@ type Service struct {
 	gatewayProviderRepo *repository.SystemAIProviderRepository                         // optional: fallback for AI Gateway
 	cbDB                cbExecutor                                                     // optional: PG pool for persistent circuit breaker
 	modelFilter         func(ctx context.Context, userID uuid.UUID, model string) bool // optional: ADR-0025 §5.2 model whitelist
+	costBreaker         CostBreakerChecker                                             // optional: blocks system-paid fallback when tripped
 	log                 *zap.Logger
 }
 
@@ -108,6 +116,12 @@ func (s *Service) SetPostCallBiller(fn PostCallBiller) {
 // SetGatewayProviderRepo sets an optional fallback provider repo for AI Gateway.
 func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
 	s.gatewayProviderRepo = repo
+}
+
+// SetCostBreaker sets a platform cost circuit breaker.
+// When tripped, system-paid Gateway providers are blocked; BYO-key users are unaffected.
+func (s *Service) SetCostBreaker(cb CostBreakerChecker) {
+	s.costBreaker = cb
 }
 
 // SetModelFilter sets an optional model whitelist filter (ADR-0025 §5.2).

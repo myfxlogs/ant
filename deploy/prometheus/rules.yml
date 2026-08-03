@@ -46,5 +46,14 @@ groups:
           summary: "PG connection pool nearly exhausted"
           description: "Pool conns >= 24 (max 25). Risk of request starvation."
 
+      - alert: CircuitBreakerOpen
+        expr: md_circuit_breaker_state{job="alphaforge-backend"} == 1
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Broker circuit breaker open"
+          description: "A broker circuit breaker has been open for more than 30s. New orders are suppressed for affected accounts."
+
   - name: infrastructure
     rules: []

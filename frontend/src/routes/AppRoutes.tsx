@@ -38,6 +38,7 @@ const StrategyGalleryPage = lazy(() => import('@/pages/strategy/StrategyGalleryP
 const StrategyDetailPage = lazy(() => import('@/pages/strategy/StrategyDetailPage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));
+const CreditBalancePage = lazy(() => import('@/pages/credit/CreditBalancePage'));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionPage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
@@ -65,6 +66,7 @@ const RefundManagement = lazy(() => import('@/pages/admin/RefundManagement'));
 const MarketplaceAnalyticsPage = lazy(() => import('@/pages/admin/MarketplaceAnalytics'));
 const CouponManagement = lazy(() => import('@/pages/admin/CouponManagement'));
 const BillingManagement = lazy(() => import('@/pages/admin/BillingManagement'));
+const CreditManagement = lazy(() => import('@/pages/admin/CreditManagement'));
 const DepositManagement = lazy(() => import('@/pages/admin/DepositManagement'));
 const SweepManagement = lazy(() => import('@/pages/admin/SweepManagement'));
 const MonitoringPage = lazy(() => import('@/pages/admin/MonitoringPage'));
@@ -97,6 +99,7 @@ const mainRoutes = (
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="wallet" element={wrap(<WalletPage />)} />
+    <Route path="credits" element={wrap(<CreditBalancePage />)} />
     <Route path="subscription" element={wrap(<SubscriptionPage />)} />
     <Route path="strategy/templates" element={<Navigate to="/strategy/new" replace />} />
     <Route path="strategy/schedules" element={<Navigate to="/strategy/live" replace />} />
@@ -130,6 +133,7 @@ const adminRoutes = (
     <Route path="users" element={wrap(<UserManagement />)} />
     <Route path="wallet" element={wrap(<WalletManagement />)} />
     <Route path="billing" element={wrap(<BillingManagement />)} />
+    <Route path="credits" element={wrap(<CreditManagement />)} />
     <Route path="deposits" element={wrap(<DepositManagement />)} />
     <Route path="sweep" element={wrap(<SweepManagement />)} />
     <Route path="accounts" element={wrap(<AccountManagement />)} />

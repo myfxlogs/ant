@@ -138,6 +138,7 @@ func (m *Manager) GetOrCreateBreaker(cfg mdtick.AccountConfig) *CircuitBreaker {
 // events for all accounts sharing the given breaker key.
 func (m *Manager) makeBreakerCallback(key string) func(from, to State) {
 	return func(from, to State) {
+		breakerStates.Store(key, to)
 		if m.onBreakerTrip == nil {
 			return
 		}

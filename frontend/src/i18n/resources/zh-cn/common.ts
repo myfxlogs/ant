@@ -13,7 +13,26 @@ const Common = {
     "confirm": "确认",
     "cancel": "取消",
     "active": "活跃",
-    "inactive": "未激活"
+    "inactive": "未激活",
+    "submit": "提交"
+  },
+  "feedback": {
+    "rateSession": "评价本次会话",
+    "good": "好",
+    "bad": "差",
+    "addReason": "补充原因",
+    "reasonPlaceholder": "哪些方面好，哪些可以改进？"
+  },
+  "credit": {
+    "balance": "积分余额",
+    "frozen": "冻结中",
+    "credits": "积分",
+    "history": "交易记录",
+    "type": "类型",
+    "amount": "金额",
+    "balanceAfter": "变动后余额",
+    "description": "说明",
+    "time": "时间"
   }
 } as const;
 export default Common;

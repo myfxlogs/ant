@@ -14,7 +14,26 @@ const Common = {
     "confirm": "Confirm",
     "cancel": "Cancel",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "submit": "Submit"
+  },
+  "feedback": {
+    "rateSession": "Rate this session",
+    "good": "Good",
+    "bad": "Bad",
+    "addReason": "Add reason",
+    "reasonPlaceholder": "What went well or what could be better?"
+  },
+  "credit": {
+    "balance": "Credit Balance",
+    "frozen": "Frozen",
+    "credits": "credits",
+    "history": "Transaction History",
+    "type": "Type",
+    "amount": "Amount",
+    "balanceAfter": "Balance After",
+    "description": "Description",
+    "time": "Time"
   }
 } as const;
 export default Common;

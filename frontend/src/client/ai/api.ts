@@ -146,4 +146,23 @@ export const aiApi = {
     const response = await aiClient.updateConversationTitle({ id, title });
     return !!response.success;
   },
+
+  submitSessionFeedback: async (sessionId: string, rating: 'good' | 'bad', reason?: string): Promise<boolean> => {
+    const response = await aiClient.submitSessionFeedback({
+      sessionId,
+      rating,
+      reason: reason || '',
+    });
+    return !!response.success;
+  },
+
+  getSessionFeedback: async (sessionId: string): Promise<{ rating: string; reason: string; createdAtTsMs: bigint } | null> => {
+    const response = await aiClient.getSessionFeedback({ sessionId });
+    if (!response.rating) return null;
+    return {
+      rating: response.rating,
+      reason: response.reason || '',
+      createdAtTsMs: response.createdAtTsMs,
+    };
+  },
 };

@@ -24,11 +24,25 @@ type Generator struct {
 	cache            *LLCache
 	memory           *MemoryStore
 	conversationRepo *repository.AIConversationRepository
+	creditSvc        CreditBilling
+}
+
+// CreditBilling is the interface for credit pre-hold and settlement.
+// Implemented by *service.CreditService.
+type CreditBilling interface {
+	PreHold(ctx context.Context, userID uuid.UUID, sessionID, providerID, modelName string) error
+	Settle(ctx context.Context, userID uuid.UUID, sessionID, providerID, modelName string, inputTokens, outputTokens int) error
+	ReleaseHold(ctx context.Context, userID uuid.UUID, sessionID string) error
 }
 
 // SetConversationRepo injects the conversation store for multi-turn history.
 func (g *Generator) SetConversationRepo(r *repository.AIConversationRepository) {
 	g.conversationRepo = r
+}
+
+// SetCreditSvc injects the credit billing service for pre-hold/settlement.
+func (g *Generator) SetCreditSvc(svc CreditBilling) {
+	g.creditSvc = svc
 }
 
 // NewGenerator creates the strategy generation orchestrator.
