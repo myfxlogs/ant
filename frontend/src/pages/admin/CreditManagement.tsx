@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Card, Table, Tag, Button, Modal, Input, Form, message, Statistic } from 'antd';
-import { useTranslation } from 'react-i18next';
 import { creditApi } from '@/client/credit';
+import type { CreditTransaction } from '@/gen/ant/v1/credit_pb';
+
+interface CreditError {
+  message?: string;
+}
 
 export default function CreditManagement() {
-  const { t } = useTranslation();
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -37,8 +40,9 @@ export default function CreditManagement() {
       setAddModalOpen(false);
       addForm.resetFields();
       load();
-    } catch (e: any) {
-      message.error(e?.message || 'Failed to add credits');
+    } catch (e: unknown) {
+      const err = e as CreditError;
+      message.error(err?.message || 'Failed to add credits');
     }
   };
 
@@ -50,8 +54,9 @@ export default function CreditManagement() {
       setRefundModalOpen(false);
       refundForm.resetFields();
       load();
-    } catch (e: any) {
-      message.error(e?.message || 'Refund failed — check user has sufficient balance');
+    } catch (e: unknown) {
+      const err = e as CreditError;
+      message.error(err?.message || 'Refund failed — check user has sufficient balance');
     }
   };
 

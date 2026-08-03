@@ -81,7 +81,7 @@ func (r *CreditRepository) AddCredits(ctx context.Context, userID uuid.UUID, amo
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var acc CreditAccount
 	err = tx.QueryRow(ctx,
@@ -123,7 +123,7 @@ func (r *CreditRepository) HoldCredits(ctx context.Context, userID uuid.UUID, am
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	var acc CreditAccount
 	err = tx.QueryRow(ctx,
@@ -174,7 +174,7 @@ func (r *CreditRepository) SettleCredits(ctx context.Context, userID uuid.UUID, 
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Release unused hold back to balance.
 	if release.GreaterThan(decimal.Zero) {

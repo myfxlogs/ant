@@ -91,7 +91,7 @@ func (s *CreditService) Settle(ctx context.Context, userID uuid.UUID, sessionID,
 	delete(s.holds, sessionID)
 	s.mu.Unlock()
 
-	if holdAmount.Equals(decimal.Zero) {
+	if holdAmount.Equal(decimal.Zero) {
 		// No prior hold — direct deduction.
 		if actualCredits.LessThanOrEqual(decimal.Zero) {
 			return nil
@@ -196,7 +196,7 @@ func (s *CreditService) ReleaseHold(ctx context.Context, userID uuid.UUID, sessi
 	delete(s.holds, sessionID)
 	s.mu.Unlock()
 
-	if holdAmount.Equals(decimal.Zero) {
+	if holdAmount.Equal(decimal.Zero) {
 		return nil
 	}
 

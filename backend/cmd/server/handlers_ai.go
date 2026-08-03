@@ -119,49 +119,8 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 
 	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo, dailyQuota)
 
-	// Phase 2: credit-based AI billing.
-	creditRepo := repository.NewCreditRepository(pool)
-	creditSvc := service.NewCreditService(creditRepo, gatewayModelRepo, log)
-	creditServer := ai.NewCreditServer(creditSvc, creditRepo, log)
-	mux.Handle(antv1c.NewCreditServiceHandler(creditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-	adminCreditServer := ai.NewAdminCreditServer(creditRepo, log)
-	mux.Handle(antv1c.NewAdminCreditServiceHandler(adminCreditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-
-	agentGateway := agent.NewGatewayServer(pool, p.MarketDataRepo, aiSvc, log)
-	agentGateway.Generator().SetCreditSvc(creditSvc)
-	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-
-	p.MktplaceHandler.SetGenerator(agentGateway.Generator())
-	if agentGateway.Generator() != nil {
-		p.MktplaceSvc.SetOptimizer(agentGateway.Generator())
-	}
-
-	if pool != nil && agentGateway.HookEngine() != nil {
-		if err := admin.LoadHookConfigsFromDB(ctx, pool, agentGateway.HookEngine()); err != nil {
-			log.Warn("failed to load hook configs from DB", zap.Error(err))
-		}
-	}
-
-	if ss := agentGateway.SettingsStore(); ss != nil {
-		aiSvc.SetModelFilter(func(ctx context.Context, userID uuid.UUID, model string) bool {
-			rs, err := ss.ResolveSettings(ctx, userID)
-			if err != nil || !rs.Loaded {
-				return true
-			}
-			if !rs.Managed.EnforceAllowedModels {
-				return true
-			}
-			if len(rs.Managed.AllowedModels) == 0 {
-				return false
-			}
-			for _, allowed := range rs.Managed.AllowedModels {
-				if allowed == model {
-					return true
-				}
-			}
-			return false
-		})
-	}
+	creditSvc := wireCreditBilling(p, pool, gatewayModelRepo, mux, log)
+	agentGateway := wireAgentGateway(p, pool, aiSvc, creditSvc, mux, log, ctx)
 
 	// Remaining AI service registrations.
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, p.Session, log)
@@ -203,4 +162,54 @@ func envInt(key string, def int) int {
 		}
 	}
 	return def
+}
+
+func wireCreditBilling(p aiServicesParams, pool *pgxpool.Pool, gatewayModelRepo *repository.AIModelRepository, mux *http.ServeMux, log *zap.Logger) *service.CreditService {
+	creditRepo := repository.NewCreditRepository(pool)
+	creditSvc := service.NewCreditService(creditRepo, gatewayModelRepo, log)
+	creditServer := ai.NewCreditServer(creditSvc, creditRepo, log)
+	mux.Handle(antv1c.NewCreditServiceHandler(creditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	adminCreditServer := ai.NewAdminCreditServer(creditRepo, log)
+	mux.Handle(antv1c.NewAdminCreditServiceHandler(adminCreditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	return creditSvc
+}
+
+func wireAgentGateway(p aiServicesParams, pool *pgxpool.Pool, aiSvc *systemai.Service, creditSvc *service.CreditService, mux *http.ServeMux, log *zap.Logger, ctx context.Context) *agent.GatewayServer {
+	agentGateway := agent.NewGatewayServer(pool, p.MarketDataRepo, aiSvc, log)
+	agentGateway.Generator().SetCreditSvc(creditSvc)
+	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+
+	p.MktplaceHandler.SetGenerator(agentGateway.Generator())
+	if agentGateway.Generator() != nil {
+		p.MktplaceSvc.SetOptimizer(agentGateway.Generator())
+	}
+
+	if pool != nil && agentGateway.HookEngine() != nil {
+		if err := admin.LoadHookConfigsFromDB(ctx, pool, agentGateway.HookEngine()); err != nil {
+			log.Warn("failed to load hook configs from DB", zap.Error(err))
+		}
+	}
+
+	if ss := agentGateway.SettingsStore(); ss != nil {
+		aiSvc.SetModelFilter(func(ctx context.Context, userID uuid.UUID, model string) bool {
+			rs, err := ss.ResolveSettings(ctx, userID)
+			if err != nil || !rs.Loaded {
+				return true
+			}
+			if !rs.Managed.EnforceAllowedModels {
+				return true
+			}
+			if len(rs.Managed.AllowedModels) == 0 {
+				return false
+			}
+			for _, allowed := range rs.Managed.AllowedModels {
+				if allowed == model {
+					return true
+				}
+			}
+			return false
+		})
+	}
+
+	return agentGateway
 }

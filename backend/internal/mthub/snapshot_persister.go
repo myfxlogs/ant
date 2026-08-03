@@ -66,7 +66,7 @@ func (p *SnapshotPersister) persist(ctx context.Context, snap *PositionSnapshot)
 		p.mu.Unlock()
 		return
 	}
-	p.lastWrite[snap.AccountID] = time.Now()
+	p.lastWrite[snap.AccountID] = Clk.Now()
 	p.mu.Unlock()
 
 	record := snapshotToProto(snap)
@@ -84,7 +84,7 @@ func (p *SnapshotPersister) persist(ctx context.Context, snap *PositionSnapshot)
 		`INSERT INTO mt_position_snapshots (account_id, payload_proto, captured_at)
 		 VALUES ($1, $2, $3)
 		 ON CONFLICT (account_id) DO UPDATE SET payload_proto = EXCLUDED.payload_proto, captured_at = EXCLUDED.captured_at`,
-		snap.AccountID, data, time.Now())
+		snap.AccountID, data, Clk.Now())
 	if err != nil {
 		p.log.Error("snapshot persister: DB write failed",
 			zap.String("account", snap.AccountID), zap.Error(err))
