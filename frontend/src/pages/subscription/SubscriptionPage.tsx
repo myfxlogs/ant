@@ -157,15 +157,15 @@ export default function SubscriptionPage() {
             <Row gutter={[24, 16]}>
               <Col xs={12} sm={6}>
                 <Statistic
-                  title={t('subscription.aiTokens', { defaultValue: 'AI Tokens' })}
-                  value={usage.aiTokensUsed}
-                  suffix={usage.aiTokensLimit > 0 ? `/ ${usage.aiTokensLimit}` : ''}
+                  title={t('subscription.aiTokensRemaining', { defaultValue: 'AI Tokens Remaining' })}
+                  value={usage.aiTokensLimit > 0 ? Math.max(0, usage.aiTokensLimit - usage.aiTokensUsed) : '∞'}
+                  suffix={usage.aiTokensLimit > 0 ? ` / ${usage.aiTokensLimit}` : ''}
                 />
                 {usage.aiTokensLimit > 0 && (
                   <Progress
                     percent={Math.min(100, (usage.aiTokensUsed / usage.aiTokensLimit) * 100)}
                     size="small"
-                    strokeColor="#D4AF37"
+                    strokeColor={usage.aiTokensUsed / usage.aiTokensLimit > 0.8 ? '#ff4d4f' : '#D4AF37'}
                   />
                 )}
               </Col>

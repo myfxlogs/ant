@@ -25,10 +25,12 @@ func wireAIBilling(
 	tokenUsageRepo *repository.AITokenUsageRepository,
 	dailyQuota *service.DailyQuotaChecker,
 ) {
-	// Wire wallet pre-check: block AI calls when balance is insufficient OR quota exceeded.
+	// Wire wallet pre-check: block AI calls when quota exceeded AND balance insufficient.
+	// Users within their monthly token quota can use AI without a wallet balance.
+	// Wallet balance is only enforced when the monthly quota is exhausted.
 	aiMinBalance := decimal.NewFromFloat(1.0)
 	if v := os.Getenv("AI_MIN_BALANCE"); v != "" {
-		if parsed, err := decimal.NewFromString(v); err == nil && parsed.IsPositive() {
+		if parsed, err := decimal.NewFromString(v); err == nil && !parsed.IsNegative() {
 			aiMinBalance = parsed
 		}
 	}
@@ -40,6 +42,43 @@ func wireAIBilling(
 			}
 		}
 		// 2. Check subscription AI token quota (monthly).
+		// remaining: -1 = unlimited, 0 = exhausted, > 0 = tokens left.
+		var remaining int = -1 // default unlimited if no checker
+		if quotaChecker != nil {
+			usedThisMonth := 0
+			if summary, err := tokenUsageRepo.MonthlySummary(ctx, userID); err == nil {
+				for _, v := range summary {
+					usedThisMonth += v
+				}
+			}
+			remaining = quotaChecker.CheckAITokenQuota(userID, usedThisMonth)
+		}
+		// 3. Wallet balance check — only enforced when monthly quota is exhausted.
+		// Users within quota (or unlimited) skip this check entirely.
+		if remaining == 0 {
+			w, err := walletSvc.GetOrCreateWallet(ctx, userID)
+			if err != nil {
+				return systemai.ErrInsufficientBalance // fail-closed on DB error
+			}
+			bal, err := decimal.NewFromString(w.Balance)
+			if err != nil {
+				return systemai.ErrInsufficientBalance
+			}
+			if bal.LessThan(aiMinBalance) {
+				return systemai.ErrInsufficientBalance
+			}
+		}
+		return nil
+	})
+
+	// Wire post-call billing: after a successful AI call, record usage and deduct cost.
+	// Users within their monthly token quota: system-paid (no wallet deduction).
+	// Quota-exhausted users: wallet deduction applies.
+	aiSvc.SetPostCallBiller(func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error {
+		cost := computeTokenCost(gatewayModelRepo, providerID, modelName, inputTokens, outputTokens)
+
+		// Determine whether to skip wallet deduction based on monthly quota.
+		skipDeduction := false
 		if quotaChecker != nil {
 			usedThisMonth := 0
 			if summary, err := tokenUsageRepo.MonthlySummary(ctx, userID); err == nil {
@@ -48,31 +87,12 @@ func wireAIBilling(
 				}
 			}
 			remaining := quotaChecker.CheckAITokenQuota(userID, usedThisMonth)
-			if remaining == 0 {
-				return systemai.ErrInsufficientBalance
-			}
+			// remaining: -1 = unlimited, >0 = within quota → skip deduction
+			// remaining: 0 = exhausted → charge wallet
+			skipDeduction = remaining != 0
 		}
-		// 3. Check wallet balance.
-		w, err := walletSvc.GetOrCreateWallet(ctx, userID)
-		if err != nil {
-			return nil // don't block on wallet lookup errors
-		}
-		bal, err := decimal.NewFromString(w.Balance)
-		if err != nil {
-			return nil // don't block on parse errors
-		}
-		if bal.LessThan(aiMinBalance) {
-			return systemai.ErrInsufficientBalance
-		}
-		return nil
-	})
 
-	// Wire post-call billing: after a successful AI call, deduct cost before returning the result.
-	// If deduction fails (insufficient balance), the error propagates to the user and they see a
-	// friendly "insufficient balance" message. No free AI.
-	aiSvc.SetPostCallBiller(func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error {
-		cost := computeTokenCost(gatewayModelRepo, providerID, modelName, inputTokens, outputTokens)
-		if err := gatewayServer.RecordTokenUsage(ctx, userID, "system", providerID, modelName, feature, inputTokens, outputTokens, cost); err != nil {
+		if err := gatewayServer.RecordTokenUsage(ctx, userID, "system", providerID, modelName, feature, inputTokens, outputTokens, cost, skipDeduction); err != nil {
 			if strings.Contains(err.Error(), "insufficient balance") {
 				return systemai.ErrInsufficientBalance
 			}

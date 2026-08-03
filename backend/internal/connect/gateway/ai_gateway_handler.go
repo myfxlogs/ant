@@ -262,19 +262,22 @@ func (s *AIGatewayServer) DeleteModel(
 // ── Token billing helper (called by chat pipeline) ──
 
 // RecordTokenUsage records a token usage event and deducts wallet if paid_by=system.
+// When skipDeduction is true, the usage record is inserted without charging the wallet
+// (used for within-quota calls where tokens are included in the user's plan).
 func (s *AIGatewayServer) RecordTokenUsage(
 	ctx context.Context,
 	userID uuid.UUID,
 	paidBy, providerID, modelName, feature string,
 	inputTokens, outputTokens int,
 	cost string,
+	skipDeduction bool,
 ) error {
 	rec := &repository.AITokenUsage{
 		UserID: userID, PaidBy: paidBy, ProviderID: providerID,
 		ModelName: modelName, Feature: feature,
 		InputTokens: inputTokens, OutputTokens: outputTokens, Cost: cost,
 	}
-	if paidBy == "system" && cost != "" && s.walletSvc != nil {
+	if paidBy == "system" && cost != "" && s.walletSvc != nil && !skipDeduction {
 		w, err := s.walletSvc.GetOrCreateWallet(ctx, userID)
 		if err != nil {
 			return fmt.Errorf("get wallet: %w", err)
