@@ -271,6 +271,28 @@ services:
     networks:
       - alphaforge-network
 
+  uptime-kuma:
+    container_name: alphaforge-uptime-kuma
+    image: louislam/uptime-kuma:1
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    ports:
+      - "127.0.0.1:${UPTIME_KUMA_PORT:-3002}:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - alphaforge-network
+
 networks:
   alphaforge-network:
     driver: bridge
@@ -286,3 +308,5 @@ volumes:
     name: alphaforge_prometheus_data
   alertmanager_data:
     name: alphaforge_alertmanager_data
+  uptime_kuma_data:
+    name: alphaforge_uptime_kuma_data
