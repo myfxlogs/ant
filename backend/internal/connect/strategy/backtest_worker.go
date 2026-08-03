@@ -168,7 +168,7 @@ func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *re
 	}
 
 		// GoExecutor removed (Gap 3). Go strategies must be converted to MQL.
-	return nil, fmt.Errorf("Go strategy backtest has been retired — please convert your strategy to MQL")
+	return nil, fmt.Errorf("go strategy backtest has been retired — please convert your strategy to MQL")
 }
 
 // StartBacktestWorker launches a pool of background workers that poll for PENDING backtest

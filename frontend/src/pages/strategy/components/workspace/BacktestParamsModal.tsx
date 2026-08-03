@@ -26,6 +26,7 @@ export interface BacktestParamsModalProps {
   onConfirm: (params: BacktestModalResult) => void;
   code: string;
   symbol: string;
+	timeframe?: string;
 }
 
 export interface BacktestModalResult {
@@ -35,7 +36,7 @@ export interface BacktestModalResult {
   strategyParams?: Record<string, string>;
 }
 
-export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, onClose, onConfirm, code, _symbol }) => {
+export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, onClose, onConfirm, code, _symbol, timeframe }) => {
   const { t, i18n } = useTranslation();
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState('');

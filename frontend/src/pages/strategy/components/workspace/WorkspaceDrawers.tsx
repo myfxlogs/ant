@@ -37,6 +37,7 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
         onClose={() => setBtModalOpen(false)}
         code={code.code}
         symbol={account.symbol}
+	        timeframe={account.timeframe}
         onConfirm={(result: BacktestModalResult) => {
           const p = result.params;
           backtest.setInitialCapital(p.initialCapital);

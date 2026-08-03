@@ -59,40 +59,8 @@ func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *con
 		}
 	}
 
-	// Validate numeric inputs — empty strings cause "can't convert to decimal" panics
-	// deep in the backtest engine. Catch them at the API boundary.
-	if req.Msg.InitialCapital != "" {
-		if _, err := decimal.NewFromString(req.Msg.InitialCapital); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument,
-				fmt.Errorf("invalid initial_capital: %q", req.Msg.InitialCapital))
-		}
-	}
-
-	// The chart's selected symbol/timeframe IS the user's intent. The MQL source
-	// is strategy logic that can be applied to any instrument — the user chose
-	// which instrument by selecting it in the chart.
-	if req.Msg.Symbol == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument,
-			fmt.Errorf("please select a symbol and timeframe from the chart before starting a backtest"))
-	}
-	if s.marketDataRepo != nil {
-		tf := req.Msg.Timeframe
-		if tf == "" {
-			tf = "H1"
-		}
-		// Use the backtest's date range if set, otherwise check recent data.
-		from, to := backtestDateRange(req.Msg)
-		bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, from, to, 2)
-		if len(bars) < 2 {
-			available := s.availableSymbols(ctx, tf, nil)
-			if available != "" {
-				return nil, connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("no market data for %s %s in the selected date range — available pairs with data: %s",
-						req.Msg.Symbol, tf, available))
-			}
-			return nil, connect.NewError(connect.CodeFailedPrecondition,
-				fmt.Errorf("no market data available — please connect your MT account to stream quotes first"))
-		}
+	if err := s.validateBacktestRequest(ctx, req); err != nil {
+		return nil, err
 	}
 
 	run := buildBacktestRunFromRequest(userID, req.Msg)
@@ -395,6 +363,43 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 		FailedCount:  int32(len(uuids)) - int32(deleted),
 	}), nil
 }
+
+// validateBacktestRequest checks preconditions before creating a backtest run:
+// decimal input validity, symbol availability, and market data existence.
+func (s *StrategyExecutionServer) validateBacktestRequest(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) error {
+	// Empty strings cause "can't convert to decimal" panics deep in the engine.
+	if req.Msg.InitialCapital != "" {
+		if _, err := decimal.NewFromString(req.Msg.InitialCapital); err != nil {
+			return connect.NewError(connect.CodeInvalidArgument,
+				fmt.Errorf("invalid initial_capital: %q", req.Msg.InitialCapital))
+		}
+	}
+	if req.Msg.Symbol == "" {
+		return connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("please select a symbol and timeframe from the chart before starting a backtest"))
+	}
+	if s.marketDataRepo == nil {
+		return nil
+	}
+	tf := req.Msg.Timeframe
+	if tf == "" {
+		tf = "H1"
+	}
+	from, to := backtestDateRange(req.Msg)
+	bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, from, to, 2)
+	if len(bars) >= 2 {
+		return nil
+	}
+	available := s.availableSymbols(ctx, tf, nil)
+	if available != "" {
+		return connect.NewError(connect.CodeFailedPrecondition,
+			fmt.Errorf("no market data for %s %s in the selected date range — available pairs with data: %s",
+				req.Msg.Symbol, tf, available))
+	}
+	return connect.NewError(connect.CodeFailedPrecondition,
+		fmt.Errorf("no market data available — please connect your MT account to stream quotes first"))
+}
+
 
 // backtestDateRange extracts the date range from the request, or returns nil,nil
 // if not set (meaning the backtest worker will use the full available range).

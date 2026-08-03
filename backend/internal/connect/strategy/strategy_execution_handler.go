@@ -186,7 +186,7 @@ func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Requ
 	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
 	if isGoStrategy(req.Msg.Code) {
 		return nil, connect.NewError(connect.CodeUnimplemented,
-			fmt.Errorf("Go strategy execution has been retired — please convert your strategy to MQL"))
+			fmt.Errorf("go strategy execution has been retired — please convert your strategy to MQL"))
 	}
 
 	// MQL source requires bar data to produce signals — use StartBacktestRun or ExecuteLive.
@@ -260,7 +260,7 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
 	if isGoStrategy(req.Msg.StrategyCode) {
 		return nil, connect.NewError(connect.CodeUnimplemented,
-			fmt.Errorf("Go strategy live execution has been retired — please convert your strategy to MQL"))
+			fmt.Errorf("go strategy live execution has been retired — please convert your strategy to MQL"))
 	}
 
 	// MQL path: in-process Bytecode VM execution.
