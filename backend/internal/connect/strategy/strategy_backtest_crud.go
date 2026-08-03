@@ -59,6 +59,15 @@ func (s *StrategyExecutionServer) StartBacktestRun(ctx context.Context, req *con
 		}
 	}
 
+	// Validate numeric inputs — empty strings cause "can't convert to decimal" panics
+	// deep in the backtest engine. Catch them at the API boundary.
+	if req.Msg.InitialCapital != "" {
+		if _, err := decimal.NewFromString(req.Msg.InitialCapital); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument,
+				fmt.Errorf("invalid initial_capital: %q", req.Msg.InitialCapital))
+		}
+	}
+
 	// The chart's selected symbol/timeframe IS the user's intent. The MQL source
 	// is strategy logic that can be applied to any instrument — the user chose
 	// which instrument by selecting it in the chart.
