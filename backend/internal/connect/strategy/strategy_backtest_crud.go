@@ -3,7 +3,6 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -212,89 +211,6 @@ func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *con
 	return connect.NewResponse(&antv1.ListBacktestRunsResponse{Runs: out}), nil
 }
 
-func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
-	runID, err := uuid.Parse(req.Msg.RunId)
-	if err != nil {
-		return err
-	}
-	userID, err := userIDRequire(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Send current state immediately so the client doesn't time out waiting
-	// for the first ticker/notification (which can take up to 30s).
-	run, err := s.backtestRepo.GetByID(ctx, userID, runID)
-	if err != nil {
-		return err
-	}
-	if run == nil {
-		return connect.NewError(connect.CodeNotFound, fmt.Errorf("backtest run %s not found", runID))
-	}
-	bp := parseBacktestResult(run.ProtoResponse)
-	if err := stream.Send(&antv1.BacktestRunUpdate{
-		Run:                  toProtoBacktestRun(run),
-		Metrics:              bp.Metrics,
-		EquityCurve:          bp.EquityCurve,
-		Risk:                 bp.Risk,
-		ExecutionAssumptions: bp.ExecutionAssumptions,
-	}); err != nil {
-		return err
-	}
-	if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
-		if run.Status == "SUCCEEDED" && run.AutoGate {
-			restoreGateEvaluation(ctx, s, run, stream)
-		}
-		return nil
-	}
-
-	// Watch for status changes — LISTEN for push events, ticker as fallback.
-	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "backtest_status")
-	if listenCancel != nil {
-		defer listenCancel()
-	}
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
-	prevStatus := run.Status
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-notifCh:
-		case <-ticker.C:
-		}
-		run, err := s.backtestRepo.GetByID(ctx, userID, runID)
-		if err != nil {
-			s.log.Warn("WatchBacktestRun: transient DB error", zap.Error(err), zap.String("runID", runID.String()))
-			continue
-		}
-		if run == nil {
-			s.log.Warn("WatchBacktestRun: run not found", zap.String("runID", runID.String()))
-			continue
-		}
-		if run.Status == prevStatus {
-			continue
-		}
-		prevStatus = run.Status
-		bp := parseBacktestResult(run.ProtoResponse)
-		if err := stream.Send(&antv1.BacktestRunUpdate{
-			Run:                  toProtoBacktestRun(run),
-			Metrics:              bp.Metrics,
-			EquityCurve:          bp.EquityCurve,
-			Risk:                 bp.Risk,
-			ExecutionAssumptions: bp.ExecutionAssumptions,
-		}); err != nil {
-			return err
-		}
-		if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
-			if run.Status == "SUCCEEDED" && run.AutoGate {
-				restoreGateEvaluation(ctx, s, run, stream)
-			}
-			return nil
-		}
-	}
-}
-
 func (s *StrategyExecutionServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
 	userID, err := userIDRequire(ctx)
 	if err != nil {
@@ -364,89 +280,7 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 	}), nil
 }
 
-// validateBacktestRequest checks preconditions before creating a backtest run:
-// decimal input validity, symbol availability, and market data existence.
-func (s *StrategyExecutionServer) validateBacktestRequest(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) error {
-	// Empty strings cause "can't convert to decimal" panics deep in the engine.
-	if req.Msg.InitialCapital != "" {
-		if _, err := decimal.NewFromString(req.Msg.InitialCapital); err != nil {
-			return connect.NewError(connect.CodeInvalidArgument,
-				fmt.Errorf("invalid initial_capital: %q", req.Msg.InitialCapital))
-		}
-	}
-	if req.Msg.Symbol == "" {
-		return connect.NewError(connect.CodeInvalidArgument,
-			fmt.Errorf("please select a symbol and timeframe from the chart before starting a backtest"))
-	}
-	if s.marketDataRepo == nil {
-		return nil
-	}
-	tf := req.Msg.Timeframe
-	if tf == "" {
-		tf = "H1"
-	}
-	from, to := backtestDateRange(req.Msg)
-	bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, from, to, 2)
-	if len(bars) >= 2 {
-		return nil
-	}
-	available := s.availableSymbols(ctx, tf, nil)
-	if available != "" {
-		return connect.NewError(connect.CodeFailedPrecondition,
-			fmt.Errorf("no market data for %s %s in the selected date range — available pairs with data: %s",
-				req.Msg.Symbol, tf, available))
-	}
-	return connect.NewError(connect.CodeFailedPrecondition,
-		fmt.Errorf("no market data available — please connect your MT account to stream quotes first"))
-}
 
 
-// backtestDateRange extracts the date range from the request, or returns nil,nil
-// if not set (meaning the backtest worker will use the full available range).
-func backtestDateRange(msg *antv1.StartBacktestRunRequest) (from, to *time.Time) {
-	if msg.From != nil {
-		t := msg.From.AsTime()
-		from = &t
-	}
-	if msg.To != nil {
-		t := msg.To.AsTime()
-		to = &t
-	}
-	return
-}
 
-// availableSymbols returns a comma-separated list of pairs that have K-line data
-// for the given timeframe, to help the user choose a valid symbol.
-func (s *StrategyExecutionServer) availableSymbols(ctx context.Context, timeframe string, from *time.Time) string {
-	candidates := []string{"EURUSDm", "GBPUSDm", "EURUSD", "XAUUSDm", "BTCUSDm", "USDJPYm"}
-	var found []string
-	for _, sym := range candidates {
-		if bars, _ := s.marketDataRepo.GetKlines(ctx, sym, "", timeframe, from, nil, 1); len(bars) > 0 {
-			found = append(found, sym)
-		}
-		if len(found) >= 5 {
-			break
-		}
-	}
-	if len(found) == 0 {
-		return ""
-	}
-	result := ""
-	for i, s := range found {
-		if i > 0 {
-			result += ", "
-		}
-		result += s
-	}
-	return result
-}
 
-// HasBacktestData checks whether the requested symbol+timeframe has K-line data.
-// Exported for the frontend to pre-check before showing the backtest form.
-func (s *StrategyExecutionServer) HasBacktestData(ctx context.Context, symbol, timeframe string) bool {
-	if s.marketDataRepo == nil {
-		return false
-	}
-	bars, _ := s.marketDataRepo.GetKlines(ctx, symbol, "", timeframe, nil, nil, 1)
-	return len(bars) > 0
-}

@@ -2,9 +2,7 @@ import { useState, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { BacktestMetrics } from './useBacktestParams';
-import type { ParamHint, ValidationSnapshot } from './useAIWorkflowAutoFix';
 import { buildFixInstruction, runAutoFixIteration, initAutoFixState, updateAutoFixState } from './useAIWorkflowAutoFix';
-import type { AutoFixIterationResult } from './useAIWorkflowAutoFix';
 
 export function isMQLCode(code: string): boolean {
   if (code.includes('package ') && code.includes('import (')) return false;
