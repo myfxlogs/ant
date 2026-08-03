@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
+import { LikeOutlined, DislikeOutlined, MessageOutlined } from '@ant-design/icons';
 import { aiApi } from '../../client/ai';
 import { useTranslation } from 'react-i18next';
 
@@ -71,7 +71,7 @@ export function SessionFeedback({ sessionId }: SessionFeedbackProps) {
           }`}
           aria-label={t('feedback.good')}
         >
-          <ThumbsUp size={16} />
+          <LikeOutlined style={{ fontSize: 16 }} />
         </button>
         <button
           onClick={() => submit('bad')}
@@ -83,14 +83,14 @@ export function SessionFeedback({ sessionId }: SessionFeedbackProps) {
           }`}
           aria-label={t('feedback.bad')}
         >
-          <ThumbsDown size={16} />
+          <DislikeOutlined style={{ fontSize: 16 }} />
         </button>
         {rating && !showReason && (
           <button
             onClick={() => setShowReason(true)}
             className="ml-1 text-xs text-blue-500 hover:underline flex items-center gap-1"
           >
-            <MessageSquare size={12} />
+            <MessageOutlined style={{ fontSize: 12 }} />
             {t('feedback.addReason')}
           </button>
         )}

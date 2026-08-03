@@ -221,7 +221,7 @@ func (r *CreditRepository) settleWithExtra(ctx context.Context, userID uuid.UUID
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Deduct entire hold from frozen.
 	_, err = tx.Exec(ctx,
