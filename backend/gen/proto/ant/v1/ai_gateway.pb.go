@@ -1271,6 +1271,94 @@ func (*DeleteProviderResponse) Descriptor() ([]byte, []int) {
 	return file_ai_gateway_proto_rawDescGZIP(), []int{21}
 }
 
+type DiscoverGatewayModelsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProviderId    string                 `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"` // UUID of system_ai_providers row
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DiscoverGatewayModelsRequest) Reset() {
+	*x = DiscoverGatewayModelsRequest{}
+	mi := &file_ai_gateway_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiscoverGatewayModelsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiscoverGatewayModelsRequest) ProtoMessage() {}
+
+func (x *DiscoverGatewayModelsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_gateway_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiscoverGatewayModelsRequest.ProtoReflect.Descriptor instead.
+func (*DiscoverGatewayModelsRequest) Descriptor() ([]byte, []int) {
+	return file_ai_gateway_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *DiscoverGatewayModelsRequest) GetProviderId() string {
+	if x != nil {
+		return x.ProviderId
+	}
+	return ""
+}
+
+type DiscoverGatewayModelsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Models        []string               `protobuf:"bytes,1,rep,name=models,proto3" json:"models,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DiscoverGatewayModelsResponse) Reset() {
+	*x = DiscoverGatewayModelsResponse{}
+	mi := &file_ai_gateway_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DiscoverGatewayModelsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DiscoverGatewayModelsResponse) ProtoMessage() {}
+
+func (x *DiscoverGatewayModelsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_gateway_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DiscoverGatewayModelsResponse.ProtoReflect.Descriptor instead.
+func (*DiscoverGatewayModelsResponse) Descriptor() ([]byte, []int) {
+	return file_ai_gateway_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *DiscoverGatewayModelsResponse) GetModels() []string {
+	if x != nil {
+		return x.Models
+	}
+	return nil
+}
+
 var File_ai_gateway_proto protoreflect.FileDescriptor
 
 const file_ai_gateway_proto_rawDesc = "" +
@@ -1383,7 +1471,12 @@ const file_ai_gateway_proto_rawDesc = "" +
 	"\x13DeleteModelResponse\"'\n" +
 	"\x15DeleteProviderRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x18\n" +
-	"\x16DeleteProviderResponse2\xcd\x05\n" +
+	"\x16DeleteProviderResponse\"?\n" +
+	"\x1cDiscoverGatewayModelsRequest\x12\x1f\n" +
+	"\vprovider_id\x18\x01 \x01(\tR\n" +
+	"providerId\"7\n" +
+	"\x1dDiscoverGatewayModelsResponse\x12\x16\n" +
+	"\x06models\x18\x01 \x03(\tR\x06models2\xb3\x06\n" +
 	"\x10AIGatewayService\x12U\n" +
 	"\x10ListSystemModels\x12\x1f.ant.v1.ListSystemModelsRequest\x1a .ant.v1.ListSystemModelsResponse\x12L\n" +
 	"\rGetTokenUsage\x12\x1c.ant.v1.GetTokenUsageRequest\x1a\x1d.ant.v1.GetTokenUsageResponse\x12L\n" +
@@ -1394,7 +1487,8 @@ const file_ai_gateway_proto_rawDesc = "" +
 	"\n" +
 	"ListModels\x12\x19.ant.v1.ListModelsRequest\x1a\x1a.ant.v1.ListModelsResponse\x12F\n" +
 	"\vUpsertModel\x12\x1a.ant.v1.UpsertModelRequest\x1a\x1b.ant.v1.UpsertModelResponse\x12F\n" +
-	"\vDeleteModel\x12\x1a.ant.v1.DeleteModelRequest\x1a\x1b.ant.v1.DeleteModelResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vDeleteModel\x12\x1a.ant.v1.DeleteModelRequest\x1a\x1b.ant.v1.DeleteModelResponse\x12d\n" +
+	"\x15DiscoverGatewayModels\x12$.ant.v1.DiscoverGatewayModelsRequest\x1a%.ant.v1.DiscoverGatewayModelsResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_gateway_proto_rawDescOnce sync.Once
@@ -1408,35 +1502,37 @@ func file_ai_gateway_proto_rawDescGZIP() []byte {
 	return file_ai_gateway_proto_rawDescData
 }
 
-var file_ai_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_ai_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_ai_gateway_proto_goTypes = []any{
-	(*ListSystemModelsRequest)(nil),  // 0: ant.v1.ListSystemModelsRequest
-	(*ListSystemModelsResponse)(nil), // 1: ant.v1.ListSystemModelsResponse
-	(*SystemModel)(nil),              // 2: ant.v1.SystemModel
-	(*GetTokenUsageRequest)(nil),     // 3: ant.v1.GetTokenUsageRequest
-	(*GetTokenUsageResponse)(nil),    // 4: ant.v1.GetTokenUsageResponse
-	(*TokenUsageRecord)(nil),         // 5: ant.v1.TokenUsageRecord
-	(*ListProvidersRequest)(nil),     // 6: ant.v1.ListProvidersRequest
-	(*ListProvidersResponse)(nil),    // 7: ant.v1.ListProvidersResponse
-	(*AIProvider)(nil),               // 8: ant.v1.AIProvider
-	(*UpdateProviderRequest)(nil),    // 9: ant.v1.UpdateProviderRequest
-	(*UpdateProviderResponse)(nil),   // 10: ant.v1.UpdateProviderResponse
-	(*CreateProviderRequest)(nil),    // 11: ant.v1.CreateProviderRequest
-	(*CreateProviderResponse)(nil),   // 12: ant.v1.CreateProviderResponse
-	(*ListModelsRequest)(nil),        // 13: ant.v1.ListModelsRequest
-	(*ListModelsResponse)(nil),       // 14: ant.v1.ListModelsResponse
-	(*AIModelConfig)(nil),            // 15: ant.v1.AIModelConfig
-	(*UpsertModelRequest)(nil),       // 16: ant.v1.UpsertModelRequest
-	(*UpsertModelResponse)(nil),      // 17: ant.v1.UpsertModelResponse
-	(*DeleteModelRequest)(nil),       // 18: ant.v1.DeleteModelRequest
-	(*DeleteModelResponse)(nil),      // 19: ant.v1.DeleteModelResponse
-	(*DeleteProviderRequest)(nil),    // 20: ant.v1.DeleteProviderRequest
-	(*DeleteProviderResponse)(nil),   // 21: ant.v1.DeleteProviderResponse
-	nil,                              // 22: ant.v1.GetTokenUsageResponse.FeatureTokensEntry
+	(*ListSystemModelsRequest)(nil),       // 0: ant.v1.ListSystemModelsRequest
+	(*ListSystemModelsResponse)(nil),      // 1: ant.v1.ListSystemModelsResponse
+	(*SystemModel)(nil),                   // 2: ant.v1.SystemModel
+	(*GetTokenUsageRequest)(nil),          // 3: ant.v1.GetTokenUsageRequest
+	(*GetTokenUsageResponse)(nil),         // 4: ant.v1.GetTokenUsageResponse
+	(*TokenUsageRecord)(nil),              // 5: ant.v1.TokenUsageRecord
+	(*ListProvidersRequest)(nil),          // 6: ant.v1.ListProvidersRequest
+	(*ListProvidersResponse)(nil),         // 7: ant.v1.ListProvidersResponse
+	(*AIProvider)(nil),                    // 8: ant.v1.AIProvider
+	(*UpdateProviderRequest)(nil),         // 9: ant.v1.UpdateProviderRequest
+	(*UpdateProviderResponse)(nil),        // 10: ant.v1.UpdateProviderResponse
+	(*CreateProviderRequest)(nil),         // 11: ant.v1.CreateProviderRequest
+	(*CreateProviderResponse)(nil),        // 12: ant.v1.CreateProviderResponse
+	(*ListModelsRequest)(nil),             // 13: ant.v1.ListModelsRequest
+	(*ListModelsResponse)(nil),            // 14: ant.v1.ListModelsResponse
+	(*AIModelConfig)(nil),                 // 15: ant.v1.AIModelConfig
+	(*UpsertModelRequest)(nil),            // 16: ant.v1.UpsertModelRequest
+	(*UpsertModelResponse)(nil),           // 17: ant.v1.UpsertModelResponse
+	(*DeleteModelRequest)(nil),            // 18: ant.v1.DeleteModelRequest
+	(*DeleteModelResponse)(nil),           // 19: ant.v1.DeleteModelResponse
+	(*DeleteProviderRequest)(nil),         // 20: ant.v1.DeleteProviderRequest
+	(*DeleteProviderResponse)(nil),        // 21: ant.v1.DeleteProviderResponse
+	(*DiscoverGatewayModelsRequest)(nil),  // 22: ant.v1.DiscoverGatewayModelsRequest
+	(*DiscoverGatewayModelsResponse)(nil), // 23: ant.v1.DiscoverGatewayModelsResponse
+	nil,                                   // 24: ant.v1.GetTokenUsageResponse.FeatureTokensEntry
 }
 var file_ai_gateway_proto_depIdxs = []int32{
 	2,  // 0: ant.v1.ListSystemModelsResponse.models:type_name -> ant.v1.SystemModel
-	22, // 1: ant.v1.GetTokenUsageResponse.feature_tokens:type_name -> ant.v1.GetTokenUsageResponse.FeatureTokensEntry
+	24, // 1: ant.v1.GetTokenUsageResponse.feature_tokens:type_name -> ant.v1.GetTokenUsageResponse.FeatureTokensEntry
 	5,  // 2: ant.v1.GetTokenUsageResponse.records:type_name -> ant.v1.TokenUsageRecord
 	8,  // 3: ant.v1.ListProvidersResponse.providers:type_name -> ant.v1.AIProvider
 	15, // 4: ant.v1.ListModelsResponse.models:type_name -> ant.v1.AIModelConfig
@@ -1449,17 +1545,19 @@ var file_ai_gateway_proto_depIdxs = []int32{
 	13, // 11: ant.v1.AIGatewayService.ListModels:input_type -> ant.v1.ListModelsRequest
 	16, // 12: ant.v1.AIGatewayService.UpsertModel:input_type -> ant.v1.UpsertModelRequest
 	18, // 13: ant.v1.AIGatewayService.DeleteModel:input_type -> ant.v1.DeleteModelRequest
-	1,  // 14: ant.v1.AIGatewayService.ListSystemModels:output_type -> ant.v1.ListSystemModelsResponse
-	4,  // 15: ant.v1.AIGatewayService.GetTokenUsage:output_type -> ant.v1.GetTokenUsageResponse
-	7,  // 16: ant.v1.AIGatewayService.ListProviders:output_type -> ant.v1.ListProvidersResponse
-	12, // 17: ant.v1.AIGatewayService.CreateProvider:output_type -> ant.v1.CreateProviderResponse
-	10, // 18: ant.v1.AIGatewayService.UpdateProvider:output_type -> ant.v1.UpdateProviderResponse
-	21, // 19: ant.v1.AIGatewayService.DeleteProvider:output_type -> ant.v1.DeleteProviderResponse
-	14, // 20: ant.v1.AIGatewayService.ListModels:output_type -> ant.v1.ListModelsResponse
-	17, // 21: ant.v1.AIGatewayService.UpsertModel:output_type -> ant.v1.UpsertModelResponse
-	19, // 22: ant.v1.AIGatewayService.DeleteModel:output_type -> ant.v1.DeleteModelResponse
-	14, // [14:23] is the sub-list for method output_type
-	5,  // [5:14] is the sub-list for method input_type
+	22, // 14: ant.v1.AIGatewayService.DiscoverGatewayModels:input_type -> ant.v1.DiscoverGatewayModelsRequest
+	1,  // 15: ant.v1.AIGatewayService.ListSystemModels:output_type -> ant.v1.ListSystemModelsResponse
+	4,  // 16: ant.v1.AIGatewayService.GetTokenUsage:output_type -> ant.v1.GetTokenUsageResponse
+	7,  // 17: ant.v1.AIGatewayService.ListProviders:output_type -> ant.v1.ListProvidersResponse
+	12, // 18: ant.v1.AIGatewayService.CreateProvider:output_type -> ant.v1.CreateProviderResponse
+	10, // 19: ant.v1.AIGatewayService.UpdateProvider:output_type -> ant.v1.UpdateProviderResponse
+	21, // 20: ant.v1.AIGatewayService.DeleteProvider:output_type -> ant.v1.DeleteProviderResponse
+	14, // 21: ant.v1.AIGatewayService.ListModels:output_type -> ant.v1.ListModelsResponse
+	17, // 22: ant.v1.AIGatewayService.UpsertModel:output_type -> ant.v1.UpsertModelResponse
+	19, // 23: ant.v1.AIGatewayService.DeleteModel:output_type -> ant.v1.DeleteModelResponse
+	23, // 24: ant.v1.AIGatewayService.DiscoverGatewayModels:output_type -> ant.v1.DiscoverGatewayModelsResponse
+	15, // [15:25] is the sub-list for method output_type
+	5,  // [5:15] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -1479,7 +1577,7 @@ func file_ai_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_gateway_proto_rawDesc), len(file_ai_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -16,6 +16,7 @@ import (
 	"alphaforge/internal/pkg/secretbox"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
+	"alphaforge/internal/service/systemai"
 )
 
 // AIGatewayServer implements AIGatewayServiceHandler.
@@ -340,4 +341,34 @@ func (s *AIGatewayServer) RecordTokenUsage(
 		return nil
 	}
 	return s.tokenUsageRepo.Insert(ctx, rec)
+}
+
+func (s *AIGatewayServer) DiscoverGatewayModels(
+	ctx context.Context,
+	req *connect.Request[antv1.DiscoverGatewayModelsRequest],
+) (*connect.Response[antv1.DiscoverGatewayModelsResponse], error) {
+	id, err := uuid.Parse(req.Msg.ProviderId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid provider_id"))
+	}
+	p, err := s.providerRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("provider not found"))
+	}
+	if len(p.APIKeyEncrypted) == 0 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("provider has no API key configured"))
+	}
+	secret, err := repository.OpenAPIKey(p.APIKeyEncrypted, s.box)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("decrypt api key: %w", err))
+	}
+	models, err := systemai.DiscoverModelsByConfig(ctx, p.ProviderID, p.BaseURL, secret)
+	if err != nil {
+		s.log.Warn("discover gateway models failed",
+			zap.String("provider", p.ProviderID),
+			zap.String("base_url", p.BaseURL),
+			zap.Error(err))
+		return connect.NewResponse(&antv1.DiscoverGatewayModelsResponse{}), nil
+	}
+	return connect.NewResponse(&antv1.DiscoverGatewayModelsResponse{Models: models}), nil
 }

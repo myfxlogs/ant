@@ -230,6 +230,7 @@ export default function AIGatewayManagement() {
         onCloseProvider={() => setProviderModalOpen(false)}
         modelModalOpen={modelModalOpen}
         editingModel={editingModel}
+        currentProvider={currentProvider}
         modelForm={modelForm}
         onSaveModel={handleSaveModel}
         onCloseModel={() => setModelModalOpen(false)}

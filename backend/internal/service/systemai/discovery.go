@@ -281,3 +281,22 @@ func dedupe[T any](in []T, key func(T) string) []string {
 	}
 	return out
 }
+
+// DiscoverModelsByConfig fetches available models from a provider's /models
+// endpoint using explicit config (no DB lookup). Used by admin Gateway
+// management to discover models for system_ai_providers.
+func DiscoverModelsByConfig(ctx context.Context, providerID, baseURL, secret string) ([]string, error) {
+	base := strings.TrimRight(strings.TrimSpace(baseURL), "/")
+	if base == "" {
+		return nil, errBaseURLEmpty
+	}
+	if perr := validateBaseURL(base); perr != nil {
+		return nil, perr
+	}
+	if providerID == "zhipu" {
+		if all, derr := fetchZhipuModels(ctx, base, secret); derr == nil && len(all) > 0 {
+			return all, nil
+		}
+	}
+	return fetchOpenAIModels(ctx, base, secret)
+}

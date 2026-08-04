@@ -60,6 +60,9 @@ const (
 	// AIGatewayServiceDeleteModelProcedure is the fully-qualified name of the AIGatewayService's
 	// DeleteModel RPC.
 	AIGatewayServiceDeleteModelProcedure = "/ant.v1.AIGatewayService/DeleteModel"
+	// AIGatewayServiceDiscoverGatewayModelsProcedure is the fully-qualified name of the
+	// AIGatewayService's DiscoverGatewayModels RPC.
+	AIGatewayServiceDiscoverGatewayModelsProcedure = "/ant.v1.AIGatewayService/DiscoverGatewayModels"
 )
 
 // AIGatewayServiceClient is a client for the ant.v1.AIGatewayService service.
@@ -82,6 +85,8 @@ type AIGatewayServiceClient interface {
 	UpsertModel(context.Context, *connect.Request[v1.UpsertModelRequest]) (*connect.Response[v1.UpsertModelResponse], error)
 	// Admin: delete a model.
 	DeleteModel(context.Context, *connect.Request[v1.DeleteModelRequest]) (*connect.Response[v1.DeleteModelResponse], error)
+	// Admin: discover available models from a provider's API.
+	DiscoverGatewayModels(context.Context, *connect.Request[v1.DiscoverGatewayModelsRequest]) (*connect.Response[v1.DiscoverGatewayModelsResponse], error)
 }
 
 // NewAIGatewayServiceClient constructs a client for the ant.v1.AIGatewayService service. By
@@ -149,20 +154,27 @@ func NewAIGatewayServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(aIGatewayServiceMethods.ByName("DeleteModel")),
 			connect.WithClientOptions(opts...),
 		),
+		discoverGatewayModels: connect.NewClient[v1.DiscoverGatewayModelsRequest, v1.DiscoverGatewayModelsResponse](
+			httpClient,
+			baseURL+AIGatewayServiceDiscoverGatewayModelsProcedure,
+			connect.WithSchema(aIGatewayServiceMethods.ByName("DiscoverGatewayModels")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // aIGatewayServiceClient implements AIGatewayServiceClient.
 type aIGatewayServiceClient struct {
-	listSystemModels *connect.Client[v1.ListSystemModelsRequest, v1.ListSystemModelsResponse]
-	getTokenUsage    *connect.Client[v1.GetTokenUsageRequest, v1.GetTokenUsageResponse]
-	listProviders    *connect.Client[v1.ListProvidersRequest, v1.ListProvidersResponse]
-	createProvider   *connect.Client[v1.CreateProviderRequest, v1.CreateProviderResponse]
-	updateProvider   *connect.Client[v1.UpdateProviderRequest, v1.UpdateProviderResponse]
-	deleteProvider   *connect.Client[v1.DeleteProviderRequest, v1.DeleteProviderResponse]
-	listModels       *connect.Client[v1.ListModelsRequest, v1.ListModelsResponse]
-	upsertModel      *connect.Client[v1.UpsertModelRequest, v1.UpsertModelResponse]
-	deleteModel      *connect.Client[v1.DeleteModelRequest, v1.DeleteModelResponse]
+	listSystemModels      *connect.Client[v1.ListSystemModelsRequest, v1.ListSystemModelsResponse]
+	getTokenUsage         *connect.Client[v1.GetTokenUsageRequest, v1.GetTokenUsageResponse]
+	listProviders         *connect.Client[v1.ListProvidersRequest, v1.ListProvidersResponse]
+	createProvider        *connect.Client[v1.CreateProviderRequest, v1.CreateProviderResponse]
+	updateProvider        *connect.Client[v1.UpdateProviderRequest, v1.UpdateProviderResponse]
+	deleteProvider        *connect.Client[v1.DeleteProviderRequest, v1.DeleteProviderResponse]
+	listModels            *connect.Client[v1.ListModelsRequest, v1.ListModelsResponse]
+	upsertModel           *connect.Client[v1.UpsertModelRequest, v1.UpsertModelResponse]
+	deleteModel           *connect.Client[v1.DeleteModelRequest, v1.DeleteModelResponse]
+	discoverGatewayModels *connect.Client[v1.DiscoverGatewayModelsRequest, v1.DiscoverGatewayModelsResponse]
 }
 
 // ListSystemModels calls ant.v1.AIGatewayService.ListSystemModels.
@@ -210,6 +222,11 @@ func (c *aIGatewayServiceClient) DeleteModel(ctx context.Context, req *connect.R
 	return c.deleteModel.CallUnary(ctx, req)
 }
 
+// DiscoverGatewayModels calls ant.v1.AIGatewayService.DiscoverGatewayModels.
+func (c *aIGatewayServiceClient) DiscoverGatewayModels(ctx context.Context, req *connect.Request[v1.DiscoverGatewayModelsRequest]) (*connect.Response[v1.DiscoverGatewayModelsResponse], error) {
+	return c.discoverGatewayModels.CallUnary(ctx, req)
+}
+
 // AIGatewayServiceHandler is an implementation of the ant.v1.AIGatewayService service.
 type AIGatewayServiceHandler interface {
 	// User: list available system models with pricing.
@@ -230,6 +247,8 @@ type AIGatewayServiceHandler interface {
 	UpsertModel(context.Context, *connect.Request[v1.UpsertModelRequest]) (*connect.Response[v1.UpsertModelResponse], error)
 	// Admin: delete a model.
 	DeleteModel(context.Context, *connect.Request[v1.DeleteModelRequest]) (*connect.Response[v1.DeleteModelResponse], error)
+	// Admin: discover available models from a provider's API.
+	DiscoverGatewayModels(context.Context, *connect.Request[v1.DiscoverGatewayModelsRequest]) (*connect.Response[v1.DiscoverGatewayModelsResponse], error)
 }
 
 // NewAIGatewayServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -293,6 +312,12 @@ func NewAIGatewayServiceHandler(svc AIGatewayServiceHandler, opts ...connect.Han
 		connect.WithSchema(aIGatewayServiceMethods.ByName("DeleteModel")),
 		connect.WithHandlerOptions(opts...),
 	)
+	aIGatewayServiceDiscoverGatewayModelsHandler := connect.NewUnaryHandler(
+		AIGatewayServiceDiscoverGatewayModelsProcedure,
+		svc.DiscoverGatewayModels,
+		connect.WithSchema(aIGatewayServiceMethods.ByName("DiscoverGatewayModels")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AIGatewayService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AIGatewayServiceListSystemModelsProcedure:
@@ -313,6 +338,8 @@ func NewAIGatewayServiceHandler(svc AIGatewayServiceHandler, opts ...connect.Han
 			aIGatewayServiceUpsertModelHandler.ServeHTTP(w, r)
 		case AIGatewayServiceDeleteModelProcedure:
 			aIGatewayServiceDeleteModelHandler.ServeHTTP(w, r)
+		case AIGatewayServiceDiscoverGatewayModelsProcedure:
+			aIGatewayServiceDiscoverGatewayModelsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -356,4 +383,8 @@ func (UnimplementedAIGatewayServiceHandler) UpsertModel(context.Context, *connec
 
 func (UnimplementedAIGatewayServiceHandler) DeleteModel(context.Context, *connect.Request[v1.DeleteModelRequest]) (*connect.Response[v1.DeleteModelResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIGatewayService.DeleteModel is not implemented"))
+}
+
+func (UnimplementedAIGatewayServiceHandler) DiscoverGatewayModels(context.Context, *connect.Request[v1.DiscoverGatewayModelsRequest]) (*connect.Response[v1.DiscoverGatewayModelsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIGatewayService.DiscoverGatewayModels is not implemented"))
 }

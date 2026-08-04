@@ -11,6 +11,7 @@ import {
   ListModelsRequestSchema,
   UpsertModelRequestSchema,
   DeleteModelRequestSchema,
+  DiscoverGatewayModelsRequestSchema,
 } from '../gen/ant/v1/ai_gateway_pb';
 
 export interface SystemModelInfo {
@@ -180,5 +181,11 @@ export const aiGatewayApi = {
   deleteModel: async (id: string): Promise<void> => {
     const req = create(DeleteModelRequestSchema, { id });
     await aiGatewayClient.deleteModel(req);
+  },
+
+  discoverGatewayModels: async (providerId: string): Promise<string[]> => {
+    const req = create(DiscoverGatewayModelsRequestSchema, { providerId });
+    const resp = await aiGatewayClient.discoverGatewayModels(req);
+    return resp.models || [];
   },
 };

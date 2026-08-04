@@ -1,8 +1,10 @@
-import { Modal, Form, Input, InputNumber, Space, Table, Button, Switch, Popconfirm, Spin, Typography } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, ThunderboltOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, InputNumber, Space, Table, Button, Switch, Popconfirm, Spin, Typography, Select, message } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, ThunderboltOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import type { FormInstance } from 'antd';
 import type { AIProviderInfo, AIModelConfigInfo } from '@/client/aiGateway';
+import { aiGatewayApi } from '@/client/aiGateway';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 const { Text } = Typography;
 
@@ -21,6 +23,7 @@ interface ModalsProps {
 
   modelModalOpen: boolean;
   editingModel: AIModelConfigInfo | null;
+  currentProvider: ProviderState | null;
   modelForm: FormInstance;
   onSaveModel: () => void;
   onCloseModel: () => void;
@@ -28,9 +31,28 @@ interface ModalsProps {
 
 export function AIGatewayModals({
   providerModalOpen, editingProvider, providerForm, saving, onSaveProvider, onCloseProvider,
-  modelModalOpen, editingModel, modelForm, onSaveModel, onCloseModel,
+  modelModalOpen, editingModel, currentProvider, modelForm, onSaveModel, onCloseModel,
 }: ModalsProps) {
   const { t } = useTranslation();
+  const [discoveredModels, setDiscoveredModels] = useState<string[]>([]);
+  const [discovering, setDiscovering] = useState(false);
+
+  const handleDiscoverModels = async () => {
+    if (!currentProvider) return;
+    setDiscovering(true);
+    try {
+      const models = await aiGatewayApi.discoverGatewayModels(currentProvider.id);
+      setDiscoveredModels(models);
+      if (models.length === 0) {
+        message.info(t('admin.aiGateway.noModelsDiscovered', { defaultValue: 'No models discovered. Check API key and base URL.' }));
+      }
+    } catch {
+      message.error(t('admin.aiGateway.discoverFailed', { defaultValue: 'Failed to discover models' }));
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -68,8 +90,30 @@ export function AIGatewayModals({
         width={500}
       >
         <Form form={modelForm} layout="vertical">
-          <Form.Item name="modelName" label={t('admin.aiGateway.modelName', { defaultValue: 'Model Name' })} rules={[{ required: true, message: t('admin.aiGateway.modelNameRequired', { defaultValue: 'Please enter model name' }) }]}>
-            <Input placeholder="deepseek-chat" />
+          <Form.Item label={t('admin.aiGateway.modelName', { defaultValue: 'Model Name' })} required>
+            <Space.Compact style={{ width: '100%' }}>
+              <Form.Item name="modelName" noStyle rules={[{ required: true, message: t('admin.aiGateway.modelNameRequired', { defaultValue: 'Please enter or select model name' }) }]}>
+                <Select
+                  showSearch
+                  allowClear
+                  placeholder="deepseek-v4-flash"
+                  style={{ width: '100%' }}
+                  options={discoveredModels.map(m => ({ label: m, value: m }))}
+                  notFoundContent={discovering ? <Spin size="small" /> : undefined}
+                  filterOption={(input, option) =>
+                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                  }
+                />
+              </Form.Item>
+              <Button
+                icon={<SearchOutlined />}
+                onClick={handleDiscoverModels}
+                loading={discovering}
+                style={{ marginLeft: 8 }}
+              >
+                {t('admin.aiGateway.discover', { defaultValue: 'Discover' })}
+              </Button>
+            </Space.Compact>
           </Form.Item>
           <Form.Item name="displayName" label={t('admin.aiGateway.displayName', { defaultValue: 'Display Name' })}>
             <Input placeholder={t('admin.aiGateway.displayNamePlaceholder', { defaultValue: 'DeepSeek Chat' })} />

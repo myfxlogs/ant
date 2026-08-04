@@ -28,6 +28,8 @@ service AIGatewayService {
   rpc UpsertModel(UpsertModelRequest) returns (UpsertModelResponse);
   // Admin: delete a model.
   rpc DeleteModel(DeleteModelRequest) returns (DeleteModelResponse);
+  // Admin: discover available models from a provider's API.
+  rpc DiscoverGatewayModels(DiscoverGatewayModelsRequest) returns (DiscoverGatewayModelsResponse);
 }
 
 // ── User-facing messages ──
@@ -152,3 +154,11 @@ message DeleteProviderRequest {
 }
 
 message DeleteProviderResponse {}
+
+message DiscoverGatewayModelsRequest {
+  string provider_id = 1;  // UUID of system_ai_providers row
+}
+
+message DiscoverGatewayModelsResponse {
+  repeated string models = 1;
+}
