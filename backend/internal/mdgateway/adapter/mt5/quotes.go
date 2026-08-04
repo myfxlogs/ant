@@ -93,6 +93,10 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
+		if sc == nil {
+			g.sleep(ctx, time.Second)
+			continue
+		}
 
 		subCtx, cancel := context.WithCancel(ctx)
 		g.mu.Lock()
@@ -267,6 +271,10 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
+		if sc == nil {
+			g.sleep(ctx, time.Second)
+			continue
+		}
 
 		subCtx, cancel := context.WithCancel(ctx)
 		g.mu.Lock()

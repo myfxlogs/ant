@@ -42,6 +42,10 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
+		if sc == nil {
+			g.sleep(ctx, time.Second)
+			continue
+		}
 
 		subCtx, cancel := context.WithCancel(ctx)
 		g.mu.Lock()
