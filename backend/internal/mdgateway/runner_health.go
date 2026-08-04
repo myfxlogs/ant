@@ -33,9 +33,21 @@ func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Lo
 					}
 				case "dead":
 					hd.handle(h)
-				case "no_data":
-					log.Debug("mdgateway: no data yet",
-						zap.String("account", h.AccountID))
+				case "no_data", "healthy":
+					// Active RPC health check: even if ticks are flowing,
+					// the RPC session may be broken (e.g. DeadlineExceeded).
+					// Ping the gateway to verify RPC connectivity.
+					if gw := mgr.GetGateway(h.AccountID); gw != nil {
+						hcCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+						if err := gw.HealthCheck(hcCtx); err != nil {
+							log.Warn("mdgateway: RPC health check failed — treating as dead",
+								zap.String("account", h.AccountID),
+								zap.String("state", h.State),
+								zap.Error(err))
+							hd.handle(h)
+						}
+						cancel()
+					}
 				default:
 					log.Debug("mdgateway: health",
 						zap.String("account", h.AccountID),
@@ -64,7 +76,13 @@ func (hd *deadAccountHandler) handle(h AccountHealth) {
 	hd.log.Error("mdgateway: dead account — attempting reconnect",
 		zap.String("account", h.AccountID),
 		zap.String("platform", h.Platform))
-	if err := hd.mgr.ReconnectGateway(hd.ctx, h.AccountID); err != nil {
+	var err error
+	if hd.mgr.fullRestart != nil {
+		err = hd.mgr.fullRestart(hd.ctx, h.AccountID)
+	} else {
+		err = hd.mgr.ReconnectGateway(hd.ctx, h.AccountID)
+	}
+	if err != nil {
 		hd.log.Error("mdgateway: reconnect failed, removing dead gateway",
 			zap.String("account", h.AccountID), zap.Error(err))
 		hd.mgr.MarkDisconnecting(h.AccountID)

@@ -74,6 +74,7 @@ type Manager struct {
 	disconnecting map[string]bool
 	baseCtx       context.Context
 	rediscoverer  *HostRediscoverer // §0: broker host rediscovery
+	fullRestart   func(ctx context.Context, accountID string) error // full restart: RemoveGateway + startGatewayForAccount
 }
 
 func NewManager(deps ManagerDeps) *Manager {
@@ -105,6 +106,10 @@ func (m *Manager) SetBaseContext(ctx context.Context) { m.baseCtx = ctx }
 
 // SetRediscoverer injects the broker host rediscoverer (§0).
 func (m *Manager) SetRediscoverer(r *HostRediscoverer) { m.rediscoverer = r }
+
+func (m *Manager) SetFullRestart(fn func(ctx context.Context, accountID string) error) {
+	m.fullRestart = fn
+}
 
 func (m *Manager) baseContext() context.Context {
 	if m.baseCtx != nil {
