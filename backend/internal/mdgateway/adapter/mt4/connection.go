@@ -122,6 +122,10 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		brokerHost = brokerHost[:idx]
 	}
 	connCli := g.connCli
+	g.log.Info("mt4 connect attempt",
+		zap.String("host", brokerHost), zap.Int32("port", brokerPort),
+		zap.String("login", g.cfg.Login),
+		zap.Int("password_len", len(g.cfg.Password)))
 	loginResp, err := connCli.Connect(loginCtx, &pb.ConnectRequest{
 		Host: brokerHost, Port: brokerPort, User: int32(strToInt(g.cfg.Login)),
 		Password: g.cfg.Password, Id: &tempID,
