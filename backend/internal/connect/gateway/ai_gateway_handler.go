@@ -262,6 +262,12 @@ func (s *AIGatewayServer) UpsertModel(
 	}
 	newID, err := s.modelRepo.Upsert(ctx, m)
 	if err != nil {
+		s.log.Error("upsert model failed",
+			zap.String("provider_id", r.ProviderId),
+			zap.String("model_name", r.ModelName),
+			zap.String("price_in", r.PricePer_1MInput),
+			zap.String("price_out", r.PricePer_1MOutput),
+			zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.UpsertModelResponse{Id: newID.String()}), nil

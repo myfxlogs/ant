@@ -232,6 +232,12 @@ func scanAIModelRows(rows interface{ Next() bool; Scan(...interface{}) error; Er
 }
 
 func (r *AIModelRepository) Upsert(ctx context.Context, m *AIModel) (uuid.UUID, error) {
+	if m.MarkupRate == "" {
+		m.MarkupRate = "1.5"
+	}
+	if m.ModelTier == "" {
+		m.ModelTier = "flagship"
+	}
 	if m.ID != uuid.Nil {
 		_, err := r.db.Exec(ctx,
 			`UPDATE ai_models SET model_name=$1, display_name=$2, price_per_1m_input=$3, price_per_1m_output=$4,
