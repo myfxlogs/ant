@@ -43,13 +43,30 @@ func (s *Service) chatCompletionStream(
 	tools []ToolDefinition,
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
-	// Pre-check wallet balance before making any API call.
-	// Industry standard for streaming micro-billing: allow a small negative balance
-	// (wallet CHECK constraint allows -$0.10). Future calls are blocked until positive.
+	// Pre-check wallet balance and quota before making any API call.
+	// remainingTokens is used to cap max_tokens so the AI provider limits
+	// output generation to the user's remaining quota.
+	remainingTokens := -1
 	if s.walletChecker != nil {
-		if err := s.walletChecker(ctx, userID); err != nil {
+		rt, err := s.walletChecker(ctx, userID)
+		if err != nil {
 			return err
 		}
+		remainingTokens = rt
+	}
+
+	// Subtract session-in-flight tokens (from prior rounds in the same agent loop).
+	if sc := sessionCounterFromCtx(ctx); sc != nil && remainingTokens >= 0 {
+		used := sc.Total()
+		remainingTokens -= used
+		if remainingTokens < 0 {
+			remainingTokens = 0
+		}
+	}
+
+	// Block if no tokens remain and no wallet balance to fall back on.
+	if remainingTokens == 0 {
+		return ErrInsufficientBalance
 	}
 
 	providers, err := s.resolveAllChatProviders(ctx, userID)
@@ -59,6 +76,8 @@ func (s *Service) chatCompletionStream(
 
 	var lastErr error
 	for _, p := range providers {
+		// Cap max_tokens to remaining quota so the provider limits output length.
+		p.maxTokens = capMaxTokens(p.maxTokens, remainingTokens)
 		err := s.tryChatCompletionStream(ctx, p, messages, tools, onChunk)
 		if err == nil {
 			return nil
@@ -250,6 +269,26 @@ func finalizeToolCalls(finishReason string, acc map[int]*StreamToolCall) []Strea
 	return out
 }
 
+// capMaxTokens limits the max_tokens sent to the AI provider so that
+// output generation cannot exceed the user's remaining token quota.
+// remainingTokens = -1 means unlimited (no cap).
+func capMaxTokens(current, remainingTokens int) int {
+	if remainingTokens < 0 {
+		return current // unlimited
+	}
+	// Reserve a small floor so the provider doesn't return a degenerate response.
+	// If remaining is very small (e.g. 50), still allow at least 100 tokens
+	// so the model can produce a short "quota exceeded" style message.
+	cap := remainingTokens
+	if cap < 100 {
+		cap = 100
+	}
+	if current <= 0 || cap < current {
+		return cap
+	}
+	return current
+}
+
 func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage *ChatUsage, messages []ChatMessage, streamedChars int) error {
 	if s.postCallBiller == nil {
 		return fmt.Errorf("postCallBiller not configured — billing infrastructure missing")
@@ -273,6 +312,11 @@ func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage 
 			zap.Int("outTokens", outTokens),
 			zap.Error(billErr))
 		return billErr
+	}
+	// Track session-scoped usage so subsequent rounds in the same agent loop
+	// see the cumulative total and can enforce quota mid-session.
+	if sc := sessionCounterFromCtx(ctx); sc != nil {
+		sc.AddTokens(inTokens + outTokens)
 	}
 	s.log.Info("chat stream billed",
 		zap.String("userID", p.userID.String()),

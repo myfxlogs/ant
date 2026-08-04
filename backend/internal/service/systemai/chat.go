@@ -200,7 +200,7 @@ func (s *Service) ChatCompletionWithUsage(
 ) (*ChatResult, error) {
 	// Pre-check wallet balance before making any API call.
 	if s.walletChecker != nil {
-		if err := s.walletChecker(ctx, userID); err != nil {
+		if _, err := s.walletChecker(ctx, userID); err != nil {
 			return nil, err
 		}
 	}

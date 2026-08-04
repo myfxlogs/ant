@@ -61,14 +61,21 @@ func (g *Generator) runAgentLoop(
 
 	streamChunk, reasoningStream, toolStream := g.buildStreamCallbacks(result, streamOrAbort)
 
+	// Create a session-scoped token counter so all LLM calls within this
+	// agent loop share quota tracking. This prevents mid-session overshoot:
+	// each round's pre-check sees the cumulative usage from prior rounds.
+	quotaCtx, sessionQuota := systemai.WithSessionQuota(ctx)
+
 	loop := connectai.NewAgentLoop(registry,
 		func(llmCtx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error {
-			return g.aiSvc.ChatCompletionStreamWithTools(llmCtx, userID, messages, tools, onChunk)
+			// Merge session quota context with the LLM call context.
+			mergedCtx := context.WithValue(llmCtx, systemai.SessionQuotaKey, sessionQuota)
+			return g.aiSvc.ChatCompletionStreamWithTools(mergedCtx, userID, messages, tools, onChunk)
 		},
 		streamChunk, toolStream, reasoningStream,
 	)
 
-	raw, loopErr := loop.RunWithHistory(ctx, sysPrompt, userPrompt, history, userID)
+	raw, loopErr := loop.RunWithHistory(quotaCtx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
 
 	turnDataBytes := g.buildFinalTurnChunk(result, raw)

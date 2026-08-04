@@ -75,7 +75,7 @@ type Service struct {
 	box                 *secretbox.Box
 	secretCache         sync.Map
 	postCallBiller      PostCallBiller
-	walletChecker       func(ctx context.Context, userID uuid.UUID) error              // pre-check before API call
+	walletChecker       func(ctx context.Context, userID uuid.UUID) (int, error)                     // pre-check before API call; returns remaining tokens (-1 = unlimited)
 	gatewayProviderRepo *repository.SystemAIProviderRepository                         // optional: fallback for AI Gateway
 	cbDB                cbExecutor                                                     // optional: PG pool for persistent circuit breaker
 	modelFilter         func(ctx context.Context, userID uuid.UUID, model string) bool // optional: ADR-0025 §5.2 model whitelist
@@ -103,7 +103,8 @@ func NewService(repo *repository.SystemAIConfigRepository, box *secretbox.Box) *
 
 // SetWalletChecker sets a pre-check called before each AI API call.
 // If it returns an error, the API call is aborted before any tokens are consumed.
-func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) error) {
+// The returned int is the remaining token quota (-1 = unlimited); used to cap max_tokens.
+func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) (int, error)) {
 	s.walletChecker = fn
 }
 

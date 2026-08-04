@@ -27,17 +27,20 @@ func wireAIBilling(
 ) {
 	aiMinBalance := parseAIMinBalance()
 
-	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) error {
+	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) (int, error) {
 		if dailyQuota != nil {
 			if err := dailyQuota.CheckQuota(ctx, userID); err != nil {
-				return err
+				return -1, err
 			}
 		}
 		remaining := monthlyTokenRemaining(quotaChecker, tokenUsageRepo, userID)
 		if remaining == 0 {
-			return checkWalletBalance(walletSvc, userID, aiMinBalance)
+			if err := checkWalletBalance(walletSvc, userID, aiMinBalance); err != nil {
+				return -1, err
+			}
+			return -1, nil // has wallet balance, no quota limit
 		}
-		return nil
+		return remaining, nil
 	})
 
 	aiSvc.SetPostCallBiller(func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error {
