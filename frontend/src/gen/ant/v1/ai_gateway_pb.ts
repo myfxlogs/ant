@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ai_gateway.proto.
  */
 export const file_ai_gateway: GenFile = /*@__PURE__*/
-  fileDesc("ChBhaV9nYXRld2F5LnByb3RvEgZhbnQudjEiGQoXTGlzdFN5c3RlbU1vZGVsc1JlcXVlc3QiPwoYTGlzdFN5c3RlbU1vZGVsc1Jlc3BvbnNlEiMKBm1vZGVscxgBIAMoCzITLmFudC52MS5TeXN0ZW1Nb2RlbCKRAQoLU3lzdGVtTW9kZWwSCgoCaWQYASABKAkSEwoLcHJvdmlkZXJfaWQYAiABKAkSEgoKbW9kZWxfbmFtZRgDIAEoCRIUCgxkaXNwbGF5X25hbWUYBCABKAkSGgoScHJpY2VfcGVyXzFtX2lucHV0GAUgASgJEhsKE3ByaWNlX3Blcl8xbV9vdXRwdXQYBiABKAkiFgoUR2V0VG9rZW5Vc2FnZVJlcXVlc3Qi2AEKFUdldFRva2VuVXNhZ2VSZXNwb25zZRJICg5mZWF0dXJlX3Rva2VucxgBIAMoCzIwLmFudC52MS5HZXRUb2tlblVzYWdlUmVzcG9uc2UuRmVhdHVyZVRva2Vuc0VudHJ5EikKB3JlY29yZHMYAiADKAsyGC5hbnQudjEuVG9rZW5Vc2FnZVJlY29yZBIUCgxtb250aGx5X2Nvc3QYAyABKAkaNAoSRmVhdHVyZVRva2Vuc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoBToCOAEivgEKEFRva2VuVXNhZ2VSZWNvcmQSCgoCaWQYASABKAkSDwoHcGFpZF9ieRgCIAEoCRITCgtwcm92aWRlcl9pZBgDIAEoCRISCgptb2RlbF9uYW1lGAQgASgJEg8KB2ZlYXR1cmUYBSABKAkSFAoMaW5wdXRfdG9rZW5zGAYgASgFEhUKDW91dHB1dF90b2tlbnMYByABKAUSDAoEY29zdBgIIAEoCRIYChBjcmVhdGVkX2F0X3RzX21zGAkgASgDIhYKFExpc3RQcm92aWRlcnNSZXF1ZXN0Ij4KFUxpc3RQcm92aWRlcnNSZXNwb25zZRIlCglwcm92aWRlcnMYASADKAsyEi5hbnQudjEuQUlQcm92aWRlciJzCgpBSVByb3ZpZGVyEgoKAmlkGAEgASgJEhMKC3Byb3ZpZGVyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEAoIYmFzZV91cmwYBCABKAkSDwoHZW5hYmxlZBgFIAEoCBITCgtoYXNfYXBpX2tleRgGIAEoCCKnAQoVVXBkYXRlUHJvdmlkZXJSZXF1ZXN0EgoKAmlkGAEgASgJEhEKBG5hbWUYAiABKAlIAIgBARIVCghiYXNlX3VybBgDIAEoCUgBiAEBEhQKB2FwaV9rZXkYBCABKAlIAogBARIUCgdlbmFibGVkGAUgASgISAOIAQFCBwoFX25hbWVCCwoJX2Jhc2VfdXJsQgoKCF9hcGlfa2V5QgoKCF9lbmFibGVkIhgKFlVwZGF0ZVByb3ZpZGVyUmVzcG9uc2UiKAoRTGlzdE1vZGVsc1JlcXVlc3QSEwoLcHJvdmlkZXJfaWQYASABKAkiOwoSTGlzdE1vZGVsc1Jlc3BvbnNlEiUKBm1vZGVscxgBIAMoCzIVLmFudC52MS5BSU1vZGVsQ29uZmlnIqMBCg1BSU1vZGVsQ29uZmlnEgoKAmlkGAEgASgJEhIKCm1vZGVsX25hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEhoKEnByaWNlX3Blcl8xbV9pbnB1dBgEIAEoCRIbChNwcmljZV9wZXJfMW1fb3V0cHV0GAUgASgJEg8KB2VuYWJsZWQYBiABKAgSEgoKc29ydF9vcmRlchgHIAEoBSKEAgoSVXBzZXJ0TW9kZWxSZXF1ZXN0Eg8KAmlkGAEgASgJSACIAQESEwoLcHJvdmlkZXJfaWQYAiABKAkSEgoKbW9kZWxfbmFtZRgDIAEoCRIZCgxkaXNwbGF5X25hbWUYBCABKAlIAYgBARIaChJwcmljZV9wZXJfMW1faW5wdXQYBSABKAkSGwoTcHJpY2VfcGVyXzFtX291dHB1dBgGIAEoCRIUCgdlbmFibGVkGAcgASgISAKIAQESFwoKc29ydF9vcmRlchgIIAEoBUgDiAEBQgUKA19pZEIPCg1fZGlzcGxheV9uYW1lQgoKCF9lbmFibGVkQg0KC19zb3J0X29yZGVyIiEKE1Vwc2VydE1vZGVsUmVzcG9uc2USCgoCaWQYASABKAkiIAoSRGVsZXRlTW9kZWxSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0RlbGV0ZU1vZGVsUmVzcG9uc2UiIwoVRGVsZXRlUHJvdmlkZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhgKFkRlbGV0ZVByb3ZpZGVyUmVzcG9uc2Uy/AQKEEFJR2F0ZXdheVNlcnZpY2USVQoQTGlzdFN5c3RlbU1vZGVscxIfLmFudC52MS5MaXN0U3lzdGVtTW9kZWxzUmVxdWVzdBogLmFudC52MS5MaXN0U3lzdGVtTW9kZWxzUmVzcG9uc2USTAoNR2V0VG9rZW5Vc2FnZRIcLmFudC52MS5HZXRUb2tlblVzYWdlUmVxdWVzdBodLmFudC52MS5HZXRUb2tlblVzYWdlUmVzcG9uc2USTAoNTGlzdFByb3ZpZGVycxIcLmFudC52MS5MaXN0UHJvdmlkZXJzUmVxdWVzdBodLmFudC52MS5MaXN0UHJvdmlkZXJzUmVzcG9uc2USTwoOVXBkYXRlUHJvdmlkZXISHS5hbnQudjEuVXBkYXRlUHJvdmlkZXJSZXF1ZXN0Gh4uYW50LnYxLlVwZGF0ZVByb3ZpZGVyUmVzcG9uc2USTwoORGVsZXRlUHJvdmlkZXISHS5hbnQudjEuRGVsZXRlUHJvdmlkZXJSZXF1ZXN0Gh4uYW50LnYxLkRlbGV0ZVByb3ZpZGVyUmVzcG9uc2USQwoKTGlzdE1vZGVscxIZLmFudC52MS5MaXN0TW9kZWxzUmVxdWVzdBoaLmFudC52MS5MaXN0TW9kZWxzUmVzcG9uc2USRgoLVXBzZXJ0TW9kZWwSGi5hbnQudjEuVXBzZXJ0TW9kZWxSZXF1ZXN0GhsuYW50LnYxLlVwc2VydE1vZGVsUmVzcG9uc2USRgoLRGVsZXRlTW9kZWwSGi5hbnQudjEuRGVsZXRlTW9kZWxSZXF1ZXN0GhsuYW50LnYxLkRlbGV0ZU1vZGVsUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChBhaV9nYXRld2F5LnByb3RvEgZhbnQudjEiGQoXTGlzdFN5c3RlbU1vZGVsc1JlcXVlc3QiPwoYTGlzdFN5c3RlbU1vZGVsc1Jlc3BvbnNlEiMKBm1vZGVscxgBIAMoCzITLmFudC52MS5TeXN0ZW1Nb2RlbCKRAQoLU3lzdGVtTW9kZWwSCgoCaWQYASABKAkSEwoLcHJvdmlkZXJfaWQYAiABKAkSEgoKbW9kZWxfbmFtZRgDIAEoCRIUCgxkaXNwbGF5X25hbWUYBCABKAkSGgoScHJpY2VfcGVyXzFtX2lucHV0GAUgASgJEhsKE3ByaWNlX3Blcl8xbV9vdXRwdXQYBiABKAkiFgoUR2V0VG9rZW5Vc2FnZVJlcXVlc3Qi2AEKFUdldFRva2VuVXNhZ2VSZXNwb25zZRJICg5mZWF0dXJlX3Rva2VucxgBIAMoCzIwLmFudC52MS5HZXRUb2tlblVzYWdlUmVzcG9uc2UuRmVhdHVyZVRva2Vuc0VudHJ5EikKB3JlY29yZHMYAiADKAsyGC5hbnQudjEuVG9rZW5Vc2FnZVJlY29yZBIUCgxtb250aGx5X2Nvc3QYAyABKAkaNAoSRmVhdHVyZVRva2Vuc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoBToCOAEivgEKEFRva2VuVXNhZ2VSZWNvcmQSCgoCaWQYASABKAkSDwoHcGFpZF9ieRgCIAEoCRITCgtwcm92aWRlcl9pZBgDIAEoCRISCgptb2RlbF9uYW1lGAQgASgJEg8KB2ZlYXR1cmUYBSABKAkSFAoMaW5wdXRfdG9rZW5zGAYgASgFEhUKDW91dHB1dF90b2tlbnMYByABKAUSDAoEY29zdBgIIAEoCRIYChBjcmVhdGVkX2F0X3RzX21zGAkgASgDIhYKFExpc3RQcm92aWRlcnNSZXF1ZXN0Ij4KFUxpc3RQcm92aWRlcnNSZXNwb25zZRIlCglwcm92aWRlcnMYASADKAsyEi5hbnQudjEuQUlQcm92aWRlciJzCgpBSVByb3ZpZGVyEgoKAmlkGAEgASgJEhMKC3Byb3ZpZGVyX2lkGAIgASgJEgwKBG5hbWUYAyABKAkSEAoIYmFzZV91cmwYBCABKAkSDwoHZW5hYmxlZBgFIAEoCBITCgtoYXNfYXBpX2tleRgGIAEoCCKnAQoVVXBkYXRlUHJvdmlkZXJSZXF1ZXN0EgoKAmlkGAEgASgJEhEKBG5hbWUYAiABKAlIAIgBARIVCghiYXNlX3VybBgDIAEoCUgBiAEBEhQKB2FwaV9rZXkYBCABKAlIAogBARIUCgdlbmFibGVkGAUgASgISAOIAQFCBwoFX25hbWVCCwoJX2Jhc2VfdXJsQgoKCF9hcGlfa2V5QgoKCF9lbmFibGVkIhgKFlVwZGF0ZVByb3ZpZGVyUmVzcG9uc2UifwoVQ3JlYXRlUHJvdmlkZXJSZXF1ZXN0EhMKC3Byb3ZpZGVyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIYmFzZV91cmwYAyABKAkSDwoHYXBpX2tleRgEIAEoCRIUCgdlbmFibGVkGAUgASgISACIAQFCCgoIX2VuYWJsZWQiJAoWQ3JlYXRlUHJvdmlkZXJSZXNwb25zZRIKCgJpZBgBIAEoCSIoChFMaXN0TW9kZWxzUmVxdWVzdBITCgtwcm92aWRlcl9pZBgBIAEoCSI7ChJMaXN0TW9kZWxzUmVzcG9uc2USJQoGbW9kZWxzGAEgAygLMhUuYW50LnYxLkFJTW9kZWxDb25maWciowEKDUFJTW9kZWxDb25maWcSCgoCaWQYASABKAkSEgoKbW9kZWxfbmFtZRgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSGgoScHJpY2VfcGVyXzFtX2lucHV0GAQgASgJEhsKE3ByaWNlX3Blcl8xbV9vdXRwdXQYBSABKAkSDwoHZW5hYmxlZBgGIAEoCBISCgpzb3J0X29yZGVyGAcgASgFIoQCChJVcHNlcnRNb2RlbFJlcXVlc3QSDwoCaWQYASABKAlIAIgBARITCgtwcm92aWRlcl9pZBgCIAEoCRISCgptb2RlbF9uYW1lGAMgASgJEhkKDGRpc3BsYXlfbmFtZRgEIAEoCUgBiAEBEhoKEnByaWNlX3Blcl8xbV9pbnB1dBgFIAEoCRIbChNwcmljZV9wZXJfMW1fb3V0cHV0GAYgASgJEhQKB2VuYWJsZWQYByABKAhIAogBARIXCgpzb3J0X29yZGVyGAggASgFSAOIAQFCBQoDX2lkQg8KDV9kaXNwbGF5X25hbWVCCgoIX2VuYWJsZWRCDQoLX3NvcnRfb3JkZXIiIQoTVXBzZXJ0TW9kZWxSZXNwb25zZRIKCgJpZBgBIAEoCSIgChJEZWxldGVNb2RlbFJlcXVlc3QSCgoCaWQYASABKAkiFQoTRGVsZXRlTW9kZWxSZXNwb25zZSIjChVEZWxldGVQcm92aWRlclJlcXVlc3QSCgoCaWQYASABKAkiGAoWRGVsZXRlUHJvdmlkZXJSZXNwb25zZTLNBQoQQUlHYXRld2F5U2VydmljZRJVChBMaXN0U3lzdGVtTW9kZWxzEh8uYW50LnYxLkxpc3RTeXN0ZW1Nb2RlbHNSZXF1ZXN0GiAuYW50LnYxLkxpc3RTeXN0ZW1Nb2RlbHNSZXNwb25zZRJMCg1HZXRUb2tlblVzYWdlEhwuYW50LnYxLkdldFRva2VuVXNhZ2VSZXF1ZXN0Gh0uYW50LnYxLkdldFRva2VuVXNhZ2VSZXNwb25zZRJMCg1MaXN0UHJvdmlkZXJzEhwuYW50LnYxLkxpc3RQcm92aWRlcnNSZXF1ZXN0Gh0uYW50LnYxLkxpc3RQcm92aWRlcnNSZXNwb25zZRJPCg5DcmVhdGVQcm92aWRlchIdLmFudC52MS5DcmVhdGVQcm92aWRlclJlcXVlc3QaHi5hbnQudjEuQ3JlYXRlUHJvdmlkZXJSZXNwb25zZRJPCg5VcGRhdGVQcm92aWRlchIdLmFudC52MS5VcGRhdGVQcm92aWRlclJlcXVlc3QaHi5hbnQudjEuVXBkYXRlUHJvdmlkZXJSZXNwb25zZRJPCg5EZWxldGVQcm92aWRlchIdLmFudC52MS5EZWxldGVQcm92aWRlclJlcXVlc3QaHi5hbnQudjEuRGVsZXRlUHJvdmlkZXJSZXNwb25zZRJDCgpMaXN0TW9kZWxzEhkuYW50LnYxLkxpc3RNb2RlbHNSZXF1ZXN0GhouYW50LnYxLkxpc3RNb2RlbHNSZXNwb25zZRJGCgtVcHNlcnRNb2RlbBIaLmFudC52MS5VcHNlcnRNb2RlbFJlcXVlc3QaGy5hbnQudjEuVXBzZXJ0TW9kZWxSZXNwb25zZRJGCgtEZWxldGVNb2RlbBIaLmFudC52MS5EZWxldGVNb2RlbFJlcXVlc3QaGy5hbnQudjEuRGVsZXRlTW9kZWxSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.ListSystemModelsRequest
@@ -310,6 +310,64 @@ export const UpdateProviderResponseSchema: GenMessage<UpdateProviderResponse> = 
   messageDesc(file_ai_gateway, 10);
 
 /**
+ * @generated from message ant.v1.CreateProviderRequest
+ */
+export type CreateProviderRequest = Message<"ant.v1.CreateProviderRequest"> & {
+  /**
+   * e.g. "zhipu", "deepseek"
+   *
+   * @generated from field: string provider_id = 1;
+   */
+  providerId: string;
+
+  /**
+   * display name
+   *
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string base_url = 3;
+   */
+  baseUrl: string;
+
+  /**
+   * @generated from field: string api_key = 4;
+   */
+  apiKey: string;
+
+  /**
+   * @generated from field: optional bool enabled = 5;
+   */
+  enabled?: boolean | undefined;
+};
+
+/**
+ * Describes the message ant.v1.CreateProviderRequest.
+ * Use `create(CreateProviderRequestSchema)` to create a new message.
+ */
+export const CreateProviderRequestSchema: GenMessage<CreateProviderRequest> = /*@__PURE__*/
+  messageDesc(file_ai_gateway, 11);
+
+/**
+ * @generated from message ant.v1.CreateProviderResponse
+ */
+export type CreateProviderResponse = Message<"ant.v1.CreateProviderResponse"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message ant.v1.CreateProviderResponse.
+ * Use `create(CreateProviderResponseSchema)` to create a new message.
+ */
+export const CreateProviderResponseSchema: GenMessage<CreateProviderResponse> = /*@__PURE__*/
+  messageDesc(file_ai_gateway, 12);
+
+/**
  * @generated from message ant.v1.ListModelsRequest
  */
 export type ListModelsRequest = Message<"ant.v1.ListModelsRequest"> & {
@@ -326,7 +384,7 @@ export type ListModelsRequest = Message<"ant.v1.ListModelsRequest"> & {
  * Use `create(ListModelsRequestSchema)` to create a new message.
  */
 export const ListModelsRequestSchema: GenMessage<ListModelsRequest> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 11);
+  messageDesc(file_ai_gateway, 13);
 
 /**
  * @generated from message ant.v1.ListModelsResponse
@@ -343,7 +401,7 @@ export type ListModelsResponse = Message<"ant.v1.ListModelsResponse"> & {
  * Use `create(ListModelsResponseSchema)` to create a new message.
  */
 export const ListModelsResponseSchema: GenMessage<ListModelsResponse> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 12);
+  messageDesc(file_ai_gateway, 14);
 
 /**
  * @generated from message ant.v1.AIModelConfig
@@ -390,7 +448,7 @@ export type AIModelConfig = Message<"ant.v1.AIModelConfig"> & {
  * Use `create(AIModelConfigSchema)` to create a new message.
  */
 export const AIModelConfigSchema: GenMessage<AIModelConfig> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 13);
+  messageDesc(file_ai_gateway, 15);
 
 /**
  * @generated from message ant.v1.UpsertModelRequest
@@ -444,7 +502,7 @@ export type UpsertModelRequest = Message<"ant.v1.UpsertModelRequest"> & {
  * Use `create(UpsertModelRequestSchema)` to create a new message.
  */
 export const UpsertModelRequestSchema: GenMessage<UpsertModelRequest> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 14);
+  messageDesc(file_ai_gateway, 16);
 
 /**
  * @generated from message ant.v1.UpsertModelResponse
@@ -461,7 +519,7 @@ export type UpsertModelResponse = Message<"ant.v1.UpsertModelResponse"> & {
  * Use `create(UpsertModelResponseSchema)` to create a new message.
  */
 export const UpsertModelResponseSchema: GenMessage<UpsertModelResponse> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 15);
+  messageDesc(file_ai_gateway, 17);
 
 /**
  * @generated from message ant.v1.DeleteModelRequest
@@ -478,7 +536,7 @@ export type DeleteModelRequest = Message<"ant.v1.DeleteModelRequest"> & {
  * Use `create(DeleteModelRequestSchema)` to create a new message.
  */
 export const DeleteModelRequestSchema: GenMessage<DeleteModelRequest> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 16);
+  messageDesc(file_ai_gateway, 18);
 
 /**
  * @generated from message ant.v1.DeleteModelResponse
@@ -491,7 +549,7 @@ export type DeleteModelResponse = Message<"ant.v1.DeleteModelResponse"> & {
  * Use `create(DeleteModelResponseSchema)` to create a new message.
  */
 export const DeleteModelResponseSchema: GenMessage<DeleteModelResponse> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 17);
+  messageDesc(file_ai_gateway, 19);
 
 /**
  * @generated from message ant.v1.DeleteProviderRequest
@@ -508,7 +566,7 @@ export type DeleteProviderRequest = Message<"ant.v1.DeleteProviderRequest"> & {
  * Use `create(DeleteProviderRequestSchema)` to create a new message.
  */
 export const DeleteProviderRequestSchema: GenMessage<DeleteProviderRequest> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 18);
+  messageDesc(file_ai_gateway, 20);
 
 /**
  * @generated from message ant.v1.DeleteProviderResponse
@@ -521,7 +579,7 @@ export type DeleteProviderResponse = Message<"ant.v1.DeleteProviderResponse"> & 
  * Use `create(DeleteProviderResponseSchema)` to create a new message.
  */
 export const DeleteProviderResponseSchema: GenMessage<DeleteProviderResponse> = /*@__PURE__*/
-  messageDesc(file_ai_gateway, 19);
+  messageDesc(file_ai_gateway, 21);
 
 /**
  * @generated from service ant.v1.AIGatewayService
@@ -556,6 +614,16 @@ export const AIGatewayService: GenService<{
     methodKind: "unary";
     input: typeof ListProvidersRequestSchema;
     output: typeof ListProvidersResponseSchema;
+  },
+  /**
+   * Admin: create a system provider.
+   *
+   * @generated from rpc ant.v1.AIGatewayService.CreateProvider
+   */
+  createProvider: {
+    methodKind: "unary";
+    input: typeof CreateProviderRequestSchema;
+    output: typeof CreateProviderResponseSchema;
   },
   /**
    * Admin: update a system provider (name, base_url, api_key, enabled).

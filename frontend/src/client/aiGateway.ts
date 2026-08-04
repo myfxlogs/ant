@@ -6,6 +6,7 @@ import {
 } from '../gen/ant/v1/ai_gateway_pb';
 import {
   ListProvidersRequestSchema,
+  CreateProviderRequestSchema,
   UpdateProviderRequestSchema,
   ListModelsRequestSchema,
   UpsertModelRequestSchema,
@@ -101,6 +102,24 @@ export const aiGatewayApi = {
       enabled: p.enabled,
       hasApiKey: p.hasApiKey,
     }));
+  },
+
+  createProvider: async (params: {
+    providerId: string;
+    name: string;
+    baseUrl: string;
+    apiKey: string;
+    enabled?: boolean;
+  }): Promise<string> => {
+    const req = create(CreateProviderRequestSchema, {
+      providerId: params.providerId,
+      name: params.name,
+      baseUrl: params.baseUrl,
+      apiKey: params.apiKey,
+      enabled: params.enabled,
+    });
+    const resp = await aiGatewayClient.createProvider(req);
+    return resp.id;
   },
 
   updateProvider: async (params: {

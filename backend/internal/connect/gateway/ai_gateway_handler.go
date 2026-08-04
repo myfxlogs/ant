@@ -133,6 +133,41 @@ func (s *AIGatewayServer) ListProviders(
 	return connect.NewResponse(&antv1.ListProvidersResponse{Providers: out}), nil
 }
 
+func (s *AIGatewayServer) CreateProvider(
+	ctx context.Context,
+	req *connect.Request[antv1.CreateProviderRequest],
+) (*connect.Response[antv1.CreateProviderResponse], error) {
+	r := req.Msg
+	if strings.TrimSpace(r.ProviderId) == "" || strings.TrimSpace(r.Name) == "" || strings.TrimSpace(r.BaseUrl) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id, name, and base_url are required"))
+	}
+	if strings.TrimSpace(r.ApiKey) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("api_key is required"))
+	}
+	if s.box == nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("encryption not initialized"))
+	}
+	enc, err := repository.SealAPIKey(strings.TrimSpace(r.ApiKey), s.box)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("encrypt api key: %w", err))
+	}
+	enabled := true
+	if r.Enabled != nil {
+		enabled = *r.Enabled
+	}
+	p := &repository.SystemAIProvider{
+		ProviderID:      strings.TrimSpace(r.ProviderId),
+		Name:            strings.TrimSpace(r.Name),
+		BaseURL:         strings.TrimSpace(r.BaseUrl),
+		APIKeyEncrypted: enc,
+		Enabled:         enabled,
+	}
+	if err := s.providerRepo.Create(ctx, p); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("create provider: %w", err))
+	}
+	return connect.NewResponse(&antv1.CreateProviderResponse{Id: p.ID.String()}), nil
+}
+
 func (s *AIGatewayServer) UpdateProvider(
 	ctx context.Context,
 	req *connect.Request[antv1.UpdateProviderRequest],

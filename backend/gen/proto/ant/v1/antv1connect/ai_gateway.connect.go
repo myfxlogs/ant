@@ -42,6 +42,9 @@ const (
 	// AIGatewayServiceListProvidersProcedure is the fully-qualified name of the AIGatewayService's
 	// ListProviders RPC.
 	AIGatewayServiceListProvidersProcedure = "/ant.v1.AIGatewayService/ListProviders"
+	// AIGatewayServiceCreateProviderProcedure is the fully-qualified name of the AIGatewayService's
+	// CreateProvider RPC.
+	AIGatewayServiceCreateProviderProcedure = "/ant.v1.AIGatewayService/CreateProvider"
 	// AIGatewayServiceUpdateProviderProcedure is the fully-qualified name of the AIGatewayService's
 	// UpdateProvider RPC.
 	AIGatewayServiceUpdateProviderProcedure = "/ant.v1.AIGatewayService/UpdateProvider"
@@ -67,6 +70,8 @@ type AIGatewayServiceClient interface {
 	GetTokenUsage(context.Context, *connect.Request[v1.GetTokenUsageRequest]) (*connect.Response[v1.GetTokenUsageResponse], error)
 	// Admin: list all system providers.
 	ListProviders(context.Context, *connect.Request[v1.ListProvidersRequest]) (*connect.Response[v1.ListProvidersResponse], error)
+	// Admin: create a system provider.
+	CreateProvider(context.Context, *connect.Request[v1.CreateProviderRequest]) (*connect.Response[v1.CreateProviderResponse], error)
 	// Admin: update a system provider (name, base_url, api_key, enabled).
 	UpdateProvider(context.Context, *connect.Request[v1.UpdateProviderRequest]) (*connect.Response[v1.UpdateProviderResponse], error)
 	// Admin: delete a system provider.
@@ -108,6 +113,12 @@ func NewAIGatewayServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(aIGatewayServiceMethods.ByName("ListProviders")),
 			connect.WithClientOptions(opts...),
 		),
+		createProvider: connect.NewClient[v1.CreateProviderRequest, v1.CreateProviderResponse](
+			httpClient,
+			baseURL+AIGatewayServiceCreateProviderProcedure,
+			connect.WithSchema(aIGatewayServiceMethods.ByName("CreateProvider")),
+			connect.WithClientOptions(opts...),
+		),
 		updateProvider: connect.NewClient[v1.UpdateProviderRequest, v1.UpdateProviderResponse](
 			httpClient,
 			baseURL+AIGatewayServiceUpdateProviderProcedure,
@@ -146,6 +157,7 @@ type aIGatewayServiceClient struct {
 	listSystemModels *connect.Client[v1.ListSystemModelsRequest, v1.ListSystemModelsResponse]
 	getTokenUsage    *connect.Client[v1.GetTokenUsageRequest, v1.GetTokenUsageResponse]
 	listProviders    *connect.Client[v1.ListProvidersRequest, v1.ListProvidersResponse]
+	createProvider   *connect.Client[v1.CreateProviderRequest, v1.CreateProviderResponse]
 	updateProvider   *connect.Client[v1.UpdateProviderRequest, v1.UpdateProviderResponse]
 	deleteProvider   *connect.Client[v1.DeleteProviderRequest, v1.DeleteProviderResponse]
 	listModels       *connect.Client[v1.ListModelsRequest, v1.ListModelsResponse]
@@ -166,6 +178,11 @@ func (c *aIGatewayServiceClient) GetTokenUsage(ctx context.Context, req *connect
 // ListProviders calls ant.v1.AIGatewayService.ListProviders.
 func (c *aIGatewayServiceClient) ListProviders(ctx context.Context, req *connect.Request[v1.ListProvidersRequest]) (*connect.Response[v1.ListProvidersResponse], error) {
 	return c.listProviders.CallUnary(ctx, req)
+}
+
+// CreateProvider calls ant.v1.AIGatewayService.CreateProvider.
+func (c *aIGatewayServiceClient) CreateProvider(ctx context.Context, req *connect.Request[v1.CreateProviderRequest]) (*connect.Response[v1.CreateProviderResponse], error) {
+	return c.createProvider.CallUnary(ctx, req)
 }
 
 // UpdateProvider calls ant.v1.AIGatewayService.UpdateProvider.
@@ -201,6 +218,8 @@ type AIGatewayServiceHandler interface {
 	GetTokenUsage(context.Context, *connect.Request[v1.GetTokenUsageRequest]) (*connect.Response[v1.GetTokenUsageResponse], error)
 	// Admin: list all system providers.
 	ListProviders(context.Context, *connect.Request[v1.ListProvidersRequest]) (*connect.Response[v1.ListProvidersResponse], error)
+	// Admin: create a system provider.
+	CreateProvider(context.Context, *connect.Request[v1.CreateProviderRequest]) (*connect.Response[v1.CreateProviderResponse], error)
 	// Admin: update a system provider (name, base_url, api_key, enabled).
 	UpdateProvider(context.Context, *connect.Request[v1.UpdateProviderRequest]) (*connect.Response[v1.UpdateProviderResponse], error)
 	// Admin: delete a system provider.
@@ -236,6 +255,12 @@ func NewAIGatewayServiceHandler(svc AIGatewayServiceHandler, opts ...connect.Han
 		AIGatewayServiceListProvidersProcedure,
 		svc.ListProviders,
 		connect.WithSchema(aIGatewayServiceMethods.ByName("ListProviders")),
+		connect.WithHandlerOptions(opts...),
+	)
+	aIGatewayServiceCreateProviderHandler := connect.NewUnaryHandler(
+		AIGatewayServiceCreateProviderProcedure,
+		svc.CreateProvider,
+		connect.WithSchema(aIGatewayServiceMethods.ByName("CreateProvider")),
 		connect.WithHandlerOptions(opts...),
 	)
 	aIGatewayServiceUpdateProviderHandler := connect.NewUnaryHandler(
@@ -276,6 +301,8 @@ func NewAIGatewayServiceHandler(svc AIGatewayServiceHandler, opts ...connect.Han
 			aIGatewayServiceGetTokenUsageHandler.ServeHTTP(w, r)
 		case AIGatewayServiceListProvidersProcedure:
 			aIGatewayServiceListProvidersHandler.ServeHTTP(w, r)
+		case AIGatewayServiceCreateProviderProcedure:
+			aIGatewayServiceCreateProviderHandler.ServeHTTP(w, r)
 		case AIGatewayServiceUpdateProviderProcedure:
 			aIGatewayServiceUpdateProviderHandler.ServeHTTP(w, r)
 		case AIGatewayServiceDeleteProviderProcedure:
@@ -305,6 +332,10 @@ func (UnimplementedAIGatewayServiceHandler) GetTokenUsage(context.Context, *conn
 
 func (UnimplementedAIGatewayServiceHandler) ListProviders(context.Context, *connect.Request[v1.ListProvidersRequest]) (*connect.Response[v1.ListProvidersResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIGatewayService.ListProviders is not implemented"))
+}
+
+func (UnimplementedAIGatewayServiceHandler) CreateProvider(context.Context, *connect.Request[v1.CreateProviderRequest]) (*connect.Response[v1.CreateProviderResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIGatewayService.CreateProvider is not implemented"))
 }
 
 func (UnimplementedAIGatewayServiceHandler) UpdateProvider(context.Context, *connect.Request[v1.UpdateProviderRequest]) (*connect.Response[v1.UpdateProviderResponse], error) {

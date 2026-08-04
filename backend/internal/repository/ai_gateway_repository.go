@@ -152,6 +152,17 @@ func NewAIModelRepository(db *pgxpool.Pool) *AIModelRepository {
 	return &AIModelRepository{db: db}
 }
 
+func (r *SystemAIProviderRepository) Create(ctx context.Context, p *SystemAIProvider) error {
+	if p.ID == uuid.Nil {
+		p.ID = uuid.New()
+	}
+	_, err := r.db.Exec(ctx,
+		`INSERT INTO system_ai_providers (id, provider_id, name, base_url, api_key_encrypted, enabled)
+		 VALUES ($1, $2, $3, $4, $5, $6)`,
+		p.ID, p.ProviderID, p.Name, p.BaseURL, p.APIKeyEncrypted, p.Enabled)
+	return err
+}
+
 func (r *SystemAIProviderRepository) Update(ctx context.Context, p *SystemAIProvider) error {
 	_, err := r.db.Exec(ctx,
 		`UPDATE system_ai_providers SET name=$1, base_url=$2, api_key_encrypted=$3, enabled=$4, updated_at=NOW()

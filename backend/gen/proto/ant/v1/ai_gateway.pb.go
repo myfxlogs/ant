@@ -667,6 +667,126 @@ func (*UpdateProviderResponse) Descriptor() ([]byte, []int) {
 	return file_ai_gateway_proto_rawDescGZIP(), []int{10}
 }
 
+type CreateProviderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProviderId    string                 `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"` // e.g. "zhipu", "deepseek"
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                               // display name
+	BaseUrl       string                 `protobuf:"bytes,3,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`
+	ApiKey        string                 `protobuf:"bytes,4,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	Enabled       *bool                  `protobuf:"varint,5,opt,name=enabled,proto3,oneof" json:"enabled,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateProviderRequest) Reset() {
+	*x = CreateProviderRequest{}
+	mi := &file_ai_gateway_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateProviderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateProviderRequest) ProtoMessage() {}
+
+func (x *CreateProviderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_gateway_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateProviderRequest.ProtoReflect.Descriptor instead.
+func (*CreateProviderRequest) Descriptor() ([]byte, []int) {
+	return file_ai_gateway_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CreateProviderRequest) GetProviderId() string {
+	if x != nil {
+		return x.ProviderId
+	}
+	return ""
+}
+
+func (x *CreateProviderRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateProviderRequest) GetBaseUrl() string {
+	if x != nil {
+		return x.BaseUrl
+	}
+	return ""
+}
+
+func (x *CreateProviderRequest) GetApiKey() string {
+	if x != nil {
+		return x.ApiKey
+	}
+	return ""
+}
+
+func (x *CreateProviderRequest) GetEnabled() bool {
+	if x != nil && x.Enabled != nil {
+		return *x.Enabled
+	}
+	return false
+}
+
+type CreateProviderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateProviderResponse) Reset() {
+	*x = CreateProviderResponse{}
+	mi := &file_ai_gateway_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateProviderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateProviderResponse) ProtoMessage() {}
+
+func (x *CreateProviderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_gateway_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateProviderResponse.ProtoReflect.Descriptor instead.
+func (*CreateProviderResponse) Descriptor() ([]byte, []int) {
+	return file_ai_gateway_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CreateProviderResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 type ListModelsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProviderId    string                 `protobuf:"bytes,1,opt,name=provider_id,json=providerId,proto3" json:"provider_id,omitempty"` // UUID of system_ai_providers row
@@ -676,7 +796,7 @@ type ListModelsRequest struct {
 
 func (x *ListModelsRequest) Reset() {
 	*x = ListModelsRequest{}
-	mi := &file_ai_gateway_proto_msgTypes[11]
+	mi := &file_ai_gateway_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -688,7 +808,7 @@ func (x *ListModelsRequest) String() string {
 func (*ListModelsRequest) ProtoMessage() {}
 
 func (x *ListModelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[11]
+	mi := &file_ai_gateway_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -701,7 +821,7 @@ func (x *ListModelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelsRequest.ProtoReflect.Descriptor instead.
 func (*ListModelsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{11}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListModelsRequest) GetProviderId() string {
@@ -720,7 +840,7 @@ type ListModelsResponse struct {
 
 func (x *ListModelsResponse) Reset() {
 	*x = ListModelsResponse{}
-	mi := &file_ai_gateway_proto_msgTypes[12]
+	mi := &file_ai_gateway_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -732,7 +852,7 @@ func (x *ListModelsResponse) String() string {
 func (*ListModelsResponse) ProtoMessage() {}
 
 func (x *ListModelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[12]
+	mi := &file_ai_gateway_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -745,7 +865,7 @@ func (x *ListModelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelsResponse.ProtoReflect.Descriptor instead.
 func (*ListModelsResponse) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{12}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListModelsResponse) GetModels() []*AIModelConfig {
@@ -770,7 +890,7 @@ type AIModelConfig struct {
 
 func (x *AIModelConfig) Reset() {
 	*x = AIModelConfig{}
-	mi := &file_ai_gateway_proto_msgTypes[13]
+	mi := &file_ai_gateway_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -782,7 +902,7 @@ func (x *AIModelConfig) String() string {
 func (*AIModelConfig) ProtoMessage() {}
 
 func (x *AIModelConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[13]
+	mi := &file_ai_gateway_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -795,7 +915,7 @@ func (x *AIModelConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AIModelConfig.ProtoReflect.Descriptor instead.
 func (*AIModelConfig) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{13}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *AIModelConfig) GetId() string {
@@ -863,7 +983,7 @@ type UpsertModelRequest struct {
 
 func (x *UpsertModelRequest) Reset() {
 	*x = UpsertModelRequest{}
-	mi := &file_ai_gateway_proto_msgTypes[14]
+	mi := &file_ai_gateway_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -875,7 +995,7 @@ func (x *UpsertModelRequest) String() string {
 func (*UpsertModelRequest) ProtoMessage() {}
 
 func (x *UpsertModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[14]
+	mi := &file_ai_gateway_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -888,7 +1008,7 @@ func (x *UpsertModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertModelRequest.ProtoReflect.Descriptor instead.
 func (*UpsertModelRequest) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{14}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *UpsertModelRequest) GetId() string {
@@ -956,7 +1076,7 @@ type UpsertModelResponse struct {
 
 func (x *UpsertModelResponse) Reset() {
 	*x = UpsertModelResponse{}
-	mi := &file_ai_gateway_proto_msgTypes[15]
+	mi := &file_ai_gateway_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -968,7 +1088,7 @@ func (x *UpsertModelResponse) String() string {
 func (*UpsertModelResponse) ProtoMessage() {}
 
 func (x *UpsertModelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[15]
+	mi := &file_ai_gateway_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -981,7 +1101,7 @@ func (x *UpsertModelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpsertModelResponse.ProtoReflect.Descriptor instead.
 func (*UpsertModelResponse) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{15}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpsertModelResponse) GetId() string {
@@ -1000,7 +1120,7 @@ type DeleteModelRequest struct {
 
 func (x *DeleteModelRequest) Reset() {
 	*x = DeleteModelRequest{}
-	mi := &file_ai_gateway_proto_msgTypes[16]
+	mi := &file_ai_gateway_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1012,7 +1132,7 @@ func (x *DeleteModelRequest) String() string {
 func (*DeleteModelRequest) ProtoMessage() {}
 
 func (x *DeleteModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[16]
+	mi := &file_ai_gateway_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1025,7 +1145,7 @@ func (x *DeleteModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteModelRequest.ProtoReflect.Descriptor instead.
 func (*DeleteModelRequest) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{16}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DeleteModelRequest) GetId() string {
@@ -1043,7 +1163,7 @@ type DeleteModelResponse struct {
 
 func (x *DeleteModelResponse) Reset() {
 	*x = DeleteModelResponse{}
-	mi := &file_ai_gateway_proto_msgTypes[17]
+	mi := &file_ai_gateway_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1055,7 +1175,7 @@ func (x *DeleteModelResponse) String() string {
 func (*DeleteModelResponse) ProtoMessage() {}
 
 func (x *DeleteModelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[17]
+	mi := &file_ai_gateway_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1068,7 +1188,7 @@ func (x *DeleteModelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteModelResponse.ProtoReflect.Descriptor instead.
 func (*DeleteModelResponse) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{17}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{19}
 }
 
 type DeleteProviderRequest struct {
@@ -1080,7 +1200,7 @@ type DeleteProviderRequest struct {
 
 func (x *DeleteProviderRequest) Reset() {
 	*x = DeleteProviderRequest{}
-	mi := &file_ai_gateway_proto_msgTypes[18]
+	mi := &file_ai_gateway_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1092,7 +1212,7 @@ func (x *DeleteProviderRequest) String() string {
 func (*DeleteProviderRequest) ProtoMessage() {}
 
 func (x *DeleteProviderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[18]
+	mi := &file_ai_gateway_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1105,7 +1225,7 @@ func (x *DeleteProviderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteProviderRequest.ProtoReflect.Descriptor instead.
 func (*DeleteProviderRequest) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{18}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *DeleteProviderRequest) GetId() string {
@@ -1123,7 +1243,7 @@ type DeleteProviderResponse struct {
 
 func (x *DeleteProviderResponse) Reset() {
 	*x = DeleteProviderResponse{}
-	mi := &file_ai_gateway_proto_msgTypes[19]
+	mi := &file_ai_gateway_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1135,7 +1255,7 @@ func (x *DeleteProviderResponse) String() string {
 func (*DeleteProviderResponse) ProtoMessage() {}
 
 func (x *DeleteProviderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_gateway_proto_msgTypes[19]
+	mi := &file_ai_gateway_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1148,7 +1268,7 @@ func (x *DeleteProviderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteProviderResponse.ProtoReflect.Descriptor instead.
 func (*DeleteProviderResponse) Descriptor() ([]byte, []int) {
-	return file_ai_gateway_proto_rawDescGZIP(), []int{19}
+	return file_ai_gateway_proto_rawDescGZIP(), []int{21}
 }
 
 var File_ai_gateway_proto protoreflect.FileDescriptor
@@ -1212,7 +1332,18 @@ const file_ai_gateway_proto_rawDesc = "" +
 	"\b_api_keyB\n" +
 	"\n" +
 	"\b_enabled\"\x18\n" +
-	"\x16UpdateProviderResponse\"4\n" +
+	"\x16UpdateProviderResponse\"\xab\x01\n" +
+	"\x15CreateProviderRequest\x12\x1f\n" +
+	"\vprovider_id\x18\x01 \x01(\tR\n" +
+	"providerId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
+	"\bbase_url\x18\x03 \x01(\tR\abaseUrl\x12\x17\n" +
+	"\aapi_key\x18\x04 \x01(\tR\x06apiKey\x12\x1d\n" +
+	"\aenabled\x18\x05 \x01(\bH\x00R\aenabled\x88\x01\x01B\n" +
+	"\n" +
+	"\b_enabled\"(\n" +
+	"\x16CreateProviderResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"4\n" +
 	"\x11ListModelsRequest\x12\x1f\n" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\"C\n" +
@@ -1252,11 +1383,12 @@ const file_ai_gateway_proto_rawDesc = "" +
 	"\x13DeleteModelResponse\"'\n" +
 	"\x15DeleteProviderRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x18\n" +
-	"\x16DeleteProviderResponse2\xfc\x04\n" +
+	"\x16DeleteProviderResponse2\xcd\x05\n" +
 	"\x10AIGatewayService\x12U\n" +
 	"\x10ListSystemModels\x12\x1f.ant.v1.ListSystemModelsRequest\x1a .ant.v1.ListSystemModelsResponse\x12L\n" +
 	"\rGetTokenUsage\x12\x1c.ant.v1.GetTokenUsageRequest\x1a\x1d.ant.v1.GetTokenUsageResponse\x12L\n" +
 	"\rListProviders\x12\x1c.ant.v1.ListProvidersRequest\x1a\x1d.ant.v1.ListProvidersResponse\x12O\n" +
+	"\x0eCreateProvider\x12\x1d.ant.v1.CreateProviderRequest\x1a\x1e.ant.v1.CreateProviderResponse\x12O\n" +
 	"\x0eUpdateProvider\x12\x1d.ant.v1.UpdateProviderRequest\x1a\x1e.ant.v1.UpdateProviderResponse\x12O\n" +
 	"\x0eDeleteProvider\x12\x1d.ant.v1.DeleteProviderRequest\x1a\x1e.ant.v1.DeleteProviderResponse\x12C\n" +
 	"\n" +
@@ -1276,7 +1408,7 @@ func file_ai_gateway_proto_rawDescGZIP() []byte {
 	return file_ai_gateway_proto_rawDescData
 }
 
-var file_ai_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_ai_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_ai_gateway_proto_goTypes = []any{
 	(*ListSystemModelsRequest)(nil),  // 0: ant.v1.ListSystemModelsRequest
 	(*ListSystemModelsResponse)(nil), // 1: ant.v1.ListSystemModelsResponse
@@ -1289,41 +1421,45 @@ var file_ai_gateway_proto_goTypes = []any{
 	(*AIProvider)(nil),               // 8: ant.v1.AIProvider
 	(*UpdateProviderRequest)(nil),    // 9: ant.v1.UpdateProviderRequest
 	(*UpdateProviderResponse)(nil),   // 10: ant.v1.UpdateProviderResponse
-	(*ListModelsRequest)(nil),        // 11: ant.v1.ListModelsRequest
-	(*ListModelsResponse)(nil),       // 12: ant.v1.ListModelsResponse
-	(*AIModelConfig)(nil),            // 13: ant.v1.AIModelConfig
-	(*UpsertModelRequest)(nil),       // 14: ant.v1.UpsertModelRequest
-	(*UpsertModelResponse)(nil),      // 15: ant.v1.UpsertModelResponse
-	(*DeleteModelRequest)(nil),       // 16: ant.v1.DeleteModelRequest
-	(*DeleteModelResponse)(nil),      // 17: ant.v1.DeleteModelResponse
-	(*DeleteProviderRequest)(nil),    // 18: ant.v1.DeleteProviderRequest
-	(*DeleteProviderResponse)(nil),   // 19: ant.v1.DeleteProviderResponse
-	nil,                              // 20: ant.v1.GetTokenUsageResponse.FeatureTokensEntry
+	(*CreateProviderRequest)(nil),    // 11: ant.v1.CreateProviderRequest
+	(*CreateProviderResponse)(nil),   // 12: ant.v1.CreateProviderResponse
+	(*ListModelsRequest)(nil),        // 13: ant.v1.ListModelsRequest
+	(*ListModelsResponse)(nil),       // 14: ant.v1.ListModelsResponse
+	(*AIModelConfig)(nil),            // 15: ant.v1.AIModelConfig
+	(*UpsertModelRequest)(nil),       // 16: ant.v1.UpsertModelRequest
+	(*UpsertModelResponse)(nil),      // 17: ant.v1.UpsertModelResponse
+	(*DeleteModelRequest)(nil),       // 18: ant.v1.DeleteModelRequest
+	(*DeleteModelResponse)(nil),      // 19: ant.v1.DeleteModelResponse
+	(*DeleteProviderRequest)(nil),    // 20: ant.v1.DeleteProviderRequest
+	(*DeleteProviderResponse)(nil),   // 21: ant.v1.DeleteProviderResponse
+	nil,                              // 22: ant.v1.GetTokenUsageResponse.FeatureTokensEntry
 }
 var file_ai_gateway_proto_depIdxs = []int32{
 	2,  // 0: ant.v1.ListSystemModelsResponse.models:type_name -> ant.v1.SystemModel
-	20, // 1: ant.v1.GetTokenUsageResponse.feature_tokens:type_name -> ant.v1.GetTokenUsageResponse.FeatureTokensEntry
+	22, // 1: ant.v1.GetTokenUsageResponse.feature_tokens:type_name -> ant.v1.GetTokenUsageResponse.FeatureTokensEntry
 	5,  // 2: ant.v1.GetTokenUsageResponse.records:type_name -> ant.v1.TokenUsageRecord
 	8,  // 3: ant.v1.ListProvidersResponse.providers:type_name -> ant.v1.AIProvider
-	13, // 4: ant.v1.ListModelsResponse.models:type_name -> ant.v1.AIModelConfig
+	15, // 4: ant.v1.ListModelsResponse.models:type_name -> ant.v1.AIModelConfig
 	0,  // 5: ant.v1.AIGatewayService.ListSystemModels:input_type -> ant.v1.ListSystemModelsRequest
 	3,  // 6: ant.v1.AIGatewayService.GetTokenUsage:input_type -> ant.v1.GetTokenUsageRequest
 	6,  // 7: ant.v1.AIGatewayService.ListProviders:input_type -> ant.v1.ListProvidersRequest
-	9,  // 8: ant.v1.AIGatewayService.UpdateProvider:input_type -> ant.v1.UpdateProviderRequest
-	18, // 9: ant.v1.AIGatewayService.DeleteProvider:input_type -> ant.v1.DeleteProviderRequest
-	11, // 10: ant.v1.AIGatewayService.ListModels:input_type -> ant.v1.ListModelsRequest
-	14, // 11: ant.v1.AIGatewayService.UpsertModel:input_type -> ant.v1.UpsertModelRequest
-	16, // 12: ant.v1.AIGatewayService.DeleteModel:input_type -> ant.v1.DeleteModelRequest
-	1,  // 13: ant.v1.AIGatewayService.ListSystemModels:output_type -> ant.v1.ListSystemModelsResponse
-	4,  // 14: ant.v1.AIGatewayService.GetTokenUsage:output_type -> ant.v1.GetTokenUsageResponse
-	7,  // 15: ant.v1.AIGatewayService.ListProviders:output_type -> ant.v1.ListProvidersResponse
-	10, // 16: ant.v1.AIGatewayService.UpdateProvider:output_type -> ant.v1.UpdateProviderResponse
-	19, // 17: ant.v1.AIGatewayService.DeleteProvider:output_type -> ant.v1.DeleteProviderResponse
-	12, // 18: ant.v1.AIGatewayService.ListModels:output_type -> ant.v1.ListModelsResponse
-	15, // 19: ant.v1.AIGatewayService.UpsertModel:output_type -> ant.v1.UpsertModelResponse
-	17, // 20: ant.v1.AIGatewayService.DeleteModel:output_type -> ant.v1.DeleteModelResponse
-	13, // [13:21] is the sub-list for method output_type
-	5,  // [5:13] is the sub-list for method input_type
+	11, // 8: ant.v1.AIGatewayService.CreateProvider:input_type -> ant.v1.CreateProviderRequest
+	9,  // 9: ant.v1.AIGatewayService.UpdateProvider:input_type -> ant.v1.UpdateProviderRequest
+	20, // 10: ant.v1.AIGatewayService.DeleteProvider:input_type -> ant.v1.DeleteProviderRequest
+	13, // 11: ant.v1.AIGatewayService.ListModels:input_type -> ant.v1.ListModelsRequest
+	16, // 12: ant.v1.AIGatewayService.UpsertModel:input_type -> ant.v1.UpsertModelRequest
+	18, // 13: ant.v1.AIGatewayService.DeleteModel:input_type -> ant.v1.DeleteModelRequest
+	1,  // 14: ant.v1.AIGatewayService.ListSystemModels:output_type -> ant.v1.ListSystemModelsResponse
+	4,  // 15: ant.v1.AIGatewayService.GetTokenUsage:output_type -> ant.v1.GetTokenUsageResponse
+	7,  // 16: ant.v1.AIGatewayService.ListProviders:output_type -> ant.v1.ListProvidersResponse
+	12, // 17: ant.v1.AIGatewayService.CreateProvider:output_type -> ant.v1.CreateProviderResponse
+	10, // 18: ant.v1.AIGatewayService.UpdateProvider:output_type -> ant.v1.UpdateProviderResponse
+	21, // 19: ant.v1.AIGatewayService.DeleteProvider:output_type -> ant.v1.DeleteProviderResponse
+	14, // 20: ant.v1.AIGatewayService.ListModels:output_type -> ant.v1.ListModelsResponse
+	17, // 21: ant.v1.AIGatewayService.UpsertModel:output_type -> ant.v1.UpsertModelResponse
+	19, // 22: ant.v1.AIGatewayService.DeleteModel:output_type -> ant.v1.DeleteModelResponse
+	14, // [14:23] is the sub-list for method output_type
+	5,  // [5:14] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
@@ -1335,14 +1471,15 @@ func file_ai_gateway_proto_init() {
 		return
 	}
 	file_ai_gateway_proto_msgTypes[9].OneofWrappers = []any{}
-	file_ai_gateway_proto_msgTypes[14].OneofWrappers = []any{}
+	file_ai_gateway_proto_msgTypes[11].OneofWrappers = []any{}
+	file_ai_gateway_proto_msgTypes[16].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_gateway_proto_rawDesc), len(file_ai_gateway_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   21,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

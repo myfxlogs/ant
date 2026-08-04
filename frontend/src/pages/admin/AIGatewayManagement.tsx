@@ -58,7 +58,13 @@ export default function AIGatewayManagement() {
         await aiGatewayApi.updateProvider(payload);
         message.success(t('common.saveSuccess', { defaultValue: 'Saved successfully' }));
       } else {
-        message.info(t('admin.aiGateway.addProviderPending', { defaultValue: 'Add provider feature pending backend support' }));
+        await aiGatewayApi.createProvider({
+          providerId: v.providerId,
+          name: v.name,
+          baseUrl: v.baseUrl,
+          apiKey: v.apiKey.trim(),
+        });
+        message.success(t('common.saveSuccess', { defaultValue: 'Saved successfully' }));
       }
       setProviderModalOpen(false);
       await loadProviders();

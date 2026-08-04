@@ -16,6 +16,8 @@ service AIGatewayService {
 
   // Admin: list all system providers.
   rpc ListProviders(ListProvidersRequest) returns (ListProvidersResponse);
+  // Admin: create a system provider.
+  rpc CreateProvider(CreateProviderRequest) returns (CreateProviderResponse);
   // Admin: update a system provider (name, base_url, api_key, enabled).
   rpc UpdateProvider(UpdateProviderRequest) returns (UpdateProviderResponse);
   // Admin: delete a system provider.
@@ -93,6 +95,18 @@ message UpdateProviderRequest {
 }
 
 message UpdateProviderResponse {}
+
+message CreateProviderRequest {
+  string provider_id = 1;   // e.g. "zhipu", "deepseek"
+  string name = 2;           // display name
+  string base_url = 3;
+  string api_key = 4;
+  optional bool enabled = 5;
+}
+
+message CreateProviderResponse {
+  string id = 1;
+}
 
 message ListModelsRequest {
   string provider_id = 1;   // UUID of system_ai_providers row
