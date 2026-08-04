@@ -29,6 +29,10 @@ type Hub struct {
 	// RemoveGateway is an optional callback to synchronously stop a gateway.
 	// Set by the pipeline after the gateway Manager is created.
 	RemoveGateway func(ctx context.Context, accountID string) error
+	// ReconnectGateway is an optional callback to reconnect a stale gateway
+	// when an RPC fails with session errors (e.g. "Invalid account").
+	// Set by the pipeline after the gateway Manager is created.
+	ReconnectGateway func(ctx context.Context, accountID string) error
 }
 
 func NewHub() *Hub {

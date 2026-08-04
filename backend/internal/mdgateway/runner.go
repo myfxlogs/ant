@@ -135,6 +135,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	// Wire synchronous gateway removal for account deletion.
 	if deps.Hub != nil {
 		deps.Hub.RemoveGateway = mgr.RemoveGateway
+		deps.Hub.ReconnectGateway = mgr.ReconnectGateway
 	}
 
 	// --- Open bar ticker (500ms) for real-time price updates ---

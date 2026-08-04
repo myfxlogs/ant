@@ -3,6 +3,7 @@ package mthub
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -239,6 +240,49 @@ var ErrDuplicateOrder = errors.New("mthub: duplicate order")
 // ErrReconciling is returned when PlaceOrder is called while the account is reconciling.
 var ErrReconciling = errors.New("mthub: account reconciling, order rejected")
 
+// isSessionError returns true if the error indicates the MT4/MT5 session
+// is invalid or the gRPC connection is broken — conditions where a
+// reconnect-and-retry is the correct response.
+func isSessionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "Invalid account") ||
+		strings.Contains(msg, "not connected") ||
+		strings.Contains(msg, "DeadlineExceeded") ||
+		strings.Contains(msg, "connection reset") ||
+		strings.Contains(msg, "transport is closing") ||
+		strings.Contains(msg, "rpc error: code = Unavailable")
+}
+
+// reconnectAndRetry attempts to reconnect the gateway for the given account
+// and then retries the operation once. If ReconnectGateway is not configured
+// or the reconnect fails, the original error is returned.
+func (s *MtHubService) reconnectAndRetry(ctx context.Context, accountID string, op func() error) error {
+	if s.hub.ReconnectGateway == nil {
+		return op()
+	}
+	if s.logger != nil {
+		s.logger.Warn("mthub: session error — auto-reconnecting gateway",
+			zap.String("account", accountID))
+	}
+	reconnCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := s.hub.ReconnectGateway(reconnCtx, accountID); err != nil {
+		if s.logger != nil {
+			s.logger.Error("mthub: auto-reconnect failed",
+				zap.String("account", accountID), zap.Error(err))
+		}
+		return op()
+	}
+	if s.logger != nil {
+		s.logger.Info("mthub: auto-reconnect succeeded, retrying operation",
+			zap.String("account", accountID))
+	}
+	return op()
+}
+
 // PlaceOrder places an order on the account's broker via the registered executor.
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
 var ErrKillSwitchEngaged = errors.New("mthub: global kill switch engaged")
@@ -260,7 +304,18 @@ func (s *MtHubService) OpenedOrders(ctx context.Context, accountID string) ([]*O
 	if exec == nil {
 		return []*OrderRecord{}, nil
 	}
-	return exec.FetchOpenedOrders(ctx)
+	result, err := exec.FetchOpenedOrders(ctx)
+	if err != nil && isSessionError(err) {
+		s.reconnectAndRetry(ctx, accountID, func() error {
+			exec = s.hub.Get(accountID)
+			if exec == nil {
+				return err
+			}
+			result, err = exec.FetchOpenedOrders(ctx)
+			return err
+		})
+	}
+	return result, err
 }
 
 // OrderHistory returns historical orders for the account.
@@ -271,7 +326,18 @@ func (s *MtHubService) OrderHistory(ctx context.Context, accountID string, from,
 	if exec == nil {
 		return []*OrderRecord{}, nil
 	}
-	return exec.FetchOrderHistory(ctx, from, to)
+	result, err := exec.FetchOrderHistory(ctx, from, to)
+	if err != nil && isSessionError(err) {
+		s.reconnectAndRetry(ctx, accountID, func() error {
+			exec = s.hub.Get(accountID)
+			if exec == nil {
+				return err
+			}
+			result, err = exec.FetchOrderHistory(ctx, from, to)
+			return err
+		})
+	}
+	return result, err
 }
 
 // SymbolParams returns trading parameters for the given symbols.
@@ -280,7 +346,18 @@ func (s *MtHubService) SymbolParams(ctx context.Context, accountID string, canon
 	if exec == nil {
 		return nil, ErrSessionNotFound
 	}
-	return exec.FetchSymbolParams(ctx, canonicals)
+	result, err := exec.FetchSymbolParams(ctx, canonicals)
+	if err != nil && isSessionError(err) {
+		s.reconnectAndRetry(ctx, accountID, func() error {
+			exec = s.hub.Get(accountID)
+			if exec == nil {
+				return err
+			}
+			result, err = exec.FetchSymbolParams(ctx, canonicals)
+			return err
+		})
+	}
+	return result, err
 }
 
 // PriceHistory fetches K-line bars from the connected broker.
@@ -289,7 +366,18 @@ func (s *MtHubService) PriceHistory(ctx context.Context, accountID, symbol, peri
 	if exec == nil {
 		return nil, ErrSessionNotFound
 	}
-	return exec.FetchPriceHistory(ctx, symbol, period, from, to, count)
+	result, err := exec.FetchPriceHistory(ctx, symbol, period, from, to, count)
+	if err != nil && isSessionError(err) {
+		s.reconnectAndRetry(ctx, accountID, func() error {
+			exec = s.hub.Get(accountID)
+			if exec == nil {
+				return err
+			}
+			result, err = exec.FetchPriceHistory(ctx, symbol, period, from, to, count)
+			return err
+		})
+	}
+	return result, err
 }
 
 // SymbolList returns all available symbol names for a connected MT account.
@@ -298,7 +386,18 @@ func (s *MtHubService) SymbolList(ctx context.Context, accountID string) ([]stri
 	if exec == nil {
 		return nil, ErrSessionNotFound
 	}
-	return exec.FetchAllSymbols(ctx)
+	result, err := exec.FetchAllSymbols(ctx)
+	if err != nil && isSessionError(err) {
+		s.reconnectAndRetry(ctx, accountID, func() error {
+			exec = s.hub.Get(accountID)
+			if exec == nil {
+				return err
+			}
+			result, err = exec.FetchAllSymbols(ctx)
+			return err
+		})
+	}
+	return result, err
 }
 
 // SubscribeSymbols dynamically subscribes the gateway to additional symbols
