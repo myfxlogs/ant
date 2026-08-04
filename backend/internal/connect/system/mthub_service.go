@@ -45,9 +45,16 @@ func (s *MtHubServer) validateAccountAccess(ctx context.Context, accountID strin
 	}
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
 	if err != nil {
+		s.log.Error("validateAccountAccess: ownership check error",
+			zap.String("user_id", userID),
+			zap.String("account_id", accountID),
+			zap.Error(err))
 		return connect.NewError(connect.CodeInternal, err)
 	}
 	if !ok {
+		s.log.Warn("validateAccountAccess: account does not belong to user",
+			zap.String("user_id", userID),
+			zap.String("account_id", accountID))
 		return connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	return nil
