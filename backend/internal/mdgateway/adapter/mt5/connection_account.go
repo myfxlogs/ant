@@ -94,7 +94,7 @@ func (g *Gateway) RequiredMargin(ctx context.Context, symbol string, lots decima
 
 func (g *Gateway) HealthCheck(ctx context.Context) error {
 	g.mu.RLock()
-	client := g.serviceCli
+	client := g.client
 	sid := g.sessionID
 	g.mu.RUnlock()
 
@@ -102,14 +102,15 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 		return fmt.Errorf("mt5: not connected")
 	}
 
-	hcCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	hcCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	md := metadata.New(map[string]string{"id": sid})
 	if tok := g.token(); tok != "" {
 		md.Set("authorization", "Bearer "+tok)
 	}
-	_, err := client.Health(metadata.NewOutgoingContext(hcCtx, md), &pb.HealthRequest{})
+	hcCtx = metadata.NewOutgoingContext(hcCtx, md)
+	_, err := client.AccountSummary(hcCtx, &pb.AccountSummaryRequest{Id: sid})
 	if err != nil {
 		return fmt.Errorf("mt5: health check failed: %w", err)
 	}
