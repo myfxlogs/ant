@@ -3,7 +3,7 @@ package mthub
 import (
 	"context"
 	"errors"
-	"strings"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -72,11 +72,16 @@ type MtHubService struct {
 	tradeBroker    *TradeBroker
 	statusBroker   *AccountStatusBroker
 	logger         *zap.Logger
+
+	// reconnectCooldown prevents repeated reconnect attempts for the same
+	// account within a short window. Keyed by accountID, value = last reconnect time.
+	reconnectMu      sync.Mutex
+	reconnectLastAt  map[string]time.Time
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
 func NewMtHubService(hub *Hub, broker *OrderEventBroker, accountBroker *AccountProfitBroker, snapshotBroker *PositionSnapshotBroker, idem *IdempotencyGuard, gate *ReconcileGate, store *TradeEventStore) *MtHubService {
-	return &MtHubService{hub: hub, broker: broker, accountBroker: accountBroker, snapshotBroker: snapshotBroker, idem: idem, reconcileGate: gate, eventStore: store}
+	return &MtHubService{hub: hub, broker: broker, accountBroker: accountBroker, snapshotBroker: snapshotBroker, idem: idem, reconcileGate: gate, eventStore: store, reconnectLastAt: map[string]time.Time{}}
 }
 
 // SetUserLimiter injects the per-user rate limiter (nil-safe).
@@ -239,49 +244,6 @@ var ErrDuplicateOrder = errors.New("mthub: duplicate order")
 
 // ErrReconciling is returned when PlaceOrder is called while the account is reconciling.
 var ErrReconciling = errors.New("mthub: account reconciling, order rejected")
-
-// isSessionError returns true if the error indicates the MT4/MT5 session
-// is invalid or the gRPC connection is broken — conditions where a
-// reconnect-and-retry is the correct response.
-func isSessionError(err error) bool {
-	if err == nil {
-		return false
-	}
-	msg := err.Error()
-	return strings.Contains(msg, "Invalid account") ||
-		strings.Contains(msg, "not connected") ||
-		strings.Contains(msg, "DeadlineExceeded") ||
-		strings.Contains(msg, "connection reset") ||
-		strings.Contains(msg, "transport is closing") ||
-		strings.Contains(msg, "rpc error: code = Unavailable")
-}
-
-// reconnectAndRetry attempts to reconnect the gateway for the given account
-// and then retries the operation once. If ReconnectGateway is not configured
-// or the reconnect fails, the original error is returned.
-func (s *MtHubService) reconnectAndRetry(ctx context.Context, accountID string, op func() error) error {
-	if s.hub.ReconnectGateway == nil {
-		return op()
-	}
-	if s.logger != nil {
-		s.logger.Warn("mthub: session error — auto-reconnecting gateway",
-			zap.String("account", accountID))
-	}
-	reconnCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	if err := s.hub.ReconnectGateway(reconnCtx, accountID); err != nil {
-		if s.logger != nil {
-			s.logger.Error("mthub: auto-reconnect failed",
-				zap.String("account", accountID), zap.Error(err))
-		}
-		return op()
-	}
-	if s.logger != nil {
-		s.logger.Info("mthub: auto-reconnect succeeded, retrying operation",
-			zap.String("account", accountID))
-	}
-	return op()
-}
 
 // PlaceOrder places an order on the account's broker via the registered executor.
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
