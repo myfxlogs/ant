@@ -293,18 +293,35 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.fetchAndPublish(ctx, sid, nil, handler)
 
 		for {
-			resp, err := stream.Recv()
-			if err != nil {
+			recvCh := make(chan *pb.OnOrderProfitReply, 1)
+			errCh := make(chan error, 1)
+			go func() {
+				resp, err := stream.Recv()
+				if err != nil {
+					errCh <- err
+					return
+				}
+				recvCh <- resp
+			}()
+			select {
+			case resp := <-recvCh:
+				p := resp.GetResult()
+				if p == nil {
+					continue
+				}
+				g.fetchAndPublish(ctx, sid, p, handler)
+			case err := <-errCh:
 				g.log.Warn("mt5 profit recv", zap.Error(err))
 				cancel()
 				g.handleStreamError(ctx, err, &backoff)
-				break
+				goto mt5ProfitLoopEnd
+			case <-time.After(90 * time.Second):
+				g.log.Warn("mt5 profit stream: no data for 90s — treating as dead")
+				cancel()
+				g.handleStreamError(ctx, fmt.Errorf("profit stream: no data timeout"), &backoff)
+				goto mt5ProfitLoopEnd
 			}
-			p := resp.GetResult()
-			if p == nil {
-				continue
-			}
-			g.fetchAndPublish(ctx, sid, p, handler)
 		}
+	mt5ProfitLoopEnd:
 	}
 }

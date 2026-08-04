@@ -215,19 +215,36 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.reportStatus("connected", "")
 		g.log.Info("mt4: profit stream active")
 		for {
-			resp, err := stream.Recv()
-			if err != nil {
+			recvCh := make(chan *pb.OnOrderProfitReply, 1)
+			errCh := make(chan error, 1)
+			go func() {
+				resp, err := stream.Recv()
+				if err != nil {
+					errCh <- err
+					return
+				}
+				recvCh <- resp
+			}()
+			select {
+			case resp := <-recvCh:
+				p := resp.GetResult()
+				if p == nil {
+					continue
+				}
+				handler(parseMt4ProfitUpdate(p, g.cfg.AccountID))
+			case err := <-errCh:
 				g.log.Warn("mt4 profit recv", zap.Error(err))
 				cancel()
 				g.handleStreamError(ctx, err, &backoff)
-				break
+				goto profitLoopEnd
+			case <-time.After(90 * time.Second):
+				g.log.Warn("mt4 profit stream: no data for 90s — treating as dead")
+				cancel()
+				g.handleStreamError(ctx, fmt.Errorf("profit stream: no data timeout"), &backoff)
+				goto profitLoopEnd
 			}
-			p := resp.GetResult()
-			if p == nil {
-				continue
-			}
-			handler(parseMt4ProfitUpdate(p, g.cfg.AccountID))
 		}
+	profitLoopEnd:
 	}
 }
 

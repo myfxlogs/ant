@@ -305,9 +305,6 @@ func makeOnAccountDisconnect(
 
 func makeOnAccountStatus(log *zap.Logger, pool *pgxpool.Pool, mthubSvc *mthub.MtHubService) func(accountID, userID, status, message string) {
 	return func(accountID, userID, status, message string) {
-		if status == "reconnecting" {
-			return
-		}
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if status == "connected" {
