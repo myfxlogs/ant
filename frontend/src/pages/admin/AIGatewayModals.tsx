@@ -8,6 +8,45 @@ import { useState } from 'react';
 
 const { Text } = Typography;
 
+// Known pricing reference for common models (USD per 1M tokens).
+// Used to auto-fill pricing when a model is selected from Discover.
+const MODEL_PRICING_REF: Record<string, { displayName?: string; input: number; output: number }> = {
+  // DeepSeek
+  'deepseek-chat': { displayName: 'DeepSeek Chat', input: 0.27, output: 1.10 },
+  'deepseek-reasoner': { displayName: 'DeepSeek Reasoner', input: 0.55, output: 2.19 },
+  'deepseek-coder': { displayName: 'DeepSeek Coder', input: 0.14, output: 0.28 },
+  // Zhipu GLM
+  'glm-5.2': { displayName: 'GLM-5.2', input: 1.11, output: 3.89 },
+  'glm-5.1': { displayName: 'GLM-5.1', input: 0.83, output: 3.33 },
+  'glm-5-turbo': { displayName: 'GLM-5 Turbo', input: 0.69, output: 3.06 },
+  'glm-5': { displayName: 'GLM-5', input: 0.56, output: 2.50 },
+  'glm-4.7': { displayName: 'GLM-4.7', input: 0.28, output: 1.11 },
+  'glm-4.7-flashx': { displayName: 'GLM-4.7 FlashX', input: 0.069, output: 0.42 },
+  'glm-4.7-flash': { displayName: 'GLM-4.7 Flash (Free)', input: 0, output: 0 },
+  'glm-4.5-air': { displayName: 'GLM-4.5 Air', input: 0.11, output: 0.28 },
+  'glm-4-plus': { displayName: 'GLM-4 Plus', input: 0.69, output: 0.69 },
+  'glm-4-air': { displayName: 'GLM-4 Air', input: 0.069, output: 0.069 },
+  'glm-4-flashx-250414': { displayName: 'GLM-4 FlashX', input: 0.014, output: 0.014 },
+  'glm-4-long': { displayName: 'GLM-4 Long', input: 0.14, output: 0.14 },
+  // OpenAI
+  'gpt-4o': { displayName: 'GPT-4o', input: 2.50, output: 10.00 },
+  'gpt-4o-mini': { displayName: 'GPT-4o Mini', input: 0.15, output: 0.60 },
+  'gpt-4-turbo': { displayName: 'GPT-4 Turbo', input: 10.00, output: 30.00 },
+  'o1': { displayName: 'o1', input: 15.00, output: 60.00 },
+  'o1-mini': { displayName: 'o1 Mini', input: 3.00, output: 12.00 },
+};
+
+function lookupModelPricing(modelName: string) {
+  const key = modelName.toLowerCase().trim();
+  // exact match first
+  if (MODEL_PRICING_REF[key]) return MODEL_PRICING_REF[key];
+  // prefix match (e.g. "glm-4.7-20250101" → "glm-4.7")
+  for (const ref of Object.keys(MODEL_PRICING_REF)) {
+    if (key.startsWith(ref)) return MODEL_PRICING_REF[ref];
+  }
+  return undefined;
+}
+
 export interface ProviderState extends AIProviderInfo {
   models?: AIModelConfigInfo[];
   modelsLoading?: boolean;
@@ -103,6 +142,15 @@ export function AIGatewayModals({
                   filterOption={(input, option) =>
                     (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
                   }
+                  onChange={(value: string) => {
+                    if (!value) return;
+                    const ref = lookupModelPricing(value);
+                    if (ref) {
+                      if (ref.displayName) modelForm.setFieldValue('displayName', ref.displayName);
+                      modelForm.setFieldValue('pricePer1mInput', ref.input);
+                      modelForm.setFieldValue('pricePer1mOutput', ref.output);
+                    }
+                  }}
                 />
               </Form.Item>
               <Button
