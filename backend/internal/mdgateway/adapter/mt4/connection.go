@@ -110,7 +110,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	g.serviceCli = pb.NewServiceClient(conn)
 	g.mu.Unlock()
 
-	tempID := "mdgw-" + g.cfg.Login
+	tempID := "mdgw-" + g.cfg.Login + "-" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	md := metadata.New(map[string]string{"id": tempID})
 	loginCtx := metadata.NewOutgoingContext(ctx, md)
 	brokerHost := g.cfg.BrokerHost
