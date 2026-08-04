@@ -1,10 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Grid } from 'antd';
-import { WorkspaceProvider, useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsTuning, useWsLayout, useWsQuickTrade } from './WorkspaceContext';
-import { useWorkspaceResize } from './hooks/useWorkspaceResize';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { WorkspaceProvider, useWsAccount, useWsTemplates, useWsBacktest, useWsTuning, useWsLayout, useWsQuickTrade, useWsCode } from './WorkspaceContext';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
-import RightPanel from './components/workspace/RightPanel';
 import WorkspaceCenterColumn from './components/workspace/WorkspaceCenterColumn';
 import WorkspaceDrawers from './components/workspace/WorkspaceDrawers';
 import WorkspaceTour from './components/workspace/WorkspaceTour';
@@ -12,18 +9,7 @@ import WorkspaceTour from './components/workspace/WorkspaceTour';
 function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
   const [btModalOpen, setBtModalOpen] = useState(false);
   const [indicatorDrawerOpen, setIndicatorDrawerOpen] = useState(false);
-  const [importDrawerOpen, setImportDrawerOpen] = useState(false);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
-  const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
-  const centerTab = useWorkspaceStore(s => s.centerTab);
-  const { rightPanelWidth, startResize } = useWorkspaceResize();
-
-  // On mobile, redirect 'design' (chart) tab to 'code' since chart is desktop-only.
-  useEffect(() => {
-    if (isMobile && centerTab === 'design') {
-      setCenterTab('code');
-    }
-  }, [isMobile, centerTab, setCenterTab]);
 
   const account = useWsAccount();
   const code = useWsCode();
@@ -56,24 +42,11 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
           btModalOpen={btModalOpen}
           setBtModalOpen={setBtModalOpen}
           setIndicatorDrawerOpen={setIndicatorDrawerOpen}
-          setImportDrawerOpen={setImportDrawerOpen}
           onShowVersionHistory={() => setVersionHistoryOpen(true)}
         />
-        {!isMobile && (
-          <>
-            <div onMouseDown={startResize} style={{ width: 5, flexShrink: 0, cursor: 'col-resize', background: 'var(--ant-color-border)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#58a6ff')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--ant-color-border)')} />
-            <RightPanel symbol={account.symbol} timeframe={account.timeframe} accountId={account.accountId}
-              onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
-              onValidateResult={result => backtest.runner.handleValidationResult(result)}
-              width={rightPanelWidth} currentCode={code.code} />
-          </>
-        )}
       </div>
       <WorkspaceDrawers btModalOpen={btModalOpen} setBtModalOpen={setBtModalOpen}
         indicatorDrawerOpen={indicatorDrawerOpen} setIndicatorDrawerOpen={setIndicatorDrawerOpen}
-        importDrawerOpen={importDrawerOpen} setImportDrawerOpen={setImportDrawerOpen}
         versionHistoryOpen={versionHistoryOpen} setVersionHistoryOpen={setVersionHistoryOpen} />
       <WorkspaceTour />
     </div>

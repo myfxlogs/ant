@@ -1,8 +1,6 @@
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 export function useLayoutSlice() {
-  const rightTab = useWorkspaceStore(s => s.rightTab);
-  const setRightTab = useWorkspaceStore(s => s.setRightTab);
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
   const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
   const bottomPanelCollapsed = useWorkspaceStore(s => s.bottomPanelCollapsed);
@@ -13,8 +11,6 @@ export function useLayoutSlice() {
   const setPositionsPanelVisible = useWorkspaceStore(s => s.setPositionsPanelVisible);
 
   return {
-    rightTab,
-    setRightTab,
     leftSidebarCollapsed,
     setLeftSidebarCollapsed,
     bottomPanelCollapsed,

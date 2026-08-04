@@ -10,6 +10,7 @@ import { useAccountSlice } from './useAccountSlice';
 import { useTemplateSlice } from './useTemplateSlice';
 import { useLayoutSlice } from './useLayoutSlice';
 import { useWorkspaceEffects } from './useWorkspaceEffects';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 export type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab, QuickTradePosition, RecentTrade };
 export { DATE_PRESETS } from '@/components/backtest/useBacktestRunner';
@@ -35,7 +36,8 @@ export function useStrategyWorkspaceState() {
   const qt = useQuickTradeData(account.accountId, account.symbol);
   const [btCollapsed, setBtCollapsed] = useState(false);
   const history = useHistoryState(account.accountId);
-  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => layout.setRightTab('chat'));
+  const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
+  const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setCenterTab('chat'));
   useWorkspaceEffects({ code: codeCtx.code, setCode: codeCtx.setCode, loadedTemplate: codeCtx.loadedTemplate, resetBacktestStatus: btCtx.resetStatus, activeAccounts: account.activeAccounts, accountId: account.accountId, setAccountId: account.setAccountId, setSymbol: account.setSymbol, fetchAccounts: account.fetchAccounts, loadTemplates: codeCtx.loadTemplates, datePreset: btCtx.datePreset, applyDatePreset: btCtx.applyDatePreset, financialsReady: qt.financialsReady, fetchTradeHistory: qt.fetchTradeHistory });
   const accountSlice = useMemo(() => ({ ...account, accountInfo: qt.accountInfo }), [account, qt.accountInfo]);
   const templatesSlice = useMemo(() => ({ list: codeCtx.templates, loading: codeCtx.templatesLoading, ...templates }), [codeCtx.templates, codeCtx.templatesLoading, templates]);

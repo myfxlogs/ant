@@ -27,7 +27,6 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
   const navigate = useNavigate();
   const currentUserId = useAuthStore(s => s.user?.id);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
-  const setRightTab = useWorkspaceStore(s => s.setRightTab);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
 
   const handleSelectTemplate = useCallback(async (templateId: string | null) => {
@@ -67,9 +66,9 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
   // Auto-open AI panel when ?ai=1 is present.
   useEffect(() => {
     if (searchParams.get('ai') === '1') {
-      setRightTab('chat');
+      setCenterTab('chat');
     }
-  }, [searchParams, setRightTab]);
+  }, [searchParams, setCenterTab]);
 
   return { selectedId: selectedTemplateId, onSelect: handleSelectTemplate };
 }

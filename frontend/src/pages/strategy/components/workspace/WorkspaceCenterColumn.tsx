@@ -1,22 +1,20 @@
 import { Button, Tooltip } from 'antd';
-import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined, ImportOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
-  CHART_ERROR_KEY, SELECT_SYMBOL_HINT_KEY,
   SEND_TO_AI_KEY, BROWSE_INDICATORS_KEY,
-  CHART_WINDOW_KEY, CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
+  CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
   BACKTEST_KEY as WS_BACKTEST_KEY, AI_ASSISTANT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { BACKTEST_KEY as GEN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
-import PriceChart from '@/components/chart/PriceChart';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import StrategyChat from '@/components/strategy/StrategyChat';
-import WorkspaceErrorBoundary from './WorkspaceErrorBoundary';
 import QuickTradeSidePanel from './QuickTradeSidePanel';
+import ImportEAPanel from '../editor/ImportEAPanel';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
 interface Props {
@@ -24,11 +22,10 @@ interface Props {
   btModalOpen: boolean;
   setBtModalOpen: (v: boolean) => void;
   setIndicatorDrawerOpen: (v: boolean) => void;
-  setImportDrawerOpen: (v: boolean) => void;
   onShowVersionHistory?: () => void;
 }
 
-export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, setImportDrawerOpen, onShowVersionHistory }: Props) {
+export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
   const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
@@ -45,17 +42,12 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || '';
   const saveStatus: 'modified' | 'saved' | 'none' = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode ? 'modified' : code.lastSavedId ? 'saved' : 'none';
 
-  const CTABS: { key: CenterTab; icon: string; label: string }[] = isMobile
-    ? [
-        { key: 'code', icon: '📄', label: t(CODE_KEY) },
-        { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
-        { key: 'chat', icon: '🤖', label: t(AI_ASSISTANT_KEY) },
-      ]
-    : [
-        { key: 'design', icon: '📈', label: t(CHART_WINDOW_KEY) },
-        { key: 'code', icon: '📄', label: t(CODE_KEY) },
-        { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
-      ];
+  const CTABS: { key: CenterTab; icon: string; label: string }[] = [
+    { key: 'chat', icon: '🤖', label: t(AI_ASSISTANT_KEY) },
+    { key: 'code', icon: '�', label: t(CODE_KEY) },
+    { key: 'import', icon: '📥', label: t('strategy.workspace.importMql', { defaultValue: 'Import MQL' }) },
+    { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
+  ];
 
   const handleCopy = () => {
     if (!code.code) return;
@@ -93,11 +85,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             {strategyName && <span style={{ fontWeight: 600, color: 'var(--ant-color-text)' }}>{strategyName}</span>}
             {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t(COMMON_UNSAVED_KEY)}</span>}
             {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t(COMMON_SAVED_KEY)}</span>}
-            <Tooltip title={t('strategy.importEA.tooltip', { defaultValue: 'Import MQL4/MQL5 source code' })}>
-              <Button size="small" icon={<ImportOutlined />} onClick={() => setImportDrawerOpen(true)}>
-                {t('strategy.importEA.button', { defaultValue: 'Import MQL' })}
-              </Button>
-            </Tooltip>
             <Tooltip title={t(SAVE_KEY)}>
               <Button size="small" icon={<SaveOutlined />}
                 onClick={() => code.setSaveModalOpen(true)}
@@ -116,7 +103,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
               <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
             </Tooltip>
             <Tooltip title={t(SEND_TO_AI_KEY)}>
-              <Button size="small" icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : layout.setRightTab('chat')}
+              <Button size="small" icon={<RobotOutlined />} onClick={() => setCenterTab('chat')}
                 style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
                 {t(SEND_TO_AI_KEY)}
               </Button>
@@ -133,24 +120,16 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
         )}
       </div>
 
-      {/* Design = Chart (desktop only) */}
-      {!isMobile && (
-        <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'design' ? 'flex' : 'none', flexDirection: 'column' }}>
-          {account.symbol ? (
-            <WorkspaceErrorBoundary fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-tertiary)' }}>{t(CHART_ERROR_KEY)}</div>}>
-              <PriceChart
-                symbol={account.symbol} timeframe={account.timeframe} onTimeframeChange={account.setTimeframe}
-                accountId={account.accountId}
-                trades={backtest.chartTrades}
-              />
-            </WorkspaceErrorBoundary>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ant-color-text-secondary)', fontSize: 14 }}>
-              {t(SELECT_SYMBOL_HINT_KEY)}
-            </div>
-          )}
-        </div>
-      )}
+      {/* AI Chat — full width center tab for both desktop and mobile */}
+      <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
+        <StrategyChat
+          symbol={account.symbol}
+          timeframe={account.timeframe}
+          accountId={account.accountId}
+          onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
+          currentCode={code.code}
+        />
+      </div>
 
       {/* Code */}
       <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'column' }}>
@@ -158,6 +137,14 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
           value={code.code}
           onChange={code.setCode}
           style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
+        />
+      </div>
+
+      {/* Import MQL */}
+      <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'import' ? 'flex' : 'none', flexDirection: 'column', overflow: 'auto' }}>
+        <ImportEAPanel
+          onApplyCode={(c) => { code.setCode(c); setCenterTab('code'); }}
+          onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
         />
       </div>
 
@@ -189,19 +176,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
           draftName={strategyName}
         />
       </div>
-
-      {/* AI Chat (mobile only — desktop uses RightPanel) */}
-      {isMobile && (
-        <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
-          <StrategyChat
-            symbol={account.symbol}
-            timeframe={account.timeframe}
-            accountId={account.accountId}
-            onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
-            currentCode={code.code}
-          />
-        </div>
-      )}
 
       {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right (desktop only) */}
       {!isMobile && (

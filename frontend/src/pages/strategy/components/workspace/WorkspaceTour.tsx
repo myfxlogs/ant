@@ -23,14 +23,14 @@ export default function WorkspaceTour() {
 
   const steps: TourProps['steps'] = [
     {
-      title: t('strategy.workspace.tour.code', { defaultValue: 'Code Editor' }),
-      description: t('strategy.workspace.tour.codeDesc', { defaultValue: 'Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files.' }),
+      title: t('strategy.workspace.tour.ai', { defaultValue: 'AI Assistant' }),
+      description: t('strategy.workspace.tour.aiDesc', { defaultValue: 'Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.' }),
       target: () => document.querySelector('[data-tour="code-editor"]') as HTMLElement,
     },
     {
-      title: t('strategy.workspace.tour.ai', { defaultValue: 'AI Assistant' }),
-      description: t('strategy.workspace.tour.aiDesc', { defaultValue: 'Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.' }),
-      target: () => document.querySelector('[data-tour="ai-panel"]') as HTMLElement,
+      title: t('strategy.workspace.tour.code', { defaultValue: 'Code Editor' }),
+      description: t('strategy.workspace.tour.codeDesc', { defaultValue: 'Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.' }),
+      target: () => document.querySelector('[data-tour="code-editor"]') as HTMLElement,
     },
     {
       title: t('strategy.workspace.tour.backtest', { defaultValue: 'Backtest' }),

@@ -6,8 +6,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-export type CenterTab = 'design' | 'code' | 'backtest' | 'chat';
-export type RightTab = 'chat' | 'code';
+export type CenterTab = 'chat' | 'code' | 'import' | 'backtest';
 
 // ── Slice interfaces ──────────────────────────────────────────────
 
@@ -22,19 +21,15 @@ export interface AccountSlice {
 
 export interface LayoutSlice {
   centerTab: CenterTab;
-  rightTab: RightTab;
   leftSidebarCollapsed: boolean;
   bottomPanelCollapsed: boolean;
   quickTradeCollapsed: boolean;
   positionsPanelVisible: boolean;
-  rightPanelWidth: number;
   setCenterTab: (v: CenterTab) => void;
-  setRightTab: (v: RightTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
   setBottomPanelCollapsed: (v: boolean) => void;
   setQuickTradeCollapsed: (v: boolean) => void;
   setPositionsPanelVisible: (v: boolean) => void;
-  setRightPanelWidth: (v: number) => void;
 }
 
 export interface CodeSlice {
@@ -65,20 +60,16 @@ function createAccountSlice(set: (partial: Partial<WorkspaceState>) => void): Ac
 
 function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): LayoutSlice {
   return {
-    centerTab: 'design',
-    rightTab: 'chat',
+    centerTab: 'chat',
     leftSidebarCollapsed: true,
     bottomPanelCollapsed: true,
     quickTradeCollapsed: true,
     positionsPanelVisible: false,
-    rightPanelWidth: 380,
     setCenterTab: (v) => set({ centerTab: v }),
-    setRightTab: (v) => set({ rightTab: v }),
     setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
     setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
     setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
     setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
-    setRightPanelWidth: (v) => set({ rightPanelWidth: Math.max(280, Math.min(600, v)) }),
   };
 }
 
@@ -102,19 +93,17 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       _hasHydrated: false,
     }),
     {
-      name: 'ant-workspace-v6',
+      name: 'ant-workspace-v7',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         accountId: state.accountId,
         symbol: state.symbol,
         timeframe: state.timeframe,
         centerTab: state.centerTab,
-        rightTab: state.rightTab,
         leftSidebarCollapsed: state.leftSidebarCollapsed,
         bottomPanelCollapsed: state.bottomPanelCollapsed,
         quickTradeCollapsed: state.quickTradeCollapsed,
         positionsPanelVisible: state.positionsPanelVisible,
-        rightPanelWidth: state.rightPanelWidth,
       }),
       onRehydrateStorage: () => () => {
         queueMicrotask(() => {
