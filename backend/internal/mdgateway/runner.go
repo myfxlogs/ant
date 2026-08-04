@@ -217,6 +217,16 @@ func startAllGateways(ctx context.Context, cfgs []mdtick.AccountConfig, deps Run
 		if err != nil {
 			log.Error("mdgateway: gateway start failed",
 				zap.String("account", accID), zap.Error(err))
+			if deps.PG != nil {
+				msg := err.Error()
+				if len(msg) > 512 {
+					msg = msg[:512]
+				}
+				_, _ = deps.PG.Exec(ctx,
+					`UPDATE mt_accounts SET account_status = 'disconnected',
+					 last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
+					accID, msg)
+			}
 			continue
 		}
 		if bfSrc, ok := gw.(backfiller.MTAPIBarSource); ok {

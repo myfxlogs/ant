@@ -67,6 +67,16 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 			if _, err := startGatewayForAccount(ctx, *cfg, deps, mgr, log); err != nil {
 				log.Error("mdgateway: dynamic gateway start failed",
 					zap.String("account", accountID), zap.Error(err))
+				if deps.PG != nil {
+					msg := err.Error()
+					if len(msg) > 512 {
+						msg = msg[:512]
+					}
+					_, _ = deps.PG.Exec(ctx,
+						`UPDATE mt_accounts SET account_status = 'disconnected',
+						 last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
+						accountID, msg)
+				}
 				// Permanent failures (Invalid account, wrong password) should not
 				// trigger redelivery — ack and stop. Only transient errors get nak.
 				if isPermanentGatewayError(err) {
