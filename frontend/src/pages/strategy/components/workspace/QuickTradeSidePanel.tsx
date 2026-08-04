@@ -20,7 +20,7 @@ export default function QuickTradeSidePanel({ accountId, symbol, accountMeta, al
       borderLeft: '1px solid var(--ant-color-border)',
       background: 'var(--ant-color-bg-elevated)',
       display: 'flex', flexDirection: 'column',
-      maxHeight: 200, overflow: 'hidden',
+      maxHeight: 160, overflow: 'hidden',
     }}>
       <div style={{
         padding: '4px 10px', fontSize: 11, fontWeight: 700,

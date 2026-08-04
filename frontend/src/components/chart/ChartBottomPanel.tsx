@@ -122,7 +122,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
 
   return (
     <div style={{
-      height: 200, flexShrink: 0, borderTop: '1px solid var(--ant-color-border)',
+      height: 160, flexShrink: 0, borderTop: '1px solid var(--ant-color-border)',
       background: 'var(--ant-color-bg-elevated)', display: 'flex', flexDirection: 'column',
     }}>
       {/* Tab bar + collapse */}

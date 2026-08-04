@@ -62,7 +62,7 @@ function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): Lay
   return {
     centerTab: 'chat',
     leftSidebarCollapsed: true,
-    bottomPanelCollapsed: true,
+    bottomPanelCollapsed: false,
     quickTradeCollapsed: true,
     positionsPanelVisible: false,
     setCenterTab: (v) => set({ centerTab: v }),

@@ -139,14 +139,13 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border)', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, background: 'var(--ant-color-bg-container)' }}>
+      <div style={{ padding: '4px 8px', borderBottom: '1px solid var(--ant-color-border)', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, background: 'var(--ant-color-bg-container)' }}>
         {symbolTag}
         {modelOptions.length > 0 && (
           <Select size="small" value={selectedModel || undefined}
             onChange={async (v) => { setSelectedModel(v); const [pid, model] = v.split('|'); try { await aiApi.setPrimary({ providerId: pid, model }); } catch {} }}
             style={{ width: 140, fontSize: 11 }} options={modelOptions} placeholder={t(SELECT_MODEL_KEY)} />
         )}
-        <div style={{ flex: 1 }} />
         <Tooltip title={t('strategy.aiChat.historyTab', 'History')}>
           <Button size="small" type="text" icon={<HistoryOutlined />} onClick={() => setHistoryOpen(true)} />
         </Tooltip>
