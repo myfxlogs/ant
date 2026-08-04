@@ -63,7 +63,15 @@ func (s *CreditService) PreHold(ctx context.Context, userID uuid.UUID, sessionID
 		return nil // no hold needed for free/BYO models
 	}
 
-	_, err := s.repo.HoldCredits(ctx, userID, holdCredits, fmt.Sprintf("AI session %s", sessionID))
+	// Skip pre-hold for users with no credit balance (e.g., free-tier users within
+	// their monthly token quota). The wallet-based billing in wireAIBilling handles
+	// quota enforcement. Credits only gate access when the user has a credit account.
+	bal, err := s.repo.GetBalance(ctx, userID)
+	if err != nil || bal.LessThanOrEqual(decimal.Zero) {
+		return nil // no credits → fall through to wallet/quota billing
+	}
+
+	_, err = s.repo.HoldCredits(ctx, userID, holdCredits, fmt.Sprintf("AI session %s", sessionID))
 	if err != nil {
 		return fmt.Errorf("credit pre-hold failed: %w", err)
 	}

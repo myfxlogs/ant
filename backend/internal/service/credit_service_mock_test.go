@@ -85,8 +85,22 @@ func TestCreditService_PreHold_Success(t *testing.T) {
 	}
 }
 
+func TestCreditService_PreHold_ZeroBalance_SkipsHold(t *testing.T) {
+	repo := &mockCreditRepo{balance: decimal.Zero, holdErr: fmt.Errorf("should not be called")}
+	models := &mockModelRepo{model: &repository.AIModel{ModelTier: "flagship"}}
+	svc := NewCreditService(repo, models, zap.NewNop())
+	uid := uuid.New()
+	err := svc.PreHold(context.Background(), uid, "session-1", "openai", "gpt-4o")
+	if err != nil {
+		t.Fatalf("PreHold should skip for zero balance, got: %v", err)
+	}
+	if repo.holdAmount.GreaterThan(decimal.Zero) {
+		t.Fatal("should not hold credits for zero-balance user")
+	}
+}
+
 func TestCreditService_PreHold_HoldError(t *testing.T) {
-	repo := &mockCreditRepo{holdErr: fmt.Errorf("insufficient balance")}
+	repo := &mockCreditRepo{balance: decimal.NewFromInt(1000), holdErr: fmt.Errorf("insufficient balance")}
 	models := &mockModelRepo{model: &repository.AIModel{ModelTier: "flagship"}}
 	svc := NewCreditService(repo, models, zap.NewNop())
 	uid := uuid.New()
