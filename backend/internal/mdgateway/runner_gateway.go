@@ -150,8 +150,7 @@ func postConnectSetup(ctx context.Context, cfg mdtick.AccountConfig, gw Gateway,
 }
 
 func updateAccountStatusOnConnect(ctx context.Context, accID string, gw Gateway, deps RunnerDeps, log *zap.Logger) {
-	isInvestor := false
-	accountInfoErr := ""
+	isInvestor, accountInfoErr := false, ""
 	if infoProvider, ok := gw.(mdtick.AccountInfoProvider); ok {
 		if info, err := infoProvider.GetAccountInfo(ctx); err == nil && info != nil {
 			isInvestor = info.IsInvestor
