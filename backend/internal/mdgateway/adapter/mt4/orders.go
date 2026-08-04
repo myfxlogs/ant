@@ -259,8 +259,6 @@ func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt4 FetchAllSymbols: not connected")
 	}
-	g.log.Info("mt4 FetchAllSymbols: using session",
-		zap.String("sid", sid), zap.String("login", g.cfg.Login))
 	md := metadata.New(map[string]string{"id": sid})
 	if tok := g.token(); tok != "" {
 		md.Set("authorization", "Bearer "+tok)

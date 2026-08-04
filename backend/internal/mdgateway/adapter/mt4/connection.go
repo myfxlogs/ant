@@ -122,10 +122,6 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		brokerHost = brokerHost[:idx]
 	}
 	connCli := g.connCli
-	g.log.Info("mt4 connect attempt",
-		zap.String("host", brokerHost), zap.Int32("port", brokerPort),
-		zap.String("login", g.cfg.Login),
-		zap.Int("password_len", len(g.cfg.Password)))
 	loginResp, err := connCli.Connect(loginCtx, &pb.ConnectRequest{
 		Host: brokerHost, Port: brokerPort, User: int32(strToInt(g.cfg.Login)),
 		Password: g.cfg.Password, Id: &tempID,
@@ -149,7 +145,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	respErr := loginResp.GetError()
 	g.log.Info("mt4 connect response",
 		zap.String("host", brokerHost), zap.String("gateway", gateway),
-		zap.Bool("has_token", token != ""), zap.String("session_id", token), zap.Any("error", respErr))
+		zap.Bool("has_token", token != ""), zap.Any("error", respErr))
 	if token == "" {
 		errMsg := "empty token"
 		if respErr != nil {

@@ -135,7 +135,16 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	// Wire synchronous gateway removal for account deletion.
 	if deps.Hub != nil {
 		deps.Hub.RemoveGateway = mgr.RemoveGateway
-		deps.Hub.ReconnectGateway = mgr.ReconnectGateway
+		deps.Hub.ReconnectGateway = func(ctx context.Context, accountID string) error {
+			// Full restart: remove old gateway, reload config, start fresh.
+			_ = mgr.RemoveGateway(ctx, accountID)
+			cfg, err := loadSingleAccountConfig(ctx, deps.PG, deps.Secrets, accountID)
+			if err != nil || cfg == nil {
+				return fmt.Errorf("full restart: load config failed for %s: %w", accountID, err)
+			}
+			_, err = startGatewayForAccount(ctx, *cfg, deps, mgr, log)
+			return err
+		}
 	}
 
 	// --- Open bar ticker (500ms) for real-time price updates ---
