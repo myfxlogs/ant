@@ -93,7 +93,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       _hasHydrated: false,
     }),
     {
-      name: 'ant-workspace-v7',
+      name: 'ant-workspace-v8',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         accountId: state.accountId,
