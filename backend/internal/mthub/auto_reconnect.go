@@ -29,22 +29,22 @@ func isSessionError(err error) bool {
 // or the reconnect fails, the original error is returned.
 // A 60-second cooldown per account prevents reconnect loops when the MT4/MT5
 // server itself is rejecting sessions.
-func (s *MtHubService) reconnectAndRetry(ctx context.Context, accountID string, op func() error) error {
+func (s *MtHubService) reconnectAndRetry(accountID string, op func() error) error {
 	if s.hub.ReconnectGateway == nil {
 		return op()
 	}
 	s.reconnectMu.Lock()
 	lastAt, ok := s.reconnectLastAt[accountID]
-	if ok && time.Since(lastAt) < 60*time.Second {
+	if ok && Clk.Now().Sub(lastAt) < 60*time.Second {
 		s.reconnectMu.Unlock()
 		if s.logger != nil {
 			s.logger.Warn("mthub: session error — reconnect skipped (cooldown)",
 				zap.String("account", accountID),
-				zap.Duration("since_last", time.Since(lastAt)))
+				zap.Duration("since_last", Clk.Now().Sub(lastAt)))
 		}
 		return op()
 	}
-	s.reconnectLastAt[accountID] = time.Now()
+	s.reconnectLastAt[accountID] = Clk.Now()
 	s.reconnectMu.Unlock()
 	if s.logger != nil {
 		s.logger.Warn("mthub: session error — auto-reconnecting gateway",

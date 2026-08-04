@@ -20,13 +20,11 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 		return
 	}
 
-	// Ensure the stream exists for account events.
 	if err := ensureAccountEventsStream(js, log); err != nil {
 		log.Warn("mdgateway: account events stream ensure failed", zap.Error(err))
 		return
 	}
 
-	// Ephemeral consumer — only active while mdgateway is running.
 	sub, err := js.Subscribe("account.>", func(m *nats.Msg) {
 		var nak bool
 		defer func() {
@@ -49,44 +47,7 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 
 		switch action {
 		case "connect", "reconnect":
-			if mgr.IsDisconnecting(accountID) {
-				log.Info("mdgateway: skipping reconnect — account is being disconnected by healthMonitor",
-					zap.String("account", accountID))
-				return
-			}
-			cfg, err := loadSingleAccountConfig(ctx, deps.PG, deps.Secrets, accountID)
-			if err != nil || cfg == nil {
-				log.Warn("mdgateway: load account config failed",
-					zap.String("account", accountID), zap.Error(err))
-				return
-			}
-
-			log.Info("mdgateway: dynamically starting gateway",
-				zap.String("account", accountID), zap.String("platform", cfg.Platform))
-
-			if _, err := startGatewayForAccount(ctx, *cfg, deps, mgr, log); err != nil {
-				log.Error("mdgateway: dynamic gateway start failed",
-					zap.String("account", accountID), zap.Error(err))
-				if deps.PG != nil {
-					msg := err.Error()
-					if len(msg) > 512 {
-						msg = msg[:512]
-					}
-					_, _ = deps.PG.Exec(ctx,
-						`UPDATE mt_accounts SET account_status = 'disconnected',
-						 last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
-						accountID, msg)
-				}
-				// Permanent failures (Invalid account, wrong password) should not
-				// trigger redelivery — ack and stop. Only transient errors get nak.
-				if isPermanentGatewayError(err) {
-					log.Warn("mdgateway: permanent failure — acking to stop redelivery",
-						zap.String("account", accountID))
-				} else {
-					nak = true // transient failure — request redelivery
-				}
-			}
-
+			nak = handleAccountConnect(ctx, deps, mgr, log, accountID)
 		case "disconnect":
 			_ = mgr.RemoveGateway(ctx, accountID)
 			log.Info("mdgateway: dynamically stopped gateway", zap.String("account", accountID))
@@ -101,6 +62,57 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 		_ = sub.Unsubscribe()
 	}()
 	log.Info("mdgateway: account event subscriber started", zap.String("subject", "account.>"))
+}
+
+// handleAccountConnect loads account config and starts a gateway.
+// Returns true if the message should be nak'd for redelivery (transient failure).
+func handleAccountConnect(ctx context.Context, deps RunnerDeps, mgr *Manager, log *zap.Logger, accountID string) bool {
+	if mgr.IsDisconnecting(accountID) {
+		log.Info("mdgateway: skipping reconnect — account is being disconnected by healthMonitor",
+			zap.String("account", accountID))
+		return false
+	}
+	cfg, err := loadSingleAccountConfig(ctx, deps.PG, deps.Secrets, accountID)
+	if err != nil || cfg == nil {
+		errMsg := "load account config failed"
+		if err != nil {
+			errMsg = err.Error()
+		}
+		log.Warn("mdgateway: load account config failed",
+			zap.String("account", accountID), zap.Error(err))
+		if deps.OnAccountStatus != nil {
+			deps.OnAccountStatus(accountID, "", "disconnected", errMsg)
+		}
+		return false
+	}
+
+	log.Info("mdgateway: dynamically starting gateway",
+		zap.String("account", accountID), zap.String("platform", cfg.Platform))
+
+	if _, err := startGatewayForAccount(ctx, *cfg, deps, mgr, log); err != nil {
+		log.Error("mdgateway: dynamic gateway start failed",
+			zap.String("account", accountID), zap.Error(err))
+		msg := err.Error()
+		if len(msg) > 512 {
+			msg = msg[:512]
+		}
+		if deps.PG != nil {
+			_, _ = deps.PG.Exec(ctx,
+				`UPDATE mt_accounts SET account_status = 'disconnected',
+				 last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
+				accountID, msg)
+		}
+		if deps.OnAccountStatus != nil {
+			deps.OnAccountStatus(accountID, cfg.UserID, "disconnected", msg)
+		}
+		if isPermanentGatewayError(err) {
+			log.Warn("mdgateway: permanent failure — acking to stop redelivery",
+				zap.String("account", accountID))
+			return false
+		}
+		return true
+	}
+	return false
 }
 
 // ensureAccountEventsStream creates the JetStream stream for account lifecycle events if it doesn't exist.

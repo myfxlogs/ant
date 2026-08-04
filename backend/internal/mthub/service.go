@@ -268,14 +268,16 @@ func (s *MtHubService) OpenedOrders(ctx context.Context, accountID string) ([]*O
 	}
 	result, err := exec.FetchOpenedOrders(ctx)
 	if err != nil && isSessionError(err) {
-		s.reconnectAndRetry(ctx, accountID, func() error {
+		if retryErr := s.reconnectAndRetry(accountID, func() error {
 			exec = s.hub.Get(accountID)
 			if exec == nil {
 				return err
 			}
 			result, err = exec.FetchOpenedOrders(ctx)
 			return err
-		})
+		}); retryErr != nil {
+			err = retryErr
+		}
 	}
 	return result, err
 }
@@ -290,14 +292,16 @@ func (s *MtHubService) OrderHistory(ctx context.Context, accountID string, from,
 	}
 	result, err := exec.FetchOrderHistory(ctx, from, to)
 	if err != nil && isSessionError(err) {
-		s.reconnectAndRetry(ctx, accountID, func() error {
+		if retryErr := s.reconnectAndRetry(accountID, func() error {
 			exec = s.hub.Get(accountID)
 			if exec == nil {
 				return err
 			}
 			result, err = exec.FetchOrderHistory(ctx, from, to)
 			return err
-		})
+		}); retryErr != nil {
+			err = retryErr
+		}
 	}
 	return result, err
 }
@@ -310,14 +314,16 @@ func (s *MtHubService) SymbolParams(ctx context.Context, accountID string, canon
 	}
 	result, err := exec.FetchSymbolParams(ctx, canonicals)
 	if err != nil && isSessionError(err) {
-		s.reconnectAndRetry(ctx, accountID, func() error {
+		if retryErr := s.reconnectAndRetry(accountID, func() error {
 			exec = s.hub.Get(accountID)
 			if exec == nil {
 				return err
 			}
 			result, err = exec.FetchSymbolParams(ctx, canonicals)
 			return err
-		})
+		}); retryErr != nil {
+			err = retryErr
+		}
 	}
 	return result, err
 }
@@ -330,14 +336,16 @@ func (s *MtHubService) PriceHistory(ctx context.Context, accountID, symbol, peri
 	}
 	result, err := exec.FetchPriceHistory(ctx, symbol, period, from, to, count)
 	if err != nil && isSessionError(err) {
-		s.reconnectAndRetry(ctx, accountID, func() error {
+		if retryErr := s.reconnectAndRetry(accountID, func() error {
 			exec = s.hub.Get(accountID)
 			if exec == nil {
 				return err
 			}
 			result, err = exec.FetchPriceHistory(ctx, symbol, period, from, to, count)
 			return err
-		})
+		}); retryErr != nil {
+			err = retryErr
+		}
 	}
 	return result, err
 }
@@ -350,14 +358,16 @@ func (s *MtHubService) SymbolList(ctx context.Context, accountID string) ([]stri
 	}
 	result, err := exec.FetchAllSymbols(ctx)
 	if err != nil && isSessionError(err) {
-		s.reconnectAndRetry(ctx, accountID, func() error {
+		if retryErr := s.reconnectAndRetry(accountID, func() error {
 			exec = s.hub.Get(accountID)
 			if exec == nil {
 				return err
 			}
 			result, err = exec.FetchAllSymbols(ctx)
 			return err
-		})
+		}); retryErr != nil {
+			err = retryErr
+		}
 	}
 	return result, err
 }
