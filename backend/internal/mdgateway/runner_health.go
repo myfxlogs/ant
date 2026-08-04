@@ -85,6 +85,10 @@ func (hd *deadAccountHandler) handle(h AccountHealth) {
 	if err != nil {
 		hd.log.Error("mdgateway: reconnect failed, removing dead gateway",
 			zap.String("account", h.AccountID), zap.Error(err))
+		if isPermanentGatewayError(err) {
+			hd.log.Warn("mdgateway: permanent failure — removing gateway without retry",
+				zap.String("account", h.AccountID))
+		}
 		hd.mgr.MarkDisconnecting(h.AccountID)
 		if hd.onDisconnect != nil {
 			hd.onDisconnect(h.AccountID)

@@ -67,7 +67,14 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 			if _, err := startGatewayForAccount(ctx, *cfg, deps, mgr, log); err != nil {
 				log.Error("mdgateway: dynamic gateway start failed",
 					zap.String("account", accountID), zap.Error(err))
-				nak = true // transient failure — request redelivery
+				// Permanent failures (Invalid account, wrong password) should not
+				// trigger redelivery — ack and stop. Only transient errors get nak.
+				if isPermanentGatewayError(err) {
+					log.Warn("mdgateway: permanent failure — acking to stop redelivery",
+						zap.String("account", accountID))
+				} else {
+					nak = true // transient failure — request redelivery
+				}
 			}
 
 		case "disconnect":
@@ -104,4 +111,17 @@ func ensureAccountEventsStream(js nats.JetStreamContext, log *zap.Logger) error 
 	}
 	log.Info("mdgateway: created JetStream ACCOUNT_EVENTS")
 	return nil
+}
+
+// isPermanentGatewayError returns true for errors that will not resolve
+// by retrying (e.g. Invalid account, wrong password). These should be
+// acked to prevent infinite NATS redelivery loops.
+func isPermanentGatewayError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "Invalid account") ||
+		strings.Contains(msg, "code=65") ||
+		strings.Contains(msg, "not connected") && strings.Contains(msg, "password")
 }
