@@ -95,22 +95,41 @@ func postConnectSetup(ctx context.Context, cfg mdtick.AccountConfig, gw Gateway,
 
 	if deps.PG != nil {
 		isInvestor := false
+		accountInfoErr := ""
 		if infoProvider, ok := gw.(mdtick.AccountInfoProvider); ok {
 			if info, err := infoProvider.GetAccountInfo(ctx); err == nil && info != nil {
 				isInvestor = info.IsInvestor
+			} else if err != nil {
+				accountInfoErr = err.Error()
+				log.Warn("mdgateway: GetAccountInfo failed during postConnectSetup",
+					zap.String("account", accID), zap.Error(err))
 			}
 		}
-		accountMethod := "master"
-		if isInvestor {
-			accountMethod = "investor"
-		}
-		if _, err := deps.PG.Exec(ctx,
-			`UPDATE mt_accounts SET account_status = 'connected',
-			 is_investor = $2, account_method = $3, last_connected_at = CURRENT_TIMESTAMP,
-			 last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
-			accID, isInvestor, accountMethod); err != nil {
-			log.Warn("mdgateway: failed to update account status to connected",
-				zap.String("account", accID), zap.Error(err))
+		if accountInfoErr != "" {
+			msg := accountInfoErr
+			if len(msg) > 512 {
+				msg = msg[:512]
+			}
+			if _, err := deps.PG.Exec(ctx,
+				`UPDATE mt_accounts SET account_status = 'reconnecting',
+				 last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
+				accID, msg); err != nil {
+				log.Warn("mdgateway: failed to update account status to reconnecting",
+					zap.String("account", accID), zap.Error(err))
+			}
+		} else {
+			accountMethod := "master"
+			if isInvestor {
+				accountMethod = "investor"
+			}
+			if _, err := deps.PG.Exec(ctx,
+				`UPDATE mt_accounts SET account_status = 'connected',
+				 is_investor = $2, account_method = $3, last_connected_at = CURRENT_TIMESTAMP,
+				 last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
+				accID, isInvestor, accountMethod); err != nil {
+				log.Warn("mdgateway: failed to update account status to connected",
+					zap.String("account", accID), zap.Error(err))
+			}
 		}
 	}
 
