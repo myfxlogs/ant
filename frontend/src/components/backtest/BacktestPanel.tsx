@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Tabs, Radio, Badge } from 'antd';
 import {
   PlayCircleOutlined,
@@ -52,11 +52,24 @@ export default function BacktestPanel(props: Props) {
   const _handleRun = () => runner.run(inputs);
   const _canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
 
+  // ── Measure actual content height for table scroll sizing ─────────────
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [contentHeight, setContentHeight] = useState(300);
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContentHeight(entry.contentRect.height);
+    });
+    ro.observe(contentRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   // ── Resize handle ─────────────────────────────────────────────────────
   const resizeRef = useRef<HTMLDivElement>(null);
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     runner.setDragging(true);
+    runner.setUserResized(true);
     const startY = e.clientY;
     const startH = runner.panelHeight;
     const onMove = (ev: MouseEvent) => {
@@ -77,7 +90,8 @@ export default function BacktestPanel(props: Props) {
     <div style={{
       borderTop: '2px solid #e8e8e8', background: '#fafbfc',
       display: 'flex', flexDirection: 'column',
-      height: runner.panelHeight, minHeight: 160,
+      ...(runner.userResized ? { height: runner.panelHeight } : { flex: 1 }),
+      minHeight: 160,
       userSelect: runner.dragging ? 'none' : 'auto',
     }}>
       {/* Resize handle */}
@@ -125,7 +139,7 @@ export default function BacktestPanel(props: Props) {
       </div>
 
       {/* Tab content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
+      <div ref={contentRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
         {/* ── Results Tab ─────────────────────────────────────────────── */}
         {runner.activeTab === 'results' && (
           <BacktestResultsTab
@@ -135,7 +149,7 @@ export default function BacktestPanel(props: Props) {
             errorMsg={runner.errorMsg}
             onAIOptimize={onAIOptimize}
             trades={runner.chartTrades}
-            panelHeight={runner.panelHeight}
+            panelHeight={contentHeight}
             onCancel={runner.cancelRun}
             gateUpdate={runner.gateUpdate}
             gateResults={runner.gateResults}

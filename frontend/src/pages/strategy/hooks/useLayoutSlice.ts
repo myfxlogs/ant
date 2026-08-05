@@ -5,6 +5,10 @@ export function useLayoutSlice() {
   const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
   const bottomPanelCollapsed = useWorkspaceStore(s => s.bottomPanelCollapsed);
   const setBottomPanelCollapsed = useWorkspaceStore(s => s.setBottomPanelCollapsed);
+  const bottomPanelHeight = useWorkspaceStore(s => s.bottomPanelHeight);
+  const setBottomPanelHeight = useWorkspaceStore(s => s.setBottomPanelHeight);
+  const bottomPanelUserResized = useWorkspaceStore(s => s.bottomPanelUserResized);
+  const setBottomPanelUserResized = useWorkspaceStore(s => s.setBottomPanelUserResized);
   const quickTradeCollapsed = useWorkspaceStore(s => s.quickTradeCollapsed);
   const setQuickTradeCollapsed = useWorkspaceStore(s => s.setQuickTradeCollapsed);
   const positionsPanelVisible = useWorkspaceStore(s => s.positionsPanelVisible);
@@ -15,6 +19,10 @@ export function useLayoutSlice() {
     setLeftSidebarCollapsed,
     bottomPanelCollapsed,
     setBottomPanelCollapsed,
+    bottomPanelHeight,
+    setBottomPanelHeight,
+    bottomPanelUserResized,
+    setBottomPanelUserResized,
     quickTradeCollapsed,
     setQuickTradeCollapsed,
     positionsPanelVisible,

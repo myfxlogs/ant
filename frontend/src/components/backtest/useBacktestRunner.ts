@@ -70,6 +70,7 @@ export function useBacktestRunner() {
   const [activeTab, setActiveTab] = useState<string>('results');
   const [panelHeight, setPanelHeight] = useState(280);
   const [dragging, setDragging] = useState(false);
+  const [userResized, setUserResized] = useState(false);
   const [strategyParamsModalOpen, setStrategyParamsModalOpen] = useState(false);
 
   // ── Internal ──────────────────────────────────────────────────────────
@@ -148,6 +149,7 @@ export function useBacktestRunner() {
     setStatus('idle'); setErrorMsg(''); setMetrics(null);
     setExecutionAssumptions(null); setChartTrades([]);
     setRunId(''); setGateUpdate(null); setGateResults([]); setQualityPreview(null); setFixDepth(0);
+    setUserResized(false);
   }, []);
 
   // ── Settings menu ─────────────────────────────────────────────────────
@@ -250,7 +252,7 @@ export function useBacktestRunner() {
     // Directives
     strategyDirectives,
     // UI
-    activeTab, setActiveTab, panelHeight, setPanelHeight, dragging, setDragging,
+    activeTab, setActiveTab, panelHeight, setPanelHeight, dragging, setDragging, userResized, setUserResized,
     strategyParamsModalOpen, setStrategyParamsModalOpen,
     // Settings
     settingsItems,

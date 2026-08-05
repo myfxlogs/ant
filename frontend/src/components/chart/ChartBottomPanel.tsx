@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Table, Tag, Button, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { CloseOutlined } from '@ant-design/icons';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
 import { POSITIONS_KEY, HISTORY_KEY, BACKTEST_KEY as WS_BACKTEST_KEY, NO_RESULTS_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY, TOTAL_TRADES_KEY as GEN_TOTAL_TRADES_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { TRADING_SYMBOL_KEY, TRADING_SIDE_KEY, TRADING_VOLUME_KEY, TRADING_MARK_PRICE_KEY, TRADING_PNL_KEY, TRADING_OPEN_TIME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 
 interface Props {
   positions: QuickTradePosition[];
@@ -14,6 +15,9 @@ interface Props {
   onToggleCollapsed: () => void;
   backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
   backtestStatus?: string;
+  panelHeight?: number;
+  onResizeStart?: (e: React.MouseEvent) => void;
+  dragging?: boolean;
 }
 
 function fmtNum(v: number | undefined, d = 2): string {
@@ -31,9 +35,10 @@ function fmtTime(ts?: string): string {
   return `${mm}-${dd} ${hh}:${min}`;
 }
 
-export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, _backtestStatus }: Props) {
+export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, panelHeight, onResizeStart, dragging }: Props) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'positions' | 'history' | 'backtest'>('positions');
+  const resizeRef = useRef<HTMLDivElement>(null);
 
   if (collapsed) {
     return (
@@ -57,15 +62,15 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
 
   const positionColumns = [
     {
-      title: t('trading.symbol'), dataIndex: 'symbol', key: 'symbol',
+      title: t(TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol',
       width: 100, render: (v: string) => <span style={{ fontSize: 11, fontWeight: 600 }}>{v}</span>,
     },
     {
-      title: t('trading.side'), dataIndex: 'side', key: 'side', width: 60,
+      title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 60,
       render: (v: string) => <Tag color={v === 'buy' ? 'success' : 'error'} style={{ fontSize: 10 }}>{v?.toUpperCase()}</Tag>,
     },
     {
-      title: t('trading.volume'), dataIndex: 'volume', key: 'volume', width: 70,
+      title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 70,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 2)}</span>,
     },
     {
@@ -73,11 +78,11 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
     },
     {
-      title: t('trading.markPrice'), dataIndex: 'markPrice', key: 'markPrice', width: 90,
+      title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'markPrice', key: 'markPrice', width: 90,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
     },
     {
-      title: t('trading.pnl'), dataIndex: 'profit', key: 'profit', width: 80,
+      title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80,
       render: (v: number) => <span style={{ fontSize: 11, fontWeight: 600, color: v >= 0 ? '#3fb950' : '#f85149' }}>
         {v >= 0 ? '+' : ''}{fmtNum(v, 2)}
       </span>,
@@ -93,15 +98,15 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
 
   const historyColumns = [
     {
-      title: t('trading.symbol'), dataIndex: 'symbol', key: 'symbol',
+      title: t(TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol',
       width: 100, render: (v: string) => <span style={{ fontSize: 11, fontWeight: 600 }}>{v}</span>,
     },
     {
-      title: t('trading.side'), dataIndex: 'side', key: 'side', width: 60,
+      title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 60,
       render: (v: string) => <Tag color={v === 'buy' || v === 'long' ? 'success' : 'error'} style={{ fontSize: 10 }}>{v?.toUpperCase()}</Tag>,
     },
     {
-      title: t('trading.volume'), dataIndex: 'volume', key: 'volume', width: 70,
+      title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 70,
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 2)}</span>,
     },
     {
@@ -109,7 +114,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
       render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
     },
     {
-      title: t('trading.pnl'), dataIndex: 'profit', key: 'profit', width: 80,
+      title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80,
       render: (v: number) => <span style={{ fontSize: 11, fontWeight: 600, color: v >= 0 ? '#3fb950' : '#f85149' }}>
         {v >= 0 ? '+' : ''}{fmtNum(v, 2)}
       </span>,
@@ -122,9 +127,17 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
 
   return (
     <div style={{
-      height: 160, flexShrink: 0, borderTop: '1px solid var(--ant-color-border)',
+      ...(panelHeight ? { height: panelHeight } : { height: 160 }),
+      flexShrink: 0, borderTop: '1px solid var(--ant-color-border)',
       background: 'var(--ant-color-bg-elevated)', display: 'flex', flexDirection: 'column',
+      userSelect: dragging ? 'none' : 'auto',
     }}>
+      {/* Resize handle */}
+      {onResizeStart && (
+        <div ref={resizeRef} onMouseDown={onResizeStart} style={{
+          height: 5, cursor: 'row-resize', background: dragging ? '#58a6ff' : 'transparent', flexShrink: 0,
+        }} />
+      )}
       {/* Tab bar + collapse */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0,
@@ -166,7 +179,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           {t(WS_BACKTEST_KEY)}
         </div>
         <div style={{ flex: 1 }} />
-        <div
+          <div
           onClick={onToggleCollapsed}
           style={{ padding: '0 12px', cursor: 'pointer', fontSize: 11, color: 'var(--ant-color-text-tertiary)', height: '100%', display: 'flex', alignItems: 'center' }}
         >

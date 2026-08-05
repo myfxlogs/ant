@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { Button, Tooltip } from 'antd';
 import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -39,13 +40,34 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   const history = useWsHistory();
   const ai = useWsAI();
 
+  // ── Bottom panel resize ──────────────────────────────────────────────
+  const [bpDragging, setBpDragging] = useState(false);
+  const handleBpResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setBpDragging(true);
+    layout.setBottomPanelUserResized(true);
+    const startY = e.clientY;
+    const startH = layout.bottomPanelHeight;
+    const onMove = (ev: MouseEvent) => {
+      const delta = startY - ev.clientY;
+      layout.setBottomPanelHeight(Math.max(80, Math.min(500, startH + delta)));
+    };
+    const onUp = () => {
+      setBpDragging(false);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [layout]);
+
   const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || '';
   const saveStatus: 'modified' | 'saved' | 'none' = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode ? 'modified' : code.lastSavedId ? 'saved' : 'none';
 
   const CTABS: { key: CenterTab; icon: string; label: string }[] = [
     { key: 'chat', icon: '🤖', label: t(AI_ASSISTANT_KEY) },
     { key: 'code', icon: '�', label: t(CODE_KEY) },
-    { key: 'import', icon: '📥', label: t('strategy.workspace.importMql', { defaultValue: 'Import MQL' }) },
+    { key: 'import', icon: '📥', label: t('strategy.workspace.importMql') },
     { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
   ];
 
@@ -200,6 +222,9 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
                 onToggleCollapsed={() => layout.setBottomPanelCollapsed(true)}
                 backtestMetrics={backtest.metrics}
                 backtestStatus={backtest.status}
+                panelHeight={layout.bottomPanelUserResized ? layout.bottomPanelHeight : undefined}
+                onResizeStart={handleBpResize}
+                dragging={bpDragging}
               />
             </div>
             {account.symbol && (
