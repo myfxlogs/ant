@@ -205,6 +205,9 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 		ir.OnInit = stmts
 	case "OnTick":
 		ir.OnTick = stmts
+	case "start":
+		// MQL4 legacy: start() is equivalent to OnTick()
+		ir.OnTick = stmts
 	case "OnBar":
 		ir.OnBar = stmts
 	case "OnTimer":

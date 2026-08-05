@@ -99,7 +99,9 @@ type OrderResult struct {
 
 // ── Positions / Pending Orders ──────────────────────────────────────
 
-// Position represents an open market position.
+// Position represents an open or closed market position.
+// For open positions, ClosePrice and CloseTime are zero values.
+// For closed positions (returned by HistoryOrders), they carry the actual close data.
 type Position struct {
 	Ticket     int64
 	Symbol     string
@@ -114,6 +116,8 @@ type Position struct {
 	Comment    string
 	Magic      int32
 	OpenTime   time.Time
+	ClosePrice decimal.Decimal
+	CloseTime  time.Time
 }
 
 // PendingOrder represents a pending (limit/stop) order.

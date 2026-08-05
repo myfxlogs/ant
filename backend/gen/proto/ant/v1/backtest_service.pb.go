@@ -957,6 +957,7 @@ type ExecuteBacktestResponse struct {
 	Error                string                  `protobuf:"bytes,6,opt,name=error,proto3" json:"error,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions   `protobuf:"bytes,7,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
 	EquityTimesMs        []int64                 `protobuf:"varint,8,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"` // bar timestamps for equity_curve points
+	BlindSpots           []*BlindSpot            `protobuf:"bytes,9,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`                    // compilation/runtime blind spots
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -1043,6 +1044,13 @@ func (x *ExecuteBacktestResponse) GetExecutionAssumptions() *ExecutionAssumption
 func (x *ExecuteBacktestResponse) GetEquityTimesMs() []int64 {
 	if x != nil {
 		return x.EquityTimesMs
+	}
+	return nil
+}
+
+func (x *ExecuteBacktestResponse) GetBlindSpots() []*BlindSpot {
+	if x != nil {
+		return x.BlindSpots
 	}
 	return nil
 }
@@ -1259,7 +1267,7 @@ var File_backtest_service_proto protoreflect.FileDescriptor
 
 const file_backtest_service_proto_rawDesc = "" +
 	"\n" +
-	"\x16backtest_service.proto\x12\x06ant.v1\x1a\x1fbacktest_execution_config.proto\x1a\x15parameter_entry.proto\"<\n" +
+	"\x16backtest_service.proto\x12\x06ant.v1\x1a\x1fbacktest_execution_config.proto\x1a\x15parameter_entry.proto\x1a\x16strategy_runtime.proto\"<\n" +
 	"\x15EngineValidateRequest\x12#\n" +
 	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\"\x9a\x01\n" +
 	"\x16EngineValidateResponse\x12\x14\n" +
@@ -1374,7 +1382,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"commission\x18\t \x01(\tR\n" +
 	"commission\x12\x16\n" +
 	"\x06reason\x18\n" +
-	" \x01(\tR\x06reason\"\x8a\x03\n" +
+	" \x01(\tR\x06reason\"\xbe\x03\n" +
 	"\x17ExecuteBacktestResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x128\n" +
 	"\ametrics\x18\x02 \x01(\v2\x1e.ant.v1.ExecuteBacktestMetricsR\ametrics\x121\n" +
@@ -1383,7 +1391,9 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x06trades\x18\x05 \x03(\v2\x1c.ant.v1.ExecuteBacktestTradeR\x06trades\x12\x14\n" +
 	"\x05error\x18\x06 \x01(\tR\x05error\x12Q\n" +
 	"\x15execution_assumptions\x18\a \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\x12&\n" +
-	"\x0fequity_times_ms\x18\b \x03(\x03R\requityTimesMs\"\xcd\x03\n" +
+	"\x0fequity_times_ms\x18\b \x03(\x03R\requityTimesMs\x122\n" +
+	"\vblind_spots\x18\t \x03(\v2\x11.ant.v1.BlindSpotR\n" +
+	"blindSpots\"\xcd\x03\n" +
 	"\x16ExecuteBacktestMetrics\x12!\n" +
 	"\ftotal_return\x18\x01 \x01(\tR\vtotalReturn\x12#\n" +
 	"\rannual_return\x18\x02 \x01(\tR\fannualReturn\x12!\n" +
@@ -1441,6 +1451,7 @@ var file_backtest_service_proto_goTypes = []any{
 	(TradeDirection)(0),               // 14: ant.v1.TradeDirection
 	(*StrategyConfig)(nil),            // 15: ant.v1.StrategyConfig
 	(*ExecutionAssumptions)(nil),      // 16: ant.v1.ExecutionAssumptions
+	(*BlindSpot)(nil),                 // 17: ant.v1.BlindSpot
 }
 var file_backtest_service_proto_depIdxs = []int32{
 	13, // 0: ant.v1.EngineValidateResponse.parameters:type_name -> ant.v1.ParameterEntry
@@ -1455,17 +1466,18 @@ var file_backtest_service_proto_depIdxs = []int32{
 	11, // 9: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
 	8,  // 10: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
 	16, // 11: ant.v1.ExecuteBacktestResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	6,  // 12: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
-	0,  // 13: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
-	2,  // 14: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
-	9,  // 15: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
-	1,  // 16: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
-	3,  // 17: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
-	15, // [15:18] is the sub-list for method output_type
-	12, // [12:15] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	17, // 12: ant.v1.ExecuteBacktestResponse.blind_spots:type_name -> ant.v1.BlindSpot
+	6,  // 13: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
+	0,  // 14: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
+	2,  // 15: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
+	9,  // 16: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
+	1,  // 17: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
+	3,  // 18: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
+	16, // [16:19] is the sub-list for method output_type
+	13, // [13:16] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_backtest_service_proto_init() }
@@ -1475,6 +1487,7 @@ func file_backtest_service_proto_init() {
 	}
 	file_backtest_execution_config_proto_init()
 	file_parameter_entry_proto_init()
+	file_strategy_runtime_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

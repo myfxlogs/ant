@@ -1,6 +1,7 @@
 package mql2go
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/shopspring/decimal"
@@ -52,8 +53,11 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 			cid := c.addConst(val)
 			c.emit(OP_PUSH_CONST, int32(cid), 0, 0)
 		} else {
-			// Unknown constant — push 0 and record blind spot
-			c.bc.Coverage.AddBlindSpot("unknown constant: " + e.Name)
+			// Unknown constant — compile error, not silent push 0.
+			// This prevents subtle bugs where missing constants silently become 0.
+			if c.err == nil {
+				c.err = fmt.Errorf("unknown constant: %s (not in MQL predefined constants or user enums)", e.Name)
+			}
 			cid := c.addConst(interp.IntVal(0))
 			c.emit(OP_PUSH_CONST, int32(cid), 0, 0)
 		}

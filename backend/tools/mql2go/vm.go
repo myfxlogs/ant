@@ -30,7 +30,8 @@ type VM struct {
 	ticks      int64
 	signal     *sdk.Signal
 	currentPos *sdk.Position // current position being iterated (for Order* builtins)
-	cachedPositions []sdk.Position // cached list for OrderSelect(i, SELECT_BY_POS)
+	cachedPositions []sdk.Position // cached list for OrderSelect(i, SELECT_BY_POS, MODE_TRADES)
+	cachedHistory []sdk.Position // cached list for OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)
 	runCtx     context.Context // context for cancellation checks
 	callDepth  int            // current user function call depth
 	fatalError string         // set when a critical builtin is missing (ADR §5.4)
@@ -159,6 +160,7 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 	vm.stack = vm.stack[:0]
 	vm.currentPos = nil
 	vm.cachedPositions = nil
+	vm.cachedHistory = nil
 	vm.callDepth = 0
 	vm.pc = entryPC
 

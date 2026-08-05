@@ -16,6 +16,7 @@ import (
 //
 // Layout:
 //   magic: "BC01" (4 bytes)
+//   compilerVersion: string (invalidates stale caches)
 //   consts: count + entries
 //   code: count + entries
 //   globalSlots: count + entries
@@ -31,11 +32,17 @@ import (
 
 const bytecodeMagic = "BC01"
 
+// CompilerVersion is incremented when the bytecode format or compiler logic
+// changes in a way that invalidates previously cached bytecode.
+// This ensures stale caches from older compiler versions are rejected.
+const CompilerVersion = "2026-07-02-v1"
+
 // MarshalBytecode serializes a Bytecode to a compact binary format for DB storage.
 // Coverage report is omitted (not needed for VM execution).
 func MarshalBytecode(bc *Bytecode) ([]byte, error) {
 	w := &bytecodeWriter{buf: make([]byte, 0, 4096)}
 	w.writeString(bytecodeMagic)
+	w.writeString(CompilerVersion)
 
 	// Consts
 	w.writeU32(uint32(len(bc.Consts)))
@@ -137,6 +144,14 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 	}
 	if magic != bytecodeMagic {
 		return nil, fmt.Errorf("bytecode: invalid magic %q (expected %q)", magic, bytecodeMagic)
+	}
+
+	cachedVersion, err := r.readString()
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read compiler version: %w", err)
+	}
+	if cachedVersion != CompilerVersion {
+		return nil, fmt.Errorf("bytecode: stale cache (compiler version %q, expected %q)", cachedVersion, CompilerVersion)
 	}
 
 	bc := &Bytecode{

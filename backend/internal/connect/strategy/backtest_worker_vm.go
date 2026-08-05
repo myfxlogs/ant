@@ -69,7 +69,7 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		zap.Int("equity_points", len(result.Equity)),
 		zap.Int("bars_processed", len(bars)))
 
-	return buildBacktestResponse(result, cfg, params), nil
+	return buildBacktestResponse(result, cfg, params, vmRunner), nil
 }
 
 func klinesToBars(klines []*antv1.ExecuteKlineBar) []sdk.Bar {
@@ -157,7 +157,7 @@ func (s *StrategyExecutionServer) applySymbolInfo(ctx context.Context, run *repo
 	}
 }
 
-func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams) *antv1.ExecuteBacktestResponse {
+func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) *antv1.ExecuteBacktestResponse {
 	resp := &antv1.ExecuteBacktestResponse{
 		Success: true,
 		Metrics: &antv1.ExecuteBacktestMetrics{
@@ -220,5 +220,24 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	}
 
 	resp.Risk = assessRisk(result.Metrics)
+
+	// Attach compilation and runtime blind spots
+	if cov := vmRunner.GetCoverage(); cov != nil {
+		for _, bs := range cov.BlindSpots {
+			resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+				Id:          bs,
+				Severity:    "warning",
+				Description: bs + " is not fully supported",
+			})
+		}
+	}
+	for _, rbs := range vmRunner.GetRuntimeBlindSpots() {
+		resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+			Id:          rbs.Builtin,
+			Severity:    rbs.Severity,
+			Description: fmt.Sprintf("%s hit %d time(s) at runtime", rbs.Builtin, rbs.Count),
+		})
+	}
+
 	return resp
 }

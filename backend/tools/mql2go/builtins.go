@@ -152,6 +152,7 @@ var builtinRegistry = []builtinEntry{
 	{"OrderCloseBy", nil},
 	{"OrderSelect", nil},
 	{"OrdersTotal", nil},
+	{"OrdersHistoryTotal", nil},
 	{"OrderStopLoss", nil},
 	{"OrderTakeProfit", nil},
 	{"OrderTicket", nil},

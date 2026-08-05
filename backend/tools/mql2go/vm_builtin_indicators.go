@@ -128,8 +128,20 @@ func builtinIADX(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// iADX(symbol, period, adx_period, applied_price, mode, shift)
 	period := int(argI(args, 2))
+	mode := argI(args, 4)
 	shift := int(argI(args, 5))
-	return interp.DecimalVal(vm.ctx.Indicators().ADX(period, shift)), nil
+	switch mode {
+	case 0: // MODE_MAIN (ADX line)
+		return interp.DecimalVal(vm.ctx.Indicators().ADX(period, shift)), nil
+	case 1: // MODE_PLUSDI (+DI line)
+		vm.recordBlindSpot("iADX:MODE_PLUSDI")
+		return interp.DecimalVal(decimal.Zero), nil
+	case 2: // MODE_MINUSDI (-DI line)
+		vm.recordBlindSpot("iADX:MODE_MINUSDI")
+		return interp.DecimalVal(decimal.Zero), nil
+	default:
+		return interp.DecimalVal(vm.ctx.Indicators().ADX(period, shift)), nil
+	}
 }
 
 func builtinIMomentum(vm *VM, args []interp.Value) (interp.Value, error) {

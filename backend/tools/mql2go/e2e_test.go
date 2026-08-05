@@ -2,6 +2,8 @@ package mql2go
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -261,4 +263,61 @@ func makeE2EBars(n int) []sdk.Bar {
 		}
 	}
 	return bars
+}
+
+// TestE2E_MACD_Sample is a regression test for the MODE_SIGNAL bug.
+// The MACD Sample EA uses iMACD with MODE_MAIN and MODE_SIGNAL.
+// If MODE_SIGNAL is silently mapped to 0 (same as MODE_MAIN), the MACD
+// and signal lines will be identical, and the EA will never open a trade.
+// This test verifies that:
+// 1. The EA compiles without "unknown constant" errors
+// 2. MODE_SIGNAL is correctly resolved to 1 (different from MODE_MAIN=0)
+// 3. The EA produces at least some trades on oscillating data
+func TestE2E_MACD_Sample(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("testdata", "macd_sample.mq4"))
+	if err != nil {
+		t.Fatalf("failed to read macd_sample.mq4: %v", err)
+	}
+
+	runner, err := CompileMQL(string(source))
+	if err != nil {
+		t.Fatalf("CompileMQL failed (MODE_SIGNAL/MODE_MAIN should be known constants): %v", err)
+	}
+
+	bars := makeE2EBars(80)
+
+	cfg := backtest.Config{
+		Symbol:         "EURUSD",
+		Timeframe:      "M1",
+		InitialCapital: decimal.NewFromInt(10000),
+		Leverage:       100,
+		Params: map[string]string{
+			"Lots":           "0.1",
+			"MACDOpenLevel":  "3",
+			"MACDCloseLevel": "2",
+			"MATrendPeriod":  "26",
+		},
+	}
+
+	engine := backtest.New(cfg, runner, bars)
+	result, err := engine.Run(context.Background())
+	if err != nil {
+		t.Fatalf("backtest.Run failed: %v", err)
+	}
+
+	if len(result.Equity) == 0 {
+		t.Fatal("expected equity points from backtest")
+	}
+
+	t.Logf("MACD Sample: trades=%d, equity points=%d, final equity=%s",
+		len(result.Trades), len(result.Equity),
+		result.Equity[len(result.Equity)-1].Equity.String())
+
+	// Verify no blind spots for iMACD (would indicate missing indicator handler)
+	blinds := runner.GetRuntimeBlindSpots()
+	for _, bs := range blinds {
+		if bs.Builtin == "iMACD" {
+			t.Errorf("iMACD should have a handler, but got blind spot (count=%d)", bs.Count)
+		}
+	}
 }

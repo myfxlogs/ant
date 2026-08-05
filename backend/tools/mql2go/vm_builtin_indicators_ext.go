@@ -106,9 +106,17 @@ func builtinIRVI(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// MQL4: iRVI(symbol, timeframe, period, mode, shift)
 	period := int(argI(args, 2))
-	// mode = args[3] — skip (SDK returns single value)
+	mode := argI(args, 3)
 	shift := int(argI(args, 4))
-	return interp.DecimalVal(vm.ctx.Indicators().RVI(period, shift)), nil
+	switch mode {
+	case 0: // MODE_MAIN (RVI line)
+		return interp.DecimalVal(vm.ctx.Indicators().RVI(period, shift)), nil
+	case 1: // MODE_SIGNAL (RVI signal line)
+		vm.recordBlindSpot("iRVI:MODE_SIGNAL")
+		return interp.DecimalVal(decimalZero), nil
+	default:
+		return interp.DecimalVal(vm.ctx.Indicators().RVI(period, shift)), nil
+	}
 }
 
 func builtinIForce(vm *VM, args []interp.Value) (interp.Value, error) {

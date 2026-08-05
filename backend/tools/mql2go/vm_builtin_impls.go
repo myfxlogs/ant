@@ -163,6 +163,7 @@ func registerTradeBuiltins() {
 	builtinRegistry[id("OrderModify")].fn = builtinOrderModify
 	builtinRegistry[id("OrderDelete")].fn = builtinOrderDelete
 	builtinRegistry[id("OrdersTotal")].fn = builtinOrdersTotal
+	builtinRegistry[id("OrdersHistoryTotal")].fn = builtinOrdersHistoryTotal
 	builtinRegistry[id("OrderSelect")].fn = builtinOrderSelect
 	builtinRegistry[id("OrderStopLoss")].fn = builtinOrderStopLoss
 	builtinRegistry[id("OrderTakeProfit")].fn = builtinOrderTakeProfit
@@ -180,8 +181,8 @@ func registerTradeBuiltins() {
 	builtinRegistry[id("OrderCloseBy")].fn = builtinOrderCloseBy
 	builtinRegistry[id("OrderExpiration")].fn = builtinNoopDecimal
 	builtinRegistry[id("OrderPrint")].fn = builtinNoop
-	builtinRegistry[id("OrderCommission")].fn = builtinNoopDecimal
-	builtinRegistry[id("OrderSwap")].fn = builtinNoopDecimal
+	builtinRegistry[id("OrderCommission")].fn = builtinOrderCommission
+	builtinRegistry[id("OrderSwap")].fn = builtinOrderSwap
 	builtinRegistry[id("PositionsTotal")].fn = builtinPositionsTotal
 	builtinRegistry[id("PositionGetTicket")].fn = builtinPositionGetTicket
 	builtinRegistry[id("PositionGetDouble")].fn = builtinPositionGetDouble

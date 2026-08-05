@@ -6,6 +6,7 @@ option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "backtest_execution_config.proto";
 import "parameter_entry.proto";
+import "strategy_runtime.proto";
 
 // BacktestService runs strategy backtests via the Go backtest engine.
 // Python strategy engine has been retired (see ADR-0021).
@@ -114,6 +115,7 @@ message ExecuteBacktestResponse {
   string error = 6;
   ExecutionAssumptions execution_assumptions = 7;
   repeated int64 equity_times_ms = 8;   // bar timestamps for equity_curve points
+  repeated BlindSpot blind_spots = 9;   // compilation/runtime blind spots
 }
 
 message ExecuteBacktestMetrics {

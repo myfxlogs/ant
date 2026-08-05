@@ -116,6 +116,11 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 	// Patch forward jumps (placeholder targets are negative indices)
 	c.patchJumps()
 
+	// Return compile error if any (e.g. unknown constant)
+	if c.err != nil {
+		return nil, c.err
+	}
+
 	return c.bc, nil
 }
 
@@ -131,6 +136,7 @@ type astCompiler struct {
 	currentFunc   *FuncEntry
 	nextLocalSlot int                // next available local slot in current function
 	loopStack     []*loopContext     // stack of loop contexts for break/continue
+	err           error              // first compile error encountered (e.g. unknown constant)
 }
 
 // emit appends an instruction and returns its index.
@@ -201,7 +207,7 @@ func (c *astCompiler) resolveVar(name string) (VarID, bool) {
 
 func isEventFunction(name string) bool {
 	switch name {
-	case "OnInit", "OnTick", "OnBar", "OnTimer", "OnTrade", "OnTradeTransaction", "OnBookEvent", "OnDeinit":
+	case "OnInit", "OnTick", "OnBar", "OnTimer", "OnTrade", "OnTradeTransaction", "OnBookEvent", "OnDeinit", "start":
 		return true
 	}
 	return false

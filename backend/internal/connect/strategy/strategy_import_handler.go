@@ -33,7 +33,7 @@ func paramGroup(name string) string {
 }
 
 // ── Import RPCs ──────────────────────────────────────────────────────
-// Analysis path: MQL → CompileToIR → interp.Analyze (coverage/blind-spot report).
+// Analysis path: MQL → CompileToIR → CompileAST → AnalyzeCoverage (combined static + compilation coverage).
 // Execution path: MQL → CompileMQL → Bytecode VM (ADR-0023 D2: analysis uses AST, execution uses Bytecode).
 // Per ADR-0023 D4, Go code generation is no longer used at runtime.
 
@@ -49,25 +49,57 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{}), nil
 	}
 
-	rep := interp.Analyze(ir)
+	// Compile to bytecode to get compilation-time coverage (catches unknown constants, etc.)
+	bc, compileErr := mql2go.CompileAST(ir)
+	if compileErr != nil {
+		s.log.Warn("AnalyzeImportCode: compile to bytecode failed", zap.Error(compileErr))
+		// Fall back to static-only analysis, but surface the compile error as a fatal blind spot
+		rep := interp.Analyze(ir)
+		paramFields := irParamFields(rep.Params)
+		paramGroups := irParamGroups(rep.Params)
+		blindSpots := irBlindSpotProtos(rep.BlindSpots)
+		blindSpots = append(blindSpots, &antv1.BlindSpot{
+			Id:          "compile_error",
+			Category:    "compiler",
+			Severity:    "fatal",
+			Description: compileErr.Error(),
+		})
+		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
+			StrategyName:     deriveNameFromFileName(req.Msg.GetSourceName()),
+			MqlVersion:       rep.Version,
+			CoverageScore:    rep.Coverage,
+			TotalBlocks:      int32(rep.TotalCalls),
+			RecognizedBlocks: int32(rep.SupportedCalls),
+			ExecutionKind:    rep.ExecKind,
+			EntryRulesCount:  int32(rep.EntryRules),
+			ExitRulesCount:   int32(rep.ExitRules),
+			Params:           paramFields,
+			Groups:           paramGroups,
+			BlindSpots:       blindSpots,
+			IndicatorNames:   rep.Indicators,
+		}), nil
+	}
 
-	paramFields := irParamFields(rep.Params)
-	paramGroups := irParamGroups(rep.Params)
-	blindSpots := irBlindSpotProtos(rep.BlindSpots)
+	// Combined coverage: static IR analysis + compilation blind spots
+	cov := mql2go.AnalyzeCoverage(ir, bc)
+
+	paramFields := irParamFields(ir.Params)
+	paramGroups := irParamGroups(ir.Params)
+	blindSpots := coverageBlindSpotProtos(cov.BlindSpots)
 
 	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
 		StrategyName:     deriveNameFromFileName(req.Msg.GetSourceName()),
-		MqlVersion:       rep.Version,
-		CoverageScore:    rep.Coverage,
-		TotalBlocks:      int32(rep.TotalCalls),
-		RecognizedBlocks: int32(rep.SupportedCalls),
-		ExecutionKind:    rep.ExecKind,
-		EntryRulesCount:  int32(rep.EntryRules),
-		ExitRulesCount:   int32(rep.ExitRules),
+		MqlVersion:       cov.Version,
+		CoverageScore:    cov.Score,
+		TotalBlocks:      int32(cov.TotalCalls),
+		RecognizedBlocks: int32(cov.SupportedCalls),
+		ExecutionKind:    cov.ExecKind,
+		EntryRulesCount:  int32(cov.EntryRules),
+		ExitRulesCount:   int32(cov.ExitRules),
 		Params:           paramFields,
 		Groups:           paramGroups,
 		BlindSpots:       blindSpots,
-		IndicatorNames:   rep.Indicators,
+		IndicatorNames:   cov.Indicators,
 	}), nil
 }
 
@@ -145,6 +177,19 @@ func irBlindSpotProtos(spots []interp.IRBlindSpot) []*antv1.BlindSpot {
 			Category:    classifyBlindSpotCategory(bs.Builtin),
 			Severity:    bs.Severity,
 			Description: bs.Builtin + " is not supported by the interpreter",
+		})
+	}
+	return result
+}
+
+func coverageBlindSpotProtos(spots []mql2go.CoverageBlindSpot) []*antv1.BlindSpot {
+	result := make([]*antv1.BlindSpot, 0, len(spots))
+	for _, bs := range spots {
+		result = append(result, &antv1.BlindSpot{
+			Id:          bs.Builtin,
+			Category:    classifyBlindSpotCategory(bs.Builtin),
+			Severity:    bs.Severity,
+			Description: bs.Builtin + " is not fully supported (source: " + bs.Source + ")",
 		})
 	}
 	return result

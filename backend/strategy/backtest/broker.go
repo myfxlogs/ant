@@ -101,15 +101,11 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 	// Apply commission (basis points of volume)
 	b.applyCommission(rec)
 
-	// Apply slippage for market orders
-	if req.Type == sdk.OrderMarket {
-		slip := b.config.Slippage
-		if req.Side == sdk.SideBuy {
-			rec.Price = rec.Price.Add(slip)
-		} else {
-			rec.Price = rec.Price.Sub(slip)
-		}
-	}
+	// Slippage in MQL4 is the maximum acceptable deviation from requested price,
+	// not an additive cost. In backtest, market orders fill at the current bar's
+	// close price — the fill price IS the market price, so deviation = 0.
+	// No price adjustment needed; slippage only matters for rejection checks
+	// when a separate fill price differs from the requested price (e.g. gaps).
 
 	// Check margin before opening
 	contractSize := b.config.ContractSize
@@ -322,6 +318,8 @@ func (b *SimBroker) Positions(magic int32) []sdk.Position {
 				StopLoss:   p.StopLoss,
 				TakeProfit: p.TakeProfit,
 				Profit:     p.Profit,
+				Swap:       p.Swap,
+				Commission: p.Commission,
 				Comment:    p.Comment,
 				Magic:      p.Magic,
 				OpenTime:   p.OpenTime,
@@ -379,6 +377,8 @@ func (b *SimBroker) HistoryOrders(from, to int64) []sdk.Position {
 			Comment:    h.Comment,
 			Magic:      h.Magic,
 			OpenTime:   h.OpenTime,
+			ClosePrice: h.ClosePrice,
+			CloseTime:  h.CloseTime,
 		})
 	}
 	return out

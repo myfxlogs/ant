@@ -120,13 +120,53 @@ func builtinOrdersTotal(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(int32(len(vm.cachedPositions))), nil
 }
 
-// builtinOrderSelect implements MQL4 OrderSelect(index, SELECT_BY_POS, MODE_TRADES).
-// It sets currentPos to the i-th position from the cached list.
+func builtinOrdersHistoryTotal(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.ctx == nil || vm.ctx.Broker() == nil {
+		return interp.IntVal(0), nil
+	}
+	if vm.cachedHistory == nil {
+		vm.cachedHistory = vm.ctx.Broker().HistoryOrders(0, 0)
+	}
+	return interp.IntVal(int32(len(vm.cachedHistory))), nil
+}
+
+// builtinOrderSelect implements MQL4 OrderSelect(index, select, pool).
+// pool: MODE_TRADES=0 (active positions), MODE_HISTORY=1 (closed orders).
+// It sets currentPos to the i-th position from the appropriate cached list.
 func builtinOrderSelect(vm *VM, args []interp.Value) (interp.Value, error) {
 	index := int(argI(args, 0))
 	// SELECT_BY_POS = 0, SELECT_BY_TICKET = 1
 	selectBy := argI(args, 1)
+	// pool: MODE_TRADES = 0, MODE_HISTORY = 1 (optional, defaults to MODE_TRADES)
+	pool := int32(0)
+	if len(args) > 2 {
+		pool = argI(args, 2)
+	}
 
+	if pool == 1 {
+		// MODE_HISTORY — select from closed orders
+		if vm.cachedHistory == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+			vm.cachedHistory = vm.ctx.Broker().HistoryOrders(0, 0)
+		}
+		if selectBy == 0 {
+			if index >= 0 && index < len(vm.cachedHistory) {
+				vm.currentPos = &vm.cachedHistory[index]
+				return interp.BoolVal(true), nil
+			}
+			return interp.BoolVal(false), nil
+		}
+		// SELECT_BY_TICKET
+		ticket := int64(argI(args, 0))
+		for i := range vm.cachedHistory {
+			if vm.cachedHistory[i].Ticket == ticket {
+				vm.currentPos = &vm.cachedHistory[i]
+				return interp.BoolVal(true), nil
+			}
+		}
+		return interp.BoolVal(false), nil
+	}
+
+	// MODE_TRADES (default)
 	if selectBy == 0 {
 		// SELECT_BY_POS — index into cached positions
 		if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
@@ -177,9 +217,22 @@ func builtinOrderTicket(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(0), nil
 }
 
+// sideToOrderType maps sdk.PositionSide (SideBuy=1, SideSell=-1) to MQL4 OP_* constants.
+// MQL4: OP_BUY=0, OP_SELL=1. MQL5 POSITION_TYPE: POSITION_TYPE_BUY=0, POSITION_TYPE_SELL=1.
+func sideToOrderType(side sdk.PositionSide) int32 {
+	switch side {
+	case sdk.SideBuy:
+		return 0 // OP_BUY / POSITION_TYPE_BUY
+	case sdk.SideSell:
+		return 1 // OP_SELL / POSITION_TYPE_SELL
+	default:
+		return -1
+	}
+}
+
 func builtinOrderType(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.currentPos != nil {
-		return interp.IntVal(int32(vm.currentPos.Side)), nil
+		return interp.IntVal(sideToOrderType(vm.currentPos.Side)), nil
 	}
 	return interp.IntVal(0), nil
 }
@@ -206,16 +259,50 @@ func builtinOrderOpenPrice(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderClosePrice(vm *VM, args []interp.Value) (interp.Value, error) {
-	// MQL4: OrderClosePrice returns 0 for open orders, close price for closed orders.
-	// Since our Position struct only tracks open positions, return 0.
+	if vm.currentPos == nil {
+		return interp.DecimalVal(decimal.Zero), nil
+	}
+	// For closed positions (from history pool), return the recorded close price.
+	if vm.currentPos.ClosePrice.IsPositive() {
+		return interp.DecimalVal(vm.currentPos.ClosePrice), nil
+	}
+	// For open positions, return current market price.
+	if vm.ctx != nil {
+		if vm.currentPos.Side == sdk.SideSell {
+			return interp.DecimalVal(vm.ctx.Ask()), nil
+		}
+		return interp.DecimalVal(vm.ctx.Bid()), nil
+	}
 	return interp.DecimalVal(decimal.Zero), nil
 }
 
 func builtinOrderProfit(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.currentPos != nil {
+	if vm.currentPos == nil {
+		return interp.DecimalVal(decimal.Zero), nil
+	}
+	// For closed positions, use the recorded close price.
+	closePrice := vm.currentPos.ClosePrice
+	// For open positions, use current market price.
+	if !closePrice.IsPositive() && vm.ctx != nil {
+		closePrice = vm.ctx.Bid()
+		if vm.currentPos.Side == sdk.SideSell {
+			closePrice = vm.ctx.Ask()
+		}
+	}
+	if !closePrice.IsPositive() {
 		return interp.DecimalVal(vm.currentPos.Profit), nil
 	}
-	return interp.DecimalVal(decimal.Zero), nil
+	contractSize := decimal.NewFromInt(100000)
+	if vm.ctx != nil {
+		if info, err := vm.ctx.Broker().SymbolInfo(vm.currentPos.Symbol); err == nil && info.ContractSize.IsPositive() {
+			contractSize = info.ContractSize
+		}
+	}
+	profit := closePrice.Sub(vm.currentPos.OpenPrice).Mul(vm.currentPos.Volume).Mul(contractSize)
+	if vm.currentPos.Side == sdk.SideSell {
+		profit = profit.Neg()
+	}
+	return interp.DecimalVal(profit), nil
 }
 
 func builtinOrderMagicNumber(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -240,7 +327,24 @@ func builtinOrderOpenTime(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderCloseTime(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentPos != nil && !vm.currentPos.CloseTime.IsZero() {
+		return interp.IntVal(int32(vm.currentPos.CloseTime.Unix())), nil
+	}
 	return interp.IntVal(0), nil
+}
+
+func builtinOrderCommission(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentPos != nil {
+		return interp.DecimalVal(vm.currentPos.Commission), nil
+	}
+	return interp.DecimalVal(decimal.Zero), nil
+}
+
+func builtinOrderSwap(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentPos != nil {
+		return interp.DecimalVal(vm.currentPos.Swap), nil
+	}
+	return interp.DecimalVal(decimal.Zero), nil
 }
 
 // ── MQL5 position builtins ───────────────────────────────────────────
@@ -282,6 +386,12 @@ func builtinPositionGetDouble(vm *VM, args []interp.Value) (interp.Value, error)
 	case 3: // POSITION_TP
 		return interp.DecimalVal(vm.currentPos.TakeProfit), nil
 	case 4: // POSITION_PRICE_CURRENT
+		if vm.ctx != nil {
+			if vm.currentPos.Side == sdk.SideSell {
+				return interp.DecimalVal(vm.ctx.Ask()), nil
+			}
+			return interp.DecimalVal(vm.ctx.Bid()), nil
+		}
 		return interp.DecimalVal(vm.currentPos.OpenPrice), nil
 	case 5: // POSITION_SWAP
 		return interp.DecimalVal(vm.currentPos.Swap), nil
@@ -305,11 +415,11 @@ func builtinPositionGetInteger(vm *VM, args []interp.Value) (interp.Value, error
 	case 1: // POSITION_MAGIC
 		return interp.IntVal(vm.currentPos.Magic), nil
 	case 2: // POSITION_TYPE
-		return interp.IntVal(int32(vm.currentPos.Side)), nil
+		return interp.IntVal(sideToOrderType(vm.currentPos.Side)), nil
 	case 3: // POSITION_TIME
 		return interp.DatetimeVal(vm.currentPos.OpenTime.UnixMilli()), nil
 	default:
-		return interp.IntVal(vm.currentPos.Magic), nil
+		return interp.IntVal(0), nil
 	}
 }
 

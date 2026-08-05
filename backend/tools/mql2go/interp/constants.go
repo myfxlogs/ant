@@ -73,6 +73,32 @@ var MQLConstants = map[string]Value{
 	"MODE_SWAPSHORT":         IntVal(36),
 	"MODE_CLOSEBY_ALLOWED":   IntVal(28),
 
+	// ── Indicator line selection modes (ENUM_INDEXBUFFER) ──────────────
+	// Used by iMACD, iStochastic, iADX, iBands, iEnvelopes, iFractals,
+	// iAlligator, iGator, iIchimoku to select which indicator line to return.
+	// https://docs.mql4.com/constants/indicatorconstants/lines
+	"MODE_MAIN":    IntVal(0), // base/main line (iMACD, iStochastic, iADX, iAlligator, iGator, iIchimoku)
+	"MODE_SIGNAL":  IntVal(1), // signal line (iMACD, iStochastic)
+	"MODE_PLUSDI":  IntVal(1), // +DI line (iADX)
+	"MODE_MINUSDI": IntVal(2), // -DI line (iADX)
+	"MODE_UPPER":   IntVal(1), // upper band (iBands, iEnvelopes)
+	"MODE_LOWER":   IntVal(2), // lower band (iBands, iEnvelopes)
+	"MODE_BASE":    IntVal(0), // base line (iAlligator jaw, iGator)
+	"MODE_TENKAN":  IntVal(1), // Tenkan-sen (iIchimoku)
+	"MODE_KIJUN":   IntVal(2), // Kijun-sen (iIchimoku)
+	"MODE_SENKOUA": IntVal(3), // Senkou Span A (iIchimoku)
+	"MODE_SENKOUB": IntVal(4), // Senkou Span B (iIchimoku)
+	"MODE_CHIKOU":  IntVal(5), // Chikou Span (iIchimoku)
+	// Alligator jaw/teeth/lips (MQL5 names, MQL4 uses MODE_BASE/MODE_UPPER/MODE_LOWER)
+	"MODE_GATORJAW":  IntVal(0),
+	"MODE_GATORTEETH": IntVal(1),
+	"MODE_GATORLIPS":  IntVal(2),
+
+	// ── Stochastic price field constants ────────────────────────────────
+	// Used as the price_field argument of iStochastic.
+	"STO_LOWHIGH":    IntVal(0),
+	"STO_CLOSECLOSE": IntVal(1),
+
 	// ── Moving average methods (ENUM_MA_METHOD) ────────────────────────
 	"MODE_SMA":  IntVal(0),
 	"MODE_EMA":  IntVal(1),
