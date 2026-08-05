@@ -258,50 +258,52 @@ func (e *Engine) checkPendingOrders(bar sdk.Bar) {
 	}
 }
 
-func (e *Engine) checkSLTP(bar sdk.Bar) {
-	open := bar.Open
-	high := bar.High
-	low := bar.Low
+// checkBuySLTP checks SL/TP for a buy position. Returns (closed, closePrice).
+// Conservative: if both SL and TP are in the bar range, SL hits first.
+func checkBuySLTP(open, high, low, sl, tp decimal.Decimal) (bool, decimal.Decimal) {
+	if open.IsPositive() && sl.IsPositive() && open.LessThanOrEqual(sl) {
+		return true, open
+	}
+	if open.IsPositive() && tp.IsPositive() && open.GreaterThanOrEqual(tp) {
+		return true, open
+	}
+	if sl.IsPositive() && low.LessThanOrEqual(sl) {
+		return true, sl
+	}
+	if tp.IsPositive() && high.GreaterThanOrEqual(tp) {
+		return true, tp
+	}
+	return false, decimal.Zero
+}
 
+// checkSellSLTP checks SL/TP for a sell position. Returns (closed, closePrice).
+// Conservative: if both SL and TP are in the bar range, SL hits first.
+func checkSellSLTP(open, high, low, sl, tp decimal.Decimal) (bool, decimal.Decimal) {
+	if open.IsPositive() && sl.IsPositive() && open.GreaterThanOrEqual(sl) {
+		return true, open
+	}
+	if open.IsPositive() && tp.IsPositive() && open.LessThanOrEqual(tp) {
+		return true, open
+	}
+	if sl.IsPositive() && high.GreaterThanOrEqual(sl) {
+		return true, sl
+	}
+	if tp.IsPositive() && low.LessThanOrEqual(tp) {
+		return true, tp
+	}
+	return false, decimal.Zero
+}
+
+func (e *Engine) checkSLTP(bar sdk.Bar) {
 	for i := 0; i < len(e.broker.positions); i++ {
 		pos := e.broker.positions[i]
-		closed := false
-		closePrice := decimal.Zero
+		var closed bool
+		var closePrice decimal.Decimal
 
 		if pos.Side == sdk.SideBuy {
-			// Gap handling: if bar opens below SL, fill at open price
-			if open.IsPositive() && pos.StopLoss.IsPositive() && open.LessThanOrEqual(pos.StopLoss) {
-				closePrice = open
-				closed = true
-			} else if open.IsPositive() && pos.TakeProfit.IsPositive() && open.GreaterThanOrEqual(pos.TakeProfit) {
-				closePrice = open
-				closed = true
-			} else if pos.StopLoss.IsPositive() && low.LessThanOrEqual(pos.StopLoss) {
-				// Conservative: check SL first — if both SL and TP are in the bar range,
-				// assume SL hit first to avoid over-optimistic backtest results.
-				closePrice = pos.StopLoss
-				closed = true
-			} else if pos.TakeProfit.IsPositive() && high.GreaterThanOrEqual(pos.TakeProfit) {
-				closePrice = pos.TakeProfit
-				closed = true
-			}
+			closed, closePrice = checkBuySLTP(bar.Open, bar.High, bar.Low, pos.StopLoss, pos.TakeProfit)
 		} else {
-			// Sell position
-			// Gap handling: if bar opens above SL (for sell, SL is above), fill at open
-			if open.IsPositive() && pos.StopLoss.IsPositive() && open.GreaterThanOrEqual(pos.StopLoss) {
-				closePrice = open
-				closed = true
-			} else if open.IsPositive() && pos.TakeProfit.IsPositive() && open.LessThanOrEqual(pos.TakeProfit) {
-				closePrice = open
-				closed = true
-			} else if pos.StopLoss.IsPositive() && high.GreaterThanOrEqual(pos.StopLoss) {
-				// Conservative: check SL first for same-bar ambiguity
-				closePrice = pos.StopLoss
-				closed = true
-			} else if pos.TakeProfit.IsPositive() && low.LessThanOrEqual(pos.TakeProfit) {
-				closePrice = pos.TakeProfit
-				closed = true
-			}
+			closed, closePrice = checkSellSLTP(bar.Open, bar.High, bar.Low, pos.StopLoss, pos.TakeProfit)
 		}
 
 		if closed {
@@ -309,7 +311,6 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 				closePrice = bar.Close
 			}
 			pos.ClosePrice = closePrice
-			// Apply swap based on actual time held (not per-bar=1-day)
 			heldDuration := time.UnixMilli(bar.Timestamp).Sub(pos.OpenTime)
 			days := int64(heldDuration.Hours() / 24)
 			if days < 0 {
