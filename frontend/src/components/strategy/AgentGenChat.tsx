@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { agentGenerateStrategyStream } from '@/client/agentGen';
-import type { AgentBacktestResult, StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
+import type { AgentBacktestResult, StrategyPlan, BacktestRunSummary } from '@/gen/ant/v1/agent_gateway_pb';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
 import ChatHistory, { type ChatTurn, type Phase } from './ChatHistory';
@@ -19,11 +19,13 @@ interface Props {
   onDone?: () => void;
   initialTurnsRef?: React.MutableRefObject<ChatTurn[]>;
   currentCode?: string;
+  lastBacktest?: BacktestRunSummary;
+  recentBacktests?: BacktestRunSummary[];
 }
 
 const NO_DATA_RE = /insufficient market data|0 bars|need.*≥.*2/i;
 
-export default function AgentGenChat({ symbol, timeframe, accountId, conversationId, onApply, onDone, initialTurnsRef, currentCode }: Props) {
+export default function AgentGenChat({ symbol, timeframe, accountId, conversationId, onApply, onDone, initialTurnsRef, currentCode, lastBacktest, recentBacktests }: Props) {
   const { t } = useTranslation();
   const [turns, setTurns] = useState<ChatTurn[]>(initialTurnsRef?.current ?? []);
   const [userInput, setUserInput] = useState('');
@@ -146,8 +148,8 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
     setUserInput('');
     lastMsgRef.current = msg;
 
-    startStream({ message: msg, symbol, timeframe, planMode: 'plan' });
-  }, [userInput, symbol, timeframe, startStream]);
+    startStream({ message: msg, symbol, timeframe, planMode: 'plan', lastBacktest, recentBacktests });
+  }, [userInput, symbol, timeframe, startStream, lastBacktest, recentBacktests]);
 
   const handlePlanConfirm = useCallback(() => {
     const planTurn = turns.find((t) => t.plan);

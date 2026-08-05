@@ -57,6 +57,7 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	srv.SetRunRepo(strategyRunRepo)
 	srv.SetImportedRepo(repository.NewImportedStrategyRepository(d.pool))
 	srv.SetVersionRepo(repository.NewStrategyVersionRepository(d.pool))
+	srv.SetFailureSignatureRepo(repository.NewFailureSignatureRepository(d.pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
 	srv.SetQuotaChecker(d.quotaChecker)
 

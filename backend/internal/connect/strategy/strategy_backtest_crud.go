@@ -130,6 +130,11 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 		sMode := cfg.GetStrictMode()
 		run.StrictMode = &sMode
 	}
+	if po := msg.GetParameterOverrides(); po != nil && len(po.GetValues()) > 0 {
+		if raw, err := proto.Marshal(po); err == nil {
+			run.ParameterOverrides = raw
+		}
+	}
 	if msg.From != nil {
 		t := msg.From.AsTime()
 		run.FromTs = &t
@@ -279,8 +284,3 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 		FailedCount:  int32(len(uuids)) - int32(deleted),
 	}), nil
 }
-
-
-
-
-

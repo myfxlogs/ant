@@ -15,7 +15,9 @@ import { AI_GATEWAY_SETTINGS_KEY, NEW_CONVERSATION_KEY, SELECT_MODEL_KEY, SELECT
 
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 
-interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; currentCode?: string; }
+import type { BacktestRunSummary } from '@/gen/ant/v1/agent_gateway_pb';
+
+interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; currentCode?: string; lastBacktest?: BacktestRunSummary; recentBacktests?: BacktestRunSummary[]; }
 
 function extractCodeFromContent(content: string): string | undefined {
   const m = content.match(/```python[\s\S]*?```/);
@@ -23,7 +25,7 @@ function extractCodeFromContent(content: string): string | undefined {
   return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
 }
 
-export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, _onValidateResult, _onRunBacktest, _backtestStatus, currentCode }: Props) {
+export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, _onValidateResult, _onRunBacktest, _backtestStatus, currentCode, lastBacktest, recentBacktests }: Props) {
   const { t } = useTranslation();
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [selectedModel, setSelectedModel] = useState('');
@@ -165,6 +167,8 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
           onDone={fetchConversations}
           initialTurnsRef={initialTurnsRef}
           currentCode={currentCode}
+          lastBacktest={lastBacktest}
+          recentBacktests={recentBacktests}
         />
       </div>
 

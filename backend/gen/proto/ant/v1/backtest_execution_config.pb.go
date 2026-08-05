@@ -78,15 +78,17 @@ func (TradeDirection) EnumDescriptor() ([]byte, []int) {
 // for a single backtest run. Stored as proto binary snapshot (config_snapshot
 // column) for full reproducibility.
 type BacktestExecutionConfig struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Commission     string                 `protobuf:"bytes,1,opt,name=commission,proto3" json:"commission,omitempty"` // ratio as string, e.g. "0.001" = 0.10%
-	Slippage       string                 `protobuf:"bytes,2,opt,name=slippage,proto3" json:"slippage,omitempty"`     // ratio as string, e.g. "0.0005" = 0.05%
-	Leverage       string                 `protobuf:"bytes,3,opt,name=leverage,proto3" json:"leverage,omitempty"`     // e.g. "1", "10", "100"
-	TradeDirection TradeDirection         `protobuf:"varint,4,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"`
-	StrictMode     bool                   `protobuf:"varint,5,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`            // true = next-bar-open, false = same-bar-close + MTF 1m
-	StrategyConfig *StrategyConfig        `protobuf:"bytes,6,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"` // parsed from @strategy annotations
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Commission      string                 `protobuf:"bytes,1,opt,name=commission,proto3" json:"commission,omitempty"` // ratio as string, e.g. "0.001" = 0.10%
+	Slippage        string                 `protobuf:"bytes,2,opt,name=slippage,proto3" json:"slippage,omitempty"`     // ratio as string, e.g. "0.0005" = 0.05%
+	Leverage        string                 `protobuf:"bytes,3,opt,name=leverage,proto3" json:"leverage,omitempty"`     // e.g. "1", "10", "100"
+	TradeDirection  TradeDirection         `protobuf:"varint,4,opt,name=trade_direction,json=tradeDirection,proto3,enum=ant.v1.TradeDirection" json:"trade_direction,omitempty"`
+	StrictMode      bool                   `protobuf:"varint,5,opt,name=strict_mode,json=strictMode,proto3" json:"strict_mode,omitempty"`                 // true = next-bar-open, false = same-bar-close + MTF 1m
+	StrategyConfig  *StrategyConfig        `protobuf:"bytes,6,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"`      // parsed from @strategy annotations
+	SwapRate        string                 `protobuf:"bytes,7,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`                        // overnight swap rate as string, e.g. "0.00001"
+	MarginCallLevel string                 `protobuf:"bytes,8,opt,name=margin_call_level,json=marginCallLevel,proto3" json:"margin_call_level,omitempty"` // equity/balance ratio threshold for forced close, e.g. "0.5" = 50%
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *BacktestExecutionConfig) Reset() {
@@ -159,6 +161,20 @@ func (x *BacktestExecutionConfig) GetStrategyConfig() *StrategyConfig {
 		return x.StrategyConfig
 	}
 	return nil
+}
+
+func (x *BacktestExecutionConfig) GetSwapRate() string {
+	if x != nil {
+		return x.SwapRate
+	}
+	return ""
+}
+
+func (x *BacktestExecutionConfig) GetMarginCallLevel() string {
+	if x != nil {
+		return x.MarginCallLevel
+	}
+	return ""
 }
 
 // StrategyConfig is the runtime execution behavior derived from @strategy
@@ -682,7 +698,7 @@ var File_backtest_execution_config_proto protoreflect.FileDescriptor
 
 const file_backtest_execution_config_proto_rawDesc = "" +
 	"\n" +
-	"\x1fbacktest_execution_config.proto\x12\x06ant.v1\"\x94\x02\n" +
+	"\x1fbacktest_execution_config.proto\x12\x06ant.v1\"\xdd\x02\n" +
 	"\x17BacktestExecutionConfig\x12\x1e\n" +
 	"\n" +
 	"commission\x18\x01 \x01(\tR\n" +
@@ -692,7 +708,9 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"\x0ftrade_direction\x18\x04 \x01(\x0e2\x16.ant.v1.TradeDirectionR\x0etradeDirection\x12\x1f\n" +
 	"\vstrict_mode\x18\x05 \x01(\bR\n" +
 	"strictMode\x12?\n" +
-	"\x0fstrategy_config\x18\x06 \x01(\v2\x16.ant.v1.StrategyConfigR\x0estrategyConfig\"\xd6\x01\n" +
+	"\x0fstrategy_config\x18\x06 \x01(\v2\x16.ant.v1.StrategyConfigR\x0estrategyConfig\x12\x1b\n" +
+	"\tswap_rate\x18\a \x01(\tR\bswapRate\x12*\n" +
+	"\x11margin_call_level\x18\b \x01(\tR\x0fmarginCallLevel\"\xd6\x01\n" +
 	"\x0eStrategyConfig\x12.\n" +
 	"\x04risk\x18\x01 \x01(\v2\x1a.ant.v1.StrategyRiskConfigR\x04risk\x122\n" +
 	"\bposition\x18\x02 \x01(\v2\x16.ant.v1.PositionConfigR\bposition\x12)\n" +

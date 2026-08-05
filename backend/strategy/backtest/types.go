@@ -11,30 +11,31 @@ import (
 
 // Config holds backtest parameters.
 type Config struct {
-	Symbol         string
-	Timeframe      string
-	StartDate      time.Time
-	EndDate        time.Time
-	InitialCapital decimal.Decimal
-	Leverage       int32
-	Commission     decimal.Decimal // percentage, e.g. 0.0003 = 0.03%
-	Slippage       decimal.Decimal // in price units, applied to market order fills
-	Spread         decimal.Decimal // bid/ask spread in price units
-	SwapRate       decimal.Decimal // overnight swap rate (e.g. 0.00001)
-	StrictMode     bool            // if true, skip bars with missing data
+	Symbol          string
+	Timeframe       string
+	StartDate       time.Time
+	EndDate         time.Time
+	InitialCapital  decimal.Decimal
+	Leverage        int32
+	Commission      decimal.Decimal // percentage, e.g. 0.0003 = 0.03%
+	Slippage        decimal.Decimal // in price units, applied to market order fills
+	Spread          decimal.Decimal // bid/ask spread in price units
+	SwapRate        decimal.Decimal // overnight swap rate (e.g. 0.00001)
+	MarginCallLevel decimal.Decimal // equity/balance ratio threshold for forced close (e.g. 0.5 = 50%); zero = disabled
+	StrictMode      bool            // if true, skip bars with missing data
 
 	// Strategy parameters passed to OnInit via ctx.Param*
-	Params         map[string]string
+	Params map[string]string
 
 	// Symbol properties for SymbolInfo
-	SymbolDigits  int32           // e.g. 5 for EURUSD
-	SymbolPoint   decimal.Decimal // e.g. 0.00001 for 5-digit
-	VolumeMin     decimal.Decimal
-	VolumeMax     decimal.Decimal
-	VolumeStep    decimal.Decimal
-	ContractSize  decimal.Decimal // typically 100000 for forex
-	StopsLevel    int32           // minimum stop distance in points
-	TickValue     decimal.Decimal // value of one tick in account currency
+	SymbolDigits int32           // e.g. 5 for EURUSD
+	SymbolPoint  decimal.Decimal // e.g. 0.00001 for 5-digit
+	VolumeMin    decimal.Decimal
+	VolumeMax    decimal.Decimal
+	VolumeStep   decimal.Decimal
+	ContractSize decimal.Decimal // typically 100000 for forex
+	StopsLevel   int32           // minimum stop distance in points
+	TickValue    decimal.Decimal // value of one tick in account currency
 
 	// ExtraSymbolBars holds bar data for secondary symbols (multi-symbol strategies).
 	// Keyed by symbol name; bars are chronologically ordered (oldest first).
@@ -77,24 +78,24 @@ type Trade struct {
 
 // OrderRecord tracks a single order through its lifecycle.
 type OrderRecord struct {
-	Ticket      int64
-	Symbol      string
-	Side        sdk.PositionSide
-	OrderType   sdk.OrderType
-	Volume      decimal.Decimal
-	Price       decimal.Decimal
-	StopLoss    decimal.Decimal
-	TakeProfit  decimal.Decimal
-	OpenTime    time.Time
-	CloseTime   time.Time
-	ClosePrice  decimal.Decimal
-	State       OrderState
-	Profit      decimal.Decimal
-	Commission  decimal.Decimal
-	Swap        decimal.Decimal
-	Comment     string
-	Magic       int32
-	OpenBar     int
+	Ticket     int64
+	Symbol     string
+	Side       sdk.PositionSide
+	OrderType  sdk.OrderType
+	Volume     decimal.Decimal
+	Price      decimal.Decimal
+	StopLoss   decimal.Decimal
+	TakeProfit decimal.Decimal
+	OpenTime   time.Time
+	CloseTime  time.Time
+	ClosePrice decimal.Decimal
+	State      OrderState
+	Profit     decimal.Decimal
+	Commission decimal.Decimal
+	Swap       decimal.Decimal
+	Comment    string
+	Magic      int32
+	OpenBar    int
 }
 
 // OrderState is the lifecycle state of an order.

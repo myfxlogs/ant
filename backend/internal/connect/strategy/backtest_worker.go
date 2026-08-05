@@ -72,14 +72,16 @@ func (s *StrategyExecutionServer) backtestWorker(ctx context.Context, workerID i
 
 // backtestParams holds extracted parameters from a BacktestRun for execution.
 type backtestParams struct {
-	code           string
-	initialCapital string
-	commission     string
-	slippage       string
-	leverage       string
-	tradeDir       antv1.TradeDirection
-	strictMode     bool
-	strategyCfg    *antv1.StrategyConfig
+	code            string
+	initialCapital  string
+	commission      string
+	slippage        string
+	leverage        string
+	tradeDir        antv1.TradeDirection
+	strictMode      bool
+	swapRate        string
+	marginCallLevel string
+	strategyCfg     *antv1.StrategyConfig
 }
 
 // extractBacktestParams extracts and validates parameters from a BacktestRun.
@@ -117,6 +119,12 @@ func extractBacktestParams(run *repository.BacktestRun) (backtestParams, error) 
 		opts := proto.UnmarshalOptions{DiscardUnknown: true}
 		if err := opts.Unmarshal(run.ConfigSnapshot, &ec); err == nil {
 			p.strategyCfg = ec.GetStrategyConfig()
+			if ec.GetSwapRate() != "" {
+				p.swapRate = ec.GetSwapRate()
+			}
+			if ec.GetMarginCallLevel() != "" {
+				p.marginCallLevel = ec.GetMarginCallLevel()
+			}
 		}
 	}
 	return p, nil
@@ -167,7 +175,7 @@ func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *re
 		return s.executeVMBacktest(ctx, params, klines, run)
 	}
 
-		// GoExecutor removed (Gap 3). Go strategies must be converted to MQL.
+	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL.
 	return nil, fmt.Errorf("go strategy backtest has been retired — please convert your strategy to MQL")
 }
 

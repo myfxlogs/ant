@@ -22,6 +22,8 @@ message BacktestExecutionConfig {
   TradeDirection trade_direction = 4;
   bool strict_mode = 5;        // true = next-bar-open, false = same-bar-close + MTF 1m
   StrategyConfig strategy_config = 6;  // parsed from @strategy annotations
+  string swap_rate = 7;        // overnight swap rate as string, e.g. "0.00001"
+  string margin_call_level = 8; // equity/balance ratio threshold for forced close, e.g. "0.5" = 50%
 }
 
 // StrategyConfig is the runtime execution behavior derived from @strategy

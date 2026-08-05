@@ -81,6 +81,13 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   // ── Import MQL inline (replaces empty state area, never modal) ────────
   const [importMode, setImportMode] = useState(false);
 
+  // ── Backtest context for AI ───────────────────────────────────────────
+  const btSummary = backtest.metrics?.totalTrades != null
+    ? { totalReturn: backtest.metrics.totalReturn, maxDrawdown: backtest.metrics.maxDrawdown, sharpeRatio: backtest.metrics.sharpeRatio, winRate: backtest.metrics.winRate, totalTrades: backtest.metrics.totalTrades }
+    : undefined;
+  const recentSummaries = (history.runs as Array<{ templateName?: string; totalReturn?: number; totalTrades?: number; startedAt?: string }>)
+    ?.slice(0, 10).map(r => ({ templateName: r.templateName || '', totalReturn: r.totalReturn ?? 0, totalTrades: r.totalTrades ?? 0, startedAt: r.startedAt || '' })) || [];
+
   // Redirect legacy tab values from localStorage (import/strategies/backtest tabs removed)
   useEffect(() => {
     if (centerTab === 'import' || centerTab === 'strategies' || centerTab === 'backtest') {
@@ -245,6 +252,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
                 accountId={account.accountId}
                 onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
                 currentCode={code.code}
+                lastBacktest={btSummary}
+                recentBacktests={recentSummaries}
               />
             </div>
           )}
@@ -345,6 +354,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
                   accountId={account.accountId}
                   onApplyCode={c => { code.setCode(c); }}
                   currentCode={code.code}
+                  lastBacktest={btSummary}
+                  recentBacktests={recentSummaries}
                 />
               </div>
             </div>

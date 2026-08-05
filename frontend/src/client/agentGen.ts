@@ -1,6 +1,6 @@
 import { agentGatewayClient } from './connect';
-import type { AgentGenerateStrategyChunk, StrategyPlan } from '../gen/ant/v1/agent_gateway_pb';
-import { AgentGenerateStrategyRequestSchema } from '../gen/ant/v1/agent_gateway_pb';
+import type { AgentGenerateStrategyChunk, StrategyPlan, BacktestRunSummary } from '../gen/ant/v1/agent_gateway_pb';
+import { AgentGenerateStrategyRequestSchema, BacktestRunSummarySchema } from '../gen/ant/v1/agent_gateway_pb';
 import { create } from '@bufbuild/protobuf';
 import i18n from '@/i18n';
 
@@ -15,6 +15,8 @@ export interface AgentGenInput {
   conversationId?: string;     // multi-turn conversation session ID
   accountId?: string;          // selected MT account for workspace context
   currentCode?: string;        // user's current strategy code for AI modification
+  lastBacktest?: BacktestRunSummary; // latest backtest metrics for AI context
+  recentBacktests?: BacktestRunSummary[]; // recent backtest runs for AI context
   backtestConfig?: {
     symbol?: string;
     timeframe?: string;
@@ -59,6 +61,8 @@ function buildAgentRequest(input: AgentGenInput) {
     currentCode: input.currentCode || '',
     locale: i18n.language || 'en',
     backtestConfig: input.backtestConfig ? buildBacktestConfig(input.backtestConfig) : undefined,
+    lastBacktest: input.lastBacktest || undefined,
+    recentBacktests: input.recentBacktests || undefined,
   });
 }
 

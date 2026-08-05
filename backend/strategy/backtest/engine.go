@@ -98,6 +98,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		}
 
 		equity := e.computeEquity(bar)
+		e.checkMarginCall(equity, bar)
 		e.equity = append(e.equity, EquityPoint{
 			Time:   time.UnixMilli(bar.Timestamp),
 			Equity: equity,
@@ -168,6 +169,36 @@ func (e *Engine) computeEquity(bar sdk.Bar) decimal.Decimal {
 		equity = equity.Add(floating)
 	}
 	return equity
+}
+
+// checkMarginCall force-closes all positions when equity drops below
+// the margin call threshold. The threshold is the ratio of equity to
+// used margin; when equity/margin < MarginCallLevel, all positions are closed.
+func (e *Engine) checkMarginCall(equity decimal.Decimal, bar sdk.Bar) {
+	if e.config.MarginCallLevel.IsZero() {
+		return
+	}
+	contractSize := e.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	usedMargin := decimal.Zero
+	for _, pos := range e.broker.positions {
+		notional := pos.Volume.Mul(contractSize).Mul(pos.Price)
+		margin := notional.Div(decimal.NewFromInt(int64(e.config.Leverage)))
+		usedMargin = usedMargin.Add(margin)
+	}
+	if usedMargin.IsZero() {
+		return
+	}
+	ratio := equity.Div(usedMargin)
+	if ratio.LessThan(e.config.MarginCallLevel) {
+		for i := len(e.broker.positions) - 1; i >= 0; i-- {
+			pos := e.broker.positions[i]
+			pos.ClosePrice = bar.Close
+			e.broker.PositionClose(pos.Ticket, pos.Volume)
+		}
+	}
 }
 
 func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {

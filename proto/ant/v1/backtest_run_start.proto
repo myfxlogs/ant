@@ -7,6 +7,7 @@ option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 import "google/protobuf/timestamp.proto";
 import "backtest_run.proto";
 import "backtest_execution_config.proto";
+import "strategy_params.proto";
 
 message StartBacktestRunRequest {
   string code = 1;
@@ -33,6 +34,7 @@ message StartBacktestRunRequest {
   // auto_gate: when true, server automatically runs 7-gate pipeline + marketplace
   // quality preview after backtest succeeds, streaming results via WatchBacktestRun.
   bool auto_gate = 15;
+  StrategyParams parameter_overrides = 16;
 }
 
 message StartBacktestRunResponse {

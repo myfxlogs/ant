@@ -370,6 +370,43 @@ message BlindSpot {
   bool user_action_required = 7;
 }
 
+// FailureSignature is a deduplication key for backtest failures.
+// Two EAs with the same signature have the same root cause.
+message FailureSignature {
+  string hash = 1;             // SHA256 of (sourceHash + ruleIDs + blindSpotIDs)
+  string source_hash = 2;      // SHA256 of anonymized EA source
+  repeated string rule_ids = 3; // matched diagnostic rule IDs (e.g. "R01", "R05")
+  repeated string blind_spots = 4; // blind spot builtin names
+  int32 total_trades = 5;      // backtest trade count
+  int64 created_at_ms = 6;     // creation timestamp (unix ms)
+}
+
+// ReproPackage is a self-contained reproduction package for offline analysis.
+message ReproPackage {
+  FailureSignature signature = 1;
+  string source_hash = 2;       // SHA256 of raw source
+  string source_preview = 3;    // first 500 chars of source
+  repeated DiagnosticFinding findings = 4;
+  int32 total_trades = 5;
+  string symbol = 6;
+  string timeframe = 7;
+  int64 created_at_ms = 8;      // creation timestamp (unix ms)
+}
+
+// DiagnosticFinding is the output of a diagnostic rule.
+message DiagnosticFinding {
+  string rule_id = 1;
+  string severity = 2;          // "fatal" | "warning" | "info"
+  string title = 3;
+  string detail = 4;
+  string suggest = 5;
+}
+
+// DiagnosticFindingList is a wrapper for persisting findings as proto bytes.
+message DiagnosticFindingList {
+  repeated DiagnosticFinding findings = 1;
+}
+
 // ── Strategy Run lifecycle queries ───────────────────────────────────
 
 message ListStrategyRunsRequest {

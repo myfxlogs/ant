@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/shopspring/decimal"
 	"alphaforge/tools/mql2go/interp"
+
+	"github.com/shopspring/decimal"
 )
 
 // isSeriesName returns true for MQL predefined time-series names.
@@ -372,14 +373,38 @@ func (c *astCompiler) compileCall(e *interp.Expr) {
 		return
 	}
 
-	// Unknown function — push args, pop them, push None
+	// Not a user function or registered builtin — check API registry.
+	if sym, ok := interp.LookupAPI(e.Name); ok {
+		switch sym.Status {
+		case interp.StatusUnsupported:
+			// Explicitly unsupported (iCustom, FileOpen, etc.) — compile error.
+			if c.err == nil {
+				c.err = fmt.Errorf("unsupported function %s: %s", e.Name, sym.Reason)
+			}
+			return
+		case interp.StatusStubbed:
+			// Stub: compiles but returns 0. Record as blind spot.
+			c.bc.Coverage.AddBlindSpot(e.Name)
+			for i := range e.Args {
+				c.compileExpr(&e.Args[i])
+			}
+			for range e.Args {
+				c.emit(OP_POP, 0, 0, 0)
+			}
+			c.emit(OP_PUSH_CONST, int32(c.addConst(interp.NoneVal())), 0, 0)
+			return
+		}
+	}
+
+	// Truly unknown function — record as blind spot (not in registry at all).
+	// This catches typos and functions we haven't catalogued yet.
+	c.bc.Coverage.AddBlindSpot("unknown function: " + e.Name)
 	for i := range e.Args {
 		c.compileExpr(&e.Args[i])
 	}
 	for range e.Args {
 		c.emit(OP_POP, 0, 0, 0)
 	}
-	c.bc.Coverage.AddBlindSpot("unknown function: " + e.Name)
 	c.emit(OP_PUSH_CONST, int32(c.addConst(interp.NoneVal())), 0, 0)
 }
 

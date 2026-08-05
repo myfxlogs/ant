@@ -73,7 +73,10 @@ type StrategyExecutionServer struct {
 
 	// PositionCache holds push-based position snapshots from PositionSnapshotBroker.
 	// Eliminates per-bar OpenedOrders polling (push-first architecture).
-	posCache *PositionCache
+
+	// Failure signature persistence (B2-6).
+	failureSigRepo *repository.FailureSignatureRepository
+	posCache       *PositionCache
 
 	// QuotaChecker enforces subscription plan limits (max strategies, live strategies).
 	quotaChecker QuotaChecker
@@ -94,7 +97,9 @@ type QualityValidator interface {
 func (s *StrategyExecutionServer) SetQualityValidator(v QualityValidator) { s.qualityValidator = v }
 
 // SetGateEvalRepo injects the gate evaluation repository for persistence.
-func (s *StrategyExecutionServer) SetGateEvalRepo(r *repository.GateEvaluationRepository) { s.gateEvalRepo = r }
+func (s *StrategyExecutionServer) SetGateEvalRepo(r *repository.GateEvaluationRepository) {
+	s.gateEvalRepo = r
+}
 
 // AccountStateProvider supplies live account state for gate evaluation (T3.2b).
 // Implemented by the MT gateway account status subscription.
@@ -164,6 +169,9 @@ func NewStrategyExecutionServer(backtestRepo *repository.BacktestRunRepository, 
 }
 
 func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
+func (s *StrategyExecutionServer) SetFailureSignatureRepo(repo *repository.FailureSignatureRepository) {
+	s.failureSigRepo = repo
+}
 func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) {
 	s.onBacktestComplete = fn
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -69,7 +70,48 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		zap.Int("equity_points", len(result.Equity)),
 		zap.Int("bars_processed", len(bars)))
 
-	return buildBacktestResponse(result, cfg, params, vmRunner), nil
+	resp, ruleFindings := buildBacktestResponse(result, cfg, params, vmRunner)
+
+	// Persist failure signature if there are diagnostic findings (B2-6).
+	if s.failureSigRepo != nil && len(ruleFindings) > 0 {
+		totalTrades := 0
+		if result.Metrics != nil {
+			totalTrades = int(result.Metrics.TotalTrades)
+		}
+		cov := vmRunner.GetCoverage()
+		var covBlindSpots []mql2go.CoverageBlindSpot
+		if cov != nil {
+			for _, bs := range cov.BlindSpots {
+				covBlindSpots = append(covBlindSpots, mql2go.CoverageBlindSpot{
+					Builtin:  bs,
+					Severity: "warning",
+					Source:   "compile",
+				})
+			}
+		}
+		var runtimeBlinds []mql2go.RuntimeBlindSpot
+		for _, rbs := range vmRunner.GetRuntimeBlindSpots() {
+			runtimeBlinds = append(runtimeBlinds, mql2go.RuntimeBlindSpot{
+				Builtin:  rbs.Builtin,
+				Severity: rbs.Severity,
+				Count:    rbs.Count,
+			})
+		}
+		reproPkg := mql2go.BuildReproPackage(
+			params.code, ruleFindings, covBlindSpots, runtimeBlinds,
+			totalTrades, run.Symbol, run.Timeframe,
+		)
+		protoPkg := reproPkg.ToProto()
+		var runID *uuid.UUID
+		if run.ID != uuid.Nil {
+			runID = &run.ID
+		}
+		if _, err := s.failureSigRepo.SaveFailureSignature(ctx, protoPkg, runID); err != nil {
+			s.log.Warn("executeVMBacktest: save failure signature failed", zap.Error(err))
+		}
+	}
+
+	return resp, nil
 }
 
 func klinesToBars(klines []*antv1.ExecuteKlineBar) []sdk.Bar {
@@ -98,6 +140,16 @@ func (s *StrategyExecutionServer) buildBacktestConfig(params backtestParams, run
 		SwapRate:       decimal.NewFromFloat(0.00001),
 		StrictMode:     params.strictMode,
 		Params:         paramsProtoToMap(run.ParameterOverrides),
+	}
+	if params.swapRate != "" {
+		if sr, err := decimal.NewFromString(params.swapRate); err == nil {
+			cfg.SwapRate = sr
+		}
+	}
+	if params.marginCallLevel != "" {
+		if mc, err := decimal.NewFromString(params.marginCallLevel); err == nil {
+			cfg.MarginCallLevel = mc
+		}
 	}
 	if run.FromTs != nil {
 		cfg.StartDate = *run.FromTs
@@ -157,13 +209,51 @@ func (s *StrategyExecutionServer) applySymbolInfo(ctx context.Context, run *repo
 	}
 }
 
-func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) *antv1.ExecuteBacktestResponse {
+func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) (*antv1.ExecuteBacktestResponse, []mql2go.DiagnosticFinding) {
+	totalTrades := 0
+	if result.Metrics != nil {
+		totalTrades = int(result.Metrics.TotalTrades)
+	}
+
+	// Run diagnostic rule engine
+	var ruleFindings []mql2go.DiagnosticFinding
+	cov := vmRunner.GetCoverage()
+	var covBlindSpots []mql2go.CoverageBlindSpot
+	// CoverageReport.BlindSpots is []string; convert to CoverageBlindSpot for the rule engine
+	if cov != nil {
+		for _, bs := range cov.BlindSpots {
+			covBlindSpots = append(covBlindSpots, mql2go.CoverageBlindSpot{
+				Builtin:  bs,
+				Severity: "warning",
+				Source:   "compile",
+			})
+		}
+	}
+	var runtimeBlinds []mql2go.RuntimeBlindSpot
+	for _, rbs := range vmRunner.GetRuntimeBlindSpots() {
+		runtimeBlinds = append(runtimeBlinds, mql2go.RuntimeBlindSpot{
+			Builtin:  rbs.Builtin,
+			Severity: rbs.Severity,
+			Count:    rbs.Count,
+		})
+	}
+	if params.code != "" {
+		engine := mql2go.NewRuleEngine()
+		ruleFindings = engine.Run(mql2go.RuleInput{
+			Source:        params.code,
+			Coverage:      cov,
+			BlindSpots:    covBlindSpots,
+			TotalTrades:   totalTrades,
+			RuntimeBlinds: runtimeBlinds,
+		})
+	}
+
 	resp := &antv1.ExecuteBacktestResponse{
 		Success: true,
 		Metrics: &antv1.ExecuteBacktestMetrics{
 			TotalReturn:   result.Metrics.TotalReturn,
 			AnnualReturn:  result.Metrics.AnnualReturn,
-			MaxDrawdown:    result.Metrics.MaxDrawdown,
+			MaxDrawdown:   result.Metrics.MaxDrawdown,
 			SharpeRatio:   result.Metrics.SharpeRatio,
 			WinRate:       result.Metrics.WinRate,
 			ProfitFactor:  result.Metrics.ProfitFactor,
@@ -222,7 +312,7 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	resp.Risk = assessRisk(result.Metrics)
 
 	// Attach compilation and runtime blind spots
-	if cov := vmRunner.GetCoverage(); cov != nil {
+	if cov != nil {
 		for _, bs := range cov.BlindSpots {
 			resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
 				Id:          bs,
@@ -239,5 +329,14 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		})
 	}
 
-	return resp
+	// Attach rule engine findings as blind spots with rule ID prefix
+	for _, f := range ruleFindings {
+		resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+			Id:          f.RuleID,
+			Severity:    f.Severity,
+			Description: f.Title + ": " + f.Detail,
+		})
+	}
+
+	return resp, ruleFindings
 }

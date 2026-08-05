@@ -47,9 +47,10 @@ type StartBacktestRunRequest struct {
 	StrategyId *string `protobuf:"bytes,14,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"`
 	// auto_gate: when true, server automatically runs 7-gate pipeline + marketplace
 	// quality preview after backtest succeeds, streaming results via WatchBacktestRun.
-	AutoGate      bool `protobuf:"varint,15,opt,name=auto_gate,json=autoGate,proto3" json:"auto_gate,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	AutoGate           bool            `protobuf:"varint,15,opt,name=auto_gate,json=autoGate,proto3" json:"auto_gate,omitempty"`
+	ParameterOverrides *StrategyParams `protobuf:"bytes,16,opt,name=parameter_overrides,json=parameterOverrides,proto3" json:"parameter_overrides,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *StartBacktestRunRequest) Reset() {
@@ -187,6 +188,13 @@ func (x *StartBacktestRunRequest) GetAutoGate() bool {
 	return false
 }
 
+func (x *StartBacktestRunRequest) GetParameterOverrides() *StrategyParams {
+	if x != nil {
+		return x.ParameterOverrides
+	}
+	return nil
+}
+
 type StartBacktestRunResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -235,7 +243,7 @@ var File_backtest_run_start_proto protoreflect.FileDescriptor
 
 const file_backtest_run_start_proto_rawDesc = "" +
 	"\n" +
-	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\"\xc2\x05\n" +
+	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\x1a\x15strategy_params.proto\"\x8b\x06\n" +
 	"\x17StartBacktestRunRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
@@ -256,7 +264,8 @@ const file_backtest_run_start_proto_rawDesc = "" +
 	"\x10execution_config\x18\r \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfig\x12$\n" +
 	"\vstrategy_id\x18\x0e \x01(\tH\x05R\n" +
 	"strategyId\x88\x01\x01\x12\x1b\n" +
-	"\tauto_gate\x18\x0f \x01(\bR\bautoGateB\a\n" +
+	"\tauto_gate\x18\x0f \x01(\bR\bautoGate\x12G\n" +
+	"\x13parameter_overrides\x18\x10 \x01(\v2\x16.ant.v1.StrategyParamsR\x12parameterOverridesB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\r\n" +
 	"\v_dataset_idB\x0e\n" +
@@ -285,17 +294,19 @@ var file_backtest_run_start_proto_goTypes = []any{
 	(BacktestRunMode)(0),             // 2: ant.v1.BacktestRunMode
 	(*timestamppb.Timestamp)(nil),    // 3: google.protobuf.Timestamp
 	(*BacktestExecutionConfig)(nil),  // 4: ant.v1.BacktestExecutionConfig
+	(*StrategyParams)(nil),           // 5: ant.v1.StrategyParams
 }
 var file_backtest_run_start_proto_depIdxs = []int32{
 	2, // 0: ant.v1.StartBacktestRunRequest.mode:type_name -> ant.v1.BacktestRunMode
 	3, // 1: ant.v1.StartBacktestRunRequest.from:type_name -> google.protobuf.Timestamp
 	3, // 2: ant.v1.StartBacktestRunRequest.to:type_name -> google.protobuf.Timestamp
 	4, // 3: ant.v1.StartBacktestRunRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	5, // 4: ant.v1.StartBacktestRunRequest.parameter_overrides:type_name -> ant.v1.StrategyParams
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_start_proto_init() }
@@ -305,6 +316,7 @@ func file_backtest_run_start_proto_init() {
 	}
 	file_backtest_run_proto_init()
 	file_backtest_execution_config_proto_init()
+	file_strategy_params_proto_init()
 	file_backtest_run_start_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
