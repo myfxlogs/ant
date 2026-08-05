@@ -16,34 +16,20 @@ import BatchTuningPanel from '@/pages/strategy/components/workspace/BatchTuningP
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import BacktestResultsTab from './BacktestResultsTab';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
-import type { StrategyTemplate } from '@/client/strategy';
-
-interface TemplatesProp {
-  list: StrategyTemplate[];
-  loading: boolean;
-  selectedId: string;
-  onSelect: (id: string | null) => void;
-}
 
 interface Props {
   runner: ReturnType<typeof useBacktestRunner>;
   inputs: BacktestRunnerInputs;
-  templates: TemplatesProp;
   onOpenHistory?: (templateId?: string) => void;
   onAIOptimize?: () => void;
   code?: string;
   onApplyTunedParams?: (code: string) => void;
-  onRunBacktest?: () => void;
-  onSaveAs?: () => void;
-  hasUnsavedDraft?: boolean;
-  draftName?: string;
 }
 
 export default function BacktestPanel(props: Props) {
   const {
-    runner, inputs, templates,
+    runner, inputs,
     onOpenHistory, onAIOptimize, code, onApplyTunedParams,
-    onRunBacktest, onSaveAs, hasUnsavedDraft, draftName,
   } = props;
   const { t } = useTranslation();
   const [tuningMode, setTuningMode] = useState<'interactive' | 'batch'>('interactive');

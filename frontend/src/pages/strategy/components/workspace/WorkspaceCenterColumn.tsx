@@ -11,12 +11,11 @@ import { BACKTEST_KEY as GEN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_gen
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
-import StrategiesTab from '@/components/backtest/StrategiesTab';
-import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import StrategyChat from '@/components/strategy/StrategyChat';
-import QuickTradeSidePanel from './QuickTradeSidePanel';
 import ImportEAPanel from '../editor/ImportEAPanel';
+import StrategiesTabPanel from './StrategiesTabPanel';
+import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
 interface Props {
@@ -195,80 +194,45 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             templateId: templates.selectedId || undefined,
             strategyId: code.strategyId,
           }}
-          templates={{
-            list: templates.list,
-            loading: templates.loading,
-            selectedId: templates.selectedId,
-            onSelect: templates.onSelect,
-          }}
           onOpenHistory={(templateId?: string) => history.open(templateId)}
           onAIOptimize={() => ai.optimize()}
           code={code.code}
           onApplyTunedParams={code.setCode}
-          onRunBacktest={() => setBtModalOpen(true)}
-          onSaveAs={() => code.setSaveModalOpen(true)}
-          hasUnsavedDraft={saveStatus === 'modified'}
-          draftName={strategyName}
         />
       </div>
 
       {/* Strategies (top-level tab) */}
-      <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'strategies' ? 'flex' : 'none', flexDirection: 'column', overflow: 'auto', padding: '8px 14px' }}>
-        <StrategiesTab
-          templates={templates.list}
-          loading={templates.loading}
-          selectedId={templates.selectedId}
-          hasUnsavedDraft={saveStatus === 'modified'}
-          draftName={strategyName}
-          onSelect={templates.onSelect}
-          onRunBacktest={() => setBtModalOpen(true)}
-          onOpenHistory={(templateId?: string) => history.open(templateId)}
-          onSaveAs={() => code.setSaveModalOpen(true)}
-        />
-      </div>
+      <StrategiesTabPanel
+        templates={templates.list}
+        loading={templates.loading}
+        selectedId={templates.selectedId}
+        hasUnsavedDraft={saveStatus === 'modified'}
+        draftName={strategyName}
+        onSelect={templates.onSelect}
+        onRunBacktest={() => setBtModalOpen(true)}
+        onOpenHistory={(templateId?: string) => history.open(templateId)}
+        onSaveAs={() => code.setSaveModalOpen(true)}
+        visible={centerTab === 'strategies'}
+      />
 
       {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right (desktop only) */}
-      {!isMobile && (
-        layout.bottomPanelCollapsed ? (
-          <ChartBottomPanel
-            positions={quickTrade.allPositions}
-            recentTrades={quickTrade.qtRecentTrades}
-            onClosePosition={quickTrade.handleClosePosition}
-            collapsed={true}
-            onToggleCollapsed={() => layout.setBottomPanelCollapsed(false)}
-            backtestMetrics={backtest.metrics}
-            backtestStatus={backtest.status}
-          />
-        ) : (
-          <div style={{ flexShrink: 0, display: 'flex', borderTop: '1px solid var(--ant-color-border)' }}>
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-              <ChartBottomPanel
-                positions={quickTrade.allPositions}
-                recentTrades={quickTrade.qtRecentTrades}
-                onClosePosition={quickTrade.handleClosePosition}
-                collapsed={false}
-                onToggleCollapsed={() => layout.setBottomPanelCollapsed(true)}
-                backtestMetrics={backtest.metrics}
-                backtestStatus={backtest.status}
-                panelHeight={layout.bottomPanelUserResized ? layout.bottomPanelHeight : undefined}
-                onResizeStart={handleBpResize}
-                dragging={bpDragging}
-              />
-            </div>
-            {account.symbol && (
-              <QuickTradeSidePanel
-                accountId={account.accountId}
-                symbol={account.symbol}
-                accountMeta={account.selectedAccountMeta}
-                allPositions={quickTrade.allPositions}
-                positions={quickTrade.qtPositions}
-                recentTrades={quickTrade.qtRecentTrades}
-                onClosePosition={quickTrade.handleClosePosition}
-              />
-            )}
-          </div>
-        )
-      )}
+      <BottomPanelSection
+        isMobile={!!isMobile}
+        collapsed={layout.bottomPanelCollapsed}
+        onToggleCollapsed={() => layout.setBottomPanelCollapsed(!layout.bottomPanelCollapsed)}
+        positions={quickTrade.allPositions}
+        recentTrades={quickTrade.qtRecentTrades}
+        onClosePosition={quickTrade.handleClosePosition}
+        backtestMetrics={backtest.metrics}
+        backtestStatus={backtest.status}
+        panelHeight={layout.bottomPanelUserResized ? layout.bottomPanelHeight : undefined}
+        onResizeStart={handleBpResize}
+        dragging={bpDragging}
+        accountId={account.accountId}
+        symbol={account.symbol}
+        accountMeta={account.selectedAccountMeta}
+        qtPositions={quickTrade.qtPositions}
+      />
     </div>
   );
 }

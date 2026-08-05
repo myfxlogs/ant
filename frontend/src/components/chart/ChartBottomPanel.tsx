@@ -5,7 +5,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
 import { POSITIONS_KEY, HISTORY_KEY, BACKTEST_KEY as WS_BACKTEST_KEY, NO_RESULTS_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY, TOTAL_TRADES_KEY as GEN_TOTAL_TRADES_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
-import { TRADING_SYMBOL_KEY, TRADING_SIDE_KEY, TRADING_VOLUME_KEY, TRADING_MARK_PRICE_KEY, TRADING_PNL_KEY, TRADING_OPEN_TIME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_SYMBOL_KEY, TRADING_SIDE_KEY, TRADING_VOLUME_KEY, TRADING_MARK_PRICE_KEY, TRADING_PNL_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 
 interface Props {
   positions: QuickTradePosition[];
