@@ -43,7 +43,7 @@ export default function StrategyGalleryPage() {
               <Button type="primary" icon={<PlusOutlined />} onClick={handleNew}>
                 {t('strategy.templates.actions.create', { defaultValue: 'New Strategy' })}
               </Button>
-              <Button icon={<RobotOutlined />} onClick={() => navigate('/strategy/new?ai=1')}>
+              <Button icon={<RobotOutlined />} onClick={() => navigate('/strategy/new')}>
                 {t('strategy.templates.gallery.aiGenerate', { defaultValue: 'AI Generate' })}
               </Button>
             </Space>

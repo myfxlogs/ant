@@ -63,12 +63,5 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
     if (tid) handleSelectTemplate(tid);
   }, [searchParams, routeId, handleSelectTemplate]);
 
-  // Auto-open AI panel when ?ai=1 is present.
-  useEffect(() => {
-    if (searchParams.get('ai') === '1') {
-      setCenterTab('chat');
-    }
-  }, [searchParams, setCenterTab]);
-
   return { selectedId: selectedTemplateId, onSelect: handleSelectTemplate };
 }

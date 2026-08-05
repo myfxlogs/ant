@@ -27,6 +27,8 @@ export interface LayoutSlice {
   bottomPanelUserResized: boolean;
   quickTradeCollapsed: boolean;
   positionsPanelVisible: boolean;
+  aiPanelOpen: boolean;
+  aiPanelWidth: number;
   setCenterTab: (v: CenterTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
   setBottomPanelCollapsed: (v: boolean) => void;
@@ -34,6 +36,8 @@ export interface LayoutSlice {
   setBottomPanelUserResized: (v: boolean) => void;
   setQuickTradeCollapsed: (v: boolean) => void;
   setPositionsPanelVisible: (v: boolean) => void;
+  setAiPanelOpen: (v: boolean) => void;
+  setAiPanelWidth: (v: number) => void;
 }
 
 export interface CodeSlice {
@@ -64,13 +68,15 @@ function createAccountSlice(set: (partial: Partial<WorkspaceState>) => void): Ac
 
 function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): LayoutSlice {
   return {
-    centerTab: 'chat',
+    centerTab: 'code',
     leftSidebarCollapsed: true,
     bottomPanelCollapsed: false,
     bottomPanelHeight: 160,
     bottomPanelUserResized: false,
     quickTradeCollapsed: true,
     positionsPanelVisible: false,
+    aiPanelOpen: false,
+    aiPanelWidth: 380,
     setCenterTab: (v) => set({ centerTab: v }),
     setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
     setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
@@ -78,6 +84,8 @@ function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): Lay
     setBottomPanelUserResized: (v) => set({ bottomPanelUserResized: v }),
     setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
     setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
+    setAiPanelOpen: (v) => set({ aiPanelOpen: v }),
+    setAiPanelWidth: (v) => set({ aiPanelWidth: v }),
   };
 }
 
@@ -114,6 +122,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         bottomPanelUserResized: state.bottomPanelUserResized,
         quickTradeCollapsed: state.quickTradeCollapsed,
         positionsPanelVisible: state.positionsPanelVisible,
+        aiPanelOpen: state.aiPanelOpen,
+        aiPanelWidth: state.aiPanelWidth,
       }),
       onRehydrateStorage: () => () => {
         queueMicrotask(() => {

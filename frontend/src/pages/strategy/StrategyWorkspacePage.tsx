@@ -35,6 +35,9 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
         onTogglePositionsPanel={() => layout.setPositionsPanelVisible(!layout.positionsPanelVisible)}
         strategyName={strategyName}
         saveStatus={saveStatus}
+        templateList={templates.list}
+        selectedTemplateId={templates.selectedId}
+        onSelectTemplate={templates.onSelect}
       />
       <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>
         <WorkspaceCenterColumn

@@ -39,3 +39,4 @@ frontend/src/
 - `Seo.tsx`：react-helmet-async 动态 meta 标签
 ## 关联文档
 - [spec/workspace-redesign.md](spec/workspace-redesign.md)
+- [spec/strategy-workspace-first-principles-audit.md](spec/strategy-workspace-first-principles-audit.md) — 第一性原理审计 + 3 批改进方案

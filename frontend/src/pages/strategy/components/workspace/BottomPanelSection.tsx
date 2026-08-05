@@ -11,6 +11,7 @@ interface Props {
   onClosePosition: (ticket: number, volume?: number) => void;
   backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
   backtestStatus?: string;
+  onOpenAdvancedBacktest?: () => void;
   panelHeight?: number;
   onResizeStart?: (e: React.MouseEvent) => void;
   dragging?: boolean;
@@ -23,7 +24,7 @@ interface Props {
 export default function BottomPanelSection({
   isMobile, collapsed, onToggleCollapsed,
   positions, recentTrades, onClosePosition,
-  backtestMetrics, backtestStatus,
+  backtestMetrics, backtestStatus, onOpenAdvancedBacktest,
   panelHeight, onResizeStart, dragging,
   accountId, symbol, accountMeta, qtPositions,
 }: Props) {
@@ -39,6 +40,7 @@ export default function BottomPanelSection({
         onToggleCollapsed={onToggleCollapsed}
         backtestMetrics={backtestMetrics}
         backtestStatus={backtestStatus}
+        onOpenAdvancedBacktest={onOpenAdvancedBacktest}
       />
     );
   }
@@ -54,6 +56,7 @@ export default function BottomPanelSection({
           onToggleCollapsed={onToggleCollapsed}
           backtestMetrics={backtestMetrics}
           backtestStatus={backtestStatus}
+          onOpenAdvancedBacktest={onOpenAdvancedBacktest}
           panelHeight={panelHeight}
           onResizeStart={onResizeStart}
           dragging={dragging}

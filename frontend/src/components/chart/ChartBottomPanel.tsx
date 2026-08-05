@@ -15,6 +15,7 @@ interface Props {
   onToggleCollapsed: () => void;
   backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
   backtestStatus?: string;
+  onOpenAdvancedBacktest?: () => void;
   panelHeight?: number;
   onResizeStart?: (e: React.MouseEvent) => void;
   dragging?: boolean;
@@ -35,7 +36,7 @@ function fmtTime(ts?: string): string {
   return `${mm}-${dd} ${hh}:${min}`;
 }
 
-export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, panelHeight, onResizeStart, dragging }: Props) {
+export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, onOpenAdvancedBacktest, panelHeight, onResizeStart, dragging }: Props) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'positions' | 'history' | 'backtest'>('positions');
   const resizeRef = useRef<HTMLDivElement>(null);
@@ -236,6 +237,13 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
               </div>
             ) : (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_RESULTS_KEY)} />
+            )}
+            {onOpenAdvancedBacktest && (
+              <div style={{ textAlign: 'center', marginTop: 8 }}>
+                <Button size="small" type="link" onClick={onOpenAdvancedBacktest}>
+                  📊 Tuning & Gate →
+                </Button>
+              </div>
             )}
           </div>
         )}
