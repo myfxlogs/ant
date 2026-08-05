@@ -1,5 +1,5 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress } from 'antd';
-import { RiseOutlined, FallOutlined, StopOutlined } from '@ant-design/icons';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Tooltip } from 'antd';
+import { RiseOutlined, FallOutlined, StopOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
@@ -50,6 +50,7 @@ interface Props {
   executionAssumptions: unknown;
   errorMsg: string;
   onAIOptimize?: () => void;
+  onOpenHistory?: () => void;
   trades: ChartTrade[];
   panelHeight: number;
   onCancel?: () => void;
@@ -58,7 +59,7 @@ interface Props {
   qualityPreview?: MarketplaceQualityPreview | null;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => tr.side === 'buy');
@@ -87,11 +88,18 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
             <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
           )}
         </div>
-        {status === 'running' && onCancel && (
-          <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
-            {t('common.cancel', { defaultValue: 'Cancel' })}
-          </Button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {onOpenHistory && (
+            <Tooltip title={t('strategy.workspace.history', { defaultValue: 'Backtest History' })}>
+              <Button size="small" type="text" icon={<HistoryOutlined />} onClick={onOpenHistory} />
+            </Tooltip>
+          )}
+          {status === 'running' && onCancel && (
+            <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
+              {t('common.cancel', { defaultValue: 'Cancel' })}
+            </Button>
+          )}
+        </div>
       </div>
 
       {status === 'running' && (

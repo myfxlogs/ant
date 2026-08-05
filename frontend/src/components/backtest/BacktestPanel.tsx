@@ -8,14 +8,13 @@ import {
   TITLE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import {
-  BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY, TEMPLATES_KEY,
+  BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
   TUNING_INTERACTIVE_KEY, TUNING_BATCH_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import SmartTuningPanel from '@/pages/strategy/components/workspace/SmartTuningPanel';
 import BatchTuningPanel from '@/pages/strategy/components/workspace/BatchTuningPanel';
 import GatePanel from '@/pages/strategy/components/workspace/GatePanel';
 import BacktestResultsTab from './BacktestResultsTab';
-import StrategiesTab from './StrategiesTab';
 import type { useBacktestRunner, BacktestRunnerInputs } from './useBacktestRunner';
 import type { StrategyTemplate } from '@/client/strategy';
 
@@ -114,7 +113,6 @@ export default function BacktestPanel(props: Props) {
               { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
-              { key: 'strategies', label: t(TEMPLATES_KEY) },
             ].map(item => ({
               ...item,
               label: item.key === 'results' && runner.status === 'running'
@@ -148,27 +146,13 @@ export default function BacktestPanel(props: Props) {
             executionAssumptions={runner.executionAssumptions}
             errorMsg={runner.errorMsg}
             onAIOptimize={onAIOptimize}
+            onOpenHistory={() => onOpenHistory?.()}
             trades={runner.chartTrades}
             panelHeight={contentHeight}
             onCancel={runner.cancelRun}
             gateUpdate={runner.gateUpdate}
             gateResults={runner.gateResults}
             qualityPreview={runner.qualityPreview}
-          />
-        )}
-
-        {/* ── Strategies Tab ─────────────────────────────────────────── */}
-        {runner.activeTab === 'strategies' && (
-          <StrategiesTab
-            templates={templates.list}
-            loading={templates.loading}
-            selectedId={templates.selectedId}
-            hasUnsavedDraft={hasUnsavedDraft ?? false}
-            draftName={draftName ?? ''}
-            onSelect={templates.onSelect}
-            onRunBacktest={() => onRunBacktest?.()}
-            onOpenHistory={(templateId?: string) => onOpenHistory?.(templateId)}
-            onSaveAs={() => onSaveAs?.()}
           />
         )}
 

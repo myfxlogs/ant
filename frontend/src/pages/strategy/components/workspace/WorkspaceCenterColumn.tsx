@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Tooltip } from 'antd';
 import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { BACKTEST_KEY as GEN_BACKTEST_KEY } from '@/gen/ant/v1/i18n/strategy_gen
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
+import StrategiesTab from '@/components/backtest/StrategiesTab';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import StrategyChat from '@/components/strategy/StrategyChat';
@@ -61,14 +62,26 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
     document.addEventListener('mouseup', onUp);
   }, [layout]);
 
+  // ── Auto-restore last backtest on first visit ────────────────────────
+  const restoreRef = useRef(false);
+  useEffect(() => {
+    if (restoreRef.current) return;
+    if (centerTab !== 'backtest') return;
+    if (!account.accountId) return;
+    if (backtest.runner.status !== 'idle') return;
+    restoreRef.current = true;
+    backtest.runner.restoreLastRun(account.accountId, templates.selectedId || undefined);
+  }, [centerTab, account.accountId, backtest.runner, templates.selectedId]);
+
   const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || '';
   const saveStatus: 'modified' | 'saved' | 'none' = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode ? 'modified' : code.lastSavedId ? 'saved' : 'none';
 
   const CTABS: { key: CenterTab; icon: string; label: string }[] = [
     { key: 'chat', icon: '🤖', label: t(AI_ASSISTANT_KEY) },
-    { key: 'code', icon: '�', label: t(CODE_KEY) },
+    { key: 'code', icon: '📝', label: t(CODE_KEY) },
     { key: 'import', icon: '📥', label: t('strategy.workspace.importMql') },
     { key: 'backtest', icon: '📊', label: t(GEN_BACKTEST_KEY) },
+    { key: 'strategies', icon: '📋', label: t('strategy.workspace.strategies', { defaultValue: 'Strategies' }) },
   ];
 
   const handleCopy = () => {
@@ -196,6 +209,21 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
           onSaveAs={() => code.setSaveModalOpen(true)}
           hasUnsavedDraft={saveStatus === 'modified'}
           draftName={strategyName}
+        />
+      </div>
+
+      {/* Strategies (top-level tab) */}
+      <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'strategies' ? 'flex' : 'none', flexDirection: 'column', overflow: 'auto', padding: '8px 14px' }}>
+        <StrategiesTab
+          templates={templates.list}
+          loading={templates.loading}
+          selectedId={templates.selectedId}
+          hasUnsavedDraft={saveStatus === 'modified'}
+          draftName={strategyName}
+          onSelect={templates.onSelect}
+          onRunBacktest={() => setBtModalOpen(true)}
+          onOpenHistory={(templateId?: string) => history.open(templateId)}
+          onSaveAs={() => code.setSaveModalOpen(true)}
         />
       </div>
 

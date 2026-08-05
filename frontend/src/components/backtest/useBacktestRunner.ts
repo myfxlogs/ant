@@ -21,9 +21,10 @@ import {
   type BacktestStatus, type ChartTrade, type BacktestMetrics,
   type ExtractedParam, type StandardParams, type BacktestRunnerInputs,
   FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults,
-  getTimeframeWarning,
+  getTimeframeWarning, protoToMetrics,
 } from './backtestRunnerTypes';
 import { handleBacktestUpdate, handleBacktestError } from './backtestRunnerWatch';
+import { backtestRunsApi } from '@/client/backtestRuns';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
@@ -232,6 +233,37 @@ export function useBacktestRunner() {
     }
   }, [runId, t]);
 
+  // ── Restore last backtest run ───────────────────────────────────────
+  const restoreLastRun = useCallback(async (accountId: string, templateId?: string) => {
+    try {
+      const resp = await strategyRuntimeApi.listBacktestRuns({
+        accountId: accountId || undefined,
+        templateId: templateId || undefined,
+        limit: 1, offset: 0,
+      });
+      const lastRun = resp.runs?.[0];
+      if (!lastRun || lastRun.status !== 'SUCCEEDED') return;
+      const runIdStr = lastRun.id;
+      if (!runIdStr) return;
+      const detail = await strategyRuntimeApi.getBacktestRun(runIdStr);
+      if (detail.metrics) {
+        setMetrics(protoToMetrics(detail.metrics));
+      }
+      if (detail.executionAssumptions) {
+        setExecutionAssumptions(detail.executionAssumptions);
+      }
+      setRunId(runIdStr);
+      setStatus('completed');
+      const tr = await backtestRunsApi.getTrades(runIdStr);
+      setChartTrades(tr.trades.map((t2) => ({
+        side: t2.side, openTime: t2.open_ts, openPrice: t2.open_price,
+        closeTime: t2.close_ts, closePrice: t2.close_price, pnl: t2.pnl, volume: t2.volume,
+      })));
+    } catch {
+      // silent — restoration is best-effort
+    }
+  }, []);
+
   return {
     // Standard params
     initialCapital, setInitialCapital, leverage, setLeverage,
@@ -248,6 +280,7 @@ export function useBacktestRunner() {
     run, submitting, status, metrics, executionAssumptions, errorMsg,
     runId, fixDepth, chartTrades, resetStatus,
     cancelRun,
+    restoreLastRun,
     gateUpdate, gateResults, qualityPreview,
     // Directives
     strategyDirectives,
