@@ -9,11 +9,11 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
-import BacktestPanel from '@/components/backtest/BacktestPanel';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import WorkspaceSidebar from './WorkspaceSidebar';
 import WorkspaceAIPanel from './WorkspaceAIPanel';
 import CodeEditorArea from './CodeEditorArea';
+import BacktestFullDrawer from './BacktestFullDrawer';
 import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
