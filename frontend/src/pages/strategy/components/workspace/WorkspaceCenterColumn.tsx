@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Tooltip, Modal, Drawer } from 'antd';
+import { Button, Tooltip, Modal } from 'antd';
 import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined, ImportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,6 +14,7 @@ import WorkspaceSidebar from './WorkspaceSidebar';
 import WorkspaceAIPanel from './WorkspaceAIPanel';
 import CodeEditorArea from './CodeEditorArea';
 import BacktestFullDrawer from './BacktestFullDrawer';
+import MobileSidebarDrawer from './MobileSidebarDrawer';
 import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
@@ -336,29 +337,20 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
         onApplyTunedParams={code.setCode}
       />
 
-      {/* Mobile sidebar drawer */}
       {isMobile && (
-        <Drawer
+        <MobileSidebarDrawer
           open={sidebarDrawerOpen}
           onClose={() => setSidebarDrawerOpen(false)}
-          placement="left"
-          width={280}
-          styles={{ body: { padding: 0 } }}
-        >
-          <WorkspaceSidebar
-            templates={templates.list}
-            loading={templates.loading}
-            selectedId={templates.selectedId || ''}
-            onSelect={(id) => { templates.onSelect(id); setSidebarDrawerOpen(false); }}
-            backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
-            runsLoading={history.loading}
-            onOpenHistory={(tid) => { history.open(tid); setSidebarDrawerOpen(false); }}
-            onImport={() => { setImportMode(true); setSidebarDrawerOpen(false); }}
-            onNew={() => { templates.onSelect(''); setSidebarDrawerOpen(false); }}
-            collapsed={false}
-            onToggle={() => setSidebarDrawerOpen(false)}
-          />
-        </Drawer>
+          templates={templates.list}
+          loading={templates.loading}
+          selectedId={templates.selectedId || ''}
+          onSelect={(id) => templates.onSelect(id)}
+          backtestRuns={(history.runs as Array<{ id: string; templateName?: string; totalReturn?: number; totalTrades?: number; templateId?: string }>) || []}
+          runsLoading={history.loading}
+          onOpenHistory={(tid) => history.open(tid)}
+          onImport={() => setImportMode(true)}
+          onNew={() => templates.onSelect('')}
+        />
       )}
 
       {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right (desktop only) */}
