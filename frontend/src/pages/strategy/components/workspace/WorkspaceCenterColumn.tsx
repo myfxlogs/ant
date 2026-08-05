@@ -55,15 +55,12 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
     }
     prevBtStatusRef.current = backtest.status;
   }, [backtest.status]);
-  // Mode-driven: collapse sidebars when right panel is active
+  // Mode-driven: collapse bottom panel when right panel is active. Keep left sidebar.
   useEffect(() => {
-    if (rightPanelTab === 'backtest') {
+    if (rightPanelTab === 'backtest' || rightPanelTab === 'ai') {
       layout.setBottomPanelCollapsed(true);
-      setLeftSidebarCollapsed(true);
-    } else if (rightPanelTab === 'ai') {
-      setLeftSidebarCollapsed(true);
     }
-  }, [rightPanelTab, layout, setLeftSidebarCollapsed]);
+  }, [rightPanelTab, layout]);
 
   // ── Bottom panel resize ──────────────────────────────────────────────
   const [bpDragging, setBpDragging] = useState(false);
@@ -143,6 +140,18 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
     }
   }, [isMobile, centerTab, setCenterTab, setAiPanelOpen]);
 
+  const handleBacktestClick = () => {
+    if (!account.accountId) {
+      Modal.warning({ title: t('strategy.workspace.selectAccountFirst', { defaultValue: 'Please select a trading account first' }) });
+      return;
+    }
+    if (!account.symbol) {
+      Modal.warning({ title: t('strategy.workspace.selectSymbolFirst', { defaultValue: 'Please select a trading symbol first' }) });
+      return;
+    }
+    setBtModalOpen(true);
+  };
+
   const handleCopy = () => {
     if (!code.code) return;
     navigator.clipboard?.writeText(code.code).catch(() => {});
@@ -215,7 +224,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             </Tooltip>
             <Tooltip title={t(RUN_BACKTEST_KEY)}>
               <Button size="small" type="primary" icon={<PlayCircleOutlined />}
-                onClick={() => setBtModalOpen(true)}
+                onClick={handleBacktestClick}
                 style={{ background: '#3fb950', borderColor: '#3fb950' }}>
                 {t(WS_BACKTEST_KEY)}
               </Button>
@@ -284,29 +293,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
           {/* Code + optional AI right panel (desktop) */}
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* Backtest status bar — shows last run result + quick re-run */}
-          {code.code && backtest.metrics && backtest.metrics.totalTrades != null && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '6px 16px', flexShrink: 0,
-              background: 'linear-gradient(90deg, #f6ffed, #f0f5ff)', borderBottom: '1px solid #d9f7be',
-              fontSize: 12,
-            }}>
-              <span style={{ fontWeight: 600 }}>📊 {t('strategy.workspace.lastBacktest', { defaultValue: 'Last Backtest' })}</span>
-              <span style={{ color: (backtest.metrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149', fontWeight: 700 }}>
-                {backtest.metrics.totalReturn != null ? `${backtest.metrics.totalReturn.toFixed(1)}%` : '—'}
-              </span>
-              <span style={{ color: 'var(--ant-color-text-secondary)' }}>
-                {backtest.metrics.totalTrades} {t('strategy.workspace.tradesLabel', { defaultValue: 'trades' })}
-                {backtest.metrics.winRate != null ? ` · ${backtest.metrics.winRate.toFixed(0)}% win` : ''}
-                {backtest.metrics.maxDrawdown != null ? ` · DD ${backtest.metrics.maxDrawdown.toFixed(1)}%` : ''}
-              </span>
-              <div style={{ flex: 1 }} />
-              <Button size="small" icon={<PlayCircleOutlined />} onClick={() => setBtModalOpen(true)}
-                style={{ background: '#3fb950', borderColor: '#3fb950', color: '#fff' }}>
-                {t('strategy.workspace.reRun', { defaultValue: 'Re-run' })}
-              </Button>
-            </div>
-          )}
           {/* Code editor — or import mode — or empty state guidance */}
           {importMode ? (
             <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>
@@ -361,7 +347,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             recentSummaries={recentSummaries}
             backtestStatus={backtest.status}
             backtestMetrics={backtest.metrics}
-            onRunBacktest={() => setBtModalOpen(true)}
+            onRunBacktest={handleBacktestClick}
             onOpenAdvanced={() => setBtDrawerOpen(true)}
           />
         )}
