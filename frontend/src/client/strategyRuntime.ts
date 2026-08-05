@@ -6,6 +6,7 @@ import { TradeDirection } from '../gen/ant/v1/backtest_execution_config_pb';
 import {
   StartBacktestRunRequestSchema,
 } from '../gen/ant/v1/backtest_run_start_pb';
+import { StrategyParamsSchema } from '../gen/ant/v1/strategy_params_pb';
 import {
   GetBacktestRunRequestSchema,
   ListBacktestRunsRequestSchema,
@@ -137,6 +138,7 @@ export const strategyRuntimeApi = {
     extraSymbols?: string[];
     strategyId?: string;
     autoGate?: boolean;
+    parameterOverrides?: Record<string, string>;
     executionConfig?: {
       commission: number;
       slippage: number;
@@ -163,6 +165,9 @@ export const strategyRuntimeApi = {
       extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),
       strategyId: params.strategyId,
       autoGate: params.autoGate ?? false,
+      parameterOverrides: params.parameterOverrides && Object.keys(params.parameterOverrides).length > 0
+        ? create(StrategyParamsSchema, { values: params.parameterOverrides })
+        : undefined,
       executionConfig: params.executionConfig ? {
         commission: params.executionConfig.commission,
         slippage: params.executionConfig.slippage,

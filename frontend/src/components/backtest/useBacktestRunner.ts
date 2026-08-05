@@ -188,6 +188,7 @@ export function useBacktestRunner() {
         templateId: templateId || undefined,
         strategyId: strategyId || undefined,
         autoGate: true,
+        parameterOverrides: strategyParamValues,
         executionConfig: {
           commission, slippage, leverage,
           tradeDirection: tradeDirection as 'long' | 'short' | 'both',
@@ -215,7 +216,7 @@ export function useBacktestRunner() {
       const { status, msg } = handleBacktestError(e, t);
       setStatus(status); setErrorMsg(msg);
     } finally { setSubmitting(false); }
-  }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate, t]);
+  }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate, strategyParamValues, t]);
 
   // ── Return ────────────────────────────────────────────────────────────
 

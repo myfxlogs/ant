@@ -10,13 +10,15 @@ import type { BacktestRunMode } from "./backtest_run_pb";
 import { file_backtest_run } from "./backtest_run_pb";
 import type { BacktestExecutionConfig } from "./backtest_execution_config_pb";
 import { file_backtest_execution_config } from "./backtest_execution_config_pb";
+import type { StrategyParams } from "./strategy_params_pb";
+import { file_strategy_params } from "./strategy_params_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file backtest_run_start.proto.
  */
 export const file_backtest_run_start: GenFile = /*@__PURE__*/
-  fileDesc("ChhiYWNrdGVzdF9ydW5fc3RhcnQucHJvdG8SBmFudC52MSKhBAoXU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgJEiUKBG1vZGUYBiABKA4yFy5hbnQudjEuQmFja3Rlc3RSdW5Nb2RlEi0KBGZyb20YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSACIAQESKwoCdG8YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAGIAQESFwoKZGF0YXNldF9pZBgJIAEoCUgCiAEBEhgKC3RlbXBsYXRlX2lkGAogASgJSAOIAQESHgoRdGVtcGxhdGVfZHJhZnRfaWQYCyABKAlIBIgBARIVCg1leHRyYV9zeW1ib2xzGAwgAygJEjkKEGV4ZWN1dGlvbl9jb25maWcYDSABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWcSGAoLc3RyYXRlZ3lfaWQYDiABKAlIBYgBARIRCglhdXRvX2dhdGUYDyABKAhCBwoFX2Zyb21CBQoDX3RvQg0KC19kYXRhc2V0X2lkQg4KDF90ZW1wbGF0ZV9pZEIUChJfdGVtcGxhdGVfZHJhZnRfaWRCDgoMX3N0cmF0ZWd5X2lkIioKGFN0YXJ0QmFja3Rlc3RSdW5SZXNwb25zZRIOCgZydW5faWQYASABKAlCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_backtest_run, file_backtest_execution_config]);
+  fileDesc("ChhiYWNrdGVzdF9ydW5fc3RhcnQucHJvdG8SBmFudC52MSLWBAoXU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgJEiUKBG1vZGUYBiABKA4yFy5hbnQudjEuQmFja3Rlc3RSdW5Nb2RlEi0KBGZyb20YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSACIAQESKwoCdG8YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAGIAQESFwoKZGF0YXNldF9pZBgJIAEoCUgCiAEBEhgKC3RlbXBsYXRlX2lkGAogASgJSAOIAQESHgoRdGVtcGxhdGVfZHJhZnRfaWQYCyABKAlIBIgBARIVCg1leHRyYV9zeW1ib2xzGAwgAygJEjkKEGV4ZWN1dGlvbl9jb25maWcYDSABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWcSGAoLc3RyYXRlZ3lfaWQYDiABKAlIBYgBARIRCglhdXRvX2dhdGUYDyABKAgSMwoTcGFyYW1ldGVyX292ZXJyaWRlcxgQIAEoCzIWLmFudC52MS5TdHJhdGVneVBhcmFtc0IHCgVfZnJvbUIFCgNfdG9CDQoLX2RhdGFzZXRfaWRCDgoMX3RlbXBsYXRlX2lkQhQKEl90ZW1wbGF0ZV9kcmFmdF9pZEIOCgxfc3RyYXRlZ3lfaWQiKgoYU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEg4KBnJ1bl9pZBgBIAEoCUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_backtest_run, file_backtest_execution_config, file_strategy_params]);
 
 /**
  * @generated from message ant.v1.StartBacktestRunRequest
@@ -109,6 +111,11 @@ export type StartBacktestRunRequest = Message<"ant.v1.StartBacktestRunRequest"> 
    * @generated from field: bool auto_gate = 15;
    */
   autoGate: boolean;
+
+  /**
+   * @generated from field: ant.v1.StrategyParams parameter_overrides = 16;
+   */
+  parameterOverrides?: StrategyParams | undefined;
 };
 
 /**

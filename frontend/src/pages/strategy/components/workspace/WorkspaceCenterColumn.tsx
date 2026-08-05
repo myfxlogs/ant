@@ -78,8 +78,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   // ── Backtest drawer (replaces backtest tab) ──────────────────────────
   const [btDrawerOpen, setBtDrawerOpen] = useState(false);
 
-  // ── Import MQL modal (user-initiated, never auto-pop) ────────────────
-  const [importModalOpen, setImportModalOpen] = useState(false);
+  // ── Import MQL inline (replaces empty state area, never modal) ────────
+  const [importMode, setImportMode] = useState(false);
 
   // Redirect legacy tab values from localStorage (import/strategies/backtest tabs removed)
   useEffect(() => {
@@ -195,7 +195,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
               <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
             </Tooltip>
             <Tooltip title={t('strategy.workspace.importMql', { defaultValue: 'Import MQL' })}>
-              <Button size="small" icon={<ImportOutlined />} onClick={() => setImportModalOpen(true)} />
+              <Button size="small" icon={<ImportOutlined />} onClick={() => setImportMode(true)} />
             </Tooltip>
             <Tooltip title={t(SEND_TO_AI_KEY)}>
               <Button size="small" icon={<RobotOutlined />}
@@ -230,7 +230,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
             runsLoading={history.loading}
             onOpenHistory={(tid) => history.open(tid)}
-            onImport={() => setImportModalOpen(true)}
+            onImport={() => setImportMode(true)}
             onNew={() => { templates.onSelect(''); }}
             collapsed={leftSidebarCollapsed}
             onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
@@ -278,8 +278,18 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
               </Button>
             </div>
           )}
-          {/* Code editor — or empty state guidance */}
-          {code.code ? (
+          {/* Code editor — or import mode — or empty state guidance */}
+          {importMode ? (
+            <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                <Button size="small" type="text" onClick={() => setImportMode(false)}>← {t('strategy.workspace.backToEditor', { defaultValue: 'Back' })}</Button>
+              </div>
+              <ImportEAPanel
+                onApplyCode={(c) => { code.setCode(c); setCenterTab('code'); setImportMode(false); }}
+                onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
+              />
+            </div>
+          ) : code.code ? (
             <StrategyCodeEditor
               value={code.code}
               onChange={code.setCode}
@@ -296,7 +306,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
                   {t('strategy.workspace.emptyDesc', { defaultValue: 'Import an existing MQL EA, pick a template, or let AI generate one for you. All backtesting and deployment happens right here.' })}
                 </div>
                 <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Button type="primary" icon={<ImportOutlined />} onClick={() => setImportModalOpen(true)}>
+                  <Button type="primary" icon={<ImportOutlined />} onClick={() => setImportMode(true)}>
                     {t('strategy.workspace.importMql', { defaultValue: 'Import MQL EA' })}
                   </Button>
                   <Button icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : setAiPanelOpen(true)}
@@ -343,6 +353,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             </div>
           </>
         )}
+          </div>
+        </div>
       </div>
 
       {/* Backtest drawer (replaces backtest tab) */}
@@ -391,28 +403,13 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
             runsLoading={history.loading}
             onOpenHistory={(tid) => { history.open(tid); setSidebarDrawerOpen(false); }}
-            onImport={() => { setImportModalOpen(true); setSidebarDrawerOpen(false); }}
+            onImport={() => { setImportMode(true); setSidebarDrawerOpen(false); }}
             onNew={() => { templates.onSelect(''); setSidebarDrawerOpen(false); }}
             collapsed={false}
             onToggle={() => setSidebarDrawerOpen(false)}
           />
         </Drawer>
       )}
-
-      {/* Import MQL Modal */}
-      <Modal
-        title={t('strategy.workspace.importMql', { defaultValue: 'Import MQL EA' })}
-        open={importModalOpen}
-        onCancel={() => setImportModalOpen(false)}
-        footer={null}
-        width={800}
-        destroyOnClose
-      >
-        <ImportEAPanel
-          onApplyCode={(c) => { code.setCode(c); setCenterTab('code'); setImportModalOpen(false); }}
-          onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
-        />
-      </Modal>
 
       {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right (desktop only) */}
       <BottomPanelSection
