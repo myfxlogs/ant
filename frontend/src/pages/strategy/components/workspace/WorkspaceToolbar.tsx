@@ -64,6 +64,7 @@ export default function WorkspaceToolbar({
   symbol, onSymbolChange, accountInfo, positionCount,
   onTogglePositionsPanel,
   mtError, strategyName, saveStatus,
+  templateList, selectedTemplateId, onSelectTemplate,
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;

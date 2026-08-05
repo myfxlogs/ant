@@ -232,11 +232,62 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
       {/* Code + optional AI right panel (desktop) */}
       <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          <StrategyCodeEditor
-            value={code.code}
-            onChange={code.setCode}
-            style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
-          />
+          {/* Backtest status bar — shows last run result + quick re-run */}
+          {code.code && backtest.metrics && backtest.metrics.totalTrades != null && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 16, padding: '6px 16px', flexShrink: 0,
+              background: 'linear-gradient(90deg, #f6ffed, #f0f5ff)', borderBottom: '1px solid #d9f7be',
+              fontSize: 12,
+            }}>
+              <span style={{ fontWeight: 600 }}>📊 {t('strategy.workspace.lastBacktest', { defaultValue: 'Last Backtest' })}</span>
+              <span style={{ color: (backtest.metrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149', fontWeight: 700 }}>
+                {backtest.metrics.totalReturn != null ? `${backtest.metrics.totalReturn.toFixed(1)}%` : '—'}
+              </span>
+              <span style={{ color: 'var(--ant-color-text-secondary)' }}>
+                {backtest.metrics.totalTrades} {t('strategy.workspace.tradesLabel', { defaultValue: 'trades' })}
+                {backtest.metrics.winRate != null ? ` · ${backtest.metrics.winRate.toFixed(0)}% win` : ''}
+                {backtest.metrics.maxDrawdown != null ? ` · DD ${backtest.metrics.maxDrawdown.toFixed(1)}%` : ''}
+              </span>
+              <div style={{ flex: 1 }} />
+              <Button size="small" icon={<PlayCircleOutlined />} onClick={() => setBtModalOpen(true)}
+                style={{ background: '#3fb950', borderColor: '#3fb950', color: '#fff' }}>
+                {t('strategy.workspace.reRun', { defaultValue: 'Re-run' })}
+              </Button>
+            </div>
+          )}
+          {/* Code editor — or empty state guidance */}
+          {code.code ? (
+            <StrategyCodeEditor
+              value={code.code}
+              onChange={code.setCode}
+              style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
+            />
+          ) : (
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', maxWidth: 420, padding: 40 }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>📝</div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--ant-color-text)' }}>
+                  {t('strategy.workspace.emptyTitle', { defaultValue: 'Start building your strategy' })}
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--ant-color-text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
+                  {t('strategy.workspace.emptyDesc', { defaultValue: 'Import an existing MQL EA, pick a template, or let AI generate one for you. All backtesting and deployment happens right here.' })}
+                </div>
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Button type="primary" icon={<ImportOutlined />} onClick={() => setImportModalOpen(true)}>
+                    {t('strategy.workspace.importMql', { defaultValue: 'Import MQL EA' })}
+                  </Button>
+                  <Button icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : setAiPanelOpen(true)}
+                    style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
+                    {t('strategy.workspace.aiGenerate', { defaultValue: 'AI Generate' })}
+                  </Button>
+                  <Button icon={<HistoryOutlined />} onClick={() => templates.onSelect(templates.list[0]?.id || '')}
+                    disabled={!templates.list.length}>
+                    {t('strategy.workspace.useTemplate', { defaultValue: 'Use Template' })}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         {/* AI right panel (desktop only, collapsible) */}
         {!isMobile && aiPanelOpen && (
