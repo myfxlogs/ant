@@ -45,6 +45,7 @@ export function useEnableDisableAccountMutation() {
       },
       onSettled: (_data, _err, vars) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts.list() });
+        queryClient.invalidateQueries({ queryKey: queryKeys.accounts.detail(vars.id) });
         // When re-enabling, force-refetch positions so stale cache is replaced.
         if (!vars?.isDisabled) {
           queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(vars.id) });

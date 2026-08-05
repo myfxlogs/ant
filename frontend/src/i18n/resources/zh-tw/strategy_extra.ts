@@ -18,8 +18,9 @@ const StrategyExtra = {
         "aiDesc": "讓 AI 生成、最佳化或除錯策略，生成的程式碼會即時顯示在編輯器中。",
         "backtestDesc": "使用可配置引數執行回測，檢視資金曲線、交易統計和風險指標。",
         "save": "儲存併發布",
-        "saveDesc": "將策略儲存為模板、釋出到市場或部署到實盤排程。"
-      }
+        "saveDesc": "將策略儲存為範本、發布到市場或部署到實盤排程。"
+      },
+      "importMql": "匯入 MQL"
     },
     "codeAssist": {
       "aiHint": "描述你想要的修改，例如"
@@ -124,6 +125,11 @@ const StrategyExtra = {
       "bridge": "盲區橋接",
       "analyze": "分析策略結構",
       "confirmImport": "確認匯入",
+      "import": "匯入策略",
+      "importing": "編譯中...",
+      "compileFailed": "編譯失敗",
+      "bridgeReference": "AI 橋接參考（不可執行）",
+      "coverage": "覆蓋率: {{score}}%",
       "tryAI": "AI 翻譯補充",
       "apply": "應用到編輯器",
       "importSuccess": "MQL 原始碼已匯入，點選「應用到編輯器」寫入編輯器",
@@ -139,6 +145,17 @@ const StrategyExtra = {
       "button": "匯入 MQL",
       "title": "匯入 MQL 策略"
     },
+    "templateModal": {
+      "title": "儲存策略範本",
+      "fields": {
+        "name": "範本名稱",
+        "description": "描述"
+      },
+      "placeholders": {
+        "name": "輸入範本名稱",
+        "description": "輸入描述"
+      }
+    },
     "version": {
       "loadFailed": "載入版本失敗",
       "rollbackSuccess": "已回滾到版本 {{n}}",
@@ -146,6 +163,12 @@ const StrategyExtra = {
       "loadVersionFailed": "載入版本失敗",
       "loadDiffFailed": "載入差異失敗",
       "colSummary": "變更摘要",
+      "colVersion": "版本",
+      "colLang": "語言",
+      "colHash": "雜湊",
+      "colDate": "日期",
+      "colActions": "操作",
+      "diff": "對比",
       "rollbackConfirm": "回滾到 v{{n}}？",
       "title": "版本歷史",
       "empty": "暫無版本歷史",

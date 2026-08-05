@@ -19,7 +19,8 @@ const StrategyExtra = {
         "backtestDesc": "設定可能なパラメータでバックテストを実行。資金カーブ、取引統計、リスク指標を表示。",
         "save": "保存して公開",
         "saveDesc": "戦略をテンプレートとして保存、マーケットプレイスに公開、または実盤スケジュールにデプロイ。"
-      }
+      },
+      "importMql": "MQLをインポート"
     },
     "codeAssist": {
       "aiHint": "希望する変更を説明してください。例："
@@ -119,25 +120,41 @@ const StrategyExtra = {
       "importTab": "EAをインポート",
       "codeTooShort": "完全なEA/インジケータのソースコードを貼り付けてください。",
       "pastePlaceholder": "MQL4/MQL5 EAコードを貼り付け...",
-      "migration": "策略导入",
-      "aiTranslate": "AI 翻译",
-      "bridge": "盲区桥接",
-      "analyze": "分析策略结构",
-      "confirmImport": "确认导入",
-      "tryAI": "AI 翻译补充",
+      "migration": "戦略インポート",
+      "aiTranslate": "AI翻訳",
+      "bridge": "ブラインドスポットブリッジ",
+      "analyze": "戦略構造を分析",
+      "confirmImport": "インポート確認",
+      "import": "戦略をインポート",
+      "importing": "コンパイル中...",
+      "compileFailed": "コンパイル失敗",
+      "bridgeReference": "AIブリッジ参照（実行不可）",
+      "coverage": "カバレッジ: {{score}}%",
+      "tryAI": "AI翻訳補充",
       "apply": "エディタに適用",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "importSuccess": "MQLソースがインポートされました。「エディタに適用」をクリックしてエディタに書き込んでください。",
       "hint": "MQL4/MQL5コードを貼り付けて分析をクリック",
       "translate": "Goに翻訳",
       "translating": "MQL4/MQL5コードを貼り付けて翻訳をクリック",
-      "bridgeBtn": "盲区桥接翻译",
+      "bridgeBtn": "ブラインドスポットブリッジ翻訳",
       "bridging": "AIがブラインドスポットをブリッジ中...",
-      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
-      "noBridgeNeeded": "覆盖率 100%，无需桥接",
+      "bridgeFailedMsg": "Agentがすべてのブラインドスポットを自動ブリッジできませんでした",
+      "noBridgeNeeded": "カバレッジ100%、ブリッジ不要",
       "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIがブラインドスポットをプラットフォームバイトコードにブリッジします",
       "tooltip": "MQL4/MQL5ソースコードをインポート",
       "button": "MQLをインポート",
       "title": "MQL戦略をインポート"
+    },
+    "templateModal": {
+      "title": "戦略テンプレートを保存",
+      "fields": {
+        "name": "テンプレート名",
+        "description": "説明"
+      },
+      "placeholders": {
+        "name": "テンプレート名を入力",
+        "description": "説明を入力"
+      }
     },
     "version": {
       "loadFailed": "バージョンの読み込みに失敗",
@@ -146,6 +163,12 @@ const StrategyExtra = {
       "loadVersionFailed": "バージョンの読み込みに失敗",
       "loadDiffFailed": "差分の読み込みに失敗",
       "colSummary": "変更概要",
+      "colVersion": "バージョン",
+      "colLang": "言語",
+      "colHash": "ハッシュ",
+      "colDate": "日付",
+      "colActions": "操作",
+      "diff": "差分",
       "rollbackConfirm": "v{{n}}にロールバックしますか？",
       "title": "バージョン履歴",
       "empty": "バージョン履歴がまだありません",

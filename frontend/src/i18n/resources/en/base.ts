@@ -781,7 +781,8 @@ const Base = {
       "searchMethod": {
         "grid": "Grid",
         "random": "Random"
-      }
+      },
+      "qualityGate": "Gate"
     },
     "backtest": {
       "canceled": "Backtest canceled",

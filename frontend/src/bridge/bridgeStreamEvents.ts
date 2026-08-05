@@ -121,10 +121,11 @@ export function handleAccountStatus(queryClient: QueryClient, status: AccountSta
   const isDisabled = s === 'disabled' ? true : s === 'enabled' ? false : undefined;
   const patch: Partial<Account> = { status: mapped };
   if (isDisabled !== undefined) patch.isDisabled = isDisabled;
-  // Circuit breaker events carry a diagnostic message — store it in lastError.
-  if (s === 'circuit_open' || s === 'circuit_half_open') {
-    patch.lastError = String(status.message || '');
-  } else if (s === 'circuit_closed') {
+  // Carry error message for disconnected/error statuses so the frontend
+  // shows connection failure reasons in real time.
+  if (status.message) {
+    patch.lastError = status.message;
+  } else if (s === 'connected') {
     patch.lastError = '';
   }
 

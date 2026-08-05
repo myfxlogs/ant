@@ -19,7 +19,8 @@ const StrategyExtra = {
         "backtestDesc": "Chạy backtest với tham số tùy chỉnh. Xem đường cong vốn, thống kê giao dịch và chỉ số rủi ro.",
         "save": "Lưu & Xuất bản",
         "saveDesc": "Lưu chiến lược làm mẫu, xuất bản lên marketplace, hoặc triển khai lên lịch giao dịch trực tiếp."
-      }
+      },
+      "importMql": "Nhập MQL"
     },
     "codeAssist": {
       "aiHint": "Mô tả thay đổi bạn muốn, ví dụ"
@@ -119,25 +120,41 @@ const StrategyExtra = {
       "importTab": "Nhập EA",
       "codeTooShort": "Vui lòng dán mã nguồn EA/indicator hoàn chỉnh.",
       "pastePlaceholder": "Dán mã MQL4/MQL5 EA...",
-      "migration": "策略导入",
-      "aiTranslate": "AI 翻译",
-      "bridge": "盲区桥接",
-      "analyze": "分析策略结构",
-      "confirmImport": "确认导入",
-      "tryAI": "AI 翻译补充",
+      "migration": "Nhập chiến lược",
+      "aiTranslate": "AI dịch",
+      "bridge": "Bắc cầu điểm mù",
+      "analyze": "Phân tích cấu trúc chiến lược",
+      "confirmImport": "Xác nhận nhập",
+      "import": "Nhập chiến lược",
+      "importing": "Đang biên dịch...",
+      "compileFailed": "Biên dịch thất bại",
+      "bridgeReference": "Tham chiếu AI bắc cầu (không thực thi được)",
+      "coverage": "Độ phủ: {{score}}%",
+      "tryAI": "AI dịch bổ sung",
       "apply": "Áp dụng vào trình soạn thảo",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "importSuccess": "Mã nguồn MQL đã nhập. Nhấn 'Áp dụng vào trình soạn thảo' để ghi vào trình soạn thảo.",
       "hint": "Dán mã MQL4/MQL5 và nhấn Phân tích",
       "translate": "Dịch sang Go",
       "translating": "Dán mã MQL4/MQL5 và nhấn Dịch",
-      "bridgeBtn": "盲区桥接翻译",
+      "bridgeBtn": "Bắc cầu điểm mù dịch",
       "bridging": "AI đang bắc cầu điểm mù...",
-      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
-      "noBridgeNeeded": "覆盖率 100%，无需桥接",
+      "bridgeFailedMsg": "Agent không thể tự động bắc cầu tất cả điểm mù",
+      "noBridgeNeeded": "Độ phủ 100%, không cần bắc cầu",
       "bridgeHint": "Dán mã MQL4/MQL5 EA, AI sẽ bắc cầu điểm mù sang bytecode nền tảng",
       "tooltip": "Nhập mã nguồn MQL4/MQL5",
       "button": "Nhập MQL",
       "title": "Nhập chiến lược MQL"
+    },
+    "templateModal": {
+      "title": "Lưu mẫu chiến lược",
+      "fields": {
+        "name": "Tên mẫu",
+        "description": "Mô tả"
+      },
+      "placeholders": {
+        "name": "Nhập tên mẫu",
+        "description": "Nhập mô tả"
+      }
     },
     "version": {
       "loadFailed": "Tải phiên bản thất bại",
@@ -146,6 +163,12 @@ const StrategyExtra = {
       "loadVersionFailed": "Tải phiên bản thất bại",
       "loadDiffFailed": "Tải diff thất bại",
       "colSummary": "Tóm tắt thay đổi",
+      "colVersion": "Phiên bản",
+      "colLang": "Ngôn ngữ",
+      "colHash": "Hash",
+      "colDate": "Ngày",
+      "colActions": "Thao tác",
+      "diff": "So sánh",
       "rollbackConfirm": "Hoàn hồi về v{{n}}?",
       "title": "Lịch sử phiên bản",
       "empty": "Chưa có lịch sử phiên bản",

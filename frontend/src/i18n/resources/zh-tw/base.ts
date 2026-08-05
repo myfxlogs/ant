@@ -779,7 +779,8 @@ const Base = {
       "searchMethod": {
         "grid": "網格",
         "random": "隨機"
-      }
+      },
+      "qualityGate": "品質門"
     },
     "backtest": {
       "canceled": "回測已取消",

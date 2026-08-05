@@ -1,5 +1,5 @@
-import { Card, Tag } from 'antd';
-import { BankOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
+import { Card, Tag, Tooltip } from 'antd';
+import { BankOutlined, RiseOutlined, FallOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
 import { ACCOUNT_LIST_KEY, FIELDS_BALANCE_KEY, FIELDS_EQUITY_KEY, FIELDS_FLOATING_KEY, NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
@@ -8,6 +8,7 @@ import { CARD_STATUS_CONNECTED_KEY, CARD_STATUS_CONNECTING_KEY, CARD_STATUS_DISA
 ;
 import { StatusResult } from '@/components/common/StatusResult';
 import type { Account } from '@/types/account';
+import { toFriendlyAccountError } from '@/bridge/accountErrorMap';
 
 interface Props {
   accounts: Account[];
@@ -75,6 +76,11 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
         <Tag color={isMT4 ? 'blue' : 'gold'} className="!text-xs !m-0">{item.mtType}</Tag>
         <div className="flex-1" />
         {getStatusTag(item, t)}
+        {isDisabled && item.lastError && (
+          <Tooltip title={toFriendlyAccountError(item.lastError)}>
+            <ExclamationCircleOutlined style={{ color: '#E53935', fontSize: 14 }} />
+          </Tooltip>
+        )}
       </div>
 
       {/* Server — more specific than company name */}

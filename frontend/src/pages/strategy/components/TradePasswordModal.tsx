@@ -28,13 +28,13 @@ const TradePasswordModal: React.FC<TradePasswordModalProps> = ({ open, accountId
     try {
       const res = await accountApi.updateTradingPassword(accountId, password);
       if (!res.success) {
-        message.error(res.message || t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_FAILED_KEY, { defaultValue: '密码验证失败，请检查是否正确' }));
+        message.error(res.message || t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_FAILED_KEY));
         return;
       }
       if (res.isInvestor) {
-        message.warning(t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_STILL_INVESTOR_KEY, { defaultValue: '登录成功，但该账户仍是投资者只读模式，无法下单。' }));
+        message.warning(t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_STILL_INVESTOR_KEY));
       } else {
-        message.success(t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_OK_KEY, { defaultValue: '交易密码已更新，账户具备交易权限' }));
+        message.success(t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_OK_KEY));
       }
       onSuccess(res);
     } catch (e: unknown) {
@@ -46,21 +46,21 @@ const TradePasswordModal: React.FC<TradePasswordModalProps> = ({ open, accountId
 
   return (
     <Modal
-      title={t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_TITLE_KEY, { defaultValue: '填写交易密码' })}
+      title={t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_TITLE_KEY)}
       open={open}
       onCancel={onCancel}
       onOk={() => void handleSubmit()}
       confirmLoading={submitting}
-      okText={t('common.confirm', { defaultValue: '确认' })}
-      cancelText={t('common.cancel', { defaultValue: '取消' })}
+      okText={t('common.confirm')}
+      cancelText={t('common.cancel')}
       destroyOnClose
     >
       <div className="text-sm text-gray-600 mb-3">
-        {t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_HINT_KEY, { defaultValue: '后端会用新密码做一次 Connect 测试，成功后覆盖当前存储的密码。MT5 账户会同时识别出是否为投资者模式。' })}
+        {t(SCHEDULE_LAUNCH_UPDATE_PASSWORD_HINT_KEY)}
       </div>
       <Input.Password
         autoFocus
-        placeholder={t(SCHEDULE_LAUNCH_NEW_PASSWORD_PLACEHOLDER_KEY, { defaultValue: '新的交易密码' })}
+        placeholder={t(SCHEDULE_LAUNCH_NEW_PASSWORD_PLACEHOLDER_KEY)}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         onPressEnter={() => void handleSubmit()}

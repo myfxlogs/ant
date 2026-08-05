@@ -779,7 +779,8 @@ const Base = {
       "searchMethod": {
         "grid": "Lưới",
         "random": "Ngẫu nhiên"
-      }
+      },
+      "qualityGate": "Cổng chất lượng"
     },
     "backtest": {
       "canceled": "Backtest bị hủy",

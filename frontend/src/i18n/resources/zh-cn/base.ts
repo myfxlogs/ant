@@ -781,7 +781,8 @@ const Base = {
       "searchMethod": {
         "grid": "网格",
         "random": "随机"
-      }
+      },
+      "qualityGate": "质量门"
     },
     "backtest": {
       "canceled": "回测已取消",

@@ -88,6 +88,13 @@ These constraints are enforced at implementation time. Violation = fix before co
 - 项目使用 multi-stage Docker build（`backend/Dockerfile`）：builder stage 在 `golang:alpine` 里编译 CGO 代码，runtime stage 只拷贝二进制 + `mql.so`
 - 运行中二进制名是 `/app/alphaforge`（不是 `alphaforge-backend` / `server`）
 
+## MQL2GO VM Pitfalls (必读)
+
+> 回测不开单但 MT4 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
+>
+> - **未知常量静默替换为 0** — `interp/constants.go` 缺少常量定义时编译器不报错，直接 push 0，导致指标返回错误线
+> - **`builtinOrderType` 返回值映射错误** — 返回 PositionSide(1/-1) 而非 OP_BUY/OP_SELL(0/1)，持仓管理失效
+
 ## Before Commit
 
 ```bash

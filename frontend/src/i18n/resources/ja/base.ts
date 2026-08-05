@@ -779,7 +779,8 @@ const Base = {
       "searchMethod": {
         "grid": "グリッド",
         "random": "ランダム"
-      }
+      },
+      "qualityGate": "品質ゲート"
     },
     "backtest": {
       "canceled": "バックテストがキャンセルされました",

@@ -20,7 +20,8 @@ const StrategyExtra = {
         "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
         "save": "Save & Publish",
         "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
-      }
+      },
+      "importMql": "Import MQL"
     },
     "codeAssist": {
       "aiHint": "Describe the changes you want, e.g."
@@ -120,25 +121,41 @@ const StrategyExtra = {
       "importTab": "Import EA",
       "codeTooShort": "Please paste complete EA/indicator source code.",
       "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
-      "migration": "策略导入",
-      "aiTranslate": "AI 翻译",
-      "bridge": "盲区桥接",
-      "analyze": "分析策略结构",
-      "confirmImport": "确认导入",
-      "tryAI": "AI 翻译补充",
+      "migration": "Strategy Import",
+      "aiTranslate": "AI Translate",
+      "bridge": "Blind Spot Bridging",
+      "analyze": "Analyze Strategy Structure",
+      "confirmImport": "Confirm Import",
+      "import": "Import Strategy",
+      "importing": "Compiling...",
+      "compileFailed": "Compile Failed",
+      "bridgeReference": "AI Bridge Reference (non-executable)",
+      "coverage": "Coverage: {{score}}%",
+      "tryAI": "AI Translate Supplement",
       "apply": "Apply to Editor",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "importSuccess": "MQL source imported. Click 'Apply to Editor' to write to the editor.",
       "hint": "Paste MQL4/MQL5 code and click Analyze",
       "translate": "Translate to Go",
       "translating": "Paste MQL4/MQL5 code and click Translate",
-      "bridgeBtn": "盲区桥接翻译",
+      "bridgeBtn": "Blind Spot Bridge Translation",
       "bridging": "AI bridging blind spots...",
-      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
-      "noBridgeNeeded": "覆盖率 100%，无需桥接",
+      "bridgeFailedMsg": "Agent could not automatically bridge all blind spots",
+      "noBridgeNeeded": "Coverage 100%, no bridging needed",
       "bridgeHint": "Paste MQL4/MQL5 EA code, AI will bridge blind spots to platform bytecode",
       "tooltip": "Import MQL4/MQL5 source code",
       "button": "Import MQL",
       "title": "Import MQL Strategy"
+    },
+    "templateModal": {
+      "title": "Save Strategy Template",
+      "fields": {
+        "name": "Template Name",
+        "description": "Description"
+      },
+      "placeholders": {
+        "name": "Enter template name",
+        "description": "Enter description"
+      }
     },
     "version": {
       "loadFailed": "Failed to load versions",
@@ -147,6 +164,12 @@ const StrategyExtra = {
       "loadVersionFailed": "Failed to load version",
       "loadDiffFailed": "Failed to load diff",
       "colSummary": "Change Summary",
+      "colVersion": "Version",
+      "colLang": "Lang",
+      "colHash": "Hash",
+      "colDate": "Date",
+      "colActions": "Actions",
+      "diff": "Diff",
       "rollbackConfirm": "Rollback to v{{n}}?",
       "title": "Version History",
       "empty": "No version history yet",

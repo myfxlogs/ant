@@ -15,6 +15,7 @@ import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountDeleteModal from './components/AccountDeleteModal';
 import ShareAccountButton from './components/ShareAccountButton';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
+import { toFriendlyAccountError } from '@/bridge/accountErrorMap';
 
 export default function AccountDetail() {
   const { t } = useTranslation();
@@ -171,11 +172,11 @@ export default function AccountDetail() {
         </div>
 
         {/* ── Error banner ── */}
-        {currentAccount.status === 'error' && currentAccount.lastError && (
+        {currentAccount.lastError && (
           <div className="rounded-lg p-3 mb-4 flex items-center gap-2"
             style={{ background: 'var(--color-danger-bg-subtle)', border: '1px solid var(--color-danger-bg)' }}>
             <WarningOutlined style={{ color: 'var(--color-danger)' }} />
-            <span style={{ color: 'var(--color-danger)', fontSize: 13 }}>{currentAccount.lastError}</span>
+            <span style={{ color: 'var(--color-danger)', fontSize: 13 }}>{toFriendlyAccountError(currentAccount.lastError)}</span>
           </div>
         )}
 

@@ -19,7 +19,8 @@ const StrategyExtra = {
         "backtestDesc": "使用可配置参数运行回测，查看资金曲线、交易统计和风险指标。",
         "save": "保存并发布",
         "saveDesc": "将策略保存为模板、发布到市场或部署到实盘调度。"
-      }
+      },
+      "importMql": "导入 MQL"
     },
     "codeAssist": {
       "aiHint": "描述你想要的修改，例如"
@@ -124,6 +125,11 @@ const StrategyExtra = {
       "bridge": "盲区桥接",
       "analyze": "分析策略结构",
       "confirmImport": "确认导入",
+      "import": "导入策略",
+      "importing": "编译中...",
+      "compileFailed": "编译失败",
+      "bridgeReference": "AI 桥接参考（不可执行）",
+      "coverage": "覆盖率: {{score}}%",
       "tryAI": "AI 翻译补充",
       "apply": "应用到编辑器",
       "importSuccess": "MQL 源码已导入，点击「应用到编辑器」写入编辑器",
@@ -139,6 +145,17 @@ const StrategyExtra = {
       "button": "导入 MQL",
       "title": "导入 MQL 策略"
     },
+    "templateModal": {
+      "title": "保存策略模板",
+      "fields": {
+        "name": "模板名称",
+        "description": "描述"
+      },
+      "placeholders": {
+        "name": "输入模板名称",
+        "description": "输入描述"
+      }
+    },
     "version": {
       "loadFailed": "加载版本失败",
       "rollbackSuccess": "已回滚到版本 {{n}}",
@@ -146,6 +163,12 @@ const StrategyExtra = {
       "loadVersionFailed": "加载版本失败",
       "loadDiffFailed": "加载差异失败",
       "colSummary": "变更摘要",
+      "colVersion": "版本",
+      "colLang": "语言",
+      "colHash": "哈希",
+      "colDate": "日期",
+      "colActions": "操作",
+      "diff": "对比",
       "rollbackConfirm": "回滚到 v{{n}}？",
       "title": "版本历史",
       "empty": "暂无版本历史",
