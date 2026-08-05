@@ -188,6 +188,29 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
         />
       </div>
 
+      {/* ── Context indicator ── */}
+      {(currentCode || lastBacktest || (recentBacktests && recentBacktests.length > 0)) && (
+        <div style={{
+          display: 'flex', gap: 6, padding: '4px 14px', flexShrink: 0,
+          borderTop: '1px solid var(--ant-color-border)', background: 'var(--ant-color-fill-quaternary)',
+          fontSize: 11, color: 'var(--ant-color-text-secondary)', flexWrap: 'wrap',
+        }}>
+          {currentCode && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4, background: '#e6f4ff', color: '#1677ff' }}>
+              📝 {t('strategy.aiChat.codeLoaded', { defaultValue: 'Strategy code in context' })}
+            </span>
+          )}
+          {lastBacktest && lastBacktest.totalTrades != null && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4, background: '#f6ffed', color: '#3fb950' }}>
+              📊 {(lastBacktest.totalReturn ?? 0) >= 0 ? '+' : ''}{lastBacktest.totalReturn?.toFixed(1)}% · {lastBacktest.totalTrades} trades
+            </span>
+          )}
+          {!currentCode && !lastBacktest && (
+            <span>{t('strategy.aiChat.noContext', { defaultValue: 'No strategy loaded — describe what you want' })}</span>
+          )}
+        </div>
+      )}
+
       {/* ── Input (always enabled) ── */}
       <ChatInput
         value={userInput}

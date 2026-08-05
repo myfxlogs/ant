@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/proto"
 
@@ -22,20 +24,11 @@ func NewFailureSignatureRepository(db *pgxpool.Pool) *FailureSignatureRepository
 
 // SaveFailureSignature persists a failure signature with its repro package.
 // If the same signature_hash already exists, it returns the existing ID (dedup).
+// Uses INSERT ... ON CONFLICT to avoid TOCTOU races under concurrent backtests.
 func (r *FailureSignatureRepository) SaveFailureSignature(ctx context.Context, pkg *antv1.ReproPackage, backtestRunID *uuid.UUID) (int64, error) {
 	sig := pkg.GetSignature()
 	if sig == nil {
 		return 0, nil
-	}
-
-	// Check for existing (dedup by hash)
-	var existingID int64
-	err := r.db.QueryRow(ctx,
-		`SELECT id FROM failure_signatures WHERE signature_hash = $1 LIMIT 1`,
-		sig.Hash,
-	).Scan(&existingID)
-	if err == nil {
-		return existingID, nil
 	}
 
 	// Serialize findings as proto bytes for BYTEA storage
@@ -51,6 +44,7 @@ func (r *FailureSignatureRepository) SaveFailureSignature(ctx context.Context, p
 			(signature_hash, source_hash, rule_ids, blind_spots, total_trades,
 			 symbol, timeframe, source_preview, findings, backtest_run_id, created_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		ON CONFLICT (signature_hash) DO UPDATE SET created_at = EXCLUDED.created_at
 		RETURNING id`,
 		sig.Hash,
 		sig.SourceHash,
@@ -65,6 +59,10 @@ func (r *FailureSignatureRepository) SaveFailureSignature(ctx context.Context, p
 		time.UnixMilli(pkg.CreatedAtMs).UTC(),
 	).Scan(&id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// ON CONFLICT DO NOTHING would return no rows; but we use DO UPDATE so this shouldn't happen
+			return 0, nil
+		}
 		return 0, err
 	}
 	return id, nil
@@ -104,7 +102,7 @@ func (r *FailureSignatureRepository) GetRecent(ctx context.Context, limit int) (
 		limit = 50
 	}
 	rows, err := r.db.Query(ctx, `
-		SELECT id, signature_hash, source_hash, rule_ids, blind_spots, total_trades,
+		SELECT signature_hash, source_hash, rule_ids, blind_spots, total_trades,
 		       symbol, timeframe, source_preview, findings, created_at
 		FROM failure_signatures ORDER BY created_at DESC LIMIT $1`,
 		limit,
@@ -121,10 +119,8 @@ func (r *FailureSignatureRepository) GetRecent(ctx context.Context, limit int) (
 		}
 		var ruleIDs, blindSpots []string
 		var createdAt time.Time
-		var id int64
 		var findingsBytes []byte
 		if err := rows.Scan(
-			&id,
 			&pkg.Signature.Hash, &pkg.Signature.SourceHash,
 			&ruleIDs, &blindSpots,
 			&pkg.Signature.TotalTrades,

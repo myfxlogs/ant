@@ -53,13 +53,9 @@ func TestRuleEngine_NonZeroTradesNoFinding(t *testing.T) {
 
 func TestRuleEngine_StartEntryMapped(t *testing.T) {
 	engine := NewRuleEngine()
-	ir := &interp.IR{
-		Version: "mql4",
-		OnTick:  []interp.Statement{{Kind: interp.StmtExpr}},
-	}
 	findings := engine.Run(RuleInput{
 		Source:      `int start() { OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0); return 0; }`,
-		IR:          ir,
+		HasOnTick:   true,
 		TotalTrades: 0,
 	})
 	for _, f := range findings {
@@ -71,10 +67,9 @@ func TestRuleEngine_StartEntryMapped(t *testing.T) {
 
 func TestRuleEngine_StartEntryNotMapped(t *testing.T) {
 	engine := NewRuleEngine()
-	ir := &interp.IR{Version: "mql4", OnTick: nil}
 	findings := engine.Run(RuleInput{
 		Source:      `int start() { OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0); return 0; }`,
-		IR:          ir,
+		HasOnTick:   false,
 		TotalTrades: 0,
 	})
 	found := false
@@ -172,5 +167,50 @@ func TestRuleEngine_AllRulesRun(t *testing.T) {
 	})
 	if len(findings) == 0 {
 		t.Fatal("expected at least one finding for complex EA with 0 trades")
+	}
+}
+
+func TestRuleEngine_ParamNameIsType(t *testing.T) {
+	engine := NewRuleEngine()
+	findings := engine.Run(RuleInput{
+		Source: `
+		int OnInit() { return 0; }
+		void OnTick() {
+			if(OrdersTotal()==0)
+				OrderSend(Symbol(),OP_BUY,Lots,Ask,5,0,0,"",123,0,0);
+		}`,
+		Coverage: &CoverageReport{BlindSpots: []string{"unknown constant: double"}},
+		TotalTrades: 0,
+	})
+	found := false
+	for _, f := range findings {
+		if f.RuleID == "R09_param_name_is_type" {
+			found = true
+			if f.Severity != "fatal" {
+				t.Errorf("expected fatal severity, got %s", f.Severity)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("expected R09 finding for param name = type keyword")
+	}
+}
+
+func TestRuleEngine_ParamNameIsType_NoFalsePositive(t *testing.T) {
+	engine := NewRuleEngine()
+	findings := engine.Run(RuleInput{
+		Source: `
+		int OnInit() { return 0; }
+		void OnTick() {
+			if(OrdersTotal()==0)
+				OrderSend(Symbol(),OP_BUY,Lots,Ask,5,0,0,"",123,0,0);
+		}`,
+		Coverage: &CoverageReport{BlindSpots: []string{"unknown constant: MyCustomEnum"}},
+		TotalTrades: 10,
+	})
+	for _, f := range findings {
+		if f.RuleID == "R09_param_name_is_type" {
+			t.Fatal("expected no R09 for non-type-keyword unknown constant")
+		}
 	}
 }

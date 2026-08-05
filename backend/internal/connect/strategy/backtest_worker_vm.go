@@ -70,32 +70,13 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 		zap.Int("equity_points", len(result.Equity)),
 		zap.Int("bars_processed", len(bars)))
 
-	resp, ruleFindings := buildBacktestResponse(result, cfg, params, vmRunner)
+	resp, ruleFindings, covBlindSpots, runtimeBlinds := buildBacktestResponse(result, cfg, params, vmRunner)
 
 	// Persist failure signature if there are diagnostic findings (B2-6).
 	if s.failureSigRepo != nil && len(ruleFindings) > 0 {
 		totalTrades := 0
 		if result.Metrics != nil {
 			totalTrades = int(result.Metrics.TotalTrades)
-		}
-		cov := vmRunner.GetCoverage()
-		var covBlindSpots []mql2go.CoverageBlindSpot
-		if cov != nil {
-			for _, bs := range cov.BlindSpots {
-				covBlindSpots = append(covBlindSpots, mql2go.CoverageBlindSpot{
-					Builtin:  bs,
-					Severity: "warning",
-					Source:   "compile",
-				})
-			}
-		}
-		var runtimeBlinds []mql2go.RuntimeBlindSpot
-		for _, rbs := range vmRunner.GetRuntimeBlindSpots() {
-			runtimeBlinds = append(runtimeBlinds, mql2go.RuntimeBlindSpot{
-				Builtin:  rbs.Builtin,
-				Severity: rbs.Severity,
-				Count:    rbs.Count,
-			})
 		}
 		reproPkg := mql2go.BuildReproPackage(
 			params.code, ruleFindings, covBlindSpots, runtimeBlinds,
@@ -209,7 +190,7 @@ func (s *StrategyExecutionServer) applySymbolInfo(ctx context.Context, run *repo
 	}
 }
 
-func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) (*antv1.ExecuteBacktestResponse, []mql2go.DiagnosticFinding) {
+func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) (*antv1.ExecuteBacktestResponse, []mql2go.DiagnosticFinding, []mql2go.CoverageBlindSpot, []mql2go.RuntimeBlindSpot) {
 	totalTrades := 0
 	if result.Metrics != nil {
 		totalTrades = int(result.Metrics.TotalTrades)
@@ -241,6 +222,7 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		engine := mql2go.NewRuleEngine()
 		ruleFindings = engine.Run(mql2go.RuleInput{
 			Source:        params.code,
+			HasOnTick:     vmRunner.HasOnTick(),
 			Coverage:      cov,
 			BlindSpots:    covBlindSpots,
 			TotalTrades:   totalTrades,
@@ -338,5 +320,5 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		})
 	}
 
-	return resp, ruleFindings
+	return resp, ruleFindings, covBlindSpots, runtimeBlinds
 }

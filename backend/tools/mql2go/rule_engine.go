@@ -18,7 +18,7 @@ type DiagnosticRule interface {
 // RuleInput is the data available to all rules.
 type RuleInput struct {
 	Source        string              // raw MQL source
-	IR            *interp.IR          // parsed IR (may be nil if compilation failed)
+	HasOnTick     bool                // true if OnTick/start() was compiled to bytecode
 	Coverage      *CoverageReport     // compile-time coverage (may be nil)
 	BlindSpots    []CoverageBlindSpot // merged blind spots from AnalyzeCoverage
 	TotalTrades   int                 // backtest result trade count
@@ -58,6 +58,7 @@ func NewRuleEngine() *RuleEngine {
 			ruleOrderSelectHistory{},
 			ruleOrderProfitOpenPos{},
 			ruleIndicatorModeMissing{},
+			ruleParamNameIsType{},
 		},
 	}
 }
@@ -133,13 +134,8 @@ func (ruleStartEntryNotMapped) Match(input RuleInput) *DiagnosticFinding {
 	if input.TotalTrades > 0 {
 		return nil
 	}
-	if input.IR == nil {
-		return nil
-	}
-	// If OnTick is populated from start(), the mapping worked.
-	// This rule fires when start() exists but wasn't mapped (shouldn't
-	// happen after the fix, but guards against regressions).
-	if len(input.IR.OnTick) > 0 {
+	// If OnTick was compiled (from start() or OnTick), the mapping worked.
+	if input.HasOnTick {
 		return nil
 	}
 	// Check if source has start() function
@@ -170,7 +166,8 @@ func (ruleMACDModeSignal) Match(input RuleInput) *DiagnosticFinding {
 		return nil
 	}
 	// MODE_SIGNAL is in constants now, but check for regressions
-	if _, ok := interp.LookupMQLConstant("MODE_SIGNAL"); !ok {
+	v, ok := interp.LookupMQLConstant("MODE_SIGNAL")
+	if !ok {
 		return &DiagnosticFinding{
 			RuleID:   "R03_macd_mode_signal",
 			Severity: "fatal",
@@ -180,15 +177,13 @@ func (ruleMACDModeSignal) Match(input RuleInput) *DiagnosticFinding {
 		}
 	}
 	// Check if MODE_SIGNAL resolves to correct value
-	if v, ok := interp.LookupMQLConstant("MODE_SIGNAL"); ok {
-		if v.Kind == interp.ValInt && v.Int != 1 {
-			return &DiagnosticFinding{
-				RuleID:   "R03_macd_mode_signal",
-				Severity: "fatal",
-				Title:    "MODE_SIGNAL has incorrect value",
-				Detail:   fmt.Sprintf("MODE_SIGNAL resolves to %d, expected 1. iMACD signal line will be wrong.", v.Int),
-				Suggest:  "Fix MODE_SIGNAL value to 1 in constants.go.",
-			}
+	if v.Kind == interp.ValInt && v.Int != 1 {
+		return &DiagnosticFinding{
+			RuleID:   "R03_macd_mode_signal",
+			Severity: "fatal",
+			Title:    "MODE_SIGNAL has incorrect value",
+			Detail:   fmt.Sprintf("MODE_SIGNAL resolves to %d, expected 1. iMACD signal line will be wrong.", v.Int),
+			Suggest:  "Fix MODE_SIGNAL value to 1 in constants.go.",
 		}
 	}
 	return nil
@@ -292,6 +287,47 @@ func (ruleOrderProfitOpenPos) Match(input RuleInput) *DiagnosticFinding {
 		Detail:   "EA uses OrderProfit() in conditions. For open positions, OrderProfit() returns floating P&L based on current market price.",
 		Suggest:  "Verify that OrderProfit() returns floating P&L for open positions, not 0.",
 	}
+}
+
+// ── Rule 8: Indicator mode parameter + missing constant ──────────────
+
+// ── Rule 9: Parameter name matches MQL primitive type ─────────────────
+
+// mqlPrimitiveTypes are MQL4/MQL5 built-in type keywords.
+var mqlPrimitiveTypes = map[string]bool{
+	"int": true, "double": true, "float": true, "bool": true, "string": true,
+	"color": true, "datetime": true, "long": true, "short": true,
+	"uint": true, "ulong": true, "char": true, "uchar": true, "void": true,
+}
+
+type ruleParamNameIsType struct{}
+
+func (ruleParamNameIsType) ID() string { return "R09_param_name_is_type" }
+
+func (ruleParamNameIsType) Match(input RuleInput) *DiagnosticFinding {
+	if input.Coverage == nil || len(input.Coverage.BlindSpots) == 0 {
+		return nil
+	}
+	// Scan coverage blind spots for "unknown constant" entries that look like
+	// a parameter name matched a type keyword (tree-sitter parser bug).
+	// Pattern: "unknown constant: <type>" where <type> is an MQL primitive type
+	// and the source code has extern/input declarations using that type.
+	for _, bs := range input.Coverage.BlindSpots {
+		if !strings.Contains(bs, "unknown constant: ") {
+			continue
+		}
+		name := strings.TrimPrefix(bs, "unknown constant: ")
+		if mqlPrimitiveTypes[name] {
+			return &DiagnosticFinding{
+				RuleID:   "R09_param_name_is_type",
+				Severity: "fatal",
+				Title:    fmt.Sprintf("Parameter name '%s' is an MQL type keyword — likely parser bug", name),
+				Detail:   fmt.Sprintf("The compiler resolved a parameter name as '%s' (an MQL primitive type). This usually means tree-sitter's findIdent captured the type instead of the variable name in an extern/input declaration. The actual variable has no value → defaults to 0.", name),
+				Suggest:  fmt.Sprintf("Check extern/input declarations in the EA source. If using 'input %s VarName = value;', the parser may need a fix for that declaration style.", name),
+			}
+		}
+	}
+	return nil
 }
 
 // ── Rule 8: Indicator mode parameter + missing constant ──────────────

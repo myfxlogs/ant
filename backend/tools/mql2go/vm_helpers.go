@@ -173,13 +173,36 @@ func (vm *VM) setField(obj interp.Value, fieldName string, val interp.Value) {
 
 // ── Builtin dispatch ─────────────────────────────────────────────────
 
-// fatalBuiltins are builtins that should cause execution to stop if unimplemented.
-// Missing trade or market data functions indicate a broken strategy.
-var fatalBuiltins = map[string]bool{
-	"OrderSend": true, "OrderClose": true, "OrderModify": true, "OrderDelete": true,
-	"OrdersTotal": true, "OrderSelect": true,
-	"MarketInfo": true,
-	"iClose": true, "iOpen": true, "iHigh": true, "iLow": true, "iTime": true, "iVolume": true,
+// isFatalUnimplemented checks the API registry to determine if an unimplemented
+// builtin should cause execution to stop. Registry-driven per Layer 0.
+func isFatalUnimplemented(name string) bool {
+	sym, ok := interp.LookupAPI(name)
+	if !ok {
+		// Not in registry — use pattern matching for unknown functions.
+		// Trade and market data functions are critical; others are not.
+		return startsWithAny(name, "Order", "Position", "MarketInfo", "iClose", "iOpen", "iHigh", "iLow", "iTime", "iVolume")
+	}
+	switch sym.Status {
+	case interp.StatusImplemented:
+		// Registered as implemented but no VM handler — this is a VM bug, fatal.
+		return true
+	case interp.StatusUnsupported:
+		// Unsupported functions should have been rejected at compile time.
+		// If they reach here, it's a compiler bug — fatal.
+		return true
+	default:
+		// StatusStubbed or unknown — not fatal, just a blind spot.
+		return false
+	}
+}
+
+func startsWithAny(s string, prefixes ...string) bool {
+	for _, p := range prefixes {
+		if len(s) >= len(p) && s[:len(p)] == p {
+			return true
+		}
+	}
+	return false
 }
 
 func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
@@ -197,13 +220,13 @@ func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
 		}
 		return result
 	}
-	// No handler registered — classify severity per ADR §5.4
-	if fatalBuiltins[entry.name] {
+	// No handler registered — classify severity via registry (Layer 0).
+	if isFatalUnimplemented(entry.name) {
 		vm.fatalError = fmt.Sprintf("unimplemented critical builtin: %s", entry.name)
 		vm.recordBlindSpot(entry.name)
 		return interp.NoneVal()
 	}
-	// Skip: Object/Chart/File operations — silent blind spot
+	// Non-fatal: Object/Chart/File operations — silent blind spot
 	vm.recordBlindSpot(entry.name)
 	return interp.NoneVal()
 }

@@ -53,6 +53,13 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		} else if val, ok := interp.LookupMQLConstant(e.Name); ok {
 			cid := c.addConst(val)
 			c.emit(OP_PUSH_CONST, int32(cid), 0, 0)
+		} else if sym, ok := interp.LookupAPI(e.Name); ok && sym.Category == interp.CatConstant && sym.Status != interp.StatusImplemented {
+			// Constant is in the registry but not implemented (future-proofing).
+			if c.err == nil {
+				c.err = fmt.Errorf("unsupported constant: %s (registry status: %d)", e.Name, sym.Status)
+			}
+			cid := c.addConst(interp.IntVal(0))
+			c.emit(OP_PUSH_CONST, int32(cid), 0, 0)
 		} else {
 			// Unknown constant — compile error, not silent push 0.
 			// This prevents subtle bugs where missing constants silently become 0.
@@ -385,6 +392,18 @@ func (c *astCompiler) compileCall(e *interp.Expr) {
 		case interp.StatusStubbed:
 			// Stub: compiles but returns 0. Record as blind spot.
 			c.bc.Coverage.AddBlindSpot(e.Name)
+			for i := range e.Args {
+				c.compileExpr(&e.Args[i])
+			}
+			for range e.Args {
+				c.emit(OP_POP, 0, 0, 0)
+			}
+			c.emit(OP_PUSH_CONST, int32(c.addConst(interp.NoneVal())), 0, 0)
+			return
+		case interp.StatusImplemented:
+			// Registered as implemented but no VM builtin handler registered.
+			// This is a registry/VM wiring mismatch — record as blind spot.
+			c.bc.Coverage.AddBlindSpot(e.Name + " (registry:implemented, no VM handler)")
 			for i := range e.Args {
 				c.compileExpr(&e.Args[i])
 			}

@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS failure_signatures (
     created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_failure_sig_hash ON failure_signatures(signature_hash);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_failure_sig_hash ON failure_signatures(signature_hash);
 CREATE INDEX IF NOT EXISTS idx_failure_sig_source ON failure_signatures(source_hash);
 CREATE INDEX IF NOT EXISTS idx_failure_sig_created ON failure_signatures(created_at DESC);

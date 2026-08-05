@@ -5,20 +5,6 @@ import (
 	"strings"
 )
 
-const (
-	bsFileIO       = "File I/O: system has own logging/params"
-	bsObjectChart  = "Object/Chart: MT client UI, no server meaning"
-	bsNetwork      = "Network: no socket access from server-side EA"
-	bsDatabase     = "Database: use PostgreSQL via system"
-	bsOpenCL       = "OpenCL: GPU compute not available server-side"
-	bsDirectX      = "DirectX: graphics not available server-side"
-	bsCalendar     = "Calendar: economic calendar not available server-side"
-	bsCustomSymbol = "Custom Symbols: not applicable server-side"
-	bsSignals      = "Signals: terminal client-side feature"
-	bsCustomInd    = "Custom Indicators: indicator development only"
-	bsWindow       = "Window: MT client UI, no server meaning"
-)
-
 // IRReport is the static analysis report derived from an IR.
 // It is the single source for coverage/blind-spot reporting.
 type IRReport struct {
@@ -30,8 +16,8 @@ type IRReport struct {
 	Params         []ParamDecl
 	Indicators     []string
 	ExecKind       string // "on_bar" | "on_tick" | "on_timer"
-	EntryRules     int // count of entry-order calls (OrderSend, CTrade.Buy/Sell/BuyLimit/etc)
-	ExitRules      int // count of exit-order calls (OrderClose, CTrade.PositionClose, OrderDelete)
+	EntryRules     int    // count of entry-order calls (OrderSend, CTrade.Buy/Sell/BuyLimit/etc)
+	ExitRules      int    // count of exit-order calls (OrderClose, CTrade.PositionClose, OrderDelete)
 }
 
 // IRBlindSpot represents an unimplemented or stub builtin call found in the IR.
@@ -67,7 +53,8 @@ func Analyze(ir *IR) *IRReport {
 		}
 		if c.isImplemented {
 			rep.SupportedCalls++
-			if isIndicatorName(c.name) {
+			// Registry-driven: check if this is an indicator name.
+			if isRegistryIndicator(c.name) {
 				indSet[c.name] = true
 			}
 			continue
@@ -92,27 +79,24 @@ func Analyze(ir *IR) *IRReport {
 }
 
 // IsBuiltinImplemented checks if a free-function builtin is implemented.
-// Single source of truth: implemented* slices in builtin_registry.go.
+// Registry-driven: looks up the name in the API registry (Layer 0).
 func IsBuiltinImplemented(name string) bool {
-	if stubIndicators[name] {
-		return true
-	}
-	return inSlice(name, implementedMarketData) ||
-		inSlice(name, implementedIndicators) ||
-		inSlice(name, implementedMQL4Trade) ||
-		inSlice(name, implementedMQL5Position) ||
-		inSlice(name, implementedAccount) ||
-		inSlice(name, implementedPlatform)
+	s, ok := LookupAPI(name)
+	return ok && s.Status == StatusImplemented && s.Category == CatFunction
 }
 
 // IsCTradeMethodImplemented checks if a CTrade method is implemented.
+// Registry-driven: looks up the name with CatCTradeMethod category.
 func IsCTradeMethodImplemented(method string) bool {
-	return inSlice(method, implementedCTradeMethods)
+	s, ok := LookupAPI(method)
+	return ok && s.Status == StatusImplemented && s.Category == CatCTradeMethod
 }
 
 // IsStubIndicator checks if an indicator is a stub (dispatch but SDK returns 0).
+// Registry-driven: StatusStubbed in the API registry.
 func IsStubIndicator(name string) bool {
-	return stubIndicators[name]
+	s, ok := LookupAPI(name)
+	return ok && s.Status == StatusStubbed
 }
 
 // ── callInfo ────────────────────────────────────────────────────────
@@ -203,13 +187,17 @@ func resolveClassType(e *Expr, globalTypes map[string]string) string {
 
 func classifySeverity(version string, c callInfo) string {
 	name := c.name
-	// Stub indicator → warning
-	if IsStubIndicator(name) {
-		return SeverityWarning
-	}
-	// Permanent blind spots — will never be implemented
-	if isPermanentBlindSpot(name) {
-		return SeverityInfo
+	// Registry-driven severity: check API registry status first.
+	if sym, ok := LookupAPI(name); ok {
+		switch sym.Status {
+		case StatusStubbed:
+			return SeverityWarning
+		case StatusUnsupported:
+			return SeverityInfo
+		case StatusImplemented:
+			// Should not reach here — implemented functions are not blind spots.
+			return SeverityInfo
+		}
 	}
 	// CTrade method → fatal
 	if c.classType == "CTrade" {
@@ -219,10 +207,6 @@ func classifySeverity(version string, c callInfo) string {
 	// → info, not warning: these are user code, not missing builtins
 	if c.classType != "" {
 		return SeverityInfo
-	}
-	// Known trade / indicator → fatal
-	if isTradeName(name) || isIndicatorName(name) {
-		return SeverityFatal
 	}
 	// Unknown but looks like an indicator (iXxx pattern) → fatal
 	if len(name) > 1 && name[0] == 'i' && name[1] >= 'A' && name[1] <= 'Z' {
@@ -240,196 +224,117 @@ func classifySeverity(version string, c callInfo) string {
 	return SeverityWarning
 }
 
-// permanentBlindSpots lists functions that will never be implemented in the
-// VM, by design. These are MT client-side features or security risks
-// that have no server-side equivalent.
-var permanentBlindSpots = map[string]string{
-	// File I/O — system has its own logging and parameter management
-	"FileOpen":          bsFileIO,
-	"FileWrite":         bsFileIO,
-	"FileRead":          bsFileIO,
-	"FileReadArray":     bsFileIO,
-	"FileWriteArray":    bsFileIO,
-	"FileClose":         bsFileIO,
-	"FileDelete":        bsFileIO,
-	"FileIsEnding":      bsFileIO,
-	"FileIsLineEnding":  bsFileIO,
-	"FileSeek":          bsFileIO,
-	"FileTell":          bsFileIO,
-	"FileFlush":         bsFileIO,
-	"FileSize":          bsFileIO,
-	"FileCopy":          bsFileIO,
-	"FileMove":          bsFileIO,
-	"FileFindFirst":     bsFileIO,
-	"FileFindNext":      bsFileIO,
-	"FileFindClose":     bsFileIO,
-	"CSVReader":         bsFileIO,
-	"CSVWriter":         bsFileIO,
-	// Object/Chart — MT client-side UI, no server-side meaning
-	"ObjectCreate":      bsObjectChart,
-	"ObjectDelete":      bsObjectChart,
-	"ObjectSet":         bsObjectChart,
-	"ObjectSetInteger":  bsObjectChart,
-	"ObjectSetDouble":   bsObjectChart,
-	"ObjectSetString":   bsObjectChart,
-	"ObjectGet":         bsObjectChart,
-	"ObjectGetInteger":  bsObjectChart,
-	"ObjectGetDouble":   bsObjectChart,
-	"ObjectGetString":   bsObjectChart,
-	"ObjectFind":        bsObjectChart,
-	"ObjectName":        bsObjectChart,
-	"ObjectsTotal":      bsObjectChart,
-	"ObjectDescription": bsObjectChart,
-	"ObjectMove":        bsObjectChart,
-	"ObjectText":        bsObjectChart,
-	"ObjectSetText":     bsObjectChart,
-	"ObjectsDeleteAll":  bsObjectChart,
-	"ChartCreate":       bsObjectChart,
-	"ChartDelete":       bsObjectChart,
-	"ChartSetInteger":   bsObjectChart,
-	"ChartSetDouble":    bsObjectChart,
-	"ChartSetString":    bsObjectChart,
-	"ChartGetInteger":   bsObjectChart,
-	"ChartGetDouble":    bsObjectChart,
-	"ChartGetString":    bsObjectChart,
-	"ChartNavigate":     bsObjectChart,
-	"ChartRedraw":       bsObjectChart,
-	"ChartApplyTemplate":  bsObjectChart,
-	"ChartSaveTemplate":   bsObjectChart,
-	// Remaining Object/Chart functions from MQL5 docs
-	"ObjectGetTimeByValue":    bsObjectChart,
-	"ObjectGetValueByTime":    bsObjectChart,
-	"ChartClose":              bsObjectChart,
-	"ChartFirst":              bsObjectChart,
-	"ChartID":                 bsObjectChart,
-	"ChartIndicatorAdd":       bsObjectChart,
-	"ChartIndicatorDelete":    bsObjectChart,
-	"ChartIndicatorGet":       bsObjectChart,
-	"ChartIndicatorName":      bsObjectChart,
-	"ChartIndicatorsTotal":    bsObjectChart,
-	"ChartNext":               bsObjectChart,
-	"ChartOpen":               bsObjectChart,
-	"ChartPeriod":             bsObjectChart,
-	"ChartPriceOnDropped":     bsObjectChart,
-	"ChartScreenShot":         bsObjectChart,
-	"ChartSetSymbolPeriod":    bsObjectChart,
-	"ChartSymbol":             bsObjectChart,
-	"ChartTimeOnDropped":      bsObjectChart,
-	"ChartTimePriceToXY":      bsObjectChart,
-	"ChartWindowFind":         bsObjectChart,
-	"ChartWindowOnDropped":    bsObjectChart,
-	"ChartXOnDropped":         bsObjectChart,
-	"ChartXYToTimePrice":      bsObjectChart,
-	"ChartYOnDropped":         bsObjectChart,
-	"TextGetSize":             bsObjectChart,
-	"TextOut":                 bsObjectChart,
-	"TextSetFont":             bsObjectChart,
-	// Remaining File functions from MQL5 docs
-	"FileReadBool":            bsFileIO,
-	"FileReadDatetime":        bsFileIO,
-	"FileReadDouble":          bsFileIO,
-	"FileReadFloat":           bsFileIO,
-	"FileReadInteger":         bsFileIO,
-	"FileReadLong":            bsFileIO,
-	"FileReadNumber":          bsFileIO,
-	"FileReadString":          bsFileIO,
-	"FileReadStruct":          bsFileIO,
-	"FileWriteDouble":         bsFileIO,
-	"FileWriteFloat":          bsFileIO,
-	"FileWriteInteger":        bsFileIO,
-	"FileWriteLong":           bsFileIO,
-	"FileWriteString":         bsFileIO,
-	"FileWriteStruct":         bsFileIO,
-	"FileGetInteger":          bsFileIO,
-	"FileIsExist":             bsFileIO,
-	"FolderClean":             bsFileIO,
-	"FolderCreate":            bsFileIO,
-	"FolderDelete":            bsFileIO,
+// isRegistryIndicator checks if a name is an indicator function in the registry.
+func isRegistryIndicator(name string) bool {
+	s, ok := LookupAPI(name)
+	return ok && s.Status == StatusImplemented && s.Category == CatFunction &&
+		len(name) > 1 && name[0] == 'i' && name[1] >= 'A' && name[1] <= 'Z'
+}
+
+// looksLikeMQLBuiltin checks if a function name matches known MQL builtin
+// naming patterns. MQL builtins use PascalCase with recognizable prefixes.
+// If a name doesn't match any pattern, it's likely user-defined code
+// (e.g. from #include .mqh files).
+func looksLikeMQLBuiltin(name string) bool {
+	prefixes := []string{
+		"Order", "Position", "Account", "History", "Deal",
+		"Symbol", "Market", "Chart", "Object", "Terminal",
+	"FileWriteDouble":  bsFileIO,
+	"FileWriteFloat":   bsFileIO,
+	"FileWriteInteger": bsFileIO,
+	"FileWriteLong":    bsFileIO,
+	"FileWriteString":  bsFileIO,
+	"FileWriteStruct":  bsFileIO,
+	"FileGetInteger":   bsFileIO,
+	"FileIsExist":      bsFileIO,
+	"FolderClean":      bsFileIO,
+	"FolderCreate":     bsFileIO,
+	"FolderDelete":     bsFileIO,
 	// Network — no server-side network access from EA
-	"WebRequest":              "Network: no outbound HTTP from server-side EA",
-	"SocketCreate":            bsNetwork,
-	"SocketClose":             bsNetwork,
-	"SocketConnect":           bsNetwork,
-	"SocketIsConnected":       bsNetwork,
-	"SocketIsReadable":        bsNetwork,
-	"SocketIsWritable":        bsNetwork,
-	"SocketTimeouts":          bsNetwork,
-	"SocketRead":              bsNetwork,
-	"SocketSend":              bsNetwork,
-	"SocketTlsHandshake":      bsNetwork,
-	"SocketTlsCertificate":    bsNetwork,
-	"SocketTlsRead":           bsNetwork,
-	"SocketTlsReadAvailable":  bsNetwork,
-	"SocketTlsSend":           bsNetwork,
-	"SendFTP":                 "Network: no FTP from server-side EA",
-	"SendMail":                "Network: no email from server-side EA",
-	"SendNotification":        "Network: no push notifications from server-side EA",
+	"WebRequest":             "Network: no outbound HTTP from server-side EA",
+	"SocketCreate":           bsNetwork,
+	"SocketClose":            bsNetwork,
+	"SocketConnect":          bsNetwork,
+	"SocketIsConnected":      bsNetwork,
+	"SocketIsReadable":       bsNetwork,
+	"SocketIsWritable":       bsNetwork,
+	"SocketTimeouts":         bsNetwork,
+	"SocketRead":             bsNetwork,
+	"SocketSend":             bsNetwork,
+	"SocketTlsHandshake":     bsNetwork,
+	"SocketTlsCertificate":   bsNetwork,
+	"SocketTlsRead":          bsNetwork,
+	"SocketTlsReadAvailable": bsNetwork,
+	"SocketTlsSend":          bsNetwork,
+	"SendFTP":                "Network: no FTP from server-side EA",
+	"SendMail":               "Network: no email from server-side EA",
+	"SendNotification":       "Network: no push notifications from server-side EA",
 	// Database — use PostgreSQL instead
-	"DatabaseOpen":            bsDatabase,
-	"DatabaseClose":           bsDatabase,
-	"DatabaseImport":          bsDatabase,
-	"DatabaseExport":          bsDatabase,
-	"DatabasePrint":           bsDatabase,
-	"DatabaseTableExists":     bsDatabase,
-	"DatabaseExecute":         bsDatabase,
-	"DatabasePrepare":         bsDatabase,
-	"DatabaseReset":           bsDatabase,
-	"DatabaseBind":            bsDatabase,
-	"DatabaseBindArray":       bsDatabase,
-	"DatabaseRead":            bsDatabase,
-	"DatabaseReadBind":        bsDatabase,
-	"DatabaseFinalize":        bsDatabase,
-	"DatabaseTransactionBegin":   bsDatabase,
-	"DatabaseTransactionCommit":  bsDatabase,
+	"DatabaseOpen":                bsDatabase,
+	"DatabaseClose":               bsDatabase,
+	"DatabaseImport":              bsDatabase,
+	"DatabaseExport":              bsDatabase,
+	"DatabasePrint":               bsDatabase,
+	"DatabaseTableExists":         bsDatabase,
+	"DatabaseExecute":             bsDatabase,
+	"DatabasePrepare":             bsDatabase,
+	"DatabaseReset":               bsDatabase,
+	"DatabaseBind":                bsDatabase,
+	"DatabaseBindArray":           bsDatabase,
+	"DatabaseRead":                bsDatabase,
+	"DatabaseReadBind":            bsDatabase,
+	"DatabaseFinalize":            bsDatabase,
+	"DatabaseTransactionBegin":    bsDatabase,
+	"DatabaseTransactionCommit":   bsDatabase,
 	"DatabaseTransactionRollback": bsDatabase,
-	"DatabaseColumnsCount":    bsDatabase,
-	"DatabaseColumnName":      bsDatabase,
-	"DatabaseColumnType":      bsDatabase,
-	"DatabaseColumnSize":      bsDatabase,
-	"DatabaseColumnText":      bsDatabase,
-	"DatabaseColumnInteger":   bsDatabase,
-	"DatabaseColumnLong":      bsDatabase,
-	"DatabaseColumnDouble":    bsDatabase,
-	"DatabaseColumnBlob":      bsDatabase,
+	"DatabaseColumnsCount":        bsDatabase,
+	"DatabaseColumnName":          bsDatabase,
+	"DatabaseColumnType":          bsDatabase,
+	"DatabaseColumnSize":          bsDatabase,
+	"DatabaseColumnText":          bsDatabase,
+	"DatabaseColumnInteger":       bsDatabase,
+	"DatabaseColumnLong":          bsDatabase,
+	"DatabaseColumnDouble":        bsDatabase,
+	"DatabaseColumnBlob":          bsDatabase,
 	// OpenCL — GPU compute, not available server-side
-	"CLBufferCreate":          bsOpenCL,
-	"CLBufferFree":            bsOpenCL,
-	"CLBufferRead":            bsOpenCL,
-	"CLBufferWrite":           bsOpenCL,
-	"CLContextCreate":         bsOpenCL,
-	"CLContextFree":           bsOpenCL,
-	"CLExecute":               bsOpenCL,
-	"CLGetDeviceInfo":         bsOpenCL,
-	"CLGetInfoInteger":        bsOpenCL,
-	"CLHandleType":            bsOpenCL,
-	"CLKernelCreate":          bsOpenCL,
-	"CLKernelFree":            bsOpenCL,
-	"CLProgramCreate":         bsOpenCL,
-	"CLProgramFree":           bsOpenCL,
-	"CLSetKernelArg":          bsOpenCL,
-	"CLSetKernelArgMem":       bsOpenCL,
+	"CLBufferCreate":    bsOpenCL,
+	"CLBufferFree":      bsOpenCL,
+	"CLBufferRead":      bsOpenCL,
+	"CLBufferWrite":     bsOpenCL,
+	"CLContextCreate":   bsOpenCL,
+	"CLContextFree":     bsOpenCL,
+	"CLExecute":         bsOpenCL,
+	"CLGetDeviceInfo":   bsOpenCL,
+	"CLGetInfoInteger":  bsOpenCL,
+	"CLHandleType":      bsOpenCL,
+	"CLKernelCreate":    bsOpenCL,
+	"CLKernelFree":      bsOpenCL,
+	"CLProgramCreate":   bsOpenCL,
+	"CLProgramFree":     bsOpenCL,
+	"CLSetKernelArg":    bsOpenCL,
+	"CLSetKernelArgMem": bsOpenCL,
 	// DirectX — graphics rendering, not available server-side
-	"DXContextCreate":         bsDirectX,
-	"DXContextSetSize":        bsDirectX,
-	"DXContextClearColors":    bsDirectX,
-	"DXContextClearDepth":     bsDirectX,
-	"DXContextGetColors":      bsDirectX,
-	"DXContextGetDepth":       bsDirectX,
-	"DXBufferCreate":          bsDirectX,
-	"DXTextureCreate":         bsDirectX,
-	"DXInputCreate":           bsDirectX,
-	"DXInputSet":              bsDirectX,
-	"DXShaderCreate":          bsDirectX,
-	"DXShaderSetLayout":       bsDirectX,
-	"DXShaderInputsSet":       bsDirectX,
-	"DXShaderTexturesSet":     bsDirectX,
-	"DXDraw":                  bsDirectX,
-	"DXDrawIndexed":           bsDirectX,
-	"DXPrimiveTopologySet":    bsDirectX,
-	"DXBufferSet":             bsDirectX,
-	"DXShaderSet":             bsDirectX,
-	"DXHandleType":            bsDirectX,
-	"DXRelease":               bsDirectX,
+	"DXContextCreate":      bsDirectX,
+	"DXContextSetSize":     bsDirectX,
+	"DXContextClearColors": bsDirectX,
+	"DXContextClearDepth":  bsDirectX,
+	"DXContextGetColors":   bsDirectX,
+	"DXContextGetDepth":    bsDirectX,
+	"DXBufferCreate":       bsDirectX,
+	"DXTextureCreate":      bsDirectX,
+	"DXInputCreate":        bsDirectX,
+	"DXInputSet":           bsDirectX,
+	"DXShaderCreate":       bsDirectX,
+	"DXShaderSetLayout":    bsDirectX,
+	"DXShaderInputsSet":    bsDirectX,
+	"DXShaderTexturesSet":  bsDirectX,
+	"DXDraw":               bsDirectX,
+	"DXDrawIndexed":        bsDirectX,
+	"DXPrimiveTopologySet": bsDirectX,
+	"DXBufferSet":          bsDirectX,
+	"DXShaderSet":          bsDirectX,
+	"DXHandleType":         bsDirectX,
+	"DXRelease":            bsDirectX,
 	// Economic Calendar — not available in backtest
 	"CalendarCountryById":         bsCalendar,
 	"CalendarEventById":           bsCalendar,
@@ -462,136 +367,130 @@ var permanentBlindSpots = map[string]string{
 	"GlobalVariablesFlush":         "Global Variables: terminal client-side state",
 	"GlobalVariableTime":           "Global Variables: terminal client-side state",
 	// Optimization Frames — strategy tester only
-	"FrameAdd":                    "Optimization: strategy tester only",
-	"FrameFilter":                 "Optimization: strategy tester only",
-	"FrameFirst":                  "Optimization: strategy tester only",
-	"FrameInputs":                 "Optimization: strategy tester only",
-	"FrameNext":                   "Optimization: strategy tester only",
-	"ParameterGetRange":           "Optimization: strategy tester only",
-	"ParameterSetRange":           "Optimization: strategy tester only",
+	"FrameAdd":          "Optimization: strategy tester only",
+	"FrameFilter":       "Optimization: strategy tester only",
+	"FrameFirst":        "Optimization: strategy tester only",
+	"FrameInputs":       "Optimization: strategy tester only",
+	"FrameNext":         "Optimization: strategy tester only",
+	"ParameterGetRange": "Optimization: strategy tester only",
+	"ParameterSetRange": "Optimization: strategy tester only",
 	// Trade Signals — terminal client-side
-	"SignalBaseGetDouble":         bsSignals,
-	"SignalBaseGetInteger":        bsSignals,
-	"SignalBaseGetString":         bsSignals,
-	"SignalBaseSelect":            bsSignals,
-	"SignalBaseTotal":             bsSignals,
-	"SignalInfoGetDouble":         bsSignals,
-	"SignalInfoGetInteger":        bsSignals,
-	"SignalInfoGetString":         bsSignals,
-	"SignalInfoSetDouble":         bsSignals,
-	"SignalInfoSetInteger":        bsSignals,
-	"SignalSubscribe":             bsSignals,
-	"SignalUnsubscribe":           bsSignals,
+	"SignalBaseGetDouble":  bsSignals,
+	"SignalBaseGetInteger": bsSignals,
+	"SignalBaseGetString":  bsSignals,
+	"SignalBaseSelect":     bsSignals,
+	"SignalBaseTotal":      bsSignals,
+	"SignalInfoGetDouble":  bsSignals,
+	"SignalInfoGetInteger": bsSignals,
+	"SignalInfoGetString":  bsSignals,
+	"SignalInfoSetDouble":  bsSignals,
+	"SignalInfoSetInteger": bsSignals,
+	"SignalSubscribe":      bsSignals,
+	"SignalUnsubscribe":    bsSignals,
 	// Custom Indicator functions — indicator development only
-	"IndicatorCreate":             bsCustomInd,
-	"IndicatorParameters":         bsCustomInd,
-	"IndicatorRelease":            bsCustomInd,
-	"IndicatorSetDouble":          bsCustomInd,
-	"IndicatorSetInteger":         bsCustomInd,
-	"IndicatorSetString":          bsCustomInd,
-	"PlotIndexGetInteger":         bsCustomInd,
-	"PlotIndexSetDouble":          bsCustomInd,
-	"PlotIndexSetInteger":         bsCustomInd,
-	"PlotIndexSetString":          bsCustomInd,
-	"SetIndexBuffer":              bsCustomInd,
+	"IndicatorCreate":     bsCustomInd,
+	"IndicatorParameters": bsCustomInd,
+	"IndicatorRelease":    bsCustomInd,
+	"IndicatorSetDouble":  bsCustomInd,
+	"IndicatorSetInteger": bsCustomInd,
+	"IndicatorSetString":  bsCustomInd,
+	"PlotIndexGetInteger": bsCustomInd,
+	"PlotIndexSetDouble":  bsCustomInd,
+	"PlotIndexSetInteger": bsCustomInd,
+	"PlotIndexSetString":  bsCustomInd,
+	"SetIndexBuffer":      bsCustomInd,
 	// Market Book — DOM not available server-side
-	"MarketBookAdd":               "Market Book: DOM not available server-side",
-	"MarketBookGet":               "Market Book: DOM not available server-side",
-	"MarketBookRelease":           "Market Book: DOM not available server-side",
+	"MarketBookAdd":     "Market Book: DOM not available server-side",
+	"MarketBookGet":     "Market Book: DOM not available server-side",
+	"MarketBookRelease": "Market Book: DOM not available server-side",
 	// Misc client-only / not applicable
-	"MessageBox":                  "Client UI: message box not available server-side",
-	"PlaySound":                   "Client UI: sound not available server-side",
-	"ResourceCreate":              "Client UI: resource not available server-side",
-	"ResourceFree":                "Client UI: resource not available server-side",
-	"ResourceReadImage":           "Client UI: resource not available server-side",
-	"ResourceSave":                "Client UI: resource not available server-side",
-	"TerminalClose":               "Client UI: terminal control not available server-side",
-	"TesterStatistics":            "Strategy tester only",
-	"EventChartCustom":            "Chart event: client-side only",
-	"OnChartEvent":                "Chart event: client-side only",
-	"OnStart":                     "Script event: not applicable for EA",
-	"OnCalculate":                 "Indicator event: not applicable for EA",
-	"OnBookEvent":                 "Market depth event: not available server-side",
-	"OnTesterInit":                "Strategy tester optimization only",
-	"OnTesterDeinit":              "Strategy tester optimization only",
-	"OnTesterPass":                "Strategy tester optimization only",
-	"CheckPointer":                "Memory management: Go handles this",
-	"GetPointer":                  "Memory management: Go handles this",
-	"DebugBreak":                  "Debugging: not applicable in production",
-	"ZeroMemory":                  "Memory management: Go handles this",
-	"PrintFormat":                 "Use Print instead",
+	"MessageBox":        "Client UI: message box not available server-side",
+	"PlaySound":         "Client UI: sound not available server-side",
+	"ResourceCreate":    "Client UI: resource not available server-side",
+	"ResourceFree":      "Client UI: resource not available server-side",
+	"ResourceReadImage": "Client UI: resource not available server-side",
+	"ResourceSave":      "Client UI: resource not available server-side",
+	"TerminalClose":     "Client UI: terminal control not available server-side",
+	"TesterStatistics":  "Strategy tester only",
+	"EventChartCustom":  "Chart event: client-side only",
+	"OnChartEvent":      "Chart event: client-side only",
+	"OnStart":           "Script event: not applicable for EA",
+	"OnCalculate":       "Indicator event: not applicable for EA",
+	"OnBookEvent":       "Market depth event: not available server-side",
+	"OnTesterInit":      "Strategy tester optimization only",
+	"OnTesterDeinit":    "Strategy tester optimization only",
+	"OnTesterPass":      "Strategy tester optimization only",
+	"CheckPointer":      "Memory management: Go handles this",
+	"GetPointer":        "Memory management: Go handles this",
+	"DebugBreak":        "Debugging: not applicable in production",
+	"ZeroMemory":        "Memory management: Go handles this",
+	"PrintFormat":       "Use Print instead",
 	// DLL import — security risk, not supported
-	"DLLImport":         "DLL #import: security risk, not supported",
+	"DLLImport": "DLL #import: security risk, not supported",
 	// MQL5 native OrderSend — CTrade wrapper covers this
-	"OrderSendMQL5":     "MQL5 native OrderSend: CTrade wrapper covers this",
-	"OrderSendAsync":    "MQL5 async OrderSend: use CTrade wrapper instead",
+	"OrderSendMQL5":  "MQL5 native OrderSend: CTrade wrapper covers this",
+	"OrderSendAsync": "MQL5 async OrderSend: use CTrade wrapper instead",
 	// MQL4-only Window functions — client UI, no server meaning
-	"WindowBarsPerChart":     bsWindow,
-	"WindowExpertName":       bsWindow,
-	"WindowFind":             bsWindow,
-	"WindowFirstVisibleBar":  bsWindow,
-	"WindowHandle":           bsWindow,
-	"WindowIsVisible":        bsWindow,
-	"WindowOnDropped":        bsWindow,
-	"WindowPriceMax":         bsWindow,
-	"WindowPriceMin":         bsWindow,
-	"WindowPriceOnDropped":   bsWindow,
-	"WindowRedraw":           bsWindow,
-	"WindowScreenShot":       bsWindow,
-	"WindowsTotal":           bsWindow,
-	"WindowTimeOnDropped":    bsWindow,
-	"WindowXOnDropped":       bsWindow,
-	"WindowYOnDropped":       bsWindow,
+	"WindowBarsPerChart":    bsWindow,
+	"WindowExpertName":      bsWindow,
+	"WindowFind":            bsWindow,
+	"WindowFirstVisibleBar": bsWindow,
+	"WindowHandle":          bsWindow,
+	"WindowIsVisible":       bsWindow,
+	"WindowOnDropped":       bsWindow,
+	"WindowPriceMax":        bsWindow,
+	"WindowPriceMin":        bsWindow,
+	"WindowPriceOnDropped":  bsWindow,
+	"WindowRedraw":          bsWindow,
+	"WindowScreenShot":      bsWindow,
+	"WindowsTotal":          bsWindow,
+	"WindowTimeOnDropped":   bsWindow,
+	"WindowXOnDropped":      bsWindow,
+	"WindowYOnDropped":      bsWindow,
 	// MQL4-only custom indicator functions — indicator development only
-	"IndicatorBuffers":       bsCustomInd,
-	"IndicatorCounted":       bsCustomInd,
-	"IndicatorDigits":        bsCustomInd,
-	"IndicatorShortName":     bsCustomInd,
-	"SetIndexArrow":          bsCustomInd,
-	"SetIndexDrawBegin":      bsCustomInd,
-	"SetIndexEmptyValue":     bsCustomInd,
-	"SetIndexLabel":          bsCustomInd,
-	"SetIndexShift":          bsCustomInd,
-	"SetIndexStyle":          bsCustomInd,
-	"SetLevelStyle":          bsCustomInd,
-	"SetLevelValue":          bsCustomInd,
+	"IndicatorBuffers":   bsCustomInd,
+	"IndicatorCounted":   bsCustomInd,
+	"IndicatorDigits":    bsCustomInd,
+	"IndicatorShortName": bsCustomInd,
+	"SetIndexArrow":      bsCustomInd,
+	"SetIndexDrawBegin":  bsCustomInd,
+	"SetIndexEmptyValue": bsCustomInd,
+	"SetIndexLabel":      bsCustomInd,
+	"SetIndexShift":      bsCustomInd,
+	"SetIndexStyle":      bsCustomInd,
+	"SetLevelStyle":      bsCustomInd,
+	"SetLevelValue":      bsCustomInd,
 	// MQL4-only Object functions
-	"ObjectType":             bsObjectChart,
-	"ObjectGetFiboDescription":   bsObjectChart,
-	"ObjectSetFiboDescription":   bsObjectChart,
-	"ObjectGetShiftByValue":  bsObjectChart,
-	"ObjectGetValueByShift":  bsObjectChart,
+	"ObjectType":               bsObjectChart,
+	"ObjectGetFiboDescription": bsObjectChart,
+	"ObjectSetFiboDescription": bsObjectChart,
+	"ObjectGetShiftByValue":    bsObjectChart,
+	"ObjectGetValueByShift":    bsObjectChart,
 	// MQL4-only Array functions
-	"ArrayCopyRates":         "Array: MQL4 timeseries copy, use Copy* functions",
-	"ArrayCopySeries":        "Array: MQL4 timeseries copy, use Copy* functions",
-	"ArrayDimension":         "Array: MQL4 legacy, use ArrayRange",
+	"ArrayCopyRates":  "Array: MQL4 timeseries copy, use Copy* functions",
+	"ArrayCopySeries": "Array: MQL4 timeseries copy, use Copy* functions",
+	"ArrayDimension":  "Array: MQL4 legacy, use ArrayRange",
 	// Tester functions
-	"HideTestIndicators":     "Strategy tester only",
-	"TesterHideIndicators":   "Strategy tester only",
-	"TesterStop":             "Strategy tester only",
-	"TesterDeposit":          "Strategy tester only",
-	"TesterWithdrawal":       "Strategy tester only",
+	"HideTestIndicators":   "Strategy tester only",
+	"TesterHideIndicators": "Strategy tester only",
+	"TesterStop":           "Strategy tester only",
+	"TesterDeposit":        "Strategy tester only",
+	"TesterWithdrawal":     "Strategy tester only",
 	// Misc client-only
-	"TranslateKey":           "Client UI: keyboard input, not applicable server-side",
+	"TranslateKey": "Client UI: keyboard input, not applicable server-side",
 	// Custom indicators — source-based execution not yet implemented
-	"iCustom":                "Custom indicator: OnCalculate execution model + indicator source registration not implemented. VM returns 0.",
+	"iCustom": "Custom indicator: OnCalculate execution model + indicator source registration not implemented. VM returns 0.",
 }
 
-// isPermanentBlindSpot returns true if the function is a known permanent blind spot.
-func isPermanentBlindSpot(name string) bool {
-	_, ok := permanentBlindSpots[name]
-	return ok
+// isRegistryIndicator checks if a name is an indicator function in the registry.
+func isRegistryIndicator(name string) bool {
+	s, ok := LookupAPI(name)
+	return ok && s.Status == StatusImplemented && s.Category == CatFunction &&
+		len(name) > 1 && name[0] == 'i' && name[1] >= 'A' && name[1] <= 'Z'
 }
 
-func isTradeName(name string) bool {
-	return inSlice(name, implementedMQL4Trade) ||
-		inSlice(name, implementedMQL5Position) ||
-		inSlice(name, implementedAccount)
-}
-
-func isIndicatorName(name string) bool {
-	return inSlice(name, implementedIndicators)
-}
+// permanentBlindSpots map and isPermanentBlindSpot removed — replaced by registry
+// StatusUnsupported check in classifySeverity.
 
 // looksLikeMQLBuiltin checks if a function name matches known MQL builtin
 // naming patterns. MQL builtins use PascalCase with recognizable prefixes.

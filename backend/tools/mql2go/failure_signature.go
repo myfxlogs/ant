@@ -48,6 +48,34 @@ func hashSource(source string) string {
 
 // BuildFailureSignature creates a dedup signature from rule findings and blind spots.
 func BuildFailureSignature(source string, findings []DiagnosticFinding, blindSpots []CoverageBlindSpot, runtimeBlinds []RuntimeBlindSpot, totalTrades int) FailureSignature {
+	return BuildFailureSignatureAt(source, findings, blindSpots, runtimeBlinds, totalTrades, time.Now().UTC())
+}
+
+// BuildReproPackage creates a full reproduction package.
+func BuildReproPackage(source string, findings []DiagnosticFinding, blindSpots []CoverageBlindSpot, runtimeBlinds []RuntimeBlindSpot, totalTrades int, symbol string, timeframe string) ReproPackage {
+	now := time.Now().UTC()
+	sig := BuildFailureSignatureAt(source, findings, blindSpots, runtimeBlinds, totalTrades, now)
+	preview := source
+	if len(preview) > 500 {
+		preview = preview[:500] + "..."
+	}
+	return ReproPackage{
+		Signature:     sig,
+		SourceHash:    sig.SourceHash,
+		SourcePreview: preview,
+		Findings:      findings,
+		BlindSpots:    blindSpots,
+		RuntimeBlinds: runtimeBlinds,
+		TotalTrades:   totalTrades,
+		Symbol:        symbol,
+		Timeframe:     timeframe,
+		CreatedAt:     now,
+	}
+}
+
+// BuildFailureSignatureAt is like BuildFailureSignature but accepts a timestamp.
+// Used by BuildReproPackage to ensure Signature.CreatedAt == ReproPackage.CreatedAt.
+func BuildFailureSignatureAt(source string, findings []DiagnosticFinding, blindSpots []CoverageBlindSpot, runtimeBlinds []RuntimeBlindSpot, totalTrades int, now time.Time) FailureSignature {
 	sourceHash := hashSource(source)
 
 	var ruleIDs []string
@@ -55,15 +83,21 @@ func BuildFailureSignature(source string, findings []DiagnosticFinding, blindSpo
 		ruleIDs = append(ruleIDs, f.RuleID)
 	}
 
+	bsSeen := make(map[string]bool)
 	var bsNames []string
 	for _, bs := range blindSpots {
-		bsNames = append(bsNames, bs.Builtin)
+		if !bsSeen[bs.Builtin] {
+			bsSeen[bs.Builtin] = true
+			bsNames = append(bsNames, bs.Builtin)
+		}
 	}
 	for _, rbs := range runtimeBlinds {
-		bsNames = append(bsNames, rbs.Builtin)
+		if !bsSeen[rbs.Builtin] {
+			bsSeen[rbs.Builtin] = true
+			bsNames = append(bsNames, rbs.Builtin)
+		}
 	}
 
-	// Build hash from sourceHash + sorted ruleIDs + sorted blindSpot names
 	sort.Strings(ruleIDs)
 	sort.Strings(bsNames)
 	hashInput := sourceHash + "|" + strings.Join(ruleIDs, ",") + "|" + strings.Join(bsNames, ",")
@@ -75,34 +109,18 @@ func BuildFailureSignature(source string, findings []DiagnosticFinding, blindSpo
 		RuleIDs:     ruleIDs,
 		BlindSpots:  bsNames,
 		TotalTrades: totalTrades,
-		CreatedAt:   time.Now().UTC(),
-	}
-}
-
-// BuildReproPackage creates a full reproduction package.
-func BuildReproPackage(source string, findings []DiagnosticFinding, blindSpots []CoverageBlindSpot, runtimeBlinds []RuntimeBlindSpot, totalTrades int, symbol string, timeframe string) ReproPackage {
-	preview := source
-	if len(preview) > 500 {
-		preview = preview[:500] + "..."
-	}
-	return ReproPackage{
-		Signature:     BuildFailureSignature(source, findings, blindSpots, runtimeBlinds, totalTrades),
-		SourceHash:    hashSource(source),
-		SourcePreview: preview,
-		Findings:      findings,
-		BlindSpots:    blindSpots,
-		RuntimeBlinds: runtimeBlinds,
-		TotalTrades:   totalTrades,
-		Symbol:        symbol,
-		Timeframe:     timeframe,
-		CreatedAt:     time.Now().UTC(),
+		CreatedAt:   now,
 	}
 }
 
 // String returns a human-readable summary of the failure signature.
 func (f FailureSignature) String() string {
+	shortHash := f.Hash
+	if len(shortHash) > 12 {
+		shortHash = shortHash[:12]
+	}
 	return fmt.Sprintf("FailureSignature{hash=%s, rules=%v, blindSpots=%v, trades=%d}",
-		f.Hash[:12], f.RuleIDs, f.BlindSpots, f.TotalTrades)
+		shortHash, f.RuleIDs, f.BlindSpots, f.TotalTrades)
 }
 
 // ToProto converts the Go FailureSignature to its proto representation.

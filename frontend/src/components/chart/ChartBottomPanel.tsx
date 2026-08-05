@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
-import { Table, Tag, Button, Empty } from 'antd';
+import { Table, Tag, Button, Empty, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlayCircleOutlined, RobotOutlined, SettingOutlined } from '@ant-design/icons';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
 import { POSITIONS_KEY, HISTORY_KEY, BACKTEST_KEY as WS_BACKTEST_KEY, NO_RESULTS_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY, TOTAL_TRADES_KEY as GEN_TOTAL_TRADES_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
@@ -16,6 +16,8 @@ interface Props {
   backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
   backtestStatus?: string;
   onOpenAdvancedBacktest?: () => void;
+  onRunBacktest?: () => void;
+  onAIOptimize?: () => void;
   panelHeight?: number;
   onResizeStart?: (e: React.MouseEvent) => void;
   dragging?: boolean;
@@ -36,7 +38,7 @@ function fmtTime(ts?: string): string {
   return `${mm}-${dd} ${hh}:${min}`;
 }
 
-export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, onOpenAdvancedBacktest, panelHeight, onResizeStart, dragging }: Props) {
+export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, onOpenAdvancedBacktest, onRunBacktest, onAIOptimize, panelHeight, onResizeStart, dragging }: Props) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'positions' | 'history' | 'backtest'>('positions');
   const resizeRef = useRef<HTMLDivElement>(null);
@@ -221,29 +223,43 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
         ) : (
           <div style={{ padding: 16 }}>
             {backtestMetrics ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                {[
-                  { label: t(GEN_RETURN_KEY), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
-                  { label: t(GEN_MAX_DRAWDOWN_KEY), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
-                  { label: t(GEN_SHARPE_KEY), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
-                  { label: t(GEN_WIN_RATE_KEY), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
-                  { label: t(GEN_TOTAL_TRADES_KEY), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
-                ].map((m, i) => (
-                  <div key={i} style={{ background: 'var(--ant-color-fill-quaternary)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
-                    <div style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>{m.label}</div>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+                  {[
+                    { label: t(GEN_RETURN_KEY), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
+                    { label: t(GEN_MAX_DRAWDOWN_KEY), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
+                    { label: t(GEN_SHARPE_KEY), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
+                    { label: t(GEN_WIN_RATE_KEY), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
+                    { label: t(GEN_TOTAL_TRADES_KEY), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
+                  ].map((m, i) => (
+                    <div key={i} style={{ background: 'var(--ant-color-fill-quaternary)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
+                      <div style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>{m.label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 10 }}>
+                  {onRunBacktest && (
+                    <Button size="small" icon={<PlayCircleOutlined />} onClick={onRunBacktest}
+                      style={{ background: '#3fb950', borderColor: '#3fb950', color: '#fff' }}>
+                      {t('strategy.workspace.reRun', { defaultValue: 'Re-run' })}
+                    </Button>
+                  )}
+                  {onAIOptimize && (
+                    <Button size="small" icon={<RobotOutlined />} onClick={onAIOptimize}
+                      style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
+                      {t('strategy.workspace.aiAnalyze', { defaultValue: 'AI Analysis' })}
+                    </Button>
+                  )}
+                  {onOpenAdvancedBacktest && (
+                    <Button size="small" icon={<SettingOutlined />} onClick={onOpenAdvancedBacktest}>
+                      {t('strategy.workspace.tuningGate', { defaultValue: 'Tuning & Gate' })}
+                    </Button>
+                  )}
+                </div>
+              </>
             ) : (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_RESULTS_KEY)} />
-            )}
-            {onOpenAdvancedBacktest && (
-              <div style={{ textAlign: 'center', marginTop: 8 }}>
-                <Button size="small" type="link" onClick={onOpenAdvancedBacktest}>
-                  📊 Tuning & Gate →
-                </Button>
-              </div>
             )}
           </div>
         )}
