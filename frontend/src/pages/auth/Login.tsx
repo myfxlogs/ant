@@ -13,6 +13,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const [rememberMe, setRememberMe] = useState(false);
 
   const languages: { key: SupportedLanguage; nativeName: string }[] = [
     { key: 'zh-cn', nativeName: LANGUAGE_NATIVE_NAMES['zh-cn'] },
@@ -35,7 +36,7 @@ export default function Login() {
   const onFinish = async (values: LoginRequest) => {
     setLoading(true);
     try {
-      const success = await login(values);
+      const success = await login({ ...values, rememberMe });
       if (success) {
         navigate('/');
       }
@@ -129,10 +130,12 @@ export default function Login() {
 
             <div className="flex items-center justify-between mb-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   className="w-4 h-4 rounded"
                   style={{ accentColor: '#D4AF37' }}
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>{t('auth.login.rememberMe')}</span>
               </label>

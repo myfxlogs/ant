@@ -11,10 +11,10 @@ export function useAuth() {
   const navigate = useNavigate();
   const { user, isAuthenticated, setTokens, logout: storeLogout } = useAuthStore();
 
-  const login = useCallback(async (data: { login: string; password: string }) => {
+  const login = useCallback(async (data: { login: string; password: string; rememberMe?: boolean }) => {
     try {
       const response = await authApi.login(data.login, data.password);
-      setTokens(response.accessToken, '', response.user as User);
+      setTokens(response.accessToken, '', response.user as User, data.rememberMe ?? false);
       showSuccess(i18n.t('auth.messages.loginSuccess'));
       navigate('/');
       return true;

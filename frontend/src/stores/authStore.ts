@@ -7,9 +7,10 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   _hasHydrated: boolean;
+  _rememberMe: boolean;
   setUser: (_user: User | null) => void;
   setAccessToken: (_token: string) => void;
-  setTokens: (_accessToken: string, _refreshToken: string, _user?: User) => void;
+  setTokens: (_accessToken: string, _refreshToken: string, _user?: User, _rememberMe?: boolean) => void;
   logout: () => void;
   setHydrated: (_hydrated: boolean) => void;
 }
@@ -21,31 +22,37 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isAuthenticated: false,
       _hasHydrated: false,
+      _rememberMe: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setAccessToken: (accessToken) => set({ accessToken, isAuthenticated: true }),
-      setTokens: (_accessToken, _refreshToken, user) => {
+      setTokens: (_accessToken, _refreshToken, user, _rememberMe) => {
         set({
           accessToken: _accessToken,
           isAuthenticated: true,
           _hasHydrated: true,
           user: user || null,
+          _rememberMe: _rememberMe ?? false,
         });
       },
-      logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+      logout: () => set({ user: null, accessToken: null, isAuthenticated: false, _rememberMe: false }),
       setHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
     }),
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        user: state.user,
-      }),
+      partialize: (state) => {
+        const base: { user: User | null; accessToken?: string | null } = { user: state.user };
+        if (state._rememberMe && state.accessToken) {
+          base.accessToken = state.accessToken;
+        }
+        return base;
+      },
       onRehydrateStorage: () => {
         return (state, error) => {
           if (error) {
             console.error('[AuthStore] Rehydration error:', error);
           }
-          const isAuth = !!(state as AuthState | undefined)?.user;
+          const isAuth = !!(state as AuthState | undefined)?.user && !!(state as AuthState | undefined)?.accessToken;
           queueMicrotask(() => {
             useAuthStore.setState({ _hasHydrated: true, isAuthenticated: isAuth });
           });
