@@ -25,6 +25,7 @@ import {
 } from './backtestRunnerTypes';
 import { handleBacktestUpdate, handleBacktestError } from './backtestRunnerWatch';
 import { backtestRunsApi } from '@/client/backtestRuns';
+import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
@@ -242,7 +243,7 @@ export function useBacktestRunner() {
         limit: 1, offset: 0,
       });
       const lastRun = resp.runs?.[0];
-      if (!lastRun || lastRun.status !== 'SUCCEEDED') return;
+      if (!lastRun || lastRun.status !== BacktestRunStatus.SUCCEEDED) return;
       const runIdStr = lastRun.id;
       if (!runIdStr) return;
       const detail = await strategyRuntimeApi.getBacktestRun(runIdStr);
