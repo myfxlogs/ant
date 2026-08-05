@@ -290,9 +290,22 @@ func builtinIADXWilder(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.DecimalVal(decimalZero), nil
 	}
+	// iADXWilder(symbol, period, adx_period, applied_price, mode, shift)
 	period := int(argI(args, 2))
-	shift := int(argI(args, 3))
-	return interp.DecimalVal(vm.ctx.Indicators().ADXWilder(period, shift)), nil
+	mode := argI(args, 4)
+	shift := int(argI(args, 5))
+	switch mode {
+	case 0: // MODE_MAIN (ADX line)
+		return interp.DecimalVal(vm.ctx.Indicators().ADXWilder(period, shift)), nil
+	case 1: // MODE_PLUSDI (+DI line)
+		vm.recordBlindSpot("iADXWilder:MODE_PLUSDI")
+		return interp.DecimalVal(decimalZero), nil
+	case 2: // MODE_MINUSDI (-DI line)
+		vm.recordBlindSpot("iADXWilder:MODE_MINUSDI")
+		return interp.DecimalVal(decimalZero), nil
+	default:
+		return interp.DecimalVal(vm.ctx.Indicators().ADXWilder(period, shift)), nil
+	}
 }
 
 func builtinIChaikin(vm *VM, args []interp.Value) (interp.Value, error) {

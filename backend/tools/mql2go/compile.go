@@ -12,27 +12,27 @@ import (
 func CompileAST(ir *interp.IR) (*Bytecode, error) {
 	c := &astCompiler{
 		bc: &Bytecode{
-			Consts:      make([]ConstValue, 0),
-			Code:        make([]Instruction, 0),
-			GlobalSlots: make(map[string]VarID),
-			Funcs:       make(map[string]FuncEntry),
-			Builtins:    make(map[string]BuiltinID),
-			Params:      ir.Params,
-			Version:     ir.Version,
-			Enums:       ir.Enums,
-			Coverage:    &CoverageReport{},
-			OnInit:              -1,
-			OnBar:               -1,
-			OnTick:              -1,
-			OnTrade:             -1,
-			OnTimer:             -1,
-			OnDeinit:            -1,
-			OnTradeTransaction:  -1,
-			OnBookEvent:         -1,
-			EventLocals: make(map[int32]int),
+			Consts:             make([]ConstValue, 0),
+			Code:               make([]Instruction, 0),
+			GlobalSlots:        make(map[string]VarID),
+			Funcs:              make(map[string]FuncEntry),
+			Builtins:           make(map[string]BuiltinID),
+			Params:             ir.Params,
+			Version:            ir.Version,
+			Enums:              ir.Enums,
+			Coverage:           &CoverageReport{},
+			OnInit:             -1,
+			OnBar:              -1,
+			OnTick:             -1,
+			OnTrade:            -1,
+			OnTimer:            -1,
+			OnDeinit:           -1,
+			OnTradeTransaction: -1,
+			OnBookEvent:        -1,
+			EventLocals:        make(map[int32]int),
 		},
-		ir:           ir,
-		localScopes:  []map[string]VarID{},
+		ir:          ir,
+		localScopes: []map[string]VarID{},
 	}
 
 	// Register builtin function IDs
@@ -134,9 +134,9 @@ type astCompiler struct {
 	ir            *interp.IR
 	localScopes   []map[string]VarID // scope stack for local variables
 	currentFunc   *FuncEntry
-	nextLocalSlot int                // next available local slot in current function
-	loopStack     []*loopContext     // stack of loop contexts for break/continue
-	err           error              // first compile error encountered (e.g. unknown constant)
+	nextLocalSlot int            // next available local slot in current function
+	loopStack     []*loopContext // stack of loop contexts for break/continue
+	err           error          // first compile error encountered (e.g. unknown constant)
 }
 
 // emit appends an instruction and returns its index.
@@ -199,7 +199,32 @@ func (c *astCompiler) resolveVar(name string) (VarID, bool) {
 	if id, ok := c.bc.GlobalSlots[name]; ok {
 		return id, true
 	}
-	// Unknown variable — register as a new global slot to avoid overwriting slot 0
+	// Unknown variable — check if it's a known MQL constant, enum, or series name
+	// that should have been resolved earlier. If not, it's likely a typo.
+	if interp.IsMQLConstant(name) || isSeriesName(name) {
+		// These should have been resolved in compileExpr, but if we get here
+		// (e.g. used as a variable target), register as global to avoid crash.
+		id := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[name] = id
+		return id, true
+	}
+	if _, ok := c.bc.Enums[name]; ok {
+		id := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[name] = id
+		return id, true
+	}
+	// MQL4 and Python allow implicit variable declaration (assign without declaring).
+	// Record as warning + blind spot, but still register to avoid crash.
+	if c.bc.Version == "mql4" || c.bc.Version == "python" {
+		c.bc.Coverage.AddBlindSpot("implicit variable: " + name)
+		id := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[name] = id
+		return id, true
+	}
+	// MQL5 requires explicit declaration — this is likely a typo.
+	if c.err == nil {
+		c.err = fmt.Errorf("unknown variable: %s (not declared, not a constant, not an enum)", name)
+	}
 	id := VarID(len(c.bc.GlobalSlots))
 	c.bc.GlobalSlots[name] = id
 	return id, true

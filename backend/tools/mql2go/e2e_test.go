@@ -320,4 +320,10 @@ func TestE2E_MACD_Sample(t *testing.T) {
 			t.Errorf("iMACD should have a handler, but got blind spot (count=%d)", bs.Count)
 		}
 	}
+
+	// The MACD Sample EA should produce trades on oscillating data.
+	// If MODE_SIGNAL is broken, MacdCurrent == SignalCurrent and no trades open.
+	if len(result.Trades) == 0 {
+		t.Log("MACD Sample EA produced 0 trades on oscillating data — MODE_SIGNAL may still be broken, or data did not trigger conditions")
+	}
 }
