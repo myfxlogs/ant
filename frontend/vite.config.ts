@@ -32,7 +32,7 @@ export default defineConfig({
   },
   build: {
     minify: 'terser',
-    chunkSizeWarningLimit: 700,
+    chunkSizeWarningLimit: 900,
     terserOptions: {
       compress: {
         drop_console: false,
@@ -59,7 +59,6 @@ export default defineConfig({
             if (id.includes('react-markdown') || id.includes('remark') || id.includes('micromark') || id.includes('mdast')) return 'vendor-markdown';
             if (id.includes('@codemirror')) return 'vendor-codemirror';
             if (id.includes('@sentry')) return 'vendor-sentry';
-            if (id.includes('@emotion') || id.includes('@rc-component') || id.includes('clsx') || id.includes('decimal.js')) return 'vendor-ui-utils';
             return 'vendor-misc';
           }
           if (id.includes('/src/gen/')) return 'gen-proto';
