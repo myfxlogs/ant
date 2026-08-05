@@ -10,11 +10,10 @@ import {
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { useWorkspaceStore, type CenterTab } from '@/stores/workspaceStore';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
-import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import StrategyChat from '@/components/strategy/StrategyChat';
-import ImportEAPanel from '../editor/ImportEAPanel';
 import WorkspaceSidebar from './WorkspaceSidebar';
 import WorkspaceAIPanel from './WorkspaceAIPanel';
+import CodeEditorArea from './CodeEditorArea';
 import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
@@ -305,84 +304,37 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             onOpenAdvanced={() => setBtDrawerOpen(true)}
           />
         ) : (
-        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* Code editor — or import mode — or empty state guidance */}
-          {importMode ? (
-            <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                <Button size="small" type="text" onClick={() => setImportMode(false)}>← {t('strategy.workspace.backToEditor', { defaultValue: 'Back' })}</Button>
-              </div>
-              <ImportEAPanel
-                onApplyCode={(c) => { code.setCode(c); setCenterTab('code'); setImportMode(false); }}
-                onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
-              />
-            </div>
-          ) : code.code ? (
-            <StrategyCodeEditor
-              value={code.code}
-              onChange={code.setCode}
-              style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
-            />
-          ) : (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ textAlign: 'center', maxWidth: 420, padding: 40 }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📝</div>
-                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--ant-color-text)' }}>
-                  {t('strategy.workspace.emptyTitle', { defaultValue: 'Start building your strategy' })}
-                </div>
-                <div style={{ fontSize: 13, color: 'var(--ant-color-text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
-                  {t('strategy.workspace.emptyDesc', { defaultValue: 'Import an existing MQL EA, pick a template, or let AI generate one for you. All backtesting and deployment happens right here.' })}
-                </div>
-                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Button type="primary" icon={<ImportOutlined />} onClick={() => setImportMode(true)}>
-                    {t('strategy.workspace.importMql', { defaultValue: 'Import MQL EA' })}
-                  </Button>
-                  <Button icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : setRightPanelTab('ai')}
-                    style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
-                    {t('strategy.workspace.aiGenerate', { defaultValue: 'AI Generate' })}
-                  </Button>
-                  <Button icon={<HistoryOutlined />} onClick={() => templates.onSelect(templates.list[0]?.id || '')}
-                    disabled={!templates.list.length}>
-                    {t('strategy.workspace.useTemplate', { defaultValue: 'Use Template' })}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <CodeEditorArea
+          code={code.code || ''}
+          importMode={importMode}
+          isMobile={isMobile}
+          templateCount={templates.list.length}
+          onSetImportMode={setImportMode}
+          onSetCode={code.setCode}
+          onSetCenterTab={setCenterTab}
+          onSetRightPanelTab={setRightPanelTab}
+          onSelectFirstTemplate={() => templates.onSelect(templates.list[0]?.id || '')}
+          onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
+        />
         )}
           </div>
         </div>
       </div>
 
-      {/* Backtest drawer (replaces backtest tab) */}
-      <Modal
-        title={t(WS_BACKTEST_KEY)}
+      <BacktestFullDrawer
         open={btDrawerOpen}
-        onCancel={() => setBtDrawerOpen(false)}
-        footer={null}
-        width="95vw"
-        style={{ top: 20 }}
-        destroyOnClose
-      >
-        <div style={{ height: 'calc(95vh - 120px)', overflow: 'auto' }}>
-          <BacktestPanel
-            runner={backtest.runner}
-            inputs={{
-              strategyCode: code.code,
-              accountId: account.accountId,
-              symbol: account.symbol,
-              timeframe: account.timeframe,
-              templateId: templates.selectedId || undefined,
-              strategyId: code.strategyId,
-            }}
-            onOpenHistory={(templateId?: string) => history.open(templateId)}
-            onAIOptimize={() => ai.optimize()}
-            code={code.code}
-            onApplyTunedParams={code.setCode}
-          />
-        </div>
-      </Modal>
+        onClose={() => setBtDrawerOpen(false)}
+        runner={backtest.runner}
+        strategyCode={code.code}
+        accountId={account.accountId}
+        symbol={account.symbol}
+        timeframe={account.timeframe}
+        templateId={templates.selectedId || undefined}
+        strategyId={code.strategyId}
+        onOpenHistory={(templateId?: string) => history.open(templateId)}
+        onAIOptimize={() => ai.optimize()}
+        onApplyTunedParams={code.setCode}
+      />
 
       {/* Mobile sidebar drawer */}
       {isMobile && (
