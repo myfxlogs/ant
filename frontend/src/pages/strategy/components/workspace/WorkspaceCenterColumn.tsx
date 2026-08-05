@@ -290,8 +290,21 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             </div>
           )}
 
-          {/* Code + optional AI right panel (desktop) */}
+          {/* Code + optional right panel (desktop) */}
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
+        {!isMobile && rightPanelTab ? (
+          <WorkspaceAIPanel
+            activeTab={rightPanelTab}
+            onTabChange={setRightPanelTab}
+            onClose={() => setRightPanelTab(null)}
+            btSummary={btSummary}
+            recentSummaries={recentSummaries}
+            backtestStatus={backtest.status}
+            backtestMetrics={backtest.metrics}
+            onRunBacktest={handleBacktestClick}
+            onOpenAdvanced={() => setBtDrawerOpen(true)}
+          />
+        ) : (
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           {/* Code editor — or import mode — or empty state guidance */}
           {importMode ? (
@@ -337,19 +350,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             </div>
           )}
         </div>
-        {/* Right panel: AI / Backtest tabs (desktop only) */}
-        {!isMobile && rightPanelTab && (
-          <WorkspaceAIPanel
-            activeTab={rightPanelTab}
-            onTabChange={setRightPanelTab}
-            onClose={() => setRightPanelTab(null)}
-            btSummary={btSummary}
-            recentSummaries={recentSummaries}
-            backtestStatus={backtest.status}
-            backtestMetrics={backtest.metrics}
-            onRunBacktest={handleBacktestClick}
-            onOpenAdvanced={() => setBtDrawerOpen(true)}
-          />
         )}
           </div>
         </div>
