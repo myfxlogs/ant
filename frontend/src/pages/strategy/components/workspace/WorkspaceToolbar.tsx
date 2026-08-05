@@ -80,7 +80,7 @@ export default function WorkspaceToolbar({
           placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
           notFoundContent={t(NO_ACCOUNTS_KEY)}
           options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
-        <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
+        <SymbolPicker accountId={selectedAccount ? accountId : ''} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
       </div>
 
       {/* Strategy name + save status */}

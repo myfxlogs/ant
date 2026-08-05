@@ -33,7 +33,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
   const [mtError, setMtError] = useState(false);
 
   useEffect(() => {
-    if (!accountId) { setSymbols([]); setMtError(false); return; }
+    if (!accountId) { setSymbols([]); setLoading(false); setMtError(false); return; }
     let cancelled = false;
     setLoading(true);
     setMtError(false);
