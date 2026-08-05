@@ -23,16 +23,6 @@ interface Props {
 
 export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
   const { t } = useTranslation();
-
-  // Auto-expand bottom panel when backtest completes with results
-  const prevBtStatusRef = useRef(backtest.status);
-  useEffect(() => {
-    if (backtest.status === 'done' && prevBtStatusRef.current === 'running' && backtest.metrics != null) {
-      layout.setBottomPanelCollapsed(false);
-      if (layout.bottomPanelHeight < 250) layout.setBottomPanelHeight(300);
-    }
-    prevBtStatusRef.current = backtest.status;
-  }, [backtest.status, backtest.metrics, layout]);
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
 
@@ -44,6 +34,29 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const layout = useWsLayout();
   const history = useWsHistory();
   const ai = useWsAI();
+
+  // Right panel tab: 'ai' | 'backtest' | null
+  const [rightPanelTab, setRightPanelTab] = useState<'ai' | 'backtest' | null>(null);
+
+  // Auto-expand bottom panel + switch right panel to backtest when running/completed
+  const prevBtStatusRef = useRef(backtest.status);
+  useEffect(() => {
+    if (backtest.status === 'running' && prevBtStatusRef.current !== 'running') {
+      setRightPanelTab('backtest');
+    }
+    if (backtest.status === 'completed' && prevBtStatusRef.current === 'running') {
+      layout.setBottomPanelCollapsed(false);
+      if (layout.bottomPanelHeight < 250) layout.setBottomPanelHeight(300);
+    }
+    prevBtStatusRef.current = backtest.status;
+  }, [backtest.status, layout]);
+
+  // Desktop: if centerTab is 'chat', open AI panel
+  useEffect(() => {
+    if (!isMobile && centerTab === 'chat') {
+      setRightPanelTab('ai'); setCenterTab('code');
+    }
+  }, [isMobile, centerTab, setCenterTab]);
 
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
   const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
@@ -93,16 +106,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     }
   }, [centerTab, setCenterTab]);
 
-  const aiPanelOpen = useWorkspaceStore(s => s.aiPanelOpen);
-  const setAiPanelOpen = useWorkspaceStore(s => s.setAiPanelOpen);
-
-  useEffect(() => {
-    if (!isMobile && centerTab === 'chat') {
-      setAiPanelOpen(true);
-      setCenterTab('code');
-    }
-  }, [isMobile, centerTab, setCenterTab, setAiPanelOpen]);
-
   return (
     <div data-tour="code-editor" style={{ flex: '1 1 0', minWidth: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <WorkspaceCenterTabBar
@@ -111,6 +114,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         setIndicatorDrawerOpen={setIndicatorDrawerOpen}
         onShowVersionHistory={onShowVersionHistory}
         onMobileSidebarToggle={() => setSidebarDrawerOpen(true)}
+        onToggleAI={() => setRightPanelTab(prev => prev === 'ai' ? null : 'ai')}
+        aiActive={rightPanelTab === 'ai'}
       />
 
       <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'row' }}>
@@ -179,7 +184,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
                       <Button type="primary" icon={<ImportOutlined />} onClick={() => setImportMode(true)}>
                         {t('strategy.workspace.importMql', { defaultValue: 'Import MQL EA' })}
                       </Button>
-                      <Button icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : setAiPanelOpen(true)}
+                      <Button icon={<RobotOutlined />} onClick={() => isMobile ? setCenterTab('chat') : setRightPanelTab('ai')}
                         style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
                         {t('strategy.workspace.aiGenerate', { defaultValue: 'AI Generate' })}
                       </Button>
@@ -192,11 +197,18 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
                 </div>
               )}
             </div>
-            {!isMobile && aiPanelOpen && (
+            {!isMobile && rightPanelTab && (
               <WorkspaceAIPanel
-                onClose={() => setAiPanelOpen(false)}
+                activeTab={rightPanelTab}
+                onTabChange={setRightPanelTab}
+                onClose={() => setRightPanelTab(null)}
                 btSummary={btSummary}
                 recentSummaries={recentSummaries}
+                backtestStatus={backtest.status}
+                backtestMetrics={backtest.metrics}
+                chartTrades={backtest.chartTrades}
+                onRunBacktest={() => setBtModalOpen(true)}
+                onOpenAdvanced={() => setBtDrawerOpen(true)}
               />
             )}
           </div>

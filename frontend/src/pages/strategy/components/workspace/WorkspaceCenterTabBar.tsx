@@ -16,14 +16,14 @@ interface Props {
   setIndicatorDrawerOpen: (v: boolean) => void;
   onShowVersionHistory?: () => void;
   onMobileSidebarToggle?: () => void;
+  onToggleAI?: () => void;
+  aiActive?: boolean;
 }
 
-export default function WorkspaceCenterTabBar({ isMobile, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory, onMobileSidebarToggle }: Props) {
+export default function WorkspaceCenterTabBar({ isMobile, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory, onMobileSidebarToggle, onToggleAI, aiActive }: Props) {
   const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
-  const aiPanelOpen = useWorkspaceStore(s => s.aiPanelOpen);
-  const setAiPanelOpen = useWorkspaceStore(s => s.setAiPanelOpen);
   const account = useWsAccount();
   const code = useWsCode();
   const templates = useWsTemplates();
@@ -113,8 +113,8 @@ export default function WorkspaceCenterTabBar({ isMobile, setBtModalOpen, setInd
           <Tooltip title={t(SEND_TO_AI_KEY)}>
             <Button size="small" icon={<RobotOutlined />}
               disabled={!code.code}
-              onClick={() => isMobile ? setCenterTab('chat') : setAiPanelOpen(!aiPanelOpen)}
-              style={!isMobile && aiPanelOpen
+              onClick={() => isMobile ? setCenterTab('chat') : onToggleAI?.()}
+              style={!isMobile && aiActive
                 ? { background: '#531dab', borderColor: '#531dab', color: '#fff' }
                 : { background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
               {t(SEND_TO_AI_KEY)}
