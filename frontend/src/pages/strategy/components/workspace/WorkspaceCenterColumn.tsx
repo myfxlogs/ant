@@ -194,9 +194,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
             <Tooltip title={t(COPY_KEY)}>
               <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
             </Tooltip>
-            <Tooltip title={t('strategy.workspace.importMql', { defaultValue: 'Import MQL' })}>
-              <Button size="small" icon={<ImportOutlined />} onClick={() => setImportMode(true)} />
-            </Tooltip>
             <Tooltip title={t(SEND_TO_AI_KEY)}>
               <Button size="small" icon={<RobotOutlined />}
                 onClick={() => isMobile ? setCenterTab('chat') : setAiPanelOpen(!aiPanelOpen)}

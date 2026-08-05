@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Grid } from 'antd';
-import { WorkspaceProvider, useWsAccount, useWsTemplates, useWsBacktest, useWsTuning, useWsLayout, useWsQuickTrade, useWsCode } from './WorkspaceContext';
+import { WorkspaceProvider, useWsAccount, useWsBacktest, useWsTuning, useWsLayout, useWsQuickTrade } from './WorkspaceContext';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import WorkspaceCenterColumn from './components/workspace/WorkspaceCenterColumn';
 import WorkspaceDrawers from './components/workspace/WorkspaceDrawers';
@@ -12,15 +12,10 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
 
   const account = useWsAccount();
-  const code = useWsCode();
-  const templates = useWsTemplates();
   const backtest = useWsBacktest();
   const tuning = useWsTuning();
   const layout = useWsLayout();
   const quickTrade = useWsQuickTrade();
-
-  const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || '';
-  const saveStatus: 'modified' | 'saved' | 'none' = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode ? 'modified' : code.lastSavedId ? 'saved' : 'none';
 
   // Header: 56px mobile, 64px desktop. Content padding-top matches in MainLayout.
   const headerHeight = isMobile ? 56 : 64;
@@ -33,11 +28,6 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
         accountInfo={account.accountInfo} positionCount={quickTrade.positionCount}
         busy={backtest.submitting || tuning.running}
         onTogglePositionsPanel={() => layout.setPositionsPanelVisible(!layout.positionsPanelVisible)}
-        strategyName={strategyName}
-        saveStatus={saveStatus}
-        templateList={templates.list}
-        selectedTemplateId={templates.selectedId}
-        onSelectTemplate={templates.onSelect}
       />
       <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>
         <WorkspaceCenterColumn

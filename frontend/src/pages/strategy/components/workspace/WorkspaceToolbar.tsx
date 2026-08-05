@@ -23,11 +23,6 @@ interface Props {
   busy?: boolean;
   onTogglePositionsPanel?: () => void;
   mtError?: string | null;
-  strategyName?: string;
-  saveStatus?: 'modified' | 'saved' | 'none';
-  templateList?: { id: string; name: string }[];
-  selectedTemplateId?: string;
-  onSelectTemplate?: (id: string | null) => void;
 }
 
 const groupStyle: React.CSSProperties = {
@@ -63,8 +58,7 @@ export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange, busy,
   symbol, onSymbolChange, accountInfo, positionCount,
   onTogglePositionsPanel,
-  mtError, strategyName, saveStatus,
-  templateList, selectedTemplateId, onSelectTemplate,
+  mtError,
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
@@ -87,32 +81,6 @@ export default function WorkspaceToolbar({
         <SymbolPicker accountId={selectedAccount ? accountId : ''} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
       </div>
 
-      {/* Strategy name + save status + switcher dropdown */}
-      {strategyName && (
-        <div data-tour="save" style={{ ...groupStyle, flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-          {saveStatus === 'modified' && <span style={{ color: '#f0a020', fontSize: 14 }}>●</span>}
-          {saveStatus === 'saved' && <span style={{ color: '#3fb950', fontSize: 14 }}>✓</span>}
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#262626' }}>{strategyName}</span>
-          <Select
-            size="small"
-            value={undefined}
-            onChange={(id) => {
-              if (id === '__view_all__') {
-                window.location.href = '/strategy';
-              } else if (id && onSelectTemplate) {
-                onSelectTemplate(id);
-              }
-            }}
-            placeholder="▾"
-            style={{ minWidth: 28 }}
-            dropdownStyle={{ minWidth: 200 }}
-            options={[
-              ...(templateList || []).map(t => ({ value: t.id, label: t.name || t.id })),
-              { value: '__view_all__', label: `📋 ${t('strategy.workspace.viewAllStrategies', { defaultValue: 'View All Strategies' })}` },
-            ]}
-          />
-        </div>
-      )}
 
       {/* Account Summary — SummaryChip cards */}
       {hasData && (
