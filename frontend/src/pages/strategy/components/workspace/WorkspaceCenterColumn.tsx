@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, Tooltip, Modal } from 'antd';
+import { Button, Tooltip, Modal, Drawer } from 'antd';
 import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined, ImportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,6 +13,7 @@ import BacktestPanel from '@/components/backtest/BacktestPanel';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import ImportEAPanel from '../editor/ImportEAPanel';
+import WorkspaceSidebar from './WorkspaceSidebar';
 import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 
@@ -37,6 +38,11 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   const layout = useWsLayout();
   const history = useWsHistory();
   const ai = useWsAI();
+
+  // ── Sidebar ──────────────────────────────────────────────────────────
+  const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
+  const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
+  const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
 
   // ── Bottom panel resize ──────────────────────────────────────────────
   const [bpDragging, setBpDragging] = useState(false);
@@ -72,18 +78,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   // ── Backtest drawer (replaces backtest tab) ──────────────────────────
   const [btDrawerOpen, setBtDrawerOpen] = useState(false);
 
-  // ── Import MQL modal (replaces import tab) ───────────────────────────
+  // ── Import MQL modal (user-initiated, never auto-pop) ────────────────
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const importPromptedRef = useRef(false);
-  useEffect(() => {
-    // Auto-prompt import modal when user opens workspace with no code and no template loaded
-    if (importPromptedRef.current) return;
-    if (code.code) return;
-    if (templates.selectedId) return;
-    if (centerTab !== 'code') return;
-    importPromptedRef.current = true;
-    setImportModalOpen(true);
-  }, [centerTab, code.code, templates.selectedId]);
 
   // Redirect legacy tab values from localStorage (import/strategies/backtest tabs removed)
   useEffect(() => {
@@ -152,6 +148,12 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
         borderBottom: '1px solid var(--ant-color-border)',
         background: 'var(--ant-color-bg-container)',
       }}>
+        {/* Mobile: sidebar toggle button */}
+        {isMobile && (
+          <Button size="small" type="text" icon={<span style={{ fontSize: 16 }}>☰</span>}
+            onClick={() => setSidebarDrawerOpen(true)}
+            style={{ marginLeft: 4, padding: '0 6px' }} />
+        )}
         {CTABS.map(({ key, icon, label }) => (
           <div
             key={key}
@@ -216,21 +218,42 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
         )}
       </div>
 
-      {/* AI Chat — full width tab (mobile only; desktop uses right panel) */}
-      {isMobile && (
-        <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
-          <StrategyChat
-            symbol={account.symbol}
-            timeframe={account.timeframe}
-            accountId={account.accountId}
-            onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
-            currentCode={code.code}
+      {/* Main area: sidebar + content */}
+      <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'row' }}>
+        {/* Sidebar: persistent on desktop, drawer overlay on mobile */}
+        {!isMobile && (
+          <WorkspaceSidebar
+            templates={templates.list}
+            loading={templates.loading}
+            selectedId={templates.selectedId || ''}
+            onSelect={(id) => templates.onSelect(id)}
+            backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
+            runsLoading={history.loading}
+            onOpenHistory={(tid) => history.open(tid)}
+            onImport={() => setImportModalOpen(true)}
+            onNew={() => { templates.onSelect(''); }}
+            collapsed={leftSidebarCollapsed}
+            onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
           />
-        </div>
-      )}
+        )}
 
-      {/* Code + optional AI right panel (desktop) */}
-      <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
+        {/* Content */}
+        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          {/* AI Chat — full width tab (mobile only; desktop uses right panel) */}
+          {isMobile && (
+            <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
+              <StrategyChat
+                symbol={account.symbol}
+                timeframe={account.timeframe}
+                accountId={account.accountId}
+                onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
+                currentCode={code.code}
+              />
+            </div>
+          )}
+
+          {/* Code + optional AI right panel (desktop) */}
+          <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           {/* Backtest status bar — shows last run result + quick re-run */}
           {code.code && backtest.metrics && backtest.metrics.totalTrades != null && (
@@ -350,6 +373,31 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
           />
         </div>
       </Modal>
+
+      {/* Mobile sidebar drawer */}
+      {isMobile && (
+        <Drawer
+          open={sidebarDrawerOpen}
+          onClose={() => setSidebarDrawerOpen(false)}
+          placement="left"
+          width={280}
+          styles={{ body: { padding: 0 } }}
+        >
+          <WorkspaceSidebar
+            templates={templates.list}
+            loading={templates.loading}
+            selectedId={templates.selectedId || ''}
+            onSelect={(id) => { templates.onSelect(id); setSidebarDrawerOpen(false); }}
+            backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
+            runsLoading={history.loading}
+            onOpenHistory={(tid) => { history.open(tid); setSidebarDrawerOpen(false); }}
+            onImport={() => { setImportModalOpen(true); setSidebarDrawerOpen(false); }}
+            onNew={() => { templates.onSelect(''); setSidebarDrawerOpen(false); }}
+            collapsed={false}
+            onToggle={() => setSidebarDrawerOpen(false)}
+          />
+        </Drawer>
+      )}
 
       {/* Import MQL Modal */}
       <Modal

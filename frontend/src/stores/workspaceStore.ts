@@ -69,7 +69,7 @@ function createAccountSlice(set: (partial: Partial<WorkspaceState>) => void): Ac
 function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): LayoutSlice {
   return {
     centerTab: 'code',
-    leftSidebarCollapsed: true,
+    leftSidebarCollapsed: false,
     bottomPanelCollapsed: false,
     bottomPanelHeight: 160,
     bottomPanelUserResized: false,
