@@ -81,7 +81,7 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
           transition: aiDragging ? 'none' : 'background 0.15s',
         }}
       />
-      <div style={{ width: activeTab === 'backtest' ? 600 : aiPanelWidth, flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid var(--ant-color-border)' }}>
+      <div style={{ width: activeTab === 'backtest' ? 900 : activeTab === 'ai' ? Math.max(aiPanelWidth, 500) : aiPanelWidth, flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid var(--ant-color-border)' }}>
         {/* Header: tabs + close */}
         <div style={{
           display: 'flex', alignItems: 'center', flexShrink: 0,

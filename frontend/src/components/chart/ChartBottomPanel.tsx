@@ -1,10 +1,9 @@
 import { useState, useRef } from 'react';
-import { Table, Tag, Button, Empty, Space } from 'antd';
+import { Table, Tag, Button, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { CloseOutlined, PlayCircleOutlined, RobotOutlined, SettingOutlined } from '@ant-design/icons';
+import { CloseOutlined } from '@ant-design/icons';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
-import { POSITIONS_KEY, HISTORY_KEY, BACKTEST_KEY as WS_BACKTEST_KEY, NO_RESULTS_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import { RETURN_LABEL_KEY as GEN_RETURN_KEY, MAX_DRAWDOWN_KEY as GEN_MAX_DRAWDOWN_KEY, SHARPE_KEY as GEN_SHARPE_KEY, WIN_RATE_KEY as GEN_WIN_RATE_KEY, TOTAL_TRADES_KEY as GEN_TOTAL_TRADES_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { POSITIONS_KEY, HISTORY_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { TRADING_SYMBOL_KEY, TRADING_SIDE_KEY, TRADING_VOLUME_KEY, TRADING_MARK_PRICE_KEY, TRADING_PNL_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 
 interface Props {
@@ -13,11 +12,6 @@ interface Props {
   onClosePosition: (ticket: number, volume?: number) => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
-  backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
-  backtestStatus?: string;
-  onOpenAdvancedBacktest?: () => void;
-  onRunBacktest?: () => void;
-  onAIOptimize?: () => void;
   panelHeight?: number;
   onResizeStart?: (e: React.MouseEvent) => void;
   dragging?: boolean;
@@ -38,9 +32,9 @@ function fmtTime(ts?: string): string {
   return `${mm}-${dd} ${hh}:${min}`;
 }
 
-export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, backtestMetrics, onOpenAdvancedBacktest, onRunBacktest, onAIOptimize, panelHeight, onResizeStart, dragging }: Props) {
+export default function ChartBottomPanel({ positions, recentTrades, onClosePosition, collapsed, onToggleCollapsed, panelHeight, onResizeStart, dragging }: Props) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'positions' | 'history' | 'backtest'>('positions');
+  const [tab, setTab] = useState<'positions' | 'history'>('positions');
   const resizeRef = useRef<HTMLDivElement>(null);
 
   if (collapsed) {
@@ -51,81 +45,34 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           height: 28, flexShrink: 0, borderTop: '1px solid var(--ant-color-border)',
           background: 'var(--ant-color-bg-elevated)', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-          fontSize: 11, color: 'var(--ant-color-text-secondary)', userSelect: 'none',
         }}
       >
-        <span>▲ {t(POSITIONS_KEY)} ({positions.length})</span>
-        <span>·</span>
-        <span>{t(HISTORY_KEY)} ({recentTrades.length})</span>
-        <span>·</span>
-        <span>{t(WS_BACKTEST_KEY)}</span>
+        <span style={{ fontSize: 11, color: 'var(--ant-color-text-tertiary)' }}>
+          {t(POSITIONS_KEY)}{positions.length > 0 ? ` (${positions.length})` : ''} · {t(HISTORY_KEY)}{recentTrades.length > 0 ? ` (${recentTrades.length})` : ''}
+        </span>
+        <span style={{ fontSize: 10 }}>▲</span>
       </div>
     );
   }
 
   const positionColumns = [
-    {
-      title: t(TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol',
-      width: 100, render: (v: string) => <span style={{ fontSize: 11, fontWeight: 600 }}>{v}</span>,
-    },
-    {
-      title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 60,
-      render: (v: string) => <Tag color={v === 'buy' ? 'success' : 'error'} style={{ fontSize: 10 }}>{v?.toUpperCase()}</Tag>,
-    },
-    {
-      title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 70,
-      render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 2)}</span>,
-    },
-    {
-      title: t('trading.entryPrice'), dataIndex: 'openPrice', key: 'openPrice', width: 90,
-      render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
-    },
-    {
-      title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'markPrice', key: 'markPrice', width: 90,
-      render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
-    },
-    {
-      title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80,
-      render: (v: number) => <span style={{ fontSize: 11, fontWeight: 600, color: v >= 0 ? '#3fb950' : '#f85149' }}>
-        {v >= 0 ? '+' : ''}{fmtNum(v, 2)}
-      </span>,
-    },
-    {
-      title: '', key: 'action', width: 50,
-      render: (_: unknown, r: unknown) => (
-        <Button size="small" type="text" danger icon={<CloseOutlined />}
-          onClick={(e) => { e.stopPropagation(); onClosePosition(r.ticket); }} />
-      ),
-    },
+    { title: t(TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 80 },
+    { title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 50, render: (v: string) => <Tag color={v === 'BUY' ? 'green' : 'red'}>{v}</Tag> },
+    { title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 60 },
+    { title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 80 },
+    { title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? '#3fb950' : '#f85149' }}>{fmtNum(v)}</span> },
+    { title: '', key: 'action', width: 40, render: (_: unknown, r: { ticket: number }) => (
+      <Button size="small" type="text" danger icon={<CloseOutlined />} onClick={() => onClosePosition(r.ticket)} />
+    )},
   ];
 
   const historyColumns = [
-    {
-      title: t(TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol',
-      width: 100, render: (v: string) => <span style={{ fontSize: 11, fontWeight: 600 }}>{v}</span>,
-    },
-    {
-      title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 60,
-      render: (v: string) => <Tag color={v === 'buy' || v === 'long' ? 'success' : 'error'} style={{ fontSize: 10 }}>{v?.toUpperCase()}</Tag>,
-    },
-    {
-      title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 70,
-      render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 2)}</span>,
-    },
-    {
-      title: t('trading.closePrice'), dataIndex: 'closePrice', key: 'closePrice', width: 90,
-      render: (v: number) => <span style={{ fontSize: 11 }}>{fmtNum(v, 5)}</span>,
-    },
-    {
-      title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80,
-      render: (v: number) => <span style={{ fontSize: 11, fontWeight: 600, color: v >= 0 ? '#3fb950' : '#f85149' }}>
-        {v >= 0 ? '+' : ''}{fmtNum(v, 2)}
-      </span>,
-    },
-    {
-      title: t('trading.closeTime'), dataIndex: 'closeTime', key: 'closeTime', width: 100,
-      render: (v: string) => <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>{fmtTime(v)}</span>,
-    },
+    { title: t(TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 80 },
+    { title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 50, render: (v: string) => <Tag color={v === 'BUY' ? 'green' : 'red'}>{v}</Tag> },
+    { title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 60 },
+    { title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'price', key: 'price', width: 80 },
+    { title: t(TRADING_PNL_KEY), dataIndex: 'pnl', key: 'pnl', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? '#3fb950' : '#f85149' }}>{fmtNum(v)}</span> },
+    { title: 'Time', dataIndex: 'time', key: 'time', width: 100, render: (v: string) => fmtTime(v) },
   ];
 
   return (
@@ -135,13 +82,11 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
       background: 'var(--ant-color-bg-elevated)', display: 'flex', flexDirection: 'column',
       userSelect: dragging ? 'none' : 'auto',
     }}>
-      {/* Resize handle */}
       {onResizeStart && (
         <div ref={resizeRef} onMouseDown={onResizeStart} style={{
           height: 5, cursor: 'row-resize', background: dragging ? '#58a6ff' : 'transparent', flexShrink: 0,
         }} />
       )}
-      {/* Tab bar + collapse */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0,
         borderBottom: '1px solid var(--ant-color-border)', height: 32,
@@ -170,17 +115,6 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           {t(HISTORY_KEY)}
           {recentTrades.length > 0 && <span style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>({recentTrades.length})</span>}
         </div>
-        <div
-          onClick={() => setTab('backtest')}
-          style={{
-            padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
-            cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            color: tab === 'backtest' ? '#58a6ff' : 'var(--ant-color-text-secondary)',
-            borderBottom: tab === 'backtest' ? '2px solid #58a6ff' : 'none',
-          }}
-        >
-          {t(WS_BACKTEST_KEY)}
-        </div>
         <div style={{ flex: 1 }} />
           <div
           onClick={onToggleCollapsed}
@@ -190,7 +124,6 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
         </div>
       </div>
 
-      {/* Table area */}
       <div style={{ flex: 1, overflow: 'auto' }}>
         {tab === 'positions' ? (
           positions.length > 0 ? (
@@ -206,7 +139,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_OPEN_POSITIONS_KEY)}
               style={{ margin: '20px 0' }} />
           )
-        ) : tab === 'history' ? (
+        ) : (
           recentTrades.length > 0 ? (
             <Table
               dataSource={recentTrades}
@@ -220,48 +153,6 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_HISTORY_KEY)}
               style={{ margin: '20px 0' }} />
           )
-        ) : (
-          <div style={{ padding: 16 }}>
-            {backtestMetrics ? (
-              <>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                  {[
-                    { label: t(GEN_RETURN_KEY), value: backtestMetrics.totalReturn != null ? `${backtestMetrics.totalReturn.toFixed(1)}%` : '—', color: (backtestMetrics.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149' },
-                    { label: t(GEN_MAX_DRAWDOWN_KEY), value: backtestMetrics.maxDrawdown != null ? `${backtestMetrics.maxDrawdown.toFixed(1)}%` : '—', color: '#f85149' },
-                    { label: t(GEN_SHARPE_KEY), value: backtestMetrics.sharpeRatio != null ? backtestMetrics.sharpeRatio.toFixed(2) : '—' },
-                    { label: t(GEN_WIN_RATE_KEY), value: backtestMetrics.winRate != null ? `${backtestMetrics.winRate.toFixed(1)}%` : '—' },
-                    { label: t(GEN_TOTAL_TRADES_KEY), value: backtestMetrics.totalTrades != null ? String(backtestMetrics.totalTrades) : '—' },
-                  ].map((m, i) => (
-                    <div key={i} style={{ background: 'var(--ant-color-fill-quaternary)', borderRadius: 6, padding: '8px 12px', textAlign: 'center' }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
-                      <div style={{ fontSize: 10, color: 'var(--ant-color-text-tertiary)' }}>{m.label}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 10 }}>
-                  {onRunBacktest && (
-                    <Button size="small" icon={<PlayCircleOutlined />} onClick={onRunBacktest}
-                      style={{ background: '#3fb950', borderColor: '#3fb950', color: '#fff' }}>
-                      {t('strategy.workspace.reRun', { defaultValue: 'Re-run' })}
-                    </Button>
-                  )}
-                  {onAIOptimize && (
-                    <Button size="small" icon={<RobotOutlined />} onClick={onAIOptimize}
-                      style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
-                      {t('strategy.workspace.aiAnalyze', { defaultValue: 'AI Analysis' })}
-                    </Button>
-                  )}
-                  {onOpenAdvancedBacktest && (
-                    <Button size="small" icon={<SettingOutlined />} onClick={onOpenAdvancedBacktest}>
-                      {t('strategy.workspace.tuningGate', { defaultValue: 'Tuning & Gate' })}
-                    </Button>
-                  )}
-                </div>
-              </>
-            ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t(NO_RESULTS_KEY)} />
-            )}
-          </div>
         )}
       </div>
     </div>

@@ -39,6 +39,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const [rightPanelTab, setRightPanelTab] = useState<'ai' | 'backtest' | null>(null);
 
   // Auto-expand bottom panel + switch right panel to backtest when running/completed
+  // Collapse bottom panel when backtest tab is active (more vertical space)
   const prevBtStatusRef = useRef(backtest.status);
   useEffect(() => {
     if (backtest.status === 'running' && prevBtStatusRef.current !== 'running') {
@@ -50,6 +51,15 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     }
     prevBtStatusRef.current = backtest.status;
   }, [backtest.status, layout]);
+  // Auto-collapse sidebars when backtest tab is active — backtest takes full focus
+  useEffect(() => {
+    if (rightPanelTab === 'backtest') {
+      layout.setBottomPanelCollapsed(true);
+      setLeftSidebarCollapsed(true);
+    } else if (rightPanelTab === 'ai') {
+      setLeftSidebarCollapsed(false);
+    }
+  }, [rightPanelTab, layout, setLeftSidebarCollapsed]);
 
   // Desktop: if centerTab is 'chat', open AI panel
   useEffect(() => {
@@ -231,11 +241,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         positions={quickTrade.allPositions}
         recentTrades={quickTrade.qtRecentTrades}
         onClosePosition={quickTrade.handleClosePosition}
-        backtestMetrics={backtest.metrics}
-        backtestStatus={backtest.status}
-        onOpenAdvancedBacktest={() => setBtDrawerOpen(true)}
-        onRunBacktest={() => setBtModalOpen(true)}
-        onAIOptimize={() => ai.optimize()}
         panelHeight={layout.bottomPanelUserResized ? layout.bottomPanelHeight : undefined}
         onResizeStart={handleBpResize}
         dragging={bpDragging}
