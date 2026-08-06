@@ -23,7 +23,7 @@ import {
   FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults,
   getTimeframeWarning, protoToMetrics,
 } from './backtestRunnerTypes';
-import { handleBacktestUpdate, handleBacktestError } from './backtestRunnerWatch';
+import { handleBacktestUpdate, handleBacktestError, type BacktestBlindSpotItem } from './backtestRunnerWatch';
 import { backtestRunsApi } from '@/client/backtestRuns';
 import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
 
@@ -81,6 +81,7 @@ export function useBacktestRunner() {
   const [gateUpdate, setGateUpdate] = useState<GateEvaluationUpdate | null>(null);
   const [gateResults, setGateResults] = useState<GateResult[]>([]);
   const [qualityPreview, setQualityPreview] = useState<MarketplaceQualityPreview | null>(null);
+  const [blindSpots, setBlindSpots] = useState<BacktestBlindSpotItem[]>([]);
   const watchRef = useRef<(() => void) | null>(null);
 
   // Sub-hooks
@@ -151,6 +152,7 @@ export function useBacktestRunner() {
     setStatus('idle'); setErrorMsg(''); setMetrics(null);
     setExecutionAssumptions(null); setChartTrades([]);
     setRunId(''); setGateUpdate(null); setGateResults([]); setQualityPreview(null); setFixDepth(0);
+    setBlindSpots([]);
     setUserResized(false);
   }, []);
 
@@ -224,12 +226,14 @@ export function useBacktestRunner() {
       setGateUpdate(null);
       setGateResults([]);
       setQualityPreview(null);
+      setBlindSpots([]);
       setFixDepth(0);
       watchRef.current?.();
       const stopWatching = await strategyRuntimeApi.watchBacktestRun(result.runId, (update: BacktestRunUpdate) => {
         handleBacktestUpdate(update, result.runId, t, {
           setFixDepth, setGateResults, setGateUpdate, setQualityPreview,
           setStatus, setMetrics, setExecutionAssumptions, setErrorMsg, setChartTrades,
+          setBlindSpots,
           stopWatching: () => { stopWatching(); watchRef.current = null; },
         });
       });
@@ -302,7 +306,7 @@ export function useBacktestRunner() {
     updateExtractedParams, updateDirectivesFromCode,
     // Run
     run, submitting, status, metrics, executionAssumptions, errorMsg,
-    runId, fixDepth, chartTrades, resetStatus,
+    runId, fixDepth, chartTrades, blindSpots, resetStatus,
     cancelRun,
     restoreLastRun,
     gateUpdate, gateResults, qualityPreview,

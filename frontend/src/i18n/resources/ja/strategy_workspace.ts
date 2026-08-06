@@ -166,7 +166,10 @@ const StrategyWorkspace = {
       "auditChecking": "確認中...",
       "auditCompileFailed": "コンパイル失敗",
       "auditBlindSpots": "{{count}} 件のブラインドスポット、カバレッジ {{percent}}%",
-      "auditAllClear": "問題なし、カバレッジ {{percent}}%"
+      "auditAllClear": "問題なし、カバレッジ {{percent}}%",
+      "backtestDegraded": "バックテスト結果は信頼できません",
+      "backtestDegradedDesc": "バックテストは完了しましたが、不変条件違反のため結果は信頼できません。これらの指標に依存しないでください。",
+      "backtestBlindSpotsTitle": "結果が信頼できない理由"
     }
   }
 } as const;

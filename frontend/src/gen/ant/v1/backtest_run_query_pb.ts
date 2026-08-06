@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_run_query.proto.
  */
 export const file_backtest_run_query: GenFile = /*@__PURE__*/
-  fileDesc("ChhiYWNrdGVzdF9ydW5fcXVlcnkucHJvdG8SBmFudC52MSInChVHZXRCYWNrdGVzdFJ1blJlcXVlc3QSDgoGcnVuX2lkGAEgASgJIoMCChZHZXRCYWNrdGVzdFJ1blJlc3BvbnNlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAkSFwoKZGF0YXNldF9pZBgEIAEoCUgAiAEBEiIKBHJpc2sYBSABKAsyFC5hbnQudjEuQmFja3Rlc3RSaXNrEjsKFWV4ZWN1dGlvbl9hc3N1bXB0aW9ucxgGIAEoCzIcLmFudC52MS5FeGVjdXRpb25Bc3N1bXB0aW9uc0INCgtfZGF0YXNldF9pZCIpChdXYXRjaEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAkixQIKEUJhY2t0ZXN0UnVuVXBkYXRlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAkSIgoEcmlzaxgEIAEoCzIULmFudC52MS5CYWNrdGVzdFJpc2sSOwoVZXhlY3V0aW9uX2Fzc3VtcHRpb25zGAUgASgLMhwuYW50LnYxLkV4ZWN1dGlvbkFzc3VtcHRpb25zEjEKC2dhdGVfdXBkYXRlGAYgASgLMhwuYW50LnYxLkdhdGVFdmFsdWF0aW9uVXBkYXRlEjoKD3F1YWxpdHlfcHJldmlldxgHIAEoCzIhLmFudC52MS5NYXJrZXRwbGFjZVF1YWxpdHlQcmV2aWV3Il4KGU1hcmtldHBsYWNlUXVhbGl0eVByZXZpZXcSEwoLcHVibGlzaGFibGUYASABKAgSLAoKdmlvbGF0aW9ucxgCIAMoCzIYLmFudC52MS5RdWFsaXR5VmlvbGF0aW9uIkUKEFF1YWxpdHlWaW9sYXRpb24SDgoGbWV0cmljGAEgASgJEg4KBmFjdHVhbBgCIAEoCRIRCgl0aHJlc2hvbGQYAyABKAkiigEKF0xpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0EhcKCmFjY291bnRfaWQYASABKAlIAIgBARINCgVsaW1pdBgCIAEoBRIOCgZvZmZzZXQYAyABKAUSGAoLdGVtcGxhdGVfaWQYBCABKAlIAYgBAUINCgtfYWNjb3VudF9pZEIOCgxfdGVtcGxhdGVfaWQiPQoYTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlEiEKBHJ1bnMYASADKAsyEy5hbnQudjEuQmFja3Rlc3RSdW5CI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_common, file_backtest_run, file_backtest_execution_config, file_ai_gate]);
+  fileDesc("ChhiYWNrdGVzdF9ydW5fcXVlcnkucHJvdG8SBmFudC52MSInChVHZXRCYWNrdGVzdFJ1blJlcXVlc3QSDgoGcnVuX2lkGAEgASgJIoMCChZHZXRCYWNrdGVzdFJ1blJlc3BvbnNlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAkSFwoKZGF0YXNldF9pZBgEIAEoCUgAiAEBEiIKBHJpc2sYBSABKAsyFC5hbnQudjEuQmFja3Rlc3RSaXNrEjsKFWV4ZWN1dGlvbl9hc3N1bXB0aW9ucxgGIAEoCzIcLmFudC52MS5FeGVjdXRpb25Bc3N1bXB0aW9uc0INCgtfZGF0YXNldF9pZCIpChdXYXRjaEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAki9QIKEUJhY2t0ZXN0UnVuVXBkYXRlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAkSIgoEcmlzaxgEIAEoCzIULmFudC52MS5CYWNrdGVzdFJpc2sSOwoVZXhlY3V0aW9uX2Fzc3VtcHRpb25zGAUgASgLMhwuYW50LnYxLkV4ZWN1dGlvbkFzc3VtcHRpb25zEjEKC2dhdGVfdXBkYXRlGAYgASgLMhwuYW50LnYxLkdhdGVFdmFsdWF0aW9uVXBkYXRlEjoKD3F1YWxpdHlfcHJldmlldxgHIAEoCzIhLmFudC52MS5NYXJrZXRwbGFjZVF1YWxpdHlQcmV2aWV3Ei4KC2JsaW5kX3Nwb3RzGAggAygLMhkuYW50LnYxLkJhY2t0ZXN0QmxpbmRTcG90IkYKEUJhY2t0ZXN0QmxpbmRTcG90EgoKAmlkGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEhAKCHNldmVyaXR5GAMgASgJIl4KGU1hcmtldHBsYWNlUXVhbGl0eVByZXZpZXcSEwoLcHVibGlzaGFibGUYASABKAgSLAoKdmlvbGF0aW9ucxgCIAMoCzIYLmFudC52MS5RdWFsaXR5VmlvbGF0aW9uIkUKEFF1YWxpdHlWaW9sYXRpb24SDgoGbWV0cmljGAEgASgJEg4KBmFjdHVhbBgCIAEoCRIRCgl0aHJlc2hvbGQYAyABKAkiigEKF0xpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0EhcKCmFjY291bnRfaWQYASABKAlIAIgBARINCgVsaW1pdBgCIAEoBRIOCgZvZmZzZXQYAyABKAUSGAoLdGVtcGxhdGVfaWQYBCABKAlIAYgBAUINCgtfYWNjb3VudF9pZEIOCgxfdGVtcGxhdGVfaWQiPQoYTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlEiEKBHJ1bnMYASADKAsyEy5hbnQudjEuQmFja3Rlc3RSdW5CI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_common, file_backtest_run, file_backtest_execution_config, file_ai_gate]);
 
 /**
  * @generated from message ant.v1.GetBacktestRunRequest
@@ -138,6 +138,13 @@ export type BacktestRunUpdate = Message<"ant.v1.BacktestRunUpdate"> & {
    * @generated from field: ant.v1.MarketplaceQualityPreview quality_preview = 7;
    */
   qualityPreview?: MarketplaceQualityPreview | undefined;
+
+  /**
+   * Invariant blind spots that make results unreliable (sent when status=DEGRADED).
+   *
+   * @generated from field: repeated ant.v1.BacktestBlindSpot blind_spots = 8;
+   */
+  blindSpots: BacktestBlindSpot[];
 };
 
 /**
@@ -146,6 +153,33 @@ export type BacktestRunUpdate = Message<"ant.v1.BacktestRunUpdate"> & {
  */
 export const BacktestRunUpdateSchema: GenMessage<BacktestRunUpdate> = /*@__PURE__*/
   messageDesc(file_backtest_run_query, 3);
+
+/**
+ * @generated from message ant.v1.BacktestBlindSpot
+ */
+export type BacktestBlindSpot = Message<"ant.v1.BacktestBlindSpot"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string description = 2;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string severity = 3;
+   */
+  severity: string;
+};
+
+/**
+ * Describes the message ant.v1.BacktestBlindSpot.
+ * Use `create(BacktestBlindSpotSchema)` to create a new message.
+ */
+export const BacktestBlindSpotSchema: GenMessage<BacktestBlindSpot> = /*@__PURE__*/
+  messageDesc(file_backtest_run_query, 4);
 
 /**
  * @generated from message ant.v1.MarketplaceQualityPreview
@@ -167,7 +201,7 @@ export type MarketplaceQualityPreview = Message<"ant.v1.MarketplaceQualityPrevie
  * Use `create(MarketplaceQualityPreviewSchema)` to create a new message.
  */
 export const MarketplaceQualityPreviewSchema: GenMessage<MarketplaceQualityPreview> = /*@__PURE__*/
-  messageDesc(file_backtest_run_query, 4);
+  messageDesc(file_backtest_run_query, 5);
 
 /**
  * @generated from message ant.v1.QualityViolation
@@ -194,7 +228,7 @@ export type QualityViolation = Message<"ant.v1.QualityViolation"> & {
  * Use `create(QualityViolationSchema)` to create a new message.
  */
 export const QualityViolationSchema: GenMessage<QualityViolation> = /*@__PURE__*/
-  messageDesc(file_backtest_run_query, 5);
+  messageDesc(file_backtest_run_query, 6);
 
 /**
  * @generated from message ant.v1.ListBacktestRunsRequest
@@ -226,7 +260,7 @@ export type ListBacktestRunsRequest = Message<"ant.v1.ListBacktestRunsRequest"> 
  * Use `create(ListBacktestRunsRequestSchema)` to create a new message.
  */
 export const ListBacktestRunsRequestSchema: GenMessage<ListBacktestRunsRequest> = /*@__PURE__*/
-  messageDesc(file_backtest_run_query, 6);
+  messageDesc(file_backtest_run_query, 7);
 
 /**
  * @generated from message ant.v1.ListBacktestRunsResponse
@@ -243,5 +277,5 @@ export type ListBacktestRunsResponse = Message<"ant.v1.ListBacktestRunsResponse"
  * Use `create(ListBacktestRunsResponseSchema)` to create a new message.
  */
 export const ListBacktestRunsResponseSchema: GenMessage<ListBacktestRunsResponse> = /*@__PURE__*/
-  messageDesc(file_backtest_run_query, 7);
+  messageDesc(file_backtest_run_query, 8);
 

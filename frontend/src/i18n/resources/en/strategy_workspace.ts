@@ -166,7 +166,10 @@ const StrategyWorkspace = {
       "auditChecking": "checking...",
       "auditCompileFailed": "Compile failed",
       "auditBlindSpots": "{{count}} blind spot(s), coverage {{percent}}%",
-      "auditAllClear": "All clear, coverage {{percent}}%"
+      "auditAllClear": "All clear, coverage {{percent}}%",
+      "backtestDegraded": "Results Unreliable",
+      "backtestDegradedDesc": "Backtest completed but results are unreliable due to invariant violations. Do not trust these metrics.",
+      "backtestBlindSpotsTitle": "Why results are unreliable"
     }
   }
 } as const;

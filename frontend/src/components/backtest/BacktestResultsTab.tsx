@@ -1,9 +1,10 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Tooltip } from 'antd';
-import { RiseOutlined, FallOutlined, StopOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Tooltip, Alert } from 'antd';
+import { RiseOutlined, FallOutlined, StopOutlined, HistoryOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
   BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY,
+  BACKTEST_DEGRADED_KEY, BACKTEST_DEGRADED_DESC_KEY, BACKTEST_BLIND_SPOTS_TITLE_KEY,
   EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
   EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY,
   EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY,
@@ -19,6 +20,7 @@ import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
+import type { BacktestBlindSpotItem } from './backtestRunnerWatch';
 import type { GateEvaluationUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
 import type { GateResult } from '@/gen/ant/v1/ai_gate_pb';
 
@@ -57,9 +59,10 @@ interface Props {
   gateUpdate?: GateEvaluationUpdate | null;
   gateResults?: GateResult[];
   qualityPreview?: MarketplaceQualityPreview | null;
+  blindSpots?: BacktestBlindSpotItem[];
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => tr.side === 'buy');
@@ -78,6 +81,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           )}
           {status === 'completed' && (
             <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
+          )}
+          {status === 'degraded' && (
+            <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>
           )}
           {status === 'completed' && onAIOptimize && metrics && (
             <Button size="small" type="dashed" onClick={onAIOptimize} style={{ fontSize: 11 }}>
@@ -113,8 +119,36 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />
       )}
 
+      {/* DEGRADED alert + blind spots */}
+      {status === 'degraded' && (
+        <Alert
+          type="warning"
+          showIcon
+          icon={<WarningOutlined />}
+          message={t(BACKTEST_DEGRADED_KEY)}
+          description={
+            <div>
+              <div style={{ marginBottom: 8 }}>{t(BACKTEST_DEGRADED_DESC_KEY)}</div>
+              {blindSpots && blindSpots.length > 0 && (
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4 }}>{t(BACKTEST_BLIND_SPOTS_TITLE_KEY)}</div>
+                  <ul style={{ margin: 0, paddingLeft: 20, fontSize: 12 }}>
+                    {blindSpots.map((b, i) => (
+                      <li key={i} style={{ marginBottom: 2 }}>
+                        <strong>{b.id}</strong>: {b.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          }
+          style={{ marginBottom: 12 }}
+        />
+      )}
+
       {/* Execution Assumptions */}
-      {executionAssumptions && status === 'completed' && (
+      {executionAssumptions && (status === 'completed' || status === 'degraded') && (
         <div style={{
           marginBottom: 12, padding: '8px 12px', border: '1px solid #e6f4ff', borderRadius: 8,
           background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
@@ -135,7 +169,6 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         </div>
       )}
 
-      {/* Auto-gate quality preview */}
       {status === 'completed' && (gateUpdate || qualityPreview) && (
         <div style={{ marginBottom: 12, padding: '8px 12px', border: '1px solid #e6fffb', borderRadius: 8, background: '#f6ffed' }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#52c41a', marginBottom: 6 }}>

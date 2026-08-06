@@ -116,6 +116,11 @@ export default function BacktestPanel(props: Props) {
                       {item.label}
                       <Badge status="error" />
                     </span>
+                : item.key === 'results' && runner.status === 'degraded'
+                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {item.label}
+                      <Badge status="warning" />
+                    </span>
                 : item.label,
             }))}
           />
@@ -139,6 +144,7 @@ export default function BacktestPanel(props: Props) {
             gateUpdate={runner.gateUpdate}
             gateResults={runner.gateResults}
             qualityPreview={runner.qualityPreview}
+            blindSpots={runner.blindSpots}
           />
         )}
 
@@ -173,7 +179,7 @@ export default function BacktestPanel(props: Props) {
         {runner.activeTab === 'gate' && runner.gate && (
           <GatePanel
             loading={runner.gate.loading || false} gates={runner.gate.gates || []} summary={runner.gate.summary || null}
-            error={runner.gate.error || ''} status={runner.status} canRun={runner.status === 'completed'}
+            error={runner.gate.error || ''} status={runner.status} canRun={runner.status === 'completed' || runner.status === 'degraded'}
             onRun={runner.gate.run || (() => {})}
             fixDepth={runner.fixDepth || 0}
           />

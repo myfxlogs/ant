@@ -166,7 +166,10 @@ const StrategyWorkspace = {
       "auditChecking": "检查中...",
       "auditCompileFailed": "编译失败",
       "auditBlindSpots": "{{count}} 个盲点，覆盖率 {{percent}}%",
-      "auditAllClear": "全部通过，覆盖率 {{percent}}%"
+      "auditAllClear": "全部通过，覆盖率 {{percent}}%",
+      "backtestDegraded": "回测结果不可信",
+      "backtestDegradedDesc": "回测已执行完成，但因存在不变量违规，回测结果不可信。请勿依赖这些指标。",
+      "backtestBlindSpotsTitle": "结果不可信的原因"
     }
   }
 } as const;

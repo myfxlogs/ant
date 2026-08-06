@@ -166,7 +166,10 @@ const StrategyWorkspace = {
       "auditChecking": "đang kiểm tra...",
       "auditCompileFailed": "Biên dịch thất bại",
       "auditBlindSpots": "{{count}} điểm mù, độ phủ {{percent}}%",
-      "auditAllClear": "Không vấn đề, độ phủ {{percent}}%"
+      "auditAllClear": "Không vấn đề, độ phủ {{percent}}%",
+      "backtestDegraded": "Kết quả không đáng tin cậy",
+      "backtestDegradedDesc": "Backtest đã hoàn thành nhưng kết quả không đáng tin cậy do vi phạm bất biến. Không nên dựa vào các chỉ số này.",
+      "backtestBlindSpotsTitle": "Lý do kết quả không đáng tin cậy"
     }
   }
 } as const;

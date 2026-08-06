@@ -1,7 +1,7 @@
 import { TIMEFRAME_MAX_MONTHS } from '@/pages/strategy/hooks/backtestParamHelpers';
 import type { BacktestMetrics as ProtoBacktestMetrics } from '@/gen/ant/v1/common_pb';
 
-export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
+export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error' | 'degraded';
 
 export interface ChartTrade {
   side: string;

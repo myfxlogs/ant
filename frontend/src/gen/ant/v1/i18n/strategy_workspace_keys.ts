@@ -484,6 +484,15 @@ export const TOUR_SAVE_KEY = 'strategy.workspace.tour.save' as const;
 /** tour.saveDesc */
 export const TOUR_SAVE_DESC_KEY = 'strategy.workspace.tour.saveDesc' as const;
 
+/** backtestDegraded */
+export const BACKTEST_DEGRADED_KEY = 'strategy.workspace.backtestDegraded' as const;
+
+/** backtestDegradedDesc */
+export const BACKTEST_DEGRADED_DESC_KEY = 'strategy.workspace.backtestDegradedDesc' as const;
+
+/** backtestBlindSpotsTitle */
+export const BACKTEST_BLIND_SPOTS_TITLE_KEY = 'strategy.workspace.backtestBlindSpotsTitle' as const;
+
 export const STRATEGYWORKSPACE_KEYS = {
   account: 'strategy.workspace.account',
   account_placeholder: 'strategy.workspace.accountPlaceholder',
@@ -646,6 +655,9 @@ export const STRATEGYWORKSPACE_KEYS = {
   tour_backtest_desc: 'strategy.workspace.tour.backtestDesc',
   tour_save: 'strategy.workspace.tour.save',
   tour_save_desc: 'strategy.workspace.tour.saveDesc',
+  backtest_degraded: 'strategy.workspace.backtestDegraded',
+  backtest_degraded_desc: 'strategy.workspace.backtestDegradedDesc',
+  backtest_blind_spots_title: 'strategy.workspace.backtestBlindSpotsTitle',
 } as const;
 
 export type StrategyWorkspaceKey = typeof STRATEGYWORKSPACE_KEYS[keyof typeof STRATEGYWORKSPACE_KEYS];
