@@ -43,12 +43,28 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     }
     prevBtStatusRef.current = backtest.status;
   }, [backtest.status]);
-  // Mode-driven: collapse bottom panel when right panel is active. Keep left sidebar.
+  // Mode-driven: collapse bottom panel when right panel is active, restore when it closes.
   useEffect(() => {
-    if (rightPanelTab === 'backtest' || rightPanelTab === 'ai') {
-      layout.setBottomPanelCollapsed(true);
-    }
+    layout.setBottomPanelCollapsed(rightPanelTab === 'backtest' || rightPanelTab === 'ai');
   }, [rightPanelTab, layout]);
+
+  // Auto-expand bottom panel when account is selected.
+  const prevAccountIdRef = useRef(account.accountId);
+  useEffect(() => {
+    if (account.accountId && !prevAccountIdRef.current) {
+      layout.setBottomPanelCollapsed(false);
+    }
+    prevAccountIdRef.current = account.accountId;
+  }, [account.accountId, layout]);
+
+  // Auto-expand quick trade panel when symbol is selected.
+  const prevSymbolRef = useRef(account.symbol);
+  useEffect(() => {
+    if (account.symbol && !prevSymbolRef.current) {
+      layout.setQuickTradeCollapsed(false);
+    }
+    prevSymbolRef.current = account.symbol;
+  }, [account.symbol, layout]);
 
   // ── Bottom panel resize ──────────────────────────────────────────────
   const [bpDragging, setBpDragging] = useState(false);
