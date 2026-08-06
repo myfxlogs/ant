@@ -311,7 +311,52 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		resp.BlindSpots = append(resp.BlindSpots, bs)
 	}
 
+	// P0 invariant: capital conservation — 期末净值 must equal 本金 + ΣProfit − ΣCommission − ΣSwap.
+	// If violated, the backtest result is unreliable (ADR-0028 §4.2 防线 B).
+	if bs := checkCapitalConservation(result); bs != nil {
+		resp.Risk.IsReliable = false
+		resp.BlindSpots = append(resp.BlindSpots, bs)
+	}
+
 	return resp, ruleFindings, covBlindSpots, runtimeBlinds
+}
+
+// checkCapitalConservation verifies the capital conservation identity:
+//   |期末净值 − (本金 + ΣProfit − ΣCommission − ΣSwap)| < 容差
+// Returns a BlindSpot if the identity is violated, nil otherwise.
+// When Equity is empty, the invariant is vacuously true (returns nil).
+// 容差 = max(0.01, 1e-4 × 本金) — covers floating-point accumulation and minor swap/commission model discrepancies.
+func checkCapitalConservation(result *backtest.Result) *antv1.BlindSpot {
+	if len(result.Equity) == 0 {
+		return nil
+	}
+	finalEquity := result.Equity[len(result.Equity)-1].Equity
+	initialCapital := result.Config.InitialCapital
+
+	var sumProfit, sumCommission, sumSwap decimal.Decimal
+	for _, t := range result.Trades {
+		sumProfit = sumProfit.Add(t.Profit)
+		sumCommission = sumCommission.Add(t.Commission)
+		sumSwap = sumSwap.Add(t.Swap)
+	}
+
+	expected := initialCapital.Add(sumProfit).Sub(sumCommission).Sub(sumSwap)
+	diff := finalEquity.Sub(expected).Abs()
+
+	tolerance := decimal.New(1, -2) // 0.01
+	if scaled := initialCapital.Mul(decimal.New(1, -4)); scaled.GreaterThan(tolerance) {
+		tolerance = scaled
+	}
+
+	if diff.GreaterThanOrEqual(tolerance) {
+		return &antv1.BlindSpot{
+			Id:          "capital_not_conserved",
+			Category:    "invariant",
+			Severity:    interp.SeverityFatal,
+			Description: "资金不守恒：期末净值与 本金+Σ盈亏−Σ手续费−Σswap 对不上，回测结果不可信",
+		}
+	}
+	return nil
 }
 
 // checkVolumeInvariant verifies that every trade has a strictly positive Volume.
