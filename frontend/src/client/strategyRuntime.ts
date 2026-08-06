@@ -2,7 +2,7 @@ import { strategyRuntimeClient, strategyRuntimeStreamClient } from './connect';
 import { create } from '@bufbuild/protobuf';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { BacktestRunMode } from '../gen/ant/v1/backtest_run_pb';
-import { TradeDirection } from '../gen/ant/v1/backtest_execution_config_pb';
+import { TradeDirection, BacktestExecutionConfigSchema } from '../gen/ant/v1/backtest_execution_config_pb';
 import {
   StartBacktestRunRequestSchema,
 } from '../gen/ant/v1/backtest_run_start_pb';
@@ -168,16 +168,16 @@ export const strategyRuntimeApi = {
       parameterOverrides: params.parameterOverrides && Object.keys(params.parameterOverrides).length > 0
         ? create(StrategyParamsSchema, { values: params.parameterOverrides })
         : undefined,
-      executionConfig: params.executionConfig ? {
-        commission: params.executionConfig.commission,
-        slippage: params.executionConfig.slippage,
-        leverage: params.executionConfig.leverage,
+      executionConfig: params.executionConfig ? create(BacktestExecutionConfigSchema, {
+        commission: String(params.executionConfig.commission),
+        slippage: String(params.executionConfig.slippage),
+        leverage: String(params.executionConfig.leverage),
         tradeDirection:
           params.executionConfig.tradeDirection === 'long' ? TradeDirection.LONG
           : params.executionConfig.tradeDirection === 'short' ? TradeDirection.SHORT
           : TradeDirection.BOTH,
         strictMode: params.executionConfig.strictMode,
-      } : undefined,
+      }) : undefined,
     });
     const resp = await strategyRuntimeService.startBacktestRun(msg);
     return { runId: resp.runId };
