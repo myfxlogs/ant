@@ -71,8 +71,8 @@ func (r *D3NorthStarReport) Format() string {
 	sb.WriteString("╔══════════════════════════════════════════════════╗\n")
 	sb.WriteString("║         D3 North Star Dashboard                  ║\n")
 	sb.WriteString("╠══════════════════════════════════════════════════╣\n")
-	sb.WriteString(fmt.Sprintf("║  Status: %-7s  Pass Rate: %5.1f%%  (%d/%d)       ║\n",
-		status, rate*100, r.countPassed(), len(r.Metrics)))
+	fmt.Fprintf(&sb, "║  Status: %-7s  Pass Rate: %5.1f%%  (%d/%d)       ║\n",
+		status, rate*100, r.countPassed(), len(r.Metrics))
 	sb.WriteString("╠══════════════════════════════════════════════════╣\n")
 
 	// Group by category.
@@ -82,7 +82,7 @@ func (r *D3NorthStarReport) Format() string {
 		if len(items) == 0 {
 			continue
 		}
-		sb.WriteString(fmt.Sprintf("║  [%s]%s\n", cat, strings.Repeat(" ", 44-len(string(cat))-2)))
+		fmt.Fprintf(&sb, "║  [%s]%s\n", cat, strings.Repeat(" ", 44-len(string(cat))-2))
 		for _, m := range items {
 			mark := "✓"
 			if !m.Passed {
