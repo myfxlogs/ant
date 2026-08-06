@@ -1,8 +1,11 @@
-import { Button } from 'antd';
-import { ImportOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Button, Tag, Tooltip } from 'antd';
+import { ImportOutlined, RobotOutlined, HistoryOutlined, CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
+import StrategyCodeEditor, { type Diagnostic } from '@/components/strategy/StrategyCodeEditor';
 import ImportEAPanel from '../editor/ImportEAPanel';
+import { strategyVersionApi } from '@/client/strategy';
+import type { BlindSpot } from '@/gen/ant/v1/strategy_runtime_pb';
 
 interface Props {
   code: string;
@@ -17,8 +20,61 @@ interface Props {
   onStrategyIdChange?: (id: string | undefined) => void;
 }
 
+function blindSpotsToDiagnostics(blindSpots: BlindSpot[], compileError?: string): Diagnostic[] {
+  const diags: Diagnostic[] = [];
+  if (compileError) {
+    diags.push({ message: compileError, severity: 'error' });
+  }
+  for (const bs of blindSpots) {
+    const severity = bs.severity === '致命' ? 'error' : bs.severity === '警告' ? 'warning' : 'info';
+    diags.push({ message: `${bs.id}: ${bs.description}`, severity });
+  }
+  return diags;
+}
+
 export default function CodeEditorArea({ code, importMode, isMobile, templateCount, onSetImportMode, onSetCode, onSetCenterTab, onSetRightPanelTab, onSelectFirstTemplate, onStrategyIdChange }: Props) {
   const { t } = useTranslation();
+  const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
+  const [auditStatus, setAuditStatus] = useState<'idle' | 'checking' | 'ok' | 'warn' | 'error'>('idle');
+  const [auditSummary, setAuditSummary] = useState<string>('');
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCheckedCode = useRef('');
+
+  const runCheck = useCallback(async (sourceCode: string) => {
+    if (!sourceCode.trim() || sourceCode.trim().length < 20) {
+      setDiagnostics([]);
+      setAuditStatus('idle');
+      return;
+    }
+    setAuditStatus('checking');
+    try {
+      const resp = await strategyVersionApi.checkCode(sourceCode);
+      const diags = blindSpotsToDiagnostics(resp.blindSpots, resp.compileError || undefined);
+      setDiagnostics(diags);
+      if (!resp.compileSuccess) {
+        setAuditStatus('error');
+        setAuditSummary(resp.compileError || 'Compile failed');
+      } else if (resp.blindSpots.length > 0) {
+        setAuditStatus('warn');
+        setAuditSummary(`${resp.blindSpots.length} blind spot(s), coverage ${(resp.coverageScore * 100).toFixed(0)}%`);
+      } else {
+        setAuditStatus('ok');
+        setAuditSummary(`All clear, coverage ${(resp.coverageScore * 100).toFixed(0)}%`);
+      }
+    } catch {
+      setAuditStatus('idle');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    if (!code || code === lastCheckedCode.current) return;
+    debounceTimer.current = setTimeout(() => {
+      lastCheckedCode.current = code;
+      runCheck(code);
+    }, 800);
+    return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
+  }, [code, runCheck]);
 
   if (importMode) {
     return (
@@ -38,11 +94,23 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
 
   if (code) {
     return (
-      <StrategyCodeEditor
-        value={code}
-        onChange={onSetCode}
-        style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
-      />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <StrategyCodeEditor
+          value={code}
+          onChange={onSetCode}
+          diagnostics={diagnostics}
+          style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
+        />
+        {auditStatus !== 'idle' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
+            {auditStatus === 'checking' && <Tag color="processing">checking...</Tag>}
+            {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: '#52c41a' }} /></Tooltip>}
+            {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: '#faad14' }} /></Tooltip>}
+            {auditStatus === 'error' && <Tooltip title={auditSummary}><CloseCircleOutlined style={{ color: '#ff4d4f' }} /></Tooltip>}
+            {auditStatus !== 'checking' && <span>{auditSummary}</span>}
+          </div>
+        )}
+      </div>
     );
   }
 

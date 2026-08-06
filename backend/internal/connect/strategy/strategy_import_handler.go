@@ -58,12 +58,7 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 		paramFields := irParamFields(rep.Params)
 		paramGroups := irParamGroups(rep.Params)
 		blindSpots := irBlindSpotProtos(rep.BlindSpots)
-		blindSpots = append(blindSpots, &antv1.BlindSpot{
-			Id:          "compile_error",
-			Category:    "compiler",
-			Severity:    "fatal",
-			Description: compileErr.Error(),
-		})
+		blindSpots = append(blindSpots, compileErrorBlindSpot(compileErr))
 		return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
 			StrategyName:     deriveNameFromFileName(req.Msg.GetSourceName()),
 			MqlVersion:       rep.Version,
@@ -193,6 +188,16 @@ func coverageBlindSpotProtos(spots []mql2go.CoverageBlindSpot) []*antv1.BlindSpo
 		})
 	}
 	return result
+}
+
+// compileErrorBlindSpot creates a fatal BlindSpot for a compilation error.
+func compileErrorBlindSpot(err error) *antv1.BlindSpot {
+	return &antv1.BlindSpot{
+		Id:          "compile_error",
+		Category:    "compiler",
+		Severity:    interp.SeverityFatal,
+		Description: err.Error(),
+	}
 }
 
 func irParamDefault(p interp.ParamDecl) string {

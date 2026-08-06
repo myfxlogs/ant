@@ -99,7 +99,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
           i18n: i18n || undefined,
         });
         if (strategyId) {
-          await strategyVersionApi.updateCode(strategyId, code, 'Updated from workspace');
+          await strategyVersionApi.updateCode(strategyId, code, 'Updated from workspace', true);
         }
         message.success(t(SAVE_SUCCESS_KEY)); loadTemplates();
       } catch (e: unknown) { message.error((e as Error)?.message || t('common.saveFailed', { defaultValue: 'Save failed' })); }

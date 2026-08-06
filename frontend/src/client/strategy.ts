@@ -279,8 +279,20 @@ export const strategyVersionApi = {
     };
   },
 
-  updateCode: async (strategyId: string, sourceCode: string, changeSummary: string) => {
-    const r = await strategyRuntimeClient.updateStrategyCode({ strategyId, sourceCode, changeSummary });
-    return { newVersion: r.newVersion };
+  updateCode: async (strategyId: string, sourceCode: string, changeSummary: string, compileAudit?: boolean) => {
+    const r = await strategyRuntimeClient.updateStrategyCode({
+      strategyId, sourceCode, changeSummary, compileAudit: compileAudit || false,
+    });
+    return {
+      newVersion: r.newVersion,
+      compileSuccess: r.compileSuccess,
+      compileError: r.compileError,
+      coverageScore: r.coverageScore,
+      blindSpots: r.blindSpots,
+    };
+  },
+
+  checkCode: async (sourceCode: string) => {
+    return await strategyRuntimeClient.checkCode({ sourceCode });
   },
 };

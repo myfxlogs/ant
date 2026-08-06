@@ -12,9 +12,9 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import { cpp } from '@codemirror/lang-cpp';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, indentOnInput } from '@codemirror/language';
 import { closeBrackets, autocompletion } from '@codemirror/autocomplete';
+import { lintGutter, setDiagnostics, type Diagnostic as CMDiagnostic } from '@codemirror/lint';
 
 export interface Diagnostic {
-  line: number;    // 1-based line number
   message: string;
   severity: 'error' | 'warning' | 'info';
 }
@@ -29,7 +29,16 @@ interface Props {
 
 const readOnlyCompartment = new Compartment();
 
-export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnostics, style }: Props) {
+function toCMDiagnostics(diagnostics: Diagnostic[]): CMDiagnostic[] {
+  return diagnostics.map(d => ({
+    from: 0,
+    to: 0,
+    message: d.message,
+    severity: d.severity,
+  }));
+}
+
+export default function StrategyCodeEditor({ value, onChange, readOnly, diagnostics, style }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
@@ -50,6 +59,7 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnos
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
     history(),
     keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
+    lintGutter(),
     readOnlyCompartment.of(EditorState.readOnly.of(!!readOnly)),
     EditorView.updateListener.of((update) => {
       if (update.docChanged) {
@@ -74,9 +84,12 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, _diagnos
   // eslint-disable-next-line react-hooks/exhaustive-deps -- readOnly handled via compartment reconfigure  | REF: rd.md#part-0.2-hooks-deps
   ], []);
 
-  // Diagnostics — reserved for future @codemirror/lint integration.
-  // Currently the parent WorkspaceCodePanel renders validation results
-  // in an Alert below the editor, which covers the same need.
+  // Push diagnostics to CodeMirror when the prop changes.
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch(setDiagnostics(view.state, toCMDiagnostics(diagnostics || [])));
+  }, [diagnostics]);
 
   // Create / destroy editor.
   useEffect(() => {

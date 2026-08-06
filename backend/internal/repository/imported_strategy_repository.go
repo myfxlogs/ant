@@ -164,3 +164,14 @@ func (r *ImportedStrategyRepository) SaveBytecode(ctx context.Context, id uuid.U
 		id, bytecode)
 	return err
 }
+
+// UpdateCoverageScore updates the coverage score for a strategy after a code audit.
+func (r *ImportedStrategyRepository) UpdateCoverageScore(ctx context.Context, id uuid.UUID, score float64) error {
+	if r.db == nil {
+		return fmt.Errorf("imported strategy repository: db not configured")
+	}
+	_, err := r.db.Exec(ctx,
+		`UPDATE imported_strategies SET coverage_score = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+		id, score)
+	return err
+}

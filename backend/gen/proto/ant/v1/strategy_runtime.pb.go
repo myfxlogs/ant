@@ -4431,6 +4431,7 @@ type UpdateStrategyCodeRequest struct {
 	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
 	SourceCode    string                 `protobuf:"bytes,2,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`
 	ChangeSummary string                 `protobuf:"bytes,3,opt,name=change_summary,json=changeSummary,proto3" json:"change_summary,omitempty"`
+	CompileAudit  bool                   `protobuf:"varint,4,opt,name=compile_audit,json=compileAudit,proto3" json:"compile_audit,omitempty"` // if true, compile code and return blind spots in response
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4486,11 +4487,23 @@ func (x *UpdateStrategyCodeRequest) GetChangeSummary() string {
 	return ""
 }
 
+func (x *UpdateStrategyCodeRequest) GetCompileAudit() bool {
+	if x != nil {
+		return x.CompileAudit
+	}
+	return false
+}
+
 type UpdateStrategyCodeResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	NewVersion    *StrategyVersionInfo   `protobuf:"bytes,1,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	NewVersion *StrategyVersionInfo   `protobuf:"bytes,1,opt,name=new_version,json=newVersion,proto3" json:"new_version,omitempty"`
+	// Audit results (populated when compile_audit = true in request).
+	CoverageScore  float64      `protobuf:"fixed64,2,opt,name=coverage_score,json=coverageScore,proto3" json:"coverage_score,omitempty"`
+	BlindSpots     []*BlindSpot `protobuf:"bytes,3,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`
+	CompileSuccess bool         `protobuf:"varint,4,opt,name=compile_success,json=compileSuccess,proto3" json:"compile_success,omitempty"`
+	CompileError   string       `protobuf:"bytes,5,opt,name=compile_error,json=compileError,proto3" json:"compile_error,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *UpdateStrategyCodeResponse) Reset() {
@@ -4526,6 +4539,178 @@ func (*UpdateStrategyCodeResponse) Descriptor() ([]byte, []int) {
 func (x *UpdateStrategyCodeResponse) GetNewVersion() *StrategyVersionInfo {
 	if x != nil {
 		return x.NewVersion
+	}
+	return nil
+}
+
+func (x *UpdateStrategyCodeResponse) GetCoverageScore() float64 {
+	if x != nil {
+		return x.CoverageScore
+	}
+	return 0
+}
+
+func (x *UpdateStrategyCodeResponse) GetBlindSpots() []*BlindSpot {
+	if x != nil {
+		return x.BlindSpots
+	}
+	return nil
+}
+
+func (x *UpdateStrategyCodeResponse) GetCompileSuccess() bool {
+	if x != nil {
+		return x.CompileSuccess
+	}
+	return false
+}
+
+func (x *UpdateStrategyCodeResponse) GetCompileError() string {
+	if x != nil {
+		return x.CompileError
+	}
+	return ""
+}
+
+type CheckCodeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceCode    string                 `protobuf:"bytes,1,opt,name=source_code,json=sourceCode,proto3" json:"source_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckCodeRequest) Reset() {
+	*x = CheckCodeRequest{}
+	mi := &file_strategy_runtime_proto_msgTypes[61]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckCodeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckCodeRequest) ProtoMessage() {}
+
+func (x *CheckCodeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_runtime_proto_msgTypes[61]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckCodeRequest.ProtoReflect.Descriptor instead.
+func (*CheckCodeRequest) Descriptor() ([]byte, []int) {
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{61}
+}
+
+func (x *CheckCodeRequest) GetSourceCode() string {
+	if x != nil {
+		return x.SourceCode
+	}
+	return ""
+}
+
+type CheckCodeResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	CompileSuccess   bool                   `protobuf:"varint,1,opt,name=compile_success,json=compileSuccess,proto3" json:"compile_success,omitempty"`
+	CompileError     string                 `protobuf:"bytes,2,opt,name=compile_error,json=compileError,proto3" json:"compile_error,omitempty"` // empty if compile_success = true
+	CoverageScore    float64                `protobuf:"fixed64,3,opt,name=coverage_score,json=coverageScore,proto3" json:"coverage_score,omitempty"`
+	TotalBlocks      int32                  `protobuf:"varint,4,opt,name=total_blocks,json=totalBlocks,proto3" json:"total_blocks,omitempty"`
+	RecognizedBlocks int32                  `protobuf:"varint,5,opt,name=recognized_blocks,json=recognizedBlocks,proto3" json:"recognized_blocks,omitempty"`
+	BlindSpots       []*BlindSpot           `protobuf:"bytes,6,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`
+	MqlVersion       string                 `protobuf:"bytes,7,opt,name=mql_version,json=mqlVersion,proto3" json:"mql_version,omitempty"`
+	IndicatorNames   []string               `protobuf:"bytes,8,rep,name=indicator_names,json=indicatorNames,proto3" json:"indicator_names,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *CheckCodeResponse) Reset() {
+	*x = CheckCodeResponse{}
+	mi := &file_strategy_runtime_proto_msgTypes[62]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckCodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckCodeResponse) ProtoMessage() {}
+
+func (x *CheckCodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_runtime_proto_msgTypes[62]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckCodeResponse.ProtoReflect.Descriptor instead.
+func (*CheckCodeResponse) Descriptor() ([]byte, []int) {
+	return file_strategy_runtime_proto_rawDescGZIP(), []int{62}
+}
+
+func (x *CheckCodeResponse) GetCompileSuccess() bool {
+	if x != nil {
+		return x.CompileSuccess
+	}
+	return false
+}
+
+func (x *CheckCodeResponse) GetCompileError() string {
+	if x != nil {
+		return x.CompileError
+	}
+	return ""
+}
+
+func (x *CheckCodeResponse) GetCoverageScore() float64 {
+	if x != nil {
+		return x.CoverageScore
+	}
+	return 0
+}
+
+func (x *CheckCodeResponse) GetTotalBlocks() int32 {
+	if x != nil {
+		return x.TotalBlocks
+	}
+	return 0
+}
+
+func (x *CheckCodeResponse) GetRecognizedBlocks() int32 {
+	if x != nil {
+		return x.RecognizedBlocks
+	}
+	return 0
+}
+
+func (x *CheckCodeResponse) GetBlindSpots() []*BlindSpot {
+	if x != nil {
+		return x.BlindSpots
+	}
+	return nil
+}
+
+func (x *CheckCodeResponse) GetMqlVersion() string {
+	if x != nil {
+		return x.MqlVersion
+	}
+	return ""
+}
+
+func (x *CheckCodeResponse) GetIndicatorNames() []string {
+	if x != nil {
+		return x.IndicatorNames
 	}
 	return nil
 }
@@ -4939,22 +5124,42 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x10from_source_code\x18\x02 \x01(\tR\x0efromSourceCode\x12:\n" +
 	"\n" +
 	"to_version\x18\x03 \x01(\v2\x1b.ant.v1.StrategyVersionInfoR\ttoVersion\x12$\n" +
-	"\x0eto_source_code\x18\x04 \x01(\tR\ftoSourceCode\"\x84\x01\n" +
+	"\x0eto_source_code\x18\x04 \x01(\tR\ftoSourceCode\"\xa9\x01\n" +
 	"\x19UpdateStrategyCodeRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12\x1f\n" +
 	"\vsource_code\x18\x02 \x01(\tR\n" +
 	"sourceCode\x12%\n" +
-	"\x0echange_summary\x18\x03 \x01(\tR\rchangeSummary\"Z\n" +
+	"\x0echange_summary\x18\x03 \x01(\tR\rchangeSummary\x12#\n" +
+	"\rcompile_audit\x18\x04 \x01(\bR\fcompileAudit\"\x83\x02\n" +
 	"\x1aUpdateStrategyCodeResponse\x12<\n" +
 	"\vnew_version\x18\x01 \x01(\v2\x1b.ant.v1.StrategyVersionInfoR\n" +
-	"newVersion*\x88\x01\n" +
+	"newVersion\x12%\n" +
+	"\x0ecoverage_score\x18\x02 \x01(\x01R\rcoverageScore\x122\n" +
+	"\vblind_spots\x18\x03 \x03(\v2\x11.ant.v1.BlindSpotR\n" +
+	"blindSpots\x12'\n" +
+	"\x0fcompile_success\x18\x04 \x01(\bR\x0ecompileSuccess\x12#\n" +
+	"\rcompile_error\x18\x05 \x01(\tR\fcompileError\"3\n" +
+	"\x10CheckCodeRequest\x12\x1f\n" +
+	"\vsource_code\x18\x01 \x01(\tR\n" +
+	"sourceCode\"\xd6\x02\n" +
+	"\x11CheckCodeResponse\x12'\n" +
+	"\x0fcompile_success\x18\x01 \x01(\bR\x0ecompileSuccess\x12#\n" +
+	"\rcompile_error\x18\x02 \x01(\tR\fcompileError\x12%\n" +
+	"\x0ecoverage_score\x18\x03 \x01(\x01R\rcoverageScore\x12!\n" +
+	"\ftotal_blocks\x18\x04 \x01(\x05R\vtotalBlocks\x12+\n" +
+	"\x11recognized_blocks\x18\x05 \x01(\x05R\x10recognizedBlocks\x122\n" +
+	"\vblind_spots\x18\x06 \x03(\v2\x11.ant.v1.BlindSpotR\n" +
+	"blindSpots\x12\x1f\n" +
+	"\vmql_version\x18\a \x01(\tR\n" +
+	"mqlVersion\x12'\n" +
+	"\x0findicator_names\x18\b \x03(\tR\x0eindicatorNames*\x88\x01\n" +
 	"\vRequestType\x12\x1c\n" +
 	"\x18REQUEST_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10REQUEST_TYPE_BAR\x10\x01\x12\x15\n" +
 	"\x11REQUEST_TYPE_TICK\x10\x02\x12\x16\n" +
 	"\x12REQUEST_TYPE_TRADE\x10\x03\x12\x16\n" +
-	"\x12REQUEST_TYPE_TIMER\x10\x042\xdf\x12\n" +
+	"\x12REQUEST_TYPE_TIMER\x10\x042\xa1\x13\n" +
 	"\x16StrategyRuntimeService\x12J\n" +
 	"\aExecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n" +
 	"\bValidate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n" +
@@ -4982,7 +5187,8 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x12GetStrategyVersion\x12!.ant.v1.GetStrategyVersionRequest\x1a\".ant.v1.GetStrategyVersionResponse\x12j\n" +
 	"\x17RollbackStrategyVersion\x12&.ant.v1.RollbackStrategyVersionRequest\x1a'.ant.v1.RollbackStrategyVersionResponse\x12a\n" +
 	"\x14DiffStrategyVersions\x12#.ant.v1.DiffStrategyVersionsRequest\x1a$.ant.v1.DiffStrategyVersionsResponse\x12[\n" +
-	"\x12UpdateStrategyCode\x12!.ant.v1.UpdateStrategyCodeRequest\x1a\".ant.v1.UpdateStrategyCodeResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x12UpdateStrategyCode\x12!.ant.v1.UpdateStrategyCodeRequest\x1a\".ant.v1.UpdateStrategyCodeResponse\x12@\n" +
+	"\tCheckCode\x12\x18.ant.v1.CheckCodeRequest\x1a\x19.ant.v1.CheckCodeResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_runtime_proto_rawDescOnce sync.Once
@@ -4997,7 +5203,7 @@ func file_strategy_runtime_proto_rawDescGZIP() []byte {
 }
 
 var file_strategy_runtime_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_strategy_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 62)
+var file_strategy_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 64)
 var file_strategy_runtime_proto_goTypes = []any{
 	(RequestType)(0),                        // 0: ant.v1.RequestType
 	(*GetImportedStrategyRequest)(nil),      // 1: ant.v1.GetImportedStrategyRequest
@@ -5061,42 +5267,44 @@ var file_strategy_runtime_proto_goTypes = []any{
 	(*DiffStrategyVersionsResponse)(nil),    // 59: ant.v1.DiffStrategyVersionsResponse
 	(*UpdateStrategyCodeRequest)(nil),       // 60: ant.v1.UpdateStrategyCodeRequest
 	(*UpdateStrategyCodeResponse)(nil),      // 61: ant.v1.UpdateStrategyCodeResponse
-	nil,                                     // 62: ant.v1.StartStrategyRequest.ParamsEntry
-	(*StrategySignal)(nil),                  // 63: ant.v1.StrategySignal
-	(*ParameterEntry)(nil),                  // 64: ant.v1.ParameterEntry
-	(*BacktestMetrics)(nil),                 // 65: ant.v1.BacktestMetrics
-	(*timestamppb.Timestamp)(nil),           // 66: google.protobuf.Timestamp
-	(*StartBacktestRunRequest)(nil),         // 67: ant.v1.StartBacktestRunRequest
-	(*GetBacktestRunRequest)(nil),           // 68: ant.v1.GetBacktestRunRequest
-	(*ListBacktestRunsRequest)(nil),         // 69: ant.v1.ListBacktestRunsRequest
-	(*WatchBacktestRunRequest)(nil),         // 70: ant.v1.WatchBacktestRunRequest
-	(*CancelBacktestRunRequest)(nil),        // 71: ant.v1.CancelBacktestRunRequest
-	(*DeleteBacktestRunRequest)(nil),        // 72: ant.v1.DeleteBacktestRunRequest
-	(*DeleteBacktestRunsRequest)(nil),       // 73: ant.v1.DeleteBacktestRunsRequest
-	(*emptypb.Empty)(nil),                   // 74: google.protobuf.Empty
-	(*StartBacktestRunResponse)(nil),        // 75: ant.v1.StartBacktestRunResponse
-	(*GetBacktestRunResponse)(nil),          // 76: ant.v1.GetBacktestRunResponse
-	(*ListBacktestRunsResponse)(nil),        // 77: ant.v1.ListBacktestRunsResponse
-	(*BacktestRunUpdate)(nil),               // 78: ant.v1.BacktestRunUpdate
-	(*CancelBacktestRunResponse)(nil),       // 79: ant.v1.CancelBacktestRunResponse
-	(*DeleteBacktestRunResponse)(nil),       // 80: ant.v1.DeleteBacktestRunResponse
-	(*DeleteBacktestRunsResponse)(nil),      // 81: ant.v1.DeleteBacktestRunsResponse
+	(*CheckCodeRequest)(nil),                // 62: ant.v1.CheckCodeRequest
+	(*CheckCodeResponse)(nil),               // 63: ant.v1.CheckCodeResponse
+	nil,                                     // 64: ant.v1.StartStrategyRequest.ParamsEntry
+	(*StrategySignal)(nil),                  // 65: ant.v1.StrategySignal
+	(*ParameterEntry)(nil),                  // 66: ant.v1.ParameterEntry
+	(*BacktestMetrics)(nil),                 // 67: ant.v1.BacktestMetrics
+	(*timestamppb.Timestamp)(nil),           // 68: google.protobuf.Timestamp
+	(*StartBacktestRunRequest)(nil),         // 69: ant.v1.StartBacktestRunRequest
+	(*GetBacktestRunRequest)(nil),           // 70: ant.v1.GetBacktestRunRequest
+	(*ListBacktestRunsRequest)(nil),         // 71: ant.v1.ListBacktestRunsRequest
+	(*WatchBacktestRunRequest)(nil),         // 72: ant.v1.WatchBacktestRunRequest
+	(*CancelBacktestRunRequest)(nil),        // 73: ant.v1.CancelBacktestRunRequest
+	(*DeleteBacktestRunRequest)(nil),        // 74: ant.v1.DeleteBacktestRunRequest
+	(*DeleteBacktestRunsRequest)(nil),       // 75: ant.v1.DeleteBacktestRunsRequest
+	(*emptypb.Empty)(nil),                   // 76: google.protobuf.Empty
+	(*StartBacktestRunResponse)(nil),        // 77: ant.v1.StartBacktestRunResponse
+	(*GetBacktestRunResponse)(nil),          // 78: ant.v1.GetBacktestRunResponse
+	(*ListBacktestRunsResponse)(nil),        // 79: ant.v1.ListBacktestRunsResponse
+	(*BacktestRunUpdate)(nil),               // 80: ant.v1.BacktestRunUpdate
+	(*CancelBacktestRunResponse)(nil),       // 81: ant.v1.CancelBacktestRunResponse
+	(*DeleteBacktestRunResponse)(nil),       // 82: ant.v1.DeleteBacktestRunResponse
+	(*DeleteBacktestRunsResponse)(nil),      // 83: ant.v1.DeleteBacktestRunsResponse
 }
 var file_strategy_runtime_proto_depIdxs = []int32{
-	63, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
+	65, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
 	7,  // 1: ant.v1.ValidateStrategyResponse.quality_hints:type_name -> ant.v1.CodeQualityHint
 	8,  // 2: ant.v1.ValidateStrategyResponse.sweep_dimensions:type_name -> ant.v1.SweepDimension
 	9,  // 3: ant.v1.ValidateStrategyResponse.strategy_directives:type_name -> ant.v1.StrategyDirective
-	64, // 4: ant.v1.ValidateStrategyResponse.parameters:type_name -> ant.v1.ParameterEntry
-	65, // 5: ant.v1.BacktestStrategyResponse.metrics:type_name -> ant.v1.BacktestMetrics
+	66, // 4: ant.v1.ValidateStrategyResponse.parameters:type_name -> ant.v1.ParameterEntry
+	67, // 5: ant.v1.BacktestStrategyResponse.metrics:type_name -> ant.v1.BacktestMetrics
 	13, // 6: ant.v1.GetStrategyTemplatesResponse.templates:type_name -> ant.v1.StrategyTemplateInfo
 	0,  // 7: ant.v1.ExecuteLiveRequest.request_type:type_name -> ant.v1.RequestType
 	16, // 8: ant.v1.ExecuteLiveRequest.bar_context:type_name -> ant.v1.LiveStrategyContext
 	21, // 9: ant.v1.ExecuteLiveRequest.tick_context:type_name -> ant.v1.TickContext
 	22, // 10: ant.v1.ExecuteLiveRequest.trade_context:type_name -> ant.v1.TradeContext
 	23, // 11: ant.v1.ExecuteLiveRequest.timer_context:type_name -> ant.v1.TimerContext
-	63, // 12: ant.v1.ExecuteLiveResponse.signal:type_name -> ant.v1.StrategySignal
-	63, // 13: ant.v1.ExecuteLiveResponse.signals:type_name -> ant.v1.StrategySignal
+	65, // 12: ant.v1.ExecuteLiveResponse.signal:type_name -> ant.v1.StrategySignal
+	65, // 13: ant.v1.ExecuteLiveResponse.signals:type_name -> ant.v1.StrategySignal
 	17, // 14: ant.v1.LiveStrategyContext.position:type_name -> ant.v1.LivePosition
 	17, // 15: ant.v1.LiveStrategyContext.positions:type_name -> ant.v1.LivePosition
 	18, // 16: ant.v1.LiveStrategyContext.params:type_name -> ant.v1.LiveParam
@@ -5115,81 +5323,85 @@ var file_strategy_runtime_proto_depIdxs = []int32{
 	31, // 29: ant.v1.DiagnosticFindingList.findings:type_name -> ant.v1.DiagnosticFinding
 	37, // 30: ant.v1.ListStrategyRunsResponse.runs:type_name -> ant.v1.StrategyRun
 	37, // 31: ant.v1.GetStrategyRunResponse.run:type_name -> ant.v1.StrategyRun
-	66, // 32: ant.v1.StrategyRun.started_at:type_name -> google.protobuf.Timestamp
-	66, // 33: ant.v1.StrategyRun.stopped_at:type_name -> google.protobuf.Timestamp
+	68, // 32: ant.v1.StrategyRun.started_at:type_name -> google.protobuf.Timestamp
+	68, // 33: ant.v1.StrategyRun.stopped_at:type_name -> google.protobuf.Timestamp
 	44, // 34: ant.v1.ListActiveStrategiesResponse.strategies:type_name -> ant.v1.ActiveStrategy
 	44, // 35: ant.v1.GetActiveStrategyResponse.strategy:type_name -> ant.v1.ActiveStrategy
-	66, // 36: ant.v1.ActiveStrategy.started_at:type_name -> google.protobuf.Timestamp
-	66, // 37: ant.v1.ActiveStrategy.last_signal_at:type_name -> google.protobuf.Timestamp
-	66, // 38: ant.v1.StrategySignalEvent.timestamp:type_name -> google.protobuf.Timestamp
-	62, // 39: ant.v1.StartStrategyRequest.params:type_name -> ant.v1.StartStrategyRequest.ParamsEntry
+	68, // 36: ant.v1.ActiveStrategy.started_at:type_name -> google.protobuf.Timestamp
+	68, // 37: ant.v1.ActiveStrategy.last_signal_at:type_name -> google.protobuf.Timestamp
+	68, // 38: ant.v1.StrategySignalEvent.timestamp:type_name -> google.protobuf.Timestamp
+	64, // 39: ant.v1.StartStrategyRequest.params:type_name -> ant.v1.StartStrategyRequest.ParamsEntry
 	44, // 40: ant.v1.WatchActiveStrategiesEvent.strategies:type_name -> ant.v1.ActiveStrategy
-	66, // 41: ant.v1.StrategyVersionInfo.created_at:type_name -> google.protobuf.Timestamp
+	68, // 41: ant.v1.StrategyVersionInfo.created_at:type_name -> google.protobuf.Timestamp
 	51, // 42: ant.v1.ListStrategyVersionsResponse.versions:type_name -> ant.v1.StrategyVersionInfo
 	51, // 43: ant.v1.GetStrategyVersionResponse.version:type_name -> ant.v1.StrategyVersionInfo
 	51, // 44: ant.v1.RollbackStrategyVersionResponse.new_version:type_name -> ant.v1.StrategyVersionInfo
 	51, // 45: ant.v1.DiffStrategyVersionsResponse.from_version:type_name -> ant.v1.StrategyVersionInfo
 	51, // 46: ant.v1.DiffStrategyVersionsResponse.to_version:type_name -> ant.v1.StrategyVersionInfo
 	51, // 47: ant.v1.UpdateStrategyCodeResponse.new_version:type_name -> ant.v1.StrategyVersionInfo
-	3,  // 48: ant.v1.StrategyRuntimeService.Execute:input_type -> ant.v1.ExecuteStrategyRequest
-	5,  // 49: ant.v1.StrategyRuntimeService.Validate:input_type -> ant.v1.ValidateStrategyRequest
-	10, // 50: ant.v1.StrategyRuntimeService.Backtest:input_type -> ant.v1.BacktestStrategyRequest
-	67, // 51: ant.v1.StrategyRuntimeService.StartBacktestRun:input_type -> ant.v1.StartBacktestRunRequest
-	68, // 52: ant.v1.StrategyRuntimeService.GetBacktestRun:input_type -> ant.v1.GetBacktestRunRequest
-	69, // 53: ant.v1.StrategyRuntimeService.ListBacktestRuns:input_type -> ant.v1.ListBacktestRunsRequest
-	70, // 54: ant.v1.StrategyRuntimeService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
-	71, // 55: ant.v1.StrategyRuntimeService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
-	72, // 56: ant.v1.StrategyRuntimeService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
-	73, // 57: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
-	74, // 58: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
-	14, // 59: ant.v1.StrategyRuntimeService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
-	24, // 60: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
-	1,  // 61: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
-	33, // 62: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
-	35, // 63: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
-	38, // 64: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
-	40, // 65: ant.v1.StrategyRuntimeService.GetActiveStrategy:input_type -> ant.v1.GetActiveStrategyRequest
-	42, // 66: ant.v1.StrategyRuntimeService.StopStrategy:input_type -> ant.v1.StopStrategyRequest
-	45, // 67: ant.v1.StrategyRuntimeService.WatchStrategySignals:input_type -> ant.v1.WatchStrategySignalsRequest
-	47, // 68: ant.v1.StrategyRuntimeService.StartStrategy:input_type -> ant.v1.StartStrategyRequest
-	49, // 69: ant.v1.StrategyRuntimeService.WatchActiveStrategies:input_type -> ant.v1.WatchActiveStrategiesRequest
-	52, // 70: ant.v1.StrategyRuntimeService.ListStrategyVersions:input_type -> ant.v1.ListStrategyVersionsRequest
-	54, // 71: ant.v1.StrategyRuntimeService.GetStrategyVersion:input_type -> ant.v1.GetStrategyVersionRequest
-	56, // 72: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:input_type -> ant.v1.RollbackStrategyVersionRequest
-	58, // 73: ant.v1.StrategyRuntimeService.DiffStrategyVersions:input_type -> ant.v1.DiffStrategyVersionsRequest
-	60, // 74: ant.v1.StrategyRuntimeService.UpdateStrategyCode:input_type -> ant.v1.UpdateStrategyCodeRequest
-	4,  // 75: ant.v1.StrategyRuntimeService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
-	6,  // 76: ant.v1.StrategyRuntimeService.Validate:output_type -> ant.v1.ValidateStrategyResponse
-	11, // 77: ant.v1.StrategyRuntimeService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
-	75, // 78: ant.v1.StrategyRuntimeService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
-	76, // 79: ant.v1.StrategyRuntimeService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
-	77, // 80: ant.v1.StrategyRuntimeService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
-	78, // 81: ant.v1.StrategyRuntimeService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
-	79, // 82: ant.v1.StrategyRuntimeService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
-	80, // 83: ant.v1.StrategyRuntimeService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
-	81, // 84: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
-	12, // 85: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
-	15, // 86: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
-	25, // 87: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
-	2,  // 88: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
-	34, // 89: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
-	36, // 90: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
-	39, // 91: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse
-	41, // 92: ant.v1.StrategyRuntimeService.GetActiveStrategy:output_type -> ant.v1.GetActiveStrategyResponse
-	43, // 93: ant.v1.StrategyRuntimeService.StopStrategy:output_type -> ant.v1.StopStrategyResponse
-	46, // 94: ant.v1.StrategyRuntimeService.WatchStrategySignals:output_type -> ant.v1.StrategySignalEvent
-	48, // 95: ant.v1.StrategyRuntimeService.StartStrategy:output_type -> ant.v1.StartStrategyResponse
-	50, // 96: ant.v1.StrategyRuntimeService.WatchActiveStrategies:output_type -> ant.v1.WatchActiveStrategiesEvent
-	53, // 97: ant.v1.StrategyRuntimeService.ListStrategyVersions:output_type -> ant.v1.ListStrategyVersionsResponse
-	55, // 98: ant.v1.StrategyRuntimeService.GetStrategyVersion:output_type -> ant.v1.GetStrategyVersionResponse
-	57, // 99: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:output_type -> ant.v1.RollbackStrategyVersionResponse
-	59, // 100: ant.v1.StrategyRuntimeService.DiffStrategyVersions:output_type -> ant.v1.DiffStrategyVersionsResponse
-	61, // 101: ant.v1.StrategyRuntimeService.UpdateStrategyCode:output_type -> ant.v1.UpdateStrategyCodeResponse
-	75, // [75:102] is the sub-list for method output_type
-	48, // [48:75] is the sub-list for method input_type
-	48, // [48:48] is the sub-list for extension type_name
-	48, // [48:48] is the sub-list for extension extendee
-	0,  // [0:48] is the sub-list for field type_name
+	28, // 48: ant.v1.UpdateStrategyCodeResponse.blind_spots:type_name -> ant.v1.BlindSpot
+	28, // 49: ant.v1.CheckCodeResponse.blind_spots:type_name -> ant.v1.BlindSpot
+	3,  // 50: ant.v1.StrategyRuntimeService.Execute:input_type -> ant.v1.ExecuteStrategyRequest
+	5,  // 51: ant.v1.StrategyRuntimeService.Validate:input_type -> ant.v1.ValidateStrategyRequest
+	10, // 52: ant.v1.StrategyRuntimeService.Backtest:input_type -> ant.v1.BacktestStrategyRequest
+	69, // 53: ant.v1.StrategyRuntimeService.StartBacktestRun:input_type -> ant.v1.StartBacktestRunRequest
+	70, // 54: ant.v1.StrategyRuntimeService.GetBacktestRun:input_type -> ant.v1.GetBacktestRunRequest
+	71, // 55: ant.v1.StrategyRuntimeService.ListBacktestRuns:input_type -> ant.v1.ListBacktestRunsRequest
+	72, // 56: ant.v1.StrategyRuntimeService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
+	73, // 57: ant.v1.StrategyRuntimeService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
+	74, // 58: ant.v1.StrategyRuntimeService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
+	75, // 59: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
+	76, // 60: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
+	14, // 61: ant.v1.StrategyRuntimeService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
+	24, // 62: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
+	1,  // 63: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
+	33, // 64: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
+	35, // 65: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
+	38, // 66: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
+	40, // 67: ant.v1.StrategyRuntimeService.GetActiveStrategy:input_type -> ant.v1.GetActiveStrategyRequest
+	42, // 68: ant.v1.StrategyRuntimeService.StopStrategy:input_type -> ant.v1.StopStrategyRequest
+	45, // 69: ant.v1.StrategyRuntimeService.WatchStrategySignals:input_type -> ant.v1.WatchStrategySignalsRequest
+	47, // 70: ant.v1.StrategyRuntimeService.StartStrategy:input_type -> ant.v1.StartStrategyRequest
+	49, // 71: ant.v1.StrategyRuntimeService.WatchActiveStrategies:input_type -> ant.v1.WatchActiveStrategiesRequest
+	52, // 72: ant.v1.StrategyRuntimeService.ListStrategyVersions:input_type -> ant.v1.ListStrategyVersionsRequest
+	54, // 73: ant.v1.StrategyRuntimeService.GetStrategyVersion:input_type -> ant.v1.GetStrategyVersionRequest
+	56, // 74: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:input_type -> ant.v1.RollbackStrategyVersionRequest
+	58, // 75: ant.v1.StrategyRuntimeService.DiffStrategyVersions:input_type -> ant.v1.DiffStrategyVersionsRequest
+	60, // 76: ant.v1.StrategyRuntimeService.UpdateStrategyCode:input_type -> ant.v1.UpdateStrategyCodeRequest
+	62, // 77: ant.v1.StrategyRuntimeService.CheckCode:input_type -> ant.v1.CheckCodeRequest
+	4,  // 78: ant.v1.StrategyRuntimeService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
+	6,  // 79: ant.v1.StrategyRuntimeService.Validate:output_type -> ant.v1.ValidateStrategyResponse
+	11, // 80: ant.v1.StrategyRuntimeService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
+	77, // 81: ant.v1.StrategyRuntimeService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
+	78, // 82: ant.v1.StrategyRuntimeService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
+	79, // 83: ant.v1.StrategyRuntimeService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
+	80, // 84: ant.v1.StrategyRuntimeService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
+	81, // 85: ant.v1.StrategyRuntimeService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
+	82, // 86: ant.v1.StrategyRuntimeService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
+	83, // 87: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
+	12, // 88: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
+	15, // 89: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
+	25, // 90: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
+	2,  // 91: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
+	34, // 92: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
+	36, // 93: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
+	39, // 94: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse
+	41, // 95: ant.v1.StrategyRuntimeService.GetActiveStrategy:output_type -> ant.v1.GetActiveStrategyResponse
+	43, // 96: ant.v1.StrategyRuntimeService.StopStrategy:output_type -> ant.v1.StopStrategyResponse
+	46, // 97: ant.v1.StrategyRuntimeService.WatchStrategySignals:output_type -> ant.v1.StrategySignalEvent
+	48, // 98: ant.v1.StrategyRuntimeService.StartStrategy:output_type -> ant.v1.StartStrategyResponse
+	50, // 99: ant.v1.StrategyRuntimeService.WatchActiveStrategies:output_type -> ant.v1.WatchActiveStrategiesEvent
+	53, // 100: ant.v1.StrategyRuntimeService.ListStrategyVersions:output_type -> ant.v1.ListStrategyVersionsResponse
+	55, // 101: ant.v1.StrategyRuntimeService.GetStrategyVersion:output_type -> ant.v1.GetStrategyVersionResponse
+	57, // 102: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:output_type -> ant.v1.RollbackStrategyVersionResponse
+	59, // 103: ant.v1.StrategyRuntimeService.DiffStrategyVersions:output_type -> ant.v1.DiffStrategyVersionsResponse
+	61, // 104: ant.v1.StrategyRuntimeService.UpdateStrategyCode:output_type -> ant.v1.UpdateStrategyCodeResponse
+	63, // 105: ant.v1.StrategyRuntimeService.CheckCode:output_type -> ant.v1.CheckCodeResponse
+	78, // [78:106] is the sub-list for method output_type
+	50, // [50:78] is the sub-list for method input_type
+	50, // [50:50] is the sub-list for extension type_name
+	50, // [50:50] is the sub-list for extension extendee
+	0,  // [0:50] is the sub-list for field type_name
 }
 
 func init() { file_strategy_runtime_proto_init() }
@@ -5211,7 +5423,7 @@ func file_strategy_runtime_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_runtime_proto_rawDesc), len(file_strategy_runtime_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   62,
+			NumMessages:   64,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

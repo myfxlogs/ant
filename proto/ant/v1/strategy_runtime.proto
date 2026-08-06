@@ -59,6 +59,9 @@ service StrategyRuntimeService {
   rpc DiffStrategyVersions(DiffStrategyVersionsRequest) returns (DiffStrategyVersionsResponse);
   // UpdateStrategyCode updates the source code of an existing strategy and creates a version snapshot.
   rpc UpdateStrategyCode(UpdateStrategyCodeRequest) returns (UpdateStrategyCodeResponse);
+  // CheckCode compiles MQL source and returns diagnostics + blind spots without saving.
+  // Used for real-time editor feedback and save-time audit.
+  rpc CheckCode(CheckCodeRequest) returns (CheckCodeResponse);
 }
 
 message GetImportedStrategyRequest {
@@ -590,8 +593,31 @@ message UpdateStrategyCodeRequest {
   string strategy_id = 1;
   string source_code = 2;
   string change_summary = 3;
+  bool compile_audit = 4;  // if true, compile code and return blind spots in response
 }
 
 message UpdateStrategyCodeResponse {
   StrategyVersionInfo new_version = 1;
+  // Audit results (populated when compile_audit = true in request).
+  double coverage_score = 2;
+  repeated BlindSpot blind_spots = 3;
+  bool compile_success = 4;
+  string compile_error = 5;
+}
+
+// ── Code Check (real-time + save-time audit) ────────────────────────
+
+message CheckCodeRequest {
+  string source_code = 1;
+}
+
+message CheckCodeResponse {
+  bool compile_success = 1;
+  string compile_error = 2;         // empty if compile_success = true
+  double coverage_score = 3;
+  int32 total_blocks = 4;
+  int32 recognized_blocks = 5;
+  repeated BlindSpot blind_spots = 6;
+  string mql_version = 7;
+  repeated string indicator_names = 8;
 }

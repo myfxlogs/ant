@@ -157,9 +157,22 @@ func (s *StrategyExecutionServer) UpdateStrategyCode(ctx context.Context, req *c
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&antv1.UpdateStrategyCodeResponse{
+	resp := &antv1.UpdateStrategyCodeResponse{
 		NewVersion: versionToProto(v),
-	}), nil
+	}
+
+	if req.Msg.GetCompileAudit() {
+		audit := compileAndAudit(sourceCode)
+		resp.CompileSuccess = audit.CompileSuccess
+		resp.CompileError = audit.CompileError
+		resp.CoverageScore = audit.CoverageScore
+		resp.BlindSpots = audit.BlindSpots
+		if s.importedRepo != nil && audit.CompileSuccess {
+			_ = s.importedRepo.UpdateCoverageScore(ctx, strategyID, audit.CoverageScore)
+		}
+	}
+
+	return connect.NewResponse(resp), nil
 }
 
 func versionToProto(v *repository.StrategyVersion) *antv1.StrategyVersionInfo {

@@ -115,6 +115,9 @@ const (
 	// StrategyRuntimeServiceUpdateStrategyCodeProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's UpdateStrategyCode RPC.
 	StrategyRuntimeServiceUpdateStrategyCodeProcedure = "/ant.v1.StrategyRuntimeService/UpdateStrategyCode"
+	// StrategyRuntimeServiceCheckCodeProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's CheckCode RPC.
+	StrategyRuntimeServiceCheckCodeProcedure = "/ant.v1.StrategyRuntimeService/CheckCode"
 )
 
 // StrategyRuntimeServiceClient is a client for the ant.v1.StrategyRuntimeService service.
@@ -164,6 +167,9 @@ type StrategyRuntimeServiceClient interface {
 	DiffStrategyVersions(context.Context, *connect.Request[v1.DiffStrategyVersionsRequest]) (*connect.Response[v1.DiffStrategyVersionsResponse], error)
 	// UpdateStrategyCode updates the source code of an existing strategy and creates a version snapshot.
 	UpdateStrategyCode(context.Context, *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error)
+	// CheckCode compiles MQL source and returns diagnostics + blind spots without saving.
+	// Used for real-time editor feedback and save-time audit.
+	CheckCode(context.Context, *connect.Request[v1.CheckCodeRequest]) (*connect.Response[v1.CheckCodeResponse], error)
 }
 
 // NewStrategyRuntimeServiceClient constructs a client for the ant.v1.StrategyRuntimeService
@@ -339,6 +345,12 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("UpdateStrategyCode")),
 			connect.WithClientOptions(opts...),
 		),
+		checkCode: connect.NewClient[v1.CheckCodeRequest, v1.CheckCodeResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceCheckCodeProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("CheckCode")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -371,6 +383,7 @@ type strategyRuntimeServiceClient struct {
 	rollbackStrategyVersion *connect.Client[v1.RollbackStrategyVersionRequest, v1.RollbackStrategyVersionResponse]
 	diffStrategyVersions    *connect.Client[v1.DiffStrategyVersionsRequest, v1.DiffStrategyVersionsResponse]
 	updateStrategyCode      *connect.Client[v1.UpdateStrategyCodeRequest, v1.UpdateStrategyCodeResponse]
+	checkCode               *connect.Client[v1.CheckCodeRequest, v1.CheckCodeResponse]
 }
 
 // Execute calls ant.v1.StrategyRuntimeService.Execute.
@@ -508,6 +521,11 @@ func (c *strategyRuntimeServiceClient) UpdateStrategyCode(ctx context.Context, r
 	return c.updateStrategyCode.CallUnary(ctx, req)
 }
 
+// CheckCode calls ant.v1.StrategyRuntimeService.CheckCode.
+func (c *strategyRuntimeServiceClient) CheckCode(ctx context.Context, req *connect.Request[v1.CheckCodeRequest]) (*connect.Response[v1.CheckCodeResponse], error) {
+	return c.checkCode.CallUnary(ctx, req)
+}
+
 // StrategyRuntimeServiceHandler is an implementation of the ant.v1.StrategyRuntimeService service.
 type StrategyRuntimeServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -555,6 +573,9 @@ type StrategyRuntimeServiceHandler interface {
 	DiffStrategyVersions(context.Context, *connect.Request[v1.DiffStrategyVersionsRequest]) (*connect.Response[v1.DiffStrategyVersionsResponse], error)
 	// UpdateStrategyCode updates the source code of an existing strategy and creates a version snapshot.
 	UpdateStrategyCode(context.Context, *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error)
+	// CheckCode compiles MQL source and returns diagnostics + blind spots without saving.
+	// Used for real-time editor feedback and save-time audit.
+	CheckCode(context.Context, *connect.Request[v1.CheckCodeRequest]) (*connect.Response[v1.CheckCodeResponse], error)
 }
 
 // NewStrategyRuntimeServiceHandler builds an HTTP handler from the service implementation. It
@@ -726,6 +747,12 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("UpdateStrategyCode")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyRuntimeServiceCheckCodeHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceCheckCodeProcedure,
+		svc.CheckCode,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("CheckCode")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyRuntimeService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyRuntimeServiceExecuteProcedure:
@@ -782,6 +809,8 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceDiffStrategyVersionsHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceUpdateStrategyCodeProcedure:
 			strategyRuntimeServiceUpdateStrategyCodeHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceCheckCodeProcedure:
+			strategyRuntimeServiceCheckCodeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -897,4 +926,8 @@ func (UnimplementedStrategyRuntimeServiceHandler) DiffStrategyVersions(context.C
 
 func (UnimplementedStrategyRuntimeServiceHandler) UpdateStrategyCode(context.Context, *connect.Request[v1.UpdateStrategyCodeRequest]) (*connect.Response[v1.UpdateStrategyCodeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.UpdateStrategyCode is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) CheckCode(context.Context, *connect.Request[v1.CheckCodeRequest]) (*connect.Response[v1.CheckCodeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.CheckCode is not implemented"))
 }
