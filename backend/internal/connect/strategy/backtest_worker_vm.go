@@ -304,7 +304,31 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	resp.Risk = assessRisk(result.Metrics)
 	resp.BlindSpots = attachBlindSpots(cov, vmRunner, ruleFindings)
 
+	// P0 invariant: every trade must have Volume > 0.
+	// If violated, the backtest result is unreliable (ADR-0028 §4.2 防线 B).
+	if bs := checkVolumeInvariant(result.Trades); bs != nil {
+		resp.Risk.IsReliable = false
+		resp.BlindSpots = append(resp.BlindSpots, bs)
+	}
+
 	return resp, ruleFindings, covBlindSpots, runtimeBlinds
+}
+
+// checkVolumeInvariant verifies that every trade has a strictly positive Volume.
+// Returns a BlindSpot if any trade has Volume <= 0, nil otherwise.
+// When there are no trades, the invariant is vacuously true (returns nil).
+func checkVolumeInvariant(trades []backtest.Trade) *antv1.BlindSpot {
+	for _, t := range trades {
+		if !t.Volume.GreaterThan(decimal.Zero) {
+			return &antv1.BlindSpot{
+				Id:          "zero_volume_trade",
+				Category:    "invariant",
+				Severity:    interp.SeverityFatal,
+				Description: "存在手数<=0的交易，回测结果不可信",
+			}
+		}
+	}
+	return nil
 }
 
 func attachBlindSpots(cov *mql2go.CoverageReport, vmRunner *mql2go.VMRunner, ruleFindings []mql2go.DiagnosticFinding) []*antv1.BlindSpot {

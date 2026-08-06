@@ -32,6 +32,7 @@
 | 0025 | Agent-Native 交互体验与自我进化设计 | Accepted |
 | 0026 | HD 钱包充值系统 — 每用户独立地址 + 自动到账确认 | Proposed |
 | 0027 | 策略模块前端重构 — Gallery + Detail + Workspace feature-slice | Implemented |
+| 0028 | 回测可靠性的分层校验与自我进化闭环 | Accepted |
 
 ## 编号规则
 
