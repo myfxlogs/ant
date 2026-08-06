@@ -203,10 +203,10 @@ type D3CorpusResult struct {
 
 // D3CorpusSummary aggregates results across all corpus entries.
 type D3CorpusSummary struct {
-	Total    int
-	Passed   int
-	Failed   int
-	Results  []D3CorpusResult
+	Total   int
+	Passed  int
+	Failed  int
+	Results []D3CorpusResult
 }
 
 // D3RunCorpusEntry compiles and runs a single corpus EA against the given bars,
@@ -223,15 +223,15 @@ func D3RunCorpusEntry(entry D3CorpusEntry, bars []sdk.Bar, config Config) (map[s
 // D3FormatCorpusSummary renders a human-readable summary of corpus results.
 func D3FormatCorpusSummary(s D3CorpusSummary) string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("D3 Corpus Summary: %d/%d passed\n", s.Passed, s.Total))
+	fmt.Fprintf(&sb, "D3 Corpus Summary: %d/%d passed\n", s.Passed, s.Total)
 	for _, r := range s.Results {
 		status := "PASS"
 		if r.Error != nil {
 			status = "FAIL"
 		}
-		sb.WriteString(fmt.Sprintf("  [%s] %s", status, r.EntryName))
+		fmt.Fprintf(&sb, "  [%s] %s", status, r.EntryName)
 		if r.Error != nil {
-			sb.WriteString(fmt.Sprintf(": %v", r.Error))
+			fmt.Fprintf(&sb, ": %v", r.Error)
 		}
 		sb.WriteString("\n")
 	}
