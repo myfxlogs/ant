@@ -28,29 +28,21 @@ func makeTradeWithPCS(profit, commission, swap string) backtest.Trade {
 	}
 }
 
-// helper: build a backtest.Result with the given equity, trades, and initial capital.
-func makeResult(equity []decimal.Decimal, trades []backtest.Trade, initialCapital decimal.Decimal) *backtest.Result {
-	eps := make([]backtest.EquityPoint, len(equity))
-	for i, e := range equity {
-		eps[i] = backtest.EquityPoint{
-			Time:   time.UnixMilli(int64(i) * 1000),
-			Equity: e,
-			Bar:    i,
-		}
-	}
+// helper: build a backtest.Result with the given finalBalance, trades, and initial capital.
+func makeResult(finalBalance decimal.Decimal, trades []backtest.Trade, initialCapital decimal.Decimal) *backtest.Result {
 	return &backtest.Result{
 		Config: backtest.Config{
 			InitialCapital: initialCapital,
 		},
-		Metrics: makeMetrics(int32(len(trades))),
-		Equity:  eps,
-		Trades:  trades,
+		Metrics:      makeMetrics(int32(len(trades))),
+		FinalBalance: finalBalance,
+		Trades:       trades,
 	}
 }
 
 // --- checkCapitalConservation unit tests ---
 
-// Positive: 期末净值 = 本金 + ΣProfit − ΣCommission − ΣSwap → invariant passes (nil).
+// Positive: FinalBalance = 本金 + ΣProfit − ΣCommission − ΣSwap → invariant passes (nil).
 func TestCheckCapitalConservation_Conserved(t *testing.T) {
 	initialCapital := decimal.NewFromInt(10000)
 	trades := []backtest.Trade{
@@ -60,7 +52,7 @@ func TestCheckCapitalConservation_Conserved(t *testing.T) {
 	}
 	// expected = 10000 + (100-50+200) - (5+5+5) - (1+0.5+2) = 10000 + 250 - 15 - 3.5 = 10231.5
 	expected := decimal.NewFromFloat(10231.5)
-	result := makeResult([]decimal.Decimal{initialCapital, expected}, trades, initialCapital)
+	result := makeResult(expected, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
@@ -68,7 +60,7 @@ func TestCheckCapitalConservation_Conserved(t *testing.T) {
 	}
 }
 
-// Negative: 期末净值 deviates beyond tolerance → invariant triggers.
+// Negative: FinalBalance deviates beyond tolerance → invariant triggers.
 func TestCheckCapitalConservation_NotConserved(t *testing.T) {
 	initialCapital := decimal.NewFromInt(10000)
 	trades := []backtest.Trade{
@@ -77,7 +69,7 @@ func TestCheckCapitalConservation_NotConserved(t *testing.T) {
 	// expected = 10000 + 100 - 5 - 1 = 10094
 	// actual = 10100 → diff = 6 > tolerance (max(0.01, 10000*1e-4=1) = 1)
 	actual := decimal.NewFromInt(10100)
-	result := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result := makeResult(actual, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs == nil {
@@ -97,40 +89,6 @@ func TestCheckCapitalConservation_NotConserved(t *testing.T) {
 	}
 }
 
-// Edge: empty Equity → vacuously true, returns nil.
-func TestCheckCapitalConservation_EmptyEquity(t *testing.T) {
-	result := &backtest.Result{
-		Config: backtest.Config{
-			InitialCapital: decimal.NewFromInt(10000),
-		},
-		Equity: []backtest.EquityPoint{},
-		Trades: []backtest.Trade{
-			makeTradeWithPCS("100", "5", "1"),
-		},
-	}
-	bs := checkCapitalConservation(result)
-	if bs != nil {
-		t.Fatalf("expected nil for empty Equity (vacuously true), got %+v", bs)
-	}
-}
-
-// Edge: nil Equity slice → vacuously true, returns nil.
-func TestCheckCapitalConservation_NilEquity(t *testing.T) {
-	result := &backtest.Result{
-		Config: backtest.Config{
-			InitialCapital: decimal.NewFromInt(10000),
-		},
-		Equity: nil,
-		Trades: []backtest.Trade{
-			makeTradeWithPCS("100", "5", "1"),
-		},
-	}
-	bs := checkCapitalConservation(result)
-	if bs != nil {
-		t.Fatalf("expected nil for nil Equity (vacuously true), got %+v", bs)
-	}
-}
-
 // Edge: diff exactly == tolerance → violation (>= tolerance triggers).
 func TestCheckCapitalConservation_DiffEqualsTolerance(t *testing.T) {
 	// initialCapital = 100 → tolerance = max(0.01, 100*1e-4=0.01) = 0.01
@@ -138,7 +96,7 @@ func TestCheckCapitalConservation_DiffEqualsTolerance(t *testing.T) {
 	trades := []backtest.Trade{} // no trades → expected = 100
 	// actual = 100.01 → diff = 0.01 == tolerance → violation (>=)
 	actual := decimal.New(10001, -2)
-	result := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result := makeResult(actual, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs == nil {
@@ -153,7 +111,7 @@ func TestCheckCapitalConservation_DiffJustBelowTolerance(t *testing.T) {
 	trades := []backtest.Trade{}
 	// actual = 100.00999 → diff = 0.00999 < 0.01 → passes
 	actual := decimal.New(10000999, -5)
-	result := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result := makeResult(actual, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
@@ -169,7 +127,7 @@ func TestCheckCapitalConservation_SingleTradeConserved(t *testing.T) {
 	}
 	// expected = 10000 + 500 - 10 - 2 = 10488
 	expected := decimal.NewFromInt(10488)
-	result := makeResult([]decimal.Decimal{initialCapital, expected}, trades, initialCapital)
+	result := makeResult(expected, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
@@ -177,15 +135,15 @@ func TestCheckCapitalConservation_SingleTradeConserved(t *testing.T) {
 	}
 }
 
-// Edge: zero trades, equity == initialCapital → passes.
+// Edge: zero trades, FinalBalance == initialCapital → passes.
 func TestCheckCapitalConservation_ZeroTradesConserved(t *testing.T) {
 	initialCapital := decimal.NewFromInt(10000)
 	trades := []backtest.Trade{}
-	result := makeResult([]decimal.Decimal{initialCapital, initialCapital}, trades, initialCapital)
+	result := makeResult(initialCapital, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
-		t.Fatalf("expected nil for zero trades with equity == initial, got %+v", bs)
+		t.Fatalf("expected nil for zero trades with FinalBalance == initial, got %+v", bs)
 	}
 }
 
@@ -199,7 +157,7 @@ func TestCheckCapitalConservation_LargeCapitalToleranceScaling(t *testing.T) {
 	// expected = 1000000 + 1000 - 50 - 10 = 1000940
 	// actual = 1000990 → diff = 50 < 100 (tolerance) → passes
 	actual := decimal.NewFromInt(1000990)
-	result := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result := makeResult(actual, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
@@ -208,7 +166,7 @@ func TestCheckCapitalConservation_LargeCapitalToleranceScaling(t *testing.T) {
 
 	// Now diff = 100 == tolerance → violation
 	actual2 := decimal.NewFromInt(1001040)
-	result2 := makeResult([]decimal.Decimal{initialCapital, actual2}, trades, initialCapital)
+	result2 := makeResult(actual2, trades, initialCapital)
 	bs2 := checkCapitalConservation(result2)
 	if bs2 == nil {
 		t.Fatal("expected BlindSpot when diff == scaled tolerance (boundary)")
@@ -223,31 +181,11 @@ func TestCheckCapitalConservation_NegativeProfitConserved(t *testing.T) {
 	}
 	// expected = 10000 - 300 - 5 - 1 = 9694
 	expected := decimal.NewFromInt(9694)
-	result := makeResult([]decimal.Decimal{initialCapital, expected}, trades, initialCapital)
+	result := makeResult(expected, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
 		t.Fatalf("expected nil for conserved negative profit, got %+v", bs)
-	}
-}
-
-// Edge: multiple equity points, only the last one matters.
-func TestCheckCapitalConservation_OnlyLastEquityPoint(t *testing.T) {
-	initialCapital := decimal.NewFromInt(10000)
-	trades := []backtest.Trade{
-		makeTradeWithPCS("100", "5", "1"),
-	}
-	// expected = 10000 + 100 - 5 - 1 = 10094
-	expected := decimal.NewFromInt(10094)
-	// intermediate points are different, only last matters
-	result := makeResult(
-		[]decimal.Decimal{initialCapital, decimal.NewFromInt(10500), decimal.NewFromInt(9800), expected},
-		trades, initialCapital,
-	)
-
-	bs := checkCapitalConservation(result)
-	if bs != nil {
-		t.Fatalf("expected nil when only last equity point matters, got %+v", bs)
 	}
 }
 
@@ -259,7 +197,7 @@ func TestCheckCapitalConservation_ZeroInitialCapital(t *testing.T) {
 	}
 	// expected = 0 + 100 - 5 - 1 = 94
 	expected := decimal.NewFromInt(94)
-	result := makeResult([]decimal.Decimal{initialCapital, expected}, trades, initialCapital)
+	result := makeResult(expected, trades, initialCapital)
 
 	bs := checkCapitalConservation(result)
 	if bs != nil {
@@ -268,10 +206,59 @@ func TestCheckCapitalConservation_ZeroInitialCapital(t *testing.T) {
 
 	// Violation: actual = 95 → diff = 1 > 0.01
 	actual := decimal.NewFromInt(95)
-	result2 := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result2 := makeResult(actual, trades, initialCapital)
 	bs2 := checkCapitalConservation(result2)
 	if bs2 == nil {
 		t.Fatal("expected BlindSpot for zero initial capital not conserved")
+	}
+}
+
+// 【关键新增】期末有大额未平仓浮盈，FinalBalance 仍守恒 → 必须返回 nil（不误报）。
+// 这是本次修正的核心：旧实现用 Equity（= balance + 浮盈）对已实现等式，
+// 期末有 5000 浮盈时 diff = 5000 → 误报。改用 FinalBalance 后浮盈无关。
+func TestCheckCapitalConservation_UnrealizedProfitNotFlagged(t *testing.T) {
+	initialCapital := decimal.NewFromInt(10000)
+	trades := []backtest.Trade{
+		makeTradeWithPCS("100", "5", "1"),
+		makeTradeWithPCS("200", "5", "2"),
+	}
+	// expected FinalBalance = 10000 + 300 - 10 - 3 = 10287
+	finalBalance := decimal.NewFromInt(10287)
+	result := makeResult(finalBalance, trades, initialCapital)
+
+	// Simulate unrealized floating PnL of 5000 — this would have caused
+	// a false positive with the old Equity-based check (diff = 5000 >> tolerance).
+	// With FinalBalance, floating PnL is irrelevant — invariant must pass.
+	result.Equity = []backtest.EquityPoint{
+		{Time: time.UnixMilli(0), Equity: initialCapital, Bar: 0},
+		{Time: time.UnixMilli(1000), Equity: finalBalance.Add(decimal.NewFromInt(5000)), Bar: 1},
+	}
+
+	bs := checkCapitalConservation(result)
+	if bs != nil {
+		t.Fatalf("expected nil with unrealized floating PnL (FinalBalance conserved), got %+v", bs)
+	}
+}
+
+// 【关键新增变体】期末有大额未平仓浮亏，FinalBalance 仍守恒 → 必须返回 nil。
+func TestCheckCapitalConservation_UnrealizedLossNotFlagged(t *testing.T) {
+	initialCapital := decimal.NewFromInt(10000)
+	trades := []backtest.Trade{
+		makeTradeWithPCS("100", "5", "1"),
+	}
+	// expected FinalBalance = 10000 + 100 - 5 - 1 = 10094
+	finalBalance := decimal.NewFromInt(10094)
+	result := makeResult(finalBalance, trades, initialCapital)
+
+	// Unrealized floating loss of 8000 — Equity = 10094 - 8000 = 2094
+	result.Equity = []backtest.EquityPoint{
+		{Time: time.UnixMilli(0), Equity: initialCapital, Bar: 0},
+		{Time: time.UnixMilli(1000), Equity: finalBalance.Sub(decimal.NewFromInt(8000)), Bar: 1},
+	}
+
+	bs := checkCapitalConservation(result)
+	if bs != nil {
+		t.Fatalf("expected nil with unrealized floating loss (FinalBalance conserved), got %+v", bs)
 	}
 }
 
@@ -285,9 +272,9 @@ func TestBuildBacktestResponse_CapitalConservationPass(t *testing.T) {
 		trades[i] = makeTradeWithPCS("100", "5", "1")
 		trades[i].Volume = decimal.NewFromFloat(0.1)
 	}
-	// expected = 10000 + 12*100 - 12*5 - 12*1 = 10000 + 1200 - 60 - 12 = 11128
+	// expected FinalBalance = 10000 + 12*100 - 12*5 - 12*1 = 10000 + 1200 - 60 - 12 = 11128
 	expected := decimal.NewFromInt(11128)
-	result := makeResult([]decimal.Decimal{initialCapital, expected}, trades, initialCapital)
+	result := makeResult(expected, trades, initialCapital)
 
 	cfg := backtest.Config{
 		InitialCapital: initialCapital,
@@ -314,7 +301,7 @@ func TestBuildBacktestResponse_CapitalConservationFail(t *testing.T) {
 	}
 	// expected = 11128, but we set 12000 → diff = 872 >> tolerance (1)
 	actual := decimal.NewFromInt(12000)
-	result := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result := makeResult(actual, trades, initialCapital)
 
 	cfg := backtest.Config{
 		InitialCapital: initialCapital,
@@ -345,21 +332,21 @@ func TestBuildBacktestResponse_CapitalConservationFail(t *testing.T) {
 	}
 }
 
-// Integration edge: empty Equity → capital invariant vacuously true, no blind spot.
-func TestBuildBacktestResponse_CapitalConservationEmptyEquity(t *testing.T) {
+// Integration: unrealized floating PnL at backtest end does not trigger false positive.
+func TestBuildBacktestResponse_CapitalConservationWithUnrealizedPnL(t *testing.T) {
 	initialCapital := decimal.NewFromInt(10000)
 	trades := make([]backtest.Trade, 12)
 	for i := range trades {
 		trades[i] = makeTradeWithPCS("100", "5", "1")
 		trades[i].Volume = decimal.NewFromFloat(0.1)
 	}
-	result := &backtest.Result{
-		Config: backtest.Config{
-			InitialCapital: initialCapital,
-		},
-		Metrics: makeMetrics(12),
-		Equity:  nil,
-		Trades:  trades,
+	// FinalBalance = 11128 (conserved), but Equity has large unrealized profit
+	finalBalance := decimal.NewFromInt(11128)
+	result := makeResult(finalBalance, trades, initialCapital)
+	// Equity includes 8000 unrealized floating profit — old impl would flag this
+	result.Equity = []backtest.EquityPoint{
+		{Time: time.UnixMilli(0), Equity: initialCapital, Bar: 0},
+		{Time: time.UnixMilli(1000), Equity: finalBalance.Add(decimal.NewFromInt(8000)), Bar: 1},
 	}
 
 	cfg := backtest.Config{
@@ -372,7 +359,7 @@ func TestBuildBacktestResponse_CapitalConservationEmptyEquity(t *testing.T) {
 
 	for _, bs := range resp.BlindSpots {
 		if bs.Id == "capital_not_conserved" {
-			t.Fatal("expected no capital_not_conserved blind spot when Equity is empty")
+			t.Fatal("expected no capital_not_conserved blind spot with unrealized PnL (FinalBalance conserved)")
 		}
 	}
 }
@@ -388,7 +375,7 @@ func TestBuildBacktestResponse_BothInvariantsViolated(t *testing.T) {
 	trades[3].Volume = decimal.Zero // volume invariant violation
 	// expected = 11128, actual = 12000 → capital invariant violation
 	actual := decimal.NewFromInt(12000)
-	result := makeResult([]decimal.Decimal{initialCapital, actual}, trades, initialCapital)
+	result := makeResult(actual, trades, initialCapital)
 
 	cfg := backtest.Config{
 		InitialCapital: initialCapital,

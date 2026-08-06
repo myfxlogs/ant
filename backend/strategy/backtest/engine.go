@@ -114,12 +114,13 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 	metrics := CalculateMetrics(e.config.InitialCapital, e.equity, allTrades)
 
 	return &Result{
-		Config:     e.config,
-		Metrics:    metrics,
-		Equity:     e.equity,
-		Trades:     allTrades,
-		StartedAt:  startedAt,
-		FinishedAt: time.Now(),
+		Config:       e.config,
+		Metrics:      metrics,
+		Equity:       e.equity,
+		Trades:       allTrades,
+		FinalBalance: e.broker.balance,
+		StartedAt:    startedAt,
+		FinishedAt:   time.Now(),
 	}, nil
 }
 

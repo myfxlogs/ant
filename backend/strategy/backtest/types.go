@@ -44,13 +44,14 @@ type Config struct {
 
 // Result holds the complete backtest output.
 type Result struct {
-	Config     Config
-	Metrics    *antv1.BacktestMetrics // reuses existing proto type
-	Equity     []EquityPoint
-	Trades     []Trade
-	Signals    []sdk.Signal
-	StartedAt  time.Time
-	FinishedAt time.Time
+	Config       Config
+	Metrics      *antv1.BacktestMetrics // reuses existing proto type
+	Equity       []EquityPoint
+	Trades       []Trade
+	Signals      []sdk.Signal
+	FinalBalance decimal.Decimal // realized balance at end (= broker.balance, excludes unrealized PnL)
+	StartedAt    time.Time
+	FinishedAt   time.Time
 }
 
 // EquityPoint is a single point on the equity curve.

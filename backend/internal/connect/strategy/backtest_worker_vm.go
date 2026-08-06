@@ -322,15 +322,15 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 }
 
 // checkCapitalConservation verifies the capital conservation identity:
-//   |期末净值 − (本金 + ΣProfit − ΣCommission − ΣSwap)| < 容差
+//
+//	|FinalBalance − (本金 + ΣProfit − ΣCommission − ΣSwap)| < 容差
+//
+// FinalBalance is the realized balance (excludes unrealized PnL), so the invariant
+// holds regardless of open positions at backtest end.
 // Returns a BlindSpot if the identity is violated, nil otherwise.
-// When Equity is empty, the invariant is vacuously true (returns nil).
 // 容差 = max(0.01, 1e-4 × 本金) — covers floating-point accumulation and minor swap/commission model discrepancies.
 func checkCapitalConservation(result *backtest.Result) *antv1.BlindSpot {
-	if len(result.Equity) == 0 {
-		return nil
-	}
-	finalEquity := result.Equity[len(result.Equity)-1].Equity
+	finalBalance := result.FinalBalance
 	initialCapital := result.Config.InitialCapital
 
 	var sumProfit, sumCommission, sumSwap decimal.Decimal
@@ -341,7 +341,7 @@ func checkCapitalConservation(result *backtest.Result) *antv1.BlindSpot {
 	}
 
 	expected := initialCapital.Add(sumProfit).Sub(sumCommission).Sub(sumSwap)
-	diff := finalEquity.Sub(expected).Abs()
+	diff := finalBalance.Sub(expected).Abs()
 
 	tolerance := decimal.New(1, -2) // 0.01
 	if scaled := initialCapital.Mul(decimal.New(1, -4)); scaled.GreaterThan(tolerance) {
