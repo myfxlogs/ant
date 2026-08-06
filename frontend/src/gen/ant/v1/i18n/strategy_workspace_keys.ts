@@ -400,6 +400,90 @@ export const MEMORY_NAME_PLACEHOLDER_KEY = 'strategy.workspace.memory.namePlaceh
 /** memory.contentPlaceholder */
 export const MEMORY_CONTENT_PLACEHOLDER_KEY = 'strategy.workspace.memory.contentPlaceholder' as const;
 
+/** sidebar.title */
+export const SIDEBAR_TITLE_KEY = 'strategy.workspace.sidebar.title' as const;
+
+/** sidebar.myStrategies */
+export const SIDEBAR_MY_STRATEGIES_KEY = 'strategy.workspace.sidebar.myStrategies' as const;
+
+/** sidebar.backtestHistory */
+export const SIDEBAR_BACKTEST_HISTORY_KEY = 'strategy.workspace.sidebar.backtestHistory' as const;
+
+/** sidebar.noRuns */
+export const SIDEBAR_NO_RUNS_KEY = 'strategy.workspace.sidebar.noRuns' as const;
+
+/** sidebar.viewAll */
+export const SIDEBAR_VIEW_ALL_KEY = 'strategy.workspace.sidebar.viewAll' as const;
+
+/** sidebar.newStrategy */
+export const SIDEBAR_NEW_STRATEGY_KEY = 'strategy.workspace.sidebar.newStrategy' as const;
+
+/** sidebar.trades */
+export const SIDEBAR_TRADES_KEY = 'strategy.workspace.sidebar.trades' as const;
+
+/** importMql */
+export const IMPORT_MQL_KEY = 'strategy.workspace.importMql' as const;
+
+/** emptyTitle */
+export const EMPTY_TITLE_KEY = 'strategy.workspace.emptyTitle' as const;
+
+/** emptyDesc */
+export const EMPTY_DESC_KEY = 'strategy.workspace.emptyDesc' as const;
+
+/** aiGenerate */
+export const AI_GENERATE_KEY = 'strategy.workspace.aiGenerate' as const;
+
+/** useTemplate */
+export const USE_TEMPLATE_KEY = 'strategy.workspace.useTemplate' as const;
+
+/** backToEditor */
+export const BACK_TO_EDITOR_KEY = 'strategy.workspace.backToEditor' as const;
+
+/** aiTab */
+export const AI_TAB_KEY = 'strategy.workspace.aiTab' as const;
+
+/** selectAccountFirst */
+export const SELECT_ACCOUNT_FIRST_KEY = 'strategy.workspace.selectAccountFirst' as const;
+
+/** selectSymbolFirst */
+export const SELECT_SYMBOL_FIRST_KEY = 'strategy.workspace.selectSymbolFirst' as const;
+
+/** auditChecking */
+export const AUDIT_CHECKING_KEY = 'strategy.workspace.auditChecking' as const;
+
+/** auditCompileFailed */
+export const AUDIT_COMPILE_FAILED_KEY = 'strategy.workspace.auditCompileFailed' as const;
+
+/** auditBlindSpots */
+export const AUDIT_BLIND_SPOTS_KEY = 'strategy.workspace.auditBlindSpots' as const;
+
+/** auditAllClear */
+export const AUDIT_ALL_CLEAR_KEY = 'strategy.workspace.auditAllClear' as const;
+
+/** tour.ai */
+export const TOUR_AI_KEY = 'strategy.workspace.tour.ai' as const;
+
+/** tour.aiDesc */
+export const TOUR_AI_DESC_KEY = 'strategy.workspace.tour.aiDesc' as const;
+
+/** tour.code */
+export const TOUR_CODE_KEY = 'strategy.workspace.tour.code' as const;
+
+/** tour.codeDesc */
+export const TOUR_CODE_DESC_KEY = 'strategy.workspace.tour.codeDesc' as const;
+
+/** tour.backtest */
+export const TOUR_BACKTEST_KEY = 'strategy.workspace.tour.backtest' as const;
+
+/** tour.backtestDesc */
+export const TOUR_BACKTEST_DESC_KEY = 'strategy.workspace.tour.backtestDesc' as const;
+
+/** tour.save */
+export const TOUR_SAVE_KEY = 'strategy.workspace.tour.save' as const;
+
+/** tour.saveDesc */
+export const TOUR_SAVE_DESC_KEY = 'strategy.workspace.tour.saveDesc' as const;
+
 export const STRATEGYWORKSPACE_KEYS = {
   account: 'strategy.workspace.account',
   account_placeholder: 'strategy.workspace.accountPlaceholder',
@@ -534,6 +618,34 @@ export const STRATEGYWORKSPACE_KEYS = {
   memory_save: 'strategy.workspace.memory.save',
   memory_name_placeholder: 'strategy.workspace.memory.namePlaceholder',
   memory_content_placeholder: 'strategy.workspace.memory.contentPlaceholder',
+  sidebar_title: 'strategy.workspace.sidebar.title',
+  sidebar_my_strategies: 'strategy.workspace.sidebar.myStrategies',
+  sidebar_backtest_history: 'strategy.workspace.sidebar.backtestHistory',
+  sidebar_no_runs: 'strategy.workspace.sidebar.noRuns',
+  sidebar_view_all: 'strategy.workspace.sidebar.viewAll',
+  sidebar_new_strategy: 'strategy.workspace.sidebar.newStrategy',
+  sidebar_trades: 'strategy.workspace.sidebar.trades',
+  import_mql: 'strategy.workspace.importMql',
+  empty_title: 'strategy.workspace.emptyTitle',
+  empty_desc: 'strategy.workspace.emptyDesc',
+  ai_generate: 'strategy.workspace.aiGenerate',
+  use_template: 'strategy.workspace.useTemplate',
+  back_to_editor: 'strategy.workspace.backToEditor',
+  ai_tab: 'strategy.workspace.aiTab',
+  select_account_first: 'strategy.workspace.selectAccountFirst',
+  select_symbol_first: 'strategy.workspace.selectSymbolFirst',
+  audit_checking: 'strategy.workspace.auditChecking',
+  audit_compile_failed: 'strategy.workspace.auditCompileFailed',
+  audit_blind_spots: 'strategy.workspace.auditBlindSpots',
+  audit_all_clear: 'strategy.workspace.auditAllClear',
+  tour_ai: 'strategy.workspace.tour.ai',
+  tour_ai_desc: 'strategy.workspace.tour.aiDesc',
+  tour_code: 'strategy.workspace.tour.code',
+  tour_code_desc: 'strategy.workspace.tour.codeDesc',
+  tour_backtest: 'strategy.workspace.tour.backtest',
+  tour_backtest_desc: 'strategy.workspace.tour.backtestDesc',
+  tour_save: 'strategy.workspace.tour.save',
+  tour_save_desc: 'strategy.workspace.tour.saveDesc',
 } as const;
 
 export type StrategyWorkspaceKey = typeof STRATEGYWORKSPACE_KEYS[keyof typeof STRATEGYWORKSPACE_KEYS];

@@ -62,6 +62,25 @@ const StrategyWorkspace = {
         "namePlaceholder": "Tên mẫu",
         "contentPlaceholder": "Mô tả chiến lược, tùy chọn, quy tắc..."
       },
+      "sidebar": {
+        "title": "Không gian làm việc",
+        "myStrategies": "Chiến lược của tôi",
+        "backtestHistory": "Lịch sử backtest",
+        "noRuns": "Chưa có lần backtest nào",
+        "viewAll": "Xem tất cả",
+        "newStrategy": "Chiến lược mới",
+        "trades": "giao dịch"
+      },
+      "tour": {
+        "ai": "Trợ lý AI",
+        "aiDesc": "Yêu cầu AI tạo, tối ưu, hoặc gỡ lỗi chiến lược. Mã được áp dụng hiển thị ngay trong trình soạn thảo.",
+        "code": "Trình soạn thảo mã",
+        "codeDesc": "Viết hoặc dán mã chiến lược MQL tại đây. Bạn cũng có thể nhập tệp .mq4/.mq5 từ tab Nhập MQL.",
+        "backtest": "Backtest",
+        "backtestDesc": "Chạy backtest với tham số configurable. Xem đường cong vốn, thống kê giao dịch, và chỉ số rủi ro.",
+        "save": "Lưu & Xuất bản",
+        "saveDesc": "Lưu chiến lược làm mẫu, xuất bản lên marketplace, hoặc triển khai lên lịch trình live."
+      },
       "account": "Tài khoản",
       "accountPlaceholder": "ID Tài Khoản",
       "ai": "AI 助手",
@@ -134,7 +153,20 @@ const StrategyWorkspace = {
       "noResults": "Không có kết quả",
       "noHistory": "Không có lịch sử",
       "untitledDraft": "Bản nháp chưa đặt tên",
-      "name": "Tên"
+      "name": "Tên",
+      "importMql": "Nhập MQL",
+      "emptyTitle": "Bắt đầu xây dựng chiến lược",
+      "emptyDesc": "Nhập MQL EA hiện có, chọn mẫu, hoặc để AI tạo cho bạn. Tất cả backtest và triển khai đều tại đây.",
+      "aiGenerate": "AI tạo",
+      "useTemplate": "Dùng mẫu",
+      "backToEditor": "Quay lại",
+      "aiTab": "AI",
+      "selectAccountFirst": "Vui lòng chọn tài khoản giao dịch trước",
+      "selectSymbolFirst": "Vui lòng chọn mã giao dịch trước",
+      "auditChecking": "đang kiểm tra...",
+      "auditCompileFailed": "Biên dịch thất bại",
+      "auditBlindSpots": "{{count}} điểm mù, độ phủ {{percent}}%",
+      "auditAllClear": "Không vấn đề, độ phủ {{percent}}%"
     }
   }
 } as const;

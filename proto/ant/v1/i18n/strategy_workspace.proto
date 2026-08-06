@@ -163,4 +163,40 @@ message StrategyWorkspaceI18n {
   string memory_save = 172;
   string memory_name_placeholder = 173;
   string memory_content_placeholder = 174;
+
+  // ── Sidebar (175-185) ──
+  string sidebar_title = 175;
+  string sidebar_my_strategies = 176;
+  string sidebar_backtest_history = 177;
+  string sidebar_no_runs = 178;
+  string sidebar_view_all = 179;
+  string sidebar_new_strategy = 180;
+  string sidebar_trades = 181;
+
+  // ── Empty state & actions (186-200) ──
+  string import_mql = 186;
+  string empty_title = 187;
+  string empty_desc = 188;
+  string ai_generate = 189;
+  string use_template = 190;
+  string back_to_editor = 191;
+  string ai_tab = 192;
+  string select_account_first = 193;
+  string select_symbol_first = 194;
+
+  // ── Audit status (201-205) ──
+  string audit_checking = 201;
+  string audit_compile_failed = 202;
+  string audit_blind_spots = 203;
+  string audit_all_clear = 204;
+
+  // ── Tour (206-215) ──
+  string tour_ai = 206;
+  string tour_ai_desc = 207;
+  string tour_code = 208;
+  string tour_code_desc = 209;
+  string tour_backtest = 210;
+  string tour_backtest_desc = 211;
+  string tour_save = 212;
+  string tour_save_desc = 213;
 }

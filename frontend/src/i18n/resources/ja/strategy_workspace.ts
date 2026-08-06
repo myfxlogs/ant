@@ -62,6 +62,25 @@ const StrategyWorkspace = {
         "namePlaceholder": "テンプレート名",
         "contentPlaceholder": "戦略の説明、設定、ルール..."
       },
+      "sidebar": {
+        "title": "ワークスペース",
+        "myStrategies": "マイ戦略",
+        "backtestHistory": "バックテスト履歴",
+        "noRuns": "バックテスト履歴なし",
+        "viewAll": "すべて表示",
+        "newStrategy": "新規戦略",
+        "trades": "取引"
+      },
+      "tour": {
+        "ai": "AI アシスタント",
+        "aiDesc": "AI に戦略の生成、最適化、デバッグを依頼。適用されたコードは即座にエディタに表示されます。",
+        "code": "コードエディタ",
+        "codeDesc": "ここに MQL 戦略コードを書くか貼り付けてください。MQL インポートタブから .mq4/.mq5 ファイルをインポートすることもできます。",
+        "backtest": "バックテスト",
+        "backtestDesc": "設定可能なパラメータでバックテストを実行。エクイティカーブ、取引統計、リスク指標を表示。",
+        "save": "保存 & 公開",
+        "saveDesc": "戦略をテンプレートとして保存、マーケットプレイスに公開、またはライブスケジュールにデプロイ。"
+      },
       "account": "口座",
       "accountPlaceholder": "アカウントID",
       "ai": "AI 助手",
@@ -134,7 +153,20 @@ const StrategyWorkspace = {
       "noResults": "結果なし",
       "noHistory": "履歴なし",
       "untitledDraft": "無題の下書き",
-      "name": "名前"
+      "name": "名前",
+      "importMql": "MQL インポート",
+      "emptyTitle": "戦略の構築を始める",
+      "emptyDesc": "既存の MQL EA をインポート、テンプレートを選択、または AI に生成させましょう。すべてのバックテストとデプロイはここで完結します。",
+      "aiGenerate": "AI 生成",
+      "useTemplate": "テンプレートを使用",
+      "backToEditor": "戻る",
+      "aiTab": "AI",
+      "selectAccountFirst": "取引アカウントを先に選択してください",
+      "selectSymbolFirst": "取引銘柄を先に選択してください",
+      "auditChecking": "確認中...",
+      "auditCompileFailed": "コンパイル失敗",
+      "auditBlindSpots": "{{count}} 件のブラインドスポット、カバレッジ {{percent}}%",
+      "auditAllClear": "問題なし、カバレッジ {{percent}}%"
     }
   }
 } as const;

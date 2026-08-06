@@ -779,8 +779,7 @@ const Base = {
       "searchMethod": {
         "grid": "Lưới",
         "random": "Ngẫu nhiên"
-      },
-      "qualityGate": "Cổng chất lượng"
+      }
     },
     "backtest": {
       "canceled": "Backtest bị hủy",
@@ -896,7 +895,13 @@ const Base = {
       "title": "Lịch sử phiên bản",
       "diff": "Khác biệt",
       "empty": "Chưa có lịch sử phiên bản",
-      "history": "Lịch sử phiên bản"
+      "history": "Lịch sử phiên bản",
+      "rollbackSuccess": "Đã khôi phục về phiên bản {{n}}",
+      "rollbackConfirm": "Khôi phục về v{{n}}?",
+      "diffTitle": "Khác biệt: v{{from}} → v{{to}}",
+      "viewTitle": "Phiên bản {{n}}",
+      "diffFrom": "Từ",
+      "diffTo": "Đến"
     }
   },
   "accounts": {
@@ -1031,7 +1036,7 @@ const Base = {
       "comments": "Bình Luận",
       "description": "Mô Tả",
       "getFree": "Nhận Miễn Phí",
-      "rentPrice": "${{amount}} / tháng",
+      "rentPrice": "¥{{amount}} / tháng",
       "subscribers": "Người Đăng Ký",
       "yourRating": "Đánh Giá Của Bạn",
       "runBacktest": "Chạy Backtest"
@@ -1056,7 +1061,7 @@ const Base = {
       "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
       "goToDeposit": "Nạp Tiền",
       "insufficientBalance": "Số dư không đủ",
-      "oneTimePurchase": "${{amount}} mua đứt",
+      "oneTimePurchase": "¥{{amount}} mua đứt",
       "price": "Giá",
       "purchaseFailed": "Mua thất bại. Vui lòng thử lại.",
       "purchaseSuccess": "Mua thành công! Chiến lược đã được thêm vào thư viện.",
@@ -1176,18 +1181,8 @@ const Base = {
   },
   "common": {
     "months": {
-      "jan": "Th1",
-      "feb": "Th2",
-      "mar": "Th3",
-      "apr": "Th4",
-      "may": "Th5",
-      "jun": "Th6",
-      "jul": "Th7",
-      "aug": "Th8",
-      "sep": "Th9",
-      "oct": "Th10",
-      "nov": "Th11",
-      "dec": "Th12"
+      "jan": "1月",
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}ngày",

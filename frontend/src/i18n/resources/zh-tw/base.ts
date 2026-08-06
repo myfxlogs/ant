@@ -779,8 +779,7 @@ const Base = {
       "searchMethod": {
         "grid": "網格",
         "random": "隨機"
-      },
-      "qualityGate": "品質門"
+      }
     },
     "backtest": {
       "canceled": "回測已取消",
@@ -896,7 +895,13 @@ const Base = {
       "title": "版本記錄",
       "diff": "差異",
       "empty": "尚無版本記錄",
-      "history": "版本記錄"
+      "history": "版本記錄",
+      "rollbackSuccess": "已還原至版本 {{n}}",
+      "rollbackConfirm": "還原至 v{{n}}？",
+      "diffTitle": "差異: v{{from}} → v{{to}}",
+      "viewTitle": "版本 {{n}}",
+      "diffFrom": "原始",
+      "diffTo": "目標"
     }
   },
   "accounts": {
@@ -1031,7 +1036,7 @@ const Base = {
       "comments": "評論",
       "description": "描述",
       "getFree": "免費獲取",
-      "rentPrice": "${{amount}} / 月",
+      "rentPrice": "¥{{amount}} / 月",
       "subscribers": "訂閱者",
       "yourRating": "我的評分",
       "runBacktest": "執行回測"
@@ -1056,7 +1061,7 @@ const Base = {
       "depositPrompt": "請先充值後再繼續。",
       "goToDeposit": "充值",
       "insufficientBalance": "餘額不足",
-      "oneTimePurchase": "${{amount}} 一次性買斷",
+      "oneTimePurchase": "¥{{amount}} 一次性買斷",
       "price": "價格",
       "purchaseFailed": "購買失敗，請重試。",
       "purchaseSuccess": "購買成功！策略已加入您的庫中。",
@@ -1177,17 +1182,7 @@ const Base = {
   "common": {
     "months": {
       "jan": "1月",
-      "feb": "2月",
-      "mar": "3月",
-      "apr": "4月",
-      "may": "5月",
-      "jun": "6月",
-      "jul": "7月",
-      "aug": "8月",
-      "sep": "9月",
-      "oct": "10月",
-      "nov": "11月",
-      "dec": "12月"
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}天",

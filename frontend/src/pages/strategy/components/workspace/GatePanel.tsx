@@ -51,7 +51,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
         )}
         {fixDepth && fixDepth > 0 && (
           <Tag color="blue" icon={<ThunderboltOutlined />} style={{ marginLeft: 'auto' }}>
-            Auto-Fix #{fixDepth}/3
+            {t('ai.gate.autoFix', { defaultValue: 'Auto-Fix #{{n}}/3', n: fixDepth })}
           </Tag>
         )}
       </div>

@@ -163,7 +163,7 @@ export default function WorkspaceSidebar({
                       </div>
                       {r.totalTrades != null && (
                         <div style={{ color: 'var(--ant-color-text-tertiary)', fontSize: 10 }}>
-                          {r.totalTrades} trades
+                          {r.totalTrades} {t('strategy.workspace.sidebar.trades', { defaultValue: 'trades' })}
                         </div>
                       )}
                     </div>

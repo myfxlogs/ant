@@ -154,7 +154,7 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
 
       {/* Diff Modal */}
       <Drawer
-        title={diffData ? `Diff: v${diffData.fromVer} → v${diffData.toVer}` : 'Diff'}
+        title={diffData ? t('strategy.version.diffTitle', { defaultValue: 'Diff: v{{from}} → v{{to}}', from: diffData.fromVer, to: diffData.toVer }) : t('strategy.version.diff', { defaultValue: 'Diff' })}
         open={diffModalOpen}
         onClose={() => { setDiffModalOpen(false); setDiffData(null); }}
         width={900}
@@ -169,7 +169,7 @@ export default function VersionHistoryDrawer({ open, strategyId, onClose, onRoll
 
       {/* View Version Modal */}
       <Drawer
-        title={viewVersion ? `Version ${viewVersion.ver}` : 'Version'}
+        title={viewVersion ? t('strategy.version.viewTitle', { defaultValue: 'Version {{n}}', n: viewVersion.ver }) : t('strategy.version.colVersion', { defaultValue: 'Version' })}
         open={!!viewVersion}
         onClose={() => setViewVersion(null)}
         width={800}

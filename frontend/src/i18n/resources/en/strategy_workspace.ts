@@ -60,7 +60,26 @@ const StrategyWorkspace = {
         "addTemplate": "Add Strategy Template",
         "save": "Save",
         "namePlaceholder": "Template name",
-        "contentPlaceholder": "Strategy description, preferences, rules..."
+        "contentPlaceholder": "策略描述、偏好、规则..."
+      },
+      "sidebar": {
+        "title": "Workspace",
+        "myStrategies": "My Strategies",
+        "backtestHistory": "Backtest History",
+        "noRuns": "No backtest runs yet",
+        "viewAll": "View all",
+        "newStrategy": "New Strategy",
+        "trades": "trades"
+      },
+      "tour": {
+        "ai": "AI Assistant",
+        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
+        "code": "Code Editor",
+        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
+        "backtest": "Backtest",
+        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
+        "save": "Save & Publish",
+        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
       },
       "account": "Account",
       "accountPlaceholder": "Account ID",
@@ -134,7 +153,20 @@ const StrategyWorkspace = {
       "noResults": "No results",
       "noHistory": "No history",
       "untitledDraft": "Untitled Draft",
-      "name": "Name"
+      "name": "Name",
+      "importMql": "Import MQL",
+      "emptyTitle": "Start building your strategy",
+      "emptyDesc": "Import an existing MQL EA, pick a template, or let AI generate one for you. All backtesting and deployment happens right here.",
+      "aiGenerate": "AI Generate",
+      "useTemplate": "Use Template",
+      "backToEditor": "Back",
+      "aiTab": "AI",
+      "selectAccountFirst": "Please select a trading account first",
+      "selectSymbolFirst": "Please select a trading symbol first",
+      "auditChecking": "checking...",
+      "auditCompileFailed": "Compile failed",
+      "auditBlindSpots": "{{count}} blind spot(s), coverage {{percent}}%",
+      "auditAllClear": "All clear, coverage {{percent}}%"
     }
   }
 } as const;

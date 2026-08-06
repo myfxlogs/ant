@@ -779,8 +779,7 @@ const Base = {
       "searchMethod": {
         "grid": "グリッド",
         "random": "ランダム"
-      },
-      "qualityGate": "品質ゲート"
+      }
     },
     "backtest": {
       "canceled": "バックテストがキャンセルされました",
@@ -896,7 +895,13 @@ const Base = {
       "title": "バージョン履歴",
       "diff": "差分",
       "empty": "まだバージョン履歴がありません",
-      "history": "バージョン履歴"
+      "history": "バージョン履歴",
+      "rollbackSuccess": "バージョン {{n}} にロールバックしました",
+      "rollbackConfirm": "v{{n}} にロールバックしますか？",
+      "diffTitle": "差分: v{{from}} → v{{to}}",
+      "viewTitle": "バージョン {{n}}",
+      "diffFrom": "元",
+      "diffTo": "先"
     }
   },
   "accounts": {
@@ -1031,7 +1036,7 @@ const Base = {
       "comments": "コメント",
       "description": "説明",
       "getFree": "無料で入手",
-      "rentPrice": "${{amount}} / 月",
+      "rentPrice": "¥{{amount}} / 月",
       "subscribers": "購読者",
       "yourRating": "あなたの評価",
       "runBacktest": "バックテスト実行"
@@ -1056,7 +1061,7 @@ const Base = {
       "depositPrompt": "続行するには入金してください。",
       "goToDeposit": "入金",
       "insufficientBalance": "残高不足",
-      "oneTimePurchase": "${{amount}} 買い切り",
+      "oneTimePurchase": "¥{{amount}} 買い切り",
       "price": "価格",
       "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
       "purchaseSuccess": "購入完了！戦略がライブラリに追加されました。",
@@ -1177,17 +1182,7 @@ const Base = {
   "common": {
     "months": {
       "jan": "1月",
-      "feb": "2月",
-      "mar": "3月",
-      "apr": "4月",
-      "may": "5月",
-      "jun": "6月",
-      "jul": "7月",
-      "aug": "8月",
-      "sep": "9月",
-      "oct": "10月",
-      "nov": "11月",
-      "dec": "12月"
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}天",

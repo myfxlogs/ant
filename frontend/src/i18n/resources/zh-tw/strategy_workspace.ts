@@ -62,6 +62,25 @@ const StrategyWorkspace = {
         "namePlaceholder": "範本名稱",
         "contentPlaceholder": "策略描述、偏好、規則..."
       },
+      "sidebar": {
+        "title": "工作區",
+        "myStrategies": "我的策略",
+        "backtestHistory": "回測歷史",
+        "noRuns": "暫無回測記錄",
+        "viewAll": "查看全部",
+        "newStrategy": "新建策略",
+        "trades": "筆交易"
+      },
+      "tour": {
+        "ai": "AI 助手",
+        "aiDesc": "讓 AI 生成、優化或除錯你的策略。應用的程式碼會立即出現在編輯器中。",
+        "code": "程式碼編輯器",
+        "codeDesc": "在這裡編寫或貼上你的 MQL 策略程式碼。你也可以從匯入 MQL 分頁匯入 .mq4/.mq5 檔案。",
+        "backtest": "回測",
+        "backtestDesc": "使用可配置參數運行回測。查看淨值曲線、交易統計和風險指標。",
+        "save": "儲存並發佈",
+        "saveDesc": "將策略儲存為範本，發佈到市集，或部署到實盤計畫。"
+      },
       "account": "帳號",
       "accountPlaceholder": "帳戶 ID",
       "ai": "AI 助手",
@@ -134,7 +153,20 @@ const StrategyWorkspace = {
       "noResults": "暫無結果",
       "noHistory": "暫無歷史",
       "untitledDraft": "未命名草稿",
-      "name": "名稱"
+      "name": "名稱",
+      "importMql": "匯入 MQL",
+      "emptyTitle": "開始構建你的策略",
+      "emptyDesc": "匯入現有 MQL EA，選擇範本，或讓 AI 為你生成。所有回測和部署都在這裡完成。",
+      "aiGenerate": "AI 生成",
+      "useTemplate": "使用範本",
+      "backToEditor": "返回",
+      "aiTab": "AI",
+      "selectAccountFirst": "請先選擇交易帳戶",
+      "selectSymbolFirst": "請先選擇交易品種",
+      "auditChecking": "檢查中...",
+      "auditCompileFailed": "編譯失敗",
+      "auditBlindSpots": "{{count}} 個盲點，覆蓋率 {{percent}}%",
+      "auditAllClear": "全部通過，覆蓋率 {{percent}}%"
     }
   }
 } as const;

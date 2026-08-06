@@ -2,6 +2,7 @@ import React from 'react';
 import { Tag, Space, Button, Popconfirm, Typography } from 'antd';
 import { RollbackOutlined, EyeOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 
@@ -76,6 +77,7 @@ export function buildVersionColumns(
 }
 
 export function DiffView({ fromCode, toCode }: { fromCode: string; toCode: string }) {
+  const { t } = useTranslation();
   const fromLines = fromCode.split('\n');
   const toLines = toCode.split('\n');
   const maxLen = Math.max(fromLines.length, toLines.length);
@@ -100,8 +102,8 @@ export function DiffView({ fromCode, toCode }: { fromCode: string; toCode: strin
     <div style={{ overflow: 'auto', height: '100%' }}>
       <div style={{ display: 'flex', padding: '4px 8px', background: '#fafafa', borderBottom: '1px solid #f0f0f0', fontSize: 11, color: '#999' }}>
         <span style={{ width: 40, textAlign: 'right', paddingRight: 8 }}>#</span>
-        <span style={{ width: '50%', padding: '0 8px' }}>From</span>
-        <span style={{ width: '50%', padding: '0 8px' }}>To</span>
+        <span style={{ width: '50%', padding: '0 8px' }}>{t('strategy.version.diffFrom', { defaultValue: 'From' })}</span>
+        <span style={{ width: '50%', padding: '0 8px' }}>{t('strategy.version.diffTo', { defaultValue: 'To' })}</span>
       </div>
       {rows}
     </div>

@@ -150,7 +150,7 @@ const Admin = {
       "loadFailed": "加载优惠券失败",
       "maxUsesPlaceholder": "最大使用次数（0=不限）",
       "minPurchasePlaceholder": "最低消费金额（0=无限制）",
-      "valuePlaceholder": "折扣值（例如 20 表示 20% 或 50 表示 $50）"
+      "valuePlaceholder": "折扣值（例如 20 表示 20% 或 50 表示 ¥50）"
     },
     "depositAddresses": {
       "address": "地址",

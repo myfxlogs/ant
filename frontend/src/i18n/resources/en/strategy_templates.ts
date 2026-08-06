@@ -178,8 +178,7 @@ const StrategyTemplates = {
         "delete": "Delete",
         "edit": "Edit",
         "launchSchedule": "Launch schedule",
-        "viewCode": "View code",
-        "deploy": "Deploy"
+        "viewCode": "View code"
       },
       "badges": {
         "preset": "Preset"

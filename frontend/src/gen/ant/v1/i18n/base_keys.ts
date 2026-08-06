@@ -3652,6 +3652,24 @@ export const STRATEGY_VERSION_EMPTY_KEY = 'strategy.version.empty' as const;
 /** strategy.version.history */
 export const STRATEGY_VERSION_HISTORY_KEY = 'strategy.version.history' as const;
 
+/** strategy.version.rollbackSuccess */
+export const STRATEGY_VERSION_ROLLBACK_SUCCESS_KEY = 'strategy.version.rollbackSuccess' as const;
+
+/** strategy.version.rollbackConfirm */
+export const STRATEGY_VERSION_ROLLBACK_CONFIRM_KEY = 'strategy.version.rollbackConfirm' as const;
+
+/** strategy.version.diffTitle */
+export const STRATEGY_VERSION_DIFF_TITLE_KEY = 'strategy.version.diffTitle' as const;
+
+/** strategy.version.viewTitle */
+export const STRATEGY_VERSION_VIEW_TITLE_KEY = 'strategy.version.viewTitle' as const;
+
+/** strategy.version.diffFrom */
+export const STRATEGY_VERSION_DIFF_FROM_KEY = 'strategy.version.diffFrom' as const;
+
+/** strategy.version.diffTo */
+export const STRATEGY_VERSION_DIFF_TO_KEY = 'strategy.version.diffTo' as const;
+
 /** common.saving */
 export const COMMON_SAVING_KEY = 'common.saving' as const;
 
@@ -5056,6 +5074,12 @@ export const BASE_KEYS = {
   strategy_version_diff: '__root__.strategy.version.diff',
   strategy_version_empty: '__root__.strategy.version.empty',
   strategy_version_history: '__root__.strategy.version.history',
+  strategy_version_rollback_success: '__root__.strategy.version.rollbackSuccess',
+  strategy_version_rollback_confirm: '__root__.strategy.version.rollbackConfirm',
+  strategy_version_diff_title: '__root__.strategy.version.diffTitle',
+  strategy_version_view_title: '__root__.strategy.version.viewTitle',
+  strategy_version_diff_from: '__root__.strategy.version.diffFrom',
+  strategy_version_diff_to: '__root__.strategy.version.diffTo',
   common_saving: '__root__.common.saving',
   strategy_validate_passed: '__root__.strategy.validate.passed',
   common_total: '__root__.common.total',

@@ -655,9 +655,7 @@ const Base = {
       "signal": "Signal",
       "strategy_execution": "Execution",
       "system": "System",
-      "trade": "Trade",
-      "auto_fix_started": "Auto-Fix",
-      "auto_fix_stopped": "Auto-Fix Stopped"
+      "trade": "Trade"
     },
     "all": "All",
     "clearAll": "Clear all",
@@ -781,8 +779,7 @@ const Base = {
       "searchMethod": {
         "grid": "Grid",
         "random": "Random"
-      },
-      "qualityGate": "Gate"
+      }
     },
     "backtest": {
       "canceled": "Backtest canceled",
@@ -898,7 +895,13 @@ const Base = {
       "title": "Version History",
       "diff": "Diff",
       "empty": "No version history yet",
-      "history": "Version History"
+      "history": "Version History",
+      "rollbackSuccess": "Rolled back to version {{n}}",
+      "rollbackConfirm": "Rollback to v{{n}}?",
+      "diffTitle": "Diff: v{{from}} → v{{to}}",
+      "viewTitle": "Version {{n}}",
+      "diffFrom": "From",
+      "diffTo": "To"
     }
   },
   "accounts": {
@@ -1033,7 +1036,7 @@ const Base = {
       "comments": "Comments",
       "description": "Description",
       "getFree": "Get Free",
-      "rentPrice": "${{amount}} / month",
+      "rentPrice": "¥{{amount}} / month",
       "subscribers": "Subscribers",
       "yourRating": "Your Rating",
       "runBacktest": "Run Backtest"
@@ -1058,7 +1061,7 @@ const Base = {
       "depositPrompt": "Please deposit funds to continue.",
       "goToDeposit": "Deposit",
       "insufficientBalance": "Insufficient balance",
-      "oneTimePurchase": "${{amount}} one-time",
+      "oneTimePurchase": "¥{{amount}} one-time",
       "price": "Price",
       "purchaseFailed": "Purchase failed. Please try again.",
       "purchaseSuccess": "Purchase successful! Strategy added to your library.",
@@ -1179,17 +1182,7 @@ const Base = {
   "common": {
     "months": {
       "jan": "Jan",
-      "feb": "Feb",
-      "mar": "Mar",
-      "apr": "Apr",
-      "may": "May",
-      "jun": "Jun",
-      "jul": "Jul",
-      "aug": "Aug",
-      "sep": "Sep",
-      "oct": "Oct",
-      "nov": "Nov",
-      "dec": "Dec"
+      "jul": "Jul"
     },
     "time": {
       "day": "{{n}}d",

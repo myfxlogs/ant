@@ -53,18 +53,18 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
       setDiagnostics(diags);
       if (!resp.compileSuccess) {
         setAuditStatus('error');
-        setAuditSummary(resp.compileError || 'Compile failed');
+        setAuditSummary(t('strategy.workspace.auditCompileFailed', { defaultValue: 'Compile failed' }));
       } else if (resp.blindSpots.length > 0) {
         setAuditStatus('warn');
-        setAuditSummary(`${resp.blindSpots.length} blind spot(s), coverage ${(resp.coverageScore * 100).toFixed(0)}%`);
+        setAuditSummary(t('strategy.workspace.auditBlindSpots', { defaultValue: '{{count}} blind spot(s), coverage {{percent}}%', count: resp.blindSpots.length, percent: (resp.coverageScore * 100).toFixed(0) }));
       } else {
         setAuditStatus('ok');
-        setAuditSummary(`All clear, coverage ${(resp.coverageScore * 100).toFixed(0)}%`);
+        setAuditSummary(t('strategy.workspace.auditAllClear', { defaultValue: 'All clear, coverage {{percent}}%', percent: (resp.coverageScore * 100).toFixed(0) }));
       }
     } catch {
       setAuditStatus('idle');
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -103,7 +103,7 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
         />
         {auditStatus !== 'idle' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
-            {auditStatus === 'checking' && <Tag color="processing">checking...</Tag>}
+            {auditStatus === 'checking' && <Tag color="processing">{t('strategy.workspace.auditChecking', { defaultValue: 'checking...' })}</Tag>}
             {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: '#52c41a' }} /></Tooltip>}
             {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: '#faad14' }} /></Tooltip>}
             {auditStatus === 'error' && <Tooltip title={auditSummary}><CloseCircleOutlined style={{ color: '#ff4d4f' }} /></Tooltip>}

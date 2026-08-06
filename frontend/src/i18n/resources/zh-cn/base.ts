@@ -655,9 +655,7 @@ const Base = {
       "signal": "信号",
       "strategy_execution": "策略执行",
       "system": "系统",
-      "trade": "交易",
-      "auto_fix_started": "自动修复",
-      "auto_fix_stopped": "自动修复已停止"
+      "trade": "交易"
     },
     "all": "全部",
     "clearAll": "清空全部",
@@ -781,8 +779,7 @@ const Base = {
       "searchMethod": {
         "grid": "网格",
         "random": "随机"
-      },
-      "qualityGate": "质量门"
+      }
     },
     "backtest": {
       "canceled": "回测已取消",
@@ -885,20 +882,26 @@ const Base = {
       "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集"
     },
     "version": {
-      "loadFailed": "失败 to load versions",
+      "loadFailed": "加载版本失败",
       "rollbackFailed": "回滚失败",
-      "loadVersionFailed": "失败 to load version",
-      "loadDiffFailed": "失败 to load diff",
+      "loadVersionFailed": "加载版本失败",
+      "loadDiffFailed": "加载差异失败",
       "colVersion": "版本",
       "colSummary": "变更摘要",
       "colLang": "语言",
       "colHash": "哈希",
       "colDate": "日期",
       "colActions": "操作",
-      "title": "Version 历史",
+      "title": "版本历史",
       "diff": "差异",
       "empty": "暂无版本历史",
-      "history": "Version 历史"
+      "history": "版本历史",
+      "rollbackSuccess": "已回滚到版本 {{n}}",
+      "rollbackConfirm": "回滚到 v{{n}}？",
+      "diffTitle": "差异: v{{from}} → v{{to}}",
+      "viewTitle": "版本 {{n}}",
+      "diffFrom": "原始",
+      "diffTo": "目标"
     }
   },
   "accounts": {
@@ -1033,7 +1036,7 @@ const Base = {
       "comments": "评论",
       "description": "描述",
       "getFree": "免费获取",
-      "rentPrice": "${{amount}} / 月",
+      "rentPrice": "¥{{amount}} / 月",
       "subscribers": "订阅者",
       "yourRating": "我的评分",
       "runBacktest": "运行回测"
@@ -1058,7 +1061,7 @@ const Base = {
       "depositPrompt": "请先充值后再继续。",
       "goToDeposit": "充值",
       "insufficientBalance": "余额不足",
-      "oneTimePurchase": "${{amount}} 一次性买断",
+      "oneTimePurchase": "¥{{amount}} 一次性买断",
       "price": "价格",
       "purchaseFailed": "购买失败，请重试。",
       "purchaseSuccess": "购买成功！策略已添加到您的库中。",
@@ -1179,17 +1182,7 @@ const Base = {
   "common": {
     "months": {
       "jan": "1月",
-      "feb": "2月",
-      "mar": "3月",
-      "apr": "4月",
-      "may": "5月",
-      "jun": "6月",
-      "jul": "7月",
-      "aug": "8月",
-      "sep": "9月",
-      "oct": "10月",
-      "nov": "11月",
-      "dec": "12月"
+      "jul": "7月"
     },
     "time": {
       "day": "{{n}}天",
