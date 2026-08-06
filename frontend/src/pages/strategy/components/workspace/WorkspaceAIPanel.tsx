@@ -35,7 +35,9 @@ interface Props {
   onOpenAdvanced?: () => void;
 }
 
-export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSummary, recentSummaries, backtestStatus, backtestMetrics, chartTrades, onRunBacktest, onOpenAdvanced }: Props) {
+export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSummary, recentSummaries,
+  backtestStatus: _backtestStatus, backtestMetrics: _backtestMetrics, chartTrades: _chartTrades,
+  onRunBacktest: _onRunBacktest, onOpenAdvanced: _onOpenAdvanced }: Props) {
   const { t } = useTranslation();
   const aiPanelWidth = useWorkspaceStore(s => s.aiPanelWidth);
   const setAiPanelWidth = useWorkspaceStore(s => s.setAiPanelWidth);

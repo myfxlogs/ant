@@ -251,42 +251,34 @@ func extractClassMethods(source string, n *sitter.Node, sourceFile string) []Hea
 		if child.Type() == "labeled_statement" {
 			for j := 0; j < int(child.NamedChildCount()); j++ {
 				inner := child.NamedChild(j)
-				if inner.Type() == "declaration" {
-					decl := childByType(inner, "function_declarator")
-					if decl != nil {
-						name := funcName(source, inner)
-						if name != "" {
-							sig := buildSignature(source, inner)
-							symbols = append(symbols, HeaderSymbol{
-								Name:      className + "." + name,
-								Kind:      "class_method",
-								Signature: sig,
-								Source:    sourceFile,
-							})
-						}
-					}
-				}
+				symbols = appendMethodIfValid(symbols, source, className, sourceFile, inner)
 			}
 		}
 		// Direct declaration (no access label)
-		if child.Type() == "declaration" {
-			decl := childByType(child, "function_declarator")
-			if decl != nil {
-				name := funcName(source, child)
-				if name != "" {
-					sig := buildSignature(source, child)
-					symbols = append(symbols, HeaderSymbol{
-						Name:      className + "." + name,
-						Kind:      "class_method",
-						Signature: sig,
-						Source:    sourceFile,
-					})
-				}
-			}
-		}
+		symbols = appendMethodIfValid(symbols, source, className, sourceFile, child)
 	}
 
 	return symbols
+}
+
+func appendMethodIfValid(symbols []HeaderSymbol, source, className, sourceFile string, n *sitter.Node) []HeaderSymbol {
+	if n.Type() != "declaration" {
+		return symbols
+	}
+	decl := childByType(n, "function_declarator")
+	if decl == nil {
+		return symbols
+	}
+	name := funcName(source, n)
+	if name == "" {
+		return symbols
+	}
+	return append(symbols, HeaderSymbol{
+		Name:      className + "." + name,
+		Kind:      "class_method",
+		Signature: buildSignature(source, n),
+		Source:    sourceFile,
+	})
 }
 
 // buildSignature extracts a function signature from a function node.
@@ -354,20 +346,21 @@ func GenerateRegistryEntries(symbols []HeaderSymbol) string {
 		}
 
 		kind := "function"
-		if s.Kind == "class_method" {
+		switch s.Kind {
+		case "class_method":
 			kind = "method"
-		} else if s.Kind == "constant" || s.Kind == "enum_value" {
+		case "constant", "enum_value":
 			kind = "constant"
 		}
 
-		b.WriteString(fmt.Sprintf("// %s — %s (from %s)\n", s.Name, kind, filepath.Base(s.Source)))
+		fmt.Fprintf(&b, "// %s — %s (from %s)\n", s.Name, kind, filepath.Base(s.Source))
 		if s.Signature != "" {
-			b.WriteString(fmt.Sprintf("//   signature: %s\n", s.Signature))
+			fmt.Fprintf(&b, "//   signature: %s\n", s.Signature)
 		}
 		if s.Value != "" {
-			b.WriteString(fmt.Sprintf("//   value: %s\n", s.Value))
+			fmt.Fprintf(&b, "//   value: %s\n", s.Value)
 		}
-		b.WriteString(fmt.Sprintf("//   status: needs classification (implemented/unsupported)\n\n"))
+		b.WriteString("//   status: needs classification (implemented/unsupported)\n\n")
 	}
 
 	return b.String()

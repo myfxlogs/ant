@@ -302,11 +302,16 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	}
 
 	resp.Risk = assessRisk(result.Metrics)
+	resp.BlindSpots = attachBlindSpots(cov, vmRunner, ruleFindings)
 
-	// Attach compilation and runtime blind spots
+	return resp, ruleFindings, covBlindSpots, runtimeBlinds
+}
+
+func attachBlindSpots(cov *mql2go.CoverageReport, vmRunner *mql2go.VMRunner, ruleFindings []mql2go.DiagnosticFinding) []*antv1.BlindSpot {
+	var spots []*antv1.BlindSpot
 	if cov != nil {
 		for _, bs := range cov.BlindSpots {
-			resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+			spots = append(spots, &antv1.BlindSpot{
 				Id:          bs,
 				Severity:    interp.SeverityForBuiltin(bs),
 				Description: bs + " is not fully supported",
@@ -314,21 +319,18 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		}
 	}
 	for _, rbs := range vmRunner.GetRuntimeBlindSpots() {
-		resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+		spots = append(spots, &antv1.BlindSpot{
 			Id:          rbs.Builtin,
 			Severity:    rbs.Severity,
 			Description: fmt.Sprintf("%s hit %d time(s) at runtime", rbs.Builtin, rbs.Count),
 		})
 	}
-
-	// Attach rule engine findings as blind spots with rule ID prefix
 	for _, f := range ruleFindings {
-		resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+		spots = append(spots, &antv1.BlindSpot{
 			Id:          f.RuleID,
 			Severity:    interp.EnglishToChineseSeverity(f.Severity),
 			Description: f.Title + ": " + f.Detail,
 		})
 	}
-
-	return resp, ruleFindings, covBlindSpots, runtimeBlinds
+	return spots
 }

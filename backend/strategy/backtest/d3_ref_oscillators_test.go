@@ -190,27 +190,7 @@ func refStochastic(bars []refBar, kPeriod, dPeriod, slowing, shift int) (float64
 	if idx < kPeriod+slowing-2 {
 		return 0, 0
 	}
-	kSum := 0.0
-	for s := 0; s < slowing; s++ {
-		i := idx - s
-		highest := bars[i-kPeriod+1].High
-		lowest := bars[i-kPeriod+1].Low
-		for j := i - kPeriod + 2; j <= i; j++ {
-			if bars[j].High > highest {
-				highest = bars[j].High
-			}
-			if bars[j].Low < lowest {
-				lowest = bars[j].Low
-			}
-		}
-		rng := highest - lowest
-		if rng == 0 {
-			kSum += 0
-		} else {
-			kSum += 100 * (bars[i].Close - lowest) / rng
-		}
-	}
-	k := kSum / float64(slowing)
+	k := stochasticK(bars, kPeriod, slowing, idx)
 	dSum := 0.0
 	for s := 0; s < dPeriod; s++ {
 		if s == 0 {
@@ -221,31 +201,39 @@ func refStochastic(bars []refBar, kPeriod, dPeriod, slowing, shift int) (float64
 				dSum += k
 				continue
 			}
-			ks := 0.0
-			for sl := 0; sl < slowing; sl++ {
-				j := i - sl
-				highest := bars[j-kPeriod+1].High
-				lowest := bars[j-kPeriod+1].Low
-				for jj := j - kPeriod + 2; jj <= j; jj++ {
-					if bars[jj].High > highest {
-						highest = bars[jj].High
-					}
-					if bars[jj].Low < lowest {
-						lowest = bars[jj].Low
-					}
-				}
-				rng := highest - lowest
-				if rng == 0 {
-					ks += 0
-				} else {
-					ks += 100 * (bars[j].Close - lowest) / rng
-				}
-			}
-			dSum += ks / float64(slowing)
+			dSum += stochasticK(bars, kPeriod, slowing, i)
 		}
 	}
 	d := dSum / float64(dPeriod)
 	return k, d
+}
+
+// stochasticK computes the %K value at index i over [i-kPeriod+1, i].
+func stochasticK(bars []refBar, kPeriod, slowing, i int) float64 {
+	sum := 0.0
+	for s := 0; s < slowing; s++ {
+		j := i - s
+		highest, lowest := highestLowest(bars, j-kPeriod+1, j)
+		rng := highest - lowest
+		if rng != 0 {
+			sum += 100 * (bars[j].Close - lowest) / rng
+		}
+	}
+	return sum / float64(slowing)
+}
+
+func highestLowest(bars []refBar, start, end int) (float64, float64) {
+	highest := bars[start].High
+	lowest := bars[start].Low
+	for j := start + 1; j <= end; j++ {
+		if bars[j].High > highest {
+			highest = bars[j].High
+		}
+		if bars[j].Low < lowest {
+			lowest = bars[j].Low
+		}
+	}
+	return highest, lowest
 }
 
 // ── Bollinger Bands ──────────────────────────────────────────────────
@@ -374,42 +362,37 @@ func refSAR(bars []refBar, step, maxAF float64, shift int) float64 {
 	}
 	sar := make([]float64, n)
 	af := step
-	isLong := bars[1].Close > bars[0].Close
-	if isLong {
+	long := bars[1].Close > bars[0].Close
+	var ep float64
+	if long {
 		sar[0] = bars[0].Low
-		ep := bars[0].High
+		ep = bars[0].High
 		for i := 1; i < n; i++ {
 			sar[i] = sar[i-1] + af*(ep-sar[i-1])
 			if bars[i].Low < sar[i] {
 				sar[i] = ep
-				isLong = false
 				af = step
 				ep = bars[i].Low
-			} else {
-				if bars[i].High > ep {
-					ep = bars[i].High
-					if af < maxAF {
-						af += step
-					}
+			} else if bars[i].High > ep {
+				ep = bars[i].High
+				if af < maxAF {
+					af += step
 				}
 			}
 		}
 	} else {
 		sar[0] = bars[0].High
-		ep := bars[0].Low
+		ep = bars[0].Low
 		for i := 1; i < n; i++ {
 			sar[i] = sar[i-1] + af*(ep-sar[i-1])
 			if bars[i].High > sar[i] {
 				sar[i] = ep
-				isLong = true
 				af = step
 				ep = bars[i].High
-			} else {
-				if bars[i].Low < ep {
-					ep = bars[i].Low
-					if af < maxAF {
-						af += step
-					}
+			} else if bars[i].Low < ep {
+				ep = bars[i].Low
+				if af < maxAF {
+					af += step
 				}
 			}
 		}

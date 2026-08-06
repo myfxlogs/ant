@@ -32,6 +32,13 @@ type RuntimeBlindSpot struct {
 	Count    int
 }
 
+// English severity strings for DiagnosticFinding; goconst requires constants.
+const (
+	sevFatalEn   = "fatal"
+	sevWarningEn = "warning"
+	sevInfoEn    = "info"
+)
+
 // DiagnosticFinding is the output of a matched rule.
 type DiagnosticFinding struct {
 	RuleID   string
@@ -96,7 +103,7 @@ func (ruleZeroTradesOrderSend) Match(input RuleInput) *DiagnosticFinding {
 		if bs.Severity == interp.SeverityFatal {
 			return &DiagnosticFinding{
 				RuleID:   "R01_zero_trades_ordersend",
-				Severity: "fatal",
+				Severity: sevFatalEn,
 				Title:    "Zero trades despite OrderSend/Buy/Sell calls",
 				Detail:   fmt.Sprintf("EA has trade calls but produced 0 trades. Fatal blind spot: %s", bs.Builtin),
 				Suggest:  fmt.Sprintf("Function %s is not implemented. This blocks all trading.", bs.Builtin),
@@ -108,7 +115,7 @@ func (ruleZeroTradesOrderSend) Match(input RuleInput) *DiagnosticFinding {
 		if rbs.Severity == interp.SeverityFatal {
 			return &DiagnosticFinding{
 				RuleID:   "R01_zero_trades_ordersend",
-				Severity: "fatal",
+				Severity: sevFatalEn,
 				Title:    "Zero trades despite OrderSend/Buy/Sell calls",
 				Detail:   fmt.Sprintf("EA has trade calls but produced 0 trades. Runtime blind spot: %s (hit %d times)", rbs.Builtin, rbs.Count),
 				Suggest:  fmt.Sprintf("Function %s failed at runtime. Check implementation.", rbs.Builtin),
@@ -117,7 +124,7 @@ func (ruleZeroTradesOrderSend) Match(input RuleInput) *DiagnosticFinding {
 	}
 	return &DiagnosticFinding{
 		RuleID:   "R01_zero_trades_ordersend",
-		Severity: "warning",
+		Severity: sevWarningEn,
 		Title:    "Zero trades despite OrderSend/Buy/Sell calls",
 		Detail:   "EA contains trade calls but backtest produced 0 trades. No fatal blind spots detected.",
 		Suggest:  "Check strategy parameters (e.g. Lots), entry conditions, and indicator values.",
@@ -144,7 +151,7 @@ func (ruleStartEntryNotMapped) Match(input RuleInput) *DiagnosticFinding {
 	}
 	return &DiagnosticFinding{
 		RuleID:   "R02_start_entry",
-		Severity: "fatal",
+		Severity: sevFatalEn,
 		Title:    "Classic MQL4 start() entry not mapped to OnTick",
 		Detail:   "EA uses start() as entry point but it was not mapped to OnTick. Strategy code never executes.",
 		Suggest:  "Add an OnTick() wrapper or ensure the compiler maps start() → OnTick.",
@@ -170,7 +177,7 @@ func (ruleMACDModeSignal) Match(input RuleInput) *DiagnosticFinding {
 	if !ok {
 		return &DiagnosticFinding{
 			RuleID:   "R03_macd_mode_signal",
-			Severity: "fatal",
+			Severity: sevFatalEn,
 			Title:    "MODE_SIGNAL constant missing",
 			Detail:   "EA uses iMACD with MODE_SIGNAL but the constant is not defined. iMACD signal line will be incorrect.",
 			Suggest:  "Add MODE_SIGNAL=1 to constants.go.",
@@ -180,7 +187,7 @@ func (ruleMACDModeSignal) Match(input RuleInput) *DiagnosticFinding {
 	if v.Kind == interp.ValInt && v.Int != 1 {
 		return &DiagnosticFinding{
 			RuleID:   "R03_macd_mode_signal",
-			Severity: "fatal",
+			Severity: sevFatalEn,
 			Title:    "MODE_SIGNAL has incorrect value",
 			Detail:   fmt.Sprintf("MODE_SIGNAL resolves to %d, expected 1. iMACD signal line will be wrong.", v.Int),
 			Suggest:  "Fix MODE_SIGNAL value to 1 in constants.go.",
@@ -214,7 +221,7 @@ func (ruleOrderTypeMapping) Match(input RuleInput) *DiagnosticFinding {
 	// only fire if zero trades + OrderType comparison present.
 	return &DiagnosticFinding{
 		RuleID:   "R04_ordertype_mapping",
-		Severity: "warning",
+		Severity: sevWarningEn,
 		Title:    "OrderType() comparison with OP_BUY/OP_SELL detected",
 		Detail:   "EA compares OrderType() to OP_BUY/OP_SELL. If the value mapping is incorrect, position management logic will fail silently.",
 		Suggest:  "Verify builtinOrderType returns OP_BUY(0)/OP_SELL(1), not PositionSide(1/-1).",
@@ -234,7 +241,7 @@ func (ruleICustomBlindSpot) Match(input RuleInput) *DiagnosticFinding {
 	}
 	return &DiagnosticFinding{
 		RuleID:   "R05_icustom",
-		Severity: "fatal",
+		Severity: sevFatalEn,
 		Title:    "iCustom (custom indicator) is not supported",
 		Detail:   "EA uses iCustom() which calls custom indicators. This function always returns 0, so entry/exit conditions depending on it will never trigger.",
 		Suggest:  "Replace custom indicator calls with standard indicators, or inline the indicator logic.",
@@ -257,7 +264,7 @@ func (ruleOrderSelectHistory) Match(input RuleInput) *DiagnosticFinding {
 	}
 	return &DiagnosticFinding{
 		RuleID:   "R06_orderselect_history",
-		Severity: "warning",
+		Severity: sevWarningEn,
 		Title:    "OrderSelect with MODE_HISTORY pool",
 		Detail:   "EA iterates the history pool (MODE_HISTORY). History pool support may be limited — closed orders may not be fully accessible.",
 		Suggest:  "Verify that OrdersHistoryTotal() and OrderSelect(idx, SELECT_BY_POS, MODE_HISTORY) return correct closed-order data.",
@@ -282,7 +289,7 @@ func (ruleOrderProfitOpenPos) Match(input RuleInput) *DiagnosticFinding {
 	}
 	return &DiagnosticFinding{
 		RuleID:   "R07_orderprofit_open",
-		Severity: "info",
+		Severity: sevInfoEn,
 		Title:    "OrderProfit() used in conditional logic",
 		Detail:   "EA uses OrderProfit() in conditions. For open positions, OrderProfit() returns floating P&L based on current market price.",
 		Suggest:  "Verify that OrderProfit() returns floating P&L for open positions, not 0.",
@@ -320,7 +327,7 @@ func (ruleParamNameIsType) Match(input RuleInput) *DiagnosticFinding {
 		if mqlPrimitiveTypes[name] {
 			return &DiagnosticFinding{
 				RuleID:   "R09_param_name_is_type",
-				Severity: "fatal",
+				Severity: sevFatalEn,
 				Title:    fmt.Sprintf("Parameter name '%s' is an MQL type keyword — likely parser bug", name),
 				Detail:   fmt.Sprintf("The compiler resolved a parameter name as '%s' (an MQL primitive type). This usually means tree-sitter's findIdent captured the type instead of the variable name in an extern/input declaration. The actual variable has no value → defaults to 0.", name),
 				Suggest:  fmt.Sprintf("Check extern/input declarations in the EA source. If using 'input %s VarName = value;', the parser may need a fix for that declaration style.", name),
@@ -355,7 +362,7 @@ func (ruleIndicatorModeMissing) Match(input RuleInput) *DiagnosticFinding {
 	}
 	return &DiagnosticFinding{
 		RuleID:   "R08_indicator_mode",
-		Severity: "fatal",
+		Severity: sevFatalEn,
 		Title:    fmt.Sprintf("Missing indicator mode constants: %s", strings.Join(missing, ", ")),
 		Detail:   fmt.Sprintf("EA uses indicator mode constants that are not defined: %s. These will resolve to 0, causing indicators to return the wrong line.", strings.Join(missing, ", ")),
 		Suggest:  fmt.Sprintf("Add %s to constants.go with correct MQL values.", strings.Join(missing, ", ")),
