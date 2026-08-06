@@ -149,22 +149,30 @@
 
 ## 7. 已落地 + 差距 + 起点
 
-**已落地（2026-08-06，待 commit 部署）**：`findIdent` 修复（`compile_interp_expr.go`）+ `param_float_default_test.go`；instruction limit 诊断（`vm_execute.go`）+ `vm_instruction_limit_test.go`。
+**已落地并生产部署（2026-08-06）**：
 
-| 项（P0） | 现状 | 缺口 |
+| 项 | 状态 | commit |
+|---|---|---|
+| findIdent/findType/findInitValue 修复（浮点 default 三函数 quirk） | ✅ 已部署 | 4050ab68 / 85673649 / e75e02a0 |
+| instruction limit 诊断 | ✅ 已部署 | 4050ab68 |
+| 防线 B：成交手数>0 不变量 | ✅ 已部署 | dffab294 |
+| 防线 B：资金守恒（FinalBalance 修正）| ✅ 已部署 | e43ba9ba / 7136fff1 |
+| 防线 B：价格>0 / 方向合法 / 时间序 | ✅ 已部署 | ec30bb1f |
+| assessRisk 闸门（IsReliable） | ✅ 已部署 | 随防线 B |
+| **永久防线第 3 层：status DEGRADED + 前端醒目** | ✅ 已部署 | d8256a90 / b0808a34 |
+| executionConfig proto 序列化修复 | ✅ 已部署 | 6977d5fb |
+| React setState 异步闭包修复 | ✅ 已部署 | ee01ea30 |
+| 踩坑文档（10 个坑完整记录） | ✅ | `docs/spec/param-pipeline-pitfalls.md` |
+
+| 项（剩余） | 优先级 | 缺口 |
 |----|------|------|
-| 防线 A 解析后校验 | ❌ | 编译器语义分析未做；提案 bug #4 待修 |
-| **防线 B 运行后不变量** | ❌ | **完全缺失——闭环入口，最关键** |
-| assessRisk 闸门 | ❌ | 防线 B 未在 assessRisk 前执行 |
+| **端到端测试（参数链）** | P0 | 用户填参→回测用参，防坑 1/7/8/9 再现 |
+| 防线 A 解析后校验 | 降级 | MQL4 隐式变量语义复杂，优先级低 |
+| 统计类提示（净值零波动等） | P2 | 提示不阻断 |
+| 用户代码缺陷检测（偷看未来等） | P2 | 告知+AI 补齐 |
+| 根治报告 + Admin 健康中心 | P2 | 双周 cadence |
 
-| 项（P2，稳定后） | 现状 |
-|----|------|
-| 永久防线加固机制（AI 提炼 + 人确认 + 部署）| ❌ |
-| 用户代码缺陷静态检测（偷看未来/只开不平/无止损）| ❌ |
-| 根治报告 + Admin 健康中心 + 分层报警 | ❌ |
-| 根治闭环（AI patch + 测试台 + 人）| ⚠️ failure_signature 有，闭环未串 |
-
-**起点（P0）**：防线 A + 防线 B。闭环入口、零成本、抓 xianhua 这类。
+**起点（已完成）**：防线 B 五恒定类 + assessRisk 闸门 + status DEGRADED 呈现 = **永久防线三端到端打通**。
 
 ---
 
