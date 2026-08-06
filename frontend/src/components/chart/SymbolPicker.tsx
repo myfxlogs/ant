@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Select } from 'antd';
 import type { SelectProps } from 'antd';
 import { StarFilled } from '@ant-design/icons';
@@ -32,13 +32,15 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
   const [watchlist] = useState<string[]>(loadWatchlist);
   const [loading, setLoading] = useState(false);
   const [mtError, setMtError] = useState(false);
+  const onMTErrorChangeRef = useRef(onMTErrorChange);
+  onMTErrorChangeRef.current = onMTErrorChange;
 
   useEffect(() => {
-    if (!accountId) { setSymbols([]); setLoading(false); setMtError(false); onMTErrorChange?.(false); return; }
+    if (!accountId) { setSymbols([]); setLoading(false); setMtError(false); onMTErrorChangeRef.current?.(false); return; }
     let cancelled = false;
     setLoading(true);
     setMtError(false);
-    onMTErrorChange?.(false);
+    onMTErrorChangeRef.current?.(false);
     marketApi.getSymbols(accountId)
       .then((list) => {
         if (cancelled) return;
@@ -48,7 +50,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
       .catch((e) => {
         if (cancelled) return;
         setLoading(false);
-        if (isMTSessionError(e)) { setMtError(true); onMTErrorChange?.(true); }
+        if (isMTSessionError(e)) { setMtError(true); onMTErrorChangeRef.current?.(true); }
       });
 
     return () => { cancelled = true; };

@@ -200,17 +200,10 @@ func (s *StrategyExecutionServer) applySymbolInfo(ctx context.Context, run *repo
 	}
 }
 
-func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) (*antv1.ExecuteBacktestResponse, []mql2go.DiagnosticFinding, []mql2go.CoverageBlindSpot, []mql2go.RuntimeBlindSpot) {
-	totalTrades := 0
-	if result.Metrics != nil {
-		totalTrades = int(result.Metrics.TotalTrades)
-	}
-
-	// Run diagnostic rule engine
-	var ruleFindings []mql2go.DiagnosticFinding
+// runDiagnostics runs the diagnostic rule engine and collects coverage/runtime blind spots.
+func runDiagnostics(params backtestParams, vmRunner *mql2go.VMRunner, totalTrades int) ([]mql2go.DiagnosticFinding, []mql2go.CoverageBlindSpot, []mql2go.RuntimeBlindSpot) {
 	cov := vmRunner.GetCoverage()
 	var covBlindSpots []mql2go.CoverageBlindSpot
-	// CoverageReport.BlindSpots is []string; convert to CoverageBlindSpot for the rule engine
 	if cov != nil {
 		for _, bs := range cov.BlindSpots {
 			covBlindSpots = append(covBlindSpots, mql2go.CoverageBlindSpot{
@@ -228,6 +221,7 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 			Count:    rbs.Count,
 		})
 	}
+	var ruleFindings []mql2go.DiagnosticFinding
 	if params.code != "" {
 		engine := mql2go.NewRuleEngine()
 		ruleFindings = engine.Run(mql2go.RuleInput{
@@ -239,6 +233,17 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 			RuntimeBlinds: runtimeBlinds,
 		})
 	}
+	return ruleFindings, covBlindSpots, runtimeBlinds
+}
+
+func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params backtestParams, vmRunner *mql2go.VMRunner) (*antv1.ExecuteBacktestResponse, []mql2go.DiagnosticFinding, []mql2go.CoverageBlindSpot, []mql2go.RuntimeBlindSpot) {
+	totalTrades := 0
+	if result.Metrics != nil {
+		totalTrades = int(result.Metrics.TotalTrades)
+	}
+
+	ruleFindings, covBlindSpots, runtimeBlinds := runDiagnostics(params, vmRunner, totalTrades)
+	cov := vmRunner.GetCoverage()
 
 	resp := &antv1.ExecuteBacktestResponse{
 		Success: true,
