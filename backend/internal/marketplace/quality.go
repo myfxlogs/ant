@@ -24,17 +24,20 @@ func (v QualityViolation) String() string {
 
 // qualityGates holds the thresholds loaded from system_config.
 type qualityGates struct {
-	MinSharpeRatio       decimal.Decimal
-	MaxDrawdownPct       decimal.Decimal
-	MinTotalTrades       int32
-	MinWinRate           decimal.Decimal
-	MaxIsOosDegradation  decimal.Decimal
-	EnforceSnapshot      bool
+	MinSharpeRatio      decimal.Decimal
+	MaxDrawdownPct      decimal.Decimal
+	MinTotalTrades      int32
+	MinWinRate          decimal.Decimal
+	MaxIsOosDegradation decimal.Decimal
+	EnforceSnapshot     bool
 }
 
 // loadQualityGates reads thresholds from system_config in a single query.
 // Disabled or missing keys are treated as "no gate" (zero value = always passes).
 func (s *Service) loadQualityGates(ctx context.Context) (qualityGates, error) {
+	if s.pg == nil {
+		return qualityGates{}, nil // no DB = no gates configured
+	}
 	rows, err := s.pg.Query(ctx,
 		`SELECT key, value FROM system_config
 		 WHERE key LIKE 'marketplace.quality.%' AND enabled = true`)
@@ -81,6 +84,9 @@ func (s *Service) hasQualityWaiver(ctx context.Context, strategyID string) (bool
 	if strategyID == "" {
 		return false, nil
 	}
+	if s.pg == nil {
+		return false, nil // no DB = no waivers
+	}
 	var exists bool
 	err := s.pg.QueryRow(ctx,
 		`SELECT EXISTS(SELECT 1 FROM marketplace_quality_waivers WHERE strategy_id = $1)`,
@@ -92,21 +98,45 @@ func (s *Service) hasQualityWaiver(ctx context.Context, strategyID string) (bool
 	return exists, nil
 }
 
+// checkDegradedStatus queries the latest backtest_run for a strategy.
+// If the status is DEGRADED (invariant violation), returns a non-waivable violation.
+// Returns nil if the strategy has no backtest runs or the latest is not DEGRADED.
+func (s *Service) checkDegradedStatus(ctx context.Context, strategyID string) *QualityViolation {
+	if strategyID == "" {
+		return nil
+	}
+	var runStatus string
+	err := s.pg.QueryRow(ctx,
+		`SELECT status FROM backtest_runs
+		  WHERE strategy_id = $1
+		  ORDER BY created_at DESC
+		  LIMIT 1`,
+		strategyID,
+	).Scan(&runStatus)
+	if err != nil {
+		return nil // no run found or query error = don't block
+	}
+	if runStatus == "DEGRADED" {
+		return &QualityViolation{
+			Metric:    "backtest_status",
+			Actual:    "DEGRADED",
+			Threshold: "SUCCEEDED (invariant checks must pass)",
+		}
+	}
+	return nil
+}
+
 // ValidateBacktestQuality checks a BacktestSnapshot against configured quality gates.
 // Returns a slice of violations (empty = passed). A nil snapshot with
 // enforce_snapshot enabled returns a single violation.
+//
+// DEGRADED hard block: if the latest backtest_run for this strategy has status
+// DEGRADED (invariant violation — result unreliable), publishing is blocked
+// regardless of waivers. Fake data publishing = fraud, non-waivable.
 func (s *Service) ValidateBacktestQuality(ctx context.Context, snapshotProto []byte, strategyID string) ([]QualityViolation, error) {
 	gates, err := s.loadQualityGates(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: load quality gates: %w", err)
-	}
-
-	waived, err := s.hasQualityWaiver(ctx, strategyID)
-	if err != nil {
-		return nil, fmt.Errorf("marketplace: check waiver: %w", err)
-	}
-	if waived {
-		return nil, nil
 	}
 
 	if len(snapshotProto) == 0 {
@@ -119,6 +149,19 @@ func (s *Service) ValidateBacktestQuality(ctx context.Context, snapshotProto []b
 	var snap antv1.BacktestSnapshot
 	if err := proto.Unmarshal(snapshotProto, &snap); err != nil {
 		return []QualityViolation{{Metric: "backtest_snapshot", Actual: "unmarshal_error", Threshold: "valid proto"}}, nil
+	}
+
+	// DEGRADED hard block — checked before waiver: fake data publishing is non-waivable.
+	if v := s.checkDegradedStatus(ctx, strategyID); v != nil {
+		return []QualityViolation{*v}, nil
+	}
+
+	waived, err := s.hasQualityWaiver(ctx, strategyID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: check waiver: %w", err)
+	}
+	if waived {
+		return nil, nil
 	}
 
 	var violations []QualityViolation
