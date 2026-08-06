@@ -527,7 +527,11 @@ func (c *compiler) findInitValue(n *sitter.Node, declName string) *sitter.Node {
 			"assignment_expression", "true", "false":
 			return child
 		case nodeIdentifier:
-			if c.text(child) != declName {
+			// Skip the param name itself AND primitive-type identifiers.
+			// Float-default quirk: "input double Lots=0.1" parses with "double"
+			// as an identifier in init_declarator — it's the type, not the value.
+			txt := c.text(child)
+			if txt != declName && !isMQLPrimitiveType(txt) {
 				return child
 			}
 		}
