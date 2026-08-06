@@ -36,6 +36,14 @@ message BacktestRunUpdate {
   GateEvaluationUpdate gate_update = 6;
   // Marketplace quality gate preview (sent when auto_gate=true and run succeeds).
   MarketplaceQualityPreview quality_preview = 7;
+  // Invariant blind spots that make results unreliable (sent when status=DEGRADED).
+  repeated BacktestBlindSpot blind_spots = 8;
+}
+
+message BacktestBlindSpot {
+  string id = 1;
+  string description = 2;
+  string severity = 3;
 }
 
 message MarketplaceQualityPreview {

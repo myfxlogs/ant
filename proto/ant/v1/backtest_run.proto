@@ -21,6 +21,7 @@ enum BacktestRunStatus {
   BACKTEST_RUN_STATUS_FAILED = 4;
   BACKTEST_RUN_STATUS_CANCEL_REQUESTED = 5;
   BACKTEST_RUN_STATUS_CANCELED = 6;
+  BACKTEST_RUN_STATUS_DEGRADED = 7;  // executed but results unreliable (invariant violations)
 }
 
 message BacktestRun {

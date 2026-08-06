@@ -199,4 +199,9 @@ message StrategyWorkspaceI18n {
   string tour_backtest_desc = 211;
   string tour_save = 212;
   string tour_save_desc = 213;
+
+  // ── Backtest degraded (214-216) ──
+  string backtest_degraded = 214;
+  string backtest_degraded_desc = 215;
+  string backtest_blind_spots_title = 216;
 }

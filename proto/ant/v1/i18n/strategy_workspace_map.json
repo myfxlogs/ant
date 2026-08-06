@@ -161,6 +161,9 @@
     "tour_backtest": "tour.backtest",
     "tour_backtest_desc": "tour.backtestDesc",
     "tour_save": "tour.save",
-    "tour_save_desc": "tour.saveDesc"
+    "tour_save_desc": "tour.saveDesc",
+    "backtest_degraded": "backtestDegraded",
+    "backtest_degraded_desc": "backtestDegradedDesc",
+    "backtest_blind_spots_title": "backtestBlindSpotsTitle"
   }
 }
