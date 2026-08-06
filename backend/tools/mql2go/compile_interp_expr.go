@@ -389,15 +389,37 @@ func (c *compiler) text(n *sitter.Node) string {
 }
 
 func (c *compiler) findIdent(n *sitter.Node) string {
+	// First pass: a direct identifier/field_identifier child that is NOT a
+	// primitive type. The MQL tree-sitter grammar can surface the type as the
+	// first identifier child for float-literal defaults — e.g. "input double
+	// Lots=0.1" parses with "double" as a direct identifier inside
+	// init_declarator — so primitive type names must be skipped to reach the
+	// real variable name. (No legal MQL identifier is a primitive type keyword.)
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		if child.Type() == nodeIdentifier || child.Type() == "field_identifier" {
-			return c.text(child)
+			name := c.text(child)
+			if !isMQLPrimitiveType(name) {
+				return name
+			}
 		}
 	}
-	// Direct identifier
+	// Second pass: the same grammar quirk buries the real identifier inside an
+	// ERROR recovery node. Descend into ERROR nodes to recover it.
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "ERROR" {
+			if name := c.findIdent(child); name != "" {
+				return name
+			}
+		}
+	}
+	// Direct identifier (n itself).
 	if n.Type() == nodeIdentifier || n.Type() == "field_identifier" {
-		return c.text(n)
+		name := c.text(n)
+		if !isMQLPrimitiveType(name) {
+			return name
+		}
 	}
 	return ""
 }

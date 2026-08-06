@@ -2,7 +2,6 @@ package mql2go
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"alphaforge/tools/mql2go/interp"
@@ -28,7 +27,7 @@ func (vm *VM) runLoop(ctx context.Context) error {
 		// Instruction limit check
 		vm.ticks++
 		if vm.ticks > MaxTicks {
-			return errors.New("strategy exceeded instruction limit")
+			return vm.instructionLimitError()
 		}
 
 		// Stack depth check
@@ -44,6 +43,38 @@ func (vm *VM) runLoop(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// instructionLimitError returns a diagnostic error when the VM exceeds MaxTicks.
+// MaxTicks is a per-event budget — runEvent resets ticks each bar/tick event —
+// so exhausting it is almost certainly an infinite loop, not legitimate complexity.
+// The message includes the enclosing user function (or event handler) and pc so
+// the EA author can locate the offending loop.
+func (vm *VM) instructionLimitError() error {
+	return fmt.Errorf(
+		"strategy exceeded instruction limit (%d instructions in a single bar/tick event) "+
+			"— this is an infinite loop in %s at pc=%d. "+
+			"Common causes: a while/for loop without a terminating condition, or unbounded recursion",
+		MaxTicks, vm.currentSymbol(), vm.pc)
+}
+
+// currentSymbol identifies the user function or event handler at the current pc,
+// for inclusion in instruction-limit diagnostics. It scans bc.Funcs for the
+// function whose [EntryPC, next EntryPC) range contains vm.pc.
+func (vm *VM) currentSymbol() string {
+	var bestName string
+	var bestEntry int32 = -1
+	for _, fn := range vm.bc.Funcs {
+		if fn.EntryPC <= vm.pc && fn.EntryPC > bestEntry {
+			bestEntry = fn.EntryPC
+			bestName = fn.Name
+		}
+	}
+	if bestName != "" {
+		return fmt.Sprintf("function %q", bestName)
+	}
+	// Not inside any user function → executing directly in an event handler.
+	return "the event handler (OnTick/OnBar/OnInit)"
 }
 
 // execute dispatches a single instruction.
@@ -312,7 +343,7 @@ func (vm *VM) executeCallUser(ins Instruction) error {
 		if vm.ticks > MaxTicks {
 			vm.locals = oldLocals
 			vm.callDepth--
-			return errors.New("strategy exceeded instruction limit")
+			return vm.instructionLimitError()
 		}
 		if err := vm.execute(ins2); err != nil {
 			vm.locals = oldLocals
