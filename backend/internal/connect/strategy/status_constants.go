@@ -12,4 +12,5 @@ const (
 	StatusCancelRequested = "CANCEL_REQUESTED"
 	StatusCanceled        = "CANCELED"
 	StatusCompleted       = "COMPLETED" // experiment terminal status
+	StatusDegraded        = "DEGRADED"  // execution succeeded but defense-line-B verdict is unreliable
 )

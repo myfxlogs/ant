@@ -44,6 +44,28 @@ func (s *StrategyExecutionServer) persistBacktestTrades(ctx context.Context, run
 	}
 }
 
+// invariantBlindSpotIDs lists BlindSpot IDs that indicate a defense-line-B
+// invariant violation, making the backtest result unreliable.
+var invariantBlindSpotIDs = []string{
+	"zero_volume_trade",
+	"capital_not_conserved",
+	"non_positive_price",
+	"invalid_side",
+	"time_order_violation",
+}
+
+// hasInvariantBlindSpot returns true if resp contains any invariant-class BlindSpot.
+func hasInvariantBlindSpot(resp *antv1.ExecuteBacktestResponse) bool {
+	for _, bs := range resp.GetBlindSpots() {
+		for _, id := range invariantBlindSpotIDs {
+			if bs.GetId() == id {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
 	if !result.GetSuccess() {
 		s.failRun(ctx, run, result.GetError())
@@ -59,9 +81,14 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 	// This is the tamper-proof source for marketplace quality gate validation.
 	snapshotBytes := buildBacktestSnapshot(run, result)
 
+	status := StatusSucceeded
+	if hasInvariantBlindSpot(result) {
+		status = StatusDegraded
+	}
+
 	now := time.Now()
-	BacktestRunsTotal.WithLabelValues(StatusSucceeded).Inc()
-	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusSucceeded, "", &now, &now, protoResp, snapshotBytes); err != nil {
+	BacktestRunsTotal.WithLabelValues(status).Inc()
+	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, "", &now, &now, protoResp, snapshotBytes); err != nil {
 		s.log.Error("backtest worker: UpdateAsyncFields failed", zap.String("runID", run.ID.String()), zap.Error(err))
 		return
 	}
