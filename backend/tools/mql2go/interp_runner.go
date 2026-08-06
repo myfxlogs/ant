@@ -289,10 +289,27 @@ func (r *VMRunner) GetCoverage() *CoverageReport {
 	return r.bc.Coverage
 }
 
+// InjectCoverage sets the compile-time coverage report on the runner.
+// Used when bytecode was loaded from cache (which omits coverage) and
+// coverage is recovered by recompiling from source.
+func (r *VMRunner) InjectCoverage(cov *CoverageReport) {
+	r.bc.Coverage = cov
+}
+
 // Bytecode returns the compiled bytecode. Callers can use this for
 // parameter extraction without recompiling.
 func (r *VMRunner) Bytecode() *Bytecode {
 	return r.bc
+}
+
+// GetGlobal returns the current value of a global variable by name.
+// Used by D3 differential tests to extract indicator values computed by MQL EAs.
+func (r *VMRunner) GetGlobal(name string) (interp.Value, bool) {
+	slot, ok := r.bc.GlobalSlots[name]
+	if !ok || int(slot) >= len(r.vm.globals) {
+		return interp.Value{}, false
+	}
+	return r.vm.globals[slot], true
 }
 
 // injectParams reads extern/input parameters from the SDK context and

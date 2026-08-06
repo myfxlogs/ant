@@ -207,7 +207,12 @@ func adxWilder(src BarSource, period, shift int) float64 {
 		}
 		plusDI := 100 * sumPlusDM / sumTR
 		minusDI := 100 * sumMinusDM / sumTR
-		dx := math.Abs(plusDI - minusDI)
+		diSum := plusDI + minusDI
+		if diSum == 0 {
+			dxValues = append(dxValues, 0)
+			continue
+		}
+		dx := 100 * math.Abs(plusDI-minusDI) / diSum
 		dxValues = append(dxValues, dx)
 	}
 

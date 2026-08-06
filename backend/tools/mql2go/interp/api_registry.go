@@ -2,9 +2,8 @@ package interp
 
 // API Registry — Layer 0 of the MQL EA Compatibility Proposal (§12.1).
 //
-// Enumerates every known MQL4/MQL5 API symbol with a three-state status:
+// Enumerates every known MQL4/MQL5 API symbol with a two-state status:
 //   - StatusImplemented: fully functional in the VM
-//   - StatusStubbed:     compiles but returns 0/default (blind spot)
 //   - StatusUnsupported: rejected at compile time (DLL, custom indicators, etc.)
 //
 // CI invariant (enforced by api_registry_test.go):
@@ -19,12 +18,11 @@ package interp
 //   2. The registry auto-populates it as StatusImplemented via init()
 //   3. Run `go test ./tools/mql2go/interp/ -run TestAPIRegistry` to verify
 
-// SymbolStatus is the three-state lifecycle of an API symbol.
+// SymbolStatus is the two-state lifecycle of an API symbol.
 type SymbolStatus int8
 
 const (
 	StatusImplemented SymbolStatus = iota
-	StatusStubbed
 	StatusUnsupported
 )
 
@@ -66,6 +64,7 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "ObjectGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: "chart objects are not supported"},
 	{Name: "ObjectSetString", Status: StatusUnsupported, Category: CatFunction, Reason: "chart objects are not supported"},
 	{Name: "ObjectGetString", Status: StatusUnsupported, Category: CatFunction, Reason: "chart objects are not supported"},
+	{Name: "ObjectGetType", Status: StatusUnsupported, Category: CatFunction, Reason: "chart objects are not supported"},
 	{Name: "ChartApplyTemplate", Status: StatusUnsupported, Category: CatFunction, Reason: "chart operations are not supported"},
 	{Name: "ChartSaveTemplate", Status: StatusUnsupported, Category: CatFunction, Reason: "chart operations are not supported"},
 	{Name: "ChartOpen", Status: StatusUnsupported, Category: CatFunction, Reason: "chart operations are not supported"},
@@ -102,6 +101,8 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "FileSeek", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
 	{Name: "FileSize", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
 	{Name: "FileTell", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
+	{Name: "FileIsEnding", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
+	{Name: "FileFlush", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
 	{Name: "FileCopy", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
 	{Name: "FileDelete", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
 	{Name: "FileMove", Status: StatusUnsupported, Category: CatFunction, Reason: "file I/O is not supported"},
@@ -184,12 +185,6 @@ func IsAPIImplemented(name string) bool {
 func IsAPIUnsupported(name string) bool {
 	s, ok := registryMap[name]
 	return ok && s.Status == StatusUnsupported
-}
-
-// IsAPIStubbed returns true if the symbol exists and is StatusStubbed.
-func IsAPIStubbed(name string) bool {
-	s, ok := registryMap[name]
-	return ok && s.Status == StatusStubbed
 }
 
 // AllImplementedFunctions returns all function/CTrade names with StatusImplemented.

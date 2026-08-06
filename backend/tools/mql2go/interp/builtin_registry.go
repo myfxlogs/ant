@@ -1,17 +1,17 @@
 package interp
 
-// Builtin name lists — the single source of truth for IsBuiltinImplemented /
-// IsCTradeMethodImplemented / IsStubIndicator in analyze.go.
+// Builtin name lists — the data source for api_registry.go, which is the
+// single source of truth for implementation status (Implemented/Unsupported).
 //
-// When adding a new VM builtin, add the name here too.
+// When adding a new VM builtin, add the name here so api_registry.go picks it up.
 // This file is the bridge between VM execution and static analysis (reporting) —
 // both must reference the same names to guarantee "preview == execution".
 
 // implementedMarketData — market data functions in the VM (vm_builtin_market.go).
 var implementedMarketData = []string{
 	"Ask", "ask", "Bid", "bid", "Point", "point", "_Point",
-	"Symbol", "symbol", "_Symbol", "Digits", "digits",
-	"Period", "M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1",
+	"Symbol", "symbol", "_Symbol", "Digits", "digits", "_Digits",
+	"Period", "_Period", "M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1",
 	"SymbolInfoDouble", "SymbolInfoInteger", "SymbolInfoString",
 	"MarketInfo",
 	// Cross-timeframe market data
@@ -73,10 +73,6 @@ var implementedCTradeMethods = []string{
 	"PositionModify", "OrderDelete",
 	"SetExpertMagicNumber", "SetDeviationInPoints",
 }
-
-// stubIndicators — indicators with SDK dispatch but stub implementations (return 0).
-// All indicators now have real implementations; this map is empty.
-var stubIndicators = map[string]bool{}
 
 // implementedPlatform — platform utility functions in the VM (vm_builtin_impls.go + vm_builtin_*.go).
 var implementedPlatform = []string{
@@ -140,13 +136,6 @@ var implementedPlatform = []string{
 	"HistoryOrderGetDouble", "HistoryOrderGetInteger", "HistoryOrderGetString",
 	// MQL5 order functions
 	"OrderGetTicket", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
-	// MQL4-only check functions (not in MQL5)
-	"IsConnected", "IsDemo", "IsDllsAllowed", "IsExpertEnabled",
-	"IsLibrariesAllowed", "IsTradeAllowed", "IsTradeContextBusy",
-	// MQL4 deprecated aliases
-	"CurTime",
-	// Common additions
-	"GetTickCount64", "GetMicrosecondCount", "SetUserError", "SetReturnError",
 	// Global Variables
 	"GlobalVariableSet", "GlobalVariableGet", "GlobalVariableDel",
 	"GlobalVariableCheck", "GlobalVariableTemp", "GlobalVariableFlush",
@@ -158,3 +147,13 @@ var implementedPlatform = []string{
 	// Market data
 	"Spread",
 }
+
+// Exported accessors for CI consistency tests (vm_builtins_test.go).
+
+func ImplementedMarketData() []string    { return implementedMarketData }
+func ImplementedIndicators() []string    { return implementedIndicators }
+func ImplementedMQL4Trade() []string     { return implementedMQL4Trade }
+func ImplementedMQL5Position() []string  { return implementedMQL5Position }
+func ImplementedAccount() []string       { return implementedAccount }
+func ImplementedPlatform() []string      { return implementedPlatform }
+func ImplementedCTradeMethods() []string { return implementedCTradeMethods }

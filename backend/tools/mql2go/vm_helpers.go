@@ -2,6 +2,7 @@ package mql2go
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/shopspring/decimal"
 
@@ -178,31 +179,21 @@ func (vm *VM) setField(obj interp.Value, fieldName string, val interp.Value) {
 func isFatalUnimplemented(name string) bool {
 	sym, ok := interp.LookupAPI(name)
 	if !ok {
-		// Not in registry — use pattern matching for unknown functions.
-		// Trade and market data functions are critical; others are not.
-		return startsWithAny(name, "Order", "Position", "MarketInfo", "iClose", "iOpen", "iHigh", "iLow", "iTime", "iVolume")
+		for _, p := range []string{"Order", "Position", "MarketInfo", "iClose", "iOpen", "iHigh", "iLow", "iTime", "iVolume"} {
+			if strings.HasPrefix(name, p) {
+				return true
+			}
+		}
+		return false
 	}
 	switch sym.Status {
 	case interp.StatusImplemented:
-		// Registered as implemented but no VM handler — this is a VM bug, fatal.
 		return true
 	case interp.StatusUnsupported:
-		// Unsupported functions should have been rejected at compile time.
-		// If they reach here, it's a compiler bug — fatal.
 		return true
 	default:
-		// StatusStubbed or unknown — not fatal, just a blind spot.
 		return false
 	}
-}
-
-func startsWithAny(s string, prefixes ...string) bool {
-	for _, p := range prefixes {
-		if len(s) >= len(p) && s[:len(p)] == p {
-			return true
-		}
-	}
-	return false
 }
 
 func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
@@ -234,6 +225,3 @@ func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
 func (vm *VM) recordBlindSpot(name string) {
 	vm.runtimeBlindSpots[name]++
 }
-
-// ValDecimal is a convenience alias for creating decimal values.
-const ValDecimal = interp.ValDecimal

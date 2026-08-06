@@ -153,10 +153,6 @@ func TestAnalyze_PreviouslyStubIndicator_NowImplemented(t *testing.T) {
 	if len(rep.BlindSpots) != 0 {
 		t.Errorf("BlindSpots = %v, want empty (iAlligator is implemented)", rep.BlindSpots)
 	}
-	// iAlligator is no longer a stub
-	if IsStubIndicator("iAlligator") {
-		t.Error("IsStubIndicator(iAlligator) = true, want false (now fully implemented)")
-	}
 }
 
 func TestAnalyze_UserFuncNotBlindSpot(t *testing.T) {
@@ -164,7 +160,7 @@ func TestAnalyze_UserFuncNotBlindSpot(t *testing.T) {
 		Version: "mql4",
 		Funcs: map[string]*FuncDef{
 			"MyHelper": {
-				Name: "MyHelper",
+				Name:   "MyHelper",
 				Params: []ParamDecl{{Name: "x", Type: "double"}},
 				Body: []Statement{
 					{Kind: StmtReturn, Expr: ptr(Expr{Kind: ExprVar, Name: "x"})},

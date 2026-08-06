@@ -204,7 +204,7 @@ func (vm *VM) executeArith(ins Instruction) {
 		vm.push(vm.floorDiv(a, b))
 	case OP_NEG:
 		a := vm.pop()
-		if a.Kind == ValDecimal {
+		if a.Kind == interp.ValDecimal {
 			vm.push(interp.DecimalVal(a.Decimal.Neg()))
 		} else {
 			vm.push(interp.IntVal(-a.ToInt()))

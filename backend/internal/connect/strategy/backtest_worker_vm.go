@@ -13,6 +13,7 @@ import (
 	"alphaforge/strategy/backtest"
 	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // executeVMBacktest runs a backtest via the in-process Bytecode VM:
@@ -35,6 +36,15 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 		return nil, fmt.Errorf("compile MQL: %w", err)
 	}
 	s.log.Info("executeVMBacktest: compiled successfully")
+
+	// Bytecode cache omits CoverageReport; recompile from source to recover
+	// coverage/blind-spot data when cache hit produced nil coverage.
+	if vmRunner.GetCoverage() == nil && params.code != "" {
+		if covRunner, _, covErr := mql2go.CompileMQLWithCoverage(params.code); covErr == nil {
+			vmRunner.InjectCoverage(covRunner.GetCoverage())
+			_ = covRunner // discard; only coverage is needed
+		}
+	}
 
 	// Persist newly compiled bytecode for future runs.
 	if bcData != nil && run.StrategyID != nil && s.importedRepo != nil {
@@ -205,7 +215,7 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		for _, bs := range cov.BlindSpots {
 			covBlindSpots = append(covBlindSpots, mql2go.CoverageBlindSpot{
 				Builtin:  bs,
-				Severity: "warning",
+				Severity: interp.SeverityForBuiltin(bs),
 				Source:   "compile",
 			})
 		}
@@ -298,7 +308,7 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		for _, bs := range cov.BlindSpots {
 			resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
 				Id:          bs,
-				Severity:    "warning",
+				Severity:    interp.SeverityForBuiltin(bs),
 				Description: bs + " is not fully supported",
 			})
 		}
@@ -315,7 +325,7 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	for _, f := range ruleFindings {
 		resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
 			Id:          f.RuleID,
-			Severity:    f.Severity,
+			Severity:    interp.EnglishToChineseSeverity(f.Severity),
 			Description: f.Title + ": " + f.Detail,
 		})
 	}

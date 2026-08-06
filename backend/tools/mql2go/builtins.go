@@ -56,6 +56,17 @@ var builtinRegistry = []builtinEntry{
 	{"Symbol", nil},
 	{"Period", nil},
 	{"Spread", nil},
+	// MQL5 predefined variable aliases (same handlers, wired in vm_builtin_impls.go)
+	{"_Point", nil},
+	{"_Symbol", nil},
+	{"_Digits", nil},
+	{"_Period", nil},
+	// Lowercase aliases (MQL4/MQL5 case-insensitive conventions)
+	{"bid", nil},
+	{"ask", nil},
+	{"point", nil},
+	{"digits", nil},
+	{"symbol", nil},
 
 	// Indicators (MQL4 + shared)
 	{"iMA", nil},

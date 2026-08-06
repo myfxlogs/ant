@@ -183,8 +183,12 @@ func (s *adxSeries) computeDX() {
 	}
 	plusDI := 100 * s.smoothPlusDM / s.smoothTR
 	minusDI := 100 * s.smoothMinusDM / s.smoothTR
-	dx := math.Abs(plusDI - minusDI)
-	s.lastDX = dx
+	diSum := plusDI + minusDI
+	if diSum == 0 {
+		s.lastDX = 0
+		return
+	}
+	s.lastDX = 100 * math.Abs(plusDI-minusDI) / diSum
 }
 
 // ── MACD series (incremental) ──────────────────────────────────────

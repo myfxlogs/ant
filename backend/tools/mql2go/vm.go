@@ -21,20 +21,20 @@ const MaxStackDepth = 4096
 
 // VM executes compiled MQL Bytecode against SDK interfaces.
 type VM struct {
-	bc         *Bytecode
-	ctx        sdk.Context
-	stack      []interp.Value
-	globals    []interp.Value
-	locals     []interp.Value // flat local variable space (frames are contiguous)
-	pc         int32
-	ticks      int64
-	signal     *sdk.Signal
-	currentPos *sdk.Position // current position being iterated (for Order* builtins)
-	cachedPositions []sdk.Position // cached list for OrderSelect(i, SELECT_BY_POS, MODE_TRADES)
-	cachedHistory []sdk.Position // cached list for OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)
-	runCtx     context.Context // context for cancellation checks
-	callDepth  int            // current user function call depth
-	fatalError string         // set when a critical builtin is missing (ADR §5.4)
+	bc              *Bytecode
+	ctx             sdk.Context
+	stack           []interp.Value
+	globals         []interp.Value
+	locals          []interp.Value // flat local variable space (frames are contiguous)
+	pc              int32
+	ticks           int64
+	signal          *sdk.Signal
+	currentPos      *sdk.Position   // current position being iterated (for Order* builtins)
+	cachedPositions []sdk.Position  // cached list for OrderSelect(i, SELECT_BY_POS, MODE_TRADES)
+	cachedHistory   []sdk.Position  // cached list for OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)
+	runCtx          context.Context // context for cancellation checks
+	callDepth       int             // current user function call depth
+	fatalError      string          // set when a critical builtin is missing (ADR §5.4)
 
 	// Pre-built lookup: EntryPC → FuncEntry (avoids O(n) scan per call)
 	funcByEntryPC map[int32]FuncEntry
@@ -46,7 +46,7 @@ type VM struct {
 // NewVM creates a VM for the given Bytecode.
 func NewVM(bc *Bytecode) *VM {
 	vm := &VM{
-		bc:               bc,
+		bc:                bc,
 		runtimeBlindSpots: make(map[string]int),
 		funcByEntryPC:     make(map[int32]FuncEntry),
 	}
@@ -148,7 +148,7 @@ func (vm *VM) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 		out = append(out, interp.RuntimeBlindSpot{
 			Builtin:  name,
 			Count:    count,
-			Severity: "warning",
+			Severity: interp.SeverityForBuiltin(name),
 		})
 	}
 	return out

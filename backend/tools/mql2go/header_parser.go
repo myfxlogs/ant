@@ -367,7 +367,7 @@ func GenerateRegistryEntries(symbols []HeaderSymbol) string {
 		if s.Value != "" {
 			b.WriteString(fmt.Sprintf("//   value: %s\n", s.Value))
 		}
-		b.WriteString(fmt.Sprintf("//   status: needs classification (implemented/stubbed/unsupported)\n\n"))
+		b.WriteString(fmt.Sprintf("//   status: needs classification (implemented/unsupported)\n\n"))
 	}
 
 	return b.String()

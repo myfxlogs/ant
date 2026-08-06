@@ -58,6 +58,17 @@ func registerPlatformBuiltins() {
 	builtinRegistry[id("Digits")].fn = builtinDigits
 	builtinRegistry[id("Symbol")].fn = builtinSymbol
 	builtinRegistry[id("Period")].fn = builtinPeriod
+	// MQL5 predefined variable aliases
+	builtinRegistry[id("_Point")].fn = builtinPoint
+	builtinRegistry[id("_Symbol")].fn = builtinSymbol
+	builtinRegistry[id("_Digits")].fn = builtinDigits
+	builtinRegistry[id("_Period")].fn = builtinPeriod
+	// Lowercase aliases
+	builtinRegistry[id("bid")].fn = builtinBid
+	builtinRegistry[id("ask")].fn = builtinAsk
+	builtinRegistry[id("point")].fn = builtinPoint
+	builtinRegistry[id("digits")].fn = builtinDigits
+	builtinRegistry[id("symbol")].fn = builtinSymbol
 	builtinRegistry[id("RefreshRates")].fn = builtinNoopBool
 	builtinRegistry[id("GetLastError")].fn = builtinNoopInt
 	builtinRegistry[id("ResetLastError")].fn = builtinNoop

@@ -105,7 +105,7 @@ func (ruleZeroTradesOrderSend) Match(input RuleInput) *DiagnosticFinding {
 	}
 	// Check runtime blind spots for trade functions
 	for _, rbs := range input.RuntimeBlinds {
-		if rbs.Severity == "fatal" {
+		if rbs.Severity == interp.SeverityFatal {
 			return &DiagnosticFinding{
 				RuleID:   "R01_zero_trades_ordersend",
 				Severity: "fatal",
