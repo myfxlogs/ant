@@ -47,7 +47,16 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
               backtest.runner.setParam(name, value);
             }
           }
-          backtest.run();
+          backtest.run({
+            params: result.strategyParams,
+            executionConfig: {
+              commission: p.commission,
+              slippage: p.slippage,
+              leverage: p.leverage,
+              tradeDirection: p.tradeDirection,
+              strictMode: p.strictMode,
+            },
+          });
         }}
       />
       <SaveTemplateWrapper code={code} />

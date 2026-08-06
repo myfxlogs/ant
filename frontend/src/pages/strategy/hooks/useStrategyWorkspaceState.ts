@@ -29,8 +29,17 @@ export function useStrategyWorkspaceState() {
   const templates = useTemplateSlice({
     handleLoadTemplate: codeCtx.handleLoadTemplate, validateCode: codeCtx.validateCode, updateExtractedParams: btCtx.updateExtractedParams,
   });
-  const handleRunBacktest = useCallback(() => {
-    btCtx.run({ strategyCode: codeCtx.code, symbol: account.symbol, accountId: account.accountId, timeframe: account.timeframe, templateId: templates.selectedId || undefined, strategyId: codeCtx.strategyId });
+  const handleRunBacktest = useCallback((overrides?: {
+    params?: Record<string, string>;
+    executionConfig?: {
+      commission: number;
+      slippage: number;
+      leverage: number;
+      tradeDirection: string;
+      strictMode: boolean;
+    };
+  }) => {
+    btCtx.run({ strategyCode: codeCtx.code, symbol: account.symbol, accountId: account.accountId, timeframe: account.timeframe, templateId: templates.selectedId || undefined, strategyId: codeCtx.strategyId }, overrides);
   }, [codeCtx.code, codeCtx.strategyId, account, templates.selectedId, btCtx]);
   const handleRunTuning = useCallback(async (): Promise<string> => btCtx.tuning.runTuning({ code: codeCtx.code, symbol: account.symbol, timeframe: account.timeframe, startDate: btCtx.startDate, endDate: btCtx.endDate, templateId: templates.selectedId || undefined }), [codeCtx.code, account, btCtx, templates.selectedId]);
   const qt = useQuickTradeData(account.accountId, account.symbol);

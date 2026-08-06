@@ -173,13 +173,39 @@ export function useBacktestRunner() {
 
   // ── Run backtest ──────────────────────────────────────────────────────
 
-  const run = useCallback(async (inputs: BacktestRunnerInputs) => {
+  const run = useCallback(async (
+    inputs: BacktestRunnerInputs,
+    overrides?: {
+      params?: Record<string, string>;
+      executionConfig?: {
+        commission: number;
+        slippage: number;
+        leverage: number;
+        tradeDirection: string;
+        strictMode: boolean;
+      };
+    },
+  ) => {
     const { strategyCode, accountId, symbol, timeframe, templateId, strategyId } = inputs;
     if (!strategyCode || !symbol) { message.warning(t(ENTER_CODE_AND_SYMBOL_KEY)); return; }
     setSubmitting(true);
     setActiveTab('results');
     try {
       trackFunnelEvent(FunnelEvents.FIRST_BACKTEST);
+      const paramValues = overrides?.params ?? strategyParamValues;
+      const cfg = overrides?.executionConfig
+        ? {
+            commission: overrides.executionConfig.commission,
+            slippage: overrides.executionConfig.slippage,
+            leverage: overrides.executionConfig.leverage,
+            tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both',
+            strictMode: overrides.executionConfig.strictMode,
+          }
+        : {
+            commission, slippage, leverage,
+            tradeDirection: tradeDirection as 'long' | 'short' | 'both',
+            strictMode,
+          };
       const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,
         mode: 'KLINE_RANGE',
@@ -188,12 +214,8 @@ export function useBacktestRunner() {
         templateId: templateId || undefined,
         strategyId: strategyId || undefined,
         autoGate: true,
-        parameterOverrides: strategyParamValues,
-        executionConfig: {
-          commission, slippage, leverage,
-          tradeDirection: tradeDirection as 'long' | 'short' | 'both',
-          strictMode,
-        },
+        parameterOverrides: paramValues,
+        executionConfig: cfg,
       });
       if (!result.runId) throw new Error('No run ID');
       setRunId(result.runId);
