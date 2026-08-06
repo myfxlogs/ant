@@ -8,10 +8,10 @@ import BacktestPanel from '@/components/backtest/BacktestPanel';
 import { useWsAccount, useWsCode, useWsBacktest, useWsHistory, useWsAI, useWsTemplates } from '../../WorkspaceContext';
 
 interface BtSummary {
-  totalReturn: number;
-  maxDrawdown: number;
-  sharpeRatio: number;
-  winRate: number;
+  totalReturn?: number;
+  maxDrawdown?: number;
+  sharpeRatio?: number;
+  winRate?: number;
   totalTrades: number;
 }
 
@@ -28,16 +28,9 @@ interface Props {
   onClose: () => void;
   btSummary?: BtSummary;
   recentSummaries: RecentSummary[];
-  backtestStatus?: string;
-  backtestMetrics?: { totalReturn?: number; maxDrawdown?: number; sharpeRatio?: number; winRate?: number; totalTrades?: number } | null;
-  chartTrades?: Array<{ ticket: number; side: string; volume: string; openPrice: string; closePrice: string; pnl: string; openTsMs: number; closeTsMs: number; comment?: string }>;
-  onRunBacktest?: () => void;
-  onOpenAdvanced?: () => void;
 }
 
-export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSummary, recentSummaries,
-  backtestStatus: _backtestStatus, backtestMetrics: _backtestMetrics, chartTrades: _chartTrades,
-  onRunBacktest: _onRunBacktest, onOpenAdvanced: _onOpenAdvanced }: Props) {
+export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSummary, recentSummaries }: Props) {
   const { t } = useTranslation();
   const aiPanelWidth = useWorkspaceStore(s => s.aiPanelWidth);
   const setAiPanelWidth = useWorkspaceStore(s => s.setAiPanelWidth);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Select } from 'antd';
 import type { SelectProps } from 'antd';
 import { StarFilled } from '@ant-design/icons';
@@ -20,23 +20,25 @@ interface SymbolPickerProps {
   value?: string;
   onChange?: (symbol: string) => void;
   onDropdownVisibleChange?: (open: boolean) => void;
+  onMTErrorChange?: (hasError: boolean) => void;
   accountId: string;
   placeholder?: string;
   style?: React.CSSProperties;
 }
 
-export default function SymbolPicker({ value, onChange, onDropdownVisibleChange, accountId, placeholder, style }: SymbolPickerProps) {
+export default function SymbolPicker({ value, onChange, onDropdownVisibleChange, onMTErrorChange, accountId, placeholder, style }: SymbolPickerProps) {
   const { t } = useTranslation();
   const [symbols, setSymbols] = useState<SymbolInfo[]>([]);
-  const [watchlist, setWatchlist] = useState<string[]>(loadWatchlist);
+  const [watchlist] = useState<string[]>(loadWatchlist);
   const [loading, setLoading] = useState(false);
   const [mtError, setMtError] = useState(false);
 
   useEffect(() => {
-    if (!accountId) { setSymbols([]); setLoading(false); setMtError(false); return; }
+    if (!accountId) { setSymbols([]); setLoading(false); setMtError(false); onMTErrorChange?.(false); return; }
     let cancelled = false;
     setLoading(true);
     setMtError(false);
+    onMTErrorChange?.(false);
     marketApi.getSymbols(accountId)
       .then((list) => {
         if (cancelled) return;
@@ -46,21 +48,11 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
       .catch((e) => {
         if (cancelled) return;
         setLoading(false);
-        if (isMTSessionError(e)) setMtError(true);
+        if (isMTSessionError(e)) { setMtError(true); onMTErrorChange?.(true); }
       });
 
     return () => { cancelled = true; };
   }, [accountId]);
-
-  const _toggleWatchlist = useCallback((sym: string) => {
-    setWatchlist((prev) => {
-      const next = prev.includes(sym)
-        ? prev.filter((s) => s !== sym)
-        : [...prev, sym];
-      localStorage.setItem(WATCHLIST_KEY, JSON.stringify(next));
-      return next;
-    });
-  }, []);
 
   const options: SelectProps['options'] = useMemo(() => {
     const watchlistSymbols = symbols.filter((s) => watchlist.includes(s.symbol));

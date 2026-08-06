@@ -5,20 +5,18 @@ import WorkspaceSidebar from './WorkspaceSidebar';
 import WorkspaceAIPanel from './WorkspaceAIPanel';
 import WorkspaceCenterTabBar from './WorkspaceCenterTabBar';
 import CodeEditorArea from './CodeEditorArea';
-import BacktestFullDrawer from './BacktestFullDrawer';
 import MobileSidebarDrawer from './MobileSidebarDrawer';
 import BottomPanelSection from './BottomPanelSection';
-import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
+import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
 
 interface Props {
   isMobile?: boolean;
-  btModalOpen: boolean;
   setBtModalOpen: (v: boolean) => void;
   setIndicatorDrawerOpen: (v: boolean) => void;
   onShowVersionHistory?: () => void;
 }
 
-export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
+export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
 
@@ -29,7 +27,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   const quickTrade = useWsQuickTrade();
   const layout = useWsLayout();
   const history = useWsHistory();
-  const ai = useWsAI();
 
   // ── Sidebar ──────────────────────────────────────────────────────────
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
@@ -84,9 +81,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
     backtest.runner.restoreLastRun(account.accountId, templates.selectedId || undefined);
   }, [account.accountId, backtest.runner, templates.selectedId]);
 
-  // ── Backtest drawer (replaces backtest tab) ──────────────────────────
-  const [btDrawerOpen, setBtDrawerOpen] = useState(false);
-
   // ── Import MQL inline (replaces empty state area, never modal) ────────
   const [importMode, setImportMode] = useState(false);
 
@@ -97,21 +91,13 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
   const recentSummaries = (history.runs as Array<{ templateName?: string; totalReturn?: number; totalTrades?: number; startedAt?: string }>)
     ?.slice(0, 10).map(r => ({ templateName: r.templateName || '', totalReturn: r.totalReturn ?? 0, totalTrades: r.totalTrades ?? 0, startedAt: r.startedAt || '' })) || [];
 
-  // Redirect legacy tab values from localStorage (import/strategies/backtest tabs removed)
-  useEffect(() => {
-    if (centerTab === 'import' || centerTab === 'strategies' || centerTab === 'backtest') {
-      setCenterTab('code');
-    }
-  }, [centerTab, setCenterTab]);
-
   // Desktop: if centerTab is 'chat', open AI panel instead
-  const setAiPanelOpen = useWorkspaceStore(s => s.setAiPanelOpen);
   useEffect(() => {
     if (!isMobile && centerTab === 'chat') {
-      setAiPanelOpen(true);
+      setRightPanelTab('ai');
       setCenterTab('code');
     }
-  }, [isMobile, centerTab, setCenterTab, setAiPanelOpen]);
+  }, [isMobile, centerTab, setCenterTab]);
 
   return (
     <div data-tour="code-editor" style={{ flex: '1 1 0', minWidth: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -168,50 +154,31 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
 
           {/* Code + optional right panel (desktop) */}
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
-        {!isMobile && rightPanelTab ? (
-          <WorkspaceAIPanel
-            activeTab={rightPanelTab}
-            onTabChange={setRightPanelTab}
-            onClose={() => setRightPanelTab(null)}
-            btSummary={btSummary}
-            recentSummaries={recentSummaries}
-            backtestStatus={backtest.status}
-            backtestMetrics={backtest.metrics}
-            onRunBacktest={handleBacktestClick}
-            onOpenAdvanced={() => setBtDrawerOpen(true)}
-          />
-        ) : (
-        <CodeEditorArea
-          code={code.code || ''}
-          importMode={importMode}
-          isMobile={isMobile}
-          templateCount={templates.list.length}
-          onSetImportMode={setImportMode}
-          onSetCode={code.setCode}
-          onSetCenterTab={setCenterTab}
-          onSetRightPanelTab={setRightPanelTab}
-          onSelectFirstTemplate={() => templates.onSelect(templates.list[0]?.id || '')}
-          onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
-        />
-        )}
+            {!isMobile && rightPanelTab ? (
+              <WorkspaceAIPanel
+                activeTab={rightPanelTab}
+                onTabChange={setRightPanelTab}
+                onClose={() => setRightPanelTab(null)}
+                btSummary={btSummary}
+                recentSummaries={recentSummaries}
+              />
+            ) : (
+              <CodeEditorArea
+                code={code.code || ''}
+                importMode={importMode}
+                isMobile={isMobile}
+                templateCount={templates.list.length}
+                onSetImportMode={setImportMode}
+                onSetCode={code.setCode}
+                onSetCenterTab={setCenterTab}
+                onSetRightPanelTab={setRightPanelTab}
+                onSelectFirstTemplate={() => templates.onSelect(templates.list[0]?.id || '')}
+                onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
+              />
+            )}
           </div>
         </div>
       </div>
-
-      <BacktestFullDrawer
-        open={btDrawerOpen}
-        onClose={() => setBtDrawerOpen(false)}
-        runner={backtest.runner}
-        strategyCode={code.code}
-        accountId={account.accountId}
-        symbol={account.symbol}
-        timeframe={account.timeframe}
-        templateId={templates.selectedId || undefined}
-        strategyId={code.strategyId}
-        onOpenHistory={(templateId?: string) => history.open(templateId)}
-        onAIOptimize={() => ai.optimize()}
-        onApplyTunedParams={code.setCode}
-      />
 
       {isMobile && (
         <MobileSidebarDrawer
@@ -242,8 +209,10 @@ export default function WorkspaceCenterColumn({ isMobile = false, _btModalOpen, 
         dragging={bpDragging}
         accountId={account.accountId}
         symbol={account.symbol}
-        accountMeta={account.selectedAccountMeta}
+        accountMeta={account.selectedAccountMeta ?? undefined}
         qtPositions={quickTrade.qtPositions}
+        quickTradeCollapsed={layout.quickTradeCollapsed}
+        onToggleQuickTrade={() => layout.setQuickTradeCollapsed(!layout.quickTradeCollapsed)}
       />
     </div>
   );

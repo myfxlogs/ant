@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Button } from 'antd';
 import { QUICK_TRADE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
 
@@ -10,9 +11,10 @@ interface Props {
   positions: unknown[];
   recentTrades: unknown[];
   onClosePosition: (ticket: number) => void;
+  onCollapse?: () => void;
 }
 
-export default function QuickTradeSidePanel({ accountId, symbol, accountMeta, allPositions, positions, recentTrades, onClosePosition }: Props) {
+export default function QuickTradeSidePanel({ accountId, symbol, accountMeta, allPositions, positions, recentTrades, onClosePosition, onCollapse }: Props) {
   const { t } = useTranslation();
   return (
     <div style={{
@@ -28,7 +30,11 @@ export default function QuickTradeSidePanel({ accountId, symbol, accountMeta, al
         background: 'var(--ant-color-bg-layout)',
         display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0,
       }}>
-        ⚡ {t(QUICK_TRADE_KEY)}
+        <span style={{ flex: 1 }}>⚡ {t(QUICK_TRADE_KEY)}</span>
+        {onCollapse && (
+          <Button size="small" type="text" onClick={onCollapse}
+            style={{ fontSize: 12, padding: '0 4px', lineHeight: 1 }}>✕</Button>
+        )}
       </div>
       <div style={{ flex: 1, overflowY: 'auto', padding: '4px 10px' }}>
         <QuickTradePanel

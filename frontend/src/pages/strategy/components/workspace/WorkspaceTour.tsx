@@ -25,7 +25,7 @@ export default function WorkspaceTour() {
     {
       title: t('strategy.workspace.tour.ai', { defaultValue: 'AI Assistant' }),
       description: t('strategy.workspace.tour.aiDesc', { defaultValue: 'Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.' }),
-      target: () => document.querySelector('[data-tour="code-editor"]') as HTMLElement,
+      target: () => document.querySelector('[data-tour="ai-assistant"]') as HTMLElement,
     },
     {
       title: t('strategy.workspace.tour.code', { defaultValue: 'Code Editor' }),

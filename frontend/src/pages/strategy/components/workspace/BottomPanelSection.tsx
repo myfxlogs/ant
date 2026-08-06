@@ -16,6 +16,8 @@ interface Props {
   symbol: string;
   accountMeta?: { leverage?: number; balance?: number; equity?: number };
   qtPositions: QuickTradePosition[];
+  quickTradeCollapsed: boolean;
+  onToggleQuickTrade: () => void;
 }
 
 export default function BottomPanelSection({
@@ -23,6 +25,7 @@ export default function BottomPanelSection({
   positions, recentTrades, onClosePosition,
   panelHeight, onResizeStart, dragging,
   accountId, symbol, accountMeta, qtPositions,
+  quickTradeCollapsed, onToggleQuickTrade,
 }: Props) {
   if (isMobile) return null;
 
@@ -52,7 +55,7 @@ export default function BottomPanelSection({
           dragging={dragging}
         />
       </div>
-      {symbol && (
+      {symbol && !quickTradeCollapsed && (
         <QuickTradeSidePanel
           accountId={accountId}
           symbol={symbol}
@@ -61,7 +64,21 @@ export default function BottomPanelSection({
           positions={qtPositions}
           recentTrades={recentTrades}
           onClosePosition={onClosePosition}
+          onCollapse={onToggleQuickTrade}
         />
+      )}
+      {symbol && quickTradeCollapsed && (
+        <div onClick={onToggleQuickTrade} role="button" tabIndex={0}
+          onKeyUp={e => e.key === 'Enter' && onToggleQuickTrade()}
+          style={{
+            width: 48, flexShrink: 0, cursor: 'pointer',
+            borderLeft: '1px solid var(--ant-color-border)',
+            background: 'var(--ant-color-bg-elevated)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            maxHeight: 160, fontSize: 20,
+          }} title="Expand Quick Trade">
+          ⚡
+        </div>
       )}
     </div>
   );

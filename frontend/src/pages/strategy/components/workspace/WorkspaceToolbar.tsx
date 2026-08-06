@@ -21,8 +21,9 @@ interface Props {
   accountInfo?: AccountInfo | null;
   positionCount?: number;
   busy?: boolean;
-  onTogglePositionsPanel?: () => void;
+  onToggleBottomPanel?: () => void;
   mtError?: string | null;
+  onMTErrorChange?: (hasError: boolean) => void;
 }
 
 const groupStyle: React.CSSProperties = {
@@ -57,8 +58,8 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
 export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange, busy,
   symbol, onSymbolChange, accountInfo, positionCount,
-  onTogglePositionsPanel,
-  mtError,
+  onToggleBottomPanel,
+  mtError, onMTErrorChange,
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
@@ -78,7 +79,7 @@ export default function WorkspaceToolbar({
           placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
           notFoundContent={t(NO_ACCOUNTS_KEY)}
           options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
-        <SymbolPicker accountId={selectedAccount ? accountId : ''} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
+        <SymbolPicker accountId={selectedAccount ? accountId : ''} value={symbol} onChange={onSymbolChange} onMTErrorChange={onMTErrorChange} style={{ width: 120 }} />
       </div>
 
 
@@ -103,8 +104,8 @@ export default function WorkspaceToolbar({
       )}
 
       {/* Open Positions */}
-      <div onClick={onTogglePositionsPanel} role="button" tabIndex={0}
-        onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
+      <div onClick={onToggleBottomPanel} role="button" tabIndex={0}
+        onKeyUp={e => e.key === 'Enter' && onToggleBottomPanel?.()}
         style={{ cursor: 'pointer' }}>
         <SummaryChip label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
           color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />

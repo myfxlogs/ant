@@ -1,7 +1,6 @@
 import { Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { TITLE_KEY as INDICATOR_CATALOG_TITLE_KEY } from '@/gen/ant/v1/i18n/indicator_catalog_keys';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
 import BacktestHistoryDrawer from './BacktestHistoryDrawer';
 import VersionHistoryDrawer from './VersionHistoryDrawer';
 import { SaveTemplateWrapper } from '../../WorkspaceLayout';
@@ -20,7 +19,6 @@ interface Props {
 
 export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicatorDrawerOpen, setIndicatorDrawerOpen, versionHistoryOpen, setVersionHistoryOpen }: Props) {
   const { t } = useTranslation();
-  const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const code = useWsCode();
   const account = useWsAccount();
   const backtest = useWsBacktest();
@@ -33,7 +31,7 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
         onClose={() => setBtModalOpen(false)}
         code={code.code}
         symbol={account.symbol}
-	        timeframe={account.timeframe}
+        timeframe={account.timeframe}
         onConfirm={(result: BacktestModalResult) => {
           const p = result.params;
           backtest.setInitialCapital(p.initialCapital);
@@ -50,7 +48,6 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
             }
           }
           backtest.run();
-          setCenterTab('backtest');
         }}
       />
       <SaveTemplateWrapper code={code} />

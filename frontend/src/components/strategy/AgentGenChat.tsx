@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { agentGenerateStrategyStream } from '@/client/agentGen';
-import type { AgentBacktestResult, StrategyPlan, BacktestRunSummary } from '@/gen/ant/v1/agent_gateway_pb';
+import { CloseOutlined } from '@ant-design/icons';
+import { agentGenerateStrategyStream, type BacktestSummary } from '@/client/agentGen';
+import type { AgentBacktestResult, StrategyPlan } from '@/gen/ant/v1/agent_gateway_pb';
 import type { StrategyProfile } from '@/gen/ant/v1/agent_profile_pb';
 import type { BacktestAnalysis } from '@/gen/ant/v1/agent_analysis_pb';
 import ChatHistory, { type ChatTurn, type Phase } from './ChatHistory';
@@ -19,8 +20,8 @@ interface Props {
   onDone?: () => void;
   initialTurnsRef?: React.MutableRefObject<ChatTurn[]>;
   currentCode?: string;
-  lastBacktest?: BacktestRunSummary;
-  recentBacktests?: BacktestRunSummary[];
+  lastBacktest?: BacktestSummary;
+  recentBacktests?: BacktestSummary[];
 }
 
 const NO_DATA_RE = /insufficient market data|0 bars|need.*≥.*2/i;
@@ -31,26 +32,37 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
   const [userInput, setUserInput] = useState('');
   const [planRefining, setPlanRefining] = useState(false);
   const [hasCode, setHasCode] = useState(false);
-  const [generating, _setGenerating] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [excludedCtx, setExcludedCtx] = useState<Set<string>>(new Set());
+
+  const toggleCtx = useCallback((key: string) => {
+    setExcludedCtx(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
 
   const abortRef = useRef<(() => void) | null>(null);
   const conversationIdRef = useRef(conversationId || crypto.randomUUID());
   const turnIdRef = useRef(0);
   const currentTurnIdRef = useRef<string | null>(null);
   const lastMsgRef = useRef('');
-  const confirmedPlanRef = useRef<StrategyPlan | null>(null);
   const streamTextRef = useRef('');
   const reasoningRef = useRef('');
 
   const nextTurnId = () => String(++turnIdRef.current);
   const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  const metricsFromResult = (r: AgentBacktestResult) => [
-    { label: t(GEN_RETURN_KEY), value: `${r.totalReturn.toFixed(1)}%`, positive: r.totalReturn >= 0 },
-    { label: t(GEN_MAX_DRAWDOWN_KEY), value: `${r.maxDrawdown.toFixed(1)}%`, positive: r.maxDrawdown <= 0 },
-    { label: t(GEN_SHARPE_KEY), value: r.sharpeRatio.toFixed(2), positive: r.sharpeRatio >= 1 },
-    { label: t(GEN_WIN_RATE_KEY), value: `${r.winRate.toFixed(1)}%` },
-  ];
+  const metricsFromResult = (r: AgentBacktestResult) => {
+    const [ret, dd, sharpe, win] = [Number(r.totalReturn), Number(r.maxDrawdown), Number(r.sharpeRatio), Number(r.winRate)];
+    return [
+      { label: t(GEN_RETURN_KEY), value: `${ret.toFixed(1)}%`, positive: ret >= 0 },
+      { label: t(GEN_MAX_DRAWDOWN_KEY), value: `${dd.toFixed(1)}%`, positive: dd <= 0 },
+      { label: t(GEN_SHARPE_KEY), value: sharpe.toFixed(2), positive: sharpe >= 1 },
+      { label: t(GEN_WIN_RATE_KEY), value: `${win.toFixed(1)}%` },
+    ];
+  };
 
   const updateCurrentTurn = useCallback((patch: Partial<ChatTurn>) => {
     const id = currentTurnIdRef.current;
@@ -97,6 +109,7 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
     onAnalysis: (a: BacktestAnalysis | undefined) => updateCurrentTurn({ analysis: a || undefined }),
     onAttempts: (n: number) => updateCurrentTurn({ attempts: n }),
     onError: (e: string) => {
+      setGenerating(false);
       updateCurrentTurn({ error: e });
       if (NO_DATA_RE.test(e)) {
         updateCurrentTurn({ phase: 'done' });
@@ -106,16 +119,18 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
       updateCurrentTurn({ plan: p });
       setPlanRefining(false);
     },
-    onDone: onDone || (() => {}),
+    onDone: () => { setGenerating(false); onDone?.(); },
   // eslint-disable-next-line react-hooks/exhaustive-deps -- metricsFromResult is not memoized  | REF: rd.md#part-0.2-hooks-deps
-  }), [onApply, updateCurrentTurn, onDone]);
+  }), [updateCurrentTurn, onDone]);
 
   const startStream = useCallback((input: {
     message: string; symbol?: string; timeframe?: string;
     planMode?: string; planFeedback?: string; confirmedPlan?: StrategyPlan;
+    lastBacktest?: BacktestSummary; recentBacktests?: BacktestSummary[];
   }) => {
     streamTextRef.current = '';
     reasoningRef.current = '';
+    setGenerating(true);
 
     const aiTurn: ChatTurn = {
       id: nextTurnId(),
@@ -127,9 +142,10 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
     currentTurnIdRef.current = aiTurn.id;
     setTurns((prev) => [...prev, aiTurn]);
 
-    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current, accountId, currentCode }, makeCallbacks());
+    const effectiveCode = excludedCtx.has('code') ? undefined : currentCode;
+    const abort = agentGenerateStrategyStream({ ...input, conversationId: conversationIdRef.current, accountId, currentCode: effectiveCode }, makeCallbacks());
     abortRef.current = abort;
-  }, [makeCallbacks, accountId, currentCode]);
+  }, [makeCallbacks, accountId, currentCode, excludedCtx]);
 
   const handleSend = useCallback(() => {
     const msg = userInput.trim();
@@ -148,14 +164,15 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
     setUserInput('');
     lastMsgRef.current = msg;
 
-    startStream({ message: msg, symbol, timeframe, planMode: 'plan', lastBacktest, recentBacktests });
-  }, [userInput, symbol, timeframe, startStream, lastBacktest, recentBacktests]);
+    const effectiveLastBt = excludedCtx.has('backtest') ? undefined : lastBacktest;
+    const effectiveRecentBts = excludedCtx.has('backtest') ? undefined : recentBacktests;
+    startStream({ message: msg, symbol, timeframe, planMode: 'plan', lastBacktest: effectiveLastBt, recentBacktests: effectiveRecentBts });
+  }, [userInput, symbol, timeframe, startStream, lastBacktest, recentBacktests, excludedCtx]);
 
   const handlePlanConfirm = useCallback(() => {
     const planTurn = turns.find((t) => t.plan);
     if (!planTurn?.plan) return;
     const savedPlan = planTurn.plan;
-    confirmedPlanRef.current = savedPlan;
     lastMsgRef.current = lastMsgRef.current || '';
 
     startStream({
@@ -188,28 +205,43 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
         />
       </div>
 
-      {/* ── Context indicator ── */}
-      {(currentCode || lastBacktest || (recentBacktests && recentBacktests.length > 0)) && (
-        <div style={{
-          display: 'flex', gap: 6, padding: '4px 14px', flexShrink: 0,
-          borderTop: '1px solid var(--ant-color-border)', background: 'var(--ant-color-fill-quaternary)',
-          fontSize: 11, color: 'var(--ant-color-text-secondary)', flexWrap: 'wrap',
-        }}>
-          {currentCode && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4, background: '#e6f4ff', color: '#1677ff' }}>
-              📝 {t('strategy.aiChat.codeLoaded', { defaultValue: 'Strategy code in context' })}
-            </span>
-          )}
-          {lastBacktest && lastBacktest.totalTrades != null && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4, background: '#f6ffed', color: '#3fb950' }}>
-              📊 {(lastBacktest.totalReturn ?? 0) >= 0 ? '+' : ''}{lastBacktest.totalReturn?.toFixed(1)}% · {lastBacktest.totalTrades} trades
-            </span>
-          )}
-          {!currentCode && !lastBacktest && (
-            <span>{t('strategy.aiChat.noContext', { defaultValue: 'No strategy loaded — describe what you want' })}</span>
-          )}
-        </div>
-      )}
+      {/* ── Context indicator with toggles ── */}
+      <div style={{
+        display: 'flex', gap: 6, padding: '4px 14px', flexShrink: 0,
+        borderTop: '1px solid var(--ant-color-border)', background: 'var(--ant-color-fill-quaternary)',
+        fontSize: 11, color: 'var(--ant-color-text-secondary)', flexWrap: 'wrap',
+        minHeight: 28, alignItems: 'center',
+      }}>
+        {currentCode && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4,
+            background: excludedCtx.has('code') ? 'var(--ant-color-fill-tertiary)' : '#e6f4ff',
+            color: excludedCtx.has('code') ? 'var(--ant-color-text-tertiary)' : '#1677ff',
+            textDecoration: excludedCtx.has('code') ? 'line-through' : 'none',
+            cursor: 'pointer', userSelect: 'none',
+          }} onClick={() => toggleCtx('code')}>
+            📝 {t('strategy.aiChat.codeLoaded', { defaultValue: 'Strategy code in context' })}
+            {excludedCtx.has('code') && <span style={{ marginLeft: 2, fontSize: 10 }}>↻</span>}
+            {!excludedCtx.has('code') && <CloseOutlined style={{ fontSize: 10, marginLeft: 2 }} />}
+          </span>
+        )}
+        {lastBacktest && lastBacktest.totalTrades != null && (
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4,
+            background: excludedCtx.has('backtest') ? 'var(--ant-color-fill-tertiary)' : '#f6ffed',
+            color: excludedCtx.has('backtest') ? 'var(--ant-color-text-tertiary)' : '#3fb950',
+            textDecoration: excludedCtx.has('backtest') ? 'line-through' : 'none',
+            cursor: 'pointer', userSelect: 'none',
+          }} onClick={() => toggleCtx('backtest')}>
+            📊 {(lastBacktest.totalReturn ?? 0) >= 0 ? '+' : ''}{lastBacktest.totalReturn?.toFixed(1)}% · {lastBacktest.totalTrades} trades
+            {excludedCtx.has('backtest') && <span style={{ marginLeft: 2, fontSize: 10 }}>↻</span>}
+            {!excludedCtx.has('backtest') && <CloseOutlined style={{ fontSize: 10, marginLeft: 2 }} />}
+          </span>
+        )}
+        {!currentCode && !lastBacktest && (
+          <span>{t('strategy.aiChat.noContext', { defaultValue: 'No strategy loaded — describe what you want' })}</span>
+        )}
+      </div>
 
       {/* ── Input (always enabled) ── */}
       <ChatInput

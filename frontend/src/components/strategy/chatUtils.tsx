@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-export const StreamContent = memo(({ text }: { text: string; onApply?: (code: string) => void }) => {
+export const StreamContent = memo(({ text }: { text: string }) => {
   // §3.1b: code never enters free text — only via write_strategy tool.
   // StreamContent renders the free-text channel (explanations, questions, plans).
   // No code block parsing needed — the single deliverable is rendered via generatedCode.

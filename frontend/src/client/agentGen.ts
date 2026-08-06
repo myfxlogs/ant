@@ -4,6 +4,16 @@ import { AgentGenerateStrategyRequestSchema } from '../gen/ant/v1/agent_gateway_
 import { create } from '@bufbuild/protobuf';
 import i18n from '@/i18n';
 
+export interface BacktestSummary {
+  totalReturn?: number;
+  maxDrawdown?: number;
+  sharpeRatio?: number;
+  winRate?: number;
+  totalTrades?: number;
+  templateName?: string;
+  startedAt?: string;
+}
+
 export interface AgentGenInput {
   message: string;
   symbol?: string;
@@ -15,8 +25,8 @@ export interface AgentGenInput {
   conversationId?: string;     // multi-turn conversation session ID
   accountId?: string;          // selected MT account for workspace context
   currentCode?: string;        // user's current strategy code for AI modification
-  lastBacktest?: BacktestRunSummary; // latest backtest metrics for AI context
-  recentBacktests?: BacktestRunSummary[]; // recent backtest runs for AI context
+  lastBacktest?: BacktestSummary; // latest backtest metrics for AI context
+  recentBacktests?: BacktestSummary[]; // recent backtest runs for AI context
   backtestConfig?: {
     symbol?: string;
     timeframe?: string;
@@ -61,8 +71,8 @@ function buildAgentRequest(input: AgentGenInput) {
     currentCode: input.currentCode || '',
     locale: i18n.language || 'en',
     backtestConfig: input.backtestConfig ? buildBacktestConfig(input.backtestConfig) : undefined,
-    lastBacktest: input.lastBacktest || undefined,
-    recentBacktests: input.recentBacktests || undefined,
+    lastBacktest: (input.lastBacktest as BacktestRunSummary | undefined) || undefined,
+    recentBacktests: (input.recentBacktests as BacktestRunSummary[] | undefined) || undefined,
   });
 }
 

@@ -1,59 +1,46 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { message } from 'antd';
 import { aiApi } from '@/client/ai';
 import {
   LOADED_STRATEGY_KEY, SAVED_STRATEGY_KEY, STRATEGY_NAME_PROMPT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
-import type { ChatMsg } from './ChatMessageItem';
 import type { Conversation, Template } from './strategyChatUtils';
 
 interface UseConversationHandlersArgs {
-  sessionId?: string;
   onApplyCode: (code: string) => void;
-  addMsg: (role: 'user' | 'ai', extra: Partial<ChatMsg>) => void;
-  setMessages: React.Dispatch<React.SetStateAction<ChatMsg[]>>;
-  setTab: (tab: 'chat' | 'history' | 'strategies') => void;
   templates: Template[];
-  setTemplates: React.Dispatch<React.SetStateAction<Template[]>>;
   conversations: Conversation[];
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>;
   activeConvId: string;
   setActiveConvId: (id: string) => void;
-  editingConvId: string | null;
   setEditingConvId: (id: string | null) => void;
   editTitle: string;
   setEditTitle: (title: string) => void;
-  planRef: React.MutableRefObject<string>;
   codeRef: React.MutableRefObject<string>;
-  prevCodeRef: React.MutableRefObject<string>;
-  titleGeneratedRef: React.MutableRefObject<boolean>;
-  firstUserMsgRef: React.MutableRefObject<string>;
-  bumpCodeGen: () => void;
   fetchTemplates: () => Promise<void>;
   fetchConversations: () => Promise<void>;
 }
 
 export function useConversationHandlers({
-  _sessionId, onApplyCode, addMsg, setMessages, setTab,
-  templates, _setTemplates, conversations, setConversations,
-  activeConvId, setActiveConvId, _editingConvId, setEditingConvId,
-  editTitle, setEditTitle, planRef, codeRef, prevCodeRef,
-  titleGeneratedRef, firstUserMsgRef, bumpCodeGen,
+  onApplyCode,
+  templates, conversations, setConversations,
+  activeConvId, setActiveConvId, setEditingConvId,
+  editTitle, setEditTitle, codeRef,
   fetchTemplates, fetchConversations,
 }: UseConversationHandlersArgs) {
   const { t } = useTranslation();
 
   const handleLoadTemplate = useCallback(async (id: string) => {
     const tpl = templates.find(t => t.id === id);
-    if (tpl?.code) { onApplyCode(tpl.code); addMsg('ai', { text: `${t(LOADED_STRATEGY_KEY)}: ${tpl.name}` }); }
-  }, [templates, onApplyCode, addMsg, t]);
+    if (tpl?.code) { onApplyCode(tpl.code); message.info(`${t(LOADED_STRATEGY_KEY)}: ${tpl.name}`); }
+  }, [templates, onApplyCode, t]);
 
   const handleSendToAI = useCallback((code: string, name: string) => {
-    codeRef.current = code; prevCodeRef.current = '';
-    bumpCodeGen(); onApplyCode(code);
-    addMsg('ai', { text: `${t(LOADED_STRATEGY_KEY)}: ${name}`, code, prevCode: codeRef.current });
-    setTab('chat');
-  }, [onApplyCode, addMsg, t, codeRef, prevCodeRef, bumpCodeGen, setTab]);
+    codeRef.current = code;
+    onApplyCode(code);
+    message.info(`${t(LOADED_STRATEGY_KEY)}: ${name}`);
+  }, [onApplyCode, t, codeRef]);
 
   const handleRenameTemplate = useCallback(async (id: string, name: string) => {
     if (!name || name === templates.find(t => t.id === id)?.name) return;
@@ -77,30 +64,20 @@ export function useConversationHandlers({
     try {
       const { strategyTemplateApi } = await import('@/client/strategy-schedules');
       const name = prompt(t(STRATEGY_NAME_PROMPT_KEY)); if (!name) return;
-      await strategyTemplateApi.create({ name, code: c });
-      fetchTemplates(); addMsg('ai', { text: `${t(SAVED_STRATEGY_KEY)}: ${name}` });
+      await strategyTemplateApi.create({ name, description: name, code: c });
+      fetchTemplates(); message.success(`${t(SAVED_STRATEGY_KEY)}: ${name}`);
     } catch {}
-  }, [codeRef, t, fetchTemplates, addMsg]);
+  }, [codeRef, t, fetchTemplates]);
 
   // Lazy-create: only generate a new UUID. The actual DB row is created
   // when the first message is sent (generator_agent.go CreateWithID).
   // This aligns with Claude Code: conversations only appear in history
   // after the first exchange, not on "New" button click.
   const handleNewConv = useCallback(() => {
-    setActiveConvId(crypto.randomUUID()); setMessages([]);
-    planRef.current = ''; codeRef.current = ''; prevCodeRef.current = '';
-    titleGeneratedRef.current = false; firstUserMsgRef.current = '';
-    setTab('chat'); fetchConversations();
-  }, [setActiveConvId, setMessages, planRef, codeRef, prevCodeRef, titleGeneratedRef, firstUserMsgRef, setTab, fetchConversations]);
-
-  const handleLoadConv = useCallback(async (id: string) => {
-    try {
-      const detail = await aiApi.getConversation(id); setActiveConvId(id);
-      setMessages((detail.messages || []).map(m => ({ role: m.role === 'user' ? 'user' : 'ai', text: m.content })));
-      titleGeneratedRef.current = true;
-      setTab('chat');
-    } catch {}
-  }, [setActiveConvId, setMessages, titleGeneratedRef, setTab]);
+    setActiveConvId(crypto.randomUUID());
+    codeRef.current = '';
+    fetchConversations();
+  }, [setActiveConvId, codeRef, fetchConversations]);
 
   const handleStartRename = useCallback((convId: string, currentTitle: string) => {
     setEditingConvId(convId);
@@ -123,12 +100,12 @@ export function useConversationHandlers({
   const handleDeleteConv = useCallback(async (convId: string) => {
     try { await aiApi.deleteConversation(convId); } catch {}
     setConversations(prev => prev.filter(c => c.id !== convId));
-    if (activeConvId === convId) { setActiveConvId(''); setMessages([]); }
-  }, [setConversations, activeConvId, setActiveConvId, setMessages]);
+    if (activeConvId === convId) { setActiveConvId(''); }
+  }, [setConversations, activeConvId, setActiveConvId]);
 
   return {
     handleLoadTemplate, handleSendToAI, handleRenameTemplate, handleDeleteTemplate,
-    handleSaveTemplate, handleNewConv, handleLoadConv,
+    handleSaveTemplate, handleNewConv,
     handleStartRename, handleCancelRename, handleConfirmRename, handleDeleteConv,
   };
 }

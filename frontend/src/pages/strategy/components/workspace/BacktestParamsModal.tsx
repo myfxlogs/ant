@@ -26,7 +26,7 @@ export interface BacktestParamsModalProps {
   onConfirm: (params: BacktestModalResult) => void;
   code: string;
   symbol: string;
-	timeframe?: string;
+  timeframe?: string;
 }
 
 export interface BacktestModalResult {

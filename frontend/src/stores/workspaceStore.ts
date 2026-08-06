@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-export type CenterTab = 'chat' | 'code' | 'import' | 'backtest' | 'strategies';
+export type CenterTab = 'chat' | 'code';
 
 // ── Slice interfaces ──────────────────────────────────────────────
 
@@ -26,8 +26,6 @@ export interface LayoutSlice {
   bottomPanelHeight: number;
   bottomPanelUserResized: boolean;
   quickTradeCollapsed: boolean;
-  positionsPanelVisible: boolean;
-  aiPanelOpen: boolean;
   aiPanelWidth: number;
   setCenterTab: (v: CenterTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
@@ -35,8 +33,6 @@ export interface LayoutSlice {
   setBottomPanelHeight: (v: number) => void;
   setBottomPanelUserResized: (v: boolean) => void;
   setQuickTradeCollapsed: (v: boolean) => void;
-  setPositionsPanelVisible: (v: boolean) => void;
-  setAiPanelOpen: (v: boolean) => void;
   setAiPanelWidth: (v: number) => void;
 }
 
@@ -73,9 +69,7 @@ function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): Lay
     bottomPanelCollapsed: false,
     bottomPanelHeight: 160,
     bottomPanelUserResized: false,
-    quickTradeCollapsed: true,
-    positionsPanelVisible: false,
-    aiPanelOpen: false,
+    quickTradeCollapsed: false,
     aiPanelWidth: 380,
     setCenterTab: (v) => set({ centerTab: v }),
     setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
@@ -83,8 +77,6 @@ function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): Lay
     setBottomPanelHeight: (v) => set({ bottomPanelHeight: v }),
     setBottomPanelUserResized: (v) => set({ bottomPanelUserResized: v }),
     setQuickTradeCollapsed: (v) => set({ quickTradeCollapsed: v }),
-    setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
-    setAiPanelOpen: (v) => set({ aiPanelOpen: v }),
     setAiPanelWidth: (v) => set({ aiPanelWidth: v }),
   };
 }
@@ -120,8 +112,6 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         bottomPanelHeight: state.bottomPanelHeight,
         bottomPanelUserResized: state.bottomPanelUserResized,
         quickTradeCollapsed: state.quickTradeCollapsed,
-        positionsPanelVisible: state.positionsPanelVisible,
-        aiPanelOpen: state.aiPanelOpen,
         aiPanelWidth: state.aiPanelWidth,
       }),
       onRehydrateStorage: () => () => {

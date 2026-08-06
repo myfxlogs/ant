@@ -11,8 +11,6 @@ export function useLayoutSlice() {
   const setBottomPanelUserResized = useWorkspaceStore(s => s.setBottomPanelUserResized);
   const quickTradeCollapsed = useWorkspaceStore(s => s.quickTradeCollapsed);
   const setQuickTradeCollapsed = useWorkspaceStore(s => s.setQuickTradeCollapsed);
-  const positionsPanelVisible = useWorkspaceStore(s => s.positionsPanelVisible);
-  const setPositionsPanelVisible = useWorkspaceStore(s => s.setPositionsPanelVisible);
 
   return {
     leftSidebarCollapsed,
@@ -25,7 +23,5 @@ export function useLayoutSlice() {
     setBottomPanelUserResized,
     quickTradeCollapsed,
     setQuickTradeCollapsed,
-    positionsPanelVisible,
-    setPositionsPanelVisible,
   };
 }

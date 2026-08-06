@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { Button, Drawer, Tag, Select, Tooltip } from 'antd';
 import { HistoryOutlined, SettingOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -13,11 +13,9 @@ const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace
 import { aiGatewayApi } from '@/client/aiGateway';
 import { AI_GATEWAY_SETTINGS_KEY, NEW_CONVERSATION_KEY, SELECT_MODEL_KEY, SELECT_SYMBOL_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 
-import type { ValidateExtendedResult } from '@/client/codeAssist';
+import type { BacktestSummary } from '@/client/agentGen';
 
-import type { BacktestRunSummary } from '@/gen/ant/v1/agent_gateway_pb';
-
-interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; onValidateResult?: (result: ValidateExtendedResult) => void; onRunBacktest?: () => void; backtestStatus?: string; currentCode?: string; lastBacktest?: BacktestRunSummary; recentBacktests?: BacktestRunSummary[]; }
+interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; currentCode?: string; lastBacktest?: BacktestSummary; recentBacktests?: BacktestSummary[]; }
 
 function extractCodeFromContent(content: string): string | undefined {
   const m = content.match(/```python[\s\S]*?```/);
@@ -25,22 +23,23 @@ function extractCodeFromContent(content: string): string | undefined {
   return m[0].replace(/^```python\n?/, '').replace(/\n?```$/, '').trim();
 }
 
-export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, _onValidateResult, _onRunBacktest, _backtestStatus, currentCode, lastBacktest, recentBacktests }: Props) {
+export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, currentCode, lastBacktest, recentBacktests }: Props) {
   const { t } = useTranslation();
   const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [loadedTemplateId, _setLoadedTemplateId] = useState('');
+  const [loadedTemplateId, setLoadedTemplateId] = useState('');
   const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [strategiesOpen, setStrategiesOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConvId, setActiveConvId] = useState(crypto.randomUUID());
+  const [activeConvId, setActiveConvId] = useState<string>(crypto.randomUUID());
   const initialTurnsRef = useRef<ChatTurn[]>([]);
   const [editingConvId, setEditingConvId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
-  const codeRef = useRef('');
-  const bumpCodeGen = () => {};
+  const codeRef = useRef(currentCode || '');
+
+  useEffect(() => { codeRef.current = currentCode || ''; }, [currentCode]);
 
   const hasSymbol = !!(symbol && timeframe);
 
@@ -66,17 +65,15 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
   // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only fetch  | REF: rd.md#part-0.2-hooks-deps
   useEffect(() => { fetchConversations(); }, []);
 
-  const noop = useCallback(() => {}, []);
   const {
     handleLoadTemplate, handleSendToAI, handleRenameTemplate, handleDeleteTemplate,
-    handleSaveTemplate, handleNewConv, _handleLoadConv,
+    handleSaveTemplate, handleNewConv,
     handleStartRename, handleCancelRename, handleConfirmRename, handleDeleteConv,
   } = useConversationHandlers({
-    sessionId: '', onApplyCode, addMsg: noop, setMessages: noop, setTab: noop,
+    onApplyCode,
     templates, conversations, setConversations,
-    activeConvId, setActiveConvId, editingConvId, setEditingConvId,
-    editTitle, setEditTitle, planRef: useRef(''), codeRef, prevCodeRef: useRef(''),
-    titleGeneratedRef: useRef(false), firstUserMsgRef: useRef(''), bumpCodeGen,
+    activeConvId, setActiveConvId, setEditingConvId,
+    editTitle, setEditTitle, codeRef,
     fetchTemplates, fetchConversations,
   });
 
@@ -108,12 +105,18 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
                 generatedCode: chunk.pythonSource || extractCodeFromContent(m.content),
                 compileError: chunk.compileError || undefined,
                 backtestError: chunk.backtestError || undefined,
-                metrics: chunk.result?.success ? [
-                  { label: 'Return', value: `${chunk.result.totalReturn.toFixed(1)}%`, positive: chunk.result.totalReturn >= 0 },
-                  { label: 'Max DD', value: `${chunk.result.maxDrawdown.toFixed(1)}%`, positive: chunk.result.maxDrawdown <= 0 },
-                  { label: 'Sharpe', value: chunk.result.sharpeRatio.toFixed(2), positive: chunk.result.sharpeRatio >= 1 },
-                  { label: 'Win', value: `${chunk.result.winRate.toFixed(1)}%` },
-                ] : undefined,
+                metrics: chunk.result?.success ? (() => {
+                  const ret = Number(chunk.result.totalReturn);
+                  const dd = Number(chunk.result.maxDrawdown);
+                  const sharpe = Number(chunk.result.sharpeRatio);
+                  const win = Number(chunk.result.winRate);
+                  return [
+                  { label: 'Return', value: `${ret.toFixed(1)}%`, positive: ret >= 0 },
+                  { label: 'Max DD', value: `${dd.toFixed(1)}%`, positive: dd <= 0 },
+                  { label: 'Sharpe', value: sharpe.toFixed(2), positive: sharpe >= 1 },
+                  { label: 'Win', value: `${win.toFixed(1)}%` },
+                  ];
+                })() : undefined,
               } as ChatTurn;
             } catch { /* fall through to plain text */ }
           }
@@ -185,7 +188,7 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
 
       <Drawer title={t('strategy.aiChat.strategiesTab', 'Strategies')} open={strategiesOpen} onClose={() => setStrategiesOpen(false)} width={360} styles={{ body: { padding: 0 } }}>
         <StrategyList templates={templates} loadedId={loadedTemplateId}
-          hasCode={!!codeRef.current} onLoad={handleLoadTemplate} onSave={handleSaveTemplate}
+          hasCode={!!codeRef.current} onLoad={(id) => { handleLoadTemplate(id); setLoadedTemplateId(id); }} onSave={handleSaveTemplate}
           onRename={handleRenameTemplate} onDelete={handleDeleteTemplate}
           onSendToAI={handleSendToAIWrapper}
         />

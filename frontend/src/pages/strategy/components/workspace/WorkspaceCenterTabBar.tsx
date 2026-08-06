@@ -85,7 +85,6 @@ export default function WorkspaceCenterTabBar({
       {CTABS.map(({ key, icon, label }) => (
         <div
           key={key}
-          data-tour={key === 'backtest' ? 'backtest' : undefined}
           onClick={() => setCenterTab(key)}
           style={{
             padding: '0 20px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
@@ -106,7 +105,7 @@ export default function WorkspaceCenterTabBar({
           {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t(COMMON_UNSAVED_KEY)}</span>}
           {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t(COMMON_SAVED_KEY)}</span>}
           <Tooltip title={t(SAVE_KEY)}>
-            <Button size="small" icon={<SaveOutlined />}
+            <Button size="small" icon={<SaveOutlined />} data-tour="save"
               disabled={!code.code}
               onClick={() => code.setSaveModalOpen(true)}
               style={{ background: '#58a6ff', borderColor: '#58a6ff', color: '#fff' }}>
@@ -114,7 +113,7 @@ export default function WorkspaceCenterTabBar({
             </Button>
           </Tooltip>
           <Tooltip title={t(RUN_BACKTEST_KEY)}>
-            <Button size="small" type="primary" icon={<PlayCircleOutlined />}
+            <Button size="small" type="primary" icon={<PlayCircleOutlined />} data-tour="backtest"
               onClick={handleBacktestClick}
               style={{ background: '#3fb950', borderColor: '#3fb950' }}>
               {t(WS_BACKTEST_KEY)}
@@ -124,7 +123,7 @@ export default function WorkspaceCenterTabBar({
             <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} />
           </Tooltip>
           <Tooltip title={t(SEND_TO_AI_KEY)}>
-            <Button size="small" icon={<RobotOutlined />}
+            <Button size="small" icon={<RobotOutlined />} data-tour="ai-assistant"
               disabled={!code.code}
               onClick={() => isMobile ? setCenterTab('chat') : setRightPanelTab(prev => prev === 'ai' ? null : 'ai')}
               style={rightPanelTab === 'ai'

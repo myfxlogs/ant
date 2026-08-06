@@ -16,6 +16,7 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
   const tuning = useWsTuning();
   const layout = useWsLayout();
   const quickTrade = useWsQuickTrade();
+  const [mtError, setMtError] = useState<string | null>(null);
 
   // Header: 56px mobile, 64px desktop. Content padding-top matches in MainLayout.
   const headerHeight = isMobile ? 56 : 64;
@@ -27,12 +28,13 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
         symbol={account.symbol} onSymbolChange={account.setSymbol}
         accountInfo={account.accountInfo} positionCount={quickTrade.positionCount}
         busy={backtest.submitting || tuning.running}
-        onTogglePositionsPanel={() => layout.setPositionsPanelVisible(!layout.positionsPanelVisible)}
+        mtError={mtError}
+        onMTErrorChange={(hasError) => setMtError(hasError ? 'MT session lost — reconnecting…' : null)}
+        onToggleBottomPanel={() => layout.setBottomPanelCollapsed(!layout.bottomPanelCollapsed)}
       />
       <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>
         <WorkspaceCenterColumn
           isMobile={isMobile}
-          btModalOpen={btModalOpen}
           setBtModalOpen={setBtModalOpen}
           setIndicatorDrawerOpen={setIndicatorDrawerOpen}
           onShowVersionHistory={() => setVersionHistoryOpen(true)}

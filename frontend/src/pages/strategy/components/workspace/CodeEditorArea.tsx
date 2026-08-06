@@ -14,7 +14,7 @@ interface Props {
   templateCount: number;
   onSetImportMode: (v: boolean) => void;
   onSetCode: (c: string) => void;
-  onSetCenterTab: (tab: string) => void;
+  onSetCenterTab: (tab: 'chat' | 'code') => void;
   onSetRightPanelTab: (tab: 'ai') => void;
   onSelectFirstTemplate: () => void;
   onStrategyIdChange?: (id: string | undefined) => void;
