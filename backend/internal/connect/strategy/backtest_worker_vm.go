@@ -318,7 +318,74 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		resp.BlindSpots = append(resp.BlindSpots, bs)
 	}
 
+	// P0 invariant: trade field integrity — prices, side, time order.
+	// If violated, the backtest result is unreliable (ADR-0028 §4.2 防线 B).
+	if bs := checkPricePositive(result); bs != nil {
+		resp.Risk.IsReliable = false
+		resp.BlindSpots = append(resp.BlindSpots, bs)
+	}
+	if bs := checkSideValid(result); bs != nil {
+		resp.Risk.IsReliable = false
+		resp.BlindSpots = append(resp.BlindSpots, bs)
+	}
+	if bs := checkTimeOrder(result); bs != nil {
+		resp.Risk.IsReliable = false
+		resp.BlindSpots = append(resp.BlindSpots, bs)
+	}
+
 	return resp, ruleFindings, covBlindSpots, runtimeBlinds
+}
+
+// checkPricePositive verifies that every trade has EntryPrice > 0 and ExitPrice > 0.
+// Returns a BlindSpot if any price is <= 0, nil otherwise.
+// When there are no trades, the invariant is vacuously true (returns nil).
+func checkPricePositive(result *backtest.Result) *antv1.BlindSpot {
+	for _, t := range result.Trades {
+		if !t.EntryPrice.GreaterThan(decimal.Zero) || !t.ExitPrice.GreaterThan(decimal.Zero) {
+			return &antv1.BlindSpot{
+				Id:          "non_positive_price",
+				Category:    "invariant",
+				Severity:    interp.SeverityFatal,
+				Description: "存在开仓价或平仓价<=0的交易，回测结果不可信",
+			}
+		}
+	}
+	return nil
+}
+
+// checkSideValid verifies that every trade has Side == sdk.SideBuy or sdk.SideSell.
+// Returns a BlindSpot if any trade has an invalid side, nil otherwise.
+// When there are no trades, the invariant is vacuously true (returns nil).
+func checkSideValid(result *backtest.Result) *antv1.BlindSpot {
+	for _, t := range result.Trades {
+		if t.Side != sdk.SideBuy && t.Side != sdk.SideSell {
+			return &antv1.BlindSpot{
+				Id:          "invalid_side",
+				Category:    "invariant",
+				Severity:    interp.SeverityFatal,
+				Description: "存在交易方向非法的交易（非 BUY/SELL），回测结果不可信",
+			}
+		}
+	}
+	return nil
+}
+
+// checkTimeOrder verifies that every trade has EntryTime <= ExitTime.
+// Returns a BlindSpot if any trade has EntryTime after ExitTime, nil otherwise.
+// EntryTime == ExitTime is valid (same-bar entry and exit).
+// When there are no trades, the invariant is vacuously true (returns nil).
+func checkTimeOrder(result *backtest.Result) *antv1.BlindSpot {
+	for _, t := range result.Trades {
+		if t.EntryTime.After(t.ExitTime) {
+			return &antv1.BlindSpot{
+				Id:          "time_order_violation",
+				Category:    "invariant",
+				Severity:    interp.SeverityFatal,
+				Description: "存在开仓时间晚于平仓时间的交易，回测结果不可信",
+			}
+		}
+	}
+	return nil
 }
 
 // checkCapitalConservation verifies the capital conservation identity:
