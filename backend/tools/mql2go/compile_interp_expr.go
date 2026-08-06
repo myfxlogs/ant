@@ -474,6 +474,30 @@ func (c *compiler) findType(n *sitter.Node) string {
 			}
 		}
 	}
+	// Fallback for the float-default grammar quirk: "input double Lots=0.1"
+	// parses with "double" as an identifier inside init_declarator (not as
+	// primitive_type). Scan descendants for a primitive-type identifier so the
+	// param's Type is populated (else injectParams skips it → volume=0).
+	if t := c.findPrimitiveTypeIdent(n); t != "" {
+		return t
+	}
+	return ""
+}
+
+// findPrimitiveTypeIdent scans descendants of n for an identifier whose text is a
+// MQL primitive type (int/double/string/...). Needed for the float-default quirk
+// where the type sits as an identifier inside init_declarator.
+func (c *compiler) findPrimitiveTypeIdent(n *sitter.Node) string {
+	if n.Type() == nodeIdentifier {
+		if isMQLPrimitiveType(c.text(n)) {
+			return c.text(n)
+		}
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		if r := c.findPrimitiveTypeIdent(n.NamedChild(i)); r != "" {
+			return r
+		}
+	}
 	return ""
 }
 
