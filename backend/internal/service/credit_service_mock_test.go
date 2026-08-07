@@ -15,18 +15,22 @@ import (
 // ── Mock repos ──
 
 type mockCreditRepo struct {
-	balance      decimal.Decimal
-	holdErr      error
-	settleErr    error
-	holdAmount   decimal.Decimal
-	settleHold   decimal.Decimal
-	settleActual decimal.Decimal
+	balance       decimal.Decimal
+	holdErr       error
+	settleErr     error
+	getBalanceErr error
+	holdAmount    decimal.Decimal
+	settleHold    decimal.Decimal
+	settleActual  decimal.Decimal
 }
 
 func (m *mockCreditRepo) GetOrCreateAccount(ctx context.Context, userID uuid.UUID) (*repository.CreditAccount, error) {
 	return &repository.CreditAccount{Balance: m.balance.StringFixed(8)}, nil
 }
 func (m *mockCreditRepo) GetBalance(ctx context.Context, userID uuid.UUID) (decimal.Decimal, error) {
+	if m.getBalanceErr != nil {
+		return decimal.Zero, m.getBalanceErr
+	}
 	return m.balance, nil
 }
 func (m *mockCreditRepo) AddCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, txType, source, description string, operatorID *uuid.UUID) (*repository.CreditTransaction, error) {
@@ -203,6 +207,17 @@ func TestCreditService_CheckBalance_Insufficient(t *testing.T) {
 	err := svc.CheckBalance(context.Background(), uid, decimal.NewFromInt(100))
 	if err == nil {
 		t.Fatal("should error on insufficient balance")
+	}
+}
+
+func TestCreditService_CheckBalance_DBError_FailClosed(t *testing.T) {
+	repo := &mockCreditRepo{getBalanceErr: fmt.Errorf("db connection lost")}
+	models := &mockModelRepo{}
+	svc := NewCreditService(repo, models, zap.NewNop())
+	uid := uuid.New()
+	err := svc.CheckBalance(context.Background(), uid, decimal.NewFromInt(100))
+	if err == nil {
+		t.Fatal("should error on DB failure (fail-closed), not allow access")
 	}
 }
 

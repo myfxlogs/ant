@@ -158,7 +158,7 @@ func (s *CreditService) Settle(ctx context.Context, userID uuid.UUID, sessionID,
 func (s *CreditService) CheckBalance(ctx context.Context, userID uuid.UUID, minCredits decimal.Decimal) error {
 	bal, err := s.repo.GetBalance(ctx, userID)
 	if err != nil {
-		return nil // fail-open on DB errors
+		return fmt.Errorf("credit balance check failed: %w", err)
 	}
 	if bal.LessThan(minCredits) {
 		return fmt.Errorf("insufficient credits: have %s, need %s", bal.StringFixed(0), minCredits.StringFixed(0))

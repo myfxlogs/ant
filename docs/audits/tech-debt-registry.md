@@ -62,7 +62,7 @@
 | ID | 项 | 来源 | 状态 |
 |----|----|------|------|
 | BRIDGE-2 | **bridge backtest 绕过防线B**（#4 补细节）：`gateway_backtest.go:92-94` 的 `validateBacktest` 只检查 `btErr != nil`，不跑 `checkVolumeInvariant`/`assessRisk`/DEGRADED。与 AGT-2 同源，但 bridge 结果只用于 `semanticDiff`（覆盖率对比），不喂 LLM 迭代 metrics，严重性低 | `internal/agent/gateway_backtest.go:92-94` | 🟦open（低，2026-08-07）|
-| CREDIT-2 | **CheckBalance fail-open on DB errors**（#4 补细节）：`credit_service.go:127` `if err != nil { return nil }` — DB 错误时余额检查通过，用户可在无额度时使用 AI。可用性优先设计，非 bug | `internal/service/credit_service.go:127` | 🟦open（低，特性，2026-08-07）|
+| CREDIT-2 | **CheckBalance fail-open on DB errors**（#4 补细节）：`credit_service.go:127` `if err != nil { return nil }` — DB 错误时余额检查通过，用户可在无额度时使用 AI。可用性优先设计，非 bug | `internal/service/credit_service.go:127` | ✅done（2026-08-09：fail-open→fail-closed。DB 错误时返回 error 阻止访问，不再放行。回归测试 `TestCreditService_CheckBalance_DBError_FailClosed` 验证。注：CheckBalance 当前无生产调用方，修复为将来使用安全。PreHold 的 `err != nil → return nil` 保留（语义正确：credits 是可选增强层，无 credits 走 wallet/quota 路径））|
 | AUD-W3-1 | migration 未包事务 | infrastructure | ✅done（2026-08-07 核验：`docker-entrypoint.sh:53` 用 `psql -c "BEGIN;" -f "$file" -c "COMMIT;"` 包事务执行每个 migration 文件）|
 | AUD-W1-3 | session token INFO 级日志 | mt-gateway | ✅done（2026-08-07 核验：`auth_handler.go`/`auth_token.go`/`auth.go` 全部 log 只用 `zap.String("userID",...)`/`zap.Error(err)`，从不 log token 值。无敏感信息泄漏）|
 | AUD-WS3 | Admin AdjustBalance txType 错分 | wallet-settlement | ✅done（2026-08-07 核验：`wallet_handler.go:146` 用 `txType="adjustment"` 正确分类，`AdjustBalanceTx` 透传 txType 到 `ledgerChainInsert`，无错分）|
