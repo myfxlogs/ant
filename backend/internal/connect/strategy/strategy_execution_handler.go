@@ -257,8 +257,7 @@ func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Req
 }
 
 // ExecuteLive runs strategy code against a live bar stream.
-// Delegates to GoExecutor.RunLive for Go-native strategy execution,
-// or executeVMLive for MQL in-process Bytecode VM path.
+// Go-native path retired (GoExecutor removed); MQL path uses in-process Bytecode VM.
 func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
 	if _, err := userIDRequire(ctx); err != nil {
 		return nil, err

@@ -99,6 +99,7 @@
 - 2026-08-09 **LAUNCH-1 Agent 策略质量基准测试套件完成**：20 策略用例（trend/mean_reversion/breakout/grid/multi_tf/oscillator），三项指标全部达标（编译 100%≥90%、回测 100%≥80%、Sharpe>0 58%≥50%）。CI 快速子集无 benchmark tag。发现并修复 3 个工具链 Bug：①`ctx.broker.close_all()` 未映射→新增 `CloseAll` builtin；②`ctx.positions()` 未映射→`PositionsTotal`；③市价单 `req.Price=0` 未填充当前市价→`SimBroker.OrderSend` 修复。go build + go test + file-lines 全绿。
 - 2026-08-09 **ARCH-2 双风控引擎修复**：移除 `submitToBroker` 中的 `risksvc.PreCheck` 调用（含 `RequiredMargin` broker RPC + 4 项检查），将等效规则注册到 Gate（`MaxPositionCount`/`MaxLotSize`/`MarginPreCheck`）。现在 `PlaceOrder` 风控路径 = `preTradeChecks`→`evaluatePlaceGate`（单一 chokepoint）→`submitToBroker`（纯执行），符合 D6-A。3 个测试更新。go build + go test + file-lines 全绿。
 - 2026-08-09 **LAUNCH-2 marketplace 资金链路集成测试**：15 个 `//go:build integration` 测试覆盖 purchase/settle/refund/subscribe 全路径。发现并修复 2 个退款生产 Bug：①`refund.go` SELECT 不存在的列 `idempotency_key`（应为 `idem_key`）；②退款用 publisher ID 查购买交易（应用 subscription 的 `idempotency_key`），导致退款功能完全不可用。全 15 测试 PASS。
+- 2026-08-09 **Git 提交推送**：51 个未提交文件按逻辑分 6 个 commit 推送到 `audit-pipeline5-collab` 分支。工作区干净。下一步：快速清理批次（DOC-4/5 注释漂移 + CQ-3 json.Marshal 核验 + CQ-4 time.Ticker 核验）。
 
 ---
 

@@ -10,7 +10,6 @@ import (
 	goredis "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	anttrace "alphaforge/internal/trace"
 	"alphaforge/internal/mdgateway/adapter"
 	"alphaforge/internal/mdgateway/adapter/brokersearch"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
@@ -20,24 +19,25 @@ import (
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/secrets"
+	anttrace "alphaforge/internal/trace"
 )
 
 // RunnerDeps collects all infrastructure needed to start mdgateway.
 type RunnerDeps struct {
-	Log            *zap.Logger
-	PG             *pgxpool.Pool
-	Store          repository.MarketDataStore         // PG market data store
-	NATSConn       *nats.Conn
-	RedisClient    *goredis.Client                    // ADR-0012: latest quote cache
-	SpillDir       string          // default /var/lib/ant/spill
-	Secrets        secrets.Client  // decrypts account passwords and mtapi tokens
-	OnAccountProfit     func(accountID, userID string, p *mdtick.ProfitUpdate)    // receives real-time balance/equity from mtapi OnOrderProfit
-	OnOrderUpdate       func(accountID, userID string, o *mdtick.OrderUpdate)     // receives real-time order/position changes from mtapi OnOrderUpdate
-	OnAccountDisconnect func(accountID string)                                     // B-1.3: called when gateway stops/fails for an account
+	Log                 *zap.Logger
+	PG                  *pgxpool.Pool
+	Store               repository.MarketDataStore // PG market data store
+	NATSConn            *nats.Conn
+	RedisClient         *goredis.Client                                                   // ADR-0012: latest quote cache
+	SpillDir            string                                                            // default /var/lib/ant/spill
+	Secrets             secrets.Client                                                    // decrypts account passwords and mtapi tokens
+	OnAccountProfit     func(accountID, userID string, p *mdtick.ProfitUpdate)            // receives real-time balance/equity from mtapi OnOrderProfit
+	OnOrderUpdate       func(accountID, userID string, o *mdtick.OrderUpdate)             // receives real-time order/position changes from mtapi OnOrderUpdate
+	OnAccountDisconnect func(accountID string)                                            // B-1.3: called when gateway stops/fails for an account
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
-	OnBar               func(bar *mdtick.Bar)                                               // called when a bar is finalized (for realtime SSE push)
-	OnAccountStatus     func(accountID, userID, status, message string)                      // called when gateway connection state changes (connected/reconnecting/disconnected)
-	OnBreakerTrip       func(accountID, userID, status, message string)                      // called when circuit breaker state changes (circuit_open/circuit_half_open/circuit_closed)
+	OnBar               func(bar *mdtick.Bar)                                             // called when a bar is finalized or open-bar tick (for realtime SSE push)
+	OnAccountStatus     func(accountID, userID, status, message string)                   // called when gateway connection state changes (connected/reconnecting/disconnected)
+	OnBreakerTrip       func(accountID, userID, status, message string)                   // called when circuit breaker state changes (circuit_open/circuit_half_open/circuit_closed)
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
 	FactorPusher        func(bar *mdtick.Bar)   // M10-BASE-B6: push finalized bars to factor subscriber
@@ -217,20 +217,20 @@ func startAllGateways(ctx context.Context, cfgs []mdtick.AccountConfig, deps Run
 		if err != nil {
 			log.Error("mdgateway: gateway start failed",
 				zap.String("account", accID), zap.Error(err))
-				msg := err.Error()
-				if len(msg) > 512 {
-					msg = msg[:512]
-				}
-				if deps.PG != nil {
-					_, _ = deps.PG.Exec(ctx,
-						`UPDATE mt_accounts SET account_status = 'disconnected',
+			msg := err.Error()
+			if len(msg) > 512 {
+				msg = msg[:512]
+			}
+			if deps.PG != nil {
+				_, _ = deps.PG.Exec(ctx,
+					`UPDATE mt_accounts SET account_status = 'disconnected',
 						 last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`,
-						accID, msg)
-				}
-				if deps.OnAccountStatus != nil {
-					deps.OnAccountStatus(accID, cfg.UserID, "disconnected", msg)
-				}
-				continue
+					accID, msg)
+			}
+			if deps.OnAccountStatus != nil {
+				deps.OnAccountStatus(accID, cfg.UserID, "disconnected", msg)
+			}
+			continue
 		}
 		if bfSrc, ok := gw.(backfiller.MTAPIBarSource); ok {
 			srcMap.gws[accID] = bfSrc
