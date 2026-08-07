@@ -3,11 +3,13 @@ package agent
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/strategy/backtest"
 	"alphaforge/tools/mql2go"
 )
 
@@ -90,8 +92,21 @@ func (s *GatewayServer) runBacktestPipeline(
 	// Step 7: Blind-spot bridge (ADR-0024)
 	if in.Language != "python" && in.Coverage.Score < 0.999 && len(in.Coverage.BlindSpots) > 0 {
 		validateBacktest := func(pyRunner *mql2go.VMRunner) error {
-			_, btErr := runVMBacktest(ctx, pyRunner, in.BtCfg, bars, in.Params)
-			return btErr
+			btResult, btErr := runVMBacktest(ctx, pyRunner, in.BtCfg, bars, in.Params)
+			if btErr != nil {
+				return btErr
+			}
+			// ADR-0028 Defense Line B: run invariant checks on bridge backtest too.
+			// REUSE: backtest.ValidateInvariants @ strategy/backtest/invariants.go
+			reliable, invariantBlinds := backtest.ValidateInvariants(btResult)
+			if !reliable {
+				var msgs []string
+				for _, bs := range invariantBlinds {
+					msgs = append(msgs, bs.Description)
+				}
+				return fmt.Errorf("invariant check failed: %s", strings.Join(msgs, "; "))
+			}
+			return nil
 		}
 
 		bridgeResult, bridgeErr := s.bridge.TranslateWithRetry(ctx, in.UserID, in.SourceCode, in.Coverage, profile, validateBacktest)
