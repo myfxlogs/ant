@@ -20,8 +20,8 @@ import (
 	"alphaforge/internal/connect/ai"
 	assetanalysis "alphaforge/internal/connect/asset_analysis"
 	"alphaforge/internal/connect/gateway"
-	strategy "alphaforge/internal/connect/strategy"
 	mktplace "alphaforge/internal/connect/marketplace"
+	strategy "alphaforge/internal/connect/strategy"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/pkg/secretbox"
 	"alphaforge/internal/repository"
@@ -40,23 +40,23 @@ type aiServicesDeps struct {
 
 // aiServicesParams holds parameters for setupAIServices.
 type aiServicesParams struct {
-	Ctx              context.Context
-	Mux              *http.ServeMux
-	Pool             *pgxpool.Pool
-	Cfg              *config.Config
-	UserRepo         *repository.UserRepository
-	MarketDataRepo   repository.MarketDataStore
-	PlatformSvc      *service.PlatformService
-	MktplaceSvc      *marketplace.Service
-	MktplaceHandler  *mktplace.MarketplaceServer
-	QuotaChecker     *service.QuotaChecker
-	WalletSvc        *service.WalletService
-	ConvRepo         *repository.AIConversationRepository
-	Session          *internalai.ConversationSession
-	BacktestRunRepo  *repository.BacktestRunRepository
-	Log              *zap.Logger
-	OtelInterceptor  connectrpc.Interceptor
-	AuthInterceptor  connectrpc.Interceptor
+	Ctx             context.Context
+	Mux             *http.ServeMux
+	Pool            *pgxpool.Pool
+	Cfg             *config.Config
+	UserRepo        *repository.UserRepository
+	MarketDataRepo  repository.MarketDataStore
+	PlatformSvc     *service.PlatformService
+	MktplaceSvc     *marketplace.Service
+	MktplaceHandler *mktplace.MarketplaceServer
+	QuotaChecker    *service.QuotaChecker
+	WalletSvc       *service.WalletService
+	ConvRepo        *repository.AIConversationRepository
+	Session         *internalai.ConversationSession
+	BacktestRunRepo *repository.BacktestRunRepository
+	Log             *zap.Logger
+	OtelInterceptor connectrpc.Interceptor
+	AuthInterceptor connectrpc.Interceptor
 }
 
 // setupAIServices wires all AI-related services and returns the shared AI service
@@ -120,6 +120,9 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo, dailyQuota)
 
 	creditSvc := wireCreditBilling(p, pool, gatewayModelRepo, mux, log)
+	if err := creditSvc.RestoreHolds(ctx); err != nil {
+		log.Warn("credit: restore stale holds on startup failed", zap.Error(err))
+	}
 	agentGateway := wireAgentGateway(p, pool, aiSvc, creditSvc, mux, log, ctx)
 
 	// Remaining AI service registrations.

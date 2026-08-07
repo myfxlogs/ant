@@ -63,10 +63,10 @@ func (s *AIGatewayServer) ListSystemModels(
 	out := make([]*antv1.SystemModel, 0, len(models))
 	for _, m := range models {
 		out = append(out, &antv1.SystemModel{
-			Id:              m.ID.String(),
-			ProviderId:      m.ProviderID.String(),
-			ModelName:       m.ModelName,
-			DisplayName:     m.DisplayName,
+			Id:                m.ID.String(),
+			ProviderId:        m.ProviderID.String(),
+			ModelName:         m.ModelName,
+			DisplayName:       m.DisplayName,
 			PricePer_1MInput:  m.PricePer1MInput,
 			PricePer_1MOutput: m.PricePer1MOutput,
 		})
@@ -104,7 +104,9 @@ func (s *AIGatewayServer) GetTokenUsage(
 		})
 	}
 	ft := make(map[string]int32, len(summary))
-	for k, v := range summary { ft[k] = int32(v) }
+	for k, v := range summary {
+		ft[k] = int32(v)
+	}
 	return connect.NewResponse(&antv1.GetTokenUsageResponse{
 		FeatureTokens: ft, Records: pbRecords, MonthlyCost: monthlyCost,
 	}), nil
@@ -141,6 +143,9 @@ func (s *AIGatewayServer) CreateProvider(
 	r := req.Msg
 	if strings.TrimSpace(r.ProviderId) == "" || strings.TrimSpace(r.Name) == "" || strings.TrimSpace(r.BaseUrl) == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id, name, and base_url are required"))
+	}
+	if err := systemai.ValidateBaseURL(strings.TrimSpace(r.BaseUrl)); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid base_url: %w", err))
 	}
 	if strings.TrimSpace(r.ApiKey) == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("api_key is required"))
@@ -186,7 +191,10 @@ func (s *AIGatewayServer) UpdateProvider(
 		p.Name = *r.Name
 	}
 	if r.BaseUrl != nil {
-		p.BaseURL = *r.BaseUrl
+		if err := systemai.ValidateBaseURL(strings.TrimSpace(*r.BaseUrl)); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid base_url: %w", err))
+		}
+		p.BaseURL = strings.TrimSpace(*r.BaseUrl)
 	}
 	if r.Enabled != nil {
 		p.Enabled = *r.Enabled

@@ -1,8 +1,8 @@
 package agent
 
 import (
-	_ "embed"
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 	"time"
@@ -79,7 +79,7 @@ func (b *Bridge) TranslateWithRetry(
 	for attempt := 1; attempt <= maxBridgeRetries; attempt++ {
 		// Build prompt: original for attempt 1, error-feedback for retries
 		var userPrompt string
-		if attempt == 1 {
+		if attempt == 1 || result == nil {
 			userPrompt = buildBridgeUserPrompt(mqlSource, coverage, profile)
 		} else {
 			userPrompt = buildBridgeRetryPrompt(mqlSource, result.PythonSource, lastCompileError, profile)

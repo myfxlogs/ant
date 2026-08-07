@@ -3,7 +3,6 @@ package ai
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"go.uber.org/zap"
@@ -72,7 +71,7 @@ func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("name must be 100 characters or fewer"))
 	}
 	if req.Msg.BaseUrl != "" {
-		if _, err := url.Parse(req.Msg.BaseUrl); err != nil {
+		if err := systemai.ValidateBaseURL(req.Msg.BaseUrl); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid base_url: %w", err))
 		}
 	}
@@ -140,15 +139,15 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
 	}
 	models, err := s.systemSvc.DiscoverModels(ctx, uid, req.Msg.ProviderId)
-		if err != nil {
-			s.log.Warn("discover models failed",
-				zap.String("provider", req.Msg.ProviderId),
-				zap.String("raw_error", err.Error()))
-			// Return empty models instead of 500 to avoid console noise.
-			return connect.NewResponse(&antv1.DiscoverSystemAIModelsResponse{
-				ProviderId: req.Msg.ProviderId,
-			}), nil
-		}
+	if err != nil {
+		s.log.Warn("discover models failed",
+			zap.String("provider", req.Msg.ProviderId),
+			zap.String("raw_error", err.Error()))
+		// Return empty models instead of 500 to avoid console noise.
+		return connect.NewResponse(&antv1.DiscoverSystemAIModelsResponse{
+			ProviderId: req.Msg.ProviderId,
+		}), nil
+	}
 	def := ""
 	if len(models) > 0 {
 		def = models[0]

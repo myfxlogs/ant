@@ -58,7 +58,6 @@ func registerHandlers(
 	userRepo := repository.NewUserRepository(pool)
 	convRepo := repository.NewAIConversationRepository(pool)
 	session := internalai.NewConversationSession(convRepo)
-	templatesRepo := repository.NewAIStrategyTemplatesRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
 	marketDataRepo := d.Store
 	walletRepo := repository.NewWalletRepository(pool)
@@ -117,8 +116,8 @@ func registerHandlers(
 	return registerPostAccountHandlers(ctx, registerPostAccountDeps{
 		Mux: mux, Pool: pool, Cfg: cfg, Log: log, D: d,
 		UserRepo: userRepo, ConvRepo: convRepo, Session: session,
-		TemplatesRepo: templatesRepo, SchedHealthRepo: schedHealthRepo,
-		MarketDataRepo: marketDataRepo, WalletRepo: walletRepo, WalletSvc: walletSvc,
+		SchedHealthRepo: schedHealthRepo,
+		MarketDataRepo:  marketDataRepo, WalletRepo: walletRepo, WalletSvc: walletSvc,
 		RegistrationSvc: registrationSvc, EmailNotifier: emailNotifier,
 		Searcher: searcher, MTTester: mtTester, AuthServer: authServer,
 		SubscriptionSvc: subscriptionSvc, QuotaChecker: quotaChecker,
@@ -137,7 +136,6 @@ type registerPostAccountDeps struct {
 	UserRepo        *repository.UserRepository
 	ConvRepo        *repository.AIConversationRepository
 	Session         *internalai.ConversationSession
-	TemplatesRepo   *repository.AIStrategyTemplatesRepository
 	SchedHealthRepo *repository.ScheduleHealthRepository
 	MarketDataRepo  repository.MarketDataStore
 	WalletRepo      *repository.WalletRepository
@@ -192,7 +190,7 @@ func registerPostAccountHandlers(ctx context.Context, p registerPostAccountDeps)
 		Ctx: ctx, Mux: mux, Pool: pool, Cfg: cfg, MarketDataRepo: p.MarketDataRepo,
 		MthubSvc: d.MthubSvc, Hub: d.Hub, EventStore: d.EventStore,
 		AISvc: aiDeps.aiSvc, MktplaceSvc: d.MktplaceSvc, MktplaceHandler: p.MktplaceHandler,
-		QuotaChecker: p.QuotaChecker, TemplatesRepo: p.TemplatesRepo, BacktestRunRepo: backtestRunRepo,
+		QuotaChecker: p.QuotaChecker, BacktestRunRepo: backtestRunRepo,
 		Log: log, OtelInterceptor: d.OtelInterceptor, AuthInterceptor: d.AuthInterceptor,
 	})
 

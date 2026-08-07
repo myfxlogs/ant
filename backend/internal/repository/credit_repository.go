@@ -36,6 +36,14 @@ type CreditTransaction struct {
 	CreatedAt     time.Time  `db:"created_at"`
 }
 
+// StaleHold represents an unsettled ai_hold transaction for crash recovery.
+type StaleHold struct {
+	TxID      uuid.UUID       `db:"id"`
+	UserID    uuid.UUID       `db:"user_id"`
+	SessionID string          `db:"session_id"`
+	Amount    decimal.Decimal `db:"amount"`
+}
+
 // CreditRepository manages credit accounts and transactions.
 type CreditRepository struct {
 	db *pgxpool.Pool
@@ -115,7 +123,7 @@ func (r *CreditRepository) AddCredits(ctx context.Context, userID uuid.UUID, amo
 
 // HoldCredits freezes credits for a pending AI session (pre-deduction).
 // Moves amount from balance to frozen_balance.
-func (r *CreditRepository) HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, description string) (*CreditTransaction, error) {
+func (r *CreditRepository) HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, sessionID, description string) (*CreditTransaction, error) {
 	if amount.LessThanOrEqual(decimal.Zero) {
 		return nil, fmt.Errorf("hold amount must be positive")
 	}
@@ -141,10 +149,10 @@ func (r *CreditRepository) HoldCredits(ctx context.Context, userID uuid.UUID, am
 
 	var ct CreditTransaction
 	err = tx.QueryRow(ctx,
-		`INSERT INTO credit_transactions (account_id, user_id, tx_type, amount, balance_before, balance_after, source, description)
-		 VALUES ($1, $2, 'ai_hold', $3, $4, $5, 'pre_deduction', $6)
+		`INSERT INTO credit_transactions (account_id, user_id, tx_type, amount, balance_before, balance_after, source, description, session_id)
+		 VALUES ($1, $2, 'ai_hold', $3, $4, $5, 'pre_deduction', $6, $7)
 		 RETURNING id, account_id, user_id, tx_type, amount, balance_before, balance_after, source, description, operator_id, related_tx_id, created_at`,
-		acc.ID, userID, amount.StringFixed(8), balBefore.StringFixed(8), acc.Balance, description).
+		acc.ID, userID, amount.StringFixed(8), balBefore.StringFixed(8), acc.Balance, description, sessionID).
 		Scan(&ct.ID, &ct.AccountID, &ct.UserID, &ct.TxType, &ct.Amount, &ct.BalanceBefore, &ct.BalanceAfter, &ct.Source, &ct.Description, &ct.OperatorID, &ct.RelatedTxID, &ct.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("insert hold tx: %w", err)
@@ -289,4 +297,50 @@ func (r *CreditRepository) ListTransactions(ctx context.Context, userID uuid.UUI
 		out = append(out, &ct)
 	}
 	return out, total, rows.Err()
+}
+
+// GetStaleHolds returns all unsettled ai_hold transactions (for crash recovery).
+// An ai_hold is stale if it has a session_id and no subsequent ai_usage or ai_release
+// transaction for the same user and session.
+func (r *CreditRepository) GetStaleHolds(ctx context.Context) ([]StaleHold, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT h.id, h.user_id, h.session_id, h.amount::numeric
+		 FROM credit_transactions h
+		 WHERE h.tx_type = 'ai_hold'
+		   AND h.session_id IS NOT NULL
+		   AND NOT EXISTS (
+		     SELECT 1 FROM credit_transactions s
+		     WHERE s.user_id = h.user_id
+		       AND s.session_id = h.session_id
+		       AND s.tx_type IN ('ai_usage', 'ai_release')
+		       AND s.created_at > h.created_at
+		   )`)
+	if err != nil {
+		return nil, fmt.Errorf("get stale holds: %w", err)
+	}
+	defer rows.Close()
+
+	var out []StaleHold
+	for rows.Next() {
+		var s StaleHold
+		if err := rows.Scan(&s.TxID, &s.UserID, &s.SessionID, &s.Amount); err != nil {
+			return nil, fmt.Errorf("scan stale hold: %w", err)
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}
+
+// MarkHoldSettled marks a stale hold as settled by inserting an ai_release transaction
+// with zero amount, so it won't be picked up by future GetStaleHolds calls.
+func (r *CreditRepository) MarkHoldSettled(ctx context.Context, txID uuid.UUID) error {
+	_, err := r.db.Exec(ctx,
+		`INSERT INTO credit_transactions (account_id, user_id, tx_type, amount, balance_before, balance_after, source, description, session_id)
+		 SELECT account_id, user_id, 'ai_release', 0, 0, 0, 'crash_recovery', 'stale hold cleared on startup', session_id
+		 FROM credit_transactions WHERE id = $1`,
+		txID)
+	if err != nil {
+		return fmt.Errorf("mark hold settled: %w", err)
+	}
+	return nil
 }

@@ -33,7 +33,7 @@ func (m *mockCreditRepo) AddCredits(ctx context.Context, userID uuid.UUID, amoun
 	m.balance = m.balance.Add(amount)
 	return &repository.CreditTransaction{Amount: amount.StringFixed(8), BalanceAfter: m.balance.StringFixed(8)}, nil
 }
-func (m *mockCreditRepo) HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, description string) (*repository.CreditTransaction, error) {
+func (m *mockCreditRepo) HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, sessionID, description string) (*repository.CreditTransaction, error) {
 	if m.holdErr != nil {
 		return nil, m.holdErr
 	}
@@ -50,6 +50,12 @@ func (m *mockCreditRepo) SettleCredits(ctx context.Context, userID uuid.UUID, ho
 }
 func (m *mockCreditRepo) ListTransactions(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]*repository.CreditTransaction, int64, error) {
 	return nil, 0, nil
+}
+func (m *mockCreditRepo) GetStaleHolds(ctx context.Context) ([]repository.StaleHold, error) {
+	return nil, nil
+}
+func (m *mockCreditRepo) MarkHoldSettled(ctx context.Context, txID uuid.UUID) error {
+	return nil
 }
 
 type mockModelRepo struct {

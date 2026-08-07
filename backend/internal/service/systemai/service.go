@@ -75,7 +75,7 @@ type Service struct {
 	box                 *secretbox.Box
 	secretCache         sync.Map
 	postCallBiller      PostCallBiller
-	walletChecker       func(ctx context.Context, userID uuid.UUID) (int, error)                     // pre-check before API call; returns remaining tokens (-1 = unlimited)
+	walletChecker       func(ctx context.Context, userID uuid.UUID) (int, error)       // pre-check before API call; returns remaining tokens (-1 = unlimited)
 	gatewayProviderRepo *repository.SystemAIProviderRepository                         // optional: fallback for AI Gateway
 	cbDB                cbExecutor                                                     // optional: PG pool for persistent circuit breaker
 	modelFilter         func(ctx context.Context, userID uuid.UUID, model string) bool // optional: ADR-0025 §5.2 model whitelist
@@ -278,7 +278,7 @@ func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, provider
 	if base == "" {
 		return nil, errBaseURLEmpty
 	}
-	if perr := validateBaseURL(base); perr != nil {
+	if perr := ValidateBaseURL(base); perr != nil {
 		return nil, perr
 	}
 	secret, secErr := s.GetSecret(ctx, userID, providerID)

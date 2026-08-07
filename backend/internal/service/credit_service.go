@@ -21,9 +21,11 @@ type CreditRepoInterface interface {
 	GetOrCreateAccount(ctx context.Context, userID uuid.UUID) (*repository.CreditAccount, error)
 	GetBalance(ctx context.Context, userID uuid.UUID) (decimal.Decimal, error)
 	AddCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, txType, source, description string, operatorID *uuid.UUID) (*repository.CreditTransaction, error)
-	HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, description string) (*repository.CreditTransaction, error)
+	HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, sessionID, description string) (*repository.CreditTransaction, error)
 	SettleCredits(ctx context.Context, userID uuid.UUID, holdAmount, actualCost decimal.Decimal, description string) error
 	ListTransactions(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]*repository.CreditTransaction, int64, error)
+	GetStaleHolds(ctx context.Context) ([]repository.StaleHold, error)
+	MarkHoldSettled(ctx context.Context, txID uuid.UUID) error
 }
 
 // CreditModelRepo is the interface for AI model pricing lookups.
@@ -38,17 +40,49 @@ type CreditService struct {
 	log    *zap.Logger
 
 	// pendingHolds tracks active pre-holds per session for settlement.
-	mu   sync.Mutex
+	mu    sync.Mutex
 	holds map[string]decimal.Decimal // sessionID → holdAmount
 }
 
 func NewCreditService(repo CreditRepoInterface, models CreditModelRepo, log *zap.Logger) *CreditService {
-	return &CreditService{
+	svc := &CreditService{
 		repo:   repo,
 		models: models,
 		log:    log,
 		holds:  make(map[string]decimal.Decimal),
 	}
+	return svc
+}
+
+// RestoreHolds recovers in-memory holds from the database after a service restart.
+// It queries unsettled ai_hold transactions and repopulates the holds map.
+// Stale holds (sessions that will never be settled because the process died)
+// are released back to the user's balance.
+func (s *CreditService) RestoreHolds(ctx context.Context) error {
+	stale, err := s.repo.GetStaleHolds(ctx)
+	if err != nil {
+		return fmt.Errorf("restore holds: %w", err)
+	}
+	for _, h := range stale {
+		// Release the frozen balance back to the user.
+		if err := s.repo.SettleCredits(ctx, h.UserID, h.Amount, decimal.Zero, fmt.Sprintf("crash recovery for session %s", h.SessionID)); err != nil {
+			s.log.Warn("restore holds: release stale hold failed",
+				zap.String("user_id", h.UserID.String()),
+				zap.String("session_id", h.SessionID),
+				zap.Error(err))
+			continue
+		}
+		if err := s.repo.MarkHoldSettled(ctx, h.TxID); err != nil {
+			s.log.Warn("restore holds: mark settled failed",
+				zap.String("tx_id", h.TxID.String()),
+				zap.Error(err))
+		}
+		s.log.Info("restore holds: released stale hold",
+			zap.String("user_id", h.UserID.String()),
+			zap.String("session_id", h.SessionID),
+			zap.String("amount", h.Amount.StringFixed(2)))
+	}
+	return nil
 }
 
 // PreHold freezes credits at session start based on model P90 estimated cost.
@@ -71,7 +105,7 @@ func (s *CreditService) PreHold(ctx context.Context, userID uuid.UUID, sessionID
 		return nil // no credits → fall through to wallet/quota billing
 	}
 
-	_, err = s.repo.HoldCredits(ctx, userID, holdCredits, fmt.Sprintf("AI session %s", sessionID))
+	_, err = s.repo.HoldCredits(ctx, userID, holdCredits, sessionID, fmt.Sprintf("AI session %s", sessionID))
 	if err != nil {
 		return fmt.Errorf("credit pre-hold failed: %w", err)
 	}

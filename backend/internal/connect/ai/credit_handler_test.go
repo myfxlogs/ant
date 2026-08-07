@@ -63,14 +63,14 @@ func (m *mockCreditRepo) AddCredits(ctx context.Context, userID uuid.UUID, amoun
 	}, nil
 }
 
-func (m *mockCreditRepo) HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, description string) (*repository.CreditTransaction, error) {
+func (m *mockCreditRepo) HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, sessionID, description string) (*repository.CreditTransaction, error) {
 	if m.holdErr != nil {
 		return nil, m.holdErr
 	}
 	return &repository.CreditTransaction{
-		ID:      uuid.New(),
-		TxType:  "ai_hold",
-		Amount:  amount.StringFixed(8),
+		ID:        uuid.New(),
+		TxType:    "ai_hold",
+		Amount:    amount.StringFixed(8),
 		CreatedAt: time.Now(),
 	}, nil
 }
@@ -289,8 +289,8 @@ func TestRefundCredits_Success(t *testing.T) {
 	uid := uuid.New()
 	ctx := ctxWithUserID(uuid.New())
 	resp, err := srv.RefundCredits(ctx, connect.NewRequest(&antv1.RefundCreditsRequest{
-		UserId: uid.String(),
-		Amount: "200",
+		UserId:      uid.String(),
+		Amount:      "200",
 		Description: "test refund",
 	}))
 	if err != nil {
@@ -357,8 +357,8 @@ func TestListAllCreditTransactions_WithUserID(t *testing.T) {
 	srv := NewAdminCreditServer(repo, zap.NewNop())
 	uid := uuid.New()
 	resp, err := srv.ListAllCreditTransactions(context.Background(), connect.NewRequest(&antv1.ListAllCreditTransactionsRequest{
-		UserId: uid.String(),
-		Page:   1,
+		UserId:   uid.String(),
+		Page:     1,
 		PageSize: 20,
 	}))
 	if err != nil {

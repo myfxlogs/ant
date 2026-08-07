@@ -28,15 +28,15 @@ var (
 	httpClient = &http.Client{
 		Timeout: 0, // no blanket timeout — per-request context handles it
 		Transport: &http.Transport{
-			MaxIdleConns:        20,
-			MaxConnsPerHost:     5,
-			IdleConnTimeout:     90 * time.Second,
-			DisableKeepAlives:   false,
+			MaxIdleConns:      20,
+			MaxConnsPerHost:   5,
+			IdleConnTimeout:   90 * time.Second,
+			DisableKeepAlives: false,
 		},
 	}
 )
 
-func validateBaseURL(s string) error {
+func ValidateBaseURL(s string) error {
 	u, err := url.Parse(s)
 	if err != nil {
 		return errBaseURLBad
@@ -290,7 +290,7 @@ func DiscoverModelsByConfig(ctx context.Context, providerID, baseURL, secret str
 	if base == "" {
 		return nil, errBaseURLEmpty
 	}
-	if perr := validateBaseURL(base); perr != nil {
+	if perr := ValidateBaseURL(base); perr != nil {
 		return nil, perr
 	}
 	if providerID == "zhipu" {

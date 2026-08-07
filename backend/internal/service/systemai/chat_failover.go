@@ -137,7 +137,6 @@ func readAPIErrorBody(resp *http.Response) apiError {
 	return parseAPIError(body)
 }
 
-
 // extractJSONField extracts a string value for the given key from a JSON object.
 // Manual string parsing — avoids encoding/json (CLAUDE.md §0 prohibition).
 func extractJSONField(raw []byte, key string) string {
@@ -257,6 +256,9 @@ func (s *Service) resolveUserProviders(ctx context.Context, userID uuid.UUID, ro
 		}
 		base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
 		if base == "" {
+			continue
+		}
+		if ValidateBaseURL(base) != nil {
 			continue
 		}
 		m := resolveModel(row.DefaultModel, row.Models, row.ProviderID, primaryPID, primaryModel)

@@ -22,7 +22,7 @@ type CreditRepo interface {
 	GetOrCreateAccount(ctx context.Context, userID uuid.UUID) (*repository.CreditAccount, error)
 	GetBalance(ctx context.Context, userID uuid.UUID) (decimal.Decimal, error)
 	AddCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, txType, source, description string, operatorID *uuid.UUID) (*repository.CreditTransaction, error)
-	HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, description string) (*repository.CreditTransaction, error)
+	HoldCredits(ctx context.Context, userID uuid.UUID, amount decimal.Decimal, sessionID, description string) (*repository.CreditTransaction, error)
 	SettleCredits(ctx context.Context, userID uuid.UUID, holdAmount, actualCost decimal.Decimal, description string) error
 	ListTransactions(ctx context.Context, userID uuid.UUID, page, pageSize int) ([]*repository.CreditTransaction, int64, error)
 }
@@ -152,9 +152,9 @@ func (s *AdminCreditServer) ListAllCreditTransactions(ctx context.Context, req *
 
 func txToProto(t *repository.CreditTransaction) *antv1.CreditTransaction {
 	p := &antv1.CreditTransaction{
-		Id:           t.ID.String(),
-		TxType:       t.TxType,
-		Amount:       t.Amount,
+		Id:            t.ID.String(),
+		TxType:        t.TxType,
+		Amount:        t.Amount,
 		BalanceBefore: t.BalanceBefore,
 		BalanceAfter:  t.BalanceAfter,
 		CreatedAtTsMs: t.CreatedAt.UnixMilli(),
