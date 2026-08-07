@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// WalkForwardService provides walk-forward validation reports for strategies.
+// Runs IS/OOS split backtests and reports degradation metrics.
+service WalkForwardService {
+  // GetWalkForwardReport returns the latest walk-forward report for a strategy.
+  rpc GetWalkForwardReport(GetWalkForwardReportRequest) returns (WalkForwardReport);
+
+  // WatchWalkForwardReport streams walk-forward report updates via SSE.
+  // Push-first: triggered by backtest_status pg_notify when a backtest completes.
+  rpc WatchWalkForwardReport(WatchWalkForwardReportRequest) returns (stream WalkForwardReport);
+}
+
+message GetWalkForwardReportRequest {
+  string strategy_id = 1;
+}
+
+message WatchWalkForwardReportRequest {
+  string strategy_id = 1;
+}
+
+// WalkForwardReport contains IS/OOS metrics and degradation analysis.
+message WalkForwardReport {
+  string strategy_id = 1;
+  string backtest_run_id = 2;
+
+  // In-sample (training) metrics
+  WalkForwardMetrics is_metrics = 3;
+  // Out-of-sample (test) metrics
+  WalkForwardMetrics oos_metrics = 4;
+
+  // Degradation analysis
+  double sharpe_degradation = 5;       // IS Sharpe - OOS Sharpe
+  double degradation_ratio = 6;        // OOS/IS Sharpe ratio (1.0 = no degradation)
+  WalkForwardStatus status = 7;        // PASS / FAIL / INSUFFICIENT_DATA
+  string reason = 8;                   // failure reason if status != PASS
+
+  // Fold-level details (from 5-fold purged walk-forward)
+  repeated WalkForwardFold folds = 9;
+
+  // CPCV median out-of-sample Sharpe
+  double cpcv_median_sharpe = 10;
+
+  int64 computed_at_ms = 11;
+}
+
+// WalkForwardMetrics holds metrics for a single walk-forward segment.
+message WalkForwardMetrics {
+  int32 trade_count = 1;
+  double net_pnl = 2;
+  double win_rate = 3;
+  double sharpe_ratio = 4;
+  double max_drawdown = 5;
+  double avg_trade_pnl = 6;
+  int64 period_start_ms = 7;
+  int64 period_end_ms = 8;
+}
+
+// WalkForwardFold holds metrics for a single walk-forward fold.
+message WalkForwardFold {
+  int32 fold_index = 1;
+  double train_sharpe = 2;
+  double test_sharpe = 3;
+  double train_max_dd = 4;
+  double test_max_dd = 5;
+  int32 trade_count = 6;
+  bool passed = 7;
+  string rejection_reason = 8;
+}
+
+enum WalkForwardStatus {
+  WALK_FORWARD_STATUS_UNSPECIFIED = 0;
+  WALK_FORWARD_STATUS_PASS = 1;
+  WALK_FORWARD_STATUS_FAIL = 2;
+  WALK_FORWARD_STATUS_INSUFFICIENT_DATA = 3;
+}

@@ -162,6 +162,12 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mux.Handle(antv1c.NewLiveBacktestDivergenceServiceHandler(divergenceServer,
 		withSency(otelInterceptor, authInterceptor)))
 
+	// FEAT-4: Walk-forward validation service.
+	walkForwardServer := strategy.NewWalkForwardServer(backtestRunRepo, log)
+	walkForwardServer.SetPgListen(pgListen)
+	mux.Handle(antv1c.NewWalkForwardServiceHandler(walkForwardServer,
+		withSency(otelInterceptor, authInterceptor)))
+
 	return strategyRuntimeDeps{
 		strategyServer:     strategyServer,
 		strategyExecServer: strategyExecServer,
