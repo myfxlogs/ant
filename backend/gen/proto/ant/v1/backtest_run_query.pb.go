@@ -204,8 +204,10 @@ type BacktestRunUpdate struct {
 	GateUpdate *GateEvaluationUpdate `protobuf:"bytes,6,opt,name=gate_update,json=gateUpdate,proto3" json:"gate_update,omitempty"`
 	// Marketplace quality gate preview (sent when auto_gate=true and run succeeds).
 	QualityPreview *MarketplaceQualityPreview `protobuf:"bytes,7,opt,name=quality_preview,json=qualityPreview,proto3" json:"quality_preview,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Invariant blind spots that make results unreliable (sent when status=DEGRADED).
+	BlindSpots    []*BacktestBlindSpot `protobuf:"bytes,8,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *BacktestRunUpdate) Reset() {
@@ -287,6 +289,73 @@ func (x *BacktestRunUpdate) GetQualityPreview() *MarketplaceQualityPreview {
 	return nil
 }
 
+func (x *BacktestRunUpdate) GetBlindSpots() []*BacktestBlindSpot {
+	if x != nil {
+		return x.BlindSpots
+	}
+	return nil
+}
+
+type BacktestBlindSpot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Severity      string                 `protobuf:"bytes,3,opt,name=severity,proto3" json:"severity,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BacktestBlindSpot) Reset() {
+	*x = BacktestBlindSpot{}
+	mi := &file_backtest_run_query_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BacktestBlindSpot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BacktestBlindSpot) ProtoMessage() {}
+
+func (x *BacktestBlindSpot) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_run_query_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BacktestBlindSpot.ProtoReflect.Descriptor instead.
+func (*BacktestBlindSpot) Descriptor() ([]byte, []int) {
+	return file_backtest_run_query_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *BacktestBlindSpot) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *BacktestBlindSpot) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *BacktestBlindSpot) GetSeverity() string {
+	if x != nil {
+		return x.Severity
+	}
+	return ""
+}
+
 type MarketplaceQualityPreview struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Publishable   bool                   `protobuf:"varint,1,opt,name=publishable,proto3" json:"publishable,omitempty"`
@@ -297,7 +366,7 @@ type MarketplaceQualityPreview struct {
 
 func (x *MarketplaceQualityPreview) Reset() {
 	*x = MarketplaceQualityPreview{}
-	mi := &file_backtest_run_query_proto_msgTypes[4]
+	mi := &file_backtest_run_query_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -309,7 +378,7 @@ func (x *MarketplaceQualityPreview) String() string {
 func (*MarketplaceQualityPreview) ProtoMessage() {}
 
 func (x *MarketplaceQualityPreview) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_run_query_proto_msgTypes[4]
+	mi := &file_backtest_run_query_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -322,7 +391,7 @@ func (x *MarketplaceQualityPreview) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarketplaceQualityPreview.ProtoReflect.Descriptor instead.
 func (*MarketplaceQualityPreview) Descriptor() ([]byte, []int) {
-	return file_backtest_run_query_proto_rawDescGZIP(), []int{4}
+	return file_backtest_run_query_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *MarketplaceQualityPreview) GetPublishable() bool {
@@ -350,7 +419,7 @@ type QualityViolation struct {
 
 func (x *QualityViolation) Reset() {
 	*x = QualityViolation{}
-	mi := &file_backtest_run_query_proto_msgTypes[5]
+	mi := &file_backtest_run_query_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -362,7 +431,7 @@ func (x *QualityViolation) String() string {
 func (*QualityViolation) ProtoMessage() {}
 
 func (x *QualityViolation) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_run_query_proto_msgTypes[5]
+	mi := &file_backtest_run_query_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -375,7 +444,7 @@ func (x *QualityViolation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QualityViolation.ProtoReflect.Descriptor instead.
 func (*QualityViolation) Descriptor() ([]byte, []int) {
-	return file_backtest_run_query_proto_rawDescGZIP(), []int{5}
+	return file_backtest_run_query_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *QualityViolation) GetMetric() string {
@@ -411,7 +480,7 @@ type ListBacktestRunsRequest struct {
 
 func (x *ListBacktestRunsRequest) Reset() {
 	*x = ListBacktestRunsRequest{}
-	mi := &file_backtest_run_query_proto_msgTypes[6]
+	mi := &file_backtest_run_query_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -423,7 +492,7 @@ func (x *ListBacktestRunsRequest) String() string {
 func (*ListBacktestRunsRequest) ProtoMessage() {}
 
 func (x *ListBacktestRunsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_run_query_proto_msgTypes[6]
+	mi := &file_backtest_run_query_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -436,7 +505,7 @@ func (x *ListBacktestRunsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBacktestRunsRequest.ProtoReflect.Descriptor instead.
 func (*ListBacktestRunsRequest) Descriptor() ([]byte, []int) {
-	return file_backtest_run_query_proto_rawDescGZIP(), []int{6}
+	return file_backtest_run_query_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListBacktestRunsRequest) GetAccountId() string {
@@ -476,7 +545,7 @@ type ListBacktestRunsResponse struct {
 
 func (x *ListBacktestRunsResponse) Reset() {
 	*x = ListBacktestRunsResponse{}
-	mi := &file_backtest_run_query_proto_msgTypes[7]
+	mi := &file_backtest_run_query_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -488,7 +557,7 @@ func (x *ListBacktestRunsResponse) String() string {
 func (*ListBacktestRunsResponse) ProtoMessage() {}
 
 func (x *ListBacktestRunsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_run_query_proto_msgTypes[7]
+	mi := &file_backtest_run_query_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -501,7 +570,7 @@ func (x *ListBacktestRunsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBacktestRunsResponse.ProtoReflect.Descriptor instead.
 func (*ListBacktestRunsResponse) Descriptor() ([]byte, []int) {
-	return file_backtest_run_query_proto_rawDescGZIP(), []int{7}
+	return file_backtest_run_query_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListBacktestRunsResponse) GetRuns() []*BacktestRun {
@@ -528,7 +597,7 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\x15execution_assumptions\x18\x06 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptionsB\r\n" +
 	"\v_dataset_id\"0\n" +
 	"\x17WatchBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x98\x03\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xd4\x03\n" +
 	"\x11BacktestRunUpdate\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
@@ -537,7 +606,13 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\x15execution_assumptions\x18\x05 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\x12=\n" +
 	"\vgate_update\x18\x06 \x01(\v2\x1c.ant.v1.GateEvaluationUpdateR\n" +
 	"gateUpdate\x12J\n" +
-	"\x0fquality_preview\x18\a \x01(\v2!.ant.v1.MarketplaceQualityPreviewR\x0equalityPreview\"w\n" +
+	"\x0fquality_preview\x18\a \x01(\v2!.ant.v1.MarketplaceQualityPreviewR\x0equalityPreview\x12:\n" +
+	"\vblind_spots\x18\b \x03(\v2\x19.ant.v1.BacktestBlindSpotR\n" +
+	"blindSpots\"a\n" +
+	"\x11BacktestBlindSpot\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12 \n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1a\n" +
+	"\bseverity\x18\x03 \x01(\tR\bseverity\"w\n" +
 	"\x19MarketplaceQualityPreview\x12 \n" +
 	"\vpublishable\x18\x01 \x01(\bR\vpublishable\x128\n" +
 	"\n" +
@@ -571,40 +646,42 @@ func file_backtest_run_query_proto_rawDescGZIP() []byte {
 	return file_backtest_run_query_proto_rawDescData
 }
 
-var file_backtest_run_query_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_backtest_run_query_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_backtest_run_query_proto_goTypes = []any{
 	(*GetBacktestRunRequest)(nil),     // 0: ant.v1.GetBacktestRunRequest
 	(*GetBacktestRunResponse)(nil),    // 1: ant.v1.GetBacktestRunResponse
 	(*WatchBacktestRunRequest)(nil),   // 2: ant.v1.WatchBacktestRunRequest
 	(*BacktestRunUpdate)(nil),         // 3: ant.v1.BacktestRunUpdate
-	(*MarketplaceQualityPreview)(nil), // 4: ant.v1.MarketplaceQualityPreview
-	(*QualityViolation)(nil),          // 5: ant.v1.QualityViolation
-	(*ListBacktestRunsRequest)(nil),   // 6: ant.v1.ListBacktestRunsRequest
-	(*ListBacktestRunsResponse)(nil),  // 7: ant.v1.ListBacktestRunsResponse
-	(*BacktestRun)(nil),               // 8: ant.v1.BacktestRun
-	(*BacktestMetrics)(nil),           // 9: ant.v1.BacktestMetrics
-	(*BacktestRisk)(nil),              // 10: ant.v1.BacktestRisk
-	(*ExecutionAssumptions)(nil),      // 11: ant.v1.ExecutionAssumptions
-	(*GateEvaluationUpdate)(nil),      // 12: ant.v1.GateEvaluationUpdate
+	(*BacktestBlindSpot)(nil),         // 4: ant.v1.BacktestBlindSpot
+	(*MarketplaceQualityPreview)(nil), // 5: ant.v1.MarketplaceQualityPreview
+	(*QualityViolation)(nil),          // 6: ant.v1.QualityViolation
+	(*ListBacktestRunsRequest)(nil),   // 7: ant.v1.ListBacktestRunsRequest
+	(*ListBacktestRunsResponse)(nil),  // 8: ant.v1.ListBacktestRunsResponse
+	(*BacktestRun)(nil),               // 9: ant.v1.BacktestRun
+	(*BacktestMetrics)(nil),           // 10: ant.v1.BacktestMetrics
+	(*BacktestRisk)(nil),              // 11: ant.v1.BacktestRisk
+	(*ExecutionAssumptions)(nil),      // 12: ant.v1.ExecutionAssumptions
+	(*GateEvaluationUpdate)(nil),      // 13: ant.v1.GateEvaluationUpdate
 }
 var file_backtest_run_query_proto_depIdxs = []int32{
-	8,  // 0: ant.v1.GetBacktestRunResponse.run:type_name -> ant.v1.BacktestRun
-	9,  // 1: ant.v1.GetBacktestRunResponse.metrics:type_name -> ant.v1.BacktestMetrics
-	10, // 2: ant.v1.GetBacktestRunResponse.risk:type_name -> ant.v1.BacktestRisk
-	11, // 3: ant.v1.GetBacktestRunResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	8,  // 4: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
-	9,  // 5: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
-	10, // 6: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
-	11, // 7: ant.v1.BacktestRunUpdate.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	12, // 8: ant.v1.BacktestRunUpdate.gate_update:type_name -> ant.v1.GateEvaluationUpdate
-	4,  // 9: ant.v1.BacktestRunUpdate.quality_preview:type_name -> ant.v1.MarketplaceQualityPreview
-	5,  // 10: ant.v1.MarketplaceQualityPreview.violations:type_name -> ant.v1.QualityViolation
-	8,  // 11: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
-	12, // [12:12] is the sub-list for method output_type
-	12, // [12:12] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	9,  // 0: ant.v1.GetBacktestRunResponse.run:type_name -> ant.v1.BacktestRun
+	10, // 1: ant.v1.GetBacktestRunResponse.metrics:type_name -> ant.v1.BacktestMetrics
+	11, // 2: ant.v1.GetBacktestRunResponse.risk:type_name -> ant.v1.BacktestRisk
+	12, // 3: ant.v1.GetBacktestRunResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	9,  // 4: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
+	10, // 5: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
+	11, // 6: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
+	12, // 7: ant.v1.BacktestRunUpdate.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	13, // 8: ant.v1.BacktestRunUpdate.gate_update:type_name -> ant.v1.GateEvaluationUpdate
+	5,  // 9: ant.v1.BacktestRunUpdate.quality_preview:type_name -> ant.v1.MarketplaceQualityPreview
+	4,  // 10: ant.v1.BacktestRunUpdate.blind_spots:type_name -> ant.v1.BacktestBlindSpot
+	6,  // 11: ant.v1.MarketplaceQualityPreview.violations:type_name -> ant.v1.QualityViolation
+	9,  // 12: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_query_proto_init() }
@@ -617,14 +694,14 @@ func file_backtest_run_query_proto_init() {
 	file_backtest_execution_config_proto_init()
 	file_ai_gate_proto_init()
 	file_backtest_run_query_proto_msgTypes[1].OneofWrappers = []any{}
-	file_backtest_run_query_proto_msgTypes[6].OneofWrappers = []any{}
+	file_backtest_run_query_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_backtest_run_query_proto_rawDesc), len(file_backtest_run_query_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

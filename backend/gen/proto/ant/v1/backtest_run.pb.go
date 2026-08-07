@@ -81,6 +81,7 @@ const (
 	BacktestRunStatus_BACKTEST_RUN_STATUS_FAILED           BacktestRunStatus = 4
 	BacktestRunStatus_BACKTEST_RUN_STATUS_CANCEL_REQUESTED BacktestRunStatus = 5
 	BacktestRunStatus_BACKTEST_RUN_STATUS_CANCELED         BacktestRunStatus = 6
+	BacktestRunStatus_BACKTEST_RUN_STATUS_DEGRADED         BacktestRunStatus = 7 // executed but results unreliable (invariant violations)
 )
 
 // Enum value maps for BacktestRunStatus.
@@ -93,6 +94,7 @@ var (
 		4: "BACKTEST_RUN_STATUS_FAILED",
 		5: "BACKTEST_RUN_STATUS_CANCEL_REQUESTED",
 		6: "BACKTEST_RUN_STATUS_CANCELED",
+		7: "BACKTEST_RUN_STATUS_DEGRADED",
 	}
 	BacktestRunStatus_value = map[string]int32{
 		"BACKTEST_RUN_STATUS_UNSPECIFIED":      0,
@@ -102,6 +104,7 @@ var (
 		"BACKTEST_RUN_STATUS_FAILED":           4,
 		"BACKTEST_RUN_STATUS_CANCEL_REQUESTED": 5,
 		"BACKTEST_RUN_STATUS_CANCELED":         6,
+		"BACKTEST_RUN_STATUS_DEGRADED":         7,
 	}
 )
 
@@ -396,7 +399,7 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\x0fBacktestRunMode\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_KLINE_RANGE\x10\x01\x12\x1d\n" +
-	"\x19BACKTEST_RUN_MODE_DATASET\x10\x02*\x89\x02\n" +
+	"\x19BACKTEST_RUN_MODE_DATASET\x10\x02*\xab\x02\n" +
 	"\x11BacktestRunStatus\x12#\n" +
 	"\x1fBACKTEST_RUN_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bBACKTEST_RUN_STATUS_PENDING\x10\x01\x12\x1f\n" +
@@ -404,7 +407,8 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\x1dBACKTEST_RUN_STATUS_SUCCEEDED\x10\x03\x12\x1e\n" +
 	"\x1aBACKTEST_RUN_STATUS_FAILED\x10\x04\x12(\n" +
 	"$BACKTEST_RUN_STATUS_CANCEL_REQUESTED\x10\x05\x12 \n" +
-	"\x1cBACKTEST_RUN_STATUS_CANCELED\x10\x06B#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x1cBACKTEST_RUN_STATUS_CANCELED\x10\x06\x12 \n" +
+	"\x1cBACKTEST_RUN_STATUS_DEGRADED\x10\aB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_run_proto_rawDescOnce sync.Once

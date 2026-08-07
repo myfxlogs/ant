@@ -165,8 +165,44 @@ type StrategyWorkspaceI18N struct {
 	MemorySave               string `protobuf:"bytes,172,opt,name=memory_save,json=memorySave,proto3" json:"memory_save,omitempty"`
 	MemoryNamePlaceholder    string `protobuf:"bytes,173,opt,name=memory_name_placeholder,json=memoryNamePlaceholder,proto3" json:"memory_name_placeholder,omitempty"`
 	MemoryContentPlaceholder string `protobuf:"bytes,174,opt,name=memory_content_placeholder,json=memoryContentPlaceholder,proto3" json:"memory_content_placeholder,omitempty"`
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
+	// ── Sidebar (175-185) ──
+	SidebarTitle           string `protobuf:"bytes,175,opt,name=sidebar_title,json=sidebarTitle,proto3" json:"sidebar_title,omitempty"`
+	SidebarMyStrategies    string `protobuf:"bytes,176,opt,name=sidebar_my_strategies,json=sidebarMyStrategies,proto3" json:"sidebar_my_strategies,omitempty"`
+	SidebarBacktestHistory string `protobuf:"bytes,177,opt,name=sidebar_backtest_history,json=sidebarBacktestHistory,proto3" json:"sidebar_backtest_history,omitempty"`
+	SidebarNoRuns          string `protobuf:"bytes,178,opt,name=sidebar_no_runs,json=sidebarNoRuns,proto3" json:"sidebar_no_runs,omitempty"`
+	SidebarViewAll         string `protobuf:"bytes,179,opt,name=sidebar_view_all,json=sidebarViewAll,proto3" json:"sidebar_view_all,omitempty"`
+	SidebarNewStrategy     string `protobuf:"bytes,180,opt,name=sidebar_new_strategy,json=sidebarNewStrategy,proto3" json:"sidebar_new_strategy,omitempty"`
+	SidebarTrades          string `protobuf:"bytes,181,opt,name=sidebar_trades,json=sidebarTrades,proto3" json:"sidebar_trades,omitempty"`
+	// ── Empty state & actions (186-200) ──
+	ImportMql          string `protobuf:"bytes,186,opt,name=import_mql,json=importMql,proto3" json:"import_mql,omitempty"`
+	EmptyTitle         string `protobuf:"bytes,187,opt,name=empty_title,json=emptyTitle,proto3" json:"empty_title,omitempty"`
+	EmptyDesc          string `protobuf:"bytes,188,opt,name=empty_desc,json=emptyDesc,proto3" json:"empty_desc,omitempty"`
+	AiGenerate         string `protobuf:"bytes,189,opt,name=ai_generate,json=aiGenerate,proto3" json:"ai_generate,omitempty"`
+	UseTemplate        string `protobuf:"bytes,190,opt,name=use_template,json=useTemplate,proto3" json:"use_template,omitempty"`
+	BackToEditor       string `protobuf:"bytes,191,opt,name=back_to_editor,json=backToEditor,proto3" json:"back_to_editor,omitempty"`
+	AiTab              string `protobuf:"bytes,192,opt,name=ai_tab,json=aiTab,proto3" json:"ai_tab,omitempty"`
+	SelectAccountFirst string `protobuf:"bytes,193,opt,name=select_account_first,json=selectAccountFirst,proto3" json:"select_account_first,omitempty"`
+	SelectSymbolFirst  string `protobuf:"bytes,194,opt,name=select_symbol_first,json=selectSymbolFirst,proto3" json:"select_symbol_first,omitempty"`
+	// ── Audit status (201-205) ──
+	AuditChecking      string `protobuf:"bytes,201,opt,name=audit_checking,json=auditChecking,proto3" json:"audit_checking,omitempty"`
+	AuditCompileFailed string `protobuf:"bytes,202,opt,name=audit_compile_failed,json=auditCompileFailed,proto3" json:"audit_compile_failed,omitempty"`
+	AuditBlindSpots    string `protobuf:"bytes,203,opt,name=audit_blind_spots,json=auditBlindSpots,proto3" json:"audit_blind_spots,omitempty"`
+	AuditAllClear      string `protobuf:"bytes,204,opt,name=audit_all_clear,json=auditAllClear,proto3" json:"audit_all_clear,omitempty"`
+	// ── Tour (206-215) ──
+	TourAi           string `protobuf:"bytes,206,opt,name=tour_ai,json=tourAi,proto3" json:"tour_ai,omitempty"`
+	TourAiDesc       string `protobuf:"bytes,207,opt,name=tour_ai_desc,json=tourAiDesc,proto3" json:"tour_ai_desc,omitempty"`
+	TourCode         string `protobuf:"bytes,208,opt,name=tour_code,json=tourCode,proto3" json:"tour_code,omitempty"`
+	TourCodeDesc     string `protobuf:"bytes,209,opt,name=tour_code_desc,json=tourCodeDesc,proto3" json:"tour_code_desc,omitempty"`
+	TourBacktest     string `protobuf:"bytes,210,opt,name=tour_backtest,json=tourBacktest,proto3" json:"tour_backtest,omitempty"`
+	TourBacktestDesc string `protobuf:"bytes,211,opt,name=tour_backtest_desc,json=tourBacktestDesc,proto3" json:"tour_backtest_desc,omitempty"`
+	TourSave         string `protobuf:"bytes,212,opt,name=tour_save,json=tourSave,proto3" json:"tour_save,omitempty"`
+	TourSaveDesc     string `protobuf:"bytes,213,opt,name=tour_save_desc,json=tourSaveDesc,proto3" json:"tour_save_desc,omitempty"`
+	// ── Backtest degraded (214-216) ──
+	BacktestDegraded        string `protobuf:"bytes,214,opt,name=backtest_degraded,json=backtestDegraded,proto3" json:"backtest_degraded,omitempty"`
+	BacktestDegradedDesc    string `protobuf:"bytes,215,opt,name=backtest_degraded_desc,json=backtestDegradedDesc,proto3" json:"backtest_degraded_desc,omitempty"`
+	BacktestBlindSpotsTitle string `protobuf:"bytes,216,opt,name=backtest_blind_spots_title,json=backtestBlindSpotsTitle,proto3" json:"backtest_blind_spots_title,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *StrategyWorkspaceI18N) Reset() {
@@ -1109,11 +1145,228 @@ func (x *StrategyWorkspaceI18N) GetMemoryContentPlaceholder() string {
 	return ""
 }
 
+func (x *StrategyWorkspaceI18N) GetSidebarTitle() string {
+	if x != nil {
+		return x.SidebarTitle
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarMyStrategies() string {
+	if x != nil {
+		return x.SidebarMyStrategies
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarBacktestHistory() string {
+	if x != nil {
+		return x.SidebarBacktestHistory
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarNoRuns() string {
+	if x != nil {
+		return x.SidebarNoRuns
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarViewAll() string {
+	if x != nil {
+		return x.SidebarViewAll
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarNewStrategy() string {
+	if x != nil {
+		return x.SidebarNewStrategy
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarTrades() string {
+	if x != nil {
+		return x.SidebarTrades
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetImportMql() string {
+	if x != nil {
+		return x.ImportMql
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetEmptyTitle() string {
+	if x != nil {
+		return x.EmptyTitle
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetEmptyDesc() string {
+	if x != nil {
+		return x.EmptyDesc
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAiGenerate() string {
+	if x != nil {
+		return x.AiGenerate
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetUseTemplate() string {
+	if x != nil {
+		return x.UseTemplate
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetBackToEditor() string {
+	if x != nil {
+		return x.BackToEditor
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAiTab() string {
+	if x != nil {
+		return x.AiTab
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSelectAccountFirst() string {
+	if x != nil {
+		return x.SelectAccountFirst
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSelectSymbolFirst() string {
+	if x != nil {
+		return x.SelectSymbolFirst
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAuditChecking() string {
+	if x != nil {
+		return x.AuditChecking
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAuditCompileFailed() string {
+	if x != nil {
+		return x.AuditCompileFailed
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAuditBlindSpots() string {
+	if x != nil {
+		return x.AuditBlindSpots
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetAuditAllClear() string {
+	if x != nil {
+		return x.AuditAllClear
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourAi() string {
+	if x != nil {
+		return x.TourAi
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourAiDesc() string {
+	if x != nil {
+		return x.TourAiDesc
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourCode() string {
+	if x != nil {
+		return x.TourCode
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourCodeDesc() string {
+	if x != nil {
+		return x.TourCodeDesc
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourBacktest() string {
+	if x != nil {
+		return x.TourBacktest
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourBacktestDesc() string {
+	if x != nil {
+		return x.TourBacktestDesc
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourSave() string {
+	if x != nil {
+		return x.TourSave
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTourSaveDesc() string {
+	if x != nil {
+		return x.TourSaveDesc
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetBacktestDegraded() string {
+	if x != nil {
+		return x.BacktestDegraded
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetBacktestDegradedDesc() string {
+	if x != nil {
+		return x.BacktestDegradedDesc
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetBacktestBlindSpotsTitle() string {
+	if x != nil {
+		return x.BacktestBlindSpotsTitle
+	}
+	return ""
+}
+
 var File_i18n_strategy_workspace_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\n" +
-	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xf8(\n" +
+	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xf82\n" +
 	"\x15StrategyWorkspaceI18n\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12%\n" +
 	"\x0eselect_account\x18\x02 \x01(\tR\rselectAccount\x12#\n" +
@@ -1260,7 +1513,43 @@ const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\vmemory_save\x18\xac\x01 \x01(\tR\n" +
 	"memorySave\x127\n" +
 	"\x17memory_name_placeholder\x18\xad\x01 \x01(\tR\x15memoryNamePlaceholder\x12=\n" +
-	"\x1amemory_content_placeholder\x18\xae\x01 \x01(\tR\x18memoryContentPlaceholderB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x1amemory_content_placeholder\x18\xae\x01 \x01(\tR\x18memoryContentPlaceholder\x12$\n" +
+	"\rsidebar_title\x18\xaf\x01 \x01(\tR\fsidebarTitle\x123\n" +
+	"\x15sidebar_my_strategies\x18\xb0\x01 \x01(\tR\x13sidebarMyStrategies\x129\n" +
+	"\x18sidebar_backtest_history\x18\xb1\x01 \x01(\tR\x16sidebarBacktestHistory\x12'\n" +
+	"\x0fsidebar_no_runs\x18\xb2\x01 \x01(\tR\rsidebarNoRuns\x12)\n" +
+	"\x10sidebar_view_all\x18\xb3\x01 \x01(\tR\x0esidebarViewAll\x121\n" +
+	"\x14sidebar_new_strategy\x18\xb4\x01 \x01(\tR\x12sidebarNewStrategy\x12&\n" +
+	"\x0esidebar_trades\x18\xb5\x01 \x01(\tR\rsidebarTrades\x12\x1e\n" +
+	"\n" +
+	"import_mql\x18\xba\x01 \x01(\tR\timportMql\x12 \n" +
+	"\vempty_title\x18\xbb\x01 \x01(\tR\n" +
+	"emptyTitle\x12\x1e\n" +
+	"\n" +
+	"empty_desc\x18\xbc\x01 \x01(\tR\temptyDesc\x12 \n" +
+	"\vai_generate\x18\xbd\x01 \x01(\tR\n" +
+	"aiGenerate\x12\"\n" +
+	"\fuse_template\x18\xbe\x01 \x01(\tR\vuseTemplate\x12%\n" +
+	"\x0eback_to_editor\x18\xbf\x01 \x01(\tR\fbackToEditor\x12\x16\n" +
+	"\x06ai_tab\x18\xc0\x01 \x01(\tR\x05aiTab\x121\n" +
+	"\x14select_account_first\x18\xc1\x01 \x01(\tR\x12selectAccountFirst\x12/\n" +
+	"\x13select_symbol_first\x18\xc2\x01 \x01(\tR\x11selectSymbolFirst\x12&\n" +
+	"\x0eaudit_checking\x18\xc9\x01 \x01(\tR\rauditChecking\x121\n" +
+	"\x14audit_compile_failed\x18\xca\x01 \x01(\tR\x12auditCompileFailed\x12+\n" +
+	"\x11audit_blind_spots\x18\xcb\x01 \x01(\tR\x0fauditBlindSpots\x12'\n" +
+	"\x0faudit_all_clear\x18\xcc\x01 \x01(\tR\rauditAllClear\x12\x18\n" +
+	"\atour_ai\x18\xce\x01 \x01(\tR\x06tourAi\x12!\n" +
+	"\ftour_ai_desc\x18\xcf\x01 \x01(\tR\n" +
+	"tourAiDesc\x12\x1c\n" +
+	"\ttour_code\x18\xd0\x01 \x01(\tR\btourCode\x12%\n" +
+	"\x0etour_code_desc\x18\xd1\x01 \x01(\tR\ftourCodeDesc\x12$\n" +
+	"\rtour_backtest\x18\xd2\x01 \x01(\tR\ftourBacktest\x12-\n" +
+	"\x12tour_backtest_desc\x18\xd3\x01 \x01(\tR\x10tourBacktestDesc\x12\x1c\n" +
+	"\ttour_save\x18\xd4\x01 \x01(\tR\btourSave\x12%\n" +
+	"\x0etour_save_desc\x18\xd5\x01 \x01(\tR\ftourSaveDesc\x12,\n" +
+	"\x11backtest_degraded\x18\xd6\x01 \x01(\tR\x10backtestDegraded\x125\n" +
+	"\x16backtest_degraded_desc\x18\xd7\x01 \x01(\tR\x14backtestDegradedDesc\x12<\n" +
+	"\x1abacktest_blind_spots_title\x18\xd8\x01 \x01(\tR\x17backtestBlindSpotsTitleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_workspace_proto_rawDescOnce sync.Once
