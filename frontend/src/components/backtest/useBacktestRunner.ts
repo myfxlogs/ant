@@ -1,11 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import {
-  ENTER_CODE_AND_SYMBOL_KEY,
-  DEFAULTS_SAVED_KEY, DEFAULTS_LOADED_KEY, DEFAULTS_RESET_KEY,
-  SETTINGS_SAVE_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY,
-} from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { ENTER_CODE_AND_SYMBOL_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { BacktestRunUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -18,14 +14,11 @@ import {
 import { useTuning } from '@/pages/strategy/hooks/useTuning';
 import { useGateEvaluation } from '@/pages/strategy/hooks/useGateEvaluation';
 import {
-  type BacktestStatus, type ChartTrade, type BacktestMetrics,
-  type ExtractedParam, type StandardParams, type BacktestRunnerInputs,
-  FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults,
-  getTimeframeWarning, protoToMetrics,
+  type BacktestStatus, type ChartTrade, type BacktestMetrics, type ExtractedParam, type StandardParams, type BacktestRunnerInputs,
+  FACTORY_DEFAULTS, loadSavedDefaults, getTimeframeWarning,
 } from './backtestRunnerTypes';
 import { handleBacktestUpdate, handleBacktestError, type BacktestBlindSpotItem } from './backtestRunnerWatch';
-import { backtestRunsApi } from '@/client/backtestRuns';
-import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
+import { buildSettingsItems, restoreLastRunFn } from './backtestRunnerHelpers';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
@@ -158,20 +151,7 @@ export function useBacktestRunner() {
 
   // ── Settings menu ─────────────────────────────────────────────────────
 
-  const settingsItems = useMemo(() => [
-    {
-      key: 'save', label: t(SETTINGS_SAVE_KEY),
-      onClick: () => { saveDefaults(standardParams); message.success(t(DEFAULTS_SAVED_KEY)); },
-    },
-    ...(saved ? [{
-      key: 'load', label: t(SETTINGS_LOAD_KEY),
-      onClick: () => { applyDefaults(saved); message.success(t(DEFAULTS_LOADED_KEY)); },
-    }] : []),
-    {
-      key: 'reset', label: t(SETTINGS_RESET_KEY),
-      onClick: () => { removeDefaults(); applyDefaults(FACTORY_DEFAULTS); message.success(t(DEFAULTS_RESET_KEY)); },
-    },
-  ], [t, standardParams, saved, applyDefaults]);
+  const settingsItems = useMemo(() => buildSettingsItems(t, standardParams, saved, applyDefaults), [t, standardParams, saved, applyDefaults]);
 
   // ── Run backtest ──────────────────────────────────────────────────────
 
@@ -196,18 +176,8 @@ export function useBacktestRunner() {
       trackFunnelEvent(FunnelEvents.FIRST_BACKTEST);
       const paramValues = overrides?.params ?? strategyParamValues;
       const cfg = overrides?.executionConfig
-        ? {
-            commission: overrides.executionConfig.commission,
-            slippage: overrides.executionConfig.slippage,
-            leverage: overrides.executionConfig.leverage,
-            tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both',
-            strictMode: overrides.executionConfig.strictMode,
-          }
-        : {
-            commission, slippage, leverage,
-            tradeDirection: tradeDirection as 'long' | 'short' | 'both',
-            strictMode,
-          };
+        ? { commission: overrides.executionConfig.commission, slippage: overrides.executionConfig.slippage, leverage: overrides.executionConfig.leverage, tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both', strictMode: overrides.executionConfig.strictMode }
+        : { commission, slippage, leverage, tradeDirection: tradeDirection as 'long' | 'short' | 'both', strictMode };
       const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,
         mode: 'KLINE_RANGE',
@@ -250,76 +220,27 @@ export function useBacktestRunner() {
     if (!runId) return;
     try {
       await strategyRuntimeApi.cancelBacktestRun(runId);
-      watchRef.current?.();
-      watchRef.current = null;
-      setStatus('idle');
-      setRunId('');
+      watchRef.current?.(); watchRef.current = null;
+      setStatus('idle'); setRunId('');
       message.info(t('strategy.backtest.canceled', { defaultValue: 'Backtest canceled' }));
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      message.error(msg || t('strategy.backtest.cancelFailed', { defaultValue: 'Cancel failed' }));
+      message.error(e instanceof Error ? e.message : t('strategy.backtest.cancelFailed', { defaultValue: 'Cancel failed' }));
     }
   }, [runId, t]);
 
-  // ── Restore last backtest run ───────────────────────────────────────
-  const restoreLastRun = useCallback(async (accountId: string, templateId?: string) => {
-    try {
-      const resp = await strategyRuntimeApi.listBacktestRuns({
-        accountId: accountId || undefined,
-        templateId: templateId || undefined,
-        limit: 1, offset: 0,
-      });
-      const lastRun = resp.runs?.[0];
-      if (!lastRun || lastRun.status !== BacktestRunStatus.SUCCEEDED) return;
-      const runIdStr = lastRun.id;
-      if (!runIdStr) return;
-      const detail = await strategyRuntimeApi.getBacktestRun(runIdStr);
-      if (detail.metrics) {
-        setMetrics(protoToMetrics(detail.metrics));
-      }
-      if (detail.executionAssumptions) {
-        setExecutionAssumptions(detail.executionAssumptions);
-      }
-      setRunId(runIdStr);
-      setStatus('completed');
-      const tr = await backtestRunsApi.getTrades(runIdStr);
-      setChartTrades(tr.trades.map((t2) => ({
-        side: t2.side, openTime: t2.open_ts, openPrice: t2.open_price,
-        closeTime: t2.close_ts, closePrice: t2.close_price, pnl: t2.pnl, volume: t2.volume,
-      })));
-    } catch {
-      // silent — restoration is best-effort
-    }
-  }, []);
+  const restoreLastRun = useCallback((accountId: string, templateId?: string) =>
+    restoreLastRunFn(accountId, templateId, setMetrics, setExecutionAssumptions, setRunId, setStatus, setChartTrades), []);
 
   return {
-    // Standard params
-    initialCapital, setInitialCapital, leverage, setLeverage,
-    lotSize, setLotSize, commission, setCommission, slippage, setSlippage,
-    tradeDirection, setTradeDirection, strictMode, setStrictMode,
+    initialCapital, setInitialCapital, leverage, setLeverage, lotSize, setLotSize,
+    commission, setCommission, slippage, setSlippage, tradeDirection, setTradeDirection, strictMode, setStrictMode,
     standardParams, applyDefaults, applyPreset,
-    // Date
-    startDate, setStartDate, endDate, setEndDate,
-    datePreset, applyDatePreset, getTimeframeWarning,
-    // Strategy params
-    extractedParams, strategyParamValues, setParam,
-    updateExtractedParams, updateDirectivesFromCode,
-    // Run
+    startDate, setStartDate, endDate, setEndDate, datePreset, applyDatePreset, getTimeframeWarning,
+    extractedParams, strategyParamValues, setParam, updateExtractedParams, updateDirectivesFromCode,
     run, submitting, status, metrics, executionAssumptions, errorMsg,
-    runId, fixDepth, chartTrades, blindSpots, resetStatus,
-    cancelRun,
-    restoreLastRun,
-    gateUpdate, gateResults, qualityPreview,
-    // Directives
-    strategyDirectives,
-    // UI
+    runId, fixDepth, chartTrades, blindSpots, resetStatus, cancelRun, restoreLastRun,
+    gateUpdate, gateResults, qualityPreview, strategyDirectives,
     activeTab, setActiveTab, panelHeight, setPanelHeight, dragging, setDragging, userResized, setUserResized,
-    strategyParamsModalOpen, setStrategyParamsModalOpen,
-    // Settings
-    settingsItems,
-    // Delegated
-    tuning, gate,
-    // Validation wiring
-    handleValidationResult,
+    strategyParamsModalOpen, setStrategyParamsModalOpen, settingsItems, tuning, gate, handleValidationResult,
   };
 }
