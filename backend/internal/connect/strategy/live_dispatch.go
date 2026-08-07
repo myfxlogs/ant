@@ -62,7 +62,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 			)
 			return
 		}
-		s.dispatchMarketOrder(ctx, cfg, sig, activeSess)
+		s.dispatchMarketOrder(ctx, cfg, bar.OpenTime, sig, activeSess)
 	case "buy_limit", "sell_limit", "buy_stop", "sell_stop",
 		"buy_stop_limit", "sell_stop_limit":
 		if activeSess != nil && activeSess.IsCircuitOpen() {
@@ -73,7 +73,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 			)
 			return
 		}
-		s.dispatchPendingOrder(ctx, cfg, sig, activeSess)
+		s.dispatchPendingOrder(ctx, cfg, bar.OpenTime, sig, activeSess)
 	case "close":
 		s.dispatchCloseOrder(ctx, cfg, sig, activeSess)
 	case "close_all":
@@ -89,15 +89,15 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 
 // ── T3.1 action dispatchers ──────────────────────────────────────────
 
-func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
 		return
 	}
-	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, sig, activeSess)
+	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, barOpenTime, sig, activeSess)
 }
 
-func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
 		return
@@ -113,7 +113,7 @@ func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg 
 	default:
 		orderType = mthub.OrderLimit
 	}
-	s.submitOrder(ctx, cfg, side, orderType, sig, activeSess)
+	s.submitOrder(ctx, cfg, side, orderType, barOpenTime, sig, activeSess)
 }
 
 // dispatchCloseAll closes all open positions for the account matching cfg.Symbol.
@@ -128,7 +128,11 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 	// Detach from parent cancellation but preserve values (userID, auth).
 	bgCtx := context.WithoutCancel(ctx)
 	go func() {
-			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchCloseAll", zap.Any("panic", r)) } }()
+		defer func() {
+			if r := recover(); r != nil {
+				s.log.Error("panic in dispatchCloseAll", zap.Any("panic", r))
+			}
+		}()
 		orders, err := s.mtHub.OpenedOrders(bgCtx, cfg.AccountID)
 		if err != nil {
 			s.log.Error("LiveStrategyRunner: dispatchCloseAll: OpenedOrders failed",
@@ -186,7 +190,11 @@ func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg Li
 		return
 	}
 	go func() {
-			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchCloseOrder", zap.Any("panic", r)) } }()
+		defer func() {
+			if r := recover(); r != nil {
+				s.log.Error("panic in dispatchCloseOrder", zap.Any("panic", r))
+			}
+		}()
 		if err := s.mtHub.CloseOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, volume); err != nil {
 			s.log.Error("LiveStrategyRunner: CloseOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
@@ -213,7 +221,11 @@ func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg L
 	price := parseDecimal(sig.GetPrice())
 
 	go func() {
-			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchModifyOrder", zap.Any("panic", r)) } }()
+		defer func() {
+			if r := recover(); r != nil {
+				s.log.Error("panic in dispatchModifyOrder", zap.Any("panic", r))
+			}
+		}()
 		if err := s.mtHub.ModifyOrder(context.WithoutCancel(ctx), cfg.AccountID, ticket, sl, tp, price); err != nil {
 			s.log.Error("LiveStrategyRunner: ModifyOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
@@ -237,7 +249,11 @@ func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg L
 	// calls OrderClose(lots=0). Both are platform-correct cancel paths.
 	bgCtx := context.WithoutCancel(ctx)
 	go func() {
-			defer func() { if r := recover(); r != nil { s.log.Error("panic in dispatchCancelOrder", zap.Any("panic", r)) } }()
+		defer func() {
+			if r := recover(); r != nil {
+				s.log.Error("panic in dispatchCancelOrder", zap.Any("panic", r))
+			}
+		}()
 		if err := s.mtHub.DeleteOrder(bgCtx, cfg.AccountID, ticket); err != nil {
 			s.log.Error("LiveStrategyRunner: DeleteOrder failed",
 				zap.Int64("ticket", ticket), zap.Error(err))
@@ -288,13 +304,17 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 
 // submitOrder is the common order submission helper (T3.1 / D6-A).
 // Every order MUST pass through Gate.Evaluate() before reaching mthub.
-func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	req := &mthub.OrderRequest{
 		AccountID: cfg.AccountID,
 		Canonical: cfg.Symbol,
 		Side:      side,
 		OrderType: orderType,
 		Volume:    parseDecimal(sig.GetVolume()),
+		// LIVE-2: deterministic ClientID for idempotency — same bar + same signal type
+		// within the same strategy run produces the same key, so duplicate dispatches
+		// (bar replay, VM retry, network glitch) are deduplicated by the idempotency guard.
+		ClientID: strategyOrderClientID(cfg.RunID, barOpenTime, sig.GetSignalType()),
 	}
 	sl := parseDecimal(sig.GetStopLoss())
 	if sl.GreaterThan(decimal.Zero) {
@@ -318,7 +338,11 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 		placeCtx = context.WithValue(placeCtx, interceptor.UserIDKey, cfg.UserID)
 	}
 	go func() {
-			defer func() { if r := recover(); r != nil { s.log.Error("panic in submitOrder", zap.Any("panic", r)) } }()
+		defer func() {
+			if r := recover(); r != nil {
+				s.log.Error("panic in submitOrder", zap.Any("panic", r))
+			}
+		}()
 		record, err := s.mtHub.PlaceOrder(placeCtx, req)
 		if err != nil {
 			if errors.Is(err, mthub.ErrCircuitOpen) {
@@ -352,6 +376,14 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 			zap.String("side", sideStr),
 		)
 	}()
+}
+
+// strategyOrderClientID generates a deterministic ClientID for strategy-submitted
+// orders, enabling idempotency dedup. Same runID + bar open time + signal type
+// always produces the same key, so duplicate dispatches (bar replay, VM retry,
+// network glitch) are rejected by the idempotency guard in MtHubService.PlaceOrder.
+func strategyOrderClientID(runID uuid.UUID, barOpenTime int64, signalType string) string {
+	return fmt.Sprintf("strat-%s-%d-%s", runID, barOpenTime, signalType)
 }
 
 // signalToSide maps a strategy signal action to mthub.Side. Returns 0 for non-directional signals.
