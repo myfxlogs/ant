@@ -133,12 +133,10 @@ const (
 	IdemKeyRenewSale = "mkt-renew-sale-"
 	IdemKeyRenewFee  = "mkt-renew-fee-"
 	IdemKeyRefund    = "mkt-refund-"
-	IdemKeyRev           = "mkt-rev-"
-	IdemKeyFeeRev        = "mkt-fee-rev-"
-	IdemKeyRevRetry      = "mkt-rev-retry-"
-	IdemKeyFeeRevRetry   = "mkt-fee-rev-retry-"
-	IdemKeySettle        = "mkt-settle-"
-	IdemKeyFeeSettle     = "mkt-fee-settle-"
+	IdemKeyRev       = "mkt-rev-"
+	IdemKeyFeeRev    = "mkt-fee-rev-"
+	IdemKeySettle    = "mkt-settle-"
+	IdemKeyFeeSettle = "mkt-fee-settle-"
 )
 
 // subJoinOnClause is the shared ON clause for joining wallet_transactions to

@@ -54,22 +54,18 @@ func (s *Service) RefundPurchase(ctx context.Context, userID, subscriptionID str
 }
 
 func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid.UUID) (*RefundResult, error) {
-	subTargetUserID, subStrategyID, subBundleID, err := s.validateRefundSubscription(ctx, tx, uid, sid)
+	subTargetUserID, subStrategyID, subBundleID, subIdemKey, err := s.validateRefundSubscription(ctx, tx, uid, sid)
 	if err != nil {
 		return nil, err
 	}
 
-	buyKey := IdemKeyBuy + subTargetUserID
-	_ = buyKey // original used idemKey from subscription
-
 	// 2. Find the original purchase transaction by its unique idem_key.
+	// The purchase used IdemKeyBuy + idempotencyKey as the wallet tx idem_key.
 	var purchaseAmount string
-	var idemKey string
 	err = tx.QueryRow(ctx,
-		`SELECT amount::text, idempotency_key FROM wallet_transactions WHERE idem_key = $1`,
-		IdemKeyBuy+subTargetUserID,
-	).Scan(&purchaseAmount, &idemKey)
-	_ = idemKey
+		`SELECT amount::text FROM wallet_transactions WHERE idem_key = $1`,
+		IdemKeyBuy+subIdemKey,
+	).Scan(&purchaseAmount)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: original purchase transaction not found: %w", err)
 	}
@@ -120,25 +116,25 @@ func (s *Service) refundPurchaseTx(ctx context.Context, tx pgx.Tx, uid, sid uuid
 	}, nil
 }
 
-func (s *Service) validateRefundSubscription(ctx context.Context, tx pgx.Tx, uid, sid uuid.UUID) (subTargetUserID, subStrategyID string, subBundleID *uuid.UUID, err error) {
-	var subKind, idemKey string
+func (s *Service) validateRefundSubscription(ctx context.Context, tx pgx.Tx, uid, sid uuid.UUID) (subTargetUserID, subStrategyID string, subBundleID *uuid.UUID, subIdemKey string, err error) {
+	var subKind string
 	var subActive bool
 	err = tx.QueryRow(ctx,
 		`SELECT target_user_id::text, target_strategy_id::text, kind, active, idempotency_key, bundle_id
 		 FROM user_subscriptions WHERE id = $1 AND subscriber_user_id = $2 FOR UPDATE`,
 		sid, uid,
-	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &idemKey, &subBundleID)
+	).Scan(&subTargetUserID, &subStrategyID, &subKind, &subActive, &subIdemKey, &subBundleID)
 	if err != nil {
-		return "", "", nil, fmt.Errorf("marketplace: subscription not found")
+		return "", "", nil, "", fmt.Errorf("marketplace: subscription not found")
 	}
 	if !subActive {
-		return "", "", nil, fmt.Errorf("marketplace: subscription already inactive")
+		return "", "", nil, "", fmt.Errorf("marketplace: subscription already inactive")
 	}
 	if subKind != SubKindPurchase {
-		return "", "", nil, fmt.Errorf("marketplace: only purchased subscriptions can be refunded")
+		return "", "", nil, "", fmt.Errorf("marketplace: only purchased subscriptions can be refunded")
 	}
-	if idemKey == "" {
-		return "", "", nil, fmt.Errorf("marketplace: subscription missing idempotency key")
+	if subIdemKey == "" {
+		return "", "", nil, "", fmt.Errorf("marketplace: subscription missing idempotency key")
 	}
 
 	var activeSchedules int
@@ -148,12 +144,12 @@ func (s *Service) validateRefundSubscription(ctx context.Context, tx pgx.Tx, uid
 		subStrategyID, uid,
 	).Scan(&activeSchedules)
 	if err != nil {
-		return "", "", nil, fmt.Errorf("marketplace: check active schedules: %w", err)
+		return "", "", nil, "", fmt.Errorf("marketplace: check active schedules: %w", err)
 	}
 	if activeSchedules > 0 {
-		return "", "", nil, fmt.Errorf("marketplace: strategy has active live schedules")
+		return "", "", nil, "", fmt.Errorf("marketplace: strategy has active live schedules")
 	}
-	return subTargetUserID, subStrategyID, subBundleID, nil
+	return subTargetUserID, subStrategyID, subBundleID, subIdemKey, nil
 }
 
 func (s *Service) reverseSettlement(ctx context.Context, tx pgx.Tx, sid, uid uuid.UUID, subTargetUserID string, subBundleID *uuid.UUID) error {
