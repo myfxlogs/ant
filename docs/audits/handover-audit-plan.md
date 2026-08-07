@@ -17,7 +17,7 @@
 | 2 | 策略执行 | market-data, strategy-runtime, risk-gate, oms, mt-gateway | bar → runner → 6门 → 16状态机 → 下单 | ✅ 已审（2026-08-07）|
 | 3 | 订单对账 | mt-gateway, mthub, oms | 订单事件 → 幂等门/对账门 → 状态更新 → PnL | ✅ 已审（2026-08-07）|
 | 5 | 回测 | frontend, api-gateway, backtest-engine | 参数 → VMRunner+SimBroker → PG → SSE（接 ADR-0028 防线）| ✅ 已审（2026-08-07）|
-| 4 | Agent循环 | frontend, api-gateway, agent-engine, mql-compiler, backtest-engine | 用户输入 → generate/revise → compile → backtest → 迭代 | ⬜ |
+| 4 | Agent循环 | frontend, api-gateway, agent-engine, mql-compiler, backtest-engine | 用户输入 → generate/revise → compile → backtest → 迭代 | 🟡半审（主干+主发现 AGT-2/AGT-1，细节待补）|
 | 7 | 策略市场 | frontend, api-gateway, strategy-marketplace, backtest-engine, agent-engine | 发布/购买/冻结结算（购买→实盘断链已定位）| ✅ 已审 |
 | — | account-mgmt | connect/{gateway,user} | MT 账户 CRUD/经纪商/用户（memory 称已完工最优，验真）| ⬜ |
 

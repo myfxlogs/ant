@@ -16,41 +16,41 @@ type BacktestRunRepository struct {
 }
 
 type BacktestRun struct {
-	ID                   uuid.UUID  `db:"id"`
-	UserID               uuid.UUID  `db:"user_id"`
-	AccountID            uuid.UUID  `db:"account_id"`
-	Symbol               string     `db:"symbol"`
-	Timeframe            string     `db:"timeframe"`
-	DatasetID            *uuid.UUID `db:"dataset_id"`
-	TemplateID           *uuid.UUID `db:"template_id"`
-	TemplateDraftID      *uuid.UUID `db:"template_draft_id"`
-	Mode                 string     `db:"mode"`
-	FromTs               *time.Time `db:"from_ts"`
-	ToTs                 *time.Time `db:"to_ts"`
-	CancelRequestedAt    *time.Time `db:"cancel_requested_at"`
-	LeaseUntil           *time.Time `db:"lease_until"`
-	StrategyCodeHash  string `db:"strategy_code_hash"`
-	CostModelSnapshot []byte `db:"cost_model_snapshot"`
-	Status               string     `db:"status"`
-	Error                string     `db:"error"`
-	StartedAt            *time.Time `db:"started_at"`
-	FinishedAt           *time.Time `db:"finished_at"`
-	StrategyCode         *string          `db:"strategy_code"`
-	InitialCapital       *decimal.Decimal `db:"initial_capital"`
-	ExtraSymbols         []string         `db:"extra_symbols"`
-	ParameterOverrides   []byte           `db:"parameter_overrides"`
-	ProtoResponse        []byte           `db:"proto_response"`
-	CreatedAt            time.Time        `db:"created_at"`
-	Commission           *decimal.Decimal `db:"commission"`
-	Slippage             *decimal.Decimal `db:"slippage"`
-	Leverage             *decimal.Decimal `db:"leverage"`
-	TradeDirection       *string          `db:"trade_direction"`
-	StrictMode           *bool            `db:"strict_mode"`
-	ConfigSnapshot       []byte           `db:"config_snapshot"`
-	StrategyID           *uuid.UUID       `db:"strategy_id"`
-	BacktestSnapshot     []byte           `db:"backtest_snapshot"`
-	AutoGate             bool             `db:"auto_gate"`
-	FixDepth             int              `db:"fix_depth"`
+	ID                 uuid.UUID        `db:"id"`
+	UserID             uuid.UUID        `db:"user_id"`
+	AccountID          uuid.UUID        `db:"account_id"`
+	Symbol             string           `db:"symbol"`
+	Timeframe          string           `db:"timeframe"`
+	DatasetID          *uuid.UUID       `db:"dataset_id"`
+	TemplateID         *uuid.UUID       `db:"template_id"`
+	TemplateDraftID    *uuid.UUID       `db:"template_draft_id"`
+	Mode               string           `db:"mode"`
+	FromTs             *time.Time       `db:"from_ts"`
+	ToTs               *time.Time       `db:"to_ts"`
+	CancelRequestedAt  *time.Time       `db:"cancel_requested_at"`
+	LeaseUntil         *time.Time       `db:"lease_until"`
+	StrategyCodeHash   string           `db:"strategy_code_hash"`
+	CostModelSnapshot  []byte           `db:"cost_model_snapshot"`
+	Status             string           `db:"status"`
+	Error              string           `db:"error"`
+	StartedAt          *time.Time       `db:"started_at"`
+	FinishedAt         *time.Time       `db:"finished_at"`
+	StrategyCode       *string          `db:"strategy_code"`
+	InitialCapital     *decimal.Decimal `db:"initial_capital"`
+	ExtraSymbols       []string         `db:"extra_symbols"`
+	ParameterOverrides []byte           `db:"parameter_overrides"`
+	ProtoResponse      []byte           `db:"proto_response"`
+	CreatedAt          time.Time        `db:"created_at"`
+	Commission         *decimal.Decimal `db:"commission"`
+	Slippage           *decimal.Decimal `db:"slippage"`
+	Leverage           *decimal.Decimal `db:"leverage"`
+	TradeDirection     *string          `db:"trade_direction"`
+	StrictMode         *bool            `db:"strict_mode"`
+	ConfigSnapshot     []byte           `db:"config_snapshot"`
+	StrategyID         *uuid.UUID       `db:"strategy_id"`
+	BacktestSnapshot   []byte           `db:"backtest_snapshot"`
+	AutoGate           bool             `db:"auto_gate"`
+	FixDepth           int              `db:"fix_depth"`
 }
 
 func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
@@ -119,7 +119,12 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		run.AutoGate,
 		run.FixDepth,
 	).Scan(&out)
-	return out, err
+	if err != nil {
+		return uuid.Nil, err
+	}
+	// Push-first: notify workers immediately so they don't wait for the 30s fallback ticker.
+	_, _ = r.db.Exec(ctx, "SELECT pg_notify('backtest_pending', $1)", out.String())
+	return out, nil
 }
 
 func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.UUID) (*BacktestRun, error) {
@@ -248,21 +253,21 @@ func (r *BacktestRunRepository) Delete(ctx context.Context, userID, runID uuid.U
 	return ct.RowsAffected() > 0, nil
 }
 
-	// DeleteBatch deletes multiple backtest runs owned by the user in a single query.
-	// Returns the count of successfully deleted rows.
-	func (r *BacktestRunRepository) DeleteBatch(ctx context.Context, userID uuid.UUID, runIDs []uuid.UUID) (int64, error) {
-		if r == nil || r.db == nil {
-			return 0, errors.New("repository not initialized")
-		}
-		if len(runIDs) == 0 {
-			return 0, nil
-		}
-		ct, err := r.db.Exec(ctx, `
+// DeleteBatch deletes multiple backtest runs owned by the user in a single query.
+// Returns the count of successfully deleted rows.
+func (r *BacktestRunRepository) DeleteBatch(ctx context.Context, userID uuid.UUID, runIDs []uuid.UUID) (int64, error) {
+	if r == nil || r.db == nil {
+		return 0, errors.New("repository not initialized")
+	}
+	if len(runIDs) == 0 {
+		return 0, nil
+	}
+	ct, err := r.db.Exec(ctx, `
 			DELETE FROM backtest_runs
 			WHERE user_id = $1 AND id = ANY($2)
 		`, userID, runIDs)
-		if err != nil {
-			return 0, err
-		}
-		return ct.RowsAffected(), nil
+	if err != nil {
+		return 0, err
 	}
+	return ct.RowsAffected(), nil
+}
