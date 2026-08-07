@@ -30,33 +30,6 @@ func refClose(bars []refBar) []float64 {
 	return out
 }
 
-// refHigh extracts high prices.
-func refHigh(bars []refBar) []float64 {
-	out := make([]float64, len(bars))
-	for i, b := range bars {
-		out[i] = b.High
-	}
-	return out
-}
-
-// refLow extracts low prices.
-func refLow(bars []refBar) []float64 {
-	out := make([]float64, len(bars))
-	for i, b := range bars {
-		out[i] = b.Low
-	}
-	return out
-}
-
-// refTypical returns typical price (H+L+C)/3 for each bar.
-func refTypical(bars []refBar) []float64 {
-	out := make([]float64, len(bars))
-	for i, b := range bars {
-		out[i] = (b.High + b.Low + b.Close) / 3
-	}
-	return out
-}
-
 // ── Moving Averages ──────────────────────────────────────────────────
 
 // refSMA computes Simple Moving Average at the given shift.
@@ -130,21 +103,4 @@ func refLWMA(data []float64, period, shift int) float64 {
 		den += w
 	}
 	return num / den
-}
-
-// refMA dispatches to the correct MA method.
-// method: 0=SMA, 1=EMA, 2=SMMA, 3=LWMA (matching MQL4 MODE_SMA etc.)
-func refMA(data []float64, period, shift, method int) float64 {
-	switch method {
-	case 0:
-		return refSMA(data, period, shift)
-	case 1:
-		return refEMA(data, period, shift)
-	case 2:
-		return refSMMA(data, period, shift)
-	case 3:
-		return refLWMA(data, period, shift)
-	default:
-		return refSMA(data, period, shift)
-	}
 }

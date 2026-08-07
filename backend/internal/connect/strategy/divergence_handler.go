@@ -14,7 +14,6 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
-	"alphaforge/internal/interceptor"
 	"alphaforge/internal/model"
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/repository"
@@ -321,17 +320,4 @@ func assessDivergence(report *antv1.DivergenceReport, bt, live *antv1.Divergence
 		return antv1.DivergenceStatus_DIVERGENCE_STATUS_MAJOR_DIVERGENCE,
 			"major divergence detected — backtest may not predict live performance"
 	}
-}
-
-// userID extracts the authenticated user ID from context (for future auth checks).
-func (s *DivergenceServer) userID(ctx context.Context) uuid.UUID {
-	raw := interceptor.GetUserID(ctx)
-	if raw == "" {
-		return uuid.Nil
-	}
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return uuid.Nil
-	}
-	return id
 }
