@@ -100,6 +100,8 @@
 - 2026-08-09 **ARCH-2 双风控引擎修复**：移除 `submitToBroker` 中的 `risksvc.PreCheck` 调用（含 `RequiredMargin` broker RPC + 4 项检查），将等效规则注册到 Gate（`MaxPositionCount`/`MaxLotSize`/`MarginPreCheck`）。现在 `PlaceOrder` 风控路径 = `preTradeChecks`→`evaluatePlaceGate`（单一 chokepoint）→`submitToBroker`（纯执行），符合 D6-A。3 个测试更新。go build + go test + file-lines 全绿。
 - 2026-08-09 **LAUNCH-2 marketplace 资金链路集成测试**：15 个 `//go:build integration` 测试覆盖 purchase/settle/refund/subscribe 全路径。发现并修复 2 个退款生产 Bug：①`refund.go` SELECT 不存在的列 `idempotency_key`（应为 `idem_key`）；②退款用 publisher ID 查购买交易（应用 subscription 的 `idempotency_key`），导致退款功能完全不可用。全 15 测试 PASS。
 - 2026-08-09 **Git 提交推送**：51 个未提交文件按逻辑分 6 个 commit 推送到 `audit-pipeline5-collab` 分支。工作区干净。下一步：快速清理批次（DOC-4/5 注释漂移 + CQ-3 json.Marshal 核验 + CQ-4 time.Ticker 核验）。
+- 2026-08-09 **DOC-4/5 + CQ-3/4 快速清理完成**：DOC-4（runner.go OnBar 注释）、DOC-5（ExecuteLive 注释）各一行修复。CQ-3（json.Marshal 48 处全量核验 — 零违规，全豁免）、CQ-4（time.Ticker 21 处全量核验 — 零违规，全合法）。提交推送 `9c902cce`。
+- 2026-08-09 **DOC-6/7 文档漂移修复完成**：DOC-6（spec 21 顶部加弃用标注，§2–§8 标为历史参考，关联 ADR 改为 ADR-0023）。DOC-7（ADR-0028 §7 端到端测试从 P0 缺口改为 ✅done，附 BT-6 修复说明）。
 
 ---
 

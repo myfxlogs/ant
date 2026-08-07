@@ -1,6 +1,8 @@
 # 21 · 回测/实盘统一代码路径规范
 
-> **关联 ADR**：ADR-0012
+> **⚠️ 架构已演进（2026-08-09 标注）**：§2–§8 描述的 `factorsvc.BarSource`/`quantengine`/DSL 因子引擎 + `IsReplay` 分支架构已被 **ADR-0023 Bytecode VM + SimBroker** 取代。当前回测路径：MQL → tree-sitter → AST → Bytecode → VMRunner → SimBroker（`strategy/backtest/`），worker 层 `executeVMBacktest`。§2–§8 保留作历史参考，不再反映实际实现。**§10 Determinism Contract 仍然有效**，BT-6 修复（两遍编译 + 固定 epoch timestamp）已使其在 VM 架构下成立。
+
+> **关联 ADR**：ADR-0012（已废弃）、ADR-0023（当前架构）
 > **关联 spec**：`docs/spec/11-mdgateway.md`、`docs/spec/24-paper-trading.md`
 
 ## 1. 设计原则

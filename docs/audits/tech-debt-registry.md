@@ -132,8 +132,8 @@
 | DOC-3 | **`2026-08-01-acceptance` Gate2 称 file-lines "🟡🟢 通过"——已证伪**：`backtest_worker_vm.go` 477/450 是 🔴 阻断。CI/commit 实际被卡。 | ✅ 已核（2026-08-06）|
 | DOC-4 | `mdgateway/runner.go:38` 注释称 OnBar "called when a bar is finalized"——**误导/过时**：`manager_health.go:44` 的 StartOpenBarTicker 也用同一 onBar 推未收盘 open bar（见 LIVE-1）。需改注释或分离回调 | mdgateway/runner.go | ✅done（2026-08-09：注释改为 "called when a bar is finalized or open-bar tick"）|
 | DOC-5 | `connect/strategy/strategy_execution_handler.go:260` 注释称 ExecuteLive "Delegates to GoExecutor.RunLive"——**过时**：GoExecutor 已是空 stub，Go 路径返回 CodeUnimplemented（见 ARCH-1）| connect/strategy/strategy_execution_handler.go | ✅done（2026-08-09：注释改为 "Go-native path retired (GoExecutor removed); MQL path uses in-process Bytecode VM"）|
-| DOC-6 | **spec `21-backtest-replay.md` 旧 factorsvc/DSL 架构漂移**（#5 审计）：spec 描述 `factorsvc.BarSource`/`quantengine`/DSL 因子引擎 + `BarSource`/`IsReplay` 分支，但实际回测走 `strategy/backtest/` VMRunner+SimBroker（worker 层 `executeVMBacktest`）。spec §10 Determinism Contract 仍有效（但被 BT-6 违反）。活文档漂移，需更新或标注"已被 VM 架构取代" | docs/blocks/backtest-engine/spec/21-backtest-replay.md | 🟦open（2026-08-07）|
-| DOC-7 | **ADR-0028 §7 "端到端测试已做"是 flaky 假闭环**（= BT-6）：§7 已落地表（commit 30668f64）声称参数链端到端测试打通，但实测 flaky（3/5 PASS）+ 一个永久 SKIP（假绿）。§7 需加注：端到端测试未真正闭环 | docs/adr/0028-backtest-reliability-validation-layers.md §7 | 🟦open（2026-08-07，随 BT-6 修复更新）|
+| DOC-6 | **spec `21-backtest-replay.md` 旧 factorsvc/DSL 架构漂移**（#5 审计）：spec 描述 `factorsvc.BarSource`/`quantengine`/DSL 因子引擎 + `BarSource`/`IsReplay` 分支，但实际回测走 `strategy/backtest/` VMRunner+SimBroker（worker 层 `executeVMBacktest`）。spec §10 Determinism Contract 仍有效（但被 BT-6 违反）。活文档漂移，需更新或标注"已被 VM 架构取代" | docs/blocks/backtest-engine/spec/21-backtest-replay.md | ✅done（2026-08-09：spec 顶部加弃用标注，§2–§8 标为历史参考，关联 ADR 改为 ADR-0023，§10 Determinism Contract 标注 BT-6 修复后成立）|
+| DOC-7 | **ADR-0028 §7 "端到端测试已做"是 flaky 假闭环**（= BT-6）：§7 已落地表（commit 30668f64）声称参数链端到端测试打通，但实测 flaky（3/5 PASS）+ 一个永久 SKIP（假绿）。§7 需加注：端到端测试未真正闭环 | docs/adr/0028-backtest-reliability-validation-layers.md §7 | ✅done（2026-08-09：§7 表格 "端到端测试" 从 P0 缺口改为 ✅done，附 BT-6 修复说明：两遍编译 + 固定 epoch timestamp，50 次连跑 0 失败）|
 
 ---
 
