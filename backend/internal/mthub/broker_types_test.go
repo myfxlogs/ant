@@ -249,3 +249,65 @@ func TestSymbolVariants(t *testing.T) {
 }
 
 func dec(v float64) decimal.Decimal { return decimal.NewFromFloat(v) }
+
+func TestOrderTypeString(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name      string
+		side      Side
+		orderType OrderType
+		want      string
+	}{
+		{"buy market", SideBuy, OrderMarket, "BUY"},
+		{"sell market", SideSell, OrderMarket, "SELL"},
+		{"buy limit", SideBuy, OrderLimit, "BUY_LIMIT"},
+		{"sell limit", SideSell, OrderLimit, "SELL_LIMIT"},
+		{"buy stop", SideBuy, OrderStop, "BUY_STOP"},
+		{"sell stop", SideSell, OrderStop, "SELL_STOP"},
+		{"buy stop_limit", SideBuy, OrderStopLimit, "BUY_STOP_LIMIT"},
+		{"sell stop_limit", SideSell, OrderStopLimit, "SELL_STOP_LIMIT"},
+		{"balance", SideBuy, OrderBalance, "BALANCE"},
+		{"credit", SideBuy, OrderCredit, "CREDIT"},
+		{"unknown", SideBuy, OrderType(99), "BUY"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &OrderRecord{Side: tt.side, OrderType: tt.orderType}
+			got := r.OrderTypeString()
+			if got != tt.want {
+				t.Errorf("OrderTypeString() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPositionSnapshotBroker_SubscribeAll(t *testing.T) {
+	t.Parallel()
+	b := NewPositionSnapshotBroker()
+	ch, cancel := b.SubscribeAll()
+	defer cancel()
+
+	b.Publish(&PositionSnapshot{AccountID: "acc-1"})
+	ev := <-ch
+	if ev.AccountID != "acc-1" {
+		t.Fatalf("expected acc-1, got %s", ev.AccountID)
+	}
+
+	// Verify all-subscriber receives from all accounts
+	b.Publish(&PositionSnapshot{AccountID: "acc-2"})
+	ev2 := <-ch
+	if ev2.AccountID != "acc-2" {
+		t.Fatalf("expected acc-2, got %s", ev2.AccountID)
+	}
+}
+
+func TestPositionSnapshotBroker_SubscribeAll_Unsubscribe(t *testing.T) {
+	t.Parallel()
+	b := NewPositionSnapshotBroker()
+	ch, cancel := b.SubscribeAll()
+	cancel()
+	_, ok := <-ch
+	if ok {
+		t.Fatal("expected channel to be closed after cancel")
+	}
+}
