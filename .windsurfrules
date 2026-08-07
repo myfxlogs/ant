@@ -12,6 +12,9 @@
 - 动工前：读 registry 条目 + git log/blame（禁重写）+ cap.sh 查复用。
 - 完工回填：registry 🟦→✅ + 根因/对抗证明/测试；pitfall 沉淀 AGENTS.md；不新建并行文档。状态语义：❓待核 / 🟦open / ✅done / ⚠️待Claude复审。
 
+## 施工质量约束（强制 — 不达标 = 未完成）
+架构最优解 / 实现最优解 / 第一性原理 / 干净无冗余(无死代码/unused) / 无BUG(边界全覆盖:空/nil/极值/并发/Decimal) / 无技术债(无TODO/HACK，禁快捷方式:回退代重新生成/标记legacy/沉默代修复) / 完全合规(CLAUDE.md:proto+SSE/decimal禁float64/push-first禁轮询/禁JSON-WS-REST-nolint-ts-ignore/file-lines Go>450 TS>375/确定性禁time.Now测试+裸map迭代) / YAGNI+不偷懒。自检过验收5维(意图/可演进性/测试质量/防御性/克制)。详见 builder-sop.md。
+
 ## Deployment（踩过的坑）
 - 后端唯一：`docker compose build backend && docker compose up -d backend`
 - ❌ 禁宿主机 `go build` → `docker cp`（glibc vs Alpine musl 不兼容）
