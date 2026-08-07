@@ -81,6 +81,32 @@ type OrderEvent struct {
 
 type OrderEventHandler func(*OrderEvent)
 
+// OrderTypeString returns a human-readable string for the order type,
+// prefixed by side (e.g. "BUY_LIMIT", "SELL_STOP", "BALANCE").
+// Shared by service/account_sync_service.go and connect/system/mthub_service_orders.go.
+func (r *OrderRecord) OrderTypeString() string {
+	prefix := "BUY"
+	if r.Side == SideSell {
+		prefix = "SELL"
+	}
+	switch r.OrderType {
+	case OrderMarket:
+		return prefix
+	case OrderLimit:
+		return prefix + "_LIMIT"
+	case OrderStop:
+		return prefix + "_STOP"
+	case OrderStopLimit:
+		return prefix + "_STOP_LIMIT"
+	case OrderBalance:
+		return "BALANCE"
+	case OrderCredit:
+		return "CREDIT"
+	default:
+		return prefix
+	}
+}
+
 type OrderExecutor interface {
 	Platform() string
 	PlaceOrder(ctx context.Context, req *OrderRequest) (int64, error)

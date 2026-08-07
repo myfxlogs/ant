@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -67,7 +67,8 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	}
 
 	from := time.Now().AddDate(-1, 0, 0)
-	parsedUID, _ := uuid.Parse(userID); lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, parsedUID, uid)
+	parsedUID, _ := uuid.Parse(userID)
+	lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, parsedUID, uid)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			s.log.Error("SyncOrderHistory: get last sync time failed", zap.Error(err))
@@ -106,10 +107,10 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 
 // ClosedTradeParams holds parameters for WriteClosedTrade.
 type ClosedTradeParams struct {
-	AccountID, Platform, OrderType, Symbol, Comment string
-	Ticket                                          int64
+	AccountID, Platform, OrderType, Symbol, Comment                 string
+	Ticket                                                          int64
 	Volume, OpenPrice, ClosePrice, Profit, Swap, Commission, SL, TP decimal.Decimal
-	OpenTime, CloseTime                                            int64
+	OpenTime, CloseTime                                             int64
 }
 
 func (s *MtHubServer) WriteClosedTrade(ctx context.Context, p ClosedTradeParams) error {
@@ -118,7 +119,7 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, p ClosedTradeParams)
 		return err
 	}
 	rec := &model.TradeRecord{
-		UserID:     uuid.Nil,
+		UserID:       uuid.Nil,
 		AccountID:    uid,
 		Ticket:       p.Ticket,
 		Symbol:       p.Symbol,
@@ -140,14 +141,12 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, p ClosedTradeParams)
 }
 
 func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) *model.TradeRecord {
-	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
-
 	rec := &model.TradeRecord{
-		UserID:     userID,
+		UserID:       userID,
 		AccountID:    accountID,
 		Ticket:       r.Ticket,
 		Symbol:       r.SymbolRaw,
-		OrderType:    orderType,
+		OrderType:    r.OrderTypeString(),
 		Volume:       r.Volume,
 		OpenPrice:    r.OpenPrice,
 		ClosePrice:   r.ClosePrice,
@@ -156,34 +155,13 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID,
 		Commission:   r.Commission,
 		OpenTime:     r.OpenTime,
 		CloseTime:    r.CloseTime,
+		StopLoss:     r.StopLoss,
+		TakeProfit:   r.TakeProfit,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
 		Platform:     platform,
 	}
 	return rec
-}
-
-func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {
-	prefix := "BUY"
-	if side == mthub.SideSell {
-		prefix = "SELL"
-	}
-	switch ot {
-	case mthub.OrderMarket:
-		return prefix
-	case mthub.OrderLimit:
-		return prefix + "_LIMIT"
-	case mthub.OrderStop:
-		return prefix + "_STOP"
-	case mthub.OrderStopLimit:
-		return prefix + "_STOP_LIMIT"
-	case mthub.OrderBalance:
-		return "BALANCE"
-	case mthub.OrderCredit:
-		return "CREDIT"
-	default:
-		return prefix
-	}
 }
 
 func toProtoOrderEvent(ev *mthub.OrderEvent) *antv1.OrderEvent {

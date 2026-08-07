@@ -85,12 +85,12 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		return nil
 	}
 
-	// 1. Fetch broker-side state (1h window)
+	// 1. Fetch broker-side state (24h window — extended from 1h to catch more gaps)
 	brokerOpened, err := exec.FetchOpenedOrders(ctx)
 	if err != nil {
 		return fmt.Errorf("reconciliation: fetch opened orders: %w", err)
 	}
-	brokerHistory, err := exec.FetchOrderHistory(ctx, Clk.Now().Add(-1*time.Hour), Clk.Now())
+	brokerHistory, err := exec.FetchOrderHistory(ctx, Clk.Now().Add(-24*time.Hour), Clk.Now())
 	if err != nil {
 		return fmt.Errorf("reconciliation: fetch order history: %w", err)
 	}
@@ -133,7 +133,8 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 	var ghosts, orphans int
 	for ticket := range antTickets {
 		if _, exists := brokerTickets[ticket]; !exists {
-			r.log.Debug("reconciliation: orphan order (ant has, broker missing)",
+			r.log.Warn("reconciliation: orphan order (ant has, broker missing)",
+				zap.String("accountID", accountID),
 				zap.Int64("ticket", ticket))
 			orphans++
 		}
@@ -141,7 +142,8 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 
 	for ticket := range brokerTickets {
 		if _, exists := antTickets[ticket]; !exists {
-			r.log.Debug("reconciliation: ghost order (broker has, ant missing)",
+			r.log.Warn("reconciliation: ghost order (broker has, ant missing)",
+				zap.String("accountID", accountID),
 				zap.Int64("ticket", ticket))
 			ghosts++
 		}
@@ -163,4 +165,3 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 
 	return nil
 }
-

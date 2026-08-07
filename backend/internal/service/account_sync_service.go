@@ -1,13 +1,18 @@
 package service
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
+	"alphaforge/internal/model"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
 	"alphaforge/internal/notifier"
@@ -41,11 +46,64 @@ func NewAccountSyncService(
 // SetNotificationSender wires the notification sender for alerts.
 func (s *AccountSyncService) SetNotificationSender(ns *notifpubsub.Sender) { s.notifSender = ns }
 
-// SyncAccountHistory synchronises broker history for the account in the background.
+// SyncAccountHistory synchronises broker order history into trade_records.
+// Called on gateway connect/disconnect to catch orders missed during disconnect gaps.
+// Synchronous — caller decides whether to run in a goroutine. Errors are logged, not returned.
 func (s *AccountSyncService) SyncAccountHistory(accountID, userID string) {
 	if s.log != nil {
-		s.log.Debug("SyncAccountHistory: requested", zap.String("account", accountID), zap.String("user", userID))
+		s.log.Info("SyncAccountHistory: starting", zap.String("account", accountID), zap.String("user", userID))
 	}
+	s.syncAccountHistory(context.Background(), accountID, userID)
+}
+
+func (s *AccountSyncService) syncAccountHistory(ctx context.Context, accountID, userID string) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		s.log.Error("SyncAccountHistory: invalid userID", zap.String("userID", userID), zap.Error(err))
+		return
+	}
+	accID, err := uuid.Parse(accountID)
+	if err != nil {
+		s.log.Error("SyncAccountHistory: invalid accountID", zap.String("accountID", accountID), zap.Error(err))
+		return
+	}
+
+	from := time.Now().AddDate(-1, 0, 0)
+	lastTime, err := s.tradeRecordRepo.GetLastSyncTime(ctx, uid, accID)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		s.log.Warn("SyncAccountHistory: get last sync time failed", zap.String("account", accountID), zap.Error(err))
+	} else if lastTime != nil {
+		from = *lastTime
+	}
+	to := time.Now()
+
+	records, err := s.mthubSvc.OrderHistory(ctx, accountID, from, to)
+	if err != nil {
+		s.log.Warn("SyncAccountHistory: fetch from broker failed", zap.String("account", accountID), zap.Error(err))
+		return
+	}
+	if len(records) == 0 {
+		s.log.Info("SyncAccountHistory: no new records", zap.String("account", accountID))
+		return
+	}
+
+	platform := s.mthubSvc.Platform(accountID)
+	tradeRecs := make([]*model.TradeRecord, 0, len(records))
+	for _, r := range records {
+		tradeRecs = append(tradeRecs, orderRecordToTradeRecord(r, accID, uid, platform))
+	}
+
+	if err := s.tradeRecordRepo.BatchCreate(ctx, tradeRecs); err != nil {
+		s.log.Error("SyncAccountHistory: batch create failed", zap.String("account", accountID), zap.Error(err))
+		return
+	}
+
+	s.log.Info("SyncAccountHistory: synced",
+		zap.String("account", accountID),
+		zap.Int("records", len(tradeRecs)))
 }
 
 // CheckMarginCall checks margin level against the broker threshold and alerts if breached.
@@ -91,5 +149,30 @@ func MapSideToString(side mthub.Side) string {
 		return "sell"
 	default:
 		return fmt.Sprintf("side-%d", side)
+	}
+}
+
+// orderRecordToTradeRecord converts an mthub.OrderRecord to a model.TradeRecord.
+// REUSE: mthub.OrderRecord.OrderTypeString @ mthub/order_types.go
+func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) *model.TradeRecord {
+	return &model.TradeRecord{
+		UserID:       userID,
+		AccountID:    accountID,
+		Ticket:       r.Ticket,
+		Symbol:       r.SymbolRaw,
+		OrderType:    r.OrderTypeString(),
+		Volume:       r.Volume,
+		OpenPrice:    r.OpenPrice,
+		ClosePrice:   r.ClosePrice,
+		Profit:       r.Profit,
+		Swap:         r.Swap,
+		Commission:   r.Commission,
+		OpenTime:     r.OpenTime,
+		CloseTime:    r.CloseTime,
+		StopLoss:     r.StopLoss,
+		TakeProfit:   r.TakeProfit,
+		OrderComment: r.Comment,
+		MagicNumber:  int(r.Magic),
+		Platform:     platform,
 	}
 }

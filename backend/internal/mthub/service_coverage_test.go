@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
+	goredis "github.com/redis/go-redis/v9"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	goredis "github.com/redis/go-redis/v9"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/costsvc"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/usermgr"
-	antv1 "alphaforge/gen/proto/ant/v1"
-	"alphaforge/internal/costsvc"
 )
 
 // --- mockMarginExecutor implements both OrderExecutor and MarginRequirer ---
@@ -429,8 +429,8 @@ func TestSubmitToBroker_MarginPrecheckPass(t *testing.T) {
 	t.Parallel()
 	svc := newTestService()
 	exec := &mockMarginExecutor{
-		mockExecutor:    mockExecutor{platform: "MT5"},
-		marginRequired:  dec(100),
+		mockExecutor:   mockExecutor{platform: "MT5"},
+		marginRequired: dec(100),
 	}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
 	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
@@ -456,10 +456,13 @@ func TestSubmitToBroker_MarginPrecheckPass(t *testing.T) {
 
 func TestSubmitToBroker_MarginPrecheckReject(t *testing.T) {
 	t.Parallel()
+	// D6-A: margin precheck is now handled by the Gate (MarginPreCheck rule),
+	// not in submitToBroker. submitToBroker just resolves executor and places order.
+	// Verify submitToBroker succeeds even with tight margin — Gate rejection is tested separately.
 	svc := newTestService()
 	exec := &mockMarginExecutor{
-		mockExecutor:    mockExecutor{platform: "MT5"},
-		marginRequired:  dec(99999),
+		mockExecutor:   mockExecutor{platform: "MT5"},
+		marginRequired: dec(99999),
 	}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
 	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
@@ -470,18 +473,23 @@ func TestSubmitToBroker_MarginPrecheckReject(t *testing.T) {
 			UsedMargin: dec(50),
 		}, nil
 	})
-	_, err := svc.submitToBroker(context.Background(), &OrderRequest{
+	ticket, err := svc.submitToBroker(context.Background(), &OrderRequest{
 		AccountID: "acc-1", Canonical: "EURUSD",
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
 	}, "ord-1")
-	if err == nil {
-		t.Fatal("expected margin precheck rejection")
+	if err != nil {
+		t.Fatalf("submitToBroker should not do margin precheck (D6-A Gate handles it): %v", err)
+	}
+	if ticket != 99999 {
+		t.Fatalf("expected ticket 99999, got %d", ticket)
 	}
 }
 
 func TestSubmitToBroker_MarginRPCError_Skips(t *testing.T) {
 	t.Parallel()
+	// D6-A: submitToBroker no longer calls RequiredMargin RPC — that was part of
+	// the old risksvc.PreCheck path. submitToBroker just resolves executor and places order.
 	svc := newTestService()
 	svc.SetLogger(zap.NewNop())
 	exec := &mockMarginExecutor{
@@ -498,7 +506,7 @@ func TestSubmitToBroker_MarginRPCError_Skips(t *testing.T) {
 		Volume: dec(0.1), Price: dec(1.085),
 	}, "ord-1")
 	if err != nil {
-		t.Fatalf("expected success when margin RPC fails (skip precheck), got %v", err)
+		t.Fatalf("expected success (no margin RPC in submitToBroker), got %v", err)
 	}
 	if ticket != 99999 {
 		t.Fatalf("expected ticket 99999, got %d", ticket)
@@ -507,11 +515,13 @@ func TestSubmitToBroker_MarginRPCError_Skips(t *testing.T) {
 
 func TestSubmitToBroker_StateProviderError_Skips(t *testing.T) {
 	t.Parallel()
+	// D6-A: submitToBroker no longer fetches account state — that's done in evaluatePlaceGate.
+	// submitToBroker just resolves executor and places order regardless of state provider.
 	svc := newTestService()
 	svc.SetLogger(zap.NewNop())
 	exec := &mockMarginExecutor{
-		mockExecutor:    mockExecutor{platform: "MT5"},
-		marginRequired:  dec(100),
+		mockExecutor:   mockExecutor{platform: "MT5"},
+		marginRequired: dec(100),
 	}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
 	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
@@ -523,7 +533,7 @@ func TestSubmitToBroker_StateProviderError_Skips(t *testing.T) {
 		Volume: dec(0.1), Price: dec(1.085),
 	}, "ord-1")
 	if err != nil {
-		t.Fatalf("expected success when state provider fails (skip precheck), got %v", err)
+		t.Fatalf("expected success (no state fetch in submitToBroker), got %v", err)
 	}
 	if ticket != 99999 {
 		t.Fatalf("expected ticket 99999, got %d", ticket)
