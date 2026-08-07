@@ -157,7 +157,7 @@ func TestSimBroker_ApplySwap(t *testing.T) {
 	})
 	for _, p := range broker.positions {
 		if p.Ticket == res.Ticket {
-			broker.applySwap(p, 3)
+			broker.applySwap(p, p.Volume, 3)
 			if !p.Swap.IsPositive() {
 				t.Errorf("Swap should be positive after 3 days, got %s", p.Swap)
 			}
@@ -178,7 +178,7 @@ func TestSimBroker_ApplySwap_DefaultRate(t *testing.T) {
 	})
 	for _, p := range broker.positions {
 		if p.Ticket == res.Ticket {
-			broker.applySwap(p, 1)
+			broker.applySwap(p, p.Volume, 1)
 			if !p.Swap.IsPositive() {
 				t.Errorf("Swap should be positive with default rate, got %s", p.Swap)
 			}
@@ -207,12 +207,12 @@ func TestSimBroker_SymbolInfo(t *testing.T) {
 	broker := NewSimBroker(Config{
 		InitialCapital: d("100000"),
 		Leverage:       100,
-		Symbol:       "EURUSD",
-		SymbolDigits: 5,
-		SymbolPoint:  d("0.00001"),
-		VolumeMin:    d("0.01"),
-		VolumeMax:    d("100"),
-		VolumeStep:   d("0.01"),
+		Symbol:         "EURUSD",
+		SymbolDigits:   5,
+		SymbolPoint:    d("0.00001"),
+		VolumeMin:      d("0.01"),
+		VolumeMax:      d("100"),
+		VolumeStep:     d("0.01"),
 	})
 	si, err := broker.SymbolInfo("EURUSD")
 	if err != nil {
@@ -770,12 +770,12 @@ func TestBacktestContext_MarketData(t *testing.T) {
 		Spread:         d("0.0002"),
 	})
 	ctx := &backtestContext{
-		broker:      broker,
-		symbol:      "EURUSD",
-		tf:          "M5",
-		currentBar:  sdk.Bar{Close: d("1.1"), Timestamp: 1000},
-		point:       d("0.00001"),
-		digits:      5,
+		broker:     broker,
+		symbol:     "EURUSD",
+		tf:         "M5",
+		currentBar: sdk.Bar{Close: d("1.1"), Timestamp: 1000},
+		point:      d("0.00001"),
+		digits:     5,
 	}
 
 	if !ctx.Point().Equal(d("0.00001")) {

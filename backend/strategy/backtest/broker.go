@@ -103,23 +103,30 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		rec.Price = b.currentPrice
 	}
 
+	// Apply spread to market order fills: buys pay ask (price + spread),
+	// sells receive bid (price). Pending orders fill at their specified price.
+	if req.Type == sdk.OrderMarket {
+		rec.Price = b.applySpreadToFill(rec.Price, req.Side == sdk.SideBuy)
+	}
+
 	// Apply commission (basis points of volume)
 	b.applyCommission(rec)
 
 	// Slippage in MQL4 is the maximum acceptable deviation from requested price,
-	// not an additive cost. In backtest, market orders fill at the current bar's
-	// close price — the fill price IS the market price, so deviation = 0.
-	// No price adjustment needed; slippage only matters for rejection checks
-	// when a separate fill price differs from the requested price (e.g. gaps).
+	// not an additive cost. Spread is applied as a fill cost above.
+	// Slippage only matters for rejection checks when a separate fill price
+	// differs from the requested price (e.g. gaps).
 
-	// Check margin before opening
+	// Check margin before opening — use equity including floating P&L
+	// (consistent with checkMarginCall's computeEquity, not just realized equity).
 	contractSize := b.config.ContractSize
 	if contractSize.IsZero() {
 		contractSize = decimal.NewFromInt(100000)
 	}
 	notional := req.Volume.Mul(contractSize).Mul(rec.Price)
 	margin := notional.Div(decimal.NewFromInt(int64(b.config.Leverage)))
-	if b.equity.LessThan(margin) {
+	equityWithFloating := b.Account().Equity
+	if equityWithFloating.LessThan(margin) {
 		return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
 	}
 
@@ -154,6 +161,16 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			}
 			if closePrice.IsZero() {
 				closePrice = pos.Price
+			}
+			// Apply spread: closing a sell position = buy (pay ask),
+			// closing a buy position = sell (receive bid).
+			closePrice = b.applySpreadToFill(closePrice, pos.Side == sdk.SideSell)
+			// Charge swap for the holding period.
+			days := b.swapDays(pos.OpenTime)
+			if closeVol.Equal(pos.Volume) {
+				b.applySwap(pos, closeVol, days)
+			} else {
+				b.chargeSwap(closeVol, days)
 			}
 			contractSize := b.config.ContractSize
 			if contractSize.IsZero() {
@@ -210,28 +227,48 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("positions must be same symbol")
 	}
 
-	closePrice := pos1.ClosePrice
-	if closePrice.IsZero() {
-		closePrice = pos1.Price
+	baseClosePrice := pos1.ClosePrice
+	if baseClosePrice.IsZero() {
+		baseClosePrice = pos1.Price
 	}
+	// Apply spread per position: closing a sell = buy (pay ask), closing a buy = sell (receive bid).
+	closePrice1 := b.applySpreadToFill(baseClosePrice, pos1.Side == sdk.SideSell)
+	closePrice2 := b.applySpreadToFill(baseClosePrice, pos2.Side == sdk.SideSell)
 
 	closeVol := pos1.Volume
 	if pos2.Volume.LessThan(closeVol) {
 		closeVol = pos2.Volume
 	}
 
+	// Charge swap for both positions based on their holding periods.
+	days1 := b.swapDays(pos1.OpenTime)
+	days2 := b.swapDays(pos2.OpenTime)
+
 	contractSize := b.config.ContractSize
 	if contractSize.IsZero() {
 		contractSize = decimal.NewFromInt(100000)
 	}
-	profit1 := closePrice.Sub(pos1.Price).Mul(closeVol).Mul(contractSize)
+	profit1 := closePrice1.Sub(pos1.Price).Mul(closeVol).Mul(contractSize)
 	if pos1.Side == sdk.SideSell {
 		profit1 = profit1.Neg()
 	}
-	profit2 := closePrice.Sub(pos2.Price).Mul(closeVol).Mul(contractSize)
+	profit2 := closePrice2.Sub(pos2.Price).Mul(closeVol).Mul(contractSize)
 	if pos2.Side == sdk.SideSell {
 		profit2 = profit2.Neg()
 	}
+
+	// Charge swap for both positions.
+	if closeVol.Equal(pos1.Volume) {
+		b.applySwap(pos1, closeVol, days1)
+	} else {
+		b.chargeSwap(closeVol, days1)
+	}
+	if closeVol.Equal(pos2.Volume) {
+		b.applySwap(pos2, closeVol, days2)
+	} else {
+		b.chargeSwap(closeVol, days2)
+	}
+
 	netProfit := profit1.Add(profit2)
 
 	b.equity = b.equity.Add(netProfit)
@@ -242,7 +279,7 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 	if closeVol.Equal(pos1.Volume) {
 		pos1.State = OrderClosed
 		pos1.CloseTime = now
-		pos1.ClosePrice = closePrice
+		pos1.ClosePrice = closePrice1
 		pos1.Profit = profit1
 		b.history = append(b.history, pos1)
 		b.recordDeal(pos1, closeVol, profit1, now)
@@ -255,7 +292,7 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 	if closeVol.Equal(pos2.Volume) {
 		pos2.State = OrderClosed
 		pos2.CloseTime = now
-		pos2.ClosePrice = closePrice
+		pos2.ClosePrice = closePrice2
 		pos2.Profit = profit2
 		b.history = append(b.history, pos2)
 		b.recordDeal(pos2, closeVol, profit2, now)
@@ -282,7 +319,7 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 		}
 	}
 
-	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket1, Volume: closeVol, Price: closePrice}, nil
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket1, Volume: closeVol, Price: closePrice1}, nil
 }
 
 func (b *SimBroker) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.OrderResult, error) {
@@ -446,6 +483,22 @@ func (b *SimBroker) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 	}, nil
 }
 
+// applySpreadToFill adjusts fill price for spread: buys pay ask (price + spread),
+// sells receive bid (price). Returns original price if spread is zero.
+func (b *SimBroker) applySpreadToFill(price decimal.Decimal, isBuy bool) decimal.Decimal {
+	spread := b.config.Spread
+	if spread.IsZero() {
+		spread = b.config.Slippage // fallback: use slippage as spread if spread not set
+	}
+	if spread.IsZero() {
+		return price
+	}
+	if isBuy {
+		return price.Add(spread)
+	}
+	return price
+}
+
 // applyCommission deducts commission from equity and records it.
 func (b *SimBroker) applyCommission(rec *OrderRecord) {
 	if b.config.Commission.IsZero() {
@@ -463,8 +516,8 @@ func (b *SimBroker) applyCommission(rec *OrderRecord) {
 	b.balance = b.balance.Sub(commission)
 }
 
-// applySwap calculates overnight swap for a position.
-func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
+// computeSwap calculates the swap charge for a given volume and holding duration in days.
+func (b *SimBroker) computeSwap(volume decimal.Decimal, days int) decimal.Decimal {
 	swapRate := b.config.SwapRate
 	if swapRate.IsZero() {
 		swapRate = decimal.NewFromFloat(0.00001) // fallback default
@@ -473,10 +526,36 @@ func (b *SimBroker) applySwap(rec *OrderRecord, days int) {
 	if contractSize.IsZero() {
 		contractSize = decimal.NewFromInt(100000)
 	}
-	swap := rec.Volume.Mul(contractSize).Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
+	return volume.Mul(contractSize).Mul(swapRate).Mul(decimal.NewFromInt(int64(days)))
+}
+
+// applySwap charges swap to balance/equity and records it on the position.
+func (b *SimBroker) applySwap(rec *OrderRecord, volume decimal.Decimal, days int) {
+	swap := b.computeSwap(volume, days)
 	rec.Swap = rec.Swap.Add(swap)
 	b.equity = b.equity.Sub(swap)
 	b.balance = b.balance.Sub(swap)
+}
+
+// chargeSwap deducts swap from balance/equity without recording on a position.
+// Used for partial closes where the position remains open.
+func (b *SimBroker) chargeSwap(volume decimal.Decimal, days int) {
+	swap := b.computeSwap(volume, days)
+	b.equity = b.equity.Sub(swap)
+	b.balance = b.balance.Sub(swap)
+}
+
+// swapDays calculates the number of overnight holding days for a position.
+func (b *SimBroker) swapDays(openTime time.Time) int {
+	if b.currentBarTime.IsZero() || openTime.IsZero() {
+		return 0
+	}
+	heldDuration := b.currentBarTime.Sub(openTime)
+	days := int64(heldDuration.Hours() / 24)
+	if days < 0 {
+		return 0
+	}
+	return int(days)
 }
 
 func (b *SimBroker) recordDeal(rec *OrderRecord, vol decimal.Decimal, profit decimal.Decimal, now time.Time) {

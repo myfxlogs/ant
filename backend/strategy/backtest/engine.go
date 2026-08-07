@@ -348,7 +348,7 @@ func (e *Engine) checkSLTP(bar sdk.Bar) {
 			if days < 0 {
 				days = 0
 			}
-			e.broker.applySwap(pos, int(days))
+			e.broker.applySwap(pos, pos.Volume, int(days))
 			contractSize := e.broker.config.ContractSize
 			if contractSize.IsZero() {
 				contractSize = decimal.NewFromInt(100000)
