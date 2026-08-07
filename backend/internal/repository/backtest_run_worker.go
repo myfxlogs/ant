@@ -198,7 +198,7 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 			started_at = COALESCE($5, started_at),
 			finished_at = COALESCE($6, finished_at),
 			lease_until = CASE
-				WHEN COALESCE(NULLIF($3, ''), status) IN ('SUCCEEDED','FAILED','CANCELED') THEN NULL
+				WHEN COALESCE(NULLIF($3, ''), status) IN ('SUCCEEDED','FAILED','CANCELED','DEGRADED') THEN NULL
 				ELSE lease_until
 			END,
 			proto_response = COALESCE($7, proto_response),
@@ -209,7 +209,7 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 	if err != nil {
 		return fmt.Errorf("update async fields: %w", err)
 	}
-	if status == "SUCCEEDED" || status == "FAILED" || status == "CANCELED" {
+	if status == "SUCCEEDED" || status == "FAILED" || status == "CANCELED" || status == "DEGRADED" {
 		_, _ = r.db.Exec(ctx, "SELECT pg_notify('backtest_status', $1)", runID.String())
 	}
 	return nil

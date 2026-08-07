@@ -14,3 +14,14 @@ const (
 	StatusCompleted       = "COMPLETED" // experiment terminal status
 	StatusDegraded        = "DEGRADED"  // execution succeeded but defense-line-B verdict is unreliable
 )
+
+// isTerminalBacktestStatus reports whether the given status is a terminal
+// state (no further transitions possible). DEGRADED is terminal — the run
+// completed but results are flagged unreliable by invariant checks (ADR-0028).
+func isTerminalBacktestStatus(status string) bool {
+	switch status {
+	case StatusSucceeded, StatusFailed, StatusCanceled, StatusDegraded:
+		return true
+	}
+	return false
+}

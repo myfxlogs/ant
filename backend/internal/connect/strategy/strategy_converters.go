@@ -47,7 +47,7 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 	if r.DatasetID != nil {
 		out.DatasetId = proto.String(r.DatasetID.String())
 	}
-	out.IsTerminal = r.Status == StatusSucceeded || r.Status == StatusFailed || r.Status == StatusCanceled
+	out.IsTerminal = isTerminalBacktestStatus(r.Status)
 	out.IsSucceeded = r.Status == StatusSucceeded
 	if r.StrategyID != nil {
 		out.StrategyId = proto.String(r.StrategyID.String())
@@ -82,6 +82,8 @@ func backtestStatusToProto(s string) antv1.BacktestRunStatus {
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_CANCEL_REQUESTED
 	case StatusCanceled:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_CANCELED
+	case StatusDegraded:
+		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_DEGRADED
 	default:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_UNSPECIFIED
 	}

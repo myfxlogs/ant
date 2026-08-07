@@ -41,7 +41,7 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 	}); err != nil {
 		return err
 	}
-	if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
+	if isTerminalBacktestStatus(run.Status) {
 		if run.Status == "SUCCEEDED" && run.AutoGate {
 			restoreGateEvaluation(ctx, s, run, stream)
 		}
@@ -86,7 +86,7 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 		}); err != nil {
 			return err
 		}
-		if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
+		if isTerminalBacktestStatus(run.Status) {
 			if run.Status == "SUCCEEDED" && run.AutoGate {
 				restoreGateEvaluation(ctx, s, run, stream)
 			}
