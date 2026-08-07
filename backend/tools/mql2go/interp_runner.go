@@ -21,8 +21,9 @@ import (
 //	engine := backtest.NewEngine(runner, ...)
 //	result := engine.Run(ctx)
 type VMRunner struct {
-	vm *VM
-	bc *Bytecode
+	vm                 *VM
+	bc                 *Bytecode
+	defenseAViolations []interp.DefenseAViolation
 }
 
 // NewVMRunner creates a sdk.Strategy runner from compiled Bytecode.
@@ -111,7 +112,9 @@ func CompilePythonWithCoverage(source string) (r *VMRunner, cov *CoverageResult,
 		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
 	coverage := AnalyzeCoverage(ir, bc)
-	return NewVMRunner(bc), coverage, nil
+	runner := NewVMRunner(bc)
+	runner.defenseAViolations = coverage.DefenseAViolations
+	return runner, coverage, nil
 }
 
 // CompileMQL is a convenience function that compiles MQL source to a VMRunner.
@@ -159,7 +162,9 @@ func CompileMQLWithCoverage(source string) (r *VMRunner, cov *CoverageResult, er
 		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
 	coverage := AnalyzeCoverage(ir, bc)
-	return NewVMRunner(bc), coverage, nil
+	runner := NewVMRunner(bc)
+	runner.defenseAViolations = coverage.DefenseAViolations
+	return runner, coverage, nil
 }
 
 // DetectLookaheadFromSource compiles source to IR and runs lookahead detection.
@@ -311,6 +316,17 @@ func (r *VMRunner) GetCoverage() *CoverageReport {
 // coverage is recovered by recompiling from source.
 func (r *VMRunner) InjectCoverage(cov *CoverageReport) {
 	r.bc.Coverage = cov
+}
+
+// GetDefenseAViolations returns post-parse validation failures (ADR-0028 §4.1).
+func (r *VMRunner) GetDefenseAViolations() []interp.DefenseAViolation {
+	return r.defenseAViolations
+}
+
+// InjectDefenseAViolations sets Defense A violations on the runner.
+// Used when bytecode was loaded from cache and violations are recovered by recompiling.
+func (r *VMRunner) InjectDefenseAViolations(violations []interp.DefenseAViolation) {
+	r.defenseAViolations = violations
 }
 
 // Bytecode returns the compiled bytecode. Callers can use this for

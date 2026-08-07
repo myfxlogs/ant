@@ -40,8 +40,9 @@ func (s *StrategyExecutionServer) executeVMBacktest(ctx context.Context, params 
 	// Bytecode cache omits CoverageReport; recompile from source to recover
 	// coverage/blind-spot data when cache hit produced nil coverage.
 	if vmRunner.GetCoverage() == nil && params.code != "" {
-		if covRunner, _, covErr := mql2go.CompileMQLWithCoverage(params.code); covErr == nil {
+		if covRunner, cov, covErr := mql2go.CompileMQLWithCoverage(params.code); covErr == nil {
 			vmRunner.InjectCoverage(covRunner.GetCoverage())
+			vmRunner.InjectDefenseAViolations(cov.DefenseAViolations)
 			_ = covRunner // discard; only coverage is needed
 		}
 	}
@@ -340,6 +341,20 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 
 	// ADR-0028 §4.2 statistical-class hints: advisory only, do NOT affect IsReliable.
 	resp.BlindSpots = append(resp.BlindSpots, backtest.CheckStatisticalHints(result)...)
+
+	// ADR-0028 §4.1 Defense A: post-parse validation violations.
+	// Fatal structural issues (param name collision, no entry point, etc.)
+	// make the backtest result unreliable.
+	for _, dv := range vmRunner.GetDefenseAViolations() {
+		resp.Risk.IsReliable = false
+		resp.BlindSpots = append(resp.BlindSpots, &antv1.BlindSpot{
+			Id:          "defense_a_" + dv.Rule,
+			Category:    "defense_a",
+			Severity:    dv.Severity,
+			Description: dv.Message,
+			Location:    dv.Identifier,
+		})
+	}
 
 	return resp, ruleFindings, covBlindSpots, runtimeBlinds
 }

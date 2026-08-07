@@ -39,6 +39,10 @@ type CoverageResult struct {
 	// LookaheadViolations lists detected future-data access patterns.
 	// Populated by interp.DetectLookahead during AnalyzeCoverage.
 	LookaheadViolations []interp.LookaheadViolation
+
+	// DefenseAViolations lists post-parse validation failures (ADR-0028 §4.1).
+	// Populated by interp.ValidateDefenseA during AnalyzeCoverage.
+	DefenseAViolations []interp.DefenseAViolation
 }
 
 // CoverageBlindSpot is a single unimplemented feature.
@@ -103,6 +107,9 @@ func AnalyzeCoverage(ir *interp.IR, bc *Bytecode) *CoverageResult {
 
 	// Detect lookahead (future-data access) violations from IR.
 	result.LookaheadViolations = interp.DetectLookahead(ir)
+
+	// Defense A: post-parse validation (ADR-0028 §4.1).
+	result.DefenseAViolations = interp.ValidateDefenseA(ir)
 
 	return result
 }

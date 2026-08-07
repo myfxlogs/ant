@@ -63,6 +63,17 @@ func compileAndAudit(source string) *antv1.CheckCodeResponse {
 		})
 	}
 
+	// Add Defense A violations (ADR-0028 §4.1 post-parse validation).
+	for _, dv := range cov.DefenseAViolations {
+		blindSpots = append(blindSpots, &antv1.BlindSpot{
+			Id:          "defense_a_" + dv.Rule,
+			Category:    "defense_a",
+			Severity:    dv.Severity,
+			Description: dv.Message,
+			Location:    dv.Identifier,
+		})
+	}
+
 	return &antv1.CheckCodeResponse{
 		CompileSuccess:   true,
 		CoverageScore:    cov.Score,

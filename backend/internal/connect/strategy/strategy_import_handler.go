@@ -82,6 +82,17 @@ func (s *StrategyExecutionServer) AnalyzeImportCode(ctx context.Context, req *co
 	paramGroups := irParamGroups(ir.Params)
 	blindSpots := coverageBlindSpotProtos(cov.BlindSpots)
 
+	// Add Defense A violations (ADR-0028 §4.1 post-parse validation).
+	for _, dv := range cov.DefenseAViolations {
+		blindSpots = append(blindSpots, &antv1.BlindSpot{
+			Id:          "defense_a_" + dv.Rule,
+			Category:    "defense_a",
+			Severity:    dv.Severity,
+			Description: dv.Message,
+			Location:    dv.Identifier,
+		})
+	}
+
 	return connect.NewResponse(&antv1.AnalyzeImportCodeResponse{
 		StrategyName:     deriveNameFromFileName(req.Msg.GetSourceName()),
 		MqlVersion:       cov.Version,
