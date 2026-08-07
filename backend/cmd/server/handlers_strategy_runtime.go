@@ -155,6 +155,13 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 		log)
 	strategyServer.SetEngine(scheduleEngine)
 
+	// FEAT-4: Live vs backtest divergence comparison service.
+	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
+	divergenceServer := strategy.NewDivergenceServer(backtestRunRepo, tradeRecordRepo, log)
+	divergenceServer.SetPgListen(pgListen)
+	mux.Handle(antv1c.NewLiveBacktestDivergenceServiceHandler(divergenceServer,
+		withSency(otelInterceptor, authInterceptor)))
+
 	return strategyRuntimeDeps{
 		strategyServer:     strategyServer,
 		strategyExecServer: strategyExecServer,

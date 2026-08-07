@@ -127,6 +127,45 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 	return out, nil
 }
 
+// GetLatestCompletedByStrategyID returns the most recent SUCCEEDED or DEGRADED
+// backtest run for a given strategy_id, or ErrNoRows if none exists.
+func (r *BacktestRunRepository) GetLatestCompletedByStrategyID(ctx context.Context, strategyID uuid.UUID) (*BacktestRun, error) {
+	var out BacktestRun
+	err := r.db.QueryRow(ctx,
+		`SELECT
+			id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
+			mode, from_ts, to_ts,
+			cancel_requested_at, lease_until,
+			strategy_code_hash,
+			cost_model_snapshot,
+			status, error, started_at, finished_at, strategy_code, initial_capital,
+			extra_symbols, parameter_overrides, proto_response,
+			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
+			strategy_id, backtest_snapshot, auto_gate, fix_depth,
+			created_at
+		FROM backtest_runs
+		WHERE strategy_id = $1 AND status IN ('SUCCEEDED', 'DEGRADED')
+		ORDER BY finished_at DESC NULLS LAST, created_at DESC
+		LIMIT 1`,
+		strategyID,
+	).Scan(
+		&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
+		&out.Mode, &out.FromTs, &out.ToTs,
+		&out.CancelRequestedAt, &out.LeaseUntil,
+		&out.StrategyCodeHash,
+		&out.CostModelSnapshot,
+		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
+		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
+		&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
+		&out.StrategyID, &out.BacktestSnapshot, &out.AutoGate, &out.FixDepth,
+		&out.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.UUID) (*BacktestRun, error) {
 	if r == nil || r.db == nil {
 		return nil, errors.New("repository not initialized")

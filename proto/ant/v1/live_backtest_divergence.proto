@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// LiveBacktestDivergenceService provides backtest vs live trade comparison
+// to verify that backtest results predict live performance (FEAT-4 product thesis).
+service LiveBacktestDivergenceService {
+  // GetDivergenceReport returns a one-shot comparison between the latest
+  // backtest run and live trade records for a given strategy.
+  rpc GetDivergenceReport(GetDivergenceReportRequest) returns (GetDivergenceReportResponse);
+
+  // WatchDivergenceReport streams divergence updates whenever new live
+  // trade records are synced (push-first via pg_notify on trade_record_sync).
+  rpc WatchDivergenceReport(WatchDivergenceReportRequest) returns (stream DivergenceUpdate);
+}
+
+message GetDivergenceReportRequest {
+  string strategy_id = 1;
+}
+
+message GetDivergenceReportResponse {
+  DivergenceReport report = 1;
+}
+
+message WatchDivergenceReportRequest {
+  string strategy_id = 1;
+}
+
+message DivergenceUpdate {
+  DivergenceReport report = 1;
+}
+
+message DivergenceReport {
+  string strategy_id = 1;
+  // Latest backtest run ID used for comparison.
+  string backtest_run_id = 2;
+
+  // Backtest metrics (from the latest completed backtest run).
+  DivergenceMetrics backtest_metrics = 3;
+  // Live metrics (computed from trade_records linked to this strategy).
+  DivergenceMetrics live_metrics = 4;
+
+  // Divergence scores (0 = identical, higher = more divergent).
+  double pnl_divergence_pct = 5;
+  double trade_count_divergence_pct = 6;
+  double win_rate_divergence_pct = 7;
+  double sharpe_divergence = 8;
+
+  // Overall health assessment.
+  DivergenceStatus status = 9;
+  string detail = 10;
+}
+
+message DivergenceMetrics {
+  int32 trade_count = 1;
+  int32 wins = 2;
+  int32 losses = 3;
+  string net_pnl = 4;
+  string gross_profit = 5;
+  string gross_loss = 6;
+  double win_rate = 7;
+  double sharpe_ratio = 8;
+  double avg_trade_pnl = 9;
+  int64 period_start_ms = 10;
+  int64 period_end_ms = 11;
+}
+
+enum DivergenceStatus {
+  DIVERGENCE_STATUS_UNSPECIFIED = 0;
+  DIVERGENCE_STATUS_CONSISTENT = 1;
+  DIVERGENCE_STATUS_MINOR_DIVERGENCE = 2;
+  DIVERGENCE_STATUS_MAJOR_DIVERGENCE = 3;
+  DIVERGENCE_STATUS_INSUFFICIENT_DATA = 4;
+}
