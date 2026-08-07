@@ -104,6 +104,9 @@
 - 2026-08-09 **DOC-6/7 文档漂移修复完成**：DOC-6（spec 21 顶部加弃用标注，§2–§8 标为历史参考，关联 ADR 改为 ADR-0023）。DOC-7（ADR-0028 §7 端到端测试从 P0 缺口改为 ✅done，附 BT-6 修复说明）。
 - 2026-08-09 **Registry 全量对账完成 — 零 ❓待核**：剩余 8 个 ❓待核项全部核验：CQ-1（死代码存量🟦）、CQ-2（前端死代码存量🟦）、CQ-5（eslint-disable 非硬违例🟦）、CQ-7（mt4/mt5 自动生成豁免✅）、CQ-8（check-file-lines 0🔴✅）、MIG-2（DDL 仍 AVAILABLE🟦）、DOC-1（=DOC-7✅）、DOC-2（全量对账完成✅）。合并到 main 推送。**Registry 62 项全核验，零 ❓待核，零上线阻塞。**
 - 2026-08-09 **MIG-2 + CQ-6 修复**：MIG-2（migration 262：deposit address schema 修正，DEFAULT AVAILABLE→ASSIGNED + CHECK 约束 ASSIGNED/RETIRED）。CQ-6（15 个 i18n en 文件已全英文，删除 stale TODO 注释）。MODE_SIGNAL/builtinOrderType 内存记录的 bug 已在之前修复（constants.go:80-81 + vm_builtin_trade.go:222-231 确认）。
+- 2026-08-09 **AGT-1/FEAT-2 偷看未来检测重写完成**：IR 级 `DetectLookahead(ir)` 替代旧 DSL regex scanner。① `interp/lookahead.go` — 遍历 IR OnBar/OnInit/Funcs，检测 series subscript（Close/Open/High/Low/Volume/Time）+ indicator call（iMA/iRSI 等 40+）的 shift 参数；负 shift = Fatal，非恒定可能负 = Warning；`evalConstInt` 编译期求值，`couldBeNegative` 检测 ExprVar/ExprUnary-/ExprBinary-；dedup by (func,shiftExpr)。② `AnalyzeCoverage` 末尾调 DetectLookahead → `CoverageResult.LookaheadViolations`。③ `DetectLookaheadFromSource` 轻量入口。④ gate pipeline `evalLookAhead` 先查 IR violations → fail，fallback DSL。⑤ `BuildPipelineInputFromRepo` 从 source recompile → 填 violations。⑥ CheckCode + SubmitStrategy 响应加 lookahead blind spots。12 unit + 2 gate pipeline tests 全绿。Registry AGT-1 🟦→✅。
+- 2026-08-09 **FEAT-4 实盘战绩不可篡改完成**：trade_records 哈希链实现。① migration 263：`seq`（GENERATED ALWAYS AS IDENTITY）+ `prev_hash` + `entry_hash` + trigger 阻止 hash 字段被 UPDATE。② `trade_record_repository.go`：`Create`/`BatchCreate` 改用 `insertWithHashChain`（advisory lock → 读链尾 prev_hash → INSERT → 计算 entry_hash → UPDATE），复用 `wallet_repo.ledgerChainInsert` 模式。③ `computeTradeEntryHash` = SHA256(prev_hash‖seq‖account_id‖ticket‖symbol‖volume‖open_price‖close_price‖profit‖open_time_ms‖close_time_ms)。④ `VerifyChain` 方法遍历链验证 prev_hash 链接 + entry_hash 重算，返回 `[]ChainBreak`。⑤ `model.TradeRecord` 加 Seq/PrevHash/EntryHash + `ChainBreak` 结构。⑥ 5 unit tests 全绿（确定性/不同输入/空 prev_hash/bytesEqual/ChainBreak）。go build + check-file-lines 0 errors。Registry FEAT-4 🟦→✅。
+- 2026-08-09 **FEAT-4 回测 vs 实盘对比完成**：backtest vs live divergence comparison 实现。① proto `live_backtest_divergence.proto`：`GetDivergenceReport`（unary）+ `WatchDivergenceReport`（SSE stream），`DivergenceReport` 含 backtest/live metrics + divergence scores + status enum（CONSISTENT/MINOR/MAJOR/INSUFFICIENT_DATA）。② `divergence_handler.go`：`computeReport` 取最新 SUCCEEDED/DEGRADED backtest run（`GetLatestCompletedByStrategyID`）+ 通过 `trade_records.schedule_id → strategy_schedules.template_id` 关联 live trade records（`GetByStrategyID`），计算 DivergenceMetrics（trade_count/wins/losses/net_pnl/win_rate/sharpe_ratio/avg_trade_pnl/period）。③ divergence 评分：pnl_divergence_pct / trade_count_divergence_pct / win_rate_divergence_pct / sharpe_divergence，阈值 <10% CONSISTENT / <30% MINOR / ≥30% MAJOR。④ `WatchDivergenceReport` push-first：pgListen `trade_record_sync` + 60s fallback ticker，复用 `WatchSchedules` pattern。⑤ migration 264：`trade_records` INSERT → `pg_notify('trade_record_sync')` 触发 SSE push。⑥ `handlers_strategy_runtime.go` 注册 `DivergenceServer`。⑦ 9 unit tests 全绿（backtest/live metrics + empty + sharpe + pctDivergence + countDivergence + assessDivergence）。go build + check-file-lines 0 errors。REUSE: `WatchSchedules` pgListen pattern + `BacktestRunTrade` struct。NEW: `live_backtest_divergence.proto` + `divergence_handler.go` + `GetLatestCompletedByStrategyID` + `GetByStrategyID`。
 
 ---
 
@@ -135,7 +138,7 @@
 
 | # | ID | 项 | 估时 | 备注 |
 |---|-----|----|------|------|
-| 11 | AGT-1 | 偷看未来检测重写 | 中-大 | 🟦open = FEAT-2，AST 级 shift 检查替代旧 DSL scanner |
+| 11 | AGT-1 | 偷看未来检测重写 | 中-大 | ✅done — IR 级 `DetectLookahead` 替代旧 DSL scanner。`interp/lookahead.go` 检测 series subscript + indicator shift（40+ 函数）；集成到 gate pipeline / CheckCode / SubmitStrategy；12 unit + 2 gate pipeline tests 全绿 |
 | 12 | AUD-W3-2 | NATS 无认证 | 中 | ✅done 误报 — `client.go` 支持 CredsFile 认证，是部署配置项 |
 | 13 | AUD-W1-4 | StartStrategy 回退用户 accountID | 小 | ✅done 误报 — `resolveModeAndAccount` live 模式服务端覆盖用户 accountID |
 | 14 | AUD-N1 | SendNotification IDOR | 小 | ✅done 误报 — admin 校验已存在 |
@@ -149,9 +152,9 @@
 
 | # | ID | 项 | 备注 |
 |---|-----|----|------|
-| 17 | BRIDGE-2 | bridge backtest 接防线B | 🟦open 低 — 仅影响 semanticDiff |
-| 18 | CREDIT-2 | CheckBalance fail-open | 🟦open — 可用性优先设计 |
-| 19 | BT-1/2/3 | SimBroker swap/equity/slippage | 🟦open — 已知简化 |
+| 17 | BRIDGE-2 | bridge backtest 接防线B | ✅done — `validateBacktest` 闭包增加 `ValidateInvariants` 全 5 项检查 |
+| 18 | CREDIT-2 | CheckBalance fail-open | ✅done — fail-open→fail-closed，DB 错误时返回 error 阻止访问 |
+| 19 | BT-1/2/3 | SimBroker swap/equity/slippage | ✅done — swap 记账 refactor + equity 定义统一 + spread 加价 |
 | 20 | LIVE-2 | 策略订单幂等 | 🟦open — 已知特性 |
 | 21 | AUD-A1-4 | connect/strategy 包拆分 | ✅done — 无超标文件 |
 | 22 | AUD-W1-3 | session token INFO 级日志 | ✅done 误报 — 只 log userID/error，不 log token |
@@ -163,6 +166,7 @@
 | 28 | ARCH-3 | 双模板表修复 | ✅done — ScheduleEngine 改用 StrategySvc.GetTemplate |
 | 29 | ARCH-2 | 双风控引擎 | ✅done — 移除 submitToBroker 中的 risksvc.PreCheck，等效规则注册到 Gate（D6-A 单一 chokepoint）|
 | 30 | FEAT-1 | 购买→实盘链路（任务2-5） | ✅done — 事件型会话化+授权闸+配额闸+每bar复验+集成测试+ADR-0029+已部署 |
+| 31 | FEAT-4 | 实盘战绩不可篡改（append-only + 哈希链） | ✅done — migration 263 + insertWithHashChain + VerifyChain + computeTradeEntryHash + 5 tests |
 
 ### 执行原则
 
