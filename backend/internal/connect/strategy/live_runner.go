@@ -206,6 +206,15 @@ type liveEventLoopParams struct {
 	extraSymbolSet map[string]bool
 }
 
+// shouldRunOnBar reports whether a finalized bar for the strategy's primary
+// symbol/timeframe should trigger OnBar. Open (in-progress) bars are excluded
+// (LIVE-1): they are chart-feed snapshots, not strategy events — feeding them
+// re-triggers OnBar mid-formation, corrupts the bar window, and diverges live
+// from closed-bar backtest. Intra-bar updates belong on the tick channel.
+func shouldRunOnBar(bar *mthub.BarUpdate, symbol, timeframe string) bool {
+	return bar.Closed && bar.Symbol == symbol && bar.Period == timeframe
+}
+
 func (s *StrategyExecutionServer) runLiveEventLoop(p liveEventLoopParams) {
 	for {
 		select {
@@ -218,11 +227,12 @@ func (s *StrategyExecutionServer) runLiveEventLoop(p liveEventLoopParams) {
 				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
 				return
 			}
-			if p.extraSymbolSet[bar.Symbol] && bar.Period == p.cfg.Timeframe {
+			// LIVE-1: extra-symbol context windows also use finalized bars only.
+			if bar.Closed && p.extraSymbolSet[bar.Symbol] && bar.Period == p.cfg.Timeframe {
 				handleExtraSymbolBar(bar, p.extraBars)
 				continue
 			}
-			if bar.Symbol != p.cfg.Symbol || bar.Period != p.cfg.Timeframe {
+			if !shouldRunOnBar(bar, p.cfg.Symbol, p.cfg.Timeframe) {
 				continue
 			}
 			s.handleBar(p.runCtx, p.cfg, bar, p.bars, p.session, p.firstBar, p.activeSess, p.extraBars)
