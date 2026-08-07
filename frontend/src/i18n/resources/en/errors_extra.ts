@@ -1,5 +1,4 @@
 // Auto-generated supplementary keys for errors
-// TODO: Translate to en
 const ErrorsExtra = {
   "errors": {
     "ai": {

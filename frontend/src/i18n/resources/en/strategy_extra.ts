@@ -1,5 +1,4 @@
 // Auto-generated supplementary keys for strategy
-// TODO: Translate to en
 const StrategyExtra = {
   "strategy": {
     "backtest": {

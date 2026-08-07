@@ -1,5 +1,4 @@
 // Auto-generated supplementary keys for accounts
-// TODO: Translate to en
 const AccountsExtra = {
   "accounts": {
     "bind": {

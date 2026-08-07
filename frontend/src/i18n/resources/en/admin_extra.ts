@@ -1,5 +1,4 @@
 // Auto-generated supplementary keys for admin
-// TODO: Translate to en
 const AdminExtra = {
   "admin": {
     "aiGateway": {
