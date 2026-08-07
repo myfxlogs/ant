@@ -259,7 +259,7 @@ func makeE2EBars(n int) []sdk.Bar {
 			Low:       decimal.NewFromFloat(price - 0.0010),
 			Close:     decimal.NewFromFloat(price),
 			Volume:    1000,
-			Timestamp: time.Now().Add(time.Duration(i) * time.Minute).UnixMilli(),
+			Timestamp: time.Date(2024, 1, 1, 0, i, 0, 0, time.UTC).UnixMilli(),
 		}
 	}
 	return bars

@@ -353,13 +353,13 @@ func TestRealGridEA_Backtest(t *testing.T) {
 		InitialCapital: decimal.NewFromInt(50000),
 		Leverage:       100,
 		Params: map[string]string{
-			"定单识别码":           "10533",
-			"起始下单量":            "0.01",
-			"翻倍":              "1.5",
-			"逆势加码间隔":           "5",
-			"逆势盈利点数":           "3",
-			"顺势盈利点数":           "10",
-			"单向最大单数":           "25",
+			"定单识别码":  "10533",
+			"起始下单量":  "0.01",
+			"翻倍":     "1.5",
+			"逆势加码间隔": "5",
+			"逆势盈利点数": "3",
+			"顺势盈利点数": "10",
+			"单向最大单数": "25",
 		},
 	}
 
@@ -429,7 +429,7 @@ func makeRealGridBars(n int) []sdk.Bar {
 			Low:       decimal.NewFromFloat(price - 0.0015),
 			Close:     decimal.NewFromFloat(price),
 			Volume:    1000,
-			Timestamp: time.Now().Add(time.Duration(i) * 15 * time.Minute).UnixMilli(),
+			Timestamp: time.Date(2024, 1, 1, 0, i*15, 0, 0, time.UTC).UnixMilli(),
 		}
 	}
 	return bars

@@ -47,12 +47,31 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 	}
 	c.bc.GlobalDecls = ir.Globals
 
-	// Compile user-defined functions first (so we know their entry points)
+	// Compile user-defined functions first (so we know their entry points).
+	// Two-pass: first register all entry PCs so forward references resolve,
+	// then compile bodies. Without this, non-deterministic map iteration
+	// (ir.Funcs is a map) causes intermittent failures where a caller is
+	// compiled before its callee is registered in bc.Funcs, making the
+	// callee fall through to "unknown function" and silently return 0.
+	userFuncNames := make([]string, 0, len(ir.Funcs))
 	for name, fn := range ir.Funcs {
 		if isEventFunction(name) {
 			continue
 		}
-		c.compileUserFunc(name, fn)
+		entryPC := int32(len(c.bc.Code))
+		c.bc.Funcs[name] = FuncEntry{
+			Name:      name,
+			EntryPC:   entryPC,
+			NumParams: len(fn.Params),
+			NumLocals: len(fn.Params),
+		}
+		c.emit(OP_ENTER_FUNC, int32(len(fn.Params)), 0, 0)
+		userFuncNames = append(userFuncNames, name)
+	}
+
+	for _, name := range userFuncNames {
+		fn := ir.Funcs[name]
+		c.compileUserFuncBody(name, fn)
 	}
 
 	// Compile event handlers
@@ -253,20 +272,17 @@ func (c *astCompiler) compileEventBody(body []interp.Statement) {
 
 // ── Function compilation ─────────────────────────────────────────────
 
-func (c *astCompiler) compileUserFunc(name string, fn *interp.FuncDef) {
-	entryPC := int32(len(c.bc.Code))
-
+func (c *astCompiler) compileUserFuncBody(name string, fn *interp.FuncDef) {
+	entry := c.bc.Funcs[name]
 	c.currentFunc = &FuncEntry{
 		Name:      name,
-		EntryPC:   entryPC,
+		EntryPC:   entry.EntryPC,
 		NumParams: len(fn.Params),
-		NumLocals: len(fn.Params), // will be updated after body compilation
+		NumLocals: len(fn.Params),
 	}
 	for _, p := range fn.Params {
 		c.currentFunc.ParamName = append(c.currentFunc.ParamName, p.Name)
 	}
-
-	c.emit(OP_ENTER_FUNC, int32(len(fn.Params)), 0, 0)
 
 	c.nextLocalSlot = len(fn.Params)
 	c.pushScope()
