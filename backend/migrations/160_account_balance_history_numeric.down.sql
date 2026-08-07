@@ -1,0 +1,3 @@
+-- 160_account_balance_history_numeric.down.sql
+-- Not reversible: ALTER COLUMN TYPE from DOUBLE PRECISION to NUMERIC(20,8).
+-- Reverting to DOUBLE PRECISION would reintroduce IEEE 754 rounding errors.

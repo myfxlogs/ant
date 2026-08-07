@@ -1,0 +1,3 @@
+-- 008_fix_order_type_length.down.sql
+-- Not reversible: ALTER COLUMN TYPE from VARCHAR(20) to VARCHAR(30).
+-- Original type was VARCHAR(20), but narrowing back could truncate data.

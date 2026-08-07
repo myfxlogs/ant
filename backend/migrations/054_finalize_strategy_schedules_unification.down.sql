@@ -1,0 +1,3 @@
+-- 054_finalize_strategy_schedules_unification.down.sql
+-- Not reversible: data migration from strategy_schedules_v2 to strategy_schedules.
+-- Reverting would require restoring strategy_schedules_v2 from backup.

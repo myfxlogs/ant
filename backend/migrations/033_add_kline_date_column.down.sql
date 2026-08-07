@@ -1,0 +1,2 @@
+-- 033_add_kline_date_column.down.sql
+-- No-op: table already dropped by 166_cleanup_dead_tables

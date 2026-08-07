@@ -1,0 +1,2 @@
+-- 166_cleanup_dead_tables.down.sql
+-- Not reversible: drops legacy tables that cannot be recreated with data.

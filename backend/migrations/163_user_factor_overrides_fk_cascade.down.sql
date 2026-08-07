@@ -1,0 +1,3 @@
+-- 163_user_factor_overrides_fk_cascade.down.sql
+-- Revert FK cascade behavior (not safely reversible without knowing original constraint).
+-- Original was likely ON DELETE NO ACTION.

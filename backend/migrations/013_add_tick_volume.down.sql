@@ -1,0 +1,2 @@
+-- 013_add_tick_volume.down.sql
+-- No-op: table already dropped by 166_cleanup_dead_tables

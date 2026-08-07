@@ -118,7 +118,7 @@
 
 | ID | 项 | 状态 |
 |----|----|------|
-| MIG-1 | 55 个 migration 缺 down 脚本（P1-5b 已审：53 纯增量无破坏性，但 down 仍缺）| 🟦open（低风险）|
+| MIG-1 | 55 个 migration 缺 down 脚本（P1-5b 已审：53 纯增量无破坏性，但 down 仍缺）| ✅done（2026-08-10：58 个缺 down 脚本全部补齐。`gen_down.sh` 自动生成 + 手动修复多行 ALTER TABLE/复杂 DO 块/约束变更。分类：① 可逆 DROP TABLE/INDEX/COLUMN — 自动生成；② ALTER COLUMN TYPE — 标注不可逆；③ 复杂 DO $$ 数据迁移 — 标注不可逆；④ 已被 166 删除的表 — 标注 no-op；⑤ 约束变更 — 手动反转。238 up → 239 down（1 个 pre-existing orphan `008_fix_trade_records_precision.down.sql` 无对应 up）。go build + check-file-lines 全绿。）|
 | MIG-2 | ADR-0026 提出的 schema 修正（status ASSIGNED/RETIRED 去 AVAILABLE、分配 SQL 重写）是否落地 | ✅done（2026-08-09：migration 262 修正：① DEFAULT 从 'AVAILABLE' 改为 'ASSIGNED'（匹配代码行为）；② UPDATE 现有 AVAILABLE 行→ASSIGNED；③ 加 CHECK 约束 `status IN ('ASSIGNED','RETIRED')`。分配 SQL 在 205 已改为按需派生 INSERT+ON CONFLICT，无需重写）|
 
 ---

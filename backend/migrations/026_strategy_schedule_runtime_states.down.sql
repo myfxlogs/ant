@@ -1,0 +1,2 @@
+-- 026_strategy_schedule_runtime_states.down.sql
+-- No-op: table already dropped by 166_cleanup_dead_tables

@@ -1,0 +1,3 @@
+-- 034_fix_schedule_fk_targets.down.sql
+-- Not reversible: FK constraint retargeting from strategy_schedules_v2 to strategy_schedules.
+-- Reverting would require strategy_schedules_v2 to still exist.

@@ -1,0 +1,3 @@
+-- 040_timestamptz_utc_for_templates_and_backtest_runs.down.sql
+-- Not reversible: ALTER COLUMN TYPE from TIMESTAMP to TIMESTAMPTZ.
+-- Reverting to TIMESTAMP would lose timezone information.

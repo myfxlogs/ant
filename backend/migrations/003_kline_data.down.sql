@@ -1,0 +1,2 @@
+-- 003_kline_data.down.sql
+-- No-op: table already dropped by 166_cleanup_dead_tables
