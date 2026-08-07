@@ -6,3 +6,5 @@ const (
 	schemaTypeString    = "string"
 	schemaKeyProperties = "properties"
 )
+
+const strTrue = "true"

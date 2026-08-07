@@ -35,9 +35,9 @@ type ResolvedSettings struct {
 type SettingTier int
 
 const (
-	TierDefault  SettingTier = 0 // built-in defaults
-	TierUser     SettingTier = 10 // per-user override
-	TierManaged  SettingTier = 100 // admin-managed, cannot be overridden by users
+	TierDefault SettingTier = 0   // built-in defaults
+	TierUser    SettingTier = 10  // per-user override
+	TierManaged SettingTier = 100 // admin-managed, cannot be overridden by users
 )
 
 // AgentSetting is a single setting key-value with its tier.
@@ -65,8 +65,8 @@ var defaultSettings = map[string]string{
 	"agent.max_retries":         "3",
 	"agent.cost_ceiling_usd":    "0.05",
 	"agent.plan_mode":           "plan",
-	"agent.memory.enabled":      "true",
-	"agent.retrospect.enabled":  "true",
+	"agent.memory.enabled":      strTrue,
+	"agent.retrospect.enabled":  strTrue,
 	"agent.capability.can_live": "false",
 }
 
@@ -143,15 +143,15 @@ func (s *SettingsStore) ResolveSettings(ctx context.Context, userID uuid.UUID) (
 // parseManagedConfig parses flat key-value managed settings into structured config.
 func parseManagedConfig(m map[string]string) ManagedConfig {
 	cfg := ManagedConfig{
-		MaxCostCeilingUSD: 0.50,
-		MaxIterations:     50,
+		MaxCostCeilingUSD:  0.50,
+		MaxIterations:      50,
 		AuditRetentionDays: 365,
 	}
 	if v, ok := m["allowed_models"]; ok {
 		cfg.AllowedModels = splitCSV(v)
 	}
 	if v, ok := m["enforce_allowed_models"]; ok {
-		cfg.EnforceAllowedModels = v == "true"
+		cfg.EnforceAllowedModels = v == strTrue
 	}
 	if v, ok := m["max_cost_ceiling_usd"]; ok {
 		if f, err := parseFloat(v); err == nil {
@@ -164,7 +164,7 @@ func parseManagedConfig(m map[string]string) ManagedConfig {
 		}
 	}
 	if v, ok := m["disable_live_trading"]; ok {
-		cfg.DisableLiveTrading = v == "true"
+		cfg.DisableLiveTrading = v == strTrue
 	}
 	if v, ok := m["required_risk_gates"]; ok {
 		cfg.RequiredRiskGates = splitCSV(v)
@@ -175,7 +175,7 @@ func parseManagedConfig(m map[string]string) ManagedConfig {
 		}
 	}
 	if v, ok := m["allow_managed_rules_only"]; ok {
-		cfg.AllowManagedRulesOnly = v == "true"
+		cfg.AllowManagedRulesOnly = v == strTrue
 	}
 	return cfg
 }
@@ -327,4 +327,3 @@ func (s *SettingsStore) GetManagedSetting(ctx context.Context, key string) (stri
 	}
 	return val, nil
 }
-

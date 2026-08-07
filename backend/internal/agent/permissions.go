@@ -12,13 +12,13 @@ import (
 type Capability string
 
 const (
-	CapGenerateStrategy  Capability = "generate_strategy"
-	CapSubmitStrategy    Capability = "submit_strategy"
-	CapLiveDeploy        Capability = "live_deploy"
-	CapSearchExperience  Capability = "search_experience"
-	CapStoreExperience   Capability = "store_experience"
-	CapManageMemory      Capability = "manage_memory"
-	CapViewBacktest      Capability = "view_backtest"
+	CapGenerateStrategy Capability = "generate_strategy"
+	CapSubmitStrategy   Capability = "submit_strategy"
+	CapLiveDeploy       Capability = "live_deploy"
+	CapSearchExperience Capability = "search_experience"
+	CapStoreExperience  Capability = "store_experience"
+	CapManageMemory     Capability = "manage_memory"
+	CapViewBacktest     Capability = "view_backtest"
 )
 
 // Effect is the outcome of a permission rule (ADR-0025 §5.3).
@@ -197,7 +197,7 @@ func (p *PermissionEngine) defaultCan(cap Capability, rs *ResolvedSettings) bool
 		if rs.Managed.DisableLiveTrading {
 			return false
 		}
-		return rs.Flat["agent.capability.can_live"] == "true"
+		return rs.Flat["agent.capability.can_live"] == strTrue
 	}
 
 	switch cap {
@@ -237,4 +237,3 @@ func (p *PermissionEngine) CapabilitiesForUser(ctx context.Context, userID uuid.
 	}
 	return result
 }
-

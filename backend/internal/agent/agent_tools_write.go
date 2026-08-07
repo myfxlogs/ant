@@ -77,7 +77,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 	}
 
 	result := map[string]string{
-		"compiled": "true",
+		"compiled": strTrue,
 		"coverage": fmt.Sprintf("%.1f%%", cov.Score*100),
 	}
 
@@ -103,7 +103,7 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 					result[fmt.Sprintf("invariant_warning_%d", i+1)] = w
 				}
 			} else {
-				result["is_reliable"] = "true"
+				result["is_reliable"] = strTrue
 			}
 			// I4: transparent inputs alongside results (§3.2c).
 			result["symbol"] = t.cfg.Symbol
