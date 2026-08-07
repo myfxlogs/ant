@@ -52,6 +52,17 @@ func compileAndAudit(source string) *antv1.CheckCodeResponse {
 	cov := mql2go.AnalyzeCoverage(ir, bc)
 	blindSpots := coverageBlindSpotProtos(cov.BlindSpots)
 
+	// Add lookahead violations as blind spots for real-time editor feedback.
+	for _, lv := range cov.LookaheadViolations {
+		blindSpots = append(blindSpots, &antv1.BlindSpot{
+			Id:          "lookahead_" + lv.Function,
+			Category:    "lookahead",
+			Severity:    lv.Severity,
+			Description: lv.Message,
+			Location:    lv.ShiftExpr,
+		})
+	}
+
 	return &antv1.CheckCodeResponse{
 		CompileSuccess:   true,
 		CoverageScore:    cov.Score,

@@ -162,6 +162,23 @@ func CompileMQLWithCoverage(source string) (r *VMRunner, cov *CoverageResult, er
 	return NewVMRunner(bc), coverage, nil
 }
 
+// DetectLookaheadFromSource compiles source to IR and runs lookahead detection.
+// Returns nil if compilation fails (caller should handle compile errors separately).
+// This is a lightweight alternative to CompileMQLWithCoverage when only lookahead
+// detection is needed (e.g. gate pipeline re-evaluation).
+func DetectLookaheadFromSource(source string) []interp.LookaheadViolation {
+	defer func() {
+		// Suppress panics — lookahead detection is best-effort.
+		// If compilation fails, there are no violations to report.
+		_ = recover()
+	}()
+	ir, err := CompileToIR(source)
+	if err != nil {
+		return nil
+	}
+	return interp.DetectLookahead(ir)
+}
+
 // safeRun executes a VM function with panic recovery.
 // Panics from cgo (tree-sitter) or deep recursion are converted to errors
 // instead of crashing the process. ADR-0023 §5.4.

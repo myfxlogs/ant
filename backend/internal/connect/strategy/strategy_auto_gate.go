@@ -11,6 +11,7 @@ import (
 	"alphaforge/internal/ai"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/repository"
+	"alphaforge/tools/mql2go"
 )
 
 // sendAutoGateUpdate computes 7-gate results and marketplace quality preview
@@ -51,10 +52,10 @@ func sendAutoGateUpdate(ctx context.Context, s *StrategyExecutionServer, run *re
 	if pipelineResult != nil {
 		for _, g := range pipelineResult.Gates {
 			if err := stream.Send(&antv1.BacktestRunUpdate{
-				Run:                 toProtoBacktestRun(run),
-				Metrics:             bp.Metrics,
-				EquityCurve:         bp.EquityCurve,
-				Risk:                bp.Risk,
+				Run:                  toProtoBacktestRun(run),
+				Metrics:              bp.Metrics,
+				EquityCurve:          bp.EquityCurve,
+				Risk:                 bp.Risk,
 				ExecutionAssumptions: bp.ExecutionAssumptions,
 				GateUpdate: &antv1.GateEvaluationUpdate{
 					Gate: GateResultToProto(g),
@@ -158,6 +159,25 @@ func BuildPipelineInputFromRepo(ctx context.Context, repo *repository.GateEvalua
 	input := ai.PipelineInput{
 		DailyReturns: dailyReturns,
 		NumAttempts:  1,
+	}
+
+	// Detect lookahead violations from strategy source via IR analysis.
+	// This replaces the legacy regex-based DSL scanner for MQL/Python strategies.
+	if run.StrategyCode != nil && *run.StrategyCode != "" {
+		rawViolations := mql2go.DetectLookaheadFromSource(*run.StrategyCode)
+		if len(rawViolations) > 0 {
+			input.LookaheadViolations = make([]ai.LookaheadViolation, len(rawViolations))
+			for i, v := range rawViolations {
+				input.LookaheadViolations[i] = ai.LookaheadViolation{
+					Function:  v.Function,
+					ShiftExpr: v.ShiftExpr,
+					ShiftVal:  v.ShiftVal,
+					IsLiteral: v.IsLiteral,
+					Severity:  v.Severity,
+					Message:   v.Message,
+				}
+			}
+		}
 	}
 
 	if repo != nil {
@@ -301,10 +321,10 @@ func restoreGateEvaluation(ctx context.Context, s *StrategyExecutionServer, run 
 		if err := proto.Unmarshal(ge.GateResults, gateList); err == nil {
 			for _, g := range gateList.Gates {
 				if err := stream.Send(&antv1.BacktestRunUpdate{
-					Run:                 toProtoBacktestRun(run),
-					Metrics:             bp.Metrics,
-					EquityCurve:         bp.EquityCurve,
-					Risk:                bp.Risk,
+					Run:                  toProtoBacktestRun(run),
+					Metrics:              bp.Metrics,
+					EquityCurve:          bp.EquityCurve,
+					Risk:                 bp.Risk,
 					ExecutionAssumptions: bp.ExecutionAssumptions,
 					GateUpdate: &antv1.GateEvaluationUpdate{
 						Gate: g,

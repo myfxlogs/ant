@@ -45,7 +45,7 @@ var GateOrder = []GateName{
 type GateStatus struct {
 	Gate     GateName
 	Passed   bool
-	Skipped  bool   // true when gate is skipped (no data)
+	Skipped  bool // true when gate is skipped (no data)
 	Reason   string
 	Score    float64
 	Duration int64
@@ -62,12 +62,13 @@ type PipelineResult struct {
 
 // PipelineInput bundles all the data needed for gate evaluation.
 type PipelineInput struct {
-	Expression      string                        // DSL expression for lookahead scanning
-	DailyReturns    []float64                     // daily P&L returns for walk-forward and DSR
-	NumAttempts     int                           // number of user strategy attempts
-	PaperMetrics    PaperGateMetrics              // paper trading metrics
-	NewSignals      []SignalDirection             // new strategy's signal directions
-	ExistingSignals map[string][]SignalDirection  // existing live strategies' signals
+	Expression          string                       // DSL expression for legacy lookahead scanning
+	DailyReturns        []float64                    // daily P&L returns for walk-forward and DSR
+	NumAttempts         int                          // number of user strategy attempts
+	PaperMetrics        PaperGateMetrics             // paper trading metrics
+	NewSignals          []SignalDirection            // new strategy's signal directions
+	ExistingSignals     map[string][]SignalDirection // existing live strategies' signals
+	LookaheadViolations []LookaheadViolation         // IR-level lookahead detection results
 }
 
 // Pipeline evaluates a strategy through all 7 gates.
@@ -85,7 +86,7 @@ func Pipeline(input PipelineInput) PipelineResult {
 		case GateCompliance:
 			status = evalCompliance(input)
 		case GateLookAhead:
-			status = evalLookAhead(input.Expression)
+			status = evalLookAhead(input)
 		case GateWalkForward:
 			status = evalWalkForward(input.DailyReturns)
 		case GateDeflatedSharpe:
@@ -160,13 +161,37 @@ func evalCompliance(input PipelineInput) GateStatus {
 	return GateStatus{Gate: GateCompliance, Passed: true}
 }
 
-func evalLookAhead(expression string) GateStatus {
-	expr := strings.TrimSpace(expression)
+// LookaheadViolation represents an IR-level detected future-data access.
+// Populated by interp.DetectLookahead, passed via PipelineInput.
+type LookaheadViolation struct {
+	Function  string
+	ShiftExpr string
+	ShiftVal  int
+	IsLiteral bool
+	Severity  string
+	Message   string
+}
+
+func evalLookAhead(input PipelineInput) GateStatus {
+	// First check IR-level violations (new detector — works for MQL/Python strategies).
+	if len(input.LookaheadViolations) > 0 {
+		reason := "lookahead bias detected: "
+		for i, v := range input.LookaheadViolations {
+			if i > 0 {
+				reason += "; "
+			}
+			reason += v.Message
+		}
+		return GateStatus{Gate: GateLookAhead, Passed: false, Reason: reason}
+	}
+
+	// Fall back to DSL expression scanning (legacy — for DSL strategies).
+	expr := strings.TrimSpace(input.Expression)
 	if expr == "" {
-		return GateStatus{Gate: GateLookAhead, Passed: true, Skipped: true, Reason: "no DSL expression — skipped for MQL/code strategy"}
+		return GateStatus{Gate: GateLookAhead, Passed: true, Skipped: true, Reason: "no DSL expression and no IR lookahead violations — skipped"}
 	}
 	s := NewLookAheadScanner()
-	scanResult := s.Scan(expression)
+	scanResult := s.Scan(input.Expression)
 	if !scanResult.Passed {
 		reason := "lookahead bias detected: "
 		for i, v := range scanResult.Violations {

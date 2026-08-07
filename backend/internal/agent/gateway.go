@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
@@ -25,14 +25,14 @@ import (
 // Synchronous strategy submission → compile → backtest → LLM analysis.
 type GatewayServer struct {
 	marketDataRepo repository.MarketDataStore
-	log           *zap.Logger
-	bridge         *Bridge    // reuse bridge instance
-	profiler       *Profiler  // reuse profiler instance
-	interpreter    *Interpreter // reuse interpreter instance
-	generator      *Generator // strategy generation from natural language
-	memory         *MemoryStore // ADR-0025 §4 three-layer memory
-	hooks          *HookEngine  // ADR-0025 §8 lifecycle hooks
-	settings       *SettingsStore // ADR-0025 §5 tiered settings
+	log            *zap.Logger
+	bridge         *Bridge           // reuse bridge instance
+	profiler       *Profiler         // reuse profiler instance
+	interpreter    *Interpreter      // reuse interpreter instance
+	generator      *Generator        // strategy generation from natural language
+	memory         *MemoryStore      // ADR-0025 §4 three-layer memory
+	hooks          *HookEngine       // ADR-0025 §8 lifecycle hooks
+	settings       *SettingsStore    // ADR-0025 §5 tiered settings
 	permissions    *PermissionEngine // ADR-0025 §9 capability permissions
 	importedRepo   *repository.ImportedStrategyRepository
 	versionRepo    *repository.StrategyVersionRepository
@@ -139,10 +139,10 @@ func (s *GatewayServer) SubmitStrategy(
 	if err != nil {
 		s.log.Warn("AgentGateway: compile failed", zap.String("strategyID", strategyID), zap.String("language", language), zap.Error(err))
 		return connect.NewResponse(&antv1.SubmitStrategyResponse{
-			StrategyId:    strategyID,
+			StrategyId:     strategyID,
 			CompileSuccess: false,
-			CompileError:  err.Error(),
-			Mode:          antv1.SubmitMode_SUBMIT_MODE_SYNC,
+			CompileError:   err.Error(),
+			Mode:           antv1.SubmitMode_SUBMIT_MODE_SYNC,
 		}), nil
 	}
 
@@ -191,6 +191,13 @@ func (s *GatewayServer) SubmitStrategy(
 			Builtin:  bs.Builtin,
 			Severity: bs.Severity,
 			Count:    int32(bs.Count),
+		})
+	}
+	for _, lv := range coverage.LookaheadViolations {
+		resp.BlindSpots = append(resp.BlindSpots, &antv1.AgentBlindSpot{
+			Builtin:  lv.Function + ":lookahead",
+			Severity: lv.Severity,
+			Count:    1,
 		})
 	}
 

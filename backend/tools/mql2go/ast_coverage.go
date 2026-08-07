@@ -35,6 +35,10 @@ type CoverageResult struct {
 
 	// Version is the MQL version: "mql4" or "mql5".
 	Version string
+
+	// LookaheadViolations lists detected future-data access patterns.
+	// Populated by interp.DetectLookahead during AnalyzeCoverage.
+	LookaheadViolations []interp.LookaheadViolation
 }
 
 // CoverageBlindSpot is a single unimplemented feature.
@@ -96,6 +100,9 @@ func AnalyzeCoverage(ir *interp.IR, bc *Bytecode) *CoverageResult {
 		}
 		return result.BlindSpots[i].Count > result.BlindSpots[j].Count
 	})
+
+	// Detect lookahead (future-data access) violations from IR.
+	result.LookaheadViolations = interp.DetectLookahead(ir)
 
 	return result
 }

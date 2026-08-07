@@ -139,6 +139,52 @@ func TestEquityCurveToDailyReturns_EmptyProto(t *testing.T) {
 	}
 }
 
+// TestPipeline_IRLookaheadViolation verifies that IR-level lookahead violations
+// cause the lookahead gate to fail, even without a DSL expression.
+func TestPipeline_IRLookaheadViolation(t *testing.T) {
+	t.Parallel()
+	input := PipelineInput{
+		DailyReturns: make([]float64, 200),
+		LookaheadViolations: []LookaheadViolation{
+			{
+				Function:  "Close",
+				ShiftExpr: "-1",
+				ShiftVal:  -1,
+				IsLiteral: true,
+				Severity:  "致命",
+				Message:   "Close: negative shift -1 accesses future bar data",
+			},
+		},
+	}
+	result := Pipeline(input)
+	if result.Passed {
+		t.Fatal("pipeline should fail with IR lookahead violation")
+	}
+	if result.FirstFail != GateLookAhead {
+		t.Fatalf("first fail should be lookahead, got %s", result.FirstFail)
+	}
+}
+
+// TestPipeline_IRLookaheadClean verifies that no IR lookahead violations
+// and no DSL expression results in a skipped lookahead gate.
+func TestPipeline_IRLookaheadClean(t *testing.T) {
+	t.Parallel()
+	input := PipelineInput{
+		DailyReturns: make([]float64, 200),
+	}
+	result := Pipeline(input)
+	for _, g := range result.Gates {
+		if g.Gate == GateLookAhead {
+			if !g.Skipped {
+				t.Fatal("lookahead gate should be skipped when no violations and no expression")
+			}
+			if !g.Passed {
+				t.Fatal("skipped gate should still have Passed=true")
+			}
+		}
+	}
+}
+
 // TestEquityCurveToDailyReturns_InvalidProto verifies graceful handling of corrupt proto.
 func TestEquityCurveToDailyReturns_InvalidProto(t *testing.T) {
 	t.Parallel()
