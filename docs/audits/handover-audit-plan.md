@@ -102,6 +102,7 @@
 - 2026-08-09 **Git 提交推送**：51 个未提交文件按逻辑分 6 个 commit 推送到 `audit-pipeline5-collab` 分支。工作区干净。下一步：快速清理批次（DOC-4/5 注释漂移 + CQ-3 json.Marshal 核验 + CQ-4 time.Ticker 核验）。
 - 2026-08-09 **DOC-4/5 + CQ-3/4 快速清理完成**：DOC-4（runner.go OnBar 注释）、DOC-5（ExecuteLive 注释）各一行修复。CQ-3（json.Marshal 48 处全量核验 — 零违规，全豁免）、CQ-4（time.Ticker 21 处全量核验 — 零违规，全合法）。提交推送 `9c902cce`。
 - 2026-08-09 **DOC-6/7 文档漂移修复完成**：DOC-6（spec 21 顶部加弃用标注，§2–§8 标为历史参考，关联 ADR 改为 ADR-0023）。DOC-7（ADR-0028 §7 端到端测试从 P0 缺口改为 ✅done，附 BT-6 修复说明）。
+- 2026-08-09 **Registry 全量对账完成 — 零 ❓待核**：剩余 8 个 ❓待核项全部核验：CQ-1（死代码存量🟦）、CQ-2（前端死代码存量🟦）、CQ-5（eslint-disable 非硬违例🟦）、CQ-7（mt4/mt5 自动生成豁免✅）、CQ-8（check-file-lines 0🔴✅）、MIG-2（DDL 仍 AVAILABLE🟦）、DOC-1（=DOC-7✅）、DOC-2（全量对账完成✅）。合并到 main 推送。**Registry 62 项全核验，零 ❓待核，零上线阻塞。**
 
 ---
 
