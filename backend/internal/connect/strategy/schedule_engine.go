@@ -20,6 +20,7 @@ import (
 
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 type runHandle struct {
@@ -27,11 +28,23 @@ type runHandle struct {
 	wg     sync.WaitGroup
 }
 
+// ScheduleRepo abstracts the schedule repository methods used by ScheduleEngine.
+// *repository.StrategyScheduleRepository satisfies this interface implicitly.
+type ScheduleRepo interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*model.StrategySchedule, error)
+	GetActiveSchedules(ctx context.Context) ([]*model.StrategySchedule, error)
+	GetDueSchedules(ctx context.Context, now time.Time) ([]*model.StrategySchedule, error)
+	GetEarliestNextRunAt(ctx context.Context) (time.Time, error)
+	UpdateLastRun(ctx context.Context, id uuid.UUID, runErr error) error
+	UpdateNextRunAt(ctx context.Context, id uuid.UUID, next time.Time) error
+}
+
 type ScheduleEngine struct {
-	repo             *repository.StrategyScheduleRepository
-	templateRepo     *repository.AIStrategyTemplatesRepository
+	repo             ScheduleRepo
+	templateReader   TemplateCodeReader
 	runner           *StrategyExecutionServer
-	autoTradeEnabled func(userID uuid.UUID) bool // nil = all enabled
+	autoTradeEnabled func(userID uuid.UUID) bool                               // nil = all enabled
+	entitlementCheck func(ctx context.Context, userID, strategyID string) bool // nil = skip
 	activeRuns       map[uuid.UUID]*runHandle
 	notifyCh         chan struct{} // 1-buffered, external events → recomputeTimer
 	mu               sync.Mutex
@@ -55,18 +68,24 @@ const (
 	dbTimeout    = 5 * time.Second
 )
 
+type TemplateCodeReader interface {
+	GetTemplate(ctx context.Context, id, userID uuid.UUID) (*service.TemplateRow, error)
+}
+
 func NewScheduleEngine(
-	repo *repository.StrategyScheduleRepository,
-	templateRepo *repository.AIStrategyTemplatesRepository,
+	repo ScheduleRepo,
+	templateReader TemplateCodeReader,
 	runner *StrategyExecutionServer,
 	autoTradeFn func(userID uuid.UUID) bool,
+	entitlementFn func(ctx context.Context, userID, strategyID string) bool,
 	log *zap.Logger,
 ) *ScheduleEngine {
 	return &ScheduleEngine{
 		repo:             repo,
-		templateRepo:     templateRepo,
+		templateReader:   templateReader,
 		runner:           runner,
 		autoTradeEnabled: autoTradeFn,
+		entitlementCheck: entitlementFn,
 		activeRuns:       make(map[uuid.UUID]*runHandle),
 		notifyCh:         make(chan struct{}, 1),
 		log:              log,
@@ -137,7 +156,19 @@ func (e *ScheduleEngine) reconcileOnStartup(ctx context.Context) {
 		return
 	}
 	var updated int
+	var eventStarted int
 	for _, s := range schedules {
+		if s.ScheduleType == model.ScheduleTypeEvent {
+			// Event-type: launch persistent streaming session.
+			if err := e.launchEventSession(ctx, s); err != nil {
+				e.log.Warn("reconcile: failed to start event session",
+					zap.String("schedule_id", s.ID.String()), zap.Error(err))
+			} else {
+				eventStarted++
+			}
+			continue
+		}
+		// Timer-type: ensure next_run_at is set.
 		if s.NextRunAt != nil && !s.NextRunAt.IsZero() {
 			continue
 		}
@@ -154,6 +185,9 @@ func (e *ScheduleEngine) reconcileOnStartup(ctx context.Context) {
 	}
 	if updated > 0 {
 		e.log.Info("reconciled missing next_run_at", zap.Int("count", updated))
+	}
+	if eventStarted > 0 {
+		e.log.Info("reconciled event-type sessions", zap.Int("count", eventStarted))
 	}
 }
 
@@ -222,9 +256,28 @@ func (e *ScheduleEngine) isAutoTradeEnabled(userID uuid.UUID) bool {
 }
 
 func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategySchedule) {
+	// Entitlement gate (task 3): verify active subscription/trial/ownership before running.
+	if e.entitlementCheck != nil {
+		if !e.entitlementCheck(ctx, schedule.UserID.String(), schedule.TemplateID.String()) {
+			e.log.Warn("dispatch: entitlement denied",
+				zap.String("schedule_id", schedule.ID.String()),
+				zap.String("user_id", schedule.UserID.String()))
+			_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("unauthorized: no active entitlement"))
+			return
+		}
+	}
+	// Quota gate (task 5): enforce live strategy limit.
+	if e.runner != nil {
+		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, "live"); err != nil {
+			e.log.Warn("dispatch: quota exceeded",
+				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
+			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
+			return
+		}
+	}
 	// Load and validate template.
-	tpl, err := e.templateRepo.GetByID(ctx, schedule.TemplateID)
-	if err != nil || tpl == nil || tpl.CodeSkeleton == "" {
+	tpl, err := e.templateReader.GetTemplate(ctx, schedule.TemplateID, schedule.UserID)
+	if err != nil || tpl == nil || tpl.Code == "" {
 		reason := "template code is empty"
 		if err != nil {
 			reason = err.Error()
@@ -245,14 +298,26 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 	e.activeRuns[schedule.ID] = handle
 	e.mu.Unlock()
 
+	// Set per-bar entitlement revalidation for marketplace strategies (task 4).
+	var entCheck func(ctx context.Context) bool
+	if e.entitlementCheck != nil {
+		isOwner := tpl.UserID != nil && *tpl.UserID == schedule.UserID
+		if !isOwner {
+			entCheck = func(ctx context.Context) bool {
+				return e.entitlementCheck(ctx, schedule.UserID.String(), schedule.TemplateID.String())
+			}
+		}
+	}
+
 	cfg := LiveStrategyConfig{
-		AccountID: schedule.AccountID.String(),
-		UserID:    schedule.UserID.String(),
-		Symbol:    schedule.Symbol,
-		Timeframe: schedule.Timeframe,
-		Code:      tpl.CodeSkeleton,
-		Mode:      "live",
-		Params:    strParams,
+		AccountID:        schedule.AccountID.String(),
+		UserID:           schedule.UserID.String(),
+		Symbol:           schedule.Symbol,
+		Timeframe:        schedule.Timeframe,
+		Code:             tpl.Code,
+		Mode:             "live",
+		Params:           strParams,
+		EntitlementCheck: entCheck,
 	}
 
 	// Pre-create run record (RunLiveStrategy requires RunID to be set).

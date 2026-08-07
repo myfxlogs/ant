@@ -12,11 +12,11 @@ import (
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
+	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway"
 	"alphaforge/internal/mdgateway/adapter"
 	"alphaforge/internal/mdgateway/adapter/brokersearch"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
-	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/notifier"
 	"alphaforge/internal/repository"
@@ -59,21 +59,21 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 	d.mthubSvc.SetBarBroker(d.barBroker)
 
 	deps := mdgateway.RunnerDeps{
-		Log:      d.log,
-		PG:       d.pool,
-		Store:    d.store,
-		NATSConn: d.nc,
-		RedisClient: d.rdb,
-		SpillDir: d.spillDir,
-		Secrets:  d.secClient,
-		Hub:            d.hub,
-		BrokerRegistry: d.brokerReg,
-		FactorPusher:   d.factorPusher,
-		Searcher:       brokersearch.New("", ""),
-		OnAccountProfit: pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector),
-		OnOrderUpdate:   buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo),
+		Log:                 d.log,
+		PG:                  d.pool,
+		Store:               d.store,
+		NATSConn:            d.nc,
+		RedisClient:         d.rdb,
+		SpillDir:            d.spillDir,
+		Secrets:             d.secClient,
+		Hub:                 d.hub,
+		BrokerRegistry:      d.brokerReg,
+		FactorPusher:        d.factorPusher,
+		Searcher:            brokersearch.New("", ""),
+		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector),
+		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo),
 		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),
-		OnBrokerInfo:         pst.makeOnBrokerInfo(d.accountSvc, d.accountSyncSvc, d.mthubSvc, d.snapshotBroker, d.reconLoop),
+		OnBrokerInfo:        pst.makeOnBrokerInfo(d.accountSvc, d.accountSyncSvc, d.mthubSvc, d.snapshotBroker, d.reconLoop),
 		OnBreakerTrip: func(accountID, userID, status, message string) {
 			d.mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
 				AccountID: accountID, UserID: userID, Status: status,
@@ -107,22 +107,22 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 }
 
 type pipelineState struct {
-	pool                *pgxpool.Pool
-	log                *zap.Logger
-	marginCallMu       sync.Mutex
-	marginCallLastSent map[string]map[int]time.Time
+	pool                 *pgxpool.Pool
+	log                  *zap.Logger
+	marginCallMu         sync.Mutex
+	marginCallLastSent   map[string]map[int]time.Time
 	marginCallThresholds map[string]decimal.Decimal
-	thresholdMu        sync.RWMutex
-	lastSnapshot       map[string]time.Time
-	snapshotMu         sync.Mutex
-	lastMetricsWrite   map[string]time.Time
-	metricsMu          sync.Mutex
+	thresholdMu          sync.RWMutex
+	lastSnapshot         map[string]time.Time
+	snapshotMu           sync.Mutex
+	lastMetricsWrite     map[string]time.Time
+	metricsMu            sync.Mutex
 }
 
 func newPipelineState(pool *pgxpool.Pool, log *zap.Logger) *pipelineState {
 	return &pipelineState{
-		pool:                pool,
-		log:                log,
+		pool:                 pool,
+		log:                  log,
 		marginCallLastSent:   make(map[string]map[int]time.Time),
 		marginCallThresholds: make(map[string]decimal.Decimal),
 		lastSnapshot:         make(map[string]time.Time),
@@ -223,7 +223,7 @@ func (p *pipelineState) makeOnBrokerInfo(
 ) func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
 	return func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
 		if userID, err := getUserIDFromPool(context.Background(), p.pool, accountID); err == nil {
-			accountSyncSvc.SyncAccountHistory(accountID, userID)
+			go accountSyncSvc.SyncAccountHistory(accountID, userID)
 		}
 		if *reconLoop != nil {
 			(*reconLoop).ReconcileAccount(context.Background(), accountID)
@@ -284,7 +284,7 @@ func makeOnAccountDisconnect(
 		var uid string
 		if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
 			uid = userID
-			go accountSyncSvc.SyncAccountHistory(accountID, userID)
+			accountSyncSvc.SyncAccountHistory(accountID, userID)
 		}
 		(*platformAgg).ClearAccount(accountID)
 		hub.RemoveSession(accountID)
@@ -297,7 +297,7 @@ func makeOnAccountDisconnect(
 		}
 		mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
 			AccountID: accountID, UserID: uid, Status: string(service.StatusDisconnected),
-			Message:  "health monitor: account dead after reconnect failure",
+			Message:   "health monitor: account dead after reconnect failure",
 			Timestamp: time.Now(),
 		})
 	}

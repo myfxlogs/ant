@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
@@ -113,6 +114,11 @@ func setupRiskGate(cfg *config.Config, jurisGate *risksvc.JurisdictionGate, capS
 	if capStore != nil {
 		gate.AddRule(risk.NewCapabilityTierRule(capStore))
 	}
+	// D6-A: consolidate all pre-trade risk checks into the single Gate chokepoint.
+	// These rules replace the former risksvc.PreCheck call in submitToBroker.
+	gate.AddRule(&risk.MaxPositionCount{Max: 20})
+	gate.AddRule(&risk.MaxLotSize{MaxLots: decimal.NewFromInt(100000)})
+	gate.AddRule(&risk.MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)})
 	return gate
 }
 

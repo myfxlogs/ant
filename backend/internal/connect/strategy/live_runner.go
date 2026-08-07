@@ -70,6 +70,12 @@ type LiveStrategyConfig struct {
 	// ShadowVerifier runs a background consistency check comparing live
 	// signals with shadow backtest results. Nil = disabled.
 	ShadowVerifier *ShadowVerifier
+
+	// EntitlementCheck, if non-nil, is called on every finalized bar to verify
+	// the user still holds an active entitlement (subscription/trial/ownership).
+	// If it returns false, the session self-terminates (no new signals).
+	// Nil = no check (user's own strategy). Push-first: rides on bar events, not a timer.
+	EntitlementCheck func(ctx context.Context) bool
 }
 
 // LiveTickSubscriber provides tick (Bid/Ask) updates for an account.
@@ -234,6 +240,14 @@ func (s *StrategyExecutionServer) runLiveEventLoop(p liveEventLoopParams) {
 			}
 			if !shouldRunOnBar(bar, p.cfg.Symbol, p.cfg.Timeframe) {
 				continue
+			}
+			// Per-bar entitlement revalidation for marketplace strategies (task 4).
+			// Revoked → session self-terminates; positions are NOT auto-closed (license boundary).
+			if p.cfg.EntitlementCheck != nil && !p.cfg.EntitlementCheck(p.runCtx) {
+				s.log.Warn("LiveStrategyRunner: entitlement revoked, stopping session",
+					zap.String("run_id", p.cfg.RunID.String()),
+					zap.String("account_id", p.cfg.AccountID))
+				return
 			}
 			s.handleBar(p.runCtx, p.cfg, bar, p.bars, p.session, p.firstBar, p.activeSess, p.extraBars)
 

@@ -181,7 +181,13 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 		if !m.Active {
 			s.engine.StopSchedule(id)
 		} else {
-			s.engine.Notify()
+			// Event-type schedules need StartSchedule to launch a streaming session;
+			// timer-type schedules just need Notify to recompute the timer.
+			if row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx)); err == nil && row.ScheduleType == "event" {
+				_ = s.engine.StartSchedule(ctx, id)
+			} else {
+				s.engine.Notify()
+			}
 		}
 	}
 	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))

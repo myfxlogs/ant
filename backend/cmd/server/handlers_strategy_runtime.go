@@ -17,8 +17,8 @@ import (
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
-	"alphaforge/internal/pglisten"
 	papereng "alphaforge/internal/paper"
+	"alphaforge/internal/pglisten"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/risksvc"
@@ -53,7 +53,6 @@ type strategyTradingParams struct {
 	MktplaceSvc     *marketplace.Service
 	MktplaceHandler *mktplace.MarketplaceServer
 	QuotaChecker    *service.QuotaChecker
-	TemplatesRepo   *repository.AIStrategyTemplatesRepository
 	BacktestRunRepo *repository.BacktestRunRepository
 	Log             *zap.Logger
 	OtelInterceptor connectrpc.Interceptor
@@ -76,7 +75,6 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mktplaceSvc := p.MktplaceSvc
 	mktplaceHandler := p.MktplaceHandler
 	quotaChecker := p.QuotaChecker
-	templatesRepo := p.TemplatesRepo
 	backtestRunRepo := p.BacktestRunRepo
 	otelInterceptor := p.OtelInterceptor
 	authInterceptor := p.AuthInterceptor
@@ -141,7 +139,7 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	autoTradingRepo := setupAutoTrading(pool, mux, strategyExecServer, log, otelInterceptor, authInterceptor)
 
 	scheduleRepo := repository.NewStrategyScheduleRepository(pool)
-	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, templatesRepo,
+	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, strategySvc,
 		strategyExecServer,
 		func(userID uuid.UUID) bool {
 			settings, err := autoTradingRepo.GetGlobalSettingsByUserID(context.Background(), userID)
@@ -149,6 +147,10 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 				return true
 			}
 			return settings.AutoTradeEnabled
+		},
+		func(ctx context.Context, userID, strategyID string) bool {
+			ok, _ := mktplaceSvc.CanAccessCode(ctx, userID, strategyID)
+			return ok
 		},
 		log)
 	strategyServer.SetEngine(scheduleEngine)
