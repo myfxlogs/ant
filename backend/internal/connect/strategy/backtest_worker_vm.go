@@ -338,6 +338,9 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 		resp.BlindSpots = append(resp.BlindSpots, bs)
 	}
 
+	// ADR-0028 §4.2 statistical-class hints: advisory only, do NOT affect IsReliable.
+	resp.BlindSpots = append(resp.BlindSpots, backtest.CheckStatisticalHints(result)...)
+
 	return resp, ruleFindings, covBlindSpots, runtimeBlinds
 }
 

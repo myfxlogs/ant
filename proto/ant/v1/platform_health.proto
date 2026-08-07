@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "alphaforge/gen/proto/ant/v1;antv1";
+
+// PlatformHealthService — ADR-0028 §5.3 Admin "Platform Health Center".
+// Provides root cause reports clustering backtest failure signatures,
+// impact analysis, and recurrence tracking. Internal admin-only.
+service PlatformHealthService {
+  // GetRootCauseReport returns the latest root cause analysis report.
+  rpc GetRootCauseReport(GetRootCauseReportRequest) returns (RootCauseReport);
+
+  // WatchHealthAlerts streams health alerts via SSE (push-first).
+  // Triggered by backtest DEGRADED/FAILED notifications.
+  rpc WatchHealthAlerts(WatchHealthAlertsRequest) returns (stream HealthAlert);
+}
+
+message GetRootCauseReportRequest {
+  // Lookback period in days (default 14 = biweekly cadence).
+  int32 lookback_days = 1;
+}
+
+message WatchHealthAlertsRequest {}
+
+message RootCauseReport {
+  google.protobuf.Timestamp generated_at = 1;
+  int32 lookback_days = 2;
+
+  // Summary
+  int32 total_backtest_runs = 3;
+  int32 total_degraded = 4;
+  int32 total_failed = 5;
+  double degraded_rate_pct = 6;
+  double failed_rate_pct = 7;
+
+  // Failure signature clusters (grouped by blind_spot_id).
+  repeated FailureCluster clusters = 8;
+
+  // Previous period comparison for recurrence tracking.
+  int32 prev_total_degraded = 9;
+  int32 prev_total_failed = 10;
+  double recurrence_rate_pct = 11;
+}
+
+message FailureCluster {
+  // The blind_spot_id that groups failures (e.g. "zero_volume_trade").
+  string signature = 1;
+
+  // Number of runs affected in the lookback period.
+  int32 affected_runs = 2;
+
+  // Number of distinct strategies affected.
+  int32 affected_strategies = 3;
+
+  // Percentage of total failures.
+  double impact_pct = 4;
+
+  // Severity: "致命" (fatal/invariant) or "提示" (hint/statistical).
+  string severity = 5;
+
+  // Human-readable description of the failure signature.
+  string description = 6;
+
+  // Suggested fix priority (1=highest).
+  int32 priority = 7;
+}
+
+message HealthAlert {
+  google.protobuf.Timestamp timestamp = 1;
+  string alert_type = 2;  // "degraded", "failed", "threshold_breach"
+  string strategy_id = 3;
+  string signature = 4;
+  string description = 5;
+  int32 affected_count = 6;
+}

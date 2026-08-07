@@ -95,6 +95,11 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 
 	s.persistBacktestTrades(ctx, run.ID, result.GetTrades())
 
+	// ADR-0028 §5.2: persist failure signatures for root cause report clustering.
+	if status == StatusDegraded {
+		s.persistFailureSignatures(ctx, run, result)
+	}
+
 	// Sync performance metrics to marketplace_strategies if published.
 	s.syncMarketplacePerformance(ctx, run, result)
 
@@ -177,6 +182,34 @@ func (s *StrategyExecutionServer) syncMarketplacePerformance(ctx context.Context
 	if err != nil {
 		s.log.Debug("marketplace sync: template not published or update failed",
 			zap.String("template_id", run.TemplateID.String()), zap.Error(err))
+	}
+}
+
+// persistFailureSignatures extracts invariant and statistical blind spots from a
+// DEGRADED backtest response and writes them to backtest_failure_signatures for
+// root cause report clustering (ADR-0028 §5.2). Best-effort: failures are logged.
+func (s *StrategyExecutionServer) persistFailureSignatures(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
+	for _, bs := range result.GetBlindSpots() {
+		if bs.GetId() == "" {
+			continue
+		}
+		var strategyID *uuid.UUID
+		if run.TemplateID != nil {
+			sid := *run.TemplateID
+			strategyID = &sid
+		}
+		_, err := s.backtestRepo.DB().Exec(ctx,
+			`INSERT INTO backtest_failure_signatures (backtest_run_id, strategy_id, user_id, signature, severity, category, description)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			run.ID, strategyID, run.UserID,
+			bs.GetId(), bs.GetSeverity(), bs.GetCategory(), bs.GetDescription(),
+		)
+		if err != nil {
+			s.log.Warn("persist failure signature failed",
+				zap.String("signature", bs.GetId()),
+				zap.String("runID", run.ID.String()),
+				zap.Error(err))
+		}
 	}
 }
 

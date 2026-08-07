@@ -87,6 +87,10 @@ func registerAdminHandlers(d adminHandlerDeps) {
 	// Admin monitor — real-time SSE system metrics
 	adminMonitorServer := admin.NewAdminMonitorServer(pool, d.RDB, d.NC, log)
 	mux.Handle(antv1c.NewAdminMonitorServiceHandler(adminMonitorServer, withSency(ic.otel, ic.auth, ic.admin)))
+
+	// ADR-0028 §5.3 Platform Health Center — root cause report + health alerts
+	platformHealthServer := admin.NewPlatformHealthServer(pool, log)
+	mux.Handle(antv1c.NewPlatformHealthServiceHandler(platformHealthServer, withSency(ic.otel, ic.auth, ic.admin)))
 }
 
 // startHardDeleteCleanup periodically hard-deletes expired soft-deleted users (30-day retention).
