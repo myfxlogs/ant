@@ -79,7 +79,7 @@ schedule 启动的会话必须走同一道 `checkStrategyQuota`（含 `CheckLive
 | 3 | 订阅授权闸：复用 `CanAccessCode` | `schedule_engine.go`, `schedule_event.go`, `handlers_strategy_runtime.go` | ✅done |
 | 4 | 每 bar 授权复验：`EntitlementCheck` | `live_runner.go`, `schedule_engine.go`, `schedule_event.go` | ✅done |
 | 5 | 配额闸：复用 `checkStrategyQuota` | `schedule_engine.go`, `schedule_event.go` | ✅done |
-| 6 | 集成测试 | `schedule_engine_test.go` | 🟦pending |
+| 6 | 集成测试 | `schedule_event_test.go` | ✅done（11 unit tests：entitlement denied/granted、timer notify、inactive/already-running/not-found、owner/non-owner entitlement revalidation、nil-runner quota skip、empty template code、template fetch error。Account conflict + quota enforcement 需 PG，e2e 覆盖）|
 | 7 | ADR-0029 留痕 | 本文件 | ✅done |
 
 **复用核对**：

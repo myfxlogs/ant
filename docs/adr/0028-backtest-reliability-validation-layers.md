@@ -167,10 +167,10 @@
 | 项（剩余） | 优先级 | 缺口 |
 |----|------|------|
 | **端到端测试（参数链）** | ✅ done | BT-6 修复（2026-08-07）：两遍编译消除 map 迭代非确定性 + 固定 epoch timestamp。50 次连跑 0 失败。原 flaky 根因 = `ir.Funcs` map 遍历序非确定 → 前向引用落 "unknown function" → volume=0。 |
-| 防线 A 解析后校验 | 降级 | MQL4 隐式变量语义复杂，优先级低 |
-| 统计类提示（净值零波动等） | P2 | 提示不阻断 |
-| 用户代码缺陷检测（偷看未来等） | P2 | 告知+AI 补齐 |
-| 根治报告 + Admin 健康中心 | P2 | 双周 cadence |
+| 防线 A 解析后校验 | ✅ done（2026-08-10）：3/4 规则已实现（参数名合法性、参数名唯一、入口存在）于 `interp/defense_a.go`。第 4 条"未定义引用"因 MQL4 隐式变量语义复杂暂不实现（降级，非阻断）。 |
+| 统计类提示（净值零波动等） | ✅ done（2026-08-10）：4 个统计类检查实现于 `statistical_hints.go`，集成到 `buildBacktestResponse`。severity="提示"，不阻断 IsReliable。 |
+| 用户代码缺陷检测（偷看未来等） | ✅ done（2026-08-09）：AGT-1 `interp/lookahead.go` — IR 级 `DetectLookahead(ir)` 检测 series subscript + indicator call 的负 shift 参数。集成到 `AnalyzeCoverage` + gate pipeline + CheckCode/SubmitStrategy 响应。12 unit + 2 gate pipeline tests。 |
+| 根治报告 + Admin 健康中心 | ✅ done（2026-08-10）：`platform_health.proto` + `platform_health_handler.go` — `GetRootCauseReport`（unary，按 signature 聚类）+ `WatchHealthAlerts`（SSE stream，push-first 监听 backtest_status NOTIFY）。migration 264 持久化 failure signatures。 |
 
 **起点（已完成）**：防线 B 五恒定类 + assessRisk 闸门 + status DEGRADED 呈现 = **永久防线三端到端打通**。
 

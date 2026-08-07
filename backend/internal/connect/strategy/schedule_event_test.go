@@ -394,6 +394,86 @@ func TestLaunchEventSession_NilRunnerSkipsQuota(t *testing.T) {
 	}
 }
 
+// TestLaunchEventSession_EmptyTemplateCode verifies that when the template
+// code is empty, the launch is rejected with an error (ADR-0029 decision 2:
+// backend must load non-empty code from strategy_templates).
+func TestLaunchEventSession_EmptyTemplateCode(t *testing.T) {
+	schedule := makeTestSchedule(model.ScheduleTypeEvent, true)
+
+	tplReader := &mockTemplateReader{
+		getTemplate: func(ctx context.Context, id, userID uuid.UUID) (*service.TemplateRow, error) {
+			return &service.TemplateRow{
+				ID:   schedule.TemplateID,
+				Code: "", // empty code
+			}, nil
+		},
+	}
+
+	lastRunErr := error(nil)
+	repo := &mockScheduleRepo{
+		getByID: func(ctx context.Context, id uuid.UUID) (*model.StrategySchedule, error) {
+			return schedule, nil
+		},
+		updateLastRun: func(ctx context.Context, id uuid.UUID, runErr error) error {
+			lastRunErr = runErr
+			return nil
+		},
+	}
+
+	engine := &ScheduleEngine{
+		repo:           repo,
+		templateReader: tplReader,
+		activeRuns:     make(map[uuid.UUID]*runHandle),
+		notifyCh:       make(chan struct{}, 1),
+		log:            zap.NewNop(),
+		entitlementCheck: func(ctx context.Context, userID, strategyID string) bool {
+			return true
+		},
+	}
+
+	err := engine.StartSchedule(context.Background(), schedule.ID)
+	if err == nil {
+		t.Fatal("expected error for empty template code")
+	}
+	if lastRunErr == nil {
+		t.Error("expected UpdateLastRun to be called with non-nil error")
+	}
+}
+
+// TestLaunchEventSession_TemplateFetchError verifies that when the template
+// reader returns an error, the launch is rejected.
+func TestLaunchEventSession_TemplateFetchError(t *testing.T) {
+	schedule := makeTestSchedule(model.ScheduleTypeEvent, true)
+
+	tplReader := &mockTemplateReader{
+		getTemplate: func(ctx context.Context, id, userID uuid.UUID) (*service.TemplateRow, error) {
+			return nil, errors.New("database connection lost")
+		},
+	}
+
+	repo := &mockScheduleRepo{
+		getByID: func(ctx context.Context, id uuid.UUID) (*model.StrategySchedule, error) {
+			return schedule, nil
+		},
+	}
+
+	engine := &ScheduleEngine{
+		repo:           repo,
+		templateReader: tplReader,
+		activeRuns:     make(map[uuid.UUID]*runHandle),
+		notifyCh:       make(chan struct{}, 1),
+		log:            zap.NewNop(),
+		entitlementCheck: func(ctx context.Context, userID, strategyID string) bool {
+			return true
+		},
+	}
+
+	err := engine.StartSchedule(context.Background(), schedule.ID)
+	if err == nil {
+		t.Fatal("expected error for template fetch failure")
+	}
+}
+
 // TestStartSchedule_NotFound verifies that a non-existent schedule
 // returns an error.
 func TestStartSchedule_NotFound(t *testing.T) {
