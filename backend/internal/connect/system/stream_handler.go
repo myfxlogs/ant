@@ -7,21 +7,15 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/mthub"
-	antdecimal "alphaforge/internal/pkg/decimal"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
 )
-
-// formatPrice delegates to the shared decimal utility.
-func formatPrice(p decimal.Decimal) string { return antdecimal.FormatPrice(p) }
 
 // StreamServer implements the ant.v1.StreamServiceHandler interface.
 type StreamServer struct {
@@ -104,8 +98,7 @@ func (s *StreamServer) SubscribeEvents(
 	loopCtx, loopCancel := context.WithCancel(ctx)
 	defer loopCancel()
 
-	profitCh, snapCh, statusCh, barCh, barDropCh, barCancel := s.initEventChannels(loopCtx, profitSubs, snapSubs, statusSubs, accountIDs, filterAll, accountSet)
-	defer barCancel()
+	profitCh, snapCh, statusCh := s.initEventChannels(loopCtx, profitSubs, snapSubs, statusSubs)
 
 	snapKnownTickets := make(map[string]map[int64]bool)
 	snapCount := make(map[string]int)
@@ -114,8 +107,6 @@ func (s *StreamServer) SubscribeEvents(
 	return s.runEventLoop(eventLoopConfig{
 		ctx:          ctx,
 		sendEvent:    sendEvent,
-		barCh:        barCh,
-		barDropCh:    barDropCh,
 		orderCh:      orderCh,
 		statusCh:     statusCh,
 		profitCh:     profitCh,
@@ -131,8 +122,6 @@ func (s *StreamServer) SubscribeEvents(
 type eventLoopConfig struct {
 	ctx          context.Context
 	sendEvent    func(*antv1.StreamEvent) error
-	barCh        <-chan *mthub.BarUpdate
-	barDropCh    <-chan *mthub.BarDropEvent
 	orderCh      <-chan *mthub.OrderEvent
 	statusCh     <-chan *mthub.AccountStatusEvent
 	profitCh     <-chan *mthub.AccountProfitEvent
@@ -154,8 +143,6 @@ func (s *StreamServer) runEventLoop(cfg eventLoopConfig) error {
 	cases := []reflect.SelectCase{
 		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.ctx.Done())},
 		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(keepalive.C)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.barCh)},
-		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.barDropCh)},
 		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.orderCh)},
 		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.statusCh)},
 		{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(cfg.profitCh)},
@@ -182,35 +169,24 @@ func (h *eventLoopHandlers) dispatch(chosen int, val reflect.Value, ok bool, cas
 		return false, h.sendEvent(&antv1.StreamEvent{Type: "ping"})
 	case 2:
 		if !ok {
-			return false, nil
+			return true, nil
 		}
-		return false, h.handleBar(val.Interface().(*mthub.BarUpdate))
+		return false, h.handleOrder(val.Interface().(*mthub.OrderEvent))
 	case 3:
 		if !ok {
 			cases[3].Chan = reflect.Value{}
 			return false, nil
 		}
-		return false, h.handleBarDrop(val.Interface().(*mthub.BarDropEvent))
+		return false, h.handleStatus(val.Interface().(*mthub.AccountStatusEvent))
 	case 4:
 		if !ok {
-			return true, nil
-		}
-		return false, h.handleOrder(val.Interface().(*mthub.OrderEvent))
-	case 5:
-		if !ok {
-			cases[5].Chan = reflect.Value{}
-			return false, nil
-		}
-		return false, h.handleStatus(val.Interface().(*mthub.AccountStatusEvent))
-	case 6:
-		if !ok {
-			cases[6].Chan = reflect.Value{}
+			cases[4].Chan = reflect.Value{}
 			return false, nil
 		}
 		return false, h.handleProfit(val.Interface().(*mthub.AccountProfitEvent))
-	case 7:
+	case 5:
 		if !ok {
-			cases[7].Chan = reflect.Value{}
+			cases[5].Chan = reflect.Value{}
 			return false, nil
 		}
 		return false, h.handleSnap(val.Interface().(*mthub.PositionSnapshot))
@@ -226,14 +202,6 @@ type eventLoopHandlers struct {
 	snapCount        map[string]int
 	recentlyClosed   map[string]map[int64]bool
 	sendEvent        func(*antv1.StreamEvent) error
-}
-
-func (h *eventLoopHandlers) handleBar(b *mthub.BarUpdate) error {
-	return h.s.handleBarEvent(b, h.filterAll, h.accountSet, h.sendEvent)
-}
-
-func (h *eventLoopHandlers) handleBarDrop(drop *mthub.BarDropEvent) error {
-	return handleBarDropEvent(drop, h.filterAll, h.accountSet, h.sendEvent)
 }
 
 func (h *eventLoopHandlers) handleOrder(ev *mthub.OrderEvent) error {
@@ -266,121 +234,4 @@ func (s *StreamServer) runKeepaliveOnly(ctx context.Context, sendEvent func(*ant
 			}
 		}
 	}
-}
-
-func handleBarDropEvent(drop *mthub.BarDropEvent, filterAll bool, accountSet map[string]bool, sendEvent func(*antv1.StreamEvent) error) error {
-	if !filterAll && !accountSet[drop.AccountID] {
-		return nil
-	}
-	return sendEvent(&antv1.StreamEvent{
-		Type:      "risk_alert",
-		AccountId: drop.AccountID,
-		Timestamp: timestamppb.Now(),
-		Payload: &antv1.StreamEvent_RiskAlert{
-			RiskAlert: &antv1.RiskAlertEvent{
-				AccountId: drop.AccountID,
-				AlertType: "bars_dropped",
-				Message:   "Real-time bars are being dropped due to slow processing. Strategy execution may be delayed.",
-				Value:     fmt.Sprintf("%d", drop.TotalDrops),
-			},
-		},
-	})
-}
-
-// --- Bar subscription and event handling ---
-
-func (s *StreamServer) forwardBarEvents(
-	loopCtx context.Context,
-	accountIDs []string,
-	filterAll bool,
-	accountSet map[string]bool,
-) (chan *mthub.BarUpdate, <-chan *mthub.BarDropEvent, func()) {
-	type barSub struct {
-		ch     <-chan *mthub.BarUpdate
-		cancel func()
-	}
-	barSubs := make([]barSub, 0, len(accountIDs))
-	type dropSub struct {
-		ch     <-chan *mthub.BarDropEvent
-		cancel func()
-	}
-	dropSubs := make([]dropSub, 0, len(accountIDs))
-	for _, aid := range accountIDs {
-		if !filterAll && !accountSet[aid] {
-			continue
-		}
-		ch, cancel := s.svc.SubscribeBarUpdates(aid)
-		barSubs = append(barSubs, barSub{ch, cancel})
-		dCh, dCancel := s.svc.SubscribeBarDrops(aid)
-		dropSubs = append(dropSubs, dropSub{ch: dCh, cancel: dCancel})
-	}
-	barCh := make(chan *mthub.BarUpdate, 64)
-	for _, bs := range barSubs {
-		go func(ch <-chan *mthub.BarUpdate) {
-			for ev := range ch {
-				select {
-				case barCh <- ev:
-				case <-loopCtx.Done():
-					return
-				}
-			}
-		}(bs.ch)
-	}
-	barDropCh := make(chan *mthub.BarDropEvent, 4)
-	for _, ds := range dropSubs {
-		go func(ch <-chan *mthub.BarDropEvent) {
-			for ev := range ch {
-				select {
-				case barDropCh <- ev:
-				case <-loopCtx.Done():
-					return
-				}
-			}
-		}(ds.ch)
-	}
-	cancelAll := func() {
-		for _, bs := range barSubs {
-			bs.cancel()
-		}
-		for _, ds := range dropSubs {
-			ds.cancel()
-		}
-	}
-	return barCh, barDropCh, cancelAll
-}
-
-func (s *StreamServer) handleBarEvent(
-	b *mthub.BarUpdate,
-	filterAll bool,
-	accountSet map[string]bool,
-	sendEvent func(*antv1.StreamEvent) error,
-) error {
-	if !filterAll && !accountSet[b.AccountID] {
-		return nil
-	}
-	t := time.UnixMilli(b.OpenTime)
-	if err := sendEvent(&antv1.StreamEvent{
-		Type:      "bar_update",
-		AccountId: b.AccountID,
-		Timestamp: timestamppb.New(t),
-		Payload: &antv1.StreamEvent_BarUpdate{
-			BarUpdate: &antv1.BarUpdateEvent{
-				AccountId: b.AccountID,
-				Symbol:    b.Symbol,
-				Period:    b.Period,
-				OpenTime:  timestamppb.New(t),
-				Open:      formatPrice(b.Open),
-				High:      formatPrice(b.High),
-				Low:       formatPrice(b.Low),
-				Close:     formatPrice(b.Close),
-				Bid:       formatPrice(b.Bid),
-				Ask:       formatPrice(b.Ask),
-				Volume:    b.Volume,
-				Closed:    b.Closed,
-			},
-		},
-	}); err != nil {
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("send bar_update event: %w", err))
-	}
-	return nil
 }

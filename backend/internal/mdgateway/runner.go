@@ -35,12 +35,11 @@ type RunnerDeps struct {
 	OnOrderUpdate       func(accountID, userID string, o *mdtick.OrderUpdate)             // receives real-time order/position changes from mtapi OnOrderUpdate
 	OnAccountDisconnect func(accountID string)                                            // B-1.3: called when gateway stops/fails for an account
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
-	OnBar               func(bar *mdtick.Bar)                                             // called when a bar is finalized or open-bar tick (for realtime SSE push)
+	OnBar               func(bar *mdtick.Bar)                                             // called when a bar is finalized (for bar broker push to strategy runner)
 	OnAccountStatus     func(accountID, userID, status, message string)                   // called when gateway connection state changes (connected/reconnecting/disconnected)
 	OnBreakerTrip       func(accountID, userID, status, message string)                   // called when circuit breaker state changes (circuit_open/circuit_half_open/circuit_closed)
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
-	FactorPusher        func(bar *mdtick.Bar)   // M10-BASE-B6: push finalized bars to factor subscriber
 	Searcher            *brokersearch.Searcher  // §0: broker host rediscovery
 }
 
@@ -105,18 +104,6 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	invalidator.Start(ctx, newPGListener(ctx, deps.PG, log))
 
 	// --- Manager (wires HandleTick pipeline) ---
-	// Wrap OnBar to also push finalized bars to factor subscriber.
-	onBar := deps.OnBar
-	if deps.FactorPusher != nil {
-		fp := deps.FactorPusher
-		orig := onBar
-		onBar = func(bar *mdtick.Bar) {
-			if orig != nil {
-				orig(bar)
-			}
-			fp(bar)
-		}
-	}
 	mgr := NewManager(ManagerDeps{
 		Normalizer:    normalizer,
 		Quality:       quality,
@@ -124,7 +111,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		Aggregator:    aggregator,
 		Publisher:     publisher,
 		PgWriter:      pgWriter,
-		OnBar:         onBar,
+		OnBar:         deps.OnBar,
 		OnBreakerTrip: deps.OnBreakerTrip,
 		Log:           log,
 		RedisClient:   deps.RedisClient,
@@ -147,9 +134,6 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		deps.Hub.ReconnectGateway = fullRestart
 	}
 	mgr.SetFullRestart(fullRestart)
-
-	// --- Open bar ticker (500ms) for real-time price updates ---
-	go mgr.StartOpenBarTicker(ctx)
 
 	// --- Host rediscoverer (§0: broker_host lazy rediscovery) ---
 	rediscoverer := NewHostRediscoverer(deps.Searcher, deps.PG, log)

@@ -67,7 +67,6 @@ type MtHubService struct {
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
 	barBroker      *BarBroker
-	dropBroker     *BarDropBroker // push-based bar drop notifications
 	tickBroker     *TickBroker
 	tradeBroker    *TradeBroker
 	statusBroker   *AccountStatusBroker
@@ -75,8 +74,8 @@ type MtHubService struct {
 
 	// reconnectCooldown prevents repeated reconnect attempts for the same
 	// account within a short window. Keyed by accountID, value = last reconnect time.
-	reconnectMu      sync.Mutex
-	reconnectLastAt  map[string]time.Time
+	reconnectMu     sync.Mutex
+	reconnectLastAt map[string]time.Time
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
@@ -128,14 +127,6 @@ func (s *MtHubService) SetLogger(l *zap.Logger) { s.logger = l }
 
 // SetBarBroker injects the bar update broker for real-time K-line push.
 func (s *MtHubService) SetBarBroker(b *BarBroker) { s.barBroker = b }
-
-// SetBarDropBroker injects the bar drop broker for push-based drop notifications.
-func (s *MtHubService) SetBarDropBroker(b *BarDropBroker) {
-	s.dropBroker = b
-	if s.barBroker != nil {
-		s.barBroker.SetDropBroker(b)
-	}
-}
 
 // SetTickBroker injects the tick broker for real-time quote (Bid/Ask) push.
 func (s *MtHubService) SetTickBroker(b *TickBroker) { s.tickBroker = b }
@@ -396,16 +387,6 @@ func (s *MtHubService) PublishAccountProfit(ev *AccountProfitEvent) {
 // SubscribeAccountProfit returns a channel of account profit events for a single account.
 func (s *MtHubService) SubscribeAccountProfit(ctx context.Context, accountID string) (<-chan *AccountProfitEvent, func()) {
 	return s.accountBroker.Subscribe(accountID)
-}
-
-// SubscribeBarDrops returns a channel of bar drop events for the given account.
-func (s *MtHubService) SubscribeBarDrops(accountID string) (<-chan *BarDropEvent, func()) {
-	if s.dropBroker == nil {
-		ch := make(chan *BarDropEvent)
-		close(ch)
-		return ch, func() {}
-	}
-	return s.dropBroker.Subscribe(accountID)
 }
 
 // PublishPositionSnapshot publishes a full position snapshot to all subscribers.

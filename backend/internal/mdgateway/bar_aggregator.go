@@ -1,27 +1,30 @@
 package mdgateway
 
 import (
-	"strings"
 	"sync"
 
-	"github.com/shopspring/decimal"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/repository"
+
+	"github.com/shopspring/decimal"
 )
 
-var Periods = []struct{ Name string; Ms int64 }{
+var Periods = []struct {
+	Name string
+	Ms   int64
+}{
 	{"1m", 60_000}, {"5m", 300_000}, {"15m", 900_000}, {"30m", 1_800_000},
 	{"1h", 3_600_000}, {"4h", 14_400_000}, {"1d", 86_400_000}, {"1w", 604_800_000},
 }
 
 type BarAggregator struct {
-	mu sync.Mutex
-	bars map[string]*openBar // key: broker:canonical:period
+	mu            sync.Mutex
+	bars          map[string]*openBar // key: broker:canonical:period
 	finalizedBars map[repository.FinalizedKey]map[int64]struct{}
 }
 
 type openBar struct {
-	bucket int64
+	bucket                 int64
 	open, high, low, close decimal.Decimal
 	bid, ask               decimal.Decimal
 	volume                 decimal.Decimal
@@ -97,7 +100,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 		} else if ob.bucket != bucket {
 			bar := &mdtick.Bar{
 				AccountID: ob.accountID,
-				Broker: t.Broker, SymbolRaw: t.SymbolRaw, Canonical: t.Canonical, Period: p.Name,
+				Broker:    t.Broker, SymbolRaw: t.SymbolRaw, Canonical: t.Canonical, Period: p.Name,
 				OpenTsUnixMs: ob.bucket * p.Ms, CloseTsUnixMs: (ob.bucket + 1) * p.Ms,
 				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
 				Bid: ob.bid, Ask: ob.ask,
@@ -113,8 +116,12 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 			onBar(bar)
 			ob.reset(bucket, mid, t, p.Ms)
 		}
-		if mid.Cmp(ob.high) > 0 { ob.high = mid }
-		if mid.Cmp(ob.low) < 0 { ob.low = mid }
+		if mid.Cmp(ob.high) > 0 {
+			ob.high = mid
+		}
+		if mid.Cmp(ob.low) < 0 {
+			ob.low = mid
+		}
 		ob.close = mid
 		ob.bid = t.Bid
 		ob.ask = t.Ask
@@ -124,37 +131,6 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 		ob.count++
 		ob.endTs = t.ArrivedUnixMs
 	}
-}
-
-// GetOpenBars returns a snapshot of all currently open bars across all periods.
-func (a *BarAggregator) GetOpenBars() []*mdtick.Bar {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	var out []*mdtick.Bar
-	for key, ob := range a.bars {
-		parts := strings.SplitN(key, ":", 3)
-		if len(parts) != 3 {
-			continue
-		}
-		out = append(out, &mdtick.Bar{
-			AccountID:     ob.accountID,
-			Broker:        parts[0],
-			SymbolRaw:     ob.symbolRaw,
-			Canonical:     parts[1],
-			Period:        parts[2],
-			OpenTsUnixMs:  ob.bucket * mdtick.PeriodMs(parts[2]),
-			CloseTsUnixMs: (ob.bucket + 1) * mdtick.PeriodMs(parts[2]),
-			Open:          ob.open,
-			High:          ob.high,
-			Low:           ob.low,
-			Close:         ob.close,
-			Bid:           ob.bid,
-			Ask:           ob.ask,
-			Volume:        ob.volume.InexactFloat64(),
-			TickCount:     ob.count,
-		})
-	}
-	return out
 }
 
 // RestoreOpenBars restores in-progress bar state after a process restart.

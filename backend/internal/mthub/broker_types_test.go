@@ -40,19 +40,6 @@ func TestPositionSnapshotBroker_Unsubscribe(t *testing.T) {
 	}
 }
 
-func TestBarDropBroker_PubSub(t *testing.T) {
-	t.Parallel()
-	b := NewBarDropBroker()
-	ch, cancel := b.Subscribe("acc-1")
-	defer cancel()
-
-	b.Publish(&BarDropEvent{AccountID: "acc-1", TotalDrops: 5})
-	ev := <-ch
-	if ev.TotalDrops != 5 {
-		t.Fatalf("expected 5 drops, got %d", ev.TotalDrops)
-	}
-}
-
 func TestBarBroker_PubSub(t *testing.T) {
 	t.Parallel()
 	b := NewBarBroker()
@@ -75,15 +62,6 @@ func TestBarBroker_DroppedBars(t *testing.T) {
 	if b.DroppedBars("acc-1") != 0 {
 		t.Fatal("no subscribers means no drop count (drop only counts when subscriber buffer is full)")
 	}
-}
-
-func TestBarBroker_SetDropBroker(t *testing.T) {
-	t.Parallel()
-	bb := NewBarBroker()
-	db := NewBarDropBroker()
-	bb.SetDropBroker(db)
-	// Just verify it doesn't panic
-	bb.Publish(&BarUpdate{AccountID: "acc-1"})
 }
 
 func TestBarBroker_FullBuffer_Drops(t *testing.T) {

@@ -47,7 +47,6 @@ type mdGatewayPipelineDeps struct {
 	platformAgg       **risksvc.PlatformAggregator
 	reconLoop         **mthub.ReconciliationLoop
 	brokerReg         *adapter.BrokerRegistry
-	factorPusher      func(bar *mdtick.Bar)
 	livePerfCollector *marketplace.LivePerformanceCollector
 }
 
@@ -68,7 +67,6 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		Secrets:             d.secClient,
 		Hub:                 d.hub,
 		BrokerRegistry:      d.brokerReg,
-		FactorPusher:        d.factorPusher,
 		Searcher:            brokersearch.New("", ""),
 		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector),
 		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo),

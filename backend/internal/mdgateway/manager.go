@@ -73,7 +73,7 @@ type Manager struct {
 	lastTickAt    map[string]int64
 	disconnecting map[string]bool
 	baseCtx       context.Context
-	rediscoverer  *HostRediscoverer // §0: broker host rediscovery
+	rediscoverer  *HostRediscoverer                                 // §0: broker host rediscovery
 	fullRestart   func(ctx context.Context, accountID string) error // full restart: RemoveGateway + startGatewayForAccount
 }
 
@@ -325,9 +325,4 @@ func (m *Manager) ResetLastTickAt(accountID string) {
 	m.mu.Lock()
 	m.lastTickAt[accountID] = time.Now().Unix()
 	m.mu.Unlock()
-}
-
-// MarketState returns the market state tracker (for factor subscriber tradability gate).
-func (m *Manager) MarketState() *MarketStateTracker {
-	return m.marketState
 }

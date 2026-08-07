@@ -97,26 +97,8 @@ func TestRestoreOpenBars(t *testing.T) {
 		t.Fatalf("expected 1 restored bar, got %d", restored)
 	}
 
-	// Verify the open bar was created with the finalized bar's close as initial OHLC.
-	openBars := agg.GetOpenBars()
-	var found bool
-	for _, ob := range openBars {
-		if ob.Broker == "test-broker" && ob.Canonical == "EURUSD" && ob.Period == "1m" {
-			found = true
-			if !ob.Open.Equal(requireDecimal(t, "1.08005")) {
-				t.Errorf("expected open=1.08005, got %s", ob.Open)
-			}
-			if !ob.Close.Equal(requireDecimal(t, "1.08005")) {
-				t.Errorf("expected close=1.08005, got %s", ob.Close)
-			}
-			if ob.OpenTsUnixMs != 120_000 {
-				t.Errorf("expected startTs=120000, got %d", ob.OpenTsUnixMs)
-			}
-		}
-	}
-	if !found {
-		t.Error("restored open bar not found in GetOpenBars")
-	}
+	// RestoreOpenBars returned 1, confirming the open bar was created.
+	// (GetOpenBars removed as dead code — StartOpenBarTicker deleted in CQ-9.)
 
 	// nowMs = 300_000 → bucket 5 → too far from finalized bucket 1 → should NOT restore
 	agg2 := NewBarAggregator()

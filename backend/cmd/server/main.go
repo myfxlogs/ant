@@ -16,17 +16,13 @@ import (
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
-	"connectrpc.com/otelconnect"
 	"alphaforge/internal/chain"
 	"alphaforge/internal/config"
 	"alphaforge/internal/connect/strategy"
-	"alphaforge/internal/factor"
 	"alphaforge/internal/hdwallet"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway/adapter"
-	"alphaforge/internal/mdgateway/adapter/mdtick"
-	anttrace "alphaforge/internal/trace"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
 	"alphaforge/internal/notifier"
@@ -34,11 +30,14 @@ import (
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risksvc"
 	"alphaforge/internal/secrets"
-	"alphaforge/internal/sweep"
 	alphasentry "alphaforge/internal/sentry"
 	"alphaforge/internal/server"
 	"alphaforge/internal/service"
 	antredis "alphaforge/internal/storage/redis"
+	"alphaforge/internal/sweep"
+	anttrace "alphaforge/internal/trace"
+
+	"connectrpc.com/otelconnect"
 )
 
 func splitAndTrim(s, sep string) []string {
@@ -106,7 +105,6 @@ func main() {
 	accountBroker := mthub.NewAccountProfitBroker()
 	snapshotBroker := mthub.NewPositionSnapshotBroker()
 	barBroker := mthub.NewBarBroker()
-	barDropBroker := mthub.NewBarDropBroker()
 	tickBroker := mthub.NewTickBroker(64, log)
 	tradeBroker := mthub.NewTradeBroker(64, log)
 	statusBroker := mthub.NewAccountStatusBroker()
@@ -121,7 +119,6 @@ func main() {
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
 	mthubSvc.SetLogger(log)
 	mthubSvc.SetBarBroker(barBroker)
-	mthubSvc.SetBarDropBroker(barDropBroker)
 	mthubSvc.SetTickBroker(tickBroker)
 	mthubSvc.SetTradeBroker(tradeBroker)
 	mthubSvc.SetStatusBroker(statusBroker)
@@ -141,30 +138,19 @@ func main() {
 	snapshotPersister := mthub.NewSnapshotPersister(snapshotBroker, pool, log)
 	go snapshotPersister.Start(pipelineCtx)
 
-	var emailNotifier *notifier.EmailNotifier             // set after creation; referenced by OnAccountProfit closure
-	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure
-	var notifSender *notifpubsub.Sender                   // set after creation; referenced by CheckMarginCall closure
-	var workerCleanup func()                               // set after creation; calls worker.Stop() on shutdown
-	var scheduleEngine *strategy.ScheduleEngine              // set after creation; started below
-	var chainMonitor *chain.Monitor                          // set after creation; started below
-	var reconcilerInst *reconcile.Reconciler                 // set after creation; started below
-	var sweepWorker *sweep.Worker                            // set after creation; started below
+	var emailNotifier *notifier.EmailNotifier   // set after creation; referenced by OnAccountProfit closure
+	var platformAgg *risksvc.PlatformAggregator // set after creation; referenced by OnOrderUpdate closure
+	var notifSender *notifpubsub.Sender         // set after creation; referenced by CheckMarginCall closure
+	var workerCleanup func()                    // set after creation; calls worker.Stop() on shutdown
+	var scheduleEngine *strategy.ScheduleEngine // set after creation; started below
+	var chainMonitor *chain.Monitor             // set after creation; started below
+	var reconcilerInst *reconcile.Reconciler    // set after creation; started below
+	var sweepWorker *sweep.Worker               // set after creation; started below
 
 	// M12-C2: multi-broker registry created early so both handler wiring
 	// and the mdgateway pipeline can reference the same instance.
 	brokerReg := adapter.NewBrokerRegistry()
 	mthubSvc.SetBrokerRegistry(brokerReg)
-
-	// --- Factor subscriber (M10-BASE-B6) ---
-	factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
-	factorRegistry := factor.NewFactorRegistry(log)
-	factorEvaluator := factor.NewFactorEvaluator(factorSub, factorRegistry, log)
-	go factorEvaluator.Start(pipelineCtx)
-	factorSub.Start(pipelineCtx)
-	var factorPusher func(bar *mdtick.Bar)
-	factorPusher = func(bar *mdtick.Bar) {
-		factorSub.Push(bar)
-	}
 
 	mktplaceSvc := marketplace.New(pool, nil, log)
 
@@ -193,7 +179,6 @@ func main() {
 			platformAgg:       &platformAgg,
 			reconLoop:         &reconLoop,
 			brokerReg:         brokerReg,
-			factorPusher:      factorPusher,
 			livePerfCollector: livePerfCollector,
 		})
 	}()
@@ -289,9 +274,7 @@ func main() {
 		log.Fatal("server failed", zap.Error(err))
 	}
 
-
 }
-
 
 func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 	pool *pgxpool.Pool, nc *nats.Conn, rdb *antredis.Client,

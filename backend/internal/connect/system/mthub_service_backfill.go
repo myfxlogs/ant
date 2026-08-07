@@ -2,11 +2,9 @@ package system
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 
 	"alphaforge/internal/repository"
 )
@@ -32,120 +30,6 @@ func periodSeconds(period string) int64 {
 	default:
 		return 3600
 	}
-}
-
-// backfillKlines pulls historical bars from the broker for ALL timeframes
-// (1m/5m/15m/30m/1h/4h/1d/1w). Each period is fetched and inserted
-// independently — one period failing does not affect the others.
-// Deduplicates: only one backfill per account+symbol runs at a time.
-func (s *MtHubServer) backfillKlines(ctx context.Context, accountID, rawSymbol string) {
-	key := accountID + ":" + rawSymbol
-	s.backfillMu.Lock()
-	if s.backfilling[key] {
-		s.backfillMu.Unlock()
-		return
-	}
-	s.backfilling[key] = true
-	s.backfillMu.Unlock()
-	defer func() {
-		s.backfillMu.Lock()
-		delete(s.backfilling, key)
-		s.backfillMu.Unlock()
-	}()
-
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
-
-	broker, err := s.platform.GetAccountBroker(ctx, accountID)
-	if err != nil || broker == "" {
-		s.log.Warn("backfill: get account broker failed",
-			zap.String("account", accountID), zap.Error(err))
-		return
-	}
-
-	now := time.Now().Unix()
-	periods := []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}
-
-	var (
-		mu       sync.Mutex
-		inserted int
-		failed   int
-		total    int
-		eg       errgroup.Group
-	)
-	// Limit concurrent broker PriceHistory calls. Some MT servers silently
-	// drop concurrent requests for the same symbol, causing data loss (e.g.
-	// brokerFallback grabbed the 1h slot while backfill was fetching it).
-	eg.SetLimit(4)
-
-	for _, period := range periods {
-		p := period // capture
-		eg.Go(func() error {
-			from := now - 300*periodSeconds(p)
-			// Cap at 2-year retention (md_bars partition TTL).
-			if minFrom := now - 730*24*3600; from < minFrom {
-				from = minFrom
-			}
-
-			bars, err := s.svc.PriceHistory(ctx, accountID, rawSymbol, p, from, now, 500)
-			if err != nil {
-				s.log.Warn("backfill: fetch failed",
-					zap.String("symbol", rawSymbol), zap.String("period", p), zap.Error(err))
-				mu.Lock()
-				failed++
-				mu.Unlock()
-				return nil
-			}
-			if len(bars) == 0 {
-				return nil
-			}
-
-			// Convert to KlineBar.
-			closeMs := uint64(periodSeconds(p) * 1000)
-			klines := make([]repository.KlineBar, len(bars))
-			for i, b := range bars {
-				klines[i] = repository.KlineBar{
-					Broker:        broker,
-					Canonical:     rawSymbol,
-					Period:        p,
-					OpenTsUnixMs:  uint64(b.Time.UnixMilli()),
-					CloseTsUnixMs: uint64(b.Time.UnixMilli()) + closeMs,
-					Open:          b.Open,
-					High:          b.High,
-					Low:           b.Low,
-					Close:         b.Close,
-					Volume:        b.Volume.InexactFloat64(),
-				}
-			}
-
-			// Insert per-period — a partition gap in 1w won't kill 1m/1h/etc.
-			if err := s.marketData.InsertBars(ctx, klines); err != nil {
-				s.log.Warn("backfill: insert failed",
-					zap.String("symbol", rawSymbol), zap.String("period", p),
-					zap.Int("bars", len(klines)), zap.Error(err))
-				mu.Lock()
-				failed++
-				mu.Unlock()
-				return nil
-			}
-
-			s.log.Info("backfill: inserted",
-				zap.String("symbol", rawSymbol), zap.String("period", p),
-				zap.Int("bars", len(klines)))
-			mu.Lock()
-			inserted++
-			total += len(klines)
-			mu.Unlock()
-			return nil
-		})
-	}
-
-	_ = eg.Wait()
-	s.log.Info("backfill: complete",
-		zap.String("symbol", rawSymbol),
-		zap.Int("total_bars", total),
-		zap.Int("periods_ok", inserted),
-		zap.Int("periods_failed", failed))
 }
 
 // brokerFallback fetches K-line bars directly from the broker for a single

@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 	"time"
-
 )
 
 func TestMtHubService_Setters(t *testing.T) {
@@ -21,7 +20,6 @@ func TestMtHubService_Setters(t *testing.T) {
 	svc.SetAccountOwnerVerifier(nil)
 	svc.SetLogger(nil)
 	svc.SetBarBroker(nil)
-	svc.SetBarDropBroker(nil)
 	svc.SetTickBroker(nil)
 	svc.SetTradeBroker(nil)
 	svc.SetStatusBroker(nil)
@@ -108,17 +106,6 @@ func TestMtHubService_SubscribeAccountStatus_Nil(t *testing.T) {
 	t.Parallel()
 	svc := &MtHubService{}
 	ch, cancel := svc.SubscribeAccountStatus("acc-1")
-	defer cancel()
-	_, ok := <-ch
-	if ok {
-		t.Fatal("expected closed channel")
-	}
-}
-
-func TestMtHubService_SubscribeBarDrops_Nil(t *testing.T) {
-	t.Parallel()
-	svc := &MtHubService{}
-	ch, cancel := svc.SubscribeBarDrops("acc-1")
 	defer cancel()
 	_, ok := <-ch
 	if ok {
@@ -226,24 +213,6 @@ func TestMtHubService_SubscribeUserOrderEvents(t *testing.T) {
 	ch, cancel := svc.SubscribeUserOrderEvents(context.Background(), "user-1")
 	defer cancel()
 	_ = ch // just verify no panic
-}
-
-func TestMtHubService_SetBarDropBroker_WiresToBarBroker(t *testing.T) {
-	t.Parallel()
-	svc := &MtHubService{barBroker: NewBarBroker()}
-	db := NewBarDropBroker()
-	svc.SetBarDropBroker(db)
-	// Verify drop broker is wired (publish to full buffer → drop event)
-	ch, cancel := svc.SubscribeBarUpdates("acc-1")
-	defer cancel()
-	_ = ch
-	for i := 0; i < 65; i++ {
-		svc.PublishBar(&BarUpdate{AccountID: "acc-1"})
-	}
-	// If wired correctly, dropBroker should have received at least 1 event
-	if svc.barBroker.DroppedBars("acc-1") < 1 {
-		t.Log("no drops detected (timing dependent)")
-	}
 }
 
 func TestPlatform_NoSession(t *testing.T) {

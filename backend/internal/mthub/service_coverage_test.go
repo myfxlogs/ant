@@ -651,16 +651,6 @@ func TestPlaceOrder_OwnershipNotOwned(t *testing.T) {
 	}
 }
 
-// --- SubscribeBarDrops with broker ---
-
-func TestSubscribeBarDrops_WithBroker(t *testing.T) {
-	t.Parallel()
-	svc := &MtHubService{dropBroker: NewBarDropBroker()}
-	ch, cancel := svc.SubscribeBarDrops("acc-1")
-	defer cancel()
-	_ = ch
-}
-
 // --- SessionState coverage ---
 
 func TestSessionState_WithExecutor(t *testing.T) {
@@ -888,18 +878,6 @@ func TestTradeBroker_Publish_DropPath(t *testing.T) {
 	_ = ch
 }
 
-func TestBarBroker_DropWithDropBroker(t *testing.T) {
-	t.Parallel()
-	bb := NewBarBroker()
-	db := NewBarDropBroker()
-	bb.SetDropBroker(db)
-	ch, cancel := bb.Subscribe("acc-1")
-	// Don't read from ch — next publish will be dropped, triggering drop notification.
-	bb.Publish(&BarUpdate{AccountID: "acc-1", Symbol: "EURUSD"})
-	cancel()
-	_ = ch
-}
-
 // --- Hub method coverage ---
 
 // --- Pure function coverage ---
@@ -1050,23 +1028,6 @@ func TestPlaceOrder_WithCostEstimatorAndEventStore(t *testing.T) {
 	}
 	if record.Ticket != 99999 {
 		t.Fatalf("expected ticket 99999, got %d", record.Ticket)
-	}
-}
-
-// --- SubscribeBarDrops without broker ---
-
-func TestSubscribeBarDrops_NoBroker(t *testing.T) {
-	t.Parallel()
-	svc := &MtHubService{}
-	ch, cancel := svc.SubscribeBarDrops("acc-1")
-	defer cancel()
-	select {
-	case _, ok := <-ch:
-		if ok {
-			t.Fatal("channel should be closed when no broker")
-		}
-	default:
-		t.Fatal("channel should be closed when no broker")
 	}
 }
 
@@ -1805,20 +1766,6 @@ func TestPositionSnapshotBroker_Publish_DropPath(t *testing.T) {
 	}
 	// This publish should hit the default (drop) case.
 	b.Publish(&PositionSnapshot{AccountID: "acc-1"})
-	cancel()
-	_ = ch
-}
-
-func TestBarDropBroker_Publish_DropPath(t *testing.T) {
-	t.Parallel()
-	b := NewBarDropBroker()
-	ch, cancel := b.Subscribe("acc-1")
-	// Buffer size is 16 — fill it.
-	for i := 0; i < 16; i++ {
-		b.Publish(&BarDropEvent{AccountID: "acc-1"})
-	}
-	// This publish should hit the default (drop) case.
-	b.Publish(&BarDropEvent{AccountID: "acc-1"})
 	cancel()
 	_ = ch
 }

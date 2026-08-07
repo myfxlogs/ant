@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -111,34 +111,7 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 	}), nil
 }
 
-// SubscribeBars dynamically subscribes the gateway to a symbol's ticks and triggers
-// a historical backfill from the broker into PG so the symbol has immediate
-// K-line data.
+// SubscribeBars is a stub — real-time chart bar subscription removed in CQ-9 dead code cleanup.
 func (s *MtHubServer) SubscribeBars(ctx context.Context, req *connect.Request[antv1.SubscribeBarsRequest]) (*connect.Response[antv1.SubscribeBarsResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	m := req.Msg
-	if m.AccountId == "" || m.Symbol == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account_id and symbol required"))
-	}
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
-	}
-	if err := s.svc.SubscribeSymbols(ctx, m.AccountId, []string{m.Symbol}); err != nil {
-		s.log.Warn("SubscribeBars: failed to subscribe symbols",
-			zap.String("account", m.AccountId), zap.String("symbol", m.Symbol), zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to subscribe bars"))
-	}
-
-	// Backfill historical bars asynchronously — PriceHistory fallback handles
-	// immediate needs for the requested period via direct broker fetch.
-	go s.backfillKlines(ctx, m.AccountId, m.Symbol)
-
-	return connect.NewResponse(&antv1.SubscribeBarsResponse{}), nil
+	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("SubscribeBars is no longer supported"))
 }
