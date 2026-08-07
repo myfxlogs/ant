@@ -80,3 +80,39 @@ Map `SideBuy(1) → 0 (OP_BUY)`, `SideSell(-1) → 1 (OP_SELL)` before returning
 **The mql2go VM silently substitutes 0 for any unknown constant.** This is the most dangerous failure mode — no error, no crash, just wrong behavior. Any time a MQL4/MQL5 EA works on MT4/MT5 but not in backtest, **always check for missing constants first**.
 
 The full list of MQL4/MQL5 constants is large and spread across many enum groups. The `interp/constants.go` file should be treated as a potential source of silent bugs. When adding support for a new indicator or MQL function, verify all constants it references exist in the map.
+
+---
+
+## Pitfall 3: Map iteration non-determinism → user function calls silently return 0 (CRITICAL)
+
+### Symptom
+Backtest **intermittently** produces `volume=0` trades. Same code, same command (`go test -count=1`), different results across runs. The flaky behavior masks the root cause — passing runs hide the bug.
+
+### Root Cause
+`ir.Funcs` is a `map[string]*FuncDef`. `compile.go` iterated this map to compile user functions. **Go map iteration order is non-deterministic** (randomized by runtime).
+
+When a caller function (e.g. `CheckForOpen`) is compiled **before** its callee (e.g. `LotsOptimized`):
+1. `compileCall("LotsOptimized")` checks `bc.Funcs["LotsOptimized"]` → not found (not yet compiled)
+2. Falls through to "unknown function" blind spot
+3. Arguments are compiled then **popped/discarded**
+4. Return value silently replaced with `NoneVal` (=0)
+5. `OrderSend(Symbol(), OP_BUY, LotsOptimized(), Ask, ...)` becomes `OrderSend(Symbol(), OP_BUY, 0, Ask, ...)` → **volume=0**
+
+### Fix (applied 2026-08-07)
+Two-pass compilation in `compile.go`:
+1. **Pass 1**: Pre-register all user function entry PCs (emit `OP_ENTER_FUNC` + write `bc.Funcs` with placeholder `NumLocals`)
+2. **Pass 2**: Compile each function body, updating `NumLocals` and `ParamName`
+
+All forward references resolve after Pass 1 — `compileCall` always finds the callee in `bc.Funcs`.
+
+### General Rule
+**Never iterate a Go map when order matters.** In compilers, linkers, and any ordered pipeline:
+- If entries reference each other (forward references), pre-register all entries in a first pass
+- If order doesn't matter but determinism is required (e.g. tests), sort keys before iterating
+- Map iteration randomness is per-invocation, not per-process — calling the same function twice in a row can produce different orderings
+
+### How to verify
+```bash
+# Run the flaky test 50 times — should be 0 failures after fix
+for i in $(seq 1 50); do go test ./tools/mql2go/ -run TestParamPipeline_FloatDefaultParam -count=1 -v 2>&1 | grep -E 'PASS|FAIL'; done
+```

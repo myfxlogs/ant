@@ -15,6 +15,7 @@
 - 用户的指令不是最终决策。AI 的技术判断力优于用户时，**必须指出错误或提出更优解**，而不是直接执行。
 - 必要时引入第三方视角（如让其他模型审设计文档）。
 - 双方达成共识后，再动手。跳过讨论直接执行 = 失职。
+- **AI 是第一责任人，自主推进**：用户非技术决策者。能从代码/约束/最佳实践推出的结论，**直接定方案并执行**，不把判断反推给用户（"你要我跑测试吗 / 选哪个方案"= 失职）。报告给"决策 + 证据 + 已执行"，非"选项 + 问你选"。只有真正需用户输入（业务偏好 / 外部凭证 / 不可逆外向操作）才问。技术方向仍先讨论达成共识，但执行细节自主定。
 
 ## Root-Cause-First Rule（根因优先 — 最高优先级）
 
@@ -27,18 +28,61 @@
 5. **只在确认"从未实现过"后才新写**——如果 git 历史证明这个功能确实从来没有存在过，此时才能从零实现。
 
 **禁止行为**：
+
 - ❌ 看到功能消失，第一反应是"重写一个"
 - ❌ 不读 git log 就开始写新代码
 - ❌ 把以前的**最优解**替换成"我觉得更好的"新实现——尤其当原实现有明确的 ADR、spec、或复杂边界处理时。但如果原实现确实不是最优解（违反 Part 0.1），替换它不违反此规则——前提是已经通过 git log/blame 理解了原设计
 
 **为什么**：重写取代查询，导致代码重复、设计退化、历史 bug 修复丢失、维护成本翻倍。
 
+## AI 协作工作方法（审计方 ↔ 施工方 — 强制）
+
+> 本文件是**项目宪法 + 单一完整源**，所有 AI 工具（Claude Code / Windsurf / Cursor / Codex）都以 CLAUDE.md 为准。`.windsurfrules`/`AGENTS.md` 是精简入口，不重复本文件，冲突以本文件为准。
+
+本项目用「审计方 + 施工方」分工（详细 SOP + 范例见 `docs/audits/builder-sop.md`）：
+
+- **审计方（Claude Code）**：只读、验证、记录、出 spec。代码级定位根因，把根因/位置/修复方向/验收标准写进 `docs/audits/tech-debt-registry.md`。**不直接改代码**（保持独立判断 + 省 token）。
+- **施工方（Windsurf / 其他 agent）**：实现修复 + 回填进度。不重新审计、不扩大范围（one task = one scope）、不自由发挥。
+
+**三层文档不丢失**（所有进度只进这三层，❌ 禁止新建并行进度文档）：
+
+1. `docs/audits/tech-debt-registry.md` — 债务总账（每条 gap：根因/位置/状态/修复方向）。施工方工作台。
+2. `docs/audits/handover-audit-plan.md` — 审计全局进度（管线状态表 + 变更日志）。
+3. `memory/`（`open-items-registry.md` + `MEMORY.md`）— 高优摘要，Claude Code 跨会话自动注入。
+
+**记忆分层**（多工具协作 — 强制）：
+
+- **项目知识**（规则/状态/经验/决策/用户协作偏好）→ **只进项目文档**（`CLAUDE.md` / `docs/`）。所有工具的单一共享源，进 git。
+- **私有 memory**（Claude Code `~/.claude`、Windsurf Cascade memory）→ **只放工具特定偏好 + 入口指针**，❌ 禁止存独立项目事实（否则跨工具信息孤岛 + 与项目文档漂移）。
+- **原则：与其"两份同步"（必漂移），不如"一次写对地方"**。项目知识进项目文档，私有 memory 不重复它。
+- 新会话状态感知：Claude Code 靠 `MEMORY.md` 指针；Windsurf/Cursor 靠 `.windsurfrules`/`AGENTS.md` 指引读 `docs/audits/handover-audit-plan.md`。入口不同，指向同一源。
+
+**状态语义**：`❓待核`=记录过未对账当前代码 / `🟦open`=已核验仍存在 / `✅done`=已修且经审计方验收。
+
+**完工回填纪律**（施工方，不做 = 任务判失败）：
+
+1. `tech-debt-registry.md` 条目状态 `🟦open → ✅done`（标日期）+ 追加**真实根因/修复方式/对抗证明/测试结果**。若真实根因与审计方假设不同，**如实写明**（高价值纠偏）。只改状态列 + 追加，不删条目、不改审计方事实陈述。
+2. 普遍 pitfall → 沉淀进本文件同类 Pitfalls 段（防再犯）。
+3. `handover-audit-plan.md` 变更日志加一行。
+4. **不自行宣告完成**——等审计方核对状态 + 实测。
+
+**对抗证明**（任何修复必带）：删掉修复的关键一行，测试必红。删了还绿 = 测试无效 = 未完成。
+
+**验收分离**：施工方不越权宣告完成；审计方核对状态 + 实测后，`✅done` 才权威。
+
+**审计方验收 5 维**（区分平庸与优秀；"build/test 绿"只是底线，不是优秀）：
+1. **意图理解**：解决 spec 背后真问题，还是字面 spec。
+2. **可演进性**（工程最关键）：加同类功能改几处？绑死结构 vs 为变化留口子。
+3. **测试质量**：验证"行为对"（含集成/边界/不变量语义），不是只跑路径。
+4. **防御性**：主动想会出错处（空/nil/极值/负数/混合）。
+5. **克制**：最简解，不炫技（过度设计）不偷懒（走捷径）。
+
 ## Codebase Navigation（功能块导航）
 
 用名字定位代码：说块名即可，AI 按表定位。调试时追管线（块名 → 目录 → 文件）。
 
 | # | 块名 (EN) | 中文 | 目录 | 一句话 |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | `mt-gateway` | MT网关 | `backend/mt{4,5}/` `backend/internal/mdgateway/adapter/mt{4,5}/` `backend/internal/mthub/` | mtapi.io 连接 MT, 下单/查持仓/拉K线 |
 | 2 | `strategy-runtime` | 策略运行时 | `backend/strategy/{sdk,runner,backtest,indicators}/` | Strategy接口, Bar重放, 回测指标, 技术指标库 |
 | 3 | `mql-compiler` | MQL编译器 | `backend/tools/mql2go/` | MQL/Python → tree-sitter → IR → Bytecode → VM |
@@ -56,7 +100,7 @@
 **管线调试**（跨块追数据流，出问题时按线追）：
 
 | 管线 | 路径 |
-|------|------|
+| ------ | ------ |
 | 行情引入 | `mt-gateway(MT4/5) → market-data(去重/质量/归一化) → NATS + PG` |
 | 策略执行 | `market-data(bar源) → strategy-runtime(runner) → risk-gate(信号管线) → oms(16状态机) → mt-gateway(下单)` |
 | 订单对账 | `mt-gateway(订单事件) → mthub(幂等门/对账门) → oms(状态更新) → NATS(实时PnL)` |
@@ -86,10 +130,10 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 **原则**: 按语义域（功能边界）拆分优先，行数作为软性参考。拆分的目的是帮助 AI 阅读代码——如果文件逻辑内聚，适度超标优于碎片化。
 
-| Language | 软性参考 | 函数参考 |
-|----------|---------|---------|
-| Go       | 300 行  | 50 行   |
-| TypeScript | 250 行 | 50 行   |
+| Language   | 软性参考 | 函数参考 |
+| ---------- | -------- | -------- |
+| Go         | 300 行   | 50 行    |
+| TypeScript | 250 行   | 50 行    |
 
 - **拆分前先判断**：是否有明确的功能边界（CRUD/生命周期/实体类型）？有 → 拆。没有 → 保持内聚。
 - **硬性红线**：Go >450 行、TS >375 行必须拆分（AI 明显退化）。
@@ -102,7 +146,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 **优先级**: Claude Code 内置工具 > `rtk` 前缀 > 裸命令
 
 | 操作 | ✅ 首选 | ⚠️ 次选 | ❌ 禁止 |
-|------|--------|--------|--------|
+| ------ | -------- | -------- | -------- |
 | 读文件 | Read 工具 | `rtk read` | `cat` / `head` / `tail` |
 | 搜索文本 | Grep 工具 | `rtk grep` | `grep -rn` |
 | 查找文件 | Glob 工具 | `rtk find` | `find` |
@@ -166,6 +210,52 @@ These constraints are enforced at implementation time. Violation = fix before co
 - 项目使用 multi-stage Docker build（`backend/Dockerfile`）：builder stage 在 `golang:alpine` 里编译 CGO 代码，runtime stage 只拷贝二进制 + `mql.so`
 - 运行中二进制名是 `/app/alphaforge`（不是 `alphaforge-backend` / `server`）
 
+## MQL2GO VM Pitfalls (必读)
+
+> 回测不开单 / volume=0 / 指标全零但 MT4/MT5 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
+
+mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。三类已确认的静默失败：
+
+| 类型 | 根因 | 症状 | 修复状态 |
+| ------ | ------ | ------ | --------- |
+| 未知常量 → 0 | `interp/constants.go` 缺常量 → 编译器 push 0 | 指标返回错误线（如 MODE_SIGNAL=0 → MACD==Signal → 永不开单） | ✅ 已补全 |
+| map 迭代非确定 | `ir.Funcs` 是 map，遍历编译 → 前向引用落 "unknown function" → 返回值=0 | volume=0 flaky（同代码同命令时 PASS 时 FAIL） | ✅ 两遍编译 |
+| OrderType 映射错误 | `builtinOrderType` 返回 SideBuy(1)/SideSell(-1) 而非 OP_BUY(0)/OP_SELL(1) | 持仓管理失效（平仓/止损条件永不触发） | ✅ 已修 |
+
+**编译确定性 — 强制**：
+
+- ❌ 禁止裸遍历 Go map 处理有序依赖（编译器/链接器/任何有序 pipeline）
+- ✅ 有前向引用 → 两遍编译：Pass 1 预注册所有 entry，Pass 2 编译体
+- ✅ 无前向引用但需确定性 → 排序 key 后遍历
+- Go map 迭代随机性是 **per-invocation**（非 per-process）
+
+**测试数据确定性 — 强制**：
+
+- ❌ 禁止 `time.Now()` 生成测试 bar timestamp（违反 spec 21 §10 Determinism Contract）
+- ✅ 用固定 epoch：`time.Date(2024, 1, 1, 0, i, 0, 0, time.UTC)`
+
+## Strategy Runner Rules (实盘执行 — 强制)
+
+**Open bar 过滤（LIVE-1）**：
+
+- ❌ 策略 runner 禁止处理未收盘 bar（`bar.Closed == false`）—— open bar 是行情快照，非策略事件
+- ✅ 用 `shouldRunOnBar(bar, symbol, timeframe)` 纯函数过滤（`live_runner.go:214`）
+- ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
+- 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
+
+## Backtest Status Management (回测状态 — 强制)
+
+**新增回测终态时的检查清单**（BT-5 教训：DEGRADED 漏了 4 处）：
+新增或修改回测终态状态时，**必须同步更新以下所有位置**：
+
+1. `status_constants.go` — 状态常量 + `isTerminalBacktestStatus()` 函数
+2. `backtest_run_worker.go` — lease CASE 语句 + `pg_notify` 条件
+3. `strategy_backtest_watch.go` — SSE watch 终态判断（用 `isTerminalBacktestStatus` helper）
+4. `strategy_converters.go` — `backtestStatusToProto()` switch case + `IsTerminal` 字段
+5. proto enum — `antv1.BacktestRunStatus` 枚举值
+
+**缺少任一 = 状态推送断链**（DEGRADED 曾漏 4 处中 3 处 → 前端卡"运行中"30s + SSE 流不结束）
+
 ## Before Commit
 
 ```bash
@@ -175,3 +265,12 @@ bash scripts/gen_capability_map.sh                      # refresh docs/CAPABILIT
 ```
 
 Full constraint details: see `/root/.claude/projects/-opt-ant/memory/`
+
+- docker compose 命令请使用 `rtk proxy docker compose ...` 避免原始输出
+
+## RTK 兼容规范
+
+- ⚠️ 避免使用 `cd && cmd` 或换行拼接的复合 Bash 块
+- ✅ 将每条命令作为独立 Bash 工具调用发出（如 `git status`、`grep -rn ...`）
+- ✅ RTK 会自动处理输出截断，无需手动 `| head/tail`
+- ❌ 不要使用管道限制输出（| head, | tail, | grep 用于分页）

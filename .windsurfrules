@@ -1,25 +1,35 @@
-# Project "ant" — Shared AI Rules
+# Project "ant" — Windsurf Rules
 
-## Deployment（最重要 — GLM 踩过的坑）
-- **后端部署唯一方式**: `docker compose build backend && docker compose up -d backend`
-- **禁止**: 宿主机 `go build` → `docker cp`（glibc vs Alpine musl，二进制不兼容）
-- **禁止**: 在运行中容器里 `go build` 或 `apk add build-base`
-- **迁移文件**: `git status backend/migrations/` — 未提交的 .up.sql 会随 Docker build 执行
+> **🔴 动工前必读 [CLAUDE.md](CLAUDE.md)（项目宪法，单一完整源：业务方向/协作原则/根因优先/功能块导航/全部技术约束/Pitfalls/「AI 协作工作方法」）。**
+> **你是施工方（Windsurf）。完整工作方法见 CLAUDE.md「AI 协作工作方法」+ [docs/audits/builder-sop.md](docs/audits/builder-sop.md)（详细 SOP + 范例）。**
+> **本文件 + [AGENTS.md](AGENTS.md) 仅关键红线 + 入口指引；与 CLAUDE.md 冲突时以 CLAUDE.md 为准。**
 
-## Reuse Preflight（动工前）
-- 写任何新 file/function 前，先查 `bash scripts/cap.sh <动词>`
-- 在 PR 里标注 `REUSE: <symbol>` 或 `NEW: 无现成能力`
+## 协作纪律（施工方动工必读）
+- 你是施工方。审计方(Claude Code)已定位根因，记在 `docs/audits/tech-debt-registry.md`。你的活 = 实现修复 + 回填进度。不重新审计、不扩大范围（one task = one scope）。
+- **新会话第一步**：读 `docs/audits/handover-audit-plan.md` 知当前任务/全局进度 + `docs/audits/tech-debt-registry.md` 知 open gap。你没有 Claude Code 的 memory 自动注入，**必须主动读这两个文件对齐状态**，否则不知道现在该干嘛。
+- 动工前：读 registry 对应条目 + `git log --all --oneline -- <path>` / `git blame`（禁不读历史就重写）+ `bash scripts/cap.sh <词>` 查复用。
+- 完工必须回填（否则判失败）：① registry 条目 `🟦open→✅done` + 真实根因/修复方式/对抗证明/测试结果；② 普遍 pitfall 沉淀进 AGENTS.md；③ 不新建并行进度文档；④ 不自行宣告完成（等审计方验收）。状态语义：❓待核 / 🟦open / ✅done。
+
+## Deployment（踩过的坑）
+- 后端唯一：`docker compose build backend && docker compose up -d backend`
+- ❌ 禁宿主机 `go build` → `docker cp`（glibc vs Alpine musl 不兼容）
+- ❌ 禁运行中容器 `go build` / `apk add build-base`
+- 迁移：未提交 `.up.sql` 随 Docker build 自动执行
 
 ## Prohibited
-- ❌ REST endpoints（除 healthz/readyz/livez/metrics）
-- ❌ WebSocket
-- ❌ JSON 序列化/持久化（proto only）
-- ❌ float64 in price calculations（用 decimal.Decimal）
-- ❌ `//nolint`, `# noqa`, `// @ts-ignore`
+- ❌ REST（除 healthz/readyz/livez/metrics）/ WebSocket
+- ❌ JSON 序列化/持久化（proto only；外部 API 响应解析豁免）
+- ❌ float64 in price（用 `decimal.Decimal`）
+- ❌ `//nolint` / `# noqa` / `// @ts-ignore`
+- ❌ 因困难妥协最优解（回退代替重新生成 / 标记 legacy / 沉默代替修复 = 违规）
 
-## Tech Stack
-- External API: ConnectRPC + SSE
-- Internal: in-process 或 NATS JetStream
-- MT access: mtapi gRPC（adapter/mt4/ 和 mt5/ 不共享代码）
-- Build: multi-stage Docker（golang:alpine → alpine runtime）
-- Binary name: `/app/alphaforge`（不是 alphaforge-backend / server）
+## 确定性（回测/编译器/任何有序 pipeline — BT-6 教训）
+- ❌ 裸遍历 Go map 处理有序依赖（有前向引用 → 两遍编译：Pass 1 预注册 entry，Pass 2 编译体）
+- ❌ `time.Now()` 生成测试 bar timestamp（违反 spec 21 §10；用固定 epoch `time.Date(2024,1,1,0,i,0,0,time.UTC)`）
+- Go map 迭代随机性是 per-invocation；flaky 测试 = 未完成的修复
+
+## 平台 / 复用
+- External: ConnectRPC + SSE only；Internal: in-process / NATS JetStream；MT: mtapi gRPC（mt4/mt5 adapter 不共享代码）
+- Push-first（gRPC stream/SSE 默认；禁轮询/cron/setInterval，除非无 push 源且非延迟敏感）
+- 新 file/function 前 `bash scripts/cap.sh <词>` 查复用，PR 标 `REUSE:`/`NEW:`（缺 = 失败）
+- Binary: `/app/alphaforge`；file-lines 红线 Go>450 / TS>375 必须拆（`cd backend && go run ./tools/check-file-lines --strict`）

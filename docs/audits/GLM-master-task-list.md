@@ -115,6 +115,15 @@
 | P1-5a ✅ | `trading_accounts` 表是否冗余 | grep 确认 0 Go 代码引用 → drop 或注释 | `internal/` 中 0 Go 引用（仅 gen proto i18n 字符串），确认冗余 |
 | P1-5b ✅ | 56 个缺 down 的 migration 是否有破坏性操作 | 逐条检查 DROP/DELETE 迁移的 down 脚本 | 53 个纯增量（CREATE/ALTER ADD），027/029 索引重建，100 表重建（factor_definitions v2），166 有意死表清理 — 无意外破坏性操作 |
 
+### P1-6 · 多策略共账户（Pro 档容量冲突）🆕 待施工
+
+| # | 内容 | 状态 |
+|----|------|------|
+| P1-6a | **商业 bug**：`session_registry.go:116` 一账户一会话，Pro 档卖"5 账户/20 实盘策略"(`strategy-marketplace.md:172`) → 付费用户最多跑 5 个实盘策略 | 已确认（购买→实盘验证 2026-08-06 挖出）|
+| P1-6b | 多策略共账户：持仓归因 + 按策略风控聚合 + 同 symbol 冲突仲裁 | 待施工。**禁止**简单放开 sessionRegistry 键（会引入未受控持仓冲突）|
+
+> 触发时机：Pro 用户撞到"只能跑 5 个"上限 / 多账户运营打磨期。详见 `docs/spec/purchase-to-live-link-spec.md` §八。
+
 ---
 
 ## 🟢 P2 — 择机做
