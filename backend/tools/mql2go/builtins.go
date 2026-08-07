@@ -208,6 +208,9 @@ var builtinRegistry = []builtinEntry{
 	{"CTrade.SetExpertMagicNumber", nil},
 	{"CTrade.SetDeviationInPoints", nil},
 
+	// Python SDK convenience methods (mapped from ctx.broker.close_all etc.)
+	{"CloseAll", nil},
+
 	// Utility
 	{"NormalizeDouble", nil},
 	{"DoubleToString", nil},

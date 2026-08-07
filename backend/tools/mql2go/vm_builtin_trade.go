@@ -565,3 +565,19 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
 	return interp.BoolVal(err == nil), nil
 }
+
+func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.ctx == nil || vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), nil
+	}
+	positions := vm.ctx.Broker().Positions(0)
+	allOK := true
+	for _, pos := range positions {
+		_, err := vm.ctx.Broker().PositionClose(pos.Ticket, decimal.Zero)
+		if err != nil {
+			allOK = false
+		}
+	}
+	vm.cachedPositions = nil
+	return interp.BoolVal(allOK), nil
+}

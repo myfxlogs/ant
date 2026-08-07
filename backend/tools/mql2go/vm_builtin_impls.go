@@ -214,6 +214,7 @@ func registerTradeBuiltins() {
 	builtinRegistry[id("CTrade.OrderDelete")].fn = builtinCTradeOrderDelete
 	builtinRegistry[id("CTrade.SetExpertMagicNumber")].fn = builtinNoop
 	builtinRegistry[id("CTrade.SetDeviationInPoints")].fn = builtinNoop
+	builtinRegistry[id("CloseAll")].fn = builtinCloseAll
 }
 
 func registerArrayBuiltins() {

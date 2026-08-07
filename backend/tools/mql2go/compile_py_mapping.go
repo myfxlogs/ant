@@ -46,11 +46,13 @@ var pyMethodMap = map[string]string{
 	"broker.buy_stop": "CTrade.BuyStop", "broker.sell_stop": "CTrade.SellStop",
 	"broker.close": "CTrade.PositionClose", "broker.close_partial": "CTrade.PositionClosePartial",
 	"broker.close_by": "CTrade.PositionCloseBy", "broker.modify": "CTrade.PositionModify",
-	"broker.delete": "CTrade.OrderDelete",
+	"broker.delete":     "CTrade.OrderDelete",
+	"broker.close_all":  "CloseAll",
 	"broker.order_send": "OrderSend", "broker.order_close": "OrderClose",
 	"broker.order_modify": "OrderModify", "broker.order_delete": "OrderDelete",
 	// positions.*
 	"positions.count": "PositionsTotal", "positions.total": "PositionsTotal",
+	"ctx.positions": "PositionsTotal",
 	// ctx.* direct
 	"ctx.ask": "Ask", "ctx.bid": "Bid", "ctx.symbol": "Symbol",
 	"ctx.point": "Point", "ctx.digits": "Digits", "ctx.spread": "Spread", "ctx.period": "Period",

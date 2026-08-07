@@ -12,18 +12,18 @@ import (
 // SimBroker implements sdk.Broker for backtesting.
 // It simulates order fills at the next bar's open price.
 type SimBroker struct {
-	config      Config
-	positions   []*OrderRecord
-	pending     []*OrderRecord
-	history     []*OrderRecord
-	deals       []sdk.Deal
-	trades      []Trade
-	ticketSeq   int64
-	dealSeq     int64
-	equity      decimal.Decimal
-	balance     decimal.Decimal
-	currentBar  int
-	currentBarTime time.Time // timestamp of the bar being processed
+	config         Config
+	positions      []*OrderRecord
+	pending        []*OrderRecord
+	history        []*OrderRecord
+	deals          []sdk.Deal
+	trades         []Trade
+	ticketSeq      int64
+	dealSeq        int64
+	equity         decimal.Decimal
+	balance        decimal.Decimal
+	currentBar     int
+	currentBarTime time.Time       // timestamp of the bar being processed
 	currentPrice   decimal.Decimal // current bar's close price for floating P&L
 }
 
@@ -96,6 +96,11 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		Comment:    req.Comment,
 		Magic:      req.Magic,
 		OpenBar:    b.currentBar,
+	}
+
+	// Market orders with price=0 fill at current market price (Python SDK convention).
+	if req.Type == sdk.OrderMarket && rec.Price.IsZero() {
+		rec.Price = b.currentPrice
 	}
 
 	// Apply commission (basis points of volume)

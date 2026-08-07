@@ -200,6 +200,8 @@ message AgentBacktestResult {
   repeated string equity_curve = 13;  // decimal strings
   repeated int64 equity_times_ms = 14;// bar timestamps
   repeated AgentTrade trades = 15;
+  bool is_reliable = 16;              // ADR-0028 防线B: false if invariant violations detected
+  repeated InvariantBlindSpot invariant_blind_spots = 17; // 防线B violations (empty if reliable)
 }
 
 message AgentTrade {
@@ -219,6 +221,14 @@ message AgentBlindSpot {
   string builtin = 1;
   string severity = 2;                // "fatal", "warning", "info"
   int32 count = 3;
+}
+
+// InvariantBlindSpot represents an ADR-0028 Defense Line B invariant violation.
+message InvariantBlindSpot {
+  string id = 1;                      // e.g. "zero_volume_trade"
+  string category = 2;               // "invariant"
+  string severity = 3;               // "致命" (SeverityFatal)
+  string description = 4;            // human-readable description
 }
 
 message SearchExperienceRequest {

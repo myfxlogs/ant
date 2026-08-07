@@ -1268,24 +1268,26 @@ func (x *SemanticChange) GetDescription() string {
 }
 
 type AgentBacktestResult struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Success          bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Error            string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	TotalReturn      string                 `protobuf:"bytes,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
-	AnnualReturn     string                 `protobuf:"bytes,4,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
-	MaxDrawdown      string                 `protobuf:"bytes,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
-	SharpeRatio      string                 `protobuf:"bytes,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	WinRate          string                 `protobuf:"bytes,7,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor     string                 `protobuf:"bytes,8,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	TotalTrades      int32                  `protobuf:"varint,9,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
-	WinningTrades    int32                  `protobuf:"varint,10,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
-	LosingTrades     int32                  `protobuf:"varint,11,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
-	TotalPnlAbsolute string                 `protobuf:"bytes,12,opt,name=total_pnl_absolute,json=totalPnlAbsolute,proto3" json:"total_pnl_absolute,omitempty"` // decimal string
-	EquityCurve      []string               `protobuf:"bytes,13,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`                  // decimal strings
-	EquityTimesMs    []int64                `protobuf:"varint,14,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"`  // bar timestamps
-	Trades           []*AgentTrade          `protobuf:"bytes,15,rep,name=trades,proto3" json:"trades,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Success             bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Error               string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	TotalReturn         string                 `protobuf:"bytes,3,opt,name=total_return,json=totalReturn,proto3" json:"total_return,omitempty"`
+	AnnualReturn        string                 `protobuf:"bytes,4,opt,name=annual_return,json=annualReturn,proto3" json:"annual_return,omitempty"`
+	MaxDrawdown         string                 `protobuf:"bytes,5,opt,name=max_drawdown,json=maxDrawdown,proto3" json:"max_drawdown,omitempty"`
+	SharpeRatio         string                 `protobuf:"bytes,6,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
+	WinRate             string                 `protobuf:"bytes,7,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor        string                 `protobuf:"bytes,8,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TotalTrades         int32                  `protobuf:"varint,9,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
+	WinningTrades       int32                  `protobuf:"varint,10,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
+	LosingTrades        int32                  `protobuf:"varint,11,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
+	TotalPnlAbsolute    string                 `protobuf:"bytes,12,opt,name=total_pnl_absolute,json=totalPnlAbsolute,proto3" json:"total_pnl_absolute,omitempty"` // decimal string
+	EquityCurve         []string               `protobuf:"bytes,13,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`                  // decimal strings
+	EquityTimesMs       []int64                `protobuf:"varint,14,rep,packed,name=equity_times_ms,json=equityTimesMs,proto3" json:"equity_times_ms,omitempty"`  // bar timestamps
+	Trades              []*AgentTrade          `protobuf:"bytes,15,rep,name=trades,proto3" json:"trades,omitempty"`
+	IsReliable          bool                   `protobuf:"varint,16,opt,name=is_reliable,json=isReliable,proto3" json:"is_reliable,omitempty"`                             // ADR-0028 防线B: false if invariant violations detected
+	InvariantBlindSpots []*InvariantBlindSpot  `protobuf:"bytes,17,rep,name=invariant_blind_spots,json=invariantBlindSpots,proto3" json:"invariant_blind_spots,omitempty"` // 防线B violations (empty if reliable)
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *AgentBacktestResult) Reset() {
@@ -1419,6 +1421,20 @@ func (x *AgentBacktestResult) GetEquityTimesMs() []int64 {
 func (x *AgentBacktestResult) GetTrades() []*AgentTrade {
 	if x != nil {
 		return x.Trades
+	}
+	return nil
+}
+
+func (x *AgentBacktestResult) GetIsReliable() bool {
+	if x != nil {
+		return x.IsReliable
+	}
+	return false
+}
+
+func (x *AgentBacktestResult) GetInvariantBlindSpots() []*InvariantBlindSpot {
+	if x != nil {
+		return x.InvariantBlindSpots
 	}
 	return nil
 }
@@ -1599,6 +1615,75 @@ func (x *AgentBlindSpot) GetCount() int32 {
 	return 0
 }
 
+// InvariantBlindSpot represents an ADR-0028 Defense Line B invariant violation.
+type InvariantBlindSpot struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                   // e.g. "zero_volume_trade"
+	Category      string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`       // "invariant"
+	Severity      string                 `protobuf:"bytes,3,opt,name=severity,proto3" json:"severity,omitempty"`       // "致命" (SeverityFatal)
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"` // human-readable description
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InvariantBlindSpot) Reset() {
+	*x = InvariantBlindSpot{}
+	mi := &file_agent_gateway_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InvariantBlindSpot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InvariantBlindSpot) ProtoMessage() {}
+
+func (x *InvariantBlindSpot) ProtoReflect() protoreflect.Message {
+	mi := &file_agent_gateway_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InvariantBlindSpot.ProtoReflect.Descriptor instead.
+func (*InvariantBlindSpot) Descriptor() ([]byte, []int) {
+	return file_agent_gateway_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *InvariantBlindSpot) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *InvariantBlindSpot) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *InvariantBlindSpot) GetSeverity() string {
+	if x != nil {
+		return x.Severity
+	}
+	return ""
+}
+
+func (x *InvariantBlindSpot) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
 type SearchExperienceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`       // natural language description
@@ -1610,7 +1695,7 @@ type SearchExperienceRequest struct {
 
 func (x *SearchExperienceRequest) Reset() {
 	*x = SearchExperienceRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[19]
+	mi := &file_agent_gateway_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1622,7 +1707,7 @@ func (x *SearchExperienceRequest) String() string {
 func (*SearchExperienceRequest) ProtoMessage() {}
 
 func (x *SearchExperienceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[19]
+	mi := &file_agent_gateway_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1635,7 +1720,7 @@ func (x *SearchExperienceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchExperienceRequest.ProtoReflect.Descriptor instead.
 func (*SearchExperienceRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{19}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *SearchExperienceRequest) GetQuery() string {
@@ -1673,7 +1758,7 @@ type ExperienceEntry struct {
 
 func (x *ExperienceEntry) Reset() {
 	*x = ExperienceEntry{}
-	mi := &file_agent_gateway_proto_msgTypes[20]
+	mi := &file_agent_gateway_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1685,7 +1770,7 @@ func (x *ExperienceEntry) String() string {
 func (*ExperienceEntry) ProtoMessage() {}
 
 func (x *ExperienceEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[20]
+	mi := &file_agent_gateway_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1698,7 +1783,7 @@ func (x *ExperienceEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExperienceEntry.ProtoReflect.Descriptor instead.
 func (*ExperienceEntry) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{20}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ExperienceEntry) GetId() string {
@@ -1752,7 +1837,7 @@ type SearchExperienceResponse struct {
 
 func (x *SearchExperienceResponse) Reset() {
 	*x = SearchExperienceResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[21]
+	mi := &file_agent_gateway_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1764,7 +1849,7 @@ func (x *SearchExperienceResponse) String() string {
 func (*SearchExperienceResponse) ProtoMessage() {}
 
 func (x *SearchExperienceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[21]
+	mi := &file_agent_gateway_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1777,7 +1862,7 @@ func (x *SearchExperienceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchExperienceResponse.ProtoReflect.Descriptor instead.
 func (*SearchExperienceResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{21}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *SearchExperienceResponse) GetEntries() []*ExperienceEntry {
@@ -1798,7 +1883,7 @@ type StoreExperienceRequest struct {
 
 func (x *StoreExperienceRequest) Reset() {
 	*x = StoreExperienceRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[22]
+	mi := &file_agent_gateway_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1810,7 +1895,7 @@ func (x *StoreExperienceRequest) String() string {
 func (*StoreExperienceRequest) ProtoMessage() {}
 
 func (x *StoreExperienceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[22]
+	mi := &file_agent_gateway_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1823,7 +1908,7 @@ func (x *StoreExperienceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreExperienceRequest.ProtoReflect.Descriptor instead.
 func (*StoreExperienceRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{22}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *StoreExperienceRequest) GetCategory() string {
@@ -1857,7 +1942,7 @@ type StoreExperienceResponse struct {
 
 func (x *StoreExperienceResponse) Reset() {
 	*x = StoreExperienceResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[23]
+	mi := &file_agent_gateway_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1869,7 +1954,7 @@ func (x *StoreExperienceResponse) String() string {
 func (*StoreExperienceResponse) ProtoMessage() {}
 
 func (x *StoreExperienceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[23]
+	mi := &file_agent_gateway_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1882,7 +1967,7 @@ func (x *StoreExperienceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreExperienceResponse.ProtoReflect.Descriptor instead.
 func (*StoreExperienceResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{23}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *StoreExperienceResponse) GetId() string {
@@ -1914,7 +1999,7 @@ type StrategyPlan struct {
 
 func (x *StrategyPlan) Reset() {
 	*x = StrategyPlan{}
-	mi := &file_agent_gateway_proto_msgTypes[24]
+	mi := &file_agent_gateway_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1926,7 +2011,7 @@ func (x *StrategyPlan) String() string {
 func (*StrategyPlan) ProtoMessage() {}
 
 func (x *StrategyPlan) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[24]
+	mi := &file_agent_gateway_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1939,7 +2024,7 @@ func (x *StrategyPlan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StrategyPlan.ProtoReflect.Descriptor instead.
 func (*StrategyPlan) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{24}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *StrategyPlan) GetType() string {
@@ -2000,7 +2085,7 @@ type AgentGenerateStrategyRequest struct {
 
 func (x *AgentGenerateStrategyRequest) Reset() {
 	*x = AgentGenerateStrategyRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[25]
+	mi := &file_agent_gateway_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2012,7 +2097,7 @@ func (x *AgentGenerateStrategyRequest) String() string {
 func (*AgentGenerateStrategyRequest) ProtoMessage() {}
 
 func (x *AgentGenerateStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[25]
+	mi := &file_agent_gateway_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2025,7 +2110,7 @@ func (x *AgentGenerateStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGenerateStrategyRequest.ProtoReflect.Descriptor instead.
 func (*AgentGenerateStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{25}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *AgentGenerateStrategyRequest) GetMessage() string {
@@ -2143,7 +2228,7 @@ type BacktestRunSummary struct {
 
 func (x *BacktestRunSummary) Reset() {
 	*x = BacktestRunSummary{}
-	mi := &file_agent_gateway_proto_msgTypes[26]
+	mi := &file_agent_gateway_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2155,7 +2240,7 @@ func (x *BacktestRunSummary) String() string {
 func (*BacktestRunSummary) ProtoMessage() {}
 
 func (x *BacktestRunSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[26]
+	mi := &file_agent_gateway_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2168,7 +2253,7 @@ func (x *BacktestRunSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BacktestRunSummary.ProtoReflect.Descriptor instead.
 func (*BacktestRunSummary) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{26}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *BacktestRunSummary) GetTemplateName() string {
@@ -2249,7 +2334,7 @@ type AgentGenerateStrategyChunk struct {
 
 func (x *AgentGenerateStrategyChunk) Reset() {
 	*x = AgentGenerateStrategyChunk{}
-	mi := &file_agent_gateway_proto_msgTypes[27]
+	mi := &file_agent_gateway_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2261,7 +2346,7 @@ func (x *AgentGenerateStrategyChunk) String() string {
 func (*AgentGenerateStrategyChunk) ProtoMessage() {}
 
 func (x *AgentGenerateStrategyChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[27]
+	mi := &file_agent_gateway_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2274,7 +2359,7 @@ func (x *AgentGenerateStrategyChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentGenerateStrategyChunk.ProtoReflect.Descriptor instead.
 func (*AgentGenerateStrategyChunk) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{27}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *AgentGenerateStrategyChunk) GetPhase() string {
@@ -2388,7 +2473,7 @@ type UserTemplateEntry struct {
 
 func (x *UserTemplateEntry) Reset() {
 	*x = UserTemplateEntry{}
-	mi := &file_agent_gateway_proto_msgTypes[28]
+	mi := &file_agent_gateway_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2400,7 +2485,7 @@ func (x *UserTemplateEntry) String() string {
 func (*UserTemplateEntry) ProtoMessage() {}
 
 func (x *UserTemplateEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[28]
+	mi := &file_agent_gateway_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2413,7 +2498,7 @@ func (x *UserTemplateEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserTemplateEntry.ProtoReflect.Descriptor instead.
 func (*UserTemplateEntry) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{28}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *UserTemplateEntry) GetId() string {
@@ -2459,7 +2544,7 @@ type ListMemoryRequest struct {
 
 func (x *ListMemoryRequest) Reset() {
 	*x = ListMemoryRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[29]
+	mi := &file_agent_gateway_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2471,7 +2556,7 @@ func (x *ListMemoryRequest) String() string {
 func (*ListMemoryRequest) ProtoMessage() {}
 
 func (x *ListMemoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[29]
+	mi := &file_agent_gateway_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2484,7 +2569,7 @@ func (x *ListMemoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMemoryRequest.ProtoReflect.Descriptor instead.
 func (*ListMemoryRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{29}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{30}
 }
 
 type ListMemoryResponse struct {
@@ -2497,7 +2582,7 @@ type ListMemoryResponse struct {
 
 func (x *ListMemoryResponse) Reset() {
 	*x = ListMemoryResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[30]
+	mi := &file_agent_gateway_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2509,7 +2594,7 @@ func (x *ListMemoryResponse) String() string {
 func (*ListMemoryResponse) ProtoMessage() {}
 
 func (x *ListMemoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[30]
+	mi := &file_agent_gateway_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2522,7 +2607,7 @@ func (x *ListMemoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMemoryResponse.ProtoReflect.Descriptor instead.
 func (*ListMemoryResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{30}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListMemoryResponse) GetTemplates() []*UserTemplateEntry {
@@ -2550,7 +2635,7 @@ type SaveUserTemplateRequest struct {
 
 func (x *SaveUserTemplateRequest) Reset() {
 	*x = SaveUserTemplateRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[31]
+	mi := &file_agent_gateway_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2562,7 +2647,7 @@ func (x *SaveUserTemplateRequest) String() string {
 func (*SaveUserTemplateRequest) ProtoMessage() {}
 
 func (x *SaveUserTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[31]
+	mi := &file_agent_gateway_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2575,7 +2660,7 @@ func (x *SaveUserTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveUserTemplateRequest.ProtoReflect.Descriptor instead.
 func (*SaveUserTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{31}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *SaveUserTemplateRequest) GetName() string {
@@ -2608,7 +2693,7 @@ type SaveUserTemplateResponse struct {
 
 func (x *SaveUserTemplateResponse) Reset() {
 	*x = SaveUserTemplateResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[32]
+	mi := &file_agent_gateway_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2620,7 +2705,7 @@ func (x *SaveUserTemplateResponse) String() string {
 func (*SaveUserTemplateResponse) ProtoMessage() {}
 
 func (x *SaveUserTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[32]
+	mi := &file_agent_gateway_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2633,7 +2718,7 @@ func (x *SaveUserTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveUserTemplateResponse.ProtoReflect.Descriptor instead.
 func (*SaveUserTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{32}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *SaveUserTemplateResponse) GetSuccess() bool {
@@ -2652,7 +2737,7 @@ type DeleteUserTemplateRequest struct {
 
 func (x *DeleteUserTemplateRequest) Reset() {
 	*x = DeleteUserTemplateRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[33]
+	mi := &file_agent_gateway_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2664,7 +2749,7 @@ func (x *DeleteUserTemplateRequest) String() string {
 func (*DeleteUserTemplateRequest) ProtoMessage() {}
 
 func (x *DeleteUserTemplateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[33]
+	mi := &file_agent_gateway_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2677,7 +2762,7 @@ func (x *DeleteUserTemplateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserTemplateRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserTemplateRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{33}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *DeleteUserTemplateRequest) GetId() string {
@@ -2696,7 +2781,7 @@ type DeleteUserTemplateResponse struct {
 
 func (x *DeleteUserTemplateResponse) Reset() {
 	*x = DeleteUserTemplateResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[34]
+	mi := &file_agent_gateway_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2708,7 +2793,7 @@ func (x *DeleteUserTemplateResponse) String() string {
 func (*DeleteUserTemplateResponse) ProtoMessage() {}
 
 func (x *DeleteUserTemplateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[34]
+	mi := &file_agent_gateway_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2721,7 +2806,7 @@ func (x *DeleteUserTemplateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserTemplateResponse.ProtoReflect.Descriptor instead.
 func (*DeleteUserTemplateResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{34}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *DeleteUserTemplateResponse) GetSuccess() bool {
@@ -2740,7 +2825,7 @@ type DeleteAgentExperienceRequest struct {
 
 func (x *DeleteAgentExperienceRequest) Reset() {
 	*x = DeleteAgentExperienceRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[35]
+	mi := &file_agent_gateway_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2752,7 +2837,7 @@ func (x *DeleteAgentExperienceRequest) String() string {
 func (*DeleteAgentExperienceRequest) ProtoMessage() {}
 
 func (x *DeleteAgentExperienceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[35]
+	mi := &file_agent_gateway_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2765,7 +2850,7 @@ func (x *DeleteAgentExperienceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAgentExperienceRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAgentExperienceRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{35}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *DeleteAgentExperienceRequest) GetId() string {
@@ -2784,7 +2869,7 @@ type DeleteAgentExperienceResponse struct {
 
 func (x *DeleteAgentExperienceResponse) Reset() {
 	*x = DeleteAgentExperienceResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[36]
+	mi := &file_agent_gateway_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2796,7 +2881,7 @@ func (x *DeleteAgentExperienceResponse) String() string {
 func (*DeleteAgentExperienceResponse) ProtoMessage() {}
 
 func (x *DeleteAgentExperienceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[36]
+	mi := &file_agent_gateway_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2809,7 +2894,7 @@ func (x *DeleteAgentExperienceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAgentExperienceResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAgentExperienceResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{36}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *DeleteAgentExperienceResponse) GetSuccess() bool {
@@ -2827,7 +2912,7 @@ type GetAgentSettingsRequest struct {
 
 func (x *GetAgentSettingsRequest) Reset() {
 	*x = GetAgentSettingsRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[37]
+	mi := &file_agent_gateway_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2839,7 +2924,7 @@ func (x *GetAgentSettingsRequest) String() string {
 func (*GetAgentSettingsRequest) ProtoMessage() {}
 
 func (x *GetAgentSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[37]
+	mi := &file_agent_gateway_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2852,7 +2937,7 @@ func (x *GetAgentSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAgentSettingsRequest.ProtoReflect.Descriptor instead.
 func (*GetAgentSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{37}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{38}
 }
 
 type AgentSettingEntry struct {
@@ -2866,7 +2951,7 @@ type AgentSettingEntry struct {
 
 func (x *AgentSettingEntry) Reset() {
 	*x = AgentSettingEntry{}
-	mi := &file_agent_gateway_proto_msgTypes[38]
+	mi := &file_agent_gateway_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2878,7 +2963,7 @@ func (x *AgentSettingEntry) String() string {
 func (*AgentSettingEntry) ProtoMessage() {}
 
 func (x *AgentSettingEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[38]
+	mi := &file_agent_gateway_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2891,7 +2976,7 @@ func (x *AgentSettingEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AgentSettingEntry.ProtoReflect.Descriptor instead.
 func (*AgentSettingEntry) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{38}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *AgentSettingEntry) GetKey() string {
@@ -2924,7 +3009,7 @@ type GetAgentSettingsResponse struct {
 
 func (x *GetAgentSettingsResponse) Reset() {
 	*x = GetAgentSettingsResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[39]
+	mi := &file_agent_gateway_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2936,7 +3021,7 @@ func (x *GetAgentSettingsResponse) String() string {
 func (*GetAgentSettingsResponse) ProtoMessage() {}
 
 func (x *GetAgentSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[39]
+	mi := &file_agent_gateway_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2949,7 +3034,7 @@ func (x *GetAgentSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAgentSettingsResponse.ProtoReflect.Descriptor instead.
 func (*GetAgentSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{39}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetAgentSettingsResponse) GetSettings() []*AgentSettingEntry {
@@ -2969,7 +3054,7 @@ type SetUserSettingRequest struct {
 
 func (x *SetUserSettingRequest) Reset() {
 	*x = SetUserSettingRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[40]
+	mi := &file_agent_gateway_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2981,7 +3066,7 @@ func (x *SetUserSettingRequest) String() string {
 func (*SetUserSettingRequest) ProtoMessage() {}
 
 func (x *SetUserSettingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[40]
+	mi := &file_agent_gateway_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2994,7 +3079,7 @@ func (x *SetUserSettingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetUserSettingRequest.ProtoReflect.Descriptor instead.
 func (*SetUserSettingRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{40}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *SetUserSettingRequest) GetKey() string {
@@ -3020,7 +3105,7 @@ type SetUserSettingResponse struct {
 
 func (x *SetUserSettingResponse) Reset() {
 	*x = SetUserSettingResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[41]
+	mi := &file_agent_gateway_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3032,7 +3117,7 @@ func (x *SetUserSettingResponse) String() string {
 func (*SetUserSettingResponse) ProtoMessage() {}
 
 func (x *SetUserSettingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[41]
+	mi := &file_agent_gateway_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3045,7 +3130,7 @@ func (x *SetUserSettingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetUserSettingResponse.ProtoReflect.Descriptor instead.
 func (*SetUserSettingResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{41}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *SetUserSettingResponse) GetSuccess() bool {
@@ -3064,7 +3149,7 @@ type DeleteUserSettingRequest struct {
 
 func (x *DeleteUserSettingRequest) Reset() {
 	*x = DeleteUserSettingRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[42]
+	mi := &file_agent_gateway_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3076,7 +3161,7 @@ func (x *DeleteUserSettingRequest) String() string {
 func (*DeleteUserSettingRequest) ProtoMessage() {}
 
 func (x *DeleteUserSettingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[42]
+	mi := &file_agent_gateway_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3089,7 +3174,7 @@ func (x *DeleteUserSettingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserSettingRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserSettingRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{42}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *DeleteUserSettingRequest) GetKey() string {
@@ -3108,7 +3193,7 @@ type DeleteUserSettingResponse struct {
 
 func (x *DeleteUserSettingResponse) Reset() {
 	*x = DeleteUserSettingResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[43]
+	mi := &file_agent_gateway_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3120,7 +3205,7 @@ func (x *DeleteUserSettingResponse) String() string {
 func (*DeleteUserSettingResponse) ProtoMessage() {}
 
 func (x *DeleteUserSettingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[43]
+	mi := &file_agent_gateway_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3133,7 +3218,7 @@ func (x *DeleteUserSettingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserSettingResponse.ProtoReflect.Descriptor instead.
 func (*DeleteUserSettingResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{43}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *DeleteUserSettingResponse) GetSuccess() bool {
@@ -3151,7 +3236,7 @@ type GetCapabilitiesRequest struct {
 
 func (x *GetCapabilitiesRequest) Reset() {
 	*x = GetCapabilitiesRequest{}
-	mi := &file_agent_gateway_proto_msgTypes[44]
+	mi := &file_agent_gateway_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3163,7 +3248,7 @@ func (x *GetCapabilitiesRequest) String() string {
 func (*GetCapabilitiesRequest) ProtoMessage() {}
 
 func (x *GetCapabilitiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[44]
+	mi := &file_agent_gateway_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3176,7 +3261,7 @@ func (x *GetCapabilitiesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCapabilitiesRequest.ProtoReflect.Descriptor instead.
 func (*GetCapabilitiesRequest) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{44}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{45}
 }
 
 type CapabilityEntry struct {
@@ -3189,7 +3274,7 @@ type CapabilityEntry struct {
 
 func (x *CapabilityEntry) Reset() {
 	*x = CapabilityEntry{}
-	mi := &file_agent_gateway_proto_msgTypes[45]
+	mi := &file_agent_gateway_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3201,7 +3286,7 @@ func (x *CapabilityEntry) String() string {
 func (*CapabilityEntry) ProtoMessage() {}
 
 func (x *CapabilityEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[45]
+	mi := &file_agent_gateway_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3214,7 +3299,7 @@ func (x *CapabilityEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CapabilityEntry.ProtoReflect.Descriptor instead.
 func (*CapabilityEntry) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{45}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *CapabilityEntry) GetCapability() string {
@@ -3240,7 +3325,7 @@ type GetCapabilitiesResponse struct {
 
 func (x *GetCapabilitiesResponse) Reset() {
 	*x = GetCapabilitiesResponse{}
-	mi := &file_agent_gateway_proto_msgTypes[46]
+	mi := &file_agent_gateway_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3252,7 +3337,7 @@ func (x *GetCapabilitiesResponse) String() string {
 func (*GetCapabilitiesResponse) ProtoMessage() {}
 
 func (x *GetCapabilitiesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[46]
+	mi := &file_agent_gateway_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3265,7 +3350,7 @@ func (x *GetCapabilitiesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCapabilitiesResponse.ProtoReflect.Descriptor instead.
 func (*GetCapabilitiesResponse) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{46}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *GetCapabilitiesResponse) GetCapabilities() []*CapabilityEntry {
@@ -3286,7 +3371,7 @@ type TemplateScope struct {
 
 func (x *TemplateScope) Reset() {
 	*x = TemplateScope{}
-	mi := &file_agent_gateway_proto_msgTypes[47]
+	mi := &file_agent_gateway_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3298,7 +3383,7 @@ func (x *TemplateScope) String() string {
 func (*TemplateScope) ProtoMessage() {}
 
 func (x *TemplateScope) ProtoReflect() protoreflect.Message {
-	mi := &file_agent_gateway_proto_msgTypes[47]
+	mi := &file_agent_gateway_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3311,7 +3396,7 @@ func (x *TemplateScope) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TemplateScope.ProtoReflect.Descriptor instead.
 func (*TemplateScope) Descriptor() ([]byte, []int) {
-	return file_agent_gateway_proto_rawDescGZIP(), []int{47}
+	return file_agent_gateway_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *TemplateScope) GetSymbols() []string {
@@ -3451,7 +3536,7 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x0eeffect_summary\x18\x02 \x01(\tR\reffectSummary\"F\n" +
 	"\x0eSemanticChange\x12\x12\n" +
 	"\x04kind\x18\x01 \x01(\tR\x04kind\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\"\xa7\x04\n" +
+	"\vdescription\x18\x02 \x01(\tR\vdescription\"\x98\x05\n" +
 	"\x13AgentBacktestResult\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
 	"\x05error\x18\x02 \x01(\tR\x05error\x12!\n" +
@@ -3468,7 +3553,10 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x12total_pnl_absolute\x18\f \x01(\tR\x10totalPnlAbsolute\x12!\n" +
 	"\fequity_curve\x18\r \x03(\tR\vequityCurve\x12&\n" +
 	"\x0fequity_times_ms\x18\x0e \x03(\x03R\requityTimesMs\x12*\n" +
-	"\x06trades\x18\x0f \x03(\v2\x12.ant.v1.AgentTradeR\x06trades\"\x98\x02\n" +
+	"\x06trades\x18\x0f \x03(\v2\x12.ant.v1.AgentTradeR\x06trades\x12\x1f\n" +
+	"\vis_reliable\x18\x10 \x01(\bR\n" +
+	"isReliable\x12N\n" +
+	"\x15invariant_blind_spots\x18\x11 \x03(\v2\x1a.ant.v1.InvariantBlindSpotR\x13invariantBlindSpots\"\x98\x02\n" +
 	"\n" +
 	"AgentTrade\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
@@ -3490,7 +3578,12 @@ const file_agent_gateway_proto_rawDesc = "" +
 	"\x0eAgentBlindSpot\x12\x18\n" +
 	"\abuiltin\x18\x01 \x01(\tR\abuiltin\x12\x1a\n" +
 	"\bseverity\x18\x02 \x01(\tR\bseverity\x12\x14\n" +
-	"\x05count\x18\x03 \x01(\x05R\x05count\"a\n" +
+	"\x05count\x18\x03 \x01(\x05R\x05count\"~\n" +
+	"\x12InvariantBlindSpot\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x1a\n" +
+	"\bseverity\x18\x03 \x01(\tR\bseverity\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\"a\n" +
 	"\x17SearchExperienceRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x14\n" +
@@ -3663,7 +3756,7 @@ func file_agent_gateway_proto_rawDescGZIP() []byte {
 }
 
 var file_agent_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
+var file_agent_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 51)
 var file_agent_gateway_proto_goTypes = []any{
 	(SubmitMode)(0),                       // 0: ant.v1.SubmitMode
 	(*AgentToken)(nil),                    // 1: ant.v1.AgentToken
@@ -3685,120 +3778,122 @@ var file_agent_gateway_proto_goTypes = []any{
 	(*AgentBacktestResult)(nil),           // 17: ant.v1.AgentBacktestResult
 	(*AgentTrade)(nil),                    // 18: ant.v1.AgentTrade
 	(*AgentBlindSpot)(nil),                // 19: ant.v1.AgentBlindSpot
-	(*SearchExperienceRequest)(nil),       // 20: ant.v1.SearchExperienceRequest
-	(*ExperienceEntry)(nil),               // 21: ant.v1.ExperienceEntry
-	(*SearchExperienceResponse)(nil),      // 22: ant.v1.SearchExperienceResponse
-	(*StoreExperienceRequest)(nil),        // 23: ant.v1.StoreExperienceRequest
-	(*StoreExperienceResponse)(nil),       // 24: ant.v1.StoreExperienceResponse
-	(*StrategyPlan)(nil),                  // 25: ant.v1.StrategyPlan
-	(*AgentGenerateStrategyRequest)(nil),  // 26: ant.v1.AgentGenerateStrategyRequest
-	(*BacktestRunSummary)(nil),            // 27: ant.v1.BacktestRunSummary
-	(*AgentGenerateStrategyChunk)(nil),    // 28: ant.v1.AgentGenerateStrategyChunk
-	(*UserTemplateEntry)(nil),             // 29: ant.v1.UserTemplateEntry
-	(*ListMemoryRequest)(nil),             // 30: ant.v1.ListMemoryRequest
-	(*ListMemoryResponse)(nil),            // 31: ant.v1.ListMemoryResponse
-	(*SaveUserTemplateRequest)(nil),       // 32: ant.v1.SaveUserTemplateRequest
-	(*SaveUserTemplateResponse)(nil),      // 33: ant.v1.SaveUserTemplateResponse
-	(*DeleteUserTemplateRequest)(nil),     // 34: ant.v1.DeleteUserTemplateRequest
-	(*DeleteUserTemplateResponse)(nil),    // 35: ant.v1.DeleteUserTemplateResponse
-	(*DeleteAgentExperienceRequest)(nil),  // 36: ant.v1.DeleteAgentExperienceRequest
-	(*DeleteAgentExperienceResponse)(nil), // 37: ant.v1.DeleteAgentExperienceResponse
-	(*GetAgentSettingsRequest)(nil),       // 38: ant.v1.GetAgentSettingsRequest
-	(*AgentSettingEntry)(nil),             // 39: ant.v1.AgentSettingEntry
-	(*GetAgentSettingsResponse)(nil),      // 40: ant.v1.GetAgentSettingsResponse
-	(*SetUserSettingRequest)(nil),         // 41: ant.v1.SetUserSettingRequest
-	(*SetUserSettingResponse)(nil),        // 42: ant.v1.SetUserSettingResponse
-	(*DeleteUserSettingRequest)(nil),      // 43: ant.v1.DeleteUserSettingRequest
-	(*DeleteUserSettingResponse)(nil),     // 44: ant.v1.DeleteUserSettingResponse
-	(*GetCapabilitiesRequest)(nil),        // 45: ant.v1.GetCapabilitiesRequest
-	(*CapabilityEntry)(nil),               // 46: ant.v1.CapabilityEntry
-	(*GetCapabilitiesResponse)(nil),       // 47: ant.v1.GetCapabilitiesResponse
-	(*TemplateScope)(nil),                 // 48: ant.v1.TemplateScope
-	nil,                                   // 49: ant.v1.SubmitStrategyRequest.ParamsEntry
-	nil,                                   // 50: ant.v1.AgentGenerateStrategyRequest.ParamsEntry
-	(*timestamppb.Timestamp)(nil),         // 51: google.protobuf.Timestamp
-	(*StrategyProfile)(nil),               // 52: ant.v1.StrategyProfile
-	(*BacktestAnalysis)(nil),              // 53: ant.v1.BacktestAnalysis
-	(*structpb.Struct)(nil),               // 54: google.protobuf.Struct
+	(*InvariantBlindSpot)(nil),            // 20: ant.v1.InvariantBlindSpot
+	(*SearchExperienceRequest)(nil),       // 21: ant.v1.SearchExperienceRequest
+	(*ExperienceEntry)(nil),               // 22: ant.v1.ExperienceEntry
+	(*SearchExperienceResponse)(nil),      // 23: ant.v1.SearchExperienceResponse
+	(*StoreExperienceRequest)(nil),        // 24: ant.v1.StoreExperienceRequest
+	(*StoreExperienceResponse)(nil),       // 25: ant.v1.StoreExperienceResponse
+	(*StrategyPlan)(nil),                  // 26: ant.v1.StrategyPlan
+	(*AgentGenerateStrategyRequest)(nil),  // 27: ant.v1.AgentGenerateStrategyRequest
+	(*BacktestRunSummary)(nil),            // 28: ant.v1.BacktestRunSummary
+	(*AgentGenerateStrategyChunk)(nil),    // 29: ant.v1.AgentGenerateStrategyChunk
+	(*UserTemplateEntry)(nil),             // 30: ant.v1.UserTemplateEntry
+	(*ListMemoryRequest)(nil),             // 31: ant.v1.ListMemoryRequest
+	(*ListMemoryResponse)(nil),            // 32: ant.v1.ListMemoryResponse
+	(*SaveUserTemplateRequest)(nil),       // 33: ant.v1.SaveUserTemplateRequest
+	(*SaveUserTemplateResponse)(nil),      // 34: ant.v1.SaveUserTemplateResponse
+	(*DeleteUserTemplateRequest)(nil),     // 35: ant.v1.DeleteUserTemplateRequest
+	(*DeleteUserTemplateResponse)(nil),    // 36: ant.v1.DeleteUserTemplateResponse
+	(*DeleteAgentExperienceRequest)(nil),  // 37: ant.v1.DeleteAgentExperienceRequest
+	(*DeleteAgentExperienceResponse)(nil), // 38: ant.v1.DeleteAgentExperienceResponse
+	(*GetAgentSettingsRequest)(nil),       // 39: ant.v1.GetAgentSettingsRequest
+	(*AgentSettingEntry)(nil),             // 40: ant.v1.AgentSettingEntry
+	(*GetAgentSettingsResponse)(nil),      // 41: ant.v1.GetAgentSettingsResponse
+	(*SetUserSettingRequest)(nil),         // 42: ant.v1.SetUserSettingRequest
+	(*SetUserSettingResponse)(nil),        // 43: ant.v1.SetUserSettingResponse
+	(*DeleteUserSettingRequest)(nil),      // 44: ant.v1.DeleteUserSettingRequest
+	(*DeleteUserSettingResponse)(nil),     // 45: ant.v1.DeleteUserSettingResponse
+	(*GetCapabilitiesRequest)(nil),        // 46: ant.v1.GetCapabilitiesRequest
+	(*CapabilityEntry)(nil),               // 47: ant.v1.CapabilityEntry
+	(*GetCapabilitiesResponse)(nil),       // 48: ant.v1.GetCapabilitiesResponse
+	(*TemplateScope)(nil),                 // 49: ant.v1.TemplateScope
+	nil,                                   // 50: ant.v1.SubmitStrategyRequest.ParamsEntry
+	nil,                                   // 51: ant.v1.AgentGenerateStrategyRequest.ParamsEntry
+	(*timestamppb.Timestamp)(nil),         // 52: google.protobuf.Timestamp
+	(*StrategyProfile)(nil),               // 53: ant.v1.StrategyProfile
+	(*BacktestAnalysis)(nil),              // 54: ant.v1.BacktestAnalysis
+	(*structpb.Struct)(nil),               // 55: google.protobuf.Struct
 }
 var file_agent_gateway_proto_depIdxs = []int32{
-	51, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
-	51, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
-	51, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
-	51, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
-	51, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
-	51, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
+	52, // 0: ant.v1.AgentToken.expires_at:type_name -> google.protobuf.Timestamp
+	52, // 1: ant.v1.AgentToken.last_used_at:type_name -> google.protobuf.Timestamp
+	52, // 2: ant.v1.AgentToken.created_at:type_name -> google.protobuf.Timestamp
+	52, // 3: ant.v1.AgentToken.updated_at:type_name -> google.protobuf.Timestamp
+	52, // 4: ant.v1.AgentAuditEntry.created_at:type_name -> google.protobuf.Timestamp
+	52, // 5: ant.v1.IssueAgentTokenRequest.expires_at:type_name -> google.protobuf.Timestamp
 	1,  // 6: ant.v1.IssueAgentTokenResponse.token:type_name -> ant.v1.AgentToken
 	1,  // 7: ant.v1.ListAgentTokensResponse.tokens:type_name -> ant.v1.AgentToken
 	2,  // 8: ant.v1.ListAgentAuditResponse.entries:type_name -> ant.v1.AgentAuditEntry
-	49, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
+	50, // 9: ant.v1.SubmitStrategyRequest.params:type_name -> ant.v1.SubmitStrategyRequest.ParamsEntry
 	13, // 10: ant.v1.SubmitStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
 	0,  // 11: ant.v1.SubmitStrategyRequest.mode:type_name -> ant.v1.SubmitMode
 	17, // 12: ant.v1.SubmitStrategyResponse.result:type_name -> ant.v1.AgentBacktestResult
-	52, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
-	53, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
+	53, // 13: ant.v1.SubmitStrategyResponse.profile:type_name -> ant.v1.StrategyProfile
+	54, // 14: ant.v1.SubmitStrategyResponse.analysis:type_name -> ant.v1.BacktestAnalysis
 	19, // 15: ant.v1.SubmitStrategyResponse.blind_spots:type_name -> ant.v1.AgentBlindSpot
 	0,  // 16: ant.v1.SubmitStrategyResponse.mode:type_name -> ant.v1.SubmitMode
 	15, // 17: ant.v1.SubmitStrategyResponse.semantic_diff:type_name -> ant.v1.SemanticDiff
 	16, // 18: ant.v1.SemanticDiff.changes:type_name -> ant.v1.SemanticChange
 	18, // 19: ant.v1.AgentBacktestResult.trades:type_name -> ant.v1.AgentTrade
-	51, // 20: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
-	21, // 21: ant.v1.SearchExperienceResponse.entries:type_name -> ant.v1.ExperienceEntry
-	54, // 22: ant.v1.StoreExperienceRequest.fingerprint:type_name -> google.protobuf.Struct
-	50, // 23: ant.v1.AgentGenerateStrategyRequest.params:type_name -> ant.v1.AgentGenerateStrategyRequest.ParamsEntry
-	13, // 24: ant.v1.AgentGenerateStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
-	25, // 25: ant.v1.AgentGenerateStrategyRequest.confirmed_plan:type_name -> ant.v1.StrategyPlan
-	27, // 26: ant.v1.AgentGenerateStrategyRequest.last_backtest:type_name -> ant.v1.BacktestRunSummary
-	27, // 27: ant.v1.AgentGenerateStrategyRequest.recent_backtests:type_name -> ant.v1.BacktestRunSummary
-	17, // 28: ant.v1.AgentGenerateStrategyChunk.result:type_name -> ant.v1.AgentBacktestResult
-	52, // 29: ant.v1.AgentGenerateStrategyChunk.profile:type_name -> ant.v1.StrategyProfile
-	53, // 30: ant.v1.AgentGenerateStrategyChunk.analysis:type_name -> ant.v1.BacktestAnalysis
-	19, // 31: ant.v1.AgentGenerateStrategyChunk.blind_spots:type_name -> ant.v1.AgentBlindSpot
-	25, // 32: ant.v1.AgentGenerateStrategyChunk.plan:type_name -> ant.v1.StrategyPlan
-	29, // 33: ant.v1.ListMemoryResponse.templates:type_name -> ant.v1.UserTemplateEntry
-	21, // 34: ant.v1.ListMemoryResponse.experiences:type_name -> ant.v1.ExperienceEntry
-	48, // 35: ant.v1.SaveUserTemplateRequest.scope:type_name -> ant.v1.TemplateScope
-	39, // 36: ant.v1.GetAgentSettingsResponse.settings:type_name -> ant.v1.AgentSettingEntry
-	46, // 37: ant.v1.GetCapabilitiesResponse.capabilities:type_name -> ant.v1.CapabilityEntry
-	3,  // 38: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
-	5,  // 39: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
-	7,  // 40: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
-	8,  // 41: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
-	10, // 42: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
-	12, // 43: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
-	26, // 44: ant.v1.AgentGatewayService.GenerateStrategy:input_type -> ant.v1.AgentGenerateStrategyRequest
-	20, // 45: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
-	23, // 46: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
-	30, // 47: ant.v1.AgentGatewayService.ListMemory:input_type -> ant.v1.ListMemoryRequest
-	32, // 48: ant.v1.AgentGatewayService.SaveUserTemplate:input_type -> ant.v1.SaveUserTemplateRequest
-	34, // 49: ant.v1.AgentGatewayService.DeleteUserTemplate:input_type -> ant.v1.DeleteUserTemplateRequest
-	36, // 50: ant.v1.AgentGatewayService.DeleteAgentExperience:input_type -> ant.v1.DeleteAgentExperienceRequest
-	38, // 51: ant.v1.AgentGatewayService.GetAgentSettings:input_type -> ant.v1.GetAgentSettingsRequest
-	41, // 52: ant.v1.AgentGatewayService.SetUserSetting:input_type -> ant.v1.SetUserSettingRequest
-	43, // 53: ant.v1.AgentGatewayService.DeleteUserSetting:input_type -> ant.v1.DeleteUserSettingRequest
-	45, // 54: ant.v1.AgentGatewayService.GetCapabilities:input_type -> ant.v1.GetCapabilitiesRequest
-	4,  // 55: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
-	6,  // 56: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
-	1,  // 57: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
-	9,  // 58: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
-	11, // 59: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
-	14, // 60: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
-	28, // 61: ant.v1.AgentGatewayService.GenerateStrategy:output_type -> ant.v1.AgentGenerateStrategyChunk
-	22, // 62: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
-	24, // 63: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
-	31, // 64: ant.v1.AgentGatewayService.ListMemory:output_type -> ant.v1.ListMemoryResponse
-	33, // 65: ant.v1.AgentGatewayService.SaveUserTemplate:output_type -> ant.v1.SaveUserTemplateResponse
-	35, // 66: ant.v1.AgentGatewayService.DeleteUserTemplate:output_type -> ant.v1.DeleteUserTemplateResponse
-	37, // 67: ant.v1.AgentGatewayService.DeleteAgentExperience:output_type -> ant.v1.DeleteAgentExperienceResponse
-	40, // 68: ant.v1.AgentGatewayService.GetAgentSettings:output_type -> ant.v1.GetAgentSettingsResponse
-	42, // 69: ant.v1.AgentGatewayService.SetUserSetting:output_type -> ant.v1.SetUserSettingResponse
-	44, // 70: ant.v1.AgentGatewayService.DeleteUserSetting:output_type -> ant.v1.DeleteUserSettingResponse
-	47, // 71: ant.v1.AgentGatewayService.GetCapabilities:output_type -> ant.v1.GetCapabilitiesResponse
-	55, // [55:72] is the sub-list for method output_type
-	38, // [38:55] is the sub-list for method input_type
-	38, // [38:38] is the sub-list for extension type_name
-	38, // [38:38] is the sub-list for extension extendee
-	0,  // [0:38] is the sub-list for field type_name
+	20, // 20: ant.v1.AgentBacktestResult.invariant_blind_spots:type_name -> ant.v1.InvariantBlindSpot
+	52, // 21: ant.v1.ExperienceEntry.created_at:type_name -> google.protobuf.Timestamp
+	22, // 22: ant.v1.SearchExperienceResponse.entries:type_name -> ant.v1.ExperienceEntry
+	55, // 23: ant.v1.StoreExperienceRequest.fingerprint:type_name -> google.protobuf.Struct
+	51, // 24: ant.v1.AgentGenerateStrategyRequest.params:type_name -> ant.v1.AgentGenerateStrategyRequest.ParamsEntry
+	13, // 25: ant.v1.AgentGenerateStrategyRequest.backtest_config:type_name -> ant.v1.AgentBacktestConfig
+	26, // 26: ant.v1.AgentGenerateStrategyRequest.confirmed_plan:type_name -> ant.v1.StrategyPlan
+	28, // 27: ant.v1.AgentGenerateStrategyRequest.last_backtest:type_name -> ant.v1.BacktestRunSummary
+	28, // 28: ant.v1.AgentGenerateStrategyRequest.recent_backtests:type_name -> ant.v1.BacktestRunSummary
+	17, // 29: ant.v1.AgentGenerateStrategyChunk.result:type_name -> ant.v1.AgentBacktestResult
+	53, // 30: ant.v1.AgentGenerateStrategyChunk.profile:type_name -> ant.v1.StrategyProfile
+	54, // 31: ant.v1.AgentGenerateStrategyChunk.analysis:type_name -> ant.v1.BacktestAnalysis
+	19, // 32: ant.v1.AgentGenerateStrategyChunk.blind_spots:type_name -> ant.v1.AgentBlindSpot
+	26, // 33: ant.v1.AgentGenerateStrategyChunk.plan:type_name -> ant.v1.StrategyPlan
+	30, // 34: ant.v1.ListMemoryResponse.templates:type_name -> ant.v1.UserTemplateEntry
+	22, // 35: ant.v1.ListMemoryResponse.experiences:type_name -> ant.v1.ExperienceEntry
+	49, // 36: ant.v1.SaveUserTemplateRequest.scope:type_name -> ant.v1.TemplateScope
+	40, // 37: ant.v1.GetAgentSettingsResponse.settings:type_name -> ant.v1.AgentSettingEntry
+	47, // 38: ant.v1.GetCapabilitiesResponse.capabilities:type_name -> ant.v1.CapabilityEntry
+	3,  // 39: ant.v1.AgentService.IssueAgentToken:input_type -> ant.v1.IssueAgentTokenRequest
+	5,  // 40: ant.v1.AgentService.ListAgentTokens:input_type -> ant.v1.ListAgentTokensRequest
+	7,  // 41: ant.v1.AgentService.RevokeAgentToken:input_type -> ant.v1.RevokeAgentTokenRequest
+	8,  // 42: ant.v1.AgentService.ListAgentAudit:input_type -> ant.v1.ListAgentAuditRequest
+	10, // 43: ant.v1.AgentService.GetAgentCapabilities:input_type -> ant.v1.GetAgentCapabilitiesRequest
+	12, // 44: ant.v1.AgentGatewayService.SubmitStrategy:input_type -> ant.v1.SubmitStrategyRequest
+	27, // 45: ant.v1.AgentGatewayService.GenerateStrategy:input_type -> ant.v1.AgentGenerateStrategyRequest
+	21, // 46: ant.v1.AgentGatewayService.SearchExperience:input_type -> ant.v1.SearchExperienceRequest
+	24, // 47: ant.v1.AgentGatewayService.StoreExperience:input_type -> ant.v1.StoreExperienceRequest
+	31, // 48: ant.v1.AgentGatewayService.ListMemory:input_type -> ant.v1.ListMemoryRequest
+	33, // 49: ant.v1.AgentGatewayService.SaveUserTemplate:input_type -> ant.v1.SaveUserTemplateRequest
+	35, // 50: ant.v1.AgentGatewayService.DeleteUserTemplate:input_type -> ant.v1.DeleteUserTemplateRequest
+	37, // 51: ant.v1.AgentGatewayService.DeleteAgentExperience:input_type -> ant.v1.DeleteAgentExperienceRequest
+	39, // 52: ant.v1.AgentGatewayService.GetAgentSettings:input_type -> ant.v1.GetAgentSettingsRequest
+	42, // 53: ant.v1.AgentGatewayService.SetUserSetting:input_type -> ant.v1.SetUserSettingRequest
+	44, // 54: ant.v1.AgentGatewayService.DeleteUserSetting:input_type -> ant.v1.DeleteUserSettingRequest
+	46, // 55: ant.v1.AgentGatewayService.GetCapabilities:input_type -> ant.v1.GetCapabilitiesRequest
+	4,  // 56: ant.v1.AgentService.IssueAgentToken:output_type -> ant.v1.IssueAgentTokenResponse
+	6,  // 57: ant.v1.AgentService.ListAgentTokens:output_type -> ant.v1.ListAgentTokensResponse
+	1,  // 58: ant.v1.AgentService.RevokeAgentToken:output_type -> ant.v1.AgentToken
+	9,  // 59: ant.v1.AgentService.ListAgentAudit:output_type -> ant.v1.ListAgentAuditResponse
+	11, // 60: ant.v1.AgentService.GetAgentCapabilities:output_type -> ant.v1.AgentCapabilities
+	14, // 61: ant.v1.AgentGatewayService.SubmitStrategy:output_type -> ant.v1.SubmitStrategyResponse
+	29, // 62: ant.v1.AgentGatewayService.GenerateStrategy:output_type -> ant.v1.AgentGenerateStrategyChunk
+	23, // 63: ant.v1.AgentGatewayService.SearchExperience:output_type -> ant.v1.SearchExperienceResponse
+	25, // 64: ant.v1.AgentGatewayService.StoreExperience:output_type -> ant.v1.StoreExperienceResponse
+	32, // 65: ant.v1.AgentGatewayService.ListMemory:output_type -> ant.v1.ListMemoryResponse
+	34, // 66: ant.v1.AgentGatewayService.SaveUserTemplate:output_type -> ant.v1.SaveUserTemplateResponse
+	36, // 67: ant.v1.AgentGatewayService.DeleteUserTemplate:output_type -> ant.v1.DeleteUserTemplateResponse
+	38, // 68: ant.v1.AgentGatewayService.DeleteAgentExperience:output_type -> ant.v1.DeleteAgentExperienceResponse
+	41, // 69: ant.v1.AgentGatewayService.GetAgentSettings:output_type -> ant.v1.GetAgentSettingsResponse
+	43, // 70: ant.v1.AgentGatewayService.SetUserSetting:output_type -> ant.v1.SetUserSettingResponse
+	45, // 71: ant.v1.AgentGatewayService.DeleteUserSetting:output_type -> ant.v1.DeleteUserSettingResponse
+	48, // 72: ant.v1.AgentGatewayService.GetCapabilities:output_type -> ant.v1.GetCapabilitiesResponse
+	56, // [56:73] is the sub-list for method output_type
+	39, // [39:56] is the sub-list for method input_type
+	39, // [39:39] is the sub-list for extension type_name
+	39, // [39:39] is the sub-list for extension extendee
+	0,  // [0:39] is the sub-list for field type_name
 }
 
 func init() { file_agent_gateway_proto_init() }
@@ -3814,7 +3909,7 @@ func file_agent_gateway_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_agent_gateway_proto_rawDesc), len(file_agent_gateway_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   50,
+			NumMessages:   51,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

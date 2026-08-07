@@ -35,14 +35,14 @@ func (t *writeStrategyTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
 		Type: "function",
 		Function: systemai.ToolDefFunction{
-			Name: "write_strategy",
+			Name:        "write_strategy",
 			Description: "提交完整的交易策略代码。这是提交策略的唯一方式——不要在聊天文本中粘贴代码。\n\n此工具自动执行：\n1. 编译验证（语法检查）\n2. 真实市场数据回测\n3. 返回编译状态 + 回测指标（胜率、收益率、最大回撤、夏普比率）\n\n提交前请确认：代码完整可运行、无语法错误、无未来函数、仓位管理合理。",
 			Parameters: map[string]any{
-				schemaKeyType:     schemaTypeObject,
-				"required": []string{"code"},
+				schemaKeyType: schemaTypeObject,
+				"required":    []string{"code"},
 				schemaKeyProperties: map[string]any{
 					"code": map[string]any{
-						schemaKeyType:        schemaTypeString,
+						schemaKeyType: schemaTypeString,
 						"description": "完整的 Python 策略代码（class MyStrategy, on_bar 方法）",
 					},
 				},
@@ -77,8 +77,8 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 	}
 
 	result := map[string]string{
-		"compiled":  "true",
-		"coverage":  fmt.Sprintf("%.1f%%", cov.Score*100),
+		"compiled": "true",
+		"coverage": fmt.Sprintf("%.1f%%", cov.Score*100),
 	}
 
 	// Step 2: Real backtest (REUSE: gateway.go:141-163).
@@ -97,6 +97,14 @@ func (t *writeStrategyTool) Run(ctx context.Context, in connectai.ToolInput) con
 			result["total_return"] = fmt.Sprintf("%s%%", btSummary.TotalReturn)
 			result["max_drawdown"] = fmt.Sprintf("%s%%", btSummary.MaxDrawdown)
 			result["sharpe"] = btSummary.SharpeRatio
+			if !btSummary.IsReliable {
+				result["is_reliable"] = "false"
+				for i, w := range btSummary.InvariantWarnings {
+					result[fmt.Sprintf("invariant_warning_%d", i+1)] = w
+				}
+			} else {
+				result["is_reliable"] = "true"
+			}
 			// I4: transparent inputs alongside results (§3.2c).
 			result["symbol"] = t.cfg.Symbol
 			result["timeframe"] = t.cfg.Timeframe
@@ -153,15 +161,20 @@ func (t *writeStrategyTool) runBacktest(ctx context.Context, runner *mql2go.VMRu
 		TotalReturn: btProto.TotalReturn,
 		MaxDrawdown: btProto.MaxDrawdown,
 		SharpeRatio: btProto.SharpeRatio,
+		IsReliable:  btProto.IsReliable,
+	}
+	for _, bs := range btProto.InvariantBlindSpots {
+		summary.InvariantWarnings = append(summary.InvariantWarnings, bs.Description)
 	}
 	return summary, tier, nil
 }
 
 type backtestSummary struct {
-	TotalTrades int
-	WinRate     string
-	TotalReturn string
-	MaxDrawdown string
-	SharpeRatio string
+	TotalTrades       int
+	WinRate           string
+	TotalReturn       string
+	MaxDrawdown       string
+	SharpeRatio       string
+	IsReliable        bool
+	InvariantWarnings []string
 }
-

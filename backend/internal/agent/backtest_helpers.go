@@ -101,6 +101,20 @@ func buildBacktestResultProto(r *backtest.Result) *antv1.AgentBacktestResult {
 			Reason:     t.Comment,
 		})
 	}
+
+	// ADR-0028 Defense Line B: run invariant checks on every backtest result.
+	// REUSE: backtest.ValidateInvariants @ strategy/backtest/invariants.go
+	reliable, invariantBlinds := backtest.ValidateInvariants(r)
+	resp.IsReliable = reliable
+	for _, bs := range invariantBlinds {
+		resp.InvariantBlindSpots = append(resp.InvariantBlindSpots, &antv1.InvariantBlindSpot{
+			Id:          bs.Id,
+			Category:    bs.Category,
+			Severity:    bs.Severity,
+			Description: bs.Description,
+		})
+	}
+
 	return resp
 }
 
