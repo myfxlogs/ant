@@ -2,26 +2,32 @@
 
 > 🔴 **ACTIVE TASK**: 市场数据架构简化 — 详见 [`docs/adr/0012-remove-tick-persistence.md`](docs/adr/0012-remove-tick-persistence.md)
 
-## 协作模式：审计方 ↔ 施工方（动工必读）
+## 协作模式：双角色 agent（审计 + 施工）+ 无损交接（动工必读）
 
-> **🔴 动工前必读 [CLAUDE.md](CLAUDE.md)（项目宪法，单一完整源）。本文件是精简入口，完整规则 + 工作方法以 CLAUDE.md 为准；详细施工 SOP 见 [docs/audits/builder-sop.md](docs/audits/builder-sop.md)。**
+> **🔴 动工前必读 [CLAUDE.md](CLAUDE.md)（项目宪法，单一完整源）。详细 SOP 见 [docs/audits/builder-sop.md](docs/audits/builder-sop.md)。**
 
-本项目用「审计方(Claude Code) + 施工方(Windsurf / 其他 agent)」分工：
+本项目当前由 Windsurf 独立推进（审计方 Claude Code 轮休）。**你同时承担两角色**：
 
-- **审计方**：代码级定位根因，把根因/位置/修复方向/验收标准写进 `docs/audits/tech-debt-registry.md` 条目。
-- **施工方（你）**：实现修复 + **回填进度记录**。你不重新审计、不扩大范围（one task = one scope）、不自由发挥。
+- **审计职责**（= Claude Code 的身份）：沿管线代码级核验（四问：通不通 / 边界对不对 / 旧审计落位 / 文档对账），发现 gap 落 `tech-debt-registry.md`（根因/位置/状态 `🟦open`/修复方向）。对已有 `❓待核` 条目逐条对账为 ✅/🟦。
+- **施工职责**：实现 registry 的 `🟦open` 条目，按 builder-sop（根因优先 / 复用核对 / 确定性 / 对抗证明 / 回填）。
 
-**新会话第一步**：读 `docs/audits/handover-audit-plan.md` 知当前任务/全局进度 + `tech-debt-registry.md` 知 open gap（对齐状态，无 memory 自动注入则必须主动读）。
+**三铁律（防"自己审自己"失效）**：
+1. **对抗证明强制**：任何施工"删关键一行测试必红"——客观校验，不靠主观。这是双角色下替代独立审计的核心兜底。
+2. **红队自审**：施工后**切换怀疑者视角**，假设刚才实现有 bug 专门找（不信任自己的代码）。审计自改代码必须用对抗心态，不能"我觉得对了"就过。
+3. **关键项标 `⚠️待Claude复审`**：架构级 / 不可逆 / 设计层决策，不擅自定，registry 标记等 Claude 回来。常规 bug / 边界修复可自主完成。
 
-**动工前**：① 读 `docs/audits/tech-debt-registry.md` 对应条目（根因/位置/验收标准已写好）；② `git log --all --oneline -- <path>` + `git blame` 理解原设计意图，先判断"bug→精准修"还是"有意移除→先讨论"，**禁止不读历史就重写**；③ `bash scripts/cap.sh <动词/符号>` 查是否已有现成能力（Reuse Preflight）。
+**无损交接纪律**（让 Claude 轮休后无缝接手）：
+- 所有审计结论 + 施工都落 **三层文档**（`tech-debt-registry.md` / `handover-audit-plan.md` / `memory/`），不进私有 memory（记忆分层铁律）。
+- 每完成一项：`handover-audit-plan.md` 变更日志加一行 + registry 状态更新。
+- Claude 回来读 `memory/open-items-registry.md` + `handover-audit-plan.md` + registry 即恢复全部上下文；专挑 `⚠️待Claude复审` 重验，不用全盘重审。
 
-**完工后必须回填，否则该任务判失败**：
-1. `docs/audits/tech-debt-registry.md`：条目状态 `🟦open → ✅done`（标日期），末尾追加 **真实根因 + 修复方式（改了哪些文件/函数）+ 对抗证明（删关键一行则测试必红）+ 测试结果（如"50 次连跑 0 失败"）**。若真实根因与审计方假设不同，**如实写明**（如 BT-6 审计方假设 time.Now，真根因是 map 迭代）。只改状态列 + 追加，不删条目、不改审计方事实陈述（保留决策轨迹）。
-2. **普遍 pitfall → 沉淀进本文件同类段**（如「MQL2GO VM Pitfalls」），写成永久约束防再犯。
-3. 发现新 gap → 在 registry **新增条目**（`🟦open` + 根因/位置/修复方向），不要塞进现有条目。
-4. **禁止新建并行进度文档**（另起 progress.md 之类 = 碎片化事实源，违规）；**禁止自行宣告"完成"**——完工汇报后等审计方核对状态 + 实测，确认才 `✅done`。
+**新会话第一步**：读 `docs/audits/handover-audit-plan.md`（当前任务/全局进度）+ `tech-debt-registry.md`（open gap + `⚠️待Claude复审` 项）。
 
-状态语义：`❓待核` = 记录过未对账当前代码 / `🟦open` = 已核验仍存在 / `✅done` = 已修且经审计方验收。详细 SOP 与红线见 [`docs/audits/builder-sop.md`](docs/audits/builder-sop.md)。
+**动工前**：① 读 registry 对应条目；② `git log --all --oneline -- <path>` + `git blame`（禁不读历史就重写）；③ `bash scripts/cap.sh <动词/符号>` 查复用。
+
+**完工回填**（不做 = 失败）：① registry 状态 `🟦open→✅done` + 真实根因/修复方式/对抗证明/测试结果（根因与假设不同如实写）；② 普遍 pitfall 沉淀进本文件同类段；③ 新 gap 新增条目；④ 不新建并行文档。双角色下无独立实时验收，靠**对抗证明 + 红队自审**兜底客观性。
+
+状态语义：`❓待核` / `🟦open` / `✅done`（自主完成：对抗证明+红队自审通过）/ `⚠️待Claude复审`（关键决策待独立复审）。详细 SOP 见 [`docs/audits/builder-sop.md`](docs/audits/builder-sop.md)。
 
 These constraints are enforced at implementation time. Violation = fix before commit.
 

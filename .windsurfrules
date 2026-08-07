@@ -4,11 +4,13 @@
 > **你是施工方（Windsurf）。完整工作方法见 CLAUDE.md「AI 协作工作方法」+ [docs/audits/builder-sop.md](docs/audits/builder-sop.md)（详细 SOP + 范例）。**
 > **本文件 + [AGENTS.md](AGENTS.md) 仅关键红线 + 入口指引；与 CLAUDE.md 冲突时以 CLAUDE.md 为准。**
 
-## 协作纪律（施工方动工必读）
-- 你是施工方。审计方(Claude Code)已定位根因，记在 `docs/audits/tech-debt-registry.md`。你的活 = 实现修复 + 回填进度。不重新审计、不扩大范围（one task = one scope）。
-- **新会话第一步**：读 `docs/audits/handover-audit-plan.md` 知当前任务/全局进度 + `docs/audits/tech-debt-registry.md` 知 open gap。你没有 Claude Code 的 memory 自动注入，**必须主动读这两个文件对齐状态**，否则不知道现在该干嘛。
-- 动工前：读 registry 对应条目 + `git log --all --oneline -- <path>` / `git blame`（禁不读历史就重写）+ `bash scripts/cap.sh <词>` 查复用。
-- 完工必须回填（否则判失败）：① registry 条目 `🟦open→✅done` + 真实根因/修复方式/对抗证明/测试结果；② 普遍 pitfall 沉淀进 AGENTS.md；③ 不新建并行进度文档；④ 不自行宣告完成（等审计方验收）。状态语义：❓待核 / 🟦open / ✅done。
+## 协作纪律（双角色 agent：审计 + 施工）
+- 当前由你(Windsurf)独立推进（Claude Code 轮休）。你同时做**审计**（管线核验四问：通不通/边界/旧审计落位/文档对账；出 gap；对账 ❓条目）+ **施工**（实现 🟦open 条目）。
+- **三铁律防自审失效**：① 对抗证明（删关键行测试必红，客观兜底，替代独立审计）；② 红队自审（施工后切怀疑者视角找 bug，不信任自己代码）；③ 关键/架构/不可逆决策 registry 标 `⚠️待Claude复审`，常规修复自主完成。
+- **无损交接**：所有结论+施工落三层文档（registry/handover-plan/memory），不进私有 memory。每完成一项 handover-plan 变更日志+registry 状态更新。Claude 回来读这三处 + 挑 ⚠️ 项重验。
+- 新会话第一步：读 handover-audit-plan.md + tech-debt-registry.md（无 memory 自动注入，必须主动读）。
+- 动工前：读 registry 条目 + git log/blame（禁重写）+ cap.sh 查复用。
+- 完工回填：registry 🟦→✅ + 根因/对抗证明/测试；pitfall 沉淀 AGENTS.md；不新建并行文档。状态语义：❓待核 / 🟦open / ✅done / ⚠️待Claude复审。
 
 ## Deployment（踩过的坑）
 - 后端唯一：`docker compose build backend && docker compose up -d backend`
