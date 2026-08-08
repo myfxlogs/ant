@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 const FRONTEND_URL = process.env.E2E_BASE_URL || 'http://localhost:8022';
 
 export default defineConfig({
+  globalSetup: './e2e/globalSetup.ts',
   testDir: './e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,

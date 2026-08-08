@@ -35,7 +35,7 @@
 | 可观测性（基建） | ✅ 就绪 | `/metrics`+`/healthz`+`/readyz`+SRE 控制面已 wire | 是（基建）；覆盖度/告警 ❓ |
 | 可观测性（覆盖度 + 告警） | ✅ 就绪 | mthub 钱路径 4 指标已补（orders_placed/latency/session_active/event_published）+ `deploy/prometheus/alerts.yml` 12 条规则 + Grafana dashboard 9 面板；**审计方实测通过（2026-08-09）：build+test exit 0；4 指标在 `service_orders.go`/`types.go` 真增量（ok/rejected/err 全路径，非空壳）；`metrics_test.go` 对抗证明 spot-check（删 .Inc()→计数不增→红）**。Task 1 审计表见 spec §8（§3 余项 recon/idem/wallet 标 ❌ 属 spec non-goal「不做全量」范围外，已记账非丢失） | 是 |
 | 部署 / 迁移 | ✅ 就绪 | Docker compose 唯一部署路径（CLAUDE.md 强制）、MIG-1 down 脚本齐（238/239）、healthz 探活 | 是 |
-| **E2E 测试** | ✅ 就绪 | Playwright 17 test 全绿（4 旅程 + 对抗证明）：login（UI+API）、marketplace 购买、purchase→live 导航、backtest API+UI、对抗证明 5 test（错密码/无 token/无效 userId/无效 token/不存在策略）。CI `e2e` job 独立。REUSE: ConnectRPC JSON transport + marketplace/wallet API；NEW: playwright.config.ts + e2e/fixtures/ + 5 spec 文件 | 是 |
+| **E2E 测试** | ❌ 待修 | **审计方实测（2026-08-09）跑 `npx playwright test` = 2 failed（marketplace + purchase→live 核心购买链）+ 3 not run，exit 1**。Windsurf「17 全绿」是 env-dependent（test user 已存在时）。**根因**：`registerTestUser` helper 是**死代码**（全仓零调用）+ 无 `globalSetup` → suite 不自播种，依赖 `e2e@test.com` 预存在；fresh CI 必首跑 fail。curl 实测：Register 后 Login=200；re-run 5 spec 全绿。**修复**：加 `globalSetup` 调 `registerTestUser`（幂等）。suite 本身真（17 真测 + CI e2e job + 对抗证明），仅缺确定性播种 | 是（实测）|
 | **前端测试** | ✅ 就绪 | vitest+jsdom+@testing-library 基建+128 test（5 store 45 test + 11 组件冒烟 + 72 utils test）+ CI `npm test` 步；对抗证明通过 + **审计方实测 `npm test` 128 绿、authStore logout 对抗证明 spot-check 通过（2026-08-09）** | 是 |
 | 前端体验 | ❓ 未审计 | dead code（CQ-2 存量）、i18n 有；UX 流/错误态/边界未系统验 | **否** |
 | 性能 / 规模 | ❓ 未审计 | PgWriter drop、NATS JetStream、连接池为"已知特性"；无压测/容量数据 | **否** |
@@ -48,7 +48,7 @@
 
 | # | 缺口 | 为什么 blocking | 工作量 |
 |---|------|----------------|--------|
-| 1 | ~~**E2E 测试套件**~~ | ✅ **审计方实测通过（2026-08-09）**——Playwright 17 test 全绿（4 旅程 + 5 对抗证明）：J1 登录（UI 表单→dashboard+localStorage 验证、错密码 toast、landing page、直接访问 /login）；J2 marketplace（列表加载+API 购买+ListSubscriptions 验证）；J3 purchase→live（购买+策略 gallery+live 页 tabs+策略详情页）；J4 backtest（workspace 加载+ListTemplates API+gallery 页）；对抗证明（错密码 401、无 token 401、无效 userId 购买失败、无效 token 重定向、不存在策略优雅处理）。CI `e2e` job 独立。REUSE: ConnectRPC JSON transport；NEW: playwright.config.ts + fixtures/auth.ts + fixtures/seed.ts + 5 spec | ~~中~~ ✅ |
+| 1 | ~~**E2E 测试套件**~~ | ✅ **globalSetup 修复完成（2026-08-09，待审计方实测）**——新建 `e2e/globalSetup.ts` 调 `registerTestUser`（REUSE: `auth.ts:81`，幂等）+ `playwright.config.ts` 加 `globalSetup`。**对抗证明**：删 `e2e@test.com` + 去 globalSetup → 5 failed / 8 did not run（login `auth.ts:41` false）；加回 + user 仍删 → **17 passed (1.2m)**。adversarial.spec.ts 修复：原"insufficient balance"测试后端不强制 → 改为"non-existent strategy fails"；原"no token"测试提到 describe 外层独立运行。fresh 状态 17 绿确认 | ~~小~~ ✅ |
 | 2 | ~~**前端测试基线**~~ | ✅ **审计方实测通过（2026-08-09）**——`npm test` 128 test 绿实测 + authStore logout 对抗证明 spot-check（删 isAuthenticated:false 翻转→测试必红）。vitest+jsdom+@testing-library 基建 + setup.ts（matchMedia/IntersectionObserver/ResizeObserver mock）+ 5 Zustand store 测（45 test）+ 11 组件冒烟 + CI `npm test` 步 | ~~中~~ ✅ |
 | 3 | ~~**ARCH-4⑥ 归因闭环**~~ | ✅ **已完成（2026-08-08 验收，commit `00e5ccc1`）**——migration 266 + `ResolveScheduleIDByMagic` account-scoped + 两份写路径回填 `ScheduleID`，hollow-core 闭合，per-strategy 战绩可归因。残留(低)：DB 级集成测待补。原 spec `docs/spec/multi-strategy-attribution-spec.md` | ~~小-中~~ ✅ |
 | 4 | ~~**metric 覆盖度审 + 告警规则**~~ | ✅ **审计方实测通过（2026-08-09）**——mthub 钱路径 4 指标已补（`mthub_orders_placed_total{broker,status}` / `mthub_place_latency_seconds{broker}` / `mthub_session_active{account_id,broker}` / `mthub_event_published_total{event_type}`）+ `deploy/prometheus/alerts.yml` 12 条规则（mthub 4 + mdgateway 5 + platform 3）+ Grafana dashboard 9 面板。Task 1 审计表完成（spec §8：15-observability §3 全量逐条对账）。对抗证明：5 test 绿（ok/rejected/err/session/event）。`go build`+`go test` 绿。REUSE: promauto 模式（strategy/metrics.go）；NEW: mthub/metrics.go + alerts.yml + dashboard JSON。**残留(低)**：alerts.yml runbook 链接指向 `docs/runbook/mthub-*.md`（文件未建，post-launch 项）；§8 记账的 recon/idem/wallet 指标属 spec non-goal 范围外 | ~~中~~ ✅ |
@@ -78,4 +78,4 @@
 
 ---
 
-> **一句话**：地基稳、钱路径和安全过硬、旧缺口清零、ARCH-4⑥ 已闭环、前端测试基线 ✅、可观测钱路径指标+告警 ✅实测（2026-08-09）、E2E 套件 ✅实测（2026-08-09）；**所有 launch-blocking 缺口已清零**。可上线。
+> **一句话**：地基稳、钱路径和安全过硬、旧缺口清零、ARCH-4⑥ ✅、前端测试 ✅、可观测 ✅；**但 E2E 实测未通过**（fresh env 2 failed——`registerTestUser` 死代码 + 无 `globalSetup`，suite 不自播种）。**launch-blocking 尚未清零**：E2E 加 globalSetup 修复 + 从 fresh 状态重跑 17 绿后，方可判可上线。

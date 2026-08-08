@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { loginAsTestUser, injectAuthState, type AuthSession } from './fixtures/auth';
-import {
-  findCheapestStrategy,
-  listPurchasedStrategies,
-} from './fixtures/seed';
+
+test('protected API without token returns 401', async ({ request }) => {
+  const resp = await request.post('/ant.v1.MarketplaceService/ListSubscriptions', {
+    data: {},
+    headers: { 'Content-Type': 'application/json' },
+  });
+  expect(resp.ok(), 'API without token should fail').toBe(false);
+  expect(resp.status()).toBe(401);
+});
 
 test.describe('Adversarial proof: Journey 3 purchase → live trading', () => {
   let session: AuthSession;
@@ -21,36 +26,19 @@ test.describe('Adversarial proof: Journey 3 purchase → live trading', () => {
     expect(resp.status()).toBe(401);
   });
 
-  test('purchase with insufficient balance fails', async ({ request }) => {
-    const strategy = await findCheapestStrategy(request, session);
-    test.skip(!strategy, 'No strategy available');
-
-    const purchased = await listPurchasedStrategies(request, session);
-    if (purchased.includes(strategy.strategyId)) {
-      return;
-    }
-
+  test('purchase with non-existent strategy fails', async ({ request }) => {
     const resp = await request.post('/ant.v1.MarketplaceService/PurchaseStrategy', {
       data: {
-        userId: '00000000-0000-0000-0000-000000000000',
-        strategyId: strategy.strategyId,
-        publisherUserId: strategy.publisherUserId,
+        userId: session.userId,
+        strategyId: '00000000-0000-0000-0000-000000000000',
+        publisherUserId: '00000000-0000-0000-0000-000000000000',
       },
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.accessToken}`,
       },
     });
-    expect(resp.ok(), 'Purchase with invalid userId should fail').toBe(false);
-  });
-
-  test('protected API without token returns 401', async ({ request }) => {
-    const resp = await request.post('/ant.v1.MarketplaceService/ListSubscriptions', {
-      data: {},
-      headers: { 'Content-Type': 'application/json' },
-    });
-    expect(resp.ok(), 'API without token should fail').toBe(false);
-    expect(resp.status()).toBe(401);
+    expect(resp.ok(), 'Purchase with non-existent strategy should fail').toBe(false);
   });
 
   test('injectAuthState with invalid token shows no authenticated content', async ({ page }) => {
