@@ -24,12 +24,16 @@ interface Props {
   onAIOptimize?: () => void;
   code?: string;
   onApplyTunedParams?: (code: string) => void;
+  strategyId?: string;
+  onAIFix?: (blindSpots: import('./backtestRunnerWatch').BacktestBlindSpotItem[]) => void;
+  aiFixing?: boolean;
 }
 
 export default function BacktestPanel(props: Props) {
   const {
     runner, inputs,
     onOpenHistory, onAIOptimize, code, onApplyTunedParams,
+    strategyId, onAIFix, aiFixing,
   } = props;
   const { t } = useTranslation();
   const [tuningMode, setTuningMode] = useState<'interactive' | 'batch'>('interactive');
@@ -145,6 +149,9 @@ export default function BacktestPanel(props: Props) {
             gateResults={runner.gateResults}
             qualityPreview={runner.qualityPreview}
             blindSpots={runner.blindSpots}
+            strategyId={strategyId}
+            onAIFix={onAIFix}
+            aiFixing={aiFixing}
           />
         )}
 

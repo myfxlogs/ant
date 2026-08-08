@@ -5,6 +5,7 @@ import { RobotOutlined, BarChartOutlined } from '@ant-design/icons';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
+import { useAIFix } from '@/components/backtest/useAIFix';
 import { useWsAccount, useWsCode, useWsBacktest, useWsHistory, useWsAI, useWsTemplates } from '../../WorkspaceContext';
 
 interface BtSummary {
@@ -40,6 +41,20 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
   const templates = useWsTemplates();
   const history = useWsHistory();
   const ai = useWsAI();
+
+  const aiFix = useAIFix({
+    strategyId: code.strategyId,
+    currentCode: code.code,
+    onApplyCode: code.setCode,
+    onRerunBacktest: () => backtest.runner.run({
+      strategyCode: code.code,
+      accountId: account.accountId,
+      symbol: account.symbol,
+      timeframe: account.timeframe,
+      templateId: templates.selectedId || undefined,
+      strategyId: code.strategyId,
+    }),
+  });
 
   const [aiDragging, setAiDragging] = useState(false);
   const handleAiResize = useCallback((e: React.MouseEvent) => {
@@ -129,10 +144,14 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
               onAIOptimize={() => ai.optimize()}
               code={code.code}
               onApplyTunedParams={code.setCode}
+              strategyId={code.strategyId}
+              onAIFix={aiFix.handleAIFix}
+              aiFixing={aiFix.aiFixing}
             />
           )}
         </div>
       </div>
+      {aiFix.diffModal}
     </>
   );
 }

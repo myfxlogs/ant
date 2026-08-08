@@ -12,7 +12,7 @@ import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
 import type { BacktestMetrics, ChartTrade } from './backtestRunnerTypes';
 import { protoToMetrics } from './backtestRunnerTypes';
 
-export type BacktestBlindSpotItem = { id: string; description: string; severity: string };
+export type BacktestBlindSpotItem = { id: string; description: string; severity: string; category: string; location: string };
 
 interface WatchCallbacks {
   setFixDepth: (n: number) => void;
@@ -40,7 +40,7 @@ export function handleBacktestUpdate(
   if (update.gateUpdate?.completed) cb.setGateUpdate(update.gateUpdate);
   if (update.qualityPreview) cb.setQualityPreview(update.qualityPreview);
   if (update.blindSpots && update.blindSpots.length > 0) {
-    cb.setBlindSpots(update.blindSpots.map((b: BacktestBlindSpot) => ({ id: b.id, description: b.description, severity: b.severity })));
+    cb.setBlindSpots(update.blindSpots.map((b: BacktestBlindSpot) => ({ id: b.id, description: b.description, severity: b.severity, category: b.category, location: b.location })));
   }
   if (run && isTerminalRun(run)) {
     handleTerminalRun(update, run, runId, t, cb);

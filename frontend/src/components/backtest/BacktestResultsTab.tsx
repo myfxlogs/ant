@@ -20,9 +20,11 @@ import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
+import type { BacktestBlindSpotItem } from './backtestRunnerWatch';
 import type { GateEvaluationUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
 import type { GateResult } from '@/gen/ant/v1/ai_gate_pb';
-import { DegradedAlert, GatePreview } from './BacktestSections';
+import { GatePreview } from './BacktestSections';
+import { DiagnosticPanel } from './DiagnosticPanel';
 
 const _ASSUMPTION_MAP: Record<string, string> = {
   MT_LIVE: 'strategy.backtest.assumptions.mtLive',
@@ -60,9 +62,12 @@ interface Props {
   gateResults?: GateResult[];
   qualityPreview?: MarketplaceQualityPreview | null;
   blindSpots?: BacktestBlindSpotItem[];
+  strategyId?: string;
+  onAIFix?: (blindSpots: BacktestBlindSpotItem[]) => void;
+  aiFixing?: boolean;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => tr.side === 'buy');
@@ -119,8 +124,15 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         <Empty description={t(BACKTEST_EMPTY_KEY, 'Run a backtest to see results')} style={{ padding: 24 }} />
       )}
 
-      {/* DEGRADED alert + blind spots */}
-      {status === 'degraded' && <DegradedAlert blindSpots={blindSpots} />}
+      {/* DEGRADED — diagnostic panel with severity grouping + AI fix + silence */}
+      {status === 'degraded' && blindSpots && blindSpots.length > 0 && (
+        <DiagnosticPanel
+          blindSpots={blindSpots}
+          strategyId={strategyId}
+          onAIFix={onAIFix}
+          aiFixing={aiFixing}
+        />
+      )}
 
       {/* Execution Assumptions */}
       {executionAssumptions && (status === 'completed' || status === 'degraded') && (
