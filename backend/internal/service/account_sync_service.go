@@ -177,7 +177,7 @@ func orderRecordToTradeRecord(ctx context.Context, r *mthub.OrderRecord, account
 		TakeProfit:   r.TakeProfit,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
-		ScheduleID:   mthub.ResolveScheduleID(ctx, resolver, log, accountID, int32(r.Magic)),
+		ScheduleID:   mthub.ResolveScheduleID(ctx, resolver, log, accountID, r.Magic),
 		Platform:     platform,
 	}
 }

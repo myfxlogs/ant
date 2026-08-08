@@ -90,13 +90,7 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mktplaceHandler.SetPgListen(pgListen)
 	mktplaceHandler.SetPgPool(pool)
 
-	// KB-P0: Knowledge base service — load compat knowledge into memory cache,
-	// wire interp KB hooks for KB-first constant/function/fix lookup.
-	kbSvc := knowledgebase.New(pool, pgListen, log)
-	if err := kbSvc.Start(ctx); err != nil {
-		log.Warn("kb service startup failed, falling back to built-in constants", zap.Error(err))
-	}
-	// K3: Wire demand signal recorder so fatal blind spots are captured for admin roadmap.
+	kbSvc := initKnowledgeBase(ctx, pool, pgListen, log)
 	mktplaceSvc.SetDemandRecorder(kbSvc)
 	quotaChecker.SetPgListen(pgListen)
 	quotaChecker.StartRefreshLoop(ctx)
@@ -194,6 +188,14 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 		scheduleEngine:     scheduleEngine,
 		platformAgg:        platformAgg,
 	}
+}
+
+func initKnowledgeBase(ctx context.Context, pool *pgxpool.Pool, pgListen *pglisten.Listener, log *zap.Logger) *knowledgebase.Service {
+	kbSvc := knowledgebase.New(pool, pgListen, log)
+	if err := kbSvc.Start(ctx); err != nil {
+		log.Warn("kb service startup failed, falling back to built-in constants", zap.Error(err))
+	}
+	return kbSvc
 }
 
 func setupAutoTrading(pool *pgxpool.Pool, mux *http.ServeMux, strategyExecServer *strategy.StrategyExecutionServer, log *zap.Logger, otelInterceptor, authInterceptor connectrpc.Interceptor) *repository.AutoTradingRepository {

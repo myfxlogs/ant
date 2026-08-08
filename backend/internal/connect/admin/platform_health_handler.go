@@ -42,7 +42,6 @@ func (s *PlatformHealthServer) GetRootCauseReport(
 	periodStart := now.AddDate(0, 0, -lookbackDays)
 	prevStart := periodStart.AddDate(0, 0, -lookbackDays)
 
-	// Summary counts for current and previous period.
 	var totalRuns, totalDegraded, totalFailed int
 	var prevDegraded, prevFailed int
 
@@ -69,78 +68,12 @@ func (s *PlatformHealthServer) GetRootCauseReport(
 		return nil, fmt.Errorf("query previous period: %w", err)
 	}
 
-	// Failure signature clusters.
-	rows, err := s.pool.Query(ctx, `
-		SELECT
-			signature,
-			severity,
-			category,
-			MAX(description) AS description,
-			COUNT(DISTINCT backtest_run_id) AS affected_runs,
-			COUNT(DISTINCT strategy_id) AS affected_strategies
-		FROM backtest_failure_signatures
-		WHERE created_at >= $1
-		GROUP BY signature, severity, category
-		ORDER BY affected_runs DESC
-	`, periodStart)
+	clusters, err := s.queryFailureClusters(ctx, periodStart, totalDegraded+totalFailed)
 	if err != nil {
-		return nil, fmt.Errorf("query failure clusters: %w", err)
-	}
-	defer rows.Close()
-
-	var clusters []*antv1.FailureCluster
-	totalFailures := totalDegraded + totalFailed
-	for rows.Next() {
-		var sig, severity, category, desc string
-		var affectedRuns, affectedStrategies int
-		if err := rows.Scan(&sig, &severity, &category, &desc, &affectedRuns, &affectedStrategies); err != nil {
-			return nil, fmt.Errorf("scan cluster row: %w", err)
-		}
-		impactPct := 0.0
-		if totalFailures > 0 {
-			impactPct = float64(affectedRuns) / float64(totalFailures) * 100
-		}
-		clusters = append(clusters, &antv1.FailureCluster{
-			Signature:          sig,
-			Severity:           severity,
-			Description:        desc,
-			AffectedRuns:       int32(affectedRuns),
-			AffectedStrategies: int32(affectedStrategies),
-			ImpactPct:          impactPct,
-			Priority:           int32(len(clusters) + 1),
-		})
+		return nil, err
 	}
 
-	// Recurrence rate: percentage of signatures that appeared in both periods.
-	var prevSignatures int
-	err = s.pool.QueryRow(ctx, `
-		SELECT COUNT(DISTINCT signature)
-		FROM backtest_failure_signatures
-		WHERE created_at >= $1 AND created_at < $2
-	`, prevStart, periodStart).Scan(&prevSignatures)
-	if err != nil {
-		s.log.Warn("failed to query previous signatures", zap.Error(err))
-	}
-
-	recurrenceRate := 0.0
-	if len(clusters) > 0 && prevSignatures > 0 {
-		// Count signatures present in both periods.
-		var recurring int
-		err = s.pool.QueryRow(ctx, `
-			SELECT COUNT(DISTINCT a.signature)
-			FROM backtest_failure_signatures a
-			WHERE a.created_at >= $1
-			AND EXISTS (
-				SELECT 1 FROM backtest_failure_signatures b
-				WHERE b.signature = a.signature
-				AND b.created_at >= $2 AND b.created_at < $1
-			)
-		`, periodStart, prevStart).Scan(&recurring)
-		if err != nil {
-			s.log.Warn("failed to query recurring signatures", zap.Error(err))
-		}
-		recurrenceRate = float64(recurring) / float64(len(clusters)) * 100
-	}
+	recurrenceRate := s.queryRecurrenceRate(ctx, periodStart, prevStart, len(clusters))
 
 	degradedRate := 0.0
 	failedRate := 0.0
@@ -162,6 +95,81 @@ func (s *PlatformHealthServer) GetRootCauseReport(
 		PrevTotalFailed:   int32(prevFailed),
 		RecurrenceRatePct: recurrenceRate,
 	}), nil
+}
+
+func (s *PlatformHealthServer) queryFailureClusters(ctx context.Context, periodStart time.Time, totalFailures int) ([]*antv1.FailureCluster, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			signature,
+			severity,
+			category,
+			MAX(description) AS description,
+			COUNT(DISTINCT backtest_run_id) AS affected_runs,
+			COUNT(DISTINCT strategy_id) AS affected_strategies
+		FROM backtest_failure_signatures
+		WHERE created_at >= $1
+		GROUP BY signature, severity, category
+		ORDER BY affected_runs DESC
+	`, periodStart)
+	if err != nil {
+		return nil, fmt.Errorf("query failure clusters: %w", err)
+	}
+	defer rows.Close()
+
+	var clusters []*antv1.FailureCluster
+	for rows.Next() {
+		var sig, severity, category, desc string
+		var affectedRuns, affectedStrategies int
+		if err := rows.Scan(&sig, &severity, &category, &desc, &affectedRuns, &affectedStrategies); err != nil {
+			return nil, fmt.Errorf("scan cluster row: %w", err)
+		}
+		impactPct := 0.0
+		if totalFailures > 0 {
+			impactPct = float64(affectedRuns) / float64(totalFailures) * 100
+		}
+		clusters = append(clusters, &antv1.FailureCluster{
+			Signature:          sig,
+			Severity:           severity,
+			Description:        desc,
+			AffectedRuns:       int32(affectedRuns),
+			AffectedStrategies: int32(affectedStrategies),
+			ImpactPct:          impactPct,
+			Priority:           int32(len(clusters) + 1),
+		})
+	}
+	return clusters, nil
+}
+
+func (s *PlatformHealthServer) queryRecurrenceRate(ctx context.Context, periodStart, prevStart time.Time, clusterCount int) float64 {
+	var prevSignatures int
+	err := s.pool.QueryRow(ctx, `
+		SELECT COUNT(DISTINCT signature)
+		FROM backtest_failure_signatures
+		WHERE created_at >= $1 AND created_at < $2
+	`, prevStart, periodStart).Scan(&prevSignatures)
+	if err != nil {
+		s.log.Warn("failed to query previous signatures", zap.Error(err))
+		return 0
+	}
+	if clusterCount == 0 || prevSignatures == 0 {
+		return 0
+	}
+	var recurring int
+	err = s.pool.QueryRow(ctx, `
+		SELECT COUNT(DISTINCT a.signature)
+		FROM backtest_failure_signatures a
+		WHERE a.created_at >= $1
+		AND EXISTS (
+			SELECT 1 FROM backtest_failure_signatures b
+			WHERE b.signature = a.signature
+			AND b.created_at >= $2 AND b.created_at < $1
+		)
+	`, periodStart, prevStart).Scan(&recurring)
+	if err != nil {
+		s.log.Warn("failed to query recurring signatures", zap.Error(err))
+		return 0
+	}
+	return float64(recurring) / float64(clusterCount) * 100
 }
 
 func (s *PlatformHealthServer) WatchHealthAlerts(

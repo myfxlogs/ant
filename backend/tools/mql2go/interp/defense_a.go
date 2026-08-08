@@ -109,9 +109,9 @@ func FormatDefenseAViolations(violations []DefenseAViolation) string {
 		return ""
 	}
 	var sb strings.Builder
-	sb.WriteString("Defense A violations:\n")
+	fmt.Fprintf(&sb, "Defense A violations:\n")
 	for _, v := range violations {
-		sb.WriteString(fmt.Sprintf("  [%s] %s\n", v.Rule, v.Message))
+		fmt.Fprintf(&sb, "  [%s] %s\n", v.Rule, v.Message)
 	}
 	return sb.String()
 }

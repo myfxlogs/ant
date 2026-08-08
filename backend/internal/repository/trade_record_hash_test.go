@@ -14,9 +14,9 @@ func TestComputeTradeEntryHash_Deterministic(t *testing.T) {
 	prevHash := []byte{1, 2, 3}
 
 	h1 := computeTradeEntryHash(prevHash, 1, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 	h2 := computeTradeEntryHash(prevHash, 1, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 
 	if len(h1) != 32 {
 		t.Fatalf("expected 32-byte hash, got %d", len(h1))
@@ -32,32 +32,32 @@ func TestComputeTradeEntryHash_DifferentInputs(t *testing.T) {
 	prevHash := []byte{}
 
 	h1 := computeTradeEntryHash(prevHash, 1, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 
 	// Different ticket → different hash.
 	h2 := computeTradeEntryHash(prevHash, 1, accountID, 200, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 	if bytesEqual(h1, h2) {
 		t.Fatal("different ticket should produce different hash")
 	}
 
 	// Different profit → different hash.
 	h3 := computeTradeEntryHash(prevHash, 1, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "100.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "100.00", [2]int64{1700000000000, 1700001000000})
 	if bytesEqual(h1, h3) {
 		t.Fatal("different profit should produce different hash")
 	}
 
 	// Different seq → different hash.
 	h4 := computeTradeEntryHash(prevHash, 2, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 	if bytesEqual(h1, h4) {
 		t.Fatal("different seq should produce different hash")
 	}
 
 	// Different prev_hash → different hash.
 	h5 := computeTradeEntryHash([]byte{9}, 1, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 	if bytesEqual(h1, h5) {
 		t.Fatal("different prev_hash should produce different hash")
 	}
@@ -69,7 +69,7 @@ func TestComputeTradeEntryHash_EmptyPrevHash(t *testing.T) {
 
 	// First record in chain: prev_hash is nil/empty.
 	h := computeTradeEntryHash(nil, 1, accountID, 100, "EURUSD",
-		"0.1", "1.1000", "1.1050", "50.00", 1700000000000, 1700001000000)
+		"0.1", "1.1000", "1.1050", "50.00", [2]int64{1700000000000, 1700001000000})
 	if len(h) != 32 {
 		t.Fatalf("expected 32-byte hash for first record, got %d", len(h))
 	}

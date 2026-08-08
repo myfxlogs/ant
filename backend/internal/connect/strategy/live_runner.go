@@ -27,6 +27,8 @@ import (
 
 const maxContextBars = 500
 
+const modeLive = "live"
+
 // ExecutionModels bitmask for which callbacks the strategy supports.
 type ExecutionModels int
 
@@ -92,6 +94,33 @@ type LiveTradeSubscriber interface {
 	SubscribeTradeEvents(accountID string) (<-chan *mthub.BrokerTradeEvent, func())
 }
 
+// preflightLiveChecks runs LEAKAGE-1 bound account check and T5 coverage gate.
+// All live-launch paths converge on RunLiveStrategy — these checks are non-bypassable.
+func (s *StrategyExecutionServer) preflightLiveChecks(ctx context.Context, cfg LiveStrategyConfig, cleanupOrphan func(string)) error {
+	if cfg.Mode == modeLive && cfg.AccountID != "" {
+		if accountUUID, parseErr := uuid.Parse(cfg.AccountID); parseErr == nil && accountUUID != uuid.Nil {
+			uid, _ := uuid.Parse(cfg.UserID)
+			if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+				cleanupOrphan(fmt.Sprintf("bound account check failed: %v", err))
+				return fmt.Errorf("live strategy runner: bound account check: %w", err)
+			}
+		}
+	}
+	if cfg.Mode == modeLive {
+		if s.coverageChecker != nil {
+			if err := s.coverageChecker.CheckLiveCoverage(ctx, cfg.StrategyID, cfg.Code); err != nil {
+				cleanupOrphan(fmt.Sprintf("fatal coverage check failed: %v", err))
+				return fmt.Errorf("live strategy runner: fatal coverage gate: %w", err)
+			}
+		} else {
+			s.log.Warn("coverage checker not injected, live coverage gate skipped",
+				zap.String("strategy_id", cfg.StrategyID),
+				zap.String("account_id", cfg.AccountID))
+		}
+	}
+	return nil
+}
+
 // RunLiveStrategy subscribes to real-time data streams for the given account/symbol/timeframe,
 // builds proto-native context for each event, executes the strategy via Bytecode VM,
 // and dispatches the resulting signals.
@@ -109,34 +138,8 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 
-	// LEAKAGE-1: Enforce tier-based account binding at the shared chokepoint.
-	// All live-launch paths (StartStrategy, launchEventSession, dispatch) converge
-	// here — this check is non-bypassable. Paper mode skips (no real MT account).
-	if cfg.Mode == "live" && cfg.AccountID != "" {
-		if accountUUID, parseErr := uuid.Parse(cfg.AccountID); parseErr == nil && accountUUID != uuid.Nil {
-			uid, _ := uuid.Parse(cfg.UserID)
-			if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
-				cleanupOrphan(fmt.Sprintf("bound account check failed: %v", err))
-				return fmt.Errorf("live strategy runner: bound account check: %w", err)
-			}
-		}
-	}
-
-	// T5: Fatal coverage gate — symmetric with publish gate (MQL-LOOP-1).
-	// Strategies with fatal blind spots (e.g. iCustom) must not run on real accounts.
-	// Paper mode skips (paper trading is for experimentation, not real money).
-	// Non-bypassable: all live-launch paths converge on RunLiveStrategy.
-	if cfg.Mode == "live" {
-		if s.coverageChecker != nil {
-			if err := s.coverageChecker.CheckLiveCoverage(ctx, cfg.StrategyID, cfg.Code); err != nil {
-				cleanupOrphan(fmt.Sprintf("fatal coverage check failed: %v", err))
-				return fmt.Errorf("live strategy runner: fatal coverage gate: %w", err)
-			}
-		} else {
-			s.log.Warn("coverage checker not injected, live coverage gate skipped",
-				zap.String("strategy_id", cfg.StrategyID),
-				zap.String("account_id", cfg.AccountID))
-		}
+	if err := s.preflightLiveChecks(ctx, cfg, cleanupOrphan); err != nil {
+		return err
 	}
 
 	if cfg.Symbol == "" {

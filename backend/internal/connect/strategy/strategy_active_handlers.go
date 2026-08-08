@@ -219,7 +219,7 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 	// LEAKAGE-1: Pre-check bound account before launching (user-facing error).
 	// RunLiveStrategy also checks (non-bypassable), but this gives the user
 	// a proper PermissionDenied error instead of a silent goroutine failure.
-	if mode == "live" && cfg.AccountID != "" {
+	if mode == modeLive && cfg.AccountID != "" {
 		if accountUUID, parseErr := uuid.Parse(cfg.AccountID); parseErr == nil && accountUUID != uuid.Nil {
 			if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
 				if errors.Is(err, service.ErrAccountLimitExceeded) {
@@ -288,7 +288,7 @@ func (s *StrategyExecutionServer) checkStrategyQuota(ctx context.Context, uid uu
 		return connect.NewError(connect.CodeResourceExhausted,
 			fmt.Errorf("strategy limit reached for your plan (%d active)", activeCount))
 	}
-	if mode == "live" {
+	if mode == modeLive {
 		liveCount, _ := s.runRepo.CountActiveLiveByUser(ctx, uid)
 		if !s.quotaChecker.CheckLiveStrategyLimit(uid, liveCount) {
 			return connect.NewError(connect.CodeResourceExhausted,
@@ -299,7 +299,7 @@ func (s *StrategyExecutionServer) checkStrategyQuota(ctx context.Context, uid uu
 }
 
 func (s *StrategyExecutionServer) resolveModeAndAccount(ctx context.Context, uid uuid.UUID, mode string, cfg *LiveStrategyConfig) error {
-	if mode == "live" {
+	if mode == modeLive {
 		if s.accountLookup == nil {
 			return connect.NewError(connect.CodeUnavailable, fmt.Errorf("account lookup not configured"))
 		}

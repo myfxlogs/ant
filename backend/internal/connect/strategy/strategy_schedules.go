@@ -138,38 +138,9 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		}
 	}
 	if m.AccountId != nil && *m.AccountId != existing.AccountID.String() {
-		newAccountID, err := uuid.Parse(*m.AccountId)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
+		if err := s.applyAccountSwitch(ctx, id, *m.AccountId, existing); err != nil {
+			return nil, err
 		}
-		// Verify the new account belongs to the user and is not frozen.
-		var status string
-		err = s.svc.DB().QueryRow(ctx,
-			`SELECT account_status FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
-			newAccountID, s.userID(ctx)).Scan(&status)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found or not owned by user"))
-		}
-		if status == "frozen" {
-			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("target account is frozen"))
-		}
-		// LEAKAGE-1: Enforce tier-based account binding limit for the new account.
-		if s.boundSvc != nil {
-			if err := s.boundSvc.EnsureBoundAccount(ctx, s.userID(ctx), newAccountID); err != nil {
-				if errors.Is(err, service.ErrAccountLimitExceeded) {
-					return nil, connect.NewError(connect.CodePermissionDenied, err)
-				}
-				if errors.Is(err, service.ErrAccountNotOwned) {
-					return nil, connect.NewError(connect.CodeNotFound, err)
-				}
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-		}
-		// Stop any running session for the old account before switching.
-		if s.engine != nil {
-			s.engine.StopSchedule(id)
-		}
-		existing.AccountID = newAccountID
 	}
 	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -178,6 +149,39 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		s.engine.Notify()
 	}
 	return connect.NewResponse(scheduleRowToProto(existing)), nil
+}
+
+func (s *StrategyServer) applyAccountSwitch(ctx context.Context, id uuid.UUID, accountIDStr string, existing *service.ScheduleRow) error {
+	newAccountID, err := uuid.Parse(accountIDStr)
+	if err != nil {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
+	}
+	var status string
+	err = s.svc.DB().QueryRow(ctx,
+		`SELECT account_status FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
+		newAccountID, s.userID(ctx)).Scan(&status)
+	if err != nil {
+		return connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found or not owned by user"))
+	}
+	if status == "frozen" {
+		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("target account is frozen"))
+	}
+	if s.boundSvc != nil {
+		if err := s.boundSvc.EnsureBoundAccount(ctx, s.userID(ctx), newAccountID); err != nil {
+			if errors.Is(err, service.ErrAccountLimitExceeded) {
+				return connect.NewError(connect.CodePermissionDenied, err)
+			}
+			if errors.Is(err, service.ErrAccountNotOwned) {
+				return connect.NewError(connect.CodeNotFound, err)
+			}
+			return connect.NewError(connect.CodeInternal, err)
+		}
+	}
+	if s.engine != nil {
+		s.engine.StopSchedule(id)
+	}
+	existing.AccountID = newAccountID
+	return nil
 }
 
 func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Request[antv1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {

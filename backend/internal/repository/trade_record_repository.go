@@ -241,7 +241,7 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 	// Compute entry_hash = SHA256(prev_hash || seq || account_id || ticket || symbol || volume || open_price || close_price || profit || open_time || close_time).
 	entryHash := computeTradeEntryHash(prevHash, seq, record.AccountID, record.Ticket, record.Symbol,
 		record.Volume.String(), record.OpenPrice.String(), record.ClosePrice.String(),
-		record.Profit.String(), record.OpenTime.UnixMilli(), record.CloseTime.UnixMilli())
+		record.Profit.String(), [2]int64{record.OpenTime.UnixMilli(), record.CloseTime.UnixMilli()})
 
 	// Update entry_hash (separate UPDATE because seq is GENERATED ALWAYS AS IDENTITY).
 	if _, err := tx.Exec(ctx,
@@ -298,7 +298,7 @@ func (r *TradeRecordRepository) VerifyChain(ctx context.Context, userID, account
 
 		// Recompute entry_hash and compare.
 		computed := computeTradeEntryHash(prevHash, seq, acctID, ticket, symbol,
-			volume, openPrice, closePrice, profit, openTime.UnixMilli(), closeTime.UnixMilli())
+			volume, openPrice, closePrice, profit, [2]int64{openTime.UnixMilli(), closeTime.UnixMilli()})
 		if !bytesEqual(entryHash, computed) {
 			breaks = append(breaks, model.ChainBreak{
 				Seq:    seq,
@@ -314,7 +314,7 @@ func (r *TradeRecordRepository) VerifyChain(ctx context.Context, userID, account
 }
 
 // computeTradeEntryHash calculates SHA256(prev_hash || seq || account_id || ticket || symbol || volume || open_price || close_price || profit || open_time_ms || close_time_ms).
-func computeTradeEntryHash(prevHash []byte, seq int64, accountID uuid.UUID, ticket int64, symbol, volume, openPrice, closePrice, profit string, openTimeMs, closeTimeMs int64) []byte {
+func computeTradeEntryHash(prevHash []byte, seq int64, accountID uuid.UUID, ticket int64, symbol, volume, openPrice, closePrice, profit string, timeMs [2]int64) []byte {
 	h := sha256.New()
 	h.Write(prevHash)
 	var seqBuf [8]byte
@@ -330,9 +330,9 @@ func computeTradeEntryHash(prevHash []byte, seq int64, accountID uuid.UUID, tick
 	h.Write([]byte(closePrice))
 	h.Write([]byte(profit))
 	var timeBuf [8]byte
-	binary.BigEndian.PutUint64(timeBuf[:], uint64(openTimeMs))
+	binary.BigEndian.PutUint64(timeBuf[:], uint64(timeMs[0]))
 	h.Write(timeBuf[:])
-	binary.BigEndian.PutUint64(timeBuf[:], uint64(closeTimeMs))
+	binary.BigEndian.PutUint64(timeBuf[:], uint64(timeMs[1]))
 	h.Write(timeBuf[:])
 	return h.Sum(nil)
 }

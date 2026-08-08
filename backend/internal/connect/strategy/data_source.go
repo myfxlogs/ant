@@ -52,7 +52,7 @@ func NewLiveSource(hub *mthub.MtHubService, mktRepo repository.MarketDataStore) 
 	return &LiveSource{hub: hub, mktRepo: mktRepo}
 }
 
-func (s *LiveSource) Name() string { return "live" }
+func (s *LiveSource) Name() string { return modeLive }
 
 func (s *LiveSource) Fetch(ctx context.Context, symbol, timeframe string, from, to *time.Time) ([]*antv1.ExecuteKlineBar, error) {
 	if s.mktRepo == nil || symbol == "" || timeframe == "" {

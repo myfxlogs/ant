@@ -19,7 +19,7 @@ import (
 // Implements OMS state machine integration (S1.2) and pre-trade risk pipeline (S1.1).
 func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
 	broker := platform(req.AccountID, s.hub)
-	start := time.Now()
+	start := Clk.Now()
 
 	if err := s.preTradeChecks(ctx, req); err != nil {
 		OrdersPlacedTotal.WithLabelValues(broker, orderStatusRejected).Inc()

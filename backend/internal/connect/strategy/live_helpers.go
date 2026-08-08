@@ -18,7 +18,7 @@ import (
 // always produces the same key, so duplicate dispatches (bar replay, VM retry,
 // network glitch) are rejected by the idempotency guard in MtHubService.PlaceOrder.
 func strategyOrderClientID(runID uuid.UUID, barOpenTime int64, signalType string) string {
-	return fmt.Sprintf("strat-%s-%d-%s", runID, barOpenTime, signalType)
+	return fmt.Sprintf("start-%s-%d-%s", runID, barOpenTime, signalType)
 }
 
 // strategyMagic delegates to model.StrategyMagic for a deterministic 32-bit magic number.

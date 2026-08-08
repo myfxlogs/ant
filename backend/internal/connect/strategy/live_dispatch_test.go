@@ -51,7 +51,7 @@ func TestStrategyOrderClientID_Format(t *testing.T) {
 	t.Parallel()
 	runID := uuid.MustParse("550e8400-e29b-41d4-a716-446655440000")
 	k := strategyOrderClientID(runID, 1700000000000, "buy_limit")
-	expected := "strat-550e8400-e29b-41d4-a716-446655440000-1700000000000-buy_limit"
+	expected := "start-550e8400-e29b-41d4-a716-446655440000-1700000000000-buy_limit"
 	if k != expected {
 		t.Fatalf("ClientID format: want %s, got %s", expected, k)
 	}

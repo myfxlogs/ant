@@ -64,7 +64,7 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 
 	// Quota gate (task 5).
 	if e.runner != nil {
-		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, "live"); err != nil {
+		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, modeLive); err != nil {
 			e.log.Warn("launchEventSession: quota exceeded",
 				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
 			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
@@ -125,7 +125,7 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 		Symbol:           schedule.Symbol,
 		Timeframe:        schedule.Timeframe,
 		Code:             tpl.Code,
-		Mode:             "live",
+		Mode:             modeLive,
 		Params:           strParams,
 		ScheduleID:       schedule.ID,
 		EntitlementCheck: entCheck,

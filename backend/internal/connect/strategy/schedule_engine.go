@@ -268,7 +268,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 	}
 	// Quota gate (task 5): enforce live strategy limit.
 	if e.runner != nil {
-		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, "live"); err != nil {
+		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, modeLive); err != nil {
 			e.log.Warn("dispatch: quota exceeded",
 				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
 			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
@@ -326,7 +326,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		Symbol:           schedule.Symbol,
 		Timeframe:        schedule.Timeframe,
 		Code:             tpl.Code,
-		Mode:             "live",
+		Mode:             modeLive,
 		Params:           strParams,
 		ScheduleID:       schedule.ID,
 		EntitlementCheck: entCheck,
