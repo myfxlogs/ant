@@ -67,6 +67,7 @@ func planToProto(p *model.SubscriptionPlan) *antv1.Plan {
 		CapabilityTier:        int32(p.CapabilityTier),
 		Features:              parseFeaturesToStruct(p.Features),
 		SortOrder:             int32(p.SortOrder),
+		MaxMtAccounts:         int32(p.MaxMTAccounts),
 	}
 }
 

@@ -27,7 +27,7 @@ func (r *SubscriptionRepository) ListPlans(ctx context.Context) ([]*model.Subscr
 	rows, err := r.pg.Query(ctx,
 		`SELECT id, name, display_name, price_monthly::text, price_yearly::text,
 		        max_ai_tokens_monthly, max_strategies, max_backtests_daily, max_live_strategies,
-		        max_symbols_per_strategy, capability_tier, features::text, sort_order, is_active,
+		        max_symbols_per_strategy, max_mt_accounts, capability_tier, features::text, sort_order, is_active,
 		        created_at, updated_at
 		 FROM subscription_plans WHERE is_active = true ORDER BY sort_order`)
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *SubscriptionRepository) ListPlans(ctx context.Context) ([]*model.Subscr
 		var p model.SubscriptionPlan
 		if err := rows.Scan(&p.ID, &p.Name, &p.DisplayName, &p.PriceMonthly, &p.PriceYearly,
 			&p.MaxAITokensMonthly, &p.MaxStrategies, &p.MaxBacktestsDaily, &p.MaxLiveStrategies,
-			&p.MaxSymbolsPerStrategy, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
+			&p.MaxSymbolsPerStrategy, &p.MaxMTAccounts, &p.CapabilityTier, &p.Features, &p.SortOrder, &p.IsActive,
 			&p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("subscription repo: scan plan: %w", err)
 		}

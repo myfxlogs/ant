@@ -21,12 +21,18 @@ type CodeAccessChecker interface {
 	CanAccessCode(ctx context.Context, userID, strategyID string) (bool, error)
 }
 
+// BoundAccountChecker ensures the MT account is bound to the user's subscription tier.
+type BoundAccountChecker interface {
+	EnsureBoundAccount(ctx context.Context, userID, accountID uuid.UUID) error
+}
+
 type StrategyServer struct {
 	svc        *service.StrategySvc
 	log        *zap.Logger
 	pgListen   *pglisten.Listener
 	engine     *ScheduleEngine
 	codeAccess CodeAccessChecker // marketplace code-access checks
+	boundSvc   BoundAccountChecker
 }
 
 // SetCodeAccessChecker injects the marketplace service for code protection.
@@ -54,6 +60,8 @@ func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.R
 }
 
 func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
+
+func (s *StrategyServer) SetBoundSvc(b BoundAccountChecker) { s.boundSvc = b }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	raw := interceptor.GetUserID(ctx)

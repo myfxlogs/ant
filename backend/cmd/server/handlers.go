@@ -87,7 +87,7 @@ func registerHandlers(
 	// 	dsDeps.sweepBundleRepo, dsDeps.sweepTronClient, dsDeps.adminRepo, otelInterceptor, authInterceptor)
 
 	// P3.1: Subscription service + QuotaChecker.
-	subscriptionSvc, quotaChecker := setupSubscription(ctx, mux, pool, log, walletSvc, registrationSvc, d.OtelInterceptor, d.AuthInterceptor)
+	subscriptionSvc, quotaChecker, boundSvc := setupSubscription(ctx, mux, pool, log, walletSvc, registrationSvc, d.OtelInterceptor, d.AuthInterceptor)
 
 	reconLoop := mthub.NewReconciliationLoop(d.Hub, pool, d.RDB.Client(), log, d.ReconcileGate)
 
@@ -123,7 +123,7 @@ func registerHandlers(
 		Searcher: searcher, MTTester: mtTester, AuthServer: authServer,
 		SubscriptionSvc: subscriptionSvc, QuotaChecker: quotaChecker,
 		ReconLoop: reconLoop, MktplaceHandler: mktplaceHandler,
-		AccountEventPub: accountEventPub, DsDeps: dsDeps,
+		AccountEventPub: accountEventPub, DsDeps: dsDeps, BoundSvc: boundSvc,
 	})
 }
 
@@ -152,6 +152,7 @@ type registerPostAccountDeps struct {
 	MktplaceHandler *mktplace.MarketplaceServer
 	AccountEventPub *mdgateway.AccountEventPublisher
 	DsDeps          depositSweepDeps
+	BoundSvc        *service.BoundAccountService
 }
 
 func registerPostAccountHandlers(ctx context.Context, p registerPostAccountDeps) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func(), *chain.Monitor, *reconcile.Reconciler, *sweep.Worker) {
@@ -243,16 +244,18 @@ func newEmailNotifier(cfg *config.Config, log *zap.Logger) *notifier.EmailNotifi
 	}, log)
 }
 
-func setupSubscription(ctx context.Context, mux *http.ServeMux, pool *pgxpool.Pool, log *zap.Logger, walletSvc *service.WalletService, registrationSvc *service.RegistrationService, otel, auth connectrpc.Interceptor) (*service.SubscriptionService, *service.QuotaChecker) {
+func setupSubscription(ctx context.Context, mux *http.ServeMux, pool *pgxpool.Pool, log *zap.Logger, walletSvc *service.WalletService, registrationSvc *service.RegistrationService, otel, auth connectrpc.Interceptor) (*service.SubscriptionService, *service.QuotaChecker, *service.BoundAccountService) {
 	subscriptionRepo := repository.NewSubscriptionRepository(pool)
 	subscriptionSvc := service.NewSubscriptionService(subscriptionRepo, walletSvc, pool, log)
 	subscriptionSvc.SetUsageRepos(repository.NewAITokenUsageRepository(pool), repository.NewStrategyRunRepository(pool))
 	registrationSvc.SetSubscriptionEnsurer(subscriptionSvc)
-	subscriptionServer := subscriptionhdr.NewServer(subscriptionSvc, subscriptionSvc, log)
+	boundRepo := repository.NewBoundAccountRepository(pool)
+	boundSvc := service.NewBoundAccountService(boundRepo, subscriptionRepo, pool, log)
+	subscriptionServer := subscriptionhdr.NewServer(subscriptionSvc, subscriptionSvc, boundSvc, log)
 	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otel, auth)))
 	quotaChecker := service.NewQuotaChecker(subscriptionRepo, pool, log)
 	_ = quotaChecker.LoadAll(ctx)
-	return subscriptionSvc, quotaChecker
+	return subscriptionSvc, quotaChecker, boundSvc
 }
 
 func registerSystemServices(mux *http.ServeMux, pool *pgxpool.Pool, log *zap.Logger, jobRepo *repository.JobRepository, logSvc *service.LogService, pgListen *pglisten.Listener, otel, auth connectrpc.Interceptor) {

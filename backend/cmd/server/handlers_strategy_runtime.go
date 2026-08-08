@@ -54,6 +54,7 @@ type strategyTradingParams struct {
 	MktplaceHandler *mktplace.MarketplaceServer
 	QuotaChecker    *service.QuotaChecker
 	BacktestRunRepo *repository.BacktestRunRepository
+	BoundSvc        *service.BoundAccountService
 	Log             *zap.Logger
 	OtelInterceptor connectrpc.Interceptor
 	AuthInterceptor connectrpc.Interceptor
@@ -76,11 +77,13 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mktplaceHandler := p.MktplaceHandler
 	quotaChecker := p.QuotaChecker
 	backtestRunRepo := p.BacktestRunRepo
+	boundSvc := p.BoundSvc
 	otelInterceptor := p.OtelInterceptor
 	authInterceptor := p.AuthInterceptor
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
 	strategyServer.SetCodeAccessChecker(mktplaceSvc)
+	strategyServer.SetBoundSvc(boundSvc)
 	pgListen := pglisten.New(pool, log)
 	strategyServer.SetPgListen(pgListen)
 	mktplaceHandler.SetPgListen(pgListen)

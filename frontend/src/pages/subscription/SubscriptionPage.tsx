@@ -6,6 +6,7 @@ import { subscriptionApi } from '@/client/subscription';
 import { formatDateTime } from '@/utils/date';
 import Seo from '@/components/common/Seo';
 import PlanCards from './PlanCards';
+import BoundAccountsCard from './BoundAccountsCard';
 
 export default function SubscriptionPage() {
   const { t } = useTranslation();
@@ -191,6 +192,11 @@ export default function SubscriptionPage() {
             </Row>
           </Card>
         )}
+
+        {/* Bound accounts management (LEAKAGE-1) */}
+        <Card title={t('subscription.boundAccountsTitle', { defaultValue: 'Bound MT Accounts' })} size="small">
+          <BoundAccountsCard />
+        </Card>
 
         {/* Plan cards */}
         <PlanCards plans={plans} currentPlanName={currentPlan?.name} t={t} onSubscribe={handleSubscribe} />

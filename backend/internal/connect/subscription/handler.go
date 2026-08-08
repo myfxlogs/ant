@@ -12,6 +12,7 @@ import (
 	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
 	"alphaforge/internal/interceptor"
+	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
 )
 
@@ -20,6 +21,12 @@ type subscriptionSvc interface {
 	Subscribe(ctx context.Context, userID uuid.UUID, planName, billingCycle string, autoRenew bool) (*service.SubscribeResult, error)
 	CancelSubscription(ctx context.Context, userID uuid.UUID) error
 	ChangePlan(ctx context.Context, userID uuid.UUID, newPlanName, billingCycle string) (*service.SubscribeResult, error)
+}
+
+type boundAccountSvc interface {
+	ListBoundAccounts(ctx context.Context, userID uuid.UUID) ([]repository.BoundAccountRow, error)
+	UnbindAccount(ctx context.Context, userID, accountID uuid.UUID) error
+	GetAccountLimit(ctx context.Context, userID uuid.UUID) (int, error)
 }
 
 // planReader is the interface for reading plans and user subscriptions as proto.
@@ -33,13 +40,14 @@ type planReader interface {
 type Server struct {
 	svc        subscriptionSvc
 	planReader planReader
+	boundSvc   boundAccountSvc
 	log        *zap.Logger
 }
 
 var _ antv1c.SubscriptionServiceHandler = (*Server)(nil)
 
-func NewServer(svc subscriptionSvc, planReader planReader, log *zap.Logger) *Server {
-	return &Server{svc: svc, planReader: planReader, log: log}
+func NewServer(svc subscriptionSvc, planReader planReader, boundSvc boundAccountSvc, log *zap.Logger) *Server {
+	return &Server{svc: svc, planReader: planReader, boundSvc: boundSvc, log: log}
 }
 
 func (s *Server) ListPlans(ctx context.Context, req *connect.Request[antv1.ListPlansRequest]) (*connect.Response[antv1.ListPlansResponse], error) {
@@ -132,6 +140,52 @@ func (s *Server) GetUsageSummary(ctx context.Context, req *connect.Request[antv1
 		Summary: summary,
 		Plan:    plan,
 	}), nil
+}
+
+func (s *Server) ListBoundAccounts(ctx context.Context, _ *connect.Request[antv1.ListBoundAccountsRequest]) (*connect.Response[antv1.ListBoundAccountsResponse], error) {
+	uid, err := parseUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	accounts, err := s.boundSvc.ListBoundAccounts(ctx, uid)
+	if err != nil {
+		s.log.Error("ListBoundAccounts", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	limit, err := s.boundSvc.GetAccountLimit(ctx, uid)
+	if err != nil {
+		s.log.Error("ListBoundAccounts: get limit", zap.Error(err))
+		limit = 0
+	}
+	items := make([]*antv1.BoundAccount, len(accounts))
+	for i, a := range accounts {
+		items[i] = &antv1.BoundAccount{
+			MtAccountId:   a.MTAccountID.String(),
+			Login:         a.Login,
+			Broker:        a.Broker,
+			Server:        a.Server,
+			MtType:        a.MTType,
+			AccountStatus: a.AccountStatus,
+			BoundAt:       a.BoundAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+	return connect.NewResponse(&antv1.ListBoundAccountsResponse{Accounts: items, MaxAccounts: int32(limit)}), nil
+}
+
+func (s *Server) UnbindAccount(ctx context.Context, req *connect.Request[antv1.UnbindAccountRequest]) (*connect.Response[antv1.UnbindAccountResponse], error) {
+	uid, err := parseUserID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	accountID, err := uuid.Parse(req.Msg.MtAccountId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid mt_account_id"))
+	}
+	if err := s.boundSvc.UnbindAccount(ctx, uid, accountID); err != nil {
+		s.log.Error("UnbindAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.UnbindAccountResponse{}), nil
 }
 
 // ── helpers ──

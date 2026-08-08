@@ -16,6 +16,7 @@ interface PlanItem {
   maxBacktestsDaily: number;
   maxLiveStrategies: number;
   maxSymbolsPerStrategy: number;
+  maxMtAccounts: number;
 }
 
 interface Props {
@@ -96,6 +97,12 @@ export default function PlanCards({ plans, currentPlanName, t, onSubscribe }: Pr
                     {t('subscription.feature.symbols', { count: plan.maxSymbolsPerStrategy, defaultValue: '{{count}} symbols/strategy' })}
                   </div>
                 )}
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                  {plan.maxMtAccounts === 0
+                    ? t('subscription.feature.unlimitedAccounts', { defaultValue: 'Unlimited MT accounts' })
+                    : t('subscription.feature.mtAccounts', { count: plan.maxMtAccounts, defaultValue: '{{count}} MT account(s)' })}
+                </div>
                 {plan.name === 'free' && (
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircleOutlined style={{ color: '#52c41a' }} />

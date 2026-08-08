@@ -19,6 +19,10 @@ service SubscriptionService {
   rpc ChangePlan(ChangePlanRequest) returns (ChangePlanResponse);
   // Get current month usage summary (AI tokens, strategy runtime, costs).
   rpc GetUsageSummary(GetUsageSummaryRequest) returns (GetUsageSummaryResponse);
+  // List MT accounts bound to the caller's subscription.
+  rpc ListBoundAccounts(ListBoundAccountsRequest) returns (ListBoundAccountsResponse);
+  // Unbind an MT account from the caller's subscription (stops active schedules on it).
+  rpc UnbindAccount(UnbindAccountRequest) returns (UnbindAccountResponse);
 }
 
 message Plan {
@@ -35,6 +39,7 @@ message Plan {
   int32 capability_tier = 11;
   google.protobuf.Struct features = 12;  // feature flags
   int32 sort_order = 13;
+  int32 max_mt_accounts = 14;  // 0 = unlimited
 }
 
 message ListPlansRequest {}
@@ -113,3 +118,26 @@ message GetUsageSummaryResponse {
   UsageSummary summary = 1;
   Plan plan = 2;                  // current plan for context
 }
+
+// --- Account Binding (LEAKAGE-1 Phase 1) ---
+
+message BoundAccount {
+  string mt_account_id = 1;
+  string login = 2;
+  string broker = 3;
+  string server = 4;
+  string mt_type = 5;       // mt4 / mt5
+  string account_status = 6;
+  string bound_at = 7;      // RFC3339 timestamp
+}
+
+message ListBoundAccountsRequest {}
+message ListBoundAccountsResponse {
+  repeated BoundAccount accounts = 1;
+  int32 max_accounts = 2;   // tier limit (0 = unlimited)
+}
+
+message UnbindAccountRequest {
+  string mt_account_id = 1;
+}
+message UnbindAccountResponse {}

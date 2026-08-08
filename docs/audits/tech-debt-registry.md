@@ -124,6 +124,11 @@
 |----|----|------|
 | MIG-1 | 55 个 migration 缺 down 脚本（P1-5b 已审：53 纯增量无破坏性，但 down 仍缺）| ✅done（2026-08-10：58 个缺 down 脚本全部补齐。`gen_down.sh` 自动生成 + 手动修复多行 ALTER TABLE/复杂 DO 块/约束变更。分类：① 可逆 DROP TABLE/INDEX/COLUMN — 自动生成；② ALTER COLUMN TYPE — 标注不可逆；③ 复杂 DO $$ 数据迁移 — 标注不可逆；④ 已被 166 删除的表 — 标注 no-op；⑤ 约束变更 — 手动反转。238 up → 239 down（1 个 pre-existing orphan `008_fix_trade_records_precision.down.sql` 无对应 up）。go build + check-file-lines 全绿。）|
 | MIG-2 | ADR-0026 提出的 schema 修正（status ASSIGNED/RETIRED 去 AVAILABLE、分配 SQL 重写）是否落地 | ✅done（2026-08-09：migration 262 修正：① DEFAULT 从 'AVAILABLE' 改为 'ASSIGNED'（匹配代码行为）；② UPDATE 现有 AVAILABLE 行→ASSIGNED；③ 加 CHECK 约束 `status IN ('ASSIGNED','RETIRED')`。分配 SQL 在 205 已改为按需派生 INSERT+ON CONFLICT，无需重写）|
+| MIG-3 | 运行实例 migration 追平：停 265，缺 266（ARCH-4 magic_number）/267（FEAT-5 decay_status）→ 测试者跑旧 build 结论失真 | ✅done（2026-08-08 审计方实测通过）：施工方 `docker compose build backend && up -d backend` 部署。**审计方独立实测全过**：① `schema_migrations` 含 `267_strategy_decay_status`+`266_strategy_schedules_magic_number`；② `marketplace_strategies.decay_status` 列存在（审计方本会话早先实测 `column does not exist`，部署后出现=生效）；③ `strategy_schedules.magic_number` 列存在；④ `/healthz` 200（port 8022 + 容器内 `ant ok`）；⑤ backend rebuild 后 `Up 17min (healthy)`。对抗证明成立。**MIG-3 验收通过** |
+| AUTH-REMEMBER | 「记住我」死按钮（frontend auth）：传输 **Bearer-token 非 cookie**（`transport.ts:32/69/85`），`authStore.ts:42` 硬编码 localStorage + `:43-47` 无条件持久化 accessToken，`_rememberMe` 死标志（存了没用），`useAuth.ts:16` login 没传 rememberMe。DeepSeek 4 次修复基于错误前提（ee42629c「cookie 控 session」）。修法：`_rememberMe` 控制 token 存储（勾→localStorage/不勾→sessionStorage），选择本身始终持久化（防 4b4564f7 second-refresh 回归） | 🟦open（spec `docs/spec/auth-session-fix-spec.md` Part A，待施工）|
+| AUTH-SWITCH-LEAK | 切用户账号数据残留（需手动刷新）：`useAuth.logout()` 只 `storeLogout()`→`authStore.logout()` 只清 authStore，不清 tradingStore/notificationStore/workspaceStore → A 数据残留给 B。修法：各 store 加 reset() + 中央 resetAllStores() + logout 拆 SSE + App.tsx user.id 变化防御 + 补跨 store 测试 | 🟦open（spec `docs/spec/auth-session-fix-spec.md` Part B，待施工）|
+| LEAKAGE-1 | 跟单外泄防护 Phase 1 — 账号绑定：按档位限账号（Free=1/Pro=5/Enterprise=0=unlimited，`subscription_plans.max_mt_accounts` 列，migration 249 已建，admin 可通过 DB 改）+ CreateSchedule/UpdateSchedule chokepoint 强制绑定校验 + 前端绑定管理 UI。挡 MT 跟单外泄（战略决策：放弃完美防复制，抬成本到不值得）。spec `docs/spec/copy-leakage-protection-spec.md` Phase 1 | ✅done（migration 268 `subscription_bound_accounts` 表 + backfill；`BoundAccountService.EnsureBoundAccount` 在 CreateSchedule/UpdateSchedule 校验绑定数<tier_limit，超额返回 `ErrAccountLimitExceeded`；proto `Plan.max_mt_accounts` + `ListBoundAccounts`/`UnbindAccount` RPC；前端 `BoundAccountsCard` 绑定管理 + `PlanCards` 显示账号上限；对抗证明：`bound_account_svc_test.go` free 用户绑第 2 账号必被拒 + pro 用户 6th 账号必被拒 + 非 owner 账号必被拒）|
+| LEAKAGE-2 | 跟单外泄防护 Phase 2 — 跟单检测：PlacedType_Signal 监控 + 多会话/多终端 + signal-provider 状态（mtapi runtime 探查定信号集），**warn-not-block**。Non-goal=检测外部被动跟单者（不可观测）。spec 同上 Phase 2 | 🟦open（spec 已出，待施工，P1；前置 LEAKAGE-1）|
 
 ---
 
@@ -163,9 +168,9 @@
 |----|----|------|------|------|
 | POST-1 | 前端 UX / 错误态 / 边界系统审计 | launch ❓ 维度 | `launch-readiness-assessment.md` §2 | 🟦open |
 | POST-2 | 性能 / 容量压测（钱路径：下单 / 回测 / SSE） | launch ❓ 维度 | 同上 §2 + §4 | 🟦open |
-| POST-3 | 运维 runbook / oncall 手册（含 `alerts.yml` 指向的 `docs/runbook/mthub-*.md` 占位文件） | launch ❓ 维度 + obs 残留 | 同上 §2/§4 | 🟦open |
-| POST-4 | 依赖安全扫描结果核验（CI `govulncheck` 当前 pass/fail 未知） | launch ❓ 维度 | 同上 §2 + `ci.yml` deadcode job | 🟦open |
-| POST-5 | agent 重构阶段 2 **收窄**（plan 驱动升级 + 语义追问；流式/收敛安全网/Apply 已 ✅）| agent 增强 | `docs/spec/agent-rebuild-completion-spec.md`（收尾 spec，2026-08-10）| ⚠️待Claude复审（2026-08-10 施工完成：`PlanTracker` interface + `generateState` plan methods + agent loop step guidance + 5 locale prompt 重写 + 18 对抗证明测试绿。等审计方实测翻 ✅）|
+| POST-3 | ~~运维 runbook / oncall 手册~~ | ✅done（2026-08-10）：alerts.yml 引用的 12 个 runbook 占位文件全建（mthub 4 + md 5 + platform 3），零 404；real ops 内容 post-launch 补 | ✅ |
+| POST-4 | ~~依赖安全扫描~~ | ✅done（CI 覆盖）：`ci.yml` deadcode job 每次 push 自动跑 `govulncheck`；本地跑导致服务器 OOM 不再重复 | ✅ |
+| POST-5 | agent 重构阶段 2 **收窄**（plan 驱动升级 + 语义追问；流式/收敛安全网/Apply 已 ✅）| agent 增强 | `docs/spec/agent-rebuild-completion-spec.md`（收尾 spec，2026-08-10）| ⚠️待Claude复审（2026-08-10 施工完成：`PlanTracker` interface + `generateState` plan methods + agent loop step guidance + 5 locale prompt 重写 + 18 对抗证明测试绿。等审计方实测翻 ✅）→ **✅done 审计方实测（2026-08-10）**：plan 驱动硬验证（`agent_loop.go:27 PlanTracker` interface + `:165-175` step guidance 注入"Plan progress X/Y, Focus ONLY on this step"+ `generator_agent.go:78 SetPlanTracker` 接线 + 9 plan 测试）；语义追问规则文件在（`internal/ai/clarification.go`+`strategy_prompt.go`+`locale_agent_zh.go`+migration 131）；Apply 切 tab 已在（`WorkspaceCenterColumn.tsx:163 setCenterTab('code')`）。build+agent/connect-ai test 绿。**残留(低，prompt 软验证)**：`clarification.go` 是"vague input→别过度追问用默认"逻辑，与 §3.5"语义性歧义必须问"是两层（vague vs detailed-but-ambiguous），需实跑确认不冲突——LLM-prompt 类 inherently 软验证，建议有真实对话后观察是否对"200倍单位/1h vs 4H"这类语义歧义真追问 |
 | POST-6 | ~~agent 重构阶段 3（SDK 多时间框架 / 语义压缩）~~ | ✅done（2026-08-10 审计方实测）：`BarsForSymbol(symbol,timeframe)`+`BarsTF`+VM builtin `vm_builtin_market.go:163` 真接通（旗舰 4H+1H+5M blocker 已解）；`compressContext`(`agent_loop.go:85`) 语义压缩在。非空壳 | ✅ |
 
 ---
@@ -180,10 +185,10 @@
 | §2 架构 | 6 | 6 | 0 | 0 |
 | §3 上线前 | 5 | 5 | 0 | 0 |
 | §4 代码质量 | 9 | 7(CQ-1/3/4/6/7/8/9) | 2(CQ-2/5) | 0 |
-| §5 迁移 | 2 | 2(MIG-1/2) | 0 | 0 |
+| §5 迁移 | 3 | 2(MIG-1/2) | 1(MIG-3) | 0 |
 | §6 文档 | 7 | 7 | 0 | 0 |
 | §7 功能 | 5 | 4(FEAT-1/2/4/5) | 1(FEAT-3) | 0 |
-| §8 Post-launch/增强 | 6 | 1(POST-6) | 4(POST-1~4) | 1(POST-5) |
+| §8 Post-launch/增强 | 6 | 4(POST-3/4/5/6) | 2(POST-1/2) | 0 |
 
 **剩余 🟦open（2026-08-10 刷新）**：**零真代码债务任务**——存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；roadmap 功能 FEAT-3（受保护回测对齐）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥/**FEAT-2（ADR-0028 实现范围合格验收 2026-08-09；3 项 §8 by-design 暂缓=非债务）**/**FEAT-5（策略衰减监控+作者发起迭代 2026-08-10 ✅done）**。**Registry 零 ❓待核，零 🟦open 代码债务。** 注：上线就绪**所有 launch-blocking 缺口审计方实测清零**——ARCH-4⑥ / 前端测试 / 可观测 / E2E 全 ✅ 实测通过（2026-08-09），见 `docs/audits/launch-readiness-assessment.md`。**所有"已知、非阻断、未做"的 post-launch / 增强项（前端UX/性能/runbook/依赖扫描 + agent 阶段2/3）集中登记在 §8**——非债务、不阻断上线，按需择期做。
 

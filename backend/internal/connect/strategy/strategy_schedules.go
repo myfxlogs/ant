@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -67,6 +68,19 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 	if tpl, err := s.svc.GetTemplate(ctx, templateID, uid); err == nil && tpl.IsSystem {
 		return nil, connect.NewError(connect.CodePermissionDenied,
 			fmt.Errorf("system preset strategies cannot be scheduled directly — save as your own strategy first"))
+	}
+
+	// LEAKAGE-1: Enforce tier-based account binding limit.
+	if s.boundSvc != nil && accountID != uuid.Nil {
+		if err := s.boundSvc.EnsureBoundAccount(ctx, uid, accountID); err != nil {
+			if errors.Is(err, service.ErrAccountLimitExceeded) {
+				return nil, connect.NewError(connect.CodePermissionDenied, err)
+			}
+			if errors.Is(err, service.ErrAccountNotOwned) {
+				return nil, connect.NewError(connect.CodeNotFound, err)
+			}
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	r := service.ScheduleRow{
@@ -138,6 +152,18 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		}
 		if status == "frozen" {
 			return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("target account is frozen"))
+		}
+		// LEAKAGE-1: Enforce tier-based account binding limit for the new account.
+		if s.boundSvc != nil {
+			if err := s.boundSvc.EnsureBoundAccount(ctx, s.userID(ctx), newAccountID); err != nil {
+				if errors.Is(err, service.ErrAccountLimitExceeded) {
+					return nil, connect.NewError(connect.CodePermissionDenied, err)
+				}
+				if errors.Is(err, service.ErrAccountNotOwned) {
+					return nil, connect.NewError(connect.CodeNotFound, err)
+				}
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		}
 		// Stop any running session for the old account before switching.
 		if s.engine != nil {

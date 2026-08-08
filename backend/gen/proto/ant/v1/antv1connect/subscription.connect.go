@@ -51,6 +51,12 @@ const (
 	// SubscriptionServiceGetUsageSummaryProcedure is the fully-qualified name of the
 	// SubscriptionService's GetUsageSummary RPC.
 	SubscriptionServiceGetUsageSummaryProcedure = "/ant.v1.SubscriptionService/GetUsageSummary"
+	// SubscriptionServiceListBoundAccountsProcedure is the fully-qualified name of the
+	// SubscriptionService's ListBoundAccounts RPC.
+	SubscriptionServiceListBoundAccountsProcedure = "/ant.v1.SubscriptionService/ListBoundAccounts"
+	// SubscriptionServiceUnbindAccountProcedure is the fully-qualified name of the
+	// SubscriptionService's UnbindAccount RPC.
+	SubscriptionServiceUnbindAccountProcedure = "/ant.v1.SubscriptionService/UnbindAccount"
 )
 
 // SubscriptionServiceClient is a client for the ant.v1.SubscriptionService service.
@@ -67,6 +73,10 @@ type SubscriptionServiceClient interface {
 	ChangePlan(context.Context, *connect.Request[v1.ChangePlanRequest]) (*connect.Response[v1.ChangePlanResponse], error)
 	// Get current month usage summary (AI tokens, strategy runtime, costs).
 	GetUsageSummary(context.Context, *connect.Request[v1.GetUsageSummaryRequest]) (*connect.Response[v1.GetUsageSummaryResponse], error)
+	// List MT accounts bound to the caller's subscription.
+	ListBoundAccounts(context.Context, *connect.Request[v1.ListBoundAccountsRequest]) (*connect.Response[v1.ListBoundAccountsResponse], error)
+	// Unbind an MT account from the caller's subscription (stops active schedules on it).
+	UnbindAccount(context.Context, *connect.Request[v1.UnbindAccountRequest]) (*connect.Response[v1.UnbindAccountResponse], error)
 }
 
 // NewSubscriptionServiceClient constructs a client for the ant.v1.SubscriptionService service. By
@@ -116,6 +126,18 @@ func NewSubscriptionServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(subscriptionServiceMethods.ByName("GetUsageSummary")),
 			connect.WithClientOptions(opts...),
 		),
+		listBoundAccounts: connect.NewClient[v1.ListBoundAccountsRequest, v1.ListBoundAccountsResponse](
+			httpClient,
+			baseURL+SubscriptionServiceListBoundAccountsProcedure,
+			connect.WithSchema(subscriptionServiceMethods.ByName("ListBoundAccounts")),
+			connect.WithClientOptions(opts...),
+		),
+		unbindAccount: connect.NewClient[v1.UnbindAccountRequest, v1.UnbindAccountResponse](
+			httpClient,
+			baseURL+SubscriptionServiceUnbindAccountProcedure,
+			connect.WithSchema(subscriptionServiceMethods.ByName("UnbindAccount")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -127,6 +149,8 @@ type subscriptionServiceClient struct {
 	cancelSubscription *connect.Client[v1.CancelSubscriptionRequest, v1.CancelSubscriptionResponse]
 	changePlan         *connect.Client[v1.ChangePlanRequest, v1.ChangePlanResponse]
 	getUsageSummary    *connect.Client[v1.GetUsageSummaryRequest, v1.GetUsageSummaryResponse]
+	listBoundAccounts  *connect.Client[v1.ListBoundAccountsRequest, v1.ListBoundAccountsResponse]
+	unbindAccount      *connect.Client[v1.UnbindAccountRequest, v1.UnbindAccountResponse]
 }
 
 // ListPlans calls ant.v1.SubscriptionService.ListPlans.
@@ -159,6 +183,16 @@ func (c *subscriptionServiceClient) GetUsageSummary(ctx context.Context, req *co
 	return c.getUsageSummary.CallUnary(ctx, req)
 }
 
+// ListBoundAccounts calls ant.v1.SubscriptionService.ListBoundAccounts.
+func (c *subscriptionServiceClient) ListBoundAccounts(ctx context.Context, req *connect.Request[v1.ListBoundAccountsRequest]) (*connect.Response[v1.ListBoundAccountsResponse], error) {
+	return c.listBoundAccounts.CallUnary(ctx, req)
+}
+
+// UnbindAccount calls ant.v1.SubscriptionService.UnbindAccount.
+func (c *subscriptionServiceClient) UnbindAccount(ctx context.Context, req *connect.Request[v1.UnbindAccountRequest]) (*connect.Response[v1.UnbindAccountResponse], error) {
+	return c.unbindAccount.CallUnary(ctx, req)
+}
+
 // SubscriptionServiceHandler is an implementation of the ant.v1.SubscriptionService service.
 type SubscriptionServiceHandler interface {
 	// List all active plans (public, no auth required for listing).
@@ -173,6 +207,10 @@ type SubscriptionServiceHandler interface {
 	ChangePlan(context.Context, *connect.Request[v1.ChangePlanRequest]) (*connect.Response[v1.ChangePlanResponse], error)
 	// Get current month usage summary (AI tokens, strategy runtime, costs).
 	GetUsageSummary(context.Context, *connect.Request[v1.GetUsageSummaryRequest]) (*connect.Response[v1.GetUsageSummaryResponse], error)
+	// List MT accounts bound to the caller's subscription.
+	ListBoundAccounts(context.Context, *connect.Request[v1.ListBoundAccountsRequest]) (*connect.Response[v1.ListBoundAccountsResponse], error)
+	// Unbind an MT account from the caller's subscription (stops active schedules on it).
+	UnbindAccount(context.Context, *connect.Request[v1.UnbindAccountRequest]) (*connect.Response[v1.UnbindAccountResponse], error)
 }
 
 // NewSubscriptionServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -218,6 +256,18 @@ func NewSubscriptionServiceHandler(svc SubscriptionServiceHandler, opts ...conne
 		connect.WithSchema(subscriptionServiceMethods.ByName("GetUsageSummary")),
 		connect.WithHandlerOptions(opts...),
 	)
+	subscriptionServiceListBoundAccountsHandler := connect.NewUnaryHandler(
+		SubscriptionServiceListBoundAccountsProcedure,
+		svc.ListBoundAccounts,
+		connect.WithSchema(subscriptionServiceMethods.ByName("ListBoundAccounts")),
+		connect.WithHandlerOptions(opts...),
+	)
+	subscriptionServiceUnbindAccountHandler := connect.NewUnaryHandler(
+		SubscriptionServiceUnbindAccountProcedure,
+		svc.UnbindAccount,
+		connect.WithSchema(subscriptionServiceMethods.ByName("UnbindAccount")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.SubscriptionService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SubscriptionServiceListPlansProcedure:
@@ -232,6 +282,10 @@ func NewSubscriptionServiceHandler(svc SubscriptionServiceHandler, opts ...conne
 			subscriptionServiceChangePlanHandler.ServeHTTP(w, r)
 		case SubscriptionServiceGetUsageSummaryProcedure:
 			subscriptionServiceGetUsageSummaryHandler.ServeHTTP(w, r)
+		case SubscriptionServiceListBoundAccountsProcedure:
+			subscriptionServiceListBoundAccountsHandler.ServeHTTP(w, r)
+		case SubscriptionServiceUnbindAccountProcedure:
+			subscriptionServiceUnbindAccountHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -263,4 +317,12 @@ func (UnimplementedSubscriptionServiceHandler) ChangePlan(context.Context, *conn
 
 func (UnimplementedSubscriptionServiceHandler) GetUsageSummary(context.Context, *connect.Request[v1.GetUsageSummaryRequest]) (*connect.Response[v1.GetUsageSummaryResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.SubscriptionService.GetUsageSummary is not implemented"))
+}
+
+func (UnimplementedSubscriptionServiceHandler) ListBoundAccounts(context.Context, *connect.Request[v1.ListBoundAccountsRequest]) (*connect.Response[v1.ListBoundAccountsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.SubscriptionService.ListBoundAccounts is not implemented"))
+}
+
+func (UnimplementedSubscriptionServiceHandler) UnbindAccount(context.Context, *connect.Request[v1.UnbindAccountRequest]) (*connect.Response[v1.UnbindAccountResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.SubscriptionService.UnbindAccount is not implemented"))
 }

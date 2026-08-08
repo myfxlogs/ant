@@ -1,7 +1,7 @@
 import { subscriptionClient } from './connect';
-import type { ListPlansResponse, GetMySubscriptionResponse, SubscribePlanResponse, CancelSubscriptionResponse, ChangePlanResponse, GetUsageSummaryResponse, Plan } from '../gen/ant/v1/subscription_pb';
+import type { ListPlansResponse, GetMySubscriptionResponse, SubscribePlanResponse, CancelSubscriptionResponse, ChangePlanResponse, GetUsageSummaryResponse, Plan, ListBoundAccountsResponse, BoundAccount } from '../gen/ant/v1/subscription_pb';
 
-export type { Plan, UserSubscription, UsageSummary } from '../gen/ant/v1/subscription_pb';
+export type { Plan, UserSubscription, UsageSummary, BoundAccount } from '../gen/ant/v1/subscription_pb';
 
 export const subscriptionApi = {
   listPlans: async () => {
@@ -48,5 +48,17 @@ export const subscriptionApi = {
       summary: msg.summary || null,
       plan: msg.plan || null,
     };
+  },
+
+  listBoundAccounts: async () => {
+    const msg = await subscriptionClient.listBoundAccounts({}) as ListBoundAccountsResponse;
+    return {
+      accounts: (msg.accounts || []) as BoundAccount[],
+      maxAccounts: msg.maxAccounts || 0,
+    };
+  },
+
+  unbindAccount: async (mtAccountId: string) => {
+    await subscriptionClient.unbindAccount({ mtAccountId });
   },
 };

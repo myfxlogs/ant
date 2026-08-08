@@ -38,6 +38,7 @@ type Plan struct {
 	CapabilityTier        int32                  `protobuf:"varint,11,opt,name=capability_tier,json=capabilityTier,proto3" json:"capability_tier,omitempty"`
 	Features              *structpb.Struct       `protobuf:"bytes,12,opt,name=features,proto3" json:"features,omitempty"` // feature flags
 	SortOrder             int32                  `protobuf:"varint,13,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	MaxMtAccounts         int32                  `protobuf:"varint,14,opt,name=max_mt_accounts,json=maxMtAccounts,proto3" json:"max_mt_accounts,omitempty"` // 0 = unlimited
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -159,6 +160,13 @@ func (x *Plan) GetFeatures() *structpb.Struct {
 func (x *Plan) GetSortOrder() int32 {
 	if x != nil {
 		return x.SortOrder
+	}
+	return 0
+}
+
+func (x *Plan) GetMaxMtAccounts() int32 {
+	if x != nil {
+		return x.MaxMtAccounts
 	}
 	return 0
 }
@@ -982,11 +990,271 @@ func (x *GetUsageSummaryResponse) GetPlan() *Plan {
 	return nil
 }
 
+type BoundAccount struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MtAccountId   string                 `protobuf:"bytes,1,opt,name=mt_account_id,json=mtAccountId,proto3" json:"mt_account_id,omitempty"`
+	Login         string                 `protobuf:"bytes,2,opt,name=login,proto3" json:"login,omitempty"`
+	Broker        string                 `protobuf:"bytes,3,opt,name=broker,proto3" json:"broker,omitempty"`
+	Server        string                 `protobuf:"bytes,4,opt,name=server,proto3" json:"server,omitempty"`
+	MtType        string                 `protobuf:"bytes,5,opt,name=mt_type,json=mtType,proto3" json:"mt_type,omitempty"` // mt4 / mt5
+	AccountStatus string                 `protobuf:"bytes,6,opt,name=account_status,json=accountStatus,proto3" json:"account_status,omitempty"`
+	BoundAt       string                 `protobuf:"bytes,7,opt,name=bound_at,json=boundAt,proto3" json:"bound_at,omitempty"` // RFC3339 timestamp
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BoundAccount) Reset() {
+	*x = BoundAccount{}
+	mi := &file_subscription_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BoundAccount) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BoundAccount) ProtoMessage() {}
+
+func (x *BoundAccount) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BoundAccount.ProtoReflect.Descriptor instead.
+func (*BoundAccount) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *BoundAccount) GetMtAccountId() string {
+	if x != nil {
+		return x.MtAccountId
+	}
+	return ""
+}
+
+func (x *BoundAccount) GetLogin() string {
+	if x != nil {
+		return x.Login
+	}
+	return ""
+}
+
+func (x *BoundAccount) GetBroker() string {
+	if x != nil {
+		return x.Broker
+	}
+	return ""
+}
+
+func (x *BoundAccount) GetServer() string {
+	if x != nil {
+		return x.Server
+	}
+	return ""
+}
+
+func (x *BoundAccount) GetMtType() string {
+	if x != nil {
+		return x.MtType
+	}
+	return ""
+}
+
+func (x *BoundAccount) GetAccountStatus() string {
+	if x != nil {
+		return x.AccountStatus
+	}
+	return ""
+}
+
+func (x *BoundAccount) GetBoundAt() string {
+	if x != nil {
+		return x.BoundAt
+	}
+	return ""
+}
+
+type ListBoundAccountsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBoundAccountsRequest) Reset() {
+	*x = ListBoundAccountsRequest{}
+	mi := &file_subscription_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBoundAccountsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBoundAccountsRequest) ProtoMessage() {}
+
+func (x *ListBoundAccountsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBoundAccountsRequest.ProtoReflect.Descriptor instead.
+func (*ListBoundAccountsRequest) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{16}
+}
+
+type ListBoundAccountsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Accounts      []*BoundAccount        `protobuf:"bytes,1,rep,name=accounts,proto3" json:"accounts,omitempty"`
+	MaxAccounts   int32                  `protobuf:"varint,2,opt,name=max_accounts,json=maxAccounts,proto3" json:"max_accounts,omitempty"` // tier limit (0 = unlimited)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListBoundAccountsResponse) Reset() {
+	*x = ListBoundAccountsResponse{}
+	mi := &file_subscription_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListBoundAccountsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListBoundAccountsResponse) ProtoMessage() {}
+
+func (x *ListBoundAccountsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListBoundAccountsResponse.ProtoReflect.Descriptor instead.
+func (*ListBoundAccountsResponse) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ListBoundAccountsResponse) GetAccounts() []*BoundAccount {
+	if x != nil {
+		return x.Accounts
+	}
+	return nil
+}
+
+func (x *ListBoundAccountsResponse) GetMaxAccounts() int32 {
+	if x != nil {
+		return x.MaxAccounts
+	}
+	return 0
+}
+
+type UnbindAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MtAccountId   string                 `protobuf:"bytes,1,opt,name=mt_account_id,json=mtAccountId,proto3" json:"mt_account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnbindAccountRequest) Reset() {
+	*x = UnbindAccountRequest{}
+	mi := &file_subscription_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnbindAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnbindAccountRequest) ProtoMessage() {}
+
+func (x *UnbindAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnbindAccountRequest.ProtoReflect.Descriptor instead.
+func (*UnbindAccountRequest) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *UnbindAccountRequest) GetMtAccountId() string {
+	if x != nil {
+		return x.MtAccountId
+	}
+	return ""
+}
+
+type UnbindAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnbindAccountResponse) Reset() {
+	*x = UnbindAccountResponse{}
+	mi := &file_subscription_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnbindAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnbindAccountResponse) ProtoMessage() {}
+
+func (x *UnbindAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnbindAccountResponse.ProtoReflect.Descriptor instead.
+func (*UnbindAccountResponse) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{19}
+}
+
 var File_subscription_proto protoreflect.FileDescriptor
 
 const file_subscription_proto_rawDesc = "" +
 	"\n" +
-	"\x12subscription.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x85\x04\n" +
+	"\x12subscription.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xad\x04\n" +
 	"\x04Plan\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12!\n" +
@@ -1002,7 +1270,8 @@ const file_subscription_proto_rawDesc = "" +
 	"\x0fcapability_tier\x18\v \x01(\x05R\x0ecapabilityTier\x123\n" +
 	"\bfeatures\x18\f \x01(\v2\x17.google.protobuf.StructR\bfeatures\x12\x1d\n" +
 	"\n" +
-	"sort_order\x18\r \x01(\x05R\tsortOrder\"\x12\n" +
+	"sort_order\x18\r \x01(\x05R\tsortOrder\x12&\n" +
+	"\x0fmax_mt_accounts\x18\x0e \x01(\x05R\rmaxMtAccounts\"\x12\n" +
 	"\x10ListPlansRequest\"7\n" +
 	"\x11ListPlansResponse\x12\"\n" +
 	"\x05plans\x18\x01 \x03(\v2\f.ant.v1.PlanR\x05plans\"\xf2\x03\n" +
@@ -1062,7 +1331,22 @@ const file_subscription_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"k\n" +
 	"\x17GetUsageSummaryResponse\x12.\n" +
 	"\asummary\x18\x01 \x01(\v2\x14.ant.v1.UsageSummaryR\asummary\x12 \n" +
-	"\x04plan\x18\x02 \x01(\v2\f.ant.v1.PlanR\x04plan2\xf1\x03\n" +
+	"\x04plan\x18\x02 \x01(\v2\f.ant.v1.PlanR\x04plan\"\xd3\x01\n" +
+	"\fBoundAccount\x12\"\n" +
+	"\rmt_account_id\x18\x01 \x01(\tR\vmtAccountId\x12\x14\n" +
+	"\x05login\x18\x02 \x01(\tR\x05login\x12\x16\n" +
+	"\x06broker\x18\x03 \x01(\tR\x06broker\x12\x16\n" +
+	"\x06server\x18\x04 \x01(\tR\x06server\x12\x17\n" +
+	"\amt_type\x18\x05 \x01(\tR\x06mtType\x12%\n" +
+	"\x0eaccount_status\x18\x06 \x01(\tR\raccountStatus\x12\x19\n" +
+	"\bbound_at\x18\a \x01(\tR\aboundAt\"\x1a\n" +
+	"\x18ListBoundAccountsRequest\"p\n" +
+	"\x19ListBoundAccountsResponse\x120\n" +
+	"\baccounts\x18\x01 \x03(\v2\x14.ant.v1.BoundAccountR\baccounts\x12!\n" +
+	"\fmax_accounts\x18\x02 \x01(\x05R\vmaxAccounts\":\n" +
+	"\x14UnbindAccountRequest\x12\"\n" +
+	"\rmt_account_id\x18\x01 \x01(\tR\vmtAccountId\"\x17\n" +
+	"\x15UnbindAccountResponse2\x99\x05\n" +
 	"\x13SubscriptionService\x12@\n" +
 	"\tListPlans\x12\x18.ant.v1.ListPlansRequest\x1a\x19.ant.v1.ListPlansResponse\x12X\n" +
 	"\x11GetMySubscription\x12 .ant.v1.GetMySubscriptionRequest\x1a!.ant.v1.GetMySubscriptionResponse\x12H\n" +
@@ -1070,7 +1354,9 @@ const file_subscription_proto_rawDesc = "" +
 	"\x12CancelSubscription\x12!.ant.v1.CancelSubscriptionRequest\x1a\".ant.v1.CancelSubscriptionResponse\x12C\n" +
 	"\n" +
 	"ChangePlan\x12\x19.ant.v1.ChangePlanRequest\x1a\x1a.ant.v1.ChangePlanResponse\x12R\n" +
-	"\x0fGetUsageSummary\x12\x1e.ant.v1.GetUsageSummaryRequest\x1a\x1f.ant.v1.GetUsageSummaryResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0fGetUsageSummary\x12\x1e.ant.v1.GetUsageSummaryRequest\x1a\x1f.ant.v1.GetUsageSummaryResponse\x12X\n" +
+	"\x11ListBoundAccounts\x12 .ant.v1.ListBoundAccountsRequest\x1a!.ant.v1.ListBoundAccountsResponse\x12L\n" +
+	"\rUnbindAccount\x12\x1c.ant.v1.UnbindAccountRequest\x1a\x1d.ant.v1.UnbindAccountResponseB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_subscription_proto_rawDescOnce sync.Once
@@ -1084,7 +1370,7 @@ func file_subscription_proto_rawDescGZIP() []byte {
 	return file_subscription_proto_rawDescData
 }
 
-var file_subscription_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_subscription_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_subscription_proto_goTypes = []any{
 	(*Plan)(nil),                       // 0: ant.v1.Plan
 	(*ListPlansRequest)(nil),           // 1: ant.v1.ListPlansRequest
@@ -1101,42 +1387,52 @@ var file_subscription_proto_goTypes = []any{
 	(*GetUsageSummaryRequest)(nil),     // 12: ant.v1.GetUsageSummaryRequest
 	(*UsageSummary)(nil),               // 13: ant.v1.UsageSummary
 	(*GetUsageSummaryResponse)(nil),    // 14: ant.v1.GetUsageSummaryResponse
-	nil,                                // 15: ant.v1.UsageSummary.TokensByFeatureEntry
-	(*structpb.Struct)(nil),            // 16: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),      // 17: google.protobuf.Timestamp
+	(*BoundAccount)(nil),               // 15: ant.v1.BoundAccount
+	(*ListBoundAccountsRequest)(nil),   // 16: ant.v1.ListBoundAccountsRequest
+	(*ListBoundAccountsResponse)(nil),  // 17: ant.v1.ListBoundAccountsResponse
+	(*UnbindAccountRequest)(nil),       // 18: ant.v1.UnbindAccountRequest
+	(*UnbindAccountResponse)(nil),      // 19: ant.v1.UnbindAccountResponse
+	nil,                                // 20: ant.v1.UsageSummary.TokensByFeatureEntry
+	(*structpb.Struct)(nil),            // 21: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),      // 22: google.protobuf.Timestamp
 }
 var file_subscription_proto_depIdxs = []int32{
-	16, // 0: ant.v1.Plan.features:type_name -> google.protobuf.Struct
+	21, // 0: ant.v1.Plan.features:type_name -> google.protobuf.Struct
 	0,  // 1: ant.v1.ListPlansResponse.plans:type_name -> ant.v1.Plan
-	17, // 2: ant.v1.UserSubscription.current_period_start:type_name -> google.protobuf.Timestamp
-	17, // 3: ant.v1.UserSubscription.current_period_end:type_name -> google.protobuf.Timestamp
-	17, // 4: ant.v1.UserSubscription.cancelled_at:type_name -> google.protobuf.Timestamp
-	17, // 5: ant.v1.UserSubscription.created_at:type_name -> google.protobuf.Timestamp
+	22, // 2: ant.v1.UserSubscription.current_period_start:type_name -> google.protobuf.Timestamp
+	22, // 3: ant.v1.UserSubscription.current_period_end:type_name -> google.protobuf.Timestamp
+	22, // 4: ant.v1.UserSubscription.cancelled_at:type_name -> google.protobuf.Timestamp
+	22, // 5: ant.v1.UserSubscription.created_at:type_name -> google.protobuf.Timestamp
 	3,  // 6: ant.v1.GetMySubscriptionResponse.subscription:type_name -> ant.v1.UserSubscription
 	0,  // 7: ant.v1.GetMySubscriptionResponse.plan:type_name -> ant.v1.Plan
 	3,  // 8: ant.v1.SubscribePlanResponse.subscription:type_name -> ant.v1.UserSubscription
 	3,  // 9: ant.v1.CancelSubscriptionResponse.subscription:type_name -> ant.v1.UserSubscription
 	3,  // 10: ant.v1.ChangePlanResponse.subscription:type_name -> ant.v1.UserSubscription
-	15, // 11: ant.v1.UsageSummary.tokens_by_feature:type_name -> ant.v1.UsageSummary.TokensByFeatureEntry
+	20, // 11: ant.v1.UsageSummary.tokens_by_feature:type_name -> ant.v1.UsageSummary.TokensByFeatureEntry
 	13, // 12: ant.v1.GetUsageSummaryResponse.summary:type_name -> ant.v1.UsageSummary
 	0,  // 13: ant.v1.GetUsageSummaryResponse.plan:type_name -> ant.v1.Plan
-	1,  // 14: ant.v1.SubscriptionService.ListPlans:input_type -> ant.v1.ListPlansRequest
-	4,  // 15: ant.v1.SubscriptionService.GetMySubscription:input_type -> ant.v1.GetMySubscriptionRequest
-	6,  // 16: ant.v1.SubscriptionService.Subscribe:input_type -> ant.v1.SubscribePlanRequest
-	8,  // 17: ant.v1.SubscriptionService.CancelSubscription:input_type -> ant.v1.CancelSubscriptionRequest
-	10, // 18: ant.v1.SubscriptionService.ChangePlan:input_type -> ant.v1.ChangePlanRequest
-	12, // 19: ant.v1.SubscriptionService.GetUsageSummary:input_type -> ant.v1.GetUsageSummaryRequest
-	2,  // 20: ant.v1.SubscriptionService.ListPlans:output_type -> ant.v1.ListPlansResponse
-	5,  // 21: ant.v1.SubscriptionService.GetMySubscription:output_type -> ant.v1.GetMySubscriptionResponse
-	7,  // 22: ant.v1.SubscriptionService.Subscribe:output_type -> ant.v1.SubscribePlanResponse
-	9,  // 23: ant.v1.SubscriptionService.CancelSubscription:output_type -> ant.v1.CancelSubscriptionResponse
-	11, // 24: ant.v1.SubscriptionService.ChangePlan:output_type -> ant.v1.ChangePlanResponse
-	14, // 25: ant.v1.SubscriptionService.GetUsageSummary:output_type -> ant.v1.GetUsageSummaryResponse
-	20, // [20:26] is the sub-list for method output_type
-	14, // [14:20] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	15, // 14: ant.v1.ListBoundAccountsResponse.accounts:type_name -> ant.v1.BoundAccount
+	1,  // 15: ant.v1.SubscriptionService.ListPlans:input_type -> ant.v1.ListPlansRequest
+	4,  // 16: ant.v1.SubscriptionService.GetMySubscription:input_type -> ant.v1.GetMySubscriptionRequest
+	6,  // 17: ant.v1.SubscriptionService.Subscribe:input_type -> ant.v1.SubscribePlanRequest
+	8,  // 18: ant.v1.SubscriptionService.CancelSubscription:input_type -> ant.v1.CancelSubscriptionRequest
+	10, // 19: ant.v1.SubscriptionService.ChangePlan:input_type -> ant.v1.ChangePlanRequest
+	12, // 20: ant.v1.SubscriptionService.GetUsageSummary:input_type -> ant.v1.GetUsageSummaryRequest
+	16, // 21: ant.v1.SubscriptionService.ListBoundAccounts:input_type -> ant.v1.ListBoundAccountsRequest
+	18, // 22: ant.v1.SubscriptionService.UnbindAccount:input_type -> ant.v1.UnbindAccountRequest
+	2,  // 23: ant.v1.SubscriptionService.ListPlans:output_type -> ant.v1.ListPlansResponse
+	5,  // 24: ant.v1.SubscriptionService.GetMySubscription:output_type -> ant.v1.GetMySubscriptionResponse
+	7,  // 25: ant.v1.SubscriptionService.Subscribe:output_type -> ant.v1.SubscribePlanResponse
+	9,  // 26: ant.v1.SubscriptionService.CancelSubscription:output_type -> ant.v1.CancelSubscriptionResponse
+	11, // 27: ant.v1.SubscriptionService.ChangePlan:output_type -> ant.v1.ChangePlanResponse
+	14, // 28: ant.v1.SubscriptionService.GetUsageSummary:output_type -> ant.v1.GetUsageSummaryResponse
+	17, // 29: ant.v1.SubscriptionService.ListBoundAccounts:output_type -> ant.v1.ListBoundAccountsResponse
+	19, // 30: ant.v1.SubscriptionService.UnbindAccount:output_type -> ant.v1.UnbindAccountResponse
+	23, // [23:31] is the sub-list for method output_type
+	15, // [15:23] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_subscription_proto_init() }
@@ -1150,7 +1446,7 @@ func file_subscription_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_subscription_proto_rawDesc), len(file_subscription_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
