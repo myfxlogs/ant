@@ -126,10 +126,16 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	// Strategies with fatal blind spots (e.g. iCustom) must not run on real accounts.
 	// Paper mode skips (paper trading is for experimentation, not real money).
 	// Non-bypassable: all live-launch paths converge on RunLiveStrategy.
-	if cfg.Mode == "live" && s.coverageChecker != nil {
-		if err := s.coverageChecker.CheckLiveCoverage(ctx, cfg.StrategyID, cfg.Code); err != nil {
-			cleanupOrphan(fmt.Sprintf("fatal coverage check failed: %v", err))
-			return fmt.Errorf("live strategy runner: fatal coverage gate: %w", err)
+	if cfg.Mode == "live" {
+		if s.coverageChecker != nil {
+			if err := s.coverageChecker.CheckLiveCoverage(ctx, cfg.StrategyID, cfg.Code); err != nil {
+				cleanupOrphan(fmt.Sprintf("fatal coverage check failed: %v", err))
+				return fmt.Errorf("live strategy runner: fatal coverage gate: %w", err)
+			}
+		} else {
+			s.log.Warn("coverage checker not injected, live coverage gate skipped",
+				zap.String("strategy_id", cfg.StrategyID),
+				zap.String("account_id", cfg.AccountID))
 		}
 	}
 

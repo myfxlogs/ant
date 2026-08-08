@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
 	"alphaforge/tools/mql2go"
 	"alphaforge/tools/mql2go/interp"
 )
@@ -165,7 +166,13 @@ func (s *Service) checkUnreliableCoverage(ctx context.Context, strategyID string
 			// K3: Record demand signal for this unsupported builtin.
 			// Best-effort: errors don't block the quality gate.
 			if s.demandRecorder != nil {
-				_ = s.demandRecorder.RecordDemandSignal(ctx, bs.Id, uuid.Nil)
+				uid := uuid.Nil
+				if raw := interceptor.GetUserID(ctx); raw != "" {
+					if parsed, parseErr := uuid.Parse(raw); parseErr == nil {
+						uid = parsed
+					}
+				}
+				_ = s.demandRecorder.RecordDemandSignal(ctx, bs.Id, uid)
 			}
 		}
 	}

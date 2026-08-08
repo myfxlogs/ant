@@ -168,6 +168,11 @@
   - **MQL-COV（覆盖率显示）**：`DiagnosticPanel.tsx` 加 coverageScore/totalBlocks/recognizedBlocks props + 覆盖率行。
   - **MQL-C1（复利实证回归）**：`c1_compound_interest_test.go` 2 DB 测试绿（RecordFix→loadFromDB→编译器解析无盲点 / RecordFact→loadFromDB→LookupConstant→IntVal(42)）。
   - **部署验证**：migration 269+270 已应用（schema_migrations 含 269_kb_compat_tables/270_kb_demand_signal）；表 kb_compat_fact(837行)+kb_compat_fix(46行)+kb_demand_signal(0行) 存在；KB 服务启动 cache loaded constants=423 fixes=46 functions=414；backend healthz=200；frontend deployed。15 KB 测试全绿（含 4 DB-backed K3/C1 测试）。registry KB-P0 + MQL-T5/CI/K3/COV/C1 全 ✅done。
+- 2026-08-08 **3 项质量加固（Claude 复审反馈，非阻断）**。KB-P0 ✅ 确认后 Claude 提出 3 个跟进：
+  - **K3 userID**：`quality.go:168` `RecordDemandSignal` 从 `uuid.Nil` 改为 `interceptor.GetUserID(ctx)` 取真实 userID（取不到才 uuid.Nil 兜底），使 `user_count` distinct 有意义。
+  - **T5 warn**：`live_runner.go:129` `coverageChecker==nil && mode==live` 时加 `s.log.Warn("coverage checker not injected, live coverage gate skipped")`，非静默 fail-open。
+  - **C1 integration e2e**：新建 `c1_notify_integration_test.go`（`//go:build integration`）：`RecordFact→轮询等缓存刷新(5s timeout)→LookupConstant 命中`，覆盖真 PG LISTEN/NOTIFY 投递路径，防 silent stale cache。PASS（<100ms）。
+  - go build + go test + check-file-lines 全绿。registry MQL-T5/K3/C1 已更新。
 > 7 管线 + account-mgmt 全部审完。以下按"正确性 > 安全 > 功能 > 体验"排序，结合"钱路径 > 用户路径 > 内部路径"权重。
 
 ### P0 — 立即施工（DoD 收尾，本会话）✅ 全部完成
