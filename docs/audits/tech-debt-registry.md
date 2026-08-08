@@ -167,7 +167,7 @@
 | §6 文档 | 7 | 7 | 0 | 0 |
 | §7 功能 | 5 | 2(FEAT-1/4) | 3(FEAT-2剩余/3/5) | 0 |
 
-**剩余 🟦open（2026-08-09 刷新，ARCH-4⑥ + 前端测试基线 + 可观测钱路径 已 ✅）**：**零真代码债务任务**——存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；roadmap 功能 FEAT-3（受保护回测对齐）/FEAT-5（AI 迭代闭环）；FEAT-2 剩余（deferred/成熟期）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥。**Registry 零 ❓待核，零 🟦open 代码债务。** 注：上线就绪另有**非债务维度**缺口（E2E 测试），见 `docs/audits/launch-readiness-assessment.md`。前端测试基线 LAUNCH-FE ✅done 待审计方实测。可观测钱路径 LAUNCH-OBS ✅done 待审计方实测。
+**剩余 🟦open（2026-08-09 刷新，ARCH-4⑥ + 前端测试基线 + 可观测钱路径 + E2E 套件 已 ✅）**：**零真代码债务任务**——存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；roadmap 功能 FEAT-3（受保护回测对齐）/FEAT-5（AI 迭代闭环）；FEAT-2 剩余（deferred/成熟期）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥。**Registry 零 ❓待核，零 🟦open 代码债务。** 注：上线就绪**所有 launch-blocking 缺口已清零**（E2E 套件 LAUNCH-E2E ✅done 待审计方实测），见 `docs/audits/launch-readiness-assessment.md`。前端测试基线 LAUNCH-FE ✅done 待审计方实测。可观测钱路径 LAUNCH-OBS ✅done 待审计方实测。E2E 套件 LAUNCH-E2E ✅done 待审计方实测。
 
 ---
 

@@ -64,7 +64,6 @@ backups/
 Emulator/
 mtproto/
 test/
-frontend/e2e/
 reference/
 
 # Local test reports / traces
