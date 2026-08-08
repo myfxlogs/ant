@@ -10,10 +10,10 @@ export default function ContentContainer({ children }: { children: React.ReactNo
   return (
     <div
       style={{
-        maxWidth: isFluid ? undefined : 1360,
+        maxWidth: isFluid ? undefined : 1400,
         margin: '0 auto',
         width: '100%',
-        padding: isFluid ? '0 12px' : undefined,
+        padding: isFluid ? '0 12px' : '0 var(--grid-margin)',
       }}
     >
       {children}

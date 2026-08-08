@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Button, Card, Col, Row } from 'antd';
+import { Button, Col, Row } from 'antd';
 import { PlusOutlined, WifiOutlined, DisconnectOutlined } from '@ant-design/icons';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ import DashboardAccountList from './DashboardAccountList';
 import { createQuickActions } from './quickActions';
 import Seo from '@/components/common/Seo';
 import WelcomeModal from '@/components/onboarding/WelcomeModal';
+import GlassCard from '@/components/common/GlassCard';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -55,9 +56,11 @@ export default function Dashboard() {
   const getDisplayName = () => user?.email?.split('@')[0] || user?.username || t(DEFAULT_NAME_KEY);
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>
       <Seo title="Dashboard" noindex />
       <WelcomeModal hasAccounts={accts.length > 0} hasStrategies={false} />
+
+      {/* Header — generous whitespace */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>
@@ -72,33 +75,38 @@ export default function Dashboard() {
           </p>
         </div>
         <Button type="primary" icon={<PlusOutlined size={16} />} onClick={() => navigate('/accounts/bind')}
-          style={{ background: PRIMARY_GRADIENT, border: 'none' }}>{t(BIND_ACCOUNT_KEY)}</Button>
+          style={{ background: PRIMARY_GRADIENT, border: 'none', borderRadius: 'var(--radius-sm)' }}>{t(BIND_ACCOUNT_KEY)}</Button>
       </div>
 
-      <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
+      {/* Account Overview — liquid glass card */}
+      <GlassCard hover={false} style={{ padding: 'var(--space-lg)' }}>
         <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t(ACCOUNT_OVERVIEW_KEY)}</h2>
         <DashboardStatCards stats={stats} loading={localLoading} />
-      </div>
+      </GlassCard>
 
-      <Row gutter={[16, 16]}>
+      {/* Main grid — 12-col grid alignment, generous gutter */}
+      <Row gutter={[24, 24]}>
         <Col xs={24} lg={16}>
           <DashboardAccountList accounts={accts} loading={localLoading} error={loadError} onRetry={fetchAccounts} />
         </Col>
         <Col xs={24} lg={8}>
-          <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(QUICK_ACTIONS_TITLE_KEY)}</span>} className="glass-card h-full">
+          <GlassCard hover={false} style={{ padding: 'var(--space-md)', height: '100%' }}>
+            <h3 className="text-base font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t(QUICK_ACTIONS_TITLE_KEY)}</h3>
             <div className="grid grid-cols-2 gap-3">
               {quickActions.map((action) => (
-                <div key={action.key} onClick={() => navigate(action.path)}
-                  className="flex flex-col items-center justify-center p-4 rounded-xl cursor-pointer transition-all"
-                  style={{ background: 'var(--color-bg-secondary)', border: '1px solid rgba(0,0,0,0.05)' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#E8ECF0'; e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F7F9'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: action.color }}>{action.icon}</div>
-                  <span style={{ color: 'var(--color-text)', fontWeight: 500, fontSize: '13px' }}>{action.label}</span>
-                </div>
+                <GlassCard
+                  key={action.key}
+                  onClick={() => navigate(action.path)}
+                  style={{ padding: 'var(--space-md)' }}
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: action.color }}>{action.icon}</div>
+                    <span style={{ color: 'var(--color-text)', fontWeight: 500, fontSize: '13px' }}>{action.label}</span>
+                  </div>
+                </GlassCard>
               ))}
             </div>
-          </Card>
+          </GlassCard>
         </Col>
       </Row>
     </div>

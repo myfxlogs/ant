@@ -1,12 +1,13 @@
-import { Card, Tag, Tooltip } from 'antd';
+import { Tag, Tooltip } from 'antd';
 import { BankOutlined, RiseOutlined, FallOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next'
-import { ACCOUNT_LIST_KEY, FIELDS_BALANCE_KEY, FIELDS_EQUITY_KEY, FIELDS_FLOATING_KEY, NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
+import { ACCOUNT_LIST_KEY, BIND_ACCOUNT_KEY, FIELDS_BALANCE_KEY, FIELDS_EQUITY_KEY, FIELDS_FLOATING_KEY, NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 import { CARD_STATUS_CONNECTED_KEY, CARD_STATUS_CONNECTING_KEY, CARD_STATUS_DISABLED_KEY, CARD_STATUS_DISCONNECTED_KEY, CARD_STATUS_ERROR_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import { StatusResult } from '@/components/common/StatusResult';
+import GlassCard from '@/components/common/GlassCard';
 import type { Account } from '@/types/account';
 import { toFriendlyAccountError } from '@/bridge/accountErrorMap';
 
@@ -53,16 +54,8 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
       tabIndex={0}
       onClick={() => navigate(`/accounts/${item.id}`)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/accounts/${item.id}`); } }}
-      className="p-4 rounded-xl cursor-pointer transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#D4AF37]"
-      style={{ background: 'var(--color-bg-secondary)', border: '1px solid rgba(0,0,0,0.05)' }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = '#E8ECF0';
-        e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = '#F5F7F9';
-        e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
-      }}
+      className="glass-card glass-card-hover"
+      style={{ padding: 'var(--space-md)', cursor: 'pointer' }}
     >
       {/* Header: icon + login + platform tag + status */}
       <div className="flex items-center gap-2 mb-2">
@@ -127,25 +120,26 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
   const navigate = useNavigate();
 
   return (
-    <Card
-      title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t(ACCOUNT_LIST_KEY)}</span>}
-      className="glass-card"
-    >
+    <GlassCard hover={false} style={{ padding: 'var(--space-md)' }}>
+      <h3 className="text-base font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t(ACCOUNT_LIST_KEY)}</h3>
       <StatusResult
         loading={loading}
         error={error}
         onRetry={onRetry}
         empty={!loading && !error && (!accounts || accounts.length === 0)}
         emptyText={t(NO_ACCOUNTS_KEY)}
+        emptyDescription={t('dashboard.noAccountsDesc', { defaultValue: 'Bind your first MT4/MT5 account to start monitoring and trading.' })}
+        emptyActionText={t(BIND_ACCOUNT_KEY, { defaultValue: 'Bind Account' })}
+        emptyAction={() => navigate('/accounts/bind')}
       >
         <div style={{ maxHeight: 520, overflowY: 'auto' }}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {(accounts || []).map((item) => (
               <AccountCard key={item.id} item={item} navigate={navigate} t={t} />
             ))}
           </div>
         </div>
       </StatusResult>
-    </Card>
+    </GlassCard>
   );
 }
