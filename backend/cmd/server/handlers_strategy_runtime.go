@@ -117,6 +117,7 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 		capStore:        capStore,
 		quotaChecker:    quotaChecker,
 		mktplaceSvc:     mktplaceSvc,
+		boundSvc:        boundSvc,
 		cfg:             cfg,
 		log:             log,
 	})

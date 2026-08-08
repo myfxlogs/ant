@@ -109,6 +109,19 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 
+	// LEAKAGE-1: Enforce tier-based account binding at the shared chokepoint.
+	// All live-launch paths (StartStrategy, launchEventSession, dispatch) converge
+	// here — this check is non-bypassable. Paper mode skips (no real MT account).
+	if cfg.Mode == "live" && cfg.AccountID != "" {
+		if accountUUID, parseErr := uuid.Parse(cfg.AccountID); parseErr == nil && accountUUID != uuid.Nil {
+			uid, _ := uuid.Parse(cfg.UserID)
+			if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+				cleanupOrphan(fmt.Sprintf("bound account check failed: %v", err))
+				return fmt.Errorf("live strategy runner: bound account check: %w", err)
+			}
+		}
+	}
+
 	if cfg.Symbol == "" {
 		cleanupOrphan("no symbol specified")
 		return fmt.Errorf("live strategy runner: symbol is required — specify which instrument to trade")

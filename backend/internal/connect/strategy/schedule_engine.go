@@ -275,6 +275,17 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 			return
 		}
 	}
+	// LEAKAGE-1: Enforce bound account at dispatch time.
+	// RunLiveStrategy also checks (non-bypassable), but early rejection avoids
+	// creating a run record and launching a doomed goroutine.
+	if e.runner != nil {
+		if err := e.runner.checkBoundAccount(ctx, schedule.UserID, schedule.AccountID); err != nil {
+			e.log.Warn("dispatch: bound account check failed",
+				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
+			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
+			return
+		}
+	}
 	// Load and validate template.
 	tpl, err := e.templateReader.GetTemplate(ctx, schedule.TemplateID, schedule.UserID)
 	if err != nil || tpl == nil || tpl.Code == "" {

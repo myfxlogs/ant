@@ -81,6 +81,12 @@ type StrategyExecutionServer struct {
 	// QuotaChecker enforces subscription plan limits (max strategies, live strategies).
 	quotaChecker QuotaChecker
 
+	// LEAKAGE-1: Bound account checker — enforces tier-based MT account binding.
+	// Injected at construction; RunLiveStrategy (the shared chokepoint) calls it
+	// before any live strategy launch. Non-bypassable: all live-launch paths
+	// (StartStrategy, launchEventSession, dispatch) converge on RunLiveStrategy.
+	boundSvc BoundAccountChecker
+
 	// QualityValidator checks backtest snapshot against marketplace quality gates (auto_gate preview).
 	qualityValidator QualityValidator
 
@@ -147,6 +153,19 @@ type QuotaChecker interface {
 }
 
 func (s *StrategyExecutionServer) SetQuotaChecker(qc QuotaChecker) { s.quotaChecker = qc }
+
+// SetBoundSvc injects the bound account checker (LEAKAGE-1).
+func (s *StrategyExecutionServer) SetBoundSvc(b BoundAccountChecker) { s.boundSvc = b }
+
+// checkBoundAccount is the shared helper used by RunLiveStrategy (chokepoint)
+// and pre-checks in StartStrategy/launchEventSession/dispatch.
+// Returns nil if boundSvc is nil or accountID is Nil (no-op).
+func (s *StrategyExecutionServer) checkBoundAccount(ctx context.Context, userID, accountID uuid.UUID) error {
+	if s.boundSvc == nil || accountID == uuid.Nil {
+		return nil
+	}
+	return s.boundSvc.EnsureBoundAccount(ctx, userID, accountID)
+}
 
 // SetGate injects the risk gate (D6-A: mandatory, non-optional).
 // Must be called before RunLiveStrategy.

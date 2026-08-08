@@ -43,6 +43,7 @@ type strategyExecDeps struct {
 	capStore        *risksvc.CapabilityStore
 	quotaChecker    *service.QuotaChecker
 	mktplaceSvc     *marketplace.Service
+	boundSvc        *service.BoundAccountService
 	cfg             *config.Config
 	log             *zap.Logger
 }
@@ -61,6 +62,9 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	srv.SetFailureSignatureRepo(repository.NewFailureSignatureRepository(d.pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
 	srv.SetQuotaChecker(d.quotaChecker)
+	if d.boundSvc != nil {
+		srv.SetBoundSvc(d.boundSvc)
+	}
 
 	if n, err := strategyRunRepo.CleanupStaleRuns(context.Background()); err != nil {
 		d.log.Warn("startup: failed to cleanup stale strategy runs", zap.Error(err))

@@ -3,6 +3,7 @@ package strategy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"connectrpc.com/connect"
@@ -12,6 +13,7 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/repository"
+	"alphaforge/internal/service"
 )
 
 // ListActiveStrategies returns currently running strategy sessions.
@@ -212,6 +214,23 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 
 	if err := s.resolveModeAndAccount(ctx, uid, mode, &cfg); err != nil {
 		return nil, err
+	}
+
+	// LEAKAGE-1: Pre-check bound account before launching (user-facing error).
+	// RunLiveStrategy also checks (non-bypassable), but this gives the user
+	// a proper PermissionDenied error instead of a silent goroutine failure.
+	if mode == "live" && cfg.AccountID != "" {
+		if accountUUID, parseErr := uuid.Parse(cfg.AccountID); parseErr == nil && accountUUID != uuid.Nil {
+			if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+				if errors.Is(err, service.ErrAccountLimitExceeded) {
+					return nil, connect.NewError(connect.CodePermissionDenied, err)
+				}
+				if errors.Is(err, service.ErrAccountNotOwned) {
+					return nil, connect.NewError(connect.CodeNotFound, err)
+				}
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+		}
 	}
 
 	runID, err := s.createStrategyRun(ctx, uid, cfg)

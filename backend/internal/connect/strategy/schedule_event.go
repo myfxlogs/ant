@@ -72,6 +72,18 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 		}
 	}
 
+	// LEAKAGE-1: Enforce bound account at launch time.
+	// RunLiveStrategy also checks (non-bypassable), but early rejection avoids
+	// creating a run record and launching a doomed goroutine.
+	if e.runner != nil {
+		if err := e.runner.checkBoundAccount(ctx, schedule.UserID, schedule.AccountID); err != nil {
+			e.log.Warn("launchEventSession: bound account check failed",
+				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
+			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
+			return err
+		}
+	}
+
 	// Load template code from strategy_templates (not ai_strategy_templates).
 	tpl, err := e.templateReader.GetTemplate(ctx, schedule.TemplateID, schedule.UserID)
 	if err != nil || tpl == nil || tpl.Code == "" {
