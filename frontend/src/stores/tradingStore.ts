@@ -40,6 +40,7 @@ interface TradingState {
   hasReceivedData: (_accountId: string) => boolean;
   setCurrentAccountId: (_accountId: string | null) => void;
   setLoading: (_loading: boolean) => void;
+  reset: () => void;
 }
 
 const defaultAccountInfo: AccountInfo = {
@@ -205,5 +206,16 @@ function createTradingState(
     };
   }),
   setLoading: (loading) => set({ loading: loading }),
+  reset: () => set({
+    positions: [],
+    positionsMap: new Map(),
+    tradeLogs: [],
+    accountInfo: { ...defaultAccountInfo },
+    accountInfoMap: new Map(),
+    accountReceivedData: new Set<string>(),
+    lastStreamProfitAtByAccount: new Map<string, number>(),
+    currentAccountId: null,
+    loading: false,
+  }),
   };
 }

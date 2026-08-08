@@ -16,4 +16,5 @@ export interface NotificationState {
   markAllAsRead: () => void;
   removeNotification: (_id: string) => void;
   clearAll: () => void;
+  reset: () => void;
 }

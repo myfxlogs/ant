@@ -47,7 +47,9 @@ interface HydrationSlice {
   _hasHydrated: boolean;
 }
 
-type WorkspaceState = AccountSlice & LayoutSlice & CodeSlice & HydrationSlice;
+type WorkspaceState = AccountSlice & LayoutSlice & CodeSlice & HydrationSlice & {
+  reset: () => void;
+};
 
 // ── Slice creators ────────────────────────────────────────────────
 
@@ -99,6 +101,20 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       ...createLayoutSlice(set),
       ...createCodeSlice(set),
       _hasHydrated: false,
+      reset: () => set({
+        accountId: '',
+        symbol: '',
+        timeframe: '1h',
+        centerTab: 'code',
+        leftSidebarCollapsed: false,
+        bottomPanelCollapsed: false,
+        bottomPanelHeight: 160,
+        bottomPanelUserResized: false,
+        quickTradeCollapsed: false,
+        aiPanelWidth: 380,
+        currentCode: '',
+        currentCodeName: '',
+      }),
     }),
     {
       name: 'ant-workspace-v10',

@@ -56,6 +56,10 @@ export const useNotificationStore = create<NotificationState>()(
       clearAll: () => {
         set({ notifications: [], unreadCount: 0 });
       },
+
+      reset: () => {
+        set({ notifications: [], unreadCount: 0 });
+      },
     }),
     {
       name: 'notification-storage',

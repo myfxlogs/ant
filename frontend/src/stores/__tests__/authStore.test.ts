@@ -2,6 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { useAuthStore } from '@/stores/authStore'
 import type { User } from '@/types/auth'
 
+const TOKEN_KEY = 'auth-access-token'
+const REMEMBER_ME_KEY = 'auth-remember-me'
+
 function makeUser(overrides: Partial<User> = {}): User {
   return {
     id: 'u1',
@@ -22,6 +25,8 @@ function makeUser(overrides: Partial<User> = {}): User {
 
 describe('authStore', () => {
   beforeEach(() => {
+    localStorage.clear()
+    sessionStorage.clear()
     useAuthStore.setState({
       user: null,
       accessToken: null,
@@ -92,5 +97,53 @@ describe('authStore', () => {
     expect(useAuthStore.getState()._hasHydrated).toBe(true)
     useAuthStore.getState().setHydrated(false)
     expect(useAuthStore.getState()._hasHydrated).toBe(false)
+  })
+
+  // ── Adversarial proof: _rememberMe controls token storage location ──
+
+  it('rememberMe=true stores token in localStorage, not sessionStorage', () => {
+    const user = makeUser()
+    useAuthStore.getState().setTokens('tok-remember', 'refresh', user, true)
+    expect(localStorage.getItem(TOKEN_KEY)).toBe('tok-remember')
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(localStorage.getItem(REMEMBER_ME_KEY)).toBe('true')
+  })
+
+  it('rememberMe=false stores token in sessionStorage, not localStorage', () => {
+    const user = makeUser()
+    useAuthStore.getState().setTokens('tok-session', 'refresh', user, false)
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBe('tok-session')
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(localStorage.getItem(REMEMBER_ME_KEY)).toBe('false')
+  })
+
+  it('logout clears token from both storages', () => {
+    useAuthStore.getState().setTokens('tok-1', 'refresh', makeUser(), true)
+    expect(localStorage.getItem(TOKEN_KEY)).toBe('tok-1')
+    useAuthStore.getState().logout()
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
+  })
+
+  it('switching from rememberMe=true to false moves token to sessionStorage', () => {
+    useAuthStore.getState().setTokens('tok-1', 'refresh', makeUser(), true)
+    expect(localStorage.getItem(TOKEN_KEY)).toBe('tok-1')
+    useAuthStore.getState().setTokens('tok-2', 'refresh', makeUser(), false)
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBe('tok-2')
+  })
+
+  it('setAccessToken persists to current storage (rememberMe=true → localStorage)', () => {
+    useAuthStore.getState().setTokens('tok-1', 'refresh', makeUser(), true)
+    useAuthStore.getState().setAccessToken('tok-refreshed')
+    expect(localStorage.getItem(TOKEN_KEY)).toBe('tok-refreshed')
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull()
+  })
+
+  it('setAccessToken persists to current storage (rememberMe=false → sessionStorage)', () => {
+    useAuthStore.getState().setTokens('tok-1', 'refresh', makeUser(), false)
+    useAuthStore.getState().setAccessToken('tok-refreshed')
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBe('tok-refreshed')
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
   })
 })

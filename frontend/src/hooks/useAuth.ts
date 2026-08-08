@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { resetAllStores } from '@/stores/resetAllStores';
 import { authApi, type User } from '@/client/auth';
 import { getErrorMessage } from '@/utils/error';
 import { showError, showSuccess, showWarning } from '@/utils/message';
@@ -55,6 +56,7 @@ export function useAuth() {
       // ignore
     }
     storeLogout();
+    resetAllStores();
     navigate('/login');
     showWarning(i18n.t('auth.messages.logoutSuccess'));
   }, [storeLogout, navigate]);

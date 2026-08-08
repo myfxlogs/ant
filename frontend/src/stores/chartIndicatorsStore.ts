@@ -92,6 +92,7 @@ interface ChartIndicatorsState {
   updateParams: (instanceId: string, params: Record<string, number>) => void;
   getDef: (defId: string) => IndicatorDef | undefined;
   registry: IndicatorDef[];
+  reset: () => void;
 }
 
 let nextId = 1;
@@ -135,4 +136,6 @@ export const useChartIndicatorsStore = create<ChartIndicatorsState>((set, _get) 
   },
 
   getDef: (defId: string) => INDICATOR_REGISTRY.find((d) => d.id === defId),
+
+  reset: () => set({ active: [] }),
 }));
