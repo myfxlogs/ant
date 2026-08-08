@@ -64,6 +64,14 @@
 - 致命违反 → 红标诊断 + AI 帮修可用；应用修复后重过防线转绿。
 - **对抗证明**：删诊断面板 → "不可信"结果无诊断信息（回归必红）；致命类不该出现"静默"开关（出现即 bug）。
 
+### ✅ 完工记录（2026-08-10）
+- **Proto**：`BacktestBlindSpot` 加 `category`+`location` 字段；`GetBacktestRunResponse` 加 `blind_spots` 字段（field 7）。
+- **Backend**：`parseBacktestResult` 提取 BlindSpots；watch/auto_gate/crud 全部发送 `BlindSpots`（6 处）。
+- **Frontend `DiagnosticPanel.tsx`**（NEW）：severity 三级分组（致命/警告/信息）+ category 人话文案 + 风险类静默开关（`localStorage bt_silence_{strategyId}`）+ AI Fix 按钮（仅 fatal/info）。
+- **Frontend `useAIFix.tsx`**（NEW）：AI 修复闭环 hook — `codeAssistApi.revise` → Modal diff 预览 → `strategyVersionApi.updateCode` → 自动重回测。
+- **对抗证明**：`TestParseBacktestResult_BlindSpots` — 删 `parseBacktestResult` BlindSpots 提取 → 测试必红。红队自审：fatal 组无静默 toggle；AI Fix 按钮仅 fatal/info 显示。
+- `go build`✅ + `go test` 3 新测试绿✅ + `npx tsc --noEmit`✅ + `npm run build`✅。
+
 ---
 
 ## Part C · MT golden trace 对拍（精度残差兜底）
