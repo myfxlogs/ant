@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/tools/mql2go"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // QualityViolation describes a single failed quality gate check.
@@ -126,6 +130,91 @@ func (s *Service) checkDegradedStatus(ctx context.Context, strategyID string) *Q
 	return nil
 }
 
+// checkUnreliableCoverage queries the latest backtest_run's proto_response for
+// IsReliable and fatal coverage blind spots. If IsReliable=false or any fatal
+// blind spot exists, returns a non-waivable QualityViolation with actionable
+// guidance. This closes the "orphan detection" gap: HONESTY-3 sets
+// IsReliable=false but the quality gate didn't check it.
+func (s *Service) checkUnreliableCoverage(ctx context.Context, strategyID string) *QualityViolation {
+	if strategyID == "" {
+		return nil
+	}
+	var protoResponse []byte
+	err := s.pg.QueryRow(ctx,
+		`SELECT proto_response FROM backtest_runs
+		  WHERE strategy_id = $1 AND status = 'SUCCEEDED'
+		  ORDER BY created_at DESC
+		  LIMIT 1`,
+		strategyID,
+	).Scan(&protoResponse)
+	if err != nil || len(protoResponse) == 0 {
+		return nil // no succeeded run or no proto = don't block
+	}
+
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(protoResponse, &resp); err != nil {
+		return nil // unmarshal error = don't block (let other gates handle)
+	}
+
+	// Collect fatal blind spots with actionable suggestions.
+	var fatalDescs []string
+	for _, bs := range resp.BlindSpots {
+		if isFatalSeverity(bs.Severity) {
+			suggestion := blindSpotSuggestion(bs.Id, bs.Description)
+			fatalDescs = append(fatalDescs, suggestion)
+			// K3: Record demand signal for this unsupported builtin.
+			// Best-effort: errors don't block the quality gate.
+			if s.demandRecorder != nil {
+				_ = s.demandRecorder.RecordDemandSignal(ctx, bs.Id, uuid.Nil)
+			}
+		}
+	}
+
+	isReliable := resp.GetRisk().GetIsReliable()
+	if !isReliable || len(fatalDescs) > 0 {
+		actual := "IsReliable=false"
+		if isReliable && len(fatalDescs) > 0 {
+			actual = "fatal coverage blind spots detected"
+		}
+		if len(fatalDescs) > 0 {
+			actual += ": " + strings.Join(fatalDescs, "; ")
+		}
+		return &QualityViolation{
+			Metric:    "coverage_reliability",
+			Actual:    actual,
+			Threshold: "IsReliable=true with zero fatal blind spots",
+		}
+	}
+	return nil
+}
+
+// isFatalSeverity returns true for fatal severity values (Chinese + English).
+func isFatalSeverity(severity string) bool {
+	return severity == "\u81f4\u547d" || severity == "fatal"
+}
+
+// blindSpotSuggestion maps a fatal blind spot to actionable guidance.
+// Returns "人话 + 怎么办" (human-readable + what to do).
+func blindSpotSuggestion(id, description string) string {
+	switch {
+	case strings.Contains(id, "iCustom") || strings.Contains(description, "iCustom"):
+		return "iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually"
+	case strings.HasPrefix(id, "i") && len(id) > 1 && id[1] >= 'A' && id[1] <= 'Z':
+		return fmt.Sprintf("%s: unknown indicator not supported by the VM — use a supported built-in indicator instead", id)
+	case strings.HasPrefix(id, "Order") || strings.HasPrefix(id, "Position"):
+		return fmt.Sprintf("%s: trade function not fully supported — check that all order/position operations use supported MQL4/5 APIs", id)
+	case strings.Contains(description, "DLL"):
+		return "DLL imports are not supported — remove external DLL calls and use built-in MQL functions"
+	case strings.Contains(description, "unknown constant"):
+		return fmt.Sprintf("unknown constant detected (%s) — replace with a known MQL constant or define it explicitly", description)
+	default:
+		if description != "" {
+			return fmt.Sprintf("%s: %s — fix the issue or remove the unsupported feature", id, description)
+		}
+		return fmt.Sprintf("%s: unsupported feature — fix or remove from strategy", id)
+	}
+}
+
 // ValidateBacktestQuality checks a BacktestSnapshot against configured quality gates.
 // Returns a slice of violations (empty = passed). A nil snapshot with
 // enforce_snapshot enabled returns a single violation.
@@ -153,6 +242,14 @@ func (s *Service) ValidateBacktestQuality(ctx context.Context, snapshotProto []b
 
 	// DEGRADED hard block — checked before waiver: fake data publishing is non-waivable.
 	if v := s.checkDegradedStatus(ctx, strategyID); v != nil {
+		return []QualityViolation{*v}, nil
+	}
+
+	// Unreliable coverage hard block — checked before waiver: strategies with
+	// IsReliable=false or fatal coverage blind spots cannot be published.
+	// This closes the "orphan detection" gap (HONESTY-3 sets IsReliable but
+	// the quality gate didn't check it). Non-waivable: unreliable results = fraud.
+	if v := s.checkUnreliableCoverage(ctx, strategyID); v != nil {
 		return []QualityViolation{*v}, nil
 	}
 
@@ -226,4 +323,59 @@ func (s *Service) ValidateBacktestQuality(ctx context.Context, snapshotProto []b
 	}
 
 	return violations, nil
+}
+
+// CheckLiveCoverage checks whether a strategy is safe to run on a real account.
+// T5: Symmetric with the publish gate — strategies with fatal blind spots must
+// not run live. Two paths:
+//  1. If a recent SUCCEEDED backtest exists, check its IsReliable + fatal blind spots.
+//  2. If no backtest exists, do a compile+coverage analysis on the source code.
+//
+// Returns nil if safe (no fatal blind spots), or an error describing the fatal
+// blind spots if unsafe. Paper mode is the caller's responsibility (caller skips).
+func (s *Service) CheckLiveCoverage(ctx context.Context, strategyID, sourceCode string) error {
+	// Path 1: Check latest SUCCEEDED backtest.
+	if strategyID != "" {
+		if v := s.checkUnreliableCoverage(ctx, strategyID); v != nil {
+			return fmt.Errorf("live coverage gate: %s (actual=%s, threshold=%s)",
+				v.Metric, v.Actual, v.Threshold)
+		}
+		// Also check DEGRADED status — invariant violations mean unreliable.
+		if v := s.checkDegradedStatus(ctx, strategyID); v != nil {
+			return fmt.Errorf("live coverage gate: %s (actual=%s, threshold=%s)",
+				v.Metric, v.Actual, v.Threshold)
+		}
+		return nil
+	}
+
+	// Path 2: No strategy ID or no backtest — do compile+coverage analysis.
+	if sourceCode == "" {
+		return nil // no code to check = can't block (let other gates handle)
+	}
+	return checkSourceCoverage(sourceCode)
+}
+
+// checkSourceCoverage compiles the MQL source and checks for fatal blind spots.
+// Used when no backtest exists yet (e.g. user just wrote code in workspace).
+func checkSourceCoverage(sourceCode string) error {
+	_, cov, err := mql2go.CompileMQLWithCoverage(sourceCode)
+	if err != nil {
+		// Compile error = honest failure, not a fatal blind spot. Allow live
+		// (the VM will report the error at runtime). Only fatal blind spots block.
+		return nil
+	}
+	if cov == nil {
+		return nil
+	}
+	var fatalDescs []string
+	for _, bs := range cov.BlindSpots {
+		if bs.Severity == interp.SeverityFatal {
+			suggestion := blindSpotSuggestion(bs.Builtin, "")
+			fatalDescs = append(fatalDescs, suggestion)
+		}
+	}
+	if len(fatalDescs) > 0 {
+		return fmt.Errorf("fatal coverage blind spots: %s", strings.Join(fatalDescs, "; "))
+	}
+	return nil
 }

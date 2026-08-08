@@ -187,7 +187,16 @@ func init() {
 
 // LookupAPI looks up a symbol in the API registry.
 // Returns the symbol and true if found, or zero value and false if not.
+// KB-first: when the KB function hook is set, it can override the status
+// (e.g., a function newly recorded as supported via RecordFact).
 func LookupAPI(name string) (APISymbol, bool) {
+	if kbFunctionLookup != nil {
+		if supported, severity := kbFunctionLookup(name); supported {
+			return APISymbol{Name: name, Status: StatusImplemented, Category: CatFunction}, true
+		} else if severity != "" {
+			return APISymbol{Name: name, Status: StatusUnsupported, Category: CatFunction, Reason: severity}, true
+		}
+	}
 	s, ok := registryMap[name]
 	return s, ok
 }

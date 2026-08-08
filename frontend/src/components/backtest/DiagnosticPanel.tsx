@@ -56,14 +56,45 @@ function categoryLabel(category: string, t: (k: string, d?: string) => string): 
   }
 }
 
+function blindSpotSuggestion(bs: BacktestBlindSpotItem, t: (k: string, d?: string) => string): string {
+  const id = bs.id;
+  const desc = bs.description;
+  if (id.includes('iCustom') || desc.includes('iCustom')) {
+    return t('strategy.backtest.diagnostic.suggestion.iCustom',
+      'iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually');
+  }
+  if (id.length > 1 && id[0] === 'i' && id[1] >= 'A' && id[1] <= 'Z') {
+    return t('strategy.backtest.diagnostic.suggestion.unknownIndicator',
+      `${id}: unknown indicator not supported by the VM — use a supported built-in indicator instead`);
+  }
+  if (id.startsWith('Order') || id.startsWith('Position')) {
+    return t('strategy.backtest.diagnostic.suggestion.tradeFunction',
+      `${id}: trade function not fully supported — check that all order/position operations use supported MQL4/5 APIs`);
+  }
+  if (desc.includes('DLL')) {
+    return t('strategy.backtest.diagnostic.suggestion.dll',
+      'DLL imports are not supported — remove external DLL calls and use built-in MQL functions');
+  }
+  if (desc.includes('unknown constant')) {
+    return t('strategy.backtest.diagnostic.suggestion.unknownConstant',
+      `Unknown constant detected (${desc}) — replace with a known MQL constant or define it explicitly`);
+  }
+  return desc
+    ? t('strategy.backtest.diagnostic.suggestion.default', `${id}: ${desc} — fix the issue or remove the unsupported feature`)
+    : t('strategy.backtest.diagnostic.suggestion.generic', `${id}: unsupported feature — fix or remove from strategy`);
+}
+
 interface DiagnosticPanelProps {
   blindSpots: BacktestBlindSpotItem[];
   strategyId?: string;
   onAIFix?: (blindSpots: BacktestBlindSpotItem[]) => void;
   aiFixing?: boolean;
+  coverageScore?: number;
+  totalBlocks?: number;
+  recognizedBlocks?: number;
 }
 
-export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing }: DiagnosticPanelProps) {
+export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks }: DiagnosticPanelProps) {
   const { t } = useTranslation();
   const silenced = useMemo(() => strategyId ? loadSilencedSignatures(strategyId) : new Set<string>(), [strategyId]);
 
@@ -97,10 +128,13 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing }: D
   const hasFixable = hasFatal || grouped.info.length > 0;
   const allSilenced = strategyId && grouped.warning.length > 0 && visibleWarning.length === 0;
 
-  if (blindSpots.length === 0) return null;
+  if (blindSpots.length === 0 && coverageScore == null) return null;
 
   const alertType = hasFatal ? 'error' : 'warning';
   const alertIcon = hasFatal ? <BugOutlined /> : <WarningOutlined />;
+
+  const coveragePercent = coverageScore != null ? Math.round(coverageScore * 100) : null;
+  const unsupportedCount = totalBlocks != null && recognizedBlocks != null ? totalBlocks - recognizedBlocks : blindSpots.length;
 
   return (
     <Alert
@@ -112,6 +146,12 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing }: D
         <div>
           <div style={{ marginBottom: 8 }}>{t(BACKTEST_DEGRADED_DESC_KEY)}</div>
 
+          {coveragePercent != null && (
+            <div style={{ marginBottom: 8, fontSize: 12, color: '#595959' }}>
+              <strong>{t('strategy.backtest.diagnostic.coverage', 'Coverage')}:</strong> {coveragePercent}% {t('strategy.backtest.diagnostic.compatible', 'compatible')}, {unsupportedCount} {t('strategy.backtest.diagnostic.unsupported', 'unsupported')}
+            </div>
+          )}
+
           {grouped.fatal.length > 0 && (
             <DiagnosticGroup
               title={t('strategy.backtest.diagnostic.fatal', 'Critical Issues')}
@@ -119,6 +159,18 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing }: D
               color={severityColor('fatal')}
               icon={severityIcon('fatal')}
               t={t}
+              renderItem={(bs) => (
+                <div key={bs.id} style={{ marginBottom: 6 }}>
+                  <div>
+                    <Tag style={{ fontSize: 10, marginRight: 4 }}>{categoryLabel(bs.category, t)}</Tag>
+                    <span>{bs.description}</span>
+                    {bs.location && <span style={{ color: '#8c8c8c', fontSize: 11, marginLeft: 4 }}>@ {bs.location}</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#595959', marginTop: 2, marginLeft: 4 }}>
+                    <strong>{t('strategy.backtest.diagnostic.suggestionLabel', '建议')}:</strong> {blindSpotSuggestion(bs, t)}
+                  </div>
+                </div>
+              )}
             />
           )}
 

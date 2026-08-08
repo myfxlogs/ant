@@ -16,6 +16,12 @@ import (
 	"alphaforge/internal/repository"
 )
 
+// DemandRecorder records demand signals for unsupported builtins (K3).
+// Implemented by knowledgebase.Service.
+type DemandRecorder interface {
+	RecordDemandSignal(ctx context.Context, builtinName string, userID uuid.UUID) error
+}
+
 // Service implements the C2C marketplace (strategy publish + subscribe).
 // M12-B1: unified model — Publish writes to both user_strategy_publishes
 // and marketplace_strategies; ListPublished JOINs both for rich metadata.
@@ -28,6 +34,7 @@ type Service struct {
 	notifSender       *notification.Sender
 	optimizer         codeOptimizer
 	creditSvc         CreditService
+	demandRecorder    DemandRecorder
 }
 
 // SystemUserID is the designated platform system account for fee collection.
@@ -64,6 +71,11 @@ func (s *Service) SetOptimizer(o codeOptimizer) {
 // SetCreditService injects the credit service for author-initiated AI iteration billing.
 func (s *Service) SetCreditService(cs CreditService) {
 	s.creditSvc = cs
+}
+
+// SetDemandRecorder injects the K3 demand signal recorder (knowledgebase.Service).
+func (s *Service) SetDemandRecorder(dr DemandRecorder) {
+	s.demandRecorder = dr
 }
 
 // codeOptimizer is the AI strategy generator used for optimization.

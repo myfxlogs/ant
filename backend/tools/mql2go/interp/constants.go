@@ -86,9 +86,10 @@ var MQLConstants = map[string]Value{
 	"MODE_BASE":    IntVal(0), // base line (iAlligator jaw, iGator)
 	"MODE_TENKAN":  IntVal(1), // Tenkan-sen (iIchimoku)
 	"MODE_KIJUN":   IntVal(2), // Kijun-sen (iIchimoku)
-	"MODE_SENKOUA": IntVal(3), // Senkou Span A (iIchimoku)
-	"MODE_SENKOUB": IntVal(4), // Senkou Span B (iIchimoku)
-	"MODE_CHIKOU":  IntVal(5), // Chikou Span (iIchimoku)
+	"MODE_SENKOUA": IntVal(3), // Senkou Span A (iIchimoku, MQL4 canonical name)
+	"MODE_SENKOUB": IntVal(4), // Senkou Span B (iIchimoku, MQL4 canonical name)
+	// MODE_SENKOU_A/MODE_SENKOU_B moved to CompatFixes (L0 deterministic alias)
+	"MODE_CHIKOU": IntVal(5), // Chikou Span (iIchimoku)
 	// Alligator jaw/teeth/lips (MQL5 names, MQL4 uses MODE_BASE/MODE_UPPER/MODE_LOWER)
 	"MODE_GATORJAW":   IntVal(0),
 	"MODE_GATORTEETH": IntVal(1),
@@ -253,7 +254,6 @@ var MQLConstants = map[string]Value{
 	"Blue":              IntVal(16711680),
 	"Yellow":            IntVal(65535),
 	"CLR_NONE":          IntVal(-1),
-	"clrNONE":           IntVal(-1),
 	"Aqua":              IntVal(16776960),
 	"Orange":            IntVal(42495),
 	"Gold":              IntVal(55295),
@@ -320,6 +320,11 @@ var MQLConstants = map[string]Value{
 	"DarkCyan":          IntVal(9145088),
 	"MediumTurquoise":   IntVal(13422912),
 	"Transparent":       IntVal(-1),
+	"Magenta":           IntVal(16711935),
+	"Pink":              IntVal(13353215),
+
+	// clr* prefixed color aliases moved to CompatFixes (L0 deterministic alias).
+	// See compat_fixes.go for the {clr* → unprefixed} mapping.
 
 	// ── Time format flags ──────────────────────────────────────────────
 	"TIME_DATE":    IntVal(1),
@@ -468,13 +473,37 @@ var MQLConstants = map[string]Value{
 // Returns the value and true if found, or NoneVal and false if not.
 // This is the single entry point used by the VM compiler (compile_expr.go)
 // to resolve ExprConst nodes.
+//
+// L0 compat-fix: if the name is not in MQLConstants, checks CompatFixes for
+// a canonical name mapping (e.g. clrGreen → Green). If found, resolves the
+// canonical name in MQLConstants. This is transparent: zero tokens, zero
+// blind spots, zero LLM calls.
 func LookupMQLConstant(name string) (Value, bool) {
-	v, ok := MQLConstants[name]
-	return v, ok
+	// KB-first: check KB cache (includes both direct constants and alias resolutions).
+	if kbConstantLookup != nil {
+		if v, ok := kbConstantLookup(name); ok {
+			return v, true
+		}
+	}
+	// Fallback: built-in MQLConstants map.
+	if v, ok := MQLConstants[name]; ok {
+		return v, true
+	}
+	// Fallback: CompatFixes alias → canonical in MQLConstants.
+	if canonical, ok := LookupCompatFix(name); ok {
+		if v, ok := MQLConstants[canonical]; ok {
+			return v, true
+		}
+	}
+	return NoneVal(), false
 }
 
 // IsMQLConstant checks if a name is a predefined MQL constant.
+// Also checks CompatFixes for L0 deterministic aliases.
 func IsMQLConstant(name string) bool {
-	_, ok := MQLConstants[name]
+	if _, ok := MQLConstants[name]; ok {
+		return true
+	}
+	_, ok := LookupCompatFix(name)
 	return ok
 }

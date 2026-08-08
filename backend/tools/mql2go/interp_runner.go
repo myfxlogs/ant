@@ -24,6 +24,7 @@ type VMRunner struct {
 	vm                 *VM
 	bc                 *Bytecode
 	defenseAViolations []interp.DefenseAViolation
+	coverageResult     *CoverageResult
 }
 
 // NewVMRunner creates a sdk.Strategy runner from compiled Bytecode.
@@ -164,6 +165,7 @@ func CompileMQLWithCoverage(source string) (r *VMRunner, cov *CoverageResult, er
 	coverage := AnalyzeCoverage(ir, bc)
 	runner := NewVMRunner(bc)
 	runner.defenseAViolations = coverage.DefenseAViolations
+	runner.coverageResult = coverage
 	return runner, coverage, nil
 }
 
@@ -309,6 +311,13 @@ func (r *VMRunner) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 // GetCoverage returns the compile-time coverage report.
 func (r *VMRunner) GetCoverage() *CoverageReport {
 	return r.bc.Coverage
+}
+
+// GetCoverageResult returns the full coverage analysis result with
+// pre-classified blind spots (severity-tagged). Used by buildBacktestResponse
+// to check for fatal blind spots (MQL-HONESTY-3).
+func (r *VMRunner) GetCoverageResult() *CoverageResult {
+	return r.coverageResult
 }
 
 // InjectCoverage sets the compile-time coverage report on the runner.

@@ -100,6 +100,7 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	gateEvalRepo := repository.NewGateEvaluationRepository(d.pool)
 	srv.SetOnBacktestComplete(makeOnBacktestComplete(gateEvalRepo, d.mktplaceSvc, d.notifSender, d.aiSvc, d.backtestRunRepo, d.log))
 	srv.SetQualityValidator(d.mktplaceSvc)
+	srv.SetCoverageChecker(d.mktplaceSvc)
 	srv.SetGateEvalRepo(gateEvalRepo)
 	return srv
 }

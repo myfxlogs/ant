@@ -14,6 +14,7 @@ import (
 	mktplace "alphaforge/internal/connect/marketplace"
 	paperhdr "alphaforge/internal/connect/paper"
 	"alphaforge/internal/connect/strategy"
+	"alphaforge/internal/knowledgebase"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
@@ -88,6 +89,15 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	strategyServer.SetPgListen(pgListen)
 	mktplaceHandler.SetPgListen(pgListen)
 	mktplaceHandler.SetPgPool(pool)
+
+	// KB-P0: Knowledge base service — load compat knowledge into memory cache,
+	// wire interp KB hooks for KB-first constant/function/fix lookup.
+	kbSvc := knowledgebase.New(pool, pgListen, log)
+	if err := kbSvc.Start(ctx); err != nil {
+		log.Warn("kb service startup failed, falling back to built-in constants", zap.Error(err))
+	}
+	// K3: Wire demand signal recorder so fatal blind spots are captured for admin roadmap.
+	mktplaceSvc.SetDemandRecorder(kbSvc)
 	quotaChecker.SetPgListen(pgListen)
 	quotaChecker.StartRefreshLoop(ctx)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, withSency(otelInterceptor, authInterceptor)))

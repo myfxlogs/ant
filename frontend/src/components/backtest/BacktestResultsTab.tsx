@@ -65,9 +65,12 @@ interface Props {
   strategyId?: string;
   onAIFix?: (blindSpots: BacktestBlindSpotItem[]) => void;
   aiFixing?: boolean;
+  coverageScore?: number;
+  totalBlocks?: number;
+  recognizedBlocks?: number;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => tr.side === 'buy');
@@ -131,6 +134,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           strategyId={strategyId}
           onAIFix={onAIFix}
           aiFixing={aiFixing}
+          coverageScore={coverageScore}
+          totalBlocks={totalBlocks}
+          recognizedBlocks={recognizedBlocks}
         />
       )}
 

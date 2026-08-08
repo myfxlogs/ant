@@ -201,13 +201,6 @@ func SeverityForBuiltin(name string) string {
 
 func classifySeverity(c callInfo) string {
 	name := c.name
-	// Registry-driven severity: check API registry status first.
-	if sym, ok := LookupAPI(name); ok {
-		switch sym.Status {
-		case StatusUnsupported:
-			return SeverityInfo
-		}
-	}
 	// CTrade method → fatal
 	if c.classType == "CTrade" {
 		return SeverityFatal
@@ -218,12 +211,22 @@ func classifySeverity(c callInfo) string {
 		return SeverityInfo
 	}
 	// Unknown but looks like an indicator (iXxx pattern) → fatal
+	// This catches iCustom (StatusUnsupported) and any unknown indicator.
 	if len(name) > 1 && name[0] == 'i' && name[1] >= 'A' && name[1] <= 'Z' {
 		return SeverityFatal
 	}
 	// Unknown but looks like a trade function (Order*/Position*/Account*) → fatal
 	if strings.HasPrefix(name, "Order") || strings.HasPrefix(name, "Position") || strings.HasPrefix(name, "Account") {
 		return SeverityFatal
+	}
+	// StatusUnsupported functions that don't match fatal patterns above are
+	// graceful no-ops (GUI/Chart/Window/Notification/FileIO/Network/Crypto).
+	// They are rejected at compile time (compile_expr.go returns an error),
+	// so they never reach the VM. If they did, returning 0 wouldn't corrupt
+	// trading logic — they're advisory/UI/side-effect functions.
+	// → SeverityInfo, not Warning.
+	if sym, ok := LookupAPI(name); ok && sym.Status == StatusUnsupported {
+		return SeverityInfo
 	}
 	// Doesn't match any known MQL builtin pattern → likely user code
 	// (e.g. functions defined in #include .mqh files, free functions)

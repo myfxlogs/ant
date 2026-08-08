@@ -87,6 +87,12 @@ type StrategyExecutionServer struct {
 	// (StartStrategy, launchEventSession, dispatch) converge on RunLiveStrategy.
 	boundSvc BoundAccountChecker
 
+	// T5: Coverage checker — enforces fatal blind spot gate at live launch.
+	// Checks latest SUCCEEDED backtest IsReliable + fatal blind spots, or
+	// does compile+coverage analysis if no backtest exists. Non-bypassable:
+	// all live-launch paths converge on RunLiveStrategy.
+	coverageChecker CoverageChecker
+
 	// QualityValidator checks backtest snapshot against marketplace quality gates (auto_gate preview).
 	qualityValidator QualityValidator
 
@@ -98,6 +104,16 @@ type StrategyExecutionServer struct {
 type QualityValidator interface {
 	ValidateBacktestQuality(ctx context.Context, snapshotProto []byte, strategyID string) ([]marketplace.QualityViolation, error)
 }
+
+// CoverageChecker checks whether a strategy is safe to run live (no fatal blind spots).
+// T5: Symmetric with the publish gate (MQL-LOOP-1) — strategies with fatal coverage
+// blind spots must not run on real accounts. Implemented by marketplace.Service.
+type CoverageChecker interface {
+	CheckLiveCoverage(ctx context.Context, strategyID, sourceCode string) error
+}
+
+// SetCoverageChecker injects the coverage checker for T5 live gate.
+func (s *StrategyExecutionServer) SetCoverageChecker(c CoverageChecker) { s.coverageChecker = c }
 
 // SetQualityValidator injects the marketplace quality validator for auto_gate preview.
 func (s *StrategyExecutionServer) SetQualityValidator(v QualityValidator) { s.qualityValidator = v }

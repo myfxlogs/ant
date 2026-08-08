@@ -122,6 +122,17 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 		}
 	}
 
+	// T5: Fatal coverage gate — symmetric with publish gate (MQL-LOOP-1).
+	// Strategies with fatal blind spots (e.g. iCustom) must not run on real accounts.
+	// Paper mode skips (paper trading is for experimentation, not real money).
+	// Non-bypassable: all live-launch paths converge on RunLiveStrategy.
+	if cfg.Mode == "live" && s.coverageChecker != nil {
+		if err := s.coverageChecker.CheckLiveCoverage(ctx, cfg.StrategyID, cfg.Code); err != nil {
+			cleanupOrphan(fmt.Sprintf("fatal coverage check failed: %v", err))
+			return fmt.Errorf("live strategy runner: fatal coverage gate: %w", err)
+		}
+	}
+
 	if cfg.Symbol == "" {
 		cleanupOrphan("no symbol specified")
 		return fmt.Errorf("live strategy runner: symbol is required — specify which instrument to trade")

@@ -123,8 +123,8 @@ func TestAnalyze_MissingBuiltin_iCustom(t *testing.T) {
 	if rep.BlindSpots[0].Builtin != "iCustom" {
 		t.Errorf("BlindSpot = %q, want iCustom", rep.BlindSpots[0].Builtin)
 	}
-	if rep.BlindSpots[0].Severity != SeverityInfo {
-		t.Errorf("Severity = %q, want %q (permanent blind spot)", rep.BlindSpots[0].Severity, SeverityInfo)
+	if rep.BlindSpots[0].Severity != SeverityFatal {
+		t.Errorf("Severity = %q, want %q (iCustom is a fatal blind spot — unsupported indicator)", rep.BlindSpots[0].Severity, SeverityFatal)
 	}
 }
 

@@ -310,6 +310,16 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	resp.Risk = assessRisk(result.Metrics)
 	resp.BlindSpots = attachBlindSpots(cov, vmRunner, ruleFindings)
 
+	// MQL-HONESTY-3: Fatal coverage/runtime blind spots (e.g. unimplemented
+	// indicator silently returning 0) make the backtest result unreliable.
+	// Only SeverityFatal affects correctness — warning/info are advisory.
+	for _, bs := range resp.BlindSpots {
+		if bs.Severity == interp.SeverityFatal {
+			resp.Risk.IsReliable = false
+			break
+		}
+	}
+
 	// P0 invariant: every trade must have Volume > 0.
 	// If violated, the backtest result is unreliable (ADR-0028 §4.2 防线 B).
 	if bs := checkVolumeInvariant(result.Trades); bs != nil {
@@ -361,7 +371,22 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 
 func attachBlindSpots(cov *mql2go.CoverageReport, vmRunner *mql2go.VMRunner, ruleFindings []mql2go.DiagnosticFinding) []*antv1.BlindSpot {
 	var spots []*antv1.BlindSpot
-	if cov != nil {
+	// MQL-HONESTY-3: Use CoverageResult (pre-classified severity) instead of
+	// raw CoverageReport strings. CoverageResult.BlindSpots have correct
+	// severity from static analysis (e.g. iXxx → SeverityFatal), while
+	// CoverageReport.BlindSpots are raw strings like "unknown function: iXxx"
+	// that SeverityForBuiltin can't classify correctly.
+	covResult := vmRunner.GetCoverageResult()
+	if covResult != nil {
+		for _, bs := range covResult.BlindSpots {
+			spots = append(spots, &antv1.BlindSpot{
+				Id:          bs.Builtin,
+				Severity:    bs.Severity,
+				Description: bs.Builtin + " is not fully supported",
+			})
+		}
+	} else if cov != nil {
+		// Fallback for cached bytecode without CoverageResult.
 		for _, bs := range cov.BlindSpots {
 			spots = append(spots, &antv1.BlindSpot{
 				Id:          bs,
