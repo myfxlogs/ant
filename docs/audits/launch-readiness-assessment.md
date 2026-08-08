@@ -36,7 +36,7 @@
 | 可观测性（覆盖度 + 告警） | ❓ 未审计 | metric 指标是否够（业务/钱路径/延迟）？Alertmanager 规则？未审 | **否**——需专项 |
 | 部署 / 迁移 | ✅ 就绪 | Docker compose 唯一部署路径（CLAUDE.md 强制）、MIG-1 down 脚本齐（238/239）、healthz 探活 | 是 |
 | **E2E 测试** | ❌ **缺口** | 全仓零 playwright/`.spec.ts`；仅有 playwright-backtest **skill/模式**，无 committed 全链路 E2E | 是（确认缺失） |
-| **前端测试** | ❌ **缺口** | 零 `*.test.tsx`、无 vitest/jest 配置——**前端零测试覆盖** | 是（确认缺失） |
+| **前端测试** | ✅ 就绪 | vitest+jsdom+@testing-library 基建+128 test（5 store 45 test + 11 组件冒烟 + 72 utils test）+ CI `npm test` 步；对抗证明通过 + **审计方实测 `npm test` 128 绿、authStore logout 对抗证明 spot-check 通过（2026-08-09）** | 是 |
 | 前端体验 | ❓ 未审计 | dead code（CQ-2 存量）、i18n 有；UX 流/错误态/边界未系统验 | **否** |
 | 性能 / 规模 | ❓ 未审计 | PgWriter drop、NATS JetStream、连接池为"已知特性"；无压测/容量数据 | **否** |
 | 合规 / 计费 | ✅* 置信 | KYC jurisdiction gate 在 Gate 链；subscription/billing 代码在；未深审计费精度 | 部分 |
@@ -49,8 +49,8 @@
 | # | 缺口 | 为什么 blocking | 工作量 |
 |---|------|----------------|--------|
 | 1 | **E2E 测试套件** | 无任何端到端守护——购买→实盘→战绩主链路、登录→回测→看报告等核心流只靠手工。回归必靠人。复用现成 `playwright-backtest` skill 模式起步 | 中 |
-| 2 | **前端测试基线** | 前端零覆盖。关键组件（策略工作区/回测面板/市场页/账户）+ store 状态至少要有冒烟级测试，否则前端改动裸奔 | 中 |
-| 3 | **ARCH-4⑥ 归因闭环** | 不补则"实盘战绩公开"（产品核心卖点 + 差异化壁垒）拿不到 per-strategy live 数据。spec 已出 `docs/spec/multi-strategy-attribution-spec.md` | 小-中 |
+| 2 | ~~**前端测试基线**~~ | ✅ **审计方实测通过（2026-08-09）**——`npm test` 128 test 绿实测 + authStore logout 对抗证明 spot-check（删 isAuthenticated:false 翻转→测试必红）。vitest+jsdom+@testing-library 基建 + setup.ts（matchMedia/IntersectionObserver/ResizeObserver mock）+ 5 Zustand store 测（45 test）+ 11 组件冒烟 + CI `npm test` 步 | ~~中~~ ✅ |
+| 3 | ~~**ARCH-4⑥ 归因闭环**~~ | ✅ **已完成（2026-08-08 验收，commit `00e5ccc1`）**——migration 266 + `ResolveScheduleIDByMagic` account-scoped + 两份写路径回填 `ScheduleID`，hollow-core 闭合，per-strategy 战绩可归因。残留(低)：DB 级集成测待补。原 spec `docs/spec/multi-strategy-attribution-spec.md` | ~~小-中~~ ✅ |
 | 4 | **metric 覆盖度审 + 告警规则** | `/metrics` 在但指标够不够、关键路径（下单/回测/资金）有无 RED/业务指标、Alertmanager 规则——未审。上线前需一次可观测性专项 | 中 |
 
 ## 4. 可延后（post-launch / 非阻断）
@@ -78,4 +78,4 @@
 
 ---
 
-> **一句话**：地基稳、钱路径和安全过硬、旧缺口清零；距对外上线还差 E2E + 前端测试 + ARCH-4⑥ + 一次可观测性专项。这四块补完，可上线。
+> **一句话**：地基稳、钱路径和安全过硬、旧缺口清零、ARCH-4⑥ 已闭环、前端测试基线已补；距对外上线还差 E2E + 一次可观测性专项。这两块补完，可上线。

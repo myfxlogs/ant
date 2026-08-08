@@ -50,6 +50,8 @@
 2. `docs/audits/handover-audit-plan.md` — 审计全局进度（管线状态表 + 变更日志）。
 3. `memory/`（`open-items-registry.md` + `MEMORY.md`）— 高优摘要，Claude Code 跨会话自动注入。
 
+**无损接手铁律（完工标 ✅ 不删）**：三层的目的 = 任何一方（审计方/施工方/后续 agent）休息，另一方读三层即可完整恢复"做了什么 / 为什么 / 验过没"。故完工项**标 ✅ 保留行，永不删除**——registry ✅ 行带根因/修复/对抗证明保留、memory 指针完工项标 ✅ + 指向 docs（不删行）、handover 变更日志 append-only。删一条完工记录 = 接手方少一块拼图 = 有损；**删了还以为没做，比没做更糟**。详见 `docs/audits/builder-sop.md` §2.6。
+
 **记忆分层**（多工具协作 — 强制）：
 
 - **项目知识**（规则/状态/经验/决策/用户协作偏好）→ **只进项目文档**（`CLAUDE.md` / `docs/`）。所有工具的单一共享源，进 git。
