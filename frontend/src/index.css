@@ -277,6 +277,13 @@ body {
   box-shadow: none !important;
 }
 
+/* Kill inner input border when wrapped by affix-wrapper (Input.Password etc.) */
+.ant-input-affix-wrapper > .ant-input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
 .ant-btn-primary {
   background: linear-gradient(135deg, #D4AF37 0%, #B8960B 100%) !important;
   border: none !important;
