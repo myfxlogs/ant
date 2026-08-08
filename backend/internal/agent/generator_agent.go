@@ -74,6 +74,8 @@ func (g *Generator) runAgentLoop(
 		},
 		streamChunk, toolStream, reasoningStream,
 	)
+	loop.SetCurrentCode(msg.CurrentCode)
+	loop.SetPlanTracker(result)
 
 	raw, loopErr := loop.RunWithHistory(quotaCtx, sysPrompt, userPrompt, history, userID)
 	g.log.Info("generator: loop done", zap.Int("raw_len", len(raw)), zap.Bool("has_err", loopErr != nil))
@@ -223,12 +225,12 @@ func (g *Generator) buildFinalTurnChunk(result *generateState, raw string) []byt
 	}
 	if result.LastBacktest != nil {
 		finalChunk.Result = &antv1.AgentBacktestResult{
-			Success:      true,
-			TotalTrades:  int32(result.LastBacktest.TotalTrades),
-			WinRate:      result.LastBacktest.WinRate,
-			TotalReturn:  result.LastBacktest.TotalReturn,
-			MaxDrawdown:  result.LastBacktest.MaxDrawdown,
-			SharpeRatio:  result.LastBacktest.SharpeRatio,
+			Success:     true,
+			TotalTrades: int32(result.LastBacktest.TotalTrades),
+			WinRate:     result.LastBacktest.WinRate,
+			TotalReturn: result.LastBacktest.TotalReturn,
+			MaxDrawdown: result.LastBacktest.MaxDrawdown,
+			SharpeRatio: result.LastBacktest.SharpeRatio,
 		}
 	}
 	if result.CompileError != "" {

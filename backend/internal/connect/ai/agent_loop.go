@@ -22,16 +22,26 @@ const maxAgentRounds = 1000
 // the LLM decides when to call tools, and we execute them and inject results
 // as structured tool-result messages.
 
+// PlanTracker exposes plan state for the agent loop to drive step-by-step execution.
+// Implemented by agent.generateState via a thin adapter.
+type PlanTracker interface {
+	HasActivePlan() bool // true if a plan exists with incomplete steps
+	CurrentStep() string // description of the current doing/pending step
+	CompletedSteps() int // number of done steps
+	TotalSteps() int     // total steps in plan
+}
+
 // AgentLoop orchestrates the LLM ↔ Tools conversation loop.
 type AgentLoop struct {
 	toolRegistry    *ToolRegistry
 	llmStream       func(ctx context.Context, messages []systemai.ChatMessage, tools []systemai.ToolDefinition, onChunk func(systemai.ChatStreamChunk) error) error
-	streamChunk     func(delta string) error                                 // forward content delta to frontend
-	reasoningStream func(delta string) error                                 // forward reasoning delta to frontend
-	toolStream      func(tc *antv1.ToolCall, tr *antv1.ToolResult) error     // forward tool events to frontend
-	currentCode     string // workspace code injected into ToolInput.Code
-	toolDefs        []systemai.ToolDefinition // cached tool schemas built from registry
-	timeBudget      time.Duration // max wall-clock time for the loop
+	streamChunk     func(delta string) error                             // forward content delta to frontend
+	reasoningStream func(delta string) error                             // forward reasoning delta to frontend
+	toolStream      func(tc *antv1.ToolCall, tr *antv1.ToolResult) error // forward tool events to frontend
+	currentCode     string                                               // workspace code injected into ToolInput.Code
+	toolDefs        []systemai.ToolDefinition                            // cached tool schemas built from registry
+	timeBudget      time.Duration                                        // max wall-clock time for the loop
+	planTracker     PlanTracker                                          // optional: plan-driven step guidance
 }
 
 // NewAgentLoop creates an AgentLoop with the given tools and LLM streaming function.
@@ -44,19 +54,24 @@ func NewAgentLoop(
 	reasoningStream func(delta string) error,
 ) *AgentLoop {
 	return &AgentLoop{
-		toolRegistry: registry,
-		llmStream:    llmStream,
+		toolRegistry:    registry,
+		llmStream:       llmStream,
 		streamChunk:     streamChunk,
 		toolStream:      toolStream,
 		reasoningStream: reasoningStream,
-		toolDefs:     registry.BuildToolSchemas(),
-		timeBudget:   10 * time.Minute,
+		toolDefs:        registry.BuildToolSchemas(),
+		timeBudget:      10 * time.Minute,
 	}
 }
 
 // SetCurrentCode injects the workspace strategy code into tool inputs.
 func (a *AgentLoop) SetCurrentCode(code string) {
 	a.currentCode = code
+}
+
+// SetPlanTracker injects plan state for step-driven execution guidance.
+func (a *AgentLoop) SetPlanTracker(pt PlanTracker) {
+	a.planTracker = pt
 }
 
 // RunWithHistory executes the agent loop with pre-loaded conversation history.
@@ -146,6 +161,21 @@ func (a *AgentLoop) run(ctx context.Context, messages []systemai.ChatMessage, us
 		messages = append(messages, assistantMsg)
 
 		messages = a.executeToolCalls(ctx, messages, toolCalls, userID)
+
+		// Plan-driven step guidance: if a plan exists with incomplete steps,
+		// inject a focused message guiding the LLM to the next step.
+		// This prevents the LLM from trying to do everything in one turn (token explosion).
+		if a.planTracker != nil && a.planTracker.HasActivePlan() {
+			step := a.planTracker.CurrentStep()
+			done := a.planTracker.CompletedSteps()
+			total := a.planTracker.TotalSteps()
+			if step != "" {
+				messages = append(messages, systemai.ChatMessage{
+					Role:    "user",
+					Content: fmt.Sprintf("Plan progress: %d/%d steps complete. Current step: %s\n\nFocus ONLY on this step. Use write_strategy or edit_code to implement it, then call update_plan to mark it done before moving to the next step.", done, total, step),
+				})
+			}
+		}
 	}
 	return fullBuf.String(), fmt.Errorf("agent: round budget exhausted (%d rounds)", maxAgentRounds)
 }
@@ -256,11 +286,15 @@ func (a *AgentLoop) makeOnChunk(roundBuf, reasoningBuf *strings.Builder, finishR
 	return func(chunk systemai.ChatStreamChunk) error {
 		if chunk.Content != "" {
 			roundBuf.WriteString(chunk.Content)
-			if a.streamChunk != nil { _ = a.streamChunk(chunk.Content) }
+			if a.streamChunk != nil {
+				_ = a.streamChunk(chunk.Content)
+			}
 		}
 		if chunk.Reasoning != "" {
 			reasoningBuf.WriteString(chunk.Reasoning)
-			if a.reasoningStream != nil { _ = a.reasoningStream(chunk.Reasoning) }
+			if a.reasoningStream != nil {
+				_ = a.reasoningStream(chunk.Reasoning)
+			}
 		}
 		if chunk.FinishReason != "" {
 			*finishReason = chunk.FinishReason

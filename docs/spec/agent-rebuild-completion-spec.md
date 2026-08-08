@@ -2,7 +2,15 @@
 
 > **定位**：`agent-first-principles-rebuild.md`（2026-07-08 地基设计）的大部分**已落地**。本 spec 只覆盖**审计方 2026-08-10 实测后确认仍未做**的剩余项——是收尾，不是大重构。
 > **关联**：`docs/audits/agent-first-principles-rebuild.md`（上位设计）、registry §8 POST-5/6、agent-engine skill。
-> **状态**：🏗 待施工。**日期**：2026-08-10
+> **状态**：🏗 待施工 → ✅ 已实现（待审计方实测）。**日期**：2026-08-10
+>
+> **实现摘要**：
+> - Part 1 (plan 驱动升级): `update_plan` 从"展示"升为"驱动状态机"——`updatePlanTool` 持久化 `PlanSteps` 到 `generateState`；`AgentLoop` 新增 `PlanTracker` 接口 + `SetPlanTracker` + `executeToolCalls` 后注入 step guidance（"Plan progress: X/Y, Current step: Z"）；5 个 locale 系统提示词加"复杂策略先 update_plan → 逐步 write_strategy"指令。
+> - Part 2 (语义追问): 5 个 locale 系统提示词加详细歧义分类——语义性（方向/仓位基准/杠杆单位/时间框架/入场出场逻辑）→ 必须追问一个聚焦问题禁止猜；装饰性（周期/阈值）→ 专业默认+注释；追问走纯文本不调 write_strategy。
+> - Part 3 (Apply 自动切 tab): 已确认 `WorkspaceCenterColumn.tsx:163` `onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}` — 已实现，无需改动。
+> - 对抗证明: 18 测试（9 agent + 5 connect/ai + 4 旧）全绿。`go build`✅ + `go test`✅ + `check-file-lines` 0🔴✅
+> - REUSE: `update_plan`@`agent_tools_plan.go`(升级)、`write_strategy`/`edit_code`(已有)、agent loop(已有)、系统提示词(改提示)、`compressContext`(已有)
+> - NEW: `PlanTracker` interface + `generateState` plan methods + plan-driven step guidance in agent loop + 5 locale prompt 重写
 
 ---
 

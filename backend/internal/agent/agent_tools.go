@@ -16,7 +16,7 @@ func buildPythonToolRegistry(result *generateState, mkt repository.MarketDataSto
 	// Support tools.
 	reg.AddPreTool(&readCurrentCodeTool{result: result})
 	reg.AddPreTool(&editCodeTool{result: result})
-	reg.AddPreTool(&updatePlanTool{})
+	reg.AddPreTool(&updatePlanTool{result: result})
 	// Market data: let the LLM inspect current bars before writing strategy code.
 	// Needed for "what's the market pattern?" / "check kline" queries.
 	reg.AddPreTool(connectai.NewReadKlineTool(mkt))

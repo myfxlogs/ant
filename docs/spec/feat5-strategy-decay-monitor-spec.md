@@ -2,7 +2,7 @@
 
 > **决策来源**：2026-08-10 产品讨论。原 FEAT-5「AI 自动迭代闭环」**重新定义**为「衰减监控(免费) + 透明徽章 + 作者发起迭代(计费)」。**不做自动迭代、不做退款**。
 > **关联**：registry FEAT-5、`decay_detector.go`（已有）、ADR-0028 §5.4「诊断免费 / 修复收费」、ARCH-4⑥ 成交归因（衰减数据源）。
-> **状态**：✅ 已实现。**日期**：2026-08-10
+> **状态**：✅ 审计方实测通过。**日期**：2026-08-10
 >
 > **实现摘要**：
 > - Step 1: `decay_monitor.go` — push-first `trade_record_sync` pg_notify → 节流(每策略/天) → `DetectDecay` → 更新 status → 通知；启动全量 `DetectDecayBatch`

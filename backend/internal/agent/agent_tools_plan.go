@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -9,8 +10,12 @@ import (
 	systemai "alphaforge/internal/service/systemai"
 )
 
-// updatePlanTool allows the LLM to track and display a multi-step strategy plan.
-type updatePlanTool struct{}
+// updatePlanTool is the plan-driven state machine tool.
+// The LLM calls it to create/update a multi-step plan. The plan is persisted
+// into generateState.PlanSteps so the agent loop can drive step-by-step execution.
+type updatePlanTool struct {
+	result *generateState
+}
 
 func (t *updatePlanTool) Name() string { return "update_plan" }
 
@@ -18,15 +23,15 @@ func (t *updatePlanTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
 		Type: "function",
 		Function: systemai.ToolDefFunction{
-			Name: "update_plan",
-			Description: "复杂策略的分步计划工具（JSON [{step, status}]）。仅多步策略使用，简单策略请直接调用write_strategy。",
+			Name:        "update_plan",
+			Description: "Plan-driven step tracker for complex strategies. Call this FIRST with a JSON plan [{step, status}] before writing code for multi-step strategies. Update step statuses as you progress. Simple strategies can skip this and call write_strategy directly.",
 			Parameters: map[string]any{
-				schemaKeyType:     schemaTypeObject,
-				"required": []string{"plan"},
+				schemaKeyType: schemaTypeObject,
+				"required":    []string{"plan"},
 				schemaKeyProperties: map[string]any{
 					"plan": map[string]any{
 						schemaKeyType: schemaTypeString,
-						"description": "JSON数组字符串，每项 {step, status}。例如: [{\"step\":\"EMA入场\",\"status\":\"done\"},{\"step\":\"ATR止损\",\"status\":\"doing\"}]",
+						"description": "JSON array string, each item {step, status}. status: pending|doing|done. Example: [{\"step\":\"EMA entry signals\",\"status\":\"done\"},{\"step\":\"ATR stop-loss\",\"status\":\"doing\"},{\"step\":\"position sizing\",\"status\":\"pending\"}]",
 					},
 				},
 			},
@@ -39,10 +44,53 @@ func (t *updatePlanTool) Run(_ context.Context, in connectai.ToolInput) connecta
 	if planJSON == "" {
 		return connectai.ToolOutput{Success: false, Error: "plan is required (JSON array of {step, status})"}
 	}
-	// Parse the plan for nice display
+
+	var steps []planStep
+	if err := json.Unmarshal([]byte(planJSON), &steps); err != nil {
+		return connectai.ToolOutput{Success: false, Error: fmt.Sprintf("invalid plan JSON: %v", err)}
+	}
+
+	// Persist plan into generateState for agent loop step-driven execution.
+	if t.result != nil {
+		t.result.PlanSteps = steps
+	}
+
+	// Build summary for LLM feedback.
+	var done, pending int
+	for _, s := range steps {
+		switch s.Status {
+		case "done":
+			done++
+		case "pending", "doing":
+			pending++
+		}
+	}
+
 	formatted := strings.ReplaceAll(planJSON, `","`, `", "`)
+	summary := fmt.Sprintf("Plan updated (%d/%d steps done):\n%s\n", done, len(steps), formatted)
+
+	if pending > 0 {
+		// Find the current "doing" or first "pending" step.
+		for _, s := range steps {
+			if s.Status == "doing" {
+				summary += fmt.Sprintf("\nCurrent step: %s — proceed with write_strategy or edit_code.", s.Step)
+				break
+			}
+		}
+		if !strings.Contains(summary, "Current step:") {
+			for _, s := range steps {
+				if s.Status == "pending" {
+					summary += fmt.Sprintf("\nNext step: %s — proceed with write_strategy or edit_code.", s.Step)
+					break
+				}
+			}
+		}
+	} else {
+		summary += "\nAll steps complete — strategy is ready."
+	}
+
 	return connectai.ToolOutput{
 		Success: true,
-		Output:  fmt.Sprintf("Plan updated:\n%s", formatted),
+		Output:  summary,
 	}
 }

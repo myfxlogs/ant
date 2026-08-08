@@ -11,7 +11,6 @@ import (
 	"alphaforge/internal/service/systemai"
 )
 
-
 // Generator orchestrates the strategy generation Agent loop:
 // intent → profile → plan → AgentLoop (generate/compile/backtest/fix).
 type Generator struct {
@@ -57,6 +56,54 @@ type generateState struct {
 	CompileError  string
 	BacktestError string
 	LastBacktest  *backtestSummary // captured on write_strategy success for persistent memory
+	PlanSteps     []planStep       // plan-driven state machine (FEAT agent-rebuild Part 1)
+}
+
+// planStep represents a single step in the execution plan.
+type planStep struct {
+	Step   string `json:"step"`
+	Status string `json:"status"` // pending | doing | done
+}
+
+// HasActivePlan returns true if a plan exists with incomplete steps.
+func (g *generateState) HasActivePlan() bool {
+	for _, s := range g.PlanSteps {
+		if s.Status != "done" {
+			return true
+		}
+	}
+	return false
+}
+
+// CurrentStep returns the description of the current doing/pending step.
+func (g *generateState) CurrentStep() string {
+	for _, s := range g.PlanSteps {
+		if s.Status == "doing" {
+			return s.Step
+		}
+	}
+	for _, s := range g.PlanSteps {
+		if s.Status == "pending" {
+			return s.Step
+		}
+	}
+	return ""
+}
+
+// CompletedSteps returns the number of done steps.
+func (g *generateState) CompletedSteps() int {
+	n := 0
+	for _, s := range g.PlanSteps {
+		if s.Status == "done" {
+			n++
+		}
+	}
+	return n
+}
+
+// TotalSteps returns the total number of steps in the plan.
+func (g *generateState) TotalSteps() int {
+	return len(g.PlanSteps)
 }
 
 // Generate runs the unified AgentLoop — single path, full tools, no pre-processing.
