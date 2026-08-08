@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { message } from 'antd';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import WorkspaceSidebar from './WorkspaceSidebar';
@@ -9,7 +8,7 @@ import CodeEditorArea from './CodeEditorArea';
 import MobileSidebarDrawer from './MobileSidebarDrawer';
 import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
-import { strategyApi } from '@/client/strategy';
+import { useSidebarActions } from './useSidebarActions';
 
 interface Props {
   isMobile?: boolean;
@@ -29,6 +28,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const quickTrade = useWsQuickTrade();
   const layout = useWsLayout();
   const history = useWsHistory();
+  const sidebarActions = useSidebarActions(code, history);
 
   // ── Sidebar ──────────────────────────────────────────────────────────
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
@@ -102,6 +102,35 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   // ── Import MQL inline (replaces empty state area, never modal) ────────
   const [importMode, setImportMode] = useState(false);
 
+  // ── New strategy handler (shared by desktop + mobile sidebar) ────────
+  const handleNewStrategy = useCallback(() => {
+    templates.onSelect('');
+    code.setCode('');
+    code.setStrategyId(undefined);
+    code.setValidationResult(null);
+    code.setLastValidatedCode('');
+    setCenterTab('code');
+  }, [templates, code, setCenterTab]);
+
+  // ── Shared sidebar props (desktop + mobile) ──────────────────────────
+  const sidebarProps = useMemo(() => ({
+    templates: templates.list,
+    loading: templates.loading,
+    selectedId: templates.selectedId || '',
+    onSelect: (id: string) => templates.onSelect(id),
+    onDeleteTemplate: sidebarActions.onDeleteTemplate,
+    onRenameTemplate: sidebarActions.onRenameTemplate,
+    onBatchDeleteTemplates: sidebarActions.onBatchDeleteTemplates,
+    backtestRuns: (history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || [],
+    runsLoading: history.loading,
+    onOpenHistory: (tid?: string) => history.open(tid),
+    onDeleteRun: history.onDeleteRun,
+    onBatchDeleteRuns: sidebarActions.onBatchDeleteRuns,
+    onImport: () => setImportMode(true),
+    onNew: handleNewStrategy,
+    autoExpandHistory: history.autoExpandHistory,
+  }), [templates, sidebarActions, history, handleNewStrategy, setImportMode]);
+
   // ── Backtest context for AI ───────────────────────────────────────────
   const btSummary = backtest.metrics?.totalTrades != null
     ? { totalReturn: backtest.metrics.totalReturn, maxDrawdown: backtest.metrics.maxDrawdown, sharpeRatio: backtest.metrics.sharpeRatio, winRate: backtest.metrics.winRate, totalTrades: backtest.metrics.totalTrades }
@@ -139,30 +168,9 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         {/* Sidebar: persistent on desktop, drawer overlay on mobile */}
         {!isMobile && (
           <WorkspaceSidebar
-            templates={templates.list}
-            loading={templates.loading}
-            selectedId={templates.selectedId || ''}
-            onSelect={(id) => templates.onSelect(id)}
-            onDeleteTemplate={async (id) => {
-              try { await strategyApi.deleteTemplate(id); message.success('Deleted'); code.loadTemplates(); }
-              catch (e) { message.error((e as Error)?.message || 'Delete failed'); }
-            }}
-            backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
-            runsLoading={history.loading}
-            onOpenHistory={(tid) => history.open(tid)}
-            onDeleteRun={history.onDeleteRun}
-            onImport={() => setImportMode(true)}
-            onNew={() => {
-              templates.onSelect('');
-              code.setCode('');
-              code.setStrategyId(undefined);
-              code.setValidationResult(null);
-              code.setLastValidatedCode('');
-              setCenterTab('code');
-            }}
+            {...sidebarProps}
             collapsed={leftSidebarCollapsed}
             onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-            autoExpandHistory={history.autoExpandHistory}
           />
         )}
 
@@ -213,30 +221,9 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
 
       {isMobile && (
         <MobileSidebarDrawer
+          {...sidebarProps}
           open={sidebarDrawerOpen}
           onClose={() => setSidebarDrawerOpen(false)}
-          templates={templates.list}
-          loading={templates.loading}
-          selectedId={templates.selectedId || ''}
-          onSelect={(id) => templates.onSelect(id)}
-          onDeleteTemplate={async (id) => {
-            try { await strategyApi.deleteTemplate(id); message.success('Deleted'); code.loadTemplates(); }
-            catch (e) { message.error((e as Error)?.message || 'Delete failed'); }
-          }}
-          backtestRuns={(history.runs as Array<{ id: string; templateName?: string; totalReturn?: number; totalTrades?: number; templateId?: string }>) || []}
-          runsLoading={history.loading}
-          onOpenHistory={(tid) => history.open(tid)}
-          onDeleteRun={history.onDeleteRun}
-          onImport={() => setImportMode(true)}
-          onNew={() => {
-            templates.onSelect('');
-            code.setCode('');
-            code.setStrategyId(undefined);
-            code.setValidationResult(null);
-            code.setLastValidatedCode('');
-            setCenterTab('code');
-          }}
-          autoExpandHistory={history.autoExpandHistory}
         />
       )}
 

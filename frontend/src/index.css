@@ -499,3 +499,22 @@ body {
 body, #root {
   overflow-x: hidden;
 }
+
+/* === Sidebar hover checkbox + action === */
+.sidebar-check {
+  opacity: 0;
+  transition: opacity 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+.sidebar-item:hover .sidebar-check,
+.sidebar-check[data-checked="true"] {
+  opacity: 1;
+}
+.sidebar-item-action {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.sidebar-item:hover .sidebar-item-action {
+  opacity: 1;
+}
