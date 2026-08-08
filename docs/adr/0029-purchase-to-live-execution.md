@@ -95,5 +95,5 @@ schedule 启动的会话必须走同一道 `checkStrategyQuota`（含 `CheckLive
 
 | ID | 项 | 触发时机 |
 |----|----|---------|
-| P1-MKT-1 | 多策略共账户（持仓归因 + 按策略风控聚合）→ 解开 Pro 档容量 | Pro 用户量起来 |
+| P1-MKT-1 | 多策略共账户 Magic Number 归因（风控 account 级，**非按策略**——决策 B 2026-08-08）→ 解开 Pro 档容量。①-⑤ 已落地验收，step⑥（trade_records.schedule_id 按 magic 回填）待施工，spec 见 `docs/spec/multi-strategy-attribution-spec.md` | step⑥ 施工 |
 | P2-MKT-2 | `ProtectedBacktestPanel` 取码/授权模式对齐 | 下次触及受保护回测 |

@@ -120,7 +120,7 @@
 | # | 内容 | 状态 |
 |----|------|------|
 | P1-6a | **商业 bug**：`session_registry.go:116` 一账户一会话，Pro 档卖"5 账户/20 实盘策略"(`strategy-marketplace.md:172`) → 付费用户最多跑 5 个实盘策略 | 已确认（购买→实盘验证 2026-08-06 挖出）|
-| P1-6b | 多策略共账户：持仓归因 + 按策略风控聚合 + 同 symbol 冲突仲裁 | 待施工。**禁止**简单放开 sessionRegistry 键（会引入未受控持仓冲突）|
+| P1-6b | 多策略共账户归因闭环（step⑥）：trade_records.schedule_id 按 magic 回填 | **①-⑤ 已落地验收**（commit `e47ea7bb`：magic 打标 / close_all 隔离 / 多 session；风控 account 级 = 决策 B）。**禁止**简单放开 sessionRegistry 键。step⑥ 待施工，spec 见 `docs/spec/multi-strategy-attribution-spec.md` |
 
 > 触发时机：Pro 用户撞到"只能跑 5 个"上限 / 多账户运营打磨期。详见 `docs/spec/purchase-to-live-link-spec.md` §八。
 

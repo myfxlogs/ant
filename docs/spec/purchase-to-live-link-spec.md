@@ -208,6 +208,6 @@ cfg := LiveStrategyConfig{ ..., Code: tpl.CodeSkeleton, ... }
 
 | ID | 项 | 为什么延期 | 触发时机 | 登记 |
 |----|----|-----------|---------|------|
-| **P1-MKT-1** | 多策略共账户（持仓归因 + 按策略风控聚合 + 同 symbol 仲裁）→ 解开 Pro 档"20 实盘策略"容量 | 是容量/扩展问题，非链路正确性问题；当前一账户一会话下购买→实盘链路本身正确（每账户可跑 1 个）。 loosening `sessionRegistry` 键会引入未受控的多策略持仓冲突，必须配套持仓归因，不能简单放开 | Pro 用户量起来 / 有用户撞到"只能跑 5 个"上限 | `GLM-master-task-list.md` P1-6 + memory |
+| **P1-MKT-1** | 多策略共账户（Magic Number 归因）→ 解开 Pro 档"20 实盘策略"容量 | **决策已定（2026-08-08）**：允许多策略共账户（决策 A）；**风控按 account 级聚合，不按策略**（决策 B——旧表述"按策略风控聚合"已废弃，改 magic 级会削弱安全）；magic 仅用于归因。**①-⑤ 已落地验收**（commit `e47ea7bb`：magic 打标 / close_all 隔离 / 多 session）；**step⑥ 归因闭环待施工**（trade_records.schedule_id 按 magic 回填），施工 spec 见 `docs/spec/multi-strategy-attribution-spec.md` | step⑥ 施工 | `GLM-master-task-list.md` P1-6 + `tech-debt-registry.md` ARCH-4 + memory |
 | **P2-MKT-2** | `ProtectedBacktestPanel`（买方受保护回测）取码/授权模式与本 spec 对齐 | 独立链路，本 spec 不碰；但取码+授权应一致，避免两套分叉 | 下次触及受保护回测代码时 | memory |
 | **ADR-0028 §7 对账** | §7"剩余"状态表与 commit `30668f64`（参数链 E2E）矛盾，需核对"端到端测试(参数链)"是否真闭环、并刷新 §7 | 文档漂移，非代码问题 | 下次触及 ADR-0028 时 | memory |
