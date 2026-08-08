@@ -168,6 +168,10 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mux.Handle(antv1c.NewWalkForwardServiceHandler(walkForwardServer,
 		withSency(otelInterceptor, authInterceptor)))
 
+	// FEAT-5: Strategy decay monitor — push-first on trade_record_sync.
+	decayMonitor := marketplace.NewDecayMonitor(mktplaceSvc, pgListen, log)
+	go decayMonitor.Start(ctx)
+
 	return strategyRuntimeDeps{
 		strategyServer:     strategyServer,
 		strategyExecServer: strategyExecServer,

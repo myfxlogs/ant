@@ -201,23 +201,27 @@ func (s *Service) chargeBuyerAndCalcFees(ctx context.Context, tx pgx.Tx, uid uui
 }
 
 type strategyPurchaseInfo struct {
-	priceModel        string
-	price             decimal.Decimal
-	title             string
-	publisherID       uuid.UUID
-	refundWindowDays  int
+	priceModel       string
+	price            decimal.Decimal
+	title            string
+	publisherID      uuid.UUID
+	refundWindowDays int
 }
 
 func (s *Service) fetchStrategyForPurchase(ctx context.Context, tx pgx.Tx, sid uuid.UUID) (*strategyPurchaseInfo, error) {
 	var priceModel, priceAmountStr, title, dbPublisherID string
 	var refundWindowDays int
+	var decayStatus string
 	err := tx.QueryRow(ctx,
-		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text, COALESCE(refund_window_days, 7)
+		`SELECT price_model, COALESCE(price_amount::text, '0'), title, publisher_id::text, COALESCE(refund_window_days, 7), COALESCE(decay_status, 'none')
 		 FROM marketplace_strategies WHERE strategy_id = $1 AND status = 'published'`,
 		sid,
-	).Scan(&priceModel, &priceAmountStr, &title, &dbPublisherID, &refundWindowDays)
+	).Scan(&priceModel, &priceAmountStr, &title, &dbPublisherID, &refundWindowDays, &decayStatus)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: strategy not published")
+	}
+	if decayStatus == "decayed" {
+		return nil, fmt.Errorf("marketplace: strategy is decayed and no longer available for new purchases")
 	}
 	priceDec, err := decimal.NewFromString(priceAmountStr)
 	if err != nil {

@@ -898,6 +898,7 @@ type PublishedStrategy struct {
 	ProviderVerified bool              `protobuf:"varint,24,opt,name=provider_verified,json=providerVerified,proto3" json:"provider_verified,omitempty"` // provider identity verified badge
 	ProviderType     string            `protobuf:"bytes,25,opt,name=provider_type,json=providerType,proto3" json:"provider_type,omitempty"`              // human | ai | hybrid
 	Disclaimer       string            `protobuf:"bytes,26,opt,name=disclaimer,proto3" json:"disclaimer,omitempty"`                                      // risk disclaimer shown to buyers
+	DecayStatus      string            `protobuf:"bytes,27,opt,name=decay_status,json=decayStatus,proto3" json:"decay_status,omitempty"`                 // none | decaying | decayed (marketplace badge)
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1096,6 +1097,13 @@ func (x *PublishedStrategy) GetProviderType() string {
 func (x *PublishedStrategy) GetDisclaimer() string {
 	if x != nil {
 		return x.Disclaimer
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetDecayStatus() string {
+	if x != nil {
+		return x.DecayStatus
 	}
 	return ""
 }
@@ -9276,6 +9284,102 @@ func (x *GetProviderFeeTierResponse) GetNextTierMinSales() int32 {
 	return 0
 }
 
+type InitiateStrategyIterationRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InitiateStrategyIterationRequest) Reset() {
+	*x = InitiateStrategyIterationRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[134]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InitiateStrategyIterationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InitiateStrategyIterationRequest) ProtoMessage() {}
+
+func (x *InitiateStrategyIterationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[134]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InitiateStrategyIterationRequest.ProtoReflect.Descriptor instead.
+func (*InitiateStrategyIterationRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{134}
+}
+
+func (x *InitiateStrategyIterationRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+type InitiateStrategyIterationResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InitiateStrategyIterationResponse) Reset() {
+	*x = InitiateStrategyIterationResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[135]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InitiateStrategyIterationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InitiateStrategyIterationResponse) ProtoMessage() {}
+
+func (x *InitiateStrategyIterationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[135]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InitiateStrategyIterationResponse.ProtoReflect.Descriptor instead.
+func (*InitiateStrategyIterationResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{135}
+}
+
+func (x *InitiateStrategyIterationResponse) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+func (x *InitiateStrategyIterationResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
@@ -9364,7 +9468,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +
-	"strategies\"\xee\x06\n" +
+	"strategies\"\x91\a\n" +
 	"\x11PublishedStrategy\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\x12\x1f\n" +
@@ -9398,7 +9502,8 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\rprovider_type\x18\x19 \x01(\tR\fproviderType\x12\x1e\n" +
 	"\n" +
 	"disclaimer\x18\x1a \x01(\tR\n" +
-	"disclaimer\"3\n" +
+	"disclaimer\x12!\n" +
+	"\fdecay_status\x18\x1b \x01(\tR\vdecayStatus\"3\n" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +
@@ -10099,7 +10204,13 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\bfee_rate\x18\x02 \x01(\tR\afeeRate\x12&\n" +
 	"\x0fmin_sales_count\x18\x03 \x01(\x05R\rminSalesCount\x12#\n" +
 	"\rcurrent_sales\x18\x04 \x01(\x05R\fcurrentSales\x12-\n" +
-	"\x13next_tier_min_sales\x18\x05 \x01(\x05R\x10nextTierMinSales2\xf6&\n" +
+	"\x13next_tier_min_sales\x18\x05 \x01(\x05R\x10nextTierMinSales\"C\n" +
+	" InitiateStrategyIterationRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\"V\n" +
+	"!InitiateStrategyIterationResponse\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess2\xe8'\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
@@ -10150,7 +10261,8 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x13GetOptimizationTask\x12\".ant.v1.GetOptimizationTaskRequest\x1a#.ant.v1.GetOptimizationTaskResponse\x12g\n" +
 	"\x16RejectOptimizationTask\x12%.ant.v1.RejectOptimizationTaskRequest\x1a&.ant.v1.RejectOptimizationTaskResponse\x12^\n" +
 	"\x13PublishOptimization\x12\".ant.v1.PublishOptimizationRequest\x1a#.ant.v1.PublishOptimizationResponse\x12^\n" +
-	"\x13PreviewOptimization\x12\".ant.v1.PreviewOptimizationRequest\x1a#.ant.v1.PreviewOptimizationResponse\x12I\n" +
+	"\x13PreviewOptimization\x12\".ant.v1.PreviewOptimizationRequest\x1a#.ant.v1.PreviewOptimizationResponse\x12p\n" +
+	"\x19InitiateStrategyIteration\x12(.ant.v1.InitiateStrategyIterationRequest\x1a).ant.v1.InitiateStrategyIterationResponse\x12I\n" +
 	"\fCreateBundle\x12\x1b.ant.v1.CreateBundleRequest\x1a\x1c.ant.v1.CreateBundleResponse\x12F\n" +
 	"\vListBundles\x12\x1a.ant.v1.ListBundlesRequest\x1a\x1b.ant.v1.ListBundlesResponse\x12@\n" +
 	"\tGetBundle\x12\x18.ant.v1.GetBundleRequest\x1a\x19.ant.v1.GetBundleResponse\x12O\n" +
@@ -10172,164 +10284,166 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 134)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 136)
 var file_marketplace_service_proto_goTypes = []any{
-	(*PublishStrategyRequest)(nil),           // 0: ant.v1.PublishStrategyRequest
-	(*BacktestSnapshot)(nil),                 // 1: ant.v1.BacktestSnapshot
-	(*PublishStrategyResponse)(nil),          // 2: ant.v1.PublishStrategyResponse
-	(*SubscribeRequest)(nil),                 // 3: ant.v1.SubscribeRequest
-	(*SubscribeResponse)(nil),                // 4: ant.v1.SubscribeResponse
-	(*UnsubscribeRequest)(nil),               // 5: ant.v1.UnsubscribeRequest
-	(*UnsubscribeResponse)(nil),              // 6: ant.v1.UnsubscribeResponse
-	(*PurchaseStrategyRequest)(nil),          // 7: ant.v1.PurchaseStrategyRequest
-	(*PurchaseStrategyResponse)(nil),         // 8: ant.v1.PurchaseStrategyResponse
-	(*ListPublishedRequest)(nil),             // 9: ant.v1.ListPublishedRequest
-	(*ListPublishedResponse)(nil),            // 10: ant.v1.ListPublishedResponse
-	(*PublishedStrategy)(nil),                // 11: ant.v1.PublishedStrategy
-	(*ListSubscriptionsRequest)(nil),         // 12: ant.v1.ListSubscriptionsRequest
-	(*ListSubscriptionsResponse)(nil),        // 13: ant.v1.ListSubscriptionsResponse
-	(*SubscriptionItem)(nil),                 // 14: ant.v1.SubscriptionItem
-	(*RateStrategyRequest)(nil),              // 15: ant.v1.RateStrategyRequest
-	(*RateStrategyResponse)(nil),             // 16: ant.v1.RateStrategyResponse
-	(*ListRatingsRequest)(nil),               // 17: ant.v1.ListRatingsRequest
-	(*ListRatingsResponse)(nil),              // 18: ant.v1.ListRatingsResponse
-	(*RatingItem)(nil),                       // 19: ant.v1.RatingItem
-	(*CommentOnStrategyRequest)(nil),         // 20: ant.v1.CommentOnStrategyRequest
-	(*CommentOnStrategyResponse)(nil),        // 21: ant.v1.CommentOnStrategyResponse
-	(*ListCommentsRequest)(nil),              // 22: ant.v1.ListCommentsRequest
-	(*ListCommentsResponse)(nil),             // 23: ant.v1.ListCommentsResponse
-	(*CommentItem)(nil),                      // 24: ant.v1.CommentItem
-	(*SetStrategyPricingRequest)(nil),        // 25: ant.v1.SetStrategyPricingRequest
-	(*SetStrategyPricingResponse)(nil),       // 26: ant.v1.SetStrategyPricingResponse
-	(*UnpublishMarketStrategyRequest)(nil),   // 27: ant.v1.UnpublishMarketStrategyRequest
-	(*UnpublishMarketStrategyResponse)(nil),  // 28: ant.v1.UnpublishMarketStrategyResponse
-	(*GetPublisherStatsRequest)(nil),         // 29: ant.v1.GetPublisherStatsRequest
-	(*GetPublisherStatsResponse)(nil),        // 30: ant.v1.GetPublisherStatsResponse
-	(*RevenueTrendPoint)(nil),                // 31: ant.v1.RevenueTrendPoint
-	(*SubscriberTrendPoint)(nil),             // 32: ant.v1.SubscriberTrendPoint
-	(*StrategyBreakdown)(nil),                // 33: ant.v1.StrategyBreakdown
-	(*RunMarketBacktestRequest)(nil),         // 34: ant.v1.RunMarketBacktestRequest
-	(*GetLivePerformanceRequest)(nil),        // 35: ant.v1.GetLivePerformanceRequest
-	(*GetLivePerformanceResponse)(nil),       // 36: ant.v1.GetLivePerformanceResponse
-	(*LivePerformancePoint)(nil),             // 37: ant.v1.LivePerformancePoint
-	(*LivePerformanceSummary)(nil),           // 38: ant.v1.LivePerformanceSummary
-	(*LinkLiveAccountRequest)(nil),           // 39: ant.v1.LinkLiveAccountRequest
-	(*LinkLiveAccountResponse)(nil),          // 40: ant.v1.LinkLiveAccountResponse
-	(*GenerateAndPublishRequest)(nil),        // 41: ant.v1.GenerateAndPublishRequest
-	(*GenerateAndPublishEvent)(nil),          // 42: ant.v1.GenerateAndPublishEvent
-	(*QualityViolationInfo)(nil),             // 43: ant.v1.QualityViolationInfo
-	(*GenerateFromTemplateRequest)(nil),      // 44: ant.v1.GenerateFromTemplateRequest
-	(*ListStrategyTemplatesRequest)(nil),     // 45: ant.v1.ListStrategyTemplatesRequest
-	(*ListStrategyTemplatesResponse)(nil),    // 46: ant.v1.ListStrategyTemplatesResponse
-	(*StrategyParameterTemplate)(nil),        // 47: ant.v1.StrategyParameterTemplate
-	(*ListAutoGenTasksRequest)(nil),          // 48: ant.v1.ListAutoGenTasksRequest
-	(*ListAutoGenTasksResponse)(nil),         // 49: ant.v1.ListAutoGenTasksResponse
-	(*AutoGenTaskInfo)(nil),                  // 50: ant.v1.AutoGenTaskInfo
-	(*ApproveAutoGenTaskRequest)(nil),        // 51: ant.v1.ApproveAutoGenTaskRequest
-	(*ApproveAutoGenTaskResponse)(nil),       // 52: ant.v1.ApproveAutoGenTaskResponse
-	(*RejectAutoGenTaskRequest)(nil),         // 53: ant.v1.RejectAutoGenTaskRequest
-	(*RejectAutoGenTaskResponse)(nil),        // 54: ant.v1.RejectAutoGenTaskResponse
-	(*TriggerBatchGenerationRequest)(nil),    // 55: ant.v1.TriggerBatchGenerationRequest
-	(*TriggerBatchGenerationResponse)(nil),   // 56: ant.v1.TriggerBatchGenerationResponse
-	(*ListLeaderboardRequest)(nil),           // 57: ant.v1.ListLeaderboardRequest
-	(*LeaderboardEntry)(nil),                 // 58: ant.v1.LeaderboardEntry
-	(*ListLeaderboardResponse)(nil),          // 59: ant.v1.ListLeaderboardResponse
-	(*StartTrialRequest)(nil),                // 60: ant.v1.StartTrialRequest
-	(*StartTrialResponse)(nil),               // 61: ant.v1.StartTrialResponse
-	(*CompareStrategiesRequest)(nil),         // 62: ant.v1.CompareStrategiesRequest
-	(*StrategyComparison)(nil),               // 63: ant.v1.StrategyComparison
-	(*CompareStrategiesResponse)(nil),        // 64: ant.v1.CompareStrategiesResponse
-	(*GetStrategyPublicInfoRequest)(nil),     // 65: ant.v1.GetStrategyPublicInfoRequest
-	(*GetStrategyPublicInfoResponse)(nil),    // 66: ant.v1.GetStrategyPublicInfoResponse
-	(*RequestVerificationRequest)(nil),       // 67: ant.v1.RequestVerificationRequest
-	(*RequestVerificationResponse)(nil),      // 68: ant.v1.RequestVerificationResponse
-	(*AdminProcessVerificationRequest)(nil),  // 69: ant.v1.AdminProcessVerificationRequest
-	(*AdminProcessVerificationResponse)(nil), // 70: ant.v1.AdminProcessVerificationResponse
-	(*AdminListStrategiesRequest)(nil),       // 71: ant.v1.AdminListStrategiesRequest
-	(*AdminStrategyItem)(nil),                // 72: ant.v1.AdminStrategyItem
-	(*AdminListStrategiesResponse)(nil),      // 73: ant.v1.AdminListStrategiesResponse
-	(*AdminFeatureStrategyRequest)(nil),      // 74: ant.v1.AdminFeatureStrategyRequest
-	(*AdminFeatureStrategyResponse)(nil),     // 75: ant.v1.AdminFeatureStrategyResponse
-	(*RequestRefundRequest)(nil),             // 76: ant.v1.RequestRefundRequest
-	(*RequestRefundResponse)(nil),            // 77: ant.v1.RequestRefundResponse
-	(*AdminListRefundRequestsRequest)(nil),   // 78: ant.v1.AdminListRefundRequestsRequest
-	(*RefundRequestItem)(nil),                // 79: ant.v1.RefundRequestItem
-	(*AdminListRefundRequestsResponse)(nil),  // 80: ant.v1.AdminListRefundRequestsResponse
-	(*AdminProcessRefundRequest)(nil),        // 81: ant.v1.AdminProcessRefundRequest
-	(*AdminProcessRefundResponse)(nil),       // 82: ant.v1.AdminProcessRefundResponse
-	(*GetMarketplaceAnalyticsRequest)(nil),   // 83: ant.v1.GetMarketplaceAnalyticsRequest
-	(*DailyAnalytics)(nil),                   // 84: ant.v1.DailyAnalytics
-	(*MarketplaceAnalytics)(nil),             // 85: ant.v1.MarketplaceAnalytics
-	(*TopItem)(nil),                          // 86: ant.v1.TopItem
-	(*TopStrategiesResponse)(nil),            // 87: ant.v1.TopStrategiesResponse
-	(*TopProvidersResponse)(nil),             // 88: ant.v1.TopProvidersResponse
-	(*ValidateCouponRequest)(nil),            // 89: ant.v1.ValidateCouponRequest
-	(*ValidateCouponResponse)(nil),           // 90: ant.v1.ValidateCouponResponse
-	(*CouponInfo)(nil),                       // 91: ant.v1.CouponInfo
-	(*CreateCouponRequest)(nil),              // 92: ant.v1.CreateCouponRequest
-	(*CreateCouponResponse)(nil),             // 93: ant.v1.CreateCouponResponse
-	(*ListCouponsRequest)(nil),               // 94: ant.v1.ListCouponsRequest
-	(*ListCouponsResponse)(nil),              // 95: ant.v1.ListCouponsResponse
-	(*DisableCouponRequest)(nil),             // 96: ant.v1.DisableCouponRequest
-	(*DisableCouponResponse)(nil),            // 97: ant.v1.DisableCouponResponse
-	(*ProviderEarnings)(nil),                 // 98: ant.v1.ProviderEarnings
-	(*ProviderTransactionItem)(nil),          // 99: ant.v1.ProviderTransactionItem
-	(*ListProviderTransactionsRequest)(nil),  // 100: ant.v1.ListProviderTransactionsRequest
-	(*ListProviderTransactionsResponse)(nil), // 101: ant.v1.ListProviderTransactionsResponse
-	(*DecayMetrics)(nil),                     // 102: ant.v1.DecayMetrics
-	(*DetectStrategyDecayRequest)(nil),       // 103: ant.v1.DetectStrategyDecayRequest
-	(*DetectStrategyDecayResponse)(nil),      // 104: ant.v1.DetectStrategyDecayResponse
-	(*ListOptimizationTasksRequest)(nil),     // 105: ant.v1.ListOptimizationTasksRequest
-	(*OptimizationTaskInfo)(nil),             // 106: ant.v1.OptimizationTaskInfo
-	(*ListOptimizationTasksResponse)(nil),    // 107: ant.v1.ListOptimizationTasksResponse
-	(*GetOptimizationTaskRequest)(nil),       // 108: ant.v1.GetOptimizationTaskRequest
-	(*GetOptimizationTaskResponse)(nil),      // 109: ant.v1.GetOptimizationTaskResponse
-	(*RejectOptimizationTaskRequest)(nil),    // 110: ant.v1.RejectOptimizationTaskRequest
-	(*RejectOptimizationTaskResponse)(nil),   // 111: ant.v1.RejectOptimizationTaskResponse
-	(*PublishOptimizationRequest)(nil),       // 112: ant.v1.PublishOptimizationRequest
-	(*PublishOptimizationResponse)(nil),      // 113: ant.v1.PublishOptimizationResponse
-	(*PreviewOptimizationRequest)(nil),       // 114: ant.v1.PreviewOptimizationRequest
-	(*PreviewOptimizationResponse)(nil),      // 115: ant.v1.PreviewOptimizationResponse
-	(*CreateBundleRequest)(nil),              // 116: ant.v1.CreateBundleRequest
-	(*CreateBundleResponse)(nil),             // 117: ant.v1.CreateBundleResponse
-	(*ListBundlesRequest)(nil),               // 118: ant.v1.ListBundlesRequest
-	(*BundleItem)(nil),                       // 119: ant.v1.BundleItem
-	(*BundleInfo)(nil),                       // 120: ant.v1.BundleInfo
-	(*ListBundlesResponse)(nil),              // 121: ant.v1.ListBundlesResponse
-	(*GetBundleRequest)(nil),                 // 122: ant.v1.GetBundleRequest
-	(*GetBundleResponse)(nil),                // 123: ant.v1.GetBundleResponse
-	(*PurchaseBundleRequest)(nil),            // 124: ant.v1.PurchaseBundleRequest
-	(*PurchaseBundleResponse)(nil),           // 125: ant.v1.PurchaseBundleResponse
-	(*DeleteBundleRequest)(nil),              // 126: ant.v1.DeleteBundleRequest
-	(*DeleteBundleResponse)(nil),             // 127: ant.v1.DeleteBundleResponse
-	(*FeeTierInfo)(nil),                      // 128: ant.v1.FeeTierInfo
-	(*ListFeeTiersResponse)(nil),             // 129: ant.v1.ListFeeTiersResponse
-	(*UpdateFeeTierRequest)(nil),             // 130: ant.v1.UpdateFeeTierRequest
-	(*UpdateFeeTierResponse)(nil),            // 131: ant.v1.UpdateFeeTierResponse
-	(*GetProviderFeeTierRequest)(nil),        // 132: ant.v1.GetProviderFeeTierRequest
-	(*GetProviderFeeTierResponse)(nil),       // 133: ant.v1.GetProviderFeeTierResponse
-	(*timestamppb.Timestamp)(nil),            // 134: google.protobuf.Timestamp
-	(*BacktestExecutionConfig)(nil),          // 135: ant.v1.BacktestExecutionConfig
-	(*emptypb.Empty)(nil),                    // 136: google.protobuf.Empty
-	(*BacktestRunUpdate)(nil),                // 137: ant.v1.BacktestRunUpdate
+	(*PublishStrategyRequest)(nil),            // 0: ant.v1.PublishStrategyRequest
+	(*BacktestSnapshot)(nil),                  // 1: ant.v1.BacktestSnapshot
+	(*PublishStrategyResponse)(nil),           // 2: ant.v1.PublishStrategyResponse
+	(*SubscribeRequest)(nil),                  // 3: ant.v1.SubscribeRequest
+	(*SubscribeResponse)(nil),                 // 4: ant.v1.SubscribeResponse
+	(*UnsubscribeRequest)(nil),                // 5: ant.v1.UnsubscribeRequest
+	(*UnsubscribeResponse)(nil),               // 6: ant.v1.UnsubscribeResponse
+	(*PurchaseStrategyRequest)(nil),           // 7: ant.v1.PurchaseStrategyRequest
+	(*PurchaseStrategyResponse)(nil),          // 8: ant.v1.PurchaseStrategyResponse
+	(*ListPublishedRequest)(nil),              // 9: ant.v1.ListPublishedRequest
+	(*ListPublishedResponse)(nil),             // 10: ant.v1.ListPublishedResponse
+	(*PublishedStrategy)(nil),                 // 11: ant.v1.PublishedStrategy
+	(*ListSubscriptionsRequest)(nil),          // 12: ant.v1.ListSubscriptionsRequest
+	(*ListSubscriptionsResponse)(nil),         // 13: ant.v1.ListSubscriptionsResponse
+	(*SubscriptionItem)(nil),                  // 14: ant.v1.SubscriptionItem
+	(*RateStrategyRequest)(nil),               // 15: ant.v1.RateStrategyRequest
+	(*RateStrategyResponse)(nil),              // 16: ant.v1.RateStrategyResponse
+	(*ListRatingsRequest)(nil),                // 17: ant.v1.ListRatingsRequest
+	(*ListRatingsResponse)(nil),               // 18: ant.v1.ListRatingsResponse
+	(*RatingItem)(nil),                        // 19: ant.v1.RatingItem
+	(*CommentOnStrategyRequest)(nil),          // 20: ant.v1.CommentOnStrategyRequest
+	(*CommentOnStrategyResponse)(nil),         // 21: ant.v1.CommentOnStrategyResponse
+	(*ListCommentsRequest)(nil),               // 22: ant.v1.ListCommentsRequest
+	(*ListCommentsResponse)(nil),              // 23: ant.v1.ListCommentsResponse
+	(*CommentItem)(nil),                       // 24: ant.v1.CommentItem
+	(*SetStrategyPricingRequest)(nil),         // 25: ant.v1.SetStrategyPricingRequest
+	(*SetStrategyPricingResponse)(nil),        // 26: ant.v1.SetStrategyPricingResponse
+	(*UnpublishMarketStrategyRequest)(nil),    // 27: ant.v1.UnpublishMarketStrategyRequest
+	(*UnpublishMarketStrategyResponse)(nil),   // 28: ant.v1.UnpublishMarketStrategyResponse
+	(*GetPublisherStatsRequest)(nil),          // 29: ant.v1.GetPublisherStatsRequest
+	(*GetPublisherStatsResponse)(nil),         // 30: ant.v1.GetPublisherStatsResponse
+	(*RevenueTrendPoint)(nil),                 // 31: ant.v1.RevenueTrendPoint
+	(*SubscriberTrendPoint)(nil),              // 32: ant.v1.SubscriberTrendPoint
+	(*StrategyBreakdown)(nil),                 // 33: ant.v1.StrategyBreakdown
+	(*RunMarketBacktestRequest)(nil),          // 34: ant.v1.RunMarketBacktestRequest
+	(*GetLivePerformanceRequest)(nil),         // 35: ant.v1.GetLivePerformanceRequest
+	(*GetLivePerformanceResponse)(nil),        // 36: ant.v1.GetLivePerformanceResponse
+	(*LivePerformancePoint)(nil),              // 37: ant.v1.LivePerformancePoint
+	(*LivePerformanceSummary)(nil),            // 38: ant.v1.LivePerformanceSummary
+	(*LinkLiveAccountRequest)(nil),            // 39: ant.v1.LinkLiveAccountRequest
+	(*LinkLiveAccountResponse)(nil),           // 40: ant.v1.LinkLiveAccountResponse
+	(*GenerateAndPublishRequest)(nil),         // 41: ant.v1.GenerateAndPublishRequest
+	(*GenerateAndPublishEvent)(nil),           // 42: ant.v1.GenerateAndPublishEvent
+	(*QualityViolationInfo)(nil),              // 43: ant.v1.QualityViolationInfo
+	(*GenerateFromTemplateRequest)(nil),       // 44: ant.v1.GenerateFromTemplateRequest
+	(*ListStrategyTemplatesRequest)(nil),      // 45: ant.v1.ListStrategyTemplatesRequest
+	(*ListStrategyTemplatesResponse)(nil),     // 46: ant.v1.ListStrategyTemplatesResponse
+	(*StrategyParameterTemplate)(nil),         // 47: ant.v1.StrategyParameterTemplate
+	(*ListAutoGenTasksRequest)(nil),           // 48: ant.v1.ListAutoGenTasksRequest
+	(*ListAutoGenTasksResponse)(nil),          // 49: ant.v1.ListAutoGenTasksResponse
+	(*AutoGenTaskInfo)(nil),                   // 50: ant.v1.AutoGenTaskInfo
+	(*ApproveAutoGenTaskRequest)(nil),         // 51: ant.v1.ApproveAutoGenTaskRequest
+	(*ApproveAutoGenTaskResponse)(nil),        // 52: ant.v1.ApproveAutoGenTaskResponse
+	(*RejectAutoGenTaskRequest)(nil),          // 53: ant.v1.RejectAutoGenTaskRequest
+	(*RejectAutoGenTaskResponse)(nil),         // 54: ant.v1.RejectAutoGenTaskResponse
+	(*TriggerBatchGenerationRequest)(nil),     // 55: ant.v1.TriggerBatchGenerationRequest
+	(*TriggerBatchGenerationResponse)(nil),    // 56: ant.v1.TriggerBatchGenerationResponse
+	(*ListLeaderboardRequest)(nil),            // 57: ant.v1.ListLeaderboardRequest
+	(*LeaderboardEntry)(nil),                  // 58: ant.v1.LeaderboardEntry
+	(*ListLeaderboardResponse)(nil),           // 59: ant.v1.ListLeaderboardResponse
+	(*StartTrialRequest)(nil),                 // 60: ant.v1.StartTrialRequest
+	(*StartTrialResponse)(nil),                // 61: ant.v1.StartTrialResponse
+	(*CompareStrategiesRequest)(nil),          // 62: ant.v1.CompareStrategiesRequest
+	(*StrategyComparison)(nil),                // 63: ant.v1.StrategyComparison
+	(*CompareStrategiesResponse)(nil),         // 64: ant.v1.CompareStrategiesResponse
+	(*GetStrategyPublicInfoRequest)(nil),      // 65: ant.v1.GetStrategyPublicInfoRequest
+	(*GetStrategyPublicInfoResponse)(nil),     // 66: ant.v1.GetStrategyPublicInfoResponse
+	(*RequestVerificationRequest)(nil),        // 67: ant.v1.RequestVerificationRequest
+	(*RequestVerificationResponse)(nil),       // 68: ant.v1.RequestVerificationResponse
+	(*AdminProcessVerificationRequest)(nil),   // 69: ant.v1.AdminProcessVerificationRequest
+	(*AdminProcessVerificationResponse)(nil),  // 70: ant.v1.AdminProcessVerificationResponse
+	(*AdminListStrategiesRequest)(nil),        // 71: ant.v1.AdminListStrategiesRequest
+	(*AdminStrategyItem)(nil),                 // 72: ant.v1.AdminStrategyItem
+	(*AdminListStrategiesResponse)(nil),       // 73: ant.v1.AdminListStrategiesResponse
+	(*AdminFeatureStrategyRequest)(nil),       // 74: ant.v1.AdminFeatureStrategyRequest
+	(*AdminFeatureStrategyResponse)(nil),      // 75: ant.v1.AdminFeatureStrategyResponse
+	(*RequestRefundRequest)(nil),              // 76: ant.v1.RequestRefundRequest
+	(*RequestRefundResponse)(nil),             // 77: ant.v1.RequestRefundResponse
+	(*AdminListRefundRequestsRequest)(nil),    // 78: ant.v1.AdminListRefundRequestsRequest
+	(*RefundRequestItem)(nil),                 // 79: ant.v1.RefundRequestItem
+	(*AdminListRefundRequestsResponse)(nil),   // 80: ant.v1.AdminListRefundRequestsResponse
+	(*AdminProcessRefundRequest)(nil),         // 81: ant.v1.AdminProcessRefundRequest
+	(*AdminProcessRefundResponse)(nil),        // 82: ant.v1.AdminProcessRefundResponse
+	(*GetMarketplaceAnalyticsRequest)(nil),    // 83: ant.v1.GetMarketplaceAnalyticsRequest
+	(*DailyAnalytics)(nil),                    // 84: ant.v1.DailyAnalytics
+	(*MarketplaceAnalytics)(nil),              // 85: ant.v1.MarketplaceAnalytics
+	(*TopItem)(nil),                           // 86: ant.v1.TopItem
+	(*TopStrategiesResponse)(nil),             // 87: ant.v1.TopStrategiesResponse
+	(*TopProvidersResponse)(nil),              // 88: ant.v1.TopProvidersResponse
+	(*ValidateCouponRequest)(nil),             // 89: ant.v1.ValidateCouponRequest
+	(*ValidateCouponResponse)(nil),            // 90: ant.v1.ValidateCouponResponse
+	(*CouponInfo)(nil),                        // 91: ant.v1.CouponInfo
+	(*CreateCouponRequest)(nil),               // 92: ant.v1.CreateCouponRequest
+	(*CreateCouponResponse)(nil),              // 93: ant.v1.CreateCouponResponse
+	(*ListCouponsRequest)(nil),                // 94: ant.v1.ListCouponsRequest
+	(*ListCouponsResponse)(nil),               // 95: ant.v1.ListCouponsResponse
+	(*DisableCouponRequest)(nil),              // 96: ant.v1.DisableCouponRequest
+	(*DisableCouponResponse)(nil),             // 97: ant.v1.DisableCouponResponse
+	(*ProviderEarnings)(nil),                  // 98: ant.v1.ProviderEarnings
+	(*ProviderTransactionItem)(nil),           // 99: ant.v1.ProviderTransactionItem
+	(*ListProviderTransactionsRequest)(nil),   // 100: ant.v1.ListProviderTransactionsRequest
+	(*ListProviderTransactionsResponse)(nil),  // 101: ant.v1.ListProviderTransactionsResponse
+	(*DecayMetrics)(nil),                      // 102: ant.v1.DecayMetrics
+	(*DetectStrategyDecayRequest)(nil),        // 103: ant.v1.DetectStrategyDecayRequest
+	(*DetectStrategyDecayResponse)(nil),       // 104: ant.v1.DetectStrategyDecayResponse
+	(*ListOptimizationTasksRequest)(nil),      // 105: ant.v1.ListOptimizationTasksRequest
+	(*OptimizationTaskInfo)(nil),              // 106: ant.v1.OptimizationTaskInfo
+	(*ListOptimizationTasksResponse)(nil),     // 107: ant.v1.ListOptimizationTasksResponse
+	(*GetOptimizationTaskRequest)(nil),        // 108: ant.v1.GetOptimizationTaskRequest
+	(*GetOptimizationTaskResponse)(nil),       // 109: ant.v1.GetOptimizationTaskResponse
+	(*RejectOptimizationTaskRequest)(nil),     // 110: ant.v1.RejectOptimizationTaskRequest
+	(*RejectOptimizationTaskResponse)(nil),    // 111: ant.v1.RejectOptimizationTaskResponse
+	(*PublishOptimizationRequest)(nil),        // 112: ant.v1.PublishOptimizationRequest
+	(*PublishOptimizationResponse)(nil),       // 113: ant.v1.PublishOptimizationResponse
+	(*PreviewOptimizationRequest)(nil),        // 114: ant.v1.PreviewOptimizationRequest
+	(*PreviewOptimizationResponse)(nil),       // 115: ant.v1.PreviewOptimizationResponse
+	(*CreateBundleRequest)(nil),               // 116: ant.v1.CreateBundleRequest
+	(*CreateBundleResponse)(nil),              // 117: ant.v1.CreateBundleResponse
+	(*ListBundlesRequest)(nil),                // 118: ant.v1.ListBundlesRequest
+	(*BundleItem)(nil),                        // 119: ant.v1.BundleItem
+	(*BundleInfo)(nil),                        // 120: ant.v1.BundleInfo
+	(*ListBundlesResponse)(nil),               // 121: ant.v1.ListBundlesResponse
+	(*GetBundleRequest)(nil),                  // 122: ant.v1.GetBundleRequest
+	(*GetBundleResponse)(nil),                 // 123: ant.v1.GetBundleResponse
+	(*PurchaseBundleRequest)(nil),             // 124: ant.v1.PurchaseBundleRequest
+	(*PurchaseBundleResponse)(nil),            // 125: ant.v1.PurchaseBundleResponse
+	(*DeleteBundleRequest)(nil),               // 126: ant.v1.DeleteBundleRequest
+	(*DeleteBundleResponse)(nil),              // 127: ant.v1.DeleteBundleResponse
+	(*FeeTierInfo)(nil),                       // 128: ant.v1.FeeTierInfo
+	(*ListFeeTiersResponse)(nil),              // 129: ant.v1.ListFeeTiersResponse
+	(*UpdateFeeTierRequest)(nil),              // 130: ant.v1.UpdateFeeTierRequest
+	(*UpdateFeeTierResponse)(nil),             // 131: ant.v1.UpdateFeeTierResponse
+	(*GetProviderFeeTierRequest)(nil),         // 132: ant.v1.GetProviderFeeTierRequest
+	(*GetProviderFeeTierResponse)(nil),        // 133: ant.v1.GetProviderFeeTierResponse
+	(*InitiateStrategyIterationRequest)(nil),  // 134: ant.v1.InitiateStrategyIterationRequest
+	(*InitiateStrategyIterationResponse)(nil), // 135: ant.v1.InitiateStrategyIterationResponse
+	(*timestamppb.Timestamp)(nil),             // 136: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil),           // 137: ant.v1.BacktestExecutionConfig
+	(*emptypb.Empty)(nil),                     // 138: google.protobuf.Empty
+	(*BacktestRunUpdate)(nil),                 // 139: ant.v1.BacktestRunUpdate
 }
 var file_marketplace_service_proto_depIdxs = []int32{
 	1,   // 0: ant.v1.PublishStrategyRequest.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
-	134, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
+	136, // 1: ant.v1.BacktestSnapshot.snapshot_at:type_name -> google.protobuf.Timestamp
 	11,  // 2: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	134, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	136, // 3: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
 	1,   // 4: ant.v1.PublishedStrategy.backtest_snapshot:type_name -> ant.v1.BacktestSnapshot
 	14,  // 5: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	134, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	134, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
+	136, // 6: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	136, // 7: ant.v1.SubscriptionItem.expires_at:type_name -> google.protobuf.Timestamp
 	19,  // 8: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	134, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	136, // 9: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
 	24,  // 10: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	134, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	136, // 11: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
 	31,  // 12: ant.v1.GetPublisherStatsResponse.revenue_trend:type_name -> ant.v1.RevenueTrendPoint
 	32,  // 13: ant.v1.GetPublisherStatsResponse.subscriber_trend:type_name -> ant.v1.SubscriberTrendPoint
 	33,  // 14: ant.v1.GetPublisherStatsResponse.strategy_breakdown:type_name -> ant.v1.StrategyBreakdown
-	135, // 15: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	137, // 15: ant.v1.RunMarketBacktestRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
 	37,  // 16: ant.v1.GetLivePerformanceResponse.points:type_name -> ant.v1.LivePerformancePoint
 	38,  // 17: ant.v1.GetLivePerformanceResponse.summary:type_name -> ant.v1.LivePerformanceSummary
 	1,   // 18: ant.v1.GenerateAndPublishEvent.backtest:type_name -> ant.v1.BacktestSnapshot
@@ -10397,13 +10511,13 @@ var file_marketplace_service_proto_depIdxs = []int32{
 	78,  // 80: ant.v1.MarketplaceService.AdminListRefundRequests:input_type -> ant.v1.AdminListRefundRequestsRequest
 	81,  // 81: ant.v1.MarketplaceService.AdminProcessRefund:input_type -> ant.v1.AdminProcessRefundRequest
 	83,  // 82: ant.v1.MarketplaceService.GetMarketplaceAnalytics:input_type -> ant.v1.GetMarketplaceAnalyticsRequest
-	136, // 83: ant.v1.MarketplaceService.GetTopStrategies:input_type -> google.protobuf.Empty
-	136, // 84: ant.v1.MarketplaceService.GetTopProviders:input_type -> google.protobuf.Empty
+	138, // 83: ant.v1.MarketplaceService.GetTopStrategies:input_type -> google.protobuf.Empty
+	138, // 84: ant.v1.MarketplaceService.GetTopProviders:input_type -> google.protobuf.Empty
 	89,  // 85: ant.v1.MarketplaceService.ValidateCoupon:input_type -> ant.v1.ValidateCouponRequest
 	92,  // 86: ant.v1.MarketplaceService.CreateCoupon:input_type -> ant.v1.CreateCouponRequest
 	94,  // 87: ant.v1.MarketplaceService.ListCoupons:input_type -> ant.v1.ListCouponsRequest
 	96,  // 88: ant.v1.MarketplaceService.DisableCoupon:input_type -> ant.v1.DisableCouponRequest
-	136, // 89: ant.v1.MarketplaceService.GetProviderEarnings:input_type -> google.protobuf.Empty
+	138, // 89: ant.v1.MarketplaceService.GetProviderEarnings:input_type -> google.protobuf.Empty
 	100, // 90: ant.v1.MarketplaceService.ListProviderTransactions:input_type -> ant.v1.ListProviderTransactionsRequest
 	103, // 91: ant.v1.MarketplaceService.DetectStrategyDecay:input_type -> ant.v1.DetectStrategyDecayRequest
 	105, // 92: ant.v1.MarketplaceService.ListOptimizationTasks:input_type -> ant.v1.ListOptimizationTasksRequest
@@ -10411,73 +10525,75 @@ var file_marketplace_service_proto_depIdxs = []int32{
 	110, // 94: ant.v1.MarketplaceService.RejectOptimizationTask:input_type -> ant.v1.RejectOptimizationTaskRequest
 	112, // 95: ant.v1.MarketplaceService.PublishOptimization:input_type -> ant.v1.PublishOptimizationRequest
 	114, // 96: ant.v1.MarketplaceService.PreviewOptimization:input_type -> ant.v1.PreviewOptimizationRequest
-	116, // 97: ant.v1.MarketplaceService.CreateBundle:input_type -> ant.v1.CreateBundleRequest
-	118, // 98: ant.v1.MarketplaceService.ListBundles:input_type -> ant.v1.ListBundlesRequest
-	122, // 99: ant.v1.MarketplaceService.GetBundle:input_type -> ant.v1.GetBundleRequest
-	124, // 100: ant.v1.MarketplaceService.PurchaseBundle:input_type -> ant.v1.PurchaseBundleRequest
-	126, // 101: ant.v1.MarketplaceService.DeleteBundle:input_type -> ant.v1.DeleteBundleRequest
-	136, // 102: ant.v1.MarketplaceService.ListFeeTiers:input_type -> google.protobuf.Empty
-	130, // 103: ant.v1.MarketplaceService.UpdateFeeTier:input_type -> ant.v1.UpdateFeeTierRequest
-	132, // 104: ant.v1.MarketplaceService.GetProviderFeeTier:input_type -> ant.v1.GetProviderFeeTierRequest
-	2,   // 105: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	4,   // 106: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	6,   // 107: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	8,   // 108: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
-	10,  // 109: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	13,  // 110: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	16,  // 111: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	18,  // 112: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	21,  // 113: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	23,  // 114: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	26,  // 115: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	28,  // 116: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
-	30,  // 117: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
-	137, // 118: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
-	36,  // 119: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
-	40,  // 120: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
-	42,  // 121: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
-	42,  // 122: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
-	46,  // 123: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
-	49,  // 124: ant.v1.MarketplaceService.ListAutoGenTasks:output_type -> ant.v1.ListAutoGenTasksResponse
-	52,  // 125: ant.v1.MarketplaceService.ApproveAutoGenTask:output_type -> ant.v1.ApproveAutoGenTaskResponse
-	54,  // 126: ant.v1.MarketplaceService.RejectAutoGenTask:output_type -> ant.v1.RejectAutoGenTaskResponse
-	56,  // 127: ant.v1.MarketplaceService.TriggerBatchGeneration:output_type -> ant.v1.TriggerBatchGenerationResponse
-	59,  // 128: ant.v1.MarketplaceService.ListLeaderboard:output_type -> ant.v1.ListLeaderboardResponse
-	61,  // 129: ant.v1.MarketplaceService.StartTrial:output_type -> ant.v1.StartTrialResponse
-	64,  // 130: ant.v1.MarketplaceService.CompareStrategies:output_type -> ant.v1.CompareStrategiesResponse
-	66,  // 131: ant.v1.MarketplaceService.GetStrategyPublicInfo:output_type -> ant.v1.GetStrategyPublicInfoResponse
-	68,  // 132: ant.v1.MarketplaceService.RequestVerification:output_type -> ant.v1.RequestVerificationResponse
-	70,  // 133: ant.v1.MarketplaceService.AdminProcessVerification:output_type -> ant.v1.AdminProcessVerificationResponse
-	73,  // 134: ant.v1.MarketplaceService.AdminListStrategies:output_type -> ant.v1.AdminListStrategiesResponse
-	75,  // 135: ant.v1.MarketplaceService.AdminFeatureStrategy:output_type -> ant.v1.AdminFeatureStrategyResponse
-	77,  // 136: ant.v1.MarketplaceService.RequestRefund:output_type -> ant.v1.RequestRefundResponse
-	80,  // 137: ant.v1.MarketplaceService.AdminListRefundRequests:output_type -> ant.v1.AdminListRefundRequestsResponse
-	82,  // 138: ant.v1.MarketplaceService.AdminProcessRefund:output_type -> ant.v1.AdminProcessRefundResponse
-	85,  // 139: ant.v1.MarketplaceService.GetMarketplaceAnalytics:output_type -> ant.v1.MarketplaceAnalytics
-	87,  // 140: ant.v1.MarketplaceService.GetTopStrategies:output_type -> ant.v1.TopStrategiesResponse
-	88,  // 141: ant.v1.MarketplaceService.GetTopProviders:output_type -> ant.v1.TopProvidersResponse
-	90,  // 142: ant.v1.MarketplaceService.ValidateCoupon:output_type -> ant.v1.ValidateCouponResponse
-	93,  // 143: ant.v1.MarketplaceService.CreateCoupon:output_type -> ant.v1.CreateCouponResponse
-	95,  // 144: ant.v1.MarketplaceService.ListCoupons:output_type -> ant.v1.ListCouponsResponse
-	97,  // 145: ant.v1.MarketplaceService.DisableCoupon:output_type -> ant.v1.DisableCouponResponse
-	98,  // 146: ant.v1.MarketplaceService.GetProviderEarnings:output_type -> ant.v1.ProviderEarnings
-	101, // 147: ant.v1.MarketplaceService.ListProviderTransactions:output_type -> ant.v1.ListProviderTransactionsResponse
-	104, // 148: ant.v1.MarketplaceService.DetectStrategyDecay:output_type -> ant.v1.DetectStrategyDecayResponse
-	107, // 149: ant.v1.MarketplaceService.ListOptimizationTasks:output_type -> ant.v1.ListOptimizationTasksResponse
-	109, // 150: ant.v1.MarketplaceService.GetOptimizationTask:output_type -> ant.v1.GetOptimizationTaskResponse
-	111, // 151: ant.v1.MarketplaceService.RejectOptimizationTask:output_type -> ant.v1.RejectOptimizationTaskResponse
-	113, // 152: ant.v1.MarketplaceService.PublishOptimization:output_type -> ant.v1.PublishOptimizationResponse
-	115, // 153: ant.v1.MarketplaceService.PreviewOptimization:output_type -> ant.v1.PreviewOptimizationResponse
-	117, // 154: ant.v1.MarketplaceService.CreateBundle:output_type -> ant.v1.CreateBundleResponse
-	121, // 155: ant.v1.MarketplaceService.ListBundles:output_type -> ant.v1.ListBundlesResponse
-	123, // 156: ant.v1.MarketplaceService.GetBundle:output_type -> ant.v1.GetBundleResponse
-	125, // 157: ant.v1.MarketplaceService.PurchaseBundle:output_type -> ant.v1.PurchaseBundleResponse
-	127, // 158: ant.v1.MarketplaceService.DeleteBundle:output_type -> ant.v1.DeleteBundleResponse
-	129, // 159: ant.v1.MarketplaceService.ListFeeTiers:output_type -> ant.v1.ListFeeTiersResponse
-	131, // 160: ant.v1.MarketplaceService.UpdateFeeTier:output_type -> ant.v1.UpdateFeeTierResponse
-	133, // 161: ant.v1.MarketplaceService.GetProviderFeeTier:output_type -> ant.v1.GetProviderFeeTierResponse
-	105, // [105:162] is the sub-list for method output_type
-	48,  // [48:105] is the sub-list for method input_type
+	134, // 97: ant.v1.MarketplaceService.InitiateStrategyIteration:input_type -> ant.v1.InitiateStrategyIterationRequest
+	116, // 98: ant.v1.MarketplaceService.CreateBundle:input_type -> ant.v1.CreateBundleRequest
+	118, // 99: ant.v1.MarketplaceService.ListBundles:input_type -> ant.v1.ListBundlesRequest
+	122, // 100: ant.v1.MarketplaceService.GetBundle:input_type -> ant.v1.GetBundleRequest
+	124, // 101: ant.v1.MarketplaceService.PurchaseBundle:input_type -> ant.v1.PurchaseBundleRequest
+	126, // 102: ant.v1.MarketplaceService.DeleteBundle:input_type -> ant.v1.DeleteBundleRequest
+	138, // 103: ant.v1.MarketplaceService.ListFeeTiers:input_type -> google.protobuf.Empty
+	130, // 104: ant.v1.MarketplaceService.UpdateFeeTier:input_type -> ant.v1.UpdateFeeTierRequest
+	132, // 105: ant.v1.MarketplaceService.GetProviderFeeTier:input_type -> ant.v1.GetProviderFeeTierRequest
+	2,   // 106: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	4,   // 107: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	6,   // 108: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	8,   // 109: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	10,  // 110: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	13,  // 111: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	16,  // 112: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	18,  // 113: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	21,  // 114: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	23,  // 115: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	26,  // 116: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	28,  // 117: ant.v1.MarketplaceService.UnpublishStrategy:output_type -> ant.v1.UnpublishMarketStrategyResponse
+	30,  // 118: ant.v1.MarketplaceService.GetPublisherStats:output_type -> ant.v1.GetPublisherStatsResponse
+	139, // 119: ant.v1.MarketplaceService.RunMarketBacktest:output_type -> ant.v1.BacktestRunUpdate
+	36,  // 120: ant.v1.MarketplaceService.GetLivePerformance:output_type -> ant.v1.GetLivePerformanceResponse
+	40,  // 121: ant.v1.MarketplaceService.LinkLiveAccount:output_type -> ant.v1.LinkLiveAccountResponse
+	42,  // 122: ant.v1.MarketplaceService.GenerateAndPublish:output_type -> ant.v1.GenerateAndPublishEvent
+	42,  // 123: ant.v1.MarketplaceService.GenerateFromTemplate:output_type -> ant.v1.GenerateAndPublishEvent
+	46,  // 124: ant.v1.MarketplaceService.ListStrategyTemplates:output_type -> ant.v1.ListStrategyTemplatesResponse
+	49,  // 125: ant.v1.MarketplaceService.ListAutoGenTasks:output_type -> ant.v1.ListAutoGenTasksResponse
+	52,  // 126: ant.v1.MarketplaceService.ApproveAutoGenTask:output_type -> ant.v1.ApproveAutoGenTaskResponse
+	54,  // 127: ant.v1.MarketplaceService.RejectAutoGenTask:output_type -> ant.v1.RejectAutoGenTaskResponse
+	56,  // 128: ant.v1.MarketplaceService.TriggerBatchGeneration:output_type -> ant.v1.TriggerBatchGenerationResponse
+	59,  // 129: ant.v1.MarketplaceService.ListLeaderboard:output_type -> ant.v1.ListLeaderboardResponse
+	61,  // 130: ant.v1.MarketplaceService.StartTrial:output_type -> ant.v1.StartTrialResponse
+	64,  // 131: ant.v1.MarketplaceService.CompareStrategies:output_type -> ant.v1.CompareStrategiesResponse
+	66,  // 132: ant.v1.MarketplaceService.GetStrategyPublicInfo:output_type -> ant.v1.GetStrategyPublicInfoResponse
+	68,  // 133: ant.v1.MarketplaceService.RequestVerification:output_type -> ant.v1.RequestVerificationResponse
+	70,  // 134: ant.v1.MarketplaceService.AdminProcessVerification:output_type -> ant.v1.AdminProcessVerificationResponse
+	73,  // 135: ant.v1.MarketplaceService.AdminListStrategies:output_type -> ant.v1.AdminListStrategiesResponse
+	75,  // 136: ant.v1.MarketplaceService.AdminFeatureStrategy:output_type -> ant.v1.AdminFeatureStrategyResponse
+	77,  // 137: ant.v1.MarketplaceService.RequestRefund:output_type -> ant.v1.RequestRefundResponse
+	80,  // 138: ant.v1.MarketplaceService.AdminListRefundRequests:output_type -> ant.v1.AdminListRefundRequestsResponse
+	82,  // 139: ant.v1.MarketplaceService.AdminProcessRefund:output_type -> ant.v1.AdminProcessRefundResponse
+	85,  // 140: ant.v1.MarketplaceService.GetMarketplaceAnalytics:output_type -> ant.v1.MarketplaceAnalytics
+	87,  // 141: ant.v1.MarketplaceService.GetTopStrategies:output_type -> ant.v1.TopStrategiesResponse
+	88,  // 142: ant.v1.MarketplaceService.GetTopProviders:output_type -> ant.v1.TopProvidersResponse
+	90,  // 143: ant.v1.MarketplaceService.ValidateCoupon:output_type -> ant.v1.ValidateCouponResponse
+	93,  // 144: ant.v1.MarketplaceService.CreateCoupon:output_type -> ant.v1.CreateCouponResponse
+	95,  // 145: ant.v1.MarketplaceService.ListCoupons:output_type -> ant.v1.ListCouponsResponse
+	97,  // 146: ant.v1.MarketplaceService.DisableCoupon:output_type -> ant.v1.DisableCouponResponse
+	98,  // 147: ant.v1.MarketplaceService.GetProviderEarnings:output_type -> ant.v1.ProviderEarnings
+	101, // 148: ant.v1.MarketplaceService.ListProviderTransactions:output_type -> ant.v1.ListProviderTransactionsResponse
+	104, // 149: ant.v1.MarketplaceService.DetectStrategyDecay:output_type -> ant.v1.DetectStrategyDecayResponse
+	107, // 150: ant.v1.MarketplaceService.ListOptimizationTasks:output_type -> ant.v1.ListOptimizationTasksResponse
+	109, // 151: ant.v1.MarketplaceService.GetOptimizationTask:output_type -> ant.v1.GetOptimizationTaskResponse
+	111, // 152: ant.v1.MarketplaceService.RejectOptimizationTask:output_type -> ant.v1.RejectOptimizationTaskResponse
+	113, // 153: ant.v1.MarketplaceService.PublishOptimization:output_type -> ant.v1.PublishOptimizationResponse
+	115, // 154: ant.v1.MarketplaceService.PreviewOptimization:output_type -> ant.v1.PreviewOptimizationResponse
+	135, // 155: ant.v1.MarketplaceService.InitiateStrategyIteration:output_type -> ant.v1.InitiateStrategyIterationResponse
+	117, // 156: ant.v1.MarketplaceService.CreateBundle:output_type -> ant.v1.CreateBundleResponse
+	121, // 157: ant.v1.MarketplaceService.ListBundles:output_type -> ant.v1.ListBundlesResponse
+	123, // 158: ant.v1.MarketplaceService.GetBundle:output_type -> ant.v1.GetBundleResponse
+	125, // 159: ant.v1.MarketplaceService.PurchaseBundle:output_type -> ant.v1.PurchaseBundleResponse
+	127, // 160: ant.v1.MarketplaceService.DeleteBundle:output_type -> ant.v1.DeleteBundleResponse
+	129, // 161: ant.v1.MarketplaceService.ListFeeTiers:output_type -> ant.v1.ListFeeTiersResponse
+	131, // 162: ant.v1.MarketplaceService.UpdateFeeTier:output_type -> ant.v1.UpdateFeeTierResponse
+	133, // 163: ant.v1.MarketplaceService.GetProviderFeeTier:output_type -> ant.v1.GetProviderFeeTierResponse
+	106, // [106:164] is the sub-list for method output_type
+	48,  // [48:106] is the sub-list for method input_type
 	48,  // [48:48] is the sub-list for extension type_name
 	48,  // [48:48] is the sub-list for extension extendee
 	0,   // [0:48] is the sub-list for field type_name
@@ -10496,7 +10612,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   134,
+			NumMessages:   136,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -20,25 +20,25 @@ import (
 // ── Stubs ──
 
 type stubMarketplaceSvc struct {
-	published      []marketplace.PublishedStrategy
-	ratings        []marketplace.RatingItem
-	avgRating      float64
-	rateCount      int32
-	comments       []marketplace.CommentItem
-	commentsTotal  int32
-	subs           []marketplace.SubscriptionItem
-	publishID      string
-	err            error
-	rateErr        error
-	commentErr     error
-	subscribeErr   error
-	unsubscribeErr error
-	purchaseErr    error
-	unpublishErr   error
+	published         []marketplace.PublishedStrategy
+	ratings           []marketplace.RatingItem
+	avgRating         float64
+	rateCount         int32
+	comments          []marketplace.CommentItem
+	commentsTotal     int32
+	subs              []marketplace.SubscriptionItem
+	publishID         string
+	err               error
+	rateErr           error
+	commentErr        error
+	subscribeErr      error
+	unsubscribeErr    error
+	purchaseErr       error
+	unpublishErr      error
 	publisherStatsErr error
-	setPricingErr  error
-	purchaseResult *marketplace.PurchaseResult
-	publisherStats *marketplace.PublisherStats
+	setPricingErr     error
+	purchaseResult    *marketplace.PurchaseResult
+	publisherStats    *marketplace.PublisherStats
 }
 
 func (s *stubMarketplaceSvc) Publish(_ context.Context, _ marketplace.PublishParams) (string, error) {
@@ -234,6 +234,9 @@ func (s *stubMarketplaceSvc) PublishOptimization(_ context.Context, _, _ string)
 }
 func (s *stubMarketplaceSvc) PreviewOptimization(_ context.Context, _, _ string) (*marketplace.PreviewOptimizationResult, error) {
 	return nil, s.err
+}
+func (s *stubMarketplaceSvc) InitiateStrategyIteration(_ context.Context, _, _ string) (string, error) {
+	return "", s.err
 }
 func (s *stubMarketplaceSvc) CreateBundle(_ context.Context, _, _, _, _, _ string, _ []string, _ string) (string, error) {
 	return "", s.err
@@ -729,5 +732,58 @@ func TestParseDecimal_Empty(t *testing.T) {
 	d := parseDecimal("")
 	if !d.IsZero() {
 		t.Errorf("expected zero for empty input, got %s", d.String())
+	}
+}
+
+// Adversarial proof: InitiateStrategyIteration requires authentication.
+// Remove the auth check and this test fails red.
+func TestInitiateStrategyIteration_Unauthenticated(t *testing.T) {
+	t.Parallel()
+	h := testMarketplaceHandler(&stubMarketplaceSvc{})
+	_, err := h.InitiateStrategyIteration(context.Background(), connect.NewRequest(&antv1.InitiateStrategyIterationRequest{}))
+	ce, ok := err.(*connect.Error)
+	if !ok || ce.Code() != connect.CodeUnauthenticated {
+		t.Fatalf("expected CodeUnauthenticated, got %v", err)
+	}
+}
+
+// Adversarial proof: not-owner returns PermissionDenied.
+func TestInitiateStrategyIteration_NotOwner(t *testing.T) {
+	t.Parallel()
+	svc := &stubMarketplaceSvc{err: errors.New("marketplace: initiate iteration: not the strategy owner")}
+	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "u1")
+	_, err := h.InitiateStrategyIteration(ctx, connect.NewRequest(&antv1.InitiateStrategyIterationRequest{StrategyId: "s1"}))
+	ce, ok := err.(*connect.Error)
+	if !ok || ce.Code() != connect.CodePermissionDenied {
+		t.Fatalf("expected CodePermissionDenied, got %v", err)
+	}
+}
+
+// Adversarial proof: strategy not found returns NotFound.
+func TestInitiateStrategyIteration_NotFound(t *testing.T) {
+	t.Parallel()
+	svc := &stubMarketplaceSvc{err: errors.New("marketplace: initiate iteration: strategy not found: sql: no rows")}
+	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "u1")
+	_, err := h.InitiateStrategyIteration(ctx, connect.NewRequest(&antv1.InitiateStrategyIterationRequest{StrategyId: "s1"}))
+	ce, ok := err.(*connect.Error)
+	if !ok || ce.Code() != connect.CodeNotFound {
+		t.Fatalf("expected CodeNotFound, got %v", err)
+	}
+}
+
+// Adversarial proof: success returns task_id + success=true.
+func TestInitiateStrategyIteration_Success(t *testing.T) {
+	t.Parallel()
+	svc := &stubMarketplaceSvc{}
+	h := testMarketplaceHandler(svc)
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, "u1")
+	resp, err := h.InitiateStrategyIteration(ctx, connect.NewRequest(&antv1.InitiateStrategyIterationRequest{StrategyId: "s1"}))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !resp.Msg.Success {
+		t.Fatal("expected success=true")
 	}
 }

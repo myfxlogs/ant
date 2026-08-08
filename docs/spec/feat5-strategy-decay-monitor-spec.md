@@ -2,7 +2,17 @@
 
 > **决策来源**：2026-08-10 产品讨论。原 FEAT-5「AI 自动迭代闭环」**重新定义**为「衰减监控(免费) + 透明徽章 + 作者发起迭代(计费)」。**不做自动迭代、不做退款**。
 > **关联**：registry FEAT-5、`decay_detector.go`（已有）、ADR-0028 §5.4「诊断免费 / 修复收费」、ARCH-4⑥ 成交归因（衰减数据源）。
-> **状态**：🏗 待施工。**日期**：2026-08-10
+> **状态**：✅ 已实现。**日期**：2026-08-10
+>
+> **实现摘要**：
+> - Step 1: `decay_monitor.go` — push-first `trade_record_sync` pg_notify → 节流(每策略/天) → `DetectDecay` → 更新 status → 通知；启动全量 `DetectDecayBatch`
+> - Step 2: migration 267 — `marketplace_strategies` 加 `decay_status`(none|decaying|decayed) + `last_decay_at`
+> - Step 3: `decay_notifications.go` — 作者收 "decay_detected"，买家收 "subscribed_strategy_decay"（复用 `notifSender.Send`）
+> - Step 4: `PublishedStrategy.decay_status` proto field 27 + `ListPublished` 查询/映射；`fetchStrategyForPurchase` 拦截 decayed 新购
+> - Step 5: 移除 `DetectStrategyDecay` handler auto-create + `CreateOptimizationTask` auto-start；新增 `InitiateStrategyIteration` RPC + `Service.InitiateStrategyIteration`（作者手动发起 → credit-billed AI generation）
+> - Step 6: 复用已有 `PublishOptimization` + `notifyVersionUpdate`（版本快照 + 订阅买家通知已存在）
+> - Step 7: 对抗证明 7 测试绿（throttle/auth/owner/notfound/success）
+> - `go build`✅ + `go test`✅ + `check-file-lines` 0🔴✅
 
 ---
 

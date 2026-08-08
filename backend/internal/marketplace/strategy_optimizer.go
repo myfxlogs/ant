@@ -11,10 +11,11 @@ import (
 	"fmt"
 	"time"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
+
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
-	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
 // OptimizationTask represents a strategy optimization task row.
@@ -65,11 +66,11 @@ func (s *Service) CreateOptimizationTask(ctx context.Context, strategyID, publis
 	var decayMetricsBytes []byte
 	if decayResult != nil {
 		dm := &antv1.DecayMetrics{
-			DecayScore:       decayResult.DecayScore,
-			SharpeDeclinePct: decayResult.SharpeDeclinePct.String(),
+			DecayScore:        decayResult.DecayScore,
+			SharpeDeclinePct:  decayResult.SharpeDeclinePct.String(),
 			WinrateDeclinePct: decayResult.WinRateDeclinePct.String(),
-			ReturnDelta:      decayResult.ReturnDelta.String(),
-			TriggerReason:    decayResult.TriggerReason,
+			ReturnDelta:       decayResult.ReturnDelta.String(),
+			TriggerReason:     decayResult.TriggerReason,
 		}
 		var err2 error
 		decayMetricsBytes, err2 = proto.Marshal(dm)
@@ -99,12 +100,72 @@ func (s *Service) CreateOptimizationTask(ctx context.Context, strategyID, publis
 		}()
 	}
 
-	// Start the AI optimization worker in the background if an optimizer is wired.
-	if s.optimizer != nil {
-		go s.runOptimizationGeneration(context.WithoutCancel(ctx), id, pid)
-	}
+	// FEAT-5: No auto-start of AI generation. Author must explicitly call
+	// InitiateStrategyIteration RPC to trigger credit-billed AI optimization.
+	// Manual code edits remain free via the existing version update path.
 
 	return id.String(), nil
+}
+
+// InitiateStrategyIteration is the author-initiated entry point for AI iteration.
+// It creates an optimization task (if one doesn't already exist for this strategy
+// in pending/completed state), then starts credit-billed AI generation.
+// The author's credits are billed via PreHold/Settle through the credit service.
+func (s *Service) InitiateStrategyIteration(ctx context.Context, strategyID, publisherID string) (string, error) {
+	sid, err := uuid.Parse(strategyID)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: initiate iteration: invalid strategy_id: %w", err)
+	}
+	pid, err := uuid.Parse(publisherID)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: initiate iteration: invalid publisher_id: %w", err)
+	}
+
+	// Verify ownership.
+	var ownerID uuid.UUID
+	err = s.pg.QueryRow(ctx,
+		`SELECT publisher_id FROM marketplace_strategies WHERE strategy_id = $1`,
+		sid,
+	).Scan(&ownerID)
+	if err != nil {
+		return "", fmt.Errorf("marketplace: initiate iteration: strategy not found: %w", err)
+	}
+	if ownerID != pid {
+		return "", fmt.Errorf("marketplace: initiate iteration: not the strategy owner")
+	}
+
+	// Check for existing pending task for this strategy to avoid duplicates.
+	var existingTaskID string
+	_ = s.pg.QueryRow(ctx,
+		`SELECT id::text FROM marketplace_strategy_optimization_tasks
+		 WHERE strategy_id = $1 AND publisher_id = $2 AND status IN ('pending', 'generating')
+		 ORDER BY created_at DESC LIMIT 1`,
+		sid, pid,
+	).Scan(&existingTaskID)
+
+	var taskID string
+	if existingTaskID != "" {
+		taskID = existingTaskID
+	} else {
+		// Create a new task with trigger_reason "author_initiated".
+		id := uuid.New()
+		_, err = s.pg.Exec(ctx,
+			`INSERT INTO marketplace_strategy_optimization_tasks
+			   (id, strategy_id, publisher_id, status, trigger_reason)
+			 VALUES ($1, $2, $3, 'pending', 'author_initiated')`,
+			id, sid, pid,
+		)
+		if err != nil {
+			return "", fmt.Errorf("marketplace: initiate iteration: create task: %w", err)
+		}
+		taskID = id.String()
+	}
+
+	// Start credit-billed AI generation in background.
+	tid, _ := uuid.Parse(taskID)
+	go s.runOptimizationGeneration(context.WithoutCancel(ctx), tid, pid)
+
+	return taskID, nil
 }
 
 // ListOptimizationTasks returns optimization tasks for a publisher.

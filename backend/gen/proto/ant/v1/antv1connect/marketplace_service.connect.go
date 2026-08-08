@@ -181,6 +181,9 @@ const (
 	// MarketplaceServicePreviewOptimizationProcedure is the fully-qualified name of the
 	// MarketplaceService's PreviewOptimization RPC.
 	MarketplaceServicePreviewOptimizationProcedure = "/ant.v1.MarketplaceService/PreviewOptimization"
+	// MarketplaceServiceInitiateStrategyIterationProcedure is the fully-qualified name of the
+	// MarketplaceService's InitiateStrategyIteration RPC.
+	MarketplaceServiceInitiateStrategyIterationProcedure = "/ant.v1.MarketplaceService/InitiateStrategyIteration"
 	// MarketplaceServiceCreateBundleProcedure is the fully-qualified name of the MarketplaceService's
 	// CreateBundle RPC.
 	MarketplaceServiceCreateBundleProcedure = "/ant.v1.MarketplaceService/CreateBundle"
@@ -285,6 +288,8 @@ type MarketplaceServiceClient interface {
 	RejectOptimizationTask(context.Context, *connect.Request[v1.RejectOptimizationTaskRequest]) (*connect.Response[v1.RejectOptimizationTaskResponse], error)
 	PublishOptimization(context.Context, *connect.Request[v1.PublishOptimizationRequest]) (*connect.Response[v1.PublishOptimizationResponse], error)
 	PreviewOptimization(context.Context, *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error)
+	// Phase 5.1b: Author-initiated AI iteration (credit-billed, no auto-trigger).
+	InitiateStrategyIteration(context.Context, *connect.Request[v1.InitiateStrategyIterationRequest]) (*connect.Response[v1.InitiateStrategyIterationResponse], error)
 	// Phase 5.2: Strategy bundles.
 	CreateBundle(context.Context, *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error)
 	ListBundles(context.Context, *connect.Request[v1.ListBundlesRequest]) (*connect.Response[v1.ListBundlesResponse], error)
@@ -602,6 +607,12 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("PreviewOptimization")),
 			connect.WithClientOptions(opts...),
 		),
+		initiateStrategyIteration: connect.NewClient[v1.InitiateStrategyIterationRequest, v1.InitiateStrategyIterationResponse](
+			httpClient,
+			baseURL+MarketplaceServiceInitiateStrategyIterationProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("InitiateStrategyIteration")),
+			connect.WithClientOptions(opts...),
+		),
 		createBundle: connect.NewClient[v1.CreateBundleRequest, v1.CreateBundleResponse](
 			httpClient,
 			baseURL+MarketplaceServiceCreateBundleProcedure,
@@ -655,63 +666,64 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 
 // marketplaceServiceClient implements MarketplaceServiceClient.
 type marketplaceServiceClient struct {
-	publishStrategy          *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
-	subscribe                *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
-	unsubscribe              *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
-	purchaseStrategy         *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
-	listPublished            *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
-	listSubscriptions        *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
-	rateStrategy             *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
-	listRatings              *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
-	commentOnStrategy        *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
-	listComments             *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
-	setStrategyPricing       *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
-	unpublishStrategy        *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
-	getPublisherStats        *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
-	runMarketBacktest        *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
-	getLivePerformance       *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
-	linkLiveAccount          *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
-	generateAndPublish       *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
-	generateFromTemplate     *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
-	listStrategyTemplates    *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
-	listAutoGenTasks         *connect.Client[v1.ListAutoGenTasksRequest, v1.ListAutoGenTasksResponse]
-	approveAutoGenTask       *connect.Client[v1.ApproveAutoGenTaskRequest, v1.ApproveAutoGenTaskResponse]
-	rejectAutoGenTask        *connect.Client[v1.RejectAutoGenTaskRequest, v1.RejectAutoGenTaskResponse]
-	triggerBatchGeneration   *connect.Client[v1.TriggerBatchGenerationRequest, v1.TriggerBatchGenerationResponse]
-	listLeaderboard          *connect.Client[v1.ListLeaderboardRequest, v1.ListLeaderboardResponse]
-	startTrial               *connect.Client[v1.StartTrialRequest, v1.StartTrialResponse]
-	compareStrategies        *connect.Client[v1.CompareStrategiesRequest, v1.CompareStrategiesResponse]
-	getStrategyPublicInfo    *connect.Client[v1.GetStrategyPublicInfoRequest, v1.GetStrategyPublicInfoResponse]
-	requestVerification      *connect.Client[v1.RequestVerificationRequest, v1.RequestVerificationResponse]
-	adminProcessVerification *connect.Client[v1.AdminProcessVerificationRequest, v1.AdminProcessVerificationResponse]
-	adminListStrategies      *connect.Client[v1.AdminListStrategiesRequest, v1.AdminListStrategiesResponse]
-	adminFeatureStrategy     *connect.Client[v1.AdminFeatureStrategyRequest, v1.AdminFeatureStrategyResponse]
-	requestRefund            *connect.Client[v1.RequestRefundRequest, v1.RequestRefundResponse]
-	adminListRefundRequests  *connect.Client[v1.AdminListRefundRequestsRequest, v1.AdminListRefundRequestsResponse]
-	adminProcessRefund       *connect.Client[v1.AdminProcessRefundRequest, v1.AdminProcessRefundResponse]
-	getMarketplaceAnalytics  *connect.Client[v1.GetMarketplaceAnalyticsRequest, v1.MarketplaceAnalytics]
-	getTopStrategies         *connect.Client[emptypb.Empty, v1.TopStrategiesResponse]
-	getTopProviders          *connect.Client[emptypb.Empty, v1.TopProvidersResponse]
-	validateCoupon           *connect.Client[v1.ValidateCouponRequest, v1.ValidateCouponResponse]
-	createCoupon             *connect.Client[v1.CreateCouponRequest, v1.CreateCouponResponse]
-	listCoupons              *connect.Client[v1.ListCouponsRequest, v1.ListCouponsResponse]
-	disableCoupon            *connect.Client[v1.DisableCouponRequest, v1.DisableCouponResponse]
-	getProviderEarnings      *connect.Client[emptypb.Empty, v1.ProviderEarnings]
-	listProviderTransactions *connect.Client[v1.ListProviderTransactionsRequest, v1.ListProviderTransactionsResponse]
-	detectStrategyDecay      *connect.Client[v1.DetectStrategyDecayRequest, v1.DetectStrategyDecayResponse]
-	listOptimizationTasks    *connect.Client[v1.ListOptimizationTasksRequest, v1.ListOptimizationTasksResponse]
-	getOptimizationTask      *connect.Client[v1.GetOptimizationTaskRequest, v1.GetOptimizationTaskResponse]
-	rejectOptimizationTask   *connect.Client[v1.RejectOptimizationTaskRequest, v1.RejectOptimizationTaskResponse]
-	publishOptimization      *connect.Client[v1.PublishOptimizationRequest, v1.PublishOptimizationResponse]
-	previewOptimization      *connect.Client[v1.PreviewOptimizationRequest, v1.PreviewOptimizationResponse]
-	createBundle             *connect.Client[v1.CreateBundleRequest, v1.CreateBundleResponse]
-	listBundles              *connect.Client[v1.ListBundlesRequest, v1.ListBundlesResponse]
-	getBundle                *connect.Client[v1.GetBundleRequest, v1.GetBundleResponse]
-	purchaseBundle           *connect.Client[v1.PurchaseBundleRequest, v1.PurchaseBundleResponse]
-	deleteBundle             *connect.Client[v1.DeleteBundleRequest, v1.DeleteBundleResponse]
-	listFeeTiers             *connect.Client[emptypb.Empty, v1.ListFeeTiersResponse]
-	updateFeeTier            *connect.Client[v1.UpdateFeeTierRequest, v1.UpdateFeeTierResponse]
-	getProviderFeeTier       *connect.Client[v1.GetProviderFeeTierRequest, v1.GetProviderFeeTierResponse]
+	publishStrategy           *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
+	subscribe                 *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
+	unsubscribe               *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
+	purchaseStrategy          *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
+	listPublished             *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
+	listSubscriptions         *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
+	rateStrategy              *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
+	listRatings               *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
+	commentOnStrategy         *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
+	listComments              *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
+	setStrategyPricing        *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
+	unpublishStrategy         *connect.Client[v1.UnpublishMarketStrategyRequest, v1.UnpublishMarketStrategyResponse]
+	getPublisherStats         *connect.Client[v1.GetPublisherStatsRequest, v1.GetPublisherStatsResponse]
+	runMarketBacktest         *connect.Client[v1.RunMarketBacktestRequest, v1.BacktestRunUpdate]
+	getLivePerformance        *connect.Client[v1.GetLivePerformanceRequest, v1.GetLivePerformanceResponse]
+	linkLiveAccount           *connect.Client[v1.LinkLiveAccountRequest, v1.LinkLiveAccountResponse]
+	generateAndPublish        *connect.Client[v1.GenerateAndPublishRequest, v1.GenerateAndPublishEvent]
+	generateFromTemplate      *connect.Client[v1.GenerateFromTemplateRequest, v1.GenerateAndPublishEvent]
+	listStrategyTemplates     *connect.Client[v1.ListStrategyTemplatesRequest, v1.ListStrategyTemplatesResponse]
+	listAutoGenTasks          *connect.Client[v1.ListAutoGenTasksRequest, v1.ListAutoGenTasksResponse]
+	approveAutoGenTask        *connect.Client[v1.ApproveAutoGenTaskRequest, v1.ApproveAutoGenTaskResponse]
+	rejectAutoGenTask         *connect.Client[v1.RejectAutoGenTaskRequest, v1.RejectAutoGenTaskResponse]
+	triggerBatchGeneration    *connect.Client[v1.TriggerBatchGenerationRequest, v1.TriggerBatchGenerationResponse]
+	listLeaderboard           *connect.Client[v1.ListLeaderboardRequest, v1.ListLeaderboardResponse]
+	startTrial                *connect.Client[v1.StartTrialRequest, v1.StartTrialResponse]
+	compareStrategies         *connect.Client[v1.CompareStrategiesRequest, v1.CompareStrategiesResponse]
+	getStrategyPublicInfo     *connect.Client[v1.GetStrategyPublicInfoRequest, v1.GetStrategyPublicInfoResponse]
+	requestVerification       *connect.Client[v1.RequestVerificationRequest, v1.RequestVerificationResponse]
+	adminProcessVerification  *connect.Client[v1.AdminProcessVerificationRequest, v1.AdminProcessVerificationResponse]
+	adminListStrategies       *connect.Client[v1.AdminListStrategiesRequest, v1.AdminListStrategiesResponse]
+	adminFeatureStrategy      *connect.Client[v1.AdminFeatureStrategyRequest, v1.AdminFeatureStrategyResponse]
+	requestRefund             *connect.Client[v1.RequestRefundRequest, v1.RequestRefundResponse]
+	adminListRefundRequests   *connect.Client[v1.AdminListRefundRequestsRequest, v1.AdminListRefundRequestsResponse]
+	adminProcessRefund        *connect.Client[v1.AdminProcessRefundRequest, v1.AdminProcessRefundResponse]
+	getMarketplaceAnalytics   *connect.Client[v1.GetMarketplaceAnalyticsRequest, v1.MarketplaceAnalytics]
+	getTopStrategies          *connect.Client[emptypb.Empty, v1.TopStrategiesResponse]
+	getTopProviders           *connect.Client[emptypb.Empty, v1.TopProvidersResponse]
+	validateCoupon            *connect.Client[v1.ValidateCouponRequest, v1.ValidateCouponResponse]
+	createCoupon              *connect.Client[v1.CreateCouponRequest, v1.CreateCouponResponse]
+	listCoupons               *connect.Client[v1.ListCouponsRequest, v1.ListCouponsResponse]
+	disableCoupon             *connect.Client[v1.DisableCouponRequest, v1.DisableCouponResponse]
+	getProviderEarnings       *connect.Client[emptypb.Empty, v1.ProviderEarnings]
+	listProviderTransactions  *connect.Client[v1.ListProviderTransactionsRequest, v1.ListProviderTransactionsResponse]
+	detectStrategyDecay       *connect.Client[v1.DetectStrategyDecayRequest, v1.DetectStrategyDecayResponse]
+	listOptimizationTasks     *connect.Client[v1.ListOptimizationTasksRequest, v1.ListOptimizationTasksResponse]
+	getOptimizationTask       *connect.Client[v1.GetOptimizationTaskRequest, v1.GetOptimizationTaskResponse]
+	rejectOptimizationTask    *connect.Client[v1.RejectOptimizationTaskRequest, v1.RejectOptimizationTaskResponse]
+	publishOptimization       *connect.Client[v1.PublishOptimizationRequest, v1.PublishOptimizationResponse]
+	previewOptimization       *connect.Client[v1.PreviewOptimizationRequest, v1.PreviewOptimizationResponse]
+	initiateStrategyIteration *connect.Client[v1.InitiateStrategyIterationRequest, v1.InitiateStrategyIterationResponse]
+	createBundle              *connect.Client[v1.CreateBundleRequest, v1.CreateBundleResponse]
+	listBundles               *connect.Client[v1.ListBundlesRequest, v1.ListBundlesResponse]
+	getBundle                 *connect.Client[v1.GetBundleRequest, v1.GetBundleResponse]
+	purchaseBundle            *connect.Client[v1.PurchaseBundleRequest, v1.PurchaseBundleResponse]
+	deleteBundle              *connect.Client[v1.DeleteBundleRequest, v1.DeleteBundleResponse]
+	listFeeTiers              *connect.Client[emptypb.Empty, v1.ListFeeTiersResponse]
+	updateFeeTier             *connect.Client[v1.UpdateFeeTierRequest, v1.UpdateFeeTierResponse]
+	getProviderFeeTier        *connect.Client[v1.GetProviderFeeTierRequest, v1.GetProviderFeeTierResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -959,6 +971,11 @@ func (c *marketplaceServiceClient) PreviewOptimization(ctx context.Context, req 
 	return c.previewOptimization.CallUnary(ctx, req)
 }
 
+// InitiateStrategyIteration calls ant.v1.MarketplaceService.InitiateStrategyIteration.
+func (c *marketplaceServiceClient) InitiateStrategyIteration(ctx context.Context, req *connect.Request[v1.InitiateStrategyIterationRequest]) (*connect.Response[v1.InitiateStrategyIterationResponse], error) {
+	return c.initiateStrategyIteration.CallUnary(ctx, req)
+}
+
 // CreateBundle calls ant.v1.MarketplaceService.CreateBundle.
 func (c *marketplaceServiceClient) CreateBundle(ctx context.Context, req *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error) {
 	return c.createBundle.CallUnary(ctx, req)
@@ -1077,6 +1094,8 @@ type MarketplaceServiceHandler interface {
 	RejectOptimizationTask(context.Context, *connect.Request[v1.RejectOptimizationTaskRequest]) (*connect.Response[v1.RejectOptimizationTaskResponse], error)
 	PublishOptimization(context.Context, *connect.Request[v1.PublishOptimizationRequest]) (*connect.Response[v1.PublishOptimizationResponse], error)
 	PreviewOptimization(context.Context, *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error)
+	// Phase 5.1b: Author-initiated AI iteration (credit-billed, no auto-trigger).
+	InitiateStrategyIteration(context.Context, *connect.Request[v1.InitiateStrategyIterationRequest]) (*connect.Response[v1.InitiateStrategyIterationResponse], error)
 	// Phase 5.2: Strategy bundles.
 	CreateBundle(context.Context, *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error)
 	ListBundles(context.Context, *connect.Request[v1.ListBundlesRequest]) (*connect.Response[v1.ListBundlesResponse], error)
@@ -1390,6 +1409,12 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("PreviewOptimization")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceInitiateStrategyIterationHandler := connect.NewUnaryHandler(
+		MarketplaceServiceInitiateStrategyIterationProcedure,
+		svc.InitiateStrategyIteration,
+		connect.WithSchema(marketplaceServiceMethods.ByName("InitiateStrategyIteration")),
+		connect.WithHandlerOptions(opts...),
+	)
 	marketplaceServiceCreateBundleHandler := connect.NewUnaryHandler(
 		MarketplaceServiceCreateBundleProcedure,
 		svc.CreateBundle,
@@ -1538,6 +1563,8 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServicePublishOptimizationHandler.ServeHTTP(w, r)
 		case MarketplaceServicePreviewOptimizationProcedure:
 			marketplaceServicePreviewOptimizationHandler.ServeHTTP(w, r)
+		case MarketplaceServiceInitiateStrategyIterationProcedure:
+			marketplaceServiceInitiateStrategyIterationHandler.ServeHTTP(w, r)
 		case MarketplaceServiceCreateBundleProcedure:
 			marketplaceServiceCreateBundleHandler.ServeHTTP(w, r)
 		case MarketplaceServiceListBundlesProcedure:
@@ -1757,6 +1784,10 @@ func (UnimplementedMarketplaceServiceHandler) PublishOptimization(context.Contex
 
 func (UnimplementedMarketplaceServiceHandler) PreviewOptimization(context.Context, *connect.Request[v1.PreviewOptimizationRequest]) (*connect.Response[v1.PreviewOptimizationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.PreviewOptimization is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) InitiateStrategyIteration(context.Context, *connect.Request[v1.InitiateStrategyIterationRequest]) (*connect.Response[v1.InitiateStrategyIterationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.InitiateStrategyIteration is not implemented"))
 }
 
 func (UnimplementedMarketplaceServiceHandler) CreateBundle(context.Context, *connect.Request[v1.CreateBundleRequest]) (*connect.Response[v1.CreateBundleResponse], error) {

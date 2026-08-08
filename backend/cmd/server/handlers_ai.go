@@ -186,6 +186,7 @@ func wireAgentGateway(p aiServicesParams, pool *pgxpool.Pool, aiSvc *systemai.Se
 	if agentGateway.Generator() != nil {
 		p.MktplaceSvc.SetOptimizer(agentGateway.Generator())
 	}
+	p.MktplaceSvc.SetCreditService(creditSvc)
 
 	if pool != nil && agentGateway.HookEngine() != nil {
 		if err := admin.LoadHookConfigsFromDB(ctx, pool, agentGateway.HookEngine()); err != nil {

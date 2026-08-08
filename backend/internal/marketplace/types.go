@@ -27,6 +27,7 @@ type Service struct {
 	pubCache          *publishedCache
 	notifSender       *notification.Sender
 	optimizer         codeOptimizer
+	creditSvc         CreditService
 }
 
 // SystemUserID is the designated platform system account for fee collection.
@@ -55,14 +56,28 @@ func (s *Service) SetNotificationSender(ns *notification.Sender) {
 	s.notifSender = ns
 }
 
-// SetOptimizer injects the AI strategy generator for auto-optimization.
+// SetOptimizer injects the AI strategy generator for optimization.
 func (s *Service) SetOptimizer(o codeOptimizer) {
 	s.optimizer = o
 }
 
-// codeOptimizer is the AI strategy generator used for automatic optimization.
+// SetCreditService injects the credit service for author-initiated AI iteration billing.
+func (s *Service) SetCreditService(cs CreditService) {
+	s.creditSvc = cs
+}
+
+// codeOptimizer is the AI strategy generator used for optimization.
 type codeOptimizer interface {
 	Generate(ctx context.Context, userID uuid.UUID, msg *antv1.AgentGenerateStrategyRequest, stream func(*antv1.AgentGenerateStrategyChunk) error) error
+}
+
+// CreditService is the interface for AI credit billing (PreHold + Settle).
+// Used for author-initiated AI iteration: agent generation bills the author's credits.
+type CreditService interface {
+	PreHold(ctx context.Context, userID uuid.UUID, sessionID string, providerID, modelName string) error
+	Settle(ctx context.Context, userID uuid.UUID, sessionID, providerID, modelName string, inputTokens, outputTokens int) error
+	ReleaseHold(ctx context.Context, userID uuid.UUID, sessionID string) error
+	CheckBalance(ctx context.Context, userID uuid.UUID, minCredits decimal.Decimal) error
 }
 
 // GetPlatformFeeRate reads the marketplace platform fee rate from system_config.
@@ -205,6 +220,7 @@ type PublishedStrategy struct {
 	ProviderVerified      bool                    // provider identity verified
 	ProviderType          string                  // human | ai | hybrid
 	Disclaimer            string                  // risk disclaimer
+	DecayStatus           string                  // none | decaying | decayed
 }
 
 // BacktestRunSnapshot is a lightweight read of a single backtest_runs row.

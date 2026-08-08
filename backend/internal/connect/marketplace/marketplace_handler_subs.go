@@ -257,6 +257,7 @@ func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Requ
 		item.ProviderVerified = p.ProviderVerified
 		item.ProviderType = p.ProviderType
 		item.Disclaimer = p.Disclaimer
+		item.DecayStatus = p.DecayStatus
 		resp.Strategies = append(resp.Strategies, item)
 	}
 	return connect.NewResponse(resp), nil

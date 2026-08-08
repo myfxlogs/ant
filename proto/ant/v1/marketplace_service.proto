@@ -83,6 +83,8 @@ service MarketplaceService {
   rpc RejectOptimizationTask(RejectOptimizationTaskRequest) returns (RejectOptimizationTaskResponse);
   rpc PublishOptimization(PublishOptimizationRequest) returns (PublishOptimizationResponse);
   rpc PreviewOptimization(PreviewOptimizationRequest) returns (PreviewOptimizationResponse);
+  // Phase 5.1b: Author-initiated AI iteration (credit-billed, no auto-trigger).
+  rpc InitiateStrategyIteration(InitiateStrategyIterationRequest) returns (InitiateStrategyIterationResponse);
   // Phase 5.2: Strategy bundles.
   rpc CreateBundle(CreateBundleRequest) returns (CreateBundleResponse);
   rpc ListBundles(ListBundlesRequest) returns (ListBundlesResponse);
@@ -214,6 +216,7 @@ message PublishedStrategy {
   bool provider_verified = 24;     // provider identity verified badge
   string provider_type = 25;       // human | ai | hybrid
   string disclaimer = 26;          // risk disclaimer shown to buyers
+  string decay_status = 27;        // none | decaying | decayed (marketplace badge)
 }
 
 message ListSubscriptionsRequest {
@@ -1109,4 +1112,15 @@ message GetProviderFeeTierResponse {
   int32 min_sales_count = 3;
   int32 current_sales = 4;
   int32 next_tier_min_sales = 5;
+}
+
+// ── Phase 5.1b: Author-initiated AI iteration ────────────────────────────────
+
+message InitiateStrategyIterationRequest {
+  string strategy_id = 1;
+}
+
+message InitiateStrategyIterationResponse {
+  string task_id = 1;
+  bool success = 2;
 }

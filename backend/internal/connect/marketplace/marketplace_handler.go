@@ -67,6 +67,7 @@ type marketplaceSvc interface {
 	RejectOptimizationTask(ctx context.Context, taskID, publisherID string) error
 	PublishOptimization(ctx context.Context, taskID, publisherID string) (string, error)
 	PreviewOptimization(ctx context.Context, taskID, publisherID string) (*marketplace.PreviewOptimizationResult, error)
+	InitiateStrategyIteration(ctx context.Context, strategyID, publisherID string) (string, error)
 	CreateBundle(ctx context.Context, publisherID, title, description, priceModel, priceAmount string, strategyIDs []string, platformFeeRate string) (string, error)
 	ListBundles(ctx context.Context, publisherID string, limit, offset int) ([]marketplace.Bundle, int, error)
 	GetBundle(ctx context.Context, bundleID string) (*marketplace.Bundle, error)

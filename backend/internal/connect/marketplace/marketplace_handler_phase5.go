@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"connectrpc.com/connect"
 	"github.com/shopspring/decimal"
@@ -30,25 +31,20 @@ func (s *MarketplaceServer) DetectStrategyDecay(
 	}
 
 	resp := &antv1.DetectStrategyDecayResponse{
-		IsDecaying:      result.IsDecaying,
-		DecayScore:      result.DecayScore,
-		TriggerReason:   result.TriggerReason,
-		BaselineSharpe:  decPtrToStr(result.BaselineSharpe),
-		BaselineWinRate: decPtrToStr(result.BaselineWinRate),
-		RecentSharpe:    decPtrToStr(result.RecentSharpe),
-		RecentWinRate:   decPtrToStr(result.RecentWinRate),
-		SharpeDeclinePct: result.SharpeDeclinePct.String(),
+		IsDecaying:        result.IsDecaying,
+		DecayScore:        result.DecayScore,
+		TriggerReason:     result.TriggerReason,
+		BaselineSharpe:    decPtrToStr(result.BaselineSharpe),
+		BaselineWinRate:   decPtrToStr(result.BaselineWinRate),
+		RecentSharpe:      decPtrToStr(result.RecentSharpe),
+		RecentWinRate:     decPtrToStr(result.RecentWinRate),
+		SharpeDeclinePct:  result.SharpeDeclinePct.String(),
 		WinrateDeclinePct: result.WinRateDeclinePct.String(),
 	}
 
-	// If decay is detected, auto-create an optimization task.
-	// CreateOptimizationTask validates ownership internally; non-owners get the
-	// decay result but no task is created (ownership error is expected).
-	if result.IsDecaying {
-		if _, err := s.svc.CreateOptimizationTask(ctx, req.Msg.GetStrategyId(), userID, "decay_detected", result); err != nil {
-			s.log.Debug("detect decay: auto-create optimization task", zap.String("strategy_id", req.Msg.GetStrategyId()), zap.Error(err))
-		}
-	}
+	// FEAT-5: No auto-create optimization task. Author must manually initiate
+	// iteration via InitiateStrategyIteration RPC. Decay detection is free
+	// diagnosis; AI iteration is credit-billed and author-initiated only.
 
 	return connect.NewResponse(resp), nil
 }
@@ -115,8 +111,8 @@ func (s *MarketplaceServer) GetOptimizationTask(
 			ChangeSummary: t.ChangeSummary,
 			CreatedAtMs:   t.CreatedAt.UnixMilli(),
 		},
-		SuggestedCode:   t.SuggestedCode,
-		SuggestedParams: t.SuggestedParams,
+		SuggestedCode:    t.SuggestedCode,
+		SuggestedParams:  t.SuggestedParams,
 		BacktestSnapshot: t.BacktestSnapshot,
 	}
 	if len(t.DecayMetrics) > 0 {
@@ -207,9 +203,9 @@ func (s *MarketplaceServer) PreviewOptimization(
 		completedAtMs = task.CompletedAt.UnixMilli()
 	}
 	taskInfo := &antv1.OptimizationTaskInfo{
-		Id:          task.ID,
-		StrategyId:  task.StrategyID,
-		Status:      task.Status,
+		Id:            task.ID,
+		StrategyId:    task.StrategyID,
+		Status:        task.Status,
 		TriggerReason: task.TriggerReason,
 		ChangeSummary: task.ChangeSummary,
 		CreatedAtMs:   task.CreatedAt.UnixMilli(),
@@ -229,10 +225,10 @@ func (s *MarketplaceServer) PreviewOptimization(
 	}
 
 	resp := &antv1.PreviewOptimizationResponse{
-		Task:               taskInfo,
-		OriginalBacktest:   &originalSnap,
-		OptimizedBacktest:  &optimizedSnap,
-		ChangeSummary:      result.ChangeSummary,
+		Task:                 taskInfo,
+		OriginalBacktest:     &originalSnap,
+		OptimizedBacktest:    &optimizedSnap,
+		ChangeSummary:        result.ChangeSummary,
 		SuggestedCodePreview: codePreview,
 	}
 	if len(result.DecayMetrics) > 0 {
@@ -253,4 +249,30 @@ func decPtrToStr(d *decimal.Decimal) string {
 		return ""
 	}
 	return d.String()
+}
+
+func (s *MarketplaceServer) InitiateStrategyIteration(
+	ctx context.Context,
+	req *connect.Request[antv1.InitiateStrategyIterationRequest],
+) (*connect.Response[antv1.InitiateStrategyIterationResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+
+	taskID, err := s.svc.InitiateStrategyIteration(ctx, req.Msg.GetStrategyId(), userID)
+	if err != nil {
+		if strings.Contains(err.Error(), "not the strategy owner") {
+			return nil, connect.NewError(connect.CodePermissionDenied, err)
+		}
+		if strings.Contains(err.Error(), "not found") {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&antv1.InitiateStrategyIterationResponse{
+		TaskId:  taskID,
+		Success: true,
+	}), nil
 }
