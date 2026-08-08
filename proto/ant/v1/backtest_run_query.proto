@@ -20,6 +20,7 @@ message GetBacktestRunResponse {
   optional string dataset_id = 4;
   BacktestRisk risk = 5;
   ExecutionAssumptions execution_assumptions = 6;
+  repeated BacktestBlindSpot blind_spots = 7;
 }
 
 message WatchBacktestRunRequest {
@@ -44,6 +45,8 @@ message BacktestBlindSpot {
   string id = 1;
   string description = 2;
   string severity = 3;
+  string category = 4;   // "invariant" | "defense_a" | "lookahead" | "statistical" | ""
+  string location = 5;   // source location or identifier (e.g. function name, rule ID)
 }
 
 message MarketplaceQualityPreview {

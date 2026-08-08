@@ -73,6 +73,7 @@ type GetBacktestRunResponse struct {
 	DatasetId            *string                `protobuf:"bytes,4,opt,name=dataset_id,json=datasetId,proto3,oneof" json:"dataset_id,omitempty"`
 	Risk                 *BacktestRisk          `protobuf:"bytes,5,opt,name=risk,proto3" json:"risk,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions  `protobuf:"bytes,6,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
+	BlindSpots           []*BacktestBlindSpot   `protobuf:"bytes,7,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -145,6 +146,13 @@ func (x *GetBacktestRunResponse) GetRisk() *BacktestRisk {
 func (x *GetBacktestRunResponse) GetExecutionAssumptions() *ExecutionAssumptions {
 	if x != nil {
 		return x.ExecutionAssumptions
+	}
+	return nil
+}
+
+func (x *GetBacktestRunResponse) GetBlindSpots() []*BacktestBlindSpot {
+	if x != nil {
+		return x.BlindSpots
 	}
 	return nil
 }
@@ -301,6 +309,8 @@ type BacktestBlindSpot struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	Severity      string                 `protobuf:"bytes,3,opt,name=severity,proto3" json:"severity,omitempty"`
+	Category      string                 `protobuf:"bytes,4,opt,name=category,proto3" json:"category,omitempty"` // "invariant" | "defense_a" | "lookahead" | "statistical" | ""
+	Location      string                 `protobuf:"bytes,5,opt,name=location,proto3" json:"location,omitempty"` // source location or identifier (e.g. function name, rule ID)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -352,6 +362,20 @@ func (x *BacktestBlindSpot) GetDescription() string {
 func (x *BacktestBlindSpot) GetSeverity() string {
 	if x != nil {
 		return x.Severity
+	}
+	return ""
+}
+
+func (x *BacktestBlindSpot) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
+func (x *BacktestBlindSpot) GetLocation() string {
+	if x != nil {
+		return x.Location
 	}
 	return ""
 }
@@ -586,7 +610,7 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\n" +
 	"\x18backtest_run_query.proto\x12\x06ant.v1\x1a\fcommon.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\x1a\rai_gate.proto\".\n" +
 	"\x15GetBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xc5\x02\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x81\x03\n" +
 	"\x16GetBacktestRunResponse\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
@@ -594,7 +618,9 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\n" +
 	"dataset_id\x18\x04 \x01(\tH\x00R\tdatasetId\x88\x01\x01\x12(\n" +
 	"\x04risk\x18\x05 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
-	"\x15execution_assumptions\x18\x06 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptionsB\r\n" +
+	"\x15execution_assumptions\x18\x06 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\x12:\n" +
+	"\vblind_spots\x18\a \x03(\v2\x19.ant.v1.BacktestBlindSpotR\n" +
+	"blindSpotsB\r\n" +
 	"\v_dataset_id\"0\n" +
 	"\x17WatchBacktestRunRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xd4\x03\n" +
@@ -608,11 +634,13 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"gateUpdate\x12J\n" +
 	"\x0fquality_preview\x18\a \x01(\v2!.ant.v1.MarketplaceQualityPreviewR\x0equalityPreview\x12:\n" +
 	"\vblind_spots\x18\b \x03(\v2\x19.ant.v1.BacktestBlindSpotR\n" +
-	"blindSpots\"a\n" +
+	"blindSpots\"\x99\x01\n" +
 	"\x11BacktestBlindSpot\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1a\n" +
-	"\bseverity\x18\x03 \x01(\tR\bseverity\"w\n" +
+	"\bseverity\x18\x03 \x01(\tR\bseverity\x12\x1a\n" +
+	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x1a\n" +
+	"\blocation\x18\x05 \x01(\tR\blocation\"w\n" +
 	"\x19MarketplaceQualityPreview\x12 \n" +
 	"\vpublishable\x18\x01 \x01(\bR\vpublishable\x128\n" +
 	"\n" +
@@ -668,20 +696,21 @@ var file_backtest_run_query_proto_depIdxs = []int32{
 	10, // 1: ant.v1.GetBacktestRunResponse.metrics:type_name -> ant.v1.BacktestMetrics
 	11, // 2: ant.v1.GetBacktestRunResponse.risk:type_name -> ant.v1.BacktestRisk
 	12, // 3: ant.v1.GetBacktestRunResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	9,  // 4: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
-	10, // 5: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
-	11, // 6: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
-	12, // 7: ant.v1.BacktestRunUpdate.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
-	13, // 8: ant.v1.BacktestRunUpdate.gate_update:type_name -> ant.v1.GateEvaluationUpdate
-	5,  // 9: ant.v1.BacktestRunUpdate.quality_preview:type_name -> ant.v1.MarketplaceQualityPreview
-	4,  // 10: ant.v1.BacktestRunUpdate.blind_spots:type_name -> ant.v1.BacktestBlindSpot
-	6,  // 11: ant.v1.MarketplaceQualityPreview.violations:type_name -> ant.v1.QualityViolation
-	9,  // 12: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
-	13, // [13:13] is the sub-list for method output_type
-	13, // [13:13] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	4,  // 4: ant.v1.GetBacktestRunResponse.blind_spots:type_name -> ant.v1.BacktestBlindSpot
+	9,  // 5: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
+	10, // 6: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
+	11, // 7: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
+	12, // 8: ant.v1.BacktestRunUpdate.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	13, // 9: ant.v1.BacktestRunUpdate.gate_update:type_name -> ant.v1.GateEvaluationUpdate
+	5,  // 10: ant.v1.BacktestRunUpdate.quality_preview:type_name -> ant.v1.MarketplaceQualityPreview
+	4,  // 11: ant.v1.BacktestRunUpdate.blind_spots:type_name -> ant.v1.BacktestBlindSpot
+	6,  // 12: ant.v1.MarketplaceQualityPreview.violations:type_name -> ant.v1.QualityViolation
+	9,  // 13: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
+	14, // [14:14] is the sub-list for method output_type
+	14, // [14:14] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_query_proto_init() }
