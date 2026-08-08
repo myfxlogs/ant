@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button, Typography, Spin, Popconfirm } from 'antd';
 import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -60,6 +60,20 @@ export default function WorkspaceSidebar({
     setPrevAutoExpand(false);
   }
 
+  // Mutual exclusion: expanding one section collapses the other
+  const toggleStrategies = useCallback(() => {
+    setStrategiesExpanded(prev => {
+      if (!prev) setHistoryExpanded(false);
+      return !prev;
+    });
+  }, []);
+  const toggleHistory = useCallback(() => {
+    setHistoryExpanded(prev => {
+      if (!prev) setStrategiesExpanded(false);
+      return !prev;
+    });
+  }, []);
+
   return (
     <div style={{
       width: collapsed ? 36 : 240, flexShrink: 0, overflow: 'hidden',
@@ -85,12 +99,12 @@ export default function WorkspaceSidebar({
 
       {!collapsed && (
         <div style={{ flex: '1 1 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '8px 10px' }}>
-          {/* My Strategies — fixed-height section */}
-          <div style={{ flex: '0 0 auto', maxHeight: '40%', display: 'flex', flexDirection: 'column', marginBottom: 8, overflow: 'hidden' }}>
+          {/* My Strategies — expands to fill, collapses to button only */}
+          <div style={{ flex: strategiesExpanded ? '1 1 auto' : '0 0 auto', display: 'flex', flexDirection: 'column', marginBottom: 8, overflow: 'hidden', minHeight: 0 }}>
             <Button
               size="small"
               icon={<FileTextOutlined />}
-              onClick={() => setStrategiesExpanded(v => !v)}
+              onClick={toggleStrategies}
               block
               style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center', flexShrink: 0 }}
             >
@@ -149,12 +163,12 @@ export default function WorkspaceSidebar({
             )}
           </div>
 
-          {/* Backtest History — fixed-height section */}
-          <div style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
+          {/* Backtest History — expands to fill, collapses to button only */}
+          <div style={{ flex: historyExpanded ? '1 1 auto' : '0 0 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
             <Button
               size="small"
               icon={<HistoryOutlined />}
-              onClick={() => setHistoryExpanded(v => !v)}
+              onClick={toggleHistory}
               block
               style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center', flexShrink: 0 }}
             >

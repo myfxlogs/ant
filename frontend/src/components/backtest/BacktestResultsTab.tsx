@@ -1,5 +1,5 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Tooltip } from 'antd';
-import { RiseOutlined, FallOutlined, StopOutlined, HistoryOutlined, WarningOutlined } from '@ant-design/icons';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress } from 'antd';
+import { RiseOutlined, FallOutlined, StopOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
@@ -103,11 +103,6 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {onOpenHistory && (
-            <Tooltip title={t('strategy.workspace.history', { defaultValue: 'Backtest History' })}>
-              <Button size="small" type="text" icon={<HistoryOutlined />} onClick={onOpenHistory} />
-            </Tooltip>
-          )}
           {status === 'running' && onCancel && (
             <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
               {t('common.cancel', { defaultValue: 'Cancel' })}
