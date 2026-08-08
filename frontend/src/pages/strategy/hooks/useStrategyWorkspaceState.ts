@@ -44,6 +44,7 @@ export function useStrategyWorkspaceState() {
   const handleRunTuning = useCallback(async (): Promise<string> => btCtx.tuning.runTuning({ code: codeCtx.code, symbol: account.symbol, timeframe: account.timeframe, startDate: btCtx.startDate, endDate: btCtx.endDate, templateId: templates.selectedId || undefined }), [codeCtx.code, account, btCtx, templates.selectedId]);
   const qt = useQuickTradeData(account.accountId, account.symbol);
   const [btCollapsed, setBtCollapsed] = useState(false);
+  const [autoExpandHistory, setAutoExpandHistory] = useState(false);
   const history = useHistoryState(account.accountId);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setCenterTab('chat'));
@@ -55,6 +56,9 @@ export function useStrategyWorkspaceState() {
     prevStatusRef.current = btCtx.status;
     if ((btCtx.status === 'completed' || btCtx.status === 'error') && prev === 'running') {
       history.refresh();
+      setAutoExpandHistory(true);
+    } else if (btCtx.status === 'idle' || btCtx.status === 'running') {
+      setAutoExpandHistory(false);
     }
   }, [btCtx.status, history]);
   useWorkspaceEffects({ code: codeCtx.code, setCode: codeCtx.setCode, loadedTemplate: codeCtx.loadedTemplate, resetBacktestStatus: btCtx.resetStatus, activeAccounts: account.activeAccounts, accountId: account.accountId, setAccountId: account.setAccountId, setSymbol: account.setSymbol, fetchAccounts: account.fetchAccounts, loadTemplates: codeCtx.loadTemplates, datePreset: btCtx.datePreset, applyDatePreset: btCtx.applyDatePreset, financialsReady: qt.financialsReady, fetchTradeHistory: qt.fetchTradeHistory });
@@ -78,6 +82,7 @@ export function useStrategyWorkspaceState() {
     quickTrade: quickTradeSlice,
     layout: layoutSlice,
     history,
+    autoExpandHistory,
     ai: aiSlice,
   };
 }

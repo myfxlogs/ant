@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { message } from 'antd';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import WorkspaceSidebar from './WorkspaceSidebar';
@@ -8,6 +9,7 @@ import CodeEditorArea from './CodeEditorArea';
 import MobileSidebarDrawer from './MobileSidebarDrawer';
 import BottomPanelSection from './BottomPanelSection';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
+import { strategyApi } from '@/client/strategy';
 
 interface Props {
   isMobile?: boolean;
@@ -141,9 +143,14 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
             loading={templates.loading}
             selectedId={templates.selectedId || ''}
             onSelect={(id) => templates.onSelect(id)}
+            onDeleteTemplate={async (id) => {
+              try { await strategyApi.deleteTemplate(id); message.success('Deleted'); code.loadTemplates(); }
+              catch (e) { message.error((e as Error)?.message || 'Delete failed'); }
+            }}
             backtestRuns={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string }>) || []}
             runsLoading={history.loading}
             onOpenHistory={(tid) => history.open(tid)}
+            onDeleteRun={history.onDeleteRun}
             onImport={() => setImportMode(true)}
             onNew={() => {
               templates.onSelect('');
@@ -155,6 +162,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
             }}
             collapsed={leftSidebarCollapsed}
             onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+            autoExpandHistory={history.autoExpandHistory}
           />
         )}
 
@@ -211,9 +219,14 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
           loading={templates.loading}
           selectedId={templates.selectedId || ''}
           onSelect={(id) => templates.onSelect(id)}
+          onDeleteTemplate={async (id) => {
+            try { await strategyApi.deleteTemplate(id); message.success('Deleted'); code.loadTemplates(); }
+            catch (e) { message.error((e as Error)?.message || 'Delete failed'); }
+          }}
           backtestRuns={(history.runs as Array<{ id: string; templateName?: string; totalReturn?: number; totalTrades?: number; templateId?: string }>) || []}
           runsLoading={history.loading}
           onOpenHistory={(tid) => history.open(tid)}
+          onDeleteRun={history.onDeleteRun}
           onImport={() => setImportMode(true)}
           onNew={() => {
             templates.onSelect('');
@@ -223,6 +236,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
             code.setLastValidatedCode('');
             setCenterTab('code');
           }}
+          autoExpandHistory={history.autoExpandHistory}
         />
       )}
 

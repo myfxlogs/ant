@@ -11,7 +11,7 @@ const TuningCtx = createContext<WsState['tuning']>(null!);
 const GateCtx = createContext<WsState['gate']>(null!);
 const QuickTradeCtx = createContext<WsState['quickTrade']>(null!);
 const LayoutCtx = createContext<WsState['layout']>(null!);
-const HistoryCtx = createContext<WsState['history']>(null!);
+const HistoryCtx = createContext<WsState['history'] & { autoExpandHistory: boolean }>(null!);
 const AICtx = createContext<WsState['ai']>(null!);
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
@@ -26,7 +26,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
               <GateCtx.Provider value={ws.gate}>
                 <QuickTradeCtx.Provider value={ws.quickTrade}>
                   <LayoutCtx.Provider value={ws.layout}>
-                    <HistoryCtx.Provider value={ws.history}>
+                    <HistoryCtx.Provider value={{ ...ws.history, autoExpandHistory: ws.autoExpandHistory }}>
                       <AICtx.Provider value={ws.ai}>
                         {children}
                       </AICtx.Provider>

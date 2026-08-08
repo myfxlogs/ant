@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Button, Typography, Spin, Empty } from 'antd';
-import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined } from '@ant-design/icons';
+import { Button, Typography, Spin, Popconfirm } from 'antd';
+import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 interface StrategyItem {
@@ -22,13 +22,16 @@ interface Props {
   loading: boolean;
   selectedId: string;
   onSelect: (id: string) => void;
+  onDeleteTemplate?: (id: string) => void;
   backtestRuns: BacktestRun[];
   runsLoading: boolean;
   onOpenHistory: (templateId?: string) => void;
+  onDeleteRun?: (runId: string) => void;
   onImport: () => void;
   onNew: () => void;
   collapsed: boolean;
   onToggle: () => void;
+  autoExpandHistory?: boolean;
 }
 
 function fmtReturn(v: number | undefined): string {
@@ -37,14 +40,25 @@ function fmtReturn(v: number | undefined): string {
 }
 
 export default function WorkspaceSidebar({
-  templates, loading, selectedId, onSelect,
-  backtestRuns, runsLoading, onOpenHistory,
+  templates, loading, selectedId, onSelect, onDeleteTemplate,
+  backtestRuns, runsLoading, onOpenHistory, onDeleteRun,
   onImport, onNew,
   collapsed, onToggle,
+  autoExpandHistory,
 }: Props) {
   const { t } = useTranslation();
   const [strategiesExpanded, setStrategiesExpanded] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+
+  // Auto-expand history section when triggered by external event (e.g. backtest completion)
+  const [prevAutoExpand, setPrevAutoExpand] = useState(false);
+  if (autoExpandHistory && !prevAutoExpand) {
+    setPrevAutoExpand(true);
+    setStrategiesExpanded(false);
+    setHistoryExpanded(true);
+  } else if (!autoExpandHistory && prevAutoExpand) {
+    setPrevAutoExpand(false);
+  }
 
   return (
     <div style={{
@@ -70,15 +84,15 @@ export default function WorkspaceSidebar({
       </div>
 
       {!collapsed && (
-        <div style={{ flex: '1 1 0', overflow: 'auto', padding: '8px 10px' }}>
-          {/* My Strategies — button menu */}
-          <div style={{ marginBottom: 8 }}>
+        <div style={{ flex: '1 1 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '8px 10px' }}>
+          {/* My Strategies — fixed-height section */}
+          <div style={{ flex: '0 0 auto', maxHeight: '40%', display: 'flex', flexDirection: 'column', marginBottom: 8, overflow: 'hidden' }}>
             <Button
               size="small"
               icon={<FileTextOutlined />}
               onClick={() => setStrategiesExpanded(v => !v)}
               block
-              style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center' }}
+              style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center', flexShrink: 0 }}
             >
               <span>{t('strategy.workspace.sidebar.myStrategies', { defaultValue: 'My Strategies' })}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -90,26 +104,44 @@ export default function WorkspaceSidebar({
               loading ? (
                 <Spin size="small" style={{ margin: '8px 0' }} />
               ) : templates.length === 0 ? (
-                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={null} style={{ margin: '8px 0' }} />
+                <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 6 }}>
+                  {t('strategy.workspace.sidebar.noStrategies', { defaultValue: 'No strategies yet' })}
+                </Typography.Text>
               ) : (
                 <div style={{
                   display: 'flex', flexDirection: 'column', gap: 2,
-                  marginTop: 6, maxHeight: 'calc(100vh - 320px)', overflow: 'auto',
+                  marginTop: 6, overflowY: 'auto', flex: '1 1 auto', minHeight: 0,
                 }}>
-                  {templates.map(t => (
+                  {templates.map(tpl => (
                     <div
-                      key={t.id}
-                      onClick={() => onSelect(t.id)}
+                      key={tpl.id}
+                      onClick={() => onSelect(tpl.id)}
                       style={{
                         padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12,
-                        background: t.id === selectedId ? '#e6f4ff' : 'transparent',
-                        border: t.id === selectedId ? '1px solid #91caff' : '1px solid transparent',
-                        fontWeight: t.id === selectedId ? 600 : 400,
+                        background: tpl.id === selectedId ? '#e6f4ff' : 'transparent',
+                        border: tpl.id === selectedId ? '1px solid #91caff' : '1px solid transparent',
+                        fontWeight: tpl.id === selectedId ? 600 : 400,
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4,
                       }}
                     >
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {t.name || t.id}
-                      </div>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                        {tpl.name || tpl.id}
+                      </span>
+                      {onDeleteTemplate && (
+                        <Popconfirm
+                          title={t('strategy.workspace.sidebar.deleteStrategyConfirm', { defaultValue: 'Delete this strategy?' })}
+                          onConfirm={(e) => { e?.stopPropagation(); onDeleteTemplate(tpl.id); }}
+                          okText={t('common.yes', { defaultValue: 'Yes' })}
+                          cancelText={t('common.no', { defaultValue: 'No' })}
+                        >
+                          <Button
+                            type="text" size="small" danger
+                            icon={<DeleteOutlined />}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ flexShrink: 0, padding: '0 2px' }}
+                          />
+                        </Popconfirm>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -117,14 +149,14 @@ export default function WorkspaceSidebar({
             )}
           </div>
 
-          {/* Backtest History — button menu */}
-          <div style={{ marginBottom: 8 }}>
+          {/* Backtest History — fixed-height section */}
+          <div style={{ flex: '1 1 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
             <Button
               size="small"
               icon={<HistoryOutlined />}
               onClick={() => setHistoryExpanded(v => !v)}
               block
-              style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center' }}
+              style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center', flexShrink: 0 }}
             >
               <span>{t('strategy.workspace.sidebar.backtestHistory', { defaultValue: 'Backtest History' })}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -140,7 +172,7 @@ export default function WorkspaceSidebar({
                   {t('strategy.workspace.sidebar.noRuns', { defaultValue: 'No backtest runs yet' })}
                 </Typography.Text>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 6 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 6, overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
                   {backtestRuns.slice(0, 10).map(r => (
                     <div
                       key={r.id}
@@ -148,23 +180,41 @@ export default function WorkspaceSidebar({
                       style={{
                         padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11,
                         background: 'transparent', border: '1px solid transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4,
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                          {r.templateName || r.id?.slice(0, 8)}
-                        </span>
-                        <span style={{
-                          fontWeight: 700, fontSize: 11, flexShrink: 0, marginLeft: 6,
-                          color: (r.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149',
-                        }}>
-                          {fmtReturn(r.totalReturn)}
-                        </span>
-                      </div>
-                      {r.totalTrades != null && (
-                        <div style={{ color: 'var(--ant-color-text-tertiary)', fontSize: 10 }}>
-                          {r.totalTrades} {t('strategy.workspace.sidebar.trades', { defaultValue: 'trades' })}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                            {r.templateName || r.id?.slice(0, 8)}
+                          </span>
+                          <span style={{
+                            fontWeight: 700, fontSize: 11, flexShrink: 0, marginLeft: 6,
+                            color: (r.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149',
+                          }}>
+                            {fmtReturn(r.totalReturn)}
+                          </span>
                         </div>
+                        {r.totalTrades != null && (
+                          <div style={{ color: 'var(--ant-color-text-tertiary)', fontSize: 10 }}>
+                            {r.totalTrades} {t('strategy.workspace.sidebar.trades', { defaultValue: 'trades' })}
+                          </div>
+                        )}
+                      </div>
+                      {onDeleteRun && (
+                        <Popconfirm
+                          title={t('strategy.workspace.sidebar.deleteRunConfirm', { defaultValue: 'Delete this backtest run?' })}
+                          onConfirm={(e) => { e?.stopPropagation(); onDeleteRun(r.id); }}
+                          okText={t('common.yes', { defaultValue: 'Yes' })}
+                          cancelText={t('common.no', { defaultValue: 'No' })}
+                        >
+                          <Button
+                            type="text" size="small" danger
+                            icon={<DeleteOutlined />}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ flexShrink: 0, padding: '0 2px' }}
+                          />
+                        </Popconfirm>
                       )}
                     </div>
                   ))}
