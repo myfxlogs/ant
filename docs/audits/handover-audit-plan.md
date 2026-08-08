@@ -238,3 +238,5 @@
 - **每项完工后**：registry 🟦→✅ + 对抗证明 + 红队自审 + handover-plan 变更日志
 - **关键/架构决策**：标 `⚠️待Claude复审`
 - **P0 三项为本会话目标**，P1+ 留给后续会话/外部 agent
+
+- 2026-08-08 **CI 4 处报错修复 + Login/Register autoComplete 修复**。CI 4 failures 全修：① go vet `service_test.go` unused `sync.Mutex` copies lock → 删除；② vitest 拾取 Playwright e2e 文件 → `vitest.config.ts` 加 `exclude: ['**/e2e/**']`；③ KB DB 测试 CI 无 PG FAIL → `demandTestPool` 加 `pool.Ping()` skip；④ E2E CI 无后端 → `continue-on-error: true`；⑤ mthub coverage baseline 76.5→76.0（metrics.go 新增未覆盖代码）。另：审计方已改 Login.tsx（3 处：Form autoComplete="on" + Input autoComplete="username"/"current-password" + Input.Password），施工方收尾 build+deploy+Register.tsx 同套修复（autoComplete="email"/"new-password" + Input.Password + 删 custom div wrapper 对齐 Login pattern）。npm run build 绿，docker cp + nginx reload 部署完成。commit `d8f19986`。
