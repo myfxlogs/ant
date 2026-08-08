@@ -145,7 +145,14 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
             runsLoading={history.loading}
             onOpenHistory={(tid) => history.open(tid)}
             onImport={() => setImportMode(true)}
-            onNew={() => { templates.onSelect(''); }}
+            onNew={() => {
+              templates.onSelect('');
+              code.setCode('');
+              code.setStrategyId(undefined);
+              code.setValidationResult(null);
+              code.setLastValidatedCode('');
+              setCenterTab('code');
+            }}
             collapsed={leftSidebarCollapsed}
             onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
           />
@@ -208,7 +215,14 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
           runsLoading={history.loading}
           onOpenHistory={(tid) => history.open(tid)}
           onImport={() => setImportMode(true)}
-          onNew={() => templates.onSelect('')}
+          onNew={() => {
+            templates.onSelect('');
+            code.setCode('');
+            code.setStrategyId(undefined);
+            code.setValidationResult(null);
+            code.setLastValidatedCode('');
+            setCenterTab('code');
+          }}
         />
       )}
 

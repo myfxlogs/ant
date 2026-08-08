@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useStrategyCode } from './useStrategyCode';
 import { useBacktestRunner } from '@/components/backtest/useBacktestRunner';
 import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab } from '@/components/backtest/useBacktestRunner';
@@ -47,6 +47,16 @@ export function useStrategyWorkspaceState() {
   const history = useHistoryState(account.accountId);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
   const ai = useAIWorkflow(codeCtx, btCtx.metrics, () => setCenterTab('chat'));
+
+  // Refresh backtest history list when a run completes or errors.
+  const prevStatusRef = useRef(btCtx.status);
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    prevStatusRef.current = btCtx.status;
+    if ((btCtx.status === 'completed' || btCtx.status === 'error') && prev === 'running') {
+      history.refresh();
+    }
+  }, [btCtx.status, history]);
   useWorkspaceEffects({ code: codeCtx.code, setCode: codeCtx.setCode, loadedTemplate: codeCtx.loadedTemplate, resetBacktestStatus: btCtx.resetStatus, activeAccounts: account.activeAccounts, accountId: account.accountId, setAccountId: account.setAccountId, setSymbol: account.setSymbol, fetchAccounts: account.fetchAccounts, loadTemplates: codeCtx.loadTemplates, datePreset: btCtx.datePreset, applyDatePreset: btCtx.applyDatePreset, financialsReady: qt.financialsReady, fetchTradeHistory: qt.fetchTradeHistory });
   const accountSlice = useMemo(() => ({ ...account, accountInfo: qt.accountInfo }), [account, qt.accountInfo]);
   const templatesSlice = useMemo(() => ({ list: codeCtx.templates, loading: codeCtx.templatesLoading, ...templates }), [codeCtx.templates, codeCtx.templatesLoading, templates]);

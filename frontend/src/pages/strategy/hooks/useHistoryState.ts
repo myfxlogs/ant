@@ -20,6 +20,7 @@ export interface HistoryState {
   onDeleteRun: (runId: string) => void;
   onBatchDelete: () => void;
   onRefresh: () => void;
+  refresh: () => void;
   setSelectedRowKeys: (keys: React.Key[]) => void;
 }
 
@@ -92,14 +93,16 @@ export function useHistoryState(accountId: string): HistoryState {
     } finally { setDeleting(false); }
   }, [selectedKeys, runs.length, page, pageSize, fetchRuns]);
 
+  // Fetch runs on mount and when accountId changes (not only when modal opens).
   useEffect(() => {
-    if (modalOpen) { setPage(1); fetchRuns(1, pageSize); }
-  }, [accountId]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchRuns(1, pageSize);
+  }, [accountId, fetchRuns]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     drawerOpen, runId, modalOpen, runs, loading, page, pageSize, total,
     selectedRowKeys: selectedKeys, setSelectedRowKeys: setSelectedKeys,
     deleting, open, close, closeModal, onPageChange, onViewRun, onDeleteRun, onBatchDelete,
     onRefresh: () => fetchRuns(page, pageSize),
+    refresh: () => fetchRuns(1, pageSize),
   };
 }
