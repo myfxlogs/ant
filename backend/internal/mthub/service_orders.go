@@ -121,6 +121,23 @@ func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest,
 	}
 	intent := orderRequestToIntent(req)
 	intent.UserId = usermgr.GetUserID(ctx)
+
+	// RISK-MARGIN1: For market orders, intent.Price is zero because the fill
+	// price is unknown at submission time. Margin rules (MarginPreCheck,
+	// MarginFloorRule) skip when price=0, so market orders bypass margin checks.
+	// Resolve the current mid-price from TickBroker so margin rules can compute
+	// required margin. If no tick is available, leave price=0 — the gate's
+	// fail-closed logic (state==nil) still applies, and margin rules will skip
+	// rather than block (graceful degradation when no tick feed is available).
+	if req.OrderType == OrderMarket && intent.Price == "0" && s.tickBroker != nil {
+		if tick := s.tickBroker.LatestTick(req.AccountID, req.Canonical); tick != nil {
+			mid := tick.Bid.Add(tick.Ask).Div(decimal.NewFromInt(2))
+			if mid.GreaterThan(decimal.Zero) {
+				intent.Price = mid.String()
+			}
+		}
+	}
+
 	state, stateErr := s.accountStateProvider(ctx, req.AccountID)
 	if stateErr != nil && s.logger != nil {
 		s.logger.Warn("gate: account state fetch failed — fail-closed",

@@ -317,6 +317,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		Code:             tpl.Code,
 		Mode:             "live",
 		Params:           strParams,
+		ScheduleID:       schedule.ID,
 		EntitlementCheck: entCheck,
 	}
 

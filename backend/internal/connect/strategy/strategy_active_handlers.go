@@ -225,18 +225,10 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 
 	runCtx, cancel := context.WithCancel(context.Background())
 	if s.sessionRegistry != nil && runID != uuid.Nil {
-		sess := s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cancel)
-		if sess == nil {
-			cancel()
-			if s.runRepo != nil {
-				_ = s.runRepo.UpdateStopped(context.Background(), runID, "error", "duplicate strategy for account")
-			}
-			return connect.NewResponse(&antv1.StartStrategyResponse{
-				Success: false,
-				Error:   fmt.Sprintf("strategy already running for account %s", cfg.AccountID),
-			}), nil
+		sess := s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, cancel)
+		if sess != nil {
+			cfg.PreRegisteredSession = sess
 		}
-		cfg.PreRegisteredSession = sess
 	}
 
 	go func() {

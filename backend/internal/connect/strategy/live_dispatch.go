@@ -5,14 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/mthub"
-	"alphaforge/internal/repository"
 )
 
 // dispatchLiveSignal routes the strategy signal to the appropriate destination.
@@ -116,7 +114,10 @@ func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg 
 	s.submitOrder(ctx, cfg, side, orderType, barOpenTime, sig, activeSess)
 }
 
-// dispatchCloseAll closes all open positions for the account matching cfg.Symbol.
+// dispatchCloseAll closes all open positions for the account matching this strategy.
+// ARCH-4: When ScheduleID is set, positions are filtered by the strategy's magic
+// number to avoid closing positions opened by other strategies on the same account.
+// When ScheduleID is zero (legacy callers), falls back to symbol-only matching.
 func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) {
 	if s.mtHub == nil {
 		s.log.Warn("LiveStrategyRunner: dispatchCloseAll: no MtHubService")
@@ -125,6 +126,7 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 		}
 		return
 	}
+	expectedMagic := strategyMagic(cfg.ScheduleID)
 	// Detach from parent cancellation but preserve values (userID, auth).
 	bgCtx := context.WithoutCancel(ctx)
 	go func() {
@@ -145,10 +147,19 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 		closed := 0
 		skipped := 0
 		for _, o := range orders {
-			// L1: Only close positions matching this strategy's symbol.
-			if o.Canonical != cfg.Symbol && o.SymbolRaw != cfg.Symbol {
-				skipped++
-				continue
+			// ARCH-4: When magic is set, filter by magic number (strategy attribution).
+			// When magic is 0 (legacy/no ScheduleID), fall back to symbol-only matching.
+			if expectedMagic != 0 {
+				if o.Magic != expectedMagic {
+					skipped++
+					continue
+				}
+			} else {
+				// L1: Only close positions matching this strategy's symbol.
+				if o.Canonical != cfg.Symbol && o.SymbolRaw != cfg.Symbol {
+					skipped++
+					continue
+				}
 			}
 			if err := s.mtHub.CloseOrder(bgCtx, cfg.AccountID, o.Ticket, o.Volume); err != nil {
 				s.log.Warn("LiveStrategyRunner: dispatchCloseAll: CloseOrder failed",
@@ -163,6 +174,7 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 		s.log.Info("LiveStrategyRunner: dispatchCloseAll complete",
 			zap.String("account", cfg.AccountID),
 			zap.String("symbol", cfg.Symbol),
+			zap.Int32("magic", expectedMagic),
 			zap.Int("closed", closed),
 			zap.Int("skipped", skipped),
 			zap.Int("total", len(orders)),
@@ -311,6 +323,10 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 		Side:      side,
 		OrderType: orderType,
 		Volume:    parseDecimal(sig.GetVolume()),
+		// ARCH-4: Magic Number attribution — each strategy schedule gets a
+		// deterministic magic derived from ScheduleID, so positions can be
+		// attributed to the correct strategy when multiple share an account.
+		Magic: strategyMagic(cfg.ScheduleID),
 		// LIVE-2: deterministic ClientID for idempotency — same bar + same signal type
 		// within the same strategy run produces the same key, so duplicate dispatches
 		// (bar replay, VM retry, network glitch) are deduplicated by the idempotency guard.
@@ -376,69 +392,4 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 			zap.String("side", sideStr),
 		)
 	}()
-}
-
-// strategyOrderClientID generates a deterministic ClientID for strategy-submitted
-// orders, enabling idempotency dedup. Same runID + bar open time + signal type
-// always produces the same key, so duplicate dispatches (bar replay, VM retry,
-// network glitch) are rejected by the idempotency guard in MtHubService.PlaceOrder.
-func strategyOrderClientID(runID uuid.UUID, barOpenTime int64, signalType string) string {
-	return fmt.Sprintf("strat-%s-%d-%s", runID, barOpenTime, signalType)
-}
-
-// signalToSide maps a strategy signal action to mthub.Side. Returns 0 for non-directional signals.
-// T3.1: expanded to cover all buy_* / sell_* variants (hard injury ②).
-func signalToSide(action string) mthub.Side {
-	switch action {
-	case "buy", "buy_limit", "buy_stop", "buy_stop_limit":
-		return mthub.SideBuy
-	case sideSell, "sell_limit", "sell_stop", "sell_stop_limit":
-		return mthub.SideSell
-	default:
-		return 0
-	}
-}
-
-// sideToString returns a human-readable Side string for logging.
-func sideToString(side mthub.Side) string {
-	switch side {
-	case mthub.SideBuy:
-		return "buy"
-	case mthub.SideSell:
-		return sideSell
-	default:
-		return "unknown"
-	}
-}
-
-// persistSignal writes the signal to strategy_signals and increments the run's signal count.
-// Failures are logged but do not block dispatch — persistence is best-effort.
-func (s *StrategyExecutionServer) persistSignal(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
-	if s.runRepo == nil {
-		return
-	}
-	var runIDPtr *uuid.UUID
-	if cfg.RunID != uuid.Nil {
-		id := cfg.RunID
-		runIDPtr = &id
-	}
-	params := repository.InsertSignalParams{
-		AccountID:  cfg.AccountID,
-		Symbol:     cfg.Symbol,
-		SignalType: sig.GetSignalType(),
-		Volume:     sig.GetVolume(),
-		Price:      sig.GetPrice(),
-		StopLoss:   sig.GetStopLoss(),
-		TakeProfit: sig.GetTakeProfit(),
-		Reason:     sig.GetReason(),
-		RunID:      runIDPtr,
-	}
-	if err := s.runRepo.InsertSignal(ctx, params); err != nil {
-		s.log.Warn("LiveStrategyRunner: failed to persist signal", zap.Error(err))
-	}
-	if cfg.RunID != uuid.Nil {
-		if err := s.runRepo.IncrementSignalCount(ctx, cfg.RunID); err != nil {
-			s.log.Warn("LiveStrategyRunner: failed to increment signal count", zap.Error(err))
-		}
-	}
 }

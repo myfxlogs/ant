@@ -19,6 +19,7 @@ type ActiveSession struct {
 	Symbol       string
 	Timeframe    string
 	Mode         string
+	ScheduleID   uuid.UUID
 	StartedAt    time.Time
 	LastSignalAt time.Time
 	SignalCount  int
@@ -96,28 +97,24 @@ func (r *SessionRegistry) Watch() (<-chan struct{}, func()) {
 }
 
 // Register adds a new active session to the registry.
-// Returns the created ActiveSession, or nil if a session is already
-// running for the same account (atomic conflict detection).
-func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID, symbol, timeframe, mode string, cancel context.CancelFunc) *ActiveSession {
+// Register creates a new ActiveSession and adds it to the registry.
+// ARCH-4: Multiple sessions per account are allowed — position attribution
+// is handled by Magic Numbers, not by session exclusivity.
+// Returns the created ActiveSession.
+func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID, symbol, timeframe, mode string, scheduleID uuid.UUID, cancel context.CancelFunc) *ActiveSession {
 	sess := &ActiveSession{
-		RunID:     runID,
-		UserID:    userID,
-		AccountID: accountID,
-		Symbol:    symbol,
-		Timeframe: timeframe,
-		Mode:      mode,
-		StartedAt: time.Now(),
-		cancel:    cancel,
-		registry:  r,
+		RunID:      runID,
+		UserID:     userID,
+		AccountID:  accountID,
+		Symbol:     symbol,
+		Timeframe:  timeframe,
+		Mode:       mode,
+		ScheduleID: scheduleID,
+		StartedAt:  time.Now(),
+		cancel:     cancel,
+		registry:   r,
 	}
 	r.mu.Lock()
-	// Atomic conflict check: reject if account already has a running session.
-	for _, existing := range r.sessions {
-		if existing.AccountID == accountID {
-			r.mu.Unlock()
-			return nil
-		}
-	}
 	r.sessions[runID] = sess
 	r.mu.Unlock()
 	r.notifyWatchers()

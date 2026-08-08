@@ -248,6 +248,38 @@ func TestTickBroker_PubSub(t *testing.T) {
 	}
 }
 
+func TestTickBroker_LatestTick(t *testing.T) {
+	t.Parallel()
+	b := NewTickBroker(64, nil)
+
+	// No tick published yet → nil.
+	if got := b.LatestTick("acc-1", "EURUSD"); got != nil {
+		t.Fatal("expected nil before Publish")
+	}
+
+	// Publish a tick → LatestTick returns it.
+	b.Publish(&TickUpdate{AccountID: "acc-1", Symbol: "EURUSD", Bid: dec(1.085), Ask: dec(1.0851)})
+	got := b.LatestTick("acc-1", "EURUSD")
+	if got == nil {
+		t.Fatal("expected non-nil after Publish")
+	}
+	if !got.Bid.Equal(dec(1.085)) {
+		t.Fatalf("expected bid 1.085, got %s", got.Bid.String())
+	}
+
+	// Different symbol → nil.
+	if got := b.LatestTick("acc-1", "GBPUSD"); got != nil {
+		t.Fatal("expected nil for unpublished symbol")
+	}
+
+	// Overwrite with newer tick.
+	b.Publish(&TickUpdate{AccountID: "acc-1", Symbol: "EURUSD", Bid: dec(1.090), Ask: dec(1.0901)})
+	got = b.LatestTick("acc-1", "EURUSD")
+	if !got.Bid.Equal(dec(1.090)) {
+		t.Fatalf("expected updated bid 1.090, got %s", got.Bid.String())
+	}
+}
+
 func TestTradeBroker_PubSub(t *testing.T) {
 	t.Parallel()
 	b := NewTradeBroker(64, nil)

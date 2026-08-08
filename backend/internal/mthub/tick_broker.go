@@ -21,20 +21,32 @@ type TickUpdate struct {
 
 // TickBroker fans out TickUpdate events to per-account subscribers.
 // Each subscriber gets a buffered channel; slow consumers are dropped.
+// Also caches the latest tick per (accountID, symbol) for market order
+// price resolution in the risk gate (RISK-MARGIN1).
 type TickBroker struct {
-	mu      sync.RWMutex
-	subs    map[string][]chan *TickUpdate // accountID → subscribers
-	maxBuf  int
-	log     *zap.Logger
+	mu     sync.RWMutex
+	subs   map[string][]chan *TickUpdate // accountID → subscribers
+	latest map[string]*TickUpdate        // "accountID:symbol" → latest tick
+	maxBuf int
+	log    *zap.Logger
 }
 
 // NewTickBroker creates a TickBroker with the given channel buffer size.
 func NewTickBroker(bufSize int, log *zap.Logger) *TickBroker {
 	return &TickBroker{
 		subs:   make(map[string][]chan *TickUpdate),
+		latest: make(map[string]*TickUpdate),
 		maxBuf: bufSize,
 		log:    log,
 	}
+}
+
+// LatestTick returns the most recent tick for the given account+symbol.
+// Returns nil if no tick has been received yet.
+func (b *TickBroker) LatestTick(accountID, symbol string) *TickUpdate {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	return b.latest[accountID+":"+symbol]
 }
 
 // Subscribe returns a channel that receives TickUpdate events for the given account.
@@ -60,10 +72,12 @@ func (b *TickBroker) Subscribe(accountID string) (<-chan *TickUpdate, func()) {
 }
 
 // Publish sends a TickUpdate to all subscribers for the given account.
+// Also caches the latest tick per (accountID, symbol) for LatestTick lookups.
 func (b *TickBroker) Publish(u *TickUpdate) {
-	b.mu.RLock()
+	b.mu.Lock()
+	b.latest[u.AccountID+":"+u.Symbol] = u
 	subs := b.subs[u.AccountID]
-	b.mu.RUnlock()
+	b.mu.Unlock()
 	for _, ch := range subs {
 		select {
 		case ch <- u:

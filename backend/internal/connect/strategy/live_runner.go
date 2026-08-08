@@ -59,6 +59,10 @@ type LiveStrategyConfig struct {
 	// to the strategy via BarsForSymbol. Trading still targets Symbol.
 	ExtraSymbols []string
 
+	// ScheduleID identifies the strategy schedule this run belongs to.
+	// Used for Magic Number attribution when multiple strategies share an account.
+	ScheduleID uuid.UUID
+
 	// RunID must be pre-set by caller (run record pre-created in DB).
 	RunID uuid.UUID
 
@@ -349,9 +353,9 @@ func (s *StrategyExecutionServer) registerLiveSession(cfg *LiveStrategyConfig, r
 	activeSess := cfg.PreRegisteredSession
 	if activeSess == nil && s.sessionRegistry != nil {
 		uid, _ := uuid.Parse(cfg.UserID)
-		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, runCancel)
+		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, runCancel)
 		if activeSess == nil {
-			cleanupOrphan("another strategy is already running for this account")
+			cleanupOrphan("session registration failed")
 			return nil
 		}
 	}

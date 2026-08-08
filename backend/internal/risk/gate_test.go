@@ -297,6 +297,43 @@ func TestMarginPreCheck_Block(t *testing.T) {
 	}
 }
 
+// RISK-MARGIN1: market orders with price=0 skip margin check (graceful degradation).
+// The caller (evaluatePlaceGate) is responsible for resolving the price from
+// TickBroker before calling Evaluate. If no tick is available, price stays 0
+// and the rule skips rather than blocking — fail-closed is handled by the
+// gate's account_state_missing check, not by individual rules.
+func TestMarginPreCheck_MarketOrderPriceZero_Skips(t *testing.T) {
+	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
+	state := &AccountState{
+		Equity:         decimal.NewFromInt(100),
+		UsedMargin:     decimal.NewFromInt(80),
+		SymbolLeverage: 100,
+	}
+	intent := intentBuy("1.0")
+	intent.Price = "0" // market order — no price resolved
+	result := r.Check(context.Background(), intent, state)
+	if !result.Allowed {
+		t.Errorf("expected skip (allowed) for market order with price=0, got: %s", result.Reason)
+	}
+}
+
+// RISK-MARGIN1: when the caller resolves a market order price from TickBroker,
+// the margin rule evaluates correctly and can block excessive margin.
+func TestMarginPreCheck_MarketOrderPriceResolved_Blocks(t *testing.T) {
+	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
+	state := &AccountState{
+		Equity:         decimal.NewFromInt(100),
+		UsedMargin:     decimal.NewFromInt(80),
+		SymbolLeverage: 100,
+	}
+	intent := intentBuy("1.0")
+	intent.Price = "1.08500" // price resolved from TickBroker mid-price
+	result := r.Check(context.Background(), intent, state)
+	if result.Allowed {
+		t.Error("expected blocked for excessive margin with resolved market price")
+	}
+}
+
 // ── Gate: Kill-Switch ─────────────────────────────────────────────────
 
 func TestGateKillSwitch_BlocksLive(t *testing.T) {

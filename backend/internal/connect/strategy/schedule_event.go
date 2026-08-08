@@ -115,6 +115,7 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 		Code:             tpl.Code,
 		Mode:             "live",
 		Params:           strParams,
+		ScheduleID:       schedule.ID,
 		EntitlementCheck: entCheck,
 	}
 
@@ -137,29 +138,15 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 		}
 	}
 
-	// Pre-register session to detect account conflicts before launching.
-	// If Register returns nil, another session is already running for this account.
-	// We do NOT replace it — first-runner-wins, never silently kill a session
-	// that may hold open positions (spec §七-Q2).
+	// Pre-register session before launching.
+	// ARCH-4: Multiple sessions per account are now allowed — position
+	// attribution is via Magic Numbers, not session exclusivity.
 	if e.runner != nil && e.runner.sessionRegistry != nil && cfg.RunID != uuid.Nil {
 		uid, _ := uuid.Parse(cfg.UserID)
-		sess := e.runner.sessionRegistry.Register(cfg.RunID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cancel)
-		if sess == nil {
-			cancel()
-			e.mu.Lock()
-			delete(e.activeRuns, schedule.ID)
-			e.mu.Unlock()
-			errMsg := fmt.Sprintf("account %s already has a running strategy", cfg.AccountID)
-			_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("launch: %s", errMsg))
-			if e.runner.runRepo != nil {
-				_ = e.runner.runRepo.UpdateStopped(context.Background(), cfg.RunID, "error", errMsg)
-			}
-			e.log.Warn("launchEventSession: account conflict",
-				zap.String("schedule_id", schedule.ID.String()),
-				zap.String("account_id", cfg.AccountID))
-			return fmt.Errorf("launch: %s", errMsg)
+		sess := e.runner.sessionRegistry.Register(cfg.RunID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, schedule.ID, cancel)
+		if sess != nil {
+			cfg.PreRegisteredSession = sess
 		}
-		cfg.PreRegisteredSession = sess
 	}
 
 	go func(ctx context.Context) { e.runOne(ctx, schedule, cfg, handle) }(runCtx)
