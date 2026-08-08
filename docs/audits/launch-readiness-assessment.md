@@ -33,7 +33,7 @@
 | 数据完整性 | ✅ 就绪* | hash chain + VerifyChain 集成测 + reconciliation；**ARCH-4⑥ 待补**（per-strategy 战绩归因，否则实盘公开拿不到数据） | 是（⑥未完成） |
 | 后端测试 | ✅ 就绪 | `go test ./...` exit 0；集成测覆盖 money path / marketplace / 哈希链 | 是 |
 | 可观测性（基建） | ✅ 就绪 | `/metrics`+`/healthz`+`/readyz`+SRE 控制面已 wire | 是（基建）；覆盖度/告警 ❓ |
-| 可观测性（覆盖度 + 告警） | ✅* 待实测 | mthub 钱路径 4 指标已补（orders_placed/latency/session_active/event_published）+ `deploy/prometheus/alerts.yml` 12 条规则 + Grafana dashboard 9 面板；对抗证明 5 test 绿。Task 1 审计表见 spec §8 | 是（待实测） |
+| 可观测性（覆盖度 + 告警） | ✅ 就绪 | mthub 钱路径 4 指标已补（orders_placed/latency/session_active/event_published）+ `deploy/prometheus/alerts.yml` 12 条规则 + Grafana dashboard 9 面板；**审计方实测通过（2026-08-09）：build+test exit 0；4 指标在 `service_orders.go`/`types.go` 真增量（ok/rejected/err 全路径，非空壳）；`metrics_test.go` 对抗证明 spot-check（删 .Inc()→计数不增→红）**。Task 1 审计表见 spec §8（§3 余项 recon/idem/wallet 标 ❌ 属 spec non-goal「不做全量」范围外，已记账非丢失） | 是 |
 | 部署 / 迁移 | ✅ 就绪 | Docker compose 唯一部署路径（CLAUDE.md 强制）、MIG-1 down 脚本齐（238/239）、healthz 探活 | 是 |
 | **E2E 测试** | ❌ **缺口** | 全仓零 playwright/`.spec.ts`；仅有 playwright-backtest **skill/模式**，无 committed 全链路 E2E | 是（确认缺失） |
 | **前端测试** | ✅ 就绪 | vitest+jsdom+@testing-library 基建+128 test（5 store 45 test + 11 组件冒烟 + 72 utils test）+ CI `npm test` 步；对抗证明通过 + **审计方实测 `npm test` 128 绿、authStore logout 对抗证明 spot-check 通过（2026-08-09）** | 是 |
@@ -51,7 +51,7 @@
 | 1 | **E2E 测试套件** | 无任何端到端守护——购买→实盘→战绩主链路、登录→回测→看报告等核心流只靠手工。回归必靠人。复用现成 `playwright-backtest` skill 模式起步 | 中 |
 | 2 | ~~**前端测试基线**~~ | ✅ **审计方实测通过（2026-08-09）**——`npm test` 128 test 绿实测 + authStore logout 对抗证明 spot-check（删 isAuthenticated:false 翻转→测试必红）。vitest+jsdom+@testing-library 基建 + setup.ts（matchMedia/IntersectionObserver/ResizeObserver mock）+ 5 Zustand store 测（45 test）+ 11 组件冒烟 + CI `npm test` 步 | ~~中~~ ✅ |
 | 3 | ~~**ARCH-4⑥ 归因闭环**~~ | ✅ **已完成（2026-08-08 验收，commit `00e5ccc1`）**——migration 266 + `ResolveScheduleIDByMagic` account-scoped + 两份写路径回填 `ScheduleID`，hollow-core 闭合，per-strategy 战绩可归因。残留(低)：DB 级集成测待补。原 spec `docs/spec/multi-strategy-attribution-spec.md` | ~~小-中~~ ✅ |
-| 4 | ~~**metric 覆盖度审 + 告警规则**~~ | ✅ **待审计方实测（2026-08-08）**——mthub 钱路径 4 指标已补（`mthub_orders_placed_total{broker,status}` / `mthub_place_latency_seconds{broker}` / `mthub_session_active{account_id,broker}` / `mthub_event_published_total{event_type}`）+ `deploy/prometheus/alerts.yml` 12 条规则（mthub 4 + mdgateway 5 + platform 3）+ Grafana dashboard 9 面板。Task 1 审计表完成（spec §8：15-observability §3 全量逐条对账）。对抗证明：5 test 绿（ok/rejected/err/session/event）。`go build`+`go test` 绿。REUSE: promauto 模式（strategy/metrics.go）；NEW: mthub/metrics.go + alerts.yml + dashboard JSON | ~~中~~ ✅ |
+| 4 | ~~**metric 覆盖度审 + 告警规则**~~ | ✅ **审计方实测通过（2026-08-09）**——mthub 钱路径 4 指标已补（`mthub_orders_placed_total{broker,status}` / `mthub_place_latency_seconds{broker}` / `mthub_session_active{account_id,broker}` / `mthub_event_published_total{event_type}`）+ `deploy/prometheus/alerts.yml` 12 条规则（mthub 4 + mdgateway 5 + platform 3）+ Grafana dashboard 9 面板。Task 1 审计表完成（spec §8：15-observability §3 全量逐条对账）。对抗证明：5 test 绿（ok/rejected/err/session/event）。`go build`+`go test` 绿。REUSE: promauto 模式（strategy/metrics.go）；NEW: mthub/metrics.go + alerts.yml + dashboard JSON。**残留(低)**：alerts.yml runbook 链接指向 `docs/runbook/mthub-*.md`（文件未建，post-launch 项）；§8 记账的 recon/idem/wallet 指标属 spec non-goal 范围外 | ~~中~~ ✅ |
 
 ## 4. 可延后（post-launch / 非阻断）
 
@@ -78,4 +78,4 @@
 
 ---
 
-> **一句话**：地基稳、钱路径和安全过硬、旧缺口清零、ARCH-4⑥ 已闭环、前端测试基线已补、可观测钱路径指标+告警已补；距对外上线还差 E2E。这一块补完，可上线。
+> **一句话**：地基稳、钱路径和安全过硬、旧缺口清零、ARCH-4⑥ 已闭环、前端测试基线 ✅、可观测钱路径指标+告警 ✅实测（2026-08-09）；**距对外上线只剩 E2E 一块**。补完即可上线。
