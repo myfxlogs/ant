@@ -20,7 +20,7 @@ func (r *StrategyScheduleRepository) GetByID(ctx context.Context, id uuid.UUID) 
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE id = $1`, id,
 	).Scan(
@@ -28,7 +28,7 @@ func (r *StrategyScheduleRepository) GetByID(ctx context.Context, id uuid.UUID) 
 		&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
 		&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
 		&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
-		&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+		&s.MagicNumber, &s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
 		&s.CreatedAt, &s.UpdatedAt,
 	)
 	if err != nil {
@@ -47,7 +47,7 @@ func (r *StrategyScheduleRepository) GetByUserID(ctx context.Context, userID uui
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC`, userID)
 }
@@ -59,7 +59,7 @@ func (r *StrategyScheduleRepository) GetByTemplateID(ctx context.Context, templa
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE template_id = $1 ORDER BY created_at DESC`, templateID)
 }
@@ -71,7 +71,7 @@ func (r *StrategyScheduleRepository) GetByAccountID(ctx context.Context, account
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE account_id = $1 ORDER BY created_at DESC`, accountID)
 }
@@ -84,7 +84,7 @@ func (r *StrategyScheduleRepository) GetByUniqueKey(ctx context.Context, userID,
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE user_id = $1 AND account_id = $2 AND template_id = $3 AND symbol = $4 AND timeframe = $5 LIMIT 1`,
 		userID, accountID, templateID, symbol, timeframe,
@@ -93,7 +93,7 @@ func (r *StrategyScheduleRepository) GetByUniqueKey(ctx context.Context, userID,
 		&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
 		&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
 		&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
-		&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+		&s.MagicNumber, &s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
 		&s.CreatedAt, &s.UpdatedAt,
 	)
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *StrategyScheduleRepository) GetActiveSchedules(ctx context.Context) ([]
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`)
 }
@@ -140,7 +140,7 @@ func (r *StrategyScheduleRepository) GetDueSchedules(ctx context.Context, before
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			manual_run_count, last_manual_run_at, last_manual_error,
+			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE is_active = true AND next_run_at IS NOT NULL AND next_run_at <= $1 ORDER BY next_run_at ASC`,
 		before)
@@ -160,6 +160,27 @@ func (r *StrategyScheduleRepository) CountByTemplateID(ctx context.Context, temp
 	return count, err
 }
 
+// ResolveScheduleIDByMagic maps a live trade's magic number back to its schedule.
+// account-scoped: magic collisions across different accounts do not cross-attribute.
+// Returns nil for magic=0 (manual/non-strategy trades) or unknown magic.
+func (r *StrategyScheduleRepository) ResolveScheduleIDByMagic(ctx context.Context, accountID uuid.UUID, magic int32) (*uuid.UUID, error) {
+	if magic == 0 {
+		return nil, nil
+	}
+	var id uuid.UUID
+	err := r.db.QueryRow(ctx,
+		`SELECT id FROM strategy_schedules WHERE account_id = $1 AND magic_number = $2 LIMIT 1`,
+		accountID, magic,
+	).Scan(&id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("ResolveScheduleIDByMagic: %w", err)
+	}
+	return &id, nil
+}
+
 // querySchedules is a shared helper that scans schedule rows into a slice.
 func querySchedules(ctx context.Context, r *StrategyScheduleRepository, query string, args ...interface{}) ([]*model.StrategySchedule, error) {
 	rows, err := r.db.Query(ctx, query, args...)
@@ -176,7 +197,7 @@ func querySchedules(ctx context.Context, r *StrategyScheduleRepository, query st
 			&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
 			&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
 			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
-			&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+			&s.MagicNumber, &s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
 			&s.CreatedAt, &s.UpdatedAt,
 		); err != nil {
 			return nil, err

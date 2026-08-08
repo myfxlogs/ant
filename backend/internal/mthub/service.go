@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"go.uber.org/zap"
 
 	"alphaforge/internal/costsvc"
@@ -136,6 +138,30 @@ func (s *MtHubService) SetTradeBroker(b *TradeBroker) { s.tradeBroker = b }
 
 // SetStatusBroker injects the account status broker for real-time connection state push.
 func (s *MtHubService) SetStatusBroker(b *AccountStatusBroker) { s.statusBroker = b }
+
+// ScheduleResolver maps a live trade's magic number back to its schedule ID.
+// Used by orderRecordToTradeRecord to attribute trades to strategies (ARCH-4 step⑥).
+type ScheduleResolver interface {
+	ResolveScheduleIDByMagic(ctx context.Context, accountID uuid.UUID, magic int32) (*uuid.UUID, error)
+}
+
+// ResolveScheduleID is the shared helper used by both orderRecordToTradeRecord paths.
+// Returns nil for magic=0 (manual/non-strategy trades) or unknown magic.
+// Errors are logged but do not block trade record writing — attribution is best-effort.
+func ResolveScheduleID(ctx context.Context, resolver ScheduleResolver, log *zap.Logger, accountID uuid.UUID, magic int32) *uuid.UUID {
+	if magic == 0 || resolver == nil {
+		return nil
+	}
+	sid, err := resolver.ResolveScheduleIDByMagic(ctx, accountID, magic)
+	if err != nil {
+		if log != nil {
+			log.Warn("resolveSchedule: failed to resolve magic to schedule_id",
+				zap.Int32("magic", magic), zap.Stringer("accountID", accountID), zap.Error(err))
+		}
+		return nil
+	}
+	return sid
+}
 
 // PublishBar publishes a bar update to all subscribers for the given account.
 func (s *MtHubService) PublishBar(ev *BarUpdate) {

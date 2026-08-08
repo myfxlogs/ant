@@ -22,13 +22,14 @@ import (
 
 // MtHubServer implements ant.v1.MtHubServiceHandler.
 type MtHubServer struct {
-	svc          *mthub.MtHubService
-	platform     *service.PlatformService
-	marketData   repository.MarketDataStore
-	tradeRecords *repository.TradeRecordRepository
-	log          *zap.Logger
-	backfillMu   sync.Mutex
-	backfilling  map[string]bool // key: "accountID:symbol"
+	svc              *mthub.MtHubService
+	platform         *service.PlatformService
+	marketData       repository.MarketDataStore
+	tradeRecords     *repository.TradeRecordRepository
+	scheduleResolver mthub.ScheduleResolver
+	log              *zap.Logger
+	backfillMu       sync.Mutex
+	backfilling      map[string]bool // key: "accountID:symbol"
 }
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
@@ -36,6 +37,9 @@ var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData repository.MarketDataStore, tradeRecords *repository.TradeRecordRepository, log *zap.Logger) *MtHubServer {
 	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, tradeRecords: tradeRecords, log: log, backfilling: make(map[string]bool)}
 }
+
+// SetScheduleResolver injects the schedule resolver for trade attribution (ARCH-4 step⑥).
+func (s *MtHubServer) SetScheduleResolver(r mthub.ScheduleResolver) { s.scheduleResolver = r }
 
 // validateAccountAccess checks that the caller is authenticated and owns the given account.
 func (s *MtHubServer) validateAccountAccess(ctx context.Context, accountID string) error {

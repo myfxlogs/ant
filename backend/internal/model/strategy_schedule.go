@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"hash/fnv"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,6 +35,7 @@ type StrategySchedule struct {
 	RunCount        int        `json:"run_count" db:"run_count"`
 	LastError       string     `json:"last_error" db:"last_error"`
 	EnableCount     int        `json:"enable_count" db:"enable_count"`
+	MagicNumber     *int32     `json:"magic_number" db:"magic_number"`
 	ManualRunCount  int        `json:"manual_run_count" db:"manual_run_count"`
 	LastManualRunAt *time.Time `json:"last_manual_run_at" db:"last_manual_run_at"`
 	LastManualError string     `json:"last_manual_error" db:"last_manual_error"`
@@ -48,9 +50,9 @@ type BacktestMetrics struct {
 	SharpeRatio   decimal.Decimal `json:"sharpe_ratio"`
 	WinRate       decimal.Decimal `json:"win_rate"`
 	ProfitFactor  decimal.Decimal `json:"profit_factor"`
-	TotalTrades   int     `json:"total_trades"`
-	WinningTrades int     `json:"winning_trades"`
-	LosingTrades  int     `json:"losing_trades"`
+	TotalTrades   int             `json:"total_trades"`
+	WinningTrades int             `json:"winning_trades"`
+	LosingTrades  int             `json:"losing_trades"`
 	AverageProfit decimal.Decimal `json:"average_profit"`
 	AverageLoss   decimal.Decimal `json:"average_loss"`
 }
@@ -256,6 +258,20 @@ func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (tim
 	default:
 		return time.Time{}, fmt.Errorf("unknown schedule_type: %s", scheduleType)
 	}
+}
+
+// StrategyMagic derives a deterministic 32-bit magic number from a ScheduleID.
+// This allows multiple strategies on the same account to attribute positions
+// correctly — each strategy's orders carry a unique magic, and dispatchCloseAll
+// filters by magic to avoid cross-strategy position interference.
+// Returns 0 when ScheduleID is zero (backward compat for callers that don't set it).
+func StrategyMagic(scheduleID uuid.UUID) int32 {
+	if scheduleID == uuid.Nil {
+		return 0
+	}
+	h := fnv.New32a()
+	_, _ = h.Write(scheduleID[:])
+	return int32(h.Sum32())
 }
 
 func NewStrategySchedule(userID, templateID, accountID uuid.UUID, symbol, timeframe string) *StrategySchedule {

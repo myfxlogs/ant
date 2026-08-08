@@ -37,6 +37,7 @@ type ScheduleRow struct {
 	RunCount        int32
 	LastError       string
 	EnableCount     int32
+	MagicNumber     *int32
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -45,7 +46,7 @@ func (s *StrategySvc) ListSchedules(ctx context.Context, userID uuid.UUID) ([]Sc
 	rows, err := s.pg.Query(ctx,
 		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config,
 		 backtest_metrics, risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
-		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, created_at, updated_at
+		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, magic_number, created_at, updated_at
 		 FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("ListSchedules: %w", err)
@@ -59,12 +60,12 @@ func (s *StrategySvc) GetSchedule(ctx context.Context, id, userID uuid.UUID) (*S
 	err := s.pg.QueryRow(ctx,
 		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config,
 		 backtest_metrics, risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
-		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, created_at, updated_at
+		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, magic_number, created_at, updated_at
 		 FROM strategy_schedules WHERE id = $1 AND user_id = $2`, id, userID,
 	).Scan(&r.ID, &r.UserID, &r.TemplateID, &r.AccountID, &r.Name, &r.Symbol, &r.Timeframe,
 		&r.Parameters, &r.ScheduleType, &r.ScheduleConfig,
 		&r.BacktestMetrics, &r.RiskScore, &r.RiskLevel, &r.RiskReasons, &r.RiskWarnings, &r.LastBacktestAt,
-		&r.IsActive, &r.LastRunAt, &r.NextRunAt, &r.RunCount, &r.LastError, &r.EnableCount, &r.CreatedAt, &r.UpdatedAt)
+		&r.IsActive, &r.LastRunAt, &r.NextRunAt, &r.RunCount, &r.LastError, &r.EnableCount, &r.MagicNumber, &r.CreatedAt, &r.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrScheduleNotFound
@@ -99,15 +100,19 @@ func (s *StrategySvc) CreateSchedule(ctx context.Context, r *ScheduleRow) error 
 			r.NextRunAt = &next
 		}
 	}
+	// ARCH-4 step⑥: compute deterministic magic from schedule ID for trade attribution.
+	magic := model.StrategyMagic(r.ID)
+	r.MagicNumber = &magic
 	_, err := s.pg.Exec(ctx,
 		`INSERT INTO strategy_schedules (id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config,
 		 backtest_metrics, risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
-		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, created_at, updated_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)`,
+		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, magic_number, created_at, updated_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)`,
 		r.ID, r.UserID, r.TemplateID, r.AccountID, r.Name, r.Symbol, r.Timeframe,
 		r.Parameters, r.ScheduleType, r.ScheduleConfig,
 		r.BacktestMetrics, r.RiskScore, r.RiskLevel, r.RiskReasons, r.RiskWarnings, r.LastBacktestAt,
-		r.IsActive, r.LastRunAt, r.NextRunAt, r.RunCount, r.LastError, r.EnableCount, r.CreatedAt, r.UpdatedAt)
+		r.IsActive, r.LastRunAt, r.NextRunAt, r.RunCount, r.LastError, r.EnableCount,
+		r.MagicNumber, r.CreatedAt, r.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("CreateSchedule: %w", err)
 	}
@@ -165,7 +170,7 @@ func scanScheduleRows(rows pgx.Rows) ([]ScheduleRow, error) {
 		err := rows.Scan(&r.ID, &r.UserID, &r.TemplateID, &r.AccountID, &r.Name, &r.Symbol, &r.Timeframe,
 			&r.Parameters, &r.ScheduleType, &r.ScheduleConfig,
 			&r.BacktestMetrics, &r.RiskScore, &r.RiskLevel, &r.RiskReasons, &r.RiskWarnings, &r.LastBacktestAt,
-			&r.IsActive, &r.LastRunAt, &r.NextRunAt, &r.RunCount, &r.LastError, &r.EnableCount, &r.CreatedAt, &r.UpdatedAt)
+			&r.IsActive, &r.LastRunAt, &r.NextRunAt, &r.RunCount, &r.LastError, &r.EnableCount, &r.MagicNumber, &r.CreatedAt, &r.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("scan schedule row: %w", err)
 		}

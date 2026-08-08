@@ -19,19 +19,23 @@ func (r *StrategyScheduleRepository) Create(ctx context.Context, s *model.Strate
 	s.CreatedAt = now
 	s.UpdatedAt = now
 
+	// ARCH-4 step⑥: compute deterministic magic from schedule ID for trade attribution.
+	magic := model.StrategyMagic(s.ID)
+	s.MagicNumber = &magic
+
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO strategy_schedules (
 			id, user_id, template_id, account_id, name, symbol, timeframe,
 			parameters, schedule_type, schedule_config, backtest_metrics,
 			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
-			created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+			magic_number, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`,
 		s.ID, s.UserID, s.TemplateID, s.AccountID, s.Name, s.Symbol, s.Timeframe,
 		s.Parameters, s.ScheduleType, s.ScheduleConfig, s.BacktestMetrics,
 		s.RiskScore, s.RiskLevel, s.RiskReasons, s.RiskWarnings, s.LastBacktestAt,
 		s.IsActive, s.LastRunAt, s.NextRunAt, s.RunCount, s.LastError, s.EnableCount,
-		s.CreatedAt, s.UpdatedAt,
+		s.MagicNumber, s.CreatedAt, s.UpdatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("create schedule: %w", err)

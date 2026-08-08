@@ -90,7 +90,7 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	parsedUID, _ = uuid.Parse(userID)
 	for _, r := range records {
-		rec := orderRecordToTradeRecord(r, uid, parsedUID, platform)
+		rec := orderRecordToTradeRecord(ctx, r, uid, parsedUID, platform, s.scheduleResolver, s.log)
 		tradeRecs = append(tradeRecs, rec)
 	}
 
@@ -140,7 +140,7 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, p ClosedTradeParams)
 	return s.tradeRecords.Create(ctx, rec)
 }
 
-func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) *model.TradeRecord {
+func orderRecordToTradeRecord(ctx context.Context, r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string, resolver mthub.ScheduleResolver, log *zap.Logger) *model.TradeRecord {
 	rec := &model.TradeRecord{
 		UserID:       userID,
 		AccountID:    accountID,
@@ -159,6 +159,7 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID,
 		TakeProfit:   r.TakeProfit,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
+		ScheduleID:   mthub.ResolveScheduleID(ctx, resolver, log, accountID, int32(r.Magic)),
 		Platform:     platform,
 	}
 	return rec

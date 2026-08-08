@@ -3,12 +3,12 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"hash/fnv"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/repository"
 )
@@ -21,18 +21,10 @@ func strategyOrderClientID(runID uuid.UUID, barOpenTime int64, signalType string
 	return fmt.Sprintf("strat-%s-%d-%s", runID, barOpenTime, signalType)
 }
 
-// strategyMagic derives a deterministic 32-bit magic number from a ScheduleID.
-// This allows multiple strategies on the same account to attribute positions
-// correctly — each strategy's orders carry a unique magic, and dispatchCloseAll
-// filters by magic to avoid cross-strategy position interference.
-// Returns 0 when ScheduleID is zero (backward compat for callers that don't set it).
+// strategyMagic delegates to model.StrategyMagic for a deterministic 32-bit magic number.
+// Kept as a thin wrapper for call-site readability within the strategy package.
 func strategyMagic(scheduleID uuid.UUID) int32 {
-	if scheduleID == uuid.Nil {
-		return 0
-	}
-	h := fnv.New32a()
-	_, _ = h.Write(scheduleID[:])
-	return int32(h.Sum32())
+	return model.StrategyMagic(scheduleID)
 }
 
 // signalToSide maps a strategy signal action to mthub.Side. Returns 0 for non-directional signals.

@@ -1,5 +1,7 @@
 # 上线前架构评估 — 2026-08-02
 
+> ⚠️ **已被取代（2026-08-08）**：本报告的 3 个 launch-blocking 缺口（agent 质量基准 / marketplace 资金链路覆盖 / GoExecutor）现已**全部解决**（LAUNCH-1 / LAUNCH-2 / ARCH-1）。当前上线就绪评估见 `docs/audits/launch-readiness-assessment.md`。本报告保留作历史归档（结论与判断记录决策轨迹，不重写）。
+
 > 基于全项目审计（6 条管线 + 11 个功能块 + 9 维审计）的输出，
 > 对照 `business-direction.md` 的商业目标，评估当前状态是否达标、
 > 哪些缺口必须在上线前堵住、哪些商业点值得深挖。

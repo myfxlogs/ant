@@ -92,6 +92,7 @@ func registerHandlers(
 	reconLoop := mthub.NewReconciliationLoop(d.Hub, pool, d.RDB.Client(), log, d.ReconcileGate)
 
 	mthubServer := system.NewMtHubServer(d.MthubSvc, d.PlatformSvc, marketDataRepo, d.TradeRecordRepo, log)
+	mthubServer.SetScheduleResolver(repository.NewStrategyScheduleRepository(pool))
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
 
 	accountEventPub := mdgateway.NewAccountEventPublisher(d.JS, log)

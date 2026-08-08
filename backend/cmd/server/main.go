@@ -129,6 +129,7 @@ func main() {
 	// --- mdgateway pipeline (M10 runner) ---
 	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
 	accountSyncSvc := service.NewAccountSyncService(tradeRecordRepo, mthubSvc, analyticsCache, log)
+	accountSyncSvc.SetScheduleResolver(repository.NewStrategyScheduleRepository(pool))
 
 	spillDir := cfg.SpillDir
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())

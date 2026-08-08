@@ -21,11 +21,12 @@ import (
 
 // AccountSyncService handles account-level background synchronisation and alerts.
 type AccountSyncService struct {
-	tradeRecordRepo *repository.TradeRecordRepository
-	mthubSvc        *mthub.MtHubService
-	analytics       *AnalyticsCache
-	notifSender     *notifpubsub.Sender
-	log             *zap.Logger
+	tradeRecordRepo  *repository.TradeRecordRepository
+	mthubSvc         *mthub.MtHubService
+	analytics        *AnalyticsCache
+	scheduleResolver mthub.ScheduleResolver
+	notifSender      *notifpubsub.Sender
+	log              *zap.Logger
 }
 
 // NewAccountSyncService creates an account sync service.
@@ -45,6 +46,9 @@ func NewAccountSyncService(
 
 // SetNotificationSender wires the notification sender for alerts.
 func (s *AccountSyncService) SetNotificationSender(ns *notifpubsub.Sender) { s.notifSender = ns }
+
+// SetScheduleResolver injects the schedule resolver for trade attribution (ARCH-4 step⑥).
+func (s *AccountSyncService) SetScheduleResolver(r mthub.ScheduleResolver) { s.scheduleResolver = r }
 
 // SyncAccountHistory synchronises broker order history into trade_records.
 // Called on gateway connect/disconnect to catch orders missed during disconnect gaps.
@@ -93,7 +97,7 @@ func (s *AccountSyncService) syncAccountHistory(ctx context.Context, accountID, 
 	platform := s.mthubSvc.Platform(accountID)
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	for _, r := range records {
-		tradeRecs = append(tradeRecs, orderRecordToTradeRecord(r, accID, uid, platform))
+		tradeRecs = append(tradeRecs, orderRecordToTradeRecord(ctx, r, accID, uid, platform, s.scheduleResolver, s.log))
 	}
 
 	if err := s.tradeRecordRepo.BatchCreate(ctx, tradeRecs); err != nil {
@@ -154,7 +158,7 @@ func MapSideToString(side mthub.Side) string {
 
 // orderRecordToTradeRecord converts an mthub.OrderRecord to a model.TradeRecord.
 // REUSE: mthub.OrderRecord.OrderTypeString @ mthub/order_types.go
-func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) *model.TradeRecord {
+func orderRecordToTradeRecord(ctx context.Context, r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string, resolver mthub.ScheduleResolver, log *zap.Logger) *model.TradeRecord {
 	return &model.TradeRecord{
 		UserID:       userID,
 		AccountID:    accountID,
@@ -173,6 +177,7 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID,
 		TakeProfit:   r.TakeProfit,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
+		ScheduleID:   mthub.ResolveScheduleID(ctx, resolver, log, accountID, int32(r.Magic)),
 		Platform:     platform,
 	}
 }
