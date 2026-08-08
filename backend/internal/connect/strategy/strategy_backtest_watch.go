@@ -38,6 +38,7 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 		EquityCurve:          bp.EquityCurve,
 		Risk:                 bp.Risk,
 		ExecutionAssumptions: bp.ExecutionAssumptions,
+		BlindSpots:           bp.BlindSpots,
 	}); err != nil {
 		return err
 	}
@@ -83,6 +84,7 @@ func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *con
 			EquityCurve:          bp.EquityCurve,
 			Risk:                 bp.Risk,
 			ExecutionAssumptions: bp.ExecutionAssumptions,
+			BlindSpots:           bp.BlindSpots,
 		}); err != nil {
 			return err
 		}

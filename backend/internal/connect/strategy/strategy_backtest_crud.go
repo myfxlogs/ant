@@ -177,6 +177,7 @@ func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *conne
 		EquityCurve:          bp.EquityCurve,
 		Risk:                 bp.Risk,
 		ExecutionAssumptions: bp.ExecutionAssumptions,
+		BlindSpots:           bp.BlindSpots,
 	}), nil
 }
 

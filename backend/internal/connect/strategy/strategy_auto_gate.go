@@ -57,6 +57,7 @@ func sendAutoGateUpdate(ctx context.Context, s *StrategyExecutionServer, run *re
 				EquityCurve:          bp.EquityCurve,
 				Risk:                 bp.Risk,
 				ExecutionAssumptions: bp.ExecutionAssumptions,
+				BlindSpots:           bp.BlindSpots,
 				GateUpdate: &antv1.GateEvaluationUpdate{
 					Gate: GateResultToProto(g),
 				},
@@ -84,6 +85,7 @@ func sendAutoGateUpdate(ctx context.Context, s *StrategyExecutionServer, run *re
 		EquityCurve:          bp.EquityCurve,
 		Risk:                 bp.Risk,
 		ExecutionAssumptions: bp.ExecutionAssumptions,
+		BlindSpots:           bp.BlindSpots,
 		GateUpdate:           gateSummary,
 		QualityPreview:       qualityPreview,
 	}); err != nil {
@@ -326,6 +328,7 @@ func restoreGateEvaluation(ctx context.Context, s *StrategyExecutionServer, run 
 					EquityCurve:          bp.EquityCurve,
 					Risk:                 bp.Risk,
 					ExecutionAssumptions: bp.ExecutionAssumptions,
+					BlindSpots:           bp.BlindSpots,
 					GateUpdate: &antv1.GateEvaluationUpdate{
 						Gate: g,
 					},
@@ -343,6 +346,7 @@ func restoreGateEvaluation(ctx context.Context, s *StrategyExecutionServer, run 
 		EquityCurve:          bp.EquityCurve,
 		Risk:                 bp.Risk,
 		ExecutionAssumptions: bp.ExecutionAssumptions,
+		BlindSpots:           bp.BlindSpots,
 		GateUpdate:           gateSummary,
 		QualityPreview:       qualityPreview,
 	}); err != nil {

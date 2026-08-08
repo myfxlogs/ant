@@ -124,6 +124,7 @@ type backtestParsed struct {
 	EquityCurve          []string
 	Risk                 *antv1.BacktestRisk
 	ExecutionAssumptions *antv1.ExecutionAssumptions
+	BlindSpots           []*antv1.BacktestBlindSpot
 }
 
 // parseBacktestResult unmarshals the proto response once and extracts all fields.
@@ -161,6 +162,16 @@ func parseBacktestResult(raw []byte) backtestParsed {
 			Warnings:   r.GetWarnings(),
 			IsReliable: r.GetIsReliable(),
 		}
+	}
+	// Extract blind spots (ADR-0028 Part B: diagnostic panel needs these in the watch stream).
+	for _, bs := range resp.GetBlindSpots() {
+		p.BlindSpots = append(p.BlindSpots, &antv1.BacktestBlindSpot{
+			Id:          bs.GetId(),
+			Description: bs.GetDescription(),
+			Severity:    bs.GetSeverity(),
+			Category:    bs.GetCategory(),
+			Location:    bs.GetLocation(),
+		})
 	}
 	return p
 }
