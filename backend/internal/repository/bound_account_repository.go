@@ -76,7 +76,7 @@ func (r *BoundAccountRepository) UnbindAccount(ctx context.Context, userID, acco
 // ListBoundAccounts returns all bound MT accounts for a user with denormalized account info.
 func (r *BoundAccountRepository) ListBoundAccounts(ctx context.Context, userID uuid.UUID) ([]BoundAccountRow, error) {
 	rows, err := r.pg.Query(ctx,
-		`SELECT sba.mt_account_id, ma.login, ma.broker, ma.server, ma.mt_type, ma.account_status, sba.bound_at
+		`SELECT sba.mt_account_id, ma.login, ma.broker_company, ma.broker_server, ma.mt_type, ma.account_status, sba.bound_at
 		 FROM subscription_bound_accounts sba
 		 JOIN mt_accounts ma ON ma.id = sba.mt_account_id
 		 WHERE sba.user_id = $1 AND ma.deleted_at IS NULL
