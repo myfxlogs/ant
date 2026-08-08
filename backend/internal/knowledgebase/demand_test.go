@@ -18,6 +18,10 @@ func demandTestPool(t *testing.T) *pgxpool.Pool {
 	if err != nil {
 		t.Skipf("no database: %v", err)
 	}
+	if err := pool.Ping(context.Background()); err != nil {
+		pool.Close()
+		t.Skipf("no database (ping failed): %v", err)
+	}
 	return pool
 }
 

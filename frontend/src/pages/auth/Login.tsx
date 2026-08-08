@@ -91,7 +91,7 @@ export default function Login() {
           <Form
             name="login"
             onFinish={onFinish}
-            autoComplete="off"
+            autoComplete="on"
             layout="vertical"
             requiredMark={false}
           >
@@ -103,6 +103,7 @@ export default function Login() {
             >
               <Input
                 placeholder={t('auth.fields.login', { defaultValue: '邮箱/账号' })}
+                autoComplete="username"
                 size="large"
                 style={{
                   borderRadius: '10px',
@@ -118,8 +119,9 @@ export default function Login() {
                 { min: 8, message: t('auth.validation.passwordMin8') },
               ]}
             >
-              <Input 
+              <Input.Password
                 placeholder={t('auth.fields.password')}
+                autoComplete="current-password"
                 size="large"
                 style={{
                   borderRadius: '10px',

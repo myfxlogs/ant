@@ -2,7 +2,6 @@ package knowledgebase
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -123,8 +122,6 @@ func TestKB_RecordFact_TriggersRefresh(t *testing.T) {
 	}
 
 	var refreshCount int32
-	var refreshMu sync.Mutex
-	_ = refreshMu
 
 	// Mock loadFromDB: on first call, simulate the new fact being in PG.
 	s.loadFromDB = func(ctx context.Context) error {
