@@ -71,6 +71,7 @@
 - **Frontend `useAIFix.tsx`**（NEW）：AI 修复闭环 hook — `codeAssistApi.revise` → Modal diff 预览 → `strategyVersionApi.updateCode` → 自动重回测。
 - **对抗证明**：`TestParseBacktestResult_BlindSpots` — 删 `parseBacktestResult` BlindSpots 提取 → 测试必红。红队自审：fatal 组无静默 toggle；AI Fix 按钮仅 fatal/info 显示。
 - `go build`✅ + `go test` 3 新测试绿✅ + `npx tsc --noEmit`✅ + `npm run build`✅。
+- **✅ 审计方实测通过（2026-08-10）**：backend `parseBacktestResult` 提取 BlindSpots + watch/persistence/code_check 6 处发送（实测）+ proto `BacktestBlindSpot.blind_spots=7`+category（实测）+ 前端 `DiagnosticPanel.tsx`（**fatal 红 + 无静默开关**、warning 静默 toggle、info；`hasFixable = fatal || info` AI Fix 门控——对抗点全中）+ `useAIFix.tsx` 闭环 + `parse_blindspots_test.go` 对抗测绿 + `go build` exit 0 实测。
 
 ---
 
