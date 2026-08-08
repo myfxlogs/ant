@@ -90,7 +90,7 @@ export default function Register() {
           <Form
             name="register"
             onFinish={onFinish}
-            autoComplete="off"
+            autoComplete="on"
             layout="vertical"
             requiredMark={false}
           >
@@ -101,27 +101,16 @@ export default function Register() {
                 { type: 'email', message: t('auth.validation.emailInvalid') },
               ]}
             >
-              <div className="relative">
-                <Input
-                  type="email"
-                  placeholder={t('auth.fields.email')}
-                  className="w-full outline-none transition-all"
-                  style={{
-                    background: 'var(--color-bg-card)',
-                    border: '1px solid rgba(185, 201, 223, 0.4)',
-                    borderRadius: '10px',
-                    padding: '14px 16px',
-                    fontSize: '16px',
-                    color: 'var(--color-text)',
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#D4AF37';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'rgba(185, 201, 223, 0.4)';
-                  }}
-                />
-              </div>
+              <Input
+                type="email"
+                placeholder={t('auth.fields.email')}
+                autoComplete="email"
+                size="large"
+                style={{
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -131,27 +120,15 @@ export default function Register() {
                 { min: 8, message: t('auth.validation.passwordMin8') },
               ]}
             >
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder={t('auth.fields.password')}
-                  className="w-full outline-none transition-all pr-12"
-                  style={{
-                    background: 'var(--color-bg-card)',
-                    border: '1px solid rgba(185, 201, 223, 0.4)',
-                    borderRadius: '10px',
-                    padding: '14px 16px',
-                    fontSize: '16px',
-                    color: 'var(--color-text)',
-                  }}
-                  onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = '#D4AF37';
-                  }}
-                  onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'rgba(185, 201, 223, 0.4)';
-                  }}
-                />
-              </div>
+              <Input.Password
+                placeholder={t('auth.fields.password')}
+                autoComplete="new-password"
+                size="large"
+                style={{
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -169,27 +146,15 @@ export default function Register() {
                 }),
               ]}
             >
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder={t('auth.fields.confirmPassword')}
-                  className="w-full outline-none transition-all pr-12"
-                  style={{
-                    background: 'var(--color-bg-card)',
-                    border: '1px solid rgba(185, 201, 223, 0.4)',
-                    borderRadius: '10px',
-                    padding: '14px 16px',
-                    fontSize: '16px',
-                    color: 'var(--color-text)',
-                  }}
-                  onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = '#D4AF37';
-                  }}
-                  onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'rgba(185, 201, 223, 0.4)';
-                  }}
-                />
-              </div>
+              <Input.Password
+                placeholder={t('auth.fields.confirmPassword')}
+                autoComplete="new-password"
+                size="large"
+                style={{
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                }}
+              />
             </Form.Item>
 
             <Form.Item>
