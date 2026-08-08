@@ -173,6 +173,7 @@
   - **T5 warn**：`live_runner.go:129` `coverageChecker==nil && mode==live` 时加 `s.log.Warn("coverage checker not injected, live coverage gate skipped")`，非静默 fail-open。
   - **C1 integration e2e**：新建 `c1_notify_integration_test.go`（`//go:build integration`）：`RecordFact→轮询等缓存刷新(5s timeout)→LookupConstant 命中`，覆盖真 PG LISTEN/NOTIFY 投递路径，防 silent stale cache。PASS（<100ms）。
   - go build + go test + check-file-lines 全绿。registry MQL-T5/K3/C1 已更新。
+- 2026-08-08 **KB-HARDEN-3 修复：LISTEN 注册竞态（生产路径真 bug）**。`TestC1_NotifyCacheRefresh_E2E` 5s 超时 red（1/5 PASS flaky）。根因：`Start()` 原先 `go s.listenLoop(ctx)` 异步注册 LISTEN——`listenLoop` 内部调 `pgListen.Listen()`（acquire conn + `LISTEN kb_compat_update`），但 `Start()` 立即返回后 `RecordFact` 可能在 LISTEN 注册完成前发出 `pg_notify`→NOTIFY 被丢弃→缓存 stale。**这是生产路径真 bug**：服务器启动后如果立即有 `RecordFact`/`RecordFix` 调用（如 seed 后立即记录新知识），NOTIFY 会丢失。修复：LISTEN 注册从 `listenLoop` 移入 `Start()` 同步执行（`s.pgListen.Listen(ctx, notifyChannel)` 在 `Start()` 内调用，返回 `notifCh` + `listenCancel` 传给 `go s.listenLoop(ctx, notifCh, listenCancel)`）。`listenLoop` 签名改为接收已注册的 `notifCh` + `listenCancel`，仅读通知。**验证**：10×integration 测试全绿（修前 1/5 PASS→修后 10/10 PASS），每次 <100ms。go build + go test + check-file-lines 全绿。registry MQL-C1 已更新（含 KB-HARDEN-3 修复详情）。
 > 7 管线 + account-mgmt 全部审完。以下按"正确性 > 安全 > 功能 > 体验"排序，结合"钱路径 > 用户路径 > 内部路径"权重。
 
 ### P0 — 立即施工（DoD 收尾，本会话）✅ 全部完成

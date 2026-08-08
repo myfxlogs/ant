@@ -18,6 +18,7 @@ package knowledgebase
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -119,20 +120,24 @@ func (s *Service) Start(ctx context.Context) error {
 	interp.SetKBFunctionLookup(s.LookupFunction)
 
 	// Start LISTEN for push-first cache invalidation.
-	go s.listenLoop(ctx)
+	// Register LISTEN synchronously so that RecordFact/RecordFix calls
+	// immediately after Start() returns will not race with LISTEN registration
+	// (pg_notify before LISTEN = dropped notification = stale cache).
+	notifCh, listenCancel, err := s.pgListen.Listen(ctx, notifyChannel)
+	if err != nil {
+		return fmt.Errorf("kb: LISTEN %s: %w", notifyChannel, err)
+	}
+	go s.listenLoop(ctx, notifCh, listenCancel)
 
 	return nil
 }
 
-// listenLoop subscribes to the KB NOTIFY channel and refreshes the cache
-// on each notification. Push-first: no polling.
-func (s *Service) listenLoop(ctx context.Context) {
-	notifCh, cancel, err := s.pgListen.Listen(ctx, notifyChannel)
-	if err != nil {
-		s.log.Error("kb: LISTEN failed, cache will not auto-refresh", zap.Error(err))
-		return
-	}
-	defer cancel()
+// listenLoop reads notifications from the registered LISTEN channel and
+// refreshes the cache on each notification. Push-first: no polling.
+// LISTEN registration is done synchronously in Start() before launching
+// this goroutine, so there is no race between LISTEN and pg_notify.
+func (s *Service) listenLoop(ctx context.Context, notifCh <-chan string, listenCancel context.CancelFunc) {
+	defer listenCancel()
 
 	for {
 		select {
