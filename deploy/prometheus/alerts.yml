@@ -1,0 +1,133 @@
+groups:
+  - name: mthub
+    rules:
+      - alert: MtHubOrderRejectRateHigh
+        expr: |
+          sum(rate(mthub_orders_placed_total{status="rejected"}[5m]))
+          / sum(rate(mthub_orders_placed_total[5m])) > 0.10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MtHub order reject rate >10%"
+          description: "More than 10% of orders are being rejected by pre-trade checks or gate."
+          runbook: "docs/runbook/mthub-order-reject.md"
+
+      - alert: MtHubPlaceLatencyP99High
+        expr: |
+          histogram_quantile(0.99, rate(mthub_place_latency_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MtHub PlaceOrder p99 >2s"
+          description: "Order placement latency p99 exceeds 2 seconds — broker may be slow or unreachable."
+          runbook: "docs/runbook/mthub-place-latency.md"
+
+      - alert: MtHubOrderErrorRateHigh
+        expr: |
+          sum(rate(mthub_orders_placed_total{status="err"}[5m])) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MtHub order error rate >0.1/s"
+          description: "Orders are failing at the broker submission layer — check broker connectivity."
+          runbook: "docs/runbook/mthub-order-error.md"
+
+      - alert: MtHubNoActiveSessions
+        expr: mthub_session_active == 0
+        for: 60s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MtHub session disconnected for {{ $labels.account_id }}"
+          description: "MT session has been disconnected for more than 60 seconds."
+          runbook: "docs/runbook/mthub-session-disconnect.md"
+
+  - name: mdgateway-observability
+    rules:
+      - alert: MdGatewayAccountDisconnected
+        expr: md_circuit_breaker_state == 1
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "CircuitBreaker open for {{ $labels.breaker_key }}"
+          description: "A broker circuit breaker has been open for more than 30s. New orders are suppressed for affected accounts."
+          runbook: "docs/runbook/md-circuit-open.md"
+
+      - alert: MdGatewayTickDropRateHigh
+        expr: |
+          rate(md_dlq_sampled_total{reason="parse_error"}[5m]) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Market data DLQ parse_error spike"
+          description: "More than 1 tick/sec being dropped to DLQ with parse errors — broker may be corrupting data."
+          runbook: "docs/runbook/md-dlq-spike.md"
+
+      - alert: MdGatewayClockSkewHigh
+        expr: md_clock_skew_max_seconds > 30
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Broker clock skew >30s"
+          description: "Maximum clock skew exceeds 30 seconds — bar timestamps may be unreliable."
+          runbook: "docs/runbook/md-clock-skew.md"
+
+      - alert: MdGatewayTickLatencyP99High
+        expr: |
+          histogram_quantile(0.99, rate(md_e2e_latency_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tick e2e P99 >500ms"
+          description: "Market data end-to-end latency p99 exceeds 500ms — SLO-MD-2 violation."
+          runbook: "docs/runbook/md-tick-latency.md"
+
+      - alert: MdGatewayNormalizerFallbackHigh
+        expr: |
+          rate(md_canonical_fallback_total[10m]) > 0.05 * rate(md_tick_total[10m])
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Normalizer algorithmic fallback >5%"
+          description: "Normalizer fallback rate exceeds 5% — PG broker_symbols may be incomplete."
+          runbook: "docs/runbook/md-normalizer-fallback.md"
+
+  - name: platform-health
+    rules:
+      - alert: BackendDown
+        expr: up{job="alphaforge-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend is down"
+          description: "Backend has been down for more than 1 minute."
+          runbook: "docs/runbook/backend-down.md"
+
+      - alert: PgConnectionPoolExhausted
+        expr: pgxpool_pool_total_conns{job="alphaforge-backend"} >= 24
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PG connection pool nearly exhausted"
+          description: "Pool conns >= 24 (max 25). Risk of request starvation."
+          runbook: "docs/runbook/pg-pool-exhausted.md"
+
+      - alert: BackendHighMemory
+        expr: process_resident_memory_bytes{job="alphaforge-backend"} > 180 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend high memory usage"
+          description: "Backend memory usage exceeds 180MB (limit 192MB)."
+          runbook: "docs/runbook/backend-high-memory.md"

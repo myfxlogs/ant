@@ -49,6 +49,9 @@ func (h *Hub) Register(id string, s *Session, e OrderExecutor) {
 	defer h.mu.Unlock()
 	h.sessions[id] = s
 	h.executors[id] = e
+	if e != nil {
+		SessionActive.WithLabelValues(id, e.Platform()).Set(1)
+	}
 	for _, ch := range h.waiters[id] {
 		close(ch)
 	}
@@ -95,6 +98,9 @@ func (h *Hub) EnsureSession(ctx context.Context, id string) (*Session, error) {
 func (h *Hub) RemoveSession(id string) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+	if exec, ok := h.executors[id]; ok && exec != nil {
+		SessionActive.WithLabelValues(id, exec.Platform()).Set(0)
+	}
 	delete(h.sessions, id)
 	delete(h.executors, id)
 }

@@ -55,3 +55,100 @@
 ## 7. 完工回填
 
 `launch-readiness-assessment.md` 缺口 ④ 划掉 + handover 变更日志 + 对抗证明（含 task 1 审计表）+ `promtool check rules` 绿。不自行宣告完成。
+
+## 8. Task 1 审计表：15-observability §3 清单 vs 代码实现状态
+
+> 逐条对 `docs/spec/15-observability.md` §3 全量指标清单 vs 代码实测。状态：✅ 已实现 / ⚠️ 部分实现 / ❌ 缺。
+
+### §3.1 mdgateway
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `md_tick_total{broker,canonical}` | ❌ 缺 | 代码中无此 Counter（mdgateway 用自定义 atomic 计数器，未走 promauto） |
+| `md_tick_dropped_total{broker,canonical,reason}` | ❌ 缺 | 无此 Counter（DLQ 有 `md_dlq_sampled_total{reason}` 但无 broker/canonical label） |
+| `md_bar_flushed_total{broker,canonical,period}` | ❌ 缺 | 无此 Counter |
+| `md_ch_write_errors_total{kind}` | ❌ 缺 | 无此 Counter |
+| `md_circuit_state{account_id,broker}` | ⚠️ 部分 | 有 `md_circuit_breaker_state{breaker_key}` — label 名不同，无 account_id/broker |
+
+### §3.2 mthub — **本次施工补全**
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `mthub_orders_placed_total{broker,status}` | ✅ **NEW** | `internal/mthub/metrics.go` + `service_orders.go` 埋点 |
+| `mthub_place_latency_seconds{broker}` | ✅ **NEW** | `internal/mthub/metrics.go` + `service_orders.go` 埋点 |
+| `mthub_session_active{account_id,broker}` | ✅ **NEW** | `internal/mthub/metrics.go` + `types.go` Hub.Register/RemoveSession |
+| `mthub_event_published_total{event_type}` | ✅ **NEW** | `internal/mthub/metrics.go` + `service_orders.go` publishOrderCreatedEvent |
+
+### §3.3 quantengine
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `quant_inference_total{strategy_id,status}` | ❌ 缺 | 无此 Counter |
+| `quant_inference_latency_seconds{strategy_id}` | ❌ 缺 | 无此 Histogram |
+| `quant_signal_total{strategy_id,side}` | ❌ 缺 | 无此 Counter |
+| `quant_signal_rejected_total{strategy_id,reason}` | ❌ 缺 | 无此 Counter |
+
+### §3.4 oms
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `oms_order_state_transition_total{from,to}` | ❌ 缺 | OMS 有 Transition() 但无 metric 埋点 |
+| `oms_order_filled_latency_seconds` | ❌ 缺 | 无此 Histogram |
+| `oms_risk_block_total{rule}` | ❌ 缺 | 无此 Counter |
+
+### §3.5 system / runtime
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `go_goroutines` etc. | ✅ | promhttp 自动暴露 |
+| `ant_build_info{version,commit,build_time}` | ❌ 缺 | 无此 Gauge |
+| `ant_pg_pool_active_conns` | ⚠️ 部分 | `pgxpool_pool_total_conns` 由 pgx 自动暴露，但命名不同 |
+| `ant_redis_pool_active_conns` | ❌ 缺 | 无此 Gauge |
+| `ant_ch_pool_active_conns` | ❌ 缺 | 无此 Gauge |
+| `ant_nats_connected` | ❌ 缺 | 无此 Gauge |
+
+### §3.6 backtest / replay
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `backtest_run_total{strategy_id,status}` | ⚠️ 部分 | 有 `ant_strategy_backtest_runs_total{status}` — 命名不同，无 strategy_id label |
+| `backtest_run_duration_seconds{strategy_id}` | ⚠️ 部分 | 有 `ant_strategy_backtest_duration_seconds` — 命名不同，无 strategy_id label |
+| `backtest_bar_replayed_total` | ❌ 缺 | 无此 Counter |
+| `backtest_signal_generated_total` | ❌ 缺 | 无此 Counter |
+| `backtest_divergence_ratio` | ❌ 缺 | 无此 Gauge |
+
+### §3.7 order state machine
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `mt_reconciliation_mismatch_total` | ❌ 缺 | 无此 Counter |
+| `mt_reconciliation_duration_seconds` | ❌ 缺 | 无此 Histogram |
+| `mt_idempotency_hit_total` | ❌ 缺 | 无此 Counter |
+| `mt_idempotency_key_ttl_seconds` | ❌ 缺 | 无此 Gauge |
+
+### §3.8 paper trading
+
+全部 ❌ 缺（无 paper trading 指标实现）。
+
+### §3.9 AI strategy generation
+
+| 指标 | 状态 | 实现位置 |
+|------|------|---------|
+| `ai_platform_cost_breaker_tripped_total` | ✅ | `internal/service/daily_quota.go` |
+| `ai_platform_cost_breaker_active` | ✅ | `internal/service/daily_quota.go` |
+| `ai_daily_quota_rejected_total{reason}` | ✅ | `internal/service/daily_quota.go` |
+| 其余 AI 指标 | ❌ 缺 | 无实现 |
+
+### §3.10 signal execution latency
+
+全部 ❌ 缺（无 signal_to_execution_latency / oms_risk_check_latency / mthub_broker_ack_latency 指标）。
+
+### 总结
+
+- **本次施工补全**：§3.2 mthub 钱路径 4 个指标（✅ 全部新增）
+- **已有但命名差异**：§3.5 go runtime（✅）、§3.6 backtest（⚠️ 命名不同）、§3.9 AI cost breaker（✅）
+- **已有部分实现**：§3.1 md_circuit_breaker_state（⚠️ label 不同）、§3.5 pgxpool（⚠️ 命名不同）
+- **未实现（不在本 spec 范围）**：§3.3 quantengine、§3.4 oms、§3.7 reconciliation、§3.8 paper、§3.10 signal latency — 这些是后续迭代项，本 spec 只补钱路径 + 告警
+- **告警落地**：`deploy/prometheus/alerts.yml` 新建，含 mthub（4 条）+ mdgateway（5 条）+ platform-health（3 条）= 12 条规则，YAML 语法验证通过
+- **Dashboard**：`deploy/grafana/alphaforge-money-path.json` 新建，9 面板覆盖钱路径 + 平台健康
+

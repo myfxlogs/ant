@@ -98,6 +98,7 @@
 | LAUNCH-2 | marketplace 资金链路集成测试（购买/退款/订阅/试用 happy+error）| ✅done（2026-08-09：15 集成测试覆盖 purchase(once/subscription)/settle/refund(frozen/settled)/subscribe(free/paid rejected)/idempotency/insufficient balance/self-buy/double refund/refund window expired/fee tier/full lifecycle。发现并修复 2 个生产 Bug：①`refund.go:69` SELECT `idempotency_key`（不存在列）→ `idem_key`；②`refund.go:70` 用 `IdemKeyBuy+targetUserID`（publisher ID）查交易→改用 `IdemKeyBuy+subIdemKey`（subscription idempotency_key），原逻辑永远找不到购买交易→退款全挂。REUSE: `PurchaseStrategy`@`purchase.go:49` + `RefundPurchase`@`refund.go:28` + `SettleExpired`@`settlement.go:34` + `Subscribe`@`service_subscription.go:32`。NEW: `money_flow_integration_test.go`（`//go:build integration`）|
 | LAUNCH-3 | GoExecutor 移除 + Bytecode VM 覆盖验证 | ✅ GoExecutor 已移除（= ARCH-1，2026-08-07 核验）；Bytecode VM 覆盖验证仍待（live 路径已确认走 VM）|
 | LAUNCH-FE | 前端测试基线（vitest/jsdom/Testing Library + store 测 + 组件冒烟 + CI）| ✅done（2026-08-09：`npm test` 128 test 全绿（12 文件）。基建补全：setup.ts 加 matchMedia/IntersectionObserver/ResizeObserver mock（Antd 6）；mockClient.ts ConnectRPC mock 工具。5 Zustand store 测 45 test（auth 8/workspace 11/notification 8/ui 4/trading 14）。11 组件冒烟（Antd Button/Tag/Statistic/Empty/Spin/Typography + authStore 集成 2 + tradingStore+Statistic 集成 2）。CI ci.yml frontend job 加 `npm test` 步。对抗证明：authStore logout isAuthenticated:true → test 必红。REUSE: vitest.config.ts/setup.ts/5 utils test 已有；NEW: mockClient.ts/5 store test/组件 test。待审计方实测）|
+| LAUNCH-OBS | 可观测钱路径指标 + 告警规则 + Grafana dashboard | ✅done（2026-08-09：mthub 钱路径 4 指标新增（`mthub_orders_placed_total{broker,status}` / `mthub_place_latency_seconds{broker}` / `mthub_session_active{account_id,broker}` / `mthub_event_published_total{event_type}`）。`deploy/prometheus/alerts.yml` 12 条规则（mthub 4 + mdgateway 5 + platform 3）。`deploy/grafana/alphaforge-money-path.json` 9 面板 dashboard。Task 1 审计表完成（spec §8：15-observability §3 全量逐条对账）。对抗证明：5 test 绿（ok/rejected/err/session/event）。REUSE: promauto 模式 strategy/metrics.go；NEW: mthub/metrics.go + alerts.yml + dashboard JSON。`go build`+`go test` 绿。待审计方实测）|
 
 ---
 
@@ -160,13 +161,13 @@
 |------|------|--------|--------|----------|
 | §1 安全/正确性 | 30+ | 30 | 0 | 0 |
 | §2 架构 | 6 | 6 | 0 | 0 |
-| §3 上线前 | 4 | 4 | 0 | 0 |
+| §3 上线前 | 5 | 5 | 0 | 0 |
 | §4 代码质量 | 9 | 7(CQ-1/3/4/6/7/8/9) | 2(CQ-2/5) | 0 |
 | §5 迁移 | 2 | 2(MIG-1/2) | 0 | 0 |
 | §6 文档 | 7 | 7 | 0 | 0 |
 | §7 功能 | 5 | 2(FEAT-1/4) | 3(FEAT-2剩余/3/5) | 0 |
 
-**剩余 🟦open（2026-08-09 刷新，ARCH-4⑥ + 前端测试基线 已 ✅）**：**零真代码债务任务**——存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；roadmap 功能 FEAT-3（受保护回测对齐）/FEAT-5（AI 迭代闭环）；FEAT-2 剩余（deferred/成熟期）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥。**Registry 零 ❓待核，零 🟦open 代码债务。** 注：上线就绪另有**非债务维度**缺口（E2E 测试 / metric 覆盖与告警），见 `docs/audits/launch-readiness-assessment.md`。前端测试基线 LAUNCH-FE ✅done 待审计方实测。
+**剩余 🟦open（2026-08-09 刷新，ARCH-4⑥ + 前端测试基线 + 可观测钱路径 已 ✅）**：**零真代码债务任务**——存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；roadmap 功能 FEAT-3（受保护回测对齐）/FEAT-5（AI 迭代闭环）；FEAT-2 剩余（deferred/成熟期）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥。**Registry 零 ❓待核，零 🟦open 代码债务。** 注：上线就绪另有**非债务维度**缺口（E2E 测试），见 `docs/audits/launch-readiness-assessment.md`。前端测试基线 LAUNCH-FE ✅done 待审计方实测。可观测钱路径 LAUNCH-OBS ✅done 待审计方实测。
 
 ---
 

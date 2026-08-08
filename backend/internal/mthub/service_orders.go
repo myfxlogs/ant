@@ -3,6 +3,7 @@ package mthub
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -17,7 +18,11 @@ import (
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
 // Implements OMS state machine integration (S1.2) and pre-trade risk pipeline (S1.1).
 func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
+	broker := platform(req.AccountID, s.hub)
+	start := time.Now()
+
 	if err := s.preTradeChecks(ctx, req); err != nil {
+		OrdersPlacedTotal.WithLabelValues(broker, orderStatusRejected).Inc()
 		return nil, err
 	}
 
@@ -35,6 +40,8 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRiskApproved)
 
 	if err := s.evaluatePlaceGate(ctx, req, orderID); err != nil {
+		OrdersPlacedTotal.WithLabelValues(broker, orderStatusRejected).Inc()
+		PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
 		return nil, err
 	}
 
@@ -45,6 +52,8 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 
 	ticket, err := s.submitToBroker(ctx, req, orderID)
 	if err != nil {
+		OrdersPlacedTotal.WithLabelValues(broker, orderStatusErr).Inc()
+		PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
 		return nil, err
 	}
 
@@ -61,6 +70,9 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	}
 
 	s.publishOrderCreatedEvent(ctx, req, ticket, costEstimate)
+
+	OrdersPlacedTotal.WithLabelValues(broker, orderStatusOK).Inc()
+	PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
 
 	return &OrderRecord{Ticket: ticket, AccountID: req.AccountID, State: OrderStatePending}, nil
 }
@@ -254,6 +266,7 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 			zap.String("eventID", ev.EventID),
 			zap.String("accountID", ev.AccountID))
 	}
+	EventPublishedTotal.WithLabelValues(string(TradeEventOrderCreated)).Inc()
 }
 
 // lossyFloat64 converts a decimal to float64 for MT API proto boundaries.

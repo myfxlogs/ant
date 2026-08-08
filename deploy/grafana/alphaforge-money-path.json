@@ -1,0 +1,136 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "title": "AlphaForge Money Path & Platform Health",
+  "uid": "alphaforge-money-path",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "title": "Order Placement Rate by Status",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(rate(mthub_orders_placed_total[5m])) by (status)",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "ops"}
+      }
+    },
+    {
+      "title": "Order Reject Rate (%)",
+      "type": "gauge",
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(rate(mthub_orders_placed_total{status=\"rejected\"}[5m])) / sum(rate(mthub_orders_placed_total[5m])) * 100",
+          "legendFormat": "reject %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "percent", "max": 100, "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "yellow", "value": 5}, {"color": "red", "value": 10}]}}
+      }
+    },
+    {
+      "title": "Place Latency p99 (s)",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 0},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(mthub_place_latency_seconds_bucket[5m]))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "s", "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "yellow", "value": 1}, {"color": "red", "value": 2}]}}
+      }
+    },
+    {
+      "title": "Active MT Sessions",
+      "type": "stat",
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 6},
+      "targets": [
+        {
+          "expr": "sum(mthub_session_active) by (broker)",
+          "legendFormat": "{{broker}}"
+        }
+      ]
+    },
+    {
+      "title": "Trade Events Published Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 6},
+      "targets": [
+        {
+          "expr": "sum(rate(mthub_event_published_total[5m])) by (event_type)",
+          "legendFormat": "{{event_type}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "ops"}
+      }
+    },
+    {
+      "title": "Backend Up",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 12},
+      "targets": [
+        {
+          "expr": "up{job=\"alphaforge-backend\"}",
+          "legendFormat": "backend"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "DOWN", "color": "red"}, "1": {"text": "UP", "color": "green"}}}]}
+      }
+    },
+    {
+      "title": "PG Pool Connections",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 12},
+      "targets": [
+        {
+          "expr": "pgxpool_pool_total_conns{job=\"alphaforge-backend\"}",
+          "legendFormat": "total conns"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "yellow", "value": 20}, {"color": "red", "value": 24}]}}
+      }
+    },
+    {
+      "title": "Circuit Breaker State",
+      "type": "stat",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 12},
+      "targets": [
+        {
+          "expr": "md_circuit_breaker_state",
+          "legendFormat": "{{breaker_key}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"mappings": [{"type": "value", "options": {"0": {"text": "CLOSED", "color": "green"}, "1": {"text": "OPEN", "color": "red"}, "2": {"text": "HALF_OPEN", "color": "yellow"}}}]}
+      }
+    },
+    {
+      "title": "DLQ Sample Rate",
+      "type": "timeseries",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 12},
+      "targets": [
+        {
+          "expr": "sum(rate(md_dlq_sampled_total[5m])) by (reason)",
+          "legendFormat": "{{reason}}"
+        }
+      ]
+    }
+  ]
+}
