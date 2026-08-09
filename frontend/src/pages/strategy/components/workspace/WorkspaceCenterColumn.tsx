@@ -132,7 +132,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     onImport: () => setImportMode(true),
     onNew: handleNewStrategy,
     autoExpandHistory: history.autoExpandHistory,
-  }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest.loadRunById, code.setCode, setRightPanelTab]);
+  }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest, code.setCode, setRightPanelTab]);
 
   // ── Backtest context for AI ───────────────────────────────────────────
   const btSummary = backtest.metrics?.totalTrades != null
