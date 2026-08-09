@@ -95,17 +95,20 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
         {/* Header: tabs + close */}
         <div style={{
           display: 'flex', alignItems: 'center', flexShrink: 0,
-          borderBottom: '1px solid var(--ant-color-border)', height: 34,
+          borderBottom: '1px solid var(--ant-color-border)', height: 40,
+          background: 'linear-gradient(180deg, #f0f5ff 0%, #e6f0ff 100%)',
         }}>
           {tabs.map(({ key, icon, label }) => (
             <div
               key={key}
               onClick={() => onTabChange(key)}
               style={{
-                padding: '0 14px', height: '100%', display: 'flex', alignItems: 'center', gap: 5,
-                cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                color: activeTab === key ? '#58a6ff' : 'var(--ant-color-text-secondary)',
-                borderBottom: activeTab === key ? '2px solid #58a6ff' : '2px solid transparent',
+                padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
+                cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                color: activeTab === key ? '#1677ff' : 'var(--ant-color-text-secondary)',
+                borderBottom: activeTab === key ? '3px solid #1677ff' : '3px solid transparent',
+                background: activeTab === key ? 'rgba(22, 119, 255, 0.06)' : 'transparent',
+                transition: 'all 0.15s',
               }}
             >
               {icon} {label}
