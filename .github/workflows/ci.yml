@@ -259,12 +259,12 @@ jobs:
 
   # ── E2E: Playwright ──
   # Requires full backend stack (PG + NATS + backend). Runs locally with
-  # docker-compose. CI marks as non-blocking until full service container
-  # setup is added.
+  # docker-compose. CI skips E2E unless E2E_BASE_URL secret is set.
   e2e:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: ${{ vars.E2E_ENABLED == 'true' }}
     continue-on-error: true
     defaults:
       run:
