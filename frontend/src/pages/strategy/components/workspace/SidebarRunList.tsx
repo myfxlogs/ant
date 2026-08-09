@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Typography, Spin, Popconfirm, Checkbox, Input } from 'antd';
 import { DeleteOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { SIDEBAR_DOUBLE_CLICK_RENAME_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface BacktestRun {
   id: string;
@@ -125,7 +126,7 @@ export default function SidebarRunList({
                   />
                 ) : (
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
-                    title={t('strategy.workspace.sidebar.doubleClickRename', { defaultValue: 'Double-click to rename' })}>
+                    title={t(SIDEBAR_DOUBLE_CLICK_RENAME_KEY)}>
                     {r.name || r.templateName || r.id?.slice(0, 8)}
                   </span>
                 )}

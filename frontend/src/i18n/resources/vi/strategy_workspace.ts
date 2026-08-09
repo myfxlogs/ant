@@ -69,7 +69,8 @@ const StrategyWorkspace = {
         "noRuns": "Chưa có lần backtest nào",
         "viewAll": "Xem tất cả",
         "newStrategy": "Chiến lược mới",
-        "trades": "giao dịch"
+        "trades": "giao dịch",
+        "doubleClickRename": "Nhấp đúp để đổi tên"
       },
       "tour": {
         "ai": "Trợ lý AI",

@@ -166,13 +166,14 @@ type StrategyWorkspaceI18N struct {
 	MemoryNamePlaceholder    string `protobuf:"bytes,173,opt,name=memory_name_placeholder,json=memoryNamePlaceholder,proto3" json:"memory_name_placeholder,omitempty"`
 	MemoryContentPlaceholder string `protobuf:"bytes,174,opt,name=memory_content_placeholder,json=memoryContentPlaceholder,proto3" json:"memory_content_placeholder,omitempty"`
 	// ── Sidebar (175-185) ──
-	SidebarTitle           string `protobuf:"bytes,175,opt,name=sidebar_title,json=sidebarTitle,proto3" json:"sidebar_title,omitempty"`
-	SidebarMyStrategies    string `protobuf:"bytes,176,opt,name=sidebar_my_strategies,json=sidebarMyStrategies,proto3" json:"sidebar_my_strategies,omitempty"`
-	SidebarBacktestHistory string `protobuf:"bytes,177,opt,name=sidebar_backtest_history,json=sidebarBacktestHistory,proto3" json:"sidebar_backtest_history,omitempty"`
-	SidebarNoRuns          string `protobuf:"bytes,178,opt,name=sidebar_no_runs,json=sidebarNoRuns,proto3" json:"sidebar_no_runs,omitempty"`
-	SidebarViewAll         string `protobuf:"bytes,179,opt,name=sidebar_view_all,json=sidebarViewAll,proto3" json:"sidebar_view_all,omitempty"`
-	SidebarNewStrategy     string `protobuf:"bytes,180,opt,name=sidebar_new_strategy,json=sidebarNewStrategy,proto3" json:"sidebar_new_strategy,omitempty"`
-	SidebarTrades          string `protobuf:"bytes,181,opt,name=sidebar_trades,json=sidebarTrades,proto3" json:"sidebar_trades,omitempty"`
+	SidebarTitle             string `protobuf:"bytes,175,opt,name=sidebar_title,json=sidebarTitle,proto3" json:"sidebar_title,omitempty"`
+	SidebarMyStrategies      string `protobuf:"bytes,176,opt,name=sidebar_my_strategies,json=sidebarMyStrategies,proto3" json:"sidebar_my_strategies,omitempty"`
+	SidebarBacktestHistory   string `protobuf:"bytes,177,opt,name=sidebar_backtest_history,json=sidebarBacktestHistory,proto3" json:"sidebar_backtest_history,omitempty"`
+	SidebarNoRuns            string `protobuf:"bytes,178,opt,name=sidebar_no_runs,json=sidebarNoRuns,proto3" json:"sidebar_no_runs,omitempty"`
+	SidebarViewAll           string `protobuf:"bytes,179,opt,name=sidebar_view_all,json=sidebarViewAll,proto3" json:"sidebar_view_all,omitempty"`
+	SidebarNewStrategy       string `protobuf:"bytes,180,opt,name=sidebar_new_strategy,json=sidebarNewStrategy,proto3" json:"sidebar_new_strategy,omitempty"`
+	SidebarTrades            string `protobuf:"bytes,181,opt,name=sidebar_trades,json=sidebarTrades,proto3" json:"sidebar_trades,omitempty"`
+	SidebarDoubleClickRename string `protobuf:"bytes,182,opt,name=sidebar_double_click_rename,json=sidebarDoubleClickRename,proto3" json:"sidebar_double_click_rename,omitempty"`
 	// ── Empty state & actions (186-200) ──
 	ImportMql          string `protobuf:"bytes,186,opt,name=import_mql,json=importMql,proto3" json:"import_mql,omitempty"`
 	EmptyTitle         string `protobuf:"bytes,187,opt,name=empty_title,json=emptyTitle,proto3" json:"empty_title,omitempty"`
@@ -1194,6 +1195,13 @@ func (x *StrategyWorkspaceI18N) GetSidebarTrades() string {
 	return ""
 }
 
+func (x *StrategyWorkspaceI18N) GetSidebarDoubleClickRename() string {
+	if x != nil {
+		return x.SidebarDoubleClickRename
+	}
+	return ""
+}
+
 func (x *StrategyWorkspaceI18N) GetImportMql() string {
 	if x != nil {
 		return x.ImportMql
@@ -1366,7 +1374,7 @@ var File_i18n_strategy_workspace_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\n" +
-	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xf82\n" +
+	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xb83\n" +
 	"\x15StrategyWorkspaceI18n\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12%\n" +
 	"\x0eselect_account\x18\x02 \x01(\tR\rselectAccount\x12#\n" +
@@ -1520,7 +1528,8 @@ const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\x0fsidebar_no_runs\x18\xb2\x01 \x01(\tR\rsidebarNoRuns\x12)\n" +
 	"\x10sidebar_view_all\x18\xb3\x01 \x01(\tR\x0esidebarViewAll\x121\n" +
 	"\x14sidebar_new_strategy\x18\xb4\x01 \x01(\tR\x12sidebarNewStrategy\x12&\n" +
-	"\x0esidebar_trades\x18\xb5\x01 \x01(\tR\rsidebarTrades\x12\x1e\n" +
+	"\x0esidebar_trades\x18\xb5\x01 \x01(\tR\rsidebarTrades\x12>\n" +
+	"\x1bsidebar_double_click_rename\x18\xb6\x01 \x01(\tR\x18sidebarDoubleClickRename\x12\x1e\n" +
 	"\n" +
 	"import_mql\x18\xba\x01 \x01(\tR\timportMql\x12 \n" +
 	"\vempty_title\x18\xbb\x01 \x01(\tR\n" +

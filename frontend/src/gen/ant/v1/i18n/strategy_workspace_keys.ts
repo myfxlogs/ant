@@ -421,6 +421,9 @@ export const SIDEBAR_NEW_STRATEGY_KEY = 'strategy.workspace.sidebar.newStrategy'
 /** sidebar.trades */
 export const SIDEBAR_TRADES_KEY = 'strategy.workspace.sidebar.trades' as const;
 
+/** sidebar.doubleClickRename */
+export const SIDEBAR_DOUBLE_CLICK_RENAME_KEY = 'strategy.workspace.sidebar.doubleClickRename' as const;
+
 /** importMql */
 export const IMPORT_MQL_KEY = 'strategy.workspace.importMql' as const;
 
@@ -634,6 +637,7 @@ export const STRATEGYWORKSPACE_KEYS = {
   sidebar_view_all: 'strategy.workspace.sidebar.viewAll',
   sidebar_new_strategy: 'strategy.workspace.sidebar.newStrategy',
   sidebar_trades: 'strategy.workspace.sidebar.trades',
+  sidebar_double_click_rename: 'strategy.workspace.sidebar.doubleClickRename',
   import_mql: 'strategy.workspace.importMql',
   empty_title: 'strategy.workspace.emptyTitle',
   empty_desc: 'strategy.workspace.emptyDesc',

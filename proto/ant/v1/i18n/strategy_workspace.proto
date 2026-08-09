@@ -172,6 +172,7 @@ message StrategyWorkspaceI18n {
   string sidebar_view_all = 179;
   string sidebar_new_strategy = 180;
   string sidebar_trades = 181;
+  string sidebar_double_click_rename = 182;
 
   // ── Empty state & actions (186-200) ──
   string import_mql = 186;

@@ -69,7 +69,8 @@ const StrategyWorkspace = {
         "noRuns": "暂无回测记录",
         "viewAll": "查看全部",
         "newStrategy": "新建策略",
-        "trades": "笔交易"
+        "trades": "笔交易",
+        "doubleClickRename": "双击重命名"
       },
       "tour": {
         "ai": "AI 助手",
