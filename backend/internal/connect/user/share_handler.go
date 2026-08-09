@@ -104,6 +104,25 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		}
 	}
 
+	// Trade stats + symbol stats from backend (zero-trust: no frontend computation).
+	var pbTradeStats *antv1.ShareTradeStats
+	if perf.TradeStats.BestTrade != "" || perf.TradeStats.WorstTrade != "" {
+		pbTradeStats = &antv1.ShareTradeStats{
+			WinningTrades: int32(perf.TradeStats.WinningTrades),
+			LosingTrades:  int32(perf.TradeStats.LosingTrades),
+			BestTrade:     perf.TradeStats.BestTrade,
+			WorstTrade:    perf.TradeStats.WorstTrade,
+			AvgWin:        perf.TradeStats.AvgWin,
+			AvgLoss:       perf.TradeStats.AvgLoss,
+		}
+	}
+	pbSymbolStats := make([]*antv1.ShareSymbolStat, 0, len(perf.SymbolStats))
+	for _, s := range perf.SymbolStats {
+		pbSymbolStats = append(pbSymbolStats, &antv1.ShareSymbolStat{
+			Symbol: s.Symbol, Count: int32(s.Count), Net: s.Net,
+		})
+	}
+
 	return connect.NewResponse(&antv1.GetSharedPerformanceResponse{
 		UserName: perf.UserName, TotalTrades: int32(perf.TotalTrades),
 		TotalReturn: perf.TotalReturn, WinRate: perf.WinRate, MaxDrawdown: perf.MaxDrawdown,
@@ -111,7 +130,9 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		EquityCurve: perf.EquityCurve, EquityTimesMs: perf.EquityTimesMs, Trades: pbTrades,
 		TotalVolume: perf.TotalVolume, ProfitFactor: perf.ProfitFactor,
 		AvgHoldingMs: perf.AvgHoldingMs, ShowPositions: st.ShowPositions,
-		Positions: pbPositions,
+		Positions:   pbPositions,
+		TradeStats:  pbTradeStats,
+		SymbolStats: pbSymbolStats,
 	}), nil
 }
 

@@ -94,7 +94,7 @@ func (s *ogImageServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build PNG.
-	pngData := renderOGImagePNG(userName, perf.TotalReturn, perf.WinRate+"%", perf.MaxDrawdown, fmt.Sprintf("%d", perf.TotalTrades), perf.SharpeRatio)
+	pngData := renderOGImagePNG(userName, perf.TotalReturn, perf.WinRate+"%", perf.MaxDrawdown+"%", fmt.Sprintf("%d", perf.TotalTrades), perf.SharpeRatio)
 
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Cache-Control", "public, max-age=3600")

@@ -48,6 +48,8 @@ message GetSharedPerformanceResponse {
   int64 avg_holding_ms = 14;
   bool show_positions = 15;
   repeated SharedPosition positions = 16;
+  ShareTradeStats trade_stats = 17;
+  repeated ShareSymbolStat symbol_stats = 18;
 }
 
 message SharedTrade {
@@ -68,6 +70,21 @@ message SharedPosition {
 
 message SharedPositionList {
   repeated SharedPosition positions = 1;
+}
+
+message ShareTradeStats {
+  int32 winning_trades = 1;
+  int32 losing_trades = 2;
+  string best_trade = 3;
+  string worst_trade = 4;
+  string avg_win = 5;
+  string avg_loss = 6;
+}
+
+message ShareSymbolStat {
+  string symbol = 1;
+  int32 count = 2;
+  string net = 3;
 }
 
 message UpdateShareTokenRequest {

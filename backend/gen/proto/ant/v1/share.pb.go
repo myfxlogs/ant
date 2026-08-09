@@ -211,6 +211,8 @@ type GetSharedPerformanceResponse struct {
 	AvgHoldingMs  int64                  `protobuf:"varint,14,opt,name=avg_holding_ms,json=avgHoldingMs,proto3" json:"avg_holding_ms,omitempty"`
 	ShowPositions bool                   `protobuf:"varint,15,opt,name=show_positions,json=showPositions,proto3" json:"show_positions,omitempty"`
 	Positions     []*SharedPosition      `protobuf:"bytes,16,rep,name=positions,proto3" json:"positions,omitempty"`
+	TradeStats    *ShareTradeStats       `protobuf:"bytes,17,opt,name=trade_stats,json=tradeStats,proto3" json:"trade_stats,omitempty"`
+	SymbolStats   []*ShareSymbolStat     `protobuf:"bytes,18,rep,name=symbol_stats,json=symbolStats,proto3" json:"symbol_stats,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -353,6 +355,20 @@ func (x *GetSharedPerformanceResponse) GetShowPositions() bool {
 func (x *GetSharedPerformanceResponse) GetPositions() []*SharedPosition {
 	if x != nil {
 		return x.Positions
+	}
+	return nil
+}
+
+func (x *GetSharedPerformanceResponse) GetTradeStats() *ShareTradeStats {
+	if x != nil {
+		return x.TradeStats
+	}
+	return nil
+}
+
+func (x *GetSharedPerformanceResponse) GetSymbolStats() []*ShareSymbolStat {
+	if x != nil {
+		return x.SymbolStats
 	}
 	return nil
 }
@@ -553,6 +569,150 @@ func (x *SharedPositionList) GetPositions() []*SharedPosition {
 	return nil
 }
 
+type ShareTradeStats struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	WinningTrades int32                  `protobuf:"varint,1,opt,name=winning_trades,json=winningTrades,proto3" json:"winning_trades,omitempty"`
+	LosingTrades  int32                  `protobuf:"varint,2,opt,name=losing_trades,json=losingTrades,proto3" json:"losing_trades,omitempty"`
+	BestTrade     string                 `protobuf:"bytes,3,opt,name=best_trade,json=bestTrade,proto3" json:"best_trade,omitempty"`
+	WorstTrade    string                 `protobuf:"bytes,4,opt,name=worst_trade,json=worstTrade,proto3" json:"worst_trade,omitempty"`
+	AvgWin        string                 `protobuf:"bytes,5,opt,name=avg_win,json=avgWin,proto3" json:"avg_win,omitempty"`
+	AvgLoss       string                 `protobuf:"bytes,6,opt,name=avg_loss,json=avgLoss,proto3" json:"avg_loss,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ShareTradeStats) Reset() {
+	*x = ShareTradeStats{}
+	mi := &file_share_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ShareTradeStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ShareTradeStats) ProtoMessage() {}
+
+func (x *ShareTradeStats) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ShareTradeStats.ProtoReflect.Descriptor instead.
+func (*ShareTradeStats) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ShareTradeStats) GetWinningTrades() int32 {
+	if x != nil {
+		return x.WinningTrades
+	}
+	return 0
+}
+
+func (x *ShareTradeStats) GetLosingTrades() int32 {
+	if x != nil {
+		return x.LosingTrades
+	}
+	return 0
+}
+
+func (x *ShareTradeStats) GetBestTrade() string {
+	if x != nil {
+		return x.BestTrade
+	}
+	return ""
+}
+
+func (x *ShareTradeStats) GetWorstTrade() string {
+	if x != nil {
+		return x.WorstTrade
+	}
+	return ""
+}
+
+func (x *ShareTradeStats) GetAvgWin() string {
+	if x != nil {
+		return x.AvgWin
+	}
+	return ""
+}
+
+func (x *ShareTradeStats) GetAvgLoss() string {
+	if x != nil {
+		return x.AvgLoss
+	}
+	return ""
+}
+
+type ShareSymbolStat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	Net           string                 `protobuf:"bytes,3,opt,name=net,proto3" json:"net,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ShareSymbolStat) Reset() {
+	*x = ShareSymbolStat{}
+	mi := &file_share_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ShareSymbolStat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ShareSymbolStat) ProtoMessage() {}
+
+func (x *ShareSymbolStat) ProtoReflect() protoreflect.Message {
+	mi := &file_share_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ShareSymbolStat.ProtoReflect.Descriptor instead.
+func (*ShareSymbolStat) Descriptor() ([]byte, []int) {
+	return file_share_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ShareSymbolStat) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *ShareSymbolStat) GetCount() int32 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+func (x *ShareSymbolStat) GetNet() string {
+	if x != nil {
+		return x.Net
+	}
+	return ""
+}
+
 type UpdateShareTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
@@ -563,7 +723,7 @@ type UpdateShareTokenRequest struct {
 
 func (x *UpdateShareTokenRequest) Reset() {
 	*x = UpdateShareTokenRequest{}
-	mi := &file_share_proto_msgTypes[7]
+	mi := &file_share_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -575,7 +735,7 @@ func (x *UpdateShareTokenRequest) String() string {
 func (*UpdateShareTokenRequest) ProtoMessage() {}
 
 func (x *UpdateShareTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[7]
+	mi := &file_share_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -588,7 +748,7 @@ func (x *UpdateShareTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateShareTokenRequest.ProtoReflect.Descriptor instead.
 func (*UpdateShareTokenRequest) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{7}
+	return file_share_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateShareTokenRequest) GetToken() string {
@@ -613,7 +773,7 @@ type UpdateShareTokenResponse struct {
 
 func (x *UpdateShareTokenResponse) Reset() {
 	*x = UpdateShareTokenResponse{}
-	mi := &file_share_proto_msgTypes[8]
+	mi := &file_share_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -625,7 +785,7 @@ func (x *UpdateShareTokenResponse) String() string {
 func (*UpdateShareTokenResponse) ProtoMessage() {}
 
 func (x *UpdateShareTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[8]
+	mi := &file_share_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -638,7 +798,7 @@ func (x *UpdateShareTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateShareTokenResponse.ProtoReflect.Descriptor instead.
 func (*UpdateShareTokenResponse) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{8}
+	return file_share_proto_rawDescGZIP(), []int{10}
 }
 
 type ListShareTokensRequest struct {
@@ -649,7 +809,7 @@ type ListShareTokensRequest struct {
 
 func (x *ListShareTokensRequest) Reset() {
 	*x = ListShareTokensRequest{}
-	mi := &file_share_proto_msgTypes[9]
+	mi := &file_share_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -661,7 +821,7 @@ func (x *ListShareTokensRequest) String() string {
 func (*ListShareTokensRequest) ProtoMessage() {}
 
 func (x *ListShareTokensRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[9]
+	mi := &file_share_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -674,7 +834,7 @@ func (x *ListShareTokensRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListShareTokensRequest.ProtoReflect.Descriptor instead.
 func (*ListShareTokensRequest) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{9}
+	return file_share_proto_rawDescGZIP(), []int{11}
 }
 
 type ListShareTokensResponse struct {
@@ -686,7 +846,7 @@ type ListShareTokensResponse struct {
 
 func (x *ListShareTokensResponse) Reset() {
 	*x = ListShareTokensResponse{}
-	mi := &file_share_proto_msgTypes[10]
+	mi := &file_share_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -698,7 +858,7 @@ func (x *ListShareTokensResponse) String() string {
 func (*ListShareTokensResponse) ProtoMessage() {}
 
 func (x *ListShareTokensResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[10]
+	mi := &file_share_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -711,7 +871,7 @@ func (x *ListShareTokensResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListShareTokensResponse.ProtoReflect.Descriptor instead.
 func (*ListShareTokensResponse) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{10}
+	return file_share_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListShareTokensResponse) GetItems() []*ShareTokenItem {
@@ -736,7 +896,7 @@ type ShareTokenItem struct {
 
 func (x *ShareTokenItem) Reset() {
 	*x = ShareTokenItem{}
-	mi := &file_share_proto_msgTypes[11]
+	mi := &file_share_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -748,7 +908,7 @@ func (x *ShareTokenItem) String() string {
 func (*ShareTokenItem) ProtoMessage() {}
 
 func (x *ShareTokenItem) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[11]
+	mi := &file_share_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -761,7 +921,7 @@ func (x *ShareTokenItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShareTokenItem.ProtoReflect.Descriptor instead.
 func (*ShareTokenItem) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{11}
+	return file_share_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ShareTokenItem) GetToken() string {
@@ -822,7 +982,7 @@ type DeleteShareTokenRequest struct {
 
 func (x *DeleteShareTokenRequest) Reset() {
 	*x = DeleteShareTokenRequest{}
-	mi := &file_share_proto_msgTypes[12]
+	mi := &file_share_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -834,7 +994,7 @@ func (x *DeleteShareTokenRequest) String() string {
 func (*DeleteShareTokenRequest) ProtoMessage() {}
 
 func (x *DeleteShareTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[12]
+	mi := &file_share_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +1007,7 @@ func (x *DeleteShareTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteShareTokenRequest.ProtoReflect.Descriptor instead.
 func (*DeleteShareTokenRequest) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{12}
+	return file_share_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeleteShareTokenRequest) GetToken() string {
@@ -865,7 +1025,7 @@ type DeleteShareTokenResponse struct {
 
 func (x *DeleteShareTokenResponse) Reset() {
 	*x = DeleteShareTokenResponse{}
-	mi := &file_share_proto_msgTypes[13]
+	mi := &file_share_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -877,7 +1037,7 @@ func (x *DeleteShareTokenResponse) String() string {
 func (*DeleteShareTokenResponse) ProtoMessage() {}
 
 func (x *DeleteShareTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[13]
+	mi := &file_share_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -890,7 +1050,7 @@ func (x *DeleteShareTokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteShareTokenResponse.ProtoReflect.Descriptor instead.
 func (*DeleteShareTokenResponse) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{13}
+	return file_share_proto_rawDescGZIP(), []int{15}
 }
 
 type ListAllShareTokensRequest struct {
@@ -903,7 +1063,7 @@ type ListAllShareTokensRequest struct {
 
 func (x *ListAllShareTokensRequest) Reset() {
 	*x = ListAllShareTokensRequest{}
-	mi := &file_share_proto_msgTypes[14]
+	mi := &file_share_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +1075,7 @@ func (x *ListAllShareTokensRequest) String() string {
 func (*ListAllShareTokensRequest) ProtoMessage() {}
 
 func (x *ListAllShareTokensRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[14]
+	mi := &file_share_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +1088,7 @@ func (x *ListAllShareTokensRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAllShareTokensRequest.ProtoReflect.Descriptor instead.
 func (*ListAllShareTokensRequest) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{14}
+	return file_share_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListAllShareTokensRequest) GetPage() int32 {
@@ -957,7 +1117,7 @@ type ListAllShareTokensResponse struct {
 
 func (x *ListAllShareTokensResponse) Reset() {
 	*x = ListAllShareTokensResponse{}
-	mi := &file_share_proto_msgTypes[15]
+	mi := &file_share_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -969,7 +1129,7 @@ func (x *ListAllShareTokensResponse) String() string {
 func (*ListAllShareTokensResponse) ProtoMessage() {}
 
 func (x *ListAllShareTokensResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[15]
+	mi := &file_share_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -982,7 +1142,7 @@ func (x *ListAllShareTokensResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAllShareTokensResponse.ProtoReflect.Descriptor instead.
 func (*ListAllShareTokensResponse) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{15}
+	return file_share_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListAllShareTokensResponse) GetItems() []*AdminShareTokenItem {
@@ -1029,7 +1189,7 @@ type AdminShareTokenItem struct {
 
 func (x *AdminShareTokenItem) Reset() {
 	*x = AdminShareTokenItem{}
-	mi := &file_share_proto_msgTypes[16]
+	mi := &file_share_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1041,7 +1201,7 @@ func (x *AdminShareTokenItem) String() string {
 func (*AdminShareTokenItem) ProtoMessage() {}
 
 func (x *AdminShareTokenItem) ProtoReflect() protoreflect.Message {
-	mi := &file_share_proto_msgTypes[16]
+	mi := &file_share_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1054,7 +1214,7 @@ func (x *AdminShareTokenItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminShareTokenItem.ProtoReflect.Descriptor instead.
 func (*AdminShareTokenItem) Descriptor() ([]byte, []int) {
-	return file_share_proto_rawDescGZIP(), []int{16}
+	return file_share_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *AdminShareTokenItem) GetToken() string {
@@ -1131,7 +1291,7 @@ const file_share_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x03 \x01(\tR\texpiresAt\"3\n" +
 	"\x1bGetSharedPerformanceRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"\xe2\x04\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\xd8\x05\n" +
 	"\x1cGetSharedPerformanceResponse\x12\x1b\n" +
 	"\tuser_name\x18\x01 \x01(\tR\buserName\x12!\n" +
 	"\faccount_info\x18\x02 \x01(\tR\vaccountInfo\x12!\n" +
@@ -1149,7 +1309,10 @@ const file_share_proto_rawDesc = "" +
 	"\rprofit_factor\x18\r \x01(\tR\fprofitFactor\x12$\n" +
 	"\x0eavg_holding_ms\x18\x0e \x01(\x03R\favgHoldingMs\x12%\n" +
 	"\x0eshow_positions\x18\x0f \x01(\bR\rshowPositions\x124\n" +
-	"\tpositions\x18\x10 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\"\x8d\x01\n" +
+	"\tpositions\x18\x10 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\x128\n" +
+	"\vtrade_stats\x18\x11 \x01(\v2\x17.ant.v1.ShareTradeStatsR\n" +
+	"tradeStats\x12:\n" +
+	"\fsymbol_stats\x18\x12 \x03(\v2\x17.ant.v1.ShareSymbolStatR\vsymbolStats\"\x8d\x01\n" +
 	"\vSharedTrade\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
@@ -1164,7 +1327,20 @@ const file_share_proto_rawDesc = "" +
 	"open_price\x18\x04 \x01(\tR\topenPrice\x12\x16\n" +
 	"\x06profit\x18\x05 \x01(\tR\x06profit\"J\n" +
 	"\x12SharedPositionList\x124\n" +
-	"\tpositions\x18\x01 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\"V\n" +
+	"\tpositions\x18\x01 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\"\xd1\x01\n" +
+	"\x0fShareTradeStats\x12%\n" +
+	"\x0ewinning_trades\x18\x01 \x01(\x05R\rwinningTrades\x12#\n" +
+	"\rlosing_trades\x18\x02 \x01(\x05R\flosingTrades\x12\x1d\n" +
+	"\n" +
+	"best_trade\x18\x03 \x01(\tR\tbestTrade\x12\x1f\n" +
+	"\vworst_trade\x18\x04 \x01(\tR\n" +
+	"worstTrade\x12\x17\n" +
+	"\aavg_win\x18\x05 \x01(\tR\x06avgWin\x12\x19\n" +
+	"\bavg_loss\x18\x06 \x01(\tR\aavgLoss\"Q\n" +
+	"\x0fShareSymbolStat\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x14\n" +
+	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x10\n" +
+	"\x03net\x18\x03 \x01(\tR\x03net\"V\n" +
 	"\x17UpdateShareTokenRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12%\n" +
 	"\x0eshow_positions\x18\x02 \x01(\bR\rshowPositions\"\x1a\n" +
@@ -1226,7 +1402,7 @@ func file_share_proto_rawDescGZIP() []byte {
 	return file_share_proto_rawDescData
 }
 
-var file_share_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_share_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_share_proto_goTypes = []any{
 	(*CreateShareTokenRequest)(nil),      // 0: ant.v1.CreateShareTokenRequest
 	(*CreateShareTokenResponse)(nil),     // 1: ant.v1.CreateShareTokenResponse
@@ -1235,40 +1411,44 @@ var file_share_proto_goTypes = []any{
 	(*SharedTrade)(nil),                  // 4: ant.v1.SharedTrade
 	(*SharedPosition)(nil),               // 5: ant.v1.SharedPosition
 	(*SharedPositionList)(nil),           // 6: ant.v1.SharedPositionList
-	(*UpdateShareTokenRequest)(nil),      // 7: ant.v1.UpdateShareTokenRequest
-	(*UpdateShareTokenResponse)(nil),     // 8: ant.v1.UpdateShareTokenResponse
-	(*ListShareTokensRequest)(nil),       // 9: ant.v1.ListShareTokensRequest
-	(*ListShareTokensResponse)(nil),      // 10: ant.v1.ListShareTokensResponse
-	(*ShareTokenItem)(nil),               // 11: ant.v1.ShareTokenItem
-	(*DeleteShareTokenRequest)(nil),      // 12: ant.v1.DeleteShareTokenRequest
-	(*DeleteShareTokenResponse)(nil),     // 13: ant.v1.DeleteShareTokenResponse
-	(*ListAllShareTokensRequest)(nil),    // 14: ant.v1.ListAllShareTokensRequest
-	(*ListAllShareTokensResponse)(nil),   // 15: ant.v1.ListAllShareTokensResponse
-	(*AdminShareTokenItem)(nil),          // 16: ant.v1.AdminShareTokenItem
+	(*ShareTradeStats)(nil),              // 7: ant.v1.ShareTradeStats
+	(*ShareSymbolStat)(nil),              // 8: ant.v1.ShareSymbolStat
+	(*UpdateShareTokenRequest)(nil),      // 9: ant.v1.UpdateShareTokenRequest
+	(*UpdateShareTokenResponse)(nil),     // 10: ant.v1.UpdateShareTokenResponse
+	(*ListShareTokensRequest)(nil),       // 11: ant.v1.ListShareTokensRequest
+	(*ListShareTokensResponse)(nil),      // 12: ant.v1.ListShareTokensResponse
+	(*ShareTokenItem)(nil),               // 13: ant.v1.ShareTokenItem
+	(*DeleteShareTokenRequest)(nil),      // 14: ant.v1.DeleteShareTokenRequest
+	(*DeleteShareTokenResponse)(nil),     // 15: ant.v1.DeleteShareTokenResponse
+	(*ListAllShareTokensRequest)(nil),    // 16: ant.v1.ListAllShareTokensRequest
+	(*ListAllShareTokensResponse)(nil),   // 17: ant.v1.ListAllShareTokensResponse
+	(*AdminShareTokenItem)(nil),          // 18: ant.v1.AdminShareTokenItem
 }
 var file_share_proto_depIdxs = []int32{
 	4,  // 0: ant.v1.GetSharedPerformanceResponse.trades:type_name -> ant.v1.SharedTrade
 	5,  // 1: ant.v1.GetSharedPerformanceResponse.positions:type_name -> ant.v1.SharedPosition
-	5,  // 2: ant.v1.SharedPositionList.positions:type_name -> ant.v1.SharedPosition
-	11, // 3: ant.v1.ListShareTokensResponse.items:type_name -> ant.v1.ShareTokenItem
-	16, // 4: ant.v1.ListAllShareTokensResponse.items:type_name -> ant.v1.AdminShareTokenItem
-	0,  // 5: ant.v1.ShareService.CreateShareToken:input_type -> ant.v1.CreateShareTokenRequest
-	2,  // 6: ant.v1.ShareService.GetSharedPerformance:input_type -> ant.v1.GetSharedPerformanceRequest
-	7,  // 7: ant.v1.ShareService.UpdateShareToken:input_type -> ant.v1.UpdateShareTokenRequest
-	9,  // 8: ant.v1.ShareService.ListShareTokens:input_type -> ant.v1.ListShareTokensRequest
-	12, // 9: ant.v1.ShareService.DeleteShareToken:input_type -> ant.v1.DeleteShareTokenRequest
-	14, // 10: ant.v1.ShareService.ListAllShareTokens:input_type -> ant.v1.ListAllShareTokensRequest
-	1,  // 11: ant.v1.ShareService.CreateShareToken:output_type -> ant.v1.CreateShareTokenResponse
-	3,  // 12: ant.v1.ShareService.GetSharedPerformance:output_type -> ant.v1.GetSharedPerformanceResponse
-	8,  // 13: ant.v1.ShareService.UpdateShareToken:output_type -> ant.v1.UpdateShareTokenResponse
-	10, // 14: ant.v1.ShareService.ListShareTokens:output_type -> ant.v1.ListShareTokensResponse
-	13, // 15: ant.v1.ShareService.DeleteShareToken:output_type -> ant.v1.DeleteShareTokenResponse
-	15, // 16: ant.v1.ShareService.ListAllShareTokens:output_type -> ant.v1.ListAllShareTokensResponse
-	11, // [11:17] is the sub-list for method output_type
-	5,  // [5:11] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	7,  // 2: ant.v1.GetSharedPerformanceResponse.trade_stats:type_name -> ant.v1.ShareTradeStats
+	8,  // 3: ant.v1.GetSharedPerformanceResponse.symbol_stats:type_name -> ant.v1.ShareSymbolStat
+	5,  // 4: ant.v1.SharedPositionList.positions:type_name -> ant.v1.SharedPosition
+	13, // 5: ant.v1.ListShareTokensResponse.items:type_name -> ant.v1.ShareTokenItem
+	18, // 6: ant.v1.ListAllShareTokensResponse.items:type_name -> ant.v1.AdminShareTokenItem
+	0,  // 7: ant.v1.ShareService.CreateShareToken:input_type -> ant.v1.CreateShareTokenRequest
+	2,  // 8: ant.v1.ShareService.GetSharedPerformance:input_type -> ant.v1.GetSharedPerformanceRequest
+	9,  // 9: ant.v1.ShareService.UpdateShareToken:input_type -> ant.v1.UpdateShareTokenRequest
+	11, // 10: ant.v1.ShareService.ListShareTokens:input_type -> ant.v1.ListShareTokensRequest
+	14, // 11: ant.v1.ShareService.DeleteShareToken:input_type -> ant.v1.DeleteShareTokenRequest
+	16, // 12: ant.v1.ShareService.ListAllShareTokens:input_type -> ant.v1.ListAllShareTokensRequest
+	1,  // 13: ant.v1.ShareService.CreateShareToken:output_type -> ant.v1.CreateShareTokenResponse
+	3,  // 14: ant.v1.ShareService.GetSharedPerformance:output_type -> ant.v1.GetSharedPerformanceResponse
+	10, // 15: ant.v1.ShareService.UpdateShareToken:output_type -> ant.v1.UpdateShareTokenResponse
+	12, // 16: ant.v1.ShareService.ListShareTokens:output_type -> ant.v1.ListShareTokensResponse
+	15, // 17: ant.v1.ShareService.DeleteShareToken:output_type -> ant.v1.DeleteShareTokenResponse
+	17, // 18: ant.v1.ShareService.ListAllShareTokens:output_type -> ant.v1.ListAllShareTokensResponse
+	13, // [13:19] is the sub-list for method output_type
+	7,  // [7:13] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_share_proto_init() }
@@ -1282,7 +1462,7 @@ func file_share_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_share_proto_rawDesc), len(file_share_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -196,6 +196,12 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ❌ Never poll when a streaming equivalent exists (e.g. MT5 `OnQuote` stream over polling `GetQuote`, SSE `bar_update` over polling `PriceHistory`)
 - ✅ If adding a new data feed, ask first: "Can this be a stream?" If yes, make it a stream
 
+## Frontend Zero-Trust (公开面刚性)
+
+- **所有衍生统计必须后端算，前端只渲染**——前端可被篡改，公开面数字必须后端权威
+- 公开面衍生统计必须后端算；回撤等指标须后端用 equity 算真值（peak-to-trough），勿用单笔最差冒充
+- 前端允许：纯格式化（`.toFixed`/`toLocaleString`）、展示变换（用后端 winRate 拆饼图）
+
 ## Data Precision
 
 - Prices: `NUMERIC(20,8)` PG / `decimal.Decimal` Go

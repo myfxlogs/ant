@@ -30,6 +30,23 @@ type sharePerformance struct {
 	TotalVolume   string
 	ProfitFactor  string
 	AvgHoldingMs  int64
+	TradeStats    tradeStatsPayload
+	SymbolStats   []symbolStatPayload
+}
+
+type tradeStatsPayload struct {
+	WinningTrades int
+	LosingTrades  int
+	BestTrade     string
+	WorstTrade    string
+	AvgWin        string
+	AvgLoss       string
+}
+
+type symbolStatPayload struct {
+	Symbol string
+	Count  int
+	Net    string
 }
 
 // BuildSharePerformance fetches and computes all performance metrics for a share token.
@@ -75,6 +92,11 @@ func BuildSharePerformance(
 	trades, _ := tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
 	stats := summarizeTrades(trades)
 
+	// Max drawdown: real peak-to-trough from equity curve (decimal).
+	// REUSE: algorithm pattern from analytics_rolling.go:103 (runningMax + dd%)
+	// and live_performance.go:208-222 (decimal peak.Sub(equity).Div(peak)).
+	maxDD := computeMaxDrawdownPct(equityPoints)
+
 	// Sharpe ratio.
 	sharpeStr := "0"
 	if sharpeVal := computeSharpe(equityPoints); sharpeVal != 0 {
@@ -86,7 +108,7 @@ func BuildSharePerformance(
 		TotalTrades:   len(trades),
 		TotalReturn:   stats.totalReturnStr(),
 		WinRate:       stats.winRateStr(),
-		MaxDrawdown:   stats.maxDrawdownStr(),
+		MaxDrawdown:   maxDD.String(),
 		SharpeRatio:   sharpeStr,
 		EquityCurve:   equityVals,
 		EquityTimesMs: equityTimesMs,
@@ -94,6 +116,8 @@ func BuildSharePerformance(
 		TotalVolume:   stats.totalVolStr(),
 		ProfitFactor:  stats.profitFactorStr(),
 		AvgHoldingMs:  stats.avgHoldingMs(),
+		TradeStats:    stats.toPayload(),
+		SymbolStats:   aggregateSymbolStats(trades),
 	}, nil
 }
 
@@ -102,11 +126,11 @@ func FormatSharedTrades(trades []*model.TradeRecord) []sharedTrade {
 	out := make([]sharedTrade, 0, len(trades))
 	for _, t := range trades {
 		out = append(out, sharedTrade{
-			Symbol:       t.Symbol,
-			Side:         t.OrderType,
-			Volume:       t.Volume.String(),
-			Profit:       t.Profit.String(),
-			CloseTimeMs:  t.CloseTime.UnixMilli(),
+			Symbol:      t.Symbol,
+			Side:        t.OrderType,
+			Volume:      t.Volume.String(),
+			Profit:      t.Profit.String(),
+			CloseTimeMs: t.CloseTime.UnixMilli(),
 		})
 	}
 	return out
@@ -157,9 +181,10 @@ type sharedPosition struct {
 
 // tradeSummary holds computed metrics from a set of trades.
 type tradeSummary struct {
-	totalProfit, totalVolume, grossProfit, grossLoss, maxDD decimal.Decimal
-	wins, losses                                            int
-	openTimeSum                                             int64
+	totalProfit, totalVolume, grossProfit, grossLoss decimal.Decimal
+	bestTrade, worstTrade                            decimal.Decimal
+	wins, losses                                     int
+	openTimeSum                                      int64
 }
 
 func summarizeTrades(trades []*model.TradeRecord) tradeSummary {
@@ -174,8 +199,11 @@ func summarizeTrades(trades []*model.TradeRecord) tradeSummary {
 			s.losses++
 			s.grossLoss = s.grossLoss.Add(t.Profit.Abs())
 		}
-		if t.Profit.LessThan(s.maxDD) {
-			s.maxDD = t.Profit
+		if s.bestTrade.IsZero() || t.Profit.GreaterThan(s.bestTrade) {
+			s.bestTrade = t.Profit
+		}
+		if s.worstTrade.IsZero() || t.Profit.LessThan(s.worstTrade) {
+			s.worstTrade = t.Profit
 		}
 		s.openTimeSum += t.CloseTime.Sub(t.OpenTime).Milliseconds()
 	}
@@ -191,10 +219,6 @@ func (s tradeSummary) winRateStr() string {
 		return "0"
 	}
 	return decimal.NewFromInt(int64(s.wins)).Div(decimal.NewFromInt(int64(s.wins + s.losses))).Mul(decimal.NewFromInt(100)).String()
-}
-
-func (s tradeSummary) maxDrawdownStr() string {
-	return s.maxDD.String()
 }
 
 func (s tradeSummary) profitFactorStr() string {
@@ -213,6 +237,84 @@ func (s tradeSummary) avgHoldingMs() int64 {
 		return s.openTimeSum / int64(n)
 	}
 	return 0
+}
+
+func (s tradeSummary) toPayload() tradeStatsPayload {
+	avgWin := decimal.Zero
+	if s.wins > 0 {
+		avgWin = s.grossProfit.Div(decimal.NewFromInt(int64(s.wins)))
+	}
+	avgLoss := decimal.Zero
+	if s.losses > 0 {
+		avgLoss = s.grossLoss.Div(decimal.NewFromInt(int64(s.losses)))
+	}
+	return tradeStatsPayload{
+		WinningTrades: s.wins,
+		LosingTrades:  s.losses,
+		BestTrade:     s.bestTrade.String(),
+		WorstTrade:    s.worstTrade.String(),
+		AvgWin:        avgWin.String(),
+		AvgLoss:       avgLoss.String(),
+	}
+}
+
+// computeMaxDrawdownPct calculates the true peak-to-trough maximum drawdown
+// percentage from equity curve points using decimal arithmetic.
+// REUSE: algorithm pattern from analytics_rolling.go:103 (runningMax + dd%)
+// and live_performance.go:208-222 (decimal peak.Sub(equity).Div(peak)).
+func computeMaxDrawdownPct(equityPoints []*model.EquityPoint) decimal.Decimal {
+	if len(equityPoints) < 2 {
+		return decimal.Zero
+	}
+	var maxDD decimal.Decimal
+	runningPeak := equityPoints[0].Equity
+	for _, p := range equityPoints[1:] {
+		if p.Equity.GreaterThan(runningPeak) {
+			runningPeak = p.Equity
+		}
+		if runningPeak.GreaterThan(decimal.Zero) {
+			dd := runningPeak.Sub(p.Equity).Div(runningPeak).Mul(decimal.NewFromInt(100))
+			if dd.GreaterThan(maxDD) {
+				maxDD = dd
+			}
+		}
+	}
+	return maxDD
+}
+
+// aggregateSymbolStats groups trades by symbol and computes count + net profit.
+// REUSE: aggregation pattern from analytics_compute.go:228/258 (by-symbol grouping).
+func aggregateSymbolStats(trades []*model.TradeRecord) []symbolStatPayload {
+	if len(trades) == 0 {
+		return nil
+	}
+	type acc struct {
+		count int
+		net   decimal.Decimal
+	}
+	m := make(map[string]*acc)
+	order := make([]string, 0, len(trades))
+	for _, t := range trades {
+		sym := t.Symbol
+		if sym == "" {
+			sym = "-"
+		}
+		if _, ok := m[sym]; !ok {
+			m[sym] = &acc{}
+			order = append(order, sym)
+		}
+		m[sym].count++
+		m[sym].net = m[sym].net.Add(t.Profit)
+	}
+	out := make([]symbolStatPayload, 0, len(order))
+	for _, sym := range order {
+		out = append(out, symbolStatPayload{
+			Symbol: sym,
+			Count:  m[sym].count,
+			Net:    m[sym].net.String(),
+		})
+	}
+	return out
 }
 
 // computeSharpe calculates annualized Sharpe ratio from equity curve points.

@@ -185,9 +185,21 @@
 
 ---
 
+## §10 智能调优管线审计 + 前端零信任全局排查（2026-08-09 新增）
+
+> 触发：产品第一负责人确立"所有计算留后端、前端零信任"原则，对智能调优（Smart Tuning）是否最优解 + 前端是否参与计算存疑。审计方（Claude Code）全链路读码后做三项决策。
+
+| ID | 项 | 状态 |
+|----|----|------|
+| TUNING-AI-1 | **智能调优 `ai` 方法 vs agent-engine 是否重复造轮子**：`ExperimentWorker.runAIProposal`(`experiment_utils.go:109`) → `ai.ProposeParams`(`param_proposer.go:158`) = **参数级**优化（代码固定，LLM 提议 `@param` 参数值，3 轮温度退火 0.7→0.85，每候选 `backtestAndScore` 进程内回测）。FEAT-5 `runOptimizationGeneration`(`strategy_optimizer_generate.go:19`) → `optimizer.Generate` = **策略代码级**迭代（agent-engine write_strategy→compile→backtest→revise）。**结论：不重复，作用域不同（参数 vs 代码）**。`param_proposer.go` 是轻量 LLM helper（单 prompt 单解析 ~170 行），非并行引擎；用 agent-engine 提议参数值反而错（它会改代码）。`ai` 方法是 `runOptimizer`(`worker.go:281`) switch 里与 grid/random/de/tpe/ags **同级**的优化器，共享同一 `ai.Score`+OOS+过拟合机器——作者可 apples-to-apples 对比"AI 提参"vs"网格搜参"，是真功能非浪费。`internal/ai/` 统一库（optimizers/scoring/regime/oos/deflated_sharpe/monte_carlo）建设质量偏上。 | ✅done（2026-08-09 决策：最优设计，保持现状，不合并、不重构）|
+| TUNING-OVERFIT-2 | **参数优化过拟合 vs 信任市场的护栏**：发布门控 `quality.go:ValidateBacktestQuality` 结构正确——**诚实非豁免闸**（DEGRADED `:251` + IsReliable/fatal 盲区 `:259`，硬阻断）是真正门槛；性能闸（min sharpe/winRate/drawdown/trades）是可选可豁免的下限（默认 off，非"越高越好"排名）。优化器不因漂亮回测获额外加分。**结论：护栏恰当，无需新增发布侧阻断闸**。市场反过拟合是分层：① 作者在 Smart Tuning 看每候选 OOS/degradation/isOverfit（`candidateResult` + `runOOSValidation`，作者侧防御）；② 发布门控堵假/不可靠数据（诚实闸）；③ 实盘战绩（哈希链不可篡改）+ FEAT-5 衰减监控 + 衰减停购 = 买家侧绑定真相（过拟合回测骗不过实盘）。**🟦 次要 follow-up**：发布 OOS 衰减闸（`quality.go:302` `if snap.OosSharpeRatio != ""`）条件性惰性——优化结果快照 `storeOptimizationResult:138-148` 未填 `OosSharpeRatio`/`OosTotalReturn` → 该闸对该路径失效。非阻断（诚实闸是真门槛 + 作者侧已看 OOS + 实盘是真相）；如需激活该闸，发布快照补填 OOS（低优）| ✅done（2026-08-09 决策：护栏恰当，不新增闸）；OOS-at-publish 惰性闸记 🟦 低优 follow-up |
+| FE-TRUST-1 | **分享业绩页前端衍生计算（零信任违背，公开面）+ 后端回撤 bug**：**根因（缺陷 A）**：`share_service.go:summarizeTrades:177-179` 的 `maxDD` 实为"单笔最负 Profit"（初值 0）非真回撤（peak-to-trough），经 `perf.MaxDrawdown` 显示在**公开 OG 社交预览图**(`share_og_image.go:97`) + 分享页 proto。**缺陷 B**：前端 `SharePerformancePageStats.ts:computeTradeStats` + `SharePerformancePageHelpers.tsx:computeMaxDrawdownPct/aggregateBySymbol` 在前端 TS 从 raw trades/equityCurve 算回撤/win-loss/best-worst/avgWin-avgLoss/品种聚合=零信任违背。叠加后果=同一"最大回撤"在 OG 图（美元·最差单笔）vs 分享页 KPI（百分比·真回撤·前端算）显示完全不同的数。**修复（2026-08-10）**：① 后端 `share_service.go` 新增 `computeMaxDrawdownPct(equityPoints) decimal.Decimal`——decimal peak-to-trough 算法（REUSE: `analytics_rolling.go:103` runningMax + `live_performance.go:208` decimal peak.Sub.Div 模式），删旧 `maxDD=单笔最负` 逻辑；② `tradeSummary` 加 `bestTrade/worstTrade`（decimal）+ `toPayload()` 算 `avgWin/avgLoss`；③ 新增 `aggregateSymbolStats(trades)` 按品种聚合 count+net（REUSE: `analytics_compute.go:228` by-symbol grouping 模式）；④ proto `share.proto` 加 `ShareTradeStats`/`ShareSymbolStat` messages + `trade_stats`/`symbol_stats` fields（17/18）；⑤ `share_handler.go` 填充新 proto 字段；⑥ 前端删 `computeMaxDrawdownPct`/`computeTradeStats`/`aggregateBySymbol` 三函数，`buildKpiCards` 改读后端 `data.tradeStats`/`data.maxDrawdown`，`SharePerformancePage.tsx` 用 `data.symbolStats` 替代前端聚合；⑦ OG 图 `share_og_image.go:97` 加 `%` 后缀与 KPI 一致。**对抗证明**：`TestComputeMaxDrawdownPct` 构造 `[100,120,90,110]`→25% + `[100,0]`→100% + 边界 cases；revert 到旧逻辑（单笔最负）→ 2 tests FAIL（spec case + full drawdown）→ 证明修了真 bug 非空操作。`grep computeMaxDrawdownPct|computeTradeStats|aggregateBySymbol frontend/src/` 零命中。`go build` + `go test ./internal/connect/user/` + `tsc --noEmit` + `npm run build` + `check-file-lines --strict` 全绿。⚠️待Claude复审（架构级：公开面零信任迁移 + proto 变更） | ✅done ⚠️待Claude复审（2026-08-10 施工，对抗证明通过，spec `docs/spec/frontend-zero-trust-share-page-spec.md`）|
+
+---
+
 ## 总计
 
-**零 ❓待核** — 全部 62 项已核验完毕。
+**零 ❓待核** — 全部 65 项已核验完毕。
 
 | 类别 | 总数 | ✅done | 🟦open | ⚠️待复审 |
 |------|------|--------|--------|----------|
@@ -200,13 +212,15 @@
 | §7 功能 | 5 | 4(FEAT-1/2/4/5) | 1(FEAT-3) | 0 |
 | §8 Post-launch/增强 | 6 | 4(POST-3/4/5/6) | 2(POST-1/2) | 0 |
 | §9 实验回测优化 | 2 | 2(EXP-1/2) | 0 | 0 |
+| §10 智能调优+前端零信任 | 3 | 3(TUNING-AI-1/OVERFIT-2/FE-TRUST-1) | 0 | 1(FE-TRUST-1) |
 
-**剩余 🟦open（2026-08-10 刷新）**：存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；roadmap 功能 FEAT-3（受保护回测对齐）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥/**FEAT-2（ADR-0028 实现范围合格验收 2026-08-09；3 项 §8 by-design 暂缓=非债务）**/**FEAT-5（策略衰减监控+作者发起迭代 2026-08-10 ✅done）**。**Registry 零 ❓待核，零 🟦open 代码债务。** 注：上线就绪**所有 launch-blocking 缺口审计方实测清零**——ARCH-4⑥ / 前端测试 / 可观测 / E2E 全 ✅ 实测通过（2026-08-09），见 `docs/audits/launch-readiness-assessment.md`。**所有"已知、非阻断、未做"的 post-launch / 增强项（前端UX/性能/runbook/依赖扫描 + agent 阶段2/3）集中登记在 §8**——非债务、不阻断上线，按需择期做。
+**剩余 🟦open（2026-08-10 刷新）**：① 存量清理 CQ-2（前端 knip 死代码）/CQ-5（eslint-disable）；② roadmap 功能 FEAT-3（受保护回测对齐）；③ TUNING-OVERFIT-2 的 OOS-at-publish 惰性闸（低优 follow-up）。**零 ❓待核**。**⚠️待Claude复审**：FE-TRUST-1（公开面零信任迁移 + proto 变更，2026-08-10 施工完成，对抗证明通过）。**已 ✅ 但旧总结误列 open**：CQ-1/CQ-9/MIG-1/MIG-2/BT-1-3/LIVE-2/AGT-1/FEAT-4V/RISK-MARGIN1/ARCH-4⑥/**FEAT-2（ADR-0028 实现范围合格验收 2026-08-09；3 项 §8 by-design 暂缓=非债务）**/**FEAT-5（策略衰减监控+作者发起迭代 2026-08-10 ✅done）**/**TUNING-AI-1（智能调优 ai 方法非重复造轮子，2026-08-09 审计决策）**/**TUNING-OVERFIT-2（过拟合护栏恰当，2026-08-09 审计决策）**。注：上线就绪**所有 launch-blocking 缺口审计方实测清零**——ARCH-4⑥ / 前端测试 / 可观测 / E2E 全 ✅ 实测通过（2026-08-09），见 `docs/audits/launch-readiness-assessment.md`。**所有"已知、非阻断、未做"的 post-launch / 增强项（前端UX/性能/runbook/依赖扫描 + agent 阶段2/3）集中登记在 §8**——非债务、不阻断上线，按需择期做。
 
 ---
 
 ## 变更日志
 
+- 2026-08-09 **新增 §10 智能调优管线审计 + 前端零信任全局排查**（触发：第一负责人确立"前端零信任"原则，对智能调优是否最优 + 前端是否参与计算存疑）。审计方全链路读码做三项决策：① **TUNING-AI-1 ✅**——智能调优 `ai` 方法（`runAIProposal` 参数级优化）vs FEAT-5（`runOptimizationGeneration` 代码级迭代）作用域不同，非重复造轮子；`ai` 方法是 `internal/ai/` 统一库里与 grid/de/tpe/ags 同级的优化器，建设质量偏上，保持现状。② **TUNING-OVERFIT-2 ✅**——发布门控 `quality.go` 护栏恰当（诚实非豁免闸 DEGRADED/IsReliable/fatal 是真门槛；性能闸是可选下限；反过拟合靠 Smart Tuning 作者侧 OOS + 实盘战绩 + FEAT-5 衰减分层），不新增闸；OOS-at-publish 惰性闸记低优 follow-up。③ **FE-TRUST-1 🟦open**——全局排查发现唯一零信任违背：`/share/:token` 公开页前端算衍生指标（maxDrawdown/win-loss/avgWin-avgLoss/品种聚合），spec `docs/spec/frontend-zero-trust-share-page-spec.md` 已出待施工。审计确认 Smart Tuning/analytics/marketplace/admin 均合规（瘦客户端或渲染后端值）。
 - 2026-08-06 建立：聚合 `docs/audit/*`(17) + `docs/audits/*` + ADR 剩余 + pre-launch + 代码扫描。状态多为 ❓待核（审计跨日期，需对账当前代码）。
 - 2026-08-07 #6 实盘调度审计补全：① 新增 LIVE-1（open bar 泄漏进策略执行流，🟦open，主发现）、LIVE-2（策略订单无幂等，特性）；② ARCH-2 双风控再次核验仍 open；③ ARCH-1/LAUNCH-3 改判 ✅（GoExecutor `go run` 已移除，剩死 stub）；④ 新增 DOC-4/DOC-5 文档漂移。
 - 2026-08-07 LIVE-1 二轮核验（用户指出 K 线图已废弃）：查路由 `AppRoutes.tsx` 确认 `Market.tsx`/`Trading.tsx` 未挂载、`FactorEvaluator.Output()` 无消费者 → 图表 SSE + 因子系统均死代码。**纠正初判**：open bar 当前零合法消费者(初判误为"ticker 非孤儿")。LIVE-1 修法简化为 runner 一行过滤；新增 CQ-9（K线图+因子整条死代码，清理待产品决策）。

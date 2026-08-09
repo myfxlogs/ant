@@ -12,7 +12,7 @@ import {
   LANGUAGE_LABELS, BrandLogo, toNum, fmt,
   type ShareData,
 } from './SharePerformancePageHelpers';
-import { computeTradeStats, buildKpiCards } from './SharePerformancePageStats';
+import { buildKpiCards } from './SharePerformancePageStats';
 
 const { Text } = Typography;
 
@@ -68,6 +68,17 @@ export default function SharePerformancePage() {
             openPrice: p.openPrice, profit: p.profit,
           })),
           showPositions: resp.showPositions,
+          tradeStats: resp.tradeStats ? {
+            winningTrades: resp.tradeStats.winningTrades,
+            losingTrades: resp.tradeStats.losingTrades,
+            bestTrade: resp.tradeStats.bestTrade,
+            worstTrade: resp.tradeStats.worstTrade,
+            avgWin: resp.tradeStats.avgWin,
+            avgLoss: resp.tradeStats.avgLoss,
+          } : null,
+          symbolStats: resp.symbolStats.map(s => ({
+            symbol: s.symbol, count: s.count, net: s.net,
+          })),
         });
       })
       .catch(() => setError('loadFailed'))
@@ -90,8 +101,17 @@ export default function SharePerformancePage() {
   if (error === 'expired') return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={t('sharePage.expired')} /></div>;
   if (error || !data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={t('sharePage.notFound')} /></div>;
 
-  const stats = computeTradeStats(data);
-  const { winningTrades, losingTrades, winPct, netProfit, isPositive, bySymbol } = stats;
+  const ts = data.tradeStats;
+  const winningTrades = ts?.winningTrades ?? 0;
+  const losingTrades = ts?.losingTrades ?? 0;
+  const winPct = (winningTrades + losingTrades) > 0
+    ? Math.round(winningTrades / (winningTrades + losingTrades) * 100)
+    : Math.round(toNum(data.winRate));
+  const netProfit = toNum(data.totalReturn);
+  const isPositive = netProfit >= 0;
+  const bySymbol = (data.symbolStats || []).map(s => ({
+    symbol: s.symbol, count: s.count, net: toNum(s.net),
+  })).sort((a, b) => b.net - a.net);
   const green = '#52c41a', red = '#ff4d4f';
 
   const equity = data.equityCurve || [];
@@ -101,7 +121,7 @@ export default function SharePerformancePage() {
     : '-';
   const signed = (n: number) => `${n >= 0 ? '+' : ''}${money(n)}`;
 
-  const kpiCards = buildKpiCards(t, data, stats);
+  const kpiCards = buildKpiCards(t, data);
 
   const PIE_COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2', '#a0d911', '#f5222d', '#2f54eb', '#faad14'];
 

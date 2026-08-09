@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file share.proto.
  */
 export const file_share: GenFile = /*@__PURE__*/
-  fileDesc("CgtzaGFyZS5wcm90bxIGYW50LnYxIm8KF0NyZWF0ZVNoYXJlVG9rZW5SZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSEwoLZXhwaXJlX2RheXMYAyABKAUSFgoOc2hvd19wb3NpdGlvbnMYBCABKAgiUAoYQ3JlYXRlU2hhcmVUb2tlblJlc3BvbnNlEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRISCgpleHBpcmVzX2F0GAMgASgJIiwKG0dldFNoYXJlZFBlcmZvcm1hbmNlUmVxdWVzdBINCgV0b2tlbhgBIAEoCSKeAwocR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXNwb25zZRIRCgl1c2VyX25hbWUYASABKAkSFAoMYWNjb3VudF9pbmZvGAIgASgJEhQKDHRvdGFsX3JldHVybhgDIAEoCRIQCgh3aW5fcmF0ZRgEIAEoCRIUCgxtYXhfZHJhd2Rvd24YBSABKAkSFAoMc2hhcnBlX3JhdGlvGAYgASgJEhQKDHRvdGFsX3RyYWRlcxgHIAEoBRIUCgxlcXVpdHlfY3VydmUYCCADKAkSIwoGdHJhZGVzGAkgAygLMhMuYW50LnYxLlNoYXJlZFRyYWRlEg8KB2V4cGlyZWQYCiABKAgSFwoPZXF1aXR5X3RpbWVzX21zGAsgAygDEhQKDHRvdGFsX3ZvbHVtZRgMIAEoCRIVCg1wcm9maXRfZmFjdG9yGA0gASgJEhYKDmF2Z19ob2xkaW5nX21zGA4gASgDEhYKDnNob3dfcG9zaXRpb25zGA8gASgIEikKCXBvc2l0aW9ucxgQIAMoCzIWLmFudC52MS5TaGFyZWRQb3NpdGlvbiJiCgtTaGFyZWRUcmFkZRIOCgZzeW1ib2wYASABKAkSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAkSDgoGcHJvZml0GAQgASgJEhUKDWNsb3NlX3RpbWVfbXMYBSABKAMiYgoOU2hhcmVkUG9zaXRpb24SDgoGc3ltYm9sGAEgASgJEgwKBHR5cGUYAiABKAkSDgoGdm9sdW1lGAMgASgJEhIKCm9wZW5fcHJpY2UYBCABKAkSDgoGcHJvZml0GAUgASgJIj8KElNoYXJlZFBvc2l0aW9uTGlzdBIpCglwb3NpdGlvbnMYASADKAsyFi5hbnQudjEuU2hhcmVkUG9zaXRpb24iQAoXVXBkYXRlU2hhcmVUb2tlblJlcXVlc3QSDQoFdG9rZW4YASABKAkSFgoOc2hvd19wb3NpdGlvbnMYAiABKAgiGgoYVXBkYXRlU2hhcmVUb2tlblJlc3BvbnNlIhgKFkxpc3RTaGFyZVRva2Vuc1JlcXVlc3QiQAoXTGlzdFNoYXJlVG9rZW5zUmVzcG9uc2USJQoFaXRlbXMYASADKAsyFi5hbnQudjEuU2hhcmVUb2tlbkl0ZW0imwEKDlNoYXJlVG9rZW5JdGVtEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIWCg5zaG93X3Bvc2l0aW9ucxgEIAEoCBISCgp2aWV3X2NvdW50GAUgASgFEhIKCmV4cGlyZXNfYXQYBiABKAkSEgoKY3JlYXRlZF9hdBgHIAEoCSIoChdEZWxldGVTaGFyZVRva2VuUmVxdWVzdBINCgV0b2tlbhgBIAEoCSIaChhEZWxldGVTaGFyZVRva2VuUmVzcG9uc2UiPAoZTGlzdEFsbFNoYXJlVG9rZW5zUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBSJ4ChpMaXN0QWxsU2hhcmVUb2tlbnNSZXNwb25zZRIqCgVpdGVtcxgBIAMoCzIbLmFudC52MS5BZG1pblNoYXJlVG9rZW5JdGVtEg0KBXRvdGFsGAIgASgFEgwKBHBhZ2UYAyABKAUSEQoJcGFnZV9zaXplGAQgASgFIrEBChNBZG1pblNoYXJlVG9rZW5JdGVtEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEhMKC2Rlc2NyaXB0aW9uGAQgASgJEhYKDnNob3dfcG9zaXRpb25zGAUgASgIEhIKCnZpZXdfY291bnQYBiABKAUSEgoKZXhwaXJlc19hdBgHIAEoCRISCgpjcmVhdGVkX2F0GAggASgJMqcECgxTaGFyZVNlcnZpY2USVQoQQ3JlYXRlU2hhcmVUb2tlbhIfLmFudC52MS5DcmVhdGVTaGFyZVRva2VuUmVxdWVzdBogLmFudC52MS5DcmVhdGVTaGFyZVRva2VuUmVzcG9uc2USYQoUR2V0U2hhcmVkUGVyZm9ybWFuY2USIy5hbnQudjEuR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXF1ZXN0GiQuYW50LnYxLkdldFNoYXJlZFBlcmZvcm1hbmNlUmVzcG9uc2USVQoQVXBkYXRlU2hhcmVUb2tlbhIfLmFudC52MS5VcGRhdGVTaGFyZVRva2VuUmVxdWVzdBogLmFudC52MS5VcGRhdGVTaGFyZVRva2VuUmVzcG9uc2USUgoPTGlzdFNoYXJlVG9rZW5zEh4uYW50LnYxLkxpc3RTaGFyZVRva2Vuc1JlcXVlc3QaHy5hbnQudjEuTGlzdFNoYXJlVG9rZW5zUmVzcG9uc2USVQoQRGVsZXRlU2hhcmVUb2tlbhIfLmFudC52MS5EZWxldGVTaGFyZVRva2VuUmVxdWVzdBogLmFudC52MS5EZWxldGVTaGFyZVRva2VuUmVzcG9uc2USWwoSTGlzdEFsbFNoYXJlVG9rZW5zEiEuYW50LnYxLkxpc3RBbGxTaGFyZVRva2Vuc1JlcXVlc3QaIi5hbnQudjEuTGlzdEFsbFNoYXJlVG9rZW5zUmVzcG9uc2VCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("CgtzaGFyZS5wcm90bxIGYW50LnYxIm8KF0NyZWF0ZVNoYXJlVG9rZW5SZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSEwoLZXhwaXJlX2RheXMYAyABKAUSFgoOc2hvd19wb3NpdGlvbnMYBCABKAgiUAoYQ3JlYXRlU2hhcmVUb2tlblJlc3BvbnNlEg0KBXRva2VuGAEgASgJEhEKCXNoYXJlX3VybBgCIAEoCRISCgpleHBpcmVzX2F0GAMgASgJIiwKG0dldFNoYXJlZFBlcmZvcm1hbmNlUmVxdWVzdBINCgV0b2tlbhgBIAEoCSL7AwocR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXNwb25zZRIRCgl1c2VyX25hbWUYASABKAkSFAoMYWNjb3VudF9pbmZvGAIgASgJEhQKDHRvdGFsX3JldHVybhgDIAEoCRIQCgh3aW5fcmF0ZRgEIAEoCRIUCgxtYXhfZHJhd2Rvd24YBSABKAkSFAoMc2hhcnBlX3JhdGlvGAYgASgJEhQKDHRvdGFsX3RyYWRlcxgHIAEoBRIUCgxlcXVpdHlfY3VydmUYCCADKAkSIwoGdHJhZGVzGAkgAygLMhMuYW50LnYxLlNoYXJlZFRyYWRlEg8KB2V4cGlyZWQYCiABKAgSFwoPZXF1aXR5X3RpbWVzX21zGAsgAygDEhQKDHRvdGFsX3ZvbHVtZRgMIAEoCRIVCg1wcm9maXRfZmFjdG9yGA0gASgJEhYKDmF2Z19ob2xkaW5nX21zGA4gASgDEhYKDnNob3dfcG9zaXRpb25zGA8gASgIEikKCXBvc2l0aW9ucxgQIAMoCzIWLmFudC52MS5TaGFyZWRQb3NpdGlvbhIsCgt0cmFkZV9zdGF0cxgRIAEoCzIXLmFudC52MS5TaGFyZVRyYWRlU3RhdHMSLQoMc3ltYm9sX3N0YXRzGBIgAygLMhcuYW50LnYxLlNoYXJlU3ltYm9sU3RhdCJiCgtTaGFyZWRUcmFkZRIOCgZzeW1ib2wYASABKAkSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAkSDgoGcHJvZml0GAQgASgJEhUKDWNsb3NlX3RpbWVfbXMYBSABKAMiYgoOU2hhcmVkUG9zaXRpb24SDgoGc3ltYm9sGAEgASgJEgwKBHR5cGUYAiABKAkSDgoGdm9sdW1lGAMgASgJEhIKCm9wZW5fcHJpY2UYBCABKAkSDgoGcHJvZml0GAUgASgJIj8KElNoYXJlZFBvc2l0aW9uTGlzdBIpCglwb3NpdGlvbnMYASADKAsyFi5hbnQudjEuU2hhcmVkUG9zaXRpb24ijAEKD1NoYXJlVHJhZGVTdGF0cxIWCg53aW5uaW5nX3RyYWRlcxgBIAEoBRIVCg1sb3NpbmdfdHJhZGVzGAIgASgFEhIKCmJlc3RfdHJhZGUYAyABKAkSEwoLd29yc3RfdHJhZGUYBCABKAkSDwoHYXZnX3dpbhgFIAEoCRIQCghhdmdfbG9zcxgGIAEoCSI9Cg9TaGFyZVN5bWJvbFN0YXQSDgoGc3ltYm9sGAEgASgJEg0KBWNvdW50GAIgASgFEgsKA25ldBgDIAEoCSJAChdVcGRhdGVTaGFyZVRva2VuUmVxdWVzdBINCgV0b2tlbhgBIAEoCRIWCg5zaG93X3Bvc2l0aW9ucxgCIAEoCCIaChhVcGRhdGVTaGFyZVRva2VuUmVzcG9uc2UiGAoWTGlzdFNoYXJlVG9rZW5zUmVxdWVzdCJAChdMaXN0U2hhcmVUb2tlbnNSZXNwb25zZRIlCgVpdGVtcxgBIAMoCzIWLmFudC52MS5TaGFyZVRva2VuSXRlbSKbAQoOU2hhcmVUb2tlbkl0ZW0SDQoFdG9rZW4YASABKAkSEQoJc2hhcmVfdXJsGAIgASgJEhMKC2Rlc2NyaXB0aW9uGAMgASgJEhYKDnNob3dfcG9zaXRpb25zGAQgASgIEhIKCnZpZXdfY291bnQYBSABKAUSEgoKZXhwaXJlc19hdBgGIAEoCRISCgpjcmVhdGVkX2F0GAcgASgJIigKF0RlbGV0ZVNoYXJlVG9rZW5SZXF1ZXN0Eg0KBXRva2VuGAEgASgJIhoKGERlbGV0ZVNoYXJlVG9rZW5SZXNwb25zZSI8ChlMaXN0QWxsU2hhcmVUb2tlbnNSZXF1ZXN0EgwKBHBhZ2UYASABKAUSEQoJcGFnZV9zaXplGAIgASgFIngKGkxpc3RBbGxTaGFyZVRva2Vuc1Jlc3BvbnNlEioKBWl0ZW1zGAEgAygLMhsuYW50LnYxLkFkbWluU2hhcmVUb2tlbkl0ZW0SDQoFdG90YWwYAiABKAUSDAoEcGFnZRgDIAEoBRIRCglwYWdlX3NpemUYBCABKAUisQEKE0FkbWluU2hhcmVUb2tlbkl0ZW0SDQoFdG9rZW4YASABKAkSEQoJc2hhcmVfdXJsGAIgASgJEg8KB3VzZXJfaWQYAyABKAkSEwoLZGVzY3JpcHRpb24YBCABKAkSFgoOc2hvd19wb3NpdGlvbnMYBSABKAgSEgoKdmlld19jb3VudBgGIAEoBRISCgpleHBpcmVzX2F0GAcgASgJEhIKCmNyZWF0ZWRfYXQYCCABKAkypwQKDFNoYXJlU2VydmljZRJVChBDcmVhdGVTaGFyZVRva2VuEh8uYW50LnYxLkNyZWF0ZVNoYXJlVG9rZW5SZXF1ZXN0GiAuYW50LnYxLkNyZWF0ZVNoYXJlVG9rZW5SZXNwb25zZRJhChRHZXRTaGFyZWRQZXJmb3JtYW5jZRIjLmFudC52MS5HZXRTaGFyZWRQZXJmb3JtYW5jZVJlcXVlc3QaJC5hbnQudjEuR2V0U2hhcmVkUGVyZm9ybWFuY2VSZXNwb25zZRJVChBVcGRhdGVTaGFyZVRva2VuEh8uYW50LnYxLlVwZGF0ZVNoYXJlVG9rZW5SZXF1ZXN0GiAuYW50LnYxLlVwZGF0ZVNoYXJlVG9rZW5SZXNwb25zZRJSCg9MaXN0U2hhcmVUb2tlbnMSHi5hbnQudjEuTGlzdFNoYXJlVG9rZW5zUmVxdWVzdBofLmFudC52MS5MaXN0U2hhcmVUb2tlbnNSZXNwb25zZRJVChBEZWxldGVTaGFyZVRva2VuEh8uYW50LnYxLkRlbGV0ZVNoYXJlVG9rZW5SZXF1ZXN0GiAuYW50LnYxLkRlbGV0ZVNoYXJlVG9rZW5SZXNwb25zZRJbChJMaXN0QWxsU2hhcmVUb2tlbnMSIS5hbnQudjEuTGlzdEFsbFNoYXJlVG9rZW5zUmVxdWVzdBoiLmFudC52MS5MaXN0QWxsU2hhcmVUb2tlbnNSZXNwb25zZUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.CreateShareTokenRequest
@@ -171,6 +171,16 @@ export type GetSharedPerformanceResponse = Message<"ant.v1.GetSharedPerformanceR
    * @generated from field: repeated ant.v1.SharedPosition positions = 16;
    */
   positions: SharedPosition[];
+
+  /**
+   * @generated from field: ant.v1.ShareTradeStats trade_stats = 17;
+   */
+  tradeStats?: ShareTradeStats | undefined;
+
+  /**
+   * @generated from field: repeated ant.v1.ShareSymbolStat symbol_stats = 18;
+   */
+  symbolStats: ShareSymbolStat[];
 };
 
 /**
@@ -272,6 +282,75 @@ export const SharedPositionListSchema: GenMessage<SharedPositionList> = /*@__PUR
   messageDesc(file_share, 6);
 
 /**
+ * @generated from message ant.v1.ShareTradeStats
+ */
+export type ShareTradeStats = Message<"ant.v1.ShareTradeStats"> & {
+  /**
+   * @generated from field: int32 winning_trades = 1;
+   */
+  winningTrades: number;
+
+  /**
+   * @generated from field: int32 losing_trades = 2;
+   */
+  losingTrades: number;
+
+  /**
+   * @generated from field: string best_trade = 3;
+   */
+  bestTrade: string;
+
+  /**
+   * @generated from field: string worst_trade = 4;
+   */
+  worstTrade: string;
+
+  /**
+   * @generated from field: string avg_win = 5;
+   */
+  avgWin: string;
+
+  /**
+   * @generated from field: string avg_loss = 6;
+   */
+  avgLoss: string;
+};
+
+/**
+ * Describes the message ant.v1.ShareTradeStats.
+ * Use `create(ShareTradeStatsSchema)` to create a new message.
+ */
+export const ShareTradeStatsSchema: GenMessage<ShareTradeStats> = /*@__PURE__*/
+  messageDesc(file_share, 7);
+
+/**
+ * @generated from message ant.v1.ShareSymbolStat
+ */
+export type ShareSymbolStat = Message<"ant.v1.ShareSymbolStat"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: int32 count = 2;
+   */
+  count: number;
+
+  /**
+   * @generated from field: string net = 3;
+   */
+  net: string;
+};
+
+/**
+ * Describes the message ant.v1.ShareSymbolStat.
+ * Use `create(ShareSymbolStatSchema)` to create a new message.
+ */
+export const ShareSymbolStatSchema: GenMessage<ShareSymbolStat> = /*@__PURE__*/
+  messageDesc(file_share, 8);
+
+/**
  * @generated from message ant.v1.UpdateShareTokenRequest
  */
 export type UpdateShareTokenRequest = Message<"ant.v1.UpdateShareTokenRequest"> & {
@@ -291,7 +370,7 @@ export type UpdateShareTokenRequest = Message<"ant.v1.UpdateShareTokenRequest"> 
  * Use `create(UpdateShareTokenRequestSchema)` to create a new message.
  */
 export const UpdateShareTokenRequestSchema: GenMessage<UpdateShareTokenRequest> = /*@__PURE__*/
-  messageDesc(file_share, 7);
+  messageDesc(file_share, 9);
 
 /**
  * @generated from message ant.v1.UpdateShareTokenResponse
@@ -304,7 +383,7 @@ export type UpdateShareTokenResponse = Message<"ant.v1.UpdateShareTokenResponse"
  * Use `create(UpdateShareTokenResponseSchema)` to create a new message.
  */
 export const UpdateShareTokenResponseSchema: GenMessage<UpdateShareTokenResponse> = /*@__PURE__*/
-  messageDesc(file_share, 8);
+  messageDesc(file_share, 10);
 
 /**
  * @generated from message ant.v1.ListShareTokensRequest
@@ -317,7 +396,7 @@ export type ListShareTokensRequest = Message<"ant.v1.ListShareTokensRequest"> & 
  * Use `create(ListShareTokensRequestSchema)` to create a new message.
  */
 export const ListShareTokensRequestSchema: GenMessage<ListShareTokensRequest> = /*@__PURE__*/
-  messageDesc(file_share, 9);
+  messageDesc(file_share, 11);
 
 /**
  * @generated from message ant.v1.ListShareTokensResponse
@@ -334,7 +413,7 @@ export type ListShareTokensResponse = Message<"ant.v1.ListShareTokensResponse"> 
  * Use `create(ListShareTokensResponseSchema)` to create a new message.
  */
 export const ListShareTokensResponseSchema: GenMessage<ListShareTokensResponse> = /*@__PURE__*/
-  messageDesc(file_share, 10);
+  messageDesc(file_share, 12);
 
 /**
  * @generated from message ant.v1.ShareTokenItem
@@ -381,7 +460,7 @@ export type ShareTokenItem = Message<"ant.v1.ShareTokenItem"> & {
  * Use `create(ShareTokenItemSchema)` to create a new message.
  */
 export const ShareTokenItemSchema: GenMessage<ShareTokenItem> = /*@__PURE__*/
-  messageDesc(file_share, 11);
+  messageDesc(file_share, 13);
 
 /**
  * @generated from message ant.v1.DeleteShareTokenRequest
@@ -398,7 +477,7 @@ export type DeleteShareTokenRequest = Message<"ant.v1.DeleteShareTokenRequest"> 
  * Use `create(DeleteShareTokenRequestSchema)` to create a new message.
  */
 export const DeleteShareTokenRequestSchema: GenMessage<DeleteShareTokenRequest> = /*@__PURE__*/
-  messageDesc(file_share, 12);
+  messageDesc(file_share, 14);
 
 /**
  * @generated from message ant.v1.DeleteShareTokenResponse
@@ -411,7 +490,7 @@ export type DeleteShareTokenResponse = Message<"ant.v1.DeleteShareTokenResponse"
  * Use `create(DeleteShareTokenResponseSchema)` to create a new message.
  */
 export const DeleteShareTokenResponseSchema: GenMessage<DeleteShareTokenResponse> = /*@__PURE__*/
-  messageDesc(file_share, 13);
+  messageDesc(file_share, 15);
 
 /**
  * @generated from message ant.v1.ListAllShareTokensRequest
@@ -433,7 +512,7 @@ export type ListAllShareTokensRequest = Message<"ant.v1.ListAllShareTokensReques
  * Use `create(ListAllShareTokensRequestSchema)` to create a new message.
  */
 export const ListAllShareTokensRequestSchema: GenMessage<ListAllShareTokensRequest> = /*@__PURE__*/
-  messageDesc(file_share, 14);
+  messageDesc(file_share, 16);
 
 /**
  * @generated from message ant.v1.ListAllShareTokensResponse
@@ -465,7 +544,7 @@ export type ListAllShareTokensResponse = Message<"ant.v1.ListAllShareTokensRespo
  * Use `create(ListAllShareTokensResponseSchema)` to create a new message.
  */
 export const ListAllShareTokensResponseSchema: GenMessage<ListAllShareTokensResponse> = /*@__PURE__*/
-  messageDesc(file_share, 15);
+  messageDesc(file_share, 17);
 
 /**
  * @generated from message ant.v1.AdminShareTokenItem
@@ -517,7 +596,7 @@ export type AdminShareTokenItem = Message<"ant.v1.AdminShareTokenItem"> & {
  * Use `create(AdminShareTokenItemSchema)` to create a new message.
  */
 export const AdminShareTokenItemSchema: GenMessage<AdminShareTokenItem> = /*@__PURE__*/
-  messageDesc(file_share, 16);
+  messageDesc(file_share, 18);
 
 /**
  * @generated from service ant.v1.ShareService

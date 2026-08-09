@@ -55,29 +55,14 @@ export interface ShareData {
   positions?: Array<{ symbol: string; type: string; volume: string; openPrice: string; profit: string }> | null;
   showPositions?: boolean;
   expired?: boolean;
+  tradeStats?: {
+    winningTrades: number;
+    losingTrades: number;
+    bestTrade: string;
+    worstTrade: string;
+    avgWin: string;
+    avgLoss: string;
+  } | null;
+  symbolStats?: Array<{ symbol: string; count: number; net: string }> | null;
 }
 
-export function computeMaxDrawdownPct(equity: Array<string | number>, fallback: number): number {
-  if (equity.length > 1) {
-    let peak = -Infinity, maxDD = 0;
-    for (const raw of equity) {
-      const e = toNum(raw);
-      if (e > peak) peak = e;
-      if (peak > 0) { const dd = (peak - e) / peak * 100; if (dd > maxDD) maxDD = dd; }
-    }
-    return maxDD;
-  }
-  return fallback;
-}
-
-export function aggregateBySymbol(trades: ShareData['trades']) {
-  const symbolMap = new Map<string, { symbol: string; count: number; net: number }>();
-  for (const tr of trades) {
-    const k = tr.symbol || '-';
-    const cur = symbolMap.get(k) || { symbol: k, count: 0, net: 0 };
-    cur.count += 1;
-    cur.net += toNum(tr.profit);
-    symbolMap.set(k, cur);
-  }
-  return Array.from(symbolMap.values()).sort((a, b) => b.net - a.net);
-}

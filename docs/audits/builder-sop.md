@@ -182,6 +182,11 @@ bash scripts/gen_capability_map.sh                   # 若新增/改了能力，
 
 ---
 
+## 施工提示词（handoff prompt）落点
+
+- **施工提示词存为文件** `docs/audits/builder-handoff-<date>.md`（同日多 task 进同一文件），不只在聊天里给。审计方（Claude Code）写提示词时即落盘；施工方从该文件开工（同目录直读，用户无需复制粘贴）。理由：无损交接（聊天易失）+ 单一事实源。
+- **提示词必须显式写「红队自审」**（带任务级防御 edge cases：nil/空/除零/scope-creep），不只「对抗证明」——二者不同：对抗证明证"测试非空跑"，红队自审抓测试没覆盖的坑（如 `decimal.Div` 零除 panic）。别隐含指向本文件 §200，要落到具体检查项。
+
 ## 红线（违反 = 任务判失败）
 
 | ❌ 红线 | 为什么 |
