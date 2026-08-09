@@ -97,7 +97,7 @@ export default function SidebarRunList({
           <div
             key={r.id}
             className="sidebar-item"
-            onClick={() => onOpenHistory(r.templateId)}
+            onClick={() => onOpenHistory(r.id)}
             onDoubleClick={(e) => { e.stopPropagation(); if (onRenameRun) startRename(r.id, r.name || r.templateName || ''); }}
             style={{
               padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11,

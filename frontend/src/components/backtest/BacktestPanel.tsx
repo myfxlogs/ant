@@ -152,6 +152,7 @@ export default function BacktestPanel(props: Props) {
             strategyId={strategyId}
             onAIFix={onAIFix}
             aiFixing={aiFixing}
+            runMeta={runner.runMeta}
           />
         )}
 

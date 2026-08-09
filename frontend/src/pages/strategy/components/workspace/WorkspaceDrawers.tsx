@@ -1,12 +1,11 @@
 import { Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { TITLE_KEY as INDICATOR_CATALOG_TITLE_KEY } from '@/gen/ant/v1/i18n/indicator_catalog_keys';
-import BacktestHistoryDrawer from './BacktestHistoryDrawer';
 import VersionHistoryDrawer from './VersionHistoryDrawer';
 import { SaveTemplateWrapper } from '../../WorkspaceLayout';
 import { BacktestParamsModal, type BacktestModalResult } from './BacktestParamsModal';
 import IndicatorCatalogContent from './IndicatorCatalogContent';
-import { useWsCode, useWsAccount, useWsBacktest, useWsHistory } from '../../WorkspaceContext';
+import { useWsCode, useWsAccount, useWsBacktest } from '../../WorkspaceContext';
 
 interface Props {
   btModalOpen: boolean;
@@ -22,7 +21,6 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
   const code = useWsCode();
   const account = useWsAccount();
   const backtest = useWsBacktest();
-  const history = useWsHistory();
 
   return (
     <>
@@ -63,24 +61,6 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
       <Drawer title={t(INDICATOR_CATALOG_TITLE_KEY)} open={indicatorDrawerOpen} onClose={() => setIndicatorDrawerOpen(false)} width={640} styles={{ body: { overflowY: 'auto' } }}>
         <IndicatorCatalogContent />
       </Drawer>
-      <BacktestHistoryDrawer
-        open={history.modalOpen || history.drawerOpen}
-        runs={history.runs}
-        loading={history.loading}
-        page={history.page}
-        pageSize={history.pageSize}
-        total={history.total}
-        selectedRowKeys={history.selectedRowKeys}
-        deleting={history.deleting}
-        onPageChange={history.onPageChange}
-        onSelectionChange={history.setSelectedRowKeys}
-        onViewRun={history.onViewRun}
-        onDeleteRun={history.onDeleteRun}
-        onBatchDelete={history.onBatchDelete}
-        onRefresh={history.onRefresh}
-        onClose={history.runId ? history.close : history.closeModal}
-        runId={history.runId}
-      />
       <VersionHistoryDrawer
         open={versionHistoryOpen}
         strategyId={code.strategyId}

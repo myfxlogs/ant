@@ -19,6 +19,8 @@ import {
 } from './backtestRunnerTypes';
 import { handleBacktestUpdate, handleBacktestError, type BacktestBlindSpotItem } from './backtestRunnerWatch';
 import { buildSettingsItems, restoreLastRunFn } from './backtestRunnerHelpers';
+import { backtestRunsApi } from '@/client/backtestRuns';
+import { protoToMetrics } from './backtestRunnerTypes';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
@@ -70,6 +72,7 @@ export function useBacktestRunner() {
 
   // ── Internal ──────────────────────────────────────────────────────────
   const [runId, setRunId] = useState('');
+  const [runMeta, setRunMeta] = useState<{ symbol?: string; timeframe?: string; createdAt?: string; name?: string } | null>(null);
   const [fixDepth, setFixDepth] = useState(0);
   const [gateUpdate, setGateUpdate] = useState<GateEvaluationUpdate | null>(null);
   const [gateResults, setGateResults] = useState<GateResult[]>([]);
@@ -231,6 +234,32 @@ export function useBacktestRunner() {
   const restoreLastRun = useCallback((accountId: string, templateId?: string) =>
     restoreLastRunFn(accountId, templateId, setMetrics, setExecutionAssumptions, setRunId, setStatus, setChartTrades), []);
 
+  const loadRunById = useCallback(async (id: string) => {
+    try {
+      watchRef.current?.(); watchRef.current = null;
+      const detail = await strategyRuntimeApi.getBacktestRun(id);
+      const run = detail.run;
+      if (run) {
+        setRunMeta({
+          symbol: run.symbol,
+          timeframe: run.timeframe,
+          createdAt: run.createdAt ? new Date(Number(run.createdAt.seconds) * 1000).toISOString() : undefined,
+          name: run.name ?? undefined,
+        });
+      }
+      if (detail.metrics) setMetrics(protoToMetrics(detail.metrics));
+      if (detail.executionAssumptions) setExecutionAssumptions(detail.executionAssumptions);
+      setRunId(id);
+      setStatus('completed');
+      const tr = await backtestRunsApi.getTrades(id);
+      setChartTrades(tr.trades.map((t2) => ({
+        side: t2.side, openTime: t2.open_ts, openPrice: t2.open_price,
+        closeTime: t2.close_ts, closePrice: t2.close_price, pnl: t2.pnl, volume: t2.volume,
+        ticket: t2.ticket, commission: t2.commission, reason: t2.reason,
+      })));
+    } catch { /* silent */ }
+  }, []);
+
   return {
     initialCapital, setInitialCapital, leverage, setLeverage, lotSize, setLotSize,
     commission, setCommission, slippage, setSlippage, tradeDirection, setTradeDirection, strictMode, setStrictMode,
@@ -238,7 +267,7 @@ export function useBacktestRunner() {
     startDate, setStartDate, endDate, setEndDate, datePreset, applyDatePreset, getTimeframeWarning,
     extractedParams, strategyParamValues, setParam, updateExtractedParams, updateDirectivesFromCode,
     run, submitting, status, metrics, executionAssumptions, errorMsg,
-    runId, fixDepth, chartTrades, blindSpots, resetStatus, cancelRun, restoreLastRun,
+    runId, runMeta, fixDepth, chartTrades, blindSpots, resetStatus, cancelRun, restoreLastRun, loadRunById,
     gateUpdate, gateResults, qualityPreview, strategyDirectives,
     activeTab, setActiveTab, panelHeight, setPanelHeight, dragging, setDragging, userResized, setUserResized,
     strategyParamsModalOpen, setStrategyParamsModalOpen, settingsItems, tuning, gate, handleValidationResult,

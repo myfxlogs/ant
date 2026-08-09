@@ -45,6 +45,7 @@ export async function restoreLastRunFn(
     setChartTrades(tr.trades.map((t2) => ({
       side: t2.side, openTime: t2.open_ts, openPrice: t2.open_price,
       closeTime: t2.close_ts, closePrice: t2.close_price, pnl: t2.pnl, volume: t2.volume,
+      ticket: t2.ticket, commission: t2.commission, reason: t2.reason,
     })));
   } catch { /* silent — restoration is best-effort */ }
 }

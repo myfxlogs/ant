@@ -1,4 +1,4 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress } from 'antd';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Typography } from 'antd';
 import { RiseOutlined, FallOutlined, StopOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
@@ -68,9 +68,10 @@ interface Props {
   coverageScore?: number;
   totalBlocks?: number;
   recognizedBlocks?: number;
+  runMeta?: { symbol?: string; timeframe?: string; createdAt?: string; name?: string } | null;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks, runMeta }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => tr.side === 'buy');
@@ -83,7 +84,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {status === 'running' && (
             <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
           )}
@@ -93,6 +94,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           {status === 'degraded' && (
             <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>
           )}
+          {runMeta?.symbol && <Tag>{runMeta.symbol}</Tag>}
+          {runMeta?.timeframe && <Tag>{runMeta.timeframe}</Tag>}
+          {runMeta?.createdAt && <Typography.Text type="secondary" style={{ fontSize: 11 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>}
           {status === 'completed' && onAIOptimize && metrics && (
             <Button size="small" type="dashed" onClick={onAIOptimize} style={{ fontSize: 11 }}>
               🤖 AI Optimize
@@ -222,21 +226,30 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
             <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
           </div>
           <Table dataSource={trades.map((tr, i) => ({ ...tr, key: i }))}
-            pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180 }}
+            pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180, x: 'max-content' }}
             columns={[
               { title: '#', dataIndex: 'key', width: 40 },
+              { title: 'Ticket', dataIndex: 'ticket', width: 70 },
               { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
-                render: (v: string) => <span style={{ color: v === 'buy' ? '#26a69a' : '#e57373' }}>{v?.toUpperCase()}</span> },
+                render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v?.toUpperCase()}</Tag> },
               { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
                 render: (v: number) => v?.toFixed(2) },
-              { title: t(TRADE_PRICE_KEY, 'Price'), dataIndex: 'openPrice', width: 80,
-                render: (v: number) => v?.toFixed(2) },
-              { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 80,
-                render: (v: number) => v?.toFixed(2) ?? '—' },
+              { title: 'Open Time', dataIndex: 'openTime', width: 140,
+                render: (v: number) => v ? new Date(v).toLocaleString() : '-' },
+              { title: t(TRADE_PRICE_KEY, 'Open Price'), dataIndex: 'openPrice', width: 90,
+                render: (v: number) => v?.toFixed(5) },
+              { title: 'Close Time', dataIndex: 'closeTime', width: 140,
+                render: (v: number) => v ? new Date(v).toLocaleString() : '-' },
+              { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 90,
+                render: (v: number) => v?.toFixed(5) ?? '—' },
               { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
                 render: (v: number) => v != null ? (
                   <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
                 ) : '-' },
+              { title: 'Commission', dataIndex: 'commission', width: 80,
+                render: (v: number) => v != null ? v.toFixed(2) : '-' },
+              { title: 'Reason', dataIndex: 'reason', width: 100,
+                render: (v: string) => v || '-' },
             ]} />
         </div>
       )}

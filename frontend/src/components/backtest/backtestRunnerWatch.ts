@@ -67,6 +67,7 @@ function handleTerminalRun(update: BacktestRunUpdate, run: NonNullable<BacktestR
       cb.setChartTrades(tr.trades.map((t: BacktestTrade) => ({
         side: t.side, openTime: t.open_ts, openPrice: t.open_price,
         closeTime: t.close_ts, closePrice: t.close_price, pnl: t.pnl, volume: t.volume,
+        ticket: t.ticket, commission: t.commission, reason: t.reason,
       })));
     }).catch(() => cb.setChartTrades([]));
   } else if (ok) {
@@ -76,6 +77,7 @@ function handleTerminalRun(update: BacktestRunUpdate, run: NonNullable<BacktestR
       cb.setChartTrades(tr.trades.map((t: BacktestTrade) => ({
         side: t.side, openTime: t.open_ts, openPrice: t.open_price,
         closeTime: t.close_ts, closePrice: t.close_price, pnl: t.pnl, volume: t.volume,
+        ticket: t.ticket, commission: t.commission, reason: t.reason,
       })));
     }).catch(() => cb.setChartTrades([]));
   } else {

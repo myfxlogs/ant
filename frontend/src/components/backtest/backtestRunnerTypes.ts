@@ -11,6 +11,9 @@ export interface ChartTrade {
   closePrice?: number;
   pnl?: number;
   volume?: number;
+  ticket?: number;
+  commission?: number;
+  reason?: string;
 }
 
 export interface BacktestMetrics {
