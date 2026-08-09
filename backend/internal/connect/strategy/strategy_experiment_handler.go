@@ -60,6 +60,10 @@ func expToProto(e *repository.StrategyExperiment) *antv1.StrategyExperiment {
 		p.FinishedAt = timestamppb.New(*e.FinishedAt)
 	}
 	p.ParameterSpace = spaceProtoToStruct(e.ParameterSpace)
+	p.StrategyName = e.StrategyName
+	if e.BacktestRunID != nil {
+		p.BacktestRunId = e.BacktestRunID.String()
+	}
 	return p
 }
 
@@ -118,6 +122,7 @@ func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context,
 		Timeframe:     req.Msg.Timeframe,
 		FromTsUnixMs:  req.Msg.FromTsUnixMs,
 		ToTsUnixMs:    req.Msg.ToTsUnixMs,
+		StrategyName:  req.Msg.StrategyName,
 	}
 	if req.Msg.BaseTemplateId != "" {
 		tid, err := uuid.Parse(req.Msg.BaseTemplateId)
@@ -125,6 +130,13 @@ func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context,
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		exp.BaseTemplateID = &tid
+	}
+	if req.Msg.BacktestRunId != "" {
+		rid, err := uuid.Parse(req.Msg.BacktestRunId)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid backtest_run_id: %w", err))
+		}
+		exp.BacktestRunID = &rid
 	}
 	if req.Msg.ParameterSpace != nil {
 		b, err := proto.Marshal(req.Msg.ParameterSpace)

@@ -34,6 +34,8 @@ export function useTuning(t: TFunction) {
     code: string; symbol: string; timeframe: string;
     startDate: string; endDate: string;
     templateId?: string;
+    strategyName?: string;
+    backtestRunId?: string;
   }): Promise<string> => {
     setTuningRunning(true);
     try {
@@ -52,6 +54,8 @@ export function useTuning(t: TFunction) {
         timeframe: params.timeframe || '',
         fromTsUnixMs: BigInt(fromMs),
         toTsUnixMs: BigInt(toMs),
+        strategyName: params.strategyName,
+        backtestRunId: params.backtestRunId,
       });
       message.success(t(STARTED_KEY));
       return result.experiment?.id || result.jobId || '';

@@ -41,7 +41,7 @@ export function useStrategyWorkspaceState() {
   }) => {
     btCtx.run({ strategyCode: codeCtx.code, symbol: account.symbol, accountId: account.accountId, timeframe: account.timeframe, templateId: templates.selectedId || undefined, strategyId: codeCtx.strategyId }, overrides);
   }, [codeCtx.code, codeCtx.strategyId, account, templates.selectedId, btCtx]);
-  const handleRunTuning = useCallback(async (): Promise<string> => btCtx.tuning.runTuning({ code: codeCtx.code, symbol: account.symbol, timeframe: account.timeframe, startDate: btCtx.startDate, endDate: btCtx.endDate, templateId: templates.selectedId || undefined }), [codeCtx.code, account, btCtx, templates.selectedId]);
+  const handleRunTuning = useCallback(async (): Promise<string> => btCtx.tuning.runTuning({ code: codeCtx.code, symbol: account.symbol, timeframe: account.timeframe, startDate: btCtx.startDate, endDate: btCtx.endDate, templateId: templates.selectedId || undefined, strategyName: btCtx.runMeta?.name || codeCtx.loadedTemplate?.name || '', backtestRunId: btCtx.runId || '' }), [codeCtx.code, codeCtx.loadedTemplate, account, btCtx, templates.selectedId]);
   const qt = useQuickTradeData(account.accountId, account.symbol);
   const [btCollapsed, setBtCollapsed] = useState(false);
   const [autoExpandHistory, setAutoExpandHistory] = useState(false);

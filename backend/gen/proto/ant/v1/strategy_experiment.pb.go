@@ -43,6 +43,8 @@ type StrategyExperiment struct {
 	Timeframe       string                 `protobuf:"bytes,16,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	FromTsUnixMs    int64                  `protobuf:"varint,17,opt,name=from_ts_unix_ms,json=fromTsUnixMs,proto3" json:"from_ts_unix_ms,omitempty"`
 	ToTsUnixMs      int64                  `protobuf:"varint,18,opt,name=to_ts_unix_ms,json=toTsUnixMs,proto3" json:"to_ts_unix_ms,omitempty"`
+	StrategyName    string                 `protobuf:"bytes,19,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
+	BacktestRunId   string                 `protobuf:"bytes,20,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -203,6 +205,20 @@ func (x *StrategyExperiment) GetToTsUnixMs() int64 {
 	return 0
 }
 
+func (x *StrategyExperiment) GetStrategyName() string {
+	if x != nil {
+		return x.StrategyName
+	}
+	return ""
+}
+
+func (x *StrategyExperiment) GetBacktestRunId() string {
+	if x != nil {
+		return x.BacktestRunId
+	}
+	return ""
+}
+
 type SubmitStrategyExperimentRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	BaseTemplateId string                 `protobuf:"bytes,1,opt,name=base_template_id,json=baseTemplateId,proto3" json:"base_template_id,omitempty"`
@@ -216,6 +232,8 @@ type SubmitStrategyExperimentRequest struct {
 	Timeframe      string                 `protobuf:"bytes,9,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
 	FromTsUnixMs   int64                  `protobuf:"varint,10,opt,name=from_ts_unix_ms,json=fromTsUnixMs,proto3" json:"from_ts_unix_ms,omitempty"`
 	ToTsUnixMs     int64                  `protobuf:"varint,11,opt,name=to_ts_unix_ms,json=toTsUnixMs,proto3" json:"to_ts_unix_ms,omitempty"`
+	StrategyName   string                 `protobuf:"bytes,12,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
+	BacktestRunId  string                 `protobuf:"bytes,13,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -325,6 +343,20 @@ func (x *SubmitStrategyExperimentRequest) GetToTsUnixMs() int64 {
 		return x.ToTsUnixMs
 	}
 	return 0
+}
+
+func (x *SubmitStrategyExperimentRequest) GetStrategyName() string {
+	if x != nil {
+		return x.StrategyName
+	}
+	return ""
+}
+
+func (x *SubmitStrategyExperimentRequest) GetBacktestRunId() string {
+	if x != nil {
+		return x.BacktestRunId
+	}
+	return ""
 }
 
 type StrategyExperimentCandidate struct {
@@ -1145,7 +1177,7 @@ var File_strategy_experiment_proto protoreflect.FileDescriptor
 
 const file_strategy_experiment_proto_rawDesc = "" +
 	"\n" +
-	"\x19strategy_experiment.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb7\x05\n" +
+	"\x19strategy_experiment.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x84\x06\n" +
 	"\x12StrategyExperiment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12(\n" +
@@ -1168,7 +1200,9 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\ttimeframe\x18\x10 \x01(\tR\ttimeframe\x12%\n" +
 	"\x0ffrom_ts_unix_ms\x18\x11 \x01(\x03R\ffromTsUnixMs\x12!\n" +
 	"\rto_ts_unix_ms\x18\x12 \x01(\x03R\n" +
-	"toTsUnixMs\"\xc5\x03\n" +
+	"toTsUnixMs\x12#\n" +
+	"\rstrategy_name\x18\x13 \x01(\tR\fstrategyName\x12&\n" +
+	"\x0fbacktest_run_id\x18\x14 \x01(\tR\rbacktestRunId\"\x92\x04\n" +
 	"\x1fSubmitStrategyExperimentRequest\x12(\n" +
 	"\x10base_template_id\x18\x01 \x01(\tR\x0ebaseTemplateId\x12@\n" +
 	"\x0fparameter_space\x18\x02 \x01(\v2\x17.google.protobuf.StructR\x0eparameterSpace\x12#\n" +
@@ -1182,7 +1216,9 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x0ffrom_ts_unix_ms\x18\n" +
 	" \x01(\x03R\ffromTsUnixMs\x12!\n" +
 	"\rto_ts_unix_ms\x18\v \x01(\x03R\n" +
-	"toTsUnixMs\"\xfc\b\n" +
+	"toTsUnixMs\x12#\n" +
+	"\rstrategy_name\x18\f \x01(\tR\fstrategyName\x12&\n" +
+	"\x0fbacktest_run_id\x18\r \x01(\tR\rbacktestRunId\"\xfc\b\n" +
 	"\x1bStrategyExperimentCandidate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
 	"\rexperiment_id\x18\x02 \x01(\tR\fexperimentId\x127\n" +

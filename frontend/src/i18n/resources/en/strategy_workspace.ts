@@ -69,8 +69,7 @@ const StrategyWorkspace = {
         "noRuns": "No backtest runs yet",
         "viewAll": "View all",
         "newStrategy": "New Strategy",
-        "trades": "trades",
-        "doubleClickRename": "Double-click to rename"
+        "trades": "trades"
       },
       "tour": {
         "ai": "AI Assistant",

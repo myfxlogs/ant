@@ -16,6 +16,8 @@ type SubmitStrategyExperimentParams = {
   timeframe?: string;
   fromTsUnixMs?: bigint;
   toTsUnixMs?: bigint;
+  strategyName?: string;
+  backtestRunId?: string;
 };
 
 export const strategyExperimentApi = {
@@ -33,6 +35,8 @@ export const strategyExperimentApi = {
         timeframe: params.timeframe ?? '',
         fromTsUnixMs: params.fromTsUnixMs ?? 0n,
         toTsUnixMs: params.toTsUnixMs ?? 0n,
+        strategyName: params.strategyName ?? '',
+        backtestRunId: params.backtestRunId ?? '',
       }),
     ),
 

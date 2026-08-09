@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -27,7 +28,8 @@ func (m *mockBarSource) Fetch(_ context.Context, _, _ string, _, _ *time.Time) (
 // panics with a nil pointer dereference — the adversarial proof.
 //
 // The test runs a minimal MQL strategy through the full in-process path:
-//   ExecuteBacktestDirect → fetchBars → executeGoBacktest → executeVMBacktest → runVMEngine
+//
+//	ExecuteBacktestDirect → fetchBars → executeGoBacktest → executeVMBacktest → runVMEngine
 //
 // runVMEngine guards failureSigRepo with nil-check and guards run.ID!=uuid.Nil
 // before using runID — both are nil/uuid.Nil in this path, so no DB access occurs.
@@ -66,7 +68,7 @@ void OnTick() { return; }
 	from := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC)
 
-	resp, err := srv.ExecuteBacktestDirect(context.Background(), mqlCode, nil, "EURUSD", "1h", from, to)
+	resp, err := srv.ExecuteBacktestDirect(context.Background(), mqlCode, nil, "EURUSD", "1h", from, to, "", uuid.Nil)
 	if err != nil {
 		t.Fatalf("ExecuteBacktestDirect returned error: %v", err)
 	}
@@ -88,7 +90,7 @@ func TestExecuteBacktestDirect_EmptyCodeReturnsError(t *testing.T) {
 	srv := &StrategyExecutionServer{
 		log: zap.NewNop(),
 	}
-	_, err := srv.ExecuteBacktestDirect(context.Background(), "", nil, "EURUSD", "1h", time.Now(), time.Now())
+	_, err := srv.ExecuteBacktestDirect(context.Background(), "", nil, "EURUSD", "1h", time.Now(), time.Now(), "", uuid.Nil)
 	if err == nil {
 		t.Fatal("expected error for empty code, got nil")
 	}

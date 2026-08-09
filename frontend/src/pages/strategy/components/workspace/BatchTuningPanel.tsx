@@ -80,6 +80,7 @@ export default function BatchTuningPanel() {
   };
 
   const expColumns: ColumnsType<StrategyExperiment> = [
+    { title: t('strategy.tuning.strategyName', { defaultValue: 'Strategy' }), dataIndex: 'strategyName', width: 120, render: (v: string) => v || '-' },
     { title: t(LIST_COLUMN_STATUS_KEY), dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
     { title: t(LIST_COLUMN_SEARCH_METHOD_KEY), dataIndex: 'searchMethod' },
     { title: t(LIST_COLUMN_MAX_CANDIDATES_KEY), dataIndex: 'maxCandidates' },
@@ -90,6 +91,7 @@ export default function BatchTuningPanel() {
     { title: t(CANDIDATES_COLUMN_RANK_KEY), dataIndex: 'rank', width: 60 },
     { title: t(CANDIDATES_COLUMN_GRADE_KEY), dataIndex: 'grade', width: 60, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
     { title: t(CANDIDATES_COLUMN_SCORE_KEY), dataIndex: 'score', width: 70, render: v => Number(v).toFixed(1) },
+    { title: t('strategy.tuning.totalTrades', { defaultValue: 'Trades' }), dataIndex: 'totalTrades', width: 60, render: (v: number) => v != null ? v : '-' },
     { title: t(CANDIDATES_COLUMN_PARAMETERS_KEY), dataIndex: 'parameters', render: v => <Text code style={{ fontSize: 10 }}>{JSON.stringify(v)}</Text> },
     { title: t(CANDIDATES_COLUMN_ACTIONS_KEY), width: 100, render: (_, r) => <Button size="small" type="primary" onClick={() => promote(r)}>{t(CANDIDATES_COLUMN_GENERATE_DRAFT_KEY)}</Button> },
   ];

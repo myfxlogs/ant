@@ -69,8 +69,7 @@ const StrategyWorkspace = {
         "noRuns": "バックテスト履歴なし",
         "viewAll": "すべて表示",
         "newStrategy": "新規戦略",
-        "trades": "取引",
-        "doubleClickRename": "ダブルクリックで名前変更"
+        "trades": "取引"
       },
       "tour": {
         "ai": "AI アシスタント",

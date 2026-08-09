@@ -64,6 +64,21 @@ func (s *StrategyExecutionServer) runVMEngine(ctx context.Context, vmRunner *mql
 	bars := klinesToBars(klines)
 	cfg := s.buildBacktestConfig(params, run)
 
+	s.log.Info("runVMEngine config",
+		zap.Int32("leverage", cfg.Leverage),
+		zap.String("initialCapital", cfg.InitialCapital.String()),
+		zap.String("commission", cfg.Commission.String()),
+		zap.String("slippage", cfg.Slippage.String()),
+		zap.String("swapRate", cfg.SwapRate.String()),
+		zap.Int32("digits", cfg.SymbolDigits),
+		zap.String("point", cfg.SymbolPoint.String()),
+		zap.String("contractSize", cfg.ContractSize.String()),
+		zap.String("volumeMin", cfg.VolumeMin.String()),
+		zap.String("volumeStep", cfg.VolumeStep.String()),
+		zap.Bool("strictMode", cfg.StrictMode),
+		zap.Int("bars", len(bars)),
+		zap.Int("paramsCount", len(cfg.Params)))
+
 	if len(run.ExtraSymbols) > 0 && s.marketDataRepo != nil {
 		s.loadExtraSymbolBars(ctx, run, &cfg)
 	}

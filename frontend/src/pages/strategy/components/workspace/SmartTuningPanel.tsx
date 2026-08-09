@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Radio, Button, Checkbox, Tag, Table, Typography, Alert, Tooltip } from 'antd';
 import { ExperimentOutlined, TrophyOutlined, ThunderboltOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation, Trans } from 'react-i18next';
-import { APPLY_KEY, DEGRADATION_KEY, ENABLED_COMBINATIONS_KEY, GRADE_KEY, GRID_WARNING_KEY, HIDE_KEY, OOS_FOOTNOTE_KEY, OOS_SCORE_KEY, OPTIMIZER_METHOD_KEY, OVERFIT_KEY, OVERFIT_WARNING_KEY, PARAMETERS_KEY, PARAMETER_DIMENSIONS_KEY, PREVIEW_KEY, PREVIEW_TITLE_KEY, RANK_KEY, REQUIRES_A_I_KEY, RESULTS_KEY, RUN_KEY, SCORE_KEY, SUMMARY_KEY, SWITCH_TO_D_E_KEY, TRUNCATED_KEY, TUNING_KEY, WAITING_KEY } from '@/gen/ant/v1/i18n/strategy_tuning_keys';
+import { APPLY_KEY, DEGRADATION_KEY, DEGRADATION_TIP_KEY, ENABLED_COMBINATIONS_KEY, GRADE_KEY, GRADE_TIP_KEY, GRID_WARNING_KEY, HIDE_KEY, OOS_FOOTNOTE_KEY, OOS_SCORE_KEY, OOS_SCORE_TIP_KEY, OPTIMIZER_METHOD_KEY, OVERFIT_KEY, OVERFIT_TIP_KEY, OVERFIT_WARNING_KEY, PARAMETERS_KEY, PARAMETERS_TIP_KEY, PARAMETER_DIMENSIONS_KEY, PREVIEW_KEY, PREVIEW_TITLE_KEY, RANK_KEY, REQUIRES_A_I_KEY, RESULTS_KEY, RUN_KEY, SCORE_KEY, SCORE_TIP_KEY, SUMMARY_KEY, SUMMARY_TIP_KEY, SWITCH_TO_D_E_KEY, TRUNCATED_KEY, TUNING_KEY, WAITING_KEY } from '@/gen/ant/v1/i18n/strategy_tuning_keys';
 import type { SweepDimension, TuneMethod } from '../../hooks/useBacktestParams';
 import { OPTIMIZER_INFO } from '../../hooks/useBacktestParams';
 import { strategyExperimentApi } from '@/client/strategyExperiment';
@@ -14,6 +14,7 @@ interface Props {
   enabledSweepDims: SweepDimension[]; cartesianSize: number;
   tuningRunning: boolean; canRun: boolean; onRunTuning: () => Promise<string>;
   code?: string; onApplyToCode?: (code: string) => void;
+  strategyName?: string;
 }
 
 const OPTIMIZER_ICONS: Partial<Record<TuneMethod, React.ReactNode>> = { grid: <ThunderboltOutlined />, random: <ThunderboltOutlined />, de: <ExperimentOutlined />, tpe: <ExperimentOutlined />, ags: <ExperimentOutlined />, ai: <RobotOutlined /> };
@@ -28,6 +29,7 @@ export default function SmartTuningPanel({
   enabledSweepDims = [], cartesianSize = 0,
   tuningRunning, canRun, onRunTuning,
   code, onApplyToCode,
+  strategyName,
 }: Props) {
   const { t } = useTranslation();
   const [candidates, setCandidates] = useState<StrategyExperimentCandidate[]>([]);
@@ -92,6 +94,13 @@ export default function SmartTuningPanel({
 
   return (
     <div style={{ fontSize: 13 }}>
+      {/* Strategy name traceability */}
+      {strategyName && (
+        <div style={{ marginBottom: 8, fontSize: 12, color: '#8c8c8c' }}>
+          {t('strategy.tuning.strategyName', { defaultValue: 'Strategy' })}: <span style={{ fontWeight: 600, color: '#262626' }}>{strategyName}</span>
+        </div>
+      )}
+
       {/* No @param guidance */}
       {sweepDimensions.length === 0 && (
         <Alert type="info" showIcon style={{ marginBottom: 12, fontSize: 13 }}
@@ -201,15 +210,16 @@ export default function SmartTuningPanel({
           <Table dataSource={candidates} rowKey="id" size="small" pagination={false} scroll={{ x: 700 }}
             columns={[
               { title: t(RANK_KEY), dataIndex: 'rank', width: 40, render: (v: number) => v || '-' },
-              { title: t(GRADE_KEY), dataIndex: 'grade', width: 60, render: (g: string) => <Tag color={gradeColors[g] || 'default'}>{g || 'C'}</Tag> },
-              { title: t(SCORE_KEY), dataIndex: 'score', width: 60, render: (s: number) => s > 0 ? s.toFixed(1) : '-' },
-              { title: t(PARAMETERS_KEY), dataIndex: 'parameters', ellipsis: true,
+              { title: <Tooltip title={t(GRADE_TIP_KEY)}>{t(GRADE_KEY)}</Tooltip>, dataIndex: 'grade', width: 60, render: (g: string) => <Tag color={gradeColors[g] || 'default'}>{g || 'C'}</Tag> },
+              { title: <Tooltip title={t(SCORE_TIP_KEY)}>{t(SCORE_KEY)}</Tooltip>, dataIndex: 'score', width: 60, render: (s: number) => s > 0 ? s.toFixed(1) : '-' },
+              { title: t('strategy.tuning.totalTrades', { defaultValue: 'Trades' }), dataIndex: 'totalTrades', width: 60, render: (v: number) => v != null ? v : '-' },
+              { title: <Tooltip title={t(PARAMETERS_TIP_KEY)}>{t(PARAMETERS_KEY)}</Tooltip>, dataIndex: 'parameters', ellipsis: true, width: 180,
                 render: (p: unknown) => {
                   if (!p) return '-';
                   try { return Object.entries(p as Record<string, unknown>).map(([k, v]) => `${k}=${v}`).join(', '); }
                   catch { return String(p); }
                 }},
-              { title: t(SUMMARY_KEY), dataIndex: 'summary', ellipsis: true, width: 150, render: (s: string) => {
+              { title: <Tooltip title={t(SUMMARY_TIP_KEY)}>{t(SUMMARY_KEY)}</Tooltip>, dataIndex: 'summary', ellipsis: true, width: 150, render: (s: string) => {
                   if (!s) return '-';
                   if (s.startsWith('strategy.tuning.summary')) {
                     const [key, ...params] = s.split('|');
@@ -219,13 +229,13 @@ export default function SmartTuningPanel({
                   }
                   return s; // backward compat with old records
                 } },
-              { title: t(OOS_SCORE_KEY), dataIndex: 'oosScore', width: 70, render: (s: number | undefined) => s != null ? s.toFixed(1) : '-' },
-              { title: t(DEGRADATION_KEY), dataIndex: 'degradationPct', width: 90, render: (pct: number | undefined) => {
+              { title: <Tooltip title={t(OOS_SCORE_TIP_KEY)}>{t(OOS_SCORE_KEY)}</Tooltip>, dataIndex: 'oosScore', width: 70, render: (s: number | undefined) => s != null ? s.toFixed(1) : '-' },
+              { title: <Tooltip title={t(DEGRADATION_TIP_KEY)}>{t(DEGRADATION_KEY)}</Tooltip>, dataIndex: 'degradationPct', width: 90, render: (pct: number | undefined) => {
                   if (pct == null) return '-';
                   const c = pct < 20 ? 'green' : pct < 40 ? 'orange' : 'red';
                   return <Tag color={c} style={{ fontSize: 11, margin: 0 }}>{pct.toFixed(1)}%</Tag>;
                 }},
-              { title: t(OVERFIT_KEY), dataIndex: 'isOverfit', width: 70, render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 11, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 12 }}>-</span> },
+              { title: <Tooltip title={t(OVERFIT_TIP_KEY)}>{t(OVERFIT_KEY)}</Tooltip>, dataIndex: 'isOverfit', width: 70, render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 11, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 12 }}>-</span> },
               ...(onApplyToCode ? [{
                 title: '', width: 120,
                 render: (_: unknown, record: StrategyExperimentCandidate) => (

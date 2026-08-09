@@ -3,11 +3,13 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/pkg/ptr"
@@ -17,13 +19,16 @@ import (
 // BacktestExecutor executes a backtest in-process without creating a backtest_runs record.
 // Implemented by StrategyExecutionServer.
 type BacktestExecutor interface {
-	ExecuteBacktestDirect(ctx context.Context, code string, overrides []byte, symbol, timeframe string, fromTs, toTs time.Time) (*antv1.ExecuteBacktestResponse, error)
+	ExecuteBacktestDirect(ctx context.Context, code string, overrides []byte, symbol, timeframe string, fromTs, toTs time.Time, backtestRunID string, userID uuid.UUID) (*antv1.ExecuteBacktestResponse, error)
 }
 
 // ExecuteBacktestDirect runs a backtest in-process: fetch bars → compile → engine → return response.
 // No DB record created, no polling, no persistence. Used by experiment worker for candidate scoring.
+// When backtestRunID is non-empty, config (leverage/commission/slippage/swapRate/marginCallLevel/strictMode)
+// is inherited from the originating backtest_runs record instead of using hardcoded defaults.
 func (s *StrategyExecutionServer) ExecuteBacktestDirect(
 	ctx context.Context, code string, overrides []byte, symbol, timeframe string, fromTs, toTs time.Time,
+	backtestRunID string, userID uuid.UUID,
 ) (*antv1.ExecuteBacktestResponse, error) {
 	if code == "" {
 		return nil, fmt.Errorf("strategy code is empty")
@@ -54,6 +59,76 @@ func (s *StrategyExecutionServer) ExecuteBacktestDirect(
 		StrictMode:         ptr.Bool(true),
 		ParameterOverrides: overrides,
 	}
+	// Inherit config from originating backtest run when available.
+	if backtestRunID != "" && s.backtestRepo != nil {
+		rid, err := uuid.Parse(backtestRunID)
+		if err == nil {
+			srcRun, err := s.backtestRepo.GetByID(ctx, userID, rid)
+			if err != nil {
+				s.log.Warn("failed to load backtest run config for experiment, falling back to defaults",
+					zap.String("backtestRunID", backtestRunID),
+					zap.Error(err))
+			}
+			if err == nil && srcRun != nil {
+				s.log.Info("experiment config inheritance",
+					zap.String("backtestRunID", backtestRunID),
+					zap.String("leverage", params.leverage),
+					zap.String("commission", params.commission),
+					zap.String("slippage", params.slippage),
+					zap.Bool("strictMode", params.strictMode))
+				run.AccountID = srcRun.AccountID
+				if srcRun.InitialCapital != nil {
+					params.initialCapital = srcRun.InitialCapital.String()
+					run.InitialCapital = srcRun.InitialCapital
+				}
+				if srcRun.Commission != nil {
+					params.commission = srcRun.Commission.String()
+					run.Commission = srcRun.Commission
+				}
+				if srcRun.Slippage != nil {
+					params.slippage = srcRun.Slippage.String()
+					run.Slippage = srcRun.Slippage
+				}
+				if srcRun.Leverage != nil && srcRun.Leverage.GreaterThan(decimal.Zero) {
+					params.leverage = strconv.FormatInt(srcRun.Leverage.IntPart(), 10)
+					run.Leverage = srcRun.Leverage
+				}
+				if srcRun.TradeDirection != nil {
+					params.tradeDir = stringToTradeDirection(*srcRun.TradeDirection)
+					run.TradeDirection = srcRun.TradeDirection
+				}
+				if srcRun.StrictMode != nil {
+					params.strictMode = *srcRun.StrictMode
+					run.StrictMode = srcRun.StrictMode
+				}
+				if len(srcRun.ConfigSnapshot) > 0 {
+					run.ConfigSnapshot = srcRun.ConfigSnapshot
+					var ec antv1.BacktestExecutionConfig
+					opts := proto.UnmarshalOptions{DiscardUnknown: true}
+					if err := opts.Unmarshal(srcRun.ConfigSnapshot, &ec); err == nil {
+						params.strategyCfg = ec.GetStrategyConfig()
+						if ec.GetSwapRate() != "" {
+							params.swapRate = ec.GetSwapRate()
+						}
+						if ec.GetMarginCallLevel() != "" {
+							params.marginCallLevel = ec.GetMarginCallLevel()
+						}
+					}
+				}
+			}
+		}
+	}
+	s.log.Info("ExecuteBacktestDirect final params",
+		zap.String("leverage", params.leverage),
+		zap.String("commission", params.commission),
+		zap.String("initialCapital", params.initialCapital),
+		zap.String("backtestRunID", backtestRunID),
+		zap.String("symbol", symbol),
+		zap.String("timeframe", timeframe),
+		zap.String("accountID", run.AccountID.String()),
+		zap.Int("codeLen", len(params.code)),
+		zap.String("codeHead", safeHead(params.code, 80)),
+		zap.Int("overridesLen", len(overrides)))
 	klines, err := s.fetchBars(ctx, run)
 	if err != nil {
 		return nil, fmt.Errorf("fetch bars: %w", err)
@@ -62,6 +137,13 @@ func (s *StrategyExecutionServer) ExecuteBacktestDirect(
 		return nil, fmt.Errorf("no K-line data available for %s %s", symbol, timeframe)
 	}
 	return s.executeGoBacktest(ctx, run, params, klines)
+}
+
+func safeHead(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	return s[:n]
 }
 
 // startBacktestWatchers starts lease heartbeat and cancel watcher goroutines.

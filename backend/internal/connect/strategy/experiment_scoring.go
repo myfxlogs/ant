@@ -21,7 +21,7 @@ import (
 func (w *ExperimentWorker) runSingleBacktest(
 	ctx context.Context, code string, overrides map[string]interface{},
 	userID uuid.UUID, symbol, timeframe string, fromTs, toTs time.Time,
-	regime ai.MarketRegime,
+	regime ai.MarketRegime, backtestRunID string,
 ) (*ai.ScoredResult, error) {
 	if w.executor == nil {
 		return nil, fmt.Errorf("backtest executor not configured")
@@ -30,7 +30,7 @@ func (w *ExperimentWorker) runSingleBacktest(
 	if err != nil {
 		return nil, fmt.Errorf("marshal overrides: %w", err)
 	}
-	resp, err := w.executor.ExecuteBacktestDirect(ctx, code, overridesBytes, symbol, timeframe, fromTs, toTs)
+	resp, err := w.executor.ExecuteBacktestDirect(ctx, code, overridesBytes, symbol, timeframe, fromTs, toTs, backtestRunID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("execute backtest direct: %w", err)
 	}
@@ -64,7 +64,12 @@ func (w *ExperimentWorker) backtestAndScore(
 		toTs = time.Now()
 	}
 
-	scored, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime)
+	backtestRunIDStr := ""
+	if exp.BacktestRunID != nil {
+		backtestRunIDStr = exp.BacktestRunID.String()
+	}
+
+	scored, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime, backtestRunIDStr)
 	if err != nil {
 		return candidateResult{}, err
 	}

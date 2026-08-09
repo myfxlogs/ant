@@ -148,15 +148,18 @@ export default function BacktestPanel(props: Props) {
                 sweepDimensions={runner.tuning.sweepDimensions || []} onToggleDimension={runner.tuning.toggleDimension || (() => {})}
                 enabledSweepDims={runner.tuning.enabledSweepDims || []} cartesianSize={runner.tuning.cartesianSize || 0}
                 tuningRunning={runner.tuning.tuningRunning || false}
-                canRun={Boolean(inputs.strategyCode && (inputs.symbol || runner.runMeta?.symbol))}
+                canRun={Boolean(inputs.strategyCode && (inputs.symbol || runner.runMeta?.symbol) && runner.runId)}
                 onRunTuning={() => runner.tuning.runTuning?.({
                   code: inputs.strategyCode,
                   symbol: inputs.symbol || runner.runMeta?.symbol || '',
                   timeframe: inputs.timeframe || runner.runMeta?.timeframe || '',
                   startDate: runner.startDate, endDate: runner.endDate,
                   templateId: inputs.templateId,
+                  strategyName: runner.runMeta?.name || '',
+                  backtestRunId: runner.runId || '',
                 })}
                 code={code} onApplyToCode={onApplyTunedParams}
+                strategyName={runner.runMeta?.name || ''}
               />
             ) : (
               <BatchTuningPanel />

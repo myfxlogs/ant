@@ -7,11 +7,17 @@ export const APPLY_KEY = 'strategy.tuning.apply' as const;
 /** degradation */
 export const DEGRADATION_KEY = 'strategy.tuning.degradation' as const;
 
+/** degradationTip */
+export const DEGRADATION_TIP_KEY = 'strategy.tuning.degradationTip' as const;
+
 /** enabledCombinations */
 export const ENABLED_COMBINATIONS_KEY = 'strategy.tuning.enabledCombinations' as const;
 
 /** grade */
 export const GRADE_KEY = 'strategy.tuning.grade' as const;
+
+/** gradeTip */
+export const GRADE_TIP_KEY = 'strategy.tuning.gradeTip' as const;
 
 /** gridWarning */
 export const GRID_WARNING_KEY = 'strategy.tuning.gridWarning' as const;
@@ -24,6 +30,9 @@ export const OOS_FOOTNOTE_KEY = 'strategy.tuning.oosFootnote' as const;
 
 /** oosScore */
 export const OOS_SCORE_KEY = 'strategy.tuning.oosScore' as const;
+
+/** oosScoreTip */
+export const OOS_SCORE_TIP_KEY = 'strategy.tuning.oosScoreTip' as const;
 
 /** optimizer.ags */
 export const OPTIMIZER_AGS_KEY = 'strategy.tuning.optimizer.ags' as const;
@@ -67,6 +76,9 @@ export const OPTIMIZER_METHOD_KEY = 'strategy.tuning.optimizerMethod' as const;
 /** overfit */
 export const OVERFIT_KEY = 'strategy.tuning.overfit' as const;
 
+/** overfitTip */
+export const OVERFIT_TIP_KEY = 'strategy.tuning.overfitTip' as const;
+
 /** overfitWarning */
 export const OVERFIT_WARNING_KEY = 'strategy.tuning.overfitWarning' as const;
 
@@ -75,6 +87,9 @@ export const PARAMETER_DIMENSIONS_KEY = 'strategy.tuning.parameterDimensions' as
 
 /** parameters */
 export const PARAMETERS_KEY = 'strategy.tuning.parameters' as const;
+
+/** parametersTip */
+export const PARAMETERS_TIP_KEY = 'strategy.tuning.parametersTip' as const;
 
 /** preview */
 export const PREVIEW_KEY = 'strategy.tuning.preview' as const;
@@ -97,11 +112,17 @@ export const RUN_KEY = 'strategy.tuning.run' as const;
 /** score */
 export const SCORE_KEY = 'strategy.tuning.score' as const;
 
+/** scoreTip */
+export const SCORE_TIP_KEY = 'strategy.tuning.scoreTip' as const;
+
 /** started */
 export const STARTED_KEY = 'strategy.tuning.started' as const;
 
 /** summary */
 export const SUMMARY_KEY = 'strategy.tuning.summary' as const;
+
+/** summaryTip */
+export const SUMMARY_TIP_KEY = 'strategy.tuning.summaryTip' as const;
 
 /** switchToDE */
 export const SWITCH_TO_D_E_KEY = 'strategy.tuning.switchToDE' as const;
@@ -118,12 +139,15 @@ export const WAITING_KEY = 'strategy.tuning.waiting' as const;
 export const STRATEGYTUNING_KEYS = {
   apply: 'strategy.tuning.apply',
   degradation: 'strategy.tuning.degradation',
+  degradation_tip: 'strategy.tuning.degradationTip',
   enabled_combinations: 'strategy.tuning.enabledCombinations',
   grade: 'strategy.tuning.grade',
+  grade_tip: 'strategy.tuning.gradeTip',
   grid_warning: 'strategy.tuning.gridWarning',
   hide: 'strategy.tuning.hide',
   oos_footnote: 'strategy.tuning.oosFootnote',
   oos_score: 'strategy.tuning.oosScore',
+  oos_score_tip: 'strategy.tuning.oosScoreTip',
   optimizer_ags: 'strategy.tuning.optimizer.ags',
   optimizer_ags_desc: 'strategy.tuning.optimizer.agsDesc',
   optimizer_ai: 'strategy.tuning.optimizer.ai',
@@ -138,9 +162,11 @@ export const STRATEGYTUNING_KEYS = {
   optimizer_tpe_desc: 'strategy.tuning.optimizer.tpeDesc',
   optimizer_method: 'strategy.tuning.optimizerMethod',
   overfit: 'strategy.tuning.overfit',
+  overfit_tip: 'strategy.tuning.overfitTip',
   overfit_warning: 'strategy.tuning.overfitWarning',
   parameter_dimensions: 'strategy.tuning.parameterDimensions',
   parameters: 'strategy.tuning.parameters',
+  parameters_tip: 'strategy.tuning.parametersTip',
   preview: 'strategy.tuning.preview',
   preview_title: 'strategy.tuning.previewTitle',
   rank: 'strategy.tuning.rank',
@@ -148,8 +174,10 @@ export const STRATEGYTUNING_KEYS = {
   results: 'strategy.tuning.results',
   run: 'strategy.tuning.run',
   score: 'strategy.tuning.score',
+  score_tip: 'strategy.tuning.scoreTip',
   started: 'strategy.tuning.started',
   summary: 'strategy.tuning.summary',
+  summary_tip: 'strategy.tuning.summaryTip',
   switch_to_d_e: 'strategy.tuning.switchToDE',
   truncated: 'strategy.tuning.truncated',
   tuning: 'strategy.tuning.tuning',

@@ -141,6 +141,7 @@
     "sidebar_view_all": "sidebar.viewAll",
     "sidebar_new_strategy": "sidebar.newStrategy",
     "sidebar_trades": "sidebar.trades",
+    "sidebar_double_click_rename": "sidebar.doubleClickRename",
     "import_mql": "importMql",
     "empty_title": "emptyTitle",
     "empty_desc": "emptyDesc",

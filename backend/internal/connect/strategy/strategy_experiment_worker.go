@@ -227,12 +227,16 @@ func (w *ExperimentWorker) runOOSValidation(ctx context.Context, exp *repository
 	if windows == nil || len(candidates) == 0 {
 		return
 	}
+	backtestRunIDStr := ""
+	if exp.BacktestRunID != nil {
+		backtestRunIDStr = exp.BacktestRunID.String()
+	}
 	topIndices := selectTopK(candidates, oosTopK)
 	for _, idx := range topIndices {
 		c := &candidates[idx]
 		oosScored, err := w.runSingleBacktest(
 			ctx, code, c.Overrides, exp.UserID, symbol, tf,
-			windows.OOSStart, windows.OOSEnd, regime,
+			windows.OOSStart, windows.OOSEnd, regime, backtestRunIDStr,
 		)
 		if err != nil {
 			w.log.Warn("OOS backtest failed",
