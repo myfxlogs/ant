@@ -21,6 +21,7 @@ message GetBacktestRunResponse {
   BacktestRisk risk = 5;
   ExecutionAssumptions execution_assumptions = 6;
   repeated BacktestBlindSpot blind_spots = 7;
+  optional string strategy_code = 8;
 }
 
 message WatchBacktestRunRequest {

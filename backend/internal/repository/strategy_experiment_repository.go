@@ -50,12 +50,20 @@ type StrategyExperimentCandidate struct {
 	Summary         string     `db:"summary"`
 	Recommendation  string     `db:"recommendation"`
 	CreatedAt       time.Time  `db:"created_at"`
+	// Raw backtest metrics (original values from in-process execution).
+	TotalReturn  float64 `db:"total_return"`
+	AnnualReturn float64 `db:"annual_return"`
+	SharpeRatio  float64 `db:"sharpe_ratio"`
+	MaxDrawdown  float64 `db:"max_drawdown"`
+	WinRate      float64 `db:"win_rate"`
+	ProfitFactor float64 `db:"profit_factor"`
+	TotalTrades  int     `db:"total_trades"`
 	// OOS validation fields (nil when window too short or not in top-K)
-	OOSScore        *float64 `db:"oos_score"`
-	OOSTotalReturn  *float64 `db:"oos_total_return"`
-	OOSSharpeRatio  *float64 `db:"oos_sharpe_ratio"`
-	DegradationPct  *float64 `db:"degradation_pct"`
-	IsOverfit       bool     `db:"is_overfit"`
+	OOSScore       *float64 `db:"oos_score"`
+	OOSTotalReturn *float64 `db:"oos_total_return"`
+	OOSSharpeRatio *float64 `db:"oos_sharpe_ratio"`
+	DegradationPct *float64 `db:"degradation_pct"`
+	IsOverfit      bool     `db:"is_overfit"`
 }
 
 type StrategyExperimentRepository struct {
@@ -156,9 +164,9 @@ func (r *StrategyExperimentRepository) CreateCandidate(ctx context.Context, cand
 		candidate.ScoreComponents = nil
 	}
 	_, err := r.db.Exec(ctx, `
-		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at,oos_score,oos_total_return,oos_sharpe_ratio,degradation_pct,is_overfit)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
-	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt, candidate.OOSScore, candidate.OOSTotalReturn, candidate.OOSSharpeRatio, candidate.DegradationPct, candidate.IsOverfit)
+		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at,total_return,annual_return,sharpe_ratio,max_drawdown,win_rate,profit_factor,total_trades,oos_score,oos_total_return,oos_sharpe_ratio,degradation_pct,is_overfit)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt, candidate.TotalReturn, candidate.AnnualReturn, candidate.SharpeRatio, candidate.MaxDrawdown, candidate.WinRate, candidate.ProfitFactor, candidate.TotalTrades, candidate.OOSScore, candidate.OOSTotalReturn, candidate.OOSSharpeRatio, candidate.DegradationPct, candidate.IsOverfit)
 	if err != nil {
 		return fmt.Errorf("create experiment candidate: %w", err)
 	}
@@ -169,7 +177,7 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 	if _, err := r.Get(ctx, userID, experimentID); err != nil {
 		return nil, err
 	}
-	rows, err := r.db.Query(ctx, `SELECT id, experiment_id, parameters, draft_code_ref, backtest_run_id, score, grade, score_components, rank, summary, recommendation, created_at, oos_score, oos_total_return, oos_sharpe_ratio, degradation_pct, is_overfit FROM strategy_experiment_candidates WHERE experiment_id = $1 ORDER BY rank ASC, created_at ASC`, experimentID)
+	rows, err := r.db.Query(ctx, `SELECT id, experiment_id, parameters, draft_code_ref, backtest_run_id, score, grade, score_components, rank, summary, recommendation, created_at, total_return, annual_return, sharpe_ratio, max_drawdown, win_rate, profit_factor, total_trades, oos_score, oos_total_return, oos_sharpe_ratio, degradation_pct, is_overfit FROM strategy_experiment_candidates WHERE experiment_id = $1 ORDER BY rank ASC, created_at ASC`, experimentID)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +185,7 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 	var result []StrategyExperimentCandidate
 	for rows.Next() {
 		var c StrategyExperimentCandidate
-		if err := rows.Scan(&c.ID, &c.ExperimentID, &c.Parameters, &c.DraftCodeRef, &c.BacktestRunID, &c.Score, &c.Grade, &c.ScoreComponents, &c.Rank, &c.Summary, &c.Recommendation, &c.CreatedAt, &c.OOSScore, &c.OOSTotalReturn, &c.OOSSharpeRatio, &c.DegradationPct, &c.IsOverfit); err != nil {
+		if err := rows.Scan(&c.ID, &c.ExperimentID, &c.Parameters, &c.DraftCodeRef, &c.BacktestRunID, &c.Score, &c.Grade, &c.ScoreComponents, &c.Rank, &c.Summary, &c.Recommendation, &c.CreatedAt, &c.TotalReturn, &c.AnnualReturn, &c.SharpeRatio, &c.MaxDrawdown, &c.WinRate, &c.ProfitFactor, &c.TotalTrades, &c.OOSScore, &c.OOSTotalReturn, &c.OOSSharpeRatio, &c.DegradationPct, &c.IsOverfit); err != nil {
 			return nil, err
 		}
 		result = append(result, c)
@@ -188,10 +196,10 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID, candidateID uuid.UUID) (*StrategyExperimentCandidate, error) {
 	var row StrategyExperimentCandidate
 	err := r.db.QueryRow(ctx, `
-		SELECT c.id, c.experiment_id, c.parameters, c.draft_code_ref, c.backtest_run_id, c.score, c.grade, c.score_components, c.rank, c.summary, c.recommendation, c.created_at, c.oos_score, c.oos_total_return, c.oos_sharpe_ratio, c.degradation_pct, c.is_overfit FROM strategy_experiment_candidates c
+		SELECT c.id, c.experiment_id, c.parameters, c.draft_code_ref, c.backtest_run_id, c.score, c.grade, c.score_components, c.rank, c.summary, c.recommendation, c.created_at, c.total_return, c.annual_return, c.sharpe_ratio, c.max_drawdown, c.win_rate, c.profit_factor, c.total_trades, c.oos_score, c.oos_total_return, c.oos_sharpe_ratio, c.degradation_pct, c.is_overfit FROM strategy_experiment_candidates c
 		JOIN strategy_experiments e ON e.id = c.experiment_id
 		WHERE c.id = $1 AND e.user_id = $2
-	`, candidateID, userID).Scan(&row.ID, &row.ExperimentID, &row.Parameters, &row.DraftCodeRef, &row.BacktestRunID, &row.Score, &row.Grade, &row.ScoreComponents, &row.Rank, &row.Summary, &row.Recommendation, &row.CreatedAt, &row.OOSScore, &row.OOSTotalReturn, &row.OOSSharpeRatio, &row.DegradationPct, &row.IsOverfit)
+	`, candidateID, userID).Scan(&row.ID, &row.ExperimentID, &row.Parameters, &row.DraftCodeRef, &row.BacktestRunID, &row.Score, &row.Grade, &row.ScoreComponents, &row.Rank, &row.Summary, &row.Recommendation, &row.CreatedAt, &row.TotalReturn, &row.AnnualReturn, &row.SharpeRatio, &row.MaxDrawdown, &row.WinRate, &row.ProfitFactor, &row.TotalTrades, &row.OOSScore, &row.OOSTotalReturn, &row.OOSSharpeRatio, &row.DegradationPct, &row.IsOverfit)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrExperimentCandidateNotFound
 	}

@@ -11,8 +11,8 @@ import (
 	"go.uber.org/zap"
 
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
-	"alphaforge/internal/config"
 	"alphaforge/internal/ai"
+	"alphaforge/internal/config"
 	"alphaforge/internal/connect/admin"
 	mktplace "alphaforge/internal/connect/marketplace"
 	"alphaforge/internal/connect/strategy"
@@ -34,27 +34,27 @@ import (
 
 // sreHandlerParams holds parameters for registerSREHandlers.
 type sreHandlerParams struct {
-	UserRepo             *repository.UserRepository
-	Mux                  *http.ServeMux
-	Log                  *zap.Logger
-	Pool                 *pgxpool.Pool
-	Store                repository.MarketDataStore
-	NC                   *nats.Conn
-	RDB                  *antredis.Client
-	Cfg                  *config.Config
-	AuthInterceptor      *interceptor.AuthInterceptor
-	OtelInterceptor      connectrpc.Interceptor
-	PlatformSvc          *service.PlatformService
-	MthubSvc             *mthub.MtHubService
-	AuthServer           *user.AuthServer
+	UserRepo               *repository.UserRepository
+	Mux                    *http.ServeMux
+	Log                    *zap.Logger
+	Pool                   *pgxpool.Pool
+	Store                  repository.MarketDataStore
+	NC                     *nats.Conn
+	RDB                    *antredis.Client
+	Cfg                    *config.Config
+	AuthInterceptor        *interceptor.AuthInterceptor
+	OtelInterceptor        connectrpc.Interceptor
+	PlatformSvc            *service.PlatformService
+	MthubSvc               *mthub.MtHubService
+	AuthServer             *user.AuthServer
 	StrategyExperimentRepo *repository.StrategyExperimentRepository
-	StrategyAssetRepo    *repository.StrategyAssetRepository
-	SchedHealthRepo      *repository.ScheduleHealthRepository
-	AnalyticsCache       *service.AnalyticsCache
-	AISvc                *systemai.Service
-	BacktestRunRepo      *repository.BacktestRunRepository
-	PgListen             *pglisten.Listener
-	EmailNotifier        *notifier.EmailNotifier
+	StrategyAssetRepo      *repository.StrategyAssetRepository
+	SchedHealthRepo        *repository.ScheduleHealthRepository
+	AnalyticsCache         *service.AnalyticsCache
+	AISvc                  *systemai.Service
+	PgListen               *pglisten.Listener
+	EmailNotifier          *notifier.EmailNotifier
+	StrategyExecServer     *strategy.StrategyExecutionServer
 }
 
 func registerSREHandlers(p sreHandlerParams) (*notifier.EmailNotifier, func()) {
@@ -71,21 +71,24 @@ func registerSREHandlers(p sreHandlerParams) (*notifier.EmailNotifier, func()) {
 	sreCanary := controlplane.NewCanaryManager()
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, p.PlatformSvc, p.EmailNotifier, log)
 	// AdminSRE — ConnectRPC (proto binary)
-	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, p.PlatformSvc, p.AnalyticsCache, p.AISvc, log)
-	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
 	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, p.PlatformSvc, log)
-	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(p.StrategyExperimentRepo, log)
 	strategyExperimentServer.SetPgListen(p.PgListen)
-	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
-	experimentWorker := strategy.NewExperimentWorker(p.StrategyExperimentRepo, p.BacktestRunRepo, store, log)
+	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+	experimentWorker := strategy.NewExperimentWorker(p.StrategyExperimentRepo, store, log)
 	experimentWorker.SetPgListen(p.PgListen)
+	if p.StrategyExecServer != nil {
+		experimentWorker.SetExecutor(p.StrategyExecServer)
+	}
 	if p.AISvc != nil {
 		experimentWorker.SetAIService(p.AISvc)
 	}
@@ -97,11 +100,11 @@ func registerSREHandlers(p sreHandlerParams) (*notifier.EmailNotifier, func()) {
 	reflectionWorker := ai.NewReflectionWorker(calSvc, store, log)
 	reflectionWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(p.StrategyAssetRepo, p.UserRepo, log)
-	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	scheduleHealthServer := system.NewScheduleHealthServer(p.SchedHealthRepo, log)
-	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
-	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, withSency(p.OtelInterceptor,p.AuthInterceptor)))
+	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 
 	// Catch-all: return 404 for unknown routes.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

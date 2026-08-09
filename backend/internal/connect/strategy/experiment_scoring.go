@@ -8,77 +8,38 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/ai"
-	"alphaforge/internal/pkg/ptr"
 	"alphaforge/internal/repository"
 )
 
-// runSingleBacktest executes one backtest with the given time window,
-// polls for completion, scores with regime-aware weights, and returns the scored result.
-// Used for both in-sample (full window) and out-of-sample (OOS window) backtests.
+// runSingleBacktest executes one backtest in-process via BacktestExecutor,
+// scores with regime-aware weights, and returns the scored result.
+// No backtest_runs record is created — used for experiment candidate scoring.
 func (w *ExperimentWorker) runSingleBacktest(
 	ctx context.Context, code string, overrides map[string]interface{},
 	userID uuid.UUID, symbol, timeframe string, fromTs, toTs time.Time,
 	regime ai.MarketRegime,
-) (*ai.ScoredResult, uuid.UUID, error) {
-	modifiedCode := code
+) (*ai.ScoredResult, error) {
+	if w.executor == nil {
+		return nil, fmt.Errorf("backtest executor not configured")
+	}
 	overridesBytes, err := marshalOverrides(overrides)
 	if err != nil {
-		return nil, uuid.Nil, fmt.Errorf("marshal overrides: %w", err)
+		return nil, fmt.Errorf("marshal overrides: %w", err)
 	}
-	run := &repository.BacktestRun{
-		ID:                 uuid.New(),
-		UserID:             userID,
-		AccountID:          uuid.Nil,
-		Symbol:             symbol,
-		Timeframe:          timeframe,
-		FromTs:             &fromTs,
-		ToTs:               &toTs,
-		Mode:               "KLINE_RANGE",
-		Status:             StatusPending,
-		StrategyCode:       &modifiedCode,
-		InitialCapital:     ptr.Decimal(decimal.NewFromInt(10000)),
-		Commission:         ptr.Decimal(decimal.NewFromFloat(0.001)),
-		Slippage:           ptr.Decimal(decimal.Zero),
-		Leverage:           ptr.Decimal(decimal.NewFromInt(1)),
-		TradeDirection:     ptr.Str("both"),
-		StrictMode:         ptr.Bool(true),
-		StrategyCodeHash:   "",
-		Error:              "",
-		ExtraSymbols:       []string{},
-		ParameterOverrides: overridesBytes,
-	}
-
-	runID, err := w.backtestRepo.Create(ctx, run)
+	resp, err := w.executor.ExecuteBacktestDirect(ctx, code, overridesBytes, symbol, timeframe, fromTs, toTs)
 	if err != nil {
-		return nil, uuid.Nil, fmt.Errorf("create backtest: %w", err)
+		return nil, fmt.Errorf("execute backtest direct: %w", err)
 	}
-
-	// Poll for completion
-	for i := 0; i < 120; i++ { // 10 minutes max timeout
-		select {
-		case <-ctx.Done():
-			return nil, uuid.Nil, fmt.Errorf("backtest %s cancelled: %w", runID, ctx.Err())
-		case <-time.After(5 * time.Second):
-		}
-		bt, err := w.backtestRepo.GetByID(ctx, userID, runID)
-		if err != nil {
-			return nil, uuid.Nil, fmt.Errorf("get backtest: %w", err)
-		}
-		if bt.Status == StatusSucceeded || bt.Status == StatusFailed {
-			if bt.Status == StatusFailed {
-				return nil, uuid.Nil, fmt.Errorf("backtest failed: %s", bt.Error)
-			}
-			btMetrics := extractBacktestMetrics(bt.ProtoResponse)
-			scored := ai.Score(btMetrics, regime)
-			return scored, runID, nil
-		}
+	if !resp.GetSuccess() {
+		return nil, fmt.Errorf("backtest failed: %s", resp.GetError())
 	}
-	return nil, uuid.Nil, fmt.Errorf("backtest %s timed out", runID)
+	btMetrics := extractBacktestMetricsFromResponse(resp)
+	scored := ai.Score(btMetrics, regime)
+	return scored, nil
 }
 
 // backtestAndScore executes an in-sample backtest on the full experiment time window.
@@ -103,7 +64,7 @@ func (w *ExperimentWorker) backtestAndScore(
 		toTs = time.Now()
 	}
 
-	scored, runID, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime)
+	scored, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime)
 	if err != nil {
 		return candidateResult{}, err
 	}
@@ -119,8 +80,30 @@ func (w *ExperimentWorker) backtestAndScore(
 		Grade:           scored.Grade,
 		ScoreComponents: scored.Components,
 		Summary:         summary,
-		BacktestRunID:   &runID,
+		TotalReturn:     scored.TotalReturn,
+		AnnualReturn:    scored.AnnualReturn,
+		SharpeRatio:     scored.SharpeRatio,
+		MaxDrawdown:     scored.MaxDrawdown,
+		WinRate:         scored.WinRate,
+		ProfitFactor:    scored.ProfitFactor,
+		TotalTrades:     scored.Trades,
 	}, nil
+}
+
+// extractBacktestMetricsFromResponse parses ExecuteBacktestResponse → BacktestMetrics.
+func extractBacktestMetricsFromResponse(resp *antv1.ExecuteBacktestResponse) *ai.BacktestMetrics {
+	m := resp.GetMetrics()
+	eq := resp.GetEquityCurve()
+	return &ai.BacktestMetrics{
+		TotalReturn:  parseFloat(m.GetTotalReturn()),
+		AnnualReturn: parseFloat(m.GetAnnualReturn()),
+		SharpeRatio:  parseFloat(m.GetSharpeRatio()),
+		MaxDrawdown:  parseFloat(m.GetMaxDrawdown()),
+		WinRate:      parseFloat(m.GetWinRate()),
+		ProfitFactor: parseFloat(m.GetProfitFactor()),
+		TotalTrades:  int(m.GetTotalTrades()),
+		Stability:    computeStability(equityCurveToFloat64(eq)),
+	}
 }
 
 // extractBacktestMetrics parses proto binary ExecuteBacktestResponse → BacktestMetrics.

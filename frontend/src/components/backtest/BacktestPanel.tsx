@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Tabs, Radio, Badge } from 'antd';
-import {
-  PlayCircleOutlined,
-} from '@ant-design/icons';
+import { Tabs, Radio } from 'antd';
+import { PlayCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import {
-  TITLE_KEY,
-} from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import {
   BACKTEST_TAB_KEY, GATE_TAB_KEY, TUNING_TAB_KEY,
   TUNING_INTERACTIVE_KEY, TUNING_BATCH_KEY,
@@ -91,41 +87,23 @@ export default function BacktestPanel(props: Props) {
       {/* Tab bar */}
       <div style={{
         display: 'flex', alignItems: 'center',
-        padding: '4px 14px 0', flexShrink: 0,
+        padding: '6px 14px 0', flexShrink: 0,
         background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        borderBottom: '1px solid #e8e8e8',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <PlayCircleOutlined style={{ color: '#1890ff' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>{t(TITLE_KEY)}</span>
+          <PlayCircleOutlined style={{ color: '#1890ff', fontSize: 14 }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>{t(TITLE_KEY)}</span>
           <Tabs size="small" activeKey={runner.activeTab} onChange={runner.setActiveTab}
             tabBarStyle={{ marginBottom: 0, borderBottom: 'none' }}
+            style={{ fontSize: 13 }}
             items={[
               { key: 'results', label: t(BACKTEST_TAB_KEY, 'Results') },
               { key: 'tuning', label: t(TUNING_TAB_KEY, 'Tuning') },
               { key: 'gate', label: t(GATE_TAB_KEY, 'Gate') },
             ].map(item => ({
               ...item,
-              label: item.key === 'results' && runner.status === 'running'
-                ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    {item.label}
-                    <Badge status="processing" />
-                  </span>
-                : item.key === 'results' && runner.status === 'completed'
-                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      {item.label}
-                      <Badge status="success" />
-                    </span>
-                : item.key === 'results' && runner.status === 'error'
-                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      {item.label}
-                      <Badge status="error" />
-                    </span>
-                : item.key === 'results' && runner.status === 'degraded'
-                  ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      {item.label}
-                      <Badge status="warning" />
-                    </span>
-                : item.label,
+              label: <span style={{ fontSize: 13, fontWeight: 500 }}>{item.label}</span>,
             }))}
           />
         </div>
@@ -166,12 +144,15 @@ export default function BacktestPanel(props: Props) {
             </Radio.Group>
             {tuningMode === 'interactive' ? (
               <SmartTuningPanel
-                tuneMethod={runner.tuning.method || 'grid'} onTuneMethodChange={runner.tuning.setMethod || (() => {})}
+                tuneMethod={runner.tuning.tuneMethod || 'grid'} onTuneMethodChange={runner.tuning.setTuneMethod || (() => {})}
                 sweepDimensions={runner.tuning.sweepDimensions || []} onToggleDimension={runner.tuning.toggleDimension || (() => {})}
-                enabledSweepDims={runner.tuning.enabledDims || []} cartesianSize={runner.tuning.cartesianSize || 0}
-                tuningRunning={runner.tuning.running || false} canRun={Boolean(inputs.strategyCode && inputs.symbol)}
-                onRunTuning={() => runner.tuning.run?.({
-                  code: inputs.strategyCode, symbol: inputs.symbol, timeframe: inputs.timeframe,
+                enabledSweepDims={runner.tuning.enabledSweepDims || []} cartesianSize={runner.tuning.cartesianSize || 0}
+                tuningRunning={runner.tuning.tuningRunning || false}
+                canRun={Boolean(inputs.strategyCode && (inputs.symbol || runner.runMeta?.symbol))}
+                onRunTuning={() => runner.tuning.runTuning?.({
+                  code: inputs.strategyCode,
+                  symbol: inputs.symbol || runner.runMeta?.symbol || '',
+                  timeframe: inputs.timeframe || runner.runMeta?.timeframe || '',
                   startDate: runner.startDate, endDate: runner.endDate,
                   templateId: inputs.templateId,
                 })}

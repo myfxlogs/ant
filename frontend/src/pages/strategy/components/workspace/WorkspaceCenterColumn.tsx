@@ -125,14 +125,14 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     onBatchDeleteTemplates: sidebarActions.onBatchDeleteTemplates,
     backtestRuns: (history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string; name?: string }>) || [],
     runsLoading: history.loading,
-    onOpenHistory: (runId?: string) => { if (runId) backtest.loadRunById(runId); setRightPanelTab('backtest'); },
+    onOpenHistory: (runId?: string) => { if (runId) backtest.loadRunById(runId, code.setCode); setRightPanelTab('backtest'); },
     onDeleteRun: history.onDeleteRun,
     onBatchDeleteRuns: sidebarActions.onBatchDeleteRuns,
     onRenameRun: sidebarActions.onRenameRun,
     onImport: () => setImportMode(true),
     onNew: handleNewStrategy,
     autoExpandHistory: history.autoExpandHistory,
-  }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest.loadRunById, setRightPanelTab]);
+  }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest.loadRunById, code.setCode, setRightPanelTab]);
 
   // ── Backtest context for AI ───────────────────────────────────────────
   const btSummary = backtest.metrics?.totalTrades != null

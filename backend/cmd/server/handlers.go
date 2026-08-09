@@ -224,8 +224,9 @@ func registerPostAccountHandlers(ctx context.Context, p registerPostAccountDeps)
 		OtelInterceptor: d.OtelInterceptor, PlatformSvc: d.PlatformSvc, MthubSvc: d.MthubSvc,
 		AuthServer: p.AuthServer, StrategyExperimentRepo: strategyExperimentRepo,
 		StrategyAssetRepo: strategyAssetRepo, SchedHealthRepo: p.SchedHealthRepo,
-		AnalyticsCache: d.AnalyticsCache, AISvc: aiDeps.aiSvc, BacktestRunRepo: backtestRunRepo,
+		AnalyticsCache: d.AnalyticsCache, AISvc: aiDeps.aiSvc,
 		PgListen: stratDeps.pgListen, EmailNotifier: p.EmailNotifier,
+		StrategyExecServer: stratDeps.strategyExecServer,
 	})
 
 	startBackgroundServices(ctx, pool, emailNotifier, p.DsDeps.depositAddrRepo, p.DsDeps.adminRepo, p.DsDeps.depositSvc, cfg, log)

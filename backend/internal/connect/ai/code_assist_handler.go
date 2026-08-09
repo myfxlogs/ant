@@ -75,10 +75,10 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	valid := len(errors) == 0
 
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:             valid,
-		Errors:            errors,
-		Warnings:          warnings,
-		ParameterEntries:  parameterEntries,
+		Valid:            valid,
+		Errors:           errors,
+		Warnings:         warnings,
+		ParameterEntries: parameterEntries,
 	}), nil
 }
 
@@ -98,18 +98,42 @@ func (s *CodeAssistServer) validateMQL(_ context.Context, code string) (*connect
 	for _, p := range paramInfos {
 		pType := mqlTypeToProtoType(p.Type)
 		params = append(params, &antv1.RequiredParamSpec{
-			Key:         p.Name,
-			Required:    false,
-			Type:        pType,
+			Key:          p.Name,
+			Required:     false,
+			Type:         pType,
 			DefaultValue: p.Default,
 		})
 		entries = append(entries, &antv1.ParameterEntry{Name: p.Name, Type: pType, Default: p.Default})
 	}
 
+	// Parse @param annotations for sweep dimensions and @strategy directives from comments.
+	annotParams := ai.ExtractParamAnnotations(code)
+	var sweepDims []*antv1.SweepDimension
+	for _, ap := range annotParams {
+		sweepDims = append(sweepDims, &antv1.SweepDimension{
+			Key:      ap.Name,
+			Type:     ai.ParamTypeString(ap.Default),
+			Default:  ap.Default,
+			Min:      ap.Min,
+			Max:      ap.Max,
+			Step:     ap.Step,
+			HasRange: ap.HasRange,
+		})
+	}
+	var strategyDirs []*antv1.StrategyDirective
+	for _, d := range ai.ExtractStrategyDirectives(code) {
+		strategyDirs = append(strategyDirs, &antv1.StrategyDirective{
+			Key:   d.Key,
+			Value: d.Value,
+		})
+	}
+
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:             true,
-		Parameters:        params,
-		ParameterEntries:  entries,
+		Valid:              true,
+		Parameters:         params,
+		ParameterEntries:   entries,
+		SweepDimensions:    sweepDims,
+		StrategyDirectives: strategyDirs,
 	}), nil
 }
 
@@ -137,10 +161,33 @@ func (s *CodeAssistServer) validatePython(_ context.Context, code string) (*conn
 		entries = append(entries, &antv1.ParameterEntry{Name: p.Name, Type: pType, Default: p.Default})
 	}
 
+	annotParams := ai.ExtractParamAnnotations(code)
+	var sweepDims []*antv1.SweepDimension
+	for _, ap := range annotParams {
+		sweepDims = append(sweepDims, &antv1.SweepDimension{
+			Key:      ap.Name,
+			Type:     ai.ParamTypeString(ap.Default),
+			Default:  ap.Default,
+			Min:      ap.Min,
+			Max:      ap.Max,
+			Step:     ap.Step,
+			HasRange: ap.HasRange,
+		})
+	}
+	var strategyDirs []*antv1.StrategyDirective
+	for _, d := range ai.ExtractStrategyDirectives(code) {
+		strategyDirs = append(strategyDirs, &antv1.StrategyDirective{
+			Key:   d.Key,
+			Value: d.Value,
+		})
+	}
+
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-		Valid:             true,
-		Parameters:        params,
-		ParameterEntries:  entries,
+		Valid:              true,
+		Parameters:         params,
+		ParameterEntries:   entries,
+		SweepDimensions:    sweepDims,
+		StrategyDirectives: strategyDirs,
 	}), nil
 }
 

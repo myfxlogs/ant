@@ -5,12 +5,64 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/pkg/ptr"
 	"alphaforge/internal/repository"
 )
+
+// BacktestExecutor executes a backtest in-process without creating a backtest_runs record.
+// Implemented by StrategyExecutionServer.
+type BacktestExecutor interface {
+	ExecuteBacktestDirect(ctx context.Context, code string, overrides []byte, symbol, timeframe string, fromTs, toTs time.Time) (*antv1.ExecuteBacktestResponse, error)
+}
+
+// ExecuteBacktestDirect runs a backtest in-process: fetch bars → compile → engine → return response.
+// No DB record created, no polling, no persistence. Used by experiment worker for candidate scoring.
+func (s *StrategyExecutionServer) ExecuteBacktestDirect(
+	ctx context.Context, code string, overrides []byte, symbol, timeframe string, fromTs, toTs time.Time,
+) (*antv1.ExecuteBacktestResponse, error) {
+	if code == "" {
+		return nil, fmt.Errorf("strategy code is empty")
+	}
+	params := backtestParams{
+		code:           code,
+		initialCapital: "10000",
+		commission:     "0.001",
+		slippage:       "0",
+		leverage:       "1",
+		tradeDir:       antv1.TradeDirection_TRADE_DIRECTION_BOTH,
+		strictMode:     true,
+	}
+	run := &repository.BacktestRun{
+		ID:                 uuid.Nil,
+		UserID:             uuid.Nil,
+		Symbol:             symbol,
+		Timeframe:          timeframe,
+		FromTs:             &fromTs,
+		ToTs:               &toTs,
+		Mode:               "KLINE_RANGE",
+		StrategyCode:       &code,
+		InitialCapital:     ptr.Decimal(decimal.NewFromInt(10000)),
+		Commission:         ptr.Decimal(decimal.NewFromFloat(0.001)),
+		Slippage:           ptr.Decimal(decimal.Zero),
+		Leverage:           ptr.Decimal(decimal.NewFromInt(1)),
+		TradeDirection:     ptr.Str("both"),
+		StrictMode:         ptr.Bool(true),
+		ParameterOverrides: overrides,
+	}
+	klines, err := s.fetchBars(ctx, run)
+	if err != nil {
+		return nil, fmt.Errorf("fetch bars: %w", err)
+	}
+	if len(klines) == 0 {
+		return nil, fmt.Errorf("no K-line data available for %s %s", symbol, timeframe)
+	}
+	return s.executeGoBacktest(ctx, run, params, klines)
+}
 
 // startBacktestWatchers starts lease heartbeat and cancel watcher goroutines.
 // Returns a derived context that is cancelled when the user requests cancellation.
@@ -147,7 +199,6 @@ func (s *StrategyExecutionServer) fetchSymbolInfo(ctx context.Context, run *repo
 	}
 	return info
 }
-
 
 func (s *StrategyExecutionServer) handleBacktestError(ctx context.Context, run *repository.BacktestRun, execCtx context.Context, err error) {
 	if execCtx.Err() != nil {

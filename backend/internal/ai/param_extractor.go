@@ -13,7 +13,7 @@ import (
 // TunableParam represents a single parameter extracted from strategy code.
 type TunableParam struct {
 	Name    string
-	Type    string  // "int", "float", or "choice"
+	Type    string // "int", "float", or "choice"
 	Default float64
 	Min     float64
 	Max     float64
@@ -62,9 +62,14 @@ func paramType(val float64) string {
 	return "float"
 }
 
-// HasTunableParams checks if the code contains any ctx.Param() calls.
+// ParamTypeString is the exported version of paramType for use by other packages.
+func ParamTypeString(val float64) string {
+	return paramType(val)
+}
+
+// HasTunableParams checks if the code contains any ctx.Param() calls or @param annotations.
 func HasTunableParams(code string) bool {
-	return strings.Contains(code, "ctx.Param(")
+	return strings.Contains(code, "ctx.Param(") || strings.Contains(code, "@param")
 }
 
 // ApplyOverrides injects parameter values into Go strategy code by replacing

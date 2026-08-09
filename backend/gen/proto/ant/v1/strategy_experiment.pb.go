@@ -347,8 +347,16 @@ type StrategyExperimentCandidate struct {
 	OosSharpeRatio *float64 `protobuf:"fixed64,17,opt,name=oos_sharpe_ratio,json=oosSharpeRatio,proto3,oneof" json:"oos_sharpe_ratio,omitempty"`
 	DegradationPct *float64 `protobuf:"fixed64,18,opt,name=degradation_pct,json=degradationPct,proto3,oneof" json:"degradation_pct,omitempty"`
 	IsOverfit      bool     `protobuf:"varint,19,opt,name=is_overfit,json=isOverfit,proto3" json:"is_overfit,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Raw backtest metrics (not scored, original values).
+	TotalReturn   *float64 `protobuf:"fixed64,20,opt,name=total_return,json=totalReturn,proto3,oneof" json:"total_return,omitempty"`
+	AnnualReturn  *float64 `protobuf:"fixed64,21,opt,name=annual_return,json=annualReturn,proto3,oneof" json:"annual_return,omitempty"`
+	SharpeRatio   *float64 `protobuf:"fixed64,22,opt,name=sharpe_ratio,json=sharpeRatio,proto3,oneof" json:"sharpe_ratio,omitempty"`
+	MaxDrawdown   *float64 `protobuf:"fixed64,23,opt,name=max_drawdown,json=maxDrawdown,proto3,oneof" json:"max_drawdown,omitempty"`
+	WinRate       *float64 `protobuf:"fixed64,24,opt,name=win_rate,json=winRate,proto3,oneof" json:"win_rate,omitempty"`
+	ProfitFactor  *float64 `protobuf:"fixed64,25,opt,name=profit_factor,json=profitFactor,proto3,oneof" json:"profit_factor,omitempty"`
+	TotalTrades   *int32   `protobuf:"varint,26,opt,name=total_trades,json=totalTrades,proto3,oneof" json:"total_trades,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StrategyExperimentCandidate) Reset() {
@@ -498,6 +506,55 @@ func (x *StrategyExperimentCandidate) GetIsOverfit() bool {
 		return x.IsOverfit
 	}
 	return false
+}
+
+func (x *StrategyExperimentCandidate) GetTotalReturn() float64 {
+	if x != nil && x.TotalReturn != nil {
+		return *x.TotalReturn
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetAnnualReturn() float64 {
+	if x != nil && x.AnnualReturn != nil {
+		return *x.AnnualReturn
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetSharpeRatio() float64 {
+	if x != nil && x.SharpeRatio != nil {
+		return *x.SharpeRatio
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetMaxDrawdown() float64 {
+	if x != nil && x.MaxDrawdown != nil {
+		return *x.MaxDrawdown
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetWinRate() float64 {
+	if x != nil && x.WinRate != nil {
+		return *x.WinRate
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetProfitFactor() float64 {
+	if x != nil && x.ProfitFactor != nil {
+		return *x.ProfitFactor
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetTotalTrades() int32 {
+	if x != nil && x.TotalTrades != nil {
+		return *x.TotalTrades
+	}
+	return 0
 }
 
 type SubmitStrategyExperimentResponse struct {
@@ -1125,7 +1182,7 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x0ffrom_ts_unix_ms\x18\n" +
 	" \x01(\x03R\ffromTsUnixMs\x12!\n" +
 	"\rto_ts_unix_ms\x18\v \x01(\x03R\n" +
-	"toTsUnixMs\"\xf3\x05\n" +
+	"toTsUnixMs\"\xfc\b\n" +
 	"\x1bStrategyExperimentCandidate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
 	"\rexperiment_id\x18\x02 \x01(\tR\fexperimentId\x127\n" +
@@ -1148,12 +1205,27 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x10oos_sharpe_ratio\x18\x11 \x01(\x01H\x02R\x0eoosSharpeRatio\x88\x01\x01\x12,\n" +
 	"\x0fdegradation_pct\x18\x12 \x01(\x01H\x03R\x0edegradationPct\x88\x01\x01\x12\x1d\n" +
 	"\n" +
-	"is_overfit\x18\x13 \x01(\bR\tisOverfitB\f\n" +
+	"is_overfit\x18\x13 \x01(\bR\tisOverfit\x12&\n" +
+	"\ftotal_return\x18\x14 \x01(\x01H\x04R\vtotalReturn\x88\x01\x01\x12(\n" +
+	"\rannual_return\x18\x15 \x01(\x01H\x05R\fannualReturn\x88\x01\x01\x12&\n" +
+	"\fsharpe_ratio\x18\x16 \x01(\x01H\x06R\vsharpeRatio\x88\x01\x01\x12&\n" +
+	"\fmax_drawdown\x18\x17 \x01(\x01H\aR\vmaxDrawdown\x88\x01\x01\x12\x1e\n" +
+	"\bwin_rate\x18\x18 \x01(\x01H\bR\awinRate\x88\x01\x01\x12(\n" +
+	"\rprofit_factor\x18\x19 \x01(\x01H\tR\fprofitFactor\x88\x01\x01\x12&\n" +
+	"\ftotal_trades\x18\x1a \x01(\x05H\n" +
+	"R\vtotalTrades\x88\x01\x01B\f\n" +
 	"\n" +
 	"_oos_scoreB\x13\n" +
 	"\x11_oos_total_returnB\x13\n" +
 	"\x11_oos_sharpe_ratioB\x12\n" +
-	"\x10_degradation_pct\"u\n" +
+	"\x10_degradation_pctB\x0f\n" +
+	"\r_total_returnB\x10\n" +
+	"\x0e_annual_returnB\x0f\n" +
+	"\r_sharpe_ratioB\x0f\n" +
+	"\r_max_drawdownB\v\n" +
+	"\t_win_rateB\x10\n" +
+	"\x0e_profit_factorB\x0f\n" +
+	"\r_total_trades\"u\n" +
 	" SubmitStrategyExperimentResponse\x12:\n" +
 	"\n" +
 	"experiment\x18\x01 \x01(\v2\x1a.ant.v1.StrategyExperimentR\n" +

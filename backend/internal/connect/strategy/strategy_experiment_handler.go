@@ -94,6 +94,15 @@ func candidateToProto(c *repository.StrategyExperimentCandidate) *antv1.Strategy
 		p.DegradationPct = c.DegradationPct
 	}
 	p.IsOverfit = c.IsOverfit
+	// Raw backtest metrics
+	p.TotalReturn = &c.TotalReturn
+	p.AnnualReturn = &c.AnnualReturn
+	p.SharpeRatio = &c.SharpeRatio
+	p.MaxDrawdown = &c.MaxDrawdown
+	p.WinRate = &c.WinRate
+	p.ProfitFactor = &c.ProfitFactor
+	totalTrades := int32(c.TotalTrades)
+	p.TotalTrades = &totalTrades
 	return p
 }
 

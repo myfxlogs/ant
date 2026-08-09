@@ -18,8 +18,8 @@ import (
 // ExperimentWorker polls for PENDING experiments and processes them.
 type ExperimentWorker struct {
 	repo           *repository.StrategyExperimentRepository
-	backtestRepo   *repository.BacktestRunRepository
 	marketDataRepo repository.MarketDataStore
+	executor       BacktestExecutor // in-process backtest execution (no DB record)
 	log            *zap.Logger
 	systemAISvc    *systemai.Service  // optional: enables AI multi-round proposal
 	pgListen       *pglisten.Listener // optional: push-first experiment dispatch
@@ -28,13 +28,11 @@ type ExperimentWorker struct {
 
 func NewExperimentWorker(
 	repo *repository.StrategyExperimentRepository,
-	backtestRepo *repository.BacktestRunRepository,
 	marketDataRepo repository.MarketDataStore,
 	log *zap.Logger,
 ) *ExperimentWorker {
 	return &ExperimentWorker{
 		repo:           repo,
-		backtestRepo:   backtestRepo,
 		marketDataRepo: marketDataRepo,
 		log:            log,
 		stopCh:         make(chan struct{}),
@@ -85,6 +83,9 @@ func (w *ExperimentWorker) Stop() { close(w.stopCh) }
 // SetAIService injects the system AI service for AI multi-round proposal (search_method="ai").
 func (w *ExperimentWorker) SetAIService(svc *systemai.Service) { w.systemAISvc = svc }
 
+// SetExecutor injects the in-process backtest executor for direct candidate scoring.
+func (w *ExperimentWorker) SetExecutor(e BacktestExecutor) { w.executor = e }
+
 // processOne claims and processes a single PENDING experiment.
 func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	exp, err := w.repo.ClaimPendingExperiment(ctx)
@@ -110,7 +111,7 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		return fmt.Errorf("experiment %s has no strategy_code", exp.ID)
 	}
 
-	params := ai.ExtractParams(code)
+	params := ai.ExtractParamsWithAnnotations(code)
 	if len(params) == 0 {
 		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusCompleted); err != nil {
 			w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
@@ -164,6 +165,13 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 			ScoreComponents: scoreProto,
 			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
 			BacktestRunID:   c.BacktestRunID,
+			TotalReturn:     c.TotalReturn,
+			AnnualReturn:    c.AnnualReturn,
+			SharpeRatio:     c.SharpeRatio,
+			MaxDrawdown:     c.MaxDrawdown,
+			WinRate:         c.WinRate,
+			ProfitFactor:    c.ProfitFactor,
+			TotalTrades:     c.TotalTrades,
 			OOSScore:        c.OOSScore,
 			OOSTotalReturn:  c.OOSTotalReturn,
 			OOSSharpeRatio:  c.OOSSharpeRatio,
@@ -209,7 +217,7 @@ func (w *ExperimentWorker) runOOSValidation(ctx context.Context, exp *repository
 	topIndices := selectTopK(candidates, oosTopK)
 	for _, idx := range topIndices {
 		c := &candidates[idx]
-		oosScored, _, err := w.runSingleBacktest(
+		oosScored, err := w.runSingleBacktest(
 			ctx, code, c.Overrides, exp.UserID, symbol, tf,
 			windows.OOSStart, windows.OOSEnd, regime,
 		)
@@ -236,6 +244,14 @@ type candidateResult struct {
 	ScoreComponents map[string]float64
 	Summary         string
 	BacktestRunID   *uuid.UUID
+	// Raw backtest metrics (original values, not scored).
+	TotalReturn  float64
+	AnnualReturn float64
+	SharpeRatio  float64
+	MaxDrawdown  float64
+	WinRate      float64
+	ProfitFactor float64
+	TotalTrades  int
 	// OOS validation (nil when not in top-K or window too short)
 	OOSScore       *float64
 	OOSTotalReturn *float64

@@ -74,6 +74,7 @@ type GetBacktestRunResponse struct {
 	Risk                 *BacktestRisk          `protobuf:"bytes,5,opt,name=risk,proto3" json:"risk,omitempty"`
 	ExecutionAssumptions *ExecutionAssumptions  `protobuf:"bytes,6,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
 	BlindSpots           []*BacktestBlindSpot   `protobuf:"bytes,7,rep,name=blind_spots,json=blindSpots,proto3" json:"blind_spots,omitempty"`
+	StrategyCode         *string                `protobuf:"bytes,8,opt,name=strategy_code,json=strategyCode,proto3,oneof" json:"strategy_code,omitempty"`
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -155,6 +156,13 @@ func (x *GetBacktestRunResponse) GetBlindSpots() []*BacktestBlindSpot {
 		return x.BlindSpots
 	}
 	return nil
+}
+
+func (x *GetBacktestRunResponse) GetStrategyCode() string {
+	if x != nil && x.StrategyCode != nil {
+		return *x.StrategyCode
+	}
+	return ""
 }
 
 type WatchBacktestRunRequest struct {
@@ -610,7 +618,7 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\n" +
 	"\x18backtest_run_query.proto\x12\x06ant.v1\x1a\fcommon.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\x1a\rai_gate.proto\".\n" +
 	"\x15GetBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x81\x03\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xbd\x03\n" +
 	"\x16GetBacktestRunResponse\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
@@ -620,8 +628,10 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\x04risk\x18\x05 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
 	"\x15execution_assumptions\x18\x06 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\x12:\n" +
 	"\vblind_spots\x18\a \x03(\v2\x19.ant.v1.BacktestBlindSpotR\n" +
-	"blindSpotsB\r\n" +
-	"\v_dataset_id\"0\n" +
+	"blindSpots\x12(\n" +
+	"\rstrategy_code\x18\b \x01(\tH\x01R\fstrategyCode\x88\x01\x01B\r\n" +
+	"\v_dataset_idB\x10\n" +
+	"\x0e_strategy_code\"0\n" +
 	"\x17WatchBacktestRunRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xd4\x03\n" +
 	"\x11BacktestRunUpdate\x12%\n" +

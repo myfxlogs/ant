@@ -74,6 +74,14 @@ message StrategyExperimentCandidate {
   optional double oos_sharpe_ratio = 17;
   optional double degradation_pct = 18;
   bool is_overfit = 19;
+  // Raw backtest metrics (not scored, original values).
+  optional double total_return = 20;
+  optional double annual_return = 21;
+  optional double sharpe_ratio = 22;
+  optional double max_drawdown = 23;
+  optional double win_rate = 24;
+  optional double profit_factor = 25;
+  optional int32 total_trades = 26;
 }
 
 message SubmitStrategyExperimentResponse {

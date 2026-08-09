@@ -234,7 +234,7 @@ export function useBacktestRunner() {
   const restoreLastRun = useCallback((accountId: string, templateId?: string) =>
     restoreLastRunFn(accountId, templateId, setMetrics, setExecutionAssumptions, setRunId, setStatus, setChartTrades), []);
 
-  const loadRunById = useCallback(async (id: string) => {
+  const loadRunById = useCallback(async (id: string, onCodeLoaded?: (code: string) => void) => {
     try {
       watchRef.current?.(); watchRef.current = null;
       const detail = await strategyRuntimeApi.getBacktestRun(id);
@@ -246,6 +246,9 @@ export function useBacktestRunner() {
           createdAt: run.createdAt ? new Date(Number(run.createdAt.seconds) * 1000).toISOString() : undefined,
           name: run.name ?? undefined,
         });
+      }
+      if (detail.strategyCode && onCodeLoaded) {
+        onCodeLoaded(detail.strategyCode);
       }
       if (detail.metrics) setMetrics(protoToMetrics(detail.metrics));
       if (detail.executionAssumptions) setExecutionAssumptions(detail.executionAssumptions);

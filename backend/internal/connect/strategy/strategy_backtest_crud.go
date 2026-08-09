@@ -171,14 +171,18 @@ func (s *StrategyExecutionServer) GetBacktestRun(ctx context.Context, req *conne
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	bp := parseBacktestResult(run.ProtoResponse)
-	return connect.NewResponse(&antv1.GetBacktestRunResponse{
+	resp := &antv1.GetBacktestRunResponse{
 		Run:                  toProtoBacktestRun(run),
 		Metrics:              bp.Metrics,
 		EquityCurve:          bp.EquityCurve,
 		Risk:                 bp.Risk,
 		ExecutionAssumptions: bp.ExecutionAssumptions,
 		BlindSpots:           bp.BlindSpots,
-	}), nil
+	}
+	if run.StrategyCode != nil && *run.StrategyCode != "" {
+		resp.StrategyCode = proto.String(*run.StrategyCode)
+	}
+	return connect.NewResponse(resp), nil
 }
 
 func (s *StrategyExecutionServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
