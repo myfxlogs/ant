@@ -4,7 +4,6 @@ import { Card, Spin, Tag, Typography, Empty, Row, Col, Table, Statistic, Select,
 import { RiseOutlined, FallOutlined, GlobalOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import ShareChart from './ShareChart';
 import Seo from '@/components/common/Seo';
 import { sharePublicClient } from '@/client/connect';
@@ -13,6 +12,7 @@ import {
   type ShareData,
 } from './SharePerformancePageHelpers';
 import { buildKpiCards } from './SharePerformancePageStats';
+import { ShareSymbolBreakdown, ShareTradeTable } from './ShareSymbolBreakdown';
 
 const { Text } = Typography;
 
@@ -123,8 +123,6 @@ export default function SharePerformancePage() {
 
   const kpiCards = buildKpiCards(t, data);
 
-  const PIE_COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2', '#a0d911', '#f5222d', '#2f54eb', '#faad14'];
-
   const columns = [
     { title: t('sharePage.symbol'), dataIndex: 'symbol', key: 'symbol', ellipsis: true },
     { title: t('sharePage.side'), dataIndex: 'side', key: 'side',
@@ -225,48 +223,9 @@ export default function SharePerformancePage() {
         </Card>
       )}
 
-      {bySymbol.length > 0 && (
-        <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.bySymbol')}</span>} style={{ marginBottom: 16, borderRadius: 10, background: cardBg }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-            <ResponsiveContainer width={110} height={110}>
-              <PieChart>
-                <Pie data={bySymbol} dataKey="net" nameKey="symbol" cx="50%" cy="50%" innerRadius={30} outerRadius={48} paddingAngle={2} isAnimationActive={false}>
-                  {bySymbol.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                </Pie>
-                <Tooltip formatter={(v: number, n: string) => [signed(v), n]} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div style={{ flex: 1, minWidth: 160, fontSize: 'clamp(11px, 2vw, 13px)' }}>
-              {bySymbol.slice(0, 8).map((s, i) => (
-                <div key={s.symbol} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: PIE_COLORS[i % PIE_COLORS.length] }} />
-                    <span style={{ color: pageColor }}>{s.symbol}</span>
-                    <span style={{ color: '#8c8c8c', fontSize: '0.9em' }}>{s.count}{t('sharePage.countUnit', { defaultValue: '笔' })}</span>
-                  </div>
-                  <span style={{ fontWeight: 500, color: s.net >= 0 ? green : red }}>{signed(s.net)}</span>
-                </div>
-              ))}
-              {bySymbol.length > 8 && <div style={{ color: '#8c8c8c', fontSize: 11 }}>+{bySymbol.length - 8} more</div>}
-            </div>
-          </div>
-        </Card>
-      )}
+      <ShareSymbolBreakdown bySymbol={bySymbol} cardBg={cardBg} pageColor={pageColor} green={green} red={red} signed={signed} />
 
-      <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.tradeRecords')} ({trades.length})</span>} style={{ borderRadius: 10, background: cardBg }}>
-        {trades.length === 0 ? (
-          <Empty description={t('sharePage.noTrades')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        ) : (
-          <Table
-            dataSource={trades}
-            columns={columns}
-            rowKey={(_, i) => String(i)}
-            size="small"
-            scroll={{ x: 500 }}
-            pagination={{ pageSize: 20, size: 'small', showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], simple: true }}
-          />
-        )}
-      </Card>
+      <ShareTradeTable trades={trades} cardBg={cardBg} columns={columns} />
 
       <Divider style={{ margin: '24px 0 12px' }} />
       <div style={{ textAlign: 'center', fontSize: 'clamp(10px, 2vw, 12px)', color: '#bbb', padding: '0 8px' }}>

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_tuning.proto.
  */
 export const file_i18n_strategy_tuning: GenFile = /*@__PURE__*/
-  fileDesc("ChppMThuL3N0cmF0ZWd5X3R1bmluZy5wcm90bxILYW50LnYxLmkxOG4ivAYKClR1bmluZ0kxOG4SDQoFYXBwbHkYASABKAkSEwoLZGVncmFkYXRpb24YAiABKAkSHAoUZW5hYmxlZF9jb21iaW5hdGlvbnMYAyABKAkSDQoFZ3JhZGUYBCABKAkSFAoMZ3JpZF93YXJuaW5nGAUgASgJEgwKBGhpZGUYBiABKAkSFAoMb29zX2Zvb3Rub3RlGAcgASgJEhEKCW9vc19zY29yZRgIIAEoCRIVCg1vcHRpbWl6ZXJfYWdzGAkgASgJEhoKEm9wdGltaXplcl9hZ3NfZGVzYxgKIAEoCRIUCgxvcHRpbWl6ZXJfYWkYCyABKAkSGQoRb3B0aW1pemVyX2FpX2Rlc2MYDCABKAkSFAoMb3B0aW1pemVyX2RlGA0gASgJEhkKEW9wdGltaXplcl9kZV9kZXNjGA4gASgJEhYKDm9wdGltaXplcl9ncmlkGA8gASgJEhsKE29wdGltaXplcl9ncmlkX2Rlc2MYECABKAkSGAoQb3B0aW1pemVyX3JhbmRvbRgRIAEoCRIdChVvcHRpbWl6ZXJfcmFuZG9tX2Rlc2MYEiABKAkSFQoNb3B0aW1pemVyX3RwZRgTIAEoCRIaChJvcHRpbWl6ZXJfdHBlX2Rlc2MYFCABKAkSGAoQb3B0aW1pemVyX21ldGhvZBgVIAEoCRIPCgdvdmVyZml0GBYgASgJEhcKD292ZXJmaXRfd2FybmluZxgXIAEoCRIcChRwYXJhbWV0ZXJfZGltZW5zaW9ucxgYIAEoCRISCgpwYXJhbWV0ZXJzGBkgASgJEg8KB3ByZXZpZXcYGiABKAkSFQoNcHJldmlld190aXRsZRgbIAEoCRIMCgRyYW5rGBwgASgJEhQKDHJlcXVpcmVzX2FfaRgdIAEoCRIPCgdyZXN1bHRzGB4gASgJEgsKA3J1bhgfIAEoCRINCgVzY29yZRggIAEoCRIPCgdzdGFydGVkGCEgASgJEg8KB3N1bW1hcnkYIiABKAkSFQoNc3dpdGNoX3RvX2RfZRgjIAEoCRIRCgl0cnVuY2F0ZWQYJCABKAkSDgoGdHVuaW5nGCUgASgJEg8KB3dhaXRpbmcYJiABKAlCIlogYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("ChppMThuL3N0cmF0ZWd5X3R1bmluZy5wcm90bxILYW50LnYxLmkxOG4i1AcKClR1bmluZ0kxOG4SDQoFYXBwbHkYASABKAkSEwoLZGVncmFkYXRpb24YAiABKAkSFwoPZGVncmFkYXRpb25fdGlwGCcgASgJEhwKFGVuYWJsZWRfY29tYmluYXRpb25zGAMgASgJEg0KBWdyYWRlGAQgASgJEhEKCWdyYWRlX3RpcBgoIAEoCRIUCgxncmlkX3dhcm5pbmcYBSABKAkSDAoEaGlkZRgGIAEoCRIUCgxvb3NfZm9vdG5vdGUYByABKAkSEQoJb29zX3Njb3JlGAggASgJEhUKDW9vc19zY29yZV90aXAYKSABKAkSFQoNb3B0aW1pemVyX2FncxgJIAEoCRIaChJvcHRpbWl6ZXJfYWdzX2Rlc2MYCiABKAkSFAoMb3B0aW1pemVyX2FpGAsgASgJEhkKEW9wdGltaXplcl9haV9kZXNjGAwgASgJEhQKDG9wdGltaXplcl9kZRgNIAEoCRIZChFvcHRpbWl6ZXJfZGVfZGVzYxgOIAEoCRIWCg5vcHRpbWl6ZXJfZ3JpZBgPIAEoCRIbChNvcHRpbWl6ZXJfZ3JpZF9kZXNjGBAgASgJEhgKEG9wdGltaXplcl9yYW5kb20YESABKAkSHQoVb3B0aW1pemVyX3JhbmRvbV9kZXNjGBIgASgJEhUKDW9wdGltaXplcl90cGUYEyABKAkSGgoSb3B0aW1pemVyX3RwZV9kZXNjGBQgASgJEhgKEG9wdGltaXplcl9tZXRob2QYFSABKAkSDwoHb3ZlcmZpdBgWIAEoCRITCgtvdmVyZml0X3RpcBgqIAEoCRIXCg9vdmVyZml0X3dhcm5pbmcYFyABKAkSHAoUcGFyYW1ldGVyX2RpbWVuc2lvbnMYGCABKAkSEgoKcGFyYW1ldGVycxgZIAEoCRIWCg5wYXJhbWV0ZXJzX3RpcBgrIAEoCRIPCgdwcmV2aWV3GBogASgJEhUKDXByZXZpZXdfdGl0bGUYGyABKAkSDAoEcmFuaxgcIAEoCRIUCgxyZXF1aXJlc19hX2kYHSABKAkSDwoHcmVzdWx0cxgeIAEoCRILCgNydW4YHyABKAkSDQoFc2NvcmUYICABKAkSEQoJc2NvcmVfdGlwGCwgASgJEg8KB3N0YXJ0ZWQYISABKAkSDwoHc3VtbWFyeRgiIAEoCRITCgtzdW1tYXJ5X3RpcBgtIAEoCRIVCg1zd2l0Y2hfdG9fZF9lGCMgASgJEhEKCXRydW5jYXRlZBgkIAEoCRIOCgZ0dW5pbmcYJSABKAkSDwoHd2FpdGluZxgmIAEoCUIiWiBhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjEvaTE4bmIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.i18n.TuningI18n
@@ -31,6 +31,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
   degradation: string;
 
   /**
+   * tooltip for degradation column
+   *
+   * @generated from field: string degradation_tip = 39;
+   */
+  degradationTip: string;
+
+  /**
    * {{enabled}} enabled · {{combos}} combinations
    *
    * @generated from field: string enabled_combinations = 3;
@@ -43,6 +50,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
    * @generated from field: string grade = 4;
    */
   grade: string;
+
+  /**
+   * tooltip for grade column
+   *
+   * @generated from field: string grade_tip = 40;
+   */
+  gradeTip: string;
 
   /**
    * Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider swit
@@ -71,6 +85,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
    * @generated from field: string oos_score = 8;
    */
   oosScore: string;
+
+  /**
+   * tooltip for oosScore column
+   *
+   * @generated from field: string oos_score_tip = 41;
+   */
+  oosScoreTip: string;
 
   /**
    * Annealed Gaussian
@@ -171,6 +192,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
   overfit: string;
 
   /**
+   * tooltip for overfit column
+   *
+   * @generated from field: string overfit_tip = 42;
+   */
+  overfitTip: string;
+
+  /**
    * ⚠ OVERFIT
    *
    * @generated from field: string overfit_warning = 23;
@@ -190,6 +218,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
    * @generated from field: string parameters = 25;
    */
   parameters: string;
+
+  /**
+   * tooltip for parameters column
+   *
+   * @generated from field: string parameters_tip = 43;
+   */
+  parametersTip: string;
 
   /**
    * Preview
@@ -241,6 +276,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
   score: string;
 
   /**
+   * tooltip for score column
+   *
+   * @generated from field: string score_tip = 44;
+   */
+  scoreTip: string;
+
+  /**
    * Smart Tuning started
    *
    * @generated from field: string started = 33;
@@ -253,6 +295,13 @@ export type TuningI18n = Message<"ant.v1.i18n.TuningI18n"> & {
    * @generated from field: string summary = 34;
    */
   summary: string;
+
+  /**
+   * tooltip for summary column
+   *
+   * @generated from field: string summary_tip = 45;
+   */
+  summaryTip: string;
 
   /**
    * Switch to DE

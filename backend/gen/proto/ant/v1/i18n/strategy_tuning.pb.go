@@ -25,12 +25,15 @@ type TuningI18N struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Apply               string                 `protobuf:"bytes,1,opt,name=apply,proto3" json:"apply,omitempty"`                                                           // Apply
 	Degradation         string                 `protobuf:"bytes,2,opt,name=degradation,proto3" json:"degradation,omitempty"`                                               // Degradation
+	DegradationTip      string                 `protobuf:"bytes,39,opt,name=degradation_tip,json=degradationTip,proto3" json:"degradation_tip,omitempty"`                  // tooltip for degradation column
 	EnabledCombinations string                 `protobuf:"bytes,3,opt,name=enabled_combinations,json=enabledCombinations,proto3" json:"enabled_combinations,omitempty"`    // {{enabled}} enabled · {{combos}} combinations
 	Grade               string                 `protobuf:"bytes,4,opt,name=grade,proto3" json:"grade,omitempty"`                                                           // Grade
+	GradeTip            string                 `protobuf:"bytes,40,opt,name=grade_tip,json=gradeTip,proto3" json:"grade_tip,omitempty"`                                    // tooltip for grade column
 	GridWarning         string                 `protobuf:"bytes,5,opt,name=grid_warning,json=gridWarning,proto3" json:"grid_warning,omitempty"`                            // Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider swit
 	Hide                string                 `protobuf:"bytes,6,opt,name=hide,proto3" json:"hide,omitempty"`                                                             // Hide
 	OosFootnote         string                 `protobuf:"bytes,7,opt,name=oos_footnote,json=oosFootnote,proto3" json:"oos_footnote,omitempty"`                            // OOS validation run on top-5 candidates (by IS score). Green degradation <20%, or
 	OosScore            string                 `protobuf:"bytes,8,opt,name=oos_score,json=oosScore,proto3" json:"oos_score,omitempty"`                                     // OOS Score
+	OosScoreTip         string                 `protobuf:"bytes,41,opt,name=oos_score_tip,json=oosScoreTip,proto3" json:"oos_score_tip,omitempty"`                         // tooltip for oosScore column
 	OptimizerAgs        string                 `protobuf:"bytes,9,opt,name=optimizer_ags,json=optimizerAgs,proto3" json:"optimizer_ags,omitempty"`                         // Annealed Gaussian
 	OptimizerAgsDesc    string                 `protobuf:"bytes,10,opt,name=optimizer_ags_desc,json=optimizerAgsDesc,proto3" json:"optimizer_ags_desc,omitempty"`          // Gaussian jitter with sigma annealing. Lightweight alternative to TPE.
 	OptimizerAi         string                 `protobuf:"bytes,11,opt,name=optimizer_ai,json=optimizerAi,proto3" json:"optimizer_ai,omitempty"`                           // AI Optimizer
@@ -45,9 +48,11 @@ type TuningI18N struct {
 	OptimizerTpeDesc    string                 `protobuf:"bytes,20,opt,name=optimizer_tpe_desc,json=optimizerTpeDesc,proto3" json:"optimizer_tpe_desc,omitempty"`          // Tree-structured Parzen Estimator. KDE models good/bad distributions.
 	OptimizerMethod     string                 `protobuf:"bytes,21,opt,name=optimizer_method,json=optimizerMethod,proto3" json:"optimizer_method,omitempty"`               // Optimizer method
 	Overfit             string                 `protobuf:"bytes,22,opt,name=overfit,proto3" json:"overfit,omitempty"`                                                      // Overfit
+	OverfitTip          string                 `protobuf:"bytes,42,opt,name=overfit_tip,json=overfitTip,proto3" json:"overfit_tip,omitempty"`                              // tooltip for overfit column
 	OverfitWarning      string                 `protobuf:"bytes,23,opt,name=overfit_warning,json=overfitWarning,proto3" json:"overfit_warning,omitempty"`                  // ⚠ OVERFIT
 	ParameterDimensions string                 `protobuf:"bytes,24,opt,name=parameter_dimensions,json=parameterDimensions,proto3" json:"parameter_dimensions,omitempty"`   // Parameter dimensions
 	Parameters          string                 `protobuf:"bytes,25,opt,name=parameters,proto3" json:"parameters,omitempty"`                                                // Parameters
+	ParametersTip       string                 `protobuf:"bytes,43,opt,name=parameters_tip,json=parametersTip,proto3" json:"parameters_tip,omitempty"`                     // tooltip for parameters column
 	Preview             string                 `protobuf:"bytes,26,opt,name=preview,proto3" json:"preview,omitempty"`                                                      // Preview
 	PreviewTitle        string                 `protobuf:"bytes,27,opt,name=preview_title,json=previewTitle,proto3" json:"preview_title,omitempty"`                        // Preview ({{shown}} of {{total}})
 	Rank                string                 `protobuf:"bytes,28,opt,name=rank,proto3" json:"rank,omitempty"`                                                            // #
@@ -55,8 +60,10 @@ type TuningI18N struct {
 	Results             string                 `protobuf:"bytes,30,opt,name=results,proto3" json:"results,omitempty"`                                                      // Results ({{count}})
 	Run                 string                 `protobuf:"bytes,31,opt,name=run,proto3" json:"run,omitempty"`                                                              // Run ({{count}})
 	Score               string                 `protobuf:"bytes,32,opt,name=score,proto3" json:"score,omitempty"`                                                          // Score
+	ScoreTip            string                 `protobuf:"bytes,44,opt,name=score_tip,json=scoreTip,proto3" json:"score_tip,omitempty"`                                    // tooltip for score column
 	Started             string                 `protobuf:"bytes,33,opt,name=started,proto3" json:"started,omitempty"`                                                      // Smart Tuning started
 	Summary             string                 `protobuf:"bytes,34,opt,name=summary,proto3" json:"summary,omitempty"`                                                      // Summary
+	SummaryTip          string                 `protobuf:"bytes,45,opt,name=summary_tip,json=summaryTip,proto3" json:"summary_tip,omitempty"`                              // tooltip for summary column
 	SwitchToDE          string                 `protobuf:"bytes,35,opt,name=switch_to_d_e,json=switchToDE,proto3" json:"switch_to_d_e,omitempty"`                          // Switch to DE
 	Truncated           string                 `protobuf:"bytes,36,opt,name=truncated,proto3" json:"truncated,omitempty"`                                                  // TRUNCATED
 	Tuning              string                 `protobuf:"bytes,37,opt,name=tuning,proto3" json:"tuning,omitempty"`                                                        // Tuning…
@@ -109,6 +116,13 @@ func (x *TuningI18N) GetDegradation() string {
 	return ""
 }
 
+func (x *TuningI18N) GetDegradationTip() string {
+	if x != nil {
+		return x.DegradationTip
+	}
+	return ""
+}
+
 func (x *TuningI18N) GetEnabledCombinations() string {
 	if x != nil {
 		return x.EnabledCombinations
@@ -119,6 +133,13 @@ func (x *TuningI18N) GetEnabledCombinations() string {
 func (x *TuningI18N) GetGrade() string {
 	if x != nil {
 		return x.Grade
+	}
+	return ""
+}
+
+func (x *TuningI18N) GetGradeTip() string {
+	if x != nil {
+		return x.GradeTip
 	}
 	return ""
 }
@@ -147,6 +168,13 @@ func (x *TuningI18N) GetOosFootnote() string {
 func (x *TuningI18N) GetOosScore() string {
 	if x != nil {
 		return x.OosScore
+	}
+	return ""
+}
+
+func (x *TuningI18N) GetOosScoreTip() string {
+	if x != nil {
+		return x.OosScoreTip
 	}
 	return ""
 }
@@ -249,6 +277,13 @@ func (x *TuningI18N) GetOverfit() string {
 	return ""
 }
 
+func (x *TuningI18N) GetOverfitTip() string {
+	if x != nil {
+		return x.OverfitTip
+	}
+	return ""
+}
+
 func (x *TuningI18N) GetOverfitWarning() string {
 	if x != nil {
 		return x.OverfitWarning
@@ -266,6 +301,13 @@ func (x *TuningI18N) GetParameterDimensions() string {
 func (x *TuningI18N) GetParameters() string {
 	if x != nil {
 		return x.Parameters
+	}
+	return ""
+}
+
+func (x *TuningI18N) GetParametersTip() string {
+	if x != nil {
+		return x.ParametersTip
 	}
 	return ""
 }
@@ -319,6 +361,13 @@ func (x *TuningI18N) GetScore() string {
 	return ""
 }
 
+func (x *TuningI18N) GetScoreTip() string {
+	if x != nil {
+		return x.ScoreTip
+	}
+	return ""
+}
+
 func (x *TuningI18N) GetStarted() string {
 	if x != nil {
 		return x.Started
@@ -329,6 +378,13 @@ func (x *TuningI18N) GetStarted() string {
 func (x *TuningI18N) GetSummary() string {
 	if x != nil {
 		return x.Summary
+	}
+	return ""
+}
+
+func (x *TuningI18N) GetSummaryTip() string {
+	if x != nil {
+		return x.SummaryTip
 	}
 	return ""
 }
@@ -365,18 +421,20 @@ var File_i18n_strategy_tuning_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_tuning_proto_rawDesc = "" +
 	"\n" +
-	"\x1ai18n/strategy_tuning.proto\x12\vant.v1.i18n\"\x9d\n" +
-	"\n" +
+	"\x1ai18n/strategy_tuning.proto\x12\vant.v1.i18n\"\x8d\f\n" +
 	"\n" +
 	"TuningI18n\x12\x14\n" +
 	"\x05apply\x18\x01 \x01(\tR\x05apply\x12 \n" +
-	"\vdegradation\x18\x02 \x01(\tR\vdegradation\x121\n" +
+	"\vdegradation\x18\x02 \x01(\tR\vdegradation\x12'\n" +
+	"\x0fdegradation_tip\x18' \x01(\tR\x0edegradationTip\x121\n" +
 	"\x14enabled_combinations\x18\x03 \x01(\tR\x13enabledCombinations\x12\x14\n" +
-	"\x05grade\x18\x04 \x01(\tR\x05grade\x12!\n" +
+	"\x05grade\x18\x04 \x01(\tR\x05grade\x12\x1b\n" +
+	"\tgrade_tip\x18( \x01(\tR\bgradeTip\x12!\n" +
 	"\fgrid_warning\x18\x05 \x01(\tR\vgridWarning\x12\x12\n" +
 	"\x04hide\x18\x06 \x01(\tR\x04hide\x12!\n" +
 	"\foos_footnote\x18\a \x01(\tR\voosFootnote\x12\x1b\n" +
-	"\toos_score\x18\b \x01(\tR\boosScore\x12#\n" +
+	"\toos_score\x18\b \x01(\tR\boosScore\x12\"\n" +
+	"\roos_score_tip\x18) \x01(\tR\voosScoreTip\x12#\n" +
 	"\roptimizer_ags\x18\t \x01(\tR\foptimizerAgs\x12,\n" +
 	"\x12optimizer_ags_desc\x18\n" +
 	" \x01(\tR\x10optimizerAgsDesc\x12!\n" +
@@ -391,12 +449,15 @@ const file_i18n_strategy_tuning_proto_rawDesc = "" +
 	"\roptimizer_tpe\x18\x13 \x01(\tR\foptimizerTpe\x12,\n" +
 	"\x12optimizer_tpe_desc\x18\x14 \x01(\tR\x10optimizerTpeDesc\x12)\n" +
 	"\x10optimizer_method\x18\x15 \x01(\tR\x0foptimizerMethod\x12\x18\n" +
-	"\aoverfit\x18\x16 \x01(\tR\aoverfit\x12'\n" +
+	"\aoverfit\x18\x16 \x01(\tR\aoverfit\x12\x1f\n" +
+	"\voverfit_tip\x18* \x01(\tR\n" +
+	"overfitTip\x12'\n" +
 	"\x0foverfit_warning\x18\x17 \x01(\tR\x0eoverfitWarning\x121\n" +
 	"\x14parameter_dimensions\x18\x18 \x01(\tR\x13parameterDimensions\x12\x1e\n" +
 	"\n" +
 	"parameters\x18\x19 \x01(\tR\n" +
-	"parameters\x12\x18\n" +
+	"parameters\x12%\n" +
+	"\x0eparameters_tip\x18+ \x01(\tR\rparametersTip\x12\x18\n" +
 	"\apreview\x18\x1a \x01(\tR\apreview\x12#\n" +
 	"\rpreview_title\x18\x1b \x01(\tR\fpreviewTitle\x12\x12\n" +
 	"\x04rank\x18\x1c \x01(\tR\x04rank\x12 \n" +
@@ -404,9 +465,12 @@ const file_i18n_strategy_tuning_proto_rawDesc = "" +
 	"requiresAI\x12\x18\n" +
 	"\aresults\x18\x1e \x01(\tR\aresults\x12\x10\n" +
 	"\x03run\x18\x1f \x01(\tR\x03run\x12\x14\n" +
-	"\x05score\x18  \x01(\tR\x05score\x12\x18\n" +
+	"\x05score\x18  \x01(\tR\x05score\x12\x1b\n" +
+	"\tscore_tip\x18, \x01(\tR\bscoreTip\x12\x18\n" +
 	"\astarted\x18! \x01(\tR\astarted\x12\x18\n" +
-	"\asummary\x18\" \x01(\tR\asummary\x12!\n" +
+	"\asummary\x18\" \x01(\tR\asummary\x12\x1f\n" +
+	"\vsummary_tip\x18- \x01(\tR\n" +
+	"summaryTip\x12!\n" +
 	"\rswitch_to_d_e\x18# \x01(\tR\n" +
 	"switchToDE\x12\x1c\n" +
 	"\ttruncated\x18$ \x01(\tR\ttruncated\x12\x16\n" +
