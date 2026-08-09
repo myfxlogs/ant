@@ -1,5 +1,5 @@
 import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Typography } from 'antd';
-import { RiseOutlined, FallOutlined, StopOutlined, WarningOutlined } from '@ant-design/icons';
+import { RiseOutlined, FallOutlined, StopOutlined, WarningOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
@@ -74,8 +74,8 @@ interface Props {
 export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks, runMeta }: Props) {
   const { t } = useTranslation();
 
-  const buys = trades.filter((tr) => tr.side === 'buy');
-  const sells = trades.filter((tr) => tr.side === 'sell');
+  const buys = trades.filter((tr) => (tr.side || '').toLowerCase() === 'buy');
+  const sells = trades.filter((tr) => (tr.side || '').toLowerCase() === 'sell');
   const buyPnl = buys.reduce((s, tr) => s + (tr.pnl || 0), 0);
   const sellPnl = sells.reduce((s, tr) => s + (tr.pnl || 0), 0);
   const buyVol = buys.reduce((s, tr) => s + (tr.volume || 0), 0);
@@ -83,36 +83,59 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {status === 'running' && (
-            <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>
-          )}
-          {status === 'completed' && (
-            <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>
-          )}
-          {status === 'degraded' && (
-            <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>
-          )}
-          {runMeta?.symbol && <Tag>{runMeta.symbol}</Tag>}
-          {runMeta?.timeframe && <Tag>{runMeta.timeframe}</Tag>}
-          {runMeta?.createdAt && <Typography.Text type="secondary" style={{ fontSize: 11 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>}
-          {status === 'completed' && onAIOptimize && metrics && (
-            <Button size="small" type="dashed" onClick={onAIOptimize} style={{ fontSize: 11 }}>
-              🤖 AI Optimize
-            </Button>
-          )}
-          {status === 'error' && (
-            <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>
-          )}
-        </div>
+      {/* Header: status + meta + actions */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10,
+        padding: '6px 12px', borderRadius: 6,
+        background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+        border: '1px solid #e2e8f0',
+      }}>
+        {/* Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {status === 'running' && onCancel && (
-            <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
-              {t('common.cancel', { defaultValue: 'Cancel' })}
-            </Button>
-          )}
+          <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.status', { defaultValue: 'Status' })}</span>
+          {status === 'running' && <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>}
+          {status === 'completed' && <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>}
+          {status === 'degraded' && <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>}
+          {status === 'error' && <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>}
         </div>
+
+        {/* Symbol */}
+        {runMeta?.symbol && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.symbol', { defaultValue: 'Symbol' })}</span>
+            <Tag>{runMeta.symbol}</Tag>
+          </div>
+        )}
+
+        {/* Timeframe */}
+        {runMeta?.timeframe && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.timeframe', { defaultValue: 'Period' })}</span>
+            <Tag>{runMeta.timeframe}</Tag>
+          </div>
+        )}
+
+        {/* Created at */}
+        {runMeta?.createdAt && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.createdAt', { defaultValue: 'Created' })}</span>
+            <Typography.Text type="secondary" style={{ fontSize: 11 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>
+          </div>
+        )}
+
+        <div style={{ flex: 1 }} />
+
+        {/* Actions */}
+        {status === 'completed' && onAIOptimize && metrics && (
+          <Button type="primary" icon={<RobotOutlined />} onClick={onAIOptimize} size="small">
+            {t('strategy.backtest.aiOptimize', { defaultValue: 'AI Optimize' })}
+          </Button>
+        )}
+        {status === 'running' && onCancel && (
+          <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
+            {t('common.cancel', { defaultValue: 'Cancel' })}
+          </Button>
+        )}
       </div>
 
       {status === 'running' && (
@@ -146,7 +169,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '4px 12px', fontSize: 12 }}>
             <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.simulationMode)}</strong></div>
             <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.signalTiming)}</strong></div>
             <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.fillRule)}</strong></div>
@@ -228,10 +251,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           <Table dataSource={trades.map((tr, i) => ({ ...tr, key: i }))}
             pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180, x: 'max-content' }}
             columns={[
-              { title: '#', dataIndex: 'key', width: 40 },
-              { title: 'Ticket', dataIndex: 'ticket', width: 70 },
+              { title: 'Ticket', dataIndex: 'ticket', width: 80 },
               { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
-                render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v?.toUpperCase()}</Tag> },
+                render: (v: string) => <Tag color={(v || '').toLowerCase() === 'buy' ? 'green' : 'red'}>{(v || '').toUpperCase()}</Tag> },
               { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
                 render: (v: number) => v?.toFixed(2) },
               { title: 'Open Time', dataIndex: 'openTime', width: 140,
