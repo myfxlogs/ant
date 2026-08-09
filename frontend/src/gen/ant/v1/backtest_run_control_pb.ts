@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_run_control.proto.
  */
 export const file_backtest_run_control: GenFile = /*@__PURE__*/
-  fileDesc("ChpiYWNrdGVzdF9ydW5fY29udHJvbC5wcm90bxIGYW50LnYxIioKGENhbmNlbEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAkiPQoZQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRIgCgNydW4YASABKAsyEy5hbnQudjEuQmFja3Rlc3RSdW4iKgoYRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSIsChlEZWxldGVCYWNrdGVzdFJ1blJlc3BvbnNlEg8KB2RlbGV0ZWQYASABKAgiLAoZRGVsZXRlQmFja3Rlc3RSdW5zUmVxdWVzdBIPCgdydW5faWRzGAEgAygJIkkKGkRlbGV0ZUJhY2t0ZXN0UnVuc1Jlc3BvbnNlEhUKDWRlbGV0ZWRfY291bnQYASABKAUSFAoMZmFpbGVkX2NvdW50GAIgASgFQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_backtest_run]);
+  fileDesc("ChpiYWNrdGVzdF9ydW5fY29udHJvbC5wcm90bxIGYW50LnYxIioKGENhbmNlbEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAkiPQoZQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRIgCgNydW4YASABKAsyEy5hbnQudjEuQmFja3Rlc3RSdW4iKgoYRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSIsChlEZWxldGVCYWNrdGVzdFJ1blJlc3BvbnNlEg8KB2RlbGV0ZWQYASABKAgiLAoZRGVsZXRlQmFja3Rlc3RSdW5zUmVxdWVzdBIPCgdydW5faWRzGAEgAygJIkkKGkRlbGV0ZUJhY2t0ZXN0UnVuc1Jlc3BvbnNlEhUKDWRlbGV0ZWRfY291bnQYASABKAUSFAoMZmFpbGVkX2NvdW50GAIgASgFIkYKGFVwZGF0ZUJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAkSEQoEbmFtZRgCIAEoCUgAiAEBQgcKBV9uYW1lIj0KGVVwZGF0ZUJhY2t0ZXN0UnVuUmVzcG9uc2USIAoDcnVuGAEgASgLMhMuYW50LnYxLkJhY2t0ZXN0UnVuQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_backtest_run]);
 
 /**
  * @generated from message ant.v1.CancelBacktestRunRequest
@@ -120,4 +120,43 @@ export type DeleteBacktestRunsResponse = Message<"ant.v1.DeleteBacktestRunsRespo
  */
 export const DeleteBacktestRunsResponseSchema: GenMessage<DeleteBacktestRunsResponse> = /*@__PURE__*/
   messageDesc(file_backtest_run_control, 5);
+
+/**
+ * @generated from message ant.v1.UpdateBacktestRunRequest
+ */
+export type UpdateBacktestRunRequest = Message<"ant.v1.UpdateBacktestRunRequest"> & {
+  /**
+   * @generated from field: string run_id = 1;
+   */
+  runId: string;
+
+  /**
+   * @generated from field: optional string name = 2;
+   */
+  name?: string | undefined;
+};
+
+/**
+ * Describes the message ant.v1.UpdateBacktestRunRequest.
+ * Use `create(UpdateBacktestRunRequestSchema)` to create a new message.
+ */
+export const UpdateBacktestRunRequestSchema: GenMessage<UpdateBacktestRunRequest> = /*@__PURE__*/
+  messageDesc(file_backtest_run_control, 6);
+
+/**
+ * @generated from message ant.v1.UpdateBacktestRunResponse
+ */
+export type UpdateBacktestRunResponse = Message<"ant.v1.UpdateBacktestRunResponse"> & {
+  /**
+   * @generated from field: ant.v1.BacktestRun run = 1;
+   */
+  run?: BacktestRun | undefined;
+};
+
+/**
+ * Describes the message ant.v1.UpdateBacktestRunResponse.
+ * Use `create(UpdateBacktestRunResponseSchema)` to create a new message.
+ */
+export const UpdateBacktestRunResponseSchema: GenMessage<UpdateBacktestRunResponse> = /*@__PURE__*/
+  messageDesc(file_backtest_run_control, 7);
 

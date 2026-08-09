@@ -5159,7 +5159,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x10REQUEST_TYPE_BAR\x10\x01\x12\x15\n" +
 	"\x11REQUEST_TYPE_TICK\x10\x02\x12\x16\n" +
 	"\x12REQUEST_TYPE_TRADE\x10\x03\x12\x16\n" +
-	"\x12REQUEST_TYPE_TIMER\x10\x042\xa1\x13\n" +
+	"\x12REQUEST_TYPE_TIMER\x10\x042\xfb\x13\n" +
 	"\x16StrategyRuntimeService\x12J\n" +
 	"\aExecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n" +
 	"\bValidate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n" +
@@ -5170,7 +5170,8 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x10WatchBacktestRun\x12\x1f.ant.v1.WatchBacktestRunRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12X\n" +
 	"\x11CancelBacktestRun\x12 .ant.v1.CancelBacktestRunRequest\x1a!.ant.v1.CancelBacktestRunResponse\x12X\n" +
 	"\x11DeleteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12[\n" +
-	"\x12DeleteBacktestRuns\x12!.ant.v1.DeleteBacktestRunsRequest\x1a\".ant.v1.DeleteBacktestRunsResponse\x12L\n" +
+	"\x12DeleteBacktestRuns\x12!.ant.v1.DeleteBacktestRunsRequest\x1a\".ant.v1.DeleteBacktestRunsResponse\x12X\n" +
+	"\x11UpdateBacktestRun\x12 .ant.v1.UpdateBacktestRunRequest\x1a!.ant.v1.UpdateBacktestRunResponse\x12L\n" +
 	"\fGetTemplates\x12\x16.google.protobuf.Empty\x1a$.ant.v1.GetStrategyTemplatesResponse\x12F\n" +
 	"\vExecuteLive\x12\x1a.ant.v1.ExecuteLiveRequest\x1a\x1b.ant.v1.ExecuteLiveResponse\x12X\n" +
 	"\x11AnalyzeImportCode\x12 .ant.v1.AnalyzeImportCodeRequest\x1a!.ant.v1.AnalyzeImportCodeResponse\x12^\n" +
@@ -5281,14 +5282,16 @@ var file_strategy_runtime_proto_goTypes = []any{
 	(*CancelBacktestRunRequest)(nil),        // 73: ant.v1.CancelBacktestRunRequest
 	(*DeleteBacktestRunRequest)(nil),        // 74: ant.v1.DeleteBacktestRunRequest
 	(*DeleteBacktestRunsRequest)(nil),       // 75: ant.v1.DeleteBacktestRunsRequest
-	(*emptypb.Empty)(nil),                   // 76: google.protobuf.Empty
-	(*StartBacktestRunResponse)(nil),        // 77: ant.v1.StartBacktestRunResponse
-	(*GetBacktestRunResponse)(nil),          // 78: ant.v1.GetBacktestRunResponse
-	(*ListBacktestRunsResponse)(nil),        // 79: ant.v1.ListBacktestRunsResponse
-	(*BacktestRunUpdate)(nil),               // 80: ant.v1.BacktestRunUpdate
-	(*CancelBacktestRunResponse)(nil),       // 81: ant.v1.CancelBacktestRunResponse
-	(*DeleteBacktestRunResponse)(nil),       // 82: ant.v1.DeleteBacktestRunResponse
-	(*DeleteBacktestRunsResponse)(nil),      // 83: ant.v1.DeleteBacktestRunsResponse
+	(*UpdateBacktestRunRequest)(nil),        // 76: ant.v1.UpdateBacktestRunRequest
+	(*emptypb.Empty)(nil),                   // 77: google.protobuf.Empty
+	(*StartBacktestRunResponse)(nil),        // 78: ant.v1.StartBacktestRunResponse
+	(*GetBacktestRunResponse)(nil),          // 79: ant.v1.GetBacktestRunResponse
+	(*ListBacktestRunsResponse)(nil),        // 80: ant.v1.ListBacktestRunsResponse
+	(*BacktestRunUpdate)(nil),               // 81: ant.v1.BacktestRunUpdate
+	(*CancelBacktestRunResponse)(nil),       // 82: ant.v1.CancelBacktestRunResponse
+	(*DeleteBacktestRunResponse)(nil),       // 83: ant.v1.DeleteBacktestRunResponse
+	(*DeleteBacktestRunsResponse)(nil),      // 84: ant.v1.DeleteBacktestRunsResponse
+	(*UpdateBacktestRunResponse)(nil),       // 85: ant.v1.UpdateBacktestRunResponse
 }
 var file_strategy_runtime_proto_depIdxs = []int32{
 	65, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
@@ -5351,54 +5354,56 @@ var file_strategy_runtime_proto_depIdxs = []int32{
 	73, // 57: ant.v1.StrategyRuntimeService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
 	74, // 58: ant.v1.StrategyRuntimeService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
 	75, // 59: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
-	76, // 60: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
-	14, // 61: ant.v1.StrategyRuntimeService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
-	24, // 62: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
-	1,  // 63: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
-	33, // 64: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
-	35, // 65: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
-	38, // 66: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
-	40, // 67: ant.v1.StrategyRuntimeService.GetActiveStrategy:input_type -> ant.v1.GetActiveStrategyRequest
-	42, // 68: ant.v1.StrategyRuntimeService.StopStrategy:input_type -> ant.v1.StopStrategyRequest
-	45, // 69: ant.v1.StrategyRuntimeService.WatchStrategySignals:input_type -> ant.v1.WatchStrategySignalsRequest
-	47, // 70: ant.v1.StrategyRuntimeService.StartStrategy:input_type -> ant.v1.StartStrategyRequest
-	49, // 71: ant.v1.StrategyRuntimeService.WatchActiveStrategies:input_type -> ant.v1.WatchActiveStrategiesRequest
-	52, // 72: ant.v1.StrategyRuntimeService.ListStrategyVersions:input_type -> ant.v1.ListStrategyVersionsRequest
-	54, // 73: ant.v1.StrategyRuntimeService.GetStrategyVersion:input_type -> ant.v1.GetStrategyVersionRequest
-	56, // 74: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:input_type -> ant.v1.RollbackStrategyVersionRequest
-	58, // 75: ant.v1.StrategyRuntimeService.DiffStrategyVersions:input_type -> ant.v1.DiffStrategyVersionsRequest
-	60, // 76: ant.v1.StrategyRuntimeService.UpdateStrategyCode:input_type -> ant.v1.UpdateStrategyCodeRequest
-	62, // 77: ant.v1.StrategyRuntimeService.CheckCode:input_type -> ant.v1.CheckCodeRequest
-	4,  // 78: ant.v1.StrategyRuntimeService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
-	6,  // 79: ant.v1.StrategyRuntimeService.Validate:output_type -> ant.v1.ValidateStrategyResponse
-	11, // 80: ant.v1.StrategyRuntimeService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
-	77, // 81: ant.v1.StrategyRuntimeService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
-	78, // 82: ant.v1.StrategyRuntimeService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
-	79, // 83: ant.v1.StrategyRuntimeService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
-	80, // 84: ant.v1.StrategyRuntimeService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
-	81, // 85: ant.v1.StrategyRuntimeService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
-	82, // 86: ant.v1.StrategyRuntimeService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
-	83, // 87: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
-	12, // 88: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
-	15, // 89: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
-	25, // 90: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
-	2,  // 91: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
-	34, // 92: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
-	36, // 93: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
-	39, // 94: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse
-	41, // 95: ant.v1.StrategyRuntimeService.GetActiveStrategy:output_type -> ant.v1.GetActiveStrategyResponse
-	43, // 96: ant.v1.StrategyRuntimeService.StopStrategy:output_type -> ant.v1.StopStrategyResponse
-	46, // 97: ant.v1.StrategyRuntimeService.WatchStrategySignals:output_type -> ant.v1.StrategySignalEvent
-	48, // 98: ant.v1.StrategyRuntimeService.StartStrategy:output_type -> ant.v1.StartStrategyResponse
-	50, // 99: ant.v1.StrategyRuntimeService.WatchActiveStrategies:output_type -> ant.v1.WatchActiveStrategiesEvent
-	53, // 100: ant.v1.StrategyRuntimeService.ListStrategyVersions:output_type -> ant.v1.ListStrategyVersionsResponse
-	55, // 101: ant.v1.StrategyRuntimeService.GetStrategyVersion:output_type -> ant.v1.GetStrategyVersionResponse
-	57, // 102: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:output_type -> ant.v1.RollbackStrategyVersionResponse
-	59, // 103: ant.v1.StrategyRuntimeService.DiffStrategyVersions:output_type -> ant.v1.DiffStrategyVersionsResponse
-	61, // 104: ant.v1.StrategyRuntimeService.UpdateStrategyCode:output_type -> ant.v1.UpdateStrategyCodeResponse
-	63, // 105: ant.v1.StrategyRuntimeService.CheckCode:output_type -> ant.v1.CheckCodeResponse
-	78, // [78:106] is the sub-list for method output_type
-	50, // [50:78] is the sub-list for method input_type
+	76, // 60: ant.v1.StrategyRuntimeService.UpdateBacktestRun:input_type -> ant.v1.UpdateBacktestRunRequest
+	77, // 61: ant.v1.StrategyRuntimeService.GetTemplates:input_type -> google.protobuf.Empty
+	14, // 62: ant.v1.StrategyRuntimeService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
+	24, // 63: ant.v1.StrategyRuntimeService.AnalyzeImportCode:input_type -> ant.v1.AnalyzeImportCodeRequest
+	1,  // 64: ant.v1.StrategyRuntimeService.GetImportedStrategy:input_type -> ant.v1.GetImportedStrategyRequest
+	33, // 65: ant.v1.StrategyRuntimeService.ListStrategyRuns:input_type -> ant.v1.ListStrategyRunsRequest
+	35, // 66: ant.v1.StrategyRuntimeService.GetStrategyRun:input_type -> ant.v1.GetStrategyRunRequest
+	38, // 67: ant.v1.StrategyRuntimeService.ListActiveStrategies:input_type -> ant.v1.ListActiveStrategiesRequest
+	40, // 68: ant.v1.StrategyRuntimeService.GetActiveStrategy:input_type -> ant.v1.GetActiveStrategyRequest
+	42, // 69: ant.v1.StrategyRuntimeService.StopStrategy:input_type -> ant.v1.StopStrategyRequest
+	45, // 70: ant.v1.StrategyRuntimeService.WatchStrategySignals:input_type -> ant.v1.WatchStrategySignalsRequest
+	47, // 71: ant.v1.StrategyRuntimeService.StartStrategy:input_type -> ant.v1.StartStrategyRequest
+	49, // 72: ant.v1.StrategyRuntimeService.WatchActiveStrategies:input_type -> ant.v1.WatchActiveStrategiesRequest
+	52, // 73: ant.v1.StrategyRuntimeService.ListStrategyVersions:input_type -> ant.v1.ListStrategyVersionsRequest
+	54, // 74: ant.v1.StrategyRuntimeService.GetStrategyVersion:input_type -> ant.v1.GetStrategyVersionRequest
+	56, // 75: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:input_type -> ant.v1.RollbackStrategyVersionRequest
+	58, // 76: ant.v1.StrategyRuntimeService.DiffStrategyVersions:input_type -> ant.v1.DiffStrategyVersionsRequest
+	60, // 77: ant.v1.StrategyRuntimeService.UpdateStrategyCode:input_type -> ant.v1.UpdateStrategyCodeRequest
+	62, // 78: ant.v1.StrategyRuntimeService.CheckCode:input_type -> ant.v1.CheckCodeRequest
+	4,  // 79: ant.v1.StrategyRuntimeService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
+	6,  // 80: ant.v1.StrategyRuntimeService.Validate:output_type -> ant.v1.ValidateStrategyResponse
+	11, // 81: ant.v1.StrategyRuntimeService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
+	78, // 82: ant.v1.StrategyRuntimeService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
+	79, // 83: ant.v1.StrategyRuntimeService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
+	80, // 84: ant.v1.StrategyRuntimeService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
+	81, // 85: ant.v1.StrategyRuntimeService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
+	82, // 86: ant.v1.StrategyRuntimeService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
+	83, // 87: ant.v1.StrategyRuntimeService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
+	84, // 88: ant.v1.StrategyRuntimeService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
+	85, // 89: ant.v1.StrategyRuntimeService.UpdateBacktestRun:output_type -> ant.v1.UpdateBacktestRunResponse
+	12, // 90: ant.v1.StrategyRuntimeService.GetTemplates:output_type -> ant.v1.GetStrategyTemplatesResponse
+	15, // 91: ant.v1.StrategyRuntimeService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
+	25, // 92: ant.v1.StrategyRuntimeService.AnalyzeImportCode:output_type -> ant.v1.AnalyzeImportCodeResponse
+	2,  // 93: ant.v1.StrategyRuntimeService.GetImportedStrategy:output_type -> ant.v1.GetImportedStrategyResponse
+	34, // 94: ant.v1.StrategyRuntimeService.ListStrategyRuns:output_type -> ant.v1.ListStrategyRunsResponse
+	36, // 95: ant.v1.StrategyRuntimeService.GetStrategyRun:output_type -> ant.v1.GetStrategyRunResponse
+	39, // 96: ant.v1.StrategyRuntimeService.ListActiveStrategies:output_type -> ant.v1.ListActiveStrategiesResponse
+	41, // 97: ant.v1.StrategyRuntimeService.GetActiveStrategy:output_type -> ant.v1.GetActiveStrategyResponse
+	43, // 98: ant.v1.StrategyRuntimeService.StopStrategy:output_type -> ant.v1.StopStrategyResponse
+	46, // 99: ant.v1.StrategyRuntimeService.WatchStrategySignals:output_type -> ant.v1.StrategySignalEvent
+	48, // 100: ant.v1.StrategyRuntimeService.StartStrategy:output_type -> ant.v1.StartStrategyResponse
+	50, // 101: ant.v1.StrategyRuntimeService.WatchActiveStrategies:output_type -> ant.v1.WatchActiveStrategiesEvent
+	53, // 102: ant.v1.StrategyRuntimeService.ListStrategyVersions:output_type -> ant.v1.ListStrategyVersionsResponse
+	55, // 103: ant.v1.StrategyRuntimeService.GetStrategyVersion:output_type -> ant.v1.GetStrategyVersionResponse
+	57, // 104: ant.v1.StrategyRuntimeService.RollbackStrategyVersion:output_type -> ant.v1.RollbackStrategyVersionResponse
+	59, // 105: ant.v1.StrategyRuntimeService.DiffStrategyVersions:output_type -> ant.v1.DiffStrategyVersionsResponse
+	61, // 106: ant.v1.StrategyRuntimeService.UpdateStrategyCode:output_type -> ant.v1.UpdateStrategyCodeResponse
+	63, // 107: ant.v1.StrategyRuntimeService.CheckCode:output_type -> ant.v1.CheckCodeResponse
+	79, // [79:108] is the sub-list for method output_type
+	50, // [50:79] is the sub-list for method input_type
 	50, // [50:50] is the sub-list for extension type_name
 	50, // [50:50] is the sub-list for extension extendee
 	0,  // [0:50] is the sub-list for field type_name

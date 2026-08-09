@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { Button, Typography, Spin, Popconfirm, Checkbox } from 'antd';
-import { DeleteOutlined, CloseOutlined } from '@ant-design/icons';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { Button, Typography, Spin, Popconfirm, Checkbox, Input } from 'antd';
+import { DeleteOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 interface BacktestRun {
@@ -10,6 +10,7 @@ interface BacktestRun {
   totalTrades?: number;
   templateName?: string;
   templateId?: string;
+  name?: string;
 }
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
   onOpenHistory: (templateId?: string) => void;
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
+  onRenameRun?: (runId: string, name: string) => void;
 }
 
 function fmtReturn(v: number | undefined): string {
@@ -26,10 +28,29 @@ function fmtReturn(v: number | undefined): string {
 }
 
 export default function SidebarRunList({
-  runs, loading, onOpenHistory, onDeleteRun, onBatchDeleteRuns,
+  runs, loading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun,
 }: Props) {
   const { t } = useTranslation();
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<{ focus: () => void; select: () => void }>(null);
+
+  const startRename = useCallback((id: string, name: string) => {
+    setRenamingId(id);
+    setRenameValue(name);
+  }, []);
+
+  const commitRename = useCallback(() => {
+    if (renamingId && renameValue.trim() && onRenameRun) {
+      onRenameRun(renamingId, renameValue.trim());
+    }
+    setRenamingId(null);
+  }, [renamingId, renameValue, onRenameRun]);
+
+  useEffect(() => {
+    if (renamingId) renameInputRef.current?.focus();
+  }, [renamingId]);
 
   const toggleCheck = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -77,6 +98,7 @@ export default function SidebarRunList({
             key={r.id}
             className="sidebar-item"
             onClick={() => onOpenHistory(r.templateId)}
+            onDoubleClick={(e) => { e.stopPropagation(); if (onRenameRun) startRename(r.id, r.name || r.templateName || ''); }}
             style={{
               padding: '5px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11,
               background: checked.has(r.id) ? 'var(--ant-color-primary-bg)' : 'transparent',
@@ -90,15 +112,29 @@ export default function SidebarRunList({
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
-                  {r.templateName || r.id?.slice(0, 8)}
-                </span>
-                <span style={{
+                {renamingId === r.id ? (
+                  <Input
+                    ref={renameInputRef as never}
+                    size="small"
+                    value={renameValue}
+                    onChange={e => setRenameValue(e.target.value)}
+                    onPressEnter={commitRename}
+                    onBlur={commitRename}
+                    onKeyDown={e => { if (e.key === 'Escape') setRenamingId(null); }}
+                    style={{ flex: 1, fontSize: 11 }}
+                  />
+                ) : (
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}
+                    title={t('strategy.workspace.sidebar.doubleClickRename', { defaultValue: 'Double-click to rename' })}>
+                    {r.name || r.templateName || r.id?.slice(0, 8)}
+                  </span>
+                )}
+                {renamingId !== r.id && <span style={{
                   fontWeight: 700, fontSize: 11, flexShrink: 0, marginLeft: 6,
                   color: (r.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149',
                 }}>
                   {fmtReturn(r.totalReturn)}
-                </span>
+                </span>}
               </div>
               {r.totalTrades != null && (
                 <div style={{ color: 'var(--ant-color-text-tertiary)', fontSize: 10 }}>
@@ -106,7 +142,10 @@ export default function SidebarRunList({
                 </div>
               )}
             </div>
-            {onDeleteRun && (
+            {renamingId === r.id && (
+              <Button type="text" size="small" icon={<CheckOutlined />} onClick={(e) => { e.stopPropagation(); commitRename(); }} style={{ flexShrink: 0, padding: '0 2px' }} />
+            )}
+            {renamingId !== r.id && onDeleteRun && (
               <Popconfirm
                 title={t('strategy.workspace.sidebar.deleteRunConfirm', { defaultValue: 'Delete this backtest run?' })}
                 onConfirm={(e) => { e?.stopPropagation(); onDeleteRun(r.id); }}

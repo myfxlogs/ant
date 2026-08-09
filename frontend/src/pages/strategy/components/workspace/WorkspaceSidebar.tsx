@@ -32,6 +32,7 @@ interface Props {
   onOpenHistory: (templateId?: string) => void;
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
+  onRenameRun?: (runId: string, name: string) => void;
   onImport: () => void;
   onNew: () => void;
   collapsed: boolean;
@@ -41,7 +42,7 @@ interface Props {
 
 export default function WorkspaceSidebar({
   templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates,
-  backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns,
+  backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun,
   onImport, onNew,
   collapsed, onToggle,
   autoExpandHistory,
@@ -60,17 +61,23 @@ export default function WorkspaceSidebar({
     setPrevAutoExpand(false);
   }
 
-  // Mutual exclusion: expanding one section collapses the other (always one open)
+  // Toggle: clicking expanded section collapses it and expands the other
   const toggleStrategies = useCallback(() => {
     setStrategiesExpanded(prev => {
-      if (prev) return true;
+      if (prev) {
+        setHistoryExpanded(true);
+        return false;
+      }
       setHistoryExpanded(false);
       return true;
     });
   }, []);
   const toggleHistory = useCallback(() => {
     setHistoryExpanded(prev => {
-      if (prev) return true;
+      if (prev) {
+        setStrategiesExpanded(true);
+        return false;
+      }
       setStrategiesExpanded(false);
       return true;
     });
@@ -151,6 +158,7 @@ export default function WorkspaceSidebar({
                 onOpenHistory={onOpenHistory}
                 onDeleteRun={onDeleteRun}
                 onBatchDeleteRuns={onBatchDeleteRuns}
+                onRenameRun={onRenameRun}
               />
             )}
           </div>

@@ -51,6 +51,7 @@ type BacktestRun struct {
 	BacktestSnapshot   []byte           `db:"backtest_snapshot"`
 	AutoGate           bool             `db:"auto_gate"`
 	FixDepth           int              `db:"fix_depth"`
+	Name               *string          `db:"name"`
 }
 
 func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
@@ -182,7 +183,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			extra_symbols, parameter_overrides, proto_response,
 			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
 			strategy_id, backtest_snapshot, auto_gate, fix_depth,
-			created_at
+			name, created_at
 		FROM backtest_runs
 		WHERE id = $1 AND user_id = $2`,
 		runID, userID,
@@ -196,7 +197,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 		&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
 		&out.StrategyID, &out.BacktestSnapshot, &out.AutoGate, &out.FixDepth,
-		&out.CreatedAt,
+		&out.Name, &out.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -226,7 +227,7 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 		extra_symbols, parameter_overrides, proto_response,
 		commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
 		strategy_id, backtest_snapshot, auto_gate, fix_depth,
-		created_at
+		name, created_at
 	FROM backtest_runs
 	WHERE user_id = $1`
 	args := []interface{}{userID}
@@ -268,7 +269,7 @@ func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query s
 			&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 			&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
 			&out.StrategyID, &out.BacktestSnapshot, &out.AutoGate, &out.FixDepth,
-			&out.CreatedAt,
+			&out.Name, &out.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -309,4 +310,16 @@ func (r *BacktestRunRepository) DeleteBatch(ctx context.Context, userID uuid.UUI
 		return 0, err
 	}
 	return ct.RowsAffected(), nil
+}
+
+// UpdateName sets the user-defined label for a backtest run.
+func (r *BacktestRunRepository) UpdateName(ctx context.Context, userID, runID uuid.UUID, name string) error {
+	if r == nil || r.db == nil {
+		return errors.New("repository not initialized")
+	}
+	_, err := r.db.Exec(ctx,
+		`UPDATE backtest_runs SET name = $3 WHERE id = $1 AND user_id = $2`,
+		runID, userID, name,
+	)
+	return err
 }

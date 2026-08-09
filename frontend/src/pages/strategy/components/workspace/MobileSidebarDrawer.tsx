@@ -16,12 +16,13 @@ interface Props {
   onOpenHistory: (tid?: string) => void;
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
+  onRenameRun?: (runId: string, name: string) => void;
   onImport: () => void;
   onNew: () => void;
   autoExpandHistory?: boolean;
 }
 
-export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onImport, onNew, autoExpandHistory }: Props) {
+export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onImport, onNew, autoExpandHistory }: Props) {
   return (
     <Drawer open={open} onClose={onClose} placement="left" width={280} styles={{ body: { padding: 0 } }}>
       <WorkspaceSidebar
@@ -34,6 +35,7 @@ export default function MobileSidebarDrawer({ open, onClose, templates, loading,
         onOpenHistory={(tid) => { onOpenHistory(tid); onClose(); }}
         onDeleteRun={onDeleteRun}
         onBatchDeleteRuns={onBatchDeleteRuns}
+        onRenameRun={onRenameRun}
         onImport={() => { onImport(); onClose(); }}
         onNew={() => { onNew(); onClose(); }}
         collapsed={false} onToggle={onClose}

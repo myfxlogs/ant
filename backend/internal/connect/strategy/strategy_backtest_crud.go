@@ -285,3 +285,30 @@ func (s *StrategyExecutionServer) DeleteBacktestRuns(ctx context.Context, req *c
 		FailedCount:  int32(len(uuids)) - int32(deleted),
 	}), nil
 }
+
+// UpdateBacktestRun implements the rename RPC for backtest runs.
+func (s *StrategyExecutionServer) UpdateBacktestRun(ctx context.Context, req *connect.Request[antv1.UpdateBacktestRunRequest]) (*connect.Response[antv1.UpdateBacktestRunResponse], error) {
+	userID, err := userIDRequire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	runID, err := uuid.Parse(req.Msg.RunId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	name := ""
+	if req.Msg.Name != nil {
+		name = *req.Msg.Name
+	}
+	if err := s.backtestRepo.UpdateName(ctx, userID, runID, name); err != nil {
+		s.log.Error("UpdateBacktestRun", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	run, err := s.backtestRepo.GetByID(ctx, userID, runID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("query run after update: %w", err))
+	}
+	return connect.NewResponse(&antv1.UpdateBacktestRunResponse{
+		Run: toProtoBacktestRun(run),
+	}), nil
+}

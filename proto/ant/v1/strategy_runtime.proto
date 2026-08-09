@@ -24,6 +24,7 @@ service StrategyRuntimeService {
   rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
   rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
   rpc DeleteBacktestRuns(DeleteBacktestRunsRequest) returns (DeleteBacktestRunsResponse);
+  rpc UpdateBacktestRun(UpdateBacktestRunRequest) returns (UpdateBacktestRunResponse);
   rpc GetTemplates(google.protobuf.Empty) returns (GetStrategyTemplatesResponse);
   // ExecuteLive: proto-native live/paper strategy execution.
   // Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).

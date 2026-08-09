@@ -30,3 +30,12 @@ message DeleteBacktestRunsResponse {
   int32 deleted_count = 1;
   int32 failed_count = 2;
 }
+
+message UpdateBacktestRunRequest {
+  string run_id = 1;
+  optional string name = 2;
+}
+
+message UpdateBacktestRunResponse {
+  BacktestRun run = 1;
+}

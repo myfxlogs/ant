@@ -17,6 +17,7 @@ import {
   CancelBacktestRunRequestSchema,
   DeleteBacktestRunRequestSchema,
   DeleteBacktestRunsRequestSchema,
+  UpdateBacktestRunRequestSchema,
 } from '../gen/ant/v1/backtest_run_control_pb';
 import type { ExecuteStrategyResponse, ValidateStrategyResponse, BacktestStrategyResponse, GetStrategyTemplatesResponse } from '../gen/ant/v1/strategy_runtime_pb';
 
@@ -211,6 +212,11 @@ export const strategyRuntimeApi = {
   deleteBacktestRuns: async (runIds: string[]) => {
     const msg = create(DeleteBacktestRunsRequestSchema, { runIds });
     return (await strategyRuntimeService.deleteBacktestRuns(msg));
+  },
+
+  updateBacktestRun: async (runId: string, name: string) => {
+    const msg = create(UpdateBacktestRunRequestSchema, { runId, name });
+    return (await strategyRuntimeService.updateBacktestRun(msg));
   },
 
   watchBacktestRun: (runId: string, onUpdate: (u: BacktestRunUpdate) => void, onError?: (e: unknown) => void) => {

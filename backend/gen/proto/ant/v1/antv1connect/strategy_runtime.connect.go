@@ -64,6 +64,9 @@ const (
 	// StrategyRuntimeServiceDeleteBacktestRunsProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's DeleteBacktestRuns RPC.
 	StrategyRuntimeServiceDeleteBacktestRunsProcedure = "/ant.v1.StrategyRuntimeService/DeleteBacktestRuns"
+	// StrategyRuntimeServiceUpdateBacktestRunProcedure is the fully-qualified name of the
+	// StrategyRuntimeService's UpdateBacktestRun RPC.
+	StrategyRuntimeServiceUpdateBacktestRunProcedure = "/ant.v1.StrategyRuntimeService/UpdateBacktestRun"
 	// StrategyRuntimeServiceGetTemplatesProcedure is the fully-qualified name of the
 	// StrategyRuntimeService's GetTemplates RPC.
 	StrategyRuntimeServiceGetTemplatesProcedure = "/ant.v1.StrategyRuntimeService/GetTemplates"
@@ -132,6 +135,7 @@ type StrategyRuntimeServiceClient interface {
 	CancelBacktestRun(context.Context, *connect.Request[v1.CancelBacktestRunRequest]) (*connect.Response[v1.CancelBacktestRunResponse], error)
 	DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error)
 	DeleteBacktestRuns(context.Context, *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error)
+	UpdateBacktestRun(context.Context, *connect.Request[v1.UpdateBacktestRunRequest]) (*connect.Response[v1.UpdateBacktestRunResponse], error)
 	GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetStrategyTemplatesResponse], error)
 	// ExecuteLive: proto-native live/paper strategy execution.
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
@@ -241,6 +245,12 @@ func NewStrategyRuntimeServiceClient(httpClient connect.HTTPClient, baseURL stri
 			httpClient,
 			baseURL+StrategyRuntimeServiceDeleteBacktestRunsProcedure,
 			connect.WithSchema(strategyRuntimeServiceMethods.ByName("DeleteBacktestRuns")),
+			connect.WithClientOptions(opts...),
+		),
+		updateBacktestRun: connect.NewClient[v1.UpdateBacktestRunRequest, v1.UpdateBacktestRunResponse](
+			httpClient,
+			baseURL+StrategyRuntimeServiceUpdateBacktestRunProcedure,
+			connect.WithSchema(strategyRuntimeServiceMethods.ByName("UpdateBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
 		getTemplates: connect.NewClient[emptypb.Empty, v1.GetStrategyTemplatesResponse](
@@ -366,6 +376,7 @@ type strategyRuntimeServiceClient struct {
 	cancelBacktestRun       *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
 	deleteBacktestRun       *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
 	deleteBacktestRuns      *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
+	updateBacktestRun       *connect.Client[v1.UpdateBacktestRunRequest, v1.UpdateBacktestRunResponse]
 	getTemplates            *connect.Client[emptypb.Empty, v1.GetStrategyTemplatesResponse]
 	executeLive             *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
 	analyzeImportCode       *connect.Client[v1.AnalyzeImportCodeRequest, v1.AnalyzeImportCodeResponse]
@@ -434,6 +445,11 @@ func (c *strategyRuntimeServiceClient) DeleteBacktestRun(ctx context.Context, re
 // DeleteBacktestRuns calls ant.v1.StrategyRuntimeService.DeleteBacktestRuns.
 func (c *strategyRuntimeServiceClient) DeleteBacktestRuns(ctx context.Context, req *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error) {
 	return c.deleteBacktestRuns.CallUnary(ctx, req)
+}
+
+// UpdateBacktestRun calls ant.v1.StrategyRuntimeService.UpdateBacktestRun.
+func (c *strategyRuntimeServiceClient) UpdateBacktestRun(ctx context.Context, req *connect.Request[v1.UpdateBacktestRunRequest]) (*connect.Response[v1.UpdateBacktestRunResponse], error) {
+	return c.updateBacktestRun.CallUnary(ctx, req)
 }
 
 // GetTemplates calls ant.v1.StrategyRuntimeService.GetTemplates.
@@ -538,6 +554,7 @@ type StrategyRuntimeServiceHandler interface {
 	CancelBacktestRun(context.Context, *connect.Request[v1.CancelBacktestRunRequest]) (*connect.Response[v1.CancelBacktestRunResponse], error)
 	DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error)
 	DeleteBacktestRuns(context.Context, *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error)
+	UpdateBacktestRun(context.Context, *connect.Request[v1.UpdateBacktestRunRequest]) (*connect.Response[v1.UpdateBacktestRunResponse], error)
 	GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetStrategyTemplatesResponse], error)
 	// ExecuteLive: proto-native live/paper strategy execution.
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
@@ -643,6 +660,12 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 		StrategyRuntimeServiceDeleteBacktestRunsProcedure,
 		svc.DeleteBacktestRuns,
 		connect.WithSchema(strategyRuntimeServiceMethods.ByName("DeleteBacktestRuns")),
+		connect.WithHandlerOptions(opts...),
+	)
+	strategyRuntimeServiceUpdateBacktestRunHandler := connect.NewUnaryHandler(
+		StrategyRuntimeServiceUpdateBacktestRunProcedure,
+		svc.UpdateBacktestRun,
+		connect.WithSchema(strategyRuntimeServiceMethods.ByName("UpdateBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
 	strategyRuntimeServiceGetTemplatesHandler := connect.NewUnaryHandler(
@@ -775,6 +798,8 @@ func NewStrategyRuntimeServiceHandler(svc StrategyRuntimeServiceHandler, opts ..
 			strategyRuntimeServiceDeleteBacktestRunHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceDeleteBacktestRunsProcedure:
 			strategyRuntimeServiceDeleteBacktestRunsHandler.ServeHTTP(w, r)
+		case StrategyRuntimeServiceUpdateBacktestRunProcedure:
+			strategyRuntimeServiceUpdateBacktestRunHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceGetTemplatesProcedure:
 			strategyRuntimeServiceGetTemplatesHandler.ServeHTTP(w, r)
 		case StrategyRuntimeServiceExecuteLiveProcedure:
@@ -858,6 +883,10 @@ func (UnimplementedStrategyRuntimeServiceHandler) DeleteBacktestRun(context.Cont
 
 func (UnimplementedStrategyRuntimeServiceHandler) DeleteBacktestRuns(context.Context, *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.DeleteBacktestRuns is not implemented"))
+}
+
+func (UnimplementedStrategyRuntimeServiceHandler) UpdateBacktestRun(context.Context, *connect.Request[v1.UpdateBacktestRunRequest]) (*connect.Response[v1.UpdateBacktestRunResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyRuntimeService.UpdateBacktestRun is not implemented"))
 }
 
 func (UnimplementedStrategyRuntimeServiceHandler) GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetStrategyTemplatesResponse], error) {

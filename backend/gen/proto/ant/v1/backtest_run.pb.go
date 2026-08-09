@@ -161,6 +161,7 @@ type BacktestRun struct {
 	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,20,opt,name=execution_config,json=executionConfig,proto3,oneof" json:"execution_config,omitempty"`
 	StrategyId      *string                  `protobuf:"bytes,21,opt,name=strategy_id,json=strategyId,proto3,oneof" json:"strategy_id,omitempty"` // imported_strategies.id (nullable)
 	FixDepth        int32                    `protobuf:"varint,22,opt,name=fix_depth,json=fixDepth,proto3" json:"fix_depth,omitempty"`            // auto-fix iteration depth (0 = original run, 1+ = auto-fixed)
+	Name            *string                  `protobuf:"bytes,23,opt,name=name,proto3,oneof" json:"name,omitempty"`                               // user-defined label for the backtest run
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -349,11 +350,18 @@ func (x *BacktestRun) GetFixDepth() int32 {
 	return 0
 }
 
+func (x *BacktestRun) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
 var File_backtest_run_proto protoreflect.FileDescriptor
 
 const file_backtest_run_proto_rawDesc = "" +
 	"\n" +
-	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\xe2\b\n" +
+	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\x84\t\n" +
 	"\vBacktestRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -385,7 +393,9 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\x10execution_config\x18\x14 \x01(\v2\x1f.ant.v1.BacktestExecutionConfigH\bR\x0fexecutionConfig\x88\x01\x01\x12$\n" +
 	"\vstrategy_id\x18\x15 \x01(\tH\tR\n" +
 	"strategyId\x88\x01\x01\x12\x1b\n" +
-	"\tfix_depth\x18\x16 \x01(\x05R\bfixDepthB\r\n" +
+	"\tfix_depth\x18\x16 \x01(\x05R\bfixDepth\x12\x17\n" +
+	"\x04name\x18\x17 \x01(\tH\n" +
+	"R\x04name\x88\x01\x01B\r\n" +
 	"\v_dataset_idB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\x19\n" +
@@ -395,7 +405,8 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\f_template_idB\x14\n" +
 	"\x12_template_draft_idB\x13\n" +
 	"\x11_execution_configB\x0e\n" +
-	"\f_strategy_id*v\n" +
+	"\f_strategy_idB\a\n" +
+	"\x05_name*v\n" +
 	"\x0fBacktestRunMode\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_KLINE_RANGE\x10\x01\x12\x1d\n" +

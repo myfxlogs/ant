@@ -27,5 +27,10 @@ export function useSidebarActions(code: CodeCtx, history: HistoryCtx) {
     catch (e) { message.error((e as Error)?.message || 'Delete failed'); }
   };
 
-  return { onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, onBatchDeleteRuns };
+  const onRenameRun = async (runId: string, name: string) => {
+    try { await strategyRuntimeApi.updateBacktestRun(runId, name); message.success('Renamed'); history.refresh(); }
+    catch (e) { message.error((e as Error)?.message || 'Rename failed'); }
+  };
+
+  return { onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, onBatchDeleteRuns, onRenameRun };
 }
