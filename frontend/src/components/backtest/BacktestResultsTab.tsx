@@ -1,10 +1,7 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Typography, Tooltip } from 'antd';
-import { RiseOutlined, FallOutlined, StopOutlined, WarningOutlined, RobotOutlined } from '@ant-design/icons';
+import { Button, Tag, Empty, Spin, Table, Skeleton, Progress, Typography, Tooltip } from 'antd';
+import { StopOutlined, WarningOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import {
-  BACKTEST_COMPLETED_KEY, BACKTEST_EMPTY_KEY, BACKTEST_ERROR_KEY, BACKTEST_RUNNING_KEY,
-  BACKTEST_DEGRADED_KEY,
   EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
   EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY,
   EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY,
@@ -12,8 +9,6 @@ import {
   EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
-  ANNUAL_RETURN_KEY, EQUITY_CURVE_KEY, MAX_DRAWDOWN_KEY, SHARPE_KEY,
-  TOTAL_RETURN_KEY, TOTAL_TRADES_KEY, WIN_RATE_KEY,
   TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import {
@@ -25,6 +20,7 @@ import type { GateEvaluationUpdate, MarketplaceQualityPreview } from '@/gen/ant/
 import type { GateResult } from '@/gen/ant/v1/ai_gate_pb';
 import { GatePreview } from './BacktestSections';
 import { DiagnosticPanel } from './DiagnosticPanel';
+import BacktestMetricCards from './BacktestMetricCards';
 
 const _ASSUMPTION_MAP: Record<string, string> = {
   MT_LIVE: 'strategy.backtest.assumptions.mtLive',
@@ -42,11 +38,6 @@ function assumeVal(t: unknown, v: string | undefined): string {
   const key = _ASSUMPTION_MAP[v];
   return key ? t(key, v) : v;
 }
-
-function pct(v: number | undefined): string { if (v == null) return '-'; return (v * 100).toFixed(2) + '%'; }
-function num(v: number | undefined, d = 2): string { if (v == null) return '-'; return v.toFixed(d); }
-
-const S = { metricStyle: { fontSize: 14, fontFamily: 'monospace' as const } };
 
 const ASSUMPTION_TOOLTIPS: Record<string, string> = {
   simulationMode: 'How price data is simulated: KLINE_RANGE uses high-low range of each bar; MT_LIVE uses real MT tick data',
@@ -92,7 +83,7 @@ interface Props {
   runMeta?: { symbol?: string; timeframe?: string; createdAt?: string; name?: string } | null;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, onOpenHistory, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks, runMeta }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks, runMeta }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => (tr.side || '').toLowerCase() === 'buy');
@@ -210,56 +201,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
       )}
 
       {metrics && (
-        <>
-          <Row gutter={[12, 12]}>
-            <Col span={8}>
-              <Card size="small">
-                <Statistic title={t(TOTAL_RETURN_KEY, 'Total Return')} value={pct(metrics.totalReturn)}
-                  prefix={metrics.totalReturn != null && metrics.totalReturn >= 0
-                    ? <RiseOutlined style={{ color: '#26a69a' }} /> : <FallOutlined style={{ color: '#ef5350' }} />}
-                  valueStyle={S.metricStyle} />
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card size="small">
-                <Statistic title={t(ANNUAL_RETURN_KEY, 'Annual Return')} value={pct(metrics.annualReturn)} valueStyle={S.metricStyle} />
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card size="small">
-                <Statistic title={t(MAX_DRAWDOWN_KEY, 'Max Drawdown')} value={pct(metrics.maxDrawdown)} valueStyle={{ ...S.metricStyle, color: '#ef5350' }} />
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card size="small">
-                <Statistic title={t(SHARPE_KEY, 'Sharpe')} value={num(metrics.sharpeRatio)} valueStyle={S.metricStyle} />
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card size="small">
-                <Statistic title={t(WIN_RATE_KEY, 'Win Rate')} value={pct(metrics.winRate)} valueStyle={S.metricStyle} />
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card size="small">
-                <Statistic title={t(TOTAL_TRADES_KEY, 'Total Trades')} value={metrics.totalTrades ?? '-'} valueStyle={S.metricStyle} />
-              </Card>
-            </Col>
-          </Row>
-
-          {metrics.equityCurve && metrics.equityCurve.length > 0 && (
-            <Card size="small" title={t(EQUITY_CURVE_KEY, 'Equity Curve')} style={{ marginTop: 12 }}>
-              <ResponsiveContainer width="100%" height={150}>
-                <LineChart data={metrics.equityCurve}>
-                  <XAxis dataKey="time" hide />
-                  <YAxis width={60} tick={{ fontSize: 11 }} />
-                  <RechartsTooltip />
-                  <Line type="monotone" dataKey="equity" stroke="#1890ff" dot={false} strokeWidth={1.5} />
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          )}
-        </>
+        <BacktestMetricCards metrics={metrics} />
       )}
 
       {/* Trade detail table */}

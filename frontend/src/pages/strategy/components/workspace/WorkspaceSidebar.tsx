@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { Button } from 'antd';
 import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useWorkspaceStore } from '@/stores/workspaceStore';
 import SidebarStrategyList from './SidebarStrategyList';
 import SidebarRunList from './SidebarRunList';
 
