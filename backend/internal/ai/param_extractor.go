@@ -24,32 +24,65 @@ type TunableParam struct {
 // paramCallPattern matches: ctx.Param("name", default)
 var paramCallPattern = regexp.MustCompile(`ctx\.Param\(\s*["'](\w+)["']\s*,\s*([\d.]+)\s*\)`)
 
-// ExtractParams parses ctx.Param() calls from Go strategy code.
+// mqlExternPattern matches: extern int/double/bool Name = value;
+// Captures type, name, and default value. Also matches MQL5 'input' keyword.
+var mqlExternPattern = regexp.MustCompile(`(?:extern|input)\s+(int|long|double|float|bool|string|color)\s+(\w+)\s*=\s*([^;]+);`)
+
+// ExtractParams parses ctx.Param() calls from Go strategy code
+// and extern/input declarations from MQL source code.
 // Returns nil if no parameters are found.
 func ExtractParams(code string) []TunableParam {
-	matches := paramCallPattern.FindAllStringSubmatch(code, -1)
-	if len(matches) == 0 {
-		return nil
-	}
 	seen := map[string]bool{}
-	out := make([]TunableParam, 0, len(matches))
-	for _, m := range matches {
+	var out []TunableParam
+
+	// Go SDK: ctx.Param("name", default)
+	for _, m := range paramCallPattern.FindAllStringSubmatch(code, -1) {
 		name := m[1]
 		if seen[name] {
 			continue
 		}
 		seen[name] = true
-		p := TunableParam{Name: name}
 		d, err := strconv.ParseFloat(m[2], 64)
 		if err != nil {
 			continue
 		}
-		p.Default = d
-		p.Type = paramType(d)
-		p.Min = d
-		p.Max = d
-		p.Step = 0
+		p := TunableParam{Name: name, Default: d, Type: paramType(d), Min: d, Max: d}
 		out = append(out, p)
+	}
+
+	// MQL: extern/input <type> Name = value;
+	for _, m := range mqlExternPattern.FindAllStringSubmatch(code, -1) {
+		name := m[2]
+		if seen[name] {
+			continue
+		}
+		seen[name] = true
+		typeStr := m[1]
+		valStr := strings.TrimSpace(m[3])
+		// Strip string literal quotes — not numeric tunable
+		if typeStr == "string" || typeStr == "color" {
+			continue
+		}
+		var def float64
+		if typeStr == "bool" {
+			if strings.EqualFold(valStr, "true") {
+				def = 1
+			} else {
+				def = 0
+			}
+		} else {
+			d, err := strconv.ParseFloat(valStr, 64)
+			if err != nil {
+				continue
+			}
+			def = d
+		}
+		p := TunableParam{Name: name, Default: def, Type: paramType(def), Min: def, Max: def}
+		out = append(out, p)
+	}
+
+	if len(out) == 0 {
+		return nil
 	}
 	return out
 }
@@ -67,9 +100,11 @@ func ParamTypeString(val float64) string {
 	return paramType(val)
 }
 
-// HasTunableParams checks if the code contains any ctx.Param() calls or @param annotations.
+// HasTunableParams checks if the code contains any tunable parameters
+// from ctx.Param() calls, @param annotations, or MQL extern/input declarations.
 func HasTunableParams(code string) bool {
-	return strings.Contains(code, "ctx.Param(") || strings.Contains(code, "@param")
+	return strings.Contains(code, "ctx.Param(") || strings.Contains(code, "@param") ||
+		strings.Contains(code, "extern ") || strings.Contains(code, "input ")
 }
 
 // ApplyOverrides injects parameter values into Go strategy code by replacing
