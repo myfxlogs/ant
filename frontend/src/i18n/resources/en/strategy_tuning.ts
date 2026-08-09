@@ -39,6 +39,8 @@ const StrategyTuning = {
       "score": "Score",
       "started": "Smart Tuning started",
       "summary": "Summary",
+      "summaryOnlyTrades": "Only {{trades}} trades",
+      "summaryParamSearch": "Parameter search",
       "switchToDE": "Switch to DE",
       "truncated": "TRUNCATED",
       "tuning": "Tuning…",

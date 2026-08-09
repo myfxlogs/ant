@@ -69,9 +69,11 @@ func (w *ExperimentWorker) backtestAndScore(
 		return candidateResult{}, err
 	}
 
-	summary := "param search"
+	// Summary stores an i18n key for frontend rendering.
+	// Format: "strategy.tuning.<key>|<param>=<value>"
+	summary := "strategy.tuning.summaryParamSearch"
 	if scored.Trades < 5 {
-		summary = fmt.Sprintf("only %d trades", scored.Trades)
+		summary = fmt.Sprintf("strategy.tuning.summaryOnlyTrades|trades=%d", scored.Trades)
 	}
 
 	return candidateResult{

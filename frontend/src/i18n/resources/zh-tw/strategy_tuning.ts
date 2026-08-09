@@ -39,6 +39,8 @@ const StrategyTuning = {
       "score": "評分",
       "started": "智慧調校已啟動",
       "summary": "摘要",
+      "summaryOnlyTrades": "僅 {{trades}} 筆交易",
+      "summaryParamSearch": "參數搜尋",
       "switchToDE": "切換到差分進化",
       "truncated": "已截斷",
       "tuning": "調校中…",

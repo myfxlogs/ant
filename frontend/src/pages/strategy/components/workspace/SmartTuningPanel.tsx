@@ -209,7 +209,16 @@ export default function SmartTuningPanel({
                   try { return Object.entries(p as Record<string, unknown>).map(([k, v]) => `${k}=${v}`).join(', '); }
                   catch { return String(p); }
                 }},
-              { title: t(SUMMARY_KEY), dataIndex: 'summary', ellipsis: true, width: 150, render: (s: string) => s || '-' },
+              { title: t(SUMMARY_KEY), dataIndex: 'summary', ellipsis: true, width: 150, render: (s: string) => {
+                  if (!s) return '-';
+                  if (s.startsWith('strategy.tuning.summary')) {
+                    const [key, ...params] = s.split('|');
+                    const vars: Record<string, string> = {};
+                    for (const p of params) { const [k, v] = p.split('='); if (k) vars[k] = v; }
+                    return t(key, { defaultValue: s, ...vars });
+                  }
+                  return s; // backward compat with old records
+                } },
               { title: t(OOS_SCORE_KEY), dataIndex: 'oosScore', width: 70, render: (s: number | undefined) => s != null ? s.toFixed(1) : '-' },
               { title: t(DEGRADATION_KEY), dataIndex: 'degradationPct', width: 90, render: (pct: number | undefined) => {
                   if (pct == null) return '-';

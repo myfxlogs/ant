@@ -39,6 +39,8 @@ const StrategyTuning = {
       "score": "スコア",
       "started": "スマートチューニング開始",
       "summary": "サマリー",
+      "summaryOnlyTrades": "取引 {{trades}} 件のみ",
+      "summaryParamSearch": "パラメータ検索",
       "switchToDE": "DEに切替",
       "truncated": "切捨",
       "tuning": "チューニング中…",

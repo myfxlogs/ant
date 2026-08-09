@@ -39,6 +39,8 @@ const StrategyTuning = {
       "score": "评分",
       "started": "智能调优已启动",
       "summary": "摘要",
+      "summaryOnlyTrades": "仅 {{trades}} 笔交易",
+      "summaryParamSearch": "参数搜索",
       "switchToDE": "切换到差分进化",
       "truncated": "已截断",
       "tuning": "调优中…",

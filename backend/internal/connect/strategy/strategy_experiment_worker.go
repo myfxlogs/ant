@@ -176,7 +176,7 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 			Score:           c.Score,
 			Grade:           c.Grade,
 			ScoreComponents: scoreProto,
-			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
+			Summary:         c.Summary,
 			BacktestRunID:   c.BacktestRunID,
 			TotalReturn:     c.TotalReturn,
 			AnnualReturn:    c.AnnualReturn,

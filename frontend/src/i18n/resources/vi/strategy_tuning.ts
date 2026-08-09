@@ -39,6 +39,8 @@ const StrategyTuning = {
       "score": "Điểm",
       "started": "Tinh Chỉnh Thông Minh đã bắt đầu",
       "summary": "Tóm Tắt",
+      "summaryOnlyTrades": "Chỉ {{trades}} giao dịch",
+      "summaryParamSearch": "Tìm kiếm tham số",
       "switchToDE": "Chuyển sang DE",
       "truncated": "ĐÃ CẮT",
       "tuning": "Đang tinh chỉnh…",
