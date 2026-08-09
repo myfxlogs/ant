@@ -22,6 +22,7 @@ export interface AccountSlice {
 export interface LayoutSlice {
   centerTab: CenterTab;
   leftSidebarCollapsed: boolean;
+  leftSidebarWidth: number;
   bottomPanelCollapsed: boolean;
   bottomPanelHeight: number;
   bottomPanelUserResized: boolean;
@@ -29,6 +30,7 @@ export interface LayoutSlice {
   aiPanelWidth: number;
   setCenterTab: (v: CenterTab) => void;
   setLeftSidebarCollapsed: (v: boolean) => void;
+  setLeftSidebarWidth: (v: number) => void;
   setBottomPanelCollapsed: (v: boolean) => void;
   setBottomPanelHeight: (v: number) => void;
   setBottomPanelUserResized: (v: boolean) => void;
@@ -68,6 +70,7 @@ function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): Lay
   return {
     centerTab: 'code',
     leftSidebarCollapsed: false,
+    leftSidebarWidth: 240,
     bottomPanelCollapsed: false,
     bottomPanelHeight: 160,
     bottomPanelUserResized: false,
@@ -75,6 +78,7 @@ function createLayoutSlice(set: (partial: Partial<WorkspaceState>) => void): Lay
     aiPanelWidth: 380,
     setCenterTab: (v) => set({ centerTab: v }),
     setLeftSidebarCollapsed: (v) => set({ leftSidebarCollapsed: v }),
+    setLeftSidebarWidth: (v) => set({ leftSidebarWidth: v }),
     setBottomPanelCollapsed: (v) => set({ bottomPanelCollapsed: v }),
     setBottomPanelHeight: (v) => set({ bottomPanelHeight: v }),
     setBottomPanelUserResized: (v) => set({ bottomPanelUserResized: v }),
@@ -107,6 +111,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         timeframe: '1h',
         centerTab: 'code',
         leftSidebarCollapsed: false,
+        leftSidebarWidth: 240,
         bottomPanelCollapsed: false,
         bottomPanelHeight: 160,
         bottomPanelUserResized: false,
@@ -124,6 +129,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         symbol: state.symbol,
         timeframe: state.timeframe,
         leftSidebarCollapsed: state.leftSidebarCollapsed,
+        leftSidebarWidth: state.leftSidebarWidth,
         bottomPanelCollapsed: state.bottomPanelCollapsed,
         bottomPanelHeight: state.bottomPanelHeight,
         bottomPanelUserResized: state.bottomPanelUserResized,

@@ -1,4 +1,4 @@
-import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Typography } from 'antd';
+import { Button, Tag, Row, Col, Card, Statistic, Empty, Spin, Table, Skeleton, Progress, Typography, Tooltip } from 'antd';
 import { RiseOutlined, FallOutlined, StopOutlined, WarningOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
@@ -48,6 +48,27 @@ function num(v: number | undefined, d = 2): string { if (v == null) return '-'; 
 
 const S = { metricStyle: { fontSize: 14, fontFamily: 'monospace' as const } };
 
+const ASSUMPTION_TOOLTIPS: Record<string, string> = {
+  simulationMode: 'How price data is simulated: KLINE_RANGE uses high-low range of each bar; MT_LIVE uses real MT tick data',
+  signalTiming: 'When the strategy signal is evaluated relative to bar close: next_bar_open means signals fire on the next bar open after bar closes',
+  fillRule: 'How orders are filled: bar_close fills at bar close price; market fills at current market price',
+  tradeDirection: 'Which trade directions are allowed: long (buy only), short (sell only), or both',
+  commission: 'Per-trade commission rate as a percentage of trade value',
+  slippage: 'Simulated price deviation from expected fill price, as a percentage',
+  leverage: 'Account leverage multiplier applied to position sizing',
+  mtfFallback: 'Reason for multi-timeframe data fallback when primary timeframe data is unavailable',
+};
+
+function AssumptionField({ label, value, tooltip }: { label: string; value: React.ReactNode; tooltip: string }) {
+  return (
+    <Tooltip title={tooltip} placement="top">
+      <div style={{ cursor: 'help' }}>
+        <span style={{ color: '#8c8c8c', borderBottom: '1px dashed #d9d9d9' }}>{label}:</span> <strong>{value}</strong>
+      </div>
+    </Tooltip>
+  );
+}
+
 interface Props {
   status: BacktestStatus;
   metrics: BacktestMetrics | null;
@@ -85,41 +106,41 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
     <div>
       {/* Header: status + meta + actions */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10,
-        padding: '6px 12px', borderRadius: 6,
-        background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-        border: '1px solid #e2e8f0',
+        display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10,
+        padding: '8px 14px', borderRadius: 6,
+        background: 'linear-gradient(180deg, #f0f5ff 0%, #e6f0ff 100%)',
+        border: '1px solid #d6e4ff',
       }}>
         {/* Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.status', { defaultValue: 'Status' })}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.status', { defaultValue: 'Status' })}</span>
           {status === 'running' && <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>}
-          {status === 'completed' && <Tag color="success">{t(BACKTEST_COMPLETED_KEY)}</Tag>}
+          {status === 'completed' && <Tag color="success" style={{ fontSize: 13, padding: '2px 8px' }}>{t(BACKTEST_COMPLETED_KEY)}</Tag>}
           {status === 'degraded' && <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>}
           {status === 'error' && <Tag color="error">{errorMsg || t(BACKTEST_ERROR_KEY, 'Backtest failed')}</Tag>}
         </div>
 
         {/* Symbol */}
         {runMeta?.symbol && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.symbol', { defaultValue: 'Symbol' })}</span>
-            <Tag>{runMeta.symbol}</Tag>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.symbol', { defaultValue: 'Symbol' })}</span>
+            <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.symbol}</Tag>
           </div>
         )}
 
         {/* Timeframe */}
         {runMeta?.timeframe && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.timeframe', { defaultValue: 'Period' })}</span>
-            <Tag>{runMeta.timeframe}</Tag>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.timeframe', { defaultValue: 'Period' })}</span>
+            <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.timeframe}</Tag>
           </div>
         )}
 
         {/* Created at */}
         {runMeta?.createdAt && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 600 }}>{t('strategy.backtest.createdAt', { defaultValue: 'Created' })}</span>
-            <Typography.Text type="secondary" style={{ fontSize: 11 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.createdAt', { defaultValue: 'Created' })}</span>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>
           </div>
         )}
 
@@ -169,14 +190,14 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '4px 12px', fontSize: 12 }}>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.simulationMode)}</strong></div>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.signalTiming)}</strong></div>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.fillRule)}</strong></div>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.tradeDirection)}</strong></div>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)}:</span> <strong>{executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)}:</span> <strong>{executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
-            <div><span style={{ color: '#8c8c8c' }}>{t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)}:</span> <strong>{executionAssumptions.actualLeverage || '-'}x</strong></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px 12px', fontSize: 12 }}>
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)} value={assumeVal(t, executionAssumptions.simulationMode)} tooltip={ASSUMPTION_TOOLTIPS.simulationMode} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)} value={assumeVal(t, executionAssumptions.signalTiming)} tooltip={ASSUMPTION_TOOLTIPS.signalTiming} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)} value={assumeVal(t, executionAssumptions.fillRule)} tooltip={ASSUMPTION_TOOLTIPS.fillRule} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)} value={assumeVal(t, executionAssumptions.tradeDirection)} tooltip={ASSUMPTION_TOOLTIPS.tradeDirection} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.commission} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)} value={executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.slippage} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)} value={(executionAssumptions.actualLeverage || '-') + 'x'} tooltip={ASSUMPTION_TOOLTIPS.leverage} />
             {executionAssumptions.mtfFallbackReason && (
               <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.mtfFallbackReason)}</strong></div>
             )}
@@ -244,9 +265,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
       {/* Trade detail table */}
       {trades.length > 0 && (
         <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 12 }}>
-            <span>🟢 {t(LONG_KEY)}: <b>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373' }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
-            <span>🔴 {t(SHORT_KEY)}: <b>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373' }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
+          <div style={{ display: 'flex', gap: 24, marginBottom: 12, fontSize: 14, padding: '6px 12px', borderRadius: 6, background: '#fafafa', border: '1px solid #f0f0f0' }}>
+            <span>🟢 {t(LONG_KEY)}: <b style={{ fontSize: 15 }}>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b style={{ fontSize: 15 }}>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373', fontSize: 15 }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
+            <span>🔴 {t(SHORT_KEY)}: <b style={{ fontSize: 15 }}>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b style={{ fontSize: 15 }}>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373', fontSize: 15 }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
           </div>
           <Table dataSource={trades.map((tr, i) => ({ ...tr, key: i }))}
             pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180, x: 'max-content' }}

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Button } from 'antd';
 import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import SidebarStrategyList from './SidebarStrategyList';
 import SidebarRunList from './SidebarRunList';
 
@@ -39,6 +40,8 @@ interface Props {
   collapsed: boolean;
   onToggle: () => void;
   autoExpandHistory?: boolean;
+  width?: number;
+  onWidthChange?: (w: number) => void;
 }
 
 export default function WorkspaceSidebar({
@@ -47,10 +50,12 @@ export default function WorkspaceSidebar({
   onImport, onNew,
   collapsed, onToggle,
   autoExpandHistory,
+  width = 240, onWidthChange,
 }: Props) {
   const { t } = useTranslation();
   const [strategiesExpanded, setStrategiesExpanded] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [sidebarDragging, setSidebarDragging] = useState(false);
 
   // Auto-expand history section when triggered by external event (e.g. backtest completion)
   const [prevAutoExpand, setPrevAutoExpand] = useState(false);
@@ -84,13 +89,34 @@ export default function WorkspaceSidebar({
     });
   }, []);
 
+  const handleSidebarResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!onWidthChange) return;
+    setSidebarDragging(true);
+    const startX = e.clientX;
+    const startW = width;
+    const onMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - startX;
+      onWidthChange(Math.max(180, Math.min(480, startW + delta)));
+    };
+    const onUp = () => {
+      setSidebarDragging(false);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [width, onWidthChange]);
+
   return (
+    <>
     <div style={{
-      width: collapsed ? 36 : 240, flexShrink: 0, overflow: 'hidden',
+      width: collapsed ? 36 : width, flexShrink: 0, overflow: 'hidden',
       borderRight: '1px solid var(--ant-color-border)',
       background: 'var(--ant-color-bg-container)',
       display: 'flex', flexDirection: 'column',
-      transition: 'width 0.2s',
+      transition: sidebarDragging ? 'none' : 'width 0.2s',
+      userSelect: sidebarDragging ? 'none' : 'auto',
     }}>
       {/* Header */}
       <div style={{
@@ -191,5 +217,17 @@ export default function WorkspaceSidebar({
         )}
       </div>
     </div>
+    {/* Resize handle */}
+    {!collapsed && onWidthChange && (
+      <div
+        onMouseDown={handleSidebarResize}
+        style={{
+          width: 4, cursor: 'col-resize', flexShrink: 0,
+          background: sidebarDragging ? '#58a6ff' : 'transparent',
+          transition: 'background 0.15s',
+        }}
+      />
+    )}
+    </>
   );
 }

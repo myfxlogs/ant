@@ -33,6 +33,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   // ── Sidebar ──────────────────────────────────────────────────────────
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
   const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
+  const leftSidebarWidth = useWorkspaceStore(s => s.leftSidebarWidth);
+  const setLeftSidebarWidth = useWorkspaceStore(s => s.setLeftSidebarWidth);
   const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
 
   // ── Right panel tab: 'ai' | 'backtest' | null — mode-driven layout ──
@@ -172,6 +174,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
             {...sidebarProps}
             collapsed={leftSidebarCollapsed}
             onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+            width={leftSidebarWidth}
+            onWidthChange={setLeftSidebarWidth}
           />
         )}
 
