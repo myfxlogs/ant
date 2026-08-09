@@ -11,9 +11,9 @@ interface Props {
   onDeleteTemplate?: (id: string) => void;
   onRenameTemplate?: (id: string, name: string) => void;
   onBatchDeleteTemplates?: (ids: string[]) => void;
-  backtestRuns: { id: string; templateName?: string; totalReturn?: number; totalTrades?: number; templateId?: string }[];
+  backtestRuns: { id: string; templateName?: string; totalReturn?: number; totalTrades?: number; templateId?: string; name?: string }[];
   runsLoading: boolean;
-  onOpenHistory: (tid?: string) => void;
+  onOpenHistory: (runId?: string) => void;
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
   onRenameRun?: (runId: string, name: string) => void;
@@ -32,7 +32,7 @@ export default function MobileSidebarDrawer({ open, onClose, templates, loading,
         onRenameTemplate={onRenameTemplate}
         onBatchDeleteTemplates={onBatchDeleteTemplates}
         backtestRuns={backtestRuns} runsLoading={runsLoading}
-        onOpenHistory={(tid) => { onOpenHistory(tid); onClose(); }}
+        onOpenHistory={(runId) => { onOpenHistory(runId); onClose(); }}
         onDeleteRun={onDeleteRun}
         onBatchDeleteRuns={onBatchDeleteRuns}
         onRenameRun={onRenameRun}

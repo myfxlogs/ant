@@ -16,7 +16,7 @@ interface BacktestRun {
 interface Props {
   runs: BacktestRun[];
   loading: boolean;
-  onOpenHistory: (templateId?: string) => void;
+  onOpenHistory: (runId?: string) => void;
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
   onRenameRun?: (runId: string, name: string) => void;

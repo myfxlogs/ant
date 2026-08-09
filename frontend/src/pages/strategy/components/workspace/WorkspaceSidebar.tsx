@@ -17,6 +17,7 @@ interface BacktestRun {
   totalTrades?: number;
   templateName?: string;
   templateId?: string;
+  name?: string;
 }
 
 interface Props {
@@ -29,7 +30,7 @@ interface Props {
   onBatchDeleteTemplates?: (ids: string[]) => void;
   backtestRuns: BacktestRun[];
   runsLoading: boolean;
-  onOpenHistory: (templateId?: string) => void;
+  onOpenHistory: (runId?: string) => void;
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
   onRenameRun?: (runId: string, name: string) => void;
