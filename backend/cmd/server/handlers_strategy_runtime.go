@@ -163,22 +163,7 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 		log)
 	strategyServer.SetEngine(scheduleEngine)
 
-	// FEAT-4: Live vs backtest divergence comparison service.
-	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
-	divergenceServer := strategy.NewDivergenceServer(backtestRunRepo, tradeRecordRepo, log)
-	divergenceServer.SetPgListen(pgListen)
-	mux.Handle(antv1c.NewLiveBacktestDivergenceServiceHandler(divergenceServer,
-		withSency(otelInterceptor, authInterceptor)))
-
-	// FEAT-4: Walk-forward validation service.
-	walkForwardServer := strategy.NewWalkForwardServer(backtestRunRepo, log)
-	walkForwardServer.SetPgListen(pgListen)
-	mux.Handle(antv1c.NewWalkForwardServiceHandler(walkForwardServer,
-		withSency(otelInterceptor, authInterceptor)))
-
-	// FEAT-5: Strategy decay monitor — push-first on trade_record_sync.
-	decayMonitor := marketplace.NewDecayMonitor(mktplaceSvc, pgListen, log)
-	go decayMonitor.Start(ctx)
+	registerDivergenceAndDecayServices(ctx, mux, pool, backtestRunRepo, mktplaceSvc, pgListen, log, otelInterceptor, authInterceptor)
 
 	return strategyRuntimeDeps{
 		strategyServer:     strategyServer,
@@ -188,6 +173,31 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 		scheduleEngine:     scheduleEngine,
 		platformAgg:        platformAgg,
 	}
+}
+
+func registerDivergenceAndDecayServices(
+	ctx context.Context,
+	mux *http.ServeMux,
+	pool *pgxpool.Pool,
+	backtestRunRepo *repository.BacktestRunRepository,
+	mktplaceSvc *marketplace.Service,
+	pgListen *pglisten.Listener,
+	log *zap.Logger,
+	otelInterceptor, authInterceptor connectrpc.Interceptor,
+) {
+	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
+	divergenceServer := strategy.NewDivergenceServer(backtestRunRepo, tradeRecordRepo, log)
+	divergenceServer.SetPgListen(pgListen)
+	mux.Handle(antv1c.NewLiveBacktestDivergenceServiceHandler(divergenceServer,
+		withSency(otelInterceptor, authInterceptor)))
+
+	walkForwardServer := strategy.NewWalkForwardServer(backtestRunRepo, log)
+	walkForwardServer.SetPgListen(pgListen)
+	mux.Handle(antv1c.NewWalkForwardServiceHandler(walkForwardServer,
+		withSency(otelInterceptor, authInterceptor)))
+
+	decayMonitor := marketplace.NewDecayMonitor(mktplaceSvc, pgListen, log)
+	go decayMonitor.Start(ctx)
 }
 
 func initKnowledgeBase(ctx context.Context, pool *pgxpool.Pool, pgListen *pglisten.Listener, log *zap.Logger) *knowledgebase.Service {

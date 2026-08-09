@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/ai"
@@ -99,29 +98,6 @@ func (w *ExperimentWorker) backtestAndScore(
 
 // extractBacktestMetricsFromResponse parses ExecuteBacktestResponse → BacktestMetrics.
 func extractBacktestMetricsFromResponse(resp *antv1.ExecuteBacktestResponse) *ai.BacktestMetrics {
-	m := resp.GetMetrics()
-	eq := resp.GetEquityCurve()
-	return &ai.BacktestMetrics{
-		TotalReturn:  parseFloat(m.GetTotalReturn()),
-		AnnualReturn: parseFloat(m.GetAnnualReturn()),
-		SharpeRatio:  parseFloat(m.GetSharpeRatio()),
-		MaxDrawdown:  parseFloat(m.GetMaxDrawdown()),
-		WinRate:      parseFloat(m.GetWinRate()),
-		ProfitFactor: parseFloat(m.GetProfitFactor()),
-		TotalTrades:  int(m.GetTotalTrades()),
-		Stability:    computeStability(equityCurveToFloat64(eq)),
-	}
-}
-
-// extractBacktestMetrics parses proto binary ExecuteBacktestResponse → BacktestMetrics.
-func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
-	if len(protoResp) == 0 {
-		return &ai.BacktestMetrics{TotalTrades: 0}
-	}
-	var resp antv1.ExecuteBacktestResponse
-	if err := proto.Unmarshal(protoResp, &resp); err != nil {
-		return &ai.BacktestMetrics{TotalTrades: 0}
-	}
 	m := resp.GetMetrics()
 	eq := resp.GetEquityCurve()
 	return &ai.BacktestMetrics{

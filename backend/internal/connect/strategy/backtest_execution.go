@@ -60,64 +60,7 @@ func (s *StrategyExecutionServer) ExecuteBacktestDirect(
 		ParameterOverrides: overrides,
 	}
 	// Inherit config from originating backtest run when available.
-	if backtestRunID != "" && s.backtestRepo != nil {
-		rid, err := uuid.Parse(backtestRunID)
-		if err == nil {
-			srcRun, err := s.backtestRepo.GetByID(ctx, userID, rid)
-			if err != nil {
-				s.log.Warn("failed to load backtest run config for experiment, falling back to defaults",
-					zap.String("backtestRunID", backtestRunID),
-					zap.Error(err))
-			}
-			if err == nil && srcRun != nil {
-				s.log.Info("experiment config inheritance",
-					zap.String("backtestRunID", backtestRunID),
-					zap.String("leverage", params.leverage),
-					zap.String("commission", params.commission),
-					zap.String("slippage", params.slippage),
-					zap.Bool("strictMode", params.strictMode))
-				run.AccountID = srcRun.AccountID
-				if srcRun.InitialCapital != nil {
-					params.initialCapital = srcRun.InitialCapital.String()
-					run.InitialCapital = srcRun.InitialCapital
-				}
-				if srcRun.Commission != nil {
-					params.commission = srcRun.Commission.String()
-					run.Commission = srcRun.Commission
-				}
-				if srcRun.Slippage != nil {
-					params.slippage = srcRun.Slippage.String()
-					run.Slippage = srcRun.Slippage
-				}
-				if srcRun.Leverage != nil && srcRun.Leverage.GreaterThan(decimal.Zero) {
-					params.leverage = strconv.FormatInt(srcRun.Leverage.IntPart(), 10)
-					run.Leverage = srcRun.Leverage
-				}
-				if srcRun.TradeDirection != nil {
-					params.tradeDir = stringToTradeDirection(*srcRun.TradeDirection)
-					run.TradeDirection = srcRun.TradeDirection
-				}
-				if srcRun.StrictMode != nil {
-					params.strictMode = *srcRun.StrictMode
-					run.StrictMode = srcRun.StrictMode
-				}
-				if len(srcRun.ConfigSnapshot) > 0 {
-					run.ConfigSnapshot = srcRun.ConfigSnapshot
-					var ec antv1.BacktestExecutionConfig
-					opts := proto.UnmarshalOptions{DiscardUnknown: true}
-					if err := opts.Unmarshal(srcRun.ConfigSnapshot, &ec); err == nil {
-						params.strategyCfg = ec.GetStrategyConfig()
-						if ec.GetSwapRate() != "" {
-							params.swapRate = ec.GetSwapRate()
-						}
-						if ec.GetMarginCallLevel() != "" {
-							params.marginCallLevel = ec.GetMarginCallLevel()
-						}
-					}
-				}
-			}
-		}
-	}
+	inheritBacktestRunConfig(ctx, s, &params, run, backtestRunID, userID)
 	s.log.Info("ExecuteBacktestDirect final params",
 		zap.String("leverage", params.leverage),
 		zap.String("commission", params.commission),
@@ -144,6 +87,73 @@ func safeHead(s string, n int) string {
 		return s
 	}
 	return s[:n]
+}
+
+// inheritBacktestRunConfig loads config from the originating backtest_runs record
+// and applies it to params/run, replacing hardcoded defaults.
+func inheritBacktestRunConfig(ctx context.Context, s *StrategyExecutionServer, params *backtestParams, run *repository.BacktestRun, backtestRunID string, userID uuid.UUID) {
+	if backtestRunID == "" || s.backtestRepo == nil {
+		return
+	}
+	rid, err := uuid.Parse(backtestRunID)
+	if err != nil {
+		return
+	}
+	srcRun, err := s.backtestRepo.GetByID(ctx, userID, rid)
+	if err != nil {
+		s.log.Warn("failed to load backtest run config for experiment, falling back to defaults",
+			zap.String("backtestRunID", backtestRunID),
+			zap.Error(err))
+		return
+	}
+	if srcRun == nil {
+		return
+	}
+	s.log.Info("experiment config inheritance",
+		zap.String("backtestRunID", backtestRunID),
+		zap.String("leverage", params.leverage),
+		zap.String("commission", params.commission),
+		zap.String("slippage", params.slippage),
+		zap.Bool("strictMode", params.strictMode))
+	run.AccountID = srcRun.AccountID
+	if srcRun.InitialCapital != nil {
+		params.initialCapital = srcRun.InitialCapital.String()
+		run.InitialCapital = srcRun.InitialCapital
+	}
+	if srcRun.Commission != nil {
+		params.commission = srcRun.Commission.String()
+		run.Commission = srcRun.Commission
+	}
+	if srcRun.Slippage != nil {
+		params.slippage = srcRun.Slippage.String()
+		run.Slippage = srcRun.Slippage
+	}
+	if srcRun.Leverage != nil && srcRun.Leverage.GreaterThan(decimal.Zero) {
+		params.leverage = strconv.FormatInt(srcRun.Leverage.IntPart(), 10)
+		run.Leverage = srcRun.Leverage
+	}
+	if srcRun.TradeDirection != nil {
+		params.tradeDir = stringToTradeDirection(*srcRun.TradeDirection)
+		run.TradeDirection = srcRun.TradeDirection
+	}
+	if srcRun.StrictMode != nil {
+		params.strictMode = *srcRun.StrictMode
+		run.StrictMode = srcRun.StrictMode
+	}
+	if len(srcRun.ConfigSnapshot) > 0 {
+		run.ConfigSnapshot = srcRun.ConfigSnapshot
+		var ec antv1.BacktestExecutionConfig
+		opts := proto.UnmarshalOptions{DiscardUnknown: true}
+		if err := opts.Unmarshal(srcRun.ConfigSnapshot, &ec); err == nil {
+			params.strategyCfg = ec.GetStrategyConfig()
+			if ec.GetSwapRate() != "" {
+				params.swapRate = ec.GetSwapRate()
+			}
+			if ec.GetMarginCallLevel() != "" {
+				params.marginCallLevel = ec.GetMarginCallLevel()
+			}
+		}
+	}
 }
 
 // startBacktestWatchers starts lease heartbeat and cancel watcher goroutines.
