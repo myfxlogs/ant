@@ -61,7 +61,16 @@ func GridSearch(params []TunableParam, maxCandidates int) []map[string]interface
 	if len(params) == 0 {
 		return nil
 	}
-	space := NormalizeSpace(params)
+	return GridSearchSpace(NormalizeSpace(params), maxCandidates)
+}
+
+// GridSearchSpace is like GridSearch but operates on a pre-resolved space.
+// Used when the parameter space comes from an external source (e.g. frontend UI)
+// rather than from @param annotations in the strategy code.
+func GridSearchSpace(space ResolvedSpace, maxCandidates int) []map[string]interface{} {
+	if len(space.Keys) == 0 {
+		return nil
+	}
 	total := cartesianSize(space)
 	rng := rand.New(rand.NewSource(rngSeed))
 	n := maxCandidates
@@ -73,17 +82,23 @@ func GridSearch(params []TunableParam, maxCandidates int) []map[string]interface
 	indices := make([]int, n)
 	if total <= n*10 {
 		all := make([]int, total)
-		for i := range all { all[i] = i }
+		for i := range all {
+			all[i] = i
+		}
 		rng.Shuffle(len(all), func(i, j int) { all[i], all[j] = all[j], all[i] })
 		copy(indices, all[:n])
 	} else {
-		for i := 0; i < n; i++ { indices[i] = rng.Intn(total) }
+		for i := 0; i < n; i++ {
+			indices[i] = rng.Intn(total)
+		}
 	}
 	out := make([]map[string]interface{}, 0, n)
 	for _, idx := range indices {
 		idxs := cartesianNth(space, idx)
 		pm := make(map[string]interface{}, len(idxs))
-		for j, k := range space.Keys { pm[k] = space.ValuesByKey[k][idxs[j]] }
+		for j, k := range space.Keys {
+			pm[k] = space.ValuesByKey[k][idxs[j]]
+		}
 		out = append(out, pm)
 	}
 	return out
@@ -105,7 +120,14 @@ func RandomSearch(params []TunableParam, maxCandidates int) []map[string]interfa
 	if len(params) == 0 {
 		return nil
 	}
-	space := NormalizeSpace(params)
+	return RandomSearchSpace(NormalizeSpace(params), maxCandidates)
+}
+
+// RandomSearchSpace is like RandomSearch but operates on a pre-resolved space.
+func RandomSearchSpace(space ResolvedSpace, maxCandidates int) []map[string]interface{} {
+	if len(space.Keys) == 0 {
+		return nil
+	}
 	rng := rand.New(rand.NewSource(rngSeed))
 	out := make([]map[string]interface{}, 0, maxCandidates)
 	for i := 0; i < maxCandidates; i++ {
@@ -118,4 +140,3 @@ func RandomSearch(params []TunableParam, maxCandidates int) []map[string]interfa
 	}
 	return out
 }
-

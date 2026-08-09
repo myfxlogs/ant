@@ -3,11 +3,13 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"alphaforge/internal/ai"
 	"alphaforge/internal/pglisten"
@@ -112,14 +114,6 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	}
 
 	params := ai.ExtractParamsWithAnnotations(code)
-	if len(params) == 0 {
-		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusCompleted); err != nil {
-			w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
-		}
-		ExperimentRunsTotal.WithLabelValues(StatusCompleted).Inc()
-		w.log.Info("No @params found", zap.String("id", exp.ID.String()))
-		return nil
-	}
 
 	// Detect and persist regime once per experiment
 	regime := w.detectRegimeForExperiment(ctx, exp)
@@ -129,7 +123,26 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		}
 	}
 
-	space := ai.NormalizeSpace(params)
+	var space ai.ResolvedSpace
+	if len(params) > 0 {
+		space = ai.NormalizeSpace(params)
+	} else {
+		// No @param annotations in code — fall back to frontend-submitted parameterSpace.
+		space = resolvedSpaceFromParamSpace(exp.ParameterSpace)
+		if len(space.Keys) == 0 {
+			if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusCompleted); err != nil {
+				w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
+			}
+			ExperimentRunsTotal.WithLabelValues(StatusCompleted).Inc()
+			w.log.Info("No tunable params found (no @param annotations and no parameterSpace)", zap.String("id", exp.ID.String()))
+			return nil
+		}
+		// Build pseudo-params from space keys so runOptimizer can use GridSearch/RandomSearch.
+		params = paramsFromSpace(space)
+		w.log.Info("Using frontend parameterSpace (no @param annotations in code)",
+			zap.String("expID", exp.ID.String()), zap.Int("dims", len(space.Keys)))
+	}
+
 	candidates, err := w.runOptimizer(ctx, exp, params, space, code, regime)
 	if err != nil {
 		w.log.Error("optimizer failed", zap.Error(err))
@@ -275,9 +288,9 @@ func (w *ExperimentWorker) runOptimizer(
 	case "ags":
 		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp, regime)
 	case "random":
-		return w.runOneShot(ctx, ai.RandomSearch(params, exp.MaxCandidates), code, exp, regime)
+		return w.runOneShot(ctx, ai.RandomSearchSpace(space, exp.MaxCandidates), code, exp, regime)
 	default:
-		return w.runOneShot(ctx, ai.GridSearch(params, exp.MaxCandidates), code, exp, regime)
+		return w.runOneShot(ctx, ai.GridSearchSpace(space, exp.MaxCandidates), code, exp, regime)
 	}
 }
 
@@ -319,3 +332,70 @@ func (w *ExperimentWorker) runIterative(
 }
 
 // backtestAndScore executes a single backtest with parameter overrides applied.
+
+// resolvedSpaceFromParamSpace builds a ResolvedSpace from a proto structpb.Struct
+// stored in exp.ParameterSpace. The struct format is { "paramName": [v1, v2, ...] }
+// as submitted by the frontend tuning UI.
+func resolvedSpaceFromParamSpace(raw []byte) ai.ResolvedSpace {
+	if len(raw) == 0 {
+		return ai.ResolvedSpace{}
+	}
+	var ps structpb.Struct
+	if err := proto.Unmarshal(raw, &ps); err != nil {
+		return ai.ResolvedSpace{}
+	}
+	keys := make([]string, 0, len(ps.Fields))
+	vals := make(map[string][]float64, len(ps.Fields))
+	for k, v := range ps.Fields {
+		listVal := v.GetListValue()
+		if listVal == nil || len(listVal.Values) == 0 {
+			continue
+		}
+		var floatVals []float64
+		for _, item := range listVal.Values {
+			f := item.GetNumberValue()
+			floatVals = append(floatVals, f)
+		}
+		if len(floatVals) > 0 {
+			keys = append(keys, k)
+			vals[k] = floatVals
+		}
+	}
+	sort.Strings(keys) // deterministic order
+	return ai.ResolvedSpace{Keys: keys, ValuesByKey: vals}
+}
+
+// paramsFromSpace creates pseudo TunableParam entries from a ResolvedSpace
+// so that GridSearch/RandomSearch can operate. Each key becomes a "choice"
+// param with Min/Max/Step derived from the value array.
+func paramsFromSpace(space ai.ResolvedSpace) []ai.TunableParam {
+	out := make([]ai.TunableParam, 0, len(space.Keys))
+	for _, key := range space.Keys {
+		vals := space.ValuesByKey[key]
+		if len(vals) == 0 {
+			continue
+		}
+		minVal, maxVal := vals[0], vals[0]
+		for _, v := range vals {
+			if v < minVal {
+				minVal = v
+			}
+			if v > maxVal {
+				maxVal = v
+			}
+		}
+		step := 1.0
+		if len(vals) > 1 {
+			step = (maxVal - minVal) / float64(len(vals)-1)
+		}
+		out = append(out, ai.TunableParam{
+			Name:    key,
+			Type:    "float",
+			Default: vals[0],
+			Min:     minVal,
+			Max:     maxVal,
+			Step:    step,
+		})
+	}
+	return out
+}
