@@ -2,8 +2,8 @@
 
 > **依据**：CLAUDE.md「Deployment (强制 — 禁止手动)」+ `tech-debt-registry.md` EXEC-PARAMS 验收行（✅ 权威 done，2026-08-10 审计方实测）+ `handover-audit-plan.md` 验收条目。
 > **强制遵守** `docs/audits/builder-sop.md` 三铁律 + 验收 checklist（§200）：① one task = one scope（不扩大）；② 对抗证明（删关键一行→测试必红）；③ **红队自审**（完工后对着 §200 checklist + 验收 5 维过一遍，带着债提交=失败）；④ 不自行宣告 ✅，等审计方实测；⑤ 完工回填三层；⑥ REUSE preflight（cap.sh）。
-> **节奏**：一次一个 task，提示词 1（部署）完成后做提示词 2（可选补测），完工回填 + 自审后再交付，不并行多任务。
-> **当前状态**：EXEC-PARAMS（a1c88f33）已由审计方实测验收通过——5 项修订全部落地、9 测试全绿、对抗证明实测（删 `SetBarPrice(bar.Open)` → close 测试红；强制 spread → bar_close 测试红）、go build/tsc/vitest 140/140/vite build/check-file-lines 全绿。⚠️待Claude复审已解除，**部署已解锁**。工作区仅剩审计方 2 行验收 doc 未提交（handover + registry），代码零未提交，migrations 空。
+> **节奏**：一次一个 task。提示词 1/2 已完成（部署 `567b87e2` + 补测 `e45ce7d4`，审计方已核对）；当前进行**提示词 3（FILL-SIM）**。完工回填 + 自审后再交付，不并行多任务。
+> **当前状态**：EXEC-PARAMS（a1c88f33）已由审计方实测验收通过并部署上线。**FILL-SIM spec 定稿**（`spec-fill-rule-limit-simulation-mode.md`：Windsurf 复审 7 点修订 + **Claude Code 审计方 2026-08-10 复核 §8**：8 项根因全部实测属实；3 项修订——§1.3/§3.3 事实校正、§2.6 VM pending 前置升级、§2.4 测试补漏）。**§2.6 是必备前置**，先于 §2.1/§2.2 施工。工作区未提交：audit spec 修订（docs）+ handover/registry（docs），代码零未提交，migrations 空。
 
 ---
 
@@ -123,4 +123,125 @@ Gate：go build ./... + go test ./internal/connect/strategy/... + go run ./tools
 2. handover-audit-plan.md 变更日志加一行。
 3. commit（test + doc 一并）。
 4. 不自宣告完成——标 ⚠️待 Claude 复审，等审计方实测。
+```
+
+---
+
+## 提示词 3【🔴 FILL-SIM】fill_rule=limit + simulation_mode=OHLC_PATH 落地（含 §2.6 VM pending 前置）
+
+```
+依据 `docs/audits/spec-fill-rule-limit-simulation-mode.md`（先完整读：§1 问题 + §2 设计 + §2.6 前置 +
+§3 最优性 + §4 清单 + §6 风险 + §7/§8 修订汇总）。审计方已复核定稿，本提示词只重申强制点，一切以 spec 为准。
+
+背景：fill_rule=limit 与 simulation_mode=DATASET 当前在 validateBacktestRequest 被 API 拒绝
+（EXEC-PARAMS 的诚实性闸）。本任务实现它们：limit = market order 转 pending；DATASET wire 值改名
+OHLC_PATH = bar 内 OHLC 路径 SL/TP 顺序判定。**前置（§2.6）：VM pending order 可见性是必备前置**——
+审计实测 builtinOrdersTotal/OrderSelect 只查 Positions、PositionModify 只搜 positions、OrderType 对
+pending 报错——不先修，market→pending 会让所有 market order EA 的持仓管理静默错乱（违反 MQL 诚实性红线）。
+
+范围（one task = one scope）：仅 FILL-SIM 一个任务，内部按 Phase A→E 顺序执行（每 Phase 独立对抗证明 +
+测试，全部完成才交付）。❌ 不扩大：不拉 M1/tick 数据、不重建 tick 持久化、不动实盘下单路径
+（runner/broker.go 不改）、不顺手重构其他代码。
+
+【REUSE preflight 必做】动工前 bash scripts/cap.sh 换词查：checkSLTP / pending / OrderModify /
+ordersTotal / whitelist。已有能力直接复用（checkPendingOrders 触发逻辑、PositionModify 结构、
+exec_params_validation_test.go 现有测试模式）。PR 描述逐条给 REUSE:/NEW:。
+
+──────── Phase A【§2.6 必备前置，先做】VM pending 可见性 ────────
+文件：backend/tools/mql2go/vm_builtin_trade.go + backend/strategy/backtest/broker.go
+1. builtinOrdersTotal：len(Positions(0)) + len(Orders(0))（MQL4 OrdersTotal 含 market+pending）。
+   ⚠️ 红队：live 路径 brokerImpl.Positions 来自 executor.OpenedOrders——先核验 adapter
+   （mdgateway/adapter/mt5/order_history.go 等）的 OpenedOrders 是否已含 pending；若含则 Positions+Orders
+   双计。实测确认后二选一：a) 确认 disjoint（多数 MT5 语义 OpenedOrders=positions 仅）；b) 若 MT4 侧含，
+   在测试中锁定 backtest（SimBroker positions/pending 天然 disjoint，broker.go:135-141 实证）+ live 侧
+   记录已知边界不双计（写回 spec 或注释，不静默）。
+2. builtinOrderSelect MODE_TRADES：positions 索引段之后追加 pending 段（SELECT_BY_POS 与 SELECT_BY_TICKET
+   均需覆盖；MQL4 语义 order 池按位置索引含 pending）。
+3. builtinOrderType：pending 订单按 OrderType 返回 OP_BUYLIMIT=2/OP_SELLLIMIT=3/OP_BUYSTOP=4/OP_SELLSTOP=5，
+   非按 Side（sideToOrderType 只在 currentPos 为 position 时用）。
+4. SimBroker.PositionModify：追加 pending 扫描段（SL/TP 可改）；builtinOrderModify 接住 args[1]（price，
+   MQL4 OrderModify(ticket,price,sl,tp)），改价语义=改 pending.Price（回测侧）。
+5. 缓存一致性：pending 快照与 cachedPositions 同生命周期（事件内多次调用一致）。
+测试（mql2go 包 + backtest 包）：EA 下 OP_BUYLIMIT → OrdersTotal()==1；OrderSelect(0,MODE_TRADES) 成功
+且 OrderType()==2；OrderModify 对 pending 成功（SL 变更后 OrderStopLoss() 反映）；pending 成交后
+OrdersTotal() 回落；OrderDelete 对 pending 不回归（已支持）。
+对抗证明（缺 = Phase A 判失败）：删 builtinOrdersTotal 的 +len(Orders) 行 → OrdersTotal 测试红；
+删 PositionModify pending 段 → OrderModify 测试红。
+
+──────── Phase B【§2.1 + §6.4】fill_rule=limit ────────
+文件：backend/strategy/backtest/broker.go（+ engine.go fill 分支）
+1. OrderSend：config.FillRule=="limit" && req.Type==OrderMarket → 转 OrderLimit。**顺序强制**：
+   price=0→currentPrice 解析必须发生在转换后仍生效（spec §2.1 注：先解析价再转换，防挂单 Price=0
+   永不触发）。保留 SL/TP/comment/magic 原样。
+2. §6.4 决策①（默认执行，审计已认可）：commission 从 OrderSend 移至 checkPendingOrders fill 分支
+   （成交时刻扣）+ 同点 margin 复检（不足 → 撤单记 RetNoMoney 并 log，不 append 进 positions）。
+   ⚠️ 红队：这是行为变化——原生 pending（KLINE_RANGE 下）从不成交的单将不再扣 commission（修正
+   而非回归）；已成交单在成交时刻扣（总额不变，时点变化）。现有测试若断言"下单即扣"须同步（KLINE_RANGE
+   回归测试锁定新语义）。若实测发现改造成本不可控，可退回②（保持现状+文档声明），但必须在回填中说明
+   理由，不能悄悄选。
+3. 不改 checkPendingOrders 触发逻辑本身（范围检查保持，§3.4 局限 1a 已接受）。
+测试（§4.3 前 4 例）：TestFillRule_Limit_MarketOrderBecomesPending（same_bar_close 模式）/
+TestFillRule_Limit_PendingFillsOnBarTouch / TestFillRule_Limit_NextBarOpen_FillsSameBarAtOpen（退化行为
+锁定）/ TestFillRule_Limit_ExplicitPrice_WaitsForTouch。
+对抗证明：删转换行 → pending 空 → TestFillRule_Limit_MarketOrderBecomesPending 红；删 fill 分支
+commission 行 → commission 断言红。
+
+──────── Phase C【§2.2】OHLC_PATH ────────
+文件：backend/strategy/backtest/engine.go（或新文件 sltp_path.go——engine.go 已 495 行，checkSLTPPath
+单独成文件优先，避免继续膨胀）+ 主循环 3 行切换（SimulationMode=="OHLC_PATH" 时替代 checkSLTP）。
+1. 路径构建：阳线 O→H→L→C、阴线 O→L→H→C（Close==Open 归阳线，注释说明）。
+2. 3 单调段区间包含检查（buy/sell 对称）；SL/TP 落不同段 → 先出现的段先触发；落同一段 → 距段起点
+   近者先触发；成交价=触发价。
+3. gap-at-open 保留：Open 已穿越 SL/TP → 成交价=Open（与现有 checkBuySLTP/checkSellSLTP 行为一致，
+   spec §2.2 修订 4）。
+4. checkPendingOrders 保持范围检查（§3.4 局限 1a，不扩范围）。
+测试（§4.3 后 7 例）：Buy_TPBeforeSL_BullishBar / Buy_SLBeforeTP_BearishBar / Sell_TPBeforeSL_BearishBar /
+SameSegment_NearerFirst / GapOpen_FillsAtOpen / NoHit / KlineRange_BehaviorUnchanged（回归：默认模式
+逐位不变）。
+对抗证明：删路径顺序判定改用 SL 优先 → TestOHLCPath_Buy_TPBeforeSL_BullishBar 红。
+
+──────── Phase D【§2.3 + §2.4】wire 改名 + 白名单 ────────
+文件：strategy_backtest_validate.go + exec_params_validation_test.go + proto/types 注释 + ExecutionAssumptions 注释
+1. 白名单校验（spec §2.4）：fill_rule ∈ {"",bar_close,market,limit}、simulation_mode ∈
+   {"",KLINE_RANGE,OHLC_PATH}、signal_timing ∈ {"",next_bar_open,same_bar_close}（顺带补齐）；
+   非法值 → invalid_argument，错误信息列合法值；"DATASET" 报错含"已更名 OHLC_PATH"提示。
+2. 测试翻转（原稿 + §8 审计补漏）：:118 RejectFillRuleLimit → 接受断言；:144 RejectSimulationModeDataset
+   → 拒绝+改名提示断言；**:383 CaseSensitiveFillRule → 翻转（"LIMIT" 大写现在必须被拒——白名单顺带修正
+   大小写 bug，测试同步改）；新增未知值拒绝测试。
+3. proto/types/ExecutionAssumptions 注释 DATASET→OHLC_PATH（spec §2.3，wire 值直接改名，无旧快照零成本）。
+对抗证明：删白名单 → "FOO" 静默走默认 → 未知值拒绝测试红。
+
+──────── Phase E【§4.2】前端 ────────
+文件：ExecutionAssumptionsSelectors.tsx（limit/DATASET 选项 enabled；DATASET value 改 "OHLC_PATH"）+
+BacktestParamsModal.tsx / useBacktestRunner.ts / strategyRuntime.ts / useStrategyWorkspaceState.ts
+（union 'DATASET'→'OHLC_PATH'）+ i18n（OHLC_PATH 显示名 "OHLC Path"/"K线路径模拟"；limit tooltip 说明
+§2.5 退化行为——next_bar_open 下 Price=0 的 market order 转 limit 同 bar open 即成交；same_bar_close 下
+可能永不成交）。
+对抗证明：改回 'DATASET' union → tsc --noEmit 红。
+
+【Gate（全部 Phase 完成才跑）】go build ./... + go test ./strategy/... + go test ./internal/connect/strategy/...
++ go test ./tools/mql2go/... + go run ./tools/check-file-lines --strict + cd frontend && npm run build
++ npx tsc --noEmit + npx vitest run。全部绿才回填。
+
+【红队自审（任务级 edge cases，任一不过回去处理，不带债交付）】
+- Phase A：live OpenedOrders 是否含 pending（双计风险，先核验再写死）；OrderSelect 索引越界不 panic；
+  OrderType 对 pending 四型映射不串；缓存一致性（事件内多调用）；KLINE_RANGE 原生 pending 路径回归。
+- Phase B：price=0→currentPrice 顺序（转换后仍生效）；next_bar_open 退化行为被测试锁定（同 bar open
+  成交）非静默；SL/TP 随转换保留；commission/margin 时点变化对 KLINE_RANGE 现有测试的影响（先跑回归
+  确认破坏面）。
+- Phase C：doji（Close==Open 归阳线）；SL/TP 恰在段边界（区间包含用 <=/>= 与现有 checkSLTP 一致）；
+  开仓于 bar 内（pending fill）的仓位同 bar SL/TP——局限 1a 接受，不扩范围；成交价恒为 SL/TP 价/Open
+  （无 spread 混入，fill_rule=limit 非 market）。
+- Phase D：空串合法（默认语义）；大小写敏感（"LIMIT"/"DATASET" 被拒）；错误信息可执行（列合法值）。
+- Phase E：TS union 全链改齐（5 文件，缺一 tsc 红）；i18n 5 语言 key 同步；退化行为 tooltip 必须写
+  （诚实性，spec §2.5）。
+- 克制：不改实盘路径；不扩 pending 路径精度（§3.4 局限 1a/2 已接受）；engine.go 超行数时优先新文件。
+- 测试数据确定性：固定 epoch，禁 time.Now()（spec 21 §10 Determinism Contract）。
+
+完工回填（不做 = 任务判失败）：
+1. tech-debt-registry.md FILL-SIM 条目（🟦open → ✅done 标日期）追加：真实根因/修复方式/对抗证明结果/
+   测试结果；若实际根因与 spec 假设不同如实写明。
+2. handover-audit-plan.md 变更日志加一行。
+3. commit（代码 + 测试 + docs 一并，message 含 FILL-SIM）。
+4. 不自宣告完成——标 ⚠️待 Claude 复审，等审计方实测（对抗证明会实测验证）。
 ```
