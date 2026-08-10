@@ -1,8 +1,10 @@
 # 施工 Spec：购买→实盘链路打通——调度运行时取码源修正 + 事件型会话化 + 订阅授权闸
 
+> **Status**: ✅ 已验收（2026-08-08 审计方实测，FEAT-1 全 7 任务 + ADR-0029 部署）— 变更日志见 `docs/audits/handover-audit-plan.md` 2026-08-08 行
+>
 > **涉及功能块**：`strategy-marketplace`（购买授权）+ `strategy-runtime`（实盘调度执行）+ `api-gateway`（schedule handler）
 >
-> 市场价值链的下一个断裂点：购买侧（钱、订阅记录、退款套利防护计数）已正常，但**部署→实盘运行这一段端到端不通**。退款套利防护（`refund.go:144` 把 `strategy_schedules` 当作"购买是否产生实盘部署"的判据）证明 schedule 就是购买→实盘的设计载体，而运行时无法把它跑起来。本 spec 修正调度运行时的三个缺陷，使已购买策略能真正在实盘执行，且源码永不下发前端（守"代码不出平台"承诺）。
+> 市场价值链的下一个断裂点：购买侧（钱、订阅记录、退款套利防护计数）已正常，但**部署→实盘运行这一段端到端不通**（本 spec 撰写时点的审计发现，2026-08-08 已全部修复验收）。退款套利防护（`refund.go:144` 把 `strategy_schedules` 当作"购买是否产生实盘部署"的判据）证明 schedule 就是购买→实盘的设计载体，而运行时无法把它跑起来。本 spec 修正调度运行时的三个缺陷，使已购买策略能真正在实盘执行，且源码永不下发前端（守"代码不出平台"承诺）。
 
 ---
 
@@ -51,6 +53,8 @@ cfg := LiveStrategyConfig{ ..., Code: tpl.CodeSkeleton, ... }
 ### 验证结论
 
 **购买侧 ✅ 正常；部署→运行侧 ❌ 端到端不通。** 不是市场模块的 bug，是 `strategy-runtime` 实盘调度对用户/市场策略从未真正实现。
+
+> ⚠️ 历史结论（spec 撰写时点 2026-08-06）。**2026-08-08 已全部修复并验收**：ARCH-3 取码源修正 + FEAT-1 事件型会话化/授权闸/配额闸 + ADR-0029，部署上线（`handover-audit-plan.md` 2026-08-08 行）。下方决策/任务为已完成实施的记录，非待办。
 
 ---
 
@@ -208,6 +212,6 @@ cfg := LiveStrategyConfig{ ..., Code: tpl.CodeSkeleton, ... }
 
 | ID | 项 | 为什么延期 | 触发时机 | 登记 |
 |----|----|-----------|---------|------|
-| **P1-MKT-1** | 多策略共账户（Magic Number 归因）→ 解开 Pro 档"20 实盘策略"容量 | **决策已定（2026-08-08）**：允许多策略共账户（决策 A）；**风控按 account 级聚合，不按策略**（决策 B——旧表述"按策略风控聚合"已废弃，改 magic 级会削弱安全）；magic 仅用于归因。**①-⑤ 已落地验收**（commit `e47ea7bb`：magic 打标 / close_all 隔离 / 多 session）；**step⑥ 归因闭环待施工**（trade_records.schedule_id 按 magic 回填），施工 spec 见 `docs/spec/multi-strategy-attribution-spec.md` | step⑥ 施工 | `GLM-master-task-list.md` P1-6 + `tech-debt-registry.md` ARCH-4 + memory |
-| **P2-MKT-2** | `ProtectedBacktestPanel`（买方受保护回测）取码/授权模式与本 spec 对齐 | 独立链路，本 spec 不碰；但取码+授权应一致，避免两套分叉 | 下次触及受保护回测代码时 | memory |
-| **ADR-0028 §7 对账** | §7"剩余"状态表与 commit `30668f64`（参数链 E2E）矛盾，需核对"端到端测试(参数链)"是否真闭环、并刷新 §7 | 文档漂移，非代码问题 | 下次触及 ADR-0028 时 | memory |
+| **P1-MKT-1** | 多策略共账户（Magic Number 归因）→ 解开 Pro 档"20 实盘策略"容量 | **决策已定（2026-08-08）**：允许多策略共账户（决策 A）；**风控按 account 级聚合，不按策略**（决策 B——旧表述"按策略风控聚合"已废弃，改 magic 级会削弱安全）；magic 仅用于归因。**①-⑥ 全 ✅ 已验收**（①-⑤ commit `e47ea7bb`：magic 打标 / close_all 隔离 / 多 session；**step⑥ 归因闭环 commit `00e5ccc1`**：`ResolveScheduleIDByMagic` account-scoped + 两份 orderRecordToTradeRecord 共享 helper 回填 schedule_id，2026-08-08 审计方验收），施工 spec 见 `docs/spec/multi-strategy-attribution-spec.md` | ✅ 已完成 | `tech-debt-registry.md` ARCH-4 + memory |
+| **P2-MKT-2** | `ProtectedBacktestPanel`（买方受保护回测）取码/授权模式与本 spec 对齐 | 独立链路，本 spec 不碰；但取码+授权应一致，避免两套分叉 | 下次触及受保护回测代码时 | memory（FEAT-3 roadmap） |
+| **ADR-0028 §7 对账** | §7"剩余"状态表与 commit `30668f64`（参数链 E2E）矛盾，需核对"端到端测试(参数链)"是否真闭环、并刷新 §7 | 文档漂移，非代码问题 | ✅ 已闭环（2026-08-10 每周对账核验）：§7 状态表已刷新（参数链 E2E 行 = ✅ done BT-6，含两遍编译根因 + 固定 epoch），`e2e_param_pipeline_test.go` 存在且 `makeE2EBars` 用固定 epoch（`e2e_test.go:262`），11 个修复 commit 全在，防线 A/统计类/lookahead/根治报告文件全在。§7 无漂移 | 已销账 |
