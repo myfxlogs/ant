@@ -24,6 +24,9 @@ type backtestContext struct {
 	// Multi-symbol support: extra symbol bar data and their current bar indices.
 	extraBars     map[string][]sdk.Bar
 	extraBarIndex map[string]int
+
+	// Log capture: MQL Print() output is collected here for test observability.
+	logs []string
 }
 
 func (c *backtestContext) Bars() sdk.BarSeries { return sdk.BarsToSlice(c.bars[:c.barIndex+1]) }
@@ -75,7 +78,7 @@ func (c *backtestContext) Broker() sdk.Broker           { return c.broker }
 func (c *backtestContext) Indicators() sdk.IndicatorSet { return c.ind }
 func (c *backtestContext) SetTimer(int)                 {}
 func (c *backtestContext) KillTimer()                   {}
-func (c *backtestContext) Log(string)                   {}
+func (c *backtestContext) Log(msg string)               { c.logs = append(c.logs, msg) }
 func (c *backtestContext) ServerTime() int64            { return c.currentBar.Timestamp }
 func (c *backtestContext) GoContext() context.Context   { return context.Background() }
 

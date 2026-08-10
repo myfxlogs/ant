@@ -258,3 +258,8 @@
   - **Gate**：go build ✅ / go test（backtest+strategy+mql2go+connect/strategy）✅ / check-file-lines 0🔴 ✅ / tsc 0 error ✅ / vite build ✅ / vitest 140/140 ✅。
   - **对抗证明**：whitelist validation 测试——删 whitelist check → unknown `fill_rule=FOO` 通过验证 → `TestValidateBacktestRequest_RejectUnknownFillRule` 必红。OHLC_PATH path check——删 `checkSLTPPath` 调用 → SL/TP 不触发 → path simulation 测试必红。
   - **⚠️待Claude复审**：修订 1（wire 值 `DATASET`→`OHLC_PATH` 改名）+ 修订 6（commission/margin 从下单时刻移至成交时刻）属设计层决策，spec 审计已标 ⚠️，施工已落地，待 Claude 独立复审。
+- 2026-08-10 **FILL-SIM 测试补强（审计方 2 阻塞级缺口修复）⚠️待复审**：
+  - **Gap ① 修复**（VM 级测试不可观测）：`engine_context.go` `Log()` 从空操作改为 `c.logs = append(c.logs, msg)`；`types.go` `Result` 加 `Logs []string` 字段；`engine.go` `Run()` 返回 `btCtx.logs`。新测试 `phase_a_vm_log_capture_test.go`（mql2go 包）：`TestPhaseA_VM_LogCapture_OrdersTotal` — MQL EA `Print("orders_total=", OrdersTotal())` → 断言 `result.Logs` 含 `"orders_total= 1"` + `"order_type= 2"`（OP_BUYLIMIT）；`TestPhaseA_VM_LogCapture_Adversarial` — 断言 `"pending_visible=true"`。**对抗证明**：删 `builtinOrdersTotal` 的 `+len(vm.cachedOrders)` 行 → `orders_total= 0` → 两测试必红（实测确认）。
+  - **Gap ② 修复**（主循环模式切换零覆盖）：新测试 `phase_de_mode_switch_test.go`（backtest 包）：`TestEngineRun_OHLCPath_vs_KlineRange_ModeSwitch` — 走完整 `engine.Run()` 路径，`signalStrategy` 带 SL/TP 在 bar 2 开仓（same_bar_close），bar 3 bullish bar 触发 SL/TP。双断言：OHLC_PATH → `ExitPrice=TP`（1.1110，segment 1 先触发）；KLINE_RANGE → `ExitPrice=SL`（1.0960，conservative SL 优先）；两模式 `FinalBalance` 不同。**对抗证明**：改主循环恒 `checkSLTP` → OHLC_PATH 模式 `ExitPrice=SL` → 测试必红（实测确认）。
+  - **Gate**：go build ✅ / go test（backtest+mql2go+connect/strategy）✅ / check-file-lines 0🔴 ✅。
+  - **⚠️待Claude复审**：审计方复核标 2 阻塞级缺口，施工方已补强测试，待 Claude 独立复测解除 ⚠️。

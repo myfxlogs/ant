@@ -55,6 +55,7 @@ type Result struct {
 	FinalBalance decimal.Decimal // realized balance at end (= broker.balance, excludes unrealized PnL)
 	StartedAt    time.Time
 	FinishedAt   time.Time
+	Logs         []string // captured MQL Print() output for test observability
 }
 
 // EquityPoint is a single point on the equity curve.

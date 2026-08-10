@@ -141,6 +141,7 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		FinalBalance: e.broker.balance,
 		StartedAt:    startedAt,
 		FinishedAt:   time.Now(),
+		Logs:         btCtx.logs,
 	}, nil
 }
 

@@ -17,6 +17,8 @@ type signalStrategy struct {
 	buyAtBar    int
 	closeAtBar  int
 	closeTicket int64
+	stopLoss    decimal.Decimal
+	takeProfit  decimal.Decimal
 }
 
 func (s *signalStrategy) OnInit(ctx sdk.Context) error                  { return nil }
@@ -25,9 +27,11 @@ func (s *signalStrategy) OnBar(ctx sdk.Context, tf string) (*sdk.Signal, error) 
 	s.barsSeen++
 	if s.buyAtBar > 0 && s.barsSeen == s.buyAtBar {
 		return &sdk.Signal{
-			Action: sdk.ActionBuy,
-			Symbol: ctx.Symbol(),
-			Volume: decimal.NewFromFloat(0.1),
+			Action:     sdk.ActionBuy,
+			Symbol:     ctx.Symbol(),
+			Volume:     decimal.NewFromFloat(0.1),
+			StopLoss:   s.stopLoss,
+			TakeProfit: s.takeProfit,
 		}, nil
 	}
 	if s.closeAtBar > 0 && s.barsSeen == s.closeAtBar && s.closeTicket > 0 {
