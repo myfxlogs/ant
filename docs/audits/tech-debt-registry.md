@@ -176,12 +176,54 @@
 
 | ID | 项 | 类别 | 详见 | 状态 |
 |----|----|------|------|------|
-| POST-1 | 前端 UX / 错误态 / 边界系统审计 | launch ❓ 维度 | `launch-readiness-assessment.md` §2 | 🟦open |
+| POST-1 | 前端 UX / 错误态 / 边界系统审计（**2026-08-10 审计产出完成 ✅**，🔴 修复待施工 🟦）| launch ❓ 维度 | `launch-readiness-assessment.md` §2 + `strategy-review-followup-spec.md` Part C | ✅ 审计完成（2026-08-10）；修复施工中，子项见下 |
 | POST-2 | 性能 / 容量压测（钱路径：下单 / 回测 / SSE） | launch ❓ 维度 | 同上 §2 + §4 | 🟦open |
 | POST-3 | ~~运维 runbook / oncall 手册~~ | ✅done（2026-08-10）：alerts.yml 引用的 12 个 runbook 占位文件全建（mthub 4 + md 5 + platform 3），零 404；real ops 内容 post-launch 补 | ✅ |
 | POST-4 | ~~依赖安全扫描~~ | ✅done（CI 覆盖）：`ci.yml` deadcode job 每次 push 自动跑 `govulncheck`；本地跑导致服务器 OOM 不再重复 | ✅ |
 | POST-5 | agent 重构阶段 2 **收窄**（plan 驱动升级 + 语义追问；流式/收敛安全网/Apply 已 ✅）| agent 增强 | `docs/spec/agent-rebuild-completion-spec.md`（收尾 spec，2026-08-10）| ⚠️待Claude复审（2026-08-10 施工完成：`PlanTracker` interface + `generateState` plan methods + agent loop step guidance + 5 locale prompt 重写 + 18 对抗证明测试绿。等审计方实测翻 ✅）→ **✅done 审计方实测（2026-08-10）**：plan 驱动硬验证（`agent_loop.go:27 PlanTracker` interface + `:165-175` step guidance 注入"Plan progress X/Y, Focus ONLY on this step"+ `generator_agent.go:78 SetPlanTracker` 接线 + 9 plan 测试）；语义追问规则文件在（`internal/ai/clarification.go`+`strategy_prompt.go`+`locale_agent_zh.go`+migration 131）；Apply 切 tab 已在（`WorkspaceCenterColumn.tsx:163 setCenterTab('code')`）。build+agent/connect-ai test 绿。**残留(低，prompt 软验证)**：`clarification.go` 是"vague input→别过度追问用默认"逻辑，与 §3.5"语义性歧义必须问"是两层（vague vs detailed-but-ambiguous），需实跑确认不冲突——LLM-prompt 类 inherently 软验证，建议有真实对话后观察是否对"200倍单位/1h vs 4H"这类语义歧义真追问 |
 | POST-6 | ~~agent 重构阶段 3（SDK 多时间框架 / 语义压缩）~~ | ✅done（2026-08-10 审计方实测）：`BarsForSymbol(symbol,timeframe)`+`BarsTF`+VM builtin `vm_builtin_market.go:163` 真接通（旗舰 4H+1H+5M blocker 已解）；`compressContext`(`agent_loop.go:85`) 语义压缩在。非空壳 | ✅ |
+
+**POST-1 UX 审计发现清单（2026-08-10 审计方 3 agent 并行静态扫描 5 大流 + 逐条代码验证；每流 ≥3 发现；标注"确认"=静态可确定性推导，"疑似"=需真机体验核验）**：
+
+**🔴P0（线上事故，已修 ✅）**：
+- **UX-P0 分享页 `/share/:token` 白屏**：`SharePerformancePage.tsx:228` 引用未声明 `trades`（git blame：`5fc5a69e` lint 拆分删 `const trades = data.trades || []` 留引用；build=`vite build` 无 tsc 不拦截 → 已上线渲染即 `ReferenceError` → React 整树卸载，公开战绩分享页全不可用）。**✅ 2026-08-10 审计方直接修复**（audit-live1 先例：线上事故+一行修复不值 round-trip）：`const trades = data.trades ?? []` @:105。**对抗证明**：`npx tsc -p tsconfig.app.json --noEmit` 修复前 `(228,32) error TS2304: Cannot find name 'trades'` 实报 → 修复后归零；删该行必重现。`npm run build` 绿。**机制性根因（另列）**：build 无类型检查，657 个存量 TS 错误（含本 P0）全部绕过——建议 `tsc -p tsconfig.app.json` 入 build/CI（阻断级，见 UX-8）
+
+**🔴阻断级（7 条，待施工，出 fix-spec 指引）**：
+- **UX-1 衰减徽章从未渲染**：proto 有 `decay_status`（`marketplace_service.proto:219`）+ 5 语言 i18n key 齐全，但 `StrategyMarketCard`/`StrategyDetailModal`/分享页零消费（`grep decayStatus` 除 gen 零命中）——产品可信度核心元素对买家完全不可见，衰减检测只存在于作者专属 OptimizationTab。建议：卡片/详情/分享页渲染徽章（正常/衰减中/已衰减）+ 散户解释文案
+- **UX-2 实盘战绩接口失败静默伪装"无数据"**：`LivePerformanceTab.tsx:66-68` `catch { setPoints([]); setSummary(null); }`——用户分不清"无实盘"与"接口挂了"。建议：独立 error 状态 + 重试
+- **UX-3 客户端筛选+服务端分页 → 总数错+必现空页**：`useMarketplace.ts:60-68` priceFilter 客户端过滤但 total 用未过滤结果估算 + `MarketTab.tsx:48` `empty={length===0}`——选"free"后第 2 页必空，用户误以为市场空了。建议：priceFilter 传后端或按过滤后数量算 total + 禁空页跳转
+- **UX-4 移动端回测结果完全不可见**：`BottomPanelSection.tsx:30` `if (isMobile) return null` + 结果面板只在桌面分支渲染——手机跑完回测只剩 toast。建议：移动端结果 Drawer/页签复用 BacktestResultsTab
+- **UX-5 AI Fix 主路径静默失败**：`useAIFix.tsx:77-81` strategyId 空时 `setDiffOpen(false)` 静默丢弃 diff；而手写代码+保存的新策略恰无 strategyId（只有 ImportEA 路径会设）。建议：空时禁用 Apply + 提示"先保存"或回退"仅更新编辑器"
+- **UX-6 实盘 SSE 断流伪装"无策略"**：`LiveStrategyPage.tsx:39-49` catch 清空列表无重连（对比 LiveSchedulesTab 有 2s 重连）——如实盘有单会显示空表。建议：保留旧数据 + 断线横幅 + 重试
+- **UX-7 4 个公开路由无 ErrorBoundary/Suspense**：`AppRoutes.tsx:173-188` SharePerformancePage/LandingPage/BrokersPage/StrategySharePage 裸 lazy 挂载（private/admin 才包 PageWrapper）——UX-P0 崩溃即此缺口后果。建议：统一 `wrap()` 或 App 级 ErrorBoundary
+- **UX-8 机制性根因：build 无类型检查（阻断级，防 UX-P0 类回归）**：`package.json` build=`vite build`（无 `tsc`），657 个存量 TS 错误全绕过——UX-P0 即因此上线。修复：`tsc -p tsconfig.app.json --noEmit` 入 build/CI 阻断（清 657 存量错误为施工方机械任务，逐条修类型；对抗证明：UX-P0 修复前 tsc 必红，清零后 tsc 绿）
+
+**🟡 显著摩擦（20 条）**：
+- **i18n 大缺口（机械可清，工具 `scripts/check-i18n-keys.ts` 已实证 89 条）**：zh-cn 自己 `menu.strategyLive` 缺 key（MainLayout:47 落英文 "Live Monitor"）；zh-tw/ja/vi 缺 `common.active/inactive/submit`+`subscription.planName.*`+`feedback.*`+`credit.*`；**ja/vi 整个 `strategy_import.ts` 文件未 import**；`sharePage.*` 29 key 5 语言全缺（分享页修复 UX-P0 后将显示原始 key）；`diagnostic.*`+aiFix ~30 key 全缺（`suggestionLabel` defaultValue 是中文"建议"——英文用户见中文）；subscription 28 key 全缺；`marketplace.seoTitle/seoDesc`+`common.retry` 缺（公开页 title 显示原始 key）。**机制性根因**：`check-i18n-keys.ts` 只查 en→locale，不查代码→en。建议：补全 + 双向检查入 CI
+- **StrategySharePage（`/strategy/:id`）全页硬编码英文**：priceLabel/Subscribers/Rating/Sharpe/Tracking since/Sign Up 等 ~10 处无 t()（公开 SEO 页 5 语言用户全见英文）；固定 `Col span={6}` 手机 4 列挤压；"Backtest Return" 与实盘同级无"回测≠实盘"标注。建议：全量 i18n + 响应式 + 信任标注
+- **原始报错串直出用户**：`MarketTab.tsx:46`+`BundleTab`+`OptimizationTab` 7 处 + 分享页 `e.message` 直接展示（ConnectRPC 原始 message）。建议：友好标题 + 错误码 i18n
+- **错误分支英文串匹配**：`SubscriptionPage.tsx:44-46,75-77` `msg.includes('insufficient balance')`——后端本地化后匹配失效，余额不足提示丢失。建议：proto 错误码
+- **Leaderboard 无 loading/错误态 + 行不可点击**：`LeaderboardTab.tsx:26-36,121-128` fetch 失败静默空表；榜单是死胡同（无法进详情/购买）。建议：StatusResult 包裹 + onRow 打开详情
+- **诊断面板静默开关无即时效果**：`DiagnosticPanel.tsx:99,121-124` `silenced` 用 useMemo 一次性加载、toggle 只写 localStorage 无 setState——拨动后行不消失，用户以为开关坏了。建议：toggle 更新 state
+- **auto-trading 错误横幅死代码**：`useAutoTradingSettings.ts:21-31` 三个 Promise 各自 catch 吞错 → 外层 catch 永不触发；后端全挂时显示硬编码默认值无任何提示。建议：任一失败即 setError
+- **回测失败旧数据显示在 error 标签下**：`useBacktestRunner.ts:217-220` catch 只 setStatus 不清 metrics——旧结果易误读为本次。建议：error 态清空或标注"上次运行"
+- **实盘历史/loadRunById/checkCode/信号流 4 处静默失败**：`LiveStrategyPage.tsx:24-33` catch setRuns([])（API 失败=空表）；`useBacktestRunner.ts:266` catch 空（点击历史条目无反馈）；`CodeEditorArea.tsx:64-66` checkCode 失败回 idle（"审计服务不可用"无提示）；`LiveStrategyPage.tsx:85-89` 信号流断流静默（疑似：需后端事件语义区分正常停止）
+- **登录丢来源页 + landing 无登录入口**：`useAuth.ts:20` 硬编码 `navigate('/')` 无 `state.from` 记忆；LandingPage grep "login" 零命中——用户从公开策略页点 Sign Up → 注册后找不到原策略；落地页老用户找不到登录。建议：redirect 记忆 + landing 加 Sign In
+- **landing 未传达核心定位**：hero 仅"AI-Powered MT4/MT5 Strategy Platform"，全文无"战绩公开可验证/代码不出平台"差异化价值主张（疑似：文案判断，缺失事实可验证）
+- **BrokersPage 英文 + "30+" 口径失真 + 双源**：整页硬编码英文；恰 30 条静态列表（FXCM 仅 MT4），"30+" 不实；与后端经纪商库双源。建议：i18n + 口径核对 + 后端读取
+- **订阅确认不显示扣款金额**：`SubscriptionPage.tsx:205-233` Modal 只有 billingCycle Radio + "您的钱包将被扣款"，无所选套餐金额。建议：Modal 显示应付金额
+- **成交表 5 列头硬编码英文**：`BacktestResultsTab.tsx:221-240` Ticket/Open Time/Close Time/Commission/Reason（同表其他列均 t()）
+- **指标无解释**：`StrategyDetailModal:130-143`+`StrategyMarketCard:99-116` winRate/totalPnl 裸数字无"实盘战绩如何验证"说明；`BacktestMetricCards` 无 tooltip（Sharpe/回撤对散户不友好）。建议：KPI tooltip + 实盘信任说明
+- **PaperAccountPanel 死组件**：`components/paper/` 零挂载（无路由无 import），i18n strategy_paper.ts 齐全无消费者。建议：挂载或删
+- **Market/Trading 死路由**：`pages/market/Market.tsx`+`pages/trading/Trading.tsx` 零 import（连带 AccountSummaryCard/PositionsTable/PlaceOrderForm/OrderHistoryTable 成死代码）——品种行情/手动交易整棵不可达（CQ-9 关联，后端已删）。建议：确认 descoped 则删
+- **分享页 404 与网络错误混淆**（2 处）：`SharePerformancePage.tsx:84`+`StrategySharePage.tsx:37-43` loadFailed 与 notFound 同一渲染分支。建议：区分 + 重试
+
+**🟢 轻微（16 条）**：
+- CompareModal 对比上限 4 个静默拒绝（`:145-147`）+ fetch 无 loading/error；硬编码 `$` 货币符号 6 组件无千分位；分页 `showTotal` 硬编码英文（参数名 t 遮蔽 i18n t）；搜索无防抖（每键一请求）；讨论区拉取失败静默 + 3 toast key 缺；详情/卡片 pnl 正负号展示不一致；Author 统计 0 值闪烁；订阅 plans 失败静默"无套餐"；`currentSub.status`/billingCycle 原始值直出；取消自动续费无二次确认（疑似：误触频率）；分享页固定 `Col span={6}`（响应式存疑）；`MT session lost` 硬编码英文；`throw new Error('No run ID')` 裸英文；AI 聊天会话列表 catch 空；降级通知 `description: ''` 空描述；`Login.tsx:73` 类名 `text中心` 拼写错误（应为 text-center）；分享页进度条 `winPct` 前端重算 vs 后端 winRate 口径（疑似：口径一致则无感）；KPI `toLocaleString('en')` 硬编码 locale；ForgotPassword 防枚举与可用性权衡（疑似）
+
+**对抗点专项核验（通过）**：DiagnosticPanel fatal 级盲区不可静默 ✅（Switch 只在 warning 分组）；AI Fix 有 loading+错误态 ✅。**零信任专项**：分享页 KPI 全部后端权威（FE-TRUST-1 后无回归）；唯一存疑=winPct 进度条前端重算（口径待核，🟢）
+
+**🔴 fix-spec 指引**：UX-1 衰减徽章（产品核心）→ `docs/spec/` 出 fix-spec；UX-2~7 → 合一批 fix-spec 或随施工方 batch；UX-8（tsc 入 CI）→ 建议立即做（防 UX-P0 类回归）。🟡 i18n 大缺口 → `check-i18n-keys.ts` 双向检查 + 补 key（机械，施工方）
 
 ---
 
