@@ -92,6 +92,7 @@ EXEC-PARAMS 已实现 3 个执行参数的端到端接线，其中 5 个合法�
 - Buy 仓位：段区间覆盖 SL（向下穿越）→ 触发 SL；段区间覆盖 TP（向上穿越）→ 触发 TP。Sell 对称
 - **SL 和 TP 落入不同段**：先出现的段先触发（确定性，非猜测）
 - **SL 和 TP 落入同一段**：段内价格单调，**距段起点近者先触发**（上行段先触较低价位，下行段先触较高价位）
+  - ⚠️ **防御性标注（2026-08-10 评审确认）**：对**合法 SL/TP 配置**（buy: `SL < entry < TP`；sell 对称）此场景**不可达**——SL 只由向下穿越触发、TP 只由向上穿越触发，单调段只含单一方向，二者不可能同段。同段规则仅为非法配置兜底（EA 可经 `PositionModify`/`OrderSend` 设置反向 SL/TP，SimBroker 不校验合法性，`broker.go:327-336` 仅赋值）：**实现为防御性代码，不承担合法性校验**。测试须用非法 SL/TP 构造（见 §4.3 `TestOHLCPath_SameSegment_NearerFirst`），注释标明"防御性，合法 SL/TP 不可达"
 - 成交价 = 触发价
 - **gap-at-open 语义保留**（复审修订 4）：路径首点为 Open。若 Open 已穿越 SL/TP（开盘跳空），成交价 = **Open 价**而非 SL/TP 价——与现有 `checkBuySLTP`/`checkSellSLTP`（`engine.go:316-320,334-339`）行为一致。缺此边界会比 KLINE_RANGE 更失真
 
@@ -204,7 +205,7 @@ OHLC_PATH 相比 KLINE_RANGE 的核心改进：从"SL 永远优先"的保守猜�
 1. `builtinOrdersTotal`：`len(Positions) + len(Orders)`（MQL4 `OrdersTotal` 含 market + pending；live 路径 `brokerImpl.Orders` → `executor.PendingOrders` 已具备）
 2. `builtinOrderSelect` MODE_TRADES：positions 之后追加 pending 索引段（SELECT_BY_POS / SELECT_BY_TICKET 均含 pending）
 3. `builtinOrderType`：pending 订单返回 OP_BUYLIMIT=2 / OP_SELLLIMIT=3 / OP_BUYSTOP=4 / OP_SELLSTOP=5（按 `OrderType` 映射，非 `Side`）
-4. `SimBroker.PositionModify`：追加 pending 扫描段（改 SL/TP；price 改价按 §6.4 决策一并处理，`builtinOrderModify` 需接 args[1]）
+4. `SimBroker.PositionModify`：追加 pending 扫描段，支持**改 SL/TP** 与**改价**两语义——MQL4 `OrderModify(ticket, price, sl, tp)` 的 `args[1]`（price）在 MT4 中仅对 pending 单有意义（= 挂单价），对已开仓位该参数被原生忽略；`builtinOrderModify` 需接住 `args[1]` 并映射为 `pending.Price`（§6.4 为 commission/margin 时点决策，与改价无关，无交叉引用）
 5. 缓存语义：pending 列表随 `cachedPositions` 同步缓存/失效（`OrdersTotal` 在事件内多次调用的一致性）
 
 **验收**：MQL4 语义测试——EA 下 OP_BUYLIMIT 后 `OrdersTotal()`==1、`OrderSelect(0,MODE_TRADES)` 成功且 `OrderType()`==2、`OrderModify` 对 pending 成功、成交后 `OrdersTotal()` 回落。
@@ -245,7 +246,7 @@ OHLC_PATH 相比 KLINE_RANGE 的核心改进：从"SL 永远优先"的保守猜�
 | `TestOHLCPath_Buy_TPBeforeSL_BullishBar` | 阳线 O→H→L→C，TP 在 H 段、SL 在 L 段 → TP 先触发 → 验证路径顺序 |
 | `TestOHLCPath_Buy_SLBeforeTP_BearishBar` | 阴线 O→L→H→C，SL 在 L 段、TP 在 H 段 → SL 先触发 → 验证路径顺序 |
 | `TestOHLCPath_Sell_TPBeforeSL_BearishBar` | sell 仓位阴线路径检查 |
-| `TestOHLCPath_SameSegment_NearerFirst` | SL/TP 落同一单调段 → 距段起点近者先触发（§2.2 同段规则） |
+| `TestOHLCPath_SameSegment_NearerFirst` | **用非法 SL/TP 构造**（如 buy `SL>entry`，合法配置同段不可达，见 §2.2 防御性标注）：SL/TP 落同一单调段 → 距段起点近者先触发；注释标明"防御性，合法 SL/TP 不可达" |
 | `TestOHLCPath_GapOpen_FillsAtOpen` | Open 跳空穿越 SL → 成交价 = Open 非 SL（gap 语义，§2.2） |
 | `TestOHLCPath_NoHit` | SL/TP 都不在路径范围内 → 不触发 |
 | `TestKlineRange_BehaviorUnchanged` | KLINE_RANGE 回归：现有 checkSLTP 行为逐位不变 |
@@ -267,6 +268,7 @@ OHLC_PATH 相比 KLINE_RANGE 的核心改进：从"SL 永远优先"的保守猜�
 2. **`fill_rule=limit` 行为变化**：旧 run 的 `fill_rule=limit` 会被 API 拒绝（不会落盘到 config snapshot），所以无旧 run 受影响。
 3. **路径方向启发式**：O→H→L→C vs O→L→H→C 的判断基于 Close vs Open，不是真实路径。但这是业界标准启发式（MT4 客户端同样使用），可接受。
 4. **未成交 pending 的成本副作用（复审修订 6）**：`OrderSend` 在下单时即扣 commission（`broker.go:114`）+ 做保证金检查（`:127-132`）——对 pending 单是既有行为，但 `fill_rule=limit` 将**所有** market order 转 pending 后被放大：永不成交的单也被扣 commission。施工时二选一并记录：① commission 移至成交时刻（`checkPendingOrders` fill 分支）——更正确；② 保持现状 + 文档声明。倾向 ①（改动小且消除失真）。**红队自审补充**：保证金检查同样只在 `OrderSend`（`:127-132`），`checkPendingOrders` fill 分支零复检（`engine.go:304-309` 仅 append）——挂单多 bar 后成交时 equity 可能已不足。若选 ①，margin 须与 commission 同点复检（不足 → 撤单记 `RetNoMoney`），否则只修一半。
+   > **范围确认（2026-08-10 评审）**：决策①（及 margin 复检）适用于**全部 pending 单，含 EA 原生 `OP_BUYLIMIT/OP_BUYSTOP` 等**——非仅 `fill_rule=limit` 转换的单。理由：① 经济对象同一（都是未成交挂单），两种 commission 制度并存 = 更多复杂性与不一致；② 这是**实盘语义对齐**（真实 MT4：挂单不成交不收 commission，成仓（fill）时才按开仓扣；margin 同理在成交时占位），KLINE_RANGE 下原生挂单 EA 的"永不成交也扣 commission"是既有失真，修正是行为改进而非回归——已核实无现有测试锁定"下单即扣"语义。**回归注意**：KLINE_RANGE 原生挂单相关测试需补/改断言锁定新语义（永不成交 → 0 commission；成交 → fill bar 扣）。
 5. **VM MQL 语义核验（复审修订 7）→ 升级为必备前置修复（审计方 Claude Code 2026-08-10 实测，非"检查"）**：`fill_rule=limit` 将 market order 转 pending 后，VM 侧 `OrdersTotal`/`OrderSelect`/`OrderModify`/`OrderType` 的 MQL4 pending 语义必须成立，否则 EA 持仓管理逻辑静默错乱（违反 MQL 诚实性红线）。**实测当前实现**：
    - `builtinOrdersTotal`（`vm_builtin_trade.go:112-121`）只数 `Broker().Positions(0)`，**不含 pending**；
    - `builtinOrderSelect` MODE_TRADES（`:136-194`）只搜 positions，**选不到 pending**；

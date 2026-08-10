@@ -179,6 +179,9 @@ OrdersTotal() 回落；OrderDelete 对 pending 不回归（已支持）。
    而非回归）；已成交单在成交时刻扣（总额不变，时点变化）。现有测试若断言"下单即扣"须同步（KLINE_RANGE
    回归测试锁定新语义）。若实测发现改造成本不可控，可退回②（保持现状+文档声明），但必须在回填中说明
    理由，不能悄悄选。
+   📌 范围已确认（2026-08-10 评审）：适用于全部 pending（含原生 OP_BUYLIMIT），非仅 limit 转换单——
+   实盘语义对齐（真实 MT4 挂单不成仓不收 commission）。依据见 spec §6.4「范围确认」块；已核实无现有测试
+   锁定"下单即扣"。
 3. 不改 checkPendingOrders 触发逻辑本身（范围检查保持，§3.4 局限 1a 已接受）。
 测试（§4.3 前 4 例）：TestFillRule_Limit_MarketOrderBecomesPending（same_bar_close 模式）/
 TestFillRule_Limit_PendingFillsOnBarTouch / TestFillRule_Limit_NextBarOpen_FillsSameBarAtOpen（退化行为
