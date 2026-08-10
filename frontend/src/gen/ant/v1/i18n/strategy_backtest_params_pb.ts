@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_backtest_params.proto.
  */
 export const file_i18n_strategy_backtest_params: GenFile = /*@__PURE__*/
-  fileDesc("CiNpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0X3BhcmFtcy5wcm90bxILYW50LnYxLmkxOG4iqAcKEkJhY2t0ZXN0UGFyYW1zSTE4bhIXCg9iYWNrdGVzdF9mYWlsZWQYASABKAkSDAoEYm90aBgCIAEoCRIPCgdjYXBpdGFsGAMgASgJEhIKCmNvbW1pc3Npb24YBCABKAkSFQoNY3VycmVudF9kcmFmdBgFIAEoCRISCgpkYXRlX3JhbmdlGAYgASgJEhcKD2RlZmF1bHRzX2xvYWRlZBgHIAEoCRIWCg5kZWZhdWx0c19yZXNldBgIIAEoCRIWCg5kZWZhdWx0c19zYXZlZBgJIAEoCRIRCglkaXJlY3Rpb24YCiABKAkSEAoIZW5kX2RhdGUYCyABKAkSHQoVZW50ZXJfY29kZV9hbmRfc3ltYm9sGAwgASgJEhkKEWV2ZW50X2RyaXZlbl9tb2RlGA0gASgJEhEKCWV4ZWN1dGlvbhgOIAEoCRIPCgdoaXN0b3J5GA8gASgJEhAKCGxldmVyYWdlGBAgASgJEhAKCGxvdF9zaXplGCYgASgJEgwKBGxvbmcYESABKAkSGwoTcHJlc2V0c19leHBsb3JhdGlvbhgSIAEoCRIcChRwcmVzZXRzX2xpdmVfYWxpZ25lZBgTIAEoCRILCgNydW4YFCABKAkSFAoMcnVudGltZV9tb2RlGBUgASgJEhUKDXNldHRpbmdzX2xvYWQYFiABKAkSFgoOc2V0dGluZ3NfcmVzZXQYFyABKAkSFQoNc2V0dGluZ3Nfc2F2ZRgYIAEoCRINCgVzaG9ydBgZIAEoCRIQCghzdHJhdGVneRgpIAEoCRIXCg9zdHJhdGVneV9wYXJhbXMYKiABKAkSEAoIc2xpcHBhZ2UYGiABKAkSEgoKc3RhcnRfZGF0ZRgbIAEoCRITCgtzdHJpY3RfbW9kZRgcIAEoCRIXCg9zdHJpY3RfbW9kZV9vZmYYHSABKAkSHAoUc3RyaWN0X21vZGVfb2ZmX2Rlc2MYHiABKAkSHwoXc3RyaWN0X21vZGVfb2ZmX3Rvb2x0aXAYHyABKAkSFgoOc3RyaWN0X21vZGVfb24YICABKAkSGwoTc3RyaWN0X21vZGVfb25fZGVzYxghIAEoCRIeChZzdHJpY3RfbW9kZV9vbl90b29sdGlwGCIgASgJEg0KBXRpdGxlGCMgASgJEg0KBXRyYWRlGCQgASgJEhcKD3ZlY3Rvcml6ZWRfbW9kZRglIAEoCRITCgtjbG9zZV9wcmljZRgxIAEoCRILCgNwbmwYMiABKAlCIlogYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("CiNpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0X3BhcmFtcy5wcm90bxILYW50LnYxLmkxOG4i+wgKEkJhY2t0ZXN0UGFyYW1zSTE4bhIXCg9iYWNrdGVzdF9mYWlsZWQYASABKAkSDAoEYm90aBgCIAEoCRIPCgdjYXBpdGFsGAMgASgJEhIKCmNvbW1pc3Npb24YBCABKAkSFQoNY3VycmVudF9kcmFmdBgFIAEoCRISCgpkYXRlX3JhbmdlGAYgASgJEhcKD2RlZmF1bHRzX2xvYWRlZBgHIAEoCRIWCg5kZWZhdWx0c19yZXNldBgIIAEoCRIWCg5kZWZhdWx0c19zYXZlZBgJIAEoCRIRCglkaXJlY3Rpb24YCiABKAkSEAoIZW5kX2RhdGUYCyABKAkSHQoVZW50ZXJfY29kZV9hbmRfc3ltYm9sGAwgASgJEhkKEWV2ZW50X2RyaXZlbl9tb2RlGA0gASgJEhEKCWV4ZWN1dGlvbhgOIAEoCRIPCgdoaXN0b3J5GA8gASgJEhAKCGxldmVyYWdlGBAgASgJEhAKCGxvdF9zaXplGCYgASgJEgwKBGxvbmcYESABKAkSGwoTcHJlc2V0c19leHBsb3JhdGlvbhgSIAEoCRIcChRwcmVzZXRzX2xpdmVfYWxpZ25lZBgTIAEoCRILCgNydW4YFCABKAkSFAoMcnVudGltZV9tb2RlGBUgASgJEhUKDXNldHRpbmdzX2xvYWQYFiABKAkSFgoOc2V0dGluZ3NfcmVzZXQYFyABKAkSFQoNc2V0dGluZ3Nfc2F2ZRgYIAEoCRINCgVzaG9ydBgZIAEoCRIQCghzdHJhdGVneRgpIAEoCRIXCg9zdHJhdGVneV9wYXJhbXMYKiABKAkSEAoIc2xpcHBhZ2UYGiABKAkSEgoKc3RhcnRfZGF0ZRgbIAEoCRITCgtzdHJpY3RfbW9kZRgcIAEoCRIXCg9zdHJpY3RfbW9kZV9vZmYYHSABKAkSHAoUc3RyaWN0X21vZGVfb2ZmX2Rlc2MYHiABKAkSHwoXc3RyaWN0X21vZGVfb2ZmX3Rvb2x0aXAYHyABKAkSFgoOc3RyaWN0X21vZGVfb24YICABKAkSGwoTc3RyaWN0X21vZGVfb25fZGVzYxghIAEoCRIeChZzdHJpY3RfbW9kZV9vbl90b29sdGlwGCIgASgJEg0KBXRpdGxlGCMgASgJEg0KBXRyYWRlGCQgASgJEhcKD3ZlY3Rvcml6ZWRfbW9kZRglIAEoCRITCgtjbG9zZV9wcmljZRgxIAEoCRILCgNwbmwYMiABKAkSDwoHbXRfbGl2ZRgzIAEoCRISCgptdF9kYXRhc2V0GDQgASgJEhUKDW5leHRfYmFyX29wZW4YNSABKAkSFgoOc2FtZV9iYXJfY2xvc2UYNiABKAkSEwoLZXhlY19tYXJrZXQYNyABKAkSEgoKZXhlY19saW1pdBg4IAEoCRIRCgl0aW1lZnJhbWUYOSABKAkSFQoNc2lnbmFsX3RpbWluZxg6IAEoCRIRCglmaWxsX3J1bGUYOyABKAkSFwoPc2ltdWxhdGlvbl9tb2RlGDwgASgJQiJaIGFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.i18n.BacktestParamsI18n
@@ -309,6 +309,76 @@ export type BacktestParamsI18n = Message<"ant.v1.i18n.BacktestParamsI18n"> & {
    * @generated from field: string pnl = 50;
    */
   pnl: string;
+
+  /**
+   * MT Live
+   *
+   * @generated from field: string mt_live = 51;
+   */
+  mtLive: string;
+
+  /**
+   * Dataset
+   *
+   * @generated from field: string mt_dataset = 52;
+   */
+  mtDataset: string;
+
+  /**
+   * Next Bar Open
+   *
+   * @generated from field: string next_bar_open = 53;
+   */
+  nextBarOpen: string;
+
+  /**
+   * Same Bar Close
+   *
+   * @generated from field: string same_bar_close = 54;
+   */
+  sameBarClose: string;
+
+  /**
+   * Market
+   *
+   * @generated from field: string exec_market = 55;
+   */
+  execMarket: string;
+
+  /**
+   * Limit
+   *
+   * @generated from field: string exec_limit = 56;
+   */
+  execLimit: string;
+
+  /**
+   * Timeframe
+   *
+   * @generated from field: string timeframe = 57;
+   */
+  timeframe: string;
+
+  /**
+   * Signal Timing
+   *
+   * @generated from field: string signal_timing = 58;
+   */
+  signalTiming: string;
+
+  /**
+   * Fill Rule
+   *
+   * @generated from field: string fill_rule = 59;
+   */
+  fillRule: string;
+
+  /**
+   * Simulation Mode
+   *
+   * @generated from field: string simulation_mode = 60;
+   */
+  simulationMode: string;
 };
 
 /**

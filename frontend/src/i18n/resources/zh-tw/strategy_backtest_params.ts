@@ -47,7 +47,17 @@ const StrategyBacktestParams = {
       "vectorizedMode": "向量化",
       "closePrice": "平倉價",
       "pnl": "盈虧",
-      "more": "更多"
+      "more": "更多",
+      "mtLive": "MT 即時",
+      "mtDataset": "資料集",
+      "nextBarOpen": "次根K線開盤",
+      "sameBarClose": "同根K線收盤",
+      "execMarket": "市價",
+      "execLimit": "限價",
+      "timeframe": "週期",
+      "signalTiming": "訊號時機",
+      "fillRule": "成交規則",
+      "simulationMode": "模式"
     }
   }
 } as const;

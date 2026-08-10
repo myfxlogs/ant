@@ -137,6 +137,22 @@ func klinesToBars(klines []*antv1.ExecuteKlineBar) []sdk.Bar {
 }
 
 func (s *StrategyExecutionServer) buildBacktestConfig(params backtestParams, run *repository.BacktestRun) backtest.Config {
+	signalTiming := params.signalTiming
+	if signalTiming == "" {
+		if params.strictMode {
+			signalTiming = "next_bar_open"
+		} else {
+			signalTiming = "same_bar_close"
+		}
+	}
+	fillRule := params.fillRule
+	if fillRule == "" {
+		fillRule = "bar_close"
+	}
+	simulationMode := params.simulationMode
+	if simulationMode == "" {
+		simulationMode = "KLINE_RANGE"
+	}
 	cfg := backtest.Config{
 		Symbol:         run.Symbol,
 		Timeframe:      run.Timeframe,
@@ -145,7 +161,10 @@ func (s *StrategyExecutionServer) buildBacktestConfig(params backtestParams, run
 		Commission:     parseDecimal(params.commission),
 		Slippage:       parseDecimal(params.slippage),
 		SwapRate:       decimal.NewFromFloat(0.00001),
-		StrictMode:     params.strictMode,
+		StrictMode:     signalTiming == "next_bar_open",
+		SignalTiming:   signalTiming,
+		FillRule:       fillRule,
+		SimulationMode: simulationMode,
 		Params:         paramsProtoToMap(run.ParameterOverrides),
 	}
 	if params.swapRate != "" {
@@ -307,19 +326,13 @@ func buildBacktestResponse(result *backtest.Result, cfg backtest.Config, params 
 	}
 
 	resp.ExecutionAssumptions = &antv1.ExecutionAssumptions{
-		SimulationMode:   "KLINE_RANGE",
-		SignalTiming:     "next_bar_open",
-		FillRule:         "bar_close",
+		SimulationMode:   cfg.SimulationMode,
+		SignalTiming:     cfg.SignalTiming,
+		FillRule:         cfg.FillRule,
 		ActualCommission: cfg.Commission.String(),
 		ActualSlippage:   cfg.Slippage.String(),
 		ActualLeverage:   fmt.Sprintf("%d", cfg.Leverage),
 		TradeDirection:   tradeDirectionToString(params.tradeDir),
-	}
-	if cfg.StrictMode {
-		resp.ExecutionAssumptions.SignalTiming = "next_bar_open"
-	} else {
-		resp.ExecutionAssumptions.SignalTiming = "same_bar_close"
-		resp.ExecutionAssumptions.MtfFallbackReason = "strict_mode disabled"
 	}
 
 	resp.Risk = assessRisk(result.Metrics)

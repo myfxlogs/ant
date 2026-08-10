@@ -47,7 +47,17 @@ const StrategyBacktestParams = {
       "vectorizedMode": "Vectorized",
       "closePrice": "Close",
       "pnl": "PnL",
-      "more": "more"
+      "more": "more",
+      "mtLive": "MT Live",
+      "mtDataset": "Dataset",
+      "nextBarOpen": "Next Bar Open",
+      "sameBarClose": "Same Bar Close",
+      "execMarket": "Market",
+      "execLimit": "Limit",
+      "timeframe": "Timeframe",
+      "signalTiming": "Signal Timing",
+      "fillRule": "Fill Rule",
+      "simulationMode": "Simulation Mode"
     }
   }
 } as const;

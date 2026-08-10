@@ -65,6 +65,16 @@ type BacktestParamsI18N struct {
 	VectorizedMode       string                 `protobuf:"bytes,37,opt,name=vectorized_mode,json=vectorizedMode,proto3" json:"vectorized_mode,omitempty"`                       // Vectorized
 	ClosePrice           string                 `protobuf:"bytes,49,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`                                   // Close price
 	Pnl                  string                 `protobuf:"bytes,50,opt,name=pnl,proto3" json:"pnl,omitempty"`                                                                   // PnL
+	MtLive               string                 `protobuf:"bytes,51,opt,name=mt_live,json=mtLive,proto3" json:"mt_live,omitempty"`                                               // MT Live
+	MtDataset            string                 `protobuf:"bytes,52,opt,name=mt_dataset,json=mtDataset,proto3" json:"mt_dataset,omitempty"`                                      // Dataset
+	NextBarOpen          string                 `protobuf:"bytes,53,opt,name=next_bar_open,json=nextBarOpen,proto3" json:"next_bar_open,omitempty"`                              // Next Bar Open
+	SameBarClose         string                 `protobuf:"bytes,54,opt,name=same_bar_close,json=sameBarClose,proto3" json:"same_bar_close,omitempty"`                           // Same Bar Close
+	ExecMarket           string                 `protobuf:"bytes,55,opt,name=exec_market,json=execMarket,proto3" json:"exec_market,omitempty"`                                   // Market
+	ExecLimit            string                 `protobuf:"bytes,56,opt,name=exec_limit,json=execLimit,proto3" json:"exec_limit,omitempty"`                                      // Limit
+	Timeframe            string                 `protobuf:"bytes,57,opt,name=timeframe,proto3" json:"timeframe,omitempty"`                                                       // Timeframe
+	SignalTiming         string                 `protobuf:"bytes,58,opt,name=signal_timing,json=signalTiming,proto3" json:"signal_timing,omitempty"`                             // Signal Timing
+	FillRule             string                 `protobuf:"bytes,59,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                                         // Fill Rule
+	SimulationMode       string                 `protobuf:"bytes,60,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`                       // Simulation Mode
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -393,11 +403,81 @@ func (x *BacktestParamsI18N) GetPnl() string {
 	return ""
 }
 
+func (x *BacktestParamsI18N) GetMtLive() string {
+	if x != nil {
+		return x.MtLive
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetMtDataset() string {
+	if x != nil {
+		return x.MtDataset
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetNextBarOpen() string {
+	if x != nil {
+		return x.NextBarOpen
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetSameBarClose() string {
+	if x != nil {
+		return x.SameBarClose
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetExecMarket() string {
+	if x != nil {
+		return x.ExecMarket
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetExecLimit() string {
+	if x != nil {
+		return x.ExecLimit
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetSignalTiming() string {
+	if x != nil {
+		return x.SignalTiming
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetFillRule() string {
+	if x != nil {
+		return x.FillRule
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetSimulationMode() string {
+	if x != nil {
+		return x.SimulationMode
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_params_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\n" +
-	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\xc3\v\n" +
+	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\x8e\x0e\n" +
 	"\x12BacktestParamsI18n\x12'\n" +
 	"\x0fbacktest_failed\x18\x01 \x01(\tR\x0ebacktestFailed\x12\x12\n" +
 	"\x04both\x18\x02 \x01(\tR\x04both\x12\x18\n" +
@@ -447,7 +527,20 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\x0fvectorized_mode\x18% \x01(\tR\x0evectorizedMode\x12\x1f\n" +
 	"\vclose_price\x181 \x01(\tR\n" +
 	"closePrice\x12\x10\n" +
-	"\x03pnl\x182 \x01(\tR\x03pnlB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x03pnl\x182 \x01(\tR\x03pnl\x12\x17\n" +
+	"\amt_live\x183 \x01(\tR\x06mtLive\x12\x1d\n" +
+	"\n" +
+	"mt_dataset\x184 \x01(\tR\tmtDataset\x12\"\n" +
+	"\rnext_bar_open\x185 \x01(\tR\vnextBarOpen\x12$\n" +
+	"\x0esame_bar_close\x186 \x01(\tR\fsameBarClose\x12\x1f\n" +
+	"\vexec_market\x187 \x01(\tR\n" +
+	"execMarket\x12\x1d\n" +
+	"\n" +
+	"exec_limit\x188 \x01(\tR\texecLimit\x12\x1c\n" +
+	"\ttimeframe\x189 \x01(\tR\ttimeframe\x12#\n" +
+	"\rsignal_timing\x18: \x01(\tR\fsignalTiming\x12\x1b\n" +
+	"\tfill_rule\x18; \x01(\tR\bfillRule\x12'\n" +
+	"\x0fsimulation_mode\x18< \x01(\tR\x0esimulationModeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_params_proto_rawDescOnce sync.Once

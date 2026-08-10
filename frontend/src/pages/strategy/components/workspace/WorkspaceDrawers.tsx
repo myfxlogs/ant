@@ -40,6 +40,9 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
           backtest.setStrictMode(p.strictMode);
           backtest.setStartDate(result.startDate);
           backtest.setEndDate(result.endDate);
+          if (result.timeframe) {
+            account.setTimeframe(result.timeframe);
+          }
           if (result.strategyParams) {
             for (const [name, value] of Object.entries(result.strategyParams)) {
               backtest.runner.setParam(name, value);
@@ -53,7 +56,11 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
               leverage: p.leverage,
               tradeDirection: p.tradeDirection,
               strictMode: p.strictMode,
+              signalTiming: result.signalTiming,
+              fillRule: result.fillRule,
+              simulationMode: result.simulationMode,
             },
+            timeframe: result.timeframe,
           });
         }}
       />

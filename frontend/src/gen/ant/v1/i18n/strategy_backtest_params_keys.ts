@@ -130,6 +130,36 @@ export const PNL_KEY = 'strategy.backtestParams.pnl' as const;
 /** more */
 export const MORE_KEY = 'strategy.backtestParams.more' as const;
 
+/** mtLive */
+export const MT_LIVE_KEY = 'strategy.backtestParams.mtLive' as const;
+
+/** mtDataset */
+export const MT_DATASET_KEY = 'strategy.backtestParams.mtDataset' as const;
+
+/** nextBarOpen */
+export const NEXT_BAR_OPEN_KEY = 'strategy.backtestParams.nextBarOpen' as const;
+
+/** sameBarClose */
+export const SAME_BAR_CLOSE_KEY = 'strategy.backtestParams.sameBarClose' as const;
+
+/** execMarket */
+export const EXEC_MARKET_KEY = 'strategy.backtestParams.execMarket' as const;
+
+/** execLimit */
+export const EXEC_LIMIT_KEY = 'strategy.backtestParams.execLimit' as const;
+
+/** timeframe */
+export const TIMEFRAME_KEY = 'strategy.backtestParams.timeframe' as const;
+
+/** signalTiming */
+export const SIGNAL_TIMING_KEY = 'strategy.backtestParams.signalTiming' as const;
+
+/** fillRule */
+export const FILL_RULE_KEY = 'strategy.backtestParams.fillRule' as const;
+
+/** simulationMode */
+export const SIMULATION_MODE_KEY = 'strategy.backtestParams.simulationMode' as const;
+
 export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
@@ -174,6 +204,16 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   close_price: 'strategy.backtestParams.closePrice',
   pnl: 'strategy.backtestParams.pnl',
   more: 'strategy.backtestParams.more',
+  mt_live: 'strategy.backtestParams.mtLive',
+  mt_dataset: 'strategy.backtestParams.mtDataset',
+  next_bar_open: 'strategy.backtestParams.nextBarOpen',
+  same_bar_close: 'strategy.backtestParams.sameBarClose',
+  exec_market: 'strategy.backtestParams.execMarket',
+  exec_limit: 'strategy.backtestParams.execLimit',
+  timeframe: 'strategy.backtestParams.timeframe',
+  signal_timing: 'strategy.backtestParams.signalTiming',
+  fill_rule: 'strategy.backtestParams.fillRule',
+  simulation_mode: 'strategy.backtestParams.simulationMode',
 } as const;
 
 export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

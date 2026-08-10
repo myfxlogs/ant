@@ -87,6 +87,9 @@ type BacktestExecutionConfig struct {
 	StrategyConfig  *StrategyConfig        `protobuf:"bytes,6,opt,name=strategy_config,json=strategyConfig,proto3" json:"strategy_config,omitempty"`      // parsed from @strategy annotations
 	SwapRate        string                 `protobuf:"bytes,7,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`                        // overnight swap rate as string, e.g. "0.00001"
 	MarginCallLevel string                 `protobuf:"bytes,8,opt,name=margin_call_level,json=marginCallLevel,proto3" json:"margin_call_level,omitempty"` // equity/balance ratio threshold for forced close, e.g. "0.5" = 50%
+	SignalTiming    string                 `protobuf:"bytes,9,opt,name=signal_timing,json=signalTiming,proto3" json:"signal_timing,omitempty"`            // "next_bar_open" | "same_bar_close"; empty = derive from strict_mode
+	FillRule        string                 `protobuf:"bytes,10,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                       // "bar_close" | "market" | "limit"; empty = "bar_close"
+	SimulationMode  string                 `protobuf:"bytes,11,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`     // "KLINE_RANGE" | "DATASET"; empty = "KLINE_RANGE"
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -173,6 +176,27 @@ func (x *BacktestExecutionConfig) GetSwapRate() string {
 func (x *BacktestExecutionConfig) GetMarginCallLevel() string {
 	if x != nil {
 		return x.MarginCallLevel
+	}
+	return ""
+}
+
+func (x *BacktestExecutionConfig) GetSignalTiming() string {
+	if x != nil {
+		return x.SignalTiming
+	}
+	return ""
+}
+
+func (x *BacktestExecutionConfig) GetFillRule() string {
+	if x != nil {
+		return x.FillRule
+	}
+	return ""
+}
+
+func (x *BacktestExecutionConfig) GetSimulationMode() string {
+	if x != nil {
+		return x.SimulationMode
 	}
 	return ""
 }
@@ -698,7 +722,7 @@ var File_backtest_execution_config_proto protoreflect.FileDescriptor
 
 const file_backtest_execution_config_proto_rawDesc = "" +
 	"\n" +
-	"\x1fbacktest_execution_config.proto\x12\x06ant.v1\"\xdd\x02\n" +
+	"\x1fbacktest_execution_config.proto\x12\x06ant.v1\"\xc8\x03\n" +
 	"\x17BacktestExecutionConfig\x12\x1e\n" +
 	"\n" +
 	"commission\x18\x01 \x01(\tR\n" +
@@ -710,7 +734,11 @@ const file_backtest_execution_config_proto_rawDesc = "" +
 	"strictMode\x12?\n" +
 	"\x0fstrategy_config\x18\x06 \x01(\v2\x16.ant.v1.StrategyConfigR\x0estrategyConfig\x12\x1b\n" +
 	"\tswap_rate\x18\a \x01(\tR\bswapRate\x12*\n" +
-	"\x11margin_call_level\x18\b \x01(\tR\x0fmarginCallLevel\"\xd6\x01\n" +
+	"\x11margin_call_level\x18\b \x01(\tR\x0fmarginCallLevel\x12#\n" +
+	"\rsignal_timing\x18\t \x01(\tR\fsignalTiming\x12\x1b\n" +
+	"\tfill_rule\x18\n" +
+	" \x01(\tR\bfillRule\x12'\n" +
+	"\x0fsimulation_mode\x18\v \x01(\tR\x0esimulationMode\"\xd6\x01\n" +
 	"\x0eStrategyConfig\x12.\n" +
 	"\x04risk\x18\x01 \x01(\v2\x1a.ant.v1.StrategyRiskConfigR\x04risk\x122\n" +
 	"\bposition\x18\x02 \x01(\v2\x16.ant.v1.PositionConfigR\bposition\x12)\n" +

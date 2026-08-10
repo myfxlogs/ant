@@ -48,4 +48,14 @@ message BacktestParamsI18n {
   string vectorized_mode = 37;  // Vectorized
   string close_price = 49;  // Close price
   string pnl = 50;  // PnL
+  string mt_live = 51;  // MT Live
+  string mt_dataset = 52;  // Dataset
+  string next_bar_open = 53;  // Next Bar Open
+  string same_bar_close = 54;  // Same Bar Close
+  string exec_market = 55;  // Market
+  string exec_limit = 56;  // Limit
+  string timeframe = 57;  // Timeframe
+  string signal_timing = 58;  // Signal Timing
+  string fill_rule = 59;  // Fill Rule
+  string simulation_mode = 60;  // Simulation Mode
 }

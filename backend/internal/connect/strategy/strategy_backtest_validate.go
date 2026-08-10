@@ -12,7 +12,8 @@ import (
 )
 
 // validateBacktestRequest checks preconditions before creating a backtest run:
-// decimal input validity, symbol availability, and market data existence.
+// decimal input validity, symbol availability, market data existence, and
+// rejection of unimplemented execution config values.
 func (s *StrategyExecutionServer) validateBacktestRequest(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) error {
 	// Empty strings cause "can't convert to decimal" panics deep in the engine.
 	if req.Msg.InitialCapital != "" {
@@ -24,6 +25,17 @@ func (s *StrategyExecutionServer) validateBacktestRequest(ctx context.Context, r
 	if req.Msg.Symbol == "" {
 		return connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("please select a symbol and timeframe from the chart before starting a backtest"))
+	}
+	// Reject unimplemented execution config values at API boundary (honesty principle).
+	if cfg := req.Msg.GetExecutionConfig(); cfg != nil {
+		if cfg.GetFillRule() == "limit" {
+			return connect.NewError(connect.CodeInvalidArgument,
+				fmt.Errorf("fill_rule=limit is not yet implemented"))
+		}
+		if cfg.GetSimulationMode() == "DATASET" {
+			return connect.NewError(connect.CodeInvalidArgument,
+				fmt.Errorf("simulation_mode=DATASET is not yet implemented"))
+		}
 	}
 	if s.marketDataRepo == nil {
 		return nil

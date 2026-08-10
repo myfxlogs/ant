@@ -146,6 +146,9 @@ export const strategyRuntimeApi = {
       leverage: number;
       tradeDirection: 'long' | 'short' | 'both';
       strictMode: boolean;
+      signalTiming?: 'next_bar_open' | 'same_bar_close';
+      fillRule?: 'bar_close' | 'market' | 'limit';
+      simulationMode?: 'KLINE_RANGE' | 'DATASET';
     };
   }): Promise<{ runId: string }> => {
     const msg = create(StartBacktestRunRequestSchema, {
@@ -178,6 +181,9 @@ export const strategyRuntimeApi = {
           : params.executionConfig.tradeDirection === 'short' ? TradeDirection.SHORT
           : TradeDirection.BOTH,
         strictMode: params.executionConfig.strictMode,
+        signalTiming: params.executionConfig.signalTiming ?? 'next_bar_open',
+        fillRule: params.executionConfig.fillRule ?? 'bar_close',
+        simulationMode: params.executionConfig.simulationMode ?? 'KLINE_RANGE',
       }) : undefined,
     });
     const resp = await strategyRuntimeService.startBacktestRun(msg);

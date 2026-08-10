@@ -168,6 +168,9 @@ export function useBacktestRunner() {
         leverage: number;
         tradeDirection: string;
         strictMode: boolean;
+        signalTiming?: 'next_bar_open' | 'same_bar_close';
+        fillRule?: 'bar_close' | 'market' | 'limit';
+        simulationMode?: 'KLINE_RANGE' | 'DATASET';
       };
     },
   ) => {
@@ -179,7 +182,7 @@ export function useBacktestRunner() {
       trackFunnelEvent(FunnelEvents.FIRST_BACKTEST);
       const paramValues = overrides?.params ?? strategyParamValues;
       const cfg = overrides?.executionConfig
-        ? { commission: overrides.executionConfig.commission, slippage: overrides.executionConfig.slippage, leverage: overrides.executionConfig.leverage, tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both', strictMode: overrides.executionConfig.strictMode }
+        ? { commission: overrides.executionConfig.commission, slippage: overrides.executionConfig.slippage, leverage: overrides.executionConfig.leverage, tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both', strictMode: overrides.executionConfig.strictMode, signalTiming: overrides.executionConfig.signalTiming, fillRule: overrides.executionConfig.fillRule, simulationMode: overrides.executionConfig.simulationMode }
         : { commission, slippage, leverage, tradeDirection: tradeDirection as 'long' | 'short' | 'both', strictMode };
       const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,

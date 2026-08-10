@@ -24,6 +24,9 @@ message BacktestExecutionConfig {
   StrategyConfig strategy_config = 6;  // parsed from @strategy annotations
   string swap_rate = 7;        // overnight swap rate as string, e.g. "0.00001"
   string margin_call_level = 8; // equity/balance ratio threshold for forced close, e.g. "0.5" = 50%
+  string signal_timing = 9;     // "next_bar_open" | "same_bar_close"; empty = derive from strict_mode
+  string fill_rule = 10;        // "bar_close" | "market" | "limit"; empty = "bar_close"
+  string simulation_mode = 11;  // "KLINE_RANGE" | "DATASET"; empty = "KLINE_RANGE"
 }
 
 // StrategyConfig is the runtime execution behavior derived from @strategy

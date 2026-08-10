@@ -82,6 +82,9 @@ type backtestParams struct {
 	swapRate        string
 	marginCallLevel string
 	strategyCfg     *antv1.StrategyConfig
+	signalTiming    string
+	fillRule        string
+	simulationMode  string
 }
 
 // extractBacktestParams extracts and validates parameters from a BacktestRun.
@@ -124,6 +127,15 @@ func extractBacktestParams(run *repository.BacktestRun) (backtestParams, error) 
 			}
 			if ec.GetMarginCallLevel() != "" {
 				p.marginCallLevel = ec.GetMarginCallLevel()
+			}
+			if ec.GetSignalTiming() != "" {
+				p.signalTiming = ec.GetSignalTiming()
+			}
+			if ec.GetFillRule() != "" {
+				p.fillRule = ec.GetFillRule()
+			}
+			if ec.GetSimulationMode() != "" {
+				p.simulationMode = ec.GetSimulationMode()
 			}
 		}
 	}

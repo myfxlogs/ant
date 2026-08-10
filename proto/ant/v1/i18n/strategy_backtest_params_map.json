@@ -43,6 +43,16 @@
 		"vectorized_mode": "vectorizedMode",
 		"close_price": "closePrice",
 		"pnl": "pnl",
-		"more": "more"
+		"more": "more",
+		"mt_live": "mtLive",
+		"mt_dataset": "mtDataset",
+		"next_bar_open": "nextBarOpen",
+		"same_bar_close": "sameBarClose",
+		"exec_market": "execMarket",
+		"exec_limit": "execLimit",
+		"timeframe": "timeframe",
+		"signal_timing": "signalTiming",
+		"fill_rule": "fillRule",
+		"simulation_mode": "simulationMode"
 	}
 }

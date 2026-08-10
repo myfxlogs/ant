@@ -152,6 +152,15 @@ func inheritBacktestRunConfig(ctx context.Context, s *StrategyExecutionServer, p
 			if ec.GetMarginCallLevel() != "" {
 				params.marginCallLevel = ec.GetMarginCallLevel()
 			}
+			if ec.GetSignalTiming() != "" {
+				params.signalTiming = ec.GetSignalTiming()
+			}
+			if ec.GetFillRule() != "" {
+				params.fillRule = ec.GetFillRule()
+			}
+			if ec.GetSimulationMode() != "" {
+				params.simulationMode = ec.GetSimulationMode()
+			}
 		}
 	}
 }

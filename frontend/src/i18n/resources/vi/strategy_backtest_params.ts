@@ -47,7 +47,17 @@ const StrategyBacktestParams = {
       "vectorizedMode": "Vector Hóa",
       "closePrice": "Giá đóng",
       "pnl": "Lãi/Lỗ",
-      "more": "thêm"
+      "more": "thêm",
+      "mtLive": "MT Trực tiếp",
+      "mtDataset": "Tập dữ liệu",
+      "nextBarOpen": "Mở nến tiếp theo",
+      "sameBarClose": "Đóng cùng nến",
+      "execMarket": "Thị trường",
+      "execLimit": "Giới hạn",
+      "timeframe": "Khung thời gian",
+      "signalTiming": "Thời điểm tín hiệu",
+      "fillRule": "Quy tắc khớp lệnh",
+      "simulationMode": "Chế độ mô phỏng"
     }
   }
 } as const;

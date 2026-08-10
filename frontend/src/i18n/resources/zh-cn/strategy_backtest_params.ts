@@ -47,7 +47,17 @@ const StrategyBacktestParams = {
       "vectorizedMode": "向量化",
       "closePrice": "平仓价",
       "pnl": "盈亏",
-      "more": "更多"
+      "more": "更多",
+      "mtLive": "MT 实时",
+      "mtDataset": "数据集",
+      "nextBarOpen": "次根K线开盘",
+      "sameBarClose": "同根K线收盘",
+      "execMarket": "市价",
+      "execLimit": "限价",
+      "timeframe": "周期",
+      "signalTiming": "信号时机",
+      "fillRule": "成交规则",
+      "simulationMode": "模式"
     }
   }
 } as const;

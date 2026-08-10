@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, InputNumber, Select, DatePicker, Switch, Button, Alert, Space, message, Row, Col } from 'antd';
+import { Modal, Form, InputNumber, Select, DatePicker, Button, Alert, Space, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { codeAssistApi } from '@/client/codeAssist';
 import {
   CAPITAL_KEY, COMMISSION_KEY, DATE_RANGE_KEY, DIRECTION_KEY,
   LEVERAGE_KEY, SLIPPAGE_KEY,
-  STRICT_MODE_KEY, STRICT_MODE_ON_KEY, STRICT_MODE_OFF_KEY,
   LONG_KEY, SHORT_KEY, BOTH_KEY,
+  TIMEFRAME_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import {
   NO_CODE_KEY, COMPILE_ERROR_KEY, VALIDATE_FIRST_KEY, CODE_VALID_KEY,
   VALIDATE_FAILED_KEY, RUN_BACKTEST_KEY, BACKTEST_KEY as WS_BACKTEST_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import { STRATEGY_PARAMS_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { COMPILING_KEY as GEN_COMPILING_KEY, COMPILE_ERROR_KEY as GEN_COMPILE_ERROR_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { COMMON_CANCEL_KEY, COMMON_RETRY_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { DATE_PRESETS, dateFromPreset } from '@/pages/strategy/hooks/backtestParamHelpers';
 import { FACTORY_DEFAULTS, type StandardParams } from '@/components/backtest/backtestRunnerTypes';
-import { paramLabel } from '@/utils/paramLabel';
+import { TIMEFRAMES } from '@/constants/timeframes';
+import ExecutionAssumptionsSelectors from './ExecutionAssumptionsSelectors';
+import StrategyParamsSection from './StrategyParamsSection';
 import dayjs from 'dayjs';
 
 export interface BacktestParamsModalProps {
@@ -33,10 +34,14 @@ export interface BacktestModalResult {
   params: StandardParams;
   startDate: string;
   endDate: string;
+  timeframe: string;
   strategyParams?: Record<string, string>;
+  signalTiming: 'next_bar_open' | 'same_bar_close';
+  fillRule: 'bar_close' | 'market' | 'limit';
+  simulationMode: 'KLINE_RANGE' | 'DATASET';
 }
 
-export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, onClose, onConfirm, code, _symbol, timeframe: _timeframe }) => {
+export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, onClose, onConfirm, code, _symbol, timeframe: initialTimeframe }) => {
   const { t, i18n } = useTranslation();
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState('');
@@ -50,6 +55,14 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
     dayjs().subtract(3, 'month'),
     dayjs(),
   ]);
+  const [timeframe, setTimeframe] = useState(initialTimeframe || '1h');
+  const [signalTiming, setSignalTiming] = useState<'next_bar_open' | 'same_bar_close'>('next_bar_open');
+  const [fillRule, setFillRule] = useState<'bar_close' | 'market' | 'limit'>('bar_close');
+  const [simulationMode, setSimulationMode] = useState<'KLINE_RANGE' | 'DATASET'>('KLINE_RANGE');
+
+  useEffect(() => {
+    if (open) setTimeframe(initialTimeframe || '1h');
+  }, [open, initialTimeframe]);
 
   useEffect(() => {
     if (open && code && !validated && !validating) {
@@ -105,7 +118,14 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
     }
     const startDate = dateRange[0]?.format('YYYY-MM-DD') || '';
     const endDate = dateRange[1]?.format('YYYY-MM-DD') || '';
-    onConfirm({ params, startDate, endDate, strategyParams: strategyParamValues });
+    onConfirm({
+      params: { ...params, strictMode: signalTiming === 'next_bar_open' },
+      startDate, endDate, timeframe,
+      strategyParams: strategyParamValues,
+      signalTiming,
+      fillRule,
+      simulationMode,
+    });
     onClose();
   };
 
@@ -162,6 +182,16 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
           />
         </Form.Item>
 
+        {/* Timeframe selector */}
+        <Form.Item label={t(TIMEFRAME_KEY)}>
+          <Select
+            value={timeframe}
+            onChange={setTimeframe}
+            style={{ width: '100%' }}
+            options={TIMEFRAMES.map(tf => ({ value: tf, label: tf }))}
+          />
+        </Form.Item>
+
         {/* Capital + Leverage */}
         <Space style={{ width: '100%' }} sizes={['50%', '50%']}>
           <Form.Item label={t(CAPITAL_KEY)} style={{ width: '50%' }}>
@@ -213,51 +243,23 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
           />
         </Form.Item>
 
-        {/* Strict mode */}
-        <Form.Item label={t(STRICT_MODE_KEY)}>
-          <Switch
-            checked={params.strictMode}
-            onChange={(v) => setParams(p => ({ ...p, strictMode: v }))}
-            checkedChildren={t(STRICT_MODE_ON_KEY)}
-            unCheckedChildren={t(STRICT_MODE_OFF_KEY)}
-          />
-        </Form.Item>
+        {/* Execution assumptions: Mode + Signal Timing + Fill Rule */}
+        <ExecutionAssumptionsSelectors
+          simulationMode={simulationMode}
+          signalTiming={signalTiming}
+          fillRule={fillRule}
+          onSimulationModeChange={setSimulationMode}
+          onSignalTimingChange={setSignalTiming}
+          onFillRuleChange={setFillRule}
+        />
 
         {/* Strategy params (extracted from code) */}
-        {extractedParams.length > 0 && (
-          <>
-            <div style={{ borderTop: '1px solid var(--ant-color-border)', marginTop: 12, paddingTop: 12 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#595959', marginBottom: 8 }}>
-                {t(STRATEGY_PARAMS_KEY)} ({extractedParams.length})
-              </div>
-              <Row gutter={[12, 8]}>
-                {extractedParams.map((p) => {
-                  const label = paramLabel(p.name, i18n.language, null) || p.label || p.name;
-                  const value = strategyParamValues[p.name] ?? p.default;
-                  if (p.type === 'bool') {
-                    return (
-                      <Col span={8} key={p.name}>
-                        <Form.Item label={label} style={{ marginBottom: 0 }}>
-                          <Switch size="small" checked={value === 'True' || value === 'true'}
-                            onChange={(v) => setStrategyParamValues(prev => ({ ...prev, [p.name]: v ? 'True' : 'False' }))} />
-                        </Form.Item>
-                      </Col>
-                    );
-                  }
-                  const step = p.type === 'float' ? 0.01 : 1;
-                  return (
-                    <Col span={8} key={p.name}>
-                      <Form.Item label={label} style={{ marginBottom: 0 }}>
-                        <InputNumber size="small" style={{ width: '100%' }} step={step}
-                          value={Number(value)} onChange={(v) => setStrategyParamValues(prev => ({ ...prev, [p.name]: String(v ?? p.default) }))} />
-                      </Form.Item>
-                    </Col>
-                  );
-                })}
-              </Row>
-            </div>
-          </>
-        )}
+        <StrategyParamsSection
+          extractedParams={extractedParams}
+          strategyParamValues={strategyParamValues}
+          onChange={(name, value) => setStrategyParamValues(prev => ({ ...prev, [name]: value }))}
+          language={i18n.language}
+        />
       </Form>
     </Modal>
   );

@@ -103,9 +103,10 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		rec.Price = b.currentPrice
 	}
 
-	// Apply spread to market order fills: buys pay ask (price + spread),
-	// sells receive bid (price). Pending orders fill at their specified price.
-	if req.Type == sdk.OrderMarket {
+	// Apply spread to market order fills based on fill_rule:
+	// bar_close = no spread (idealized), market = spread (realistic).
+	// Pending orders fill at their specified price.
+	if req.Type == sdk.OrderMarket && b.config.FillRule == "market" {
 		rec.Price = b.applySpreadToFill(rec.Price, req.Side == sdk.SideBuy)
 	}
 
@@ -162,9 +163,10 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			if closePrice.IsZero() {
 				closePrice = pos.Price
 			}
-			// Apply spread: closing a sell position = buy (pay ask),
-			// closing a buy position = sell (receive bid).
-			closePrice = b.applySpreadToFill(closePrice, pos.Side == sdk.SideSell)
+			// Apply spread based on fill_rule: bar_close = no spread, market = spread.
+			if b.config.FillRule == "market" {
+				closePrice = b.applySpreadToFill(closePrice, pos.Side == sdk.SideSell)
+			}
 			// Charge swap for the holding period.
 			days := b.swapDays(pos.OpenTime)
 			if closeVol.Equal(pos.Volume) {

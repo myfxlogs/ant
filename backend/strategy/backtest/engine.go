@@ -72,6 +72,8 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		return nil, err
 	}
 
+	var pendingSignals []sdk.Signal
+
 	for i := 1; i < len(e.bars); i++ {
 		if err := ctx.Err(); err != nil {
 			break
@@ -84,6 +86,17 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		btCtx.barIndex = i
 		btCtx.currentBar = bar
 
+		// Execute delayed signals from previous bar (next_bar_open mode).
+		// SetBarPrice(bar.Open) so PositionClose uses the open price, not close.
+		if len(pendingSignals) > 0 {
+			e.broker.SetBarPrice(bar.Open)
+			for _, sig := range pendingSignals {
+				e.dispatchSignal(&sig, bar)
+			}
+			e.broker.SetBarPrice(bar.Close)
+			pendingSignals = nil
+		}
+
 		e.advanceExtraBars(btCtx, bar.Timestamp)
 		e.checkPendingOrders(bar)
 		e.checkSLTP(bar)
@@ -94,7 +107,11 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 			continue
 		}
 		if sig != nil {
-			e.dispatchSignal(sig, bar)
+			if e.config.SignalTiming == "same_bar_close" {
+				e.dispatchSignal(sig, bar)
+			} else {
+				pendingSignals = append(pendingSignals, *sig)
+			}
 		}
 
 		equity := e.computeEquity(bar)
@@ -218,6 +235,9 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 			ot = sdk.OrderStop
 		}
 		price := bar.Close
+		if !e.broker.currentPrice.IsZero() {
+			price = e.broker.currentPrice
+		}
 		if sig.Price.IsPositive() {
 			price = sig.Price
 		}
