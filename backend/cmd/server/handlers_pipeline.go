@@ -68,7 +68,7 @@ func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHu
 		err := pool.QueryRow(ctx,
 			`SELECT balance, equity, free_margin, COALESCE(margin,0),
 			        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id=$1),0)
-			 FROM accounts WHERE id=$2`, accountID, accountID).
+			 FROM mt_accounts WHERE id=$2`, accountID, accountID).
 			Scan(&balance, &equity, &freeMargin, &margin, &positions)
 		if err != nil {
 			return nil, fmt.Errorf("account state query: %w", err)
