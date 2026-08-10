@@ -3,6 +3,7 @@
 > **依据**：CLAUDE.md「Deployment (强制 — 禁止手动)」+ `tech-debt-registry.md` EXEC-PARAMS 验收行（✅ 权威 done，2026-08-10 审计方实测）+ `handover-audit-plan.md` 验收条目。
 > **强制遵守** `docs/audits/builder-sop.md` 三铁律 + 验收 checklist（§200）：① one task = one scope（不扩大）；② 对抗证明（删关键一行→测试必红）；③ **红队自审**（完工后对着 §200 checklist + 验收 5 维过一遍，带着债提交=失败）；④ 不自行宣告 ✅，等审计方实测；⑤ 完工回填三层；⑥ REUSE preflight（cap.sh）。
 > **节奏**：一次一个 task。提示词 1/2 已完成（部署 `567b87e2` + 补测 `e45ce7d4`，审计方已核对）；当前进行**提示词 3（FILL-SIM）**。完工回填 + 自审后再交付，不并行多任务。
+> **📌 FILL-SIM 提示词独立成文（2026-08-10）**：提示词 3 已移出本文件，独立为 **`docs/audits/builder-handoff-fill-sim-2026-08-10.md`**（自包含，打开即开工，含用户评审 3 点闭环）。下方提示词 3 原文保留作历史，**施工以独立文件为准**。
 > **当前状态**：EXEC-PARAMS（a1c88f33）已由审计方实测验收通过并部署上线。**FILL-SIM spec 定稿**（`spec-fill-rule-limit-simulation-mode.md`：Windsurf 复审 7 点修订 + **Claude Code 审计方 2026-08-10 复核 §8**：8 项根因全部实测属实；3 项修订——§1.3/§3.3 事实校正、§2.6 VM pending 前置升级、§2.4 测试补漏）。**§2.6 是必备前置**，先于 §2.1/§2.2 施工。工作区未提交：audit spec 修订（docs）+ handover/registry（docs），代码零未提交，migrations 空。
 
 ---
