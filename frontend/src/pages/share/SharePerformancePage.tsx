@@ -102,6 +102,7 @@ export default function SharePerformancePage() {
   if (error || !data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={t('sharePage.notFound')} /></div>;
 
   const ts = data.tradeStats;
+  const trades = data.trades ?? [];
   const winningTrades = ts?.winningTrades ?? 0;
   const losingTrades = ts?.losingTrades ?? 0;
   const winPct = (winningTrades + losingTrades) > 0
