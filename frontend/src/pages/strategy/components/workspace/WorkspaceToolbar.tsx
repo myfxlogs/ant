@@ -32,12 +32,9 @@ const groupStyle: React.CSSProperties = {
   boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
 };
 
-function fmtCompact(v: number | undefined | null): string {
+function fmtFull(v: number | undefined | null): string {
   if (v == null) return '—';
-  const abs = Math.abs(v);
-  if (abs >= 1_000_000) return (v / 1_000_000).toFixed(2) + 'M';
-  if (abs >= 1_000) return (v / 1_000).toFixed(1) + 'K';
-  return v.toFixed(2);
+  return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function SummaryChip({ label, value, color, icon }: { label: string; value: string | number; color?: string; icon?: React.ReactNode }) {
@@ -86,17 +83,17 @@ export default function WorkspaceToolbar({
       {/* Account Summary — SummaryChip cards */}
       {hasData && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <SummaryChip label={t(TRADING_BALANCE_KEY)} value={`$${fmtCompact(accountInfo!.balance)}`} />
-          <SummaryChip label={t(TRADING_EQUITY_KEY)} value={`$${fmtCompact(accountInfo!.equity)}`} />
+          <SummaryChip label={t(TRADING_BALANCE_KEY)} value={`$${fmtFull(accountInfo!.balance)}`} />
+          <SummaryChip label={t(TRADING_EQUITY_KEY)} value={`$${fmtFull(accountInfo!.equity)}`} />
           <SummaryChip
             label={t(TRADING_PROFIT_KEY)}
-            value={`$${fmtCompact(Math.abs(accountInfo!.profit))}`}
+            value={`$${fmtFull(Math.abs(accountInfo!.profit))}`}
             color={profitColor}
             icon={accountInfo!.profit >= 0
               ? <RiseOutlined style={{ fontSize: 11 }} />
               : <FallOutlined style={{ fontSize: 11 }} />}
           />
-          <SummaryChip label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
+          <SummaryChip label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtFull(accountInfo!.freeMargin)}`} />
           {accountInfo!.marginLevel > 0 && (
             <SummaryChip label={t(TRADING_MARGIN_LEVEL_KEY)} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
           )}

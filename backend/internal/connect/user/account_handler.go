@@ -9,6 +9,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -94,6 +95,12 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 			connectedAt = timestamppb.New(t)
 		}
 	}
+	profit := a.Equity.Sub(a.Balance)
+	var profitPercent float64
+	if a.Balance.GreaterThan(decimal.Zero) {
+		pp, _ := profit.Div(a.Balance).Mul(decimal.NewFromInt(100)).Float64()
+		profitPercent = pp
+	}
 	return &antv1.Account{
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
@@ -105,6 +112,7 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 		IsInvestor: a.IsInvestor, LastError: a.LastError,
 		IsDisabled:  a.Status == string(service.StatusDisconnected) || a.Status == string(service.StatusFrozen),
 		ConnectedAt: connectedAt,
+		Profit:      profit.String(), ProfitPercent: profitPercent,
 	}
 }
 
