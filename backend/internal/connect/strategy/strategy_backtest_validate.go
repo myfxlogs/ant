@@ -26,15 +26,26 @@ func (s *StrategyExecutionServer) validateBacktestRequest(ctx context.Context, r
 		return connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("please select a symbol and timeframe from the chart before starting a backtest"))
 	}
-	// Reject unimplemented execution config values at API boundary (honesty principle).
+	// Whitelist validation for execution config values (reject unknown values).
 	if cfg := req.Msg.GetExecutionConfig(); cfg != nil {
-		if cfg.GetFillRule() == "limit" {
+		validFillRules := map[string]bool{"": true, "bar_close": true, "market": true, "limit": true}
+		if !validFillRules[cfg.GetFillRule()] {
 			return connect.NewError(connect.CodeInvalidArgument,
-				fmt.Errorf("fill_rule=limit is not yet implemented"))
+				fmt.Errorf("invalid fill_rule %q: must be one of bar_close, market, limit", cfg.GetFillRule()))
 		}
-		if cfg.GetSimulationMode() == "DATASET" {
+		validSimModes := map[string]bool{"": true, "KLINE_RANGE": true, "OHLC_PATH": true}
+		if !validSimModes[cfg.GetSimulationMode()] {
+			if cfg.GetSimulationMode() == "DATASET" {
+				return connect.NewError(connect.CodeInvalidArgument,
+					fmt.Errorf("invalid simulation_mode %q: DATASET has been renamed to OHLC_PATH", cfg.GetSimulationMode()))
+			}
 			return connect.NewError(connect.CodeInvalidArgument,
-				fmt.Errorf("simulation_mode=DATASET is not yet implemented"))
+				fmt.Errorf("invalid simulation_mode %q: must be one of KLINE_RANGE, OHLC_PATH", cfg.GetSimulationMode()))
+		}
+		validSignalTimings := map[string]bool{"": true, "next_bar_open": true, "same_bar_close": true}
+		if !validSignalTimings[cfg.GetSignalTiming()] {
+			return connect.NewError(connect.CodeInvalidArgument,
+				fmt.Errorf("invalid signal_timing %q: must be one of next_bar_open, same_bar_close", cfg.GetSignalTiming()))
 		}
 	}
 	if s.marketDataRepo == nil {

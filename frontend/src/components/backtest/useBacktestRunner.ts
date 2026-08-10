@@ -170,7 +170,7 @@ export function useBacktestRunner() {
         strictMode: boolean;
         signalTiming?: 'next_bar_open' | 'same_bar_close';
         fillRule?: 'bar_close' | 'market' | 'limit';
-        simulationMode?: 'KLINE_RANGE' | 'DATASET';
+        simulationMode?: 'KLINE_RANGE' | 'OHLC_PATH';
       };
     },
   ) => {

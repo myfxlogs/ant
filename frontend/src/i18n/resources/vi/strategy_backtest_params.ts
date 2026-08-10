@@ -50,6 +50,7 @@ const StrategyBacktestParams = {
       "more": "thêm",
       "mtLive": "MT Trực tiếp",
       "mtDataset": "Tập dữ liệu",
+      "mtOhlcPath": "Đường đi OHLC",
       "nextBarOpen": "Mở nến tiếp theo",
       "sameBarClose": "Đóng cùng nến",
       "execMarket": "Thị trường",

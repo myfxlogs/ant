@@ -24,8 +24,8 @@ type Config struct {
 	MarginCallLevel decimal.Decimal // equity/balance ratio threshold for forced close (e.g. 0.5 = 50%); zero = disabled
 	StrictMode      bool            // derived from SignalTiming; kept for backward compat
 	SignalTiming    string          // "next_bar_open" | "same_bar_close"; non-empty after buildBacktestConfig
-	FillRule        string          // "bar_close" | "market"; non-empty after buildBacktestConfig
-	SimulationMode  string          // "KLINE_RANGE" | "DATASET"; non-empty after buildBacktestConfig
+	FillRule        string          // "bar_close" | "market" | "limit"; non-empty after buildBacktestConfig
+	SimulationMode  string          // "KLINE_RANGE" | "OHLC_PATH"; non-empty after buildBacktestConfig
 
 	// Strategy parameters passed to OnInit via ctx.Param*
 	Params map[string]string

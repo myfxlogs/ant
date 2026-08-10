@@ -7,10 +7,10 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 
 interface Props {
-  simulationMode: 'KLINE_RANGE' | 'DATASET';
+  simulationMode: 'KLINE_RANGE' | 'OHLC_PATH';
   signalTiming: 'next_bar_open' | 'same_bar_close';
   fillRule: 'bar_close' | 'market' | 'limit';
-  onSimulationModeChange: (v: 'KLINE_RANGE' | 'DATASET') => void;
+  onSimulationModeChange: (v: 'KLINE_RANGE' | 'OHLC_PATH') => void;
   onSignalTimingChange: (v: 'next_bar_open' | 'same_bar_close') => void;
   onFillRuleChange: (v: 'bar_close' | 'market' | 'limit') => void;
 }
@@ -29,7 +29,7 @@ export default function ExecutionAssumptionsSelectors({
           style={{ width: '100%' }}
           options={[
             { value: 'KLINE_RANGE', label: t(MT_LIVE_KEY) },
-            { value: 'DATASET', label: t('strategy.backtestParams.mtDataset'), disabled: true },
+            { value: 'OHLC_PATH', label: t('strategy.backtestParams.mtOhlcPath') },
           ]}
         />
       </Form.Item>
@@ -52,7 +52,7 @@ export default function ExecutionAssumptionsSelectors({
           options={[
             { value: 'bar_close', label: t(SAME_BAR_CLOSE_KEY) },
             { value: 'market', label: t(EXEC_MARKET_KEY) },
-            { value: 'limit', label: t(EXEC_LIMIT_KEY), disabled: true },
+            { value: 'limit', label: t(EXEC_LIMIT_KEY) },
           ]}
         />
       </Form.Item>

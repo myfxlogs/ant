@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"connectrpc.com/connect"
@@ -75,7 +76,7 @@ func TestBuildBacktestConfig_FallbackNeitherSet_DefaultsNextBarOpen(t *testing.T
 	params := backtestParams{
 		initialCapital: "10000",
 		leverage:       "100",
-		signalTiming:   "", // empty
+		signalTiming:   "",    // empty
 		strictMode:     false, // false → same_bar_close, not next_bar_open
 	}
 	cfg := srv.buildBacktestConfig(params, run)
@@ -115,13 +116,13 @@ func TestBuildBacktestConfig_DefaultSimulationMode(t *testing.T) {
 
 // ── Validate rejection tests (validateBacktestRequest) ──────────────
 
-func TestValidateBacktestRequest_RejectFillRuleLimit(t *testing.T) {
+func TestValidateBacktestRequest_AcceptFillRuleLimit(t *testing.T) {
 	srv := &StrategyExecutionServer{marketDataRepo: nil}
 	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
-		Code:       "//test",
-		Symbol:     "EURUSD",
-		Timeframe:  "H1",
-		AccountId:  uuid.New().String(),
+		Code:      "//test",
+		Symbol:    "EURUSD",
+		Timeframe: "H1",
+		AccountId: uuid.New().String(),
 		ExecutionConfig: &antv1.BacktestExecutionConfig{
 			FillRule:       "limit",
 			SimulationMode: "KLINE_RANGE",
@@ -129,25 +130,22 @@ func TestValidateBacktestRequest_RejectFillRuleLimit(t *testing.T) {
 		},
 	})
 	err := srv.validateBacktestRequest(context.Background(), req)
-	if err == nil {
-		t.Fatal("expected error for fill_rule=limit, got nil")
-	}
-	ce, ok := err.(*connect.Error)
-	if !ok {
-		t.Fatalf("expected connect.Error, got %T", err)
-	}
-	if ce.Code() != connect.CodeInvalidArgument {
-		t.Fatalf("expected CodeInvalidArgument, got %v", ce.Code())
+	// fill_rule=limit is now a valid whitelist value — should NOT be rejected.
+	if err != nil {
+		ce, ok := err.(*connect.Error)
+		if ok && ce.Code() == connect.CodeInvalidArgument {
+			t.Fatalf("fill_rule=limit should be accepted (whitelist): got %v", err)
+		}
 	}
 }
 
 func TestValidateBacktestRequest_RejectSimulationModeDataset(t *testing.T) {
 	srv := &StrategyExecutionServer{marketDataRepo: nil}
 	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
-		Code:       "//test",
-		Symbol:     "EURUSD",
-		Timeframe:  "H1",
-		AccountId:  uuid.New().String(),
+		Code:      "//test",
+		Symbol:    "EURUSD",
+		Timeframe: "H1",
+		AccountId: uuid.New().String(),
 		ExecutionConfig: &antv1.BacktestExecutionConfig{
 			FillRule:       "bar_close",
 			SimulationMode: "DATASET",
@@ -165,15 +163,19 @@ func TestValidateBacktestRequest_RejectSimulationModeDataset(t *testing.T) {
 	if ce.Code() != connect.CodeInvalidArgument {
 		t.Fatalf("expected CodeInvalidArgument, got %v", ce.Code())
 	}
+	// Error message should mention OHLC_PATH as the replacement.
+	if !strings.Contains(err.Error(), "OHLC_PATH") {
+		t.Errorf("error should mention OHLC_PATH as replacement: got %v", err)
+	}
 }
 
 func TestValidateBacktestRequest_AcceptValidExecConfig(t *testing.T) {
 	srv := &StrategyExecutionServer{marketDataRepo: nil}
 	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
-		Code:       "//test",
-		Symbol:     "EURUSD",
-		Timeframe:  "H1",
-		AccountId:  uuid.New().String(),
+		Code:      "//test",
+		Symbol:    "EURUSD",
+		Timeframe: "H1",
+		AccountId: uuid.New().String(),
 		ExecutionConfig: &antv1.BacktestExecutionConfig{
 			FillRule:       "bar_close",
 			SimulationMode: "KLINE_RANGE",
@@ -184,6 +186,70 @@ func TestValidateBacktestRequest_AcceptValidExecConfig(t *testing.T) {
 	// With marketDataRepo=nil, validate returns nil after exec config check.
 	if err != nil {
 		t.Fatalf("valid exec config should not be rejected: got %v", err)
+	}
+}
+
+func TestValidateBacktestRequest_RejectUnknownFillRule(t *testing.T) {
+	srv := &StrategyExecutionServer{marketDataRepo: nil}
+	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
+		Code:      "//test",
+		Symbol:    "EURUSD",
+		Timeframe: "H1",
+		AccountId: uuid.New().String(),
+		ExecutionConfig: &antv1.BacktestExecutionConfig{
+			FillRule: "FOO",
+		},
+	})
+	err := srv.validateBacktestRequest(context.Background(), req)
+	if err == nil {
+		t.Fatal("expected error for unknown fill_rule=FOO, got nil")
+	}
+	ce, ok := err.(*connect.Error)
+	if !ok || ce.Code() != connect.CodeInvalidArgument {
+		t.Fatalf("expected CodeInvalidArgument, got %v", err)
+	}
+}
+
+func TestValidateBacktestRequest_RejectUnknownSimulationMode(t *testing.T) {
+	srv := &StrategyExecutionServer{marketDataRepo: nil}
+	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
+		Code:      "//test",
+		Symbol:    "EURUSD",
+		Timeframe: "H1",
+		AccountId: uuid.New().String(),
+		ExecutionConfig: &antv1.BacktestExecutionConfig{
+			SimulationMode: "FOO",
+		},
+	})
+	err := srv.validateBacktestRequest(context.Background(), req)
+	if err == nil {
+		t.Fatal("expected error for unknown simulation_mode=FOO, got nil")
+	}
+	ce, ok := err.(*connect.Error)
+	if !ok || ce.Code() != connect.CodeInvalidArgument {
+		t.Fatalf("expected CodeInvalidArgument, got %v", err)
+	}
+}
+
+func TestValidateBacktestRequest_AcceptOHLCPath(t *testing.T) {
+	srv := &StrategyExecutionServer{marketDataRepo: nil}
+	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
+		Code:      "//test",
+		Symbol:    "EURUSD",
+		Timeframe: "H1",
+		AccountId: uuid.New().String(),
+		ExecutionConfig: &antv1.BacktestExecutionConfig{
+			FillRule:       "bar_close",
+			SimulationMode: "OHLC_PATH",
+			SignalTiming:   "next_bar_open",
+		},
+	})
+	err := srv.validateBacktestRequest(context.Background(), req)
+	if err != nil {
+		ce, ok := err.(*connect.Error)
+		if ok && ce.Code() == connect.CodeInvalidArgument {
+			t.Fatalf("simulation_mode=OHLC_PATH should be accepted: got %v", err)
+		}
 	}
 }
 
@@ -382,26 +448,26 @@ func TestExtractAndBuildConfig_OldSnapshotStrictTrue(t *testing.T) {
 
 func TestValidateBacktestRequest_CaseSensitiveFillRule(t *testing.T) {
 	srv := &StrategyExecutionServer{marketDataRepo: nil}
-	// "LIMIT" (uppercase) should NOT be rejected — only exact "limit" is.
-	// This is by design: proto values are lowercase by convention.
+	// "LIMIT" (uppercase) is NOT in the whitelist — should be rejected.
 	req := connect.NewRequest(&antv1.StartBacktestRunRequest{
 		Code:      "//test",
 		Symbol:    "EURUSD",
 		Timeframe: "H1",
 		AccountId: uuid.New().String(),
 		ExecutionConfig: &antv1.BacktestExecutionConfig{
-			FillRule: "LIMIT", // uppercase — not "limit"
+			FillRule: "LIMIT", // uppercase — not in whitelist
 		},
 	})
 	err := srv.validateBacktestRequest(context.Background(), req)
-	// Should NOT be rejected — "LIMIT" != "limit"
-	// With marketDataRepo=nil, passes through (returns nil)
-	if err != nil {
-		ce, ok := err.(*connect.Error)
-		if ok && ce.Code() == connect.CodeInvalidArgument {
-			t.Fatalf("LIMIT (uppercase) should not be rejected as 'limit': got %v", err)
-		}
-		// Other errors (e.g. market data) are fine — we only care about the fill_rule check
+	if err == nil {
+		t.Fatal("expected error for uppercase LIMIT, got nil")
+	}
+	ce, ok := err.(*connect.Error)
+	if !ok {
+		t.Fatalf("expected connect.Error, got %T", err)
+	}
+	if ce.Code() != connect.CodeInvalidArgument {
+		t.Fatalf("expected CodeInvalidArgument, got %v", ce.Code())
 	}
 }
 

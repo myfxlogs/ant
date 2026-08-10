@@ -38,7 +38,7 @@ export interface BacktestModalResult {
   strategyParams?: Record<string, string>;
   signalTiming: 'next_bar_open' | 'same_bar_close';
   fillRule: 'bar_close' | 'market' | 'limit';
-  simulationMode: 'KLINE_RANGE' | 'DATASET';
+  simulationMode: 'KLINE_RANGE' | 'OHLC_PATH';
 }
 
 export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, onClose, onConfirm, code, _symbol, timeframe: initialTimeframe }) => {
@@ -58,7 +58,7 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
   const [timeframe, setTimeframe] = useState(initialTimeframe || '1h');
   const [signalTiming, setSignalTiming] = useState<'next_bar_open' | 'same_bar_close'>('next_bar_open');
   const [fillRule, setFillRule] = useState<'bar_close' | 'market' | 'limit'>('bar_close');
-  const [simulationMode, setSimulationMode] = useState<'KLINE_RANGE' | 'DATASET'>('KLINE_RANGE');
+  const [simulationMode, setSimulationMode] = useState<'KLINE_RANGE' | 'OHLC_PATH'>('KLINE_RANGE');
 
   useEffect(() => {
     if (open) setTimeframe(initialTimeframe || '1h');

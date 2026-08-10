@@ -130,7 +130,7 @@ export const strategyRuntimeApi = {
     symbol: string;
     timeframe: string;
     initialCapital?: number;
-    mode: 'KLINE_RANGE' | 'DATASET';
+    mode: 'KLINE_RANGE' | 'OHLC_PATH';
     from?: Date;
     to?: Date;
     datasetId?: string;
@@ -148,7 +148,7 @@ export const strategyRuntimeApi = {
       strictMode: boolean;
       signalTiming?: 'next_bar_open' | 'same_bar_close';
       fillRule?: 'bar_close' | 'market' | 'limit';
-      simulationMode?: 'KLINE_RANGE' | 'DATASET';
+      simulationMode?: 'KLINE_RANGE' | 'OHLC_PATH';
     };
   }): Promise<{ runId: string }> => {
     const msg = create(StartBacktestRunRequestSchema, {
@@ -158,12 +158,12 @@ export const strategyRuntimeApi = {
       timeframe: params.timeframe,
       initialCapital: String(params.initialCapital ?? 10000),
       mode:
-        params.mode === 'DATASET'
-          ? BacktestRunMode.DATASET
+        params.mode === 'OHLC_PATH'
+          ? BacktestRunMode.KLINE_RANGE // OHLC_PATH is a simulation_mode, not a run mode; use KLINE_RANGE
           : BacktestRunMode.KLINE_RANGE,
       from: params.mode === 'KLINE_RANGE' ? toTimestamp(params.from) : undefined,
       to: params.mode === 'KLINE_RANGE' ? toTimestamp(params.to) : undefined,
-      datasetId: params.mode === 'DATASET' ? params.datasetId : undefined,
+      datasetId: undefined, // OHLC_PATH mode doesn't use datasetId
       templateId: params.templateId,
       templateDraftId: params.templateDraftId,
       extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),

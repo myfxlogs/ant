@@ -94,10 +94,21 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	// OrderModify(ticket, price, sl, tp, expiration, color)
 	ticket := int64(argI(args, 0))
+	price := argD(args, 1)
 	sl := argD(args, 2)
 	tp := argD(args, 3)
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	// For pending orders, price modification is handled by PositionModifyPrice.
+	// SimBroker.PositionModify scans both positions and pending orders.
+	if !price.IsZero() {
+		if pm, ok := vm.ctx.Broker().(pendingPriceModifier); ok {
+			pm.PositionModifyPrice(ticket, price)
+		}
+	}
+	return interp.BoolVal(true), nil
 }
 
 func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -113,11 +124,14 @@ func builtinOrdersTotal(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
 		return interp.IntVal(0), nil
 	}
-	// Use cached positions if already loaded this event; otherwise load now.
+	// MQL4 OrdersTotal returns both open positions and pending orders in MODE_TRADES.
 	if vm.cachedPositions == nil {
 		vm.cachedPositions = vm.ctx.Broker().Positions(0)
 	}
-	return interp.IntVal(int32(len(vm.cachedPositions))), nil
+	if vm.cachedOrders == nil {
+		vm.cachedOrders = vm.ctx.Broker().Orders(0)
+	}
+	return interp.IntVal(int32(len(vm.cachedPositions) + len(vm.cachedOrders))), nil
 }
 
 func builtinOrdersHistoryTotal(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -167,26 +181,45 @@ func builtinOrderSelect(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 
 	// MODE_TRADES (default)
+	// MQL4 MODE_TRADES includes both open positions and pending orders.
+	// Indexing: [0..len(positions)-1] = positions, [len(positions)..len(positions)+len(orders)-1] = pending orders.
+	if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+		vm.cachedPositions = vm.ctx.Broker().Positions(0)
+	}
+	if vm.cachedOrders == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+		vm.cachedOrders = vm.ctx.Broker().Orders(0)
+	}
+
 	if selectBy == 0 {
-		// SELECT_BY_POS — index into cached positions
-		if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
-			vm.cachedPositions = vm.ctx.Broker().Positions(0)
-		}
-		if index >= 0 && index < len(vm.cachedPositions) {
+		// SELECT_BY_POS — index into combined positions + pending orders
+		posCount := len(vm.cachedPositions)
+		if index >= 0 && index < posCount {
 			vm.currentPos = &vm.cachedPositions[index]
+			vm.currentOrder = nil
+			return interp.BoolVal(true), nil
+		}
+		orderIdx := index - posCount
+		if orderIdx >= 0 && orderIdx < len(vm.cachedOrders) {
+			vm.currentOrder = &vm.cachedOrders[orderIdx]
+			vm.currentPos = nil
 			return interp.BoolVal(true), nil
 		}
 		return interp.BoolVal(false), nil
 	}
 
-	// SELECT_BY_TICKET — find by ticket number
+	// SELECT_BY_TICKET — find by ticket number in positions then pending orders
 	ticket := int64(argI(args, 0))
-	if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
-		vm.cachedPositions = vm.ctx.Broker().Positions(0)
-	}
 	for i := range vm.cachedPositions {
 		if vm.cachedPositions[i].Ticket == ticket {
 			vm.currentPos = &vm.cachedPositions[i]
+			vm.currentOrder = nil
+			return interp.BoolVal(true), nil
+		}
+	}
+	for i := range vm.cachedOrders {
+		if vm.cachedOrders[i].Ticket == ticket {
+			vm.currentOrder = &vm.cachedOrders[i]
+			vm.currentPos = nil
 			return interp.BoolVal(true), nil
 		}
 	}
@@ -197,6 +230,9 @@ func builtinOrderSelect(vm *VM, args []interp.Value) (interp.Value, error) {
 // The VM stores the "current position" being iterated in currentPos.
 
 func builtinOrderStopLoss(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.DecimalVal(vm.currentOrder.StopLoss), nil
+	}
 	if vm.currentPos != nil {
 		return interp.DecimalVal(vm.currentPos.StopLoss), nil
 	}
@@ -204,6 +240,9 @@ func builtinOrderStopLoss(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderTakeProfit(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.DecimalVal(vm.currentOrder.TakeProfit), nil
+	}
 	if vm.currentPos != nil {
 		return interp.DecimalVal(vm.currentPos.TakeProfit), nil
 	}
@@ -211,6 +250,9 @@ func builtinOrderTakeProfit(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderTicket(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.IntVal(int32(vm.currentOrder.Ticket)), nil
+	}
 	if vm.currentPos != nil {
 		return interp.IntVal(int32(vm.currentPos.Ticket)), nil
 	}
@@ -230,7 +272,37 @@ func sideToOrderType(side sdk.PositionSide) int32 {
 	}
 }
 
+// orderTypeToMQL4 maps sdk.OrderType + side to MQL4 OP_* constants.
+// MQL4: OP_BUYLIMIT=2, OP_SELLLIMIT=3, OP_BUYSTOP=4, OP_SELLSTOP=5.
+func orderTypeToMQL4(ot sdk.OrderType, side sdk.PositionSide) int32 {
+	switch ot {
+	case sdk.OrderLimit:
+		if side == sdk.SideSell {
+			return 3 // OP_SELLLIMIT
+		}
+		return 2 // OP_BUYLIMIT
+	case sdk.OrderStop:
+		if side == sdk.SideSell {
+			return 5 // OP_SELLSTOP
+		}
+		return 4 // OP_BUYSTOP
+	default:
+		return 0
+	}
+}
+
+// pendingPriceModifier allows modifying the price of a pending order.
+// SimBroker implements this; live broker may not.
+type pendingPriceModifier interface {
+	PositionModifyPrice(ticket int64, price decimal.Decimal) (sdk.OrderResult, error)
+}
+
 func builtinOrderType(vm *VM, args []interp.Value) (interp.Value, error) {
+	// Pending orders: return MQL4 OP_* constants for limit/stop types.
+	if vm.currentOrder != nil {
+		return interp.IntVal(orderTypeToMQL4(vm.currentOrder.Type, vm.currentOrder.Side)), nil
+	}
+	// Open positions: return OP_BUY/OP_SELL.
 	if vm.currentPos != nil {
 		return interp.IntVal(sideToOrderType(vm.currentPos.Side)), nil
 	}
@@ -238,6 +310,9 @@ func builtinOrderType(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderLots(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.DecimalVal(vm.currentOrder.Volume), nil
+	}
 	if vm.currentPos != nil {
 		return interp.DecimalVal(vm.currentPos.Volume), nil
 	}
@@ -245,6 +320,9 @@ func builtinOrderLots(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderSymbol(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.StringVal(vm.currentOrder.Symbol), nil
+	}
 	if vm.currentPos != nil {
 		return interp.StringVal(vm.currentPos.Symbol), nil
 	}
@@ -252,6 +330,9 @@ func builtinOrderSymbol(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderOpenPrice(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.DecimalVal(vm.currentOrder.Price), nil
+	}
 	if vm.currentPos != nil {
 		return interp.DecimalVal(vm.currentPos.OpenPrice), nil
 	}
@@ -306,6 +387,9 @@ func builtinOrderProfit(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderMagicNumber(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.IntVal(vm.currentOrder.Magic), nil
+	}
 	if vm.currentPos != nil {
 		return interp.IntVal(vm.currentPos.Magic), nil
 	}
@@ -313,6 +397,9 @@ func builtinOrderMagicNumber(vm *VM, args []interp.Value) (interp.Value, error) 
 }
 
 func builtinOrderComment(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.StringVal(vm.currentOrder.Comment), nil
+	}
 	if vm.currentPos != nil {
 		return interp.StringVal(vm.currentPos.Comment), nil
 	}
@@ -320,6 +407,9 @@ func builtinOrderComment(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderOpenTime(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.currentOrder != nil {
+		return interp.IntVal(int32(vm.currentOrder.OpenTime.Unix())), nil
+	}
 	if vm.currentPos != nil {
 		return interp.IntVal(int32(vm.currentPos.OpenTime.Unix())), nil
 	}
@@ -579,5 +669,6 @@ func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 		}
 	}
 	vm.cachedPositions = nil
+	vm.cachedOrders = nil
 	return interp.BoolVal(allOK), nil
 }

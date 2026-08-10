@@ -103,6 +103,21 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		rec.Price = b.currentPrice
 	}
 
+	// fill_rule=limit: convert market orders to pending limit orders.
+	// The order waits for price to reach the limit price before filling.
+	// Commission and margin checks are deferred to fill time (checkPendingOrders).
+	if req.Type == sdk.OrderMarket && b.config.FillRule == "limit" {
+		rec.OrderType = sdk.OrderLimit
+		rec.State = OrderPending
+		b.pending = append(b.pending, rec)
+		return sdk.OrderResult{
+			RetCode: sdk.RetDone,
+			Ticket:  ticket,
+			Volume:  req.Volume,
+			Price:   rec.Price,
+		}, nil
+	}
+
 	// Apply spread to market order fills based on fill_rule:
 	// bar_close = no spread (idealized), market = spread (realistic).
 	// Pending orders fill at their specified price.
@@ -110,32 +125,25 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		rec.Price = b.applySpreadToFill(rec.Price, req.Side == sdk.SideBuy)
 	}
 
-	// Apply commission (basis points of volume)
-	b.applyCommission(rec)
-
-	// Slippage in MQL4 is the maximum acceptable deviation from requested price,
-	// not an additive cost. Spread is applied as a fill cost above.
-	// Slippage only matters for rejection checks when a separate fill price
-	// differs from the requested price (e.g. gaps).
-
-	// Check margin before opening — use equity including floating P&L
-	// (consistent with checkMarginCall's computeEquity, not just realized equity).
-	contractSize := b.config.ContractSize
-	if contractSize.IsZero() {
-		contractSize = decimal.NewFromInt(100000)
-	}
-	notional := req.Volume.Mul(contractSize).Mul(rec.Price)
-	margin := notional.Div(decimal.NewFromInt(int64(b.config.Leverage)))
-	equityWithFloating := b.Account().Equity
-	if equityWithFloating.LessThan(margin) {
-		return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
-	}
-
-	// Market orders fill immediately at current price
+	// Market orders: apply commission and check margin immediately at order time.
+	// Pending orders (native OP_BUYLIMIT etc.): commission and margin are deferred
+	// to fill time in checkPendingOrders (real MT4 semantics: pending orders don't
+	// incur commission or margin until they fill).
 	if req.Type == sdk.OrderMarket {
+		b.applyCommission(rec)
+
+		contractSize := b.config.ContractSize
+		if contractSize.IsZero() {
+			contractSize = decimal.NewFromInt(100000)
+		}
+		notional := req.Volume.Mul(contractSize).Mul(rec.Price)
+		margin := notional.Div(decimal.NewFromInt(int64(b.config.Leverage)))
+		equityWithFloating := b.Account().Equity
+		if equityWithFloating.LessThan(margin) {
+			return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
+		}
 		b.positions = append(b.positions, rec)
 	} else {
-		// Pending orders wait for price trigger
 		rec.State = OrderPending
 		b.pending = append(b.pending, rec)
 	}
@@ -329,6 +337,26 @@ func (b *SimBroker) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.Or
 		if pos.Ticket == ticket {
 			pos.StopLoss = sl
 			pos.TakeProfit = tp
+			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
+		}
+	}
+	// Pending orders also accept SL/TP modification (MQL4 OrderModify semantics).
+	for _, ord := range b.pending {
+		if ord.Ticket == ticket {
+			ord.StopLoss = sl
+			ord.TakeProfit = tp
+			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
+		}
+	}
+	return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+}
+
+// PositionModifyPrice changes the entry price of a pending order.
+// This implements the pendingPriceModifier interface for OrderModify's price arg.
+func (b *SimBroker) PositionModifyPrice(ticket int64, price decimal.Decimal) (sdk.OrderResult, error) {
+	for _, ord := range b.pending {
+		if ord.Ticket == ticket {
+			ord.Price = price
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 		}
 	}

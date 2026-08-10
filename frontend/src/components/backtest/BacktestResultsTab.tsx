@@ -27,6 +27,8 @@ import BacktestMetricCards from './BacktestMetricCards';
 const _ASSUMPTION_MAP: Record<string, string> = {
   MT_LIVE: 'strategy.backtest.assumptions.mtLive',
   MT_DATASET: 'strategy.backtest.assumptions.mtDataset',
+  OHLC_PATH: 'strategy.backtest.assumptions.mtOhlcPath',
+  KLINE_RANGE: 'strategy.backtest.assumptions.mtLive',
   next_bar_open: 'strategy.backtest.assumptions.nextBarOpen',
   same_bar_close: 'strategy.backtest.assumptions.sameBarClose',
   market: 'strategy.backtestParams.market',

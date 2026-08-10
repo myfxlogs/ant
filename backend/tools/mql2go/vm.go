@@ -29,12 +29,14 @@ type VM struct {
 	pc              int32
 	ticks           int64
 	signal          *sdk.Signal
-	currentPos      *sdk.Position   // current position being iterated (for Order* builtins)
-	cachedPositions []sdk.Position  // cached list for OrderSelect(i, SELECT_BY_POS, MODE_TRADES)
-	cachedHistory   []sdk.Position  // cached list for OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)
-	runCtx          context.Context // context for cancellation checks
-	callDepth       int             // current user function call depth
-	fatalError      string          // set when a critical builtin is missing (ADR §5.4)
+	currentPos      *sdk.Position      // current position being iterated (for Order* builtins)
+	currentOrder    *sdk.PendingOrder  // current pending order being iterated (for Order* builtins)
+	cachedPositions []sdk.Position     // cached list for OrderSelect(i, SELECT_BY_POS, MODE_TRADES)
+	cachedOrders    []sdk.PendingOrder // cached pending orders for MODE_TRADES indexing
+	cachedHistory   []sdk.Position     // cached list for OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)
+	runCtx          context.Context    // context for cancellation checks
+	callDepth       int                // current user function call depth
+	fatalError      string             // set when a critical builtin is missing (ADR §5.4)
 
 	// Pre-built lookup: EntryPC → FuncEntry (avoids O(n) scan per call)
 	funcByEntryPC map[int32]FuncEntry
@@ -159,7 +161,9 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 	// Reset state for this event invocation
 	vm.stack = vm.stack[:0]
 	vm.currentPos = nil
+	vm.currentOrder = nil
 	vm.cachedPositions = nil
+	vm.cachedOrders = nil
 	vm.cachedHistory = nil
 	vm.callDepth = 0
 	vm.pc = entryPC

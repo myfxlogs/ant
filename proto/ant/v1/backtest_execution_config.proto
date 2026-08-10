@@ -26,7 +26,7 @@ message BacktestExecutionConfig {
   string margin_call_level = 8; // equity/balance ratio threshold for forced close, e.g. "0.5" = 50%
   string signal_timing = 9;     // "next_bar_open" | "same_bar_close"; empty = derive from strict_mode
   string fill_rule = 10;        // "bar_close" | "market" | "limit"; empty = "bar_close"
-  string simulation_mode = 11;  // "KLINE_RANGE" | "DATASET"; empty = "KLINE_RANGE"
+  string simulation_mode = 11;  // "KLINE_RANGE" | "OHLC_PATH"; empty = "KLINE_RANGE"
 }
 
 // StrategyConfig is the runtime execution behavior derived from @strategy
@@ -76,7 +76,7 @@ message ExecutionConfig {
 // ExecutionAssumptions describes what the engine actually did during the run.
 // Returned in the backtest response for the post-backtest transparency panel.
 message ExecutionAssumptions {
-  string simulation_mode = 1;      // "KLINE_RANGE" or "DATASET"
+  string simulation_mode = 1;      // "KLINE_RANGE" or "OHLC_PATH"
   string signal_timing = 2;        // "next_bar_open" or "same_bar_close"
   string fill_rule = 3;            // fill semantics used
   string mtf_fallback_reason = 4;  // empty if MTF sub-resolution was active
