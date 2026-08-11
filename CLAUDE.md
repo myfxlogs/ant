@@ -50,7 +50,7 @@
 2. `docs/audits/handover-audit-plan.md` — 审计全局进度（管线状态表 + 变更日志）。
 3. `memory/`（`open-items-registry.md` + `MEMORY.md`）— 高优摘要，Claude Code 跨会话自动注入。
 
-**无损接手铁律（完工标 ✅ 不删）**：三层的目的 = 任何一方（审计方/施工方/后续 agent）休息，另一方读三层即可完整恢复"做了什么 / 为什么 / 验过没"。故完工项**标 ✅ 保留行，永不删除**——registry ✅ 行带根因/修复/对抗证明保留、memory 指针完工项标 ✅ + 指向 docs（不删行）、handover 变更日志 append-only。删一条完工记录 = 接手方少一块拼图 = 有损；**删了还以为没做，比没做更糟**。详见 `docs/audits/builder-sop.md` §2.6。
+**无损接手铁律（完工标 ✅ 不删）**：三层的目的 = 任何一方（审计方/施工方/后续 agent）休息，另一方读三层即可完整恢复"做了什么 / 为什么 / 验过没"。故完工项**标 ✅ 保留行，永不删除**——registry ✅ 行带根因/修复/对抗证明保留、memory 指针完工项标 ✅ + 指向 docs（不删行）、handover 变更日志 append-only。删一条完工记录 = 接手方少一块拼图 = 有损；**删了还以为没做，比没做更糟**。详见 `docs/audits/builder-sop.md` §2.6。**🆕 2026-08-11 修订（用户批准，省 token）**：✅done **明细行**允许归档 git——registry/handover 文件只留状态行 + 最近 changelog + "靠 git 追溯"指针；**open/返工中条目 + 根因 + 对抗测试记录 + changelog 追加**仍必留文件内。历史明细追溯：`git log --oneline -- <file>`。**自动执行（同日起，用户要求机器强制不靠提醒）**：git pre-commit 钩子 `scripts/hooks/pre-commit`（`core.hooksPath` 已注册；新 clone 需 `git config core.hooksPath scripts/hooks`）强制——变更日志条目 / ✅ 行 / 状态行禁删，唯一例外 = 文件仍保留"靠 git 追溯"指针的文档化裁剪；**任何 agent（含施工方）提交违规即被拦**，被拦 = 改好文档再提交，禁 `--no-verify` 绕过；施工方入口 `.windsurfrules`/`AGENTS.md` 同列该条。
 
 **记忆分层**（多工具协作 — 强制）：
 

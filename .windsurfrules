@@ -8,6 +8,7 @@
 - 当前由你(Windsurf)独立推进（Claude Code 轮休）。你同时做**审计**（管线核验四问：通不通/边界/旧审计落位/文档对账；出 gap；对账 ❓条目）+ **施工**（实现 🟦open 条目）。
 - **三铁律防自审失效**：① 对抗证明（删关键行测试必红，客观兜底，替代独立审计）；② 红队自审（施工后切怀疑者视角找 bug，不信任自己代码）；③ 关键/架构/不可逆决策 registry 标 `⚠️待Claude复审`，常规修复自主完成。
 - **无损交接**：所有结论+施工落三层文档（registry/handover-plan/memory），不进私有 memory。每完成一项 handover-plan 变更日志+registry 状态更新。Claude 回来读这三处 + 挑 ⚠️ 项重验。
+- **文档规则自动执行**（2026-08-11）：✅done 明细可归档 git（文件留状态 + 最近 changelog + "靠 git 追溯"指针），但 ① open/返工中条目 + 根因 + 对抗测试记录必留文件内 ② 变更日志条目 / ✅ 行 / 状态行禁删（唯一例外：文件仍保留"靠 git 追溯"指针的文档化裁剪）。**git pre-commit 钩子（`scripts/hooks/pre-commit`）强制，违规提交被拦**——被拦 = 改好文档再提交，禁 `--no-verify` 绕过。
 - 新会话第一步：读 handover-audit-plan.md + tech-debt-registry.md（无 memory 自动注入，必须主动读）。
 - 动工前：读 registry 条目 + git log/blame（禁重写）+ cap.sh 查复用。
 - 完工回填：registry 🟦→✅ + 根因/对抗证明/测试；pitfall 沉淀 AGENTS.md；不新建并行文档。状态语义：❓待核 / 🟦open / ✅done / ⚠️待Claude复审。

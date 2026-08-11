@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# 文档管理规则自动执行（2026-08-11 用户要求：规则靠机器强制，不靠人工提醒）
+# 规则源：CLAUDE.md「无损接手铁律」+ docs/audits/builder-sop.md §2.6（2026-08-11 修订版）
+# 适用：所有 agent（Claude Code / Windsurf / 任何接手 agent）——git 层强制，与提交者无关。
+# 用法：无参 = 检查已暂存（pre-commit 钩子）；传 BASE_REF = 检查 BASE_REF...HEAD（CI 用）。
+# 规则：① 变更日志条目（"- 20xx-..."）禁删/改 ② registry ✅ 行/状态标记行禁删。
+# 例外：文件新版本仍含"靠 git 追溯"指针 = 文档化裁剪（用户批准的方式），放行。
+# 违规 = 提交被拦，改好文档再提交；禁止 --no-verify 绕过。
+
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 1
+fail=0
+base="${1:-}"
+
+for f in docs/audits/handover-audit-plan.md docs/audits/tech-debt-registry.md; do
+  if [ -n "$base" ]; then
+    diff=$(git diff "$base...HEAD" -- "$f" 2>/dev/null) || continue
+    new=$(git show "HEAD:$f" 2>/dev/null)
+  else
+    git diff --cached --quiet -- "$f" && continue
+    diff=$(git diff --cached -- "$f")
+    new=$(git show ":$f" 2>/dev/null)
+  fi
+
+  # 被删的文件行（排除 --- 头），命中任一模式 = 疑似违规：
+  # ① 变更日志条目 ② 含 ✅ 的行 ③ 含状态标记 🟦open/❓/⚠️ 的行
+  deleted=$(echo "$diff" | grep '^-' | grep -v '^---' | grep -E '^- 20[0-9]{2}-|✅|🟦open|❓|⚠️')
+  if [ -n "$deleted" ]; then
+    if ! echo "$new" | grep -q '追溯'; then
+      echo "❌ 文档规则：$f 删除了完工/状态记录（变更日志条目 / ✅ 行 / 🟦open 行）。" >&2
+      echo "   → 无意删除：恢复该行再提交；有意裁剪：文件必须保留"靠 git 追溯"指针行（用户批准的方式）。" >&2
+      fail=1
+    fi
+  fi
+done
+
+exit $fail

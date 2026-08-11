@@ -36,6 +36,7 @@
   - [ ] handover-audit-plan.md 变更日志已加一行？
   - [ ] 如有关键决策，已标 `⚠️待Claude复审`？
   - **违反 ② = 违反无损交接纪律，等同施工未完成。禁止"做完再批量补 handover"。**
+- ⑥ **文档规则自动执行**（2026-08-11 起）：✅done 明细可归档 git（文件留状态 + 最近 changelog + "靠 git 追溯"指针，见 CLAUDE.md 铁律修订版），但 ① open/返工中条目 + 根因 + 对抗测试记录必留文件内 ② 变更日志条目 / ✅ 行 / 状态行禁删（唯一例外：文件仍保留"靠 git 追溯"指针的文档化裁剪）。**git pre-commit 钩子（`scripts/hooks/pre-commit`）强制，违规提交被拦**——被拦即改文档，禁 `--no-verify` 绕过。
 
 状态语义：`❓待核` / `🟦open` / `✅done`（自主完成：对抗证明+红队自审通过）/ `⚠️待Claude复审`（关键决策待独立复审）。详细 SOP 见 [`docs/audits/builder-sop.md`](docs/audits/builder-sop.md)。
 

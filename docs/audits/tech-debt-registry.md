@@ -33,6 +33,7 @@
 - **UX-6** 实盘SSE断流伪装无策略 → 已实现（保留旧数据+2s重连+Alert横幅）
 - **UX-7** 4公开路由无ErrorBoundary → 已实现（全wrap()）
 - **UX-8** build无类型检查 → ✅ 返工：`package.json` build=`tsc --noEmit -p tsconfig.app.json && vite build`，CI `npx tsc --noEmit -p tsconfig.app.json`。erasableSyntaxOnly 移除动因：恢复 flag → src/gen/ 11×TS1294 enum 错误（被 import 的 gen 不受 exclude 挡），故移除。T4/T5 对抗测试 ✅
+- **🆕 2026-08-11 审计方复审（af565aa7 返工）**：4 缺陷实现 ✅ 验收通过（代码级核对 + 全门禁实测绿：tsc 0err/vitest 146/go build/go test/check-file-lines 0err/npm build）。**对抗证明 5/8 无效（审计方独立删行实测）**：T1 缓存命中复现 `-1` 仍绿——`TestPublishedCache_HitReturnsTotal` 只测 set/get 单元，不调 `ListPublished` 主路径；T6/T7 删 handler `ORDER BY updated_at DESC LIMIT 1` 仍绿——测试断言测试文件内字符串字面量，不触 `share_handler.go`；T3 删 `backtestContent` 接线仍绿——渲染手写 div，从不渲染 `BottomPanelSection`；T8 同模式（手写 Alert，不渲染 LivePerformanceTab）。有效：T2（`buildPublishedCountQuery` SQL 断言，属上轮 990aa947 功能非本返工）、T4/T5（package.json 契约）。**裁决：实现验收 ✅；对抗证明不达标 = 未完成**（铁律：删了还绿=测试无效）。待补：T1 走 ListPublished 集成（缓存命中 total 真值）/ T3+T8 渲染真实组件 / T6+T7 抽可测函数。
 
 **🟡 显著摩擦 20 条** + **🟢 轻微 16 条**：详见 git 历史 `tech-debt-registry.md@2026-08-10`。
 
@@ -48,6 +49,7 @@ POST-1 返工施工完成（4 缺陷 + 8 对抗测试），待审计方实测验
 
 ## 变更日志
 
+- 2026-08-11 **UX-1~8 返工复审（审计方实测）**：4 缺陷实现 ✅ 验收通过；对抗证明 5/8 无效（删行实测 T1/T6/T7 仍绿 + T3/T8 结构判定同模式）→ 补强测试返工单。88a95c3d 文档裁剪=用户批准（✅done 明细归档 git，已修订 CLAUDE.md/builder-sop §2.6）。
 - 2026-08-11 **POST-1 UX-1~8 返工施工**：4 缺陷修复（UX-3 缓存 total=-1 / UX-4 移动端回测面板 / UX-8 tsc 真门禁 / UX-1 查询确定性）+ 8 项对抗测试（T1-T8）。门禁全绿：go build + check-file-lines 0err + tsc + vitest 146pass + build。待审计方实测验收。
 - 2026-08-11 **Part D 验收 + UX-1~8 复审**：Part D（runbook 12实写+CQ-2 knip 0issue+CQ-9 前端收尾）审计方实测 ✅。UX-1~8 复审：TS清零✅实测，UX-3 缓存total=-1/UX-4 修错面板/UX-8 CI空操作 3缺陷打回，8项对抗测试全缺，维持🟦open。
 - 2026-08-10 **FILL-SIM 验收通过 ✅**：Phase A-E 全部完成，2阻塞级缺口补强后审计方独立复测通过，⚠️解除。FILL-SIM 闭环。
