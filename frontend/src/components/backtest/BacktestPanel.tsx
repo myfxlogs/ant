@@ -34,9 +34,6 @@ export default function BacktestPanel(props: Props) {
   const { t } = useTranslation();
   const [tuningMode, setTuningMode] = useState<'interactive' | 'batch'>('interactive');
 
-  const _handleRun = () => runner.run(inputs);
-  const _canRun = Boolean(inputs.strategyCode && inputs.symbol) && !runner.submitting;
-
   // ── Measure actual content height for table scroll sizing ─────────────
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(300);
@@ -170,9 +167,9 @@ export default function BacktestPanel(props: Props) {
         {/* ── Gate Tab ────────────────────────────────────────────────── */}
         {runner.activeTab === 'gate' && runner.gate && (
           <GatePanel
-            loading={runner.gate.loading || false} gates={runner.gate.gates || []} summary={runner.gate.summary || null}
-            error={runner.gate.error || ''} status={runner.status} canRun={runner.status === 'completed' || runner.status === 'degraded'}
-            onRun={runner.gate.run || (() => {})}
+            loading={runner.gate.gateLoading || false} gates={runner.gate.gateGates || []} summary={runner.gate.gateSummary || null}
+            error={runner.gate.gateError || ''} status={runner.status} canRun={runner.status === 'completed' || runner.status === 'degraded'}
+            onRun={runner.gate.runGate || (() => {})}
             fixDepth={runner.fixDepth || 0}
           />
         )}

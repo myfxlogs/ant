@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Table, Tag, Typography, Button, Card, Space, message, Popconfirm, Tabs, Empty, Tooltip } from 'antd';
+import { Table, Tag, Typography, Button, Card, Space, message, Popconfirm, Tabs, Empty, Tooltip, Alert } from 'antd';
 import { ReloadOutlined, StopOutlined, EyeOutlined, MonitorOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { strategyActiveApi, strategyRunsApi } from '@/client/strategy';
@@ -20,6 +20,7 @@ export default function LiveStrategyPage() {
   const [watchingRunId, setWatchingRunId] = useState<string | null>(null);
   const [signals, setSignals] = useState<StrategySignalEvent[]>([]);
   const abortRef = useRef<AbortController | null>(null);
+  const [streamError, setStreamError] = useState(false);
 
   const fetchRuns = useCallback(async () => {
     setLoading(true);
@@ -34,20 +35,28 @@ export default function LiveStrategyPage() {
 
   useEffect(() => {
     if (activeTab !== 'active') return;
-    const abort = new AbortController();
-    setLoading(true);
-    (async () => {
-      try {
-        for await (const event of strategyActiveApi.watchActive('', abort.signal)) {
-          setActiveStrategies((event.strategies || []) as ActiveStrategy[]);
-          setLoading(false);
+    let active = true;
+    const connect = async () => {
+      while (active) {
+        const ctrl = new AbortController();
+        try {
+          setLoading(true);
+          for await (const event of strategyActiveApi.watchActive('', ctrl.signal)) {
+            setActiveStrategies((event.strategies || []) as ActiveStrategy[]);
+            setLoading(false);
+            setStreamError(false);
+          }
+        } catch {
+          // Stream ended — keep existing data, show reconnect banner
         }
-      } catch {
-        setActiveStrategies([]);
-        setLoading(false);
+        ctrl.abort();
+        if (!active) break;
+        setStreamError(true);
+        await new Promise(r => setTimeout(r, 2000));
       }
-    })();
-    return () => abort.abort();
+    };
+    connect();
+    return () => { active = false; };
   }, [activeTab]);
 
   useEffect(() => {
@@ -83,17 +92,13 @@ export default function LiveStrategyPage() {
           setSignals(prev => [...prev.slice(-199), event as StrategySignalEvent]);
         }
       } catch (e: unknown) {
-        if (e instanceof Error && e.name !== 'AbortError') {
-          // Stream ended (strategy stopped)
-        }
+        if (e instanceof Error && e.name !== 'AbortError') { /* stream ended */ }
       }
     })();
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (abortRef.current) abortRef.current.abort();
-    };
+    return () => { if (abortRef.current) abortRef.current.abort(); };
   }, []);
 
   const activeColumns = [
@@ -143,44 +148,24 @@ export default function LiveStrategyPage() {
   ];
 
   const runColumns = [
-    {
-      title: t('strategy.live.runId', { defaultValue: 'Run ID' }), dataIndex: 'id', width: 100,
-      render: (v: string) => <Text code copyable>{shortId(v)}</Text>,
-    },
-    {
-      title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120,
-      render: (v: string) => <Text style={{ fontSize: 12 }}>{v}</Text>,
-    },
-    {
-      title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80,
-    },
-    {
-      title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60,
-    },
-    {
-      title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70,
-      render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag>,
-    },
-    {
-      title: t('strategy.live.status', { defaultValue: 'Status' }), dataIndex: 'status', width: 90,
-      render: (v: string) => <Tag color={STATUS_COLORS[v] || 'default'}>{v}</Tag>,
-    },
-    {
-      title: t('strategy.live.totalSignals', { defaultValue: 'Total Signals' }), dataIndex: 'totalSignals', width: 90,
-      render: (v: number) => <Text strong>{v}</Text>,
-    },
-    {
-      title: t('strategy.live.startedAt', { defaultValue: 'Started' }), dataIndex: 'startedAt', width: 140,
-      render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text>,
-    },
-    {
-      title: t('strategy.live.stoppedAt', { defaultValue: 'Stopped' }), dataIndex: 'stoppedAt', width: 140,
-      render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text>,
-    },
-    {
-      title: t('strategy.live.error', { defaultValue: 'Error' }), dataIndex: 'error', ellipsis: true,
-      render: (v: string) => v ? <Tooltip title={v}><Text type="danger" style={{ fontSize: 12 }}>{v}</Text></Tooltip> : <Text type="secondary">-</Text>,
-    },
+    { title: t('strategy.live.runId', { defaultValue: 'Run ID' }), dataIndex: 'id', width: 100,
+      render: (v: string) => <Text code copyable>{shortId(v)}</Text> },
+    { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120,
+      render: (v: string) => <Text style={{ fontSize: 12 }}>{v}</Text> },
+    { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
+    { title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60 },
+    { title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70,
+      render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag> },
+    { title: t('strategy.live.status', { defaultValue: 'Status' }), dataIndex: 'status', width: 90,
+      render: (v: string) => <Tag color={STATUS_COLORS[v] || 'default'}>{v}</Tag> },
+    { title: t('strategy.live.totalSignals', { defaultValue: 'Total Signals' }), dataIndex: 'totalSignals', width: 90,
+      render: (v: number) => <Text strong>{v}</Text> },
+    { title: t('strategy.live.startedAt', { defaultValue: 'Started' }), dataIndex: 'startedAt', width: 140,
+      render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text> },
+    { title: t('strategy.live.stoppedAt', { defaultValue: 'Stopped' }), dataIndex: 'stoppedAt', width: 140,
+      render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text> },
+    { title: t('strategy.live.error', { defaultValue: 'Error' }), dataIndex: 'error', ellipsis: true,
+      render: (v: string) => v ? <Tooltip title={v}><Text type="danger" style={{ fontSize: 12 }}>{v}</Text></Tooltip> : <Text type="secondary">-</Text> },
   ];
 
   return (
@@ -193,6 +178,15 @@ export default function LiveStrategyPage() {
           </Button>
         )}
       </div>
+
+      {streamError && activeTab === 'active' && (
+        <Alert
+          type="warning"
+          message={t('strategy.live.streamDisconnected', { defaultValue: 'Connection interrupted, reconnecting…' })}
+          showIcon
+          style={{ marginBottom: 12 }}
+        />
+      )}
 
       <Tabs
         activeKey={activeTab}

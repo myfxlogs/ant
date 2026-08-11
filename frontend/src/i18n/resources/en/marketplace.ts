@@ -148,6 +148,12 @@ const Marketplace = {
       "winRate": "Win Rate",
       "equityCurve": "Equity Curve"
     },
+    "decay": {
+      "badgeDecaying": "Performance Declining",
+      "badgeDecayed": "Strategy Decayed",
+      "descDecaying": "Platform detected sustained performance decline. Monitoring in progress.",
+      "descDecayed": "Platform detected significant performance decay. New purchases are no longer available."
+    },
     "share": {
       "copyLink": "Copy Link",
       "linkCopied": "Link copied!",

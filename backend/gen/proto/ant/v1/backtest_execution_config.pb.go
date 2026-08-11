@@ -89,7 +89,7 @@ type BacktestExecutionConfig struct {
 	MarginCallLevel string                 `protobuf:"bytes,8,opt,name=margin_call_level,json=marginCallLevel,proto3" json:"margin_call_level,omitempty"` // equity/balance ratio threshold for forced close, e.g. "0.5" = 50%
 	SignalTiming    string                 `protobuf:"bytes,9,opt,name=signal_timing,json=signalTiming,proto3" json:"signal_timing,omitempty"`            // "next_bar_open" | "same_bar_close"; empty = derive from strict_mode
 	FillRule        string                 `protobuf:"bytes,10,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                       // "bar_close" | "market" | "limit"; empty = "bar_close"
-	SimulationMode  string                 `protobuf:"bytes,11,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`     // "KLINE_RANGE" | "DATASET"; empty = "KLINE_RANGE"
+	SimulationMode  string                 `protobuf:"bytes,11,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`     // "KLINE_RANGE" | "OHLC_PATH"; empty = "KLINE_RANGE"
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -620,7 +620,7 @@ func (x *ExecutionConfig) GetSignalTiming() string {
 // Returned in the backtest response for the post-backtest transparency panel.
 type ExecutionAssumptions struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
-	SimulationMode    string                 `protobuf:"bytes,1,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`            // "KLINE_RANGE" or "DATASET"
+	SimulationMode    string                 `protobuf:"bytes,1,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`            // "KLINE_RANGE" or "OHLC_PATH"
 	SignalTiming      string                 `protobuf:"bytes,2,opt,name=signal_timing,json=signalTiming,proto3" json:"signal_timing,omitempty"`                  // "next_bar_open" or "same_bar_close"
 	FillRule          string                 `protobuf:"bytes,3,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                              // fill semantics used
 	MtfFallbackReason string                 `protobuf:"bytes,4,opt,name=mtf_fallback_reason,json=mtfFallbackReason,proto3" json:"mtf_fallback_reason,omitempty"` // empty if MTF sub-resolution was active

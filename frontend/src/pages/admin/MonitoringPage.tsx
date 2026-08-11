@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Card, Col, Row, Statistic, Tag, Progress, Space, Alert, Descriptions } from 'antd';
 import { MonitorOutlined, DatabaseOutlined, CloudServerOutlined, ApiOutlined, ThunderboltOutlined, WarningOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { adminMonitorStreamClient } from '@/client/connect';
 import { create } from '@bufbuild/protobuf';
 import { SubscribeMetricsRequestSchema } from '@/gen/ant/v1/admin_monitor_pb';
@@ -15,7 +16,7 @@ function formatBytes(bytes: bigint | number): string {
   return b + ' B';
 }
 
-function formatUptime(seconds: number, t: (k: string, o?: unknown) => string): string {
+function formatUptime(seconds: number, t: TFunction): string {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -32,7 +33,7 @@ function formatNs(ns: number): string {
   return ns.toFixed(0) + ' ns';
 }
 
-function StatusTag({ status, t }: { status: string; t: (k: string, o?: unknown) => string }) {
+function StatusTag({ status, t }: { status: string; t: TFunction }) {
   if (!status) return <Tag>{t('monitoring.unknown', { defaultValue: 'Unknown' })}</Tag>;
   const isOk = status === 'ok';
   return (

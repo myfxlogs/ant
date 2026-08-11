@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, Table, Input, Select, Space, Tag, Popconfirm, Button, message, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
-import type { TableRowSelection } from 'antd/es/table';
+import type { TableProps } from 'antd';
 import { PlusOutlined, DeleteOutlined, UserDeleteOutlined, AuditOutlined, KeyOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
 import { StatusResult } from '@/components/common/StatusResult';
@@ -22,9 +22,9 @@ export default function UserManagement() {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [batchDeleting, setBatchDeleting] = useState(false);
 
-  const rowSelection: TableRowSelection<UserWithAccounts> = {
+  const rowSelection: TableProps<UserWithAccounts>['rowSelection'] = {
     selectedRowKeys,
-    onChange: (keys) => setSelectedRowKeys(keys),
+    onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
   };
 

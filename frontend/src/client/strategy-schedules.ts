@@ -1,7 +1,7 @@
-import type { PartialMessage } from '@bufbuild/protobuf';
 import { create } from '@bufbuild/protobuf';
 import { strategyClient } from './connect';
 import { ScheduleConfigSchema, type ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
+import { CreateScheduleRequestSchema, UpdateScheduleRequestSchema, type CreateScheduleRequest, type UpdateScheduleRequest } from '../gen/ant/v1/strategy_schedule_control_pb';
 import { strategyApi } from './strategy';
 import type { RunBacktestResult } from './strategy';
 
@@ -14,7 +14,7 @@ function toBigInt(v: unknown): bigint {
   return 0n;
 }
 
-function normalizeScheduleConfig(cfg: PartialMessage<ScheduleConfig> | undefined): ScheduleConfig {
+function normalizeScheduleConfig(cfg: Partial<ScheduleConfig> | undefined): ScheduleConfig {
   if (!cfg) {
     return create(ScheduleConfigSchema, {
       cronExpression: '',
@@ -44,7 +44,7 @@ export const strategyScheduleApi = {
     timeframe: string;
     parameters?: Record<string, string>;
     scheduleType: string;
-    scheduleConfig?: PartialMessage<ScheduleConfig>;
+    scheduleConfig?: Partial<ScheduleConfig>;
   }) => {
     const scheduleConfig = normalizeScheduleConfig(params.scheduleConfig);
     return await strategyClient.createSchedule({
@@ -66,7 +66,7 @@ export const strategyScheduleApi = {
     timeframe?: string;
     parameters?: Record<string, string>;
     scheduleType?: string;
-    scheduleConfig?: PartialMessage<ScheduleConfig>;
+    scheduleConfig?: Partial<ScheduleConfig>;
     accountId?: string;
   }) => {
     const scheduleConfig = params.scheduleConfig ? normalizeScheduleConfig(params.scheduleConfig) : undefined;
@@ -108,7 +108,17 @@ export const strategyScheduleApi = {
     });
     return {
       success: response.success,
-      metrics: response.metrics,
+      metrics: response.metrics ? {
+        totalReturn: Number(response.metrics.totalReturn),
+        annualReturn: Number(response.metrics.annualReturn),
+        sharpeRatio: Number(response.metrics.sharpeRatio),
+        maxDrawdown: Number(response.metrics.maxDrawdown),
+        winRate: Number(response.metrics.winRate),
+        profitFactor: Number(response.metrics.profitFactor),
+        totalTrades: Number(response.metrics.totalTrades),
+        averageProfit: Number(response.metrics.averageProfit),
+        averageLoss: Number(response.metrics.averageLoss),
+      } : undefined,
       riskScore: response.riskScore,
       riskLevel: response.riskLevel,
       riskReasons: response.riskReasons,
@@ -131,9 +141,17 @@ export const strategyScheduleV2Api = {
   watch: (signal?: AbortSignal) => strategyClient.watchSchedules({}, { signal }),
   list: strategyApi.listSchedules,
   get: strategyApi.getSchedule,
-  create: strategyApi.createSchedule,
-  update: strategyApi.updateSchedule,
-  delete: strategyApi.deleteSchedule,
-  toggle: strategyApi.toggleSchedule,
-  runBacktest: strategyApi.runBacktest,
+  create: (req: Omit<CreateScheduleRequest, '$typeName' | '$unknown'>) => strategyClient.createSchedule(create(CreateScheduleRequestSchema, req)),
+  update: (req: Omit<UpdateScheduleRequest, '$typeName' | '$unknown'>) => strategyClient.updateSchedule(create(UpdateScheduleRequestSchema, req)),
+  delete: (id: string) => strategyClient.deleteSchedule({ id }),
+  toggle: (id: string, active: boolean) => strategyClient.toggleSchedule({ id, active }),
+  runBacktest: (params: { templateId: string; accountId: string; symbol: string; timeframe: string; parameters?: Record<string, string>; initialCapital?: number }) =>
+    strategyClient.runBacktest({
+      templateId: params.templateId,
+      accountId: params.accountId,
+      symbol: params.symbol,
+      timeframe: params.timeframe,
+      parameters: params.parameters || {},
+      initialCapital: String(params.initialCapital || 10000),
+    }),
 };

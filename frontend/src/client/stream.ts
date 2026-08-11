@@ -25,11 +25,6 @@ export interface StreamCallbacks {
   onError?: (error: Error) => void;
 }
 
-type _Listener<T> = {
-  onData: (v: T) => void;
-  onError?: (error: unknown) => void;
-};
-
 function dispatchStreamEvent(e: StreamEvent, callbacks: StreamCallbacks): void {
   switch (e.payload.case) {
     case 'orderUpdate':
@@ -121,10 +116,10 @@ export const streamApi = {
     callback: (profit: ProfitUpdate) => void,
     onError?: (error: unknown) => void,
   ) => {
-    return subscribeShared(
+    return subscribeShared<ProfitUpdate>(
       sharedProfitStreams,
       accountId,
-      (signal) => streamClient.subscribeProfitUpdates({ accountId }, { signal }),
+      (signal) => streamClient.subscribeProfitUpdates({ accountId }, { signal }) as unknown as AsyncIterable<ProfitUpdate>,
       { onData: callback, onError },
     );
   },
@@ -134,10 +129,10 @@ export const streamApi = {
     callback: (order: OrderUpdate) => void,
     onError?: (error: unknown) => void,
   ) => {
-    return subscribeShared(
+    return subscribeShared<OrderUpdate>(
       sharedOrderStreams,
       accountId,
-      (signal) => streamClient.subscribeOrderUpdates({ accountId }, { signal }),
+      (signal) => streamClient.subscribeOrderUpdates({ accountId }, { signal }) as unknown as AsyncIterable<OrderUpdate>,
       { onData: callback, onError },
     );
   },

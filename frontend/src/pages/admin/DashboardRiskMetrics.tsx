@@ -24,7 +24,8 @@ interface Props {
 
 export function DashboardRiskMetrics({ metrics, selectedWindow, onWindowChange }: Props) {
   const { t } = useTranslation();
-  const riskWindows: RiskWindow[] = ((metrics?.app?.riskWindows as RiskWindow[]) || []).map((item) => ({
+  const app = (metrics?.app ?? {}) as Record<string, unknown>;
+  const riskWindows: RiskWindow[] = ((app.riskWindows as RiskWindow[]) || []).map((item) => ({
     ...item, window: item?.window || `${item?.hours || 0}h`,
   }));
   const activeWindow = riskWindows.find((item) => item.window === selectedWindow)
@@ -36,14 +37,14 @@ export function DashboardRiskMetrics({ metrics, selectedWindow, onWindowChange }
     <>
       <Card title={t('admin.dashboard.riskMetrics.title')}>
         <Row gutter={[16, 16]}>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidateTotal')} value={toNumber(metrics?.app?.riskValidateTotal)} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidatePass')} value={toNumber(metrics?.app?.riskValidatePass)} valueStyle={{ color: '#52c41a' }} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidateReject')} value={toNumber(metrics?.app?.riskValidateReject)} valueStyle={{ color: '#fa8c16' }} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidateError')} value={toNumber(metrics?.app?.riskValidateError)} valueStyle={{ color: '#ff4d4f' }} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderSendSuccess')} value={toNumber(metrics?.app?.orderSendSuccess)} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderSendFailed')} value={toNumber(metrics?.app?.orderSendFailed)} valueStyle={{ color: '#ff4d4f' }} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderCloseSuccess')} value={toNumber(metrics?.app?.orderCloseSuccess)} /></Col>
-          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderCloseFailed')} value={toNumber(metrics?.app?.orderCloseFailed)} valueStyle={{ color: '#ff4d4f' }} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidateTotal')} value={toNumber(app.riskValidateTotal)} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidatePass')} value={toNumber(app.riskValidatePass)} valueStyle={{ color: '#52c41a' }} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidateReject')} value={toNumber(app.riskValidateReject)} valueStyle={{ color: '#fa8c16' }} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.riskValidateError')} value={toNumber(app.riskValidateError)} valueStyle={{ color: '#ff4d4f' }} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderSendSuccess')} value={toNumber(app.orderSendSuccess)} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderSendFailed')} value={toNumber(app.orderSendFailed)} valueStyle={{ color: '#ff4d4f' }} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderCloseSuccess')} value={toNumber(app.orderCloseSuccess)} /></Col>
+          <Col xs={12} sm={8} lg={6}><Statistic title={t('admin.dashboard.riskMetrics.orderCloseFailed')} value={toNumber(app.orderCloseFailed)} valueStyle={{ color: '#ff4d4f' }} /></Col>
         </Row>
       </Card>
 

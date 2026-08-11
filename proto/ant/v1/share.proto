@@ -50,6 +50,7 @@ message GetSharedPerformanceResponse {
   repeated SharedPosition positions = 16;
   ShareTradeStats trade_stats = 17;
   repeated ShareSymbolStat symbol_stats = 18;
+  string decay_status = 19;        // none | decaying | decayed (buyer visibility)
 }
 
 message SharedTrade {

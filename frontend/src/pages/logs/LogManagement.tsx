@@ -40,14 +40,14 @@ export default function LogManagement() {
   const [opResult, setOpResult] = useState('');
 
   const { data: accounts = [] } = useRpcQuery(['logs', 'accounts'],
-    async () => { const accs = await accountApi.list(); return (Array.isArray(accs) ? accs : []) as AccountLike[]; });
+    async () => { const accs = await accountApi.list(); return (Array.isArray(accs) ? accs : []) as unknown as AccountLike[]; });
 
   const { data: queryResult, isLoading: loading, error: queryError, refetch } = useRpcQuery(
     ['logs', activeTab, page, pageSize, filters],
     async () => {
       switch (activeTab) {
         case 'connection': return logApi.getConnectionLogs({ page, pageSize, ...filters });
-        case 'execution': return logApi.getExecutionLogs({ page, pageSize, ...filters });
+        case 'execution': return logApi.getOrderHistory({ page, pageSize, ...filters });
         case 'orders': return logApi.getOrderHistory({ page, pageSize, ...filters });
         default: return logApi.getOperationLogs({ page, pageSize, ...filters });
       }
@@ -145,7 +145,7 @@ export default function LogManagement() {
         />
         <StatusResult loading={loading} error={error} empty={!loading && !error && filteredLogs.length === 0}
           emptyText={t('common.noData', { defaultValue: 'No logs found' })} onRetry={() => refetch()}>
-          <Table scroll={{ x: 'max-content' }} columns={columns} dataSource={filteredLogs} rowKey="id"
+          <Table scroll={{ x: 'max-content' }} columns={columns as never} dataSource={filteredLogs as never} rowKey="id"
             pagination={{ current: page, pageSize, total, onChange: (p, ps) => { setPage(p); setPageSize(ps); } }} />
         </StatusResult>
       </Card>

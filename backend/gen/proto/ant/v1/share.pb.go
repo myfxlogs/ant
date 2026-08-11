@@ -213,6 +213,7 @@ type GetSharedPerformanceResponse struct {
 	Positions     []*SharedPosition      `protobuf:"bytes,16,rep,name=positions,proto3" json:"positions,omitempty"`
 	TradeStats    *ShareTradeStats       `protobuf:"bytes,17,opt,name=trade_stats,json=tradeStats,proto3" json:"trade_stats,omitempty"`
 	SymbolStats   []*ShareSymbolStat     `protobuf:"bytes,18,rep,name=symbol_stats,json=symbolStats,proto3" json:"symbol_stats,omitempty"`
+	DecayStatus   string                 `protobuf:"bytes,19,opt,name=decay_status,json=decayStatus,proto3" json:"decay_status,omitempty"` // none | decaying | decayed (buyer visibility)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -371,6 +372,13 @@ func (x *GetSharedPerformanceResponse) GetSymbolStats() []*ShareSymbolStat {
 		return x.SymbolStats
 	}
 	return nil
+}
+
+func (x *GetSharedPerformanceResponse) GetDecayStatus() string {
+	if x != nil {
+		return x.DecayStatus
+	}
+	return ""
 }
 
 type SharedTrade struct {
@@ -1291,7 +1299,7 @@ const file_share_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x03 \x01(\tR\texpiresAt\"3\n" +
 	"\x1bGetSharedPerformanceRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\"\xd8\x05\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\xfb\x05\n" +
 	"\x1cGetSharedPerformanceResponse\x12\x1b\n" +
 	"\tuser_name\x18\x01 \x01(\tR\buserName\x12!\n" +
 	"\faccount_info\x18\x02 \x01(\tR\vaccountInfo\x12!\n" +
@@ -1312,7 +1320,8 @@ const file_share_proto_rawDesc = "" +
 	"\tpositions\x18\x10 \x03(\v2\x16.ant.v1.SharedPositionR\tpositions\x128\n" +
 	"\vtrade_stats\x18\x11 \x01(\v2\x17.ant.v1.ShareTradeStatsR\n" +
 	"tradeStats\x12:\n" +
-	"\fsymbol_stats\x18\x12 \x03(\v2\x17.ant.v1.ShareSymbolStatR\vsymbolStats\"\x8d\x01\n" +
+	"\fsymbol_stats\x18\x12 \x03(\v2\x17.ant.v1.ShareSymbolStatR\vsymbolStats\x12!\n" +
+	"\fdecay_status\x18\x13 \x01(\tR\vdecayStatus\"\x8d\x01\n" +
 	"\vSharedTrade\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +

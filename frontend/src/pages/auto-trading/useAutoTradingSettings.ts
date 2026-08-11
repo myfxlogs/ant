@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { autoTradingApi } from '@/client/autoTrading';
-import type { GlobalSettings, AutoTradingStatus } from '@/gen/ant/v1/auto_trading_pb';
+import type { GlobalSettings, AutoTradingStatus } from '@/gen/ant/v1/auto_trading_settings_pb';
 import type { TradingLog } from '@/gen/ant/v1/auto_trading_logs_pb';
 
 export function useAutoTradingSettings() {

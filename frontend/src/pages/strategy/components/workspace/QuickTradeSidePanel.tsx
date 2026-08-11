@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { QUICK_TRADE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import QuickTradePanel from '@/components/chart/QuickTradePanel';
+import QuickTradePanel, { type AccountMeta, type PositionItem, type TradeItem } from '@/components/chart/QuickTradePanel';
 
 interface Props {
   accountId: string;
   symbol: string;
-  accountMeta?: { leverage?: number; balance?: number; currency?: string };
-  allPositions: unknown[];
-  positions: unknown[];
-  recentTrades: unknown[];
+  accountMeta?: AccountMeta | null;
+  allPositions?: PositionItem[];
+  positions?: PositionItem[];
+  recentTrades?: TradeItem[];
   onClosePosition: (ticket: number) => void;
   onCollapse?: () => void;
 }

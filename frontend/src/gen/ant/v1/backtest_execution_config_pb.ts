@@ -89,7 +89,7 @@ export type BacktestExecutionConfig = Message<"ant.v1.BacktestExecutionConfig"> 
   fillRule: string;
 
   /**
-   * "KLINE_RANGE" | "DATASET"; empty = "KLINE_RANGE"
+   * "KLINE_RANGE" | "OHLC_PATH"; empty = "KLINE_RANGE"
    *
    * @generated from field: string simulation_mode = 11;
    */
@@ -317,7 +317,7 @@ export const ExecutionConfigSchema: GenMessage<ExecutionConfig> = /*@__PURE__*/
  */
 export type ExecutionAssumptions = Message<"ant.v1.ExecutionAssumptions"> & {
   /**
-   * "KLINE_RANGE" or "DATASET"
+   * "KLINE_RANGE" or "OHLC_PATH"
    *
    * @generated from field: string simulation_mode = 1;
    */

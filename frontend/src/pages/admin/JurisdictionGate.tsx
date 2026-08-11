@@ -106,7 +106,7 @@ export default function JurisdictionGate() {
     <div className="space-y-4">
       <div>
         <Title level={3}>
-          <SafetyOutlined size={24} stroke={1.5} className="inline mr-2" />
+          <SafetyOutlined size={24} className="inline mr-2" />
           {t('admin.jurisdiction.title')}
         </Title>
       </div>

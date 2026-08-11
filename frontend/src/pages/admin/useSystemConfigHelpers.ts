@@ -51,21 +51,21 @@ export async function saveConfigValue(
   t: TFunction,
 ): Promise<boolean> {
   if (flags.isStrategyHealthConfig) {
-    const raw = (values.value || '').trim();
+    const raw = String(values.value || '').trim();
     if (!validateStrategyHealthConfig(raw, t)) return false;
   } else if (flags.isEconAIConfig) {
     const { ok, cfg } = validateEconAIConfig(values, t);
     if (!ok) return false;
     await adminApi.setConfig(currentConfig.key, {
       value: JSON.stringify(cfg),
-      description: values.description || currentConfig.description || '',
+      description: String(values.description || '') || currentConfig.description || '',
     });
     return true;
   } else if (flags.isJSONConfig) {
     const raw = (values.value || '').toString().trim();
     if (!validateJSONConfig(raw, t)) return false;
   }
-  await adminApi.setConfig(currentConfig.key, values);
+    await adminApi.setConfig(currentConfig.key, values as { value: string; description?: string });
   return true;
 }
 

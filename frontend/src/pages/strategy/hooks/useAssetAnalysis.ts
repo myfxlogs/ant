@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { assetAnalysisClient } from '@/client/connect';
 import type { AnalyzeAssetResponse } from '@/gen/ant/v1/asset_analysis_pb';
-import type { PartialMessage } from '@bufbuild/protobuf';
 
 export type AnalysisPhase = 'idle' | 'mtf_outlook' | 'sr_levels' | 'volatility' | 'ai_recommendation' | 'complete';
 
@@ -13,7 +12,7 @@ export function useAssetAnalysis() {
   const [phase, setPhase] = useState<AnalysisPhase>('idle');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<PartialMessage<AnalyzeAssetResponse>>({});
+  const [result, setResult] = useState<Partial<AnalyzeAssetResponse>>({});
   const [progress, setProgress] = useState(0);
 
   const analyze = useCallback(async () => {

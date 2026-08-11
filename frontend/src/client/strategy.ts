@@ -1,7 +1,6 @@
-import type { PartialMessage } from '@bufbuild/protobuf';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import { strategyClient } from './connect';
-import type { TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
+import type { StrategyTemplate, TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 
 export type { StrategyTemplate, TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 export type { StrategyCard } from '../gen/ant/v1/strategy_template_entity_pb';
@@ -44,7 +43,7 @@ export const strategyApi = {
     return { cards: response.cards, total: response.total };
   },
 
-  getTemplate: async (id: string) => {
+  getTemplate: async (id: string): Promise<StrategyTemplate> => {
     return await strategyClient.getTemplate({ id });
   },
 
@@ -52,7 +51,7 @@ export const strategyApi = {
     name: string;
     description: string;
     code: string;
-    parameters?: PartialMessage<TemplateParameter>[];
+    parameters?: TemplateParameter[];
     isPublic?: boolean;
     tags?: string[];
     i18n?: TemplateI18n;
@@ -73,7 +72,7 @@ export const strategyApi = {
     name?: string;
     description?: string;
     code?: string;
-    parameters?: PartialMessage<TemplateParameter>[];
+    parameters?: TemplateParameter[];
     isPublic?: boolean;
     tags?: string[];
     i18n?: TemplateI18n;
@@ -103,7 +102,7 @@ export const strategyApi = {
     name?: string;
     description?: string;
     code?: string;
-    parameters?: PartialMessage<TemplateParameter>[];
+    parameters?: TemplateParameter[];
     tags?: string[];
   }) => {
     return await strategyClient.updateTemplateDraft({
@@ -164,7 +163,7 @@ export const strategyApi = {
 
 // ── Strategy Import (via StrategyRuntimeService) ────────────────────
 
-import { strategyRuntimeClient } from './connect';
+import { strategyRuntimeClient, strategyRuntimeStreamClient } from './connect';
 
 export const strategyImportApi = {
   analyzeCode: async (params: {

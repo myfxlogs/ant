@@ -110,7 +110,7 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
       <Table
         size="small"
         dataSource={signals}
-        rowKey={(r, i) => String(i)}
+        rowKey={(_r, i) => String(i)}
         columns={signalColumns}
         pagination={{ pageSize: 50, showSizeChanger: false }}
         locale={{ emptyText: <Empty description={t('strategy.live.waitingSignals', { defaultValue: 'Waiting for signals...' })} /> }}

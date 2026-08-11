@@ -92,7 +92,7 @@ export const strategyRuntimeApi = {
         accountId: params.accountId,
         symbol: params.symbol,
         timeframe: params.timeframe,
-        initialCapital: params.initialCapital || 10000,
+        initialCapital: String(params.initialCapital || 10000),
       },
       {
         timeoutMs: 300_000,
@@ -101,7 +101,7 @@ export const strategyRuntimeApi = {
     return {
       success: msg.success,
       metrics: msg.metrics,
-      equityCurve: msg.equityCurve || [],
+      equityCurve: (msg.equityCurve || []).map(Number),
       error: msg.error,
     };
   },

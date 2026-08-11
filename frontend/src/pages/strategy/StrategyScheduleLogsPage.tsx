@@ -37,7 +37,7 @@ export default function StrategyScheduleLogsPage() {
   const refreshOrders = useCallback(async () => {
     if (!scheduleId) return;
     try {
-      const resp = await logApi.getOrderLogHistory({ scheduleId, page: 1, pageSize: 200 });
+      const resp = await logApi.getOrderHistory({ scheduleId, page: 1, pageSize: 200 });
       setOrderLogs((resp?.orders || []) as OrderHistoryRecord[]);
     } catch (err) {
       console.error('refreshOrders failed', err);

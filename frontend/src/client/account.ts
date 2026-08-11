@@ -79,7 +79,7 @@ export const accountApi = {
 
   connect: async (id: string): Promise<ConnectAccountResult> => {
     const response = await accountClient.connectAccount({ id });
-    const camel = toCamelCase(response);
+    const camel = toCamelCase<{ success: boolean; message: string }>(response);
     return {
       success: camel.success,
       message: camel.message,
@@ -106,7 +106,7 @@ export const accountApi = {
   // (not investor read-only mode).
   verifyTradePermission: async (id: string) => {
     const response = await accountClient.verifyTradePermission({ id });
-    const camel = toCamelCase(response);
+    const camel = toCamelCase<{ hasTradePermission: boolean; isInvestor: boolean; verified: boolean; message: string }>(response);
     return {
       hasTradePermission: camel.hasTradePermission,
       isInvestor: camel.isInvestor,
@@ -122,7 +122,7 @@ export const accountApi = {
       newPassword,
       oldPassword: oldPassword || '',
     });
-    const camel = toCamelCase(response);
+    const camel = toCamelCase<{ success: boolean; hasTradePermission: boolean; isInvestor: boolean; message: string }>(response);
     return {
       success: camel.success,
       hasTradePermission: camel.hasTradePermission,

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ConfigProvider, theme } from 'antd';
+import type { Locale } from 'antd/es/locale';
 import dayjs from 'dayjs';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
 import { useUIStore } from '@/stores/uiStore';
 
 const antdLocaleCache: Record<string, unknown> = {};
 
-const dayjsLocaleLoaders: Record<string, () => Promise<void>> = {
+const dayjsLocaleLoaders: Record<string, () => Promise<unknown>> = {
   'zh-cn': () => import('dayjs/locale/zh-cn'),
   'zh-tw': () => import('dayjs/locale/zh-tw'),
   ja: () => import('dayjs/locale/ja'),
@@ -84,7 +85,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ConfigProvider
-      locale={antdLocale || undefined}
+      locale={antdLocale as Locale | undefined}
       theme={{
         algorithm: isDark ? darkAlgorithm : defaultAlgorithm,
         token: isDark ? darkTokens : undefined,

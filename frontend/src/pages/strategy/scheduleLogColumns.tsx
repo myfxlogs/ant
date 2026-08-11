@@ -1,12 +1,14 @@
 import { Typography, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { TFunction } from 'i18next';
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
-import type { TFunction } from 'react-i18next'
 import { ACTION_RESTART_KEY, ACTION_START_KEY, ACTION_STOP_KEY, EXEC_TABLE_ACTION_KEY, EXEC_TABLE_DURATION_MS_KEY, EXEC_TABLE_ERROR_KEY, EXEC_TABLE_EXECUTE_KEY, EXEC_TABLE_STATUS_KEY, EXEC_TABLE_TIME_KEY, ORDERS_TABLE_CLOSE_PRICE_KEY, ORDERS_TABLE_LOTS_KEY, ORDERS_TABLE_OPEN_PRICE_KEY, ORDERS_TABLE_PROFIT_KEY, ORDERS_TABLE_SIDE_KEY, ORDERS_TABLE_SYMBOL_KEY, ORDERS_TABLE_TICKET_KEY, ORDERS_TABLE_TIME_KEY, ORDER_SIDE_BUY_KEY, ORDER_SIDE_CLOSE_KEY, ORDER_SIDE_SELL_KEY, STATUS_FAILED_KEY, STATUS_SUCCESS_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
 ;
 
 const { Text } = Typography;
+
+interface ColOpts { t: TFunction; formatTime: (v: unknown) => string; }
 
 export function formatLogTime(v: unknown) {
   if (!v) return '-';
@@ -26,7 +28,7 @@ export function formatLogTime(v: unknown) {
   return String(v);
 }
 
-export function renderExecStatus(v: unknown, _t: (key: string, opts?: unknown) => string) {
+export function renderExecStatus(v: unknown, _t: TFunction) {
   const s = String(v || '').toLowerCase();
   if (s === 'success' || s === 'completed' || s === 'succeeded') return <Tag color="green">{s.toUpperCase()}</Tag>;
   if (s === 'failed' || s === 'error') return <Tag color="red">{s.toUpperCase()}</Tag>;
@@ -42,28 +44,26 @@ export function renderMs(v: unknown) {
   return <Text>{n}ms</Text>;
 }
 
-export function renderOperationAction(v: unknown, t: (key: string, opts?: unknown) => string) {
+export function renderOperationAction(v: unknown, t: TFunction) {
   const s = String(v || '').toLowerCase();
   const map: Record<string, string> = { start: t(ACTION_START_KEY), stop: t(ACTION_STOP_KEY), restart: t(ACTION_RESTART_KEY) };
   return <Text>{map[s] || s.toUpperCase()}</Text>;
 }
 
-export function renderOperationStatus(v: unknown, t: (key: string, opts?: unknown) => string) {
+export function renderOperationStatus(v: unknown, t: TFunction) {
   const s = String(v || '').toLowerCase();
   if (s === 'success') return <Tag color="green">{t(STATUS_SUCCESS_KEY)}</Tag>;
   if (s === 'failed') return <Tag color="red">{t(STATUS_FAILED_KEY)}</Tag>;
   return <Text>{s || '-'}</Text>;
 }
 
-export function renderOrderTypeTag(value: string, t: (key: string, opts?: unknown) => string) {
+export function renderOrderTypeTag(value: string, t: TFunction) {
   if (!value) return <Text>-</Text>;
   const s = value.toLowerCase();
   if (s === 'buy' || s === 'market_buy') return <Tag color="green">{t(ORDER_SIDE_BUY_KEY)}</Tag>;
   if (s === 'sell' || s === 'market_sell') return <Tag color="red">{t(ORDER_SIDE_SELL_KEY)}</Tag>;
   return <Tag>{value.toUpperCase()}</Tag>;
 }
-
-interface ColOpts { t: TFunction; formatTime: (v: unknown) => string; }
 
 export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<ScheduleRunLog> {
   return [
@@ -89,7 +89,7 @@ export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<Schedu
 
 export function buildOrderColumns({ t, formatTime }: ColOpts): ColumnsType<OrderHistoryRecord> {
   return [
-    { title: t(ORDERS_TABLE_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text> },
+    { title: t(ORDERS_TABLE_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: OrderHistoryRecord) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text> },
     { title: t(ORDERS_TABLE_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 100, render: (v: unknown) => renderOrderTypeTag(String(v || ''), t) },
     { title: t(ORDERS_TABLE_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120, render: (v: unknown) => <Text>{String(v || '-')}</Text> },
     { title: t(ORDERS_TABLE_LOTS_KEY), dataIndex: 'lots', key: 'lots', width: 90, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },

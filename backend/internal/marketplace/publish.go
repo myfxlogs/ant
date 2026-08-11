@@ -34,8 +34,8 @@ func newPublishedCache() *publishedCache {
 	return &publishedCache{m: make(map[string]publishedCacheEntry)}
 }
 
-func (c *publishedCache) key(userID, assetClass, keyword, sortBy string, limit, offset int) string {
-	return fmt.Sprintf("%s|%s|%s|%s|%d|%d", userID, assetClass, keyword, sortBy, limit, offset)
+func (c *publishedCache) key(userID, assetClass, keyword, sortBy, priceFilter string, limit, offset int) string {
+	return fmt.Sprintf("%s|%s|%s|%s|%s|%d|%d", userID, assetClass, keyword, sortBy, priceFilter, limit, offset)
 }
 
 func (c *publishedCache) get(key string) ([]PublishedStrategy, bool) {
@@ -274,7 +274,7 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 // ListPublished returns strategies published to the marketplace with full
 // metadata from marketplace_strategies (M12-B1). Supports keyword search, sorting, and offset pagination.
 // Results are cached for 60s to reduce DB load on the market listing page.
-func (s *Service) ListPublished(ctx context.Context, userID string, limit int, offset int, assetClass, keyword, sortBy string) ([]PublishedStrategy, error) {
+func (s *Service) ListPublished(ctx context.Context, userID string, limit int, offset int, assetClass, keyword, sortBy, priceFilter string) ([]PublishedStrategy, int, error) {
 	if limit <= 0 {
 		limit = 50
 	}
@@ -285,16 +285,16 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 	// Check cache (skip for keyword searches — they vary too much to cache effectively).
 	var cacheKey string
 	if keyword == "" {
-		cacheKey = s.pubCache.key(userID, assetClass, keyword, sortBy, limit, offset)
+		cacheKey = s.pubCache.key(userID, assetClass, keyword, sortBy, priceFilter, limit, offset)
 		if cached, ok := s.pubCache.get(cacheKey); ok {
-			return cached, nil
+			return cached, -1, nil
 		}
 	}
 
-	query, args := buildPublishedQuery(userID, assetClass, keyword, sortBy, limit, offset)
+	query, args := buildPublishedQuery(userID, assetClass, keyword, sortBy, priceFilter, limit, offset)
 	rows, err := s.pg.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 	var out []PublishedStrategy
@@ -306,7 +306,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 			&p.AssetClass, &p.Symbols, &p.Timeframe, &p.RiskLevel, &p.Tags,
 			&p.TotalSubscribers, &p.WinRate, &p.TotalPnL, &p.AvgRating, &p.RatingCount,
 			&p.CodeSnippet, &snapshotRaw, &p.ProviderVerified, &p.ProviderType, &p.Disclaimer, &p.DecayStatus); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		if len(snapshotRaw) > 0 {
 			var snap antv1.BacktestSnapshot
@@ -317,16 +317,28 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 		out = append(out, p)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
+
+	// Count total matching rows (without LIMIT/OFFSET) for pagination.
+	total := len(out)
+	if offset == 0 && len(out) < limit {
+		// Short-circuit: first page with fewer results than limit = exact count.
+	} else {
+		countQuery, countArgs := buildPublishedCountQuery(userID, assetClass, keyword, priceFilter)
+		if err := s.pg.QueryRow(ctx, countQuery, countArgs...).Scan(&total); err != nil {
+			total = len(out)
+		}
+	}
+
 	// Cache the result for non-keyword queries.
 	if cacheKey != "" {
 		s.pubCache.set(cacheKey, out)
 	}
-	return out, nil
+	return out, total, nil
 }
 
-func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offset int) (string, []interface{}) {
+func buildPublishedQuery(userID, assetClass, keyword, sortBy, priceFilter string, limit, offset int) (string, []interface{}) {
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,st.name,usp.platform_strategy_id::text),
 			COALESCE(u.email, u.nickname, usp.user_id::text), usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
 			COALESCE(ms.price_model,''), ms.price_amount::text, COALESCE(ms.asset_class,''),
@@ -353,6 +365,11 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 	if assetClass != "" {
 		query += fmt.Sprintf(" AND ms.asset_class = $%d", next())
 		args = append(args, assetClass)
+	}
+	if priceFilter == "free" {
+		query += " AND (ms.price_amount IS NULL OR ms.price_amount = '0')"
+	} else if priceFilter == "paid" {
+		query += " AND ms.price_amount IS NOT NULL AND ms.price_amount::numeric > 0"
 	}
 	var hasFuzzySearch bool
 	if keyword != "" {
@@ -389,6 +406,42 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit, offs
 	if offset > 0 {
 		query += fmt.Sprintf(" OFFSET $%d", next())
 		args = append(args, offset)
+	}
+	return query, args
+}
+
+func buildPublishedCountQuery(userID, assetClass, keyword, priceFilter string) (string, []interface{}) {
+	query := `SELECT COUNT(*) FROM user_strategy_publishes usp
+		 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.platform_strategy_id
+		 LEFT JOIN strategy_templates st ON st.id::text=usp.platform_strategy_id::text
+		 LEFT JOIN users u ON u.id = usp.user_id
+		 WHERE ms.status = 'published'`
+	args := []interface{}{}
+	p := 0
+	next := func() int { p++; return p }
+
+	if userID != "" {
+		query += fmt.Sprintf(" AND usp.user_id::text = $%d", next())
+		args = append(args, userID)
+	}
+	if assetClass != "" {
+		query += fmt.Sprintf(" AND ms.asset_class = $%d", next())
+		args = append(args, assetClass)
+	}
+	if priceFilter == "free" {
+		query += " AND (ms.price_amount IS NULL OR ms.price_amount = '0')"
+	} else if priceFilter == "paid" {
+		query += " AND ms.price_amount IS NOT NULL AND ms.price_amount::numeric > 0"
+	}
+	if keyword != "" {
+		n := next()
+		query += fmt.Sprintf(
+			" AND (similarity(ms.title, $%[1]d) > 0.2 OR similarity(ms.description, $%[1]d) > 0.2"+
+				" OR similarity(ms.tags::text, $%[1]d) > 0.2"+
+				" OR similarity(st.name, $%[1]d) > 0.2"+
+				" OR similarity(u.nickname, $%[1]d) > 0.2"+
+				" OR similarity(u.email, $%[1]d) > 0.2)", n)
+		args = append(args, keyword)
 	}
 	return query, args
 }

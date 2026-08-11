@@ -69,7 +69,7 @@ export default function DepositManagement() {
       dataIndex: 'confirmedAt',
       key: 'confirmedAt',
       width: 180,
-      render: (v: unknown) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
+      render: (v: unknown) => v ? new Date(Number((v as Record<string, unknown>).seconds) * 1000).toLocaleString() : '-',
     },
   ], [t]);
 
@@ -94,7 +94,7 @@ export default function DepositManagement() {
           pagination={{
             current: page,
             pageSize: 20,
-            total: data?.total || 0,
+            total: Number(data?.total || 0),
             onChange: setPage,
             size: 'small',
           }}

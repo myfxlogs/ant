@@ -70,9 +70,9 @@ export default function ProtectedBacktestPanel({ strategyId, defaultSymbol = 'EU
         endDateMs: BigInt(dateRange[1].valueOf()),
         initialCapital: String(initialCapital),
         executionConfig: {
-          commission,
-          slippage: 0,
-          leverage,
+          commission: String(commission),
+          slippage: '0',
+          leverage: String(leverage),
           tradeDirection: TradeDirection.BOTH,
           strictMode: true,
         },
@@ -91,13 +91,13 @@ export default function ProtectedBacktestPanel({ strategyId, defaultSymbol = 'EU
             setStatus('completed');
             if (update.metrics) {
               setMetrics({
-                totalReturn: update.metrics.totalReturn,
-                annualReturn: update.metrics.annualReturn,
-                maxDrawdown: update.metrics.maxDrawdown,
-                sharpeRatio: update.metrics.sharpeRatio,
-                winRate: update.metrics.winRate,
-                totalTrades: update.metrics.totalTrades,
-                equityCurve: (update.equityCurve || []).map((v: number, i: number) => ({ time: i, equity: v })),
+                totalReturn: Number(update.metrics.totalReturn),
+                annualReturn: Number(update.metrics.annualReturn),
+                maxDrawdown: Number(update.metrics.maxDrawdown),
+                sharpeRatio: Number(update.metrics.sharpeRatio),
+                winRate: Number(update.metrics.winRate),
+                totalTrades: Number(update.metrics.totalTrades),
+                equityCurve: (update.equityCurve || []).map((v: string, i: number) => ({ time: i, equity: Number(v) })),
               });
             }
           } else if (st === BacktestRunStatus.FAILED || st === BacktestRunStatus.CANCELED) {

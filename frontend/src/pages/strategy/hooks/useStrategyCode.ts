@@ -5,7 +5,7 @@ import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SA
 
 import { strategyApi, strategyVersionApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
-import { buildParamI18n } from '@/utils/paramLabel';
+
 import type { TemplateParameter } from '@/gen/ant/v1/strategy_template_entity_pb';
 
 export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExtendedResult) => void }) {
@@ -57,7 +57,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   // accepted by createTemplate / updateTemplate (TemplateParameter proto).
   const _validatedParams = useCallback((): TemplateParameter[] => {
     if (!validationResult?.parameterEntries) return [];
-    return validationResult.parameterEntries.map(e => ({ key: e.name, type: e.type as TemplateParameter['type'] || 'string', defaultValue: e.default }));
+    return validationResult.parameterEntries.map(e => ({ name: e.name, type: e.type || 'string', default: e.default }));
   }, [validationResult]);
 
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
@@ -92,11 +92,9 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
-        const i18n = await buildParamI18n(validationResult?.parameterEntries || []);
         await strategyApi.updateTemplate({
           id: loadedTemplate.id, code,
           parameters: _validatedParams(),
-          i18n: i18n || undefined,
         });
         if (strategyId) {
           await strategyVersionApi.updateCode(strategyId, code, 'Updated from workspace', true);
@@ -111,11 +109,9 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   const handleSaveModalOk = useCallback(async () => {
     try {
       const values = await saveForm.validateFields(); setSaveLoading(true);
-      const i18n = await buildParamI18n(validationResult?.parameterEntries || []);
       const tpl = await strategyApi.createTemplate({
         name: values.name, description: values.description || '', code,
         parameters: _validatedParams(),
-        i18n: i18n || undefined,
       });
       if (tpl?.id) setLastSavedId(tpl.id);
       message.success(t(SAVE_SUCCESS_KEY)); setSaveModalOpen(false); loadTemplates();

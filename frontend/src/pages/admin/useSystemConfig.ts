@@ -14,10 +14,10 @@ export function useSystemConfig() {
   const [currentConfig, setCurrentConfig] = useState<AdminConfigType | null>(null);
   const [form] = Form.useForm();
 
-  const isAIProviderCatalog = currentConfig?.value_type === 'json' && currentConfig?.key === 'ai.provider_catalog';
+  const isAIProviderCatalog = currentConfig?.valueType === 'json' && currentConfig?.key === 'ai.provider_catalog';
   const isEconAIConfig = currentConfig?.key === 'econ.translation.ai_config';
-  const isStrategyHealthConfig = currentConfig?.value_type === 'json' && currentConfig?.key === 'strategy.schedule.health_grading_config';
-  const isJSONConfig = currentConfig?.value_type === 'json';
+  const isStrategyHealthConfig = currentConfig?.valueType === 'json' && currentConfig?.key === 'strategy.schedule.health_grading_config';
+  const isJSONConfig = currentConfig?.valueType === 'json';
 
   const strategyHealthConfigTemplate = {
     green_success_rate: 90,

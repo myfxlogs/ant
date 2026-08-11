@@ -32,7 +32,7 @@ export default function SystemConfigPage() {
       width: 150,
       ellipsis: true,
       render: (text: string, record: AdminConfigType) => {
-        if (record.value_type === 'json') {
+        if (record.valueType === 'json') {
           return <Tag color="processing">JSON</Tag>;
         }
         return text;
@@ -70,10 +70,10 @@ export default function SystemConfigPage() {
     },
     {
       title: t('admin.config.updatedAt'),
-      dataIndex: 'updated_at',
-      key: 'updated_at',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
       width: 180,
-      render: (_text: unknown, record: AdminConfigType) => formatDateTime(record.updated_at),
+      render: (_text: unknown, record: AdminConfigType) => formatDateTime(record.updatedAt),
     },
     {
       title: t('common.edit'),

@@ -123,7 +123,7 @@ export default function WalletPage() {
       dataIndex: 'confirmedAt',
       key: 'confirmedAt',
       width: 180,
-      render: (v: unknown) => v ? new Date(v.seconds * 1000).toLocaleString() : '-',
+      render: (v: unknown) => v ? new Date(Number((v as Record<string, unknown>).seconds) * 1000).toLocaleString() : '-',
     },
   ], [t]);
 
@@ -210,7 +210,7 @@ export default function WalletPage() {
       </Card>
 
       {/* Deposit History */}
-      {myDeposits?.deposits?.length > 0 && (
+      {myDeposits?.deposits && myDeposits.deposits.length > 0 && (
         <Card
           title={t('wallet.deposit.history')}
           size="small"

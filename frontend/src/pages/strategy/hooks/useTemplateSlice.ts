@@ -46,7 +46,7 @@ export function useTemplateSlice(deps: TemplateSliceDeps): TemplateSlice {
     }
     setCenterTab('code');
     if (tpl.parameters?.length) {
-      const params = tpl.parameters.map((p: unknown) => ({
+      const params = tpl.parameters.map((p: { name?: string; type?: string; default?: string; label?: string }) => ({
         name: p.name || '', type: p.type || 'string',
         default: p.default || '', label: p.label || p.name || '',
       }));

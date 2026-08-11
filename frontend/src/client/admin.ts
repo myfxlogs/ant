@@ -72,12 +72,11 @@ export const adminApi = {
     const msg = await adminLogClient.listLogs({
       page: params?.page || 1,
       pageSize: params?.pageSize || 10,
-      userId: params?.userId,
-      action: params?.action,
-      startDate: params?.startDate,
-      endDate: params?.endDate,
-      module: params?.module,
-      actionType: params?.actionType,
+      adminId: params?.userId || '',
+      actionType: params?.action || '',
+      startDate: params?.startDate || '',
+      endDate: params?.endDate || '',
+      module: params?.module || '',
     }) as ListLogsResponse;
     return {
       logs: msg.logs,
@@ -216,18 +215,6 @@ export const adminApi = {
 
   getMetrics: async () => {
     return await adminSystemClient.getMetrics({});
-  },
-
-  resolveAlert: async (alertId: string) => {
-    await adminSystemClient.resolveAlert({ alertId });
-  },
-
-  clearCache: async () => {
-    await adminSystemClient.clearCache({});
-  },
-
-  invalidateCache: async (tags: string[]) => {
-    await adminSystemClient.invalidateCache({ tags });
   },
 
 };

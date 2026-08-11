@@ -10,18 +10,23 @@ export interface BreakerStatus {
   tripped_at?: string; trip_reason?: string; allow_probe_trade?: boolean;
 }
 
+export interface CanaryConfig {
+  strategy_id: string;
+  version_tag: string;
+}
+
 export const sreApi = {
   killSwitchStatus: async (): Promise<KillSwitchStatus> => {
     const r = await adminSREClient.getKillSwitch({});
-    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
+    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(Number(r.setAtUnixMs)).toISOString() : undefined };
   },
   killSwitchEngage: async (reason: string, _operator: string): Promise<KillSwitchStatus> => {
     const r = await adminSREClient.setKillSwitch({ enabled: true, reason });
-    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
+    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(Number(r.setAtUnixMs)).toISOString() : undefined };
   },
   killSwitchDisengage: async (): Promise<KillSwitchStatus> => {
     const r = await adminSREClient.setKillSwitch({ enabled: false, reason: '' });
-    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
+    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(Number(r.setAtUnixMs)).toISOString() : undefined };
   },
   breakersList: async (): Promise<BreakerStatus[]> => {
     const r = await adminSREClient.listBreakers({});
@@ -34,11 +39,14 @@ export const sreApi = {
     const r = await adminSREClient.resetBreaker({ name });
     return { strategy_id: r.name, state: r.open ? 'open' : 'closed', total_pnl: 0, loss_percent: 0, trade_count: 0 };
   },
-  canaryList: async (): Promise<{ strategy_id: string; version_tag: string }[]> => {
+  canaryList: async (): Promise<CanaryConfig[]> => {
     const r = await adminSREClient.getCanary({});
     return r.targetVersion ? [{ strategy_id: '', version_tag: r.targetVersion }] : [];
   },
-  canarySet: async (strategyId: string, versionTag: string, durationDays: number) => {
+  canarySet: async (_strategyId: string, versionTag: string, durationDays: number) => {
     await adminSREClient.setCanary({ enabled: true, targetVersion: versionTag, trafficPercent: durationDays });
+  },
+  canaryDelete: async (_strategyId: string) => {
+    await adminSREClient.setCanary({ enabled: false, targetVersion: '', trafficPercent: 0 });
   },
 };

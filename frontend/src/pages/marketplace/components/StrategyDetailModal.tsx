@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Rate, Tabs, Alert, Empty, message } from 'antd';
+import { Modal, Descriptions, Tag, Button, Typography, Space, Divider, Rate, Tabs, Alert, Empty, message, Tooltip } from 'antd';
 import { ShoppingCartOutlined, DownloadOutlined, ThunderboltOutlined, WarningOutlined, ExperimentOutlined, RocketOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyDiscussion } from '../hooks/useStrategyDiscussion';
@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 import LivePerformanceTab from './LivePerformanceTab';
 import ShareButtons from './ShareButtons';
+import { DecayBadge } from './DecayBadge';
 import { strategyVersionApi } from '@/client/strategy';
 import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 import { VersionHistoryTab, versionHistoryTabLabel } from './VersionHistoryTab';
@@ -95,31 +96,17 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
   const isFree = String(strategy.priceModel || '').toLowerCase() === 'free' || !Number(strategy.priceAmount);
 
   return (
-    <Modal
-      title={name}
-      open={open}
-      onCancel={onClose}
-      width={720}
-      footer={null}
-      destroyOnClose
-    >
+    <Modal title={<span>{name} <DecayBadge decayStatus={strategy.decayStatus} /></span>}
+      open={open} onCancel={onClose} width={720} footer={null} destroyOnClose>
+      <DecayBadge decayStatus={strategy.decayStatus} showDescription />
+
       {/* Basic info */}
       <Descriptions column={2} size="small" bordered style={{ marginBottom: 16 }}>
-        <Descriptions.Item label={t('marketplace.detail.author')}>
-          {String(strategy.publisherUserId || '').slice(0, 12)}
-        </Descriptions.Item>
-        <Descriptions.Item label={t('marketplace.detail.price')}>
-          <Tag color={isFree ? 'green' : 'gold'}>{priceText(strategy, t)}</Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label={t('marketplace.detail.assetClass')}>
-          {t(`marketplace.publish.assetClass.${strategy.assetClass}`)}
-        </Descriptions.Item>
-        <Descriptions.Item label={t('marketplace.detail.riskLevel')}>
-          {t(`marketplace.publish.riskLevel.${strategy.riskLevel}`)}
-        </Descriptions.Item>
-        <Descriptions.Item label={t('marketplace.detail.subscribers')}>
-          {String(strategy.totalSubscribers || 0)}
-        </Descriptions.Item>
+        <Descriptions.Item label={t('marketplace.detail.author')}>{String(strategy.publisherUserId || '').slice(0, 12)}</Descriptions.Item>
+        <Descriptions.Item label={t('marketplace.detail.price')}><Tag color={isFree ? 'green' : 'gold'}>{priceText(strategy, t)}</Tag></Descriptions.Item>
+        <Descriptions.Item label={t('marketplace.detail.assetClass')}>{t(`marketplace.publish.assetClass.${strategy.assetClass}`)}</Descriptions.Item>
+        <Descriptions.Item label={t('marketplace.detail.riskLevel')}>{t(`marketplace.publish.riskLevel.${strategy.riskLevel}`)}</Descriptions.Item>
+        <Descriptions.Item label={t('marketplace.detail.subscribers')}>{String(strategy.totalSubscribers || 0)}</Descriptions.Item>
         <Descriptions.Item label={t('marketplace.detail.avgRating')}>
           <Rate disabled allowHalf value={d.ratingAvg || Number(strategy.avgRating || 0)} style={{ fontSize: 14 }} />
           <Text type="secondary" style={{ marginLeft: 4, fontSize: 12 }}>({d.ratingCount || strategy.ratingCount || 0})</Text>
@@ -146,22 +133,14 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
       {strategy.description && (
         <div style={{ marginBottom: 16 }}>
           <Text strong>{t('marketplace.detail.description')}</Text>
-          <Paragraph type="secondary" style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>
-            {strategy.description}
-          </Paragraph>
+          <Paragraph type="secondary" style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>{strategy.description}</Paragraph>
         </div>
       )}
 
       {/* Risk disclaimer */}
       {strategy.disclaimer && (
-        <Alert
-          type="warning"
-          showIcon
-          icon={<WarningOutlined />}
-          style={{ marginBottom: 16 }}
-          message={t('marketplace.detail.riskDisclaimer')}
-          description={strategy.disclaimer}
-        />
+        <Alert type="warning" showIcon icon={<WarningOutlined />} style={{ marginBottom: 16 }}
+          message={t('marketplace.detail.riskDisclaimer')} description={strategy.disclaimer} />
       )}
 
       {/* Tags */}
@@ -242,17 +221,19 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
             </Button>
           </>
         ) : isFree ? (
-          <Button type="primary" icon={<DownloadOutlined />} size="large" onClick={() => onGetFree(strategy)}>
+          <Button type="primary" icon={<DownloadOutlined />} size="large" onClick={() => onGetFree(strategy)} disabled={strategy.decayStatus === 'decayed'}>
             {t('marketplace.detail.getFree')}
           </Button>
         ) : (
           <>
-            <Button icon={<ExperimentOutlined />} size="large" loading={trialLoading} onClick={handleStartTrial}>
+            <Button icon={<ExperimentOutlined />} size="large" loading={trialLoading} onClick={handleStartTrial} disabled={strategy.decayStatus === 'decayed'}>
               {t('marketplace.trial.start')}
             </Button>
-            <Button type="primary" icon={<ShoppingCartOutlined />} size="large" onClick={() => onBuy(strategy)}>
-              {t('marketplace.detail.buyNow')}
-            </Button>
+            <Tooltip title={strategy.decayStatus === 'decayed' ? t('marketplace.decay.descDecayed') : ''}>
+              <Button type="primary" icon={<ShoppingCartOutlined />} size="large" onClick={() => onBuy(strategy)} disabled={strategy.decayStatus === 'decayed'}>
+                {t('marketplace.detail.buyNow')}
+              </Button>
+            </Tooltip>
           </>
         )}
         </div>

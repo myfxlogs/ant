@@ -184,9 +184,11 @@ message ListPublishedRequest {
   string keyword = 4;    // search title/description/tags (ILIKE)
   string sort_by = 5;    // newest | popular | performance (default: newest)
   int32 offset = 6;      // pagination offset (default: 0)
+  string price_filter = 7; // all|free|paid (empty = all)
 }
 message ListPublishedResponse {
   repeated PublishedStrategy strategies = 1;
+  int32 total = 2;       // total count matching filters (for pagination)
 }
 
 message PublishedStrategy {

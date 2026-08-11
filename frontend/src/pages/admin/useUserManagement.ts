@@ -69,7 +69,7 @@ export function useUserManagement() {
 
   const handleBatchDelete = async (ids: string[]) => {
     try {
-      const resp: unknown = await adminApi.deleteUsers(ids);
+      const resp = await adminApi.deleteUsers(ids);
       if (resp?.failedCount > 0) {
         message.warning(
           t('admin.userManagement.deleteConfirm.batchDeletePartial', {
@@ -105,7 +105,7 @@ export function useUserManagement() {
     if (!currentUser) return;
     try {
       const result = await adminApi.resetUserPassword(currentUser.id);
-      const newPass = (result as unknown)?.newPassword;
+      const newPass = (result as Record<string, unknown>)?.newPassword;
       if (newPass) {
         Modal.success({
           title: t('admin.userManagement.messages.passwordUpdatedSuccess'),

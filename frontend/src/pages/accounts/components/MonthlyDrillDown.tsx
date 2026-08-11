@@ -78,14 +78,14 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
             tickFormatter={(v) => v.toFixed(1)} />
           <YAxis type="category" dataKey="symbol" width={yAxis.width} stroke="var(--color-text-muted)" fontSize={yAxis.fontSize} />
           <Tooltip contentStyle={tooltipStyle}
-            formatter={(_v: number, _n: string, props: { payload?: { rawRatio?: number } }) =>
-              [`${props?.payload?.rawRatio?.toFixed(2) ?? '—'}`, 'Reward:Risk']
+            formatter={(_v: unknown, _n: unknown, props: { payload?: { rawRatio?: number } }) =>
+              [`${props?.payload?.rawRatio?.toFixed(2) ?? '—'}`, 'Reward:Risk'] as [string, string]
             } />
           <Bar dataKey="riskRatio" radius={[0, 3, 3, 0]} maxBarSize={30} cursor="pointer" isAnimationActive={false}>
             <LabelList
               dataKey="rawRatio"
               position="right"
-              formatter={(v: number) => Number.isFinite(v) ? v.toFixed(2) : ''}
+              formatter={(v: unknown) => { const n = Number(v); return Number.isFinite(n) ? n.toFixed(2) : ''; }}
               style={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 500 }}
             />
             {chartData.map((_, i) => (
@@ -155,8 +155,8 @@ const PopularityPanel = React.memo(({ popularity, t }: {
             ))}
           </Pie>
           <Tooltip contentStyle={tooltipStyle}
-            formatter={(v: number, _n: string, props: { payload?: { trades?: number } }) =>
-              [`${v.toFixed(1)}% (${props?.payload?.trades ?? 0} trades)`, '']
+            formatter={(v: unknown, _n: unknown, props: { payload?: { trades?: number } }) =>
+              [`${Number(v).toFixed(1)}% (${props?.payload?.trades ?? 0} trades)`, ''] as [string, string]
             } />
         </PieChart>
       </ResponsiveContainer>
@@ -218,7 +218,7 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
             tickFormatter={fmtMs} />
           <YAxis type="category" dataKey="symbol" width={yAxis.width} stroke="var(--color-text-muted)" fontSize={yAxis.fontSize} />
           <Tooltip contentStyle={tooltipStyle}
-            formatter={(v: number) => [fmtMs(Number(v)), '']} />
+            formatter={(v: unknown) => [fmtMs(Number(v)), ''] as [string, string]} />
           <Bar dataKey="long" radius={[0, 3, 3, 0]} maxBarSize={22} cursor="pointer" isAnimationActive={false}
             fill="rgba(83, 243, 2, 0.7)" name={t(ANALYTICS_MONTHLY_DETAIL_LONG_KEY)} />
           <Bar dataKey="short" radius={[0, 3, 3, 0]} maxBarSize={22} cursor="pointer" isAnimationActive={false}

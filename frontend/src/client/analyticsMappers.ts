@@ -143,7 +143,7 @@ export function mapRollingMetrics(r: GetRollingMetricsResponse): RollingMetricsD
   };
 }
 
-function mapMonthlyMetrics(c: ReturnType<typeof deepConvertBigIntToNumber>): MonthlyDetailData['metrics'] {
+function mapMonthlyMetrics(c: { metrics?: { netReturn?: string | null; returnPercent?: number; totalTrades?: bigint | number; winRate?: number; profitFactor?: number; bestTrade?: string | null; worstTrade?: string | null } }): MonthlyDetailData['metrics'] {
   const m = c.metrics;
   return {
     netReturn: toNum(m?.netReturn),
@@ -156,18 +156,18 @@ function mapMonthlyMetrics(c: ReturnType<typeof deepConvertBigIntToNumber>): Mon
   };
 }
 
-function mapMonthlyBonus(c: ReturnType<typeof deepConvertBigIntToNumber>): MonthlyDetailData['bonus'] {
+function mapMonthlyBonus(c: { bonus?: { riskRatio?: number; symbolPopularity?: { symbol?: string; trades?: bigint | number; sharePercent?: number }[]; symbolRisks?: { symbol?: string; riskRatio?: number }[]; symbolHoldingSplit?: { symbol?: string; bullsSeconds?: number; shortTermSeconds?: number }[] } }): MonthlyDetailData['bonus'] {
   if (!c.bonus) return undefined;
   return {
     riskRatio: c.bonus.riskRatio,
-    symbolPopularity: (c.bonus.symbolPopularity ?? []).map((s) => ({
-      symbol: s.symbol, trades: Number(s.trades), sharePercent: s.sharePercent,
+    symbolPopularity: (c.bonus.symbolPopularity ?? []).map((s: { symbol?: string; trades?: bigint | number; sharePercent?: number }) => ({
+      symbol: s.symbol || '', trades: Number(s.trades), sharePercent: s.sharePercent ?? 0,
     })),
-    symbolRisks: (c.bonus.symbolRisks ?? []).map((r) => ({
-      symbol: r.symbol, riskRatio: r.riskRatio,
+    symbolRisks: (c.bonus.symbolRisks ?? []).map((r: { symbol?: string; riskRatio?: number }) => ({
+      symbol: r.symbol || '', riskRatio: r.riskRatio ?? 0,
     })),
-    symbolHoldingSplit: (c.bonus.symbolHoldingSplit ?? []).map((h) => ({
-      symbol: h.symbol, bullsSeconds: h.bullsSeconds, shortTermSeconds: h.shortTermSeconds,
+    symbolHoldingSplit: (c.bonus.symbolHoldingSplit ?? []).map((h: { symbol?: string; bullsSeconds?: number; shortTermSeconds?: number }) => ({
+      symbol: h.symbol || '', bullsSeconds: h.bullsSeconds ?? 0, shortTermSeconds: h.shortTermSeconds ?? 0,
     })),
   };
 }

@@ -67,9 +67,9 @@ export default function MonthlyAnalysisMainChart({
         <ComposedChart
           data={series}
           margin={{ top: 20, right: 6, left: 0, bottom: 4 }}
-          onMouseMove={(state) => onMouseMove(state.activeTooltipIndex)}
+          onMouseMove={(state) => onMouseMove(Number(state.activeTooltipIndex))}
           onMouseLeave={onMouseLeave}
-          onClick={(state) => onCommitByTooltipIndex(state.activeTooltipIndex ?? state.activeIndex)}
+          onClick={(state) => onCommitByTooltipIndex(Number(state.activeTooltipIndex ?? state.activeIndex))}
         >
           {/* Alternating month background — myfxbook signature */}
           {series.map((item, i) => {
@@ -99,7 +99,7 @@ export default function MonthlyAnalysisMainChart({
             angle={-30}
             textAnchor="end"
             height={42}
-            tick={({ x, y, payload, index }: unknown) => (
+            tick={({ x, y, payload, index }: { x: number; y: number; payload: { value: string }; index: number }) => (
               <g transform={`translate(${x},${y})`} style={{ cursor: 'pointer' }}
                 onClick={() => onCommitMonthClick(series[index], index)}>
                 <text x={0} y={0} dy={4} textAnchor="end" fill="var(--color-text-muted)" fontSize={11}
@@ -160,12 +160,13 @@ export default function MonthlyAnalysisMainChart({
             <LabelList
               dataKey="value"
               position="top"
-              formatter={(v: number) => {
-                if (!Number.isFinite(v) || Math.abs(Number(v)) < 1e-12) return '';
-                if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
-                if (selectedMetric === 'profit') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
-                if (selectedMetric === 'lots') return v.toFixed(2);
-                return `${v >= 0 ? '+' : ''}${v.toFixed(1)}`;
+              formatter={(v: number | string) => {
+                const n = Number(v);
+                if (!Number.isFinite(n) || Math.abs(n) < 1e-12) return '';
+                if (selectedMetric === 'change') return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+                if (selectedMetric === 'profit') return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+                if (selectedMetric === 'lots') return n.toFixed(2);
+                return `${n >= 0 ? '+' : ''}${n.toFixed(1)}`;
               }}
               style={{ fontSize: 9, fill: 'var(--color-text-muted)', fontWeight: 600, pointerEvents: 'none' }}
             />

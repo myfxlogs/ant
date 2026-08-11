@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { Drawer, Button } from 'antd';
+import { LayoutOutlined } from '@ant-design/icons';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import QuickTradeSidePanel from './QuickTradeSidePanel';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
@@ -27,7 +30,37 @@ export default function BottomPanelSection({
   accountId, symbol, accountMeta, qtPositions,
   quickTradeCollapsed, onToggleQuickTrade,
 }: Props) {
-  if (isMobile) return null;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  if (isMobile) {
+    return (
+      <>
+        <Button
+          icon={<LayoutOutlined />}
+          onClick={() => setMobileOpen(true)}
+          style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1000 }}
+          type="primary"
+          shape="circle"
+        />
+        <Drawer
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          placement="bottom"
+          height="60vh"
+          title={undefined}
+          styles={{ body: { padding: 0 } }}
+        >
+          <ChartBottomPanel
+            positions={positions}
+            recentTrades={recentTrades}
+            onClosePosition={onClosePosition}
+            collapsed={false}
+            onToggleCollapsed={() => setMobileOpen(false)}
+          />
+        </Drawer>
+      </>
+    );
+  }
 
   if (collapsed) {
     return (

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
@@ -47,12 +47,10 @@ const ORDER_KIND_KEYS: Record<OrderKind, string> = {
   STOP: 'trading.stop',
 };
 
-const _cardBox: React.CSSProperties = { background: 'var(--ant-color-bg-elevated)', border: '1px solid var(--ant-color-border)', borderRadius: 6, padding: '6px 10px' };
 const labelSm: React.CSSProperties = { fontSize: 10, color: 'var(--ant-color-text-tertiary)', fontWeight: 600 };
 
-export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], _positions = [], _recentTrades = [], onClosePosition, _onToggleAllPositions, horizontal }: Props) {
+export default function QuickTradePanel({ accountId, symbol, accountMeta, horizontal }: Props) {
   const { t } = useTranslation();
-  const _totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
   const [orderKind, setOrderKind] = useState<OrderKind>('MARKET');
   const [volume, setVolume] = useState<number | null>(0.01);
@@ -60,7 +58,6 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
   const [stopLoss, setStopLoss] = useState<number | null>(null);
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [_closingTicket, setClosingTicket] = useState<number | null>(null);
   const [marginMode, setMarginMode] = useState<'cross' | 'isolated'>('cross');
 
   const isLimitOrStop = orderKind === 'LIMIT' || orderKind === 'STOP';
@@ -91,19 +88,6 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
     } catch (e: unknown) { message.error(e instanceof Error ? e.message : String(e) || t(ORDER_FAILED_KEY)); }
     finally { setSubmitting(false); }
   }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop, marginMode, isMT5, submitting, t]);
-
-  const closeTimerRef = useRef<number | null>(null);
-  useEffect(() => () => { if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current); }, []);
-
-  const _handleClosePos = useCallback(async (ticket: number, volume?: number) => {
-    setClosingTicket(ticket);
-    try {
-      await onClosePosition?.(ticket, volume);
-    } finally {
-      if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = window.setTimeout(() => setClosingTicket(null), 5000);
-    }
-  }, [onClosePosition]);
 
   if (horizontal) {
     return (

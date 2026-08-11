@@ -1,4 +1,3 @@
-import React from 'react';
 import { Tag, Button, Checkbox } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';

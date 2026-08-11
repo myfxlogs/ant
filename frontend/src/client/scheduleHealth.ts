@@ -1,5 +1,6 @@
 import { scheduleHealthClient } from "./connect";
-import type { GetScheduleHealthResponse } from "@/gen/ant/v1/schedule_health_pb";
+import { create } from "@bufbuild/protobuf";
+import { ScheduleHealthSummarySchema, type GetScheduleHealthResponse, type ScheduleHealthSummary } from "@/gen/ant/v1/schedule_health_pb";
 
 function num<T>(v: T | undefined | null, fallback: number): number {
   return (v ?? fallback) as number;
@@ -21,7 +22,7 @@ export const scheduleHealthApi = {
 };
 
 function mapScheduleHealthResponse(response: GetScheduleHealthResponse) {
-  const s = response.summary ?? {};
+  const s: ScheduleHealthSummary = response.summary ?? create(ScheduleHealthSummarySchema);
   return {
     totalRuns: num(s.totalRuns, 0),
     successRuns: num(s.successRuns, 0),

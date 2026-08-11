@@ -41,7 +41,7 @@ export default function SubscriptionPage() {
       }
     },
     onError: (err: Error) => {
-      const msg = String((err as unknown)?.message || '');
+      const msg = err.message;
       if (msg.includes('insufficient balance')) {
         message.error(t('subscription.insufficientBalance', { defaultValue: 'Insufficient wallet balance. Please top up your wallet first.' }));
       } else {
@@ -72,7 +72,7 @@ export default function SubscriptionPage() {
       }
     },
     onError: (err: Error) => {
-      const msg = String((err as unknown)?.message || '');
+      const msg = err.message;
       if (msg.includes('insufficient balance')) {
         message.error(t('subscription.insufficientBalance', { defaultValue: 'Insufficient wallet balance. Please top up your wallet first.' }));
       } else {

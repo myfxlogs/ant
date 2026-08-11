@@ -212,12 +212,12 @@ func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.R
 
 func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Request[antv1.ListPublishedRequest]) (*connect.Response[antv1.ListPublishedResponse], error) {
 	m := req.Msg
-	list, err := s.svc.ListPublished(ctx, m.UserId, int(m.Limit), int(m.Offset), m.AssetClass, m.Keyword, m.SortBy)
+	list, total, err := s.svc.ListPublished(ctx, m.UserId, int(m.Limit), int(m.Offset), m.AssetClass, m.Keyword, m.SortBy, m.PriceFilter)
 	if err != nil {
 		s.log.Error("ListPublished", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	resp := &antv1.ListPublishedResponse{}
+	resp := &antv1.ListPublishedResponse{Total: int32(total)}
 	for _, p := range list {
 		item := &antv1.PublishedStrategy{
 			PublishId:        p.PublishID,

@@ -6,6 +6,7 @@ import { EDIT_MODAL_FIELDS_TEMPLATE_EXTRA_KEY, EDIT_MODAL_FIELDS_TEMPLATE_KEY, E
 ;
 import { isTradingAccountEnabled } from '@/utils/accountStatus';
 import { TIMEFRAMES } from '@/constants/timeframes';
+import type { AccountRow, TemplateOption } from '../hooks/libraryTypes';
 
 interface Props {
   isCreate: boolean;
@@ -13,12 +14,12 @@ interface Props {
   symbols: { value: string; label: string }[];
   symbolsLoading: boolean;
   scheduleTypeWatch: string | undefined;
-  templates: unknown[];
-  accounts: unknown[];
+  templates: TemplateOption[];
+  accounts: AccountRow[];
 }
 
-export function buildAccountOptions(accounts: unknown[]) {
-  return (accounts || []).filter(isTradingAccountEnabled).map((a: unknown) => ({
+export function buildAccountOptions(accounts: AccountRow[]) {
+  return (accounts || []).filter(isTradingAccountEnabled).map((a: AccountRow) => ({
     value: a.id,
     label: a.login ? `${a.login} (${a.mtType || ''})` : a.id,
   }));
@@ -44,7 +45,7 @@ export default function EditScheduleBasicFields({
               rules={[{ required: true, message: t(EDIT_MODAL_VALIDATION_TEMPLATE_REQUIRED_KEY) }]}
               extra={t(EDIT_MODAL_FIELDS_TEMPLATE_EXTRA_KEY)}>
               <Select showSearch optionFilterProp="label"
-                options={(templates || []).map((tpl: unknown) => ({ value: tpl.id, label: tpl.name }))} />
+                options={(templates || []).map((tpl: TemplateOption) => ({ value: tpl.id, label: tpl.name }))} />
             </Form.Item>
           </Col>
           <Col span={12}>

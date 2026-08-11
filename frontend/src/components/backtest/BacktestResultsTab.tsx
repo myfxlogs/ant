@@ -1,6 +1,7 @@
 import { Button, Tag, Empty, Spin, Table, Skeleton, Progress, Typography, Tooltip } from 'antd';
 import { StopOutlined, WarningOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
   EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY,
@@ -18,8 +19,8 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
 import type { BacktestBlindSpotItem } from './backtestRunnerWatch';
-import type { GateEvaluationUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
-import type { GateResult } from '@/gen/ant/v1/ai_gate_pb';
+import type { MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
+import type { GateEvaluationUpdate, GateResult } from '@/gen/ant/v1/ai_gate_pb';
 import { GatePreview } from './BacktestSections';
 import { DiagnosticPanel } from './DiagnosticPanel';
 import BacktestMetricCards from './BacktestMetricCards';
@@ -37,10 +38,18 @@ const _ASSUMPTION_MAP: Record<string, string> = {
   long: 'strategy.backtestParams.long',
   short: 'strategy.backtestParams.short',
 };
-function assumeVal(t: unknown, v: string | undefined): string {
+import type { ExecutionAssumptions as ProtoExecutionAssumptions } from '@/gen/ant/v1/backtest_execution_config_pb';
+
+type ExecutionAssumptions = ProtoExecutionAssumptions;
+
+function assumeVal(t: (key: string, fallback?: string) => string, v: string | undefined): string {
   if (!v) return '-';
   const key = _ASSUMPTION_MAP[v];
   return key ? t(key, v) : v;
+}
+
+function assumeValFromTFunction(t: TFunction, v: string | undefined): string {
+  return assumeVal((key: string, fallback?: string) => t(key, { defaultValue: fallback }), v);
 }
 
 const ASSUMPTION_TOOLTIPS: Record<string, string> = {
@@ -67,7 +76,7 @@ function AssumptionField({ label, value, tooltip }: { label: string; value: Reac
 interface Props {
   status: BacktestStatus;
   metrics: BacktestMetrics | null;
-  executionAssumptions: unknown;
+  executionAssumptions: ExecutionAssumptions | null;
   errorMsg: string;
   onAIOptimize?: () => void;
   onOpenHistory?: () => void;
@@ -186,15 +195,15 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px 12px', fontSize: 12 }}>
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)} value={assumeVal(t, executionAssumptions.simulationMode)} tooltip={ASSUMPTION_TOOLTIPS.simulationMode} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)} value={assumeVal(t, executionAssumptions.signalTiming)} tooltip={ASSUMPTION_TOOLTIPS.signalTiming} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)} value={assumeVal(t, executionAssumptions.fillRule)} tooltip={ASSUMPTION_TOOLTIPS.fillRule} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)} value={assumeVal(t, executionAssumptions.tradeDirection)} tooltip={ASSUMPTION_TOOLTIPS.tradeDirection} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.commission} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)} value={executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.slippage} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.simulationMode)} tooltip={ASSUMPTION_TOOLTIPS.simulationMode} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)} value={assumeValFromTFunction(t, executionAssumptions.signalTiming)} tooltip={ASSUMPTION_TOOLTIPS.signalTiming} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.fillRule)} tooltip={ASSUMPTION_TOOLTIPS.fillRule} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)} value={assumeValFromTFunction(t, executionAssumptions.tradeDirection)} tooltip={ASSUMPTION_TOOLTIPS.tradeDirection} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission ? (Number(executionAssumptions.actualCommission) * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.commission} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)} value={executionAssumptions.actualSlippage ? (Number(executionAssumptions.actualSlippage) * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.slippage} />
             <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)} value={(executionAssumptions.actualLeverage || '-') + 'x'} tooltip={ASSUMPTION_TOOLTIPS.leverage} />
             {executionAssumptions.mtfFallbackReason && (
-              <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeVal(t, executionAssumptions.mtfFallbackReason)}</strong></div>
+              <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeValFromTFunction(t, executionAssumptions.mtfFallbackReason)}</strong></div>
             )}
           </div>
         </div>

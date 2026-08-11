@@ -18,7 +18,7 @@ interface ToggleVars {
 export function useEnableDisableAccountMutation() {
   const queryClient = useQueryClient();
 
-  return useRpcMutation<Account, Error, ToggleVars>(
+  return useRpcMutation<void, Error, ToggleVars>(
     ({ id, isDisabled }) =>
       isDisabled ? accountApi.disconnect(id) : accountApi.reconnect(id),
     {
@@ -39,8 +39,9 @@ export function useEnableDisableAccountMutation() {
         return { previous };
       },
       onError: (_err, _vars, ctx) => {
-        if (ctx?.previous) {
-          queryClient.setQueryData(queryKeys.accounts.list(), ctx.previous);
+        const context = ctx as { previous?: Account[] } | undefined;
+        if (context?.previous) {
+          queryClient.setQueryData(queryKeys.accounts.list(), context.previous);
         }
       },
       onSettled: (_data, _err, vars) => {

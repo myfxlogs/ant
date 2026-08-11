@@ -20,7 +20,8 @@ export function useDeleteAccountMutation() {
         return { prevTq };
       },
       onError: (_err, _vars, context) => {
-        if (context?.prevTq) queryClient.setQueryData(queryKeys.accounts.list(), context.prevTq);
+        const ctx = context as { prevTq?: Account[] } | undefined;
+        if (ctx?.prevTq) queryClient.setQueryData(queryKeys.accounts.list(), ctx.prevTq);
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts.list() });

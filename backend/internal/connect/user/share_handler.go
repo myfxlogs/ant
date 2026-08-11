@@ -74,6 +74,13 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	// Query decay_status from marketplace_strategies via linked_account_id (real-time value).
+	var decayStatus string
+	_ = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(decay_status, 'none') FROM marketplace_strategies WHERE linked_account_id = $1 AND status = 'published'`,
+		st.AccountID,
+	).Scan(&decayStatus)
+
 	// Format trades for proto.
 	sharedTrades := FormatSharedTrades(perf.Trades)
 	pbTrades := make([]*antv1.SharedTrade, 0, len(sharedTrades))
@@ -133,6 +140,7 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		Positions:   pbPositions,
 		TradeStats:  pbTradeStats,
 		SymbolStats: pbSymbolStats,
+		DecayStatus: decayStatus,
 	}), nil
 }
 

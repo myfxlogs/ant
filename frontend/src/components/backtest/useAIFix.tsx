@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { message, Modal } from 'antd';
+import { message, Modal, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { BacktestBlindSpotItem } from '@/components/backtest/backtestRunnerWatch';
 
@@ -101,6 +101,9 @@ export function useAIFix({ strategyId, currentCode, onApplyCode, onRerunBacktest
     setDiffCode(null);
   }, []);
 
+  const noStrategyId = !strategyId;
+  const noStrategyIdTip = t('strategy.backtest.diagnostic.saveFirst', 'Please save the strategy first to apply AI fixes');
+
   const diffModal = (
     <Modal
       title={t('strategy.backtest.diagnostic.diffPreview', 'AI Fix Preview')}
@@ -109,8 +112,17 @@ export function useAIFix({ strategyId, currentCode, onApplyCode, onRerunBacktest
       onCancel={handleCancelDiff}
       okText={t('strategy.backtest.diagnostic.apply', 'Apply & Re-run')}
       cancelText={t('common.cancel', { defaultValue: 'Cancel' })}
+      okButtonProps={{ disabled: noStrategyId }}
       width={800}
     >
+      {noStrategyId && (
+        <Alert
+          type="warning"
+          message={noStrategyIdTip}
+          showIcon
+          style={{ marginBottom: 12 }}
+        />
+      )}
       {diffCode && (
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>

@@ -64,5 +64,6 @@ export interface ShareData {
     avgLoss: string;
   } | null;
   symbolStats?: Array<{ symbol: string; count: number; net: string }> | null;
+  decayStatus?: string;
 }
 

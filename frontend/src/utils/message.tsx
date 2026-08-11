@@ -1,4 +1,3 @@
-import React from 'react';
 import { message, Modal } from 'antd';
 import { translateMaybeI18nKey } from '@/utils/error';
 

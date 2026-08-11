@@ -8,9 +8,18 @@ import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip as RTooltip } from
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { strategyApi } from '@/client/strategy';
+import type { StrategyTemplate } from '@/gen/ant/v1/strategy_template_entity_pb';
 import { queryKeys } from '@/queries/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 import Seo from '@/components/common/Seo';
+
+type TemplateWithMetrics = StrategyTemplate & {
+  sparkline?: string[];
+  winRate?: string;
+  maxDrawdown?: string;
+  profitFactor?: string;
+  sharpeRatio?: string;
+};
 
 const { Title, Paragraph } = Typography;
 
@@ -21,7 +30,7 @@ export default function StrategyDetailPage() {
 
   const { data: template, isLoading } = useQuery({
     queryKey: queryKeys.templates.detail(id!),
-    queryFn: () => strategyApi.getTemplate(id!),
+    queryFn: async () => strategyApi.getTemplate(id!) as unknown as TemplateWithMetrics,
     enabled: !!id,
   });
 
@@ -33,9 +42,9 @@ export default function StrategyDetailPage() {
   const handleEdit = () => navigate(`/strategy/${id}/edit`);
   const handleFork = async () => {
     try {
-      const draft = await strategyApi.createTemplateDraft({ name: `${template.name || 'Strategy'} (Fork)` });
+      const draft = await strategyApi.createTemplateDraft({ name: `${template?.name || 'Strategy'} (Fork)` });
       if (!draft.id) throw new Error('Draft creation returned empty id');
-      await strategyApi.updateTemplateDraft({ id: draft.id, name: `${template.name || 'Strategy'} (Fork)`, description: template.description, code: template.code, tags: template.tags });
+      await strategyApi.updateTemplateDraft({ id: draft.id, name: `${template?.name || 'Strategy'} (Fork)`, description: template?.description, code: template?.code, tags: template?.tags });
       navigate(`/strategy/${draft.id}/edit`);
     } catch (_e) {
       // navigate to edit as fallback
@@ -47,7 +56,7 @@ export default function StrategyDetailPage() {
 
   const sparklineData = useMemo(() => {
     if (!template?.sparkline || template.sparkline.length < 2) return [];
-    return template.sparkline.map((v, i) => ({ idx: i, value: parseFloat(v) || 0 }));
+    return template.sparkline.map((v: string, i: number) => ({ idx: i, value: parseFloat(v) || 0 }));
   }, [template]);
 
   const statsRows = useMemo(() => {
@@ -114,7 +123,7 @@ export default function StrategyDetailPage() {
                         <ResponsiveContainer width="100%" height={240}>
                           <LineChart data={sparklineData}>
                             <YAxis domain={['auto', 'auto']} style={{ fontSize: 11 }} />
-                            <RTooltip formatter={(v: number) => v.toFixed(2)} />
+                            <RTooltip formatter={(v: number | string) => Number(v).toFixed(2)} />
                             <Line type="monotone" dataKey="value" stroke="#58a6ff" strokeWidth={2} dot={false} />
                           </LineChart>
                         </ResponsiveContainer>

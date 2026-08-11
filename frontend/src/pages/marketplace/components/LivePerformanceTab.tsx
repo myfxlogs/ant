@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Card, Row, Col, Statistic, Empty, Spin, Typography, Button, Select } from 'antd';
+import { Card, Row, Col, Statistic, Empty, Spin, Typography, Button, Select, Alert } from 'antd';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
@@ -42,9 +42,11 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
   const [accounts, setAccounts] = useState<{label: string; value: string}[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>('');
   const [linking, setLinking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const resp = await marketplaceClient.getLivePerformance({ strategyId, limit: 90 });
       setPoints((resp.points || []).map(p => ({
@@ -66,10 +68,11 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
     } catch {
       setPoints([]);
       setSummary(null);
+      setError(t('marketplace.live.loadError', 'Failed to load live performance data'));
     } finally {
       setLoading(false);
     }
-  }, [strategyId]);
+  }, [strategyId, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -103,6 +106,19 @@ export default function LivePerformanceTab({ strategyId, isOwner }: Props) {
   const hasData = points.length > 0;
 
   if (loading) return <Spin style={{ display: 'block', padding: 40 }} />;
+
+  if (error) {
+    return (
+      <div style={{ padding: 40 }}>
+        <Alert
+          type="error"
+          message={error}
+          showIcon
+          action={<Button size="small" onClick={load}>{t('common.retry', { defaultValue: 'Retry' })}</Button>}
+        />
+      </div>
+    );
+  }
 
   if (!hasData && !isOwner) {
     return <Empty description={t('marketplace.live.noData')} style={{ padding: 40 }} />;

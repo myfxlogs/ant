@@ -61,7 +61,7 @@ export function useAccountDetailData(id: string | undefined) {
   const positions = useMemo(() => positionsQ.data ?? [], [positionsQ.data]);
 
   // ── Financial values (prefer SSE over snapshot) ──
-  const financials = useMemo(() => computeFinancials(id, hasReceivedData, financialsQ.data, currentAccount), [id, hasReceivedData, financialsQ.data, currentAccount]);
+  const financials = useMemo(() => computeFinancials(id, hasReceivedData, financialsQ.data as Record<string, unknown> | null | undefined, currentAccount as Record<string, unknown> | null), [id, hasReceivedData, financialsQ.data, currentAccount]);
 
   // ── Account actions ──
   const handleConnect = useCallback(async () => {
@@ -160,7 +160,7 @@ function computeFinancials(id: string | undefined, hasReceivedData: boolean, sse
   const src = (id && hasReceivedData && sse) ? sse : acc;
   const result: Record<string, number> = {};
   for (const key of FINANCIAL_KEYS) {
-    result[key] = src?.[key] ?? 0;
+    result[key] = Number(src?.[key] ?? 0);
   }
   return result as Financials;
 }

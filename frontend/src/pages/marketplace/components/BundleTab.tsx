@@ -51,7 +51,7 @@ export default function BundleTab() {
         return;
       }
       setCreating(true);
-      const _resp = await marketplaceClient.createBundle(create(CreateBundleRequestSchema, {
+      await marketplaceClient.createBundle(create(CreateBundleRequestSchema, {
         title: vals.title,
         description: vals.description || '',
         priceModel: vals.priceModel,
@@ -75,7 +75,7 @@ export default function BundleTab() {
     const idempotencyKey = `bundle_${bundleId}_${Date.now()}`;
     setPurchasing(bundleId);
     try {
-      const _resp = await marketplaceClient.purchaseBundle(create(PurchaseBundleRequestSchema, { bundleId, idempotencyKey }));
+      await marketplaceClient.purchaseBundle(create(PurchaseBundleRequestSchema, { bundleId, idempotencyKey }));
       message.success(t('marketplace.bundle.purchased'));
       fetchBundles();
     } catch (e: unknown) {

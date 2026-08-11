@@ -22,7 +22,7 @@ import (
 // Defined on the consumer side — marketplace.Service package need not know about it.
 type marketplaceSvc interface {
 	Publish(ctx context.Context, params marketplace.PublishParams) (string, error)
-	ListPublished(ctx context.Context, userID string, limit int, offset int, assetClass, keyword, sortBy string) ([]marketplace.PublishedStrategy, error)
+	ListPublished(ctx context.Context, userID string, limit int, offset int, assetClass, keyword, sortBy, priceFilter string) ([]marketplace.PublishedStrategy, int, error)
 	Rate(ctx context.Context, userID, strategyID string, rating int32) (float64, int32, error)
 	ListRatings(ctx context.Context, strategyID string) ([]marketplace.RatingItem, float64, int32, error)
 	Comment(ctx context.Context, userID, strategyID, content string) (string, error)

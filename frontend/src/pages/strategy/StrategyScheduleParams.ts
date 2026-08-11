@@ -23,15 +23,15 @@ export function buildParametersFromForm(v: CommonFields): Record<string, string>
   const out: Record<string, string> = {};
   setIfPositive(out, '__schedule.name', v.scheduleName, (val) => String(val).trim());
   setIfPositive(out, '__risk.default_volume', v.defaultVolume, String);
-  setIfPositive(out, '__risk.max_positions', v.maxPositions, (val) => String(Math.floor(val)));
+  setIfPositive(out, '__risk.max_positions', v.maxPositions, (val) => String(Math.floor(Number(val))));
   setIfPositive(out, '__risk.stop_loss_price_offset', v.stopLossPriceOffset, String);
   setIfPositive(out, '__risk.take_profit_price_offset', v.takeProfitPriceOffset, String);
   if (v.maxDrawdownPct && v.maxDrawdownPct > 0 && v.maxDrawdownPct <= 1) out['__risk.max_drawdown_pct'] = String(v.maxDrawdownPct);
   setIfPositive(out, 'lot', v.lot, String);
-  setIfPositive(out, 'grid_count', v.grid_count, (val) => String(Math.floor(val)));
+  setIfPositive(out, 'grid_count', v.grid_count, (val) => String(Math.floor(Number(val))));
   if (typeof v.lower_price === 'number') out['lower_price'] = String(v.lower_price);
   if (typeof v.upper_price === 'number') out['upper_price'] = String(v.upper_price);
-  setIfPositive(out, 'interval_hours', v.interval_hours, (val) => String(Math.floor(val)));
+  setIfPositive(out, 'interval_hours', v.interval_hours, (val) => String(Math.floor(Number(val))));
   return out;
 }
 

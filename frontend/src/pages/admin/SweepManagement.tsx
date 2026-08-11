@@ -30,7 +30,7 @@ export default function SweepManagement() {
   const exportMutation = useMutation({
     mutationFn: async (addrId: string) => {
       const bundle = await depositApi.exportUnsignedSweepBundle(addrId);
-      downloadBlob(new Blob([bundle]), `unsigned-bundle-${addrId.slice(0, 8)}.bin`);
+      downloadBlob(new Blob([bundle as BlobPart]), `unsigned-bundle-${addrId.slice(0, 8)}.bin`);
     },
     onSuccess: () => message.success(t('admin.sweep.exportSuccess')),
     onError: (err: Error) => message.error(err.message),
@@ -39,7 +39,7 @@ export default function SweepManagement() {
   const exportBatchMutation = useMutation({
     mutationFn: async (addrIds: string[]) => {
       const bundle = await depositApi.exportBatchUnsignedSweepBundle(addrIds);
-      downloadBlob(new Blob([bundle]), `unsigned-batch-${Date.now()}.bin`);
+      downloadBlob(new Blob([bundle as BlobPart]), `unsigned-batch-${Date.now()}.bin`);
     },
     onSuccess: () => {
       message.success(t('admin.sweep.batchExportSuccess'));
@@ -64,7 +64,7 @@ export default function SweepManagement() {
   const undelegateMutation = useMutation({
     mutationFn: async (addrIds: string[]) => depositApi.buildUndelegateOnlyBundle(addrIds),
     onSuccess: (bundle) => {
-      downloadBlob(new Blob([bundle]), `undelegate-${Date.now()}.bin`);
+      downloadBlob(new Blob([bundle as BlobPart]), `undelegate-${Date.now()}.bin`);
       message.success(t('admin.sweep.undelegateSuccess'));
     },
     onError: (err: Error) => message.error(err.message),
@@ -193,7 +193,7 @@ export default function SweepManagement() {
           pagination={{
             current: page,
             pageSize: 20,
-            total: dashboard?.total || 0,
+            total: Number(dashboard?.total || 0),
             onChange: setPage,
             size: 'small',
           }}

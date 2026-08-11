@@ -1,4 +1,3 @@
-import React from 'react';
 import { Row, Col, Card, Button, Empty } from 'antd';
 import { CrownOutlined, CheckCircleOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';

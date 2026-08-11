@@ -229,10 +229,10 @@ export default function AccountDetail() {
           symbolDistributionData={symbolDistributionData}
           dailyPnLData={dailyPnLData}
           hourlyData={hourlyData}
-          tradeStats={tradeStats}
-          riskMetrics={riskMetrics}
+          tradeStats={tradeStats as unknown as Record<string, number>}
+          riskMetrics={riskMetrics as unknown as Record<string, number>}
           monthlyAnalysisYears={monthlyAnalysisYears}
-          monthlyAnalysisData={monthlyAnalysisData}
+          monthlyAnalysisData={monthlyAnalysisData as unknown as Record<string, unknown>[]}
           currency={currentAccount?.currency || 'USD'}
           accountId={id}
         />

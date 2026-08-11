@@ -5,7 +5,6 @@ import { useAccount } from '@/hooks/useAccount';
 import { strategyScheduleApi } from '@/client/strategy-schedules';
 import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { ScheduleConfig } from '@/gen/ant/v1/strategy_schedule_entity_pb';
-import type { PartialMessage } from '@bufbuild/protobuf';
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import { TIMEFRAMES } from '@/constants/timeframes';
 import {
@@ -63,7 +62,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
     try {
       const v = await form.validateFields();
       setLoading(true);
-      const scheduleConfig: PartialMessage<ScheduleConfig> = {
+      const scheduleConfig: Partial<ScheduleConfig> = {
         cronExpression: '', intervalMs: 0n, eventTrigger: '',
         triggerMode: v.scheduleType === 'hf_quote' ? 'hf_quote_stream' : 'stable_kline',
         hfCooldownMs: 0n,

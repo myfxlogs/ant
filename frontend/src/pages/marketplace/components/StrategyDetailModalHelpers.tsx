@@ -1,4 +1,3 @@
-import React from 'react';
 import { Divider, Typography, Rate, Spin, List, Input, Button } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';

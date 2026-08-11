@@ -63,7 +63,7 @@ func TestIsUniqueViolation_Wrapped(t *testing.T) {
 func TestPublishedCache_Key(t *testing.T) {
 	t.Parallel()
 	c := newPublishedCache()
-	k := c.key("user-1", "forex", "EURUSD", "sharpe", 10, 0)
+	k := c.key("user-1", "forex", "EURUSD", "sharpe", "all", 10, 0)
 	if k == "" {
 		t.Fatal("expected non-empty key")
 	}

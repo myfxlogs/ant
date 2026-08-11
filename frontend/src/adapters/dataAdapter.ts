@@ -83,11 +83,12 @@ export function toCamelCase<T>(obj: unknown): T {
     return obj as T;
   }
 
-  const result: unknown = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+  const result: Record<string, unknown> = {};
+  const src = obj as Record<string, unknown>;
+  for (const key in src) {
+    if (Object.prototype.hasOwnProperty.call(src, key)) {
       const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-      result[camelKey] = toCamelCase(obj[key]);
+      result[camelKey] = toCamelCase(src[key]);
     }
   }
   return result as T;
@@ -111,11 +112,12 @@ export function toSnakeCase<T>(obj: unknown): T {
     return obj as T;
   }
 
-  const result: unknown = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+  const result: Record<string, unknown> = {};
+  const src = obj as Record<string, unknown>;
+  for (const key in src) {
+    if (Object.prototype.hasOwnProperty.call(src, key)) {
       const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-      result[snakeKey] = toSnakeCase(obj[key]);
+      result[snakeKey] = toSnakeCase(src[key]);
     }
   }
   return result as T;

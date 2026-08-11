@@ -41,31 +41,24 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
   const [paymentStrategy, setPaymentStrategy] = useState<PublishedStrategy | null>(null);
   const [walletBalance, setWalletBalance] = useState('0');
 
-  // ── Market listing (server-side pagination via API) ──
+  // ── Market listing (server-side pagination + price filter via API) ──
   // NOTE: userId is NOT passed — the market shows ALL published strategies.
   // Author tab filters client-side via myPublished (by publisherUserId).
-  const { data: allStrategies = [], isLoading: loading, error, refetch } = useRpcQuery(
-    ['marketplace', 'published', searchText, sortBy, page, pageSize],
+  const { data: respData, isLoading: loading, error, refetch } = useRpcQuery(
+    ['marketplace', 'published', searchText, sortBy, priceFilter, page, pageSize],
     async () => {
       const resp = await marketplaceClient.listPublished({
         limit: pageSize, offset: (page - 1) * pageSize,
         keyword: searchText || undefined,
         sortBy: sortBy || undefined,
+        priceFilter: priceFilter !== 'all' ? priceFilter : undefined,
       });
-      return (resp.strategies || []) as PublishedStrategy[];
+      return { strategies: (resp.strategies || []) as PublishedStrategy[], total: resp.total };
     },
   );
 
-  // Client-side price filter + cache-warmed list
-  const strategies = useMemo(() => {
-    let list = allStrategies;
-    if (priceFilter === 'free') list = list.filter(s => !s.priceAmount || s.priceAmount === '0');
-    if (priceFilter === 'paid') list = list.filter(s => s.priceAmount && Number(s.priceAmount) > 0);
-    return list;
-  }, [allStrategies, priceFilter]);
-
-  // Estimate total — API returns at most pageSize items
-  const total = allStrategies.length < pageSize ? (page - 1) * pageSize + allStrategies.length : page * pageSize + 1;
+  const strategies = respData?.strategies ?? [];
+  const total = respData?.total ?? 0;
 
   // ── Purchases ──
   const { data: purchases = [], isLoading: purchasesLoading, refetch: refetchPurchases } = useRpcQuery(

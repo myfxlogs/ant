@@ -399,6 +399,12 @@ const Marketplace = {
       "winRate": "勝率",
       "equityCurve": "エクイティカーブ"
     },
+    "decay": {
+      "badgeDecaying": "パフォーマンス低下中",
+      "badgeDecayed": "戦略劣化",
+      "descDecaying": "プラットフォームが実パフォーマンスの持続的低下を検出しました。監視中です。",
+      "descDecayed": "プラットフォームが実パフォーマンスの大幅な劣化を検出しました。新規購入は停止されました。"
+    },
     "share": {
       "copyLink": "リンクをコピー",
       "linkCopied": "リンクをコピーしました！",

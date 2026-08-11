@@ -6,11 +6,17 @@ import { TRIGGER_MODAL_ACTIONS_CONFIRM_ORDER_KEY, TRIGGER_MODAL_ACTIONS_RERUN_KE
 
 const { Text } = Typography;
 
+type ScheduleInfo = { name?: string; symbol?: string; timeframe?: string };
+
+type TriggerSignal = { type?: string; signalType?: string; signal?: string; volume?: number | string };
+
+type TriggerMeta = { error?: string };
+
 type Props = {
   open: boolean;
   triggering: boolean;
-  triggerContext: { schedule: unknown; accountId: string } | null;
-  triggerResult: { logs: string[]; signal: unknown; meta: unknown } | null;
+  triggerContext: { schedule: ScheduleInfo; accountId: string } | null;
+  triggerResult: { logs: string[]; signal: TriggerSignal; meta: TriggerMeta } | null;
   onClose: () => void;
   onRerun: () => void;
   onConfirmOrder: () => void;
@@ -39,7 +45,7 @@ export default function TriggerModal({
   };
 
   const canOrder = (() => {
-    const sig: unknown = triggerResult?.signal;
+    const sig: TriggerSignal | undefined = triggerResult?.signal;
     if (!sig) return false;
     const raw = String(sig?.type ?? sig?.signalType ?? sig?.signal ?? '').trim().toLowerCase();
     const actionOk = raw === 'buy' || raw === 'sell';

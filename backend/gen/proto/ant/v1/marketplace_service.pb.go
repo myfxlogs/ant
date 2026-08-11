@@ -746,10 +746,11 @@ type ListPublishedRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	AssetClass    string                 `protobuf:"bytes,3,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"` // optional filter by asset class
-	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`                         // search title/description/tags (ILIKE)
-	SortBy        string                 `protobuf:"bytes,5,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`             // newest | popular | performance (default: newest)
-	Offset        int32                  `protobuf:"varint,6,opt,name=offset,proto3" json:"offset,omitempty"`                          // pagination offset (default: 0)
+	AssetClass    string                 `protobuf:"bytes,3,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"`    // optional filter by asset class
+	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`                            // search title/description/tags (ILIKE)
+	SortBy        string                 `protobuf:"bytes,5,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`                // newest | popular | performance (default: newest)
+	Offset        int32                  `protobuf:"varint,6,opt,name=offset,proto3" json:"offset,omitempty"`                             // pagination offset (default: 0)
+	PriceFilter   string                 `protobuf:"bytes,7,opt,name=price_filter,json=priceFilter,proto3" json:"price_filter,omitempty"` // all|free|paid (empty = all)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -826,9 +827,17 @@ func (x *ListPublishedRequest) GetOffset() int32 {
 	return 0
 }
 
+func (x *ListPublishedRequest) GetPriceFilter() string {
+	if x != nil {
+		return x.PriceFilter
+	}
+	return ""
+}
+
 type ListPublishedResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Strategies    []*PublishedStrategy   `protobuf:"bytes,1,rep,name=strategies,proto3" json:"strategies,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"` // total count matching filters (for pagination)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -868,6 +877,13 @@ func (x *ListPublishedResponse) GetStrategies() []*PublishedStrategy {
 		return x.Strategies
 	}
 	return nil
+}
+
+func (x *ListPublishedResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
 }
 
 type PublishedStrategy struct {
@@ -9456,7 +9472,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x0fsubscription_id\x18\x01 \x01(\tR\x0esubscriptionId\x12%\n" +
 	"\x0etransaction_id\x18\x02 \x01(\tR\rtransactionId\x12%\n" +
 	"\x0eamount_charged\x18\x03 \x01(\tR\ramountCharged\x12#\n" +
-	"\rbalance_after\x18\x04 \x01(\tR\fbalanceAfter\"\xb1\x01\n" +
+	"\rbalance_after\x18\x04 \x01(\tR\fbalanceAfter\"\xd4\x01\n" +
 	"\x14ListPublishedRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x1f\n" +
@@ -9464,11 +9480,13 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"assetClass\x12\x18\n" +
 	"\akeyword\x18\x04 \x01(\tR\akeyword\x12\x17\n" +
 	"\asort_by\x18\x05 \x01(\tR\x06sortBy\x12\x16\n" +
-	"\x06offset\x18\x06 \x01(\x05R\x06offset\"R\n" +
+	"\x06offset\x18\x06 \x01(\x05R\x06offset\x12!\n" +
+	"\fprice_filter\x18\a \x01(\tR\vpriceFilter\"h\n" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +
-	"strategies\"\x91\a\n" +
+	"strategies\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x91\a\n" +
 	"\x11PublishedStrategy\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\x12\x1f\n" +

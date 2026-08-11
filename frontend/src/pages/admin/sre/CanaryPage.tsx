@@ -26,8 +26,7 @@ export default function CanaryPage() {
     const values = await form.validateFields();
     setSubmitLoading(true);
     try {
-      const accountIds = (values.accountIds || '').split(/[\n,]+/).map((s: string) => s.trim()).filter(Boolean);
-      await sreApi.canarySet({ ...values, account_ids: accountIds });
+      await sreApi.canarySet(values.strategyId || '', values.versionTag || '', values.durationDays || 0);
       setModalOpen(false); form.resetFields(); fetchCanaries();
     } finally { setSubmitLoading(false); }
   };

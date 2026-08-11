@@ -399,6 +399,12 @@ const Marketplace = {
       "winRate": "胜率",
       "equityCurve": "净值曲线"
     },
+    "decay": {
+      "badgeDecaying": "表现下降中",
+      "badgeDecayed": "策略已衰减",
+      "descDecaying": "平台检测到该策略实盘表现持续下降，正在监控中。",
+      "descDecayed": "平台检测到该策略实盘表现显著衰减，已停止新购买。"
+    },
     "share": {
       "copyLink": "复制链接",
       "linkCopied": "链接已复制！",

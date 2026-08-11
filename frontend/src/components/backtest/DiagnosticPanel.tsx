@@ -1,6 +1,7 @@
 import { Alert, Tag, Button, Tooltip, Switch } from 'antd';
 import { WarningOutlined, BugOutlined, InfoCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useMemo, useCallback } from 'react';
 import {
   BACKTEST_DEGRADED_KEY, BACKTEST_DEGRADED_DESC_KEY,
@@ -46,7 +47,7 @@ function severityIcon(level: 'fatal' | 'warning' | 'info') {
   }
 }
 
-function categoryLabel(category: string, t: (k: string, d?: string) => string): string {
+function categoryLabel(category: string, t: TFunction): string {
   switch (category) {
     case 'invariant': return t('strategy.backtest.diagnostic.invariant', 'Invariant Violation');
     case 'defense_a': return t('strategy.backtest.diagnostic.defenseA', 'Structural Validation');
@@ -56,7 +57,7 @@ function categoryLabel(category: string, t: (k: string, d?: string) => string): 
   }
 }
 
-function blindSpotSuggestion(bs: BacktestBlindSpotItem, t: (k: string, d?: string) => string): string {
+function blindSpotSuggestion(bs: BacktestBlindSpotItem, t: TFunction): string {
   const id = bs.id;
   const desc = bs.description;
   if (id.includes('iCustom') || desc.includes('iCustom')) {
@@ -249,7 +250,7 @@ function DiagnosticGroup({
   items: BacktestBlindSpotItem[];
   color: string;
   icon: React.ReactNode;
-  t: (k: string, d?: string) => string;
+  t: TFunction;
   renderItem?: (bs: BacktestBlindSpotItem) => React.ReactNode;
 }) {
   if (items.length === 0) return null;

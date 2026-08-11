@@ -50,25 +50,25 @@ export default function ScheduleTable({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const templateById = useMemo(() => {
-    const m = new Map<string, unknown>();
-    (templates || []).forEach((item: unknown) => {
+    const m = new Map<string, TemplateOption>();
+    (templates || []).forEach((item) => {
       if (item?.id) m.set(item.id, item);
     });
     return m;
   }, [templates]);
   const accountById = useMemo(() => {
-    const m = new Map<string, unknown>();
-    (accounts || []).forEach((item: unknown) => {
+    const m = new Map<string, AccountRow>();
+    (accounts || []).forEach((item) => {
       if (item?.id) m.set(item.id, item);
     });
     return m;
   }, [accounts]);
-  const columns: ColumnsType<unknown> = [
+  const columns: ColumnsType<ScheduleRow> = [
     {
       title: t("strategy.schedules.table.name"),
       dataIndex: "name",
       key: "name",
-      render: (v: unknown, row: unknown) => (
+      render: (v: React.ReactNode, row: ScheduleRow) => (
         <Space orientation="vertical" size={0}>
           <Text strong>{v}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -113,7 +113,7 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.tradeParams"),
       key: "trade",
-      render: (_: unknown, row: unknown) => (
+      render: (_: unknown, row: ScheduleRow) => (
         <Space orientation="vertical" size={0}>
           <Text>{row?.symbol}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
@@ -125,12 +125,12 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.schedule"),
       key: "schedule",
-      render: (_: unknown, row: unknown) => <Text>{formatSchedule(t, row)}</Text>,
+      render: (_: unknown, row: ScheduleRow) => <Text>{formatSchedule(t, row)}</Text>,
     },
     {
       title: t("strategy.schedules.table.status"),
       key: "status",
-      render: (_: unknown, row: unknown) => (
+      render: (_: unknown, row: ScheduleRow) => (
         <Space orientation="vertical" size={0}>
           <Space>
             <Switch
@@ -153,11 +153,11 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.lastRun"),
       key: "lastRunAt",
-      render: (_: unknown, row: unknown) => (
+      render: (_: unknown, row: ScheduleRow) => (
         <Space orientation="vertical" size={0}>
           <Text>{formatTime(row?.lastRunAt)}</Text>
           <Text type="secondary" style={{ fontSize: 12 }}>
-            {t("strategy.schedules.enableCount")}:{" "}
+            {t("strategy.schedules.enableCount")}: {" "}
             {typeof row?.enableCount === "number" ? row.enableCount : "-"}
           </Text>
         </Space>
@@ -166,7 +166,7 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.actions"),
       key: "actions",
-      render: (_: unknown, row: unknown) => (
+      render: (_: unknown, row: ScheduleRow) => (
         <Space>
           <Button size="small" onClick={() => onEdit(row)} disabled={loading}>
             {t("common.edit")}
@@ -218,7 +218,7 @@ export default function ScheduleTable({
   );
 }
 
-function formatSchedule(t: (key: string) => string, row: unknown) {
+function formatSchedule(t: (key: string, opts?: Record<string, unknown>) => string, row: ScheduleRow) {
   const conf = row?.scheduleConfig || {};
   if (row?.scheduleType === "interval") {
     const raw = conf?.intervalMs;
@@ -230,10 +230,10 @@ function formatSchedule(t: (key: string) => string, row: unknown) {
           : undefined;
     if (typeof ms === "number" && Number.isFinite(ms) && ms > 0) {
       const s = Math.max(1, Math.floor(ms / 1000));
-      return t(FORMAT_INTERVAL_KEY, { s });
+      return t(FORMAT_INTERVAL_KEY, { s } as Record<string, unknown>);
     }
     return "-";
   }
   const cron = String(conf?.cronExpression || "").trim();
-  return cron ? t(FORMAT_CRON_KEY, { expr: cron }) : "-";
+  return cron ? t(FORMAT_CRON_KEY, { expr: cron } as Record<string, unknown>) : "-";
 }

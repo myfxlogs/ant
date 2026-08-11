@@ -44,8 +44,8 @@ type stubMarketplaceSvc struct {
 func (s *stubMarketplaceSvc) Publish(_ context.Context, _ marketplace.PublishParams) (string, error) {
 	return s.publishID, s.err
 }
-func (s *stubMarketplaceSvc) ListPublished(_ context.Context, _ string, _ int, _ int, _, _, _ string) ([]marketplace.PublishedStrategy, error) {
-	return s.published, s.err
+func (s *stubMarketplaceSvc) ListPublished(_ context.Context, _ string, _ int, _ int, _, _, _, _ string) ([]marketplace.PublishedStrategy, int, error) {
+	return s.published, len(s.published), s.err
 }
 func (s *stubMarketplaceSvc) Rate(_ context.Context, _, _ string, _ int32) (float64, int32, error) {
 	if s.rateErr != nil {

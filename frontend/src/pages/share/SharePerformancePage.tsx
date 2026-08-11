@@ -13,6 +13,7 @@ import {
 } from './SharePerformancePageHelpers';
 import { buildKpiCards } from './SharePerformancePageStats';
 import { ShareSymbolBreakdown, ShareTradeTable } from './ShareSymbolBreakdown';
+import { DecayBadge } from '@/pages/marketplace/components/DecayBadge';
 
 const { Text } = Typography;
 
@@ -55,13 +56,13 @@ export default function SharePerformancePage() {
           totalTrades: resp.totalTrades,
           totalVolume: resp.totalVolume,
           profitFactor: resp.profitFactor,
-          avgHoldingMs: resp.avgHoldingMs,
+          avgHoldingMs: Number(resp.avgHoldingMs),
           sharpeRatio: resp.sharpeRatio,
           equityCurve: resp.equityCurve,
-          equityTimesMs: resp.equityTimesMs,
+          equityTimesMs: resp.equityTimesMs.map(Number),
           trades: resp.trades.map(t => ({
             symbol: t.symbol, side: t.side, volume: t.volume,
-            profit: t.profit, closeTimeMs: t.closeTimeMs,
+            profit: t.profit, closeTimeMs: Number(t.closeTimeMs),
           })),
           positions: resp.positions.map(p => ({
             symbol: p.symbol, type: p.type, volume: p.volume,
@@ -79,6 +80,7 @@ export default function SharePerformancePage() {
           symbolStats: resp.symbolStats.map(s => ({
             symbol: s.symbol, count: s.count, net: s.net,
           })),
+          decayStatus: resp.decayStatus,
         });
       })
       .catch(() => setError('loadFailed'))
@@ -127,7 +129,7 @@ export default function SharePerformancePage() {
   const columns = [
     { title: t('sharePage.symbol'), dataIndex: 'symbol', key: 'symbol', ellipsis: true },
     { title: t('sharePage.side'), dataIndex: 'side', key: 'side',
-      render: (v: string) => <Tag color={v?.toLowerCase() === 'buy' ? 'green' : 'red'}>{v}</Tag> },
+      render: (v: unknown) => <Tag color={String(v)?.toLowerCase() === 'buy' ? 'green' : 'red'}>{v as string}</Tag> },
     { title: t('sharePage.volume'), dataIndex: 'volume', key: 'volume', render: (v: unknown) => toNum(v).toFixed(2) },
     { title: t('sharePage.profit'), dataIndex: 'profit', key: 'profit',
       render: (v: unknown) => { const n = toNum(v); return <span style={{ color: n >= 0 ? green : red, fontWeight: 500 }}>{signed(n)}</span>; } },
@@ -154,6 +156,12 @@ export default function SharePerformancePage() {
         <BrandLogo name={appName} dark={isDark} />
         {langSelector}
       </div>
+
+      {data.decayStatus && data.decayStatus !== 'none' && (
+        <div style={{ marginBottom: 16 }}>
+          <DecayBadge decayStatus={data.decayStatus} showDescription />
+        </div>
+      )}
 
       <Card style={{ borderRadius: 14, marginBottom: 16, textAlign: 'center', border: 'none', background: 'linear-gradient(135deg, rgba(212,175,55,0.10), rgba(184,150,11,0.03))' }}>
         <Text type="secondary" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }}>{t('sharePage.title')} · {data.userName || '-'}</Text>
@@ -187,7 +195,7 @@ export default function SharePerformancePage() {
 
       {equity.length > 0 && (
         <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.equityCurve')}</span>} style={{ marginBottom: 16, borderRadius: 10, background: cardBg }}>
-          <ShareChart data={equity} timesMs={data.equityTimesMs} />
+          <ShareChart data={equity} timesMs={(data.equityTimesMs || []).map(Number)} />
         </Card>
       )}
 

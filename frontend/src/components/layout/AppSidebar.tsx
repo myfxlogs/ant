@@ -46,7 +46,7 @@ function BrandLogo() {
   return (
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-        <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
+        <LineChartOutlined size={22} color="#FFFFFF" />
       </div>
       <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('app.name')}</span>
     </div>
@@ -110,14 +110,14 @@ function SidebarMenu({ items }: { items: MenuItem[] }) {
 
 export default function AppSidebar({
   isMobile, drawerVisible, menuItems, language, languages, languageMenu,
-  onDrawerClose, _onMenuClick,
+  onDrawerClose,
 }: Props) {
   const { t: _t } = useTranslation();
 
   const langDropdown = (
     <Dropdown menu={languageMenu} placement="topLeft" trigger={['click']}>
       <div className="flex items-center gap-2 p-3 rounded-lg cursor-pointer" style={{ background: 'var(--color-bg-secondary)' }}>
-        <GlobalOutlined size={18} stroke={1.5} />
+        <GlobalOutlined size={18} />
         <span style={{ color: 'var(--color-text)' }}>{languages.find(l => l.key === language)?.nativeName || 'English'}</span>
       </div>
     </Dropdown>

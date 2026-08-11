@@ -170,13 +170,13 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* Public share page — standalone, no SSE, no auth */}
-      <Route path="/share/:token" element={<SharePerformancePage />} />
+      <Route path="/share/:token" element={wrap(<SharePerformancePage />)} />
       {/* Public landing page — unauthenticated only; authenticated falls through to * */}
-      {!isAuthenticated && <Route path="/" element={<LandingPage />} />}
+      {!isAuthenticated && <Route path="/" element={wrap(<LandingPage />)} />}
       {/* Public marketplace — unauthenticated only; authenticated uses mainRoutes version with layout */}
       {!isAuthenticated && <Route path="/marketplace" element={wrap(<MarketplacePage />)} />}
       {/* Public brokers page — SEO landing page, always accessible */}
-      <Route path="/brokers" element={<BrokersPage />} />
+      <Route path="/brokers" element={wrap(<BrokersPage />)} />
       {/* Everything else inside StreamProvider */}
       <Route path="*" element={
         <StreamProvider>
@@ -185,7 +185,7 @@ export function AppRoutes() {
             {mainRoutes}
             {adminRoutes}
             {/* Strategy share landing page — must be after mainRoutes so known paths (workspace, live, etc.) match first */}
-            <Route path="/strategy/:strategyId" element={<StrategySharePage />} />
+            <Route path="/strategy/:strategyId" element={wrap(<StrategySharePage />)} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </StreamProvider>

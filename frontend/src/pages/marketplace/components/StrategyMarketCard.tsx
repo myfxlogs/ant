@@ -3,6 +3,7 @@ import { CheckCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 import { useMarketplaceCtx } from '../MarketplaceContext';
+import { DecayBadge } from './DecayBadge';
 
 const { Text } = Typography;
 
@@ -62,10 +63,11 @@ export default function StrategyMarketCard({ strategy, isPurchased, isOwner, onO
       }
     >
       {/* Name */}
-      <div style={{ marginBottom: 8 }}>
-        <Text strong ellipsis style={{ fontSize: 14, maxWidth: '100%', display: 'block' }}>
+      <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+        <Text strong ellipsis style={{ fontSize: 14, flex: 1 }}>
           {name}
         </Text>
+        <DecayBadge decayStatus={strategy.decayStatus} />
       </div>
 
       {/* Author */}

@@ -399,6 +399,12 @@ const Marketplace = {
       "winRate": "Tỷ lệ thắng",
       "equityCurve": "Đường vốn"
     },
+    "decay": {
+      "badgeDecaying": "Hiệu suất giảm",
+      "badgeDecayed": "Chiến lược suy thoái",
+      "descDecaying": "Nền tảng phát hiện hiệu suất thực tế giảm liên tục. Đang theo dõi.",
+      "descDecayed": "Nền tảng phát hiện suy thoái đáng kể. Không còn bán mới."
+    },
     "share": {
       "copyLink": "Sao chép liên kết",
       "linkCopied": "Đã sao chép liên kết!",

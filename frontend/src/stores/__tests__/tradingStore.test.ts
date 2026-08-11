@@ -90,16 +90,16 @@ describe('tradingStore', () => {
   })
 
   it('setTradeLogs replaces logs', () => {
-    const logs: TradeLog[] = [{ ticket: 1, symbol: 'EURUSD', type: 'buy', volume: 0.1, price: 1.1, time: 0, profit: 0 } as TradeLog]
+    const logs: TradeLog[] = [{ ticket: 1, symbol: 'EURUSD', type: 'buy', volume: 0.1, price: 1.1, time: 0, profit: 0 } as unknown as TradeLog]
     useTradingStore.getState().setTradeLogs(logs)
     expect(useTradingStore.getState().tradeLogs).toHaveLength(1)
   })
 
   it('addTradeLog prepends to logs', () => {
     useTradingStore.getState().setTradeLogs([
-      { ticket: 1, symbol: 'EURUSD', type: 'buy', volume: 0.1, price: 1.1, time: 0, profit: 0 } as TradeLog,
+      { ticket: 1, symbol: 'EURUSD', type: 'buy', volume: 0.1, price: 1.1, time: 0, profit: 0 } as unknown as TradeLog,
     ])
-    useTradingStore.getState().addTradeLog({ ticket: 2, symbol: 'GBPUSD', type: 'sell', volume: 0.2, price: 1.3, time: 0, profit: 0 } as TradeLog)
+    useTradingStore.getState().addTradeLog({ ticket: 2, symbol: 'GBPUSD', type: 'sell', volume: 0.2, price: 1.3, time: 0, profit: 0 } as unknown as TradeLog)
     const logs = useTradingStore.getState().tradeLogs
     expect(logs).toHaveLength(2)
     expect(logs[0].ticket).toBe(2)

@@ -2,6 +2,9 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 
 type WsState = ReturnType<typeof useStrategyWorkspaceState>;
+export type WsAccount = WsState['account'];
+export type WsCode = WsState['code'];
+export type WsTemplates = WsState['templates'];
 
 const AccountCtx = createContext<WsState['account']>(null!);
 const CodeCtx = createContext<WsState['code']>(null!);

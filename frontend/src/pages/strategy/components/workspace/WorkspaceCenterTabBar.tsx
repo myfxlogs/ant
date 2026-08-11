@@ -125,7 +125,7 @@ export default function WorkspaceCenterTabBar({
           <Tooltip title={t(SEND_TO_AI_KEY)}>
             <Button size="small" icon={<RobotOutlined />} data-tour="ai-assistant"
               disabled={!code.code}
-              onClick={() => isMobile ? setCenterTab('chat') : setRightPanelTab(prev => prev === 'ai' ? null : 'ai')}
+              onClick={() => isMobile ? setCenterTab('chat') : setRightPanelTab(rightPanelTab === 'ai' ? null : 'ai')}
               style={rightPanelTab === 'ai'
                 ? { background: '#531dab', borderColor: '#531dab', color: '#fff' }
                 : { background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>

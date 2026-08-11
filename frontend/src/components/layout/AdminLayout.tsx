@@ -51,34 +51,34 @@ export default function AdminLayout() {
   }, []);
 
   const menuItems = [
-    { key: '/admin', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
-    { key: '/admin/users', icon: <TeamOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
-    { key: '/admin/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.walletManagement') },
-    { key: '/admin/billing', icon: <DollarOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.billing') },
-    { key: '/admin/deposits', icon: <DollarOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.deposits') },
-    { key: '/admin/sweep', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.sweep') },
-    { key: '/admin/accounts', icon: <BankOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
-    { key: '/admin/trading', icon: <LineChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
-    { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
-    { key: '/admin/config', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
-    { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
-    { key: '/admin/strategies', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.strategies') },
-    { key: '/admin/shares', icon: <ShareAltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.shareManagement') },
-    { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.aiGateway') },
-    { key: '/admin/monitoring', icon: <MonitorOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.monitoring') },
-    { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.agentSettings') },
-    { key: '/admin/autogen-tasks', icon: <RobotOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.autogenTasks') },
-    { key: '/admin/marketplace', icon: <ShopOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.marketplace') },
-    { key: '/admin/refunds', icon: <RollbackOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.refunds') },
-    { key: '/admin/analytics', icon: <BarChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.analytics') },
-    { key: '/admin/coupons', icon: <TagOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.coupons') },
-    { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.sre') },
+    { key: '/admin', icon: <DashboardOutlined size={20} />, label: t('admin.sidebar.dashboard') },
+    { key: '/admin/users', icon: <TeamOutlined size={20} />, label: t('admin.sidebar.userManagement') },
+    { key: '/admin/wallet', icon: <WalletOutlined size={20} />, label: t('admin.sidebar.walletManagement') },
+    { key: '/admin/billing', icon: <DollarOutlined size={20} />, label: t('admin.sidebar.billing') },
+    { key: '/admin/deposits', icon: <DollarOutlined size={20} />, label: t('admin.sidebar.deposits') },
+    { key: '/admin/sweep', icon: <ThunderboltOutlined size={20} />, label: t('admin.sidebar.sweep') },
+    { key: '/admin/accounts', icon: <BankOutlined size={20} />, label: t('admin.sidebar.accountManagement') },
+    { key: '/admin/trading', icon: <LineChartOutlined size={20} />, label: t('admin.sidebar.tradingMonitor') },
+    { key: '/admin/logs', icon: <FileTextOutlined size={20} />, label: t('admin.sidebar.operationLogs') },
+    { key: '/admin/config', icon: <SettingOutlined size={20} />, label: t('admin.sidebar.systemConfig') },
+    { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} />, label: t('admin.sidebar.jurisdiction') },
+    { key: '/admin/strategies', icon: <CodeOutlined size={20} />, label: t('admin.sidebar.strategies') },
+    { key: '/admin/shares', icon: <ShareAltOutlined size={20} />, label: t('admin.sidebar.shareManagement') },
+    { key: '/admin/ai-gateway', icon: <ThunderboltOutlined size={20} />, label: t('admin.sidebar.aiGateway') },
+    { key: '/admin/monitoring', icon: <MonitorOutlined size={20} />, label: t('admin.sidebar.monitoring') },
+    { key: '/admin/agent-settings', icon: <SafetyOutlined size={20} />, label: t('admin.sidebar.agentSettings') },
+    { key: '/admin/autogen-tasks', icon: <RobotOutlined size={20} />, label: t('admin.sidebar.autogenTasks') },
+    { key: '/admin/marketplace', icon: <ShopOutlined size={20} />, label: t('admin.sidebar.marketplace') },
+    { key: '/admin/refunds', icon: <RollbackOutlined size={20} />, label: t('admin.sidebar.refunds') },
+    { key: '/admin/analytics', icon: <BarChartOutlined size={20} />, label: t('admin.sidebar.analytics') },
+    { key: '/admin/coupons', icon: <TagOutlined size={20} />, label: t('admin.sidebar.coupons') },
+    { key: '/admin/sre', icon: <SafetyOutlined size={20} />, label: t('admin.sidebar.sre') },
   ];
 
   const userMenuItems = [
-    { key: 'back', icon: <ArrowLeftOutlined size={18} stroke={1.5} />, label: t('admin.header.backToUser') },
+    { key: 'back', icon: <ArrowLeftOutlined size={18} />, label: t('admin.header.backToUser') },
     { type: 'divider' as const },
-    { key: 'logout', icon: <LogoutOutlined size={18} stroke={1.5} />, label: t('admin.header.logout'), danger: true },
+    { key: 'logout', icon: <LogoutOutlined size={18} />, label: t('admin.header.logout'), danger: true },
   ];
 
   const handleUserMenuClick = ({ key }: { key: string }) => {
@@ -122,7 +122,7 @@ export default function AdminLayout() {
         <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-              <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
+              <LineChartOutlined size={22} color="#FFFFFF" />
             </div>
             <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
           </div>
@@ -150,7 +150,7 @@ export default function AdminLayout() {
           <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-                <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
+                <LineChartOutlined size={22} color="#FFFFFF" />
               </div>
               <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
             </div>
@@ -182,7 +182,7 @@ export default function AdminLayout() {
                 className="p-2 rounded-lg transition-colors"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                <MenuOutlined size={22} stroke={1.5} />
+                <MenuOutlined size={22} />
               </button>
             )}
             {!isMobile && (
@@ -199,7 +199,7 @@ export default function AdminLayout() {
             >
               <div className="flex items-center cursor-pointer gap-2 px-2 py-1 rounded-lg transition-colors">
                 <Avatar
-                  icon={<TeamOutlined size={22} stroke={1.5} />}
+                  icon={<TeamOutlined size={22} />}
                   style={{ background: BRAND_GRADIENT }}
                   size="small"
                 />

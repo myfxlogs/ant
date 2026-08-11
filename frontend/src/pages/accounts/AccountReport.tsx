@@ -8,7 +8,7 @@ import { DETAIL_CARDS_BALANCE_KEY, DETAIL_CARDS_EQUITY_KEY, DETAIL_CARDS_FLOATIN
 ;
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '@/client/analytics';
-import type { AttributionAnalysisData, RollingMetricsData, AccountAnalyticsData } from '@/client/analytics';
+import type { AttributionAnalysisData, RollingMetricsData, AccountAnalyticsData, MonthlyAnalysisData } from '@/client/analytics';
 import { queryKeys } from '@/queries/queryKeys';
 import { useAccountDetailQuery } from '@/queries/useAccountDetailQuery';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
@@ -16,13 +16,13 @@ import ReportNarrative from './components/ReportNarrative';
 import ReportChartPanels from './components/ReportChartPanels';
 import type { MonthlyAnalysisPoint } from './components/MonthlyAnalysisCard.shared';
 
-type Period = 'week' | 'month' | 'quarter' | 'year';
+type Period = 'day' | 'week' | 'month' | 'all';
 
 export default function AccountReport() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const abortRef = useRef<() => void>();
+  const abortRef = useRef<(() => void) | undefined>(undefined);
 
   const [period, setPeriod] = useState<Period>('month');
   const [generating, setGenerating] = useState(false);
@@ -53,7 +53,7 @@ export default function AccountReport() {
     enabled: !!id, staleTime: 5 * 60_000,
   });
 
-  const monthlyAnalysisQ = useQuery<{ years: number[]; data: unknown[] }>({
+  const monthlyAnalysisQ = useQuery<MonthlyAnalysisData>({
     queryKey: queryKeys.analytics.monthlyAnalysis(id!),
     queryFn: () => analyticsApi.getMonthlyAnalysis(id!),
     enabled: !!id, staleTime: 5 * 60_000,
@@ -101,8 +101,8 @@ export default function AccountReport() {
   const monthlyAnalysisData: MonthlyAnalysisPoint[] = Array.isArray(raw) ? raw as MonthlyAnalysisPoint[] : [];
 
   const periodLabels: Record<Period, string> = {
-    week: t(REPORT_PERIODS_WEEK_KEY), month: t(REPORT_PERIODS_MONTH_KEY),
-    quarter: t(REPORT_PERIODS_QUARTER_KEY), year: t(REPORT_PERIODS_YEAR_KEY),
+    day: t(REPORT_PERIODS_WEEK_KEY), week: t(REPORT_PERIODS_WEEK_KEY), month: t(REPORT_PERIODS_MONTH_KEY),
+    all: t(REPORT_PERIODS_YEAR_KEY),
   };
 
   if (!currentAccount) {
@@ -176,7 +176,7 @@ export default function AccountReport() {
           monthlyAnalysisError={monthlyAnalysisQ.error?.message ?? null}
           monthlyAnalysisYears={monthlyAnalysisYears}
           monthlyAnalysisData={monthlyAnalysisData}
-          monthlyWinRates={rollingQ.data?.monthlyWinRates}
+          monthlyWinRates={rollingQ.data?.monthlyWinRates ?? []}
           hourlyData={derived.hourlyData}
           dailyPnLData={derived.dailyPnLData}
         />

@@ -30,12 +30,12 @@ export default function Register() {
     selectedKeys: [currentLang],
   };
 
-  const onFinish = async (values: unknown) => {
+  const onFinish = async (values: Record<string, unknown>) => {
     setLoading(true);
     try {
       await register({
-        password: values.password,
-        email: values.email,
+        password: String(values.password),
+        email: String(values.email),
       });
     } finally {
       setLoading(false);

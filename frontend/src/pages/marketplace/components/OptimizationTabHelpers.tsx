@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Row, Col, Statistic, Typography, Empty, Tag, Space, Button } from 'antd';
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';

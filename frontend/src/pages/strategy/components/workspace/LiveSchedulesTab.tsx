@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button, Form, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { create } from '@bufbuild/protobuf';
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
+import { ScheduleConfigSchema } from '@/gen/ant/v1/strategy_schedule_entity_pb';
 import ScheduleTable from '../ScheduleTable';
 import EditScheduleModal from '../EditScheduleModal';
 import TriggerModal from '../TriggerModal';
@@ -53,7 +55,7 @@ export default function LiveSchedulesTab() {
   const [triggerResult, setTriggerResult] = useState<TriggerResult | null>(null);
   const [triggerContext, setTriggerContext] = useState<TriggerContext | null>(null);
 
-  const symbolsOpts = useMemo(() => symbols.map(s => ({ value: s, label: s })), [symbols]);
+  const symbolsOpts = useMemo(() => symbols.map(s => ({ value: s.value, label: s.label })), [symbols]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -122,7 +124,7 @@ export default function LiveSchedulesTab() {
     const { schedule } = triggerContext;
     const raw = triggerResult?.signal;
     if (!raw) return;
-    const action = String(raw?.type ?? raw?.signalType ?? raw?.signal ?? '').trim().toLowerCase();
+    const action = String(raw?.type ?? raw?.signalType ?? '').trim().toLowerCase();
     if (!action || action === 'hold') return;
     const volume = Number(raw?.volume || 0);
     if (!(volume > 0)) return;
@@ -161,7 +163,7 @@ export default function LiveSchedulesTab() {
       defaultVolume: parsed.defaultVolume, maxPositions: parsed.maxPositions, stopLossPriceOffset: parsed.stopLossPriceOffset, takeProfitPriceOffset: parsed.takeProfitPriceOffset,
       maxDrawdownPct: parsed.maxDrawdownPct, scheduleType, intervalMs, hfCooldownMs, parametersJson,
     });
-    void loadSymbols(row?.accountId, row?.symbol);
+    void loadSymbols(row?.accountId || '');
     setOpenEdit(true);
   }, [form, loadSymbols]);
 
@@ -171,11 +173,11 @@ export default function LiveSchedulesTab() {
     try { params = v.parametersJson?.trim() ? JSON.parse(v.parametersJson) : {}; } catch { message.error(t(MESSAGES_PARAMETERS_PARSE_FAILED_KEY)); return; }
     const merged = { ...params, ...buildParametersFromForm(v) };
     const sType: ScheduleType = (v.scheduleType || 'kline_close') as ScheduleType;
-    const scheduleConfig: Record<string, unknown> = {
+    const scheduleConfig = create(ScheduleConfigSchema, {
       cronExpression: '', intervalMs: 0n, eventTrigger: '',
       triggerMode: sType === 'hf_quote' ? 'hf_quote_stream' : 'stable_kline',
       stableOverrideIntervalMs: 0n, hfCooldownMs: 0n,
-    };
+    });
     if (sType === 'interval') { const ms = Math.max(1000, Math.floor(Number(v.intervalMs || 300_000))); scheduleConfig.intervalMs = BigInt(ms); }
     if (sType === 'hf_quote') { const cd = Math.max(100, Math.floor(Number(v.hfCooldownMs || 1_000))); scheduleConfig.hfCooldownMs = BigInt(cd); }
     const backendType = sType === 'interval' ? 'interval' : 'event';
@@ -247,17 +249,20 @@ export default function LiveSchedulesTab() {
       <TriggerModal
         open={openTrigger}
         triggering={triggering}
-        result={triggerResult}
-        context={triggerContext}
-        onCancel={() => { setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null); }}
-        onOrderSend={doOrderSend}
+        triggerResult={triggerResult}
+        triggerContext={triggerContext}
+        onClose={() => { setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null); }}
+        onRerun={() => { if (triggerContext?.schedule) onManualTrigger(triggerContext.schedule as unknown as ScheduleRow); }}
+        onConfirmOrder={doOrderSend}
       />
       <ScheduleHealthModal
         open={healthOpen}
         loading={healthLoading}
-        target={healthTarget}
-        summary={healthSummary}
+        target={healthTarget as unknown as Record<string, unknown> | null}
+        summary={healthSummary as unknown as Record<string, unknown> | null}
+        onRefresh={() => { if (healthTarget) loadScheduleHealth(healthTarget); }}
         onClose={() => { setHealthOpen(false); setHealthTarget(null); setHealthSummary(null); }}
+        formatTime={formatTime}
       />
     </div>
   );
