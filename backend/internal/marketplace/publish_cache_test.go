@@ -1,23 +1,36 @@
 package marketplace
 
 import (
+	"context"
 	"testing"
 	"time"
+
+	"go.uber.org/zap"
 )
 
-// T1: Cache hit returns correct total (not -1).
-// Adversarial: delete `entry.total` return → total=0 → red.
-func TestPublishedCache_HitReturnsTotal(t *testing.T) {
-	c := newPublishedCache()
-	data := []PublishedStrategy{{PublishID: "p1"}}
-	c.set("k1", data, 42)
-
-	got, total, ok := c.get("k1")
-	if !ok {
-		t.Fatal("expected cache hit")
+// T1: ListPublished cache hit returns real total (not -1).
+// Pre-populate cache, call ListPublished with nil pg (cache hit avoids DB).
+// Adversarial: revert cache get to return -1 → total=-1 → assertion fails → red.
+func TestListPublished_CacheHitReturnsTotal(t *testing.T) {
+	s := &Service{
+		pg:       nil, // safe: cache hit returns before touching pg
+		pubCache: newPublishedCache(),
+		log:      zap.NewNop(),
 	}
-	if total != 42 {
-		t.Errorf("total = %d, want 42 (cache must return real total, not -1 or 0)", total)
+
+	// Pre-populate cache with known data and total.
+	data := []PublishedStrategy{{PublishID: "p1", Title: "Test Strategy"}}
+	expectedTotal := 42
+	cacheKey := s.pubCache.key("", "", "", "", "", 10, 0)
+	s.pubCache.set(cacheKey, data, expectedTotal)
+
+	// Call ListPublished with same params — should hit cache, return total=42.
+	got, total, err := s.ListPublished(context.Background(), "", 10, 0, "", "", "", "")
+	if err != nil {
+		t.Fatalf("ListPublished error: %v", err)
+	}
+	if total != expectedTotal {
+		t.Errorf("total = %d, want %d (cache hit must return real total, not -1)", total, expectedTotal)
 	}
 	if len(got) != 1 || got[0].PublishID != "p1" {
 		t.Errorf("data mismatch: %+v", got)
@@ -43,7 +56,6 @@ func TestBuildPublishedCountQuery_PriceFilterInSQL(t *testing.T) {
 	paidQuery, paidArgs := buildPublishedCountQuery("", "", "", "paid")
 	allQuery, _ := buildPublishedCountQuery("", "", "", "")
 
-	// free and paid must differ from all (no filter)
 	if freeQuery == allQuery {
 		t.Error("free filter query identical to no-filter query — priceFilter not in SQL")
 	}
@@ -53,11 +65,9 @@ func TestBuildPublishedCountQuery_PriceFilterInSQL(t *testing.T) {
 	if freeQuery == paidQuery {
 		t.Error("free and paid queries are identical — priceFilter not differentiated")
 	}
-	// free has no args (clause is static), paid has no args either
 	if len(freeArgs) != 0 || len(paidArgs) != 0 {
 		t.Logf("freeArgs=%d paidArgs=%d (static clauses expected 0 args)", len(freeArgs), len(paidArgs))
 	}
-	// Verify the actual SQL contains the filter keywords
 	if !contains(freeQuery, "price_amount IS NULL") {
 		t.Error("free query missing 'price_amount IS NULL' clause")
 	}
@@ -71,7 +81,6 @@ func TestPublishedCache_Expiry(t *testing.T) {
 	c := newPublishedCache()
 	c.set("k_exp", []PublishedStrategy{}, 5)
 
-	// Manually expire
 	c.mu.Lock()
 	e := c.m["k_exp"]
 	e.expiresAt = time.Now().Add(-1 * time.Second)

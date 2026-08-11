@@ -78,18 +78,8 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 
 	// Query decay_status from marketplace_strategies via linked_account_id (real-time value).
 	var decayStatus string
-	err = s.pg.QueryRow(ctx,
-		`SELECT COALESCE(decay_status, 'none') FROM marketplace_strategies WHERE linked_account_id = $1 AND status = 'published' ORDER BY updated_at DESC LIMIT 1`,
-		st.AccountID,
-	).Scan(&decayStatus)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			decayStatus = "none"
-		} else {
-			s.log.Warn("share: failed to query decay_status", zap.String("account_id", st.AccountID), zap.Error(err))
-			decayStatus = "none"
-		}
-	}
+	err = s.pg.QueryRow(ctx, buildShareDecayStatusQuery(), st.AccountID).Scan(&decayStatus)
+	decayStatus = resolveDecayStatus(err, s.log, st.AccountID, decayStatus)
 
 	// Format trades for proto.
 	sharedTrades := FormatSharedTrades(perf.Trades)
@@ -232,4 +222,26 @@ func (s *ShareServer) ListAllShareTokens(ctx context.Context, req *connect.Reque
 	return connect.NewResponse(&antv1.ListAllShareTokensResponse{
 		Items: items, Total: int32(total), Page: int32(page), PageSize: int32(pageSize),
 	}), nil
+}
+
+// buildShareDecayStatusQuery returns the SQL string for querying decay_status
+// from marketplace_strategies. ORDER BY updated_at DESC LIMIT 1 ensures
+// deterministic row selection when multiple published rows exist.
+func buildShareDecayStatusQuery() string {
+	return `SELECT COALESCE(decay_status, 'none') FROM marketplace_strategies WHERE linked_account_id = $1 AND status = 'published' ORDER BY updated_at DESC LIMIT 1`
+}
+
+// resolveDecayStatus handles the error from the decay_status query:
+// ErrNoRows → "none" (no published strategy for this account)
+// other errors → log + "none" (never swallow silently)
+// nil error → return the scanned value as-is
+func resolveDecayStatus(err error, log *zap.Logger, accountID string, scanned string) string {
+	if err == nil {
+		return scanned
+	}
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "none"
+	}
+	log.Warn("share: failed to query decay_status", zap.String("account_id", accountID), zap.Error(err))
+	return "none"
 }
