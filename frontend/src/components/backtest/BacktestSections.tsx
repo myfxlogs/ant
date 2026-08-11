@@ -1,35 +1,7 @@
-import { Tag, Alert } from 'antd';
-import { WarningOutlined } from '@ant-design/icons';
+import { Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
-import {
-  BACKTEST_DEGRADED_KEY, BACKTEST_DEGRADED_DESC_KEY, BACKTEST_BLIND_SPOTS_TITLE_KEY,
-} from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import type { BacktestBlindSpotItem } from './backtestRunnerWatch';
 import type { GateEvaluationUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
 import type { GateResult } from '@/gen/ant/v1/ai_gate_pb';
-
-export function DegradedAlert({ blindSpots }: { blindSpots?: BacktestBlindSpotItem[] }) {
-  const { t } = useTranslation();
-  return (
-    <Alert type="warning" showIcon icon={<WarningOutlined />}
-      message={t(BACKTEST_DEGRADED_KEY)}
-      description={
-        <div>
-          <div style={{ marginBottom: 8 }}>{t(BACKTEST_DEGRADED_DESC_KEY)}</div>
-          {blindSpots && blindSpots.length > 0 && (
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 12, marginBottom: 4 }}>{t(BACKTEST_BLIND_SPOTS_TITLE_KEY)}</div>
-              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 12 }}>
-                {blindSpots.map((b, i) => <li key={i} style={{ marginBottom: 2 }}><strong>{b.id}</strong>: {b.description}</li>)}
-              </ul>
-            </div>
-          )}
-        </div>
-      }
-      style={{ marginBottom: 12 }}
-    />
-  );
-}
 
 export function GatePreview({ gateUpdate, gateResults, qualityPreview }: {
   gateUpdate?: GateEvaluationUpdate | null;

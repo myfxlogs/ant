@@ -31,7 +31,6 @@
     "dayjs": "^1.11.19",
     "i18next": "^25.10.10",
     "i18next-browser-languagedetector": "^8.2.1",
-    "klinecharts": "^9.8.12",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

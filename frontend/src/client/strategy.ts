@@ -1,14 +1,10 @@
 import type { PartialMessage } from '@bufbuild/protobuf';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import { strategyClient } from './connect';
-import type { BacktestMetrics } from '../gen/ant/v1/common_pb';
 import type { TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 
 export type { StrategyTemplate, TemplateParameter, TemplateI18n } from '../gen/ant/v1/strategy_template_entity_pb';
 export type { StrategyCard } from '../gen/ant/v1/strategy_template_entity_pb';
-export type { StrategySchedule, ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
-export type { StrategySignal } from '../gen/ant/v1/strategy_signal_messages_pb';
-export type { BacktestMetrics };
 
 export interface RunBacktestResult {
   success: boolean;

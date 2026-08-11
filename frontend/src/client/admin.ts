@@ -276,5 +276,3 @@ export const adminStrategyApi = {
     await adminStrategyClient.archiveStrategy({ id });
   },
 };
-
-export { adminJurisdictionApi } from './admin-jurisdiction';

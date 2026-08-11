@@ -1,8 +1,6 @@
 import { adminBillingClient } from './connect';
 import type { ListAdminSubscriptionsResponse, GetRevenueSummaryResponse, ListAdminWalletTransactionsResponse } from '../gen/ant/v1/admin_billing_pb';
 
-export type { AdminSubscriptionDetail, PlanRevenue, AdminWalletTransactionDetail } from '../gen/ant/v1/admin_billing_pb';
-
 export const adminBillingApi = {
   listSubscriptions: async (params?: { page?: number; pageSize?: number; plan?: string; status?: string }) => {
     const msg = await adminBillingClient.listSubscriptions({

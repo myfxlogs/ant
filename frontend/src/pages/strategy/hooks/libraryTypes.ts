@@ -1,14 +1,3 @@
-import type { StrategyTemplate } from '@/client/strategy';
-
-// ── Template helpers ──
-export function isSystemTemplate(tpl: StrategyTemplate): boolean {
-  return Boolean(tpl.isSystem);
-}
-
-export function isPublicTemplate(tpl: StrategyTemplate): boolean {
-  return Boolean(tpl.isPublic);
-}
-
 // Minimal template reference used by schedule forms and tables
 export interface TemplateOption {
   id: string;
@@ -43,12 +32,6 @@ export interface AccountRow {
   mtType?: string;
   leverage?: number;
   isDisabled?: boolean;
-}
-
-// ── Symbol option ──
-export interface SymbolOption {
-  value: string;
-  label: string;
 }
 
 // ── Health summary ──

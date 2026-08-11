@@ -25,13 +25,6 @@ export function getUILocale(): string {
   return 'en-US';
 }
 
-/** Localized full month name for calendar month 1–12 (UI language). */
-export function formatMonthLongName(month: number): string {
-  if (month < 1 || month > 12) return '';
-  const d = new Date(Date.UTC(2000, month - 1, 1));
-  return d.toLocaleString(getUILocale(), { month: 'long', timeZone: 'UTC' });
-}
-
 export function formatDateTime(dateStr: string | number | bigint | Timestamp | null | undefined): string {
   if (dateStr == null || dateStr === '') return '-';
   // Handle Unix milliseconds (int64 proto fields: number or bigint)
@@ -80,76 +73,6 @@ export function formatDateTime(dateStr: string | number | bigint | Timestamp | n
   }).replace(/\//g, '-');
 }
 
-export function formatDate(dateStr: string | Timestamp | null | undefined): string {
-  if (!dateStr) return '-';
-  const locale = getUILocale();
-  const timeZone = getDeviceTimeZone();
-  
-  if (typeof dateStr === 'object' && 'seconds' in dateStr) {
-    const date = timestampToDate(dateStr as Timestamp);
-    return date.toLocaleDateString(locale, {
-      timeZone,
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).replace(/\//g, '-');
-  }
-  
-  let cleanStr = dateStr as string;
-  if (cleanStr.endsWith('Z')) {
-    cleanStr = cleanStr.replace('Z', '+00:00');
-  }
-  cleanStr = cleanStr.replace(/\.\d+/, '');
-  cleanStr = cleanStr.replace('T', ' ');
-  
-  const date = new Date(cleanStr);
-  if (isNaN(date.getTime())) {
-    return dateStr as string;
-  }
-  
-  return date.toLocaleDateString(locale, {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).replace(/\//g, '-');
-}
-
-export function formatTime(dateStr: string | Timestamp | null | undefined): string {
-  if (!dateStr) return '-';
-  const locale = getUILocale();
-  const timeZone = getDeviceTimeZone();
-  
-  if (typeof dateStr === 'object' && 'seconds' in dateStr) {
-    const date = timestampToDate(dateStr as Timestamp);
-    return date.toLocaleTimeString(locale, {
-      timeZone,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  }
-  
-  let cleanStr = dateStr as string;
-  if (cleanStr.endsWith('Z')) {
-    cleanStr = cleanStr.replace('Z', '+00:00');
-  }
-  cleanStr = cleanStr.replace(/\.\d+/, '');
-  cleanStr = cleanStr.replace('T', ' ');
-  
-  const date = new Date(cleanStr);
-  if (isNaN(date.getTime())) {
-    return dateStr as string;
-  }
-  
-  return date.toLocaleTimeString(locale, {
-    timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-}
-
 export function formatHoldingTime(raw: string | null | undefined): string {
   if (!raw || raw === '-') return '-';
   const s = String(raw).trim();
@@ -182,29 +105,4 @@ export function formatHoldingTime(raw: string | null | undefined): string {
 function timestampToDate(timestamp: Timestamp): Date {
   const ms = Number(timestamp.seconds) * 1000 + Math.floor(Number(timestamp.nanos) / 1000000);
   return new Date(ms);
-}
-
-/** Human-readable duration from seconds (e.g. average holding); uses i18n time units. */
-export function formatDurationFromSeconds(seconds: number | null | undefined): string {
-  if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) {
-    return '—';
-  }
-  const lang = normalizeLanguage(i18n.language);
-  const needsSpace = lang === 'en' || lang === 'vi';
-  if (seconds < 60) {
-    return i18n.t('common.time.lessThanMinute');
-  }
-  if (seconds < 3600) {
-    const minutes = Math.floor(seconds / 60);
-    const unit = i18n.t('common.time.minute');
-    return needsSpace ? `${minutes} ${unit}` : `${minutes}${unit}`;
-  }
-  if (seconds < 86400) {
-    const hours = Math.floor(seconds / 3600);
-    const unit = i18n.t('common.time.hour');
-    return needsSpace ? `${hours} ${unit}` : `${hours}${unit}`;
-  }
-  const days = Math.floor(seconds / 86400);
-  const unit = i18n.t('common.time.day');
-  return needsSpace ? `${days} ${unit}` : `${days}${unit}`;
 }

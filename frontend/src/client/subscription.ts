@@ -1,7 +1,7 @@
 import { subscriptionClient } from './connect';
 import type { ListPlansResponse, GetMySubscriptionResponse, SubscribePlanResponse, CancelSubscriptionResponse, ChangePlanResponse, GetUsageSummaryResponse, Plan, ListBoundAccountsResponse, BoundAccount } from '../gen/ant/v1/subscription_pb';
 
-export type { Plan, UserSubscription, UsageSummary, BoundAccount } from '../gen/ant/v1/subscription_pb';
+export type { BoundAccount } from '../gen/ant/v1/subscription_pb';
 
 export const subscriptionApi = {
   listPlans: async () => {

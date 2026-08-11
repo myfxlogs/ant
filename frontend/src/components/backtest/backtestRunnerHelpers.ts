@@ -8,7 +8,7 @@ import {
   SETTINGS_SAVE_KEY, SETTINGS_LOAD_KEY, SETTINGS_RESET_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import {
-  FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults, protoToMetrics,
+  FACTORY_DEFAULTS, saveDefaults, removeDefaults, protoToMetrics,
   type StandardParams, type BacktestMetrics, type ChartTrade,
 } from './backtestRunnerTypes';
 
@@ -49,5 +49,3 @@ export async function restoreLastRunFn(
     })));
   } catch { /* silent — restoration is best-effort */ }
 }
-
-export { loadSavedDefaults };

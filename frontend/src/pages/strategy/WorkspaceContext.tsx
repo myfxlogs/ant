@@ -47,7 +47,6 @@ export const useWsCode = () => useContext(CodeCtx);
 export const useWsTemplates = () => useContext(TemplatesCtx);
 export const useWsBacktest = () => useContext(BacktestCtx);
 export const useWsTuning = () => useContext(TuningCtx);
-export const useWsGate = () => useContext(GateCtx);
 export const useWsQuickTrade = () => useContext(QuickTradeCtx);
 export const useWsLayout = () => useContext(LayoutCtx);
 export const useWsHistory = () => useContext(HistoryCtx);

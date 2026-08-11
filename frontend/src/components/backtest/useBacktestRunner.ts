@@ -24,8 +24,7 @@ import { protoToMetrics } from './backtestRunnerTypes';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
-export type { SweepDimension, TuneMethod, BacktestSubTab } from '@/pages/strategy/hooks/useTuning';
-export { OPTIMIZER_INFO } from '@/pages/strategy/hooks/useTuning';
+export type { SweepDimension, TuneMethod } from '@/pages/strategy/hooks/useTuning';
 export type { BacktestStatus, ChartTrade, BacktestMetrics, ExtractedParam, StandardParams, BacktestRunnerInputs };
 export { FACTORY_DEFAULTS };
 

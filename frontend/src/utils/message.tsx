@@ -10,23 +10,6 @@ message.config({
 });
 
 /**
- * 显示居中的加载提示
- * @param content 加载提示内容
- * @param duration 持续时间（秒），0 表示持久显示
- * @returns 关闭提示的函数
- */
-export const showLoading = (content: string, duration: number = 0) => {
-  return message.loading({
-    content: translateMaybeI18nKey(content, content),
-    duration,
-    style: {
-      textAlign: 'center',
-    },
-    className: 'centered-message',
-  });
-};
-
-/**
  * 显示居中的成功提示
  * @param content 成功提示内容
  * @param duration 持续时间（秒）

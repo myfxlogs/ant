@@ -1,7 +1,4 @@
 // analyticsTypes.ts — shared types for analytics data.
-import type { TradeRecord, MonthlyPnLItem } from '../gen/ant/v1/analytics_pb';
-
-export type { TradeRecord, MonthlyPnLItem };
 
 // ── Core analytics types ──────────────────────────────────────────────────────
 

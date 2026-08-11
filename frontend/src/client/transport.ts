@@ -16,9 +16,6 @@ const defaultApiUrl = (() => {
 const rawApiUrl = envApiUrl || defaultApiUrl;
 const API_URL = rawApiUrl.replace(/\/+$/, '');
 
-/** Same origin Connect base URL; also used for EventSource (debate v2 advance jobs). */
-export const apiBaseUrl = API_URL;
-
 const rawStreamUrl = envStreamUrl || API_URL;
 const STREAM_URL = rawStreamUrl.replace(/\/+$/, '');
 

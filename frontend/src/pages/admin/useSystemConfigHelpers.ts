@@ -1,7 +1,6 @@
 import { message } from 'antd';
 import type { TFunction } from 'i18next';
 import { adminApi, type SystemConfig as AdminConfigType } from '@/client/admin';
-import { getErrorMessage } from '@/utils/error';
 
 interface ConfigFlags {
   isStrategyHealthConfig: boolean;
@@ -81,5 +80,3 @@ export function parseEconAIConfigValue(config: AdminConfigType): Record<string, 
   }
   return initial;
 }
-
-export { getErrorMessage };

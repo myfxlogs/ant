@@ -57,7 +57,7 @@ export interface StandardParams {
   lotSize: number;
   commission: number;
   slippage: number;
-  tradeDirection: string;
+  tradeDirection: 'both' | 'long' | 'short';
   strictMode: boolean;
 }
 

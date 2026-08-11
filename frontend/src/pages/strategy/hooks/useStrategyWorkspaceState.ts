@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useStrategyCode } from './useStrategyCode';
 import { useBacktestRunner } from '@/components/backtest/useBacktestRunner';
-import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab } from '@/components/backtest/useBacktestRunner';
 import { useQuickTradeData } from './useQuickTradeData';
 import type { QuickTradePosition, RecentTrade } from './useQuickTradeData';
 import { useAIWorkflow } from './useAIWorkflow';
@@ -12,9 +11,7 @@ import { useLayoutSlice } from './useLayoutSlice';
 import { useWorkspaceEffects } from './useWorkspaceEffects';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
-export type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab, QuickTradePosition, RecentTrade };
-export { DATE_PRESETS } from '@/components/backtest/useBacktestRunner';
-export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
+export type { QuickTradePosition, RecentTrade };
 
 export function useStrategyWorkspaceState() {
   const layout = useLayoutSlice();

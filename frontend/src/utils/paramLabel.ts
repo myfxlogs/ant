@@ -1,7 +1,7 @@
 import { codeAssistApi } from '@/client/codeAssist';
 import type { ParameterEntry } from '@/gen/ant/v1/parameter_entry_pb';
 import type { TemplateI18n } from '@/gen/ant/v1/strategy_template_entity_pb';
-import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
+import { create, toBinary } from '@bufbuild/protobuf';
 import { TemplateI18nSchema } from '@/gen/ant/v1/strategy_template_entity_pb';
 
 const SUPPORTED_LOCALES = ['en', 'zh-cn', 'zh-tw', 'ja', 'vi'] as const;
@@ -58,17 +58,5 @@ export async function buildParamI18n(parameters: ParameterEntry[]): Promise<Uint
     return toBinary(TemplateI18nSchema, i18n);
   } catch {
     return null;
-  }
-}
-
-/**
- * Deserialize a TemplateI18n from binary bytes (from DB).
- */
-export function parseI18n(bytes: Uint8Array | null | undefined): TemplateI18n | undefined {
-  if (!bytes || bytes.length === 0) return undefined;
-  try {
-    return fromBinary(TemplateI18nSchema, bytes);
-  } catch {
-    return undefined;
   }
 }

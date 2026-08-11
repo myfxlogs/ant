@@ -12,8 +12,6 @@ import {
 } from './sharedStream';
 
 export type { StreamEvent } from '../gen/ant/v1/stream_pb';
-export type { OrderUpdateEvent } from '../gen/ant/v1/stream_event_trade_pb';
-export type { ProfitUpdateEvent, UserSummaryEvent } from '../gen/ant/v1/stream_event_account_pb';
 
 /** Stop reconnecting after repeated proxy/HTTP2-style failures (reduces browser network error spam). */
 const STREAM_TRANSPORT_FAILURE_CAP = 12;
@@ -202,22 +200,6 @@ export const streamApi = {
 
 export function subscribeEvents(accountIds: string[], callbacks: StreamCallbacks) {
   return streamApi.subscribeEvents(accountIds, callbacks);
-}
-
-export function subscribeProfitUpdates(
-  accountId: string,
-  callback: (profit: ProfitUpdate) => void,
-  onError?: (error: unknown) => void,
-) {
-  return streamApi.subscribeProfitUpdates(accountId, callback, onError);
-}
-
-export function subscribeOrderUpdates(
-  accountId: string,
-  callback: (order: OrderUpdate) => void,
-  onError?: (error: unknown) => void,
-) {
-  return streamApi.subscribeOrderUpdates(accountId, callback, onError);
 }
 
 export function subscribeUserSummary(

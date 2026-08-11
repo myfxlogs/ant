@@ -5,9 +5,12 @@
     "src/App.css",
     "src/i18n/resources/**"
   ],
-  "ignoreBinaries": [],
-  "ignoreDependencies": [],
-  "ignoreExports": {
-    "src/client/ai/errorPatterns.ts": ["toFriendlyAIChatError"]
-  }
+  "entry": [
+    "src/test/**/*.ts",
+    "src/test/**/*.tsx",
+    "e2e/**/*.ts"
+  ],
+  "ignoreBinaries": ["buf"],
+  "ignoreDependencies": ["@bufbuild/protoc-gen-es"],
+  "ignoreExportsUsedInFile": true
 }

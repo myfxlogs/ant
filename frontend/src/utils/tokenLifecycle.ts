@@ -49,7 +49,6 @@ const SCHEDULER_TICK_MS = 30 * 1000; // 30 seconds
 const IDLE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 let refreshPromise: Promise<string | null> | null = null;
-let schedulerTimer: number | null = null;
 let lastUserActivity = Date.now();
 let listenersAttached = false;
 let sessionExpiredModalShown = false;
@@ -204,25 +203,6 @@ export function startTokenScheduler(): void {
     document.addEventListener('visibilitychange', onVisibilityChange);
   }
   if (typeof window !== 'undefined') {
-    schedulerTimer = window.setInterval(() => { void schedulerTick(); }, SCHEDULER_TICK_MS);
-  }
-}
-
-/** For tests / explicit teardown. */
-export function stopTokenScheduler(): void {
-  if (!listenersAttached) return;
-  listenersAttached = false;
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('mousemove', bumpUserActivity);
-    window.removeEventListener('keydown', bumpUserActivity);
-    window.removeEventListener('click', bumpUserActivity);
-    window.removeEventListener('focus', bumpUserActivity);
-  }
-  if (typeof document !== 'undefined') {
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-  }
-  if (schedulerTimer !== null && typeof window !== 'undefined') {
-    window.clearInterval(schedulerTimer);
-    schedulerTimer = null;
+    window.setInterval(() => { void schedulerTick(); }, SCHEDULER_TICK_MS);
   }
 }

@@ -46,8 +46,6 @@ export type MonthlyAnalysisCardProps = {
   currency?: string;
 };
 
-export const monthShortLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
 /** Returns translated month abbreviations for the current locale. */
 export function getMonthLabels(t: (key: string) => string): string[] {
   return [
@@ -91,16 +89,3 @@ export const PIE_COLORS = [
   '#CDDC39',
 ];
 
-export function formatSecondsAxis(sec: number): string {
-  if (!Number.isFinite(sec) || sec <= 0) return '0';
-  if (sec < 60) return `${Math.round(sec)}s`;
-  if (sec < 3600) return `${(sec / 60).toFixed(1)}min`;
-  return `${(sec / 3600).toFixed(2)}hr`;
-}
-
-/** Bar length (axis); raw value shown in tooltip. */
-export function riskBarVisual(raw: number): number {
-  if (!Number.isFinite(raw)) return 0;
-  if (raw >= 999.98) return 100;
-  return Math.min(raw, 200);
-}

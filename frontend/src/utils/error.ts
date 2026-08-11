@@ -17,11 +17,6 @@ type LegacyResponseError = {
   };
 };
 
-export interface ConnectionError {
-  type: 'CONNECTION_ERROR';
-  message: string;
-}
-
 // Maps backend error codes to i18n keys (mirrors backend errorMessages map).
 const errorCodeToKey: Record<number, string> = {
   0: 'errors.success',
@@ -141,14 +136,6 @@ export function translateMaybeI18nKey(msg: unknown, fallback: string): string {
     return translated && translated !== trimmed ? translated : fallback;
   }
   return trimmed;
-}
-
-export function isConnectionError(error: unknown): boolean {
-  if (error && typeof error === 'object' && 'message' in error) {
-    const errorMsg = (error as Error).message;
-    return errorMsg.includes('Failed to fetch');
-  }
-  return false;
 }
 
 const ERROR_PATTERNS: Array<{ match: (lower: string) => boolean; key: string }> = [

@@ -7,8 +7,18 @@ import { AMOUNT_LOTS_KEY, CROSS_KEY, ISOLATED_KEY, MARGIN_MODE_KEY, MT4_CROSS_ON
 
 ;
 import { tradingApi } from '@/client/trading';
-import type { PositionItem } from './PositionSection';
-import type { TradeItem } from './TradeHistorySection';
+
+export interface PositionItem {
+  ticket: number; side: string; volume: number;
+  openPrice: number; markPrice?: number; profit: number; leverage?: number;
+}
+
+export interface TradeItem {
+  ticket: number; symbol: string; side: string;
+  closePrice?: number; price?: number; profit: number;
+  closeTime?: string; created_at?: string;
+}
+
 interface AccountMeta {
   brokerCompany: string;
   brokerServer: string;

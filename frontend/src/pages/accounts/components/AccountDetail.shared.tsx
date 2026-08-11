@@ -12,46 +12,6 @@ import type { TradeRecordItem } from '@/client/analyticsTypes';
 
 import { formatTimestamp } from './AccountDetail.utils';
 
-export const StatCard = memo(
-  ({
-    icon,
-    label,
-    value,
-    valueColor = 'var(--color-text)',
-    background = 'var(--color-bg-secondary)',
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    valueColor?: string;
-    background?: string;
-  }) => (
-    <div className="p-2 rounded-lg" style={{ background }}>
-      <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>{icon} {label}</div>
-      <div className="text-base font-bold" style={{ color: valueColor }}>{value}</div>
-    </div>
-  ),
-);
-
-export const InfoCard = memo(
-  ({ icon, label, value, loading }: { icon: React.ReactNode; label: string; value: string; loading?: boolean }) => {
-    const { t } = useTranslation();
-    return (
-      <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-border)' }}>
-        <div className="flex items-center gap-2 mb-3">
-          {icon}
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>{label}</span>
-        </div>
-        {loading ? (
-          <div className="text-lg" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
-        ) : (
-          <div className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{value}</div>
-        )}
-      </div>
-    );
-  },
-);
-
 export const SmallInfoCard = memo(
   ({
     icon,

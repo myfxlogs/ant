@@ -16,7 +16,7 @@ import type {
   ImportXpubResponse,
 } from '../gen/ant/v1/deposit_pb';
 
-export type { PendingSignBundleEntry, SweepDashboardEntry };
+export type { SweepDashboardEntry };
 
 export const depositApi = {
   getDepositAddress: async () => {
