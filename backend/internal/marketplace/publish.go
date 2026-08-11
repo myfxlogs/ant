@@ -22,6 +22,7 @@ const publishedCacheTTL = 60 * time.Second
 
 type publishedCacheEntry struct {
 	data      []PublishedStrategy
+	total     int
 	expiresAt time.Time
 }
 
@@ -38,14 +39,14 @@ func (c *publishedCache) key(userID, assetClass, keyword, sortBy, priceFilter st
 	return fmt.Sprintf("%s|%s|%s|%s|%s|%d|%d", userID, assetClass, keyword, sortBy, priceFilter, limit, offset)
 }
 
-func (c *publishedCache) get(key string) ([]PublishedStrategy, bool) {
+func (c *publishedCache) get(key string) ([]PublishedStrategy, int, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	e, ok := c.m[key]
 	if !ok || time.Now().After(e.expiresAt) {
-		return nil, false
+		return nil, 0, false
 	}
-	return e.data, true
+	return e.data, e.total, true
 }
 
 func (c *publishedCache) clear() {
@@ -56,7 +57,7 @@ func (c *publishedCache) clear() {
 	}
 }
 
-func (c *publishedCache) set(key string, data []PublishedStrategy) {
+func (c *publishedCache) set(key string, data []PublishedStrategy, total int) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	if len(c.m) > 256 {
@@ -66,7 +67,7 @@ func (c *publishedCache) set(key string, data []PublishedStrategy) {
 			}
 		}
 	}
-	c.m[key] = publishedCacheEntry{data: data, expiresAt: time.Now().Add(publishedCacheTTL)}
+	c.m[key] = publishedCacheEntry{data: data, total: total, expiresAt: time.Now().Add(publishedCacheTTL)}
 }
 
 // Unpublish hides a strategy from the marketplace by setting its status to "hidden".
@@ -286,8 +287,8 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 	var cacheKey string
 	if keyword == "" {
 		cacheKey = s.pubCache.key(userID, assetClass, keyword, sortBy, priceFilter, limit, offset)
-		if cached, ok := s.pubCache.get(cacheKey); ok {
-			return cached, -1, nil
+		if cached, cachedTotal, ok := s.pubCache.get(cacheKey); ok {
+			return cached, cachedTotal, nil
 		}
 	}
 
@@ -333,7 +334,7 @@ func (s *Service) ListPublished(ctx context.Context, userID string, limit int, o
 
 	// Cache the result for non-keyword queries.
 	if cacheKey != "" {
-		s.pubCache.set(cacheKey, out)
+		s.pubCache.set(cacheKey, out, total)
 	}
 	return out, total, nil
 }

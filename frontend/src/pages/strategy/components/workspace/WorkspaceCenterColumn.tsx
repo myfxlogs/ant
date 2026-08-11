@@ -7,7 +7,9 @@ import WorkspaceCenterTabBar from './WorkspaceCenterTabBar';
 import CodeEditorArea from './CodeEditorArea';
 import MobileSidebarDrawer from './MobileSidebarDrawer';
 import BottomPanelSection from './BottomPanelSection';
-import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
+import BacktestResultsTab from '@/components/backtest/BacktestResultsTab';
+import { useAIFix } from '@/components/backtest/useAIFix';
+import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
 import { useSidebarActions } from './useSidebarActions';
 
 interface Props {
@@ -28,6 +30,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const quickTrade = useWsQuickTrade();
   const layout = useWsLayout();
   const history = useWsHistory();
+  const ai = useWsAI();
   const sidebarActions = useSidebarActions(code, history);
 
   // ── Sidebar ──────────────────────────────────────────────────────────
@@ -141,6 +144,44 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const recentSummaries = (history.runs as Array<{ templateName?: string; totalReturn?: number; totalTrades?: number; startedAt?: string }>)
     ?.slice(0, 10).map(r => ({ templateName: r.templateName || '', totalReturn: r.totalReturn ?? 0, totalTrades: r.totalTrades ?? 0, startedAt: r.startedAt || '' })) || [];
 
+  // ── AI fix for mobile backtest results ───────────────────────────────
+  const mobileAiFix = useAIFix({
+    strategyId: code.strategyId,
+    currentCode: code.code,
+    onApplyCode: code.setCode,
+    onRerunBacktest: () => backtest.runner.run({
+      strategyCode: code.code,
+      accountId: account.accountId,
+      symbol: account.symbol,
+      timeframe: account.timeframe,
+      templateId: templates.selectedId || undefined,
+      strategyId: code.strategyId,
+    }),
+  });
+
+  // ── Backtest results content for mobile Drawer ───────────────────────
+  const mobileBacktestContent = (
+    <BacktestResultsTab
+      status={backtest.runner.status}
+      metrics={backtest.runner.metrics}
+      executionAssumptions={backtest.runner.executionAssumptions}
+      errorMsg={backtest.runner.errorMsg}
+      onAIOptimize={() => ai.optimize()}
+      onOpenHistory={() => history.open()}
+      trades={backtest.runner.chartTrades}
+      panelHeight={300}
+      onCancel={backtest.runner.cancelRun}
+      gateUpdate={backtest.runner.gateUpdate}
+      gateResults={backtest.runner.gateResults}
+      qualityPreview={backtest.runner.qualityPreview}
+      blindSpots={backtest.runner.blindSpots}
+      strategyId={code.strategyId}
+      onAIFix={mobileAiFix.handleAIFix}
+      aiFixing={mobileAiFix.aiFixing}
+      runMeta={backtest.runner.runMeta}
+    />
+  );
+
   // Desktop: if centerTab is 'chat', open AI panel instead
   useEffect(() => {
     if (!isMobile && centerTab === 'chat') {
@@ -249,7 +290,9 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         qtPositions={quickTrade.qtPositions}
         quickTradeCollapsed={layout.quickTradeCollapsed}
         onToggleQuickTrade={() => layout.setQuickTradeCollapsed(!layout.quickTradeCollapsed)}
+        backtestContent={mobileBacktestContent}
       />
+      {isMobile && mobileAiFix.diffModal}
     </div>
   );
 }

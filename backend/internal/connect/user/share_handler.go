@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
@@ -76,10 +78,18 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 
 	// Query decay_status from marketplace_strategies via linked_account_id (real-time value).
 	var decayStatus string
-	_ = s.pg.QueryRow(ctx,
-		`SELECT COALESCE(decay_status, 'none') FROM marketplace_strategies WHERE linked_account_id = $1 AND status = 'published'`,
+	err = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(decay_status, 'none') FROM marketplace_strategies WHERE linked_account_id = $1 AND status = 'published' ORDER BY updated_at DESC LIMIT 1`,
 		st.AccountID,
 	).Scan(&decayStatus)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			decayStatus = "none"
+		} else {
+			s.log.Warn("share: failed to query decay_status", zap.String("account_id", st.AccountID), zap.Error(err))
+			decayStatus = "none"
+		}
+	}
 
 	// Format trades for proto.
 	sharedTrades := FormatSharedTrades(perf.Trades)

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Drawer, Button } from 'antd';
-import { LayoutOutlined } from '@ant-design/icons';
+import { Drawer, Button, Segmented } from 'antd';
+import { LayoutOutlined, BarChartOutlined } from '@ant-design/icons';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import QuickTradeSidePanel from './QuickTradeSidePanel';
 import type { AccountMeta } from '@/components/chart/QuickTradePanel';
@@ -22,6 +22,7 @@ interface Props {
   qtPositions: QuickTradePosition[];
   quickTradeCollapsed: boolean;
   onToggleQuickTrade: () => void;
+  backtestContent?: React.ReactNode;
 }
 
 export default function BottomPanelSection({
@@ -30,8 +31,10 @@ export default function BottomPanelSection({
   panelHeight, onResizeStart, dragging,
   accountId, symbol, accountMeta, qtPositions,
   quickTradeCollapsed, onToggleQuickTrade,
+  backtestContent,
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'backtest' | 'positions'>('backtest');
 
   if (isMobile) {
     return (
@@ -49,15 +52,31 @@ export default function BottomPanelSection({
           placement="bottom"
           height="60vh"
           title={undefined}
-          styles={{ body: { padding: 0 } }}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}
         >
-          <ChartBottomPanel
-            positions={positions}
-            recentTrades={recentTrades}
-            onClosePosition={onClosePosition}
-            collapsed={false}
-            onToggleCollapsed={() => setMobileOpen(false)}
-          />
+          <div style={{ padding: '4px 12px', flexShrink: 0, borderBottom: '1px solid var(--ant-color-border)' }}>
+            <Segmented
+              size="small"
+              value={mobileTab}
+              onChange={(v) => setMobileTab(v as 'backtest' | 'positions')}
+              options={[
+                { label: 'Backtest', value: 'backtest', icon: <BarChartOutlined /> },
+                { label: 'Positions', value: 'positions', icon: <LayoutOutlined /> },
+              ]}
+            />
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {mobileTab === 'backtest' && backtestContent}
+            {mobileTab === 'positions' && (
+              <ChartBottomPanel
+                positions={positions}
+                recentTrades={recentTrades}
+                onClosePosition={onClosePosition}
+                collapsed={false}
+                onToggleCollapsed={() => setMobileOpen(false)}
+              />
+            )}
+          </div>
         </Drawer>
       </>
     );

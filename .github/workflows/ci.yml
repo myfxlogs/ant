@@ -251,7 +251,7 @@ jobs:
       - name: Lint (full)
         run: npx eslint src/ --max-warnings 0
       - name: Type check (tsc --noEmit)
-        run: npx tsc --noEmit
+        run: npx tsc --noEmit -p tsconfig.app.json
       - name: Knip (dead code report)
         run: npx knip --no-progress || true
       - name: Build

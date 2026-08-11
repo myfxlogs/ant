@@ -73,8 +73,8 @@ func TestPublishedCache_SetGet(t *testing.T) {
 	t.Parallel()
 	c := newPublishedCache()
 	data := []PublishedStrategy{{StrategyID: "strat-1"}}
-	c.set("key-1", data)
-	got, ok := c.get("key-1")
+	c.set("key-1", data, 1)
+	got, _, ok := c.get("key-1")
 	if !ok {
 		t.Fatal("expected cache hit")
 	}
@@ -86,7 +86,7 @@ func TestPublishedCache_SetGet(t *testing.T) {
 func TestPublishedCache_GetMiss(t *testing.T) {
 	t.Parallel()
 	c := newPublishedCache()
-	_, ok := c.get("nonexistent")
+	_, _, ok := c.get("nonexistent")
 	if ok {
 		t.Fatal("expected cache miss")
 	}
@@ -100,7 +100,7 @@ func TestPublishedCache_GetExpired(t *testing.T) {
 		data:      []PublishedStrategy{{StrategyID: "old"}},
 		expiresAt: time.Now().Add(-time.Hour),
 	}
-	_, ok := c.get("expired")
+	_, _, ok := c.get("expired")
 	if ok {
 		t.Fatal("expected cache miss for expired entry")
 	}
@@ -109,11 +109,11 @@ func TestPublishedCache_GetExpired(t *testing.T) {
 func TestPublishedCache_Clear(t *testing.T) {
 	t.Parallel()
 	c := newPublishedCache()
-	c.set("key-1", []PublishedStrategy{{StrategyID: "s1"}})
-	c.set("key-2", []PublishedStrategy{{StrategyID: "s2"}})
+	c.set("key-1", []PublishedStrategy{{StrategyID: "s1"}}, 1)
+	c.set("key-2", []PublishedStrategy{{StrategyID: "s2"}}, 1)
 	c.clear()
-	_, ok1 := c.get("key-1")
-	_, ok2 := c.get("key-2")
+	_, _, ok1 := c.get("key-1")
+	_, _, ok2 := c.get("key-2")
 	if ok1 || ok2 {
 		t.Fatal("expected all entries cleared")
 	}
@@ -124,7 +124,7 @@ func TestPublishedCache_EvictionOnOverflow(t *testing.T) {
 	c := newPublishedCache()
 	// Fill beyond 256 to trigger eviction
 	for i := 0; i < 260; i++ {
-		c.set(string(rune(i)), []PublishedStrategy{{StrategyID: "s"}})
+		c.set(string(rune(i)), []PublishedStrategy{{StrategyID: "s"}}, 1)
 	}
 	// Should not panic, and should have evicted some expired entries
 }
