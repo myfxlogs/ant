@@ -11,6 +11,7 @@ interface TradeStatsLike {
 interface EquityCurvePoint {
   date?: string;
   equity?: number;
+  balance?: number;
 }
 
 interface SymbolStatLike {

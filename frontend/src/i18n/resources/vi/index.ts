@@ -119,6 +119,6 @@ const vi = mergeResources(
   DashboardExtra,
   MarketplaceExtra,
   LandingExtra,
-) as const;
+);
 
 export default vi;

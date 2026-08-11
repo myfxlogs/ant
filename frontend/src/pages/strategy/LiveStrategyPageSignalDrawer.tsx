@@ -2,6 +2,7 @@ import { Table, Tag, Typography, Space, Empty, Descriptions, Drawer } from 'antd
 import { MonitorOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import type { ActiveStrategy, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 
 const { Text } = Typography;
@@ -19,7 +20,7 @@ const MODE_COLORS: Record<string, string> = {
 
 export function formatTime(ts?: { seconds?: bigint; nanos?: number } | null): string {
   if (!ts || !ts.seconds) return '-';
-  const d = timestampDate(ts);
+  const d = timestampDate(ts as Timestamp);
   return d.toLocaleString();
 }
 

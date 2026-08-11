@@ -3,6 +3,7 @@ import { Drawer, Button } from 'antd';
 import { LayoutOutlined } from '@ant-design/icons';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import QuickTradeSidePanel from './QuickTradeSidePanel';
+import type { AccountMeta } from '@/components/chart/QuickTradePanel';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
 
 interface Props {
@@ -17,7 +18,7 @@ interface Props {
   dragging?: boolean;
   accountId: string;
   symbol: string;
-  accountMeta?: { leverage?: number; balance?: number; equity?: number };
+  accountMeta?: AccountMeta | null;
   qtPositions: QuickTradePosition[];
   quickTradeCollapsed: boolean;
   onToggleQuickTrade: () => void;

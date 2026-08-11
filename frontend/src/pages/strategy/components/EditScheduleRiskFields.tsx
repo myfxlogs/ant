@@ -8,7 +8,7 @@ export default function EditScheduleRiskFields() {
   const { t } = useTranslation();
   return (
     <>
-      <Divider orientation="left" plain>
+      <Divider titlePlacement="left" plain>
         {t(SCHEDULE_LAUNCH_FORM_RISK_SECTION_KEY, { defaultValue: 'Risk Parameters (Optional)' })}
       </Divider>
       <Row gutter={12}>

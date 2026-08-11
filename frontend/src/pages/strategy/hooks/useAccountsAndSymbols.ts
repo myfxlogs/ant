@@ -14,7 +14,7 @@ export function useAccountsAndSymbols() {
   const fetchAccounts = useCallback(async () => {
     try {
       const data = await accountApi.list();
-      setAccounts((data as AccountLike[]) || []);
+      setAccounts((data as unknown as AccountLike[]) || []);
     } catch {
       setAccounts([]);
     }

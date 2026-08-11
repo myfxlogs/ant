@@ -12,7 +12,7 @@ import type { TradeRecordItem, RecentTradesData } from '@/client/analytics';
 
 function normalizeSide(raw: string): Position['type'] {
   const u = raw.toLowerCase();
-  if (['buy', 'sell', 'buy_limit', 'sell_limit', 'buy_stop', 'sell_stop'].includes(u)) return u;
+  if (['buy', 'sell', 'buy_limit', 'sell_limit', 'buy_stop', 'sell_stop'].includes(u)) return u as Position['type'];
   return u.includes('sell') ? 'sell' : 'buy';
 }
 

@@ -73,7 +73,7 @@ export default function MarketRegimePage() {
             <Descriptions.Item label={t(RESULT_CONFIDENCE_KEY)}>{(result.confidence * 100).toFixed(1)}%</Descriptions.Item>
             <Descriptions.Item label={t(RESULT_MODEL_VERSION_KEY)}>{result.modelVersion}</Descriptions.Item>
             <Descriptions.Item label={t(RESULT_STRATEGY_FAMILIES_KEY)}>{(result.strategyFamilies ?? []).map((item) => <Tag key={item}>{item}</Tag>)}</Descriptions.Item>
-            <Descriptions.Item label={t(RESULT_FEATURES_KEY)}><Text code>{result.features}</Text></Descriptions.Item>
+            <Descriptions.Item label={t(RESULT_FEATURES_KEY)}><Text code>{JSON.stringify(result.features)}</Text></Descriptions.Item>
             <Descriptions.Item label={t(RESULT_RECORD_ID_KEY)}><Text copyable>{result.id}</Text></Descriptions.Item>
           </Descriptions>
         </Card>

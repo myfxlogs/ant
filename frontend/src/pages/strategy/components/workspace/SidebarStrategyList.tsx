@@ -101,7 +101,7 @@ export default function SidebarStrategyList({
           >
             <span className="sidebar-check" style={{ flexShrink: 0, opacity: checked.size > 0 ? 1 : undefined, transition: 'opacity 0.15s' }}
               onClick={(e) => onBatchDeleteTemplates ? toggleCheck(tpl.id, e) : undefined}>
-              <Checkbox checked={checked.has(tpl.id)} size="small" />
+              <Checkbox checked={checked.has(tpl.id)} />
             </span>
             {renamingId === tpl.id ? (
               <Input

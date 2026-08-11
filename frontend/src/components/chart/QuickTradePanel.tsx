@@ -19,7 +19,7 @@ export interface TradeItem {
   closeTime?: string; created_at?: string;
 }
 
-interface AccountMeta {
+export interface AccountMeta {
   brokerCompany: string;
   brokerServer: string;
   mtType: 'MT4' | 'MT5';
@@ -78,9 +78,8 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, horizo
       const clientId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const result = await tradingApi.orderSend({
         accountId, symbol, type: typeStr, volume: volume, clientId,
-        price: isLimitOrStop ? price : undefined,
+        price: isLimitOrStop ? (price ?? undefined) : undefined,
         stopLoss: stopLoss ?? undefined, takeProfit: takeProfit ?? undefined,
-        marginMode: isMT5 ? marginMode : undefined,
       });
       if (result.error && result.error !== '0' && result.error !== '') {
         message.error(result.message || result.error);

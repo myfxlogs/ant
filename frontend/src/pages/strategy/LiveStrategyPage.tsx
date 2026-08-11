@@ -88,7 +88,7 @@ export default function LiveStrategyPage() {
 
     (async () => {
       try {
-        for await (const event of strategyActiveApi.watchSignals(runId, abortRef.current.signal)) {
+        for await (const event of strategyActiveApi.watchSignals(runId, abortRef.current!.signal)) {
           setSignals(prev => [...prev.slice(-199), event as StrategySignalEvent]);
         }
       } catch (e: unknown) {

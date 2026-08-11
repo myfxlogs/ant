@@ -121,6 +121,6 @@ const en = mergeResources(
   DashboardExtra,
   MarketplaceExtra,
   LandingExtra,
-) as const;
+);
 
 export default en;

@@ -109,7 +109,7 @@ export default function SidebarRunList({
           >
             <span className="sidebar-check" style={{ flexShrink: 0, opacity: checked.size > 0 ? 1 : undefined, transition: 'opacity 0.15s' }}
               onClick={(e) => onBatchDeleteRuns ? toggleCheck(r.id, e) : undefined}>
-              <Checkbox checked={checked.has(r.id)} size="small" />
+              <Checkbox checked={checked.has(r.id)} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

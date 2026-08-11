@@ -1,7 +1,7 @@
 import { Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
-import type { GateEvaluationUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
-import type { GateResult } from '@/gen/ant/v1/ai_gate_pb';
+import type { MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
+import type { GateEvaluationUpdate, GateResult } from '@/gen/ant/v1/ai_gate_pb';
 
 export function GatePreview({ gateUpdate, gateResults, qualityPreview }: {
   gateUpdate?: GateEvaluationUpdate | null;

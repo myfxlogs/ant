@@ -109,7 +109,7 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
 
   const handlePresetClick = (presetKey: string) => {
     setDatePreset(presetKey);
-    const { start, end } = dateFromPreset(presetKey);
+    const { start, end } = dateFromPreset(Number(presetKey));
     setDateRange([dayjs(start), dayjs(end)]);
   };
 

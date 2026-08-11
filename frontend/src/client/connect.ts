@@ -94,7 +94,7 @@ export const autoTradingClient = createClient(AutoTradingService, transport);
 export const aiGatewayClient = createClient(AIGatewayService, transport);
 export const agentGatewayClient = createClient(AgentGatewayService, transport);
 export const adminAgentSettingsClient = createClient(AdminAgentSettingsService, transport);
-const publicTransport = createConnectTransport({ baseUrl: (import.meta as unknown).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080"), useBinaryFormat: true });
+const publicTransport = createConnectTransport({ baseUrl: (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_API_URL || (typeof window !== "undefined" ? window.location.origin : "http://127.0.0.1:8080"), useBinaryFormat: true });
 export const shareClient = createClient(ShareService, transport);
 export const sharePublicClient = createClient(ShareService, publicTransport);
 export const adminBillingClient = createClient(AdminBillingService, transport);

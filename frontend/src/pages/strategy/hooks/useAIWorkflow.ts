@@ -79,7 +79,7 @@ interface AICodeContext {
   code: string;
   setCode: (code: string) => void;
   validationResult: { valid: boolean; errors?: string[]; warnings?: string[]; parameters?: { key: string; type?: string; required?: boolean; default?: unknown; suggested?: unknown }[]; qualityHints?: { category: string; message: string; line: number }[] } | null;
-  setValidationResult: (r: unknown) => void;
+  setValidationResult: (r: import('@/client/codeAssist').ValidateExtendedResult | null) => void;
   setLastValidatedCode: (code: string) => void;
   loadTemplates: () => Promise<void>;
 }

@@ -53,7 +53,7 @@ export default function Dashboard() {
     accountCount: summary?.accountCount ?? accts.length,
   };
 
-  const getDisplayName = () => user?.email?.split('@')[0] || user?.username || t(DEFAULT_NAME_KEY);
+  const getDisplayName = () => user?.email?.split('@')[0] || user?.nickname || t(DEFAULT_NAME_KEY);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-lg)' }}>

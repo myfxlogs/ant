@@ -1,8 +1,7 @@
-import { Tooltip } from 'antd';
 import { BarChartOutlined, TrophyOutlined, DownOutlined, RightOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bar, CartesianGrid, ComposedChart, Cell, Pie, PieChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, CartesianGrid, ComposedChart, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import {
   ANALYTICS_ADVANCED_STATS_TITLE_KEY, ANALYTICS_STATS_AVG_DAILY_RETURN_KEY,
   ANALYTICS_STATS_AVG_HOLDING_KEY, ANALYTICS_STATS_AVG_LOSS_KEY, ANALYTICS_STATS_AVG_PROFIT_KEY,
@@ -75,7 +74,7 @@ export default function AccountAnalyticsStats({
             <StatCell label={t(ANALYTICS_STATS_TOTAL_TRADES_KEY)} value={`${stats.totalTrades || 0}`} />
             <StatCell label={t(ANALYTICS_STATS_AVG_PROFIT_KEY)} value={`+${(stats.averageProfit || 0).toFixed(2)}`} color="var(--color-success)" />
             <StatCell label={t(ANALYTICS_STATS_AVG_LOSS_KEY)} value={`${(stats.averageLoss || 0).toFixed(2)}`} color="var(--color-danger)" />
-            <StatCell label={t(ANALYTICS_STATS_AVG_HOLDING_KEY)} value={formatHoldingTime(stats.averageHoldingTime) || '-'} />
+            <StatCell label={t(ANALYTICS_STATS_AVG_HOLDING_KEY)} value={formatHoldingTime(String(stats.averageHoldingTime ?? '')) || '-'} />
             <StatCell label={t(ANALYTICS_STATS_CONSECUTIVE_WINS_LOSSES_KEY)} value={`${stats.maxConsecutiveWins || 0}/${stats.maxConsecutiveLosses || 0}`} />
             <StatCell label={t(ANALYTICS_STATS_SHARPE_KEY)} value={`${(risks.sharpeRatio || 0).toFixed(2)}`} color="var(--color-success)" />
             <StatCell label={t(ANALYTICS_STATS_SORTINO_KEY)} value={`${(risks.sortinoRatio || 0).toFixed(2)}`} />

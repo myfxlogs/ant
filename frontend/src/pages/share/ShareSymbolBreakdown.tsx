@@ -36,7 +36,7 @@ export function ShareSymbolBreakdown({ bySymbol, cardBg, pageColor, green, red, 
             <Pie data={bySymbol} dataKey="net" nameKey="symbol" cx="50%" cy="50%" innerRadius={30} outerRadius={48} paddingAngle={2} isAnimationActive={false}>
               {bySymbol.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
             </Pie>
-            <Tooltip formatter={(v: number, n: string) => [signed(v), n]} />
+            <Tooltip formatter={((v: number | undefined, n: string) => [signed(v ?? 0), n]) as never} />
           </PieChart>
         </ResponsiveContainer>
         <div style={{ flex: 1, minWidth: 160, fontSize: 'clamp(11px, 2vw, 13px)' }}>

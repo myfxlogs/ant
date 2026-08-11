@@ -216,7 +216,7 @@ export default function AccountTradeTabs({
                 </thead>
                 <tbody>
                   {historyTrades.map((trade) => (
-                    <HistoryTradeRow key={trade.id || trade.ticket} trade={trade} />
+                    <HistoryTradeRow key={trade.ticket} trade={trade} />
                   ))}
                 </tbody>
               </table>

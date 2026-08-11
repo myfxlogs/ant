@@ -55,7 +55,7 @@ export default function AIGatewayManagement() {
         if (v.name !== editingProvider.name) payload.name = v.name;
         if (v.baseUrl !== editingProvider.baseUrl) payload.baseUrl = v.baseUrl;
         if (v.apiKey && v.apiKey.trim()) payload.apiKey = v.apiKey.trim();
-        await aiGatewayApi.updateProvider(payload);
+        await aiGatewayApi.updateProvider(payload as { id: string; name?: string; baseUrl?: string; apiKey?: string; enabled?: boolean });
         message.success(t('common.saveSuccess', { defaultValue: 'Saved successfully' }));
       } else {
         await aiGatewayApi.createProvider({

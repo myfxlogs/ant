@@ -1,11 +1,12 @@
 import { Button, Popconfirm, Space, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { TFunction } from 'i18next';
 import type { SanctionedCountry, UserKYCItem } from '@/gen/ant/v1/admin_jurisdiction_pb';
 
 export function getJurisdictionColumns({
   t, onRemoveCountry, onSetKYC, onOverride,
 }: {
-  t: (key: string, opts?: unknown) => string;
+  t: TFunction;
   onRemoveCountry: (code: string) => void;
   onSetKYC: (row: UserKYCItem) => void;
   onOverride: (row: UserKYCItem) => void;

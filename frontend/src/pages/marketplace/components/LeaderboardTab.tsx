@@ -100,11 +100,11 @@ export default function LeaderboardTab() {
       },
       {
         title: t('marketplace.leaderboard.maxDD'), key: 'dd', width: 90,
-        render: (_: unknown, row: LeaderboardEntry) => `${Number(row.maxDrawdown || 0).toFixed(2)}%`,
+        render: (_: unknown, row: LeaderboardEntry) => <>{`${Number(row.maxDrawdown || 0).toFixed(2)}%`}</>,
       },
       {
         title: t('marketplace.leaderboard.sharpe'), key: 'sharpe', width: 80,
-        render: (_: unknown, row: LeaderboardEntry) => row.sharpeRatio ? Number(row.sharpeRatio).toFixed(2) : '-',
+        render: (_: unknown, row: LeaderboardEntry) => <>{row.sharpeRatio ? Number(row.sharpeRatio).toFixed(2) : '-'}</>,
       },
     );
   }

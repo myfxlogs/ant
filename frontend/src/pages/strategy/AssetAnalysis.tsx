@@ -75,7 +75,7 @@ function renderSRLevels(levels: SRLevelType[], t: (key: string) => string) {
           color={lvl.type === 'RESISTANCE' ? 'red' : 'green'}
           style={{ padding: '4px 12px', fontSize: 13 }}
         >
-          {lvl.price?.toFixed(5)}
+          {Number(lvl.price ?? 0).toFixed(5)}
           <span style={{ fontSize: 10, marginLeft: 6 }}>
             {lvl.strength} | {lvl.touches} touches
           </span>

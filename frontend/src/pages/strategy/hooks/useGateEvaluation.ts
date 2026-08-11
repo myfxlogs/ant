@@ -22,7 +22,7 @@ export function useGateEvaluation() {
       {
         onGate: (g) => setGateGates(prev => [...prev, g]),
         onCompleted: (s) => { setGateSummary(s); setGateLoading(false); },
-        onError: (e) => { setGateError(String(e?.message ?? e ?? 'Unknown error')); setGateLoading(false); },
+        onError: (e: unknown) => { setGateError(String((e as { message?: string })?.message ?? e ?? 'Unknown error')); setGateLoading(false); },
       },
     );
     gateStopRef.current = stop;

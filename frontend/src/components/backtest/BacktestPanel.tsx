@@ -169,7 +169,7 @@ export default function BacktestPanel(props: Props) {
           <GatePanel
             loading={runner.gate.gateLoading || false} gates={runner.gate.gateGates || []} summary={runner.gate.gateSummary || null}
             error={runner.gate.gateError || ''} status={runner.status} canRun={runner.status === 'completed' || runner.status === 'degraded'}
-            onRun={runner.gate.runGate || (() => {})}
+            onRun={runner.gate.runGate ? () => runner.gate?.runGate(runner.runId || '', () => {}) : () => {}}
             fixDepth={runner.fixDepth || 0}
           />
         )}

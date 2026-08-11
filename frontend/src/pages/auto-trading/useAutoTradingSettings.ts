@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { autoTradingApi } from '@/client/autoTrading';
+import { useAuthStore } from '@/stores/authStore';
 import type { GlobalSettings, AutoTradingStatus } from '@/gen/ant/v1/auto_trading_settings_pb';
 import type { TradingLog } from '@/gen/ant/v1/auto_trading_logs_pb';
 
@@ -21,7 +22,7 @@ export function useAutoTradingSettings() {
       const [s, st, recentLogs] = await Promise.all([
         autoTradingApi.getGlobalSettings().catch(() => null),
         autoTradingApi.getAutoTradingStatus().catch(() => null),
-        autoTradingApi.getRecentTradingLogs({ limit: 20 }).catch(() => ({ logs: [] })),
+        autoTradingApi.getRecentTradingLogs({ userId: useAuthStore.getState().user?.id ?? '', limit: 20 }).catch(() => ({ logs: [] })),
       ]);
       setSettings(s);
       setStatus(st);

@@ -159,7 +159,7 @@ function mapMonthlyMetrics(c: { metrics?: { netReturn?: string | null; returnPer
 function mapMonthlyBonus(c: { bonus?: { riskRatio?: number; symbolPopularity?: { symbol?: string; trades?: bigint | number; sharePercent?: number }[]; symbolRisks?: { symbol?: string; riskRatio?: number }[]; symbolHoldingSplit?: { symbol?: string; bullsSeconds?: number; shortTermSeconds?: number }[] } }): MonthlyDetailData['bonus'] {
   if (!c.bonus) return undefined;
   return {
-    riskRatio: c.bonus.riskRatio,
+    riskRatio: c.bonus.riskRatio ?? 0,
     symbolPopularity: (c.bonus.symbolPopularity ?? []).map((s: { symbol?: string; trades?: bigint | number; sharePercent?: number }) => ({
       symbol: s.symbol || '', trades: Number(s.trades), sharePercent: s.sharePercent ?? 0,
     })),

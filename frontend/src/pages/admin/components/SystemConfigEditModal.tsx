@@ -1,11 +1,12 @@
 import { Modal, Form, Input, Button, Space, Select, Switch, Alert } from 'antd';
+import type { FormInstance } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { SystemConfig as AdminConfigType } from '@/client/admin';
 
 interface Props {
   visible: boolean;
   currentConfig: AdminConfigType | null;
-  form: unknown;
+  form: FormInstance<Record<string, unknown>>;
   isAIProviderCatalog: boolean;
   isEconAIConfig: boolean;
   isStrategyHealthConfig: boolean;

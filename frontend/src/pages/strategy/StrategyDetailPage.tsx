@@ -123,7 +123,7 @@ export default function StrategyDetailPage() {
                         <ResponsiveContainer width="100%" height={240}>
                           <LineChart data={sparklineData}>
                             <YAxis domain={['auto', 'auto']} style={{ fontSize: 11 }} />
-                            <RTooltip formatter={(v: number | string) => Number(v).toFixed(2)} />
+                            <RTooltip formatter={(v: number | string | undefined) => Number(v ?? 0).toFixed(2)} />
                             <Line type="monotone" dataKey="value" stroke="#58a6ff" strokeWidth={2} dot={false} />
                           </LineChart>
                         </ResponsiveContainer>

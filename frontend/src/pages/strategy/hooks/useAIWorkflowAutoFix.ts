@@ -57,7 +57,7 @@ export async function runAutoFixIteration(
   iter: number,
   maxIters: number,
   preSnapshot: IssueSnapshot,
-  codeCtx: { setCode: (s: string) => void; setLastValidatedCode: (s: string) => void; setValidationResult: (r: ValidationSnapshot) => void },
+  codeCtx: { setCode: (s: string) => void; setLastValidatedCode: (s: string) => void; setValidationResult: (r: import('@/client/codeAssist').ValidateExtendedResult | null) => void },
   t: (k: string, o?: Record<string, unknown>) => string,
 ): Promise<AutoFixIterationResult> {
   const { codeAssistApi } = await import('@/client/codeAssist');

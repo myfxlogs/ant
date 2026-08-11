@@ -51,7 +51,7 @@ export function buildVersionColumns(
       width: 150,
       render: (ts: unknown) => {
         if (!ts) return <Text type="secondary">—</Text>;
-        const d = ts instanceof Date ? ts : new Date(ts);
+        const d = ts instanceof Date ? ts : new Date(ts as string | number);
         return dayjs(d).format('YYYY-MM-DD HH:mm');
       },
     },

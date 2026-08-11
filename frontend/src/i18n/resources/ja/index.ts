@@ -119,6 +119,6 @@ const ja = mergeResources(
   DashboardExtra,
   MarketplaceExtra,
   LandingExtra,
-) as const;
+);
 
 export default ja;

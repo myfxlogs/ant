@@ -64,7 +64,7 @@ export default function Summary() {
     ['economicCalendar'],
     async () => {
       const events = await analyticsApi.getEconomicCalendar();
-      return (Array.isArray(events) ? events.slice(0, 50) : []) as EconomicCalendarEvent[];
+      return (Array.isArray(events) ? events.slice(0, 50) : []) as unknown as EconomicCalendarEvent[];
     },
   );
 

@@ -195,7 +195,7 @@ export default function SharePerformancePage() {
 
       {equity.length > 0 && (
         <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.equityCurve')}</span>} style={{ marginBottom: 16, borderRadius: 10, background: cardBg }}>
-          <ShareChart data={equity} timesMs={(data.equityTimesMs || []).map(Number)} />
+          <ShareChart data={equity.map(Number)} timesMs={(data.equityTimesMs || []).map(Number)} />
         </Card>
       )}
 

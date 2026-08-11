@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useAuthStore } from '@/stores/authStore';
+import type { ExtractedParam } from '@/components/backtest/backtestRunnerTypes';
 
 interface LoadedTemplate {
   userId?: string;
@@ -13,7 +14,7 @@ interface LoadedTemplate {
 interface TemplateSliceDeps {
   handleLoadTemplate: (id: string) => Promise<LoadedTemplate | null>;
   validateCode: (code: string) => void;
-  updateExtractedParams: (params: unknown[] | null) => void;
+  updateExtractedParams: (params: ExtractedParam[] | null) => void;
 }
 
 export interface TemplateSlice {

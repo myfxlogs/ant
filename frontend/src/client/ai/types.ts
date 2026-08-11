@@ -65,9 +65,8 @@ export function toAgentView(a: AIAgentDefinition): AIAgentDefinitionView {
   };
 }
 
-export function fromAgentView(v: AIAgentDefinitionView): AIAgentDefinition {
+export function fromAgentView(v: AIAgentDefinitionView): Record<string, unknown> {
   return {
-    id: v.id,
     agentKey: v.agentKey,
     type: v.type,
     name: v.name,
@@ -77,7 +76,7 @@ export function fromAgentView(v: AIAgentDefinitionView): AIAgentDefinition {
     position: v.position,
     providerId: v.providerId,
     modelOverride: v.modelOverride,
-  } as AIAgentDefinition;
+  };
 }
 
 export function mapConversationSummary(c: ProtoConversationSummary): ConversationSummary {

@@ -12,7 +12,7 @@ export function usePositionsQuery(accountId: string) {
     queryKey: queryKeys.positions.byAccount(accountId),
     queryFn: async () => {
       const result = await tradingApi.getPositions(accountId);
-      return result as Position[];
+      return result as unknown as Position[];
     },
     enabled: !!accountId,
     staleTime: 120_000, // SSE keeps position state fresh

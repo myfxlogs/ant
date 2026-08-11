@@ -121,6 +121,6 @@ const zhcn = mergeResources(
   DashboardExtra,
   MarketplaceExtra,
   LandingExtra,
-) as const;
+);
 
 export default zhcn;

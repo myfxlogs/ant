@@ -1,5 +1,6 @@
 import { Card, Row, Col, Statistic, Typography, Empty, Tag, Space, Button } from 'antd';
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { OptimizationTaskInfo, BacktestSnapshot } from '@/gen/ant/v1/marketplace_service_pb';
 

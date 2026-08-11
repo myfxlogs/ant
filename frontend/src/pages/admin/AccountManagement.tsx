@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Card, Table, Button, Input, Select, Space, Tag, Drawer, Descriptions, message, Popconfirm } from 'antd';
+import { timestampDate } from '@bufbuild/protobuf/wkt';
 import { adminApi, type AccountWithUser, type AccountListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -28,7 +29,7 @@ export default function AccountManagement() {
         id: e.id,
         action: e.action,
         detail: e.detail,
-        created_at: e.createdAt ? e.createdAt.toDate().toISOString() : '',
+        created_at: e.createdAt ? timestampDate(e.createdAt).toISOString() : '',
       })));
     } catch { setAuditLogs([]); }
     finally { setAuditLoading(false); }

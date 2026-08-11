@@ -1,6 +1,7 @@
 import { Card, Tag, Typography, Rate, Space, Tooltip, Checkbox } from 'antd';
 import { CheckCircleOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 import { useMarketplaceCtx } from '../MarketplaceContext';
 import { DecayBadge } from './DecayBadge';
@@ -15,7 +16,7 @@ interface Props {
   onGetFree?: (s: PublishedStrategy) => void;
 }
 
-function priceLabel(s: PublishedStrategy, t: (k: string) => string): { text: string; color: string } {
+function priceLabel(s: PublishedStrategy, t: TFunction): { text: string; color: string } {
   const model = String(s.priceModel || '').toLowerCase();
   const amount = Number(s.priceAmount || 0);
   if (model === 'free' || !amount) return { text: t('marketplace.card.free'), color: '#52c41a' };

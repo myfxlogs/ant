@@ -4,7 +4,7 @@ import { ShopOutlined, BookOutlined, UserOutlined, TrophyOutlined, SwapOutlined,
 import { useTranslation } from 'react-i18next';
 import i18n, { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import Seo from '@/components/common/Seo';
-import { useMarketplace } from './hooks/useMarketplace';
+import { useMarketplace, type TabKey } from './hooks/useMarketplace';
 import { MarketplaceProvider } from './MarketplaceContext';
 import MarketTab from './components/MarketTab';
 import PurchaseTab from './components/PurchaseTab';
@@ -69,7 +69,7 @@ function MarketplaceUI() {
             </div>
             {!m.isAuthenticated && <div>{langSelector}</div>}
           </div>
-          <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as unknown)} items={[
+          <Tabs activeKey={m.activeTab} onChange={k => m.setActiveTab(k as TabKey)} items={[
             { key: 'market', label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>, children: <MarketTabMemo /> },
             { key: 'leaderboard', label: <span><TrophyOutlined /> {t('marketplace.tabs.leaderboard')}</span>, children: <LeaderboardTabMemo /> },
             ...(m.isAuthenticated ? [

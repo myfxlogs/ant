@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useAccount } from '@/hooks/useAccount';
 import { marketApi } from '@/client/market';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import type { AccountMeta } from '@/components/chart/QuickTradePanel';
 
 export interface AccountSlice {
   activeAccounts: ReturnType<typeof useAccount>['accounts'];
@@ -12,7 +13,7 @@ export interface AccountSlice {
   timeframe: string;
   setTimeframe: (v: string) => void;
   handleAccountChange: (id: string) => void;
-  selectedAccountMeta: { brokerCompany: string; brokerServer: string; mtType: string; leverage: number } | null;
+  selectedAccountMeta: AccountMeta | null;
   fetchAccounts: () => void;
 }
 
@@ -29,7 +30,7 @@ export function useAccountSlice(): AccountSlice {
   const selectedAccountMeta = useMemo(() => {
     const a = activeAccounts.find(a => a.id === accountId);
     if (!a) return null;
-    return { brokerCompany: a.brokerCompany, brokerServer: a.brokerServer, mtType: a.mtType, leverage: a.leverage ?? 0 };
+    return { brokerCompany: a.brokerCompany, brokerServer: a.brokerServer, mtType: (a.mtType === 'MT5' ? 'MT5' : 'MT4') as 'MT4' | 'MT5', leverage: a.leverage ?? 0 };
   }, [activeAccounts, accountId]);
 
   const handleAccountChange = useCallback((id: string) => {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Layout, Menu, Drawer, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { GlobalOutlined, LineChartOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -101,7 +102,7 @@ function SidebarMenu({ items }: { items: MenuItem[] }) {
       selectedKeys={[location.pathname]}
       openKeys={openKeys}
       onOpenChange={setOpenKeys}
-      items={items}
+      items={items as MenuProps['items']}
       onClick={handleClick}
       style={{ background: 'transparent', border: 'none' }}
     />

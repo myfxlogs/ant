@@ -1,11 +1,12 @@
 import React from 'react';
 import { Form, Input, Modal } from 'antd';
+import type { FormInstance } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
 	open: boolean;
 	confirmLoading: boolean;
-	form: unknown;
+	form: FormInstance;
 	onCancel: () => void;
 	onOk: () => void;
 	afterOpenChange?: (open: boolean) => void;

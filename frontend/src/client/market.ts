@@ -93,7 +93,7 @@ export const marketApi = {
 
     try {
       const resp: unknown = await tradingClient.priceHistory(req);
-      const bars = (resp.bars || []) as OHLCV[];
+      const bars = ((resp as { bars?: OHLCV[] }).bars || []) as OHLCV[];
       return bars.map((bar) => ({
         time: toUnixSeconds(bar.openTime),
         open: Number(bar.open ?? '0'),

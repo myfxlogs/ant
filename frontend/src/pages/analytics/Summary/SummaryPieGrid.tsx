@@ -7,7 +7,7 @@ import { SUMMARY_CARDS_DIRECTION_SHARE_KEY, SUMMARY_CARDS_PNL_SHARE_KEY, SUMMARY
 ;
 
 interface PieDataItem { name: string; value: number; color: string; [key: string]: unknown; }
-interface SymbolStatItem { symbol: string; profit: number; [key: string]: unknown; }
+interface SymbolStatItem { symbol: string; profit: number; }
 
 interface Props {
   symbolStats: SymbolStatItem[];

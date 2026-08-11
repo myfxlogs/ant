@@ -75,7 +75,7 @@ export default function AlgoDashboard() {
             totalSlices: status.totalSlices,
             symbol: status.parentSymbol,
             side: status.parentSide,
-            volume: status.parentVolume,
+            volume: Number(status.parentVolume || 0),
           } : a
         ));
       }

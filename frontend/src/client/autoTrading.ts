@@ -95,7 +95,7 @@ export const autoTradingApi = {
     return autoTradingClient.getTradingLogs(req);
   },
 
-  getRecentTradingLogs: async (req: { accountId: string; limit?: number }) => {
-    return autoTradingClient.getRecentTradingLogs(req);
+  getRecentTradingLogs: async (req: { userId: string; limit?: number }) => {
+    return autoTradingClient.getRecentTradingLogs({ userId: req.userId, limit: req.limit ?? 20 });
   },
 };

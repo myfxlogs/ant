@@ -72,7 +72,7 @@ export default function TopBar({ isMobile, onMenuToggle, languageMenu }: Props) 
         <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenu }} placement="bottomRight" trigger={['click']}>
           <div className="flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors" style={{ background: 'var(--color-bg-secondary)' }}>
             <Avatar size={32} icon={<UserOutlined />} style={{ background: '#D4AF37' }} />
-            <span className="hidden sm:inline text-sm font-medium" style={{ color: 'var(--color-text)' }}>{user?.email?.split('@')[0] || user?.username || ''}</span>
+            <span className="hidden sm:inline text-sm font-medium" style={{ color: 'var(--color-text)' }}>{user?.email?.split('@')[0] || user?.nickname || ''}</span>
           </div>
         </Dropdown>
       </div>

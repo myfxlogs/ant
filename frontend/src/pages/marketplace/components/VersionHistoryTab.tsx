@@ -1,6 +1,7 @@
 import { Tag, Typography, Empty, Spin, List, Alert } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import type { StrategyVersionInfo } from '@/gen/ant/v1/strategy_runtime_pb';
 import dayjs from 'dayjs';
 
@@ -32,7 +33,7 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
                   <Tag color="blue">v{v.versionNumber}</Tag>
                   <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>{v.changeSummary || '-'}</Text>
                   <Text type="secondary" style={{ fontSize: 11, marginLeft: 8 }}>
-                    {v.createdAt ? dayjs(typeof v.createdAt === 'object' && 'seconds' in v.createdAt ? new Date(Number((v.createdAt as unknown).seconds) * 1000) : v.createdAt as unknown).format('YYYY-MM-DD HH:mm') : ''}
+                    {v.createdAt ? dayjs(typeof v.createdAt === 'object' && 'seconds' in v.createdAt ? new Date(Number((v.createdAt as Record<string, unknown>).seconds) * 1000) : v.createdAt as unknown as string).format('YYYY-MM-DD HH:mm') : ''}
                   </Text>
                 </div>
                 {isPurchased && v.versionNumber > 1 && (
@@ -56,6 +57,6 @@ export function VersionHistoryTab({ versions, versionsLoading, isPurchased }: Ve
   );
 }
 
-export function versionHistoryTabLabel(t: (key: string, opts?: unknown) => string) {
+export function versionHistoryTabLabel(t: TFunction) {
   return <span><HistoryOutlined /> {t('marketplace.detail.versionHistory')}</span>;
 }

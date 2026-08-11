@@ -8,9 +8,9 @@ const { Text } = Typography;
 
 type ScheduleInfo = { name?: string; symbol?: string; timeframe?: string };
 
-type TriggerSignal = { type?: string; signalType?: string; signal?: string; volume?: number | string };
+type TriggerSignal = { type?: string; signalType?: string; signal?: string; volume?: number | string } | null;
 
-type TriggerMeta = { error?: string };
+type TriggerMeta = { error?: string; templateId?: string; scheduleId?: string } & Record<string, unknown>;
 
 type Props = {
   open: boolean;

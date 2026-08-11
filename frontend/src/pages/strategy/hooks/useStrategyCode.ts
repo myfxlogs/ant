@@ -6,7 +6,9 @@ import { COPY_FAILED_KEY, COPY_SUCCESS_KEY, SAVE_SUCCESS_KEY, VALIDATE_BEFORE_SA
 import { strategyApi, strategyVersionApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 
+import { create } from '@bufbuild/protobuf';
 import type { TemplateParameter } from '@/gen/ant/v1/strategy_template_entity_pb';
+import { TemplateParameterSchema } from '@/gen/ant/v1/strategy_template_entity_pb';
 
 export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExtendedResult) => void }) {
   const onValidateResult = opts?.onValidateResult;
@@ -57,7 +59,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
   // accepted by createTemplate / updateTemplate (TemplateParameter proto).
   const _validatedParams = useCallback((): TemplateParameter[] => {
     if (!validationResult?.parameterEntries) return [];
-    return validationResult.parameterEntries.map(e => ({ name: e.name, type: e.type || 'string', default: e.default }));
+    return validationResult.parameterEntries.map(e => create(TemplateParameterSchema, { name: e.name, type: e.type || 'string', default: e.default ?? '', min: '', max: '', step: '', label: '', description: '', options: [] }));
   }, [validationResult]);
 
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);

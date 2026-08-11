@@ -74,7 +74,7 @@ export default function AutoTradingSettingsPage() {
                     valueStyle={{
                       fontSize: 18,
                       fontWeight: 600,
-                      color: (status?.todayProfit ?? 0) >= 0 ? '#26a69a' : '#ef5350',
+                      color: Number(status?.todayProfit ?? 0) >= 0 ? '#26a69a' : '#ef5350',
                     }}
                   />
                 </Col>

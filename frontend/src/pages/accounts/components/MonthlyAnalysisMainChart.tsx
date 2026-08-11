@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
+import type { XAxisTickContentProps } from 'recharts';
 import {
   Bar,
   CartesianGrid,
@@ -99,7 +100,7 @@ export default function MonthlyAnalysisMainChart({
             angle={-30}
             textAnchor="end"
             height={42}
-            tick={({ x, y, payload, index }: { x: number; y: number; payload: { value: string }; index: number }) => (
+            tick={({ x, y, payload, index }: XAxisTickContentProps) => (
               <g transform={`translate(${x},${y})`} style={{ cursor: 'pointer' }}
                 onClick={() => onCommitMonthClick(series[index], index)}>
                 <text x={0} y={0} dy={4} textAnchor="end" fill="var(--color-text-muted)" fontSize={11}
@@ -160,7 +161,7 @@ export default function MonthlyAnalysisMainChart({
             <LabelList
               dataKey="value"
               position="top"
-              formatter={(v: number | string) => {
+              formatter={(v: string | number | boolean | null | undefined) => {
                 const n = Number(v);
                 if (!Number.isFinite(n) || Math.abs(n) < 1e-12) return '';
                 if (selectedMetric === 'change') return `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
