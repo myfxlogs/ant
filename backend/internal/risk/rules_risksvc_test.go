@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/risksvc"
 )
 
 func TestContractExpiryRule_PassesForSpot(t *testing.T) {
@@ -111,6 +112,80 @@ func TestKycJurisdictionRule_NilGatePasses(t *testing.T) {
 	if !result.Allowed {
 		t.Error("nil gate should pass (not yet wired)")
 	}
+}
+
+// DEPLOY-LIVE-5: ClientIPFn returns real IP → GeoIP resolves sanctioned country → must block.
+func TestKycJurisdictionRule_RealIP_SanctionedBlock(t *testing.T) {
+	gate := &risksvc.JurisdictionGate{
+		GeoIP: &mockGeoIP{country: "IR"},
+		Store: &mockJurisdictionStore{sanctioned: true},
+	}
+	rule := &KycJurisdictionGateRule{
+		Gate:       gate,
+		UserIDFn:   func(_ context.Context) string { return "u1" },
+		ClientIPFn: func(_ context.Context) string { return "5.1.1.1" },
+	}
+	result := rule.Check(context.Background(),
+		&antv1.OrderIntent{UserId: "u1"}, nil)
+	if result.Allowed {
+		t.Fatal("expected block for sanctioned country when ClientIPFn returns real IP")
+	}
+}
+
+// DEPLOY-LIVE-5: ClientIPFn returns "" → GeoIP check skipped → passes (current broken behavior).
+func TestKycJurisdictionRule_EmptyIP_Passes(t *testing.T) {
+	gate := &risksvc.JurisdictionGate{
+		GeoIP: &mockGeoIP{country: "IR"},
+		Store: &mockJurisdictionStore{sanctioned: true},
+	}
+	rule := &KycJurisdictionGateRule{
+		Gate:       gate,
+		UserIDFn:   func(_ context.Context) string { return "u1" },
+		ClientIPFn: func(_ context.Context) string { return "" },
+	}
+	result := rule.Check(context.Background(),
+		&antv1.OrderIntent{UserId: "u1"}, nil)
+	if !result.Allowed {
+		t.Fatal("empty IP should skip GeoIP check and pass (demonstrates the bug)")
+	}
+}
+
+// --- DEPLOY-LIVE-5 mocks ---
+
+type mockGeoIP struct {
+	country string
+	err     error
+}
+
+func (m *mockGeoIP) CountryCode(_ string) (string, error) {
+	return m.country, m.err
+}
+
+type mockJurisdictionStore struct {
+	sanctioned bool
+	status     *risksvc.JurisdictionStatus
+}
+
+func (m *mockJurisdictionStore) GetStatus(_ context.Context, _ string) (*risksvc.JurisdictionStatus, error) {
+	if m.status != nil {
+		return m.status, nil
+	}
+	return &risksvc.JurisdictionStatus{}, nil
+}
+func (m *mockJurisdictionStore) SetKYCStatus(_ context.Context, _, _, _ string) error  { return nil }
+func (m *mockJurisdictionStore) RecordCountry(_ context.Context, _, _, _ string) error { return nil }
+func (m *mockJurisdictionStore) IsDisclaimerAccepted(_ context.Context, _ string) (bool, error) {
+	return true, nil
+}
+func (m *mockJurisdictionStore) AcceptDisclaimer(_ context.Context, _, _ string) error { return nil }
+func (m *mockJurisdictionStore) IsQuestionnaireCompleted(_ context.Context, _ string) (bool, error) {
+	return true, nil
+}
+func (m *mockJurisdictionStore) SubmitQuestionnaire(_ context.Context, _, _ string, _ int) error {
+	return nil
+}
+func (m *mockJurisdictionStore) IsSanctioned(_ context.Context, _ string) (bool, error) {
+	return m.sanctioned, nil
 }
 
 func TestCapabilityTierRule_NilStorePasses(t *testing.T) {

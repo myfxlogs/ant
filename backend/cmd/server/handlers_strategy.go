@@ -13,6 +13,7 @@ import (
 	"alphaforge/internal/config"
 	"alphaforge/internal/connect/ai"
 	"alphaforge/internal/connect/strategy"
+	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
 	notifpubsub "alphaforge/internal/notification"
@@ -113,7 +114,7 @@ func setupRiskGate(cfg *config.Config, jurisGate *risksvc.JurisdictionGate, capS
 		gate.AddRule(&risk.KycJurisdictionGateRule{
 			Gate:       jurisGate,
 			UserIDFn:   usermgr.GetUserID,
-			ClientIPFn: func(ctx context.Context) string { return "" },
+			ClientIPFn: interceptor.GetClientIP,
 		})
 	}
 	if capStore != nil {
