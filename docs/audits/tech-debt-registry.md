@@ -64,6 +64,7 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 ## 变更日志
 
+- 2026-08-12 **REPLAY-MODEL ✅**：EXEC-PARAMS 后续简化 — 4 执行假设选择器合并为单"复盘模型"下拉框（MT4 对齐：Every Tick / 1 Minute OHLC / Open Prices Only）。前端 only，后端参数不变（replayModel→signalTiming+simulationMode+fillRule 映射在 modal 层）。红队自审通过。commit `0408f1a7`。
 - 2026-08-11 **POST-1 验收通过 ✅（审计方独立删行复测）**：5/5 断言级全红——T1 改 total=-1 红（ListPublished 主路径）/ T6 删 ORDER BY+LIMIT 红 / T7 删 ErrNoRows 分支红（logged 1 want 0）/ T3 删 backtestContent 接线红 / T8 删 error 块红。T1-T8 对抗证明 8/8 有效；实现仅 T6/T7 抽函数行为不变。门禁全绿实测：go build / go test marketplace+user / check-file-lines 0err / tsc 0err / vitest 144pass / npm build。POST-1 闭环。
 - 2026-08-11 **POST-1 测试补强完成**：T1/T3/T6/T7/T8 五项重做，每项施工方删行实测必红。T1 走 ListPublished 集成（缓存命中 total 真值）；T6/T7 抽 `buildShareDecayStatusQuery`+`resolveDecayStatus` 可测函数（行为不变），T7 用 zaptest/observer 验证 ErrNoRows 不产生日志；T3 渲染真实 BottomPanelSection；T8 渲染真实 LivePerformanceTab（mock fetch reject）。门禁全绿：go build + check-file-lines 0err + tsc 0err + vitest 144pass + npm build。待审计方独立删行复测。
 - 2026-08-11 **UX-1~8 返工复审（审计方实测）**：4 缺陷实现 ✅ 验收通过；对抗证明 5/8 无效（删行实测 T1/T6/T7 仍绿 + T3/T8 结构判定同模式）→ 补强测试返工单。88a95c3d 文档裁剪=用户批准（✅done 明细归档 git，已修订 CLAUDE.md/builder-sop §2.6）。
