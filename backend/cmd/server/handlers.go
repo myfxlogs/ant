@@ -193,7 +193,8 @@ func registerPostAccountHandlers(ctx context.Context, p registerPostAccountDeps)
 		MthubSvc: d.MthubSvc, Hub: d.Hub, EventStore: d.EventStore,
 		AISvc: aiDeps.aiSvc, MktplaceSvc: d.MktplaceSvc, MktplaceHandler: p.MktplaceHandler,
 		QuotaChecker: p.QuotaChecker, BacktestRunRepo: backtestRunRepo,
-		Log: log, OtelInterceptor: d.OtelInterceptor, AuthInterceptor: d.AuthInterceptor,
+		BoundSvc: p.BoundSvc,
+		Log:      log, OtelInterceptor: d.OtelInterceptor, AuthInterceptor: d.AuthInterceptor,
 	})
 
 	if aiDeps.agentGateway.Generator() != nil {

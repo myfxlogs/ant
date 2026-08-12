@@ -20,11 +20,11 @@
 | TUNING-OVERFIT-2 | OOS-at-publish 惰性闸（`quality.go:302` 条件性惰性，优化快照未填 OOS 字段）| 🟦open（低优 follow-up）|
 | CQ-5 | eslint-disable 残留 11 处缺注释 | 🟦open（低优，补理由注释）|
 | DEPLOY-UX | DeployScheduleModal 创建调度后不自动启用、不跳转 — 用户"部署后找不到" | ✅done |
-| CREATE-SCHEDULE-200EMPTY | CreateSchedule 返回 HTTP 200 + 0 字节 body + DB 无记录 — 根因=接线 bug：handlers.go:191 漏传 BoundSvc → typed-nil 接口 → EnsureBoundAccount panic 被 sentryhttp Repanic:false 静默吞掉 | 🟦open（2026-08-12 根因定论，待施工）|
+| CREATE-SCHEDULE-200EMPTY | CreateSchedule 返回 HTTP 200 + 0 字节 body + DB 无记录 — 根因=接线 bug：handlers.go:191 漏传 BoundSvc → typed-nil 接口 → EnsureBoundAccount panic 被 sentryhttp Repanic:false 静默吞掉 | ✅done（2026-08-12）|
 | DEPLOY-LIVE-1 | 实盘部署管线审计（2026-08-12）—— tick/trade 信号 `bar.OpenTime` nil panic → 进程崩溃（P1）| ✅done（2026-08-12 审计方独立删行复测验收）|
 | DEPLOY-LIVE-2 | MT4 `mt4Op` default→`Op_Buy`：stop_limit 信号在 MT4 账户变市价买入错单（P1）| ✅done（2026-08-12 审计方独立删行复测验收）|
-| DEPLOY-LIVE-1-COVERAGE | 审计方复测发现覆盖缺口：live dispatch 调用点（`barOpenTimeForSignal`→`bar.OpenTime` 还原）删行仍绿——无 mtHub mock 测试覆盖 live 路径（补强测试，随下一批施工）| 🟦open（2026-08-12）|
-| DEPLOY-LIVE-3 | CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch`（UpdateSchedule 切账户）同样 typed-nil panic（P1，随 200EMPTY 一并修）| 🟦open |
+| DEPLOY-LIVE-1-COVERAGE | 审计方复测发现覆盖缺口：live dispatch 调用点（`barOpenTimeForSignal`→`bar.OpenTime` 还原）删行仍绿——无 mtHub mock 测试覆盖 live 路径（补强测试，随下一批施工）| ✅done（2026-08-12）|
+| DEPLOY-LIVE-3 | CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch`（UpdateSchedule 切账户）同样 typed-nil panic（P1，随 200EMPTY 一并修）| ✅done（2026-08-12）|
 | DEPLOY-LIVE-4 | gate fail-open：`evaluatePlaceGate`/CloseOrder `gate==nil || accountStateProvider==nil` → 静默放行（P2）| 🟦open |
 | DEPLOY-LIVE-5 | KYC 地域门控空转：`ClientIPFn` 恒返回 "" → GeoIP/sanctioned 检查永远跳过（P2）| 🟦open |
 | DEPLOY-LIVE-6 | `dispatch`/`launchEventSession` ~100 行重复（四道门+run record+entCheck）——加门改两处，漏改即门控缺口（P2，可演进性）| 🟦open |
@@ -64,7 +64,7 @@
 
 ---
 
-## CREATE-SCHEDULE-200EMPTY（2026-08-12 审计方根因定论：接线 bug + Sentry 吞 panic，🟦open 待施工）
+## CREATE-SCHEDULE-200EMPTY（2026-08-12 审计方根因定论：接线 bug + Sentry 吞 panic，✅done）
 
 **症状**（用户报告 + windsurf e2e 复现 + 审计方独立复现）：Deploy modal 填完整表单点 Create → CreateSchedule API 返回 HTTP 200 + 0 字节 body，DB 无 schedule 记录，前端 `created.id` undefined → 不跳转。
 
@@ -119,15 +119,16 @@
 - **对抗证明**：`TestMt4Op` 9 case——6 个已知组合返回正确 Op+nil；3 个未知/stop_limit 组合返回 error（`buy_stop_limit_unsupported`/`sell_stop_limit_unsupported`/`unknown_type_returns_error`）。旧代码 stop_limit 返回 `Op_Buy`（红）；新代码返回 error（绿）。`go test ./internal/mdgateway/adapter/mt4/... -count=1` 全绿
 - **→ 审计方独立删行复测（2026-08-12，验收）**：`mt4Op` 唯一生产调用者 = `PlaceOrder`（orders.go:48），err 传播正确（`fmt.Errorf("mt4 PlaceOrder: %w", err)`）；MT5 stop_limit case 确认存在（回归不破）。独立删行：default 改回 `return pb.Op_Op_Buy, nil` → TestMt4Op 3 case **RED**（"expected error, got Op_Buy"）。**✅ 验收通过**。
 
-**DEPLOY-LIVE-3 CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch` 同样 typed-nil panic**
+**DEPLOY-LIVE-3 CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch` 同样 typed-nil panic** ✅done（2026-08-12）
 - 位置：`strategy_schedules.go:169-179`——UpdateSchedule 切账户走 `s.boundSvc.EnsureBoundAccount`（与 CreateSchedule:74 同一 `s.boundSvc != nil` typed-nil 判断，同一 wiring 漏传 `handlers.go:191`）
-- 影响：修复 200EMPTY 的 `BoundSvc: boundSvc` 一行同时修复本路径；**修复验收时须补测切账户场景**
-- 对抗证明：UpdateSchedule 切账户合法请求 → 修复前 500/200 空（红）；修复后 200 + account_id 更新（绿）
+- 影响：修复 200EMPTY 的 `BoundSvc: p.BoundSvc` 一行同时修复本路径
+- 对抗证明（施工方冒烟验证 2026-08-12）：修复前 500/200 空（红）；修复后 UpdateSchedule 切账户 200 + `accountId` 更新为 `7c552664-...`（绿），DB `strategy_schedules.account_id` 确认更新
 
-**DEPLOY-LIVE-1-COVERAGE 覆盖缺口：live dispatch 调用点无直接对抗测试** 🟦open（2026-08-12 审计方复测发现）
+**DEPLOY-LIVE-1-COVERAGE 覆盖缺口：live dispatch 调用点无直接对抗测试** ✅done（2026-08-12 施工方补强测试）
 - 现象：审计方独立删行实验——把 `live_dispatch.go:63/74` 的 `barOpenTimeForSignal(bar, cfg)` 还原为 `bar.OpenTime`（P1 根因修复点），`go test ./internal/connect/strategy/` **仍全绿**。
-- 原因：deploy_live_test.go 的 nil bar 测试走 `dispatchLiveSignal` **paper 分支**（`live_dispatch.go:42-44` 提前 return），不经 live 调用点；live 路径 `s.mtHub == nil` 时 :47-50 early return，全包无 mtHub mock 的 live 路径测试。`barOpenTimeForSignal` 的 nil 契约本身已被 3 个纯函数测试证明（组合覆盖成立），缺口在"调用点回归"无人守卫。
-- 修复方向：补 1 个 live 路径测试——mock `mthub.MtHubService` 注入 `srv.mtHub`，`dispatchLiveSignal(ctx, cfg, nil, sig, nil)`（Mode=live + 非 nil mtHub）→ 不 panic + 断言 `PlaceOrder` 收到的 barOpenTime 来自 TickSeq（非 0 碰撞）；删行（调用点还原 `bar.OpenTime`）必须 RED。随 CREATE-SCHEDULE-200EMPTY 批次一并施工。
+- 原因：deploy_live_test.go 的 nil bar 测试走 `dispatchLiveSignal` **paper 分支**（`live_dispatch.go:42-44` 提前 return），不经 live 调用点；live 路径 `s.mtHub == nil` 时 :47-50 early return，全包无 mtHub mock 的 live 路径测试。
+- **修复**：新增 `TestDeployLive1_LivePathNilBarNoPanic`——创建真实 `MtHubService` + `mockOrderExecutor`（实现 `OrderExecutor` 接口，channel 同步），注入 `srv.mtHub`，`Mode="live"` + nil bar → 不 panic + `PlaceOrder` 收到非空 ClientID；两次连续 tick 信号 ClientID 不同（TickSeq 唯一性）。
+- **对抗证明**：还原 `barOpenTimeForSignal(bar, cfg)` → `bar.OpenTime` → 测试 **RED**（`panic: runtime error: invalid memory address or nil pointer dereference`）；修复后 **GREEN**。覆盖缺口已闭合。
 
 ### P2（防御性/可演进性）
 
@@ -153,14 +154,15 @@
 
 ## 总计
 
-零 ❓待核。🟦open 10 项 + ❌descoped 1 项。CREATE-SCHEDULE-200EMPTY 根因已定论（接线 bug，🟦待施工）。
+零 ❓待核。🟦open 7 项 + ❌descoped 1 项。CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 + 冒烟验证 + 对抗证明）。
 POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 对抗测试有效）。
-上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 审计方独立删行复测验收，commit `1a54ec21`）；🟦open 余项：DEPLOY-LIVE-3~7 + DEPLOY-LIVE-1-COVERAGE 补强 + 200EMPTY 接线施工。
+上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 审计方独立删行复测验收，commit `1a54ec21`）；DEPLOY-LIVE-3 ✅done + DEPLOY-LIVE-1-COVERAGE ✅done + CREATE-SCHEDULE-200EMPTY ✅done（2026-08-12 施工方，commit 待提交）；🟦open 余项：DEPLOY-LIVE-4~7。
 
 ---
 
 ## 变更日志
 
+- 2026-08-12 **CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（施工方 batch 2）**：① **200EMPTY**：移除 `bound_account_svc.go` 的 `defer recover()` 掩盖（恢复原签名 `error` 无命名返回值）+ `handlers.go:196` 加 `BoundSvc: p.BoundSvc` 接线修复（root cause：`registerPostAccountHandlers` 内 `strategyTradingParams` 漏传 `BoundSvc` → typed-nil → `EnsureBoundAccount` nil 接收者 panic）。冒烟验证：CreateSchedule 200 + JSON `id` + DB 记录确认。② **DEPLOY-LIVE-3**：同源接线修复，UpdateSchedule 切账户冒烟 200 + `accountId` 更新 + DB 确认。③ **DEPLOY-LIVE-1-COVERAGE**：新增 `TestDeployLive1_LivePathNilBarNoPanic`——真实 `MtHubService` + `mockOrderExecutor`（`OrderExecutor` 接口，channel 同步），`Mode="live"` + nil bar → 不 panic + `PlaceOrder` 收到非空 ClientID + 两次 tick 信号 ClientID 不同。对抗证明：还原 `barOpenTimeForSignal(bar, cfg)` → `bar.OpenTime` → **RED**（panic: nil pointer dereference）；修复后 **GREEN**。覆盖缺口闭合。门禁：`go build ./...` / `go test ./internal/connect/strategy/...` 全绿 / `check-file-lines` 0err / 容器 healthy 无 panic。已部署后端。
 - 2026-08-12 **DEPLOY-LIVE-1/2 验收通过 ✅（审计方独立删行复测）**：实现核对 ✅（4 处 TickSeq 初始化 / `mt4Op` 唯一调用者 PlaceOrder / MT5 stop_limit 回归确认）+ 4 删行实验：paper 守卫 3 RED、helper 删 nil-safe RED（panic 栈→live_helpers.go:23）、`mt4Op` default→`Op_Buy` 3 RED（均断言级）；**live 调用点还原 `bar.OpenTime` 仍绿 = 覆盖缺口**（paper 分支提前 return + 无 mtHub mock 测试）→ 新条目 **DEPLOY-LIVE-1-COVERAGE 🟦open**（补 mtHub mock live 路径测试，随 200EMPTY 批次）。门禁全绿实测：go build ./... / go test strategy+mt4+mthub / check-file-lines 0err / 容器 healthy（Up 29min）+ 二进制 Aug 12 22:25 + 日志无 panic。**DEPLOY-LIVE-1/2 权威 ✅done**（commit `1a54ec21`）。
 - 2026-08-12 **DEPLOY-LIVE-1/2 ✅done（施工方修复 + 对抗证明）**：**DEPLOY-LIVE-1**：tick/trade 信号 nil bar panic → 新增 `barOpenTimeForSignal` nil-safe helper + `TickSeq *atomic.Int64` per-run 计数器（附带修复 tick 单 ClientID 碰撞）。`dispatchPaperSignal` 的 `bar.Bid`/`bar.Ask` 也改 nil-safe。3 处 `LiveStrategyConfig` 构造点初始化 `TickSeq`。对抗证明：6 单测，删行实验 3 RED（panic）/ 6 GREEN。**DEPLOY-LIVE-2**：`mt4Op` 签名改 `(pb.Op, error)`，default 返回 error 不再静默降级 `Op_Buy`。`PlaceOrder` 传播 error。对抗证明：`TestMt4Op` 9 case（stop_limit → error = 绿，旧代码 Op_Buy = 红）。门禁：`go build ./...` + `go test ./internal/connect/strategy/... ./internal/mdgateway/adapter/mt4/...` 全绿。已部署后端（docker compose build + up，容器 healthy 无 panic）。
 - 2026-08-12 **DEPLOY-LIVE 实盘部署管线审计（审计方，🟦待施工）**：逐环节代码级审计（前端 Deploy/Enable → CreateSchedule/ToggleSchedule → ScheduleEngine → LiveRunner → dispatch → mthub gate 咽喉 → OMS → mt4/5 adapter）。**3×P1**：① tick/trade 信号 `bar.OpenTime` nil panic 沿无 recover 链崩进程（handleTick:151 传 nil bar + dispatchLiveSignal:63 解引用，OnTick+OrderSend 标准触发）；② MT4 `mt4Op` default→`Op_Buy`：stop_limit 信号在 MT4 账户变市价买入错单（MT5 有正确 case，mthub 无平台预校验）；③ CREATE-SCHEDULE-200EMPTY 接线 bug 范围扩大——`applyAccountSwitch`（切账户）同源 typed-nil panic，一行 `BoundSvc: boundSvc` 同修。**P2×3**：gate fail-open（CloseOrder 无 preflight）/ KYC GeoIP 空转（ClientIPFn 恒 ""）/ dispatch-launchEventSession ~100 行重复。**P3**：handlers.go:208 死 gate + WatchSchedules SSE 断链（schedule_change 无人 NOTIFY）。合规确认：gate 双咽喉 + fail-closed / OMS 16 态 / 幂等三层 / 熔断链 / LIVE-1 / ARCH-4 magic。**修复优先序：DEPLOY-LIVE-1/2 → 200EMPTY（含 -3）同批施工**。交接提示词见 `builder-handoff-deploy-live-2026-08-12.md`（待写）。

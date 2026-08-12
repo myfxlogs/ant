@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -26,6 +27,42 @@ func (m *mockPaperEngine) ModifyPaperOrder(ctx context.Context, accountID, symbo
 	return nil
 }
 func (m *mockPaperEngine) CancelPaperOrder(ctx context.Context, accountID, symbol string) error {
+	return nil
+}
+
+// mockOrderExecutor implements mthub.OrderExecutor for live path tests.
+// Records the ClientID of each PlaceOrder call via a channel for synchronization.
+type mockOrderExecutor struct {
+	placedCh chan string
+}
+
+func (m *mockOrderExecutor) Platform() string { return "mock" }
+func (m *mockOrderExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest) (int64, error) {
+	m.placedCh <- req.ClientID
+	return 1, nil
+}
+func (m *mockOrderExecutor) CloseOrder(_ context.Context, _ int64, _ decimal.Decimal) error {
+	return nil
+}
+func (m *mockOrderExecutor) DeleteOrder(_ context.Context, _ int64) error { return nil }
+func (m *mockOrderExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ decimal.Decimal) error {
+	return nil
+}
+func (m *mockOrderExecutor) FetchOpenedOrders(_ context.Context) ([]*mthub.OrderRecord, error) {
+	return nil, nil
+}
+func (m *mockOrderExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*mthub.OrderRecord, error) {
+	return nil, nil
+}
+func (m *mockOrderExecutor) FetchSymbolParams(_ context.Context, _ []string) ([]*mthub.SymbolParam, error) {
+	return nil, nil
+}
+func (m *mockOrderExecutor) FetchAllSymbols(_ context.Context) ([]string, error) { return nil, nil }
+func (m *mockOrderExecutor) FetchPriceHistory(_ context.Context, _ string, _ string, _, _ int64, _ int) ([]*mthub.Bar, error) {
+	return nil, nil
+}
+func (m *mockOrderExecutor) AddSymbols(_ context.Context, _ []string) error { return nil }
+func (m *mockOrderExecutor) SubscribeOrderEvents(_ context.Context, _ mthub.OrderEventHandler) error {
 	return nil
 }
 
@@ -132,5 +169,61 @@ func TestDeployLive1_NilBarNilTickSeqReturnsZero(t *testing.T) {
 	got := barOpenTimeForSignal(nil, cfg)
 	if got != 0 {
 		t.Fatalf("barOpenTimeForSignal with nil bar and nil TickSeq = %d, want 0", got)
+	}
+}
+
+// DEPLOY-LIVE-1-COVERAGE: live path test — Mode="live" + non-nil mtHub.
+// Exercises the actual live dispatch call site (live_dispatch.go:63) where
+// barOpenTimeForSignal(bar, cfg) is called. With nil bar, the fix returns
+// TickSeq counter; reverting to bar.OpenTime causes nil pointer panic.
+// The mock executor's PlaceOrder records the ClientID so we can verify
+// two consecutive tick signals get different ClientIDs (no collision).
+func TestDeployLive1_LivePathNilBarNoPanic(t *testing.T) {
+	exec := &mockOrderExecutor{placedCh: make(chan string, 2)}
+	hub := mthub.NewHub()
+	svc := mthub.NewMtHubService(hub, mthub.NewOrderEventBroker(), mthub.NewAccountProfitBroker(), mthub.NewPositionSnapshotBroker(), nil, nil, nil)
+	svc.SetLogger(zap.NewNop())
+	hub.Register("acct-1", &mthub.Session{AccountID: "acct-1", CreatedAt: time.Now()}, exec)
+
+	srv := &StrategyExecutionServer{log: zap.NewNop(), mtHub: svc}
+	cfg := LiveStrategyConfig{
+		AccountID:  "acct-1",
+		UserID:     "user-1",
+		Symbol:     "EURUSD",
+		Mode:       "live",
+		RunID:      uuid.New(),
+		TickSeq:    new(atomic.Int64),
+		ScheduleID: uuid.New(),
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("dispatchLiveSignal panicked with nil bar on live path: %v", r)
+		}
+	}()
+
+	sig := &antv1.StrategySignal{SignalType: "buy", Volume: "0.1"}
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, nil)
+
+	var clientID1 string
+	select {
+	case clientID1 = <-exec.placedCh:
+		if clientID1 == "" {
+			t.Fatal("expected non-empty ClientID from PlaceOrder")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("PlaceOrder was not called within 2s — live path not reached")
+	}
+
+	sig2 := &antv1.StrategySignal{SignalType: "buy", Volume: "0.1"}
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig2, nil)
+
+	select {
+	case clientID2 := <-exec.placedCh:
+		if clientID2 == clientID1 {
+			t.Fatalf("two consecutive tick signals have same ClientID: %s (collision)", clientID1)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("second PlaceOrder was not called within 2s")
 	}
 }
