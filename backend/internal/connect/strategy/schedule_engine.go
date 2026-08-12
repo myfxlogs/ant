@@ -50,6 +50,7 @@ type ScheduleEngine struct {
 	notifyCh         chan struct{} // 1-buffered, external events → recomputeTimer
 	mu               sync.Mutex
 	log              *zap.Logger
+	lifecycleCtx     context.Context // set by Start(); used as runCtx parent so runs outlive handler ctx
 
 	// D6: TTL cache for autoTradeEnabled results to avoid PG query per schedule check.
 	autoTradeCache   map[uuid.UUID]autoTradeEntry
@@ -96,6 +97,7 @@ func NewScheduleEngine(
 
 // Start begins the main timer loop. Blocks until ctx is cancelled.
 func (e *ScheduleEngine) Start(ctx context.Context) error {
+	e.lifecycleCtx = ctx
 	e.log.Info("schedule engine starting")
 	e.reconcileOnStartup(ctx)
 
@@ -322,11 +324,14 @@ func (e *ScheduleEngine) buildLiveRun(ctx context.Context, schedule *model.Strat
 	}
 
 	strParams, _ := schedule.GetParameters()
-
-	runCtx, cancel := context.WithCancel(ctx)
+	// lifecycleCtx = engine lifetime; runs survive handler ctx cancellation. nil guard for Start() race.
+	runParent := e.lifecycleCtx
+	if runParent == nil {
+		runParent = context.Background()
+	}
+	runCtx, cancel := context.WithCancel(runParent)
 	handle := &runHandle{cancel: cancel}
 	handle.wg.Add(1)
-
 	e.mu.Lock()
 	e.activeRuns[schedule.ID] = handle
 	e.mu.Unlock()
