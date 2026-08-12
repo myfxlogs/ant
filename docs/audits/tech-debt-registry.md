@@ -142,6 +142,16 @@
 - **对抗证明**：还原 `barOpenTimeForSignal(bar, cfg)` → `bar.OpenTime` → 测试 **RED**（`panic: runtime error: invalid memory address or nil pointer dereference`）；修复后 **GREEN**。覆盖缺口已闭合。
 - **→ 审计方独立删行复测（2026-08-12，验收）✅ 权威 done**：测试真实性核对 ✓——真实 `mthub.NewHub()` + `NewMtHubService` + `hub.Register` + mockOrderExecutor（channel 2s timeout 同步），`Mode="live"` + nil bar + 非 nil mtHub → **真走 live 调用点**（非 paper 提前 return 分支）。审计方独立删行：helper 还原无条件 `bar.OpenTime` → `-run "TestDeployLive1_LivePathNilBarNoPanic$"` 精确单跑 **RED**（panic: nil pointer dereference，断言级，前次全包跑崩因 TickSeqUniqueness 无 recover 阻塞后续——单跑即可证）✓。对抗证明有效，覆盖缺口闭合
 
+### P1（新增 2026-08-12 用户端到端实测暴露）
+
+**DEPLOY-LIVE-8 调度启用即死（执行链断裂，P1）**：`strategy_schedules.go:217` `ToggleSchedule` 调 `s.engine.StartSchedule(ctx, id)` 传 **ConnectRPC handler ctx** → handler 返回后框架 cancel 请求 ctx → `launchEventSession` 的 `runCtx = context.WithCancel(ctx)`（schedule_event.go:104）随之取消 → `runLiveEventLoop` 收到 `runCtx.Done()`（live_runner.go:270）退出 → **run 28ms 即死**。
+- **用户实测证据**（2026-08-12 23:55）：调度 'E2E 复刻 - Live' 启用 → run `fbef8bfc` started 15:55:42.761 → stopped 15:55:42.789（**28ms**，0 信号 0 错误）；日志 `starting` → 2.3ms 后 `context cancelled, exiting` → `run completed`（无 error，静默假成功）
+- **连锁症状**：Active Runs 空（run 已死）/ 日志页空 / 健康检查 0 数据——用户看到的"调度显示运行中但日志健康不可用"根因**不是 UI 缺失，是 run 从未存活**
+- 对比：`executeLoop → dispatch` 路径用引擎生命周期 ctx（正确）；`StartSchedule → launchEventSession` 路径用 handler ctx（错误）
+- **修复方向**：ScheduleEngine 持 `lifecycleCtx`（`Start(ctx)` 时保存），`launchEventSession` 用 `e.lifecycleCtx` 派生 runCtx（run 生命周期 = 引擎生命周期；`Stop()`/`StopSchedule` 仍走 handle.cancel() 双保险）。`StartSchedule` 内 GetByID 等快路径 DB 查询可保留 handler ctx
+- **对抗证明**：集成测试——传已 cancel 的 ctx 调 launchEventSession → run 仍启动持续 running（断言 activeRuns 含该 schedule + run 记录 running）；删修复行（改回 `WithCancel(ctx)`）→ **RED**（run 立即退出）
+- **引入**：非回归——DEPLOY-UX `3daf8ac1` 前 ToggleSchedule 无 StartSchedule 调用？需施工方 git blame 核对（无论如何 handler ctx 派生长期 goroutine 属设计错误，与引入时间无关）
+
 ### P2（防御性/可演进性）
 
 **DEPLOY-LIVE-4 gate fail-open**：`service_orders.go:131`/`service_orders_close.go:104` `if s.gate == nil || s.accountStateProvider == nil { return nil }` 静默放行。live_runner preflight 挡了 nil gate，但 **CloseOrder 无 preflight 挡**（gate 空转）；accountStateProvider 注入缺失时全部放行。修复方向：nil → 返回 error（fail-closed）。
