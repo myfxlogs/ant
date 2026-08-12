@@ -7,6 +7,7 @@ import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
 import { BACKTEST_COMPLETED_KEY, BACKTEST_ERROR_KEY, BACKTEST_DEGRADED_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { TOTAL_RETURN_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import { BACKTEST_FAILED_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { getErrorMessage } from '@/utils/error';
 import type { BacktestBlindSpot } from '@/gen/ant/v1/backtest_run_query_pb';
 import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
 import type { BacktestMetrics, ChartTrade } from './backtestRunnerTypes';
@@ -87,7 +88,7 @@ function handleTerminalRun(update: BacktestRunUpdate, run: NonNullable<BacktestR
 }
 
 export function handleBacktestError(e: unknown, t: TFunction): { status: 'error'; msg: string } {
-  const msg = e instanceof Error ? e.message : String(e);
-  message.error(msg || t(BACKTEST_FAILED_KEY));
-  return { status: 'error', msg: msg || 'Unknown error' };
+  const msg = getErrorMessage(e, t(BACKTEST_FAILED_KEY));
+  message.error(msg);
+  return { status: 'error', msg };
 }

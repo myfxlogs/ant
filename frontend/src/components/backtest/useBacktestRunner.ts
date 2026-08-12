@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { ENTER_CODE_AND_SYMBOL_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { ENTER_CODE_AND_SYMBOL_KEY, BACKTEST_FAILED_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { BacktestRunUpdate, MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -267,8 +267,14 @@ export function useBacktestRunner() {
         closeTime: t2.close_ts, closePrice: t2.close_price, pnl: t2.pnl, volume: t2.volume,
         ticket: t2.ticket, commission: t2.commission, reason: t2.reason,
       })));
-    } catch { /* silent */ }
-  }, []);
+    } catch (e) {
+      console.error('loadRunById failed:', id, e);
+      const { getErrorMessage } = await import('@/utils/error');
+      const friendly = getErrorMessage(e, t(BACKTEST_FAILED_KEY));
+      setStatus('error'); setErrorMsg(friendly);
+      message.error(friendly);
+    }
+  }, [t]);
 
   return {
     initialCapital, setInitialCapital, leverage, setLeverage, lotSize, setLotSize,

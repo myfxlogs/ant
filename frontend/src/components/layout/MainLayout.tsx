@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, PieChartOutlined, BookOutlined } from '@ant-design/icons';
+import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, PieChartOutlined, BookOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +44,7 @@ export default function MainLayout() {
       children: [
         { key: '/strategy', icon: <BookOutlined size={20} />, label: t('strategy.templates.gallery.title', { defaultValue: 'Strategies' }) },
         { key: '/strategy/new', icon: <CodeOutlined size={20} />, label: t('menu.strategyWorkspace') },
+        { key: '/strategy/live', icon: <ThunderboltOutlined size={20} />, label: t('menu.liveStrategy', { defaultValue: 'Live Monitor' }) },
       ],
     },
     { key: '/auto-trading', icon: <SettingOutlined size={20} />, label: t('menu.autoTrading') },
