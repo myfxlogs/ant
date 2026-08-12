@@ -150,7 +150,7 @@
 - 对比：`executeLoop → dispatch` 路径用引擎生命周期 ctx（正确）；`StartSchedule → launchEventSession` 路径用 handler ctx（错误）
 - **修复方向**：ScheduleEngine 持 `lifecycleCtx`（`Start(ctx)` 时保存），`launchEventSession` 用 `e.lifecycleCtx` 派生 runCtx（run 生命周期 = 引擎生命周期；`Stop()`/`StopSchedule` 仍走 handle.cancel() 双保险）。`StartSchedule` 内 GetByID 等快路径 DB 查询可保留 handler ctx
 - **对抗证明**：集成测试——传已 cancel 的 ctx 调 launchEventSession → run 仍启动持续 running（断言 activeRuns 含该 schedule + run 记录 running）；删修复行（改回 `WithCancel(ctx)`）→ **RED**（run 立即退出）
-- **引入**：非回归——DEPLOY-UX `3daf8ac1` 前 ToggleSchedule 无 StartSchedule 调用？需施工方 git blame 核对（无论如何 handler ctx 派生长期 goroutine 属设计错误，与引入时间无关）
+- **引入**（审计方 git log -S 已定位，非回归）：FEAT-1 `84f88d07`（购买→实盘链路）在 ToggleSchedule 新增 `_ = s.engine.StartSchedule(ctx, id)` 三行（注释"Event-type schedules need StartSchedule to launch a streaming session"）——事件型调度需要流式会话而引入，但**传了 handler ctx**（对比：手动 StartStrategy 路径 `strategy_active_handlers.go:247` 用 `context.WithCancel(context.Background())` 正确——设计意图早有定论，P1 属 FEAT-1 接线时漏传引擎 ctx，非设计缺陷）
 
 ### P2（防御性/可演进性）
 

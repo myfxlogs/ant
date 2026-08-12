@@ -80,7 +80,7 @@
 
 ## 六、红队自审（逐条给出结论）
 
-- [ ] P1：`Start` 里 `lifecycleCtx` 在 `reconcileOnStartup` 前保存（无竞态）；engine 从未 Start 时 `lifecycleCtx` nil → `WithCancel(nil)` panic——**守卫**（nil 则退化为 `context.Background()`）或保证 Start 先于一切 StartSchedule（核对 main.go 启动顺序）
+- [x] P1：**`lifecycleCtx` nil 守卫必须做（审计方已核对启动顺序，非可选）**：`main.go:223` 是 `go func() { _ = scheduleEngine.Start(ctx) }()` **goroutine 启动**——与 handler 服务请求完全并发、无顺序保证 → 首个 ToggleSchedule 请求可能先于 `e.lifecycleCtx = ctx` 赋值到达 → `context.WithCancel(nil)` **panic**（context 包 `WithCancel(nil)` 直接 panic "cannot create context from nil parent"）。**必须**：`launchEventSession` 里取 lifecycleCtx 时 nil 则退化为 `context.Background()`（或 `Start` 内用互斥保证原子性），勿依赖启动顺序
 - [ ] P1：`Stop()`（引擎关闭）仍正确 cancel 所有 run（lifecycleCtx 取消 + handle.cancel 双路径）
 - [ ] P2（本批连带核对，不改）：dispatch（executeLoop）路径 ctx 已是引擎 ctx 无误——确认无同类 handler ctx 泄漏（grep `StartSchedule\|launchEventSession\|dispatch(` 的调用方）
 - [ ] proto 改动：前后端 gen 同步生成；`strategy_name` 查询失败路径（schedule 已删）不 panic（name 空字符串）
