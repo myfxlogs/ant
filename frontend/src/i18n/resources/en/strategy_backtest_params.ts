@@ -58,7 +58,8 @@ const StrategyBacktestParams = {
       "signalTiming": "Signal Timing",
       "fillRule": "Fill Rule",
       "simulationMode": "Simulation Mode",
-      "mtOhlcPath": "OHLC Path"
+      "mtOhlcPath": "OHLC Path",
+      "replayModel": "Replay Model"
     }
   }
 } as const;

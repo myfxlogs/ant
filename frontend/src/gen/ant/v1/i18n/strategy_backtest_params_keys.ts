@@ -163,6 +163,18 @@ export const SIMULATION_MODE_KEY = 'strategy.backtestParams.simulationMode' as c
 /** mtOhlcPath */
 export const MT_OHLC_PATH_KEY = 'strategy.backtestParams.mtOhlcPath' as const;
 
+/** replayModel */
+export const REPLAY_MODEL_KEY = 'strategy.backtestParams.replayModel' as const;
+
+/** replayEveryTick */
+export const REPLAY_OHLC_PATH_KEY = 'strategy.backtestParams.replayEveryTick' as const;
+
+/** replay1mOhlc */
+export const REPLAY_KLINE_RANGE_KEY = 'strategy.backtestParams.replay1mOhlc' as const;
+
+/** replayOpenPrices */
+export const REPLAY_OPEN_PRICE_KEY = 'strategy.backtestParams.replayOpenPrices' as const;
+
 export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
@@ -218,6 +230,10 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   fill_rule: 'strategy.backtestParams.fillRule',
   simulation_mode: 'strategy.backtestParams.simulationMode',
   mt_ohlc_path: 'strategy.backtestParams.mtOhlcPath',
+  replay_model: 'strategy.backtestParams.replayModel',
+  replay_ohlc_path: 'strategy.backtestParams.replayEveryTick',
+  replay_kline_range: 'strategy.backtestParams.replay1mOhlc',
+  replay_open_price: 'strategy.backtestParams.replayOpenPrices',
 } as const;
 
 export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

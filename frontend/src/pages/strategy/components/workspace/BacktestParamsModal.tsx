@@ -19,8 +19,8 @@ import { COMMON_CANCEL_KEY, COMMON_RETRY_KEY } from '@/gen/ant/v1/i18n/base_keys
 import { DATE_PRESETS, dateFromPreset } from '@/pages/strategy/hooks/backtestParamHelpers';
 import { FACTORY_DEFAULTS, loadSavedDefaults, saveDefaults, removeDefaults, type StandardParams } from '@/components/backtest/backtestRunnerTypes';
 import { TIMEFRAMES } from '@/constants/timeframes';
-import ExecutionAssumptionsSelectors from './ExecutionAssumptionsSelectors';
 import StrategyParamsSection from './StrategyParamsSection';
+import ExecutionAssumptionsSelectors, { type ReplayModel } from './ExecutionAssumptionsSelectors';
 import dayjs from 'dayjs';
 
 export interface BacktestParamsModalProps {
@@ -41,6 +41,7 @@ export interface BacktestModalResult {
   signalTiming: 'next_bar_open' | 'same_bar_close';
   fillRule: 'bar_close' | 'market' | 'limit';
   simulationMode: 'KLINE_RANGE' | 'OHLC_PATH';
+  replayModel: ReplayModel;
 }
 
 export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, onClose, onConfirm, code, symbol: _symbol, timeframe: initialTimeframe }) => {
@@ -58,9 +59,7 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
     dayjs(),
   ]);
   const [timeframe, setTimeframe] = useState(initialTimeframe || '1h');
-  const [signalTiming, setSignalTiming] = useState<'next_bar_open' | 'same_bar_close'>('next_bar_open');
-  const [fillRule, setFillRule] = useState<'bar_close' | 'market' | 'limit'>('bar_close');
-  const [simulationMode, setSimulationMode] = useState<'KLINE_RANGE' | 'OHLC_PATH'>('KLINE_RANGE');
+  const [replayModel, setReplayModel] = useState<ReplayModel>('open_price');
 
   useEffect(() => {
     if (open) setTimeframe(initialTimeframe || '1h');
@@ -120,13 +119,16 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
     }
     const startDate = dateRange[0]?.format('YYYY-MM-DD') || '';
     const endDate = dateRange[1]?.format('YYYY-MM-DD') || '';
+    const signalTiming = replayModel === 'open_price' ? 'next_bar_open' : 'same_bar_close';
+    const simulationMode = replayModel === 'ohlc_path' ? 'OHLC_PATH' : 'KLINE_RANGE';
     onConfirm({
       params: { ...params, strictMode: signalTiming === 'next_bar_open' },
       startDate, endDate, timeframe,
       strategyParams: strategyParamValues,
       signalTiming,
-      fillRule,
+      fillRule: 'bar_close',
       simulationMode,
+      replayModel,
     });
     onClose();
   };
@@ -218,16 +220,10 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
           </Col>
         </Row>
 
-        {/* Execution assumptions: Direction + Mode + Signal Timing + Fill Rule (2x2 grid) */}
+        {/* Replay model: single dropdown replacing 4 execution assumption selectors */}
         <ExecutionAssumptionsSelectors
-          simulationMode={simulationMode}
-          signalTiming={signalTiming}
-          fillRule={fillRule}
-          tradeDirection={params.tradeDirection}
-          onSimulationModeChange={setSimulationMode}
-          onSignalTimingChange={setSignalTiming}
-          onFillRuleChange={setFillRule}
-          onTradeDirectionChange={(v) => setParams(p => ({ ...p, tradeDirection: v }))}
+          value={replayModel}
+          onChange={setReplayModel}
         />
 
         {/* Strategy params (extracted from code) */}

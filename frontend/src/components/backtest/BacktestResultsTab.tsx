@@ -1,18 +1,13 @@
 import { Button, Tag, Empty, Spin, Table, Skeleton, Progress, Typography, Tooltip } from 'antd';
 import { StopOutlined, WarningOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import {
   EXEC_ASSUMPTIONS_KEY, EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY, EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY, EXEC_ASSUMPTIONS_FIELDS_MODE_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY, EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY,
-  EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY,
+  EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY,
+  EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY,
   BACKTEST_RUNNING_KEY, BACKTEST_COMPLETED_KEY, BACKTEST_DEGRADED_KEY,
   BACKTEST_ERROR_KEY, BACKTEST_EMPTY_KEY,
-  TOOLTIP_SIM_MODE_KEY, TOOLTIP_SIGNAL_TIMING_KEY, TOOLTIP_FILL_RULE_KEY,
-  TOOLTIP_TRADE_DIRECTION_KEY, TOOLTIP_COMMISSION_KEY, TOOLTIP_SLIPPAGE_KEY,
-  TOOLTIP_LEVERAGE_KEY, TOOLTIP_MTF_FALLBACK_KEY,
+  TOOLTIP_COMMISSION_KEY, TOOLTIP_SLIPPAGE_KEY, TOOLTIP_LEVERAGE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
   TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
@@ -22,6 +17,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
+  REPLAY_MODEL_KEY, REPLAY_OHLC_PATH_KEY, REPLAY_KLINE_RANGE_KEY, REPLAY_OPEN_PRICE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { COMMON_CANCEL_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
@@ -32,42 +28,22 @@ import { GatePreview } from './BacktestSections';
 import { DiagnosticPanel } from './DiagnosticPanel';
 import BacktestMetricCards from './BacktestMetricCards';
 
-const _ASSUMPTION_MAP: Record<string, string> = {
-  MT_LIVE: 'strategy.backtest.assumptions.mtLive',
-  MT_DATASET: 'strategy.backtest.assumptions.mtDataset',
-  OHLC_PATH: 'strategy.backtest.assumptions.mtOhlcPath',
-  KLINE_RANGE: 'strategy.backtest.assumptions.mtLive',
-  next_bar_open: 'strategy.backtest.assumptions.nextBarOpen',
-  same_bar_close: 'strategy.backtest.assumptions.sameBarClose',
-  market: 'strategy.backtestParams.market',
-  limit: 'strategy.backtestParams.limit',
-  both: 'strategy.backtestParams.both',
-  long: 'strategy.backtestParams.long',
-  short: 'strategy.backtestParams.short',
-};
 import type { ExecutionAssumptions as ProtoExecutionAssumptions } from '@/gen/ant/v1/backtest_execution_config_pb';
 
 type ExecutionAssumptions = ProtoExecutionAssumptions;
 
-function assumeVal(t: (key: string, fallback?: string) => string, v: string | undefined): string {
-  if (!v) return '-';
-  const key = _ASSUMPTION_MAP[v];
-  return key ? t(key, v) : v;
-}
-
-function assumeValFromTFunction(t: TFunction, v: string | undefined): string {
-  return assumeVal((key: string, fallback?: string) => t(key, { defaultValue: fallback }), v);
+// Helper to derive replay model label from execution assumptions
+function getReplayModelLabel(ea: ExecutionAssumptions): string {
+  if (ea.simulationMode === 'OHLC_PATH') return REPLAY_OHLC_PATH_KEY;
+  if (ea.signalTiming === 'next_bar_open') return REPLAY_OPEN_PRICE_KEY;
+  return REPLAY_KLINE_RANGE_KEY;
 }
 
 const ASSUMPTION_TOOLTIP_KEYS: Record<string, string> = {
-  simulationMode: TOOLTIP_SIM_MODE_KEY,
-  signalTiming: TOOLTIP_SIGNAL_TIMING_KEY,
-  fillRule: TOOLTIP_FILL_RULE_KEY,
-  tradeDirection: TOOLTIP_TRADE_DIRECTION_KEY,
+  replayModel: '',
   commission: TOOLTIP_COMMISSION_KEY,
   slippage: TOOLTIP_SLIPPAGE_KEY,
   leverage: TOOLTIP_LEVERAGE_KEY,
-  mtfFallback: TOOLTIP_MTF_FALLBACK_KEY,
 };
 
 function AssumptionField({ label, value, tooltip }: { label: string; value: React.ReactNode; tooltip: string }) {
@@ -202,16 +178,10 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px 12px', fontSize: 12 }}>
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.simulationMode)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.simulationMode)} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)} value={assumeValFromTFunction(t, executionAssumptions.signalTiming)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.signalTiming)} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.fillRule)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.fillRule)} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)} value={assumeValFromTFunction(t, executionAssumptions.tradeDirection)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.tradeDirection)} />
+            <AssumptionField label={t(REPLAY_MODEL_KEY)} value={t(getReplayModelLabel(executionAssumptions))} tooltip={t(REPLAY_MODEL_KEY)} />
             <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission ? (Number(executionAssumptions.actualCommission) * 100).toFixed(4) + '%' : '-'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.commission)} />
             <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)} value={executionAssumptions.actualSlippage ? (Number(executionAssumptions.actualSlippage) * 100).toFixed(4) + '%' : '-'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.slippage)} />
             <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)} value={(executionAssumptions.actualLeverage || '-') + 'x'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.leverage)} />
-            {executionAssumptions.mtfFallbackReason && (
-              <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeValFromTFunction(t, executionAssumptions.mtfFallbackReason)}</strong></div>
-            )}
           </div>
         </div>
       )}

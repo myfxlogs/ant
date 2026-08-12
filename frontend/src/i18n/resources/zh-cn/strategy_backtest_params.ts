@@ -58,7 +58,8 @@ const StrategyBacktestParams = {
       "signalTiming": "信号时机",
       "fillRule": "成交规则",
       "simulationMode": "模式",
-      "mtOhlcPath": "OHLC 路径"
+      "mtOhlcPath": "OHLC 路径",
+      "replayModel": "复盘模型"
     }
   }
 } as const;

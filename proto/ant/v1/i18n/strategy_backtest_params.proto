@@ -59,4 +59,8 @@ message BacktestParamsI18n {
   string fill_rule = 59;  // Fill Rule
   string simulation_mode = 60;  // Simulation Mode
   string mt_ohlc_path = 61;  // OHLC Path
+  string replay_model = 62;  // Replay Model
+  string replay_every_tick = 63;  // Every Tick (replay model option)
+  string replay_1m_ohlc = 64;  // 1 Minute OHLC (replay model option)
+  string replay_open_prices = 65;  // Open Prices Only (replay model option)
 }
