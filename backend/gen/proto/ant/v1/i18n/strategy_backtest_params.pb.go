@@ -76,6 +76,10 @@ type BacktestParamsI18N struct {
 	FillRule             string                 `protobuf:"bytes,59,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                                         // Fill Rule
 	SimulationMode       string                 `protobuf:"bytes,60,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`                       // Simulation Mode
 	MtOhlcPath           string                 `protobuf:"bytes,61,opt,name=mt_ohlc_path,json=mtOhlcPath,proto3" json:"mt_ohlc_path,omitempty"`                                 // OHLC Path
+	ReplayModel          string                 `protobuf:"bytes,62,opt,name=replay_model,json=replayModel,proto3" json:"replay_model,omitempty"`                                // Replay Model
+	ReplayEveryTick      string                 `protobuf:"bytes,63,opt,name=replay_every_tick,json=replayEveryTick,proto3" json:"replay_every_tick,omitempty"`                  // Every Tick (replay model option)
+	Replay_1MOhlc        string                 `protobuf:"bytes,64,opt,name=replay_1m_ohlc,json=replay1mOhlc,proto3" json:"replay_1m_ohlc,omitempty"`                           // 1 Minute OHLC (replay model option)
+	ReplayOpenPrices     string                 `protobuf:"bytes,65,opt,name=replay_open_prices,json=replayOpenPrices,proto3" json:"replay_open_prices,omitempty"`               // Open Prices Only (replay model option)
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -481,11 +485,39 @@ func (x *BacktestParamsI18N) GetMtOhlcPath() string {
 	return ""
 }
 
+func (x *BacktestParamsI18N) GetReplayModel() string {
+	if x != nil {
+		return x.ReplayModel
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetReplayEveryTick() string {
+	if x != nil {
+		return x.ReplayEveryTick
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetReplay_1MOhlc() string {
+	if x != nil {
+		return x.Replay_1MOhlc
+	}
+	return ""
+}
+
+func (x *BacktestParamsI18N) GetReplayOpenPrices() string {
+	if x != nil {
+		return x.ReplayOpenPrices
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_params_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\n" +
-	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\xb0\x0e\n" +
+	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\xd3\x0f\n" +
 	"\x12BacktestParamsI18n\x12'\n" +
 	"\x0fbacktest_failed\x18\x01 \x01(\tR\x0ebacktestFailed\x12\x12\n" +
 	"\x04both\x18\x02 \x01(\tR\x04both\x12\x18\n" +
@@ -550,7 +582,11 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\tfill_rule\x18; \x01(\tR\bfillRule\x12'\n" +
 	"\x0fsimulation_mode\x18< \x01(\tR\x0esimulationMode\x12 \n" +
 	"\fmt_ohlc_path\x18= \x01(\tR\n" +
-	"mtOhlcPathB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"mtOhlcPath\x12!\n" +
+	"\freplay_model\x18> \x01(\tR\vreplayModel\x12*\n" +
+	"\x11replay_every_tick\x18? \x01(\tR\x0freplayEveryTick\x12$\n" +
+	"\x0ereplay_1m_ohlc\x18@ \x01(\tR\freplay1mOhlc\x12,\n" +
+	"\x12replay_open_prices\x18A \x01(\tR\x10replayOpenPricesB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_params_proto_rawDescOnce sync.Once

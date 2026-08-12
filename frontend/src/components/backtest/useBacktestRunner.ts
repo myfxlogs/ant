@@ -28,6 +28,11 @@ export type { SweepDimension, TuneMethod } from '@/pages/strategy/hooks/useTunin
 export type { BacktestStatus, ChartTrade, BacktestMetrics, ExtractedParam, StandardParams, BacktestRunnerInputs };
 export { FACTORY_DEFAULTS };
 
+function toDate(primary?: string, fallback?: string): Date | undefined {
+  const s = primary || fallback;
+  return s ? new Date(s) : undefined;
+}
+
 export function useBacktestRunner() {
   const { t } = useTranslation();
 
@@ -183,13 +188,11 @@ export function useBacktestRunner() {
       const cfg = overrides?.executionConfig
         ? { commission: overrides.executionConfig.commission, slippage: overrides.executionConfig.slippage, leverage: overrides.executionConfig.leverage, tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both', strictMode: overrides.executionConfig.strictMode, signalTiming: overrides.executionConfig.signalTiming, fillRule: overrides.executionConfig.fillRule, simulationMode: overrides.executionConfig.simulationMode }
         : { commission, slippage, leverage, tradeDirection: tradeDirection as 'long' | 'short' | 'both', strictMode };
-      const effectiveStartDate = inputs.startDate ?? startDate;
-      const effectiveEndDate = inputs.endDate ?? endDate;
       const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,
         mode: 'KLINE_RANGE',
-        from: effectiveStartDate ? new Date(effectiveStartDate) : undefined,
-        to: effectiveEndDate ? new Date(effectiveEndDate) : undefined,
+        from: toDate(inputs.startDate, startDate),
+        to: toDate(inputs.endDate, endDate),
         templateId: templateId || undefined,
         strategyId: strategyId || undefined,
         autoGate: true,
