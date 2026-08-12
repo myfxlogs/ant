@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/costsvc"
+	"alphaforge/internal/risk"
 )
 
 // --- Pure function tests (no dependencies) ---
@@ -158,7 +159,22 @@ func mustDec(s string) decimal.Decimal {
 }
 
 // newTestService creates a minimally wired MtHubService for unit testing.
+// Includes a permissive gate + state provider so PlaceOrder/CloseOrder
+// pass the gate check (DEPLOY-LIVE-4 fail-closed). Tests that need to
+// test nil-gate behavior should use newTestServiceNoGate().
 func newTestService() *MtHubService {
+	hub := NewHub()
+	svc := NewMtHubService(hub, NewOrderEventBroker(), NewAccountProfitBroker(), NewPositionSnapshotBroker(), nil, nil, nil)
+	svc.SetGate(risk.NewDefaultGate())
+	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
+		return &risk.AccountState{Balance: dec(100000), Equity: dec(100000), FreeMargin: dec(95000)}, nil
+	})
+	return svc
+}
+
+// newTestServiceNoGate creates a service without gate/state provider for
+// testing fail-closed behavior (DEPLOY-LIVE-4).
+func newTestServiceNoGate() *MtHubService {
 	hub := NewHub()
 	return NewMtHubService(hub, NewOrderEventBroker(), NewAccountProfitBroker(), NewPositionSnapshotBroker(), nil, nil, nil)
 }

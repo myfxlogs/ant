@@ -128,8 +128,11 @@ func (s *MtHubService) preTradeChecks(ctx context.Context, req *OrderRequest) er
 }
 
 func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest, orderID string) error {
-	if s.gate == nil || s.accountStateProvider == nil {
-		return nil
+	if s.gate == nil {
+		return fmt.Errorf("gate not configured: order rejected (fail-closed)")
+	}
+	if s.accountStateProvider == nil {
+		return fmt.Errorf("account state provider not configured: order rejected (fail-closed)")
 	}
 	intent := orderRequestToIntent(req)
 	intent.UserId = usermgr.GetUserID(ctx)

@@ -12,6 +12,7 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
+	"alphaforge/internal/risk"
 )
 
 // mockPaperEngine is a no-op PaperOrderExecutor for testing.
@@ -183,6 +184,10 @@ func TestDeployLive1_LivePathNilBarNoPanic(t *testing.T) {
 	hub := mthub.NewHub()
 	svc := mthub.NewMtHubService(hub, mthub.NewOrderEventBroker(), mthub.NewAccountProfitBroker(), mthub.NewPositionSnapshotBroker(), nil, nil, nil)
 	svc.SetLogger(zap.NewNop())
+	svc.SetGate(risk.NewDefaultGate())
+	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
+		return &risk.AccountState{Balance: decimal.NewFromInt(100000), Equity: decimal.NewFromInt(100000)}, nil
+	})
 	hub.Register("acct-1", &mthub.Session{AccountID: "acct-1", CreatedAt: time.Now()}, exec)
 
 	srv := &StrategyExecutionServer{log: zap.NewNop(), mtHub: svc}

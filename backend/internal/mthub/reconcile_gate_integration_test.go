@@ -3,6 +3,7 @@
 package mthub
 
 import (
+	"alphaforge/internal/risk"
 	"context"
 	"errors"
 	"testing"
@@ -19,6 +20,10 @@ func TestReconcileBeforeAccept(t *testing.T) {
 	gate.EnterReconciling("test-account")
 
 	svc := NewMtHubService(hub, nil, nil, nil, nil, gate, nil)
+	svc.SetGate(risk.NewDefaultGate())
+	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
+		return &risk.AccountState{Balance: decimal.NewFromInt(100000), Equity: decimal.NewFromInt(100000)}, nil
+	})
 
 	req := &OrderRequest{
 		AccountID: "test-account",

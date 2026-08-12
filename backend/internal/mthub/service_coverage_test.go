@@ -1963,3 +1963,57 @@ func TestIdempotencyGuard_DeleteKey_ErrorPath(t *testing.T) {
 	// DeleteKey doesn't return an error — it should not panic.
 	g.DeleteKey(context.Background(), "acc-1", "client-1")
 }
+
+// DEPLOY-LIVE-4: gate=nil → PlaceOrder must fail-closed (return error, not pass through).
+func TestEvaluatePlaceGate_NilGate_FailClosed(t *testing.T) {
+	t.Parallel()
+	svc := newTestServiceNoGate()
+	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, &mockExecutor{platform: "MT5"})
+	_, err := svc.PlaceOrder(context.Background(), &OrderRequest{
+		AccountID: "acc-1", Canonical: "EURUSD",
+		Side: SideBuy, OrderType: OrderMarket,
+		Volume: dec(0.1), Price: dec(1.085),
+	})
+	if err == nil {
+		t.Fatal("expected fail-closed error when gate is nil, got nil")
+	}
+}
+
+// DEPLOY-LIVE-4: accountStateProvider=nil → PlaceOrder must fail-closed.
+func TestEvaluatePlaceGate_NilStateProvider_FailClosed(t *testing.T) {
+	t.Parallel()
+	svc := newTestServiceNoGate()
+	svc.SetGate(risk.NewDefaultGate())
+	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, &mockExecutor{platform: "MT5"})
+	_, err := svc.PlaceOrder(context.Background(), &OrderRequest{
+		AccountID: "acc-1", Canonical: "EURUSD",
+		Side: SideBuy, OrderType: OrderMarket,
+		Volume: dec(0.1), Price: dec(1.085),
+	})
+	if err == nil {
+		t.Fatal("expected fail-closed error when accountStateProvider is nil, got nil")
+	}
+}
+
+// DEPLOY-LIVE-4: gate=nil → CloseOrder must fail-closed.
+func TestEvaluateCloseGate_NilGate_FailClosed(t *testing.T) {
+	t.Parallel()
+	svc := newTestServiceNoGate()
+	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, &mockExecutor{platform: "MT5"})
+	err := svc.CloseOrder(context.Background(), "acc-1", 123, decimal.NewFromInt(1))
+	if err == nil {
+		t.Fatal("expected fail-closed error when gate is nil on close, got nil")
+	}
+}
+
+// DEPLOY-LIVE-4: accountStateProvider=nil → CloseOrder must fail-closed.
+func TestEvaluateCloseGate_NilStateProvider_FailClosed(t *testing.T) {
+	t.Parallel()
+	svc := newTestServiceNoGate()
+	svc.SetGate(risk.NewDefaultGate())
+	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, &mockExecutor{platform: "MT5"})
+	err := svc.CloseOrder(context.Background(), "acc-1", 123, decimal.NewFromInt(1))
+	if err == nil {
+		t.Fatal("expected fail-closed error when accountStateProvider is nil on close, got nil")
+	}
+}

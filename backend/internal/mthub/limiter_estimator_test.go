@@ -39,7 +39,8 @@ func TestCostEstimator_Wired(t *testing.T) {
 	mockExec := &mockExecutor{}
 	hub.Register("test-account", &Session{AccountID: "test-account"}, mockExec)
 
-	svc := NewMtHubService(hub, nil, nil, nil, nil, nil, nil)
+	svc := newTestService()
+	svc.hub = hub
 
 	model := &costsvc.CostModel{
 		Symbol:           "EURUSD",
@@ -93,50 +94,80 @@ func TestUserLimiter_RateLimitKicksIn(t *testing.T) {
 	}
 }
 
-	// mockExecutor is a configurable OrderExecutor stub for unit tests.
-	// All fn fields are optional — nil means use the default success behavior.
-	type mockExecutor struct {
-		platform              string
-		placeOrderFn          func(context.Context, *OrderRequest) (int64, error)
-		closeOrderFn          func(context.Context, int64, decimal.Decimal) error
-		deleteOrderFn         func(context.Context, int64) error
-		modifyOrderFn         func(context.Context, int64, decimal.Decimal, decimal.Decimal, decimal.Decimal) error
-		fetchSymbolParamsFn   func(context.Context, []string) ([]*SymbolParam, error)
-		fetchOpenedOrdersFn   func(context.Context) ([]*OrderRecord, error)
-		fetchOrderHistoryFn   func(context.Context, time.Time, time.Time) ([]*OrderRecord, error)
-		fetchAllSymbolsFn     func(context.Context) ([]string, error)
-		fetchPriceHistoryFn   func(context.Context, string, string, int64, int64, int) ([]*Bar, error)
-	}
+// mockExecutor is a configurable OrderExecutor stub for unit tests.
+// All fn fields are optional — nil means use the default success behavior.
+type mockExecutor struct {
+	platform            string
+	placeOrderFn        func(context.Context, *OrderRequest) (int64, error)
+	closeOrderFn        func(context.Context, int64, decimal.Decimal) error
+	deleteOrderFn       func(context.Context, int64) error
+	modifyOrderFn       func(context.Context, int64, decimal.Decimal, decimal.Decimal, decimal.Decimal) error
+	fetchSymbolParamsFn func(context.Context, []string) ([]*SymbolParam, error)
+	fetchOpenedOrdersFn func(context.Context) ([]*OrderRecord, error)
+	fetchOrderHistoryFn func(context.Context, time.Time, time.Time) ([]*OrderRecord, error)
+	fetchAllSymbolsFn   func(context.Context) ([]string, error)
+	fetchPriceHistoryFn func(context.Context, string, string, int64, int64, int) ([]*Bar, error)
+}
 
 func (m *mockExecutor) Platform() string {
-	if m.platform != "" { return m.platform }; return "mock"
+	if m.platform != "" {
+		return m.platform
+	}
+	return "mock"
 }
 func (m *mockExecutor) PlaceOrder(ctx context.Context, req *OrderRequest) (int64, error) {
-	if m.placeOrderFn != nil { return m.placeOrderFn(ctx, req) }; return 99999, nil
+	if m.placeOrderFn != nil {
+		return m.placeOrderFn(ctx, req)
+	}
+	return 99999, nil
 }
 func (m *mockExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
-	if m.closeOrderFn != nil { return m.closeOrderFn(ctx, ticket, lots) }; return nil
+	if m.closeOrderFn != nil {
+		return m.closeOrderFn(ctx, ticket, lots)
+	}
+	return nil
 }
 func (m *mockExecutor) DeleteOrder(ctx context.Context, ticket int64) error {
-	if m.deleteOrderFn != nil { return m.deleteOrderFn(ctx, ticket) }; return nil
+	if m.deleteOrderFn != nil {
+		return m.deleteOrderFn(ctx, ticket)
+	}
+	return nil
 }
 func (m *mockExecutor) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
-	if m.modifyOrderFn != nil { return m.modifyOrderFn(ctx, ticket, sl, tp, price) }; return nil
+	if m.modifyOrderFn != nil {
+		return m.modifyOrderFn(ctx, ticket, sl, tp, price)
+	}
+	return nil
 }
 func (m *mockExecutor) FetchOpenedOrders(ctx context.Context) ([]*OrderRecord, error) {
-	if m.fetchOpenedOrdersFn != nil { return m.fetchOpenedOrdersFn(ctx) }; return nil, nil
+	if m.fetchOpenedOrdersFn != nil {
+		return m.fetchOpenedOrdersFn(ctx)
+	}
+	return nil, nil
 }
 func (m *mockExecutor) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*OrderRecord, error) {
-	if m.fetchOrderHistoryFn != nil { return m.fetchOrderHistoryFn(ctx, from, to) }; return nil, nil
+	if m.fetchOrderHistoryFn != nil {
+		return m.fetchOrderHistoryFn(ctx, from, to)
+	}
+	return nil, nil
 }
 func (m *mockExecutor) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*SymbolParam, error) {
-	if m.fetchSymbolParamsFn != nil { return m.fetchSymbolParamsFn(ctx, canonicals) }; return nil, nil
+	if m.fetchSymbolParamsFn != nil {
+		return m.fetchSymbolParamsFn(ctx, canonicals)
+	}
+	return nil, nil
 }
 func (m *mockExecutor) FetchAllSymbols(ctx context.Context) ([]string, error) {
-	if m.fetchAllSymbolsFn != nil { return m.fetchAllSymbolsFn(ctx) }; return nil, nil
+	if m.fetchAllSymbolsFn != nil {
+		return m.fetchAllSymbolsFn(ctx)
+	}
+	return nil, nil
 }
 func (m *mockExecutor) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*Bar, error) {
-	if m.fetchPriceHistoryFn != nil { return m.fetchPriceHistoryFn(ctx, symbol, period, from, to, count) }; return nil, nil
+	if m.fetchPriceHistoryFn != nil {
+		return m.fetchPriceHistoryFn(ctx, symbol, period, from, to, count)
+	}
+	return nil, nil
 }
-func (m *mockExecutor) AddSymbols(_ context.Context, _ []string) error                  { return nil }
+func (m *mockExecutor) AddSymbols(_ context.Context, _ []string) error                    { return nil }
 func (m *mockExecutor) SubscribeOrderEvents(_ context.Context, _ OrderEventHandler) error { return nil }

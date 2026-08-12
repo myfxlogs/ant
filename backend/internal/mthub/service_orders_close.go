@@ -101,8 +101,11 @@ func (s *MtHubService) preCloseChecks(ctx context.Context, accountID string) err
 }
 
 func (s *MtHubService) evaluateCloseGate(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
-	if s.gate == nil || s.accountStateProvider == nil {
-		return nil
+	if s.gate == nil {
+		return fmt.Errorf("gate not configured: order rejected (fail-closed)")
+	}
+	if s.accountStateProvider == nil {
+		return fmt.Errorf("account state provider not configured: order rejected (fail-closed)")
 	}
 	closeIntent := &antv1.OrderIntent{
 		AccountId: accountID,
