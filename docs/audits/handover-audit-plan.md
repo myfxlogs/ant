@@ -22,6 +22,8 @@
 
 ## 变更日志
 
+- 2026-08-12 **BT-DATE-FIX 完成 ✅**：回测日期范围不生效 + Run ID 显示 — 根因 A（后端）：`GetKlines` SQL `is_replay = 0` 过滤排除了 `ensureBarData` 从 broker 拉回的历史数据（`IsReplay: true`）。根因 B（前端）：React stale closure — `setStartDate()` 后立即 `run()` 读到旧 state。修复：移除 `is_replay = 0`；`BacktestRunnerInputs` 加 `startDate/endDate` 直接传入；`toDate()` 模块级纯函数降复杂度。Run ID 显示在结果页 header。CI 全绿。commit `2af15034` + `7283ff3f`。
+- 2026-08-12 **UI-PANEL-SWITCH 完成 ✅**：选策略后右侧面板不切回代码 — `onSelect` 未重置 `rightPanelTab`。修复：加 `setRightPanelTab(null)`。回测历史 `totalReturn` 为 null 时的 `'—'` 替换为重命名按钮。commit `1f867e1d`。
 - 2026-08-12 **BT-DATA-GAP 完成 ✅**：回测数据缺失设计缺陷修复 — 原设计回测只查 PG 缓存，缺数据报错或静默用旧数据（用户选 8 月但 PG 只有 6-7 月数据 → 回测静默跑旧数据）。第一性原则：broker 是数据源，PG 是缓存，系统应自动从 broker 拉取缺失数据。新增 `ensureBarData`：检测 PG 覆盖缺口 → `mtHub.PriceHistory` 拉取 → `InsertBars` 落 PG → 重新查询。在 `validateBacktestRequest`（提交前）和 `fetchBars`（worker 执行前）两处调用。只有 broker 也拿不到数据才报错。go build + 8 validate 测试全绿。
 - 2026-08-12 **REPLAY-MODEL 完成 ✅**：4 个执行假设选择器（Direction/SimulationMode/SignalTiming/FillRule）合并为单个"复盘模型"下拉框，术语对齐 MT4 Strategy Tester（Every Tick / 1 Minute OHLC / Open Prices Only）。映射：ohlc_path→OHLC_PATH+same_bar_close / kline_range→KLINE_RANGE+same_bar_close / open_price→KLINE_RANGE+next_bar_open。fillRule 固定 bar_close。i18n 5 语言完整。红队自审通过（映射双向一致、无 dangling import、tradeDirection 保持 both 默认）。门禁：tsc 0err / eslint 0warn / npm build ok。已部署前端。
 - 2026-08-11 **POST-1 验收通过 ✅（审计方独立删行复测）**：5/5 断言级全红——T1 改 total=-1 红（走 `ListPublished` 主路径）/ T6 删 ORDER BY+LIMIT 1 红 / T7 删 ErrNoRows 分支红（logged 1 want 0）/ T3 删 backtestContent 接线红（getByTestId 抛错）/ T8 删 error 块红（Alert null）。**T1-T8 对抗证明 8/8 有效**。实现仅 T6/T7 抽函数（行为不变）。门禁全绿实测：go build / go test marketplace+user / check-file-lines 0err / tsc 0err / vitest 144pass / npm build。实验编辑全还原，工作树干净。POST-1 闭环。
