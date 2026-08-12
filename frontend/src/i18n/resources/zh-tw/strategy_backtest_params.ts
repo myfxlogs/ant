@@ -57,7 +57,8 @@ const StrategyBacktestParams = {
       "timeframe": "週期",
       "signalTiming": "訊號時機",
       "fillRule": "成交規則",
-      "simulationMode": "模式"
+      "simulationMode": "模式",
+      "mtOhlcPath": "OHLC 路徑"
     }
   }
 } as const;

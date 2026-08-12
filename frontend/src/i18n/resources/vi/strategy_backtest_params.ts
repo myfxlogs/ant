@@ -57,7 +57,8 @@ const StrategyBacktestParams = {
       "timeframe": "Khung thời gian",
       "signalTiming": "Thời điểm tín hiệu",
       "fillRule": "Quy tắc khớp lệnh",
-      "simulationMode": "Chế độ mô phỏng"
+      "simulationMode": "Chế độ mô phỏng",
+      "mtOhlcPath": "Đường dẫn OHLC"
     }
   }
 } as const;

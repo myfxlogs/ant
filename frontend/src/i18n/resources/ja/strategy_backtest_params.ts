@@ -57,7 +57,8 @@ const StrategyBacktestParams = {
       "timeframe": "タイムフレーム",
       "signalTiming": "シグナルタイミング",
       "fillRule": "約定ルール",
-      "simulationMode": "シミュレーションモード"
+      "simulationMode": "シミュレーションモード",
+      "mtOhlcPath": "OHLC パス"
     }
   }
 } as const;

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   SIMULATION_MODE_KEY, SIGNAL_TIMING_KEY, FILL_RULE_KEY,
   NEXT_BAR_OPEN_KEY, SAME_BAR_CLOSE_KEY, EXEC_MARKET_KEY, EXEC_LIMIT_KEY,
-  MT_LIVE_KEY, DIRECTION_KEY, BOTH_KEY, LONG_KEY, SHORT_KEY,
+  MT_LIVE_KEY, MT_OHLC_PATH_KEY, DIRECTION_KEY, BOTH_KEY, LONG_KEY, SHORT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 
 interface Props {
@@ -46,7 +46,7 @@ export default function ExecutionAssumptionsSelectors({
             style={{ width: '100%' }}
             options={[
               { value: 'KLINE_RANGE', label: t(MT_LIVE_KEY) },
-              { value: 'OHLC_PATH', label: t('strategy.backtestParams.mtOhlcPath') },
+              { value: 'OHLC_PATH', label: t(MT_OHLC_PATH_KEY) },
             ]}
           />
         </Form.Item>

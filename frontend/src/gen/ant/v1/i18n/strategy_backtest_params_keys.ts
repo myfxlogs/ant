@@ -160,6 +160,9 @@ export const FILL_RULE_KEY = 'strategy.backtestParams.fillRule' as const;
 /** simulationMode */
 export const SIMULATION_MODE_KEY = 'strategy.backtestParams.simulationMode' as const;
 
+/** mtOhlcPath */
+export const MT_OHLC_PATH_KEY = 'strategy.backtestParams.mtOhlcPath' as const;
+
 export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
@@ -214,6 +217,7 @@ export const STRATEGYBACKTESTPARAMS_KEYS = {
   signal_timing: 'strategy.backtestParams.signalTiming',
   fill_rule: 'strategy.backtestParams.fillRule',
   simulation_mode: 'strategy.backtestParams.simulationMode',
+  mt_ohlc_path: 'strategy.backtestParams.mtOhlcPath',
 } as const;
 
 export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

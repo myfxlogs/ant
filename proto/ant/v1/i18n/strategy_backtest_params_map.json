@@ -53,6 +53,7 @@
 		"timeframe": "timeframe",
 		"signal_timing": "signalTiming",
 		"fill_rule": "fillRule",
-		"simulation_mode": "simulationMode"
+		"simulation_mode": "simulationMode",
+		"mt_ohlc_path": "mtOhlcPath"
 	}
 }

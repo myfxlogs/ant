@@ -75,6 +75,7 @@ type BacktestParamsI18N struct {
 	SignalTiming         string                 `protobuf:"bytes,58,opt,name=signal_timing,json=signalTiming,proto3" json:"signal_timing,omitempty"`                             // Signal Timing
 	FillRule             string                 `protobuf:"bytes,59,opt,name=fill_rule,json=fillRule,proto3" json:"fill_rule,omitempty"`                                         // Fill Rule
 	SimulationMode       string                 `protobuf:"bytes,60,opt,name=simulation_mode,json=simulationMode,proto3" json:"simulation_mode,omitempty"`                       // Simulation Mode
+	MtOhlcPath           string                 `protobuf:"bytes,61,opt,name=mt_ohlc_path,json=mtOhlcPath,proto3" json:"mt_ohlc_path,omitempty"`                                 // OHLC Path
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -473,11 +474,18 @@ func (x *BacktestParamsI18N) GetSimulationMode() string {
 	return ""
 }
 
+func (x *BacktestParamsI18N) GetMtOhlcPath() string {
+	if x != nil {
+		return x.MtOhlcPath
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_params_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\n" +
-	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\x8e\x0e\n" +
+	"#i18n/strategy_backtest_params.proto\x12\vant.v1.i18n\"\xb0\x0e\n" +
 	"\x12BacktestParamsI18n\x12'\n" +
 	"\x0fbacktest_failed\x18\x01 \x01(\tR\x0ebacktestFailed\x12\x12\n" +
 	"\x04both\x18\x02 \x01(\tR\x04both\x12\x18\n" +
@@ -540,7 +548,9 @@ const file_i18n_strategy_backtest_params_proto_rawDesc = "" +
 	"\ttimeframe\x189 \x01(\tR\ttimeframe\x12#\n" +
 	"\rsignal_timing\x18: \x01(\tR\fsignalTiming\x12\x1b\n" +
 	"\tfill_rule\x18; \x01(\tR\bfillRule\x12'\n" +
-	"\x0fsimulation_mode\x18< \x01(\tR\x0esimulationModeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x0fsimulation_mode\x18< \x01(\tR\x0esimulationMode\x12 \n" +
+	"\fmt_ohlc_path\x18= \x01(\tR\n" +
+	"mtOhlcPathB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_params_proto_rawDescOnce sync.Once

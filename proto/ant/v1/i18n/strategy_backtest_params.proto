@@ -58,4 +58,5 @@ message BacktestParamsI18n {
   string signal_timing = 58;  // Signal Timing
   string fill_rule = 59;  // Fill Rule
   string simulation_mode = 60;  // Simulation Mode
+  string mt_ohlc_path = 61;  // OHLC Path
 }
