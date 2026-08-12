@@ -95,6 +95,16 @@
 2. 修复后 → 200 + JSON 含 `id` + DB `strategy_schedules` 新增记录 → **绿**
 3. 前端：message.success 条件化后，空/500 响应 → 不显示"调度成功"toast → 红绿对照
 
+**→ 审计方验收（2026-08-12，commit `b240a7ca`）✅ 权威 done**：
+- **根因定论精度修正（本会话关键）**：两处 SetBoundSvc 路径行为不同，不能一概"typed-nil panic"——
+  - **StrategyServer**（`handlers_strategy_runtime.go:87` 无条件 `SetBoundSvc(boundSvc)`，无 nil 保护）→ typed-nil → `EnsureBoundAccount` nil 接收者 **panic** → sentryhttp 吞 → **200EMPTY 直接根因** ✓（施工方说法对此路径正确）
+  - **StrategyExecutionServer**（`handlers_strategy.go:65-67` `if d.boundSvc != nil` 保护，LEAKAGE-1 `97d57173` 引入一直存在）→ 修复前 **不 panic，静默绕过 EnsureBoundAccount**（绑定校验门洞开）——即 DEPLOY-LIVE-3 真实严重度是**静默绕过非 crash**（见下）
+- **实现核对 ✓**：diff 干净——handlers.go:196 `BoundSvc: p.BoundSvc` 一行透传链完整（:90 setupSubscription 组装 → :126 deps → :196）；`bound_account_svc.go` recover 掩盖移除恢复原签名（+1/-6，无残留）
+- **删行对抗 2 实验（审计方独立实测）**：① 删 helper nil-safe → `TestDeployLive1_LivePathNilBarNoPanic` **RED**（断言级，COVERAGE 对抗有效，见下）；② 删 handlers.go `BoundSvc:` 接线 → 全包仍绿——**接线无单测是固有**（strategy 包测试 mock boundSvc 不经 handlers.go 接线），wiring 只能靠冒烟/集成验收，非测试缺陷
+- **冒烟实测（审计方，/tmp/smoke_batch2.py 对 live 8022）**：Login ✓ → CreateSchedule（合法 schedule_type=`event`）→ **200 + JSON 含 id** `b6c876c3…`（非 200 空）✓ → GetSchedule 200 + DB 记录 ✓ → UpdateSchedule 切账户 → 200 + accountId 变更 `904d14e6→7c552664` ✓ → DeleteSchedule 200 ✓。全程无 panic 日志
+- **门禁实测**：go build ./... ✓ / strategy 包 go test 全绿（含新 COVERAGE 测试）✓ / check-file-lines 0err ✓ / 容器 healthy + 二进制 Aug 12 23:08（施工方已部署 batch2）✓ / service 包集成测试（TestEnsureBound*）因宿主机无 PG 无法跑（`dial tcp 127.0.0.1:5432` 环境问题，非代码问题，bound_account_svc_test.go 注释确认 integration mode）
+- **防再犯 follow-up 仍在 open**（不阻塞验收）：sentryhttp `Repanic: false` 静默吞 panic、前端 message.success 无条件——低优，待排期
+
 ---
 
 ## DEPLOY-LIVE 实盘部署管线审计（2026-08-12 审计方；DEPLOY-LIVE-1/2 ✅done，DEPLOY-LIVE-3~7 🟦open）
@@ -123,12 +133,14 @@
 - 位置：`strategy_schedules.go:169-179`——UpdateSchedule 切账户走 `s.boundSvc.EnsureBoundAccount`（与 CreateSchedule:74 同一 `s.boundSvc != nil` typed-nil 判断，同一 wiring 漏传 `handlers.go:191`）
 - 影响：修复 200EMPTY 的 `BoundSvc: p.BoundSvc` 一行同时修复本路径
 - 对抗证明（施工方冒烟验证 2026-08-12）：修复前 500/200 空（红）；修复后 UpdateSchedule 切账户 200 + `accountId` 更新为 `7c552664-...`（绿），DB `strategy_schedules.account_id` 确认更新
+- **→ 审计方验收（2026-08-12，commit `b240a7ca`）✅ 权威 done + 严重度精度修正**：施工方标题"同样 typed-nil panic"**不准确**——applyAccountSwitch 走 StrategyExecutionServer，`handlers_strategy.go:65-67` **有 `if d.boundSvc != nil` 保护**（LEAKAGE-1 `97d57173` 引入一直存在），故修复前是**静默绕过 EnsureBoundAccount**（绑定/额度校验门洞开，调度可绑任意账户）**非 panic**。修复（handlers.go:196 一行接线）同时治愈两路径 ✓。审计方冒烟独立复测：UpdateSchedule 切账户（含 disconnected 账户 `7c552664`，EnsureBoundAccount 只查归属+绑定不查连接状态，符合预期）→ 200 + accountId 变更 ✓。修复前行为已由根因链证实（typed-nil 由同一漏传导致，若走无保护路径即 panic）
 
 **DEPLOY-LIVE-1-COVERAGE 覆盖缺口：live dispatch 调用点无直接对抗测试** ✅done（2026-08-12 施工方补强测试）
 - 现象：审计方独立删行实验——把 `live_dispatch.go:63/74` 的 `barOpenTimeForSignal(bar, cfg)` 还原为 `bar.OpenTime`（P1 根因修复点），`go test ./internal/connect/strategy/` **仍全绿**。
 - 原因：deploy_live_test.go 的 nil bar 测试走 `dispatchLiveSignal` **paper 分支**（`live_dispatch.go:42-44` 提前 return），不经 live 调用点；live 路径 `s.mtHub == nil` 时 :47-50 early return，全包无 mtHub mock 的 live 路径测试。
 - **修复**：新增 `TestDeployLive1_LivePathNilBarNoPanic`——创建真实 `MtHubService` + `mockOrderExecutor`（实现 `OrderExecutor` 接口，channel 同步），注入 `srv.mtHub`，`Mode="live"` + nil bar → 不 panic + `PlaceOrder` 收到非空 ClientID；两次连续 tick 信号 ClientID 不同（TickSeq 唯一性）。
 - **对抗证明**：还原 `barOpenTimeForSignal(bar, cfg)` → `bar.OpenTime` → 测试 **RED**（`panic: runtime error: invalid memory address or nil pointer dereference`）；修复后 **GREEN**。覆盖缺口已闭合。
+- **→ 审计方独立删行复测（2026-08-12，验收）✅ 权威 done**：测试真实性核对 ✓——真实 `mthub.NewHub()` + `NewMtHubService` + `hub.Register` + mockOrderExecutor（channel 2s timeout 同步），`Mode="live"` + nil bar + 非 nil mtHub → **真走 live 调用点**（非 paper 提前 return 分支）。审计方独立删行：helper 还原无条件 `bar.OpenTime` → `-run "TestDeployLive1_LivePathNilBarNoPanic$"` 精确单跑 **RED**（panic: nil pointer dereference，断言级，前次全包跑崩因 TickSeqUniqueness 无 recover 阻塞后续——单跑即可证）✓。对抗证明有效，覆盖缺口闭合
 
 ### P2（防御性/可演进性）
 
@@ -154,9 +166,9 @@
 
 ## 总计
 
-零 ❓待核。🟦open 7 项 + ❌descoped 1 项。CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 + 冒烟验证 + 对抗证明）。
+零 ❓待核。🟦open 7 项 + ❌descoped 1 项。CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 `b240a7ca` + **审计方验收：删行 RED 复测 + 冒烟 200+id/切账户实测全绿**）。
 POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 对抗测试有效）。
-上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 审计方独立删行复测验收，commit `1a54ec21`）；DEPLOY-LIVE-3 ✅done + DEPLOY-LIVE-1-COVERAGE ✅done + CREATE-SCHEDULE-200EMPTY ✅done（2026-08-12 施工方，commit 待提交）；🟦open 余项：DEPLOY-LIVE-4~7。
+上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 审计方独立删行复测验收，commit `1a54ec21`）；CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 `b240a7ca` + **审计方验收：COVERAGE 删行 RED 独立复测 + 冒烟 200+JSON id + 切账户 200 实测**，详见各段验收标注）；🟦open 余项：DEPLOY-LIVE-4~7。
 
 ---
 
