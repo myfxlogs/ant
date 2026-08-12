@@ -50,7 +50,6 @@ const StrategyBacktestParams = {
       "more": "more",
       "mtLive": "MT Live",
       "mtDataset": "Dataset",
-      "mtOhlcPath": "OHLC Path",
       "nextBarOpen": "Next Bar Open",
       "sameBarClose": "Same Bar Close",
       "execMarket": "Market",

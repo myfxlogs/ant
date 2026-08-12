@@ -43,6 +43,36 @@ export const BACKTEST_RECORDS_KEY = 'strategy.backtest.backtestRecords' as const
 /** profitFactor */
 export const PROFIT_FACTOR_KEY = 'strategy.backtest.profitFactor' as const;
 
+/** tradeTicket */
+export const TRADE_TICKET_KEY = 'strategy.backtest.tradeTicket' as const;
+
+/** tradeOpenTime */
+export const TRADE_OPEN_TIME_KEY = 'strategy.backtest.tradeOpenTime' as const;
+
+/** tradeCloseTime */
+export const TRADE_CLOSE_TIME_KEY = 'strategy.backtest.tradeCloseTime' as const;
+
+/** tradeCommission */
+export const TRADE_COMMISSION_KEY = 'strategy.backtest.tradeCommission' as const;
+
+/** tradeReason */
+export const TRADE_REASON_KEY = 'strategy.backtest.tradeReason' as const;
+
+/** status */
+export const STATUS_KEY = 'strategy.backtest.status' as const;
+
+/** symbol */
+export const SYMBOL_KEY = 'strategy.backtest.symbol' as const;
+
+/** timeframe */
+export const TIMEFRAME_KEY = 'strategy.backtest.timeframe' as const;
+
+/** createdAt */
+export const CREATED_AT_KEY = 'strategy.backtest.createdAt' as const;
+
+/** aiOptimize */
+export const AI_OPTIMIZE_KEY = 'strategy.backtest.aiOptimize' as const;
+
 export const STRATEGYBACKTEST_KEYS = {
   annual_return: 'strategy.backtest.annualReturn',
   equity_curve: 'strategy.backtest.equityCurve',
@@ -58,6 +88,16 @@ export const STRATEGYBACKTEST_KEYS = {
   win_rate: 'strategy.backtest.winRate',
   backtest_records: 'strategy.backtest.backtestRecords',
   profit_factor: 'strategy.backtest.profitFactor',
+  trade_ticket: 'strategy.backtest.tradeTicket',
+  trade_open_time: 'strategy.backtest.tradeOpenTime',
+  trade_close_time: 'strategy.backtest.tradeCloseTime',
+  trade_commission: 'strategy.backtest.tradeCommission',
+  trade_reason: 'strategy.backtest.tradeReason',
+  status: 'strategy.backtest.status',
+  symbol: 'strategy.backtest.symbol',
+  timeframe: 'strategy.backtest.timeframe',
+  created_at: 'strategy.backtest.createdAt',
+  ai_optimize: 'strategy.backtest.aiOptimize',
 } as const;
 
 export type StrategyBacktestKey = typeof STRATEGYBACKTEST_KEYS[keyof typeof STRATEGYBACKTEST_KEYS];

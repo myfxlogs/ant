@@ -5,6 +5,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
 import { POSITIONS_KEY, HISTORY_KEY, NO_HISTORY_KEY, NO_OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { TRADING_SYMBOL_KEY, TRADING_SIDE_KEY, TRADING_VOLUME_KEY, TRADING_MARK_PRICE_KEY, TRADING_PNL_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADE_TIME_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 
 interface Props {
   positions: QuickTradePosition[];
@@ -72,7 +73,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
     { title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 60 },
     { title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'price', key: 'price', width: 80 },
     { title: t(TRADING_PNL_KEY), dataIndex: 'pnl', key: 'pnl', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? '#3fb950' : '#f85149' }}>{fmtNum(v)}</span> },
-    { title: 'Time', dataIndex: 'time', key: 'time', width: 100, render: (v: string) => fmtTime(v) },
+    { title: t(TRADE_TIME_KEY), dataIndex: 'time', key: 'time', width: 100, render: (v: string) => fmtTime(v) },
   ];
 
   return (

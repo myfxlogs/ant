@@ -16,7 +16,17 @@ const StrategyBacktest = {
       "tradeVolume": "Volume",
       "winRate": "Win Rate",
       "backtestRecords": "Backtest Records",
-      "profitFactor": "PF"
+      "profitFactor": "PF",
+      "tradeTicket": "Ticket",
+      "tradeOpenTime": "Open Time",
+      "tradeCloseTime": "Close Time",
+      "tradeCommission": "Commission",
+      "tradeReason": "Reason",
+      "status": "Status",
+      "symbol": "Symbol",
+      "timeframe": "Period",
+      "createdAt": "Created",
+      "aiOptimize": "AI Optimize"
     }
   }
 } as const;

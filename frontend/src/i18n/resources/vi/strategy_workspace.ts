@@ -69,7 +69,12 @@ const StrategyWorkspace = {
         "noRuns": "Chưa có lần backtest nào",
         "viewAll": "Xem tất cả",
         "newStrategy": "Chiến lược mới",
-        "trades": "giao dịch"
+        "trades": "giao dịch",
+        "noStrategies": "Chưa có chiến lược",
+        "batchDeleteConfirm": "Xóa các chiến lược đã chọn?",
+        "deleteStrategyConfirm": "Xóa chiến lược này?",
+        "batchDeleteRunsConfirm": "Xóa các lần backtest đã chọn?",
+        "deleteRunConfirm": "Xóa lần backtest này?"
       },
       "tour": {
         "ai": "Trợ lý AI",
@@ -169,7 +174,17 @@ const StrategyWorkspace = {
       "auditAllClear": "Không vấn đề, độ phủ {{percent}}%",
       "backtestDegraded": "Kết quả không đáng tin cậy",
       "backtestDegradedDesc": "Backtest đã hoàn thành nhưng kết quả không đáng tin cậy do vi phạm bất biến. Không nên dựa vào các chỉ số này.",
-      "backtestBlindSpotsTitle": "Lý do kết quả không đáng tin cậy"
+      "backtestBlindSpotsTitle": "Lý do kết quả không đáng tin cậy",
+      "expandQuickTrade": "Mở rộng Giao Dịch Nhanh",
+      "mtSessionLost": "Mất phiên MT — đang kết nối lại…",
+      "tooltipSimMode": "Cách mô phỏng dữ liệu giá: KLINE_RANGE sử dụng phạm vi cao-thấp của mỗi nến; MT_LIVE sử dụng dữ liệu tick MT thực tế",
+      "tooltipSignalTiming": "Thời điểm đánh giá tín hiệu chiến lược so với đóng nến: next_bar_open có nghĩa là tín hiệu kích hoạt ở nến mở tiếp theo sau khi nến đóng",
+      "tooltipFillRule": "Cách khớp lệnh: bar_close khớp ở giá đóng nến; market khớp ở giá thị trường hiện tại",
+      "tooltipTradeDirection": "Hướng giao dịch được phép: long (chỉ mua), short (chỉ bán), hoặc both (cả hai)",
+      "tooltipCommission": "Tỷ lệ hoa hồng mỗi giao dịch dưới dạng phần trăm giá trị giao dịch",
+      "tooltipSlippage": "Độ lệch giá khớp lệnh mô phỏng so với giá dự kiến, tính bằng phần trăm",
+      "tooltipLeverage": "Hệ số đòn bẩy tài khoản áp dụng cho kích thước vị thế",
+      "tooltipMtfFallback": "Lý do dự phòng dữ liệu đa khung thời gian khi dữ liệu khung chính không khả dụng"
     }
   }
 } as const;

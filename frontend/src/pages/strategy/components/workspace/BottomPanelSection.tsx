@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Drawer, Button, Segmented } from 'antd';
 import { LayoutOutlined, BarChartOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import ChartBottomPanel from '@/components/chart/ChartBottomPanel';
 import QuickTradeSidePanel from './QuickTradeSidePanel';
 import type { AccountMeta } from '@/components/chart/QuickTradePanel';
 import type { QuickTradePosition, RecentTrade } from '@/pages/strategy/hooks/useStrategyWorkspaceState';
+import { BACKTEST_KEY, POSITIONS_KEY, EXPAND_QUICK_TRADE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface Props {
   isMobile: boolean;
@@ -33,6 +35,7 @@ export default function BottomPanelSection({
   quickTradeCollapsed, onToggleQuickTrade,
   backtestContent,
 }: Props) {
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'backtest' | 'positions'>('backtest');
 
@@ -60,8 +63,8 @@ export default function BottomPanelSection({
               value={mobileTab}
               onChange={(v) => setMobileTab(v as 'backtest' | 'positions')}
               options={[
-                { label: 'Backtest', value: 'backtest', icon: <BarChartOutlined /> },
-                { label: 'Positions', value: 'positions', icon: <LayoutOutlined /> },
+                { label: t(BACKTEST_KEY), value: 'backtest', icon: <BarChartOutlined /> },
+                { label: t(POSITIONS_KEY), value: 'positions', icon: <LayoutOutlined /> },
               ]}
             />
           </div>
@@ -129,7 +132,7 @@ export default function BottomPanelSection({
             background: 'var(--ant-color-bg-elevated)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             maxHeight: 160, fontSize: 20,
-          }} title="Expand Quick Trade">
+          }} title={t(EXPAND_QUICK_TRADE_KEY)}>
           ⚡
         </div>
       )}

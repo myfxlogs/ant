@@ -10,13 +10,20 @@ import {
   EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY,
   BACKTEST_RUNNING_KEY, BACKTEST_COMPLETED_KEY, BACKTEST_DEGRADED_KEY,
   BACKTEST_ERROR_KEY, BACKTEST_EMPTY_KEY,
+  TOOLTIP_SIM_MODE_KEY, TOOLTIP_SIGNAL_TIMING_KEY, TOOLTIP_FILL_RULE_KEY,
+  TOOLTIP_TRADE_DIRECTION_KEY, TOOLTIP_COMMISSION_KEY, TOOLTIP_SLIPPAGE_KEY,
+  TOOLTIP_LEVERAGE_KEY, TOOLTIP_MTF_FALLBACK_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import {
   TRADE_PRICE_KEY, TRADE_SIDE_KEY, TRADE_VOLUME_KEY,
+  TRADE_TICKET_KEY, TRADE_OPEN_TIME_KEY, TRADE_CLOSE_TIME_KEY,
+  TRADE_COMMISSION_KEY, TRADE_REASON_KEY,
+  STATUS_KEY, SYMBOL_KEY, TIMEFRAME_KEY, CREATED_AT_KEY, AI_OPTIMIZE_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
+import { COMMON_CANCEL_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
 import type { BacktestBlindSpotItem } from './backtestRunnerWatch';
 import type { MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -52,15 +59,15 @@ function assumeValFromTFunction(t: TFunction, v: string | undefined): string {
   return assumeVal((key: string, fallback?: string) => t(key, { defaultValue: fallback }), v);
 }
 
-const ASSUMPTION_TOOLTIPS: Record<string, string> = {
-  simulationMode: 'How price data is simulated: KLINE_RANGE uses high-low range of each bar; MT_LIVE uses real MT tick data',
-  signalTiming: 'When the strategy signal is evaluated relative to bar close: next_bar_open means signals fire on the next bar open after bar closes',
-  fillRule: 'How orders are filled: bar_close fills at bar close price; market fills at current market price',
-  tradeDirection: 'Which trade directions are allowed: long (buy only), short (sell only), or both',
-  commission: 'Per-trade commission rate as a percentage of trade value',
-  slippage: 'Simulated price deviation from expected fill price, as a percentage',
-  leverage: 'Account leverage multiplier applied to position sizing',
-  mtfFallback: 'Reason for multi-timeframe data fallback when primary timeframe data is unavailable',
+const ASSUMPTION_TOOLTIP_KEYS: Record<string, string> = {
+  simulationMode: TOOLTIP_SIM_MODE_KEY,
+  signalTiming: TOOLTIP_SIGNAL_TIMING_KEY,
+  fillRule: TOOLTIP_FILL_RULE_KEY,
+  tradeDirection: TOOLTIP_TRADE_DIRECTION_KEY,
+  commission: TOOLTIP_COMMISSION_KEY,
+  slippage: TOOLTIP_SLIPPAGE_KEY,
+  leverage: TOOLTIP_LEVERAGE_KEY,
+  mtfFallback: TOOLTIP_MTF_FALLBACK_KEY,
 };
 
 function AssumptionField({ label, value, tooltip }: { label: string; value: React.ReactNode; tooltip: string }) {
@@ -117,7 +124,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
       }}>
         {/* Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.status', { defaultValue: 'Status' })}</span>
+          <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(STATUS_KEY)}</span>
           {status === 'running' && <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>}
           {status === 'completed' && <Tag color="success" style={{ fontSize: 13, padding: '2px 8px' }}>{t(BACKTEST_COMPLETED_KEY)}</Tag>}
           {status === 'degraded' && <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>}
@@ -127,7 +134,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Symbol */}
         {runMeta?.symbol && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.symbol', { defaultValue: 'Symbol' })}</span>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(SYMBOL_KEY)}</span>
             <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.symbol}</Tag>
           </div>
         )}
@@ -135,7 +142,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Timeframe */}
         {runMeta?.timeframe && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.timeframe', { defaultValue: 'Period' })}</span>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(TIMEFRAME_KEY)}</span>
             <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.timeframe}</Tag>
           </div>
         )}
@@ -143,7 +150,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Created at */}
         {runMeta?.createdAt && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t('strategy.backtest.createdAt', { defaultValue: 'Created' })}</span>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(CREATED_AT_KEY)}</span>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>
           </div>
         )}
@@ -153,12 +160,12 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Actions */}
         {status === 'completed' && onAIOptimize && metrics && (
           <Button type="primary" icon={<RobotOutlined />} onClick={onAIOptimize} size="small">
-            {t('strategy.backtest.aiOptimize', { defaultValue: 'AI Optimize' })}
+            {t(AI_OPTIMIZE_KEY)}
           </Button>
         )}
         {status === 'running' && onCancel && (
           <Button size="small" danger icon={<StopOutlined />} onClick={onCancel}>
-            {t('common.cancel', { defaultValue: 'Cancel' })}
+            {t(COMMON_CANCEL_KEY)}
           </Button>
         )}
       </div>
@@ -195,13 +202,13 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px 12px', fontSize: 12 }}>
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.simulationMode)} tooltip={ASSUMPTION_TOOLTIPS.simulationMode} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)} value={assumeValFromTFunction(t, executionAssumptions.signalTiming)} tooltip={ASSUMPTION_TOOLTIPS.signalTiming} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.fillRule)} tooltip={ASSUMPTION_TOOLTIPS.fillRule} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)} value={assumeValFromTFunction(t, executionAssumptions.tradeDirection)} tooltip={ASSUMPTION_TOOLTIPS.tradeDirection} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission ? (Number(executionAssumptions.actualCommission) * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.commission} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)} value={executionAssumptions.actualSlippage ? (Number(executionAssumptions.actualSlippage) * 100).toFixed(4) + '%' : '-'} tooltip={ASSUMPTION_TOOLTIPS.slippage} />
-            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)} value={(executionAssumptions.actualLeverage || '-') + 'x'} tooltip={ASSUMPTION_TOOLTIPS.leverage} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_MODE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.simulationMode)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.simulationMode)} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_TIMING_KEY)} value={assumeValFromTFunction(t, executionAssumptions.signalTiming)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.signalTiming)} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_FILL_RULE_KEY)} value={assumeValFromTFunction(t, executionAssumptions.fillRule)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.fillRule)} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_DIRECTION_KEY)} value={assumeValFromTFunction(t, executionAssumptions.tradeDirection)} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.tradeDirection)} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission ? (Number(executionAssumptions.actualCommission) * 100).toFixed(4) + '%' : '-'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.commission)} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_SLIPPAGE_KEY)} value={executionAssumptions.actualSlippage ? (Number(executionAssumptions.actualSlippage) * 100).toFixed(4) + '%' : '-'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.slippage)} />
+            <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_LEVERAGE_KEY)} value={(executionAssumptions.actualLeverage || '-') + 'x'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.leverage)} />
             {executionAssumptions.mtfFallbackReason && (
               <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t(EXEC_ASSUMPTIONS_FIELDS_MTF_FALLBACK_KEY)}:</span> <strong>{assumeValFromTFunction(t, executionAssumptions.mtfFallbackReason)}</strong></div>
             )}
@@ -227,16 +234,16 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           <Table dataSource={trades.map((tr, i) => ({ ...tr, key: i }))}
             pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180, x: 'max-content' }}
             columns={[
-              { title: 'Ticket', dataIndex: 'ticket', width: 80 },
+              { title: t(TRADE_TICKET_KEY), dataIndex: 'ticket', width: 80 },
               { title: t(TRADE_SIDE_KEY, 'Side'), dataIndex: 'side', width: 60,
                 render: (v: string) => <Tag color={(v || '').toLowerCase() === 'buy' ? 'green' : 'red'}>{(v || '').toUpperCase()}</Tag> },
               { title: t(TRADE_VOLUME_KEY, 'Volume'), dataIndex: 'volume', width: 70,
                 render: (v: number) => v?.toFixed(2) },
-              { title: 'Open Time', dataIndex: 'openTime', width: 140,
+              { title: t(TRADE_OPEN_TIME_KEY), dataIndex: 'openTime', width: 140,
                 render: (v: number) => v ? new Date(v).toLocaleString() : '-' },
               { title: t(TRADE_PRICE_KEY, 'Open Price'), dataIndex: 'openPrice', width: 90,
                 render: (v: number) => v?.toFixed(5) },
-              { title: 'Close Time', dataIndex: 'closeTime', width: 140,
+              { title: t(TRADE_CLOSE_TIME_KEY), dataIndex: 'closeTime', width: 140,
                 render: (v: number) => v ? new Date(v).toLocaleString() : '-' },
               { title: t(CLOSE_PRICE_KEY), dataIndex: 'closePrice', width: 90,
                 render: (v: number) => v?.toFixed(5) ?? '—' },
@@ -244,9 +251,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
                 render: (v: number) => v != null ? (
                   <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
                 ) : '-' },
-              { title: 'Commission', dataIndex: 'commission', width: 80,
+              { title: t(TRADE_COMMISSION_KEY), dataIndex: 'commission', width: 80,
                 render: (v: number) => v != null ? v.toFixed(2) : '-' },
-              { title: 'Reason', dataIndex: 'reason', width: 100,
+              { title: t(TRADE_REASON_KEY), dataIndex: 'reason', width: 100,
                 render: (v: string) => v || '-' },
             ]} />
         </div>

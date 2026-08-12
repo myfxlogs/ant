@@ -165,6 +165,21 @@
     "tour_save_desc": "tour.saveDesc",
     "backtest_degraded": "backtestDegraded",
     "backtest_degraded_desc": "backtestDegradedDesc",
-    "backtest_blind_spots_title": "backtestBlindSpotsTitle"
+    "backtest_blind_spots_title": "backtestBlindSpotsTitle",
+    "sidebar_no_strategies": "sidebar.noStrategies",
+    "sidebar_batch_delete_confirm": "sidebar.batchDeleteConfirm",
+    "sidebar_delete_strategy_confirm": "sidebar.deleteStrategyConfirm",
+    "sidebar_batch_delete_runs_confirm": "sidebar.batchDeleteRunsConfirm",
+    "sidebar_delete_run_confirm": "sidebar.deleteRunConfirm",
+    "expand_quick_trade": "expandQuickTrade",
+    "mt_session_lost": "mtSessionLost",
+    "tooltip_sim_mode": "tooltipSimMode",
+    "tooltip_signal_timing": "tooltipSignalTiming",
+    "tooltip_fill_rule": "tooltipFillRule",
+    "tooltip_trade_direction": "tooltipTradeDirection",
+    "tooltip_commission": "tooltipCommission",
+    "tooltip_slippage": "tooltipSlippage",
+    "tooltip_leverage": "tooltipLeverage",
+    "tooltip_mtf_fallback": "tooltipMtfFallback"
   }
 }

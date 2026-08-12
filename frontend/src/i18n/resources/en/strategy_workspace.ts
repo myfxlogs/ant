@@ -69,7 +69,12 @@ const StrategyWorkspace = {
         "noRuns": "No backtest runs yet",
         "viewAll": "View all",
         "newStrategy": "New Strategy",
-        "trades": "trades"
+        "trades": "trades",
+        "noStrategies": "No strategies yet",
+        "batchDeleteConfirm": "Delete selected strategies?",
+        "deleteStrategyConfirm": "Delete this strategy?",
+        "batchDeleteRunsConfirm": "Delete selected runs?",
+        "deleteRunConfirm": "Delete this backtest run?"
       },
       "tour": {
         "ai": "AI Assistant",
@@ -169,7 +174,17 @@ const StrategyWorkspace = {
       "auditAllClear": "All clear, coverage {{percent}}%",
       "backtestDegraded": "Results Unreliable",
       "backtestDegradedDesc": "Backtest completed but results are unreliable due to invariant violations. Do not trust these metrics.",
-      "backtestBlindSpotsTitle": "Why results are unreliable"
+      "backtestBlindSpotsTitle": "Why results are unreliable",
+      "expandQuickTrade": "Expand Quick Trade",
+      "mtSessionLost": "MT session lost — reconnecting…",
+      "tooltipSimMode": "How price data is simulated: KLINE_RANGE uses high-low range of each bar; MT_LIVE uses real MT tick data",
+      "tooltipSignalTiming": "When the strategy signal is evaluated relative to bar close: next_bar_open means signals fire on the next bar open after bar closes",
+      "tooltipFillRule": "How orders are filled: bar_close fills at bar close price; market fills at current market price",
+      "tooltipTradeDirection": "Which trade directions are allowed: long (buy only), short (sell only), or both",
+      "tooltipCommission": "Per-trade commission rate as a percentage of trade value",
+      "tooltipSlippage": "Simulated price deviation from expected fill price, as a percentage",
+      "tooltipLeverage": "Account leverage multiplier applied to position sizing",
+      "tooltipMtfFallback": "Reason for multi-timeframe data fallback when primary timeframe data is unavailable"
     }
   }
 } as const;

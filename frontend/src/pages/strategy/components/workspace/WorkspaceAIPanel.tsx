@@ -7,6 +7,7 @@ import StrategyChat from '@/components/strategy/StrategyChat';
 import BacktestPanel from '@/components/backtest/BacktestPanel';
 import { useAIFix } from '@/components/backtest/useAIFix';
 import { useWsAccount, useWsCode, useWsBacktest, useWsHistory, useWsAI, useWsTemplates } from '../../WorkspaceContext';
+import { AI_TAB_KEY, BACKTEST_TAB_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface BtSummary {
   totalReturn?: number;
@@ -76,8 +77,8 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
   }, [aiPanelWidth, setAiPanelWidth]);
 
   const tabs: { key: 'ai' | 'backtest'; icon: React.ReactNode; label: string }[] = [
-    { key: 'ai', icon: <RobotOutlined />, label: t('strategy.workspace.aiTab', { defaultValue: 'AI' }) },
-    { key: 'backtest', icon: <BarChartOutlined />, label: t('strategy.workspace.backtestTab', { defaultValue: 'Backtest' }) },
+    { key: 'ai', icon: <RobotOutlined />, label: t(AI_TAB_KEY) },
+    { key: 'backtest', icon: <BarChartOutlined />, label: t(BACKTEST_TAB_KEY) },
   ];
 
   return (

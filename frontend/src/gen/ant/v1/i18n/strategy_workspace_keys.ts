@@ -496,6 +496,51 @@ export const BACKTEST_DEGRADED_DESC_KEY = 'strategy.workspace.backtestDegradedDe
 /** backtestBlindSpotsTitle */
 export const BACKTEST_BLIND_SPOTS_TITLE_KEY = 'strategy.workspace.backtestBlindSpotsTitle' as const;
 
+/** sidebar.noStrategies */
+export const SIDEBAR_NO_STRATEGIES_KEY = 'strategy.workspace.sidebar.noStrategies' as const;
+
+/** sidebar.batchDeleteConfirm */
+export const SIDEBAR_BATCH_DELETE_CONFIRM_KEY = 'strategy.workspace.sidebar.batchDeleteConfirm' as const;
+
+/** sidebar.deleteStrategyConfirm */
+export const SIDEBAR_DELETE_STRATEGY_CONFIRM_KEY = 'strategy.workspace.sidebar.deleteStrategyConfirm' as const;
+
+/** sidebar.batchDeleteRunsConfirm */
+export const SIDEBAR_BATCH_DELETE_RUNS_CONFIRM_KEY = 'strategy.workspace.sidebar.batchDeleteRunsConfirm' as const;
+
+/** sidebar.deleteRunConfirm */
+export const SIDEBAR_DELETE_RUN_CONFIRM_KEY = 'strategy.workspace.sidebar.deleteRunConfirm' as const;
+
+/** expandQuickTrade */
+export const EXPAND_QUICK_TRADE_KEY = 'strategy.workspace.expandQuickTrade' as const;
+
+/** mtSessionLost */
+export const MT_SESSION_LOST_KEY = 'strategy.workspace.mtSessionLost' as const;
+
+/** tooltipSimMode */
+export const TOOLTIP_SIM_MODE_KEY = 'strategy.workspace.tooltipSimMode' as const;
+
+/** tooltipSignalTiming */
+export const TOOLTIP_SIGNAL_TIMING_KEY = 'strategy.workspace.tooltipSignalTiming' as const;
+
+/** tooltipFillRule */
+export const TOOLTIP_FILL_RULE_KEY = 'strategy.workspace.tooltipFillRule' as const;
+
+/** tooltipTradeDirection */
+export const TOOLTIP_TRADE_DIRECTION_KEY = 'strategy.workspace.tooltipTradeDirection' as const;
+
+/** tooltipCommission */
+export const TOOLTIP_COMMISSION_KEY = 'strategy.workspace.tooltipCommission' as const;
+
+/** tooltipSlippage */
+export const TOOLTIP_SLIPPAGE_KEY = 'strategy.workspace.tooltipSlippage' as const;
+
+/** tooltipLeverage */
+export const TOOLTIP_LEVERAGE_KEY = 'strategy.workspace.tooltipLeverage' as const;
+
+/** tooltipMtfFallback */
+export const TOOLTIP_MTF_FALLBACK_KEY = 'strategy.workspace.tooltipMtfFallback' as const;
+
 export const STRATEGYWORKSPACE_KEYS = {
   account: 'strategy.workspace.account',
   account_placeholder: 'strategy.workspace.accountPlaceholder',
@@ -662,6 +707,21 @@ export const STRATEGYWORKSPACE_KEYS = {
   backtest_degraded: 'strategy.workspace.backtestDegraded',
   backtest_degraded_desc: 'strategy.workspace.backtestDegradedDesc',
   backtest_blind_spots_title: 'strategy.workspace.backtestBlindSpotsTitle',
+  sidebar_no_strategies: 'strategy.workspace.sidebar.noStrategies',
+  sidebar_batch_delete_confirm: 'strategy.workspace.sidebar.batchDeleteConfirm',
+  sidebar_delete_strategy_confirm: 'strategy.workspace.sidebar.deleteStrategyConfirm',
+  sidebar_batch_delete_runs_confirm: 'strategy.workspace.sidebar.batchDeleteRunsConfirm',
+  sidebar_delete_run_confirm: 'strategy.workspace.sidebar.deleteRunConfirm',
+  expand_quick_trade: 'strategy.workspace.expandQuickTrade',
+  mt_session_lost: 'strategy.workspace.mtSessionLost',
+  tooltip_sim_mode: 'strategy.workspace.tooltipSimMode',
+  tooltip_signal_timing: 'strategy.workspace.tooltipSignalTiming',
+  tooltip_fill_rule: 'strategy.workspace.tooltipFillRule',
+  tooltip_trade_direction: 'strategy.workspace.tooltipTradeDirection',
+  tooltip_commission: 'strategy.workspace.tooltipCommission',
+  tooltip_slippage: 'strategy.workspace.tooltipSlippage',
+  tooltip_leverage: 'strategy.workspace.tooltipLeverage',
+  tooltip_mtf_fallback: 'strategy.workspace.tooltipMtfFallback',
 } as const;
 
 export type StrategyWorkspaceKey = typeof STRATEGYWORKSPACE_KEYS[keyof typeof STRATEGYWORKSPACE_KEYS];

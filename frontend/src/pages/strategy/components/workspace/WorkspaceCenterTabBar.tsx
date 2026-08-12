@@ -5,8 +5,9 @@ import {
   SEND_TO_AI_KEY, BROWSE_INDICATORS_KEY,
   CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
   BACKTEST_KEY as WS_BACKTEST_KEY, AI_ASSISTANT_KEY,
+  SELECT_ACCOUNT_FIRST_KEY, SELECT_SYMBOL_FIRST_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
-import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY } from '@/gen/ant/v1/i18n/base_keys';
+import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY, STRATEGY_VERSION_HISTORY_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { type CenterTab } from '@/stores/workspaceStore';
 import type { WsCode, WsAccount, WsTemplates } from '../../WorkspaceContext';
 
@@ -55,11 +56,11 @@ export default function WorkspaceCenterTabBar({
 
   const handleBacktestClick = () => {
     if (!account.accountId) {
-      Modal.warning({ title: t('strategy.workspace.selectAccountFirst', { defaultValue: 'Please select a trading account first' }) });
+      Modal.warning({ title: t(SELECT_ACCOUNT_FIRST_KEY) });
       return;
     }
     if (!account.symbol) {
-      Modal.warning({ title: t('strategy.workspace.selectSymbolFirst', { defaultValue: 'Please select a trading symbol first' }) });
+      Modal.warning({ title: t(SELECT_SYMBOL_FIRST_KEY) });
       return;
     }
     setBtModalOpen(true);
@@ -136,7 +137,7 @@ export default function WorkspaceCenterTabBar({
             <Button size="small" icon={<QuestionCircleOutlined />} onClick={() => setIndicatorDrawerOpen(true)} />
           </Tooltip>
           {onShowVersionHistory && code.strategyId && (
-            <Tooltip title={t('strategy.version.history', { defaultValue: 'Version History' })}>
+            <Tooltip title={t(STRATEGY_VERSION_HISTORY_KEY)}>
               <Button size="small" icon={<HistoryOutlined />} onClick={onShowVersionHistory} />
             </Tooltip>
           )}

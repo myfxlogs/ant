@@ -16,7 +16,17 @@ const StrategyBacktest = {
       "tradeVolume": "手數",
       "winRate": "勝率",
       "backtestRecords": "回測記錄",
-      "profitFactor": "盈虧比"
+      "profitFactor": "盈虧比",
+      "tradeTicket": "訂單號",
+      "tradeOpenTime": "開倉時間",
+      "tradeCloseTime": "平倉時間",
+      "tradeCommission": "手續費",
+      "tradeReason": "原因",
+      "status": "狀態",
+      "symbol": "品種",
+      "timeframe": "週期",
+      "createdAt": "建立時間",
+      "aiOptimize": "AI 優化"
     }
   }
 } as const;

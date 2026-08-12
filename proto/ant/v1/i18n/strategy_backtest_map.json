@@ -14,6 +14,16 @@
 		"trade_volume": "tradeVolume",
 		"win_rate": "winRate",
 		"backtest_records": "backtestRecords",
-		"profit_factor": "profitFactor"
+		"profit_factor": "profitFactor",
+		"trade_ticket": "tradeTicket",
+		"trade_open_time": "tradeOpenTime",
+		"trade_close_time": "tradeCloseTime",
+		"trade_commission": "tradeCommission",
+		"trade_reason": "tradeReason",
+		"status": "status",
+		"symbol": "symbol",
+		"timeframe": "timeframe",
+		"created_at": "createdAt",
+		"ai_optimize": "aiOptimize"
 	}
 }

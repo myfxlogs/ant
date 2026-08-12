@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Grid } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { WorkspaceProvider, useWsAccount, useWsBacktest, useWsTuning, useWsLayout, useWsQuickTrade } from './WorkspaceContext';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import WorkspaceCenterColumn from './components/workspace/WorkspaceCenterColumn';
 import WorkspaceDrawers from './components/workspace/WorkspaceDrawers';
 import WorkspaceTour from './components/workspace/WorkspaceTour';
+import { MT_SESSION_LOST_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
+  const { t } = useTranslation();
   const [btModalOpen, setBtModalOpen] = useState(false);
   const [indicatorDrawerOpen, setIndicatorDrawerOpen] = useState(false);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
@@ -29,7 +32,7 @@ function WorkspaceInner({ isMobile }: { isMobile: boolean }) {
         accountInfo={account.accountInfo} positionCount={quickTrade.positionCount}
         busy={backtest.submitting || tuning.running}
         mtError={mtError}
-        onMTErrorChange={(hasError) => setMtError(hasError ? 'MT session lost — reconnecting…' : null)}
+        onMTErrorChange={(hasError) => setMtError(hasError ? t(MT_SESSION_LOST_KEY) : null)}
         onToggleBottomPanel={() => layout.setBottomPanelCollapsed(!layout.bottomPanelCollapsed)}
       />
       <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>

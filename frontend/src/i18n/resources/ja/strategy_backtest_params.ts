@@ -50,7 +50,6 @@ const StrategyBacktestParams = {
       "more": "その他",
       "mtLive": "MT ライブ",
       "mtDataset": "データセット",
-      "mtOhlcPath": "OHLC パス",
       "nextBarOpen": "次足始値",
       "sameBarClose": "同足終値",
       "execMarket": "成行",

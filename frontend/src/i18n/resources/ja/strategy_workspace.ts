@@ -69,7 +69,12 @@ const StrategyWorkspace = {
         "noRuns": "バックテスト履歴なし",
         "viewAll": "すべて表示",
         "newStrategy": "新規戦略",
-        "trades": "取引"
+        "trades": "取引",
+        "noStrategies": "戦略なし",
+        "batchDeleteConfirm": "選択した戦略を削除しますか？",
+        "deleteStrategyConfirm": "この戦略を削除しますか？",
+        "batchDeleteRunsConfirm": "選択したバックテストを削除しますか？",
+        "deleteRunConfirm": "このバックテストを削除しますか？"
       },
       "tour": {
         "ai": "AI アシスタント",
@@ -169,7 +174,17 @@ const StrategyWorkspace = {
       "auditAllClear": "問題なし、カバレッジ {{percent}}%",
       "backtestDegraded": "バックテスト結果は信頼できません",
       "backtestDegradedDesc": "バックテストは完了しましたが、不変条件違反のため結果は信頼できません。これらの指標に依存しないでください。",
-      "backtestBlindSpotsTitle": "結果が信頼できない理由"
+      "backtestBlindSpotsTitle": "結果が信頼できない理由",
+      "expandQuickTrade": "クイック取引を展開",
+      "mtSessionLost": "MT セッションが切断されました — 再接続中…",
+      "tooltipSimMode": "価格データのシミュレーション方法：KLINE_RANGE は各バーの高値安値範囲を使用、MT_LIVE は実際の MT ティックデータを使用",
+      "tooltipSignalTiming": "バー確定に対する戦略シグナルの評価タイミング：next_bar_open はバー確定後の次バー始値でシグナルが発火",
+      "tooltipFillRule": "注文の約定方法：bar_close はバー終値で約定、market は現在の市場価格で約定",
+      "tooltipTradeDirection": "許可される取引方向：long（買いのみ）、short（売りのみ）、または both（両方）",
+      "tooltipCommission": "取引金額に対する百分比としての取引手数料",
+      "tooltipSlippage": "予想約定価格からの乖離、百分比表示",
+      "tooltipLeverage": "ポジションサイズに適用されるアカウントレバレッジ倍率",
+      "tooltipMtfFallback": "主時間軸データが利用不可の場合のマルチタイムフレームデータフォールバック理由"
     }
   }
 } as const;

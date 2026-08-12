@@ -20,4 +20,14 @@ message BacktestI18n {
   string win_rate = 12;  // Win Rate
   string backtest_records = 40;  // Backtest Records
   string profit_factor = 41;  // Profit Factor
+  string trade_ticket = 42;  // Ticket
+  string trade_open_time = 43;  // Open Time
+  string trade_close_time = 44;  // Close Time
+  string trade_commission = 45;  // Commission
+  string trade_reason = 46;  // Reason
+  string status = 47;  // Status
+  string symbol = 48;  // Symbol
+  string timeframe = 49;  // Period
+  string created_at = 50;  // Created
+  string ai_optimize = 51;  // AI Optimize
 }

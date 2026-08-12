@@ -16,7 +16,17 @@ const StrategyBacktest = {
       "tradeVolume": "数量",
       "winRate": "勝率",
       "backtestRecords": "バックテスト記録",
-      "profitFactor": "PF"
+      "profitFactor": "PF",
+      "tradeTicket": "チケット",
+      "tradeOpenTime": "建玉時間",
+      "tradeCloseTime": "決済時間",
+      "tradeCommission": "手数料",
+      "tradeReason": "理由",
+      "status": "ステータス",
+      "symbol": "シンボル",
+      "timeframe": "期間",
+      "createdAt": "作成日時",
+      "aiOptimize": "AI最適化"
     }
   }
 } as const;

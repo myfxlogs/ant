@@ -69,7 +69,12 @@ const StrategyWorkspace = {
         "noRuns": "暂无回测记录",
         "viewAll": "查看全部",
         "newStrategy": "新建策略",
-        "trades": "笔交易"
+        "trades": "笔交易",
+        "noStrategies": "暂无策略",
+        "batchDeleteConfirm": "删除选中的策略？",
+        "deleteStrategyConfirm": "删除此策略？",
+        "batchDeleteRunsConfirm": "删除选中的回测记录？",
+        "deleteRunConfirm": "删除此回测记录？"
       },
       "tour": {
         "ai": "AI 助手",
@@ -169,7 +174,17 @@ const StrategyWorkspace = {
       "auditAllClear": "全部通过，覆盖率 {{percent}}%",
       "backtestDegraded": "回测结果不可信",
       "backtestDegradedDesc": "回测已执行完成，但因存在不变量违规，回测结果不可信。请勿依赖这些指标。",
-      "backtestBlindSpotsTitle": "结果不可信的原因"
+      "backtestBlindSpotsTitle": "结果不可信的原因",
+      "expandQuickTrade": "展开快速交易",
+      "mtSessionLost": "MT 会话丢失 — 重新连接中…",
+      "tooltipSimMode": "价格数据模拟方式：KLINE_RANGE 使用每根 K 线的高低范围；MT_LIVE 使用真实 MT tick 数据",
+      "tooltipSignalTiming": "策略信号相对于 K 线收盘的评估时机：next_bar_open 表示信号在 K 线收盘后下一根开盘时触发",
+      "tooltipFillRule": "订单成交方式：bar_close 以 K 线收盘价成交；market 以当前市价成交",
+      "tooltipTradeDirection": "允许的交易方向：long（仅做多）、short（仅做空）或 both（双向）",
+      "tooltipCommission": "每笔交易的佣金率，按交易金额的百分比计算",
+      "tooltipSlippage": "模拟成交价与预期价格的偏差，以百分比表示",
+      "tooltipLeverage": "应用于仓位大小的账户杠杆倍数",
+      "tooltipMtfFallback": "当主时间周期数据不可用时，多时间周期数据回退的原因"
     }
   }
 } as const;

@@ -50,7 +50,6 @@ const StrategyBacktestParams = {
       "more": "更多",
       "mtLive": "MT 实时",
       "mtDataset": "数据集",
-      "mtOhlcPath": "OHLC 路径",
       "nextBarOpen": "次根K线开盘",
       "sameBarClose": "同根K线收盘",
       "execMarket": "市价",

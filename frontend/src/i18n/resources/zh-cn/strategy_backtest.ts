@@ -16,7 +16,17 @@ const StrategyBacktest = {
       "tradeVolume": "手数",
       "winRate": "胜率",
       "backtestRecords": "回测记录",
-      "profitFactor": "盈亏比"
+      "profitFactor": "盈亏比",
+      "tradeTicket": "订单号",
+      "tradeOpenTime": "开仓时间",
+      "tradeCloseTime": "平仓时间",
+      "tradeCommission": "手续费",
+      "tradeReason": "原因",
+      "status": "状态",
+      "symbol": "品种",
+      "timeframe": "周期",
+      "createdAt": "创建时间",
+      "aiOptimize": "AI 优化"
     }
   }
 } as const;

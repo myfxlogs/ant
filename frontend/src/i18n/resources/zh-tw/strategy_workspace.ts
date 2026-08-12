@@ -69,7 +69,12 @@ const StrategyWorkspace = {
         "noRuns": "暫無回測記錄",
         "viewAll": "查看全部",
         "newStrategy": "新建策略",
-        "trades": "筆交易"
+        "trades": "筆交易",
+        "noStrategies": "暫無策略",
+        "batchDeleteConfirm": "刪除選中的策略？",
+        "deleteStrategyConfirm": "刪除此策略？",
+        "batchDeleteRunsConfirm": "刪除選中的回測記錄？",
+        "deleteRunConfirm": "刪除此回測記錄？"
       },
       "tour": {
         "ai": "AI 助手",
@@ -169,7 +174,17 @@ const StrategyWorkspace = {
       "auditAllClear": "全部通過，覆蓋率 {{percent}}%",
       "backtestDegraded": "回測結果不可信",
       "backtestDegradedDesc": "回測已執行完成，但因存在不變量違規，回測結果不可信。請勿依賴這些指標。",
-      "backtestBlindSpotsTitle": "結果不可信的原因"
+      "backtestBlindSpotsTitle": "結果不可信的原因",
+      "expandQuickTrade": "展開快速交易",
+      "mtSessionLost": "MT 會話丟失 — 重新連接中…",
+      "tooltipSimMode": "價格數據模擬方式：KLINE_RANGE 使用每根 K 線的高低範圍；MT_LIVE 使用真實 MT tick 數據",
+      "tooltipSignalTiming": "策略信號相對於 K 線收盤的評估時機：next_bar_open 表示信號在 K 線收盤後下一根開盤時觸發",
+      "tooltipFillRule": "訂單成交方式：bar_close 以 K 線收盤價成交；market 以當前市價成交",
+      "tooltipTradeDirection": "允許的交易方向：long（僅做多）、short（僅做空）或 both（雙向）",
+      "tooltipCommission": "每筆交易的佣金率，按交易金額的百分比計算",
+      "tooltipSlippage": "模擬成交價與預期價格的偏差，以百分比表示",
+      "tooltipLeverage": "應用於倉位大小的帳戶槓桿倍數",
+      "tooltipMtfFallback": "當主時間週期數據不可用時，多時間週期數據回退的原因"
     }
   }
 } as const;

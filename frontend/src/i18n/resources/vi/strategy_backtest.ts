@@ -16,7 +16,17 @@ const StrategyBacktest = {
       "tradeVolume": "Khối Lượng",
       "winRate": "Tỷ Lệ Thắng",
       "backtestRecords": "Hồ sơ backtest",
-      "profitFactor": "PF"
+      "profitFactor": "PF",
+      "tradeTicket": "Mã Lệnh",
+      "tradeOpenTime": "Giờ Mở",
+      "tradeCloseTime": "Giờ Đóng",
+      "tradeCommission": "Hoa hồng",
+      "tradeReason": "Lý do",
+      "status": "Trạng thái",
+      "symbol": "Ký hiệu",
+      "timeframe": "Khung giờ",
+      "createdAt": "Ngày tạo",
+      "aiOptimize": "Tối ưu AI"
     }
   }
 } as const;

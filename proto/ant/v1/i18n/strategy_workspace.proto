@@ -205,4 +205,25 @@ message StrategyWorkspaceI18n {
   string backtest_degraded = 214;
   string backtest_degraded_desc = 215;
   string backtest_blind_spots_title = 216;
+
+  // ── Additional sidebar (217-221) ──
+  string sidebar_no_strategies = 217;
+  string sidebar_batch_delete_confirm = 218;
+  string sidebar_delete_strategy_confirm = 219;
+  string sidebar_batch_delete_runs_confirm = 220;
+  string sidebar_delete_run_confirm = 221;
+
+  // ── Quick trade & MT status (222-223) ──
+  string expand_quick_trade = 222;
+  string mt_session_lost = 223;
+
+  // ── Execution assumption tooltips (224-231) ──
+  string tooltip_sim_mode = 224;
+  string tooltip_signal_timing = 225;
+  string tooltip_fill_rule = 226;
+  string tooltip_trade_direction = 227;
+  string tooltip_commission = 228;
+  string tooltip_slippage = 229;
+  string tooltip_leverage = 230;
+  string tooltip_mtf_fallback = 231;
 }
