@@ -20,6 +20,7 @@ export interface ScheduleRow {
   lastRunAt?: string;
   nextRunAt?: string;
   enableCount?: number;
+  lastError?: string;
   createdAt?: string;
 }
 

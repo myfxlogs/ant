@@ -5,6 +5,7 @@ import {
   Switch,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -141,7 +142,7 @@ export default function ScheduleTable({
               disabled={loading}
             />
             {row?.isActive ? (
-              <Tag color="green">{t("strategy.schedules.status.running")}</Tag>
+              <Tag color="blue">{t("strategy.schedules.status.enabled", { defaultValue: "Enabled" })}</Tag>
             ) : (
               <Tag>{t("strategy.schedules.status.disabled")}</Tag>
             )}
@@ -149,6 +150,11 @@ export default function ScheduleTable({
           <Text type="secondary" style={{ fontSize: 12 }}>
             {t("strategy.schedules.nextRunAt")}: {formatTime(row?.nextRunAt)}
           </Text>
+          {row?.lastError && (
+            <Tooltip title={row.lastError}>
+              <Text type="danger" style={{ fontSize: 11 }}>⚠ {row.lastError.slice(0, 40)}</Text>
+            </Tooltip>
+          )}
         </Space>
       ),
     },

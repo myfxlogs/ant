@@ -13,6 +13,7 @@ import { useAccountsAndSymbols } from '../../hooks/useAccountsAndSymbols';
 import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption } from '../../hooks/libraryTypes';
 import type { ScheduleFormValues, ScheduleType } from '../EditScheduleModal';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
+import { useNavigate } from 'react-router-dom';
 import { strategyRuntimeApi } from '@/client/strategyRuntime';
 import { tradingApi } from '@/client/trading';
 import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
@@ -34,8 +35,9 @@ function formatTime(v: unknown): string {
   return new Date(ms).toLocaleString();
 }
 
-export default function LiveSchedulesTab({ highlightScheduleId }: { highlightScheduleId?: string | null }) {
+export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { highlightScheduleId?: string | null; healthId?: string | null }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
   const [templates, setTemplates] = useState<TemplateOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,7 +77,6 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
 
   useEffect(() => {
     let active = true;
-    const RECONNECT_MS = 90_000;
     const connect = async () => {
       while (active) {
         const ctrl = new AbortController();
@@ -86,8 +87,7 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
               setSchedules((event.schedules || []) as ScheduleRow[]);
             }
           })();
-          const timerDone = new Promise(r => setTimeout(r, RECONNECT_MS));
-          await Promise.race([streamDone, timerDone]);
+          await Promise.race([streamDone, new Promise(r => setTimeout(r, 90_000))]);
           ctrl.abort();
         } catch { /* reconnect */ }
         if (!active) break;
@@ -104,6 +104,12 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
     try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id) as ScheduleHealthSummary); }
     catch { setHealthSummary(null); } finally { setHealthLoading(false); }
   }, []);
+
+  useEffect(() => {
+    if (!healthId || !schedules.length) return;
+    const target = schedules.find(s => s.id === healthId);
+    if (target) { setHealthTarget(target); void loadScheduleHealth(target); setHealthOpen(true); }
+  }, [healthId, schedules, loadScheduleHealth]);
 
   const onManualTrigger = useCallback(async (row: ScheduleRow) => {
     setTriggering(true); setTriggerResult(null);
@@ -129,11 +135,7 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
     const volume = Number(raw?.volume || 0);
     if (!(volume > 0)) return;
     try {
-      const res = await tradingApi.orderSend({
-        accountId: schedule.accountId, symbol: raw.symbol || schedule.symbol,
-        type: action, volume, price: Number(raw?.price || 0),
-        stopLoss: Number(raw?.stopLoss || 0), takeProfit: Number(raw?.takeProfit || 0), comment: String(raw?.comment || ''),
-      });
+      const res = await tradingApi.orderSend({ accountId: schedule.accountId, symbol: raw.symbol || schedule.symbol, type: action, volume, price: Number(raw?.price || 0), stopLoss: Number(raw?.stopLoss || 0), takeProfit: Number(raw?.takeProfit || 0), comment: String(raw?.comment || '') });
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error })); return; }
       message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
@@ -154,14 +156,13 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
     let scheduleType: ScheduleType = 'kline_close';
     if (rawType === 'interval') scheduleType = 'interval';
     else if (triggerMode === 'hf_quote_stream') scheduleType = 'hf_quote';
-    const intervalMs = typeof conf?.intervalMs === 'number' ? conf.intervalMs : typeof conf?.intervalMs === 'bigint' ? Number(conf.intervalMs) : 300_000;
-    const hfCooldownMs = typeof conf?.hfCooldownMs === 'number' ? conf.hfCooldownMs : typeof conf?.hfCooldownMs === 'bigint' ? Number(conf.hfCooldownMs) : 1_000;
+    const toMs = (v: unknown, dft: number) => typeof v === 'number' ? v : typeof v === 'bigint' ? Number(v) : dft;
     const parametersJson = row?.parameters ? JSON.stringify(row.parameters, null, 2) : '{}';
     const parsed = parseParametersToForm(row?.parameters || {});
     form.setFieldsValue({
       id: row?.id, templateId: row?.templateId, accountId: row?.accountId, name: row?.name, symbol: row?.symbol, timeframe: row?.timeframe,
       defaultVolume: parsed.defaultVolume, maxPositions: parsed.maxPositions, stopLossPriceOffset: parsed.stopLossPriceOffset, takeProfitPriceOffset: parsed.takeProfitPriceOffset,
-      maxDrawdownPct: parsed.maxDrawdownPct, scheduleType, intervalMs, hfCooldownMs, parametersJson,
+      maxDrawdownPct: parsed.maxDrawdownPct, scheduleType, intervalMs: toMs(conf?.intervalMs, 300_000), hfCooldownMs: toMs(conf?.hfCooldownMs, 1_000), parametersJson,
     });
     void loadSymbols(row?.accountId || '');
     setOpenEdit(true);
@@ -173,13 +174,9 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
     try { params = v.parametersJson?.trim() ? JSON.parse(v.parametersJson) : {}; } catch { message.error(t(MESSAGES_PARAMETERS_PARSE_FAILED_KEY)); return; }
     const merged = { ...params, ...buildParametersFromForm(v) };
     const sType: ScheduleType = (v.scheduleType || 'kline_close') as ScheduleType;
-    const scheduleConfig = create(ScheduleConfigSchema, {
-      cronExpression: '', intervalMs: 0n, eventTrigger: '',
-      triggerMode: sType === 'hf_quote' ? 'hf_quote_stream' : 'stable_kline',
-      stableOverrideIntervalMs: 0n, hfCooldownMs: 0n,
-    });
-    if (sType === 'interval') { const ms = Math.max(1000, Math.floor(Number(v.intervalMs || 300_000))); scheduleConfig.intervalMs = BigInt(ms); }
-    if (sType === 'hf_quote') { const cd = Math.max(100, Math.floor(Number(v.hfCooldownMs || 1_000))); scheduleConfig.hfCooldownMs = BigInt(cd); }
+    const scheduleConfig = create(ScheduleConfigSchema, { cronExpression: '', intervalMs: 0n, eventTrigger: '', triggerMode: sType === 'hf_quote' ? 'hf_quote_stream' : 'stable_kline', stableOverrideIntervalMs: 0n, hfCooldownMs: 0n });
+    if (sType === 'interval') scheduleConfig.intervalMs = BigInt(Math.max(1000, Math.floor(Number(v.intervalMs || 300_000))));
+    if (sType === 'hf_quote') scheduleConfig.hfCooldownMs = BigInt(Math.max(100, Math.floor(Number(v.hfCooldownMs || 1_000))));
     const backendType = sType === 'interval' ? 'interval' : 'event';
     setLoading(true);
     try {
@@ -196,9 +193,10 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
   }, [editing, form, refresh, t]);
 
   const onToggleActive = useCallback(async (row: ScheduleRow, next: boolean) => {
-    try { await strategyScheduleV2Api.toggle(row.id, next); message.success(next ? t(COMMON_ENABLED_KEY) : t(COMMON_DISABLED_KEY)); await refresh(); }
-    catch (e: unknown) { message.error(e instanceof Error ? e.message : t(COMMON_OPERATION_FAILED_KEY)); }
-  }, [refresh, t]);
+    try { await strategyScheduleV2Api.toggle(row.id, next); message.success(next ? t(COMMON_ENABLED_KEY) : t(COMMON_DISABLED_KEY)); await refresh();
+      if (next) navigate('/strategy/live?tab=active');
+    } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(COMMON_OPERATION_FAILED_KEY)); }
+  }, [refresh, t, navigate]);
 
   const onDelete = useCallback(async (row: ScheduleRow) => {
     try { await strategyScheduleV2Api.delete(row.id); message.success(t(COMMON_DELETED_KEY)); await refresh(); }
@@ -219,46 +217,26 @@ export default function LiveSchedulesTab({ highlightScheduleId }: { highlightSch
       </div>
 
       <ScheduleTable
-        schedules={schedules}
-        templates={templates}
-        accounts={accounts}
-        loading={loading}
-        triggering={triggering}
-        triggerContext={triggerContext}
-        formatTime={formatTime}
-        onEdit={openUpdate}
-        onToggleActive={onToggleActive}
-        onHealthCheck={loadScheduleHealth}
-        onManualTrigger={onManualTrigger}
-        onDelete={onDelete}
-        highlightScheduleId={highlightScheduleId}
+        schedules={schedules} templates={templates} accounts={accounts}
+        loading={loading} triggering={triggering} triggerContext={triggerContext}
+        formatTime={formatTime} onEdit={openUpdate} onToggleActive={onToggleActive}
+        onHealthCheck={loadScheduleHealth} onManualTrigger={onManualTrigger}
+        onDelete={onDelete} highlightScheduleId={highlightScheduleId}
       />
-
       <EditScheduleModal
-        editing={editing}
-        open={openEdit}
-        loading={loading}
-        form={form}
-        templates={templates}
-        accounts={accounts}
-        symbols={symbolsOpts}
-        symbolsLoading={symbolsLoading}
-        accountIdWatch={accountIdWatch}
-        onCancel={() => { setOpenEdit(false); setEditing(null); form.resetFields(); }}
-        onOk={submitEdit}
+        editing={editing} open={openEdit} loading={loading} form={form}
+        templates={templates} accounts={accounts} symbols={symbolsOpts}
+        symbolsLoading={symbolsLoading} accountIdWatch={accountIdWatch}
+        onCancel={() => { setOpenEdit(false); setEditing(null); form.resetFields(); }} onOk={submitEdit}
       />
       <TriggerModal
-        open={openTrigger}
-        triggering={triggering}
-        triggerResult={triggerResult}
-        triggerContext={triggerContext}
+        open={openTrigger} triggering={triggering} triggerResult={triggerResult} triggerContext={triggerContext}
         onClose={() => { setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null); }}
         onRerun={() => { if (triggerContext?.schedule) onManualTrigger(triggerContext.schedule as unknown as ScheduleRow); }}
         onConfirmOrder={doOrderSend}
       />
       <ScheduleHealthModal
-        open={healthOpen}
-        loading={healthLoading}
+        open={healthOpen} loading={healthLoading}
         target={healthTarget as unknown as Record<string, unknown> | null}
         summary={healthSummary as unknown as Record<string, unknown> | null}
         onRefresh={() => { if (healthTarget) loadScheduleHealth(healthTarget); }}
