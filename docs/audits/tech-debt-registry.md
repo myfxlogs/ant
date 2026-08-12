@@ -19,7 +19,7 @@
 | FEAT-3 | 受保护回测对齐 | 🟦open（roadmap）|
 | TUNING-OVERFIT-2 | OOS-at-publish 惰性闸（`quality.go:302` 条件性惰性，优化快照未填 OOS 字段）| 🟦open（低优 follow-up）|
 | CQ-5 | eslint-disable 残留 11 处缺注释 | 🟦open（低优，补理由注释）|
-| DEPLOY-UX | DeployScheduleModal 创建调度后不自动启用、不跳转 — 用户"部署后找不到" | 🟦open |
+| DEPLOY-UX | DeployScheduleModal 创建调度后不自动启用、不跳转 — 用户"部署后找不到" | ✅done |
 
 ---
 
@@ -57,7 +57,7 @@
 
 ## 总计
 
-零 ❓待核。🟦open 6 项 + ❌descoped 1 项。⚠️待Claude复审：无。
+零 ❓待核。🟦open 5 项 + ❌descoped 1 项。⚠️待Claude复审：无。
 POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 对抗测试有效）。
 上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。
 
@@ -65,7 +65,7 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 ## 变更日志
 
-- 2026-08-12 **DEPLOY-UX 🟦open**：DeployScheduleModal 创建调度后不自动启用、不跳转 — 用户"部署后找不到"。根因：创建 `is_active=false` 调度后只显示 toast 关闭弹窗，用户不知道去哪管理。ADR-0030 定义两步法（Configure → Confirm）：创建后跳转 `/strategy/live?tab=schedules&scheduleId=xxx`，Schedules tab 高亮新调度，用户手动 Enable。施工待进行。
+- 2026-08-12 **DEPLOY-UX ✅done**：DeployScheduleModal 两步法部署 — 根因：创建 `is_active=false` 调度后只显示 toast 关闭弹窗，用户不知道去哪管理。ADR-0030 定义两步法（Configure → Confirm）：创建后跳转 `/strategy/live?tab=schedules&scheduleId=xxx`，Schedules tab 高亮新调度（金色 2s 渐隐动画），用户手动 Enable。文件：`DeployScheduleModal.tsx`（navigate 替代 toggle）、`LiveStrategyPage.tsx`（useSearchParams）、`LiveSchedulesTab.tsx`（highlightScheduleId prop）、`ScheduleTable.tsx`（rowClassName）、`index.css`（keyframe）。对抗证明：tsc 0err / npm build ok。红队自审通过（navigate 在 onClose 后安全、created?.id 空值安全、URL query 生命周期合理）。commit `3daf8ac1`。
 - 2026-08-12 **BT-DATE-FIX ✅**：回测日期范围不生效 + Run ID 显示 — 根因 A（后端）：`GetKlines` SQL 有 `is_replay = 0` 过滤，把 `ensureBarData` 从 broker 拉回的历史数据（`IsReplay: true`）排除，回测仍用旧 live 数据。根因 B（前端）：React stale closure — `setStartDate()` 后立即调 `run()`，闭包读到旧 state。修复 A：移除 `is_replay = 0`，`DISTINCT ON` 已去重。修复 B：`BacktestRunnerInputs` 加 `startDate/endDate`，`run()` 优先用 `inputs.startDate ?? startDate`，`toDate()` 提取为模块级纯函数降复杂度。新增 Run ID 显示在回测结果页 header（前 8 位 monospace）。对抗证明：tsc 0err / eslint 0warn / go build ok / CI 全绿。commit `2af15034` + `7283ff3f`。
 - 2026-08-12 **UI-PANEL-SWITCH ✅**：选策略后右侧面板不切回代码 — 根因：`WorkspaceCenterColumn` 的 `onSelect` 只调 `templates.onSelect(id)`，未重置 `rightPanelTab`，右侧停留在 backtest 结果。修复：`onSelect` 回调加 `setRightPanelTab(null)`。同时将回测历史列表中 `totalReturn` 为 null 时显示的 `'—'` 替换为 `EditOutlined` 重命名按钮。对抗证明：tsc 0err / eslint 0warn / npm build ok。commit `1f867e1d`。
 - 2026-08-12 **BT-DATA-GAP ✅**：回测数据缺失设计缺陷修复 — 原设计：回测只查 PG `md_bars` 缓存，缺数据直接报错或静默用旧数据。根因：PG 是缓存不是数据源，broker 才是 source of truth；把缓存管理问题甩给用户违反第一性原则。修复：新增 `ensureBarData` 方法，在 `validateBacktestRequest` 和 `fetchBars` 中自动检测 PG 数据覆盖缺口 → 通过 `mtHub.PriceHistory` 从 broker 拉取缺失范围 → `InsertBars` 落 PG → 重新查询。只有 broker 也拿不到数据才报错并告知用户原因。新增 `MtHubService.ActiveAccountIDs()` 透传方法。文件：`backtest_data_ensure.go`（新）、`strategy_backtest_validate.go`、`backtest_execution.go`、`mthub/service.go`。对抗证明：go build 通过 + 8 个 validate 测试全绿。
