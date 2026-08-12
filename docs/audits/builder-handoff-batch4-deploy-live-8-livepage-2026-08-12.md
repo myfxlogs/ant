@@ -10,28 +10,31 @@
 
 | # | 任务 | 级别 | 位置（审计方已逐行核对） |
 |---|------|------|--------------------------|
-| 1 | **DEPLOY-LIVE-8**：调度启用即死（执行链断裂）| **P1** | `strategy_schedules.go:217` + `schedule_event.go:104` + `schedule_engine.go` Start |
+| 1 | **DEPLOY-LIVE-8**：调度启用即死（执行链断裂）| **P1** | `strategy_schedules.go:221` + `schedule_engine.go:326`（buildLiveRun）+ `schedule_engine.go` Start |
 | 2 | **ActiveStrategy 增强**（UI 前置数据契约）| P1 配套 | proto `strategy_runtime.proto:475` + `strategy_active_handlers.go:158` |
 | 3 | **Live 页 UI 重设计**（监视主视图，用户已确认方案）| P1 配套 | `LiveStrategyPage.tsx` + `LiveSchedulesTab.tsx` + `DeployScheduleModal.tsx` |
 
 ## 二、任务 1：DEPLOY-LIVE-8（P1，启用即死）
 
 **根因（审计方实测证据链完整，勿重新排查）**：
-- `strategy_schedules.go:217` `ToggleSchedule` 调 `_ = s.engine.StartSchedule(ctx, id)` 传 **ConnectRPC handler ctx**
-- `schedule_event.go:104` `runCtx, cancel := context.WithCancel(ctx)` —— runCtx 继承 handler ctx
+- `strategy_schedules.go:221` `ToggleSchedule` 调 `_ = s.engine.StartSchedule(ctx, id)` 传 **ConnectRPC handler ctx**（原 :217，LIVE-7b 施工后 +4）
+- `schedule_engine.go:326`（`buildLiveRun` 内，LIVE-6 `cd3416b1` 抽公共函数后的 **P1 当前点**）`runCtx, cancel := context.WithCancel(ctx)` —— runCtx 继承 handler ctx
 - handler 返回 → ConnectRPC 框架 cancel 请求 ctx → `live_runner.go:270` `runLiveEventLoop` 收到 `runCtx.Done()` 退出
 - **实测**（用户 2026-08-12 23:55 端到端）：run `fbef8bfc` **28ms 即死**（started 15:55:42.761 → stopped 15:55:42.789，0 信号 0 错误）；日志 `LiveStrategyRunner: starting` → 2.3ms 后 `context cancelled, exiting` → `run completed`（静默假成功）
+- **⚠️ 位置说明（勿困惑）**：批次3 施工（LIVE-6 抽 `buildLiveRun`，commit `cd3416b1`）已把四道门 + runCtx 构造移入 `schedule_engine.go:276-378` 公共函数，`launchEventSession`（schedule_event.go:52-76）只调它。**抽函数时行为保持不变，P1 未修**：dispatch 路径（executeLoop ← Start 引擎 ctx）正确，launchEventSession 路径（StartSchedule ← handler ctx）仍错——两路径共用 `buildLiveRun:326`，修复点在公共函数内
 
 **修复（契约）**：
-1. `ScheduleEngine` struct 加字段 `lifecycleCtx context.Context`
-2. `func (e *ScheduleEngine) Start(ctx context.Context) error` 开头保存 `e.lifecycleCtx = ctx`（引擎生命周期 = 服务生命周期）
-3. `launchEventSession` 改 `runCtx, cancel := context.WithCancel(e.lifecycleCtx)`（run 生命周期 = 引擎生命周期；`Stop()`/`StopSchedule` 仍走 handle.cancel() 双保险）
-4. `StartSchedule` 内 `GetByID` 等快路径 DB 查询保留 handler ctx（无 goroutine 泄漏，无需改）
-5. `ToggleSchedule` 调用不用改（ctx 只用于快查询）
+1. `ScheduleEngine` struct 加字段 `lifecycleCtx context.Context`（schedule_engine.go:43-57）
+2. `func (e *ScheduleEngine) Start(ctx context.Context) error` 开头保存 `e.lifecycleCtx = ctx`（:98，`reconcileOnStartup` 之前）
+3. `buildLiveRun` 里 `runCtx, cancel := context.WithCancel(ctx)`（**schedule_engine.go:326**）改为 `context.WithCancel(e.lifecycleCtx)`（run 生命周期 = 引擎生命周期；`Stop()`/`StopSchedule` 仍走 handle.cancel() 双保险 :425/:436）
+4. **nil 守卫（必做，审计方已核对 main.go 启动顺序，非可选）**：`main.go:223` 是 `go func() { _ = scheduleEngine.Start(ctx) }()` **goroutine 启动**——与 handler 请求完全并发、无顺序保证 → 首个 ToggleSchedule 请求可能先于 `e.lifecycleCtx = ctx` 赋值到达 → `context.WithCancel(nil)` **panic**（context 包直接 panic）。取 lifecycleCtx 时 nil → 退化 `context.Background()`（或 Start 内互斥保证原子性）
+5. `StartSchedule` 内 `GetByID` 等快路径 DB 查询保留 handler ctx（无 goroutine 泄漏，无需改）
+6. `ToggleSchedule` 调用不用改（ctx 只用于快查询）
 
 **对抗证明（必做，删行必红）**：
-- 集成测试：构造**已 cancel 的 ctx** 调 `launchEventSession` → run 仍启动且持续（断言 `activeRuns` 含该 schedule + run 记录 status=running）——证明 run 不再依赖调用方 ctx
-- 删行实验：`runCtx, cancel := context.WithCancel(e.lifecycleCtx)` 还原为 `context.WithCancel(ctx)` → 测试 **RED**（run 立即退出）→ 还原 → GREEN
+- 集成测试：构造**已 cancel 的 ctx** 调 `launchEventSession`（入口 schedule_event.go:52 不变，内部走 buildLiveRun）→ run 仍启动且持续（断言 `activeRuns` 含该 schedule + run 记录 status=running）——证明 run 不再依赖调用方 ctx
+- 删行实验：`schedule_engine.go:326` `context.WithCancel(e.lifecycleCtx)` 还原为 `context.WithCancel(ctx)` → 测试 **RED**（run 立即退出）→ 还原 → GREEN
+- 守卫测试：engine 从未 Start（lifecycleCtx nil）时调 launchEventSession → 不 panic（run 用 background ctx 兜底）
 - 冒烟：启用调度 → run 持续 running 超过 1 分钟（原 28ms 死）→ 等 15m bar 收盘观察信号（可先看 `session registered` 后不再 `context cancelled`）
 
 ## 三、任务 2：ActiveStrategy 增强（运行监视 UI 的数据前置）
@@ -80,7 +83,7 @@
 
 ## 六、红队自审（逐条给出结论）
 
-- [x] P1：**`lifecycleCtx` nil 守卫必须做（审计方已核对启动顺序，非可选）**：`main.go:223` 是 `go func() { _ = scheduleEngine.Start(ctx) }()` **goroutine 启动**——与 handler 服务请求完全并发、无顺序保证 → 首个 ToggleSchedule 请求可能先于 `e.lifecycleCtx = ctx` 赋值到达 → `context.WithCancel(nil)` **panic**（context 包 `WithCancel(nil)` 直接 panic "cannot create context from nil parent"）。**必须**：`launchEventSession` 里取 lifecycleCtx 时 nil 则退化为 `context.Background()`（或 `Start` 内用互斥保证原子性），勿依赖启动顺序
+- [x] P1：**`lifecycleCtx` nil 守卫必须做（审计方已核对启动顺序，非可选）**：`main.go:223` 是 `go func() { _ = scheduleEngine.Start(ctx) }()` **goroutine 启动**——与 handler 服务请求完全并发、无顺序保证 → 首个 ToggleSchedule 请求可能先于 `e.lifecycleCtx = ctx` 赋值到达 → `context.WithCancel(nil)` **panic**（context 包 `WithCancel(nil)` 直接 panic "cannot create context from nil parent"）。**必须**：`buildLiveRun`（schedule_engine.go:326 修复点）取 lifecycleCtx 时 nil 则退化为 `context.Background()`（或 `Start` 内用互斥保证原子性），勿依赖启动顺序
 - [ ] P1：`Stop()`（引擎关闭）仍正确 cancel 所有 run（lifecycleCtx 取消 + handle.cancel 双路径）
 - [ ] P2（本批连带核对，不改）：dispatch（executeLoop）路径 ctx 已是引擎 ctx 无误——确认无同类 handler ctx 泄漏（grep `StartSchedule\|launchEventSession\|dispatch(` 的调用方）
 - [ ] proto 改动：前后端 gen 同步生成；`strategy_name` 查询失败路径（schedule 已删）不 panic（name 空字符串）

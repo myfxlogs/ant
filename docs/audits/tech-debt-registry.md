@@ -25,10 +25,11 @@
 | DEPLOY-LIVE-2 | MT4 `mt4Op` default→`Op_Buy`：stop_limit 信号在 MT4 账户变市价买入错单（P1）| ✅done（2026-08-12 审计方独立删行复测验收）|
 | DEPLOY-LIVE-1-COVERAGE | 审计方复测发现覆盖缺口：live dispatch 调用点（`barOpenTimeForSignal`→`bar.OpenTime` 还原）删行仍绿——无 mtHub mock 测试覆盖 live 路径（补强测试，随下一批施工）| ✅done（2026-08-12）|
 | DEPLOY-LIVE-3 | CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch`（UpdateSchedule 切账户）同样 typed-nil panic（P1，随 200EMPTY 一并修）| ✅done（2026-08-12）|
-| DEPLOY-LIVE-4 | gate fail-open：`evaluatePlaceGate`/CloseOrder `gate==nil || accountStateProvider==nil` → 静默放行（P2）| 🟦open |
-| DEPLOY-LIVE-5 | KYC 地域门控空转：`ClientIPFn` 恒返回 "" → GeoIP/sanctioned 检查永远跳过（P2）| 🟦open |
-| DEPLOY-LIVE-6 | `dispatch`/`launchEventSession` ~100 行重复（四道门+run record+entCheck）——加门改两处，漏改即门控缺口（P2，可演进性）| 🟦open |
-| DEPLOY-LIVE-7 | 死代码/断链：handlers.go:208-210 未用 gate；WatchSchedules SSE `schedule_change` 无人 NOTIFY 且前端不消费（P3）| 🟦open |
+| DEPLOY-LIVE-4 | gate fail-open：`evaluatePlaceGate`/CloseOrder `gate==nil || accountStateProvider==nil` → 静默放行（P2）| ✅done（2026-08-12 对抗证明：删 fail-closed 行→4 测试 RED） |
+| DEPLOY-LIVE-5 | KYC 地域门控空转：`ClientIPFn` 恒返回 "" → GeoIP/sanctioned 检查永远跳过（P2）| ✅done（2026-08-12 对抗证明：RealIP→block / EmptyIP→pass 双测试） |
+| DEPLOY-LIVE-6 | `dispatch`/`launchEventSession` ~100 行重复（四道门+run record+entCheck）——加门改两处，漏改即门控缺口（P2，可演进性）| ✅done（2026-08-12 对抗证明：禁用 buildLiveRun entitlement→两路径同时 RED） |
+| DEPLOY-LIVE-7 | 死代码/断链：handlers.go:208-210 未用 gate；WatchSchedules SSE `schedule_change` 无人 NOTIFY 且前端不消费（P3）| ✅done（2026-08-12 删除死 gate + 接 pg_notify） |
+| DEPLOY-LIVE-8 | 调度启用即死（执行链断裂）：ToggleSchedule 传 handler ctx → `buildLiveRun:326` `WithCancel(ctx)` → handler 返回即 cancel → run 28ms 即死（P1）| 🟦open（批次4 待施工，提示词 `builder-handoff-batch4-deploy-live-8-livepage-2026-08-12.md`）|
 
 ---
 
@@ -144,11 +145,11 @@
 
 ### P1（新增 2026-08-12 用户端到端实测暴露）
 
-**DEPLOY-LIVE-8 调度启用即死（执行链断裂，P1）**：`strategy_schedules.go:217` `ToggleSchedule` 调 `s.engine.StartSchedule(ctx, id)` 传 **ConnectRPC handler ctx** → handler 返回后框架 cancel 请求 ctx → `launchEventSession` 的 `runCtx = context.WithCancel(ctx)`（schedule_event.go:104）随之取消 → `runLiveEventLoop` 收到 `runCtx.Done()`（live_runner.go:270）退出 → **run 28ms 即死**。
+**DEPLOY-LIVE-8 调度启用即死（执行链断裂，P1）**：`strategy_schedules.go:221` `ToggleSchedule` 调 `s.engine.StartSchedule(ctx, id)` 传 **ConnectRPC handler ctx**（原 :217，LIVE-7b 施工后 +4）→ handler 返回后框架 cancel 请求 ctx → `buildLiveRun` 的 `runCtx = context.WithCancel(ctx)`（schedule_engine.go:326；**P1 点原在 schedule_event.go:104，LIVE-6 `cd3416b1` 抽公共函数时随移且行为未变**）随之取消 → `runLiveEventLoop` 收到 `runCtx.Done()`（live_runner.go:270）退出 → **run 28ms 即死**。
 - **用户实测证据**（2026-08-12 23:55）：调度 'E2E 复刻 - Live' 启用 → run `fbef8bfc` started 15:55:42.761 → stopped 15:55:42.789（**28ms**，0 信号 0 错误）；日志 `starting` → 2.3ms 后 `context cancelled, exiting` → `run completed`（无 error，静默假成功）
 - **连锁症状**：Active Runs 空（run 已死）/ 日志页空 / 健康检查 0 数据——用户看到的"调度显示运行中但日志健康不可用"根因**不是 UI 缺失，是 run 从未存活**
 - 对比：`executeLoop → dispatch` 路径用引擎生命周期 ctx（正确）；`StartSchedule → launchEventSession` 路径用 handler ctx（错误）
-- **修复方向**：ScheduleEngine 持 `lifecycleCtx`（`Start(ctx)` 时保存），`launchEventSession` 用 `e.lifecycleCtx` 派生 runCtx（run 生命周期 = 引擎生命周期；`Stop()`/`StopSchedule` 仍走 handle.cancel() 双保险）。`StartSchedule` 内 GetByID 等快路径 DB 查询可保留 handler ctx
+- **修复方向**：ScheduleEngine 持 `lifecycleCtx`（`Start(ctx)` 时保存），`buildLiveRun`（schedule_engine.go:326）用 `e.lifecycleCtx` 派生 runCtx（run 生命周期 = 引擎生命周期；`Stop()`/`StopSchedule` 仍走 handle.cancel() 双保险 :425/:436）。**nil 守卫必做**（`main.go:223` Start 在 goroutine 启动，与 handler 请求并发无顺序保证 → 首个请求可能先于 lifecycleCtx 赋值 → `WithCancel(nil)` panic；nil 则退化 `context.Background()`）。`StartSchedule` 内 GetByID 等快路径 DB 查询可保留 handler ctx
 - **对抗证明**：集成测试——传已 cancel 的 ctx 调 launchEventSession → run 仍启动持续 running（断言 activeRuns 含该 schedule + run 记录 running）；删修复行（改回 `WithCancel(ctx)`）→ **RED**（run 立即退出）
 - **引入**（审计方 git log -S 已定位，非回归）：FEAT-1 `84f88d07`（购买→实盘链路）在 ToggleSchedule 新增 `_ = s.engine.StartSchedule(ctx, id)` 三行（注释"Event-type schedules need StartSchedule to launch a streaming session"）——事件型调度需要流式会话而引入，但**传了 handler ctx**（对比：手动 StartStrategy 路径 `strategy_active_handlers.go:247` 用 `context.WithCancel(context.Background())` 正确——设计意图早有定论，P1 属 FEAT-1 接线时漏传引擎 ctx，非设计缺陷）
 
@@ -162,7 +163,8 @@
 
 ### P3（死代码/断链）
 
-**DEPLOY-LIVE-7**：a) `handlers.go:208-210` `gate := risk.NewDefaultGate()` 定义后未用（死代码，正式 gate 在 `handlers_strategy.go:90 setupRiskGate`）；b) `WatchSchedules` SSE（`strategy_schedules.go:243`）监听 `schedule_change`，**全 backend 无任何 `pg_notify('schedule_change')`** 且前端不消费 watch()（LiveSchedulesTab 用 list + mount/effect refresh）——双死。修复方向：删除或接 NOTIFY + 前端消费。
+**DEPLOY-LIVE-7**：a) `handlers.go:208-210` `gate := risk.NewDefaultGate()` 定义后未用（死代码，正式 gate 在 `handlers_strategy.go:90 setupRiskGate`）；b) `WatchSchedules` SSE（`strategy_schedules.go:243`）监听 `schedule_change`，**全 backend 无任何 `pg_notify('schedule_change')`**——watch 流事件永远为空。修复方向：删除或接 NOTIFY + 前端消费。
+- **✅done（2026-08-12 施工方 `ad6fb98a`）**：删死 gate（-5 行）+ 四写路径接 `pg_notify('schedule_change')`（+11 行）。**审计方核对修正**：原"前端不消费 watch()"**字面不准确**——LiveSchedulesTab:76-99 的 watch 循环早已存在且真消费（`setSchedules(event.schedules)`，90s 重连式）；真断链在后端无人 NOTIFY（事件永空），`ad6fb98a` 接 NOTIFY 后断链已通。前端 90s 重连式 watch 仍是轮询兜底（Push-First 增强项，非断链，可后续优化）。待审计方验收。
 
 ### 审计确认无 gap（合规项记录）
 
@@ -176,9 +178,9 @@
 
 ## 总计
 
-零 ❓待核。🟦open 7 项 + ❌descoped 1 项。CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 `b240a7ca` + **审计方验收：删行 RED 复测 + 冒烟 200+id/切账户实测全绿**）。
+零 ❓待核。🟦open 6 项（含 **DEPLOY-LIVE-8 P1**）+ ❌descoped 1 项。DEPLOY-LIVE-4~7 ✅done（2026-08-12 施工方修复：LIVE-4 `826fbf5a` fail-closed / LIVE-5 `6a9d9cb6` ClientIPFn / LIVE-6 `cd3416b1` 抽 buildLiveRun / LIVE-7 `ad6fb98a` 死 gate + NOTIFY；对抗证明齐备，**待审计方验收**）。⚠️ **DEPLOY-LIVE-8（P1 调度启用即死）🟦open**——P1 点随 LIVE-6 抽函数移至 `buildLiveRun:326`（行为未变未修），批次4 待施工。
 POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 对抗测试有效）。
-上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 审计方独立删行复测验收，commit `1a54ec21`）；CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 `b240a7ca` + **审计方验收：COVERAGE 删行 RED 独立复测 + 冒烟 200+JSON id + 切账户 200 实测**，详见各段验收标注）；🟦open 余项：DEPLOY-LIVE-4~7。
+上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 审计方独立删行复测验收，commit `1a54ec21`）；CREATE-SCHEDULE-200EMPTY + DEPLOY-LIVE-3 + DEPLOY-LIVE-1-COVERAGE ✅done（2026-08-12 施工方修复 `b240a7ca` + **审计方验收：COVERAGE 删行 RED 独立复测 + 冒烟 200+JSON id + 切账户 200 实测**，详见各段验收标注）；🟦open 余项：**DEPLOY-LIVE-8（P1，批次4）** / MQL-LOOP-4（P2 暂缓）/ POST-2 / FEAT-3 / TUNING-OVERFIT-2 / CQ-5。
 
 ---
 
