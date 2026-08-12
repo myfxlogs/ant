@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Modal, Form, Input, Select, InputNumber, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAccount } from '@/hooks/useAccount';
-import { strategyScheduleApi } from '@/client/strategy-schedules';
+import { strategyScheduleApi, strategyScheduleV2Api } from '@/client/strategy-schedules';
 import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { ScheduleConfig } from '@/gen/ant/v1/strategy_schedule_entity_pb';
 import SymbolPicker from '@/components/chart/SymbolPicker';
@@ -74,7 +74,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
         scheduleConfig.hfCooldownMs = BigInt(Math.max(100, Math.floor(Number(v.hfCooldownMs || 1000))));
       }
       const backendType = v.scheduleType === 'interval' ? 'interval' : 'event';
-      await strategyScheduleApi.createSchedule({
+      const created = await strategyScheduleApi.createSchedule({
         templateId,
         accountId: v.accountId,
         name: v.name,
@@ -83,6 +83,14 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
         scheduleType: backendType,
         scheduleConfig,
       });
+      if (created?.id) {
+        try {
+          await strategyScheduleV2Api.toggle(created.id, true);
+        } catch (toggleErr: unknown) {
+          const toggleMsg = toggleErr instanceof Error ? toggleErr.message : String(toggleErr);
+          message.warning(`${t(MESSAGES_SCHEDULE_CREATED_KEY)} — ${toggleMsg}`);
+        }
+      }
       trackFunnelEvent(FunnelEvents.FIRST_LIVE);
       message.success(t(MESSAGES_SCHEDULE_CREATED_KEY));
       onCreated?.();
