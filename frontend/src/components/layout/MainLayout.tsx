@@ -44,7 +44,7 @@ export default function MainLayout() {
       children: [
         { key: '/strategy', icon: <BookOutlined size={20} />, label: t('strategy.templates.gallery.title', { defaultValue: 'Strategies' }) },
         { key: '/strategy/new', icon: <CodeOutlined size={20} />, label: t('menu.strategyWorkspace') },
-        { key: '/strategy/live', icon: <ThunderboltOutlined size={20} />, label: t('menu.liveStrategy', { defaultValue: 'Live Monitor' }) },
+        { key: '/strategy/live', icon: <ThunderboltOutlined size={20} />, label: t('menu.strategyLive') },
       ],
     },
     { key: '/auto-trading', icon: <SettingOutlined size={20} />, label: t('menu.autoTrading') },

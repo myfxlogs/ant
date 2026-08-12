@@ -1,4 +1,6 @@
 const Menu = {
-  "menu": {}
+  "menu": {
+    "strategyLive": "ライブ戦略モニター"
+  }
 } as const;
 export default Menu;
