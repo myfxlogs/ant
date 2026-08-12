@@ -257,36 +257,55 @@ func (e *ScheduleEngine) isAutoTradeEnabled(userID uuid.UUID) bool {
 }
 
 func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategySchedule) {
-	// Entitlement gate (task 3): verify active subscription/trial/ownership before running.
+	cfg, handle, runCtx, err := e.buildLiveRun(ctx, schedule, "dispatch")
+	if err != nil {
+		return
+	}
+	go func(ctx context.Context) { e.runOne(ctx, schedule, cfg, handle) }(runCtx)
+
+	e.log.Info("dispatched", zap.String("schedule_id", schedule.ID.String()),
+		zap.String("symbol", schedule.Symbol), zap.String("timeframe", schedule.Timeframe))
+}
+
+// buildLiveRun runs the four pre-launch gates (entitlement/quota/bound/template),
+// assembles LiveStrategyConfig, pre-creates the run record, and registers the
+// run handle. Denied gates call repo.UpdateLastRun and return an error; callers
+// decide whether to propagate (launch) or swallow (dispatch).
+// Shared by dispatch and launchEventSession so a new gate can never be added
+// to one path and missed on the other (LEAKAGE-1 lesson).
+func (e *ScheduleEngine) buildLiveRun(ctx context.Context, schedule *model.StrategySchedule, logPrefix string) (LiveStrategyConfig, *runHandle, context.Context, error) {
+	// Entitlement gate.
 	if e.entitlementCheck != nil {
 		if !e.entitlementCheck(ctx, schedule.UserID.String(), schedule.TemplateID.String()) {
-			e.log.Warn("dispatch: entitlement denied",
+			e.log.Warn(logPrefix+": entitlement denied",
 				zap.String("schedule_id", schedule.ID.String()),
 				zap.String("user_id", schedule.UserID.String()))
-			_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("unauthorized: no active entitlement"))
-			return
+			err := fmt.Errorf("unauthorized: no active entitlement")
+			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
+			return LiveStrategyConfig{}, nil, nil, err
 		}
 	}
-	// Quota gate (task 5): enforce live strategy limit.
+
+	// Quota gate.
 	if e.runner != nil {
 		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, modeLive); err != nil {
-			e.log.Warn("dispatch: quota exceeded",
+			e.log.Warn(logPrefix+": quota exceeded",
 				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
 			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
-			return
+			return LiveStrategyConfig{}, nil, nil, err
 		}
 	}
-	// LEAKAGE-1: Enforce bound account at dispatch time.
-	// RunLiveStrategy also checks (non-bypassable), but early rejection avoids
-	// creating a run record and launching a doomed goroutine.
+
+	// Bound account gate (LEAKAGE-1).
 	if e.runner != nil {
 		if err := e.runner.checkBoundAccount(ctx, schedule.UserID, schedule.AccountID); err != nil {
-			e.log.Warn("dispatch: bound account check failed",
+			e.log.Warn(logPrefix+": bound account check failed",
 				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
 			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
-			return
+			return LiveStrategyConfig{}, nil, nil, err
 		}
 	}
+
 	// Load and validate template.
 	tpl, err := e.templateReader.GetTemplate(ctx, schedule.TemplateID, schedule.UserID)
 	if err != nil || tpl == nil || tpl.Code == "" {
@@ -294,10 +313,12 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		if err != nil {
 			reason = err.Error()
 		}
-		e.log.Error("dispatch: invalid template",
-			zap.String("schedule_id", schedule.ID.String()), zap.String("template_id", schedule.TemplateID.String()), zap.Error(err))
-		_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("dispatch: %s", reason))
-		return
+		e.log.Error(logPrefix+": invalid template",
+			zap.String("schedule_id", schedule.ID.String()),
+			zap.String("template_id", schedule.TemplateID.String()), zap.Error(err))
+		err := fmt.Errorf("%s: %s", logPrefix, reason)
+		_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
+		return LiveStrategyConfig{}, nil, nil, err
 	}
 
 	strParams, _ := schedule.GetParameters()
@@ -310,7 +331,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 	e.activeRuns[schedule.ID] = handle
 	e.mu.Unlock()
 
-	// Set per-bar entitlement revalidation for marketplace strategies (task 4).
+	// Per-bar entitlement revalidation for marketplace strategies.
 	var entCheck func(ctx context.Context) bool
 	if e.entitlementCheck != nil {
 		isOwner := tpl.UserID != nil && *tpl.UserID == schedule.UserID
@@ -334,7 +355,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		TickSeq:          new(atomic.Int64),
 	}
 
-	// Pre-create run record (RunLiveStrategy requires RunID to be set).
+	// Pre-create run record.
 	if e.runner != nil && e.runner.runRepo != nil {
 		uid, _ := uuid.Parse(cfg.UserID)
 		run := &repository.StrategyRun{
@@ -347,16 +368,13 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 			Status:       "running",
 		}
 		if err := e.runner.runRepo.Create(ctx, run); err != nil {
-			e.log.Warn("dispatch: failed to create run record", zap.Error(err))
+			e.log.Warn(logPrefix+": failed to create run record", zap.Error(err))
 		} else {
 			cfg.RunID = run.ID
 		}
 	}
 
-	go func(ctx context.Context) { e.runOne(ctx, schedule, cfg, handle) }(runCtx)
-
-	e.log.Info("dispatched", zap.String("schedule_id", schedule.ID.String()),
-		zap.String("symbol", schedule.Symbol), zap.String("timeframe", schedule.Timeframe))
+	return cfg, handle, runCtx, nil
 }
 
 func (e *ScheduleEngine) runOne(ctx context.Context, schedule *model.StrategySchedule, cfg LiveStrategyConfig, handle *runHandle) {

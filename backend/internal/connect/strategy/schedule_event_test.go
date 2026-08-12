@@ -495,3 +495,86 @@ func TestStartSchedule_NotFound(t *testing.T) {
 		t.Fatal("expected error for non-existent schedule")
 	}
 }
+
+// DEPLOY-LIVE-6: Verify dispatch path shares the same entitlement gate as
+// launchEventSession via buildLiveRun. If the common function is bypassed,
+// this test fails — proving both paths use buildLiveRun.
+func TestDispatch_SharesBuildLiveRun_EntitlementDenied(t *testing.T) {
+	schedule := makeTestSchedule(model.ScheduleTypeCron, true)
+
+	tplCalled := false
+	tplReader := &mockTemplateReader{
+		getTemplate: func(ctx context.Context, id, userID uuid.UUID) (*service.TemplateRow, error) {
+			tplCalled = true
+			return nil, nil
+		},
+	}
+
+	lastRunErr := error(nil)
+	repo := &mockScheduleRepo{
+		updateLastRun: func(ctx context.Context, id uuid.UUID, runErr error) error {
+			lastRunErr = runErr
+			return nil
+		},
+	}
+
+	engine := &ScheduleEngine{
+		repo:           repo,
+		templateReader: tplReader,
+		activeRuns:     make(map[uuid.UUID]*runHandle),
+		notifyCh:       make(chan struct{}, 1),
+		log:            zap.NewNop(),
+		entitlementCheck: func(ctx context.Context, userID, strategyID string) bool {
+			return false
+		},
+	}
+
+	engine.dispatch(context.Background(), schedule)
+
+	if tplCalled {
+		t.Error("template reader should not be called when entitlement denied in dispatch")
+	}
+	if lastRunErr == nil {
+		t.Error("expected UpdateLastRun to be called with entitlement error")
+	}
+}
+
+// DEPLOY-LIVE-6: Verify dispatch path shares the same template validation
+// gate as launchEventSession. Both paths must reject empty template code.
+func TestDispatch_SharesBuildLiveRun_EmptyTemplate(t *testing.T) {
+	schedule := makeTestSchedule(model.ScheduleTypeCron, true)
+
+	tplReader := &mockTemplateReader{
+		getTemplate: func(ctx context.Context, id, userID uuid.UUID) (*service.TemplateRow, error) {
+			return &service.TemplateRow{Code: ""}, nil
+		},
+	}
+
+	lastRunErr := error(nil)
+	repo := &mockScheduleRepo{
+		updateLastRun: func(ctx context.Context, id uuid.UUID, runErr error) error {
+			lastRunErr = runErr
+			return nil
+		},
+	}
+
+	engine := &ScheduleEngine{
+		repo:           repo,
+		templateReader: tplReader,
+		activeRuns:     make(map[uuid.UUID]*runHandle),
+		notifyCh:       make(chan struct{}, 1),
+		log:            zap.NewNop(),
+		entitlementCheck: func(ctx context.Context, userID, strategyID string) bool {
+			return true
+		},
+	}
+
+	engine.dispatch(context.Background(), schedule)
+
+	if lastRunErr == nil {
+		t.Error("expected UpdateLastRun to be called with template error")
+	}
+	if engine.isRunning(schedule.ID) {
+		t.Error("schedule should not be running after empty template rejection")
+	}
+}

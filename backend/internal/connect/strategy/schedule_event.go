@@ -3,13 +3,11 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"alphaforge/internal/model"
-	"alphaforge/internal/repository"
 )
 
 // StartSchedule loads a schedule by ID and starts it.
@@ -52,104 +50,9 @@ func (e *ScheduleEngine) StartSchedule(ctx context.Context, id uuid.UUID) error 
 // Revoked entitlement during runtime is handled by per-bar EntitlementCheck
 // in the live event loop (task 4), which self-terminates the session.
 func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model.StrategySchedule) error {
-	// Entitlement gate (task 3).
-	if e.entitlementCheck != nil {
-		if !e.entitlementCheck(ctx, schedule.UserID.String(), schedule.TemplateID.String()) {
-			e.log.Warn("launchEventSession: entitlement denied",
-				zap.String("schedule_id", schedule.ID.String()),
-				zap.String("user_id", schedule.UserID.String()))
-			_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("unauthorized: no active entitlement"))
-			return fmt.Errorf("unauthorized: no active entitlement")
-		}
-	}
-
-	// Quota gate (task 5).
-	if e.runner != nil {
-		if err := e.runner.checkStrategyQuota(ctx, schedule.UserID, modeLive); err != nil {
-			e.log.Warn("launchEventSession: quota exceeded",
-				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
-			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
-			return err
-		}
-	}
-
-	// LEAKAGE-1: Enforce bound account at launch time.
-	// RunLiveStrategy also checks (non-bypassable), but early rejection avoids
-	// creating a run record and launching a doomed goroutine.
-	if e.runner != nil {
-		if err := e.runner.checkBoundAccount(ctx, schedule.UserID, schedule.AccountID); err != nil {
-			e.log.Warn("launchEventSession: bound account check failed",
-				zap.String("schedule_id", schedule.ID.String()), zap.Error(err))
-			_ = e.repo.UpdateLastRun(ctx, schedule.ID, err)
-			return err
-		}
-	}
-
-	// Load template code from strategy_templates (not ai_strategy_templates).
-	tpl, err := e.templateReader.GetTemplate(ctx, schedule.TemplateID, schedule.UserID)
-	if err != nil || tpl == nil || tpl.Code == "" {
-		reason := "template code is empty"
-		if err != nil {
-			reason = err.Error()
-		}
-		e.log.Error("launchEventSession: invalid template",
-			zap.String("schedule_id", schedule.ID.String()),
-			zap.String("template_id", schedule.TemplateID.String()), zap.Error(err))
-		_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("launch: %s", reason))
-		return fmt.Errorf("launch: %s", reason)
-	}
-
-	strParams, _ := schedule.GetParameters()
-
-	runCtx, cancel := context.WithCancel(ctx)
-	handle := &runHandle{cancel: cancel}
-	handle.wg.Add(1)
-
-	e.mu.Lock()
-	e.activeRuns[schedule.ID] = handle
-	e.mu.Unlock()
-
-	// Per-bar entitlement revalidation for marketplace strategies (task 4).
-	var entCheck func(ctx context.Context) bool
-	if e.entitlementCheck != nil {
-		isOwner := tpl.UserID != nil && *tpl.UserID == schedule.UserID
-		if !isOwner {
-			entCheck = func(ctx context.Context) bool {
-				return e.entitlementCheck(ctx, schedule.UserID.String(), schedule.TemplateID.String())
-			}
-		}
-	}
-
-	cfg := LiveStrategyConfig{
-		AccountID:        schedule.AccountID.String(),
-		UserID:           schedule.UserID.String(),
-		Symbol:           schedule.Symbol,
-		Timeframe:        schedule.Timeframe,
-		Code:             tpl.Code,
-		Mode:             modeLive,
-		Params:           strParams,
-		ScheduleID:       schedule.ID,
-		EntitlementCheck: entCheck,
-		TickSeq:          new(atomic.Int64),
-	}
-
-	// Pre-create run record (RunLiveStrategy requires RunID to be set).
-	if e.runner != nil && e.runner.runRepo != nil {
-		uid, _ := uuid.Parse(cfg.UserID)
-		run := &repository.StrategyRun{
-			UserID:       uid,
-			AccountID:    cfg.AccountID,
-			Symbol:       cfg.Symbol,
-			Timeframe:    cfg.Timeframe,
-			Mode:         cfg.Mode,
-			StrategyCode: cfg.Code,
-			Status:       "running",
-		}
-		if err := e.runner.runRepo.Create(ctx, run); err != nil {
-			e.log.Warn("launchEventSession: failed to create run record", zap.Error(err))
-		} else {
-			cfg.RunID = run.ID
-		}
+	cfg, handle, runCtx, err := e.buildLiveRun(ctx, schedule, "launchEventSession")
+	if err != nil {
+		return err
 	}
 
 	// Pre-register session before launching.
@@ -157,7 +60,7 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 	// attribution is via Magic Numbers, not session exclusivity.
 	if e.runner != nil && e.runner.sessionRegistry != nil && cfg.RunID != uuid.Nil {
 		uid, _ := uuid.Parse(cfg.UserID)
-		sess := e.runner.sessionRegistry.Register(cfg.RunID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, schedule.ID, cancel)
+		sess := e.runner.sessionRegistry.Register(cfg.RunID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, schedule.ID, handle.cancel)
 		if sess != nil {
 			cfg.PreRegisteredSession = sess
 		}
