@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync/atomic"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -76,6 +77,11 @@ type LiveStrategyConfig struct {
 	// ShadowVerifier runs a background consistency check comparing live
 	// signals with shadow backtest results. Nil = disabled.
 	ShadowVerifier *ShadowVerifier
+
+	// TickSeq is an atomic counter for tick/trade signals, ensuring unique
+	// ClientIDs when bar is nil (OnTick/OnTrade paths). Bar signals use
+	// bar.OpenTime for determinism; tick signals use this counter.
+	TickSeq *atomic.Int64
 
 	// EntitlementCheck, if non-nil, is called on every finalized bar to verify
 	// the user still holds an active entitlement (subscription/trial/ownership).

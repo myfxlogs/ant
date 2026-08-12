@@ -21,6 +21,13 @@
 | CQ-5 | eslint-disable 残留 11 处缺注释 | 🟦open（低优，补理由注释）|
 | DEPLOY-UX | DeployScheduleModal 创建调度后不自动启用、不跳转 — 用户"部署后找不到" | ✅done |
 | CREATE-SCHEDULE-200EMPTY | CreateSchedule 返回 HTTP 200 + 0 字节 body + DB 无记录 — 根因=接线 bug：handlers.go:191 漏传 BoundSvc → typed-nil 接口 → EnsureBoundAccount panic 被 sentryhttp Repanic:false 静默吞掉 | 🟦open（2026-08-12 根因定论，待施工）|
+| DEPLOY-LIVE-1 | 实盘部署管线审计（2026-08-12）—— tick/trade 信号 `bar.OpenTime` nil panic → 进程崩溃（P1）| ✅done（2026-08-12）|
+| DEPLOY-LIVE-2 | MT4 `mt4Op` default→`Op_Buy`：stop_limit 信号在 MT4 账户变市价买入错单（P1）| ✅done（2026-08-12）|
+| DEPLOY-LIVE-3 | CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch`（UpdateSchedule 切账户）同样 typed-nil panic（P1，随 200EMPTY 一并修）| 🟦open |
+| DEPLOY-LIVE-4 | gate fail-open：`evaluatePlaceGate`/CloseOrder `gate==nil || accountStateProvider==nil` → 静默放行（P2）| 🟦open |
+| DEPLOY-LIVE-5 | KYC 地域门控空转：`ClientIPFn` 恒返回 "" → GeoIP/sanctioned 检查永远跳过（P2）| 🟦open |
+| DEPLOY-LIVE-6 | `dispatch`/`launchEventSession` ~100 行重复（四道门+run record+entCheck）——加门改两处，漏改即门控缺口（P2，可演进性）| 🟦open |
+| DEPLOY-LIVE-7 | 死代码/断链：handlers.go:208-210 未用 gate；WatchSchedules SSE `schedule_change` 无人 NOTIFY 且前端不消费（P3）| 🟦open |
 
 ---
 
@@ -89,16 +96,65 @@
 
 ---
 
+## DEPLOY-LIVE 实盘部署管线审计（2026-08-12 审计方；DEPLOY-LIVE-1/2 ✅done，DEPLOY-LIVE-3~7 🟦open）
+
+> 管线：frontend(Deploy modal → Enable) → api-gateway(CreateSchedule/ToggleSchedule) → ScheduleEngine(dispatch/launchEventSession) → LiveRunner(bar/tick/trade 三通道) → dispatchLiveSignal → MtHubService.PlaceOrder(gate 咽喉) → OMS 16 状态机 → mt4/5 adapter → broker。
+> 审计方法：逐环节代码级 + git 历史对照 + 对抗验证（P1 均验证触发链完整）。
+
+### P1（资金/可用性风险）
+
+**DEPLOY-LIVE-1 tick/trade 信号 → `bar.OpenTime` nil panic → 进程崩溃** ✅done（2026-08-12）
+- 位置：`live_runner_events.go:151/181`（handleTick/handleTrade 调 `dispatchFromBytes(ctx, cfg, nil, ...)` 传 **nil bar**）→ `live_dispatch.go:63/74`（`s.dispatchMarketOrder(ctx, cfg, bar.OpenTime, ...)` 调用线程解引用）→ panic 沿 event loop → RunLiveStrategy → runOne → ScheduleEngine goroutine 传播，**全链无 recover → 后端进程崩溃（所有账户调度停摆）**
+- 触发：策略实现 OnTick/OnTrade（`detectExecModels` 探测 HasOnTick → 订阅 tick 流）且回调里发市价单（MQL `OnTick`+`OrderSend` 是标准模式；`strategy/runner/runner.go:94-106` `ts.OnTick` 直接返回 Signal → `vmSignalToProto` → "buy"/"sell"）
+- **修复**：新增 `barOpenTimeForSignal(bar, cfg)` nil-safe helper（`live_helpers.go:22-30`）—— bar 非 nil 返回 `bar.OpenTime`，bar nil 返回 `cfg.TickSeq.Add(1)`（per-run atomic counter）。`dispatchLiveSignal` 两处 `bar.OpenTime` 替换为 `barOpenTimeForSignal(bar, cfg)`。`dispatchPaperSignal` 的 `bar.Bid`/`bar.Ask` 也改为 nil-safe。`LiveStrategyConfig` 新增 `TickSeq *atomic.Int64` 字段，三处构造点（`schedule_engine.go:333`/`schedule_event.go:133`/`strategy_active_handlers.go:214`）初始化 `new(atomic.Int64)`
+- **附带修复**：tick 单 ClientID 碰撞——`TickSeq` 原子计数器确保每个 tick 信号 ClientID 唯一，幂等守卫不再吞后续 tick 单
+- **对抗证明**：6 个单测（`deploy_live_test.go`）—— 3 个 nil bar 信号测试 + 3 个 `barOpenTimeForSignal` helper 测试。删行实验：还原 `bar.OpenTime` + `bar.Bid`/`bar.Ask` → 3 个 nil bar 测试 **RED**（panic: nil pointer dereference）；修复后 6/6 **GREEN**。`go test ./internal/connect/strategy/... -count=1` 全绿
+
+**DEPLOY-LIVE-2 MT4 `mt4Op` default → `Op_Buy`：stop_limit 信号在 MT4 账户变市价买入错单** ✅done（2026-08-12）
+- 位置：`backend/internal/mdgateway/adapter/mt4/orders.go:17-34`——switch 仅 buy/sell × market/limit/stop 六 case，`default: return pb.Op_Op_Buy`。MT5 adapter（mt5/orders.go:106-109）有正确 BuyStopLimit/SellStopLimit case
+- 触发：MQL5/Python 策略（SDK 支持 stop_limit，`dispatchPendingOrder` → `mthub.OrderStopLimit`）绑定 MT4 账户 → mt4Op 落 default → **Op_Buy 市价买入**（错单 = 直接资金风险）；mthub 层无平台类型预校验
+- **修复**：`mt4Op` 签名改为 `(pb.Op, error)`，default 返回 `fmt.Errorf("mt4 unsupported order type: side=%d orderType=%d", side, ot)`。`PlaceOrder` 传播 error（`orders.go:48-51`）。MT5 adapter 不变（已正确）
+- **对抗证明**：`TestMt4Op` 9 case——6 个已知组合返回正确 Op+nil；3 个未知/stop_limit 组合返回 error（`buy_stop_limit_unsupported`/`sell_stop_limit_unsupported`/`unknown_type_returns_error`）。旧代码 stop_limit 返回 `Op_Buy`（红）；新代码返回 error（绿）。`go test ./internal/mdgateway/adapter/mt4/... -count=1` 全绿
+
+**DEPLOY-LIVE-3 CREATE-SCHEDULE-200EMPTY 同源接线 bug 扩大：`applyAccountSwitch` 同样 typed-nil panic**
+- 位置：`strategy_schedules.go:169-179`——UpdateSchedule 切账户走 `s.boundSvc.EnsureBoundAccount`（与 CreateSchedule:74 同一 `s.boundSvc != nil` typed-nil 判断，同一 wiring 漏传 `handlers.go:191`）
+- 影响：修复 200EMPTY 的 `BoundSvc: boundSvc` 一行同时修复本路径；**修复验收时须补测切账户场景**
+- 对抗证明：UpdateSchedule 切账户合法请求 → 修复前 500/200 空（红）；修复后 200 + account_id 更新（绿）
+
+### P2（防御性/可演进性）
+
+**DEPLOY-LIVE-4 gate fail-open**：`service_orders.go:131`/`service_orders_close.go:104` `if s.gate == nil || s.accountStateProvider == nil { return nil }` 静默放行。live_runner preflight 挡了 nil gate，但 **CloseOrder 无 preflight 挡**（gate 空转）；accountStateProvider 注入缺失时全部放行。修复方向：nil → 返回 error（fail-closed）。
+
+**DEPLOY-LIVE-5 KYC 地域门控空转**：`handlers_strategy.go:116` `ClientIPFn: func(ctx) string { return "" }` → `JurisdictionGate.Check`（`risksvc/jurisdiction.go:93`）`clientIP != ""` 不满足 → **GeoIP/sanctioned 检查永远跳过**（RequireKYC/Disclaimer/Questionnaire 若配置开启仍按 Store 检查）。修复方向：从 nginx 头（X-Real-IP/X-Forwarded-For）提取真实 IP 注入 ctx。
+
+**DEPLOY-LIVE-6 `dispatch`（schedule_engine.go:258-358）与 `launchEventSession`（schedule_event.go:53-171）~100 行重复**（entitlement/quota/bound/模板四道门 + run record + entCheck + cfg 组装，仅事件语义不同）——加一道门改两处、漏一处即门控缺口（本次 LEAKAGE-1 接线漏传即同类教训）。修复方向：抽公共 `buildLiveRun(cfg)` 门控函数。
+
+### P3（死代码/断链）
+
+**DEPLOY-LIVE-7**：a) `handlers.go:208-210` `gate := risk.NewDefaultGate()` 定义后未用（死代码，正式 gate 在 `handlers_strategy.go:90 setupRiskGate`）；b) `WatchSchedules` SSE（`strategy_schedules.go:243`）监听 `schedule_change`，**全 backend 无任何 `pg_notify('schedule_change')`** 且前端不消费 watch()（LiveSchedulesTab 用 list + mount/effect refresh）——双死。修复方向：删除或接 NOTIFY + 前端消费。
+
+### 审计确认无 gap（合规项记录）
+
+- gate 链条完整：`setupRiskGate` = DuplicateProtection + KYC/capability + MaxPositionCount 20 + MaxLotSize 100000 + MarginPreCheck 0.80 → 注入 srv + mthub 双咽喉；fail-closed（state nil / equity 负 sentinel → block）✓
+- OMS 16 状态机 + 30s SUBMITTED 超时 → UNKNOWN → reconcile-before-accept ✓
+- 幂等三层（PG advisory lock + IdempotencyKey + broker magic hash(clientID)）✓；LIVE-2 bar OpenTime 确定性 ClientID ✓
+- 熔断链：breaker → ErrCircuitOpen → session 级 SetCircuitOpen 抑制后续单 ✓
+- LIVE-1 open bar 过滤（`shouldRunOnBar`，extra-symbol 同过滤）✓；ARCH-4 magic 归属（close_all 按 magic 过滤，避免误平他策略仓）✓；entitlement 每 bar 复检 ✓；bound/coverage preflight 非绕过 ✓；MT4 断线 fail（ErrSessionNotFound/ErrCircuitOpen）✓；paper 模式独立引擎 ✓
+
+---
+
 ## 总计
 
-零 ❓待核。🟦open 5 项 + ❌descoped 1 项。⚠️待Claude复审：CREATE-SCHEDULE-200EMPTY。
+零 ❓待核。🟦open 9 项 + ❌descoped 1 项。⚠️待Claude复审：CREATE-SCHEDULE-200EMPTY。
 POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 对抗测试有效）。
-上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。
+上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。⚠️ 2026-08-12 DEPLOY-LIVE 审计新增 3×P1（tick panic 进程崩溃 / MT4 stop_limit 错单 / 200EMPTY 范围扩大）——原"上线就绪"结论限定于当时审计范围，实盘部署管线新 P1 未含。DEPLOY-LIVE-1/2 ✅done（2026-08-12 施工方修复 + 对抗证明）。
 
 ---
 
 ## 变更日志
 
+- 2026-08-12 **DEPLOY-LIVE-1/2 ✅done（施工方修复 + 对抗证明）**：**DEPLOY-LIVE-1**：tick/trade 信号 nil bar panic → 新增 `barOpenTimeForSignal` nil-safe helper + `TickSeq *atomic.Int64` per-run 计数器（附带修复 tick 单 ClientID 碰撞）。`dispatchPaperSignal` 的 `bar.Bid`/`bar.Ask` 也改 nil-safe。3 处 `LiveStrategyConfig` 构造点初始化 `TickSeq`。对抗证明：6 单测，删行实验 3 RED（panic）/ 6 GREEN。**DEPLOY-LIVE-2**：`mt4Op` 签名改 `(pb.Op, error)`，default 返回 error 不再静默降级 `Op_Buy`。`PlaceOrder` 传播 error。对抗证明：`TestMt4Op` 9 case（stop_limit → error = 绿，旧代码 Op_Buy = 红）。门禁：`go build ./...` + `go test ./internal/connect/strategy/... ./internal/mdgateway/adapter/mt4/...` 全绿。已部署后端（docker compose build + up，容器 healthy 无 panic）。
+- 2026-08-12 **DEPLOY-LIVE 实盘部署管线审计（审计方，🟦待施工）**：逐环节代码级审计（前端 Deploy/Enable → CreateSchedule/ToggleSchedule → ScheduleEngine → LiveRunner → dispatch → mthub gate 咽喉 → OMS → mt4/5 adapter）。**3×P1**：① tick/trade 信号 `bar.OpenTime` nil panic 沿无 recover 链崩进程（handleTick:151 传 nil bar + dispatchLiveSignal:63 解引用，OnTick+OrderSend 标准触发）；② MT4 `mt4Op` default→`Op_Buy`：stop_limit 信号在 MT4 账户变市价买入错单（MT5 有正确 case，mthub 无平台预校验）；③ CREATE-SCHEDULE-200EMPTY 接线 bug 范围扩大——`applyAccountSwitch`（切账户）同源 typed-nil panic，一行 `BoundSvc: boundSvc` 同修。**P2×3**：gate fail-open（CloseOrder 无 preflight）/ KYC GeoIP 空转（ClientIPFn 恒 ""）/ dispatch-launchEventSession ~100 行重复。**P3**：handlers.go:208 死 gate + WatchSchedules SSE 断链（schedule_change 无人 NOTIFY）。合规确认：gate 双咽喉 + fail-closed / OMS 16 态 / 幂等三层 / 熔断链 / LIVE-1 / ARCH-4 magic。**修复优先序：DEPLOY-LIVE-1/2 → 200EMPTY（含 -3）同批施工**。交接提示词见 `builder-handoff-deploy-live-2026-08-12.md`（待写）。
 - 2026-08-12 **CREATE-SCHEDULE-200EMPTY 根因更新 ⚠️待Claude复审**：原假设"部署漂移"排除（重建后端后问题依旧）。新根因：`BoundAccountService.EnsureBoundAccount` 内部 nil pointer dereference panic，被 `sentryhttp.Options{Repanic: false}`（`main.go:266`）静默吞掉 → HTTP 200 + 空 body。加 `defer recover()` 后确认 panic 消息：`"runtime error: invalid memory address or nil pointer dereference"`。nil 的确切字段/行号未定位（`fmt.Printf` debug 输出未出现在 docker logs，疑似 stdout 缓冲）。修复方向：用 `fmt.Fprintf(os.Stderr,...)` 或 `runtime.Stack()` 定位 panic 行 → 修复 nil 来源 → 移除 recover。附加建议：`sentryhttp` 改 `Repanic: true` + ConnectRPC interceptor 层 recover，避免 panic 静默返回 200。**→ 审计方复审定论（同日，⚠️"未定位"已补全，交接提示词已重写）**：nil 来源 = **接线 bug**——`handlers.go:191` 调 `setupStrategyAndTrading` 漏传 `BoundSvc`（:126 有传）→ `handlers_strategy_runtime.go:81-87` `SetBoundSvc(nil)` typed-nil 接口（`s.boundSvc != nil` 误判 true）→ `bound_account_svc.go:41` `s.boundRepo` nil 接收者解引用。**windsurf 的 defer recover（35-40 行）是掩盖不是修复，需移除**。修复 = `handlers.go:191` 加 `BoundSvc: boundSvc` 一行 + 移除 recover + 重建。引入 = LEAKAGE-1 `be831d5d`（08-08）接线不完整。对抗证明：删行→panic 复现（红）；修复→200+JSON 含 id+DB 记录（绿）。**🟦待施工。**
 - 2026-08-12 **DEPLOY-UX ✅done**：DeployScheduleModal 两步法部署 — 根因：创建 `is_active=false` 调度后只显示 toast 关闭弹窗，用户不知道去哪管理。ADR-0030 定义两步法（Configure → Confirm）：创建后跳转 `/strategy/live?tab=schedules&scheduleId=xxx`，Schedules tab 高亮新调度（金色 2s 渐隐动画），用户手动 Enable。文件：`DeployScheduleModal.tsx`（navigate 替代 toggle）、`LiveStrategyPage.tsx`（useSearchParams）、`LiveSchedulesTab.tsx`（highlightScheduleId prop）、`ScheduleTable.tsx`（rowClassName）、`index.css`（keyframe）。对抗证明：tsc 0err / npm build ok。红队自审通过（navigate 在 onClose 后安全、created?.id 空值安全、URL query 生命周期合理）。commit `3daf8ac1`。
 - 2026-08-12 **BT-DATE-FIX ✅**：回测日期范围不生效 + Run ID 显示 — 根因 A（后端）：`GetKlines` SQL 有 `is_replay = 0` 过滤，把 `ensureBarData` 从 broker 拉回的历史数据（`IsReplay: true`）排除，回测仍用旧 live 数据。根因 B（前端）：React stale closure — `setStartDate()` 后立即调 `run()`，闭包读到旧 state。修复 A：移除 `is_replay = 0`，`DISTINCT ON` 已去重。修复 B：`BacktestRunnerInputs` 加 `startDate/endDate`，`run()` 优先用 `inputs.startDate ?? startDate`，`toDate()` 提取为模块级纯函数降复杂度。新增 Run ID 显示在回测结果页 header（前 8 位 monospace）。对抗证明：tsc 0err / eslint 0warn / go build ok / CI 全绿。commit `2af15034` + `7283ff3f`。

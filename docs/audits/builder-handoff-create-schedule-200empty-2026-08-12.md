@@ -74,6 +74,14 @@ Deploy modal 填完整表单点 Create → `CreateSchedule` API 返回 **HTTP 20
 3. **删行实验（回归级，必做）**：临时删掉 `handlers.go:191` 的 `BoundSvc: boundSvc` 一行 → 重新构建 → 合法请求 → **必须复现 panic**（无 recover 时 = 200 空；或至少 500 带 panic 字样）→ 还原 + 重建 → 200 + JSON。**实测记录红/绿各一行输出**。
 4. **前端 toast 逻辑（如顺手）**：`message.success` 改为 `if (created?.id) { message.success(...); navigate(...) } else { message.error(...) }`——但**此改动超出本任务 scope**，不做也行；如做需补前端 build + 部署，在回填中注明。
 
+## 五b、范围扩大：DEPLOY-LIVE-3（applyAccountSwitch 同源 bug，随本任务一并修）
+
+> 2026-08-12 实盘部署管线审计确认：**同一接线 bug 还影响 UpdateSchedule 切账户**。
+
+- 位置：`strategy_schedules.go:169-179` `applyAccountSwitch` 里 `if s.boundSvc != nil { s.boundSvc.EnsureBoundAccount(...) }` —— 与 CreateSchedule:74 同一 typed-nil 接口判断，同一 wiring 漏传（`handlers.go:191`）。
+- 修复：**无额外代码改动**——`handlers.go:191` 加 `BoundSvc: boundSvc` 一行即同时修复。
+- **验收补充**：除 CreateSchedule 冒烟外，增加 UpdateSchedule 切账户（account_id 换另一个账户 UUID）合法请求 → 200 + account_id 更新（修复前会 500/200 空）。DB 断言 `strategy_schedules.account_id` 已变更。
+
 ## 六、红队自审（任务级 edge cases，必须逐条给出结论）
 
 - [ ] 部署后 `docker ps` 确认 backend 重启（Up 时间重置）且 healthy

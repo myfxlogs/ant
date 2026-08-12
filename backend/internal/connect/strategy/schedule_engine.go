@@ -13,6 +13,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
@@ -330,6 +331,7 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 		Params:           strParams,
 		ScheduleID:       schedule.ID,
 		EntitlementCheck: entCheck,
+		TickSeq:          new(atomic.Int64),
 	}
 
 	// Pre-create run record (RunLiveStrategy requires RunID to be set).

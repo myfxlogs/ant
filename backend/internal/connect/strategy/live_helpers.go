@@ -13,10 +13,27 @@ import (
 	"alphaforge/internal/repository"
 )
 
+// barOpenTimeForSignal extracts the bar open time for ClientID generation.
+// For bar signals, returns bar.OpenTime (deterministic per bar — enables
+// idempotency dedup for bar replays). For tick/trade signals (bar=nil),
+// returns a per-run atomic counter value to ensure each tick order gets
+// a unique ClientID (preventing idempotency guard from swallowing
+// subsequent tick orders in the same run).
+func barOpenTimeForSignal(bar *mthub.BarUpdate, cfg LiveStrategyConfig) int64 {
+	if bar != nil {
+		return bar.OpenTime
+	}
+	if cfg.TickSeq != nil {
+		return cfg.TickSeq.Add(1)
+	}
+	return 0
+}
+
 // strategyOrderClientID generates a deterministic ClientID for strategy-submitted
 // orders, enabling idempotency dedup. Same runID + bar open time + signal type
 // always produces the same key, so duplicate dispatches (bar replay, VM retry,
 // network glitch) are rejected by the idempotency guard in MtHubService.PlaceOrder.
+// For tick/trade signals, barOpenTime is a per-run atomic counter (see barOpenTimeForSignal).
 func strategyOrderClientID(runID uuid.UUID, barOpenTime int64, signalType string) string {
 	return fmt.Sprintf("start-%s-%d-%s", runID, barOpenTime, signalType)
 }

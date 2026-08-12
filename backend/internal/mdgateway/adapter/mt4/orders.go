@@ -7,6 +7,7 @@ import (
 
 	"alphaforge/internal/mthub"
 	pb "alphaforge/mt4"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
@@ -14,22 +15,22 @@ import (
 
 const orderTimeout = 30 * time.Second
 
-func mt4Op(side mthub.Side, ot mthub.OrderType) pb.Op {
+func mt4Op(side mthub.Side, ot mthub.OrderType) (pb.Op, error) {
 	switch {
 	case side == mthub.SideBuy && ot == mthub.OrderMarket:
-		return pb.Op_Op_Buy
+		return pb.Op_Op_Buy, nil
 	case side == mthub.SideSell && ot == mthub.OrderMarket:
-		return pb.Op_Op_Sell
+		return pb.Op_Op_Sell, nil
 	case side == mthub.SideBuy && ot == mthub.OrderLimit:
-		return pb.Op_Op_BuyLimit
+		return pb.Op_Op_BuyLimit, nil
 	case side == mthub.SideSell && ot == mthub.OrderLimit:
-		return pb.Op_Op_SellLimit
+		return pb.Op_Op_SellLimit, nil
 	case side == mthub.SideBuy && ot == mthub.OrderStop:
-		return pb.Op_Op_BuyStop
+		return pb.Op_Op_BuyStop, nil
 	case side == mthub.SideSell && ot == mthub.OrderStop:
-		return pb.Op_Op_SellStop
+		return pb.Op_Op_SellStop, nil
 	default:
-		return pb.Op_Op_Buy
+		return 0, fmt.Errorf("mt4 unsupported order type: side=%d orderType=%d", side, ot)
 	}
 }
 
@@ -44,7 +45,10 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	if g.breaker != nil && !g.breaker.Allow() {
 		return 0, mthub.ErrCircuitOpen
 	}
-	op := mt4Op(req.Side, req.OrderType)
+	op, err := mt4Op(req.Side, req.OrderType)
+	if err != nil {
+		return 0, fmt.Errorf("mt4 PlaceOrder: %w", err)
+	}
 	price := req.Price.InexactFloat64()
 	md := metadata.New(map[string]string{"id": sid})
 	if tok := g.token(); tok != "" {

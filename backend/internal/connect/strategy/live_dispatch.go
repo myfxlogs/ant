@@ -60,7 +60,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 			)
 			return
 		}
-		s.dispatchMarketOrder(ctx, cfg, bar.OpenTime, sig, activeSess)
+		s.dispatchMarketOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
 	case "buy_limit", "sell_limit", "buy_stop", "sell_stop",
 		"buy_stop_limit", "sell_stop_limit":
 		if activeSess != nil && activeSess.IsCircuitOpen() {
@@ -71,7 +71,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 			)
 			return
 		}
-		s.dispatchPendingOrder(ctx, cfg, bar.OpenTime, sig, activeSess)
+		s.dispatchPendingOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
 	case "close":
 		s.dispatchCloseOrder(ctx, cfg, sig, activeSess)
 	case "close_all":
@@ -306,8 +306,11 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 		return
 	}
 
-	bid := bar.Bid
-	ask := bar.Ask
+	var bid, ask decimal.Decimal
+	if bar != nil {
+		bid = bar.Bid
+		ask = bar.Ask
+	}
 	if err := s.paperEngine.PlacePaperOrder(ctx, cfg.AccountID, cfg.Symbol,
 		action, parseDecimal(sig.GetVolume()), bid, ask); err != nil {
 		s.log.Warn("LiveStrategyRunner: paper order failed", zap.Error(err))

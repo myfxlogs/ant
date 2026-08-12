@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync/atomic"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -210,6 +211,7 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 		UserID:       uid.String(),
 		ExtraSymbols: req.Msg.GetExtraSymbols(),
 		StrategyID:   req.Msg.GetStrategyId(),
+		TickSeq:      new(atomic.Int64),
 	}
 
 	if err := s.resolveModeAndAccount(ctx, uid, mode, &cfg); err != nil {

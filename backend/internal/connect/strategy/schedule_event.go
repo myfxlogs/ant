@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -129,6 +130,7 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 		Params:           strParams,
 		ScheduleID:       schedule.ID,
 		EntitlementCheck: entCheck,
+		TickSeq:          new(atomic.Int64),
 	}
 
 	// Pre-create run record (RunLiveStrategy requires RunID to be set).

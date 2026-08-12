@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	pb "alphaforge/mt4"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mthub"
+	pb "alphaforge/mt4"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -464,33 +465,33 @@ func TestFetchOpenedOrders_WithMockData(t *testing.T) {
 		openedOrdersRes: &pb.OpenedOrdersReply{
 			Result: []*pb.Order{
 				{
-					Ticket:     1001,
-					Symbol:     "EURUSD",
-					Type:       pb.Op_Op_Buy,
-					Lots:       0.1,
-					OpenPrice:  1.1000,
-					ClosePrice: 1.1020,
-					OpenTime:   ts,
-					CloseTime:  ts,
-					Profit:     20.0,
-					Swap:       -1.0,
-					Commission: -0.5,
-					Comment:    "test",
+					Ticket:      1001,
+					Symbol:      "EURUSD",
+					Type:        pb.Op_Op_Buy,
+					Lots:        0.1,
+					OpenPrice:   1.1000,
+					ClosePrice:  1.1020,
+					OpenTime:    ts,
+					CloseTime:   ts,
+					Profit:      20.0,
+					Swap:        -1.0,
+					Commission:  -0.5,
+					Comment:     "test",
 					MagicNumber: 42,
 				},
 				{
-					Ticket:     1002,
-					Symbol:     "GBPUSD",
-					Type:       pb.Op_Op_SellLimit,
-					Lots:       0.2,
-					OpenPrice:  1.3050,
-					ClosePrice: 1.3030,
-					OpenTime:   ts,
-					CloseTime:  ts,
-					Profit:     -10.0,
-					Swap:       0.5,
-					Commission: -1.0,
-					Comment:    "limit",
+					Ticket:      1002,
+					Symbol:      "GBPUSD",
+					Type:        pb.Op_Op_SellLimit,
+					Lots:        0.2,
+					OpenPrice:   1.3050,
+					ClosePrice:  1.3030,
+					OpenTime:    ts,
+					CloseTime:   ts,
+					Profit:      -10.0,
+					Swap:        0.5,
+					Commission:  -1.0,
+					Comment:     "limit",
 					MagicNumber: 99,
 				},
 			},
@@ -531,7 +532,7 @@ func TestFetchOrderHistory_WithMockData(t *testing.T) {
 		orderHistoryRes: &pb.OrderHistoryReply{
 			Result: []*pb.Order{
 				{
-					Ticket:     2001, Symbol: "XAUUSD",
+					Ticket: 2001, Symbol: "XAUUSD",
 					Type: pb.Op_Op_BuyStop, Lots: 0.5,
 					OpenPrice: 1950.0, ClosePrice: 1960.0,
 					OpenTime: ts, CloseTime: closeTs,
@@ -755,29 +756,39 @@ func TestOrderUpdateRecvLoop_ReceivesUpdates(t *testing.T) {
 	cancel()
 }
 
-
 // --- mt4Op pure function tests ---
 
 func TestMt4Op(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name string
-		side mthub.Side
-		ot   mthub.OrderType
-		want pb.Op
+		name    string
+		side    mthub.Side
+		ot      mthub.OrderType
+		want    pb.Op
+		wantErr bool
 	}{
-		{"buy market", mthub.SideBuy, mthub.OrderMarket, pb.Op_Op_Buy},
-		{"sell market", mthub.SideSell, mthub.OrderMarket, pb.Op_Op_Sell},
-		{"buy limit", mthub.SideBuy, mthub.OrderLimit, pb.Op_Op_BuyLimit},
-		{"sell limit", mthub.SideSell, mthub.OrderLimit, pb.Op_Op_SellLimit},
-		{"buy stop", mthub.SideBuy, mthub.OrderStop, pb.Op_Op_BuyStop},
-		{"sell stop", mthub.SideSell, mthub.OrderStop, pb.Op_Op_SellStop},
-		{"unknown type defaults to buy", mthub.SideBuy, mthub.OrderType(99), pb.Op_Op_Buy},
-		{"unknown type with sell defaults to buy", mthub.SideSell, mthub.OrderType(99), pb.Op_Op_Buy},
+		{"buy market", mthub.SideBuy, mthub.OrderMarket, pb.Op_Op_Buy, false},
+		{"sell market", mthub.SideSell, mthub.OrderMarket, pb.Op_Op_Sell, false},
+		{"buy limit", mthub.SideBuy, mthub.OrderLimit, pb.Op_Op_BuyLimit, false},
+		{"sell limit", mthub.SideSell, mthub.OrderLimit, pb.Op_Op_SellLimit, false},
+		{"buy stop", mthub.SideBuy, mthub.OrderStop, pb.Op_Op_BuyStop, false},
+		{"sell stop", mthub.SideSell, mthub.OrderStop, pb.Op_Op_SellStop, false},
+		{"buy stop_limit unsupported", mthub.SideBuy, mthub.OrderStopLimit, 0, true},
+		{"sell stop_limit unsupported", mthub.SideSell, mthub.OrderStopLimit, 0, true},
+		{"unknown type returns error", mthub.SideBuy, mthub.OrderType(99), 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := mt4Op(tt.side, tt.ot)
+			got, err := mt4Op(tt.side, tt.ot)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("mt4Op(%v, %v) expected error, got %v", tt.side, tt.ot, got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("mt4Op(%v, %v) unexpected error: %v", tt.side, tt.ot, err)
+			}
 			if got != tt.want {
 				t.Errorf("mt4Op(%v, %v) = %v, want %v", tt.side, tt.ot, got, tt.want)
 			}
