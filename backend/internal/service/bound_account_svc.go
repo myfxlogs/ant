@@ -32,7 +32,12 @@ func NewBoundAccountService(boundRepo *repository.BoundAccountRepository, subRep
 
 // EnsureBoundAccount checks if the account is bound; if not, auto-binds it
 // if the user's tier allows. Returns error if limit exceeded or account not owned.
-func (s *BoundAccountService) EnsureBoundAccount(ctx context.Context, userID, accountID uuid.UUID) error {
+func (s *BoundAccountService) EnsureBoundAccount(ctx context.Context, userID, accountID uuid.UUID) (retErr error) {
+	defer func() {
+		if r := recover(); r != nil {
+			retErr = fmt.Errorf("ensure bound: panic: %v", r)
+		}
+	}()
 	bound, err := s.boundRepo.IsAccountBound(ctx, userID, accountID)
 	if err != nil {
 		return fmt.Errorf("ensure bound: check bound: %w", err)

@@ -20,6 +20,7 @@
 | TUNING-OVERFIT-2 | OOS-at-publish 惰性闸（`quality.go:302` 条件性惰性，优化快照未填 OOS 字段）| 🟦open（低优 follow-up）|
 | CQ-5 | eslint-disable 残留 11 处缺注释 | 🟦open（低优，补理由注释）|
 | DEPLOY-UX | DeployScheduleModal 创建调度后不自动启用、不跳转 — 用户"部署后找不到" | ✅done |
+| CREATE-SCHEDULE-200EMPTY | CreateSchedule 返回 HTTP 200 + 0 字节 body + DB 无记录 — 根因=接线 bug：handlers.go:191 漏传 BoundSvc → typed-nil 接口 → EnsureBoundAccount panic 被 sentryhttp Repanic:false 静默吞掉 | 🟦open（2026-08-12 根因定论，待施工）|
 
 ---
 
@@ -55,9 +56,42 @@
 
 ---
 
+## CREATE-SCHEDULE-200EMPTY（2026-08-12 审计方根因定论：接线 bug + Sentry 吞 panic，🟦open 待施工）
+
+**症状**（用户报告 + windsurf e2e 复现 + 审计方独立复现）：Deploy modal 填完整表单点 Create → CreateSchedule API 返回 HTTP 200 + 0 字节 body，DB 无 schedule 记录，前端 `created.id` undefined → 不跳转。
+
+**审计方复现**（curl 直调 nginx 8022，JSON 直连）：
+- 合法请求（真实 templateId 8403ffab… + 真实 accountId 904d14e6…）→ `HTTP 200 BYTES:0`，`Content-Type: application/json` + `Content-Length: 0`
+
+**确认根因（证据链完整，非部署漂移；首轮"部署漂移"结论作废）**：
+
+1. **接线 bug（直接根因，git HEAD 存在）**：`backend/cmd/server/handlers.go:191` 调用 `setupStrategyAndTrading` 时 **漏传 `BoundSvc`**（对照 :126 `registerPostAccountDeps` 有传，此处漏）。→ `handlers_strategy_runtime.go:81` `boundSvc := p.BoundSvc` = nil → `:87 SetBoundSvc(nil)` → `StrategyServer.boundSvc`（`BoundAccountChecker` 接口）接收 **typed-nil** `*service.BoundAccountService` → 接口 type 非空 → `strategy_schedules.go:74` `s.boundSvc != nil` 判断为 **true**
+2. **panic**：CreateSchedule `:75` 调 `s.boundSvc.EnsureBoundAccount` → `bound_account_svc.go:41` `s.boundRepo.IsAccountBound(...)` nil 接收者解引用 → **panic: nil pointer dereference**。INSERT 从未执行 → DB 0 记录
+3. **症状机制（200 空）**：`main.go:266` `sentryhttp.New(Options{Repanic: false})` recover 吞 panic → 不 re-panic → net/http 未写响应 → **HTTP 200 + Content-Length: 0**。Sentry DSN 未设置 → 无痕
+4. **前端假象**：`DeployScheduleModal.tsx` handleSubmit `message.success(...)` **无条件执行** → toast "调度成功" → `created.id` undefined → 不跳转 → Live 页活跃运行空
+
+**引入历史**：LEAKAGE-1 `be831d5d`（2026-08-08 10:36:46）加 EnsureBoundAccount 调用 + SetBoundSvc 接口注入，但 **strategy runtime handler 接线漏传**。此前（08-08 前）CreateSchedule 无此检查 → 用户能创建调度。对照组 `handlers_strategy.go:65-67` 有 `if d.boundSvc != nil` 保护，`handlers_strategy_runtime.go:87` 无此保护——两处都缺失。
+
+**排除清单（审计方实测）**：nginx 透传正常（ListAccounts 200+1232B）/ 前端请求构造正常 / DB 正常 / 其他 handler 正常（DeleteSchedule 500 JSON）/ auth 正常。
+
+**windsurf 当前残留（需清理，非修复）**：`bound_account_svc.go:35-40` defer recover 掩盖（把 panic 转 500 "ensure bound: panic: runtime error: invalid memory address or nil pointer dereference"），未修根因（接线）。`strategy_schedules.go` 已清理干净。
+
+**修复方向（一行接线）**：
+1. `handlers.go:191` strategyTradingParams 加 `BoundSvc: boundSvc,`（boundSvc 已由 :90 `setupSubscription` 组装，:126 已用同源）
+2. 移除 `bound_account_svc.go:35-40` recover 掩盖，恢复干净实现
+3. 重建部署（`docker compose build backend && docker compose up -d backend`）
+4. **防再犯（低优 follow-up）**：sentryhttp `Repanic: false` 静默吞 panic = "静默错"，违背绝不静默错原则 → 建议改 `Repanic: true`（panic 传播 → nginx 502 可检测）；前端 `message.success` 改为 `created?.id` 条件化
+
+**对抗证明**（修复必带，删行必红）：
+1. 删 `BoundSvc: boundSvc` 行 → 重建 → CreateSchedule 合法请求 → panic → 200 空（Repanic:false 下）或 500 → **红**
+2. 修复后 → 200 + JSON 含 `id` + DB `strategy_schedules` 新增记录 → **绿**
+3. 前端：message.success 条件化后，空/500 响应 → 不显示"调度成功"toast → 红绿对照
+
+---
+
 ## 总计
 
-零 ❓待核。🟦open 5 项 + ❌descoped 1 项。⚠️待Claude复审：无。
+零 ❓待核。🟦open 5 项 + ❌descoped 1 项。⚠️待Claude复审：CREATE-SCHEDULE-200EMPTY。
 POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 对抗测试有效）。
 上线就绪：所有 launch-blocking 缺口审计方实测清零（2026-08-09）。
 
@@ -65,6 +99,7 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 ## 变更日志
 
+- 2026-08-12 **CREATE-SCHEDULE-200EMPTY 根因更新 ⚠️待Claude复审**：原假设"部署漂移"排除（重建后端后问题依旧）。新根因：`BoundAccountService.EnsureBoundAccount` 内部 nil pointer dereference panic，被 `sentryhttp.Options{Repanic: false}`（`main.go:266`）静默吞掉 → HTTP 200 + 空 body。加 `defer recover()` 后确认 panic 消息：`"runtime error: invalid memory address or nil pointer dereference"`。nil 的确切字段/行号未定位（`fmt.Printf` debug 输出未出现在 docker logs，疑似 stdout 缓冲）。修复方向：用 `fmt.Fprintf(os.Stderr,...)` 或 `runtime.Stack()` 定位 panic 行 → 修复 nil 来源 → 移除 recover。附加建议：`sentryhttp` 改 `Repanic: true` + ConnectRPC interceptor 层 recover，避免 panic 静默返回 200。**→ 审计方复审定论（同日，⚠️"未定位"已补全，交接提示词已重写）**：nil 来源 = **接线 bug**——`handlers.go:191` 调 `setupStrategyAndTrading` 漏传 `BoundSvc`（:126 有传）→ `handlers_strategy_runtime.go:81-87` `SetBoundSvc(nil)` typed-nil 接口（`s.boundSvc != nil` 误判 true）→ `bound_account_svc.go:41` `s.boundRepo` nil 接收者解引用。**windsurf 的 defer recover（35-40 行）是掩盖不是修复，需移除**。修复 = `handlers.go:191` 加 `BoundSvc: boundSvc` 一行 + 移除 recover + 重建。引入 = LEAKAGE-1 `be831d5d`（08-08）接线不完整。对抗证明：删行→panic 复现（红）；修复→200+JSON 含 id+DB 记录（绿）。**🟦待施工。**
 - 2026-08-12 **DEPLOY-UX ✅done**：DeployScheduleModal 两步法部署 — 根因：创建 `is_active=false` 调度后只显示 toast 关闭弹窗，用户不知道去哪管理。ADR-0030 定义两步法（Configure → Confirm）：创建后跳转 `/strategy/live?tab=schedules&scheduleId=xxx`，Schedules tab 高亮新调度（金色 2s 渐隐动画），用户手动 Enable。文件：`DeployScheduleModal.tsx`（navigate 替代 toggle）、`LiveStrategyPage.tsx`（useSearchParams）、`LiveSchedulesTab.tsx`（highlightScheduleId prop）、`ScheduleTable.tsx`（rowClassName）、`index.css`（keyframe）。对抗证明：tsc 0err / npm build ok。红队自审通过（navigate 在 onClose 后安全、created?.id 空值安全、URL query 生命周期合理）。commit `3daf8ac1`。
 - 2026-08-12 **BT-DATE-FIX ✅**：回测日期范围不生效 + Run ID 显示 — 根因 A（后端）：`GetKlines` SQL 有 `is_replay = 0` 过滤，把 `ensureBarData` 从 broker 拉回的历史数据（`IsReplay: true`）排除，回测仍用旧 live 数据。根因 B（前端）：React stale closure — `setStartDate()` 后立即调 `run()`，闭包读到旧 state。修复 A：移除 `is_replay = 0`，`DISTINCT ON` 已去重。修复 B：`BacktestRunnerInputs` 加 `startDate/endDate`，`run()` 优先用 `inputs.startDate ?? startDate`，`toDate()` 提取为模块级纯函数降复杂度。新增 Run ID 显示在回测结果页 header（前 8 位 monospace）。对抗证明：tsc 0err / eslint 0warn / go build ok / CI 全绿。commit `2af15034` + `7283ff3f`。
 - 2026-08-12 **UI-PANEL-SWITCH ✅**：选策略后右侧面板不切回代码 — 根因：`WorkspaceCenterColumn` 的 `onSelect` 只调 `templates.onSelect(id)`，未重置 `rightPanelTab`，右侧停留在 backtest 结果。修复：`onSelect` 回调加 `setRightPanelTab(null)`。同时将回测历史列表中 `totalReturn` 为 null 时显示的 `'—'` 替换为 `EditOutlined` 重命名按钮。对抗证明：tsc 0err / eslint 0warn / npm build ok。commit `1f867e1d`。

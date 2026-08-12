@@ -44,7 +44,6 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
   const activeAccounts = useMemo(() => (accounts || []).filter(a => !a.isDisabled), [accounts]);
   const scheduleType = Form.useWatch('scheduleType', form);
   const accountIdWatch = Form.useWatch('accountId', form);
-  const symbolWatch = Form.useWatch('symbol', form);
 
   useEffect(() => { if (open) fetchAccounts(); }, [open, fetchAccounts]);
 
@@ -124,7 +123,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
           />
         </Form.Item>
         <Form.Item name="symbol" label={t(SCHEDULE_LAUNCH_FORM_SYMBOL_KEY)} rules={[{ required: true }]}>
-          <SymbolPicker accountId={accountIdWatch} value={symbolWatch} onChange={(v) => form.setFieldValue('symbol', v)} style={{ width: '100%' }} />
+          <SymbolPicker accountId={accountIdWatch} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item name="timeframe" label={t(SCHEDULE_LAUNCH_FORM_TIMEFRAME_KEY)} rules={[{ required: true }]}>
           <Select
