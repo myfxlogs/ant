@@ -56,8 +56,8 @@
 		"simulation_mode": "simulationMode",
 		"mt_ohlc_path": "mtOhlcPath",
 		"replay_model": "replayModel",
-		"replay_ohlc_path": "replayEveryTick",
-		"replay_kline_range": "replay1mOhlc",
-		"replay_open_price": "replayOpenPrices"
+		"replay_every_tick": "replayEveryTick",
+		"replay_1m_ohlc": "replay1mOhlc",
+		"replay_open_prices": "replayOpenPrices"
 	}
 }

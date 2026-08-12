@@ -59,7 +59,10 @@ const StrategyBacktestParams = {
       "fillRule": "Quy tắc khớp lệnh",
       "simulationMode": "Chế độ mô phỏng",
       "mtOhlcPath": "Đường dẫn OHLC",
-      "replayModel": "Mô hình lại"
+      "replayModel": "Mô hình lại",
+      "replayEveryTick": "Mỗi Tick",
+      "replay1mOhlc": "1 Phút OHLC",
+      "replayOpenPrices": "Chỉ giá mở"
     }
   }
 } as const;

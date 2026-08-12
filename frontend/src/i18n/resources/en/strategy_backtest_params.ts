@@ -59,7 +59,10 @@ const StrategyBacktestParams = {
       "fillRule": "Fill Rule",
       "simulationMode": "Simulation Mode",
       "mtOhlcPath": "OHLC Path",
-      "replayModel": "Replay Model"
+      "replayModel": "Replay Model",
+      "replayEveryTick": "Every Tick",
+      "replay1mOhlc": "1 Minute OHLC",
+      "replayOpenPrices": "Open Prices Only"
     }
   }
 } as const;

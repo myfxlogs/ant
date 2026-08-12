@@ -59,7 +59,10 @@ const StrategyBacktestParams = {
       "fillRule": "約定ルール",
       "simulationMode": "シミュレーションモード",
       "mtOhlcPath": "OHLC パス",
-      "replayModel": "リプレイモデル"
+      "replayModel": "リプレイモデル",
+      "replayEveryTick": "毎チック",
+      "replay1mOhlc": "1分足 OHLC",
+      "replayOpenPrices": "始値のみ"
     }
   }
 } as const;

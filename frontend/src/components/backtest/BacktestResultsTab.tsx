@@ -17,7 +17,7 @@ import {
 } from '@/gen/ant/v1/i18n/strategy_backtest_keys';
 import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
-  REPLAY_MODEL_KEY, REPLAY_OHLC_PATH_KEY, REPLAY_KLINE_RANGE_KEY, REPLAY_OPEN_PRICE_KEY,
+  REPLAY_MODEL_KEY, REPLAY_EVERY_TICK_KEY, REPLAY_1M_OHLC_KEY, REPLAY_OPEN_PRICES_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
 import { COMMON_CANCEL_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
@@ -34,9 +34,9 @@ type ExecutionAssumptions = ProtoExecutionAssumptions;
 
 // Helper to derive replay model label from execution assumptions
 function getReplayModelLabel(ea: ExecutionAssumptions): string {
-  if (ea.simulationMode === 'OHLC_PATH') return REPLAY_OHLC_PATH_KEY;
-  if (ea.signalTiming === 'next_bar_open') return REPLAY_OPEN_PRICE_KEY;
-  return REPLAY_KLINE_RANGE_KEY;
+  if (ea.simulationMode === 'OHLC_PATH') return REPLAY_EVERY_TICK_KEY;
+  if (ea.signalTiming === 'next_bar_open') return REPLAY_OPEN_PRICES_KEY;
+  return REPLAY_1M_OHLC_KEY;
 }
 
 const ASSUMPTION_TOOLTIP_KEYS: Record<string, string> = {

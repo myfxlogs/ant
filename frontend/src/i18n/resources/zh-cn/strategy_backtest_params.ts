@@ -59,7 +59,10 @@ const StrategyBacktestParams = {
       "fillRule": "成交规则",
       "simulationMode": "模式",
       "mtOhlcPath": "OHLC 路径",
-      "replayModel": "复盘模型"
+      "replayModel": "复盘模型",
+      "replayEveryTick": "每笔 Tick",
+      "replay1mOhlc": "1 分钟 OHLC",
+      "replayOpenPrices": "仅开盘价"
     }
   }
 } as const;
