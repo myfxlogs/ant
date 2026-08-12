@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Table, Tag, Typography, Button, Card, Space, message, Popconfirm, Tabs, Empty, Tooltip, Alert } from 'antd';
 import { ReloadOutlined, StopOutlined, EyeOutlined, MonitorOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { strategyActiveApi, strategyRunsApi } from '@/client/strategy';
 import type { ActiveStrategy, StrategyRun, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 import { SignalDrawer, formatTime, shortId, STATUS_COLORS, MODE_COLORS } from './LiveStrategyPageSignalDrawer';
@@ -11,7 +12,10 @@ const { Text } = Typography;
 
 export default function LiveStrategyPage() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('active');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'active';
+  const highlightScheduleId = searchParams.get('scheduleId') || null;
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [activeStrategies, setActiveStrategies] = useState<ActiveStrategy[]>([]);
   const [runs, setRuns] = useState<StrategyRun[]>([]);
   const [loading, setLoading] = useState(false);
@@ -229,7 +233,7 @@ export default function LiveStrategyPage() {
           {
             key: 'schedules',
             label: <span><ClockCircleOutlined /> {t('strategy.live.schedulesTab', { defaultValue: 'Schedules' })}</span>,
-            children: <LiveSchedulesTab />,
+            children: <LiveSchedulesTab highlightScheduleId={highlightScheduleId} />,
           },
         ]}
       />

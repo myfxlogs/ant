@@ -22,6 +22,7 @@
 
 ## 变更日志
 
+- 2026-08-12 **DEPLOY-UX 🟦open**：DeployScheduleModal 创建调度后不跳转、不自动启用 — 用户"部署后找不到"。ADR-0030 定义两步法（Configure → Confirm）：创建调度(is_active=false) → 跳转 `/strategy/live?tab=schedules&scheduleId=xxx` → Schedules tab 高亮新调度 → 用户手动 Enable。施工待进行。
 - 2026-08-12 **BT-DATE-FIX 完成 ✅**：回测日期范围不生效 + Run ID 显示 — 根因 A（后端）：`GetKlines` SQL `is_replay = 0` 过滤排除了 `ensureBarData` 从 broker 拉回的历史数据（`IsReplay: true`）。根因 B（前端）：React stale closure — `setStartDate()` 后立即 `run()` 读到旧 state。修复：移除 `is_replay = 0`；`BacktestRunnerInputs` 加 `startDate/endDate` 直接传入；`toDate()` 模块级纯函数降复杂度。Run ID 显示在结果页 header。CI 全绿。commit `2af15034` + `7283ff3f`。
 - 2026-08-12 **UI-PANEL-SWITCH 完成 ✅**：选策略后右侧面板不切回代码 — `onSelect` 未重置 `rightPanelTab`。修复：加 `setRightPanelTab(null)`。回测历史 `totalReturn` 为 null 时的 `'—'` 替换为重命名按钮。commit `1f867e1d`。
 - 2026-08-12 **BT-DATA-GAP 完成 ✅**：回测数据缺失设计缺陷修复 — 原设计回测只查 PG 缓存，缺数据报错或静默用旧数据（用户选 8 月但 PG 只有 6-7 月数据 → 回测静默跑旧数据）。第一性原则：broker 是数据源，PG 是缓存，系统应自动从 broker 拉取缺失数据。新增 `ensureBarData`：检测 PG 覆盖缺口 → `mtHub.PriceHistory` 拉取 → `InsertBars` 落 PG → 重新查询。在 `validateBacktestRequest`（提交前）和 `fetchBars`（worker 执行前）两处调用。只有 broker 也拿不到数据才报错。go build + 8 validate 测试全绿。

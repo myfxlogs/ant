@@ -518,3 +518,11 @@ body, #root {
 .sidebar-item:hover .sidebar-item-action {
   opacity: 1;
 }
+
+@keyframes schedule-highlight {
+  0% { background-color: rgba(212, 175, 55, 0.3); }
+  100% { background-color: transparent; }
+}
+.schedule-row-highlight {
+  animation: schedule-highlight 2s ease-out;
+}

@@ -31,6 +31,7 @@ type Props = {
   onHealthCheck: (row: ScheduleRow) => void;
   onManualTrigger: (row: ScheduleRow) => void;
   onDelete: (row: ScheduleRow) => void;
+  highlightScheduleId?: string | null;
 };
 
 export default function ScheduleTable({
@@ -46,6 +47,7 @@ export default function ScheduleTable({
   onHealthCheck,
   onManualTrigger,
   onDelete,
+  highlightScheduleId,
 }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -214,6 +216,7 @@ export default function ScheduleTable({
       dataSource={schedules}
       columns={columns}
       pagination={{ pageSize: 10 }}
+      rowClassName={(row) => row.id === highlightScheduleId ? 'schedule-row-highlight' : ''}
     />
   );
 }

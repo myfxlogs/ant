@@ -34,7 +34,7 @@ function formatTime(v: unknown): string {
   return new Date(ms).toLocaleString();
 }
 
-export default function LiveSchedulesTab() {
+export default function LiveSchedulesTab({ highlightScheduleId }: { highlightScheduleId?: string | null }) {
   const { t } = useTranslation();
   const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
   const [templates, setTemplates] = useState<TemplateOption[]>([]);
@@ -231,6 +231,7 @@ export default function LiveSchedulesTab() {
         onHealthCheck={loadScheduleHealth}
         onManualTrigger={onManualTrigger}
         onDelete={onDelete}
+        highlightScheduleId={highlightScheduleId}
       />
 
       <EditScheduleModal
