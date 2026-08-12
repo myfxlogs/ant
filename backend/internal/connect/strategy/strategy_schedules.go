@@ -15,6 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/pglisten"
 	"alphaforge/internal/service"
 )
 
@@ -102,6 +103,7 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 	if s.engine != nil {
 		s.engine.Notify()
 	}
+	s.notifyScheduleChange(ctx)
 	return connect.NewResponse(scheduleRowToProto(&r)), nil
 }
 
@@ -148,6 +150,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 	if s.engine != nil {
 		s.engine.Notify()
 	}
+	s.notifyScheduleChange(ctx)
 	return connect.NewResponse(scheduleRowToProto(existing)), nil
 }
 
@@ -195,6 +198,7 @@ func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Reques
 	if err := s.svc.DeleteSchedule(ctx, id, s.userID(ctx)); err != nil {
 		return nil, err
 	}
+	s.notifyScheduleChange(ctx)
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
@@ -224,7 +228,14 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	s.notifyScheduleChange(ctx)
 	return connect.NewResponse(scheduleRowToProto(row)), nil
+}
+
+func (s *StrategyServer) notifyScheduleChange(ctx context.Context) {
+	if s.pgListen != nil {
+		pglisten.Notify(ctx, s.svc.DB(), "schedule_change", "")
+	}
 }
 
 func validScheduleType(t string) bool {

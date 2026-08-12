@@ -27,7 +27,6 @@ import (
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/reconcile"
 	"alphaforge/internal/repository"
-	"alphaforge/internal/risk"
 	"alphaforge/internal/risksvc"
 	"alphaforge/internal/service"
 	usersvc "alphaforge/internal/service/user"
@@ -205,10 +204,6 @@ func registerPostAccountHandlers(ctx context.Context, p registerPostAccountDeps)
 
 	registerSystemServices(mux, pool, log, jobRepo, logSvc, stratDeps.pgListen, d.OtelInterceptor, d.AuthInterceptor)
 	aiDeps.gateEvalServer.SetNotificationSender(stratDeps.notifSender)
-
-	gate := risk.NewDefaultGate()
-	gate.SetKillSwitch(func() bool { return cfg.RiskGateKillSwitch })
-	gate.SetAutotradeEnabled(func(uid string) bool { return cfg.RiskGateAutotradeEnabled })
 
 	accountNumberSvc := usersvc.NewAccountNumberService(pool)
 	registerAdminHandlers(adminHandlerDeps{
