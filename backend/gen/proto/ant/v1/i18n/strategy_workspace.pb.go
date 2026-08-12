@@ -202,8 +202,26 @@ type StrategyWorkspaceI18N struct {
 	BacktestDegraded        string `protobuf:"bytes,214,opt,name=backtest_degraded,json=backtestDegraded,proto3" json:"backtest_degraded,omitempty"`
 	BacktestDegradedDesc    string `protobuf:"bytes,215,opt,name=backtest_degraded_desc,json=backtestDegradedDesc,proto3" json:"backtest_degraded_desc,omitempty"`
 	BacktestBlindSpotsTitle string `protobuf:"bytes,216,opt,name=backtest_blind_spots_title,json=backtestBlindSpotsTitle,proto3" json:"backtest_blind_spots_title,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	// ── Additional sidebar (217-221) ──
+	SidebarNoStrategies           string `protobuf:"bytes,217,opt,name=sidebar_no_strategies,json=sidebarNoStrategies,proto3" json:"sidebar_no_strategies,omitempty"`
+	SidebarBatchDeleteConfirm     string `protobuf:"bytes,218,opt,name=sidebar_batch_delete_confirm,json=sidebarBatchDeleteConfirm,proto3" json:"sidebar_batch_delete_confirm,omitempty"`
+	SidebarDeleteStrategyConfirm  string `protobuf:"bytes,219,opt,name=sidebar_delete_strategy_confirm,json=sidebarDeleteStrategyConfirm,proto3" json:"sidebar_delete_strategy_confirm,omitempty"`
+	SidebarBatchDeleteRunsConfirm string `protobuf:"bytes,220,opt,name=sidebar_batch_delete_runs_confirm,json=sidebarBatchDeleteRunsConfirm,proto3" json:"sidebar_batch_delete_runs_confirm,omitempty"`
+	SidebarDeleteRunConfirm       string `protobuf:"bytes,221,opt,name=sidebar_delete_run_confirm,json=sidebarDeleteRunConfirm,proto3" json:"sidebar_delete_run_confirm,omitempty"`
+	// ── Quick trade & MT status (222-223) ──
+	ExpandQuickTrade string `protobuf:"bytes,222,opt,name=expand_quick_trade,json=expandQuickTrade,proto3" json:"expand_quick_trade,omitempty"`
+	MtSessionLost    string `protobuf:"bytes,223,opt,name=mt_session_lost,json=mtSessionLost,proto3" json:"mt_session_lost,omitempty"`
+	// ── Execution assumption tooltips (224-231) ──
+	TooltipSimMode        string `protobuf:"bytes,224,opt,name=tooltip_sim_mode,json=tooltipSimMode,proto3" json:"tooltip_sim_mode,omitempty"`
+	TooltipSignalTiming   string `protobuf:"bytes,225,opt,name=tooltip_signal_timing,json=tooltipSignalTiming,proto3" json:"tooltip_signal_timing,omitempty"`
+	TooltipFillRule       string `protobuf:"bytes,226,opt,name=tooltip_fill_rule,json=tooltipFillRule,proto3" json:"tooltip_fill_rule,omitempty"`
+	TooltipTradeDirection string `protobuf:"bytes,227,opt,name=tooltip_trade_direction,json=tooltipTradeDirection,proto3" json:"tooltip_trade_direction,omitempty"`
+	TooltipCommission     string `protobuf:"bytes,228,opt,name=tooltip_commission,json=tooltipCommission,proto3" json:"tooltip_commission,omitempty"`
+	TooltipSlippage       string `protobuf:"bytes,229,opt,name=tooltip_slippage,json=tooltipSlippage,proto3" json:"tooltip_slippage,omitempty"`
+	TooltipLeverage       string `protobuf:"bytes,230,opt,name=tooltip_leverage,json=tooltipLeverage,proto3" json:"tooltip_leverage,omitempty"`
+	TooltipMtfFallback    string `protobuf:"bytes,231,opt,name=tooltip_mtf_fallback,json=tooltipMtfFallback,proto3" json:"tooltip_mtf_fallback,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *StrategyWorkspaceI18N) Reset() {
@@ -1370,11 +1388,116 @@ func (x *StrategyWorkspaceI18N) GetBacktestBlindSpotsTitle() string {
 	return ""
 }
 
+func (x *StrategyWorkspaceI18N) GetSidebarNoStrategies() string {
+	if x != nil {
+		return x.SidebarNoStrategies
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarBatchDeleteConfirm() string {
+	if x != nil {
+		return x.SidebarBatchDeleteConfirm
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarDeleteStrategyConfirm() string {
+	if x != nil {
+		return x.SidebarDeleteStrategyConfirm
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarBatchDeleteRunsConfirm() string {
+	if x != nil {
+		return x.SidebarBatchDeleteRunsConfirm
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetSidebarDeleteRunConfirm() string {
+	if x != nil {
+		return x.SidebarDeleteRunConfirm
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetExpandQuickTrade() string {
+	if x != nil {
+		return x.ExpandQuickTrade
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetMtSessionLost() string {
+	if x != nil {
+		return x.MtSessionLost
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipSimMode() string {
+	if x != nil {
+		return x.TooltipSimMode
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipSignalTiming() string {
+	if x != nil {
+		return x.TooltipSignalTiming
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipFillRule() string {
+	if x != nil {
+		return x.TooltipFillRule
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipTradeDirection() string {
+	if x != nil {
+		return x.TooltipTradeDirection
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipCommission() string {
+	if x != nil {
+		return x.TooltipCommission
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipSlippage() string {
+	if x != nil {
+		return x.TooltipSlippage
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipLeverage() string {
+	if x != nil {
+		return x.TooltipLeverage
+	}
+	return ""
+}
+
+func (x *StrategyWorkspaceI18N) GetTooltipMtfFallback() string {
+	if x != nil {
+		return x.TooltipMtfFallback
+	}
+	return ""
+}
+
 var File_i18n_strategy_workspace_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\n" +
-	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xb83\n" +
+	"\x1di18n/strategy_workspace.proto\x12\vant.v1.i18n\"\xd99\n" +
 	"\x15StrategyWorkspaceI18n\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12%\n" +
 	"\x0eselect_account\x18\x02 \x01(\tR\rselectAccount\x12#\n" +
@@ -1558,7 +1681,22 @@ const file_i18n_strategy_workspace_proto_rawDesc = "" +
 	"\x0etour_save_desc\x18\xd5\x01 \x01(\tR\ftourSaveDesc\x12,\n" +
 	"\x11backtest_degraded\x18\xd6\x01 \x01(\tR\x10backtestDegraded\x125\n" +
 	"\x16backtest_degraded_desc\x18\xd7\x01 \x01(\tR\x14backtestDegradedDesc\x12<\n" +
-	"\x1abacktest_blind_spots_title\x18\xd8\x01 \x01(\tR\x17backtestBlindSpotsTitleB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\x1abacktest_blind_spots_title\x18\xd8\x01 \x01(\tR\x17backtestBlindSpotsTitle\x123\n" +
+	"\x15sidebar_no_strategies\x18\xd9\x01 \x01(\tR\x13sidebarNoStrategies\x12@\n" +
+	"\x1csidebar_batch_delete_confirm\x18\xda\x01 \x01(\tR\x19sidebarBatchDeleteConfirm\x12F\n" +
+	"\x1fsidebar_delete_strategy_confirm\x18\xdb\x01 \x01(\tR\x1csidebarDeleteStrategyConfirm\x12I\n" +
+	"!sidebar_batch_delete_runs_confirm\x18\xdc\x01 \x01(\tR\x1dsidebarBatchDeleteRunsConfirm\x12<\n" +
+	"\x1asidebar_delete_run_confirm\x18\xdd\x01 \x01(\tR\x17sidebarDeleteRunConfirm\x12-\n" +
+	"\x12expand_quick_trade\x18\xde\x01 \x01(\tR\x10expandQuickTrade\x12'\n" +
+	"\x0fmt_session_lost\x18\xdf\x01 \x01(\tR\rmtSessionLost\x12)\n" +
+	"\x10tooltip_sim_mode\x18\xe0\x01 \x01(\tR\x0etooltipSimMode\x123\n" +
+	"\x15tooltip_signal_timing\x18\xe1\x01 \x01(\tR\x13tooltipSignalTiming\x12+\n" +
+	"\x11tooltip_fill_rule\x18\xe2\x01 \x01(\tR\x0ftooltipFillRule\x127\n" +
+	"\x17tooltip_trade_direction\x18\xe3\x01 \x01(\tR\x15tooltipTradeDirection\x12.\n" +
+	"\x12tooltip_commission\x18\xe4\x01 \x01(\tR\x11tooltipCommission\x12*\n" +
+	"\x10tooltip_slippage\x18\xe5\x01 \x01(\tR\x0ftooltipSlippage\x12*\n" +
+	"\x10tooltip_leverage\x18\xe6\x01 \x01(\tR\x0ftooltipLeverage\x121\n" +
+	"\x14tooltip_mtf_fallback\x18\xe7\x01 \x01(\tR\x12tooltipMtfFallbackB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_workspace_proto_rawDescOnce sync.Once

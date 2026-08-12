@@ -37,6 +37,16 @@ type BacktestI18N struct {
 	WinRate         string                 `protobuf:"bytes,12,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                         // Win Rate
 	BacktestRecords string                 `protobuf:"bytes,40,opt,name=backtest_records,json=backtestRecords,proto3" json:"backtest_records,omitempty"` // Backtest Records
 	ProfitFactor    string                 `protobuf:"bytes,41,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`          // Profit Factor
+	TradeTicket     string                 `protobuf:"bytes,42,opt,name=trade_ticket,json=tradeTicket,proto3" json:"trade_ticket,omitempty"`             // Ticket
+	TradeOpenTime   string                 `protobuf:"bytes,43,opt,name=trade_open_time,json=tradeOpenTime,proto3" json:"trade_open_time,omitempty"`     // Open Time
+	TradeCloseTime  string                 `protobuf:"bytes,44,opt,name=trade_close_time,json=tradeCloseTime,proto3" json:"trade_close_time,omitempty"`  // Close Time
+	TradeCommission string                 `protobuf:"bytes,45,opt,name=trade_commission,json=tradeCommission,proto3" json:"trade_commission,omitempty"` // Commission
+	TradeReason     string                 `protobuf:"bytes,46,opt,name=trade_reason,json=tradeReason,proto3" json:"trade_reason,omitempty"`             // Reason
+	Status          string                 `protobuf:"bytes,47,opt,name=status,proto3" json:"status,omitempty"`                                          // Status
+	Symbol          string                 `protobuf:"bytes,48,opt,name=symbol,proto3" json:"symbol,omitempty"`                                          // Symbol
+	Timeframe       string                 `protobuf:"bytes,49,opt,name=timeframe,proto3" json:"timeframe,omitempty"`                                    // Period
+	CreatedAt       string                 `protobuf:"bytes,50,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`                   // Created
+	AiOptimize      string                 `protobuf:"bytes,51,opt,name=ai_optimize,json=aiOptimize,proto3" json:"ai_optimize,omitempty"`                // AI Optimize
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -169,11 +179,81 @@ func (x *BacktestI18N) GetProfitFactor() string {
 	return ""
 }
 
+func (x *BacktestI18N) GetTradeTicket() string {
+	if x != nil {
+		return x.TradeTicket
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetTradeOpenTime() string {
+	if x != nil {
+		return x.TradeOpenTime
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetTradeCloseTime() string {
+	if x != nil {
+		return x.TradeCloseTime
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetTradeCommission() string {
+	if x != nil {
+		return x.TradeCommission
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetTradeReason() string {
+	if x != nil {
+		return x.TradeReason
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetCreatedAt() string {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return ""
+}
+
+func (x *BacktestI18N) GetAiOptimize() string {
+	if x != nil {
+		return x.AiOptimize
+	}
+	return ""
+}
+
 var File_i18n_strategy_backtest_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	"\n" +
-	"\x1ci18n/strategy_backtest.proto\x12\vant.v1.i18n\"\xe1\x03\n" +
+	"\x1ci18n/strategy_backtest.proto\x12\vant.v1.i18n\"\xb2\x06\n" +
 	"\fBacktestI18n\x12#\n" +
 	"\rannual_return\x18\x01 \x01(\tR\fannualReturn\x12!\n" +
 	"\fequity_curve\x18\x02 \x01(\tR\vequityCurve\x12!\n" +
@@ -192,7 +272,19 @@ const file_i18n_strategy_backtest_proto_rawDesc = "" +
 	"\ftrade_volume\x18\v \x01(\tR\vtradeVolume\x12\x19\n" +
 	"\bwin_rate\x18\f \x01(\tR\awinRate\x12)\n" +
 	"\x10backtest_records\x18( \x01(\tR\x0fbacktestRecords\x12#\n" +
-	"\rprofit_factor\x18) \x01(\tR\fprofitFactorB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
+	"\rprofit_factor\x18) \x01(\tR\fprofitFactor\x12!\n" +
+	"\ftrade_ticket\x18* \x01(\tR\vtradeTicket\x12&\n" +
+	"\x0ftrade_open_time\x18+ \x01(\tR\rtradeOpenTime\x12(\n" +
+	"\x10trade_close_time\x18, \x01(\tR\x0etradeCloseTime\x12)\n" +
+	"\x10trade_commission\x18- \x01(\tR\x0ftradeCommission\x12!\n" +
+	"\ftrade_reason\x18. \x01(\tR\vtradeReason\x12\x16\n" +
+	"\x06status\x18/ \x01(\tR\x06status\x12\x16\n" +
+	"\x06symbol\x180 \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x181 \x01(\tR\ttimeframe\x12\x1d\n" +
+	"\n" +
+	"created_at\x182 \x01(\tR\tcreatedAt\x12\x1f\n" +
+	"\vai_optimize\x183 \x01(\tR\n" +
+	"aiOptimizeB\"Z alphaforge/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_backtest_proto_rawDescOnce sync.Once

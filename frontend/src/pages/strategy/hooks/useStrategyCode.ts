@@ -105,7 +105,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       } catch (e: unknown) { message.error((e as Error)?.message || t('common.saveFailed', { defaultValue: 'Save failed' })); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
-  }, [code, canSave, loadedTemplate, strategyId, t, loadTemplates, _validatedParams, validationResult]);
+  }, [code, canSave, loadedTemplate, strategyId, t, loadTemplates, _validatedParams]);
 
   const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
   const handleSaveModalOk = useCallback(async () => {
@@ -123,7 +123,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
       if (err?.message) message.error(err.message);
     }
     finally { setSaveLoading(false); }
-  }, [code, saveForm, t, loadTemplates, _validatedParams, validationResult]);
+  }, [code, saveForm, t, loadTemplates, _validatedParams]);
 
   const handleCopy = useCallback(() => {
     if (!code) return;

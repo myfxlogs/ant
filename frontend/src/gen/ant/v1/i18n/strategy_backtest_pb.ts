@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_backtest.proto.
  */
 export const file_i18n_strategy_backtest: GenFile = /*@__PURE__*/
-  fileDesc("ChxpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0LnByb3RvEgthbnQudjEuaTE4biK2AgoMQmFja3Rlc3RJMThuEhUKDWFubnVhbF9yZXR1cm4YASABKAkSFAoMZXF1aXR5X2N1cnZlGAIgASgJEhQKDG1heF9kcmF3ZG93bhgDIAEoCRIOCgZzaGFycGUYBCABKAkSFAoMdG90YWxfcmV0dXJuGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoCRIRCgl0cmFkZV9sb2cYByABKAkSEwoLdHJhZGVfcHJpY2UYCCABKAkSEgoKdHJhZGVfc2lkZRgJIAEoCRISCgp0cmFkZV90aW1lGAogASgJEhQKDHRyYWRlX3ZvbHVtZRgLIAEoCRIQCgh3aW5fcmF0ZRgMIAEoCRIYChBiYWNrdGVzdF9yZWNvcmRzGCggASgJEhUKDXByb2ZpdF9mYWN0b3IYKSABKAlCIlogYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
+  fileDesc("ChxpMThuL3N0cmF0ZWd5X2JhY2t0ZXN0LnByb3RvEgthbnQudjEuaTE4biKLBAoMQmFja3Rlc3RJMThuEhUKDWFubnVhbF9yZXR1cm4YASABKAkSFAoMZXF1aXR5X2N1cnZlGAIgASgJEhQKDG1heF9kcmF3ZG93bhgDIAEoCRIOCgZzaGFycGUYBCABKAkSFAoMdG90YWxfcmV0dXJuGAUgASgJEhQKDHRvdGFsX3RyYWRlcxgGIAEoCRIRCgl0cmFkZV9sb2cYByABKAkSEwoLdHJhZGVfcHJpY2UYCCABKAkSEgoKdHJhZGVfc2lkZRgJIAEoCRISCgp0cmFkZV90aW1lGAogASgJEhQKDHRyYWRlX3ZvbHVtZRgLIAEoCRIQCgh3aW5fcmF0ZRgMIAEoCRIYChBiYWNrdGVzdF9yZWNvcmRzGCggASgJEhUKDXByb2ZpdF9mYWN0b3IYKSABKAkSFAoMdHJhZGVfdGlja2V0GCogASgJEhcKD3RyYWRlX29wZW5fdGltZRgrIAEoCRIYChB0cmFkZV9jbG9zZV90aW1lGCwgASgJEhgKEHRyYWRlX2NvbW1pc3Npb24YLSABKAkSFAoMdHJhZGVfcmVhc29uGC4gASgJEg4KBnN0YXR1cxgvIAEoCRIOCgZzeW1ib2wYMCABKAkSEQoJdGltZWZyYW1lGDEgASgJEhIKCmNyZWF0ZWRfYXQYMiABKAkSEwoLYWlfb3B0aW1pemUYMyABKAlCIlogYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxL2kxOG5iBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.i18n.BacktestI18n
@@ -113,6 +113,76 @@ export type BacktestI18n = Message<"ant.v1.i18n.BacktestI18n"> & {
    * @generated from field: string profit_factor = 41;
    */
   profitFactor: string;
+
+  /**
+   * Ticket
+   *
+   * @generated from field: string trade_ticket = 42;
+   */
+  tradeTicket: string;
+
+  /**
+   * Open Time
+   *
+   * @generated from field: string trade_open_time = 43;
+   */
+  tradeOpenTime: string;
+
+  /**
+   * Close Time
+   *
+   * @generated from field: string trade_close_time = 44;
+   */
+  tradeCloseTime: string;
+
+  /**
+   * Commission
+   *
+   * @generated from field: string trade_commission = 45;
+   */
+  tradeCommission: string;
+
+  /**
+   * Reason
+   *
+   * @generated from field: string trade_reason = 46;
+   */
+  tradeReason: string;
+
+  /**
+   * Status
+   *
+   * @generated from field: string status = 47;
+   */
+  status: string;
+
+  /**
+   * Symbol
+   *
+   * @generated from field: string symbol = 48;
+   */
+  symbol: string;
+
+  /**
+   * Period
+   *
+   * @generated from field: string timeframe = 49;
+   */
+  timeframe: string;
+
+  /**
+   * Created
+   *
+   * @generated from field: string created_at = 50;
+   */
+  createdAt: string;
+
+  /**
+   * AI Optimize
+   *
+   * @generated from field: string ai_optimize = 51;
+   */
+  aiOptimize: string;
 };
 
 /**
