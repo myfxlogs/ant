@@ -38,6 +38,7 @@ func (s *StrategyExecutionServer) ListActiveStrategies(ctx context.Context, req 
 	for i, sess := range sessions {
 		pbStrategies[i] = activeSessionToProto(sess)
 	}
+	s.enrichWithStrategyName(ctx, pbStrategies)
 	return connect.NewResponse(&antv1.ListActiveStrategiesResponse{Strategies: pbStrategies}), nil
 }
 
@@ -64,7 +65,9 @@ func (s *StrategyExecutionServer) GetActiveStrategy(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("strategy %s not found", runID))
 	}
 
-	return connect.NewResponse(&antv1.GetActiveStrategyResponse{Strategy: activeSessionToProto(sess)}), nil
+	pb := activeSessionToProto(sess)
+	s.enrichWithStrategyName(ctx, []*antv1.ActiveStrategy{pb})
+	return connect.NewResponse(&antv1.GetActiveStrategyResponse{Strategy: pb}), nil
 }
 
 // StopStrategy cancels a running strategy session by run ID.
@@ -168,11 +171,30 @@ func activeSessionToProto(sess *ActiveSession) *antv1.ActiveStrategy {
 		ErrorCount:  int32(sess.ErrorCount),
 		LastError:   sess.LastError,
 		StderrTail:  sess.StderrTail,
+		ScheduleId:  sess.ScheduleID.String(),
 	}
 	if !sess.LastSignalAt.IsZero() {
 		pb.LastSignalAt = timestamppb.New(sess.LastSignalAt)
 	}
 	return pb
+}
+
+// enrichWithStrategyName fills StrategyName on each ActiveStrategy proto by
+// looking up schedule_id → schedule name. nil lookup = no-op (name stays empty).
+func (s *StrategyExecutionServer) enrichWithStrategyName(ctx context.Context, pbs []*antv1.ActiveStrategy) {
+	if s.scheduleNameLookup == nil {
+		return
+	}
+	for _, pb := range pbs {
+		if pb.ScheduleId == "" {
+			continue
+		}
+		scheduleID, err := uuid.Parse(pb.ScheduleId)
+		if err != nil {
+			continue
+		}
+		pb.StrategyName = s.scheduleNameLookup(ctx, scheduleID)
+	}
 }
 
 // StartStrategy launches a new live or paper strategy run.
@@ -371,6 +393,7 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 		for _, sess := range sessions {
 			pbStrats = append(pbStrats, activeSessionToProto(sess))
 		}
+		s.enrichWithStrategyName(ctx, pbStrats)
 		return stream.Send(&antv1.WatchActiveStrategiesEvent{Strategies: pbStrats})
 	}
 

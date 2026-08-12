@@ -485,6 +485,8 @@ message ActiveStrategy {
   int32 error_count = 10;
   string last_error = 11;
   string stderr_tail = 12;
+  string schedule_id = 13;
+  string strategy_name = 14;
 }
 
 // ── Strategy signal SSE stream ───────────────────────────────────────

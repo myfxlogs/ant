@@ -98,6 +98,10 @@ type StrategyExecutionServer struct {
 
 	// GateEvalRepo persists 7-gate pipeline results + marketplace quality preview.
 	gateEvalRepo *repository.GateEvaluationRepository
+
+	// scheduleNameLookup resolves schedule ID → strategy name for ActiveStrategy proto.
+	// nil = strategy_name left empty (frontend falls back to runId).
+	scheduleNameLookup func(ctx context.Context, scheduleID uuid.UUID) string
 }
 
 // QualityValidator validates backtest quality for marketplace publishing (read-only preview).
@@ -159,6 +163,9 @@ func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, u
 	s.accountLookup = f
 }
 func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCache = pc }
+func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Context, scheduleID uuid.UUID) string) {
+	s.scheduleNameLookup = f
+}
 
 // QuotaChecker provides subscription plan limit checks.
 // Implemented by service.QuotaChecker.

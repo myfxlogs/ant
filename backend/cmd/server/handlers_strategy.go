@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -62,6 +63,14 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	srv.SetVersionRepo(repository.NewStrategyVersionRepository(d.pool))
 	srv.SetFailureSignatureRepo(repository.NewFailureSignatureRepository(d.pool))
 	srv.SetSessionRegistry(strategy.NewSessionRegistry())
+	srv.SetScheduleNameLookup(func(ctx context.Context, scheduleID uuid.UUID) string {
+		var name string
+		err := d.pool.QueryRow(ctx, `SELECT name FROM strategy_schedules WHERE id = $1`, scheduleID).Scan(&name)
+		if err != nil {
+			return ""
+		}
+		return name
+	})
 	srv.SetQuotaChecker(d.quotaChecker)
 	if d.boundSvc != nil {
 		srv.SetBoundSvc(d.boundSvc)
