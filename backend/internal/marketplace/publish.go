@@ -367,9 +367,10 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy, priceFilter string
 		query += fmt.Sprintf(" AND ms.asset_class = $%d", next())
 		args = append(args, assetClass)
 	}
-	if priceFilter == "free" {
+	switch priceFilter {
+	case "free":
 		query += " AND (ms.price_amount IS NULL OR ms.price_amount = '0')"
-	} else if priceFilter == "paid" {
+	case "paid":
 		query += " AND ms.price_amount IS NOT NULL AND ms.price_amount::numeric > 0"
 	}
 	var hasFuzzySearch bool
@@ -429,9 +430,10 @@ func buildPublishedCountQuery(userID, assetClass, keyword, priceFilter string) (
 		query += fmt.Sprintf(" AND ms.asset_class = $%d", next())
 		args = append(args, assetClass)
 	}
-	if priceFilter == "free" {
+	switch priceFilter {
+	case "free":
 		query += " AND (ms.price_amount IS NULL OR ms.price_amount = '0')"
-	} else if priceFilter == "paid" {
+	case "paid":
 		query += " AND ms.price_amount IS NOT NULL AND ms.price_amount::numeric > 0"
 	}
 	if keyword != "" {

@@ -7,9 +7,8 @@ import WorkspaceCenterTabBar from './WorkspaceCenterTabBar';
 import CodeEditorArea from './CodeEditorArea';
 import MobileSidebarDrawer from './MobileSidebarDrawer';
 import BottomPanelSection from './BottomPanelSection';
-import BacktestResultsTab from '@/components/backtest/BacktestResultsTab';
-import { useAIFix } from '@/components/backtest/useAIFix';
-import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory, useWsAI } from '../../WorkspaceContext';
+import MobileBacktestContent from './MobileBacktestContent';
+import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
 import { useSidebarActions } from './useSidebarActions';
 
 interface Props {
@@ -30,19 +29,15 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const quickTrade = useWsQuickTrade();
   const layout = useWsLayout();
   const history = useWsHistory();
-  const ai = useWsAI();
   const sidebarActions = useSidebarActions(code, history);
 
-  // ── Sidebar ──────────────────────────────────────────────────────────
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
   const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
   const leftSidebarWidth = useWorkspaceStore(s => s.leftSidebarWidth);
   const setLeftSidebarWidth = useWorkspaceStore(s => s.setLeftSidebarWidth);
   const [sidebarDrawerOpen, setSidebarDrawerOpen] = useState(false);
 
-  // ── Right panel tab: 'ai' | 'backtest' | null — mode-driven layout ──
   const [rightPanelTab, setRightPanelTab] = useState<'ai' | 'backtest' | null>(null);
-  // Auto-switch to backtest tab when backtest starts
   const prevBtStatusRef = useRef(backtest.status);
   useEffect(() => {
     if (backtest.status === 'running' && prevBtStatusRef.current !== 'running') {
@@ -50,12 +45,10 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     }
     prevBtStatusRef.current = backtest.status;
   }, [backtest.status]);
-  // Mode-driven: collapse bottom panel when right panel is active, restore when it closes.
   useEffect(() => {
     layout.setBottomPanelCollapsed(rightPanelTab === 'backtest' || rightPanelTab === 'ai');
   }, [rightPanelTab, layout]);
 
-  // Auto-expand bottom panel when account is selected.
   const prevAccountIdRef = useRef(account.accountId);
   useEffect(() => {
     if (account.accountId && !prevAccountIdRef.current) {
@@ -64,7 +57,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     prevAccountIdRef.current = account.accountId;
   }, [account.accountId, layout]);
 
-  // Auto-expand quick trade panel when symbol is selected.
   const prevSymbolRef = useRef(account.symbol);
   useEffect(() => {
     if (account.symbol && !prevSymbolRef.current) {
@@ -73,7 +65,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     prevSymbolRef.current = account.symbol;
   }, [account.symbol, layout]);
 
-  // ── Bottom panel resize ──────────────────────────────────────────────
   const [bpDragging, setBpDragging] = useState(false);
   const handleBpResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -94,7 +85,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     document.addEventListener('mouseup', onUp);
   }, [layout]);
 
-  // ── Auto-restore last backtest on first visit ────────────────────────
   const restoreRef = useRef(false);
   useEffect(() => {
     if (restoreRef.current) return;
@@ -104,10 +94,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     backtest.runner.restoreLastRun(account.accountId, templates.selectedId || undefined);
   }, [account.accountId, backtest.runner, templates.selectedId]);
 
-  // ── Import MQL inline (replaces empty state area, never modal) ────────
   const [importMode, setImportMode] = useState(false);
 
-  // ── New strategy handler (shared by desktop + mobile sidebar) ────────
   const handleNewStrategy = useCallback(() => {
     templates.onSelect('');
     code.setCode('');
@@ -117,7 +105,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     setCenterTab('code');
   }, [templates, code, setCenterTab]);
 
-  // ── Shared sidebar props (desktop + mobile) ──────────────────────────
   const sidebarProps = useMemo(() => ({
     templates: templates.list,
     loading: templates.loading,
@@ -137,52 +124,12 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     autoExpandHistory: history.autoExpandHistory,
   }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest, code.setCode, setRightPanelTab]);
 
-  // ── Backtest context for AI ───────────────────────────────────────────
   const btSummary = backtest.metrics?.totalTrades != null
     ? { totalReturn: backtest.metrics.totalReturn, maxDrawdown: backtest.metrics.maxDrawdown, sharpeRatio: backtest.metrics.sharpeRatio, winRate: backtest.metrics.winRate, totalTrades: backtest.metrics.totalTrades }
     : undefined;
   const recentSummaries = (history.runs as Array<{ templateName?: string; totalReturn?: number; totalTrades?: number; startedAt?: string }>)
     ?.slice(0, 10).map(r => ({ templateName: r.templateName || '', totalReturn: r.totalReturn ?? 0, totalTrades: r.totalTrades ?? 0, startedAt: r.startedAt || '' })) || [];
 
-  // ── AI fix for mobile backtest results ───────────────────────────────
-  const mobileAiFix = useAIFix({
-    strategyId: code.strategyId,
-    currentCode: code.code,
-    onApplyCode: code.setCode,
-    onRerunBacktest: () => backtest.runner.run({
-      strategyCode: code.code,
-      accountId: account.accountId,
-      symbol: account.symbol,
-      timeframe: account.timeframe,
-      templateId: templates.selectedId || undefined,
-      strategyId: code.strategyId,
-    }),
-  });
-
-  // ── Backtest results content for mobile Drawer ───────────────────────
-  const mobileBacktestContent = (
-    <BacktestResultsTab
-      status={backtest.runner.status}
-      metrics={backtest.runner.metrics}
-      executionAssumptions={backtest.runner.executionAssumptions}
-      errorMsg={backtest.runner.errorMsg}
-      onAIOptimize={() => ai.optimize()}
-      onOpenHistory={() => history.open()}
-      trades={backtest.runner.chartTrades}
-      panelHeight={300}
-      onCancel={backtest.runner.cancelRun}
-      gateUpdate={backtest.runner.gateUpdate}
-      gateResults={backtest.runner.gateResults}
-      qualityPreview={backtest.runner.qualityPreview}
-      blindSpots={backtest.runner.blindSpots}
-      strategyId={code.strategyId}
-      onAIFix={mobileAiFix.handleAIFix}
-      aiFixing={mobileAiFix.aiFixing}
-      runMeta={backtest.runner.runMeta}
-    />
-  );
-
-  // Desktop: if centerTab is 'chat', open AI panel instead
   useEffect(() => {
     if (!isMobile && centerTab === 'chat') {
       setRightPanelTab('ai');
@@ -207,9 +154,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         templates={templates}
       />
 
-      {/* Main area: sidebar + content */}
       <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'row' }}>
-        {/* Sidebar: persistent on desktop, drawer overlay on mobile */}
         {!isMobile && (
           <WorkspaceSidebar
             {...sidebarProps}
@@ -220,9 +165,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
           />
         )}
 
-        {/* Content */}
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* AI Chat — full width tab (mobile only; desktop uses right panel) */}
           {isMobile && (
             <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
               <StrategyChat
@@ -237,7 +180,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
             </div>
           )}
 
-          {/* Code + optional right panel (desktop) */}
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
             {!isMobile && rightPanelTab ? (
               <WorkspaceAIPanel
@@ -273,7 +215,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         />
       )}
 
-      {/* Bottom panel: Positions | History | Backtest  +  Quick Trade on the right (desktop only) */}
       <BottomPanelSection
         isMobile={!!isMobile}
         collapsed={layout.bottomPanelCollapsed}
@@ -290,9 +231,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         qtPositions={quickTrade.qtPositions}
         quickTradeCollapsed={layout.quickTradeCollapsed}
         onToggleQuickTrade={() => layout.setQuickTradeCollapsed(!layout.quickTradeCollapsed)}
-        backtestContent={mobileBacktestContent}
+        backtestContent={isMobile ? <MobileBacktestContent /> : null}
       />
-      {isMobile && mobileAiFix.diffModal}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined, ThunderboltOutlined, CrownOutlined, BookOutlined } from '@ant-design/icons';
+import { HomeOutlined, HistoryOutlined, CodeOutlined, ShopOutlined, SettingOutlined, PieChartOutlined, BookOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -44,13 +44,8 @@ export default function MainLayout() {
       children: [
         { key: '/strategy', icon: <BookOutlined size={20} />, label: t('strategy.templates.gallery.title', { defaultValue: 'Strategies' }) },
         { key: '/strategy/new', icon: <CodeOutlined size={20} />, label: t('menu.strategyWorkspace') },
-        { key: '/strategy/live', icon: <ThunderboltOutlined size={20} />, label: t('menu.strategyLive', { defaultValue: 'Live Monitor' }) },
-        { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} />, label: t('menu.marketTools') },
       ],
     },
-    { key: '/wallet', icon: <WalletOutlined size={20} />, label: t('menu.wallet') },
-    { key: '/subscription', icon: <CrownOutlined size={20} />, label: t('menu.subscription', { defaultValue: 'Subscription' }) },
-    { key: '/trading/algos', icon: <DashboardOutlined size={20} />, label: t('menu.algoDashboard') },
     { key: '/auto-trading', icon: <SettingOutlined size={20} />, label: t('menu.autoTrading') },
     { key: '/analytics', icon: <PieChartOutlined size={20} />, label: t('menu.analytics') },
     { key: '/marketplace', icon: <ShopOutlined size={20} />, label: t('menu.marketplace') },

@@ -105,7 +105,9 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	// SimBroker.PositionModify scans both positions and pending orders.
 	if !price.IsZero() {
 		if pm, ok := vm.ctx.Broker().(pendingPriceModifier); ok {
-			pm.PositionModifyPrice(ticket, price)
+			if _, err := pm.PositionModifyPrice(ticket, price); err != nil {
+				return interp.BoolVal(false), nil
+			}
 		}
 	}
 	return interp.BoolVal(true), nil
