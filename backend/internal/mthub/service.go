@@ -345,6 +345,12 @@ func (s *MtHubService) SymbolParams(ctx context.Context, accountID string, canon
 	return result, err
 }
 
+// ActiveAccountIDs returns the IDs of all currently connected MT accounts.
+// Delegates to Hub.ActiveAccountIDs.
+func (s *MtHubService) ActiveAccountIDs() []string {
+	return s.hub.ActiveAccountIDs()
+}
+
 // PriceHistory fetches K-line bars from the connected broker.
 func (s *MtHubService) PriceHistory(ctx context.Context, accountID, symbol, period string, from, to int64, count int) ([]*Bar, error) {
 	exec := s.hub.Get(accountID)

@@ -128,6 +128,7 @@ export default function BacktestPanel(props: Props) {
             onAIFix={onAIFix}
             aiFixing={aiFixing}
             runMeta={runner.runMeta}
+            runId={runner.runId}
           />
         )}
 

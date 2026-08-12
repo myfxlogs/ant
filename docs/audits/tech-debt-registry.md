@@ -64,6 +64,7 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 ## 变更日志
 
+- 2026-08-12 **BT-DATA-GAP ✅**：回测数据缺失设计缺陷修复 — 原设计：回测只查 PG `md_bars` 缓存，缺数据直接报错或静默用旧数据。根因：PG 是缓存不是数据源，broker 才是 source of truth；把缓存管理问题甩给用户违反第一性原则。修复：新增 `ensureBarData` 方法，在 `validateBacktestRequest` 和 `fetchBars` 中自动检测 PG 数据覆盖缺口 → 通过 `mtHub.PriceHistory` 从 broker 拉取缺失范围 → `InsertBars` 落 PG → 重新查询。只有 broker 也拿不到数据才报错并告知用户原因。新增 `MtHubService.ActiveAccountIDs()` 透传方法。文件：`backtest_data_ensure.go`（新）、`strategy_backtest_validate.go`、`backtest_execution.go`、`mthub/service.go`。对抗证明：go build 通过 + 8 个 validate 测试全绿。
 - 2026-08-12 **REPLAY-MODEL ✅**：EXEC-PARAMS 后续简化 — 4 执行假设选择器合并为单"复盘模型"下拉框（MT4 对齐：Every Tick / 1 Minute OHLC / Open Prices Only）。前端 only，后端参数不变（replayModel→signalTiming+simulationMode+fillRule 映射在 modal 层）。红队自审通过。commit `0408f1a7`。
 - 2026-08-11 **POST-1 验收通过 ✅（审计方独立删行复测）**：5/5 断言级全红——T1 改 total=-1 红（ListPublished 主路径）/ T6 删 ORDER BY+LIMIT 红 / T7 删 ErrNoRows 分支红（logged 1 want 0）/ T3 删 backtestContent 接线红 / T8 删 error 块红。T1-T8 对抗证明 8/8 有效；实现仅 T6/T7 抽函数行为不变。门禁全绿实测：go build / go test marketplace+user / check-file-lines 0err / tsc 0err / vitest 144pass / npm build。POST-1 闭环。
 - 2026-08-11 **POST-1 测试补强完成**：T1/T3/T6/T7/T8 五项重做，每项施工方删行实测必红。T1 走 ListPublished 集成（缓存命中 total 真值）；T6/T7 抽 `buildShareDecayStatusQuery`+`resolveDecayStatus` 可测函数（行为不变），T7 用 zaptest/observer 验证 ErrNoRows 不产生日志；T3 渲染真实 BottomPanelSection；T8 渲染真实 LivePerformanceTab（mock fetch reject）。门禁全绿：go build + check-file-lines 0err + tsc 0err + vitest 144pass + npm build。待审计方独立删行复测。

@@ -97,4 +97,6 @@ export interface BacktestRunnerInputs {
   timeframe: string;
   templateId?: string;
   strategyId?: string;
+  startDate?: string;
+  endDate?: string;
 }

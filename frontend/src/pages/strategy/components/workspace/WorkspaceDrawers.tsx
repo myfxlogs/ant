@@ -61,6 +61,8 @@ export default function WorkspaceDrawers({ btModalOpen, setBtModalOpen, indicato
               simulationMode: result.simulationMode,
             },
             timeframe: result.timeframe,
+            startDate: result.startDate,
+            endDate: result.endDate,
           });
         }}
       />

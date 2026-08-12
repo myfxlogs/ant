@@ -183,11 +183,13 @@ export function useBacktestRunner() {
       const cfg = overrides?.executionConfig
         ? { commission: overrides.executionConfig.commission, slippage: overrides.executionConfig.slippage, leverage: overrides.executionConfig.leverage, tradeDirection: overrides.executionConfig.tradeDirection as 'long' | 'short' | 'both', strictMode: overrides.executionConfig.strictMode, signalTiming: overrides.executionConfig.signalTiming, fillRule: overrides.executionConfig.fillRule, simulationMode: overrides.executionConfig.simulationMode }
         : { commission, slippage, leverage, tradeDirection: tradeDirection as 'long' | 'short' | 'both', strictMode };
+      const effectiveStartDate = inputs.startDate ?? startDate;
+      const effectiveEndDate = inputs.endDate ?? endDate;
       const result = await strategyRuntimeApi.startBacktestRun({
         code: strategyCode, accountId, symbol, timeframe, initialCapital,
         mode: 'KLINE_RANGE',
-        from: startDate ? new Date(startDate) : undefined,
-        to: endDate ? new Date(endDate) : undefined,
+        from: effectiveStartDate ? new Date(effectiveStartDate) : undefined,
+        to: effectiveEndDate ? new Date(effectiveEndDate) : undefined,
         templateId: templateId || undefined,
         strategyId: strategyId || undefined,
         autoGate: true,

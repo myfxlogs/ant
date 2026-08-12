@@ -84,7 +84,7 @@ func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 			broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
 			open, high, low, close, volume, tick_count
 		FROM md_bars
-		WHERE canonical = $1 AND period = $2 AND is_replay = 0`, distinctKey)
+		WHERE canonical = $1 AND period = $2`, distinctKey)
 
 	if from != nil {
 		query += fmt.Sprintf(` AND open_ts_unix_ms >= %s`, argN())

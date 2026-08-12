@@ -227,7 +227,14 @@ func (s *StrategyExecutionServer) startBacktestWatchers(ctx context.Context, run
 
 // fetchBars retrieves K-line data via BarSource when available,
 // falling back to direct PG fetch for backward compatibility.
+// Auto-fetches missing data from the connected MT broker when PG data is stale.
 func (s *StrategyExecutionServer) fetchBars(ctx context.Context, run *repository.BacktestRun) ([]*antv1.ExecuteKlineBar, error) {
+	// Ensure PG has data covering the requested range before querying.
+	if err := s.ensureBarData(ctx, run.Symbol, run.Timeframe, run.FromTs, run.ToTs, run.AccountID.String()); err != nil {
+		s.log.Warn("fetchBars: ensureBarData failed, proceeding with PG data only",
+			zap.String("symbol", run.Symbol), zap.Error(err))
+	}
+
 	if s.barSource != nil {
 		klines, err := s.barSource.Fetch(ctx, run.Symbol, run.Timeframe, run.FromTs, run.ToTs)
 		if err != nil {

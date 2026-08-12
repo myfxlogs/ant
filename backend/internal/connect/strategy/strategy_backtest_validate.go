@@ -56,6 +56,14 @@ func (s *StrategyExecutionServer) validateBacktestRequest(ctx context.Context, r
 		tf = "H1"
 	}
 	from, to := backtestDateRange(req.Msg)
+
+	// Ensure PG has bar data covering the requested range.
+	// If PG data is missing or stale, auto-fetch from the connected MT broker.
+	// Only error if broker fetch also fails.
+	if err := s.ensureBarData(ctx, req.Msg.Symbol, tf, from, to, req.Msg.AccountId); err != nil {
+		return err
+	}
+
 	bars, _ := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", tf, from, to, 2)
 	if len(bars) >= 2 {
 		return nil

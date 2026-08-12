@@ -19,7 +19,7 @@ import {
   CLOSE_PRICE_KEY, LONG_KEY, PNL_KEY, SHORT_KEY,
   REPLAY_MODEL_KEY, REPLAY_EVERY_TICK_KEY, REPLAY_1M_OHLC_KEY, REPLAY_OPEN_PRICES_KEY,
 } from '@/gen/ant/v1/i18n/strategy_backtest_params_keys';
-import { COMMON_CANCEL_KEY } from '@/gen/ant/v1/i18n/base_keys';
+import { COMMON_CANCEL_KEY, STRATEGY_LIVE_RUN_ID_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import type { BacktestStatus, BacktestMetrics, ChartTrade } from './useBacktestRunner';
 import type { BacktestBlindSpotItem } from './backtestRunnerWatch';
 import type { MarketplaceQualityPreview } from '@/gen/ant/v1/backtest_run_query_pb';
@@ -77,9 +77,10 @@ interface Props {
   totalBlocks?: number;
   recognizedBlocks?: number;
   runMeta?: { symbol?: string; timeframe?: string; createdAt?: string; name?: string } | null;
+  runId?: string;
 }
 
-export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks, runMeta }: Props) {
+export default function BacktestResultsTab({ status, metrics, executionAssumptions, errorMsg, onAIOptimize, trades, panelHeight, onCancel, gateUpdate, gateResults, qualityPreview, blindSpots, strategyId, onAIFix, aiFixing, coverageScore, totalBlocks, recognizedBlocks, runMeta, runId }: Props) {
   const { t } = useTranslation();
 
   const buys = trades.filter((tr) => (tr.side || '').toLowerCase() === 'buy');
@@ -120,6 +121,14 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(TIMEFRAME_KEY)}</span>
             <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.timeframe}</Tag>
+          </div>
+        )}
+
+        {/* Run ID */}
+        {runId && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(STRATEGY_LIVE_RUN_ID_KEY)}</span>
+            <Typography.Text type="secondary" style={{ fontSize: 12, fontFamily: 'monospace' }}>{runId.slice(0, 8)}</Typography.Text>
           </div>
         )}
 

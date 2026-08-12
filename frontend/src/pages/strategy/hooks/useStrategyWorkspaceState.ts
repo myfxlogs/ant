@@ -39,8 +39,10 @@ export function useStrategyWorkspaceState() {
       simulationMode?: 'KLINE_RANGE' | 'OHLC_PATH';
     };
     timeframe?: string;
+    startDate?: string;
+    endDate?: string;
   }) => {
-    btCtx.run({ strategyCode: codeCtx.code, symbol: account.symbol, accountId: account.accountId, timeframe: overrides?.timeframe ?? account.timeframe, templateId: templates.selectedId || undefined, strategyId: codeCtx.strategyId }, overrides);
+    btCtx.run({ strategyCode: codeCtx.code, symbol: account.symbol, accountId: account.accountId, timeframe: overrides?.timeframe ?? account.timeframe, templateId: templates.selectedId || undefined, strategyId: codeCtx.strategyId, startDate: overrides?.startDate, endDate: overrides?.endDate }, overrides);
   }, [codeCtx.code, codeCtx.strategyId, account, templates.selectedId, btCtx]);
   const handleRunTuning = useCallback(async (): Promise<string> => btCtx.tuning.runTuning({ code: codeCtx.code, symbol: account.symbol, timeframe: account.timeframe, startDate: btCtx.startDate, endDate: btCtx.endDate, templateId: templates.selectedId || undefined, strategyName: btCtx.runMeta?.name || codeCtx.loadedTemplate?.name || '', backtestRunId: btCtx.runId || '' }), [codeCtx.code, codeCtx.loadedTemplate, account, btCtx, templates.selectedId]);
   const qt = useQuickTradeData(account.accountId, account.symbol);
