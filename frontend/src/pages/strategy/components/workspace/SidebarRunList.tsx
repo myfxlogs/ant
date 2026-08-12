@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Typography, Spin, Popconfirm, Checkbox, Input } from 'antd';
-import { DeleteOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons';
+import { DeleteOutlined, CloseOutlined, CheckOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { SIDEBAR_DOUBLE_CLICK_RENAME_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
@@ -134,7 +134,11 @@ export default function SidebarRunList({
                   fontWeight: 700, fontSize: 11, flexShrink: 0, marginLeft: 6,
                   color: (r.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149',
                 }}>
-                  {fmtReturn(r.totalReturn)}
+                  {r.totalReturn != null ? fmtReturn(r.totalReturn) : (
+                    <Button type="text" size="small" icon={<EditOutlined />}
+                      onClick={(e) => { e.stopPropagation(); if (onRenameRun) startRename(r.id, r.name || r.templateName || ''); }}
+                      style={{ flexShrink: 0, padding: '0 2px', fontSize: 11 }} className="sidebar-item-action" />
+                  )}
                 </span>}
               </div>
               {r.totalTrades != null && (

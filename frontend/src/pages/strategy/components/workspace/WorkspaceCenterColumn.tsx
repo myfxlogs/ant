@@ -109,7 +109,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     templates: templates.list,
     loading: templates.loading,
     selectedId: templates.selectedId || '',
-    onSelect: (id: string) => templates.onSelect(id),
+    onSelect: (id: string) => { templates.onSelect(id); setRightPanelTab(null); },
     onDeleteTemplate: sidebarActions.onDeleteTemplate,
     onRenameTemplate: sidebarActions.onRenameTemplate,
     onBatchDeleteTemplates: sidebarActions.onBatchDeleteTemplates,
