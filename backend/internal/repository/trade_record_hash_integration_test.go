@@ -328,3 +328,71 @@ func TestTradeRecordHashChain_ConcurrentInsert_Integration(t *testing.T) {
 		t.Fatalf("expected 5 records, got %d", count)
 	}
 }
+
+// TestTradeRecordHashChain_DuplicateTicketIdempotent_Integration verifies EXEC-1:
+// Writing the same (account_id, ticket, close_time) twice should succeed (idempotent
+// skip via ON CONFLICT DO NOTHING), not fail with "hash chain fields are immutable".
+//
+// Adversarial proof: Revert to ON CONFLICT DO UPDATE + unconditional entry_hash UPDATE
+// → second write hits trigger RAISE "immutable" → test fails (RED).
+// With DO NOTHING + early return on conflict → second write returns nil (GREEN).
+func TestTradeRecordHashChain_DuplicateTicketIdempotent_Integration(t *testing.T) {
+	pool := getTestPool(t)
+	repo := NewTradeRecordRepository(pool)
+
+	userID := uuid.New()
+	accountID := uuid.New()
+
+	// Insert test user and mt_account to satisfy FK constraints.
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO users (id, email, password_hash, status) VALUES ($1, $2, 'test', 'active') ON CONFLICT DO NOTHING`,
+		userID, "test-exec1-"+userID.String()[:8]+"@test.local"); err != nil {
+		t.Skipf("skipping: cannot insert test user: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO mt_accounts (id, user_id, mt_type, broker_host, login, account_status) VALUES ($1, $2, 'mt4', 'test', '12345', 'disconnected') ON CONFLICT DO NOTHING`,
+		accountID, userID); err != nil {
+		t.Skipf("skipping: cannot insert test account: %v", err)
+	}
+	t.Cleanup(func() {
+		cleanupTestTradeRecords(t, pool, userID, accountID)
+		pool.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1`, accountID)
+		pool.Exec(ctx, `DELETE FROM users WHERE id = $1`, userID)
+	})
+
+	// First write — should succeed and set entry_hash.
+	rec1 := makeTestTradeRecord(userID, accountID, 999)
+	if err := repo.Create(ctx, rec1); err != nil {
+		t.Fatalf("first write failed: %v", err)
+	}
+	if len(rec1.EntryHash) != 32 {
+		t.Fatalf("first write: entry_hash not set (len=%d)", len(rec1.EntryHash))
+	}
+
+	// Second write — same (account_id, ticket, close_time). Should be idempotent skip.
+	rec2 := makeTestTradeRecord(userID, accountID, 999)
+	if err := repo.Create(ctx, rec2); err != nil {
+		t.Fatalf("second write (duplicate) failed — RED: ON CONFLICT DO UPDATE + entry_hash UPDATE hits immutable trigger: %v", err)
+	}
+
+	// Verify only 1 record exists (no duplicate).
+	count, err := repo.CountByAccount(ctx, userID, accountID)
+	if err != nil {
+		t.Fatalf("CountByAccount: %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("expected 1 record after duplicate write, got %d", count)
+	}
+
+	// Verify entry_hash was set on the first write (NULL→non-NULL allowed by fixed trigger).
+	var entryHash []byte
+	if err := pool.QueryRow(ctx,
+		`SELECT entry_hash FROM trade_records WHERE user_id = $1 AND account_id = $2 AND ticket = 999`,
+		userID, accountID).Scan(&entryHash); err != nil {
+		t.Fatalf("query entry_hash: %v", err)
+	}
+	if len(entryHash) != 32 {
+		t.Fatalf("entry_hash not set (len=%d) — trigger still blocks NULL→non-NULL", len(entryHash))
+	}
+}

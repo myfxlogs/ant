@@ -708,3 +708,56 @@ func TestTradeEventStore_EventToPayload(t *testing.T) {
 		t.Fatalf("expected EURUSD, got %s", payload.Canonical)
 	}
 }
+
+// TestPublishTradeEventFromUpdate verifies EXEC-3: PublishTradeEventFromUpdate
+// bridges broker order updates to the TradeBroker, enabling strategy OnTrade callbacks.
+//
+// Adversarial proof: Remove the PublishTradeEventFromUpdate call from buildOnOrderUpdate
+// → no event received on tradeBroker channel → test fails (RED).
+// With the call → event received with correct fields (GREEN).
+func TestPublishTradeEventFromUpdate(t *testing.T) {
+	t.Parallel()
+	svc := &MtHubService{tradeBroker: NewTradeBroker(64, nil)}
+	ch, cancel := svc.SubscribeTradeEvents("acc-1")
+	defer cancel()
+
+	svc.PublishTradeEventFromUpdate(
+		"acc-1", "close", "buy", "EURUSD",
+		999, decimal.NewFromFloat(0.1), decimal.NewFromFloat(1.105),
+		decimal.NewFromFloat(1.095), decimal.NewFromFloat(1.110),
+		decimal.NewFromFloat(50.0), decimal.Zero, decimal.Zero,
+	)
+
+	select {
+	case ev := <-ch:
+		if ev.AccountID != "acc-1" {
+			t.Fatalf("expected accountID acc-1, got %s", ev.AccountID)
+		}
+		if ev.Ticket != 999 {
+			t.Fatalf("expected ticket 999, got %d", ev.Ticket)
+		}
+		if ev.EventType != BrokerTradeClosed {
+			t.Fatalf("expected BrokerTradeClosed, got %d", ev.EventType)
+		}
+		if ev.Symbol != "EURUSD" {
+			t.Fatalf("expected EURUSD, got %s", ev.Symbol)
+		}
+		if !ev.Profit.Equal(decimal.NewFromFloat(50.0)) {
+			t.Fatalf("expected profit 50, got %s", ev.Profit.String())
+		}
+	case <-time.After(time.Second):
+		t.Fatal("no trade event received — RED: PublishTradeEventFromUpdate not wired")
+	}
+}
+
+// TestPublishTradeEventFromUpdate_NilBroker verifies nil-safety.
+func TestPublishTradeEventFromUpdate_NilBroker(t *testing.T) {
+	t.Parallel()
+	svc := &MtHubService{} // no tradeBroker
+	svc.PublishTradeEventFromUpdate(
+		"acc-1", "close", "buy", "EURUSD",
+		1, decimal.Zero, decimal.Zero,
+		decimal.Zero, decimal.Zero,
+		decimal.Zero, decimal.Zero, decimal.Zero,
+	)
+}

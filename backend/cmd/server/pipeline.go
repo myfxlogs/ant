@@ -69,7 +69,7 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		BrokerRegistry:      d.brokerReg,
 		Searcher:            brokersearch.New("", ""),
 		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector),
-		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo),
+		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo, d.mthubSvc),
 		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),
 		OnBrokerInfo:        pst.makeOnBrokerInfo(d.accountSvc, d.accountSyncSvc, d.mthubSvc, d.snapshotBroker, d.reconLoop),
 		OnBreakerTrip: func(accountID, userID, status, message string) {
@@ -93,6 +93,14 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 				Ask:       b.Ask,
 				Volume:    b.Volume,
 				Closed:    b.IsClosed,
+			})
+		},
+		OnTick: func(t *mdtick.Tick) {
+			d.mthubSvc.PublishTick(&mthub.TickUpdate{
+				AccountID: t.AccountID,
+				Symbol:    t.Canonical,
+				Bid:       t.Bid,
+				Ask:       t.Ask,
 			})
 		},
 	}

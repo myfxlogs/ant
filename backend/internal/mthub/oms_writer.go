@@ -24,9 +24,10 @@
 package mthub
 
 import (
-	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,14 +39,14 @@ import (
 type OMSState string
 
 const (
-	OMSStateNew             OMSState = "NEW"
-	OMSStateValidated       OMSState = "VALIDATED"
-	OMSStateRiskApproved    OMSState = "RISK_APPROVED"
-	OMSStateSubmitted       OMSState = "SUBMITTED"
-	OMSStateWorking         OMSState = "WORKING"
-	OMSStatePartiallyFilled OMSState = "PARTIALLY_FILLED"
-	OMSStateFilled          OMSState = "FILLED"
-	OMSStateCancelled       OMSState = "CANCELLED"
+	OMSStateNew              OMSState = "NEW"
+	OMSStateValidated        OMSState = "VALIDATED"
+	OMSStateRiskApproved     OMSState = "RISK_APPROVED"
+	OMSStateSubmitted        OMSState = "SUBMITTED"
+	OMSStateWorking          OMSState = "WORKING"
+	OMSStatePartiallyFilled  OMSState = "PARTIALLY_FILLED"
+	OMSStateFilled           OMSState = "FILLED"
+	OMSStateCancelled        OMSState = "CANCELLED"
 	OMSStateRejected         OMSState = "REJECTED"
 	OMSStateFailed           OMSState = "FAILED"
 	OMSStateExpired          OMSState = "EXPIRED"
@@ -59,12 +60,12 @@ const (
 // isValidOMSTransition validates state transitions (mirrors oms.isValid).
 func isValidOMSTransition(current, next OMSState) bool {
 	transitions := map[OMSState][]OMSState{
-		OMSStateNew:          {OMSStateValidated},
-		OMSStateValidated:    {OMSStateRiskApproved, OMSStateRejected},
-		OMSStateRiskApproved: {OMSStateSubmitted, OMSStateRejected, OMSStateFailed},
-		OMSStateSubmitted:    {OMSStateWorking, OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed, OMSStateUnknown, OMSStateRequoted, OMSStateSlippageRejected, OMSStateMarginCall},
-		OMSStateWorking:      {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed, OMSStateRequoted},
-		OMSStatePartiallyFilled: {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed},
+		OMSStateNew:              {OMSStateValidated},
+		OMSStateValidated:        {OMSStateRiskApproved, OMSStateRejected},
+		OMSStateRiskApproved:     {OMSStateSubmitted, OMSStateRejected, OMSStateFailed},
+		OMSStateSubmitted:        {OMSStateWorking, OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed, OMSStateUnknown, OMSStateRequoted, OMSStateSlippageRejected, OMSStateMarginCall},
+		OMSStateWorking:          {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed, OMSStateRequoted},
+		OMSStatePartiallyFilled:  {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed},
 		OMSStateRequoted:         {OMSStateRiskApproved, OMSStateCancelled, OMSStateExpired},
 		OMSStateSlippageRejected: {OMSStateRiskApproved, OMSStateCancelled, OMSStateExpired},
 		OMSStateUnknown:          {OMSStateReconciling, OMSStateWorking, OMSStateFilled, OMSStateCancelled, OMSStateFailed, OMSStateExpired},
@@ -130,6 +131,31 @@ func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platfor
 	return nil
 }
 
+// UpdateTicket sets the real broker ticket on an order after broker acceptance.
+// Called after submitToBroker succeeds — replaces the negative placeholder
+// with the real broker ticket so OnOrderUpdate can look up the order by ticket.
+func (w *OmsWriter) UpdateTicket(ctx context.Context, orderID string, ticket int64) error {
+	_, err := w.pool.Exec(ctx,
+		`UPDATE orders SET ticket = $1, updated_at = now() WHERE id = $2`,
+		ticket, orderID)
+	if err != nil {
+		return fmt.Errorf("oms update ticket: %w", err)
+	}
+	return nil
+}
+
+// OrderIDByTicket looks up the order ID and current state by broker ticket.
+// Returns empty strings if the order is not found.
+func (w *OmsWriter) OrderIDByTicket(ctx context.Context, accountID string, ticket int64) (orderID, state string, err error) {
+	row := w.pool.QueryRow(ctx,
+		`SELECT id::text, state FROM orders WHERE mt_account_id = $1::uuid AND ticket = $2`,
+		accountID, ticket)
+	var oid, st string
+	if err := row.Scan(&oid, &st); err != nil {
+		return "", "", err
+	}
+	return oid, st, nil
+}
 
 // Transition validates and persists a state transition to PG.
 func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, current, next OMSState) error {
@@ -182,4 +208,3 @@ func IdempotencyKey(accountID, clientID string) string {
 	}
 	return uuid.NewMD5(uuid.NameSpaceOID, []byte(fmt.Sprintf("ord-%s-%s", accountID, clientID))).String()
 }
-

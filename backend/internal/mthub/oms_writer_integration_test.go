@@ -162,3 +162,63 @@ func TestOmsWriterTransition_ConcurrentConflict(t *testing.T) {
 	}
 	_, _ = pg.Exec(ctx, "DELETE FROM orders WHERE id = $1", orderID)
 }
+
+// TestOmsWriter_UpdateTicket_And_TransitionOrderByTicket verifies EXEC-2:
+// After UpdateTicket stores the real broker ticket, TransitionOrderByTicket
+// can look up the order by ticket and transition it from SUBMITTED to FILLED.
+//
+// Adversarial proof: Remove the TransitionOrderByTicket call from buildOnOrderUpdate
+// → order stays SUBMITTED (no transition happens) → RED.
+// With the call → order transitions to FILLED → GREEN.
+func TestOmsWriter_UpdateTicket_And_TransitionOrderByTicket(t *testing.T) {
+	t.Parallel()
+	pg := getTestPG(t)
+
+	w := NewOmsWriter(pg, nil)
+	svc := &MtHubService{omsWriter: w, logger: nil}
+	ctx := context.Background()
+	orderID := uuid.New().String()
+	accountID := "06daab3c-5d87-41fd-bd8b-f31ba73c16c1"
+	brokerTicket := int64(999888)
+
+	// Insert + transition to SUBMITTED (simulating PlaceOrder flow).
+	if err := w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD",
+		0, decimal.NewFromInt(1), decimal.NewFromFloat(1.085), decimal.Zero, decimal.Zero,
+	); err != nil {
+		t.Fatalf("InsertOrder: %v", err)
+	}
+	_ = w.Transition(ctx, orderID, accountID, OMSStateNew, OMSStateValidated)
+	_ = w.Transition(ctx, orderID, accountID, OMSStateValidated, OMSStateRiskApproved)
+	_ = w.Transition(ctx, orderID, accountID, OMSStateRiskApproved, OMSStateSubmitted)
+
+	// UpdateTicket — stores real broker ticket (replaces negative placeholder).
+	if err := w.UpdateTicket(ctx, orderID, brokerTicket); err != nil {
+		t.Fatalf("UpdateTicket: %v", err)
+	}
+
+	// Verify OrderIDByTicket finds it.
+	oid, state, err := w.OrderIDByTicket(ctx, accountID, brokerTicket)
+	if err != nil {
+		t.Fatalf("OrderIDByTicket: %v", err)
+	}
+	if oid != orderID {
+		t.Fatalf("expected orderID %s, got %s", orderID, oid)
+	}
+	if state != string(OMSStateSubmitted) {
+		t.Fatalf("expected SUBMITTED, got %s", state)
+	}
+
+	// TransitionOrderByTicket — simulates OnOrderUpdate close event.
+	svc.TransitionOrderByTicket(ctx, accountID, brokerTicket, OMSStateFilled)
+
+	// Verify order is now FILLED.
+	_, finalState, err := w.OrderIDByTicket(ctx, accountID, brokerTicket)
+	if err != nil {
+		t.Fatalf("OrderIDByTicket after transition: %v", err)
+	}
+	if finalState != string(OMSStateFilled) {
+		t.Fatalf("expected FILLED, got %s — RED: TransitionOrderByTicket not wired", finalState)
+	}
+
+	_, _ = pg.Exec(ctx, "DELETE FROM orders WHERE id = $1", orderID)
+}

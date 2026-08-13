@@ -3,6 +3,7 @@ package mthub
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -181,6 +182,13 @@ func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, or
 		return 0, err
 	}
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateSubmitted)
+	// Store the real broker ticket so OnOrderUpdate can resolve orderID by ticket.
+	if s.omsWriter != nil {
+		if err := s.omsWriter.UpdateTicket(ctx, orderID, ticket); err != nil && s.logger != nil {
+			s.logger.Error("oms: failed to update ticket after broker accept",
+				zap.String("orderID", orderID), zap.Int64("ticket", ticket), zap.Error(err))
+		}
+	}
 	return ticket, nil
 }
 
@@ -287,6 +295,62 @@ func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID str
 				zap.String("to", string(to)))
 		}
 	}
+}
+
+// TransitionOrderByTicket looks up the order by broker ticket and transitions
+// its OMS state. Used by OnOrderUpdate callback to move orders from SUBMITTED
+// to terminal states (FILLED/CANCELLED/FAILED) when broker fill/reject events arrive.
+func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID string, ticket int64, to OMSState) {
+	if s.omsWriter == nil {
+		return
+	}
+	orderID, currentState, err := s.omsWriter.OrderIDByTicket(ctx, accountID, ticket)
+	if err != nil {
+		if s.logger != nil {
+			s.logger.Warn("oms: order not found by ticket",
+				zap.String("accountID", accountID), zap.Int64("ticket", ticket), zap.Error(err))
+		}
+		return
+	}
+	s.omsTransition(ctx, orderID, accountID, OMSState(currentState), to)
+}
+
+// PublishTradeEventFromUpdate publishes a BrokerTradeEvent derived from an
+// OnOrderUpdate event. This bridges broker fill/close events to the TradeBroker,
+// enabling strategy OnTrade callbacks (trailing stops, martingale, etc.).
+func (s *MtHubService) PublishTradeEventFromUpdate(
+	accountID, updateType, orderType, symbol string,
+	ticket int64,
+	volume, closePrice, sl, tp, profit, commission, swap decimal.Decimal,
+) {
+	if s.tradeBroker == nil {
+		return
+	}
+	var eventType BrokerTradeEventType
+	switch strings.ToLower(updateType) {
+	case "close", "pending_close":
+		eventType = BrokerTradeClosed
+	case "modify":
+		eventType = BrokerTradeModified
+	case "delete":
+		eventType = BrokerTradeCancelled
+	default:
+		eventType = BrokerTradeFilled
+	}
+	s.tradeBroker.Publish(&BrokerTradeEvent{
+		AccountID:  accountID,
+		Ticket:     ticket,
+		Symbol:     symbol,
+		EventType:  eventType,
+		Side:       orderType,
+		Volume:     volume,
+		Price:      closePrice,
+		StopLoss:   sl,
+		TakeProfit: tp,
+		Profit:     profit,
+		Commission: commission,
+		Swap:       swap,
+	})
 }
 
 // lossyFloat64 converts a decimal to float64 for MT API proto boundaries.

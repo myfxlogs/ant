@@ -201,6 +201,9 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 	}
 
 	// Insert with prev_hash. seq is GENERATED ALWAYS AS IDENTITY.
+	// ON CONFLICT DO NOTHING: duplicate (account_id, ticket, close_time) is
+	// idempotent append-only — the existing row's hash chain is immutable.
+	// Only newly inserted rows (RETURNING yields a row) need entry_hash set.
 	var returnedID uuid.UUID
 	var seq int64
 	insertQuery := `
@@ -211,27 +214,20 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 			order_comment, magic_number, platform, prev_hash
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
-		) ON CONFLICT (account_id, ticket, close_time) DO UPDATE SET
-			user_id = EXCLUDED.user_id,
-			schedule_id = COALESCE(EXCLUDED.schedule_id, trade_records.schedule_id),
-			profit = EXCLUDED.profit,
-			swap = EXCLUDED.swap,
-			commission = EXCLUDED.commission,
-			close_price = EXCLUDED.close_price,
-			stop_loss = EXCLUDED.stop_loss,
-			take_profit = EXCLUDED.take_profit,
-			volume = EXCLUDED.volume,
-			open_price = EXCLUDED.open_price,
-			platform = EXCLUDED.platform,
-			updated_at = CURRENT_TIMESTAMP
+		) ON CONFLICT (account_id, ticket, close_time) DO NOTHING
 		RETURNING id, seq
 	`
-	if err := tx.QueryRow(ctx, insertQuery,
+	err = tx.QueryRow(ctx, insertQuery,
 		record.UserID, record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 		record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 		record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
 		record.OrderComment, record.MagicNumber, record.Platform, prevHash,
-	).Scan(&returnedID, &seq); err != nil {
+	).Scan(&returnedID, &seq)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Conflict — row already exists, hash chain preserved. Idempotent skip.
+			return nil
+		}
 		return fmt.Errorf("trade hash chain: insert: %w", err)
 	}
 	record.ID = returnedID
@@ -244,6 +240,7 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 		record.Profit.String(), [2]int64{record.OpenTime.UnixMilli(), record.CloseTime.UnixMilli()})
 
 	// Update entry_hash (separate UPDATE because seq is GENERATED ALWAYS AS IDENTITY).
+	// Only reached for newly inserted rows — conflict rows returned early above.
 	if _, err := tx.Exec(ctx,
 		`UPDATE trade_records SET entry_hash = $1 WHERE id = $2`, entryHash, returnedID,
 	); err != nil {
