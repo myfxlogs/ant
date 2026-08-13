@@ -80,9 +80,12 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 	if tok := g.token(); tok != "" {
 		md.Set("authorization", "Bearer "+tok)
 	}
-	_, err := client.Ping(metadata.NewOutgoingContext(pingCtx, md), &pb.PingRequest{})
+	resp, err := client.Ping(metadata.NewOutgoingContext(pingCtx, md), &pb.PingRequest{})
 	if err != nil {
 		return fmt.Errorf("mt4: ping failed: %w", err)
+	}
+	if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+		return fmt.Errorf("mt4: ping: code=%d msg=%s", e.GetCode(), e.GetMessage())
 	}
 	return nil
 }

@@ -114,9 +114,12 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 		md.Set("authorization", "Bearer "+tok)
 	}
 	hcCtx = metadata.NewOutgoingContext(hcCtx, md)
-	_, err := client.AccountSummary(hcCtx, &pb.AccountSummaryRequest{Id: sid})
+	resp, err := client.AccountSummary(hcCtx, &pb.AccountSummaryRequest{Id: sid})
 	if err != nil {
 		return fmt.Errorf("mt5: health check failed: %w", err)
+	}
+	if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+		return fmt.Errorf("mt5: health check: code=%d msg=%s", e.GetCode(), e.GetMessage())
 	}
 	return nil
 }

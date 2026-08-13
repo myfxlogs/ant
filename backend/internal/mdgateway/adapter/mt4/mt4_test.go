@@ -1074,8 +1074,11 @@ func TestSubscribeOrderEvents_StreamError(t *testing.T) {
 	gw.sessionID = "sid"
 	gw.streamCli = sc
 
+	// MDGATEWAY-4: stream creation moved into goroutine reconnect loop.
+	// SubscribeOrderEvents returns nil (success) — stream errors are
+	// handled asynchronously with backoff retry inside the goroutine.
 	err := gw.SubscribeOrderEvents(context.Background(), nil)
-	if err == nil {
-		t.Error("SubscribeOrderEvents should fail on stream error")
+	if err != nil {
+		t.Errorf("SubscribeOrderEvents should not fail on initial stream error (goroutine retries): %v", err)
 	}
 }

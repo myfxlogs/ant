@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Modal, Form, Input, Select, InputNumber, message } from 'antd';
+import { Modal, Form, Input, Select, InputNumber, message, Button, Typography } from 'antd';
+import { LinkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
@@ -117,7 +118,19 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
         <Form.Item name="accountId" label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY)} rules={[{ required: true }]}>
           <Select
             placeholder={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_PLACEHOLDER_KEY)}
-            notFoundContent={t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY)}
+            notFoundContent={
+              <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                <Typography.Text type="secondary">{t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY)}</Typography.Text>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<LinkOutlined />}
+                  onClick={() => navigate('/accounts/bind')}
+                >
+                  {t('schedule.launch.noAccount.bindButton', { defaultValue: 'Bind MT Account' })}
+                </Button>
+              </div>
+            }
             showSearch optionFilterProp="label"
             options={activeAccounts.map(a => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
           />

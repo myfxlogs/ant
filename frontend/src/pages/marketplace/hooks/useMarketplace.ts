@@ -1,6 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
-import { message } from 'antd';
+import { useState, useCallback, useMemo, createElement } from 'react';
+import { message, notification, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { marketplaceClient } from '@/client/connect';
 import { walletApi } from '@/client/wallet';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
@@ -25,6 +26,7 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
   const { user, isAuthenticated } = useAuthStore();
   const userId = user?.id || '';
   const requireAuth = useAuthRequired();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<TabKey>('market');
   const [searchText, setSearchText] = useState('');
@@ -149,8 +151,19 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
       });
       message.success(t('marketplace.messages.subscribed'));
       refetchPurchases();
+      notification.success({
+        message: t('marketplace.payment.purchaseSuccess'),
+        description: t('marketplace.payment.deployGuide', { defaultValue: 'Your strategy is ready to deploy.' }),
+        btn: createElement(Button, {
+          type: 'primary',
+          size: 'small',
+          onClick: () => { notification.destroy(); navigate('/strategy/live?tab=schedules'); },
+        }, t('marketplace.payment.goDeploy', { defaultValue: 'Deploy Now' })),
+        duration: 0,
+        placement: 'topRight',
+      });
     } catch { message.error(t('marketplace.messages.subscribeFailed')); }
-  }, [requireAuth, userId, t, refetchPurchases]);
+  }, [requireAuth, userId, t, refetchPurchases, navigate]);
 
   const handleBuy = useCallback(async (strategy: PublishedStrategy) => {
     if (!requireAuth()) return;
@@ -179,6 +192,17 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
       setPaymentModalOpen(false);
       setPaymentStrategy(null);
       refetchPurchases();
+      notification.success({
+        message: t('marketplace.payment.purchaseSuccess'),
+        description: t('marketplace.payment.deployGuide', { defaultValue: 'Your strategy is ready to deploy.' }),
+        btn: createElement(Button, {
+          type: 'primary',
+          size: 'small',
+          onClick: () => { notification.destroy(); navigate('/strategy/live?tab=schedules'); },
+        }, t('marketplace.payment.goDeploy', { defaultValue: 'Deploy Now' })),
+        duration: 0,
+        placement: 'topRight',
+      });
     } catch (err: unknown) {
       const msg = String((err as { message?: string })?.message || '');
       if (msg.includes('insufficient balance') || msg.includes('insufficient_balance')) {
@@ -198,7 +222,7 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
     } finally {
       setPaymentLoading(false);
     }
-  }, [paymentStrategy, userId, t, refetchPurchases]);
+  }, [paymentStrategy, userId, t, refetchPurchases, navigate]);
 
   const handleCancelPayment = useCallback(() => {
     setPaymentModalOpen(false);

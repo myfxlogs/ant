@@ -179,6 +179,43 @@ func (m *mockOrderUpdateStream) Context() context.Context     { return m.ctx }
 func (m *mockOrderUpdateStream) SendMsg(msg any) error        { return nil }
 func (m *mockOrderUpdateStream) RecvMsg(msg any) error        { return io.EOF }
 
+// mockServiceClient implements pb.ServiceClient for HealthCheck tests.
+type mockServiceClient struct {
+	pingRes *pb.PingReply
+	pingErr error
+}
+
+func (m *mockServiceClient) Ping(ctx context.Context, in *pb.PingRequest, opts ...grpc.CallOption) (*pb.PingReply, error) {
+	if m.pingRes != nil || m.pingErr != nil {
+		return m.pingRes, m.pingErr
+	}
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) PingHost(ctx context.Context, in *pb.PingHostRequest, opts ...grpc.CallOption) (*pb.PingHostReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) PingHostMany(ctx context.Context, in *pb.PingHostManyRequest, opts ...grpc.CallOption) (*pb.PingHostManyReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) GetLogs(ctx context.Context, in *pb.GetLogsRequest, opts ...grpc.CallOption) (*pb.GetLogsReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) GetLogsByUser(ctx context.Context, in *pb.GetLogsByUserRequest, opts ...grpc.CallOption) (*pb.GetLogsByUserReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) MemorySnapshot(ctx context.Context, in *pb.MemorySnapshotRequest, opts ...grpc.CallOption) (*pb.MemorySnapshotReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) Search(ctx context.Context, in *pb.SearchRequest, opts ...grpc.CallOption) (*pb.SearchReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) GetClients(ctx context.Context, in *pb.GetClientsRequest, opts ...grpc.CallOption) (*pb.GetClientsReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockServiceClient) MemoryUsage(ctx context.Context, in *pb.MemoryUsageRequest, opts ...grpc.CallOption) (*pb.MemoryUsageReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+
 // mockStreamsClient implements pb.StreamsClient for testing recv loops.
 type mockStreamsClient struct {
 	quoteStream       *mockQuoteStream
@@ -207,8 +244,11 @@ func (m *mockStreamsClient) OnOrderUpdate(ctx context.Context, in *pb.OnOrderUpd
 	if m.orderUpdateErr != nil {
 		return nil, m.orderUpdateErr
 	}
-	m.orderUpdateStream.ctx = ctx
-	return m.orderUpdateStream, nil
+	if m.orderUpdateStream != nil {
+		m.orderUpdateStream.ctx = ctx
+		return m.orderUpdateStream, nil
+	}
+	return nil, fmt.Errorf("mock: no order update stream configured")
 }
 func (m *mockStreamsClient) OnTickValue(ctx context.Context, in *pb.OnTickValueRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnTickValueReply], error) {
 	return nil, fmt.Errorf("mock: not implemented")

@@ -7,6 +7,7 @@ import (
 
 	"alphaforge/internal/mthub"
 	pb "alphaforge/mt5"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
@@ -317,15 +318,6 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if streamCli == nil || sid == "" {
 		return fmt.Errorf("mt5 SubscribeOrderEvents: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid})
-	if tok := g.token(); tok != "" {
-		md.Set("authorization", "Bearer "+tok)
-	}
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	stream, err := streamCli.OnOrderUpdate(ctx, &pb.OnOrderUpdateRequest{Id: sid})
-	if err != nil {
-		return fmt.Errorf("mt5 OnOrderUpdate: %w", err)
-	}
 	g.mu.Lock()
 	if g.cancelHubOrderSub != nil {
 		g.cancelHubOrderSub()
@@ -338,32 +330,88 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 				g.log.Error("mt5 order event recv panic", zap.Any("panic", r))
 			}
 		}()
+		backoff := time.Second
 		for {
 			if ctx.Err() != nil {
 				return
 			}
-			msg, err := stream.Recv()
-			if err != nil {
-				if ctx.Err() != nil {
-					return
-				}
-				g.log.Warn("mt5 order event recv error", zap.Error(err))
-				return
-			}
-			if h == nil || msg.GetResult() == nil || msg.GetResult().GetUpdate() == nil {
+			g.mu.RLock()
+			streamCli := g.streamCli
+			sid := g.sessionID
+			g.mu.RUnlock()
+			if streamCli == nil || sid == "" {
+				g.sleep(ctx, backoff)
+				backoff = minDuration(backoff*2, streamMaxBackoff)
 				continue
 			}
-			upd := msg.GetResult().GetUpdate()
-			o := upd.GetOrder()
-			event := &mthub.OrderEvent{
-				AccountID: g.cfg.AccountID,
-				EventType: upd.GetType().String(),
-				Timestamp: time.Now(),
+			md := metadata.New(map[string]string{"id": sid})
+			if tok := g.token(); tok != "" {
+				md.Set("authorization", "Bearer "+tok)
 			}
-			if o != nil {
-				event.Ticket = o.GetTicket()
+			subCtx, cancel := context.WithCancel(ctx)
+			subCtx = metadata.NewOutgoingContext(subCtx, md)
+			stream, err := streamCli.OnOrderUpdate(subCtx, &pb.OnOrderUpdateRequest{Id: sid})
+			if err != nil {
+				g.log.Warn("mt5 order event subscribe", zap.Error(err), zap.Duration("backoff", backoff))
+				cancel()
+				g.handleStreamError(ctx, err, &backoff)
+				continue
 			}
-			h(event)
+			backoff = time.Second
+			recvCh := make(chan *pb.OnOrderUpdateReply, 1)
+			errCh := make(chan error, 1)
+			go func() {
+				for {
+					msg, err := stream.Recv()
+					if err != nil {
+						errCh <- err
+						close(recvCh)
+						close(errCh)
+						return
+					}
+					select {
+					case recvCh <- msg:
+					case <-subCtx.Done():
+						close(recvCh)
+						close(errCh)
+						return
+					}
+				}
+			}()
+		hubOrderLoop:
+			for {
+				select {
+				case <-ctx.Done():
+					cancel()
+					return
+				case msg := <-recvCh:
+					if h == nil || msg.GetResult() == nil || msg.GetResult().GetUpdate() == nil {
+						continue
+					}
+					upd := msg.GetResult().GetUpdate()
+					o := upd.GetOrder()
+					event := &mthub.OrderEvent{
+						AccountID: g.cfg.AccountID,
+						EventType: upd.GetType().String(),
+						Timestamp: time.Now(),
+					}
+					if o != nil {
+						event.Ticket = o.GetTicket()
+					}
+					h(event)
+				case err := <-errCh:
+					g.log.Warn("mt5 order event recv error", zap.Error(err))
+					cancel()
+					g.handleStreamError(ctx, err, &backoff)
+					break hubOrderLoop
+				case <-time.After(g.orderUpdateTimeoutOrDefault()):
+					g.log.Warn("mt5 order event stream: no data — treating as dead",
+						zap.String("account", g.cfg.AccountID), zap.Duration("timeout", g.orderUpdateTimeoutOrDefault()))
+					cancel()
+					g.handleStreamError(ctx, fmt.Errorf("order event stream: no data timeout"), &backoff)
+					break hubOrderLoop
+				}
+			}
 		}
 	}()
 	return nil
