@@ -14,9 +14,6 @@ import { useTranslation } from "react-i18next"
 import { FORMAT_CRON_KEY, FORMAT_INTERVAL_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 import type { ScheduleRow, TemplateOption, AccountRow, TriggerContext } from '../hooks/libraryTypes';
 
-;
-import { useNavigate } from "react-router-dom";
-
 const { Text } = Typography;
 
 type Props = {
@@ -32,6 +29,7 @@ type Props = {
   onHealthCheck: (row: ScheduleRow) => void;
   onManualTrigger: (row: ScheduleRow) => void;
   onDelete: (row: ScheduleRow) => void;
+  onShowLogs: (row: ScheduleRow) => void;
   highlightScheduleId?: string | null;
 };
 
@@ -48,10 +46,10 @@ export default function ScheduleTable({
   onHealthCheck,
   onManualTrigger,
   onDelete,
+  onShowLogs,
   highlightScheduleId,
 }: Props) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const templateById = useMemo(() => {
     const m = new Map<string, TemplateOption>();
     (templates || []).forEach((item) => {
@@ -181,7 +179,7 @@ export default function ScheduleTable({
           </Button>
           <Button
             size="small"
-            onClick={() => navigate(`/strategy/schedules/${row.id}/logs`)}
+            onClick={() => onShowLogs(row)}
             disabled={loading}
           >
             {t("strategy.schedules.actions.logs")}

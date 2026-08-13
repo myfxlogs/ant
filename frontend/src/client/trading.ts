@@ -1,6 +1,7 @@
 import { tradingClient } from './connect';
 import { Side, OrderType, PlaceOrderRequestSchema, CloseOrderRequestSchema } from '@/gen/ant/v1/mthub_service_pb';
 import { create } from '@bufbuild/protobuf';
+import { ConnectError } from '@connectrpc/connect';
 import type { OrderRecord } from '@/gen/ant/v1/mthub_service_pb';
 import type { OpenedOrdersResponse } from '@/gen/ant/v1/mthub_service_pb';
 import type { OrderHistoryResponse } from '@/gen/ant/v1/mthub_service_pb';
@@ -138,29 +139,34 @@ export const tradingApi = {
     magicNumber?: bigint;
   }): Promise<OrderSendResult> => {
     const { side, orderType } = parseSideOrderType(params.type);
-    const response = await tradingClient.placeOrder(
-      create(PlaceOrderRequestSchema, {
-        accountId: params.accountId,
-        canonical: params.symbol,
-        side,
-        orderType,
-        volume: toDecimalString(params.volume, '0'),
-        price: toDecimalString(params.price, '0'),
-        stopLoss: toDecimalString(params.stopLoss, '0'),
-        takeProfit: toDecimalString(params.takeProfit, '0'),
-        comment: params.comment || '',
-        clientId: params.clientId || '',
-        magic: Number(params.magicNumber || 0),
-      }),
-    );
-    const ticket = response.ticket ? Number(response.ticket) : 0;
-    const errorMsg = ticket ? '' : (response.status || 'order rejected');
-    return {
-      order: ticket ? { ticket } : undefined,
-      error: errorMsg,
-      retcode: ticket ? 0 : undefined,
-      message: response.status || '',
-    };
+    try {
+      const response = await tradingClient.placeOrder(
+        create(PlaceOrderRequestSchema, {
+          accountId: params.accountId,
+          canonical: params.symbol,
+          side,
+          orderType,
+          volume: toDecimalString(params.volume, '0'),
+          price: toDecimalString(params.price, '0'),
+          stopLoss: toDecimalString(params.stopLoss, '0'),
+          takeProfit: toDecimalString(params.takeProfit, '0'),
+          comment: params.comment || '',
+          clientId: params.clientId || '',
+          magic: Number(params.magicNumber || 0),
+        }),
+      );
+      const ticket = response.ticket ? Number(response.ticket) : 0;
+      const errorMsg = ticket ? '' : (response.status || 'order rejected');
+      return {
+        order: ticket ? { ticket } : undefined,
+        error: errorMsg,
+        retcode: ticket ? 0 : undefined,
+        message: response.status || '',
+      };
+    } catch (e: unknown) {
+      const msg = e instanceof ConnectError ? (e.message || e.rawMessage || '下单失败') : (e instanceof Error ? e.message : '下单失败');
+      return { error: msg, message: msg };
+    }
   },
 
   orderClose: async (params: {
@@ -169,20 +175,25 @@ export const tradingApi = {
     volume?: number;
     price?: number;
   }): Promise<OrderCloseResult> => {
-    const response = await tradingClient.closeOrder(
-      create(CloseOrderRequestSchema, {
-        accountId: params.accountId,
-        ticket: params.ticket,
-        lots: params.volume ? String(params.volume) : '',
-      }),
-    );
-    const ok = response.status === 'closed';
-    return {
-      order: undefined,
-      error: ok ? '' : 'close failed',
-      retcode: ok ? 0 : undefined,
-      message: ok ? (response.message || 'Position closed') : 'Close failed',
-    };
+    try {
+      const response = await tradingClient.closeOrder(
+        create(CloseOrderRequestSchema, {
+          accountId: params.accountId,
+          ticket: params.ticket,
+          lots: params.volume ? String(params.volume) : '',
+        }),
+      );
+      const ok = response.status === 'closed';
+      return {
+        order: undefined,
+        error: ok ? '' : 'close failed',
+        retcode: ok ? 0 : undefined,
+        message: ok ? (response.message || 'Position closed') : 'Close failed',
+      };
+    } catch (e: unknown) {
+      const msg = e instanceof ConnectError ? (e.message || e.rawMessage || '平仓失败') : (e instanceof Error ? e.message : '平仓失败');
+      return { error: msg, message: msg };
+    }
   },
 
   getPositions: async (accountId: string) => {

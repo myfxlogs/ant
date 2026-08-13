@@ -73,6 +73,8 @@ function shouldSuppressError(error: unknown, proc: string): boolean {
   if (error instanceof ConnectError && (error.code === Code.InvalidArgument || error.code === Code.AlreadyExists)) return true;
   if (isAuthFreeProcedure(proc)) return true;
   if (error instanceof ConnectError && error.code === Code.Unauthenticated && !useAuthStore.getState().isAuthenticated) return true;
+  // Trading procedures handle errors themselves via tradingApi catch blocks.
+  if (proc.includes('mthubservice') && (proc.includes('placeorder') || proc.includes('closeorder'))) return true;
   return false;
 }
 

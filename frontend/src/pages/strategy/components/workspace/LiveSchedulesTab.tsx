@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Button, Form, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -9,12 +9,13 @@ import ScheduleTable from '../ScheduleTable';
 import EditScheduleModal from '../EditScheduleModal';
 import TriggerModal from '../TriggerModal';
 import ScheduleHealthModal from '../ScheduleHealthModal';
+import ScheduleLogsModal from '../ScheduleLogsModal';
 import { useAccountsAndSymbols } from '../../hooks/useAccountsAndSymbols';
 import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption } from '../../hooks/libraryTypes';
 import type { ScheduleFormValues, ScheduleType } from '../EditScheduleModal';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
 import { useNavigate } from 'react-router-dom';
-import { strategyRuntimeApi } from '@/client/strategyRuntime';
+import { strategyActiveApi } from '@/client/strategy';
 import { tradingApi } from '@/client/trading';
 import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
 import { parseParametersToForm, buildParametersFromForm } from '../../StrategyScheduleParams';
@@ -50,26 +51,33 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
   const [healthOpen, setHealthOpen] = useState(false);
   const [healthLoading, setHealthLoading] = useState(false);
   const [healthTarget, setHealthTarget] = useState<ScheduleRow | null>(null);
+  const [logsScheduleId, setLogsScheduleId] = useState<string | null>(null);
   const [healthSummary, setHealthSummary] = useState<ScheduleHealthSummary | null>(null);
 
   const [triggering, setTriggering] = useState(false);
   const [openTrigger, setOpenTrigger] = useState(false);
   const [triggerResult, setTriggerResult] = useState<TriggerResult | null>(null);
   const [triggerContext, setTriggerContext] = useState<TriggerContext | null>(null);
+  const triggerRunIdRef = useRef<string | null>(null);
+  const triggerAbortRef = useRef<AbortController | null>(null);
+
+  const stopTriggerRun = useCallback(() => {
+    if (triggerAbortRef.current) { triggerAbortRef.current.abort(); triggerAbortRef.current = null; }
+    if (triggerRunIdRef.current) { void strategyActiveApi.stop(triggerRunIdRef.current); triggerRunIdRef.current = null; }
+  }, []);
 
   const symbolsOpts = useMemo(() => symbols.map(s => ({ value: s.value, label: s.label })), [symbols]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list()]);
+      const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list(), fetchAccounts()]);
       const tplsOpts: TemplateOption[] = [];
       const seen = new Set<string>();
       (tpls || []).forEach((t: { id?: string; name?: string; isPublic?: boolean; isSystem?: boolean }) => { if (t?.id) { seen.add(String(t.id)); tplsOpts.push({ id: t.id, name: t.name || '', isPublic: t.isPublic }); } });
       (DEFAULT_TEMPLATES as DefaultTemplateItem[]).forEach(t => { if (t?.id && !seen.has(String(t.id))) tplsOpts.push({ id: String(t.id), name: t.name, isPublic: t.isSystem }); });
       setTemplates(tplsOpts);
       setSchedules(schs as ScheduleRow[]);
-      void fetchAccounts();
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [fetchAccounts]);
 
@@ -112,18 +120,28 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
   }, [healthId, schedules, loadScheduleHealth]);
 
   const onManualTrigger = useCallback(async (row: ScheduleRow) => {
+    stopTriggerRun();
     setTriggering(true); setTriggerResult(null);
     setTriggerContext({ schedule: row, accountId: row.accountId }); setOpenTrigger(true);
     try {
       const tpl = await strategyTemplateApi.get(row.templateId);
       const code = String(tpl?.code || '');
       if (!code) throw new Error('Template code empty');
-      const exec = await strategyRuntimeApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
-      if (!exec.success) throw new Error(exec.error || 'Execute failed');
-      setTriggerResult({ logs: exec.logs || [], signal: exec.signal ?? null, meta: { templateId: row.templateId, scheduleId: row.id } });
+      const resp = await strategyActiveApi.start({ accountId: row.accountId, strategyCode: code, symbol: row.symbol, timeframe: row.timeframe, mode: 'paper', strategyId: row.templateId });
+      if (!resp.success) throw new Error(resp.error || 'StartStrategy failed');
+      triggerRunIdRef.current = resp.runId;
+      setTriggerResult({ logs: ['Run started, listening for signals...'], signal: null, meta: { templateId: row.templateId, scheduleId: row.id } });
+      const abort = new AbortController(); triggerAbortRef.current = abort;
+      (async () => {
+        try { for await (const ev of strategyActiveApi.watchSignals(resp.runId, abort.signal)) {
+          const s = ev as Record<string, unknown>;
+          setTriggerResult(prev => ({ logs: [...(prev?.logs || []), `Signal: ${s.signalType ?? ''} ${s.volume ?? ''} @ ${s.price ?? ''}`], signal: s as TriggerResult['signal'], meta: prev?.meta || {} }));
+          setTriggering(false);
+        } } catch (e) { if ((e as { name?: string })?.name !== 'AbortError') setTriggerResult(prev => ({ logs: [...(prev?.logs || []), `Stream ended: ${e instanceof Error ? e.message : String(e)}`], signal: prev?.signal ?? null, meta: prev?.meta || {} })); }
+      })();
     } catch (e: unknown) { setTriggerResult({ logs: [], signal: null, meta: { error: e instanceof Error ? e.message : String(e) } }); }
     finally { setTriggering(false); }
-  }, []);
+  }, [stopTriggerRun]);
 
   const doOrderSend = useCallback(async () => {
     if (!triggerContext?.schedule) return;
@@ -138,9 +156,10 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
       const res = await tradingApi.orderSend({ accountId: schedule.accountId, symbol: raw.symbol || schedule.symbol, type: action, volume, price: Number(raw?.price || 0), stopLoss: Number(raw?.stopLoss || 0), takeProfit: Number(raw?.takeProfit || 0), comment: String(raw?.comment || '') });
       if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error })); return; }
       message.success(t(MESSAGES_ORDER_SUBMITTED_KEY));
+      stopTriggerRun();
       setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
     } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(MESSAGES_ORDER_FAILED_KEY)); }
-  }, [triggerContext, triggerResult, t]);
+  }, [triggerContext, triggerResult, t, stopTriggerRun]);
 
   const openCreate = useCallback(() => {
     setEditing(null); form.resetFields();
@@ -209,6 +228,8 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
     void loadSymbols(accountIdWatch);
   }, [accountIdWatch, openEdit, editing?.id, loadSymbols]);
 
+  useEffect(() => () => stopTriggerRun(), [stopTriggerRun]);
+
   return (
     <div>
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'flex-end' }}>
@@ -222,7 +243,8 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
         loading={loading} triggering={triggering} triggerContext={triggerContext}
         formatTime={formatTime} onEdit={openUpdate} onToggleActive={onToggleActive}
         onHealthCheck={loadScheduleHealth} onManualTrigger={onManualTrigger}
-        onDelete={onDelete} highlightScheduleId={highlightScheduleId}
+        onDelete={onDelete} onShowLogs={(row) => setLogsScheduleId(row.id)}
+        highlightScheduleId={highlightScheduleId}
       />
       <EditScheduleModal
         editing={editing} open={openEdit} loading={loading} form={form}
@@ -232,7 +254,7 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
       />
       <TriggerModal
         open={openTrigger} triggering={triggering} triggerResult={triggerResult} triggerContext={triggerContext}
-        onClose={() => { setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null); }}
+        onClose={() => { stopTriggerRun(); setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null); }}
         onRerun={() => { if (triggerContext?.schedule) onManualTrigger(triggerContext.schedule as unknown as ScheduleRow); }}
         onConfirmOrder={doOrderSend}
       />
@@ -243,6 +265,11 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
         onRefresh={() => { if (healthTarget) loadScheduleHealth(healthTarget); }}
         onClose={() => { setHealthOpen(false); setHealthTarget(null); setHealthSummary(null); }}
         formatTime={formatTime}
+      />
+      <ScheduleLogsModal
+        open={logsScheduleId !== null}
+        scheduleId={logsScheduleId}
+        onClose={() => setLogsScheduleId(null)}
       />
     </div>
   );

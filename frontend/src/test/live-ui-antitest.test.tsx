@@ -28,6 +28,7 @@ const baseProps = {
   onHealthCheck: noop,
   onManualTrigger: noop,
   onDelete: noop,
+  onShowLogs: noop,
   highlightScheduleId: null,
 }
 

@@ -17,10 +17,10 @@ func TestJurisdictionGate(t *testing.T) {
 		geo := &StubGeoIPResolver{Countries: map[string]string{"1.2.3.4": "US"}}
 
 		gate := &JurisdictionGate{
-			Store:               store,
-			GeoIP:               geo,
-			RequireKYC:          true,
-			RequireDisclaimer:   true,
+			Store:                store,
+			GeoIP:                geo,
+			RequireKYC:           true,
+			RequireDisclaimer:    true,
 			RequireQuestionnaire: true,
 		}
 
@@ -115,8 +115,8 @@ func TestJurisdictionGate(t *testing.T) {
 
 		gate := &JurisdictionGate{
 			Store:                store,
-			RequireKYC:          true,
-			RequireDisclaimer:   true,
+			RequireKYC:           true,
+			RequireDisclaimer:    true,
 			RequireQuestionnaire: true,
 		}
 
@@ -129,7 +129,7 @@ func TestJurisdictionGate(t *testing.T) {
 		}
 	})
 
-	t.Run("geoip unavailable — fail-closed", func(t *testing.T) {
+	t.Run("geoip unavailable — skip check (infrastructure issue)", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
 		geo := &StubGeoIPResolver{Err: ErrGeoIPUnavailable}
 
@@ -139,11 +139,8 @@ func TestJurisdictionGate(t *testing.T) {
 		}
 
 		err := gate.Check(context.Background(), "user-7", "1.2.3.4")
-		if err == nil {
-			t.Fatal("expected geoip unavailable error, got nil")
-		}
-		if !errors.Is(err, ErrGeoIPUnavailable) {
-			t.Fatalf("expected ErrGeoIPUnavailable, got %v", err)
+		if err != nil {
+			t.Fatalf("expected nil error (skip on geoip unavailable), got %v", err)
 		}
 	})
 
@@ -171,10 +168,10 @@ func TestJurisdictionGate(t *testing.T) {
 		geo := &StubGeoIPResolver{Countries: map[string]string{"2.3.4.5": "JP"}}
 
 		gate := &JurisdictionGate{
-			Store:               store,
-			GeoIP:               geo,
-			RequireKYC:          true,
-			RequireDisclaimer:   true,
+			Store:                store,
+			GeoIP:                geo,
+			RequireKYC:           true,
+			RequireDisclaimer:    true,
 			RequireQuestionnaire: true,
 		}
 

@@ -67,9 +67,9 @@ type QuestionAnswer struct {
 // --- Sentinel errors ---
 
 var (
-	ErrGeoIPUnavailable = errors.New("geoip database unavailable")
-	ErrSanctionedCountry = errors.New("sanctioned country")
-	ErrKYCNotVerified   = errors.New("kyc not verified")
+	ErrGeoIPUnavailable      = errors.New("geoip database unavailable")
+	ErrSanctionedCountry     = errors.New("sanctioned country")
+	ErrKYCNotVerified        = errors.New("kyc not verified")
 	ErrDisclaimerNotAccepted = errors.New("disclaimer not accepted")
 	ErrQuestionnaireNotDone  = errors.New("risk questionnaire not completed")
 )
@@ -79,10 +79,10 @@ var (
 // JurisdictionGate orchestrates the five-component compliance check.
 // Zero-value fields disable the corresponding check.
 type JurisdictionGate struct {
-	Store               JurisdictionStore
-	GeoIP               GeoIPResolver
-	RequireKYC          bool
-	RequireDisclaimer   bool
+	Store                JurisdictionStore
+	GeoIP                GeoIPResolver
+	RequireKYC           bool
+	RequireDisclaimer    bool
 	RequireQuestionnaire bool
 }
 
@@ -93,8 +93,11 @@ func (g *JurisdictionGate) Check(ctx context.Context, userID, clientIP string) e
 	if g.GeoIP != nil && clientIP != "" {
 		country, err := g.GeoIP.CountryCode(clientIP)
 		if err != nil {
+			// GeoIP database unavailable is an infrastructure issue, not a
+			// compliance block. Skip the country check; other checks (KYC,
+			// disclaimer, questionnaire) still run per config.
 			if errors.Is(err, ErrGeoIPUnavailable) {
-				return fmt.Errorf("%w: %w", ErrGeoIPUnavailable, err)
+				country = ""
 			}
 			// Non-fatal geoip errors (parse failures, private IPs) — log and continue.
 			// Private/lookup-failure IPs get country="" which is never sanctioned.
@@ -210,4 +213,3 @@ func (r *MaxMindGeoIPResolver) CountryCode(ipStr string) (string, error) {
 
 	return lookup(ipStr)
 }
-

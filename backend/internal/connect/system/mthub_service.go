@@ -2,6 +2,7 @@ package system
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -108,7 +109,7 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 	})
 	if err != nil {
 		s.log.Error("PlaceOrder", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, orderErrorToConnect(err)
 	}
 	return connect.NewResponse(&antv1.PlaceOrderResponse{Ticket: rec.Ticket, Status: "submitted"}), nil
 }
@@ -130,7 +131,7 @@ func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1
 	s.log.Info("CloseOrder", zap.String("account_id", m.AccountId), zap.Int64("ticket", m.Ticket), zap.String("lots", m.Lots), zap.String("lots_dec", lots.String()))
 	if err := s.svc.CloseOrder(ctx, m.AccountId, m.Ticket, lots); err != nil {
 		s.log.Error("CloseOrder", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, orderErrorToConnect(err)
 	}
 	return connect.NewResponse(&antv1.CloseOrderResponse{
 		Status:  "closed",
@@ -278,5 +279,42 @@ func toProtoState(s mthub.OrderState) antv1.OrderState {
 		return antv1.OrderState_ORDER_STATE_REJECTED
 	default:
 		return antv1.OrderState_ORDER_STATE_PENDING
+	}
+}
+
+// orderErrorToConnect maps known mthub sentinel errors to ConnectRPC errors
+// with user-friendly messages. Unknown errors default to CodeInternal with
+// a generic message (raw error details are logged but not exposed to clients).
+func orderErrorToConnect(err error) error {
+	switch {
+	case errors.Is(err, mthub.ErrKillSwitchEngaged):
+		return connect.NewError(connect.CodeFailedPrecondition,
+			fmt.Errorf("交易已被全局熔断器暂停，请联系管理员"))
+	case errors.Is(err, mthub.ErrRateLimited):
+		return connect.NewError(connect.CodeResourceExhausted,
+			fmt.Errorf("操作过于频繁，请稍后再试"))
+	case errors.Is(err, mthub.ErrDuplicateOrder):
+		return connect.NewError(connect.CodeAlreadyExists,
+			fmt.Errorf("重复的下单请求已被忽略"))
+	case errors.Is(err, mthub.ErrReconciling):
+		return connect.NewError(connect.CodeUnavailable,
+			fmt.Errorf("账户正在对账中，请稍后再试"))
+	case errors.Is(err, mthub.ErrAccountNotOwned):
+		return connect.NewError(connect.CodePermissionDenied,
+			fmt.Errorf("无权操作此账户"))
+	case errors.Is(err, mthub.ErrSessionNotFound):
+		return connect.NewError(connect.CodeNotFound,
+			fmt.Errorf("交易会话未找到，账户可能未连接"))
+	case errors.Is(err, mthub.ErrCircuitOpen):
+		return connect.NewError(connect.CodeUnavailable,
+			fmt.Errorf("经纪商连接熔断中，请稍后再试"))
+	default:
+		// For gate rejections and other wrapped errors, extract the message.
+		errMsg := err.Error()
+		if len(errMsg) > 200 {
+			errMsg = errMsg[:200] + "..."
+		}
+		return connect.NewError(connect.CodeInternal,
+			fmt.Errorf("下单失败：%s", errMsg))
 	}
 }

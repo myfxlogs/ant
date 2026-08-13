@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Table, Tag, Typography, Button, Card, Space, message, Popconfirm, Tabs, Empty, Tooltip, Alert } from 'antd';
 import { ReloadOutlined, StopOutlined, EyeOutlined, MonitorOutlined, ClockCircleOutlined, FileTextOutlined, HeartOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { strategyActiveApi, strategyRunsApi } from '@/client/strategy';
+import { accountApi } from '@/client/account';
+import type { Account } from '@/types/account';
 import type { ActiveStrategy, StrategyRun, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 import { SignalDrawer, formatTime, shortId, STATUS_COLORS, MODE_COLORS } from './LiveStrategyPageSignalDrawer';
 import LiveSchedulesTab from './components/workspace/LiveSchedulesTab';
+import ScheduleLogsModal from './components/ScheduleLogsModal';
 
 const { Text } = Typography;
 
@@ -31,6 +34,12 @@ export default function LiveStrategyPage() {
   const [signals, setSignals] = useState<StrategySignalEvent[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const [streamError, setStreamError] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [logsModalScheduleId, setLogsModalScheduleId] = useState<string | null>(null);
+
+  useEffect(() => { void accountApi.list().then(setAccounts).catch(() => {}); }, []);
+  const accountById = useMemo(() => { const m = new Map<string, Account>(); accounts.forEach(a => { if (a?.id) m.set(a.id, a); }); return m; }, [accounts]);
+  const fmtAccount = useCallback((id: string) => { const a = accountById.get(id); return a?.login ? `${a.login} (${a.mtType})` : id; }, [accountById]);
 
   const fetchRuns = useCallback(async () => {
     setLoading(true);
@@ -114,7 +123,7 @@ export default function LiveStrategyPage() {
   const activeColumns = [
     { title: t('strategy.live.runId', { defaultValue: 'Run ID' }), dataIndex: 'runId', width: 100, render: (v: string) => <Text code copyable>{shortId(v)}</Text> },
     { title: t('strategy.live.strategyName', { defaultValue: 'Strategy' }), dataIndex: 'strategyName', width: 120, render: (v: string, record: ActiveStrategy) => v || <Text type="secondary">{shortId(record.runId)}</Text> },
-    { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{v}</Text> },
+    { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{fmtAccount(v)}</Text> },
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
     { title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60 },
     { title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70, render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag> },
@@ -129,7 +138,7 @@ export default function LiveStrategyPage() {
             <Button size="small" icon={<MonitorOutlined />} onClick={() => handleWatchSignals(record.runId)} />
           </Tooltip>
           <Tooltip title={t('strategy.live.logs', { defaultValue: 'Logs' })}>
-            <Button size="small" icon={<FileTextOutlined />} disabled={isLogButtonDisabled(record.scheduleId)} onClick={() => navigate(`/strategy/schedules/${record.scheduleId}/logs`)} />
+            <Button size="small" icon={<FileTextOutlined />} disabled={isLogButtonDisabled(record.scheduleId)} onClick={() => setLogsModalScheduleId(record.scheduleId)} />
           </Tooltip>
           <Tooltip title={t('strategy.live.health', { defaultValue: 'Health' })}>
             <Button size="small" icon={<HeartOutlined />} disabled={isHealthButtonDisabled(record.scheduleId)} onClick={() => navigate(`/strategy/live?tab=schedules&healthId=${record.scheduleId}`)} />
@@ -144,7 +153,7 @@ export default function LiveStrategyPage() {
 
   const runColumns = [
     { title: t('strategy.live.runId', { defaultValue: 'Run ID' }), dataIndex: 'id', width: 100, render: (v: string) => <Text code copyable>{shortId(v)}</Text> },
-    { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{v}</Text> },
+    { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{fmtAccount(v)}</Text> },
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
     { title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60 },
     { title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70, render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag> },
@@ -234,6 +243,11 @@ export default function LiveStrategyPage() {
         watchingRunId={watchingRunId}
         signals={signals}
         activeStrategies={activeStrategies}
+      />
+      <ScheduleLogsModal
+        open={logsModalScheduleId !== null}
+        scheduleId={logsModalScheduleId}
+        onClose={() => setLogsModalScheduleId(null)}
       />
     </div>
   );
