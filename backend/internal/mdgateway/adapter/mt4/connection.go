@@ -39,6 +39,7 @@ type Gateway struct {
 	onStatusChange       func(status, message string) // connection state callback (nil-safe)
 	breaker              mdtick.Breaker
 	quoteTimeout         time.Duration // no-data timeout for quote recvLoop (default 90s, injectable for tests)
+	orderUpdateTimeout   time.Duration // no-data timeout for orderUpdate recvLoop (default 90s, injectable for tests)
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {

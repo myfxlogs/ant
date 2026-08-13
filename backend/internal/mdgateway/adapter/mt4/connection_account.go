@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt4"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt4"
+
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
@@ -32,6 +33,9 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 	resp, err := client.AccountSummary(asCtx, &pb.AccountSummaryRequest{Id: sid})
 	if err != nil {
 		return nil, fmt.Errorf("mt4 AccountSummary: %w", err)
+	}
+	if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+		return nil, fmt.Errorf("mt4 AccountSummary: code=%d msg=%s", e.GetCode(), e.GetMessage())
 	}
 	if resp.GetResult() == nil {
 		g.log.Info("mt4: AccountSummary returned nil — checking IsInvestor RPC")

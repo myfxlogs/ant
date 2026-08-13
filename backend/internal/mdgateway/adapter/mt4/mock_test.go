@@ -14,17 +14,22 @@ import (
 
 // mockMT4Client implements pb.MT4Client for testing data conversion paths.
 type mockMT4Client struct {
-	openedOrdersRes *pb.OpenedOrdersReply
-	openedOrdersErr error
-	orderHistoryRes *pb.OrderHistoryReply
-	orderHistoryErr error
-	quoteHistoryRes *pb.QuoteHistoryReply
-	quoteHistoryErr error
-	symbolParamsRes *pb.SymbolParamsReply
-	symbolParamsErr error
+	openedOrdersRes   *pb.OpenedOrdersReply
+	openedOrdersErr   error
+	orderHistoryRes   *pb.OrderHistoryReply
+	orderHistoryErr   error
+	quoteHistoryRes   *pb.QuoteHistoryReply
+	quoteHistoryErr   error
+	symbolParamsRes   *pb.SymbolParamsReply
+	symbolParamsErr   error
+	accountSummaryRes *pb.AccountSummaryReply
+	accountSummaryErr error
 }
 
 func (m *mockMT4Client) AccountSummary(ctx context.Context, in *pb.AccountSummaryRequest, opts ...grpc.CallOption) (*pb.AccountSummaryReply, error) {
+	if m.accountSummaryRes != nil || m.accountSummaryErr != nil {
+		return m.accountSummaryRes, m.accountSummaryErr
+	}
 	return nil, fmt.Errorf("mock: not implemented")
 }
 func (m *mockMT4Client) Groups(ctx context.Context, in *pb.GroupsRequest, opts ...grpc.CallOption) (*pb.GroupsReply, error) {

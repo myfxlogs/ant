@@ -4,7 +4,7 @@ import { Card, Typography, Tag, Rate, Space, Button, Spin, Statistic, Row, Col, 
 import { ShopOutlined, UserOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import Seo from '@/components/common/Seo';
-import { marketplaceClient } from '@/client/connect';
+import { marketplacePublicClient } from '@/client/connect';
 import type { GetStrategyPublicInfoResponse } from '@/gen/ant/v1/marketplace_service_pb';
 
 const { Title, Paragraph, Text } = Typography;
@@ -20,7 +20,7 @@ export default function StrategySharePage() {
   useEffect(() => {
     if (!strategyId) return;
     setLoading(true);
-    marketplaceClient.getStrategyPublicInfo({ strategyId })
+    marketplacePublicClient.getStrategyPublicInfo({ strategyId })
       .then(resp => setData(resp))
       .catch(() => setError(true))
       .finally(() => setLoading(false));

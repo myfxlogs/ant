@@ -8,6 +8,7 @@ import (
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mthub"
 	pb "alphaforge/mt5"
+
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
@@ -31,6 +32,9 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 	resp, err := client.AccountSummary(asCtx, &pb.AccountSummaryRequest{Id: sid})
 	if err != nil {
 		return nil, fmt.Errorf("mt5 AccountSummary: %w", err)
+	}
+	if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+		return nil, fmt.Errorf("mt5 AccountSummary: code=%d msg=%s", e.GetCode(), e.GetMessage())
 	}
 	if resp.GetResult() == nil {
 		g.log.Warn("mt5 AccountSummary: result nil, assuming investor (read-only) account")
