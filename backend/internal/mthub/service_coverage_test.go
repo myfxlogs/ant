@@ -2,6 +2,7 @@ package mthub
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -1974,8 +1975,8 @@ func TestEvaluatePlaceGate_NilGate_FailClosed(t *testing.T) {
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
 	})
-	if err == nil {
-		t.Fatal("expected fail-closed error when gate is nil, got nil")
+	if err == nil || !strings.Contains(err.Error(), "gate not configured") {
+		t.Fatalf("expected 'gate not configured' fail-closed error, got %v", err)
 	}
 }
 
@@ -2001,8 +2002,8 @@ func TestEvaluateCloseGate_NilGate_FailClosed(t *testing.T) {
 	svc := newTestServiceNoGate()
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, &mockExecutor{platform: "MT5"})
 	err := svc.CloseOrder(context.Background(), "acc-1", 123, decimal.NewFromInt(1))
-	if err == nil {
-		t.Fatal("expected fail-closed error when gate is nil on close, got nil")
+	if err == nil || !strings.Contains(err.Error(), "gate not configured") {
+		t.Fatalf("expected 'gate not configured' fail-closed error, got %v", err)
 	}
 }
 

@@ -31,9 +31,9 @@ import { MESSAGES_ORDER_SUBMITTED_KEY, MESSAGES_ORDER_FAILED_KEY, MESSAGES_PARAM
 function formatTime(v: unknown): string {
   if (!v) return '-';
   const ms = typeof v === 'bigint' ? Number(v) : typeof v === 'number' ? v : 0;
-  if (!ms) return '-';
-  return new Date(ms).toLocaleString();
+  return ms ? new Date(ms).toLocaleString() : '-';
 }
+export function getEnableNavigateTarget(next: boolean): string | null { return next ? '/strategy/live?tab=active' : null; }
 
 export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { highlightScheduleId?: string | null; healthId?: string | null }) {
   const { t } = useTranslation();
@@ -194,7 +194,8 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
 
   const onToggleActive = useCallback(async (row: ScheduleRow, next: boolean) => {
     try { await strategyScheduleV2Api.toggle(row.id, next); message.success(next ? t(COMMON_ENABLED_KEY) : t(COMMON_DISABLED_KEY)); await refresh();
-      if (next) navigate('/strategy/live?tab=active');
+      const target = getEnableNavigateTarget(next);
+      if (target) navigate(target);
     } catch (e: unknown) { message.error(e instanceof Error ? e.message : t(COMMON_OPERATION_FAILED_KEY)); }
   }, [refresh, t, navigate]);
 

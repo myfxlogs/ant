@@ -10,6 +10,10 @@ import LiveSchedulesTab from './components/workspace/LiveSchedulesTab';
 
 const { Text } = Typography;
 
+export function isLogButtonDisabled(scheduleId: string): boolean { return !scheduleId; }
+
+export function isHealthButtonDisabled(scheduleId: string): boolean { return !scheduleId; }
+
 export default function LiveStrategyPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
@@ -125,10 +129,10 @@ export default function LiveStrategyPage() {
             <Button size="small" icon={<MonitorOutlined />} onClick={() => handleWatchSignals(record.runId)} />
           </Tooltip>
           <Tooltip title={t('strategy.live.logs', { defaultValue: 'Logs' })}>
-            <Button size="small" icon={<FileTextOutlined />} disabled={!record.scheduleId} onClick={() => navigate(`/strategy/schedules/${record.scheduleId}/logs`)} />
+            <Button size="small" icon={<FileTextOutlined />} disabled={isLogButtonDisabled(record.scheduleId)} onClick={() => navigate(`/strategy/schedules/${record.scheduleId}/logs`)} />
           </Tooltip>
           <Tooltip title={t('strategy.live.health', { defaultValue: 'Health' })}>
-            <Button size="small" icon={<HeartOutlined />} disabled={!record.scheduleId} onClick={() => navigate(`/strategy/live?tab=schedules&healthId=${record.scheduleId}`)} />
+            <Button size="small" icon={<HeartOutlined />} disabled={isHealthButtonDisabled(record.scheduleId)} onClick={() => navigate(`/strategy/live?tab=schedules&healthId=${record.scheduleId}`)} />
           </Tooltip>
           <Popconfirm title={t('strategy.live.confirmStop', { defaultValue: 'Stop this strategy?' })} onConfirm={() => handleStop(record.runId)}>
             <Button size="small" danger icon={<StopOutlined />} loading={stopping === record.runId} />

@@ -427,24 +427,6 @@ func TestPublishOrderCreatedEvent_NilStore(t *testing.T) {
 	}, 12345, nil)
 }
 
-func TestEvaluatePlaceGate_NilGate(t *testing.T) {
-	t.Parallel()
-	svc := newTestService()
-	err := svc.evaluatePlaceGate(context.Background(), &OrderRequest{AccountID: "acc-1"}, "ord-1")
-	if err != nil {
-		t.Fatalf("expected nil error with nil gate, got %v", err)
-	}
-}
-
-func TestEvaluateCloseGate_NilGate(t *testing.T) {
-	t.Parallel()
-	svc := newTestService()
-	err := svc.evaluateCloseGate(context.Background(), "acc-1", 123, decimal.NewFromInt(1))
-	if err != nil {
-		t.Fatalf("expected nil error with nil gate, got %v", err)
-	}
-}
-
 func TestPostCloseFailure_NilOMSWriter(t *testing.T) {
 	t.Parallel()
 	svc := newTestService()
