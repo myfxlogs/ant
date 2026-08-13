@@ -3370,6 +3370,8 @@ type ActiveStrategy struct {
 	StderrTail    string                 `protobuf:"bytes,12,opt,name=stderr_tail,json=stderrTail,proto3" json:"stderr_tail,omitempty"`
 	ScheduleId    string                 `protobuf:"bytes,13,opt,name=schedule_id,json=scheduleId,proto3" json:"schedule_id,omitempty"`
 	StrategyName  string                 `protobuf:"bytes,14,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
+	Bid           string                 `protobuf:"bytes,15,opt,name=bid,proto3" json:"bid,omitempty"` // latest bid price for the strategy's symbol
+	Ask           string                 `protobuf:"bytes,16,opt,name=ask,proto3" json:"ask,omitempty"` // latest ask price for the strategy's symbol
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3498,6 +3500,20 @@ func (x *ActiveStrategy) GetScheduleId() string {
 func (x *ActiveStrategy) GetStrategyName() string {
 	if x != nil {
 		return x.StrategyName
+	}
+	return ""
+}
+
+func (x *ActiveStrategy) GetBid() string {
+	if x != nil {
+		return x.Bid
+	}
+	return ""
+}
+
+func (x *ActiveStrategy) GetAsk() string {
+	if x != nil {
+		return x.Ask
 	}
 	return ""
 }
@@ -5033,7 +5049,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\"F\n" +
 	"\x14StopStrategyResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error\"\xf0\x03\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\x94\x04\n" +
 	"\x0eActiveStrategy\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
@@ -5055,7 +5071,9 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"stderrTail\x12\x1f\n" +
 	"\vschedule_id\x18\r \x01(\tR\n" +
 	"scheduleId\x12#\n" +
-	"\rstrategy_name\x18\x0e \x01(\tR\fstrategyName\"4\n" +
+	"\rstrategy_name\x18\x0e \x01(\tR\fstrategyName\x12\x10\n" +
+	"\x03bid\x18\x0f \x01(\tR\x03bid\x12\x10\n" +
+	"\x03ask\x18\x10 \x01(\tR\x03ask\"4\n" +
 	"\x1bWatchStrategySignalsRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xc2\x02\n" +
 	"\x13StrategySignalEvent\x12\x15\n" +

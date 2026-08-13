@@ -61,6 +61,7 @@ export default function LiveStrategyPage() {
         try {
           setLoading(true);
           for await (const event of strategyActiveApi.watchActive('', ctrl.signal)) {
+            if (!event.strategies?.length) continue; // skip heartbeat keepalive
             setActiveStrategies((event.strategies || []) as ActiveStrategy[]);
             setLoading(false);
             setStreamError(false);
@@ -125,6 +126,11 @@ export default function LiveStrategyPage() {
     { title: t('strategy.live.strategyName', { defaultValue: 'Strategy' }), dataIndex: 'strategyName', width: 120, render: (v: string, record: ActiveStrategy) => v || <Text type="secondary">{shortId(record.runId)}</Text> },
     { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{fmtAccount(v)}</Text> },
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
+    { title: t('strategy.live.price', { defaultValue: 'Price' }), dataIndex: 'bid', width: 100, render: (_: string, record: ActiveStrategy) => {
+      if (!record.bid && !record.ask) return <Text type="secondary">-</Text>;
+      const spread = record.bid && record.ask ? ` / ${record.ask}` : '';
+      return <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }}>{record.bid}{spread}</Text>;
+    } },
     { title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60 },
     { title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70, render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag> },
     { title: t('strategy.live.signals', { defaultValue: 'Signals' }), dataIndex: 'signalCount', width: 70, render: (v: number) => <Text strong>{v}</Text> },

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sync/atomic"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -13,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/mthub"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/service"
 )
@@ -35,8 +37,9 @@ func (s *StrategyExecutionServer) ListActiveStrategies(ctx context.Context, req 
 	}
 
 	pbStrategies := make([]*antv1.ActiveStrategy, len(sessions))
+	tickFn := s.tickPriceFn()
 	for i, sess := range sessions {
-		pbStrategies[i] = activeSessionToProto(sess)
+		pbStrategies[i] = activeSessionToProto(sess, tickFn)
 	}
 	s.enrichWithStrategyName(ctx, pbStrategies)
 	return connect.NewResponse(&antv1.ListActiveStrategiesResponse{Strategies: pbStrategies}), nil
@@ -65,7 +68,7 @@ func (s *StrategyExecutionServer) GetActiveStrategy(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("strategy %s not found", runID))
 	}
 
-	pb := activeSessionToProto(sess)
+	pb := activeSessionToProto(sess, s.tickPriceFn())
 	s.enrichWithStrategyName(ctx, []*antv1.ActiveStrategy{pb})
 	return connect.NewResponse(&antv1.GetActiveStrategyResponse{Strategy: pb}), nil
 }
@@ -158,7 +161,8 @@ func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req 
 }
 
 // activeSessionToProto converts an ActiveSession to a proto ActiveStrategy.
-func activeSessionToProto(sess *ActiveSession) *antv1.ActiveStrategy {
+// If tickFn is non-nil, it is called to populate bid/ask for the session's symbol.
+func activeSessionToProto(sess *ActiveSession, tickFn func(accountID, symbol string) (bid, ask string)) *antv1.ActiveStrategy {
 	pb := &antv1.ActiveStrategy{
 		RunId:       sess.RunID.String(),
 		UserId:      sess.UserID.String(),
@@ -176,7 +180,25 @@ func activeSessionToProto(sess *ActiveSession) *antv1.ActiveStrategy {
 	if !sess.LastSignalAt.IsZero() {
 		pb.LastSignalAt = timestamppb.New(sess.LastSignalAt)
 	}
+	if tickFn != nil {
+		pb.Bid, pb.Ask = tickFn(sess.AccountID, sess.Symbol)
+	}
 	return pb
+}
+
+// tickPriceFn returns a closure that fetches the latest bid/ask for a given
+// account+symbol from the MtHub tick broker. Returns nil if mtHub is unavailable.
+func (s *StrategyExecutionServer) tickPriceFn() func(accountID, symbol string) (bid, ask string) {
+	if s.mtHub == nil {
+		return nil
+	}
+	return func(accountID, symbol string) (string, string) {
+		tick := s.mtHub.LatestTick(accountID, symbol)
+		if tick == nil {
+			return "", ""
+		}
+		return tick.Bid.String(), tick.Ask.String()
+	}
 }
 
 // enrichWithStrategyName fills StrategyName on each ActiveStrategy proto by
@@ -367,6 +389,7 @@ func (s *StrategyExecutionServer) createStrategyRun(ctx context.Context, uid uui
 // WatchActiveStrategies streams the active strategy list via SSE.
 // Sends the current list immediately, then pushes updates whenever
 // sessions are registered, deregistered, or change state.
+// Also pushes updates when tick prices change (throttled to 500ms).
 func (s *StrategyExecutionServer) WatchActiveStrategies(
 	ctx context.Context,
 	req *connect.Request[antv1.WatchActiveStrategiesRequest],
@@ -381,6 +404,7 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 	}
 
 	accountFilter := req.Msg.GetAccountId()
+	tickFn := s.tickPriceFn()
 
 	sendList := func() error {
 		var sessions []*ActiveSession
@@ -391,7 +415,7 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 		}
 		pbStrats := make([]*antv1.ActiveStrategy, 0, len(sessions))
 		for _, sess := range sessions {
-			pbStrats = append(pbStrats, activeSessionToProto(sess))
+			pbStrats = append(pbStrats, activeSessionToProto(sess, tickFn))
 		}
 		s.enrichWithStrategyName(ctx, pbStrats)
 		return stream.Send(&antv1.WatchActiveStrategiesEvent{Strategies: pbStrats})
@@ -406,12 +430,55 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 	notifCh, cancelWatch := s.sessionRegistry.Watch()
 	defer cancelWatch()
 
+	// Subscribe to tick updates for real-time prices.
+	var tickCh <-chan *mthub.TickUpdate
+	var cancelTickWatch func()
+	if s.mtHub != nil {
+		tickCh, cancelTickWatch = s.mtHub.WatchAllTicks()
+		defer cancelTickWatch()
+	}
+
+	// Throttle tick-driven updates to 500ms to avoid flooding the SSE stream.
+	tickTimer := time.NewTimer(0)
+	if !tickTimer.Stop() {
+		<-tickTimer.C
+	}
+	defer tickTimer.Stop()
+
+	// Heartbeat: send empty event periodically to keep SSE alive when no
+	// session/tick changes occur. Prevents中间层 from closing idle streams.
+	hbInterval := s.heartbeatInterval
+	if hbInterval <= 0 {
+		hbInterval = 20 * time.Second
+	}
+	heartbeat := time.NewTicker(hbInterval)
+	defer heartbeat.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case <-notifCh:
 			if err := sendList(); err != nil {
+				return err
+			}
+		case <-tickCh:
+			// Drain any buffered ticks, then wait 500ms before sending.
+			for {
+				select {
+				case <-tickCh:
+					continue
+				default:
+				}
+				break
+			}
+			tickTimer.Reset(500 * time.Millisecond)
+		case <-tickTimer.C:
+			if err := sendList(); err != nil {
+				return err
+			}
+		case <-heartbeat.C:
+			if err := stream.Send(&antv1.WatchActiveStrategiesEvent{}); err != nil {
 				return err
 			}
 		}

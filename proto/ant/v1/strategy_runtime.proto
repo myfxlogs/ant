@@ -487,6 +487,8 @@ message ActiveStrategy {
   string stderr_tail = 12;
   string schedule_id = 13;
   string strategy_name = 14;
+  string bid = 15;          // latest bid price for the strategy's symbol
+  string ask = 16;          // latest ask price for the strategy's symbol
 }
 
 // ── Strategy signal SSE stream ───────────────────────────────────────

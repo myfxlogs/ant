@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -63,6 +64,9 @@ type StrategyExecutionServer struct {
 
 	// Active session registry for monitoring + control.
 	sessionRegistry *SessionRegistry
+
+	// SSE heartbeat interval for WatchActiveStrategies (default 20s, injectable for tests).
+	heartbeatInterval time.Duration
 
 	// AccountLookup provides the MT4 account ID for bar data subscription in paper mode.
 	accountLookup func(ctx context.Context, userID string) string
