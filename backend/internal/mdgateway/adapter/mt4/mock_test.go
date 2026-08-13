@@ -7,20 +7,21 @@ import (
 	"sync"
 
 	pb "alphaforge/mt4"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
 // mockMT4Client implements pb.MT4Client for testing data conversion paths.
 type mockMT4Client struct {
-	openedOrdersRes  *pb.OpenedOrdersReply
-	openedOrdersErr  error
-	orderHistoryRes  *pb.OrderHistoryReply
-	orderHistoryErr  error
-	quoteHistoryRes  *pb.QuoteHistoryReply
-	quoteHistoryErr  error
-	symbolParamsRes  *pb.SymbolParamsReply
-	symbolParamsErr  error
+	openedOrdersRes *pb.OpenedOrdersReply
+	openedOrdersErr error
+	orderHistoryRes *pb.OrderHistoryReply
+	orderHistoryErr error
+	quoteHistoryRes *pb.QuoteHistoryReply
+	quoteHistoryErr error
+	symbolParamsRes *pb.SymbolParamsReply
+	symbolParamsErr error
 }
 
 func (m *mockMT4Client) AccountSummary(ctx context.Context, in *pb.AccountSummaryRequest, opts ...grpc.CallOption) (*pb.AccountSummaryReply, error) {
@@ -106,18 +107,18 @@ func (m *mockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
 	}
 	return nil, io.EOF
 }
-func (m *mockQuoteStream) Header() (metadata.MD, error)  { return nil, nil }
-func (m *mockQuoteStream) Trailer() metadata.MD           { return nil }
-func (m *mockQuoteStream) CloseSend() error               { return nil }
-func (m *mockQuoteStream) Context() context.Context       { return m.ctx }
-func (m *mockQuoteStream) SendMsg(msg any) error          { return nil }
-func (m *mockQuoteStream) RecvMsg(msg any) error          { return io.EOF }
+func (m *mockQuoteStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *mockQuoteStream) Trailer() metadata.MD         { return nil }
+func (m *mockQuoteStream) CloseSend() error             { return nil }
+func (m *mockQuoteStream) Context() context.Context     { return m.ctx }
+func (m *mockQuoteStream) SendMsg(msg any) error        { return nil }
+func (m *mockQuoteStream) RecvMsg(msg any) error        { return io.EOF }
 
 type mockProfitStream struct {
-	mu       sync.Mutex
-	updates  []*pb.OnOrderProfitReply
-	idx      int
-	ctx      context.Context
+	mu      sync.Mutex
+	updates []*pb.OnOrderProfitReply
+	idx     int
+	ctx     context.Context
 }
 
 func (m *mockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
@@ -136,12 +137,12 @@ func (m *mockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
 	}
 	return nil, io.EOF
 }
-func (m *mockProfitStream) Header() (metadata.MD, error)  { return nil, nil }
-func (m *mockProfitStream) Trailer() metadata.MD           { return nil }
-func (m *mockProfitStream) CloseSend() error               { return nil }
-func (m *mockProfitStream) Context() context.Context       { return m.ctx }
-func (m *mockProfitStream) SendMsg(msg any) error          { return nil }
-func (m *mockProfitStream) RecvMsg(msg any) error          { return io.EOF }
+func (m *mockProfitStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *mockProfitStream) Trailer() metadata.MD         { return nil }
+func (m *mockProfitStream) CloseSend() error             { return nil }
+func (m *mockProfitStream) Context() context.Context     { return m.ctx }
+func (m *mockProfitStream) SendMsg(msg any) error        { return nil }
+func (m *mockProfitStream) RecvMsg(msg any) error        { return io.EOF }
 
 type mockOrderUpdateStream struct {
 	mu      sync.Mutex
@@ -166,12 +167,12 @@ func (m *mockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
 	}
 	return nil, io.EOF
 }
-func (m *mockOrderUpdateStream) Header() (metadata.MD, error)  { return nil, nil }
-func (m *mockOrderUpdateStream) Trailer() metadata.MD           { return nil }
-func (m *mockOrderUpdateStream) CloseSend() error               { return nil }
-func (m *mockOrderUpdateStream) Context() context.Context       { return m.ctx }
-func (m *mockOrderUpdateStream) SendMsg(msg any) error          { return nil }
-func (m *mockOrderUpdateStream) RecvMsg(msg any) error          { return io.EOF }
+func (m *mockOrderUpdateStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *mockOrderUpdateStream) Trailer() metadata.MD         { return nil }
+func (m *mockOrderUpdateStream) CloseSend() error             { return nil }
+func (m *mockOrderUpdateStream) Context() context.Context     { return m.ctx }
+func (m *mockOrderUpdateStream) SendMsg(msg any) error        { return nil }
+func (m *mockOrderUpdateStream) RecvMsg(msg any) error        { return io.EOF }
 
 // mockStreamsClient implements pb.StreamsClient for testing recv loops.
 type mockStreamsClient struct {
@@ -226,12 +227,18 @@ func (m *mockConnCli) Disconnect(ctx context.Context, in *pb.DisconnectRequest, 
 	return nil, fmt.Errorf("mock: not implemented")
 }
 
-type mockSubCli struct{}
+type mockSubCli struct {
+	subscribeManyReply *pb.SubscribeManyReply
+	subscribeManyErr   error
+}
 
 func (m *mockSubCli) Subscribe(ctx context.Context, in *pb.SubscribeRequest, opts ...grpc.CallOption) (*pb.SubscribeReply, error) {
 	return nil, fmt.Errorf("mock: not implemented")
 }
 func (m *mockSubCli) SubscribeMany(ctx context.Context, in *pb.SubscribeManyRequest, opts ...grpc.CallOption) (*pb.SubscribeManyReply, error) {
+	if m.subscribeManyReply != nil || m.subscribeManyErr != nil {
+		return m.subscribeManyReply, m.subscribeManyErr
+	}
 	return nil, fmt.Errorf("mock: not implemented")
 }
 func (m *mockSubCli) UnSubscribe(ctx context.Context, in *pb.UnSubscribeRequest, opts ...grpc.CallOption) (*pb.UnSubscribeReply, error) {
@@ -252,7 +259,6 @@ func (m *mockSubCli) SubscribeOrderUpdate(ctx context.Context, in *pb.SubscribeO
 func (m *mockSubCli) SubscribeQuoteHistory(ctx context.Context, in *pb.SubscribeQuoteHistoryRequest, opts ...grpc.CallOption) (*pb.SubscribeQuoteHistoryReply, error) {
 	return nil, fmt.Errorf("mock: not implemented")
 }
-
 
 // mockTradingClient implements pb.TradingClient for testing order operations.
 type mockTradingClient struct {
@@ -279,4 +285,3 @@ func (m *mockTradingClient) OrderDelete(ctx context.Context, in *pb.OrderDeleteR
 func (m *mockTradingClient) OrderClose(ctx context.Context, in *pb.OrderCloseRequest, opts ...grpc.CallOption) (*pb.OrderCloseReply, error) {
 	return m.orderCloseRes, m.orderCloseErr
 }
-

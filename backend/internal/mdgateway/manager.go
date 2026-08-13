@@ -47,6 +47,7 @@ type ManagerDeps struct {
 	MarketState      *MarketStateTracker
 	StuffingDetector *StuffingDetector
 	OnBar            func(*mdtick.Bar)
+	OnTick           func(*mdtick.Tick)
 	OnBreakerTrip    func(accountID, userID, status, message string) // called when circuit breaker state changes
 	Log              *zap.Logger
 	RedisClient      *goredis.Client // ADR-0012: latest quote cache
@@ -62,6 +63,7 @@ type Manager struct {
 	marketState      *MarketStateTracker
 	stuffingDetector *StuffingDetector
 	onBar            func(*mdtick.Bar)
+	onTick           func(*mdtick.Tick)
 	onBreakerTrip    func(accountID, userID, status, message string)
 	breakers         map[string]*CircuitBreaker
 	otelTracer       *anttrace.Tracer
@@ -88,6 +90,7 @@ func NewManager(deps ManagerDeps) *Manager {
 		marketState:      deps.MarketState,
 		stuffingDetector: deps.StuffingDetector,
 		onBar:            deps.OnBar,
+		onTick:           deps.OnTick,
 		onBreakerTrip:    deps.OnBreakerTrip,
 		breakers:         make(map[string]*CircuitBreaker),
 		gateways:         make(map[string]Gateway),

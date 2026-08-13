@@ -36,6 +36,7 @@ type RunnerDeps struct {
 	OnAccountDisconnect func(accountID string)                                            // B-1.3: called when gateway stops/fails for an account
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
 	OnBar               func(bar *mdtick.Bar)                                             // called when a bar is finalized (for bar broker push to strategy runner)
+	OnTick              func(tick *mdtick.Tick)                                           // called for every tick after normalize (for tick broker push to strategy runner)
 	OnAccountStatus     func(accountID, userID, status, message string)                   // called when gateway connection state changes (connected/reconnecting/disconnected)
 	OnBreakerTrip       func(accountID, userID, status, message string)                   // called when circuit breaker state changes (circuit_open/circuit_half_open/circuit_closed)
 	Hub                 *mthub.Hub
@@ -112,6 +113,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		Publisher:     publisher,
 		PgWriter:      pgWriter,
 		OnBar:         deps.OnBar,
+		OnTick:        deps.OnTick,
 		OnBreakerTrip: deps.OnBreakerTrip,
 		Log:           log,
 		RedisClient:   deps.RedisClient,

@@ -24,11 +24,12 @@ type TickUpdate struct {
 // Also caches the latest tick per (accountID, symbol) for market order
 // price resolution in the risk gate (RISK-MARGIN1).
 type TickBroker struct {
-	mu     sync.RWMutex
-	subs   map[string][]chan *TickUpdate // accountID → subscribers
-	latest map[string]*TickUpdate        // "accountID:symbol" → latest tick
-	maxBuf int
-	log    *zap.Logger
+	mu       sync.RWMutex
+	subs     map[string][]chan *TickUpdate // accountID → subscribers
+	watchers []chan *TickUpdate            // global watchers (WatchAll)
+	latest   map[string]*TickUpdate        // "accountID:symbol" → latest tick
+	maxBuf   int
+	log      *zap.Logger
 }
 
 // NewTickBroker creates a TickBroker with the given channel buffer size.
@@ -77,6 +78,7 @@ func (b *TickBroker) Publish(u *TickUpdate) {
 	b.mu.Lock()
 	b.latest[u.AccountID+":"+u.Symbol] = u
 	subs := b.subs[u.AccountID]
+	watchers := b.watchers
 	b.mu.Unlock()
 	for _, ch := range subs {
 		select {
@@ -87,4 +89,31 @@ func (b *TickBroker) Publish(u *TickUpdate) {
 				zap.String("symbol", u.Symbol))
 		}
 	}
+	for _, ch := range watchers {
+		select {
+		case ch <- u:
+		default:
+		}
+	}
+}
+
+// WatchAll returns a channel that receives ALL tick updates across all accounts.
+// Used by WatchActiveStrategies to push real-time prices to the Active Runs table.
+// The returned cancel function removes the subscription.
+func (b *TickBroker) WatchAll() (<-chan *TickUpdate, func()) {
+	ch := make(chan *TickUpdate, 128)
+	b.mu.Lock()
+	b.watchers = append(b.watchers, ch)
+	b.mu.Unlock()
+	cancel := func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for i, c := range b.watchers {
+			if c == ch {
+				b.watchers = append(b.watchers[:i], b.watchers[i+1:]...)
+				return
+			}
+		}
+	}
+	return ch, cancel
 }

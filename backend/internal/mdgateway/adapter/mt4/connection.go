@@ -11,6 +11,7 @@ import (
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	pb "alphaforge/mt4"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -37,6 +38,7 @@ type Gateway struct {
 	reconnecting         bool                         // true while reconnection is in progress (prevents recvLoop race)
 	onStatusChange       func(status, message string) // connection state callback (nil-safe)
 	breaker              mdtick.Breaker
+	quoteTimeout         time.Duration // no-data timeout for quote recvLoop (default 90s, injectable for tests)
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {

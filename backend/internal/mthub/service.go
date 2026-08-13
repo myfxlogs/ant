@@ -197,6 +197,26 @@ func (s *MtHubService) SubscribeTickUpdates(accountID string) (<-chan *TickUpdat
 	return s.tickBroker.Subscribe(accountID)
 }
 
+// LatestTick returns the most recent tick for the given account+symbol.
+// Returns nil if no tick has been received yet.
+func (s *MtHubService) LatestTick(accountID, symbol string) *TickUpdate {
+	if s.tickBroker == nil {
+		return nil
+	}
+	return s.tickBroker.LatestTick(accountID, symbol)
+}
+
+// WatchAllTicks returns a channel that receives ALL tick updates across all accounts.
+// Used by WatchActiveStrategies to push real-time prices to the Active Runs table.
+func (s *MtHubService) WatchAllTicks() (<-chan *TickUpdate, func()) {
+	if s.tickBroker == nil {
+		ch := make(chan *TickUpdate)
+		close(ch)
+		return ch, func() {}
+	}
+	return s.tickBroker.WatchAll()
+}
+
 // PublishTradeEvent publishes a trade event to all subscribers for the given account.
 func (s *MtHubService) PublishTradeEvent(ev *BrokerTradeEvent) {
 	if s.tradeBroker != nil {

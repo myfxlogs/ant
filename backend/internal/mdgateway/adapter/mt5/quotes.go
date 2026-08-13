@@ -7,6 +7,7 @@ import (
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	pb "alphaforge/mt5"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
@@ -31,8 +32,12 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 			subMd.Set("authorization", "Bearer "+tok)
 		}
 		subCtx := metadata.NewOutgoingContext(ctx, subMd)
-		if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
-			g.log.Warn("mt5: subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
+		resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms})
+		if err != nil {
+			g.log.Warn("mt5: subscribe symbols RPC failed", zap.Strings("syms", syms), zap.Error(err))
+		} else if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+			g.log.Error("mt5: subscribe symbols rejected by mtapi", zap.Strings("syms", syms),
+				zap.Int32("code", int32(e.GetCode())), zap.String("msg", e.GetMessage()))
 		} else {
 			g.log.Info("mt5: subscribed symbols", zap.Strings("syms", syms))
 		}
@@ -60,9 +65,12 @@ func (g *Gateway) AddSymbols(ctx context.Context, symbols []string) error {
 		subMd.Set("authorization", "Bearer "+tok)
 	}
 	subCtx := metadata.NewOutgoingContext(ctx, subMd)
-	_, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: symbols})
+	resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: symbols})
 	if err != nil {
 		return fmt.Errorf("mt5 AddSymbols: %w", err)
+	}
+	if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+		return fmt.Errorf("mt5 AddSymbols: mtapi rejected: code=%d msg=%s", e.GetCode(), e.GetMessage())
 	}
 	// Persist for re-subscription after reconnect.
 	g.mu.Lock()
@@ -120,32 +128,56 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.reportStatus("connected", "")
 		g.log.Info("mt5: quote stream active")
 		for {
-			tick, err := stream.Recv()
-			if err != nil {
+			recvCh := make(chan *pb.OnQuoteReply, 1)
+			errCh := make(chan error, 1)
+			go func() {
+				tick, err := stream.Recv()
+				if err != nil {
+					errCh <- err
+					return
+				}
+				recvCh <- tick
+			}()
+			select {
+			case tick := <-recvCh:
+				q := tick.GetResult()
+				if q == nil {
+					continue
+				}
+				handler(&mdtick.Tick{
+					UserID:        g.cfg.UserID,
+					AccountID:     g.cfg.AccountID,
+					Broker:        g.cfg.Broker,
+					Platform:      "mt5",
+					SymbolRaw:     q.GetSymbol(),
+					Canonical:     "",
+					TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
+					ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
+					Bid:           decimal.NewFromFloat(q.GetBid()),
+					Ask:           decimal.NewFromFloat(q.GetAsk()),
+					BidVolume:     float64(q.GetVolume()),
+				})
+			case err := <-errCh:
 				g.log.Warn("mt5 recv", zap.Error(err))
 				cancel()
 				g.handleStreamError(ctx, err, &backoff)
-				break
+				goto mt5QuoteLoopEnd
+			case <-time.After(g.quoteTimeoutOrDefault()):
+				g.log.Warn("mt5 quote stream: no data — treating as dead", zap.String("account", g.cfg.AccountID), zap.Duration("timeout", g.quoteTimeoutOrDefault()))
+				cancel()
+				g.handleStreamError(ctx, fmt.Errorf("quote stream: no data timeout"), &backoff)
+				goto mt5QuoteLoopEnd
 			}
-			q := tick.GetResult()
-			if q == nil {
-				continue
-			}
-			handler(&mdtick.Tick{
-				UserID:        g.cfg.UserID,
-				AccountID:     g.cfg.AccountID,
-				Broker:        g.cfg.Broker,
-				Platform:      "mt5",
-				SymbolRaw:     q.GetSymbol(),
-				Canonical:     "",
-				TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-				ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
-				Bid:           decimal.NewFromFloat(q.GetBid()),
-				Ask:           decimal.NewFromFloat(q.GetAsk()),
-				BidVolume:     float64(q.GetVolume()),
-			})
 		}
+	mt5QuoteLoopEnd:
 	}
+}
+
+func (g *Gateway) quoteTimeoutOrDefault() time.Duration {
+	if g.quoteTimeout > 0 {
+		return g.quoteTimeout
+	}
+	return 90 * time.Second
 }
 
 func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
@@ -162,8 +194,12 @@ func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
 		subMd.Set("authorization", "Bearer "+tok)
 	}
 	subCtx := metadata.NewOutgoingContext(ctx, subMd)
-	if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
-		g.log.Warn("mt5: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
+	resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms})
+	if err != nil {
+		g.log.Warn("mt5: re-subscribe symbols RPC failed", zap.Strings("syms", syms), zap.Error(err))
+	} else if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+		g.log.Error("mt5: re-subscribe symbols rejected by mtapi", zap.Strings("syms", syms),
+			zap.Int32("code", int32(e.GetCode())), zap.String("msg", e.GetMessage()))
 	}
 }
 

@@ -69,6 +69,9 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 	if err := m.publisher.PublishTick(ctx, t); err != nil && m.log != nil {
 		m.log.Warn("mdgateway: PublishTick failed", zap.String("account", t.AccountID), zap.String("symbol", t.Canonical), zap.Error(err))
 	}
+	if m.onTick != nil {
+		m.onTick(t)
+	}
 	for _, b := range bars {
 		if err := m.publisher.PublishBar(ctx, b); err != nil && m.log != nil {
 			m.log.Warn("mdgateway: PublishBar failed", zap.String("account", b.AccountID), zap.String("symbol", b.Canonical), zap.Error(err))
