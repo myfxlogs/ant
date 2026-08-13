@@ -1,5 +1,7 @@
 # 施工交接批次 4b：Live 页 UI 对抗测试补强（审计方验收遗留返工单）
 
+> **🆕 2026-08-13 已并入批次 5**：本文件 UI 三项任务已并入 `builder-handoff-batch5-antitest-2026-08-13.md`（含 LIVE-4 + LIVE-7b + UI 三项统一补强）。施工方请以 batch5 为准。本文件保留作历史痕迹，勿单独施工。
+>
 > 审计方（Claude Code）2026-08-13 批次4 验收后发出。**one task = one scope**：只做本文件列的三项 UI 对抗测试 + 一个低优清理。**不重新审计、不自由发挥、不扩大范围。**
 > 背景：批次4 Live 页 UI 实现已验收 ✅（tab 序 / strategyName 列 / 日志+健康按钮 / Enable→tab1 联动 / 状态诚实 / healthId 联动，代码核对全符合），但 **spec 必做的 3 项对抗测试零存在**（`LiveSchedulesTab`/`ScheduleTable`/`LiveStrategyPage` 无任何 test 文件，`tests/e2e/deploy-schedule.spec.ts` 无新断言）。按铁律：**删了还绿 = 测试无效 = 未完成**——实现合格但对抗缺失 = 本批次任务未完成。
 
