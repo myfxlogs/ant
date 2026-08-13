@@ -64,11 +64,11 @@ func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Lo
 }
 
 type deadAccountHandler struct {
-	ctx         context.Context
-	mgr         *Manager
-	log         *zap.Logger
+	ctx          context.Context
+	mgr          *Manager
+	log          *zap.Logger
 	onDisconnect func(string)
-	dead        *int64
+	dead         *int64
 }
 
 func (hd *deadAccountHandler) handle(h AccountHealth) {
@@ -149,23 +149,4 @@ func checkStaleAccounts(ctx context.Context, stales []staleEntry, log *zap.Logge
 		hd.handle(h)
 	}
 	return stale
-}
-
-// defaultQuoteSymbols returns a broad set of symbols for mtapi SymbolSubscribe
-// when an account has no configured symbols. Kept in sync with frontend COMMON_SYMBOLS.
-func defaultQuoteSymbols() []string {
-	return []string{
-		// Forex majors
-		"EURUSDm", "GBPUSDm", "USDJPYm", "AUDUSDm", "NZDUSDm", "USDCADm", "USDCHFm",
-		// Forex crosses
-		"EURGBPm", "EURJPYm", "GBPJPYm", "AUDJPYm", "NZDJPYm", "CADJPYm", "CHFJPYm",
-		"EURCHFm", "EURAUDm", "EURNZDm", "GBPCHFm", "GBPAUDm", "GBPNZDm",
-		"GBPCADm", "AUDCADm", "AUDCHFm", "AUDNZDm", "NZDCADm", "NZDCHFm", "CADCHFm",
-		// Metals
-		"XAUUSDm", "XAGUSDm", "XAUJPYm",
-		// Crypto
-		"BTCUSDm", "ETHUSDm", "XRPUSDm", "SOLUSDm", "BNBUSDm",
-		// Indices
-		"US30m", "US100m", "GER40m",
-	}
 }

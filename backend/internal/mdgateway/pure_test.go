@@ -9,6 +9,7 @@ import (
 
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/repository"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
@@ -41,30 +42,6 @@ func TestNewNormalizer_NilPool(t *testing.T) {
 	}
 	if n.cache == nil {
 		t.Error("cache map should be initialized")
-	}
-}
-
-// --- runner.go ---
-
-func TestDefaultQuoteSymbols(t *testing.T) {
-	t.Parallel()
-	syms := defaultQuoteSymbols()
-	if len(syms) == 0 {
-		t.Error("defaultQuoteSymbols should not be empty")
-	}
-	for _, s := range syms {
-		if len(s) < 2 || s[len(s)-1] != 'm' {
-			t.Errorf("symbol %q should end with 'm'", s)
-		}
-	}
-	has := make(map[string]bool)
-	for _, s := range syms {
-		has[s] = true
-	}
-	for _, e := range []string{"BTCUSDm", "EURUSDm", "GBPUSDm", "USDJPYm", "XAUUSDm"} {
-		if !has[e] {
-			t.Errorf("defaultQuoteSymbols missing %q", e)
-		}
 	}
 }
 
@@ -457,8 +434,6 @@ func TestEvaluateTradeable_Holiday(t *testing.T) {
 	}
 }
 
-
-
 // --- user_metrics_flusher.go ---
 
 func TestNewUserMetricsCollector(t *testing.T) {
@@ -657,7 +632,6 @@ func TestManager_Health_Empty(t *testing.T) {
 
 // --- runner.go drain ---
 
-
 // --- quote_stuffing.go ---
 
 func TestDefaultStuffingDetectorConfig(t *testing.T) {
@@ -835,9 +809,6 @@ func TestRemoveGateway_NotExist(t *testing.T) {
 	}
 }
 
-
-
-
 // --- quality.go ---
 
 func TestSetDLQWriter(t *testing.T) {
@@ -845,8 +816,6 @@ func TestSetDLQWriter(t *testing.T) {
 	q := NewQuality(DefaultQualityConfig())
 	q.SetDLQWriter(nil)
 }
-
-
 
 // --- metrics.go percentile ---
 
@@ -889,11 +858,6 @@ func TestNewNormalizer_NilPG(t *testing.T) {
 
 // --- dlq_writer.go ---
 
-
-
-
-
-
 func TestPublisher_PublishTick_NilJS(t *testing.T) {
 	t.Parallel()
 	pub := NewPublisher(nil)
@@ -913,7 +877,7 @@ func TestPublisher_PublishBar_NilJS(t *testing.T) {
 	err := pub.PublishBar(context.Background(), &mdtick.Bar{
 		Broker: "broker", Canonical: "EURUSD", Period: "1h",
 		CloseTsUnixMs: time.Now().UnixMilli(),
-		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
+		Open:          decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
 		Low: decimal.NewFromFloat(1.0990), Close: decimal.NewFromFloat(1.1020),
 	})
 	if err != nil {
@@ -927,7 +891,7 @@ func TestPublisher_PublishBarRevision_NilJS(t *testing.T) {
 	err := pub.PublishBarRevision(context.Background(), &mdtick.Bar{
 		Broker: "broker", Canonical: "EURUSD", Period: "1h",
 		CloseTsUnixMs: time.Now().UnixMilli(),
-		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
+		Open:          decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
 		Low: decimal.NewFromFloat(1.0990), Close: decimal.NewFromFloat(1.1020),
 	})
 	if err != nil {
@@ -954,10 +918,6 @@ func TestResolve(t *testing.T) {
 		t.Log("Resolve returned empty (expected without PG-backed mapping)")
 	}
 }
-
-
-
-
 
 func TestShouldSample_Always(t *testing.T) {
 	t.Parallel()
@@ -1041,8 +1001,6 @@ func TestBarAggregator_IngestExternalBar_Finalized(t *testing.T) {
 		t.Error("duplicate bar should be rejected")
 	}
 }
-
-
 
 // --- normalizer.go Resolve cache hit ---
 
@@ -1165,7 +1123,6 @@ func TestNormalizerInvalidator_TickerLoop(t *testing.T) {
 
 // --- spill_replay.go Run ---
 
-
 // --- quote_stuffing.go IsPaused deeper ---
 
 func TestStuffingDetector_IsPaused_Expired(t *testing.T) {
@@ -1198,12 +1155,7 @@ func TestStuffingDetector_IsPaused_Active(t *testing.T) {
 	}
 }
 
-
-
-
-
 // --- dlq_writer.go spillDLQ with spill ---
-
 
 // --- session_clock.go ClockSkewMs with offset ---
 

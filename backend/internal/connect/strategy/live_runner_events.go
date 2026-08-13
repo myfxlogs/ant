@@ -101,13 +101,26 @@ func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStr
 			cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
 		}
 	}
-	vmSess, vmErr := NewVMLiveSessionCached(cfg.Code, cachedBytecode)
-	if vmErr != nil {
-		s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
-		if activeSess != nil {
-			activeSess.RecordError("compile MQL: " + vmErr.Error())
+	var vmSess *VMLiveSession
+	var vmErr error
+	if sdk.IsPython(cfg.Code) {
+		vmSess, vmErr = NewPythonVMLiveSessionCached(cfg.Code, cachedBytecode)
+		if vmErr != nil {
+			s.log.Error("LiveStrategyRunner: compile Python failed", zap.Error(vmErr))
+			if activeSess != nil {
+				activeSess.RecordError("compile Python: " + vmErr.Error())
+			}
+			return nil, vmErr
 		}
-		return nil, vmErr
+	} else {
+		vmSess, vmErr = NewVMLiveSessionCached(cfg.Code, cachedBytecode)
+		if vmErr != nil {
+			s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
+			if activeSess != nil {
+				activeSess.RecordError("compile MQL: " + vmErr.Error())
+			}
+			return nil, vmErr
+		}
 	}
 	if cfg.StrategyID != "" && s.importedRepo != nil {
 		if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil && sid != uuid.Nil {
@@ -136,7 +149,11 @@ func (s *StrategyExecutionServer) handleTick(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TICK,
 		TickContext:  tctx,
 	}
-	reqBytes, marshalErr := proto.Marshal(req); if marshalErr != nil { s.log.Warn("LiveStrategyRunner: tick proto marshal failed", zap.Error(marshalErr)); return }
+	reqBytes, marshalErr := proto.Marshal(req)
+	if marshalErr != nil {
+		s.log.Warn("LiveStrategyRunner: tick proto marshal failed", zap.Error(marshalErr))
+		return
+	}
 	respBytes, err := (*session).SendEvent(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
@@ -166,7 +183,11 @@ func (s *StrategyExecutionServer) handleTrade(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TRADE,
 		TradeContext: tctx,
 	}
-	reqBytes, marshalErr := proto.Marshal(req); if marshalErr != nil { s.log.Warn("LiveStrategyRunner: trade proto marshal failed", zap.Error(marshalErr)); return }
+	reqBytes, marshalErr := proto.Marshal(req)
+	if marshalErr != nil {
+		s.log.Warn("LiveStrategyRunner: trade proto marshal failed", zap.Error(marshalErr))
+		return
+	}
 	respBytes, err := (*session).SendEvent(ctx, reqBytes)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))

@@ -31,16 +31,25 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 		if tok := g.token(); tok != "" {
 			subMd.Set("authorization", "Bearer "+tok)
 		}
-		subCtx := metadata.NewOutgoingContext(ctx, subMd)
-		resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms})
-		if err != nil {
-			g.log.Warn("mt4: subscribe symbols RPC failed", zap.Strings("syms", syms), zap.Error(err))
-		} else if e := resp.GetError(); e != nil && e.GetCode() != 0 {
-			g.log.Error("mt4: subscribe symbols rejected by mtapi", zap.Strings("syms", syms),
-				zap.Int32("code", int32(e.GetCode())), zap.String("msg", e.GetMessage()))
-		} else {
-			g.log.Info("mt4: subscribed symbols", zap.Strings("syms", syms))
+		// LIVE-PRICE-4: Subscribe per-symbol to avoid atomic batch failure
+		// when one symbol doesn't exist on the broker. Non-existent symbols
+		// are skipped (logged) instead of failing the entire subscription.
+		subscribed := 0
+		for _, sym := range syms {
+			subCtx := metadata.NewOutgoingContext(ctx, subMd)
+			resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: []string{sym}})
+			if err != nil {
+				g.log.Warn("mt4: subscribe symbol RPC failed", zap.String("sym", sym), zap.Error(err))
+				continue
+			}
+			if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+				g.log.Warn("mt4: subscribe symbol rejected by mtapi", zap.String("sym", sym),
+					zap.Int32("code", int32(e.GetCode())), zap.String("msg", e.GetMessage()))
+				continue
+			}
+			subscribed++
 		}
+		g.log.Info("mt4: subscribed symbols", zap.Int("requested", len(syms)), zap.Int("subscribed", subscribed))
 	}
 	go g.recvLoop(ctx, handler)
 	return nil
@@ -192,14 +201,23 @@ func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
 	if tok := g.token(); tok != "" {
 		subMd.Set("authorization", "Bearer "+tok)
 	}
-	subCtx := metadata.NewOutgoingContext(ctx, subMd)
-	resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms})
-	if err != nil {
-		g.log.Warn("mt4: re-subscribe symbols RPC failed", zap.Strings("syms", syms), zap.Error(err))
-	} else if e := resp.GetError(); e != nil && e.GetCode() != 0 {
-		g.log.Error("mt4: re-subscribe symbols rejected by mtapi", zap.Strings("syms", syms),
-			zap.Int32("code", int32(e.GetCode())), zap.String("msg", e.GetMessage()))
+	// LIVE-PRICE-4: Per-symbol re-subscribe, skip failures.
+	subscribed := 0
+	for _, sym := range syms {
+		subCtx := metadata.NewOutgoingContext(ctx, subMd)
+		resp, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: []string{sym}})
+		if err != nil {
+			g.log.Warn("mt4: re-subscribe symbol RPC failed", zap.String("sym", sym), zap.Error(err))
+			continue
+		}
+		if e := resp.GetError(); e != nil && e.GetCode() != 0 {
+			g.log.Warn("mt4: re-subscribe symbol rejected by mtapi", zap.String("sym", sym),
+				zap.Int32("code", int32(e.GetCode())), zap.String("msg", e.GetMessage()))
+			continue
+		}
+		subscribed++
 	}
+	g.log.Info("mt4: re-subscribed symbols", zap.Int("requested", len(syms)), zap.Int("subscribed", subscribed))
 }
 
 func (g *Gateway) SubscribeProfit(ctx context.Context, handler mdtick.ProfitHandler) error {

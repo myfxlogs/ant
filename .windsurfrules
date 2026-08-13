@@ -27,6 +27,7 @@
 - ❌ JSON 序列化/持久化（proto only；外部 API 响应解析豁免）
 - ❌ float64 in price（用 `decimal.Decimal`）
 - ❌ `//nolint` / `# noqa` / `// @ts-ignore`
+- ❌ 硬编码外部可变数据（broker symbol 清单/参数等）：有权威查询（`FetchAllSymbols`）时禁写死静态列表，必然漂移→静默 bug（反例 LIVE-PRICE-4：硬编码含不存在 symbol → 原子 SubscribeMany 整批失败 → OnQuote 空 → 实盘无法开仓）。豁免：通用常量（timeframe 毫秒/数学常量/固定枚举）
 - ❌ 因困难妥协最优解（回退代替重新生成 / 标记 legacy / 沉默代替修复 = 违规）
 
 ## 确定性（回测/编译器/任何有序 pipeline — BT-6 教训）

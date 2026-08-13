@@ -82,6 +82,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ❌ float64 in price calculations (use `decimal.Decimal` in Go)
 - ❌ Cross-scope changes (one task = one scope)
 - ❌ Hardcoded secrets / `.env` in repo
+- ❌ 硬编码"本应来自外部权威源的可变数据"（broker symbol 清单、broker 参数、服务器地址等外部系统当前状态）。存在权威查询（`FetchAllSymbols`、broker RPC）时禁止写死静态列表——必然漂移→静默 bug。**反例 LIVE-PRICE-4**：`defaultQuoteSymbols()` 硬编码含 broker 不存在的 symbol → 原子 `SubscribeMany` 整批失败 → OnQuote 零交付 → 实盘无法开仓。修复=订阅前用 `FetchAllSymbols` 过滤。**豁免**：通用常量（标准 timeframe 毫秒 `60_000`、数学常量、固定枚举）。详见 CLAUDE.md。
 - ❌ `//nolint`, `# noqa`, `// @ts-ignore`, `// #nosec`
 - ❌ 因困难而妥协最优解。遇到阻碍时禁止退而求其次——必须回到根因，找到正确的修复方式，哪怕需要推翻旧架构、完全重构。快捷方式（回退代替重新生成、标记 legacy 代替移除、沉默代替修复）视为违规。
 

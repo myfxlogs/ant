@@ -14,6 +14,7 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/repository"
+	"alphaforge/strategy/sdk"
 )
 
 const (
@@ -185,6 +186,11 @@ func (s *StrategyExecutionServer) executeGoBacktest(ctx context.Context, run *re
 	// MQL path: in-process Bytecode VM execution.
 	if isMQLStrategy(params.code) {
 		return s.executeVMBacktest(ctx, params, klines, run)
+	}
+
+	// Python path: in-process Bytecode VM execution (same VM, different compiler).
+	if sdk.IsPython(params.code) {
+		return s.executePythonVMBacktest(ctx, params, klines, run)
 	}
 
 	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL.

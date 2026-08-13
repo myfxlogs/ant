@@ -23,9 +23,7 @@ import (
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
-	"alphaforge/strategy/runner"
 	"alphaforge/strategy/sdk"
-	"alphaforge/tools/mql2go"
 )
 
 // StrategyExecutionServer implements ant.v1c.StrategyRuntimeServiceHandler.
@@ -326,77 +324,17 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 		return connect.NewResponse(resp), nil
 	}
 
+	// Python path: in-process Bytecode VM execution (same VM, different compiler).
+	if sdk.IsPython(req.Msg.StrategyCode) {
+		resp, err := s.executePythonVMLive(ctx, req.Msg)
+		if err != nil {
+			s.log.Warn("vm python live execution failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("python live execution failed: %w", err))
+		}
+		return connect.NewResponse(resp), nil
+	}
+
 	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "live execution not available"}), nil
-}
-
-// executeVMLive runs a single live event via the in-process Bytecode VM.
-// MQL source → CompileMQLCached → VMRunner → runner.Runner → dispatch event → ExecuteLiveResponse.
-// Uses bytecode cache from imported_strategies when strategy_id is available.
-func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
-	var cachedBytecode []byte
-	if req.StrategyId != "" && s.importedRepo != nil {
-		if sid, parseErr := uuid.Parse(req.StrategyId); parseErr == nil {
-			cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
-		}
-	}
-
-	strategy, bcData, err := mql2go.CompileMQLCached(req.StrategyCode, cachedBytecode)
-	if err != nil {
-		return nil, fmt.Errorf("compile MQL: %w", err)
-	}
-
-	// Persist newly compiled bytecode for future runs.
-	if bcData != nil && req.StrategyId != "" && s.importedRepo != nil {
-		if sid, parseErr := uuid.Parse(req.StrategyId); parseErr == nil && sid != uuid.Nil {
-			if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
-				s.log.Warn("executeVMLive: save bytecode cache failed", zap.Error(saveErr))
-			}
-		}
-	}
-
-	// Build runner config from bar context (first request must have bar_context).
-	bctx := req.GetBarContext()
-	if bctx == nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: "first request must have bar_context for initialization"}, nil
-	}
-
-	params := make(map[string]string)
-	for _, p := range bctx.GetParams() {
-		params[p.GetKey()] = p.GetValue()
-	}
-
-	r := runner.New(runner.Config{
-		Symbol:    bctx.Symbol,
-		Timeframe: bctx.Timeframe,
-		Params:    params,
-		Mode:      bctx.Mode,
-	})
-	r.SetStrategy(strategy)
-
-	if err := r.Init(ctx); err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}, nil
-	}
-
-	// Dispatch based on request type
-	switch req.GetRequestType() {
-	case antv1.RequestType_REQUEST_TYPE_BAR:
-		return vmHandleBar(ctx, r, bctx), nil
-
-	case antv1.RequestType_REQUEST_TYPE_TICK:
-		return vmHandleTick(ctx, r, req.GetTickContext()), nil
-
-	case antv1.RequestType_REQUEST_TYPE_TRADE:
-		return vmHandleTrade(ctx, r, req.GetTradeContext()), nil
-
-	case antv1.RequestType_REQUEST_TYPE_TIMER:
-		return vmHandleTimer(ctx, r, req.GetTimerContext()), nil
-
-	default:
-		if bctx != nil {
-			return vmHandleBar(ctx, r, bctx), nil
-		}
-		return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}, nil
-	}
 }
 
 // toCamelCase converts a filename like "my_strategy" to "MyStrategy".

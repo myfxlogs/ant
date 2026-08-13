@@ -124,7 +124,20 @@ func postConnectSetup(ctx context.Context, cfg mdtick.AccountConfig, gw Gateway,
 
 	syms := cfg.Symbols
 	if len(syms) == 0 {
-		syms = defaultQuoteSymbols()
+		// LIVE-PRICE-4: Use broker's real symbol list instead of hardcoded defaults.
+		// Hardcoded list may contain symbols the broker doesn't offer → atomic
+		// SubscribeMany fails for the entire batch → zero quotes.
+		if fetcher, ok := gw.(mdtick.SymbolFetcher); ok {
+			available, ferr := fetcher.FetchAllSymbols(ctx)
+			if ferr != nil {
+				log.Warn("mdgateway: FetchAllSymbols failed, skipping symbol subscription",
+					zap.String("account", accID), zap.Error(ferr))
+			} else {
+				syms = available
+				log.Info("mdgateway: using broker symbol list for subscription",
+					zap.String("account", accID), zap.Int("count", len(syms)))
+			}
+		}
 	}
 	if err := gw.Subscribe(ctx, syms, mgr.HandleTick); err != nil {
 		_ = mgr.RemoveGateway(ctx, accID)

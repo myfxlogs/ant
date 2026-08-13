@@ -47,6 +47,31 @@ func NewVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSessio
 	return &VMLiveSession{strategy: strategy}, nil
 }
 
+// NewPythonVMLiveSession creates a VMLiveSession for a Python strategy.
+// The VMRunner is language-agnostic — only the compilation front-end differs.
+func NewPythonVMLiveSession(source string) (*VMLiveSession, error) {
+	strategy, err := mql2go.CompilePython(source)
+	if err != nil {
+		return nil, fmt.Errorf("compile Python: %w", err)
+	}
+	return &VMLiveSession{strategy: strategy}, nil
+}
+
+// NewPythonVMLiveSessionCached creates a VMLiveSession for a Python strategy
+// using cached bytecode when available. Falls back to full compilation on cache miss.
+func NewPythonVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSession, error) {
+	if len(cachedBytecode) > 0 {
+		if runner, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
+			return &VMLiveSession{strategy: runner}, nil
+		}
+	}
+	strategy, err := mql2go.CompilePython(source)
+	if err != nil {
+		return nil, fmt.Errorf("compile Python: %w", err)
+	}
+	return &VMLiveSession{strategy: strategy}, nil
+}
+
 func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
 	if s.started {
 		return nil, fmt.Errorf("vm live session already started")

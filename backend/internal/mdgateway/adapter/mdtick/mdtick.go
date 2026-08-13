@@ -44,6 +44,14 @@ type BrokerInfoFetcher interface {
 	FetchBrokerInfo(ctx context.Context) (*BrokerInfo, error)
 }
 
+// SymbolFetcher is implemented by mt4.Gateway and mt5.Gateway.
+// Returns all available symbol names from the broker, used to filter
+// subscription requests so non-existent symbols don't cause atomic
+// SubscribeMany failures.
+type SymbolFetcher interface {
+	FetchAllSymbols(ctx context.Context) ([]string, error)
+}
+
 // AccountInfoProvider is implemented by gateway adapters that can return
 // account-level metadata (investor flag, etc.) after connection.
 type AccountInfoProvider interface {

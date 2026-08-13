@@ -168,6 +168,10 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ❌ float64 in price calculations (use `decimal.Decimal` in Go)
 - ❌ Cross-scope changes (one task = one scope)
 - ❌ Hardcoded secrets / `.env` in repo
+- ❌ 硬编码"本应来自外部权威源的可变数据"。当数据代表某**外部系统的当前状态**（broker symbol 清单、broker 参数、服务器地址、每账户/每经纪人不同的值），且**存在权威查询**（`FetchAllSymbols`、broker RPC 等）时，禁止写死静态列表——必然漂移 → 静默 bug。
+  - **反例（LIVE-PRICE-4，2026-08-13 实盘无法开仓 P1）**：`defaultQuoteSymbols()` 硬编码 37 个 symbol，含 broker 上不存在的 `XAUJPYm`/`EURUSDm`；mtapi `SubscribeMany` 是**原子操作**，一个不存在 → 整批 37 个全被拒 → 连 100% 存在的 `XAUUSDm` 都订阅不上 → `OnQuote` 零交付 → 实盘策略收不到任何报价 → 无法开仓。修复 = 订阅前用 `FetchAllSymbols`（broker 真实 symbol 清单）过滤，只订存在的。
+  - **正确做法**：查询权威源（建调度选 symbol 时早已这么做——实时拉 broker 列表；gateway 订阅必须用同一权威源，不得用硬编码 fallback）。
+  - **豁免（合法硬编码）**：真正的**通用常量**——标准 timeframe 毫秒映射（`60_000`/`300_000`）、数学常量、固定枚举值。这些是普适固定值、非外部状态，不在此列。
 - ❌ `//nolint`, `# noqa`, `// @ts-ignore`
 - ❌ 因困难而妥协最优解。遇到阻碍时禁止退而求其次——必须回到根因，找到正确的修复方式，哪怕需要推翻旧架构、完全重构。快捷方式（回退代替重新生成、标记 legacy 代替移除、沉默代替修复）视为违规。
 
