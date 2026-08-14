@@ -11,6 +11,7 @@ import type { StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 import { strategyActiveApi } from '@/client/strategy';
 import { formatTime, shortId } from '../../LiveStrategyPageSignalDrawer';
 import type { JoinedRow } from './strategyJoin';
+import { formatMode } from './formatMode';
 
 const { Text } = Typography;
 
@@ -221,7 +222,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
               <Descriptions.Item label={t('strategy.live.symbol', { defaultValue: 'Symbol' })}>{row.symbol}</Descriptions.Item>
               <Descriptions.Item label={t('strategy.live.timeframe', { defaultValue: 'TF' })}>{row.timeframe}</Descriptions.Item>
               <Descriptions.Item label={t('strategy.schedules.table.schedule', { defaultValue: 'Schedule' })}>{row.scheduleType}</Descriptions.Item>
-              <Descriptions.Item label={t('strategy.live.mode', { defaultValue: 'Mode' })}>{row.active?.mode || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('strategy.live.mode', { defaultValue: 'Mode' })}>{formatMode(row.active?.mode, t)}</Descriptions.Item>
               <Descriptions.Item label={t('strategy.live.parameters', { defaultValue: 'Parameters' })} span={2}>{paramsStr}</Descriptions.Item>
               {row.active && (
                 <Descriptions.Item label={t('strategy.live.runId', { defaultValue: 'Run ID' })}>

@@ -11,6 +11,7 @@ import OrphanRunsTable from './OrphanRunsTable';
 import { secondsSince, formatAgo } from './timeHelpers';
 import { isLogButtonDisabled, isHealthButtonDisabled } from './strategyJoin';
 import type { JoinedRow } from './strategyJoin';
+import { formatMode } from './formatMode';
 
 const { Text } = Typography;
 
@@ -167,29 +168,30 @@ export default function MyStrategiesTable({
       title: t('strategy.live.mode', { defaultValue: 'Mode' }),
       key: 'mode', width: 60,
       render: (_: unknown, row: JoinedRow) => row.active
-        ? <Tag color={MODE_COLORS[row.active.mode] || 'default'}>{row.active.mode}</Tag>
+        ? <Tag color={MODE_COLORS[row.active.mode] || 'default'}>{formatMode(row.active.mode, t)}</Tag>
         : <Text type="secondary">-</Text>,
     },
     {
       title: '', key: 'actions', width: 120, fixed: 'right',
       render: (_: unknown, row: JoinedRow) => {
         const menuItems = [
-          { key: 'toggle', icon: row.isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />, label: row.isActive ? t('common.disable', { defaultValue: 'Disable' }) : t('common.enable', { defaultValue: 'Enable' }) },
           { key: 'run', icon: <ThunderboltOutlined />, label: t('strategy.schedules.actions.runNow', { defaultValue: 'Run Now' }), disabled: !row.isActive },
           { key: 'edit', icon: <EditOutlined />, label: t('common.edit', { defaultValue: 'Edit' }) },
           { key: 'logs', icon: <FileTextOutlined />, label: t('strategy.live.logs', { defaultValue: 'Logs' }), disabled: isLogButtonDisabled(row.id) },
           { key: 'health', icon: <HeartOutlined />, label: t('strategy.live.health', { defaultValue: 'Health' }), disabled: isHealthButtonDisabled(row.id) },
-          ...(row.active ? [{ type: 'divider' as const }, { key: 'stop', icon: <PauseCircleOutlined />, label: t('strategy.live.confirmStop', { defaultValue: 'Stop this strategy?' }), danger: true }] : []),
+          ...(row.active || row.isActive ? [{ type: 'divider' as const }, { key: 'stop', icon: <PauseCircleOutlined />, label: t('strategy.live.stopAndDisable', { defaultValue: 'Stop & Disable' }), danger: true }] : []),
           { type: 'divider' as const },
           { key: 'delete', icon: <DeleteOutlined />, label: t('common.delete', { defaultValue: 'Delete' }), danger: true, disabled: !row.id },
         ];
         const handleMenu = ({ key }: { key: string }) => {
-          if (key === 'toggle') onToggleActive(row, !row.isActive);
-          else if (key === 'run') onManualTrigger(row);
+          if (key === 'run') onManualTrigger(row);
           else if (key === 'edit') onEdit(row);
           else if (key === 'logs') onShowLogs(row.id);
           else if (key === 'health') onHealthCheck(row);
-          else if (key === 'stop' && row.active) onStop(row.active.runId);
+          else if (key === 'stop') {
+            if (row.active) onStop(row.active.runId);
+            if (row.isActive) onToggleActive(row, false);
+          }
           else if (key === 'delete') onDelete(row);
         };
         return (

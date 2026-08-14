@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import type { ActiveStrategy, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
+import { formatMode } from './components/live/formatMode';
 
 const { Text } = Typography;
 
@@ -97,7 +98,7 @@ export function SignalDrawer({ open, onClose, watchingRunId, signals, activeStra
           </Descriptions.Item>
           <Descriptions.Item label={t('strategy.live.mode', { defaultValue: 'Mode' })}>
             <Tag color={MODE_COLORS[watching.mode || ''] || 'default'}>
-              {watching.mode}
+              {formatMode(watching.mode, t)}
             </Tag>
           </Descriptions.Item>
           <Descriptions.Item label={t('strategy.live.signals', { defaultValue: 'Signals' })}>
