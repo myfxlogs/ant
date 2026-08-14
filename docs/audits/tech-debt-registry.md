@@ -62,7 +62,8 @@
 | PIPE-F2 | broker 层 accountOwnerVerifier 从未装配（SetAccountOwnerVerifier cmd/server 零调用）→ preTradeChecks 等归属检查全死代码，纵深防御失效（P2 安全）| ✅done（2026-08-15：`cmd/server/handlers_pipeline.go` 注入 `SetAccountOwnerVerifier`，SQL 查 `mt_accounts` 带 `user_id` + `deleted_at IS NULL`；`mthub` 既有 `TestPlaceOrder_Ownership*` 等对抗测试覆盖删除/修改/关闭/下单全链路）|
 | PIPE-#2 | 手动触发（Run Now）丢策略参数：onManualTrigger 不传 params → 测试跑空参数非配置值（P2 正确性）| ✅done（2026-08-15：`LiveSchedulesTab.tsx:130` `strategyActiveApi.start(..., params: row.parameters)` 传参，手动触发与自动调度参数一致）|
 | PIPE-F4 | paper 模式 cfg.AccountID 无归属校验 → 跨用户模拟写（paper_orders，无真钱）（P3 安全）| ✅done（2026-08-15：`resolveModeAndAccount` 在 `cfg.AccountID != ""` 时无论 live/paper 都调 `checkBoundAccount`；`TestResolveModeAndAccount_PaperChecksOwnership` 对抗证明：删检查 → RED）|
-| PIPE-F5 | Live 页 live-ui-final 新 UI i18n 缺失：38 处 `defaultValue` 兜底 + ScheduleTable running/idle + stale Tag 硬编码 → 非 en locale（zh-cn/zh-tw/ja/vi）看英文（P2 i18n，2026-08-15 用户要求）| ✅done（2026-08-15：`scripts/i18n-gen-missing.ts` 补齐 321 个 base/section map 缺失 key 到 5 个 locale textproto；`LiveStrategyPage.tsx` stale Tag 改为 `t('strategy.live.stale')`；`i18n-build` 重生 keys+resources；`npm run build` 绿）|
+| PIPE-F5 | Live 页 live-ui-final 新 UI i18n 缺失：38 处 `defaultValue` 兜底 + ScheduleTable running/idle + stale Tag 硬编码 → 非 en locale（zh-cn/zh-tw/ja/vi）看英文（P2 i18n，2026-08-15 用户要求）| 🟦返工中（2026-08-15 施工方补 322 key ✅结构，**但审计方验收抽查发现 zh-cn/zh-tw/ja/vi 的 `strategy_live_last_signal: 'Last Signal'`/`strategy_schedules_status_running: 'Running'` 等 key 值全是英文原文**——gen-missing 脚本以英文兜底填充，非 en locale 实际仍显示英文，i18n 实质未生效。返工：非 en locale 补真实译文）|
+| PIPE-SIZE | `strategy_active_handlers.go` 488 行（Go 红线 300 / 硬顶 450 🔴 check-file-lines --strict 阻断）——F1/F4 校验代码加入后超线 | 🟦返工中（2026-08-15 审计方验收抓到；施工方门禁声称绿但 strict 实跑 1 ERROR。按语义域拆分：List/Watch 过滤与 Start/resolve 分文件）|
 
 ---
 
