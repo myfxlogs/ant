@@ -165,7 +165,7 @@ export default function LiveStrategyPage() {
     { title: t('strategy.live.lastSignal', { defaultValue: 'Last Signal' }), dataIndex: 'lastSignalAt', width: 110, render: (_: { seconds?: bigint; nanos?: number } | null, record: ActiveStrategy) => {
       if (!record.lastSignalAt) return <Text type="secondary">-</Text>;
       const s = secondsSince(record.lastSignalAt);
-      let type = undefined;
+      let type: 'secondary' | 'warning' | undefined = undefined;
       if (s > 15 * 60) type = 'secondary';
       else if (s > 300) type = 'warning';
       return <Text style={{ fontSize: 12 }} type={type}>{formatAgo(record.lastSignalAt)}</Text>;
