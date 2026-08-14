@@ -79,6 +79,9 @@ func (c *capturePaperEngine) ModifyPaperOrder(ctx context.Context, accountID, sy
 func (c *capturePaperEngine) CancelPaperOrder(ctx context.Context, accountID, symbol string) error {
 	return nil
 }
+func (c *capturePaperEngine) PaperPnl(ctx context.Context, accountID, symbol string, bid, ask decimal.Decimal) (decimal.Decimal, error) {
+	return decimal.Zero, nil
+}
 
 func (c *capturePaperEngine) orderCount() int {
 	c.mu.Lock()

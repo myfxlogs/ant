@@ -431,21 +431,6 @@ func (s *MtHubService) SubscribeUserOrderEvents(ctx context.Context, userID stri
 	return s.broker.Subscribe(userID)
 }
 
-// PublishAccountProfit publishes an account profit event to all subscribers.
-func (s *MtHubService) PublishAccountProfit(ev *AccountProfitEvent) {
-	s.accountBroker.Publish(ev)
-}
-
-// SubscribeAccountProfit returns a channel of account profit events for a single account.
-func (s *MtHubService) SubscribeAccountProfit(ctx context.Context, accountID string) (<-chan *AccountProfitEvent, func()) {
-	return s.accountBroker.Subscribe(accountID)
-}
-
-// SubscribeAccountProfitAll returns a channel of account profit events for all accounts.
-func (s *MtHubService) SubscribeAccountProfitAll() (<-chan *AccountProfitEvent, func()) {
-	return s.accountBroker.WatchAll()
-}
-
 // PublishPositionSnapshot publishes a full position snapshot to all subscribers.
 func (s *MtHubService) PublishPositionSnapshot(ev *PositionSnapshot) {
 	s.snapshotBroker.Publish(ev)
