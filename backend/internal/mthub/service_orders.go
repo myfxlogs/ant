@@ -159,17 +159,19 @@ func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest,
 		s.logger.Warn("gate: account state fetch failed — fail-closed",
 			zap.String("accountID", req.AccountID), zap.Error(stateErr))
 	}
-	// RISK-MARGIN2: ContractSize is per-symbol; fetch from broker SymbolParams
-	// and overlay onto the account snapshot. Fall back to risk.rules defaults
-	// (100000 for FX) only when the broker provides no contract size.
-	if state != nil && state.ContractSize.IsZero() {
+	// RISK-MARGIN2: Always overlay ContractSize from the broker for this order's
+	// symbol before evaluating the gate. Cache + TTL avoids a broker round-trip
+	// per order. Unknown contract size (zero or lookup failure) flows through to
+	// the MarginPreCheck rule and is fail-closed with reason "contract size unknown".
+	if state != nil && req.Canonical != "" {
 		sctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		params, err := s.SymbolParams(sctx, req.AccountID, []string{req.Canonical})
+		param, err := s.CachedSymbolParam(sctx, req.AccountID, req.Canonical)
 		cancel()
-		if err == nil && len(params) > 0 {
-			if params[0].LotSize.GreaterThan(decimal.Zero) {
-				state.ContractSize = params[0].LotSize
-			}
+		if err != nil {
+			return fmt.Errorf("contract size lookup failed for %s: %w", req.Canonical, err)
+		}
+		if param != nil && param.ContractSize.GreaterThan(decimal.Zero) {
+			state.ContractSize = param.ContractSize
 		}
 	}
 
@@ -251,12 +253,18 @@ func orderTypeToString(ot OrderType) string {
 
 // estimateOrderCost runs pre-trade cost estimation and returns a CostEstimate proto.
 func (s *MtHubService) estimateOrderCost(ctx context.Context, req *OrderRequest) *antv1.CostEstimate {
+	contractSize := decimal.NewFromInt(100000)
+	if p, err := s.CachedSymbolParam(ctx, req.AccountID, req.Canonical); err == nil && p != nil {
+		if p.ContractSize.GreaterThan(decimal.Zero) {
+			contractSize = p.ContractSize
+		}
+	}
 	est := s.costEstimator.Estimate(ctx, costsvc.EstimateParams{
 		Symbol:       req.Canonical,
 		Side:         sideToString(req.Side),
 		Lots:         req.Volume,
 		Price:        req.Price,
-		ContractSize: decimal.NewFromInt(100000),
+		ContractSize: contractSize,
 	})
 	return costToProto(&est)
 }

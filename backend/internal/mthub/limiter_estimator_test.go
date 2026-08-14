@@ -156,7 +156,10 @@ func (m *mockExecutor) FetchSymbolParams(ctx context.Context, canonicals []strin
 	if m.fetchSymbolParamsFn != nil {
 		return m.fetchSymbolParamsFn(ctx, canonicals)
 	}
-	return nil, nil
+	if len(canonicals) == 0 {
+		return nil, nil
+	}
+	return []*SymbolParam{{Canonical: canonicals[0], ContractSize: decimal.NewFromInt(100000), LotSize: decimal.NewFromInt(100000)}}, nil
 }
 func (m *mockExecutor) FetchAllSymbols(ctx context.Context) ([]string, error) {
 	if m.fetchAllSymbolsFn != nil {

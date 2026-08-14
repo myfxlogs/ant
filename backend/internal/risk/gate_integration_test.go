@@ -128,12 +128,12 @@ func TestGateIntegrationKillSwitchLiveOnly(t *testing.T) {
 	}
 
 	liveIntent := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "buy", Volume: "0.01", Type: "buy",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
 	simIntent := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "buy", Volume: "0.01", Type: "buy",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_SIM,
 	}
@@ -162,9 +162,9 @@ func TestGateAuditTrail(t *testing.T) {
 
 	// Allowed order.
 	intent := &antv1.OrderIntent{
-		UserId:    "user-1", AccountId: "acct-1", Symbol: "EURUSD",
+		UserId: "user-1", AccountId: "acct-1", Symbol: "EURUSD",
 		Side: "buy", Volume: "0.01", Type: "buy",
-		Price: "1.08500",
+		Price:  "1.08500",
 		Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
 
@@ -196,6 +196,7 @@ func TestGateOfflineBatchPreCheck(t *testing.T) {
 		Equity:         decimal.NewFromInt(100000),
 		FreeMargin:     decimal.NewFromInt(95000),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 
 	// Simulate a batch of backtest intents for offline pre-check.
@@ -289,6 +290,7 @@ func TestOrderIntentFieldMapping(t *testing.T) {
 		Equity:         decimal.NewFromInt(100000),
 		FreeMargin:     decimal.NewFromInt(95000),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 
 	decision := g.Evaluate(context.Background(), intent, state)
@@ -316,6 +318,7 @@ func TestGateIntegrationConcurrentBatch(t *testing.T) {
 		Balance:        decimal.NewFromInt(100000),
 		Equity:         decimal.NewFromInt(100000),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 
 	done := make(chan bool, 10)

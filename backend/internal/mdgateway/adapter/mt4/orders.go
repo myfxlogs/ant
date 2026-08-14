@@ -217,6 +217,8 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 			param.Digits = si.GetDigits()
 			param.StopLevel = si.GetStopsLevel()
 			param.PointValue = decimal.NewFromFloat(si.GetPoint())
+			param.ContractSize = decimal.NewFromFloat(si.GetContractSize())
+			param.LotSize = param.ContractSize
 		}
 		if gp != nil {
 			param.LotMin = decimal.NewFromFloat(gp.GetMinLot())
@@ -224,10 +226,8 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 			param.LotStep = decimal.NewFromFloat(gp.GetLotStep())
 			param.TradeMode = gp.GetExecution()
 		}
-		// MT4 does not expose ContractSize (LotSize) via SymbolParams; default is 1.
-		if param.LotSize.IsZero() {
-			param.LotSize = decimal.NewFromInt(1)
-		}
+		// Do not default ContractSize to 1; zero means "unknown" and triggers
+		// fail-closed margin checks in the risk gate.
 		out = append(out, param)
 	}
 	return out, nil

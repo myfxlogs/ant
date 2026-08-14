@@ -2,6 +2,7 @@ package risk
 
 import (
 	"context"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -59,6 +60,7 @@ func defaultState() *AccountState {
 		DailyPnL:       decimal.NewFromInt(50),
 		PeakEquity:     decimal.NewFromInt(10100),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 }
 
@@ -113,7 +115,7 @@ func TestMaxPositionCount_Block(t *testing.T) {
 func TestMaxExposure_Allow(t *testing.T) {
 	r := &MaxExposure{MaxRatio: decimal.NewFromFloat(0.5)}
 	// 0.01 lots × 1.08500 × 100000 = 1085. 1085 < 5000 (50% of 10000) → allowed.
-	state := &AccountState{Balance: decimal.NewFromInt(10000)}
+	state := &AccountState{Balance: decimal.NewFromInt(10000), ContractSize: decimal.NewFromInt(100000)}
 	result := r.Check(context.Background(), intentBuy("0.01"), state)
 	if !result.Allowed {
 		t.Errorf("expected allowed, got: %s", result.Reason)
@@ -122,7 +124,7 @@ func TestMaxExposure_Allow(t *testing.T) {
 
 func TestMaxExposure_Block(t *testing.T) {
 	r := &MaxExposure{MaxRatio: decimal.NewFromFloat(0.5)}
-	state := &AccountState{Balance: decimal.NewFromInt(10000)}
+	state := &AccountState{Balance: decimal.NewFromInt(10000), ContractSize: decimal.NewFromInt(100000)}
 	result := r.Check(context.Background(), intentBuy("100.0"), state)
 	if result.Allowed {
 		t.Error("expected blocked for 100 lots")
@@ -290,6 +292,7 @@ func TestMarginPreCheck_Block(t *testing.T) {
 		Equity:         decimal.NewFromInt(100),
 		UsedMargin:     decimal.NewFromInt(80),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 	result := r.Check(context.Background(), intentBuy("1.0"), state)
 	if result.Allowed {
@@ -308,6 +311,7 @@ func TestMarginPreCheck_MarketOrderPriceZero_Skips(t *testing.T) {
 		Equity:         decimal.NewFromInt(100),
 		UsedMargin:     decimal.NewFromInt(80),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 	intent := intentBuy("1.0")
 	intent.Price = "0" // market order — no price resolved
@@ -325,12 +329,51 @@ func TestMarginPreCheck_MarketOrderPriceResolved_Blocks(t *testing.T) {
 		Equity:         decimal.NewFromInt(100),
 		UsedMargin:     decimal.NewFromInt(80),
 		SymbolLeverage: 100,
+		ContractSize:   decimal.NewFromInt(100000),
 	}
 	intent := intentBuy("1.0")
 	intent.Price = "1.08500" // price resolved from TickBroker mid-price
 	result := r.Check(context.Background(), intent, state)
 	if result.Allowed {
 		t.Error("expected blocked for excessive margin with resolved market price")
+	}
+}
+
+// MARGIN-GATE adversarial: BTCUSDm (crypto-like, CS=1), USDJPY (USD-base, CS=100000),
+// EURUSD (FX, CS=100000) and fail-closed on missing ContractSize.
+func TestMarginPreCheck_AdversarialSymbols(t *testing.T) {
+	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
+
+	// BTCUSDm 0.01 lot @ 63300, CS=1, lev=100 → required ≈ 6.33
+	btc := &antv1.OrderIntent{Symbol: "BTCUSDm", Side: "buy", Volume: "0.01", Price: "63300", Type: "buy"}
+	btcState := &AccountState{Equity: decimal.NewFromInt(10000), UsedMargin: decimal.Zero, SymbolLeverage: 100, ContractSize: decimal.NewFromInt(1)}
+	if res := r.Check(context.Background(), btc, btcState); !res.Allowed {
+		t.Errorf("BTCUSDm 0.01 lot should be allowed, got: %s", res.Reason)
+	}
+
+	// USDJPY 0.01 lot @ 150.0, CS=100000, lev=10 (USD-base, fx_rate=1) → required ≈ 100
+	usdjpy := &antv1.OrderIntent{Symbol: "USDJPY", Side: "buy", Volume: "0.01", Price: "150.0", Type: "buy"}
+	usdjpyState := &AccountState{Equity: decimal.NewFromInt(10000), UsedMargin: decimal.Zero, SymbolLeverage: 10, ContractSize: decimal.NewFromInt(100000)}
+	if res := r.Check(context.Background(), usdjpy, usdjpyState); !res.Allowed {
+		t.Errorf("USDJPY 0.01 lot should be allowed, got: %s", res.Reason)
+	}
+
+	// EURUSD 0.01 lot @ 1.0850, CS=100000, lev=100 → required ≈ 10.85
+	eur := &antv1.OrderIntent{Symbol: "EURUSD", Side: "buy", Volume: "0.01", Price: "1.0850", Type: "buy"}
+	eurState := &AccountState{Equity: decimal.NewFromInt(10000), UsedMargin: decimal.Zero, SymbolLeverage: 100, ContractSize: decimal.NewFromInt(100000)}
+	if res := r.Check(context.Background(), eur, eurState); !res.Allowed {
+		t.Errorf("EURUSD 0.01 lot should be allowed, got: %s", res.Reason)
+	}
+
+	// Missing ContractSize → fail-closed with explicit reason.
+	missing := &antv1.OrderIntent{Symbol: "EURUSD", Side: "buy", Volume: "0.01", Price: "1.0850", Type: "buy"}
+	missingState := &AccountState{Equity: decimal.NewFromInt(10000), UsedMargin: decimal.Zero, SymbolLeverage: 100}
+	res := r.Check(context.Background(), missing, missingState)
+	if res.Allowed {
+		t.Error("expected blocked when ContractSize is missing")
+	}
+	if !strings.Contains(res.Reason, "contract size unknown for symbol EURUSD") {
+		t.Errorf("expected contract size unknown reason, got: %s", res.Reason)
 	}
 }
 

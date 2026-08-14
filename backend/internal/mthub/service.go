@@ -78,11 +78,16 @@ type MtHubService struct {
 	// account within a short window. Keyed by accountID, value = last reconnect time.
 	reconnectMu     sync.Mutex
 	reconnectLastAt map[string]time.Time
+
+	// symbolParamCache stores per-symbol trading parameters with a TTL so the
+	// risk gate can resolve ContractSize without a broker round-trip on every order.
+	symbolParamMu    sync.RWMutex
+	symbolParamCache map[string]symbolParamCacheEntry
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
 func NewMtHubService(hub *Hub, broker *OrderEventBroker, accountBroker *AccountProfitBroker, snapshotBroker *PositionSnapshotBroker, idem *IdempotencyGuard, gate *ReconcileGate, store *TradeEventStore) *MtHubService {
-	return &MtHubService{hub: hub, broker: broker, accountBroker: accountBroker, snapshotBroker: snapshotBroker, idem: idem, reconcileGate: gate, eventStore: store, reconnectLastAt: map[string]time.Time{}}
+	return &MtHubService{hub: hub, broker: broker, accountBroker: accountBroker, snapshotBroker: snapshotBroker, idem: idem, reconcileGate: gate, eventStore: store, reconnectLastAt: map[string]time.Time{}, symbolParamCache: map[string]symbolParamCacheEntry{}}
 }
 
 // SetUserLimiter injects the per-user rate limiter (nil-safe).

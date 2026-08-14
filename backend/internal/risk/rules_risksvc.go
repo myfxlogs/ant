@@ -26,8 +26,8 @@ import (
 // KycJurisdictionGateRule blocks orders from users who have not completed KYC
 // or are in sanctioned jurisdictions.  Wraps the existing risksvc.JurisdictionGate.
 type KycJurisdictionGateRule struct {
-	Gate      *risksvc.JurisdictionGate
-	UserIDFn  func(ctx context.Context) string  // extracts user ID from context
+	Gate       *risksvc.JurisdictionGate
+	UserIDFn   func(ctx context.Context) string // extracts user ID from context
 	ClientIPFn func(ctx context.Context) string // extracts client IP from context
 }
 
@@ -116,7 +116,12 @@ func (r *MarginFloorRule) Check(_ context.Context, intent *antv1.OrderIntent, st
 	if vol.LessThanOrEqual(decimal.Zero) || price.LessThanOrEqual(decimal.Zero) {
 		return passResult(r.Name()) // skip for market orders (price unknown)
 	}
-	required := vol.Mul(price).Mul(contractSize(state))
+	cs, ok := contractSize(state, intent.GetSymbol())
+	if !ok {
+		return blockResult(r.Name(),
+			fmt.Sprintf("contract size unknown for symbol %s", intent.GetSymbol()))
+	}
+	required := vol.Mul(price).Mul(cs)
 	if state.FreeMargin.LessThan(decimal.NewFromFloat(ratio).Mul(required)) {
 		return blockResult(r.Name(),
 			fmt.Sprintf("free margin %s < required %s (ratio=%.1f)", state.FreeMargin.String(), decimal.NewFromFloat(ratio).Mul(required).String(), ratio))

@@ -32,10 +32,10 @@ type OrderRecord struct {
 }
 
 type SymbolParam struct {
-	Canonical, SymbolRaw                         string
-	Digits, TradeMode, StopLevel                 int32
-	PointValue, LotSize, LotStep, LotMin, LotMax decimal.Decimal
-	SpreadFloat                                  bool
+	Canonical, SymbolRaw                                       string
+	Digits, TradeMode, StopLevel                               int32
+	PointValue, ContractSize, LotSize, LotStep, LotMin, LotMax decimal.Decimal
+	SpreadFloat                                                bool
 }
 
 type Bar struct {

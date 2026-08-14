@@ -720,7 +720,12 @@ func TestOrderHistory_WithSession(t *testing.T) {
 func TestSymbolParams_WithSession(t *testing.T) {
 	t.Parallel()
 	svc := newTestService()
-	exec := &mockExecutor{platform: "MT5"}
+	exec := &mockExecutor{
+		platform: "MT5",
+		fetchSymbolParamsFn: func(_ context.Context, _ []string) ([]*SymbolParam, error) {
+			return nil, nil
+		},
+	}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
 	params, err := svc.SymbolParams(context.Background(), "acc-1", []string{"EURUSD"})
 	if err != nil {

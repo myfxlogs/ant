@@ -7,6 +7,7 @@ package risk
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -33,13 +34,14 @@ func parsePrice(s string) decimal.Decimal {
 	return d
 }
 
-// contractSize returns the per-symbol contract multiplier from AccountState,
-// falling back to 100000 (standard FX lot) when not populated.
-func contractSize(state *AccountState) decimal.Decimal {
+// contractSize returns the per-symbol contract multiplier from AccountState.
+// It no longer silently defaults; the second result reports whether the value
+// was explicitly populated. Missing/zero contract size must fail-closed.
+func contractSize(state *AccountState, symbol string) (decimal.Decimal, bool) {
 	if state != nil && state.ContractSize.GreaterThan(decimal.Zero) {
-		return state.ContractSize
+		return state.ContractSize, true
 	}
-	return decimal.NewFromInt(100000)
+	return decimal.Zero, false
 }
 
 // ── R1: Max Lot Size ──────────────────────────────────────────────────
@@ -101,7 +103,14 @@ func (r *MaxExposure) Check(_ context.Context, intent *antv1.OrderIntent, state 
 		// Market order — use current_price from state (approximate).
 		return &RuleResult{Allowed: true}
 	}
-	notional := vol.Mul(price).Mul(contractSize(state)) // vol × price × contract_size
+	cs, ok := contractSize(state, intent.GetSymbol())
+	if !ok {
+		return &RuleResult{
+			Allowed: false,
+			Reason:  fmt.Sprintf("contract size unknown for symbol %s", intent.GetSymbol()),
+		}
+	}
+	notional := vol.Mul(price).Mul(cs) // vol × price × contract_size
 	maxAllowed := state.Balance.Mul(r.MaxRatio)
 	if notional.GreaterThan(maxAllowed) {
 		return &RuleResult{
@@ -203,9 +212,9 @@ func (r *LeverageCap) Check(_ context.Context, intent *antv1.OrderIntent, state 
 // ── R7: Order Frequency Limit ─────────────────────────────────────────
 
 type OrderFrequencyLimit struct {
-	MaxOrders int
-	Window    time.Duration
-	mu        sync.Mutex
+	MaxOrders  int
+	Window     time.Duration
+	mu         sync.Mutex
 	timestamps map[string][]time.Time // per-userID
 }
 
@@ -318,20 +327,36 @@ func (r *MarginPreCheck) Check(_ context.Context, intent *antv1.OrderIntent, sta
 		return &RuleResult{Allowed: true} // market order — broker determines fill price
 	}
 
+	cs, ok := contractSize(state, intent.GetSymbol())
+	if !ok {
+		return &RuleResult{
+			Allowed: false,
+			Reason:  fmt.Sprintf("contract size unknown for symbol %s", intent.GetSymbol()),
+		}
+	}
+
 	leverage := decimal.NewFromInt(int64(state.SymbolLeverage))
 	if leverage.IsZero() {
 		leverage = decimal.NewFromInt(100)
 	}
 
-	// required = volume × price × contract_size / leverage
-	requiredMargin := vol.Mul(price).Mul(contractSize(state)).Div(leverage)
+	// required = volume × contract_size × fx_rate / leverage
+	// For USD-denominated base symbols (USDJPY, USDCHF, ...) the base currency
+	// is already the account currency, so fx_rate = 1. For all other symbols we
+	// approximate the conversion to USD using the quoted price. Cross-currency
+	// pairs (e.g. EURGBP) are an approximation when the account currency is USD.
+	fxRate := decimal.NewFromInt(1)
+	if !strings.HasPrefix(intent.GetSymbol(), "USD") {
+		fxRate = price
+	}
+	requiredMargin := vol.Mul(cs).Mul(fxRate).Div(leverage)
 	totalMargin := state.UsedMargin.Add(requiredMargin)
 	ratio := totalMargin.Div(state.Equity)
 
 	if ratio.GreaterThan(r.MaxMarginRatio) {
 		return &RuleResult{
 			Allowed: false,
-			Reason:  fmt.Sprintf("margin ratio %.1f%% exceeds limit %.1f%% (required=%s used=%s equity=%s)",
+			Reason: fmt.Sprintf("margin ratio %.1f%% exceeds limit %.1f%% (required=%s used=%s equity=%s)",
 				ratio.InexactFloat64()*100, r.MaxMarginRatio.InexactFloat64()*100,
 				requiredMargin, state.UsedMargin, state.Equity),
 		}

@@ -250,17 +250,18 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		si := r.GetSymbolInfo()
 		sg := r.GetSymbolGroup()
 		out = append(out, &mthub.SymbolParam{
-			Canonical:   c,
-			SymbolRaw:   c,
-			Digits:      si.GetDigits(),
-			TradeMode:   int32(sg.GetTradeMode()),
-			StopLevel:   sg.GetSL(),
-			PointValue:  decimal.NewFromFloat(si.GetTickValue()),
-			LotSize:     decimal.NewFromFloat(si.GetContractSize()),
-			LotStep:     decimal.NewFromFloat(sg.GetLotsStep()),
-			LotMin:      decimal.NewFromFloat(sg.GetMinLots()),
-			LotMax:      decimal.NewFromFloat(sg.GetMaxLots()),
-			SpreadFloat: si.GetSpread() > 0,
+			Canonical:    c,
+			SymbolRaw:    c,
+			Digits:       si.GetDigits(),
+			TradeMode:    int32(sg.GetTradeMode()),
+			StopLevel:    sg.GetSL(),
+			PointValue:   decimal.NewFromFloat(si.GetTickValue()),
+			ContractSize: decimal.NewFromFloat(si.GetContractSize()),
+			LotSize:      decimal.NewFromFloat(si.GetContractSize()),
+			LotStep:      decimal.NewFromFloat(sg.GetLotsStep()),
+			LotMin:       decimal.NewFromFloat(sg.GetMinLots()),
+			LotMax:       decimal.NewFromFloat(sg.GetMaxLots()),
+			SpreadFloat:  si.GetSpread() > 0,
 		})
 	}
 	return out, nil
