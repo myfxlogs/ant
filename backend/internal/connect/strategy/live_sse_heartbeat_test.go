@@ -69,8 +69,8 @@ func TestWatchActiveStrategies_Heartbeat(t *testing.T) {
 			t.Fatal("stream closed before heartbeat")
 		}
 		event := stream.Msg()
-		// Heartbeat = empty event (no strategies field set)
-		if len(event.GetStrategies()) == 0 {
+		// Heartbeat = empty event with heartbeat flag set
+		if event.GetHeartbeat() {
 			heartbeatReceived = true
 		}
 	}

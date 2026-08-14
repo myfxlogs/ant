@@ -438,7 +438,7 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 				return err
 			}
 		case <-heartbeat.C:
-			if err := stream.Send(&antv1.WatchActiveStrategiesEvent{}); err != nil {
+			if err := stream.Send(&antv1.WatchActiveStrategiesEvent{Heartbeat: true}); err != nil {
 				return err
 			}
 		}

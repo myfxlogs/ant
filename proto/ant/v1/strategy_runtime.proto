@@ -539,6 +539,7 @@ message WatchActiveStrategiesRequest {
 
 message WatchActiveStrategiesEvent {
   repeated ActiveStrategy strategies = 1;
+  bool heartbeat = 2;
 }
 
 // ── Strategy version management ──────────────────────────────────────

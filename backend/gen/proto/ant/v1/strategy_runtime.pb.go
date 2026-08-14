@@ -3901,6 +3901,7 @@ func (x *WatchActiveStrategiesRequest) GetAccountId() string {
 type WatchActiveStrategiesEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Strategies    []*ActiveStrategy      `protobuf:"bytes,1,rep,name=strategies,proto3" json:"strategies,omitempty"`
+	Heartbeat     bool                   `protobuf:"varint,2,opt,name=heartbeat,proto3" json:"heartbeat,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3940,6 +3941,13 @@ func (x *WatchActiveStrategiesEvent) GetStrategies() []*ActiveStrategy {
 		return x.Strategies
 	}
 	return nil
+}
+
+func (x *WatchActiveStrategiesEvent) GetHeartbeat() bool {
+	if x != nil {
+		return x.Heartbeat
+	}
+	return false
 }
 
 type StrategyVersionInfo struct {
@@ -5130,11 +5138,12 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x05error\x18\x03 \x01(\tR\x05error\"=\n" +
 	"\x1cWatchActiveStrategiesRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\"T\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"r\n" +
 	"\x1aWatchActiveStrategiesEvent\x126\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x16.ant.v1.ActiveStrategyR\n" +
-	"strategies\"\xfb\x01\n" +
+	"strategies\x12\x1c\n" +
+	"\theartbeat\x18\x02 \x01(\bR\theartbeat\"\xfb\x01\n" +
 	"\x13StrategyVersionInfo\x12\x1d\n" +
 	"\n" +
 	"version_id\x18\x01 \x01(\tR\tversionId\x12%\n" +

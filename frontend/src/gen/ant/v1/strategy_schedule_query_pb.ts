@@ -6,13 +6,15 @@ import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { StrategySchedule } from "./strategy_schedule_entity_pb";
 import { file_strategy_schedule_entity } from "./strategy_schedule_entity_pb";
+import type { MtPositionSnapshotItem } from "./mt_position_snapshot_pb";
+import { file_mt_position_snapshot } from "./mt_position_snapshot_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file strategy_schedule_query.proto.
  */
 export const file_strategy_schedule_query: GenFile = /*@__PURE__*/
-  fileDesc("Ch1zdHJhdGVneV9zY2hlZHVsZV9xdWVyeS5wcm90bxIGYW50LnYxIhYKFExpc3RTY2hlZHVsZXNSZXF1ZXN0IkQKFUxpc3RTY2hlZHVsZXNSZXNwb25zZRIrCglzY2hlZHVsZXMYASADKAsyGC5hbnQudjEuU3RyYXRlZ3lTY2hlZHVsZSIgChJHZXRTY2hlZHVsZVJlcXVlc3QSCgoCaWQYASABKAlCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_strategy_schedule_entity]);
+  fileDesc("Ch1zdHJhdGVneV9zY2hlZHVsZV9xdWVyeS5wcm90bxIGYW50LnYxIhYKFExpc3RTY2hlZHVsZXNSZXF1ZXN0IkQKFUxpc3RTY2hlZHVsZXNSZXNwb25zZRIrCglzY2hlZHVsZXMYASADKAsyGC5hbnQudjEuU3RyYXRlZ3lTY2hlZHVsZSIgChJHZXRTY2hlZHVsZVJlcXVlc3QSCgoCaWQYASABKAkiMgobR2V0U2NoZWR1bGVQb3NpdGlvbnNSZXF1ZXN0EhMKC3NjaGVkdWxlX2lkGAEgASgJIlEKHEdldFNjaGVkdWxlUG9zaXRpb25zUmVzcG9uc2USMQoJcG9zaXRpb25zGAEgAygLMh4uYW50LnYxLk10UG9zaXRpb25TbmFwc2hvdEl0ZW1CI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_strategy_schedule_entity, file_mt_position_snapshot]);
 
 /**
  * @generated from message ant.v1.ListSchedulesRequest
@@ -60,4 +62,38 @@ export type GetScheduleRequest = Message<"ant.v1.GetScheduleRequest"> & {
  */
 export const GetScheduleRequestSchema: GenMessage<GetScheduleRequest> = /*@__PURE__*/
   messageDesc(file_strategy_schedule_query, 2);
+
+/**
+ * @generated from message ant.v1.GetSchedulePositionsRequest
+ */
+export type GetSchedulePositionsRequest = Message<"ant.v1.GetSchedulePositionsRequest"> & {
+  /**
+   * @generated from field: string schedule_id = 1;
+   */
+  scheduleId: string;
+};
+
+/**
+ * Describes the message ant.v1.GetSchedulePositionsRequest.
+ * Use `create(GetSchedulePositionsRequestSchema)` to create a new message.
+ */
+export const GetSchedulePositionsRequestSchema: GenMessage<GetSchedulePositionsRequest> = /*@__PURE__*/
+  messageDesc(file_strategy_schedule_query, 3);
+
+/**
+ * @generated from message ant.v1.GetSchedulePositionsResponse
+ */
+export type GetSchedulePositionsResponse = Message<"ant.v1.GetSchedulePositionsResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.MtPositionSnapshotItem positions = 1;
+   */
+  positions: MtPositionSnapshotItem[];
+};
+
+/**
+ * Describes the message ant.v1.GetSchedulePositionsResponse.
+ * Use `create(GetSchedulePositionsResponseSchema)` to create a new message.
+ */
+export const GetSchedulePositionsResponseSchema: GenMessage<GetSchedulePositionsResponse> = /*@__PURE__*/
+  messageDesc(file_strategy_schedule_query, 4);
 

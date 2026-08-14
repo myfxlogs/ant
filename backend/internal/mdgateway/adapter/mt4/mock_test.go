@@ -320,6 +320,7 @@ func (m *mockSubCli) SubscribeQuoteHistory(ctx context.Context, in *pb.Subscribe
 
 // mockTradingClient implements pb.TradingClient for testing order operations.
 type mockTradingClient struct {
+	lastOrderSend  *pb.OrderSendRequest
 	orderSendRes   *pb.OrderSendReply
 	orderSendErr   error
 	orderCloseRes  *pb.OrderCloseReply
@@ -329,6 +330,7 @@ type mockTradingClient struct {
 }
 
 func (m *mockTradingClient) OrderSend(ctx context.Context, in *pb.OrderSendRequest, opts ...grpc.CallOption) (*pb.OrderSendReply, error) {
+	m.lastOrderSend = in
 	return m.orderSendRes, m.orderSendErr
 }
 func (m *mockTradingClient) OrderModify(ctx context.Context, in *pb.OrderModifyRequest, opts ...grpc.CallOption) (*pb.OrderModifyReply, error) {

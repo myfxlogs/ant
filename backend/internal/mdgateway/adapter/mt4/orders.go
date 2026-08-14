@@ -63,6 +63,7 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		Price:      price,
 		Stoploss:   req.StopLoss.InexactFloat64(),
 		Takeprofit: req.TakeProfit.InexactFloat64(),
+		Magic:      req.Magic,
 	})
 	if err != nil {
 		if g.breaker != nil {

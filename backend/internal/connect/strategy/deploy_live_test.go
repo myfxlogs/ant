@@ -58,8 +58,15 @@ func (m *mockOrderExecutor) FetchOpenedOrders(_ context.Context) ([]*mthub.Order
 func (m *mockOrderExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*mthub.OrderRecord, error) {
 	return nil, nil
 }
-func (m *mockOrderExecutor) FetchSymbolParams(_ context.Context, _ []string) ([]*mthub.SymbolParam, error) {
-	return nil, nil
+func (m *mockOrderExecutor) FetchSymbolParams(_ context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {
+	if len(canonicals) == 0 {
+		return nil, nil
+	}
+	return []*mthub.SymbolParam{{
+		Canonical:    canonicals[0],
+		ContractSize: decimal.NewFromInt(100000),
+		LotSize:      decimal.NewFromInt(100000),
+	}}, nil
 }
 func (m *mockOrderExecutor) FetchAllSymbols(_ context.Context) ([]string, error) { return nil, nil }
 func (m *mockOrderExecutor) FetchPriceHistory(_ context.Context, _ string, _ string, _, _ int64, _ int) ([]*mthub.Bar, error) {

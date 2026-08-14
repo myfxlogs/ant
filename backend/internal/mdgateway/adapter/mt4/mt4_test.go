@@ -849,6 +849,34 @@ func TestPlaceOrder_Success(t *testing.T) {
 	}
 }
 
+// ARCH-4-MT4-MAGIC: verify Magic is passed to mtapi OrderSend.
+// Adversarial: remove `Magic: req.Magic` in orders.go → in.Magic == 0 != 42 (RED).
+func TestPlaceOrder_PassesMagic(t *testing.T) {
+	t.Parallel()
+	mock := &mockTradingClient{
+		orderSendRes: &pb.OrderSendReply{
+			Result: &pb.Order{Ticket: 12345},
+		},
+	}
+	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
+	gw.sessionID = "sid"
+	gw.tradingCli = mock
+	_, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+		Canonical: "EURUSD", Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
+		Volume: decimal.NewFromFloat(0.1), Price: decimal.NewFromFloat(1.1000),
+		Magic: 42,
+	})
+	if err != nil {
+		t.Fatalf("PlaceOrder: %v", err)
+	}
+	if mock.lastOrderSend == nil {
+		t.Fatal("OrderSend not called")
+	}
+	if mock.lastOrderSend.Magic != 42 {
+		t.Fatalf("OrderSend.Magic = %d, want 42 (adversarial: remove `Magic: req.Magic` → RED)", mock.lastOrderSend.Magic)
+	}
+}
+
 func TestPlaceOrder_ErrorCode(t *testing.T) {
 	t.Parallel()
 	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())

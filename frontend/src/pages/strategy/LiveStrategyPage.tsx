@@ -83,7 +83,7 @@ export default function LiveStrategyPage() {
         try {
           setLoading(true);
           for await (const event of strategyActiveApi.watchActive('', ctrl.signal)) {
-            if (!event.strategies?.length) continue; // skip heartbeat keepalive
+            if (event.heartbeat) continue; // skip heartbeat keepalive
             setActiveStrategies((event.strategies || []) as ActiveStrategy[]);
             setLoading(false);
             setStreamError(false);
@@ -150,7 +150,7 @@ export default function LiveStrategyPage() {
     { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{fmtAccount(v)}</Text> },
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
     { title: t('strategy.live.price', { defaultValue: 'Price' }), dataIndex: 'bid', width: 100, render: (_: string, record: ActiveStrategy) => {
-      const stale = secondsSince(record.lastTickAt) > 60;
+      const stale = record.lastTickAt ? secondsSince(record.lastTickAt) > 60 : false;
       if (!record.bid && !record.ask) return <Text type="secondary">-</Text>;
       const spread = record.bid && record.ask ? ` / ${record.ask}` : '';
       return (
@@ -163,8 +163,12 @@ export default function LiveStrategyPage() {
       );
     } },
     { title: t('strategy.live.lastSignal', { defaultValue: 'Last Signal' }), dataIndex: 'lastSignalAt', width: 110, render: (_: { seconds?: bigint; nanos?: number } | null, record: ActiveStrategy) => {
+      if (!record.lastSignalAt) return <Text type="secondary">-</Text>;
       const s = secondsSince(record.lastSignalAt);
-      return <Text style={{ fontSize: 12 }} type={s > 300 ? 'warning' : undefined}>{formatAgo(record.lastSignalAt)}</Text>;
+      let type = undefined;
+      if (s > 15 * 60) type = 'secondary';
+      else if (s > 300) type = 'warning';
+      return <Text style={{ fontSize: 12 }} type={type}>{formatAgo(record.lastSignalAt)}</Text>;
     } },
     { title: t('strategy.live.pnl', { defaultValue: 'PnL' }), dataIndex: 'pnl', width: 90, render: (_: string, record: ActiveStrategy) => {
       if (!record.pnl) return <Text type="secondary">-</Text>;
