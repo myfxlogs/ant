@@ -1,49 +1,66 @@
-# 施工交接：Live 页 2-Tab 重设计（策略为中心）+ MARGIN-GATE-2 补全
+# 施工交接：Live 页 2-Tab 重设计（策略为中心）——批次 B（前端本体）
 
-> **审计方定论 2026-08-15（自审修正版）。** 用户以第一真实用户身份否决旧 3-tab（持仓不可见/日志埋弹窗/管理动作跨 tab）。改为 2-tab 策略为中心。**原口头方案经自审发现 2 个技术缺陷，本文件是修正版**。
+> **审计方定论 2026-08-15（2026-08-15 二次更新：前置全部就绪，本文件现为 §3-only 现状版）。** 用户以第一真实用户身份否决旧 3-tab（持仓不可见/日志埋弹窗/管理动作跨 tab）。改为 2-tab 策略为中心。
 >
-> **前置**：MARGIN-GATE-2（本文 §0）先行或同批——margin 已修部分（overlay+杠杆），剩 2 处。
+> **前置状态（全部 ✅，无需再做）**：
+> - §0 MARGIN-GATE-2 ✅done（margin fail-closed + USD 公式，生产验证 0 拒单）
+> - §2 批次 A ✅done（magic 全链：MT4 下单传 magic / PositionSnapshotItem.magic_number / `GetSchedulePositions` RPC + 对抗测试）
+> - 双流字段全就绪：`StrategySchedule.is_running/active_run_id/signal_count` + `ActiveStrategy.pnl/last_signal_at/last_tick_at/schedule_id(=13)/strategy_name(=14)`
+>
+> **铁律**：对抗证明 + commit + 部署 + 回填 registry + 不自行宣告完成。
 
 ---
 
-## §0 MARGIN-GATE-2（先做，小）：补 margin 修复的遗漏 2 处
+## §3 前端 2-Tab 本体（本批唯一任务）
 
-已修：ContractSize overlay（service_orders.go SymbolParams 覆盖）+ SymbolLeverage（handlers_pipeline provider）。**遗漏**：
-- **①** `risk/rules.go:38-43` contractSize() helper：state.ContractSize 为零时**静默默认 100000**——删默认；为零 → MarginPreCheck **fail-closed**（reason="contract size unknown for symbol X"，别静默当外汇）。
-- **④** `risk/rules.go:325` 公式 `vol×price×CS÷lev`：**USD 本位币对（USD 开头：USDJPY/USDCAD/USDCHF）不应乘 price**（名义价值在 USD 本位币，price 是 USD→计价币汇率不是仓位大小）→ USDJPY 膨胀 ~150 倍全拒。改 `vol×CS×汇率÷lev`：symbol 以 "USD" 开头 → 汇率=1；否则（crypto/金属/EUR 本位）汇率=price。USD 账户假设，跨币对（EURGBP）近似写注释。
-- **核实**：overlay 的 `SymbolParam.LotSize`（service_orders.go:171 / order_types.go:37）映射的是 proto `SymbolParams.ContractSize`（字段12）还是 min-lot？若语义不明 → 适配层加明确 `ContractSize` 字段映射字段12，**别用 LotSize**（若是 min-lot=0.01 → 保证金 $0.06 fail-open 裸奔）。
-- **对抗**：USDJPY 0.01 lot → 旧 required≈$150,000 拒单 RED / 新 required≈$100（vol×100000÷100）GREEN；BTCUSDm 回归 ≈$6.33；fail-closed：mock 查不到 ContractSize → 拒单 reason 含 "contract size unknown"（删 fail-closed 分支→静默默认 RED）。
+### Tab1「我的策略」——双流 join 一张表
 
-## §1 重设计架构（修正版，与口头版的关键差异）
+**数据源（全部已存在，勿新建流）**：
+- `strategy-schedules.ts` 的 `watchSchedules` 流（低频）——配置态 + `isRunning/activeRunId/signalCount`（`libraryTypes.ts:20-22`）
+- `LiveStrategyPage.tsx:85` 的 `watchActive` 流（高频）——`pnl/bid/ask/lastSignalAt/lastTickAt/lastError/scheduleId`
+- **join 键**：`schedule.id ↔ active.scheduleId`（`ActiveStrategy.schedule_id=13` 已有；`activeRunId` 冗余可用但 scheduleId 是主键关联）
 
-**❌ 原方案缺陷 1**：把 pnl/bid/ask 塞进 WatchSchedules——错。schedule watch 只在调度变更/ticker 时推，**pnl/报价是每 tick 变的**，塞进去 = 表里价格永远 stale。
-**✅ 修正**：**前端双流 join**——两个流都已存在且刚加好字段：
-- `watchSchedules` 流：配置 + 运行状态（is_running/active_run_id/signal_count）——低频。
-- `watchActive` 流：实时指标（pnl/bid/ask/last_signal_at/last_tick_at/last_error）——高频（tick 节流推送）。
-- 前端按 `schedule_id ↔ active_run_id` join 成一张表。**后端批次 A 只需做 §2 持仓查询，不再动 WatchSchedules。**
+**列**（join 后一行 = 一个 schedule）：
+`[策略名 | Symbol/TF | 账户 | 状态(绿●运行中 isRunning+active/黄○已启用未运行 isActive/灰○停用) | 报价(stale标记复用现 :153 逻辑) | 信号数+最后时间(复用 :165 灰/橙档) | PnL(复用 :172 绿红) | 错误(tooltip) | 操作(▶启用/⏹停用/⚡立即运行/✎编辑)]`
 
-**❌ 原方案缺陷 2**：per-strategy 持仓按 magic 过滤——但 `PositionSnapshotItem`（mthub/broker_types.go:28）**没有 magic_number 字段**，无法过滤。
-**✅ 修正**：§2 必须先把 magic 打通进持仓数据，才能过滤。
+操作全按 schedule_id：`toggleSchedule`（strategy-schedules.ts）/ `onManualTrigger`（LiveSchedulesTab.tsx:122 现成，**含 #2 修复后的 params 传递**）/ 编辑跳现有表单。
 
-## §2 批次 A（后端）
+**状态合并逻辑**：`isRunning`（schedule 流）为准显示运行状态；`activeRunId` 存在 → 从 active 流 join 指标列；**不存在 → 指标列全 "-"**（红队 #3：别崩）。active 流里有孤儿 run（无对应 schedule，如手动 paper 测试）→ 表底单独小节"临时运行"展示（别丢，用户在测的策略）。
 
-1. **magic 进持仓**：`mdtick.OrderUpdate` 捕获 magic（mtapi OnOrderUpdate 的 order 数据带 magic；adapter 侧确认字段映射）→ `PositionSnapshotItem` 加 `MagicNumber int64`。
-2. **per-schedule 持仓查询 RPC**：`GetSchedulePositions(schedule_id)` → live：position snapshot 按 magic==strategyMagic(schedule_id) 过滤（paper：paperEngine 订单按 run 过滤）。返回 `[{ticket, symbol, side, volume, open_price, current_price, pnl, open_time}]`。**归属校验**：schedule 属当前 uid（复用 GetSchedule 的 user 过滤）。
-3. proto 改动 `buf generate`。
-- **对抗**：mock 两策略（magic A/B）各一仓 → GetSchedulePositions(A) 只回 A 的仓（B 的混入 RED）；删 magic 过滤 → 混入 RED。
+### 行展开（点行，非弹窗）
 
-## §3 批次 B（前端，A 完工验收后）
+Table `expandable.expandedRowRender`，四个内嵌区（tab 或纵向堆叠，选简单的）：
+1. **持仓**：`strategyClient.getSchedulePositions(scheduleId)`（`strategy_pb.ts:127` 已生成 client）。刷新遵循 push-first：展开时拉一次 + `watchActive` 推送时刷新（active 事件带 pnl 变化即重拉），**勿 setInterval 轮询**（红队 #4）。
+2. **最近信号**：现有 signals 数据源（watchSignals / 已有 signal log 数据），最近 20 条时间线。
+3. **运行日志**：`logClient.getScheduleRunLogs`（`log.ts:86` 现成，带分页）。
+4. **配置摘要**：symbol/timeframe/参数/schedule_type + 「编辑」跳现有编辑入口。
 
-1. **Tab1「我的策略」**：一张表，双流 join（§1）：
-   `[策略名 | Symbol/TF | 账户 | 状态(绿●运行中/黄○已启用未运行/灰○停用) | 报价(stale标记) | 信号+最后时间 | PnL(绿红) | 错误(tooltip) | 操作(▶/⏹/✎/⚡)]`
-   操作全部按 schedule_id（toggle/stop/edit/runNow 的 RPC 均已有）。
-2. **行展开**（点行，非弹窗）：四个内嵌区——持仓（§2 RPC，实时刷新）/ 最近信号（最近20，时间线）/ 运行日志（schedule_run_logs）/ 配置摘要+编辑。
-3. **Tab2「运行历史」**：保留现表。**删** Active Runs、Schedules 两 tab。
-4. 空态 CTA「创建策略」；paper/live Tag 区分。
+### Tab2「运行历史」
+保留现有 Run History 表（`LiveStrategyPage.tsx:222` 块原样迁移）。**删除 Active Runs、Schedules 两个 tab**（它们的全部信息已被 Tab1 吸收）。
+
+### 其他
+- URL `?tab=` 参数兼容：`active|schedules` → 都映射到新 Tab1；`history` → Tab2。
+- 空态 CTA「创建策略」（现 :245 Empty 组件迁移）。
+- paper/live Tag 区分（cfg.Mode 或 schedule 上标注）。
+- **LiveStrategyPage.tsx 拆分注意**：现 305 行（🟡 超标 22%），新表组件抽独立文件（如 `components/live/MyStrategiesTable.tsx` + `ScheduleExpandedRow.tsx`），主页面只留 tab 骨架 + 流管理。**拆后 check-file-lines --strict 必须 0 ERROR**。
+- i18n：新 key 走 `t('strategy.live.*', { defaultValue })` + gen-missing + **translate-zh-cn + translate-llm 四 locale**（别只 gen 不翻，PIPE-F5 教训）。
+
+---
+
+## 验收标准（审计方将逐项核）
+
+1. 双流 join 正确：运行中策略行有实时指标；未运行策略行指标 "-" 不崩。
+2. 行展开四区数据真实（持仓含 magic 过滤后的本策略仓位——用生产 MT4 账户验证）。
+3. 旧 3-tab 删除干净（无死代码/死 i18n key）。
+4. 对抗证明：删 join 逻辑 → 运行中行指标全 "-"（RED）；删展开区持仓拉取 → 展开空（RED）。vitest 组件测试或最小渲染测试。
+5. `?tab=schedules` 旧链接落到 Tab1 不 404。
+6. strict 0 ERROR + tsc 0 err + npm build + vitest 全绿。
 
 ## 红队自审
-- [ ] §0 ④ 汇率规则只适用 USD 账户——非 USD 账户先 fail-closed 拒（别算错）。
-- [ ] §2 magic 映射：MT4 order 的 magic 在 OnOrderUpdate 里是否真的推送？先抓一次真实 OrderUpdate 验证字段存在再写过滤。
-- [ ] §3 join 键：active_run_id 为空（未运行）→ 表里该行指标列显示 "-"，别崩。
-- [ ] 展开区持仓刷新别轮询过频（10s 或 SSE，遵循 push-first）。
-- [ ] proto 改动 buf generate；全部 commit + 部署 + 回填 registry（**勿再只留 handoff 不回填**）。
+- [ ] join 键用 scheduleId（非 activeRunId——它是派生值）。
+- [ ] active 流孤儿 run（手动 paper 测试）别静默丢——"临时运行"小节。
+- [ ] 展开持仓刷新非轮询（push-first）。
+- [ ] schedule_id 为空的手动 run（无 schedule）在 join 时容错。
+- [ ] i18n 四 locale 真翻译（非英文兜底）。
+- [ ] 主页面文件不超线（新组件抽文件）。
+- [ ] 完工回填 registry（新增 LIVE-REDESIGN 条目 → ✅done + 对抗证明）+ handover 变更日志。
