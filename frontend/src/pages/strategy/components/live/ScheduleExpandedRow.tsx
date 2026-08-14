@@ -1,0 +1,168 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Table, Tag, Typography, Tabs, Descriptions, Empty, Spin } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { strategyClient } from '@/client/connect';
+import { logApi } from '@/client/log';
+import type { MtPositionSnapshotItem } from '@/gen/ant/v1/mt_position_snapshot_pb';
+import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
+import type { ActiveStrategy, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
+import { strategyActiveApi } from '@/client/strategy';
+import { formatTime, shortId } from '../../LiveStrategyPageSignalDrawer';
+import type { ScheduleRow } from '../../hooks/libraryTypes';
+
+const { Text } = Typography;
+
+interface JoinedRow extends ScheduleRow {
+  active?: ActiveStrategy;
+}
+
+interface Props {
+  row: JoinedRow;
+  activeVersion: number;
+}
+
+export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
+  const { t } = useTranslation();
+  const [positions, setPositions] = useState<MtPositionSnapshotItem[]>([]);
+  const [positionsLoading, setPositionsLoading] = useState(false);
+  const [logs, setLogs] = useState<ScheduleRunLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [signals, setSignals] = useState<StrategySignalEvent[]>([]);
+  const [signalsLoading, setSignalsLoading] = useState(false);
+  const signalAbortRef = useRef<AbortController | null>(null);
+
+  const fetchPositions = useCallback(async () => {
+    if (!row.id) return;
+    setPositionsLoading(true);
+    try {
+      const resp = await strategyClient.getSchedulePositions({ scheduleId: row.id });
+      setPositions(resp.positions || []);
+    } catch { setPositions([]); }
+    setPositionsLoading(false);
+  }, [row.id]);
+
+  const fetchLogs = useCallback(async () => {
+    if (!row.id) return;
+    setLogsLoading(true);
+    try {
+      const resp = await logApi.getScheduleRunLogs({ scheduleId: row.id, page: 1, pageSize: 20 });
+      setLogs(resp.logs || []);
+    } catch { setLogs([]); }
+    setLogsLoading(false);
+  }, [row.id]);
+
+  const fetchSignals = useCallback(async () => {
+    const runId = row.active?.runId;
+    if (!runId) { setSignals([]); return; }
+    if (signalAbortRef.current) signalAbortRef.current.abort();
+    const ctrl = new AbortController();
+    signalAbortRef.current = ctrl;
+    setSignalsLoading(true);
+    (async () => {
+      try {
+        for await (const ev of strategyActiveApi.watchSignals(runId, ctrl.signal)) {
+          if (!ev.signalType) continue;
+          setSignals(prev => [...prev.slice(-19), ev as StrategySignalEvent]);
+        }
+      } catch { /* stream ended */ }
+      setSignalsLoading(false);
+    })();
+  }, [row.active?.runId]);
+
+  useEffect(() => {
+    void fetchPositions();
+    void fetchLogs();
+    void fetchSignals();
+    return () => { if (signalAbortRef.current) signalAbortRef.current.abort(); };
+  }, [fetchPositions, fetchLogs, fetchSignals]);
+
+  useEffect(() => {
+    if (activeVersion > 0 && row.active) void fetchPositions();
+  }, [activeVersion, row.active, fetchPositions]);
+
+  const positionColumns = [
+    { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
+    { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
+    { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70 },
+    { title: t('common.openPrice', { defaultValue: 'Open Price' }), dataIndex: 'openPrice', width: 90 },
+    { title: t('common.currentPrice', { defaultValue: 'Current' }), dataIndex: 'currentPrice', width: 90 },
+    { title: t('strategy.live.pnl', { defaultValue: 'PnL' }), dataIndex: 'profit', width: 80, render: (v: string) => {
+      if (!v) return <Text type="secondary">-</Text>;
+      const n = Number(v); const color = n >= 0 ? 'success' : 'danger';
+      return <Text type={color}>{n >= 0 ? `+${v}` : v}</Text>;
+    } },
+    { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 80, render: (v: string) => v || '-' },
+    { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 80, render: (v: string) => v || '-' },
+  ];
+
+  const signalColumns = [
+    { title: t('strategy.live.time', { defaultValue: 'Time' }), dataIndex: 'timestamp', width: 140, render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text> },
+    { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'signalType', width: 80, render: (v: string) => <Tag color={v === 'buy' || v === 'buy_limit' ? 'green' : v === 'sell' || v === 'sell_limit' ? 'red' : 'default'}>{v}</Tag> },
+    { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70 },
+    { title: t('strategy.live.price', { defaultValue: 'Price' }), dataIndex: 'price', width: 80 },
+  ];
+
+  const logColumns = [
+    { title: t('strategy.live.time', { defaultValue: 'Time' }), dataIndex: 'createdAt', width: 140, render: (v: unknown) => <Text style={{ fontSize: 12 }}>{formatTime(v as { seconds?: bigint; nanos?: number } | null)}</Text> },
+    { title: t('common.status', { defaultValue: 'Status' }), dataIndex: 'status', width: 80, render: (v: string) => <Tag color={v === 'success' ? 'green' : v === 'failed' ? 'red' : 'default'}>{v}</Tag> },
+    { title: t('common.message', { defaultValue: 'Message' }), dataIndex: 'message', ellipsis: true, render: (v: string) => v ? <Text style={{ fontSize: 12 }}>{v}</Text> : <Text type="secondary">-</Text> },
+  ];
+
+  const paramsStr = row.parameters ? Object.entries(row.parameters).map(([k, v]) => `${k}=${v}`).join(', ') : '-';
+
+  return (
+    <Tabs
+      size="small"
+      items={[
+        {
+          key: 'positions',
+          label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
+          children: (
+            <Spin spinning={positionsLoading}>
+              <Table size="small" dataSource={positions} rowKey="ticket" columns={positionColumns} pagination={false}
+                locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
+            </Spin>
+          ),
+        },
+        {
+          key: 'signals',
+          label: <span>{t('strategy.live.signals', { defaultValue: 'Signals' })} {signals.length > 0 && <Tag color="blue">{signals.length}</Tag>}</span>,
+          children: (
+            <Spin spinning={signalsLoading}>
+              <Table size="small" dataSource={signals} rowKey={(_r, i) => String(i)} columns={signalColumns} pagination={false}
+                locale={{ emptyText: <Empty description={t('strategy.live.waitingSignals', { defaultValue: 'Waiting for signals...' })} /> }} />
+            </Spin>
+          ),
+        },
+        {
+          key: 'logs',
+          label: t('strategy.live.logs', { defaultValue: 'Logs' }),
+          children: (
+            <Spin spinning={logsLoading}>
+              <Table size="small" dataSource={logs} rowKey="id" columns={logColumns} pagination={false}
+                locale={{ emptyText: <Empty description={t('common.noData', { defaultValue: 'No data' })} /> }} />
+            </Spin>
+          ),
+        },
+        {
+          key: 'config',
+          label: t('strategy.live.config', { defaultValue: 'Config' }),
+          children: (
+            <Descriptions size="small" column={2} bordered>
+              <Descriptions.Item label={t('strategy.live.symbol', { defaultValue: 'Symbol' })}>{row.symbol}</Descriptions.Item>
+              <Descriptions.Item label={t('strategy.live.timeframe', { defaultValue: 'TF' })}>{row.timeframe}</Descriptions.Item>
+              <Descriptions.Item label={t('strategy.schedules.table.schedule', { defaultValue: 'Schedule' })}>{row.scheduleType}</Descriptions.Item>
+              <Descriptions.Item label={t('strategy.live.mode', { defaultValue: 'Mode' })}>{row.active?.mode || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('strategy.live.parameters', { defaultValue: 'Parameters' })} span={2}>{paramsStr}</Descriptions.Item>
+              {row.active && (
+                <Descriptions.Item label={t('strategy.live.runId', { defaultValue: 'Run ID' })}>
+                  <Text code>{shortId(row.active.runId)}</Text>
+                </Descriptions.Item>
+              )}
+            </Descriptions>
+          ),
+        },
+      ]}
+    />
+  );
+}

@@ -3433,6 +3433,42 @@ export const STRATEGY_LIVE_SIGNAL_LOG_KEY = 'strategy.live.signalLog' as const;
 /** strategy.live.waitingSignals */
 export const STRATEGY_LIVE_WAITING_SIGNALS_KEY = 'strategy.live.waitingSignals' as const;
 
+/** strategy.live.myStrategies */
+export const STRATEGY_LIVE_MY_STRATEGIES_KEY = 'strategy.live.myStrategies' as const;
+
+/** strategy.live.temporaryRuns */
+export const STRATEGY_LIVE_TEMPORARY_RUNS_KEY = 'strategy.live.temporaryRuns' as const;
+
+/** strategy.live.positions */
+export const STRATEGY_LIVE_POSITIONS_KEY = 'strategy.live.positions' as const;
+
+/** strategy.live.noPositions */
+export const STRATEGY_LIVE_NO_POSITIONS_KEY = 'strategy.live.noPositions' as const;
+
+/** strategy.live.config */
+export const STRATEGY_LIVE_CONFIG_KEY = 'strategy.live.config' as const;
+
+/** strategy.live.parameters */
+export const STRATEGY_LIVE_PARAMETERS_KEY = 'strategy.live.parameters' as const;
+
+/** strategy.live.runStarted */
+export const STRATEGY_LIVE_RUN_STARTED_KEY = 'strategy.live.runStarted' as const;
+
+/** strategy.live.runStartFailed */
+export const STRATEGY_LIVE_RUN_START_FAILED_KEY = 'strategy.live.runStartFailed' as const;
+
+/** common.status */
+export const COMMON_STATUS_KEY = 'common.status' as const;
+
+/** common.message */
+export const COMMON_MESSAGE_KEY = 'common.message' as const;
+
+/** common.openPrice */
+export const COMMON_OPEN_PRICE_KEY = 'common.openPrice' as const;
+
+/** common.currentPrice */
+export const COMMON_CURRENT_PRICE_KEY = 'common.currentPrice' as const;
+
 /** strategy.schedule.maxPositionsPlaceholder */
 export const STRATEGY_SCHEDULE_MAX_POSITIONS_PLACEHOLDER_KEY = 'strategy.schedule.maxPositionsPlaceholder' as const;
 
@@ -5964,6 +6000,18 @@ export const BASE_KEYS = {
   strategy_live_reason: '__root__.strategy.live.reason',
   strategy_live_signal_log: '__root__.strategy.live.signalLog',
   strategy_live_waiting_signals: '__root__.strategy.live.waitingSignals',
+  strategy_live_my_strategies: '__root__.strategy.live.myStrategies',
+  strategy_live_temporary_runs: '__root__.strategy.live.temporaryRuns',
+  strategy_live_positions: '__root__.strategy.live.positions',
+  strategy_live_no_positions: '__root__.strategy.live.noPositions',
+  strategy_live_config: '__root__.strategy.live.config',
+  strategy_live_parameters: '__root__.strategy.live.parameters',
+  strategy_live_run_started: '__root__.strategy.live.runStarted',
+  strategy_live_run_start_failed: '__root__.strategy.live.runStartFailed',
+  common_status: '__root__.common.status',
+  common_message: '__root__.common.message',
+  common_open_price: '__root__.common.openPrice',
+  common_current_price: '__root__.common.currentPrice',
   strategy_schedule_max_positions_placeholder: '__root__.strategy.schedule.maxPositionsPlaceholder',
   marketplace_publish_price_model_free: '__root__.marketplace.publish.priceModel.free',
   marketplace_publish_price_model_subscription: '__root__.marketplace.publish.priceModel.subscription',

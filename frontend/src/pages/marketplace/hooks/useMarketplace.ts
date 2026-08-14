@@ -157,7 +157,7 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
         btn: createElement(Button, {
           type: 'primary',
           size: 'small',
-          onClick: () => { notification.destroy(); navigate('/strategy/live?tab=schedules'); },
+          onClick: () => { notification.destroy(); navigate('/strategy/live?tab=strategies'); },
         }, t('marketplace.payment.goDeploy', { defaultValue: 'Deploy Now' })),
         duration: 0,
         placement: 'topRight',
@@ -198,7 +198,7 @@ export function useMarketplace(): Omit<MarketplaceCtx, 'compareIds' | 'toggleCom
         btn: createElement(Button, {
           type: 'primary',
           size: 'small',
-          onClick: () => { notification.destroy(); navigate('/strategy/live?tab=schedules'); },
+          onClick: () => { notification.destroy(); navigate('/strategy/live?tab=strategies'); },
         }, t('marketplace.payment.goDeploy', { defaultValue: 'Deploy Now' })),
         duration: 0,
         placement: 'topRight',

@@ -34,7 +34,7 @@ function formatTime(v: unknown): string {
   const ms = typeof v === 'bigint' ? Number(v) : typeof v === 'number' ? v : 0;
   return ms ? new Date(ms).toLocaleString() : '-';
 }
-export function getEnableNavigateTarget(next: boolean): string | null { return next ? '/strategy/live?tab=active' : null; }
+export function getEnableNavigateTarget(next: boolean): string | null { return next ? '/strategy/live?tab=strategies' : null; }
 
 export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { highlightScheduleId?: string | null; healthId?: string | null }) {
   const { t } = useTranslation();

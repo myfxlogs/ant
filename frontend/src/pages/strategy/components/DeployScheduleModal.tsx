@@ -90,7 +90,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
       onCreated?.();
       onClose();
       if (created?.id) {
-        navigate(`/strategy/live?tab=schedules&scheduleId=${created.id}`);
+        navigate(`/strategy/live?tab=strategies&scheduleId=${created.id}`);
       }
     } catch (e: unknown) {
       if (e && typeof e === 'object' && 'errorFields' in e) return;
