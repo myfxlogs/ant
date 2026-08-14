@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { Table, Tag, Typography, Space, Button, Tooltip, Empty, Badge, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { PlayCircleOutlined, PauseCircleOutlined, ThunderboltOutlined, EditOutlined, FileTextOutlined, HeartOutlined, DeleteOutlined, MoreOutlined, CopyOutlined, RightOutlined, DownOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, PauseCircleOutlined, ThunderboltOutlined, EditOutlined, FileTextOutlined, HeartOutlined, DeleteOutlined, MoreOutlined, CopyOutlined, RightOutlined, DownOutlined, CodeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { ScheduleRow, TemplateOption, AccountRow } from '../../hooks/libraryTypes';
 import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb';
@@ -12,6 +12,7 @@ import { secondsSince, formatAgo } from './timeHelpers';
 import { isLogButtonDisabled, isHealthButtonDisabled } from './strategyJoin';
 import type { JoinedRow } from './strategyJoin';
 import { formatMode } from './formatMode';
+import { strategyMagic } from './strategyMagic';
 
 const { Text } = Typography;
 
@@ -26,6 +27,7 @@ interface Props {
   onToggleActive: (row: ScheduleRow, next: boolean) => void;
   onManualTrigger: (row: ScheduleRow) => void;
   onEdit: (row: ScheduleRow) => void;
+  onEditParams: (row: ScheduleRow) => void;
   onDelete: (row: ScheduleRow) => void;
   onShowLogs: (scheduleId: string) => void;
   onHealthCheck: (row: ScheduleRow) => void;
@@ -35,7 +37,7 @@ interface Props {
 
 export default function MyStrategiesTable({
   schedules, orphanRuns, templates, accounts, loading, activeVersion,
-  highlightScheduleId, onToggleActive, onManualTrigger, onEdit, onDelete,
+  highlightScheduleId, onToggleActive, onManualTrigger, onEdit, onEditParams, onDelete,
   onShowLogs, onHealthCheck, onStop, stopping,
 }: Props) {
   const { t } = useTranslation();
@@ -87,6 +89,13 @@ export default function MyStrategiesTable({
       ),
     },
     {
+      title: 'Magic', key: 'magic', width: 70,
+      render: (_: unknown, row: JoinedRow) => {
+        const m = strategyMagic(row.id);
+        return <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{m}</Text>;
+      },
+    },
+    {
       title: t('strategy.live.account', { defaultValue: 'Account' }),
       dataIndex: 'accountId', key: 'accountId', width: 110,
       render: (v: string) => <Text style={{ fontSize: 12 }}>{fmtAccount(v)}</Text>,
@@ -135,7 +144,7 @@ export default function MyStrategiesTable({
         return (
           <Space direction="vertical" size={0}>
             <Text strong>{a.signalCount}</Text>
-            <Text style={{ fontSize: 11 }} type={type}>{formatAgo(a.lastSignalAt)}</Text>
+            <Text style={{ fontSize: 11, textDecoration: 'none' }} type={type}>{formatAgo(a.lastSignalAt)}</Text>
           </Space>
         );
       },
@@ -172,11 +181,12 @@ export default function MyStrategiesTable({
         : <Text type="secondary">-</Text>,
     },
     {
-      title: '', key: 'actions', width: 120, fixed: 'right',
+      title: t('common.action', { defaultValue: 'Actions' }), key: 'actions', width: 120, fixed: 'right',
       render: (_: unknown, row: JoinedRow) => {
         const menuItems = [
           { key: 'run', icon: <ThunderboltOutlined />, label: t('strategy.schedules.actions.runNow', { defaultValue: 'Run Now' }), disabled: !row.isActive },
-          { key: 'edit', icon: <EditOutlined />, label: t('common.edit', { defaultValue: 'Edit' }) },
+          { key: 'editParams', icon: <EditOutlined />, label: t('strategy.live.editParams', { defaultValue: 'Edit Parameters' }) },
+          { key: 'editCode', icon: <CodeOutlined />, label: t('strategy.live.editStrategy', { defaultValue: 'Edit Strategy' }) },
           { key: 'logs', icon: <FileTextOutlined />, label: t('strategy.live.logs', { defaultValue: 'Logs' }), disabled: isLogButtonDisabled(row.id) },
           { key: 'health', icon: <HeartOutlined />, label: t('strategy.live.health', { defaultValue: 'Health' }), disabled: isHealthButtonDisabled(row.id) },
           ...(row.active || row.isActive ? [{ type: 'divider' as const }, { key: 'stop', icon: <PauseCircleOutlined />, label: t('strategy.live.stopAndDisable', { defaultValue: 'Stop & Disable' }), danger: true }] : []),
@@ -185,7 +195,8 @@ export default function MyStrategiesTable({
         ];
         const handleMenu = ({ key }: { key: string }) => {
           if (key === 'run') onManualTrigger(row);
-          else if (key === 'edit') onEdit(row);
+          if (key === 'editParams') onEditParams(row);
+          else if (key === 'editCode') onEdit(row);
           else if (key === 'logs') onShowLogs(row.id);
           else if (key === 'health') onHealthCheck(row);
           else if (key === 'stop') {
@@ -226,7 +237,7 @@ export default function MyStrategiesTable({
         rowClassName={(row) => row.id === highlightScheduleId ? 'schedule-row-highlight' : ''}
         expandable={{
           expandedRowKeys: expandedKeys,
-          onExpand: (expanded, row) => setExpandedKeys(expanded ? [...expandedKeys, row.id] : expandedKeys.filter(k => k !== row.id)),
+          onExpand: (expanded, row) => setExpandedKeys(expanded ? [row.id] : []),
           expandedRowRender: (row) => <ScheduleExpandedRow row={row} activeVersion={activeVersion} liveBid={row.active?.bid} liveAsk={row.active?.ask} />,
           rowExpandable: (row) => !!row.id,
           expandIcon: ({ expanded, onExpand, record }) => (

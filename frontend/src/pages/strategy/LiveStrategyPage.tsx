@@ -12,6 +12,7 @@ import ScheduleLogsModal from './components/ScheduleLogsModal';
 import ScheduleHealthModal from './components/ScheduleHealthModal';
 import MyStrategiesTable from './components/live/MyStrategiesTable';
 import RunHistoryTab from './components/live/RunHistoryTab';
+import EditParamsModal from './components/live/EditParamsModal';
 import { joinSchedulesWithActive, findOrphanRuns } from './components/live/strategyJoin';
 import type { JoinedRow } from './components/live/strategyJoin';
 import type { ScheduleRow, TemplateOption, ScheduleHealthSummary } from './hooks/libraryTypes';
@@ -156,6 +157,8 @@ export default function LiveStrategyPage() {
     else navigate('/strategy');
   }, [navigate]);
 
+  const [editParamsRow, setEditParamsRow] = useState<ScheduleRow | null>(null);
+
   const onDelete = useCallback(async (row: ScheduleRow) => {
     try {
       await strategyScheduleV2Api.delete(row.id);
@@ -204,7 +207,7 @@ export default function LiveStrategyPage() {
                 accounts={scheduleAccounts} loading={loading} activeVersion={activeVersion}
                 highlightScheduleId={highlightScheduleId}
                 onToggleActive={onToggleActive} onManualTrigger={onManualTrigger}
-                onEdit={onEdit} onDelete={onDelete}
+                onEdit={onEdit} onEditParams={(row) => setEditParamsRow(row)} onDelete={onDelete}
                 onShowLogs={(id) => setLogsModalScheduleId(id)}
                 onHealthCheck={onHealthCheck} onStop={handleStop} stopping={stopping}
               />
@@ -217,6 +220,13 @@ export default function LiveStrategyPage() {
           children: <RunHistoryTab />,
         },
       ]} />
+      <EditParamsModal
+        open={editParamsRow !== null}
+        schedule={editParamsRow}
+        accounts={scheduleAccounts}
+        onClose={() => setEditParamsRow(null)}
+        onUpdated={() => setActiveVersion(v => v + 1)}
+      />
 
       <ScheduleLogsModal open={logsModalScheduleId !== null} scheduleId={logsModalScheduleId}
         onClose={() => setLogsModalScheduleId(null)} />
