@@ -110,6 +110,9 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	d.mthubSvc.SetGate(gate)
 	posCache := strategy.NewPositionCache(d.log)
 	srv.SetPositionCache(posCache)
+	if d.strategyServer != nil {
+		d.strategyServer.SetPositionCache(posCache)
+	}
 	accountProvider := strategy.NewMTAccountStateProvider(d.hub, d.log)
 	accountProvider.SetPositionCache(posCache)
 	srv.SetAccountProvider(accountProvider)

@@ -12,7 +12,7 @@ import { secondsSince, formatAgo } from './timeHelpers';
 import { isLogButtonDisabled, isHealthButtonDisabled } from './strategyJoin';
 import type { JoinedRow } from './strategyJoin';
 import { formatMode } from './formatMode';
-import { strategyMagic } from './strategyMagic';
+
 
 const { Text } = Typography;
 
@@ -87,13 +87,6 @@ export default function MyStrategiesTable({
           <Text type="secondary" style={{ fontSize: 11 }}>{row.timeframe}</Text>
         </Space>
       ),
-    },
-    {
-      title: 'Magic', key: 'magic', width: 70,
-      render: (_: unknown, row: JoinedRow) => {
-        const m = strategyMagic(row.id);
-        return <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{m}</Text>;
-      },
     },
     {
       title: t('strategy.live.account', { defaultValue: 'Account' }),

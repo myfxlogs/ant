@@ -137,6 +137,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
 
   const positionColumns = [
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
+    { title: 'Magic', dataIndex: 'magicNumber', width: 70, render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
     { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
     { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70 },
     { title: t('common.openPrice', { defaultValue: 'Open Price' }), dataIndex: 'openPrice', width: 90 },
@@ -183,7 +184,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   return (
     <Tabs
       size="small"
-      style={{ marginLeft: -8 }}
+      style={{ marginLeft: 40 }}
       items={[
         {
           key: 'positions',
