@@ -280,7 +280,6 @@ func (s *StrategyExecutionServer) runLiveEventLoop(p liveEventLoopParams) {
 				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
 				return
 			}
-			diagBarRecv(s.log, p.cfg, bar)
 			// LIVE-1: extra-symbol context windows also use finalized bars only.
 			if bar.Closed && p.extraSymbolSet[bar.Symbol] && bar.Period == p.cfg.Timeframe {
 				handleExtraSymbolBar(bar, p.extraBars)
