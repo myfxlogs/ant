@@ -3856,6 +3856,969 @@ export const WALLET_WHITELIST_LABEL_LABEL_KEY = 'wallet.whitelist.labelLabel' as
 /** wallet.whitelist.labelPlaceholder */
 export const WALLET_WHITELIST_LABEL_PLACEHOLDER_KEY = 'wallet.whitelist.labelPlaceholder' as const;
 
+/** strategy.backtest.autoGate */
+export const STRATEGY_BACKTEST_AUTO_GATE_KEY = 'strategy.backtest.autoGate' as const;
+
+/** strategy.backtest.publishable */
+export const STRATEGY_BACKTEST_PUBLISHABLE_KEY = 'strategy.backtest.publishable' as const;
+
+/** strategy.backtest.notPublishable */
+export const STRATEGY_BACKTEST_NOT_PUBLISHABLE_KEY = 'strategy.backtest.notPublishable' as const;
+
+/** strategy.backtest.diagnostic.invariant */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_INVARIANT_KEY = 'strategy.backtest.diagnostic.invariant' as const;
+
+/** strategy.backtest.diagnostic.defenseA */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_DEFENSE_A_KEY = 'strategy.backtest.diagnostic.defenseA' as const;
+
+/** strategy.backtest.diagnostic.lookahead */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_LOOKAHEAD_KEY = 'strategy.backtest.diagnostic.lookahead' as const;
+
+/** strategy.backtest.diagnostic.statistical */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_STATISTICAL_KEY = 'strategy.backtest.diagnostic.statistical' as const;
+
+/** strategy.backtest.diagnostic.unknown */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_UNKNOWN_KEY = 'strategy.backtest.diagnostic.unknown' as const;
+
+/** strategy.backtest.diagnostic.suggestion.iCustom */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_SUGGESTION_I_CUSTOM_KEY = 'strategy.backtest.diagnostic.suggestion.iCustom' as const;
+
+/** strategy.backtest.diagnostic.suggestion.dll */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_SUGGESTION_DLL_KEY = 'strategy.backtest.diagnostic.suggestion.dll' as const;
+
+/** strategy.backtest.diagnostic.coverage */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_COVERAGE_KEY = 'strategy.backtest.diagnostic.coverage' as const;
+
+/** strategy.backtest.diagnostic.compatible */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_COMPATIBLE_KEY = 'strategy.backtest.diagnostic.compatible' as const;
+
+/** strategy.backtest.diagnostic.unsupported */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_UNSUPPORTED_KEY = 'strategy.backtest.diagnostic.unsupported' as const;
+
+/** strategy.backtest.diagnostic.fatal */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_FATAL_KEY = 'strategy.backtest.diagnostic.fatal' as const;
+
+/** strategy.backtest.diagnostic.suggestionLabel */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_SUGGESTION_LABEL_KEY = 'strategy.backtest.diagnostic.suggestionLabel' as const;
+
+/** strategy.backtest.diagnostic.warning */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_WARNING_KEY = 'strategy.backtest.diagnostic.warning' as const;
+
+/** strategy.backtest.diagnostic.silenceHint */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_SILENCE_HINT_KEY = 'strategy.backtest.diagnostic.silenceHint' as const;
+
+/** strategy.backtest.diagnostic.allSilenced */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_ALL_SILENCED_KEY = 'strategy.backtest.diagnostic.allSilenced' as const;
+
+/** strategy.backtest.diagnostic.info */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_INFO_KEY = 'strategy.backtest.diagnostic.info' as const;
+
+/** strategy.backtest.diagnostic.aiFix */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_AI_FIX_KEY = 'strategy.backtest.diagnostic.aiFix' as const;
+
+/** strategy.backtest.diagnostic.noCode */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_NO_CODE_KEY = 'strategy.backtest.diagnostic.noCode' as const;
+
+/** strategy.backtest.diagnostic.aiNoResult */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_AI_NO_RESULT_KEY = 'strategy.backtest.diagnostic.aiNoResult' as const;
+
+/** strategy.backtest.diagnostic.aiFailed */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_AI_FAILED_KEY = 'strategy.backtest.diagnostic.aiFailed' as const;
+
+/** strategy.backtest.diagnostic.fixApplied */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_FIX_APPLIED_KEY = 'strategy.backtest.diagnostic.fixApplied' as const;
+
+/** strategy.backtest.diagnostic.fixAppliedCompileWarn */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_FIX_APPLIED_COMPILE_WARN_KEY = 'strategy.backtest.diagnostic.fixAppliedCompileWarn' as const;
+
+/** strategy.backtest.diagnostic.applyFailed */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_APPLY_FAILED_KEY = 'strategy.backtest.diagnostic.applyFailed' as const;
+
+/** strategy.backtest.diagnostic.saveFirst */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_SAVE_FIRST_KEY = 'strategy.backtest.diagnostic.saveFirst' as const;
+
+/** strategy.backtest.diagnostic.diffPreview */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_DIFF_PREVIEW_KEY = 'strategy.backtest.diagnostic.diffPreview' as const;
+
+/** strategy.backtest.diagnostic.apply */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_APPLY_KEY = 'strategy.backtest.diagnostic.apply' as const;
+
+/** strategy.backtest.diagnostic.diffHint */
+export const STRATEGY_BACKTEST_DIAGNOSTIC_DIFF_HINT_KEY = 'strategy.backtest.diagnostic.diffHint' as const;
+
+/** strategy.backtest.cancelFailed */
+export const STRATEGY_BACKTEST_CANCEL_FAILED_KEY = 'strategy.backtest.cancelFailed' as const;
+
+/** strategy.templates.gallery.title */
+export const STRATEGY_TEMPLATES_GALLERY_TITLE_KEY = 'strategy.templates.gallery.title' as const;
+
+/** notifications.prefs.saveFailed */
+export const NOTIFICATIONS_PREFS_SAVE_FAILED_KEY = 'notifications.prefs.saveFailed' as const;
+
+/** notifications.prefs.newStrategy */
+export const NOTIFICATIONS_PREFS_NEW_STRATEGY_KEY = 'notifications.prefs.newStrategy' as const;
+
+/** notifications.prefs.priceChange */
+export const NOTIFICATIONS_PREFS_PRICE_CHANGE_KEY = 'notifications.prefs.priceChange' as const;
+
+/** notifications.prefs.subExpiring */
+export const NOTIFICATIONS_PREFS_SUB_EXPIRING_KEY = 'notifications.prefs.subExpiring' as const;
+
+/** notifications.prefs.performance */
+export const NOTIFICATIONS_PREFS_PERFORMANCE_KEY = 'notifications.prefs.performance' as const;
+
+/** notifications.prefs.newRating */
+export const NOTIFICATIONS_PREFS_NEW_RATING_KEY = 'notifications.prefs.newRating' as const;
+
+/** notifications.prefs.title */
+export const NOTIFICATIONS_PREFS_TITLE_KEY = 'notifications.prefs.title' as const;
+
+/** strategy.aiChat.codeLoaded */
+export const STRATEGY_AI_CHAT_CODE_LOADED_KEY = 'strategy.aiChat.codeLoaded' as const;
+
+/** strategy.aiChat.noContext */
+export const STRATEGY_AI_CHAT_NO_CONTEXT_KEY = 'strategy.aiChat.noContext' as const;
+
+/** strategy.chat.entry */
+export const STRATEGY_CHAT_ENTRY_KEY = 'strategy.chat.entry' as const;
+
+/** strategy.chat.exit */
+export const STRATEGY_CHAT_EXIT_KEY = 'strategy.chat.exit' as const;
+
+/** strategy.chat.risk */
+export const STRATEGY_CHAT_RISK_KEY = 'strategy.chat.risk' as const;
+
+/** strategy.chat.indicators */
+export const STRATEGY_CHAT_INDICATORS_KEY = 'strategy.chat.indicators' as const;
+
+/** importAnalysis.emptyAnalysisDesc */
+export const IMPORT_ANALYSIS_EMPTY_ANALYSIS_DESC_KEY = 'importAnalysis.emptyAnalysisDesc' as const;
+
+/** accounts.status.circuit_open */
+export const ACCOUNTS_STATUS_CIRCUIT_OPEN_KEY = 'accounts.status.circuit_open' as const;
+
+/** accounts.status.circuit_half_open */
+export const ACCOUNTS_STATUS_CIRCUIT_HALF_OPEN_KEY = 'accounts.status.circuit_half_open' as const;
+
+/** analytics.pnl */
+export const ANALYTICS_PNL_KEY = 'analytics.pnl' as const;
+
+/** admin.aiGateway.noModelsDiscovered */
+export const ADMIN_AI_GATEWAY_NO_MODELS_DISCOVERED_KEY = 'admin.aiGateway.noModelsDiscovered' as const;
+
+/** admin.aiGateway.discoverFailed */
+export const ADMIN_AI_GATEWAY_DISCOVER_FAILED_KEY = 'admin.aiGateway.discoverFailed' as const;
+
+/** admin.aiGateway.discover */
+export const ADMIN_AI_GATEWAY_DISCOVER_KEY = 'admin.aiGateway.discover' as const;
+
+/** admin.aiGateway.displayNamePlaceholder */
+export const ADMIN_AI_GATEWAY_DISPLAY_NAME_PLACEHOLDER_KEY = 'admin.aiGateway.displayNamePlaceholder' as const;
+
+/** admin.autogen.loadFailed */
+export const ADMIN_AUTOGEN_LOAD_FAILED_KEY = 'admin.autogen.loadFailed' as const;
+
+/** admin.autogen.approved */
+export const ADMIN_AUTOGEN_APPROVED_KEY = 'admin.autogen.approved' as const;
+
+/** admin.autogen.approveFailed */
+export const ADMIN_AUTOGEN_APPROVE_FAILED_KEY = 'admin.autogen.approveFailed' as const;
+
+/** admin.autogen.rejected */
+export const ADMIN_AUTOGEN_REJECTED_KEY = 'admin.autogen.rejected' as const;
+
+/** admin.autogen.rejectFailed */
+export const ADMIN_AUTOGEN_REJECT_FAILED_KEY = 'admin.autogen.rejectFailed' as const;
+
+/** admin.autogen.triggerFailed */
+export const ADMIN_AUTOGEN_TRIGGER_FAILED_KEY = 'admin.autogen.triggerFailed' as const;
+
+/** admin.autogen.symbol */
+export const ADMIN_AUTOGEN_SYMBOL_KEY = 'admin.autogen.symbol' as const;
+
+/** admin.autogen.timeframe */
+export const ADMIN_AUTOGEN_TIMEFRAME_KEY = 'admin.autogen.timeframe' as const;
+
+/** admin.autogen.strategyType */
+export const ADMIN_AUTOGEN_STRATEGY_TYPE_KEY = 'admin.autogen.strategyType' as const;
+
+/** admin.autogen.status */
+export const ADMIN_AUTOGEN_STATUS_KEY = 'admin.autogen.status' as const;
+
+/** admin.autogen.quality */
+export const ADMIN_AUTOGEN_QUALITY_KEY = 'admin.autogen.quality' as const;
+
+/** admin.autogen.error */
+export const ADMIN_AUTOGEN_ERROR_KEY = 'admin.autogen.error' as const;
+
+/** admin.autogen.actions */
+export const ADMIN_AUTOGEN_ACTIONS_KEY = 'admin.autogen.actions' as const;
+
+/** admin.autogen.confirmApprove */
+export const ADMIN_AUTOGEN_CONFIRM_APPROVE_KEY = 'admin.autogen.confirmApprove' as const;
+
+/** admin.autogen.approve */
+export const ADMIN_AUTOGEN_APPROVE_KEY = 'admin.autogen.approve' as const;
+
+/** admin.autogen.confirmReject */
+export const ADMIN_AUTOGEN_CONFIRM_REJECT_KEY = 'admin.autogen.confirmReject' as const;
+
+/** admin.autogen.reject */
+export const ADMIN_AUTOGEN_REJECT_KEY = 'admin.autogen.reject' as const;
+
+/** admin.autogen.title */
+export const ADMIN_AUTOGEN_TITLE_KEY = 'admin.autogen.title' as const;
+
+/** admin.autogen.allStatus */
+export const ADMIN_AUTOGEN_ALL_STATUS_KEY = 'admin.autogen.allStatus' as const;
+
+/** admin.autogen.refresh */
+export const ADMIN_AUTOGEN_REFRESH_KEY = 'admin.autogen.refresh' as const;
+
+/** admin.autogen.triggerBatch */
+export const ADMIN_AUTOGEN_TRIGGER_BATCH_KEY = 'admin.autogen.triggerBatch' as const;
+
+/** admin.autogen.enqueue */
+export const ADMIN_AUTOGEN_ENQUEUE_KEY = 'admin.autogen.enqueue' as const;
+
+/** admin.autogen.symbols */
+export const ADMIN_AUTOGEN_SYMBOLS_KEY = 'admin.autogen.symbols' as const;
+
+/** admin.autogen.timeframes */
+export const ADMIN_AUTOGEN_TIMEFRAMES_KEY = 'admin.autogen.timeframes' as const;
+
+/** admin.autogen.strategyTypes */
+export const ADMIN_AUTOGEN_STRATEGY_TYPES_KEY = 'admin.autogen.strategyTypes' as const;
+
+/** admin.coupon.loadFailed */
+export const ADMIN_COUPON_LOAD_FAILED_KEY = 'admin.coupon.loadFailed' as const;
+
+/** admin.coupon.fillRequired */
+export const ADMIN_COUPON_FILL_REQUIRED_KEY = 'admin.coupon.fillRequired' as const;
+
+/** admin.coupon.created */
+export const ADMIN_COUPON_CREATED_KEY = 'admin.coupon.created' as const;
+
+/** admin.coupon.createFailed */
+export const ADMIN_COUPON_CREATE_FAILED_KEY = 'admin.coupon.createFailed' as const;
+
+/** admin.coupon.disabled */
+export const ADMIN_COUPON_DISABLED_KEY = 'admin.coupon.disabled' as const;
+
+/** admin.coupon.disableFailed */
+export const ADMIN_COUPON_DISABLE_FAILED_KEY = 'admin.coupon.disableFailed' as const;
+
+/** admin.coupon.colCode */
+export const ADMIN_COUPON_COL_CODE_KEY = 'admin.coupon.colCode' as const;
+
+/** admin.coupon.colType */
+export const ADMIN_COUPON_COL_TYPE_KEY = 'admin.coupon.colType' as const;
+
+/** admin.coupon.colValue */
+export const ADMIN_COUPON_COL_VALUE_KEY = 'admin.coupon.colValue' as const;
+
+/** admin.coupon.colMinPurchase */
+export const ADMIN_COUPON_COL_MIN_PURCHASE_KEY = 'admin.coupon.colMinPurchase' as const;
+
+/** admin.coupon.colUsage */
+export const ADMIN_COUPON_COL_USAGE_KEY = 'admin.coupon.colUsage' as const;
+
+/** admin.coupon.colExpires */
+export const ADMIN_COUPON_COL_EXPIRES_KEY = 'admin.coupon.colExpires' as const;
+
+/** admin.coupon.colStatus */
+export const ADMIN_COUPON_COL_STATUS_KEY = 'admin.coupon.colStatus' as const;
+
+/** admin.coupon.colActions */
+export const ADMIN_COUPON_COL_ACTIONS_KEY = 'admin.coupon.colActions' as const;
+
+/** admin.coupon.disable */
+export const ADMIN_COUPON_DISABLE_KEY = 'admin.coupon.disable' as const;
+
+/** admin.coupon.create */
+export const ADMIN_COUPON_CREATE_KEY = 'admin.coupon.create' as const;
+
+/** admin.coupon.createTitle */
+export const ADMIN_COUPON_CREATE_TITLE_KEY = 'admin.coupon.createTitle' as const;
+
+/** admin.coupon.codePlaceholder */
+export const ADMIN_COUPON_CODE_PLACEHOLDER_KEY = 'admin.coupon.codePlaceholder' as const;
+
+/** admin.coupon.valuePlaceholder */
+export const ADMIN_COUPON_VALUE_PLACEHOLDER_KEY = 'admin.coupon.valuePlaceholder' as const;
+
+/** admin.coupon.minPurchasePlaceholder */
+export const ADMIN_COUPON_MIN_PURCHASE_PLACEHOLDER_KEY = 'admin.coupon.minPurchasePlaceholder' as const;
+
+/** admin.coupon.maxUsesPlaceholder */
+export const ADMIN_COUPON_MAX_USES_PLACEHOLDER_KEY = 'admin.coupon.maxUsesPlaceholder' as const;
+
+/** admin.coupon.expiresPlaceholder */
+export const ADMIN_COUPON_EXPIRES_PLACEHOLDER_KEY = 'admin.coupon.expiresPlaceholder' as const;
+
+/** admin.depositAddresses.importFailed */
+export const ADMIN_DEPOSIT_ADDRESSES_IMPORT_FAILED_KEY = 'admin.depositAddresses.importFailed' as const;
+
+/** admin.depositAddresses.address */
+export const ADMIN_DEPOSIT_ADDRESSES_ADDRESS_KEY = 'admin.depositAddresses.address' as const;
+
+/** admin.depositAddresses.user */
+export const ADMIN_DEPOSIT_ADDRESSES_USER_KEY = 'admin.depositAddresses.user' as const;
+
+/** admin.depositAddresses.index */
+export const ADMIN_DEPOSIT_ADDRESSES_INDEX_KEY = 'admin.depositAddresses.index' as const;
+
+/** admin.depositAddresses.status */
+export const ADMIN_DEPOSIT_ADDRESSES_STATUS_KEY = 'admin.depositAddresses.status' as const;
+
+/** admin.depositAddresses.received */
+export const ADMIN_DEPOSIT_ADDRESSES_RECEIVED_KEY = 'admin.depositAddresses.received' as const;
+
+/** admin.depositAddresses.network */
+export const ADMIN_DEPOSIT_ADDRESSES_NETWORK_KEY = 'admin.depositAddresses.network' as const;
+
+/** admin.depositAddresses.assignedAt */
+export const ADMIN_DEPOSIT_ADDRESSES_ASSIGNED_AT_KEY = 'admin.depositAddresses.assignedAt' as const;
+
+/** admin.depositAddresses.importHint */
+export const ADMIN_DEPOSIT_ADDRESSES_IMPORT_HINT_KEY = 'admin.depositAddresses.importHint' as const;
+
+/** admin.depositAddresses.all */
+export const ADMIN_DEPOSIT_ADDRESSES_ALL_KEY = 'admin.depositAddresses.all' as const;
+
+/** admin.depositAddresses.import */
+export const ADMIN_DEPOSIT_ADDRESSES_IMPORT_KEY = 'admin.depositAddresses.import' as const;
+
+/** admin.depositAddresses.availablePool */
+export const ADMIN_DEPOSIT_ADDRESSES_AVAILABLE_POOL_KEY = 'admin.depositAddresses.availablePool' as const;
+
+/** admin.depositAddresses.total */
+export const ADMIN_DEPOSIT_ADDRESSES_TOTAL_KEY = 'admin.depositAddresses.total' as const;
+
+/** admin.deposit.table.block */
+export const ADMIN_DEPOSIT_TABLE_BLOCK_KEY = 'admin.deposit.table.block' as const;
+
+/** admin.deposit.table.confirmations */
+export const ADMIN_DEPOSIT_TABLE_CONFIRMATIONS_KEY = 'admin.deposit.table.confirmations' as const;
+
+/** admin.analytics.name */
+export const ADMIN_ANALYTICS_NAME_KEY = 'admin.analytics.name' as const;
+
+/** admin.analytics.value */
+export const ADMIN_ANALYTICS_VALUE_KEY = 'admin.analytics.value' as const;
+
+/** admin.analytics.platformRev */
+export const ADMIN_ANALYTICS_PLATFORM_REV_KEY = 'admin.analytics.platformRev' as const;
+
+/** admin.analytics.providerRev */
+export const ADMIN_ANALYTICS_PROVIDER_REV_KEY = 'admin.analytics.providerRev' as const;
+
+/** admin.analytics.activeBuyers */
+export const ADMIN_ANALYTICS_ACTIVE_BUYERS_KEY = 'admin.analytics.activeBuyers' as const;
+
+/** admin.analytics.refundRate */
+export const ADMIN_ANALYTICS_REFUND_RATE_KEY = 'admin.analytics.refundRate' as const;
+
+/** admin.analytics.totalTx */
+export const ADMIN_ANALYTICS_TOTAL_TX_KEY = 'admin.analytics.totalTx' as const;
+
+/** admin.analytics.newSubs */
+export const ADMIN_ANALYTICS_NEW_SUBS_KEY = 'admin.analytics.newSubs' as const;
+
+/** admin.analytics.totalStrategies */
+export const ADMIN_ANALYTICS_TOTAL_STRATEGIES_KEY = 'admin.analytics.totalStrategies' as const;
+
+/** admin.analytics.newStrategies */
+export const ADMIN_ANALYTICS_NEW_STRATEGIES_KEY = 'admin.analytics.newStrategies' as const;
+
+/** admin.analytics.topByRevenue */
+export const ADMIN_ANALYTICS_TOP_BY_REVENUE_KEY = 'admin.analytics.topByRevenue' as const;
+
+/** admin.analytics.topBySubs */
+export const ADMIN_ANALYTICS_TOP_BY_SUBS_KEY = 'admin.analytics.topBySubs' as const;
+
+/** admin.analytics.topProvidersRev */
+export const ADMIN_ANALYTICS_TOP_PROVIDERS_REV_KEY = 'admin.analytics.topProvidersRev' as const;
+
+/** admin.analytics.topProvidersStrat */
+export const ADMIN_ANALYTICS_TOP_PROVIDERS_STRAT_KEY = 'admin.analytics.topProvidersStrat' as const;
+
+/** admin.marketplace.loadFailed */
+export const ADMIN_MARKETPLACE_LOAD_FAILED_KEY = 'admin.marketplace.loadFailed' as const;
+
+/** admin.marketplace.featureSuccess */
+export const ADMIN_MARKETPLACE_FEATURE_SUCCESS_KEY = 'admin.marketplace.featureSuccess' as const;
+
+/** admin.marketplace.featureFailed */
+export const ADMIN_MARKETPLACE_FEATURE_FAILED_KEY = 'admin.marketplace.featureFailed' as const;
+
+/** admin.marketplace.unfeatureSuccess */
+export const ADMIN_MARKETPLACE_UNFEATURE_SUCCESS_KEY = 'admin.marketplace.unfeatureSuccess' as const;
+
+/** admin.marketplace.unfeatureFailed */
+export const ADMIN_MARKETPLACE_UNFEATURE_FAILED_KEY = 'admin.marketplace.unfeatureFailed' as const;
+
+/** admin.marketplace.colTitle */
+export const ADMIN_MARKETPLACE_COL_TITLE_KEY = 'admin.marketplace.colTitle' as const;
+
+/** admin.marketplace.colPublisher */
+export const ADMIN_MARKETPLACE_COL_PUBLISHER_KEY = 'admin.marketplace.colPublisher' as const;
+
+/** admin.marketplace.colStatus */
+export const ADMIN_MARKETPLACE_COL_STATUS_KEY = 'admin.marketplace.colStatus' as const;
+
+/** admin.marketplace.colPrice */
+export const ADMIN_MARKETPLACE_COL_PRICE_KEY = 'admin.marketplace.colPrice' as const;
+
+/** admin.marketplace.colSales */
+export const ADMIN_MARKETPLACE_COL_SALES_KEY = 'admin.marketplace.colSales' as const;
+
+/** admin.marketplace.colRevenue */
+export const ADMIN_MARKETPLACE_COL_REVENUE_KEY = 'admin.marketplace.colRevenue' as const;
+
+/** admin.marketplace.colFeatured */
+export const ADMIN_MARKETPLACE_COL_FEATURED_KEY = 'admin.marketplace.colFeatured' as const;
+
+/** admin.marketplace.colActions */
+export const ADMIN_MARKETPLACE_COL_ACTIONS_KEY = 'admin.marketplace.colActions' as const;
+
+/** admin.marketplace.feature */
+export const ADMIN_MARKETPLACE_FEATURE_KEY = 'admin.marketplace.feature' as const;
+
+/** admin.marketplace.unfeature */
+export const ADMIN_MARKETPLACE_UNFEATURE_KEY = 'admin.marketplace.unfeature' as const;
+
+/** admin.marketplace.filterStatus */
+export const ADMIN_MARKETPLACE_FILTER_STATUS_KEY = 'admin.marketplace.filterStatus' as const;
+
+/** admin.marketplace.searchPlaceholder */
+export const ADMIN_MARKETPLACE_SEARCH_PLACEHOLDER_KEY = 'admin.marketplace.searchPlaceholder' as const;
+
+/** admin.marketplace.featureTitle */
+export const ADMIN_MARKETPLACE_FEATURE_TITLE_KEY = 'admin.marketplace.featureTitle' as const;
+
+/** admin.marketplace.featureDesc */
+export const ADMIN_MARKETPLACE_FEATURE_DESC_KEY = 'admin.marketplace.featureDesc' as const;
+
+/** admin.refund.loadFailed */
+export const ADMIN_REFUND_LOAD_FAILED_KEY = 'admin.refund.loadFailed' as const;
+
+/** admin.refund.approved */
+export const ADMIN_REFUND_APPROVED_KEY = 'admin.refund.approved' as const;
+
+/** admin.refund.rejected */
+export const ADMIN_REFUND_REJECTED_KEY = 'admin.refund.rejected' as const;
+
+/** admin.refund.processFailed */
+export const ADMIN_REFUND_PROCESS_FAILED_KEY = 'admin.refund.processFailed' as const;
+
+/** admin.refund.colUser */
+export const ADMIN_REFUND_COL_USER_KEY = 'admin.refund.colUser' as const;
+
+/** admin.refund.colStrategy */
+export const ADMIN_REFUND_COL_STRATEGY_KEY = 'admin.refund.colStrategy' as const;
+
+/** admin.refund.colAmount */
+export const ADMIN_REFUND_COL_AMOUNT_KEY = 'admin.refund.colAmount' as const;
+
+/** admin.refund.colReason */
+export const ADMIN_REFUND_COL_REASON_KEY = 'admin.refund.colReason' as const;
+
+/** admin.refund.colStatus */
+export const ADMIN_REFUND_COL_STATUS_KEY = 'admin.refund.colStatus' as const;
+
+/** admin.refund.colDate */
+export const ADMIN_REFUND_COL_DATE_KEY = 'admin.refund.colDate' as const;
+
+/** admin.refund.colActions */
+export const ADMIN_REFUND_COL_ACTIONS_KEY = 'admin.refund.colActions' as const;
+
+/** admin.refund.approve */
+export const ADMIN_REFUND_APPROVE_KEY = 'admin.refund.approve' as const;
+
+/** admin.refund.reject */
+export const ADMIN_REFUND_REJECT_KEY = 'admin.refund.reject' as const;
+
+/** admin.refund.filterStatus */
+export const ADMIN_REFUND_FILTER_STATUS_KEY = 'admin.refund.filterStatus' as const;
+
+/** admin.refund.approveTitle */
+export const ADMIN_REFUND_APPROVE_TITLE_KEY = 'admin.refund.approveTitle' as const;
+
+/** admin.refund.rejectTitle */
+export const ADMIN_REFUND_REJECT_TITLE_KEY = 'admin.refund.rejectTitle' as const;
+
+/** admin.refund.reviewNotePlaceholder */
+export const ADMIN_REFUND_REVIEW_NOTE_PLACEHOLDER_KEY = 'admin.refund.reviewNotePlaceholder' as const;
+
+/** admin.wallet.tabWallets */
+export const ADMIN_WALLET_TAB_WALLETS_KEY = 'admin.wallet.tabWallets' as const;
+
+/** admin.wallet.tabDepositAddresses */
+export const ADMIN_WALLET_TAB_DEPOSIT_ADDRESSES_KEY = 'admin.wallet.tabDepositAddresses' as const;
+
+/** admin.userManagement.form.accountNumberPlaceholder */
+export const ADMIN_USER_MANAGEMENT_FORM_ACCOUNT_NUMBER_PLACEHOLDER_KEY = 'admin.userManagement.form.accountNumberPlaceholder' as const;
+
+/** sre.canary.accountIdsPlaceholder */
+export const SRE_CANARY_ACCOUNT_IDS_PLACEHOLDER_KEY = 'sre.canary.accountIdsPlaceholder' as const;
+
+/** auth.forgotPassword.emailSent */
+export const AUTH_FORGOT_PASSWORD_EMAIL_SENT_KEY = 'auth.forgotPassword.emailSent' as const;
+
+/** auth.forgotPassword.mtVerified */
+export const AUTH_FORGOT_PASSWORD_MT_VERIFIED_KEY = 'auth.forgotPassword.mtVerified' as const;
+
+/** auth.forgotPassword.mtFailed */
+export const AUTH_FORGOT_PASSWORD_MT_FAILED_KEY = 'auth.forgotPassword.mtFailed' as const;
+
+/** auth.forgotPassword.emailTab */
+export const AUTH_FORGOT_PASSWORD_EMAIL_TAB_KEY = 'auth.forgotPassword.emailTab' as const;
+
+/** auth.forgotPassword.sendResetLink */
+export const AUTH_FORGOT_PASSWORD_SEND_RESET_LINK_KEY = 'auth.forgotPassword.sendResetLink' as const;
+
+/** auth.forgotPassword.mtTab */
+export const AUTH_FORGOT_PASSWORD_MT_TAB_KEY = 'auth.forgotPassword.mtTab' as const;
+
+/** auth.forgotPassword.mtLogin */
+export const AUTH_FORGOT_PASSWORD_MT_LOGIN_KEY = 'auth.forgotPassword.mtLogin' as const;
+
+/** auth.forgotPassword.mtLoginPlaceholder */
+export const AUTH_FORGOT_PASSWORD_MT_LOGIN_PLACEHOLDER_KEY = 'auth.forgotPassword.mtLoginPlaceholder' as const;
+
+/** auth.forgotPassword.mtPassword */
+export const AUTH_FORGOT_PASSWORD_MT_PASSWORD_KEY = 'auth.forgotPassword.mtPassword' as const;
+
+/** auth.forgotPassword.mtPasswordPlaceholder */
+export const AUTH_FORGOT_PASSWORD_MT_PASSWORD_PLACEHOLDER_KEY = 'auth.forgotPassword.mtPasswordPlaceholder' as const;
+
+/** auth.forgotPassword.mtHint */
+export const AUTH_FORGOT_PASSWORD_MT_HINT_KEY = 'auth.forgotPassword.mtHint' as const;
+
+/** auth.forgotPassword.verifyAndReset */
+export const AUTH_FORGOT_PASSWORD_VERIFY_AND_RESET_KEY = 'auth.forgotPassword.verifyAndReset' as const;
+
+/** auth.forgotPassword.adminTab */
+export const AUTH_FORGOT_PASSWORD_ADMIN_TAB_KEY = 'auth.forgotPassword.adminTab' as const;
+
+/** auth.forgotPassword.adminHint */
+export const AUTH_FORGOT_PASSWORD_ADMIN_HINT_KEY = 'auth.forgotPassword.adminHint' as const;
+
+/** auth.resetPassword.mismatch */
+export const AUTH_RESET_PASSWORD_MISMATCH_KEY = 'auth.resetPassword.mismatch' as const;
+
+/** auth.resetPassword.invalidToken */
+export const AUTH_RESET_PASSWORD_INVALID_TOKEN_KEY = 'auth.resetPassword.invalidToken' as const;
+
+/** auth.resetPassword.success */
+export const AUTH_RESET_PASSWORD_SUCCESS_KEY = 'auth.resetPassword.success' as const;
+
+/** auth.resetPassword.failed */
+export const AUTH_RESET_PASSWORD_FAILED_KEY = 'auth.resetPassword.failed' as const;
+
+/** auth.resetPassword.title */
+export const AUTH_RESET_PASSWORD_TITLE_KEY = 'auth.resetPassword.title' as const;
+
+/** auth.resetPassword.newPassword */
+export const AUTH_RESET_PASSWORD_NEW_PASSWORD_KEY = 'auth.resetPassword.newPassword' as const;
+
+/** auth.resetPassword.confirmRequired */
+export const AUTH_RESET_PASSWORD_CONFIRM_REQUIRED_KEY = 'auth.resetPassword.confirmRequired' as const;
+
+/** auth.resetPassword.confirmPassword */
+export const AUTH_RESET_PASSWORD_CONFIRM_PASSWORD_KEY = 'auth.resetPassword.confirmPassword' as const;
+
+/** auth.resetPassword.submit */
+export const AUTH_RESET_PASSWORD_SUBMIT_KEY = 'auth.resetPassword.submit' as const;
+
+/** dashboard.noAccountsDesc */
+export const DASHBOARD_NO_ACCOUNTS_DESC_KEY = 'dashboard.noAccountsDesc' as const;
+
+/** landing.brokersTitle */
+export const LANDING_BROKERS_TITLE_KEY = 'landing.brokersTitle' as const;
+
+/** landing.brokersDesc */
+export const LANDING_BROKERS_DESC_KEY = 'landing.brokersDesc' as const;
+
+/** landing.brokersLink */
+export const LANDING_BROKERS_LINK_KEY = 'landing.brokersLink' as const;
+
+/** marketplace.live.loadError */
+export const MARKETPLACE_LIVE_LOAD_ERROR_KEY = 'marketplace.live.loadError' as const;
+
+/** marketplace.optimization.decayScore */
+export const MARKETPLACE_OPTIMIZATION_DECAY_SCORE_KEY = 'marketplace.optimization.decayScore' as const;
+
+/** marketplace.optimization.trigger */
+export const MARKETPLACE_OPTIMIZATION_TRIGGER_KEY = 'marketplace.optimization.trigger' as const;
+
+/** marketplace.optimization.sharpeDecline */
+export const MARKETPLACE_OPTIMIZATION_SHARPE_DECLINE_KEY = 'marketplace.optimization.sharpeDecline' as const;
+
+/** marketplace.optimization.winRateDecline */
+export const MARKETPLACE_OPTIMIZATION_WIN_RATE_DECLINE_KEY = 'marketplace.optimization.winRateDecline' as const;
+
+/** marketplace.optimization.returnDelta */
+export const MARKETPLACE_OPTIMIZATION_RETURN_DELTA_KEY = 'marketplace.optimization.returnDelta' as const;
+
+/** strategy.templates.actions.deploy */
+export const STRATEGY_TEMPLATES_ACTIONS_DEPLOY_KEY = 'strategy.templates.actions.deploy' as const;
+
+/** marketplace.payment.deployGuide */
+export const MARKETPLACE_PAYMENT_DEPLOY_GUIDE_KEY = 'marketplace.payment.deployGuide' as const;
+
+/** marketplace.payment.goDeploy */
+export const MARKETPLACE_PAYMENT_GO_DEPLOY_KEY = 'marketplace.payment.goDeploy' as const;
+
+/** strategy.live.strategyName */
+export const STRATEGY_LIVE_STRATEGY_NAME_KEY = 'strategy.live.strategyName' as const;
+
+/** strategy.live.stale */
+export const STRATEGY_LIVE_STALE_KEY = 'strategy.live.stale' as const;
+
+/** strategy.live.lastSignal */
+export const STRATEGY_LIVE_LAST_SIGNAL_KEY = 'strategy.live.lastSignal' as const;
+
+/** strategy.live.pnl */
+export const STRATEGY_LIVE_PNL_KEY = 'strategy.live.pnl' as const;
+
+/** strategy.live.unknownError */
+export const STRATEGY_LIVE_UNKNOWN_ERROR_KEY = 'strategy.live.unknownError' as const;
+
+/** strategy.live.logs */
+export const STRATEGY_LIVE_LOGS_KEY = 'strategy.live.logs' as const;
+
+/** strategy.live.health */
+export const STRATEGY_LIVE_HEALTH_KEY = 'strategy.live.health' as const;
+
+/** strategy.live.streamDisconnected */
+export const STRATEGY_LIVE_STREAM_DISCONNECTED_KEY = 'strategy.live.streamDisconnected' as const;
+
+/** strategy.live.goSchedules */
+export const STRATEGY_LIVE_GO_SCHEDULES_KEY = 'strategy.live.goSchedules' as const;
+
+/** strategy.templates.scheduleLaunch.metrics.winRate */
+export const STRATEGY_TEMPLATES_SCHEDULE_LAUNCH_METRICS_WIN_RATE_KEY = 'strategy.templates.scheduleLaunch.metrics.winRate' as const;
+
+/** strategy.templates.detail.profitFactor */
+export const STRATEGY_TEMPLATES_DETAIL_PROFIT_FACTOR_KEY = 'strategy.templates.detail.profitFactor' as const;
+
+/** strategy.templates.scheduleLaunch.metrics.maxDrawdown */
+export const STRATEGY_TEMPLATES_SCHEDULE_LAUNCH_METRICS_MAX_DRAWDOWN_KEY = 'strategy.templates.scheduleLaunch.metrics.maxDrawdown' as const;
+
+/** strategy.templates.scheduleLaunch.metrics.sharpe */
+export const STRATEGY_TEMPLATES_SCHEDULE_LAUNCH_METRICS_SHARPE_KEY = 'strategy.templates.scheduleLaunch.metrics.sharpe' as const;
+
+/** strategy.templates.detail.notFound */
+export const STRATEGY_TEMPLATES_DETAIL_NOT_FOUND_KEY = 'strategy.templates.detail.notFound' as const;
+
+/** strategy.templates.gallery.system */
+export const STRATEGY_TEMPLATES_GALLERY_SYSTEM_KEY = 'strategy.templates.gallery.system' as const;
+
+/** strategy.templates.gallery.shared */
+export const STRATEGY_TEMPLATES_GALLERY_SHARED_KEY = 'strategy.templates.gallery.shared' as const;
+
+/** strategy.templates.gallery.forkEdit */
+export const STRATEGY_TEMPLATES_GALLERY_FORK_EDIT_KEY = 'strategy.templates.gallery.forkEdit' as const;
+
+/** strategy.templates.detail.openInWorkspace */
+export const STRATEGY_TEMPLATES_DETAIL_OPEN_IN_WORKSPACE_KEY = 'strategy.templates.detail.openInWorkspace' as const;
+
+/** strategy.templates.detail.overview */
+export const STRATEGY_TEMPLATES_DETAIL_OVERVIEW_KEY = 'strategy.templates.detail.overview' as const;
+
+/** strategy.templates.detail.noDescription */
+export const STRATEGY_TEMPLATES_DETAIL_NO_DESCRIPTION_KEY = 'strategy.templates.detail.noDescription' as const;
+
+/** strategy.templates.detail.equityCurve */
+export const STRATEGY_TEMPLATES_DETAIL_EQUITY_CURVE_KEY = 'strategy.templates.detail.equityCurve' as const;
+
+/** strategy.templates.detail.tradeStats */
+export const STRATEGY_TEMPLATES_DETAIL_TRADE_STATS_KEY = 'strategy.templates.detail.tradeStats' as const;
+
+/** strategy.templates.table.useCount */
+export const STRATEGY_TEMPLATES_TABLE_USE_COUNT_KEY = 'strategy.templates.table.useCount' as const;
+
+/** strategy.templates.table.createdAt */
+export const STRATEGY_TEMPLATES_TABLE_CREATED_AT_KEY = 'strategy.templates.table.createdAt' as const;
+
+/** strategy.templates.table.visibility */
+export const STRATEGY_TEMPLATES_TABLE_VISIBILITY_KEY = 'strategy.templates.table.visibility' as const;
+
+/** strategy.templates.visibility.public */
+export const STRATEGY_TEMPLATES_VISIBILITY_PUBLIC_KEY = 'strategy.templates.visibility.public' as const;
+
+/** strategy.templates.visibility.private */
+export const STRATEGY_TEMPLATES_VISIBILITY_PRIVATE_KEY = 'strategy.templates.visibility.private' as const;
+
+/** strategy.templates.table.status */
+export const STRATEGY_TEMPLATES_TABLE_STATUS_KEY = 'strategy.templates.table.status' as const;
+
+/** strategy.templates.detail.parameters */
+export const STRATEGY_TEMPLATES_DETAIL_PARAMETERS_KEY = 'strategy.templates.detail.parameters' as const;
+
+/** strategy.templates.codeModal.title */
+export const STRATEGY_TEMPLATES_CODE_MODAL_TITLE_KEY = 'strategy.templates.codeModal.title' as const;
+
+/** strategy.templates.actions.create */
+export const STRATEGY_TEMPLATES_ACTIONS_CREATE_KEY = 'strategy.templates.actions.create' as const;
+
+/** strategy.templates.gallery.aiGenerate */
+export const STRATEGY_TEMPLATES_GALLERY_AI_GENERATE_KEY = 'strategy.templates.gallery.aiGenerate' as const;
+
+/** strategy.templates.gallery.searchPlaceholder */
+export const STRATEGY_TEMPLATES_GALLERY_SEARCH_PLACEHOLDER_KEY = 'strategy.templates.gallery.searchPlaceholder' as const;
+
+/** strategy.templates.gallery.filterAll */
+export const STRATEGY_TEMPLATES_GALLERY_FILTER_ALL_KEY = 'strategy.templates.gallery.filterAll' as const;
+
+/** strategy.templates.gallery.filterMine */
+export const STRATEGY_TEMPLATES_GALLERY_FILTER_MINE_KEY = 'strategy.templates.gallery.filterMine' as const;
+
+/** strategy.templates.gallery.filterSystem */
+export const STRATEGY_TEMPLATES_GALLERY_FILTER_SYSTEM_KEY = 'strategy.templates.gallery.filterSystem' as const;
+
+/** strategy.templates.gallery.sortRecent */
+export const STRATEGY_TEMPLATES_GALLERY_SORT_RECENT_KEY = 'strategy.templates.gallery.sortRecent' as const;
+
+/** strategy.templates.gallery.sortReturn */
+export const STRATEGY_TEMPLATES_GALLERY_SORT_RETURN_KEY = 'strategy.templates.gallery.sortReturn' as const;
+
+/** strategy.templates.gallery.sortRisk */
+export const STRATEGY_TEMPLATES_GALLERY_SORT_RISK_KEY = 'strategy.templates.gallery.sortRisk' as const;
+
+/** strategy.templates.gallery.sortUsage */
+export const STRATEGY_TEMPLATES_GALLERY_SORT_USAGE_KEY = 'strategy.templates.gallery.sortUsage' as const;
+
+/** strategy.templates.messages.fetchTemplateListFailed */
+export const STRATEGY_TEMPLATES_MESSAGES_FETCH_TEMPLATE_LIST_FAILED_KEY = 'strategy.templates.messages.fetchTemplateListFailed' as const;
+
+/** strategy.templates.gallery.empty */
+export const STRATEGY_TEMPLATES_GALLERY_EMPTY_KEY = 'strategy.templates.gallery.empty' as const;
+
+/** schedule.launch.noAccount.bindButton */
+export const SCHEDULE_LAUNCH_NO_ACCOUNT_BIND_BUTTON_KEY = 'schedule.launch.noAccount.bindButton' as const;
+
+/** marketplace.publish.trialDays.7 */
+export const MARKETPLACE_PUBLISH_TRIAL_DAYS_7_KEY = 'marketplace.publish.trialDays.7' as const;
+
+/** marketplace.publish.trialDays.14 */
+export const MARKETPLACE_PUBLISH_TRIAL_DAYS_14_KEY = 'marketplace.publish.trialDays.14' as const;
+
+/** marketplace.publish.trialDays.30 */
+export const MARKETPLACE_PUBLISH_TRIAL_DAYS_30_KEY = 'marketplace.publish.trialDays.30' as const;
+
+/** marketplace.publish.trialDaysLabel */
+export const MARKETPLACE_PUBLISH_TRIAL_DAYS_LABEL_KEY = 'marketplace.publish.trialDaysLabel' as const;
+
+/** marketplace.publish.trialDaysPlaceholder */
+export const MARKETPLACE_PUBLISH_TRIAL_DAYS_PLACEHOLDER_KEY = 'marketplace.publish.trialDaysPlaceholder' as const;
+
+/** marketplace.publish.trialDaysCustom */
+export const MARKETPLACE_PUBLISH_TRIAL_DAYS_CUSTOM_KEY = 'marketplace.publish.trialDaysCustom' as const;
+
+/** strategy.schedules.status.enabled */
+export const STRATEGY_SCHEDULES_STATUS_ENABLED_KEY = 'strategy.schedules.status.enabled' as const;
+
+/** strategy.schedules.status.running */
+export const STRATEGY_SCHEDULES_STATUS_RUNNING_KEY = 'strategy.schedules.status.running' as const;
+
+/** strategy.schedules.status.idle */
+export const STRATEGY_SCHEDULES_STATUS_IDLE_KEY = 'strategy.schedules.status.idle' as const;
+
+/** strategy.templates.gallery.forkSuccess */
+export const STRATEGY_TEMPLATES_GALLERY_FORK_SUCCESS_KEY = 'strategy.templates.gallery.forkSuccess' as const;
+
+/** strategy.templates.gallery.forkFailed */
+export const STRATEGY_TEMPLATES_GALLERY_FORK_FAILED_KEY = 'strategy.templates.gallery.forkFailed' as const;
+
+/** strategy.templates.messages.publishFailed */
+export const STRATEGY_TEMPLATES_MESSAGES_PUBLISH_FAILED_KEY = 'strategy.templates.messages.publishFailed' as const;
+
+/** strategy.templates.gallery.unpublishSuccess */
+export const STRATEGY_TEMPLATES_GALLERY_UNPUBLISH_SUCCESS_KEY = 'strategy.templates.gallery.unpublishSuccess' as const;
+
+/** strategy.templates.gallery.unpublishFailed */
+export const STRATEGY_TEMPLATES_GALLERY_UNPUBLISH_FAILED_KEY = 'strategy.templates.gallery.unpublishFailed' as const;
+
+/** strategy.templates.messages.templateDeleted */
+export const STRATEGY_TEMPLATES_MESSAGES_TEMPLATE_DELETED_KEY = 'strategy.templates.messages.templateDeleted' as const;
+
+/** strategy.templates.gallery.deleteFailed */
+export const STRATEGY_TEMPLATES_GALLERY_DELETE_FAILED_KEY = 'strategy.templates.gallery.deleteFailed' as const;
+
+/** strategy.templates.gallery.deploy */
+export const STRATEGY_TEMPLATES_GALLERY_DEPLOY_KEY = 'strategy.templates.gallery.deploy' as const;
+
+/** strategy.templates.gallery.publish */
+export const STRATEGY_TEMPLATES_GALLERY_PUBLISH_KEY = 'strategy.templates.gallery.publish' as const;
+
+/** strategy.templates.gallery.unpublish */
+export const STRATEGY_TEMPLATES_GALLERY_UNPUBLISH_KEY = 'strategy.templates.gallery.unpublish' as const;
+
+/** strategy.templates.gallery.fork */
+export const STRATEGY_TEMPLATES_GALLERY_FORK_KEY = 'strategy.templates.gallery.fork' as const;
+
+/** strategy.templates.deleteConfirm */
+export const STRATEGY_TEMPLATES_DELETE_CONFIRM_KEY = 'strategy.templates.deleteConfirm' as const;
+
+/** strategy.templates.actions.delete */
+export const STRATEGY_TEMPLATES_ACTIONS_DELETE_KEY = 'strategy.templates.actions.delete' as const;
+
+/** strategy.tuning.strategyName */
+export const STRATEGY_TUNING_STRATEGY_NAME_KEY = 'strategy.tuning.strategyName' as const;
+
+/** strategy.tuning.totalTrades */
+export const STRATEGY_TUNING_TOTAL_TRADES_KEY = 'strategy.tuning.totalTrades' as const;
+
+/** strategy.workspace.sidebar.noRuns */
+export const STRATEGY_WORKSPACE_SIDEBAR_NO_RUNS_KEY = 'strategy.workspace.sidebar.noRuns' as const;
+
+/** common.selected */
+export const COMMON_SELECTED_KEY = 'common.selected' as const;
+
+/** strategy.workspace.sidebar.batchDeleteRunsConfirm */
+export const STRATEGY_WORKSPACE_SIDEBAR_BATCH_DELETE_RUNS_CONFIRM_KEY = 'strategy.workspace.sidebar.batchDeleteRunsConfirm' as const;
+
+/** strategy.workspace.sidebar.trades */
+export const STRATEGY_WORKSPACE_SIDEBAR_TRADES_KEY = 'strategy.workspace.sidebar.trades' as const;
+
+/** strategy.workspace.sidebar.deleteRunConfirm */
+export const STRATEGY_WORKSPACE_SIDEBAR_DELETE_RUN_CONFIRM_KEY = 'strategy.workspace.sidebar.deleteRunConfirm' as const;
+
+/** strategy.workspace.sidebar.viewAll */
+export const STRATEGY_WORKSPACE_SIDEBAR_VIEW_ALL_KEY = 'strategy.workspace.sidebar.viewAll' as const;
+
+/** strategy.workspace.sidebar.noStrategies */
+export const STRATEGY_WORKSPACE_SIDEBAR_NO_STRATEGIES_KEY = 'strategy.workspace.sidebar.noStrategies' as const;
+
+/** strategy.workspace.sidebar.batchDeleteConfirm */
+export const STRATEGY_WORKSPACE_SIDEBAR_BATCH_DELETE_CONFIRM_KEY = 'strategy.workspace.sidebar.batchDeleteConfirm' as const;
+
+/** strategy.workspace.sidebar.deleteStrategyConfirm */
+export const STRATEGY_WORKSPACE_SIDEBAR_DELETE_STRATEGY_CONFIRM_KEY = 'strategy.workspace.sidebar.deleteStrategyConfirm' as const;
+
+/** strategy.tuning.noParams.title */
+export const STRATEGY_TUNING_NO_PARAMS_TITLE_KEY = 'strategy.tuning.noParams.title' as const;
+
+/** strategy.tuning.noParams.desc */
+export const STRATEGY_TUNING_NO_PARAMS_DESC_KEY = 'strategy.tuning.noParams.desc' as const;
+
+/** strategy.tuning.disabledHint */
+export const STRATEGY_TUNING_DISABLED_HINT_KEY = 'strategy.tuning.disabledHint' as const;
+
+/** strategy.tuning.noDimsHint */
+export const STRATEGY_TUNING_NO_DIMS_HINT_KEY = 'strategy.tuning.noDimsHint' as const;
+
+/** strategy.tuning.qualityGate */
+export const STRATEGY_TUNING_QUALITY_GATE_KEY = 'strategy.tuning.qualityGate' as const;
+
+/** strategy.workspace.sidebar.title */
+export const STRATEGY_WORKSPACE_SIDEBAR_TITLE_KEY = 'strategy.workspace.sidebar.title' as const;
+
+/** strategy.workspace.sidebar.myStrategies */
+export const STRATEGY_WORKSPACE_SIDEBAR_MY_STRATEGIES_KEY = 'strategy.workspace.sidebar.myStrategies' as const;
+
+/** strategy.workspace.sidebar.backtestHistory */
+export const STRATEGY_WORKSPACE_SIDEBAR_BACKTEST_HISTORY_KEY = 'strategy.workspace.sidebar.backtestHistory' as const;
+
+/** strategy.workspace.sidebar.newStrategy */
+export const STRATEGY_WORKSPACE_SIDEBAR_NEW_STRATEGY_KEY = 'strategy.workspace.sidebar.newStrategy' as const;
+
+/** strategy.workspace.importMql */
+export const STRATEGY_WORKSPACE_IMPORT_MQL_KEY = 'strategy.workspace.importMql' as const;
+
+/** strategy.workspace.tour.ai */
+export const STRATEGY_WORKSPACE_TOUR_AI_KEY = 'strategy.workspace.tour.ai' as const;
+
+/** strategy.workspace.tour.aiDesc */
+export const STRATEGY_WORKSPACE_TOUR_AI_DESC_KEY = 'strategy.workspace.tour.aiDesc' as const;
+
+/** strategy.workspace.tour.code */
+export const STRATEGY_WORKSPACE_TOUR_CODE_KEY = 'strategy.workspace.tour.code' as const;
+
+/** strategy.workspace.tour.codeDesc */
+export const STRATEGY_WORKSPACE_TOUR_CODE_DESC_KEY = 'strategy.workspace.tour.codeDesc' as const;
+
+/** strategy.workspace.tour.backtest */
+export const STRATEGY_WORKSPACE_TOUR_BACKTEST_KEY = 'strategy.workspace.tour.backtest' as const;
+
+/** strategy.workspace.tour.backtestDesc */
+export const STRATEGY_WORKSPACE_TOUR_BACKTEST_DESC_KEY = 'strategy.workspace.tour.backtestDesc' as const;
+
+/** strategy.workspace.tour.save */
+export const STRATEGY_WORKSPACE_TOUR_SAVE_KEY = 'strategy.workspace.tour.save' as const;
+
+/** strategy.workspace.tour.saveDesc */
+export const STRATEGY_WORKSPACE_TOUR_SAVE_DESC_KEY = 'strategy.workspace.tour.saveDesc' as const;
+
+/** strategy.validate.autoFixFailed */
+export const STRATEGY_VALIDATE_AUTO_FIX_FAILED_KEY = 'strategy.validate.autoFixFailed' as const;
+
+/** strategy.live.positionClosed */
+export const STRATEGY_LIVE_POSITION_CLOSED_KEY = 'strategy.live.positionClosed' as const;
+
+/** strategy.live.closeFailed */
+export const STRATEGY_LIVE_CLOSE_FAILED_KEY = 'strategy.live.closeFailed' as const;
+
+/** strategy.validate.failed */
+export const STRATEGY_VALIDATE_FAILED_KEY = 'strategy.validate.failed' as const;
+
+/** strategy.templates.loadFailed */
+export const STRATEGY_TEMPLATES_LOAD_FAILED_KEY = 'strategy.templates.loadFailed' as const;
+
+/** strategy.templates.loadOneFailed */
+export const STRATEGY_TEMPLATES_LOAD_ONE_FAILED_KEY = 'strategy.templates.loadOneFailed' as const;
+
+/** strategy.tuning.failed */
+export const STRATEGY_TUNING_FAILED_KEY = 'strategy.tuning.failed' as const;
+
+/** subscription.unbindSuccess */
+export const SUBSCRIPTION_UNBIND_SUCCESS_KEY = 'subscription.unbindSuccess' as const;
+
+/** subscription.unbindFailed */
+export const SUBSCRIPTION_UNBIND_FAILED_KEY = 'subscription.unbindFailed' as const;
+
+/** subscription.accountLogin */
+export const SUBSCRIPTION_ACCOUNT_LOGIN_KEY = 'subscription.accountLogin' as const;
+
+/** subscription.accountBroker */
+export const SUBSCRIPTION_ACCOUNT_BROKER_KEY = 'subscription.accountBroker' as const;
+
+/** subscription.accountServer */
+export const SUBSCRIPTION_ACCOUNT_SERVER_KEY = 'subscription.accountServer' as const;
+
+/** subscription.accountType */
+export const SUBSCRIPTION_ACCOUNT_TYPE_KEY = 'subscription.accountType' as const;
+
+/** subscription.accountStatus */
+export const SUBSCRIPTION_ACCOUNT_STATUS_KEY = 'subscription.accountStatus' as const;
+
+/** subscription.boundAt */
+export const SUBSCRIPTION_BOUND_AT_KEY = 'subscription.boundAt' as const;
+
+/** subscription.unbindConfirm */
+export const SUBSCRIPTION_UNBIND_CONFIRM_KEY = 'subscription.unbindConfirm' as const;
+
+/** subscription.unbind */
+export const SUBSCRIPTION_UNBIND_KEY = 'subscription.unbind' as const;
+
+/** subscription.boundAccountsCount */
+export const SUBSCRIPTION_BOUND_ACCOUNTS_COUNT_KEY = 'subscription.boundAccountsCount' as const;
+
+/** subscription.noBoundAccounts */
+export const SUBSCRIPTION_NO_BOUND_ACCOUNTS_KEY = 'subscription.noBoundAccounts' as const;
+
+/** subscription.feature.unlimitedAccounts */
+export const SUBSCRIPTION_FEATURE_UNLIMITED_ACCOUNTS_KEY = 'subscription.feature.unlimitedAccounts' as const;
+
+/** subscription.aiTokensRemaining */
+export const SUBSCRIPTION_AI_TOKENS_REMAINING_KEY = 'subscription.aiTokensRemaining' as const;
+
+/** subscription.boundAccountsTitle */
+export const SUBSCRIPTION_BOUND_ACCOUNTS_TITLE_KEY = 'subscription.boundAccountsTitle' as const;
+
 export const BASE_KEYS = {
   admin_config_ai_provider_catalog: '__root__.admin.config.aiProviderCatalog',
   onboarding_step1_title: '__root__.onboarding.step1.title',
@@ -5142,6 +6105,327 @@ export const BASE_KEYS = {
   wallet_whitelist_address_required: '__root__.wallet.whitelist.addressRequired',
   wallet_whitelist_label_label: '__root__.wallet.whitelist.labelLabel',
   wallet_whitelist_label_placeholder: '__root__.wallet.whitelist.labelPlaceholder',
+  strategy_backtest_auto_gate: '__root__.strategy.backtest.autoGate',
+  strategy_backtest_publishable: '__root__.strategy.backtest.publishable',
+  strategy_backtest_not_publishable: '__root__.strategy.backtest.notPublishable',
+  strategy_backtest_diagnostic_invariant: '__root__.strategy.backtest.diagnostic.invariant',
+  strategy_backtest_diagnostic_defense_a: '__root__.strategy.backtest.diagnostic.defenseA',
+  strategy_backtest_diagnostic_lookahead: '__root__.strategy.backtest.diagnostic.lookahead',
+  strategy_backtest_diagnostic_statistical: '__root__.strategy.backtest.diagnostic.statistical',
+  strategy_backtest_diagnostic_unknown: '__root__.strategy.backtest.diagnostic.unknown',
+  strategy_backtest_diagnostic_suggestion_i_custom: '__root__.strategy.backtest.diagnostic.suggestion.iCustom',
+  strategy_backtest_diagnostic_suggestion_dll: '__root__.strategy.backtest.diagnostic.suggestion.dll',
+  strategy_backtest_diagnostic_coverage: '__root__.strategy.backtest.diagnostic.coverage',
+  strategy_backtest_diagnostic_compatible: '__root__.strategy.backtest.diagnostic.compatible',
+  strategy_backtest_diagnostic_unsupported: '__root__.strategy.backtest.diagnostic.unsupported',
+  strategy_backtest_diagnostic_fatal: '__root__.strategy.backtest.diagnostic.fatal',
+  strategy_backtest_diagnostic_suggestion_label: '__root__.strategy.backtest.diagnostic.suggestionLabel',
+  strategy_backtest_diagnostic_warning: '__root__.strategy.backtest.diagnostic.warning',
+  strategy_backtest_diagnostic_silence_hint: '__root__.strategy.backtest.diagnostic.silenceHint',
+  strategy_backtest_diagnostic_all_silenced: '__root__.strategy.backtest.diagnostic.allSilenced',
+  strategy_backtest_diagnostic_info: '__root__.strategy.backtest.diagnostic.info',
+  strategy_backtest_diagnostic_ai_fix: '__root__.strategy.backtest.diagnostic.aiFix',
+  strategy_backtest_diagnostic_no_code: '__root__.strategy.backtest.diagnostic.noCode',
+  strategy_backtest_diagnostic_ai_no_result: '__root__.strategy.backtest.diagnostic.aiNoResult',
+  strategy_backtest_diagnostic_ai_failed: '__root__.strategy.backtest.diagnostic.aiFailed',
+  strategy_backtest_diagnostic_fix_applied: '__root__.strategy.backtest.diagnostic.fixApplied',
+  strategy_backtest_diagnostic_fix_applied_compile_warn: '__root__.strategy.backtest.diagnostic.fixAppliedCompileWarn',
+  strategy_backtest_diagnostic_apply_failed: '__root__.strategy.backtest.diagnostic.applyFailed',
+  strategy_backtest_diagnostic_save_first: '__root__.strategy.backtest.diagnostic.saveFirst',
+  strategy_backtest_diagnostic_diff_preview: '__root__.strategy.backtest.diagnostic.diffPreview',
+  strategy_backtest_diagnostic_apply: '__root__.strategy.backtest.diagnostic.apply',
+  strategy_backtest_diagnostic_diff_hint: '__root__.strategy.backtest.diagnostic.diffHint',
+  strategy_backtest_cancel_failed: '__root__.strategy.backtest.cancelFailed',
+  strategy_templates_gallery_title: '__root__.strategy.templates.gallery.title',
+  notifications_prefs_save_failed: '__root__.notifications.prefs.saveFailed',
+  notifications_prefs_new_strategy: '__root__.notifications.prefs.newStrategy',
+  notifications_prefs_price_change: '__root__.notifications.prefs.priceChange',
+  notifications_prefs_sub_expiring: '__root__.notifications.prefs.subExpiring',
+  notifications_prefs_performance: '__root__.notifications.prefs.performance',
+  notifications_prefs_new_rating: '__root__.notifications.prefs.newRating',
+  notifications_prefs_title: '__root__.notifications.prefs.title',
+  strategy_ai_chat_code_loaded: '__root__.strategy.aiChat.codeLoaded',
+  strategy_ai_chat_no_context: '__root__.strategy.aiChat.noContext',
+  strategy_chat_entry: '__root__.strategy.chat.entry',
+  strategy_chat_exit: '__root__.strategy.chat.exit',
+  strategy_chat_risk: '__root__.strategy.chat.risk',
+  strategy_chat_indicators: '__root__.strategy.chat.indicators',
+  import_analysis_empty_analysis_desc: '__root__.importAnalysis.emptyAnalysisDesc',
+  accounts_status_circuit_open: '__root__.accounts.status.circuit_open',
+  accounts_status_circuit_half_open: '__root__.accounts.status.circuit_half_open',
+  analytics_pnl: '__root__.analytics.pnl',
+  admin_ai_gateway_no_models_discovered: '__root__.admin.aiGateway.noModelsDiscovered',
+  admin_ai_gateway_discover_failed: '__root__.admin.aiGateway.discoverFailed',
+  admin_ai_gateway_discover: '__root__.admin.aiGateway.discover',
+  admin_ai_gateway_display_name_placeholder: '__root__.admin.aiGateway.displayNamePlaceholder',
+  admin_autogen_load_failed: '__root__.admin.autogen.loadFailed',
+  admin_autogen_approved: '__root__.admin.autogen.approved',
+  admin_autogen_approve_failed: '__root__.admin.autogen.approveFailed',
+  admin_autogen_rejected: '__root__.admin.autogen.rejected',
+  admin_autogen_reject_failed: '__root__.admin.autogen.rejectFailed',
+  admin_autogen_trigger_failed: '__root__.admin.autogen.triggerFailed',
+  admin_autogen_symbol: '__root__.admin.autogen.symbol',
+  admin_autogen_timeframe: '__root__.admin.autogen.timeframe',
+  admin_autogen_strategy_type: '__root__.admin.autogen.strategyType',
+  admin_autogen_status: '__root__.admin.autogen.status',
+  admin_autogen_quality: '__root__.admin.autogen.quality',
+  admin_autogen_error: '__root__.admin.autogen.error',
+  admin_autogen_actions: '__root__.admin.autogen.actions',
+  admin_autogen_confirm_approve: '__root__.admin.autogen.confirmApprove',
+  admin_autogen_approve: '__root__.admin.autogen.approve',
+  admin_autogen_confirm_reject: '__root__.admin.autogen.confirmReject',
+  admin_autogen_reject: '__root__.admin.autogen.reject',
+  admin_autogen_title: '__root__.admin.autogen.title',
+  admin_autogen_all_status: '__root__.admin.autogen.allStatus',
+  admin_autogen_refresh: '__root__.admin.autogen.refresh',
+  admin_autogen_trigger_batch: '__root__.admin.autogen.triggerBatch',
+  admin_autogen_enqueue: '__root__.admin.autogen.enqueue',
+  admin_autogen_symbols: '__root__.admin.autogen.symbols',
+  admin_autogen_timeframes: '__root__.admin.autogen.timeframes',
+  admin_autogen_strategy_types: '__root__.admin.autogen.strategyTypes',
+  admin_coupon_load_failed: '__root__.admin.coupon.loadFailed',
+  admin_coupon_fill_required: '__root__.admin.coupon.fillRequired',
+  admin_coupon_created: '__root__.admin.coupon.created',
+  admin_coupon_create_failed: '__root__.admin.coupon.createFailed',
+  admin_coupon_disabled: '__root__.admin.coupon.disabled',
+  admin_coupon_disable_failed: '__root__.admin.coupon.disableFailed',
+  admin_coupon_col_code: '__root__.admin.coupon.colCode',
+  admin_coupon_col_type: '__root__.admin.coupon.colType',
+  admin_coupon_col_value: '__root__.admin.coupon.colValue',
+  admin_coupon_col_min_purchase: '__root__.admin.coupon.colMinPurchase',
+  admin_coupon_col_usage: '__root__.admin.coupon.colUsage',
+  admin_coupon_col_expires: '__root__.admin.coupon.colExpires',
+  admin_coupon_col_status: '__root__.admin.coupon.colStatus',
+  admin_coupon_col_actions: '__root__.admin.coupon.colActions',
+  admin_coupon_disable: '__root__.admin.coupon.disable',
+  admin_coupon_create: '__root__.admin.coupon.create',
+  admin_coupon_create_title: '__root__.admin.coupon.createTitle',
+  admin_coupon_code_placeholder: '__root__.admin.coupon.codePlaceholder',
+  admin_coupon_value_placeholder: '__root__.admin.coupon.valuePlaceholder',
+  admin_coupon_min_purchase_placeholder: '__root__.admin.coupon.minPurchasePlaceholder',
+  admin_coupon_max_uses_placeholder: '__root__.admin.coupon.maxUsesPlaceholder',
+  admin_coupon_expires_placeholder: '__root__.admin.coupon.expiresPlaceholder',
+  admin_deposit_addresses_import_failed: '__root__.admin.depositAddresses.importFailed',
+  admin_deposit_addresses_address: '__root__.admin.depositAddresses.address',
+  admin_deposit_addresses_user: '__root__.admin.depositAddresses.user',
+  admin_deposit_addresses_index: '__root__.admin.depositAddresses.index',
+  admin_deposit_addresses_status: '__root__.admin.depositAddresses.status',
+  admin_deposit_addresses_received: '__root__.admin.depositAddresses.received',
+  admin_deposit_addresses_network: '__root__.admin.depositAddresses.network',
+  admin_deposit_addresses_assigned_at: '__root__.admin.depositAddresses.assignedAt',
+  admin_deposit_addresses_import_hint: '__root__.admin.depositAddresses.importHint',
+  admin_deposit_addresses_all: '__root__.admin.depositAddresses.all',
+  admin_deposit_addresses_import: '__root__.admin.depositAddresses.import',
+  admin_deposit_addresses_available_pool: '__root__.admin.depositAddresses.availablePool',
+  admin_deposit_addresses_total: '__root__.admin.depositAddresses.total',
+  admin_deposit_table_block: '__root__.admin.deposit.table.block',
+  admin_deposit_table_confirmations: '__root__.admin.deposit.table.confirmations',
+  admin_analytics_name: '__root__.admin.analytics.name',
+  admin_analytics_value: '__root__.admin.analytics.value',
+  admin_analytics_platform_rev: '__root__.admin.analytics.platformRev',
+  admin_analytics_provider_rev: '__root__.admin.analytics.providerRev',
+  admin_analytics_active_buyers: '__root__.admin.analytics.activeBuyers',
+  admin_analytics_refund_rate: '__root__.admin.analytics.refundRate',
+  admin_analytics_total_tx: '__root__.admin.analytics.totalTx',
+  admin_analytics_new_subs: '__root__.admin.analytics.newSubs',
+  admin_analytics_total_strategies: '__root__.admin.analytics.totalStrategies',
+  admin_analytics_new_strategies: '__root__.admin.analytics.newStrategies',
+  admin_analytics_top_by_revenue: '__root__.admin.analytics.topByRevenue',
+  admin_analytics_top_by_subs: '__root__.admin.analytics.topBySubs',
+  admin_analytics_top_providers_rev: '__root__.admin.analytics.topProvidersRev',
+  admin_analytics_top_providers_strat: '__root__.admin.analytics.topProvidersStrat',
+  admin_marketplace_load_failed: '__root__.admin.marketplace.loadFailed',
+  admin_marketplace_feature_success: '__root__.admin.marketplace.featureSuccess',
+  admin_marketplace_feature_failed: '__root__.admin.marketplace.featureFailed',
+  admin_marketplace_unfeature_success: '__root__.admin.marketplace.unfeatureSuccess',
+  admin_marketplace_unfeature_failed: '__root__.admin.marketplace.unfeatureFailed',
+  admin_marketplace_col_title: '__root__.admin.marketplace.colTitle',
+  admin_marketplace_col_publisher: '__root__.admin.marketplace.colPublisher',
+  admin_marketplace_col_status: '__root__.admin.marketplace.colStatus',
+  admin_marketplace_col_price: '__root__.admin.marketplace.colPrice',
+  admin_marketplace_col_sales: '__root__.admin.marketplace.colSales',
+  admin_marketplace_col_revenue: '__root__.admin.marketplace.colRevenue',
+  admin_marketplace_col_featured: '__root__.admin.marketplace.colFeatured',
+  admin_marketplace_col_actions: '__root__.admin.marketplace.colActions',
+  admin_marketplace_feature: '__root__.admin.marketplace.feature',
+  admin_marketplace_unfeature: '__root__.admin.marketplace.unfeature',
+  admin_marketplace_filter_status: '__root__.admin.marketplace.filterStatus',
+  admin_marketplace_search_placeholder: '__root__.admin.marketplace.searchPlaceholder',
+  admin_marketplace_feature_title: '__root__.admin.marketplace.featureTitle',
+  admin_marketplace_feature_desc: '__root__.admin.marketplace.featureDesc',
+  admin_refund_load_failed: '__root__.admin.refund.loadFailed',
+  admin_refund_approved: '__root__.admin.refund.approved',
+  admin_refund_rejected: '__root__.admin.refund.rejected',
+  admin_refund_process_failed: '__root__.admin.refund.processFailed',
+  admin_refund_col_user: '__root__.admin.refund.colUser',
+  admin_refund_col_strategy: '__root__.admin.refund.colStrategy',
+  admin_refund_col_amount: '__root__.admin.refund.colAmount',
+  admin_refund_col_reason: '__root__.admin.refund.colReason',
+  admin_refund_col_status: '__root__.admin.refund.colStatus',
+  admin_refund_col_date: '__root__.admin.refund.colDate',
+  admin_refund_col_actions: '__root__.admin.refund.colActions',
+  admin_refund_approve: '__root__.admin.refund.approve',
+  admin_refund_reject: '__root__.admin.refund.reject',
+  admin_refund_filter_status: '__root__.admin.refund.filterStatus',
+  admin_refund_approve_title: '__root__.admin.refund.approveTitle',
+  admin_refund_reject_title: '__root__.admin.refund.rejectTitle',
+  admin_refund_review_note_placeholder: '__root__.admin.refund.reviewNotePlaceholder',
+  admin_wallet_tab_wallets: '__root__.admin.wallet.tabWallets',
+  admin_wallet_tab_deposit_addresses: '__root__.admin.wallet.tabDepositAddresses',
+  admin_user_management_form_account_number_placeholder: '__root__.admin.userManagement.form.accountNumberPlaceholder',
+  sre_canary_account_ids_placeholder: '__root__.sre.canary.accountIdsPlaceholder',
+  auth_forgot_password_email_sent: '__root__.auth.forgotPassword.emailSent',
+  auth_forgot_password_mt_verified: '__root__.auth.forgotPassword.mtVerified',
+  auth_forgot_password_mt_failed: '__root__.auth.forgotPassword.mtFailed',
+  auth_forgot_password_email_tab: '__root__.auth.forgotPassword.emailTab',
+  auth_forgot_password_send_reset_link: '__root__.auth.forgotPassword.sendResetLink',
+  auth_forgot_password_mt_tab: '__root__.auth.forgotPassword.mtTab',
+  auth_forgot_password_mt_login: '__root__.auth.forgotPassword.mtLogin',
+  auth_forgot_password_mt_login_placeholder: '__root__.auth.forgotPassword.mtLoginPlaceholder',
+  auth_forgot_password_mt_password: '__root__.auth.forgotPassword.mtPassword',
+  auth_forgot_password_mt_password_placeholder: '__root__.auth.forgotPassword.mtPasswordPlaceholder',
+  auth_forgot_password_mt_hint: '__root__.auth.forgotPassword.mtHint',
+  auth_forgot_password_verify_and_reset: '__root__.auth.forgotPassword.verifyAndReset',
+  auth_forgot_password_admin_tab: '__root__.auth.forgotPassword.adminTab',
+  auth_forgot_password_admin_hint: '__root__.auth.forgotPassword.adminHint',
+  auth_reset_password_mismatch: '__root__.auth.resetPassword.mismatch',
+  auth_reset_password_invalid_token: '__root__.auth.resetPassword.invalidToken',
+  auth_reset_password_success: '__root__.auth.resetPassword.success',
+  auth_reset_password_failed: '__root__.auth.resetPassword.failed',
+  auth_reset_password_title: '__root__.auth.resetPassword.title',
+  auth_reset_password_new_password: '__root__.auth.resetPassword.newPassword',
+  auth_reset_password_confirm_required: '__root__.auth.resetPassword.confirmRequired',
+  auth_reset_password_confirm_password: '__root__.auth.resetPassword.confirmPassword',
+  auth_reset_password_submit: '__root__.auth.resetPassword.submit',
+  dashboard_no_accounts_desc: '__root__.dashboard.noAccountsDesc',
+  landing_brokers_title: '__root__.landing.brokersTitle',
+  landing_brokers_desc: '__root__.landing.brokersDesc',
+  landing_brokers_link: '__root__.landing.brokersLink',
+  marketplace_live_load_error: '__root__.marketplace.live.loadError',
+  marketplace_optimization_decay_score: '__root__.marketplace.optimization.decayScore',
+  marketplace_optimization_trigger: '__root__.marketplace.optimization.trigger',
+  marketplace_optimization_sharpe_decline: '__root__.marketplace.optimization.sharpeDecline',
+  marketplace_optimization_win_rate_decline: '__root__.marketplace.optimization.winRateDecline',
+  marketplace_optimization_return_delta: '__root__.marketplace.optimization.returnDelta',
+  strategy_templates_actions_deploy: '__root__.strategy.templates.actions.deploy',
+  marketplace_payment_deploy_guide: '__root__.marketplace.payment.deployGuide',
+  marketplace_payment_go_deploy: '__root__.marketplace.payment.goDeploy',
+  strategy_live_strategy_name: '__root__.strategy.live.strategyName',
+  strategy_live_stale: '__root__.strategy.live.stale',
+  strategy_live_last_signal: '__root__.strategy.live.lastSignal',
+  strategy_live_pnl: '__root__.strategy.live.pnl',
+  strategy_live_unknown_error: '__root__.strategy.live.unknownError',
+  strategy_live_logs: '__root__.strategy.live.logs',
+  strategy_live_health: '__root__.strategy.live.health',
+  strategy_live_stream_disconnected: '__root__.strategy.live.streamDisconnected',
+  strategy_live_go_schedules: '__root__.strategy.live.goSchedules',
+  strategy_templates_schedule_launch_metrics_win_rate: '__root__.strategy.templates.scheduleLaunch.metrics.winRate',
+  strategy_templates_detail_profit_factor: '__root__.strategy.templates.detail.profitFactor',
+  strategy_templates_schedule_launch_metrics_max_drawdown: '__root__.strategy.templates.scheduleLaunch.metrics.maxDrawdown',
+  strategy_templates_schedule_launch_metrics_sharpe: '__root__.strategy.templates.scheduleLaunch.metrics.sharpe',
+  strategy_templates_detail_not_found: '__root__.strategy.templates.detail.notFound',
+  strategy_templates_gallery_system: '__root__.strategy.templates.gallery.system',
+  strategy_templates_gallery_shared: '__root__.strategy.templates.gallery.shared',
+  strategy_templates_gallery_fork_edit: '__root__.strategy.templates.gallery.forkEdit',
+  strategy_templates_detail_open_in_workspace: '__root__.strategy.templates.detail.openInWorkspace',
+  strategy_templates_detail_overview: '__root__.strategy.templates.detail.overview',
+  strategy_templates_detail_no_description: '__root__.strategy.templates.detail.noDescription',
+  strategy_templates_detail_equity_curve: '__root__.strategy.templates.detail.equityCurve',
+  strategy_templates_detail_trade_stats: '__root__.strategy.templates.detail.tradeStats',
+  strategy_templates_table_use_count: '__root__.strategy.templates.table.useCount',
+  strategy_templates_table_created_at: '__root__.strategy.templates.table.createdAt',
+  strategy_templates_table_visibility: '__root__.strategy.templates.table.visibility',
+  strategy_templates_visibility_public: '__root__.strategy.templates.visibility.public',
+  strategy_templates_visibility_private: '__root__.strategy.templates.visibility.private',
+  strategy_templates_table_status: '__root__.strategy.templates.table.status',
+  strategy_templates_detail_parameters: '__root__.strategy.templates.detail.parameters',
+  strategy_templates_code_modal_title: '__root__.strategy.templates.codeModal.title',
+  strategy_templates_actions_create: '__root__.strategy.templates.actions.create',
+  strategy_templates_gallery_ai_generate: '__root__.strategy.templates.gallery.aiGenerate',
+  strategy_templates_gallery_search_placeholder: '__root__.strategy.templates.gallery.searchPlaceholder',
+  strategy_templates_gallery_filter_all: '__root__.strategy.templates.gallery.filterAll',
+  strategy_templates_gallery_filter_mine: '__root__.strategy.templates.gallery.filterMine',
+  strategy_templates_gallery_filter_system: '__root__.strategy.templates.gallery.filterSystem',
+  strategy_templates_gallery_sort_recent: '__root__.strategy.templates.gallery.sortRecent',
+  strategy_templates_gallery_sort_return: '__root__.strategy.templates.gallery.sortReturn',
+  strategy_templates_gallery_sort_risk: '__root__.strategy.templates.gallery.sortRisk',
+  strategy_templates_gallery_sort_usage: '__root__.strategy.templates.gallery.sortUsage',
+  strategy_templates_messages_fetch_template_list_failed: '__root__.strategy.templates.messages.fetchTemplateListFailed',
+  strategy_templates_gallery_empty: '__root__.strategy.templates.gallery.empty',
+  schedule_launch_no_account_bind_button: '__root__.schedule.launch.noAccount.bindButton',
+  marketplace_publish_trial_days_7: '__root__.marketplace.publish.trialDays.7',
+  marketplace_publish_trial_days_14: '__root__.marketplace.publish.trialDays.14',
+  marketplace_publish_trial_days_30: '__root__.marketplace.publish.trialDays.30',
+  marketplace_publish_trial_days_label: '__root__.marketplace.publish.trialDaysLabel',
+  marketplace_publish_trial_days_placeholder: '__root__.marketplace.publish.trialDaysPlaceholder',
+  marketplace_publish_trial_days_custom: '__root__.marketplace.publish.trialDaysCustom',
+  strategy_schedules_status_enabled: '__root__.strategy.schedules.status.enabled',
+  strategy_schedules_status_running: '__root__.strategy.schedules.status.running',
+  strategy_schedules_status_idle: '__root__.strategy.schedules.status.idle',
+  strategy_templates_gallery_fork_success: '__root__.strategy.templates.gallery.forkSuccess',
+  strategy_templates_gallery_fork_failed: '__root__.strategy.templates.gallery.forkFailed',
+  strategy_templates_messages_publish_failed: '__root__.strategy.templates.messages.publishFailed',
+  strategy_templates_gallery_unpublish_success: '__root__.strategy.templates.gallery.unpublishSuccess',
+  strategy_templates_gallery_unpublish_failed: '__root__.strategy.templates.gallery.unpublishFailed',
+  strategy_templates_messages_template_deleted: '__root__.strategy.templates.messages.templateDeleted',
+  strategy_templates_gallery_delete_failed: '__root__.strategy.templates.gallery.deleteFailed',
+  strategy_templates_gallery_deploy: '__root__.strategy.templates.gallery.deploy',
+  strategy_templates_gallery_publish: '__root__.strategy.templates.gallery.publish',
+  strategy_templates_gallery_unpublish: '__root__.strategy.templates.gallery.unpublish',
+  strategy_templates_gallery_fork: '__root__.strategy.templates.gallery.fork',
+  strategy_templates_delete_confirm: '__root__.strategy.templates.deleteConfirm',
+  strategy_templates_actions_delete: '__root__.strategy.templates.actions.delete',
+  strategy_tuning_strategy_name: '__root__.strategy.tuning.strategyName',
+  strategy_tuning_total_trades: '__root__.strategy.tuning.totalTrades',
+  strategy_workspace_sidebar_no_runs: '__root__.strategy.workspace.sidebar.noRuns',
+  common_selected: '__root__.common.selected',
+  strategy_workspace_sidebar_batch_delete_runs_confirm: '__root__.strategy.workspace.sidebar.batchDeleteRunsConfirm',
+  strategy_workspace_sidebar_trades: '__root__.strategy.workspace.sidebar.trades',
+  strategy_workspace_sidebar_delete_run_confirm: '__root__.strategy.workspace.sidebar.deleteRunConfirm',
+  strategy_workspace_sidebar_view_all: '__root__.strategy.workspace.sidebar.viewAll',
+  strategy_workspace_sidebar_no_strategies: '__root__.strategy.workspace.sidebar.noStrategies',
+  strategy_workspace_sidebar_batch_delete_confirm: '__root__.strategy.workspace.sidebar.batchDeleteConfirm',
+  strategy_workspace_sidebar_delete_strategy_confirm: '__root__.strategy.workspace.sidebar.deleteStrategyConfirm',
+  strategy_tuning_no_params_title: '__root__.strategy.tuning.noParams.title',
+  strategy_tuning_no_params_desc: '__root__.strategy.tuning.noParams.desc',
+  strategy_tuning_disabled_hint: '__root__.strategy.tuning.disabledHint',
+  strategy_tuning_no_dims_hint: '__root__.strategy.tuning.noDimsHint',
+  strategy_tuning_quality_gate: '__root__.strategy.tuning.qualityGate',
+  strategy_workspace_sidebar_title: '__root__.strategy.workspace.sidebar.title',
+  strategy_workspace_sidebar_my_strategies: '__root__.strategy.workspace.sidebar.myStrategies',
+  strategy_workspace_sidebar_backtest_history: '__root__.strategy.workspace.sidebar.backtestHistory',
+  strategy_workspace_sidebar_new_strategy: '__root__.strategy.workspace.sidebar.newStrategy',
+  strategy_workspace_import_mql: '__root__.strategy.workspace.importMql',
+  strategy_workspace_tour_ai: '__root__.strategy.workspace.tour.ai',
+  strategy_workspace_tour_ai_desc: '__root__.strategy.workspace.tour.aiDesc',
+  strategy_workspace_tour_code: '__root__.strategy.workspace.tour.code',
+  strategy_workspace_tour_code_desc: '__root__.strategy.workspace.tour.codeDesc',
+  strategy_workspace_tour_backtest: '__root__.strategy.workspace.tour.backtest',
+  strategy_workspace_tour_backtest_desc: '__root__.strategy.workspace.tour.backtestDesc',
+  strategy_workspace_tour_save: '__root__.strategy.workspace.tour.save',
+  strategy_workspace_tour_save_desc: '__root__.strategy.workspace.tour.saveDesc',
+  strategy_validate_auto_fix_failed: '__root__.strategy.validate.autoFixFailed',
+  strategy_live_position_closed: '__root__.strategy.live.positionClosed',
+  strategy_live_close_failed: '__root__.strategy.live.closeFailed',
+  strategy_validate_failed: '__root__.strategy.validate.failed',
+  strategy_templates_load_failed: '__root__.strategy.templates.loadFailed',
+  strategy_templates_load_one_failed: '__root__.strategy.templates.loadOneFailed',
+  strategy_tuning_failed: '__root__.strategy.tuning.failed',
+  subscription_unbind_success: '__root__.subscription.unbindSuccess',
+  subscription_unbind_failed: '__root__.subscription.unbindFailed',
+  subscription_account_login: '__root__.subscription.accountLogin',
+  subscription_account_broker: '__root__.subscription.accountBroker',
+  subscription_account_server: '__root__.subscription.accountServer',
+  subscription_account_type: '__root__.subscription.accountType',
+  subscription_account_status: '__root__.subscription.accountStatus',
+  subscription_bound_at: '__root__.subscription.boundAt',
+  subscription_unbind_confirm: '__root__.subscription.unbindConfirm',
+  subscription_unbind: '__root__.subscription.unbind',
+  subscription_bound_accounts_count: '__root__.subscription.boundAccountsCount',
+  subscription_no_bound_accounts: '__root__.subscription.noBoundAccounts',
+  subscription_feature_unlimited_accounts: '__root__.subscription.feature.unlimitedAccounts',
+  subscription_ai_tokens_remaining: '__root__.subscription.aiTokensRemaining',
+  subscription_bound_accounts_title: '__root__.subscription.boundAccountsTitle',
 } as const;
 
 export type BaseKey = typeof BASE_KEYS[keyof typeof BASE_KEYS];

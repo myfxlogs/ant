@@ -87,5 +87,12 @@ func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHu
 		Symbol: "DEFAULT", SpreadPips: decimal.NewFromInt(1), PipSize: decimal.NewFromFloat(0.00001), PipValue: decimal.NewFromInt(1), CommissionPerLot: decimal.Zero,
 	}, log))
 	mthubSvc.SetOmsWriter(mthub.NewOmsWriter(pool, eventStore))
+	mthubSvc.SetAccountOwnerVerifier(func(ctx context.Context, userID, accountID string) (bool, error) {
+		var exists bool
+		err := pool.QueryRow(ctx,
+			`SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id=$1::uuid AND user_id=$2::uuid AND deleted_at IS NULL)`,
+			accountID, userID).Scan(&exists)
+		return exists, err
+	})
 	mthubSvc.SetGuard(guard)
 }

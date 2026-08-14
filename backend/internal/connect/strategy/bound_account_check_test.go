@@ -5,9 +5,12 @@ import (
 	"errors"
 	"testing"
 
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/interceptor"
 	"alphaforge/internal/service"
 )
 
@@ -99,5 +102,52 @@ func TestCheckBoundAccount_NilAccountIDSkips(t *testing.T) {
 	err := srv.checkBoundAccount(context.Background(), uuid.New(), uuid.Nil)
 	if err != nil {
 		t.Fatalf("nil accountID should skip check, got: %v", err)
+	}
+}
+
+// TestListActiveStrategies_AccountFilterChecksOwnership is the adversarial proof for F1:
+// If ListActiveStrategies omits the account ownership check before filtering by
+// account_id, a user can list another user's active sessions.
+//
+// Adversarial proof: remove the checkBoundAccount call in ListActiveStrategies → this test goes red.
+func TestListActiveStrategies_AccountFilterChecksOwnership(t *testing.T) {
+	srv := NewStrategyExecutionServer(nil, zap.NewNop())
+	srv.SetBoundSvc(&mockBoundSvc{err: service.ErrAccountNotOwned})
+	srv.sessionRegistry = &SessionRegistry{}
+
+	userID := uuid.New()
+	accountID := uuid.New()
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, userID.String())
+
+	_, err := srv.ListActiveStrategies(ctx, connect.NewRequest(&antv1.ListActiveStrategiesRequest{
+		AccountId: accountID.String(),
+	}))
+	if err == nil {
+		t.Fatal("expected error for unowned account filter, got nil — adversarial proof: F1 check is missing!")
+	}
+	if !errors.Is(err, service.ErrAccountNotOwned) {
+		t.Fatalf("expected ErrAccountNotOwned, got: %v", err)
+	}
+}
+
+// TestResolveModeAndAccount_PaperChecksOwnership is the adversarial proof for F4:
+// resolveModeAndAccount must enforce account ownership for paper mode too
+// when a specific account_id is supplied, preventing cross-user simulated writes.
+//
+// Adversarial proof: remove the checkBoundAccount call in resolveModeAndAccount → this test goes red.
+func TestResolveModeAndAccount_PaperChecksOwnership(t *testing.T) {
+	srv := NewStrategyExecutionServer(nil, zap.NewNop())
+	srv.SetBoundSvc(&mockBoundSvc{err: service.ErrAccountNotOwned})
+
+	userID := uuid.New()
+	ctx := context.WithValue(context.Background(), interceptor.UserIDKey, userID.String())
+	cfg := &LiveStrategyConfig{AccountID: uuid.New().String()}
+
+	err := srv.resolveModeAndAccount(ctx, userID, "paper", cfg)
+	if err == nil {
+		t.Fatal("expected error for unowned account in paper mode, got nil — adversarial proof: F4 check is missing!")
+	}
+	if !errors.Is(err, service.ErrAccountNotOwned) {
+		t.Fatalf("expected ErrAccountNotOwned, got: %v", err)
 	}
 }

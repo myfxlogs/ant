@@ -30,8 +30,21 @@ func (s *StrategyExecutionServer) ListActiveStrategies(ctx context.Context, req 
 	}
 
 	var sessions []*ActiveSession
-	if req.Msg.GetAccountId() != "" {
-		sessions = s.sessionRegistry.ListByAccount(req.Msg.GetAccountId())
+	if accountFilter := req.Msg.GetAccountId(); accountFilter != "" {
+		accountUUID, parseErr := uuid.Parse(accountFilter)
+		if parseErr != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", parseErr))
+		}
+		if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+			if errors.Is(err, service.ErrAccountLimitExceeded) {
+				return nil, connect.NewError(connect.CodePermissionDenied, err)
+			}
+			if errors.Is(err, service.ErrAccountNotOwned) {
+				return nil, connect.NewError(connect.CodeNotFound, err)
+			}
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		sessions = s.sessionRegistry.ListByAccount(accountFilter)
 	} else {
 		sessions = s.sessionRegistry.ListByUser(uid)
 	}
@@ -303,6 +316,17 @@ func (s *StrategyExecutionServer) resolveModeAndAccount(ctx context.Context, uid
 	// If the caller already selected an account (panel/schedule), it is the
 	// single source of truth — both trading and bar source follow it.
 	if cfg.AccountID != "" {
+		if accountUUID, parseErr := uuid.Parse(cfg.AccountID); parseErr == nil && accountUUID != uuid.Nil {
+			if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+				if errors.Is(err, service.ErrAccountLimitExceeded) {
+					return connect.NewError(connect.CodePermissionDenied, err)
+				}
+				if errors.Is(err, service.ErrAccountNotOwned) {
+					return connect.NewError(connect.CodeNotFound, err)
+				}
+				return connect.NewError(connect.CodeInternal, err)
+			}
+		}
 		cfg.DataSourceAccountID = cfg.AccountID
 		return nil
 	}
@@ -364,6 +388,24 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 	}
 
 	accountFilter := req.Msg.GetAccountId()
+
+	// F1: IDOR - check account ownership if accountFilter is provided.
+	if accountFilter != "" {
+		accountUUID, parseErr := uuid.Parse(accountFilter)
+		if parseErr != nil {
+			return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", parseErr))
+		}
+		if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+			if errors.Is(err, service.ErrAccountLimitExceeded) {
+				return connect.NewError(connect.CodePermissionDenied, err)
+			}
+			if errors.Is(err, service.ErrAccountNotOwned) {
+				return connect.NewError(connect.CodeNotFound, err)
+			}
+			return connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
 	tickFn := s.tickPriceFn()
 
 	sendList := func() error {

@@ -158,7 +158,7 @@ export default function LiveStrategyPage() {
           <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type={stale ? 'secondary' : undefined}>
             {record.bid}{spread}
           </Text>
-          {stale && <Tag color="default" style={{ fontSize: 10 }}>stale</Tag>}
+          {stale && <Tag color="default" style={{ fontSize: 10 }}>{t('strategy.live.stale', { defaultValue: 'stale' })}</Tag>}
         </Space>
       );
     } },

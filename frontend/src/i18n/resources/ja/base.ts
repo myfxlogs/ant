@@ -99,7 +99,8 @@ const Base = {
         "nickname": "ニックネーム",
         "password": "パスワード",
         "role": "役割",
-        "status": "ステータス"
+        "status": "ステータス",
+        "accountNumberPlaceholder": "e.g. 123568"
       },
       "passwordForm": {
         "placeholders": {
@@ -317,7 +318,11 @@ const Base = {
       "priceInput": "入力価格 ($/1M)",
       "priceOutput": "出力価格 ($/1M)",
       "confirmDeleteModel": "このモデルを削除しますか？",
-      "noModels": "モデルがありません"
+      "noModels": "モデルがありません",
+      "noModelsDiscovered": "No models discovered. Check API key and base URL.",
+      "discoverFailed": "Failed to discover models",
+      "discover": "Discover",
+      "displayNamePlaceholder": "DeepSeek Chat"
     },
     "account": {
       "errors": {
@@ -461,7 +466,9 @@ const Base = {
         "status": "ステータス",
         "reviewNote": "レビューノート",
         "time": "時間",
-        "action": "操作"
+        "action": "操作",
+        "block": "Block",
+        "confirmations": "Confirmations"
       },
       "approved": "入金が承認され、ウォレットに反映されました。",
       "approveFailed": "入金の承認に失敗しました。",
@@ -517,7 +524,9 @@ const Base = {
       "noMatch": "該当するユーザーが見つかりません",
       "walletDetail": "ウォレット詳細",
       "transactions": "取引履歴",
-      "adjustReason": "理由"
+      "adjustReason": "理由",
+      "tabWallets": "User Wallets",
+      "tabDepositAddresses": "Deposit Addresses"
     },
     "header": {
       "admin": "管理",
@@ -577,6 +586,428 @@ const Base = {
       "usdAmount": "USD金額",
       "tokenAmount": "トークン数量",
       "fillResult": "結果を入力"
+    },
+    "autogen": {
+      "loadFailed": "Failed to load tasks",
+      "approved": "Task approved and published",
+      "approveFailed": "Approve failed",
+      "rejected": "Task rejected",
+      "rejectFailed": "Reject failed",
+      "triggerFailed": "Trigger failed",
+      "symbol": "Symbol",
+      "timeframe": "TF",
+      "strategyType": "Type",
+      "status": "Status",
+      "quality": "Quality",
+      "error": "Error",
+      "actions": "Actions",
+      "confirmApprove": "Approve and publish?",
+      "approve": "Approve",
+      "confirmReject": "Reject this task?",
+      "reject": "Reject",
+      "title": "AI Strategy Generation Tasks",
+      "allStatus": "All Status",
+      "refresh": "Refresh",
+      "triggerBatch": "Trigger Batch",
+      "enqueue": "Enqueue",
+      "symbols": "Symbols (comma-separated)",
+      "timeframes": "Timeframes (comma-separated)",
+      "strategyTypes": "Strategy Types (comma-separated)"
+    },
+    "coupon": {
+      "loadFailed": "Failed to load coupons",
+      "fillRequired": "Please fill required fields",
+      "created": "Coupon created",
+      "createFailed": "Failed to create coupon",
+      "disabled": "Coupon disabled",
+      "disableFailed": "Failed to disable coupon",
+      "colCode": "Code",
+      "colType": "Type",
+      "colValue": "Value",
+      "colMinPurchase": "Min Purchase",
+      "colUsage": "Usage",
+      "colExpires": "Expires",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "disable": "Disable",
+      "create": "Create Coupon",
+      "createTitle": "Create Coupon",
+      "codePlaceholder": "Coupon code (e.g. SUMMER20)",
+      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)",
+      "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
+      "maxUsesPlaceholder": "Max uses (0 = unlimited)",
+      "expiresPlaceholder": "Expires at (ISO 8601, empty = never)"
+    },
+    "depositAddresses": {
+      "importFailed": "Import failed",
+      "address": "Address",
+      "user": "User ID",
+      "index": "Index",
+      "status": "Status",
+      "received": "Received USDT",
+      "network": "Network",
+      "assignedAt": "Assigned At",
+      "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
+      "all": "All Status",
+      "import": "Import Addresses",
+      "availablePool": "Available in Pool",
+      "total": "Total Addresses"
+    },
+    "analytics": {
+      "name": "Name",
+      "value": "Value",
+      "platformRev": "Platform Rev",
+      "providerRev": "Provider Rev",
+      "activeBuyers": "Active Buyers",
+      "refundRate": "Refund Rate",
+      "totalTx": "Transactions",
+      "newSubs": "New Subscribers",
+      "totalStrategies": "Total Strategies",
+      "newStrategies": "New Strategies",
+      "topByRevenue": "Top Strategies by Revenue",
+      "topBySubs": "Top Strategies by Subscribers",
+      "topProvidersRev": "Top Providers by Revenue",
+      "topProvidersStrat": "Top Providers by Strategies"
+    },
+    "marketplace": {
+      "loadFailed": "Failed to load strategies",
+      "featureSuccess": "Strategy featured",
+      "featureFailed": "Failed to feature strategy",
+      "unfeatureSuccess": "Removed featured",
+      "unfeatureFailed": "Failed to unfeature",
+      "colTitle": "Title",
+      "colPublisher": "Publisher",
+      "colStatus": "Status",
+      "colPrice": "Price",
+      "colSales": "Sales",
+      "colRevenue": "Revenue",
+      "colFeatured": "Featured",
+      "colActions": "Actions",
+      "feature": "Feature",
+      "unfeature": "Remove featured",
+      "filterStatus": "All statuses",
+      "searchPlaceholder": "Search by title...",
+      "featureTitle": "Feature Strategy",
+      "featureDesc": "Set priority for featured placement. Higher = more prominent."
+    },
+    "refund": {
+      "loadFailed": "Failed to load refund requests",
+      "approved": "Refund approved and executed",
+      "rejected": "Refund request rejected",
+      "processFailed": "Failed to process refund",
+      "colUser": "User",
+      "colStrategy": "Strategy",
+      "colAmount": "Amount",
+      "colReason": "Reason",
+      "colStatus": "Status",
+      "colDate": "Date",
+      "colActions": "Actions",
+      "approve": "Approve & Execute",
+      "reject": "Reject",
+      "filterStatus": "All statuses",
+      "approveTitle": "Approve Refund",
+      "rejectTitle": "Reject Refund",
+      "reviewNotePlaceholder": "Review note (optional for reject, recommended for approve)..."
+    }
+  },
+  "strategy": {
+    "backtest": {
+      "diagnostic": {
+        "suggestion": {
+          "iCustom": "iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually",
+          "dll": "DLL imports are not supported — remove external DLL calls and use built-in MQL functions"
+        },
+        "invariant": "Invariant Violation",
+        "defenseA": "Structural Validation",
+        "lookahead": "Lookahead Bias",
+        "statistical": "Statistical Hint",
+        "unknown": "Diagnostic",
+        "coverage": "Coverage",
+        "compatible": "compatible",
+        "unsupported": "unsupported",
+        "fatal": "Critical Issues",
+        "suggestionLabel": "建议",
+        "warning": "Risk Warnings",
+        "silenceHint": "Acknowledge as intentional — hide this warning",
+        "allSilenced": "All warnings acknowledged as intentional",
+        "info": "Quality Hints",
+        "aiFix": "AI Fix",
+        "noCode": "No strategy code to fix",
+        "aiNoResult": "AI returned no code",
+        "aiFailed": "AI fix failed",
+        "fixApplied": "Fix applied — re-running backtest",
+        "fixAppliedCompileWarn": "Fix applied but compile has warnings",
+        "applyFailed": "Failed to apply fix",
+        "saveFirst": "Please save the strategy first to apply AI fixes",
+        "diffPreview": "AI Fix Preview",
+        "apply": "Apply & Re-run",
+        "diffHint": "Review the AI-generated code below. Apply to create a new version and re-run backtest."
+      },
+      "canceled": "バックテストがキャンセルされました",
+      "lotSize": "ロットサイズ",
+      "strategyParameters": "戦略パラメータ",
+      "autoGate": "Auto Gate Evaluation",
+      "publishable": "Publishable",
+      "notPublishable": "Not Publishable",
+      "cancelFailed": "Cancel failed"
+    },
+    "templates": {
+      "scheduleLaunch": {
+        "metrics": {
+          "winRate": "Win Rate",
+          "maxDrawdown": "Max Drawdown",
+          "sharpe": "Sharpe Ratio"
+        }
+      },
+      "gallery": {
+        "title": "Strategies",
+        "system": "System",
+        "shared": "Shared",
+        "forkEdit": "Fork & Edit",
+        "aiGenerate": "AI Generate",
+        "searchPlaceholder": "Search strategies...",
+        "filterAll": "All",
+        "filterMine": "Mine",
+        "filterSystem": "System",
+        "sortRecent": "Recent",
+        "sortReturn": "Return",
+        "sortRisk": "Risk",
+        "sortUsage": "Usage",
+        "empty": "No strategies found",
+        "forkSuccess": "Forked to new strategy",
+        "forkFailed": "Fork failed",
+        "unpublishSuccess": "Unpublished",
+        "unpublishFailed": "Unpublish failed",
+        "deleteFailed": "Delete failed",
+        "deploy": "Deploy",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "fork": "Fork"
+      },
+      "actions": {
+        "deploy": "Deploy",
+        "create": "New Strategy",
+        "delete": "Delete"
+      },
+      "detail": {
+        "profitFactor": "Profit Factor",
+        "notFound": "Strategy not found",
+        "openInWorkspace": "Open in Workspace",
+        "overview": "Overview",
+        "noDescription": "No description",
+        "equityCurve": "Equity Curve",
+        "tradeStats": "Trade Statistics",
+        "parameters": "Parameters"
+      },
+      "table": {
+        "useCount": "Use Count",
+        "createdAt": "Created",
+        "visibility": "Visibility",
+        "status": "Status"
+      },
+      "visibility": {
+        "public": "Public",
+        "private": "Private"
+      },
+      "codeModal": {
+        "title": "Code"
+      },
+      "messages": {
+        "fetchTemplateListFailed": "Failed to load strategies",
+        "publishFailed": "Publish failed",
+        "templateDeleted": "Deleted"
+      },
+      "title": "ストラテジーテンプレート",
+      "saveCurrent": "現在のストラテジーを保存",
+      "lines": "行",
+      "chatEdit": "チャット編集",
+      "source": "ソース",
+      "rename": "名前変更",
+      "confirmDelete": "このストラテジーを削除しますか？",
+      "noTemplates": "保存済み��トラテジーテンプレートがありません",
+      "sourceCode": "ストラテジーソース",
+      "copyAll": "すべてコピー",
+      "deleteConfirm": "Delete this strategy?",
+      "loadFailed": "Failed to load templates",
+      "loadOneFailed": "Failed to load template"
+    },
+    "workspace": {
+      "chartIndicators": {
+        "overlay": "オーバーレイ（メインチャート）",
+        "subPane": "サブペインインジケーター"
+      },
+      "sidebar": {
+        "noRuns": "No backtest runs yet",
+        "batchDeleteRunsConfirm": "Delete selected runs?",
+        "trades": "trades",
+        "deleteRunConfirm": "Delete this backtest run?",
+        "viewAll": "View all",
+        "noStrategies": "No strategies yet",
+        "batchDeleteConfirm": "Delete selected strategies?",
+        "deleteStrategyConfirm": "Delete this strategy?",
+        "title": "Workspace",
+        "myStrategies": "My Strategies",
+        "backtestHistory": "Backtest History",
+        "newStrategy": "New Strategy"
+      },
+      "tour": {
+        "ai": "AI Assistant",
+        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
+        "code": "Code Editor",
+        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
+        "backtest": "Backtest",
+        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
+        "save": "Save & Publish",
+        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+      },
+      "importMql": "Import MQL"
+    },
+    "tuning": {
+      "searchMethod": {
+        "grid": "グリッド",
+        "random": "ランダム"
+      },
+      "noParams": {
+        "title": "No tunable parameters detected",
+        "desc": "Add @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5"
+      },
+      "strategyName": "Strategy",
+      "totalTrades": "Trades",
+      "disabledHint": "Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.",
+      "noDimsHint": "Enable at least one parameter dimension below.",
+      "qualityGate": "Gate",
+      "failed": "Tuning failed"
+    },
+    "schedules": {
+      "status": {
+        "enabled": "Enabled",
+        "running": "Running",
+        "idle": "Idle"
+      }
+    },
+    "chat": {
+      "executionPlan": "執行計画",
+      "codeGenerated": "コードが生成されました。下のボタンで戦略レビューとバックテストを実行してください。",
+      "entry": "Entry:",
+      "exit": "Exit:",
+      "risk": "Risk:",
+      "indicators": "Indicators:"
+    },
+    "aiChat": {
+      "historyTab": "履歴",
+      "strategiesTab": "ストラテジー",
+      "codeLoaded": "Strategy code in context",
+      "noContext": "No strategy loaded — describe what you want"
+    },
+    "live": {
+      "stopSuccess": "ストラテジーが停止しました",
+      "stopFailed": "停止に失敗しました",
+      "runId": "実行ID",
+      "account": "口座",
+      "symbol": "銘柄",
+      "timeframe": "TF",
+      "mode": "モード",
+      "signals": "シグナル",
+      "errors": "エラー",
+      "startedAt": "開始時刻",
+      "watchSignals": "シグナル監視",
+      "confirmStop": "このストラテジーを停止しますか？",
+      "status": "ステータス",
+      "totalSignals": "総シグナル数",
+      "stoppedAt": "停止時刻",
+      "error": "エラー",
+      "title": "ライブストラテジーモニター",
+      "activeTab": "アクティブな実行",
+      "noActive": "アクティブなストラテジーはありません",
+      "historyTab": "実行履歴",
+      "noRuns": "ストラテジーの実行はありません",
+      "schedulesTab": "スケジュール",
+      "time": "時刻",
+      "signalType": "タイプ",
+      "volume": "数量",
+      "price": "価格",
+      "sl": "SL",
+      "tp": "TP",
+      "reason": "理由",
+      "signalLog": "シグナルログ",
+      "waitingSignals": "シグナルを待機中...",
+      "strategyName": "Strategy",
+      "stale": "stale",
+      "lastSignal": "Last Signal",
+      "pnl": "PnL",
+      "unknownError": "Unknown error",
+      "logs": "Logs",
+      "health": "Health",
+      "streamDisconnected": "Connection interrupted, reconnecting…",
+      "goSchedules": "Go to Schedules",
+      "positionClosed": "Position closed",
+      "closeFailed": "Close failed"
+    },
+    "schedule": {
+      "maxPositionsPlaceholder": "無制限"
+    },
+    "ai": {
+      "reviseHint": "まずコードを書いてから、AIに改善を依頼してください",
+      "explainHint": "コードを書くとAIの説明が表示されます",
+      "settingsHint": "AIプロバイダーとモデルを設定"
+    },
+    "validate": {
+      "running": "検証を実行中...",
+      "errors": "エラー",
+      "warnings": "警告",
+      "fixWithAI": "エラーをAI修正に送信",
+      "parameters": "パラメータ",
+      "hints": "提案",
+      "allClear": "すべてのチェックを通過しました — 問題は見つかりませんでした。",
+      "passed": "検証に合格しました — 保存のロックが解除されました。",
+      "autoFixFailed": "Auto-fix failed",
+      "failed": "Validation failed"
+    },
+    "importEA": {
+      "writeTab": "ストラテジーコード",
+      "importTab": "EAのインポート",
+      "codeTooShort": "完全なEA/インジケーターのソースコードを貼り付けてください",
+      "pastePlaceholder": "MQL4/MQL5のEAコードを貼り付けてください...",
+      "migration": "ストラテジーインポート",
+      "aiTranslate": "AI翻訳",
+      "bridge": "盲点ブリッジ",
+      "analyze": "ストラテジー構造を分析",
+      "confirmImport": "インポートを確認",
+      "tryAI": "AI翻訳を試す",
+      "apply": "エディターに適用",
+      "importSuccess": "MQLソースコードがインポートされました。「エディターに適用」をクリックしてエディターに書き込んでください。",
+      "hint": "MQL4/MQL5コードを貼り付け、「分析」をクリックしてください。",
+      "translate": "Goに翻訳",
+      "translating": "AI翻訳中...",
+      "bridgeBtn": "盲点ブリッジ翻訳",
+      "bridgeSuccess": "ブリッジ成功",
+      "bridgeFailedTag": "ブリッジ失敗",
+      "bridging": "AIが盲点をブリッジ中...",
+      "bridgeFailedMsg": "エージェントが全ての盲点を自動でブリッジできません",
+      "noBridgeNeeded": "カバレッジ100%、ブリッジ不要",
+      "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIが盲点を自動的にPythonサブセットに翻訳します"
+    },
+    "version": {
+      "loadFailed": "バージョンの読み込みに失敗しました",
+      "rollbackFailed": "ロールバックに失敗しました",
+      "loadVersionFailed": "バージョンの読み込みに失敗しました",
+      "loadDiffFailed": "差分の読み込みに失敗しました",
+      "colVersion": "バージョン",
+      "colSummary": "変更概要",
+      "colLang": "言語",
+      "colHash": "ハッシュ",
+      "colDate": "日付",
+      "colActions": "操作",
+      "title": "バージョン履歴",
+      "diff": "差分",
+      "empty": "まだバージョン履歴がありません",
+      "history": "バージョン履歴",
+      "rollbackSuccess": "バージョン {{n}} にロールバックしました",
+      "rollbackConfirm": "v{{n}} にロールバックしますか？",
+      "diffTitle": "差分: v{{from}} → v{{to}}",
+      "viewTitle": "バージョン {{n}}",
+      "diffFrom": "元",
+      "diffTo": "先"
     }
   },
   "autoTrading": {
@@ -656,6 +1087,15 @@ const Base = {
       "strategy_execution": "戦略",
       "system": "系统",
       "trade": "取引"
+    },
+    "prefs": {
+      "saveFailed": "Failed to save preferences",
+      "newStrategy": "New strategy published",
+      "priceChange": "Strategy price changed",
+      "subExpiring": "Subscription expiring soon",
+      "performance": "Strategy performance anomaly",
+      "newRating": "New rating or comment received",
+      "title": "Notification Preferences"
     },
     "all": "すべて",
     "clearAll": "クリア",
@@ -768,142 +1208,6 @@ const Base = {
     "title": "マイウォレット",
     "transactions": "取引履歴"
   },
-  "strategy": {
-    "workspace": {
-      "chartIndicators": {
-        "overlay": "オーバーレイ（メインチャート）",
-        "subPane": "サブペインインジケーター"
-      }
-    },
-    "tuning": {
-      "searchMethod": {
-        "grid": "グリッド",
-        "random": "ランダム"
-      }
-    },
-    "backtest": {
-      "canceled": "バックテストがキャンセルされました",
-      "lotSize": "ロットサイズ",
-      "strategyParameters": "戦略パラメータ"
-    },
-    "chat": {
-      "executionPlan": "執行計画",
-      "codeGenerated": "コードが生成されました。下のボタンで戦略レビューとバックテストを実行してください。"
-    },
-    "aiChat": {
-      "historyTab": "履歴",
-      "strategiesTab": "ストラテジー"
-    },
-    "templates": {
-      "title": "ストラテジーテンプレート",
-      "saveCurrent": "現在のストラテジーを保存",
-      "lines": "行",
-      "chatEdit": "チャット編集",
-      "source": "ソース",
-      "rename": "名前変更",
-      "confirmDelete": "このストラテジーを削除しますか？",
-      "noTemplates": "保存済み��トラテジーテンプレートがありません",
-      "sourceCode": "ストラテジーソース",
-      "copyAll": "すべてコピー"
-    },
-    "live": {
-      "stopSuccess": "ストラテジーが停止しました",
-      "stopFailed": "停止に失敗しました",
-      "runId": "実行ID",
-      "account": "口座",
-      "symbol": "銘柄",
-      "timeframe": "TF",
-      "mode": "モード",
-      "signals": "シグナル",
-      "errors": "エラー",
-      "startedAt": "開始時刻",
-      "watchSignals": "シグナル監視",
-      "confirmStop": "このストラテジーを停止しますか？",
-      "status": "ステータス",
-      "totalSignals": "総シグナル数",
-      "stoppedAt": "停止時刻",
-      "error": "エラー",
-      "title": "ライブストラテジーモニター",
-      "activeTab": "アクティブな実行",
-      "noActive": "アクティブなストラテジーはありません",
-      "historyTab": "実行履歴",
-      "noRuns": "ストラテジーの実行はありません",
-      "schedulesTab": "スケジュール",
-      "time": "時刻",
-      "signalType": "タイプ",
-      "volume": "数量",
-      "price": "価格",
-      "sl": "SL",
-      "tp": "TP",
-      "reason": "理由",
-      "signalLog": "シグナルログ",
-      "waitingSignals": "シグナルを待機中..."
-    },
-    "schedule": {
-      "maxPositionsPlaceholder": "無制限"
-    },
-    "ai": {
-      "reviseHint": "まずコードを書いてから、AIに改善を依頼してください",
-      "explainHint": "コードを書くとAIの説明が表示されます",
-      "settingsHint": "AIプロバイダーとモデルを設定"
-    },
-    "validate": {
-      "running": "検証を実行中...",
-      "errors": "エラー",
-      "warnings": "警告",
-      "fixWithAI": "エラーをAI修正に送信",
-      "parameters": "パラメータ",
-      "hints": "提案",
-      "allClear": "すべてのチェックを通過しました — 問題は見つかりませんでした。",
-      "passed": "検証に合格しました — 保存のロックが解除されました。"
-    },
-    "importEA": {
-      "writeTab": "ストラテジーコード",
-      "importTab": "EAのインポート",
-      "codeTooShort": "完全なEA/インジケーターのソースコードを貼り付けてください",
-      "pastePlaceholder": "MQL4/MQL5のEAコードを貼り付けてください...",
-      "migration": "ストラテジーインポート",
-      "aiTranslate": "AI翻訳",
-      "bridge": "盲点ブリッジ",
-      "analyze": "ストラテジー構造を分析",
-      "confirmImport": "インポートを確認",
-      "tryAI": "AI翻訳を試す",
-      "apply": "エディターに適用",
-      "importSuccess": "MQLソースコードがインポートされました。「エディターに適用」をクリックしてエディターに書き込んでください。",
-      "hint": "MQL4/MQL5コードを貼り付け、「分析」をクリックしてください。",
-      "translate": "Goに翻訳",
-      "translating": "AI翻訳中...",
-      "bridgeBtn": "盲点ブリッジ翻訳",
-      "bridgeSuccess": "ブリッジ成功",
-      "bridgeFailedTag": "ブリッジ失敗",
-      "bridging": "AIが盲点をブリッジ中...",
-      "bridgeFailedMsg": "エージェントが全ての盲点を自動でブリッジできません",
-      "noBridgeNeeded": "カバレッジ100%、ブリッジ不要",
-      "bridgeHint": "MQL4/MQL5 EAコードを貼り付けると、AIが盲点を自動的にPythonサブセットに翻訳します"
-    },
-    "version": {
-      "loadFailed": "バージョンの読み込みに失敗しました",
-      "rollbackFailed": "ロールバックに失敗しました",
-      "loadVersionFailed": "バージョンの読み込みに失敗しました",
-      "loadDiffFailed": "差分の読み込みに失敗しました",
-      "colVersion": "バージョン",
-      "colSummary": "変更概要",
-      "colLang": "言語",
-      "colHash": "ハッシュ",
-      "colDate": "日付",
-      "colActions": "操作",
-      "title": "バージョン履歴",
-      "diff": "差分",
-      "empty": "まだバージョン履歴がありません",
-      "history": "バージョン履歴",
-      "rollbackSuccess": "バージョン {{n}} にロールバックしました",
-      "rollbackConfirm": "v{{n}} にロールバックしますか？",
-      "diffTitle": "差分: v{{from}} → v{{to}}",
-      "viewTitle": "バージョン {{n}}",
-      "diffFrom": "元",
-      "diffTo": "先"
-    }
-  },
   "accounts": {
     "bind": {
       "fields": {
@@ -919,6 +1223,10 @@ const Base = {
     "messages": {
       "shareLinkCopied": "共有リンクがクリップボードにコピーされました",
       "shareLinkFailed": "共有リンクの作成に失敗しました"
+    },
+    "status": {
+      "circuit_open": "Circuit Open",
+      "circuit_half_open": "Circuit Testing"
     }
   },
   "sre": {
@@ -958,7 +1266,8 @@ const Base = {
       "noCanaries": "カナリア設定がありません",
       "newCanaryTitle": "新規カナリア",
       "accountIdsLabel": "カナリアアカウントID（カンマまたは改行で区切り）",
-      "durationDays": "カナリア日数"
+      "durationDays": "カナリア日数",
+      "accountIdsPlaceholder": "account-1, account-2"
     },
     "killSwitch": {
       "description": "ワンクリックで全取引を停止 — KILL 確認が必要。5 分以内に取り消し可能です。",
@@ -996,6 +1305,11 @@ const Base = {
       "riskLevel": {
         "label": "リスクレベル"
       },
+      "trialDays": {
+        "7": "7 days",
+        "14": "14 days",
+        "30": "30 days"
+      },
       "return": "リターン",
       "winRate": "勝率",
       "trades": "トレード",
@@ -1009,7 +1323,10 @@ const Base = {
       "tagsPlaceholder": "タグを入力してEnterキーを押すと追加されます",
       "codeSnippet": "ストラテジープレビュー（公開）",
       "codeSnippetPlaceholder": "任意: ストラテジーのスニペットや概要を共有してください（全員に表示されます）",
-      "includeBacktestSnapshot": "最新のバックテスト結果を含める"
+      "includeBacktestSnapshot": "最新のバックテスト結果を含める",
+      "trialDaysLabel": "Trial Period",
+      "trialDaysPlaceholder": "Select or enter custom days",
+      "trialDaysCustom": "Custom days"
     },
     "author": {
       "avgRating": "平均評価",
@@ -1068,7 +1385,9 @@ const Base = {
       "purchasing": "処理中...",
       "strategyName": "戦略",
       "title": "購入確定",
-      "walletBalance": "残高"
+      "walletBalance": "残高",
+      "deployGuide": "Your strategy is ready to deploy.",
+      "goDeploy": "Deploy Now"
     },
     "purchases": {
       "empty": "購入履歴はまだありません。マーケットで戦略を見つけましょう。",
@@ -1107,12 +1426,29 @@ const Base = {
       "run": "バックテスト実行",
       "idle": "パラメータを設定してバックテストを実行してください"
     },
+    "live": {
+      "loadError": "Failed to load live performance data"
+    },
+    "optimization": {
+      "decayScore": "Decay Score",
+      "trigger": "Trigger",
+      "sharpeDecline": "Sharpe Decline",
+      "winRateDecline": "Win Rate Decline",
+      "returnDelta": "Return Delta"
+    },
     "empty": "公開された戦略はまだありません",
     "filterByClass": "資産クラスで絞り込む",
     "noSubscriptions": "購読はまだありません",
     "searchPlaceholder": "戦略を検索...",
     "subtitle": "コミュニティ戦略を発見、購入、利用",
     "title": "ストラテジーマーケット"
+  },
+  "schedule": {
+    "launch": {
+      "noAccount": {
+        "bindButton": "Bind MT Account"
+      }
+    }
   },
   "onboarding": {
     "step1": {
@@ -1143,7 +1479,21 @@ const Base = {
     "forgotPassword": {
       "backToLogin": "返回登录",
       "hint": "管理者またはサポートに連絡してパスワードをリセットしてください。",
-      "title": "パスワードリセット"
+      "title": "パスワードリセット",
+      "emailSent": "If the email exists, a reset link has been sent.",
+      "mtVerified": "Identity verified. Redirecting to password reset.",
+      "mtFailed": "MT credential verification failed.",
+      "emailTab": "Email",
+      "sendResetLink": "Send Reset Link",
+      "mtTab": "MT Verify",
+      "mtLogin": "MT Account Number",
+      "mtLoginPlaceholder": "e.g. 12345678",
+      "mtPassword": "MT Password",
+      "mtPasswordPlaceholder": "MT trading password",
+      "mtHint": "Enter your bound MT account credentials to verify your identity. Server and platform are detected automatically.",
+      "verifyAndReset": "Verify & Reset Password",
+      "adminTab": "Admin",
+      "adminHint": "Please contact your administrator or support to reset your password."
     },
     "login": {
       "forgotPassword": "パスワードをお忘れですか？",
@@ -1177,6 +1527,17 @@ const Base = {
       "passwordMismatch": "パスワードが一致しません",
       "passwordRequired": "パスワードを入力してください",
       "loginRequired": "メールアドレスまたは口座番号を入力してください"
+    },
+    "resetPassword": {
+      "mismatch": "Passwords do not match.",
+      "invalidToken": "Invalid or missing reset token.",
+      "success": "Password has been reset. Please log in with your new password.",
+      "failed": "Failed to reset password.",
+      "title": "Set New Password",
+      "newPassword": "New Password",
+      "confirmRequired": "Please confirm your password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Reset Password"
     }
   },
   "common": {
@@ -1267,7 +1628,8 @@ const Base = {
     "success": "成功",
     "failed": "失敗",
     "reset": "リセット",
-    "saving": "保存中..."
+    "saving": "保存中...",
+    "selected": "selected"
   },
   "errors": {
     "ai": {
@@ -1330,7 +1692,8 @@ const Base = {
       "strategies": "{{count}} 戦略",
       "backtests": "{{count}} バックテスト/日",
       "liveStrategies": "{{count}} ライブ戦略",
-      "symbols": "{{count}} シンボル/戦略"
+      "symbols": "{{count}} シンボル/戦略",
+      "unlimitedAccounts": "Unlimited MT accounts"
     },
     "title": "サブスクリプションプラン",
     "subscribeSuccess": "サブスクリプションが有効になりました！",
@@ -1361,7 +1724,21 @@ const Base = {
     "selectBillingCycle": "請求サイクル",
     "monthly": "月額",
     "yearly": "年額",
-    "chargeNotice": "有料プランはウォレットから引き落としされます。無料プランは課金されません。"
+    "chargeNotice": "有料プランはウォレットから引き落としされます。無料プランは課金されません。",
+    "unbindSuccess": "Account unbound successfully.",
+    "unbindFailed": "Failed to unbind account.",
+    "accountLogin": "Login",
+    "accountBroker": "Broker",
+    "accountServer": "Server",
+    "accountType": "Type",
+    "accountStatus": "Status",
+    "boundAt": "Bound At",
+    "unbindConfirm": "Unbind this account? Active schedules on it will be stopped.",
+    "unbind": "Unbind",
+    "boundAccountsCount": "Bound Accounts",
+    "noBoundAccounts": "No bound accounts yet. Schedule a strategy to auto-bind an account.",
+    "aiTokensRemaining": "AI Tokens Remaining",
+    "boundAccountsTitle": "Bound MT Accounts"
   },
   "agent": {
     "analysis": {
@@ -1417,12 +1794,14 @@ const Base = {
     "handling": "ハンドリング",
     "userActionRequired": "操作が必要です",
     "noBlindSpots": "確認不要のロジック",
-    "noBlindSpotsDesc": "すべてのストラテジーロジックが自動認識されました。安全にインポートできます。"
+    "noBlindSpotsDesc": "すべてのストラテジーロジックが自動認識されました。安全にインポートできます。",
+    "emptyAnalysisDesc": "No strategy logic was recognized. The source code may be incomplete or use a different language."
   },
   "dashboard": {
     "quickActions": {
       "aiStrategy": "AI戦略"
-    }
+    },
+    "noAccountsDesc": "Bind your first MT4/MT5 account to start monitoring and trading."
   },
   "logs": {
     "triggerSource": {
@@ -1603,6 +1982,14 @@ const Base = {
     "nonPositive": "非正",
     "pushInterval": "プッシュ間隔: 5秒",
     "lastUpdate": "最終更新"
+  },
+  "analytics": {
+    "pnl": "P&L:"
+  },
+  "landing": {
+    "brokersTitle": "Compatible with 30+ MT4/MT5 Brokers",
+    "brokersDesc": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
+    "brokersLink": "View all supported brokers"
   }
 } as const;
 export default Base;

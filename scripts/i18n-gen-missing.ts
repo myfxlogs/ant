@@ -139,7 +139,7 @@ function main() {
     for (const k of missingFromMap) {
       if (k.key.startsWith('strategy.workspace.')) {
         const swMap = JSON.parse(fs.readFileSync(path.join(PROTO_DIR, 'strategy_workspace_map.json'), 'utf-8'));
-        const protoName = k.key.replace('strategy.workspace.', '').replace(/([A-Z])/g, '_$1').toLowerCase();
+        const protoName = k.key.replace('strategy.workspace.', '').replace(/\./g, '_').replace(/([A-Z])/g, '_$1').toLowerCase();
         const relPath = k.key.replace('strategy.workspace.', '');
         if (!(protoName in swMap.fields)) {
           swMap.fields[protoName] = relPath;
@@ -148,7 +148,7 @@ function main() {
       }
       if (k.key.startsWith('strategy.chartTools.')) {
         const ctMap = JSON.parse(fs.readFileSync(path.join(PROTO_DIR, 'strategy_chart_tools_map.json'), 'utf-8'));
-        const protoName = k.key.replace('strategy.chartTools.', '').replace(/([A-Z])/g, '_$1').toLowerCase();
+        const protoName = k.key.replace('strategy.chartTools.', '').replace(/\./g, '_').replace(/([A-Z])/g, '_$1').toLowerCase();
         const relPath = k.key.replace('strategy.chartTools.', '');
         if (!(protoName in ctMap.fields)) {
           ctMap.fields[protoName] = relPath;

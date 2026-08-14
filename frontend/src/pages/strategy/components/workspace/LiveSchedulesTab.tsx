@@ -127,7 +127,7 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
       const tpl = await strategyTemplateApi.get(row.templateId);
       const code = String(tpl?.code || '');
       if (!code) throw new Error('Template code empty');
-      const resp = await strategyActiveApi.start({ accountId: row.accountId, strategyCode: code, symbol: row.symbol, timeframe: row.timeframe, mode: 'paper', strategyId: row.templateId });
+      const resp = await strategyActiveApi.start({ accountId: row.accountId, strategyCode: code, symbol: row.symbol, timeframe: row.timeframe, mode: 'paper', strategyId: row.templateId, params: row.parameters });
       if (!resp.success) throw new Error(resp.error || 'StartStrategy failed');
       triggerRunIdRef.current = resp.runId;
       setTriggerResult({ logs: ['Run started, listening for signals...'], signal: null, meta: { templateId: row.templateId, scheduleId: row.id } });
