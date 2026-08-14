@@ -39,8 +39,13 @@ Table `expandable.expandedRowRender`，四个内嵌区（tab 或纵向堆叠，�
 保留现有 Run History 表（`LiveStrategyPage.tsx:222` 块原样迁移）。**删除 Active Runs、Schedules 两个 tab**（它们的全部信息已被 Tab1 吸收）。
 
 ### 其他
-- URL `?tab=` 参数兼容：`active|schedules` → 都映射到新 Tab1；`history` → Tab2。
+- URL `?tab=` 参数兼容（**外部引用共 4 处，逐一迁移别漏**，实测清单）：
+  - `LiveSchedulesTab.tsx:37` `getEnableNavigateTarget` → `?tab=active`（+ 对抗测试 `test/live-ui-antitest.test.tsx:86-92` 同步改期望值）
+  - `useMarketplace.ts:160` + `:201` 购买成功引导 → `?tab=schedules`
+  - `LiveStrategyPage.tsx:195` health 按钮 → `?tab=schedules&healthId=...`
+  - 映射规则：`active|schedules` → Tab1（我的策略）；`history` → Tab2。**改完后 grep 全库 `tab=active|tab=schedules` 确认无残留旧值**。
 - 空态 CTA「创建策略」（现 :245 Empty 组件迁移）。
+- **healthId/highlightScheduleId URL 参数**（`LiveStrategyPage.tsx:47-48` 现传入 LiveSchedulesTab:266）——Schedules tab 删除后这两个参数需在新 Tab1 有落点：`highlightScheduleId` → 新表对应行高亮；`healthId` → 自动开对应 schedule 的健康详情（行展开或复用 ScheduleHealthModal）。
 - paper/live Tag 区分（cfg.Mode 或 schedule 上标注）。
 - **LiveStrategyPage.tsx 拆分注意**：现 305 行（🟡 超标 22%），新表组件抽独立文件（如 `components/live/MyStrategiesTable.tsx` + `ScheduleExpandedRow.tsx`），主页面只留 tab 骨架 + 流管理。**拆后 check-file-lines --strict 必须 0 ERROR**。
 - i18n：新 key 走 `t('strategy.live.*', { defaultValue })` + gen-missing + **translate-zh-cn + translate-llm 四 locale**（别只 gen 不翻，PIPE-F5 教训）。
