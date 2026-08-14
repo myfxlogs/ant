@@ -922,6 +922,9 @@ const Base = {
       "startedAt": "Bắt đầu",
       "watchSignals": "Xem Tín hiệu",
       "confirmStop": "Dừng chiến lược này?",
+      "confirmClose": "Đóng vị thế này?",
+      "confirmCloseAll": "Đóng tất cả vị thế?",
+      "closeAll": "Đóng tất cả",
       "status": "Trạng thái",
       "totalSignals": "Tổng Tín hiệu",
       "stoppedAt": "Thời gian dừng",
@@ -959,7 +962,7 @@ const Base = {
       "streamDisconnected": "Kết nối bị gián đoạn, đang kết nối lại…",
       "goSchedules": "Đến lịch trình",
       "positionClosed": "Vị thế đã đóng",
-      "closeFailed": "Đóng vị thế thất bại"
+      "closeFailed": "Đóng thất bại"
     },
     "schedule": {
       "maxPositionsPlaceholder": "Không giới hạn"

@@ -922,6 +922,9 @@ const Base = {
       "startedAt": "啟動時間",
       "watchSignals": "查看訊號",
       "confirmStop": "停止此策略？",
+      "confirmClose": "平倉此持倉？",
+      "confirmCloseAll": "全部平倉？",
+      "closeAll": "全部平倉",
       "status": "狀態",
       "totalSignals": "總訊號數",
       "stoppedAt": "停止時間",
@@ -958,7 +961,7 @@ const Base = {
       "health": "健康",
       "streamDisconnected": "連線中斷，正在重連…",
       "goSchedules": "前往排程",
-      "positionClosed": "持倉已平",
+      "positionClosed": "持倉已平倉",
       "closeFailed": "平倉失敗"
     },
     "schedule": {

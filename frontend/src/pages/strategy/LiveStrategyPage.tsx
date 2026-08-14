@@ -42,7 +42,9 @@ export default function LiveStrategyPage() {
   const [healthLoading, setHealthLoading] = useState(false);
   const [healthTarget, setHealthTarget] = useState<ScheduleRow | null>(null);
   const [healthSummary, setHealthSummary] = useState<ScheduleHealthSummary | null>(null);
-  const { accounts: scheduleAccounts } = useAccountsAndSymbols();
+  const { accounts: scheduleAccounts, fetchAccounts } = useAccountsAndSymbols();
+
+  useEffect(() => { void fetchAccounts(); }, [fetchAccounts]);
 
   useEffect(() => {
     if (activeTab !== 'strategies') return;

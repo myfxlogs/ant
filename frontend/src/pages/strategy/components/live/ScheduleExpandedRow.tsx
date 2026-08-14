@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Table, Tag, Typography, Tabs, Descriptions, Empty, Spin } from 'antd';
+import { Table, Tag, Typography, Tabs, Descriptions, Empty, Spin, Button, Popconfirm, message } from 'antd';
+import { CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { strategyClient } from '@/client/connect';
 import { logApi } from '@/client/log';
+import { tradingApi } from '@/client/trading';
 import type { MtPositionSnapshotItem } from '@/gen/ant/v1/mt_position_snapshot_pb';
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import type { StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
@@ -25,14 +27,18 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
   const [logsLoading, setLogsLoading] = useState(false);
   const [signals, setSignals] = useState<StrategySignalEvent[]>([]);
   const [signalsLoading, setSignalsLoading] = useState(false);
+  const [closingTicket, setClosingTicket] = useState<bigint | null>(null);
+  const [closingAll, setClosingAll] = useState(false);
   const signalAbortRef = useRef<AbortController | null>(null);
+  const positionsLoadedRef = useRef(false);
 
-  const fetchPositions = useCallback(async () => {
+  const fetchPositions = useCallback(async (silent = false) => {
     if (!row.id) return;
-    setPositionsLoading(true);
+    if (!silent || !positionsLoadedRef.current) setPositionsLoading(true);
     try {
       const resp = await strategyClient.getSchedulePositions({ scheduleId: row.id });
       setPositions(resp.positions || []);
+      positionsLoadedRef.current = true;
     } catch { setPositions([]); }
     setPositionsLoading(false);
   }, [row.id]);
@@ -54,15 +60,18 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
     const ctrl = new AbortController();
     signalAbortRef.current = ctrl;
     setSignalsLoading(true);
+    let receivedAny = false;
     (async () => {
       try {
         for await (const ev of strategyActiveApi.watchSignals(runId, ctrl.signal)) {
+          if (!receivedAny) { receivedAny = true; setSignalsLoading(false); }
           if (!ev.signalType) continue;
           setSignals(prev => [...prev.slice(-19), ev as StrategySignalEvent]);
         }
       } catch { /* stream ended */ }
       setSignalsLoading(false);
     })();
+    setTimeout(() => { if (!receivedAny) setSignalsLoading(false); }, 3000);
   }, [row.active?.runId]);
 
   useEffect(() => {
@@ -73,8 +82,40 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
   }, [fetchPositions, fetchLogs, fetchSignals]);
 
   useEffect(() => {
-    if (activeVersion > 0 && row.active) void fetchPositions();
+    if (activeVersion > 0 && row.active) void fetchPositions(true);
   }, [activeVersion, row.active, fetchPositions]);
+
+  const handleClosePosition = useCallback(async (ticket: bigint, volume: string) => {
+    if (!row.accountId) return;
+    setClosingTicket(ticket);
+    try {
+      const result = await tradingApi.orderClose({
+        accountId: row.accountId,
+        ticket,
+        volume: Number(volume) || undefined,
+      });
+      if (result.error) message.error(result.error);
+      else { message.success(t('strategy.live.positionClosed', { defaultValue: 'Position closed' })); void fetchPositions(true); }
+    } catch { message.error(t('strategy.live.closeFailed', { defaultValue: 'Close failed' })); }
+    setClosingTicket(null);
+  }, [row.accountId, fetchPositions, t]);
+
+  const handleCloseAll = useCallback(async () => {
+    if (!row.accountId || positions.length === 0) return;
+    setClosingAll(true);
+    let ok = 0, fail = 0;
+    for (const p of positions) {
+      const result = await tradingApi.orderClose({
+        accountId: row.accountId,
+        ticket: p.ticket,
+        volume: Number(p.volume) || undefined,
+      });
+      if (result.error) fail++; else ok++;
+    }
+    setClosingAll(false);
+    if (ok > 0) { message.success(t('strategy.live.positionClosed', { defaultValue: 'Position closed' })); void fetchPositions(true); }
+    if (fail > 0) message.error(`${fail} position(s) failed to close`);
+  }, [row.accountId, positions, fetchPositions, t]);
 
   const positionColumns = [
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
@@ -89,6 +130,13 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
     } },
     { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 80, render: (v: string) => v || '-' },
     { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 80, render: (v: string) => v || '-' },
+    { title: '', key: 'close', width: 60, render: (_: unknown, r: MtPositionSnapshotItem) => (
+      <Popconfirm title={t('strategy.live.confirmClose', { defaultValue: 'Close this position?' })}
+        onConfirm={() => handleClosePosition(r.ticket, r.volume)}>
+        <Button size="small" type="text" danger icon={<CloseCircleOutlined />}
+          loading={closingTicket === r.ticket} />
+      </Popconfirm>
+    ) },
   ];
 
   const signalColumns = [
@@ -115,6 +163,16 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
           label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
             <Spin spinning={positionsLoading}>
+              {positions.length > 0 && (
+                <div style={{ marginBottom: 8, textAlign: 'right' }}>
+                  <Popconfirm title={t('strategy.live.confirmCloseAll', { defaultValue: 'Close all positions?' })}
+                    onConfirm={handleCloseAll}>
+                    <Button size="small" danger icon={<CloseCircleOutlined />} loading={closingAll}>
+                      {t('strategy.live.closeAll', { defaultValue: 'Close All' })}
+                    </Button>
+                  </Popconfirm>
+                </div>
+              )}
               <Table size="small" dataSource={positions} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
             </Spin>

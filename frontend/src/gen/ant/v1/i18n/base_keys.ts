@@ -3376,6 +3376,15 @@ export const STRATEGY_LIVE_WATCH_SIGNALS_KEY = 'strategy.live.watchSignals' as c
 /** strategy.live.confirmStop */
 export const STRATEGY_LIVE_CONFIRM_STOP_KEY = 'strategy.live.confirmStop' as const;
 
+/** strategy.live.confirmClose */
+export const STRATEGY_LIVE_CONFIRM_CLOSE_KEY = 'strategy.live.confirmClose' as const;
+
+/** strategy.live.confirmCloseAll */
+export const STRATEGY_LIVE_CONFIRM_CLOSE_ALL_KEY = 'strategy.live.confirmCloseAll' as const;
+
+/** strategy.live.closeAll */
+export const STRATEGY_LIVE_CLOSE_ALL_KEY = 'strategy.live.closeAll' as const;
+
 /** strategy.live.status */
 export const STRATEGY_LIVE_STATUS_KEY = 'strategy.live.status' as const;
 
@@ -5993,6 +6002,9 @@ export const BASE_KEYS = {
   strategy_live_started_at: '__root__.strategy.live.startedAt',
   strategy_live_watch_signals: '__root__.strategy.live.watchSignals',
   strategy_live_confirm_stop: '__root__.strategy.live.confirmStop',
+  strategy_live_confirm_close: '__root__.strategy.live.confirmClose',
+  strategy_live_confirm_close_all: '__root__.strategy.live.confirmCloseAll',
+  strategy_live_close_all: '__root__.strategy.live.closeAll',
   strategy_live_status: '__root__.strategy.live.status',
   strategy_live_total_signals: '__root__.strategy.live.totalSignals',
   strategy_live_stopped_at: '__root__.strategy.live.stoppedAt',
