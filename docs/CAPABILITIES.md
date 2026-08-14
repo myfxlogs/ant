@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-08-14 07:07 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-08-14 07:13 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -846,7 +846,7 @@ RunBacktest	backend/internal/connect/strategy/strategy_signals.go:15
 RunBacktest	proto/ant/v1/backtest_service.proto:14
 RunBacktest	proto/ant/v1/strategy.proto:30
 RunEvaluation	proto/ant/v1/ai_gate.proto:11
-RunLiveStrategy	backend/internal/connect/strategy/live_runner.go:135
+RunLiveStrategy	backend/internal/connect/strategy/live_runner.go:133
 RunMarketBacktest	proto/ant/v1/marketplace_service.proto:30
 RunStrategy	proto/ant/v1/backtest_service.proto:16
 SaveUserTemplate	proto/ant/v1/agent_gateway.proto:40
@@ -985,7 +985,7 @@ StartPlatformRenewalLoop	backend/internal/service/subscription_renewal.go:18
 StartRefreshLoop	backend/internal/risksvc/platform_aggregator.go:155
 StartRefreshLoop	backend/internal/service/quota_checker.go:165
 StartSchedule	backend/internal/connect/strategy/schedule_event.go:17
-StartStrategy	backend/internal/connect/strategy/strategy_active_handlers.go:251
+StartStrategy	backend/internal/connect/strategy/strategy_active_handlers.go:179
 StartStrategy	proto/ant/v1/strategy_runtime.proto:49
 StartTrial	proto/ant/v1/marketplace_service.proto:52
 State	backend/internal/mthub/derived_state.go:121
@@ -1166,7 +1166,7 @@ VerifyTradePermission	proto/ant/v1/account.proto:23
 Version	reference/grpc/mt5.proto:376
 WaitSession	backend/internal/mthub/types.go:64
 Watch	backend/internal/connect/strategy/session_registry.go:130
-WatchActiveStrategies	backend/internal/connect/strategy/strategy_active_handlers.go:425
+WatchActiveStrategies	backend/internal/connect/strategy/strategy_active_handlers.go:353
 WatchActiveStrategies	proto/ant/v1/strategy_runtime.proto:52
 WatchAll	backend/internal/mthub/tick_broker.go:108
 WatchAll	backend/internal/mthub/types.go:187
@@ -1740,7 +1740,7 @@ backend/internal/connect/strategy/data_source.go:68:func (s *LiveSource) Subscri
 backend/internal/connect/strategy/divergence_handler.go:38:func (s *DivergenceServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 backend/internal/connect/strategy/divergence_handler.go:42:func (s *DivergenceServer) GetDivergenceReport(
 backend/internal/connect/strategy/divergence_handler.go:60:func (s *DivergenceServer) WatchDivergenceReport(
-backend/internal/connect/strategy/live_runner.go:135:func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
+backend/internal/connect/strategy/live_runner.go:133:func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
 backend/internal/connect/strategy/position_cache.go:35:func (c *PositionCache) Subscribe(ctx context.Context, hub *mthub.MtHubService, accountID string) {
 backend/internal/connect/strategy/position_cache.go:59:func (c *PositionCache) Unsubscribe(accountID string) {
 backend/internal/connect/strategy/position_cache.go:67:func (c *PositionCache) GetSnapshot(accountID string) *mthub.PositionSnapshot {
@@ -1778,9 +1778,9 @@ backend/internal/connect/strategy/shadow_verifier.go:65:func (sv *ShadowVerifier
 backend/internal/connect/strategy/shadow_verifier.go:75:func (sv *ShadowVerifier) RecordBar(bar sdk.Bar) {
 backend/internal/connect/strategy/shadow_verifier.go:92:func (sv *ShadowVerifier) RecordLiveSignal(barTime int64, action, volume, price string) {
 backend/internal/connect/strategy/strategy_active_handlers.go:114:func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req *connect.Request[antv1.WatchStrategySignalsRequest], stream *connect.ServerStream[antv1.StrategySignalEvent]) error {
+backend/internal/connect/strategy/strategy_active_handlers.go:179:func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connect.Request[antv1.StartStrategyRequest]) (*connect.Response[antv1.StartStrategyResponse], error) {
 backend/internal/connect/strategy/strategy_active_handlers.go:23:func (s *StrategyExecutionServer) ListActiveStrategies(ctx context.Context, req *connect.Request[antv1.ListActiveStrategiesRequest]) (*connect.Response[antv1.ListActiveStrategiesResponse], error) {
-backend/internal/connect/strategy/strategy_active_handlers.go:251:func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connect.Request[antv1.StartStrategyRequest]) (*connect.Response[antv1.StartStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_active_handlers.go:425:func (s *StrategyExecutionServer) WatchActiveStrategies(
+backend/internal/connect/strategy/strategy_active_handlers.go:353:func (s *StrategyExecutionServer) WatchActiveStrategies(
 backend/internal/connect/strategy/strategy_active_handlers.go:49:func (s *StrategyExecutionServer) GetActiveStrategy(ctx context.Context, req *connect.Request[antv1.GetActiveStrategyRequest]) (*connect.Response[antv1.GetActiveStrategyResponse], error) {
 backend/internal/connect/strategy/strategy_active_handlers.go:77:func (s *StrategyExecutionServer) StopStrategy(ctx context.Context, req *connect.Request[antv1.StopStrategyRequest]) (*connect.Response[antv1.StopStrategyResponse], error) {
 backend/internal/connect/strategy/strategy_asset_handler.go:120:func (s *StrategyAssetServer) ReviewStrategyAsset(ctx context.Context, req *connect.Request[antv1.ReviewStrategyAssetRequest]) (*connect.Response[antv1.StrategyAsset], error) {
