@@ -343,6 +343,7 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 ## LIVE 语义一致性审计（2026-08-15 同类 bug 横扫：live harness 与回测/MT4 的静默背离）
 
 > 触发：用户问"还有没有其他类似 Bug"（LIVE-NO-PRELOAD 同类 = live 执行环境与回测/MT4 语义不一致导致策略静默不交易/交易错）。审计方全量核对 live harness（`vm_live_handlers.go`/`runner/broker.go`/`vm_builtin_*.go`）注入面。
+> **施工方案已出（最优解）**：`docs/audits/builder-handoff-live-harness-parity-2026-08-15.md`（批次 LIVE-HARNESS-PARITY：Task 1 NO-PRELOAD / Task 2 NO-FREEMARGIN / Task 3 NO-EXIT / Task 4 NO-SYMBOLINFO，含复用核对/对抗证明/生产验收链/依赖关系）。
 
 **架构事实**：live 模式 VM 的 broker = `brokerImpl{executor: nil}`（harness 模式，`vm_live_session.go:100` runner.New 无 executor），唯一数据入口 = 每个 bar/tick/trade 事件一次的 `r.UpdateLiveState(balance, equity, positions)`（`vm_live_handlers.go:16/82`）。
 
