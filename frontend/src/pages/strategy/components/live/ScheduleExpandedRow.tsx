@@ -17,9 +17,11 @@ const { Text } = Typography;
 interface Props {
   row: JoinedRow;
   activeVersion: number;
+  liveBid?: string;
+  liveAsk?: string;
 }
 
-export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
+export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveAsk }: Props) {
   const { t } = useTranslation();
   const [positions, setPositions] = useState<MtPositionSnapshotItem[]>([]);
   const [positionsLoading, setPositionsLoading] = useState(false);
@@ -117,6 +119,13 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
     if (fail > 0) message.error(`${fail} position(s) failed to close`);
   }, [row.accountId, positions, fetchPositions, t]);
 
+  const livePrice = liveBid || liveAsk || '';
+  const positionsWithLive = positions.map(p => {
+    if (!livePrice) return p;
+    const cp = p.type === 'buy' ? (liveBid || liveAsk || p.currentPrice) : (liveAsk || liveBid || p.currentPrice);
+    return { ...p, currentPrice: cp };
+  });
+
   const positionColumns = [
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
     { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
@@ -129,7 +138,15 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
       return <Text type={color}>{n >= 0 ? `+${v}` : v}</Text>;
     } },
     { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 80, render: (v: string) => v || '-' },
-    { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 80, render: (v: string) => v || '-' },
+    { title: <span>{t('strategy.live.tp', { defaultValue: 'TP' })}{positionsWithLive.length > 0 && (
+      <Popconfirm title={t('strategy.live.confirmCloseAll', { defaultValue: 'Close all positions?' })}
+        onConfirm={handleCloseAll}>
+        <Button size="small" type="link" danger icon={<CloseCircleOutlined />} loading={closingAll}
+          style={{ marginLeft: 4, padding: '0 4px' }}>
+          {t('strategy.live.closeAll', { defaultValue: 'Close All' })}
+        </Button>
+      </Popconfirm>
+    )}</span>, dataIndex: 'takeProfit', width: 120, render: (v: string) => v || '-' },
     { title: '', key: 'close', width: 60, render: (_: unknown, r: MtPositionSnapshotItem) => (
       <Popconfirm title={t('strategy.live.confirmClose', { defaultValue: 'Close this position?' })}
         onConfirm={() => handleClosePosition(r.ticket, r.volume)}>
@@ -163,17 +180,7 @@ export default function ScheduleExpandedRow({ row, activeVersion }: Props) {
           label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
             <Spin spinning={positionsLoading}>
-              {positions.length > 0 && (
-                <div style={{ marginBottom: 8, textAlign: 'right' }}>
-                  <Popconfirm title={t('strategy.live.confirmCloseAll', { defaultValue: 'Close all positions?' })}
-                    onConfirm={handleCloseAll}>
-                    <Button size="small" danger icon={<CloseCircleOutlined />} loading={closingAll}>
-                      {t('strategy.live.closeAll', { defaultValue: 'Close All' })}
-                    </Button>
-                  </Popconfirm>
-                </div>
-              )}
-              <Table size="small" dataSource={positions} rowKey="ticket" columns={positionColumns} pagination={false}
+              <Table size="small" dataSource={positionsWithLive} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
             </Spin>
           ),

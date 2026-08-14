@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import i18n, { normalizeLanguage, setLanguage, LANGUAGE_NATIVE_NAMES, type SupportedLanguage } from '@/i18n';
 import AppSidebar from '@/components/layout/AppSidebar';
 import TopBar from '@/components/layout/TopBar';
+import { useUIStore } from '@/stores/uiStore';
 
 const { Content } = Layout;
 
@@ -63,6 +64,9 @@ export default function MainLayout() {
     onClick: handleLanguageChange,
   };
 
+  const { sidebarCollapsed } = useUIStore();
+  const siderWidth = sidebarCollapsed ? 64 : 240;
+
   return (
     <Layout className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <AppSidebar
@@ -71,8 +75,8 @@ export default function MainLayout() {
         onDrawerClose={() => setDrawerVisible(false)}
         onMenuClick={(_key) => { /* handled by SidebarMenu internally via navigate */ }}
       />
-      <Layout style={{ background: 'transparent', marginLeft: isMobile ? 0 : 240 }}>
-        <TopBar isMobile={isMobile} onMenuToggle={() => setDrawerVisible(true)} language={language} languages={languages} languageMenu={languageMenu} />
+      <Layout style={{ background: 'transparent', marginLeft: isMobile ? 0 : siderWidth, transition: 'margin-left 0.2s' }}>
+        <TopBar isMobile={isMobile} onMenuToggle={() => setDrawerVisible(true)} language={language} languages={languages} languageMenu={languageMenu} siderWidth={siderWidth} />
         <Content className="pt-14 sm:pt-16 px-0" style={{ paddingBottom: 'var(--space-xl)' }}>
           <ContentContainer>
             <Outlet />

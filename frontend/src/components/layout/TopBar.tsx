@@ -22,9 +22,10 @@ interface Props {
   language: SupportedLanguage;
   languages: LanguageOption[];
   languageMenu: { items: { key: string; label: string; icon: React.ReactNode | null }[]; onClick: (info: { key: string }) => void };
+  siderWidth: number;
 }
 
-export default function TopBar({ isMobile, onMenuToggle, languageMenu }: Props) {
+export default function TopBar({ isMobile, onMenuToggle, language: _language, languages: _languages, languageMenu, siderWidth }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -46,7 +47,7 @@ export default function TopBar({ isMobile, onMenuToggle, languageMenu }: Props) 
 
   return (
     <Header className="px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16"
-      style={{ background: 'var(--color-bg-header)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--color-border)', position: 'fixed', top: 0, left: isMobile ? 0 : 240, right: 0, zIndex: 100 }}>
+      style={{ background: 'var(--color-bg-header)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--color-border)', position: 'fixed', top: 0, left: isMobile ? 0 : siderWidth, right: 0, zIndex: 100, transition: 'left 0.2s' } }>
       <div className="flex items-center gap-2">
         {isMobile && (
           <button onClick={onMenuToggle} className="p-2 rounded-lg transition-colors" style={{ color: 'var(--color-text-secondary)' }}>

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Layout, Menu, Drawer, Dropdown } from 'antd';
+import { Layout, Menu, Drawer, Dropdown, Button } from 'antd';
 import type { MenuProps } from 'antd';
-import { GlobalOutlined, LineChartOutlined } from '@ant-design/icons';
+import { GlobalOutlined, LineChartOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
+import { useUIStore } from '@/stores/uiStore';
 import type { SupportedLanguage } from '@/i18n';
 
 interface MenuItem {
@@ -42,8 +43,15 @@ interface Props {
 
 const BRAND_GRADIENT = PRIMARY_GRADIENT;
 
-function BrandLogo() {
+function BrandLogo({ collapsed }: { collapsed?: boolean }) {
   const { t } = useTranslation();
+  if (collapsed) {
+    return (
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
+        <LineChartOutlined size={22} color="#FFFFFF" />
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
@@ -138,12 +146,18 @@ export default function AppSidebar({
   }
 
   // Desktop sidebar
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const siderWidth = sidebarCollapsed ? 64 : 240;
   return (
-    <Layout.Sider trigger={null}
-      style={{ background: 'var(--color-bg-main)', borderRight: '1px solid var(--color-border)', width: 240, minWidth: 240, maxWidth: 240, position: 'fixed', left: 0, top: 0, bottom: 0 }}
-      width={240}>
-      <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid var(--color-border)' }}><BrandLogo /></div>
+    <Layout.Sider trigger={null} collapsed={sidebarCollapsed}
+      style={{ background: 'var(--color-bg-main)', borderRight: '1px solid var(--color-border)', width: siderWidth, minWidth: siderWidth, maxWidth: siderWidth, position: 'fixed', left: 0, top: 0, bottom: 0, transition: 'width 0.2s' }}
+      width={siderWidth}>
+      <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid var(--color-border)' }}><BrandLogo collapsed={sidebarCollapsed} /></div>
       <SidebarMenu items={menuItems} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderTop: '1px solid var(--color-border)' }}>
+        <Button type="text" block icon={sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} onClick={toggleSidebar}
+          style={{ height: 48 }} />
+      </div>
     </Layout.Sider>
   );
 }

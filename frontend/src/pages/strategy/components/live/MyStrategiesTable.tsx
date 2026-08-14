@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Table, Tag, Typography, Space, Button, Tooltip, Popconfirm, Empty, Badge } from 'antd';
+import { Table, Tag, Typography, Space, Button, Tooltip, Empty, Badge, Dropdown } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { PlayCircleOutlined, PauseCircleOutlined, ThunderboltOutlined, EditOutlined, FileTextOutlined, HeartOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, PauseCircleOutlined, ThunderboltOutlined, EditOutlined, FileTextOutlined, HeartOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { ScheduleRow, TemplateOption, AccountRow } from '../../hooks/libraryTypes';
 import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb';
@@ -164,41 +164,43 @@ export default function MyStrategiesTable({
         : <Text type="secondary">-</Text>,
     },
     {
-      title: '', key: 'actions', width: 200,
-      render: (_: unknown, row: JoinedRow) => (
-        <Space size="small">
-          <Tooltip title={row.isActive ? t('common.disable', { defaultValue: 'Disable' }) : t('common.enable', { defaultValue: 'Enable' })}>
-            <Button size="small" type="text" icon={row.isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
-              onClick={() => onToggleActive(row, !row.isActive)} />
-          </Tooltip>
-          <Tooltip title={t('strategy.schedules.actions.runNow', { defaultValue: 'Run Now' })}>
-            <Button size="small" type="text" icon={<ThunderboltOutlined />} disabled={!row.isActive}
-              onClick={() => onManualTrigger(row)} />
-          </Tooltip>
-          <Tooltip title={t('common.edit', { defaultValue: 'Edit' })}>
-            <Button size="small" type="text" icon={<EditOutlined />} onClick={() => onEdit(row)} />
-          </Tooltip>
-          <Tooltip title={t('strategy.live.logs', { defaultValue: 'Logs' })}>
-            <Button size="small" type="text" icon={<FileTextOutlined />} disabled={isLogButtonDisabled(row.id)}
-              onClick={() => onShowLogs(row.id)} />
-          </Tooltip>
-          <Tooltip title={t('strategy.live.health', { defaultValue: 'Health' })}>
-            <Button size="small" type="text" icon={<HeartOutlined />} disabled={isHealthButtonDisabled(row.id)}
-              onClick={() => onHealthCheck(row)} />
-          </Tooltip>
-          {row.active && (
-            <Popconfirm title={t('strategy.live.confirmStop', { defaultValue: 'Stop this strategy?' })}
-              onConfirm={() => onStop(row.active!.runId)}>
-              <Button size="small" type="text" danger loading={stopping === row.active.runId}
-                icon={<PauseCircleOutlined />} />
-            </Popconfirm>
-          )}
-          <Popconfirm title={t('strategy.schedules.deleteConfirm.title', { defaultValue: 'Delete this schedule?' })}
-            onConfirm={() => onDelete(row)}>
-            <Button size="small" type="text" danger icon={<DeleteOutlined />} disabled={!row.id} />
-          </Popconfirm>
-        </Space>
-      ),
+      title: '', key: 'actions', width: 120, fixed: 'right',
+      render: (_: unknown, row: JoinedRow) => {
+        const menuItems = [
+          { key: 'toggle', icon: row.isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />, label: row.isActive ? t('common.disable', { defaultValue: 'Disable' }) : t('common.enable', { defaultValue: 'Enable' }) },
+          { key: 'run', icon: <ThunderboltOutlined />, label: t('strategy.schedules.actions.runNow', { defaultValue: 'Run Now' }), disabled: !row.isActive },
+          { key: 'edit', icon: <EditOutlined />, label: t('common.edit', { defaultValue: 'Edit' }) },
+          { key: 'logs', icon: <FileTextOutlined />, label: t('strategy.live.logs', { defaultValue: 'Logs' }), disabled: isLogButtonDisabled(row.id) },
+          { key: 'health', icon: <HeartOutlined />, label: t('strategy.live.health', { defaultValue: 'Health' }), disabled: isHealthButtonDisabled(row.id) },
+          ...(row.active ? [{ type: 'divider' as const }, { key: 'stop', icon: <PauseCircleOutlined />, label: t('strategy.live.confirmStop', { defaultValue: 'Stop this strategy?' }), danger: true }] : []),
+          { type: 'divider' as const },
+          { key: 'delete', icon: <DeleteOutlined />, label: t('common.delete', { defaultValue: 'Delete' }), danger: true, disabled: !row.id },
+        ];
+        const handleMenu = ({ key }: { key: string }) => {
+          if (key === 'toggle') onToggleActive(row, !row.isActive);
+          else if (key === 'run') onManualTrigger(row);
+          else if (key === 'edit') onEdit(row);
+          else if (key === 'logs') onShowLogs(row.id);
+          else if (key === 'health') onHealthCheck(row);
+          else if (key === 'stop' && row.active) onStop(row.active.runId);
+          else if (key === 'delete') onDelete(row);
+        };
+        return (
+          <Space size="small">
+            <Tooltip title={row.isActive ? t('common.disable', { defaultValue: 'Disable' }) : t('common.enable', { defaultValue: 'Enable' })}>
+              <Button size="small" type="text" icon={row.isActive ? <PauseCircleOutlined /> : <PlayCircleOutlined />}
+                onClick={() => onToggleActive(row, !row.isActive)} />
+            </Tooltip>
+            <Tooltip title={t('strategy.schedules.actions.runNow', { defaultValue: 'Run Now' })}>
+              <Button size="small" type="text" icon={<ThunderboltOutlined />} disabled={!row.isActive}
+                onClick={() => onManualTrigger(row)} />
+            </Tooltip>
+            <Dropdown menu={{ items: menuItems, onClick: handleMenu }} trigger={['click']} placement="bottomRight">
+              <Button size="small" type="text" icon={<MoreOutlined />} />
+            </Dropdown>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -215,7 +217,7 @@ export default function MyStrategiesTable({
         expandable={{
           expandedRowKeys: expandedKeys,
           onExpand: (expanded, row) => setExpandedKeys(expanded ? [...expandedKeys, row.id] : expandedKeys.filter(k => k !== row.id)),
-          expandedRowRender: (row) => <ScheduleExpandedRow row={row} activeVersion={activeVersion} />,
+          expandedRowRender: (row) => <ScheduleExpandedRow row={row} activeVersion={activeVersion} liveBid={row.active?.bid} liveAsk={row.active?.ask} />,
           rowExpandable: (row) => !!row.id,
         }}
         locale={{ emptyText: (

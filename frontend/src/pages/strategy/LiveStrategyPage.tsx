@@ -152,7 +152,8 @@ export default function LiveStrategyPage() {
   }, [t]);
 
   const onEdit = useCallback((row: ScheduleRow) => {
-    navigate(`/strategy/schedules?edit=${row.id}`);
+    if (row.templateId) navigate(`/strategy/${row.templateId}/edit`);
+    else navigate('/strategy');
   }, [navigate]);
 
   const onDelete = useCallback(async (row: ScheduleRow) => {
