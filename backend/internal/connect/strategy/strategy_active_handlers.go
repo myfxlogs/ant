@@ -345,24 +345,29 @@ func (s *StrategyExecutionServer) checkStrategyQuota(ctx context.Context, uid uu
 }
 
 func (s *StrategyExecutionServer) resolveModeAndAccount(ctx context.Context, uid uuid.UUID, mode string, cfg *LiveStrategyConfig) error {
-	if mode == modeLive {
-		if s.accountLookup == nil {
+	// If the caller already selected an account (panel/schedule), it is the
+	// single source of truth — both trading and bar source follow it.
+	if cfg.AccountID != "" {
+		cfg.DataSourceAccountID = cfg.AccountID
+		return nil
+	}
+	// Fallback: auto-select a connected MT account via accountLookup.
+	if s.accountLookup == nil {
+		if mode == modeLive {
 			return connect.NewError(connect.CodeUnavailable, fmt.Errorf("account lookup not configured"))
 		}
-		mt4ID := s.accountLookup(ctx, uid.String())
-		if mt4ID == "" {
+		return nil
+	}
+	mt4ID := s.accountLookup(ctx, uid.String())
+	if mt4ID == "" {
+		if mode == modeLive {
 			return connect.NewError(connect.CodeFailedPrecondition,
 				fmt.Errorf("no connected MT account found — please bind an MT account before starting a live strategy"))
 		}
-		cfg.DataSourceAccountID = mt4ID
-		cfg.AccountID = mt4ID
 		return nil
 	}
-	if s.accountLookup != nil {
-		if mt4ID := s.accountLookup(ctx, uid.String()); mt4ID != "" {
-			cfg.DataSourceAccountID = mt4ID
-		}
-	}
+	cfg.DataSourceAccountID = mt4ID
+	cfg.AccountID = mt4ID
 	return nil
 }
 

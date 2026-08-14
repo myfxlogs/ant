@@ -85,7 +85,7 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 		var mt4ID string
 		err := d.pool.QueryRow(ctx,
 			`SELECT id::text FROM mt_accounts
-			 WHERE user_id = $1::uuid AND account_status != 'frozen'
+			 WHERE user_id = $1::uuid AND account_status = 'connected'
 			 ORDER BY created_at LIMIT 1`,
 			userID).Scan(&mt4ID)
 		if err != nil {
