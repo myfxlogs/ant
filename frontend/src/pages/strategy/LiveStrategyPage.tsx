@@ -109,6 +109,7 @@ export default function LiveStrategyPage() {
     (async () => {
       try {
         for await (const event of strategyActiveApi.watchSignals(runId, abortRef.current!.signal)) {
+          if (!event.signalType) continue; // skip heartbeat keepalive
           setSignals(prev => [...prev.slice(-199), event as StrategySignalEvent]);
         }
       } catch (e: unknown) {
@@ -134,7 +135,7 @@ export default function LiveStrategyPage() {
     { title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60 },
     { title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70, render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag> },
     { title: t('strategy.live.signals', { defaultValue: 'Signals' }), dataIndex: 'signalCount', width: 70, render: (v: number) => <Text strong>{v}</Text> },
-    { title: t('strategy.live.errors', { defaultValue: 'Errors' }), dataIndex: 'errorCount', width: 60, render: (v: number) => v > 0 ? <Tag color="red">{v}</Tag> : <Text type="secondary">0</Text> },
+    { title: t('strategy.live.errors', { defaultValue: 'Errors' }), dataIndex: 'errorCount', width: 60, render: (v: number, record: ActiveStrategy) => v > 0 ? <Tooltip title={record.lastError || t('strategy.live.unknownError', { defaultValue: 'Unknown error' })}><Tag color="red">{v}</Tag></Tooltip> : <Text type="secondary">0</Text> },
     { title: t('strategy.live.startedAt', { defaultValue: 'Started' }), dataIndex: 'startedAt', width: 140, render: (v: { seconds?: bigint; nanos?: number } | null) => <Text style={{ fontSize: 12 }}>{formatTime(v)}</Text> },
     {
       title: '', width: 180,
@@ -201,7 +202,7 @@ export default function LiveStrategyPage() {
               <Card size="small">
                 <Table
                   size="small"
-                  dataSource={activeStrategies}
+                  dataSource={[...activeStrategies].sort((a, b) => a.runId.localeCompare(b.runId))}
                   rowKey="runId"
                   loading={loading}
                   columns={activeColumns}

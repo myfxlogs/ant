@@ -62,7 +62,10 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	srv.SetImportedRepo(repository.NewImportedStrategyRepository(d.pool))
 	srv.SetVersionRepo(repository.NewStrategyVersionRepository(d.pool))
 	srv.SetFailureSignatureRepo(repository.NewFailureSignatureRepository(d.pool))
-	srv.SetSessionRegistry(strategy.NewSessionRegistry())
+	reg := strategy.NewSessionRegistry()
+	reg.SetLogger(d.log)
+	reg.SetLogRepository(repository.NewLogRepository(d.pool))
+	srv.SetSessionRegistry(reg)
 	srv.SetScheduleNameLookup(func(ctx context.Context, scheduleID uuid.UUID) string {
 		var name string
 		err := d.pool.QueryRow(ctx, `SELECT name FROM strategy_schedules WHERE id = $1`, scheduleID).Scan(&name)

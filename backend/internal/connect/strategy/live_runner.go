@@ -394,8 +394,8 @@ func handleExtraSymbolBar(bar *mthub.BarUpdate, extraBars map[string][]liveBar) 
 
 func (s *StrategyExecutionServer) registerLiveSession(cfg *LiveStrategyConfig, runID uuid.UUID, runCancel func(), cleanupOrphan func(string)) *ActiveSession {
 	activeSess := cfg.PreRegisteredSession
+	uid, _ := uuid.Parse(cfg.UserID)
 	if activeSess == nil && s.sessionRegistry != nil {
-		uid, _ := uuid.Parse(cfg.UserID)
 		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, runCancel)
 		if activeSess == nil {
 			cleanupOrphan("session registration failed")
@@ -404,6 +404,10 @@ func (s *StrategyExecutionServer) registerLiveSession(cfg *LiveStrategyConfig, r
 	}
 	if activeSess != nil {
 		s.log.Info("LiveStrategyRunner: session registered", zap.String("run_id", runID.String()))
+		if s.sessionRegistry != nil {
+			s.sessionRegistry.InsertScheduleRunLog(context.Background(), uid, cfg.ScheduleID,
+				"start", "register", "success", "", "", decimal.Zero)
+		}
 	}
 	return activeSess
 }
@@ -441,6 +445,11 @@ func (s *StrategyExecutionServer) cleanupLiveSession(runID uuid.UUID, cfg LiveSt
 		}
 		if err := s.runRepo.UpdateStopped(context.Background(), runID, status, errMsg); err != nil {
 			s.log.Warn("LiveStrategyRunner: failed to update run record on stop", zap.Error(err))
+		}
+		uid, _ := uuid.Parse(cfg.UserID)
+		if s.sessionRegistry != nil {
+			s.sessionRegistry.InsertScheduleRunLog(context.Background(), uid, cfg.ScheduleID,
+				"complete", "cleanup", status, errMsg, "", decimal.Zero)
 		}
 	}
 }

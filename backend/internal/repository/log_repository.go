@@ -19,15 +19,23 @@ func NewLogRepository(db *pgxpool.Pool) *LogRepository {
 }
 
 type ScheduleRunLogRow struct {
-	ID           uuid.UUID `db:"id"`
-	Kind         string    `db:"kind"`
-	Action       string    `db:"action"`
-	Status       string    `db:"status"`
-	DurationMs   int64     `db:"duration_ms"`
-	ErrorMessage string    `db:"error_message"`
-	SignalType   string    `db:"signal_type"`
+	ID           uuid.UUID       `db:"id"`
+	Kind         string          `db:"kind"`
+	Action       string          `db:"action"`
+	Status       string          `db:"status"`
+	DurationMs   int64           `db:"duration_ms"`
+	ErrorMessage string          `db:"error_message"`
+	SignalType   string          `db:"signal_type"`
 	SignalVolume decimal.Decimal `db:"signal_volume"`
-	CreatedAt    time.Time `db:"created_at"`
+	CreatedAt    time.Time       `db:"created_at"`
+}
+
+func (r *LogRepository) InsertScheduleRunLog(ctx context.Context, userID, scheduleID uuid.UUID, kind, action, status, errorMessage, signalType string, signalVolume decimal.Decimal) error {
+	_, err := r.db.Exec(ctx,
+		`INSERT INTO schedule_run_logs (user_id, schedule_id, kind, action, status, duration_ms, error_message, signal_type, signal_volume)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		userID, scheduleID, kind, action, status, 0, errorMessage, signalType, signalVolume)
+	return err
 }
 
 func (r *LogRepository) GetScheduleRunLogs(ctx context.Context, userID uuid.UUID, scheduleID uuid.UUID, page, pageSize int) ([]*ScheduleRunLogRow, int, error) {

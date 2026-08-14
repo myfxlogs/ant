@@ -20,8 +20,8 @@ import (
 	"go.uber.org/zap"
 
 	"alphaforge/internal/mthub"
-	"alphaforge/internal/risk"
 	"alphaforge/internal/repository"
+	"alphaforge/internal/risk"
 )
 
 // paperRepository is the local interface for paper account persistence.
@@ -79,6 +79,10 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 			Symbol: symbol, Side: side,
 			Volume: volume, OrderType: "market", Price: fillPrice,
 		}); !result.Allowed {
+			e.log.Error("PaperEngine: PlacePaperOrder rejected by guard",
+				zap.String("accountID", accountID), zap.String("symbol", symbol),
+				zap.String("side", side), zap.String("volume", volume.String()),
+				zap.String("reason", result.Reason))
 			return fmt.Errorf("paper: guard blocked: %s", result.Reason)
 		}
 	}
@@ -96,6 +100,9 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 	}
 
 	if err := e.repo.CreateOrder(ctx, order); err != nil {
+		e.log.Error("PaperEngine: CreateOrder failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol),
+			zap.String("side", side), zap.Error(err))
 		return err
 	}
 
@@ -115,7 +122,9 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 	newEquity := newBalance
 
 	if err := e.repo.UpdateAccountBalance(ctx, accountID, newBalance, newEquity); err != nil {
-		e.log.Warn("PaperEngine: balance update failed", zap.Error(err))
+		e.log.Error("PaperEngine: balance update failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol),
+			zap.Error(err))
 	}
 
 	// Push SSE update to subscribers.
@@ -136,15 +145,21 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 func (e *PaperEngine) ClosePaperOrder(ctx context.Context, accountID, symbol string) error {
 	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
 	if err != nil {
+		e.log.Error("PaperEngine: ClosePaperOrder find open order failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol), zap.Error(err))
 		return fmt.Errorf("find open order: %w", err)
 	}
 	if order == nil {
+		e.log.Error("PaperEngine: ClosePaperOrder no open position",
+			zap.String("accountID", accountID), zap.String("symbol", symbol))
 		return fmt.Errorf("no open position for %s on account %s", symbol, accountID)
 	}
 	now := time.Now()
 	order.State = "closed"
 	order.ClosedAt = &now
 	if err := e.repo.UpdateOrder(ctx, order); err != nil {
+		e.log.Error("PaperEngine: ClosePaperOrder update failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol), zap.Error(err))
 		return fmt.Errorf("close order: %w", err)
 	}
 	e.log.Info("PaperEngine: position closed",
@@ -158,14 +173,20 @@ func (e *PaperEngine) ClosePaperOrder(ctx context.Context, accountID, symbol str
 func (e *PaperEngine) ModifyPaperOrder(ctx context.Context, accountID, symbol string, sl, tp decimal.Decimal) error {
 	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
 	if err != nil {
+		e.log.Error("PaperEngine: ModifyPaperOrder find open order failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol), zap.Error(err))
 		return fmt.Errorf("find open order: %w", err)
 	}
 	if order == nil {
+		e.log.Error("PaperEngine: ModifyPaperOrder no open position",
+			zap.String("accountID", accountID), zap.String("symbol", symbol))
 		return fmt.Errorf("no open position for %s on account %s", symbol, accountID)
 	}
 	order.StopLoss = sl
 	order.TakeProfit = tp
 	if err := e.repo.UpdateOrder(ctx, order); err != nil {
+		e.log.Error("PaperEngine: ModifyPaperOrder update failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol), zap.Error(err))
 		return fmt.Errorf("modify order: %w", err)
 	}
 	e.log.Info("PaperEngine: position modified",
@@ -178,6 +199,8 @@ func (e *PaperEngine) ModifyPaperOrder(ctx context.Context, accountID, symbol st
 func (e *PaperEngine) CancelPaperOrder(ctx context.Context, accountID, symbol string) error {
 	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
 	if err != nil {
+		e.log.Error("PaperEngine: CancelPaperOrder find open order failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol), zap.Error(err))
 		return fmt.Errorf("find open order: %w", err)
 	}
 	if order == nil {
@@ -185,6 +208,8 @@ func (e *PaperEngine) CancelPaperOrder(ctx context.Context, accountID, symbol st
 	}
 	order.State = "cancelled"
 	if err := e.repo.UpdateOrder(ctx, order); err != nil {
+		e.log.Error("PaperEngine: CancelPaperOrder update failed",
+			zap.String("accountID", accountID), zap.String("symbol", symbol), zap.Error(err))
 		return fmt.Errorf("cancel order: %w", err)
 	}
 	e.log.Info("PaperEngine: order cancelled",

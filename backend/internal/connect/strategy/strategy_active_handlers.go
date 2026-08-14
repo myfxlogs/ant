@@ -134,6 +134,16 @@ func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req 
 	}
 
 	sigCh := sess.SubscribeSignals()
+
+	// Heartbeat: send empty event periodically to keep SSE alive when no
+	// signals are dispatched. Prevents中间层 from closing idle streams.
+	hbInterval := s.heartbeatInterval
+	if hbInterval <= 0 {
+		hbInterval = 20 * time.Second
+	}
+	heartbeat := time.NewTicker(hbInterval)
+	defer heartbeat.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -154,6 +164,10 @@ func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req 
 				Reason:     event.Reason,
 				Timestamp:  timestamppb.New(event.Timestamp),
 			}); err != nil {
+				return err
+			}
+		case <-heartbeat.C:
+			if err := stream.Send(&antv1.StrategySignalEvent{}); err != nil {
 				return err
 			}
 		}

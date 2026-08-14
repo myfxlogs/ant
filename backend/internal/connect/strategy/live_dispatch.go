@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -27,6 +28,11 @@ import (
 //	Cancel:    cancel            → CancelPending
 func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal, activeSess *ActiveSession) {
 	action := sig.GetSignalType()
+	uid, _ := uuid.Parse(cfg.UserID)
+	if s.sessionRegistry != nil {
+		s.sessionRegistry.InsertScheduleRunLog(ctx, uid, cfg.ScheduleID,
+			"signal", action, "received", "", action, parseDecimal(sig.GetVolume()))
+	}
 	s.log.Info("LiveStrategyRunner: signal",
 		zap.String("account", cfg.AccountID),
 		zap.String("symbol", cfg.Symbol),
@@ -289,19 +295,28 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 	switch action {
 	case "close", "close_all":
 		if err := s.paperEngine.ClosePaperOrder(ctx, cfg.AccountID, cfg.Symbol); err != nil {
-			s.log.Warn("LiveStrategyRunner: paper close failed", zap.Error(err))
+			s.log.Error("LiveStrategyRunner: paper close failed",
+				zap.String("run", cfg.RunID.String()),
+				zap.String("symbol", cfg.Symbol), zap.String("action", action),
+				zap.Error(err))
 		}
 		return
 	case "modify":
 		sl := parseDecimal(sig.GetStopLoss())
 		tp := parseDecimal(sig.GetTakeProfit())
 		if err := s.paperEngine.ModifyPaperOrder(ctx, cfg.AccountID, cfg.Symbol, sl, tp); err != nil {
-			s.log.Warn("LiveStrategyRunner: paper modify failed", zap.Error(err))
+			s.log.Error("LiveStrategyRunner: paper modify failed",
+				zap.String("run", cfg.RunID.String()),
+				zap.String("symbol", cfg.Symbol), zap.String("action", action),
+				zap.Error(err))
 		}
 		return
 	case "cancel":
 		if err := s.paperEngine.CancelPaperOrder(ctx, cfg.AccountID, cfg.Symbol); err != nil {
-			s.log.Warn("LiveStrategyRunner: paper cancel failed", zap.Error(err))
+			s.log.Error("LiveStrategyRunner: paper cancel failed",
+				zap.String("run", cfg.RunID.String()),
+				zap.String("symbol", cfg.Symbol), zap.String("action", action),
+				zap.Error(err))
 		}
 		return
 	}
@@ -313,7 +328,11 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 	}
 	if err := s.paperEngine.PlacePaperOrder(ctx, cfg.AccountID, cfg.Symbol,
 		action, parseDecimal(sig.GetVolume()), bid, ask); err != nil {
-		s.log.Warn("LiveStrategyRunner: paper order failed", zap.Error(err))
+		s.log.Error("LiveStrategyRunner: paper order failed",
+			zap.String("run", cfg.RunID.String()),
+			zap.String("symbol", cfg.Symbol), zap.String("action", action),
+			zap.String("volume", sig.GetVolume()), zap.String("price", sig.GetPrice()),
+			zap.Error(err))
 	}
 }
 

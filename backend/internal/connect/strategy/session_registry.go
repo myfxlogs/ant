@@ -9,6 +9,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+
+	"alphaforge/internal/repository"
+
+	"github.com/shopspring/decimal"
 )
 
 // ActiveSession holds metadata about a running live strategy session.
@@ -30,6 +35,7 @@ type ActiveSession struct {
 	cancel       context.CancelFunc
 	signalSubs   []chan *SignalEvent
 	signalSubsMu sync.Mutex
+	log          *zap.Logger      // optional logger for error recording
 	registry     *SessionRegistry // back-pointer for watcher notification
 }
 
@@ -54,6 +60,8 @@ type SessionRegistry struct {
 	mu       sync.RWMutex
 	sessions map[uuid.UUID]*ActiveSession // keyed by RunID
 	watchers []chan struct{}              // notified on any session change
+	log      *zap.Logger                  // optional logger for session errors
+	logRepo  *repository.LogRepository    // optional schedule run log persistence
 }
 
 // NewSessionRegistry creates a new empty registry.
@@ -61,6 +69,19 @@ func NewSessionRegistry() *SessionRegistry {
 	return &SessionRegistry{
 		sessions: make(map[uuid.UUID]*ActiveSession),
 	}
+}
+
+// SetLogger injects the logger for RecordError output.
+func (r *SessionRegistry) SetLogger(log *zap.Logger) { r.log = log }
+
+// SetLogRepository injects the repository for best-effort schedule run logging.
+func (r *SessionRegistry) SetLogRepository(repo *repository.LogRepository) { r.logRepo = repo }
+
+func (r *SessionRegistry) logger() *zap.Logger {
+	if r.log != nil {
+		return r.log
+	}
+	return zap.NewNop()
 }
 
 // notifyWatchers sends a non-blocking signal to all watchers.
@@ -112,6 +133,7 @@ func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID,
 		ScheduleID: scheduleID,
 		StartedAt:  time.Now(),
 		cancel:     cancel,
+		log:        r.logger(),
 		registry:   r,
 	}
 	r.mu.Lock()
@@ -226,14 +248,36 @@ func (s *ActiveSession) SubscribeSignals() <-chan *SignalEvent {
 	return ch
 }
 
-// RecordError increments the error count and stores the last error.
+// InsertScheduleRunLog writes a best-effort schedule run log entry.
+// It does not block the caller and swallows panics/timeout internally.
+func (r *SessionRegistry) InsertScheduleRunLog(ctx context.Context, userID, scheduleID uuid.UUID, kind, action, status, errorMessage, signalType string, signalVolume decimal.Decimal) {
+	if r.logRepo == nil {
+		return
+	}
+	go func() {
+		defer func() { _ = recover() }()
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		_ = r.logRepo.InsertScheduleRunLog(ctx, userID, scheduleID, kind, action, status, errorMessage, signalType, signalVolume)
+	}()
+}
+
+// RecordError increments the error count, stores the last error, and logs it.
 func (s *ActiveSession) RecordError(err string) {
 	s.signalSubsMu.Lock()
 	s.ErrorCount++
 	s.LastError = err
 	s.signalSubsMu.Unlock()
+	if s.log != nil {
+		s.log.Error("ActiveSession: recorded error",
+			zap.String("run", s.RunID.String()),
+			zap.String("schedule", s.ScheduleID.String()),
+			zap.String("error", err))
+	}
 	if s.registry != nil {
 		s.registry.notifyWatchers()
+		s.registry.InsertScheduleRunLog(context.Background(), s.UserID, s.ScheduleID,
+			"error", "record", "failed", err, "", decimal.Zero)
 	}
 }
 
