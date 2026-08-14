@@ -880,8 +880,8 @@ const Base = {
     },
     "schedules": {
       "status": {
-        "enabled": "Enabled",
-        "running": "Running",
+        "enabled": "已启用",
+        "running": "运行中",
         "idle": "空闲"
       }
     },
@@ -900,8 +900,8 @@ const Base = {
       "noContext": "No strategy loaded — describe what you want"
     },
     "live": {
-      "stopSuccess": "策略 stopped",
-      "stopFailed": "失败 to stop",
+      "stopSuccess": "策略已停止",
+      "stopFailed": "停止失败",
       "runId": "运行 ID",
       "account": "账户",
       "symbol": "品种",
@@ -910,10 +910,10 @@ const Base = {
       "signals": "信号",
       "errors": "错误",
       "startedAt": "已启动",
-      "watchSignals": "Watch 信号",
+      "watchSignals": "查看信号",
       "confirmStop": "确定停止此策略？",
       "status": "状态",
-      "totalSignals": "总计 信号",
+      "totalSignals": "总信号数",
       "stoppedAt": "已停止",
       "error": "错误",
       "title": "实盘策略监控",
@@ -932,16 +932,16 @@ const Base = {
       "signalLog": "信号日志",
       "waitingSignals": "等待信号...",
       "strategyName": "策略",
-      "stale": "stale",
-      "lastSignal": "Last Signal",
-      "pnl": "PnL",
-      "unknownError": "Unknown error",
+      "stale": "滞后",
+      "lastSignal": "最新信号",
+      "pnl": "盈亏",
+      "unknownError": "未知错误",
       "logs": "日志",
-      "health": "Health",
-      "streamDisconnected": "Connection interrupted, reconnecting…",
-      "goSchedules": "Go to 调度",
-      "positionClosed": "Position closed",
-      "closeFailed": "关闭 failed"
+      "health": "健康",
+      "streamDisconnected": "连接中断，正在重连…",
+      "goSchedules": "前往调度",
+      "positionClosed": "持仓已平",
+      "closeFailed": "平仓失败"
     },
     "schedule": {
       "maxPositionsPlaceholder": "不限"

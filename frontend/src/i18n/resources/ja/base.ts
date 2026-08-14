@@ -880,9 +880,9 @@ const Base = {
     },
     "schedules": {
       "status": {
-        "enabled": "Enabled",
-        "running": "Running",
-        "idle": "Idle"
+        "enabled": "有効",
+        "running": "実行中",
+        "idle": "アイドル"
       }
     },
     "chat": {
@@ -931,17 +931,17 @@ const Base = {
       "reason": "理由",
       "signalLog": "シグナルログ",
       "waitingSignals": "シグナルを待機中...",
-      "strategyName": "Strategy",
-      "stale": "stale",
-      "lastSignal": "Last Signal",
-      "pnl": "PnL",
-      "unknownError": "Unknown error",
-      "logs": "Logs",
-      "health": "Health",
-      "streamDisconnected": "Connection interrupted, reconnecting…",
-      "goSchedules": "Go to Schedules",
-      "positionClosed": "Position closed",
-      "closeFailed": "Close failed"
+      "strategyName": "ストラテジー",
+      "stale": "遅延",
+      "lastSignal": "最新シグナル",
+      "pnl": "損益",
+      "unknownError": "不明なエラー",
+      "logs": "ログ",
+      "health": "ヘルス",
+      "streamDisconnected": "接続が中断されました。再接続中…",
+      "goSchedules": "スケジュールへ",
+      "positionClosed": "ポジション決済済み",
+      "closeFailed": "決済失敗"
     },
     "schedule": {
       "maxPositionsPlaceholder": "無制限"

@@ -880,9 +880,9 @@ const Base = {
     },
     "schedules": {
       "status": {
-        "enabled": "Enabled",
-        "running": "Running",
-        "idle": "Idle"
+        "enabled": "已啟用",
+        "running": "執行中",
+        "idle": "空閒"
       }
     },
     "chat": {
@@ -931,17 +931,17 @@ const Base = {
       "reason": "原因",
       "signalLog": "訊號紀錄",
       "waitingSignals": "等待訊號中...",
-      "strategyName": "Strategy",
-      "stale": "stale",
-      "lastSignal": "Last Signal",
-      "pnl": "PnL",
-      "unknownError": "Unknown error",
-      "logs": "Logs",
-      "health": "Health",
-      "streamDisconnected": "Connection interrupted, reconnecting…",
-      "goSchedules": "Go to Schedules",
-      "positionClosed": "Position closed",
-      "closeFailed": "Close failed"
+      "strategyName": "策略",
+      "stale": "滯後",
+      "lastSignal": "最新訊號",
+      "pnl": "盈虧",
+      "unknownError": "未知錯誤",
+      "logs": "日誌",
+      "health": "健康",
+      "streamDisconnected": "連線中斷，正在重連…",
+      "goSchedules": "前往排程",
+      "positionClosed": "持倉已平",
+      "closeFailed": "平倉失敗"
     },
     "schedule": {
       "maxPositionsPlaceholder": "無限制"

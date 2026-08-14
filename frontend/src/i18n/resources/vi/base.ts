@@ -880,9 +880,9 @@ const Base = {
     },
     "schedules": {
       "status": {
-        "enabled": "Enabled",
-        "running": "Running",
-        "idle": "Idle"
+        "enabled": "Đã bật",
+        "running": "Đang chạy",
+        "idle": "Chờ"
       }
     },
     "chat": {
@@ -931,17 +931,17 @@ const Base = {
       "reason": "Lý do",
       "signalLog": "Nhật ký tín hiệu",
       "waitingSignals": "Đang chờ tín hiệu...",
-      "strategyName": "Strategy",
-      "stale": "stale",
-      "lastSignal": "Last Signal",
-      "pnl": "PnL",
-      "unknownError": "Unknown error",
-      "logs": "Logs",
-      "health": "Health",
-      "streamDisconnected": "Connection interrupted, reconnecting…",
-      "goSchedules": "Go to Schedules",
-      "positionClosed": "Position closed",
-      "closeFailed": "Close failed"
+      "strategyName": "Chiến lược",
+      "stale": "lỗi thời",
+      "lastSignal": "Tín hiệu gần nhất",
+      "pnl": "Lợi nhuận",
+      "unknownError": "Lỗi không xác định",
+      "logs": "Nhật ký",
+      "health": "Sức khỏe",
+      "streamDisconnected": "Kết nối bị gián đoạn, đang kết nối lại…",
+      "goSchedules": "Đến lịch trình",
+      "positionClosed": "Vị thế đã đóng",
+      "closeFailed": "Đóng vị thế thất bại"
     },
     "schedule": {
       "maxPositionsPlaceholder": "Không giới hạn"
