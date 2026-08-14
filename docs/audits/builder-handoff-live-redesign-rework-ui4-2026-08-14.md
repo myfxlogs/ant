@@ -74,9 +74,13 @@ describe('UI-4: dual-stream join (real function)', () => {
 
 ## 对抗证明（必做，删行必红）
 
-1. 删除 `joinLiveData.ts` 中 `if (a.scheduleId) activeBySchedule.set(a.scheduleId, a);` 这一行 → **UI-4 join 测试必 RED**（没有守卫，空 scheduleId 也会被 set，但 `active: activeBySchedule.get(s.id)` 对 s1 仍能取到——**注意：如果只用"匹配成功"用例，删守卫可能不红！** 所以必须保留上面第 3 个用例「empty scheduleId ignored」——删守卫后该用例 RED ✓）
-2. 删除 `findOrphanRuns` 中 `!a.scheduleId ||` → **orphan 空 scheduleId 用例 RED**
-3. 验证后恢复，全量 vitest 绿。
+⚠️ **陷阱提醒（审计方实测推演，勿踩）**：`if (a.scheduleId)` 守卫删掉**不会让 join 测试红**——守卫只阻止空 scheduleId 进 map 的 `''` 键，而行 id 非空，`''` 键永不被 lookup。所以：
+
+1. **join 对抗**：把 `joinSchedulesWithActive` 函数体中和为「不建 map、直接返回无 active」（即删掉整个 `for` 循环 + map 构造，返回 `schedules.map(s => ({ ...s }))`）→ **UI-4「match → active attached」用例必 RED**（join 断了，指标全 undefined）。恢复后绿。
+2. **orphan 对抗**：删除 `findOrphanRuns` 中 `!a.scheduleId ||` → **「orphan: empty scheduleId」用例必 RED**（空 scheduleId 不再判孤儿，orphans 长度 0）。恢复后绿。
+3. 两个删行验证都 RED 后恢复原代码，全量 vitest 绿。
+
+> 备注：empty-scheduleId join 用例（第 3 个）保留——它钉住防御语义（空 scheduleId 的 active 不挂任何行），虽当前行为不可观察，但防未来 refactor 改键语义。
 
 ## 门禁（全绿才算完工）
 
