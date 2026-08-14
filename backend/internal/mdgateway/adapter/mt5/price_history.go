@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt5"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt5"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
@@ -85,12 +86,13 @@ func convertMT5Bars(bars []*pb.Bar, accountID, period string) []*mdtick.Bar {
 	pm := mdtick.PeriodMs(period)
 	var out []*mdtick.Bar
 	for _, b := range bars {
-		t := b.GetTime().AsTime()
+		openMs := b.GetTime().AsTime().UnixMilli()
+		openMs -= openMs % pm
 		out = append(out, &mdtick.Bar{
 			AccountID:     accountID,
 			Period:        period,
-			OpenTsUnixMs:  t.UnixMilli(),
-			CloseTsUnixMs: t.UnixMilli() + pm,
+			OpenTsUnixMs:  openMs,
+			CloseTsUnixMs: openMs + pm,
 			Open:          decimal.NewFromFloat(b.GetOpenPrice()),
 			High:          decimal.NewFromFloat(b.GetHighPrice()),
 			Low:           decimal.NewFromFloat(b.GetLowPrice()),

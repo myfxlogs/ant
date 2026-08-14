@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt4"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	pb "alphaforge/mt4"
+
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
@@ -77,14 +78,16 @@ func mt4PeriodToTimeframe(period string) (pb.Timeframe, bool) {
 }
 
 func convertMT4Bars(bars []*pb.Bar, accountID, period string) []*mdtick.Bar {
+	pm := mdtick.PeriodMs(period)
 	var out []*mdtick.Bar
 	for _, b := range bars {
-		t := b.GetTime().AsTime()
+		openMs := b.GetTime().AsTime().UnixMilli()
+		openMs -= openMs % pm
 		out = append(out, &mdtick.Bar{
 			AccountID:     accountID,
 			Period:        period,
-			OpenTsUnixMs:  t.UnixMilli(),
-			CloseTsUnixMs: t.UnixMilli() + mdtick.PeriodMs(period),
+			OpenTsUnixMs:  openMs,
+			CloseTsUnixMs: openMs + pm,
 			Open:          decimal.NewFromFloat(b.GetOpen()),
 			High:          decimal.NewFromFloat(b.GetHigh()),
 			Low:           decimal.NewFromFloat(b.GetLow()),

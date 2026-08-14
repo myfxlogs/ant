@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	pb "alphaforge/mt5"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mthub"
+	pb "alphaforge/mt5"
+
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -361,6 +362,36 @@ func TestConvertMT5Bars_WithData(t *testing.T) {
 	}
 }
 
+// TestBARALIGN_ConvertMT5Bars_SubSecondAlignment verifies BAR-ALIGN:
+// mtapi bar Time with sub-second precision must be floored to period boundary.
+//
+// Adversarial proof: Remove the `openMs -= openMs % pm` alignment line →
+// openMs retains sub-second offset → open_ts % periodMs != 0 (RED).
+func TestBARALIGN_ConvertMT5Bars_SubSecondAlignment(t *testing.T) {
+	t.Parallel()
+	// 2026-01-15 10:00:00.385 UTC → UnixMilli = 1784978400385 (not 5m-aligned, offset 385ms)
+	ts := timestamppb.New(time.Date(2026, 1, 15, 10, 0, 0, 385_000_000, time.UTC))
+	pbBars := []*pb.Bar{
+		{Time: ts, OpenPrice: 1.1000, HighPrice: 1.1050, LowPrice: 1.0990, ClosePrice: 1.1020, Volume: 100, TickVolume: 50},
+	}
+	bars := convertMT5Bars(pbBars, "acct-5", "5m")
+	if len(bars) != 1 {
+		t.Fatalf("expected 1 bar, got %d", len(bars))
+	}
+	pm := mdtick.PeriodMs("5m") // 300000
+	if bars[0].OpenTsUnixMs%pm != 0 {
+		t.Fatalf("BAR-ALIGN: open_ts %d not aligned to 5m boundary (remainder %d) — RED: sub-second offset not floored",
+			bars[0].OpenTsUnixMs, bars[0].OpenTsUnixMs%pm)
+	}
+	wantOpen := int64(1768471200000) // 2026-01-15 10:00:00.000 UTC, floored to 5m
+	if bars[0].OpenTsUnixMs != wantOpen {
+		t.Fatalf("open_ts = %d, want %d (floored to 5m)", bars[0].OpenTsUnixMs, wantOpen)
+	}
+	if bars[0].CloseTsUnixMs != wantOpen+pm {
+		t.Fatalf("close_ts = %d, want %d (open+periodMs)", bars[0].CloseTsUnixMs, wantOpen+pm)
+	}
+}
+
 func TestPeriodMs(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -679,17 +710,17 @@ func TestFetchOpenedOrders_WithMock(t *testing.T) {
 		openedOrdersRes: &pb.OpenedOrdersReply{
 			Result: []*pb.Order{
 				{
-					Ticket:     6001, Symbol: "EURUSD",
+					Ticket: 6001, Symbol: "EURUSD",
 					OrderType: pb.OrderType_OrderType_Buy,
-					Lots: 0.1, OpenPrice: 1.1000, ClosePrice: 1.1020,
+					Lots:      0.1, OpenPrice: 1.1000, ClosePrice: 1.1020,
 					OpenTime: ts, CloseTime: ts,
 					Profit: 20.0, Swap: -1.0, Commission: -0.5,
 					Comment: "test", ExpertId: 42,
 				},
 				{
-					Ticket:     6002, Symbol: "GBPUSD",
+					Ticket: 6002, Symbol: "GBPUSD",
 					OrderType: pb.OrderType_OrderType_SellLimit,
-					Lots: 0.2, OpenPrice: 1.3050, ClosePrice: 1.3030,
+					Lots:      0.2, OpenPrice: 1.3050, ClosePrice: 1.3030,
 					OpenTime: ts, CloseTime: ts,
 					Profit: -10.0, Swap: 0.5, Commission: -1.0,
 					Comment: "limit", ExpertId: 99,
