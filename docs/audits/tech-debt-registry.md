@@ -295,9 +295,54 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 **🆕 2026-08-13 实盘报价/价格管线审计（用户报告 run `60ca698c` 无法执行 + 无 price；用户纠正 OPS 误诊后修正）**：审计方代码级 + 容器/DB/NATS/metrics 实测定论——**LIVE-PRICE-3 🟦open（P1，真正即时根因）** SubscribeMany 响应 error 未检查（MT4+MT5 共 5 处 `if _, err :=` 丢弃响应），mtapi 订阅失败被静默吞 → OnQuote 空（metrics `md_e2e_latency_seconds_count 0` = HandleTick 从未触发；profit 免订阅故活、quote 必须订阅故死，不对称坐实）；**LIVE-PRICE-1 🟦open（P1）** tick 桥从未实现（`mthub.PublishTick` 零调用方，OnTick 不执行 + 价格列空）；**LIVE-PRICE-2 🟦open（P2 次要）** quote 流无静默死检测（31h 没发现/没自愈的原因）；**~~LIVE-PRICE-OPS~~ ❌撤回（误诊）** 用户确认 Exness-Trial 账户 MT 客户端有报价，初版"账户 feed 停"判错，真实根因是 LIVE-PRICE-3。**修复优先序：LIVE-PRICE-3 → LIVE-PRICE-1 → LIVE-PRICE-2**。交接提示词 `docs/audits/builder-handoff-live-price-2026-08-13.md`。
 
+## 实盘"无法开仓"调查（2026-08-14 审计方实测，用户报告 run/schedule `599ddaa5` 无法开仓）
+
+> 触发：用户报告策略运行 ID `599ddaa5-6a19-4889-ad73-503a800bcd39`（= schedule，BTCUSDm/1m/live，Exness-Trial `904d14e6`，"E2E 复刻 - Live"）无法开仓。审计方容器/DB/日志/快照解码全链路实测。
+
+### 结论（直接答案）：策略没坏——它打到了自己代码里的 3 仓上限
+
+策略代码：`void OnBar() { if (OrdersTotal() < 3) OrderSend(Symbol(), OP_BUY, 0.01, Ask, 3, 0, 0, "eager", 16384, 0, clrGreen); }`——每分钟 bar 收盘买 0.01，直到 3 仓。实测证据链（全部与 broker 状态逐分钟吻合）：
+
+- 17:02-17:05 每根 1m bar 一个 buy 信号，**4 笔全部真实到达 broker**（ticket 344686687/344687664/344688186/344688584，magic -149059009 归属正确 = ARCH-4-MT4-MAGIC + ORDERS-MAGIC 修复已在部署二进制中生效）。
+- 17:01:57-17:03:37 经 ConnectRPC `CloseOrder`（`system/mthub_service.go:131` handler 日志）平掉 6 个仓位——策略代码**无任何平仓逻辑**，信号表 3 小时只有 `buy` → 这些平仓来自**前端 UI 手动操作**（QuickTradePanel 逐仓 close）。每平一仓 broker 持仓减 1 → 下一根 bar `OrdersTotal()<3` 成立 → 再买。
+- 17:03:43.5 一笔 **magic=0 的 0.02 手动买单**（OMS 行 `9a3c0b3e`，UUIDv3=带 clientId 的 place 路径；非策略——策略 magic=-149059009）真实开仓 broker（快照 ticket 344688065）。
+- 17:05:01 broker 持仓=3（0.02 手动 + 0.01×2 策略）→ `OrdersTotal()=3` → 17:06 起策略**按其代码正确停止买入**（`bars less than 100` 仍在刷 = OnBar 仍在执行，只是条件不满足）。**broker 侧 3 仓真实存在且至今未平**（17:05:01 后零订单事件 → 快照未再更新）。
+
+即：**策略一直在正常开仓；"无法开仓"是 3 仓上限 + 下方缺陷让 UI 看不到真实仓位**的综合观感。
+
+### P1 — CLOSE-ORDER-UUID：平仓单 OMS 记录全灭（新发现，非 EXEC-2 同一条）
+
+- **根因**：`mthub/service_orders_close.go:22` `closeOrderID := fmt.Sprintf("close-%s-%d", accountID, ticket)`——**合成字符串不是 UUID**。`oms_writer.go:124` `INSERT INTO orders (id ...)` 的 id 列是 UUID → 每次平仓 InsertOrder 必失败 `invalid input syntax for type uuid (SQLSTATE 22P02)`，`postCloseSuccess/postCloseFailure` 的 omsTransition 同 ID 同败。日志铁证：每次平仓 `CloseOrder: OMS insert skipped ... close-904d14e6-...-344012976` + `oms transition failed ... SUBMITTED → FILLED`（22P02）。**broker 侧平仓本身成功**（`mt4 CloseOrder: success`），但 OMS 对平仓单**零记录**（insert 失败 → "skipped" → 状态机全无）。
+- **影响**：orders 表查不到任何平仓动作 → 持仓/订单 UI 与审计对账失真（用户看到"平了又没平/仓位状态错乱"的来源之一）。
+- **修复方向**：`InsertOrder` 传 `uuid.New().String()`（或复用 `IdempotencyKey(accountID, closeOrderID)` 的 MD5 命名空间 UUID——与 place 路径同构，天然幂等），`closeOrderID` 保留作 idem key。注意 `oms_writer.go:124` 的 `ON CONFLICT (id) DO NOTHING` 已支持幂等重入。
+- **对抗证明**：集成测试 CloseOrder → 断言 orders 表出现 state=FILLED 的平仓行（GREEN）；还原合成字符串 ID → RED。
+
+### P1 — SUBMIT-STUCK-RACE：新单成交事件先于 ticket 落库到达 → 事件被丢 → 订单永久卡 SUBMITTED（EXEC-2 的精确机制，实测坐实）
+
+- **根因**：`oms_writer.go:108` InsertOrder 先写**负数占位 ticket**（`hashToNegative(orderID)`），真实 ticket 要等 `mt4/orders.go:60` OrderSend RPC 返回后由 `UpdateTicket`（`oms_writer.go:137`）回填。mtapi 的 OnOrderUpdate 流（`order_stream.go:90` → `pipeline_callbacks.go:107` `transitionOMSByUpdate` → `service_orders.go:325` `TransitionOrderByTicket`）**会在 RPC 返回前就把新单事件推过来**——此时按真实 ticket 查 `WHERE ticket=$2` 查不到（DB 里还是负数占位）→ `oms: order not found by ticket` warn → **事件被丢弃且无重投** → UpdateTicket 之后再无此 ticket 的事件 → 订单**永久 SUBMITTED**。
+- **实测证据（17:04/17:05 两笔）**：`17:04:01.404 warn "oms: order not found by ticket" 344688186` 比 `17:04:01.407 "order submitted"`（UpdateTicket 完成时刻）**早 3ms**；两行至今 `state=SUBMITTED`（broker 侧仓位真实存在）。对照 17:02/17:03 两笔：事件恰好落在 UpdateTicket 之后 → 正常转 FILLED。另观察到 17:02 单 OrderSend RPC 耗时 22s（首次下单，mtapi 延迟），窗口越大撞上竞态概率越高。
+- **修复方向（推荐组合）**：① `TransitionOrderByTicket` 查无 → **延迟重试**（如 2s 后重查一次，覆盖 RPC 在途窗口）或入队补投；② 查无时触发一次 `ReconcileAccount`（reconciliation.go 已有：SUBMMITTED + broker 有 ticket → repair FILLED，且此时 UpdateTicket 已完成，能查中）；③ 治本可选：占位 ticket 机制改为 `UpdateTicket` 后由 place 流程自拉一次 OpenedOrders 对账。
+- **对抗证明**：mock 流事件早于 UpdateTicket 到达 → 新代码最终转 FILLED（GREEN）；删延迟重试/触发对账 → 仍 SUBMITTED（RED）。
+
+### P2 — DEDUP-5S-THROTTLE：5s 去重闸门误伤不同 ticket 的连续平仓
+
+- **根因**：risk gate 的 duplicate-order 检测按"账户级 5s 窗口"判重，**不区分 ticket**。实测：17:01:57.8 平 344012976 成功后，17:02:01.15 平 344010713（**不同 ticket**）被拒 `gate rejected close: duplicate order detected within 5s`；17:02:30.68 再试再拒。策略/UI 连续平仓被 5s 节流，用户看到"平仓点了没反应"。
+- **修复方向**：close 意图的重复检测键应含 `ticket`（`evaluateCloseGate` 的 `OrderIntent.Magic` 已带 ticket——若 gate 键未含 Magic 则为缺陷）；或 close 走 `idem.CheckAndSet(accountID, closeOrderID, ticket)`（已含 ticket）而 gate 层不再判重。
+
+### 设计注意 — ORDERS-TOTAL-MANUAL：VM OrdersTotal 不认 magic，手动单会卡住策略仓位上限
+
+- `vm_builtin_trade.go:171` `Broker().Positions(0)` magic=0 不过滤 → 账户上**任何手动单**（magic=0）都计入策略的 `OrdersTotal()`。本案例：1 笔手动 0.02 + 2 笔策略 0.01 = 3 → 策略按自己的代码停买。MQL4 语义正确，但文档/UI 上应让用户知道"同账户手动单会占用策略仓位计数"（可演进选项：live broker 层按 schedule magic 过滤 `Positions(magic)`，需讨论——会改变 MQL4 语义保真度，暂不改，先记录）。
+
+### 附带观察（不阻塞）
+
+- 本 run 的 strategy_runs 行 16:52:21 被标 `stopped ("server restarted")`（容器 StartedAt=16:42:15，与标记时间矛盾——疑旧容器优雅退出期延迟标记或重复标记），但 goroutine 实际存活交易到 17:05+：**Active Runs UI 状态可能失真**，待下轮顺查。
+- `[strategy:BTCUSDm] bars less than 100` 每秒数次刷屏（上下文窗口<100 根时逐 tick 打印），与信号产生无关但淹没日志。
+
 ---
 
 ## 变更日志
+
+- 2026-08-15 **实盘"无法开仓"调查（用户报告 schedule/run `599ddaa5`）审计方实测定论：策略没坏，打到了自己代码的 3 仓上限**。逐分钟实测证据链：策略 `OrdersTotal()<3` 每 bar 买 0.01；17:02-17:05 4 笔真实到 broker（magic 归属正确，ARCH-4-MT4-MAGIC/ORDERS-MAGIC 已生效）；期间 6 次平仓 = 前端 UI 手动（策略代码无平仓逻辑，信号表只有 buy）+ 1 笔手动 0.02（magic=0）→ 17:05:01 broker 3 仓 → 策略正确停买（"无法开仓"观感来源）。**新发现 3 缺陷**：① **CLOSE-ORDER-UUID（P1）** `service_orders_close.go:22` 合成字符串 ID 非 UUID → 每次平仓 OMS insert/transition 全 22P02 失败，平仓单零记录（broker 平仓本身成功）；② **SUBMIT-STUCK-RACE（P1，EXEC-2 精确机制）** 占位 ticket + 流事件先于 `UpdateTicket` 到达 → `order not found by ticket` 丢弃无重投 → 订单永久 SUBMITTED（17:04/17:05 两笔铁证：warn 比 UpdateTicket 早 3ms；对照 17:02/17:03 事件晚到即正常 FILLED）；③ **DEDUP-5S-THROTTLE（P2）** gate 5s 判重不区分 ticket，不同 ticket 连续平仓被拒（实测两次）。**设计注意 ORDERS-TOTAL-MANUAL**：VM OrdersTotal 不过滤 magic，手动单占用策略仓位计数（MQL4 语义正确，记录不改）。详见 registry 新段「实盘"无法开仓"调查」。
 
 - 2026-08-15 **live-ui-final（2198143e）审计方复审完成 🔴 ARCH-4-MT4-MAGIC 新发现 + DEPLOY-LIVE-1-COVERAGE-RED 根因定论**：后端全项复审（session_registry PnL 归属/SubscribeToMthub 接线/GetByScheduleID/RecordError 写 run_logs 非阻塞/心跳/富化 全 ✓）发现 🔴：MT4 `OrderSendRequest` 从不传 magic（mt5 传 expertID 对照）→ MT4 生产账户上 close-all 静默全 skip / GetSchedulePositions 恒空 / **P0-4 PnL 恒 "-"**（UpdatePnlFromPositions skip magic==0）——本批头号功能在生产平台静默死（影响面含 ARCH-4 归属，生产验证仅 MT5 路径或未验）。另确认 DEPLOY-LIVE-1-COVERAGE 测试红 = `05859858f` margin refactor fail-closed 与测试 mock（FetchSymbolParams 返回空）不匹配，非拆分引入（stash 二分实证），生产行为正确。前端子代理复审（Explore agent 独立审计）无 🔴，🟡×3（空 lastSignalAt 误标橙 / 缺 >15min 灰档 / 心跳与真空列表不可分→0 active 时 loading 永转）。同批交施工（提示词 `builder-handoff-live-ui-review-2026-08-15.md`）。**✅ 施工方完成（80267998+9ea55c22）+ 审计方验收通过（2026-08-14）**：4 项全对（mt4 Magic / mock 修复 / heartbeat marker 三层（proto+发送端+前端+旧测试更新）/ 前端 🟡×3 + stale 守卫）；**对抗证明审计方独立删行复测 3/3 RED→恢复 GREEN 断言级有效**（mt4 Magic 行 / Heartbeat:true / mock 还原旧版）；全量门禁绿（go build / go test 仅 internal/service 宿主无 PG 既有失败 / check-file-lines 0err / tsc 0err）；后端部署 healthy 0 panic，registry 追加式回填合规。审计方拆分（strategy_schedules.go 299 行 + strategy_schedule_positions.go 191 行）随批 commit，函数级 15/15 保留验证通过。**待生产实测回填**：下次 MT4 下单持仓 magic 非 0 / PnL 列有值 / 0 active 时 loading 不再永转。
 - 2026-08-15 **ORDERS-MAGIC ✅done（P2 数据缺口，审计方直接修复——首次以第一负责人身份动代码）**：orders 表有 `magic_number` 列但 **INSERT 从不写入**（`oms_writer.go:124` SQL 列清单无此列）——intent 层一直带 Magic（`live_dispatch.go:366` `Magic: strategyMagic(cfg.ScheduleID)` ARCH-4 归属）但持久化层丢弃 → 订单级策略归属断档（哪单是哪个策略的，orders 表查不出）。**修复（4 文件）**：`oms_writer.go:119` InsertOrder 加 `magic int32` 参数 + SQL 加 magic_number 列；`service_orders.go:33` 调用传 `req.Magic`（OrderRequest 本有 Magic 字段）；`service_orders_close.go` 零改动（原游离尾参 `, 0` 恰为预留 magic 位，签名补齐后正好对上——原作者意图推测）；集成测试加对抗断言（插 magic=12345 → SELECT 回读=12345，删 SQL 列则红）。**自审**：① Magic 链验证完整（live_dispatch:366 赋值 → PlaceOrder → InsertOrder 落库，paper 路径走 PlacePaperOrder 不经 InsertOrder 无影响）；② 与施工方 STREAM-KEEPALIVE 批零文件冲突（他改 mdgateway+reconciliation，我改 mthub 3 文件，共存编译全绿 go build ./... + vet）；③ **存量不回填**（卡着的 344012976/344010713 修复前插入 magic 仍空，由补账按 ticket 处理不依赖 magic）；④ 对抗证明为集成测试需 PG（宿主不可跑，CI/部署环境执行）。**部署**：留工作树随施工方下一批 build 一起上线。**角色边界说明**：审计方原则上不改代码（保持独立判断），本次用户明确授权（"这个小缺口你处理了吧"+确认与施工方无冲突）——属授权例外，非先例。
