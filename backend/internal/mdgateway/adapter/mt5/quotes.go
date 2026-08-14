@@ -271,6 +271,7 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 			positions = append(positions, mdtick.ProfitPosition{
 				Ticket:       o.GetTicket(),
 				Symbol:       o.GetSymbol(),
+				Magic:        int32(o.GetExpertId()),
 				Profit:       decimal.NewFromFloat(o.GetProfit()),
 				Volume:       decimal.NewFromFloat(o.GetLots()),
 				CurrentPrice: decimal.NewFromFloat(o.GetOpenPrice()),

@@ -441,6 +441,11 @@ func (s *MtHubService) SubscribeAccountProfit(ctx context.Context, accountID str
 	return s.accountBroker.Subscribe(accountID)
 }
 
+// SubscribeAccountProfitAll returns a channel of account profit events for all accounts.
+func (s *MtHubService) SubscribeAccountProfitAll() (<-chan *AccountProfitEvent, func()) {
+	return s.accountBroker.WatchAll()
+}
+
 // PublishPositionSnapshot publishes a full position snapshot to all subscribers.
 func (s *MtHubService) PublishPositionSnapshot(ev *PositionSnapshot) {
 	s.snapshotBroker.Publish(ev)

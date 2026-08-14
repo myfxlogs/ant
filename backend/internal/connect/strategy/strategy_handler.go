@@ -27,12 +27,13 @@ type BoundAccountChecker interface {
 }
 
 type StrategyServer struct {
-	svc        *service.StrategySvc
-	log        *zap.Logger
-	pgListen   *pglisten.Listener
-	engine     *ScheduleEngine
-	codeAccess CodeAccessChecker // marketplace code-access checks
-	boundSvc   BoundAccountChecker
+	svc             *service.StrategySvc
+	log             *zap.Logger
+	pgListen        *pglisten.Listener
+	engine          *ScheduleEngine
+	codeAccess      CodeAccessChecker // marketplace code-access checks
+	boundSvc        BoundAccountChecker
+	sessionRegistry *SessionRegistry
 }
 
 // SetCodeAccessChecker injects the marketplace service for code protection.
@@ -62,6 +63,8 @@ func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.R
 func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
 
 func (s *StrategyServer) SetBoundSvc(b BoundAccountChecker) { s.boundSvc = b }
+
+func (s *StrategyServer) SetSessionRegistry(r *SessionRegistry) { s.sessionRegistry = r }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	raw := interceptor.GetUserID(ctx)

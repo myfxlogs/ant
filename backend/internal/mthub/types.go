@@ -146,6 +146,7 @@ type AccountProfitEvent struct {
 type AccountProfitPosition struct {
 	Ticket       int64
 	Symbol       string
+	Magic        int32
 	Profit       decimal.Decimal
 	Volume       decimal.Decimal
 	CurrentPrice decimal.Decimal
@@ -154,6 +155,7 @@ type AccountProfitPosition struct {
 type AccountProfitBroker struct {
 	mu          sync.RWMutex
 	subscribers map[string][]chan *AccountProfitEvent
+	watchers    []chan *AccountProfitEvent // cross-account watchers (e.g. session registry)
 }
 
 func NewAccountProfitBroker() *AccountProfitBroker {
@@ -163,6 +165,7 @@ func NewAccountProfitBroker() *AccountProfitBroker {
 func (b *AccountProfitBroker) Publish(ev *AccountProfitEvent) {
 	b.mu.RLock()
 	src := b.subscribers[ev.AccountID]
+	watchers := b.watchers
 	b.mu.RUnlock()
 	chs := make([]chan *AccountProfitEvent, len(src))
 	copy(chs, src)
@@ -172,6 +175,32 @@ func (b *AccountProfitBroker) Publish(ev *AccountProfitEvent) {
 		default:
 		}
 	}
+	for _, ch := range watchers {
+		select {
+		case ch <- ev:
+		default:
+		}
+	}
+}
+
+// WatchAll returns a channel that receives every AccountProfitEvent across all accounts.
+func (b *AccountProfitBroker) WatchAll() (<-chan *AccountProfitEvent, func()) {
+	ch := make(chan *AccountProfitEvent, 64)
+	b.mu.Lock()
+	b.watchers = append(b.watchers, ch)
+	b.mu.Unlock()
+	cancel := func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for i, c := range b.watchers {
+			if c == ch {
+				b.watchers = append(b.watchers[:i], b.watchers[i+1:]...)
+				close(ch)
+				return
+			}
+		}
+	}
+	return ch, cancel
 }
 
 func (b *AccountProfitBroker) Subscribe(accountID string) (<-chan *AccountProfitEvent, func()) {

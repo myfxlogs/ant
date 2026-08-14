@@ -299,6 +299,12 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 				zap.String("run", cfg.RunID.String()),
 				zap.String("symbol", cfg.Symbol), zap.String("action", action),
 				zap.Error(err))
+			return
+		}
+		if s.sessionRegistry != nil {
+			if sess, ok := s.sessionRegistry.Get(cfg.RunID); ok {
+				sess.SetPnL("0")
+			}
 		}
 		return
 	case "modify":
@@ -333,6 +339,14 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 			zap.String("symbol", cfg.Symbol), zap.String("action", action),
 			zap.String("volume", sig.GetVolume()), zap.String("price", sig.GetPrice()),
 			zap.Error(err))
+		return
+	}
+	// Update running PnL for the paper session after each fill.
+	if s.sessionRegistry != nil {
+		if sess, ok := s.sessionRegistry.Get(cfg.RunID); ok {
+			pnl, _ := s.paperEngine.PaperPnl(ctx, cfg.AccountID, cfg.Symbol, bid, ask)
+			sess.SetPnL(pnl.String())
+		}
 	}
 }
 

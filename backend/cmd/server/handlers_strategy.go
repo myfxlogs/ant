@@ -46,6 +46,7 @@ type strategyExecDeps struct {
 	quotaChecker    *service.QuotaChecker
 	mktplaceSvc     *marketplace.Service
 	boundSvc        *service.BoundAccountService
+	strategyServer  *strategy.StrategyServer
 	cfg             *config.Config
 	log             *zap.Logger
 }
@@ -65,7 +66,11 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	reg := strategy.NewSessionRegistry()
 	reg.SetLogger(d.log)
 	reg.SetLogRepository(repository.NewLogRepository(d.pool))
+	reg.SubscribeToMthub(d.mthubSvc)
 	srv.SetSessionRegistry(reg)
+	if d.strategyServer != nil {
+		d.strategyServer.SetSessionRegistry(reg)
+	}
 	srv.SetScheduleNameLookup(func(ctx context.Context, scheduleID uuid.UUID) string {
 		var name string
 		err := d.pool.QueryRow(ctx, `SELECT name FROM strategy_schedules WHERE id = $1`, scheduleID).Scan(&name)

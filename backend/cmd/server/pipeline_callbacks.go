@@ -54,7 +54,7 @@ func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, us
 	}
 	for _, pos := range o.Positions {
 		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
-			Ticket: pos.Ticket, Symbol: pos.Symbol, Type: pos.Type,
+			Ticket: pos.Ticket, Symbol: pos.Symbol, Type: pos.Type, Magic: pos.Magic,
 			Volume: pos.Volume, OpenPrice: pos.OpenPrice, CurrentPrice: pos.CurrentPrice,
 			StopLoss: pos.StopLoss, TakeProfit: pos.TakeProfit,
 			Profit: pos.Profit, Swap: pos.Swap, Commission: pos.Commission,

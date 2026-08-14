@@ -323,6 +323,7 @@ func parseMt4ProfitUpdate(p *pb.ProfitUpdate, accountID string) *mdtick.ProfitUp
 		positions = append(positions, mdtick.ProfitPosition{
 			Ticket:       int64(o.GetTicket()),
 			Symbol:       o.GetSymbol(),
+			Magic:        o.GetMagicNumber(),
 			Profit:       decimal.NewFromFloat(o.GetProfit()),
 			Volume:       decimal.NewFromFloat(o.GetLots()),
 			CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),

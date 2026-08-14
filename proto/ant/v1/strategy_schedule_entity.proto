@@ -31,6 +31,9 @@ message StrategySchedule {
   google.protobuf.Timestamp created_at = 21;
   google.protobuf.Timestamp updated_at = 22;
   int32 enable_count = 23;
+  bool is_running = 24;
+  string active_run_id = 25;
+  int32 signal_count = 26;
 }
 
 message ScheduleConfig {

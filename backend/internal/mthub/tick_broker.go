@@ -6,6 +6,7 @@ package mthub
 
 import (
 	"sync"
+	"time"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -17,6 +18,7 @@ type TickUpdate struct {
 	Symbol    string
 	Bid       decimal.Decimal
 	Ask       decimal.Decimal
+	Time      time.Time // server-side timestamp of receipt
 }
 
 // TickBroker fans out TickUpdate events to per-account subscribers.
@@ -75,6 +77,9 @@ func (b *TickBroker) Subscribe(accountID string) (<-chan *TickUpdate, func()) {
 // Publish sends a TickUpdate to all subscribers for the given account.
 // Also caches the latest tick per (accountID, symbol) for LatestTick lookups.
 func (b *TickBroker) Publish(u *TickUpdate) {
+	if u.Time.IsZero() {
+		u.Time = time.Now()
+	}
 	b.mu.Lock()
 	b.latest[u.AccountID+":"+u.Symbol] = u
 	subs := b.subs[u.AccountID]

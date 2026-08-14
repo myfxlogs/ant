@@ -17,6 +17,9 @@ export interface ScheduleRow {
   scheduleConfig: Record<string, unknown>;
   parameters: Record<string, string>;
   isActive: boolean;
+  isRunning?: boolean;
+  activeRunId?: string;
+  signalCount?: number;
   lastRunAt?: string;
   nextRunAt?: string;
   enableCount?: number;

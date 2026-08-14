@@ -175,8 +175,13 @@ func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req 
 }
 
 // activeSessionToProto converts an ActiveSession to a proto ActiveStrategy.
-// If tickFn is non-nil, it is called to populate bid/ask for the session's symbol.
-func activeSessionToProto(sess *ActiveSession, tickFn func(accountID, symbol string) (bid, ask string)) *antv1.ActiveStrategy {
+// If tickFn is non-nil, it is called to populate bid/ask/lastTickAt for the session's symbol.
+func activeSessionToProto(sess *ActiveSession, tickFn func(accountID, symbol string) (bid, ask string, tickAt *time.Time)) *antv1.ActiveStrategy {
+	sess.pnlMu.RLock()
+	pnl := sess.PnL
+	lastTick := sess.LastTickAt
+	sess.pnlMu.RUnlock()
+
 	pb := &antv1.ActiveStrategy{
 		RunId:       sess.RunID.String(),
 		UserId:      sess.UserID.String(),
@@ -190,28 +195,36 @@ func activeSessionToProto(sess *ActiveSession, tickFn func(accountID, symbol str
 		LastError:   sess.LastError,
 		StderrTail:  sess.StderrTail,
 		ScheduleId:  sess.ScheduleID.String(),
+		Pnl:         pnl,
 	}
 	if !sess.LastSignalAt.IsZero() {
 		pb.LastSignalAt = timestamppb.New(sess.LastSignalAt)
 	}
+	if !lastTick.IsZero() {
+		pb.LastTickAt = timestamppb.New(lastTick)
+	}
 	if tickFn != nil {
-		pb.Bid, pb.Ask = tickFn(sess.AccountID, sess.Symbol)
+		bid, ask, tickAt := tickFn(sess.AccountID, sess.Symbol)
+		pb.Bid, pb.Ask = bid, ask
+		if tickAt != nil {
+			pb.LastTickAt = timestamppb.New(*tickAt)
+		}
 	}
 	return pb
 }
 
-// tickPriceFn returns a closure that fetches the latest bid/ask for a given
+// tickPriceFn returns a closure that fetches the latest bid/ask/tick-time for a given
 // account+symbol from the MtHub tick broker. Returns nil if mtHub is unavailable.
-func (s *StrategyExecutionServer) tickPriceFn() func(accountID, symbol string) (bid, ask string) {
+func (s *StrategyExecutionServer) tickPriceFn() func(accountID, symbol string) (bid, ask string, tickAt *time.Time) {
 	if s.mtHub == nil {
 		return nil
 	}
-	return func(accountID, symbol string) (string, string) {
+	return func(accountID, symbol string) (string, string, *time.Time) {
 		tick := s.mtHub.LatestTick(accountID, symbol)
 		if tick == nil {
-			return "", ""
+			return "", "", nil
 		}
-		return tick.Bid.String(), tick.Ask.String()
+		return tick.Bid.String(), tick.Ask.String(), &tick.Time
 	}
 }
 

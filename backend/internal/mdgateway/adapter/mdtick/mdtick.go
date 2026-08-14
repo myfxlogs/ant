@@ -90,6 +90,7 @@ type ProfitUpdate struct {
 type ProfitPosition struct {
 	Ticket       int64
 	Symbol       string
+	Magic        int32 // strategy attribution magic number (ExpertID)
 	Profit       decimal.Decimal
 	Volume       decimal.Decimal
 	CurrentPrice decimal.Decimal
@@ -135,6 +136,7 @@ type OrderUpdatePosition struct {
 	Ticket       int64
 	Symbol       string
 	Type         string // "buy", "sell", etc.
+	Magic        int32  // strategy attribution magic number (ExpertID)
 	Volume       decimal.Decimal
 	OpenPrice    decimal.Decimal
 	CurrentPrice decimal.Decimal

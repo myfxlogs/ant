@@ -17,6 +17,28 @@ export function isLogButtonDisabled(scheduleId: string): boolean { return !sched
 
 export function isHealthButtonDisabled(scheduleId: string): boolean { return !scheduleId; }
 
+function tsToMs(ts: { seconds?: bigint; nanos?: number } | null | undefined): number | null {
+  if (!ts || ts.seconds === undefined) return null;
+  return Number(ts.seconds) * 1000 + Math.floor((ts.nanos || 0) / 1_000_000);
+}
+
+function formatAgo(ts: { seconds?: bigint; nanos?: number } | null | undefined): string {
+  const ms = tsToMs(ts);
+  if (ms === null) return '-';
+  const diff = Math.max(0, Date.now() - ms);
+  if (diff < 60_000) return 'now';
+  const m = Math.floor(diff / 60_000);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ago`;
+}
+
+function secondsSince(ts: { seconds?: bigint; nanos?: number } | null | undefined): number {
+  const ms = tsToMs(ts);
+  if (ms === null) return Infinity;
+  return (Date.now() - ms) / 1000;
+}
+
 export default function LiveStrategyPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
@@ -128,9 +150,27 @@ export default function LiveStrategyPage() {
     { title: t('strategy.live.account', { defaultValue: 'Account' }), dataIndex: 'accountId', width: 120, render: (v: string) => <Text style={{ fontSize: 12 }}>{fmtAccount(v)}</Text> },
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
     { title: t('strategy.live.price', { defaultValue: 'Price' }), dataIndex: 'bid', width: 100, render: (_: string, record: ActiveStrategy) => {
+      const stale = secondsSince(record.lastTickAt) > 60;
       if (!record.bid && !record.ask) return <Text type="secondary">-</Text>;
       const spread = record.bid && record.ask ? ` / ${record.ask}` : '';
-      return <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }}>{record.bid}{spread}</Text>;
+      return (
+        <Space direction="vertical" size={0}>
+          <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type={stale ? 'secondary' : undefined}>
+            {record.bid}{spread}
+          </Text>
+          {stale && <Tag color="default" style={{ fontSize: 10 }}>stale</Tag>}
+        </Space>
+      );
+    } },
+    { title: t('strategy.live.lastSignal', { defaultValue: 'Last Signal' }), dataIndex: 'lastSignalAt', width: 110, render: (_: { seconds?: bigint; nanos?: number } | null, record: ActiveStrategy) => {
+      const s = secondsSince(record.lastSignalAt);
+      return <Text style={{ fontSize: 12 }} type={s > 300 ? 'warning' : undefined}>{formatAgo(record.lastSignalAt)}</Text>;
+    } },
+    { title: t('strategy.live.pnl', { defaultValue: 'PnL' }), dataIndex: 'pnl', width: 90, render: (_: string, record: ActiveStrategy) => {
+      if (!record.pnl) return <Text type="secondary">-</Text>;
+      const n = Number(record.pnl);
+      const color = n >= 0 ? 'success' : 'danger';
+      return <Text style={{ fontSize: 12 }} type={color}>{n >= 0 ? `+${record.pnl}` : record.pnl}</Text>;
     } },
     { title: t('strategy.live.timeframe', { defaultValue: 'TF' }), dataIndex: 'timeframe', width: 60 },
     { title: t('strategy.live.mode', { defaultValue: 'Mode' }), dataIndex: 'mode', width: 70, render: (v: string) => <Tag color={MODE_COLORS[v] || 'default'}>{v}</Tag> },

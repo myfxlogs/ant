@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	"alphaforge/internal/mdgateway/adapter/mdtick"
+	"alphaforge/internal/mthub"
 	"alphaforge/internal/repository"
 
 	"github.com/shopspring/decimal"
@@ -25,16 +27,20 @@ type ActiveSession struct {
 	Timeframe    string
 	Mode         string
 	ScheduleID   uuid.UUID
+	MagicNumber  int32 // ARCH-4: deterministic magic for position attribution
 	StartedAt    time.Time
 	LastSignalAt time.Time
+	LastTickAt   time.Time
 	SignalCount  int
 	ErrorCount   int
 	LastError    string
 	StderrTail   string
+	PnL          string // running PnL for this run, empty when unknown
 	circuitOpen  bool
 	cancel       context.CancelFunc
 	signalSubs   []chan *SignalEvent
 	signalSubsMu sync.Mutex
+	pnlMu        sync.RWMutex
 	log          *zap.Logger      // optional logger for error recording
 	registry     *SessionRegistry // back-pointer for watcher notification
 }
@@ -76,6 +82,29 @@ func (r *SessionRegistry) SetLogger(log *zap.Logger) { r.log = log }
 
 // SetLogRepository injects the repository for best-effort schedule run logging.
 func (r *SessionRegistry) SetLogRepository(repo *repository.LogRepository) { r.logRepo = repo }
+
+// SubscribeToMthub registers a cross-account listener on the mthub profit broker
+// so running sessions receive per-magic PnL updates in real time.
+func (r *SessionRegistry) SubscribeToMthub(mthubSvc *mthub.MtHubService) {
+	if mthubSvc == nil {
+		return
+	}
+	ch, cancel := mthubSvc.SubscribeAccountProfitAll()
+	go func() {
+		defer cancel()
+		for ev := range ch {
+			positions := make([]mdtick.ProfitPosition, 0, len(ev.Positions))
+			for _, p := range ev.Positions {
+				positions = append(positions, mdtick.ProfitPosition{
+					Symbol: p.Symbol,
+					Magic:  p.Magic,
+					Profit: p.Profit,
+				})
+			}
+			r.UpdatePnlFromPositions(ev.AccountID, positions)
+		}
+	}()
+}
 
 func (r *SessionRegistry) logger() *zap.Logger {
 	if r.log != nil {
@@ -124,17 +153,18 @@ func (r *SessionRegistry) Watch() (<-chan struct{}, func()) {
 // Returns the created ActiveSession.
 func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID, symbol, timeframe, mode string, scheduleID uuid.UUID, cancel context.CancelFunc) *ActiveSession {
 	sess := &ActiveSession{
-		RunID:      runID,
-		UserID:     userID,
-		AccountID:  accountID,
-		Symbol:     symbol,
-		Timeframe:  timeframe,
-		Mode:       mode,
-		ScheduleID: scheduleID,
-		StartedAt:  time.Now(),
-		cancel:     cancel,
-		log:        r.logger(),
-		registry:   r,
+		RunID:       runID,
+		UserID:      userID,
+		AccountID:   accountID,
+		Symbol:      symbol,
+		Timeframe:   timeframe,
+		Mode:        mode,
+		ScheduleID:  scheduleID,
+		MagicNumber: strategyMagic(scheduleID),
+		StartedAt:   time.Now(),
+		cancel:      cancel,
+		log:         r.logger(),
+		registry:    r,
 	}
 	r.mu.Lock()
 	r.sessions[runID] = sess
@@ -184,6 +214,51 @@ func (r *SessionRegistry) ListByUser(userID uuid.UUID) []*ActiveSession {
 	return out
 }
 
+// GetByScheduleID returns the active session for a schedule (if any).
+func (r *SessionRegistry) GetByScheduleID(scheduleID uuid.UUID) (*ActiveSession, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for _, sess := range r.sessions {
+		if sess.ScheduleID == scheduleID {
+			return sess, true
+		}
+	}
+	return nil, false
+}
+
+// UpdatePnlFromPositions recomputes PnL for active sessions from a broker
+// profit/position snapshot. It matches by account + symbol + magic number and
+// updates each running session's PnL in-place.
+func (r *SessionRegistry) UpdatePnlFromPositions(accountID string, positions []mdtick.ProfitPosition) {
+	r.mu.RLock()
+	byMagic := make(map[int32]*ActiveSession)
+	for _, sess := range r.sessions {
+		if sess.AccountID == accountID {
+			byMagic[sess.MagicNumber] = sess
+		}
+	}
+	r.mu.RUnlock()
+	if len(byMagic) == 0 {
+		return
+	}
+
+	// Sum profit for each magic number. ProfitPosition already contains the
+	// running profit for that position, so simple attribution-by-magic works.
+	pnlByMagic := make(map[int32]decimal.Decimal)
+	for _, pos := range positions {
+		if pos.Magic == 0 {
+			continue
+		}
+		pnlByMagic[pos.Magic] = pnlByMagic[pos.Magic].Add(pos.Profit)
+	}
+
+	for magic, pnl := range pnlByMagic {
+		if sess, ok := byMagic[magic]; ok {
+			sess.SetPnL(pnl.String())
+		}
+	}
+}
+
 // ListByAccount returns all active sessions for an account.
 func (r *SessionRegistry) ListByAccount(accountID string) []*ActiveSession {
 	r.mu.RLock()
@@ -218,6 +293,26 @@ func (r *SessionRegistry) Stop(runID uuid.UUID) error {
 	}
 	sess.cancel()
 	return nil
+}
+
+// RecordTick updates the latest tick timestamp for this session.
+func (s *ActiveSession) RecordTick(t time.Time) {
+	s.pnlMu.Lock()
+	s.LastTickAt = t
+	s.pnlMu.Unlock()
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
+}
+
+// SetPnL updates the running PnL for this run.
+func (s *ActiveSession) SetPnL(pnl string) {
+	s.pnlMu.Lock()
+	s.PnL = pnl
+	s.pnlMu.Unlock()
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
 }
 
 // RecordSignal updates session metadata when a signal is dispatched and

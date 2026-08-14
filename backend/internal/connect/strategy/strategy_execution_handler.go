@@ -147,6 +147,7 @@ type PaperOrderExecutor interface {
 	ClosePaperOrder(ctx context.Context, accountID, symbol string) error
 	ModifyPaperOrder(ctx context.Context, accountID, symbol string, sl, tp decimal.Decimal) error
 	CancelPaperOrder(ctx context.Context, accountID, symbol string) error
+	PaperPnl(ctx context.Context, accountID, symbol string, bid, ask decimal.Decimal) (decimal.Decimal, error)
 }
 
 func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                      { s.barSource = bs }

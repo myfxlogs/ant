@@ -29,6 +29,7 @@ type PositionSnapshotItem struct {
 	Ticket       int64
 	Symbol       string
 	Type         string
+	Magic        int32
 	Volume       decimal.Decimal
 	OpenPrice    decimal.Decimal
 	CurrentPrice decimal.Decimal

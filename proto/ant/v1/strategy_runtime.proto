@@ -489,6 +489,8 @@ message ActiveStrategy {
   string strategy_name = 14;
   string bid = 15;          // latest bid price for the strategy's symbol
   string ask = 16;          // latest ask price for the strategy's symbol
+  google.protobuf.Timestamp last_tick_at = 17;   // last time a tick was received for this symbol
+  string pnl = 18;          // running PnL for this run (per-magic attribution)
 }
 
 // ── Strategy signal SSE stream ───────────────────────────────────────

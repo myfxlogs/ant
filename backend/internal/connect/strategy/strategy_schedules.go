@@ -28,7 +28,7 @@ func (s *StrategyServer) ListSchedules(ctx context.Context, req *connect.Request
 	}
 	schedules := make([]*antv1.StrategySchedule, len(rows))
 	for i, r := range rows {
-		schedules[i] = scheduleRowToProto(&r)
+		schedules[i] = s.scheduleRowToProto(&r)
 	}
 	return connect.NewResponse(&antv1.ListSchedulesResponse{Schedules: schedules}), nil
 }
@@ -42,7 +42,7 @@ func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[a
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(scheduleRowToProto(row)), nil
+	return connect.NewResponse(s.scheduleRowToProto(row)), nil
 }
 
 func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Request[antv1.CreateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
@@ -104,7 +104,7 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 		s.engine.Notify()
 	}
 	s.notifyScheduleChange(ctx)
-	return connect.NewResponse(scheduleRowToProto(&r)), nil
+	return connect.NewResponse(s.scheduleRowToProto(&r)), nil
 }
 
 func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Request[antv1.UpdateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
@@ -151,7 +151,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		s.engine.Notify()
 	}
 	s.notifyScheduleChange(ctx)
-	return connect.NewResponse(scheduleRowToProto(existing)), nil
+	return connect.NewResponse(s.scheduleRowToProto(existing)), nil
 }
 
 func (s *StrategyServer) applyAccountSwitch(ctx context.Context, id uuid.UUID, accountIDStr string, existing *service.ScheduleRow) error {
@@ -229,7 +229,7 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	s.notifyScheduleChange(ctx)
-	return connect.NewResponse(scheduleRowToProto(row)), nil
+	return connect.NewResponse(s.scheduleRowToProto(row)), nil
 }
 
 func (s *StrategyServer) notifyScheduleChange(ctx context.Context) {
@@ -289,7 +289,7 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 
 		schedules := make([]*antv1.StrategySchedule, len(rows))
 		for i, r := range rows {
-			schedules[i] = scheduleRowToProto(&r)
+			schedules[i] = s.scheduleRowToProto(&r)
 		}
 
 		if err := stream.Send(&antv1.WatchSchedulesEvent{Schedules: schedules}); err != nil {
@@ -300,7 +300,11 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 
 // --- Schedule proto converters ---
 
-func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
+func (s *StrategyServer) scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
+	return buildScheduleProto(r, s.sessionRegistry)
+}
+
+func buildScheduleProto(r *service.ScheduleRow, reg *SessionRegistry) *antv1.StrategySchedule {
 	if r == nil {
 		return nil
 	}
@@ -363,6 +367,13 @@ func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
 	}
 	if r.NextRunAt != nil {
 		s.NextRunAt = timestamppb.New(*r.NextRunAt)
+	}
+	if reg != nil {
+		if sess, ok := reg.GetByScheduleID(r.ID); ok {
+			s.IsRunning = true
+			s.ActiveRunId = sess.RunID.String()
+			s.SignalCount = int32(sess.SignalCount)
+		}
 	}
 	return s
 }

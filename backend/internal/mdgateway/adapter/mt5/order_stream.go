@@ -185,6 +185,7 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 			Ticket:       o.GetTicket(),
 			Symbol:       o.GetSymbol(),
 			Type:         mt5OrderTypeLabel(o.GetOrderType()),
+			Magic:        int32(o.GetExpertId()),
 			Volume:       decimal.NewFromFloat(o.GetLots()),
 			OpenPrice:    decimal.NewFromFloat(o.GetOpenPrice()),
 			CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),

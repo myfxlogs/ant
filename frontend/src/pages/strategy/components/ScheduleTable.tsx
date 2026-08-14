@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   Popconfirm,
   Space,
@@ -143,6 +144,17 @@ export default function ScheduleTable({
               <Tag color="blue">{t("strategy.schedules.status.enabled", { defaultValue: "Enabled" })}</Tag>
             ) : (
               <Tag>{t("strategy.schedules.status.disabled")}</Tag>
+            )}
+          </Space>
+          <Space>
+            <Badge status={row?.isRunning ? "success" : "default"} />
+            <Text style={{ fontSize: 12 }}>
+              {row?.isRunning
+                ? t("strategy.schedules.status.running", { defaultValue: "Running" })
+                : t("strategy.schedules.status.idle", { defaultValue: "Idle" })}
+            </Text>
+            {typeof row?.signalCount === "number" && row.signalCount > 0 && (
+              <Text type="secondary" style={{ fontSize: 12 }}>({row.signalCount})</Text>
             )}
           </Space>
           <Text type="secondary" style={{ fontSize: 12 }}>

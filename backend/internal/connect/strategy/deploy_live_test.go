@@ -30,6 +30,9 @@ func (m *mockPaperEngine) ModifyPaperOrder(ctx context.Context, accountID, symbo
 func (m *mockPaperEngine) CancelPaperOrder(ctx context.Context, accountID, symbol string) error {
 	return nil
 }
+func (m *mockPaperEngine) PaperPnl(ctx context.Context, accountID, symbol string, bid, ask decimal.Decimal) (decimal.Decimal, error) {
+	return decimal.Zero, nil
+}
 
 // mockOrderExecutor implements mthub.OrderExecutor for live path tests.
 // Records the ClientID of each PlaceOrder call via a channel for synchronization.

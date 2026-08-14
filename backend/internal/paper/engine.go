@@ -141,7 +141,29 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 	return nil
 }
 
-// ClosePaperOrder finds and closes an open paper position by symbol.
+// PaperPnl returns the unrealized PnL of the single open paper position for
+// the given account+symbol, using the latest bid/ask. Returns 0 if no open order.
+func (e *PaperEngine) PaperPnl(ctx context.Context, accountID, symbol string, bid, ask decimal.Decimal) (decimal.Decimal, error) {
+	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
+	if err != nil || order == nil || order.State != "open" {
+		return decimal.Zero, nil
+	}
+	var exit decimal.Decimal
+	switch order.Side {
+	case "buy":
+		exit = bid
+	case "sell":
+		exit = ask
+	default:
+		exit = bid.Add(ask).Div(decimal.NewFromInt(2))
+	}
+	diff := exit.Sub(order.FillPrice)
+	if order.Side == "sell" {
+		diff = order.FillPrice.Sub(exit)
+	}
+	return order.Volume.Mul(diff), nil
+}
+
 func (e *PaperEngine) ClosePaperOrder(ctx context.Context, accountID, symbol string) error {
 	order, err := e.repo.FindOpenOrder(ctx, accountID, symbol)
 	if err != nil {

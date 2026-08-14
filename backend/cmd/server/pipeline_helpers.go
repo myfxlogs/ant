@@ -12,6 +12,7 @@ func convertProfitPositions(positions []mdtick.ProfitPosition) []mthub.AccountPr
 		out = append(out, mthub.AccountProfitPosition{
 			Ticket:       pos.Ticket,
 			Symbol:       pos.Symbol,
+			Magic:        pos.Magic,
 			Profit:       pos.Profit,
 			Volume:       pos.Volume,
 			CurrentPrice: pos.CurrentPrice,
