@@ -7,21 +7,22 @@ import (
 	"sync"
 
 	pb "alphaforge/mt5"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
 // mockMT5Client implements pb.MT5Client for testing data conversion paths.
 type mockMT5Client struct {
-	openedOrdersRes    *pb.OpenedOrdersReply
-	openedOrdersErr    error
-	accountSummaryRes  *pb.AccountSummaryReply
-	accountSummaryErr  error
-	symbolParamsRes    *pb.SymbolParamsReply
-	symbolParamsErr    error
+	openedOrdersRes   *pb.OpenedOrdersReply
+	openedOrdersErr   error
+	accountSummaryRes *pb.AccountSummaryReply
+	accountSummaryErr error
+	symbolParamsRes   *pb.SymbolParamsReply
+	symbolParamsErr   error
 }
 
-func (m *mockMT5Client) getErr() error        { return fmt.Errorf("mock: not implemented") }
+func (m *mockMT5Client) getErr() error { return fmt.Errorf("mock: not implemented") }
 
 func (m *mockMT5Client) Account(ctx context.Context, in *pb.AccountRequest, opts ...grpc.CallOption) (*pb.AccountReply, error) {
 	return nil, m.getErr()
@@ -159,10 +160,11 @@ func (m *mockQHClient) PriceHistoryExMany(ctx context.Context, in *pb.PriceHisto
 // --- Mock streaming types for recvLoop tests ---
 
 type mt5MockQuoteStream struct {
-	mu     sync.Mutex
-	quotes []*pb.OnQuoteReply
-	idx    int
-	ctx    context.Context
+	mu      sync.Mutex
+	quotes  []*pb.OnQuoteReply
+	idx     int
+	ctx     context.Context
+	recvErr error
 }
 
 func (m *mt5MockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
@@ -174,25 +176,29 @@ func (m *mt5MockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
 		return q, nil
 	}
 	m.mu.Unlock()
-	// Block until context is cancelled, simulating a long-lived stream.
+	if m.recvErr != nil {
+		return nil, m.recvErr
+	}
+	// Block until context is cancelled, simulating a long-lived idle stream.
 	if m.ctx != nil {
 		<-m.ctx.Done()
 		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
-func (m *mt5MockQuoteStream) Header() (metadata.MD, error)  { return nil, nil }
-func (m *mt5MockQuoteStream) Trailer() metadata.MD           { return nil }
-func (m *mt5MockQuoteStream) CloseSend() error               { return nil }
-func (m *mt5MockQuoteStream) Context() context.Context       { return m.ctx }
-func (m *mt5MockQuoteStream) SendMsg(msg any) error          { return nil }
-func (m *mt5MockQuoteStream) RecvMsg(msg any) error          { return io.EOF }
+func (m *mt5MockQuoteStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *mt5MockQuoteStream) Trailer() metadata.MD         { return nil }
+func (m *mt5MockQuoteStream) CloseSend() error             { return nil }
+func (m *mt5MockQuoteStream) Context() context.Context     { return m.ctx }
+func (m *mt5MockQuoteStream) SendMsg(msg any) error        { return nil }
+func (m *mt5MockQuoteStream) RecvMsg(msg any) error        { return io.EOF }
 
 type mt5MockProfitStream struct {
 	mu      sync.Mutex
 	updates []*pb.OnOrderProfitReply
 	idx     int
 	ctx     context.Context
+	recvErr error
 }
 
 func (m *mt5MockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
@@ -204,25 +210,29 @@ func (m *mt5MockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
 		return u, nil
 	}
 	m.mu.Unlock()
-	// Block until context is cancelled, simulating a long-lived stream.
+	if m.recvErr != nil {
+		return nil, m.recvErr
+	}
+	// Block until context is cancelled, simulating a long-lived idle stream.
 	if m.ctx != nil {
 		<-m.ctx.Done()
 		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
-func (m *mt5MockProfitStream) Header() (metadata.MD, error)  { return nil, nil }
-func (m *mt5MockProfitStream) Trailer() metadata.MD           { return nil }
-func (m *mt5MockProfitStream) CloseSend() error               { return nil }
-func (m *mt5MockProfitStream) Context() context.Context       { return m.ctx }
-func (m *mt5MockProfitStream) SendMsg(msg any) error          { return nil }
-func (m *mt5MockProfitStream) RecvMsg(msg any) error          { return io.EOF }
+func (m *mt5MockProfitStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *mt5MockProfitStream) Trailer() metadata.MD         { return nil }
+func (m *mt5MockProfitStream) CloseSend() error             { return nil }
+func (m *mt5MockProfitStream) Context() context.Context     { return m.ctx }
+func (m *mt5MockProfitStream) SendMsg(msg any) error        { return nil }
+func (m *mt5MockProfitStream) RecvMsg(msg any) error        { return io.EOF }
 
 type mt5MockOrderUpdateStream struct {
 	mu      sync.Mutex
 	updates []*pb.OnOrderUpdateReply
 	idx     int
 	ctx     context.Context
+	recvErr error
 }
 
 func (m *mt5MockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
@@ -234,19 +244,22 @@ func (m *mt5MockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
 		return u, nil
 	}
 	m.mu.Unlock()
-	// Block until context is cancelled, simulating a long-lived stream.
+	if m.recvErr != nil {
+		return nil, m.recvErr
+	}
+	// Block until context is cancelled, simulating a long-lived idle stream.
 	if m.ctx != nil {
 		<-m.ctx.Done()
 		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
-func (m *mt5MockOrderUpdateStream) Header() (metadata.MD, error)  { return nil, nil }
-func (m *mt5MockOrderUpdateStream) Trailer() metadata.MD           { return nil }
-func (m *mt5MockOrderUpdateStream) CloseSend() error               { return nil }
-func (m *mt5MockOrderUpdateStream) Context() context.Context       { return m.ctx }
-func (m *mt5MockOrderUpdateStream) SendMsg(msg any) error          { return nil }
-func (m *mt5MockOrderUpdateStream) RecvMsg(msg any) error          { return io.EOF }
+func (m *mt5MockOrderUpdateStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *mt5MockOrderUpdateStream) Trailer() metadata.MD         { return nil }
+func (m *mt5MockOrderUpdateStream) CloseSend() error             { return nil }
+func (m *mt5MockOrderUpdateStream) Context() context.Context     { return m.ctx }
+func (m *mt5MockOrderUpdateStream) SendMsg(msg any) error        { return nil }
+func (m *mt5MockOrderUpdateStream) RecvMsg(msg any) error        { return io.EOF }
 
 type mt5MockStreamsClient struct {
 	quoteStream       *mt5MockQuoteStream

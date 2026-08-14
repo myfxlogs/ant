@@ -2,6 +2,7 @@ package mt5
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -74,12 +75,13 @@ func TestMDGATEWAY1_FetchAccountInfo_Success(t *testing.T) {
 	}
 }
 
-// TestMDGATEWAY3_OrderUpdateTimeout_FiresReconnect verifies MDGATEWAY-3:
-// A blocking order update stream (no data) triggers reconnect via the timeout path.
+// TestMDGATEWAY3_OrderUpdateRecvError_DoesNotFireOnIdle verifies a silent
+// order update stream does NOT reconnect. Idle is the normal state for an
+// event-driven stream.
 //
-// Adversarial proof: Delete the `case <-time.After` branch → the timeout
-// never fires and the test hangs (detected by -timeout flag as RED).
-func TestMDGATEWAY3_OrderUpdateTimeout_FiresReconnect(t *testing.T) {
+// Adversarial proof: Recreate the old `case <-time.After` timeout branch →
+// a "reconnecting" callback would fire and the test would fail (RED).
+func TestMDGATEWAY3_OrderUpdateRecvError_DoesNotFireOnIdle(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -89,9 +91,8 @@ func TestMDGATEWAY3_OrderUpdateTimeout_FiresReconnect(t *testing.T) {
 	gw := New(mdtick.AccountConfig{AccountID: "test-acc"}, zap.NewNop())
 	gw.conn = &cc
 	gw.sessionID = "test-session"
-	gw.orderUpdateTimeout = 50 * time.Millisecond
 	gw.streamCli = &mt5MockStreamsClient{
-		orderUpdateStream: &mt5MockOrderUpdateStream{ctx: ctx},
+		orderUpdateStream: &mt5MockOrderUpdateStream{},
 	}
 
 	reconnected := make(chan struct{}, 4)
@@ -108,23 +109,48 @@ func TestMDGATEWAY3_OrderUpdateTimeout_FiresReconnect(t *testing.T) {
 
 	select {
 	case <-reconnected:
-		// GREEN: timeout fired → handleStreamError → reportStatus("reconnecting")
-	case <-time.After(3 * time.Second):
-		t.Fatal("timeout: order update stream did not reconnect — RED: no-data timeout missing")
+		t.Fatal("order update stream should NOT reconnect on idle silence — RED: no-data timeout still present")
+	case <-time.After(200 * time.Millisecond):
+		// GREEN: no Recv error, no reconnect
 	}
 }
 
-// TestMDGATEWAY3_OrderUpdateTimeout_Injectable verifies the orderUpdateTimeout
-// field is injectable for tests (not hardcoded 90s).
-func TestMDGATEWAY3_OrderUpdateTimeout_Injectable(t *testing.T) {
+// TestMDGATEWAY3_OrderUpdateRecvError_FiresReconnect verifies MDGATEWAY-3:
+// A Recv error on the order update stream triggers reconnect.
+//
+// Adversarial proof: Delete the `if err != nil` branch after stream.Recv() →
+// the error is swallowed and no reconnect is observed (RED).
+func TestMDGATEWAY3_OrderUpdateRecvError_FiresReconnect(t *testing.T) {
 	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var cc grpc.ClientConn
 	gw := New(mdtick.AccountConfig{AccountID: "test-acc"}, zap.NewNop())
-	if got := gw.orderUpdateTimeoutOrDefault(); got != 90*time.Second {
-		t.Fatalf("default should be 90s, got %v", got)
+	gw.conn = &cc
+	gw.sessionID = "test-session"
+	gw.streamCli = &mt5MockStreamsClient{
+		orderUpdateStream: &mt5MockOrderUpdateStream{recvErr: errors.New("mock order update recv error")},
 	}
-	gw.orderUpdateTimeout = 5 * time.Second
-	if got := gw.orderUpdateTimeoutOrDefault(); got != 5*time.Second {
-		t.Fatalf("injected should be 5s, got %v", got)
+
+	reconnected := make(chan struct{}, 4)
+	gw.SetStatusCallback(func(status, message string) {
+		if status == "reconnecting" {
+			select {
+			case reconnected <- struct{}{}:
+			default:
+			}
+		}
+	})
+
+	go gw.orderUpdateRecvLoop(ctx, func(u *mdtick.OrderUpdate) {})
+
+	select {
+	case <-reconnected:
+		// GREEN: Recv error → handleStreamError → reportStatus("reconnecting")
+	case <-time.After(3 * time.Second):
+		t.Fatal("timeout: order update stream did not reconnect on Recv error — RED: error-driven reconnect missing")
 	}
 }
 
@@ -169,13 +195,13 @@ func TestMDGATEWAY2_HealthCheck_Success(t *testing.T) {
 	}
 }
 
-// TestMDGATEWAY4_SubscribeOrderEvents_ReconnectOnTimeout verifies MDGATEWAY-4:
-// SubscribeOrderEvents goroutine reconnects when the order event stream has no data
-// (timeout fires → handleStreamError → resubscribe).
+// TestMDGATEWAY4_SubscribeOrderEvents_ReconnectOnRecvError verifies MDGATEWAY-4:
+// SubscribeOrderEvents goroutine reconnects when the order event stream Recv
+// returns an error (Recv error → handleStreamError → resubscribe).
 //
-// Adversarial proof: Remove the outer reconnect loop (or the time.After branch) →
-// goroutine exits on first timeout/error → no reconnect observed (RED).
-func TestMDGATEWAY4_SubscribeOrderEvents_ReconnectOnTimeout(t *testing.T) {
+// Adversarial proof: Remove the outer reconnect loop (or the `if err != nil`
+// branch after Recv) → goroutine exits on first error → no reconnect observed (RED).
+func TestMDGATEWAY4_SubscribeOrderEvents_ReconnectOnRecvError(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -185,9 +211,8 @@ func TestMDGATEWAY4_SubscribeOrderEvents_ReconnectOnTimeout(t *testing.T) {
 	gw := New(mdtick.AccountConfig{AccountID: "test-acc"}, zap.NewNop())
 	gw.conn = &cc
 	gw.sessionID = "test-session"
-	gw.orderUpdateTimeout = 50 * time.Millisecond
 	gw.streamCli = &mt5MockStreamsClient{
-		orderUpdateStream: &mt5MockOrderUpdateStream{ctx: ctx},
+		orderUpdateStream: &mt5MockOrderUpdateStream{recvErr: errors.New("mock order event recv error")},
 	}
 
 	reconnectCount := make(chan int, 10)
@@ -213,6 +238,6 @@ func TestMDGATEWAY4_SubscribeOrderEvents_ReconnectOnTimeout(t *testing.T) {
 			t.Fatalf("expected at least 1 reconnect, got %d", c)
 		}
 	case <-time.After(3 * time.Second):
-		t.Fatal("timeout: SubscribeOrderEvents did not reconnect — RED: goroutine exits on no-data, no outer reconnect loop")
+		t.Fatal("timeout: SubscribeOrderEvents did not reconnect on Recv error — RED: goroutine exits on error, no outer reconnect loop")
 	}
 }

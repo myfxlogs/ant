@@ -359,59 +359,35 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 				continue
 			}
 			backoff = time.Second
-			recvCh := make(chan *pb.OnOrderUpdateReply, 1)
-			errCh := make(chan error, 1)
-			go func() {
-				for {
-					msg, err := stream.Recv()
-					if err != nil {
-						errCh <- err
-						close(recvCh)
-						close(errCh)
-						return
-					}
-					select {
-					case recvCh <- msg:
-					case <-subCtx.Done():
-						close(recvCh)
-						close(errCh)
-						return
-					}
-				}
-			}()
 		hubOrderLoop:
 			for {
 				select {
 				case <-ctx.Done():
 					cancel()
 					return
-				case msg := <-recvCh:
-					if h == nil || msg.GetResult() == nil || msg.GetResult().GetUpdate() == nil {
-						continue
-					}
-					upd := msg.GetResult().GetUpdate()
-					o := upd.GetOrder()
-					event := &mthub.OrderEvent{
-						AccountID: g.cfg.AccountID,
-						EventType: upd.GetType().String(),
-						Timestamp: time.Now(),
-					}
-					if o != nil {
-						event.Ticket = o.GetTicket()
-					}
-					h(event)
-				case err := <-errCh:
+				default:
+				}
+				msg, err := stream.Recv()
+				if err != nil {
 					g.log.Warn("mt5 order event recv error", zap.Error(err))
 					cancel()
 					g.handleStreamError(ctx, err, &backoff)
 					break hubOrderLoop
-				case <-time.After(g.orderUpdateTimeoutOrDefault()):
-					g.log.Warn("mt5 order event stream: no data — treating as dead",
-						zap.String("account", g.cfg.AccountID), zap.Duration("timeout", g.orderUpdateTimeoutOrDefault()))
-					cancel()
-					g.handleStreamError(ctx, fmt.Errorf("order event stream: no data timeout"), &backoff)
-					break hubOrderLoop
 				}
+				if h == nil || msg.GetResult() == nil || msg.GetResult().GetUpdate() == nil {
+					continue
+				}
+				upd := msg.GetResult().GetUpdate()
+				o := upd.GetOrder()
+				event := &mthub.OrderEvent{
+					AccountID: g.cfg.AccountID,
+					EventType: upd.GetType().String(),
+					Timestamp: time.Now(),
+				}
+				if o != nil {
+					event.Ticket = o.GetTicket()
+				}
+				h(event)
 			}
 		}
 	}()

@@ -12,6 +12,7 @@
 
 | ID | 项 | 状态 |
 |----|----|------|
+| STREAM-KEEPALIVE-1 | 移除 mt4/mt5 quote/profit/order-update/hub 8 处 no-data 超时反模式，改为 Recv-error 驱动重连；mt4/mt5 `connection.go` 加 gRPC keepalive (30s/20s/PermitWithoutStream)；`mthub/reconciliation.go` 升级为修复型，`SUBMITTED` 卡单按 broker 状态转 `FILLED`/`CANCELLED`/`FAILED`；`Disconnect` 加 `Close` panic 兜底；对抗测试 `TestQuoteStream_RecvError_*` + `TestMDGATEWAY3/4_*` 覆盖空闲/错误重连 | ✅done（2026-08-15 施工方；部署后待审计方实测验收，keepalive PING 行为待回填） |
 | MARGIN-GATE-2-MAGIC-RPC | §0 MARGIN-GATE-2（contractSize fail-closed / USD-quote margin 公式）+ §2 magic 进 PositionSnapshotItem + `GetSchedulePositions` RPC；对抗测试 `TestSnapshotToProto_PreservesMagicNumber` + `TestGetSchedulePositionsFilter` | ✅done（2026-08-15 施工方；部署后待审计方实测验收）|
 | MQL-LOOP-4 | P2-T4/T5 扩展（useAIFix 扩到 coverage fatal + T5 实盘门控）| 🟦open（P2 暂缓）|
 | LEAKAGE-2 | ~~跟单检测~~ | ❌ descoped（2026-08-08：技术不可行，MetaQuotes 无 API 检测提供方/订阅者）|
@@ -289,6 +290,8 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 ## 变更日志
 
+- 2026-08-15 **STREAM-KEEPALIVE 🟦open（P0，第 4 类系统性违规：无数据超时=反向轮询）+ 成交事件丢失根因定论**：生产验证 margin 修复 ✅（部署后 0 gate rejected，2 笔真实订单 ticket 344012976/344010713 过 gate 到达 Exness demo——链路首次通到 broker）。**但发现下一断点**：订单卡 SUBMITTED + 无持仓 + OnOrderUpdate 流 337 次"stream active"（间隔 5-30s）= **无限重连循环**。**根因（用户定性，审计方确认）**：MDGATEWAY-3/4 给流加的"90s 无数据=死"超时是**反向轮询**——定时器启发式猜死亡，违 Push-First 精神（行为被 time.After 治理而非事件驱动）；order-update 是事件驱动流（订单变更才推），**空闲=正常**→ 90s 超时必误判→无限重连→成交事件落在重连缝隙**永久丢失**（mtapi 不重放）。**受影响 8 处**（quote/profit/order-update/hub事件 × mt4/mt5），其中 5 处是审计方本会话修"流僵死"时引入（修症状用错工具=制度化反模式；继硬编码×3、LLM死字段后**第4类**用户抓到的违规）。**修复方向**：删全部 8 处 no-data 超时（保留 Recv error 驱动重连）+ gRPC client keepalive（传输层阳性死亡信号：PING 无应答→Recv 报错→错误驱动重连）+ reconcile-repair（order 流建立事件触发 OpenedOrders 对账补账，旧 P2#8 升级修复型）。**待实测**：mtapi 是否应答 gRPC PING（限制策略风险），结果回填。handoff `builder-handoff-stream-keepalive-2026-08-15.md`（含既有 no-data 超时测试重写要求，防覆盖倒退）。
+- 2026-08-15 **MARGIN-GATE 生产验证 ✅ + 下一断点发现（成交事件丢失）**：部署后 schedule_run_logs **0 次 gate rejected**（此前每单必拒）+ 2 笔真实订单过风控到 broker（ticket 344012976/344010713, BTCUSDm 0.01）——**signal→VM→gate→broker 下单链生产全通**（整条链走到的最远处）。但订单卡 SUBMITTED（EXEC-2 transition 未触发）+ positions 无 BTCUSDm + 90min 零 OnOrderUpdate 活动 + **orders 表 magic_number 为空**（归属数据缺口）→ 成交回报链断（见 STREAM-KEEPALIVE）。
 - 2026-08-15 **实盘数据层架构定论（用户"一次拉取"原则审计）+ Live 页 2-tab 重设计决策**：
   - **数据层审计**（用户质疑"参考数据反复拉取，不是最优"→审计方两轮自审修正）：**原则**=参考数据(拉一次+缓存)/流数据(订阅)/逐次数据(每单)。**结论**：实盘路径基本已合规（报价=OnQuote流✅；历史bar=一次回填PG✅；账户equity/margin=OnOrderProfit流→每5s写PG→每单本地PG读，**非每单调broker**，PG即缓存、重启安全✅；杠杆=进PG本地读✅）。**唯一真违规=symbol元数据（合约大小）**——已由 MARGIN-GATE 批的 SymbolParams 缓存修复。**两处自审纠错留档**：① state_cache.go(256行)维护的是订单/持仓非账户equity（此前误称"只差接线"）；② accountStateProvider 是本地PG读非mtapi RPC（此前误称"每单1-2次RPC"）。**明确不做**：equity换内存缓存（PG读1ms无网络，换内存只省微秒+冷启动复杂度，不值）。**教训**：附和用户直觉时未核对代码，两轮自审才纠正——原则对≠现状错。
   - **Live 页 2-tab 重设计决策（用户否决旧方案后改判）**：初判"补gap上线、3→2 tab后置"；用户以第一真实用户身份否决（持仓不可见/日志埋弹窗/管理动作跨tab）→改判立即重设计（前提已变：执行链通+E2E网在+可观测性在+跨tab桥接数据已打通，合并成本大降）。设计：Tab1「我的策略」双流join（watchSchedules配置态×watchActive实时态，按schedule_id↔active_run_id）+行展开（持仓/信号/日志/配置）+操作全按schedule_id；Tab2「运行历史」。**自审修正2处**：① 勿把pnl/报价塞WatchSchedules（schedule流低频推送→价格stale，改前端join双已有流）；② PositionSnapshotItem缺magic_number字段→per-strategy持仓须先打通magic（mdtick.OrderUpdate→PositionSnapshotItem加MagicNumber）。handoff `builder-handoff-live-redesign-2026-08-14.md`（含§0 MARGIN-GATE-2）。**代价**：上线推迟2-3施工日，换"打开页面看到策略在赚亏/在做什么/能管它"=核心卖点门面。

@@ -32,7 +32,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		orderID = IdempotencyKey(req.AccountID, req.ClientID)
 		if err := s.omsWriter.InsertOrder(ctx, orderID, req.AccountID, platform(req.AccountID, s.hub), req.Canonical,
 			int16(req.OrderType), req.Volume, req.Price,
-			req.StopLoss, req.TakeProfit); err != nil {
+			req.StopLoss, req.TakeProfit, req.Magic); err != nil {
 			return nil, fmt.Errorf("oms insert: %w", err)
 		}
 	}

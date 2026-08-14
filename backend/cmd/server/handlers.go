@@ -89,6 +89,7 @@ func registerHandlers(
 	subscriptionSvc, quotaChecker, boundSvc := setupSubscription(ctx, mux, pool, log, walletSvc, registrationSvc, d.OtelInterceptor, d.AuthInterceptor)
 
 	reconLoop := mthub.NewReconciliationLoop(d.Hub, pool, d.RDB.Client(), log, d.ReconcileGate)
+	reconLoop.SetMtHubService(d.MthubSvc)
 
 	mthubServer := system.NewMtHubServer(d.MthubSvc, d.PlatformSvc, marketDataRepo, d.TradeRecordRepo, log)
 	mthubServer.SetScheduleResolver(repository.NewStrategyScheduleRepository(pool))

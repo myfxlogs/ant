@@ -116,15 +116,15 @@ func hashToNegative(id string) int64 {
 	return -int64(h&0x7FFFFFFFFFFFFFFF) - 1
 }
 
-func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit decimal.Decimal) error {
+func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit decimal.Decimal, magic int32) error {
 	if platform == "" {
 		platform = "MT5"
 	}
 	_, err := w.pool.Exec(ctx, `
-		INSERT INTO orders (id, mt_account_id, platform, ticket, symbol, order_type, volume, price, stop_loss, take_profit, state)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		INSERT INTO orders (id, mt_account_id, platform, ticket, symbol, order_type, volume, price, stop_loss, take_profit, state, magic_number)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		ON CONFLICT (id) DO NOTHING
-	`, orderID, accountID, platform, hashToNegative(orderID), symbol, orderType, volume, price, stopLoss, takeProfit, string(OMSStateNew))
+	`, orderID, accountID, platform, hashToNegative(orderID), symbol, orderType, volume, price, stopLoss, takeProfit, string(OMSStateNew), magic)
 	if err != nil {
 		return fmt.Errorf("oms insert order: %w", err)
 	}

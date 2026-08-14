@@ -90,10 +90,11 @@ func (m *mockMT4Client) TickValueWithSize(ctx context.Context, in *pb.TickValueW
 // --- Mock streaming types for recvLoop tests ---
 
 type mockQuoteStream struct {
-	mu     sync.Mutex
-	quotes []*pb.OnQuoteReply
-	idx    int
-	ctx    context.Context
+	mu      sync.Mutex
+	quotes  []*pb.OnQuoteReply
+	idx     int
+	ctx     context.Context
+	recvErr error
 }
 
 func (m *mockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
@@ -105,7 +106,11 @@ func (m *mockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
 		return q, nil
 	}
 	m.mu.Unlock()
-	// Block until context is cancelled, simulating a long-lived stream.
+	// If a Recv error is configured, return it (simulating a dead/tripped stream).
+	if m.recvErr != nil {
+		return nil, m.recvErr
+	}
+	// Block until context is cancelled, simulating a long-lived idle stream.
 	if m.ctx != nil {
 		<-m.ctx.Done()
 		return nil, m.ctx.Err()
@@ -124,6 +129,7 @@ type mockProfitStream struct {
 	updates []*pb.OnOrderProfitReply
 	idx     int
 	ctx     context.Context
+	recvErr error
 }
 
 func (m *mockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
@@ -135,7 +141,10 @@ func (m *mockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
 		return u, nil
 	}
 	m.mu.Unlock()
-	// Block until context is cancelled, simulating a long-lived stream.
+	if m.recvErr != nil {
+		return nil, m.recvErr
+	}
+	// Block until context is cancelled, simulating a long-lived idle stream.
 	if m.ctx != nil {
 		<-m.ctx.Done()
 		return nil, m.ctx.Err()
@@ -154,6 +163,7 @@ type mockOrderUpdateStream struct {
 	updates []*pb.OnOrderUpdateReply
 	idx     int
 	ctx     context.Context
+	recvErr error
 }
 
 func (m *mockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
@@ -165,7 +175,10 @@ func (m *mockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
 		return u, nil
 	}
 	m.mu.Unlock()
-	// Block until context is cancelled, simulating a long-lived stream.
+	if m.recvErr != nil {
+		return nil, m.recvErr
+	}
+	// Block until context is cancelled, simulating a long-lived idle stream.
 	if m.ctx != nil {
 		<-m.ctx.Done()
 		return nil, m.ctx.Err()

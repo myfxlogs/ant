@@ -2,6 +2,7 @@ package mt4
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -84,26 +85,13 @@ func TestSubscribeMany_Success(t *testing.T) {
 	}
 }
 
-// TestQuoteTimeout_Injectable verifies LIVE-PRICE-2: quoteTimeout field
-// is injectable for tests. The recvLoop should use it instead of hardcoded 90s.
-func TestQuoteTimeout_Injectable(t *testing.T) {
-	t.Parallel()
-	gw := New(mdtick.AccountConfig{AccountID: "test-acc"}, zap.NewNop())
-	if got := gw.quoteTimeoutOrDefault(); got != 90*time.Second {
-		t.Errorf("default quoteTimeout = %v, want 90s", got)
-	}
-	gw.quoteTimeout = 100 * time.Millisecond
-	if got := gw.quoteTimeoutOrDefault(); got != 100*time.Millisecond {
-		t.Errorf("injected quoteTimeout = %v, want 100ms", got)
-	}
-}
-
-// TestQuoteTimeout_FiresReconnect verifies LIVE-PRICE-2:
-// A blocking quote stream (no data) triggers reconnect via the timeout path.
+// TestQuoteStream_RecvError_DoesNotFireOnIdle verifies a silent quote stream
+// (no data, no error) does NOT trigger a reconnect. Idle is the normal state
+// for an event-driven stream.
 //
-// Adversarial proof: Delete the `case <-time.After` branch → the timeout
-// never fires and the test hangs (detected by -timeout flag as RED).
-func TestQuoteTimeout_FiresReconnect(t *testing.T) {
+// Adversarial proof: Recreate the old `case <-time.After` timeout branch →
+// the test would see a "reconnecting" callback and fail (RED).
+func TestQuoteStream_RecvError_DoesNotFireOnIdle(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -113,9 +101,47 @@ func TestQuoteTimeout_FiresReconnect(t *testing.T) {
 	gw := New(mdtick.AccountConfig{AccountID: "test-acc"}, zap.NewNop())
 	gw.conn = &cc
 	gw.sessionID = "test-session"
-	gw.quoteTimeout = 50 * time.Millisecond
 	gw.streamCli = &mockStreamsClient{
-		quoteStream: &mockQuoteStream{ctx: ctx},
+		quoteStream: &mockQuoteStream{},
+	}
+
+	reconnected := make(chan struct{}, 4)
+	gw.SetStatusCallback(func(status, message string) {
+		if status == "reconnecting" {
+			select {
+			case reconnected <- struct{}{}:
+			default:
+			}
+		}
+	})
+
+	go gw.recvLoop(ctx, func(t *mdtick.Tick) {})
+
+	select {
+	case <-reconnected:
+		t.Fatal("quote stream should NOT reconnect on idle silence — RED: no-data timeout still present")
+	case <-time.After(200 * time.Millisecond):
+		// GREEN: no Recv error, no reconnect
+	}
+}
+
+// TestQuoteStream_RecvError_FiresReconnect verifies LIVE-PRICE-2:
+// A Recv error on the quote stream triggers reconnect via the error path.
+//
+// Adversarial proof: Remove the `if err != nil` branch after stream.Recv() →
+// the error is swallowed and no reconnect is observed (RED).
+func TestQuoteStream_RecvError_FiresReconnect(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var cc grpc.ClientConn
+	gw := New(mdtick.AccountConfig{AccountID: "test-acc"}, zap.NewNop())
+	gw.conn = &cc
+	gw.sessionID = "test-session"
+	gw.streamCli = &mockStreamsClient{
+		quoteStream: &mockQuoteStream{recvErr: errors.New("mock quote recv error")},
 	}
 	gw.subCli = &mockSubCli{
 		subscribeManyReply: &pb.SubscribeManyReply{Result: "ok"},
@@ -135,9 +161,9 @@ func TestQuoteTimeout_FiresReconnect(t *testing.T) {
 
 	select {
 	case <-reconnected:
-		// GREEN: timeout fired → handleStreamError → reportStatus("reconnecting")
+		// GREEN: Recv error → handleStreamError → reportStatus("reconnecting")
 	case <-time.After(3 * time.Second):
-		t.Fatal("quote timeout did not trigger reconnect within 3s — RED: case <-time.After missing or broken")
+		t.Fatal("quote stream did not reconnect on Recv error — RED: error-driven reconnect missing")
 	}
 }
 

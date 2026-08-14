@@ -69,66 +69,31 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		backoff = time.Second
 		g.reportStatus("connected", "")
 		g.log.Info("mt5: order update stream active")
-		recvCh := make(chan *pb.OnOrderUpdateReply, 1)
-		errCh := make(chan error, 1)
-		go func() {
-			for {
-				resp, err := stream.Recv()
-				if err != nil {
-					errCh <- err
-					close(recvCh)
-					close(errCh)
-					return
-				}
-				select {
-				case recvCh <- resp:
-				case <-subCtx.Done():
-					close(recvCh)
-					close(errCh)
-					return
-				}
-			}
-		}()
-	orderLoop:
 		for {
-			select {
-			case resp := <-recvCh:
-				s := resp.GetResult()
-				if s == nil {
-					continue
-				}
-				func() {
-					defer func() {
-						if r := recover(); r != nil {
-							g.log.Error("mt5 order update handler panic", zap.Any("panic", r))
-						}
-					}()
-					handler(parseMt5OrderUpdate(s, g.cfg.AccountID))
-				}()
-			case err := <-errCh:
+			resp, err := stream.Recv()
+			if err != nil {
 				g.log.Warn("mt5 order update recv", zap.Error(err))
 				cancel()
 				g.handleStreamError(ctx, err, &backoff)
-				break orderLoop
-			case <-time.After(g.orderUpdateTimeoutOrDefault()):
-				g.log.Warn("mt5 order update stream: no data — treating as dead",
-					zap.String("account", g.cfg.AccountID), zap.Duration("timeout", g.orderUpdateTimeoutOrDefault()))
-				cancel()
-				g.handleStreamError(ctx, fmt.Errorf("order update stream: no data timeout"), &backoff)
-				break orderLoop
+				break
 			}
+			s := resp.GetResult()
+			if s == nil {
+				continue
+			}
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						g.log.Error("mt5 order update handler panic", zap.Any("panic", r))
+					}
+				}()
+				handler(parseMt5OrderUpdate(s, g.cfg.AccountID))
+			}()
 		}
 	}
 }
 
 const streamMaxBackoff = 5 * time.Minute
-
-func (g *Gateway) orderUpdateTimeoutOrDefault() time.Duration {
-	if g.orderUpdateTimeout > 0 {
-		return g.orderUpdateTimeout
-	}
-	return 90 * time.Second
-}
 
 func (g *Gateway) handleStreamError(ctx context.Context, err error, backoff *time.Duration) {
 	if err != context.Canceled && err != context.DeadlineExceeded {

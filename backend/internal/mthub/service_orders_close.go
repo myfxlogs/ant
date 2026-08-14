@@ -60,7 +60,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 	if s.omsWriter != nil {
 		pf := platform(accountID, s.hub)
 		if err := s.omsWriter.InsertOrder(ctx, closeOrderID, accountID, pf, "",
-			int16(OrderMarket), lots, decimal.Zero, decimal.Zero, decimal.Zero); err != nil {
+			int16(OrderMarket), lots, decimal.Zero, decimal.Zero, decimal.Zero, 0); err != nil {
 			if s.logger != nil {
 				s.logger.Warn("CloseOrder: OMS insert skipped", zap.Error(err))
 			}

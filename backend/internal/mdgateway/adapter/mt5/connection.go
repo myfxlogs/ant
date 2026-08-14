@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -39,8 +40,6 @@ type Gateway struct {
 	reconnecting         bool                         // true while reconnection is in progress (prevents recvLoop race)
 	onStatusChange       func(status, message string) // connection state callback (nil-safe)
 	breaker              mdtick.Breaker
-	quoteTimeout         time.Duration // no-data timeout for quote recvLoop (default 90s, injectable for tests)
-	orderUpdateTimeout   time.Duration // no-data timeout for orderUpdate recvLoop (default 90s, injectable for tests)
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
@@ -100,6 +99,11 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
 		grpc.WithBlock(),
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(16*1024*1024)),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                30 * time.Second,
+			Timeout:             20 * time.Second,
+			PermitWithoutStream: true,
+		}),
 	)
 	if err != nil {
 		return fmt.Errorf("mt5 dial: %w", err)
@@ -202,8 +206,16 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 		g.cancelHubOrderSub = nil
 	}
 	if g.conn != nil {
-		_ = g.conn.Close()
+		old := g.conn
 		g.conn = nil
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					g.log.Warn("mt5: connection Close panic", zap.Any("panic", r))
+				}
+			}()
+			_ = old.Close()
+		}()
 	}
 	g.client = nil
 	g.connCli = nil

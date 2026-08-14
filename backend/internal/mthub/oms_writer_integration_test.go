@@ -20,22 +20,33 @@ func TestOmsWriterInsertAndTransition(t *testing.T) {
 	orderID := uuid.New().String()
 	accountID := "06daab3c-5d87-41fd-bd8b-f31ba73c16c1" // real MT account in dev DB
 
-	// Insert order.
+	// Insert order. Magic=12345 must persist to orders.magic_number (ORDERS-MAGIC).
 	err := w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD",
 		0, // OrderMarket
 		decimal.NewFromInt(1),
 		decimal.NewFromFloat(1.085),
 		decimal.Zero,
 		decimal.Zero,
+		12345,
 	)
 	if err != nil {
 		t.Fatalf("InsertOrder failed: %v", err)
 	}
 
+	// ORDERS-MAGIC adversarial: magic_number persisted.
+	var gotMagic int32
+	err = w.pool.QueryRow(ctx, `SELECT magic_number FROM orders WHERE id=$1`, orderID).Scan(&gotMagic)
+	if err != nil {
+		t.Fatalf("query magic: %v", err)
+	}
+	if gotMagic != 12345 {
+		t.Fatalf("magic_number not persisted: got %d, want 12345", gotMagic)
+	}
+
 	// Idempotent re-insert (ON CONFLICT DO NOTHING).
 	err = w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD", 0,
 		decimal.NewFromInt(1), decimal.NewFromFloat(1.085),
-		decimal.Zero, decimal.Zero)
+		decimal.Zero, decimal.Zero, 12345)
 	if err != nil {
 		t.Fatalf("InsertOrder (idempotent) failed: %v", err)
 	}

@@ -18,11 +18,17 @@ type ReconciliationLoop struct {
 	redis *goredis.Client
 	log   *zap.Logger
 	gate  *ReconcileGate
+	svc   *MtHubService // optional: used to repair stuck OMS orders (SUBMITTED→FILLED/CANCELLED/FAILED)
 }
 
 // NewReconciliationLoop creates a reconciliation loop.
 func NewReconciliationLoop(hub *Hub, pg *pgxpool.Pool, redis *goredis.Client, log *zap.Logger, gate *ReconcileGate) *ReconciliationLoop {
 	return &ReconciliationLoop{hub: hub, pg: pg, redis: redis, log: log, gate: gate}
+}
+
+// SetMtHubService wires the OMS writer so reconciliation can repair stuck orders.
+func (r *ReconciliationLoop) SetMtHubService(svc *MtHubService) {
+	r.svc = svc
 }
 
 // Start runs a full reconciliation on startup then waits for event-driven triggers.
@@ -52,7 +58,12 @@ func (r *ReconciliationLoop) ReconcileAccount(ctx context.Context, accountID str
 
 // TriggerReconcile triggers a reconciliation for a specific account.
 // Safe to call from OnBrokerInfo in main.go on broker reconnect events.
+// It is idempotent: overlapping reconciliations for the same account are skipped.
 func (r *ReconciliationLoop) TriggerReconcile(accountID string) {
+	if r.gate != nil && !r.gate.CanAccept(accountID) {
+		r.log.Debug("reconciliation: already in progress, skipping trigger", zap.String("accountID", accountID))
+		return
+	}
 	r.log.Info("reconciliation: triggered for account", zap.String("accountID", accountID))
 	if r.gate != nil {
 		r.gate.EnterReconciling(accountID)
@@ -77,6 +88,27 @@ func (r *ReconciliationLoop) reconcileAll(ctx context.Context) {
 			r.log.Error("reconciliation: account failed", zap.String("accountID", accountID), zap.Error(err))
 		}
 	}
+}
+
+func brokerOrderStateToOMS(s OrderState) OMSState {
+	switch s {
+	case OrderStateOpen, OrderStateClosed:
+		return OMSStateFilled
+	case OrderStateCancelled:
+		return OMSStateCancelled
+	case OrderStateRejected:
+		return OMSStateFailed
+	case OrderStatePending:
+		return OMSStateWorking
+	}
+	return ""
+}
+
+func (r *ReconciliationLoop) repairOrder(ctx context.Context, accountID string, ticket int64, to OMSState) {
+	if r.svc == nil {
+		return
+	}
+	r.svc.TransitionOrderByTicket(ctx, accountID, ticket, to)
 }
 
 func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID string) error {
@@ -128,15 +160,29 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		antTickets[ticket] = state
 	}
 
-	// 3. Compare ticket existence only (OMS and broker use different state enums,
-	//    so direct state comparison is meaningless. Detect ghost/orphan tickets.)
-	var ghosts, orphans int
-	for ticket := range antTickets {
-		if _, exists := brokerTickets[ticket]; !exists {
+	// 3. Compare ticket existence and repair stuck SUBMITTED orders.
+	//    OMS and broker use different state enums, so direct state comparison
+	//    is meaningless; we drive OMS transitions from broker reality.
+	var ghosts, orphans, repaired int
+	for ticket, antState := range antTickets {
+		br, exists := brokerTickets[ticket]
+		if !exists {
 			r.log.Warn("reconciliation: orphan order (ant has, broker missing)",
 				zap.String("accountID", accountID),
 				zap.Int64("ticket", ticket))
 			orphans++
+			if antState == string(OMSStateSubmitted) && r.svc != nil {
+				r.repairOrder(ctx, accountID, ticket, OMSStateFailed)
+				repaired++
+			}
+			continue
+		}
+		if antState == string(OMSStateSubmitted) && r.svc != nil {
+			to := brokerOrderStateToOMS(br.State)
+			if to != "" && to != OMSStateSubmitted {
+				r.repairOrder(ctx, accountID, ticket, to)
+				repaired++
+			}
 		}
 	}
 
@@ -149,11 +195,12 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		}
 	}
 
-	if ghosts+orphans > 0 {
+	if ghosts+orphans > 0 || repaired > 0 {
 		r.log.Info("reconciliation: account summary",
 			zap.String("accountID", accountID),
 			zap.Int("ghosts", ghosts),
 			zap.Int("orphans", orphans),
+			zap.Int("repaired", repaired),
 			zap.Int("broker_orders", len(brokerTickets)),
 			zap.Int("ant_orders", len(antTickets)),
 		)

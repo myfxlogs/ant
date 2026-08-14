@@ -137,55 +137,32 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.reportStatus("connected", "")
 		g.log.Info("mt4: quote stream active")
 		for {
-			recvCh := make(chan *pb.OnQuoteReply, 1)
-			errCh := make(chan error, 1)
-			go func() {
-				quote, err := stream.Recv()
-				if err != nil {
-					errCh <- err
-					return
-				}
-				recvCh <- quote
-			}()
-			select {
-			case quote := <-recvCh:
-				q := quote.GetResult()
-				if q == nil {
-					continue
-				}
-				handler(&mdtick.Tick{
-					UserID:        g.cfg.UserID,
-					AccountID:     g.cfg.AccountID,
-					Broker:        g.cfg.Broker,
-					Platform:      "mt4",
-					SymbolRaw:     q.GetSymbol(),
-					Canonical:     "",
-					TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-					ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
-					Bid:           decimal.NewFromFloat(q.GetBid()),
-					Ask:           decimal.NewFromFloat(q.GetAsk()),
-				})
-			case err := <-errCh:
+			quote, err := stream.Recv()
+			if err != nil {
 				g.log.Warn("mt4 recv", zap.Error(err))
 				cancel()
 				g.handleStreamError(ctx, err, &backoff)
 				goto quoteLoopEnd
-			case <-time.After(g.quoteTimeoutOrDefault()):
-				g.log.Warn("mt4 quote stream: no data — treating as dead", zap.String("account", g.cfg.AccountID), zap.Duration("timeout", g.quoteTimeoutOrDefault()))
-				cancel()
-				g.handleStreamError(ctx, fmt.Errorf("quote stream: no data timeout"), &backoff)
-				goto quoteLoopEnd
 			}
+			q := quote.GetResult()
+			if q == nil {
+				continue
+			}
+			handler(&mdtick.Tick{
+				UserID:        g.cfg.UserID,
+				AccountID:     g.cfg.AccountID,
+				Broker:        g.cfg.Broker,
+				Platform:      "mt4",
+				SymbolRaw:     q.GetSymbol(),
+				Canonical:     "",
+				TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
+				ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
+				Bid:           decimal.NewFromFloat(q.GetBid()),
+				Ask:           decimal.NewFromFloat(q.GetAsk()),
+			})
 		}
 	quoteLoopEnd:
 	}
-}
-
-func (g *Gateway) quoteTimeoutOrDefault() time.Duration {
-	if g.quoteTimeout > 0 {
-		return g.quoteTimeout
-	}
-	return 90 * time.Second
 }
 
 func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
@@ -277,34 +254,18 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.reportStatus("connected", "")
 		g.log.Info("mt4: profit stream active")
 		for {
-			recvCh := make(chan *pb.OnOrderProfitReply, 1)
-			errCh := make(chan error, 1)
-			go func() {
-				resp, err := stream.Recv()
-				if err != nil {
-					errCh <- err
-					return
-				}
-				recvCh <- resp
-			}()
-			select {
-			case resp := <-recvCh:
-				p := resp.GetResult()
-				if p == nil {
-					continue
-				}
-				handler(parseMt4ProfitUpdate(p, g.cfg.AccountID))
-			case err := <-errCh:
+			resp, err := stream.Recv()
+			if err != nil {
 				g.log.Warn("mt4 profit recv", zap.Error(err))
 				cancel()
 				g.handleStreamError(ctx, err, &backoff)
 				goto profitLoopEnd
-			case <-time.After(90 * time.Second):
-				g.log.Warn("mt4 profit stream: no data for 90s — treating as dead")
-				cancel()
-				g.handleStreamError(ctx, fmt.Errorf("profit stream: no data timeout"), &backoff)
-				goto profitLoopEnd
 			}
+			p := resp.GetResult()
+			if p == nil {
+				continue
+			}
+			handler(parseMt4ProfitUpdate(p, g.cfg.AccountID))
 		}
 	profitLoopEnd:
 	}
