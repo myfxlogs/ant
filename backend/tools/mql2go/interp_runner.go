@@ -210,8 +210,10 @@ func (r *VMRunner) OnInit(ctx sdk.Context) error {
 }
 
 // OnBar implements sdk.Strategy.
-// The VM trades directly through ctx.Broker() (MQL semantics),
-// so the returned signal is always nil — the engine must not double-dispatch.
+// In live (signalMode=true) the VM builds a pending signal from Order* builtins;
+// the runner returns it for server-side dispatch. In backtest (signalMode=false)
+// the VM executes through ctx.Broker() and returns nil so the engine does not
+// double-dispatch.
 func (r *VMRunner) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
 	r.vm.SetContext(ctx)
 
@@ -219,7 +221,7 @@ func (r *VMRunner) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error)
 		return nil, fmt.Errorf("VM OnBar: %w", err)
 	}
 
-	return nil, nil
+	return r.vm.Signal(), nil
 }
 
 // OnTick implements sdk.TickStrategy (optional).
@@ -235,7 +237,7 @@ func (r *VMRunner) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signa
 		}
 	}
 
-	return nil, nil
+	return r.vm.Signal(), nil
 }
 
 // HasOnTick implements sdk.TickCapable — returns true if the EA has OnTick bytecode.
@@ -251,7 +253,7 @@ func (r *VMRunner) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, 
 		return nil, fmt.Errorf("VM OnTrade: %w", err)
 	}
 
-	return nil, nil
+	return r.vm.Signal(), nil
 }
 
 // OnTradeTransaction implements sdk.TradeTransactionStrategy (optional, MQL5).
@@ -262,7 +264,7 @@ func (r *VMRunner) OnTradeTransaction(ctx sdk.Context) (*sdk.Signal, error) {
 		return nil, fmt.Errorf("VM OnTradeTransaction: %w", err)
 	}
 
-	return nil, nil
+	return r.vm.Signal(), nil
 }
 
 // OnBookEvent implements sdk.BookEventStrategy (optional, MQL5).
@@ -273,12 +275,17 @@ func (r *VMRunner) OnBookEvent(ctx sdk.Context) (*sdk.Signal, error) {
 		return nil, fmt.Errorf("VM OnBookEvent: %w", err)
 	}
 
-	return nil, nil
+	return r.vm.Signal(), nil
 }
 
 // HasOnTradeTransaction returns true if the EA has OnTradeTransaction bytecode.
 func (r *VMRunner) HasOnTradeTransaction() bool {
 	return r.vm.bc.OnTradeTransaction >= 0
+}
+
+// SetSignalMode enables signal-only mode for live execution.
+func (r *VMRunner) SetSignalMode(enabled bool) {
+	r.vm.SetSignalMode(enabled)
 }
 
 // HasOnBookEvent returns true if the EA has OnBookEvent bytecode.
@@ -300,7 +307,7 @@ func (r *VMRunner) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
 		return nil, fmt.Errorf("VM OnTimer: %w", err)
 	}
 
-	return nil, nil
+	return r.vm.Signal(), nil
 }
 
 // GetRuntimeBlindSpots returns blind spots encountered during VM execution.

@@ -38,6 +38,11 @@ type VM struct {
 	callDepth       int                // current user function call depth
 	fatalError      string             // set when a critical builtin is missing (ADR §5.4)
 
+	// signalMode is true for live trading: Order* builtins build a pending
+	// sdk.Signal instead of executing through the broker. The runner returns
+	// this signal for server-side dispatch (paper / live OMS).
+	signalMode bool
+
 	// Pre-built lookup: EntryPC → FuncEntry (avoids O(n) scan per call)
 	funcByEntryPC map[int32]FuncEntry
 
@@ -71,6 +76,13 @@ func (vm *VM) Signal() *sdk.Signal {
 // SetSignal sets the current signal.
 func (vm *VM) SetSignal(s *sdk.Signal) {
 	vm.signal = s
+}
+
+// SetSignalMode enables or disables signal-only mode for live execution.
+// In signal mode, trade builtins produce a pending sdk.Signal instead of
+// calling the broker. The caller (live runner) then dispatches it.
+func (vm *VM) SetSignalMode(enabled bool) {
+	vm.signalMode = enabled
 }
 
 // getSeriesHelper returns a bar series value by name and shift (int).
@@ -166,6 +178,7 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 	vm.cachedOrders = nil
 	vm.cachedHistory = nil
 	vm.callDepth = 0
+	vm.signal = nil
 	vm.pc = entryPC
 
 	// Allocate local variable space for this event handler.

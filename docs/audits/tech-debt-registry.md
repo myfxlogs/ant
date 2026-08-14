@@ -326,4 +326,4 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 - 2026-08-10 **FILL-SIM 验收通过 ✅**：Phase A-E 全部完成，2阻塞级缺口补强后审计方独立复测通过，⚠️解除。FILL-SIM 闭环。
 - 2026-08-10 **FE-TRUST-1 审计方实测验收 ✅**：分享页零信任迁移+后端回撤bug修复，Claude复审通过。
 - 2026-08-10 **EXEC-PARAMS 验收通过 ✅**：回测执行假设参数端到端接线+核心bug修复，审计方实测通过。
-- 2026-08-10 **POST-5 agent重构收尾 ✅**：plan驱动+语义追问全落地，agent重构里程碑完成。
+- 2026-08-15 **LIVE-NET ✅done**：实盘 MQL `OrderSend` 不产 `StrategySignal` → `ExecuteLiveResponse.Signals` 为空 → dispatch 链下游无单。修复：VM 引入 `signalMode`（live 下 `OrderSend`/`CTrade.*` 构造 `sdk.Signal` 并由 `OnBar`/`OnTick` 等返回，不直接执行 broker）；`VMLiveSession` 构造器默认启用；新增 `live_integration_test.go` `TestLivePath_E2E` 从 mock bar 到 paperEngine 逐步断言。验证：go test -run TestLivePath_E2E -v ./internal/connect/strategy/ -timeout 30s PASS；go test ./internal/connect/strategy/... ./tools/mql2go/... ./strategy/backtest/... 全绿。

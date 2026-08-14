@@ -36,6 +36,26 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	mapOrderCmd(cmd, &req)
 
+	if vm.signalMode {
+		action := orderCmdToSignalAction(cmd)
+		if action == sdk.ActionNone {
+			return interp.IntVal(-1), nil
+		}
+		vm.signal = &sdk.Signal{
+			Action:     action,
+			Symbol:     symbol,
+			Volume:     volume,
+			Price:      price,
+			StopLoss:   sl,
+			TakeProfit: tp,
+			Deviation:  deviation,
+			Magic:      magic,
+			Comment:    comment,
+		}
+		// Return a positive ticket so MQL logic that checks the result works.
+		return interp.IntVal(1), nil
+	}
+
 	result, err := vm.ctx.Broker().OrderSend(req)
 	if err != nil {
 		return interp.IntVal(-1), nil
@@ -63,6 +83,27 @@ func mapOrderCmd(cmd int32, req *sdk.OrderRequest) {
 	case 5: // OP_SELLSTOP
 		req.Type = sdk.OrderStop
 		req.Side = sdk.SideSell
+	}
+}
+
+// orderCmdToSignalAction converts an MQL4 OrderSend OP_* command to an
+// sdk.SignalAction. Returns ActionNone for unknown commands.
+func orderCmdToSignalAction(cmd int32) sdk.SignalAction {
+	switch cmd {
+	case 0:
+		return sdk.ActionBuy
+	case 1:
+		return sdk.ActionSell
+	case 2:
+		return sdk.ActionBuyLimit
+	case 3:
+		return sdk.ActionSellLimit
+	case 4:
+		return sdk.ActionBuyStop
+	case 5:
+		return sdk.ActionSellStop
+	default:
+		return sdk.ActionNone
 	}
 }
 
@@ -602,11 +643,52 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 		TakeProfit: tp,
 		Comment:    comment,
 	}
+
+	if vm.signalMode {
+		action := ctradeTypeToSignalAction(orderType, side)
+		if action == sdk.ActionNone {
+			return interp.BoolVal(false), nil
+		}
+		vm.signal = &sdk.Signal{
+			Action:     action,
+			Symbol:     symbol,
+			Volume:     volume,
+			Price:      price,
+			StopLoss:   sl,
+			TakeProfit: tp,
+			Comment:    comment,
+		}
+		return interp.BoolVal(true), nil
+	}
+
 	_, err := vm.ctx.Broker().OrderSend(req)
 	if err != nil {
 		return interp.BoolVal(false), nil
 	}
 	return interp.BoolVal(true), nil
+}
+
+// ctradeTypeToSignalAction converts CTrade order type + side to sdk.SignalAction.
+func ctradeTypeToSignalAction(orderType sdk.OrderType, side sdk.PositionSide) sdk.SignalAction {
+	switch orderType {
+	case sdk.OrderMarket:
+		if side == sdk.SideSell {
+			return sdk.ActionSell
+		}
+		return sdk.ActionBuy
+	case sdk.OrderLimit:
+		if side == sdk.SideSell {
+			return sdk.ActionSellLimit
+		}
+		return sdk.ActionBuyLimit
+	case sdk.OrderStop:
+		if side == sdk.SideSell {
+			return sdk.ActionSellStop
+		}
+		return sdk.ActionBuyStop
+	default:
+		return sdk.ActionNone
+	}
 }
 
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {

@@ -34,6 +34,7 @@ func NewVMLiveSession(source string) (*VMLiveSession, error) {
 	if err != nil {
 		return nil, fmt.Errorf("compile MQL: %w", err)
 	}
+	strategy.SetSignalMode(true)
 	return &VMLiveSession{strategy: strategy}, nil
 }
 
@@ -44,6 +45,7 @@ func NewVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSessio
 	if err != nil {
 		return nil, fmt.Errorf("compile MQL: %w", err)
 	}
+	strategy.SetSignalMode(true)
 	return &VMLiveSession{strategy: strategy}, nil
 }
 
@@ -54,6 +56,7 @@ func NewPythonVMLiveSession(source string) (*VMLiveSession, error) {
 	if err != nil {
 		return nil, fmt.Errorf("compile Python: %w", err)
 	}
+	strategy.SetSignalMode(true)
 	return &VMLiveSession{strategy: strategy}, nil
 }
 
@@ -62,6 +65,7 @@ func NewPythonVMLiveSession(source string) (*VMLiveSession, error) {
 func NewPythonVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSession, error) {
 	if len(cachedBytecode) > 0 {
 		if runner, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
+			runner.SetSignalMode(true)
 			return &VMLiveSession{strategy: runner}, nil
 		}
 	}
@@ -69,6 +73,7 @@ func NewPythonVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLive
 	if err != nil {
 		return nil, fmt.Errorf("compile Python: %w", err)
 	}
+	strategy.SetSignalMode(true)
 	return &VMLiveSession{strategy: strategy}, nil
 }
 
