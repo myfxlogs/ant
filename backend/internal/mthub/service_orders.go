@@ -159,6 +159,20 @@ func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest,
 		s.logger.Warn("gate: account state fetch failed — fail-closed",
 			zap.String("accountID", req.AccountID), zap.Error(stateErr))
 	}
+	// RISK-MARGIN2: ContractSize is per-symbol; fetch from broker SymbolParams
+	// and overlay onto the account snapshot. Fall back to risk.rules defaults
+	// (100000 for FX) only when the broker provides no contract size.
+	if state != nil && state.ContractSize.IsZero() {
+		sctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		params, err := s.SymbolParams(sctx, req.AccountID, []string{req.Canonical})
+		cancel()
+		if err == nil && len(params) > 0 {
+			if params[0].LotSize.GreaterThan(decimal.Zero) {
+				state.ContractSize = params[0].LotSize
+			}
+		}
+	}
+
 	decision := s.gate.Evaluate(ctx, intent, state)
 	if !decision.GetAllow() {
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)

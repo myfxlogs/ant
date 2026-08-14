@@ -36,8 +36,8 @@ func initRiskPipeline(
 
 func buildJurisdictionGate(pool *pgxpool.Pool, cfg *config.Config) *risksvc.JurisdictionGate {
 	return &risksvc.JurisdictionGate{
-		Store: risksvc.NewPgJurisdictionStore(pool),
-		GeoIP: risksvc.NewMaxMindGeoIPResolver(cfg.GeoIPDBPath),
+		Store:      risksvc.NewPgJurisdictionStore(pool),
+		GeoIP:      risksvc.NewMaxMindGeoIPResolver(cfg.GeoIPDBPath),
 		RequireKYC: cfg.RequireKYC, RequireDisclaimer: cfg.RequireDisclaimer,
 		RequireQuestionnaire: cfg.RequireQuestionnaire,
 	}
@@ -64,21 +64,22 @@ func loadCapabilityStore(pool *pgxpool.Pool, log *zap.Logger) *risksvc.Capabilit
 func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHubService, hub *mthub.Hub, eventStore *mthub.TradeEventStore, guard *risk.Guard) {
 	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*risk.AccountState, error) {
 		var balance, equity, freeMargin, margin decimal.Decimal
-		var positions int
+		var positions, leverage int
 		err := pool.QueryRow(ctx,
-			`SELECT balance, equity, free_margin, COALESCE(margin,0),
+			`SELECT balance, equity, free_margin, COALESCE(margin,0), COALESCE(leverage,100),
 			        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id=$1),0)
 			 FROM mt_accounts WHERE id=$2`, accountID, accountID).
-			Scan(&balance, &equity, &freeMargin, &margin, &positions)
+			Scan(&balance, &equity, &freeMargin, &margin, &leverage, &positions)
 		if err != nil {
 			return nil, fmt.Errorf("account state query: %w", err)
 		}
 		return &risk.AccountState{
-			Balance:       balance,
-			Equity:        equity,
-			FreeMargin:    freeMargin,
-			UsedMargin:    margin,
-			OpenPositions: positions,
+			Balance:        balance,
+			Equity:         equity,
+			FreeMargin:     freeMargin,
+			UsedMargin:     margin,
+			OpenPositions:  positions,
+			SymbolLeverage: leverage,
 		}, nil
 	})
 	mthubSvc.SetUserLimiter(usermgr.NewUserLimiter(usermgr.DefaultConfig()))
