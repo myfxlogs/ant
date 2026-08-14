@@ -136,7 +136,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   });
 
   const positionColumns = [
-    { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80 },
+    { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
     { title: 'Magic', dataIndex: 'magicNumber', width: 70, render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
     { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
     { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70 },
@@ -191,7 +191,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
           key: 'positions',
           label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
-            <div style={{ paddingLeft: 8 }}>
+            <div>
             <Spin spinning={positionsLoading}>
               <Table size="small" dataSource={positionsWithLive} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
