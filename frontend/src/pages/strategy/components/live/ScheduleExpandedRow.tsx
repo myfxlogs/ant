@@ -184,7 +184,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   return (
     <Tabs
       size="small"
-      style={{ marginLeft: 0 }}
+      style={{ marginLeft: -21 }}
       tabBarGutter={0}
       tabBarStyle={{ marginBottom: 0 }}
       items={[
@@ -192,7 +192,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
           key: 'positions',
           label: <span style={{ display: 'inline-block', width: 80, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
-            <div style={{ marginLeft: -40 }}>
+            <div style={{ marginLeft: -61 }}>
             <Spin spinning={positionsLoading}>
               <Table size="small" dataSource={positionsWithLive} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />

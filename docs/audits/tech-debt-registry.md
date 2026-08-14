@@ -340,6 +340,53 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 - **🆕 CLEANUP-MISFIRE（P2）**：16:52:21 三个运行中的 run 行被 `CleanupStaleRuns`（`strategy_run_repo.go:179`，唯一 SQL 与唯一调用点 `handlers_strategy.go:87` 均在**进程启动时**执行一次）标成 `stopped (server restarted)`——但当前容器 StartedAt=16:42:15、二进制 PID 420145 START=16:42，**本进程不可能在 16:52:21 执行它** → 必然存在 16:52:21 前后短暂启动的**第二个后端实例**（宿主 `go run` 或一次性 docker run，无 exited 容器残留，嫌疑=施工方在宿主违规跑二进制，违反部署铁律）。后果：DB 行显示 stopped（UI 显示已停）而 goroutine 实际存活（54091a67 交易到 17:49、41e4114d 至今仍在刷 Print）→ **UI 与真实状态分裂**，且引擎不会为"已停"run 重新拉起。**修复方向**：CleanupStaleRuns 跳过本进程 session registry 中仍存活的 run（进程内可判活），并调查 16:52:21 的第二实例来源。
 - **验证预言**：`41e4114d` 约 18:22:27 UTC（北京 02:22:27）跨过 100 根 bar 门槛，Print 刷屏停止、MACD 逻辑开始执行；但 `total<1` 要求账户 0 持仓才开新仓——当前仍有 1-2 个持仓（含手动 0.02），不清仓则只走平仓/移动止损逻辑不开新仓。
 
+## LIVE 语义一致性审计（2026-08-15 同类 bug 横扫：live harness 与回测/MT4 的静默背离）
+
+> 触发：用户问"还有没有其他类似 Bug"（LIVE-NO-PRELOAD 同类 = live 执行环境与回测/MT4 语义不一致导致策略静默不交易/交易错）。审计方全量核对 live harness（`vm_live_handlers.go`/`runner/broker.go`/`vm_builtin_*.go`）注入面。
+
+**架构事实**：live 模式 VM 的 broker = `brokerImpl{executor: nil}`（harness 模式，`vm_live_session.go:100` runner.New 无 executor），唯一数据入口 = 每个 bar/tick/trade 事件一次的 `r.UpdateLiveState(balance, equity, positions)`（`vm_live_handlers.go:16/82`）。
+
+### P1 — LIVE-NO-EXIT：MQL 平仓/改单/删单在实盘全部静默失败（策略只能开不能平！）
+
+- **根因**：`signalMode` 只有 OrderSend 类有信号分支（`vm_builtin_trade.go:39` builtinOrderSend / `:647` ctradeOrder）。**OrderClose（:110）/ OrderCloseBy（:121）/ OrderModify（:132）/ OrderDelete（:157）/ CTrade.PositionClose（:694）全部直调 `vm.ctx.Broker().PositionClose/Modify/Delete`** → live harness executor=nil → `brokerImpl.PositionClose`（broker.go:51）返回 `"broker: no executor configured"` → 内置函数返回 **false** → 策略代码里 `if(!OrderClose(...)) Print("OrderClose error")` 静默失败。**MACD Sample 的平仓分支和移动止损（OrderModify）在实盘永远不执行**。回测（SimBroker）这些全工作 → live/backtest 断裂，且是资金风险级（开仓后无退出能力）。
+- **修复方向**：5 个内置函数在 signalMode 下仿照 builtinOrderSend 发 `sdk.ActionClose/ActionModify/ActionCancel` 信号（带 ticket → `OrderTicket` → `ExecutedTicket` 字段已存在，`vmSignalToProto:236` 已映射）；dispatchLiveSignal 的 close/modify/cancel 分支（live_dispatch.go:81-88）**管线现成**，只差 VM 侧发信号。注意：OrderModify 的语义要区分"改价"（pending）与"改 SL/TP"（持仓）。
+- **对抗证明**：live 集成测试——MQL `OrderClose(123,...)` → 断言产出 signal_type=close 且 ticket=123（GREEN）；还原直调 Broker → 无信号（RED）。
+
+### P1 — LIVE-NO-FREEMARGIN：AccountFreeMargin/Margin/Leverage 实盘恒 0 → 保证金检查类策略永不交易
+
+- **根因**：`UpdateLiveState`（runner.go:58）只注入 balance/equity/positions；`brokerImpl.Account()`（broker.go:167-178 harness 分支）只回 {Balance, Equity} → **FreeMargin/Margin/Leverage 恒 0**。`AccountFreeMargin()`（vm_builtin_account.go:31）读 `ctx.Account().FreeMargin` = 0。
+- **直接后果（本案例连锁）**：MACD Sample 越过 Bars≥100 门槛后，下一行 `if(AccountFreeMargin()<(1000*Lots)) { Print("We have no money..."); return; }` → 0<100 恒真 → **预载修复后它依然不会开仓**。任何用 AccountFreeMargin/AccountMargin/AccountLeverage 做仓位/风控判断的 EA 实盘全静默错误。
+- **数据源现成**：OnOrderProfit 流快照有 Margin/FreeMargin（`publishPositionSnapshot` 已带 Margin/FreeMargin/MarginLevel 到 PositionSnapshot proto）→ BarContext/TickContext proto + UpdateLiveState 加字段即可，无需新 RPC。
+- **对抗证明**：mock tctx 带 margin → VM 内 `AccountFreeMargin()` 非 0（GREEN）；删注入 → 0（RED）。
+
+### P1 — LIVE-NO-PRELOAD：bar 窗口（主+副 symbol）从零攒起（本会话已定论，列此清单归档）
+
+`live_runner.go:218` + `initExtraBars:365-375` 全空窗起步；MACD Sample 等 `Bars<100` 门槛策略实盘干等 100 分钟/次重启。修复 = 启动时 PG `md_bars` 预载主/副 symbol 最近 maxContextBars 根闭合 bar（回测同源）+ 重叠合并/乱序去重（见追查补充段）。
+
+### P2 — LIVE-NO-SYMBOLINFO：Point/Digits/Spread/MarketInfo/SymbolInfo* 实盘全 0
+
+- **根因**：`contextImpl.Point()/Digits()`（context.go:135-147）与 `builtinMarketInfo/SymbolInfoDouble` 全走 `broker.SymbolInfo` → executor=nil → 空 SymbolInfo{} → **Point=0、Digits=0、Spread=0**。
+- **后果**：MACD Sample `MathAbs(MacdCurrent)>(MACDOpenLevel*Point)` → 阈值=0 恒过（入场条件被错误放宽，与 MT4 不一致）；`Point*TrailingStop`=0 → 若平仓桥修好后移动止损会设成"现价±0"= 立即止损。任何用 Point 算距离/阈值的 EA 实盘数值全错。
+- **修复方向**：live harness 注入 symbol info（mdgateway SymbolParams 已有缓存：ContractSize/Digits/StopsLevel/PointValue——`mthub.SymbolParam`）；或 UpdateLiveState 加字段。
+
+### P2 — LIVE-NO-HISTORY：OrdersHistoryTotal/OrderSelect(MODE_HISTORY) 实盘恒 0/false
+
+- **根因**：`brokerImpl.HistoryOrders`（broker.go:146）与 `Deals`（:153）**无条件 return nil**（连 executor 非 nil 分支也 nil）。→ `OrdersHistoryTotal()=0`、`OrderSelect(x,SELECT_BY_POS,MODE_HISTORY)` 恒 false。
+- **后果**：读历史成交的策略（防重复开仓、按历史盈亏决定下一单、网格/马丁的资金管理）实盘静默错。回测 SimBroker 有完整历史 → live/backtest 断裂。
+- **修复方向**：harness 注入（OrderUpdate 流的 close 事件 → 本地缓存 / PG trade_records 查询）；P2，随 NO-FREEMARGIN 批一起做。
+
+### P2（已知 shelfware，归档不新增）— cross-timeframe 指标静默同源
+
+`builtinIMA`（vm_builtin_indicators.go:11）忽略 symbol/timeframe 参数；`BarsTF()`（context.go:107）直接返回主周期序列（代码注明 Phase B2）。live/backtest 一致但与 MT4 语义不同（iMA(H1) 实为 iMA(M1)）。列入清单待 Phase B2，不阻塞。
+
+### P2（设计决策，记录）— forming bar 不进窗口
+
+LIVE-1 设计：窗口只含闭合 bar → OnTick 策略读 `Close[0]` 拿到上一根收盘价，MT4 是当前价。Ask/Bid 已由 tick 注入补足，大多数 EA 用 Ask/Bid 不受影响；读 Close[0] 的 tick 策略存在语义差异，文档化即可，暂不改（改 = 与 LIVE-1 open-bar 过滤冲突）。
+
+### 已核实正常（排除项，防误报）
+
+OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 UpdateLiveState 注入 + VM 每事件重置缓存 `vm.go:173-179`）✓；OrderSend/CTrade.Buy signalMode ✓；Ask/Bid tick 注入 ✓；OnTrade 桥 ✓；VM 缓存每事件刷新（eagertest 逐分钟响应 broker 持仓变化实证）✓。
+
 ### 附带观察（不阻塞）
 
 - 本 run 的 strategy_runs 行 16:52:21 被标 `stopped ("server restarted")`（容器 StartedAt=16:42:15，与标记时间矛盾——疑旧容器优雅退出期延迟标记或重复标记），但 goroutine 实际存活交易到 17:05+：**Active Runs UI 状态可能失真**，待下轮顺查。
