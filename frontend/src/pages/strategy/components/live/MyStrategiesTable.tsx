@@ -173,10 +173,11 @@ export default function MyStrategiesTable({
       key: 'pnl', width: 90,
       render: (_: unknown, row: JoinedRow) => {
         const a = row.active;
-        if (!a || !a.pnl) return <Text type="secondary">-</Text>;
-        const n = Number(a.pnl);
+        if (!a) return <Text type="secondary">-</Text>;
+        const pnl = a.pnl || '0';
+        const n = Number(pnl);
         const color = n >= 0 ? 'success' : 'danger';
-        return <Text style={{ fontSize: 12 }} type={color}>{n >= 0 ? `+${a.pnl}` : a.pnl}</Text>;
+        return <Text style={{ fontSize: 12 }} type={color}>{n >= 0 ? `+${pnl}` : pnl}</Text>;
       },
     },
     {
