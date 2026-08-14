@@ -43,6 +43,22 @@ export default function MyStrategiesTable({
   const { t } = useTranslation();
   const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
 
+  const fallbackCopy = useCallback((text: string) => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      message.success(t('common.copied', { defaultValue: 'Copied' }));
+    } catch {
+      message.error(t('common.copyFailed', { defaultValue: 'Copy failed' }));
+    }
+    document.body.removeChild(ta);
+  }, [t]);
+
   const templateById = useMemo(() => {
     const m = new Map<string, TemplateOption>();
     (templates || []).forEach(item => { if (item?.id) m.set(item.id, item); });
@@ -72,7 +88,17 @@ export default function MyStrategiesTable({
             <Tooltip title={t('common.copy', { defaultValue: 'Copy' })}>
               <Button type="text" size="small" icon={<CopyOutlined style={{ fontSize: 11 }} />}
                 style={{ padding: 0, height: 16, minWidth: 16 }}
-                onClick={() => { void navigator.clipboard.writeText(row.id); message.success(t('common.copied', { defaultValue: 'Copied' })); }} />
+                onClick={() => {
+                  const text = row.id;
+                  if (navigator.clipboard?.writeText) {
+                    void navigator.clipboard.writeText(text).then(
+                      () => message.success(t('common.copied', { defaultValue: 'Copied' })),
+                      () => fallbackCopy(text),
+                    );
+                  } else {
+                    fallbackCopy(text);
+                  }
+                }} />
             </Tooltip>
           </Space>
         </Space>
