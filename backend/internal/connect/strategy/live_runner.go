@@ -188,6 +188,10 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	barCh, barCancel := source.Subscribe(barAccountID)
 	defer barCancel()
 
+	// Demand-driven: ensure gateway subscribes to this strategy's symbol.
+	// Retries until gateway session is available (handles startup race).
+	subscribeSymbolsWithRetry(ctx, s.mtHub, barAccountID, cfg.Symbol, s.log)
+
 	tickCh, tickCancel := s.subscribeTickUpdates(cfg.AccountID, needsTick)
 	if tickCancel != nil {
 		defer tickCancel()
@@ -276,6 +280,7 @@ func (s *StrategyExecutionServer) runLiveEventLoop(p liveEventLoopParams) {
 				s.log.Warn("LiveStrategyRunner: bar channel closed, exiting")
 				return
 			}
+			diagBarRecv(s.log, p.cfg, bar)
 			// LIVE-1: extra-symbol context windows also use finalized bars only.
 			if bar.Closed && p.extraSymbolSet[bar.Symbol] && bar.Period == p.cfg.Timeframe {
 				handleExtraSymbolBar(bar, p.extraBars)

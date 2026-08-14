@@ -107,6 +107,7 @@ type mockExecutor struct {
 	fetchOrderHistoryFn func(context.Context, time.Time, time.Time) ([]*OrderRecord, error)
 	fetchAllSymbolsFn   func(context.Context) ([]string, error)
 	fetchPriceHistoryFn func(context.Context, string, string, int64, int64, int) ([]*Bar, error)
+	addSymbolsFn        func(context.Context, []string) error
 }
 
 func (m *mockExecutor) Platform() string {
@@ -169,5 +170,10 @@ func (m *mockExecutor) FetchPriceHistory(ctx context.Context, symbol, period str
 	}
 	return nil, nil
 }
-func (m *mockExecutor) AddSymbols(_ context.Context, _ []string) error                    { return nil }
+func (m *mockExecutor) AddSymbols(ctx context.Context, symbols []string) error {
+	if m.addSymbolsFn != nil {
+		return m.addSymbolsFn(ctx, symbols)
+	}
+	return nil
+}
 func (m *mockExecutor) SubscribeOrderEvents(_ context.Context, _ OrderEventHandler) error { return nil }
