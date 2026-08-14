@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
-import { Table, Tag, Typography, Space, Button, Tooltip, Empty, Badge, Dropdown } from 'antd';
+import { Table, Tag, Typography, Space, Button, Tooltip, Empty, Badge, Dropdown, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { PlayCircleOutlined, PauseCircleOutlined, ThunderboltOutlined, EditOutlined, FileTextOutlined, HeartOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, PauseCircleOutlined, ThunderboltOutlined, EditOutlined, FileTextOutlined, HeartOutlined, DeleteOutlined, MoreOutlined, CopyOutlined, RightOutlined, DownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { ScheduleRow, TemplateOption, AccountRow } from '../../hooks/libraryTypes';
 import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb';
@@ -64,7 +64,14 @@ export default function MyStrategiesTable({
       render: (v: string, row: JoinedRow) => (
         <Space direction="vertical" size={0}>
           <Text strong>{v || templateById.get(row.templateId)?.name || row.templateId}</Text>
-          <Text type="secondary" style={{ fontSize: 11 }}>{row.id}</Text>
+          <Space size={2}>
+            <Text type="secondary" style={{ fontSize: 11 }}>{row.id.slice(0, 8)}</Text>
+            <Tooltip title={t('common.copy', { defaultValue: 'Copy' })}>
+              <Button type="text" size="small" icon={<CopyOutlined style={{ fontSize: 11 }} />}
+                style={{ padding: 0, height: 16, minWidth: 16 }}
+                onClick={() => { void navigator.clipboard.writeText(row.id); message.success(t('common.copied', { defaultValue: 'Copied' })); }} />
+            </Tooltip>
+          </Space>
         </Space>
       ),
     },
@@ -212,13 +219,21 @@ export default function MyStrategiesTable({
         rowKey="id"
         loading={loading}
         columns={columns}
-        pagination={false}
+        scroll={{ y: 400 }}
+        pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `${total}` }}
         rowClassName={(row) => row.id === highlightScheduleId ? 'schedule-row-highlight' : ''}
         expandable={{
           expandedRowKeys: expandedKeys,
           onExpand: (expanded, row) => setExpandedKeys(expanded ? [...expandedKeys, row.id] : expandedKeys.filter(k => k !== row.id)),
           expandedRowRender: (row) => <ScheduleExpandedRow row={row} activeVersion={activeVersion} liveBid={row.active?.bid} liveAsk={row.active?.ask} />,
           rowExpandable: (row) => !!row.id,
+          expandIcon: ({ expanded, onExpand, record }) => (
+            <span role="img" aria-label={expanded ? 'Collapse' : 'Expand'}
+              onClick={(e) => onExpand(record, e)}
+              style={{ cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16 }}>
+              {expanded ? <DownOutlined style={{ fontSize: 10 }} /> : <RightOutlined style={{ fontSize: 10 }} />}
+            </span>
+          ),
         }}
         locale={{ emptyText: (
           <Empty description={t('strategy.live.noActive', { defaultValue: 'No active strategies' })} />

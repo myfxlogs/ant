@@ -123,7 +123,15 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   const positionsWithLive = positions.map(p => {
     if (!livePrice) return p;
     const cp = p.type === 'buy' ? (liveBid || liveAsk || p.currentPrice) : (liveAsk || liveBid || p.currentPrice);
-    return { ...p, currentPrice: cp };
+    const openNum = Number(p.openPrice);
+    const curNum = Number(cp);
+    const volNum = Number(p.volume);
+    let liveProfit = p.profit;
+    if (openNum && curNum && volNum) {
+      const diff = p.type === 'buy' ? (curNum - openNum) : (openNum - curNum);
+      liveProfit = (diff * volNum).toFixed(2);
+    }
+    return { ...p, currentPrice: cp, profit: liveProfit };
   });
 
   const positionColumns = [
@@ -138,20 +146,20 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
       return <Text type={color}>{n >= 0 ? `+${v}` : v}</Text>;
     } },
     { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 80, render: (v: string) => v || '-' },
-    { title: <span>{t('strategy.live.tp', { defaultValue: 'TP' })}{positionsWithLive.length > 0 && (
+    { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 80, render: (v: string) => v || '-' },
+    { title: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>{positionsWithLive.length > 0 && (
       <Popconfirm title={t('strategy.live.confirmCloseAll', { defaultValue: 'Close all positions?' })}
         onConfirm={handleCloseAll}>
-        <Button size="small" type="link" danger icon={<CloseCircleOutlined />} loading={closingAll}
-          style={{ marginLeft: 4, padding: '0 4px' }}>
+        <Button size="small" type="text" danger icon={<CloseCircleOutlined />} loading={closingAll}
+          style={{ padding: '0 4px', height: 22 }}>
           {t('strategy.live.closeAll', { defaultValue: 'Close All' })}
         </Button>
       </Popconfirm>
-    )}</span>, dataIndex: 'takeProfit', width: 120, render: (v: string) => v || '-' },
-    { title: '', key: 'close', width: 60, render: (_: unknown, r: MtPositionSnapshotItem) => (
+    )}</span>, key: 'close', width: 120, render: (_: unknown, r: MtPositionSnapshotItem) => (
       <Popconfirm title={t('strategy.live.confirmClose', { defaultValue: 'Close this position?' })}
         onConfirm={() => handleClosePosition(r.ticket, r.volume)}>
         <Button size="small" type="text" danger icon={<CloseCircleOutlined />}
-          loading={closingTicket === r.ticket} />
+          loading={closingTicket === r.ticket} style={{ height: 22 }} />
       </Popconfirm>
     ) },
   ];
