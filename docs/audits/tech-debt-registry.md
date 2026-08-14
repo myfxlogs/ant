@@ -62,6 +62,7 @@
 | PIPE-F2 | broker 层 accountOwnerVerifier 从未装配（SetAccountOwnerVerifier cmd/server 零调用）→ preTradeChecks 等归属检查全死代码，纵深防御失效（P2 安全）| 🟦open（2026-08-14 管线审计）|
 | PIPE-#2 | 手动触发（Run Now）丢策略参数：onManualTrigger 不传 params → 测试跑空参数非配置值（P2 正确性）| 🟦open（2026-08-14 管线审计）|
 | PIPE-F4 | paper 模式 cfg.AccountID 无归属校验 → 跨用户模拟写（paper_orders，无真钱）（P3 安全）| 🟦open（2026-08-14 管线审计）|
+| PIPE-F5 | Live 页 live-ui-final 新 UI i18n 缺失：38 处 `defaultValue` 兜底 + ScheduleTable running/idle + stale Tag 硬编码 → 非 en locale（zh-cn/zh-tw/ja/vi）看英文（P2 i18n，2026-08-15 用户要求）| 🟦open（2026-08-15 审计方实证 key 清单，随 PIPE 批施工）|
 
 ---
 
