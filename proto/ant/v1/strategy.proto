@@ -22,6 +22,7 @@ service StrategyService {
 
   rpc ListSchedules(ListSchedulesRequest) returns (ListSchedulesResponse);
   rpc GetSchedule(GetScheduleRequest) returns (StrategySchedule);
+  rpc GetSchedulePositions(GetSchedulePositionsRequest) returns (GetSchedulePositionsResponse);
   rpc CreateSchedule(CreateScheduleRequest) returns (StrategySchedule);
   rpc UpdateSchedule(UpdateScheduleRequest) returns (StrategySchedule);
   rpc DeleteSchedule(DeleteScheduleRequest) returns (google.protobuf.Empty);

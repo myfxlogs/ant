@@ -171,6 +171,7 @@ type MtPositionSnapshotItem struct {
 	Commission    string                 `protobuf:"bytes,11,opt,name=commission,proto3" json:"commission,omitempty"`
 	Comment       string                 `protobuf:"bytes,12,opt,name=comment,proto3" json:"comment,omitempty"`
 	OpenTime      int64                  `protobuf:"varint,13,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
+	MagicNumber   int64                  `protobuf:"varint,14,opt,name=magic_number,json=magicNumber,proto3" json:"magic_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -296,6 +297,13 @@ func (x *MtPositionSnapshotItem) GetOpenTime() int64 {
 	return 0
 }
 
+func (x *MtPositionSnapshotItem) GetMagicNumber() int64 {
+	if x != nil {
+		return x.MagicNumber
+	}
+	return 0
+}
+
 var File_mt_position_snapshot_proto protoreflect.FileDescriptor
 
 const file_mt_position_snapshot_proto_rawDesc = "" +
@@ -317,7 +325,7 @@ const file_mt_position_snapshot_proto_rawDesc = "" +
 	" \x01(\tR\x06profit\x12<\n" +
 	"\tpositions\x18\v \x03(\v2\x1e.ant.v1.MtPositionSnapshotItemR\tpositions\x12;\n" +
 	"\vcaptured_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"capturedAt\"\xf9\x02\n" +
+	"capturedAt\"\x9c\x03\n" +
 	"\x16MtPositionSnapshotItem\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
@@ -336,7 +344,8 @@ const file_mt_position_snapshot_proto_rawDesc = "" +
 	"commission\x18\v \x01(\tR\n" +
 	"commission\x12\x18\n" +
 	"\acomment\x18\f \x01(\tR\acomment\x12\x1b\n" +
-	"\topen_time\x18\r \x01(\x03R\bopenTimeB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\topen_time\x18\r \x01(\x03R\bopenTime\x12!\n" +
+	"\fmagic_number\x18\x0e \x01(\x03R\vmagicNumberB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_mt_position_snapshot_proto_rawDescOnce sync.Once

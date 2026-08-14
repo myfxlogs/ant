@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "alphaforge/gen/proto/ant/v1;antv1";
 
 import "strategy_schedule_entity.proto";
+import "mt_position_snapshot.proto";
 
 message ListSchedulesRequest {}
 
@@ -14,4 +15,12 @@ message ListSchedulesResponse {
 
 message GetScheduleRequest {
   string id = 1;
+}
+
+message GetSchedulePositionsRequest {
+  string schedule_id = 1;
+}
+
+message GetSchedulePositionsResponse {
+  repeated MtPositionSnapshotItem positions = 1;
 }

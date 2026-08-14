@@ -145,16 +145,109 @@ func (x *GetScheduleRequest) GetId() string {
 	return ""
 }
 
+type GetSchedulePositionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ScheduleId    string                 `protobuf:"bytes,1,opt,name=schedule_id,json=scheduleId,proto3" json:"schedule_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSchedulePositionsRequest) Reset() {
+	*x = GetSchedulePositionsRequest{}
+	mi := &file_strategy_schedule_query_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSchedulePositionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSchedulePositionsRequest) ProtoMessage() {}
+
+func (x *GetSchedulePositionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_schedule_query_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSchedulePositionsRequest.ProtoReflect.Descriptor instead.
+func (*GetSchedulePositionsRequest) Descriptor() ([]byte, []int) {
+	return file_strategy_schedule_query_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetSchedulePositionsRequest) GetScheduleId() string {
+	if x != nil {
+		return x.ScheduleId
+	}
+	return ""
+}
+
+type GetSchedulePositionsResponse struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Positions     []*MtPositionSnapshotItem `protobuf:"bytes,1,rep,name=positions,proto3" json:"positions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSchedulePositionsResponse) Reset() {
+	*x = GetSchedulePositionsResponse{}
+	mi := &file_strategy_schedule_query_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSchedulePositionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSchedulePositionsResponse) ProtoMessage() {}
+
+func (x *GetSchedulePositionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_schedule_query_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSchedulePositionsResponse.ProtoReflect.Descriptor instead.
+func (*GetSchedulePositionsResponse) Descriptor() ([]byte, []int) {
+	return file_strategy_schedule_query_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetSchedulePositionsResponse) GetPositions() []*MtPositionSnapshotItem {
+	if x != nil {
+		return x.Positions
+	}
+	return nil
+}
+
 var File_strategy_schedule_query_proto protoreflect.FileDescriptor
 
 const file_strategy_schedule_query_proto_rawDesc = "" +
 	"\n" +
-	"\x1dstrategy_schedule_query.proto\x12\x06ant.v1\x1a\x1estrategy_schedule_entity.proto\"\x16\n" +
+	"\x1dstrategy_schedule_query.proto\x12\x06ant.v1\x1a\x1estrategy_schedule_entity.proto\x1a\x1amt_position_snapshot.proto\"\x16\n" +
 	"\x14ListSchedulesRequest\"O\n" +
 	"\x15ListSchedulesResponse\x126\n" +
 	"\tschedules\x18\x01 \x03(\v2\x18.ant.v1.StrategyScheduleR\tschedules\"$\n" +
 	"\x12GetScheduleRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02idB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x02id\x18\x01 \x01(\tR\x02id\">\n" +
+	"\x1bGetSchedulePositionsRequest\x12\x1f\n" +
+	"\vschedule_id\x18\x01 \x01(\tR\n" +
+	"scheduleId\"\\\n" +
+	"\x1cGetSchedulePositionsResponse\x12<\n" +
+	"\tpositions\x18\x01 \x03(\v2\x1e.ant.v1.MtPositionSnapshotItemR\tpositionsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_schedule_query_proto_rawDescOnce sync.Once
@@ -168,20 +261,24 @@ func file_strategy_schedule_query_proto_rawDescGZIP() []byte {
 	return file_strategy_schedule_query_proto_rawDescData
 }
 
-var file_strategy_schedule_query_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_strategy_schedule_query_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_strategy_schedule_query_proto_goTypes = []any{
-	(*ListSchedulesRequest)(nil),  // 0: ant.v1.ListSchedulesRequest
-	(*ListSchedulesResponse)(nil), // 1: ant.v1.ListSchedulesResponse
-	(*GetScheduleRequest)(nil),    // 2: ant.v1.GetScheduleRequest
-	(*StrategySchedule)(nil),      // 3: ant.v1.StrategySchedule
+	(*ListSchedulesRequest)(nil),         // 0: ant.v1.ListSchedulesRequest
+	(*ListSchedulesResponse)(nil),        // 1: ant.v1.ListSchedulesResponse
+	(*GetScheduleRequest)(nil),           // 2: ant.v1.GetScheduleRequest
+	(*GetSchedulePositionsRequest)(nil),  // 3: ant.v1.GetSchedulePositionsRequest
+	(*GetSchedulePositionsResponse)(nil), // 4: ant.v1.GetSchedulePositionsResponse
+	(*StrategySchedule)(nil),             // 5: ant.v1.StrategySchedule
+	(*MtPositionSnapshotItem)(nil),       // 6: ant.v1.MtPositionSnapshotItem
 }
 var file_strategy_schedule_query_proto_depIdxs = []int32{
-	3, // 0: ant.v1.ListSchedulesResponse.schedules:type_name -> ant.v1.StrategySchedule
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	5, // 0: ant.v1.ListSchedulesResponse.schedules:type_name -> ant.v1.StrategySchedule
+	6, // 1: ant.v1.GetSchedulePositionsResponse.positions:type_name -> ant.v1.MtPositionSnapshotItem
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_strategy_schedule_query_proto_init() }
@@ -190,13 +287,14 @@ func file_strategy_schedule_query_proto_init() {
 		return
 	}
 	file_strategy_schedule_entity_proto_init()
+	file_mt_position_snapshot_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_schedule_query_proto_rawDesc), len(file_strategy_schedule_query_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

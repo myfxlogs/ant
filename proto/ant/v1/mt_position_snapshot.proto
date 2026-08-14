@@ -34,4 +34,5 @@ message MtPositionSnapshotItem {
   string commission = 11;
   string comment = 12;
   int64 open_time = 13;
+  int64 magic_number = 14;
 }

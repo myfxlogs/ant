@@ -9,12 +9,14 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/model"
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/service"
 )
@@ -43,6 +45,83 @@ func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[a
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(s.scheduleRowToProto(row)), nil
+}
+
+func (s *StrategyServer) GetSchedulePositions(ctx context.Context, req *connect.Request[antv1.GetSchedulePositionsRequest]) (*connect.Response[antv1.GetSchedulePositionsResponse], error) {
+	id, err := uuid.Parse(req.Msg.ScheduleId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	uid := s.userID(ctx)
+	row, err := s.svc.GetSchedule(ctx, id, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	expectedMagic := model.StrategyMagic(id)
+	if row.MagicNumber != nil {
+		expectedMagic = *row.MagicNumber
+	}
+
+	// Live path: last persisted position snapshot filtered by schedule magic.
+	var raw []byte
+	err = s.svc.DB().QueryRow(ctx,
+		`SELECT payload_proto FROM mt_position_snapshots WHERE account_id = $1`,
+		row.AccountID.String(),
+	).Scan(&raw)
+
+	if err == nil && len(raw) > 0 {
+		record := &antv1.MtPositionSnapshotRecord{}
+		if err := proto.Unmarshal(raw, record); err == nil {
+			positions := make([]*antv1.MtPositionSnapshotItem, 0, len(record.GetPositions()))
+			for _, pos := range record.GetPositions() {
+				if pos.GetMagicNumber() == int64(expectedMagic) {
+					positions = append(positions, pos)
+				}
+			}
+			return connect.NewResponse(&antv1.GetSchedulePositionsResponse{Positions: positions}), nil
+		}
+	}
+
+	// Paper path: open paper orders for the schedule's account + symbol.
+	rows, err := s.svc.DB().Query(ctx,
+		`SELECT id, symbol, side, volume, fill_price, pnl, created_at
+		 FROM paper_orders
+		 WHERE paper_account_id = $1 AND symbol = $2 AND state = 'open'
+		 ORDER BY created_at DESC`,
+		row.AccountID.String(), row.Symbol,
+	)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer rows.Close()
+
+	var positions []*antv1.MtPositionSnapshotItem
+	for rows.Next() {
+		var oid string
+		var symbol, side string
+		var volume, fillPrice, pnl decimal.Decimal
+		var createdAt time.Time
+		if err := rows.Scan(&oid, &symbol, &side, &volume, &fillPrice, &pnl, &createdAt); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		_ = oid
+		positions = append(positions, &antv1.MtPositionSnapshotItem{
+			Ticket:       0,
+			Symbol:       symbol,
+			Type:         side,
+			MagicNumber:  0,
+			Volume:       volume.String(),
+			OpenPrice:    fillPrice.String(),
+			CurrentPrice: fillPrice.String(),
+			Profit:       pnl.String(),
+			OpenTime:     createdAt.Unix(),
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.GetSchedulePositionsResponse{Positions: positions}), nil
 }
 
 func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Request[antv1.CreateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {

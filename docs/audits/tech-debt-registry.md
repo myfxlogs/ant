@@ -12,6 +12,7 @@
 
 | ID | 项 | 状态 |
 |----|----|------|
+| MARGIN-GATE-2-MAGIC-RPC | §0 MARGIN-GATE-2（contractSize fail-closed / USD-quote margin 公式）+ §2 magic 进 PositionSnapshotItem + `GetSchedulePositions` RPC；对抗测试 `TestSnapshotToProto_PreservesMagicNumber` + `TestGetSchedulePositionsFilter` | ✅done（2026-08-15 施工方；部署后待审计方实测验收）|
 | MQL-LOOP-4 | P2-T4/T5 扩展（useAIFix 扩到 coverage fatal + T5 实盘门控）| 🟦open（P2 暂缓）|
 | LEAKAGE-2 | ~~跟单检测~~ | ❌ descoped（2026-08-08：技术不可行，MetaQuotes 无 API 检测提供方/订阅者）|
 | POST-1 | 前端 UX 修复（UX-1~8 阻断级 + 🟡20 + 🟢16）| ✅done（2026-08-11 审计方独立删行复测 5/5 全红）|

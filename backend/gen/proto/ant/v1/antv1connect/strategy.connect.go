@@ -70,6 +70,9 @@ const (
 	// StrategyServiceGetScheduleProcedure is the fully-qualified name of the StrategyService's
 	// GetSchedule RPC.
 	StrategyServiceGetScheduleProcedure = "/ant.v1.StrategyService/GetSchedule"
+	// StrategyServiceGetSchedulePositionsProcedure is the fully-qualified name of the StrategyService's
+	// GetSchedulePositions RPC.
+	StrategyServiceGetSchedulePositionsProcedure = "/ant.v1.StrategyService/GetSchedulePositions"
 	// StrategyServiceCreateScheduleProcedure is the fully-qualified name of the StrategyService's
 	// CreateSchedule RPC.
 	StrategyServiceCreateScheduleProcedure = "/ant.v1.StrategyService/CreateSchedule"
@@ -116,6 +119,7 @@ type StrategyServiceClient interface {
 	CancelTemplateDraft(context.Context, *connect.Request[v1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error)
 	ListSchedules(context.Context, *connect.Request[v1.ListSchedulesRequest]) (*connect.Response[v1.ListSchedulesResponse], error)
 	GetSchedule(context.Context, *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
+	GetSchedulePositions(context.Context, *connect.Request[v1.GetSchedulePositionsRequest]) (*connect.Response[v1.GetSchedulePositionsResponse], error)
 	CreateSchedule(context.Context, *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error)
@@ -211,6 +215,12 @@ func NewStrategyServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(strategyServiceMethods.ByName("GetSchedule")),
 			connect.WithClientOptions(opts...),
 		),
+		getSchedulePositions: connect.NewClient[v1.GetSchedulePositionsRequest, v1.GetSchedulePositionsResponse](
+			httpClient,
+			baseURL+StrategyServiceGetSchedulePositionsProcedure,
+			connect.WithSchema(strategyServiceMethods.ByName("GetSchedulePositions")),
+			connect.WithClientOptions(opts...),
+		),
 		createSchedule: connect.NewClient[v1.CreateScheduleRequest, v1.StrategySchedule](
 			httpClient,
 			baseURL+StrategyServiceCreateScheduleProcedure,
@@ -288,6 +298,7 @@ type strategyServiceClient struct {
 	cancelTemplateDraft  *connect.Client[v1.CancelTemplateDraftRequest, emptypb.Empty]
 	listSchedules        *connect.Client[v1.ListSchedulesRequest, v1.ListSchedulesResponse]
 	getSchedule          *connect.Client[v1.GetScheduleRequest, v1.StrategySchedule]
+	getSchedulePositions *connect.Client[v1.GetSchedulePositionsRequest, v1.GetSchedulePositionsResponse]
 	createSchedule       *connect.Client[v1.CreateScheduleRequest, v1.StrategySchedule]
 	updateSchedule       *connect.Client[v1.UpdateScheduleRequest, v1.StrategySchedule]
 	deleteSchedule       *connect.Client[v1.DeleteScheduleRequest, emptypb.Empty]
@@ -360,6 +371,11 @@ func (c *strategyServiceClient) GetSchedule(ctx context.Context, req *connect.Re
 	return c.getSchedule.CallUnary(ctx, req)
 }
 
+// GetSchedulePositions calls ant.v1.StrategyService.GetSchedulePositions.
+func (c *strategyServiceClient) GetSchedulePositions(ctx context.Context, req *connect.Request[v1.GetSchedulePositionsRequest]) (*connect.Response[v1.GetSchedulePositionsResponse], error) {
+	return c.getSchedulePositions.CallUnary(ctx, req)
+}
+
 // CreateSchedule calls ant.v1.StrategyService.CreateSchedule.
 func (c *strategyServiceClient) CreateSchedule(ctx context.Context, req *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
 	return c.createSchedule.CallUnary(ctx, req)
@@ -424,6 +440,7 @@ type StrategyServiceHandler interface {
 	CancelTemplateDraft(context.Context, *connect.Request[v1.CancelTemplateDraftRequest]) (*connect.Response[emptypb.Empty], error)
 	ListSchedules(context.Context, *connect.Request[v1.ListSchedulesRequest]) (*connect.Response[v1.ListSchedulesResponse], error)
 	GetSchedule(context.Context, *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
+	GetSchedulePositions(context.Context, *connect.Request[v1.GetSchedulePositionsRequest]) (*connect.Response[v1.GetSchedulePositionsResponse], error)
 	CreateSchedule(context.Context, *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error)
@@ -515,6 +532,12 @@ func NewStrategyServiceHandler(svc StrategyServiceHandler, opts ...connect.Handl
 		connect.WithSchema(strategyServiceMethods.ByName("GetSchedule")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyServiceGetSchedulePositionsHandler := connect.NewUnaryHandler(
+		StrategyServiceGetSchedulePositionsProcedure,
+		svc.GetSchedulePositions,
+		connect.WithSchema(strategyServiceMethods.ByName("GetSchedulePositions")),
+		connect.WithHandlerOptions(opts...),
+	)
 	strategyServiceCreateScheduleHandler := connect.NewUnaryHandler(
 		StrategyServiceCreateScheduleProcedure,
 		svc.CreateSchedule,
@@ -601,6 +624,8 @@ func NewStrategyServiceHandler(svc StrategyServiceHandler, opts ...connect.Handl
 			strategyServiceListSchedulesHandler.ServeHTTP(w, r)
 		case StrategyServiceGetScheduleProcedure:
 			strategyServiceGetScheduleHandler.ServeHTTP(w, r)
+		case StrategyServiceGetSchedulePositionsProcedure:
+			strategyServiceGetSchedulePositionsHandler.ServeHTTP(w, r)
 		case StrategyServiceCreateScheduleProcedure:
 			strategyServiceCreateScheduleHandler.ServeHTTP(w, r)
 		case StrategyServiceUpdateScheduleProcedure:
@@ -676,6 +701,10 @@ func (UnimplementedStrategyServiceHandler) ListSchedules(context.Context, *conne
 
 func (UnimplementedStrategyServiceHandler) GetSchedule(context.Context, *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyService.GetSchedule is not implemented"))
+}
+
+func (UnimplementedStrategyServiceHandler) GetSchedulePositions(context.Context, *connect.Request[v1.GetSchedulePositionsRequest]) (*connect.Response[v1.GetSchedulePositionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyService.GetSchedulePositions is not implemented"))
 }
 
 func (UnimplementedStrategyServiceHandler) CreateSchedule(context.Context, *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {

@@ -22,7 +22,7 @@ type SnapshotPersister struct {
 	log      *zap.Logger
 	throttle time.Duration
 
-	mu       sync.Mutex
+	mu        sync.Mutex
 	lastWrite map[string]time.Time
 }
 
@@ -126,6 +126,7 @@ func snapshotToProto(snap *PositionSnapshot) *antv1.MtPositionSnapshotRecord {
 			Ticket:       pos.Ticket,
 			Symbol:       pos.Symbol,
 			Type:         pos.Type,
+			MagicNumber:  int64(pos.Magic),
 			Volume:       pos.Volume.String(),
 			OpenPrice:    pos.OpenPrice.String(),
 			CurrentPrice: pos.CurrentPrice.String(),
