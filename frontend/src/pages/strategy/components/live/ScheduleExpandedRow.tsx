@@ -137,9 +137,9 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
 
   const positionColumns = [
     { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
-    { title: 'Magic', dataIndex: 'magicNumber', width: 70, render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
-    { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
-    { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70 },
+    { title: 'Magic', dataIndex: 'magicNumber', width: 70, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }), render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
+    { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }), render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
+    { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
     { title: t('common.openPrice', { defaultValue: 'Open Price' }), dataIndex: 'openPrice', width: 90 },
     { title: t('common.currentPrice', { defaultValue: 'Current' }), dataIndex: 'currentPrice', width: 90 },
     { title: t('strategy.live.pnl', { defaultValue: 'PnL' }), dataIndex: 'profit', width: 80, render: (v: string) => {
@@ -185,11 +185,12 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
     <Tabs
       size="small"
       style={{ marginLeft: 0 }}
+      tabBarGutter={0}
       tabBarStyle={{ marginBottom: 0 }}
       items={[
         {
           key: 'positions',
-          label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
+          label: <span style={{ display: 'inline-block', width: 80, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
             <div style={{ marginLeft: -40 }}>
             <Spin spinning={positionsLoading}>
@@ -201,7 +202,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
         {
           key: 'signals',
-          label: <span>{t('strategy.live.signals', { defaultValue: 'Signals' })} {signals.length > 0 && <Tag color="blue">{signals.length}</Tag>}</span>,
+          label: <span style={{ display: 'inline-block', width: 70, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.signals', { defaultValue: 'Signals' })} {signals.length > 0 && <Tag color="blue">{signals.length}</Tag>}</span>,
           children: (
             <div>
             <Spin spinning={signalsLoading}>
@@ -213,7 +214,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
         {
           key: 'logs',
-          label: t('strategy.live.logs', { defaultValue: 'Logs' }),
+          label: <span style={{ display: 'inline-block', width: 60, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.logs', { defaultValue: 'Logs' })}</span>,
           children: (
             <div>
             <Spin spinning={logsLoading}>
@@ -225,7 +226,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
         {
           key: 'config',
-          label: t('strategy.live.config', { defaultValue: 'Config' }),
+          label: <span style={{ display: 'inline-block', width: 70, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.config', { defaultValue: 'Config' })}</span>,
           children: (
             <div>
             <Descriptions size="small" column={2} bordered>
