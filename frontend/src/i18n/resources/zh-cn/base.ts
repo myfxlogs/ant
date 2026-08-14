@@ -320,7 +320,7 @@ const Base = {
       "confirmDeleteModel": "删除 this model?",
       "noModels": "无模型",
       "noModelsDiscovered": "No models discovered. Check API key and base URL.",
-      "discoverFailed": "Failed to discover models",
+      "discoverFailed": "失败 to discover models",
       "discover": "Discover",
       "displayNamePlaceholder": "DeepSeek Chat"
     },
@@ -525,8 +525,8 @@ const Base = {
       "walletDetail": "钱包详情",
       "transactions": "交易记录",
       "adjustReason": "原因",
-      "tabWallets": "User Wallets",
-      "tabDepositAddresses": "Deposit Addresses"
+      "tabWallets": "用户 Wallets",
+      "tabDepositAddresses": "充值 Addresses"
     },
     "header": {
       "admin": "管理",
@@ -588,48 +588,48 @@ const Base = {
       "fillResult": "填入结果"
     },
     "autogen": {
-      "loadFailed": "Failed to load tasks",
+      "loadFailed": "失败 to load tasks",
       "approved": "Task approved and published",
       "approveFailed": "Approve failed",
       "rejected": "Task rejected",
       "rejectFailed": "Reject failed",
       "triggerFailed": "Trigger failed",
-      "symbol": "Symbol",
-      "timeframe": "TF",
+      "symbol": "品种",
+      "timeframe": "周期",
       "strategyType": "Type",
-      "status": "Status",
+      "status": "状态",
       "quality": "Quality",
-      "error": "Error",
+      "error": "错误",
       "actions": "Actions",
       "confirmApprove": "Approve and publish?",
       "approve": "Approve",
       "confirmReject": "Reject this task?",
       "reject": "Reject",
-      "title": "AI Strategy Generation Tasks",
-      "allStatus": "All Status",
-      "refresh": "Refresh",
+      "title": "AI 策略 Generation Tasks",
+      "allStatus": "All 状态",
+      "refresh": "刷新",
       "triggerBatch": "Trigger Batch",
       "enqueue": "Enqueue",
       "symbols": "Symbols (comma-separated)",
       "timeframes": "Timeframes (comma-separated)",
-      "strategyTypes": "Strategy Types (comma-separated)"
+      "strategyTypes": "策略 Types (comma-separated)"
     },
     "coupon": {
-      "loadFailed": "Failed to load coupons",
+      "loadFailed": "失败 to load coupons",
       "fillRequired": "Please fill required fields",
       "created": "Coupon created",
-      "createFailed": "Failed to create coupon",
+      "createFailed": "失败 to create coupon",
       "disabled": "Coupon disabled",
-      "disableFailed": "Failed to disable coupon",
+      "disableFailed": "失败 to disable coupon",
       "colCode": "Code",
       "colType": "Type",
       "colValue": "Value",
       "colMinPurchase": "Min Purchase",
       "colUsage": "Usage",
       "colExpires": "Expires",
-      "colStatus": "Status",
+      "colStatus": "状态",
       "colActions": "Actions",
-      "disable": "Disable",
+      "disable": "禁用",
       "create": "Create Coupon",
       "createTitle": "Create Coupon",
       "codePlaceholder": "Coupon code (e.g. SUMMER20)",
@@ -641,65 +641,65 @@ const Base = {
     "depositAddresses": {
       "importFailed": "Import failed",
       "address": "Address",
-      "user": "User ID",
+      "user": "用户 ID",
       "index": "Index",
-      "status": "Status",
+      "status": "状态",
       "received": "Received USDT",
-      "network": "Network",
+      "network": "网络",
       "assignedAt": "Assigned At",
       "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
-      "all": "All Status",
+      "all": "All 状态",
       "import": "Import Addresses",
       "availablePool": "Available in Pool",
-      "total": "Total Addresses"
+      "total": "总计 Addresses"
     },
     "analytics": {
       "name": "Name",
       "value": "Value",
       "platformRev": "Platform Rev",
-      "providerRev": "Provider Rev",
-      "activeBuyers": "Active Buyers",
+      "providerRev": "提供商 Rev",
+      "activeBuyers": "活跃 Buyers",
       "refundRate": "Refund Rate",
-      "totalTx": "Transactions",
+      "totalTx": "交易记录",
       "newSubs": "New Subscribers",
-      "totalStrategies": "Total Strategies",
-      "newStrategies": "New Strategies",
-      "topByRevenue": "Top Strategies by Revenue",
-      "topBySubs": "Top Strategies by Subscribers",
+      "totalStrategies": "总策略数",
+      "newStrategies": "New 策略",
+      "topByRevenue": "Top 策略 by Revenue",
+      "topBySubs": "Top 策略 by Subscribers",
       "topProvidersRev": "Top Providers by Revenue",
-      "topProvidersStrat": "Top Providers by Strategies"
+      "topProvidersStrat": "Top Providers by 策略"
     },
     "marketplace": {
-      "loadFailed": "Failed to load strategies",
-      "featureSuccess": "Strategy featured",
-      "featureFailed": "Failed to feature strategy",
+      "loadFailed": "失败 to load strategies",
+      "featureSuccess": "策略 featured",
+      "featureFailed": "失败 to feature strategy",
       "unfeatureSuccess": "Removed featured",
-      "unfeatureFailed": "Failed to unfeature",
+      "unfeatureFailed": "失败 to unfeature",
       "colTitle": "Title",
       "colPublisher": "Publisher",
-      "colStatus": "Status",
-      "colPrice": "Price",
+      "colStatus": "状态",
+      "colPrice": "价格",
       "colSales": "Sales",
       "colRevenue": "Revenue",
       "colFeatured": "Featured",
       "colActions": "Actions",
       "feature": "Feature",
-      "unfeature": "Remove featured",
+      "unfeature": "移除 featured",
       "filterStatus": "All statuses",
-      "searchPlaceholder": "Search by title...",
-      "featureTitle": "Feature Strategy",
+      "searchPlaceholder": "搜索 by title...",
+      "featureTitle": "Feature 策略",
       "featureDesc": "Set priority for featured placement. Higher = more prominent."
     },
     "refund": {
-      "loadFailed": "Failed to load refund requests",
+      "loadFailed": "失败 to load refund requests",
       "approved": "Refund approved and executed",
       "rejected": "Refund request rejected",
-      "processFailed": "Failed to process refund",
-      "colUser": "User",
-      "colStrategy": "Strategy",
-      "colAmount": "Amount",
+      "processFailed": "失败 to process refund",
+      "colUser": "用户",
+      "colStrategy": "策略",
+      "colAmount": "金额",
       "colReason": "Reason",
-      "colStatus": "Status",
+      "colStatus": "状态",
       "colDate": "Date",
       "colActions": "Actions",
       "approve": "Approve & Execute",
@@ -737,7 +737,7 @@ const Base = {
         "aiFailed": "AI fix failed",
         "fixApplied": "Fix applied — re-running backtest",
         "fixAppliedCompileWarn": "Fix applied but compile has warnings",
-        "applyFailed": "Failed to apply fix",
+        "applyFailed": "失败 to apply fix",
         "saveFirst": "Please save the strategy first to apply AI fixes",
         "diffPreview": "AI Fix Preview",
         "apply": "Apply & Re-run",
@@ -749,7 +749,7 @@ const Base = {
       "autoGate": "Auto Gate Evaluation",
       "publishable": "Publishable",
       "notPublishable": "Not Publishable",
-      "cancelFailed": "Cancel failed"
+      "cancelFailed": "取消 failed"
     },
     "templates": {
       "scheduleLaunch": {
@@ -760,15 +760,15 @@ const Base = {
         }
       },
       "gallery": {
-        "title": "Strategies",
-        "system": "System",
+        "title": "策略",
+        "system": "系统",
         "shared": "Shared",
-        "forkEdit": "Fork & Edit",
+        "forkEdit": "Fork & 编辑",
         "aiGenerate": "AI Generate",
-        "searchPlaceholder": "Search strategies...",
+        "searchPlaceholder": "搜索 strategies...",
         "filterAll": "All",
         "filterMine": "Mine",
-        "filterSystem": "System",
+        "filterSystem": "系统",
         "sortRecent": "Recent",
         "sortReturn": "Return",
         "sortRisk": "Risk",
@@ -778,7 +778,7 @@ const Base = {
         "forkFailed": "Fork failed",
         "unpublishSuccess": "Unpublished",
         "unpublishFailed": "Unpublish failed",
-        "deleteFailed": "Delete failed",
+        "deleteFailed": "删除 failed",
         "deploy": "Deploy",
         "publish": "Publish",
         "unpublish": "Unpublish",
@@ -786,12 +786,12 @@ const Base = {
       },
       "actions": {
         "deploy": "Deploy",
-        "create": "New Strategy",
-        "delete": "Delete"
+        "create": "New 策略",
+        "delete": "删除"
       },
       "detail": {
         "profitFactor": "Profit Factor",
-        "notFound": "Strategy not found",
+        "notFound": "策略 not found",
         "openInWorkspace": "Open in Workspace",
         "overview": "Overview",
         "noDescription": "No description",
@@ -803,7 +803,7 @@ const Base = {
         "useCount": "Use Count",
         "createdAt": "Created",
         "visibility": "Visibility",
-        "status": "Status"
+        "status": "状态"
       },
       "visibility": {
         "public": "Public",
@@ -813,7 +813,7 @@ const Base = {
         "title": "Code"
       },
       "messages": {
-        "fetchTemplateListFailed": "Failed to load strategies",
+        "fetchTemplateListFailed": "失败 to load strategies",
         "publishFailed": "Publish failed",
         "templateDeleted": "Deleted"
       },
@@ -827,9 +827,9 @@ const Base = {
       "noTemplates": "无已保存策略模板",
       "sourceCode": "策略 Source",
       "copyAll": "复制 All",
-      "deleteConfirm": "Delete this strategy?",
-      "loadFailed": "Failed to load templates",
-      "loadOneFailed": "Failed to load template"
+      "deleteConfirm": "删除 this strategy?",
+      "loadFailed": "失败 to load templates",
+      "loadOneFailed": "失败 to load template"
     },
     "workspace": {
       "chartIndicators": {
@@ -838,17 +838,17 @@ const Base = {
       },
       "sidebar": {
         "noRuns": "No backtest runs yet",
-        "batchDeleteRunsConfirm": "Delete selected runs?",
+        "batchDeleteRunsConfirm": "删除 selected runs?",
         "trades": "trades",
-        "deleteRunConfirm": "Delete this backtest run?",
+        "deleteRunConfirm": "删除 this backtest run?",
         "viewAll": "View all",
         "noStrategies": "No strategies yet",
-        "batchDeleteConfirm": "Delete selected strategies?",
-        "deleteStrategyConfirm": "Delete this strategy?",
+        "batchDeleteConfirm": "删除 selected strategies?",
+        "deleteStrategyConfirm": "删除 this strategy?",
         "title": "Workspace",
-        "myStrategies": "My Strategies",
-        "backtestHistory": "Backtest History",
-        "newStrategy": "New Strategy"
+        "myStrategies": "My 策略",
+        "backtestHistory": "Backtest 历史",
+        "newStrategy": "New 策略"
       },
       "tour": {
         "ai": "AI Assistant",
@@ -857,8 +857,8 @@ const Base = {
         "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
         "backtest": "Backtest",
         "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "save": "保存 & Publish",
+        "saveDesc": "保存 your strategy as a template, publish to marketplace, or deploy to a live schedule."
       },
       "importMql": "Import MQL"
     },
@@ -869,12 +869,12 @@ const Base = {
       },
       "noParams": {
         "title": "No tunable parameters detected",
-        "desc": "Add @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5"
+        "desc": "添加 @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5"
       },
-      "strategyName": "Strategy",
-      "totalTrades": "Trades",
+      "strategyName": "策略",
+      "totalTrades": "交易数",
       "disabledHint": "Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.",
-      "noDimsHint": "Enable at least one parameter dimension below.",
+      "noDimsHint": "启用 at least one parameter dimension below.",
       "qualityGate": "Gate",
       "failed": "Tuning failed"
     },
@@ -882,7 +882,7 @@ const Base = {
       "status": {
         "enabled": "Enabled",
         "running": "Running",
-        "idle": "Idle"
+        "idle": "空闲"
       }
     },
     "chat": {
@@ -896,7 +896,7 @@ const Base = {
     "aiChat": {
       "historyTab": "历史",
       "strategiesTab": "策略",
-      "codeLoaded": "Strategy code in context",
+      "codeLoaded": "策略 code in context",
       "noContext": "No strategy loaded — describe what you want"
     },
     "live": {
@@ -931,17 +931,17 @@ const Base = {
       "reason": "原因",
       "signalLog": "信号日志",
       "waitingSignals": "等待信号...",
-      "strategyName": "Strategy",
+      "strategyName": "策略",
       "stale": "stale",
       "lastSignal": "Last Signal",
       "pnl": "PnL",
       "unknownError": "Unknown error",
-      "logs": "Logs",
+      "logs": "日志",
       "health": "Health",
       "streamDisconnected": "Connection interrupted, reconnecting…",
-      "goSchedules": "Go to Schedules",
+      "goSchedules": "Go to 调度",
       "positionClosed": "Position closed",
-      "closeFailed": "Close failed"
+      "closeFailed": "关闭 failed"
     },
     "schedule": {
       "maxPositionsPlaceholder": "不限"
@@ -1089,11 +1089,11 @@ const Base = {
       "trade": "交易"
     },
     "prefs": {
-      "saveFailed": "Failed to save preferences",
+      "saveFailed": "失败 to save preferences",
       "newStrategy": "New strategy published",
-      "priceChange": "Strategy price changed",
+      "priceChange": "策略 price changed",
       "subExpiring": "Subscription expiring soon",
-      "performance": "Strategy performance anomaly",
+      "performance": "策略 performance anomaly",
       "newRating": "New rating or comment received",
       "title": "Notification Preferences"
     },
@@ -1427,7 +1427,7 @@ const Base = {
       "idle": "设置参数并运行回测"
     },
     "live": {
-      "loadError": "Failed to load live performance data"
+      "loadError": "失败 to load live performance data"
     },
     "optimization": {
       "decayScore": "Decay Score",
@@ -1446,7 +1446,7 @@ const Base = {
   "schedule": {
     "launch": {
       "noAccount": {
-        "bindButton": "Bind MT Account"
+        "bindButton": "Bind MT 账户"
       }
     }
   },
@@ -1483,10 +1483,10 @@ const Base = {
       "emailSent": "If the email exists, a reset link has been sent.",
       "mtVerified": "Identity verified. Redirecting to password reset.",
       "mtFailed": "MT credential verification failed.",
-      "emailTab": "Email",
+      "emailTab": "邮箱",
       "sendResetLink": "Send Reset Link",
       "mtTab": "MT Verify",
-      "mtLogin": "MT Account Number",
+      "mtLogin": "MT 账户 Number",
       "mtLoginPlaceholder": "e.g. 12345678",
       "mtPassword": "MT Password",
       "mtPasswordPlaceholder": "MT trading password",
@@ -1532,11 +1532,11 @@ const Base = {
       "mismatch": "Passwords do not match.",
       "invalidToken": "Invalid or missing reset token.",
       "success": "Password has been reset. Please log in with your new password.",
-      "failed": "Failed to reset password.",
+      "failed": "失败 to reset password.",
       "title": "Set New Password",
       "newPassword": "New Password",
       "confirmRequired": "Please confirm your password",
-      "confirmPassword": "Confirm Password",
+      "confirmPassword": "确认 Password",
       "submit": "Reset Password"
     }
   },
@@ -1726,15 +1726,15 @@ const Base = {
     "monthly": "月付",
     "yearly": "年付",
     "chargeNotice": "付费方案将从钱包扣款。免费方案不扣费。",
-    "unbindSuccess": "Account unbound successfully.",
-    "unbindFailed": "Failed to unbind account.",
+    "unbindSuccess": "账户 unbound successfully.",
+    "unbindFailed": "失败 to unbind account.",
     "accountLogin": "Login",
     "accountBroker": "Broker",
     "accountServer": "Server",
     "accountType": "Type",
-    "accountStatus": "Status",
+    "accountStatus": "状态",
     "boundAt": "Bound At",
-    "unbindConfirm": "Unbind this account? Active schedules on it will be stopped.",
+    "unbindConfirm": "Unbind this account? 活跃 schedules on it will be stopped.",
     "unbind": "Unbind",
     "boundAccountsCount": "Bound Accounts",
     "noBoundAccounts": "No bound accounts yet. Schedule a strategy to auto-bind an account.",
