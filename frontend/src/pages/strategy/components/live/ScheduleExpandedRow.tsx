@@ -183,6 +183,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   return (
     <Tabs
       size="small"
+      style={{ marginLeft: -8 }}
       items={[
         {
           key: 'positions',

@@ -144,7 +144,7 @@ export default function MyStrategiesTable({
         return (
           <Space direction="vertical" size={0}>
             <Text strong>{a.signalCount}</Text>
-            <Text style={{ fontSize: 11, textDecoration: 'none' }} type={type}>{formatAgo(a.lastSignalAt)}</Text>
+            {a.signalCount > 0 && <Text style={{ fontSize: 11, textDecoration: 'none' }} type={type}>{formatAgo(a.lastSignalAt)}</Text>}
           </Space>
         );
       },

@@ -4543,6 +4543,39 @@ export const STRATEGY_LIVE_STREAM_DISCONNECTED_KEY = 'strategy.live.streamDiscon
 /** strategy.live.goSchedules */
 export const STRATEGY_LIVE_GO_SCHEDULES_KEY = 'strategy.live.goSchedules' as const;
 
+/** strategy.live.editParams */
+export const STRATEGY_LIVE_EDIT_PARAMS_KEY = 'strategy.live.editParams' as const;
+
+/** strategy.live.editStrategy */
+export const STRATEGY_LIVE_EDIT_STRATEGY_KEY = 'strategy.live.editStrategy' as const;
+
+/** strategy.live.stopAndDisable */
+export const STRATEGY_LIVE_STOP_AND_DISABLE_KEY = 'strategy.live.stopAndDisable' as const;
+
+/** strategy.live.mode_live */
+export const STRATEGY_LIVE_MODE_LIVE_KEY = 'strategy.live.mode_live' as const;
+
+/** strategy.live.mode_paper */
+export const STRATEGY_LIVE_MODE_PAPER_KEY = 'strategy.live.mode_paper' as const;
+
+/** strategy.live.riskParams */
+export const STRATEGY_LIVE_RISK_PARAMS_KEY = 'strategy.live.riskParams' as const;
+
+/** strategy.live.defaultVolume */
+export const STRATEGY_LIVE_DEFAULT_VOLUME_KEY = 'strategy.live.defaultVolume' as const;
+
+/** strategy.live.maxPositions */
+export const STRATEGY_LIVE_MAX_POSITIONS_KEY = 'strategy.live.maxPositions' as const;
+
+/** strategy.live.stopLossOffset */
+export const STRATEGY_LIVE_STOP_LOSS_OFFSET_KEY = 'strategy.live.stopLossOffset' as const;
+
+/** strategy.live.takeProfitOffset */
+export const STRATEGY_LIVE_TAKE_PROFIT_OFFSET_KEY = 'strategy.live.takeProfitOffset' as const;
+
+/** strategy.live.maxDrawdown */
+export const STRATEGY_LIVE_MAX_DRAWDOWN_KEY = 'strategy.live.maxDrawdown' as const;
+
 /** strategy.templates.scheduleLaunch.metrics.winRate */
 export const STRATEGY_TEMPLATES_SCHEDULE_LAUNCH_METRICS_WIN_RATE_KEY = 'strategy.templates.scheduleLaunch.metrics.winRate' as const;
 
@@ -6391,6 +6424,17 @@ export const BASE_KEYS = {
   strategy_live_health: '__root__.strategy.live.health',
   strategy_live_stream_disconnected: '__root__.strategy.live.streamDisconnected',
   strategy_live_go_schedules: '__root__.strategy.live.goSchedules',
+  strategy_live_edit_params: '__root__.strategy.live.editParams',
+  strategy_live_edit_strategy: '__root__.strategy.live.editStrategy',
+  strategy_live_stop_and_disable: '__root__.strategy.live.stopAndDisable',
+  strategy_live_mode_live: '__root__.strategy.live.mode_live',
+  strategy_live_mode_paper: '__root__.strategy.live.mode_paper',
+  strategy_live_risk_params: '__root__.strategy.live.riskParams',
+  strategy_live_default_volume: '__root__.strategy.live.defaultVolume',
+  strategy_live_max_positions: '__root__.strategy.live.maxPositions',
+  strategy_live_stop_loss_offset: '__root__.strategy.live.stopLossOffset',
+  strategy_live_take_profit_offset: '__root__.strategy.live.takeProfitOffset',
+  strategy_live_max_drawdown: '__root__.strategy.live.maxDrawdown',
   strategy_templates_schedule_launch_metrics_win_rate: '__root__.strategy.templates.scheduleLaunch.metrics.winRate',
   strategy_templates_detail_profit_factor: '__root__.strategy.templates.detail.profitFactor',
   strategy_templates_schedule_launch_metrics_max_drawdown: '__root__.strategy.templates.scheduleLaunch.metrics.maxDrawdown',
