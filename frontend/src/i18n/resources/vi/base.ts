@@ -882,7 +882,17 @@ const Base = {
       "status": {
         "enabled": "Đã bật",
         "running": "Đang chạy",
-        "idle": "Chờ"
+        "idle": "Chờ",
+        "disabled": "Đã tắt"
+      },
+      "actions": {
+        "runNow": "Chạy ngay"
+      },
+      "deleteConfirm": {
+        "title": "Xóa lịch trình này?"
+      },
+      "table": {
+        "schedule": "Lịch trình"
       }
     },
     "chat": {

@@ -66,9 +66,8 @@ describe('UI-2: ScheduleTable displays lastError', () => {
 })
 
 // UI-3: disabled guard — test that log/health buttons are disabled when scheduleId is empty.
-// We test the column render function directly by extracting it from LiveStrategyPage's activeColumns.
-// Since activeColumns is defined inline in LiveStrategyPage, we test the guard logic via a pure function.
-import { isLogButtonDisabled, isHealthButtonDisabled } from '@/pages/strategy/LiveStrategyPage'
+// Tests the real guard functions used by MyStrategiesTable actions column.
+import { isLogButtonDisabled, isHealthButtonDisabled } from '@/pages/strategy/components/live/strategyJoin'
 
 describe('UI-3: log/health buttons disabled when scheduleId empty', () => {
   it('disables buttons when scheduleId is empty', () => {
@@ -97,34 +96,45 @@ describe('UI-1: Enable success navigates to active tab', () => {
   })
 })
 
-// UI-4: Dual-stream join — verify that schedule rows without matching active data show '-' for metrics.
-// Adversarial: delete the join logic (activeBySchedule map) → active is undefined → metrics render '-'.
-// This tests the join logic as a pure function to avoid complex stream mocking.
+// UI-4: Dual-stream join — verify the real joinSchedulesWithActive/findOrphanRuns functions.
+// Adversarial: neutralize the join body in strategyJoin.ts (e.g. return schedules.map(s => ({...s})) without active)
+// → joinSchedulesWithActive returns no active → test expects active to be defined → RED.
+import { joinSchedulesWithActive, findOrphanRuns } from '@/pages/strategy/components/live/strategyJoin'
+import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb'
+
 describe('UI-4: Dual-stream join shows "-" for non-running schedules', () => {
+  const schedules: ScheduleRow[] = [
+    { id: 's1', templateId: 't1', accountId: 'a1', name: 'Test',
+      symbol: 'EURUSD', timeframe: 'H1', scheduleType: 'interval',
+      scheduleConfig: {}, parameters: {}, isActive: true },
+  ]
+
   it('joinedRow has no active data when scheduleId not in active stream', () => {
-    const schedules: ScheduleRow[] = [
-      { id: 's1', templateId: 't1', accountId: 'a1', name: 'Test',
-        symbol: 'EURUSD', timeframe: 'H1', scheduleType: 'interval',
-        scheduleConfig: {}, parameters: {}, isActive: true },
-    ]
-    // Simulate the join: no active strategies → active is undefined
-    const activeBySchedule = new Map<string, { scheduleId: string; pnl: string }>()
-    const joined = schedules.map(s => ({ ...s, active: activeBySchedule.get(s.id) }))
+    const emptyActive: ActiveStrategy[] = []
+    const joined = joinSchedulesWithActive(schedules, emptyActive)
+    expect(joined).toHaveLength(1)
     expect(joined[0].active).toBeUndefined()
-    // If active is undefined, the table renders '-' for pnl/price/signals — verified by column render logic
   })
 
   it('joinedRow has active data when scheduleId matches', () => {
-    const schedules: ScheduleRow[] = [
-      { id: 's1', templateId: 't1', accountId: 'a1', name: 'Test',
-        symbol: 'EURUSD', timeframe: 'H1', scheduleType: 'interval',
-        scheduleConfig: {}, parameters: {}, isActive: true },
-    ]
-    const mockActive = { scheduleId: 's1', pnl: '100.50', runId: 'r1' }
-    const activeBySchedule = new Map<string, typeof mockActive>()
-    activeBySchedule.set('s1', mockActive)
-    const joined = schedules.map(s => ({ ...s, active: activeBySchedule.get(s.id) }))
+    const mockActive = { scheduleId: 's1', pnl: '100.50', runId: 'r1' } as unknown as ActiveStrategy
+    const joined = joinSchedulesWithActive(schedules, [mockActive])
     expect(joined[0].active).toBeDefined()
     expect(joined[0].active?.pnl).toBe('100.50')
+  })
+
+  it('findOrphanRuns returns active strategies with no matching schedule', () => {
+    const orphan = { scheduleId: 'orphan-1', runId: 'r2', pnl: '0' } as unknown as ActiveStrategy
+    const matched = { scheduleId: 's1', runId: 'r1', pnl: '50' } as unknown as ActiveStrategy
+    const result = findOrphanRuns([orphan, matched], schedules)
+    expect(result).toHaveLength(1)
+    expect(result[0].runId).toBe('r2')
+  })
+
+  it('findOrphanRuns returns active strategies with empty scheduleId', () => {
+    const noSchedule = { scheduleId: '', runId: 'r3', pnl: '0' } as unknown as ActiveStrategy
+    const result = findOrphanRuns([noSchedule], schedules)
+    expect(result).toHaveLength(1)
+    expect(result[0].runId).toBe('r3')
   })
 })

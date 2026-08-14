@@ -12,12 +12,10 @@ import ScheduleLogsModal from './components/ScheduleLogsModal';
 import ScheduleHealthModal from './components/ScheduleHealthModal';
 import MyStrategiesTable from './components/live/MyStrategiesTable';
 import RunHistoryTab from './components/live/RunHistoryTab';
-import type { JoinedRow } from './components/live/MyStrategiesTable';
+import { joinSchedulesWithActive, findOrphanRuns } from './components/live/strategyJoin';
+import type { JoinedRow } from './components/live/strategyJoin';
 import type { ScheduleRow, TemplateOption, ScheduleHealthSummary } from './hooks/libraryTypes';
 import { useAccountsAndSymbols } from './hooks/useAccountsAndSymbols';
-
-export function isLogButtonDisabled(scheduleId: string): boolean { return !scheduleId; }
-export function isHealthButtonDisabled(scheduleId: string): boolean { return !scheduleId; }
 
 function mapTabParam(tab: string | null): string {
   if (tab === 'history') return 'history';
@@ -104,18 +102,15 @@ export default function LiveStrategyPage() {
     return () => { active = false; };
   }, [activeTab]);
 
-  const joinedRows = useMemo<JoinedRow[]>(() => {
-    const activeBySchedule = new Map<string, ActiveStrategy>();
-    for (const a of activeStrategies) {
-      if (a.scheduleId) activeBySchedule.set(a.scheduleId, a);
-    }
-    return schedules.map(s => ({ ...s, active: activeBySchedule.get(s.id) }));
-  }, [schedules, activeStrategies]);
+  const joinedRows = useMemo<JoinedRow[]>(
+    () => joinSchedulesWithActive(schedules, activeStrategies),
+    [schedules, activeStrategies],
+  );
 
-  const orphanRuns = useMemo<ActiveStrategy[]>(() => {
-    const scheduleIds = new Set(schedules.map(s => s.id));
-    return activeStrategies.filter(a => !a.scheduleId || !scheduleIds.has(a.scheduleId));
-  }, [activeStrategies, schedules]);
+  const orphanRuns = useMemo<ActiveStrategy[]>(
+    () => findOrphanRuns(activeStrategies, schedules),
+    [activeStrategies, schedules],
+  );
 
   const handleStop = async (runId: string) => {
     setStopping(runId);

@@ -4663,6 +4663,18 @@ export const STRATEGY_SCHEDULES_STATUS_RUNNING_KEY = 'strategy.schedules.status.
 /** strategy.schedules.status.idle */
 export const STRATEGY_SCHEDULES_STATUS_IDLE_KEY = 'strategy.schedules.status.idle' as const;
 
+/** strategy.schedules.status.disabled */
+export const STRATEGY_SCHEDULES_STATUS_DISABLED_KEY = 'strategy.schedules.status.disabled' as const;
+
+/** strategy.schedules.actions.runNow */
+export const STRATEGY_SCHEDULES_ACTIONS_RUN_NOW_KEY = 'strategy.schedules.actions.runNow' as const;
+
+/** strategy.schedules.deleteConfirm.title */
+export const STRATEGY_SCHEDULES_DELETE_CONFIRM_TITLE_KEY = 'strategy.schedules.deleteConfirm.title' as const;
+
+/** strategy.schedules.table.schedule */
+export const STRATEGY_SCHEDULES_TABLE_SCHEDULE_KEY = 'strategy.schedules.table.schedule' as const;
+
 /** strategy.templates.gallery.forkSuccess */
 export const STRATEGY_TEMPLATES_GALLERY_FORK_SUCCESS_KEY = 'strategy.templates.gallery.forkSuccess' as const;
 
@@ -6410,6 +6422,10 @@ export const BASE_KEYS = {
   strategy_schedules_status_enabled: '__root__.strategy.schedules.status.enabled',
   strategy_schedules_status_running: '__root__.strategy.schedules.status.running',
   strategy_schedules_status_idle: '__root__.strategy.schedules.status.idle',
+  strategy_schedules_status_disabled: '__root__.strategy.schedules.status.disabled',
+  strategy_schedules_actions_run_now: '__root__.strategy.schedules.actions.runNow',
+  strategy_schedules_delete_confirm_title: '__root__.strategy.schedules.deleteConfirm.title',
+  strategy_schedules_table_schedule: '__root__.strategy.schedules.table.schedule',
   strategy_templates_gallery_fork_success: '__root__.strategy.templates.gallery.forkSuccess',
   strategy_templates_gallery_fork_failed: '__root__.strategy.templates.gallery.forkFailed',
   strategy_templates_messages_publish_failed: '__root__.strategy.templates.messages.publishFailed',

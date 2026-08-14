@@ -9,12 +9,10 @@ import { MODE_COLORS } from '../../LiveStrategyPageSignalDrawer';
 import ScheduleExpandedRow from './ScheduleExpandedRow';
 import OrphanRunsTable from './OrphanRunsTable';
 import { secondsSince, formatAgo } from './timeHelpers';
+import { isLogButtonDisabled, isHealthButtonDisabled } from './strategyJoin';
+import type { JoinedRow } from './strategyJoin';
 
 const { Text } = Typography;
-
-export interface JoinedRow extends ScheduleRow {
-  active?: ActiveStrategy;
-}
 
 interface Props {
   schedules: JoinedRow[];
@@ -181,11 +179,11 @@ export default function MyStrategiesTable({
             <Button size="small" type="text" icon={<EditOutlined />} onClick={() => onEdit(row)} />
           </Tooltip>
           <Tooltip title={t('strategy.live.logs', { defaultValue: 'Logs' })}>
-            <Button size="small" type="text" icon={<FileTextOutlined />} disabled={!row.id}
+            <Button size="small" type="text" icon={<FileTextOutlined />} disabled={isLogButtonDisabled(row.id)}
               onClick={() => onShowLogs(row.id)} />
           </Tooltip>
           <Tooltip title={t('strategy.live.health', { defaultValue: 'Health' })}>
-            <Button size="small" type="text" icon={<HeartOutlined />} disabled={!row.id}
+            <Button size="small" type="text" icon={<HeartOutlined />} disabled={isHealthButtonDisabled(row.id)}
               onClick={() => onHealthCheck(row)} />
           </Tooltip>
           {row.active && (

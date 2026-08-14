@@ -882,7 +882,17 @@ const Base = {
       "status": {
         "enabled": "已启用",
         "running": "运行中",
-        "idle": "空闲"
+        "idle": "空闲",
+        "disabled": "已禁用"
+      },
+      "actions": {
+        "runNow": "立即运行"
+      },
+      "deleteConfirm": {
+        "title": "确定删除此调度？"
+      },
+      "table": {
+        "schedule": "调度"
       }
     },
     "chat": {

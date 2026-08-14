@@ -882,7 +882,17 @@ const Base = {
       "status": {
         "enabled": "Enabled",
         "running": "Running",
-        "idle": "Idle"
+        "idle": "Idle",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "runNow": "Run Now"
+      },
+      "deleteConfirm": {
+        "title": "Delete this schedule?"
+      },
+      "table": {
+        "schedule": "Schedule"
       }
     },
     "chat": {

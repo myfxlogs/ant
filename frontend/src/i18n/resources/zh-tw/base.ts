@@ -882,7 +882,17 @@ const Base = {
       "status": {
         "enabled": "已啟用",
         "running": "執行中",
-        "idle": "空閒"
+        "idle": "空閒",
+        "disabled": "已停用"
+      },
+      "actions": {
+        "runNow": "立即執行"
+      },
+      "deleteConfirm": {
+        "title": "確定刪除此排程？"
+      },
+      "table": {
+        "schedule": "排程"
       }
     },
     "chat": {

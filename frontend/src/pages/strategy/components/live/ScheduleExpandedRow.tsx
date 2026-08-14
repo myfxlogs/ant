@@ -5,16 +5,12 @@ import { strategyClient } from '@/client/connect';
 import { logApi } from '@/client/log';
 import type { MtPositionSnapshotItem } from '@/gen/ant/v1/mt_position_snapshot_pb';
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
-import type { ActiveStrategy, StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
+import type { StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 import { strategyActiveApi } from '@/client/strategy';
 import { formatTime, shortId } from '../../LiveStrategyPageSignalDrawer';
-import type { ScheduleRow } from '../../hooks/libraryTypes';
+import type { JoinedRow } from './strategyJoin';
 
 const { Text } = Typography;
-
-interface JoinedRow extends ScheduleRow {
-  active?: ActiveStrategy;
-}
 
 interface Props {
   row: JoinedRow;

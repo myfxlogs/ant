@@ -882,7 +882,17 @@ const Base = {
       "status": {
         "enabled": "有効",
         "running": "実行中",
-        "idle": "アイドル"
+        "idle": "アイドル",
+        "disabled": "無効"
+      },
+      "actions": {
+        "runNow": "今すぐ実行"
+      },
+      "deleteConfirm": {
+        "title": "このスケジュールを削除しますか？"
+      },
+      "table": {
+        "schedule": "スケジュール"
       }
     },
     "chat": {
