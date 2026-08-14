@@ -336,7 +336,7 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 ### 追查补充（2026-08-15 用户追问"平仓后仍不开仓"）—— 真正的元凶：live runner 无历史 bar 预加载
 
 - **身份纠正（重要）**：用户报告的 schedule `599ddaa5`（"E2E 复刻 - Live"）与之前分析的"每 bar 买 0.01"策略**不是同一个**！`schedule_run_logs` 铁证：17:02-17:05 的 4 个 buy 信号全部属于 schedule `2fec87ee`（"eagertest - Live"，run `54091a67`）。`599ddaa5` 的 run 是 `41e4114d`（16:42:27 启动，**0 信号**），其策略代码 = **MT4 官方 MACD Sample**（OnTick + `if(Bars<100) { Print("bars less than 100"); return; }`——日志刷屏的正是这句 Print）。上一段"3 仓上限"分析适用于 eagertest，**不适用于 599ddaa5**。
-- **🆕 LIVE-NO-PRELOAD（P1，599ddaa5 无法开仓的真正根因）**：live runner 的 bar 窗口**从零开始**（`live_runner.go:218` `bars := make([]liveBar, 0, maxContextBars)`，无任何 PG 历史预加载），只靠实时 bar 流每分钟攒 1 根 → MACD Sample 的 `Bars<100` 门槛要**等 100 分钟**才跨过（run 16:42:27 启动 → 约 18:22:27 UTC 才满 100 根）。MT4 客户端里图表自带几百根 bar、EA 挂上即跑——**这是实盘与 MT4 行为的关键背离**，任何依赖 `Bars`/指标暖机的 EA（几乎全部 MT4 EA）在我们平台每次 run（重）启动后都要干等几分钟~几小时。今天 `599ddaa5` 被反复启停 4 次（enable_count=4，schedule_run_logs 10:59/11:56/12:47/16:42 四次 register），每次都重置窗口 → 全天从未跨过门槛。**修复方向**：run 启动时从 PG `md_bars` 预载最近 `maxContextBars` 根闭合 bar（与回测同源），再走 LIVE-1 finalized 过滤；1m/15m 预载成本低。
+- **🆕 LIVE-NO-PRELOAD（P1）+ LIVE-DELTA-DROPS-WINDOW（P0，2026-08-15 第三轮审计推翻早前机制描述）**：早前描述"窗口从零攒起、攒 100 根要 100 分钟（18:22 过门槛）"**机制错误**——真实结构缺陷更深：**delta 协议实现把 VM bar 窗口每事件替换成 1 根**（`vm_live_handlers.go:19` delta 分支构建仅含 1 根的 barWindow + `runner.go:88` `setBars` 替换语义；proto 注释承诺 "harness appends" 但 git 全历史 append 侧从未实现）→ 首个 bar 事件后 VM `Bars` **恒 = 1**，`Bars<100` **永远不过**（不是干等）。回测对照（`backtest/engine.go:61/85` btCtx 全量 bars + barIndex 递增）坐实 live/backtest 结构性断裂——**一切读 bar/指标的 MQL 策略在实盘永不工作**（eagertest 能交易只因它只读 OrdersTotal 不读 bar）。LIVE-NO-PRELOAD（服务端窗口从零攒起）是叠加其上的数据起点问题。**修复架构（第一性最优，方案 B）**：删 delta 路径改**每 bar 全量窗口**（与回测逐 bar 全量天然同构、单一事实源、负代码量）+ run 启动从 PG `md_bars` 种子（GetKlines 回测同源，MaxCloseTs+from 窗口两步取最近 500 根）。施工方案 `builder-handoff-live-harness-parity-2026-08-15.md` v1.2 Task 1。
 - **🆕 CLEANUP-MISFIRE（P2）**：16:52:21 三个运行中的 run 行被 `CleanupStaleRuns`（`strategy_run_repo.go:179`，唯一 SQL 与唯一调用点 `handlers_strategy.go:87` 均在**进程启动时**执行一次）标成 `stopped (server restarted)`——但当前容器 StartedAt=16:42:15、二进制 PID 420145 START=16:42，**本进程不可能在 16:52:21 执行它** → 必然存在 16:52:21 前后短暂启动的**第二个后端实例**（宿主 `go run` 或一次性 docker run，无 exited 容器残留，嫌疑=施工方在宿主违规跑二进制，违反部署铁律）。后果：DB 行显示 stopped（UI 显示已停）而 goroutine 实际存活（54091a67 交易到 17:49、41e4114d 至今仍在刷 Print）→ **UI 与真实状态分裂**，且引擎不会为"已停"run 重新拉起。**修复方向**：CleanupStaleRuns 跳过本进程 session registry 中仍存活的 run（进程内可判活），并调查 16:52:21 的第二实例来源。
 - **验证预言**：`41e4114d` 约 18:22:27 UTC（北京 02:22:27）跨过 100 根 bar 门槛，Print 刷屏停止、MACD 逻辑开始执行；但 `total<1` 要求账户 0 持仓才开新仓——当前仍有 1-2 个持仓（含手动 0.02），不清仓则只走平仓/移动止损逻辑不开新仓。
 
@@ -360,9 +360,9 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 - **数据源现成**：OnOrderProfit 流快照有 Margin/FreeMargin（`publishPositionSnapshot` 已带 Margin/FreeMargin/MarginLevel 到 PositionSnapshot proto）→ BarContext/TickContext proto + UpdateLiveState 加字段即可，无需新 RPC。
 - **对抗证明**：mock tctx 带 margin → VM 内 `AccountFreeMargin()` 非 0（GREEN）；删注入 → 0（RED）。
 
-### P1 — LIVE-NO-PRELOAD：bar 窗口（主+副 symbol）从零攒起（本会话已定论，列此清单归档）
+### P0 — LIVE-DELTA-DROPS-WINDOW：VM bar 窗口每事件被替换成 1 根（第三轮审计新发现，比 LIVE-NO-PRELOAD 更深）
 
-`live_runner.go:218` + `initExtraBars:365-375` 全空窗起步；MACD Sample 等 `Bars<100` 门槛策略实盘干等 100 分钟/次重启。修复 = 启动时 PG `md_bars` 预载主/副 symbol 最近 maxContextBars 根闭合 bar（回测同源）+ 重叠合并/乱序去重（见追查补充段）。
+- **根因**：`vm_live_handlers.go:19-29` delta 分支把 barWindow 构建成仅含 delta bars（1 根），`runner.go:88` `setBars` 替换 → 首个 bar 事件后 VM `Bars` 恒 1。proto `DeltaBar` 注释（strategy_runtime.proto:236）承诺 "harness appends"，**append 侧从未实现**（git 全历史无）。**影响**：一切读 `Bars`/`Close[]`/指标序列的 MQL 策略在实盘结构性失效（指标输入只有 1 根 bar）。**修复**：方案 B 每 bar 全量窗口（见「实盘无法开仓调查」追查补充段）。
 
 ### P2 — LIVE-NO-SYMBOLINFO：Point/Digits/Spread/MarketInfo/SymbolInfo* 实盘全 0
 
@@ -396,6 +396,13 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 ---
 
 ## 变更日志
+
+- 2026-08-15 **收工总账（当日全弧线，无损交接锚点）**：本日审计方围绕用户报告"schedule `599ddaa5` 无法开仓"完成 4 轮递进工作，全部落档：
+  1. **调查与身份纠正**：599ddaa5 = MACD Sample（run `41e4114d`，0 信号）；17:02-17:05 的 4 笔 buy 属 eagertest（`2fec87ee`）。新发现 **CLOSE-ORDER-UUID（P1）/ SUBMIT-STUCK-RACE（P1，EXEC-2 精确机制）/ DEDUP-5S-THROTTLE（P2）/ CLEANUP-MISFIRE（P2，16:52:21 第二后端实例疑云，宿主违规跑二进制嫌疑）**——修复方向全在本段「实盘无法开仓调查」，**handoff 待出、批次待派**（registry 挂账）。
+  2. **同类 bug 横扫**（LIVE 语义一致性审计段）：P0 **LIVE-DELTA-DROPS-WINDOW**（第三轮审计定论，推翻前两轮"攒 100 分钟"错误机制——VM `Bars` 实盘恒 1，一切读 bar/指标的策略结构性失效）+ P1 LIVE-NO-EXIT / LIVE-NO-FREEMARGIN / LIVE-NO-PRELOAD + P2 LIVE-NO-SYMBOLINFO / LIVE-NO-HISTORY。
+  3. **施工方案三轮自审**：`builder-handoff-live-harness-parity-2026-08-15.md` v1.0→v1.1（7 项修订）→v1.2（架构推翻：Task 1 改**每 bar 全量窗口方案 B** + 种子）→v1.2.1（开工提示词核验轮 R9）。含架构决策对比表、红队清单、第一性+禁令合规复查 9 项。
+  4. **开工提示词已交付**（v1.2.1 核验后，用户转 Windsurf）：批次 LIVE-HARNESS-PARITY Task 1-4 已派发。
+  **下会话入口**：① Windsurf 完工后审计方验收（独立删行复测 + §5 生产验收链：MACD Sample 重启即过门槛/FreeMargin 真实/close 信号出现）；② 出「无法开仓调查」批 handoff 并派发（3+1 缺陷，与 PARITY 批零文件冲突）；③ CLEANUP-MISFIRE 16:52 实例来源调查；④ 生产观察：MACD Sample 部署后行为（Buy 条件满足时 0.1 手下单）。
 
 - 2026-08-15 **实盘"无法开仓"调查（用户报告 schedule/run `599ddaa5`）审计方实测定论：策略没坏，打到了自己代码的 3 仓上限**。逐分钟实测证据链：策略 `OrdersTotal()<3` 每 bar 买 0.01；17:02-17:05 4 笔真实到 broker（magic 归属正确，ARCH-4-MT4-MAGIC/ORDERS-MAGIC 已生效）；期间 6 次平仓 = 前端 UI 手动（策略代码无平仓逻辑，信号表只有 buy）+ 1 笔手动 0.02（magic=0）→ 17:05:01 broker 3 仓 → 策略正确停买（"无法开仓"观感来源）。**新发现 3 缺陷**：① **CLOSE-ORDER-UUID（P1）** `service_orders_close.go:22` 合成字符串 ID 非 UUID → 每次平仓 OMS insert/transition 全 22P02 失败，平仓单零记录（broker 平仓本身成功）；② **SUBMIT-STUCK-RACE（P1，EXEC-2 精确机制）** 占位 ticket + 流事件先于 `UpdateTicket` 到达 → `order not found by ticket` 丢弃无重投 → 订单永久 SUBMITTED（17:04/17:05 两笔铁证：warn 比 UpdateTicket 早 3ms；对照 17:02/17:03 事件晚到即正常 FILLED）；③ **DEDUP-5S-THROTTLE（P2）** gate 5s 判重不区分 ticket，不同 ticket 连续平仓被拒（实测两次）。**设计注意 ORDERS-TOTAL-MANUAL**：VM OrdersTotal 不过滤 magic，手动单占用策略仓位计数（MQL4 语义正确，记录不改）。详见 registry 新段「实盘"无法开仓"调查」。
 
