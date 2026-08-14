@@ -252,9 +252,13 @@ func (r *SessionRegistry) UpdatePnlFromPositions(accountID string, positions []m
 		pnlByMagic[pos.Magic] = pnlByMagic[pos.Magic].Add(pos.Profit)
 	}
 
-	for magic, pnl := range pnlByMagic {
-		if sess, ok := byMagic[magic]; ok {
+	// Update PnL for all active sessions on this account. Sessions whose magic
+	// number has no open position get PnL reset to "0" (position closed = no PnL).
+	for magic, sess := range byMagic {
+		if pnl, ok := pnlByMagic[magic]; ok {
 			sess.SetPnL(pnl.String())
+		} else {
+			sess.SetPnL("0")
 		}
 	}
 }

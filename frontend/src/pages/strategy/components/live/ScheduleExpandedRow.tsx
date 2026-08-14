@@ -185,41 +185,49 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
     <Tabs
       size="small"
       style={{ marginLeft: 40 }}
+      tabBarStyle={{ marginBottom: 0 }}
       items={[
         {
           key: 'positions',
           label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
+            <div style={{ paddingLeft: 16 }}>
             <Spin spinning={positionsLoading}>
               <Table size="small" dataSource={positionsWithLive} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
             </Spin>
+            </div>
           ),
         },
         {
           key: 'signals',
           label: <span>{t('strategy.live.signals', { defaultValue: 'Signals' })} {signals.length > 0 && <Tag color="blue">{signals.length}</Tag>}</span>,
           children: (
+            <div style={{ paddingLeft: 16 }}>
             <Spin spinning={signalsLoading}>
               <Table size="small" dataSource={signals} rowKey={(_r, i) => String(i)} columns={signalColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.waitingSignals', { defaultValue: 'Waiting for signals...' })} /> }} />
             </Spin>
+            </div>
           ),
         },
         {
           key: 'logs',
           label: t('strategy.live.logs', { defaultValue: 'Logs' }),
           children: (
+            <div style={{ paddingLeft: 16 }}>
             <Spin spinning={logsLoading}>
               <Table size="small" dataSource={logs} rowKey="id" columns={logColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('common.noData', { defaultValue: 'No data' })} /> }} />
             </Spin>
+            </div>
           ),
         },
         {
           key: 'config',
           label: t('strategy.live.config', { defaultValue: 'Config' }),
           children: (
+            <div style={{ paddingLeft: 16 }}>
             <Descriptions size="small" column={2} bordered>
               <Descriptions.Item label={t('strategy.live.symbol', { defaultValue: 'Symbol' })}>{row.symbol}</Descriptions.Item>
               <Descriptions.Item label={t('strategy.live.timeframe', { defaultValue: 'TF' })}>{row.timeframe}</Descriptions.Item>
@@ -232,6 +240,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
                 </Descriptions.Item>
               )}
             </Descriptions>
+            </div>
           ),
         },
       ]}
