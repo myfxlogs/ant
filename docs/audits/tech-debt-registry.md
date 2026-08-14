@@ -333,6 +333,13 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 
 - `vm_builtin_trade.go:171` `Broker().Positions(0)` magic=0 不过滤 → 账户上**任何手动单**（magic=0）都计入策略的 `OrdersTotal()`。本案例：1 笔手动 0.02 + 2 笔策略 0.01 = 3 → 策略按自己的代码停买。MQL4 语义正确，但文档/UI 上应让用户知道"同账户手动单会占用策略仓位计数"（可演进选项：live broker 层按 schedule magic 过滤 `Positions(magic)`，需讨论——会改变 MQL4 语义保真度，暂不改，先记录）。
 
+### 追查补充（2026-08-15 用户追问"平仓后仍不开仓"）—— 真正的元凶：live runner 无历史 bar 预加载
+
+- **身份纠正（重要）**：用户报告的 schedule `599ddaa5`（"E2E 复刻 - Live"）与之前分析的"每 bar 买 0.01"策略**不是同一个**！`schedule_run_logs` 铁证：17:02-17:05 的 4 个 buy 信号全部属于 schedule `2fec87ee`（"eagertest - Live"，run `54091a67`）。`599ddaa5` 的 run 是 `41e4114d`（16:42:27 启动，**0 信号**），其策略代码 = **MT4 官方 MACD Sample**（OnTick + `if(Bars<100) { Print("bars less than 100"); return; }`——日志刷屏的正是这句 Print）。上一段"3 仓上限"分析适用于 eagertest，**不适用于 599ddaa5**。
+- **🆕 LIVE-NO-PRELOAD（P1，599ddaa5 无法开仓的真正根因）**：live runner 的 bar 窗口**从零开始**（`live_runner.go:218` `bars := make([]liveBar, 0, maxContextBars)`，无任何 PG 历史预加载），只靠实时 bar 流每分钟攒 1 根 → MACD Sample 的 `Bars<100` 门槛要**等 100 分钟**才跨过（run 16:42:27 启动 → 约 18:22:27 UTC 才满 100 根）。MT4 客户端里图表自带几百根 bar、EA 挂上即跑——**这是实盘与 MT4 行为的关键背离**，任何依赖 `Bars`/指标暖机的 EA（几乎全部 MT4 EA）在我们平台每次 run（重）启动后都要干等几分钟~几小时。今天 `599ddaa5` 被反复启停 4 次（enable_count=4，schedule_run_logs 10:59/11:56/12:47/16:42 四次 register），每次都重置窗口 → 全天从未跨过门槛。**修复方向**：run 启动时从 PG `md_bars` 预载最近 `maxContextBars` 根闭合 bar（与回测同源），再走 LIVE-1 finalized 过滤；1m/15m 预载成本低。
+- **🆕 CLEANUP-MISFIRE（P2）**：16:52:21 三个运行中的 run 行被 `CleanupStaleRuns`（`strategy_run_repo.go:179`，唯一 SQL 与唯一调用点 `handlers_strategy.go:87` 均在**进程启动时**执行一次）标成 `stopped (server restarted)`——但当前容器 StartedAt=16:42:15、二进制 PID 420145 START=16:42，**本进程不可能在 16:52:21 执行它** → 必然存在 16:52:21 前后短暂启动的**第二个后端实例**（宿主 `go run` 或一次性 docker run，无 exited 容器残留，嫌疑=施工方在宿主违规跑二进制，违反部署铁律）。后果：DB 行显示 stopped（UI 显示已停）而 goroutine 实际存活（54091a67 交易到 17:49、41e4114d 至今仍在刷 Print）→ **UI 与真实状态分裂**，且引擎不会为"已停"run 重新拉起。**修复方向**：CleanupStaleRuns 跳过本进程 session registry 中仍存活的 run（进程内可判活），并调查 16:52:21 的第二实例来源。
+- **验证预言**：`41e4114d` 约 18:22:27 UTC（北京 02:22:27）跨过 100 根 bar 门槛，Print 刷屏停止、MACD 逻辑开始执行；但 `total<1` 要求账户 0 持仓才开新仓——当前仍有 1-2 个持仓（含手动 0.02），不清仓则只走平仓/移动止损逻辑不开新仓。
+
 ### 附带观察（不阻塞）
 
 - 本 run 的 strategy_runs 行 16:52:21 被标 `stopped ("server restarted")`（容器 StartedAt=16:42:15，与标记时间矛盾——疑旧容器优雅退出期延迟标记或重复标记），但 goroutine 实际存活交易到 17:05+：**Active Runs UI 状态可能失真**，待下轮顺查。

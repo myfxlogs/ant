@@ -191,7 +191,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
           key: 'positions',
           label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
-            <div>
+            <div style={{ marginLeft: -40 }}>
             <Spin spinning={positionsLoading}>
               <Table size="small" dataSource={positionsWithLive} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
