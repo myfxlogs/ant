@@ -198,15 +198,8 @@ func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg Li
 		return
 	}
 	// D6-A: gate moved to MtHubService.CloseOrder (single chokepoint).
+	// W1: volume=0 is valid for close signals (OrderCloseBy / CTrade.PositionClose = full close).
 	volume := parseDecimal(sig.GetVolume())
-	if volume.LessThanOrEqual(decimal.Zero) {
-		s.log.Warn("LiveStrategyRunner: close order with zero volume, skipping",
-			zap.Int64("ticket", ticket))
-		if activeSess != nil {
-			activeSess.RecordError(fmt.Sprintf("close order ticket=%d: zero volume", ticket))
-		}
-		return
-	}
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {

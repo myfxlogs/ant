@@ -2,12 +2,19 @@ package strategy
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
+	"alphaforge/internal/risk"
 )
 
 // ── Task 1: Delta protocol removed + dedup guard ─────────────────────
@@ -103,4 +110,229 @@ func TestBackfillContextStrings_MissingSnapshot_MarginMinusOne(t *testing.T) {
 	if freeMargin != "-1" {
 		t.Errorf("freeMargin=%s, want -1 (fail-visible)", freeMargin)
 	}
+}
+
+// ── W1: Zero-volume close signal not silently dropped ────────────────
+
+// TestW1_ZeroVolumeClose_ReachesExecutor verifies that a close signal with
+// volume=0 (OrderCloseBy / CTrade.PositionClose = full close) is NOT silently
+// dropped by dispatchCloseOrder. Revert the W1 fix (re-add the volume<=0 guard)
+// → this test goes RED because CloseOrder is never called.
+func TestW1_ZeroVolumeClose_ReachesExecutor(t *testing.T) {
+	exec := &mockOrderExecutor{
+		placedCh: make(chan string, 1),
+		closedCh: make(chan int64, 1),
+	}
+	hub := mthub.NewHub()
+	svc := mthub.NewMtHubService(hub, mthub.NewOrderEventBroker(), mthub.NewAccountProfitBroker(), mthub.NewPositionSnapshotBroker(), nil, nil, nil)
+	svc.SetLogger(zap.NewNop())
+	svc.SetGate(risk.NewDefaultGate())
+	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
+		return &risk.AccountState{Balance: decimal.NewFromInt(100000), Equity: decimal.NewFromInt(100000)}, nil
+	})
+	hub.Register("acct-1", &mthub.Session{AccountID: "acct-1", CreatedAt: time.Now()}, exec)
+
+	srv := &StrategyExecutionServer{log: zap.NewNop(), mtHub: svc}
+	cfg := LiveStrategyConfig{
+		AccountID:  "acct-1",
+		UserID:     "user-1",
+		Symbol:     "EURUSD",
+		Mode:       "live",
+		RunID:      uuid.New(),
+		TickSeq:    new(atomic.Int64),
+		ScheduleID: uuid.New(),
+	}
+
+	sig := &antv1.StrategySignal{SignalType: "close", Volume: "0", ExecutedTicket: 12345}
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, nil)
+
+	select {
+	case ticket := <-exec.closedCh:
+		if ticket != 12345 {
+			t.Fatalf("expected ticket 12345, got %d", ticket)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("W1: zero-volume close signal was silently dropped — CloseOrder never called (timeout)")
+	}
+}
+
+// ── W3-1: seedBarWindows adversarial test ────────────────────────────
+
+// mockMarketDataStore implements repository.MarketDataStore for seedBarWindows test.
+type mockMarketDataStore struct {
+	maxCloseTs int64
+	klines     []repository.KlineBar
+}
+
+func (m *mockMarketDataStore) GetKlines(_ context.Context, _, _, _ string, _, _ *time.Time, _ int32) ([]repository.KlineBar, error) {
+	return m.klines, nil
+}
+func (m *mockMarketDataStore) MaxCloseTs(_ context.Context, _, _, _ string) (int64, error) {
+	return m.maxCloseTs, nil
+}
+func (m *mockMarketDataStore) GetLatestTick(_ context.Context, _, _ string) (*repository.LatestTick, error) {
+	return nil, nil
+}
+func (m *mockMarketDataStore) LoadFinalizedBars(_ context.Context, _ time.Time) (map[repository.FinalizedKey][]int64, error) {
+	return nil, nil
+}
+func (m *mockMarketDataStore) GetLatestBars(_ context.Context, _ time.Time) ([]repository.KlineBar, error) {
+	return nil, nil
+}
+func (m *mockMarketDataStore) FetchActualReturn(_ context.Context, _ string, _ time.Time) (float64, error) {
+	return 0, nil
+}
+func (m *mockMarketDataStore) InsertBars(_ context.Context, _ []repository.KlineBar) error {
+	return nil
+}
+
+// TestW3_SeedBarWindows_PopulatesWindow verifies that seedBarWindows fills
+// the bar window from historical PG data. Delete the seedBarWindows call
+// in RunLiveStrategy → bars stays empty → this test goes RED.
+func TestW3_SeedBarWindows_PopulatesWindow(t *testing.T) {
+	periodMs := int64(60 * 1000) // 1m
+	now := time.Now().UnixMilli()
+	maxCloseTs := now - periodMs // last closed bar
+
+	klines := make([]repository.KlineBar, 120)
+	for i := range klines {
+		openMs := maxCloseTs - int64(119-i)*periodMs
+		klines[i] = repository.KlineBar{
+			OpenTsUnixMs:  uint64(openMs),
+			CloseTsUnixMs: uint64(openMs + periodMs),
+			Open:          decimal.NewFromInt(int64(i + 1)),
+			High:          decimal.NewFromInt(int64(i + 2)),
+			Low:           decimal.NewFromInt(int64(i)),
+			Close:         decimal.NewFromInt(int64(i + 1)),
+			Volume:        100,
+		}
+	}
+
+	mockRepo := &mockMarketDataStore{maxCloseTs: maxCloseTs, klines: klines}
+	srv := &StrategyExecutionServer{
+		log:            zap.NewNop(),
+		marketDataRepo: mockRepo,
+		brokerCompanyLookup: func(_ context.Context, _ string) string {
+			return "test-broker"
+		},
+	}
+
+	cfg := LiveStrategyConfig{
+		AccountID: "acct-1",
+		Symbol:    "EURUSD",
+		Timeframe: "1m",
+	}
+	bars := make([]liveBar, 0, maxContextBars)
+	srv.seedBarWindows(context.Background(), cfg, &bars, nil)
+
+	if len(bars) < 100 {
+		t.Fatalf("seedBarWindows: expected >=100 bars, got %d (seedBarWindows not populating window)", len(bars))
+	}
+}
+
+// ── W3-2: Two consecutive bar events — window grows (no delta collapse) ─
+
+// TestW3_TwoConsecutiveBars_WindowGrows verifies that after two consecutive
+// bar events the VM sees a growing window (no delta collapse to 1).
+// Revert to delta protocol (replace instead of full window) → second event
+// window = 1 → this test goes RED.
+func TestW3_TwoConsecutiveBars_WindowGrows(t *testing.T) {
+	// Strategy: OrderSend with volume = Bars() — the signal volume encodes
+	// the bar count, so we can assert window growth from the response.
+	const code = `void OnBar() { OrderSend(Symbol(), OP_BUY, Bars(), Ask, 3, 0, 0); }`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	vmSess, err := NewVMLiveSession(code)
+	if err != nil {
+		t.Fatalf("compile MQL: %v", err)
+	}
+
+	// Build initial context with 120 bars (simulating seedBarWindows).
+	makeBars := func(n int) *antv1.LiveStrategyContext {
+		closeVals := make([]string, n)
+		openVals := make([]string, n)
+		highVals := make([]string, n)
+		lowVals := make([]string, n)
+		volVals := make([]string, n)
+		times := make([]int64, n)
+		baseTs := int64(1700000000000)
+		for i := range n {
+			closeVals[i] = decimal.NewFromInt(int64(i + 1)).String()
+			openVals[i] = decimal.NewFromInt(int64(i)).String()
+			highVals[i] = decimal.NewFromInt(int64(i + 2)).String()
+			lowVals[i] = decimal.NewFromInt(int64(i)).String()
+			volVals[i] = "100"
+			times[i] = baseTs + int64(i)*60000
+		}
+		return &antv1.LiveStrategyContext{
+			Symbol:       "EURUSD",
+			Timeframe:    "1m",
+			Mode:         "paper",
+			Close:        closeVals,
+			Open:         openVals,
+			High:         highVals,
+			Low:          lowVals,
+			Volume:       volVals,
+			BarTimesMs:   times,
+			CurrentPrice: closeVals[n-1],
+		}
+	}
+
+	// Event 1: Start with 120 bars.
+	lctx1 := makeBars(120)
+	req1 := &antv1.ExecuteLiveRequest{
+		StrategyCode: code,
+		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
+		BarContext:   lctx1,
+	}
+	reqBytes1, _ := proto.Marshal(req1)
+	respBytes1, err := vmSess.Start(ctx, reqBytes1)
+	if err != nil {
+		t.Fatalf("vm Start (event 1): %v", err)
+	}
+	var resp1 antv1.ExecuteLiveResponse
+	proto.Unmarshal(respBytes1, &resp1)
+	if !resp1.GetSuccess() {
+		t.Fatalf("event 1: VM returned error: %s", resp1.GetError())
+	}
+
+	// Event 2: Send 121 bars (full window, not delta).
+	lctx2 := makeBars(121)
+	req2 := &antv1.ExecuteLiveRequest{
+		StrategyCode: code,
+		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
+		BarContext:   lctx2,
+	}
+	reqBytes2, _ := proto.Marshal(req2)
+	respBytes2, err := vmSess.SendEvent(ctx, reqBytes2)
+	if err != nil {
+		t.Fatalf("vm SendEvent (event 2): %v", err)
+	}
+	var resp2 antv1.ExecuteLiveResponse
+	proto.Unmarshal(respBytes2, &resp2)
+	if !resp2.GetSuccess() {
+		t.Fatalf("event 2: VM returned error: %s", resp2.GetError())
+	}
+
+	// Extract signal volume from event 2 — it should be 121 (Bars() count).
+	sig := resp2.GetSignal()
+	if sig == nil && len(resp2.GetSignals()) > 0 {
+		sig = resp2.GetSignals()[0]
+	}
+	if sig == nil {
+		t.Fatal("event 2: no signal returned — OrderSend with Bars() volume should produce a signal")
+	}
+	vol, err := decimal.NewFromString(sig.GetVolume())
+	if err != nil {
+		t.Fatalf("event 2: invalid signal volume %q: %v", sig.GetVolume(), err)
+	}
+	barCount := int(vol.IntPart())
+	if barCount < 121 {
+		t.Fatalf("W3: after 2 consecutive bar events, VM Bars()=%d, expected >=121 (delta collapse?)", barCount)
+	}
+	t.Logf("W3: event 2 VM Bars()=%d (window grew correctly)", barCount)
+
+	vmSess.Close()
 }

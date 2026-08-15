@@ -86,6 +86,11 @@ type LiveStrategyConfig struct {
 	// If it returns false, the session self-terminates (no new signals).
 	// Nil = no check (user's own strategy). Push-first: rides on bar events, not a timer.
 	EntitlementCheck func(ctx context.Context) bool
+
+	// SymbolParam is pre-fetched at run startup from broker (CachedSymbolParam).
+	// Stored here so bar/tick builders do O(1) string fill — no per-event RPC.
+	// W2: moved out of tick/bar hot path to avoid per-event broker RPC on cache miss.
+	SymbolParam *mthub.SymbolParam
 }
 
 // LiveTickSubscriber provides tick (Bid/Ask) updates for an account.
@@ -222,6 +227,8 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 	extraBars, extraSymbolSet := initExtraBars(cfg)
 
 	s.seedBarWindows(ctx, cfg, &bars, extraBars)
+
+	s.prefetchSymbolParam(ctx, &cfg)
 
 	defer func() {
 		if session != nil {

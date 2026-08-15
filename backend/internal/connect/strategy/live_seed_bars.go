@@ -113,3 +113,20 @@ func (s *StrategyExecutionServer) resolveBrokerCompany(ctx context.Context, cfg 
 	}
 	return s.brokerCompanyLookup(ctx, cfg.AccountID)
 }
+
+// prefetchSymbolParam fetches symbol params once at startup with a 5s timeout.
+// Builders read from cfg.SymbolParam — no per-event broker RPC (W2).
+func (s *StrategyExecutionServer) prefetchSymbolParam(ctx context.Context, cfg *LiveStrategyConfig) {
+	if s.mtHub == nil || cfg.AccountID == "" || cfg.Symbol == "" {
+		return
+	}
+	fetchCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	param, err := s.mtHub.CachedSymbolParam(fetchCtx, cfg.AccountID, cfg.Symbol)
+	if err != nil || param == nil {
+		s.log.Warn("LiveStrategyRunner: symbol param pre-fetch failed, will retry on first bar",
+			zap.String("symbol", cfg.Symbol), zap.Error(err))
+		return
+	}
+	cfg.SymbolParam = param
+}

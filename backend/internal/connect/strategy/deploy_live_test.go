@@ -38,6 +38,7 @@ func (m *mockPaperEngine) PaperPnl(ctx context.Context, accountID, symbol string
 // Records the ClientID of each PlaceOrder call via a channel for synchronization.
 type mockOrderExecutor struct {
 	placedCh chan string
+	closedCh chan int64
 }
 
 func (m *mockOrderExecutor) Platform() string { return "mock" }
@@ -45,7 +46,10 @@ func (m *mockOrderExecutor) PlaceOrder(_ context.Context, req *mthub.OrderReques
 	m.placedCh <- req.ClientID
 	return 1, nil
 }
-func (m *mockOrderExecutor) CloseOrder(_ context.Context, _ int64, _ decimal.Decimal) error {
+func (m *mockOrderExecutor) CloseOrder(_ context.Context, ticket int64, _ decimal.Decimal) error {
+	if m.closedCh != nil {
+		m.closedCh <- ticket
+	}
 	return nil
 }
 func (m *mockOrderExecutor) DeleteOrder(_ context.Context, _ int64) error { return nil }

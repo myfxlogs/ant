@@ -237,13 +237,16 @@ func buildSymbolSeries(extraBars map[string][]liveBar) []*antv1.LiveSymbolSeries
 }
 
 // backfillSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
-// LiveStrategyContext from the MtHubService cached symbol params.
+// LiveStrategyContext from the pre-fetched symbol params (W2: no per-event RPC).
+// Falls back to a one-shot 5s-timeout fetch if startup pre-fetch failed.
 func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lctx *antv1.LiveStrategyContext) {
-	if s.mtHub == nil || cfg.AccountID == "" || cfg.Symbol == "" {
-		return
+	param := cfg.SymbolParam
+	if param == nil && s.mtHub != nil && cfg.AccountID != "" && cfg.Symbol != "" {
+		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		param, _ = s.mtHub.CachedSymbolParam(fetchCtx, cfg.AccountID, cfg.Symbol)
+		cancel()
 	}
-	param, err := s.mtHub.CachedSymbolParam(context.Background(), cfg.AccountID, cfg.Symbol)
-	if err != nil || param == nil {
+	if param == nil {
 		return
 	}
 	lctx.Point = param.PointValue.String()
@@ -253,13 +256,16 @@ func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lct
 }
 
 // backfillTickSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
-// TickContext from the MtHubService cached symbol params.
+// TickContext from the pre-fetched symbol params (W2: no per-event RPC).
+// Falls back to a one-shot 5s-timeout fetch if startup pre-fetch failed.
 func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig, tctx *antv1.TickContext) {
-	if s.mtHub == nil || cfg.AccountID == "" || cfg.Symbol == "" {
-		return
+	param := cfg.SymbolParam
+	if param == nil && s.mtHub != nil && cfg.AccountID != "" && cfg.Symbol != "" {
+		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		param, _ = s.mtHub.CachedSymbolParam(fetchCtx, cfg.AccountID, cfg.Symbol)
+		cancel()
 	}
-	param, err := s.mtHub.CachedSymbolParam(context.Background(), cfg.AccountID, cfg.Symbol)
-	if err != nil || param == nil {
+	if param == nil {
 		return
 	}
 	tctx.Point = param.PointValue.String()

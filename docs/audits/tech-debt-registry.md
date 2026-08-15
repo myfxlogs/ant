@@ -401,6 +401,8 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 ## 变更日志
 
+- 2026-08-15 **OMS-EXIT-FIX 批 handoff 已出（入口 #2，与 PARITY 返工并行）**：`builder-handoff-oms-exit-fix-2026-08-15.md`——4 任务：① CLOSE-ORDER-UUID（P1，平仓 OMS 行改 MD5-UUID，REUSE IdempotencyKey 模式）② SUBMIT-STUCK-RACE（P1，TransitionOrderByTicket 查无→2s 进程内重试→仍无则 TriggerReconcile 对账修复，REUSE STREAM-KEEPALIVE 修复型对账）③ DEDUP-5S-THROTTLE（P2，**根因精化：判重 key 缺 AccountID+Magic——close 意图 symbol/side/price 全空 → 任何账户任何 ticket 5s 内互拒还跨账户误伤**，key 扩 2 字段）④ CLEANUP-MISFIRE（P2，CleanupStaleRuns 排除活 run + Register 时 MarkRunning 反标）。零文件冲突 PARITY（mthub/risk/repository vs connect/strategy）。**待用户派发。**
+
 - 2026-08-15 **收工总账（当日全弧线，无损交接锚点）**：本日审计方围绕用户报告"schedule `599ddaa5` 无法开仓"完成 4 轮递进工作，全部落档：
   1. **调查与身份纠正**：599ddaa5 = MACD Sample（run `41e4114d`，0 信号）；17:02-17:05 的 4 笔 buy 属 eagertest（`2fec87ee`）。新发现 **CLOSE-ORDER-UUID（P1）/ SUBMIT-STUCK-RACE（P1，EXEC-2 精确机制）/ DEDUP-5S-THROTTLE（P2）/ CLEANUP-MISFIRE（P2，16:52:21 第二后端实例疑云，宿主违规跑二进制嫌疑）**——修复方向全在本段「实盘无法开仓调查」，**handoff 待出、批次待派**（registry 挂账）。
   2. **同类 bug 横扫**（LIVE 语义一致性审计段）：P0 **LIVE-DELTA-DROPS-WINDOW**（第三轮审计定论，推翻前两轮"攒 100 分钟"错误机制——VM `Bars` 实盘恒 1，一切读 bar/指标的策略结构性失效）+ P1 LIVE-NO-EXIT / LIVE-NO-FREEMARGIN / LIVE-NO-PRELOAD + P2 LIVE-NO-SYMBOLINFO / LIVE-NO-HISTORY。
