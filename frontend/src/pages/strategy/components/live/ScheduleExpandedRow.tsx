@@ -149,6 +149,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
     } },
     { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 80, render: (v: string) => v || '-' },
     { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 80, render: (v: string) => v || '-' },
+    { title: 'Magic', dataIndex: 'magicNumber', width: 70, render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
     { title: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>{positionsWithLive.length > 0 && (
       <Popconfirm title={t('strategy.live.confirmCloseAll', { defaultValue: 'Close all positions?' })}
         onConfirm={handleCloseAll}>
@@ -157,14 +158,13 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
           {t('strategy.live.closeAll', { defaultValue: 'Close All' })}
         </Button>
       </Popconfirm>
-    )}</span>, key: 'close', width: 120, render: (_: unknown, r: MtPositionSnapshotItem) => (
+    )}</span>, key: 'close', width: 120, align: 'right' as const, render: (_: unknown, r: MtPositionSnapshotItem) => (
       <Popconfirm title={t('strategy.live.confirmClose', { defaultValue: 'Close this position?' })}
         onConfirm={() => handleClosePosition(r.ticket, r.volume)}>
         <Button size="small" type="text" danger icon={<CloseCircleOutlined />}
           loading={closingTicket === r.ticket} style={{ height: 22 }} />
       </Popconfirm>
     ) },
-    { title: 'Magic', dataIndex: 'magicNumber', width: 70, render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
   ];
 
   const signalColumns = [
@@ -186,6 +186,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
     <div className="live-expanded-align" style={{ marginLeft: LIVE_EXPAND_COL_WIDTH }}>
     <Tabs
       size="small"
+      tabBarGutter={24}
       tabBarStyle={{ marginBottom: 0 }}
       items={[
         {
