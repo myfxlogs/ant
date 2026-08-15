@@ -1,14 +1,19 @@
 import { test, expect } from '@playwright/test';
 
+test.use({ locale: 'zh-CN' });
+
 const EMAIL = 'xianhua.chan@gmail.com';
 const PASSWORD = 'Abc123456...';
 
 test('system diagnostics tab renders live data (replaces manual monitoring)', async ({ page }) => {
   test.setTimeout(90_000);
   await page.goto('/login');
-  await page.getByPlaceholder(/email|account/i).fill(EMAIL);
-  await page.getByPlaceholder(/password/i).fill(PASSWORD);
-  await page.getByRole('button', { name: /sign in|login/i }).click();
+  await page.locator('input[type=password]').waitFor();
+  const inputs = page.locator('form input:not([type=password])');
+  await inputs.first().fill(EMAIL);
+  await page.locator('input[type=password]').fill(PASSWORD);
+  await page.locator('form button[type=submit], form button:not([type=button])').first().click();
+  await page.waitForTimeout(3000);
   await page.waitForURL(/\/$|\/dashboard/i, { timeout: 15_000 });
 
   await page.goto('/strategy/live');
