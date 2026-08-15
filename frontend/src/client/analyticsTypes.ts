@@ -88,6 +88,7 @@ export interface TradeRecordItem {
   swap: number;
   commission: number;
   comment: string;
+  magicNumber: number;
 }
 
 export interface RecentTradesData {

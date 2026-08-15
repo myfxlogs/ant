@@ -810,6 +810,7 @@ type TradeRecord struct {
 	Swap          string                 `protobuf:"bytes,10,opt,name=swap,proto3" json:"swap,omitempty"`             // monetary
 	Commission    string                 `protobuf:"bytes,11,opt,name=commission,proto3" json:"commission,omitempty"` // monetary
 	Comment       string                 `protobuf:"bytes,12,opt,name=comment,proto3" json:"comment,omitempty"`
+	MagicNumber   int32                  `protobuf:"varint,13,opt,name=magic_number,json=magicNumber,proto3" json:"magic_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -926,6 +927,13 @@ func (x *TradeRecord) GetComment() string {
 		return x.Comment
 	}
 	return ""
+}
+
+func (x *TradeRecord) GetMagicNumber() int32 {
+	if x != nil {
+		return x.MagicNumber
+	}
+	return 0
 }
 
 type GetRecentTradesRequest struct {
@@ -2954,7 +2962,7 @@ const file_analytics_proto_rawDesc = "" +
 	"\x18max_floating_loss_amount\x18\x05 \x01(\tR\x15maxFloatingLossAmount\x125\n" +
 	"\x17max_floating_loss_ratio\x18\x06 \x01(\x01R\x14maxFloatingLossRatio\x12;\n" +
 	"\x1amax_floating_profit_amount\x18\a \x01(\tR\x17maxFloatingProfitAmount\x129\n" +
-	"\x19max_floating_profit_ratio\x18\b \x01(\x01R\x16maxFloatingProfitRatio\"\xcb\x02\n" +
+	"\x19max_floating_profit_ratio\x18\b \x01(\x01R\x16maxFloatingProfitRatio\"\xee\x02\n" +
 	"\vTradeRecord\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\tR\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
@@ -2973,7 +2981,8 @@ const file_analytics_proto_rawDesc = "" +
 	"\n" +
 	"commission\x18\v \x01(\tR\n" +
 	"commission\x12\x18\n" +
-	"\acomment\x18\f \x01(\tR\acomment\"h\n" +
+	"\acomment\x18\f \x01(\tR\acomment\x12!\n" +
+	"\fmagic_number\x18\r \x01(\x05R\vmagicNumber\"h\n" +
 	"\x16GetRecentTradesRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x12\n" +

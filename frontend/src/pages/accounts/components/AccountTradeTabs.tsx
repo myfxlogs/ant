@@ -14,7 +14,7 @@ import { queryKeys } from '@/queries/queryKeys';
 import { showError } from '@/utils/message';
 import { HistoryTradeRow, PendingOrderRow, PositionRow } from './AccountDetail.shared';
 import { useTranslation } from 'react-i18next'
-import { TRADE_TABS_EMPTY_HISTORY_KEY, TRADE_TABS_EMPTY_POSITIONS_KEY, TRADE_TABS_HISTORY_WITH_COUNT_KEY, TRADE_TABS_PAGINATION_TOTAL_KEY, TRADE_TABS_PENDING_WITH_COUNT_KEY, TRADE_TABS_POSITIONS_WITH_COUNT_KEY, TRADE_TABS_SYNC_HISTORY_KEY, TRADE_TABS_TABLE_CLOSE_PRICE_KEY, TRADE_TABS_TABLE_CLOSE_TIME_KEY, TRADE_TABS_TABLE_CURRENT_PRICE_KEY, TRADE_TABS_TABLE_OPEN_PRICE_KEY, TRADE_TABS_TABLE_OPEN_TIME_KEY, TRADE_TABS_TABLE_ORDER_ID_KEY, TRADE_TABS_TABLE_PENDING_PRICE_KEY, TRADE_TABS_TABLE_PENDING_TIME_KEY, TRADE_TABS_TABLE_PROFIT_KEY, TRADE_TABS_TABLE_SIDE_KEY, TRADE_TABS_TABLE_SYMBOL_KEY, TRADE_TABS_TABLE_TYPE_KEY, TRADE_TABS_TABLE_VOLUME_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
+import { TRADE_TABS_EMPTY_HISTORY_KEY, TRADE_TABS_EMPTY_POSITIONS_KEY, TRADE_TABS_HISTORY_WITH_COUNT_KEY, TRADE_TABS_PAGINATION_TOTAL_KEY, TRADE_TABS_PENDING_WITH_COUNT_KEY, TRADE_TABS_POSITIONS_WITH_COUNT_KEY, TRADE_TABS_SYNC_HISTORY_KEY, TRADE_TABS_TABLE_CLOSE_PRICE_KEY, TRADE_TABS_TABLE_CLOSE_TIME_KEY, TRADE_TABS_TABLE_CURRENT_PRICE_KEY, TRADE_TABS_TABLE_MAGIC_KEY, TRADE_TABS_TABLE_OPEN_PRICE_KEY, TRADE_TABS_TABLE_OPEN_TIME_KEY, TRADE_TABS_TABLE_ORDER_ID_KEY, TRADE_TABS_TABLE_PENDING_PRICE_KEY, TRADE_TABS_TABLE_PENDING_TIME_KEY, TRADE_TABS_TABLE_PROFIT_KEY, TRADE_TABS_TABLE_SIDE_KEY, TRADE_TABS_TABLE_SYMBOL_KEY, TRADE_TABS_TABLE_TYPE_KEY, TRADE_TABS_TABLE_VOLUME_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 ;
 import type { Position } from '@/types/trading';
@@ -129,6 +129,7 @@ export default function AccountTradeTabs({
                       <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CURRENT_PRICE_KEY)}</th>
                       <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PROFIT_KEY)}</th>
                       <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_OPEN_TIME_KEY)}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_MAGIC_KEY)}</th>
                     </tr>
                   </thead>
                   <tbody>{realPositions.map((p) => <PositionRow key={p.ticket} position={p} />)}</tbody>
@@ -151,6 +152,7 @@ export default function AccountTradeTabs({
                         <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PENDING_PRICE_KEY)}</th>
                         <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CURRENT_PRICE_KEY)}</th>
                         <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PENDING_TIME_KEY)}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_MAGIC_KEY)}</th>
                       </tr>
                     </thead>
                     <tbody>{pendingOrders.map((p) => <PendingOrderRow key={p.ticket} order={p} />)}</tbody>
@@ -212,6 +214,7 @@ export default function AccountTradeTabs({
                     <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CLOSE_PRICE_KEY)}</th>
                     <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PROFIT_KEY)}</th>
                     <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CLOSE_TIME_KEY)}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_MAGIC_KEY)}</th>
                   </tr>
                 </thead>
                 <tbody>

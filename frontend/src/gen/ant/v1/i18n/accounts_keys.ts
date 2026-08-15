@@ -808,6 +808,9 @@ export const TRADE_TABS_TABLE_CLOSE_PRICE_KEY = 'accounts.tradeTabs.table.closeP
 /** tradeTabs.table.closeTime */
 export const TRADE_TABS_TABLE_CLOSE_TIME_KEY = 'accounts.tradeTabs.table.closeTime' as const;
 
+/** tradeTabs.table.magic */
+export const TRADE_TABS_TABLE_MAGIC_KEY = 'accounts.tradeTabs.table.magic' as const;
+
 /** tradeTabs.table.currentPrice */
 export const TRADE_TABS_TABLE_CURRENT_PRICE_KEY = 'accounts.tradeTabs.table.currentPrice' as const;
 
@@ -1111,6 +1114,7 @@ export const ACCOUNTS_KEYS = {
   trade_tabs_sync_history: 'accounts.tradeTabs.syncHistory',
   trade_tabs_table_close_price: 'accounts.tradeTabs.table.closePrice',
   trade_tabs_table_close_time: 'accounts.tradeTabs.table.closeTime',
+  trade_tabs_table_magic: 'accounts.tradeTabs.table.magic',
   trade_tabs_table_current_price: 'accounts.tradeTabs.table.currentPrice',
   trade_tabs_table_open_price: 'accounts.tradeTabs.table.openPrice',
   trade_tabs_table_open_time: 'accounts.tradeTabs.table.openTime',

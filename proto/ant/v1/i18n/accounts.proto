@@ -273,6 +273,7 @@ message AccountsI18n {
   string trade_tabs_sync_history = 266;  // Sync History
   string trade_tabs_table_close_price = 267;  // Close price
   string trade_tabs_table_close_time = 268;  // Close time
+  string trade_tabs_table_magic = 281;  // Magic
   string trade_tabs_table_current_price = 269;  // Current price
   string trade_tabs_table_open_price = 270;  // Open price
   string trade_tabs_table_open_time = 271;  // Open time

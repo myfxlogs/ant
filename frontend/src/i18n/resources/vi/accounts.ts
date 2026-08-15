@@ -347,6 +347,7 @@ const Accounts = {
       "table": {
         "closePrice": "Giá đóng",
         "closeTime": "平仓时间",
+        "magic": "Magic",
         "currentPrice": "Giá hiện tại",
         "openPrice": "Giá mở",
         "openTime": "Thời gian mở",

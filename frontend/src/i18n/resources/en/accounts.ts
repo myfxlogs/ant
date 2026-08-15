@@ -347,6 +347,7 @@ const Accounts = {
       "table": {
         "closePrice": "Close price",
         "closeTime": "Close time",
+        "magic": "Magic",
         "currentPrice": "Current price",
         "openPrice": "Open price",
         "openTime": "Open time",

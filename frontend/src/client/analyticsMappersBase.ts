@@ -113,5 +113,6 @@ export function mapTradeRecord(t: ProtoTradeRecord): TradeRecordItem {
     swap: toNum(t.swap),
     commission: toNum(t.commission),
     comment: t.comment,
+    magicNumber: t.magicNumber ?? 0,
   };
 }

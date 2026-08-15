@@ -21,7 +21,7 @@ export interface ProtoPosition {
   profit: number;
   commission: number;
   swap: number;
-  magic: number;
+  magicNumber: number;
   openTime: number;
   closeTime: number;
 }
@@ -85,7 +85,7 @@ function fromProtoOrders(orders: OrderRecord[]): ProtoPosition[] {
       profit: Number(o.profit),
       commission: Number(o.commission || 0),
       swap: Number(o.swap || 0),
-      magic: Number(o.magic || 0),
+      magicNumber: Number(o.magic || 0),
       openTime: toUnixSeconds(o.openTime),
       closeTime: toUnixSeconds(o.closeTime),
     };

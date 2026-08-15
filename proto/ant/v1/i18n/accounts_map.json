@@ -270,6 +270,7 @@
     "trade_tabs_sync_history": "tradeTabs.syncHistory",
     "trade_tabs_table_close_price": "tradeTabs.table.closePrice",
     "trade_tabs_table_close_time": "tradeTabs.table.closeTime",
+    "trade_tabs_table_magic": "tradeTabs.table.magic",
     "trade_tabs_table_current_price": "tradeTabs.table.currentPrice",
     "trade_tabs_table_open_price": "tradeTabs.table.openPrice",
     "trade_tabs_table_open_time": "tradeTabs.table.openTime",

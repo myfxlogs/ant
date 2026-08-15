@@ -114,6 +114,7 @@ message TradeRecord {
   string swap = 10;                 // monetary
   string commission = 11;           // monetary
   string comment = 12;
+  int32 magic_number = 13;
 }
 
 message GetRecentTradesRequest {

@@ -312,6 +312,7 @@ func tradeRecordToProto(r *model.TradeRecord) *antv1.TradeRecord {
 		Swap:       r.Swap.String(),
 		Commission: r.Commission.String(),
 		Comment:    r.OrderComment,
+		MagicNumber: int32(r.MagicNumber),
 	}
 }
 

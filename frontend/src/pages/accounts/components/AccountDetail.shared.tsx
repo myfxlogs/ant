@@ -72,6 +72,7 @@ export const PositionRow = memo(({ position }: { position: Position }) => {
       {(Number(position.profit) || 0) >= 0 ? '+' : ''}{(Number(position.profit) || 0).toFixed(2)}
     </td>
     <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(position.openTime)}</td>
+    <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{position.magicNumber ? position.magicNumber : '-'}</td>
     </tr>
   );
 });
@@ -108,6 +109,7 @@ export const PendingOrderRow = memo(({ order }: { order: Position }) => {
       />
     </td>
     <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(order.openTime)}</td>
+    <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{order.magicNumber ? order.magicNumber : '-'}</td>
     </tr>
   );
 });
@@ -149,6 +151,7 @@ export const HistoryTradeRow = memo(({ trade }: { trade: TradeRecordItem }) => {
       <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : formatPrice(closePrice, trade.symbol)}</td>
       <td className="text-right p-3 font-medium" style={{ color: (Number(trade.profit) || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{(Number(trade.profit) || 0) >= 0 ? '+' : ''}{(Number(trade.profit) || 0).toFixed(2)}</td>
       <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(closeTime)}</td>
+      <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{trade.magicNumber ? trade.magicNumber : '-'}</td>
     </tr>
   );
 });

@@ -292,6 +292,7 @@ type AccountsI18N struct {
 	TradeTabsSyncHistory                           string                 `protobuf:"bytes,266,opt,name=trade_tabs_sync_history,json=tradeTabsSyncHistory,proto3" json:"trade_tabs_sync_history,omitempty"`                                                                                    // Sync History
 	TradeTabsTableClosePrice                       string                 `protobuf:"bytes,267,opt,name=trade_tabs_table_close_price,json=tradeTabsTableClosePrice,proto3" json:"trade_tabs_table_close_price,omitempty"`                                                                      // Close price
 	TradeTabsTableCloseTime                        string                 `protobuf:"bytes,268,opt,name=trade_tabs_table_close_time,json=tradeTabsTableCloseTime,proto3" json:"trade_tabs_table_close_time,omitempty"`                                                                         // Close time
+	TradeTabsTableMagic                            string                 `protobuf:"bytes,281,opt,name=trade_tabs_table_magic,json=tradeTabsTableMagic,proto3" json:"trade_tabs_table_magic,omitempty"`                                                                                       // Magic
 	TradeTabsTableCurrentPrice                     string                 `protobuf:"bytes,269,opt,name=trade_tabs_table_current_price,json=tradeTabsTableCurrentPrice,proto3" json:"trade_tabs_table_current_price,omitempty"`                                                                // Current price
 	TradeTabsTableOpenPrice                        string                 `protobuf:"bytes,270,opt,name=trade_tabs_table_open_price,json=tradeTabsTableOpenPrice,proto3" json:"trade_tabs_table_open_price,omitempty"`                                                                         // Open price
 	TradeTabsTableOpenTime                         string                 `protobuf:"bytes,271,opt,name=trade_tabs_table_open_time,json=tradeTabsTableOpenTime,proto3" json:"trade_tabs_table_open_time,omitempty"`                                                                            // Open time
@@ -2220,6 +2221,13 @@ func (x *AccountsI18N) GetTradeTabsTableCloseTime() string {
 	return ""
 }
 
+func (x *AccountsI18N) GetTradeTabsTableMagic() string {
+	if x != nil {
+		return x.TradeTabsTableMagic
+	}
+	return ""
+}
+
 func (x *AccountsI18N) GetTradeTabsTableCurrentPrice() string {
 	if x != nil {
 		return x.TradeTabsTableCurrentPrice
@@ -2301,7 +2309,7 @@ var File_i18n_accounts_proto protoreflect.FileDescriptor
 
 const file_i18n_accounts_proto_rawDesc = "" +
 	"\n" +
-	"\x13i18n/accounts.proto\x12\vant.v1.i18n\"\xc0\x8a\x01\n" +
+	"\x13i18n/accounts.proto\x12\vant.v1.i18n\"\xf6\x8a\x01\n" +
 	"\fAccountsI18n\x12C\n" +
 	"\x1eanalytics_advanced_stats_title\x18\x01 \x01(\tR\x1banalyticsAdvancedStatsTitle\x12A\n" +
 	"\x1danalytics_advanced_tabs_daily\x18\x02 \x01(\tR\x1aanalyticsAdvancedTabsDaily\x12C\n" +
@@ -2575,7 +2583,8 @@ const file_i18n_accounts_proto_rawDesc = "" +
 	"\x1ftrade_tabs_positions_with_count\x18\x89\x02 \x01(\tR\x1btradeTabsPositionsWithCount\x126\n" +
 	"\x17trade_tabs_sync_history\x18\x8a\x02 \x01(\tR\x14tradeTabsSyncHistory\x12?\n" +
 	"\x1ctrade_tabs_table_close_price\x18\x8b\x02 \x01(\tR\x18tradeTabsTableClosePrice\x12=\n" +
-	"\x1btrade_tabs_table_close_time\x18\x8c\x02 \x01(\tR\x17tradeTabsTableCloseTime\x12C\n" +
+	"\x1btrade_tabs_table_close_time\x18\x8c\x02 \x01(\tR\x17tradeTabsTableCloseTime\x124\n" +
+	"\x16trade_tabs_table_magic\x18\x99\x02 \x01(\tR\x13tradeTabsTableMagic\x12C\n" +
 	"\x1etrade_tabs_table_current_price\x18\x8d\x02 \x01(\tR\x1atradeTabsTableCurrentPrice\x12=\n" +
 	"\x1btrade_tabs_table_open_price\x18\x8e\x02 \x01(\tR\x17tradeTabsTableOpenPrice\x12;\n" +
 	"\x1atrade_tabs_table_open_time\x18\x8f\x02 \x01(\tR\x16tradeTabsTableOpenTime\x129\n" +

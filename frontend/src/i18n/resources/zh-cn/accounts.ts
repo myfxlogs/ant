@@ -347,6 +347,7 @@ const Accounts = {
       "table": {
         "closePrice": "平仓价",
         "closeTime": "平仓时间",
+        "magic": "Magic",
         "currentPrice": "当前价",
         "openPrice": "开仓价",
         "openTime": "开仓时间",
