@@ -65,6 +65,7 @@ export function handleOrderUpdate(queryClient: QueryClient, order: OrderUpdate) 
           volume: pos.volume, openPrice: pos.openPrice, closePrice: pos.closePrice ?? 0,
           profit: pos.profit, openTime: pos.openTime, closeTime: pos.closeTime ?? '',
           swap: pos.swap, commission: pos.commission, comment: pos.comment,
+          magicNumber: 0,
         };
         if (!old) return { trades: [trade], total: 1 };
         const filtered = old.trades.filter((t) => t.ticket !== trade.ticket);
