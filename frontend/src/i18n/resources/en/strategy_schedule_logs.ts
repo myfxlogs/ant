@@ -4,6 +4,8 @@ const StrategyScheduleLogs = {
   "strategy": {
     "scheduleLogs": {
       "action": {
+        "cleanup": "Cleanup",
+        "register": "Register",
         "restart": "Restart",
         "start": "Start",
         "stop": "Stop"
@@ -13,7 +15,9 @@ const StrategyScheduleLogs = {
         "failed": "Failed",
         "pending": "Pending",
         "running": "Running",
-        "skipped": "Skipped"
+        "skipped": "Skipped",
+        "stopped": "Stopped",
+        "success": "Success"
       },
       "execTable": {
         "action": "Action",

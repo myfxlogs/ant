@@ -1,6 +1,8 @@
 {
   "prefix": "strategy.scheduleLogs",
   "fields": {
+    "action_cleanup": "action.cleanup",
+    "action_register": "action.register",
     "action_restart": "action.restart",
     "action_start": "action.start",
     "action_stop": "action.stop",
@@ -9,6 +11,8 @@
     "exec_status_pending": "execStatus.pending",
     "exec_status_running": "execStatus.running",
     "exec_status_skipped": "execStatus.skipped",
+    "exec_status_stopped": "execStatus.stopped",
+    "exec_status_success": "execStatus.success",
     "exec_table_action": "execTable.action",
     "exec_table_duration_ms": "execTable.durationMs",
     "exec_table_error": "execTable.error",

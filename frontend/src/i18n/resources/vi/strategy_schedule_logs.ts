@@ -4,6 +4,8 @@ const StrategyScheduleLogs = {
   "strategy": {
     "scheduleLogs": {
       "action": {
+        "cleanup": "Dọn dẹp",
+        "register": "Đăng ký",
         "restart": "Khởi Động Lại",
         "start": "Bắt Đầu",
         "stop": "Dừng"
@@ -13,7 +15,9 @@ const StrategyScheduleLogs = {
         "failed": "Thất Bại",
         "pending": "Chưa kiểm tra",
         "running": "Đang chạy",
-        "skipped": "Đã Bỏ Qua"
+        "skipped": "Đã Bỏ Qua",
+        "stopped": "Đã dừng",
+        "success": "Thành Công"
       },
       "execTable": {
         "action": "Hành động",

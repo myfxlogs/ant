@@ -3,7 +3,7 @@ import type { ColumnsType } from 'antd/es/table';
 import type { TFunction } from 'i18next';
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
-import { ACTION_RESTART_KEY, ACTION_START_KEY, ACTION_STOP_KEY, EXEC_TABLE_ACTION_KEY, EXEC_TABLE_DURATION_MS_KEY, EXEC_TABLE_ERROR_KEY, EXEC_TABLE_EXECUTE_KEY, EXEC_TABLE_STATUS_KEY, EXEC_TABLE_TIME_KEY, ORDERS_TABLE_CLOSE_PRICE_KEY, ORDERS_TABLE_LOTS_KEY, ORDERS_TABLE_OPEN_PRICE_KEY, ORDERS_TABLE_PROFIT_KEY, ORDERS_TABLE_SIDE_KEY, ORDERS_TABLE_SYMBOL_KEY, ORDERS_TABLE_TICKET_KEY, ORDERS_TABLE_TIME_KEY, ORDER_SIDE_BUY_KEY, ORDER_SIDE_CLOSE_KEY, ORDER_SIDE_SELL_KEY, STATUS_FAILED_KEY, STATUS_SUCCESS_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
+import { ACTION_CLEANUP_KEY, ACTION_REGISTER_KEY, ACTION_RESTART_KEY, ACTION_START_KEY, ACTION_STOP_KEY, EXEC_STATUS_FAILED_KEY, EXEC_STATUS_PENDING_KEY, EXEC_STATUS_RUNNING_KEY, EXEC_STATUS_STOPPED_KEY, EXEC_STATUS_SUCCESS_KEY, EXEC_TABLE_ACTION_KEY, EXEC_TABLE_DURATION_MS_KEY, EXEC_TABLE_ERROR_KEY, EXEC_TABLE_EXECUTE_KEY, EXEC_TABLE_STATUS_KEY, EXEC_TABLE_TIME_KEY, ORDERS_TABLE_CLOSE_PRICE_KEY, ORDERS_TABLE_LOTS_KEY, ORDERS_TABLE_OPEN_PRICE_KEY, ORDERS_TABLE_PROFIT_KEY, ORDERS_TABLE_SIDE_KEY, ORDERS_TABLE_SYMBOL_KEY, ORDERS_TABLE_TICKET_KEY, ORDERS_TABLE_TIME_KEY, ORDER_SIDE_BUY_KEY, ORDER_SIDE_CLOSE_KEY, ORDER_SIDE_SELL_KEY, STATUS_FAILED_KEY, STATUS_SUCCESS_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
 ;
 
 const { Text } = Typography;
@@ -28,12 +28,13 @@ export function formatLogTime(v: unknown) {
   return String(v);
 }
 
-export function renderExecStatus(v: unknown, _t: TFunction) {
+export function renderExecStatus(v: unknown, t: TFunction) {
   const s = String(v || '').toLowerCase();
-  if (s === 'success' || s === 'completed' || s === 'succeeded') return <Tag color="green">{s.toUpperCase()}</Tag>;
-  if (s === 'failed' || s === 'error') return <Tag color="red">{s.toUpperCase()}</Tag>;
-  if (s === 'running') return <Tag color="blue">{s.toUpperCase()}</Tag>;
-  if (s === 'pending' || s === 'queued') return <Tag color="orange">{s.toUpperCase()}</Tag>;
+  if (s === 'success' || s === 'completed' || s === 'succeeded') return <Tag color="green">{t(EXEC_STATUS_SUCCESS_KEY)}</Tag>;
+  if (s === 'failed' || s === 'error') return <Tag color="red">{t(EXEC_STATUS_FAILED_KEY)}</Tag>;
+  if (s === 'running') return <Tag color="blue">{t(EXEC_STATUS_RUNNING_KEY)}</Tag>;
+  if (s === 'pending' || s === 'queued') return <Tag color="orange">{t(EXEC_STATUS_PENDING_KEY)}</Tag>;
+  if (s === 'stopped') return <Tag>{t(EXEC_STATUS_STOPPED_KEY)}</Tag>;
   return <Text>{s || '-'}</Text>;
 }
 
@@ -46,8 +47,8 @@ export function renderMs(v: unknown) {
 
 export function renderOperationAction(v: unknown, t: TFunction) {
   const s = String(v || '').toLowerCase();
-  const map: Record<string, string> = { start: t(ACTION_START_KEY), stop: t(ACTION_STOP_KEY), restart: t(ACTION_RESTART_KEY) };
-  return <Text>{map[s] || s.toUpperCase()}</Text>;
+  const map: Record<string, string> = { start: t(ACTION_START_KEY), stop: t(ACTION_STOP_KEY), restart: t(ACTION_RESTART_KEY), register: t(ACTION_REGISTER_KEY), cleanup: t(ACTION_CLEANUP_KEY) };
+  return <Text>{map[s] || s}</Text>;
 }
 
 export function renderOperationStatus(v: unknown, t: TFunction) {
@@ -72,6 +73,8 @@ export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<Schedu
       if (String(row?.kind || '').toLowerCase() === 'operation') return renderOperationAction(row?.action, t);
       const st = String(row?.signalType || row?.action || '').toLowerCase();
       if (st === 'close') return <Text>{t(ORDER_SIDE_CLOSE_KEY)}</Text>;
+      if (st === 'register') return <Text>{t(ACTION_REGISTER_KEY)}</Text>;
+      if (st === 'cleanup') return <Text>{t(ACTION_CLEANUP_KEY)}</Text>;
       return <Text>{String(row?.signalType || row?.action || t(EXEC_TABLE_EXECUTE_KEY))}</Text>;
     }},
     { title: t(EXEC_TABLE_STATUS_KEY), dataIndex: 'status', key: 'status', width: 120, render: (_: unknown, row: ScheduleRunLog) => {

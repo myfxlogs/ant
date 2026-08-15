@@ -4,6 +4,8 @@ const StrategyScheduleLogs = {
   "strategy": {
     "scheduleLogs": {
       "action": {
+        "cleanup": "清理",
+        "register": "注册",
         "restart": "重启",
         "start": "启动",
         "stop": "停止"
@@ -13,7 +15,9 @@ const StrategyScheduleLogs = {
         "failed": "失败",
         "pending": "待检测",
         "running": "运行中",
-        "skipped": "已跳过"
+        "skipped": "已跳过",
+        "stopped": "已停止",
+        "success": "成功"
       },
       "execTable": {
         "action": "操作",
