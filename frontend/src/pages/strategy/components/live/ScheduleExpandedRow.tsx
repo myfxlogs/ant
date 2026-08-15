@@ -121,6 +121,25 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
     if (fail > 0) message.error(`${fail} position(s) failed to close`);
   }, [row.accountId, positions, fetchPositions, t]);
 
+  // Column widths as percentages of the table width (sum = 100%). With
+  // table-layout:fixed, percentage widths render EXACTLY (no proportional
+  // stretching of px widths into leftover space). The tab bar uses the same
+  // percentages (see the inline <style> below), so tab N's left edge locks to
+  // column N's left edge at ANY container width — the tab row reads as the
+  // table's header row. Derived from the previous nominal px widths (/820).
+  const COL_PCT = [
+    '9.7561%', // 1 symbol    ↔ 持仓 tab
+    '7.3171%', // 2 type      ↔ 信号 tab
+    '8.5366%', // 3 volume    ↔ 日志 tab
+    '10.9756%', // 4 openPrice ↔ 配置 tab
+    '10.9756%', // 5 currentPrice
+    '9.7561%', // 6 pnl
+    '9.7561%', // 7 sl
+    '9.7561%', // 8 tp
+    '8.5366%', // 9 magic
+    '14.6341%', // 10 close (actions, right-aligned)
+  ];
+
   const livePrice = liveBid || liveAsk || '';
   const positionsWithLive = positions.map(p => {
     if (!livePrice) return p;
@@ -137,19 +156,19 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   });
 
   const positionColumns = [
-    { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: 80, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
-    { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: 60, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }), render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
-    { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: 70, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
-    { title: t('common.openPrice', { defaultValue: 'Open Price' }), dataIndex: 'openPrice', width: 90, onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
-    { title: t('common.currentPrice', { defaultValue: 'Current' }), dataIndex: 'currentPrice', width: 90 },
-    { title: t('strategy.live.pnl', { defaultValue: 'PnL' }), dataIndex: 'profit', width: 80, render: (v: string) => {
+    { title: t('strategy.live.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', width: COL_PCT[0], onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
+    { title: t('strategy.live.signalType', { defaultValue: 'Type' }), dataIndex: 'type', width: COL_PCT[1], onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }), render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v}</Tag> },
+    { title: t('strategy.live.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', width: COL_PCT[2], onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
+    { title: t('common.openPrice', { defaultValue: 'Open Price' }), dataIndex: 'openPrice', width: COL_PCT[3], onHeaderCell: () => ({ style: { paddingLeft: 0 } }), onCell: () => ({ style: { paddingLeft: 0 } }) },
+    { title: t('common.currentPrice', { defaultValue: 'Current' }), dataIndex: 'currentPrice', width: COL_PCT[4] },
+    { title: t('strategy.live.pnl', { defaultValue: 'PnL' }), dataIndex: 'profit', width: COL_PCT[5], render: (v: string) => {
       if (!v) return <Text type="secondary">-</Text>;
       const n = Number(v); const color = n >= 0 ? 'success' : 'danger';
       return <Text type={color}>{n >= 0 ? `+${v}` : v}</Text>;
     } },
-    { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: 80, render: (v: string) => v || '-' },
-    { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: 80, render: (v: string) => v || '-' },
-    { title: 'Magic', dataIndex: 'magicNumber', width: 70, render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
+    { title: t('strategy.live.sl', { defaultValue: 'SL' }), dataIndex: 'stopLoss', width: COL_PCT[6], render: (v: string) => v || '-' },
+    { title: t('strategy.live.tp', { defaultValue: 'TP' }), dataIndex: 'takeProfit', width: COL_PCT[7], render: (v: string) => v || '-' },
+    { title: 'Magic', dataIndex: 'magicNumber', width: COL_PCT[8], render: (v: bigint) => { const n = Number(v); return n ? <Text style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }} type="secondary">{n}</Text> : <Text type="secondary">-</Text>; } },
     { title: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>{positionsWithLive.length > 0 && (
       <Popconfirm title={t('strategy.live.confirmCloseAll', { defaultValue: 'Close all positions?' })}
         onConfirm={handleCloseAll}>
@@ -158,7 +177,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
           {t('strategy.live.closeAll', { defaultValue: 'Close All' })}
         </Button>
       </Popconfirm>
-    )}</span>, key: 'close', width: 120, align: 'right' as const, render: (_: unknown, r: MtPositionSnapshotItem) => (
+    )}</span>, key: 'close', width: COL_PCT[9], align: 'right' as const, render: (_: unknown, r: MtPositionSnapshotItem) => (
       <Popconfirm title={t('strategy.live.confirmClose', { defaultValue: 'Close this position?' })}
         onConfirm={() => handleClosePosition(r.ticket, r.volume)}>
         <Button size="small" type="text" danger icon={<CloseCircleOutlined />}
@@ -184,9 +203,16 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
 
   return (
     <div className="live-expanded-align" style={{ marginLeft: LIVE_EXPAND_COL_WIDTH }}>
+    {/* Tab N's width = column N's width (same percentage array as positionColumns) →
+        the tab row reads as the table's header row. Generated inline from COL_PCT
+        so the two sides can never drift apart. */}
+    <style>{`
+      .live-expanded-align .ant-tabs-nav-list { width: 100%; }
+      ${COL_PCT.slice(0, 4).map((w, i) => `.live-expanded-align .ant-tabs-tab:nth-child(${i + 1}) { width: ${w}; justify-content: flex-start; }`).join('\n')}
+    `}</style>
     <Tabs
       size="small"
-      tabBarGutter={24}
+      tabBarGutter={0}
       tabBarStyle={{ marginBottom: 0 }}
       items={[
         {

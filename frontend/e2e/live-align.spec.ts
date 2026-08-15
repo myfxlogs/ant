@@ -55,6 +55,22 @@ test('positions table Symbol column aligns with Positions tab label', async ({ p
   expect(Math.abs(headerX - strategyX)).toBeLessThan(3);
   expect(Math.abs(headerX - tabX)).toBeLessThan(3);
 
+  // Grid alignment: tab N ≡ inner table column N (positions/signal/logs/config
+  // line up with symbol/type/volume/openPrice). Columns 1-4 have paddingLeft 0,
+  // so th box x == text x.
+  const grid = await page.evaluate(() => {
+    const scope = document.querySelector('.ant-table-expanded-row') || document;
+    const tab = (n: number) => (scope.querySelector(`.ant-tabs-tab:nth-child(${n}) .ant-tabs-tab-btn`) as HTMLElement | null)?.getBoundingClientRect().x;
+    const th = (n: number) => (scope.querySelector(`.ant-tabs-content-active .ant-table-thead th:nth-child(${n})`) as HTMLElement | null)?.getBoundingClientRect().x;
+    return [1, 2, 3, 4].map((n) => ({ n, tab: tab(n), th: th(n) }));
+  });
+  for (const g of grid) {
+    expect(g.tab).toBeDefined();
+    expect(g.th).toBeDefined();
+    console.log(`grid col ${g.n}: tab x=${g.tab}, header x=${g.th}, diff=${Math.abs(g.tab! - g.th!)}`);
+    expect(Math.abs(g.tab! - g.th!)).toBeLessThan(3);
+  }
+
   // Take screenshot for visual verification
   await page.screenshot({ path: 'e2e/screenshots/live-positions-align.png', fullPage: false });
 });
