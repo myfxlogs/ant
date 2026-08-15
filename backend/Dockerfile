@@ -1,6 +1,6 @@
 # M6-1: multi-stage build — compile in builder, run in scratch/distroless
 ARG ALPINE_MIRROR=
-FROM golang:1.26.2-alpine AS builder
+FROM golang:1.26.6-alpine AS builder
 ARG ALPINE_MIRROR
 
 WORKDIR /app
@@ -30,7 +30,7 @@ COPY . .
 ENV CGO_ENABLED=1
 RUN go build -ldflags="-w -s" -o /app/alphaforge ./cmd/server
 
-FROM golang:1.26.2-alpine
+FROM golang:1.26.6-alpine
 ARG ALPINE_MIRROR
 
 WORKDIR /app
