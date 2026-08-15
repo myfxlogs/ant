@@ -17,8 +17,11 @@ import (
 
 // PgWriterConfig controls batch sizes and queue capacity.
 type PgWriterConfig struct {
-	MaxBatchSize int // default 2000
-	QueueSize    int // default 10000
+	MaxBatchSize int           // default 2000
+	QueueSize    int           // default 10000
+	FlushEvery   time.Duration // default 30s; time-based flush so low bar rates
+	// (on-demand subscriptions produce ~1 bar/min) still land in PG promptly.
+	// Without it a 2000-bar batch at 1 bar/min takes ~33h to reach PG.
 }
 
 // DefaultPgWriterConfig returns production-tuned defaults.
@@ -26,6 +29,7 @@ func DefaultPgWriterConfig() PgWriterConfig {
 	return PgWriterConfig{
 		MaxBatchSize: 2000,
 		QueueSize:    10000,
+		FlushEvery:   30 * time.Second,
 	}
 }
 
@@ -71,9 +75,17 @@ func (w *PgWriter) EnqueueBar(b *mdtick.Bar) {
 }
 
 // Start begins the flush loop. Blocks until ctx.Done.
-// Flush is event-driven: when a batch reaches MaxBatchSize, or on shutdown.
+// Flush triggers: batch reaches MaxBatchSize, FlushEvery elapses (partial
+// batch), or shutdown. The time trigger keeps PG fresh under low bar rates
+// (on-demand subscriptions) where a full 2000-bar batch may take a day.
 func (w *PgWriter) Start(ctx context.Context) {
 	var barBatch []*mdtick.Bar
+	flushEvery := w.cfg.FlushEvery
+	if flushEvery <= 0 {
+		flushEvery = 30 * time.Second
+	}
+	ticker := time.NewTicker(flushEvery)
+	defer ticker.Stop()
 
 	for {
 		select {
@@ -83,6 +95,11 @@ func (w *PgWriter) Start(ctx context.Context) {
 		case b := <-w.barQ:
 			barBatch = append(barBatch, b)
 			if len(barBatch) >= w.cfg.MaxBatchSize {
+				w.flushBars(ctx, barBatch)
+				barBatch = barBatch[:0]
+			}
+		case <-ticker.C:
+			if len(barBatch) > 0 {
 				w.flushBars(ctx, barBatch)
 				barBatch = barBatch[:0]
 			}
