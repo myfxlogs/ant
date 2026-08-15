@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Form, Input, Select, Spin, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { ScheduleRow, AccountRow } from '../../hooks/libraryTypes';
-import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
-import { codeAssistApi } from '@/client/codeAssist';
+import { strategyScheduleV2Api } from '@/client/strategy-schedules';
 import StrategyParamsSection from '../workspace/StrategyParamsSection';
+import { useStrategyParams } from './useStrategyParams';
 
 interface Props {
   open: boolean;
@@ -14,40 +14,19 @@ interface Props {
   onUpdated: () => void;
 }
 
-interface ExtractedParam {
-  name: string;
-  type: string;
-  default: string;
-  label: string;
-}
-
 export default function EditParamsModal({ open, schedule, accounts, onClose, onUpdated }: Props) {
   const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [extractedParams, setExtractedParams] = useState<ExtractedParam[]>([]);
-  const [strategyParamValues, setStrategyParamValues] = useState<Record<string, string>>({});
-  const [paramsLoading, setParamsLoading] = useState(false);
 
-  const loadStrategyParams = useCallback(async (templateId: string) => {
-    if (!templateId) return;
-    setParamsLoading(true);
-    try {
-      const tpl = await strategyTemplateApi.get(templateId);
-      const code = String(tpl?.code || '');
-      if (!code) { setParamsLoading(false); return; }
-      const result = await codeAssistApi.validateExtended(code);
-      if (result.valid && result.parameterEntries) {
-        setExtractedParams(result.parameterEntries.map(e => ({
-          name: e.name, type: e.type, default: e.default, label: e.label || '',
-        })));
-      }
-    } catch { /* template not found or validation failed */ }
-    setParamsLoading(false);
-  }, []);
+  const { extractedParams, strategyParamValues, setStrategyParamValues, paramsLoading } =
+    useStrategyParams({
+      open,
+      templateId: schedule?.templateId,
+      initialValues: schedule?.parameters,
+    });
 
-  // E1: Load effect — only fires when modal opens or schedule changes (by id).
-  // Uses schedule?.id as dep to avoid object-reference retrigger (row data updates every tick).
+  // Load form fields when modal opens or schedule changes (by id).
   useEffect(() => {
     if (open && schedule) {
       form.setFieldsValue({
@@ -56,37 +35,9 @@ export default function EditParamsModal({ open, schedule, accounts, onClose, onU
         timeframe: schedule.timeframe,
         accountId: schedule.accountId,
       });
-      // Seed strategy param values from schedule's stored parameters.
-      const params = schedule.parameters || {};
-      const vals: Record<string, string> = {};
-      for (const [k, v] of Object.entries(params)) {
-        if (!k.startsWith('__risk.') && !k.startsWith('__schedule.')) vals[k] = String(v);
-      }
-      setStrategyParamValues(vals);
-      if (schedule.templateId) void loadStrategyParams(schedule.templateId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, schedule?.id, form, loadStrategyParams]);
-
-  // E1: Merge effect — when extracted params arrive, fill in defaults for keys
-  // the user hasn't set yet. Uses functional update to preserve user edits.
-  useEffect(() => {
-    if (extractedParams.length === 0) return;
-    setStrategyParamValues(prev => {
-      const next = { ...prev };
-      for (const p of extractedParams) {
-        if (!(p.name in next)) next[p.name] = p.default;
-      }
-      return next;
-    });
-  }, [extractedParams]);
-
-  useEffect(() => {
-    if (!open) {
-      setExtractedParams([]);
-      setStrategyParamValues({});
-    }
-  }, [open]);
+  }, [open, schedule?.id, form]);
 
   const handleOk = async () => {
     if (!schedule) return;

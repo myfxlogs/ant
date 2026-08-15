@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Modal, Form, Input, Select, InputNumber, message, Button, Typography } from 'antd';
+import { Modal, Form, Input, Select, InputNumber, Spin, message, Button, Typography } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,8 @@ import { trackFunnelEvent, FunnelEvents } from '@/utils/analytics';
 import type { ScheduleConfig } from '@/gen/ant/v1/strategy_schedule_entity_pb';
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import { TIMEFRAMES } from '@/constants/timeframes';
+import StrategyParamsSection from './workspace/StrategyParamsSection';
+import { useStrategyParams } from './live/useStrategyParams';
 import {
   SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_KEY,
   SCHEDULE_LAUNCH_FORM_SCHEDULE_NAME_PLACEHOLDER_KEY,
@@ -37,7 +39,7 @@ interface Props {
 }
 
 export default function DeployScheduleModal({ open, templateId, templateName, onClose, onCreated }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,11 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
   const activeAccounts = useMemo(() => (accounts || []).filter(a => !a.isDisabled), [accounts]);
   const scheduleType = Form.useWatch('scheduleType', form);
   const accountIdWatch = Form.useWatch('accountId', form);
+
+  // D1: REUSE useStrategyParams hook (shared with EditParamsModal).
+  // Deploy scenario: no initialValues → all defaults (MT4 semantics).
+  const { extractedParams, strategyParamValues, setStrategyParamValues, paramsLoading } =
+    useStrategyParams({ open, templateId });
 
   useEffect(() => { if (open) fetchAccounts(); }, [open, fetchAccounts]);
 
@@ -82,6 +89,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
         name: v.name,
         symbol: v.symbol,
         timeframe: v.timeframe,
+        parameters: strategyParamValues,
         scheduleType: backendType,
         scheduleConfig,
       });
@@ -109,6 +117,7 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
       onCancel={onClose}
       confirmLoading={loading}
       okText={t(SCHEDULE_LAUNCH_ACTIONS_CREATE_KEY)}
+      width={560}
       destroyOnClose
     >
       <Form form={form} layout="vertical">
@@ -160,6 +169,23 @@ export default function DeployScheduleModal({ open, templateId, templateName, on
             <InputNumber min={100} step={100} style={{ width: '100%' }} addonAfter="ms" />
           </Form.Item>
         )}
+
+        <Spin spinning={paramsLoading}>
+          {extractedParams.length > 0 ? (
+            <StrategyParamsSection
+              extractedParams={extractedParams}
+              strategyParamValues={strategyParamValues}
+              onChange={(name, value) => setStrategyParamValues(prev => ({ ...prev, [name]: value }))}
+              language={i18n.language}
+            />
+          ) : !paramsLoading ? (
+            <div style={{ borderTop: '1px solid var(--ant-color-border)', marginTop: 12, paddingTop: 12 }}>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {t('strategy.live.noParams', { defaultValue: 'This strategy has no input parameters.' })}
+              </Typography.Text>
+            </div>
+          ) : null}
+        </Spin>
       </Form>
     </Modal>
   );

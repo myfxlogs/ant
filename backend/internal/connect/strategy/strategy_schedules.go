@@ -85,6 +85,13 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 		}
 	}
 
+	// D2: Validate parameters against template schema (REUSE validateScheduleParams — same as Update).
+	if m.Parameters != nil && templateID != uuid.Nil {
+		if err := s.validateScheduleParams(ctx, templateID, m.Parameters); err != nil {
+			return nil, err
+		}
+	}
+
 	r := service.ScheduleRow{
 		UserID:         uid,
 		TemplateID:     templateID,
@@ -366,7 +373,7 @@ func (s *StrategyServer) validateScheduleParams(ctx context.Context, templateID 
 	tpl, err := s.svc.GetTemplate(ctx, templateID, s.userID(ctx))
 	if err != nil {
 		if s.log != nil {
-			s.log.Warn("UpdateSchedule: template not found, skipping param validation",
+			s.log.Warn("validateScheduleParams: template not found, skipping param validation",
 				zap.String("templateId", templateID.String()))
 		}
 		return nil
@@ -375,10 +382,30 @@ func (s *StrategyServer) validateScheduleParams(ctx context.Context, templateID 
 	if len(declared) == 0 {
 		return nil
 	}
+	cleaned, err := validateParamsAgainstSchema(declared, params)
+	if err != nil {
+		return err
+	}
+	// Replace params with cleaned copy (legacy dead keys stripped).
+	for k := range params {
+		delete(params, k)
+	}
+	for k, v := range cleaned {
+		params[k] = v
+	}
+	return nil
+}
+
+// validateParamsAgainstSchema is a pure function that validates params against
+// declared parameter entries. Returns a cleaned copy with legacy dead keys
+// stripped (does NOT mutate the input map). Returns error for unknown keys
+// or type mismatches.
+func validateParamsAgainstSchema(declared []*antv1.ParameterEntry, params map[string]string) (map[string]string, error) {
 	declaredMap := make(map[string]string, len(declared))
 	for _, e := range declared {
 		declaredMap[e.Name] = e.Type
 	}
+	cleaned := make(map[string]string, len(params))
 	var unknown []string
 	for key, val := range params {
 		if legacyDeadKeys[key] || strings.HasPrefix(key, "__schedule.") {
@@ -390,21 +417,16 @@ func (s *StrategyServer) validateScheduleParams(ctx context.Context, templateID 
 			continue
 		}
 		if err := validateParamType(typ, val); err != nil {
-			return connect.NewError(connect.CodeInvalidArgument,
+			return nil, connect.NewError(connect.CodeInvalidArgument,
 				fmt.Errorf("parameter %q: %w", key, err))
 		}
+		cleaned[key] = val
 	}
 	if len(unknown) > 0 {
-		return connect.NewError(connect.CodeInvalidArgument,
+		return nil, connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("unknown parameter(s): %s", strings.Join(unknown, ", ")))
 	}
-	// Strip legacy dead keys so they don't persist.
-	for key := range params {
-		if legacyDeadKeys[key] {
-			delete(params, key)
-		}
-	}
-	return nil
+	return cleaned, nil
 }
 
 func validateParamType(typ, val string) error {
