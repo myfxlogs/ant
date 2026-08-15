@@ -257,6 +257,16 @@ body {
   margin-inline-start: 0 !important;
 }
 
+/* 层级字号：tab 行是上级（600 字重），内层表头是下级（12px/400）——
+   修正此前表头(600)反而压过 tab(400) 的倒挂。只作用于展开区。 */
+.live-expanded-align .ant-tabs-tab-btn {
+  font-weight: 600;
+}
+.live-expanded-align .ant-table-thead th {
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select-selector,
