@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/connect/ai"
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/service"
 )
@@ -116,16 +118,50 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	// E3: Validate parameters against template schema before saving.
+	if m.Parameters != nil && existing.TemplateID != uuid.Nil {
+		if err := s.validateScheduleParams(ctx, existing.TemplateID, m.Parameters); err != nil {
+			return nil, err
+		}
+	}
+
+	substantiveChanged, err := s.applyScheduleUpdates(ctx, id, m, existing)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// E2: Auto-restart running session if substantive fields changed.
+	// Pattern copied from ToggleSchedule — StopSchedule + StartSchedule.
+	s.maybeRestartSchedule(ctx, id, substantiveChanged)
+	s.notifyScheduleChange(ctx)
+	return connect.NewResponse(s.scheduleRowToProto(existing)), nil
+}
+
+// applyScheduleUpdates mutates existing with all fields from the request.
+// Returns true if a substantive field (Symbol/Timeframe/Parameters/AccountID) changed.
+func (s *StrategyServer) applyScheduleUpdates(ctx context.Context, id uuid.UUID, m *antv1.UpdateScheduleRequest, existing *service.ScheduleRow) (bool, error) {
+	substantiveChanged := false
 	if m.Name != nil {
 		existing.Name = *m.Name
 	}
 	if m.Symbol != nil {
+		if existing.Symbol != *m.Symbol {
+			substantiveChanged = true
+		}
 		existing.Symbol = *m.Symbol
 	}
 	if m.Timeframe != nil {
+		if existing.Timeframe != *m.Timeframe {
+			substantiveChanged = true
+		}
 		existing.Timeframe = *m.Timeframe
 	}
 	if m.Parameters != nil {
+		substantiveChanged = true
 		existing.Parameters = scheduleParamsToProto(m.Parameters)
 	}
 	if m.ScheduleType != nil {
@@ -135,22 +171,35 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		if b, err := proto.Marshal(m.ScheduleConfig); err == nil {
 			existing.ScheduleConfig = b
 		} else {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
+			return false, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
 		}
 	}
 	if m.AccountId != nil && *m.AccountId != existing.AccountID.String() {
+		substantiveChanged = true
 		if err := s.applyAccountSwitch(ctx, id, *m.AccountId, existing); err != nil {
-			return nil, err
+			return false, err
 		}
 	}
-	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	return substantiveChanged, nil
+}
+
+// maybeRestartSchedule stops and restarts a running session if substantive fields changed.
+// Falls back to Notify for non-substantive changes or non-running schedules.
+func (s *StrategyServer) maybeRestartSchedule(ctx context.Context, id uuid.UUID, substantiveChanged bool) {
+	if s.engine == nil {
+		return
 	}
-	if s.engine != nil {
+	if substantiveChanged && s.engine.isRunning(id) {
+		s.engine.StopSchedule(id)
+		if err := s.engine.StartSchedule(ctx, id); err != nil {
+			if s.log != nil {
+				s.log.Warn("UpdateSchedule: restart failed (params persisted, next start will pick up)",
+					zap.String("scheduleId", id.String()), zap.Error(err))
+			}
+		}
+	} else {
 		s.engine.Notify()
 	}
-	s.notifyScheduleChange(ctx)
-	return connect.NewResponse(s.scheduleRowToProto(existing)), nil
 }
 
 func (s *StrategyServer) applyAccountSwitch(ctx context.Context, id uuid.UUID, accountIDStr string, existing *service.ScheduleRow) error {
@@ -295,4 +344,85 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 			return err
 		}
 	}
+}
+
+// legacyDeadKeys are the 5 historical risk-parameter keys with zero consumers.
+// They are silently stripped (not rejected) for backward compatibility.
+var legacyDeadKeys = map[string]bool{
+	"__risk.default_volume":           true,
+	"__risk.max_positions":            true,
+	"__risk.stop_loss_price_offset":   true,
+	"__risk.take_profit_price_offset": true,
+	"__risk.max_drawdown_pct":         true,
+}
+
+// validateScheduleParams validates incoming parameters against the template's
+// declared input schema. REUSE: ai.ExtractParams (no regex duplication).
+// - Unknown keys → 400 with key name in error message
+// - Type mismatch (e.g. "abc" for int) → 400
+// - Legacy dead keys → silently stripped (not rejected, not persisted)
+// - Template not found → skip validation (degrade to allow, log.Warn)
+func (s *StrategyServer) validateScheduleParams(ctx context.Context, templateID uuid.UUID, params map[string]string) error {
+	tpl, err := s.svc.GetTemplate(ctx, templateID, s.userID(ctx))
+	if err != nil {
+		if s.log != nil {
+			s.log.Warn("UpdateSchedule: template not found, skipping param validation",
+				zap.String("templateId", templateID.String()))
+		}
+		return nil
+	}
+	declared := ai.ExtractParams(tpl.Code)
+	if len(declared) == 0 {
+		return nil
+	}
+	declaredMap := make(map[string]string, len(declared))
+	for _, e := range declared {
+		declaredMap[e.Name] = e.Type
+	}
+	var unknown []string
+	for key, val := range params {
+		if legacyDeadKeys[key] || strings.HasPrefix(key, "__schedule.") {
+			continue
+		}
+		typ, ok := declaredMap[key]
+		if !ok {
+			unknown = append(unknown, key)
+			continue
+		}
+		if err := validateParamType(typ, val); err != nil {
+			return connect.NewError(connect.CodeInvalidArgument,
+				fmt.Errorf("parameter %q: %w", key, err))
+		}
+	}
+	if len(unknown) > 0 {
+		return connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("unknown parameter(s): %s", strings.Join(unknown, ", ")))
+	}
+	// Strip legacy dead keys so they don't persist.
+	for key := range params {
+		if legacyDeadKeys[key] {
+			delete(params, key)
+		}
+	}
+	return nil
+}
+
+func validateParamType(typ, val string) error {
+	switch typ {
+	case "int":
+		if _, err := strconv.ParseInt(val, 10, 64); err != nil {
+			return fmt.Errorf("expected integer, got %q", val)
+		}
+	case "float":
+		if _, err := strconv.ParseFloat(val, 64); err != nil {
+			return fmt.Errorf("expected number, got %q", val)
+		}
+	case "bool":
+		if val != "true" && val != "false" {
+			return fmt.Errorf("expected true/false, got %q", val)
+		}
+	case "str":
+		// any string is valid
+	}
+	return nil
 }

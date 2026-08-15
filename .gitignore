@@ -84,3 +84,5 @@ bin/
 e2e/shots/*
 backend/test_email.go
 .venv/
+# frontend vitest suite lives here (tracked) — un-ignore despite blanket test/
+!frontend/src/test/

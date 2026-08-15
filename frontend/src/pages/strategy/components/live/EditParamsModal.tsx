@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Modal, Form, Input, Select, InputNumber, Spin, message } from 'antd';
+import { Modal, Form, Input, Select, Spin, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import type { ScheduleRow, AccountRow } from '../../hooks/libraryTypes';
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
 import { codeAssistApi } from '@/client/codeAssist';
-import { parseParametersToForm, buildParametersFromForm, type CommonFields } from '../../StrategyScheduleParams';
 import StrategyParamsSection from '../workspace/StrategyParamsSection';
 
 interface Props {
@@ -47,29 +46,40 @@ export default function EditParamsModal({ open, schedule, accounts, onClose, onU
     setParamsLoading(false);
   }, []);
 
+  // E1: Load effect — only fires when modal opens or schedule changes (by id).
+  // Uses schedule?.id as dep to avoid object-reference retrigger (row data updates every tick).
   useEffect(() => {
     if (open && schedule) {
-      const parsed = parseParametersToForm(schedule.parameters || {});
       form.setFieldsValue({
         name: schedule.name,
         symbol: schedule.symbol,
         timeframe: schedule.timeframe,
         accountId: schedule.accountId,
-        defaultVolume: parsed.defaultVolume,
-        maxPositions: parsed.maxPositions,
-        stopLossPriceOffset: parsed.stopLossPriceOffset,
-        takeProfitPriceOffset: parsed.takeProfitPriceOffset,
-        maxDrawdownPct: parsed.maxDrawdownPct,
       });
-      const vals: Record<string, string> = {};
+      // Seed strategy param values from schedule's stored parameters.
       const params = schedule.parameters || {};
-      for (const p of extractedParams) {
-        vals[p.name] = params[p.name] ?? p.default;
+      const vals: Record<string, string> = {};
+      for (const [k, v] of Object.entries(params)) {
+        if (!k.startsWith('__risk.') && !k.startsWith('__schedule.')) vals[k] = String(v);
       }
       setStrategyParamValues(vals);
       if (schedule.templateId) void loadStrategyParams(schedule.templateId);
     }
-  }, [open, schedule, form, extractedParams, loadStrategyParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, schedule?.id, form, loadStrategyParams]);
+
+  // E1: Merge effect — when extracted params arrive, fill in defaults for keys
+  // the user hasn't set yet. Uses functional update to preserve user edits.
+  useEffect(() => {
+    if (extractedParams.length === 0) return;
+    setStrategyParamValues(prev => {
+      const next = { ...prev };
+      for (const p of extractedParams) {
+        if (!(p.name in next)) next[p.name] = p.default;
+      }
+      return next;
+    });
+  }, [extractedParams]);
 
   useEffect(() => {
     if (!open) {
@@ -83,24 +93,20 @@ export default function EditParamsModal({ open, schedule, accounts, onClose, onU
     const v = await form.validateFields();
     setLoading(true);
     try {
-      const formFields: CommonFields = {
-        defaultVolume: v.defaultVolume,
-        maxPositions: v.maxPositions,
-        stopLossPriceOffset: v.stopLossPriceOffset,
-        takeProfitPriceOffset: v.takeProfitPriceOffset,
-        maxDrawdownPct: v.maxDrawdownPct,
-      };
-      const riskParams = buildParametersFromForm(formFields);
-      const merged = { ...strategyParamValues, ...riskParams };
       await strategyScheduleV2Api.update({
         id: schedule.id,
         name: v.name,
         symbol: v.symbol,
         timeframe: v.timeframe,
         accountId: v.accountId,
-        parameters: merged,
+        parameters: strategyParamValues,
       });
-      message.success(t('common.updated', { defaultValue: 'Updated' }));
+      // E2: If schedule was running, backend auto-restarts with new params.
+      if (schedule.isRunning) {
+        message.success(t('strategy.live.savedAndRestarted', { defaultValue: 'Saved — strategy restarted with new parameters' }));
+      } else {
+        message.success(t('common.updated', { defaultValue: 'Updated' }));
+      }
       onUpdated();
       onClose();
     } catch (e: unknown) {
@@ -141,27 +147,6 @@ export default function EditParamsModal({ open, schedule, accounts, onClose, onU
         <Form.Item name="accountId" label={t('strategy.live.account', { defaultValue: 'Account' })}>
           <Select options={accounts.map(a => ({ value: a.id, label: a.login ? `${a.login}${a.brokerCompany ? ' - ' + a.brokerCompany : ''}` : a.id }))} />
         </Form.Item>
-
-        <div style={{ borderTop: '1px solid var(--ant-color-border)', marginTop: 12, paddingTop: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#595959', marginBottom: 8 }}>
-            {t('strategy.live.riskParams', { defaultValue: 'Risk Parameters' })}
-          </div>
-          <Form.Item name="defaultVolume" label={t('strategy.live.defaultVolume', { defaultValue: 'Default Volume' })}>
-            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="maxPositions" label={t('strategy.live.maxPositions', { defaultValue: 'Max Positions' })}>
-            <InputNumber min={0} step={1} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="stopLossPriceOffset" label={t('strategy.live.stopLossOffset', { defaultValue: 'Stop Loss Offset' })}>
-            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="takeProfitPriceOffset" label={t('strategy.live.takeProfitOffset', { defaultValue: 'Take Profit Offset' })}>
-            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="maxDrawdownPct" label={t('strategy.live.maxDrawdown', { defaultValue: 'Max Drawdown %' })}>
-            <InputNumber min={0} max={1} step={0.01} style={{ width: '100%' }} />
-          </Form.Item>
-        </div>
 
         <Spin spinning={paramsLoading}>
           <StrategyParamsSection

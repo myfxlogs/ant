@@ -70,7 +70,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	errors = append(errors, missingSigs...)
 	warnings = append(warnings, structWarns...)
 
-	parameterEntries := extractParams(code)
+	parameterEntries := ExtractParams(code)
 
 	valid := len(errors) == 0
 
@@ -271,8 +271,8 @@ var paramType = map[string]string{
 	"String":  "str",
 }
 
-// extractParams statically extracts ctx.Param*() calls and returns structured entries.
-func extractParams(code string) []*antv1.ParameterEntry {
+// ExtractParams statically extracts ctx.Param*() calls and returns structured entries.
+func ExtractParams(code string) []*antv1.ParameterEntry {
 	matches := paramPattern.FindAllStringSubmatch(code, -1)
 	if len(matches) == 0 {
 		return nil
