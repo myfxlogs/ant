@@ -11,6 +11,7 @@ import type { StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
 import { strategyActiveApi } from '@/client/strategy';
 import { formatTime, shortId } from '../../LiveStrategyPageSignalDrawer';
 import type { JoinedRow } from './strategyJoin';
+import { LIVE_EXPAND_COL_WIDTH } from './strategyJoin';
 import { formatMode } from './formatMode';
 
 const { Text } = Typography;
@@ -182,17 +183,16 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   const paramsStr = row.parameters ? Object.entries(row.parameters).map(([k, v]) => `${k}=${v}`).join(', ') : '-';
 
   return (
+    <div className="live-expanded-align" style={{ marginLeft: LIVE_EXPAND_COL_WIDTH }}>
     <Tabs
       size="small"
-      style={{ marginLeft: 0 }}
-      tabBarGutter={0}
       tabBarStyle={{ marginBottom: 0 }}
       items={[
         {
           key: 'positions',
-          label: <span style={{ display: 'inline-block', width: 80, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
+          label: <span>{t('strategy.live.positions', { defaultValue: 'Positions' })} {positions.length > 0 && <Tag color="blue">{positions.length}</Tag>}</span>,
           children: (
-            <div style={{ marginLeft: -40 }}>
+            <div>
             <Spin spinning={positionsLoading}>
               <Table size="small" dataSource={positionsWithLive} rowKey="ticket" columns={positionColumns} pagination={false}
                 locale={{ emptyText: <Empty description={t('strategy.live.noPositions', { defaultValue: 'No open positions' })} /> }} />
@@ -202,7 +202,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
         {
           key: 'signals',
-          label: <span style={{ display: 'inline-block', width: 60, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.signals', { defaultValue: 'Signals' })} {signals.length > 0 && <Tag color="blue">{signals.length}</Tag>}</span>,
+          label: <span>{t('strategy.live.signals', { defaultValue: 'Signals' })} {signals.length > 0 && <Tag color="blue">{signals.length}</Tag>}</span>,
           children: (
             <div>
             <Spin spinning={signalsLoading}>
@@ -214,7 +214,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
         {
           key: 'logs',
-          label: <span style={{ display: 'inline-block', width: 70, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.logs', { defaultValue: 'Logs' })}</span>,
+          label: <span>{t('strategy.live.logs', { defaultValue: 'Logs' })}</span>,
           children: (
             <div>
             <Spin spinning={logsLoading}>
@@ -226,7 +226,7 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
         {
           key: 'config',
-          label: <span style={{ display: 'inline-block', width: 90, overflow: 'hidden', whiteSpace: 'nowrap' }}>{t('strategy.live.config', { defaultValue: 'Config' })}</span>,
+          label: <span>{t('strategy.live.config', { defaultValue: 'Config' })}</span>,
           children: (
             <div>
             <Descriptions size="small" column={2} bordered>
@@ -246,5 +246,6 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
         },
       ]}
     />
+    </div>
   );
 }

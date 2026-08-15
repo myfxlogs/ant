@@ -248,6 +248,15 @@ body {
   background: var(--color-bg-secondary) !important;
 }
 
+/* Live 监控页行展开区（.live-expanded-align 见 ScheduleExpandedRow）：取消内层表格
+   的 .ant-table 左边距（antd 经逻辑属性 margin-inline 设置，computed margin-left=40px），
+   使"品种"表头与上方"持仓"tab、外层"策略"列头三点垂直对齐。!important 同时压住
+   物理与逻辑属性两个来源；只作用于展开区内表，外层表不动。 */
+.live-expanded-align .ant-table {
+  margin-left: 0 !important;
+  margin-inline-start: 0 !important;
+}
+
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select-selector,

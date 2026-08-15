@@ -5,6 +5,7 @@ import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb';
 import ScheduleExpandedRow from './ScheduleExpandedRow';
 import OrphanRunsTable from './OrphanRunsTable';
 import type { JoinedRow } from './strategyJoin';
+import { LIVE_EXPAND_COL_WIDTH } from './strategyJoin';
 import { useMyStrategiesColumns } from './myStrategiesColumns';
 import { RightOutlined, DownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -86,6 +87,7 @@ export default function MyStrategiesTable({
         pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `${total}` }}
         rowClassName={(row) => row.id === highlightScheduleId ? 'schedule-row-highlight' : ''}
         expandable={{
+          columnWidth: LIVE_EXPAND_COL_WIDTH,
           expandedRowKeys: expandedKeys,
           onExpand: (expanded, row) => setExpandedKeys(expanded ? [row.id] : []),
           expandedRowRender: (row) => <ScheduleExpandedRow row={row} activeVersion={activeVersion} liveBid={row.active?.bid} liveAsk={row.active?.ask} />,

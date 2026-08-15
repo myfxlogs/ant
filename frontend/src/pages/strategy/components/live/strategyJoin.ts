@@ -1,6 +1,12 @@
 import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb';
 import type { ScheduleRow } from '../../hooks/libraryTypes';
 
+// Expand-column width shared by the outer strategy table and its expanded row:
+// the expanded-row content offsets by this amount so the "Positions" tab label
+// and the inner table's first column header align vertically with the outer
+// "Strategy" column header (single source of truth — change both or neither).
+export const LIVE_EXPAND_COL_WIDTH = 48;
+
 export interface JoinedRow extends ScheduleRow {
   active?: ActiveStrategy;
 }
