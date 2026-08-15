@@ -113,6 +113,32 @@ func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 	return scanKlineBars(rows, s.log)
 }
 
+// GetRecentKlines returns the most recent `limit` bars (newest-first order),
+// gap-immune: unlike GetKlines' time-window semantics, it takes the latest N
+// bars regardless of how far back they reach — matching MT4 chart behavior
+// ("last N bars") so a data gap doesn't shrink the live seed window
+// (SEED-GAP: a 26h writer outage left a 500-minute window ~90% empty).
+func (s *PgMarketDataStore) GetRecentKlines(ctx context.Context, canonical, broker, period string, limit int32) ([]KlineBar, error) {
+	if limit <= 0 {
+		limit = 500
+	}
+	period = normalizeTimeframe(period)
+	rows, err := s.pool.Query(ctx, `
+		SELECT DISTINCT ON (canonical, period, open_ts_unix_ms)
+			broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
+			open, high, low, close, volume, tick_count
+		FROM md_bars
+		WHERE canonical = $1 AND period = $2 AND broker = $3
+		ORDER BY canonical, period, open_ts_unix_ms DESC, tick_count DESC
+		LIMIT $4
+	`, canonical, period, broker, limit)
+	if err != nil {
+		return nil, fmt.Errorf("pg get recent klines: %w", err)
+	}
+	defer rows.Close()
+	return scanKlineBars(rows, s.log)
+}
+
 // GetLatestTick returns the most recent bid/ask for a symbol.
 // ADR-0012: Reads from Redis (latest_quote:{canonical}) — sole source after md_ticks dropped.
 func (s *PgMarketDataStore) GetLatestTick(ctx context.Context, canonical, broker string) (*LatestTick, error) {

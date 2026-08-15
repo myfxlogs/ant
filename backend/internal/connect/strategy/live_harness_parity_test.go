@@ -336,3 +336,67 @@ func TestW3_TwoConsecutiveBars_WindowGrows(t *testing.T) {
 
 	vmSess.Close()
 }
+
+// ── SEED-GAP: gap-immune seeding (latest-N, MT4 chart semantics) ──────
+
+// gapSeedStore embeds the plain stub and adds the recentKlinesRepo extension:
+// GetRecentKlines returns the full latest-500 history (DESC), while the plain
+// time-window path would only see 53 bars (post-gap recovery period).
+type gapSeedStore struct {
+	mockMarketDataStore
+	recent []repository.KlineBar // DESC (newest first)
+}
+
+func (m *gapSeedStore) GetRecentKlines(_ context.Context, _, _, _ string, _ int32) ([]repository.KlineBar, error) {
+	return m.recent, nil
+}
+
+// TestSEEDGAP_GapImmuneSeeding verifies seeding takes the latest N bars even
+// when the last-500-minute window is mostly gap (26h writer outage scenario).
+// Disable the extension branch in seedSymbol (fallback to time window) →
+// seeded drops to 53 → RED.
+func TestSEEDGAP_GapImmuneSeeding(t *testing.T) {
+	periodMs := int64(60 * 1000)
+	now := time.Now().UnixMilli()
+
+	recent := make([]repository.KlineBar, 0, maxContextBars)
+	for i := 0; i < maxContextBars; i++ { // newest first
+		openMs := now - int64(i+1)*periodMs
+		recent = append(recent, repository.KlineBar{
+			OpenTsUnixMs:  uint64(openMs),
+			CloseTsUnixMs: uint64(openMs + periodMs),
+			Open:          decimal.NewFromInt(1),
+			High:          decimal.NewFromInt(2),
+			Low:           decimal.NewFromInt(1),
+			Close:         decimal.NewFromInt(1),
+			Volume:        100,
+		})
+	}
+	// Time-window path would only find the 53 newest bars (post-gap recovery).
+	windowASC := make([]repository.KlineBar, 53)
+	for i := range windowASC {
+		windowASC[i] = recent[52-i] // reverse newest-53 → ASC
+	}
+	store := &gapSeedStore{
+		mockMarketDataStore: mockMarketDataStore{maxCloseTs: now - periodMs, klines: windowASC},
+		recent:              recent,
+	}
+	srv := &StrategyExecutionServer{
+		log:            zap.NewNop(),
+		marketDataRepo: store,
+		brokerCompanyLookup: func(_ context.Context, _ string) string {
+			return "test-broker"
+		},
+	}
+	bars := make([]liveBar, 0, maxContextBars)
+	srv.seedBarWindows(context.Background(), LiveStrategyConfig{
+		AccountID: "acct-1", Symbol: "EURUSD", Timeframe: "1m",
+	}, &bars, nil)
+
+	if len(bars) != maxContextBars {
+		t.Fatalf("SEED-GAP: seeded %d bars, want %d — gap fell back to time window (would give 53)", len(bars), maxContextBars)
+	}
+	if bars[0].openTime > bars[len(bars)-1].openTime {
+		t.Fatal("SEED-GAP: seeded bars not in ASC order after DESC reverse")
+	}
+}

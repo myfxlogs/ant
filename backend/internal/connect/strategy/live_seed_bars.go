@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	"alphaforge/internal/repository"
 )
 
 // seedBarWindows pre-loads historical bars from PG (md_bars) into the live bar
@@ -47,6 +49,13 @@ func (s *StrategyExecutionServer) seedBarWindows(
 	}
 }
 
+// recentKlinesRepo is an optional extension of MarketDataStore for gap-immune
+// seeding: "latest N bars" (MT4 chart semantics) instead of a time window.
+// *repository.PgMarketDataStore implements it; test stubs may not (fallback path).
+type recentKlinesRepo interface {
+	GetRecentKlines(ctx context.Context, canonical, broker, period string, limit int32) ([]repository.KlineBar, error)
+}
+
 func seedSymbol(
 	ctx context.Context,
 	s *StrategyExecutionServer,
@@ -57,23 +66,41 @@ func seedSymbol(
 	if s.marketDataRepo == nil || broker == "" {
 		return
 	}
-	maxTs, err := s.marketDataRepo.MaxCloseTs(ctx, broker, symbol, timeframe)
-	if err != nil {
-		s.log.Warn("seedBarWindows: MaxCloseTs failed",
-			zap.String("symbol", symbol), zap.Error(err))
-		return
+	var klines []repository.KlineBar
+	if rr, ok := s.marketDataRepo.(recentKlinesRepo); ok {
+		// Preferred path: latest N bars regardless of gaps (newest-first → reverse).
+		var err error
+		klines, err = rr.GetRecentKlines(ctx, symbol, broker, timeframe, int32(maxContextBars))
+		if err != nil {
+			s.log.Warn("seedBarWindows: GetRecentKlines failed, falling back to time window",
+				zap.String("symbol", symbol), zap.Error(err))
+			klines = nil
+		} else {
+			for i, j := 0, len(klines)-1; i < j; i, j = i+1, j-1 {
+				klines[i], klines[j] = klines[j], klines[i]
+			}
+		}
 	}
-	if maxTs == 0 {
-		s.log.Warn("seedBarWindows: no historical data, skipping",
-			zap.String("symbol", symbol), zap.String("broker", broker))
-		return
-	}
-	from := time.UnixMilli(maxTs - int64(maxContextBars)*periodMs + periodMs)
-	klines, err := s.marketDataRepo.GetKlines(ctx, symbol, broker, timeframe, &from, nil, int32(maxContextBars))
-	if err != nil {
-		s.log.Warn("seedBarWindows: GetKlines failed",
-			zap.String("symbol", symbol), zap.Error(err))
-		return
+	if len(klines) == 0 {
+		// Fallback: time-window two-step (requires data continuity).
+		maxTs, err := s.marketDataRepo.MaxCloseTs(ctx, broker, symbol, timeframe)
+		if err != nil {
+			s.log.Warn("seedBarWindows: MaxCloseTs failed",
+				zap.String("symbol", symbol), zap.Error(err))
+			return
+		}
+		if maxTs == 0 {
+			s.log.Warn("seedBarWindows: no historical data, skipping",
+				zap.String("symbol", symbol), zap.String("broker", broker))
+			return
+		}
+		from := time.UnixMilli(maxTs - int64(maxContextBars)*periodMs + periodMs)
+		klines, err = s.marketDataRepo.GetKlines(ctx, symbol, broker, timeframe, &from, nil, int32(maxContextBars))
+		if err != nil {
+			s.log.Warn("seedBarWindows: GetKlines failed",
+				zap.String("symbol", symbol), zap.Error(err))
+			return
+		}
 	}
 	now := time.Now().UnixMilli()
 	seeded := 0
