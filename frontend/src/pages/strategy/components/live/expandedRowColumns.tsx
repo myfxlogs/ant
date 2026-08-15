@@ -1,10 +1,7 @@
-import { Table, Tag, Typography, Button, Popconfirm } from 'antd';
+import { Tag, Typography, Button, Popconfirm } from 'antd';
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { MtPositionSnapshotItem } from '@/gen/ant/v1/mt_position_snapshot_pb';
-import type { StrategySignalEvent } from '@/gen/ant/v1/strategy_runtime_pb';
-import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import { formatTime } from '../../LiveStrategyPageSignalDrawer';
 import type { JoinedRow } from './strategyJoin';
 
