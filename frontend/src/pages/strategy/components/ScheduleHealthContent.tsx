@@ -13,7 +13,7 @@ const STATUS_TAG_COLOR: Record<string, string> = {
 };
 
 function translateStatus(t: (k: string) => string, status: unknown): { label: string; color: string } {
-  const s = String(status || '');
+  const s = String(status || '').toLowerCase();
   switch (s) {
     case 'success': return { label: t(HEALTH_RUN_LOGS_STATUS_SUCCESS_KEY), color: STATUS_TAG_COLOR.success };
     case 'failed': return { label: t(HEALTH_RUN_LOGS_STATUS_FAILED_KEY), color: STATUS_TAG_COLOR.failed };

@@ -107,7 +107,7 @@ export default function DiagnosticsTab({ active }: Props) {
         <Descriptions.Item label={t('strategy.live.diag.lastEval')}>
           {formatLastEval(diag?.lastEvalAt ?? 0n, t)}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.live.status', { defaultValue: 'Status' })} span={3}>
+        <Descriptions.Item label={t('strategy.live.status')} span={3}>
           <StateBadge state={state} t={t} />
         </Descriptions.Item>
       </Descriptions>
