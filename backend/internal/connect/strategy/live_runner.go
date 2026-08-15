@@ -221,6 +221,8 @@ func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveS
 
 	extraBars, extraSymbolSet := initExtraBars(cfg)
 
+	s.seedBarWindows(ctx, cfg, &bars, extraBars)
+
 	defer func() {
 		if session != nil {
 			_ = session.Close()
@@ -376,7 +378,7 @@ func initExtraBars(cfg LiveStrategyConfig) (map[string][]liveBar, map[string]boo
 
 func handleExtraSymbolBar(bar *mthub.BarUpdate, extraBars map[string][]liveBar) {
 	ew := extraBars[bar.Symbol]
-	ew = append(ew, liveBar{
+	appendDedupBar(&ew, liveBar{
 		open:     bar.Open.String(),
 		high:     bar.High.String(),
 		low:      bar.Low.String(),
@@ -384,8 +386,24 @@ func handleExtraSymbolBar(bar *mthub.BarUpdate, extraBars map[string][]liveBar) 
 		volume:   strconv.FormatFloat(bar.Volume, 'f', -1, 64),
 		openTime: bar.OpenTime,
 	})
-	if len(ew) > maxContextBars {
-		ew = ew[len(ew)-maxContextBars:]
-	}
 	extraBars[bar.Symbol] = ew
+}
+
+// appendDedupBar appends a bar to the window with three-state deduplication:
+//   - openTime < last → skip (out-of-order/replay)
+//   - openTime == last → replace last bar (real-time stream is authoritative over backfill snapshot)
+//   - openTime > last → append (new bar)
+func appendDedupBar(bars *[]liveBar, b liveBar) {
+	n := len(*bars)
+	if n > 0 && b.openTime < (*bars)[n-1].openTime {
+		return
+	}
+	if n > 0 && b.openTime == (*bars)[n-1].openTime {
+		(*bars)[n-1] = b
+		return
+	}
+	*bars = append(*bars, b)
+	if len(*bars) > maxContextBars {
+		*bars = (*bars)[len(*bars)-maxContextBars:]
+	}
 }

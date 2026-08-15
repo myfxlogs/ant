@@ -19,7 +19,7 @@ type Config struct {
 	Symbol              string
 	Timeframe           string
 	Params              map[string]string // user-configured parameter overrides
-	Mode                string           // "live" | "paper" | "backtest"
+	Mode                string            // "live" | "paper" | "backtest"
 	DataSourceAccountID string
 }
 
@@ -54,12 +54,14 @@ func (r *Runner) SetStrategy(s sdk.Strategy) {
 }
 
 // UpdateLiveState sets the live account state from the parent process.
-// Used by the live harness to pass equity/balance/positions without RPC.
-func (r *Runner) UpdateLiveState(balance, equity string, positions []sdk.Position) {
+// Used by the live harness to pass equity/balance/margin/free_margin/positions without RPC.
+func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, positions []sdk.Position) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
 	r.ctx.liveBalance = balance
 	r.ctx.liveEquity = equity
+	r.ctx.liveMargin = margin
+	r.ctx.liveFreeMargin = freeMargin
 	r.ctx.livePositions = positions
 }
 
@@ -184,6 +186,17 @@ func (r *Runner) UpdateTickState(bid, ask decimal.Decimal) {
 	r.ctx.setTick(bid, ask)
 }
 
+// UpdateSymbolInfo sets the live symbol info from the parent process.
+// Used by the live harness to pass Point/Digits/ContractSize/StopsLevel without RPC.
+func (r *Runner) UpdateSymbolInfo(point string, digits int32, contractSize, stopsLevel string) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	r.ctx.livePoint = point
+	r.ctx.liveDigits = digits
+	r.ctx.liveContractSize = contractSize
+	r.ctx.liveStopsLevel = stopsLevel
+}
+
 // OrderExecutor wraps the broker's trading interface.
 // Used by backtest.SimBroker and live-trading adapter.
 type OrderExecutor interface {
@@ -207,4 +220,3 @@ func (r *Runner) Deinit(ctx context.Context, reason string) error {
 	r.ctx.setGoContext(ctx)
 	return r.strategy.OnDeinit(r.ctx, reason)
 }
-

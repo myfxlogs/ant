@@ -27,9 +27,17 @@ type contextImpl struct {
 	goCtx context.Context
 
 	// Live state from parent process (harness mode — no RPC).
-	liveBalance   string
-	liveEquity    string
-	livePositions []sdk.Position
+	liveBalance    string
+	liveEquity     string
+	liveMargin     string
+	liveFreeMargin string
+	livePositions  []sdk.Position
+
+	// Symbol info from parent process (harness mode — no RPC).
+	livePoint        string
+	liveDigits       int32
+	liveContractSize string
+	liveStopsLevel   string
 
 	// Tick-level prices (harness mode — set on TICK requests).
 	tickBid decimal.Decimal
@@ -129,10 +137,18 @@ func (c *contextImpl) BarsForSymbol(symbol, timeframe string) sdk.BarSeries {
 	return sdk.BarsToSlice(bars)
 }
 
-func (c *contextImpl) Symbol() string   { return c.symbol }
+func (c *contextImpl) Symbol() string    { return c.symbol }
 func (c *contextImpl) Timeframe() string { return c.timeframe }
 
 func (c *contextImpl) Point() decimal.Decimal {
+	c.mu.RLock()
+	if c.livePoint != "" {
+		if d, err := decimal.NewFromString(c.livePoint); err == nil {
+			c.mu.RUnlock()
+			return d
+		}
+	}
+	c.mu.RUnlock()
 	info, _ := c.runner.broker.SymbolInfo(c.symbol)
 	return info.Point
 }
@@ -142,6 +158,13 @@ func (c *contextImpl) Pip() decimal.Decimal {
 }
 
 func (c *contextImpl) Digits() int32 {
+	c.mu.RLock()
+	if c.liveDigits != 0 {
+		d := c.liveDigits
+		c.mu.RUnlock()
+		return d
+	}
+	c.mu.RUnlock()
 	info, _ := c.runner.broker.SymbolInfo(c.symbol)
 	return info.Digits
 }
@@ -187,7 +210,7 @@ func (c *contextImpl) Mode() sdk.AccountMode {
 
 // ── Services ───────────────────────────────────────────────────────
 
-func (c *contextImpl) Broker() sdk.Broker     { return c.runner.broker }
+func (c *contextImpl) Broker() sdk.Broker           { return c.runner.broker }
 func (c *contextImpl) Indicators() sdk.IndicatorSet { return c.runner.ind }
 
 // ── Lifecycle ──────────────────────────────────────────────────────

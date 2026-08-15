@@ -20,7 +20,7 @@ func (s *StrategyExecutionServer) handleBar(
 	session *Session, firstBar *bool, activeSess *ActiveSession,
 	extraBars map[string][]liveBar,
 ) {
-	*bars = append(*bars, liveBar{
+	appendDedupBar(bars, liveBar{
 		open:     bar.Open.String(),
 		high:     bar.High.String(),
 		low:      bar.Low.String(),
@@ -28,9 +28,6 @@ func (s *StrategyExecutionServer) handleBar(
 		volume:   strconv.FormatFloat(bar.Volume, 'f', -1, 64),
 		openTime: bar.OpenTime,
 	})
-	if len(*bars) > maxContextBars {
-		*bars = (*bars)[len(*bars)-maxContextBars:]
-	}
 
 	if cfg.ShadowVerifier != nil {
 		cfg.ShadowVerifier.RecordBar(sdk.Bar{
@@ -43,12 +40,7 @@ func (s *StrategyExecutionServer) handleBar(
 		})
 	}
 
-	var lctx *antv1.LiveStrategyContext
-	if *firstBar {
-		lctx = s.buildLiveContext(ctx, cfg, *bars, extraBars)
-	} else {
-		lctx = s.buildDeltaContext(ctx, cfg, *bars, extraBars)
-	}
+	lctx := s.buildLiveContext(ctx, cfg, *bars, extraBars)
 
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode: cfg.Code,

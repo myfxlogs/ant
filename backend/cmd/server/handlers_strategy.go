@@ -79,6 +79,16 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 		}
 		return name
 	})
+	srv.SetBrokerCompanyLookup(func(ctx context.Context, accountID string) string {
+		var broker string
+		err := d.pool.QueryRow(ctx,
+			`SELECT COALESCE(broker_company,'') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&broker)
+		if err != nil {
+			return ""
+		}
+		return broker
+	})
 	srv.SetQuotaChecker(d.quotaChecker)
 	if d.boundSvc != nil {
 		srv.SetBoundSvc(d.boundSvc)

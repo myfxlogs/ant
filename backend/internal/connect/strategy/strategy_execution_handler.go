@@ -104,6 +104,10 @@ type StrategyExecutionServer struct {
 	// scheduleNameLookup resolves schedule ID → strategy name for ActiveStrategy proto.
 	// nil = strategy_name left empty (frontend falls back to runId).
 	scheduleNameLookup func(ctx context.Context, scheduleID uuid.UUID) string
+
+	// brokerCompanyLookup resolves accountID → mt_accounts.broker_company.
+	// Used by seedBarWindows to filter md_bars to the correct data source.
+	brokerCompanyLookup func(ctx context.Context, accountID string) string
 }
 
 // QualityValidator validates backtest quality for marketplace publishing (read-only preview).
@@ -168,6 +172,9 @@ func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, u
 func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCache = pc }
 func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Context, scheduleID uuid.UUID) string) {
 	s.scheduleNameLookup = f
+}
+func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) string) {
+	s.brokerCompanyLookup = f
 }
 
 // QuotaChecker provides subscription plan limit checks.

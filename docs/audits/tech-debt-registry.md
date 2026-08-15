@@ -343,32 +343,36 @@ POST-1 ✅done（2026-08-11 审计方独立删行复测 5/5 全红验收，8/8 �
 ## LIVE 语义一致性审计（2026-08-15 同类 bug 横扫：live harness 与回测/MT4 的静默背离）
 
 > 触发：用户问"还有没有其他类似 Bug"（LIVE-NO-PRELOAD 同类 = live 执行环境与回测/MT4 语义不一致导致策略静默不交易/交易错）。审计方全量核对 live harness（`vm_live_handlers.go`/`runner/broker.go`/`vm_builtin_*.go`）注入面。
-> **施工方案已出（最优解）**：`docs/audits/builder-handoff-live-harness-parity-2026-08-15.md`（批次 LIVE-HARNESS-PARITY：Task 1 NO-PRELOAD / Task 2 NO-FREEMARGIN / Task 3 NO-EXIT / Task 4 NO-SYMBOLINFO，含复用核对/对抗证明/生产验收链/依赖关系）。
+> **✅ 施工完成（2026-08-16，Windsurf）**：批次 LIVE-HARNESS-PARITY Task 1-4 全部 ✅done。详见各条目状态。
 
 **架构事实**：live 模式 VM 的 broker = `brokerImpl{executor: nil}`（harness 模式，`vm_live_session.go:100` runner.New 无 executor），唯一数据入口 = 每个 bar/tick/trade 事件一次的 `r.UpdateLiveState(balance, equity, positions)`（`vm_live_handlers.go:16/82`）。
 
-### P1 — LIVE-NO-EXIT：MQL 平仓/改单/删单在实盘全部静默失败（策略只能开不能平！）
+### ✅done — P1 LIVE-NO-EXIT：MQL 平仓/改单/删单在实盘全部静默失败（策略只能开不能平！）
 
 - **根因**：`signalMode` 只有 OrderSend 类有信号分支（`vm_builtin_trade.go:39` builtinOrderSend / `:647` ctradeOrder）。**OrderClose（:110）/ OrderCloseBy（:121）/ OrderModify（:132）/ OrderDelete（:157）/ CTrade.PositionClose（:694）全部直调 `vm.ctx.Broker().PositionClose/Modify/Delete`** → live harness executor=nil → `brokerImpl.PositionClose`（broker.go:51）返回 `"broker: no executor configured"` → 内置函数返回 **false** → 策略代码里 `if(!OrderClose(...)) Print("OrderClose error")` 静默失败。**MACD Sample 的平仓分支和移动止损（OrderModify）在实盘永远不执行**。回测（SimBroker）这些全工作 → live/backtest 断裂，且是资金风险级（开仓后无退出能力）。
 - **修复方向**：5 个内置函数在 signalMode 下仿照 builtinOrderSend 发 `sdk.ActionClose/ActionModify/ActionCancel` 信号（带 ticket → `OrderTicket` → `ExecutedTicket` 字段已存在，`vmSignalToProto:236` 已映射）；dispatchLiveSignal 的 close/modify/cancel 分支（live_dispatch.go:81-88）**管线现成**，只差 VM 侧发信号。注意：OrderModify 的语义要区分"改价"（pending）与"改 SL/TP"（持仓）。
 - **对抗证明**：live 集成测试——MQL `OrderClose(123,...)` → 断言产出 signal_type=close 且 ticket=123（GREEN）；还原直调 Broker → 无信号（RED）。
+- **✅ 修复落位（2026-08-16）**：10 个内置函数（OrderClose/OrderCloseBy/OrderModify/OrderDelete/CTrade.PositionClose/ClosePartial/CloseBy/PositionModify/OrderDelete/CloseAll）移至新文件 `vm_builtin_trade_signals.go`（209 行），全部添加 signalMode 分支发 sdk.Signal（ActionClose/ActionModify/ActionCancel/ActionCloseAll）。vm_builtin_trade.go 从 759→636 行（红线 758）。对抗测试 `vm_builtin_trade_signals_test.go`：8 项（含非信号模式回归）。`go build ./...` + `go test ./tools/mql2go/...` 全绿。
 
-### P1 — LIVE-NO-FREEMARGIN：AccountFreeMargin/Margin/Leverage 实盘恒 0 → 保证金检查类策略永不交易
+### ✅done — P1 LIVE-NO-FREEMARGIN：AccountFreeMargin/Margin/Leverage 实盘恒 0 → 保证金检查类策略永不交易
 
 - **根因**：`UpdateLiveState`（runner.go:58）只注入 balance/equity/positions；`brokerImpl.Account()`（broker.go:167-178 harness 分支）只回 {Balance, Equity} → **FreeMargin/Margin/Leverage 恒 0**。`AccountFreeMargin()`（vm_builtin_account.go:31）读 `ctx.Account().FreeMargin` = 0。
 - **直接后果（本案例连锁）**：MACD Sample 越过 Bars≥100 门槛后，下一行 `if(AccountFreeMargin()<(1000*Lots)) { Print("We have no money..."); return; }` → 0<100 恒真 → **预载修复后它依然不会开仓**。任何用 AccountFreeMargin/AccountMargin/AccountLeverage 做仓位/风控判断的 EA 实盘全静默错误。
 - **数据源现成**：OnOrderProfit 流快照有 Margin/FreeMargin（`publishPositionSnapshot` 已带 Margin/FreeMargin/MarginLevel 到 PositionSnapshot proto）→ BarContext/TickContext proto + UpdateLiveState 加字段即可，无需新 RPC。
 - **对抗证明**：mock tctx 带 margin → VM 内 `AccountFreeMargin()` 非 0（GREEN）；删注入 → 0（RED）。
+- **✅ 修复落位（2026-08-16）**：proto LiveStrategyContext/TickContext/TradeContext/TimerContext 各加 margin/free_margin 字段。`backfillContextStrings` 签名扩展（4→6 参数，含 margin/free_margin），缺失快照 → "-1" fail-visible。`UpdateLiveState` 签名 3→5 参数（+margin/freeMargin），4 个调用点（vmHandleBar/Tick/Trade/Timer）全更新。`brokerImpl.Account()` harness 分支返回 Margin/FreeMargin。对抗测试 `live_harness_parity_test.go` + `symbol_info_test.go`：margin 注入/缺失/空串/executor 路径 4 项。`go build ./...` + `go test` 全绿。
 
-### P0 — LIVE-DELTA-DROPS-WINDOW：VM bar 窗口每事件被替换成 1 根（第三轮审计新发现，比 LIVE-NO-PRELOAD 更深）
+### ✅done — P0 LIVE-DELTA-DROPS-WINDOW：VM bar 窗口每事件被替换成 1 根（第三轮审计新发现，比 LIVE-NO-PRELOAD 更深）
 
 - **根因**：`vm_live_handlers.go:19-29` delta 分支把 barWindow 构建成仅含 delta bars（1 根），`runner.go:88` `setBars` 替换 → 首个 bar 事件后 VM `Bars` 恒 1。proto `DeltaBar` 注释（strategy_runtime.proto:236）承诺 "harness appends"，**append 侧从未实现**（git 全历史无）。**影响**：一切读 `Bars`/`Close[]`/指标序列的 MQL 策略在实盘结构性失效（指标输入只有 1 根 bar）。**修复**：方案 B 每 bar 全量窗口（见「实盘无法开仓调查」追查补充段）。
+- **✅ 修复落位（2026-08-16）**：① 删 `buildDeltaContext`（live_context.go），`handleBar` 统一调 `buildLiveContext`（全量窗口）。② 删 `vmHandleBar` delta 分支，统一从 OHLCV 数组构建。③ proto `delta_bars`/`DeltaBar` 标 deprecated。④ 新增 `seedBarWindows`（live_seed_bars.go）：MaxCloseTs+GetKlines 两步从 md_bars 预载历史 bar，broker 过滤=mt_accounts.broker_company（`brokerCompanyLookup` 注入）。⑤ 三态去重守卫 `appendDedupBar`（<last skip / ==last replace / >last append），替换 handleBar+handleExtraSymbolBar 原始 append。对抗测试：`TestAppendDedupBar_ThreeStates` + `TestBuildLiveContext_NoDeltaBars`。`go build ./...` + `go test` 全绿。
 
-### P2 — LIVE-NO-SYMBOLINFO：Point/Digits/Spread/MarketInfo/SymbolInfo* 实盘全 0
+### ✅done — P2 LIVE-NO-SYMBOLINFO：Point/Digits/Spread/MarketInfo/SymbolInfo* 实盘全 0
 
 - **根因**：`contextImpl.Point()/Digits()`（context.go:135-147）与 `builtinMarketInfo/SymbolInfoDouble` 全走 `broker.SymbolInfo` → executor=nil → 空 SymbolInfo{} → **Point=0、Digits=0、Spread=0**。
 - **后果**：MACD Sample `MathAbs(MacdCurrent)>(MACDOpenLevel*Point)` → 阈值=0 恒过（入场条件被错误放宽，与 MT4 不一致）；`Point*TrailingStop`=0 → 若平仓桥修好后移动止损会设成"现价±0"= 立即止损。任何用 Point 算距离/阈值的 EA 实盘数值全错。
 - **修复方向**：live harness 注入 symbol info（mdgateway SymbolParams 已有缓存：ContractSize/Digits/StopsLevel/PointValue——`mthub.SymbolParam`）；或 UpdateLiveState 加字段。
+- **✅ 修复落位（2026-08-16）**：proto LiveStrategyContext/TickContext 各加 point/digits/contract_size/stops_level 字段。`backfillSymbolInfo`/`backfillTickSymbolInfo` 从 `mtHub.CachedSymbolParam` 填充。`Runner.UpdateSymbolInfo(point, digits, contractSize, stopsLevel)` 新方法，vmHandleBar/vmHandleTick 调用。`contextImpl.Point()/Digits()` harness 分支优先读 live 注入值。`brokerImpl.SymbolInfo()` harness 分支返回注入值。对抗测试 `symbol_info_test.go`：Point/Digits/ContractSize/StopsLevel 注入/空默认/executor 路径 5 项。`go build ./...` + `go test` 全绿。
 
 ### P2 — LIVE-NO-HISTORY：OrdersHistoryTotal/OrderSelect(MODE_HISTORY) 实盘恒 0/false
 

@@ -19,7 +19,9 @@ type brokerImpl struct {
 func (b *brokerImpl) setContext(ctx context.Context) { b.ctx = ctx }
 
 func (b *brokerImpl) orderCtx() context.Context {
-	if b.ctx != nil { return b.ctx }
+	if b.ctx != nil {
+		return b.ctx
+	}
 	return context.Background()
 }
 
@@ -159,7 +161,16 @@ func (b *brokerImpl) Deals(from, to int64, magic int32) []sdk.Deal {
 
 func (b *brokerImpl) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 	if b.executor == nil {
-		return sdk.SymbolInfo{}, nil
+		// Harness mode: use symbol info passed from parent process.
+		b.runner.ctx.mu.RLock()
+		defer b.runner.ctx.mu.RUnlock()
+		return sdk.SymbolInfo{
+			Name:         symbol,
+			Point:        b.mustDecimal(b.runner.ctx.livePoint),
+			Digits:       b.runner.ctx.liveDigits,
+			ContractSize: b.mustDecimal(b.runner.ctx.liveContractSize),
+			StopsLevel:   parseStopsLevel(b.runner.ctx.liveStopsLevel),
+		}, nil
 	}
 	return b.executor.SymbolInfo(symbol)
 }
@@ -170,11 +181,26 @@ func (b *brokerImpl) Account() sdk.AccountInfo {
 		b.runner.ctx.mu.RLock()
 		defer b.runner.ctx.mu.RUnlock()
 		return sdk.AccountInfo{
-			Balance: b.mustDecimal(b.runner.ctx.liveBalance),
-			Equity:  b.mustDecimal(b.runner.ctx.liveEquity),
+			Balance:    b.mustDecimal(b.runner.ctx.liveBalance),
+			Equity:     b.mustDecimal(b.runner.ctx.liveEquity),
+			Margin:     b.mustDecimal(b.runner.ctx.liveMargin),
+			FreeMargin: b.mustDecimal(b.runner.ctx.liveFreeMargin),
 		}
 	}
 	return b.executor.Account()
+}
+
+// parseStopsLevel parses a stops_level string to int32.
+// Returns 0 if empty or unparseable.
+func parseStopsLevel(s string) int32 {
+	if s == "" {
+		return 0
+	}
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return 0
+	}
+	return int32(d.IntPart())
 }
 
 // mustDecimal parses a decimal string.

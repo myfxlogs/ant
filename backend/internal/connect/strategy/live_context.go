@@ -22,7 +22,8 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 		Params:       buildLiveParams(cfg.Params),
 		CurrentPrice: tick.Bid.String(),
 	}
-	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions)
+	s.backfillTickSymbolInfo(cfg, tctx)
 	return tctx
 }
 
@@ -56,26 +57,33 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 		Commission: evt.Commission.String(),
 		Swap:       evt.Swap.String(),
 	}
-	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions)
 	return tctx
 }
 
-// backfillContextStrings populates equity/balance/positions from the push-based
+// backfillContextStrings populates equity/balance/margin/free_margin/positions from the push-based
 // PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
-func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance *string, positions *[]*antv1.LivePosition) {
+// Missing snapshot → "-1" for equity/balance/margin/free_margin (fail-visible).
+func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance, margin, freeMargin *string, positions *[]*antv1.LivePosition) {
 	if s.posCache == nil {
 		*equity = "-1"
 		*balance = "-1"
+		*margin = "-1"
+		*freeMargin = "-1"
 		return
 	}
 	snap := s.posCache.GetSnapshot(accountID)
 	if snap == nil {
 		*equity = "-1"
 		*balance = "-1"
+		*margin = "-1"
+		*freeMargin = "-1"
 		return
 	}
 	*equity = snap.Equity.String()
 	*balance = snap.Balance.String()
+	*margin = snap.Margin.String()
+	*freeMargin = snap.FreeMargin.String()
 	pos := make([]*antv1.LivePosition, 0, len(snap.Positions))
 	for _, p := range snap.Positions {
 		side := "buy"
@@ -177,24 +185,8 @@ func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg Live
 	if n > 0 {
 		lctx.CurrentPrice = closeVals[n-1]
 	}
-	s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
-	lctx.Symbols = buildSymbolSeries(extraBars)
-	return lctx
-}
-
-// buildDeltaContext creates a delta-bar context with only the latest bar.
-func (s *StrategyExecutionServer) buildDeltaContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar, extraBars map[string][]liveBar) *antv1.LiveStrategyContext {
-	n := len(bars)
-	if n == 0 {
-		return &antv1.LiveStrategyContext{Symbol: cfg.Symbol, Timeframe: cfg.Timeframe, Mode: cfg.Mode, Params: buildLiveParams(cfg.Params)}
-	}
-	last := bars[n-1]
-	lctx := &antv1.LiveStrategyContext{
-		DeltaBars: []*antv1.DeltaBar{{Open: last.open, High: last.high, Low: last.low, Close: last.close, Volume: last.volume, BarTimeMs: last.openTime}},
-		Symbol:    cfg.Symbol, Timeframe: cfg.Timeframe, Mode: cfg.Mode, Params: buildLiveParams(cfg.Params),
-		CurrentPrice: last.close,
-	}
-	s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Positions)
+	s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions)
+	s.backfillSymbolInfo(cfg, lctx)
 	lctx.Symbols = buildSymbolSeries(extraBars)
 	return lctx
 }
@@ -242,4 +234,36 @@ func buildSymbolSeries(extraBars map[string][]liveBar) []*antv1.LiveSymbolSeries
 		})
 	}
 	return out
+}
+
+// backfillSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
+// LiveStrategyContext from the MtHubService cached symbol params.
+func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lctx *antv1.LiveStrategyContext) {
+	if s.mtHub == nil || cfg.AccountID == "" || cfg.Symbol == "" {
+		return
+	}
+	param, err := s.mtHub.CachedSymbolParam(context.Background(), cfg.AccountID, cfg.Symbol)
+	if err != nil || param == nil {
+		return
+	}
+	lctx.Point = param.PointValue.String()
+	lctx.Digits = param.Digits
+	lctx.ContractSize = param.ContractSize.String()
+	lctx.StopsLevel = int32(param.StopLevel)
+}
+
+// backfillTickSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
+// TickContext from the MtHubService cached symbol params.
+func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig, tctx *antv1.TickContext) {
+	if s.mtHub == nil || cfg.AccountID == "" || cfg.Symbol == "" {
+		return
+	}
+	param, err := s.mtHub.CachedSymbolParam(context.Background(), cfg.AccountID, cfg.Symbol)
+	if err != nil || param == nil {
+		return
+	}
+	tctx.Point = param.PointValue.String()
+	tctx.Digits = param.Digits
+	tctx.ContractSize = param.ContractSize.String()
+	tctx.StopsLevel = int32(param.StopLevel)
 }

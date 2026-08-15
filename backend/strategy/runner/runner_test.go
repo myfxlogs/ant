@@ -196,7 +196,7 @@ func TestRunner_HasOnTradeTransaction_NilStrategy(t *testing.T) {
 func TestRunner_UpdateLiveState(t *testing.T) {
 	r := New(Config{})
 	positions := []sdk.Position{{Ticket: 1, Symbol: "EURUSD"}}
-	r.UpdateLiveState("10000", "10500", positions)
+	r.UpdateLiveState("10000", "10500", "500", "9500", positions)
 
 	// Verify via broker.Account() in harness mode (no executor).
 	info := r.broker.Account()
@@ -410,7 +410,7 @@ func TestBrokerImpl_OrderDelete_Error(t *testing.T) {
 
 func TestBrokerImpl_Positions_NoExecutor_HarnessMode(t *testing.T) {
 	r := New(Config{})
-	r.UpdateLiveState("1000", "1100", []sdk.Position{
+	r.UpdateLiveState("1000", "1100", "100", "1000", []sdk.Position{
 		{Ticket: 1, Magic: 100},
 		{Ticket: 2, Magic: 200},
 		{Ticket: 3, Magic: 100},
@@ -523,7 +523,7 @@ func TestBrokerImpl_SymbolInfo_WithExecutor(t *testing.T) {
 
 func TestBrokerImpl_Account_NoExecutor(t *testing.T) {
 	r := New(Config{})
-	r.UpdateLiveState("5000", "5500", nil)
+	r.UpdateLiveState("5000", "5500", "200", "5300", nil)
 
 	info := r.broker.Account()
 	if !info.Balance.Equal(dec("5000")) {

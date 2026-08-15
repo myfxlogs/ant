@@ -233,11 +233,19 @@ message LiveStrategyContext {
   string primary_symbol = 16;
   string current_price = 17;
 
-  // Delta-bar protocol: if non-empty, the harness appends these to its local
-  // bar window instead of rebuilding from close/open/high/low/volume arrays.
-  // The first bar of a session uses the full OHLCV arrays; subsequent bars
-  // use this field for incremental delivery.
+  // Deprecated: Delta-bar protocol removed (LIVE-HARNESS-PARITY Task 1).
+  // Field retained for proto field number compatibility; not populated by server.
   repeated DeltaBar delta_bars = 18;
+
+  // Account margin state (LIVE-HARNESS-PARITY Task 2).
+  string margin = 19;
+  string free_margin = 20;
+
+  // Symbol info (LIVE-HARNESS-PARITY Task 4).
+  string point = 21;
+  int32 digits = 22;
+  string contract_size = 23;
+  int32 stops_level = 24;
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -269,9 +277,8 @@ message LiveSymbolSeries {
 }
 
 // DeltaBar is a single OHLCV bar for the delta-bar protocol.
-// When LiveStrategyContext.delta_bars is non-empty, the harness appends
-// these bars to its local rolling window rather than rebuilding from the
-// full OHLCV arrays.
+// Deprecated: Delta-bar protocol removed (LIVE-HARNESS-PARITY Task 1).
+// Message retained for proto field number compatibility; not populated by server.
 message DeltaBar {
   string open = 1;
   string high = 2;
@@ -294,6 +301,16 @@ message TickContext {
   string balance = 8;
   repeated LivePosition positions = 9;
   string current_price = 10;
+
+  // Account margin state (LIVE-HARNESS-PARITY Task 2).
+  string margin = 11;
+  string free_margin = 12;
+
+  // Symbol info (LIVE-HARNESS-PARITY Task 4).
+  string point = 13;
+  int32 digits = 14;
+  string contract_size = 15;
+  int32 stops_level = 16;
 }
 
 // TradeContext carries a trade event for OnTrade strategies.
@@ -313,6 +330,10 @@ message TradeContext {
   string equity = 12;
   string balance = 13;
   repeated LivePosition positions = 14;
+
+  // Account margin state (LIVE-HARNESS-PARITY Task 2).
+  string margin = 15;
+  string free_margin = 16;
 }
 
 // TimerContext carries a periodic timer fire for OnTimer strategies.
@@ -325,6 +346,10 @@ message TimerContext {
   string equity = 5;
   string balance = 6;
   repeated LivePosition positions = 7;
+
+  // Account margin state (LIVE-HARNESS-PARITY Task 2).
+  string margin = 8;
+  string free_margin = 9;
 }
 
 // ── Strategy Import (migration engine) ──────────────────────────────

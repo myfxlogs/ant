@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"strconv"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
@@ -13,32 +14,19 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	if lctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "bar_context missing"}
 	}
-	r.UpdateLiveState(lctx.Balance, lctx.Equity, vmPositionsToSdk(lctx.Positions))
+	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions))
+	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
 
-	var barWindow []sdk.Bar
-	if len(lctx.DeltaBars) > 0 {
-		for _, db := range lctx.DeltaBars {
-			barWindow = append(barWindow, sdk.Bar{
-				Open:      parseDecimal(db.Open),
-				High:      parseDecimal(db.High),
-				Low:       parseDecimal(db.Low),
-				Close:     parseDecimal(db.Close),
-				Volume:    parseInt64(db.Volume),
-				Timestamp: db.BarTimeMs,
-			})
-		}
-	} else {
-		n := len(lctx.Close)
-		barWindow = make([]sdk.Bar, n)
-		for i := 0; i < n; i++ {
-			barWindow[i] = sdk.Bar{
-				Open:      parseDecimal(lctx.Open[i]),
-				High:      parseDecimal(lctx.High[i]),
-				Low:       parseDecimal(lctx.Low[i]),
-				Close:     parseDecimal(lctx.Close[i]),
-				Volume:    parseInt64(lctx.Volume[i]),
-				Timestamp: lctx.BarTimesMs[i],
-			}
+	n := len(lctx.Close)
+	barWindow := make([]sdk.Bar, n)
+	for i := 0; i < n; i++ {
+		barWindow[i] = sdk.Bar{
+			Open:      parseDecimal(lctx.Open[i]),
+			High:      parseDecimal(lctx.High[i]),
+			Low:       parseDecimal(lctx.Low[i]),
+			Close:     parseDecimal(lctx.Close[i]),
+			Volume:    parseInt64(lctx.Volume[i]),
+			Timestamp: lctx.BarTimesMs[i],
 		}
 	}
 
@@ -79,7 +67,8 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 	if tctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "tick_context missing"}
 	}
-	r.UpdateLiveState(tctx.Balance, tctx.Equity, vmPositionsToSdk(tctx.Positions))
+	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions))
+	r.UpdateSymbolInfo(tctx.Point, tctx.Digits, tctx.ContractSize, strconv.FormatInt(int64(tctx.StopsLevel), 10))
 	bid := parseDecimal(tctx.Bid)
 	ask := parseDecimal(tctx.Ask)
 	r.UpdateTickState(bid, ask)
@@ -97,7 +86,7 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
 	}
-	r.UpdateLiveState(evctx.Balance, evctx.Equity, vmPositionsToSdk(evctx.Positions))
+	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, vmPositionsToSdk(evctx.Positions))
 
 	side := sdk.SideBuy
 	if evctx.Side == "sell" {
@@ -144,7 +133,7 @@ func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerCont
 	if tmctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "timer_context missing"}
 	}
-	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, vmPositionsToSdk(tmctx.Positions))
+	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions))
 	sig, err := r.OnTimerTick(ctx)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
