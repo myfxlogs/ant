@@ -26,6 +26,7 @@ type VMLiveSession struct {
 	strategy *mql2go.VMRunner
 	runner   *runner.Runner
 	started  bool
+	diag     *sessionDiag
 }
 
 // NewVMLiveSession creates a VMLiveSession for an MQL strategy.
@@ -141,25 +142,48 @@ func (s *VMLiveSession) Close() error {
 }
 
 func (s *VMLiveSession) dispatch(ctx context.Context, req *antv1.ExecuteLiveRequest) *antv1.ExecuteLiveResponse {
+	var resp *antv1.ExecuteLiveResponse
+	var evalKind int
 	switch req.GetRequestType() {
 	case antv1.RequestType_REQUEST_TYPE_BAR:
-		return vmHandleBar(ctx, s.runner, req.GetBarContext())
+		resp = vmHandleBar(ctx, s.runner, req.GetBarContext())
+		evalKind = evalKindBar
 
 	case antv1.RequestType_REQUEST_TYPE_TICK:
-		return vmHandleTick(ctx, s.runner, req.GetTickContext())
+		resp = vmHandleTick(ctx, s.runner, req.GetTickContext())
+		evalKind = evalKindTick
 
 	case antv1.RequestType_REQUEST_TYPE_TRADE:
-		return vmHandleTrade(ctx, s.runner, req.GetTradeContext())
+		resp = vmHandleTrade(ctx, s.runner, req.GetTradeContext())
+		evalKind = evalKindTrade
 
 	case antv1.RequestType_REQUEST_TYPE_TIMER:
-		return vmHandleTimer(ctx, s.runner, req.GetTimerContext())
+		resp = vmHandleTimer(ctx, s.runner, req.GetTimerContext())
+		evalKind = -1
 
 	default:
 		if bctx := req.GetBarContext(); bctx != nil {
-			return vmHandleBar(ctx, s.runner, bctx)
+			resp = vmHandleBar(ctx, s.runner, bctx)
+			evalKind = evalKindBar
+		} else {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}
 		}
-		return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}
 	}
+
+	if s.diag != nil && evalKind >= 0 {
+		s.diag.RecordEval(evalKind)
+		if resp.GetSuccess() {
+			s.diag.RecordIndicators(s.strategy.LastIndicators(), s.strategy.OrdersTotal())
+		}
+	}
+
+	return resp
+}
+
+// SetDiag attaches a sessionDiag for L1/L2 diagnostics capture.
+// Called after session creation, once ActiveSession is available.
+func (s *VMLiveSession) SetDiag(d *sessionDiag) {
+	s.diag = d
 }
 
 // Ensure VMLiveSession implements Session.

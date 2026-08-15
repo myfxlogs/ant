@@ -17,7 +17,12 @@ func builtinIMA(vm *VM, args []interp.Value) (interp.Value, error) {
 	period := int(argI(args, 2))
 	method := maMethodName(argI(args, 4))
 	appliedPrice := int(argI(args, 5))
-	return interp.DecimalVal(vm.ctx.Indicators().MA(period, shift, method, appliedPrice)), nil
+	val := vm.ctx.Indicators().MA(period, shift, method, appliedPrice)
+	if shift == 0 {
+		h := diagHash4(diagNameMA, int32(period), argI(args, 4), int32(appliedPrice))
+		recordDiag(vm, h, diagKeyMA(period, method, appliedPrice), val)
+	}
+	return interp.DecimalVal(val), nil
 }
 
 func maMethodName(id int32) string {
@@ -43,7 +48,12 @@ func builtinIRSI(vm *VM, args []interp.Value) (interp.Value, error) {
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 3))
 	shift := int(argI(args, 4))
-	return interp.DecimalVal(vm.ctx.Indicators().RSI(period, shift, appliedPrice)), nil
+	val := vm.ctx.Indicators().RSI(period, shift, appliedPrice)
+	if shift == 0 {
+		h := diagHash3(diagNameRSI, int32(period), int32(appliedPrice))
+		recordDiag(vm, h, diagKeyRSI(period, appliedPrice), val)
+	}
+	return interp.DecimalVal(val), nil
 }
 
 func builtinIATR(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -53,7 +63,12 @@ func builtinIATR(vm *VM, args []interp.Value) (interp.Value, error) {
 	// iATR(symbol, period, atr_period, shift)
 	period := int(argI(args, 2))
 	shift := int(argI(args, 3))
-	return interp.DecimalVal(vm.ctx.Indicators().ATR(period, shift)), nil
+	val := vm.ctx.Indicators().ATR(period, shift)
+	if shift == 0 {
+		h := diagHash2(diagNameATR, int32(period))
+		recordDiag(vm, h, diagKeyATR(period), val)
+	}
+	return interp.DecimalVal(val), nil
 }
 
 func builtinIBands(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -67,6 +82,24 @@ func builtinIBands(vm *VM, args []interp.Value) (interp.Value, error) {
 	shift := int(argI(args, 7))
 	upper, middle, lower := vm.ctx.Indicators().Bollinger(period, deviation, appliedPrice, shift)
 	mode := argI(args, 6)
+	if shift == 0 {
+		devInt := int32(deviation.IntPart())
+		h := diagHash5(diagNameBands, int32(period), devInt, int32(appliedPrice), mode)
+		var sub string
+		var val decimal.Decimal
+		switch mode {
+		case 1:
+			sub = "upper"
+			val = upper
+		case 2:
+			sub = "lower"
+			val = lower
+		default:
+			sub = "middle"
+			val = middle
+		}
+		recordDiag(vm, h, diagKeyBands(period, deviation, appliedPrice, sub), val)
+	}
 	switch mode {
 	case 1:
 		return interp.DecimalVal(upper), nil
@@ -89,9 +122,21 @@ func builtinIMACD(vm *VM, args []interp.Value) (interp.Value, error) {
 	shift := int(argI(args, 7))
 	mode := argI(args, 6)
 	if mode == 1 {
-		return interp.DecimalVal(vm.ctx.Indicators().MACDSignal(fast, slow, signal, appliedPrice, shift)), nil
+		val := vm.ctx.Indicators().MACDSignal(fast, slow, signal, appliedPrice, shift)
+		if shift == 0 {
+			h := diagHash5(diagNameMACD, int32(fast), int32(slow), int32(signal), int32(appliedPrice))
+			recordDiag(vm, h, diagKeyMACD(fast, slow, signal, appliedPrice, "signal"), val)
+		}
+		return interp.DecimalVal(val), nil
 	}
-	return interp.DecimalVal(vm.ctx.Indicators().MACD(fast, slow, signal, appliedPrice, shift)), nil
+	val := vm.ctx.Indicators().MACD(fast, slow, signal, appliedPrice, shift)
+	if shift == 0 {
+		h := diagHash5(diagNameMACD, int32(fast), int32(slow), int32(signal), int32(appliedPrice))
+		// Use a different hash for main vs signal by including mode in hash
+		h2 := h ^ uint64(0xDEAD)
+		recordDiag(vm, h2, diagKeyMACD(fast, slow, signal, appliedPrice, "main"), val)
+	}
+	return interp.DecimalVal(val), nil
 }
 
 func builtinIStochastic(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -105,6 +150,15 @@ func builtinIStochastic(vm *VM, args []interp.Value) (interp.Value, error) {
 	shift := int(argI(args, 8))
 	kVal, dVal := vm.ctx.Indicators().Stochastic(k, d, slowing, shift)
 	mode := argI(args, 7)
+	if shift == 0 {
+		h := diagHash4(diagNameStoch, int32(k), int32(d), int32(slowing))
+		if mode == 1 {
+			h2 := h ^ uint64(0xBEEF)
+			recordDiag(vm, h2, diagKeyStoch(k, d, slowing, "d"), dVal)
+		} else {
+			recordDiag(vm, h, diagKeyStoch(k, d, slowing, "k"), kVal)
+		}
+	}
 	if mode == 1 {
 		return interp.DecimalVal(dVal), nil
 	}
@@ -132,7 +186,12 @@ func builtinIADX(vm *VM, args []interp.Value) (interp.Value, error) {
 	shift := int(argI(args, 5))
 	switch mode {
 	case 0: // MODE_MAIN (ADX line)
-		return interp.DecimalVal(vm.ctx.Indicators().ADX(period, shift)), nil
+		val := vm.ctx.Indicators().ADX(period, shift)
+		if shift == 0 {
+			h := diagHash2(diagNameADX, int32(period))
+			recordDiag(vm, h, diagKeyADX(period), val)
+		}
+		return interp.DecimalVal(val), nil
 	case 1: // MODE_PLUSDI (+DI line)
 		vm.recordBlindSpot("iADX:MODE_PLUSDI")
 		return interp.DecimalVal(decimal.Zero), nil
@@ -140,7 +199,12 @@ func builtinIADX(vm *VM, args []interp.Value) (interp.Value, error) {
 		vm.recordBlindSpot("iADX:MODE_MINUSDI")
 		return interp.DecimalVal(decimal.Zero), nil
 	default:
-		return interp.DecimalVal(vm.ctx.Indicators().ADX(period, shift)), nil
+		val := vm.ctx.Indicators().ADX(period, shift)
+		if shift == 0 {
+			h := diagHash2(diagNameADX, int32(period))
+			recordDiag(vm, h, diagKeyADX(period), val)
+		}
+		return interp.DecimalVal(val), nil
 	}
 }
 

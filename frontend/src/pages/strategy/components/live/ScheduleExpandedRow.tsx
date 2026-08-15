@@ -13,6 +13,7 @@ import type { JoinedRow } from './strategyJoin';
 import { LIVE_EXPAND_COL_WIDTH } from './strategyJoin';
 import { formatMode } from './formatMode';
 import { COL_PCT, buildPositionColumns, buildSignalColumns, buildLogColumns, buildParamsStr } from './expandedRowColumns';
+import DiagnosticsTab from './DiagnosticsTab';
 
 const { Text } = Typography;
 
@@ -207,6 +208,11 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
             </Descriptions>
             </div>
           ),
+        },
+        {
+          key: 'diagnostics',
+          label: <span>{t('strategy.live.diagnostics', { defaultValue: 'Diagnostics' })}</span>,
+          children: <DiagnosticsTab active={row.active} />,
         },
       ]}
     />

@@ -516,6 +516,26 @@ message ActiveStrategy {
   string ask = 16;          // latest ask price for the strategy's symbol
   google.protobuf.Timestamp last_tick_at = 17;   // last time a tick was received for this symbol
   string pnl = 18;          // running PnL for this run (per-magic attribution)
+  StrategyDiagnostics diagnostics = 19;          // runtime diagnostics (L1 counters + L2 indicators)
+}
+
+// StrategyDiagnostics carries runtime diagnostics for a live strategy session.
+// L1: evaluation counters (bar/tick/trade eval counts, window bars, orders total).
+// L2: indicator ring buffer (last N values per indicator key, display-ordered).
+message StrategyDiagnostics {
+  int64 eval_count = 1;       // total evaluations (bar + tick + trade)
+  int64 tick_count = 2;       // tick evaluations
+  int64 bar_count = 3;        // bar evaluations
+  int64 last_eval_at = 4;     // unix ms of last evaluation
+  int32 window_bars = 5;      // server-side bar window length
+  int32 orders_total = 6;     // last OrdersTotal seen by VM (R3: from VM internal, not event loop)
+  repeated DiagIndicatorSeries indicators = 7;  // L2 indicator ring buffer, display-ordered
+}
+
+// DiagIndicatorSeries is a named ring buffer of indicator values for diagnostics.
+message DiagIndicatorSeries {
+  string key = 1;             // display key (e.g. "iRSI[14,0]")
+  repeated string values = 2; // decimal values, newest last (ring buffer, max 64)
 }
 
 // ── Strategy signal SSE stream ───────────────────────────────────────

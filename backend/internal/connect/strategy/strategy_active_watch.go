@@ -241,6 +241,10 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 	heartbeat := time.NewTicker(hbInterval)
 	defer heartbeat.Stop()
 
+	// Every 3rd heartbeat, send full session list with diagnostics instead of empty heartbeat.
+	// This gives frontend ~60s diagnostics refresh (3 × 20s default heartbeat).
+	var heartbeatCount int
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -265,8 +269,16 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 				return err
 			}
 		case <-heartbeat.C:
-			if err := stream.Send(&antv1.WatchActiveStrategiesEvent{Heartbeat: true}); err != nil {
-				return err
+			heartbeatCount++
+			if heartbeatCount%3 == 0 {
+				// Diagnostics heartbeat: send full list with diagnostics data.
+				if err := sendList(); err != nil {
+					return err
+				}
+			} else {
+				if err := stream.Send(&antv1.WatchActiveStrategiesEvent{Heartbeat: true}); err != nil {
+					return err
+				}
 			}
 		}
 	}

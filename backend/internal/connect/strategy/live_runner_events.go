@@ -42,6 +42,10 @@ func (s *StrategyExecutionServer) handleBar(
 
 	lctx := s.buildLiveContext(ctx, cfg, *bars, extraBars)
 
+	if activeSess != nil && activeSess.diag != nil {
+		activeSess.diag.RecordWindow(len(*bars))
+	}
+
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode: cfg.Code,
 		StrategyId:   cfg.StrategyID,
@@ -113,6 +117,9 @@ func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStr
 			}
 			return nil, vmErr
 		}
+	}
+	if activeSess != nil {
+		vmSess.SetDiag(activeSess.diag)
 	}
 	if cfg.StrategyID != "" && s.importedRepo != nil {
 		if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil && sid != uuid.Nil {

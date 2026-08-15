@@ -3466,6 +3466,51 @@ export const STRATEGY_LIVE_RUN_STARTED_KEY = 'strategy.live.runStarted' as const
 /** strategy.live.runStartFailed */
 export const STRATEGY_LIVE_RUN_START_FAILED_KEY = 'strategy.live.runStartFailed' as const;
 
+/** strategy.live.diagnostics */
+export const STRATEGY_LIVE_DIAGNOSTICS_KEY = 'strategy.live.diagnostics' as const;
+
+/** strategy.live.diag.evalCount */
+export const STRATEGY_LIVE_DIAG_EVAL_COUNT_KEY = 'strategy.live.diag.evalCount' as const;
+
+/** strategy.live.diag.barCount */
+export const STRATEGY_LIVE_DIAG_BAR_COUNT_KEY = 'strategy.live.diag.barCount' as const;
+
+/** strategy.live.diag.tickCount */
+export const STRATEGY_LIVE_DIAG_TICK_COUNT_KEY = 'strategy.live.diag.tickCount' as const;
+
+/** strategy.live.diag.windowBars */
+export const STRATEGY_LIVE_DIAG_WINDOW_BARS_KEY = 'strategy.live.diag.windowBars' as const;
+
+/** strategy.live.diag.ordersTotal */
+export const STRATEGY_LIVE_DIAG_ORDERS_TOTAL_KEY = 'strategy.live.diag.ordersTotal' as const;
+
+/** strategy.live.diag.lastEval */
+export const STRATEGY_LIVE_DIAG_LAST_EVAL_KEY = 'strategy.live.diag.lastEval' as const;
+
+/** strategy.live.diag.indicators */
+export const STRATEGY_LIVE_DIAG_INDICATORS_KEY = 'strategy.live.diag.indicators' as const;
+
+/** strategy.live.diag.noIndicators */
+export const STRATEGY_LIVE_DIAG_NO_INDICATORS_KEY = 'strategy.live.diag.noIndicators' as const;
+
+/** strategy.live.diag.state.active */
+export const STRATEGY_LIVE_DIAG_STATE_ACTIVE_KEY = 'strategy.live.diag.state.active' as const;
+
+/** strategy.live.diag.state.dataStarvation */
+export const STRATEGY_LIVE_DIAG_STATE_DATA_STARVATION_KEY = 'strategy.live.diag.state.dataStarvation' as const;
+
+/** strategy.live.diag.state.noEvaluations */
+export const STRATEGY_LIVE_DIAG_STATE_NO_EVALUATIONS_KEY = 'strategy.live.diag.state.noEvaluations' as const;
+
+/** strategy.live.diag.state.error */
+export const STRATEGY_LIVE_DIAG_STATE_ERROR_KEY = 'strategy.live.diag.state.error' as const;
+
+/** strategy.live.diag.ago */
+export const STRATEGY_LIVE_DIAG_AGO_KEY = 'strategy.live.diag.ago' as const;
+
+/** strategy.live.diag.never */
+export const STRATEGY_LIVE_DIAG_NEVER_KEY = 'strategy.live.diag.never' as const;
+
 /** common.status */
 export const COMMON_STATUS_KEY = 'common.status' as const;
 
@@ -6065,6 +6110,21 @@ export const BASE_KEYS = {
   strategy_live_parameters: '__root__.strategy.live.parameters',
   strategy_live_run_started: '__root__.strategy.live.runStarted',
   strategy_live_run_start_failed: '__root__.strategy.live.runStartFailed',
+  strategy_live_diagnostics: '__root__.strategy.live.diagnostics',
+  strategy_live_diag_eval_count: '__root__.strategy.live.diag.evalCount',
+  strategy_live_diag_bar_count: '__root__.strategy.live.diag.barCount',
+  strategy_live_diag_tick_count: '__root__.strategy.live.diag.tickCount',
+  strategy_live_diag_window_bars: '__root__.strategy.live.diag.windowBars',
+  strategy_live_diag_orders_total: '__root__.strategy.live.diag.ordersTotal',
+  strategy_live_diag_last_eval: '__root__.strategy.live.diag.lastEval',
+  strategy_live_diag_indicators: '__root__.strategy.live.diag.indicators',
+  strategy_live_diag_no_indicators: '__root__.strategy.live.diag.noIndicators',
+  strategy_live_diag_state_active: '__root__.strategy.live.diag.state.active',
+  strategy_live_diag_state_data_starvation: '__root__.strategy.live.diag.state.dataStarvation',
+  strategy_live_diag_state_no_evaluations: '__root__.strategy.live.diag.state.noEvaluations',
+  strategy_live_diag_state_error: '__root__.strategy.live.diag.state.error',
+  strategy_live_diag_ago: '__root__.strategy.live.diag.ago',
+  strategy_live_diag_never: '__root__.strategy.live.diag.never',
   common_status: '__root__.common.status',
   common_message: '__root__.common.message',
   common_open_price: '__root__.common.openPrice',

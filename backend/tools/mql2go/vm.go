@@ -48,6 +48,14 @@ type VM struct {
 
 	// Runtime blind spots (function name → hit count)
 	runtimeBlindSpots map[string]int
+
+	// L2 diagnostics: indicator values recorded at builtin return points.
+	// Cleared per event in runEvent; read by VMRunner.LastIndicators() after execution.
+	lastIndicators map[string]decimal.Decimal
+
+	// L2 diagnostics: memoized indicator key strings keyed by parameter hash.
+	// Avoids fmt.Sprintf allocations on the hot path (R2).
+	diagKeyCache map[uint64]string
 }
 
 // NewVM creates a VM for the given Bytecode.
@@ -56,6 +64,8 @@ func NewVM(bc *Bytecode) *VM {
 		bc:                bc,
 		runtimeBlindSpots: make(map[string]int),
 		funcByEntryPC:     make(map[int32]FuncEntry),
+		lastIndicators:    make(map[string]decimal.Decimal),
+		diagKeyCache:      make(map[uint64]string),
 	}
 	for _, fn := range bc.Funcs {
 		vm.funcByEntryPC[fn.EntryPC] = fn
@@ -180,6 +190,11 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 	vm.callDepth = 0
 	vm.signal = nil
 	vm.pc = entryPC
+
+	// Clear L2 indicator captures for this event.
+	for k := range vm.lastIndicators {
+		delete(vm.lastIndicators, k)
+	}
 
 	// Allocate local variable space for this event handler.
 	// Event handlers don't go through OP_CALL_USER, so we must set up locals here.

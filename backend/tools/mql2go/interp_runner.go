@@ -361,6 +361,23 @@ func (r *VMRunner) GetGlobal(name string) (interp.Value, bool) {
 	return r.vm.globals[slot], true
 }
 
+// LastIndicators returns the indicator values captured during the last event execution.
+// The map is populated by recordDiag calls in indicator builtins (shift==0 only).
+// Returns nil if no indicators were recorded. The caller must not modify the returned map.
+func (r *VMRunner) LastIndicators() map[string]decimal.Decimal {
+	return r.vm.lastIndicators
+}
+
+// OrdersTotal returns the last OrdersTotal value seen by the VM's builtinOrdersTotal.
+// This is the VM internal cached value (R3: not from the event loop), which reflects
+// the actual position+order count at the time of the last OnBar/OnTick execution.
+func (r *VMRunner) OrdersTotal() int {
+	if r.vm.cachedPositions == nil && r.vm.cachedOrders == nil {
+		return 0
+	}
+	return len(r.vm.cachedPositions) + len(r.vm.cachedOrders)
+}
+
 // injectParams reads extern/input parameters from the SDK context and
 // writes them into the VM's global variable slots.
 func (r *VMRunner) injectParams(ctx sdk.Context) {

@@ -47,6 +47,9 @@ func activeSessionToProto(sess *ActiveSession, tickFn func(accountID, symbol str
 			pb.LastTickAt = timestamppb.New(*tickAt)
 		}
 	}
+	if sess.diag != nil {
+		pb.Diagnostics = diagToProto(sess.diag.SnapshotDiag())
+	}
 	return pb
 }
 
