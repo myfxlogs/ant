@@ -322,6 +322,11 @@ func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID str
 // TransitionOrderByTicket looks up the order by broker ticket and transitions
 // its OMS state. Used by OnOrderUpdate callback to move orders from SUBMITTED
 // to terminal states (FILLED/CANCELLED/FAILED) when broker fill/reject events arrive.
+//
+// Task 2 (SUBMIT-STUCK-RACE): If the ticket is not yet backfilled in OMS
+// (broker fill event arrived before PlaceOrder RPC returned), a delayed retry
+// covers the ms-level race. If still not found after retry, triggers
+// reconciliation as a fallback (REUSE: ReconciliationLoop.TriggerReconcile).
 func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID string, ticket int64, to OMSState) {
 	if s.omsWriter == nil {
 		return
@@ -329,12 +334,37 @@ func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID st
 	orderID, currentState, err := s.omsWriter.OrderIDByTicket(ctx, accountID, ticket)
 	if err != nil {
 		if s.logger != nil {
-			s.logger.Warn("oms: order not found by ticket",
+			s.logger.Warn("oms: order not found by ticket, scheduling retry",
 				zap.String("accountID", accountID), zap.Int64("ticket", ticket), zap.Error(err))
 		}
+		// Delayed retry in a detached goroutine — covers ms-level backfill race.
+		go s.retryTransitionByTicket(accountID, ticket, to)
 		return
 	}
 	s.omsTransition(ctx, orderID, accountID, OMSState(currentState), to)
+}
+
+// retryTransitionByTicket retries the ticket lookup after a short delay.
+// If the ticket is now found, transitions the order. If still not found,
+// triggers reconciliation as a fallback (if reconcileTrigger is configured).
+func (s *MtHubService) retryTransitionByTicket(accountID string, ticket int64, to OMSState) {
+	time.AfterFunc(2*time.Second, func() {
+		retryCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		orderID, currentState, err := s.omsWriter.OrderIDByTicket(retryCtx, accountID, ticket)
+		if err != nil {
+			if s.logger != nil {
+				s.logger.Warn("oms: order still not found by ticket after retry, triggering reconciliation",
+					zap.String("accountID", accountID), zap.Int64("ticket", ticket))
+			}
+			if s.reconcileTrigger != nil {
+				s.reconcileTrigger(accountID)
+			}
+			return
+		}
+		s.omsTransition(retryCtx, orderID, accountID, OMSState(currentState), to)
+	})
 }
 
 // PublishTradeEventFromUpdate publishes a BrokerTradeEvent derived from an

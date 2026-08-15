@@ -176,16 +176,45 @@ var ErrStrategyRunNotFound = errors.New("strategy run not found")
 
 // CleanupStaleRuns marks all runs with status='running' as 'stopped'.
 // Called on server startup to clean up runs orphaned by a crash/restart.
-func (r *StrategyRunRepository) CleanupStaleRuns(ctx context.Context) (int64, error) {
+// excludeIDs contains run IDs of currently active sessions (from SessionRegistry)
+// that should NOT be marked as stopped.
+func (r *StrategyRunRepository) CleanupStaleRuns(ctx context.Context, excludeIDs []uuid.UUID) (int64, error) {
+	if len(excludeIDs) == 0 {
+		tag, err := r.db.Exec(ctx, `
+			UPDATE strategy_runs
+			SET status = 'stopped', error = 'server restarted', stopped_at = CURRENT_TIMESTAMP
+			WHERE status = 'running'
+		`)
+		if err != nil {
+			return 0, fmt.Errorf("cleanup stale runs: %w", err)
+		}
+		return tag.RowsAffected(), nil
+	}
 	tag, err := r.db.Exec(ctx, `
 		UPDATE strategy_runs
 		SET status = 'stopped', error = 'server restarted', stopped_at = CURRENT_TIMESTAMP
-		WHERE status = 'running'
-	`)
+		WHERE status = 'running' AND id != ALL($1::uuid[])
+	`, excludeIDs)
 	if err != nil {
 		return 0, fmt.Errorf("cleanup stale runs: %w", err)
 	}
 	return tag.RowsAffected(), nil
+}
+
+// MarkRunning restores a strategy run row to 'running' status, clearing
+// stopped_at and error. Used when a live goroutine registers with the
+// SessionRegistry but the DB row was previously marked stopped (e.g. by
+// a second instance's CleanupStaleRuns). The live goroutine is authoritative.
+func (r *StrategyRunRepository) MarkRunning(ctx context.Context, runID uuid.UUID) error {
+	_, err := r.db.Exec(ctx, `
+		UPDATE strategy_runs
+		SET status = 'running', stopped_at = NULL, error = NULL
+		WHERE id = $1
+	`, runID)
+	if err != nil {
+		return fmt.Errorf("mark running: %w", err)
+	}
+	return nil
 }
 
 // MonthlyRuntimeMinutes returns total runtime minutes for the current month.

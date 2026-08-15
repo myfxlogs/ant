@@ -220,6 +220,11 @@ func main() {
 	accountSyncSvc.SetNotificationSender(notifSender)
 	mktplaceSvc.SetNotificationSender(notifSender)
 
+	// Task 2 (SUBMIT-STUCK-RACE): wire reconciliation trigger so
+	// TransitionOrderByTicket can fall back to reconciliation when
+	// a broker fill event arrives before ticket backfill.
+	mthubSvc.SetReconcileTrigger(reconLoop.TriggerReconcile)
+
 	go func() { _ = scheduleEngine.Start(ctx) }()
 	defer workerCleanup()
 

@@ -6,6 +6,7 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -59,15 +60,16 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 
 	if s.omsWriter != nil {
 		pf := platform(accountID, s.hub)
-		if err := s.omsWriter.InsertOrder(ctx, closeOrderID, accountID, pf, "",
+		omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+		if err := s.omsWriter.InsertOrder(ctx, omsOrderID, accountID, pf, "",
 			int16(OrderMarket), lots, decimal.Zero, decimal.Zero, decimal.Zero, 0); err != nil {
 			if s.logger != nil {
 				s.logger.Warn("CloseOrder: OMS insert skipped", zap.Error(err))
 			}
 		} else {
-			s.omsTransition(ctx, closeOrderID, accountID, OMSStateNew, OMSStateValidated)
-			s.omsTransition(ctx, closeOrderID, accountID, OMSStateValidated, OMSStateRiskApproved)
-			s.omsTransition(ctx, closeOrderID, accountID, OMSStateRiskApproved, OMSStateSubmitted)
+			s.omsTransition(ctx, omsOrderID, accountID, OMSStateNew, OMSStateValidated)
+			s.omsTransition(ctx, omsOrderID, accountID, OMSStateValidated, OMSStateRiskApproved)
+			s.omsTransition(ctx, omsOrderID, accountID, OMSStateRiskApproved, OMSStateSubmitted)
 		}
 	}
 
@@ -132,7 +134,8 @@ func (s *MtHubService) postCloseFailure(ctx context.Context, closeOrderID, accou
 		s.logger.Error("CloseOrder: executor failed", zap.Error(err), zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 	}
 	if s.omsWriter != nil {
-		s.omsTransition(ctx, closeOrderID, accountID, OMSStateSubmitted, OMSStateFailed)
+		omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+		s.omsTransition(ctx, omsOrderID, accountID, OMSStateSubmitted, OMSStateFailed)
 	}
 }
 
@@ -141,7 +144,8 @@ func (s *MtHubService) postCloseSuccess(ctx context.Context, closeOrderID, accou
 		s.logger.Info("CloseOrder: executor success", zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 	}
 	if s.omsWriter != nil {
-		s.omsTransition(ctx, closeOrderID, accountID, OMSStateSubmitted, OMSStateFilled)
+		omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+		s.omsTransition(ctx, omsOrderID, accountID, OMSStateSubmitted, OMSStateFilled)
 	}
 	if s.eventStore != nil {
 		ev := &TradeEvent{

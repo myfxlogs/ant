@@ -95,7 +95,7 @@ func TestOmsWriterInsertOrder_EmptyPlatform(t *testing.T) {
 
 	// Platform empty → defaults to "MT5".
 	err := w.InsertOrder(ctx, orderID, accountID, "", "EURUSD", 0,
-		decimal.NewFromInt(1), decimal.Zero, decimal.Zero, decimal.Zero)
+		decimal.NewFromInt(1), decimal.Zero, decimal.Zero, decimal.Zero, 0)
 	if err != nil {
 		t.Fatalf("InsertOrder with empty platform failed: %v", err)
 	}
@@ -113,7 +113,7 @@ func TestOmsWriterTransition_InvalidState(t *testing.T) {
 	// Insert first.
 	_ = w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD", 0,
 		decimal.NewFromInt(1), decimal.NewFromFloat(1.085),
-		decimal.Zero, decimal.Zero)
+		decimal.Zero, decimal.Zero, 0)
 
 	// Invalid transition: NEW → FILLED (skipping intermediate states).
 	err := w.Transition(ctx, orderID, accountID, OMSStateNew, OMSStateFilled)
@@ -134,7 +134,7 @@ func TestOmsWriterTransition_WithTradeEventStore(t *testing.T) {
 
 	_ = w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD", 0,
 		decimal.NewFromInt(1), decimal.NewFromFloat(1.085),
-		decimal.Zero, decimal.Zero)
+		decimal.Zero, decimal.Zero, 0)
 
 	err := w.Transition(ctx, orderID, accountID, OMSStateNew, OMSStateValidated)
 	if err != nil {
@@ -161,7 +161,7 @@ func TestOmsWriterTransition_ConcurrentConflict(t *testing.T) {
 
 	_ = w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD", 0,
 		decimal.NewFromInt(1), decimal.NewFromFloat(1.085),
-		decimal.Zero, decimal.Zero)
+		decimal.Zero, decimal.Zero, 0)
 
 	// First transition succeeds.
 	_ = w.Transition(ctx, orderID, accountID, OMSStateNew, OMSStateValidated)
@@ -194,7 +194,7 @@ func TestOmsWriter_UpdateTicket_And_TransitionOrderByTicket(t *testing.T) {
 
 	// Insert + transition to SUBMITTED (simulating PlaceOrder flow).
 	if err := w.InsertOrder(ctx, orderID, accountID, "MT5", "EURUSD",
-		0, decimal.NewFromInt(1), decimal.NewFromFloat(1.085), decimal.Zero, decimal.Zero,
+		0, decimal.NewFromInt(1), decimal.NewFromFloat(1.085), decimal.Zero, decimal.Zero, 0,
 	); err != nil {
 		t.Fatalf("InsertOrder: %v", err)
 	}
