@@ -405,6 +405,13 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 ## 变更日志
 
+- 2026-08-15 **PARITY 返工 + OMS-EXIT-FIX 双批复审完成（审计方），审计方接手收尾（用户关停 Windsurf 后授权）**：
+  - **PARITY W1-W3 ✅ 复审通过**（Windsurf `ea4643d4`，死于 W5 构建被终止）：W1 零量守卫已删 + 全链集成测试（真 MtHubService+mock executor+gate）；W2 `cfg.SymbolParam` 启动预取（5s 超时）+ builder O(1) 填充 + 兜底带超时（偏离"仅重试一次"：兜底在 param==nil 期间每事件快败重试直至网关恢复——自愈性优于一次性，接受并记档）；W3 两测试齐（两连 bar 测试用 `OrderSend volume=Bars()` 编码窗口数，巧）。**对抗复测 3/3 断言级 RED**（W1 ticket 守卫突变 / W3 seed 循环清空 / W3 窗口塌缩 n:=1）。mthub 一次 81s FAIL 复现 3 连绿——语言服务器垂死期负载抖动，非缺陷。
+  - **OMS-EXIT-FIX 复审（Windsurf `aa7892c1`，用户提前派发）+ 审计方补强 `8bc6c8f`**：Task 1-3 代码正确；🔴 **Task 1 测试测拷贝不测真代码**（测试内联重算 UUID，`uuid.New()` 突变全绿——POST-1 复发）→ 修复：抽 `closeOMSOrderID()` 生产函数（顺带消 3 处重复），测试改测真函数，确定性断言级锁死（`uuid.New()` 突变 RED）；Task 3 判重 key 突变 RED ✓；Task 2 重试实现正确但测试仅 nil 安全（行为留生产验证记档）；**Task 4 MarkRunning 接线由审计方补齐**（`registerLiveSession` 调 `runRepo.MarkRunning`——活 goroutine 是权威，误标行自愈）。
+  - **Live UI 完整闭环（用户驱动 4 轮，审计方直接实现）**：三方对齐（`568fbb1`：发现 antd 逻辑属性 `margin-inline` 是 -40 魔法数元凶 + `.ant-tabs-content-active` 选择器修正 + e2e UI 登录路径）→ tab 间距/列序（`4b75367`）→ **tab-列网格对齐**（`69e062e`：列宽百分比化消灭 table-layout:fixed 拉伸 + tab 宽度同数组内联生成，e2e 网格断言 4 列 diff<3px）→ 字号层级（tab 600 / 内表头 12px/400）。Windsurf 昨日 8 个对齐 commit 的未解之谜正式结案（固定 px 对抗拉伸列）。
+  - **角色边界**：用户关停 Windsurf 后明确授权审计方接手未完成事务（"你来完成 windsurf 未完成的事务"）——同 ORDERS-MAGIC 授权例外先例；复审与施工同人，以对抗删行复测+生产验收链保持客观性。
+  - **W5 部署 + 生产验收链 ✅（2026-08-15 04:27 UTC 部署，审计方实测）**：`seedBarWindows: seeded 487 bars`（broker="Exness Technologies Ltd" 权威解析正确）；run `07e13f2a` running（MarkRunning 生效无误标）；账户 3s 前活跃（报价/利润流在推）；**`bars less than 100` 刷屏 = 0（tick 流动下）——P0 修复生产生效**（旧二进制结构性恒 1）；**`no money` = 0——FreeMargin 注入生效**；**SUBMITTED 卡单清零**（历史 2 笔 344688186/344688584 被对账修复——SUBMIT-STUCK-RACE 修复机制生效）。⏳ MACD buy/close 信号待市场条件（策略在正常评估，条件未满足非缺陷）。**LIVE-HARNESS-PARITY + OMS-EXIT-FIX 双批生产闭环达成。**
+
 - 2026-08-15 **OMS-EXIT-FIX 批 handoff 已出（入口 #2，与 PARITY 返工并行）**：`builder-handoff-oms-exit-fix-2026-08-15.md`——4 任务：① CLOSE-ORDER-UUID（P1，平仓 OMS 行改 MD5-UUID，REUSE IdempotencyKey 模式）② SUBMIT-STUCK-RACE（P1，TransitionOrderByTicket 查无→2s 进程内重试→仍无则 TriggerReconcile 对账修复，REUSE STREAM-KEEPALIVE 修复型对账）③ DEDUP-5S-THROTTLE（P2，**根因精化：判重 key 缺 AccountID+Magic——close 意图 symbol/side/price 全空 → 任何账户任何 ticket 5s 内互拒还跨账户误伤**，key 扩 2 字段）④ CLEANUP-MISFIRE（P2，CleanupStaleRuns 排除活 run + Register 时 MarkRunning 反标）。零文件冲突 PARITY（mthub/risk/repository vs connect/strategy）。**待用户派发。**
 
 - 2026-08-15 **收工总账（当日全弧线，无损交接锚点）**：本日审计方围绕用户报告"schedule `599ddaa5` 无法开仓"完成 4 轮递进工作，全部落档：
