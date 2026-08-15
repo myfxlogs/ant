@@ -249,7 +249,7 @@ func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lct
 	lctx.Point = param.PointValue.String()
 	lctx.Digits = param.Digits
 	lctx.ContractSize = param.ContractSize.String()
-	lctx.StopsLevel = int32(param.StopLevel)
+	lctx.StopsLevel = param.StopLevel
 }
 
 // backfillTickSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
@@ -265,5 +265,5 @@ func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig,
 	tctx.Point = param.PointValue.String()
 	tctx.Digits = param.Digits
 	tctx.ContractSize = param.ContractSize.String()
-	tctx.StopsLevel = int32(param.StopLevel)
+	tctx.StopsLevel = param.StopLevel
 }

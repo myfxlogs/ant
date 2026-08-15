@@ -261,3 +261,23 @@ bash scripts/gen_capability_map.sh                        # 刷新 CAPABILITIES.
 | # | 修订 | 问题 |
 |---|---|---|
 | R9 | ① Task 2/Task 4 两处仍引用已删除的 buildDeltaContext（v1.1 残留）→ 改"三个 builder（若仍存在说明 Task 1 未完成）"兼作施工自检点；② Task 3 搬移方式精确化（函数整体搬移、函数名不变 → wiring.go 零改动，原文件净减 100+ 行脱离红线）；③ §6 补回"任务无强依赖"说明 | 提示词逐句对文档+代码核验时抓出：内部矛盾会误导施工方；"新增代码放新文件"歧义可能诱导往 758 行文件加行 |
+
+## 8. 审计方验收裁决（2026-08-15）——实现大体质忠实，**小返工后通过**
+
+**已验证通过项**：
+- 门禁全绿实测：`go build ./...` ✓ / `go test` runner+mql2go+connect/strategy ✓ / `check-file-lines --strict` 0 ERROR ✓
+- **对抗复测审计方独立删行 5/5 RED 有效**：dedupe `==` 分支（TestAppendDedupBar_ThreeStates）/ margin backfill（TestBackfillContextStrings_MarginFreeMargin）/ OrderClose signalMode（TestSignalMode_OrderClose）/ UpdateSymbolInfo Point / liveMargin 注入——均断言级真红
+- **结构验证 PASS（审计方临时测试，未入库）**：两个连续 bar 事件后 VM 窗口=121（无 delta 塌缩）——v1.2 架构在真实代码路径生效
+- 文件红线：`vm_builtin_trade.go` 758→636（净 -122，一行未加 ✓）；`live_context.go` 269 / `live_runner.go` 409（<450 ✓）
+- proto 字段号与规格逐一对上；Timer 第 4 调用点补齐；"-1" fail-visible 语义统一；三态去重统一单 helper（克制）；CloseAll 主动覆盖（同类合理扩展）
+
+**返工项（W1-W3 必做，W4 可选）**：
+
+| # | 级别 | 项 | 说明 |
+|---|---|---|---|
+| W1 | 🔴 | **dispatchCloseOrder 零量守卫放宽（原规格 R4，漏做）** | `live_dispatch.go:202` 仍丢弃 `volume<=0` 的 close 信号 → `OrderCloseBy` 与 `CTrade.PositionClose`（MQL5 全仓平语义，Volume=0）发出的信号被静默丢弃。修法：close 路径 volume<=0 **放行**（mthub.CloseOrder 对 lots=0=全仓平，UI 路径已实证）；modify/cancel 的 ticket==0 守卫不动。对抗测试：零量 close 信号到达 CloseOrder mock（删放行 → RED） |
+| W2 | 🟡 | **Task 4 取数移出事件热路径（原规格 R6，偏离）** | `backfillSymbolInfo`/`backfillTickSymbolInfo` 在**每 bar/tick** 的 builder 里调 `CachedSymbolParam` 且 `context.Background()` **无超时**——TTL 5min 过期时一个 tick 事件同步做无超时 broker RPC；网关断连时（cache 无条目）**每 tick 都发起失败 RPC**。修法：run 启动取一次存 server 字段（按 runID），builder 只做字符串填充；启动失败 → 首 bar 重试一次上限；任何兜底调用必须 5s 超时 |
+| W3 | 🟡 | **补 2 项缺失对抗测试** | ① `seedBarWindows` 零测试——mock MarketDataStore：种子 120 根 → 首事件窗口≥100（GREEN）/ 删 seedBarWindows 调用 → RED；② 两连续 bar 事件结构测试入库（审计方已独立验证 PASS，可用探针策略模式：stub sdk.Strategy 在 OnBar 记录 `ctx.Bars().Len()`，断言第二事件后 ≥121） |
+| W4 | ℹ️ | gen churn（可选） | protoc-gen-go v1.36.11→v1.36.12 重生 150+ 无关 pb.go（仅版本注释行变化，无害）——建议 pin 插件版本防再次全量 churn |
+| W5 | ⚠️ | **部署**（返工完成后） | 容器仍是 2026-08-14 16:42 旧镜像（未部署）。`docker compose build backend && docker compose up -d backend` 后**重启 MACD 调度 `599ddaa5`**，审计方跑生产验收链（§5：刷屏立停 / FreeMargin 真实 / buy+close 信号出现） |
+

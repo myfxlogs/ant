@@ -122,6 +122,7 @@ export default function AppSidebar({
   onDrawerClose,
 }: Props) {
   const { t: _t } = useTranslation();
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
   const langDropdown = (
     <Dropdown menu={languageMenu} placement="topLeft" trigger={['click']}>
@@ -146,7 +147,6 @@ export default function AppSidebar({
   }
 
   // Desktop sidebar
-  const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const siderWidth = sidebarCollapsed ? 64 : 240;
   return (
     <Layout.Sider trigger={null} collapsed={sidebarCollapsed}

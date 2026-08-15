@@ -147,6 +147,28 @@ func (s *StrategyExecutionServer) WatchStrategySignals(ctx context.Context, req 
 	}
 }
 
+// checkAccountFilter validates account ownership if accountFilter is provided.
+// Returns an error suitable for direct return from the Connect handler.
+func (s *StrategyExecutionServer) checkAccountFilter(ctx context.Context, uid uuid.UUID, accountFilter string) error {
+	if accountFilter == "" {
+		return nil
+	}
+	accountUUID, parseErr := uuid.Parse(accountFilter)
+	if parseErr != nil {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", parseErr))
+	}
+	if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
+		if errors.Is(err, service.ErrAccountLimitExceeded) {
+			return connect.NewError(connect.CodePermissionDenied, err)
+		}
+		if errors.Is(err, service.ErrAccountNotOwned) {
+			return connect.NewError(connect.CodeNotFound, err)
+		}
+		return connect.NewError(connect.CodeInternal, err)
+	}
+	return nil
+}
+
 // WatchActiveStrategies streams the active strategy list via SSE.
 // Sends the current list immediately, then pushes updates whenever
 // sessions are registered, deregistered, or change state.
@@ -165,22 +187,8 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 	}
 
 	accountFilter := req.Msg.GetAccountId()
-
-	// F1: IDOR - check account ownership if accountFilter is provided.
-	if accountFilter != "" {
-		accountUUID, parseErr := uuid.Parse(accountFilter)
-		if parseErr != nil {
-			return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", parseErr))
-		}
-		if err := s.checkBoundAccount(ctx, uid, accountUUID); err != nil {
-			if errors.Is(err, service.ErrAccountLimitExceeded) {
-				return connect.NewError(connect.CodePermissionDenied, err)
-			}
-			if errors.Is(err, service.ErrAccountNotOwned) {
-				return connect.NewError(connect.CodeNotFound, err)
-			}
-			return connect.NewError(connect.CodeInternal, err)
-		}
+	if err := s.checkAccountFilter(ctx, uid, accountFilter); err != nil {
+		return err
 	}
 
 	tickFn := s.tickPriceFn()

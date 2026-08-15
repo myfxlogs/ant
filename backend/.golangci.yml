@@ -211,6 +211,12 @@ linters:
           - staticcheck
         path: internal/mthub/
       - linters:
+          - forbidigo
+        path: internal/mthub/
+      - linters:
+          - revive
+        path: internal/mthub/
+      - linters:
           - staticcheck
         path: internal/secrets/vault_legacy\.go
       - linters:

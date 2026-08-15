@@ -37,7 +37,7 @@ func parsePrice(s string) decimal.Decimal {
 // contractSize returns the per-symbol contract multiplier from AccountState.
 // It no longer silently defaults; the second result reports whether the value
 // was explicitly populated. Missing/zero contract size must fail-closed.
-func contractSize(state *AccountState, symbol string) (decimal.Decimal, bool) {
+func contractSize(state *AccountState) (decimal.Decimal, bool) {
 	if state != nil && state.ContractSize.GreaterThan(decimal.Zero) {
 		return state.ContractSize, true
 	}
@@ -103,7 +103,7 @@ func (r *MaxExposure) Check(_ context.Context, intent *antv1.OrderIntent, state 
 		// Market order — use current_price from state (approximate).
 		return &RuleResult{Allowed: true}
 	}
-	cs, ok := contractSize(state, intent.GetSymbol())
+	cs, ok := contractSize(state)
 	if !ok {
 		return &RuleResult{
 			Allowed: false,
@@ -327,7 +327,7 @@ func (r *MarginPreCheck) Check(_ context.Context, intent *antv1.OrderIntent, sta
 		return &RuleResult{Allowed: true} // market order — broker determines fill price
 	}
 
-	cs, ok := contractSize(state, intent.GetSymbol())
+	cs, ok := contractSize(state)
 	if !ok {
 		return &RuleResult{
 			Allowed: false,

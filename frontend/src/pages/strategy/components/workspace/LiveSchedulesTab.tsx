@@ -22,19 +22,14 @@ import { parseParametersToForm, buildParametersFromForm } from '../../StrategySc
 import { DEFAULT_TEMPLATES } from '../../StrategyLibrary.defaults';
 import type { DefaultTemplateItem } from '../../StrategyLibrary.defaults';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
+import { formatTime, getEnableNavigateTarget } from './liveSchedulesUtils';
+import { manualTriggerStart } from './manualTrigger';
 import {
   COMMON_UPDATED_KEY, COMMON_CREATED_KEY, COMMON_SAVE_FAILED_KEY,
   COMMON_ENABLED_KEY, COMMON_DISABLED_KEY, COMMON_OPERATION_FAILED_KEY,
   COMMON_DELETED_KEY, COMMON_DELETE_FAILED_KEY,
 } from '@/gen/ant/v1/i18n/base_keys';
 import { MESSAGES_ORDER_SUBMITTED_KEY, MESSAGES_ORDER_FAILED_KEY, MESSAGES_PARAMETERS_PARSE_FAILED_KEY, CREATE_SCHEDULE_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
-
-function formatTime(v: unknown): string {
-  if (!v) return '-';
-  const ms = typeof v === 'bigint' ? Number(v) : typeof v === 'number' ? v : 0;
-  return ms ? new Date(ms).toLocaleString() : '-';
-}
-export function getEnableNavigateTarget(next: boolean): string | null { return next ? '/strategy/live?tab=strategies' : null; }
 
 export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { highlightScheduleId?: string | null; healthId?: string | null }) {
   const { t } = useTranslation();
@@ -53,21 +48,18 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
   const [healthTarget, setHealthTarget] = useState<ScheduleRow | null>(null);
   const [logsScheduleId, setLogsScheduleId] = useState<string | null>(null);
   const [healthSummary, setHealthSummary] = useState<ScheduleHealthSummary | null>(null);
-
   const [triggering, setTriggering] = useState(false);
   const [openTrigger, setOpenTrigger] = useState(false);
   const [triggerResult, setTriggerResult] = useState<TriggerResult | null>(null);
   const [triggerContext, setTriggerContext] = useState<TriggerContext | null>(null);
   const triggerRunIdRef = useRef<string | null>(null);
   const triggerAbortRef = useRef<AbortController | null>(null);
-
   const stopTriggerRun = useCallback(() => {
     if (triggerAbortRef.current) { triggerAbortRef.current.abort(); triggerAbortRef.current = null; }
     if (triggerRunIdRef.current) { void strategyActiveApi.stop(triggerRunIdRef.current); triggerRunIdRef.current = null; }
   }, []);
 
   const symbolsOpts = useMemo(() => symbols.map(s => ({ value: s.value, label: s.label })), [symbols]);
-
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
@@ -80,7 +72,6 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
       setSchedules(schs as ScheduleRow[]);
     } catch { /* ignore */ } finally { setLoading(false); }
   }, [fetchAccounts]);
-
   useEffect(() => { void refresh(); }, [refresh]);
 
   useEffect(() => {
@@ -120,27 +111,10 @@ export default function LiveSchedulesTab({ highlightScheduleId, healthId }: { hi
   }, [healthId, schedules, loadScheduleHealth]);
 
   const onManualTrigger = useCallback(async (row: ScheduleRow) => {
-    stopTriggerRun();
-    setTriggering(true); setTriggerResult(null);
-    setTriggerContext({ schedule: row, accountId: row.accountId }); setOpenTrigger(true);
-    try {
-      const tpl = await strategyTemplateApi.get(row.templateId);
-      const code = String(tpl?.code || '');
-      if (!code) throw new Error('Template code empty');
-      const resp = await strategyActiveApi.start({ accountId: row.accountId, strategyCode: code, symbol: row.symbol, timeframe: row.timeframe, mode: 'paper', strategyId: row.templateId, params: row.parameters });
-      if (!resp.success) throw new Error(resp.error || 'StartStrategy failed');
-      triggerRunIdRef.current = resp.runId;
-      setTriggerResult({ logs: ['Run started, listening for signals...'], signal: null, meta: { templateId: row.templateId, scheduleId: row.id } });
-      const abort = new AbortController(); triggerAbortRef.current = abort;
-      (async () => {
-        try { for await (const ev of strategyActiveApi.watchSignals(resp.runId, abort.signal)) {
-          const s = ev as Record<string, unknown>;
-          setTriggerResult(prev => ({ logs: [...(prev?.logs || []), `Signal: ${s.signalType ?? ''} ${s.volume ?? ''} @ ${s.price ?? ''}`], signal: s as TriggerResult['signal'], meta: prev?.meta || {} }));
-          setTriggering(false);
-        } } catch (e) { if ((e as { name?: string })?.name !== 'AbortError') setTriggerResult(prev => ({ logs: [...(prev?.logs || []), `Stream ended: ${e instanceof Error ? e.message : String(e)}`], signal: prev?.signal ?? null, meta: prev?.meta || {} })); }
-      })();
-    } catch (e: unknown) { setTriggerResult({ logs: [], signal: null, meta: { error: e instanceof Error ? e.message : String(e) } }); }
-    finally { setTriggering(false); }
+    await manualTriggerStart({
+      row, triggerRunIdRef, triggerAbortRef, stopTriggerRun,
+      setTriggering, setTriggerResult, setTriggerContext, setOpenTrigger,
+    });
   }, [stopTriggerRun]);
 
   const doOrderSend = useCallback(async () => {

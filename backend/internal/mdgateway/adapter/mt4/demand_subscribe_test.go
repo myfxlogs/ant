@@ -68,7 +68,10 @@ func TestDEMAND_SUB_NonNilSymbolsCallsSubscribeMany(t *testing.T) {
 		t.Fatalf("Subscribe failed: %v", err)
 	}
 
-	if len(mock.calls) != 1 {
-		t.Fatalf("expected 1 SubscribeMany call, got %d", len(mock.calls))
+	mock.mu.Lock()
+	gotCalls := len(mock.calls)
+	mock.mu.Unlock()
+	if gotCalls != 1 {
+		t.Fatalf("expected 1 SubscribeMany call, got %d", gotCalls)
 	}
 }

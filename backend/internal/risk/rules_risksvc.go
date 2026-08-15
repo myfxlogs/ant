@@ -116,10 +116,12 @@ func (r *MarginFloorRule) Check(_ context.Context, intent *antv1.OrderIntent, st
 	if vol.LessThanOrEqual(decimal.Zero) || price.LessThanOrEqual(decimal.Zero) {
 		return passResult(r.Name()) // skip for market orders (price unknown)
 	}
-	cs, ok := contractSize(state, intent.GetSymbol())
+	cs, ok := contractSize(state)
 	if !ok {
-		return blockResult(r.Name(),
-			fmt.Sprintf("contract size unknown for symbol %s", intent.GetSymbol()))
+		return &RuleResult{
+			Allowed: false,
+			Reason:  fmt.Sprintf("contract size unknown for symbol %s", intent.GetSymbol()),
+		}
 	}
 	required := vol.Mul(price).Mul(cs)
 	if state.FreeMargin.LessThan(decimal.NewFromFloat(ratio).Mul(required)) {

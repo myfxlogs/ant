@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -169,6 +170,7 @@ func TestQuoteStream_RecvError_FiresReconnect(t *testing.T) {
 
 // mockSubCliPerSymbol returns different results based on the symbol being subscribed.
 type mockSubCliPerSymbol struct {
+	mu           sync.Mutex
 	validSymbols map[string]bool
 	calls        []string
 }
@@ -177,6 +179,8 @@ func (m *mockSubCliPerSymbol) Subscribe(ctx context.Context, in *pb.SubscribeReq
 	return nil, fmt.Errorf("mock: not implemented")
 }
 func (m *mockSubCliPerSymbol) SubscribeMany(ctx context.Context, in *pb.SubscribeManyRequest, opts ...grpc.CallOption) (*pb.SubscribeManyReply, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	for _, s := range in.Symbols {
 		m.calls = append(m.calls, s)
 		if !m.validSymbols[s] {
@@ -234,7 +238,10 @@ func TestSubscribe_PerSymbol_SkipsInvalid(t *testing.T) {
 	}
 
 	// Verify all 3 symbols were attempted (per-symbol calls).
-	if len(mock.calls) != 3 {
-		t.Fatalf("expected 3 per-symbol SubscribeMany calls, got %d — RED: batch mode only 1 call", len(mock.calls))
+	mock.mu.Lock()
+	gotCalls := len(mock.calls)
+	mock.mu.Unlock()
+	if gotCalls != 3 {
+		t.Fatalf("expected 3 per-symbol SubscribeMany calls, got %d — RED: batch mode only 1 call", gotCalls)
 	}
 }
