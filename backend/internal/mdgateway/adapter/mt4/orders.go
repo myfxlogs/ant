@@ -332,11 +332,11 @@ func (g *Gateway) orderEventLoop(ctx context.Context, h mthub.OrderEventHandler)
 			continue
 		}
 		backoff = time.Second
-		g.recvOrderUpdates(ctx, subCtx, cancel, stream, h, &backoff)
+		g.recvOrderUpdates(ctx, cancel, stream, h, &backoff)
 	}
 }
 
-func (g *Gateway) recvOrderUpdates(ctx, subCtx context.Context, cancel context.CancelFunc,
+func (g *Gateway) recvOrderUpdates(ctx context.Context, cancel context.CancelFunc,
 	stream grpc.ServerStreamingClient[pb.OnOrderUpdateReply], h mthub.OrderEventHandler, backoff *time.Duration,
 ) {
 	defer cancel()
