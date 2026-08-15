@@ -10,14 +10,14 @@ interface Props {
 }
 
 function formatLastEval(ms: number | bigint, t: (k: string, o?: Record<string, unknown>) => string): string {
-  if (!ms || ms === 0n) return t('strategy.live.diag.never', { defaultValue: 'never' });
+  if (!ms || ms === 0n) return t('strategy.live.diag.never');
   const msNum = typeof ms === 'bigint' ? Number(ms) : ms;
   const agoSec = Math.floor((Date.now() - msNum) / 1000);
-  if (agoSec < 0) return t('strategy.live.diag.never', { defaultValue: 'never' });
-  if (agoSec < 60) return `${agoSec}s ${t('strategy.live.diag.ago', { defaultValue: 'ago' })}`;
-  if (agoSec < 3600) return `${Math.floor(agoSec / 60)}m ${t('strategy.live.diag.ago', { defaultValue: 'ago' })}`;
-  if (agoSec < 86400) return `${Math.floor(agoSec / 3600)}h ${t('strategy.live.diag.ago', { defaultValue: 'ago' })}`;
-  return `${Math.floor(agoSec / 86400)}d ${t('strategy.live.diag.ago', { defaultValue: 'ago' })}`;
+  if (agoSec < 0) return t('strategy.live.diag.never');
+  if (agoSec < 60) return `${agoSec}s ${t('strategy.live.diag.ago')}`;
+  if (agoSec < 3600) return `${Math.floor(agoSec / 60)}m ${t('strategy.live.diag.ago')}`;
+  if (agoSec < 86400) return `${Math.floor(agoSec / 3600)}h ${t('strategy.live.diag.ago')}`;
+  return `${Math.floor(agoSec / 86400)}d ${t('strategy.live.diag.ago')}`;
 }
 
 function deriveState(diag: StrategyDiagnostics | undefined, errorCount: number): 'active' | 'starvation' | 'noeval' | 'error' {
@@ -34,13 +34,13 @@ function deriveState(diag: StrategyDiagnostics | undefined, errorCount: number):
 function StateBadge({ state, t }: { state: ReturnType<typeof deriveState>; t: (k: string, o?: Record<string, unknown>) => string }) {
   switch (state) {
     case 'active':
-      return <Space><Badge status="success" /><Text>{t('strategy.live.diag.state.active', { defaultValue: 'Active' })}</Text></Space>;
+      return <Space><Badge status="success" /><Text>{t('strategy.live.diag.state.active')}</Text></Space>;
     case 'starvation':
-      return <Space><Badge status="warning" /><Text>{t('strategy.live.diag.state.data_starvation', { defaultValue: 'Data Starvation' })}</Text></Space>;
+      return <Space><Badge status="warning" /><Text>{t('strategy.live.diag.state.dataStarvation')}</Text></Space>;
     case 'noeval':
-      return <Space><Badge status="default" /><Text type="secondary">{t('strategy.live.diag.state.no_evaluations', { defaultValue: 'No Evaluations' })}</Text></Space>;
+      return <Space><Badge status="default" /><Text type="secondary">{t('strategy.live.diag.state.noEvaluations')}</Text></Space>;
     case 'error':
-      return <Space><Badge status="error" /><Text type="danger">{t('strategy.live.diag.state.error', { defaultValue: 'Error' })}</Text></Space>;
+      return <Space><Badge status="error" /><Text type="danger">{t('strategy.live.diag.state.error')}</Text></Space>;
   }
 }
 
@@ -83,28 +83,28 @@ export default function DiagnosticsTab({ active }: Props) {
   const state = useMemo(() => deriveState(diag, active?.errorCount ?? 0), [diag, active?.errorCount]);
 
   if (!active) {
-    return <Empty description={t('strategy.live.noActive', { defaultValue: 'No active strategies' })} />;
+    return <Empty description={t('strategy.live.noActive')} />;
   }
 
   return (
     <div>
       <Descriptions size="small" column={3} bordered>
-        <Descriptions.Item label={t('strategy.live.diag.eval_count', { defaultValue: 'Evaluations' })}>
+        <Descriptions.Item label={t('strategy.live.diag.evalCount')}>
           <Text strong>{diag?.evalCount?.toString() ?? '0'}</Text>
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.live.diag.bar_count', { defaultValue: 'Bar Evals' })}>
+        <Descriptions.Item label={t('strategy.live.diag.barCount')}>
           {diag?.barCount?.toString() ?? '0'}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.live.diag.tick_count', { defaultValue: 'Tick Evals' })}>
+        <Descriptions.Item label={t('strategy.live.diag.tickCount')}>
           {diag?.tickCount?.toString() ?? '0'}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.live.diag.window_bars', { defaultValue: 'Window Bars' })}>
+        <Descriptions.Item label={t('strategy.live.diag.windowBars')}>
           {diag?.windowBars ?? 0}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.live.diag.orders_total', { defaultValue: 'Orders Total' })}>
+        <Descriptions.Item label={t('strategy.live.diag.ordersTotal')}>
           {diag?.ordersTotal ?? 0}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.live.diag.last_eval', { defaultValue: 'Last Eval' })}>
+        <Descriptions.Item label={t('strategy.live.diag.lastEval')}>
           {formatLastEval(diag?.lastEvalAt ?? 0n, t)}
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.live.status', { defaultValue: 'Status' })} span={3}>
@@ -113,13 +113,13 @@ export default function DiagnosticsTab({ active }: Props) {
       </Descriptions>
 
       <div style={{ marginTop: 12 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>{t('strategy.live.diag.indicators', { defaultValue: 'Indicators' })}</Text>
+        <Text type="secondary" style={{ fontSize: 12 }}>{t('strategy.live.diag.indicators')}</Text>
         {diag?.indicators && diag.indicators.length > 0 ? (
           <div style={{ marginTop: 4 }}>
             {diag.indicators.map(s => <IndicatorRow key={s.key} series={s} />)}
           </div>
         ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.live.diag.no_indicators', { defaultValue: 'No indicator data yet' })} style={{ margin: '8px 0' }} />
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('strategy.live.diag.noIndicators')} style={{ margin: '8px 0' }} />
         )}
       </div>
     </div>
