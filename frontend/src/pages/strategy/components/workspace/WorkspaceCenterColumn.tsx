@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Modal } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
 import WorkspaceSidebar from './WorkspaceSidebar';
@@ -10,6 +12,8 @@ import BottomPanelSection from './BottomPanelSection';
 import MobileBacktestContent from './MobileBacktestContent';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
 import { useSidebarActions } from './useSidebarActions';
+import { COMMON_CANCEL_KEY, COMMON_CONFIRM_KEY, COMMON_UNSAVED_KEY } from '@/gen/ant/v1/i18n/base_keys';
+import { SIDEBAR_NEW_STRATEGY_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface Props {
   isMobile?: boolean;
@@ -19,6 +23,7 @@ interface Props {
 }
 
 export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
+  const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
 
@@ -97,13 +102,30 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const [importMode, setImportMode] = useState(false);
 
   const handleNewStrategy = useCallback(() => {
-    templates.onSelect('');
-    code.setCode('');
-    code.setStrategyId(undefined);
-    code.setValidationResult(null);
-    code.setLastValidatedCode('');
-    setCenterTab('code');
-  }, [templates, code, setCenterTab]);
+    const hasUnsaved = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode;
+    const doNew = () => {
+      templates.onSelect('');
+      code.setCode('');
+      code.setStrategyId(undefined);
+      code.setValidationResult(null);
+      code.setLastValidatedCode('');
+      code.setLoadedTemplate(null);
+      backtest.runner.resetStatus();
+      setRightPanelTab(null);
+      setCenterTab('code');
+    };
+    if (hasUnsaved) {
+      Modal.confirm({
+        title: t(SIDEBAR_NEW_STRATEGY_KEY),
+        content: t(COMMON_UNSAVED_KEY),
+        okText: t(COMMON_CONFIRM_KEY),
+        cancelText: t(COMMON_CANCEL_KEY),
+        onOk: doNew,
+      });
+    } else {
+      doNew();
+    }
+  }, [templates, code, backtest, setCenterTab, setRightPanelTab, t]);
 
   const sidebarProps = useMemo(() => ({
     templates: templates.list,

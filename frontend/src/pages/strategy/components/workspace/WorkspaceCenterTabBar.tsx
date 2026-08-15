@@ -6,6 +6,7 @@ import {
   CODE_KEY, SAVE_KEY, COPY_KEY, RUN_BACKTEST_KEY,
   BACKTEST_KEY as WS_BACKTEST_KEY, AI_ASSISTANT_KEY,
   SELECT_ACCOUNT_FIRST_KEY, SELECT_SYMBOL_FIRST_KEY,
+  SIDEBAR_NEW_STRATEGY_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY, STRATEGY_VERSION_HISTORY_KEY } from '@/gen/ant/v1/i18n/base_keys';
 import { type CenterTab } from '@/stores/workspaceStore';
@@ -51,7 +52,7 @@ export default function WorkspaceCenterTabBar({
         { key: 'code', icon: '📝', label: t(CODE_KEY) },
       ];
 
-  const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || '';
+  const strategyName = templates.list.find((t2: { id: string; name?: string }) => t2.id === templates.selectedId)?.name || code.loadedTemplate?.name || (!code.code && !code.loadedTemplate ? t(SIDEBAR_NEW_STRATEGY_KEY) : '');
   const saveStatus: 'modified' | 'saved' | 'none' = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode ? 'modified' : code.lastSavedId ? 'saved' : 'none';
 
   const handleBacktestClick = () => {

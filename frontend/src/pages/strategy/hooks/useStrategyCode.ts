@@ -132,7 +132,7 @@ export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExt
 
   return { code, setCode, strategyId, setStrategyId, validating, validationResult, setValidationResult,
     lastValidatedCode, setLastValidatedCode, handleValidate, validateCode,
-    templates, templatesLoading, loadedTemplate, loadTemplates, handleLoadTemplate,
+    templates, templatesLoading, loadedTemplate, setLoadedTemplate, loadTemplates, handleLoadTemplate,
     saveModalOpen, setSaveModalOpen, saveLoading, saveForm, canSave,
     handleSave, handleSaveAs, handleSaveModalOk, handleCopy, lastSavedId };
 }
