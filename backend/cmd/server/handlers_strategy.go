@@ -97,8 +97,7 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	// Task 4 (CLEANUP-MISFIRE): exclude currently active runs from cleanup.
 	// At startup, ListAll() is empty (no sessions registered yet), so all
 	// running rows are cleaned up — semantically correct for orphan recovery.
-	// MarkRunning method exists in strategy_run_repo.go; wiring it into
-	// SessionRegistry.Register is deferred to PARITY batch (connect/strategy scope).
+	// Wrongly-marked rows self-heal: registerLiveSession calls runRepo.MarkRunning.
 	excludeIDs := make([]uuid.UUID, 0, len(reg.ListAll()))
 	for _, sess := range reg.ListAll() {
 		excludeIDs = append(excludeIDs, sess.RunID)

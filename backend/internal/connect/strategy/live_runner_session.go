@@ -23,6 +23,14 @@ func (s *StrategyExecutionServer) registerLiveSession(cfg *LiveStrategyConfig, r
 	}
 	if activeSess != nil {
 		s.log.Info("LiveStrategyRunner: session registered", zap.String("run_id", runID.String()))
+		// OMS-EXIT-FIX Task 4: the live goroutine is the authority — if the DB
+		// row was wrongly marked stopped (e.g. a transient second instance ran
+		// CleanupStaleRuns), flip it back to running on register.
+		if s.runRepo != nil {
+			if err := s.runRepo.MarkRunning(context.Background(), runID); err != nil {
+				s.log.Warn("LiveStrategyRunner: MarkRunning failed", zap.String("run_id", runID.String()), zap.Error(err))
+			}
+		}
 		if s.sessionRegistry != nil {
 			s.sessionRegistry.InsertScheduleRunLog(context.Background(), uid, cfg.ScheduleID,
 				"start", "register", "success", "", "", decimal.Zero)

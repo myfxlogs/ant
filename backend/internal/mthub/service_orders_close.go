@@ -13,6 +13,15 @@ import (
 	"alphaforge/internal/usermgr"
 )
 
+
+// closeOMSOrderID derives a deterministic UUID for a close order's OMS row from
+// (accountID, ticket): the same pair always maps to the same row, so an
+// idempotent re-close of the same ticket upserts the same row
+// (CLOSE-ORDER-UUID fix; extracted so tests exercise the production derivation).
+func closeOMSOrderID(closeOrderID string) string {
+	return uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+}
+
 // CloseOrder closes an existing position.
 // Gate order matches PlaceOrder: killSwitch → ownership → idempotency → reconcile → rateLimit.
 func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
@@ -60,7 +69,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 
 	if s.omsWriter != nil {
 		pf := platform(accountID, s.hub)
-		omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+		omsOrderID := closeOMSOrderID(closeOrderID)
 		if err := s.omsWriter.InsertOrder(ctx, omsOrderID, accountID, pf, "",
 			int16(OrderMarket), lots, decimal.Zero, decimal.Zero, decimal.Zero, 0); err != nil {
 			if s.logger != nil {
@@ -134,7 +143,7 @@ func (s *MtHubService) postCloseFailure(ctx context.Context, closeOrderID, accou
 		s.logger.Error("CloseOrder: executor failed", zap.Error(err), zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 	}
 	if s.omsWriter != nil {
-		omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+		omsOrderID := closeOMSOrderID(closeOrderID)
 		s.omsTransition(ctx, omsOrderID, accountID, OMSStateSubmitted, OMSStateFailed)
 	}
 }
@@ -144,7 +153,7 @@ func (s *MtHubService) postCloseSuccess(ctx context.Context, closeOrderID, accou
 		s.logger.Info("CloseOrder: executor success", zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 	}
 	if s.omsWriter != nil {
-		omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+		omsOrderID := closeOMSOrderID(closeOrderID)
 		s.omsTransition(ctx, omsOrderID, accountID, OMSStateSubmitted, OMSStateFilled)
 	}
 	if s.eventStore != nil {

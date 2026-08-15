@@ -23,7 +23,7 @@ import (
 func TestTask1_CloseOrder_OMS_ID_IsValidUUID(t *testing.T) {
 	// Verify the MD5-UUID derivation from closeOrderID produces a valid UUID.
 	closeOrderID := "close-acct-1-12345"
-	omsOrderID := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+	omsOrderID := closeOMSOrderID(closeOrderID)
 
 	parsed, err := uuid.Parse(omsOrderID)
 	if err != nil {
@@ -34,7 +34,7 @@ func TestTask1_CloseOrder_OMS_ID_IsValidUUID(t *testing.T) {
 	}
 
 	// Determinism: same closeOrderID → same UUID (idempotent retry maps to same row).
-	omsOrderID2 := uuid.NewMD5(uuid.NameSpaceOID, []byte(closeOrderID)).String()
+	omsOrderID2 := closeOMSOrderID(closeOrderID)
 	if omsOrderID != omsOrderID2 {
 		t.Fatalf("MD5-UUID not deterministic: %s vs %s", omsOrderID, omsOrderID2)
 	}
@@ -48,8 +48,8 @@ func TestTask1_CloseOrder_OMS_ID_IsValidUUID(t *testing.T) {
 
 // TestTask1_CloseOrder_OMS_ID_DifferentTickets maps to different UUIDs.
 func TestTask1_CloseOrder_OMS_ID_DifferentTickets(t *testing.T) {
-	id1 := uuid.NewMD5(uuid.NameSpaceOID, []byte("close-acct-1-100")).String()
-	id2 := uuid.NewMD5(uuid.NameSpaceOID, []byte("close-acct-1-200")).String()
+	id1 := closeOMSOrderID("close-acct-1-100")
+	id2 := closeOMSOrderID("close-acct-1-200")
 	if id1 == id2 {
 		t.Fatal("different tickets should produce different OMS UUIDs")
 	}
@@ -57,8 +57,8 @@ func TestTask1_CloseOrder_OMS_ID_DifferentTickets(t *testing.T) {
 
 // TestTask1_CloseOrder_OMS_ID_DifferentAccounts maps to different UUIDs.
 func TestTask1_CloseOrder_OMS_ID_DifferentAccounts(t *testing.T) {
-	id1 := uuid.NewMD5(uuid.NameSpaceOID, []byte("close-acct-1-100")).String()
-	id2 := uuid.NewMD5(uuid.NameSpaceOID, []byte("close-acct-2-100")).String()
+	id1 := closeOMSOrderID("close-acct-1-100")
+	id2 := closeOMSOrderID("close-acct-2-100")
 	if id1 == id2 {
 		t.Fatal("different accounts should produce different OMS UUIDs")
 	}
