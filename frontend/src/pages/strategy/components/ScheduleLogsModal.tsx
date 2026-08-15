@@ -74,10 +74,10 @@ export default function ScheduleLogsModal({ open, scheduleId, onClose }: Props) 
         emptyText={t('common.noData')}>
         {activeTab === 'exec' ? (
           <Table columns={execColumns} dataSource={execLogs} rowKey="id"
-            scroll={{ x: 'max-content' }} pagination={false} size="small" />
+            scroll={{ x: 'max-content' }} pagination={{ pageSize: 20, size: 'small', hideOnSinglePage: true }} size="small" />
         ) : (
           <Table columns={orderColumns} dataSource={orderLogs} rowKey="id"
-            scroll={{ x: 'max-content' }} pagination={false} size="small" />
+            scroll={{ x: 'max-content' }} pagination={{ pageSize: 20, size: 'small', hideOnSinglePage: true }} size="small" />
         )}
       </StatusResult>
     </Modal>

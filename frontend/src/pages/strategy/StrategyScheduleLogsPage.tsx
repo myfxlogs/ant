@@ -79,11 +79,11 @@ export default function StrategyScheduleLogsPage() {
           {activeTab === 'exec' ? (
             <Table columns={execColumns} dataSource={execLogs} rowKey="id"
               scroll={{ x: 'max-content' }}
-              pagination={false} />
+              pagination={{ pageSize: 20, size: 'small', hideOnSinglePage: true }} />
           ) : (
             <Table columns={orderColumns} dataSource={orderLogs} rowKey="id"
               scroll={{ x: 'max-content' }}
-              pagination={false} />
+              pagination={{ pageSize: 20, size: 'small', hideOnSinglePage: true }} />
           )}
         </StatusResult>
       </Card>
