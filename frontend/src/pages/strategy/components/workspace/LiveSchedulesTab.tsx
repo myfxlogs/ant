@@ -23,6 +23,7 @@ import { DEFAULT_TEMPLATES } from '../../StrategyLibrary.defaults';
 import type { DefaultTemplateItem } from '../../StrategyLibrary.defaults';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { formatTime, getEnableNavigateTarget } from './liveSchedulesUtils';
+export { getEnableNavigateTarget };
 import { manualTriggerStart } from './manualTrigger';
 import {
   COMMON_UPDATED_KEY, COMMON_CREATED_KEY, COMMON_SAVE_FAILED_KEY,
