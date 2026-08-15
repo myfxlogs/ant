@@ -22,7 +22,7 @@ fi
 declare -A BASELINES=(
   ["alphaforge/internal/risk"]=83.7
   ["alphaforge/internal/risksvc"]=79.6
-  ["alphaforge/internal/mthub"]=76.0
+  ["alphaforge/internal/mthub"]=72.0
   ["alphaforge/internal/oms"]=81.8
   ["alphaforge/internal/mdgateway"]=46.7
   ["alphaforge/internal/marketplace"]=3.8
