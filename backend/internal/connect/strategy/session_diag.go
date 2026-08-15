@@ -96,7 +96,13 @@ func (d *sessionDiag) RecordWindow(n int) {
 // RecordIndicators writes indicator values and ordersTotal to the ring buffer
 // with 5s server-side throttling. VM records every event (zero cost);
 // this method is called from vmHandleX tail to throttle ring buffer writes.
+// Empty writes (event captured no indicators — e.g. bar events for OnTick-only
+// strategies) do NOT burn the throttle window: an empty stamp would starve
+// subsequent non-empty writes inside the window (SRD-1 audit fix).
 func (d *sessionDiag) RecordIndicators(values map[string]decimal.Decimal, ordersTotal int) {
+	if len(values) == 0 {
+		return
+	}
 	now := time.Now().UnixMilli()
 	d.mu.Lock()
 	defer d.mu.Unlock()
