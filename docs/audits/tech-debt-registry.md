@@ -405,6 +405,8 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 ## 变更日志
 
+- 2026-08-15 **PGWRITER-STALE ✅done（P1，监控 MACD 时发现，审计方直接修复 `dba6dd2`）**：监控发现 md_bars 最新 bar 停更 26h。**根因**：`PgWriter.Start` 只有数量触发刷盘（凑满 2000 或停机），无时间触发——全量订阅时代（每秒几十 bar）批很快满；DEMAND-SUB 改按需订阅后 bar 产量降至 ~1/分钟 → **一次刷盘要 33 小时**，两个各自正确的优化相乘成病态。**影响**：回测数据源冻结（新回测用旧数据）；策略实时数据不受影响（bar 走进程内桥，不经 PG）。**修复**：`FlushEvery` ticker（默认 30s，可注入）部分批也落库；对抗 `TestPGWRITER_TimeBasedFlush_LandsPromptly`（单 bar 须在 FlushEvery 内落库；永不触发 ticker 突变 → RED 断言级）。**连带发现的可观测性缺口**（误导了本次诊断，记档）：① `ObserveE2eLatency` 全代码库**零调用方**（注释称该在 pg_writer 调，重构丢失）——`md_e2e_latency=0` 被误读为"无 tick"；② DEMAND-SUB 的 `bsym` DIAG 日志已被移除（grep 零命中）。**审计方教训**：早间 PARITY 验收中"刷屏=0（tick 流动下）"是**误报**——当时以 profit 流活跃误当 tick 流（修复本身经对抗测试有效，但该生产指标当时是空洞真）；价格列跳动（用户确认）才是 tick 桥的真证据。待部署验证：bar age < 10 分钟。
+
 - 2026-08-15 **PARITY 返工 + OMS-EXIT-FIX 双批复审完成（审计方），审计方接手收尾（用户关停 Windsurf 后授权）**：
   - **PARITY W1-W3 ✅ 复审通过**（Windsurf `ea4643d4`，死于 W5 构建被终止）：W1 零量守卫已删 + 全链集成测试（真 MtHubService+mock executor+gate）；W2 `cfg.SymbolParam` 启动预取（5s 超时）+ builder O(1) 填充 + 兜底带超时（偏离"仅重试一次"：兜底在 param==nil 期间每事件快败重试直至网关恢复——自愈性优于一次性，接受并记档）；W3 两测试齐（两连 bar 测试用 `OrderSend volume=Bars()` 编码窗口数，巧）。**对抗复测 3/3 断言级 RED**（W1 ticket 守卫突变 / W3 seed 循环清空 / W3 窗口塌缩 n:=1）。mthub 一次 81s FAIL 复现 3 连绿——语言服务器垂死期负载抖动，非缺陷。
   - **OMS-EXIT-FIX 复审（Windsurf `aa7892c1`，用户提前派发）+ 审计方补强 `8bc6c8f`**：Task 1-3 代码正确；🔴 **Task 1 测试测拷贝不测真代码**（测试内联重算 UUID，`uuid.New()` 突变全绿——POST-1 复发）→ 修复：抽 `closeOMSOrderID()` 生产函数（顺带消 3 处重复），测试改测真函数，确定性断言级锁死（`uuid.New()` 突变 RED）；Task 3 判重 key 突变 RED ✓；Task 2 重试实现正确但测试仅 nil 安全（行为留生产验证记档）；**Task 4 MarkRunning 接线由审计方补齐**（`registerLiveSession` 调 `runRepo.MarkRunning`——活 goroutine 是权威，误标行自愈）。
