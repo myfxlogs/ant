@@ -12,7 +12,6 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next"
-import { FORMAT_CRON_KEY, FORMAT_INTERVAL_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 import type { ScheduleRow, TemplateOption, AccountRow, TriggerContext } from '../hooks/libraryTypes';
 import { formatSchedule } from './scheduleFormat';
 
