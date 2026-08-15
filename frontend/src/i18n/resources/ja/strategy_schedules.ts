@@ -71,6 +71,15 @@ const StrategySchedules = {
         }
       },
       "health": {
+        "runLogs": {
+          "status": {
+            "failed": "失敗",
+            "running": "実行中",
+            "stopped": "停止",
+            "success": "成功"
+          },
+          "signalType": "シグナル（発注用）"
+        },
         "fields": {
           "configKey": "設定キー",
           "failedRuns": "失敗回数",
@@ -101,12 +110,14 @@ const StrategySchedules = {
           "pending": "まずヘルスチェックを実行してください。",
           "watch": "成功率は監視対象です（>= {{yellowSuccessRate}}%）。"
         },
-        "runLogs": {
-          "signalType": "シグナル（発注用）"
-        },
         "sections": {
           "orders": "最近の注文記録",
           "runLogs": "最近の実行ログ"
+        },
+        "value": {
+          "buy": "買い",
+          "hold": "ホールド",
+          "sell": "売り"
         },
         "summaryBanner": "ヘルス評価: {{grade}}、サンプル {{totalRuns}} 件、成功率 {{successRate}}%",
         "thresholdsSummary": "min_sample_size={{minSampleSize}}、緑: 成功率>={{greenSuccessRate}}% かつ 失敗<={{greenMaxFailedRuns}}、黄: 成功率>={{yellowSuccessRate}}%",

@@ -71,6 +71,15 @@ const StrategySchedules = {
         }
       },
       "health": {
+        "runLogs": {
+          "status": {
+            "failed": "Thất bại",
+            "running": "Đang chạy",
+            "stopped": "Đã dừng",
+            "success": "Thành công"
+          },
+          "signalType": "Tín hiệu (đặt lệnh)"
+        },
         "fields": {
           "configKey": "Khóa cấu hình",
           "failedRuns": "Số lần thất bại",
@@ -101,12 +110,14 @@ const StrategySchedules = {
           "pending": "Vui lòng chạy kiểm tra sức khỏe trước.",
           "watch": "Tỷ lệ thành công đạt ngưỡng theo dõi (>= {{yellowSuccessRate}}%)."
         },
-        "runLogs": {
-          "signalType": "Tín hiệu (đặt lệnh)"
-        },
         "sections": {
           "orders": "Bản Ghi Lệnh Gần Đây",
           "runLogs": "Nhật ký chạy gần đây"
+        },
+        "value": {
+          "buy": "Mua",
+          "hold": "Giữ",
+          "sell": "Bán"
         },
         "summaryBanner": "Mức sức khỏe: {{grade}}; mẫu gần nhất {{totalRuns}} lần, tỷ lệ thành công {{successRate}}%",
         "thresholdsSummary": "min_sample_size={{minSampleSize}}; xanh: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}; vàng: success>={{yellowSuccessRate}}%",

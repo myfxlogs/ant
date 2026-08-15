@@ -1,11 +1,46 @@
 import { Space, Alert, Descriptions, Table, Tag, Typography } from 'antd';
 import { useTranslation } from 'react-i18next'
-import { HEALTH_FIELDS_CONFIG_KEY_KEY, HEALTH_FIELDS_FAILED_RUNS_KEY, HEALTH_FIELDS_GRADE_KEY, HEALTH_FIELDS_LAST_RUN_AT_KEY, HEALTH_FIELDS_LATEST_ERROR_KEY, HEALTH_FIELDS_LATEST_PROFIT_KEY, HEALTH_FIELDS_LATEST_TICKET_KEY, HEALTH_FIELDS_RULE_KEY, HEALTH_FIELDS_SUCCESS_OVER_TOTAL_KEY, HEALTH_FIELDS_THRESHOLDS_KEY, HEALTH_GRADE_ALERT_KEY, HEALTH_GRADE_HEALTHY_KEY, HEALTH_GRADE_NO_SAMPLE_KEY, HEALTH_GRADE_PENDING_KEY, HEALTH_GRADE_WATCH_KEY, HEALTH_MESSAGES_CLICK_REFRESH_KEY, HEALTH_NOTES_ALERT_KEY, HEALTH_NOTES_HEALTHY_KEY, HEALTH_NOTES_NO_SAMPLE_KEY, HEALTH_NOTES_PENDING_KEY, HEALTH_NOTES_WATCH_KEY, HEALTH_RUN_LOGS_SIGNAL_TYPE_KEY, HEALTH_SECTIONS_ORDERS_KEY, HEALTH_SECTIONS_RUN_LOGS_KEY, HEALTH_SUMMARY_BANNER_KEY, HEALTH_THRESHOLDS_SUMMARY_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
+import { HEALTH_FIELDS_CONFIG_KEY_KEY, HEALTH_FIELDS_FAILED_RUNS_KEY, HEALTH_FIELDS_GRADE_KEY, HEALTH_FIELDS_LAST_RUN_AT_KEY, HEALTH_FIELDS_LATEST_ERROR_KEY, HEALTH_FIELDS_LATEST_PROFIT_KEY, HEALTH_FIELDS_LATEST_TICKET_KEY, HEALTH_FIELDS_RULE_KEY, HEALTH_FIELDS_SUCCESS_OVER_TOTAL_KEY, HEALTH_FIELDS_THRESHOLDS_KEY, HEALTH_GRADE_ALERT_KEY, HEALTH_GRADE_HEALTHY_KEY, HEALTH_GRADE_NO_SAMPLE_KEY, HEALTH_GRADE_PENDING_KEY, HEALTH_GRADE_WATCH_KEY, HEALTH_MESSAGES_CLICK_REFRESH_KEY, HEALTH_NOTES_ALERT_KEY, HEALTH_NOTES_HEALTHY_KEY, HEALTH_NOTES_NO_SAMPLE_KEY, HEALTH_NOTES_PENDING_KEY, HEALTH_NOTES_WATCH_KEY, HEALTH_RUN_LOGS_SIGNAL_TYPE_KEY, HEALTH_RUN_LOGS_STATUS_FAILED_KEY, HEALTH_RUN_LOGS_STATUS_RUNNING_KEY, HEALTH_RUN_LOGS_STATUS_STOPPED_KEY, HEALTH_RUN_LOGS_STATUS_SUCCESS_KEY, HEALTH_SECTIONS_ORDERS_KEY, HEALTH_SECTIONS_RUN_LOGS_KEY, HEALTH_SUMMARY_BANNER_KEY, HEALTH_THRESHOLDS_SUMMARY_KEY, HEALTH_VALUE_BUY_KEY, HEALTH_VALUE_HOLD_KEY, HEALTH_VALUE_SELL_KEY } from '@/gen/ant/v1/i18n/strategy_schedules_keys';
 import { EXEC_TABLE_DURATION_MS_KEY, EXEC_TABLE_ERROR_KEY, EXEC_TABLE_STATUS_KEY, EXEC_TABLE_TIME_KEY, ORDERS_TABLE_PROFIT_KEY, ORDERS_TABLE_SIDE_KEY, ORDERS_TABLE_SYMBOL_KEY, ORDERS_TABLE_TICKET_KEY, ORDERS_TABLE_TIME_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
 
 ;
 
 const { Text } = Typography;
+
+const STATUS_TAG_COLOR: Record<string, string> = {
+  success: 'green',
+  failed: 'red',
+};
+
+function translateStatus(t: (k: string) => string, status: unknown): { label: string; color: string } {
+  const s = String(status || '');
+  switch (s) {
+    case 'success': return { label: t(HEALTH_RUN_LOGS_STATUS_SUCCESS_KEY), color: STATUS_TAG_COLOR.success };
+    case 'failed': return { label: t(HEALTH_RUN_LOGS_STATUS_FAILED_KEY), color: STATUS_TAG_COLOR.failed };
+    case 'stopped': return { label: t(HEALTH_RUN_LOGS_STATUS_STOPPED_KEY), color: STATUS_TAG_COLOR.stopped || 'default' };
+    case 'running': return { label: t(HEALTH_RUN_LOGS_STATUS_RUNNING_KEY), color: STATUS_TAG_COLOR.running || 'default' };
+    default: return { label: s, color: 'default' };
+  }
+}
+
+function translateSignalType(t: (k: string) => string, v: unknown): string {
+  const s = String(v || '').toLowerCase();
+  switch (s) {
+    case 'buy': return t(HEALTH_VALUE_BUY_KEY);
+    case 'sell': return t(HEALTH_VALUE_SELL_KEY);
+    case 'hold': return t(HEALTH_VALUE_HOLD_KEY);
+    default: return String(v || '-');
+  }
+}
+
+function translateOrderType(t: (k: string) => string, v: unknown): string {
+  const s = String(v || '').toLowerCase();
+  switch (s) {
+    case 'buy': return t(HEALTH_VALUE_BUY_KEY);
+    case 'sell': return t(HEALTH_VALUE_SELL_KEY);
+    default: return String(v || '-');
+  }
+}
 
 interface Props {
   summary: Record<string, unknown> | null;
@@ -58,24 +93,24 @@ export default function ScheduleHealthContent({ summary, loading, formatTime }: 
       </Descriptions>
 
       <Text strong>{t(HEALTH_SECTIONS_RUN_LOGS_KEY)}</Text>
-      <Table scroll={{ x: 'max-content' }} rowKey={(row) => String(row?.id || '')} size="small" loading={loading} pagination={false}
+      <Table scroll={{ x: 'max-content' }} rowKey={(row) => String(row?.id || '')} size="small" loading={loading} pagination={{ pageSize: 10, size: 'small', hideOnSinglePage: true }}
         dataSource={(summary?.runLogs || []) as Record<string, unknown>[]}
         columns={[
           { title: t(EXEC_TABLE_TIME_KEY), key: 'createdAt', width: 180, render: (_: unknown, row: { createdAt?: string | Date }) => formatTime(row?.createdAt) },
-          { title: t(EXEC_TABLE_STATUS_KEY), dataIndex: 'status', key: 'status', width: 120 },
-          { title: t(HEALTH_RUN_LOGS_SIGNAL_TYPE_KEY), dataIndex: 'signalType', key: 'signalType', width: 120 },
+          { title: t(EXEC_TABLE_STATUS_KEY), dataIndex: 'status', key: 'status', width: 120, render: (v: unknown) => { const st = translateStatus(t, v); return <Tag color={st.color}>{st.label}</Tag>; } },
+          { title: t(HEALTH_RUN_LOGS_SIGNAL_TYPE_KEY), dataIndex: 'signalType', key: 'signalType', width: 120, render: (v: unknown) => translateSignalType(t, v) },
           { title: t(EXEC_TABLE_DURATION_MS_KEY), dataIndex: 'durationMs', key: 'durationMs', width: 110, render: (v: unknown) => toNumber(v) },
           { title: t(EXEC_TABLE_ERROR_KEY), dataIndex: 'errorMessage', key: 'errorMessage', render: (v: unknown) => String(v || '-') },
         ]}
       />
 
       <Text strong>{t(HEALTH_SECTIONS_ORDERS_KEY)}</Text>
-      <Table scroll={{ x: 'max-content' }} rowKey={(row) => String(row?.id || row?.ticket || '')} size="small" loading={loading} pagination={false}
+      <Table scroll={{ x: 'max-content' }} rowKey={(row) => String(row?.id || row?.ticket || '')} size="small" loading={loading} pagination={{ pageSize: 10, size: 'small', hideOnSinglePage: true }}
         dataSource={(summary?.orders || []) as Record<string, unknown>[]}
         columns={[
           { title: t(ORDERS_TABLE_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: Record<string, unknown>) => formatTime(row?.closeTime || row?.openTime) },
           { title: t(ORDERS_TABLE_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 110 },
-          { title: t(ORDERS_TABLE_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 110 },
+          { title: t(ORDERS_TABLE_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 110, render: (v: unknown) => translateOrderType(t, v) },
           { title: t(ORDERS_TABLE_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120 },
           { title: t(ORDERS_TABLE_PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 100, render: (v: unknown) => toNumber(v).toFixed(2) },
         ]}

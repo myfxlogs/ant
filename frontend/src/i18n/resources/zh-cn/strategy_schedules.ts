@@ -71,6 +71,15 @@ const StrategySchedules = {
         }
       },
       "health": {
+        "runLogs": {
+          "status": {
+            "failed": "失败",
+            "running": "运行中",
+            "stopped": "已停止",
+            "success": "成功"
+          },
+          "signalType": "信号(用于下单)"
+        },
         "fields": {
           "configKey": "配置键",
           "failedRuns": "执行失败次数",
@@ -78,7 +87,7 @@ const StrategySchedules = {
           "lastRunAt": "最后运行时间",
           "latestError": "最近错误",
           "latestProfit": "最近成交盈亏",
-          "latestTicket": "最近成交 Ticket",
+          "latestTicket": "最近成交订单号",
           "rule": "判定依据",
           "successOverTotal": "执行成功/总次数",
           "thresholds": "当前阈值"
@@ -101,12 +110,14 @@ const StrategySchedules = {
           "pending": "请先执行健康检查。",
           "watch": "成功率达到关注阈值（>= {{yellowSuccessRate}}%），建议持续观察。"
         },
-        "runLogs": {
-          "signalType": "信号(用于下单)"
-        },
         "sections": {
           "orders": "最近订单记录",
           "runLogs": "最近执行日志"
+        },
+        "value": {
+          "buy": "买入",
+          "hold": "持有",
+          "sell": "卖出"
         },
         "summaryBanner": "健康分级：{{grade}}；最近样本 {{totalRuns}} 次，成功率 {{successRate}}%",
         "thresholdsSummary": "min_sample_size={{minSampleSize}}；绿色：成功率>={{greenSuccessRate}}% 且失败次数<={{greenMaxFailedRuns}}；黄色：成功率>={{yellowSuccessRate}}%",

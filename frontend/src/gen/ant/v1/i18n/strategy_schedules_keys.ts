@@ -238,6 +238,18 @@ export const HEALTH_NOTES_WATCH_KEY = 'strategy.schedules.health.notes.watch' as
 /** health.runLogs.signalType */
 export const HEALTH_RUN_LOGS_SIGNAL_TYPE_KEY = 'strategy.schedules.health.runLogs.signalType' as const;
 
+/** health.runLogs.status.failed */
+export const HEALTH_RUN_LOGS_STATUS_FAILED_KEY = 'strategy.schedules.health.runLogs.status.failed' as const;
+
+/** health.runLogs.status.running */
+export const HEALTH_RUN_LOGS_STATUS_RUNNING_KEY = 'strategy.schedules.health.runLogs.status.running' as const;
+
+/** health.runLogs.status.stopped */
+export const HEALTH_RUN_LOGS_STATUS_STOPPED_KEY = 'strategy.schedules.health.runLogs.status.stopped' as const;
+
+/** health.runLogs.status.success */
+export const HEALTH_RUN_LOGS_STATUS_SUCCESS_KEY = 'strategy.schedules.health.runLogs.status.success' as const;
+
 /** health.sections.orders */
 export const HEALTH_SECTIONS_ORDERS_KEY = 'strategy.schedules.health.sections.orders' as const;
 
@@ -252,6 +264,15 @@ export const HEALTH_THRESHOLDS_SUMMARY_KEY = 'strategy.schedules.health.threshol
 
 /** health.title */
 export const HEALTH_TITLE_KEY = 'strategy.schedules.health.title' as const;
+
+/** health.value.buy */
+export const HEALTH_VALUE_BUY_KEY = 'strategy.schedules.health.value.buy' as const;
+
+/** health.value.hold */
+export const HEALTH_VALUE_HOLD_KEY = 'strategy.schedules.health.value.hold' as const;
+
+/** health.value.sell */
+export const HEALTH_VALUE_SELL_KEY = 'strategy.schedules.health.value.sell' as const;
 
 /** messages.defaultTemplateNotFound */
 export const MESSAGES_DEFAULT_TEMPLATE_NOT_FOUND_KEY = 'strategy.schedules.messages.defaultTemplateNotFound' as const;
@@ -453,11 +474,18 @@ export const STRATEGYSCHEDULES_KEYS = {
   health_notes_pending: 'strategy.schedules.health.notes.pending',
   health_notes_watch: 'strategy.schedules.health.notes.watch',
   health_run_logs_signal_type: 'strategy.schedules.health.runLogs.signalType',
+  health_run_logs_status_failed: 'strategy.schedules.health.runLogs.status.failed',
+  health_run_logs_status_running: 'strategy.schedules.health.runLogs.status.running',
+  health_run_logs_status_stopped: 'strategy.schedules.health.runLogs.status.stopped',
+  health_run_logs_status_success: 'strategy.schedules.health.runLogs.status.success',
   health_sections_orders: 'strategy.schedules.health.sections.orders',
   health_sections_run_logs: 'strategy.schedules.health.sections.runLogs',
   health_summary_banner: 'strategy.schedules.health.summaryBanner',
   health_thresholds_summary: 'strategy.schedules.health.thresholdsSummary',
   health_title: 'strategy.schedules.health.title',
+  health_value_buy: 'strategy.schedules.health.value.buy',
+  health_value_hold: 'strategy.schedules.health.value.hold',
+  health_value_sell: 'strategy.schedules.health.value.sell',
   messages_default_template_not_found: 'strategy.schedules.messages.defaultTemplateNotFound',
   messages_execute_failed: 'strategy.schedules.messages.executeFailed',
   messages_import_default_template_failed_no_id: 'strategy.schedules.messages.importDefaultTemplateFailedNoId',

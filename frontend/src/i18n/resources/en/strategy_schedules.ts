@@ -71,6 +71,15 @@ const StrategySchedules = {
         }
       },
       "health": {
+        "runLogs": {
+          "status": {
+            "failed": "Failed",
+            "running": "Running",
+            "stopped": "Stopped",
+            "success": "Success"
+          },
+          "signalType": "Signal"
+        },
         "fields": {
           "configKey": "Config key",
           "failedRuns": "Failed runs",
@@ -101,12 +110,14 @@ const StrategySchedules = {
           "pending": "Run health check first.",
           "watch": "Success rate is acceptable but should be monitored (>= {{yellowSuccessRate}}%)."
         },
-        "runLogs": {
-          "signalType": "Signal"
-        },
         "sections": {
           "orders": "Recent order records",
           "runLogs": "Recent execution logs"
+        },
+        "value": {
+          "buy": "Buy",
+          "hold": "Hold",
+          "sell": "Sell"
         },
         "summaryBanner": "Grade: {{grade}}; samples: {{totalRuns}}, success rate: {{successRate}}%",
         "thresholdsSummary": "min_sample_size={{minSampleSize}}, green: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}, yellow: success>={{yellowSuccessRate}}%",
