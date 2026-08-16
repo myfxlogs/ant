@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { resetAllStores } from '@/stores/resetAllStores';
 import { authApi, type User } from '@/client/auth';
@@ -10,6 +11,7 @@ import i18n from '@/i18n';
 
 export function useAuth() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, isAuthenticated, setTokens, logout: storeLogout } = useAuthStore();
 
   const login = useCallback(async (data: { login: string; password: string; rememberMe?: boolean }) => {
@@ -57,9 +59,10 @@ export function useAuth() {
     }
     storeLogout();
     resetAllStores();
+    queryClient.clear();
     navigate('/login');
     showWarning(i18n.t('auth.messages.logoutSuccess'));
-  }, [storeLogout, navigate]);
+  }, [storeLogout, navigate, queryClient]);
 
   const getMe = useCallback(async () => {
     try {
