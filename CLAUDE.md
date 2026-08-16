@@ -222,6 +222,12 @@ These constraints are enforced at implementation time. Violation = fix before co
 - 项目使用 multi-stage Docker build（`backend/Dockerfile`）：builder stage 在 `golang:alpine` 里编译 CGO 代码，runtime stage 只拷贝二进制 + `mql.so`
 - 运行中二进制名是 `/app/alphaforge`（不是 `alphaforge-backend` / `server`）
 
+**部署验证 Pitfalls（QC-CACHE-LEAK/STALE-HTML-CACHE 2026-08-16 教训，两次翻车）**：
+
+1. **施工方回填 ✅done ≠ 已部署**——Windsurf 曾把修复写对并回填 ✅done，但从未 build + docker cp，用户线上一直是旧包。验收必须实测容器内资产：`docker exec alphaforge-frontend ls -la /usr/share/nginx/html/assets/`（看时间戳是否晚于修复 commit）+ 对比 index.html hash。
+2. **部署验证要到"入口响应头"层**——文件在容器里 ≠ 浏览器会拿新的。必查 `curl -sI http://localhost:8022/` 带 `Cache-Control: no-cache`。
+3. **nginx `try_files /index.html =404` 是就地吐文件**，绕过 `= /index.html` location 的响应头——要应用该块的头必须让 try_files **内部重定向**（`try_files /不存在的守卫路径 /index.html`）。同理：location 内任一 `add_header` 会丢失**全部** server 级继承头（含 CSP/HSTS），需整组重声明。
+
 ## MQL2GO VM Pitfalls (必读)
 
 > 回测不开单 / volume=0 / 指标全零但 MT4/MT5 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
