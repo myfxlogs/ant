@@ -7,6 +7,7 @@ import { strategyActiveApi } from '@/client/strategy';
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
 import type { ActiveStrategy } from '@/gen/ant/v1/strategy_runtime_pb';
+import { createStreamWatchdog } from '@/client/streamWatchdog';
 import { formatTime } from './LiveStrategyPageSignalDrawer';
 import ScheduleLogsModal from './components/ScheduleLogsModal';
 import ScheduleHealthModal from './components/ScheduleHealthModal';
@@ -50,12 +51,23 @@ export default function LiveStrategyPage() {
   useEffect(() => {
     if (activeTab !== 'strategies') return;
     let active = true;
+    const watchdog = createStreamWatchdog({
+      staleThresholdMs: 60_000, // 3 × backend 20s heartbeat
+      onStale: () => {
+        setStreamError(true);
+        ctrlRef?.abort();
+      },
+    });
+    let ctrlRef: AbortController | null = null;
     const connect = async () => {
       while (active) {
         const ctrl = new AbortController();
+        ctrlRef = ctrl;
+        watchdog.start();
         try {
           setLoading(true);
           for await (const event of strategyActiveApi.watchActive('', ctrl.signal)) {
+            watchdog.touch();
             if (event.heartbeat) continue;
             setActiveStrategies((event.strategies || []) as ActiveStrategy[]);
             setActiveVersion(v => v + 1);
@@ -63,6 +75,7 @@ export default function LiveStrategyPage() {
             setStreamError(false);
           }
         } catch { /* reconnect */ }
+        watchdog.stop();
         ctrl.abort();
         if (!active) break;
         setStreamError(true);
@@ -70,7 +83,7 @@ export default function LiveStrategyPage() {
       }
     };
     connect();
-    return () => { active = false; };
+    return () => { active = false; watchdog.stop(); };
   }, [activeTab]);
 
   useEffect(() => {

@@ -81,6 +81,11 @@ export function StreamProvider({ children }: { children: ReactNode }) {
             setConnectionState('disconnected');
           }
         },
+        () => {
+          if (mountRef.current) {
+            setConnectionState('connecting');
+          }
+        },
       );
     }
 
@@ -108,6 +113,7 @@ export function StreamProvider({ children }: { children: ReactNode }) {
           handlePositionSnapshot(queryClient, accountId, positions);
         },
         onError: () => {
+          unsubEventsRef.current?.();
           unsubEventsRef.current = null;
           unsubSummaryRef.current?.();
           unsubSummaryRef.current = null;
@@ -121,6 +127,11 @@ export function StreamProvider({ children }: { children: ReactNode }) {
                 setReconnectTrigger((n) => n + 1);
               }
             }, 3000);
+          }
+        },
+        onStale: () => {
+          if (mountRef.current) {
+            setConnectionState('connecting');
           }
         },
       });

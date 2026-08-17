@@ -16,6 +16,9 @@ import (
 	"alphaforge/internal/mthub"
 )
 
+// StreamServer heartbeat interval for order/profit streams (default 15s, injectable for tests).
+var orderProfitHeartbeatInterval = 15 * time.Second
+
 // SubscribeOrderUpdates streams order update events for a single account.
 func (s *StreamServer) SubscribeOrderUpdates(
 	ctx context.Context,
@@ -42,10 +45,18 @@ func (s *StreamServer) SubscribeOrderUpdates(
 	ch, cancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
 	defer cancel()
 
+	hbInterval := orderProfitHeartbeatInterval
+	heartbeat := time.NewTicker(hbInterval)
+	defer heartbeat.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-heartbeat.C:
+			if err := stream.Send(&antv1.OrderUpdateEvent{}); err != nil {
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send order heartbeat: %w", err))
+			}
 		case ev, ok := <-ch:
 			if !ok {
 				return nil
@@ -90,10 +101,18 @@ func (s *StreamServer) SubscribeProfitUpdates(
 	ch, cancel := s.svc.SubscribeAccountProfit(ctx, accountID)
 	defer cancel()
 
+	hbInterval := orderProfitHeartbeatInterval
+	heartbeat := time.NewTicker(hbInterval)
+	defer heartbeat.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-heartbeat.C:
+			if err := stream.Send(&antv1.ProfitUpdateEvent{}); err != nil {
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send profit heartbeat: %w", err))
+			}
 		case ev, ok := <-ch:
 			if !ok {
 				return nil
