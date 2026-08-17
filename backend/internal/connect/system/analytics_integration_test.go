@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	goredis "github.com/redis/go-redis/v9"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -30,9 +31,13 @@ func getTestPG(t *testing.T) *pgxpool.Pool {
 	if dsn == "" {
 		password := os.Getenv("DB_PASSWORD")
 		user := os.Getenv("DB_USER")
-		if user == "" { user = "ant" }
+		if user == "" {
+			user = "ant"
+		}
 		dbname := os.Getenv("DB_NAME")
-		if dbname == "" { dbname = "ant" }
+		if dbname == "" {
+			dbname = "ant"
+		}
 		port := "5433"
 		dsn = "postgres://" + user + ":" + password + "@localhost:" + port + "/" + dbname + "?sslmode=disable"
 	}
@@ -218,7 +223,11 @@ func TestAnalyticsCacheHitMiss(t *testing.T) {
 	if ts1.TotalTrades != 3 {
 		t.Errorf("first call: expected 3 total trades, got %d", ts1.TotalTrades)
 	}
-	if ts1.NetProfit == 0 {
+	np1, err := decimal.NewFromString(ts1.NetProfit)
+	if err != nil {
+		t.Fatalf("first call: invalid net_profit %q: %v", ts1.NetProfit, err)
+	}
+	if np1.IsZero() {
 		t.Error("first call: expected non-zero net profit")
 	}
 	t.Logf("First call (cache miss) took %v, total_trades=%d", dur1, ts1.TotalTrades)
@@ -311,10 +320,14 @@ func TestAnalyticsCacheInvalidation(t *testing.T) {
 	if ts2.TotalTrades != 3 {
 		t.Errorf("after invalidation: expected 3 total trades, got %d", ts2.TotalTrades)
 	}
-	if ts2.NetProfit != 110.0 {
-		t.Errorf("after invalidation: expected net profit 110, got %f", ts2.NetProfit)
+	np2, err := decimal.NewFromString(ts2.NetProfit)
+	if err != nil {
+		t.Fatalf("after invalidation: invalid net_profit %q: %v", ts2.NetProfit, err)
 	}
-	t.Logf("After invalidation: %d trades, net_profit=%f", ts2.TotalTrades, ts2.NetProfit)
+	if !np2.Equal(decimal.NewFromFloat(110.0)) {
+		t.Errorf("after invalidation: expected net profit 110, got %s", ts2.NetProfit)
+	}
+	t.Logf("After invalidation: %d trades, net_profit=%s", ts2.TotalTrades, ts2.NetProfit)
 }
 
 // --- Test 3: Cross-account auth enforcement ---
@@ -505,24 +518,27 @@ func TestAnalyticsMonthlyPnL(t *testing.T) {
 	if items[0].Month != 1 {
 		t.Errorf("Jan: expected month=1, got %d", items[0].Month)
 	}
-	if items[0].Profit != 100.0 {
-		t.Errorf("Jan: expected profit=100, got %f", items[0].Profit)
+	p0, _ := decimal.NewFromString(items[0].Profit)
+	if !p0.Equal(decimal.NewFromFloat(100.0)) {
+		t.Errorf("Jan: expected profit=100, got %s", items[0].Profit)
 	}
 	if items[0].Trades != 2 {
 		t.Errorf("Jan: expected trades=2, got %d", items[0].Trades)
 	}
 
 	// February (month 2) — profit=-30, trades=1.
-	if items[1].Profit != -30.0 {
-		t.Errorf("Feb: expected profit=-30, got %f", items[1].Profit)
+	p1, _ := decimal.NewFromString(items[1].Profit)
+	if !p1.Equal(decimal.NewFromFloat(-30.0)) {
+		t.Errorf("Feb: expected profit=-30, got %s", items[1].Profit)
 	}
 	if items[1].Trades != 1 {
 		t.Errorf("Feb: expected trades=1, got %d", items[1].Trades)
 	}
 
 	// March (month 3) — profit=80, trades=2.
-	if items[2].Profit != 80.0 {
-		t.Errorf("Mar: expected profit=80, got %f", items[2].Profit)
+	p2, _ := decimal.NewFromString(items[2].Profit)
+	if !p2.Equal(decimal.NewFromFloat(80.0)) {
+		t.Errorf("Mar: expected profit=80, got %s", items[2].Profit)
 	}
 	if items[2].Trades != 2 {
 		t.Errorf("Mar: expected trades=2, got %d", items[2].Trades)
@@ -530,15 +546,16 @@ func TestAnalyticsMonthlyPnL(t *testing.T) {
 
 	// April-December should be zero.
 	for i := 3; i < 12; i++ {
-		if items[i].Profit != 0 {
-			t.Errorf("month %d: expected profit=0, got %f", i+1, items[i].Profit)
+		pi, _ := decimal.NewFromString(items[i].Profit)
+		if !pi.IsZero() {
+			t.Errorf("month %d: expected profit=0, got %s", i+1, items[i].Profit)
 		}
 		if items[i].Trades != 0 {
 			t.Errorf("month %d: expected trades=0, got %d", i+1, items[i].Trades)
 		}
 	}
 
-	t.Logf("Monthly PnL verified: Jan=%f/%d, Feb=%f/%d, Mar=%f/%d",
+	t.Logf("Monthly PnL verified: Jan=%s/%d, Feb=%s/%d, Mar=%s/%d",
 		items[0].Profit, items[0].Trades,
 		items[1].Profit, items[1].Trades,
 		items[2].Profit, items[2].Trades)

@@ -151,6 +151,21 @@ export function createStreamWatchdog(opts: {
 2. `handover-audit-plan.md` 变更日志加一行。
 3. 不自行宣告完成——等审计方核对 + 实测。
 
+## 9. 🔴 返工单（审计方验收 2026-08-17，5/5 实现忠实但对抗证明 2/5 无效——POST-1 同款）
+
+**审计方已实测**：门禁全绿（tsc 0err / vitest 183 / go build ✓ / check-file-lines 0 ERROR / npm build ✓）；A0 helper 6 单测 + C Provider 测试 + 实现五任务全部忠实 spec（逐文件核对）。
+
+**返工 1（🔴 A 接线集成测试纸面声明）**：`stream-watchdog-integration.test.ts` 声称"subscribeEvents 对抗测试"，实际只 import `createStreamWatchdog`，**从未触碰 `stream.ts`**。审计方独立删行复测：删 `stream.ts` onStale 里的 `currentAbort?.abort()`（:115）→ 11/11 仍绿。**onStale→abort→catch→stale-reconnect 完整闭环零测试覆盖**。
+**修复要求**：mock `streamClient.subscribeEvents` 返回永挂的 AsyncIterable（僵尸连接模拟）→ 真实调用 `subscribeEvents()` → fake timers 推进 >45s → 断言：① onStale 回调被调；② 底层流的 abort signal 被 abort；③ 重连发生（mock 调用计数 ≥2）。删 abort 行 → 测试 RED。
+
+**返工 2（🔴 A2 Live 页零测试）**：全仓库无测试引用 `LiveStrategyPage` 的 watchdog 接入。删 `watchdog.start()`/onStale → 无测试红。
+**修复要求**：mock `strategyActiveApi.watchActive` 返回挂起流 → 渲染 `LiveStrategyPage`（tab='strategies'）→ fake timers 推进 >60s → 断言 `ctrl.abort()` 被调 + 重连横幅状态（`streamError`）置 true。删 watchdog 接入 → RED。
+
+**返工 3（🟡 B integration 基线 build 失败）**：`stream_heartbeat_test.go` 逻辑忠实，但包内**既有**编译错误使整个 integration 包 build 失败（`analytics_integration_test.go:221/314/508/516/524/533` NetProfit/Profit string 比较 + `mthub_service_integration_test.go:203/448` trackedExecutor 缺 `AddSymbols` 方法）→ 心跳测试无法运行。审计方跑 `go test -tags integration` 报 [build failed]。
+**修复要求**：修基线 2 处（string 断言改字符串比较 / trackedExecutor 补 `AddSymbols` 方法，照抄 `mthub` 现有 mock 实现）→ `TestSubscribeOrderUpdates_Heartbeat`/`TestSubscribeProfitUpdates_Heartbeat` 真实跑绿（PG 5433 可用）。
+
+**返工完成后**：对抗证明 5/5 断言级 + 审计方独立删行复测通过 → 才可标 ✅done → 再部署 + 生产实测（offline/睡眠唤醒自愈）。
+
 ## 7. 范围约束
 
 One task = one scope：只动 SSE 自愈链——`frontend/src/client/streamWatchdog.ts`（新建）、`stream.ts`、`sharedStream.ts`、`StreamProvider.tsx`、`LiveStrategyPage.tsx`、`backend/internal/connect/system/stream_handlers_extra.go` + 对应测试。不顺手重构、不改无关重连逻辑、不动 broker/handler 业务语义。

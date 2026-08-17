@@ -182,14 +182,23 @@ func (f *fakeAuthInterceptorSys) WrapStreamingHandler(next connect.StreamingHand
 	}
 }
 
-// insertHeartbeatAccount inserts a test account owned by userID and returns its UUID string.
+// insertHeartbeatAccount inserts a test user and account owned by userID and returns the account UUID string.
 func insertHeartbeatAccount(t *testing.T, pool *pgxpool.Pool, userID string) string {
 	t.Helper()
 	ctx := context.Background()
+	_, err := pool.Exec(ctx,
+		`INSERT INTO users (id, email, password_hash, nickname, role, status)
+		 VALUES ($1, $2, 'dummy', 'hbtest', 'user', 'active')
+		 ON CONFLICT (id) DO NOTHING`,
+		userID, "hbtest-"+userID+"@test.com",
+	)
+	if err != nil {
+		t.Fatalf("insertHeartbeatUser failed: %v", err)
+	}
 	var accountID string
-	err := pool.QueryRow(ctx,
-		`INSERT INTO mt_accounts (user_id, login, password, mt_type, broker_company, broker_server, broker_host, account_status)
-		 VALUES ($1, 'hbtest', 'hbpass', 'mt5', 'TestBroker', 'TestServer', 'test.example.com', 'connected')
+	err = pool.QueryRow(ctx,
+		`INSERT INTO mt_accounts (user_id, login, mt_type, broker_company, broker_server, broker_host, account_status)
+		 VALUES ($1, 'hbtest', 'mt5', 'TestBroker', 'TestServer', 'test.example.com', 'connected')
 		 RETURNING id::text`,
 		userID,
 	).Scan(&accountID)
@@ -198,6 +207,7 @@ func insertHeartbeatAccount(t *testing.T, pool *pgxpool.Pool, userID string) str
 	}
 	t.Cleanup(func() {
 		pool.Exec(ctx, `DELETE FROM mt_accounts WHERE id::text = $1`, accountID)
+		pool.Exec(ctx, `DELETE FROM users WHERE id = $1`, userID)
 	})
 	return accountID
 }

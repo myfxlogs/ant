@@ -36,9 +36,13 @@ func testPG(t *testing.T) *pgxpool.Pool {
 	if dsn == "" {
 		password := os.Getenv("DB_PASSWORD")
 		user := os.Getenv("DB_USER")
-		if user == "" { user = "ant" }
+		if user == "" {
+			user = "ant"
+		}
 		dbname := os.Getenv("DB_NAME")
-		if dbname == "" { dbname = "ant" }
+		if dbname == "" {
+			dbname = "ant"
+		}
 		dsn = "postgres://" + user + ":" + password + "@localhost:5433/" + dbname + "?sslmode=disable"
 	}
 	pool, err := pgxpool.New(context.Background(), dsn)
@@ -138,6 +142,18 @@ func (e *trackedExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) (
 
 func (e *trackedExecutor) FetchSymbolParams(_ context.Context, _ []string) ([]*mthub.SymbolParam, error) {
 	return nil, nil
+}
+
+func (e *trackedExecutor) FetchAllSymbols(_ context.Context) ([]string, error) {
+	return nil, nil
+}
+
+func (e *trackedExecutor) FetchPriceHistory(_ context.Context, _, _ string, _, _ int64, _ int) ([]*mthub.Bar, error) {
+	return nil, nil
+}
+
+func (e *trackedExecutor) AddSymbols(_ context.Context, _ []string) error {
+	return nil
 }
 
 func (e *trackedExecutor) SubscribeOrderEvents(_ context.Context, _ mthub.OrderEventHandler) error {
