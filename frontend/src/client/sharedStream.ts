@@ -16,6 +16,71 @@ export type SharedStreamState<T> = {
   staleDetected?: boolean;
 };
 
+function backoffDelay(retryCount: number): number {
+  return Math.min(1000 * Math.pow(2, retryCount), 30000);
+}
+
+function isAbortError(error: unknown): boolean {
+  const errorStr = String(error);
+  return (error as Error).name === 'AbortError' || errorStr.includes('canceled');
+}
+
+function notifyListenersError<T>(state: SharedStreamState<T>, error: unknown): void {
+  for (const l of state.listeners.values()) {
+    try {
+      l.onError?.(error);
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function dispatchToListeners<T>(state: SharedStreamState<T>, val: T): void {
+  // Skip heartbeat events (empty accountId from backend keepalive).
+  if (!(val as { accountId?: string }).accountId) return;
+  for (const l of state.listeners.values()) {
+    try {
+      l.onData(val);
+    } catch {
+      // ignore listener errors
+    }
+  }
+}
+
+function cleanupIfEmpty<T>(key: string, store: Map<string, SharedStreamState<T>>): void {
+  const current = store.get(key);
+  if (current && current.listeners.size === 0) {
+    current.watchdog?.stop();
+    store.delete(key);
+  }
+}
+
+function handleStreamCatch<T>(
+  state: SharedStreamState<T>,
+  error: unknown,
+  runStream: (n: number) => void,
+  retryCount: number,
+): void {
+  state.watchdog?.stop();
+  if (state.staleDetected && state.listeners.size > 0) {
+    runStream(0);
+    return;
+  }
+  if (isAbortError(error)) return;
+  notifyListenersError(state, error);
+  scheduleReconnect(state, runStream, retryCount);
+}
+
+function scheduleReconnect<T>(
+  state: SharedStreamState<T>,
+  runStream: (retryCount: number) => void,
+  retryCount: number,
+): boolean {
+  if (state.listeners.size === 0) return false;
+  setTimeout(() => runStream(retryCount + 1), backoffDelay(retryCount));
+  return true;
+}
+
 const sharedProfitStreams = new Map<string, SharedStreamState<ProfitUpdate>>();
 const sharedOrderStreams = new Map<string, SharedStreamState<OrderUpdate>>();
 
@@ -44,7 +109,6 @@ export function startSharedStream<T>(
   }
 
   const runStream = async (retryCount = 0) => {
-    // Fresh abort controller for each attempt.
     state.abortController = new AbortController();
     state.staleDetected = false;
     state.watchdog?.start();
@@ -53,58 +117,16 @@ export function startSharedStream<T>(
       const stream = start(state.abortController.signal);
       for await (const item of stream) {
         state.watchdog?.touch();
-        const val = toCamelCase(item) as T;
-        // Skip heartbeat events (empty accountId from backend keepalive).
-        if (!(val as { accountId?: string }).accountId) continue;
-        for (const l of state.listeners.values()) {
-          try {
-            l.onData(val);
-          } catch {
-            // ignore listener errors
-          }
-        }
+        dispatchToListeners(state, toCamelCase(item) as T);
       }
 
       state.watchdog?.stop();
-      // Stream ended cleanly — reconnect with backoff if listeners remain.
-      if (state.listeners.size > 0) {
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-        setTimeout(() => runStream(retryCount + 1), delay);
-        return;
-      }
+      scheduleReconnect(state, runStream, retryCount);
     } catch (error) {
-      state.watchdog?.stop();
-      if (state.staleDetected) {
-        // Watchdog triggered — force immediate reconnect.
-        if (state.listeners.size > 0) {
-          runStream(0);
-          return;
-        }
-      }
-      const errorStr = String(error);
-      if ((error as Error).name === 'AbortError' || errorStr.includes('canceled')) {
-        return;
-      }
-      for (const l of state.listeners.values()) {
-        try {
-          l.onError?.(error);
-        } catch {
-          // ignore
-        }
-      }
-      // Reconnect with backoff if listeners remain.
-      if (state.listeners.size > 0) {
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-        setTimeout(() => runStream(retryCount + 1), delay);
-        return;
-      }
+      handleStreamCatch(state, error, runStream, retryCount);
     } finally {
       state.started = false;
-      const current = store.get(key);
-      if (current && current.listeners.size === 0) {
-        current.watchdog?.stop();
-        store.delete(key);
-      }
+      cleanupIfEmpty(key, store);
     }
   };
 

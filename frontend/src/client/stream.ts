@@ -64,6 +64,42 @@ function isAbortError(error: unknown): boolean {
   return (error as Error).name === 'AbortError' || errorStr.includes('canceled') || errorStr.includes('aborted');
 }
 
+/** Classify a stream error and update transport failure streak. Returns the action to take. */
+type StreamErrorAction = 'stale-reconnect' | 'abort' | 'stop' | 'retry';
+
+function classifyStreamError(
+  error: unknown,
+  opts: {
+    isAborted: boolean;
+    staleDetected: boolean;
+    transportFailStreak: number;
+    onError?: (error: Error) => void;
+  },
+): { action: StreamErrorAction; streak: number } {
+  if (opts.staleDetected && !opts.isAborted) return { action: 'stale-reconnect', streak: opts.transportFailStreak };
+  if (opts.isAborted || isAbortError(error)) return { action: 'abort', streak: opts.transportFailStreak };
+
+  let streak = opts.transportFailStreak;
+  if (isLikelyStreamTransportFailure(error)) {
+    streak++;
+    if (streak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {
+      console.warn(`[stream] transport failures approaching cap: ${streak}/${STREAM_TRANSPORT_FAILURE_CAP}`);
+    }
+    if (streak >= STREAM_TRANSPORT_FAILURE_CAP) {
+      opts.onError?.(new Error('stream transport failure cap reached'));
+      return { action: 'stop', streak };
+    }
+  } else {
+    streak = 0;
+    opts.onError?.(error as Error);
+  }
+  return { action: 'retry', streak };
+}
+
+function backoffDelay(retryCount: number): number {
+  return Math.min(1000 * Math.pow(2, retryCount), 30000);
+}
+
 export const streamApi = {
   subscribeEvents: (accountIds: string[], callbacks: StreamCallbacks) => {
     let isAborted = false;
@@ -103,31 +139,17 @@ export const streamApi = {
 
         watchdog.stop();
         if (!isAborted) {
-          const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-          setTimeout(() => runStream(retryCount + 1), delay);
+          setTimeout(() => runStream(retryCount + 1), backoffDelay(retryCount));
         }
       } catch (error) {
         watchdog.stop();
-        if (staleDetected && !isAborted) {
-          runStream(0);
-          return;
-        }
-        if (isAborted || isAbortError(error)) return;
-        if (isLikelyStreamTransportFailure(error)) {
-          transportFailStreak++;
-          if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {
-            console.warn(`[stream] transport failures approaching cap: ${transportFailStreak}/${STREAM_TRANSPORT_FAILURE_CAP}`);
-          }
-          if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP) {
-            callbacks.onError?.(new Error('stream transport failure cap reached'));
-            return;
-          }
-        } else {
-          transportFailStreak = 0;
-          callbacks.onError?.(error as Error);
-        }
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-        setTimeout(() => runStream(retryCount + 1), delay);
+        const result = classifyStreamError(error, {
+          isAborted, staleDetected, transportFailStreak, onError: callbacks.onError,
+        });
+        transportFailStreak = result.streak;
+        if (result.action === 'stale-reconnect') { runStream(0); return; }
+        if (result.action === 'abort' || result.action === 'stop') return;
+        setTimeout(() => runStream(retryCount + 1), backoffDelay(retryCount));
       }
     };
 
@@ -207,31 +229,17 @@ export const streamApi = {
 
         watchdog.stop();
         if (!isAborted) {
-          const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-          setTimeout(() => runStream(retryCount + 1), delay);
+          setTimeout(() => runStream(retryCount + 1), backoffDelay(retryCount));
         }
       } catch (error) {
         watchdog.stop();
-        if (staleDetected && !isAborted) {
-          runStream(0);
-          return;
-        }
-        if (isAborted || isAbortError(error)) return;
-        if (isLikelyStreamTransportFailure(error)) {
-          transportFailStreak++;
-          if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {
-            console.warn(`[stream] transport failures approaching cap: ${transportFailStreak}/${STREAM_TRANSPORT_FAILURE_CAP}`);
-          }
-          if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP) {
-            onError?.(new Error('stream transport failure cap reached'));
-            return;
-          }
-        } else {
-          transportFailStreak = 0;
-          onError?.(error);
-        }
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
-        setTimeout(() => runStream(retryCount + 1), delay);
+        const result = classifyStreamError(error, {
+          isAborted, staleDetected, transportFailStreak, onError: onError as ((e: Error) => void) | undefined,
+        });
+        transportFailStreak = result.streak;
+        if (result.action === 'stale-reconnect') { runStream(0); return; }
+        if (result.action === 'abort' || result.action === 'stop') return;
+        setTimeout(() => runStream(retryCount + 1), backoffDelay(retryCount));
       }
     };
 
