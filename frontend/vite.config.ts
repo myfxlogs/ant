@@ -55,8 +55,10 @@ export default defineConfig({
             if (id.includes('dayjs') || id.includes('date-fns')) return 'vendor-date';
             if (id.includes('monaco-editor') || id.includes('@monaco-editor')) return 'vendor-monaco';
             if (id.includes('zustand')) return 'vendor-zustand';
-            if (id.includes('react-syntax-highlighter') || id.includes('refractor') || id.includes('prismjs')) return 'vendor-prism';
-            if (id.includes('highlight.js') || id.includes('lowlight')) return 'vendor-highlight';
+            // Let react-syntax-highlighter, refractor, prismjs, highlight.js, lowlight
+            // fall through to default Vite chunking — they're only dynamically imported,
+            // so Vite will create separate chunks NOT preloaded on initial page load.
+            if (id.includes('react-syntax-highlighter') || id.includes('refractor') || id.includes('prismjs') || id.includes('highlight.js') || id.includes('lowlight')) return;
             if (id.includes('react-markdown') || id.includes('remark') || id.includes('micromark') || id.includes('mdast')) return 'vendor-markdown';
             if (id.includes('@codemirror')) return 'vendor-codemirror';
             if (id.includes('@sentry')) return 'vendor-sentry';

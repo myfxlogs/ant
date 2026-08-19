@@ -1,12 +1,34 @@
-import { useState } from 'react';
-import { Button, Typography, Popconfirm, Input, Modal } from 'antd';
+import { useState, lazy, Suspense, useEffect } from 'react';
+import { Button, Typography, Popconfirm, Input, Modal, Spin } from 'antd';
 import { FileTextOutlined, SendOutlined, DeleteOutlined, EditOutlined, CopyOutlined, CodeOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
-import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useTranslation } from 'react-i18next';
 
-SyntaxHighlighter.registerLanguage('python', python);
+const SyntaxHighlighter = lazy(() => import('react-syntax-highlighter/dist/esm/index').then(m => ({ default: m.Light })));
+
+function LazyCodeView({ code }: { code: string }) {
+  const [style, setStyle] = useState<typeof import('react-syntax-highlighter/dist/esm/styles/hljs').atomOneDark | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      import('react-syntax-highlighter/dist/esm/languages/hljs/python'),
+      import('react-syntax-highlighter/dist/esm/styles/hljs'),
+    ]).then(([py, styles]) => {
+      if (cancelled) return;
+      // Register language on the lazy-loaded SyntaxHighlighter
+      import('react-syntax-highlighter/dist/esm/index').then(m => m.Light.registerLanguage('python', py.default));
+      setStyle(styles.atomOneDark);
+    });
+    return () => { cancelled = true; };
+  }, []);
+  if (!style) return <div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>;
+  return (
+    <SyntaxHighlighter language="python" style={style} showLineNumbers wrapLines
+      customStyle={{ margin: 0, borderRadius: 6, fontSize: 12, maxHeight: '60vh' }}
+      lineNumberStyle={{ fontSize: 10, minWidth: '2em', color: '#636d83' }}>
+      {code}
+    </SyntaxHighlighter>
+  );
+}
 
 interface Tpl { id: string; name: string; code: string }
 
@@ -43,8 +65,8 @@ export default function StrategyList({ templates, loadedId, hasCode, onLoad, onS
           {templates.map(tpl => (
             <div key={tpl.id}
               style={{ padding: '8px 10px', borderRadius: 8, fontSize: 12,
-                background: tpl.id === loadedId ? '#f6ffed' : '#fafafa',
-                border: tpl.id === loadedId ? '1px solid #b7eb8f' : '1px solid #f0f0f0',
+                background: tpl.id === loadedId ? 'var(--color-success-bg)' : 'var(--color-bg-secondary)',
+                border: tpl.id === loadedId ? '1px solid var(--color-success)' : '1px solid var(--color-border)',
                 transition: 'all 0.15s',
               }}>
               {/* Row 1: name + line count */}
@@ -104,11 +126,9 @@ export default function StrategyList({ templates, loadedId, hasCode, onLoad, onS
         footer={<Button onClick={() => { copy(viewCode?.code || ''); }} icon={<CopyOutlined />}>{copied ? t('common.copied', { defaultValue: 'Copied' }) : t('strategy.templates.copyAll', { defaultValue: 'Copy All' })}</Button>}
         width={700} style={{ top: 20 }}>
         {viewCode && (
-          <SyntaxHighlighter language="python" style={atomOneDark} showLineNumbers wrapLines
-            customStyle={{ margin: 0, borderRadius: 6, fontSize: 12, maxHeight: '60vh' }}
-            lineNumberStyle={{ fontSize: 10, minWidth: '2em', color: '#636d83' }}>
-            {viewCode.code}
-          </SyntaxHighlighter>
+          <Suspense fallback={<div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>}>
+            <LazyCodeView code={viewCode.code} />
+          </Suspense>
         )}
       </Modal>
     </div>

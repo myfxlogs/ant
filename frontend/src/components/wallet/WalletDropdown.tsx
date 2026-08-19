@@ -18,7 +18,7 @@ export default function WalletDropdown() {
   const { data: wallet } = useQuery({
     queryKey: queryKeys.wallet.all,
     queryFn: () => walletApi.getWallet(),
-    staleTime: 30_000,
+    staleTime: 300_000,
     retry: false,
   });
 

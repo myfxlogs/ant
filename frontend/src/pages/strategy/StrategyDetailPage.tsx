@@ -1,17 +1,39 @@
-import { useMemo } from 'react';
+import { useMemo, lazy, Suspense, useEffect, useState } from 'react';
 import { Typography, Tabs, Tag, Space, Button, Descriptions, Spin, Empty } from 'antd';
 import { EditOutlined, ForkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip as RTooltip } from 'recharts';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { strategyApi } from '@/client/strategy';
 import type { StrategyTemplate } from '@/gen/ant/v1/strategy_template_entity_pb';
 import { queryKeys } from '@/queries/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 import Seo from '@/components/common/Seo';
+
+const SyntaxHighlighter = lazy(() => import('react-syntax-highlighter/dist/esm/prism').then(m => ({ default: m.Prism })));
+
+function LazyCodeView({ code }: { code: string }) {
+  const [style, setStyle] = useState<typeof import('react-syntax-highlighter/dist/esm/styles/prism').vscDarkPlus | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    import('react-syntax-highlighter/dist/esm/styles/prism').then(m => {
+      if (!cancelled) setStyle(m.vscDarkPlus);
+    });
+    return () => { cancelled = true; };
+  }, []);
+  if (!style) return <div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>;
+  return (
+    <SyntaxHighlighter
+      language="mql"
+      style={style}
+      customStyle={{ borderRadius: 8, maxHeight: '70vh', fontSize: 13 }}
+      showLineNumbers
+    >
+      {code}
+    </SyntaxHighlighter>
+  );
+}
 
 type TemplateWithMetrics = StrategyTemplate & {
   sparkline?: string[];
@@ -173,14 +195,9 @@ export default function StrategyDetailPage() {
                 label: t('strategy.templates.codeModal.title', { defaultValue: 'Code' }),
                 children: (
                   <div style={{ padding: '8px 0' }}>
-                    <SyntaxHighlighter
-                      language="mql"
-                      style={vscDarkPlus}
-                      customStyle={{ borderRadius: 8, maxHeight: '70vh', fontSize: 13 }}
-                      showLineNumbers
-                    >
-                      {template.code || ''}
-                    </SyntaxHighlighter>
+                    <Suspense fallback={<div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>}>
+                      <LazyCodeView code={template.code || ''} />
+                    </Suspense>
                   </div>
                 ),
               }] : []),
