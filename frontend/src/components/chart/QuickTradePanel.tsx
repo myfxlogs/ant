@@ -205,7 +205,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, horizo
           <Radio.Button value="isolated">{t(ISOLATED_KEY)}</Radio.Button>
         </Radio.Group>
         {!isMT5 && (
-          <div style={{ fontSize: 9, color: '#8c8c8c', marginTop: 2 }}>{t(MT4_CROSS_ONLY_KEY)}</div>
+          <div style={{ fontSize: 9, color: 'var(--color-text-muted)', marginTop: 2 }}>{t(MT4_CROSS_ONLY_KEY)}</div>
         )}
       </div>
 

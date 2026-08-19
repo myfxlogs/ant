@@ -61,7 +61,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
     { title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 50, render: (v: string) => <Tag color={v === 'BUY' ? 'green' : 'red'}>{v}</Tag> },
     { title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 60 },
     { title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 80 },
-    { title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? '#3fb950' : '#f85149' }}>{fmtNum(v)}</span> },
+    { title: t(TRADING_PNL_KEY), dataIndex: 'profit', key: 'profit', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{fmtNum(v)}</span> },
     { title: '', key: 'action', width: 40, render: (_: unknown, r: { ticket: number }) => (
       <Button size="small" type="text" danger icon={<CloseOutlined />} onClick={() => onClosePosition(r.ticket)} />
     )},
@@ -72,7 +72,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
     { title: t(TRADING_SIDE_KEY), dataIndex: 'side', key: 'side', width: 50, render: (v: string) => <Tag color={v === 'BUY' ? 'green' : 'red'}>{v}</Tag> },
     { title: t(TRADING_VOLUME_KEY), dataIndex: 'volume', key: 'volume', width: 60 },
     { title: t(TRADING_MARK_PRICE_KEY), dataIndex: 'price', key: 'price', width: 80 },
-    { title: t(TRADING_PNL_KEY), dataIndex: 'pnl', key: 'pnl', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? '#3fb950' : '#f85149' }}>{fmtNum(v)}</span> },
+    { title: t(TRADING_PNL_KEY), dataIndex: 'pnl', key: 'pnl', width: 80, render: (v: number | undefined) => <span style={{ color: (v ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{fmtNum(v)}</span> },
     { title: t(TRADE_TIME_KEY), dataIndex: 'time', key: 'time', width: 100, render: (v: string) => fmtTime(v) },
   ];
 
@@ -85,7 +85,7 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
     }}>
       {onResizeStart && (
         <div ref={resizeRef} onMouseDown={onResizeStart} style={{
-          height: 5, cursor: 'row-resize', background: dragging ? '#58a6ff' : 'transparent', flexShrink: 0,
+          height: 5, cursor: 'row-resize', background: dragging ? 'var(--color-info)' : 'transparent', flexShrink: 0,
         }} />
       )}
       <div style={{
@@ -97,8 +97,8 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           style={{
             padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
             cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            color: tab === 'positions' ? '#58a6ff' : 'var(--ant-color-text-secondary)',
-            borderBottom: tab === 'positions' ? '2px solid #58a6ff' : 'none',
+            color: tab === 'positions' ? 'var(--color-info)' : 'var(--ant-color-text-secondary)',
+            borderBottom: tab === 'positions' ? '2px solid var(--color-info)' : 'none',
           }}
         >
           {t(POSITIONS_KEY)}
@@ -109,8 +109,8 @@ export default function ChartBottomPanel({ positions, recentTrades, onClosePosit
           style={{
             padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
             cursor: 'pointer', fontSize: 12, fontWeight: 600,
-            color: tab === 'history' ? '#58a6ff' : 'var(--ant-color-text-secondary)',
-            borderBottom: tab === 'history' ? '2px solid #58a6ff' : 'none',
+            color: tab === 'history' ? 'var(--color-info)' : 'var(--ant-color-text-secondary)',
+            borderBottom: tab === 'history' ? '2px solid var(--color-info)' : 'none',
           }}
         >
           {t(HISTORY_KEY)}

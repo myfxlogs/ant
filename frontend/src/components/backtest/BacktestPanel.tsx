@@ -70,7 +70,7 @@ export default function BacktestPanel(props: Props) {
   // ── Expanded state ────────────────────────────────────────────────────
   return (
     <div style={{
-      borderTop: '2px solid #e8e8e8', background: '#fafbfc',
+      borderTop: '2px solid var(--color-border)', background: 'var(--color-bg-secondary)',
       display: 'flex', flexDirection: 'column',
       ...(runner.userResized ? { height: runner.panelHeight } : { flex: 1 }),
       minHeight: 160,
@@ -78,19 +78,19 @@ export default function BacktestPanel(props: Props) {
     }}>
       {/* Resize handle */}
       <div ref={resizeRef} onMouseDown={handleMouseDown} style={{
-        height: 5, cursor: 'row-resize', background: runner.dragging ? '#1890ff' : 'transparent', flexShrink: 0,
+        height: 5, cursor: 'row-resize', background: runner.dragging ? 'var(--color-info)' : 'transparent', flexShrink: 0,
       }} />
 
       {/* Tab bar */}
       <div style={{
         display: 'flex', alignItems: 'center',
         padding: '6px 14px 0', flexShrink: 0,
-        background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
-        borderBottom: '1px solid #e8e8e8',
+        background: 'var(--color-bg-elevated)',
+        borderBottom: '1px solid var(--color-border)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <PlayCircleOutlined style={{ color: '#1890ff', fontSize: 14 }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>{t(TITLE_KEY)}</span>
+          <PlayCircleOutlined style={{ color: 'var(--color-info)', fontSize: 14 }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>{t(TITLE_KEY)}</span>
           <Tabs size="small" activeKey={runner.activeTab} onChange={runner.setActiveTab}
             tabBarStyle={{ marginBottom: 0, borderBottom: 'none' }}
             style={{ fontSize: 13 }}

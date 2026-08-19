@@ -45,7 +45,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
           {t(GATE_RUN_PIPELINE_KEY, 'Run Gate Evaluation')}
         </Button>
         {!canRun && status === 'idle' && (
-          <span style={{ marginLeft: 8, fontSize: 11, color: '#8c8c8c' }}>
+          <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--color-text-muted)' }}>
             {t(GATE_RUN_HINT_KEY, 'Complete a backtest first')}
           </span>
         )}
@@ -67,24 +67,24 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
             const gs = gateMap.get(gate);
             const isCurrent = loading && gates.length === GATE_ORDER.indexOf(gate);
             if (isCurrent) {
-              return { title: <span><LoadingOutlined style={{ color: '#1677ff' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
-                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t(GATE_EVALUATING_KEY, 'Evaluating...')}</span>, status: 'process' as const };
+              return { title: <span><LoadingOutlined style={{ color: 'var(--color-info)' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
+                description: <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{t(GATE_EVALUATING_KEY, 'Evaluating...')}</span>, status: 'process' as const };
             }
             if (!gs) {
-              return { title: <span><ClockCircleFilled style={{ color: '#d9d9d9' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
+              return { title: <span><ClockCircleFilled style={{ color: 'var(--color-text-muted)' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
                 description: null, status: 'wait' as const };
             }
             if (gs.skipped) {
-              return { title: <span><MinusCircleOutlined style={{ color: '#faad14', marginRight: 6 }} />
+              return { title: <span><MinusCircleOutlined style={{ color: 'var(--color-warning)', marginRight: 6 }} />
                 {t(GATE_KEY[gs.gate] || gs.gate, gs.gate)}
                 <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
               </span>,
-                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t(GATE_SKIPPED_KEY, 'SKIPPED')} — {gs.reason || t(GATE_NO_DATA_KEY, 'no data')}</span>,
+                description: <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{t(GATE_SKIPPED_KEY, 'SKIPPED')} — {gs.reason || t(GATE_NO_DATA_KEY, 'no data')}</span>,
                 status: 'wait' as const };
             }
             return { title: <span>{gs.passed
-                ? <CheckCircleFilled style={{ color: '#52c41a', marginRight: 6 }} />
-                : <CloseCircleFilled style={{ color: '#ff4d4f', marginRight: 6 }} />}
+                ? <CheckCircleFilled style={{ color: 'var(--color-success)', marginRight: 6 }} />
+                : <CloseCircleFilled style={{ color: 'var(--color-danger)', marginRight: 6 }} />}
               {t(GATE_KEY[gs.gate] || gs.gate, gs.gate)}
               <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
             </span>,

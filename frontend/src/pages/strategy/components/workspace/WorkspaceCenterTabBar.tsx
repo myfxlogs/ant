@@ -91,11 +91,11 @@ export default function WorkspaceCenterTabBar({
           style={{
             padding: '0 20px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            color: centerTab === key ? '#58a6ff' : 'var(--ant-color-text-secondary)',
-            borderBottom: centerTab === key ? '2px solid #58a6ff' : '2px solid transparent',
+            color: centerTab === key ? 'var(--color-info)' : 'var(--ant-color-text-secondary)',
+            borderBottom: centerTab === key ? '2px solid var(--color-info)' : '2px solid transparent',
           }}
         >
-          {key === 'code' && saveStatus === 'modified' && <span style={{ color: '#d29922', fontSize: 14 }}>●</span>}
+          {key === 'code' && saveStatus === 'modified' && <span style={{ color: 'var(--color-warning)', fontSize: 14 }}>●</span>}
           {icon} {label}
         </div>
       ))}
@@ -104,20 +104,20 @@ export default function WorkspaceCenterTabBar({
       {centerTab === 'code' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', fontSize: 11 }}>
           {strategyName && <span style={{ fontWeight: 600, color: 'var(--ant-color-text)' }}>{strategyName}</span>}
-          {saveStatus === 'modified' && <span style={{ color: '#d29922' }}>● {t(COMMON_UNSAVED_KEY)}</span>}
-          {saveStatus === 'saved' && <span style={{ color: '#3fb950' }}>✓ {t(COMMON_SAVED_KEY)}</span>}
+          {saveStatus === 'modified' && <span style={{ color: 'var(--color-warning)' }}>● {t(COMMON_UNSAVED_KEY)}</span>}
+          {saveStatus === 'saved' && <span style={{ color: 'var(--color-success)' }}>✓ {t(COMMON_SAVED_KEY)}</span>}
           <Tooltip title={t(SAVE_KEY)}>
             <Button size="small" icon={<SaveOutlined />} data-tour="save"
               disabled={!code.code}
               onClick={() => code.setSaveModalOpen(true)}
-              style={{ background: '#58a6ff', borderColor: '#58a6ff', color: '#fff' }}>
+              style={{ background: 'var(--color-info)', borderColor: 'var(--color-info)', color: '#fff' }}>
               {t(COMMON_SAVE_KEY)}
             </Button>
           </Tooltip>
           <Tooltip title={t(RUN_BACKTEST_KEY)}>
             <Button size="small" type="primary" icon={<PlayCircleOutlined />} data-tour="backtest"
               onClick={handleBacktestClick}
-              style={{ background: '#3fb950', borderColor: '#3fb950' }}>
+              style={{ background: 'var(--color-success)', borderColor: 'var(--color-success)' }}>
               {t(WS_BACKTEST_KEY)}
             </Button>
           </Tooltip>
@@ -130,7 +130,7 @@ export default function WorkspaceCenterTabBar({
               onClick={() => isMobile ? setCenterTab('chat') : setRightPanelTab(rightPanelTab === 'ai' ? null : 'ai')}
               style={rightPanelTab === 'ai'
                 ? { background: '#531dab', borderColor: '#531dab', color: '#fff' }
-                : { background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
+                : { background: 'var(--color-ai-btn)', borderColor: 'var(--color-ai-btn)', color: '#fff' }}>
               {t(SEND_TO_AI_KEY)}
             </Button>
           </Tooltip>

@@ -57,17 +57,17 @@ export default function StrategyList({ templates, loadedId, hasCode, onLoad, onS
                       style={{ flex: 1, fontSize: 12 }} autoFocus />
                     <Button size="small" type="text" icon={<CheckOutlined />}
                       onClick={() => { onRename(tpl.id, editName.trim()); setEditId(null); }}
-                      style={{ color: '#52c41a', padding: '0 4px' }} />
+                      style={{ color: 'var(--color-success)', padding: '0 4px' }} />
                     <Button size="small" type="text" icon={<CloseOutlined />}
-                      onClick={() => setEditId(null)} style={{ color: '#ff4d4f', padding: '0 4px' }} />
+                      onClick={() => setEditId(null)} style={{ color: 'var(--color-danger)', padding: '0 4px' }} />
                   </div>
                 ) : (
                   <>
                     <span onClick={() => onLoad(tpl.id)}
-                      style={{ color: '#262626', fontWeight: tpl.id === loadedId ? 600 : 400, cursor: 'pointer', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {tpl.id === loadedId && <span style={{ color: '#52c41a', marginRight: 4 }}>●</span>}{tpl.name}
+                      style={{ color: 'var(--color-text)', fontWeight: tpl.id === loadedId ? 600 : 400, cursor: 'pointer', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {tpl.id === loadedId && <span style={{ color: 'var(--color-success)', marginRight: 4 }}>●</span>}{tpl.name}
                     </span>
-                    <span style={{ color: '#8c8c8c', fontSize: 10, flexShrink: 0, marginLeft: 8 }}>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: 10, flexShrink: 0, marginLeft: 8 }}>
                       {tpl.code ? `${tpl.code.split('\n').length} ${t('strategy.templates.lines', { defaultValue: 'lines' })}` : ''}
                     </span>
                   </>
@@ -87,14 +87,14 @@ export default function StrategyList({ templates, loadedId, hasCode, onLoad, onS
                 <Popconfirm title={t('strategy.templates.confirmDelete', { defaultValue: 'Delete this strategy?' })} okText={t('common.delete', { defaultValue: 'Delete' })} cancelText={t('common.cancel', { defaultValue: 'Cancel' })}
                   okButtonProps={{ danger: true }} onConfirm={() => onDelete(tpl.id)}>
                   <Button size="small" type="link" icon={<DeleteOutlined />}
-                    style={{ fontSize: 10, padding: '0 4px', height: 20, color: '#ff4d4f' }}>{t('common.delete', { defaultValue: 'Delete' })}</Button>
+                    style={{ fontSize: 10, padding: '0 4px', height: 20, color: 'var(--color-danger)' }}>{t('common.delete', { defaultValue: 'Delete' })}</Button>
                 </Popconfirm>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div style={{ fontSize: 13, color: '#8c8c8c', textAlign: 'center', padding: '40px 0' }}>
+        <div style={{ fontSize: 13, color: 'var(--color-text-muted)', textAlign: 'center', padding: '40px 0' }}>
           {t('strategy.templates.noTemplates', { defaultValue: 'No saved strategy templates' })}
         </div>
       )}

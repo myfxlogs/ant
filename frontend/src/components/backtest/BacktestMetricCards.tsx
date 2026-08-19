@@ -22,7 +22,7 @@ export default function BacktestMetricCards({ metrics }: { metrics: BacktestMetr
           <Card size="small">
             <Statistic title={t(TOTAL_RETURN_KEY, 'Total Return')} value={pct(metrics.totalReturn)}
               prefix={metrics.totalReturn != null && metrics.totalReturn >= 0
-                ? <RiseOutlined style={{ color: '#26a69a' }} /> : <FallOutlined style={{ color: '#ef5350' }} />}
+                ? <RiseOutlined style={{ color: 'var(--color-success)' }} /> : <FallOutlined style={{ color: 'var(--color-danger)' }} />}
               valueStyle={metricStyle} />
           </Card>
         </Col>
@@ -33,7 +33,7 @@ export default function BacktestMetricCards({ metrics }: { metrics: BacktestMetr
         </Col>
         <Col span={8}>
           <Card size="small">
-            <Statistic title={t(MAX_DRAWDOWN_KEY, 'Max Drawdown')} value={pct(metrics.maxDrawdown)} valueStyle={{ ...metricStyle, color: '#ef5350' }} />
+            <Statistic title={t(MAX_DRAWDOWN_KEY, 'Max Drawdown')} value={pct(metrics.maxDrawdown)} valueStyle={{ ...metricStyle, color: 'var(--color-danger)' }} />
           </Card>
         </Col>
         <Col span={8}>

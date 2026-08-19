@@ -132,7 +132,7 @@ export default function SidebarRunList({
                 )}
                 {renamingId !== r.id && <span style={{
                   fontWeight: 700, fontSize: 11, flexShrink: 0, marginLeft: 6,
-                  color: (r.totalReturn ?? 0) >= 0 ? '#3fb950' : '#f85149',
+                  color: (r.totalReturn ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
                 }}>
                   {r.totalReturn != null ? fmtReturn(r.totalReturn) : (
                     <Button type="text" size="small" icon={<EditOutlined />}

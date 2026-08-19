@@ -108,9 +108,9 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
         {auditStatus !== 'idle' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
             {auditStatus === 'checking' && <Tag color="processing">{t(AUDIT_CHECKING_KEY)}</Tag>}
-            {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: '#52c41a' }} /></Tooltip>}
-            {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: '#faad14' }} /></Tooltip>}
-            {auditStatus === 'error' && <Tooltip title={auditSummary}><CloseCircleOutlined style={{ color: '#ff4d4f' }} /></Tooltip>}
+            {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: 'var(--color-success)' }} /></Tooltip>}
+            {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: 'var(--color-warning)' }} /></Tooltip>}
+            {auditStatus === 'error' && <Tooltip title={auditSummary}><CloseCircleOutlined style={{ color: 'var(--color-danger)' }} /></Tooltip>}
             {auditStatus !== 'checking' && <span>{auditSummary}</span>}
           </div>
         )}
@@ -133,7 +133,7 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
             {t(IMPORT_MQL_KEY)}
           </Button>
           <Button icon={<RobotOutlined />} onClick={() => isMobile ? onSetCenterTab('chat') : onSetRightPanelTab('ai')}
-            style={{ background: '#722ed1', borderColor: '#722ed1', color: '#fff' }}>
+            style={{ background: 'var(--color-ai-btn)', borderColor: 'var(--color-ai-btn)', color: '#fff' }}>
             {t(AI_GENERATE_KEY)}
           </Button>
           <Button icon={<HistoryOutlined />} onClick={onSelectFirstTemplate}

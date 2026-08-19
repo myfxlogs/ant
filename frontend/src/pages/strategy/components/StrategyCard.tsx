@@ -13,7 +13,7 @@ import PublishToMarketModal from './PublishToMarketModal';
 
 const { Text } = Typography;
 
-function Sparkline({ data }: { data: number[] }) {
+function Sparkline({ data }: { data: number[]; color?: string }) {
   if (!data || data.length < 2) return null;
   const nums = data.filter(n => !isNaN(n));
   if (nums.length < 2) return null;
@@ -25,10 +25,10 @@ function Sparkline({ data }: { data: number[] }) {
   const step = w / (nums.length - 1);
   const points = nums.map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(' ');
   const isUp = nums[nums.length - 1] >= nums[0];
-  const color = isUp ? '#52c41a' : '#ff4d4f';
+  const strokeColor = isUp ? 'var(--color-success)' : 'var(--color-danger)';
   return (
     <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-      <polyline points={points} fill="none" stroke={color} strokeWidth={1.5} />
+      <polyline points={points} fill="none" stroke={strokeColor} strokeWidth={1.5} />
     </svg>
   );
 }

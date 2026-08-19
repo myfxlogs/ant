@@ -50,7 +50,7 @@ function AssumptionField({ label, value, tooltip }: { label: string; value: Reac
   return (
     <Tooltip title={tooltip} placement="top">
       <div style={{ cursor: 'help' }}>
-        <span style={{ color: '#8c8c8c', borderBottom: '1px dashed #d9d9d9' }}>{label}:</span> <strong>{value}</strong>
+        <span style={{ color: 'var(--color-text-muted)', borderBottom: '1px dashed var(--color-border)' }}>{label}:</span> <strong>{value}</strong>
       </div>
     </Tooltip>
   );
@@ -96,12 +96,12 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10,
         padding: '8px 14px', borderRadius: 6,
-        background: 'linear-gradient(180deg, #f0f5ff 0%, #e6f0ff 100%)',
-        border: '1px solid #d6e4ff',
+        background: 'var(--color-bg-elevated)',
+        border: '1px solid var(--color-border)',
       }}>
         {/* Status */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(STATUS_KEY)}</span>
+          <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 700 }}>{t(STATUS_KEY)}</span>
           {status === 'running' && <Tag color="processing" icon={<Spin size="small" />}>{t(BACKTEST_RUNNING_KEY)}</Tag>}
           {status === 'completed' && <Tag color="success" style={{ fontSize: 13, padding: '2px 8px' }}>{t(BACKTEST_COMPLETED_KEY)}</Tag>}
           {status === 'degraded' && <Tag color="warning" icon={<WarningOutlined />}>{t(BACKTEST_DEGRADED_KEY)}</Tag>}
@@ -111,7 +111,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Symbol */}
         {runMeta?.symbol && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(SYMBOL_KEY)}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 700 }}>{t(SYMBOL_KEY)}</span>
             <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.symbol}</Tag>
           </div>
         )}
@@ -119,7 +119,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Timeframe */}
         {runMeta?.timeframe && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(TIMEFRAME_KEY)}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 700 }}>{t(TIMEFRAME_KEY)}</span>
             <Tag style={{ fontSize: 13, padding: '2px 8px' }}>{runMeta.timeframe}</Tag>
           </div>
         )}
@@ -127,7 +127,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Run ID */}
         {runId && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(STRATEGY_LIVE_RUN_ID_KEY)}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 700 }}>{t(STRATEGY_LIVE_RUN_ID_KEY)}</span>
             <Typography.Text type="secondary" style={{ fontSize: 12, fontFamily: 'monospace' }}>{runId.slice(0, 8)}</Typography.Text>
           </div>
         )}
@@ -135,7 +135,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
         {/* Created at */}
         {runMeta?.createdAt && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, color: '#595959', fontWeight: 700 }}>{t(CREATED_AT_KEY)}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 700 }}>{t(CREATED_AT_KEY)}</span>
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>{new Date(runMeta.createdAt).toLocaleString()}</Typography.Text>
           </div>
         )}
@@ -182,10 +182,10 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
       {/* Execution Assumptions */}
       {executionAssumptions && (status === 'completed' || status === 'degraded') && (
         <div style={{
-          marginBottom: 12, padding: '8px 12px', border: '1px solid #e6f4ff', borderRadius: 8,
-          background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
+          marginBottom: 12, padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 8,
+          background: 'var(--color-bg-elevated)',
         }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-info)', marginBottom: 6 }}>{t(EXEC_ASSUMPTIONS_KEY)}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '6px 12px', fontSize: 12 }}>
             <AssumptionField label={t(REPLAY_MODEL_KEY)} value={t(getReplayModelLabel(executionAssumptions))} tooltip={t(REPLAY_MODEL_KEY)} />
             <AssumptionField label={t(EXEC_ASSUMPTIONS_FIELDS_COMMISSION_KEY)} value={executionAssumptions.actualCommission ? (Number(executionAssumptions.actualCommission) * 100).toFixed(4) + '%' : '-'} tooltip={t(ASSUMPTION_TOOLTIP_KEYS.commission)} />
@@ -206,9 +206,9 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
       {/* Trade detail table */}
       {trades.length > 0 && (
         <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', gap: 24, marginBottom: 12, fontSize: 14, padding: '6px 12px', borderRadius: 6, background: '#fafafa', border: '1px solid #f0f0f0' }}>
-            <span>🟢 {t(LONG_KEY)}: <b style={{ fontSize: 15 }}>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b style={{ fontSize: 15 }}>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? '#26a69a' : '#e57373', fontSize: 15 }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
-            <span>🔴 {t(SHORT_KEY)}: <b style={{ fontSize: 15 }}>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b style={{ fontSize: 15 }}>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? '#26a69a' : '#e57373', fontSize: 15 }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
+          <div style={{ display: 'flex', gap: 24, marginBottom: 12, fontSize: 14, padding: '6px 12px', borderRadius: 6, background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+            <span> {t(LONG_KEY)}: <b style={{ fontSize: 15 }}>{buys.length}</b> {t(TRADE_VOLUME_KEY)} <b style={{ fontSize: 15 }}>{buyVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: buyPnl >= 0 ? 'var(--color-success)' : 'var(--color-danger)', fontSize: 15 }}>{buyPnl >= 0 ? '+' : ''}{buyPnl.toFixed(2)}</b></span>
+            <span> {t(SHORT_KEY)}: <b style={{ fontSize: 15 }}>{sells.length}</b> {t(TRADE_VOLUME_KEY)} <b style={{ fontSize: 15 }}>{sellVol.toFixed(2)}</b> {t(PNL_KEY)} <b style={{ color: sellPnl >= 0 ? 'var(--color-success)' : 'var(--color-danger)', fontSize: 15 }}>{sellPnl >= 0 ? '+' : ''}{sellPnl.toFixed(2)}</b></span>
           </div>
           <Table dataSource={trades.map((tr, i) => ({ ...tr, key: i }))}
             pagination={{ pageSize: 30, size: 'small' }} scroll={{ y: panelHeight - 180, x: 'max-content' }}
@@ -228,7 +228,7 @@ export default function BacktestResultsTab({ status, metrics, executionAssumptio
                 render: (v: number) => v?.toFixed(5) ?? '—' },
               { title: t(PNL_KEY), dataIndex: 'pnl', width: 80,
                 render: (v: number) => v != null ? (
-                  <span style={{ color: v >= 0 ? '#26a69a' : '#ef5350' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
+                  <span style={{ color: v >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{v >= 0 ? '+' : ''}{v.toFixed(2)}</span>
                 ) : '-' },
               { title: t(TRADE_COMMISSION_KEY), dataIndex: 'commission', width: 80,
                 render: (v: number) => v != null ? v.toFixed(2) : '-' },

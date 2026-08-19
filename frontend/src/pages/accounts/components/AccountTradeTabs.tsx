@@ -144,7 +144,7 @@ export default function AccountTradeTabs({
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr style={{ background: '#FAFBFC' }}>
+                      <tr style={{ background: 'var(--color-bg-secondary)' }}>
                         <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_ORDER_ID_KEY)}</th>
                         <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_SYMBOL_KEY)}</th>
                         <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TYPE_KEY)}</th>

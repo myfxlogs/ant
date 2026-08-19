@@ -30,21 +30,21 @@ const { Text } = Typography;
 const getTypeIcon = (type: Notification['type']) => {
   switch (type) {
     case 'trade':
-      return <ThunderboltOutlined style={{ color: '#1890ff' }} />;
+      return <ThunderboltOutlined style={{ color: 'var(--color-info)' }} />;
     case 'signal':
-      return <CodeOutlined style={{ color: '#52c41a' }} />;
+      return <CodeOutlined style={{ color: 'var(--color-success)' }} />;
     case 'risk_alert':
-      return <WarningOutlined style={{ color: '#faad14' }} />;
+      return <WarningOutlined style={{ color: 'var(--color-warning)' }} />;
     case 'strategy_execution':
-      return <CheckCircleOutlined style={{ color: '#722ed1' }} />;
+      return <CheckCircleOutlined style={{ color: 'var(--color-ai-btn)' }} />;
     case 'strategy_version_update':
       return <RocketOutlined style={{ color: '#13c2c2' }} />;
     case 'auto_fix_started':
-      return <RobotOutlined style={{ color: '#1677ff' }} />;
+      return <RobotOutlined style={{ color: 'var(--color-info)' }} />;
     case 'auto_fix_stopped':
-      return <StopOutlined style={{ color: '#fa8c16' }} />;
+      return <StopOutlined style={{ color: 'var(--color-warning)' }} />;
     default:
-      return <SettingOutlined style={{ color: '#8c8c8c' }} />;
+      return <SettingOutlined style={{ color: 'var(--color-text-muted)' }} />;
   }
 };
 

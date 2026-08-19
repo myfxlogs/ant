@@ -222,7 +222,7 @@ export default function WorkspaceSidebar({
         onMouseDown={handleSidebarResize}
         style={{
           width: 4, cursor: 'col-resize', flexShrink: 0,
-          background: sidebarDragging ? '#58a6ff' : 'transparent',
+          background: sidebarDragging ? 'var(--color-info)' : 'transparent',
           transition: 'background 0.15s',
         }}
       />

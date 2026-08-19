@@ -24,7 +24,7 @@ export default function StrategyParamsSection({
   if (extractedParams.length === 0) return null;
   return (
     <div style={{ borderTop: '1px solid var(--ant-color-border)', marginTop: 12, paddingTop: 12 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#595959', marginBottom: 8 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
         {t(STRATEGY_PARAMS_KEY)} ({extractedParams.length})
       </div>
       <Row gutter={[12, 8]}>

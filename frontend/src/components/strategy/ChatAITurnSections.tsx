@@ -51,7 +51,7 @@ export function GeneratedCodeCard({ turn, copiedId, onCopy, onApplyCode }: {
           </Button>
         </div>
       </div>
-      <pre style={{ fontSize: 12, maxHeight: 200, overflow: 'auto', background: '#f5f5f5', padding: 8, borderRadius: 4, margin: 0 }}>{turn.generatedCode}</pre>
+      <pre style={{ fontSize: 12, maxHeight: 200, overflow: 'auto', background: 'var(--color-bg-tertiary)', padding: 8, borderRadius: 4, margin: 0 }}>{turn.generatedCode}</pre>
     </div>
   );
 }
@@ -69,7 +69,7 @@ export function MetricsAndProfile({ turn }: { turn: ChatTurn }) {
                 value={m.value}
                 valueStyle={{
                   fontSize: 14,
-                  color: m.positive === true ? '#3fb950' : m.positive === false ? '#f85149' : undefined,
+                  color: m.positive === true ? 'var(--color-success)' : m.positive === false ? 'var(--color-danger)' : undefined,
                 }}
               />
             </Col>

@@ -148,7 +148,7 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
       footer={[
         <Button key="cancel" onClick={onClose}>{t(COMMON_CANCEL_KEY)}</Button>,
         <Button key="run" type="primary" loading={validating} disabled={!validated} onClick={handleConfirm}
-          style={{ background: '#3fb950', borderColor: '#3fb950' }}>
+          style={{ background: 'var(--color-success)', borderColor: 'var(--color-success)' }}>
           {t(WS_BACKTEST_KEY)}
         </Button>,
       ]}

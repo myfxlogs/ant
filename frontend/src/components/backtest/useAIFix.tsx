@@ -125,12 +125,12 @@ export function useAIFix({ strategyId, currentCode, onApplyCode, onRerunBacktest
       )}
       {diffCode && (
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>
             {t('strategy.backtest.diagnostic.diffHint', 'Review the AI-generated code below. Apply to create a new version and re-run backtest.')}
           </div>
           <pre style={{
             maxHeight: 400, overflow: 'auto', fontSize: 12, padding: 12,
-            background: '#f5f5f5', borderRadius: 8, whiteSpace: 'pre-wrap',
+            background: 'var(--color-bg-tertiary)', borderRadius: 8, whiteSpace: 'pre-wrap',
           }}>
             {diffCode}
           </pre>

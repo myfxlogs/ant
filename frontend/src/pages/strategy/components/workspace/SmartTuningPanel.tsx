@@ -96,8 +96,8 @@ export default function SmartTuningPanel({
     <div style={{ fontSize: 13 }}>
       {/* Strategy name traceability */}
       {strategyName && (
-        <div style={{ marginBottom: 8, fontSize: 12, color: '#8c8c8c' }}>
-          {t('strategy.tuning.strategyName', { defaultValue: 'Strategy' })}: <span style={{ fontWeight: 600, color: '#262626' }}>{strategyName}</span>
+        <div style={{ marginBottom: 8, fontSize: 12, color: 'var(--color-text-muted)' }}>
+          {t('strategy.tuning.strategyName', { defaultValue: 'Strategy' })}: <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{strategyName}</span>
         </div>
       )}
 
@@ -147,20 +147,20 @@ export default function SmartTuningPanel({
           <Button size="middle" type="primary" loading={tuningRunning} disabled={!canRun || enabledSweepDims.length === 0}
             onClick={handleRunTuning} style={{ fontSize: 13 }}>{tuningRunning ? t(TUNING_KEY) : t(RUN_KEY, { count: cartesianSize.toLocaleString() })}</Button>
         </Tooltip>
-        {tuneMethod === 'ai' && <span style={{ fontSize: 12, color: '#fa8c16' }}>{t(REQUIRES_A_I_KEY)}</span>}
+        {tuneMethod === 'ai' && <span style={{ fontSize: 12, color: 'var(--color-warning)' }}>{t(REQUIRES_A_I_KEY)}</span>}
       </div>
       {!canRun && (
-        <div style={{ marginBottom: 12, padding: '6px 10px', borderRadius: 4, background: '#fffbe6', border: '1px solid #ffe58f', fontSize: 12, color: '#8c6d1f' }}>
+        <div style={{ marginBottom: 12, padding: '6px 10px', borderRadius: 4, background: 'var(--color-warning-bg)', border: '1px solid var(--color-warning-border)', fontSize: 12, color: 'var(--color-warning-text)' }}>
           {t('strategy.tuning.disabledHint', { defaultValue: 'Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.' })}
         </div>
       )}
 
       {/* Sweep dimensions (hidden for AI optimizer) */}
       {tuneMethod !== 'ai' && sweepDimensions.length > 0 && (
-        <div style={{ marginBottom: 12, padding: 12, borderRadius: 6, border: '1px solid #d9d9d9', background: '#fafbfc' }}>
+        <div style={{ marginBottom: 12, padding: 12, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <Typography.Text type="secondary" style={{ fontSize: 13, fontWeight: 600 }}>{t(PARAMETER_DIMENSIONS_KEY)}</Typography.Text>
-            <span style={{ fontSize: 12, color: '#595959' }}>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
               {t(ENABLED_COMBINATIONS_KEY, { enabled: enabledSweepDims.length, combos: cartesianSize.toLocaleString() })}
               {cartesianSize > 0 && (
                 <Button type="link" size="small" style={{ fontSize: 12, padding: '0 4px' }}
@@ -175,17 +175,17 @@ export default function SmartTuningPanel({
               fontSize: 13, borderRadius: 4, marginBottom: 3, cursor: 'pointer',
               background: d.enabled ? 'rgba(24,144,255,0.06)' : 'transparent', opacity: d.enabled ? 1 : 0.4 }}>
               <Checkbox checked={d.enabled} onChange={() => onToggleDimension(d.key)} />
-              <span style={{ flex: 1, fontWeight: 500, color: '#262626' }}>{d.label}</span>
+              <span style={{ flex: 1, fontWeight: 500, color: 'var(--color-text)' }}>{d.label}</span>
               <Tag color={d.source === 'code' ? 'blue' : 'orange'} style={{ fontSize: 10, lineHeight: '16px', margin: 0 }}>
                 {d.source.toUpperCase()}</Tag>
-              <span style={{ color: '#1890ff', fontWeight: 700, fontSize: 13 }}>×{d.values.length}</span>
-              <span style={{ color: '#8c8c8c', fontSize: 11 }}>{d.values.slice(0, 5).join(', ')}{d.values.length > 5 ? '…' : ''}</span>
+              <span style={{ color: 'var(--color-info)', fontWeight: 700, fontSize: 13 }}>×{d.values.length}</span>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>{d.values.slice(0, 5).join(', ')}{d.values.length > 5 ? '…' : ''}</span>
             </label>
           ))}
           {showPreview && previewRows.length > 0 && (
-            <div style={{ marginTop: 8, padding: 8, borderRadius: 4, background: '#f6f8fa', border: '1px solid #e1e4e8' }}>
+            <div style={{ marginTop: 8, padding: 8, borderRadius: 4, background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#595959' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
                   {t(PREVIEW_TITLE_KEY, { shown: previewRows.length, total: cartesianSize.toLocaleString() })}</span>
                 {previewTruncated && <Tag color="orange" style={{ fontSize: 10, lineHeight: '16px' }}>{t(TRUNCATED_KEY)}</Tag>}
               </div>
@@ -202,9 +202,9 @@ export default function SmartTuningPanel({
 
       {/* Results table */}
       {candidates.length > 0 && (
-        <div style={{ marginTop: 12, padding: 12, borderRadius: 6, border: '1px solid #d9d9d9', background: '#fafbfc' }}>
+        <div style={{ marginTop: 12, padding: 12, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-            <TrophyOutlined style={{ color: '#faad14', fontSize: 16 }} />
+            <TrophyOutlined style={{ color: 'var(--color-warning)', fontSize: 16 }} />
             <Typography.Text strong style={{ fontSize: 14 }}>{t(RESULTS_KEY, { count: candidates.length })}</Typography.Text>
           </div>
           <Table dataSource={candidates} rowKey="id" size="small" pagination={false} scroll={{ x: 700 }}
@@ -235,7 +235,7 @@ export default function SmartTuningPanel({
                   const c = pct < 20 ? 'green' : pct < 40 ? 'orange' : 'red';
                   return <Tag color={c} style={{ fontSize: 11, margin: 0 }}>{pct.toFixed(1)}%</Tag>;
                 }},
-              { title: <Tooltip title={t(OVERFIT_TIP_KEY)}>{t(OVERFIT_KEY)}</Tooltip>, dataIndex: 'isOverfit', width: 70, render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 11, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: '#bfbfbf', fontSize: 12 }}>-</span> },
+              { title: <Tooltip title={t(OVERFIT_TIP_KEY)}>{t(OVERFIT_KEY)}</Tooltip>, dataIndex: 'isOverfit', width: 70, render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 11, margin: 0 }}>{t(OVERFIT_WARNING_KEY)}</Tag> : <span style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>-</span> },
               ...(onApplyToCode ? [{
                 title: '', width: 120,
                 render: (_: unknown, record: StrategyExperimentCandidate) => (
@@ -259,7 +259,7 @@ export default function SmartTuningPanel({
       )}
 
       {watching && (
-        <div style={{ textAlign: 'center', padding: 8, fontSize: 13, color: '#8c8c8c' }}>
+        <div style={{ textAlign: 'center', padding: 8, fontSize: 13, color: 'var(--color-text-muted)' }}>
           {t(WAITING_KEY)}
         </div>
       )}

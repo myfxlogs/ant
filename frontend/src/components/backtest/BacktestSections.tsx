@@ -10,8 +10,8 @@ export function GatePreview({ gateUpdate, gateResults, qualityPreview }: {
 }) {
   const { t } = useTranslation();
   return (
-    <div style={{ marginBottom: 12, padding: '8px 12px', border: '1px solid #e6fffb', borderRadius: 8, background: '#f6ffed' }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#52c41a', marginBottom: 6 }}>
+    <div style={{ marginBottom: 12, padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-bg-elevated)' }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-success)', marginBottom: 6 }}>
         {t('strategy.backtest.autoGate', { defaultValue: 'Auto Gate Evaluation' })}
       </div>
       {gateResults && gateResults.length > 0 && (
@@ -28,7 +28,7 @@ export function GatePreview({ gateUpdate, gateResults, qualityPreview }: {
           <Tag color={gateUpdate.completed.passed ? 'success' : 'error'}>
             {gateUpdate.completed.passed ? 'PASS' : 'FAIL'}
           </Tag>
-          <span style={{ color: '#595959' }}>{gateUpdate.completed.summary}</span>
+          <span style={{ color: 'var(--color-text-secondary)' }}>{gateUpdate.completed.summary}</span>
         </div>
       )}
       {qualityPreview && (
@@ -41,7 +41,7 @@ export function GatePreview({ gateUpdate, gateResults, qualityPreview }: {
           {qualityPreview.violations && qualityPreview.violations.length > 0 && (
             <div style={{ marginTop: 4 }}>
               {qualityPreview.violations.map((v, i) => (
-                <div key={i} style={{ color: '#8c8c8c', fontSize: 11 }}>{v.metric}: {v.actual} / {v.threshold}</div>
+                <div key={i} style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>{v.metric}: {v.actual} / {v.threshold}</div>
               ))}
             </div>
           )}

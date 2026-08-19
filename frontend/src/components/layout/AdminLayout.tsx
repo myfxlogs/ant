@@ -117,9 +117,9 @@ export default function AdminLayout() {
           header: { display: 'none' },
           wrapper: { width: '280px' },
         }}
-        style={{ background: '#1a1f36' }}
+        style={{ background: 'var(--color-admin-sidebar)' }}
       >
-        <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+        <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid var(--color-admin-border)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
               <LineChartOutlined size={22} color="#FFFFFF" />
@@ -127,7 +127,7 @@ export default function AdminLayout() {
             <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
           </div>
         </div>
-        <div style={{ background: '#1a1f36', minHeight: 'calc(100% - 64px)' }}>
+        <div style={{ background: 'var(--color-admin-sidebar)', minHeight: 'calc(100% - 64px)' }}>
           {menuContent}
         </div>
       </Drawer>
@@ -136,7 +136,7 @@ export default function AdminLayout() {
         <Sider
           trigger={null}
           style={{
-            background: '#1a1f36',
+            background: 'var(--color-admin-sidebar)',
             position: 'fixed',
             left: 0,
             top: 0,
@@ -165,9 +165,9 @@ export default function AdminLayout() {
         <Header
           className="px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16"
           style={{
-            background: 'rgba(255, 255, 255, 0.95)',
+            background: 'var(--color-header-bg)',
             backdropFilter: 'blur(12px)',
-            borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+            borderBottom: '1px solid var(--color-border)',
             position: 'fixed',
             top: 0,
             left: isMobile ? 0 : 240,

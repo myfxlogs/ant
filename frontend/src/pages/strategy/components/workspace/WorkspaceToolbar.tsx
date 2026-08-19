@@ -28,8 +28,8 @@ interface Props {
 
 const groupStyle: React.CSSProperties = {
   padding: '6px 12px 8px', borderRadius: 10,
-  background: 'rgba(255,255,255,0.72)', border: '1px solid rgba(0,0,0,0.05)',
-  boxShadow: '0 1px 3px rgba(15,23,42,0.04)',
+  background: 'var(--color-chip-bg)', border: '1px solid var(--color-chip-border)',
+  boxShadow: '0 1px 3px var(--color-shadow)',
 };
 
 function fmtFull(v: number | undefined | null): string {
@@ -42,10 +42,10 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '6px 14px', borderRadius: 10,
-      background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(0,0,0,0.06)',
+      background: 'var(--color-chip-bg)', border: '1px solid var(--color-chip-border)',
     }}>
-      <span style={{ fontSize: 12, color: '#8c8c8c', fontWeight: 500 }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 700, color: color || '#262626', display: 'flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 500 }}>{label}</span>
+      <span style={{ fontSize: 14, fontWeight: 700, color: color || 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
         {icon}{value}
       </span>
     </div>
@@ -60,14 +60,14 @@ export default function WorkspaceToolbar({
 }: Props) {
   const { t } = useTranslation();
   const hasData = accountInfo != null;
-  const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
+  const profitColor = accountInfo && accountInfo.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)';
   const selectedAccount = (accounts || []).find(a => a.id === accountId);
 
   return (
     <div style={{
       display: 'flex', alignItems: 'flex-end', gap: 10, flexWrap: 'wrap',
-      padding: '8px 12px 10px', background: '#f8fafc',
-      borderBottom: '1px solid #e8e8e8', flexShrink: 0,
+      padding: '8px 12px 10px', background: 'var(--color-bg-secondary)',
+      borderBottom: '1px solid var(--color-border)', flexShrink: 0,
     }}>
       {/* Account + Symbol selectors */}
       <div style={{ ...groupStyle, flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -105,19 +105,19 @@ export default function WorkspaceToolbar({
         onKeyUp={e => e.key === 'Enter' && onToggleBottomPanel?.()}
         style={{ cursor: 'pointer' }}>
         <SummaryChip label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
-          color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
+          color={positionCount != null && positionCount > 0 ? 'var(--color-info)' : undefined} />
       </div>
 
       {/* Account Metadata — SummaryChip cards for consistent rounded borders */}
       {selectedAccount && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <SummaryChip label={t(TRADING_PLATFORM_KEY)} value={selectedAccount.mtType}
-            color={selectedAccount.mtType === 'MT5' ? '#1677ff' : '#fa8c16'} />
+            color={selectedAccount.mtType === 'MT5' ? 'var(--color-info)' : 'var(--color-warning)'} />
           <SummaryChip label={t(TRADING_BROKER_KEY)} value={selectedAccount.brokerCompany} />
           <SummaryChip label={t(TRADING_SERVER_KEY)} value={selectedAccount.brokerServer} />
           <SummaryChip label={t(TRADING_PERMISSION_KEY)}
             value={selectedAccount.isInvestor ? t(TRADING_INVESTOR_KEY) : t(TRADING_MASTER_KEY)}
-            color={selectedAccount.isInvestor ? '#fa8c16' : '#52c41a'} />
+            color={selectedAccount.isInvestor ? 'var(--color-warning)' : 'var(--color-success)'} />
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
             <SummaryChip label={t(TRADING_LEVERAGE_KEY)} value={`1:${selectedAccount.leverage}`} />
           )}

@@ -87,7 +87,7 @@ export default function WelcomeModal({ hasAccounts, hasStrategies }: Props) {
           title: (
             <div className="flex items-center gap-2">
               <span>{s.title}</span>
-              {s.done && <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 14 }} />}
+              {s.done && <CheckCircleOutlined style={{ color: 'var(--color-success)', fontSize: 14 }} />}
             </div>
           ),
           description: (

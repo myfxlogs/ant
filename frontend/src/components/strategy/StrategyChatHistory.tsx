@@ -39,8 +39,8 @@ export default function StrategyChatHistory({
           {conversations.map(conv => (
             <div key={conv.id}
               style={{ padding: '8px 10px', cursor: editingConvId === conv.id ? 'default' : 'pointer', borderRadius: 8, fontSize: 12,
-                background: conv.id === activeConvId ? '#e6f4ff' : '#fafafa',
-                border: conv.id === activeConvId ? '1px solid #91caff' : '1px solid #f0f0f0',
+                background: conv.id === activeConvId ? 'var(--color-bg-elevated)' : 'var(--color-bg-secondary)',
+                border: conv.id === activeConvId ? '1px solid var(--color-info)' : '1px solid var(--color-border)',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, transition: 'all 0.15s' }}>
               {editingConvId === conv.id ? (
                 <div style={{ display: 'flex', gap: 4, flex: 1, alignItems: 'center' }}>
@@ -49,27 +49,27 @@ export default function StrategyChatHistory({
                     onPressEnter={() => onConfirmRename(conv.id)}
                     style={{ flex: 1, fontSize: 12 }} autoFocus />
                   <Button size="small" type="text" icon={<CheckOutlined />} onClick={() => onConfirmRename(conv.id)}
-                    style={{ color: '#52c41a', padding: '0 4px' }} />
+                    style={{ color: 'var(--color-success)', padding: '0 4px' }} />
                   <Button size="small" type="text" icon={<CloseOutlined />} onClick={onCancelRename}
-                    style={{ color: '#ff4d4f', padding: '0 4px' }} />
+                    style={{ color: 'var(--color-danger)', padding: '0 4px' }} />
                 </div>
               ) : (
                 <>
                   <span onClick={() => onLoadConv(conv.id)}
-                    style={{ color: '#262626', fontWeight: conv.id === activeConvId ? 600 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {conv.id === activeConvId && <span style={{ color: '#1677ff', marginRight: 4 }}>●</span>}{conv.title}
+                    style={{ color: 'var(--color-text)', fontWeight: conv.id === activeConvId ? 600 : 400, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {conv.id === activeConvId && <span style={{ color: 'var(--color-info)', marginRight: 4 }}>●</span>}{conv.title}
                   </span>
-                  <span style={{ color: '#8c8c8c', fontSize: 10, flexShrink: 0 }}>{conv.created_at?.slice(0, 10)}</span>
+                  <span style={{ color: 'var(--color-text-muted)', fontSize: 10, flexShrink: 0 }}>{conv.created_at?.slice(0, 10)}</span>
                   <Button size="small" type="text" icon={<EditOutlined style={{ fontSize: 11 }} />}
                     onClick={(e) => { e.stopPropagation(); onStartRename(conv.id, conv.title); }}
-                    style={{ color: '#8c8c8c', padding: '0 2px', flexShrink: 0 }}
+                    style={{ color: 'var(--color-text-muted)', padding: '0 2px', flexShrink: 0 }}
                     title={t(RENAME_KEY)} />
                   <Popconfirm title={t(DELETE_CONFIRM_KEY)} okText={t(DELETE_KEY)} cancelText={t(CANCEL_KEY)}
                     okButtonProps={{ danger: true }}
                     onConfirm={() => onDeleteConv(conv.id)}>
                     <Button size="small" type="text" icon={<DeleteOutlined style={{ fontSize: 11 }} />}
                       onClick={(e) => e.stopPropagation()}
-                      style={{ color: '#ff4d4f', padding: '0 2px', flexShrink: 0 }}
+                      style={{ color: 'var(--color-danger)', padding: '0 2px', flexShrink: 0 }}
                       title={t(DELETE_KEY)} />
                   </Popconfirm>
                 </>
@@ -77,7 +77,7 @@ export default function StrategyChatHistory({
             </div>
           ))}
         </div>
-      ) : <div style={{ fontSize: 13, color: '#8c8c8c', textAlign: 'center', padding: '40px 0' }}>{t(NO_HISTORY_KEY)}</div>}
+      ) : <div style={{ fontSize: 13, color: 'var(--color-text-muted)', textAlign: 'center', padding: '40px 0' }}>{t(NO_HISTORY_KEY)}</div>}
     </div>
   );
 }

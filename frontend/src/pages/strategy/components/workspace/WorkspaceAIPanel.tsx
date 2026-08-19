@@ -88,7 +88,7 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
         onMouseDown={handleAiResize}
         style={{
           width: 4, cursor: 'col-resize', flexShrink: 0,
-          background: aiDragging ? '#58a6ff' : 'var(--ant-color-border)',
+          background: aiDragging ? 'var(--color-info)' : 'var(--ant-color-border)',
           transition: aiDragging ? 'none' : 'background 0.15s',
         }}
       />
@@ -97,7 +97,7 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
         <div style={{
           display: 'flex', alignItems: 'center', flexShrink: 0,
           borderBottom: '1px solid var(--ant-color-border)', height: 40,
-          background: 'linear-gradient(180deg, #f0f5ff 0%, #e6f0ff 100%)',
+          background: 'var(--color-bg-elevated)',
         }}>
           {tabs.map(({ key, icon, label }) => (
             <div
@@ -106,9 +106,9 @@ export default function WorkspaceAIPanel({ activeTab, onTabChange, onClose, btSu
               style={{
                 padding: '0 16px', height: '100%', display: 'flex', alignItems: 'center', gap: 6,
                 cursor: 'pointer', fontSize: 13, fontWeight: 700,
-                color: activeTab === key ? '#1677ff' : 'var(--ant-color-text-secondary)',
-                borderBottom: activeTab === key ? '3px solid #1677ff' : '3px solid transparent',
-                background: activeTab === key ? 'rgba(22, 119, 255, 0.06)' : 'transparent',
+                color: activeTab === key ? 'var(--color-info)' : 'var(--ant-color-text-secondary)',
+                borderBottom: activeTab === key ? '3px solid var(--color-info)' : '3px solid transparent',
+                background: activeTab === key ? 'rgba(88, 166, 255, 0.08)' : 'transparent',
                 transition: 'all 0.15s',
               }}
             >

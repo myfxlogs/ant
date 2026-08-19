@@ -215,8 +215,8 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
         {currentCode && (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4,
-            background: excludedCtx.has('code') ? 'var(--ant-color-fill-tertiary)' : '#e6f4ff',
-            color: excludedCtx.has('code') ? 'var(--ant-color-text-tertiary)' : '#1677ff',
+            background: excludedCtx.has('code') ? 'var(--ant-color-fill-tertiary)' : 'rgba(88, 166, 255, 0.1)',
+            color: excludedCtx.has('code') ? 'var(--ant-color-text-tertiary)' : 'var(--color-info)',
             textDecoration: excludedCtx.has('code') ? 'line-through' : 'none',
             cursor: 'pointer', userSelect: 'none',
           }} onClick={() => toggleCtx('code')}>
@@ -228,8 +228,8 @@ export default function AgentGenChat({ symbol, timeframe, accountId, conversatio
         {lastBacktest && lastBacktest.totalTrades != null && (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 4, padding: '1px 8px', borderRadius: 4,
-            background: excludedCtx.has('backtest') ? 'var(--ant-color-fill-tertiary)' : '#f6ffed',
-            color: excludedCtx.has('backtest') ? 'var(--ant-color-text-tertiary)' : '#3fb950',
+            background: excludedCtx.has('backtest') ? 'var(--ant-color-fill-tertiary)' : 'rgba(63, 185, 80, 0.1)',
+            color: excludedCtx.has('backtest') ? 'var(--ant-color-text-tertiary)' : 'var(--color-success)',
             textDecoration: excludedCtx.has('backtest') ? 'line-through' : 'none',
             cursor: 'pointer', userSelect: 'none',
           }} onClick={() => toggleCtx('backtest')}>

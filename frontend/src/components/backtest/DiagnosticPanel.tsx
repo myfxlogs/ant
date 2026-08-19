@@ -33,9 +33,9 @@ function severityLevel(severity: string): 'fatal' | 'warning' | 'info' {
 
 function severityColor(level: 'fatal' | 'warning' | 'info'): string {
   switch (level) {
-    case 'fatal': return '#ff4d4f';
-    case 'warning': return '#faad14';
-    case 'info': return '#8c8c8c';
+    case 'fatal': return 'var(--color-danger)';
+    case 'warning': return 'var(--color-warning)';
+    case 'info': return 'var(--color-text-muted)';
   }
 }
 
@@ -148,7 +148,7 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing, cov
           <div style={{ marginBottom: 8 }}>{t(BACKTEST_DEGRADED_DESC_KEY)}</div>
 
           {coveragePercent != null && (
-            <div style={{ marginBottom: 8, fontSize: 12, color: '#595959' }}>
+            <div style={{ marginBottom: 8, fontSize: 12, color: 'var(--color-text-secondary)' }}>
               <strong>{t('strategy.backtest.diagnostic.coverage', 'Coverage')}:</strong> {coveragePercent}% {t('strategy.backtest.diagnostic.compatible', 'compatible')}, {unsupportedCount} {t('strategy.backtest.diagnostic.unsupported', 'unsupported')}
             </div>
           )}
@@ -165,9 +165,9 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing, cov
                   <div>
                     <Tag style={{ fontSize: 10, marginRight: 4 }}>{categoryLabel(bs.category, t)}</Tag>
                     <span>{bs.description}</span>
-                    {bs.location && <span style={{ color: '#8c8c8c', fontSize: 11, marginLeft: 4 }}>@ {bs.location}</span>}
+                    {bs.location && <span style={{ color: 'var(--color-text-muted)', fontSize: 11, marginLeft: 4 }}>@ {bs.location}</span>}
                   </div>
-                  <div style={{ fontSize: 11, color: '#595959', marginTop: 2, marginLeft: 4 }}>
+                  <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2, marginLeft: 4 }}>
                     <strong>{t('strategy.backtest.diagnostic.suggestionLabel', '建议')}:</strong> {blindSpotSuggestion(bs, t)}
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing, cov
                   <div style={{ flex: 1 }}>
                     <Tag style={{ fontSize: 10, marginRight: 4 }}>{categoryLabel(bs.category, t)}</Tag>
                     <span>{bs.description}</span>
-                    {bs.location && <span style={{ color: '#8c8c8c', fontSize: 11, marginLeft: 4 }}>@ {bs.location}</span>}
+                    {bs.location && <span style={{ color: 'var(--color-text-muted)', fontSize: 11, marginLeft: 4 }}>@ {bs.location}</span>}
                   </div>
                   {strategyId && (
                     <Tooltip title={t('strategy.backtest.diagnostic.silenceHint', 'Acknowledge as intentional — hide this warning')}>
@@ -203,7 +203,7 @@ export function DiagnosticPanel({ blindSpots, strategyId, onAIFix, aiFixing, cov
           )}
 
           {allSilenced && (
-            <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 4 }}>
               {t('strategy.backtest.diagnostic.allSilenced', 'All warnings acknowledged as intentional')}
             </div>
           )}
