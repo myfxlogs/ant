@@ -125,11 +125,8 @@ func TestMtHubService_OpenedOrders_NoSession(t *testing.T) {
 	t.Parallel()
 	svc := &MtHubService{hub: NewHub()}
 	orders, err := svc.OpenedOrders(context.Background(), "no-such")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(orders) != 0 {
-		t.Fatalf("expected empty list, got %d", len(orders))
+	if err != ErrSessionNotFound || orders != nil {
+		t.Fatalf("expected session-not-found and nil orders, got orders=%v err=%v", orders, err)
 	}
 }
 
@@ -137,11 +134,8 @@ func TestMtHubService_OrderHistory_NoSession(t *testing.T) {
 	t.Parallel()
 	svc := &MtHubService{hub: NewHub()}
 	orders, err := svc.OrderHistory(context.Background(), "no-such", time.Now(), time.Now())
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if len(orders) != 0 {
-		t.Fatalf("expected empty list, got %d", len(orders))
+	if err != ErrSessionNotFound || orders != nil {
+		t.Fatalf("expected session-not-found and nil history, got orders=%v err=%v", orders, err)
 	}
 }
 

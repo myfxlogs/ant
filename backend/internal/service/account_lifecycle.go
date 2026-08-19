@@ -188,7 +188,7 @@ func (s *AccountService) SetStatus(ctx context.Context, userID uuid.UUID, id str
 // CleanupOldSnapshots purges balance snapshot records older than the retention window.
 func (s *AccountService) CleanupOldSnapshots(ctx context.Context, log *zap.Logger) error {
 	tag, err := s.db.Exec(ctx,
-		`DELETE FROM account_balance_snapshots WHERE recorded_at < NOW() - INTERVAL '90 days'`)
+		`DELETE FROM account_balance_history WHERE recorded_at < NOW() - INTERVAL '90 days'`)
 	if err != nil {
 		return fmt.Errorf("service: cleanup old snapshots: %w", err)
 	}

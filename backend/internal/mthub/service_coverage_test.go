@@ -171,6 +171,32 @@ func TestEvaluatePlaceGate_Allow(t *testing.T) {
 	}
 }
 
+func TestEvaluatePlaceGate_UsesBrokerRequiredMargin(t *testing.T) {
+	t.Parallel()
+	svc := newTestService()
+	exec := &mockMarginExecutor{
+		mockExecutor:   mockExecutor{platform: "MT5"},
+		marginRequired: dec(40),
+	}
+	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
+	gate := risk.NewGate()
+	gate.AddRule(&risk.MarginPreCheck{MaxMarginRatio: dec(0.80)})
+	svc.SetGate(gate)
+	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
+		return &risk.AccountState{
+			Balance: dec(100), Equity: dec(100), FreeMargin: dec(50), UsedMargin: dec(50),
+			SymbolLeverage: 100, ContractSize: dec(1),
+		}, nil
+	})
+	err := svc.evaluatePlaceGate(ctxWithUser("user-1"), &OrderRequest{
+		AccountID: "acc-1", Canonical: "EURUSD", Side: SideBuy, OrderType: OrderMarket,
+		Volume: dec(1), Price: dec(1.1),
+	}, "ord-1")
+	if err == nil {
+		t.Fatal("broker required margin of 40 plus used margin 50 must exceed the 80% gate")
+	}
+}
+
 // --- evaluateCloseGate coverage ---
 
 func TestEvaluateCloseGate_Rejection(t *testing.T) {

@@ -204,15 +204,15 @@ func parseStopsLevel(s string) int32 {
 }
 
 // mustDecimal parses a decimal string.
-// Returns zero if the string is empty or unparseable — a corrupted balance/equity
-// value is a material error, but the SDK interface cannot return errors here.
+// Returns a negative sentinel if the string is empty or unparseable so account
+// data corruption cannot masquerade as a zero account value.
 func (b *brokerImpl) mustDecimal(s string) decimal.Decimal {
 	if s == "" {
-		return decimal.Zero
+		return decimal.NewFromInt(-1)
 	}
 	d, err := decimal.NewFromString(s)
 	if err != nil {
-		return decimal.Zero
+		return decimal.NewFromInt(-1)
 	}
 	return d
 }

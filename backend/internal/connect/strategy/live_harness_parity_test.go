@@ -57,7 +57,23 @@ func TestAppendDedupBar_ThreeStates(t *testing.T) {
 func TestBuildLiveContext_NoDeltaBars(t *testing.T) {
 	srv := NewStrategyExecutionServer(nil, nil)
 	bars := []liveBar{{open: "1", high: "2", low: "0.5", close: "1.5", volume: "100", openTime: 100}}
-	lctx := srv.buildLiveContext(context.Background(), LiveStrategyConfig{Symbol: "EURUSD", Timeframe: "M5"}, bars, nil)
+	lctx, err := srv.buildLiveContext(context.Background(), LiveStrategyConfig{Symbol: "EURUSD", Timeframe: "M5", Mode: "live"}, bars, nil)
+	if err == nil || lctx != nil {
+		t.Fatal("missing authoritative snapshot must block context construction")
+	}
+	pc := NewPositionCache(nil)
+	snap := &mthub.PositionSnapshot{
+		AccountID: "", Balance: decimal.NewFromInt(10000), Equity: decimal.NewFromInt(10000),
+		Margin: decimal.Zero, FreeMargin: decimal.NewFromInt(10000), Leverage: 100,
+		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
+		CapturedAt: time.Now(),
+	}
+	pc.PutSnapshot(snap, snap.CapturedAt)
+	srv.posCache = pc
+	lctx, err = srv.buildLiveContext(context.Background(), LiveStrategyConfig{Symbol: "", Timeframe: "M5"}, bars, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(lctx.Close) != 1 {
 		t.Errorf("buildLiveContext: len(Close)=%d, want 1", len(lctx.Close))
 	}
@@ -75,16 +91,18 @@ func TestBackfillContextStrings_MarginFreeMargin(t *testing.T) {
 	srv := NewStrategyExecutionServer(nil, nil)
 	srv.posCache = NewPositionCache(nil)
 
-	srv.posCache.snapshots["acct1"] = &mthub.PositionSnapshot{
-		Balance:    decimal.NewFromInt(10000),
-		Equity:     decimal.NewFromInt(10500),
-		Margin:     decimal.NewFromInt(500),
-		FreeMargin: decimal.NewFromInt(9500),
+	snap := &mthub.PositionSnapshot{
+		AccountID: "acct1", Balance: decimal.NewFromInt(10000), Equity: decimal.NewFromInt(10500),
+		Margin: decimal.NewFromInt(500), FreeMargin: decimal.NewFromInt(9500), Leverage: 100,
+		FinancialsAuthoritative: true, FinancialsSource: "account_summary", CapturedAt: time.Now(),
 	}
+	srv.posCache.PutSnapshot(snap, snap.CapturedAt)
 
 	var equity, balance, margin, freeMargin string
 	var positions []*antv1.LivePosition
-	srv.backfillContextStrings("acct1", &equity, &balance, &margin, &freeMargin, &positions)
+	if err := srv.backfillContextStrings("acct1", &equity, &balance, &margin, &freeMargin, &positions); err != nil {
+		t.Fatal(err)
+	}
 
 	if margin != "500" {
 		t.Errorf("margin=%s, want 500", margin)
@@ -102,13 +120,8 @@ func TestBackfillContextStrings_MissingSnapshot_MarginMinusOne(t *testing.T) {
 
 	var equity, balance, margin, freeMargin string
 	var positions []*antv1.LivePosition
-	srv.backfillContextStrings("nonexistent", &equity, &balance, &margin, &freeMargin, &positions)
-
-	if margin != "-1" {
-		t.Errorf("margin=%s, want -1 (fail-visible)", margin)
-	}
-	if freeMargin != "-1" {
-		t.Errorf("freeMargin=%s, want -1 (fail-visible)", freeMargin)
+	if err := srv.backfillContextStrings("nonexistent", &equity, &balance, &margin, &freeMargin, &positions); err == nil {
+		t.Fatal("missing snapshot must return an error")
 	}
 }
 

@@ -37,8 +37,8 @@ func (s *StrategyServer) GetSchedulePositions(ctx context.Context, req *connect.
 
 	// Live path: push-based PositionCache (real-time from OnOrderUpdate stream).
 	if s.posCache != nil {
-		snap := s.posCache.GetSnapshot(row.AccountID.String())
-		if snap != nil {
+		snap, fresh := s.posCache.GetFreshSnapshot(row.AccountID.String(), time.Now())
+		if fresh && snap != nil {
 			positions := make([]*antv1.MtPositionSnapshotItem, 0, len(snap.Positions))
 			for _, pos := range snap.Positions {
 				if pos.Magic == expectedMagic {
@@ -64,10 +64,11 @@ func (s *StrategyServer) GetSchedulePositions(ctx context.Context, req *connect.
 		}
 	}
 
-	// Fallback: persisted position snapshot (up to 30s stale) filtered by schedule magic.
+	// Fallback: persisted position snapshot within the same freshness window.
 	var raw []byte
 	err = s.svc.DB().QueryRow(ctx,
-		`SELECT payload_proto FROM mt_position_snapshots WHERE account_id = $1`,
+		`SELECT payload_proto FROM mt_position_snapshots
+		 WHERE account_id = $1 AND captured_at >= NOW() - INTERVAL '90 seconds'`,
 		row.AccountID.String(),
 	).Scan(&raw)
 

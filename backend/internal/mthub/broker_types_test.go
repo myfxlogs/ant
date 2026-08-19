@@ -21,6 +21,27 @@ func TestPositionSnapshotBroker_PubSub(t *testing.T) {
 	}
 }
 
+func TestPositionSnapshotBroker_DropsOldestKeepsLatest(t *testing.T) {
+	t.Parallel()
+	b := NewPositionSnapshotBroker()
+	ch, cancel := b.Subscribe("acc-1")
+	defer cancel()
+	for i := int64(0); i < 8; i++ {
+		b.Publish(&PositionSnapshot{AccountID: "acc-1", Positions: []PositionSnapshotItem{{Ticket: i}}})
+	}
+	b.Publish(&PositionSnapshot{AccountID: "acc-1", Positions: []PositionSnapshotItem{{Ticket: 99}}})
+	foundLatest := false
+	for i := 0; i < 8; i++ {
+		ev := <-ch
+		if len(ev.Positions) == 1 && ev.Positions[0].Ticket == 99 {
+			foundLatest = true
+		}
+	}
+	if !foundLatest {
+		t.Fatal("latest authoritative snapshot was dropped when subscriber buffer was full")
+	}
+}
+
 func TestPositionSnapshotBroker_NoSubscriber(t *testing.T) {
 	t.Parallel()
 	b := NewPositionSnapshotBroker()

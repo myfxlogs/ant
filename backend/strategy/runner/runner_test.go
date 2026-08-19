@@ -552,15 +552,15 @@ func TestBrokerImpl_Account_WithExecutor(t *testing.T) {
 
 func TestMustDecimal_Empty(t *testing.T) {
 	r := New(Config{})
-	if !r.broker.mustDecimal("").Equal(decimal.Zero) {
-		t.Error("mustDecimal(\"\") should return zero")
+	if !r.broker.mustDecimal("").Equal(decimal.NewFromInt(-1)) {
+		t.Error("mustDecimal(\"\") should return negative sentinel")
 	}
 }
 
 func TestMustDecimal_Invalid(t *testing.T) {
 	r := New(Config{})
-	if !r.broker.mustDecimal("abc").Equal(decimal.Zero) {
-		t.Error("mustDecimal(\"abc\") should return zero")
+	if !r.broker.mustDecimal("abc").Equal(decimal.NewFromInt(-1)) {
+		t.Error("mustDecimal(\"abc\") should return negative sentinel")
 	}
 }
 

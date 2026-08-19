@@ -77,8 +77,9 @@ tmp/
 id_ed25519
 # 运维 SSH 私钥目录（如 ./ssh/id_ed25519），切勿提交
 ssh/
-.claude/
+.claude/*
 !.claude/skills/
+!.claude/skills/**
 bin/alphaforge
 bin/
 e2e/shots/*

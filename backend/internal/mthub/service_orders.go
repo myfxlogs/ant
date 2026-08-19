@@ -173,6 +173,23 @@ func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest,
 		if param != nil && param.ContractSize.GreaterThan(decimal.Zero) {
 			state.ContractSize = param.ContractSize
 		}
+		if exec := s.hub.Get(req.AccountID); exec != nil {
+			if marginRequirer, ok := exec.(MarginRequirer); ok {
+				price, _ := decimal.NewFromString(intent.GetPrice())
+				marginCtx, marginCancel := context.WithTimeout(context.Background(), 5*time.Second)
+				required, marginErr := marginRequirer.RequiredMargin(marginCtx, req.Canonical, req.Volume, req.Side, price)
+				marginCancel()
+				if marginErr != nil {
+					return fmt.Errorf("broker required margin failed for %s: %w", req.Canonical, marginErr)
+				}
+				if required.IsNegative() {
+					return fmt.Errorf("broker returned negative required margin for %s", req.Canonical)
+				}
+				state.BrokerMarginAvailable = true
+				state.RequiredMarginKnown = true
+				state.RequiredMargin = required
+			}
+		}
 	}
 
 	decision := s.gate.Evaluate(ctx, intent, state)

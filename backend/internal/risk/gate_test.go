@@ -350,11 +350,7 @@ func TestMarginPreCheck_Block(t *testing.T) {
 	}
 }
 
-// RISK-MARGIN1: market orders with price=0 skip margin check (graceful degradation).
-// The caller (evaluatePlaceGate) is responsible for resolving the price from
-// TickBroker before calling Evaluate. If no tick is available, price stays 0
-// and the rule skips rather than blocking — fail-closed is handled by the
-// gate's account_state_missing check, not by individual rules.
+// Market orders without a broker margin capability retain the legacy price-unknown path.
 func TestMarginPreCheck_MarketOrderPriceZero_Skips(t *testing.T) {
 	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
 	state := &AccountState{
@@ -391,6 +387,32 @@ func TestMarginPreCheck_MarketOrderPriceResolved_Blocks(t *testing.T) {
 
 // MARGIN-GATE adversarial: BTCUSDm (crypto-like, CS=1), USDJPY (USD-base, CS=100000),
 // EURUSD (FX, CS=100000) and fail-closed on missing ContractSize.
+func TestMarginPreCheck_MT4DefersToBroker(t *testing.T) {
+	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
+	state := &AccountState{Platform: "mt4", Equity: decimal.NewFromInt(1), UsedMargin: decimal.NewFromInt(1)}
+	intent := &antv1.OrderIntent{Symbol: "EURUSD", Side: "buy", Volume: "100", Price: "1.1", Type: "buy"}
+	result := r.Check(context.Background(), intent, state)
+	if !result.Allowed || !strings.Contains(result.Reason, "broker remains authoritative") {
+		t.Fatalf("MT4 without RequiredMargin must defer to broker, got allow=%v reason=%q", result.Allowed, result.Reason)
+	}
+}
+
+func TestMarginPreCheck_UsesBrokerRequiredMargin(t *testing.T) {
+	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
+	state := &AccountState{
+		Equity: decimal.NewFromInt(100), UsedMargin: decimal.NewFromInt(50),
+		BrokerMarginAvailable: true, RequiredMarginKnown: true, RequiredMargin: decimal.NewFromInt(20),
+	}
+	intent := &antv1.OrderIntent{Symbol: "EURUSD", Side: "buy", Volume: "1", Price: "0", Type: "buy"}
+	if result := r.Check(context.Background(), intent, state); !result.Allowed {
+		t.Fatalf("broker required margin should allow 90%% total margin, got: %s", result.Reason)
+	}
+	state.RequiredMarginKnown = false
+	if result := r.Check(context.Background(), intent, state); result.Allowed {
+		t.Fatal("missing broker required margin must fail closed")
+	}
+}
+
 func TestMarginPreCheck_AdversarialSymbols(t *testing.T) {
 	r := &MarginPreCheck{MaxMarginRatio: decimal.NewFromFloat(0.80)}
 

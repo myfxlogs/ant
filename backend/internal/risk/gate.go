@@ -40,15 +40,19 @@ import (
 // AccountState carries the account context needed for rule evaluation.
 // All monetary fields are decimal.Decimal per CLAUDE.md.
 type AccountState struct {
-	Balance        decimal.Decimal
-	Equity         decimal.Decimal
-	FreeMargin     decimal.Decimal
-	UsedMargin     decimal.Decimal
-	OpenPositions  int
-	DailyPnL       decimal.Decimal
-	PeakEquity     decimal.Decimal
-	SymbolLeverage int
-	ContractSize   decimal.Decimal // per-symbol contract multiplier (e.g. 100000 for standard FX, 1 for spot crypto)
+	Balance               decimal.Decimal
+	Equity                decimal.Decimal
+	FreeMargin            decimal.Decimal
+	UsedMargin            decimal.Decimal
+	OpenPositions         int
+	DailyPnL              decimal.Decimal
+	PeakEquity            decimal.Decimal
+	Platform              string
+	SymbolLeverage        int
+	ContractSize          decimal.Decimal // per-symbol contract multiplier (e.g. 100000 for standard FX, 1 for spot crypto)
+	BrokerMarginAvailable bool
+	RequiredMarginKnown   bool
+	RequiredMargin        decimal.Decimal
 }
 
 // ── Rule interface ────────────────────────────────────────────────────
@@ -61,9 +65,9 @@ type Rule interface {
 
 // RuleResult is the outcome of a single rule check.
 type RuleResult struct {
-	Allowed         bool
-	Reason          string
-	AdjustedVolume  decimal.Decimal // zero = no adjustment
+	Allowed        bool
+	Reason         string
+	AdjustedVolume decimal.Decimal // zero = no adjustment
 }
 
 // ── Gate ──────────────────────────────────────────────────────────────

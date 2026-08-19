@@ -60,6 +60,9 @@ func (p *SnapshotPersister) Start(ctx context.Context) {
 }
 
 func (p *SnapshotPersister) persist(ctx context.Context, snap *PositionSnapshot) {
+	if snap == nil || !snap.FinancialsAuthoritative {
+		return
+	}
 	p.mu.Lock()
 	last, exists := p.lastWrite[snap.AccountID]
 	if exists && time.Since(last) < p.throttle {
@@ -119,7 +122,7 @@ func snapshotToProto(snap *PositionSnapshot) *antv1.MtPositionSnapshotRecord {
 		FreeMargin:  snap.FreeMargin.String(),
 		MarginLevel: snap.MarginLevel.String(),
 		Profit:      snap.Profit.String(),
-		CapturedAt:  timestamppb.Now(),
+		CapturedAt:  timestamppb.New(snap.CapturedAt),
 	}
 	for _, pos := range snap.Positions {
 		record.Positions = append(record.Positions, &antv1.MtPositionSnapshotItem{

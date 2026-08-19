@@ -178,7 +178,7 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	balance := s.GetBalance()
 	equityD := decimal.NewFromFloat(s.GetEquity())
 	balanceD := decimal.NewFromFloat(balance)
-	profitD := equityD.Sub(balanceD)
+	profitD := decimal.NewFromFloat(s.GetProfit())
 	var profitPct float64
 	if balance > 0 {
 		profitPct = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()

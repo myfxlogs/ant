@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -12,7 +13,7 @@ import (
 )
 
 // buildTickContext creates a TickContext proto from a tick update.
-func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg LiveStrategyConfig, tick *mthub.TickUpdate) *antv1.TickContext {
+func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg LiveStrategyConfig, tick *mthub.TickUpdate) (*antv1.TickContext, error) {
 	tctx := &antv1.TickContext{
 		Bid:          tick.Bid.String(),
 		Ask:          tick.Ask.String(),
@@ -22,13 +23,15 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 		Params:       buildLiveParams(cfg.Params),
 		CurrentPrice: tick.Bid.String(),
 	}
-	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions)
+	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions); err != nil && cfg.Mode == "live" {
+		return nil, err
+	}
 	s.backfillTickSymbolInfo(cfg, tctx)
-	return tctx
+	return tctx, nil
 }
 
 // buildTradeContext creates a TradeContext proto from a trade event.
-func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg LiveStrategyConfig, evt *mthub.BrokerTradeEvent) *antv1.TradeContext {
+func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg LiveStrategyConfig, evt *mthub.BrokerTradeEvent) (*antv1.TradeContext, error) {
 	side := "buy"
 	if evt.Side == sideSell {
 		side = sideSell
@@ -57,28 +60,22 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 		Commission: evt.Commission.String(),
 		Swap:       evt.Swap.String(),
 	}
-	s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions)
-	return tctx
+	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions); err != nil && cfg.Mode == "live" {
+		return nil, err
+	}
+	return tctx, nil
 }
 
 // backfillContextStrings populates equity/balance/margin/free_margin/positions from the push-based
 // PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
-// Missing snapshot → "-1" for equity/balance/margin/free_margin (fail-visible).
-func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance, margin, freeMargin *string, positions *[]*antv1.LivePosition) {
+// Missing or stale authoritative snapshots return an error and block execution.
+func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance, margin, freeMargin *string, positions *[]*antv1.LivePosition) error {
 	if s.posCache == nil {
-		*equity = "-1"
-		*balance = "-1"
-		*margin = "-1"
-		*freeMargin = "-1"
-		return
+		return fmt.Errorf("authoritative account snapshot unavailable: position cache not configured")
 	}
-	snap := s.posCache.GetSnapshot(accountID)
-	if snap == nil {
-		*equity = "-1"
-		*balance = "-1"
-		*margin = "-1"
-		*freeMargin = "-1"
-		return
+	snap, ok := s.posCache.GetFreshSnapshot(accountID, time.Now())
+	if !ok {
+		return fmt.Errorf("authoritative account snapshot unavailable or stale: account=%s", accountID)
 	}
 	*equity = snap.Equity.String()
 	*balance = snap.Balance.String()
@@ -98,6 +95,7 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 		})
 	}
 	*positions = pos
+	return nil
 }
 
 // dispatchFromBytes unmarshals a live response and dispatches signals to OMS.
@@ -154,7 +152,7 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 }
 
 // buildLiveContext creates a full OHLCV bar context from the bar window.
-func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar, extraBars map[string][]liveBar) *antv1.LiveStrategyContext {
+func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar, extraBars map[string][]liveBar) (*antv1.LiveStrategyContext, error) {
 	n := len(bars)
 	closeVals := make([]string, n)
 	openVals := make([]string, n)
@@ -185,10 +183,12 @@ func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg Live
 	if n > 0 {
 		lctx.CurrentPrice = closeVals[n-1]
 	}
-	s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions)
+	if err := s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions); err != nil && cfg.Mode == "live" {
+		return nil, err
+	}
 	s.backfillSymbolInfo(cfg, lctx)
 	lctx.Symbols = buildSymbolSeries(extraBars)
-	return lctx
+	return lctx, nil
 }
 
 func buildLiveParams(params map[string]string) []*antv1.LiveParam {

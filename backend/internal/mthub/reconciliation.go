@@ -114,7 +114,7 @@ func (r *ReconciliationLoop) repairOrder(ctx context.Context, accountID string, 
 func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID string) error {
 	exec := r.hub.Get(accountID)
 	if exec == nil {
-		return nil
+		return ErrSessionNotFound
 	}
 
 	// 1. Fetch broker-side state (24h window — extended from 1h to catch more gaps)

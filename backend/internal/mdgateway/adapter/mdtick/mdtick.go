@@ -4,9 +4,12 @@ package mdtick
 
 import (
 	"context"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
+
+const FinancialsSourceAccountSummary = "account_summary"
 
 // Breaker is the common interface for circuit breakers used by gateway adapters.
 type Breaker interface {
@@ -48,6 +51,9 @@ type BrokerInfo struct {
 	Margin      decimal.Decimal
 	FreeMargin  decimal.Decimal
 	MarginLevel decimal.Decimal
+	Profit      decimal.Decimal
+	Leverage    int32
+	CapturedAt  time.Time
 }
 
 // BrokerInfoFetcher is implemented by mt4.Gateway and mt5.Gateway.
@@ -86,17 +92,20 @@ type MTAccountInfo struct {
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
 type ProfitUpdate struct {
-	AccountID     string
-	Platform      string
-	Balance       decimal.Decimal
-	Credit        decimal.Decimal
-	Equity        decimal.Decimal
-	Margin        decimal.Decimal
-	FreeMargin    decimal.Decimal
-	MarginLevel   decimal.Decimal
-	Profit        decimal.Decimal
-	ProfitPercent float64
-	Positions     []ProfitPosition
+	AccountID       string
+	Platform        string
+	Balance         decimal.Decimal
+	Credit          decimal.Decimal
+	Equity          decimal.Decimal
+	Margin          decimal.Decimal
+	FreeMargin      decimal.Decimal
+	MarginLevel     decimal.Decimal
+	Profit          decimal.Decimal
+	ProfitPercent   float64
+	Leverage        int32
+	FinancialSource string
+	CapturedAt      time.Time
+	Positions       []ProfitPosition
 }
 
 // ProfitPosition is an open position snapshot within a ProfitUpdate.

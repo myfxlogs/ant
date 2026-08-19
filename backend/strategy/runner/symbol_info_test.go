@@ -60,16 +60,15 @@ func TestUpdateSymbolInfo_BrokerSymbolInfo(t *testing.T) {
 	}
 }
 
-// TestUpdateSymbolInfo_EmptyDefaults verifies that without UpdateSymbolInfo,
-// harness mode returns zero values (not panic).
+// TestUpdateSymbolInfo_EmptyDefaults verifies missing symbol data is visible.
 func TestUpdateSymbolInfo_EmptyDefaults(t *testing.T) {
 	r := New(Config{})
 	info, err := r.broker.SymbolInfo("EURUSD")
 	if err != nil {
 		t.Fatalf("SymbolInfo error: %v", err)
 	}
-	if !info.Point.IsZero() {
-		t.Errorf("Point=%s, want 0 (default)", info.Point.String())
+	if !info.Point.Equal(decimal.NewFromInt(-1)) {
+		t.Errorf("Point=%s, want -1 sentinel", info.Point.String())
 	}
 	if info.Digits != 0 {
 		t.Errorf("Digits=%d, want 0 (default)", info.Digits)
@@ -91,18 +90,17 @@ func TestUpdateLiveState_MarginFreeMargin(t *testing.T) {
 	}
 }
 
-// TestUpdateLiveState_EmptyMargin verifies that empty margin strings
-// default to zero (not panic).
+// TestUpdateLiveState_EmptyMargin verifies that missing margin strings are visible.
 func TestUpdateLiveState_EmptyMargin(t *testing.T) {
 	r := New(Config{})
 	r.UpdateLiveState("10000", "10500", "", "", nil)
 
 	info := r.broker.Account()
-	if !info.Margin.IsZero() {
-		t.Errorf("Margin=%s, want 0 (empty default)", info.Margin.String())
+	if !info.Margin.Equal(decimal.NewFromInt(-1)) {
+		t.Errorf("Margin=%s, want -1 sentinel", info.Margin.String())
 	}
-	if !info.FreeMargin.IsZero() {
-		t.Errorf("FreeMargin=%s, want 0 (empty default)", info.FreeMargin.String())
+	if !info.FreeMargin.Equal(decimal.NewFromInt(-1)) {
+		t.Errorf("FreeMargin=%s, want -1 sentinel", info.FreeMargin.String())
 	}
 }
 

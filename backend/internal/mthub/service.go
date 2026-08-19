@@ -251,7 +251,7 @@ func platform(accountID string, hub *Hub) string {
 func (s *MtHubService) OpenedOrders(ctx context.Context, accountID string) ([]*OrderRecord, error) {
 	exec := s.hub.Get(accountID)
 	if exec == nil {
-		return []*OrderRecord{}, nil
+		return nil, ErrSessionNotFound
 	}
 	result, err := exec.FetchOpenedOrders(ctx)
 	if err != nil && isSessionError(err) {
@@ -270,12 +270,10 @@ func (s *MtHubService) OpenedOrders(ctx context.Context, accountID string) ([]*O
 }
 
 // OrderHistory returns historical orders for the account.
-// When the session hasn't been established yet, returns an empty list
-// instead of an error — the SSE stream will push data once connected.
 func (s *MtHubService) OrderHistory(ctx context.Context, accountID string, from, to time.Time) ([]*OrderRecord, error) {
 	exec := s.hub.Get(accountID)
 	if exec == nil {
-		return []*OrderRecord{}, nil
+		return nil, ErrSessionNotFound
 	}
 	result, err := exec.FetchOrderHistory(ctx, from, to)
 	if err != nil && isSessionError(err) {

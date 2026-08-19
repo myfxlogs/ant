@@ -318,15 +318,38 @@ type MarginPreCheck struct {
 func (r *MarginPreCheck) Name() string { return "margin_pre_check" }
 
 func (r *MarginPreCheck) Check(_ context.Context, intent *antv1.OrderIntent, state *AccountState) *RuleResult {
-	if state == nil || r.MaxMarginRatio.IsZero() || state.Equity.IsZero() {
+	if state == nil || r.MaxMarginRatio.IsZero() {
 		return &RuleResult{Allowed: true}
+	}
+	if state.Equity.IsZero() {
+		return &RuleResult{Allowed: false, Reason: "broker equity unavailable"}
 	}
 	vol := parseVol(intent.GetVolume())
 	price := parsePrice(intent.GetPrice())
-	if price.IsZero() {
-		return &RuleResult{Allowed: true} // market order — broker determines fill price
+	if price.IsZero() && !state.BrokerMarginAvailable {
+		return &RuleResult{Allowed: true}
 	}
 
+	if state.Platform == "mt4" && !state.BrokerMarginAvailable {
+		return &RuleResult{Allowed: true, Reason: "MT4 broker required-margin RPC unavailable; broker remains authoritative"}
+	}
+	if state.BrokerMarginAvailable {
+		if !state.RequiredMarginKnown {
+			return &RuleResult{Allowed: false, Reason: "broker required margin unavailable"}
+		}
+		requiredMargin := state.RequiredMargin
+		totalMargin := state.UsedMargin.Add(requiredMargin)
+		ratio := totalMargin.Div(state.Equity)
+		if ratio.GreaterThan(r.MaxMarginRatio) {
+			return &RuleResult{
+				Allowed: false,
+				Reason: fmt.Sprintf("margin ratio %.1f%% exceeds limit %.1f%% (required=%s used=%s equity=%s)",
+					ratio.InexactFloat64()*100, r.MaxMarginRatio.InexactFloat64()*100,
+					requiredMargin, state.UsedMargin, state.Equity),
+			}
+		}
+		return &RuleResult{Allowed: true}
+	}
 	cs, ok := contractSize(state)
 	if !ok {
 		return &RuleResult{
@@ -334,17 +357,14 @@ func (r *MarginPreCheck) Check(_ context.Context, intent *antv1.OrderIntent, sta
 			Reason:  fmt.Sprintf("contract size unknown for symbol %s", intent.GetSymbol()),
 		}
 	}
-
-	leverage := decimal.NewFromInt(int64(state.SymbolLeverage))
-	if leverage.IsZero() {
-		leverage = decimal.NewFromInt(100)
+	if state.SymbolLeverage <= 0 {
+		return &RuleResult{Allowed: false, Reason: "broker leverage unavailable"}
 	}
+	leverage := decimal.NewFromInt(int64(state.SymbolLeverage))
 
-	// required = volume × contract_size × fx_rate / leverage
-	// For USD-denominated base symbols (USDJPY, USDCHF, ...) the base currency
-	// is already the account currency, so fx_rate = 1. For all other symbols we
-	// approximate the conversion to USD using the quoted price. Cross-currency
-	// pairs (e.g. EURGBP) are an approximation when the account currency is USD.
+	// This local formula is retained only for platforms without a broker
+	// required-margin capability; MT5 uses the broker RPC above.
+	// USD-base symbols use fx_rate=1; other symbols use the quoted price.
 	fxRate := decimal.NewFromInt(1)
 	if !strings.HasPrefix(intent.GetSymbol(), "USD") {
 		fxRate = price

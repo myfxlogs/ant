@@ -308,8 +308,11 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 	if err != nil {
 		return nil, fmt.Errorf("mt4 AccountSummary: %w", err)
 	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return nil, fmt.Errorf("mt4 AccountSummary: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
 	if resp.GetResult() == nil {
-		return &mdtick.BrokerInfo{}, nil
+		return nil, fmt.Errorf("mt4 AccountSummary: result nil")
 	}
 
 	s := resp.GetResult()
@@ -321,6 +324,9 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 		Margin:            decimal.NewFromFloat(s.GetMargin()),
 		FreeMargin:        decimal.NewFromFloat(s.GetFreeMargin()),
 		MarginLevel:       decimal.NewFromFloat(s.GetMarginLevel()),
+		Profit:            decimal.NewFromFloat(s.GetProfit()),
+		Leverage:          int32(s.GetLeverage()),
+		CapturedAt:        Clk.Now(),
 	}, nil
 }
 

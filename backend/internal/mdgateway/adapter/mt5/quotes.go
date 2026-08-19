@@ -197,10 +197,17 @@ func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
 }
 
 // fetchAndPublish calls AccountSummary (canonical MQL5 values) and publishes
-// via the handler. If AccountSummary fails, falls back to stream-derived values
-// from p; if p is nil (initial call before any stream frame), skips.
+// via the handler. If AccountSummary fails, no financial snapshot is published;
+// p contributes positions only.
 func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitUpdate, handler mdtick.ProfitHandler) {
-	var balance, equity, profit, margin, freeMargin, marginLevel, credit decimal.Decimal
+	g.mu.RLock()
+	client := g.client
+	g.mu.RUnlock()
+	if client == nil {
+		g.log.Error("mt5 AccountSummary unavailable; financial snapshot rejected",
+			zap.String("account_id", g.cfg.AccountID))
+		return
+	}
 
 	asMd := metadata.New(map[string]string{"id": sid})
 	if tok := g.token(); tok != "" {
@@ -209,32 +216,21 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 	sctx, scancel := context.WithTimeout(ctx, 3*time.Second)
 	defer scancel()
 	asCtx := metadata.NewOutgoingContext(sctx, asMd)
-	acct, err := g.client.AccountSummary(asCtx, &pb.AccountSummaryRequest{Id: sid})
-
-	if err == nil && acct != nil && acct.GetResult() != nil {
-		s := acct.GetResult()
-		balance = decimal.NewFromFloat(s.GetBalance())
-		equity = decimal.NewFromFloat(s.GetEquity())
-		profit = decimal.NewFromFloat(s.GetProfit())
-		margin = decimal.NewFromFloat(s.GetMargin())
-		freeMargin = decimal.NewFromFloat(s.GetFreeMargin())
-		marginLevel = decimal.NewFromFloat(s.GetMarginLevel())
-		credit = decimal.NewFromFloat(s.GetCredit())
-	} else if p != nil {
-		g.log.Debug("mt5 AccountSummary failed; falling back to stream frame",
-			zap.String("account_id", g.cfg.AccountID), zap.Error(err))
-		balance = decimal.NewFromFloat(p.GetBalance())
-		equity = decimal.NewFromFloat(p.GetEquity())
-		profit = equity.Sub(balance)
-		margin = decimal.NewFromFloat(p.GetMargin())
-		freeMargin = decimal.NewFromFloat(p.GetFreeMargin())
-		marginLevel = decimal.NewFromFloat(p.GetMarginLevel())
-		credit = decimal.NewFromFloat(p.GetCredit())
-	} else {
-		g.log.Warn("mt5 initial AccountSummary failed; no data to publish",
+	acct, err := client.AccountSummary(asCtx, &pb.AccountSummaryRequest{Id: sid})
+	if err != nil || acct == nil || acct.GetResult() == nil || (acct.GetError() != nil && acct.GetError().GetCode() != 0) {
+		g.log.Error("mt5 AccountSummary failed; financial snapshot rejected",
 			zap.String("account_id", g.cfg.AccountID), zap.Error(err))
 		return
 	}
+
+	s := acct.GetResult()
+	balance := decimal.NewFromFloat(s.GetBalance())
+	equity := decimal.NewFromFloat(s.GetEquity())
+	profit := decimal.NewFromFloat(s.GetProfit())
+	margin := decimal.NewFromFloat(s.GetMargin())
+	freeMargin := decimal.NewFromFloat(s.GetFreeMargin())
+	marginLevel := decimal.NewFromFloat(s.GetMarginLevel())
+	credit := decimal.NewFromFloat(s.GetCredit())
 
 	var profitPercent float64
 	if balance.GreaterThan(decimal.Zero) {
@@ -257,17 +253,20 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 	}
 
 	handler(&mdtick.ProfitUpdate{
-		AccountID:     g.cfg.AccountID,
-		Platform:      "mt5",
-		Balance:       balance,
-		Credit:        credit,
-		Equity:        equity,
-		Margin:        margin,
-		FreeMargin:    freeMargin,
-		MarginLevel:   marginLevel,
-		Profit:        profit,
-		ProfitPercent: profitPercent,
-		Positions:     positions,
+		AccountID:       g.cfg.AccountID,
+		Platform:        "mt5",
+		Balance:         balance,
+		Credit:          credit,
+		Equity:          equity,
+		Margin:          margin,
+		FreeMargin:      freeMargin,
+		MarginLevel:     marginLevel,
+		Profit:          profit,
+		ProfitPercent:   profitPercent,
+		Leverage:        int32(s.GetLeverage()),
+		FinancialSource: mdtick.FinancialsSourceAccountSummary,
+		CapturedAt:      Clk.Now(),
+		Positions:       positions,
 	})
 }
 

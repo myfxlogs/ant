@@ -12,17 +12,21 @@ import (
 
 // PositionSnapshot is a complete account position list pushed from OnOrderUpdate stream.
 type PositionSnapshot struct {
-	AccountID   string
-	UserID      string
-	Platform    string
-	Balance     decimal.Decimal
-	Credit      decimal.Decimal
-	Equity      decimal.Decimal
-	Margin      decimal.Decimal
-	FreeMargin  decimal.Decimal
-	MarginLevel decimal.Decimal
-	Profit      decimal.Decimal
-	Positions   []PositionSnapshotItem
+	AccountID               string
+	UserID                  string
+	Platform                string
+	Balance                 decimal.Decimal
+	Credit                  decimal.Decimal
+	Equity                  decimal.Decimal
+	Margin                  decimal.Decimal
+	FreeMargin              decimal.Decimal
+	MarginLevel             decimal.Decimal
+	Profit                  decimal.Decimal
+	Leverage                int32
+	FinancialsAuthoritative bool
+	FinancialsSource        string
+	CapturedAt              time.Time
+	Positions               []PositionSnapshotItem
 }
 
 type PositionSnapshotItem struct {
@@ -65,6 +69,14 @@ func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 		select {
 		case ch <- ev:
 		default:
+			select {
+			case <-ch:
+			default:
+			}
+			select {
+			case ch <- ev:
+			default:
+			}
 		}
 	}
 }

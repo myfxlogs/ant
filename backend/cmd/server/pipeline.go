@@ -209,14 +209,6 @@ func (p *pipelineState) makeOnAccountProfit(
 			Status: "connected", Timestamp: time.Now(),
 			Positions: convertProfitPositions(pr.Positions),
 		})
-		p.log.Info("OnAccountProfit: received profit update",
-			zap.String("account", accountID), zap.String("platform", pr.Platform),
-			zap.Int("positions", len(pr.Positions)),
-			zap.String("balance", pr.Balance.String()), zap.String("equity", pr.Equity.String()),
-			// Broker-provided margin fields: observed to decide DATA-TRUTH-2
-			// (MT4 accounts persist margin=0 even while holding open positions).
-			zap.String("margin", pr.Margin.String()), zap.String("free_margin", pr.FreeMargin.String()),
-			zap.String("margin_level", pr.MarginLevel.String()))
 		// OnOrderUpdate/OpenedOrders are unreliable for some sessions; OnOrderProfit
 		// always carries the full opened-orders list. Publish a position snapshot from
 		// the profit data so the frontend displays the correct open positions.
@@ -255,10 +247,9 @@ func (p *pipelineState) makeOnBrokerInfo(
 		// (e.g. no open positions, or mtapi stream stuck).
 		if info.HasAccountSummary {
 			userID, _ := getUserIDFromPool(context.Background(), p.pool, accountID)
-			profit := info.Equity.Sub(info.Balance)
 			var profitPercent float64
 			if info.Balance.GreaterThan(decimal.Zero) {
-				pp, _ := profit.Div(info.Balance).Mul(decimal.NewFromInt(100)).Float64()
+				pp, _ := info.Profit.Div(info.Balance).Mul(decimal.NewFromInt(100)).Float64()
 				profitPercent = pp
 			}
 			mthubSvc.PublishAccountProfit(&mthub.AccountProfitEvent{
@@ -271,7 +262,7 @@ func (p *pipelineState) makeOnBrokerInfo(
 				Margin:        info.Margin,
 				FreeMargin:    info.FreeMargin,
 				MarginLevel:   info.MarginLevel,
-				Profit:        profit,
+				Profit:        info.Profit,
 				ProfitPercent: profitPercent,
 				Status:        "connected",
 				Timestamp:     time.Now(),
@@ -281,6 +272,10 @@ func (p *pipelineState) makeOnBrokerInfo(
 				_ = accountSvc.UpdateAccountMetrics(mctx, uid, accountID,
 					info.Balance, info.Equity, info.Credit,
 					info.Margin, info.FreeMargin, info.MarginLevel)
+				if err := accountSvc.RecordBalanceSnapshot(mctx, accountID, userID,
+					info.Balance, info.Equity, info.Margin, info.FreeMargin); err != nil {
+					p.log.Warn("OnBrokerInfo: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
+				}
 				mcancel()
 			}
 			p.log.Info("OnBrokerInfo: published authoritative account summary from broker",
@@ -292,8 +287,8 @@ func (p *pipelineState) makeOnBrokerInfo(
 		go func() {
 			// mtapi.io session needs a moment to load account state after Connect.
 			// Reconciliation (30s timeout) usually succeeds; the initial OpenedOrders
-			// call often races the session warm-up and returns 0. Retry a few times
-			// with short backoff before publishing the (possibly empty) snapshot.
+			// call can race the session warm-up. Retry errors before publishing the
+			// broker-confirmed position list, including a legitimate empty list.
 			var orders []*mthub.OrderRecord
 			var err error
 			for attempt := 0; attempt < 3; attempt++ {
@@ -309,12 +304,7 @@ func (p *pipelineState) makeOnBrokerInfo(
 						zap.Int("attempt", attempt+1), zap.Error(err))
 					continue
 				}
-				if len(orders) > 0 {
-					break
-				}
-				p.log.Warn("OnBrokerInfo: OpenedOrders returned empty, retrying",
-					zap.String("account", accountID), zap.String("platform", platform),
-					zap.Int("attempt", attempt+1))
+				break
 			}
 			if err != nil {
 				p.log.Warn("OnBrokerInfo: OpenedOrders failed, initial position snapshot skipped",
@@ -323,7 +313,15 @@ func (p *pipelineState) makeOnBrokerInfo(
 			}
 			p.log.Info("OnBrokerInfo: publishing initial position snapshot",
 				zap.String("account", accountID), zap.String("platform", platform), zap.Int("positions", len(orders)))
-			snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
+			userID, _ := getUserIDFromPool(context.Background(), p.pool, accountID)
+			snapshot := &mthub.PositionSnapshot{
+				AccountID: accountID, UserID: userID, Platform: platform,
+				Balance: info.Balance, Credit: info.Credit, Equity: info.Equity,
+				Margin: info.Margin, FreeMargin: info.FreeMargin, MarginLevel: info.MarginLevel,
+				Profit: info.Profit, Leverage: info.Leverage, FinancialsAuthoritative: info.HasAccountSummary,
+				FinancialsSource: mdtick.FinancialsSourceAccountSummary, CapturedAt: info.CapturedAt,
+				Positions: make([]mthub.PositionSnapshotItem, 0, len(orders)),
+			}
 			for _, o := range orders {
 				snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
 					Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: service.MapSideToString(o.Side), Volume: o.Volume,

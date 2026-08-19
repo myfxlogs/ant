@@ -85,6 +85,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ❌ 硬编码"本应来自外部权威源的可变数据"（broker symbol 清单、broker 参数、服务器地址等外部系统当前状态）。存在权威查询（`FetchAllSymbols`、broker RPC）时禁止写死静态列表——必然漂移→静默 bug。**反例 LIVE-PRICE-4**：`defaultQuoteSymbols()` 硬编码含 broker 不存在的 symbol → 原子 `SubscribeMany` 整批失败 → OnQuote 零交付 → 实盘无法开仓。修复=订阅前用 `FetchAllSymbols` 过滤。**豁免**：通用常量（标准 timeframe 毫秒 `60_000`、数学常量、固定枚举）。详见 CLAUDE.md。
 - ❌ **用本地计算/推导替代服务器权威数据（用户 2026-08-19 确立："服务器有的数据，一律以服务器为准，这是唯一真相"）**。broker/外部服务器返回的字段（balance/equity/margin/free_margin/margin_level、持仓、订单、symbol 参数…）是唯一真相，本地一律**只做透传与持久化，不做重算**。推论：① 存在权威 RPC 时禁止自算（如禁止按 contractSize 反推 margin，必须取 `AccountSummary`）；② **禁止用"不含该字段的次级数据源"覆盖权威值**——反例 DATA-TRUTH-2：MT4 `OnOrderProfit` 帧不填 margin/margin_level，却每 5s 把 `mt_accounts.margin` 覆盖成 0，导致 `MarginLevel > 0` 门槛永不成立、MT4 爆仓预警完全不触发（同一字段 MT5 帧填得完整，`AccountSummary` 也填得完整）；③ 一个事实只允许一个写入方 + 一张真相表——反例 DATA-TRUTH-4：两个同名 `RecordBalanceSnapshot` 写两张不同表，生产那份写进**不存在**的表且错误被 `log.Debug` 吞，净值曲线静默断供 28 天。豁免：纯展示派生值（百分比、涨跌幅）可本地算，但不得回写覆盖权威字段。
 - ❌ `//nolint`, `# noqa`, `// @ts-ignore`, `// #nosec`
+- ❌ **缺失/陈旧 broker 快照静默转零或继续执行**：权威金融快照必须带来源与采集/接收时间；缺失、非法、过期时策略 VM 与 Risk Gate 必须 fail-closed。订单流只可更新持仓事实，不得覆盖 AccountSummary 的金融字段；无 session 查询不得返回空订单成功。
 - ❌ 因困难而妥协最优解。遇到阻碍时禁止退而求其次——必须回到根因，找到正确的修复方式，哪怕需要推翻旧架构、完全重构。快捷方式（回退代替重新生成、标记 legacy 代替移除、沉默代替修复）视为违规。
 
 ## Reuse Preflight (避免重复造轮子 — 强制)
@@ -121,6 +122,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 ## Deployment (强制 — 禁止手动)
 
 - **后端部署唯一方式**: `docker compose build backend && docker compose up -d backend`
+- **每次 build 前先清理 Docker build cache**: `docker builder prune -f`（每次构建约产生 2-3GB cache，58G 磁盘不清理会快速吃满）
 - **前端部署唯一方式**: `docker cp frontend/dist/. alphaforge-frontend:/usr/share/nginx/html/ && docker exec alphaforge-frontend nginx -s reload`
 - **❌ 禁止宿主机 `go build` → `docker cp` 到容器**（宿主 glibc，容器 Alpine musl，二进制不兼容）
 - **❌ 禁止在运行中容器里 `go build` 或 `apk add build-base`**（污染运行时环境，容器重建即丢失）
@@ -130,11 +132,21 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 ## MQL2GO VM Pitfalls (必读)
 
-> 回测不开单但 MT4 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
->
-> - **未知常量静默替换为 0** — `interp/constants.go` 缺少常量定义时编译器不报错，直接 push 0，导致指标返回错误线
-> - **`builtinOrderType` 返回值映射错误** — 返回 PositionSide(1/-1) 而非 OP_BUY/OP_SELL(0/1)，持仓管理失效
-> - **Go map 迭代序非确定 → 用户函数前向引用静默返回 0** — `ir.Funcs` 是 map，遍历编译用户函数时 caller 可能先于 callee 编译 → callee 落入 "unknown function" 盲区 → 返回值静默替换为 0 → volume=0 / 指标值=0。修复：两遍编译（Pass 1 预注册 entry PC，Pass 2 编译体）。**通用规则：编译器/链接器中禁止裸遍历 map 处理有序依赖**
+> 回测不开单 / volume=0 / 指标全零但 MT4/MT5 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
+
+### 已确认的静默失败模式
+
+- **未知常量 → 0** — `interp/constants.go` 缺常量 → 编译器 push 0。例如 `MODE_SIGNAL` 缺失时 `iMACD` 返回主线而非信号线 → `MacdCurrent == SignalCurrent` → 永不开单。
+- **`builtinOrderType` 映射错误** — 必须返回 `OP_BUY=0 / OP_SELL=1`，不能返回 `PositionSide` (`SideBuy=1 / SideSell=-1`)，否则持仓管理/平仓逻辑失效。
+- **Go map 迭代非确定 → 用户函数前向引用返回 0** — `ir.Funcs` 是 map，编译器必须两遍编译：Pass 1 预注册所有 entry PC，Pass 2 编译体。**通用规则：任何有序 pipeline 禁止裸遍历 map 处理有序依赖**。
+
+### 调试路径
+
+1. 先查 `CoverageReport.BlindSpots` 中的 "unknown constant" / "unknown function" — 这是静默失败的首要信号。
+2. 连跑验证：`for i in $(seq 1 50); do go test -run <TestName> -count=1 -v 2>&1 | grep -E 'PASS|FAIL'; done`。
+3. 对比 PASS vs FAIL 的 debug 输出，确定哪些函数被调用、哪些被静默跳过。
+4. 在 builtin 入口加 `fmt.Fprintf(os.Stderr, ...)` 临时日志，确认参数值与调用次数。
+5. 检查 `compileCall` 路径：user func → builtin → API registry → unknown（每层 fallback 都可能静默吞掉调用）。
 
 ## Strategy Runner Rules (实盘执行 — 强制)
 
@@ -154,6 +166,19 @@ These constraints are enforced at implementation time. Violation = fix before co
 3. `strategy_backtest_watch.go` — SSE watch 终态判断（用 `isTerminalBacktestStatus` helper）
 4. `strategy_converters.go` — `backtestStatusToProto()` switch case + `IsTerminal` 字段
 5. proto enum — `antv1.BacktestRunStatus` 枚举值
+
+## Frontend Auth & Stream Error Pitfalls (FE-AUTH-1 / FE-STREAM-1)
+
+- **Auth-free endpoint 必须前后端同步放行**：`backend/internal/interceptor/auth.go` 的 `WrapUnary` 排除列表与 `frontend/src/client/transport.ts` 的 `isAuthFree` 必须同时包含 `/refreshtoken`、`/refreshtokenfromcookie`、`/verifyemail`、`/resendverification`。任一遗漏 → 刷新后 401 或 token preflight 死锁。
+- **`procedureHint` 必须包含 method name**：格式 `${service.typeName}.${method.name}`（小写）。仅用 service name 会导致 `isAuthFree` 的 `includes('refreshtoken')` 失效。
+- **`"missing request message"` 不是 auth 失败**：页面刷新时 server-stream 被浏览器 abort 会产生该字符串错误，应归类为 `isLikelyStreamTransportFailure`（传输层中断），而非 `isStreamAuthFailure`。误归类会触发 "Session expired" toast。
+- **前端 assets 清理**：`alphaforge-frontend` 以非 root 运行，`docker cp frontend/dist/.` 只叠加不清理，旧 chunk 会堆积。大版本部署前以 root 清理：`docker exec -u root alphaforge-frontend rm -rf /usr/share/nginx/html/assets`。
+
+## PG Connection Pool & Push-First LISTEN (PG-POOL-1)
+
+- **主 pgxpool 必须配置 MaxConns**：env `DB_MAX_CONNS` 默认 25。默认 `max(4, NumCPU)` 在 4 核主机上 = 4，而 push-first refactor 后有 4 个永久 LISTEN holder（`normalizer_invalidator`、`backfiller`、`strategy_experiment_worker`、`backtest_worker`）各占 1 conn，启动即占满池。
+- **每个 SSE stream 再占 1 conn**：`pgListen.Listen` per stream 会进一步耗尽池。规模上去后应使用独立 LISTEN pool 或单 listener 按 channel fan-out。
+- **症状**：Login、`/healthz` 的 `pool.Ping` 在 `pool.Acquire()` 上阻塞，524/504，`/readyz` 正常（无 pool），容器 unhealthy。
 
 ## Before Commit
 

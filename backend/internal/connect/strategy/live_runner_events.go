@@ -40,7 +40,14 @@ func (s *StrategyExecutionServer) handleBar(
 		})
 	}
 
-	lctx := s.buildLiveContext(ctx, cfg, *bars, extraBars)
+	lctx, err := s.buildLiveContext(ctx, cfg, *bars, extraBars)
+	if err != nil {
+		s.log.Warn("LiveStrategyRunner: bar skipped", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
+		return
+	}
 
 	if activeSess != nil && activeSess.diag != nil {
 		activeSess.diag.RecordWindow(len(*bars))
@@ -59,7 +66,6 @@ func (s *StrategyExecutionServer) handleBar(
 	}
 
 	var respBytes []byte
-	var err error
 	if *firstBar {
 		vmSess, vmErr := s.initVMSession(ctx, cfg, activeSess)
 		if vmErr != nil {
@@ -140,7 +146,14 @@ func (s *StrategyExecutionServer) handleTick(
 	if *session == nil {
 		return
 	}
-	tctx := s.buildTickContext(ctx, cfg, tick)
+	tctx, err := s.buildTickContext(ctx, cfg, tick)
+	if err != nil {
+		s.log.Warn("LiveStrategyRunner: tick skipped", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
+		return
+	}
 
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode: cfg.Code,
@@ -174,7 +187,14 @@ func (s *StrategyExecutionServer) handleTrade(
 	if *session == nil {
 		return
 	}
-	tctx := s.buildTradeContext(ctx, cfg, evt)
+	tctx, err := s.buildTradeContext(ctx, cfg, evt)
+	if err != nil {
+		s.log.Warn("LiveStrategyRunner: trade event skipped", zap.Error(err))
+		if activeSess != nil {
+			activeSess.RecordError(err.Error())
+		}
+		return
+	}
 
 	req := &antv1.ExecuteLiveRequest{
 		StrategyCode: cfg.Code,
