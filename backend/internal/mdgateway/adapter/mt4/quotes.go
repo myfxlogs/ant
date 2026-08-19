@@ -110,7 +110,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
-		if sc == nil {
+		if sc == nil || sid == "" {
 			g.sleep(ctx, time.Second)
 			continue
 		}
@@ -171,7 +171,7 @@ func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
 	sub := g.subCli
 	sid := g.sessionID
 	g.mu.RUnlock()
-	if sub == nil || len(syms) == 0 {
+	if sub == nil || sid == "" || len(syms) == 0 {
 		return
 	}
 	subMd := metadata.New(map[string]string{"id": sid})
@@ -243,7 +243,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
-		if sc == nil {
+		if sc == nil || sid == "" {
 			g.sleep(ctx, time.Second)
 			continue
 		}
@@ -294,11 +294,17 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 				cancel()
 				goto profitLoopEnd
 			case <-timer.C:
-				g.log.Warn("mt4 profit stream silence timeout; forcing reconnect",
+				g.log.Warn("mt4 profit stream silence timeout; retrying profit stream",
 					zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
 				cancel()
-				_ = g.Disconnect(context.Background())
-				g.handleStreamError(ctx, context.DeadlineExceeded, &backoff)
+				// Do NOT call Disconnect() — that tears down the shared connection
+				// including the quote stream (OnQuote). For empty accounts (no positions,
+				// no margin), OnOrderProfit legitimately never pushes data, so this
+				// timeout fires repeatedly. Disconnecting destroys the quote stream
+				// which IS receiving ticks, causing data starvation for live strategies.
+				// Just sleep with backoff and retry the profit stream on the same connection.
+				g.sleep(ctx, backoff)
+				backoff = minDuration(backoff*2, maxBackoff)
 				goto profitLoopEnd
 			case r := <-ch:
 				if !timer.Stop() {

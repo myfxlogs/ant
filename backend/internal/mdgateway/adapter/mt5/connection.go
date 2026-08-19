@@ -24,6 +24,7 @@ type Gateway struct {
 	cfg                  mdtick.AccountConfig
 	log                  *zap.Logger
 	mu                   sync.RWMutex
+	connectMu            sync.Mutex // single-flight guard: serializes concurrent reconnects from the quote/profit/order stream loops
 	conn                 *grpc.ClientConn
 	client               pb.MT5Client
 	connCli              pb.ConnectionClient
@@ -244,6 +245,15 @@ func (g *Gateway) ensureConnected(ctx context.Context, backoff *time.Duration, m
 		g.sleep(ctx, 500*time.Millisecond)
 		return nil // recvLoop will retry on next iteration
 	}
+	// Single-flight: the quote, profit and order-update loops all call
+	// ensureConnected. Without serialization they race Connect() after a
+	// shared-connection teardown, each creating a separate mtapi session;
+	// the losers then use a stale/empty sessionID and every SubscribeMany
+	// is rejected with "Client with id = ... not found" — silent price starvation.
+	if !g.beginConnect() {
+		return nil // another loop already restored the connection
+	}
+	defer g.connectMu.Unlock()
 	if err := g.Connect(ctx); err != nil {
 		g.log.Warn("mt5 reconnect failed", zap.Error(err), zap.Duration("backoff", *backoff))
 		g.sleep(ctx, *backoff)
@@ -251,6 +261,22 @@ func (g *Gateway) ensureConnected(ctx context.Context, backoff *time.Duration, m
 		return fmt.Errorf("mt5 reconnect: %w", err)
 	}
 	return nil
+}
+
+// beginConnect acquires the single-flight reconnect slot. It returns false
+// (without holding connectMu) when another goroutine already restored the
+// connection while this one waited, meaning no Connect call is needed.
+// Callers that receive true MUST release g.connectMu.
+func (g *Gateway) beginConnect() bool {
+	g.connectMu.Lock()
+	g.mu.RLock()
+	conn := g.conn
+	g.mu.RUnlock()
+	if conn != nil {
+		g.connectMu.Unlock()
+		return false
+	}
+	return true
 }
 
 func (g *Gateway) sleep(ctx context.Context, d time.Duration) {

@@ -52,7 +52,7 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 			_ = mgr.RemoveGateway(ctx, accountID)
 			log.Info("mdgateway: dynamically stopped gateway", zap.String("account", accountID))
 		}
-	}, nats.DeliverAll(), nats.AckExplicit())
+	}, nats.DeliverNew(), nats.AckExplicit())
 	if err != nil {
 		log.Warn("mdgateway: account event subscribe failed", zap.Error(err))
 		return
@@ -122,11 +122,11 @@ func ensureAccountEventsStream(js nats.JetStreamContext, log *zap.Logger) error 
 		return nil // Already exists.
 	}
 	_, err = js.AddStream(&nats.StreamConfig{
-		Name:      "ACCOUNT_EVENTS",
-		Subjects:  []string{"account.>"},
-		MaxAge:    24 * 3600 * 1e9, // 24h in nanoseconds
-		Storage:   nats.FileStorage,
-		Replicas:  1,
+		Name:     "ACCOUNT_EVENTS",
+		Subjects: []string{"account.>"},
+		MaxAge:   24 * 3600 * 1e9, // 24h in nanoseconds
+		Storage:  nats.FileStorage,
+		Replicas: 1,
 	})
 	if err != nil {
 		return err

@@ -108,7 +108,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
-		if sc == nil {
+		if sc == nil || sid == "" {
 			g.sleep(ctx, time.Second)
 			continue
 		}
@@ -170,7 +170,7 @@ func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
 	sub := g.subCli
 	sid := g.sessionID
 	g.mu.RUnlock()
-	if sub == nil || len(syms) == 0 {
+	if sub == nil || sid == "" || len(syms) == 0 {
 		return
 	}
 	subMd := metadata.New(map[string]string{"id": sid})
@@ -301,7 +301,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		sc := g.streamCli
 		sid := g.sessionID
 		g.mu.RUnlock()
-		if sc == nil {
+		if sc == nil || sid == "" {
 			g.sleep(ctx, time.Second)
 			continue
 		}
