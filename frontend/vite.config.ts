@@ -35,7 +35,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 900,
     terserOptions: {
       compress: {
-        drop_console: false,
+        drop_console: true,
+        drop_debugger: true,
       },
     },
     modulePreload: { polyfill: false },
@@ -48,7 +49,7 @@ export default defineConfig({
             if (id.includes('react-router')) return 'vendor-router';
             if (id.includes('react-dom') || id.includes('scheduler')) return 'vendor-react-dom';
             if (id.includes('/react/')) return 'vendor-react';
-            if (id.includes('recharts') || id.includes('klinecharts') || id.includes('d3-')) return 'vendor-charts';
+            if (id.includes('recharts') || id.includes('klinecharts') || id.includes('d3-') || id.includes('victory-vendor')) return 'vendor-charts';
             if (id.includes('@bufbuild/protobuf') || id.includes('@connectrpc/connect')) return 'vendor-protobuf';
             if (id.includes('i18next') || id.includes('react-i18next')) return 'vendor-i18n';
             if (id.includes('dayjs') || id.includes('date-fns')) return 'vendor-date';
@@ -59,6 +60,7 @@ export default defineConfig({
             if (id.includes('react-markdown') || id.includes('remark') || id.includes('micromark') || id.includes('mdast')) return 'vendor-markdown';
             if (id.includes('@codemirror')) return 'vendor-codemirror';
             if (id.includes('@sentry')) return 'vendor-sentry';
+            if (id.includes('@tanstack/')) return 'vendor-query';
             return 'vendor-misc';
           }
           if (id.includes('/src/gen/')) return 'gen-proto';

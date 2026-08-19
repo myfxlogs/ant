@@ -17,7 +17,7 @@ test.describe('Dark mode + performance audit', () => {
     await page.getByPlaceholder(/password/i).fill(ADMIN_PASSWORD);
     await page.getByRole('button', { name: /sign in|login/i }).click();
     await expect(page).toHaveURL(/\/$|\/dashboard|\/strategy/i, { timeout: 20_000 });
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
 
     // Screenshot: home/dashboard in dark mode
     await page.screenshot({ path: 'e2e/screenshots/dark-home.png', fullPage: true });
@@ -33,13 +33,22 @@ test.describe('Dark mode + performance audit', () => {
 
     for (const p of pages) {
       const start = Date.now();
+      // Track API call timings
+      const apiCalls: { url: string; duration: number }[] = [];
+      page.on('requestfinished', req => {
+        if (req.url().includes('/ant.v1.')) {
+          apiCalls.push({ url: req.url().split('/ant.v1.')[1], duration: Math.round(req.timing().responseEnd - req.timing().startTime) });
+        }
+      });
       await page.goto(p.path);
       // Wait for network to settle (SSE streams stay open, so use domcontentloaded + timeout)
       await page.waitForLoadState('domcontentloaded', { timeout: 30_000 }).catch(() => {});
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(500);
       const elapsed = Date.now() - start;
       timings.push({ page: p.name, ms: elapsed });
       console.log(`[${p.name}] loaded in ${elapsed}ms`);
+      console.log(`  API calls: ${apiCalls.length}`);
+      apiCalls.forEach(c => console.log(`    ${c.url}: ${c.duration}ms`));
 
       await page.screenshot({ path: `e2e/screenshots/dark-${p.name}.png`, fullPage: true });
     }
@@ -49,6 +58,48 @@ test.describe('Dark mode + performance audit', () => {
     for (const t of timings) {
       console.log(`${t.page}: ${t.ms}ms`);
     }
+
+    // Capture detailed navigation timing for the last page
+    const navTiming = await page.evaluate(() => {
+      const entries = performance.getEntriesByType('navigation');
+      if (entries.length === 0) return null;
+      const e = entries[0] as PerformanceNavigationTiming;
+      return {
+        domContentLoaded: Math.round(e.domContentLoadedEventEnd - e.startTime),
+        loadComplete: Math.round(e.loadEventEnd - e.startTime),
+        domInteractive: Math.round(e.domInteractive - e.startTime),
+        responseEnd: Math.round(e.responseEnd - e.startTime),
+        transferSize: e.transferSize,
+        encodedBodySize: e.encodedBodySize,
+      };
+    });
+    console.log('\n=== Navigation Timing (last page) ===');
+    if (navTiming) {
+      console.log(`Response end: ${navTiming.responseEnd}ms`);
+      console.log(`DOM interactive: ${navTiming.domInteractive}ms`);
+      console.log(`DOM content loaded: ${navTiming.domContentLoaded}ms`);
+      console.log(`Load complete: ${navTiming.loadComplete}ms`);
+    }
+
+    // Count resource sizes and parse timings
+    const resources = await page.evaluate(() => {
+      const entries = performance.getEntriesByType('resource');
+      const jsEntries = entries.filter(e => e.name.endsWith('.js') || e.name.includes('.js?'));
+      const totalSize = jsEntries.reduce((sum, e) => sum + (e as PerformanceResourceTiming).transferSize, 0);
+      const totalDuration = jsEntries.reduce((max, e) => Math.max(max, e.duration), 0);
+      // Sum up all JS durations (not just max) to approximate total parse+exec time
+      const totalJSDuration = jsEntries.reduce((sum, e) => sum + e.duration, 0);
+      // Get the largest JS files by duration
+      const topJS = jsEntries
+        .map(e => ({ name: (e.name.split('/').pop() || '').substring(0, 40), dur: Math.round(e.duration), size: Math.round((e as PerformanceResourceTiming).transferSize / 1024) }))
+        .sort((a, b) => b.dur - a.dur)
+        .slice(0, 10);
+      return { count: jsEntries.length, totalKB: Math.round(totalSize / 1024), maxDuration: Math.round(totalDuration), totalJSDuration: Math.round(totalJSDuration), topJS };
+    });
+    console.log(`\n=== Resources ===`);
+    console.log(`JS files: ${resources.count}, total: ${resources.totalKB}KB, max duration: ${resources.maxDuration}ms, total JS duration: ${resources.totalJSDuration}ms`);
+    console.log(`Top JS by duration:`);
+    resources.topJS.forEach(j => console.log(`  ${j.name}: ${j.dur}ms, ${j.size}KB`));
 
     // Check computed styles for contrast issues
     const bodyStyles = await page.evaluate(() => {
