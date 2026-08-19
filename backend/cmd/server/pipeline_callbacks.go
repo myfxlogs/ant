@@ -64,6 +64,25 @@ func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, us
 	broker.Publish(snapshot)
 }
 
+func publishProfitPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, userID string, p *mdtick.ProfitUpdate) {
+	snapshot := &mthub.PositionSnapshot{
+		AccountID: accountID, UserID: userID, Platform: p.Platform,
+		Balance: p.Balance, Credit: p.Credit, Equity: p.Equity,
+		Margin: p.Margin, FreeMargin: p.FreeMargin, MarginLevel: p.MarginLevel,
+		Profit: p.Profit, Positions: make([]mthub.PositionSnapshotItem, 0, len(p.Positions)),
+	}
+	for _, pos := range p.Positions {
+		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
+			Ticket: pos.Ticket, Symbol: pos.Symbol, Type: pos.Type, Magic: pos.Magic,
+			Volume: pos.Volume, OpenPrice: pos.OpenPrice, CurrentPrice: pos.CurrentPrice,
+			StopLoss: pos.StopLoss, TakeProfit: pos.TakeProfit,
+			Profit: pos.Profit, Swap: pos.Swap, Commission: pos.Commission,
+			Comment: pos.Comment, OpenTime: pos.OpenTime,
+		})
+	}
+	broker.Publish(snapshot)
+}
+
 func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordRepository, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) {
 	if !strings.EqualFold(o.UpdateType, "close") || o.UpdateCloseTime <= 0 {
 		return

@@ -12,6 +12,7 @@ import (
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	pb "alphaforge/mt5"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -299,14 +300,16 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 		return nil, fmt.Errorf("mt5 AccountSummary: result nil, msg=%s", msg)
 	}
 
-	// Proto v2.x AccountSummary does not carry MarginCallLevel / StopOutLevel.
-	// When these fields are added to the mtapi proto, uncomment:
-	//   summary := resp.GetResult()
-	//   return &mdtick.BrokerInfo{
-	//       MarginCallPct: summary.GetMarginCallLevel(),
-	//       StopOutPct:    summary.GetStopOutLevel(),
-	//   }, nil
-	return &mdtick.BrokerInfo{}, nil
+	s := resp.GetResult()
+	return &mdtick.BrokerInfo{
+		HasAccountSummary: true,
+		Balance:           decimal.NewFromFloat(s.GetBalance()),
+		Credit:            decimal.NewFromFloat(s.GetCredit()),
+		Equity:            decimal.NewFromFloat(s.GetEquity()),
+		Margin:            decimal.NewFromFloat(s.GetMargin()),
+		FreeMargin:        decimal.NewFromFloat(s.GetFreeMargin()),
+		MarginLevel:       decimal.NewFromFloat(s.GetMarginLevel()),
+	}, nil
 }
 
 func strToUint64(s string) uint64 {

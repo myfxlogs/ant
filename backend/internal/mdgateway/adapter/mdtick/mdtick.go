@@ -29,12 +29,25 @@ type OrderUpdateHandler func(o *OrderUpdate)
 // Called once per successful connection; values of 0 mean "use schema default".
 type BrokerInfoHandler func(accountID, platform, broker string, info *BrokerInfo)
 
-// BrokerInfo holds broker-level margin configuration fetched after mtapi Connect.
-// Zero values signal that the broker did not expose these settings and the
-// schema DEFAULTs (100.0 / 50.0) should be used.
+// BrokerInfo holds broker-level margin configuration and account financial
+// snapshot fetched after mtapi Connect via AccountSummary.
+// The financial fields (Balance/Equity/etc.) are authoritative broker values
+// used to publish a profit_update on every connect/reconnect, ensuring the
+// frontend never displays stale data when OnOrderProfit is silent.
 type BrokerInfo struct {
 	MarginCallPct float64 // broker margin_call_level (e.g. 60.0 == 60%)
 	StopOutPct    float64 // broker stop_out_level (e.g. 30.0 == 30%)
+
+	// HasAccountSummary is true when AccountSummary returned a valid result.
+	// When false (e.g. investor accounts), financial fields are zero and should not be published.
+	HasAccountSummary bool
+
+	Balance     decimal.Decimal
+	Credit      decimal.Decimal
+	Equity      decimal.Decimal
+	Margin      decimal.Decimal
+	FreeMargin  decimal.Decimal
+	MarginLevel decimal.Decimal
 }
 
 // BrokerInfoFetcher is implemented by mt4.Gateway and mt5.Gateway.
@@ -90,10 +103,18 @@ type ProfitUpdate struct {
 type ProfitPosition struct {
 	Ticket       int64
 	Symbol       string
-	Magic        int32 // strategy attribution magic number (ExpertID)
-	Profit       decimal.Decimal
+	Type         string // "buy", "sell", etc.
+	Magic        int32  // strategy attribution magic number (ExpertID)
 	Volume       decimal.Decimal
+	OpenPrice    decimal.Decimal
 	CurrentPrice decimal.Decimal
+	StopLoss     decimal.Decimal
+	TakeProfit   decimal.Decimal
+	Profit       decimal.Decimal
+	Swap         decimal.Decimal
+	Commission   decimal.Decimal
+	Comment      string
+	OpenTime     int64 // unix seconds
 }
 
 // OrderUpdate represents a real-time order change event from OnOrderUpdate stream.

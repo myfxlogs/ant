@@ -68,7 +68,7 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		Hub:                 d.hub,
 		BrokerRegistry:      d.brokerReg,
 		Searcher:            brokersearch.New("", ""),
-		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector),
+		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector, d.snapshotBroker),
 		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo, d.mthubSvc),
 		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),
 		OnBrokerInfo:        pst.makeOnBrokerInfo(d.accountSvc, d.accountSyncSvc, d.mthubSvc, d.snapshotBroker, d.reconLoop),
@@ -161,6 +161,7 @@ func (p *pipelineState) makeOnAccountProfit(
 	eventStore *mthub.TradeEventStore,
 	emailNotifier **notifier.EmailNotifier,
 	livePerfCollector *marketplace.LivePerformanceCollector,
+	snapshotBroker *mthub.PositionSnapshotBroker,
 ) func(accountID, userID string, pr *mdtick.ProfitUpdate) {
 	return func(accountID, userID string, pr *mdtick.ProfitUpdate) {
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -205,6 +206,14 @@ func (p *pipelineState) makeOnAccountProfit(
 			Status: "connected", Timestamp: time.Now(),
 			Positions: convertProfitPositions(pr.Positions),
 		})
+		p.log.Info("OnAccountProfit: received profit update",
+			zap.String("account", accountID), zap.String("platform", pr.Platform),
+			zap.Int("positions", len(pr.Positions)),
+			zap.String("balance", pr.Balance.String()), zap.String("equity", pr.Equity.String()))
+		// OnOrderUpdate/OpenedOrders are unreliable for some sessions; OnOrderProfit
+		// always carries the full opened-orders list. Publish a position snapshot from
+		// the profit data so the frontend displays the correct open positions.
+		publishProfitPositionSnapshot(snapshotBroker, accountID, userID, pr)
 		if pr.MarginLevel.GreaterThan(decimal.Zero) {
 			p.thresholdMu.RLock()
 			callPct := p.marginCallThresholds[accountID]
@@ -234,15 +243,79 @@ func (p *pipelineState) makeOnBrokerInfo(
 		if *reconLoop != nil {
 			(*reconLoop).ReconcileAccount(context.Background(), accountID)
 		}
+		// Publish authoritative broker financials on every connect/reconnect.
+		// This corrects stale DB/frontend values when OnOrderProfit is silent
+		// (e.g. no open positions, or mtapi stream stuck).
+		if info.HasAccountSummary {
+			userID, _ := getUserIDFromPool(context.Background(), p.pool, accountID)
+			profit := info.Equity.Sub(info.Balance)
+			var profitPercent float64
+			if info.Balance.GreaterThan(decimal.Zero) {
+				pp, _ := profit.Div(info.Balance).Mul(decimal.NewFromInt(100)).Float64()
+				profitPercent = pp
+			}
+			mthubSvc.PublishAccountProfit(&mthub.AccountProfitEvent{
+				AccountID:     accountID,
+				UserID:        userID,
+				Platform:      platform,
+				Balance:       info.Balance,
+				Credit:        info.Credit,
+				Equity:        info.Equity,
+				Margin:        info.Margin,
+				FreeMargin:    info.FreeMargin,
+				MarginLevel:   info.MarginLevel,
+				Profit:        profit,
+				ProfitPercent: profitPercent,
+				Status:        "connected",
+				Timestamp:     time.Now(),
+			})
+			if uid, err := uuid.Parse(userID); err == nil {
+				mctx, mcancel := context.WithTimeout(context.Background(), 5*time.Second)
+				_ = accountSvc.UpdateAccountMetrics(mctx, uid, accountID,
+					info.Balance, info.Equity, info.Credit,
+					info.Margin, info.FreeMargin, info.MarginLevel)
+				mcancel()
+			}
+			p.log.Info("OnBrokerInfo: published authoritative account summary from broker",
+				zap.String("account", accountID), zap.String("platform", platform),
+				zap.String("balance", info.Balance.String()),
+				zap.String("equity", info.Equity.String()),
+				zap.String("margin", info.Margin.String()))
+		}
 		go func() {
-			sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			orders, err := mthubSvc.OpenedOrders(sctx, accountID)
+			// mtapi.io session needs a moment to load account state after Connect.
+			// Reconciliation (30s timeout) usually succeeds; the initial OpenedOrders
+			// call often races the session warm-up and returns 0. Retry a few times
+			// with short backoff before publishing the (possibly empty) snapshot.
+			var orders []*mthub.OrderRecord
+			var err error
+			for attempt := 0; attempt < 3; attempt++ {
+				if attempt > 0 {
+					time.Sleep(2 * time.Second)
+				}
+				sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				orders, err = mthubSvc.OpenedOrders(sctx, accountID)
+				cancel()
+				if err != nil {
+					p.log.Warn("OnBrokerInfo: OpenedOrders failed, retrying",
+						zap.String("account", accountID), zap.String("platform", platform),
+						zap.Int("attempt", attempt+1), zap.Error(err))
+					continue
+				}
+				if len(orders) > 0 {
+					break
+				}
+				p.log.Warn("OnBrokerInfo: OpenedOrders returned empty, retrying",
+					zap.String("account", accountID), zap.String("platform", platform),
+					zap.Int("attempt", attempt+1))
+			}
 			if err != nil {
 				p.log.Warn("OnBrokerInfo: OpenedOrders failed, initial position snapshot skipped",
 					zap.String("account", accountID), zap.String("platform", platform), zap.Error(err))
 				return
 			}
+			p.log.Info("OnBrokerInfo: publishing initial position snapshot",
+				zap.String("account", accountID), zap.String("platform", platform), zap.Int("positions", len(orders)))
 			snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
 			for _, o := range orders {
 				snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{

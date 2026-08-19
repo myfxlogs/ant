@@ -12,6 +12,7 @@ import (
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	pb "alphaforge/mt4"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -39,6 +40,8 @@ type Gateway struct {
 	reconnecting         bool                         // true while reconnection is in progress (prevents recvLoop race)
 	onStatusChange       func(status, message string) // connection state callback (nil-safe)
 	breaker              mdtick.Breaker
+	lastProfitUpdate     *mdtick.ProfitUpdate // last OnOrderProfit frame; used to detect data silence
+	lastProfitAt         time.Time            // last time a frame was received
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
@@ -283,14 +286,16 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 		return &mdtick.BrokerInfo{}, nil
 	}
 
-	// Proto v2.x AccountSummary does not carry MarginCallLevel / StopOutLevel.
-	// When these fields are added to the mtapi proto, uncomment:
-	//   summary := resp.GetResult()
-	//   return &mdtick.BrokerInfo{
-	//       MarginCallPct: summary.GetMarginCallLevel(),
-	//       StopOutPct:    summary.GetStopOutLevel(),
-	//   }, nil
-	return &mdtick.BrokerInfo{}, nil
+	s := resp.GetResult()
+	return &mdtick.BrokerInfo{
+		HasAccountSummary: true,
+		Balance:           decimal.NewFromFloat(s.GetBalance()),
+		Credit:            decimal.NewFromFloat(s.GetCredit()),
+		Equity:            decimal.NewFromFloat(s.GetEquity()),
+		Margin:            decimal.NewFromFloat(s.GetMargin()),
+		FreeMargin:        decimal.NewFromFloat(s.GetFreeMargin()),
+		MarginLevel:       decimal.NewFromFloat(s.GetMarginLevel()),
+	}, nil
 }
 
 func minDuration(a, b time.Duration) time.Duration {

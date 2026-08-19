@@ -197,6 +197,22 @@ func (g *Gateway) reSubscribeSymbols(ctx context.Context) {
 	g.log.Info("mt4: re-subscribed symbols", zap.Int("requested", len(syms)), zap.Int("subscribed", subscribed))
 }
 
+func (g *Gateway) profitRecvTimeout() time.Duration {
+	g.mu.RLock()
+	lu := g.lastProfitUpdate
+	g.mu.RUnlock()
+	if lu == nil {
+		// First frame on a fresh connection; give mtapi a bit of time to push it.
+		return 30 * time.Second
+	}
+	if len(lu.Positions) > 0 || lu.Margin.GreaterThan(decimal.Zero) {
+		// Account has open positions/margin: OnOrderProfit should fire very frequently.
+		return 15 * time.Second
+	}
+	// Empty account: profit stream may legitimately be quiet, but still should heartbeat periodically.
+	return 60 * time.Second
+}
+
 func (g *Gateway) SubscribeProfit(ctx context.Context, handler mdtick.ProfitHandler) error {
 	g.mu.RLock()
 	sc := g.streamCli
@@ -254,18 +270,60 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.reportStatus("connected", "")
 		g.log.Info("mt4: profit stream active")
 		for {
-			resp, err := stream.Recv()
-			if err != nil {
-				g.log.Warn("mt4 profit recv", zap.Error(err))
+			timeout := g.profitRecvTimeout()
+			timer := time.NewTimer(timeout)
+
+			type recvResult struct {
+				resp *pb.OnOrderProfitReply
+				err  error
+			}
+			ch := make(chan recvResult, 1)
+			go func() {
+				resp, err := stream.Recv()
+				select {
+				case ch <- recvResult{resp: resp, err: err}:
+				case <-subCtx.Done():
+				}
+			}()
+
+			select {
+			case <-subCtx.Done():
+				if !timer.Stop() {
+					<-timer.C
+				}
 				cancel()
-				g.handleStreamError(ctx, err, &backoff)
 				goto profitLoopEnd
+			case <-timer.C:
+				g.log.Warn("mt4 profit stream silence timeout; forcing reconnect",
+					zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
+				cancel()
+				_ = g.Disconnect(context.Background())
+				g.handleStreamError(ctx, context.DeadlineExceeded, &backoff)
+				goto profitLoopEnd
+			case r := <-ch:
+				if !timer.Stop() {
+					select {
+					case <-timer.C:
+					default:
+					}
+				}
+				if r.err != nil {
+					g.log.Warn("mt4 profit recv", zap.Error(r.err))
+					cancel()
+					g.handleStreamError(ctx, r.err, &backoff)
+					goto profitLoopEnd
+				}
+				p := r.resp.GetResult()
+				if p == nil {
+					continue
+				}
+				pu := parseMt4ProfitUpdate(p, g.cfg.AccountID)
+				g.mu.Lock()
+				g.lastProfitUpdate = pu
+				g.lastProfitAt = time.Now()
+				g.mu.Unlock()
+				handler(pu)
 			}
-			p := resp.GetResult()
-			if p == nil {
-				continue
-			}
-			handler(parseMt4ProfitUpdate(p, g.cfg.AccountID))
 		}
 	profitLoopEnd:
 	}
@@ -281,13 +339,29 @@ func parseMt4ProfitUpdate(p *pb.ProfitUpdate, accountID string) *mdtick.ProfitUp
 	}
 	positions := make([]mdtick.ProfitPosition, 0, len(p.GetOrders()))
 	for _, o := range p.GetOrders() {
+		typ := "buy"
+		if o.GetType() == pb.Op_Op_Sell {
+			typ = "sell"
+		}
+		openTime := int64(0)
+		if t := o.GetOpenTime(); t != nil {
+			openTime = t.AsTime().Unix()
+		}
 		positions = append(positions, mdtick.ProfitPosition{
 			Ticket:       int64(o.GetTicket()),
 			Symbol:       o.GetSymbol(),
+			Type:         typ,
 			Magic:        o.GetMagicNumber(),
-			Profit:       decimal.NewFromFloat(o.GetProfit()),
 			Volume:       decimal.NewFromFloat(o.GetLots()),
+			OpenPrice:    decimal.NewFromFloat(o.GetOpenPrice()),
 			CurrentPrice: decimal.NewFromFloat(o.GetClosePrice()),
+			StopLoss:     decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit:   decimal.NewFromFloat(o.GetTakeProfit()),
+			Profit:       decimal.NewFromFloat(o.GetProfit()),
+			Swap:         decimal.NewFromFloat(o.GetSwap()),
+			Commission:   decimal.NewFromFloat(o.GetCommission()),
+			Comment:      o.GetComment(),
+			OpenTime:     openTime,
 		})
 	}
 	return &mdtick.ProfitUpdate{

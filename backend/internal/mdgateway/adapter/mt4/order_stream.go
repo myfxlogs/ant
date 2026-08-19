@@ -10,7 +10,9 @@ import (
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func (g *Gateway) SubscribeOrderUpdate(ctx context.Context, handler mdtick.OrderUpdateHandler) error {
@@ -96,6 +98,15 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 const streamMaxBackoff = 5 * time.Minute
 
 func (g *Gateway) handleStreamError(ctx context.Context, err error, backoff *time.Duration) {
+	// gRPC wraps context.Canceled as "rpc error: code = Canceled desc = context canceled".
+	// When one stream's Disconnect cancels another stream's subCtx, the other stream
+	// sees this wrapped error. We must NOT call Disconnect again — that would cascade
+	// and tear down the shared connection for all streams, creating an infinite loop.
+	if status.Code(err) == codes.Canceled {
+		g.sleep(ctx, *backoff)
+		*backoff = minDuration(*backoff*2, streamMaxBackoff)
+		return
+	}
 	if err != context.Canceled && err != context.DeadlineExceeded {
 		g.reportStatus("reconnecting", err.Error())
 		_ = g.Disconnect(ctx)
