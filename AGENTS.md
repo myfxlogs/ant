@@ -83,6 +83,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ❌ Cross-scope changes (one task = one scope)
 - ❌ Hardcoded secrets / `.env` in repo
 - ❌ 硬编码"本应来自外部权威源的可变数据"（broker symbol 清单、broker 参数、服务器地址等外部系统当前状态）。存在权威查询（`FetchAllSymbols`、broker RPC）时禁止写死静态列表——必然漂移→静默 bug。**反例 LIVE-PRICE-4**：`defaultQuoteSymbols()` 硬编码含 broker 不存在的 symbol → 原子 `SubscribeMany` 整批失败 → OnQuote 零交付 → 实盘无法开仓。修复=订阅前用 `FetchAllSymbols` 过滤。**豁免**：通用常量（标准 timeframe 毫秒 `60_000`、数学常量、固定枚举）。详见 CLAUDE.md。
+- ❌ **用本地计算/推导替代服务器权威数据（用户 2026-08-19 确立："服务器有的数据，一律以服务器为准，这是唯一真相"）**。broker/外部服务器返回的字段（balance/equity/margin/free_margin/margin_level、持仓、订单、symbol 参数…）是唯一真相，本地一律**只做透传与持久化，不做重算**。推论：① 存在权威 RPC 时禁止自算（如禁止按 contractSize 反推 margin，必须取 `AccountSummary`）；② **禁止用"不含该字段的次级数据源"覆盖权威值**——反例 DATA-TRUTH-2：MT4 `OnOrderProfit` 帧不填 margin/margin_level，却每 5s 把 `mt_accounts.margin` 覆盖成 0，导致 `MarginLevel > 0` 门槛永不成立、MT4 爆仓预警完全不触发（同一字段 MT5 帧填得完整，`AccountSummary` 也填得完整）；③ 一个事实只允许一个写入方 + 一张真相表——反例 DATA-TRUTH-4：两个同名 `RecordBalanceSnapshot` 写两张不同表，生产那份写进**不存在**的表且错误被 `log.Debug` 吞，净值曲线静默断供 28 天。豁免：纯展示派生值（百分比、涨跌幅）可本地算，但不得回写覆盖权威字段。
 - ❌ `//nolint`, `# noqa`, `// @ts-ignore`, `// #nosec`
 - ❌ 因困难而妥协最优解。遇到阻碍时禁止退而求其次——必须回到根因，找到正确的修复方式，哪怕需要推翻旧架构、完全重构。快捷方式（回退代替重新生成、标记 legacy 代替移除、沉默代替修复）视为违规。
 

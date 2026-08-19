@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"github.com/shopspring/decimal"
 	"context"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
 
@@ -160,16 +161,6 @@ func (r *AnalyticsRepository) GetBalanceAtTime(ctx context.Context, accountID uu
 	return balance, nil
 }
 
-// RecordBalanceSnapshot inserts a periodic equity/balance snapshot.
-func (r *AnalyticsRepository) RecordBalanceSnapshot(ctx context.Context, accountID, userID uuid.UUID, balance, equity, margin, freeMargin decimal.Decimal) error {
-	query := `
-		INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
-		VALUES ($1, $2, $3, $4, $5, $6, NOW())
-	`
-	_, err := r.db.Exec(ctx, query, accountID, userID, balance, equity, margin, freeMargin)
-	return err
-}
-
 func (r *AnalyticsRepository) GetConsecutiveStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) (maxWins, maxLosses int, err error) {
 	query := `
 		WITH profit_signs AS (
@@ -207,4 +198,3 @@ func (r *AnalyticsRepository) GetHoldingTimeStats(ctx context.Context, accountID
 	err = r.db.QueryRow(ctx, query, accountID, start, end).Scan(&avgHoldingSeconds)
 	return
 }
-

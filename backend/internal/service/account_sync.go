@@ -238,6 +238,12 @@ func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID str
 }
 
 // RecordBalanceSnapshot persists a balance sample to the time-series table, throttled per account.
+//
+// The target table MUST stay `account_balance_history`: it is the single source read by the
+// whole analytics stack (equity curve, hourly equity, monthly detail, starting balance behind
+// ReturnPercent). A previous refactor pointed this insert at `account_balance_snapshots`, a
+// table that does not exist in the schema, so every write failed for 28 days while the readers
+// silently starved. Values come from the broker's own account frame — never recomputed locally.
 func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, accountID, userID string, balance, equity, margin, freeMargin decimal.Decimal) error {
 	const minInterval = 5 * time.Second
 	s.snapshotThrottleMu.Lock()
@@ -249,8 +255,8 @@ func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, accountID, u
 	s.snapshotThrottle[accountID] = time.Now()
 	s.snapshotThrottleMu.Unlock()
 	_, err := s.db.Exec(ctx, `
-		INSERT INTO account_balance_snapshots (account_id, user_id, balance, equity, margin, free_margin)
-		VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6)
+		INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
+		VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, NOW())
 	`, accountID, userID, balance, equity, margin, freeMargin)
 	if err != nil {
 		return fmt.Errorf("service: record balance snapshot: %w", err)

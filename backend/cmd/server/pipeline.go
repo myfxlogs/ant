@@ -194,7 +194,10 @@ func (p *pipelineState) makeOnAccountProfit(
 			p.lastSnapshot[accountID] = time.Now()
 			p.snapshotMu.Unlock()
 			if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, userID, pr.Balance, pr.Equity, pr.Margin, pr.FreeMargin); err != nil {
-				p.log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
+				// Warn, not Debug: this insert failed 100% of the time for 28 days
+				// (wrong target table) and the Debug level hid it while every
+				// analytics reader of account_balance_history starved.
+				p.log.Warn("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 			}
 		}()
 		accountSvc.UpdateSummaryCache(userID, accountID, pr.Balance, pr.Equity, "connected")
@@ -209,7 +212,11 @@ func (p *pipelineState) makeOnAccountProfit(
 		p.log.Info("OnAccountProfit: received profit update",
 			zap.String("account", accountID), zap.String("platform", pr.Platform),
 			zap.Int("positions", len(pr.Positions)),
-			zap.String("balance", pr.Balance.String()), zap.String("equity", pr.Equity.String()))
+			zap.String("balance", pr.Balance.String()), zap.String("equity", pr.Equity.String()),
+			// Broker-provided margin fields: observed to decide DATA-TRUTH-2
+			// (MT4 accounts persist margin=0 even while holding open positions).
+			zap.String("margin", pr.Margin.String()), zap.String("free_margin", pr.FreeMargin.String()),
+			zap.String("margin_level", pr.MarginLevel.String()))
 		// OnOrderUpdate/OpenedOrders are unreliable for some sessions; OnOrderProfit
 		// always carries the full opened-orders list. Publish a position snapshot from
 		// the profit data so the frontend displays the correct open positions.
