@@ -75,29 +75,30 @@
 
 .dark {
   --color-accent: #E2E8F0;
-  --color-bg-main: #0F172A;
-  --color-bg-card: #1E293B;
-  --color-bg-secondary: #1E293B;
-  --color-bg-tertiary: #334155;
-  --color-bg-header: rgba(15, 23, 42, 0.72);
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-light: rgba(255, 255, 255, 0.05);
-  --color-text: #E2E8F0;
-  --color-text-secondary: #94A3B8;
-  --color-text-muted: #64748B;
+  --color-bg-main: #0d1117;
+  --color-bg-card: #161b22;
+  --color-bg-secondary: #161b22;
+  --color-bg-tertiary: #21262d;
+  --color-bg-elevated: #1c2128;
+  --color-bg-header: rgba(13, 17, 23, 0.85);
+  --color-border: rgba(255, 255, 255, 0.15);
+  --color-border-light: rgba(255, 255, 255, 0.08);
+  --color-text: #e6edf3;
+  --color-text-secondary: #9da7b5;
+  --color-text-muted: #7d8590;
   --color-shadow: rgba(0, 0, 0, 0.2);
   --color-shadow-hover: rgba(0, 0, 0, 0.4);
   --color-scrollbar: rgba(255, 255, 255, 0.15);
   --color-scrollbar-hover: rgba(255, 255, 255, 0.25);
-  --color-glass-bg: rgba(30, 41, 59, 0.55);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-bg: rgba(22, 27, 34, 0.55);
+  --color-glass-border: rgba(255, 255, 255, 0.15);
   --color-gold-bg: rgba(212, 175, 55, 0.15);
   --color-gold-bg-hover: rgba(212, 175, 55, 0.08);
   --color-gold-shadow: rgba(212, 175, 55, 0.15);
   --color-skeleton-base: rgba(255, 255, 255, 0.06);
   --color-skeleton-shine: rgba(255, 255, 255, 0.1);
-  --color-chip-bg: rgba(30, 41, 59, 0.8);
-  --color-chip-border: rgba(255, 255, 255, 0.08);
+  --color-chip-bg: rgba(22, 27, 34, 0.8);
+  --color-chip-border: rgba(255, 255, 255, 0.15);
   --color-warning-border: rgba(255, 152, 0, 0.3);
   --color-warning-text: #d29922;
   --color-ai-btn: #722ed1;
@@ -107,9 +108,9 @@
   --color-danger: #f85149;
   --color-warning: #d29922;
   --color-warning-bg: rgba(210, 153, 34, 0.08);
-  --color-admin-sidebar: #0f172a;
-  --color-admin-border: rgba(255, 255, 255, 0.08);
-  --color-header-bg: rgba(15, 23, 42, 0.95);
+  --color-admin-sidebar: #0d1117;
+  --color-admin-border: rgba(255, 255, 255, 0.15);
+  --color-header-bg: rgba(13, 17, 23, 0.95);
 }
 
 body {
