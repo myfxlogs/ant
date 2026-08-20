@@ -355,3 +355,150 @@ func TestTronGridClient_GetTRC20Balance_APIFailure(t *testing.T) {
 		t.Fatal("expected error for success=false, got nil")
 	}
 }
+
+// TestTronGridClient_GetBlockEvents_SuccessFalse verifies that HTTP 200 with
+// success:false is treated as an error, not as "block has no transfers".
+// Without this check, a rate-limited response would silently skip the block
+// and advance the checkpoint, losing deposits forever.
+func TestTronGridClient_GetBlockEvents_SuccessFalse(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"success":false,"data":[],"Error":"request rate exceeded"}`))
+	}))
+	defer srv.Close()
+
+	client := NewTronGridClient("")
+	client.baseURL = srv.URL
+
+	events, err := client.GetBlockEvents(t.Context(), "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", 12345)
+	if err == nil {
+		t.Fatal("expected error for success=false, got nil")
+	}
+	if len(events) != 0 {
+		t.Errorf("expected 0 events on error, got %d", len(events))
+	}
+}
+
+// TestTronGridClient_HasOutgoing_SuccessFalse verifies that HTTP 200 with
+// success:false returns (false, error), not (false, nil). Returning (false, nil)
+// would fail-open the double-spend check and allow re-sweeping an address
+// that may have already been swept.
+func TestTronGridClient_HasOutgoing_SuccessFalse(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"success":false,"data":[],"Error":"rate limited"}`))
+	}))
+	defer srv.Close()
+
+	client := NewTronGridClient("")
+	client.baseURL = srv.URL
+
+	hasOut, err := client.HasOutgoingTRC20Transfer(t.Context(), "TFrom", "TTo", "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t")
+	if err == nil {
+		t.Fatal("expected error for success=false, got nil")
+	}
+	if hasOut {
+		t.Error("expected false for hasOutgoing on API error, got true")
+	}
+}
+
+// TestTronGridClient_GetBlockEvents_SecondPageFailureNoPartial verifies that
+// when a later pagination page returns success:false, the entire call returns
+// an error and does NOT return partial first-page events. Returning partial
+// data + error would let callers accidentally consume incomplete results.
+func TestTronGridClient_GetBlockEvents_SecondPageFailureNoPartial(t *testing.T) {
+	page := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		page++
+		w.Header().Set("Content-Type", "application/json")
+		if page == 1 {
+			_, _ = w.Write([]byte(`{
+				"success":true,
+				"data":[{"transaction_id":"tx1","block_number":100,"event_name":"Transfer","result":{"0":"","1":"","2":"1000000"},"_unconfirmed":false}],
+				"meta":{"fingerprint":"fp123"}
+			}`))
+			return
+		}
+		// Page 2: success=false — must abort the whole call.
+		_, _ = w.Write([]byte(`{"success":false,"data":[],"Error":"rate limited"}`))
+	}))
+	defer srv.Close()
+
+	client := NewTronGridClient("")
+	client.baseURL = srv.URL
+
+	events, err := client.GetBlockEvents(t.Context(), "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", 100)
+	if err == nil {
+		t.Fatal("expected error for second-page success=false, got nil")
+	}
+	if len(events) != 0 {
+		t.Errorf("expected 0 events (no partial) on second-page failure, got %d", len(events))
+	}
+}
+
+// TestTronGridClient_GetBlockEvents_EmptySuccess verifies that a legitimate
+// success:true response with empty data (block has no transfers) returns
+// (empty, nil). This prevents the fix from over-correcting and treating
+// valid empty blocks as failures.
+func TestTronGridClient_GetBlockEvents_EmptySuccess(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"success":true,"data":[],"meta":{}}`))
+	}))
+	defer srv.Close()
+
+	client := NewTronGridClient("")
+	client.baseURL = srv.URL
+
+	events, err := client.GetBlockEvents(t.Context(), "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", 12345)
+	if err != nil {
+		t.Fatalf("expected nil error for success:true empty data, got %v", err)
+	}
+	if len(events) != 0 {
+		t.Errorf("expected 0 events for empty block, got %d", len(events))
+	}
+}
+
+// TestTronGridClient_GetLatestBlock_HTTP200APIError verifies that HTTP 200
+// with a non-empty Error field is treated as an error. The getnowblock
+// endpoint uses Error (not success:false) to signal API-level failures.
+func TestTronGridClient_GetLatestBlock_HTTP200APIError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"Error":"request rate exceeded"}`))
+	}))
+	defer srv.Close()
+
+	client := NewTronGridClient("")
+	client.baseURL = srv.URL
+
+	block, err := client.GetLatestBlock(t.Context())
+	if err == nil {
+		t.Fatal("expected error for HTTP 200 + Error field, got nil")
+	}
+	if block != 0 {
+		t.Errorf("expected block=0 on error, got %d", block)
+	}
+}
+
+// TestTronGridClient_GetLatestBlock_EmptyStructure verifies that an empty
+// JSON object {} (no blockID, no block_header) returns an error, not 0,nil.
+// Returning 0,nil would make scanBlocks think the chain is at height 0.
+func TestTronGridClient_GetLatestBlock_EmptyStructure(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+
+	client := NewTronGridClient("")
+	client.baseURL = srv.URL
+
+	block, err := client.GetLatestBlock(t.Context())
+	if err == nil {
+		t.Fatal("expected error for empty structure, got nil")
+	}
+	if block != 0 {
+		t.Errorf("expected block=0 on error, got %d", block)
+	}
+}

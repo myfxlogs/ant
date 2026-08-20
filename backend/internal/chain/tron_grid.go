@@ -55,12 +55,41 @@ type tronGridRawEvent struct {
 }
 
 // tronGridEventResponse is the raw TronGrid API response for contract events.
+// TronGrid v1 endpoints return HTTP 200 with success:false when rate-limited
+// or when the API rejects the request; Error/Message carry the reason.
 type tronGridEventResponse struct {
 	Data []tronGridRawEvent `json:"data"`
 	Meta struct {
 		Fingerprint string `json:"fingerprint"`
 	} `json:"meta"`
-	Success bool `json:"success"`
+	Success bool   `json:"success"`
+	Error   string `json:"Error"`
+	Message string `json:"message"`
+}
+
+// validateEventResponse checks that a TronGrid v1 event API response indicates
+// success. TronGrid returns HTTP 200 with success:false when rate-limited or
+// when the API rejects the request. Treating that as empty data would silently
+// skip blocks (lost deposits) or fail-open the double-spend check.
+//
+// Called per-page so that a failure on any pagination page aborts the whole
+// call — callers must return nil, error (not partial first-page data).
+// The error includes the operation name, the request page fingerprint (which
+// page failed), and the API-provided error/message. It never includes the
+// API key.
+func validateEventResponse(result *tronGridEventResponse, op, pageFingerprint string) error {
+	if !result.Success {
+		apiErr := result.Error
+		if apiErr == "" {
+			apiErr = result.Message
+		}
+		if apiErr == "" {
+			apiErr = "no error detail provided by API"
+		}
+		return fmt.Errorf("trongrid: %s: API returned success=false (page fingerprint=%q): %s",
+			op, pageFingerprint, apiErr)
+	}
+	return nil
 }
 
 // GetBlockEvents fetches all USDT Transfer events for a specific block.
@@ -106,6 +135,14 @@ func (c *TronGridClient) GetBlockEvents(ctx context.Context, contractAddress str
 		var result tronGridEventResponse
 		if err := json.Unmarshal(body, &result); err != nil {
 			return nil, fmt.Errorf("trongrid: unmarshal: %w", err)
+		}
+
+		// Fail-closed: HTTP 200 + success:false means the API rejected the
+		// request (rate limit, etc.). Treating it as empty data would silently
+		// skip the block and advance the checkpoint, losing deposits forever.
+		// Return nil (not partial allEvents) so scanBlocks does not saveCheckpoint.
+		if err := validateEventResponse(&result, "GetBlockEvents", fingerprint); err != nil {
+			return nil, err
 		}
 
 		for _, raw := range result.Data {
@@ -188,6 +225,14 @@ func (c *TronGridClient) HasOutgoingTRC20Transfer(ctx context.Context, from, to,
 			return false, fmt.Errorf("trongrid: unmarshal: %w", err)
 		}
 
+		// Fail-closed: HTTP 200 + success:false must NOT be treated as "no
+		// outgoing transfer" (false, nil). That would fail-open the double-
+		// spend check and allow re-sweeping an address that may have already
+		// been swept. Return (false, error) so CheckDoubleSpend blocks the retry.
+		if err := validateEventResponse(&result, "HasOutgoingTRC20Transfer", fingerprint); err != nil {
+			return false, err
+		}
+
 		for _, raw := range result.Data {
 			if raw.EventName != "Transfer" {
 				continue
@@ -233,10 +278,16 @@ func (c *TronGridClient) GetLatestBlock(ctx context.Context) (int64, error) {
 		return 0, fmt.Errorf("trongrid: status %d: %s", resp.StatusCode, string(body))
 	}
 
+	// getnowblock uses a different response shape than v1 event endpoints:
+	// it has no "success" field. Instead, errors are signalled by a top-level
+	// "Error" string, and a valid response must contain blockID + block_header
+	// + raw_data.number. Use pointer fields to distinguish "field absent" from
+	// "field present but zero-valued".
 	var result struct {
 		BlockID     string `json:"blockID"`
-		BlockHeader struct {
-			RawData struct {
+		Error       string `json:"Error"`
+		BlockHeader *struct {
+			RawData *struct {
 				Number    int64 `json:"number"`
 				Timestamp int64 `json:"timestamp"`
 			} `json:"raw_data"`
@@ -244,6 +295,26 @@ func (c *TronGridClient) GetLatestBlock(ctx context.Context) (int64, error) {
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return 0, fmt.Errorf("trongrid: unmarshal block: %w", err)
+	}
+
+	// Fail-closed structural validation. TronGrid can return HTTP 200 with an
+	// Error field (rate limit) or an empty/invalid block structure. Returning
+	// block=0,nil would make scanBlocks think the chain is at height 0 and
+	// potentially skip all pending deposits.
+	if result.Error != "" {
+		return 0, fmt.Errorf("trongrid: GetLatestBlock: API error: %s", result.Error)
+	}
+	if result.BlockID == "" {
+		return 0, fmt.Errorf("trongrid: GetLatestBlock: empty blockID in response")
+	}
+	if result.BlockHeader == nil {
+		return 0, fmt.Errorf("trongrid: GetLatestBlock: missing block_header in response")
+	}
+	if result.BlockHeader.RawData == nil {
+		return 0, fmt.Errorf("trongrid: GetLatestBlock: missing block_header.raw_data in response")
+	}
+	if result.BlockHeader.RawData.Number <= 0 {
+		return 0, fmt.Errorf("trongrid: GetLatestBlock: invalid block number %d", result.BlockHeader.RawData.Number)
 	}
 
 	return result.BlockHeader.RawData.Number, nil
