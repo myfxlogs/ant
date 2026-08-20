@@ -117,12 +117,18 @@ func (r *StrategyScheduleRepository) GetActiveSchedules(ctx context.Context) ([]
 		FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`)
 }
 
-// GetEarliestNextRunAt returns the earliest next_run_at among all active schedules.
-// Returns zero time if no active schedule has a next_run_at set.
+// GetEarliestNextRunAt returns the earliest next_run_at among active timer-type
+// schedules (interval/cron only). Event-type schedules are push-driven and must
+// never participate in the timer loop — a dirty event next_run_at would cause a
+// 0-delay hot loop (SCHEDULE-HOTLOOP-1).
+// Returns zero time if no active timer schedule has a next_run_at set.
 func (r *StrategyScheduleRepository) GetEarliestNextRunAt(ctx context.Context) (time.Time, error) {
 	var earliest *time.Time
 	err := r.db.QueryRow(ctx,
-		`SELECT MIN(next_run_at) FROM strategy_schedules WHERE is_active = true AND next_run_at IS NOT NULL`,
+		`SELECT MIN(next_run_at) FROM strategy_schedules
+		 WHERE is_active = true AND next_run_at IS NOT NULL
+		   AND schedule_type IN ($1, $2)`,
+		model.ScheduleTypeInterval, model.ScheduleTypeCron,
 	).Scan(&earliest)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("GetEarliestNextRunAt: %w", err)
@@ -133,7 +139,9 @@ func (r *StrategyScheduleRepository) GetEarliestNextRunAt(ctx context.Context) (
 	return *earliest, nil
 }
 
-// GetDueSchedules returns active schedules whose next_run_at is <= the given time.
+// GetDueSchedules returns active timer-type schedules (interval/cron only) whose
+// next_run_at is <= the given time. Event-type schedules are excluded — they are
+// push-driven and must not be dispatched by the timer loop (SCHEDULE-HOTLOOP-1).
 func (r *StrategyScheduleRepository) GetDueSchedules(ctx context.Context, before time.Time) ([]*model.StrategySchedule, error) {
 	return querySchedules(ctx, r,
 		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
@@ -142,8 +150,11 @@ func (r *StrategyScheduleRepository) GetDueSchedules(ctx context.Context, before
 			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
 			magic_number, manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
-		FROM strategy_schedules WHERE is_active = true AND next_run_at IS NOT NULL AND next_run_at <= $1 ORDER BY next_run_at ASC`,
-		before)
+		FROM strategy_schedules
+		WHERE is_active = true AND next_run_at IS NOT NULL AND next_run_at <= $1
+		  AND schedule_type IN ($2, $3)
+		ORDER BY next_run_at ASC`,
+		before, model.ScheduleTypeInterval, model.ScheduleTypeCron)
 }
 
 // CountByUserID returns the total number of schedules for a user.

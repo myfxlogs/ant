@@ -145,7 +145,7 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
 		withSency(otelInterceptor, authInterceptor)))
 
-	autoTradingRepo := setupAutoTrading(pool, mux, strategyExecServer, log, otelInterceptor, authInterceptor)
+	autoTradingRepo, autoTradingServer := setupAutoTrading(pool, mux, strategyExecServer, log, otelInterceptor, authInterceptor)
 
 	scheduleRepo := repository.NewStrategyScheduleRepository(pool)
 	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, strategySvc,
@@ -163,6 +163,15 @@ func setupStrategyAndTrading(p strategyTradingParams) strategyRuntimeDeps {
 		},
 		log)
 	strategyServer.SetEngine(scheduleEngine)
+
+	// SCHEDULE-HOTLOOP-1: wire autoTrade cache invalidation callback.
+	// ToggleAutoTrade and UpdateGlobalSettings call this after DB success to
+	// invalidate the schedule engine's autoTrade cache + recompute the timer,
+	// preventing a 30s TTL window where disabled autoTrade still dispatches.
+	autoTradingServer.SetOnAutoTradeChanged(func(userID uuid.UUID) {
+		scheduleEngine.InvalidateAutoTradeCache(userID)
+		scheduleEngine.Notify()
+	})
 
 	registerDivergenceAndDecayServices(ctx, mux, pool, backtestRunRepo, mktplaceSvc, pgListen, log, otelInterceptor, authInterceptor)
 
@@ -209,7 +218,7 @@ func initKnowledgeBase(ctx context.Context, pool *pgxpool.Pool, pgListen *pglist
 	return kbSvc
 }
 
-func setupAutoTrading(pool *pgxpool.Pool, mux *http.ServeMux, strategyExecServer *strategy.StrategyExecutionServer, log *zap.Logger, otelInterceptor, authInterceptor connectrpc.Interceptor) *repository.AutoTradingRepository {
+func setupAutoTrading(pool *pgxpool.Pool, mux *http.ServeMux, strategyExecServer *strategy.StrategyExecutionServer, log *zap.Logger, otelInterceptor, authInterceptor connectrpc.Interceptor) (*repository.AutoTradingRepository, *autotrading.AutoTradingServer) {
 	autoTradingRepo := repository.NewAutoTradingRepository(pool)
 	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, nil, log)
 	strategyExecServer.AddGateRule(&risk.UserRiskConfigRule{Store: func(ctx context.Context, accountID string) (*risk.UserRiskConfig, error) {
@@ -240,5 +249,5 @@ func setupAutoTrading(pool *pgxpool.Pool, mux *http.ServeMux, strategyExecServer
 	}})
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 		withSency(otelInterceptor, authInterceptor)))
-	return autoTradingRepo
+	return autoTradingRepo, autoTradingServer
 }

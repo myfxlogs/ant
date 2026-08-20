@@ -20,6 +20,7 @@ type mockScheduleRepo struct {
 	getActiveSchedules func(ctx context.Context) ([]*model.StrategySchedule, error)
 	updateLastRun      func(ctx context.Context, id uuid.UUID, runErr error) error
 	updateNextRunAt    func(ctx context.Context, id uuid.UUID, next time.Time) error
+	clearNextRunAt     func(ctx context.Context, id uuid.UUID) error
 }
 
 func (m *mockScheduleRepo) GetByID(ctx context.Context, id uuid.UUID) (*model.StrategySchedule, error) {
@@ -51,6 +52,15 @@ func (m *mockScheduleRepo) UpdateNextRunAt(ctx context.Context, id uuid.UUID, ne
 		return m.updateNextRunAt(ctx, id, next)
 	}
 	return nil
+}
+func (m *mockScheduleRepo) ClearNextRunAt(ctx context.Context, id uuid.UUID) error {
+	if m.clearNextRunAt != nil {
+		return m.clearNextRunAt(ctx, id)
+	}
+	return nil
+}
+func (m *mockScheduleRepo) ClearEventNextRunAt(ctx context.Context) (int, error) {
+	return 0, nil
 }
 
 type mockTemplateReader struct {

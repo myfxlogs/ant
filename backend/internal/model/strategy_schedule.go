@@ -216,8 +216,17 @@ func (s *StrategySchedule) ComputeNextRunAt() (time.Time, error) {
 
 // ComputeNextRunAtFromConfig is a standalone helper for computing next_run_at from raw fields.
 // Used by both the model (StrategySchedule.ComputeNextRunAt) and the service layer (ScheduleRow).
-// Accepts proto-encoded ScheduleConfig bytes.
+// Accepts proto-encoded ScheduleConfig bytes. Wraps ComputeNextRunAtFromConfigAt with time.Now.
 func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (time.Time, error) {
+	return ComputeNextRunAtFromConfigAt(scheduleType, scheduleConfig, time.Now())
+}
+
+// ComputeNextRunAtFromConfigAt is the deterministic core: computes the next run time
+// strictly after `now` based on schedule_type and config. Pure function — no time.Now,
+// no side effects. Used by ScheduleEngine with an injectable now() for testability.
+// Returns zero time for event-driven schedules (kline_close, hf_quote) that don't use
+// timer-based firing. Returns error for unknown schedule_type or unparseable config.
+func ComputeNextRunAtFromConfigAt(scheduleType string, scheduleConfig []byte, now time.Time) (time.Time, error) {
 	var cfg antv1.ScheduleConfig
 	if len(scheduleConfig) > 0 {
 		if err := proto.Unmarshal(scheduleConfig, &cfg); err != nil {
@@ -234,7 +243,7 @@ func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (tim
 		if ms < 1000 {
 			ms = 3600_000
 		}
-		return time.Now().Add(time.Duration(ms) * time.Millisecond), nil
+		return now.Add(time.Duration(ms) * time.Millisecond), nil
 
 	case ScheduleTypeCron:
 		// Backward compat: old records mapped kline_close/hf_quote as "cron" with triggerMode.
@@ -250,7 +259,7 @@ func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (tim
 		if ms < 1000 {
 			ms = 3600_000
 		}
-		return time.Now().Add(time.Duration(ms) * time.Millisecond), nil
+		return now.Add(time.Duration(ms) * time.Millisecond), nil
 
 	case ScheduleTypeEvent:
 		return time.Time{}, nil // event-driven: kline_close / hf_quote

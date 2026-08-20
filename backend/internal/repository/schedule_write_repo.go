@@ -105,6 +105,37 @@ func (r *StrategyScheduleRepository) UpdateNextRunAt(ctx context.Context, id uui
 	return nil
 }
 
+// ClearNextRunAt sets next_run_at to SQL NULL for a single schedule.
+// Used to quarantine invalid-config schedules (SCHEDULE-HOTLOOP-1) so they
+// are excluded from timer queries and never re-enter the 0-delay hot loop.
+// Must use NULL, not a zero time — GetEarliestNextRunAt/GetDueSchedules
+// filter on IS NOT NULL, and a zero time would be picked up as "due now".
+func (r *StrategyScheduleRepository) ClearNextRunAt(ctx context.Context, id uuid.UUID) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE strategy_schedules SET next_run_at = NULL, updated_at = $2 WHERE id = $1`,
+		id, time.Now())
+	if err != nil {
+		return fmt.Errorf("clear next run at: %w", err)
+	}
+	return nil
+}
+
+// ClearEventNextRunAt clears next_run_at for all event-type schedules that
+// have a stale (non-NULL) next_run_at. Event schedules are push-driven and
+// must never participate in the timer loop — a dirty next_run_at would make
+// GetEarliestNextRunAt return a past time → 0-delay hot loop.
+// Returns the number of rows cleaned.
+func (r *StrategyScheduleRepository) ClearEventNextRunAt(ctx context.Context) (int, error) {
+	ct, err := r.db.Exec(ctx,
+		`UPDATE strategy_schedules SET next_run_at = NULL, updated_at = $1
+		 WHERE schedule_type = $2 AND next_run_at IS NOT NULL`,
+		time.Now(), model.ScheduleTypeEvent)
+	if err != nil {
+		return 0, fmt.Errorf("clear event next run at: %w", err)
+	}
+	return int(ct.RowsAffected()), nil
+}
+
 // UpdateLastRun records the last run time and error state, incrementing run_count.
 func (r *StrategyScheduleRepository) UpdateLastRun(ctx context.Context, id uuid.UUID, runErr error) error {
 	now := time.Now()
