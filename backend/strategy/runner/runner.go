@@ -7,6 +7,7 @@ package runner
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 
 	"github.com/shopspring/decimal"
 
@@ -32,6 +33,13 @@ type Runner struct {
 
 	mu       sync.Mutex
 	strategy sdk.Strategy
+
+	// barRev advances once per OnBar call, enabling SeriesCache to detect
+	// rolling-window content changes at constant Len() (LIVE-INDICATOR-1).
+	// OnTick/OnTrade/OnTimer/OnBookEvent do NOT advance it — the bar window
+	// is unchanged within a bar. Atomic for race-detector cleanliness under
+	// the single-owner event loop (no mutex needed on the hot path).
+	barRev atomic.Uint64
 }
 
 // New creates a new Runner.
@@ -51,6 +59,13 @@ func New(cfg Config) *Runner {
 // SetStrategy sets the strategy to execute.
 func (r *Runner) SetStrategy(s sdk.Strategy) {
 	r.strategy = s
+}
+
+// barRevision returns the current bar revision counter. Each OnBar call
+// advances it by 1; other event handlers do not. Used by runnerBarSource
+// to implement indicators.RevisionedBarSource for SeriesCache invalidation.
+func (r *Runner) barRevision() uint64 {
+	return r.barRev.Load()
 }
 
 // UpdateLiveState sets the live account state from the parent process.
@@ -80,6 +95,7 @@ func (r *Runner) Init(ctx context.Context) error {
 }
 
 // OnBar calls the strategy's OnBar for a new bar.
+// Advances barRev so SeriesCache invalidates on rolling-window content changes.
 func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string) (*sdk.Signal, error) {
 	if r.strategy == nil {
 		return nil, nil
@@ -89,6 +105,7 @@ func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string
 	r.mu.Lock()
 	r.ctx.setBars(bars)
 	r.mu.Unlock()
+	r.barRev.Add(1)
 	return r.strategy.OnBar(r.ctx, timeframe)
 }
 

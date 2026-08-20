@@ -10,6 +10,12 @@ type SeriesCache struct {
 	src BarSource
 	n   int // number of bars processed
 
+	// lastRev tracks the Revision() of a RevisionedBarSource. hasRev=false
+	// means no revision has been recorded yet (first call or after reset).
+	// For non-revisioned sources, hasRev stays false and lastRev stays 0.
+	lastRev uint64
+	hasRev  bool
+
 	ema     map[int]*emaSeries
 	smma    map[int]*emaSeries // SMMA uses same incremental pattern with different alpha
 	sma     map[int]*smaSeries
@@ -29,7 +35,9 @@ type SeriesCache struct {
 }
 
 // NewSeriesCache creates a cache backed by the given BarSource.
-// The BarSource must grow over time (append-only) for incremental updates to work.
+// For append-only sources (backtest), incremental updates work via Len() growth.
+// For RevisionedBarSource sources (live rolling window), any Revision() change
+// triggers a full reset + lazy rebuild — content may change at constant Len().
 func NewSeriesCache(src BarSource) *SeriesCache {
 	return &SeriesCache{
 		src:     src,
@@ -52,27 +60,29 @@ func NewSeriesCache(src BarSource) *SeriesCache {
 
 // EnsureUpdated processes any new bars since the last update.
 // Must be called before any query method.
+//
+// For RevisionedBarSource sources (e.g. live rolling window), any revision
+// change triggers a full reset — the content has changed even if Len() is
+// unchanged, so incremental state is invalid. After reset, series are rebuilt
+// lazily on first query. For non-revisioned sources (backtest append-only),
+// the existing n>c.n incremental / n<c.n reset path is preserved.
 func (c *SeriesCache) EnsureUpdated() {
+	// Revisioned source: detect content change via Revision().
+	// Must check before the Len()-based logic — a rolling window keeps
+	// constant length while content changes, so Len() alone cannot detect it.
+	if rs, ok := c.src.(RevisionedBarSource); ok {
+		rev := rs.Revision()
+		if c.hasRev && rev != c.lastRev {
+			c.reset()
+		}
+		c.lastRev = rev
+		c.hasRev = true
+	}
+
 	n := c.src.Len()
 	if n < c.n {
-		// BarSource shrank — reset everything
-		c.n = 0
-		c.ema = make(map[int]*emaSeries)
-		c.smma = make(map[int]*emaSeries)
-		c.sma = make(map[int]*smaSeries)
-		c.lwma = make(map[int]*lwmaSeries)
-		c.rsi = make(map[int]*rsiSeries)
-		c.atr = make(map[int]*atrSeries)
-		c.adx = make(map[int]*adxSeries)
-		c.macd = make(map[string]*macdSeries)
-		c.chaikin = make(map[string]*chaikinSeries)
-		c.ad = nil
-		c.obv = nil
-		c.sar = make(map[string]*sarSeries)
-		c.force = make(map[string]*forceSeries)
-		c.ama = make(map[string]*amaSeries)
-		c.dema = make(map[int]*demaSeries)
-		c.tema = make(map[int]*temaSeries)
+		// BarSource shrank (non-revisioned fallback) — reset everything.
+		c.reset()
 	}
 
 	// Process new bars in chronological order (oldest first).
@@ -84,6 +94,31 @@ func (c *SeriesCache) EnsureUpdated() {
 		c.processBar(i)
 	}
 	c.n = n
+}
+
+// reset clears all cached series state so the next query rebuilds from scratch.
+// This is the single source of truth for what state must be cleared — having
+// two reset lists would drift as new series are added.
+func (c *SeriesCache) reset() {
+	c.n = 0
+	c.lastRev = 0
+	c.hasRev = false
+	c.ema = make(map[int]*emaSeries)
+	c.smma = make(map[int]*emaSeries)
+	c.sma = make(map[int]*smaSeries)
+	c.lwma = make(map[int]*lwmaSeries)
+	c.rsi = make(map[int]*rsiSeries)
+	c.atr = make(map[int]*atrSeries)
+	c.adx = make(map[int]*adxSeries)
+	c.macd = make(map[string]*macdSeries)
+	c.chaikin = make(map[string]*chaikinSeries)
+	c.ad = nil
+	c.obv = nil
+	c.sar = make(map[string]*sarSeries)
+	c.force = make(map[string]*forceSeries)
+	c.ama = make(map[string]*amaSeries)
+	c.dema = make(map[int]*demaSeries)
+	c.tema = make(map[int]*temaSeries)
 }
 
 func (c *SeriesCache) processBar(bsIdx int) {

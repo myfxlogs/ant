@@ -23,7 +23,7 @@ func (is *indicatorSet) bars() sdk.BarSeries {
 func (is *indicatorSet) ensureCache() *indicators.SeriesCache {
 	bars := is.bars()
 	if is.src == nil {
-		is.src = &runnerBarSource{bars: bars}
+		is.src = &runnerBarSource{bars: bars, runner: is.runner}
 		is.cache = indicators.NewSeriesCache(is.src)
 	}
 	is.src.bars = bars

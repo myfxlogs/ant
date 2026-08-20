@@ -64,7 +64,7 @@
 **完工回填纪律**（施工方，不做 = 任务判失败）：
 
 1. `tech-debt-registry.md` 条目状态 `🟦open → ✅done`（标日期）+ 追加**真实根因/修复方式/对抗证明/测试结果**。若真实根因与审计方假设不同，**如实写明**（高价值纠偏）。只改状态列 + 追加，不删条目、不改审计方事实陈述。
-2. 普遍 pitfall → 沉淀进本文件同类 Pitfalls 段（防再犯）。
+2. 普遍 pitfall → 沉淀进本文件同类 Pitfalls 段（防再犯）。**沉淀时必须横扫 registry 所有同类前缀条目**（如修了 DATA-TRUTH-10，必须对账 DATA-TRUTH-1~9 的 pitfall 沉淀状态），不能只补最近一个——否则同类坑会随会话消失。2026-08-20 教训：第一轮只补了 DATA-TRUTH-10/LOG-UX-1，漏了 DATA-TRUTH-2~9，直到用户追问才发现。
 3. `handover-audit-plan.md` 变更日志加一行。
 4. **不自行宣告完成**——等审计方核对状态 + 实测。
 
@@ -232,13 +232,14 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 > 回测不开单 / volume=0 / 指标全零但 MT4/MT5 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
 
-mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。三类已确认的静默失败：
+mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。四类已确认的静默失败：
 
 | 类型 | 根因 | 症状 | 修复状态 |
 | ------ | ------ | ------ | --------- |
 | 未知常量 → 0 | `interp/constants.go` 缺常量 → 编译器 push 0 | 指标返回错误线（如 MODE_SIGNAL=0 → MACD==Signal → 永不开单） | ✅ 已补全 |
 | map 迭代非确定 | `ir.Funcs` 是 map，遍历编译 → 前向引用落 "unknown function" → 返回值=0 | volume=0 flaky（同代码同命令时 PASS 时 FAIL） | ✅ 两遍编译 |
 | OrderType 映射错误 | `builtinOrderType` 返回 SideBuy(1)/SideSell(-1) 而非 OP_BUY(0)/OP_SELL(1) | 持仓管理失效（平仓/止损条件永不触发） | ✅ 已修 |
+| 固定长度滚动窗口 + append-only 指标缓存（LIVE-INDICATOR-1） | live seed 500 bars 后窗口恒长 500；`SeriesCache.EnsureUpdated()` 只比较 `Len()`，`n==c.n` 时跳过更新 | VM/bar/tick eval 持续增长但 EMA/MACD/RSI/ATR/ADX 永远停在启动首帧，策略静默 0 信号 | 🟦open（revisioned source 任意 revision 变化 reset+lazy rebuild；同 source+cache 500→500 + legacy start BAR→TICK 对抗） |
 
 **编译确定性 — 强制**：
 
@@ -260,6 +261,14 @@ mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。
 - ✅ 用 `shouldRunOnBar(bar, symbol, timeframe)` 纯函数过滤（`live_runner.go:214`）
 - ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
 - 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
+
+## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1)
+
+- **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
+- **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。
+- **持久化失败必须有界退避**：GetDue/ComputeNext/UpdateNext 失败时不 dispatch，ScheduleEngine 用 context-aware backoff timer 等待，`Notify` 可提前唤醒；invalid config 记录错误并 clear next 隔离。只降日志级别不能修复热循环。
+- **autoTrade cache 必须由所有写入口主动失效**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须通过 callback 执行 `InvalidateAutoTradeCache(userID)+Notify()`，不能容忍关闭后 TTL 30s 内继续 dispatch。
+- 对抗测试必须覆盖：autoTrade=false、already-running、eligible dispatch、GetDue/UpdateNext 失败退避+Notify、event 脏 next、两个 autoTrade 写入口、runOne 不二次更新。完整证据与方案见 registry `SCHEDULE-HOTLOOP-1`。
 
 ## Backtest Status Management (回测状态 — 强制)
 

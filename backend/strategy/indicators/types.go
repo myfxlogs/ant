@@ -15,6 +15,20 @@ type BarSource interface {
 	Len() int
 }
 
+// RevisionedBarSource is an optional BarSource capability for sources whose
+// content can change without Len() growing — e.g. a fixed-length rolling
+// window that drops the oldest bar and appends a newest one, keeping a
+// constant length. When SeriesCache detects that the source implements this
+// interface, it tracks Revision() and resets+rebuilds on any change, rather
+// than assuming append-only growth.
+//
+// Sources that are genuinely append-only (backtest btBarSource) should NOT
+// implement this interface — they stay on the O(new-bars) incremental path.
+type RevisionedBarSource interface {
+	BarSource
+	Revision() uint64
+}
+
 // ── Helper functions ────────────────────────────────────────────────
 
 // selectPrice extracts the price at index i based on appliedPrice.

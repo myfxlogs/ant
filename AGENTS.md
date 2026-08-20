@@ -28,7 +28,7 @@
 **完工回填**（不做 = 失败，**每项完工后立即执行，禁止批量补**）：
 - ① registry 状态 `🟦open→✅done` + 真实根因/修复方式/对抗证明/测试结果（根因与假设不同如实写）
 - ② **`handover-audit-plan.md` 变更日志加一行**（含：日期 + ID + 一句话结论 + 验证状态）
-- ③ 普遍 pitfall 沉淀进本文件同类段
+- ③ 普遍 pitfall 沉淀进本文件同类段。**沉淀时必须横扫 registry 所有同类前缀条目**（如修了 DATA-TRUTH-10，必须对账 DATA-TRUTH-1~9 的 pitfall 沉淀状态），不能只补最近一个——否则同类坑会随会话消失。2026-08-20 教训：第一轮只补了 DATA-TRUTH-10/LOG-UX-1，漏了 DATA-TRUTH-2~9，直到用户追问才发现
 - ④ 新 gap 新增条目
 - ⑤ 不新建并行文档
 - **完工检查清单**（每项完工后逐条自问，任何一条 ❌ = 未完成）：
@@ -139,6 +139,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - **未知常量 → 0** — `interp/constants.go` 缺常量 → 编译器 push 0。例如 `MODE_SIGNAL` 缺失时 `iMACD` 返回主线而非信号线 → `MacdCurrent == SignalCurrent` → 永不开单。
 - **`builtinOrderType` 映射错误** — 必须返回 `OP_BUY=0 / OP_SELL=1`，不能返回 `PositionSide` (`SideBuy=1 / SideSell=-1`)，否则持仓管理/平仓逻辑失效。
 - **Go map 迭代非确定 → 用户函数前向引用返回 0** — `ir.Funcs` 是 map，编译器必须两遍编译：Pass 1 预注册所有 entry PC，Pass 2 编译体。**通用规则：任何有序 pipeline 禁止裸遍历 map 处理有序依赖**。
+- **固定长度滚动窗口 + append-only 指标缓存 → 指标永久冻结（LIVE-INDICATOR-1 ✅done）** — live 启动 seed 恰好 `maxContextBars=500`，之后每根新 bar 都 drop oldest + append newest，窗口长度恒为 500；`SeriesCache.EnsureUpdated()` 只比较 `Len()`，看到 `n==c.n==500` 就认为无更新，导致 EMA/MACD/RSI/ATR/ADX 等所有 cache-backed 指标永远停在启动首帧。生产证据：4817 次 VM eval / 46 bar eval，但 MACD/EMA 与 00:44 首帧逐位一致，00:51 SELL 条件成立却 0 signal。**修复**：indicators 层新增可选 `RevisionedBarSource`（`Revision() uint64`），`EnsureUpdated()` 对 revisioned source 检测 revision 变化并 reset+lazy rebuild；runner 层 `runnerBarSource` 实现 `RevisionedBarSource`，`Runner.OnBar` 用 `atomic.Uint64` 推进 barRev（OnTick/OnTrade/OnTimer 不推进）；backtest `btBarSource` 不实现 revision，零开销。**通用规则：增量缓存 freshness 不能只靠长度；revisioned source 的任何 revision 变化都必须 reset+lazy rebuild，不能因长度增长就猜测只是 append**。对抗测试必须复用同一个 source+cache 做 500→500 mutation（新建 cache 会假绿），并精确覆盖 legacy `start()` 的 BAR→TICK 信号路径。完整证据/修复/对抗证明见 registry `LIVE-INDICATOR-1`。
 
 ### 调试路径
 
@@ -155,6 +156,14 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ✅ 用 `shouldRunOnBar(bar, symbol, timeframe)` 纯函数过滤（`live_runner.go:214`）
 - ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
 - 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
+
+## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1)
+
+- **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
+- **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。
+- **持久化失败必须有界退避**：GetDue/ComputeNext/UpdateNext 失败时不 dispatch，ScheduleEngine 用 context-aware backoff timer 等待，`Notify` 可提前唤醒；invalid config 记录错误并 clear next 隔离。只降日志级别不能修复热循环。
+- **autoTrade cache 必须由所有写入口主动失效**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须通过 callback 执行 `InvalidateAutoTradeCache(userID)+Notify()`，不能容忍关闭后 TTL 30s 内继续 dispatch。
+- 对抗测试必须覆盖：autoTrade=false、already-running、eligible dispatch、GetDue/UpdateNext 失败退避+Notify、event 脏 next、两个 autoTrade 写入口、runOne 不二次更新。完整证据与方案见 registry `SCHEDULE-HOTLOOP-1`。
 
 ## Backtest Status Management (回测状态 — 强制)
 
@@ -173,6 +182,51 @@ These constraints are enforced at implementation time. Violation = fix before co
 - **`procedureHint` 必须包含 method name**：格式 `${service.typeName}.${method.name}`（小写）。仅用 service name 会导致 `isAuthFree` 的 `includes('refreshtoken')` 失效。
 - **`"missing request message"` 不是 auth 失败**：页面刷新时 server-stream 被浏览器 abort 会产生该字符串错误，应归类为 `isLikelyStreamTransportFailure`（传输层中断），而非 `isStreamAuthFailure`。误归类会触发 "Session expired" toast。
 - **前端 assets 清理**：`alphaforge-frontend` 以非 root 运行，`docker cp frontend/dist/.` 只叠加不清理，旧 chunk 会堆积。大版本部署前以 root 清理：`docker exec -u root alphaforge-frontend rm -rf /usr/share/nginx/html/assets`。
+
+## Broker Snapshot & Stream Pitfalls (DATA-TRUTH-2~10 / LOG-UX-1)
+
+> 实盘策略 stale / 数据断流 / 前端列空白 / 风控失明？先查 [`docs/runbook/stale-authoritative-snapshot.md`](docs/runbook/stale-authoritative-snapshot.md)
+> 完整根因 + 对抗证明见 `docs/audits/tech-debt-registry.md` DATA-TRUTH-2~10 / LOG-UX-1
+> **核心原则（用户 2026-08-19 确立）**：服务器有的数据一律以服务器为准，本地只做透传与持久化，不做重算；缺失/过期必须 fail-closed，不静默转零。
+
+### 已确认的静默失败模式
+
+**数据源归属类（DATA-TRUTH-2/7）**：
+
+- **MT4 `OnOrderProfit` 不填 margin/free_margin/margin_level，却覆盖权威值（DATA-TRUTH-2）** — MT4 profit stream 帧 `margin=0 / free_margin=equity / margin_level=0`（字段根本未填，`free_margin==equity` 是铁证）。旧代码用这些帧覆盖 `mt_accounts` → `MarginLevel > 0` 门槛永不成立 → MT4 爆仓预警完全不触发。**MT4 的 `AccountSummary` 含 margin（实测 718 行 margin>0），只是 profit 流不含**——错的是数据源归属，不是平台能力。修复：MT4 profit handler 改用 `fetchAndPublish` 模式，每帧调 `AccountSummary` 取权威金融值，stream 帧仅取 positions。
+- **权威 RPC 失败后回退到已知不完整数据（DATA-TRUTH-7）** — MT4 `fetchAndPublish` 在 `AccountSummary` 失败时曾回退到 margin=0 的 `OnOrderProfit`；订单流用 `equity-balance` 本地重算 Profit。短暂 RPC 故障会把正确快照覆盖成假值。**通用规则：权威 RPC 失败时拒绝发布快照，不降级为假数据**。修复：RPC/app error/空结果均拒绝发布；订单流 Profit 改用 broker `GetProfit()`。
+
+**快照生命周期类（DATA-TRUTH-5/6/10）**：
+
+- **瞬时 pub/sub 不保留 latest → late subscriber 错过初始快照（DATA-TRUTH-10 根因①）** — `PositionSnapshotBroker` 曾是纯瞬时 pub/sub：gateway 在策略订阅前就 publish 了初始 AccountSummary，策略晚订阅 → 永远收不到 → 90s 后 `AccountSnapshotMaxAge` 判 stale → `authoritative account snapshot unavailable`。**通用规则：任何"先 publish 后 subscribe"的 broker 必须保留 latest + replay 给 late subscriber**。修复：broker retained latest + `Subscribe` 时立即 replay。
+- **nil-result stream 帧被当作 stream 活跃 → 静默超时永不触发 → 权威快照不续期（DATA-TRUTH-10 根因②）** — MT4/MT5 空账户的 `OnOrderProfit` 持续发 nil-result heartbeat，旧代码把它当作 stream 活跃 → 既无金融更新又不触发 silence timeout → `AccountSummary` 只在 connect 时调一次 → `CapturedAt` 永不刷新 → 90s 后 stale。**通用规则：stream 续期必须基于有效数据帧或独立定时器，nil-result/heartbeat 帧不能算 stream 活跃**。修复：MT4/MT5 profit stream 每 45s 独立调 broker `AccountSummary` 续期。
+- **financial-only refresh 清空持仓（DATA-TRUTH-10 连带）** — 周期 `AccountSummary` 只刷新金融字段时，若把持仓也一起覆盖会清空已有 positions。**通用规则：金融快照与持仓快照 authority 分离**——financial-only refresh 用 `PositionsAuthoritative=false` 标记，consumer 不得用它清空持仓。修复：新增 `PositionsAuthoritative` 字段。
+- **Risk Gate 本地重算 equity/margin/free_margin + 固定 leverage=100（DATA-TRUTH-5）** — `MTAccountStateProvider` 曾固定 `leverage=100`，本地算 `equity=balance+profit`、`margin=notional/100`、`free_margin=equity-margin`，并在 `PositionCache` 与私有 balance/equity cache 间回退。不同 broker 的合约大小、分层杠杆、品种杠杆和保证金货币都可能不同，固定 leverage 没有正确性基础。**通用规则：Risk Gate 必须消费同一份 broker 权威快照，禁止本地重算金融字段**。修复：删除 legacy poll、balance/equity cache、固定 leverage 和本地重算；直接从 `PositionCache.GetFreshSnapshot()` 读取。
+- **快照无来源/采集时间/接收时间，旧快照可无限使用（DATA-TRUTH-6）** — `PositionSnapshot` 曾无 provenance 字段，broker 断开后策略和风控可无限期使用最后一份旧快照。**通用规则：权威快照必须带 `FinancialsSource`/`CapturedAt`/`ReceivedAt`，过期（>90s）fail-closed**。修复：`PositionSnapshot` 增加 leverage/source/authoritative/captured_at；`PositionCache` 90s freshness 检查。
+
+**事实完整性类（DATA-TRUTH-4/6/8）**：
+
+- **双实现写不同表 + `log.Debug` 吞错误 → 净值曲线静默断供 28 天（DATA-TRUTH-4）** — 两个同名 `RecordBalanceSnapshot`：生产那份写进**不存在**的表 `account_balance_snapshots`（`to_regclass` 返回 NULL）→ 100% 失败；错误被 `log.Debug` 吞（生产 level=info）→ 零告警。分析栈全读另一张表 `account_balance_history` → 28 天零写入。**通用规则：一个事实只允许一个写入方 + 一张真相表；写入失败不得用 `log.Debug` 吞**。修复：写入方指向 `account_balance_history` + `log.Warn`；删死代码消除双实现。
+- **无 session 查询返回空仓成功（DATA-TRUTH-6）** — `OpenedOrders`/`OrderHistory` 在 `exec==nil` 时曾返回 `empty,nil`，把"无法查询 broker"伪装成"broker 确认 0 订单"，污染 `OrdersTotal()`、UI、风控、CloseAll 与对账。**通用规则：无 session 必须返回明确 error，不能伪装为空仓**。修复：返回 `ErrSessionNotFound`。
+- **历史快照清理操作不存在的旧表（DATA-TRUTH-8）** — writer 已修到 `account_balance_history`，但 `CleanupOldSnapshots` 仍 DELETE `account_balance_snapshots` → 清理 100% 失败、真实历史表无限增长。**通用规则：修复写入路径时必须同步检查清理/归档/迁移路径**。修复：`CleanupOldSnapshots` 改为清理 `account_balance_history`。
+
+**保证金权威化类（DATA-TRUTH-9）**：
+
+- **MT5 已有 `RequiredMargin` RPC 但风险链本地估算（DATA-TRUTH-9）** — `adapter/mt5.RequiredMargin` 已实现，但 `risk/rules.go` 仍按 contract size/price/leverage 本地估算 required margin；无法覆盖 broker 分层杠杆、品种保证金货币与动态规则。**通用规则：存在 broker 权威 RPC 时必须使用，禁止本地公式 fallback**。修复：MT5 `evaluatePlaceGate` 调 broker `RequiredMargin`；MT4 无等价 RPC → 显式 `Platform==mt4` capability boundary，交由 OrderSend 服务器校验，禁止套固定公式。
+
+**前端字段对账类（LOG-UX-1）**：
+
+- **proto 无 `message` 字段，前端却读 `dataIndex: 'message'` → 列永远空白（LOG-UX-1）** — `ScheduleRunLog` proto 只有 `error_message`/`signal_type`/`kind`/`action`/`status`，无通用 `message`。前端列 `dataIndex: 'message'` → 字段不存在 → 永远空白。**通用规则：前端列 dataIndex 必须与 proto 字段对账**，缺字段时显式 fallback 语义（错误显示 `error_message`，普通行显示 `kind/action/signal_type` 上下文，真空显示 `-`），禁止靠不存在的字段名静默空白。
+
+### 调试路径
+
+1. 看到 `authoritative account snapshot unavailable or stale: account=<uuid>` → 先查 `schedule_run_logs` 确认是持续还是偶发。
+2. 查 `account_balance_history` 该账户最新 `recorded_at` 与 `free_margin` —— 若 `recorded_at` 远滞后 → AccountSummary 续期链断了（DATA-TRUTH-10 根因②）。
+3. 查 `PositionSnapshotBroker` 是否 replay latest 给 late subscriber —— 策略启动日志应有 "replayed latest snapshot" 字样（DATA-TRUTH-10 根因①）。
+4. MT4 账户 `margin=0 / free_margin=equity / margin_level=0` → 查是否用了 profit stream 帧而非 `AccountSummary`（DATA-TRUTH-2）。
+5. 净值曲线断供 → 查 `account_balance_history` 是否有新写入 + 查日志是否有 `snapshot insert failed` 被 `log.Debug` 吞（DATA-TRUTH-4）。
+6. 策略 `OrdersTotal()=0` 但 broker 有持仓 → 查 `OpenedOrders` 是否因无 session 返回了空仓成功（DATA-TRUTH-6）。
+7. 前端日志/订单列空白 → 核对 `dataIndex` 与 proto 字段名是否一致（LOG-UX-1）。
 
 ## PG Connection Pool & Push-First LISTEN (PG-POOL-1)
 

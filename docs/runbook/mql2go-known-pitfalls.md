@@ -75,9 +75,48 @@ Map `SideBuy(1) → 0 (OP_BUY)`, `SideSell(-1) → 1 (OP_SELL)` before returning
 
 ---
 
+## Pitfall 3: Fixed-length live window freezes incremental indicator cache (CRITICAL)
+
+### Symptom
+
+Live strategy status remains Active, tick/bar evaluations and "last evaluated" continuously advance, the window has 500 bars, account state is fresh, but the strategy permanently produces zero signals. Runtime diagnostics show EMA/MACD/RSI/ATR/ADX values never change after startup.
+
+### Root Cause
+
+Live startup seeds exactly `maxContextBars=500`. Every new closed bar runs `appendDedupBar`, which drops the oldest bar and appends the newest, so the window length remains 500.
+
+`indicatorSet.ensureCache()` updates `src.bars`, but `SeriesCache.EnsureUpdated()` detects changes only through `Len()`:
+
+```go
+n := c.src.Len()
+for i := n - c.n - 1; i >= 0; i-- {
+    c.processBar(i)
+}
+c.n = n
+```
+
+After the first evaluation, `c.n=500`. Every rolling update is also `n=500`, so the loop never executes. All cache-backed indicators remain frozen at the startup bar while VM evaluation counters continue increasing. This is a cache-invalidation protocol error: the cache assumes append-only input, but live execution provides a bounded rolling window.
+
+Production evidence (LIVE-INDICATOR-1, 2026-08-20): schedule `599ddaa5`, run `3d2184b5` had 4817 evaluations (46 bar + 4771 tick), `Window Bars=500`, `Orders Total=0`; diagnostics `MACD.main=0.23718981101410463`, `MACD.signal=8.119201031042982`, `EMA26=69559.67407019278` matched the 00:44 startup frame exactly. The 00:51 SELL condition was true under the same algorithm but produced no signal.
+
+### Required Fix and Test
+
+- Establish an optional `RevisionedBarSource` protocol between runner and `SeriesCache`; normal append-only backtest sources remain unchanged.
+- For revisioned sources, **any revision change** resets and lazily rebuilds all cached series. Do not infer “append-only” merely because length grew; revision means content changed.
+- Runner advances revision only on `OnBar`; tick/trade/timer evaluations over the unchanged window must not rebuild.
+- Adversarial test must mutate and reuse the **same source and same cache**: initialize 500 bars, query indicators, drop oldest + append newest (length stays 500), increment revision, query again, and compare all cache-backed indicators with stateless results. Creating a second cache makes the test pass even when production invalidation is broken.
+- VMLiveSession integration must reproduce legacy MQL4 `start()` semantics: initial BAR → TICK, rolling BAR → next TICK emits the crossover signal. An OnBar-only fixture does not fully cover the production path.
+- Each VMLiveSession owns one Runner/SeriesCache and dispatches events serially; verify this with `-race`. Do not add a partial mutex only around `EnsureUpdated`, because lazy indicator query methods also mutate the maps.
+
+### Debugging Tip
+
+When evaluations advance but no trades occur, compare runtime indicator values against values recomputed from the latest bars. If diagnostics match the startup frame rather than current bars, inspect cache invalidation before investigating strategy conditions, risk gates, or broker execution.
+
+---
+
 ## General Lesson
 
-**The mql2go VM silently substitutes 0 for any unknown constant.** This is the most dangerous failure mode — no error, no crash, just wrong behavior. Any time a MQL4/MQL5 EA works on MT4/MT5 but not in backtest, **always check for missing constants first**.
+The mql2go VM's most dangerous failures are silent: unknown constants become zero, enum mismatches disable branches, and stale caches return plausible but obsolete indicator values. When an EA works on MT4/MT5 but not on the platform, verify both coverage blind spots and that runtime indicator values advance with new bars.
 
 The full list of MQL4/MQL5 constants is large and spread across many enum groups. The `interp/constants.go` file should be treated as a potential source of silent bugs. When adding support for a new indicator or MQL function, verify all constants it references exist in the map.
 
