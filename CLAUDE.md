@@ -262,12 +262,12 @@ mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。
 - ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
 - 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
 
-## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1)
+## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 🟦open — cache TOCTOU 施工完成待复审)
 
 - **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
 - **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。
 - **持久化失败必须有界退避**：GetDue/ComputeNext/UpdateNext 失败时不 dispatch，ScheduleEngine 用 context-aware backoff timer 等待，`Notify` 可提前唤醒；invalid config 记录错误并 clear next 隔离。只降日志级别不能修复热循环。
-- **autoTrade cache 必须由所有写入口主动失效**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须通过 callback 执行 `InvalidateAutoTradeCache(userID)+Notify()`，不能容忍关闭后 TTL 30s 内继续 dispatch。
+- **autoTrade cache 必须由所有写入口主动失效，且 check/query/write 与 invalidate 必须线性化**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须 callback invalidate+Notify；但仅 delete 不够——cache miss 解锁查 DB 后再回写存在 TOCTOU，旧查询可在 invalidate 后把旧 true 写回 30s。**修复（SCHEDULE-HOTLOOP-1a）**：per-user `autoTradeGeneration` map（与 cache 共用 `autoTradeCacheMu`），`InvalidateAutoTradeCache` 临界区内 `generation[userID]++`+delete；`isAutoTradeEnabled` miss 时记录 gen → DB query 锁外执行 → 回写时 generation 不匹配则丢弃旧结果并重查。对抗测试用 channel 精确控制“旧查询开始→更新+invalidate→旧查询返回”时序，删 generation retry → 4 断言确定性 RED。
 - 对抗测试必须覆盖：autoTrade=false、already-running、eligible dispatch、GetDue/UpdateNext 失败退避+Notify、event 脏 next、两个 autoTrade 写入口、runOne 不二次更新。完整证据与方案见 registry `SCHEDULE-HOTLOOP-1`。
 
 ## Backtest Status Management (回测状态 — 强制)

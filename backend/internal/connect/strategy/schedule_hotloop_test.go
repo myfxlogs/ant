@@ -216,13 +216,14 @@ func (f *fakeScheduleRepo) getNextRunAt(id uuid.UUID) *time.Time {
 // makeEngine creates a ScheduleEngine with a fake repo and injectable now.
 func makeEngine(repo *fakeScheduleRepo, now time.Time, autoTradeFn func(uuid.UUID) bool) *ScheduleEngine {
 	e := &ScheduleEngine{
-		repo:           repo,
-		templateReader: &mockTemplateReader{},
-		activeRuns:     make(map[uuid.UUID]*runHandle),
-		notifyCh:       make(chan struct{}, 1),
-		log:            zap.NewNop(),
-		now:            func() time.Time { return now },
-		autoTradeCache: make(map[uuid.UUID]autoTradeEntry),
+		repo:                repo,
+		templateReader:      &mockTemplateReader{},
+		activeRuns:          make(map[uuid.UUID]*runHandle),
+		notifyCh:            make(chan struct{}, 1),
+		log:                 zap.NewNop(),
+		now:                 func() time.Time { return now },
+		autoTradeCache:      make(map[uuid.UUID]autoTradeEntry),
+		autoTradeGeneration: make(map[uuid.UUID]uint64),
 	}
 	if autoTradeFn != nil {
 		e.autoTradeEnabled = autoTradeFn
@@ -627,14 +628,126 @@ func TestSCHEDULE_HOTLOOP_1_AutoTradeCacheInvalidation(t *testing.T) {
 	}
 }
 
-// 8b. AutoTradeCallbackWiring: verifies the autotrading handler calls the
-// callback on ToggleAutoTrade and UpdateGlobalSettings (when autoTrade changes).
-// This tests the handler layer, not the engine directly.
-func TestSCHEDULE_HOTLOOP_1_AutoTradeCallbackWiring(t *testing.T) {
-	// This is tested in the autotrading package test (auto_trade_callback_test.go).
-	// Here we verify the engine-side contract: InvalidateAutoTradeCache + Notify
-	// combination is the correct response.
-	t.Log("engine-side contract verified in test 8; handler-side in autotrading package")
+// 8b. AutoTradeCacheInvalidationLinearizable: deterministic TOCTOU test for
+// SCHEDULE-HOTLOOP-1a. Uses channels to force the exact interleaving:
+//
+//	A: cache miss → unlock → DB query starts, captures old true
+//	B: DB commits false → callback invalidate (generation++ + delete cache)
+//	A: old query returns true → re-lock → generation mismatch → discard → retry
+//	A: retry query returns false → write false to cache
+//
+// Adversarial: delete the generation mismatch retry → A writes old true to cache
+// → test RED (returns true, cache has true, queryCallCount==1).
+func TestSCHEDULE_HOTLOOP_1_AutoTradeCacheInvalidationLinearizable(t *testing.T) {
+	fixedNow := time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC)
+	userID := uuid.New()
+	repo := newFakeScheduleRepo()
+
+	// authoritativeState simulates the DB's autoTradeEnabled value.
+	// Initial: true. The test will flip it to false mid-query.
+	var authoritativeState atomic.Bool
+	authoritativeState.Store(true)
+
+	// Channels for deterministic timing control.
+	queryStarted := make(chan struct{})
+	releaseOldQuery := make(chan struct{})
+
+	// Track how many times autoTradeEnabled was called.
+	var queryCallCount atomic.Int64
+
+	// fake autoTradeEnabled: first call blocks until released, captures old value.
+	// Subsequent calls return the current authoritative state immediately.
+	firstCall := atomic.Bool{}
+	firstCall.Store(true)
+	autoTradeFn := func(uid uuid.UUID) bool {
+		queryCallCount.Add(1)
+		if firstCall.CompareAndSwap(true, false) {
+			// First call: capture the OLD value (true), signal that the query
+			// has started, then block until the test releases us — by which
+			// point the DB will have been updated and the cache invalidated.
+			captured := authoritativeState.Load() // captures true
+			close(queryStarted)
+			<-releaseOldQuery // blocks until test allows return
+			return captured   // returns stale true
+		}
+		// Subsequent calls: return current authoritative state (false).
+		return authoritativeState.Load()
+	}
+
+	engine := makeEngine(repo, fixedNow, autoTradeFn)
+
+	// Step 1: Start isAutoTradeEnabled in a goroutine. It will cache-miss,
+	// call autoTradeEnabled (first call), which captures true and blocks.
+	type result struct {
+		enabled bool
+	}
+	resultCh := make(chan result, 1)
+	go func() {
+		enabled := engine.isAutoTradeEnabled(userID)
+		resultCh <- result{enabled: enabled}
+	}()
+
+	// Step 2: Wait for the first query to start (old true captured).
+	select {
+	case <-queryStarted:
+		// good — first query has captured true and is now blocked
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for first query to start")
+	}
+
+	// Step 3: Simulate DB commit — user disables autoTrade.
+	authoritativeState.Store(false)
+
+	// Step 4: Invalidate the cache (as the callback would).
+	// This increments generation and deletes any cache entry.
+	engine.InvalidateAutoTradeCache(userID)
+
+	// Step 5: Release the old query — it will return stale true.
+	close(releaseOldQuery)
+
+	// Step 6: Wait for isAutoTradeEnabled to complete.
+	select {
+	case r := <-resultCh:
+		// Step 7a: Assert final result is false (not stale true).
+		if r.enabled {
+			t.Error("isAutoTradeEnabled returned stale true after invalidate — TOCTOU not prevented")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("isAutoTradeEnabled did not complete — possible infinite retry loop")
+	}
+
+	// Step 7b: Assert queryCallCount >= 2 (old result discarded, retried).
+	if queryCallCount.Load() < 2 {
+		t.Errorf("autoTradeEnabled called %d times, expected >= 2 (stale result must be discarded and retried)", queryCallCount.Load())
+	}
+
+	// Step 7c: Assert cache holds false (not stale true).
+	engine.autoTradeCacheMu.Lock()
+	entry, ok := engine.autoTradeCache[userID]
+	engine.autoTradeCacheMu.Unlock()
+	if !ok {
+		t.Error("cache entry missing after isAutoTradeEnabled — should be populated with false")
+	} else if entry.enabled {
+		t.Error("cache holds stale true — TOCTOU allowed old query to overwrite invalidate")
+	}
+
+	// Step 7d: Assert generation was incremented.
+	engine.autoTradeCacheMu.Lock()
+	gen := engine.autoTradeGeneration[userID]
+	engine.autoTradeCacheMu.Unlock()
+	if gen == 0 {
+		t.Error("generation not incremented — InvalidateAutoTradeCache did not advance generation")
+	}
+
+	// Step 7e: Subsequent call hits cache (false), no new DB query.
+	countBefore := queryCallCount.Load()
+	enabled := engine.isAutoTradeEnabled(userID)
+	if enabled {
+		t.Error("subsequent isAutoTradeEnabled returned true — cache should hold false")
+	}
+	if queryCallCount.Load() != countBefore {
+		t.Errorf("subsequent call queried DB (count %d → %d) — should hit cache", countBefore, queryCallCount.Load())
+	}
 }
 
 // 9. RunOneDoesNotRewriteNext: executeLoop advances next_run_at before dispatch.

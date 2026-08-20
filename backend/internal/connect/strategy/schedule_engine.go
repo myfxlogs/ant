@@ -61,8 +61,11 @@ type ScheduleEngine struct {
 	now func() time.Time
 
 	// D6: TTL cache for autoTradeEnabled results to avoid PG query per schedule check.
-	autoTradeCache   map[uuid.UUID]autoTradeEntry
-	autoTradeCacheMu sync.Mutex
+	// SCHEDULE-HOTLOOP-1a: autoTradeGeneration prevents TOCTOU where a stale DB query
+	// result is written back to cache after an invalidate. Both maps share autoTradeCacheMu.
+	autoTradeGeneration map[uuid.UUID]uint64
+	autoTradeCache      map[uuid.UUID]autoTradeEntry
+	autoTradeCacheMu    sync.Mutex
 }
 
 type autoTradeEntry struct {
@@ -91,16 +94,17 @@ func NewScheduleEngine(
 	log *zap.Logger,
 ) *ScheduleEngine {
 	return &ScheduleEngine{
-		repo:             repo,
-		templateReader:   templateReader,
-		runner:           runner,
-		autoTradeEnabled: autoTradeFn,
-		entitlementCheck: entitlementFn,
-		activeRuns:       make(map[uuid.UUID]*runHandle),
-		notifyCh:         make(chan struct{}, 1),
-		log:              log,
-		now:              time.Now,
-		autoTradeCache:   make(map[uuid.UUID]autoTradeEntry),
+		repo:                repo,
+		templateReader:      templateReader,
+		runner:              runner,
+		autoTradeEnabled:    autoTradeFn,
+		entitlementCheck:    entitlementFn,
+		activeRuns:          make(map[uuid.UUID]*runHandle),
+		notifyCh:            make(chan struct{}, 1),
+		log:                 log,
+		now:                 time.Now,
+		autoTradeCache:      make(map[uuid.UUID]autoTradeEntry),
+		autoTradeGeneration: make(map[uuid.UUID]uint64),
 	}
 }
 
@@ -216,13 +220,20 @@ func (e *ScheduleEngine) Stop() {
 	e.log.Info("all schedules stopped")
 }
 
-// InvalidateAutoTradeCache removes the cached autoTradeEnabled entry for a user.
-// Called by external write paths (ToggleAutoTrade, UpdateGlobalSettings) via a
-// callback so the autotrading package does not import strategy (no import cycle).
-// After invalidation, the next isAutoTradeEnabled call re-queries the source.
-// Callers should also call Notify() to recompute the timer immediately.
+// InvalidateAutoTradeCache removes the cached autoTradeEnabled entry for a user
+// and advances the per-user generation counter so that any in-flight DB query
+// whose result was captured before the invalidate will be discarded on write-back
+// (SCHEDULE-HOTLOOP-1a TOCTOU fix). Called by external write paths
+// (ToggleAutoTrade, UpdateGlobalSettings) via a callback so the autotrading
+// package does not import strategy (no import cycle). After invalidation, the
+// next isAutoTradeEnabled call re-queries the source. Callers should also call
+// Notify() to recompute the timer immediately.
 func (e *ScheduleEngine) InvalidateAutoTradeCache(userID uuid.UUID) {
 	e.autoTradeCacheMu.Lock()
+	if e.autoTradeGeneration == nil {
+		e.autoTradeGeneration = make(map[uuid.UUID]uint64)
+	}
+	e.autoTradeGeneration[userID]++
 	delete(e.autoTradeCache, userID)
 	e.autoTradeCacheMu.Unlock()
 }

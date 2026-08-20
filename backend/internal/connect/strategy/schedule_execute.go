@@ -166,24 +166,44 @@ func (e *ScheduleEngine) executeLoop(ctx context.Context) error {
 
 // isAutoTradeEnabled checks the per-user autotrade setting with a TTL cache
 // to avoid querying PG on every schedule dispatch cycle.
+//
+// SCHEDULE-HOTLOOP-1a: Uses per-user generation to prevent a TOCTOU where a
+// stale DB query result is written back to cache after an invalidate. The
+// generation is read before the DB query and re-checked after; if it changed
+// (meaning InvalidateAutoTradeCache ran during the query), the stale result is
+// discarded and the query is retried. The DB query runs outside the lock so
+// one user's slow query does not block another user's cache/invalidate.
 func (e *ScheduleEngine) isAutoTradeEnabled(userID uuid.UUID) bool {
 	if e.autoTradeEnabled == nil {
 		return true
 	}
-	now := e.nowTime()
-	e.autoTradeCacheMu.Lock()
-	if entry, ok := e.autoTradeCache[userID]; ok && now.Before(entry.expireAt) {
+	for {
+		now := e.nowTime()
+
+		e.autoTradeCacheMu.Lock()
+		if entry, ok := e.autoTradeCache[userID]; ok && now.Before(entry.expireAt) {
+			e.autoTradeCacheMu.Unlock()
+			return entry.enabled
+		}
+		if e.autoTradeGeneration == nil {
+			e.autoTradeGeneration = make(map[uuid.UUID]uint64)
+		}
+		gen := e.autoTradeGeneration[userID]
 		e.autoTradeCacheMu.Unlock()
-		return entry.enabled
+
+		// DB query outside lock — does not block other users' cache/invalidate.
+		enabled := e.autoTradeEnabled(userID)
+
+		e.autoTradeCacheMu.Lock()
+		if e.autoTradeGeneration[userID] != gen {
+			// Invalidate ran during the query — discard stale result, retry.
+			e.autoTradeCacheMu.Unlock()
+			continue
+		}
+		e.autoTradeCache[userID] = autoTradeEntry{enabled: enabled, expireAt: e.nowTime().Add(autoTradeCacheTTL)}
+		e.autoTradeCacheMu.Unlock()
+		return enabled
 	}
-	e.autoTradeCacheMu.Unlock()
-
-	enabled := e.autoTradeEnabled(userID)
-
-	e.autoTradeCacheMu.Lock()
-	e.autoTradeCache[userID] = autoTradeEntry{enabled: enabled, expireAt: now.Add(autoTradeCacheTTL)}
-	e.autoTradeCacheMu.Unlock()
-	return enabled
 }
 
 func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategySchedule) {

@@ -157,12 +157,12 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
 - 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
 
-## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 ✅done)
+## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 🟦open — cache TOCTOU 施工完成待复审)
 
 - **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
 - **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。
 - **持久化失败必须有界退避**：GetDue/ComputeNext/UpdateNext 失败时不 dispatch，ScheduleEngine 用 context-aware backoff timer 等待，`Notify` 可提前唤醒；invalid config 记录错误并 clear next 隔离。只降日志级别不能修复热循环。
-- **autoTrade cache 必须由所有写入口主动失效**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须通过 callback 执行 `InvalidateAutoTradeCache(userID)+Notify()`，不能容忍关闭后 TTL 30s 内继续 dispatch。`UpdateGlobalSettings` 仅 autoTradeEnabled 实际变更时才回调（避免冗余失效）。
+- **autoTrade cache 必须由所有写入口主动失效，且 check/query/write 与 invalidate 必须线性化**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须 callback invalidate+Notify；但仅 delete 不够——cache miss 解锁查 DB 后再回写存在 TOCTOU，旧查询可在 invalidate 后把旧 true 写回 30s。**修复（SCHEDULE-HOTLOOP-1a）**：per-user `autoTradeGeneration` map（与 cache 共用 `autoTradeCacheMu`），`InvalidateAutoTradeCache` 临界区内 `generation[userID]++`+delete；`isAutoTradeEnabled` miss 时记录 gen → DB query 锁外执行 → 回写时 generation 不匹配则丢弃旧结果并重查。对抗测试用 channel 精确控制“旧查询开始→更新+invalidate→旧查询返回”时序，删 generation retry → 4 断言确定性 RED。
 - **ClearNextRunAt 必须用 SQL NULL 而非零时间**：`GetEarliestNextRunAt`/`GetDueSchedules` 过滤 `IS NOT NULL`，零时间 `time.Time{}` 会被当作"现在到期"重新进入热循环。
 - 对抗测试 11 项全 PASS（含 race -race）：autoTrade=false pre-advance/no dispatch、already-running pre-advance、eligible UpdateNextRunAt 先于 dispatch、UpdateNext 失败不 dispatch、GetDue 失败 backoff 有界≤5/200ms、Notify 可提前唤醒 backoff、event SQL 排除+startup 清脏、invalid config 隔离、cache invalidation、callback wiring（ToggleAutoTrade + UpdateGlobalSettings onChange）、runOne 不重写 next。删 pre-consume 行 → Test_AutoTradeDisabledConsumesDue RED。完整证据与方案见 registry `SCHEDULE-HOTLOOP-1`。
 
