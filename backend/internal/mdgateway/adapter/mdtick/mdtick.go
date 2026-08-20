@@ -92,20 +92,21 @@ type MTAccountInfo struct {
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
 type ProfitUpdate struct {
-	AccountID       string
-	Platform        string
-	Balance         decimal.Decimal
-	Credit          decimal.Decimal
-	Equity          decimal.Decimal
-	Margin          decimal.Decimal
-	FreeMargin      decimal.Decimal
-	MarginLevel     decimal.Decimal
-	Profit          decimal.Decimal
-	ProfitPercent   float64
-	Leverage        int32
-	FinancialSource string
-	CapturedAt      time.Time
-	Positions       []ProfitPosition
+	AccountID              string
+	Platform               string
+	Balance                decimal.Decimal
+	Credit                 decimal.Decimal
+	Equity                 decimal.Decimal
+	Margin                 decimal.Decimal
+	FreeMargin             decimal.Decimal
+	MarginLevel            decimal.Decimal
+	Profit                 decimal.Decimal
+	ProfitPercent          float64
+	Leverage               int32
+	FinancialSource        string
+	CapturedAt             time.Time
+	PositionsAuthoritative bool
+	Positions              []ProfitPosition
 }
 
 // ProfitPosition is an open position snapshot within a ProfitUpdate.

@@ -1,7 +1,8 @@
 import { Tag, Typography, Button, Popconfirm } from 'antd';
-import { CloseCircleOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, CopyOutlined } from '@ant-design/icons';
 import type { TFunction } from 'i18next';
 import type { MtPositionSnapshotItem } from '@/gen/ant/v1/mt_position_snapshot_pb';
+import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import { formatTime } from '../../LiveStrategyPageSignalDrawer';
 import type { JoinedRow } from './strategyJoin';
 
@@ -65,7 +66,12 @@ export function buildLogColumns(t: TFunction) {
   return [
     { title: t('strategy.live.time', { defaultValue: 'Time' }), dataIndex: 'createdAt', width: 140, render: (v: unknown) => <Text style={{ fontSize: 12 }}>{formatTime(v as { seconds?: bigint; nanos?: number } | null)}</Text> },
     { title: t('common.status', { defaultValue: 'Status' }), dataIndex: 'status', width: 80, render: (v: string) => <Tag color={v === 'success' ? 'green' : v === 'failed' ? 'red' : 'default'}>{v}</Tag> },
-    { title: t('common.message', { defaultValue: 'Message' }), dataIndex: 'message', ellipsis: true, render: (v: string) => v ? <Text style={{ fontSize: 12 }}>{v}</Text> : <Text type="secondary">-</Text> },
+    { title: t('common.message', { defaultValue: 'Message' }), key: 'message', ellipsis: true, render: (_: unknown, row: ScheduleRunLog) => {
+      const error = row.errorMessage?.trim();
+      const message = error || [row.kind, row.action, row.signalType].filter(Boolean).join(' / ');
+      if (!message) return <Text type="secondary">-</Text>;
+      return <Text style={{ fontSize: 12 }} copyable={{ text: message, icon: <CopyOutlined /> }} ellipsis={{ tooltip: message }}>{message}</Text>;
+    } },
   ];
 }
 

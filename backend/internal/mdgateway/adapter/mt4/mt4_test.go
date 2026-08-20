@@ -814,6 +814,28 @@ func TestDATATRUTH2_AccountSummaryFailureRejectsFinancialSnapshot(t *testing.T) 
 	}
 }
 
+func TestAccountSummaryRefreshContinuesWithoutProfitFrames(t *testing.T) {
+	t.Parallel()
+	gw := New(mdtick.AccountConfig{AccountID: "a1"}, zap.NewNop())
+	gw.client = &mockMT4Client{accountSummaryRes: &pb.AccountSummaryReply{Result: &pb.AccountSummary{
+		Balance: 10000, Equity: 10000, FreeMargin: 10000, Leverage: 100,
+	}}}
+	updates := make(chan *mdtick.ProfitUpdate, 4)
+	ctx, cancel := context.WithTimeout(context.Background(), 80*time.Millisecond)
+	defer cancel()
+	go gw.refreshAccountSummary(ctx, "sid", 10*time.Millisecond, func(p *mdtick.ProfitUpdate) { updates <- p })
+	for i := 0; i < 2; i++ {
+		select {
+		case got := <-updates:
+			if !got.FreeMargin.Equal(decimal.NewFromInt(10000)) || got.PositionsAuthoritative {
+				t.Fatalf("unexpected financial refresh: %+v", got)
+			}
+		case <-ctx.Done():
+			t.Fatal("periodic AccountSummary refresh stopped without profit frames")
+		}
+	}
+}
+
 func TestOrderUpdateRecvLoop_ReceivesUpdates(t *testing.T) {
 	t.Parallel()
 	ts := timestamppb.Now()

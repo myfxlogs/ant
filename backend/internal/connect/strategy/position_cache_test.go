@@ -14,7 +14,8 @@ func cacheSnapshot() *mthub.PositionSnapshot {
 		AccountID: "acct-1", Balance: decimal.NewFromInt(10000), Equity: decimal.NewFromInt(10000),
 		Margin: decimal.NewFromInt(10), FreeMargin: decimal.NewFromInt(9990), Leverage: 100,
 		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
-		CapturedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+		PositionsAuthoritative: true,
+		CapturedAt:             time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 }
 
@@ -42,9 +43,10 @@ func TestPositionCacheOrderUpdateMergesPositionsWithoutOverwritingFinancials(t *
 	snap := cacheSnapshot()
 	cache.PutSnapshot(snap, snap.CapturedAt)
 	order := &mthub.PositionSnapshot{
-		AccountID:        "acct-1",
-		Positions:        []mthub.PositionSnapshotItem{{Ticket: 7}},
-		FinancialsSource: "order_stream",
+		AccountID:              "acct-1",
+		Positions:              []mthub.PositionSnapshotItem{{Ticket: 7}},
+		PositionsAuthoritative: true,
+		FinancialsSource:       "order_stream",
 	}
 	cache.PutSnapshot(order, snap.CapturedAt.Add(time.Second))
 	got, ok := cache.GetFreshSnapshot("acct-1", snap.CapturedAt.Add(2*time.Second))
@@ -53,5 +55,21 @@ func TestPositionCacheOrderUpdateMergesPositionsWithoutOverwritingFinancials(t *
 	}
 	if !got.Balance.Equal(snap.Balance) || !got.FreeMargin.Equal(snap.FreeMargin) || len(got.Positions) != 1 || got.Positions[0].Ticket != 7 {
 		t.Fatalf("order update changed authoritative financials or positions were not merged: %+v", got)
+	}
+}
+
+func TestPositionCacheFinancialRefreshPreservesPositions(t *testing.T) {
+	cache := NewPositionCache(nil)
+	snap := cacheSnapshot()
+	snap.Positions = []mthub.PositionSnapshotItem{{Ticket: 7}}
+	cache.PutSnapshot(snap, snap.CapturedAt)
+	refresh := cacheSnapshot()
+	refresh.CapturedAt = snap.CapturedAt.Add(30 * time.Second)
+	refresh.Positions = nil
+	refresh.PositionsAuthoritative = false
+	cache.PutSnapshot(refresh, refresh.CapturedAt)
+	got, ok := cache.GetFreshSnapshot("acct-1", refresh.CapturedAt.Add(time.Second))
+	if !ok || len(got.Positions) != 1 || got.Positions[0].Ticket != 7 {
+		t.Fatalf("financial-only refresh cleared authoritative positions: %+v", got)
 	}
 }

@@ -29,6 +29,27 @@ func (g *Gateway) profitRecvTimeout() time.Duration {
 	return 60 * time.Second
 }
 
+const accountSummaryRefreshInterval = 45 * time.Second
+
+func (g *Gateway) refreshAccountSummary(ctx context.Context, sid string, interval time.Duration, handler mdtick.ProfitHandler) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			g.fetchAndPublish(ctx, sid, nil, func(pu *mdtick.ProfitUpdate) {
+				g.mu.Lock()
+				g.lastProfitUpdate = pu
+				g.lastProfitAt = time.Now()
+				g.mu.Unlock()
+				handler(pu)
+			})
+		}
+	}
+}
+
 func (g *Gateway) SubscribeProfit(ctx context.Context, handler mdtick.ProfitHandler) error {
 	g.mu.RLock()
 	sc := g.streamCli
@@ -97,6 +118,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			g.mu.Unlock()
 			handler(pu)
 		})
+		go g.refreshAccountSummary(subCtx, sid, accountSummaryRefreshInterval, handler)
 
 		for {
 			timeout := g.profitRecvTimeout()
@@ -212,20 +234,21 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 	}
 
 	handler(&mdtick.ProfitUpdate{
-		AccountID:       g.cfg.AccountID,
-		Platform:        "mt4",
-		Balance:         balance,
-		Credit:          credit,
-		Equity:          equity,
-		Margin:          margin,
-		FreeMargin:      freeMargin,
-		MarginLevel:     marginLevel,
-		Profit:          profit,
-		ProfitPercent:   profitPercent,
-		Leverage:        int32(s.GetLeverage()),
-		FinancialSource: mdtick.FinancialsSourceAccountSummary,
-		CapturedAt:      Clk.Now(),
-		Positions:       parseMt4Positions(p),
+		AccountID:              g.cfg.AccountID,
+		Platform:               "mt4",
+		Balance:                balance,
+		Credit:                 credit,
+		Equity:                 equity,
+		Margin:                 margin,
+		FreeMargin:             freeMargin,
+		MarginLevel:            marginLevel,
+		Profit:                 profit,
+		ProfitPercent:          profitPercent,
+		Leverage:               int32(s.GetLeverage()),
+		FinancialSource:        mdtick.FinancialsSourceAccountSummary,
+		CapturedAt:             Clk.Now(),
+		PositionsAuthoritative: p != nil,
+		Positions:              parseMt4Positions(p),
 	})
 }
 

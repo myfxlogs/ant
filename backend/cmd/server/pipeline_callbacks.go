@@ -51,7 +51,8 @@ func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, us
 		Balance: o.Balance, Credit: o.Credit, Equity: o.Equity,
 		Margin: o.Margin, FreeMargin: o.FreeMargin, MarginLevel: o.MarginLevel,
 		Profit: o.Profit, FinancialsSource: "order_stream", CapturedAt: time.Now(),
-		Positions: make([]mthub.PositionSnapshotItem, 0, len(o.Positions)),
+		PositionsAuthoritative: true,
+		Positions:              make([]mthub.PositionSnapshotItem, 0, len(o.Positions)),
 	}
 	for _, pos := range o.Positions {
 		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
@@ -73,7 +74,8 @@ func publishProfitPositionSnapshot(broker *mthub.PositionSnapshotBroker, account
 		Profit: p.Profit, Leverage: p.Leverage,
 		FinancialsAuthoritative: p.FinancialSource == mdtick.FinancialsSourceAccountSummary,
 		FinancialsSource:        p.FinancialSource, CapturedAt: p.CapturedAt,
-		Positions: make([]mthub.PositionSnapshotItem, 0, len(p.Positions)),
+		PositionsAuthoritative: p.PositionsAuthoritative,
+		Positions:              make([]mthub.PositionSnapshotItem, 0, len(p.Positions)),
 	}
 	for _, pos := range p.Positions {
 		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{

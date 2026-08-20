@@ -61,13 +61,14 @@ func (c *PositionCache) put(snap *mthub.PositionSnapshot, receivedAt time.Time) 
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	current := c.snapshots[snap.AccountID]
 	if !snap.FinancialsAuthoritative {
-		current := c.snapshots[snap.AccountID]
-		if current == nil || !current.FinancialsAuthoritative {
+		if current == nil || !current.FinancialsAuthoritative || !snap.PositionsAuthoritative {
 			return
 		}
 		merged := *current
 		merged.Positions = append([]mthub.PositionSnapshotItem(nil), snap.Positions...)
+		merged.PositionsAuthoritative = true
 		c.snapshots[snap.AccountID] = &merged
 		return
 	}
@@ -76,7 +77,12 @@ func (c *PositionCache) put(snap *mthub.PositionSnapshot, receivedAt time.Time) 
 			zap.String("account", snap.AccountID), zap.String("source", snap.FinancialsSource))
 		return
 	}
-	c.snapshots[snap.AccountID] = snap
+	merged := *snap
+	if !snap.PositionsAuthoritative && current != nil && current.PositionsAuthoritative {
+		merged.Positions = append([]mthub.PositionSnapshotItem(nil), current.Positions...)
+		merged.PositionsAuthoritative = true
+	}
+	c.snapshots[snap.AccountID] = &merged
 	c.receivedAt[snap.AccountID] = receivedAt
 }
 

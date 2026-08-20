@@ -1,4 +1,5 @@
 import { Typography, Tag } from 'antd';
+import { CopyOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { TFunction } from 'i18next';
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
@@ -85,7 +86,11 @@ export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<Schedu
     { title: t(EXEC_TABLE_ERROR_KEY), dataIndex: 'errorMessage', key: 'errorMessage', render: (v: unknown) => {
       const s = String(v || '').trim();
       if (!s) return <Text type="secondary">{t('common.none')}</Text>;
-      return <Text type="danger" ellipsis={{ tooltip: s }} style={{ maxWidth: 360, display: 'inline-block' }}>{s}</Text>;
+      return <Text type="danger" copyable={{
+        text: s,
+        icon: <CopyOutlined />,
+        tooltips: [t('common.copy', { defaultValue: '复制' }), t('common.copied', { defaultValue: '已复制' })],
+      }} ellipsis={{ tooltip: s }} style={{ maxWidth: 360, display: 'inline-block' }}>{s}</Text>;
     }},
   ];
 }

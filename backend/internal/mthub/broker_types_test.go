@@ -21,15 +21,34 @@ func TestPositionSnapshotBroker_PubSub(t *testing.T) {
 	}
 }
 
+func TestPositionSnapshotBroker_ReplaysLatestToLateSubscriber(t *testing.T) {
+	t.Parallel()
+	b := NewPositionSnapshotBroker()
+	b.Publish(&PositionSnapshot{
+		AccountID: "acc-1", Balance: decimal.NewFromInt(10000),
+		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
+	})
+	ch, cancel := b.Subscribe("acc-1")
+	defer cancel()
+	select {
+	case got := <-ch:
+		if !got.Balance.Equal(decimal.NewFromInt(10000)) {
+			t.Fatalf("replayed balance=%s, want 10000", got.Balance)
+		}
+	default:
+		t.Fatal("late subscriber did not receive retained latest snapshot")
+	}
+}
+
 func TestPositionSnapshotBroker_DropsOldestKeepsLatest(t *testing.T) {
 	t.Parallel()
 	b := NewPositionSnapshotBroker()
 	ch, cancel := b.Subscribe("acc-1")
 	defer cancel()
 	for i := int64(0); i < 8; i++ {
-		b.Publish(&PositionSnapshot{AccountID: "acc-1", Positions: []PositionSnapshotItem{{Ticket: i}}})
+		b.Publish(&PositionSnapshot{AccountID: "acc-1", Positions: []PositionSnapshotItem{{Ticket: i}}, PositionsAuthoritative: true})
 	}
-	b.Publish(&PositionSnapshot{AccountID: "acc-1", Positions: []PositionSnapshotItem{{Ticket: 99}}})
+	b.Publish(&PositionSnapshot{AccountID: "acc-1", Positions: []PositionSnapshotItem{{Ticket: 99}}, PositionsAuthoritative: true})
 	foundLatest := false
 	for i := 0; i < 8; i++ {
 		ev := <-ch

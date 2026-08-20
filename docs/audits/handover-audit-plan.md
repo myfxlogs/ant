@@ -22,6 +22,10 @@
 
 ## 变更日志
 
+- 2026-08-19 **DATA-TRUTH-10 + LOG-UX-1 🟦open（部署后用户实测触发）**：95262066 正确 AccountSummary 只在 23:40 入一次，23:44 起策略每分钟 stale。根因 = PositionSnapshotBroker 不 retained/replay + 空账户 nil-result stream 不触发 AccountSummary 续期；修复方向为 latest replay + 低频权威快照 refresh + positions authority 分离。日志 Tab 已确认是 `schedule_run_logs` 调度生命周期/信号/错误与订单历史，不是 MQL Print；前端错误省略不可复制，增加 copyable 并明确空行语义。
+
+- 2026-08-19 **DATA-TRUTH-10 + LOG-UX-1 ✅done（代码修复+测试，部署后观察）**：生产 stale 根因确认不是应放宽 freshness，而是 late subscriber 错过瞬时 broker snapshot，且 MT4/MT5 nil-result stream 不触发 AccountSummary 续期。修复 retained-latest/replay、45s AccountSummary refresh、financial-only/positions authority 分离；日志 Message 列改读 `error_message`，普通生命周期行显示 kind/action/signal 上下文，错误支持一键复制。验证：Go mthub/strategy/MT4/MT5 全绿，frontend targeted test 2/2 + build 绿。部署验证：backend healthy，95262066 `account_balance_history` 出现 `free_margin=10000` 最新快照；新镜像观察 stale 是否归零待继续取证。
+
 - 2026-08-19 **DATA-TRUTH-5~9 🟦open（用户要求先回填再施工）**：由账号 `95262066` broker/DB `free_margin=10000` 但策略 VM 持续读 0 的实盘证据启动全链路横扫，确认不是单字段遗漏而是系统不变量未落地：①策略/Risk 未消费同一 broker 权威快照，Risk 仍固定 leverage=100 并本地重算 equity/margin/free_margin；② PositionSnapshot 无来源与 freshness，缺失/非法值经 `-1→0` 后策略继续执行；③ OpenedOrders/OrderHistory 无 session 返回 `empty,nil`，把未知伪装真实空仓；④ AccountSummary 失败回退到 MT4 已知不完整流并多处本地重算 Profit；⑤历史快照 cleanup 仍删不存在旧表；⑥MT5 已有 RequiredMargin RPC 但风险链未使用。用户批准立即按“先文档→修复+对抗证明→红队自审→最终回填”纪律推进，registry 已新增 DATA-TRUTH-5~9。
 
 - 2026-08-19 **DATA-TRUTH-5~9 施工、自审与回填 ✅done（代码/测试完成，部署验收待做）**：MT4/MT5 AccountSummary 金融快照补齐 source/captured_at/received_at/freshness；策略 VM 与 Risk Gate 缺失/陈旧/非权威快照 fail-closed；删除 Risk 本地 equity/margin/free_margin 重算、balance/equity 重复 cache、AccountSummary 失败回退；OrderUpdate 仅合并持仓不覆盖金融事实；MT5 RequiredMargin 接入下单 chokepoint，MT4 无等价 mtapi RPC 显式 capability 分支交 broker 校验；无 session 不再返回空订单；cleanup 改写正确表，OnBrokerInfo 补无 profit stream 首快照历史。对抗测试：策略/provider/cache/risk/mthub/MT4 全部 PASS；`go build ./...` PASS；`go test ./...` 唯一失败为既有 `internal/service` 测试硬编码 localhost:5432 alphaforge 环境不可用，非本次代码失败；file-lines 0 errors。红队复核后补强：MT4 RequiredMargin capability boundary、latest-wins snapshot broker、persist freshness/authoritative 过滤。线上部署与账号 95262066 实测待执行。

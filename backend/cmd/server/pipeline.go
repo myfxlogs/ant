@@ -320,7 +320,8 @@ func (p *pipelineState) makeOnBrokerInfo(
 				Margin: info.Margin, FreeMargin: info.FreeMargin, MarginLevel: info.MarginLevel,
 				Profit: info.Profit, Leverage: info.Leverage, FinancialsAuthoritative: info.HasAccountSummary,
 				FinancialsSource: mdtick.FinancialsSourceAccountSummary, CapturedAt: info.CapturedAt,
-				Positions: make([]mthub.PositionSnapshotItem, 0, len(orders)),
+				PositionsAuthoritative: true,
+				Positions:              make([]mthub.PositionSnapshotItem, 0, len(orders)),
 			}
 			for _, o := range orders {
 				snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{

@@ -26,6 +26,7 @@ type PositionSnapshot struct {
 	FinancialsAuthoritative bool
 	FinancialsSource        string
 	CapturedAt              time.Time
+	PositionsAuthoritative  bool
 	Positions               []PositionSnapshotItem
 }
 
@@ -51,40 +52,83 @@ type PositionSnapshotBroker struct {
 	mu          sync.RWMutex
 	subscribers map[string][]chan *PositionSnapshot
 	allSubs     []chan *PositionSnapshot
+	latest      map[string]*PositionSnapshot
 }
 
 func NewPositionSnapshotBroker() *PositionSnapshotBroker {
-	return &PositionSnapshotBroker{subscribers: map[string][]chan *PositionSnapshot{}}
+	return &PositionSnapshotBroker{
+		subscribers: map[string][]chan *PositionSnapshot{},
+		latest:      map[string]*PositionSnapshot{},
+	}
+}
+
+func mergePositionSnapshot(current, incoming *PositionSnapshot) *PositionSnapshot {
+	if incoming == nil {
+		return current
+	}
+	if current == nil {
+		merged := *incoming
+		merged.Positions = append([]PositionSnapshotItem(nil), incoming.Positions...)
+		return &merged
+	}
+	merged := *current
+	if incoming.FinancialsAuthoritative {
+		merged.AccountID = incoming.AccountID
+		merged.UserID = incoming.UserID
+		merged.Platform = incoming.Platform
+		merged.Balance = incoming.Balance
+		merged.Credit = incoming.Credit
+		merged.Equity = incoming.Equity
+		merged.Margin = incoming.Margin
+		merged.FreeMargin = incoming.FreeMargin
+		merged.MarginLevel = incoming.MarginLevel
+		merged.Profit = incoming.Profit
+		merged.Leverage = incoming.Leverage
+		merged.FinancialsAuthoritative = true
+		merged.FinancialsSource = incoming.FinancialsSource
+		merged.CapturedAt = incoming.CapturedAt
+	}
+	if incoming.PositionsAuthoritative {
+		merged.Positions = append([]PositionSnapshotItem(nil), incoming.Positions...)
+		merged.PositionsAuthoritative = true
+	}
+	return &merged
 }
 
 func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
-	b.mu.RLock()
-	src := b.subscribers[ev.AccountID]
-	all := b.allSubs
-	b.mu.RUnlock()
-	chs := make([]chan *PositionSnapshot, 0, len(src)+len(all))
-	chs = append(chs, src...)
-	chs = append(chs, all...)
+	if ev == nil {
+		return
+	}
+	b.mu.Lock()
+	merged := mergePositionSnapshot(b.latest[ev.AccountID], ev)
+	b.latest[ev.AccountID] = merged
+	chs := make([]chan *PositionSnapshot, 0, len(b.subscribers[ev.AccountID])+len(b.allSubs))
+	chs = append(chs, b.subscribers[ev.AccountID]...)
+	chs = append(chs, b.allSubs...)
 	for _, ch := range chs {
 		select {
-		case ch <- ev:
+		case ch <- merged:
 		default:
 			select {
 			case <-ch:
 			default:
 			}
 			select {
-			case ch <- ev:
+			case ch <- merged:
 			default:
 			}
 		}
 	}
+	b.mu.Unlock()
 }
 
 func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSnapshot, func()) {
 	ch := make(chan *PositionSnapshot, 8)
 	b.mu.Lock()
 	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
+	if latest := b.latest[accountID]; latest != nil {
+		ch <- latest
+	}
 	b.mu.Unlock()
 	return ch, func() {
 		b.mu.Lock()
@@ -105,6 +149,12 @@ func (b *PositionSnapshotBroker) SubscribeAll() (<-chan *PositionSnapshot, func(
 	ch := make(chan *PositionSnapshot, 64)
 	b.mu.Lock()
 	b.allSubs = append(b.allSubs, ch)
+	for _, latest := range b.latest {
+		select {
+		case ch <- latest:
+		default:
+		}
+	}
 	b.mu.Unlock()
 	return ch, func() {
 		b.mu.Lock()
