@@ -140,7 +140,7 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	if update != nil && update.GetOrder() != nil {
 		o := update.GetOrder()
 		updateTicket = o.GetTicket()
-		updateType = mt5UpdateTypeLabel(update.GetType())
+		updateType = Mt5UpdateTypeLabel(update.GetType())
 		updateOrderType = mt5OrderTypeLabel(o.GetOrderType())
 		updateSymbol = o.GetSymbol()
 		updateVolume = decimal.NewFromFloat(o.GetLots())
@@ -216,7 +216,10 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	}
 }
 
-func mt5UpdateTypeLabel(t pb.UpdateType) string {
+// Mt5UpdateTypeLabel maps an MT5 UpdateType proto enum to the string
+// label used in UpdateType. Exported for integration tests that verify
+// the adapter → PositionSnapshotBroker → TradeBarrier pipeline.
+func Mt5UpdateTypeLabel(t pb.UpdateType) string {
 	switch t {
 	case pb.UpdateType_UpdateType_MarketOpen:
 		return "open"

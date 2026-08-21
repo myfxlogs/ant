@@ -261,8 +261,8 @@ func TestMT5UpdateTypeLabel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mt5UpdateTypeLabel(tt.tp); got != tt.want {
-				t.Errorf("mt5UpdateTypeLabel(%v) = %q, want %q", tt.tp, got, tt.want)
+			if got := Mt5UpdateTypeLabel(tt.tp); got != tt.want {
+				t.Errorf("Mt5UpdateTypeLabel(%v) = %q, want %q", tt.tp, got, tt.want)
 			}
 		})
 	}

@@ -140,7 +140,7 @@ func parseMt4OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	if update != nil && update.GetOrder() != nil {
 		o := update.GetOrder()
 		updateTicket = int64(o.GetTicket())
-		updateType = mt4UpdateActionLabel(update.GetAction())
+		updateType = Mt4UpdateActionLabel(update.GetAction())
 		updateOrderType = mt4OrderOpLabel(o.GetType())
 		updateSymbol = o.GetSymbol()
 		updateVolume = decimal.NewFromFloat(o.GetLots())
@@ -216,7 +216,10 @@ func parseMt4OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	}
 }
 
-func mt4UpdateActionLabel(a pb.UpdateAction) string {
+// Mt4UpdateActionLabel maps an MT4 UpdateAction proto enum to the string
+// label used in UpdateType. Exported for integration tests that verify
+// the adapter → PositionSnapshotBroker → TradeBarrier pipeline.
+func Mt4UpdateActionLabel(a pb.UpdateAction) string {
 	switch a {
 	case pb.UpdateAction_UpdateAction_PositionOpen:
 		return "open"

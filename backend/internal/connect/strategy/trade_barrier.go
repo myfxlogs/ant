@@ -321,9 +321,30 @@ func (b *TradeBarrier) WaitConfirmed(ctx context.Context) tradeBarrierState {
 	}
 }
 
+// Reconcile attempts to recover from outcomeUnknown state using an
+// authoritative reconciliation result (e.g. a delayed OpenedOrders query).
+// If the barrier is not in outcomeUnknown, this is a no-op.
+// If confirmed=true → transitions to barrierConfirmed.
+// If confirmed=false → transitions to barrierDeterministicRejected.
+// Either way, the caller must subsequently call Release() to return to idle.
+func (b *TradeBarrier) Reconcile(confirmed bool) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if b.state != barrierOutcomeUnknown {
+		return
+	}
+	if confirmed {
+		b.state = barrierConfirmed
+	} else {
+		b.state = barrierDeterministicRejected
+	}
+	b.cond.Broadcast()
+}
+
 // Release transitions any state→idle. Called by the coordinator after
 // WaitConfirmed returns a confirmed or deterministicRejected state.
-// For outcomeUnknown, the caller must NOT call Release — barrier stays locked.
+// For outcomeUnknown, the caller must NOT call Release — barrier stays locked
+// unless Reconcile has transitioned it to a recoverable terminal state.
 func (b *TradeBarrier) Release() {
 	b.mu.Lock()
 	b.state = barrierIdle
@@ -364,10 +385,16 @@ type confirmationConfig struct {
 	// If the broker doesn't respond within this duration, the outcome is
 	// unknown and the barrier stays locked.
 	mutationRPCTimeout time.Duration
+	// recoveryDelay is the delay before attempting reconciliation-based
+	// recovery from outcomeUnknown state (④-②). Only applies to mutations
+	// with a known ticket (close/modify/cancel). Open mutations (ticket
+	// unknown) stay fail-closed — no auto-recovery.
+	recoveryDelay time.Duration
 }
 
 var defaultConfirmationConfig = confirmationConfig{
 	pushWait:              5 * time.Second,
 	readAfterWriteTimeout: 10 * time.Second,
 	mutationRPCTimeout:    30 * time.Second,
+	recoveryDelay:         10 * time.Second,
 }

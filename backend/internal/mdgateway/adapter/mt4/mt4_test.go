@@ -201,8 +201,8 @@ func TestMT4UpdateActionLabel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := mt4UpdateActionLabel(tt.action); got != tt.want {
-				t.Errorf("mt4UpdateActionLabel(%v) = %q, want %q", tt.action, got, tt.want)
+			if got := Mt4UpdateActionLabel(tt.action); got != tt.want {
+				t.Errorf("Mt4UpdateActionLabel(%v) = %q, want %q", tt.action, got, tt.want)
 			}
 		})
 	}
