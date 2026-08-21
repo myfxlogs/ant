@@ -51,8 +51,8 @@ func TestCompatFixes_MODE_SENKOU_A(t *testing.T) {
 // TestCompatFixes_Adversarial_RemoveEntry proves that removing a CompatFixes
 // entry causes the lookup to fail (blind spot would reappear). This is the
 // adversarial proof: if the registry entry is removed, the test fails.
+// NOT parallel — mutates global CompatFixes map, would race with other readers.
 func TestCompatFixes_Adversarial_RemoveEntry(t *testing.T) {
-	t.Parallel()
 	// Save and remove clrGreen from CompatFixes to prove it's needed.
 	original := CompatFixes["clrGreen"]
 	delete(CompatFixes, "clrGreen")
