@@ -715,6 +715,7 @@ const Base = {
       "diag": {
         "state": {
           "active": "活跃",
+          "warning": "警告",
           "dataStarvation": "数据饥饿",
           "noEvaluations": "无评估",
           "error": "错误"
@@ -728,7 +729,36 @@ const Base = {
         "indicators": "指标",
         "noIndicators": "暂无指标数据",
         "ago": "前",
-        "never": "从未"
+        "never": "从未",
+        "orderTruth": "订单真相",
+        "vmOrdersTotal": "VM订单总数",
+        "brokerAccountOrders": "经纪商账户订单",
+        "strategyMagicOrders": "策略Magic订单",
+        "pendingBrokerOrders": "经纪商挂单",
+        "scheduleMagic": "调度Magic",
+        "lastBrokerTicket": "最近经纪商订单号",
+        "vmBrokerMismatch": "VM订单数与经纪商不一致",
+        "execution": "执行状态",
+        "executionState": "执行状态",
+        "orderLifecycle": "订单生命周期",
+        "freshness": "数据新鲜度",
+        "financialSource": "金融数据来源",
+        "financialAge": "金融数据年龄",
+        "financialFresh": "金融数据新鲜",
+        "positionsSource": "持仓数据来源",
+        "positionsAge": "持仓数据年龄",
+        "positionsFresh": "持仓数据新鲜",
+        "fresh": "新鲜",
+        "stale": "过期",
+        "na": "无",
+        "lifecycle": {
+          "signal_generated": "信号已生成",
+          "order_submitting": "订单提交中",
+          "order_submitted": "订单已提交",
+          "order_confirmed": "订单已确认",
+          "order_rejected": "订单已拒绝",
+          "order_outcome_unknown": "订单结果未知"
+        }
       },
       "stopSuccess": "策略已停止",
       "stopFailed": "停止失败",

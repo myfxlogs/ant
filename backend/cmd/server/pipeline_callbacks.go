@@ -57,19 +57,28 @@ func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, us
 		PositionsCapturedAt: now,
 		PositionsSource:     "order_stream",
 		Positions:           make([]mthub.PositionSnapshotItem, 0, len(o.Positions)),
+		PendingOrders:       make([]mthub.PositionSnapshotItem, 0),
 		// LIVE-ORDER-REENTRY-1: carry triggering update metadata for barrier confirmation.
 		UpdateTicket: o.UpdateTicket,
 		UpdateType:   o.UpdateType,
 		UpdateMagic:  o.UpdateMagic,
 	}
 	for _, pos := range o.Positions {
-		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
+		item := mthub.PositionSnapshotItem{
 			Ticket: pos.Ticket, Symbol: pos.Symbol, Type: pos.Type, Magic: pos.Magic,
 			Volume: pos.Volume, OpenPrice: pos.OpenPrice, CurrentPrice: pos.CurrentPrice,
 			StopLoss: pos.StopLoss, TakeProfit: pos.TakeProfit,
 			Profit: pos.Profit, Swap: pos.Swap, Commission: pos.Commission,
 			Comment: pos.Comment, OpenTime: pos.OpenTime,
-		})
+		}
+		// LIVE-MQL-ORDER-CONTEXT-1: split market positions from pending orders
+		// by order type. MQL4 OrdersTotal = positions + pending, but OrderSelect
+		// must distinguish them for OrderType/OrderMagicNumber.
+		if mdtick.IsPendingOrderType(pos.Type) {
+			snapshot.PendingOrders = append(snapshot.PendingOrders, item)
+		} else {
+			snapshot.Positions = append(snapshot.Positions, item)
+		}
 	}
 	broker.Publish(snapshot)
 }
@@ -87,15 +96,21 @@ func publishProfitPositionSnapshot(broker *mthub.PositionSnapshotBroker, account
 		PositionsCapturedAt: p.CapturedAt,
 		PositionsSource:     "profit_stream",
 		Positions:           make([]mthub.PositionSnapshotItem, 0, len(p.Positions)),
+		PendingOrders:       make([]mthub.PositionSnapshotItem, 0),
 	}
 	for _, pos := range p.Positions {
-		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
+		item := mthub.PositionSnapshotItem{
 			Ticket: pos.Ticket, Symbol: pos.Symbol, Type: pos.Type, Magic: pos.Magic,
 			Volume: pos.Volume, OpenPrice: pos.OpenPrice, CurrentPrice: pos.CurrentPrice,
 			StopLoss: pos.StopLoss, TakeProfit: pos.TakeProfit,
 			Profit: pos.Profit, Swap: pos.Swap, Commission: pos.Commission,
 			Comment: pos.Comment, OpenTime: pos.OpenTime,
-		})
+		}
+		if mdtick.IsPendingOrderType(pos.Type) {
+			snapshot.PendingOrders = append(snapshot.PendingOrders, item)
+		} else {
+			snapshot.Positions = append(snapshot.Positions, item)
+		}
 	}
 	broker.Publish(snapshot)
 }

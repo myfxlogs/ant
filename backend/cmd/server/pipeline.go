@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -325,14 +326,27 @@ func (p *pipelineState) makeOnBrokerInfo(
 				PositionsCapturedAt: info.CapturedAt,
 				PositionsSource:     "opened_orders_initial",
 				Positions:           make([]mthub.PositionSnapshotItem, 0, len(orders)),
+				PendingOrders:       make([]mthub.PositionSnapshotItem, 0),
 			}
 			for _, o := range orders {
-				snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
-					Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: service.MapSideToString(o.Side), Volume: o.Volume,
-					OpenPrice: o.OpenPrice, Profit: o.Profit,
+				// LIVE-MQL-ORDER-CONTEXT-1: use OrderTypeString (handles side +
+				// order type, e.g. "BUY_LIMIT") and lowercase to match adapter
+				// labels. Also set Magic/SL/TP which were previously missing.
+				item := mthub.PositionSnapshotItem{
+					Ticket: o.Ticket, Symbol: o.SymbolRaw,
+					Type:    strings.ToLower(o.OrderTypeString()),
+					Magic:   o.Magic,
+					Volume:  o.Volume, OpenPrice: o.OpenPrice, Profit: o.Profit,
 					Swap: o.Swap, Commission: o.Commission, Comment: o.Comment,
-					OpenTime: o.OpenTime.Unix(),
-				})
+					StopLoss:   o.StopLoss,
+					TakeProfit: o.TakeProfit,
+					OpenTime:   o.OpenTime.Unix(),
+				}
+				if mdtick.IsPendingOrderType(item.Type) {
+					snapshot.PendingOrders = append(snapshot.PendingOrders, item)
+				} else {
+					snapshot.Positions = append(snapshot.Positions, item)
+				}
 			}
 			snapshotBroker.Publish(snapshot)
 		}()

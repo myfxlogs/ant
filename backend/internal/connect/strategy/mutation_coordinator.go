@@ -188,7 +188,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 				zap.String("client_id", spec.clientID),
 				zap.Error(err),
 			)
-			s.logOrderLifecycle(activeSess, cfg, "order_outcome_unknown", sideStr, 0, err.Error())
+			s.logOrderLifecycle(activeSess, cfg, "order_outcome_unknown", sideStr, spec.expectedTicket, err.Error())
 			// ④-②: For known-ticket mutations (close/modify/cancel), start a
 			// background reconciliation goroutine that may recover the barrier
 			// after a delay. Open mutations (ticket=0) stay fail-closed.

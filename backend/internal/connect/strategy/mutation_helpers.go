@@ -5,11 +5,13 @@
 package strategy
 
 import (
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
+	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mthub"
 )
 
@@ -30,19 +32,24 @@ func (s *StrategyExecutionServer) publishReadAfterWriteSnapshot(
 		PositionsSource:        "opened_orders_confirmation",
 		PositionsCapturedAt:    time.Now(),
 		Positions:              make([]mthub.PositionSnapshotItem, 0, len(orders)),
+		PendingOrders:          make([]mthub.PositionSnapshotItem, 0),
 	}
 	for _, o := range orders {
-		sideStr := "buy"
-		if o.Side == mthub.SideSell {
-			sideStr = "sell"
-		}
-		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
-			Ticket: o.Ticket, Symbol: o.Canonical, Type: sideStr, Magic: o.Magic,
+		// LIVE-MQL-ORDER-CONTEXT-1: use OrderTypeString for full order type
+		// (e.g. "BUY_LIMIT") and split market vs pending.
+		typeStr := strings.ToLower(o.OrderTypeString())
+		item := mthub.PositionSnapshotItem{
+			Ticket: o.Ticket, Symbol: o.Canonical, Type: typeStr, Magic: o.Magic,
 			Volume: o.Volume, OpenPrice: o.OpenPrice,
 			StopLoss: o.StopLoss, TakeProfit: o.TakeProfit,
 			Profit: o.Profit, Swap: o.Swap, Commission: o.Commission,
 			Comment: o.Comment, OpenTime: o.OpenTime.Unix(),
-		})
+		}
+		if mdtick.IsPendingOrderType(typeStr) {
+			snapshot.PendingOrders = append(snapshot.PendingOrders, item)
+		} else {
+			snapshot.Positions = append(snapshot.Positions, item)
+		}
 	}
 	s.mtHub.SnapshotBroker().Publish(snapshot)
 }
@@ -65,6 +72,11 @@ func (s *StrategyExecutionServer) logOrderLifecycle(
 			zap.String("schedule_id", activeSess.ScheduleID.String()),
 			zap.Int32("magic", activeSess.MagicNumber),
 		)
+		// LIVE-DIAG-TRUTH-1 rework: persist lifecycle + ticket in sessionDiag
+		// so diagnostics survive barrier.Release() (which clears transient state).
+		if activeSess.diag != nil {
+			activeSess.diag.RecordLifecycle(kind, ticket)
+		}
 	}
 	if errMsg != "" {
 		fields = append(fields, zap.String("error", errMsg))

@@ -127,7 +127,22 @@ func (b *brokerImpl) Positions(magic int32) []sdk.Position {
 
 func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 	if b.executor == nil {
-		return nil
+		// LIVE-MQL-ORDER-CONTEXT-1: harness mode — use pending orders passed
+		// from parent process via UpdateLiveState. Previously returned nil,
+		// causing OrdersTotal to undercount and OrderSelect to miss pending orders.
+		b.runner.ctx.mu.RLock()
+		liveOrders := b.runner.ctx.livePendingOrders
+		b.runner.ctx.mu.RUnlock()
+		if magic == 0 {
+			return liveOrders
+		}
+		var filtered []sdk.PendingOrder
+		for _, o := range liveOrders {
+			if o.Magic == magic {
+				filtered = append(filtered, o)
+			}
+		}
+		return filtered
 	}
 	orders, err := b.executor.PendingOrders(b.orderCtx())
 	if err != nil {

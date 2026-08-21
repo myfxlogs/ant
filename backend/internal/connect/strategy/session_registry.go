@@ -329,6 +329,8 @@ func (s *ActiveSession) SetPnL(pnl string) {
 
 // RecordSignal updates session metadata when a signal is dispatched and
 // publishes the signal event to all SSE subscribers.
+// Also persists "signal_generated" to sessionDiag so diagnostics reflect
+// the most recent signal even before any order submission attempt.
 func (s *ActiveSession) RecordSignal(event *SignalEvent) {
 	s.signalSubsMu.Lock()
 	s.SignalCount++
@@ -340,6 +342,10 @@ func (s *ActiveSession) RecordSignal(event *SignalEvent) {
 		}
 	}
 	s.signalSubsMu.Unlock()
+	// LIVE-DIAG-TRUTH-1: persist signal_generated lifecycle (rule 1: signal ≠ fill)
+	if s.diag != nil {
+		s.diag.RecordLifecycle("signal_generated", 0)
+	}
 	if s.registry != nil {
 		s.registry.notifyWatchers()
 	}

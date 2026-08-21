@@ -27,11 +27,12 @@ type contextImpl struct {
 	goCtx context.Context
 
 	// Live state from parent process (harness mode — no RPC).
-	liveBalance    string
-	liveEquity     string
-	liveMargin     string
-	liveFreeMargin string
-	livePositions  []sdk.Position
+	liveBalance       string
+	liveEquity        string
+	liveMargin        string
+	liveFreeMargin    string
+	livePositions     []sdk.Position
+	livePendingOrders []sdk.PendingOrder // LIVE-MQL-ORDER-CONTEXT-1
 
 	// Symbol info from parent process (harness mode — no RPC).
 	livePoint        string

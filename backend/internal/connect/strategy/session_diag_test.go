@@ -56,14 +56,16 @@ func TestSessionDiag_RecordIndicators_Throttling(t *testing.T) {
 		t.Errorf("indicators count = %d, want 1", len(snap.Indicators))
 	}
 
-	// Second call within 5s should be throttled.
+	// Second call within 5s: indicator ring buffer write is throttled,
+	// but ordersTotal is ALWAYS updated (LIVE-DIAG-TRUTH-1: VM OrdersTotal
+	// must reflect the last value the VM actually saw, not a throttled stale value).
 	vals2 := map[string]decimal.Decimal{
 		"iRSI[14,0]": decimal.NewFromFloat(60.0),
 	}
 	d.RecordIndicators(vals2, 3)
 	snap2 := d.SnapshotDiag()
-	if snap2.OrdersTotalSeen != 2 {
-		t.Errorf("ordersTotal after throttle = %d, want 2 (throttled)", snap2.OrdersTotalSeen)
+	if snap2.OrdersTotalSeen != 3 {
+		t.Errorf("ordersTotal after throttle = %d, want 3 (ordersTotal always updates, only indicator ring buffer is throttled)", snap2.OrdersTotalSeen)
 	}
 	rsi := snap2.Indicators["iRSI[14,0]"]
 	if len(rsi) != 1 || !rsi[0].Equal(decimal.NewFromFloat(55.5)) {

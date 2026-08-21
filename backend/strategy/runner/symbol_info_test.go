@@ -79,7 +79,7 @@ func TestUpdateSymbolInfo_EmptyDefaults(t *testing.T) {
 // are returned from broker.Account() in harness mode.
 func TestUpdateLiveState_MarginFreeMargin(t *testing.T) {
 	r := New(Config{})
-	r.UpdateLiveState("10000", "10500", "500", "9500", nil)
+	r.UpdateLiveState("10000", "10500", "500", "9500", nil, nil)
 
 	info := r.broker.Account()
 	if !info.Margin.Equal(decimal.NewFromInt(500)) {
@@ -93,7 +93,7 @@ func TestUpdateLiveState_MarginFreeMargin(t *testing.T) {
 // TestUpdateLiveState_EmptyMargin verifies that missing margin strings are visible.
 func TestUpdateLiveState_EmptyMargin(t *testing.T) {
 	r := New(Config{})
-	r.UpdateLiveState("10000", "10500", "", "", nil)
+	r.UpdateLiveState("10000", "10500", "", "", nil, nil)
 
 	info := r.broker.Account()
 	if !info.Margin.Equal(decimal.NewFromInt(-1)) {

@@ -29,6 +29,11 @@ type PositionSnapshot struct {
 	PositionsAuthoritative  bool
 	Positions               []PositionSnapshotItem
 
+	// LIVE-MQL-ORDER-CONTEXT-1: pending orders (limit/stop) separated from
+	// market positions. MQL4 OrdersTotal = positions + pending orders, but
+	// OrderSelect must distinguish them for OrderType/OrderMagicNumber.
+	PendingOrders []PositionSnapshotItem
+
 	// B6: positions freshness provenance. Tracked independently from
 	// financials so a financial-only refresh cannot make stale positions
 	// appear fresh, and a retained replay cannot resurrect old positions.
@@ -83,6 +88,7 @@ func mergePositionSnapshot(current, incoming *PositionSnapshot) *PositionSnapsho
 	if current == nil {
 		merged := *incoming
 		merged.Positions = append([]PositionSnapshotItem(nil), incoming.Positions...)
+		merged.PendingOrders = append([]PositionSnapshotItem(nil), incoming.PendingOrders...)
 		return &merged
 	}
 	merged := *current
@@ -104,6 +110,7 @@ func mergePositionSnapshot(current, incoming *PositionSnapshot) *PositionSnapsho
 	}
 	if incoming.PositionsAuthoritative {
 		merged.Positions = append([]PositionSnapshotItem(nil), incoming.Positions...)
+		merged.PendingOrders = append([]PositionSnapshotItem(nil), incoming.PendingOrders...)
 		merged.PositionsAuthoritative = true
 		// B6: carry positions provenance from the incoming event.
 		merged.PositionsCapturedAt = incoming.PositionsCapturedAt

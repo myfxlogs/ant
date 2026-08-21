@@ -715,6 +715,7 @@ const Base = {
       "diag": {
         "state": {
           "active": "活躍",
+          "warning": "警告",
           "dataStarvation": "資料飢餓",
           "noEvaluations": "無評估",
           "error": "錯誤"
@@ -728,7 +729,36 @@ const Base = {
         "indicators": "指標",
         "noIndicators": "暫無指標資料",
         "ago": "前",
-        "never": "從未"
+        "never": "從未",
+        "orderTruth": "訂單真相",
+        "vmOrdersTotal": "VM訂單總數",
+        "brokerAccountOrders": "券商帳戶訂單",
+        "strategyMagicOrders": "策略Magic訂單",
+        "pendingBrokerOrders": "待處理券商訂單",
+        "scheduleMagic": "排程Magic",
+        "lastBrokerTicket": "最後券商票號",
+        "vmBrokerMismatch": "VM數量與券商數量不一致",
+        "execution": "執行",
+        "executionState": "執行狀態",
+        "orderLifecycle": "訂單生命週期",
+        "freshness": "新鮮度",
+        "financialSource": "金融來源",
+        "financialAge": "金融年齡",
+        "financialFresh": "金融新鮮度",
+        "positionsSource": "持倉來源",
+        "positionsAge": "持倉年齡",
+        "positionsFresh": "持倉新鮮度",
+        "fresh": "新鮮",
+        "stale": "滯後",
+        "na": "無",
+        "lifecycle": {
+          "signal_generated": "訊號已產生",
+          "order_submitting": "訂單提交中",
+          "order_submitted": "訂單已提交",
+          "order_confirmed": "訂單已確認",
+          "order_rejected": "訂單已拒絕",
+          "order_outcome_unknown": "結果未知"
+        }
       },
       "stopSuccess": "策略已停止",
       "stopFailed": "停止失敗",

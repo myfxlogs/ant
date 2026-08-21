@@ -83,6 +83,7 @@ func (c *PositionCache) put(snap *mthub.PositionSnapshot, receivedAt time.Time) 
 		}
 		merged := *current
 		merged.Positions = append([]mthub.PositionSnapshotItem(nil), snap.Positions...)
+		merged.PendingOrders = append([]mthub.PositionSnapshotItem(nil), snap.PendingOrders...)
 		merged.PositionsAuthoritative = true
 		// B6: carry positions provenance from the incoming event.
 		merged.PositionsCapturedAt = snap.PositionsCapturedAt
@@ -109,8 +110,9 @@ func (c *PositionCache) put(snap *mthub.PositionSnapshot, receivedAt time.Time) 
 	merged := *snap
 	if !snap.PositionsAuthoritative && current != nil && current.PositionsAuthoritative {
 		// Financial-only refresh: preserve existing authoritative positions
-		// and their provenance (B6: don't refresh positions captured/received).
+		// and pending orders + their provenance (B6: don't refresh positions captured/received).
 		merged.Positions = append([]mthub.PositionSnapshotItem(nil), current.Positions...)
+		merged.PendingOrders = append([]mthub.PositionSnapshotItem(nil), current.PendingOrders...)
 		merged.PositionsAuthoritative = true
 		merged.PositionsCapturedAt = current.PositionsCapturedAt
 		merged.PositionsSource = current.PositionsSource

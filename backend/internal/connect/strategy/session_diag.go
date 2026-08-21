@@ -33,6 +33,28 @@ func diagToProto(s DiagSnapshot) *antv1.StrategyDiagnostics {
 		LastEvalAt:  s.LastEvalAt,
 		WindowBars:  int32(s.WindowBars),
 		OrdersTotal: int32(s.OrdersTotalSeen),
+		// L3: Order truth
+		VmOrdersTotal:      int32(s.VmOrdersTotal),
+		BrokerAccountOrders: int32(s.BrokerAccountOrders),
+		StrategyMagicOrders: int32(s.StrategyMagicOrders),
+		PendingBrokerOrders: int32(s.PendingBrokerOrders),
+		ScheduleMagic:       s.ScheduleMagic,
+		// L3: Execution state
+		ExecutionState:   s.ExecutionState,
+		OrderLifecycle:   s.OrderLifecycle,
+		LastBrokerTicket: s.LastBrokerTicket,
+		// L3: Financial freshness
+		FinancialSource:     s.FinancialSource,
+		FinancialCapturedAt: s.FinancialCapturedAt,
+		FinancialAgeMs:      s.FinancialAgeMs,
+		FinancialFresh:      s.FinancialFresh,
+		// L3: Positions freshness
+		PositionsSource:     s.PositionsSource,
+		PositionsCapturedAt: s.PositionsCapturedAt,
+		PositionsAgeMs:      s.PositionsAgeMs,
+		PositionsFresh:      s.PositionsFresh,
+		// L3: Data availability
+		DataAvailable: s.DataAvailable,
 	}
 	if len(s.IndicatorOrder) > 0 {
 		pb.Indicators = make([]*antv1.DiagIndicatorSeries, 0, len(s.IndicatorOrder))
@@ -64,12 +86,29 @@ type sessionDiag struct {
 	indicators        map[string][]decimal.Decimal
 	indicatorKeyOrder []string
 	lastWriteAt       int64 // unix ms, for 5s throttling
+
+	// LIVE-DIAG-TRUTH-1 rework: persisted lifecycle + ticket.
+	// Barrier state is transient — Release() clears it to idle/ticket=0.
+	// These fields persist the last known lifecycle so diagnostics
+	// continue to show "order_confirmed" etc. after Release().
+	lastLifecycle     string
+	lastBrokerTicket  int64
 }
 
 func newSessionDiag() *sessionDiag {
 	return &sessionDiag{
-		indicators: make(map[string][]decimal.Decimal),
+		indicators:    make(map[string][]decimal.Decimal),
+		lastLifecycle: "signal_generated",
 	}
+}
+
+// RecordLifecycle persists the last order lifecycle stage and broker ticket.
+// Called from logOrderLifecycle at every transition point (before Release).
+func (d *sessionDiag) RecordLifecycle(lifecycle string, ticket int64) {
+	d.mu.Lock()
+	d.lastLifecycle = lifecycle
+	d.lastBrokerTicket = ticket
+	d.mu.Unlock()
 }
 
 // RecordEval increments the evaluation counter for the given event kind.
@@ -96,21 +135,28 @@ func (d *sessionDiag) RecordWindow(n int) {
 // RecordIndicators writes indicator values and ordersTotal to the ring buffer
 // with 5s server-side throttling. VM records every event (zero cost);
 // this method is called from vmHandleX tail to throttle ring buffer writes.
-// Empty writes (event captured no indicators — e.g. bar events for OnTick-only
-// strategies) do NOT burn the throttle window: an empty stamp would starve
-// subsequent non-empty writes inside the window (SRD-1 audit fix).
+//
+// LIVE-DIAG-TRUTH-1 fix: Empty indicator values must NOT block ordersTotal
+// update. OnTick-only strategies produce empty indicator maps on bar events,
+// but OrdersTotal is still valid and must be recorded. The throttle window
+// is only burned when there are actual indicator values to write — empty
+// calls update ordersTotal without consuming the throttle slot.
 func (d *sessionDiag) RecordIndicators(values map[string]decimal.Decimal, ordersTotal int) {
-	if len(values) == 0 {
-		return
-	}
 	now := time.Now().UnixMilli()
 	d.mu.Lock()
 	defer d.mu.Unlock()
+
+	// Always update ordersTotal — it's valid even when indicators are empty.
+	d.ordersTotalSeen = ordersTotal
+
+	if len(values) == 0 {
+		return // No indicator values to write; don't burn throttle window.
+	}
+
 	if now-d.lastWriteAt < int64(diagWriteInterval/time.Millisecond) {
-		return
+		return // Throttled — indicator ring buffer write skipped.
 	}
 	d.lastWriteAt = now
-	d.ordersTotalSeen = ordersTotal
 	for key, val := range values {
 		ring := d.indicators[key]
 		if ring == nil {
@@ -138,6 +184,35 @@ type DiagSnapshot struct {
 	OrdersTotalSeen int
 	Indicators      map[string][]decimal.Decimal
 	IndicatorOrder  []string
+
+	// L3: Order truth — computed at snapshot time from PositionCache + barrier.
+	VmOrdersTotal       int
+	BrokerAccountOrders int
+	StrategyMagicOrders int
+	PendingBrokerOrders int
+	ScheduleMagic       int32
+
+	// L3: Execution state
+	ExecutionState   string
+	OrderLifecycle   string
+	LastBrokerTicket int64
+
+	// L3: Financial freshness
+	FinancialSource     string
+	FinancialCapturedAt int64
+	FinancialAgeMs      int64
+	FinancialFresh      bool
+
+	// L3: Positions freshness
+	PositionsSource     string
+	PositionsCapturedAt int64
+	PositionsAgeMs      int64
+	PositionsFresh      bool
+
+	// L3: Data availability — distinguishes "no broker data source"
+	// (paper mode / not wired) from "stale data". When false, freshness
+	// fields are meaningless and frontend shows N/A instead of Stale.
+	DataAvailable bool
 }
 
 // SnapshotDiag returns a copy of the current diagnostics state.
@@ -162,5 +237,8 @@ func (d *sessionDiag) SnapshotDiag() DiagSnapshot {
 		OrdersTotalSeen: d.ordersTotalSeen,
 		Indicators:      indicators,
 		IndicatorOrder:  order,
+		// Persisted lifecycle (survives Release)
+		OrderLifecycle:   d.lastLifecycle,
+		LastBrokerTicket: d.lastBrokerTicket,
 	}
 }

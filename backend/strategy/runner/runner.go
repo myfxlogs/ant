@@ -61,6 +61,13 @@ func (r *Runner) SetStrategy(s sdk.Strategy) {
 	r.strategy = s
 }
 
+// Broker returns the broker implementation for testing and external access.
+// LIVE-MQL-ORDER-CONTEXT-1: needed for integration tests verifying the
+// positions/pending orders → MQL OrdersTotal chain.
+func (r *Runner) Broker() sdk.Broker {
+	return r.broker
+}
+
 // barRevision returns the current bar revision counter. Each OnBar call
 // advances it by 1; other event handlers do not. Used by runnerBarSource
 // to implement indicators.RevisionedBarSource for SeriesCache invalidation.
@@ -69,8 +76,12 @@ func (r *Runner) barRevision() uint64 {
 }
 
 // UpdateLiveState sets the live account state from the parent process.
-// Used by the live harness to pass equity/balance/margin/free_margin/positions without RPC.
-func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, positions []sdk.Position) {
+// Used by the live harness to pass equity/balance/margin/free_margin/positions
+// and pending orders without RPC.
+// LIVE-MQL-ORDER-CONTEXT-1: now also accepts pending orders so MQL
+// OrdersTotal/OrderSelect can distinguish market positions from pending
+// orders per MQL4 MODE_TRADES semantics.
+func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, positions []sdk.Position, pendingOrders []sdk.PendingOrder) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
 	r.ctx.liveBalance = balance
@@ -78,6 +89,7 @@ func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, pos
 	r.ctx.liveMargin = margin
 	r.ctx.liveFreeMargin = freeMargin
 	r.ctx.livePositions = positions
+	r.ctx.livePendingOrders = pendingOrders
 }
 
 // UpdateExtraBars sets the extra symbol bar windows for multi-symbol strategies.

@@ -23,7 +23,7 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 		Params:       buildLiveParams(cfg.Params),
 		CurrentPrice: tick.Bid.String(),
 	}
-	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions); err != nil && cfg.Mode == "live" {
+	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == "live" {
 		return nil, err
 	}
 	s.backfillTickSymbolInfo(cfg, tctx)
@@ -60,19 +60,23 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 		Commission: evt.Commission.String(),
 		Swap:       evt.Swap.String(),
 	}
-	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions); err != nil && cfg.Mode == "live" {
+	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == "live" {
 		return nil, err
 	}
 	return tctx, nil
 }
 
-// backfillContextStrings populates equity/balance/margin/free_margin/positions from the push-based
-// PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
+// backfillContextStrings populates equity/balance/margin/free_margin/positions/pending_orders
+// from the push-based PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
 // Missing or stale authoritative snapshots return an error and block execution.
 // LIVE-ORDER-REENTRY-1: uses GetFreshTradingSnapshot — both financials AND
 // positions must be fresh for VM evaluation. A financial-only refresh must
 // not make stale positions usable.
-func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance, margin, freeMargin *string, positions *[]*antv1.LivePosition) error {
+// LIVE-MQL-ORDER-CONTEXT-1: now also populates pending orders and all
+// LivePosition fields (symbol, magic, order_type, sl, tp, profit, comment,
+// open_time) so MQL OrdersTotal/OrderSelect/OrderMagicNumber preserve
+// broker-original account-level semantics.
+func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance, margin, freeMargin *string, positions *[]*antv1.LivePosition, pendingOrders *[]*antv1.LivePendingOrder) error {
 	if s.posCache == nil {
 		return fmt.Errorf("authoritative account snapshot unavailable: position cache not configured")
 	}
@@ -91,14 +95,52 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 			side = sideSell
 		}
 		pos = append(pos, &antv1.LivePosition{
-			Ticket:    p.Ticket,
-			Side:      side,
-			Volume:    p.Volume.String(),
-			OpenPrice: p.OpenPrice.String(),
+			Ticket:      p.Ticket,
+			Side:        side,
+			Volume:      p.Volume.String(),
+			OpenPrice:   p.OpenPrice.String(),
+			Sl:          p.StopLoss.String(),
+			Tp:          p.TakeProfit.String(),
+			Swap:        p.Swap.String(),
+			Commission:  p.Commission.String(),
+			Symbol:      p.Symbol,
+			MagicNumber: p.Magic,
+			OrderType:   p.Type,
+			Profit:      p.Profit.String(),
+			Comment:     p.Comment,
+			OpenTime:    p.OpenTime,
 		})
 	}
 	*positions = pos
+
+	// LIVE-MQL-ORDER-CONTEXT-1: populate pending orders with full fields.
+	pending := make([]*antv1.LivePendingOrder, 0, len(snap.PendingOrders))
+	for _, o := range snap.PendingOrders {
+		pending = append(pending, &antv1.LivePendingOrder{
+			Ticket:      o.Ticket,
+			Symbol:      o.Symbol,
+			OrderType:   o.Type,
+			Side:        pendingOrderSide(o.Type),
+			Volume:      o.Volume.String(),
+			Price:       o.OpenPrice.String(),
+			Sl:          o.StopLoss.String(),
+			Tp:          o.TakeProfit.String(),
+			Comment:     o.Comment,
+			MagicNumber: o.Magic,
+			OpenTime:    o.OpenTime,
+		})
+	}
+	*pendingOrders = pending
 	return nil
+}
+
+// pendingOrderSide derives the buy/sell side from a pending order type string.
+// "buy_limit" → "buy", "sell_stop" → "sell", etc.
+func pendingOrderSide(orderType string) string {
+	if len(orderType) >= 3 && orderType[:3] == "buy" {
+		return "buy"
+	}
+	return "sell"
 }
 
 // dispatchFromBytes unmarshals a live response and dispatches signals to OMS.
@@ -186,7 +228,7 @@ func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg Live
 	if n > 0 {
 		lctx.CurrentPrice = closeVals[n-1]
 	}
-	if err := s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions); err != nil && cfg.Mode == "live" {
+	if err := s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions, &lctx.PendingOrders); err != nil && cfg.Mode == "live" {
 		return nil, err
 	}
 	s.backfillSymbolInfo(cfg, lctx)

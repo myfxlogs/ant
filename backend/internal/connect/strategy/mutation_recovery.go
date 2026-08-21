@@ -83,7 +83,7 @@ func (s *StrategyExecutionServer) recoverFromOutcomeUnknown(
 			zap.String("account", cfg.AccountID),
 			zap.Int64("ticket", ticket),
 		)
-		s.logOrderLifecycle(activeSess, cfg, "order_recovered_confirmed", "", ticket, "")
+		s.logOrderLifecycle(activeSess, cfg, "order_confirmed", "", ticket, "")
 		barrier.Release()
 		if activeSess != nil {
 			activeSess.SetCircuitOpen(false)
@@ -93,7 +93,7 @@ func (s *StrategyExecutionServer) recoverFromOutcomeUnknown(
 			zap.String("account", cfg.AccountID),
 			zap.Int64("ticket", ticket),
 		)
-		s.logOrderLifecycle(activeSess, cfg, "order_recovered_rejected", "", ticket, "")
+		s.logOrderLifecycle(activeSess, cfg, "order_rejected", "", ticket, "")
 		barrier.Release()
 		if activeSess != nil {
 			activeSess.SetCircuitOpen(false)

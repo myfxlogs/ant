@@ -36,6 +36,12 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   const [closingAll, setClosingAll] = useState(false);
   const signalAbortRef = useRef<AbortController | null>(null);
   const positionsLoadedRef = useRef(false);
+  /** Monotonic timestamp (ms) of the last silent position refetch. */
+  const lastSilentFetchRef = useRef(0);
+  /** Minimum interval between silent (SSE-triggered) position refetches.
+   *  Positions change only on open/close; the live PnL is computed client-side
+   *  from bid/ask, so refetching on every SSE tick is wasteful and causes 524s. */
+  const SILENT_REFETCH_MIN_INTERVAL_MS = 10_000;
 
   const fetchPositions = useCallback(async (silent = false) => {
     if (!row.id) return;
@@ -87,7 +93,15 @@ export default function ScheduleExpandedRow({ row, activeVersion, liveBid, liveA
   }, [fetchPositions, fetchLogs, fetchSignals]);
 
   useEffect(() => {
-    if (activeVersion > 0 && row.active) void fetchPositions(true);
+    if (activeVersion <= 0 || !row.active) return;
+    // Throttle silent refetches: the watchActive SSE stream fires on every
+    // tick/heartbeat (multiple times per second), but positions only change
+    // on open/close. Without throttling, this creates a storm of RPC calls
+    // that causes Cloudflare 524 timeouts.
+    const now = Date.now();
+    if (now - lastSilentFetchRef.current < SILENT_REFETCH_MIN_INTERVAL_MS) return;
+    lastSilentFetchRef.current = now;
+    void fetchPositions(true);
   }, [activeVersion, row.active, fetchPositions]);
 
   const handleClosePosition = useCallback(async (ticket: bigint, volume: string) => {

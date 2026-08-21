@@ -110,7 +110,8 @@ func TestBackfillContextStrings_MarginFreeMargin(t *testing.T) {
 
 	var equity, balance, margin, freeMargin string
 	var positions []*antv1.LivePosition
-	if err := srv.backfillContextStrings("acct1", &equity, &balance, &margin, &freeMargin, &positions); err != nil {
+	var pendingOrders []*antv1.LivePendingOrder
+	if err := srv.backfillContextStrings("acct1", &equity, &balance, &margin, &freeMargin, &positions, &pendingOrders); err != nil {
 		t.Fatal(err)
 	}
 
@@ -130,7 +131,8 @@ func TestBackfillContextStrings_MissingSnapshot_MarginMinusOne(t *testing.T) {
 
 	var equity, balance, margin, freeMargin string
 	var positions []*antv1.LivePosition
-	if err := srv.backfillContextStrings("nonexistent", &equity, &balance, &margin, &freeMargin, &positions); err == nil {
+	var pendingOrders []*antv1.LivePendingOrder
+	if err := srv.backfillContextStrings("nonexistent", &equity, &balance, &margin, &freeMargin, &positions, &pendingOrders); err == nil {
 		t.Fatal("missing snapshot must return an error")
 	}
 }

@@ -49,7 +49,7 @@ func (s *StrategyExecutionServer) ListActiveStrategies(ctx context.Context, req 
 	pbStrategies := make([]*antv1.ActiveStrategy, len(sessions))
 	tickFn := s.tickPriceFn()
 	for i, sess := range sessions {
-		pbStrategies[i] = activeSessionToProto(sess, tickFn)
+		pbStrategies[i] = activeSessionToProto(sess, tickFn, s.posCache)
 	}
 	s.enrichWithStrategyName(ctx, pbStrategies)
 	return connect.NewResponse(&antv1.ListActiveStrategiesResponse{Strategies: pbStrategies}), nil
@@ -78,7 +78,7 @@ func (s *StrategyExecutionServer) GetActiveStrategy(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("strategy %s not found", runID))
 	}
 
-	pb := activeSessionToProto(sess, s.tickPriceFn())
+	pb := activeSessionToProto(sess, s.tickPriceFn(), s.posCache)
 	s.enrichWithStrategyName(ctx, []*antv1.ActiveStrategy{pb})
 	return connect.NewResponse(&antv1.GetActiveStrategyResponse{Strategy: pb}), nil
 }
@@ -202,7 +202,7 @@ func (s *StrategyExecutionServer) WatchActiveStrategies(
 		}
 		pbStrats := make([]*antv1.ActiveStrategy, 0, len(sessions))
 		for _, sess := range sessions {
-			pbStrats = append(pbStrats, activeSessionToProto(sess, tickFn))
+			pbStrats = append(pbStrats, activeSessionToProto(sess, tickFn, s.posCache))
 		}
 		s.enrichWithStrategyName(ctx, pbStrats)
 		return stream.Send(&antv1.WatchActiveStrategiesEvent{Strategies: pbStrats})

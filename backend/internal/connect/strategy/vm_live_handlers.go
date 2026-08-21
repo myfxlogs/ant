@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"strconv"
+	"time"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
@@ -14,7 +15,7 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	if lctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "bar_context missing"}
 	}
-	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions))
+	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions), vmPendingOrdersToSdk(lctx.PendingOrders))
 	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
 
 	n := len(lctx.Close)
@@ -67,7 +68,7 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 	if tctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "tick_context missing"}
 	}
-	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions))
+	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions), vmPendingOrdersToSdk(tctx.PendingOrders))
 	r.UpdateSymbolInfo(tctx.Point, tctx.Digits, tctx.ContractSize, strconv.FormatInt(int64(tctx.StopsLevel), 10))
 	bid := parseDecimal(tctx.Bid)
 	ask := parseDecimal(tctx.Ask)
@@ -86,7 +87,7 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
 	}
-	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, vmPositionsToSdk(evctx.Positions))
+	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, vmPositionsToSdk(evctx.Positions), vmPendingOrdersToSdk(evctx.PendingOrders))
 
 	side := sdk.SideBuy
 	if evctx.Side == "sell" {
@@ -133,7 +134,7 @@ func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerCont
 	if tmctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "timer_context missing"}
 	}
-	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions))
+	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions), vmPendingOrdersToSdk(tmctx.PendingOrders))
 	sig, err := r.OnTimerTick(ctx)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
@@ -141,6 +142,10 @@ func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerCont
 	return vmSignalResponse(sig, tmctx.Symbol)
 }
 
+// vmPositionsToSdk converts LivePosition protos to SDK Positions.
+// LIVE-MQL-ORDER-CONTEXT-1: now preserves ALL fields (symbol, magic, sl, tp,
+// profit, swap, commission, comment, open_time) so MQL OrderSelect/OrderMagicNumber/
+// OrderSymbol/OrderStopLoss/OrderTakeProfit/OrderComment return broker-original values.
 func vmPositionsToSdk(lps []*antv1.LivePosition) []sdk.Position {
 	positions := make([]sdk.Position, 0, len(lps))
 	for _, lp := range lps {
@@ -149,13 +154,63 @@ func vmPositionsToSdk(lps []*antv1.LivePosition) []sdk.Position {
 			side = sdk.SideSell
 		}
 		positions = append(positions, sdk.Position{
-			Ticket:    lp.Ticket,
-			Side:      side,
-			Volume:    parseDecimal(lp.Volume),
-			OpenPrice: parseDecimal(lp.OpenPrice),
+			Ticket:     lp.Ticket,
+			Symbol:     lp.Symbol,
+			Side:       side,
+			Volume:     parseDecimal(lp.Volume),
+			OpenPrice:  parseDecimal(lp.OpenPrice),
+			StopLoss:   parseDecimal(lp.Sl),
+			TakeProfit: parseDecimal(lp.Tp),
+			Profit:     parseDecimal(lp.Profit),
+			Swap:       parseDecimal(lp.Swap),
+			Commission: parseDecimal(lp.Commission),
+			Comment:    lp.Comment,
+			Magic:      lp.MagicNumber,
+			OpenTime:   time.Unix(lp.OpenTime, 0),
 		})
 	}
 	return positions
+}
+
+// vmPendingOrdersToSdk converts LivePendingOrder protos to SDK PendingOrders.
+// LIVE-MQL-ORDER-CONTEXT-1: pending orders (limit/stop) are separate from
+// market positions so MQL OrdersTotal/OrderSelect can distinguish them.
+func vmPendingOrdersToSdk(lpos []*antv1.LivePendingOrder) []sdk.PendingOrder {
+	orders := make([]sdk.PendingOrder, 0, len(lpos))
+	for _, lo := range lpos {
+		side := sdk.SideBuy
+		if lo.Side == "sell" {
+			side = sdk.SideSell
+		}
+		orders = append(orders, sdk.PendingOrder{
+			Ticket:     lo.Ticket,
+			Symbol:     lo.Symbol,
+			Type:       vmPendingOrderType(lo.OrderType),
+			Side:       side,
+			Volume:     parseDecimal(lo.Volume),
+			Price:      parseDecimal(lo.Price),
+			StopLoss:   parseDecimal(lo.Sl),
+			TakeProfit: parseDecimal(lo.Tp),
+			Comment:    lo.Comment,
+			Magic:      lo.MagicNumber,
+			OpenTime:   time.Unix(lo.OpenTime, 0),
+		})
+	}
+	return orders
+}
+
+// vmPendingOrderType converts a pending order type string to sdk.OrderType.
+func vmPendingOrderType(s string) sdk.OrderType {
+	switch s {
+	case "buy_limit", "sell_limit":
+		return sdk.OrderLimit
+	case "buy_stop", "sell_stop":
+		return sdk.OrderStop
+	case "buy_stop_limit", "sell_stop_limit":
+		return sdk.OrderStopLimit
+	default:
+		return sdk.OrderMarket
+	}
 }
 
 func vmTradeEventType(s string) sdk.TradeEventType {

@@ -1,0 +1,24 @@
+{
+  "read_config_from": {
+    "agents_standard": true,
+    "claude": true,
+    "windsurf": true,
+    "cursor": true
+  },
+  "permissions": {
+    "deny": [
+      "Exec(git reset --hard *)",
+      "Exec(git clean *)",
+      "Exec(rm -rf *)",
+      "Exec(git push --force *)"
+    ],
+    "ask": [
+      "Exec(git commit *)",
+      "Exec(git push *)",
+      "Exec(docker compose build *)",
+      "Exec(docker compose up *)",
+      "Exec(docker cp *)",
+      "Exec(docker exec *)"
+    ]
+  }
+}

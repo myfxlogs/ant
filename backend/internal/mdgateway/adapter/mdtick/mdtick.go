@@ -264,3 +264,28 @@ type AccountConfig struct {
 	MtapiToken string   // mt_token plaintext from DB
 	Symbols    []string // canonical_subscribed_symbols
 }
+
+// IsPendingOrderType returns true if the order type string represents a
+// pending (limit/stop) order rather than a market position.
+// LIVE-MQL-ORDER-CONTEXT-1: used to split OnOrderUpdate positions into
+// market positions vs pending orders for MQL OrdersTotal/OrderSelect.
+// Market: "buy", "sell". Pending: "buy_limit", "sell_limit", "buy_stop",
+// "sell_stop", "buy_stop_limit", "sell_stop_limit".
+// "balance" and "credit" are neither market nor pending — they are
+// account-level entries that should not appear in OrdersTotal.
+func IsPendingOrderType(orderType string) bool {
+	switch orderType {
+	case "buy_limit", "sell_limit",
+		"buy_stop", "sell_stop",
+		"buy_stop_limit", "sell_stop_limit":
+		return true
+	default:
+		return false
+	}
+}
+
+// IsMarketPositionType returns true if the order type string represents a
+// market position (buy/sell). Pending orders and balance/credit return false.
+func IsMarketPositionType(orderType string) bool {
+	return orderType == "buy" || orderType == "sell"
+}

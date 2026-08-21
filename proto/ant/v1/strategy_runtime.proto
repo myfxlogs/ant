@@ -246,9 +246,16 @@ message LiveStrategyContext {
   int32 digits = 22;
   string contract_size = 23;
   int32 stops_level = 24;
+
+  // LIVE-MQL-ORDER-CONTEXT-1: pending orders (limit/stop) separate from
+  // market positions for MQL OrdersTotal/OrderSelect account-level semantics.
+  repeated LivePendingOrder pending_orders = 25;
 }
 
 // LivePosition mirrors the engine Position for live context.
+// LIVE-MQL-ORDER-CONTEXT-1: added symbol, magic_number, order_type, profit,
+// comment, open_time so MQL OrderSelect/OrderMagicNumber/OrderSymbol can
+// preserve broker-original account-level semantics.
 message LivePosition {
   int64 ticket = 1;
   string side = 2;       // "buy" | "sell"
@@ -258,6 +265,30 @@ message LivePosition {
   string tp = 6;
   string swap = 7;
   string commission = 8;
+  string symbol = 9;
+  int32 magic_number = 10;
+  string order_type = 11;  // "buy" | "sell" (market positions only)
+  string profit = 12;
+  string comment = 13;
+  int64 open_time = 14;    // unix seconds
+}
+
+// LivePendingOrder mirrors a pending (limit/stop) order for live context.
+// LIVE-MQL-ORDER-CONTEXT-1: pending orders must NOT be disguised as market
+// positions — they have their own proto so OrdersTotal/OrderSelect can
+// distinguish them per MQL4 MODE_TRADES semantics.
+message LivePendingOrder {
+  int64 ticket = 1;
+  string symbol = 2;
+  string order_type = 3;   // "buy_limit" | "sell_limit" | "buy_stop" | "sell_stop" | "buy_stop_limit" | "sell_stop_limit"
+  string side = 4;         // "buy" | "sell" (derived from order_type)
+  string volume = 5;
+  string price = 6;        // pending order trigger price
+  string sl = 7;
+  string tp = 8;
+  string comment = 9;
+  int32 magic_number = 10;
+  int64 open_time = 11;    // unix seconds (order placement time)
 }
 
 // LiveParam is a key-value strategy parameter.
@@ -311,6 +342,9 @@ message TickContext {
   int32 digits = 14;
   string contract_size = 15;
   int32 stops_level = 16;
+
+  // LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
+  repeated LivePendingOrder pending_orders = 17;
 }
 
 // TradeContext carries a trade event for OnTrade strategies.
@@ -334,6 +368,9 @@ message TradeContext {
   // Account margin state (LIVE-HARNESS-PARITY Task 2).
   string margin = 15;
   string free_margin = 16;
+
+  // LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
+  repeated LivePendingOrder pending_orders = 17;
 }
 
 // TimerContext carries a periodic timer fire for OnTimer strategies.
@@ -350,6 +387,9 @@ message TimerContext {
   // Account margin state (LIVE-HARNESS-PARITY Task 2).
   string margin = 8;
   string free_margin = 9;
+
+  // LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
+  repeated LivePendingOrder pending_orders = 10;
 }
 
 // ── Strategy Import (migration engine) ──────────────────────────────
@@ -522,6 +562,9 @@ message ActiveStrategy {
 // StrategyDiagnostics carries runtime diagnostics for a live strategy session.
 // L1: evaluation counters (bar/tick/trade eval counts, window bars, orders total).
 // L2: indicator ring buffer (last N values per indicator key, display-ordered).
+// L3 (LIVE-DIAG-TRUTH-1): order truth — VM vs broker vs magic counts, execution
+// state, freshness provenance, order lifecycle. All L3 fields are computed
+// server-side from PositionCache + TradeBarrier; the frontend renders only.
 message StrategyDiagnostics {
   int64 eval_count = 1;       // total evaluations (bar + tick + trade)
   int64 tick_count = 2;       // tick evaluations
@@ -530,6 +573,44 @@ message StrategyDiagnostics {
   int32 window_bars = 5;      // server-side bar window length
   int32 orders_total = 6;     // last OrdersTotal seen by VM (R3: from VM internal, not event loop)
   repeated DiagIndicatorSeries indicators = 7;  // L2 indicator ring buffer, display-ordered
+
+  // L3: Order truth — distinguishes VM count from broker account-level count
+  // and strategy-magic-filtered count. Mixed-magic scenario (broker account=3,
+  // target magic=1, VM=0) must show all three, not collapse into one.
+  int32 vm_orders_total = 8;          // VM's last OrdersTotal (account-level, no magic filter)
+  int32 broker_account_orders = 9;    // broker account-level open positions + pending orders
+  int32 strategy_magic_orders = 10;   // orders matching schedule magic number
+  int32 pending_broker_orders = 11;   // broker pending orders (limit/stop, not market positions)
+  int32 schedule_magic = 12;          // schedule's magic number for position attribution
+
+  // L3: Execution state — from TradeBarrier, not inferred by frontend.
+  // Values: "idle", "submitting", "accepted_unconfirmed", "confirmed",
+  //         "deterministic_rejected", "outcome_unknown"
+  string execution_state = 13;
+
+  // L3: Order lifecycle — most recent order's lifecycle stage.
+  // Values: "signal_generated", "order_submitting", "order_submitted",
+  //         "order_confirmed", "order_rejected", "order_outcome_unknown"
+  // signal_generated ≠ order_confirmed: a signal is not a fill.
+  string order_lifecycle = 14;
+  int64 last_broker_ticket = 15;      // most recent broker ticket (0 = none)
+
+  // L3: Financial snapshot freshness — from PositionCache.
+  string financial_source = 16;       // e.g. "order_stream", "profit_stream", "account_summary"
+  int64 financial_captured_at = 17;   // unix ms of broker event time
+  int64 financial_age_ms = 18;        // age since captured_at (ms), computed at snapshot time
+  bool financial_fresh = 19;          // true if within AccountSnapshotMaxAge (90s)
+
+  // L3: Positions snapshot freshness — independently tracked from financials.
+  string positions_source = 20;       // e.g. "order_stream", "opened_orders_initial"
+  int64 positions_captured_at = 21;   // unix ms of broker event time for positions
+  int64 positions_age_ms = 22;        // age since positions_captured_at (ms)
+  bool positions_fresh = 23;          // true if within AccountSnapshotMaxAge (90s)
+
+  // L3: Data availability — false when no broker data source exists (paper mode,
+  // not wired). Distinguishes "unavailable" from "stale": when false, freshness
+  // fields are meaningless and frontend shows N/A instead of Stale/Warning.
+  bool data_available = 24;
 }
 
 // DiagIndicatorSeries is a named ring buffer of indicator values for diagnostics.
