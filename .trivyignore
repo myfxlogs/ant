@@ -2,3 +2,4 @@
 # Add entries as CVE-YYYY-NNNNN or package@version patterns.
 # Example:
 # CVE-2024-9999    # Accepted: libfoo fixed in next base image
+GO-2026-5932    # golang.org/x/crypto/openpgp unmaintained, no fix available; not used in code paths
