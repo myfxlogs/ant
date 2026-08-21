@@ -166,6 +166,12 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ✅ `PositionCache` freshness 拆分：`GetFreshTradingSnapshot`（financials+positions 都须 fresh）给 VM/Risk Gate；`GetFreshFinancialSnapshot`/`GetFreshPositionSnapshot` 给 display；financial-only refresh 不让 stale positions 显 fresh
 - 后果：fire-and-forget → VM 在 broker 确认前继续 → `OrdersTotal()==0` → 下一 tick 重复开仓 → 数秒内多个同方向订单
 
+**账户快照 freshness 续期（DATA-TRUTH-10 / DATA-TRUTH-10-FIX2）**：
+- ❌ `refreshAccountSummary`（45s ticker）调 `fetchAndPublish(ctx, sid, nil, handler)` 时 `p==nil` → `PositionsAuthoritative: false` → `PositionCache.put()` 不更新 `positionsReceivedAt` → 0 持仓账户无 `OnOrderUpdate` 事件 → 90s 后 `GetFreshTradingSnapshot` 全阻塞（生产实测 92 分钟 7,730 次错误）
+- ✅ `fetchAndPublish` 在 `p==nil` 时必须额外调 `OpenedOrders` RPC 获取权威持仓（即使为空），设 `PositionsAuthoritative: true`——0 持仓也是权威的
+- ❌ **测试禁止把 bug 行为编码为期望行为**：原 `TestAccountSummaryRefreshContinuesWithoutProfitFrames` 断言 `PositionsAuthoritative: false`（即 bug），删修复行测试仍 GREEN = 测试穿透。修复后断言改为 `true` + mock 加 `openedOrdersRes`，删 `positionsAuth = true` → RED
+- **通用规则**：任何 `PositionsAuthoritative` / `FinancialsAuthoritative` 的续期路径必须同时更新 `positionsReceivedAt` 和 `financialsReceivedAt`；只更新一个会导致 `GetFreshTradingSnapshot`（要求两者都 fresh）在 90s 后 fail-closed
+
 ## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 代码验收通过，待生产部署验收)
 
 - **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。

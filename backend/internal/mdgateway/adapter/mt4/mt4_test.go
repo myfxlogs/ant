@@ -817,9 +817,15 @@ func TestDATATRUTH2_AccountSummaryFailureRejectsFinancialSnapshot(t *testing.T) 
 func TestAccountSummaryRefreshContinuesWithoutProfitFrames(t *testing.T) {
 	t.Parallel()
 	gw := New(mdtick.AccountConfig{AccountID: "a1"}, zap.NewNop())
-	gw.client = &mockMT4Client{accountSummaryRes: &pb.AccountSummaryReply{Result: &pb.AccountSummary{
-		Balance: 10000, Equity: 10000, FreeMargin: 10000, Leverage: 100,
-	}}}
+	gw.client = &mockMT4Client{
+		accountSummaryRes: &pb.AccountSummaryReply{Result: &pb.AccountSummary{
+			Balance: 10000, Equity: 10000, FreeMargin: 10000, Leverage: 100,
+		}},
+		// OpenedOrders returns empty reply → positions are authoritative (0 positions).
+		// This is the fix for stale snapshot: refreshAccountSummary now fetches
+		// OpenedOrders so positionsReceivedAt stays fresh even for empty accounts.
+		openedOrdersRes: &pb.OpenedOrdersReply{Result: []*pb.Order{}},
+	}
 	updates := make(chan *mdtick.ProfitUpdate, 4)
 	ctx, cancel := context.WithTimeout(context.Background(), 80*time.Millisecond)
 	defer cancel()
@@ -827,8 +833,13 @@ func TestAccountSummaryRefreshContinuesWithoutProfitFrames(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		select {
 		case got := <-updates:
-			if !got.FreeMargin.Equal(decimal.NewFromInt(10000)) || got.PositionsAuthoritative {
-				t.Fatalf("unexpected financial refresh: %+v", got)
+			if !got.FreeMargin.Equal(decimal.NewFromInt(10000)) {
+				t.Fatalf("unexpected FreeMargin: %s", got.FreeMargin)
+			}
+			// PositionsAuthoritative must be true — refreshAccountSummary fetches
+			// OpenedOrders to keep positionsReceivedAt fresh.
+			if !got.PositionsAuthoritative {
+				t.Fatalf("expected PositionsAuthoritative=true (OpenedOrders fetched), got false: %+v", got)
 			}
 		case <-ctx.Done():
 			t.Fatal("periodic AccountSummary refresh stopped without profit frames")
