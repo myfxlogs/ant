@@ -758,6 +758,20 @@ const Base = {
           "order_confirmed": "Lệnh đã xác nhận",
           "order_rejected": "Lệnh bị từ chối",
           "order_outcome_unknown": "Kết quả không rõ"
+        },
+        "execState": {
+          "idle": "Chờ",
+          "submitting": "Đang gửi",
+          "accepted_unconfirmed": "Đã nhận (chưa xác nhận)",
+          "confirmed": "Đã xác nhận",
+          "deterministic_rejected": "Bị từ chối",
+          "outcome_unknown": "Không rõ"
+        },
+        "source": {
+          "account_summary": "Tóm tắt tài khoản",
+          "profit_stream": "Luồng lợi nhuận",
+          "order_update": "Cập nhật lệnh",
+          "position_snapshot": "Ảnh chụp vị thế"
         }
       },
       "stopSuccess": "Chiến lược đã dừng",
@@ -1897,6 +1911,13 @@ const Base = {
     "result": {
       "pass": "PASS",
       "reject": "REJECT"
+    },
+    "signalType": {
+      "buy": "MUA",
+      "sell": "BÁN",
+      "close": "ĐÓNG",
+      "hold": "GIỮ",
+      "modify": "SỬA"
     }
   },
   "app": {

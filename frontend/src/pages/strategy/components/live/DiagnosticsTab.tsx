@@ -205,7 +205,7 @@ export default function DiagnosticsTab({ active }: Props) {
       <Descriptions size="small" column={2} bordered style={{ marginTop: 12 }} title={t('strategy.live.diag.execution')}>
         <Descriptions.Item label={t('strategy.live.diag.executionState')}>
           <Tag color={executionStateColor(diag?.executionState ?? 'idle')}>
-            {diag?.executionState ?? 'idle'}
+            {t(`strategy.live.diag.execState.${diag?.executionState ?? 'idle'}`)}
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.live.diag.orderLifecycle')}>
@@ -218,7 +218,7 @@ export default function DiagnosticsTab({ active }: Props) {
       {/* L3: Freshness (rules 3, 5: server-computed, frontend renders only) */}
       <Descriptions size="small" column={3} bordered style={{ marginTop: 12 }} title={t('strategy.live.diag.freshness')}>
         <Descriptions.Item label={t('strategy.live.diag.financialSource')}>
-          {diag?.financialSource || '-'}
+          {diag?.financialSource ? t(`strategy.live.diag.source.${diag.financialSource}`, { defaultValue: diag.financialSource }) : '-'}
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.live.diag.financialAge')}>
           {formatAge(diag?.financialAgeMs ?? 0n)}
@@ -227,7 +227,7 @@ export default function DiagnosticsTab({ active }: Props) {
           {finFreshTag}
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.live.diag.positionsSource')}>
-          {diag?.positionsSource || '-'}
+          {diag?.positionsSource ? t(`strategy.live.diag.source.${diag.positionsSource}`, { defaultValue: diag.positionsSource }) : '-'}
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.live.diag.positionsAge')}>
           {formatAge(diag?.positionsAgeMs ?? 0n)}

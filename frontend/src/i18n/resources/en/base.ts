@@ -758,6 +758,20 @@ const Base = {
           "order_confirmed": "Order Confirmed",
           "order_rejected": "Order Rejected",
           "order_outcome_unknown": "Outcome Unknown"
+        },
+        "execState": {
+          "idle": "Idle",
+          "submitting": "Submitting",
+          "accepted_unconfirmed": "Accepted (Unconfirmed)",
+          "confirmed": "Confirmed",
+          "deterministic_rejected": "Rejected",
+          "outcome_unknown": "Unknown"
+        },
+        "source": {
+          "account_summary": "Account Summary",
+          "profit_stream": "Profit Stream",
+          "order_update": "Order Update",
+          "position_snapshot": "Position Snapshot"
         }
       },
       "stopSuccess": "Strategy stopped",
@@ -1898,6 +1912,13 @@ const Base = {
     "result": {
       "pass": "PASS",
       "reject": "REJECT"
+    },
+    "signalType": {
+      "buy": "BUY",
+      "sell": "SELL",
+      "close": "CLOSE",
+      "hold": "HOLD",
+      "modify": "MODIFY"
     }
   },
   "app": {

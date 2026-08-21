@@ -758,6 +758,20 @@ const Base = {
           "order_confirmed": "訂單已確認",
           "order_rejected": "訂單已拒絕",
           "order_outcome_unknown": "結果未知"
+        },
+        "execState": {
+          "idle": "閒置",
+          "submitting": "提交中",
+          "accepted_unconfirmed": "已接受（未確認）",
+          "confirmed": "已確認",
+          "deterministic_rejected": "已拒絕",
+          "outcome_unknown": "未知"
+        },
+        "source": {
+          "account_summary": "帳戶摘要",
+          "profit_stream": "利潤流",
+          "order_update": "訂單更新",
+          "position_snapshot": "持倉快照"
         }
       },
       "stopSuccess": "策略已停止",
@@ -1897,6 +1911,13 @@ const Base = {
     "result": {
       "pass": "通過",
       "reject": "拒絕"
+    },
+    "signalType": {
+      "buy": "買入",
+      "sell": "賣出",
+      "close": "平倉",
+      "hold": "持有",
+      "modify": "修改"
     }
   },
   "app": {

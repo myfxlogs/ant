@@ -26,10 +26,13 @@ export function getEventTypeTag(type: string | undefined) {
   return <Tag color={colors[n] || 'default'}>{n ? n.toUpperCase() : '-'}</Tag>;
 }
 
-export function getSignalTypeTag(type: string | undefined) {
+export function getSignalTypeTag(type: string | undefined, t?: (k: string, o?: Record<string, unknown>) => string) {
   if (!type) return '-';
   const colors: Record<string, string> = { buy: 'green', sell: 'red', close: 'orange', hold: 'default', modify: 'blue' };
-  return <Tag color={colors[type] || 'default'}>{type.toUpperCase()}</Tag>;
+  const tl = t ?? ((k: string) => k);
+  const key = `logs.signalType.${type.toLowerCase()}`;
+  const label = tl(key, { defaultValue: type.toUpperCase() });
+  return <Tag color={colors[type] || 'default'}>{label}</Tag>;
 }
 
 interface ColumnOpts {
@@ -62,7 +65,7 @@ export function buildExecutionColumns({ t, formatTime }: ColumnOpts) {
     { title: t(PRODUCT_KEY), dataIndex: 'symbol', key: 'symbol', width: 100 },
     { title: t(PERIOD_KEY), dataIndex: 'timeframe', key: 'timeframe', width: 80 },
     { title: t(STATUS_KEY), dataIndex: 'status', key: 'status', width: 100, render: (v: string) => getStatusTag(v, t) },
-    { title: t(SIGNAL_KEY), dataIndex: 'signalType', key: 'signalType', width: 80, render: getSignalTypeTag },
+    { title: t(SIGNAL_KEY), dataIndex: 'signalType', key: 'signalType', width: 80, render: (v: string) => getSignalTypeTag(v, t) },
     { title: t(SIGNAL_PRICE_KEY), dataIndex: 'signalPrice', key: 'signalPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
     { title: t(EXECUTION_PRICE_KEY), dataIndex: 'executedPrice', key: 'executedPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
     { title: t(PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 100, render: (v: number) => v ? <span style={{ color: v >= 0 ? 'green' : 'red' }}>{v.toFixed(2)}</span> : '-' },

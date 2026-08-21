@@ -73,7 +73,11 @@ export function buildExecColumns({ t, formatTime }: ColOpts): ColumnsType<Schedu
     { title: t(EXEC_TABLE_ACTION_KEY), key: 'action', width: 160, render: (_: unknown, row: ScheduleRunLog) => {
       if (String(row?.kind || '').toLowerCase() === 'operation') return renderOperationAction(row?.action, t);
       const st = String(row?.signalType || row?.action || '').toLowerCase();
+      if (st === 'buy') return <Text>{t(ORDER_SIDE_BUY_KEY)}</Text>;
+      if (st === 'sell') return <Text>{t(ORDER_SIDE_SELL_KEY)}</Text>;
       if (st === 'close') return <Text>{t(ORDER_SIDE_CLOSE_KEY)}</Text>;
+      if (st === 'modify') return <Text>{t('strategy.scheduleLogs.signalType.modify', { defaultValue: 'Modify' })}</Text>;
+      if (st === 'hold') return <Text>{t('strategy.scheduleLogs.signalType.hold', { defaultValue: 'Hold' })}</Text>;
       if (st === 'register') return <Text>{t(ACTION_REGISTER_KEY)}</Text>;
       if (st === 'cleanup') return <Text>{t(ACTION_CLEANUP_KEY)}</Text>;
       return <Text>{String(row?.signalType || row?.action || t(EXEC_TABLE_EXECUTE_KEY))}</Text>;

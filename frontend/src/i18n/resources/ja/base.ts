@@ -758,6 +758,20 @@ const Base = {
           "order_confirmed": "注文確認済み",
           "order_rejected": "注文拒否",
           "order_outcome_unknown": "結果不明"
+        },
+        "execState": {
+          "idle": "アイドル",
+          "submitting": "送信中",
+          "accepted_unconfirmed": "承認（未確認）",
+          "confirmed": "確認済み",
+          "deterministic_rejected": "拒否",
+          "outcome_unknown": "不明"
+        },
+        "source": {
+          "account_summary": "口座サマリー",
+          "profit_stream": "プロフィットストリーム",
+          "order_update": "注文更新",
+          "position_snapshot": "ポジションスナップショット"
         }
       },
       "stopSuccess": "ストラテジーが停止しました",
@@ -1897,6 +1911,13 @@ const Base = {
     "result": {
       "pass": "合格",
       "reject": "却下"
+    },
+    "signalType": {
+      "buy": "買い",
+      "sell": "売り",
+      "close": "決済",
+      "hold": "ホールド",
+      "modify": "修正"
     }
   },
   "app": {
