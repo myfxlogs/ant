@@ -148,71 +148,86 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		backoff = time.Second
 		g.reportStatus("connected", "")
 		g.log.Info("mt5: quote stream active")
-		for {
-			timeout := g.quoteRecvTimeout()
-			timer := time.NewTimer(timeout)
-
-			type recvResult struct {
-				resp *pb.OnQuoteReply
-				err  error
-			}
-			ch := make(chan recvResult, 1)
-			go func() {
-				tick, err := stream.Recv()
-				select {
-				case ch <- recvResult{resp: tick, err: err}:
-				case <-subCtx.Done():
-				}
-			}()
-
-			select {
-			case <-subCtx.Done():
-				if !timer.Stop() {
-					<-timer.C
-				}
-				cancel()
-				goto mt5QuoteLoopEnd
-			case <-timer.C:
-				g.log.Warn("mt5 quote stream silence timeout; retrying quote stream",
-					zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
-				cancel()
-				// Do NOT call Disconnect() — see mt4/quotes.go for rationale.
-				g.sleep(ctx, backoff)
-				backoff = minDuration(backoff*2, maxBackoff)
-				goto mt5QuoteLoopEnd
-			case r := <-ch:
-				if !timer.Stop() {
-					select {
-					case <-timer.C:
-					default:
-					}
-				}
-				if r.err != nil {
-					g.log.Warn("mt5 recv", zap.Error(r.err))
-					cancel()
-					g.handleStreamError(ctx, r.err, &backoff)
-					goto mt5QuoteLoopEnd
-				}
-				q := r.resp.GetResult()
-				if q == nil {
-					continue
-				}
-				handler(&mdtick.Tick{
-					UserID:        g.cfg.UserID,
-					AccountID:     g.cfg.AccountID,
-					Broker:        g.cfg.Broker,
-					Platform:      "mt5",
-					SymbolRaw:     q.GetSymbol(),
-					Canonical:     "",
-					TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-					ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
-					Bid:           decimal.NewFromFloat(q.GetBid()),
-					Ask:           decimal.NewFromFloat(q.GetAsk()),
-					BidVolume:     float64(q.GetVolume()),
-				})
-			}
+	for {
+		action := g.recvQuoteFrame(ctx, subCtx, stream, handler, &backoff, maxBackoff)
+		if action == quoteActionContinue {
+			continue
 		}
-	mt5QuoteLoopEnd:
+		cancel()
+		break
+	}
+}
+}
+
+// quoteFrameAction represents the outcome of a single recvQuoteFrame call.
+type quoteFrameAction int
+
+const (
+	quoteActionContinue quoteFrameAction = iota // got a tick, keep looping
+	quoteActionBreak                            // silence timeout or error, break inner loop
+)
+
+// recvQuoteFrame receives one quote frame with a silence timeout. On silence
+// timeout or Recv error, returns quoteActionBreak (caller cancels + retries
+// the stream). On successful tick, dispatches via handler and returns
+// quoteActionContinue.
+// Do NOT call Disconnect() on silence — that tears down the shared connection
+// including the profit stream. mtapi proxy can keep the gRPC connection alive
+// (keepalive pings succeed) but stop pushing quote data. Without this silence
+// timeout, stream.Recv() blocks forever and the strategy starves for ticks.
+func (g *Gateway) recvQuoteFrame(ctx context.Context, subCtx context.Context,
+	stream pb.Streams_OnQuoteClient, handler mdtick.TickHandler, backoff *time.Duration, maxBackoff time.Duration,
+) quoteFrameAction {
+	timeout := g.quoteRecvTimeout()
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	type recvResult struct {
+		resp *pb.OnQuoteReply
+		err  error
+	}
+	ch := make(chan recvResult, 1)
+	go func() {
+		tick, err := stream.Recv()
+		select {
+		case ch <- recvResult{resp: tick, err: err}:
+		case <-subCtx.Done():
+		}
+	}()
+
+	select {
+	case <-subCtx.Done():
+		return quoteActionBreak
+	case <-timer.C:
+		g.log.Warn("mt5 quote stream silence timeout; retrying quote stream",
+			zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
+		g.sleep(ctx, *backoff)
+		*backoff = minDuration(*backoff*2, maxBackoff)
+		return quoteActionBreak
+	case r := <-ch:
+		if r.err != nil {
+			g.log.Warn("mt5 recv", zap.Error(r.err))
+			g.handleStreamError(ctx, r.err, backoff)
+			return quoteActionBreak
+		}
+		q := r.resp.GetResult()
+		if q == nil {
+			return quoteActionContinue
+		}
+		handler(&mdtick.Tick{
+			UserID:        g.cfg.UserID,
+			AccountID:     g.cfg.AccountID,
+			Broker:        g.cfg.Broker,
+			Platform:      "mt5",
+			SymbolRaw:     q.GetSymbol(),
+			Canonical:     "",
+			TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
+			ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
+			Bid:           decimal.NewFromFloat(q.GetBid()),
+			Ask:           decimal.NewFromFloat(q.GetAsk()),
+			BidVolume:     float64(q.GetVolume()),
+		})
+		return quoteActionContinue
 	}
 }
 

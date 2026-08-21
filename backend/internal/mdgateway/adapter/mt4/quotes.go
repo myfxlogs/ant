@@ -158,75 +158,84 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.reportStatus("connected", "")
 		g.log.Info("mt4: quote stream active")
 		for {
-			timeout := g.quoteRecvTimeout()
-			timer := time.NewTimer(timeout)
-
-			type recvResult struct {
-				resp *pb.OnQuoteReply
-				err  error
+			action := g.recvQuoteFrame(ctx, subCtx, stream, handler, &backoff, maxBackoff)
+			if action == quoteActionContinue {
+				continue
 			}
-			ch := make(chan recvResult, 1)
-			go func() {
-				quote, err := stream.Recv()
-				select {
-				case ch <- recvResult{resp: quote, err: err}:
-				case <-subCtx.Done():
-				}
-			}()
-
-			select {
-			case <-subCtx.Done():
-				if !timer.Stop() {
-					<-timer.C
-				}
-				cancel()
-				goto quoteLoopEnd
-			case <-timer.C:
-				g.log.Warn("mt4 quote stream silence timeout; retrying quote stream",
-					zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
-				cancel()
-				// Do NOT call Disconnect() — that tears down the shared connection
-				// including the profit stream. mtapi proxy can keep the gRPC connection
-				// alive (keepalive pings succeed) but stop pushing quote data. Without
-				// this silence timeout, stream.Recv() blocks forever and the strategy
-				// starves for ticks. Just sleep with backoff and retry on the same
-				// connection; if the connection is truly dead, gRPC keepalive will
-				// eventually return a Recv error which triggers handleStreamError.
-				g.sleep(ctx, backoff)
-				backoff = minDuration(backoff*2, maxBackoff)
-				goto quoteLoopEnd
-			case r := <-ch:
-				if !timer.Stop() {
-					select {
-					case <-timer.C:
-					default:
-					}
-				}
-				if r.err != nil {
-					g.log.Warn("mt4 recv", zap.Error(r.err))
-					cancel()
-					g.handleStreamError(ctx, r.err, &backoff)
-					goto quoteLoopEnd
-				}
-				q := r.resp.GetResult()
-				if q == nil {
-					continue
-				}
-				handler(&mdtick.Tick{
-					UserID:        g.cfg.UserID,
-					AccountID:     g.cfg.AccountID,
-					Broker:        g.cfg.Broker,
-					Platform:      "mt4",
-					SymbolRaw:     q.GetSymbol(),
-					Canonical:     "",
-					TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-					ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
-					Bid:           decimal.NewFromFloat(q.GetBid()),
-					Ask:           decimal.NewFromFloat(q.GetAsk()),
-				})
-			}
+			cancel()
+			break
 		}
-	quoteLoopEnd:
+	}
+}
+
+// quoteFrameAction represents the outcome of a single recvQuoteFrame call.
+type quoteFrameAction int
+
+const (
+	quoteActionContinue quoteFrameAction = iota // got a tick, keep looping
+	quoteActionBreak                            // silence timeout or error, break inner loop
+)
+
+// recvQuoteFrame receives one quote frame with a silence timeout. On silence
+// timeout or Recv error, returns quoteActionBreak (caller cancels + retries
+// the stream). On successful tick, dispatches via handler and returns
+// quoteActionContinue.
+// Do NOT call Disconnect() on silence — that tears down the shared connection
+// including the profit stream. mtapi proxy can keep the gRPC connection alive
+// (keepalive pings succeed) but stop pushing quote data. Without this silence
+// timeout, stream.Recv() blocks forever and the strategy starves for ticks.
+func (g *Gateway) recvQuoteFrame(ctx context.Context, subCtx context.Context,
+	stream pb.Streams_OnQuoteClient, handler mdtick.TickHandler, backoff *time.Duration, maxBackoff time.Duration,
+) quoteFrameAction {
+	timeout := g.quoteRecvTimeout()
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	type recvResult struct {
+		resp *pb.OnQuoteReply
+		err  error
+	}
+	ch := make(chan recvResult, 1)
+	go func() {
+		quote, err := stream.Recv()
+		select {
+		case ch <- recvResult{resp: quote, err: err}:
+		case <-subCtx.Done():
+		}
+	}()
+
+	select {
+	case <-subCtx.Done():
+		return quoteActionBreak
+	case <-timer.C:
+		g.log.Warn("mt4 quote stream silence timeout; retrying quote stream",
+			zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
+		g.sleep(ctx, *backoff)
+		*backoff = minDuration(*backoff*2, maxBackoff)
+		return quoteActionBreak
+	case r := <-ch:
+		if r.err != nil {
+			g.log.Warn("mt4 recv", zap.Error(r.err))
+			g.handleStreamError(ctx, r.err, backoff)
+			return quoteActionBreak
+		}
+		q := r.resp.GetResult()
+		if q == nil {
+			return quoteActionContinue
+		}
+		handler(&mdtick.Tick{
+			UserID:        g.cfg.UserID,
+			AccountID:     g.cfg.AccountID,
+			Broker:        g.cfg.Broker,
+			Platform:      "mt4",
+			SymbolRaw:     q.GetSymbol(),
+			Canonical:     "",
+			TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
+			ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
+			Bid:           decimal.NewFromFloat(q.GetBid()),
+			Ask:           decimal.NewFromFloat(q.GetAsk()),
+		})
+		return quoteActionContinue
 	}
 }
 

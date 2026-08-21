@@ -105,22 +105,29 @@ func (m *mockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
 		m.mu.Unlock()
 		return q, nil
 	}
+	recvErr := m.recvErr
+	ctx := m.ctx
 	m.mu.Unlock()
 	// If a Recv error is configured, return it (simulating a dead/tripped stream).
-	if m.recvErr != nil {
-		return nil, m.recvErr
+	if recvErr != nil {
+		return nil, recvErr
 	}
 	// Block until context is cancelled, simulating a long-lived idle stream.
-	if m.ctx != nil {
-		<-m.ctx.Done()
-		return nil, m.ctx.Err()
+	if ctx != nil {
+		<-ctx.Done()
+		return nil, ctx.Err()
 	}
 	return nil, io.EOF
 }
 func (m *mockQuoteStream) Header() (metadata.MD, error) { return nil, nil }
 func (m *mockQuoteStream) Trailer() metadata.MD         { return nil }
 func (m *mockQuoteStream) CloseSend() error             { return nil }
-func (m *mockQuoteStream) Context() context.Context     { return m.ctx }
+func (m *mockQuoteStream) Context() context.Context {
+	m.mu.Lock()
+	ctx := m.ctx
+	m.mu.Unlock()
+	return ctx
+}
 func (m *mockQuoteStream) SendMsg(msg any) error        { return nil }
 func (m *mockQuoteStream) RecvMsg(msg any) error        { return io.EOF }
 
@@ -140,21 +147,28 @@ func (m *mockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
 		m.mu.Unlock()
 		return u, nil
 	}
+	recvErr := m.recvErr
+	ctx := m.ctx
 	m.mu.Unlock()
-	if m.recvErr != nil {
-		return nil, m.recvErr
+	if recvErr != nil {
+		return nil, recvErr
 	}
 	// Block until context is cancelled, simulating a long-lived idle stream.
-	if m.ctx != nil {
-		<-m.ctx.Done()
-		return nil, m.ctx.Err()
+	if ctx != nil {
+		<-ctx.Done()
+		return nil, ctx.Err()
 	}
 	return nil, io.EOF
 }
 func (m *mockProfitStream) Header() (metadata.MD, error) { return nil, nil }
 func (m *mockProfitStream) Trailer() metadata.MD         { return nil }
 func (m *mockProfitStream) CloseSend() error             { return nil }
-func (m *mockProfitStream) Context() context.Context     { return m.ctx }
+func (m *mockProfitStream) Context() context.Context {
+	m.mu.Lock()
+	ctx := m.ctx
+	m.mu.Unlock()
+	return ctx
+}
 func (m *mockProfitStream) SendMsg(msg any) error        { return nil }
 func (m *mockProfitStream) RecvMsg(msg any) error        { return io.EOF }
 
@@ -174,21 +188,28 @@ func (m *mockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
 		m.mu.Unlock()
 		return u, nil
 	}
+	recvErr := m.recvErr
+	ctx := m.ctx
 	m.mu.Unlock()
-	if m.recvErr != nil {
-		return nil, m.recvErr
+	if recvErr != nil {
+		return nil, recvErr
 	}
 	// Block until context is cancelled, simulating a long-lived idle stream.
-	if m.ctx != nil {
-		<-m.ctx.Done()
-		return nil, m.ctx.Err()
+	if ctx != nil {
+		<-ctx.Done()
+		return nil, ctx.Err()
 	}
 	return nil, io.EOF
 }
 func (m *mockOrderUpdateStream) Header() (metadata.MD, error) { return nil, nil }
 func (m *mockOrderUpdateStream) Trailer() metadata.MD         { return nil }
 func (m *mockOrderUpdateStream) CloseSend() error             { return nil }
-func (m *mockOrderUpdateStream) Context() context.Context     { return m.ctx }
+func (m *mockOrderUpdateStream) Context() context.Context {
+	m.mu.Lock()
+	ctx := m.ctx
+	m.mu.Unlock()
+	return ctx
+}
 func (m *mockOrderUpdateStream) SendMsg(msg any) error        { return nil }
 func (m *mockOrderUpdateStream) RecvMsg(msg any) error        { return io.EOF }
 
@@ -243,14 +264,18 @@ func (m *mockStreamsClient) OnQuote(ctx context.Context, in *pb.OnQuoteRequest, 
 	if m.quoteErr != nil {
 		return nil, m.quoteErr
 	}
+	m.quoteStream.mu.Lock()
 	m.quoteStream.ctx = ctx
+	m.quoteStream.mu.Unlock()
 	return m.quoteStream, nil
 }
 func (m *mockStreamsClient) OnOrderProfit(ctx context.Context, in *pb.OnOrderProfitRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnOrderProfitReply], error) {
 	if m.profitErr != nil {
 		return nil, m.profitErr
 	}
+	m.profitStream.mu.Lock()
 	m.profitStream.ctx = ctx
+	m.profitStream.mu.Unlock()
 	return m.profitStream, nil
 }
 func (m *mockStreamsClient) OnOrderUpdate(ctx context.Context, in *pb.OnOrderUpdateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnOrderUpdateReply], error) {
@@ -258,7 +283,9 @@ func (m *mockStreamsClient) OnOrderUpdate(ctx context.Context, in *pb.OnOrderUpd
 		return nil, m.orderUpdateErr
 	}
 	if m.orderUpdateStream != nil {
+		m.orderUpdateStream.mu.Lock()
 		m.orderUpdateStream.ctx = ctx
+		m.orderUpdateStream.mu.Unlock()
 		return m.orderUpdateStream, nil
 	}
 	return nil, fmt.Errorf("mock: no order update stream configured")
