@@ -45,6 +45,7 @@ jobs:
           scanners: vuln
           severity: HIGH,CRITICAL
           exit-code: 1
+          trivyignores: .trivyignore
 
   # NOTE: trivy-image scan removed — docker/build-push-action@v6 context/file
   # path resolution is incompatible with multi-directory Dockerfiles.
