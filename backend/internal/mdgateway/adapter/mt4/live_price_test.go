@@ -86,13 +86,17 @@ func TestSubscribeMany_Success(t *testing.T) {
 	}
 }
 
-// TestQuoteStream_RecvError_DoesNotFireOnIdle verifies a silent quote stream
-// (no data, no error) does NOT trigger a reconnect. Idle is the normal state
-// for an event-driven stream.
+// TestQuoteStream_SilenceTimeout_FiresReconnect verifies STREAM-KEEPALIVE-1-FIX:
+// A silent quote stream (gRPC connection alive but no data pushed by mtapi
+// proxy) triggers a reconnect after the silence timeout. This is the opposite
+// of the old STREAM-KEEPALIVE-1 design which assumed "idle = normal" —
+// production proved this wrong: mtapi keeps gRPC keepalive pings succeeding
+// but stops pushing quote data, causing stream.Recv() to block forever and
+// the strategy to starve for ticks.
 //
-// Adversarial proof: Recreate the old `case <-time.After` timeout branch →
-// the test would see a "reconnecting" callback and fail (RED).
-func TestQuoteStream_RecvError_DoesNotFireOnIdle(t *testing.T) {
+// Adversarial proof: Remove the `case <-timer.C` branch from recvLoop →
+// the silence timeout never fires and no reconnect is observed (RED).
+func TestQuoteStream_SilenceTimeout_FiresReconnect(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -103,14 +107,19 @@ func TestQuoteStream_RecvError_DoesNotFireOnIdle(t *testing.T) {
 	gw.conn = &cc
 	gw.sessionID = "test-session"
 	gw.streamCli = &mockStreamsClient{
-		quoteStream: &mockQuoteStream{},
+		quoteStream: &mockQuoteStream{ctx: ctx}, // blocks on Recv until ctx cancelled
 	}
+	gw.subCli = &mockSubCli{
+		subscribeManyReply: &pb.SubscribeManyReply{Result: "ok"},
+	}
+	// Override timeout to 100ms for fast test (production default is 45s).
+	gw.quoteRecvTimeoutOverride = 100 * time.Millisecond
 
-	reconnected := make(chan struct{}, 4)
+	streamActive := make(chan struct{}, 4)
 	gw.SetStatusCallback(func(status, message string) {
-		if status == "reconnecting" {
+		if status == "connected" {
 			select {
-			case reconnected <- struct{}{}:
+			case streamActive <- struct{}{}:
 			default:
 			}
 		}
@@ -118,11 +127,20 @@ func TestQuoteStream_RecvError_DoesNotFireOnIdle(t *testing.T) {
 
 	go gw.recvLoop(ctx, func(t *mdtick.Tick) {})
 
+	// Wait for initial "quote stream active" (first connect), then the
+	// silence timeout should fire and trigger a reconnect → second "active".
 	select {
-	case <-reconnected:
-		t.Fatal("quote stream should NOT reconnect on idle silence — RED: no-data timeout still present")
-	case <-time.After(200 * time.Millisecond):
-		// GREEN: no Recv error, no reconnect
+	case <-streamActive:
+		// First connect — expected
+	case <-time.After(3 * time.Second):
+		t.Fatal("quote stream did not connect initially — setup failure")
+	}
+
+	select {
+	case <-streamActive:
+		// GREEN: silence timeout fired → cancel → retry → reconnect → "connected"
+	case <-time.After(3 * time.Second):
+		t.Fatal("quote stream did NOT reconnect after silence timeout — RED: silence timeout missing or not firing")
 	}
 }
 

@@ -43,6 +43,7 @@ type Gateway struct {
 	breaker              mdtick.Breaker
 	lastProfitUpdate     *mdtick.ProfitUpdate // last OnOrderProfit frame; used to detect data silence
 	lastProfitAt         time.Time            // last time a frame was received
+	quoteRecvTimeoutOverride time.Duration // test-only: overrides the quote stream silence timeout
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {

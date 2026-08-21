@@ -42,6 +42,7 @@ type Gateway struct {
 	reconnecting         bool                         // true while reconnection is in progress (prevents recvLoop race)
 	onStatusChange       func(status, message string) // connection state callback (nil-safe)
 	breaker              mdtick.Breaker
+	quoteRecvTimeoutOverride time.Duration // test-only: overrides the quote stream silence timeout
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {

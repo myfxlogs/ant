@@ -13,6 +13,20 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// defaultQuoteRecvTimeout is the maximum interval to wait for a quote frame
+// before declaring the stream silent and retrying. See mt4/quotes.go for
+// rationale.
+const defaultQuoteRecvTimeout = 45 * time.Second
+
+// quoteRecvTimeout returns the silence timeout for the quote stream. Tests
+// override this via quoteRecvTimeoutOverride to keep test runtime low.
+func (g *Gateway) quoteRecvTimeout() time.Duration {
+	if g.quoteRecvTimeoutOverride > 0 {
+		return g.quoteRecvTimeoutOverride
+	}
+	return defaultQuoteRecvTimeout
+}
+
 func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.TickHandler) error {
 	g.mu.RLock()
 	sc := g.streamCli
@@ -135,30 +149,68 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.reportStatus("connected", "")
 		g.log.Info("mt5: quote stream active")
 		for {
-			tick, err := stream.Recv()
-			if err != nil {
-				g.log.Warn("mt5 recv", zap.Error(err))
+			timeout := g.quoteRecvTimeout()
+			timer := time.NewTimer(timeout)
+
+			type recvResult struct {
+				resp *pb.OnQuoteReply
+				err  error
+			}
+			ch := make(chan recvResult, 1)
+			go func() {
+				tick, err := stream.Recv()
+				select {
+				case ch <- recvResult{resp: tick, err: err}:
+				case <-subCtx.Done():
+				}
+			}()
+
+			select {
+			case <-subCtx.Done():
+				if !timer.Stop() {
+					<-timer.C
+				}
 				cancel()
-				g.handleStreamError(ctx, err, &backoff)
 				goto mt5QuoteLoopEnd
+			case <-timer.C:
+				g.log.Warn("mt5 quote stream silence timeout; retrying quote stream",
+					zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
+				cancel()
+				// Do NOT call Disconnect() — see mt4/quotes.go for rationale.
+				g.sleep(ctx, backoff)
+				backoff = minDuration(backoff*2, maxBackoff)
+				goto mt5QuoteLoopEnd
+			case r := <-ch:
+				if !timer.Stop() {
+					select {
+					case <-timer.C:
+					default:
+					}
+				}
+				if r.err != nil {
+					g.log.Warn("mt5 recv", zap.Error(r.err))
+					cancel()
+					g.handleStreamError(ctx, r.err, &backoff)
+					goto mt5QuoteLoopEnd
+				}
+				q := r.resp.GetResult()
+				if q == nil {
+					continue
+				}
+				handler(&mdtick.Tick{
+					UserID:        g.cfg.UserID,
+					AccountID:     g.cfg.AccountID,
+					Broker:        g.cfg.Broker,
+					Platform:      "mt5",
+					SymbolRaw:     q.GetSymbol(),
+					Canonical:     "",
+					TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
+					ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
+					Bid:           decimal.NewFromFloat(q.GetBid()),
+					Ask:           decimal.NewFromFloat(q.GetAsk()),
+					BidVolume:     float64(q.GetVolume()),
+				})
 			}
-			q := tick.GetResult()
-			if q == nil {
-				continue
-			}
-			handler(&mdtick.Tick{
-				UserID:        g.cfg.UserID,
-				AccountID:     g.cfg.AccountID,
-				Broker:        g.cfg.Broker,
-				Platform:      "mt5",
-				SymbolRaw:     q.GetSymbol(),
-				Canonical:     "",
-				TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-				ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
-				Bid:           decimal.NewFromFloat(q.GetBid()),
-				Ask:           decimal.NewFromFloat(q.GetAsk()),
-				BidVolume:     float64(q.GetVolume()),
-			})
 		}
 	mt5QuoteLoopEnd:
 	}

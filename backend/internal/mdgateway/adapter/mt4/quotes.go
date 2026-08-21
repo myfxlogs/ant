@@ -13,6 +13,27 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// defaultQuoteRecvTimeout is the maximum interval to wait for a quote frame
+// before declaring the stream silent and retrying. mtapi proxy can keep the
+// gRPC connection alive (keepalive pings succeed) but stop pushing quote
+// data — in this state, stream.Recv() blocks forever and the strategy
+// starves for ticks. 45s is chosen because: (1) forex ticks arrive multiple
+// times per second during market hours, so 45s of silence is definitively
+// abnormal; (2) it's long enough to avoid false positives during brief
+// broker-side gaps (e.g. between sessions); (3) it's short enough that a
+// stuck stream is recovered in under a minute rather than blocking
+// indefinitely.
+const defaultQuoteRecvTimeout = 45 * time.Second
+
+// quoteRecvTimeout returns the silence timeout for the quote stream. Tests
+// override this via quoteRecvTimeoutOverride to keep test runtime low.
+func (g *Gateway) quoteRecvTimeout() time.Duration {
+	if g.quoteRecvTimeoutOverride > 0 {
+		return g.quoteRecvTimeoutOverride
+	}
+	return defaultQuoteRecvTimeout
+}
+
 func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.TickHandler) error {
 	g.mu.RLock()
 	sc := g.streamCli
@@ -137,29 +158,73 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.reportStatus("connected", "")
 		g.log.Info("mt4: quote stream active")
 		for {
-			quote, err := stream.Recv()
-			if err != nil {
-				g.log.Warn("mt4 recv", zap.Error(err))
+			timeout := g.quoteRecvTimeout()
+			timer := time.NewTimer(timeout)
+
+			type recvResult struct {
+				resp *pb.OnQuoteReply
+				err  error
+			}
+			ch := make(chan recvResult, 1)
+			go func() {
+				quote, err := stream.Recv()
+				select {
+				case ch <- recvResult{resp: quote, err: err}:
+				case <-subCtx.Done():
+				}
+			}()
+
+			select {
+			case <-subCtx.Done():
+				if !timer.Stop() {
+					<-timer.C
+				}
 				cancel()
-				g.handleStreamError(ctx, err, &backoff)
 				goto quoteLoopEnd
+			case <-timer.C:
+				g.log.Warn("mt4 quote stream silence timeout; retrying quote stream",
+					zap.Duration("timeout", timeout), zap.String("account", g.cfg.AccountID))
+				cancel()
+				// Do NOT call Disconnect() — that tears down the shared connection
+				// including the profit stream. mtapi proxy can keep the gRPC connection
+				// alive (keepalive pings succeed) but stop pushing quote data. Without
+				// this silence timeout, stream.Recv() blocks forever and the strategy
+				// starves for ticks. Just sleep with backoff and retry on the same
+				// connection; if the connection is truly dead, gRPC keepalive will
+				// eventually return a Recv error which triggers handleStreamError.
+				g.sleep(ctx, backoff)
+				backoff = minDuration(backoff*2, maxBackoff)
+				goto quoteLoopEnd
+			case r := <-ch:
+				if !timer.Stop() {
+					select {
+					case <-timer.C:
+					default:
+					}
+				}
+				if r.err != nil {
+					g.log.Warn("mt4 recv", zap.Error(r.err))
+					cancel()
+					g.handleStreamError(ctx, r.err, &backoff)
+					goto quoteLoopEnd
+				}
+				q := r.resp.GetResult()
+				if q == nil {
+					continue
+				}
+				handler(&mdtick.Tick{
+					UserID:        g.cfg.UserID,
+					AccountID:     g.cfg.AccountID,
+					Broker:        g.cfg.Broker,
+					Platform:      "mt4",
+					SymbolRaw:     q.GetSymbol(),
+					Canonical:     "",
+					TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
+					ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
+					Bid:           decimal.NewFromFloat(q.GetBid()),
+					Ask:           decimal.NewFromFloat(q.GetAsk()),
+				})
 			}
-			q := quote.GetResult()
-			if q == nil {
-				continue
-			}
-			handler(&mdtick.Tick{
-				UserID:        g.cfg.UserID,
-				AccountID:     g.cfg.AccountID,
-				Broker:        g.cfg.Broker,
-				Platform:      "mt4",
-				SymbolRaw:     q.GetSymbol(),
-				Canonical:     "",
-				TsUnixMs:      q.GetTime().AsTime().UnixMilli(),
-				ArrivedUnixMs: Clk.Now().UTC().UnixMilli(),
-				Bid:           decimal.NewFromFloat(q.GetBid()),
-				Ask:           decimal.NewFromFloat(q.GetAsk()),
-			})
 		}
 	quoteLoopEnd:
 	}
