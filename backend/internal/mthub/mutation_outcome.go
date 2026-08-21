@@ -90,11 +90,21 @@ func brokerError(err error) error {
 // so errors.Is can detect it without string matching.
 var ErrGateRejected = errors.New("mthub: gate rejected order")
 
+// ErrBrokerRejected is a sentinel for broker application-level rejections.
+// When the broker (MT4/MT5 via mtapi) returns a non-zero error code in its
+// response, the order provably reached the broker and was definitively
+// rejected — this is a deterministic rejection, not an unknown outcome.
+// The order did NOT execute and no ticket was assigned.
+// Wrapped with fmt.Errorf("%w: code=%d msg=%s", ErrBrokerRejected, ...) by
+// the adapters so ClassifyMutationError can detect it without string matching.
+var ErrBrokerRejected = errors.New("mthub: broker rejected order")
+
 // ClassifyMutationError determines whether a mutation error is a deterministic
 // pre-broker rejection (safe to release barrier) or a broker-phase unknown
 // outcome (barrier must stay locked). Returns:
 //
-//	"deterministic_rejected" — order provably never reached broker
+//	"deterministic_rejected" — order provably never reached broker, or broker
+//	                           definitively rejected it at the application level
 //	"outcome_unknown"         — broker acceptance state unknown (fail-closed)
 //
 // Non-MutationError errors default to "outcome_unknown" (fail-closed) unless
@@ -103,16 +113,14 @@ func ClassifyMutationError(err error) string {
 	if err == nil {
 		return "confirmed"
 	}
-	// If the error is already wrapped with phase info, use it directly.
-	var me *MutationError
-	if errors.As(err, &me) {
-		if me.IsPreBroker() {
-			return "deterministic_rejected"
-		}
-		return "outcome_unknown"
-	}
-	// Unwrapped sentinel errors that are provably pre-broker.
-	if errors.Is(err, ErrKillSwitchEngaged) ||
+	// Check deterministic sentinels FIRST — they are authoritative regardless
+	// of phase wrapping. A brokerError-wrapped ErrBrokerRejected is still a
+	// deterministic rejection: the broker saw the request and said no.
+	// Without this ordering, MutationError{PhaseBroker} would short-circuit
+	// to "outcome_unknown" and lock the barrier forever on broker rejections
+	// like MT4 code=130 (Invalid S/L or T/P), preventing strategy retry.
+	if errors.Is(err, ErrBrokerRejected) ||
+		errors.Is(err, ErrKillSwitchEngaged) ||
 		errors.Is(err, ErrRateLimited) ||
 		errors.Is(err, ErrDuplicateOrder) ||
 		errors.Is(err, ErrReconciling) ||
@@ -121,6 +129,14 @@ func ClassifyMutationError(err error) string {
 		errors.Is(err, ErrSessionNotFound) ||
 		errors.Is(err, ErrGateRejected) {
 		return "deterministic_rejected"
+	}
+	// If the error is wrapped with phase info, use it directly.
+	var me *MutationError
+	if errors.As(err, &me) {
+		if me.IsPreBroker() {
+			return "deterministic_rejected"
+		}
+		return "outcome_unknown"
 	}
 	// Default: unknown — fail-closed. Never assume an unclassified error
 	// means "order didn't reach broker" (B4: no string guessing).

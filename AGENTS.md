@@ -166,6 +166,13 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ✅ `PositionCache` freshness 拆分：`GetFreshTradingSnapshot`（financials+positions 都须 fresh）给 VM/Risk Gate；`GetFreshFinancialSnapshot`/`GetFreshPositionSnapshot` 给 display；financial-only refresh 不让 stale positions 显 fresh
 - 后果：fire-and-forget → VM 在 broker 确认前继续 → `OrdersTotal()==0` → 下一 tick 重复开仓 → 数秒内多个同方向订单
 
+**Broker 应用层拒绝 vs 传输层错误（LIVE-ORDER-REENTRY-1-BROKER-REJECT）**：
+- ❌ MT4/MT5 adapter 在 `resp.GetError().GetCode() != 0` 时返回裸 `fmt.Errorf("mt4 OrderSend: code=%d msg=%s", ...)` 无 sentinel → `brokerError()` 包装为 `PhaseBroker` → `ClassifyMutationError` 先检查 phase → `outcome_unknown` → barrier 永久锁定 → 策略无法再下单（生产实测 MT4 code=130 Invalid S/L or T/P → 策略永久阻塞）
+- ✅ MT4/MT5 adapter 4 个订单操作（send/close/delete/modify）的应用层拒绝必须用 `fmt.Errorf("%w: ...", mthub.ErrBrokerRejected, ...)` 包装 sentinel
+- ✅ `ClassifyMutationError` **sentinel 检查必须在 MutationError phase 检查之前**——sentinel 是权威的，无论 phase 包装如何，`ErrBrokerRejected` 永远是 `deterministic_rejected`
+- **关键语义区分**：`resp.GetError()` 是 broker **应用层响应**（订单已到达 broker 并被明确拒绝，如 code=130 SL/TP 无效、code=134 余额不足、code=135 价格变化），不是传输层错误（gRPC `err != nil`，不知道订单有没有到达）。前者 = 确定性拒绝 → 释放 barrier → 策略可重试；后者 = outcome unknown → barrier 锁定 → fail-closed
+- **通用规则**：任何从 broker 响应体（`resp.GetError()`）提取的错误都是应用层拒绝，必须标 sentinel；只有 gRPC 传输层错误（`err != nil`）才是 outcome unknown
+
 **账户快照 freshness 续期（DATA-TRUTH-10 / DATA-TRUTH-10-FIX2）**：
 - ❌ `refreshAccountSummary`（45s ticker）调 `fetchAndPublish(ctx, sid, nil, handler)` 时 `p==nil` → `PositionsAuthoritative: false` → `PositionCache.put()` 不更新 `positionsReceivedAt` → 0 持仓账户无 `OnOrderUpdate` 事件 → 90s 后 `GetFreshTradingSnapshot` 全阻塞（生产实测 92 分钟 7,730 次错误）
 - ✅ `fetchAndPublish` 在 `p==nil` 时必须额外调 `OpenedOrders` RPC 获取权威持仓（即使为空），设 `PositionsAuthoritative: true`——0 持仓也是权威的

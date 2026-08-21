@@ -55,7 +55,7 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("mt5 OrderSend: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+		return 0, fmt.Errorf("%w: mt5 OrderSend: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	if resp.GetResult() == nil {
 		if g.breaker != nil {
@@ -154,7 +154,7 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
 		g.log.Error("mt5 OrderClose: broker error", zap.Int32("code", int32(resp.GetError().GetCode())), zap.String("msg", resp.GetError().GetMessage()))
-		return fmt.Errorf("mt5 OrderClose: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+		return fmt.Errorf("%w: mt5 OrderClose: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	g.log.Info("mt5 CloseOrder: success", zap.Int64("ticket", ticket))
 	return nil
@@ -188,7 +188,7 @@ func (g *Gateway) DeleteOrder(ctx context.Context, ticket int64) error {
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
 		g.log.Error("mt5 OrderClose (delete): broker error", zap.Int32("code", int32(resp.GetError().GetCode())), zap.String("msg", resp.GetError().GetMessage()))
-		return fmt.Errorf("mt5 DeleteOrder: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+		return fmt.Errorf("%w: mt5 DeleteOrder: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	g.log.Info("mt5 DeleteOrder: success", zap.Int64("ticket", ticket))
 	return nil
@@ -217,7 +217,7 @@ func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price d
 		return fmt.Errorf("mt5 OrderModify: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
-		return fmt.Errorf("mt5 OrderModify: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+		return fmt.Errorf("%w: mt5 OrderModify: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	return nil
 }

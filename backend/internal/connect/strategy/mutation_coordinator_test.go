@@ -12,6 +12,7 @@ package strategy
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -457,6 +458,58 @@ func TestLIVE_ORDER_REENTRY_1_T6_PROD_TransportTimeoutStaysLocked(t *testing.T) 
 	}
 	if got := exec.placeCount.Load(); got != 1 {
 		t.Fatalf("T6-PROD: PlaceOrder called %d times, want 1", got)
+	}
+}
+
+// T8-BROKER-REJECT: Broker application-level rejection (e.g. MT4 code=130
+// Invalid S/L or T/P) must be classified as deterministic_rejected, NOT
+// outcome_unknown. The broker saw the request and definitively said no —
+// no ticket was assigned, the order did not execute. The barrier must be
+// released so the strategy can retry on the next tick.
+//
+// This test simulates the exact production scenario: account 904d14e6,
+// schedule 599ddaa5, MT4 OrderSend returned code=130 "Invalid S/L or T/P".
+// Before the fix, this was classified as outcome_unknown → barrier locked
+// forever → strategy could never place another order.
+func TestLIVE_ORDER_REENTRY_1_T8_BrokerAppRejectionReleasesBarrier(t *testing.T) {
+	// Simulate MT4 adapter returning ErrBrokerRejected (wrapped by brokerError
+	// in submitToBroker → MutationError{PhaseBroker, Cause: ErrBrokerRejected}).
+	exec := &prodMockExecutor{
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+			return 0, fmt.Errorf("%w: mt4 OrderSend: code=130 msg=Invalid S/L or T/P", mthub.ErrBrokerRejected)
+		},
+	}
+	srv, svc, _ := testCoordinatorSetup(exec)
+	cfg := testLiveCfg()
+	sess := testActiveSess()
+
+	// First: verify PlaceOrder classifies the error correctly via the real
+	// MtHubService path (submitToBroker → brokerError → ClassifyMutationError).
+	req := &mthub.OrderRequest{
+		AccountID: cfg.AccountID, Canonical: cfg.Symbol,
+		Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
+		Volume: decimal.NewFromFloat(0.1), Magic: strategyMagic(cfg.ScheduleID),
+		ClientID: "test-t8-broker-reject",
+	}
+	_, err := svc.PlaceOrder(context.Background(), req)
+	if err == nil {
+		t.Fatal("T8-BROKER-REJECT: PlaceOrder should return error")
+	}
+	outcome := mthub.ClassifyMutationError(err)
+	if outcome != "deterministic_rejected" {
+		t.Fatalf("T8-BROKER-REJECT: ClassifyMutationError=%s, want deterministic_rejected (broker app rejection is deterministic)", outcome)
+	}
+
+	// Second: verify the full dispatch path releases the barrier.
+	// Reset placeCount since the direct PlaceOrder call above already counted.
+	exec.placeCount.Store(0)
+	sig := &antv1.StrategySignal{SignalType: "buy", Volume: "0.1"}
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, sess)
+	if state := sess.barrier.State(); state != barrierIdle {
+		t.Fatalf("T8-BROKER-REJECT: barrier state=%s, want idle (released after broker rejection)", state)
+	}
+	if got := exec.placeCount.Load(); got != 1 {
+		t.Fatalf("T8-BROKER-REJECT: PlaceOrder called %d times, want 1 (via dispatch only)", got)
 	}
 }
 
