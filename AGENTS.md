@@ -157,7 +157,15 @@ These constraints are enforced at implementation time. Violation = fix before co
 - ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
 - 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
 
-## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 🟦open — cache TOCTOU 施工完成待复审)
+**Order submission 串行语义（LIVE-ORDER-REENTRY-1）**：
+- ❌ 禁止 fire-and-forget goroutine 下单——`submitOrder`/`dispatchCloseOrder`/`dispatchModifyOrder`/`dispatchCancelOrder`/`dispatchCloseAll` 全部同步，事件循环阻塞到 broker mutation 确定性 outcome
+- ✅ 每 `ActiveSession` 持有 `TradeBarrier`，CAS Acquire 保证最多一个未确认 broker mutation（I1）
+- ✅ broker ticket ≠ positions caught up——须等权威 `OnOrderUpdate` push 或单次 read-after-write `OpenedOrders` 确认（I3/I4/I6）
+- ✅ transport timeout（DeadlineExceeded）= outcome unknown → barrier 锁定 fail-closed，不重下（I5）
+- ✅ `PositionCache` freshness 拆分：`GetFreshTradingSnapshot`（financials+positions 都须 fresh）给 VM/Risk Gate；`GetFreshFinancialSnapshot`/`GetFreshPositionSnapshot` 给 display；financial-only refresh 不让 stale positions 显 fresh
+- 后果：fire-and-forget → VM 在 broker 确认前继续 → `OrdersTotal()==0` → 下一 tick 重复开仓 → 数秒内多个同方向订单
+
+## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 代码验收通过，待生产部署验收)
 
 - **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
 - **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。

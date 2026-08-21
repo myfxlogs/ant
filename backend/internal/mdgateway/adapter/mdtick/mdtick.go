@@ -148,6 +148,10 @@ type OrderUpdate struct {
 	UpdateCloseTime  int64 // unix seconds
 	UpdateSL         decimal.Decimal
 	UpdateTP         decimal.Decimal
+	// UpdateMagic is the magic number of the triggering order (LIVE-ORDER-REENTRY-1).
+	// Extracted from the Update's Order field — MT4 Order.MagicNumber / MT5 Order.ExpertId.
+	// Used by the execution barrier to match confirmation events precisely.
+	UpdateMagic int32
 	// Account metrics from OrderUpdateSummary.
 	Balance     decimal.Decimal
 	Credit      decimal.Decimal

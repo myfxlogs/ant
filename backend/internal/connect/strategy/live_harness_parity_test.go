@@ -66,7 +66,12 @@ func TestBuildLiveContext_NoDeltaBars(t *testing.T) {
 		AccountID: "", Balance: decimal.NewFromInt(10000), Equity: decimal.NewFromInt(10000),
 		Margin: decimal.Zero, FreeMargin: decimal.NewFromInt(10000), Leverage: 100,
 		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
-		CapturedAt: time.Now(),
+		// LIVE-ORDER-REENTRY-1: GetFreshTradingSnapshot requires both fresh.
+		// R2: PositionsCapturedAt must be non-zero (zero = fail-closed).
+		PositionsAuthoritative: true,
+		CapturedAt:             time.Now(),
+		PositionsCapturedAt:    time.Now(),
+		PositionsSource:        "order_stream",
 	}
 	pc.PutSnapshot(snap, snap.CapturedAt)
 	srv.posCache = pc
@@ -95,6 +100,11 @@ func TestBackfillContextStrings_MarginFreeMargin(t *testing.T) {
 		AccountID: "acct1", Balance: decimal.NewFromInt(10000), Equity: decimal.NewFromInt(10500),
 		Margin: decimal.NewFromInt(500), FreeMargin: decimal.NewFromInt(9500), Leverage: 100,
 		FinancialsAuthoritative: true, FinancialsSource: "account_summary", CapturedAt: time.Now(),
+		// LIVE-ORDER-REENTRY-1: GetFreshTradingSnapshot requires both fresh.
+		// R2: PositionsCapturedAt must be non-zero (zero = fail-closed).
+		PositionsAuthoritative: true,
+		PositionsCapturedAt:    time.Now(),
+		PositionsSource:        "order_stream",
 	}
 	srv.posCache.PutSnapshot(snap, snap.CapturedAt)
 
@@ -157,7 +167,9 @@ func TestW1_ZeroVolumeClose_ReachesExecutor(t *testing.T) {
 	}
 
 	sig := &antv1.StrategySignal{SignalType: "close", Volume: "0", ExecutedTicket: 12345}
-	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, nil)
+	// LIVE-ORDER-REENTRY-1: close path now requires an ActiveSession with a barrier.
+	activeSess := &ActiveSession{barrier: NewTradeBarrier(zap.NewNop())}
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, activeSess)
 
 	select {
 	case ticket := <-exec.closedCh:

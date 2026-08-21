@@ -36,8 +36,9 @@ func (s *StrategyServer) GetSchedulePositions(ctx context.Context, req *connect.
 	}
 
 	// Live path: push-based PositionCache (real-time from OnOrderUpdate stream).
+	// LIVE-ORDER-REENTRY-1: positions-only freshness is sufficient for display.
 	if s.posCache != nil {
-		snap, fresh := s.posCache.GetFreshSnapshot(row.AccountID.String(), time.Now())
+		snap, fresh := s.posCache.GetFreshPositionSnapshot(row.AccountID.String(), time.Now())
 		if fresh && snap != nil {
 			positions := make([]*antv1.MtPositionSnapshotItem, 0, len(snap.Positions))
 			for _, pos := range snap.Positions {

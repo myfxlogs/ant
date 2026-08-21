@@ -69,11 +69,14 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 // backfillContextStrings populates equity/balance/margin/free_margin/positions from the push-based
 // PositionCache (subscribed to PositionSnapshotBroker). No polling — O(1) read.
 // Missing or stale authoritative snapshots return an error and block execution.
+// LIVE-ORDER-REENTRY-1: uses GetFreshTradingSnapshot — both financials AND
+// positions must be fresh for VM evaluation. A financial-only refresh must
+// not make stale positions usable.
 func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equity, balance, margin, freeMargin *string, positions *[]*antv1.LivePosition) error {
 	if s.posCache == nil {
 		return fmt.Errorf("authoritative account snapshot unavailable: position cache not configured")
 	}
-	snap, ok := s.posCache.GetFreshSnapshot(accountID, time.Now())
+	snap, ok := s.posCache.GetFreshTradingSnapshot(accountID, time.Now())
 	if !ok {
 		return fmt.Errorf("authoritative account snapshot unavailable or stale: account=%s", accountID)
 	}

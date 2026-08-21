@@ -43,6 +43,7 @@
 
 - **审计方（Claude Code）**：只读、验证、记录、出 spec。代码级定位根因，把根因/位置/修复方向/验收标准写进 `docs/audits/tech-debt-registry.md`。**不直接改代码**（保持独立判断 + 省 token）。
 - **施工方（Windsurf / 其他 agent）**：实现修复 + 回填进度。不重新审计、不扩大范围（one task = one scope）、不自由发挥。
+- **施工提示词一句话铁律**：审计方必须先把根因、边界、不变量、施工要求、对抗测试与验收标准完整写入 `tech-debt-registry.md`（必要时按既有文档规则写入对应 block plan/spec，并由 registry 指向）；交给施工方的聊天提示词只能用一句话给出任务 ID + 必读文档入口（例如“施工 `LIVE-ORDER-REENTRY-1`，严格按 registry 最新返工要求执行，完成后回填并停在待复审，禁止部署/扩 scope”）。禁止在聊天中再次复制长篇施工计划，禁止让聊天记录成为文档之外的第二事实源。
 
 **三层文档不丢失**（所有进度只进这三层，❌ 禁止新建并行进度文档）：
 
@@ -262,7 +263,7 @@ mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。
 - ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
 - 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
 
-## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 🟦open — cache TOCTOU 施工完成待复审)
+## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 代码验收通过，待生产部署验收)
 
 - **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
 - **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。

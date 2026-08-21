@@ -46,13 +46,21 @@ func buildOnOrderUpdate(
 }
 
 func publishPositionSnapshot(broker *mthub.PositionSnapshotBroker, accountID, userID string, o *mdtick.OrderUpdate) {
+	now := time.Now()
 	snapshot := &mthub.PositionSnapshot{
 		AccountID: accountID, UserID: userID, Platform: o.Platform,
 		Balance: o.Balance, Credit: o.Credit, Equity: o.Equity,
 		Margin: o.Margin, FreeMargin: o.FreeMargin, MarginLevel: o.MarginLevel,
-		Profit: o.Profit, FinancialsSource: "order_stream", CapturedAt: time.Now(),
+		Profit: o.Profit, FinancialsSource: "order_stream", CapturedAt: now,
 		PositionsAuthoritative: true,
-		Positions:              make([]mthub.PositionSnapshotItem, 0, len(o.Positions)),
+		// B6: positions provenance — broker event time and source.
+		PositionsCapturedAt: now,
+		PositionsSource:     "order_stream",
+		Positions:           make([]mthub.PositionSnapshotItem, 0, len(o.Positions)),
+		// LIVE-ORDER-REENTRY-1: carry triggering update metadata for barrier confirmation.
+		UpdateTicket: o.UpdateTicket,
+		UpdateType:   o.UpdateType,
+		UpdateMagic:  o.UpdateMagic,
 	}
 	for _, pos := range o.Positions {
 		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
@@ -75,7 +83,10 @@ func publishProfitPositionSnapshot(broker *mthub.PositionSnapshotBroker, account
 		FinancialsAuthoritative: p.FinancialSource == mdtick.FinancialsSourceAccountSummary,
 		FinancialsSource:        p.FinancialSource, CapturedAt: p.CapturedAt,
 		PositionsAuthoritative: p.PositionsAuthoritative,
-		Positions:              make([]mthub.PositionSnapshotItem, 0, len(p.Positions)),
+		// B6: positions provenance from profit stream.
+		PositionsCapturedAt: p.CapturedAt,
+		PositionsSource:     "profit_stream",
+		Positions:           make([]mthub.PositionSnapshotItem, 0, len(p.Positions)),
 	}
 	for _, pos := range p.Positions {
 		snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{

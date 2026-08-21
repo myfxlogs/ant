@@ -17,19 +17,19 @@ import (
 // price is the new limit price for pending orders (use decimal.Zero if N/A).
 func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket int64, sl, tp, price decimal.Decimal) error {
 	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
-		return ErrKillSwitchEngaged
+		return preBrokerError(ErrKillSwitchEngaged)
 	}
 	if s.accountOwnerVerifier != nil {
 		uid := usermgr.GetUserID(ctx)
 		if uid == "" {
-			return fmt.Errorf("unauthenticated: user ID required for order modification")
+			return preBrokerError(fmt.Errorf("unauthenticated: user ID required for order modification"))
 		}
 		owns, err := s.accountOwnerVerifier(ctx, uid, accountID)
 		if err != nil {
-			return fmt.Errorf("account ownership check: %w", err)
+			return preBrokerError(fmt.Errorf("account ownership check: %w", err))
 		}
 		if !owns {
-			return fmt.Errorf("%w: %s", ErrAccountNotOwned, accountID)
+			return preBrokerError(fmt.Errorf("%w: %s", ErrAccountNotOwned, accountID))
 		}
 	}
 
@@ -56,7 +56,7 @@ func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket
 		if s.logger != nil {
 			s.logger.Warn("ModifyOrder: session not found", zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 		}
-		return ErrSessionNotFound
+		return preBrokerError(ErrSessionNotFound)
 	}
 
 	_ = price // passed to executor, used when modifying pending order limit price
@@ -72,7 +72,7 @@ func (s *MtHubService) ModifyOrder(ctx context.Context, accountID string, ticket
 			s.logger.Error("ModifyOrder: executor failed", zap.Error(err),
 				zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 		}
-		return fmt.Errorf("modify order: %w", err)
+		return brokerError(fmt.Errorf("modify order: %w", err))
 	}
 
 	if s.logger != nil {

@@ -52,7 +52,7 @@ func (p *MTAccountStateProvider) GetAccountState(_ context.Context, accountID st
 			zap.String("account", accountID))
 		return nil, nil
 	}
-	snap, ok := p.posCache.GetFreshSnapshot(accountID, p.now())
+	snap, ok := p.posCache.GetFreshTradingSnapshot(accountID, p.now())
 	if !ok {
 		p.log.Warn("MTAccountStateProvider: authoritative account snapshot missing or stale — gate fail-closed",
 			zap.String("account", accountID))

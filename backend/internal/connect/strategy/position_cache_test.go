@@ -16,6 +16,8 @@ func cacheSnapshot() *mthub.PositionSnapshot {
 		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
 		PositionsAuthoritative: true,
 		CapturedAt:             time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+		PositionsCapturedAt:    time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+		PositionsSource:        "order_stream",
 	}
 }
 
@@ -47,6 +49,8 @@ func TestPositionCacheOrderUpdateMergesPositionsWithoutOverwritingFinancials(t *
 		Positions:              []mthub.PositionSnapshotItem{{Ticket: 7}},
 		PositionsAuthoritative: true,
 		FinancialsSource:       "order_stream",
+		PositionsCapturedAt:    snap.CapturedAt.Add(time.Second),
+		PositionsSource:        "order_stream",
 	}
 	cache.PutSnapshot(order, snap.CapturedAt.Add(time.Second))
 	got, ok := cache.GetFreshSnapshot("acct-1", snap.CapturedAt.Add(2*time.Second))

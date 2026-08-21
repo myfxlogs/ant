@@ -24,7 +24,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 
 	if err := s.preTradeChecks(ctx, req); err != nil {
 		OrdersPlacedTotal.WithLabelValues(broker, orderStatusRejected).Inc()
-		return nil, err
+		return nil, preBrokerError(err)
 	}
 
 	var orderID string
@@ -43,7 +43,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	if err := s.evaluatePlaceGate(ctx, req, orderID); err != nil {
 		OrdersPlacedTotal.WithLabelValues(broker, orderStatusRejected).Inc()
 		PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
-		return nil, err
+		return nil, preBrokerError(err)
 	}
 
 	var costEstimate *antv1.CostEstimate
@@ -55,7 +55,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	if err != nil {
 		OrdersPlacedTotal.WithLabelValues(broker, orderStatusErr).Inc()
 		PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
-		return nil, err
+		return nil, brokerError(err)
 	}
 
 	if s.idem != nil && req.ClientID != "" {
@@ -130,10 +130,10 @@ func (s *MtHubService) preTradeChecks(ctx context.Context, req *OrderRequest) er
 
 func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest, orderID string) error {
 	if s.gate == nil {
-		return fmt.Errorf("gate not configured: order rejected (fail-closed)")
+		return wrapGateError("gate not configured: order rejected (fail-closed)")
 	}
 	if s.accountStateProvider == nil {
-		return fmt.Errorf("account state provider not configured: order rejected (fail-closed)")
+		return wrapGateError("account state provider not configured: order rejected (fail-closed)")
 	}
 	intent := orderRequestToIntent(req)
 	intent.UserId = usermgr.GetUserID(ctx)
@@ -195,7 +195,7 @@ func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest,
 	decision := s.gate.Evaluate(ctx, intent, state)
 	if !decision.GetAllow() {
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
-		return fmt.Errorf("gate rejected: %s", decision.GetReason())
+		return wrapGateError("gate rejected: " + decision.GetReason())
 	}
 	return nil
 }
@@ -206,7 +206,7 @@ func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, or
 	exec := s.hub.Get(req.AccountID)
 	if exec == nil {
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
-		return 0, ErrSessionNotFound
+		return 0, preBrokerError(ErrSessionNotFound)
 	}
 
 	ticket, err := exec.PlaceOrder(ctx, req)

@@ -2,6 +2,7 @@ package mthub
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"sync"
 	"testing"
@@ -80,7 +81,7 @@ func TestPreTradeChecks_RateLimiter(t *testing.T) {
 		AccountID: "acc-1",
 		Side:      SideBuy,
 	})
-	if err == nil || err != ErrRateLimited {
+	if err == nil || !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -268,7 +269,7 @@ func TestCloseOrder_RateLimiter(t *testing.T) {
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, exec)
 	svc.SetUserLimiter(newSaturatedLimiter())
 	err := svc.CloseOrder(ctxWithUser("user-1"), "acc-1", 123, decimal.NewFromInt(1))
-	if err != ErrRateLimited {
+	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -336,7 +337,7 @@ func TestDeleteOrder_RateLimiter(t *testing.T) {
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, exec)
 	svc.SetUserLimiter(newSaturatedLimiter())
 	err := svc.DeleteOrder(ctxWithUser("user-1"), "acc-1", 123)
-	if err != ErrRateLimited {
+	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -637,7 +638,7 @@ func TestPlaceOrder_RateLimiter(t *testing.T) {
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
 	})
-	if err != ErrRateLimited {
+	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -1036,7 +1037,7 @@ func TestDeleteOrder_KillSwitch_WithLogger(t *testing.T) {
 	svc.SetLogger(zap.NewNop())
 	svc.SetKillSwitch(&mockKillSwitch{engaged: true})
 	err := svc.DeleteOrder(context.Background(), "acc-1", 123)
-	if err != ErrKillSwitchEngaged {
+	if !errors.Is(err, ErrKillSwitchEngaged) {
 		t.Fatalf("expected ErrKillSwitchEngaged, got %v", err)
 	}
 }
@@ -1395,7 +1396,7 @@ func TestCloseOrder_RateLimited(t *testing.T) {
 	exec := &mockExecutor{platform: "MT5"}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
 	err := svc.CloseOrder(ctxWithUser("user-1"), "acc-1", 123, decimal.NewFromInt(1))
-	if err != ErrRateLimited {
+	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -1409,7 +1410,7 @@ func TestDeleteOrder_RateLimited(t *testing.T) {
 	exec := &mockExecutor{platform: "MT5"}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)
 	err := svc.DeleteOrder(ctxWithUser("user-1"), "acc-1", 123)
-	if err != ErrRateLimited {
+	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -1427,7 +1428,7 @@ func TestPlaceOrder_RateLimited(t *testing.T) {
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
 	})
-	if err != ErrRateLimited {
+	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
 	}
 }
@@ -1689,7 +1690,7 @@ func TestPlaceOrder_KillSwitchEngaged(t *testing.T) {
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
 	})
-	if err != ErrKillSwitchEngaged {
+	if !errors.Is(err, ErrKillSwitchEngaged) {
 		t.Fatalf("expected ErrKillSwitchEngaged, got %v", err)
 	}
 }
@@ -1701,7 +1702,7 @@ func TestCloseOrder_KillSwitchEngaged(t *testing.T) {
 	svc := newTestService()
 	svc.SetKillSwitch(&mockKillSwitch{engaged: true})
 	err := svc.CloseOrder(context.Background(), "acc-1", 123, decimal.NewFromInt(1))
-	if err != ErrKillSwitchEngaged {
+	if !errors.Is(err, ErrKillSwitchEngaged) {
 		t.Fatalf("expected ErrKillSwitchEngaged, got %v", err)
 	}
 }
@@ -1713,7 +1714,7 @@ func TestModifyOrder_KillSwitchEngaged(t *testing.T) {
 	svc := newTestService()
 	svc.SetKillSwitch(&mockKillSwitch{engaged: true})
 	err := svc.ModifyOrder(context.Background(), "acc-1", 123, decimal.Zero, decimal.Zero, decimal.Zero)
-	if err != ErrKillSwitchEngaged {
+	if !errors.Is(err, ErrKillSwitchEngaged) {
 		t.Fatalf("expected ErrKillSwitchEngaged, got %v", err)
 	}
 }
@@ -1725,7 +1726,7 @@ func TestDeleteOrder_KillSwitchEngaged(t *testing.T) {
 	svc := newTestService()
 	svc.SetKillSwitch(&mockKillSwitch{engaged: true})
 	err := svc.DeleteOrder(context.Background(), "acc-1", 123)
-	if err != ErrKillSwitchEngaged {
+	if !errors.Is(err, ErrKillSwitchEngaged) {
 		t.Fatalf("expected ErrKillSwitchEngaged, got %v", err)
 	}
 }

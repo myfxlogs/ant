@@ -44,6 +44,11 @@ type ActiveSession struct {
 	log          *zap.Logger      // optional logger for error recording
 	registry     *SessionRegistry // back-pointer for watcher notification
 	diag         *sessionDiag     // runtime diagnostics (L1 counters + L2 indicators)
+
+	// LIVE-ORDER-REENTRY-1: session-scoped execution barrier.
+	// Serializes broker mutations — at most one unconfirmed order in-flight.
+	// Restores MT4 EA single-threaded OrderSend semantics.
+	barrier *TradeBarrier
 }
 
 // SignalEvent is pushed to SSE subscribers when a signal is dispatched.
@@ -167,6 +172,7 @@ func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID,
 		log:         r.logger(),
 		registry:    r,
 		diag:        newSessionDiag(),
+		barrier:     NewTradeBarrier(r.logger()),
 	}
 	r.mu.Lock()
 	r.sessions[runID] = sess

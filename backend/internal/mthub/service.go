@@ -388,3 +388,8 @@ func (s *MtHubService) PublishPositionSnapshot(ev *PositionSnapshot) {
 func (s *MtHubService) SubscribePositionSnapshots(ctx context.Context, accountID string) (<-chan *PositionSnapshot, func()) {
 	return s.snapshotBroker.Subscribe(accountID)
 }
+
+// SnapshotBroker returns the underlying PositionSnapshotBroker.
+// Used by the execution barrier to publish read-after-write confirmation
+// snapshots into the existing position pipeline (LIVE-ORDER-REENTRY-1).
+func (s *MtHubService) SnapshotBroker() *PositionSnapshotBroker { return s.snapshotBroker }

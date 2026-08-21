@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -36,14 +37,21 @@ func (m *mockPaperEngine) PaperPnl(ctx context.Context, accountID, symbol string
 
 // mockOrderExecutor implements mthub.OrderExecutor for live path tests.
 // Records the ClientID of each PlaceOrder call via a channel for synchronization.
+// LIVE-ORDER-REENTRY-1: FetchOpenedOrders returns the last placed ticket so
+// the execution barrier's read-after-write confirmation can succeed.
 type mockOrderExecutor struct {
 	placedCh chan string
 	closedCh chan int64
+	mu       sync.Mutex
+	tickets  []int64 // tickets returned by PlaceOrder, visible to FetchOpenedOrders
 }
 
 func (m *mockOrderExecutor) Platform() string { return "mock" }
 func (m *mockOrderExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest) (int64, error) {
 	m.placedCh <- req.ClientID
+	m.mu.Lock()
+	m.tickets = append(m.tickets, 1) // mock always returns ticket=1
+	m.mu.Unlock()
 	return 1, nil
 }
 func (m *mockOrderExecutor) CloseOrder(_ context.Context, ticket int64, _ decimal.Decimal) error {
@@ -57,7 +65,13 @@ func (m *mockOrderExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ deci
 	return nil
 }
 func (m *mockOrderExecutor) FetchOpenedOrders(_ context.Context) ([]*mthub.OrderRecord, error) {
-	return nil, nil
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	orders := make([]*mthub.OrderRecord, 0, len(m.tickets))
+	for _, t := range m.tickets {
+		orders = append(orders, &mthub.OrderRecord{Ticket: t, Canonical: "EURUSD"})
+	}
+	return orders, nil
 }
 func (m *mockOrderExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*mthub.OrderRecord, error) {
 	return nil, nil
@@ -214,6 +228,8 @@ func TestDeployLive1_LivePathNilBarNoPanic(t *testing.T) {
 		TickSeq:    new(atomic.Int64),
 		ScheduleID: uuid.New(),
 	}
+	// LIVE-ORDER-REENTRY-1: live path now requires an ActiveSession with a barrier.
+	activeSess := &ActiveSession{barrier: NewTradeBarrier(zap.NewNop())}
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -222,7 +238,7 @@ func TestDeployLive1_LivePathNilBarNoPanic(t *testing.T) {
 	}()
 
 	sig := &antv1.StrategySignal{SignalType: "buy", Volume: "0.1"}
-	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, nil)
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig, activeSess)
 
 	var clientID1 string
 	select {
@@ -230,19 +246,27 @@ func TestDeployLive1_LivePathNilBarNoPanic(t *testing.T) {
 		if clientID1 == "" {
 			t.Fatal("expected non-empty ClientID from PlaceOrder")
 		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("PlaceOrder was not called within 2s — live path not reached")
+	case <-time.After(15 * time.Second):
+		t.Fatal("PlaceOrder was not called within 15s — live path not reached")
+	}
+
+	// dispatchLiveSignal is now synchronous (LIVE-ORDER-REENTRY-1): it blocks
+	// until the barrier confirms via read-after-write. So by the time we get
+	// here, the first order is fully confirmed and the barrier is released.
+	// The barrier state should be idle (released after confirmation).
+	if state := activeSess.barrier.State(); state != barrierIdle {
+		t.Fatalf("after dispatchLiveSignal returns, barrier should be idle (released), got %s", state)
 	}
 
 	sig2 := &antv1.StrategySignal{SignalType: "buy", Volume: "0.1"}
-	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig2, nil)
+	srv.dispatchLiveSignal(context.Background(), cfg, nil, sig2, activeSess)
 
 	select {
 	case clientID2 := <-exec.placedCh:
 		if clientID2 == clientID1 {
 			t.Fatalf("two consecutive tick signals have same ClientID: %s (collision)", clientID1)
 		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("second PlaceOrder was not called within 2s")
+	case <-time.After(15 * time.Second):
+		t.Fatal("second PlaceOrder was not called within 15s")
 	}
 }

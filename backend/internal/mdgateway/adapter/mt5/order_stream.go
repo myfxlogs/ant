@@ -134,6 +134,7 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	var updateSL decimal.Decimal
 	var updateTP decimal.Decimal
 	var updateOrderType string
+	var updateMagic int32
 
 	update := s.GetUpdate()
 	if update != nil && update.GetOrder() != nil {
@@ -153,6 +154,7 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 		updateCloseTime = o.GetCloseTime().GetSeconds()
 		updateSL = decimal.NewFromFloat(o.GetStopLoss())
 		updateTP = decimal.NewFromFloat(o.GetTakeProfit())
+		updateMagic = int32(o.GetExpertId())
 	}
 
 	positions := make([]mdtick.OrderUpdatePosition, 0, len(s.GetOpenedOrders()))
@@ -201,6 +203,7 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 		UpdateCloseTime:  updateCloseTime,
 		UpdateSL:         updateSL,
 		UpdateTP:         updateTP,
+		UpdateMagic:      updateMagic,
 		Balance:          balanceD,
 		Credit:           decimal.Zero,
 		Equity:           equityD,

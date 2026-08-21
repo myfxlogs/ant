@@ -13,7 +13,6 @@ import (
 	"alphaforge/internal/usermgr"
 )
 
-
 // closeOMSOrderID derives a deterministic UUID for a close order's OMS row from
 // (accountID, ticket): the same pair always maps to the same row, so an
 // idempotent re-close of the same ticket upserts the same row
@@ -26,7 +25,7 @@ func closeOMSOrderID(closeOrderID string) string {
 // Gate order matches PlaceOrder: killSwitch → ownership → idempotency → reconcile → rateLimit.
 func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
 	if err := s.preCloseChecks(ctx, accountID); err != nil {
-		return err
+		return preBrokerError(err)
 	}
 
 	closeOrderID := fmt.Sprintf("close-%s-%d", accountID, ticket)
@@ -42,17 +41,17 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 	}
 
 	if s.reconcileGate != nil && !s.reconcileGate.CanAccept(accountID) {
-		return fmt.Errorf("%w: %s", ErrReconciling, accountID)
+		return preBrokerError(fmt.Errorf("%w: %s", ErrReconciling, accountID))
 	}
 	if s.userLimiter != nil {
 		uid := usermgr.GetUserID(ctx)
 		if uid != "" && !s.userLimiter.AllowOrder(uid) {
-			return ErrRateLimited
+			return preBrokerError(ErrRateLimited)
 		}
 	}
 
 	if err := s.evaluateCloseGate(ctx, accountID, ticket, lots); err != nil {
-		return err
+		return preBrokerError(err)
 	}
 
 	exec := s.hub.Get(accountID)
@@ -60,7 +59,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 		if s.logger != nil {
 			s.logger.Warn("CloseOrder: session not found", zap.String("accountID", accountID), zap.Int64("ticket", ticket))
 		}
-		return ErrSessionNotFound
+		return preBrokerError(ErrSessionNotFound)
 	}
 
 	if s.logger != nil {
@@ -84,7 +83,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 
 	if err := exec.CloseOrder(ctx, ticket, lots); err != nil {
 		s.postCloseFailure(ctx, closeOrderID, accountID, ticket, err)
-		return err
+		return brokerError(err)
 	}
 
 	s.postCloseSuccess(ctx, closeOrderID, accountID, ticket)
@@ -113,10 +112,10 @@ func (s *MtHubService) preCloseChecks(ctx context.Context, accountID string) err
 
 func (s *MtHubService) evaluateCloseGate(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
 	if s.gate == nil {
-		return fmt.Errorf("gate not configured: order rejected (fail-closed)")
+		return wrapGateError("gate not configured: order rejected (fail-closed)")
 	}
 	if s.accountStateProvider == nil {
-		return fmt.Errorf("account state provider not configured: order rejected (fail-closed)")
+		return wrapGateError("account state provider not configured: order rejected (fail-closed)")
 	}
 	closeIntent := &antv1.OrderIntent{
 		AccountId: accountID,
@@ -133,7 +132,7 @@ func (s *MtHubService) evaluateCloseGate(ctx context.Context, accountID string, 
 	}
 	decision := s.gate.Evaluate(ctx, closeIntent, state)
 	if !decision.GetAllow() {
-		return fmt.Errorf("gate rejected close: %s", decision.GetReason())
+		return wrapGateError("gate rejected close: " + decision.GetReason())
 	}
 	return nil
 }

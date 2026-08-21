@@ -31,6 +31,23 @@ func parseDecimal(s string) decimal.Decimal {
 	return d
 }
 
+// parseDecimalPtr returns nil for an empty string (field not provided) and
+// a non-nil pointer for any valid decimal string including "0" (explicit
+// zero, e.g. clearing SL/TP). Used by verifyTicketModified (R5-⑤) to
+// distinguish "don't check" (nil) from "check that it equals zero" (non-nil
+// pointer to decimal.Zero).
+func parseDecimalPtr(s string) *decimal.Decimal {
+	if s == "" {
+		return nil
+	}
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		log.Printf("parseDecimalPtr: invalid value %q: %v", s, err)
+		return nil
+	}
+	return &d
+}
+
 func parseInt64(s string) int64 {
 	n, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {

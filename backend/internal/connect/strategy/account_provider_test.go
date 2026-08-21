@@ -17,7 +17,12 @@ func testAccountSnapshot() *mthub.PositionSnapshot {
 		Margin: decimal.NewFromInt(900), FreeMargin: decimal.NewFromInt(11100),
 		Profit: decimal.NewFromInt(321), Leverage: 500, FinancialsAuthoritative: true,
 		FinancialsSource: "account_summary", CapturedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-		Positions: []mthub.PositionSnapshotItem{{Ticket: 1}},
+		// LIVE-ORDER-REENTRY-1: GetFreshTradingSnapshot requires both fresh.
+		PositionsAuthoritative: true,
+		// B6: positions provenance required for freshness check.
+		PositionsCapturedAt: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+		PositionsSource:     "order_stream",
+		Positions:           []mthub.PositionSnapshotItem{{Ticket: 1}},
 	}
 }
 

@@ -25,9 +25,23 @@ type PositionSnapshot struct {
 	Leverage                int32
 	FinancialsAuthoritative bool
 	FinancialsSource        string
-	CapturedAt              time.Time
+	CapturedAt              time.Time // financials capture time (broker event time)
 	PositionsAuthoritative  bool
 	Positions               []PositionSnapshotItem
+
+	// B6: positions freshness provenance. Tracked independently from
+	// financials so a financial-only refresh cannot make stale positions
+	// appear fresh, and a retained replay cannot resurrect old positions.
+	PositionsCapturedAt time.Time // broker event/callback time for positions
+	PositionsSource     string    // "order_stream", "profit_stream", "opened_orders_initial", "opened_orders_confirmation"
+
+	// LIVE-ORDER-REENTRY-1: triggering update metadata for barrier confirmation.
+	// B7: These are EPHEMERAL — they describe the incoming OnOrderUpdate event,
+	// NOT retained position state. The broker clears them from latest before
+	// a new subscriber replays. AccountSummary-only snapshots have zero values.
+	UpdateTicket int64
+	UpdateType   string
+	UpdateMagic  int32
 }
 
 type PositionSnapshotItem struct {
@@ -91,6 +105,17 @@ func mergePositionSnapshot(current, incoming *PositionSnapshot) *PositionSnapsho
 	if incoming.PositionsAuthoritative {
 		merged.Positions = append([]PositionSnapshotItem(nil), incoming.Positions...)
 		merged.PositionsAuthoritative = true
+		// B6: carry positions provenance from the incoming event.
+		merged.PositionsCapturedAt = incoming.PositionsCapturedAt
+		merged.PositionsSource = incoming.PositionsSource
+	}
+	// B7: carry the incoming event's ephemeral trigger metadata so live
+	// subscribers (barrier confirmation listener) can match on ticket+magic.
+	// These are NOT retained in latest — see Publish for the clearing logic.
+	if incoming.UpdateTicket != 0 {
+		merged.UpdateTicket = incoming.UpdateTicket
+		merged.UpdateType = incoming.UpdateType
+		merged.UpdateMagic = incoming.UpdateMagic
 	}
 	return &merged
 }
@@ -101,10 +126,18 @@ func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 	}
 	b.mu.Lock()
 	merged := mergePositionSnapshot(b.latest[ev.AccountID], ev)
-	b.latest[ev.AccountID] = merged
+	// B7: Send the merged snapshot WITH ephemeral trigger metadata to live
+	// subscribers (barrier confirmation listener needs UpdateTicket/Type/Magic).
 	chs := make([]chan *PositionSnapshot, 0, len(b.subscribers[ev.AccountID])+len(b.allSubs))
 	chs = append(chs, b.subscribers[ev.AccountID]...)
 	chs = append(chs, b.allSubs...)
+	// B7: Store a clean copy in latest WITHOUT ephemeral trigger metadata.
+	// New subscribers replaying latest must NOT see old one-shot UpdateTicket.
+	retained := *merged
+	retained.UpdateTicket = 0
+	retained.UpdateType = ""
+	retained.UpdateMagic = 0
+	b.latest[ev.AccountID] = &retained
 	for _, ch := range chs {
 		select {
 		case ch <- merged:
