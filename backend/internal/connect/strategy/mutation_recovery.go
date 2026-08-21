@@ -40,7 +40,7 @@ import (
 // original mutation call (which has already returned).
 func (s *StrategyExecutionServer) recoverFromOutcomeUnknown(
 	cfg LiveStrategyConfig, activeSess *ActiveSession,
-	barrier *TradeBarrier, ticket int64, magic int32, action mutationAction,
+	barrier *TradeBarrier, ticket int64, action mutationAction,
 	verify func(orders []*mthub.OrderRecord) bool,
 	conf confirmationConfig,
 ) {

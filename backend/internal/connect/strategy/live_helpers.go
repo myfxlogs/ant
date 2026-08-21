@@ -48,7 +48,7 @@ func strategyMagic(scheduleID uuid.UUID) int32 {
 // T3.1: expanded to cover all buy_* / sell_* variants (hard injury ②).
 func signalToSide(action string) mthub.Side {
 	switch action {
-	case "buy", "buy_limit", "buy_stop", "buy_stop_limit":
+	case sideBuy, "buy_limit", "buy_stop", "buy_stop_limit":
 		return mthub.SideBuy
 	case sideSell, "sell_limit", "sell_stop", "sell_stop_limit":
 		return mthub.SideSell
@@ -61,7 +61,7 @@ func signalToSide(action string) mthub.Side {
 func sideToString(side mthub.Side) string {
 	switch side {
 	case mthub.SideBuy:
-		return "buy"
+		return sideBuy
 	case mthub.SideSell:
 		return sideSell
 	default:

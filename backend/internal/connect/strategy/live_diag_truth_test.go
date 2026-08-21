@@ -674,7 +674,7 @@ func TestLIVE_DIAG_TRUTH_1_RecoveryCanonicalLifecycle(t *testing.T) {
 	// 4. barrier.Reconcile(true) → barrierConfirmed
 	// 5. logOrderLifecycle(..., "order_confirmed", ..., 99, ...)
 	// 6. RecordLifecycle("order_confirmed", 99) in sessionDiag
-	srv.recoverFromOutcomeUnknown(cfg, sess, barrier, ticket, 12345, "close", verify, conf)
+	srv.recoverFromOutcomeUnknown(cfg, sess, barrier, ticket, "close", verify, conf)
 
 	snap := sess.diag.SnapshotDiag()
 	if snap.OrderLifecycle != "order_confirmed" {
@@ -718,7 +718,7 @@ func TestLIVE_DIAG_TRUTH_1_RecoveryRejectedCanonicalLifecycle(t *testing.T) {
 		readAfterWriteTimeout: 5 * time.Second,
 	}
 
-	srv.recoverFromOutcomeUnknown(cfg, sess, barrier, ticket, 12345, "close", verify, conf)
+	srv.recoverFromOutcomeUnknown(cfg, sess, barrier, ticket, "close", verify, conf)
 
 	snap := sess.diag.SnapshotDiag()
 	if snap.OrderLifecycle != "order_rejected" {

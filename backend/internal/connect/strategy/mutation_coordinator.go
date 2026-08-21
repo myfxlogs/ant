@@ -197,7 +197,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 				if verify == nil {
 					verify = verifyTicketPresent(spec.expectedTicket)
 				}
-				go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, spec.expectedTicket, spec.expectedMagic, spec.action, verify, conf)
+				go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, spec.expectedTicket, spec.action, verify, conf)
 			}
 			return mutationResult{state: barrierOutcomeUnknown}
 		}
@@ -237,7 +237,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 		verify = verifyTicketPresent(effectiveTicket)
 	}
 
-	confirmState := s.waitForConfirmation(ctx, cfg, activeSess, barrier, effectiveTicket, spec.expectedMagic, spec.action, verify, conf)
+	confirmState := s.waitForConfirmation(ctx, cfg, barrier, effectiveTicket, spec.expectedMagic, spec.action, verify, conf)
 
 	switch confirmState {
 	case barrierConfirmed:
@@ -264,7 +264,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 		if verify == nil {
 			verify = verifyTicketPresent(effectiveTicket)
 		}
-		go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, effectiveTicket, spec.expectedMagic, spec.action, verify, conf)
+		go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, effectiveTicket, spec.action, verify, conf)
 		// Do NOT release.
 	default:
 		// Context cancelled — release to avoid deadlock on shutdown.
@@ -279,7 +279,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 // waitForConfirmation waits for push confirmation with a bounded fallback
 // to a single read-after-write OpenedOrders query (I6: not polling).
 func (s *StrategyExecutionServer) waitForConfirmation(
-	ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession,
+	ctx context.Context, cfg LiveStrategyConfig,
 	barrier *TradeBarrier, ticket int64, magic int32, action mutationAction,
 	verify func(orders []*mthub.OrderRecord) bool,
 	conf confirmationConfig,

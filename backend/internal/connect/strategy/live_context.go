@@ -32,7 +32,7 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 
 // buildTradeContext creates a TradeContext proto from a trade event.
 func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg LiveStrategyConfig, evt *mthub.BrokerTradeEvent) (*antv1.TradeContext, error) {
-	side := "buy"
+	side := sideBuy
 	if evt.Side == sideSell {
 		side = sideSell
 	}
@@ -41,7 +41,7 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 	case mthub.BrokerTradeFilled:
 		evtType = "fill"
 	case mthub.BrokerTradeClosed:
-		evtType = "close"
+		evtType = string(actionClose)
 	case mthub.BrokerTradeModified:
 		evtType = "modify"
 	case mthub.BrokerTradeCancelled:
@@ -90,7 +90,7 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 	*freeMargin = snap.FreeMargin.String()
 	pos := make([]*antv1.LivePosition, 0, len(snap.Positions))
 	for _, p := range snap.Positions {
-		side := "buy"
+		side := sideBuy
 		if p.Type == sideSell {
 			side = sideSell
 		}
@@ -137,8 +137,8 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 // pendingOrderSide derives the buy/sell side from a pending order type string.
 // "buy_limit" → "buy", "sell_stop" → "sell", etc.
 func pendingOrderSide(orderType string) string {
-	if len(orderType) >= 3 && orderType[:3] == "buy" {
-		return "buy"
+	if len(orderType) >= 3 && orderType[:3] == sideBuy {
+		return sideBuy
 	}
 	return "sell"
 }

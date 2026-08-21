@@ -329,3 +329,70 @@ func TestPositionSnapshotBroker_SubscribeAll_Unsubscribe(t *testing.T) {
 		t.Fatal("expected channel to be closed after cancel")
 	}
 }
+
+// --- mergePositionSnapshot tests (LIVE-MQL-ORDER-CONTEXT-1 PendingOrders) ---
+
+func TestMergePositionSnapshot_NilCurrent(t *testing.T) {
+	t.Parallel()
+	incoming := &PositionSnapshot{
+		AccountID:              "acc-1",
+		PositionsAuthoritative: true,
+		Positions:              []PositionSnapshotItem{{Ticket: 1, Magic: 100}},
+		PendingOrders:          []PositionSnapshotItem{{Ticket: 2, Magic: 100}},
+	}
+	merged := mergePositionSnapshot(nil, incoming)
+	if len(merged.Positions) != 1 || merged.Positions[0].Ticket != 1 {
+		t.Fatalf("positions not copied: %+v", merged.Positions)
+	}
+	if len(merged.PendingOrders) != 1 || merged.PendingOrders[0].Ticket != 2 {
+		t.Fatalf("pending orders not copied: %+v", merged.PendingOrders)
+	}
+}
+
+func TestMergePositionSnapshot_AuthoritativePending(t *testing.T) {
+	t.Parallel()
+	current := &PositionSnapshot{
+		AccountID: "acc-1",
+		Positions: []PositionSnapshotItem{{Ticket: 1}},
+		PendingOrders: []PositionSnapshotItem{{Ticket: 3}},
+	}
+	incoming := &PositionSnapshot{
+		AccountID:              "acc-1",
+		PositionsAuthoritative: true,
+		Positions:              []PositionSnapshotItem{{Ticket: 2}},
+		PendingOrders:          []PositionSnapshotItem{{Ticket: 4, Magic: 200}},
+	}
+	merged := mergePositionSnapshot(current, incoming)
+	if len(merged.Positions) != 1 || merged.Positions[0].Ticket != 2 {
+		t.Fatalf("authoritative positions not replaced: %+v", merged.Positions)
+	}
+	if len(merged.PendingOrders) != 1 || merged.PendingOrders[0].Ticket != 4 {
+		t.Fatalf("authoritative pending orders not replaced: %+v", merged.PendingOrders)
+	}
+}
+
+func TestMergePositionSnapshot_PartialMerge(t *testing.T) {
+	t.Parallel()
+	current := &PositionSnapshot{
+		AccountID: "acc-1",
+		Balance:   decimal.NewFromInt(1000),
+		Positions: []PositionSnapshotItem{{Ticket: 1}},
+		PendingOrders: []PositionSnapshotItem{{Ticket: 3}},
+	}
+	incoming := &PositionSnapshot{
+		AccountID:                "acc-1",
+		Balance:                  decimal.NewFromInt(2000),
+		FinancialsAuthoritative:  true,
+		// No authoritative positions/pending — should keep current
+	}
+	merged := mergePositionSnapshot(current, incoming)
+	if !merged.Balance.Equal(decimal.NewFromInt(2000)) {
+		t.Fatalf("balance not merged: %s", merged.Balance)
+	}
+	if len(merged.Positions) != 1 || merged.Positions[0].Ticket != 1 {
+		t.Fatalf("positions not retained: %+v", merged.Positions)
+	}
+	if len(merged.PendingOrders) != 1 || merged.PendingOrders[0].Ticket != 3 {
+		t.Fatalf("pending orders not retained: %+v", merged.PendingOrders)
+	}
+}

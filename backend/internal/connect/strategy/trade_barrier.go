@@ -89,13 +89,13 @@ type eventCacheKey struct {
 // pending_delete) that no adapter ever emits — pending-order confirmations
 // never matched and always fell back to the 5s pushWait + read-after-write.
 var actionCompatibleUpdateTypes = map[string]map[string]bool{
-	"open": {
+	string(actionOpen): {
 		"open": true, "pending_open": true, // PendingFill → "open" (MT4)
 	},
-	"close": {
+	string(actionClose): {
 		"close": true, "pending_close": true, // PartialClose → "close" (MT5)
 	},
-	"modify": {
+	string(actionModify): {
 		"modify": true, "pending_modify": true, // MT5 PendingModify → "modify"
 	},
 	"cancel": {

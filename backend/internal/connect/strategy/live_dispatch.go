@@ -58,7 +58,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 
 	// T3.1: dispatch based on expanded action set.
 	switch action {
-	case "buy", sideSell:
+	case sideBuy, sideSell:
 		if activeSess != nil && activeSess.IsCircuitOpen() {
 			s.log.Warn("LiveStrategyRunner: suppressing order — circuit breaker open",
 				zap.String("account", cfg.AccountID),
@@ -79,7 +79,7 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 			return
 		}
 		s.dispatchPendingOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
-	case "close":
+	case string(actionClose):
 		s.dispatchCloseOrder(ctx, cfg, sig, activeSess)
 	case "close_all":
 		s.dispatchCloseAll(ctx, cfg, activeSess)
