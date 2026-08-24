@@ -322,7 +322,7 @@ func (vm *VM) executeCallUser(ins Instruction) error {
 
 	vm.locals = newLocals
 	returnPC := vm.pc
-	vm.pc = entryPC + 1
+	vm.pc = entryPC // Jump to function body start (EntryPC points at body, not marker)
 
 	for vm.pc < int32(len(vm.bc.Code)) {
 		if vm.ticks%10000 == 0 && vm.runCtx != nil {

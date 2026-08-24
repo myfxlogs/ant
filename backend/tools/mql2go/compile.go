@@ -273,10 +273,18 @@ func (c *astCompiler) compileEventBody(body []interp.Statement) {
 // ── Function compilation ─────────────────────────────────────────────
 
 func (c *astCompiler) compileUserFuncBody(name string, fn *interp.FuncDef) {
+	// Update EntryPC to the actual function body start.
+	// Pass 1 emitted OP_ENTER_FUNC markers at the original EntryPC positions,
+	// but the bodies are compiled after ALL markers (Pass 2). So entryPC+1
+	// (used by executeCallUser) would land on the next function's marker,
+	// not this function's body. Fix: point EntryPC at the real body start
+	// and change executeCallUser to jump to entryPC (no +1).
+	bodyStart := int32(len(c.bc.Code))
 	entry := c.bc.Funcs[name]
+	entry.EntryPC = bodyStart
 	c.currentFunc = &FuncEntry{
 		Name:      name,
-		EntryPC:   entry.EntryPC,
+		EntryPC:   bodyStart,
 		NumParams: len(fn.Params),
 		NumLocals: len(fn.Params),
 	}
