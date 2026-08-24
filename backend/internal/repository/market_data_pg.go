@@ -43,18 +43,19 @@ func (s *PgMarketDataStore) SetRedisClient(rdb *goredis.Client) {
 // ordered by open_ts_unix_ms (oldest first).
 //
 // A bar is semantically identified by its open time — two bars with the same
-// (broker, canonical, period, open_ts) are the same bar even if their close_ts
-// differs by a few milliseconds due to clock skew between accounts. Dedup by
-// open_ts ensures one bar per timestamp, and ORDER BY open_ts guarantees the
-// chronological ordering that the backtest engine requires.
+// (canonical, period, open_ts) are the same bar even if their close_ts differs
+// by a few milliseconds due to clock skew between accounts, or if they originate
+// from different brokers. Dedup by open_ts ensures one bar per timestamp, and
+// ORDER BY open_ts guarantees the chronological ordering that the backtest
+// engine requires.
 //
-// When broker is specified, the query filters to that broker and deduplicates
-// by (canonical, period, open_ts) only — broker is a constant filter so it
-// doesn't belong in the distinct key. When broker is empty, the distinct key
-// includes broker so each broker's bars are preserved separately.
+// When broker is specified, the query additionally filters to that broker.
+// In all cases the distinct key is (canonical, period, open_ts) — broker is
+// never part of the distinct key, so multiple brokers writing the same symbol
+// collapse to a single chronological series (the highest-tick_count bar wins).
 //
-// Tiebreaker: tick_count DESC ensures that when multiple accounts write the
-// same bar (same broker, canonical, period, open_ts), the bar with the most
+// Tiebreaker: tick_count DESC ensures that when multiple accounts/brokers write
+// the same bar (same canonical, period, open_ts), the bar with the most
 // underlying ticks is selected — a quality-driven choice rather than arbitrary.
 func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, period string, from, to *time.Time, limit int32) ([]KlineBar, error) {
 	if limit <= 0 {
@@ -66,19 +67,17 @@ func (s *PgMarketDataStore) GetKlines(ctx context.Context, canonical, broker, pe
 	args := []any{canonical, period}
 	argN := func() string { return fmt.Sprintf("$%d", len(args)+1) }
 
-	// Distinct key and ORDER BY depend on whether broker is pinned.
-	var distinctKey, orderClause string
-	if broker != "" {
-		// Broker is a filter constant — don't include it in the distinct key.
-		distinctKey = "canonical, period, open_ts_unix_ms"
-		orderClause = "canonical, period, open_ts_unix_ms, tick_count DESC"
-	} else {
-		// No broker filter — distinct key includes broker to keep per-broker
-		// time series separate. This is a legacy fallback; new code should
-		// always specify a broker for deterministic results.
-		distinctKey = "broker, canonical, period, open_ts_unix_ms"
-		orderClause = "broker, canonical, period, open_ts_unix_ms, tick_count DESC"
-	}
+	// The distinct key is always (canonical, period, open_ts) — broker is never
+	// part of it. This guarantees one bar per timestamp across all brokers and
+	// a globally chronological result. Including broker in the distinct key /
+	// ORDER BY (the previous broker="" behavior) kept per-broker series
+	// separate and sorted by broker name first, which produced non-chronological
+	// output whenever multiple brokers wrote the same canonical symbol
+	// (e.g. backtest ID 1ccad72a: "bars are not chronologically ordered at
+	// index 12" because Exness (VG) Ltd bars preceded Exness Technologies Ltd
+	// bars despite being later in time).
+	const distinctKey = "canonical, period, open_ts_unix_ms"
+	const orderClause = "canonical, period, open_ts_unix_ms, tick_count DESC"
 
 	query := fmt.Sprintf(`SELECT DISTINCT ON (%s)
 			broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms,

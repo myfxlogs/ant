@@ -118,6 +118,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - Prices: `NUMERIC(20,8)` PG / `Decimal(18,6)` CH / `decimal.Decimal` Go
 - Time: UTC, millisecond precision (`int64 ts_unix_ms`)
 - Symbol: raw broker symbol = canonical (no suffix stripping)
+- **md_bars 查询的 `DISTINCT ON` / `ORDER BY` 不能把 `broker` 排在时间列前面**（反例 BT-MULTIBROKER-ORDER，2026-08-24）：`GetKlines(broker="")` 曾把 `broker` 放进 distinct key + `ORDER BY broker, ...open_ts` → 多 broker 写同一 canonical 时按 broker 名排序而非按时间排序 → 回测崩 `bars are not chronologically ordered`。正确做法：distinct key 恒为 `(canonical, period, open_ts_unix_ms)`，`ORDER BY ...open_ts_unix_ms, tick_count DESC`，`broker` 仅作可选 WHERE 过滤——跨 broker 去重（最高 tick_count 胜出）+ 全局时序。所有 backtest/market-data 调用方都传 `broker=""` 且都需要单一时序。
 
 ## Deployment (强制 — 禁止手动)
 
