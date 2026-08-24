@@ -29,5 +29,5 @@ func (c *backtestContext) BarsForSymbol(symbol, timeframe string) sdk.BarSeries 
 	if timeframe != "" && timeframe != c.tf {
 		visible = aggregateBars(visible, timeframe)
 	}
-	return sdk.BarsToSlice(visible)
+	return wrapBTBarSeries(sdk.BarsToSlice(visible))
 }

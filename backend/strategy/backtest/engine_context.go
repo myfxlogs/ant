@@ -29,7 +29,9 @@ type backtestContext struct {
 	logs []string
 }
 
-func (c *backtestContext) Bars() sdk.BarSeries { return sdk.BarsToSlice(c.bars[:c.barIndex+1]) }
+func (c *backtestContext) Bars() sdk.BarSeries {
+	return wrapBTBarSeries(sdk.BarsToSlice(c.bars[:c.barIndex+1]))
+}
 
 func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
 	if tf == "" || tf == c.tf {
@@ -40,7 +42,7 @@ func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
 	// lower-TF bar, with OHLCV accumulated only from bars seen so far.
 	visible := c.bars[:c.barIndex+1]
 	aggregated := aggregateBars(visible, tf)
-	return sdk.BarsToSlice(aggregated)
+	return wrapBTBarSeries(sdk.BarsToSlice(aggregated))
 }
 
 func (c *backtestContext) Symbol() string    { return c.symbol }
