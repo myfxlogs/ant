@@ -444,7 +444,98 @@ Generated `gen/`、i18n、scripts 和 proto 的 `info` 不属于 warning 清零�
 - **T5**：回归审查必须证明只发生语义拆分；任何行为变更、warning 规避、无关 scope、临时测试或文档失配均失败。完成后不 commit/push/deploy，等待 Claude 复审。
 
 <!-- D-VM-LIVE-001:BEGIN -->
-## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（ACTIVE；2026-08-25）
+## ⚠️ D-VM-LIVE-001 范围重定（Claude 第一负责人决策，2026-08-25 每周对账后）——先删攻击面，再谈重建
+
+> **本段优先于下方原设计冻结全文。原文保留作为 Phase 2 参考，但 Phase 1 未完成前不得按原文施工。**
+
+**推翻性事实（Claude 独立核验，2026-08-25）**：
+
+1. **public `ExecuteLive` 的 live 模式零生产调用方**。前端 `ExecuteLive` 仅出现在 `frontend/src/gen/ant/v1/strategy_runtime_pb.ts`（protoc 生成物），**无任何手写客户端调用**；后端 `internal/connect/strategy` 内 `Mode: "live"` 的产生者除测试文件外，只有 `live_runner.go:27 const modeLive`（调度路径）与 validators。
+2. **该 RPC 不下单**。`dispatchVMLive`（`vm_live_dispatch.go:88-155`）构造进程内 `runner.New(...)` → `r.Init` → `vmHandleBar/Tick/Trade/Timer` → 返回 `ExecuteLiveResponse{Signal}`。全路径**无 mthub、无 OMS、无 gate、无 broker 调用**——signal 只回给已认证的调用者本人。
+3. **调度路径不接收客户端上下文**。`RunLiveStrategy` 经 `buildLiveRun` → `buildLiveContext` **服务端自建** bar/account context（`live_harness_parity_test.go:60` 可证形态），四道闸（entitlement→quota→bound account→服务端取码）齐备。
+
+**结论**：round 1–5 的返工一直在**加固一个没人调用、且不碰资金的入口**。真实严重度不是 P0 资金/交易入侵，而是 **P2 信息泄露 IDOR**——`injectServerSideAccountTruth` 按 `account_id` 查 `WHERE id ... deleted_at`（无 user 归属过滤），A 传 B 的 `account_id` 可令 B 账户的 `Login`/`Company`/`IsDemo`/`IsConnected` 被注入 A 的策略求值并经 signal 侧信道观测。无下单能力、无资金影响。
+
+**决策（第一性：最便宜的正确修复是删掉攻击面，不是加固它）**：
+
+- **Phase 1（立即，取代当前全部 round 6 计划）**：public `ExecuteLive` **在 compile/Init 之前直接拒绝 live 模式**，返回明确 `unsupported` 语义错误；paper 模式保留但必须严格校验 mode（未知 mode 一律拒绝，不得落入非 live 分支）。`RequestType`/context 形态与 mode 的一致性校验一并前置。**理由**：零调用方 ⇒ 零产品影响；一次性关闭"客户端自带 balance/positions/status"整类威胁 + IDOR；使 `VM-TRADE-CONTEXT-6`/`VM-API-TRUTH-3` 在该入口的全部争议失效。规模约 10 行 + 1 项对抗测试（live 请求必被拒 → 删拒绝行必 RED）。
+- **Phase 2（Phase 1 落地并验收后重估，不默认施工）**：`LiveTruthProvider` 单一入口。**重估依据**：调度路径本就服务端自建 context，Phase 1 后已无客户端 truth 注入面，原设计的多数动机消失。若仍需，只保留"调度路径 ownership + freshness/provenance"这一真实缺口，禁止再按 5 个 lookup closure 的形态施工。
+- **`accountIsInvestorLookup`/`accountTradeAllowedLookup` 等发明性字段（`account_status='trade_allowed'` 在 `chk_account_status` 约束下恒 false）在 Phase 1 后一并移除**，不再维护"永远 fail-closed 的假权限源"。
+
+**Phase 1 完成并验收后**：D-COMMIT-SCOPE-001 的部署闸可解除（未验收 round 5 代码路径在 live 模式下已不可达）。
+
+**开工前置（阻塞中）**：仓库当前有另一 agent 并发施工（169 文件已 staged，含 VM/compiler 文件）。**在取得工作树独占前不得派工**——竞争工作树上无法做可信的 RED→restore→GREEN 对抗证明（本次对账期间已发生一次"clean → 大量 staged"的状态翻转）。
+
+<!-- D-VM-LIVE-001-P1:BEGIN -->
+## D-VM-LIVE-001-P1 施工提示词（ACTIVE—开工；施工者 GLM-5.2，设计/验收者 Claude；SSOT SHA256: `373283d4508d7e770685eee4979b5b4583524b68687bcbcfe87b49158a944c3b`）
+
+> 指纹为 `D-VM-LIVE-001-P1:BEGIN` 与 `:END` 两行之间（不含 marker 行）的 UTF-8 内容 SHA-256，计算于填入指纹之前；核验命令：`awk '/BEGIN marker/{f=1;next}/END marker/{f=0}f' docs/audits/tech-debt-registry.md`（去掉本指纹行后比对）。指纹不匹配说明 prompt 被改动，立即停止并返回 Claude。
+
+> **先整读** `AGENTS.md §0`、本 registry 的「D-VM-LIVE-001 范围重定」段和本节，再动手。只做本节 S1–S4。**旧 round 1–5 的 prompt 与 proof 全部作废，禁止引用。**
+
+### 立项背景（证据链）
+
+public `ExecuteLive` 的 live 模式经 Claude 独立核验确认：**① 零生产调用方**（前端 `ExecuteLive` 仅存在于 `frontend/src/gen/ant/v1/strategy_runtime_pb.ts` 生成物，无手写调用；后端 `Mode:"live"` 产生者除测试外仅调度路径常量）；**② 不下单**（`dispatchVMLive` 全路径无 mthub/OMS/gate/broker，只返回 signal）；**③ 调度路径不走此入口**（`VMLiveSession.dispatch` 是独立方法，由 `initVMSession` 进程内调用）。故 round 1–5 在加固一个无人调用、不碰资金的入口。真实缺陷是 **P2 IDOR**：`injectServerSideAccountTruth` 按 `account_id` 查询无归属过滤，可令他人账户 `Login/Company/IsDemo/IsConnected` 经 signal 侧信道被观测。
+
+### 目标
+
+public `ExecuteLive` 在**编译之前**拒绝 live 模式与一切非法 mode，一次性关闭"客户端自带账户 truth"整类威胁 + 上述 IDOR。
+
+### 🔴 绝对边界（违反 = 直接判失败）
+
+1. **只改 public RPC 入口 `StrategyExecutionServer.ExecuteLive`（`internal/connect/strategy/strategy_execution_handlers.go:90`）的准入校验。**
+2. **禁止修改 `VMLiveSession`（`vm_live_session.go`）的任何行为**——`Start`/`SendEvent`/`dispatch`(:175) 是**生产实盘调度路径**，必须继续支持 live 模式。改坏它 = 线上实盘策略全停。
+3. **禁止删除/修改** `injectServerSideAccountTruth`、`accountTradeAllowedLookup`、`accountIsInvestorLookup` 及 `dispatchVMLive:98-106` 的 live 分支——它们在本阶段变为死代码但**保留原样**，清理是 Phase 1b 的独立任务。理由：先证明拒绝生效，再删旁路，否则对抗测试可能因错误原因通过。
+4. 不碰 proto 字段号、不碰 DB schema、不碰部署、不扩到无关功能块。
+
+### 施工步骤
+
+- **S1**：`live_runner.go:27` 现有 `const modeLive = "live"` 之后新增 `const modePaper = "paper"`。（REUSE: `modeLive` @ `live_runner.go:27`；NEW: `modePaper` — 已搜 `modePaper`/`"paper"`，全仓仅裸字面量无常量。）
+- **S2**：在 `vm_live_validators.go` 新增 `validateExecuteLiveRequestMode(req *antv1.ExecuteLiveRequest) error`。语义：取出**所有非 nil** 的 context（`GetBarContext()` / `GetTickContext()` / `GetTradeContext()` / `GetTimerContext()`，proto mode 字段号分别为 13/5/18/3），逐个校验其 `Mode`：
+  - `Mode == modeLive` → 返回 error，文案含 `live mode is not supported on this endpoint`（明确 unsupported 语义，非"参数错误"）；
+  - `Mode != modePaper` → 返回 error（**空串、未知值一律拒绝**，不得落入非 live 分支）；
+  - 全部为 `modePaper` → nil。
+  - 请求若**一个 context 都没有** → 返回 error（不得放行无 context 请求）。
+  - （NEW: 已搜 `validateMode`/`cap.sh validateMode` → 代码层与 CAPABILITIES 均无命中，确为空白。）
+- **S3**：在 `ExecuteLive`（`strategy_execution_handlers.go:90`）的 `userIDRequire` 之后、`isGoStrategy` 分支之前调用 S2，失败则 `return nil, connect.NewError(connect.CodeInvalidArgument, err)`。**必须在此处**——`executeVMLive:26` / `executePythonVMLive:60` 才编译，晚于此点即违背"编译前拒绝"。
+- **S4**：`strategy_runtime.proto:198-201` 的 `account_id` 注释已过期（描述 live 模式行为），改为说明 public 入口不支持 live、`account_id` 仅保留给未来 paper 场景；`buf lint` 必须过，**字段号不变**。
+
+### 测试（先红后绿，断言级）
+
+- **T1** `TestExecuteLive_RejectsLiveMode_BeforeCompile`：构造 `BarContext{Mode:"live"}` + **故意语法错误的 MQL 源码** → 断言返回 `CodeInvalidArgument` 且错误含 `live mode is not supported`，**不是**编译错误。这同时证明"拒绝发生在编译之前"。
+- **T2** `TestExecuteLive_RejectsUnknownAndEmptyMode`：table-driven 覆盖 `""`、`"LIVE"`、`"backtest"`、`"foo"` → 全部 `CodeInvalidArgument`。
+- **T3** `TestExecuteLive_RejectsLiveModeInNonBarContexts`：分别只填 `TickContext`/`TradeContext`/`TimerContext` 且 `Mode:"live"` → 全部被拒（证明四个 context 的 mode 都被检查，堵住 round 5 复审指出的"tick/trade/timer 自带 mode 绕过"）。
+- **T4** `TestExecuteLive_AllowsPaperMode`：`BarContext{Mode:"paper"}` + 合法 MQL → 不因 mode 被拒（可因其他原因失败，但错误不得含 `mode`）。
+- **T5 回归（必做）** `TestVMLiveSession_LiveModeStillWorks`：直接构造 `VMLiveSession` 并以 `Mode:"live"` 走 `Start`/`SendEvent` → **必须成功**，证明调度实盘路径未被误伤。
+
+### 对抗证明（缺一即未完成）
+
+- **P1**：删除 S3 的调用行 → T1/T2/T3 必须 **RED**（断言级：错误消息不含 `live mode is not supported`，或请求被放行到编译阶段）；恢复 → GREEN。
+- **P2**：把 S2 中 `Mode != modePaper` 分支改为 `return nil`（放行未知 mode）→ T2 必须 RED；恢复 → GREEN。
+- **P3**：把 S2 改为只检查 `GetBarContext()` → T3 必须 RED；恢复 → GREEN。
+- 每项须记录 mutation 命令、RED 输出摘要、restore 后 GREEN。**nil panic、另一条错误、"任意 error" 均不算证据。**
+
+### 红队自审（施工后切换怀疑者视角，逐条书面回答）
+
+1. 生产调度实盘（`599ddaa5` 这类 event session）会不会被这个改动打断？依据是什么（不能只说"应该不会"，要指出调用链为何不经过本入口）？
+2. `RequestType` 与 context 不匹配时（如 `REQUEST_TYPE_TICK` 但只填了 `bar_context`）会走哪条分支？会不会绕过 mode 校验？
+3. mode 大小写、前后空格（`" live"`/`"Live"`）会被拒还是被放行？是否符合 fail-closed？
+4. 有没有任何**内部** Go 调用方直接调 `StrategyExecutionServer.ExecuteLive`（非 RPC）？（自己 grep 验证并给出结论）
+5. 本改动是否让任何既有测试失败？失败的是"测试假设过期"还是"我改坏了"？
+
+### 验收门禁（逐条贴真实输出）
+
+`gofmt -l` 本次改动文件为空；`go build ./...`；`go vet ./...`；`go test ./internal/connect/strategy -count=1`；`go test -race ./internal/connect/strategy -count=1` **连跑 3 次**；`go run ./tools/check-file-lines --strict` 必须 `0 errors, 0 warnings`（info 需披露）；`buf lint`；`git diff --check`。
+
+### 回填与收尾
+
+registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–P3 对抗证明输出 + 红队自审 5 问答；`handover-audit-plan.md` 追加一行。**状态填 `⚠️待Claude复审`，不得自标 ✅done。**
+
+> **勿部署、勿 push、停手等 Claude 复审。禁止 `--no-verify`。收工只显式 `git add` 本任务涉及的文件，禁止 `git add -A`／`git add .`（本仓多 agent 并发，上一轮已两次把他人改动扫进提交）。**
+
+<!-- D-VM-LIVE-001-P1:END -->
+
+## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（ACTIVE；2026-08-25，Phase 2 参考）
 
 > 本节是下一次施工的唯一设计入口；旧 round 5 提示词已标记 `SUPERSEDED`，GLM-5.2 不得按旧节施工。该设计先于任何 S/T 施工指令，未完成本节的字段、错误和测试契约不得开工。
 
