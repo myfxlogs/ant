@@ -22,6 +22,12 @@
 
 ## 变更日志
 
+- 2026-08-25 **D-VM-LIVE-001 Phase 2 重估裁决 + Phase 1b 派工（D-VM-LIVE-001-P1B）**：
+
+  - **Phase 2 裁决（Claude 第一负责人）：不施工，D-VM-LIVE-001 关闭在即**。三项证据：① 客户端注入面已由 Phase 1 关闭；② 调度路径 truth 已实现——`buildLiveContext`（live_context_build.go:48-108）服务端自建 5 lookup + `backfillContextStrings`（live_context.go:75）经 `GetFreshTradingSnapshot` 注入金融/持仓并 stale 即阻断（LIVE-ORDER-REENTRY-1）；③ `account_status='trade_allowed'` 发明性字段无 Go 消费点。`LiveTruthProvider` 原动机全部消失，禁止按 D1 契约施工。唯一剩余可选增强（非缺陷）：Snapshot provenance/source 溯源标签，挂 🟦open 低优不派工。
+  - **P1B 派工（GLM-5.2）**：删 `injectServerSideAccountTruth`（vm_live_dispatch.go:161-221）+ `dispatchVMLive` live 分支（:94-106）+ 两个测死代码的测试（vm_trade_context6_round5_test.go:149-165/:167-232）。**scope 修正**：5 个 lookup 字段与装配（strategy_execution_handler.go:109-139/213-243）是调度路径 `buildLiveContext` 的 active 依赖，**禁止删除**（覆盖 P1 边界 #3 字面）。对抗 P1（grep 清零）/P2（拒绝测试仍绿）/P3（调用链不可达证明）。SSOT `ed166302…`。任务状态 ⚠️待Claude复审。
+  - **后续排队**：P1B 验收后派 D-CODE-HYGIENE-001 manifest 补齐（P0 验收收口），禁止并行。
+
 - 2026-08-25 **D-VM-LIVE-001-P1-R1 审计方独立复审：R1 验收通过，P1 全部验收通过，部署闸解除条件达成**：
 
   审计方（Claude）独立复测（非施工方自报）：
