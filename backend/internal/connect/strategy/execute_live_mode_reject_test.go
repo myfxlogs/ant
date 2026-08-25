@@ -11,6 +11,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
@@ -176,32 +177,70 @@ func TestExecuteLive_RejectsNoContext(t *testing.T) {
 	}
 }
 
-// TestVMLiveSession_LiveModeStillWorks (T5 regression — live dispatch path)
+// TestVMLiveSession_LiveModeStillWorks (T5 — live dispatch path regression)
 // VMLiveSession is the production scheduled-live dispatch path and must
 // continue to work with live mode. This test directly constructs a session
-// and sends a bar event, proving the mode rejection in ExecuteLive does not
-// affect the internal dispatch path.
+// with Mode:"live" + non-empty authoritative financial fields, walks through
+// Start → SendEvent, and asserts success — proving the mode rejection in the
+// public ExecuteLive RPC handler does NOT affect the internal dispatch path.
+//
+// Adversarial proof (R1-P1, as independently re-verified): adding the S3
+// mode rejection to validateBarContextWithMode — the shared validation path
+// used by BOTH VMLiveSession.Start (Start → validateFirstBarContext →
+// validateBarContext) and dispatchVMLive — makes this test RED, proving the
+// test walks the real Start → SendEvent path. (Moving the S3 call into
+// executeVMLive does NOT affect this test: VMLiveSession.Start dispatches
+// internally via vm_live_session.go dispatch() and never calls
+// executeVMLive — verified by mutation during audit.)
 func TestVMLiveSession_LiveModeStillWorks(t *testing.T) {
 	t.Parallel()
-	// This test verifies that VMLiveSession.Start and SendEvent still accept
-	// live mode — the mode rejection is only in the public RPC handler.
-	// We call validateExecuteLiveRequestMode with a paper request to confirm
-	// the validator itself works, then verify VMLiveSession is unaffected.
-	req := &antv1.ExecuteLiveRequest{
-		BarContext: &antv1.LiveStrategyContext{Mode: modeLive},
+
+	// Minimal MQL4 strategy that does nothing in start() — sufficient to
+	// prove Start/SendEvent succeed without depending on indicator logic.
+	const noopMQL = `
+int start()
+{
+    return 0;
+}
+`
+
+	// Build a 1-bar live context with non-empty authoritative financial
+	// fields. validateBarContextWithMode (vm_live_validators.go:187)
+	// requires Balance/Equity/Margin/FreeMargin non-empty in live mode;
+	// missing them would fail-start for VMLiveSession's own validator,
+	// NOT because of P1's mode rejection.
+	bars := []liveBar{
+		{
+			open: "100.0", high: "101.0", low: "99.0", close: "100.5",
+			volume: "1000", openTime: 1_700_000_000_000,
+		},
 	}
-	// The public validator rejects live mode:
-	err := validateExecuteLiveRequestMode(req)
-	if err == nil {
-		t.Fatal("validateExecuteLiveRequestMode should reject live mode")
+	lctx := buildLiveCtx(bars, "TESTUSD", "1m", modeLive)
+	lctx.Balance = "10000"
+	lctx.Equity = "10000"
+	lctx.Margin = "0"
+	lctx.FreeMargin = "10000"
+
+	ctx := context.Background()
+	sess, resp, err := startSession(ctx, noopMQL, lctx)
+	if err != nil {
+		t.Fatalf("VMLiveSession.Start with live mode must succeed, got error: %v", err)
 	}
-	// But VMLiveSession uses its own dispatch path (not ExecuteLive),
-	// so live mode is still valid for scheduled execution. We verify
-	// by checking that modeLive constant is unchanged and available.
-	if modeLive != "live" {
-		t.Fatalf("modeLive constant changed: %q", modeLive)
+	if sess == nil {
+		t.Fatal("VMLiveSession.Start returned nil session")
+	}
+	defer sess.Close()
+	if resp == nil {
+		t.Fatal("VMLiveSession.Start returned nil response")
+	}
+
+	// Send a follow-up TICK event to prove SendEvent also works in live mode.
+	tickResp, err := sendTickEvent(ctx, sess,
+		buildTickCtx("TESTUSD", decimal.NewFromFloat(100.5), decimal.NewFromFloat(100.6)))
+	if err != nil {
+		t.Fatalf("VMLiveSession.SendEvent (tick) with live mode must succeed, got error: %v", err)
+	}
+	if tickResp == nil {
+		t.Fatal("VMLiveSession.SendEvent returned nil response")
 	}
 }
-
-// Ensure strings import is used.
-var _ = strings.Contains

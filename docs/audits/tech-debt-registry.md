@@ -541,7 +541,7 @@ registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–
 
 > **⚠️ marker 收紧（2026-08-25 审计方 Claude）**：原 END marker 位于交付回填之后，回填（prompt :530 指示写入 marker 段内）必然破坏指纹，导致复审时指纹核验失败。已把 END 移到回填之前，指纹范围 = 纯 prompt 主体（不含任何回填）。指纹值已按新范围重算并更新。交付回填与后续复审记录均位于 marker 之外，永不再影响指纹核验。
 
-### D-VM-LIVE-001-P1 交付回填（2026-08-25；施工方 GLM-5.2；状态 ⚠️待Claude复审）
+### D-VM-LIVE-001-P1 交付回填（2026-08-25；施工方 GLM-5.2；状态 ✅已验收——2026-08-25 Claude 独立复审通过，见下节）
 
 **实现**：
 - S1：`live_runner.go:29` 新增 `const modePaper = "paper"`（REUSE: `modeLive` @ `live_runner.go:27`；NEW: `modePaper` — 已搜全仓无常量）
@@ -674,6 +674,61 @@ registry 本条回填真实实现 + REUSE/NEW 结论 + 红队自审 5 问答 + R
 <!-- D-VM-LIVE-001-P1-R1:END -->
 
 > **D-VM-LIVE-001-P1-R1 SSOT SHA256: `c0ad6cfb3d898d6d7246e8792d3373c0d302e39a0539944e310dad357dc704cb`**（协议 v2；计算=上方核验命令提取的区块原文整体哈希，指纹行在 marker 外）
+
+### D-VM-LIVE-001-P1-R1 交付回填（2026-08-25；施工方 GLM-5.2；状态 ✅已验收——2026-08-25 Claude 独立复审通过，见下节）
+
+**实现**：
+- R1-1：重写 `TestVMLiveSession_LiveModeStillWorks`（execute_live_mode_reject_test.go:179-240）——`NewVMLiveSession(noopMQL)` + `buildLiveCtx(bars, "TESTUSD", "1m", modeLive)` + 非空金融字段（Balance/Equity/Margin/FreeMargin）→ `startSession`（复用 live_indicator_freeze_test.go:121 helper，内部调 `NewVMLiveSession` → `sess.Start`）→ `sendTickEvent`（复用 :105 helper，内部调 `sess.SendEvent`）→ 断言 Start/SendEvent 成功（err==nil + resp!=nil + sess!=nil）。REUSE: `startSession` @ live_indicator_freeze_test.go:121, `sendTickEvent` @ :105, `buildLiveCtx` @ :46, `buildTickCtx` @ :80；NEW: 无（全部复用既有 helper）
+- R1-2：删除 :207 `var _ = strings.Contains` 冗余行（strings 已被 :88/:143/:160 真实使用）
+
+**R1-P1 对抗证明（RED→restore→GREEN）**：
+- Mutation：把 mode 拒绝加到 `validateBarContextWithMode`（vm_live_validators.go:95，VMLiveSession.Start → validateFirstBarContext → validateBarContext → validateBarContextWithMode 的共享路径），`mode == modeLive` 时返回 `bar_context: live mode is not supported on this endpoint`
+- RED：T5 `TestVMLiveSession_LiveModeStillWorks` RED——"VMLiveSession.Start with live mode must succeed, got error: first bar_context invalid: bar_context: live mode is not supported on this endpoint"（断言级失败，非 nil panic/任意 error）
+- 注：prompt 字面说"挪进 executeVMLive"，但 `executeVMLive` 是 public ExecuteLive 的内部函数，VMLiveSession.Start 走自己的 `dispatch` 方法（vm_live_session.go:175），不经过 `executeVMLive`。挪进 `executeVMLive` 只让 T1/T2/T3 RED（handler 不再拒绝，mode 错误从 executeVMLive 返回 CodeInternal 而非 CodeInvalidArgument），T5 仍 PASS。正确的"内部调度路径"mutation 目标是 `validateBarContextWithMode`（VMLiveSession 和 executeVMLive 共享的验证路径），T5 RED 证明测试走的是真实 VMLiveSession.Start/SendEvent 路径
+- Restore：恢复 `validateBarContextWithMode` → 全 GREEN
+
+**红队自审 5 问答**：
+1. live mode 下 Start 需要 Balance/Equity/Margin/FreeMargin 非空合法 decimal（`validateLiveFinancialFields` @ vm_live_validators.go:40 要求非空，:53 调 `validateFinancialFields` 校验合法 decimal）；至少 1 bar OHLCV（:96-98）。测试填了全部字段
+2. 测试真的构造了 VMLiveSession 并走 Start/SendEvent——`startSession` 内部调 `NewVMLiveSession` → `sess.Start`，`sendTickEvent` 内部调 `sess.SendEvent`。R1-P1 mutation（拒绝加到 `validateBarContextWithMode`）让 T5 RED 证明测试走真实路径；如果只调 validator，mutation 不会让测试 RED（validator 不在 VMLiveSession 路径上）
+3. 不冲突/重复——live_indicator_freeze_test.go 测 LIVE-INDICATOR-1（500-bar MACD crossover 指标冻结），新测试测 D-VM-LIVE-001-P1（1-bar noop mode 不被拒），目的/策略/数据完全不同，复用 helper 是同包工具共享
+4. NewVMLiveSession 不需要额外初始化——只接收 source string 编译 bytecode，Start 用进程内 runner.New + r.Init，不连 broker/hub（vm_live_session.go:33/118-133）
+5. 全部既有测试 PASS（`go test ./internal/connect/strategy/ -count=1` 94s），无失败
+
+**验收门禁**：
+- `gofmt -l` 改动文件：空
+- `go build ./...`：exit 0
+- `go vet ./internal/connect/strategy/...`：无问题
+- `go test ./internal/connect/strategy/ -count=1`：PASS（94s）
+- `go test -race ./internal/connect/strategy/ -run TestVMLiveSession_LiveModeStillWorks -count=1` ×3：全部 PASS（1.1s/1.1s/1.1s）
+- `go run ./tools/check-file-lines --strict`：0 errors, 0 warnings, 108 info
+- `git diff --check`：无空白错误
+- buf lint：不涉及（proto 零改动）
+
+**变更文件**：
+- `backend/internal/connect/strategy/execute_live_mode_reject_test.go`（重写 T5 + 删冗余行，净 +33 行）
+- `docs/audits/tech-debt-registry.md`（本回填）
+- `docs/audits/handover-audit-plan.md`（追加交接行）
+
+**生产代码零改动确认**：`git diff --stat` 对 vm_live_validators.go / strategy_execution_handlers.go / vm_live_dispatch.go / live_runner.go / vm_live_session.go 均为空。
+
+### D-VM-LIVE-001-P1-R1 审计方独立复审（2026-08-25；Claude；结论：**R1 验收通过，D-VM-LIVE-001-P1 全部验收通过**）
+
+**独立核验**（非施工方自报）：
+- **指纹核验**：R1 prompt SSOT SHA256 `c0ad6cfb3d898d6d7246e8792d3373c0d302e39a0539944e310dad357dc704cb` 独立复算一致 ✅（协议 v2 命令，无排除操作）
+- **Scope 核验**：工作树仅 3 文件——`execute_live_mode_reject_test.go` + 两个文档回填；`git diff --stat` 对全部 5 个生产文件（vm_live_validators.go / strategy_execution_handlers.go / vm_live_dispatch.go / live_runner.go / vm_live_session.go）为空 ✅（R1 边界「只改测试文件」符合）
+- **T5 实现核验**：`TestVMLiveSession_LiveModeStillWorks`（:190-241）真构造 VMLiveSession 走真实路径——`startSession`（live_indicator_freeze_test.go:121 内部 `NewVMLiveSession` → `sess.Start`）+ `sendTickEvent`（:105 内部 `sess.SendEvent`）；live ctx 填 Balance/Equity/Margin/FreeMargin 非空合法 decimal（满足 `validateLiveFinancialFields` @ vm_live_validators.go:40，缺了属 VMLiveSession 正常 fail-closed 非 P1 误伤）；1 bar OHLCV + 固定 epoch 时间戳（确定性）；断言 err==nil + sess/resp 非 nil + SendEvent 成功。helper 全复用、无复制实现 ✅；:207 冗余行已删（strings 仍被 :88/:143/:160 真实使用）✅
+
+**审计方独立 mutation 对抗复测**（RED→restore→GREEN，断言级）：
+- **Mutation A（施工方实际采用的 mutation，复现）**：`validateBarContextWithMode`（vm_live_validators.go:95）开头加 `mode=="live"` → 返回 `bar_context: live mode is not supported on this endpoint` → **T5 断言级 RED**（"VMLiveSession.Start with live mode must succeed, got error: first bar_context invalid: bar_context: live mode is not supported on this endpoint"，与施工方回填 RED 输出逐字一致）；T1/T2/T3/T4/T5b 不受影响（handler 先拒，不触共享路径）；restore → 全 GREEN ✅
+- **Mutation B（prompt 字面要求的 mutation，偏差声明验证）**：S3 调用从 handler（strategy_execution_handlers.go:97-99）禁用 + 挪进 `executeVMLive` 开头 → **T1/T2/T3/T5b 全 RED（handler 不再拒绝，mode 错误经 `CodeInternal` 包装返回）但 T5 仍 PASS**——与施工方回填 :687 声明逐字一致 ✅
+
+**偏差裁决（施工方偏离 prompt 字面 mutation 目标，记录有效）**：prompt R1-P1 字面要求"挪进 executeVMLive → T5 必须 RED"，但静态读码 + Mutation B 动态实测双重证明：`VMLiveSession.Start` 走自己的 `dispatch`（vm_live_session.go:175，Start→validateFirstBarContext→validateBarContext→dispatch→vmHandle*），**不经过 `executeVMLive`**（该函数仅被 public handler :110 调用）；`validateBarContextWithMode` 是 VMLiveSession.Start（经 validateBarContext）与 executeVMLive（经 dispatchVMLive:112 → validateBarContext）**唯一共享的验证点**。故：prompt 字面 mutation 程序不可能使 T5 RED（实测 T5 仍 PASS），施工方改用共享验证路径是**达成 prompt 意图（模拟拒绝扩散到内部调度路径）的唯一正确目标**——T5 RED（Mutation A）证明测试走真实 VMLiveSession.Start/SendEvent 路径。偏差已在回填 :687 记录。**判为合理偏差，不要求 R2。**
+
+**审计方修正（一行注释，测试行为零改动）**：测试文件 :187-189 注释残留 prompt 的错误假设——"VMLiveSession.Start calls executeVMLive indirectly"（与回填 :687 声明及 Mutation B 实测矛盾，描述的对抗机制实际不产生其声称的效果）。已修正为真实 mutation 描述（validateBarContextWithMode 共享路径 + Mutation B 为何不影响本测试）；修正后 T1-T5b 重跑全绿 + gofmt 干净 ✅
+
+**门禁独立复测**：go build ./... ✅ / go vet ./internal/connect/strategy/... ✅ / go test ./internal/connect/strategy -count=1（94.5s）✅ / go test -race -run TestVMLiveSession_LiveModeStillWorks ×3（1.12/1.12/1.14s）✅ / check-file-lines `0 errors, 0 warnings, 108 info` ✅ / git diff --check ✅ / gofmt -l 改动文件空 ✅
+
+**裁决**：D-VM-LIVE-001-P1-R1 **验收通过**。至此 D-VM-LIVE-001-P1 全部验收通过（S1-S4 + T1/T2/T3/T4/T5b/T5 + P1-P3 + R1-P1 + 红队自审 + 门禁）。**D-COMMIT-SCOPE-001 部署闸解除条件达成**（范围重定 :465：Phase 1 完成并验收后解除——round 5 未验收代码路径在 live 模式下已不可达）。D-VM-LIVE-001 进入 Phase 2 重估（LiveTruthProvider 是否仍需施工，动机已大部分消失，见范围重定段）。⚠️ 注：D-CODE-HYGIENE-001 仍 `⚠️待Claude复审`（120 新文件缺逐文件 manifest）——为独立验收流程债务，不阻塞本部署闸解除，但解除后仍建议在 D-CODE 验收前不发布生产（部署安全与验收流程分开看）。
 
 ## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（ACTIVE；2026-08-25，Phase 2 参考）
 
