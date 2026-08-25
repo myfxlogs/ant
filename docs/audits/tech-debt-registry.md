@@ -612,6 +612,61 @@ registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–
 
 **⚠️ 流程事故记录（2026-08-25，commit `4ac4f210`）**：审计方提交文档变更时未先 `git diff --cached --name-only` 核对暂存区，把 GLM 已暂存的 5 个代码文件连带提交进 main（T5 名义测试随之进 main）。**影响评估**：生产零影响（部署门禁未解除，backend 不从 main 构建）；代码已独立验收通过，唯一未验收项 T5 是测试质量问题。**不 revert**（代码验收通过、revert 成本高于收益、R1 直接在 main 上返工更简单）。**流程修复**：① R1 派工 prompt 明确告知 GLM「P1 代码已在 main（`4ac4f210`），在 main 上直接返工，工作树无暂存代码」；② 审计方 commit 前必查 `git diff --cached --name-only`（本条教训入 memory）。
 
+<!-- D-VM-LIVE-001-P1-R1:BEGIN -->
+## D-VM-LIVE-001-P1-R1 返工提示词（ACTIVE—开工；施工者 GLM-5.2，设计/验收者 Claude；SSOT SHA256: `1bd405ae1fbc749b18098abeabf5c1a2cf2535c5a5c28e0387ab21b8767ed347`）
+
+> 指纹为 `D-VM-LIVE-001-P1-R1:BEGIN` 与 `:END` 两行之间（不含 marker 行）的 UTF-8 内容 SHA-256，计算于填入指纹之前；核验命令：`awk '/BEGIN marker/{f=1;next}/END marker/{f=0}f' docs/audits/tech-debt-registry.md`（去掉本指纹行后比对）。指纹不匹配说明 prompt 被改动，立即停止并返回 Claude。
+
+> **先整读** `AGENTS.md §0`、上方 P1 复审记录与本节，再动手。只做 R1-1/R1-2。**P1 代码已在 main（commit `4ac4f210`，工作树当前干净，直接在 main 上返工）**。部署门禁未解除——勿部署、勿 push。
+
+### 背景
+
+P1 已验收（审计方独立复测）：S1–S4 实现 + T1/T2/T3/T4/T5b + P1–P3 mutation 全有效。唯一退回项 = **T5 名义测试**：施工方实现只调 `validateExecuteLiveRequestMode` + 断言 `modeLive=="live"` 常量，未构造 VMLiveSession、未走 Start/SendEvent、无调度路径断言——删除/破坏 VMLiveSession 的 live 行为测试不会红。审计铁律：测试测拷贝不测真代码 = 无效证明（UX-1~8 同标准）。
+
+### 目标
+
+按 P1 prompt :509 原文实现 T5：「**直接构造 `VMLiveSession` 并以 `Mode:"live"` 走 `Start`/`SendEvent` → 必须成功**，证明调度实盘路径未被误伤」。
+
+### 🔴 绝对边界（违反 = 直接判失败）
+
+1. **只改 `backend/internal/connect/strategy/execute_live_mode_reject_test.go`**（测试文件）。生产代码（strategy_execution_handlers.go / vm_live_validators.go / live_runner.go / vm_live_session.go / dispatchVMLive 等一切非测试文件）**零改动**——`git diff` 必须只含该测试文件（文档回填除外）。
+2. **禁止修改** `VMLiveSession` 及其既有测试文件（live_indicator_freeze_test.go / live_integration_test.go 等）。
+3. 不碰 proto / schema / 部署 / 其他功能块。
+
+### 施工步骤
+
+- **R1-1**：重写 `TestVMLiveSession_LiveModeStillWorks`：
+  - `NewVMLiveSession(code)` 构造 session（REUSE: `NewVMLiveSession` @ vm_live_session.go:33）。
+  - `Mode:"live"` 的 `LiveStrategyContext`，**必须填 Balance/Equity/Margin/FreeMargin 非空合法 decimal**——live mode 下 `validateBarContextWithMode`（vm_live_validators.go:187）要求权威金融字段非空，缺了 Start 失败是 VMLiveSession 正常 fail-closed 行为，**不是** P1 误伤；测试要证明的是「live mode 不被拒绝」，不是「任意输入成功」。
+  - 走 `Start` → `SendEvent`（BAR 或 TICK 事件）→ 断言成功（`Success=true` 或 error 不含 `live mode is not supported`）。
+  - 复用同包既有 helper（`buildLiveCtx`/`startSession`/`sendTickEvent` @ live_indicator_freeze_test.go:46/121/105 为参考模式），**不得**在测试文件内复制实现。
+- **R1-2**：删除测试文件 :207 `var _ = strings.Contains` 冗余行（strings 已被 :87/:142 真实使用）。
+
+### 对抗证明（缺一即未完成）
+
+- **R1-P1**：把 S3 调用点（strategy_execution_handlers.go:95-99）从 handler **挪进** `executeVMLive`（模拟拒绝逻辑扩散到内部调度路径）→ **T5 必须 RED**（live mode 在内部路径被拒绝）；同时 T1/T2/T3 因 handler 不再拒绝也 RED；恢复 → 全 GREEN。mutation 期间禁止 commit。禁止 `--no-verify`。
+- 每项记录 mutation 命令、RED 输出摘要、restore 后 GREEN。**nil panic、另一条错误、"任意 error" 均不算证据。**
+
+### 红队自审（施工后切换怀疑者视角，逐条书面回答）
+
+1. live mode 下 Start 需要哪些字段才不报错？为什么缺了会失败（引用 validator 行为，不能只说"应该"）？
+2. 测试是否**真的构造了 VMLiveSession 并走 Start/SendEvent**？把"走 Start"替换成"只调 validator"测试会不会还绿？（红队必须实际做这个自查对抗并给出结果）
+3. 新测试与既有 live_indicator_freeze_test.go 的 live 场景是否冲突/重复？
+4. `NewVMLiveSession` 在测试环境是否需要额外初始化（broker/hub 依赖）？依据是什么（引用代码）？
+5. 本改动是否让任何既有测试失败？失败的是"测试假设过期"还是"我改坏了"？
+
+### 验收门禁（逐条贴真实输出）
+
+`gofmt -l` 本次改动文件为空；`go build ./...`；`go vet ./internal/connect/strategy/...`；`go test ./internal/connect/strategy -count=1`；`go test -race ./internal/connect/strategy -run TestVMLiveSession_LiveModeStillWorks -count=1` **连跑 3 次**；`go run ./tools/check-file-lines --strict`（info 需披露）；`git diff --check`。（buf lint 不涉及——proto 零改动。）
+
+### 回填与收尾
+
+registry 本条回填真实实现 + REUSE/NEW 结论 + 红队自审 5 问答 + R1-P1 对抗证明输出；`handover-audit-plan.md` 追加一行。**状态填 `⚠️待Claude复审`，不得自标 ✅done。**
+
+> **勿部署、勿 push、停手等 Claude 复审。禁止 `--no-verify`。收工只显式 `git add` 本任务涉及的文件（预期仅 `execute_live_mode_reject_test.go` + 两个文档），禁止 `git add -A`／`git add .`（本仓多 agent 并发）。**
+
+<!-- D-VM-LIVE-001-P1-R1:END -->
+
 ## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（ACTIVE；2026-08-25，Phase 2 参考）
 
 > 本节是下一次施工的唯一设计入口；旧 round 5 提示词已标记 `SUPERSEDED`，GLM-5.2 不得按旧节施工。该设计先于任何 S/T 施工指令，未完成本节的字段、错误和测试契约不得开工。
