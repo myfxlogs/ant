@@ -467,9 +467,11 @@ Generated `gen/`、i18n、scripts 和 proto 的 `info` 不属于 warning 清零�
 **开工前置（阻塞中）**：仓库当前有另一 agent 并发施工（169 文件已 staged，含 VM/compiler 文件）。**在取得工作树独占前不得派工**——竞争工作树上无法做可信的 RED→restore→GREEN 对抗证明（本次对账期间已发生一次"clean → 大量 staged"的状态翻转）。
 
 <!-- D-VM-LIVE-001-P1:BEGIN -->
-## D-VM-LIVE-001-P1 施工提示词（ACTIVE—开工；施工者 GLM-5.2，设计/验收者 Claude；SSOT SHA256: `f975cd73c6ffb8d8fc1107a3ecbeef6c79ad80bef86175d157225ffbab578700`，2026-08-25 收紧 marker 范围后重算，见 marker 内注）
+## D-VM-LIVE-001-P1 施工提示词（ACTIVE—开工；施工者 GLM-5.2，设计/验收者 Claude）
 
-> 指纹为 `D-VM-LIVE-001-P1:BEGIN` 与 `:END` 两行之间（不含 marker 行）的 UTF-8 内容 SHA-256，计算于填入指纹之前；核验命令：`awk '/BEGIN marker/{f=1;next}/END marker/{f=0}f' docs/audits/tech-debt-registry.md`（去掉本指纹行后比对）。指纹不匹配说明 prompt 被改动，立即停止并返回 Claude。
+> **指纹与核验（协议 v2，2026-08-25）**：SSOT SHA256 见本区块 END 标记之后一行（指纹行在 marker 外，天然不含于提取结果）。核验命令（**无任何排除/删除操作**，提取 marker 两行之间的区块原文整体哈希）：
+> `sed -n '/^<!-- D-VM-LIVE-001-P1:BEGIN -->$/,/^<!-- D-VM-LIVE-001-P1:END -->$/p' docs/audits/tech-debt-registry.md | sed '1d;$d' | sha256sum`
+> 与 SSOT 值比对。不匹配说明 prompt 被改动，立即停止并返回 Claude。**协议 v1 缺陷（已废弃）**：awk 无锚定匹配 marker 字面量会误吞含 marker 字符串的说明行，且指纹行在 marker 内需排除操作，两处歧义导致审计方计算值与核验值不一致。**历史**：2026-08-25 曾收紧 END marker 至交付回填之前（回填破坏指纹），指纹随之重算；现按协议 v2 再次重算。
 
 > **先整读** `AGENTS.md §0`、本 registry 的「D-VM-LIVE-001 范围重定」段和本节，再动手。只做本节 S1–S4。**旧 round 1–5 的 prompt 与 proof 全部作废，禁止引用。**
 
@@ -535,6 +537,8 @@ registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–
 
 <!-- D-VM-LIVE-001-P1:END -->
 
+> **D-VM-LIVE-001-P1 SSOT SHA256: `7793da25921ca7b0c09c6e71efc47129476525cb195ef56a9aa6274b81f27154`**（协议 v2；计算=上方核验命令提取的区块原文整体哈希，指纹行在 marker 外；2026-08-25 曾因 marker 收紧与协议 v1 缺陷两次重算，本次为 v2 最终值）
+
 > **⚠️ marker 收紧（2026-08-25 审计方 Claude）**：原 END marker 位于交付回填之后，回填（prompt :530 指示写入 marker 段内）必然破坏指纹，导致复审时指纹核验失败。已把 END 移到回填之前，指纹范围 = 纯 prompt 主体（不含任何回填）。指纹值已按新范围重算并更新。交付回填与后续复审记录均位于 marker 之外，永不再影响指纹核验。
 
 ### D-VM-LIVE-001-P1 交付回填（2026-08-25；施工方 GLM-5.2；状态 ⚠️待Claude复审）
@@ -587,7 +591,7 @@ registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–
 ### D-VM-LIVE-001-P1 审计方独立复审（2026-08-25；Claude；结论：**实现+对抗证明验收通过，T5 测试返工**）
 
 **独立核验**（非施工方自报）：
-- 指纹核验：回填导致原指纹失配 → **marker 收紧修复**（见 marker 内注，新指纹 `f975cd73`），收紧后核验通过
+- 指纹核验：回填导致原指纹失配 → **marker 收紧修复**（见 marker 内注），后因协议 v1 缺陷（awk 无锚定吞说明行）再次失配 → **协议 v2**（指纹行移出 marker + sed 行首尾锚定 + 无排除操作），P1/R1 指纹分别为 `7793da25`/`c0ad6cfb`，核验自洽
 - 范围核验：HEAD=55105d5d，工作树 7 文件（5 代码/proto + 2 文档回填），无越界改动；`VMLiveSession`（vm_live_session.go）零改动 ✅；`injectServerSideAccountTruth`/`accountTradeAllowedLookup`/`accountIsInvestorLookup`/`dispatchVMLive:98-106` live 分支保留原样 ✅（Phase 1b 旁路未动）
 - S1 `modePaper` @ live_runner.go:29 ✅；S2 `validateExecuteLiveRequestMode` @ vm_live_validators.go:203 ✅（四 context 全检、无 context 拒绝、fail-closed）；S3 接入 @ strategy_execution_handlers.go:95-99（userIDRequire 后、isGoStrategy 前）✅；S4 proto 注释 @ :198-201 字段号 8 不变 ✅
 
@@ -613,9 +617,11 @@ registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–
 **⚠️ 流程事故记录（2026-08-25，commit `4ac4f210`）**：审计方提交文档变更时未先 `git diff --cached --name-only` 核对暂存区，把 GLM 已暂存的 5 个代码文件连带提交进 main（T5 名义测试随之进 main）。**影响评估**：生产零影响（部署门禁未解除，backend 不从 main 构建）；代码已独立验收通过，唯一未验收项 T5 是测试质量问题。**不 revert**（代码验收通过、revert 成本高于收益、R1 直接在 main 上返工更简单）。**流程修复**：① R1 派工 prompt 明确告知 GLM「P1 代码已在 main（`4ac4f210`），在 main 上直接返工，工作树无暂存代码」；② 审计方 commit 前必查 `git diff --cached --name-only`（本条教训入 memory）。
 
 <!-- D-VM-LIVE-001-P1-R1:BEGIN -->
-## D-VM-LIVE-001-P1-R1 返工提示词（ACTIVE—开工；施工者 GLM-5.2，设计/验收者 Claude；SSOT SHA256: `1bd405ae1fbc749b18098abeabf5c1a2cf2535c5a5c28e0387ab21b8767ed347`）
+## D-VM-LIVE-001-P1-R1 返工提示词（ACTIVE—开工；施工者 GLM-5.2，设计/验收者 Claude）
 
-> 指纹为 `D-VM-LIVE-001-P1-R1:BEGIN` 与 `:END` 两行之间（不含 marker 行）的 UTF-8 内容 SHA-256，计算于填入指纹之前；核验命令：`awk '/BEGIN marker/{f=1;next}/END marker/{f=0}f' docs/audits/tech-debt-registry.md`（去掉本指纹行后比对）。指纹不匹配说明 prompt 被改动，立即停止并返回 Claude。
+> **指纹与核验（协议 v2，2026-08-25）**：SSOT SHA256 见本区块 END 标记之后一行（指纹行在 marker 外，天然不含于提取结果）。核验命令（**无任何排除/删除操作**，提取 marker 两行之间的区块原文整体哈希）：
+> `sed -n '/^<!-- D-VM-LIVE-001-P1-R1:BEGIN -->$/,/^<!-- D-VM-LIVE-001-P1-R1:END -->$/p' docs/audits/tech-debt-registry.md | sed '1d;$d' | sha256sum`
+> 与 SSOT 值比对。不匹配说明 prompt 被改动，立即停止并返回 Claude。**协议 v1 缺陷（已废弃）**：awk 无锚定匹配 marker 字面量会误吞含 marker 字符串的说明行，且指纹行在 marker 内需排除操作，两处歧义导致审计方计算值与核验值不一致。
 
 > **先整读** `AGENTS.md §0`、上方 P1 复审记录与本节，再动手。只做 R1-1/R1-2。**P1 代码已在 main（commit `4ac4f210`，工作树当前干净，直接在 main 上返工）**。部署门禁未解除——勿部署、勿 push。
 
@@ -666,6 +672,8 @@ registry 本条回填真实实现 + REUSE/NEW 结论 + 红队自审 5 问答 + R
 > **勿部署、勿 push、停手等 Claude 复审。禁止 `--no-verify`。收工只显式 `git add` 本任务涉及的文件（预期仅 `execute_live_mode_reject_test.go` + 两个文档），禁止 `git add -A`／`git add .`（本仓多 agent 并发）。**
 
 <!-- D-VM-LIVE-001-P1-R1:END -->
+
+> **D-VM-LIVE-001-P1-R1 SSOT SHA256: `c0ad6cfb3d898d6d7246e8792d3373c0d302e39a0539944e310dad357dc704cb`**（协议 v2；计算=上方核验命令提取的区块原文整体哈希，指纹行在 marker 外）
 
 ## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（ACTIVE；2026-08-25，Phase 2 参考）
 
