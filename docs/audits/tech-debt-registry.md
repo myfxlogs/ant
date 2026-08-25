@@ -610,6 +610,8 @@ registry 本条目回填真实实现 + REUSE/NEW 结论 + T1–T5 结果 + P1–
 
 **D-VM-LIVE-001-P1 验收裁决**：S1–S4 实现 + T1/T2/T3/T4/T5b + P1–P3 对抗证明 = **验收通过**；T5 = **退回返工（R1）**。R1 验收前 D-VM-LIVE-001 整体状态保持 `⚠️待Claude复审`，D-COMMIT-SCOPE-001 部署门禁**保持**（T5 只是测试质量项，生产影响为零——S3 拒绝逻辑已上线验收通过；若 R1 长时间未动，可评估先行解除门禁，见 R1 验收时裁决）。
 
+**⚠️ 流程事故记录（2026-08-25，commit `4ac4f210`）**：审计方提交文档变更时未先 `git diff --cached --name-only` 核对暂存区，把 GLM 已暂存的 5 个代码文件连带提交进 main（T5 名义测试随之进 main）。**影响评估**：生产零影响（部署门禁未解除，backend 不从 main 构建）；代码已独立验收通过，唯一未验收项 T5 是测试质量问题。**不 revert**（代码验收通过、revert 成本高于收益、R1 直接在 main 上返工更简单）。**流程修复**：① R1 派工 prompt 明确告知 GLM「P1 代码已在 main（`4ac4f210`），在 main 上直接返工，工作树无暂存代码」；② 审计方 commit 前必查 `git diff --cached --name-only`（本条教训入 memory）。
+
 ## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（ACTIVE；2026-08-25，Phase 2 参考）
 
 > 本节是下一次施工的唯一设计入口；旧 round 5 提示词已标记 `SUPERSEDED`，GLM-5.2 不得按旧节施工。该设计先于任何 S/T 施工指令，未完成本节的字段、错误和测试契约不得开工。
