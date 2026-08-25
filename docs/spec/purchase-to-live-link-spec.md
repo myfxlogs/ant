@@ -1,6 +1,10 @@
 # 施工 Spec：购买→实盘链路打通——调度运行时取码源修正 + 事件型会话化 + 订阅授权闸
 
-> **Status**: ✅ 已验收（2026-08-08 审计方实测，FEAT-1 全 7 任务 + ADR-0029 部署）— 变更日志见 `docs/audits/handover-audit-plan.md` 2026-08-08 行
+> **Status**: ✅ 已验收（2026-08-08 审计方实测，FEAT-1 全 7 任务 + ADR-0029 部署）— 验收证据见 commit `84f88d07`、`docs/adr/0029-purchase-to-live-execution.md`、`docs/audits/tech-debt-registry.md`
+>
+> **⚠️ 2026-08-25 每周对账修正**：原文"变更日志见 `handover-audit-plan.md` 2026-08-08 行"是**失效引用**——该文件不含任何 2026-08-08 条目（changelog 起始晚于本 spec 验收日）。已改指向真实证据源。
+>
+> **本 spec 验收后链路又经多次 P1 修复（本文未记录，均已在代码中闭合）**：DEPLOY-LIVE-8（handler ctx 导致事件会话启动 28ms 即死 → `lifecycleCtx` 派生）、DEPLOY-LIVE-6（dispatch/launchEventSession ~100 行重复 → 抽 `buildLiveRun`）、DEPLOY-LIVE-7b（`schedule_change` NOTIFY 接线）、SUPPLY-1（Python/AI 策略实盘部署分支，2026-08-13）。详见 registry 对应条目。
 >
 > **涉及功能块**：`strategy-marketplace`（购买授权）+ `strategy-runtime`（实盘调度执行）+ `api-gateway`（schedule handler）
 >
@@ -186,7 +190,7 @@ cfg := LiveStrategyConfig{ ..., Code: tpl.CodeSkeleton, ... }
 7. 服务重启 → active 事件型 schedule 自动恢复会话（`reconcileOnStartup`）。
 8. `go build` + `check-file-lines --strict` + `go test` 全绿。
 9. **配额**：超额用户激活事件型 schedule → 被 `CheckLiveStrategyLimit` 拦截，不启动。
-10. **同 account 冲突**：账户已有在跑会话时，再次激活 → 被拒（不顶替原会话）。
+10. ~~**同 account 冲突**：账户已有在跑会话时，再次激活 → 被拒（不顶替原会话）。~~ **❌ 已被 ARCH-4 推翻（2026-08-25 每周对账核验）**：`session_registry.go:154-156` 现明确允许一账户多会话（"Multiple sessions per account are allowed — position attribution is via Magic Numbers"），`Register` 永不返回 nil，本条验收标准已不适用。见下方 Q2。
 11. **授权撤销**：会话运行中退款/订阅过期 → 每 bar 复验命中 → 会话自终止；**未平仓持仓保留**（用户自行一键平仓），不自动平仓。
 
 ---
@@ -199,6 +203,8 @@ cfg := LiveStrategyConfig{ ..., Code: tpl.CodeSkeleton, ... }
 
 **Q2 同 account 冲突**：**先跑者赢、后来者拒、绝不静默替换**。`launchEventSession` 在 `Register` 返回 nil（账户占用）时标记 error + 友好报错，不顶替、不重试。理由：绝不静默杀掉可能持有未平仓的在跑会话——孤儿/冲突持仓是交易系统最糟故障。
 > ⚠️ 顺带挖出的商业 bug（见 §八 衍生项 P1-MKT-1）：`sessionRegistry` 一账户一会话，与 Pro 档"5 账户/20 实盘策略"售卖档位冲突——本 spec 守住现状，多策略共账户另行立项。
+>
+> **❌ Q2 已被后续决议推翻（2026-08-25 每周对账核验，本段保留记录决策演进）**：P1-MKT-1 决策 A（ARCH-4 多策略共账户，2026-08-08 commit `e47ea7bb`/`00e5ccc1`）已实现"一账户多会话 + Magic Number 归因"，取代本 Q2 的"先跑者赢、后来者拒"。现状：`Register` 永不返回 nil（`session_registry.go:154-156`），任务 2 所述"账户 X 已有运行中策略，请先停止"友好报错**从未实现**（仅 `live_runner.go:215` 残留死消息）。§八 已记录该推翻决策，但本节文本此前未同步。
 
 **Q3 授权撤销实时性（→ 任务 4）**：**启动闸 + 每 bar 复验（TTL 缓存，搭车 bar 事件循环、非 Ticker 轮询）+ 撤销只停信号不平仓**。撤销 → 会话优雅自终止。理由：复验统一覆盖退款/过期/Admin 禁用；**不自动平仓**是"不代客交易、不碰资金"牌照硬边界——平台提供一键平仓按钮（用户显式点），不行使权力。退款分支天然已处理（`refund.go:153` 拒绝在有 active schedule 时退款）。
 

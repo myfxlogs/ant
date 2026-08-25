@@ -29,7 +29,7 @@ func extractEnumValues(source string, n *sitter.Node, sourceFile string) []Heade
 					ecChild := ec.NamedChild(k)
 					if ecChild.Type() == nodeIdentifier {
 						name = nodeText(source, ecChild)
-					} else if ecChild.Type() == "number_literal" {
+					} else if ecChild.Type() == nodeNumberLiteral {
 						nVal := interp.ParseNumberLiteral(nodeText(source, ecChild))
 						counter = nVal.ToInt()
 					}
@@ -123,7 +123,7 @@ func buildSignature(source string, n *sitter.Node) string {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		t := child.Type()
-		if t == "primitive_type" || t == "type_identifier" || t == "sized_type_specifier" {
+		if t == "primitive_type" || t == nodeTypeIdentifier || t == "sized_type_specifier" {
 			retType = nodeText(source, child)
 			break
 		}

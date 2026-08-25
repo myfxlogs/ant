@@ -25,10 +25,22 @@ for f in docs/audits/handover-audit-plan.md docs/audits/tech-debt-registry.md; d
 
   # 被删的文件行（排除 --- 头）：
   # ① 🟦open/❓ 状态行 = open/待核条目，必拦（无指针例外——open 条目必留文件内）
+  #    例外：同一条目 ID 仍在新文件中且状态变为 ✅done/⚠️ = 合法状态变更，放行。
   deleted_open=$(echo "$diff" | grep '^-' | grep -v '^---' | grep -E '🟦open|❓')
   if [ -n "$deleted_open" ]; then
-    echo "❌ 文档规则：$f 删除了 open/待核条目行（🟦open/❓）。open 条目必留文件内（根因+对抗记录），无例外——恢复该行再提交。" >&2
-    fail=1
+    # 提取被删行的条目 ID（| 分割的第一列），检查该 ID 是否仍存在于新文件中
+    truly_deleted=""
+    while IFS= read -r line; do
+      id=$(echo "$line" | sed 's/^-|//' | sed 's/ |.*//' | tr -d ' ')
+      if [ -n "$id" ] && ! echo "$new" | grep -q "^| $id |"; then
+        truly_deleted="$truly_deleted\n  $id"
+      fi
+    done <<< "$deleted_open"
+    if [ -n "$truly_deleted" ]; then
+      echo "❌ 文档规则：$f 删除了 open/待核条目行（🟦open/❓）。open 条目必留文件内（根因+对抗记录），无例外——恢复该行再提交。" >&2
+      echo -e "   被真正删除的条目 ID：$truly_deleted" >&2
+      fail=1
+    fi
   fi
   # ② 变更日志条目 / ✅ / ⚠️ 行 = 完工明细，仅"文件保留'靠 git 追溯'指针"时允许归档裁剪
   deleted_done=$(echo "$diff" | grep '^-' | grep -v '^---' | grep -E '^- 20[0-9]{2}-|✅|⚠️')

@@ -45,9 +45,10 @@ declaration
 
 **根因**：永久防线只实现了"检测+标记"（IsReliable/BlindSpot），没实现"阻止冒充成功"（status 降级 + 前端醒目展示）。**检测 ≠ 保护**——检测到了但用户看不到 = 没保护。
 
-**修复**（待施工）：
-- 后端：`StatusDegraded` 常量 + `saveBacktestResult` 检查 invariant BlindSpot → status=DEGRADED
-- 前端：DEGRADED 醒目展示 + BlindSpot 列出原因
+**修复**（✅done — 2026-08-06/07 落地，2026-08-25 每周对账核验；本节原标"待施工"已过期）：
+- 后端：`StatusDegraded` 常量（`internal/connect/strategy/status_constants.go`）+ `saveBacktestResult` 检查 invariant BlindSpot → status=DEGRADED（`backtest_persistence.go:69-99`，`zero_volume_trade` 登记于 `invariantBlindSpotIDs`）
+- 前端：DEGRADED 醒目展示 + BlindSpot 列出原因（`BacktestResultsTab.tsx:107,170` / `DiagnosticPanel.tsx:145` / SSE `backtestRunnerWatch.ts:55-66`）
+- commit `d8256a90`（坑2 修复）+ `58273444`（BT-5 DEGRADED 状态推送断链）；e2e `e2e_defense_presentation_test.go`
 
 **教训**：永久防线 = **检测 + 标记 + 阻止冒充成功**，三层缺一不可。只做前两层等于没做。详见 ADR-0028 §5.1。
 
@@ -68,7 +69,7 @@ backtest.run();  // 立即调用（useCallback 闭包捕获旧 state！）
 
 React `setState` 是**异步**的——循环 `setParam` 后立即 `backtest.run()`，此时 React 还没 re-render，**`run` 的 `useCallback` 闭包捕获的还是旧的 `strategyParamValues`（空对象）**。leverage/commission 同理。
 
-**修复方向**（待施工）：`run()` 不应从闭包 state 读参数（异步陷阱），而应从调用者**直接传入**的参数读。`onConfirm` 有 `result.strategyParams` + `result.params`（同步值），直接传给 `run`。
+**修复**（✅done — 2026-08-25 每周对账核验；本节原标"待施工"已过期）：`run()` 不再从闭包 state 读参数，改为接收调用者**直接传入**的 `overrides`——`run(overrides?)` 用 `overrides?.params ?? strategyParamValues`（`useBacktestRunner.ts:165-190`）；`onConfirm` 把 `result.strategyParams` + `result.params`（同步值）直接传给 `run`（`WorkspaceDrawers.tsx:51-66`）。
 
 **教训**：React `setState` + 立即调用依赖该 state 的 `useCallback` = **闭包旧 state 陷阱**。参数链必须同步传递，不经过异步 state 中转。
 
@@ -192,4 +193,6 @@ MQL 源码
 
 **教训**：参数链是多环节链路（tree-sitter→提取→注入→VM→撮合），**单元测试只能验证各环节自身正确，不能验证环节间的衔接**。只有端到端测试（从 MQL 源码 + 用户参数 → 回测 result 里的实际值）才能抓衔接断点。这是所有坑的共同系统性根因——**缺乏端到端测试 = 靠用户踩坑发现 bug**。
 
-**每个箭头都是一个可能断的环节。这次的 6 个坑分布在 5 个环节上。端到端测试是唯一的系统性防护。**
+**每个箭头都是一个可能断的环节。这次的 10 个坑分布在 7 个环节上。端到端测试是唯一的系统性防护。**
+
+> **坑10 状态更新（2026-08-25 每周对账）**：本坑的系统性根因"缺乏端到端测试"**已闭合**——commit `30668f64`（2026-08-06）新增 `backend/tools/mql2go/e2e_param_pipeline_test.go`（MQL 源码 → CompileMQL → cfg.Params → engine.Run → 断言实际成交手数 0.5 / 默认 0.1）+ `e2e_defense_presentation_test.go`。**残留软肋**：两个参数链测试在 0 成交时走 `t.Skip`（软断言），环境无成交时会 SKIP 而非 FAIL，建议后续改为硬失败。

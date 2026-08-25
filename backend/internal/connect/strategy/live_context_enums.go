@@ -46,12 +46,12 @@ func brokerTradeEventTypeString(t mthub.BrokerTradeEventType) (string, error) {
 // VM-TRADE-CONTEXT-6 round 5: unknown order type must fail-closed, not default
 // to "sell" (which would silently change trade semantics).
 func pendingOrderSide(orderType string) (string, error) {
-	switch {
-	case orderType == "buy_limit" || orderType == "buy_stop" || orderType == "buy_stop_limit" || orderType == "buy_market":
+	switch orderType {
+	case "buy_limit", "buy_stop", "buy_stop_limit", "buy_market":
 		return sideBuy, nil
-	case orderType == "sell_limit" || orderType == "sell_stop" || orderType == "sell_stop_limit" || orderType == "sell_market":
+	case "sell_limit", "sell_stop", "sell_stop_limit", "sell_market":
 		return sideSell, nil
-	case orderType == "":
+	case "":
 		return "", fmt.Errorf("pending order type is empty")
 	default:
 		return "", fmt.Errorf("unknown pending order type %q", orderType)

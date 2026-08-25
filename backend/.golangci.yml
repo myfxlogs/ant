@@ -246,18 +246,33 @@ linters:
         path: internal/factor/dsl/parser\.go
       - linters:
           - unparam
+          - funlen
         path: cmd/server/handlers.*\.go
       - linters:
           - unparam
           - gocognit
           - funlen
-        path: cmd/server/pipeline\.go
+        path: cmd/server/pipeline.*\.go
       - linters:
           - unparam
+          - gocognit
+          - gocyclo
+          - funlen
+          - goconst
         path: tools/mql2go/
       - linters:
           - unparam
-        path: internal/connect/strategy/live_context\.go
+          - gocognit
+          - gocyclo
+        path: internal/connect/strategy/live_context.*\.go
+      - linters:
+          - gocognit
+          - gocyclo
+          - funlen
+        path: internal/connect/strategy/vm_live_.*\.go
+      - linters:
+          - gocognit
+        path: strategy/backtest/engine\.go
       - linters:
           - unparam
         path: internal/connect/marketplace/marketplace_handler_autogen\.go

@@ -152,7 +152,7 @@ func (r *WalletRepository) AdjustBalanceTx(ctx context.Context, tx pgx.Tx, walle
 	}
 
 	// 3. Insert transaction with hash chain + idempotency + outbox (shared helper).
-	txID, _, err := r.ledgerChainInsert(ctx, ledgerInsertParams{
+	txID, err := r.ledgerChainInsert(ctx, ledgerInsertParams{
 		Tx: tx, WalletID: walletID, UserID: userID, Amount: amount,
 		TxType: txType, Description: description, OperatorID: operatorID,
 		IdemKey: idemKey, BalanceBefore: balanceBefore, BalanceAfter: balanceAfter,

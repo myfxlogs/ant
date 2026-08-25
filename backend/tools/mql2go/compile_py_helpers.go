@@ -31,7 +31,7 @@ func (c *pyCompiler) findExprChild(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case nodeIdentifier, nodeString, "integer", nodeFloat, "true", "false", "none",
+		case nodeIdentifier, nodeString, "integer", nodeFloat, nodeTrue, nodeFalse, "none",
 			nodeCall, "binary_operator", "unary_operator", "not_operator", "comparison_operator",
 			"boolean_operator", "conditional_expression",
 			nodeParenExpr, nodeAttribute, "subscript",
@@ -46,7 +46,7 @@ func (c *pyCompiler) findDefaultVal(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "integer", nodeFloat, nodeString, "true", "false", "none",
+		case "integer", nodeFloat, nodeString, nodeTrue, nodeFalse, "none",
 			nodeCall, "binary_operator", "unary_operator", "not_operator", "comparison_operator",
 			"boolean_operator", "conditional_expression",
 			nodeParenExpr, nodeAttribute, "subscript":

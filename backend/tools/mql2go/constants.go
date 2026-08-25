@@ -9,5 +9,9 @@ const (
 	nodeFloat             = "float"
 	nodeString            = "string"
 	nodeVolume            = "volume"
+	nodeTypeIdentifier    = "type_identifier"
+	nodeNumberLiteral     = "number_literal"
+	nodeTrue              = "true"
+	nodeFalse             = "false"
 	fnPositionGetDouble   = "PositionGetDouble"
 )

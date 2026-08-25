@@ -26,7 +26,7 @@ func (c *compiler) collectClassDecl(ir *interp.IR, n *sitter.Node) {
 func (c *compiler) findTypeName(n *sitter.Node) string {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			return c.text(child)
 		}
 	}

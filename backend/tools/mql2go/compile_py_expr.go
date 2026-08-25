@@ -35,10 +35,10 @@ func (c *pyCompiler) compileExpr(n *sitter.Node) *interp.Expr {
 		s := unquotePython(c.text(n))
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal(s)}
 
-	case "true":
+	case nodeTrue:
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(true)}
 
-	case "false":
+	case nodeFalse:
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}
 
 	case "none":

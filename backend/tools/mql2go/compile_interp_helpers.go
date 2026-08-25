@@ -71,7 +71,7 @@ func (c *compiler) findArraySize(n *sitter.Node) (int, bool) {
 func (c *compiler) parseArrayDimension(n *sitter.Node) (int, bool) {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() != "number_literal" {
+		if child.Type() != nodeNumberLiteral {
 			continue
 		}
 		var size int
@@ -100,7 +100,7 @@ func (c *compiler) findType(n *sitter.Node) string {
 	// (tree-sitter parses 'input BuyOrSell0 x' with 'input' as type_identifier)
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			name := c.text(child)
 			if name != "input" && name != "extern" {
 				return name
@@ -138,11 +138,11 @@ func (c *compiler) findExprChild(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "number_literal", "string_literal", nodeIdentifier,
+		case nodeNumberLiteral, "string_literal", nodeIdentifier,
 			"call_expression", "binary_expression", "unary_expression",
 			"subscript_expression", "conditional_expression",
 			nodeParenExpr, "field_expression",
-			"assignment_expression", "true", "false",
+			"assignment_expression", nodeTrue, nodeFalse,
 			"cast_expression", "comma_expression":
 			return child
 		}
@@ -154,11 +154,11 @@ func (c *compiler) findInitValue(n *sitter.Node, declName string) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "number_literal", "string_literal",
+		case nodeNumberLiteral, "string_literal",
 			"call_expression", "binary_expression", "unary_expression",
 			"subscript_expression", "conditional_expression",
 			nodeParenExpr, "field_expression",
-			"assignment_expression", "true", "false",
+			"assignment_expression", nodeTrue, nodeFalse,
 			"cast_expression", "comma_expression":
 			return child
 		case nodeIdentifier:

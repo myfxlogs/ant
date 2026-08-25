@@ -90,7 +90,7 @@ func (r *WalletRepository) freezeOp(ctx context.Context, tx pgx.Tx, walletID, us
 	}
 
 	// 3. Insert transaction with hash chain + idempotency + outbox (shared helper).
-	txID, _, err := r.ledgerChainInsert(ctx, ledgerInsertParams{
+	txID, err := r.ledgerChainInsert(ctx, ledgerInsertParams{
 		Tx: tx, WalletID: walletID, UserID: userID, Amount: amount,
 		TxType: txType, Description: description, IdemKey: idemKey,
 		BalanceBefore: balanceBefore, BalanceAfter: balanceAfter,

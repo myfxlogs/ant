@@ -101,7 +101,7 @@ func extractDefines(source, sourceFile string) []HeaderSymbol {
 func isClassNode(source string, n *sitter.Node) bool {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			txt := nodeText(source, child)
 			if txt == "class" || txt == "struct" {
 				return true

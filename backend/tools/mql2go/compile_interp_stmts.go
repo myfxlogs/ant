@@ -105,7 +105,7 @@ func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
 	var enumName string
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			enumName = c.text(child)
 			if ir.EnumTypes == nil {
 				ir.EnumTypes = make(map[string]bool)
@@ -145,7 +145,7 @@ func (c *compiler) parseEnumerator(ec *sitter.Node) (name string, val *int32) {
 		ecChild := ec.NamedChild(k)
 		if ecChild.Type() == nodeIdentifier {
 			name = c.text(ecChild)
-		} else if ecChild.Type() == "number_literal" {
+		} else if ecChild.Type() == nodeNumberLiteral {
 			nVal := interp.ParseNumberLiteral(c.text(ecChild))
 			v := nVal.ToInt()
 			val = &v

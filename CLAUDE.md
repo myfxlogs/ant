@@ -107,7 +107,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 ## Command Output Discipline (Token Efficiency)
 
-**优先级**: GPT-5.6 内置工具 > `rtk` 前缀 > 裸命令
+**优先级**: Claude 内置工具 > `rtk` 前缀 > 裸命令
 
 | 操作 | ✅ 首选 | ⚠️ 次选 | ❌ 禁止 |
 | ------ | -------- | -------- | -------- |
@@ -186,7 +186,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 **部署验证 Pitfalls（QC-CACHE-LEAK/STALE-HTML-CACHE 2026-08-16 教训，两次翻车）**：
 
-1. **施工方回填 ✅done ≠ 已部署**——GLM-5.2 曾把修复写对并回填 ✅done，但从未 build + docker cp，用户线上一直是旧包。验收必须实测容器内资产：`docker exec alphaforge-frontend ls -la /usr/share/nginx/html/assets/`（看时间戳是否晚于修复 commit）+ 对比 index.html hash。
+1. **施工方回填 ✅done ≠ 已部署**——Windsurf 曾把修复写对并回填 ✅done（QC-CACHE-LEAK，2026-08-16），但从未 build + docker cp，用户线上一直是旧包。验收必须实测容器内资产：`docker exec alphaforge-frontend ls -la /usr/share/nginx/html/assets/`（看时间戳是否晚于修复 commit）+ 对比 index.html hash。
 2. **部署验证要到"入口响应头"层**——文件在容器里 ≠ 浏览器会拿新的。必查 `curl -sI http://localhost:8022/` 带 `Cache-Control: no-cache`。
 3. **nginx `try_files /index.html =404` 是就地吐文件**，绕过 `= /index.html` location 的响应头——要应用该块的头必须让 try_files **内部重定向**（`try_files /不存在的守卫路径 /index.html`）。同理：location 内任一 `add_header` 会丢失**全部** server 级继承头（含 CSP/HSTS），需整组重声明。
 
@@ -201,7 +201,7 @@ mql2go VM 的核心危险：**不报错、不崩溃、只产生错误行为**。
 | 未知常量 → 0 | `interp/constants.go` 缺常量 → 编译器 push 0 | 指标返回错误线（如 MODE_SIGNAL=0 → MACD==Signal → 永不开单） | ✅ 已补全 |
 | map 迭代非确定 | `ir.Funcs` 是 map，遍历编译 → 前向引用落 "unknown function" → 返回值=0 | volume=0 flaky（同代码同命令时 PASS 时 FAIL） | ✅ 两遍编译 |
 | OrderType 映射错误 | `builtinOrderType` 返回 SideBuy(1)/SideSell(-1) 而非 OP_BUY(0)/OP_SELL(1) | 持仓管理失效（平仓/止损条件永不触发） | ✅ 已修 |
-| 固定长度滚动窗口 + append-only 指标缓存（LIVE-INDICATOR-1） | live seed 500 bars 后窗口恒长 500；`SeriesCache.EnsureUpdated()` 只比较 `Len()`，`n==c.n` 时跳过更新 | VM/bar/tick eval 持续增长但 EMA/MACD/RSI/ATR/ADX 永远停在启动首帧，策略静默 0 信号 | 🟦open（revisioned source 任意 revision 变化 reset+lazy rebuild；同 source+cache 500→500 + legacy start BAR→TICK 对抗） |
+| 固定长度滚动窗口 + append-only 指标缓存（LIVE-INDICATOR-1） | live seed 500 bars 后窗口恒长 500；`SeriesCache.EnsureUpdated()` 只比较 `Len()`，`n==c.n` 时跳过更新 | VM/bar/tick eval 持续增长但 EMA/MACD/RSI/ATR/ADX 永远停在启动首帧，策略静默 0 信号 | ✅done（2026-08-20 施工 + 审计方复审 + 生产验收；revisioned source 任意 revision 变化 reset+lazy rebuild；同 source+cache 500→500 + legacy start BAR→TICK 对抗） |
 
 **编译确定性 — 强制**：
 

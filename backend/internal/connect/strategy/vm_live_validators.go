@@ -3,8 +3,6 @@ package strategy
 import (
 	"fmt"
 
-	"github.com/shopspring/decimal"
-
 	antv1 "alphaforge/gen/proto/ant/v1"
 )
 
@@ -196,15 +194,4 @@ func validateBarContextWithMode(bctx *antv1.LiveStrategyContext, mode string) er
 		}
 	}
 	return nil
-}
-
-// parseOptionalDecimalStrict parses a decimal string that may be empty.
-// Returns decimal.Zero and nil error for empty string (field not provided).
-// VM-TRADE-CONTEXT-6 round 4: for financial fields where empty means "not set"
-// but non-empty invalid must fail-closed.
-func parseOptionalDecimalStrict(s string) (decimal.Decimal, error) {
-	if s == "" {
-		return decimal.Zero, nil
-	}
-	return parseDecimalStrict(s)
 }

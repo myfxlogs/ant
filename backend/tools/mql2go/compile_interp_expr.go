@@ -40,8 +40,8 @@ func (c *compiler) compileExprFromStmt(n *sitter.Node) *interp.Expr {
 
 func isMQLExpressionNodeType(nodeType string) bool {
 	switch nodeType {
-	case "number_literal", "string_literal", "true", "false", nodeIdentifier,
-		"type_identifier", "null", "call_expression", "binary_expression",
+	case nodeNumberLiteral, "string_literal", nodeTrue, nodeFalse, nodeIdentifier,
+		nodeTypeIdentifier, "null", "call_expression", "binary_expression",
 		"unary_expression", "subscript_expression", "assignment_expression",
 		"update_expression", "conditional_expression", nodeParenExpr,
 		"field_expression", "cast_expression", "comma_expression":
@@ -56,15 +56,15 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		return nil
 	}
 	switch n.Type() {
-	case "number_literal":
+	case nodeNumberLiteral:
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.ParseNumberLiteral(c.text(n))}
 
 	case "string_literal":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal(unquote(c.text(n)))}
 
-	case "true":
+	case nodeTrue:
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(true)}
-	case "false":
+	case nodeFalse:
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}
 
 	case nodeIdentifier:
@@ -78,7 +78,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "null":
 		return &interp.Expr{Kind: interp.ExprConst, Name: "NULL"}
 
-	case "type_identifier":
+	case nodeTypeIdentifier:
 		// Predefined constant: OP_BUY, PRICE_CLOSE, etc.
 		return &interp.Expr{Kind: interp.ExprConst, Name: c.text(n)}
 
@@ -121,7 +121,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
 			ct := child.Type()
-			if ct != "primitive_type" && ct != "type_identifier" && ct != "type_descriptor" {
+			if ct != "primitive_type" && ct != nodeTypeIdentifier && ct != "type_descriptor" {
 				return c.compileExpr(child)
 			}
 		}

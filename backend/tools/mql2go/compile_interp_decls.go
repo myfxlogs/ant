@@ -22,7 +22,7 @@ func isInputDeclaration(n *sitter.Node, source string) bool {
 		return false
 	}
 	first := n.NamedChild(0)
-	if first.Type() != "type_identifier" {
+	if first.Type() != nodeTypeIdentifier {
 		return false
 	}
 	return source[first.StartByte():first.EndByte()] == "input"

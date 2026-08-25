@@ -121,7 +121,7 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 		expr      *interp.Expr
 	}
 	var targets []caseTarget
-	var defaultIdx int = -1
+	var defaultIdx = -1
 	for i, sc := range s.Cases {
 		t := caseTarget{isDefault: sc.Expr == nil, body: sc.Body, expr: sc.Expr}
 		if sc.Expr == nil {
@@ -245,7 +245,7 @@ func (c *compiler) compileFor(n *sitter.Node) *interp.Statement {
 					stmt.Cond = expr
 				}
 			}
-		case "binary_expression", "call_expression", nodeIdentifier, "number_literal":
+		case "binary_expression", "call_expression", nodeIdentifier, nodeNumberLiteral:
 			if stmt.Cond == nil {
 				stmt.Cond = c.compileExpr(child)
 			}
