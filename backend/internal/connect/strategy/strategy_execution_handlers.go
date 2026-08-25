@@ -92,6 +92,12 @@ func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.
 		return nil, err
 	}
 
+	// D-VM-LIVE-001-P1: reject live mode before compilation to close
+	// client-supplied account truth attack surface.
+	if err := validateExecuteLiveRequestMode(req.Msg); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
 	// Go-native compilation path: generated Go strategy via go run.
 	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
 	if isGoStrategy(req.Msg.StrategyCode) {

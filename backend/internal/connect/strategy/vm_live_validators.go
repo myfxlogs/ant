@@ -195,3 +195,42 @@ func validateBarContextWithMode(bctx *antv1.LiveStrategyContext, mode string) er
 	}
 	return nil
 }
+
+// validateExecuteLiveRequestMode validates that all contexts in an ExecuteLiveRequest
+// use paper mode exclusively. Live mode is rejected before compilation to close the
+// client-supplied account truth attack surface (D-VM-LIVE-001-P1).
+// Unknown/empty modes are rejected (fail-closed).
+func validateExecuteLiveRequestMode(req *antv1.ExecuteLiveRequest) error {
+	type ctxMode struct {
+		name string
+		mode string
+	}
+	var contexts []ctxMode
+	if c := req.GetBarContext(); c != nil {
+		contexts = append(contexts, ctxMode{"bar_context", c.GetMode()})
+	}
+	if c := req.GetTickContext(); c != nil {
+		contexts = append(contexts, ctxMode{"tick_context", c.GetMode()})
+	}
+	if c := req.GetTradeContext(); c != nil {
+		contexts = append(contexts, ctxMode{"trade_context", c.GetMode()})
+	}
+	if c := req.GetTimerContext(); c != nil {
+		contexts = append(contexts, ctxMode{"timer_context", c.GetMode()})
+	}
+
+	if len(contexts) == 0 {
+		return fmt.Errorf("at least one context is required")
+	}
+	for _, c := range contexts {
+		switch c.mode {
+		case modePaper:
+			// ok
+		case modeLive:
+			return fmt.Errorf("%s: live mode is not supported on this endpoint", c.name)
+		default:
+			return fmt.Errorf("%s: unsupported mode %q (allowed: paper)", c.name, c.mode)
+		}
+	}
+	return nil
+}

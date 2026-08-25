@@ -26,6 +26,8 @@ const maxContextBars = 500
 
 const modeLive = "live"
 
+const modePaper = "paper"
+
 // ExecutionModels bitmask for which callbacks the strategy supports.
 type ExecutionModels int
 
