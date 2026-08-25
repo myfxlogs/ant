@@ -27,12 +27,17 @@ type contextImpl struct {
 	goCtx context.Context
 
 	// Live state from parent process (harness mode — no RPC).
-	liveBalance       string
-	liveEquity        string
-	liveMargin        string
-	liveFreeMargin    string
-	livePositions     []sdk.Position
-	livePendingOrders []sdk.PendingOrder // LIVE-MQL-ORDER-CONTEXT-1
+	liveBalance        string
+	liveEquity         string
+	liveMargin         string
+	liveFreeMargin     string
+	livePositions      []sdk.Position
+	livePendingOrders  []sdk.PendingOrder // LIVE-MQL-ORDER-CONTEXT-1
+	liveLogin          int64              // VM-TRADE-CONTEXT-3: account login from parent process
+	liveCompany        string             // VM-TRADE-CONTEXT-3: broker company from parent process
+	liveIsDemo         bool               // VM-API-TRUTH-3: account is demo/contest
+	liveIsConnected    bool               // VM-API-TRUTH-3: host is connected to broker
+	liveIsTradeAllowed bool               // VM-API-TRUTH-3: trading is permitted
 
 	// Symbol info from parent process (harness mode — no RPC).
 	livePoint        string

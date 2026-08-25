@@ -2,6 +2,9 @@ package mql2go
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
+	"sort"
 
 	"github.com/shopspring/decimal"
 
@@ -34,9 +37,16 @@ type VM struct {
 	cachedPositions []sdk.Position     // cached list for OrderSelect(i, SELECT_BY_POS, MODE_TRADES)
 	cachedOrders    []sdk.PendingOrder // cached pending orders for MODE_TRADES indexing
 	cachedHistory   []sdk.Position     // cached list for OrderSelect(i, SELECT_BY_POS, MODE_HISTORY)
-	runCtx          context.Context    // context for cancellation checks
-	callDepth       int                // current user function call depth
-	fatalError      string             // set when a critical builtin is missing (ADR §5.4)
+	positionsLoaded bool
+	ordersLoaded    bool
+	historyLoaded   bool
+	runCtx          context.Context // context for cancellation checks
+	callDepth       int             // current user function call depth
+	fatalError      string          // set when a critical builtin is missing (ADR §5.4)
+	stackError      string          // set when malformed bytecode underflows the operand stack
+	tradeMagic      int32           // CTrade expert magic configured by the EA
+	tradeDeviation  int32           // CTrade deviation configured by the EA
+	rng             *rand.Rand
 
 	// signalMode is true for live trading: Order* builtins build a pending
 	// sdk.Signal instead of executing through the broker. The runner returns
@@ -45,6 +55,8 @@ type VM struct {
 
 	// Pre-built lookup: EntryPC → FuncEntry (avoids O(n) scan per call)
 	funcByEntryPC map[int32]FuncEntry
+
+	validationErr error
 
 	// Runtime blind spots (function name → hit count)
 	runtimeBlindSpots map[string]int
@@ -67,8 +79,11 @@ func NewVM(bc *Bytecode) *VM {
 		lastIndicators:    make(map[string]decimal.Decimal),
 		diagKeyCache:      make(map[uint64]string),
 	}
-	for _, fn := range bc.Funcs {
-		vm.funcByEntryPC[fn.EntryPC] = fn
+	if bc != nil {
+		vm.validationErr = validateBytecode(bc)
+		for _, fn := range bc.Funcs {
+			vm.funcByEntryPC[fn.EntryPC] = fn
+		}
 	}
 	return vm
 }
@@ -167,7 +182,7 @@ func (vm *VM) RunOnBookEvent(ctx context.Context) error {
 
 // GetRuntimeBlindSpots returns the blind spots encountered during execution.
 func (vm *VM) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
-	var out []interp.RuntimeBlindSpot
+	out := make([]interp.RuntimeBlindSpot, 0, len(vm.runtimeBlindSpots))
 	for name, count := range vm.runtimeBlindSpots {
 		out = append(out, interp.RuntimeBlindSpot{
 			Builtin:  name,
@@ -175,11 +190,39 @@ func (vm *VM) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 			Severity: interp.SeverityForBuiltin(name),
 		})
 	}
+	sort.Slice(out, func(i, j int) bool {
+		rankI := runtimeSeverityRank(out[i].Severity)
+		rankJ := runtimeSeverityRank(out[j].Severity)
+		if rankI != rankJ {
+			return rankI < rankJ
+		}
+		if out[i].Count != out[j].Count {
+			return out[i].Count > out[j].Count
+		}
+		return out[i].Builtin < out[j].Builtin
+	})
 	return out
+}
+
+func runtimeSeverityRank(severity string) int {
+	switch severity {
+	case interp.SeverityFatal:
+		return 0
+	case interp.SeverityWarning:
+		return 1
+	default:
+		return 2
+	}
 }
 
 // runEvent executes the VM starting at the given entry point.
 func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
+	if vm.bc == nil {
+		return fmt.Errorf("VM has no bytecode")
+	}
+	if vm.validationErr != nil {
+		return vm.validationErr
+	}
 	// Reset state for this event invocation
 	vm.stack = vm.stack[:0]
 	vm.currentPos = nil
@@ -187,8 +230,12 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 	vm.cachedPositions = nil
 	vm.cachedOrders = nil
 	vm.cachedHistory = nil
+	vm.positionsLoaded = false
+	vm.ordersLoaded = false
+	vm.historyLoaded = false
 	vm.callDepth = 0
 	vm.signal = nil
+	vm.stackError = ""
 	vm.pc = entryPC
 
 	// Clear L2 indicator captures for this event.
@@ -218,19 +265,27 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 // initGlobals initializes global variables from the Bytecode's variable slots.
 func (vm *VM) initGlobals() {
 	vm.globals = make([]interp.Value, len(vm.bc.GlobalSlots))
-	// Initialize array globals with proper size
+	// Initialize array globals with proper size and struct/class globals as ValClass.
 	for _, decl := range vm.bc.GlobalDecls {
+		slot, ok := vm.bc.GlobalSlots[decl.Name]
+		if !ok {
+			continue
+		}
 		if decl.IsArray && decl.ArraySize > 0 {
-			slot, ok := vm.bc.GlobalSlots[decl.Name]
-			if !ok {
-				continue
-			}
 			arr := make([]interp.Value, decl.ArraySize)
 			zeroVal := zeroValueForType(decl.Type)
 			for i := range arr {
 				arr[i] = zeroVal
 			}
-			vm.globals[slot] = interp.Value{Kind: interp.ValArray, Array: arr}
+			vm.globals[slot] = interp.ArrayVal(arr)
+			continue
+		}
+		// Struct/class globals must be ValClass so field assignments work.
+		if vm.bc.ClassTypes[decl.Type] {
+			vm.globals[slot] = interp.Value{
+				Kind:  interp.ValClass,
+				Class: &interp.ClassInstance{Name: decl.Type, Fields: make(map[string]interp.Value)},
+			}
 		}
 	}
 }

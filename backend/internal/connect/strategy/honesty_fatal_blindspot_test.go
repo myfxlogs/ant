@@ -40,20 +40,37 @@ func makeE2EBars(n int) []sdk.Bar {
 // blind spot (e.g. unknown indicator iXxx → SeverityFatal → silently returns 0)
 // causes IsReliable=false in the backtest response.
 //
+// VM-HONESTY-3-REVIEW: The test puts the fatal indicator in a DEAD branch
+// (if(1==0)) so the VM produces >10 trades normally. This ensures assessRisk
+// sets IsReliable=true (trades>=10), and ONLY the HONESTY-3 fatal-severity
+// check loop in buildBacktestResponse can override it to false.
+//
 // Adversarial proof: if the HONESTY-3 fix in buildBacktestResponse is removed
 // (the fatal-severity check loop), this test will FAIL because IsReliable
-// stays true despite a fatal blind spot being present.
+// stays true (trades>=10) despite a fatal blind spot being present.
 func TestHONESTY3_FatalBlindSpotSetsUnreliable(t *testing.T) {
-	// MQL source with an unknown indicator (iXxx pattern → SeverityFatal)
+	// MQL source with an unknown indicator in a dead branch (if(1==0)).
+	// Static coverage analysis finds the fatal blind spot, but the VM
+	// never executes it, so trades are produced normally (>10 trades).
 	source := `
 extern int MagicNumber = 50001;
 extern double LotSize = 0.1;
+extern int MAPeriod = 3;
 int OnInit() { return 0; }
 void OnBar()
 {
-    double v = iNonExistentIndicator(Symbol(), 0, 14, 0, 0);
-    if (v > 0 && OrdersTotal() == 0)
+    if (1 == 0) {
+        double v = iNonExistentIndicator(Symbol(), 0, 14, 0, 0);
+    }
+    double ma = iMA(Symbol(), 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
+    double maPrev = iMA(Symbol(), 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 2);
+    if (ma > maPrev && OrdersTotal() == 0)
         OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "Test", MagicNumber, 0, clrGreen);
+    if (ma < maPrev && OrdersTotal() > 0)
+    {
+        if (OrderSelect(0, SELECT_BY_POS, MODE_TRADES))
+            OrderClose(OrderTicket(), LotSize, Bid, 5, clrRed);
+    }
 }
 `
 	runner, cov, err := mql2go.CompileMQLWithCoverage(source)
@@ -75,8 +92,8 @@ void OnBar()
 		t.Fatal("expected at least one fatal coverage blind spot from iNonExistentIndicator")
 	}
 
-	// Run backtest
-	bars := makeE2EBars(80)
+	// Run backtest — use 200 bars with MAPeriod=3 for enough crossovers.
+	bars := makeE2EBars(200)
 	cfg := backtest.Config{
 		Symbol:         "EURUSD",
 		Timeframe:      "M1",
@@ -89,6 +106,14 @@ void OnBar()
 	if err != nil {
 		t.Fatalf("backtest failed: %v", err)
 	}
+
+	// VM-HONESTY-3-REVIEW: Verify trades>=10 so assessRisk would set
+	// IsReliable=true. This proves the fatal blind spot loop (not the
+	// <10 trades rule) is what sets IsReliable=false.
+	if result.Metrics.TotalTrades < 10 {
+		t.Fatalf("expected >=10 trades so assessRisk sets IsReliable=true, got %d — test cannot prove HONESTY-3 fix", result.Metrics.TotalTrades)
+	}
+	t.Logf("trades=%d (>=10, so assessRisk would set IsReliable=true)", result.Metrics.TotalTrades)
 
 	// Build the response via buildBacktestResponse — this is where HONESTY-3 fix lives
 	params := backtestParams{
@@ -145,7 +170,10 @@ void OnBar()
     if (ma > maPrev && OrdersTotal() == 0)
         OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "Test", MagicNumber, 0, clrGreen);
     if (ma < maPrev && OrdersTotal() > 0)
-        OrderClose(OrderTicket(), LotSize, Bid, 5, clrRed);
+    {
+        if (OrderSelect(0, SELECT_BY_POS, MODE_TRADES))
+            OrderClose(OrderTicket(), LotSize, Bid, 5, clrRed);
+    }
 }
 `
 	runner, _, err := mql2go.CompileMQLWithCoverage(source)

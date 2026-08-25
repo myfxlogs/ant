@@ -132,11 +132,18 @@ func seedSymbol(
 // resolveBrokerCompany fetches the broker_company from mt_accounts for the
 // given config's account ID. Returns "" if unavailable (degrade gracefully).
 func (s *StrategyExecutionServer) resolveBrokerCompany(ctx context.Context, cfg LiveStrategyConfig) string {
+	company, _ := s.resolveBrokerCompanyErr(ctx, cfg)
+	return company
+}
+
+// resolveBrokerCompanyErr resolves broker company and returns any DB error.
+// VM-API-TRUTH-3 round 4: distinguishes query error from real empty result.
+func (s *StrategyExecutionServer) resolveBrokerCompanyErr(ctx context.Context, cfg LiveStrategyConfig) (string, error) {
 	if cfg.AccountID == "" {
-		return ""
+		return "", nil
 	}
 	if s.brokerCompanyLookup == nil {
-		return ""
+		return "", nil
 	}
 	return s.brokerCompanyLookup(ctx, cfg.AccountID)
 }

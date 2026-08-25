@@ -3,11 +3,9 @@ package marketplace
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
@@ -25,15 +23,15 @@ type LivePerformancePoint struct {
 
 // LivePerformanceSummary is the aggregated live performance for a strategy.
 type LivePerformanceSummary struct {
-	TotalReturn     decimal.Decimal
-	AnnualReturn    *decimal.Decimal
-	MaxDrawdown     decimal.Decimal
-	SharpeRatio     *decimal.Decimal
-	WinRate         *decimal.Decimal
-	TotalTrades     int32
+	TotalReturn      decimal.Decimal
+	AnnualReturn     *decimal.Decimal
+	MaxDrawdown      decimal.Decimal
+	SharpeRatio      *decimal.Decimal
+	WinRate          *decimal.Decimal
+	TotalTrades      int32
 	AvgMonthlyReturn *decimal.Decimal
-	TrackingSince   time.Time
-	LastUpdated     time.Time
+	TrackingSince    time.Time
+	LastUpdated      time.Time
 }
 
 // LinkLiveAccount links a trading account to a published strategy for live tracking.
@@ -262,140 +260,4 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	go s.notifyPerformanceAnomaly(context.WithoutCancel(ctx), sid, title, dailyReturn, drawdown)
 
 	return nil
-}
-
-func (s *Service) recomputePerformanceSummary(ctx context.Context, tx pgx.Tx, sid, aid uuid.UUID, today time.Time, prevEquity decimal.Decimal) error {
-	var totalReturn, maxDrawdown decimal.Decimal
-	var allTrades, allWins int32
-	var firstDate, lastDate time.Time
-	err := tx.QueryRow(ctx,
-		`SELECT
-			   COALESCE(SUM(daily_pnl), 0),
-			   COALESCE(MAX(drawdown), 0),
-			   COALESCE(SUM(total_trades), 0)::int,
-			   COALESCE(SUM(winning_trades), 0)::int,
-			   MIN(date), MAX(date)
-			 FROM marketplace_live_performance
-			 WHERE strategy_id = $1 AND account_id = $2`,
-		sid, aid,
-	).Scan(&totalReturn, &maxDrawdown, &allTrades, &allWins, &firstDate, &lastDate)
-	if err != nil {
-		return fmt.Errorf("marketplace: recompute summary: %w", err)
-	}
-
-	var winRate *decimal.Decimal
-	if allTrades > 0 {
-		wr := decimal.NewFromInt(int64(allWins)).Div(decimal.NewFromInt(int64(allTrades)))
-		winRate = &wr
-	}
-
-	var annualReturn, sharpeRatio *decimal.Decimal
-	daysTracked := int64(lastDate.Sub(firstDate).Hours() / 24)
-	if daysTracked > 30 && prevEquity.GreaterThan(decimal.Zero) {
-		ar := totalReturn.Div(decimal.NewFromInt(daysTracked)).Mul(decimal.NewFromInt(365))
-		annualReturn = &ar
-
-		var meanRet, stdRet decimal.Decimal
-		err = tx.QueryRow(ctx,
-			`SELECT COALESCE(AVG(daily_return), 0), COALESCE(STDDEV(daily_return), 0)
-				 FROM marketplace_live_performance
-				 WHERE strategy_id = $1 AND account_id = $2 AND daily_return != 0`,
-			sid, aid,
-		).Scan(&meanRet, &stdRet)
-		if err == nil {
-			if stdRet.GreaterThan(decimal.Zero) {
-				sr := meanRet.Div(stdRet).Mul(decimal.NewFromFloat(15.8745))
-				sharpeRatio = &sr
-			}
-		}
-	}
-
-	_, err = tx.Exec(ctx,
-		`INSERT INTO marketplace_live_performance_summary
-			   (strategy_id, account_id, total_return, annual_return, max_drawdown, sharpe_ratio, win_rate,
-			    total_trades, tracking_since, last_updated, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
-		 ON CONFLICT (strategy_id) DO UPDATE SET
-		   total_return = $3, annual_return = $4, max_drawdown = $5, sharpe_ratio = $6, win_rate = $7,
-		   total_trades = $8, tracking_since = $9, last_updated = $10, updated_at = now()`,
-		sid, aid, totalReturn,
-		nullDec(annualReturn), maxDrawdown,
-		nullDec(sharpeRatio), nullDec(winRate),
-		allTrades, firstDate, today)
-	if err != nil {
-		return fmt.Errorf("marketplace: upsert summary: %w", err)
-	}
-	return nil
-}
-
-func nullDec(d *decimal.Decimal) interface{} {
-	if d == nil {
-		return nil
-	}
-	return *d
-}
-
-// LivePerformanceCollector receives push-based profit updates for linked accounts
-// and records daily performance. It is called from the OnAccountProfit callback.
-// Uses an in-memory cache to avoid DB queries on every profit update for unlinked accounts.
-type LivePerformanceCollector struct {
-	svc   *Service
-	log   *zap.Logger
-	cache map[string]string // accountID → strategyID
-	mu    sync.RWMutex
-}
-
-func NewLivePerformanceCollector(svc *Service, log *zap.Logger) *LivePerformanceCollector {
-	c := &LivePerformanceCollector{svc: svc, log: log, cache: make(map[string]string)}
-	c.loadCache()
-	return c
-}
-
-// loadCache preloads all linked account→strategy mappings from DB at startup.
-func (c *LivePerformanceCollector) loadCache() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	rows, err := c.svc.pg.Query(ctx,
-		`SELECT linked_account_id::text, strategy_id::text
-			 FROM marketplace_strategies
-			 WHERE linked_account_id IS NOT NULL AND status = 'published'`)
-	if err != nil {
-		c.log.Warn("live performance: failed to preload cache", zap.Error(err))
-		return
-	}
-	defer rows.Close()
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	for rows.Next() {
-		var aid, sid string
-		if err := rows.Scan(&aid, &sid); err == nil {
-			c.cache[aid] = sid
-		}
-	}
-}
-
-// OnProfitUpdate is called from the OnAccountProfit pipeline callback.
-// Uses the in-memory cache to skip unlinked accounts without any DB query.
-func (c *LivePerformanceCollector) OnProfitUpdate(accountID string, equity, balance decimal.Decimal) {
-	c.mu.RLock()
-	strategyID, ok := c.cache[accountID]
-	c.mu.RUnlock()
-	if !ok {
-		return // not linked — skip without DB query
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := c.svc.UpsertDailyPerformance(ctx, strategyID, accountID, equity); err != nil {
-		c.log.Warn("live performance: upsert failed",
-			zap.String("account", accountID),
-			zap.String("strategy", strategyID),
-			zap.Error(err))
-	}
-}
-
-// RefreshCache reloads the linked account→strategy mapping. Called after LinkLiveAccount.
-func (c *LivePerformanceCollector) RefreshCache() {
-	c.loadCache()
 }

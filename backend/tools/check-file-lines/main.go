@@ -33,6 +33,7 @@ var skipDirs = map[string]bool{
 var scopes = []string{
 	"backend/internal",
 	"backend/cmd",
+	"backend/tools", // VM-CODE-HYGIENE-1: now includes VM compiler directory
 	"frontend/src",
 	"proto",
 	"scripts",

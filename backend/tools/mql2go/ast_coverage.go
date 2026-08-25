@@ -102,7 +102,10 @@ func AnalyzeCoverage(ir *interp.IR, bc *Bytecode) *CoverageResult {
 		if result.BlindSpots[i].Severity != result.BlindSpots[j].Severity {
 			return severityRank(result.BlindSpots[i].Severity) < severityRank(result.BlindSpots[j].Severity)
 		}
-		return result.BlindSpots[i].Count > result.BlindSpots[j].Count
+		if result.BlindSpots[i].Count != result.BlindSpots[j].Count {
+			return result.BlindSpots[i].Count > result.BlindSpots[j].Count
+		}
+		return result.BlindSpots[i].Builtin < result.BlindSpots[j].Builtin
 	})
 
 	// Detect lookahead (future-data access) violations from IR.

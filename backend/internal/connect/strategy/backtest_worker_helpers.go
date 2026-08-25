@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -31,6 +32,20 @@ func parseDecimal(s string) decimal.Decimal {
 	return d
 }
 
+// parseDecimalStrict parses a decimal string and returns an error on failure.
+// VM-TRADE-CONTEXT-6: for authoritative financial inputs (OHLCV, positions,
+// trade events) where silent zero would corrupt trading logic.
+func parseDecimalStrict(s string) (decimal.Decimal, error) {
+	if s == "" {
+		return decimal.Zero, fmt.Errorf("empty decimal string")
+	}
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero, fmt.Errorf("invalid decimal %q: %w", s, err)
+	}
+	return d, nil
+}
+
 // parseDecimalPtr returns nil for an empty string (field not provided) and
 // a non-nil pointer for any valid decimal string including "0" (explicit
 // zero, e.g. clearing SL/TP). Used by verifyTicketModified (R5-⑤) to
@@ -54,6 +69,21 @@ func parseInt64(s string) int64 {
 		return 0
 	}
 	return n
+}
+
+// parseInt64Strict parses an integer string and returns an error on failure.
+// VM-TRADE-CONTEXT-6: for authoritative integer inputs (volume, ticket counts)
+// where silent zero would corrupt trading logic. Empty string is rejected
+// (caller must omit the field or pass "0" for explicit zero).
+func parseInt64Strict(s string) (int64, error) {
+	if s == "" {
+		return 0, fmt.Errorf("empty integer string")
+	}
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid integer %q: %w", s, err)
+	}
+	return n, nil
 }
 
 func parseInt32(s string) int32 {

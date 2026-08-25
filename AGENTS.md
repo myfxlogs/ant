@@ -2,45 +2,56 @@
 
 > 🔴 **ACTIVE TASK**: 市场数据架构简化 — 详见 [`docs/adr/0012-remove-tick-persistence.md`](docs/adr/0012-remove-tick-persistence.md)
 
-## 协作模式：双角色 agent（审计 + 施工）+ 无损交接（动工必读）
+## §0 角色定位（项目治理 SSOT；常驻）
 
-> **🔴 动工前必读 [CLAUDE.md](CLAUDE.md)（项目宪法，单一完整源）。详细 SOP 见 [docs/audits/builder-sop.md](docs/audits/builder-sop.md)。**
+> 本节优先于仓库中任何历史角色描述和工具兼容规则文件（包括 `.windsurfrules`）；`CLAUDE.md` 仅保留技术约束并以本节为角色入口。
 
-本项目当前由 Windsurf 独立推进（审计方 Claude Code 轮休）。**你同时承担两角色**：
+| 角色 | 职责 | 决策权 |
+|---|---|---|
+| **Claude** | 项目第一负责人、唯一技术决策者；负责设计、定稿、架构/合规/方向、审计、验收与交付判断 | **最高**：技术判断、架构、合规、方向与最终质量 |
+| **GLM-5.2** | 施工方；严格按 `AGENTS.md` + registry/handover 中的 SSOT 和编号化施工提示词落地 | **无**：遇到设计疑问必须停止并返回 Claude |
+| **人类（业主）** | 提出需求、提供业务输入与必要外部凭证 | 需求可能错误；不直接替代技术结论 |
 
-- **审计职责**（= Claude Code 的身份）：沿管线代码级核验（四问：通不通 / 边界对不对 / 旧审计落位 / 文档对账），发现 gap 落 `tech-debt-registry.md`（根因/位置/状态 `🟦open`/修复方向）。对已有 `❓待核` 条目逐条对账为 ✅/🟦。
-- **施工职责**：实现 registry 的 `🟦open` 条目，按 builder-sop（根因优先 / 复用核对 / 确定性 / 对抗证明 / 回填）+ **施工质量约束（强制，详见 builder-sop）：架构最优解 / 实现最优解 / 第一性 / 干净无冗余 / 无 BUG / 无技术债 / 完全合规 / YAGNI 不偷懒**。不达标 = 未完成。
+**固定流程：讨论 → 决定 → 执行 → Claude 独立复审 → 验收/交付；顺序不可跳过。**
 
-**三铁律（防"自己审自己"失效）**：
-1. **对抗证明强制**：任何施工"删关键一行测试必红"——客观校验，不靠主观。这是双角色下替代独立审计的核心兜底。
-2. **红队自审**：施工后**切换怀疑者视角**，假设刚才实现有 bug 专门找（不信任自己的代码）。审计自改代码必须用对抗心态，不能"我觉得对了"就过。
-3. **关键项标 `⚠️待Claude复审`**：架构级 / 不可逆 / 设计层决策，不擅自定，registry 标记等 Claude 回来。常规 bug / 边界修复可自主完成。
+### 常驻工作流
 
-**无损交接纪律**（让 Claude 轮休后无缝接手）：
-- 所有审计结论 + 施工都落 **三层文档**（`tech-debt-registry.md` / `handover-audit-plan.md` / `memory/`），不进私有 memory（记忆分层铁律）。
-- 每完成一项：`handover-audit-plan.md` 变更日志加一行 + registry 状态更新。
-- Claude 回来读 `memory/open-items-registry.md` + `handover-audit-plan.md` + registry 即恢复全部上下文；专挑 `⚠️待Claude复审` 重验，不用全盘重审。
+1. Claude 完成设计 SSOT，写入 `docs/`/现有治理文档，并在允许的外部操作阶段提交。
+2. Claude 完成整读自审和代码事实回验后，生成带路径、坐标、hash 和验收标准的施工提示词。
+3. GLM-5.2 只施工，不做设计决策、不扩大 scope；超出提示词范围必须停止并返回。
+4. Claude 执行 A–F 独立复审；不达标即退回，不能因测试“基本通过”而放行。
+5. 复审通过后才进入交付/部署流程；部署仍须遵守运行环境安全门禁和外向操作授权。
 
-**新会话第一步**：读 `docs/audits/handover-audit-plan.md`（当前任务/全局进度）+ `tech-debt-registry.md`（open gap + `⚠️待Claude复审` 项）。
+### Claude 的具体职责
 
-**动工前**：① 读 registry 对应条目；② `git log --all --oneline -- <path>` + `git blame`（禁不读历史就重写）；③ `bash scripts/cap.sh <动词/符号>` 查复用。
+- **设计/定稿/审计/验收（全权）**：设计文档是单一真相源；出提示词前强制整读 SSOT、自审并逐一核实字段号、方法签名、注入坐标、调用链和边界，禁止“或/待核对”类歧义。
+- **施工提示词**：只写指令，不代施工；编号化（S1–Sn/T1–Tn）、串行、单一目标、精确坐标、明确验收标准；复审缺陷形成指令级清单后退回 GLM-5.2。
+- **复审 A–F**：A 架构复用；B 第一性最简；C 洁净（含 check-lines 零警告）；D 正确性（边界/nil/竞态）；E 合规；F 文档/状态同步；独立重跑 build、gofmt、vet、test、race×3、必要 DSN 及部署后三通道运行时证据。
+- **方向/决策**：每个方向决策必须在现有 `docs/adr/`、registry 或 handover 中留痕；聊天不是第二事实源。
 
-**完工回填**（不做 = 失败，**每项完工后立即执行，禁止批量补**）：
-- ① registry 状态 `🟦open→✅done` + 真实根因/修复方式/对抗证明/测试结果（根因与假设不同如实写）
-- ② **`handover-audit-plan.md` 变更日志加一行**（含：日期 + ID + 一句话结论 + 验证状态）
-- ③ 普遍 pitfall 沉淀进本文件同类段。**沉淀时必须横扫 registry 所有同类前缀条目**（如修了 DATA-TRUTH-10，必须对账 DATA-TRUTH-1~9 的 pitfall 沉淀状态），不能只补最近一个——否则同类坑会随会话消失。2026-08-20 教训：第一轮只补了 DATA-TRUTH-10/LOG-UX-1，漏了 DATA-TRUTH-2~9，直到用户追问才发现
-- ④ 新 gap 新增条目
-- ⑤ 不新建并行文档
-- **完工检查清单**（每项完工后逐条自问，任何一条 ❌ = 未完成）：
-  - [ ] registry 已更新？
-  - [ ] handover-audit-plan.md 变更日志已加一行？
-  - [ ] 如有关键决策，已标 `⚠️待Claude复审`？
-  - **违反 ② = 违反无损交接纪律，等同施工未完成。禁止"做完再批量补 handover"。**
-- ⑥ **文档规则自动执行**（2026-08-11 起）：✅done 明细可归档 git（文件留状态 + 最近 changelog + "靠 git 追溯"指针，见 CLAUDE.md 铁律修订版），但 ① open/返工中条目 + 根因 + 对抗测试记录必留文件内 ② 变更日志条目 / ✅ 行 / 状态行禁删（唯一例外：文件仍保留"靠 git 追溯"指针的文档化裁剪）。**git pre-commit 钩子（`scripts/hooks/pre-commit`）强制，违规提交被拦**——被拦即改文档，禁 `--no-verify` 绕过。
+### 施工提示词语法
 
-状态语义：`❓待核` / `🟦open` / `✅done`（自主完成：对抗证明+红队自审通过）/ `⚠️待Claude复审`（关键决策待独立复审）。详细 SOP 见 [`docs/audits/builder-sop.md`](docs/audits/builder-sop.md)。
+固定头部：立项背景（触发 + 证据链）→ 设计 SSOT 声明 → 约束与目标 → 边界/不做；正文使用 S1–Sn/T1–Tn，每步包含目标、精确代码坐标（file:line/字段/方法签名）和落点；验收包含机检五件套、全量 race×3、check-lines 零警告、先红后绿；固定尾部为“勿部署，停手等 Claude 复审”，并禁止 `--no-verify`。
 
-These constraints are enforced at implementation time. Violation = fix before commit.
+### 常驻纪律红线
+
+- 服务器/DB/venue 实拍优先于 proto、文档和旧状态；事实缺失或不确定必须 fail-closed。
+- 事件驱动优先于定时器；没有事件源时先定义必然发生的 boot 事件。
+- P3 单一事实单一位置：结论进决策/SSOT，规则进本文件，禁止复制漂移。
+- 前端零信任：运算、校验、分页由后端负责，前端只渲染。
+- 多 agent 同仓：收工只显式 add 本会话文件；不得覆盖或清理其他 agent 的改动。
+
+### 无损交接与状态
+
+- 当前仓库没有独立的 `STATE.md` 或 `decisions.md`；在 Claude 正式建立并迁移前，状态与决策 SSOT 只有 `docs/audits/tech-debt-registry.md`、`docs/audits/handover-audit-plan.md` 和现有 `docs/adr/`，禁止 agent 自行创建同义第二事实源。
+- 所有设计、施工、审计和结论落入上述 SSOT 及必要的 `memory/` 入口，不新建并行进度文档。
+- 每项施工完成必须立即回填 registry 根因/实现/对抗证明/测试结果，并在 handover 追加一行；施工方不得自行宣告验收完成。
+- 状态统一为：`❓待核` / `🟦open` / `✅done` / `⚠️待Claude复审`；`✅done` 只有 Claude 独立复审后才权威。
+- 每个关键修复必须有真实 mutation RED→restore→GREEN 证据；nil panic、另一条错误、callback-only 或“任意 error”均不算证据。
+- 收工顺序固定为：自审 → 更新上述 SSOT → 清扫私有记忆 → 追加 handover LOG → 在明确授权的外部操作阶段串行提交/推送 → 写入已批准的知识库入口；当前仓库没有独立 KB/STATE 文件时，禁止 agent 自行发明第二路径。
+- 提交前必须通过 pre-commit 门禁，禁止 `--no-verify`；不得提交 secrets、无关 generated churn 或未审计 scope。
+
+These constraints are enforced at implementation time. Violation = stop, document the gap, and return to Claude.
 
 ## File & Function Size
 
@@ -59,7 +70,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 ## Command Output Discipline (Token Efficiency)
 
-**优先级**: Claude Code 内置工具 > `rtk` 前缀 > 裸命令
+**优先级**: Claude 内置工具 > `rtk` 前缀 > 裸命令
 
 | 操作 | ✅ 首选 | ⚠️ 次选 | ❌ 禁止 |
 |------|--------|--------|--------|
@@ -140,6 +151,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 - **未知常量 → 0** — `interp/constants.go` 缺常量 → 编译器 push 0。例如 `MODE_SIGNAL` 缺失时 `iMACD` 返回主线而非信号线 → `MacdCurrent == SignalCurrent` → 永不开单。
 - **`builtinOrderType` 映射错误** — 必须返回 `OP_BUY=0 / OP_SELL=1`，不能返回 `PositionSide` (`SideBuy=1 / SideSell=-1`)，否则持仓管理/平仓逻辑失效。
 - **Go map 迭代非确定 → 用户函数前向引用返回 0** — `ir.Funcs` 是 map，编译器必须两遍编译：Pass 1 预注册所有 entry PC，Pass 2 编译体。**通用规则：任何有序 pipeline 禁止裸遍历 map 处理有序依赖**。
+- **Pass 2 中 user→user 前向引用仍可能使用 stale marker PC（BT-FUNC-ENTRYPC-FWD 🟦open）** — 当前修复只在逐个编译函数 body 时更新当前 EntryPC；尚未编译的 callee 在 `c.bc.Funcs` 中仍是 Pass 1 marker PC，caller 若先编译会把 stale PC 写进 `OP_CALL_USER`，之后 callee 更新也不会回补。现有 T3 `ForwardReference` 只覆盖 event→function（事件在所有 user body 之后编译），不是 user→user。**通用规则：所有 user function body entry 地址必须在发出任何 `OP_CALL_USER` 前最终确定，或先发符号目标再统一 patch；必须测试 caller→callee 且 callee 后定义。**
 - **两遍编译的 EntryPC 指向 marker 而非 body → OP_CALL_USER 跳到错误 PC → 被调函数静默不执行（BT-FUNC-ENTRYPC ✅done）** — Pass 1 为每个用户函数 emit `OP_ENTER_FUNC` marker 并记录 `EntryPC = marker PC`；Pass 2 编译所有 body（body 在所有 marker 之后连续排列）。`executeCallUser` 执行 `vm.pc = entryPC + 1` 跳过 marker——但当有 ≥2 个用户函数时，`entryPC+1` 是下一个函数的 marker，不是本函数 body。后果：`if(res==0) CheckForOpen()` 中 `CheckForOpen()` 的 `OP_CALL_USER` 跳到错误 PC → body 静默不执行 → 永不下单。**修复**：`compileUserFuncBody` 在编译 body 前更新 `EntryPC = len(c.bc.Code)`（body 实际起始）；`executeCallUser` 改为 `vm.pc = entryPC`（不再 +1）。**通用规则：两遍编译中 Pass 1 预注册的 PC 值必须在 Pass 2 编译 body 前更新为 body 实际起始位置，不能保留 marker 位置——marker 是占位符，不是跳转目标**。
 - **固定长度滚动窗口 + append-only 指标缓存 → 指标永久冻结（LIVE-INDICATOR-1 ✅done）** — live 启动 seed 恰好 `maxContextBars=500`，之后每根新 bar 都 drop oldest + append newest，窗口长度恒为 500；`SeriesCache.EnsureUpdated()` 只比较 `Len()`，看到 `n==c.n==500` 就认为无更新，导致 EMA/MACD/RSI/ATR/ADX 等所有 cache-backed 指标永远停在启动首帧。生产证据：4817 次 VM eval / 46 bar eval，但 MACD/EMA 与 00:44 首帧逐位一致，00:51 SELL 条件成立却 0 signal。**修复**：indicators 层新增可选 `RevisionedBarSource`（`Revision() uint64`），`EnsureUpdated()` 对 revisioned source 检测 revision 变化并 reset+lazy rebuild；runner 层 `runnerBarSource` 实现 `RevisionedBarSource`，`Runner.OnBar` 用 `atomic.Uint64` 推进 barRev（OnTick/OnTrade/OnTimer 不推进）；backtest `btBarSource` 不实现 revision，零开销。**通用规则：增量缓存 freshness 不能只靠长度；revisioned source 的任何 revision 变化都必须 reset+lazy rebuild，不能因长度增长就猜测只是 append**。对抗测试必须复用同一个 source+cache 做 500→500 mutation（新建 cache 会假绿），并精确覆盖 legacy `start()` 的 BAR→TICK 信号路径。完整证据/修复/对抗证明见 registry `LIVE-INDICATOR-1`。
 - **broker → proto → SDK 字段丢失 → MQL OrderSelect/OrderMagicNumber 返回错误值（LIVE-MQL-ORDER-CONTEXT-1 ✅done）** — `vmPositionsToSdk` 曾只保留 Ticket/Side/Volume/OpenPrice，丢弃 Symbol/Magic/SL/TP/Swap/Commission/Profit/Comment/OpenTime；`LivePosition` proto 只有 8 字段；挂单（buy_limit/sell_stop）没有独立 proto，全塞进 `Positions`；harness `Orders(magic)` 直接返回 nil。后果：MQL `OrderMagicNumber()` 返回 0、`OrderSymbol()` 返回空、`OrdersTotal()` 漏算挂单。**通用规则：跨层字段映射必须全字段透传，禁止"只保留策略当前需要的字段"——MQL 策略可通过 OrderSelect 访问任意字段，任何字段丢失都是静默 bug**。修复：proto 补齐全字段 + 新增 `LivePendingOrder`；pipeline 按 `IsPendingOrderType` 拆分 market vs pending；`UpdateLiveState` 接收 pendingOrders；harness `Orders` 返回 `livePendingOrders`。对抗测试必须验证 magic 端到端 + 删任一层映射必 RED。完整证据见 registry `LIVE-MQL-ORDER-CONTEXT-1`。**返工教训（审计复审阻断）**：Go 层断言 `broker.Positions/Orders` 和手工 `len()` 不够——必须编译 MQL 源码 → `Runner.OnTick` → VM 实际执行 `OrdersTotal`/`OrderSelect`/`OrderMagicNumber` → 通过 `VMRunner.GetGlobal` 读取 MQL 全局变量验证值。独立改 `builtinOrderMagicNumber` pending Magic 为 0 后 Go 层测试仍 GREEN，只有 VM 层测试 RED。**通用规则：MQL builtin 对抗测试必须穿透到 VM 执行层，不能只检查 Go 层 slice**。

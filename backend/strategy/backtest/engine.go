@@ -3,7 +3,6 @@ package backtest
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -39,12 +38,22 @@ func (e *Engine) Broker() *SimBroker {
 
 // Run executes the backtest and returns the result.
 func (e *Engine) Run(ctx context.Context) (*Result, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("backtest: nil context")
+	}
+	if len(e.bars) == 0 {
+		return nil, fmt.Errorf("backtest: bars are required")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("backtest: context canceled: %w", err)
+	}
 	startedAt := time.Now()
 
 	btCtx := &backtestContext{
 		broker: e.broker,
 		symbol: e.config.Symbol,
 		tf:     e.config.Timeframe,
+		goCtx:  ctx,
 		bars:   e.bars,
 		params: e.config.Params,
 		point:  e.config.SymbolPoint,
@@ -75,7 +84,10 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 
 	for i := 1; i < len(e.bars); i++ {
 		if err := ctx.Err(); err != nil {
-			break
+			if deinitErr := e.strategy.OnDeinit(btCtx, "backtest_canceled"); deinitErr != nil {
+				return nil, fmt.Errorf("backtest: context canceled: %w (deinit: %v)", err, deinitErr)
+			}
+			return nil, fmt.Errorf("backtest: context canceled: %w", err)
 		}
 		bar := e.bars[i]
 		e.broker.SetBar(i)
@@ -90,7 +102,9 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 		if len(pendingSignals) > 0 {
 			e.broker.SetBarPrice(bar.Open)
 			for _, sig := range pendingSignals {
-				e.dispatchSignal(&sig, bar)
+				if err := e.dispatchSignal(&sig, bar); err != nil {
+					return nil, fmt.Errorf("backtest: delayed signal failed at bar %d: %w", i, err)
+				}
 			}
 			e.broker.SetBarPrice(bar.Close)
 			pendingSignals = nil
@@ -106,19 +120,22 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 
 		sig, err := e.runStrategySignal(btCtx, bar)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: OnBar error at bar %d: %v\n", i, err)
-			continue
+			return nil, fmt.Errorf("backtest: strategy event failed at bar %d: %w", i, err)
 		}
 		if sig != nil {
 			if e.config.SignalTiming == "same_bar_close" {
-				e.dispatchSignal(sig, bar)
+				if err := e.dispatchSignal(sig, bar); err != nil {
+					return nil, fmt.Errorf("backtest: signal failed at bar %d: %w", i, err)
+				}
 			} else {
 				pendingSignals = append(pendingSignals, *sig)
 			}
 		}
 
 		equity := e.computeEquity(bar)
-		e.checkMarginCall(equity, bar)
+		if err := e.checkMarginCall(equity, bar); err != nil {
+			return nil, fmt.Errorf("backtest: margin call failed at bar %d: %w", i, err)
+		}
 		e.equity = append(e.equity, EquityPoint{
 			Time:   time.UnixMilli(bar.Timestamp),
 			Equity: equity,
@@ -196,9 +213,9 @@ func (e *Engine) computeEquity(bar sdk.Bar) decimal.Decimal {
 // checkMarginCall force-closes all positions when equity drops below
 // the margin call threshold. The threshold is the ratio of equity to
 // used margin; when equity/margin < MarginCallLevel, all positions are closed.
-func (e *Engine) checkMarginCall(equity decimal.Decimal, bar sdk.Bar) {
+func (e *Engine) checkMarginCall(equity decimal.Decimal, bar sdk.Bar) error {
 	if e.config.MarginCallLevel.IsZero() {
-		return
+		return nil
 	}
 	contractSize := e.config.ContractSize
 	if contractSize.IsZero() {
@@ -211,19 +228,25 @@ func (e *Engine) checkMarginCall(equity decimal.Decimal, bar sdk.Bar) {
 		usedMargin = usedMargin.Add(margin)
 	}
 	if usedMargin.IsZero() {
-		return
+		return nil
 	}
 	ratio := equity.Div(usedMargin)
 	if ratio.LessThan(e.config.MarginCallLevel) {
 		for i := len(e.broker.positions) - 1; i >= 0; i-- {
 			pos := e.broker.positions[i]
 			pos.ClosePrice = bar.Close
-			e.broker.PositionClose(pos.Ticket, pos.Volume)
+			if _, err := e.broker.PositionClose(pos.Ticket, pos.Volume); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
-func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
+func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) error {
+	if sig == nil {
+		return nil
+	}
 	switch sig.Action {
 	case sdk.ActionBuy, sdk.ActionSell, sdk.ActionBuyLimit, sdk.ActionSellLimit,
 		sdk.ActionBuyStop, sdk.ActionSellStop:
@@ -256,29 +279,38 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 			Comment:    sig.Comment,
 			Magic:      sig.Magic,
 		}); err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: OrderSend error at bar %d: %v\n", e.broker.currentBar, err)
+			return fmt.Errorf("OrderSend: %w", err)
 		}
 	case sdk.ActionClose:
 		if _, err := e.broker.PositionClose(sig.OrderTicket, decimal.Zero); err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+			return fmt.Errorf("PositionClose: %w", err)
 		}
 	case sdk.ActionCancel:
 		if _, err := e.broker.OrderDelete(sig.OrderTicket); err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+			return fmt.Errorf("OrderDelete: %w", err)
+		}
+	case sdk.ActionModify:
+		if _, err := e.broker.PositionModify(sig.OrderTicket, sig.StopLoss, sig.TakeProfit); err != nil {
+			return fmt.Errorf("PositionModify: %w", err)
 		}
 	case sdk.ActionCloseAll:
 		for _, p := range e.broker.Positions(sig.Magic) {
 			if _, err := e.broker.PositionClose(p.Ticket, decimal.Zero); err != nil {
-				fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+				return fmt.Errorf("PositionClose: %w", err)
 			}
 		}
 	case sdk.ActionCancelAll:
 		for _, o := range e.broker.Orders(sig.Magic) {
 			if _, err := e.broker.OrderDelete(o.Ticket); err != nil {
-				fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+				return fmt.Errorf("OrderDelete: %w", err)
 			}
 		}
+	case sdk.ActionNone:
+		return nil
+	default:
+		return fmt.Errorf("unsupported signal action: %d", sig.Action)
 	}
+	return nil
 }
 
 func (e *Engine) checkPendingOrders(bar sdk.Bar) {

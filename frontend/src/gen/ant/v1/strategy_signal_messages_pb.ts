@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_signal_messages.proto.
  */
 export const file_strategy_signal_messages: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdHJhdGVneV9zaWduYWxfbWVzc2FnZXMucHJvdG8SBmFudC52MSI4ChJMaXN0U2lnbmFsc1JlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCRIOCgZzdGF0dXMYAiABKAkiPgoTTGlzdFNpZ25hbHNSZXNwb25zZRInCgdzaWduYWxzGAEgAygLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsIssCCg5TdHJhdGVneVNpZ25hbBIKCgJpZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRISCgphY2NvdW50X2lkGAMgASgJEg4KBnN5bWJvbBgEIAEoCRITCgtzaWduYWxfdHlwZRgFIAEoCRIOCgZ2b2x1bWUYBiABKAkSDQoFcHJpY2UYByABKAkSEQoJc3RvcF9sb3NzGAggASgJEhMKC3Rha2VfcHJvZml0GAkgASgJEg4KBnJlYXNvbhgKIAEoCRIOCgZzdGF0dXMYCyABKAkSFwoPZXhlY3V0ZWRfdGlja2V0GAwgASgDEi4KCmNyZWF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2V4ZWN1dGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIpChRFeGVjdXRlU2lnbmFsUmVxdWVzdBIRCglzaWduYWxfaWQYASABKAkilQEKFUV4ZWN1dGVTaWduYWxSZXNwb25zZRIOCgZ0aWNrZXQYASABKAMSDgoGc3ltYm9sGAIgASgJEgwKBHR5cGUYAyABKAkSDgoGdm9sdW1lGAQgASgJEg0KBXByaWNlGAUgASgJEi8KC2V4ZWN1dGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIpChRDb25maXJtU2lnbmFsUmVxdWVzdBIRCglzaWduYWxfaWQYASABKAkiKAoTQ2FuY2VsU2lnbmFsUmVxdWVzdBIRCglzaWduYWxfaWQYASABKAlCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Ch5zdHJhdGVneV9zaWduYWxfbWVzc2FnZXMucHJvdG8SBmFudC52MSI4ChJMaXN0U2lnbmFsc1JlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCRIOCgZzdGF0dXMYAiABKAkiPgoTTGlzdFNpZ25hbHNSZXNwb25zZRInCgdzaWduYWxzGAEgAygLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsIoYDCg5TdHJhdGVneVNpZ25hbBIKCgJpZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRISCgphY2NvdW50X2lkGAMgASgJEg4KBnN5bWJvbBgEIAEoCRITCgtzaWduYWxfdHlwZRgFIAEoCRIOCgZ2b2x1bWUYBiABKAkSDQoFcHJpY2UYByABKAkSEQoJc3RvcF9sb3NzGAggASgJEhMKC3Rha2VfcHJvZml0GAkgASgJEg4KBnJlYXNvbhgKIAEoCRIOCgZzdGF0dXMYCyABKAkSFwoPZXhlY3V0ZWRfdGlja2V0GAwgASgDEi4KCmNyZWF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2V4ZWN1dGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVtYWdpYxgPIAEoBRIRCglkZXZpYXRpb24YECABKAUSFwoPb3Bwb3NpdGVfdGlja2V0GBEgASgDIikKFEV4ZWN1dGVTaWduYWxSZXF1ZXN0EhEKCXNpZ25hbF9pZBgBIAEoCSKVAQoVRXhlY3V0ZVNpZ25hbFJlc3BvbnNlEg4KBnRpY2tldBgBIAEoAxIOCgZzeW1ib2wYAiABKAkSDAoEdHlwZRgDIAEoCRIOCgZ2b2x1bWUYBCABKAkSDQoFcHJpY2UYBSABKAkSLwoLZXhlY3V0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIikKFENvbmZpcm1TaWduYWxSZXF1ZXN0EhEKCXNpZ25hbF9pZBgBIAEoCSIoChNDYW5jZWxTaWduYWxSZXF1ZXN0EhEKCXNpZ25hbF9pZBgBIAEoCUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.ListSignalsRequest
@@ -126,6 +126,29 @@ export type StrategySignal = Message<"ant.v1.StrategySignal"> & {
    * @generated from field: google.protobuf.Timestamp executed_at = 14;
    */
   executedAt?: Timestamp | undefined;
+
+  /**
+   * VM-TRADE-CONTEXT-3/4: fields required for complete signal contract.
+   *
+   * EA-configured magic number (0 = use schedule magic)
+   *
+   * @generated from field: int32 magic = 15;
+   */
+  magic: number;
+
+  /**
+   * EA-configured deviation (0 = use default)
+   *
+   * @generated from field: int32 deviation = 16;
+   */
+  deviation: number;
+
+  /**
+   * for CloseBy: the opposite position ticket
+   *
+   * @generated from field: int64 opposite_ticket = 17;
+   */
+  oppositeTicket: bigint;
 };
 
 /**

@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"alphaforge/internal/repository"
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 	"alphaforge/tools/mql2go"
 )
 
@@ -25,28 +25,33 @@ func (s *StrategyExecutionServer) executePythonVMBacktest(ctx context.Context, p
 		cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, *run.StrategyID)
 	}
 
-	var vmRunner *mql2go.VMRunner
-	if len(cachedBytecode) > 0 {
-		if r, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
-			vmRunner = r
-		}
-	}
-	if vmRunner == nil {
-		r, err := mql2go.CompilePython(params.code)
-		if err != nil {
-			s.log.Error("executePythonVMBacktest: compile failed", zap.Error(err))
-			return nil, fmt.Errorf("compile Python: %w", err)
-		}
-		vmRunner = r
+	// VM-CACHE-INTEGRITY-2: Use CompilePythonCached which verifies SourceHash
+	// before accepting cached bytecode, mirroring the MQL path. This prevents
+	// stale bytecode from a different source version from being used silently.
+	vmRunner, bcData, err := mql2go.CompilePythonCached(params.code, cachedBytecode)
+	if err != nil {
+		s.log.Error("executePythonVMBacktest: compile failed", zap.Error(err))
+		return nil, fmt.Errorf("compile Python: %w", err)
 	}
 	s.log.Info("executePythonVMBacktest: compiled successfully")
 
+	// VM-CACHE-INTEGRITY-2: Bytecode cache omits CoverageResult; recompile from
+	// source to restore severity-aware blind spots and Defense A data on cache
+	// hits. Mirrors the MQL path in executeVMBacktest.
+	if vmRunner.GetCoverageResult() == nil && params.code != "" {
+		covRunner, cov, covErr := mql2go.CompilePythonWithCoverage(params.code)
+		if covErr != nil {
+			s.log.Error("executePythonVMBacktest: restore coverage failed", zap.Error(covErr))
+			return nil, fmt.Errorf("restore Python coverage: %w", covErr)
+		}
+		vmRunner.InjectCoverage(covRunner.GetCoverage())
+		vmRunner.InjectCoverageResult(cov)
+	}
+
 	// Persist newly compiled bytecode for future runs.
-	if run.StrategyID != nil && s.importedRepo != nil {
-		if bcData, mErr := mql2go.MarshalBytecode(vmRunner.Bytecode()); mErr == nil {
-			if saveErr := s.importedRepo.SaveBytecode(ctx, *run.StrategyID, bcData); saveErr != nil {
-				s.log.Warn("executePythonVMBacktest: save bytecode cache failed", zap.Error(saveErr))
-			}
+	if bcData != nil && run.StrategyID != nil && s.importedRepo != nil {
+		if saveErr := s.importedRepo.SaveBytecode(ctx, *run.StrategyID, bcData); saveErr != nil {
+			s.log.Warn("executePythonVMBacktest: save bytecode cache failed", zap.Error(saveErr))
 		}
 	}
 

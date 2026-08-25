@@ -30,6 +30,10 @@ message StrategySignal {
   int64 executed_ticket = 12;
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp executed_at = 14;
+  // VM-TRADE-CONTEXT-3/4: fields required for complete signal contract.
+  int32 magic = 15;             // EA-configured magic number (0 = use schedule magic)
+  int32 deviation = 16;         // EA-configured deviation (0 = use default)
+  int64 opposite_ticket = 17;   // for CloseBy: the opposite position ticket
 }
 
 message ExecuteSignalRequest {

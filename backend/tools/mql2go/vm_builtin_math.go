@@ -61,12 +61,15 @@ func builtinMathMod(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinMathRand(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.rng != nil {
+		return interp.IntVal(int32(vm.rng.Intn(32767))), nil
+	}
 	return interp.IntVal(int32(rand.Intn(32767))), nil
 }
 
 func builtinMathSrand(vm *VM, args []interp.Value) (interp.Value, error) {
 	seed := int64(argI(args, 0))
-	_ = rand.New(rand.NewSource(seed))
+	vm.rng = rand.New(rand.NewSource(seed))
 	return interp.NoneVal(), nil
 }
 
@@ -76,22 +79,56 @@ func builtinMathIsValidNumber(vm *VM, args []interp.Value) (interp.Value, error)
 }
 
 // MQL4 lowercase math aliases — dispatch to the corresponding Math* function.
-func builtinAliasCeil(vm *VM, args []interp.Value) (interp.Value, error)  { return builtinMathCeil(vm, args) }
-func builtinAliasFloor(vm *VM, args []interp.Value) (interp.Value, error)  { return builtinMathFloor(vm, args) }
-func builtinAliasCos(vm *VM, args []interp.Value) (interp.Value, error)    { return builtinMathCos(vm, args) }
-func builtinAliasSin(vm *VM, args []interp.Value) (interp.Value, error)    { return builtinMathSin(vm, args) }
-func builtinAliasTan(vm *VM, args []interp.Value) (interp.Value, error)    { return builtinMathTan(vm, args) }
-func builtinAliasExp(vm *VM, args []interp.Value) (interp.Value, error)    { return builtinMathExp(vm, args) }
-func builtinAliasFabs(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathAbs(vm, args) }
-func builtinAliasFmax(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathMax(vm, args) }
-func builtinAliasFmin(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathMin(vm, args) }
-func builtinAliasFmod(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathMod(vm, args) }
-func builtinAliasLog(vm *VM, args []interp.Value) (interp.Value, error)    { return builtinMathLog(vm, args) }
-func builtinAliasLog10(vm *VM, args []interp.Value) (interp.Value, error)  { return builtinMathLog10(vm, args) }
-func builtinAliasPow(vm *VM, args []interp.Value) (interp.Value, error)    { return builtinMathPow(vm, args) }
-func builtinAliasRound(vm *VM, args []interp.Value) (interp.Value, error)  { return builtinMathRound(vm, args) }
-func builtinAliasRand(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathRand(vm, args) }
-func builtinAliasSrand(vm *VM, args []interp.Value) (interp.Value, error)  { return builtinMathSrand(vm, args) }
-func builtinAliasSqrt(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathSqrt(vm, args) }
+func builtinAliasCeil(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathCeil(vm, args)
+}
+func builtinAliasFloor(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathFloor(vm, args)
+}
+func builtinAliasCos(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathCos(vm, args)
+}
+func builtinAliasSin(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathSin(vm, args)
+}
+func builtinAliasTan(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathTan(vm, args)
+}
+func builtinAliasExp(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathExp(vm, args)
+}
+func builtinAliasFabs(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathAbs(vm, args)
+}
+func builtinAliasFmax(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathMax(vm, args)
+}
+func builtinAliasFmin(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathMin(vm, args)
+}
+func builtinAliasFmod(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathMod(vm, args)
+}
+func builtinAliasLog(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathLog(vm, args)
+}
+func builtinAliasLog10(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathLog10(vm, args)
+}
+func builtinAliasPow(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathPow(vm, args)
+}
+func builtinAliasRound(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathRound(vm, args)
+}
+func builtinAliasRand(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathRand(vm, args)
+}
+func builtinAliasSrand(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathSrand(vm, args)
+}
+func builtinAliasSqrt(vm *VM, args []interp.Value) (interp.Value, error) {
+	return builtinMathSqrt(vm, args)
+}
 
 var decimalZero = safeDecimalFromFloat(0)

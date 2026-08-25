@@ -44,30 +44,44 @@ type Broker interface {
 
 // AccountInfo holds the current account state.
 type AccountInfo struct {
-	Balance       decimal.Decimal
-	Equity        decimal.Decimal
-	Margin        decimal.Decimal
-	FreeMargin    decimal.Decimal
-	MarginLevel   decimal.Decimal
-	Leverage      int32
-	Currency      string
-	Mode          AccountMode
+	Balance     decimal.Decimal
+	Equity      decimal.Decimal
+	Margin      decimal.Decimal
+	FreeMargin  decimal.Decimal
+	MarginLevel decimal.Decimal
+	Leverage    int32
+	Currency    string
+	Mode        AccountMode
+	Login       int64  // account number (MT login); 0 if unavailable
+	Company     string // broker company name; "" if unavailable
+	// VM-API-TRUTH-3: authoritative account status from broker/context.
+	// IsDemo: true for demo/contest accounts, false for real accounts.
+	// In backtest, always true (simulated). In live, from account record.
+	IsDemo bool
+	// IsConnected: true when the host process is connected to the broker.
+	// In backtest, always true. In live, true when event stream is active
+	// (if the VM is running, it received an event → connection is up).
+	IsConnected bool
+	// IsTradeAllowed: true when trading is permitted on the account.
+	// In backtest, always true. In live, actual trade permission is
+	// enforced at order submission (broker rejects if not allowed).
+	IsTradeAllowed bool
 }
 
 // SymbolInfo holds static symbol parameters.
 type SymbolInfo struct {
-	Name        string
-	Digits      int32
-	Point       decimal.Decimal
-	VolumeMin   decimal.Decimal
-	VolumeMax   decimal.Decimal
-	VolumeStep  decimal.Decimal
-	StopsLevel  int32
-	Spread      int32
-	TickValue   decimal.Decimal
-	TickSize    decimal.Decimal
-	SwapLong    decimal.Decimal
-	SwapShort   decimal.Decimal
+	Name         string
+	Digits       int32
+	Point        decimal.Decimal
+	VolumeMin    decimal.Decimal
+	VolumeMax    decimal.Decimal
+	VolumeStep   decimal.Decimal
+	StopsLevel   int32
+	Spread       int32
+	TickValue    decimal.Decimal
+	TickSize     decimal.Decimal
+	SwapLong     decimal.Decimal
+	SwapShort    decimal.Decimal
 	ContractSize decimal.Decimal
 }
 

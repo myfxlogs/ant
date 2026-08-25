@@ -114,9 +114,11 @@ type mockTradingClient struct {
 	orderCloseErr  error
 	orderModifyRes *pb.OrderModifyReply
 	orderModifyErr error
+	lastOrderSend  *pb.OrderSendRequest // VM-TRADE-CONTEXT-7: capture for assertions
 }
 
 func (m *mockTradingClient) OrderSend(ctx context.Context, in *pb.OrderSendRequest, opts ...grpc.CallOption) (*pb.OrderSendReply, error) {
+	m.lastOrderSend = in
 	return m.orderSendRes, m.orderSendErr
 }
 func (m *mockTradingClient) OrderClose(ctx context.Context, in *pb.OrderCloseRequest, opts ...grpc.CallOption) (*pb.OrderCloseReply, error) {

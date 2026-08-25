@@ -32,20 +32,15 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 
 // buildTradeContext creates a TradeContext proto from a trade event.
 func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg LiveStrategyConfig, evt *mthub.BrokerTradeEvent) (*antv1.TradeContext, error) {
-	side := sideBuy
-	if evt.Side == sideSell {
-		side = sideSell
+	// VM-TRADE-CONTEXT-6 round 5: unknown side/event type must fail-closed,
+	// not default to buy/fill (which would silently change trade semantics).
+	side, err := brokerSideFromString(evt.Side)
+	if err != nil {
+		return nil, fmt.Errorf("buildTradeContext: %w", err)
 	}
-	evtType := "fill"
-	switch evt.EventType {
-	case mthub.BrokerTradeFilled:
-		evtType = "fill"
-	case mthub.BrokerTradeClosed:
-		evtType = string(actionClose)
-	case mthub.BrokerTradeModified:
-		evtType = "modify"
-	case mthub.BrokerTradeCancelled:
-		evtType = "cancel"
+	evtType, err := brokerTradeEventTypeString(evt.EventType)
+	if err != nil {
+		return nil, fmt.Errorf("buildTradeContext: %w", err)
 	}
 	tctx := &antv1.TradeContext{
 		Ticket:     evt.Ticket,
@@ -59,6 +54,7 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 		Profit:     evt.Profit.String(),
 		Commission: evt.Commission.String(),
 		Swap:       evt.Swap.String(),
+		Mode:       cfg.Mode, // VM-TRADE-CONTEXT-6 round 5: mode for financial validation
 	}
 	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == "live" {
 		return nil, err
@@ -90,9 +86,11 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 	*freeMargin = snap.FreeMargin.String()
 	pos := make([]*antv1.LivePosition, 0, len(snap.Positions))
 	for _, p := range snap.Positions {
-		side := sideBuy
-		if p.Type == sideSell {
-			side = sideSell
+		// VM-TRADE-CONTEXT-6 round 5: unknown side must fail-closed,
+		// not default to buy (which would silently change trade semantics).
+		side, err := brokerSideFromString(p.Type)
+		if err != nil {
+			return fmt.Errorf("position %d: %w", p.Ticket, err)
 		}
 		pos = append(pos, &antv1.LivePosition{
 			Ticket:      p.Ticket,
@@ -116,11 +114,16 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 	// LIVE-MQL-ORDER-CONTEXT-1: populate pending orders with full fields.
 	pending := make([]*antv1.LivePendingOrder, 0, len(snap.PendingOrders))
 	for _, o := range snap.PendingOrders {
+		// VM-TRADE-CONTEXT-6 round 5: unknown order type must fail-closed.
+		pSide, err := pendingOrderSide(o.Type)
+		if err != nil {
+			return fmt.Errorf("pending order %d: %w", o.Ticket, err)
+		}
 		pending = append(pending, &antv1.LivePendingOrder{
 			Ticket:      o.Ticket,
 			Symbol:      o.Symbol,
 			OrderType:   o.Type,
-			Side:        pendingOrderSide(o.Type),
+			Side:        pSide,
 			Volume:      o.Volume.String(),
 			Price:       o.OpenPrice.String(),
 			Sl:          o.StopLoss.String(),
@@ -132,15 +135,6 @@ func (s *StrategyExecutionServer) backfillContextStrings(accountID string, equit
 	}
 	*pendingOrders = pending
 	return nil
-}
-
-// pendingOrderSide derives the buy/sell side from a pending order type string.
-// "buy_limit" → "buy", "sell_stop" → "sell", etc.
-func pendingOrderSide(orderType string) string {
-	if len(orderType) >= 3 && orderType[:3] == sideBuy {
-		return sideBuy
-	}
-	return "sell"
 }
 
 // dispatchFromBytes unmarshals a live response and dispatches signals to OMS.
@@ -197,124 +191,3 @@ func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg Liv
 }
 
 // buildLiveContext creates a full OHLCV bar context from the bar window.
-func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg LiveStrategyConfig, bars []liveBar, extraBars map[string][]liveBar) (*antv1.LiveStrategyContext, error) {
-	n := len(bars)
-	closeVals := make([]string, n)
-	openVals := make([]string, n)
-	highVals := make([]string, n)
-	lowVals := make([]string, n)
-	volVals := make([]string, n)
-	times := make([]int64, n)
-	for i, b := range bars {
-		closeVals[i] = b.close
-		openVals[i] = b.open
-		highVals[i] = b.high
-		lowVals[i] = b.low
-		volVals[i] = b.volume
-		times[i] = b.openTime
-	}
-	lctx := &antv1.LiveStrategyContext{
-		Close:      closeVals,
-		Open:       openVals,
-		High:       highVals,
-		Low:        lowVals,
-		Volume:     volVals,
-		BarTimesMs: times,
-		Symbol:     cfg.Symbol,
-		Timeframe:  cfg.Timeframe,
-		Mode:       cfg.Mode,
-		Params:     buildLiveParams(cfg.Params),
-	}
-	if n > 0 {
-		lctx.CurrentPrice = closeVals[n-1]
-	}
-	if err := s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions, &lctx.PendingOrders); err != nil && cfg.Mode == "live" {
-		return nil, err
-	}
-	s.backfillSymbolInfo(cfg, lctx)
-	lctx.Symbols = buildSymbolSeries(extraBars)
-	return lctx, nil
-}
-
-func buildLiveParams(params map[string]string) []*antv1.LiveParam {
-	if len(params) == 0 {
-		return nil
-	}
-	out := make([]*antv1.LiveParam, 0, len(params))
-	for k, v := range params {
-		out = append(out, &antv1.LiveParam{Key: k, Value: v})
-	}
-	return out
-}
-
-func buildSymbolSeries(extraBars map[string][]liveBar) []*antv1.LiveSymbolSeries {
-	if len(extraBars) == 0 {
-		return nil
-	}
-	out := make([]*antv1.LiveSymbolSeries, 0, len(extraBars))
-	for sym, bars := range extraBars {
-		if len(bars) == 0 {
-			continue
-		}
-		n := len(bars)
-		closeVals := make([]string, n)
-		openVals := make([]string, n)
-		highVals := make([]string, n)
-		lowVals := make([]string, n)
-		volVals := make([]string, n)
-		for i, b := range bars {
-			closeVals[i] = b.close
-			openVals[i] = b.open
-			highVals[i] = b.high
-			lowVals[i] = b.low
-			volVals[i] = b.volume
-		}
-		out = append(out, &antv1.LiveSymbolSeries{
-			Symbol: sym,
-			Close:  closeVals,
-			Open:   openVals,
-			High:   highVals,
-			Low:    lowVals,
-			Volume: volVals,
-		})
-	}
-	return out
-}
-
-// backfillSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
-// LiveStrategyContext from the pre-fetched symbol params (W2: no per-event RPC).
-// Falls back to a one-shot 5s-timeout fetch if startup pre-fetch failed.
-func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lctx *antv1.LiveStrategyContext) {
-	param := cfg.SymbolParam
-	if param == nil && s.mtHub != nil && cfg.AccountID != "" && cfg.Symbol != "" {
-		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		param, _ = s.mtHub.CachedSymbolParam(fetchCtx, cfg.AccountID, cfg.Symbol)
-		cancel()
-	}
-	if param == nil {
-		return
-	}
-	lctx.Point = param.PointValue.String()
-	lctx.Digits = param.Digits
-	lctx.ContractSize = param.ContractSize.String()
-	lctx.StopsLevel = param.StopLevel
-}
-
-// backfillTickSymbolInfo populates Point/Digits/ContractSize/StopsLevel on
-// TickContext from the pre-fetched symbol params (W2: no per-event RPC).
-// Falls back to a one-shot 5s-timeout fetch if startup pre-fetch failed.
-func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig, tctx *antv1.TickContext) {
-	param := cfg.SymbolParam
-	if param == nil && s.mtHub != nil && cfg.AccountID != "" && cfg.Symbol != "" {
-		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		param, _ = s.mtHub.CachedSymbolParam(fetchCtx, cfg.AccountID, cfg.Symbol)
-		cancel()
-	}
-	if param == nil {
-		return
-	}
-	tctx.Point = param.PointValue.String()
-	tctx.Digits = param.Digits
-	tctx.ContractSize = param.ContractSize.String()
-	tctx.StopsLevel = param.StopLevel
-}

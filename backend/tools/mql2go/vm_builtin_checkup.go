@@ -1,20 +1,28 @@
 package mql2go
 
-import (
-	"time"
-
-	"alphaforge/tools/mql2go/interp"
-)
+import "alphaforge/tools/mql2go/interp"
 
 // MQL4/MQL5 Checkup / Platform functions — complete implementation.
 // In backtest context, most of these return fixed values.
+// VM-API-TRUTH-3: IsConnected/IsDemo/IsTradeAllowed read from authoritative
+// AccountInfo when available; backtest defaults to true (simulated environment).
 
 func builtinIsConnected(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
+	// VM-API-TRUTH-3: in backtest, always connected. In live, the host
+	// process is connected if the VM is receiving events (connection is
+	// a host-level concern, not a VM-level query).
+	if vm.ctx == nil {
+		return interp.BoolVal(true), nil
+	}
+	return interp.BoolVal(vm.ctx.Account().IsConnected), nil
 }
 
 func builtinIsDemo(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
+	// VM-API-TRUTH-3: in backtest, always demo. In live, from AccountInfo.
+	if vm.ctx == nil {
+		return interp.BoolVal(true), nil
+	}
+	return interp.BoolVal(vm.ctx.Account().IsDemo), nil
 }
 
 func builtinIsDllsAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -30,7 +38,13 @@ func builtinIsLibrariesAllowed(vm *VM, args []interp.Value) (interp.Value, error
 }
 
 func builtinIsTradeAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
+	// VM-API-TRUTH-3: in backtest, always allowed. In live, actual trade
+	// permission is enforced at order submission (broker rejects if not
+	// allowed). The VM-level query reflects the account's trade-enabled flag.
+	if vm.ctx == nil {
+		return interp.BoolVal(true), nil
+	}
+	return interp.BoolVal(vm.ctx.Account().IsTradeAllowed), nil
 }
 
 func builtinIsTradeContextBusy(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -66,15 +80,15 @@ func builtinTerminalInfoString(vm *VM, args []interp.Value) (interp.Value, error
 }
 
 func builtinGetTickCount(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(int32(time.Now().UnixMilli() & 0x7FFFFFFF)), nil
+	return interp.IntVal(int32(vm.runtimeTimeMillis() & 0x7FFFFFFF)), nil
 }
 
 func builtinGetTickCount64(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(int32(time.Now().UnixMilli())), nil
+	return interp.IntVal(int32(vm.runtimeTimeMillis())), nil
 }
 
 func builtinGetMicrosecondCount(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(int32(time.Now().UnixMicro())), nil
+	return interp.IntVal(int32(vm.runtimeTimeMillis() * 1000)), nil
 }
 
 func builtinSetUserError(vm *VM, args []interp.Value) (interp.Value, error) {

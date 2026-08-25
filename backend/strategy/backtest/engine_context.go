@@ -13,6 +13,7 @@ type backtestContext struct {
 	broker     *SimBroker
 	symbol     string
 	tf         string
+	goCtx      context.Context
 	bars       []sdk.Bar
 	barIndex   int
 	currentBar sdk.Bar
@@ -30,7 +31,14 @@ type backtestContext struct {
 }
 
 func (c *backtestContext) Bars() sdk.BarSeries {
-	return wrapBTBarSeries(sdk.BarsToSlice(c.bars[:c.barIndex+1]))
+	end := c.barIndex + 1
+	if end < 0 {
+		end = 0
+	}
+	if end > len(c.bars) {
+		end = len(c.bars)
+	}
+	return wrapBTBarSeries(sdk.BarsToSlice(c.bars[:end]))
 }
 
 func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
@@ -40,8 +48,14 @@ func (c *backtestContext) BarsTF(tf string) sdk.BarSeries {
 	// Aggregate only bars up to current barIndex — no future data leakage.
 	// MT4 semantics: shift=0 on higher TF returns the bar containing the current
 	// lower-TF bar, with OHLCV accumulated only from bars seen so far.
-	visible := c.bars[:c.barIndex+1]
-	aggregated := aggregateBars(visible, tf)
+	end := c.barIndex + 1
+	if end < 0 {
+		end = 0
+	}
+	if end > len(c.bars) {
+		end = len(c.bars)
+	}
+	aggregated := aggregateBars(c.bars[:end], tf)
 	return wrapBTBarSeries(sdk.BarsToSlice(aggregated))
 }
 
@@ -81,8 +95,13 @@ func (c *backtestContext) Indicators() sdk.IndicatorSet { return c.ind }
 func (c *backtestContext) SetTimer(int)                 {}
 func (c *backtestContext) KillTimer()                   {}
 func (c *backtestContext) Log(msg string)               { c.logs = append(c.logs, msg) }
-func (c *backtestContext) ServerTime() int64            { return c.currentBar.Timestamp }
-func (c *backtestContext) GoContext() context.Context   { return context.Background() }
+func (c *backtestContext) ServerTime() int64 { return c.currentBar.Timestamp }
+func (c *backtestContext) GoContext() context.Context {
+	if c.goCtx == nil {
+		return context.Background()
+	}
+	return c.goCtx
+}
 
 func (c *backtestContext) Param(name string, defaultVal interface{}) interface{} {
 	if c.params != nil {

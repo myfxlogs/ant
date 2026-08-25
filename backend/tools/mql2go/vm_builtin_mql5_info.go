@@ -13,10 +13,10 @@ func builtinSymbolInfoTick(vm *VM, args []interp.Value) (interp.Value, error) {
 	// SymbolInfoTick(symbol, tick) fills an MqlTick struct.
 	// Return true with a struct containing bid/ask.
 	fields := map[string]interp.Value{
-		"time":  interp.IntVal(int32(vm.ctx.ServerTime() / 1000)),
-		"bid":   interp.DecimalVal(vm.ctx.Bid()),
-		"ask":   interp.DecimalVal(vm.ctx.Ask()),
-		"last":  interp.DecimalVal(vm.ctx.Bid()),
+		"time":     interp.IntVal(int32(vm.ctx.ServerTime() / 1000)),
+		"bid":      interp.DecimalVal(vm.ctx.Bid()),
+		"ask":      interp.DecimalVal(vm.ctx.Ask()),
+		"last":     interp.DecimalVal(vm.ctx.Bid()),
 		nodeVolume: interp.IntVal(0),
 	}
 	return interp.Value{Kind: interp.ValClass, Class: &interp.ClassInstance{Fields: fields}}, nil

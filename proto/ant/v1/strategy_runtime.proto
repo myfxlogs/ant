@@ -195,6 +195,11 @@ message ExecuteLiveRequest {
   TradeContext trade_context = 5;         // REQUEST_TYPE_TRADE
   TimerContext timer_context = 6;         // REQUEST_TYPE_TIMER
   string strategy_id = 7;                // imported strategy ID for bytecode cache
+  // VM-TRADE-CONTEXT-6 round 5: account ID for server-side account truth
+  // lookup in live mode. When mode == "live" and account_id is empty,
+  // ExecuteLive rejects the request (client-submitted Login/Company/status
+  // are not authoritative). Paper/backtest mode does not require this.
+  string account_id = 8;
 }
 
 message ExecuteLiveResponse {
@@ -250,6 +255,17 @@ message LiveStrategyContext {
   // LIVE-MQL-ORDER-CONTEXT-1: pending orders (limit/stop) separate from
   // market positions for MQL OrdersTotal/OrderSelect account-level semantics.
   repeated LivePendingOrder pending_orders = 25;
+
+  // VM-TRADE-CONTEXT-3: account identity for AccountNumber()/AccountCompany().
+  int64 login = 26;
+  string company = 27;
+
+  // VM-API-TRUTH-3: authoritative account status from mt_accounts.
+  // IsDemo: true for demo/contest accounts. IsConnected: true when host
+  // is connected to broker. IsTradeAllowed: true when trading is permitted.
+  bool is_demo = 28;
+  bool is_connected = 29;
+  bool is_trade_allowed = 30;
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -371,6 +387,9 @@ message TradeContext {
 
   // LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
   repeated LivePendingOrder pending_orders = 17;
+
+  // VM-TRADE-CONTEXT-6 round 5: mode for mode-aware financial validation.
+  string mode = 18;  // "live" | "paper"
 }
 
 // TimerContext carries a periodic timer fire for OnTimer strategies.

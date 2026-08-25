@@ -11,12 +11,21 @@ import (
 
 // brokerImpl implements sdk.Broker by delegating to OrderExecutor.
 type brokerImpl struct {
-	runner   *Runner
-	executor OrderExecutor // set by LiveRunner
-	ctx      context.Context
+	runner    *Runner
+	executor  OrderExecutor // set by LiveRunner
+	ctx       context.Context
+	lastError error // VM-TRADE-CONTEXT-2: records last query error for fail-closed
 }
 
 func (b *brokerImpl) setContext(ctx context.Context) { b.ctx = ctx }
+
+// LastError returns the last query error from Positions/Orders/HistoryOrders/Deals.
+// VM-TRADE-CONTEXT-2: The runner checks this after strategy execution to fail-closed
+// when broker queries fail (instead of silently presenting empty positions).
+func (b *brokerImpl) LastError() error { return b.lastError }
+
+// resetError clears the last error before each strategy event.
+func (b *brokerImpl) resetError() { b.lastError = nil }
 
 func (b *brokerImpl) orderCtx() context.Context {
 	if b.ctx != nil {
@@ -108,9 +117,9 @@ func (b *brokerImpl) Positions(magic int32) []sdk.Position {
 	}
 	positions, err := b.executor.OpenedOrders(b.orderCtx())
 	if err != nil {
-		// Log but don't return error — SDK interface returns []Position, not ([]Position, error).
-		// Strategy will see empty positions and may re-enter, but at least we log.
-		_ = err
+		// VM-TRADE-CONTEXT-2: Record error for fail-closed instead of silently
+		// returning nil. The runner checks LastError() after strategy execution.
+		b.lastError = fmt.Errorf("broker: Positions query failed: %w", err)
 		return nil
 	}
 	if magic == 0 {
@@ -146,6 +155,8 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 	}
 	orders, err := b.executor.PendingOrders(b.orderCtx())
 	if err != nil {
+		// VM-TRADE-CONTEXT-2: Record error for fail-closed.
+		b.lastError = fmt.Errorf("broker: Orders query failed: %w", err)
 		return nil
 	}
 	if magic == 0 {
@@ -162,15 +173,25 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 
 func (b *brokerImpl) HistoryOrders(from, to int64) []sdk.Position {
 	if b.executor == nil {
+		// VM-TRADE-CONTEXT-3: harness mode also records error — HistoryOrders
+		// is unavailable regardless of executor presence.
+		b.lastError = fmt.Errorf("broker: HistoryOrders not available (no executor)")
 		return nil
 	}
+	// VM-TRADE-CONTEXT-2: HistoryOrders is not implemented in the live executor.
+	// Record error so the runner can fail-closed instead of silently returning nil.
+	b.lastError = fmt.Errorf("broker: HistoryOrders not available in live mode")
 	return nil
 }
 
 func (b *brokerImpl) Deals(from, to int64, magic int32) []sdk.Deal {
 	if b.executor == nil {
+		// VM-TRADE-CONTEXT-3: harness mode also records error.
+		b.lastError = fmt.Errorf("broker: Deals not available (no executor)")
 		return nil
 	}
+	// VM-TRADE-CONTEXT-2: Deals is not implemented in the live executor.
+	b.lastError = fmt.Errorf("broker: Deals not available in live mode")
 	return nil
 }
 
@@ -196,10 +217,15 @@ func (b *brokerImpl) Account() sdk.AccountInfo {
 		b.runner.ctx.mu.RLock()
 		defer b.runner.ctx.mu.RUnlock()
 		return sdk.AccountInfo{
-			Balance:    b.mustDecimal(b.runner.ctx.liveBalance),
-			Equity:     b.mustDecimal(b.runner.ctx.liveEquity),
-			Margin:     b.mustDecimal(b.runner.ctx.liveMargin),
-			FreeMargin: b.mustDecimal(b.runner.ctx.liveFreeMargin),
+			Balance:        b.mustDecimal(b.runner.ctx.liveBalance),
+			Equity:         b.mustDecimal(b.runner.ctx.liveEquity),
+			Margin:         b.mustDecimal(b.runner.ctx.liveMargin),
+			FreeMargin:     b.mustDecimal(b.runner.ctx.liveFreeMargin),
+			Login:          b.runner.ctx.liveLogin,          // VM-TRADE-CONTEXT-3
+			Company:        b.runner.ctx.liveCompany,        // VM-TRADE-CONTEXT-3
+			IsDemo:         b.runner.ctx.liveIsDemo,         // VM-API-TRUTH-3
+			IsConnected:    b.runner.ctx.liveIsConnected,    // VM-API-TRUTH-3
+			IsTradeAllowed: b.runner.ctx.liveIsTradeAllowed, // VM-API-TRUTH-3
 		}
 	}
 	return b.executor.Account()

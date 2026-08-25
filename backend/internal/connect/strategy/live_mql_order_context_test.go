@@ -103,8 +103,8 @@ func TestLIVE_MQL_ORDER_CONTEXT_1_FullChain_PositionsAndPendingOrders(t *testing
 	}
 
 	// Step 2: vmPositionsToSdk / vmPendingOrdersToSdk → SDK types
-	sdkPositions := vmPositionsToSdk(positions)
-	sdkPendingOrders := vmPendingOrdersToSdk(pendingOrders)
+	sdkPositions, perr := vmPositionsToSdk(positions); if perr != nil { t.Fatal(perr) }
+	sdkPendingOrders, oerr := vmPendingOrdersToSdk(pendingOrders); if oerr != nil { t.Fatal(oerr) }
 
 	if len(sdkPositions) != 2 {
 		t.Fatalf("vmPositionsToSdk: got %d, want 2", len(sdkPositions))
@@ -164,8 +164,8 @@ func TestLIVE_MQL_ORDER_CONTEXT_1_MagicEndToEnd(t *testing.T) {
 	}
 
 	// Verify magic is preserved in SDK types
-	sdkPositions := vmPositionsToSdk(positions)
-	sdkPendingOrders := vmPendingOrdersToSdk(pendingOrders)
+	sdkPositions, perr := vmPositionsToSdk(positions); if perr != nil { t.Fatal(perr) }
+	sdkPendingOrders, oerr := vmPendingOrdersToSdk(pendingOrders); if oerr != nil { t.Fatal(oerr) }
 	for i, p := range sdkPositions {
 		if p.Magic != testMagic {
 			t.Fatalf("sdk.Position[%d].Magic = %d, want %d (magic lost in vmPositionsToSdk)", i, p.Magic, testMagic)
@@ -210,7 +210,7 @@ func TestLIVE_MQL_ORDER_CONTEXT_1_AllFieldsPreserved(t *testing.T) {
 		t.Fatalf("backfillContextStrings failed: %v", err)
 	}
 
-	sdkPositions := vmPositionsToSdk(positions)
+	sdkPositions, perr := vmPositionsToSdk(positions); if perr != nil { t.Fatal(perr) }
 
 	// Check first position (buy)
 	p0 := sdkPositions[0]
@@ -259,7 +259,7 @@ func TestLIVE_MQL_ORDER_CONTEXT_1_PendingOrderFieldsPreserved(t *testing.T) {
 		t.Fatalf("backfillContextStrings failed: %v", err)
 	}
 
-	sdkPending := vmPendingOrdersToSdk(pendingOrders)
+	sdkPending, oerr := vmPendingOrdersToSdk(pendingOrders); if oerr != nil { t.Fatal(oerr) }
 
 	// Check first pending order (buy_limit)
 	o0 := sdkPending[0]
@@ -319,8 +319,8 @@ func TestLIVE_MQL_ORDER_CONTEXT_1_PendingOrdersNotInPositions(t *testing.T) {
 		t.Fatalf("backfillContextStrings failed: %v", err)
 	}
 
-	sdkPositions := vmPositionsToSdk(positions)
-	sdkPending := vmPendingOrdersToSdk(pendingOrders)
+	sdkPositions, perr := vmPositionsToSdk(positions); if perr != nil { t.Fatal(perr) }
+	sdkPending, oerr := vmPendingOrdersToSdk(pendingOrders); if oerr != nil { t.Fatal(oerr) }
 
 	r := runner.New(runner.Config{})
 	r.UpdateLiveState(balance, equity, margin, freeMargin, sdkPositions, sdkPending)
@@ -355,8 +355,8 @@ func TestLIVE_MQL_ORDER_CONTEXT_1_MagicFilterWorks(t *testing.T) {
 		t.Fatalf("backfillContextStrings failed: %v", err)
 	}
 
-	sdkPositions := vmPositionsToSdk(positions)
-	sdkPending := vmPendingOrdersToSdk(pendingOrders)
+	sdkPositions, perr := vmPositionsToSdk(positions); if perr != nil { t.Fatal(perr) }
+	sdkPending, oerr := vmPendingOrdersToSdk(pendingOrders); if oerr != nil { t.Fatal(oerr) }
 
 	r := runner.New(runner.Config{})
 	r.UpdateLiveState(balance, equity, margin, freeMargin, sdkPositions, sdkPending)

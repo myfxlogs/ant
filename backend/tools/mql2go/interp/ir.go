@@ -87,6 +87,7 @@ type IR struct {
 	Funcs             map[string]*FuncDef // user-defined functions
 	Enums             map[string]int32    // enum constants → int value
 	EnumTypes         map[string]bool     // enum type names (e.g. "BuyOrSell0")
+	ClassTypes        map[string]bool     // class/struct type names (user-defined + builtin)
 }
 
 // GlobalVar represents a global variable declaration.

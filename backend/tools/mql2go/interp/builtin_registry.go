@@ -56,14 +56,8 @@ var implementedMQL5Position = []string{
 var implementedAccount = []string{
 	// MQL4 Account* functions (callTrade)
 	"AccountBalance", "AccountEquity", "AccountFreeMargin",
-	"AccountMargin", "AccountLeverage",
-	"AccountNumber", "AccountStopoutLevel", "AccountCurrency",
-	"AccountName", "AccountCompany",
-	// MQL4-only account functions (callTradeStubs)
-	"AccountFreeMarginCheck", "AccountFreeMarginMode", "AccountServer",
-	"AccountStopoutMode", "AccountCredit", "AccountProfit",
-	// MQL5 AccountInfo* functions (callTradeStubs)
-	"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
+	"AccountMargin", "AccountLeverage", "AccountNumber", "AccountCurrency",
+	"AccountCompany", // VM-API-TRUTH-2: now reads Account().Company
 }
 
 // implementedCTradeMethods — case labels in builtin_ctrade.go execCTrade switch.
@@ -86,10 +80,9 @@ var implementedPlatform = []string{
 	"ArrayFill", "ArrayFree", "ArrayRange", "ArrayIsSeries",
 	"ArrayBsearch", "ArrayCompare", "ArrayInsert", "ArrayRemove",
 	"ArrayReverse", "ArraySwap", "ArrayPrint", "ArrayGetAsSeries", "ArrayIsDynamic",
-	"StringConcatenate", "StringFind", "StringSubstr", "StringLen",
-	"StringReplace", "StringSplit", "StringTrimLeft", "StringTrimRight",
-	"StringAdd", "StringCompare", "StringGetCharacter", "StringSetCharacter",
-	"StringToLower", "StringToUpper", "StringBufferLen", "StringInit", "StringFill",
+	"StringFind", "StringSubstr", "StringLen", "StringSplit",
+	"StringTrimLeft", "StringTrimRight", "StringCompare", "StringGetCharacter",
+	"StringToLower", "StringToUpper", "StringBufferLen",
 	"DoubleToString", "DoubleToStr", "IntegerToString",
 	"StringToDouble", "StringToInteger", "NormalizeDouble",
 	"CharToString", "CharArrayToString", "ShortToString", "ShortArrayToString",
@@ -98,8 +91,7 @@ var implementedPlatform = []string{
 	"TimeGMT", "TimeGMTOffset", "TimeDaylightSavings", "TimeTradeServer",
 	"TimeToStruct", "StructToTime", "PeriodSeconds",
 	"EventKillTimer", "EventSetMillisecondTimer", "EventSetTimer",
-	"ExpertRemove", "GetLastError", "ResetLastError", "IsTesting", "IsOptimization",
-	"IsVisualMode", "RefreshRates",
+	"IsTesting", "IsOptimization", "IsVisualMode", "RefreshRates",
 	"Day", "DayOfWeek", "Hour", "Minute", "Year", "Month",
 	"StrToInteger",
 	// MQL4 lowercase math aliases
@@ -111,31 +103,14 @@ var implementedPlatform = []string{
 	"IsStopped", "UninitializeReason",
 	"MQLInfoInteger", "MQLInfoString",
 	"TerminalInfoDouble", "TerminalInfoInteger", "TerminalInfoString",
-	"GetTickCount", "GetTickCount64", "GetMicrosecondCount",
-	"SetUserError", "SetReturnError", "CurTime",
-	// MQL5 market info additions
-	"SymbolInfoTick", "SymbolName", "SymbolSelect", "SymbolsTotal",
-	"SymbolInfoMarginRate", "SymbolInfoSessionQuote", "SymbolInfoSessionTrade",
-	"SymbolIsSynchronized",
-	// MQL5 timeseries access
-	"Bars", "iBarShift", "iHighest", "iLowest",
-	"iTickVolume", "iRealVolume", "iVolume", "iSpread",
-	"CopyRates", "CopyClose", "CopyHigh", "CopyLow", "CopyOpen",
-	"CopyTime", "CopyBuffer", "CopyTickVolume", "CopyRealVolume", "CopySpread",
-	"CopyTicks",
-	"BarsCalculated",
-	"SeriesInfoInteger",
-	// MQL5 trade helpers
-	"OrderCalcMargin", "OrderCalcProfit", "OrderCheck",
+	"GetTickCount",
+	"CurTime",
+	// MQL5 timeseries access that is faithfully available in the VM
+	"Bars", "iBarShift", "iHighest", "iLowest", "iTickVolume", "iVolume",
+	"CopyClose", "CopyHigh", "CopyLow", "CopyOpen", "CopyTime", "CopyTickVolume",
+	// MQL5 position selection
 	"PositionSelect",
-	// MQL5 order history
-	"HistorySelect", "HistorySelectByPosition",
-	"HistoryDealsTotal", "HistoryDealSelect", "HistoryDealGetTicket",
-	"HistoryDealGetDouble", "HistoryDealGetInteger", "HistoryDealGetString",
-	"HistoryOrdersTotal", "HistoryOrderSelect", "HistoryOrderGetTicket",
-	"HistoryOrderGetDouble", "HistoryOrderGetInteger", "HistoryOrderGetString",
-	// MQL5 order functions
-	"OrderGetTicket", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
+
 	// Global Variables
 	"GlobalVariableSet", "GlobalVariableGet", "GlobalVariableDel",
 	"GlobalVariableCheck", "GlobalVariableTemp", "GlobalVariableFlush",

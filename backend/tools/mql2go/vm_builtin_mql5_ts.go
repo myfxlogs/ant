@@ -1,6 +1,8 @@
 package mql2go
 
 import (
+	"github.com/shopspring/decimal"
+
 	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go/interp"
 )
@@ -29,8 +31,10 @@ func builtinIBarShift(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.IntVal(-1), nil
 	}
 	ts := int64(argI(args, 2)) * 1000
+	exact := len(args) > 3 && argI(args, 3) != 0
 	for i := 0; i < series.Len(); i++ {
-		if series.Time(i) <= ts {
+		barTs := series.Time(i)
+		if barTs == ts || (!exact && barTs < ts) {
 			return interp.IntVal(int32(i)), nil
 		}
 	}
@@ -45,25 +49,13 @@ func builtinIHighest(vm *VM, args []interp.Value) (interp.Value, error) {
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
 	}
-	_ = argI(args, 2) // type: MODE_HIGH, MODE_LOW, etc. — unused, we always search High
-	count := int(argI(args, 3))
-	start := int(argI(args, 4))
-	if count <= 0 {
-		count = series.Len()
+	mode := argI(args, 2)
+	if !validSeriesMode(mode) {
+		vm.recordBlindSpot("iHighest:invalid series mode")
+		return interp.IntVal(-1), nil
 	}
-	if start < 0 {
-		start = 0
-	}
-	maxIdx := start
-	maxVal := series.High(start)
-	for i := start + 1; i < start+count && i < series.Len(); i++ {
-		h := series.High(i)
-		if h.GreaterThan(maxVal) {
-			maxVal = h
-			maxIdx = i
-		}
-	}
-	return interp.IntVal(int32(maxIdx)), nil
+	idx, _ := extremeIndex(series, mode, argI(args, 3), argI(args, 4), true)
+	return interp.IntVal(idx), nil
 }
 
 func builtinILowest(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -74,25 +66,61 @@ func builtinILowest(vm *VM, args []interp.Value) (interp.Value, error) {
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
 	}
-	_ = argI(args, 2)
-	count := int(argI(args, 3))
-	start := int(argI(args, 4))
-	if count <= 0 {
-		count = series.Len()
+	mode := argI(args, 2)
+	if !validSeriesMode(mode) {
+		vm.recordBlindSpot("iLowest:invalid series mode")
+		return interp.IntVal(-1), nil
 	}
-	if start < 0 {
-		start = 0
+	idx, _ := extremeIndex(series, mode, argI(args, 3), argI(args, 4), false)
+	return interp.IntVal(idx), nil
+}
+
+func validSeriesMode(mode int32) bool {
+	return mode >= 0 && mode <= 5
+}
+
+func extremeIndex(series sdk.BarSeries, mode, count, start int32, highest bool) (int32, bool) {
+	if series.Len() == 0 || start < 0 || int(start) >= series.Len() {
+		return -1, false
 	}
-	minIdx := start
-	minVal := series.Low(start)
-	for i := start + 1; i < start+count && i < series.Len(); i++ {
-		l := series.Low(i)
-		if l.LessThan(minVal) {
-			minVal = l
-			minIdx = i
+	if count <= 0 || int(count) > series.Len()-int(start) {
+		count = int32(series.Len() - int(start))
+	}
+	valueAt := func(shift int) (decimal.Decimal, bool) {
+		switch mode {
+		case 0: // MODE_OPEN
+			return series.Open(shift), true
+		case 1: // MODE_LOW
+			return series.Low(shift), true
+		case 2: // MODE_HIGH
+			return series.High(shift), true
+		case 3: // MODE_CLOSE
+			return series.Close(shift), true
+		case 4: // MODE_VOLUME
+			return decimal.NewFromInt(series.Volume(shift)), true
+		case 5: // MODE_TIME
+			return decimal.NewFromInt(series.Time(shift) / 1000), true
+		default:
+			return decimal.Zero, false
 		}
 	}
-	return interp.IntVal(int32(minIdx)), nil
+	bestIdx := int(start)
+	best, valid := valueAt(bestIdx)
+	if !valid {
+		return -1, false
+	}
+	end := int(start) + int(count)
+	for i := bestIdx + 1; i < end; i++ {
+		value, valid := valueAt(i)
+		if !valid {
+			return -1, false
+		}
+		if (highest && value.GreaterThan(best)) || (!highest && value.LessThan(best)) {
+			best = value
+			bestIdx = i
+		}
+	}
+	return int32(bestIdx), true
 }
 
 func builtinITickVolume(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -135,7 +163,10 @@ func resolveSeries(vm *VM, symArgIdx, tfArgIdx int, args []interp.Value) (sdk.Ba
 		return nil, false
 	}
 	sym := argS(args, symArgIdx)
-	tf := intToTF(argI(args, tfArgIdx))
+	tf, ok := resolveTF(vm, argI(args, tfArgIdx)) // VM-TIMESERIES-SEMANTICS-2
+	if !ok {
+		return nil, false
+	}
 	return resolveBarSeries(vm, sym, tf), true
 }
 
@@ -155,7 +186,7 @@ func copyBarData(args []interp.Value, series sdk.BarSeries, getVal func(sdk.BarS
 		absCount = -absCount
 	}
 	if absCount <= 0 || series == nil {
-		args[arrIdx].Array = args[arrIdx].Array[:0]
+		args[arrIdx].SetArrayData(args[arrIdx].ArrayData()[:0])
 		return 0
 	}
 	if startPos < 0 {
@@ -164,7 +195,7 @@ func copyBarData(args []interp.Value, series sdk.BarSeries, getVal func(sdk.BarS
 	if startPos+absCount > series.Len() {
 		absCount = series.Len() - startPos
 		if absCount <= 0 {
-			args[arrIdx].Array = args[arrIdx].Array[:0]
+			args[arrIdx].SetArrayData(args[arrIdx].ArrayData()[:0])
 			return 0
 		}
 	}
@@ -181,7 +212,7 @@ func copyBarData(args []interp.Value, series sdk.BarSeries, getVal func(sdk.BarS
 		}
 		result[i] = getVal(series, shift)
 	}
-	args[arrIdx].Array = result
+	args[arrIdx].SetArrayData(result)
 	return int32(absCount)
 }
 
@@ -248,7 +279,7 @@ func builtinCopyTime(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.IntVal(-1), nil
 	}
 	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
-		return interp.IntVal(int32(s.Time(shift)))
+		return interp.IntVal(int32(s.Time(shift) / 1000))
 	})
 	return interp.IntVal(n), nil
 }

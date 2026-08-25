@@ -17,6 +17,7 @@ func (vm *VM) push(v interp.Value) {
 
 func (vm *VM) pop() interp.Value {
 	if len(vm.stack) == 0 {
+		vm.setStackError("operand stack underflow at pc=%d", vm.pc)
 		return interp.NoneVal()
 	}
 	n := len(vm.stack)
@@ -32,8 +33,13 @@ func (vm *VM) pop2() (interp.Value, interp.Value) {
 }
 
 func (vm *VM) popN(n int) []interp.Value {
+	if n < 0 {
+		vm.setStackError("negative pop count %d at pc=%d", n, vm.pc)
+		return nil
+	}
 	if n > len(vm.stack) {
-		n = len(vm.stack)
+		vm.setStackError("operand stack underflow at pc=%d: need %d values, have %d", vm.pc, n, len(vm.stack))
+		return nil
 	}
 	start := len(vm.stack) - n
 	result := make([]interp.Value, n)
@@ -42,12 +48,29 @@ func (vm *VM) popN(n int) []interp.Value {
 	return result
 }
 
+func (vm *VM) setStackError(format string, args ...interface{}) {
+	if vm.stackError == "" {
+		vm.stackError = fmt.Sprintf(format, args...)
+	}
+}
+
+func (vm *VM) invalidateOrderCaches() {
+	vm.cachedPositions = nil
+	vm.cachedOrders = nil
+	vm.cachedHistory = nil
+	vm.positionsLoaded = false
+	vm.ordersLoaded = false
+	vm.historyLoaded = false
+	vm.currentPos = nil
+	vm.currentOrder = nil
+}
+
 // ── Arithmetic helpers ───────────────────────────────────────────────
 
 func (vm *VM) arith(a, b interp.Value, op string) interp.Value {
-	// String concatenation: "a" + "b" → "ab"
-	if op == "+" && a.Kind == interp.ValString && b.Kind == interp.ValString {
-		return interp.StringVal(a.Str + b.Str)
+	// MQL concatenates strings with values using their display form.
+	if op == "+" && (a.Kind == interp.ValString || b.Kind == interp.ValString) {
+		return interp.StringVal(a.ToString() + b.ToString())
 	}
 
 	// If either is decimal, use decimal arithmetic
@@ -63,10 +86,15 @@ func (vm *VM) arith(a, b interp.Value, op string) interp.Value {
 			return interp.DecimalVal(ad.Mul(bd))
 		case "/":
 			if bd.IsZero() {
+				vm.setStackError("division by zero")
 				return interp.DecimalVal(decimal.Zero)
 			}
 			return interp.DecimalVal(ad.Div(bd))
 		case "%":
+			if bd.IsZero() {
+				vm.setStackError("modulo by zero")
+				return interp.DecimalVal(decimal.Zero)
+			}
 			return interp.DecimalVal(ad.Mod(bd))
 		}
 	}
@@ -82,11 +110,13 @@ func (vm *VM) arith(a, b interp.Value, op string) interp.Value {
 		return interp.IntVal(ai * bi)
 	case "/":
 		if bi == 0 {
+			vm.setStackError("integer division by zero")
 			return interp.IntVal(0)
 		}
 		return interp.IntVal(ai / bi)
 	case "%":
 		if bi == 0 {
+			vm.setStackError("integer modulo by zero")
 			return interp.IntVal(0)
 		}
 		return interp.IntVal(ai % bi)
@@ -109,6 +139,7 @@ func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
 		ad := a.ToDecimal()
 		bd := b.ToDecimal()
 		if bd.IsZero() {
+			vm.setStackError("floor division by zero")
 			return interp.DecimalVal(decimal.Zero)
 		}
 		return interp.DecimalVal(ad.Div(bd).Floor())
@@ -117,6 +148,7 @@ func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
 	ai := a.ToInt()
 	bi := b.ToInt()
 	if bi == 0 {
+		vm.setStackError("integer floor division by zero")
 		return interp.IntVal(0)
 	}
 	q := ai / bi
@@ -128,6 +160,13 @@ func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
 }
 
 // ── Series access ────────────────────────────────────────────────────
+
+func (vm *VM) runtimeTimeMillis() int64 {
+	if vm.ctx == nil {
+		return 0
+	}
+	return vm.ctx.ServerTime()
+}
 
 func (vm *VM) getSeries(name string, shift int32) interp.Value {
 	if vm.ctx == nil || vm.ctx.Bars() == nil {
@@ -196,32 +235,47 @@ func isFatalUnimplemented(name string) bool {
 	}
 }
 
-func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
+func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) (interp.Value, error) {
 	id := BuiltinID(builtinID)
-	if int(id) >= len(builtinRegistry) {
-		vm.recordBlindSpot(fmt.Sprintf("builtin_%d", id))
-		return interp.NoneVal()
+	if builtinID < 0 || int(id) >= len(builtinRegistry) {
+		name := fmt.Sprintf("builtin_%d", id)
+		vm.recordBlindSpot(name)
+		return interp.NoneVal(), fmt.Errorf("invalid builtin id: %d", builtinID)
 	}
 	entry := builtinRegistry[id]
+	if sym, ok := interp.LookupAPI(entry.name); ok && sym.Status == interp.StatusUnsupported {
+		vm.recordBlindSpot(entry.name)
+		return interp.NoneVal(), fmt.Errorf("unsupported API %s: %s", entry.name, sym.Reason)
+	}
 	if entry.fn != nil {
 		result, err := entry.fn(vm, args)
 		if err != nil {
-			vm.recordBlindSpot(entry.name)
-			return interp.NoneVal()
+			return interp.NoneVal(), fmt.Errorf("builtin %s: %w", entry.name, err)
 		}
-		return result
+		// Defense-in-depth: if the handler set fatalError via recordBlindSpot
+		// (e.g. iADX MODE_PLUSDI), return an error immediately rather than
+		// relying on the caller to check fatalError after the call.
+		// This ensures fatal blind spots terminate at the current instruction
+		// regardless of which opcode invoked the builtin.
+		if vm.fatalError != "" {
+			return interp.NoneVal(), fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+		return result, nil
 	}
 	// No handler registered — classify severity via registry (Layer 0).
 	if isFatalUnimplemented(entry.name) {
 		vm.fatalError = fmt.Sprintf("unimplemented critical builtin: %s", entry.name)
 		vm.recordBlindSpot(entry.name)
-		return interp.NoneVal()
+		return interp.NoneVal(), fmt.Errorf("VM fatal: %s", vm.fatalError)
 	}
 	// Non-fatal: Object/Chart/File operations — silent blind spot
 	vm.recordBlindSpot(entry.name)
-	return interp.NoneVal()
+	return interp.NoneVal(), nil
 }
 
 func (vm *VM) recordBlindSpot(name string) {
 	vm.runtimeBlindSpots[name]++
+	if vm.fatalError == "" && interp.SeverityForBuiltin(name) == interp.SeverityFatal {
+		vm.fatalError = fmt.Sprintf("unimplemented critical builtin: %s", name)
+	}
 }

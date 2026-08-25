@@ -35,50 +35,11 @@
 
 **为什么**：重写取代查询，导致代码重复、设计退化、历史 bug 修复丢失、维护成本翻倍。
 
-## AI 协作工作方法（审计方 ↔ 施工方 — 强制）
+## AI 协作工作方法
 
-> 本文件是**项目宪法 + 单一完整源**，所有 AI 工具（Claude Code / Windsurf / Cursor / Codex）都以 CLAUDE.md 为准。`.windsurfrules`/`AGENTS.md` 是精简入口，不重复本文件，冲突以本文件为准。
+> 角色、职责、决策权和协作流程以 `AGENTS.md §0` 为唯一 SSOT；本文件仅保留项目技术约束。文件名 `CLAUDE.md` 为历史兼容入口，不代表 Claude 角色；任何历史工具规则与本节冲突时，以 `AGENTS.md §0` 为准。
 
-本项目用「审计方 + 施工方」分工（详细 SOP + 范例见 `docs/audits/builder-sop.md`）：
-
-- **审计方（Claude Code）**：只读、验证、记录、出 spec。代码级定位根因，把根因/位置/修复方向/验收标准写进 `docs/audits/tech-debt-registry.md`。**不直接改代码**（保持独立判断 + 省 token）。
-- **施工方（Windsurf / 其他 agent）**：实现修复 + 回填进度。不重新审计、不扩大范围（one task = one scope）、不自由发挥。
-- **施工提示词一句话铁律**：审计方必须先把根因、边界、不变量、施工要求、对抗测试与验收标准完整写入 `tech-debt-registry.md`（必要时按既有文档规则写入对应 block plan/spec，并由 registry 指向）；交给施工方的聊天提示词只能用一句话给出任务 ID + 必读文档入口（例如“施工 `LIVE-ORDER-REENTRY-1`，严格按 registry 最新返工要求执行，完成后回填并停在待复审，禁止部署/扩 scope”）。禁止在聊天中再次复制长篇施工计划，禁止让聊天记录成为文档之外的第二事实源。
-
-**三层文档不丢失**（所有进度只进这三层，❌ 禁止新建并行进度文档）：
-
-1. `docs/audits/tech-debt-registry.md` — 债务总账（每条 gap：根因/位置/状态/修复方向）。施工方工作台。
-2. `docs/audits/handover-audit-plan.md` — 审计全局进度（管线状态表 + 变更日志）。
-3. `memory/`（`open-items-registry.md` + `MEMORY.md`）— 高优摘要，Claude Code 跨会话自动注入。
-
-**无损接手铁律（完工标 ✅ 不删）**：三层的目的 = 任何一方（审计方/施工方/后续 agent）休息，另一方读三层即可完整恢复"做了什么 / 为什么 / 验过没"。故完工项**标 ✅ 保留行，永不删除**——registry ✅ 行带根因/修复/对抗证明保留、memory 指针完工项标 ✅ + 指向 docs（不删行）、handover 变更日志 append-only。删一条完工记录 = 接手方少一块拼图 = 有损；**删了还以为没做，比没做更糟**。详见 `docs/audits/builder-sop.md` §2.6。**🆕 2026-08-11 修订（用户批准，省 token）**：✅done **明细行**允许归档 git——registry/handover 文件只留状态行 + 最近 changelog + "靠 git 追溯"指针；**open/返工中条目 + 根因 + 对抗测试记录 + changelog 追加**仍必留文件内。历史明细追溯：`git log --oneline -- <file>`。**自动执行（同日起，用户要求机器强制不靠提醒）**：git pre-commit 钩子 `scripts/hooks/pre-commit`（`core.hooksPath` 已注册；新 clone 需 `git config core.hooksPath scripts/hooks`）强制——变更日志条目 / ✅ 行 / 状态行禁删，唯一例外 = 文件仍保留"靠 git 追溯"指针的文档化裁剪；**任何 agent（含施工方）提交违规即被拦**，被拦 = 改好文档再提交，禁 `--no-verify` 绕过；施工方入口 `.windsurfrules`/`AGENTS.md` 同列该条。
-
-**记忆分层**（多工具协作 — 强制）：
-
-- **项目知识**（规则/状态/经验/决策/用户协作偏好）→ **只进项目文档**（`CLAUDE.md` / `docs/`）。所有工具的单一共享源，进 git。
-- **私有 memory**（Claude Code `~/.claude`、Windsurf Cascade memory）→ **只放工具特定偏好 + 入口指针**，❌ 禁止存独立项目事实（否则跨工具信息孤岛 + 与项目文档漂移）。
-- **原则：与其"两份同步"（必漂移），不如"一次写对地方"**。项目知识进项目文档，私有 memory 不重复它。
-- 新会话状态感知：Claude Code 靠 `MEMORY.md` 指针；Windsurf/Cursor 靠 `.windsurfrules`/`AGENTS.md` 指引读 `docs/audits/handover-audit-plan.md`。入口不同，指向同一源。
-
-**状态语义**：`❓待核`=记录过未对账当前代码 / `🟦open`=已核验仍存在 / `✅done`=已修且经审计方验收。
-
-**完工回填纪律**（施工方，不做 = 任务判失败）：
-
-1. `tech-debt-registry.md` 条目状态 `🟦open → ✅done`（标日期）+ 追加**真实根因/修复方式/对抗证明/测试结果**。若真实根因与审计方假设不同，**如实写明**（高价值纠偏）。只改状态列 + 追加，不删条目、不改审计方事实陈述。
-2. 普遍 pitfall → 沉淀进本文件同类 Pitfalls 段（防再犯）。**沉淀时必须横扫 registry 所有同类前缀条目**（如修了 DATA-TRUTH-10，必须对账 DATA-TRUTH-1~9 的 pitfall 沉淀状态），不能只补最近一个——否则同类坑会随会话消失。2026-08-20 教训：第一轮只补了 DATA-TRUTH-10/LOG-UX-1，漏了 DATA-TRUTH-2~9，直到用户追问才发现。
-3. `handover-audit-plan.md` 变更日志加一行。
-4. **不自行宣告完成**——等审计方核对状态 + 实测。
-
-**对抗证明**（任何修复必带）：删掉修复的关键一行，测试必红。删了还绿 = 测试无效 = 未完成。
-
-**验收分离**：施工方不越权宣告完成；审计方核对状态 + 实测后，`✅done` 才权威。
-
-**审计方验收 5 维**（区分平庸与优秀；"build/test 绿"只是底线，不是优秀）：
-1. **意图理解**：解决 spec 背后真问题，还是字面 spec。
-2. **可演进性**（工程最关键）：加同类功能改几处？绑死结构 vs 为变化留口子。
-3. **测试质量**：验证"行为对"（含集成/边界/不变量语义），不是只跑路径。
-4. **防御性**：主动想会出错处（空/nil/极值/负数/混合）。
-5. **克制**：最简解，不炫技（过度设计）不偷懒（走捷径）。
+所有设计、施工、审计、验收、交接、状态和对抗证明均按 `AGENTS.md §0` 执行；当前实际状态 SSOT 为 `docs/audits/tech-debt-registry.md` 与 `docs/audits/handover-audit-plan.md`，不得自行创建同义的第二份状态或决策源。
 
 ## Codebase Navigation（功能块导航）
 
@@ -146,7 +107,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 ## Command Output Discipline (Token Efficiency)
 
-**优先级**: Claude Code 内置工具 > `rtk` 前缀 > 裸命令
+**优先级**: GPT-5.6 内置工具 > `rtk` 前缀 > 裸命令
 
 | 操作 | ✅ 首选 | ⚠️ 次选 | ❌ 禁止 |
 | ------ | -------- | -------- | -------- |
@@ -225,7 +186,7 @@ These constraints are enforced at implementation time. Violation = fix before co
 
 **部署验证 Pitfalls（QC-CACHE-LEAK/STALE-HTML-CACHE 2026-08-16 教训，两次翻车）**：
 
-1. **施工方回填 ✅done ≠ 已部署**——Windsurf 曾把修复写对并回填 ✅done，但从未 build + docker cp，用户线上一直是旧包。验收必须实测容器内资产：`docker exec alphaforge-frontend ls -la /usr/share/nginx/html/assets/`（看时间戳是否晚于修复 commit）+ 对比 index.html hash。
+1. **施工方回填 ✅done ≠ 已部署**——GLM-5.2 曾把修复写对并回填 ✅done，但从未 build + docker cp，用户线上一直是旧包。验收必须实测容器内资产：`docker exec alphaforge-frontend ls -la /usr/share/nginx/html/assets/`（看时间戳是否晚于修复 commit）+ 对比 index.html hash。
 2. **部署验证要到"入口响应头"层**——文件在容器里 ≠ 浏览器会拿新的。必查 `curl -sI http://localhost:8022/` 带 `Cache-Control: no-cache`。
 3. **nginx `try_files /index.html =404` 是就地吐文件**，绕过 `= /index.html` location 的响应头——要应用该块的头必须让 try_files **内部重定向**（`try_files /不存在的守卫路径 /index.html`）。同理：location 内任一 `add_header` 会丢失**全部** server 级继承头（含 CSP/HSTS），需整组重声明。
 

@@ -3,7 +3,6 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -11,11 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/emptypb"
 
-	antv1 "alphaforge/gen/proto/ant/v1"
 	antv1c "alphaforge/gen/proto/ant/v1/antv1connect"
-	"alphaforge/internal/ai"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mthub"
@@ -23,7 +19,6 @@ import (
 	"alphaforge/internal/pglisten"
 	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
-	"alphaforge/strategy/sdk"
 )
 
 // StrategyExecutionServer implements ant.v1c.StrategyRuntimeServiceHandler.
@@ -107,7 +102,41 @@ type StrategyExecutionServer struct {
 
 	// brokerCompanyLookup resolves accountID → mt_accounts.broker_company.
 	// Used by seedBarWindows to filter md_bars to the correct data source.
-	brokerCompanyLookup func(ctx context.Context, accountID string) string
+	// VM-API-TRUTH-3 round 4: returns (value, error) so DB query errors
+	// are distinguishable from real empty results.
+	brokerCompanyLookup func(ctx context.Context, accountID string) (string, error)
+
+	// accountLoginLookup resolves accountID → mt_accounts.login (int64).
+	// VM-TRADE-CONTEXT-6: used by buildLiveContext to inject Login into
+	// LiveStrategyContext so AccountNumber() works during OnInit.
+	// VM-API-TRUTH-3 round 4: returns (value, error) so DB query errors
+	// are distinguishable from real login=0.
+	accountLoginLookup func(ctx context.Context, accountID string) (int64, error)
+
+	// accountIsDemoLookup resolves accountID → mt_accounts.account_type == 'demo'.
+	// VM-API-TRUTH-3: used by buildLiveContext to inject IsDemo into
+	// LiveStrategyContext so IsDemo() reflects the real account type.
+	// VM-API-TRUTH-3 round 4: returns (value, error) so DB query errors
+	// are distinguishable from real false.
+	accountIsDemoLookup func(ctx context.Context, accountID string) (bool, error)
+
+	// accountConnectedLookup resolves accountID → mt_accounts.account_status == 'connected'.
+	// VM-API-TRUTH-3: used by buildLiveContext to inject IsConnected from the
+	// authoritative account_status column, not a hardcoded constant.
+	// VM-API-TRUTH-3 round 4: returns (value, error) so DB query errors
+	// are distinguishable from real false.
+	accountConnectedLookup func(ctx context.Context, accountID string) (bool, error)
+
+	// accountIsInvestorLookup resolves accountID → mt_accounts.is_investor.
+	// VM-API-TRUTH-3 round 4: Investor/read-only accounts cannot trade even
+	// when account_status == 'connected'. Used to gate IsTradeAllowed.
+	accountIsInvestorLookup func(ctx context.Context, accountID string) (bool, error)
+
+	// accountTradeAllowedLookup resolves accountID → whether trading is permitted.
+	// VM-API-TRUTH-3 round 4: returns (value, error). The caller (buildLiveContext)
+	// combines this with accountIsInvestorLookup — if either returns true for
+	// "cannot trade" or errors, IsTradeAllowed is false (fail-closed).
+	accountTradeAllowedLookup func(ctx context.Context, accountID string) (bool, error)
 }
 
 // QualityValidator validates backtest quality for marketplace publishing (read-only preview).
@@ -173,8 +202,45 @@ func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCac
 func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Context, scheduleID uuid.UUID) string) {
 	s.scheduleNameLookup = f
 }
-func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) string) {
+func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) (string, error)) {
 	s.brokerCompanyLookup = f
+}
+
+// SetAccountLoginLookup injects the accountID → login resolver.
+// VM-TRADE-CONTEXT-6: used by buildLiveContext to fill LiveStrategyContext.Login.
+// VM-API-TRUTH-3 round 4: returns (value, error) so DB errors propagate.
+func (s *StrategyExecutionServer) SetAccountLoginLookup(f func(ctx context.Context, accountID string) (int64, error)) {
+	s.accountLoginLookup = f
+}
+
+// SetAccountIsDemoLookup injects the accountID → isDemo resolver.
+// VM-API-TRUTH-3: used by buildLiveContext to fill LiveStrategyContext.IsDemo.
+// VM-API-TRUTH-3 round 4: returns (value, error) so DB errors propagate.
+func (s *StrategyExecutionServer) SetAccountIsDemoLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountIsDemoLookup = f
+}
+
+// SetAccountConnectedLookup injects the accountID → isConnected resolver.
+// VM-API-TRUTH-3: used by buildLiveContext to fill LiveStrategyContext.IsConnected
+// from the authoritative account_status column.
+// VM-API-TRUTH-3 round 4: returns (value, error) so DB errors propagate.
+func (s *StrategyExecutionServer) SetAccountConnectedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountConnectedLookup = f
+}
+
+// SetAccountIsInvestorLookup injects the accountID → isInvestor resolver.
+// VM-API-TRUTH-3 round 4: Investor/read-only accounts cannot trade even
+// when connected. Used to gate IsTradeAllowed.
+func (s *StrategyExecutionServer) SetAccountIsInvestorLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountIsInvestorLookup = f
+}
+
+// SetAccountTradeAllowedLookup injects the accountID → isTradeAllowed resolver.
+// VM-API-TRUTH-3: used by buildLiveContext to fill LiveStrategyContext.IsTradeAllowed.
+// VM-API-TRUTH-3 round 4: returns (value, error). buildLiveContext also checks
+// is_investor — investor accounts get IsTradeAllowed=false even if this returns true.
+func (s *StrategyExecutionServer) SetAccountTradeAllowedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountTradeAllowedLookup = f
 }
 
 // QuotaChecker provides subscription plan limit checks.
@@ -237,137 +303,4 @@ func userIDRequire(ctx context.Context) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
-	_, err := userIDRequire(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
-	if isGoStrategy(req.Msg.Code) {
-		return nil, connect.NewError(connect.CodeUnimplemented,
-			fmt.Errorf("go strategy execution has been retired — please convert your strategy to MQL"))
-	}
-
-	// MQL source requires bar data to produce signals — use StartBacktestRun or ExecuteLive.
-	if isMQLStrategy(req.Msg.Code) {
-		return nil, connect.NewError(connect.CodeInvalidArgument,
-			fmt.Errorf("MQL strategies require bar data — use StartBacktestRun or ExecuteLive"))
-	}
-
-	return connect.NewResponse(&antv1.ExecuteStrategyResponse{
-		Success: false,
-		Error:   "strategy execution not available",
-	}), nil
-}
-
-func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
-	_, err := userIDRequire(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	code := req.Msg.GetCode()
-	if code == "" {
-		return connect.NewResponse(&antv1.ValidateStrategyResponse{
-			Valid:  false,
-			Errors: []string{"code is empty"},
-		}), nil
-	}
-
-	hasSig, missing := ai.HasRequiredSignature(code)
-	var errors []string
-	if !hasSig {
-		errors = missing
-	}
-	warnings := ai.StructuralWarnings(code)
-
-	return connect.NewResponse(&antv1.ValidateStrategyResponse{
-		Valid:    len(errors) == 0,
-		Errors:   errors,
-		Warnings: warnings,
-	}), nil
-}
-
-func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
-	uid, err := userIDRequire(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Synchronous backtest is deprecated.
-	// Use StartBacktestRun for async execution via the Go-native backtest engine.
-	s.log.Debug("Backtest: deprecated sync endpoint called", zap.String("userID", uid.String()))
-	return connect.NewResponse(&antv1.BacktestStrategyResponse{
-		Success: false,
-		Error:   "use StartBacktestRun for async backtesting via the Go-native engine",
-	}), nil
-}
-
-func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetStrategyTemplatesResponse], error) {
-	return connect.NewResponse(&antv1.GetStrategyTemplatesResponse{Templates: builtinTemplates()}), nil
-}
-
-// ExecuteLive runs strategy code against a live bar stream.
-// Go-native path retired (GoExecutor removed); MQL path uses in-process Bytecode VM.
-func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
-	if _, err := userIDRequire(ctx); err != nil {
-		return nil, err
-	}
-
-	// Go-native compilation path: generated Go strategy via go run.
-	// GoExecutor removed (Gap 3). Go strategies must be converted to MQL for Bytecode VM.
-	if isGoStrategy(req.Msg.StrategyCode) {
-		return nil, connect.NewError(connect.CodeUnimplemented,
-			fmt.Errorf("go strategy live execution has been retired — please convert your strategy to MQL"))
-	}
-
-	// MQL path: in-process Bytecode VM execution.
-	if isMQLStrategy(req.Msg.StrategyCode) {
-		resp, err := s.executeVMLive(ctx, req.Msg)
-		if err != nil {
-			s.log.Warn("vm live execution failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("live execution failed: %w", err))
-		}
-		return connect.NewResponse(resp), nil
-	}
-
-	// Python path: in-process Bytecode VM execution (same VM, different compiler).
-	if sdk.IsPython(req.Msg.StrategyCode) {
-		resp, err := s.executePythonVMLive(ctx, req.Msg)
-		if err != nil {
-			s.log.Warn("vm python live execution failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("python live execution failed: %w", err))
-		}
-		return connect.NewResponse(resp), nil
-	}
-
-	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "live execution not available"}), nil
-}
-
-// toCamelCase converts a filename like "my_strategy" to "MyStrategy".
-func toCamelCase(s string) string {
-	parts := strings.Split(s, "_")
-	var b strings.Builder
-	for _, p := range parts {
-		if p == "" {
-			continue
-		}
-		b.WriteString(strings.ToUpper(p[:1]))
-		if len(p) > 1 {
-			b.WriteString(p[1:])
-		}
-	}
-	return b.String()
-}
-
 func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
-
-func isGoStrategy(code string) bool {
-	return sdk.IsGo(code)
-}
-
-// isMQLStrategy returns true if the code looks like MQL source (not Go, not Python).
-func isMQLStrategy(code string) bool {
-	return sdk.IsMQL(code)
-}

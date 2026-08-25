@@ -97,10 +97,10 @@ type BuiltinID uint16
 
 // Instruction is a single bytecode instruction.
 type Instruction struct {
-	Op    Opcode
-	A     int32  // generic operand (const ID, var ID, func ID, jump target, etc.)
-	B     int32  // second operand (for binary ops, arg count, etc.)
-	Line  uint32 // source line for debugging
+	Op   Opcode
+	A    int32  // generic operand (const ID, var ID, func ID, jump target, etc.)
+	B    int32  // second operand (for binary ops, arg count, etc.)
+	Line uint32 // source line for debugging
 }
 
 // ConstValue is a constant pool entry.
@@ -114,6 +114,10 @@ type ConstValue struct {
 
 // Bytecode is a compiled MQL strategy ready for VM execution.
 type Bytecode struct {
+	// SourceHash identifies the normalized source used to produce this bytecode.
+	// It is empty for callers that compile an IR directly rather than source.
+	SourceHash string
+
 	// Constant pool
 	Consts []ConstValue
 
@@ -133,14 +137,14 @@ type Bytecode struct {
 	Builtins map[string]BuiltinID
 
 	// Event entry points (instruction indices, -1 = not compiled)
-	OnInit              int32
-	OnBar               int32
-	OnTick              int32
-	OnTrade             int32
-	OnTimer             int32
-	OnDeinit            int32
-	OnTradeTransaction  int32
-	OnBookEvent         int32
+	OnInit             int32
+	OnBar              int32
+	OnTick             int32
+	OnTrade            int32
+	OnTimer            int32
+	OnDeinit           int32
+	OnTradeTransaction int32
+	OnBookEvent        int32
 
 	// EventLocals tracks the number of local variable slots needed per event handler.
 	// Key = entry PC, value = number of local slots.
@@ -149,11 +153,17 @@ type Bytecode struct {
 	// Parameters (extern/input declarations)
 	Params []interp.ParamDecl
 
-	// Version ("mql4" or "mql5")
+	// Version ("mql4", "mql5", or "python") — also serves as the language
+	// discriminator for cache validation (VM-CACHE-INTEGRITY-5).
 	Version string
 
 	// Enums (constant name → int value)
 	Enums map[string]int32
+
+	// ClassTypes tracks user-defined and builtin class/struct type names.
+	// Used by initGlobals to initialize struct globals as ValClass instances
+	// so that field assignments (state.field = x) execute correctly.
+	ClassTypes map[string]bool
 
 	// Coverage report (populated during compilation)
 	Coverage *CoverageReport
@@ -162,17 +172,17 @@ type Bytecode struct {
 // FuncEntry describes a user-defined function in the bytecode.
 type FuncEntry struct {
 	Name      string
-	EntryPC   int32   // instruction index of function body
-	NumParams int     // number of parameters
-	NumLocals int     // total local slots (params + locals)
+	EntryPC   int32    // instruction index of function body
+	NumParams int      // number of parameters
+	NumLocals int      // total local slots (params + locals)
 	ParamName []string // parameter names (for binding)
 }
 
 // CoverageReport tracks what MQL features were encountered during compilation.
 type CoverageReport struct {
-	SupportedNodes  []string // CST node types successfully compiled
+	SupportedNodes   []string // CST node types successfully compiled
 	UnsupportedNodes []string // CST node types that couldn't be compiled
-	BlindSpots      []string // functions called that have no implementation
+	BlindSpots       []string // functions called that have no implementation
 }
 
 func (r *CoverageReport) AddSupported(nodeType string) {

@@ -1,0 +1,280 @@
+package mql2go
+
+// builtinRegistry is the complete table of MQL builtins.
+// VM-CODE-HYGIENE-1: extracted from builtins.go for file-lines compliance.
+
+var builtinRegistryCore = []builtinEntry{
+	// Math functions
+	{"MathAbs", nil},
+	{"MathMax", nil},
+	{"MathMin", nil},
+	{"MathSqrt", nil},
+	{"MathPow", nil},
+	{"MathLog", nil},
+	{"MathRound", nil},
+	{"MathFloor", nil},
+	{"MathCeil", nil},
+	{"MathExp", nil},
+
+	// Platform functions
+	{"Print", nil},
+	{"Alert", nil},
+	{"Comment", nil},
+
+	// Market data
+	{"Close", nil},
+	{"Open", nil},
+	{"High", nil},
+	{"Low", nil},
+	{"Volume", nil},
+	{"Time", nil},
+	{"iClose", nil},
+	{"iOpen", nil},
+	{"iHigh", nil},
+	{"iLow", nil},
+	{"iVolume", nil},
+	{"iTime", nil},
+
+	// Price data
+	{"Bid", nil},
+	{"Ask", nil},
+	{"Point", nil},
+	{"Digits", nil},
+	{"Symbol", nil},
+	{"Period", nil},
+	{"Spread", nil},
+	// MQL5 predefined variable aliases (same handlers, wired in vm_builtin_impls.go)
+	{"_Point", nil},
+	{"_Symbol", nil},
+	{"_Digits", nil},
+	{"_Period", nil},
+	// Lowercase aliases (MQL4/MQL5 case-insensitive conventions)
+	{"bid", nil},
+	{"ask", nil},
+	{"point", nil},
+	{"digits", nil},
+	{"symbol", nil},
+
+	// Indicators (MQL4 + shared)
+	{"iMA", nil},
+	{"iRSI", nil},
+	{"iATR", nil},
+	{"iBands", nil},
+	{"iBollinger", nil},
+	{"iMACD", nil},
+	{"iStochastic", nil},
+	{"iCCI", nil},
+	{"iADX", nil},
+	{"iMomentum", nil},
+	{"iWPR", nil},
+	{"iMFI", nil},
+	{"iOBV", nil},
+	{"iSAR", nil},
+	{"iStdDev", nil},
+	{"iAlligator", nil},
+	{"iIchimoku", nil},
+	{"iEnvelopes", nil},
+	{"iDeMarker", nil},
+	{"iOsMA", nil},
+	{"iRVI", nil},
+	{"iForce", nil},
+	{"iFractals", nil},
+	{"iGator", nil},
+	{"iAC", nil},
+	{"iAD", nil},
+	{"iAO", nil},
+	{"iBearsPower", nil},
+	{"iBullsPower", nil},
+	{"iBWMFI", nil},
+
+	// MQL5-only indicators
+	{"iAMA", nil},
+	{"iDEMA", nil},
+	{"iTEMA", nil},
+	{"iFrAMA", nil},
+	{"iVIDyA", nil},
+	{"iTriX", nil},
+	{"iADXWilder", nil},
+	{"iChaikin", nil},
+	{"iVolumes", nil},
+
+	// *OnArray variants (compute on user-provided arrays)
+	{"iMAOnArray", nil},
+	{"iRSIOnArray", nil},
+	{"iATROnArray", nil},
+	{"iBandsOnArray", nil},
+	{"iStdDevOnArray", nil},
+	{"iMomentumOnArray", nil},
+	{"iCCIOnArray", nil},
+	{"iMACDOnArray", nil},
+
+	// Account functions
+	{"AccountBalance", nil},
+	{"AccountEquity", nil},
+	{"AccountFreeMargin", nil},
+	{"AccountMargin", nil},
+	{"AccountLeverage", nil},
+	{"AccountProfit", nil},
+	{"AccountCurrency", nil},
+	{"AccountCompany", nil},
+	{"AccountNumber", nil},
+	{"AccountStopoutLevel", nil},
+	{"AccountName", nil},
+	{"AccountServer", nil},
+	{"AccountFreeMarginCheck", nil},
+	{"AccountFreeMarginMode", nil},
+
+	// Symbol info
+	{"SymbolInfoDouble", nil},
+	{"SymbolInfoInteger", nil},
+	{"SymbolInfoString", nil},
+	{"MarketInfo", nil},
+
+	// String functions
+	{"StringFormat", nil},
+	{"StringFind", nil},
+	{"StringSubstr", nil},
+	{"StringLen", nil},
+	{"StringReplace", nil},
+	{"StringSplit", nil},
+	{"StringTrimLeft", nil},
+	{"StringTrimRight", nil},
+	{"StringConcatenate", nil},
+	{"StringToDouble", nil},
+
+	// MQL4 trade functions
+	{"OrderSend", nil},
+	{"OrderClose", nil},
+	{"OrderModify", nil},
+	{"OrderDelete", nil},
+	{"OrderCloseBy", nil},
+	{"OrderSelect", nil},
+	{"OrdersTotal", nil},
+	{"OrdersHistoryTotal", nil},
+	{"OrderStopLoss", nil},
+	{"OrderTakeProfit", nil},
+	{"OrderTicket", nil},
+	{"OrderType", nil},
+	{"OrderLots", nil},
+	{"OrderSymbol", nil},
+	{"OrderOpenPrice", nil},
+	{"OrderClosePrice", nil},
+	{"OrderProfit", nil},
+	{"OrderCommission", nil},
+	{"OrderSwap", nil},
+	{"OrderMagicNumber", nil},
+	{"OrderComment", nil},
+	{"OrderExpiration", nil},
+	{"OrderOpenTime", nil},
+	{"OrderCloseTime", nil},
+	{"OrderPrint", nil},
+
+	// MQL5 position functions
+	{"PositionsTotal", nil},
+	{"PositionGetTicket", nil},
+	{fnPositionGetDouble, nil},
+	{"PositionGetInteger", nil},
+	{"PositionGetString", nil},
+	{"PositionGetSymbol", nil},
+	{"PositionSelectByTicket", nil},
+	{"PositionClose", nil},
+	{"PositionModify", nil},
+
+	// MQL5 CTrade methods (registered as method builtins)
+	{"CTrade.Buy", nil},
+	{"CTrade.Sell", nil},
+	{"CTrade.BuyLimit", nil},
+	{"CTrade.SellLimit", nil},
+	{"CTrade.BuyStop", nil},
+	{"CTrade.SellStop", nil},
+	{"CTrade.PositionClose", nil},
+	{"CTrade.PositionClosePartial", nil},
+	{"CTrade.PositionCloseBy", nil},
+	{"CTrade.PositionModify", nil},
+	{"CTrade.OrderDelete", nil},
+	{"CTrade.SetExpertMagicNumber", nil},
+	{"CTrade.SetDeviationInPoints", nil},
+
+	// Python SDK convenience methods (mapped from ctx.broker.close_all etc.)
+	{"CloseAll", nil},
+
+	// Utility
+	{"NormalizeDouble", nil},
+	{"DoubleToString", nil},
+	{"DoubleToStr", nil},
+	{"IntegerToString", nil},
+	{"StringToInteger", nil},
+	{"StrToDouble", nil},
+	{"StrToInteger", nil},
+	{"TimeCurrent", nil},
+	{"TimeLocal", nil},
+	{"Sleep", nil},
+	{"EventSetTimer", nil},
+	{"EventKillTimer", nil},
+	{"EventSetMillisecondTimer", nil},
+
+	// Datetime functions
+	{"Day", nil},
+	{"DayOfWeek", nil},
+	{"Hour", nil},
+	{"Minute", nil},
+	{"Year", nil},
+	{"Month", nil},
+	{"StrToTime", nil},
+	{"TimeToStr", nil},
+
+	// Platform functions
+	{"RefreshRates", nil},
+	{"GetLastError", nil},
+	{"ResetLastError", nil},
+	{"ExpertRemove", nil},
+	{"IsTesting", nil},
+	{"IsOptimization", nil},
+	{"IsVisualMode", nil},
+
+	// Array functions
+	{"ArraySize", nil},
+	{"ArrayResize", nil},
+	{"ArrayCopy", nil},
+	{"ArraySetAsSeries", nil},
+	{"ArrayMaximum", nil},
+	{"ArrayMinimum", nil},
+	{"ArraySort", nil},
+	{"ArrayFree", nil},
+	{"ArrayInitialize", nil},
+	{"ArrayFill", nil},
+	{"ArrayRange", nil},
+	{"ArrayIsSeries", nil},
+
+	// Object/Chart (permanent blind spots — skip)
+	{"ObjectCreate", nil},
+	{"ObjectDelete", nil},
+	{"ObjectSet", nil},
+	{"ObjectGet", nil},
+	{"ObjectSetText", nil},
+	{"ObjectsTotal", nil},
+	{"ObjectFind", nil},
+	{"ObjectName", nil},
+	{"ObjectGetType", nil},
+	{"ChartApplyTemplate", nil},
+
+	// File operations (permanent blind spots — skip)
+	{"FileOpen", nil},
+	{"FileClose", nil},
+	{"FileWrite", nil},
+	{"FileRead", nil},
+	{"FileDelete", nil},
+	{"FileIsEnding", nil},
+	{"FileSeek", nil},
+	{"FileTell", nil},
+	{"FileFlush", nil},
+	{"FileSize", nil},
+}
+
+// builtinRegistry is the complete table of MQL builtins.
+// Core entries (math, platform, market, indicators, account, trade, utility,
+// datetime, array, object, file) are in builtinRegistryCore above.
+// Extended entries (MQL4/MQL5 complete lists) are in builtinRegistryExt
+// (builtins_registry_ext.go). The concatenation preserves the original
+// registration order so BuiltinID indices remain stable.
+var builtinRegistry = append(builtinRegistryCore, builtinRegistryExt...)

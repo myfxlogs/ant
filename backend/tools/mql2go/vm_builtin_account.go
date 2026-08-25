@@ -45,6 +45,23 @@ func builtinAccountLeverage(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(vm.ctx.Account().Leverage), nil
 }
 
+func builtinAccountCurrency(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.ctx == nil {
+		return interp.StringVal(""), nil
+	}
+	return interp.StringVal(vm.ctx.Account().Currency), nil
+}
+
+// builtinAccountCompany returns the broker company name from the
+// authoritative account context. VM-API-TRUTH-2: previously this was a
+// noop returning "" — a silent blind spot. Now reads from Account().Company.
+func builtinAccountCompany(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.ctx == nil {
+		return interp.StringVal(""), nil
+	}
+	return interp.StringVal(vm.ctx.Account().Company), nil
+}
+
 // ── Symbol info builtins ─────────────────────────────────────────────
 
 func builtinSymbolInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -190,7 +207,7 @@ func builtinStringFormat(vm *VM, args []interp.Value) (interp.Value, error) {
 
 func builtinArraySize(vm *VM, args []interp.Value) (interp.Value, error) {
 	if len(args) > 0 && args[0].Kind == interp.ValArray {
-		return interp.IntVal(int32(len(args[0].Array))), nil
+		return interp.IntVal(int32(len(args[0].ArrayData()))), nil
 	}
 	return interp.IntVal(0), nil
 }

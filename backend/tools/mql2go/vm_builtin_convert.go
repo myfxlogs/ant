@@ -3,7 +3,6 @@ package mql2go
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"alphaforge/tools/mql2go/interp"
 )
@@ -19,7 +18,7 @@ func builtinCharArrayToString(vm *VM, args []interp.Value) (interp.Value, error)
 	if len(args) < 1 || args[0].Kind != interp.ValArray {
 		return interp.StringVal(""), nil
 	}
-	arr := args[0].Array
+	arr := args[0].ArrayData()
 	start := 0
 	count := -1
 	if len(args) > 1 {
@@ -73,7 +72,7 @@ func builtinStringToCharArray(vm *VM, args []interp.Value) (interp.Value, error)
 	for i, c := range s {
 		arr[i] = interp.IntVal(c)
 	}
-	return interp.Value{Kind: interp.ValArray, Array: arr}, nil
+	return interp.ArrayVal(arr), nil
 }
 
 func builtinStringToShortArray(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -92,15 +91,5 @@ func builtinTimeToString(vm *VM, args []interp.Value) (interp.Value, error) {
 	if len(args) > 1 {
 		mode = argI(args, 1)
 	}
-	t := time.Unix(ts, 0).UTC()
-	switch mode {
-	case 1: // TIME_DATE
-		return interp.StringVal(t.Format("2006.01.02")), nil
-	case 2: // TIME_MINUTES
-		return interp.StringVal(t.Format("15:04")), nil
-	case 4: // TIME_SECONDS
-		return interp.StringVal(t.Format("15:04:05")), nil
-	default: // TIME_DATE|TIME_MINUTES
-		return interp.StringVal(t.Format("2006.01.02 15:04")), nil
-	}
+	return interp.StringVal(formatMQLTime(ts, mode)), nil
 }

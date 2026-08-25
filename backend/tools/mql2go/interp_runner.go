@@ -2,13 +2,42 @@ package mql2go
 
 import (
 	"fmt"
-	"strconv"
+	"sync"
 
-	"github.com/shopspring/decimal"
-
-	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go/interp"
 )
+
+// compilePythonWithCoverageFn is the coverage compiler function used by
+// CompilePythonCached. It defaults to CompilePythonWithCoverage but can be
+// overridden in tests via setCompilePythonWithCoverageFn to simulate failures.
+// VM-CACHE-INTEGRITY-5 round 4: test-injectable coverage failure for
+// adversarial proof. Mutex-protected to avoid race-prone global state.
+var (
+	compilePythonWithCoverageMu sync.Mutex
+	compilePythonWithCoverageFn = CompilePythonWithCoverage
+)
+
+// setCompilePythonWithCoverageFn sets the coverage compiler function for testing.
+// Returns a restore function. Test-only — not for production use.
+func setCompilePythonWithCoverageFn(fn func(string) (*VMRunner, *CoverageResult, error)) func() {
+	compilePythonWithCoverageMu.Lock()
+	orig := compilePythonWithCoverageFn
+	compilePythonWithCoverageFn = fn
+	compilePythonWithCoverageMu.Unlock()
+	return func() {
+		compilePythonWithCoverageMu.Lock()
+		compilePythonWithCoverageFn = orig
+		compilePythonWithCoverageMu.Unlock()
+	}
+}
+
+// callCompilePythonWithCoverage calls the current coverage compiler function.
+func callCompilePythonWithCoverage(source string) (*VMRunner, *CoverageResult, error) {
+	compilePythonWithCoverageMu.Lock()
+	fn := compilePythonWithCoverageFn
+	compilePythonWithCoverageMu.Unlock()
+	return fn(source)
+}
 
 // VMRunner wraps a Bytecode VM to implement sdk.Strategy.
 // This is the in-process execution entrypoint that replaces the WASM harness.
@@ -56,10 +85,12 @@ func CompileMQLFromBytecode(data []byte) (*VMRunner, error) {
 func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
 	if len(cachedBytecode) > 0 {
 		r, e := CompileMQLFromBytecode(cachedBytecode)
-		if e == nil {
+		// VM-CACHE-INTEGRITY-5: verify SourceHash AND language (Version must
+		// be "mql4" or "mql5", not "python") before accepting cached bytecode.
+		if e == nil && r.Bytecode().SourceHash == hashSource(source) && isMQLVersion(r.Bytecode().Version) {
 			return r, cachedBytecode, nil
 		}
-		// Cache corrupted — fall through to recompile
+		// Cache corrupted, compiled from different source, or wrong language — recompile.
 	}
 	r, err := CompileMQL(source)
 	if err != nil {
@@ -68,7 +99,56 @@ func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, b
 	bc := r.Bytecode()
 	data, mErr := MarshalBytecode(bc)
 	if mErr != nil {
-		return r, nil, nil
+		return nil, nil, fmt.Errorf("marshal freshly compiled bytecode: %w", mErr)
+	}
+	return r, data, nil
+}
+
+// isMQLVersion returns true if the version indicates MQL (not Python).
+// VM-CACHE-INTEGRITY-5: prevents Python bytecode from being used as MQL cache.
+func isMQLVersion(v string) bool {
+	return v == "mql4" || v == "mql5"
+}
+
+// CompilePythonCached mirrors CompileMQLCached for the Python subset path.
+// It verifies the cached bytecode's SourceHash AND language (Version == "python")
+// against the current source, falls back to full compilation on mismatch/corruption,
+// and returns the serialized bytecode for caller-side caching.
+// VM-CACHE-INTEGRITY-2: SourceHash verification.
+// VM-CACHE-INTEGRITY-5: language (Version) verification + CoverageResult restore.
+func CompilePythonCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
+	if len(cachedBytecode) > 0 {
+		r, e := CompileMQLFromBytecode(cachedBytecode)
+		// VM-CACHE-INTEGRITY-5: verify SourceHash AND language (Version == "python").
+		if e == nil && r.Bytecode().SourceHash == hashSource(source) && r.Bytecode().Version == "python" {
+			// VM-CACHE-INTEGRITY-5: restore CoverageResult on cache hit.
+			// Bytecode cache omits coverage data; recompile from source
+			// to restore severity-aware blind spots and Defense A data.
+			// If recompilation fails, return error — do NOT return a cache
+			// runner without coverage (would be a silent degradation).
+			if r.GetCoverageResult() == nil && source != "" {
+				covRunner, cov, covErr := callCompilePythonWithCoverage(source)
+				if covErr != nil {
+					return nil, nil, fmt.Errorf("restore coverage from source: %w", covErr)
+				}
+				if cov == nil {
+					return nil, nil, fmt.Errorf("restore coverage from source: CoverageResult is nil")
+				}
+				r.InjectCoverage(covRunner.GetCoverage())
+				r.InjectCoverageResult(cov)
+			}
+			return r, cachedBytecode, nil
+		}
+		// Cache corrupted, compiled from different source, or wrong language — recompile.
+	}
+	r, err := CompilePython(source)
+	if err != nil {
+		return nil, nil, err
+	}
+	bc := r.Bytecode()
+	data, mErr := MarshalBytecode(bc)
+	if mErr != nil {
+		return nil, nil, fmt.Errorf("marshal freshly compiled Python bytecode: %w", mErr)
 	}
 	return r, data, nil
 }
@@ -91,7 +171,11 @@ func CompilePython(source string) (runner *VMRunner, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
-	return NewVMRunner(bc), nil
+	bc.SourceHash = hashSource(source)
+	runner = NewVMRunner(bc)
+	runner.coverageResult = AnalyzeCoverage(ir, bc)
+	runner.defenseAViolations = runner.coverageResult.DefenseAViolations
+	return runner, nil
 }
 
 // CompilePythonWithCoverage compiles Python subset source and returns both the runner
@@ -113,8 +197,10 @@ func CompilePythonWithCoverage(source string) (r *VMRunner, cov *CoverageResult,
 		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
 	coverage := AnalyzeCoverage(ir, bc)
+	bc.SourceHash = hashSource(source)
 	runner := NewVMRunner(bc)
 	runner.defenseAViolations = coverage.DefenseAViolations
+	runner.coverageResult = coverage
 	return runner, coverage, nil
 }
 
@@ -139,7 +225,11 @@ func CompileMQL(source string) (runner *VMRunner, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
-	return NewVMRunner(bc), nil
+	bc.SourceHash = hashSource(source)
+	runner = NewVMRunner(bc)
+	runner.coverageResult = AnalyzeCoverage(ir, bc)
+	runner.defenseAViolations = runner.coverageResult.DefenseAViolations
+	return runner, nil
 }
 
 // CompileMQLWithCoverage compiles MQL source and returns both the runner
@@ -163,6 +253,7 @@ func CompileMQLWithCoverage(source string) (r *VMRunner, cov *CoverageResult, er
 		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
 	coverage := AnalyzeCoverage(ir, bc)
+	bc.SourceHash = hashSource(source)
 	runner := NewVMRunner(bc)
 	runner.defenseAViolations = coverage.DefenseAViolations
 	runner.coverageResult = coverage
@@ -199,241 +290,3 @@ func safeRun(fn func() error) (err error) {
 }
 
 // OnInit implements sdk.Strategy.
-func (r *VMRunner) OnInit(ctx sdk.Context) error {
-	r.vm.SetContext(ctx)
-
-	// Inject extern/input parameters from SDK context into VM globals
-	r.injectParams(ctx)
-
-	// Run OnInit bytecode
-	return safeRun(func() error { return r.vm.RunOnInit(ctx.GoContext()) })
-}
-
-// OnBar implements sdk.Strategy.
-// In live (signalMode=true) the VM builds a pending signal from Order* builtins;
-// the runner returns it for server-side dispatch. In backtest (signalMode=false)
-// the VM executes through ctx.Broker() and returns nil so the engine does not
-// double-dispatch.
-func (r *VMRunner) OnBar(ctx sdk.Context, timeframe string) (*sdk.Signal, error) {
-	r.vm.SetContext(ctx)
-
-	if err := safeRun(func() error { return r.vm.RunOnBar(ctx.GoContext()) }); err != nil {
-		return nil, fmt.Errorf("VM OnBar: %w", err)
-	}
-
-	return r.vm.Signal(), nil
-}
-
-// OnTick implements sdk.TickStrategy (optional).
-// Only executes OnTick bytecode — does NOT fallback to OnBar.
-// The engine checks for TickStrategy and calls OnTick; if the EA
-// only has OnBar, the engine's else-branch calls OnBar directly.
-func (r *VMRunner) OnTick(ctx sdk.Context, bid, ask decimal.Decimal) (*sdk.Signal, error) {
-	r.vm.SetContext(ctx)
-
-	if r.vm.bc.OnTick >= 0 {
-		if err := safeRun(func() error { return r.vm.RunOnTick(ctx.GoContext()) }); err != nil {
-			return nil, fmt.Errorf("VM OnTick: %w", err)
-		}
-	}
-
-	return r.vm.Signal(), nil
-}
-
-// HasOnTick implements sdk.TickCapable — returns true if the EA has OnTick bytecode.
-func (r *VMRunner) HasOnTick() bool {
-	return r.vm.bc.OnTick >= 0
-}
-
-// OnTrade implements sdk.TradeStrategy (optional).
-func (r *VMRunner) OnTrade(ctx sdk.Context, event sdk.TradeEvent) (*sdk.Signal, error) {
-	r.vm.SetContext(ctx)
-
-	if err := safeRun(func() error { return r.vm.RunOnTrade(ctx.GoContext()) }); err != nil {
-		return nil, fmt.Errorf("VM OnTrade: %w", err)
-	}
-
-	return r.vm.Signal(), nil
-}
-
-// OnTradeTransaction implements sdk.TradeTransactionStrategy (optional, MQL5).
-func (r *VMRunner) OnTradeTransaction(ctx sdk.Context) (*sdk.Signal, error) {
-	r.vm.SetContext(ctx)
-
-	if err := safeRun(func() error { return r.vm.RunOnTradeTransaction(ctx.GoContext()) }); err != nil {
-		return nil, fmt.Errorf("VM OnTradeTransaction: %w", err)
-	}
-
-	return r.vm.Signal(), nil
-}
-
-// OnBookEvent implements sdk.BookEventStrategy (optional, MQL5).
-func (r *VMRunner) OnBookEvent(ctx sdk.Context) (*sdk.Signal, error) {
-	r.vm.SetContext(ctx)
-
-	if err := safeRun(func() error { return r.vm.RunOnBookEvent(ctx.GoContext()) }); err != nil {
-		return nil, fmt.Errorf("VM OnBookEvent: %w", err)
-	}
-
-	return r.vm.Signal(), nil
-}
-
-// HasOnTradeTransaction returns true if the EA has OnTradeTransaction bytecode.
-func (r *VMRunner) HasOnTradeTransaction() bool {
-	return r.vm.bc.OnTradeTransaction >= 0
-}
-
-// SetSignalMode enables signal-only mode for live execution.
-func (r *VMRunner) SetSignalMode(enabled bool) {
-	r.vm.SetSignalMode(enabled)
-}
-
-// HasOnBookEvent returns true if the EA has OnBookEvent bytecode.
-func (r *VMRunner) HasOnBookEvent() bool {
-	return r.vm.bc.OnBookEvent >= 0
-}
-
-// OnDeinit implements sdk.Strategy.
-func (r *VMRunner) OnDeinit(ctx sdk.Context, reason string) error {
-	r.vm.SetContext(ctx)
-	return safeRun(func() error { return r.vm.RunOnDeinit(ctx.GoContext()) })
-}
-
-// OnTimer implements sdk.TimerStrategy (optional).
-func (r *VMRunner) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
-	r.vm.SetContext(ctx)
-
-	if err := safeRun(func() error { return r.vm.RunOnTimer(ctx.GoContext()) }); err != nil {
-		return nil, fmt.Errorf("VM OnTimer: %w", err)
-	}
-
-	return r.vm.Signal(), nil
-}
-
-// GetRuntimeBlindSpots returns blind spots encountered during VM execution.
-func (r *VMRunner) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
-	return r.vm.GetRuntimeBlindSpots()
-}
-
-// GetCoverage returns the compile-time coverage report.
-func (r *VMRunner) GetCoverage() *CoverageReport {
-	return r.bc.Coverage
-}
-
-// GetCoverageResult returns the full coverage analysis result with
-// pre-classified blind spots (severity-tagged). Used by buildBacktestResponse
-// to check for fatal blind spots (MQL-HONESTY-3).
-func (r *VMRunner) GetCoverageResult() *CoverageResult {
-	return r.coverageResult
-}
-
-// InjectCoverage sets the compile-time coverage report on the runner.
-// Used when bytecode was loaded from cache (which omits coverage) and
-// coverage is recovered by recompiling from source.
-func (r *VMRunner) InjectCoverage(cov *CoverageReport) {
-	r.bc.Coverage = cov
-}
-
-// GetDefenseAViolations returns post-parse validation failures (ADR-0028 §4.1).
-func (r *VMRunner) GetDefenseAViolations() []interp.DefenseAViolation {
-	return r.defenseAViolations
-}
-
-// InjectDefenseAViolations sets Defense A violations on the runner.
-// Used when bytecode was loaded from cache and violations are recovered by recompiling.
-func (r *VMRunner) InjectDefenseAViolations(violations []interp.DefenseAViolation) {
-	r.defenseAViolations = violations
-}
-
-// Bytecode returns the compiled bytecode. Callers can use this for
-// parameter extraction without recompiling.
-func (r *VMRunner) Bytecode() *Bytecode {
-	return r.bc
-}
-
-// GetGlobal returns the current value of a global variable by name.
-// Used by D3 differential tests to extract indicator values computed by MQL EAs.
-func (r *VMRunner) GetGlobal(name string) (interp.Value, bool) {
-	slot, ok := r.bc.GlobalSlots[name]
-	if !ok || int(slot) >= len(r.vm.globals) {
-		return interp.Value{}, false
-	}
-	return r.vm.globals[slot], true
-}
-
-// LastIndicators returns the indicator values captured during the last event execution.
-// The map is populated by recordDiag calls in indicator builtins (shift==0 only).
-// Returns nil if no indicators were recorded. The caller must not modify the returned map.
-func (r *VMRunner) LastIndicators() map[string]decimal.Decimal {
-	return r.vm.lastIndicators
-}
-
-// OrdersTotal returns the last OrdersTotal value seen by the VM's builtinOrdersTotal.
-// This is the VM internal cached value (R3: not from the event loop), which reflects
-// the actual position+order count at the time of the last OnBar/OnTick execution.
-func (r *VMRunner) OrdersTotal() int {
-	if r.vm.cachedPositions == nil && r.vm.cachedOrders == nil {
-		return 0
-	}
-	return len(r.vm.cachedPositions) + len(r.vm.cachedOrders)
-}
-
-// injectParams reads extern/input parameters from the SDK context and
-// writes them into the VM's global variable slots.
-func (r *VMRunner) injectParams(ctx sdk.Context) {
-	if r.vm.globals == nil {
-		r.vm.initGlobals()
-	}
-
-	for _, p := range r.bc.Params {
-		slot, ok := r.bc.GlobalSlots[p.Name]
-		if !ok {
-			continue
-		}
-
-		var val interp.Value
-		switch p.Type {
-		case "int", "long":
-			var def int
-			if p.Default != nil {
-				def, _ = strconv.Atoi(interp.EvalExprLiteral(p.Default))
-			}
-			val = interp.IntVal(int32(ctx.ParamInt(p.Name, def)))
-
-		case "double", nodeFloat:
-			var def decimal.Decimal
-			if p.Default != nil {
-				if d, err := decimal.NewFromString(interp.EvalExprLiteral(p.Default)); err == nil {
-					def = d
-				}
-			}
-			val = interp.DecimalVal(ctx.ParamDecimal(p.Name, def))
-
-		case nodeString:
-			var def string
-			if p.Default != nil {
-				def = interp.EvalExprLiteral(p.Default)
-			}
-			val = interp.StringVal(ctx.ParamString(p.Name, def))
-
-		case "bool":
-			var def bool
-			if p.Default != nil {
-				def = interp.EvalExprLiteral(p.Default) == "true"
-			}
-			val = interp.BoolVal(ctx.ParamBool(p.Name, def))
-
-		default:
-			// Enum types — treat as int
-			var def int
-			if p.Default != nil {
-				def, _ = strconv.Atoi(interp.EvalExprLiteral(p.Default))
-			}
-			val = interp.IntVal(int32(ctx.ParamInt(p.Name, def)))
-		}
-
-		if int(slot) < len(r.vm.globals) {
-			r.vm.globals[slot] = val
-		}
-	}
-}

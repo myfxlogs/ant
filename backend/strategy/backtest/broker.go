@@ -79,6 +79,21 @@ func (b *SimBroker) recordTrade(rec *OrderRecord) {
 // ── Order execution ────────────────────────────────────────────────
 
 func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
+	if !req.Volume.IsPositive() {
+		return sdk.OrderResult{RetCode: sdk.RetInvalidVolume}, fmt.Errorf("volume must be positive")
+	}
+	if b.config.Leverage <= 0 {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("leverage must be positive")
+	}
+	if req.Side != sdk.SideBuy && req.Side != sdk.SideSell {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("invalid order side %d", req.Side)
+	}
+	if req.Type == sdk.OrderStopLimit {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("stop-limit orders are not supported by the backtest broker")
+	}
+	if req.Type != sdk.OrderMarket && req.Type != sdk.OrderLimit && req.Type != sdk.OrderStop {
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("invalid order type %d", req.Type)
+	}
 	b.ticketSeq++
 	ticket := b.ticketSeq
 
@@ -130,8 +145,6 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 	// to fill time in checkPendingOrders (real MT4 semantics: pending orders don't
 	// incur commission or margin until they fill).
 	if req.Type == sdk.OrderMarket {
-		b.applyCommission(rec)
-
 		contractSize := b.config.ContractSize
 		if contractSize.IsZero() {
 			contractSize = decimal.NewFromInt(100000)
@@ -142,6 +155,7 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		if equityWithFloating.LessThan(margin) {
 			return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
 		}
+		b.applyCommission(rec)
 		b.positions = append(b.positions, rec)
 	} else {
 		rec.State = OrderPending
@@ -159,6 +173,9 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.OrderResult, error) {
 	for i, pos := range b.positions {
 		if pos.Ticket == ticket {
+			if volume.IsNegative() || volume.GreaterThan(pos.Volume) {
+				return sdk.OrderResult{RetCode: sdk.RetInvalidVolume}, fmt.Errorf("invalid close volume %s for position volume %s", volume, pos.Volume)
+			}
 			closeVol := volume
 			if closeVol.IsZero() || closeVol.Equal(pos.Volume) {
 				closeVol = pos.Volume
@@ -348,7 +365,7 @@ func (b *SimBroker) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.Or
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 		}
 	}
-	return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+	return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("ticket %d not found", ticket)
 }
 
 // PositionModifyPrice changes the entry price of a pending order.
@@ -360,7 +377,7 @@ func (b *SimBroker) PositionModifyPrice(ticket int64, price decimal.Decimal) (sd
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 		}
 	}
-	return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+	return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("ticket %d not found", ticket)
 }
 
 func (b *SimBroker) OrderDelete(ticket int64) (sdk.OrderResult, error) {
@@ -372,15 +389,35 @@ func (b *SimBroker) OrderDelete(ticket int64) (sdk.OrderResult, error) {
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 		}
 	}
-	return sdk.OrderResult{RetCode: sdk.RetRejected}, nil
+	return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("ticket %d not found", ticket)
 }
 
 // ── Query ──────────────────────────────────────────────────────────
+
+func (b *SimBroker) floatingProfit(pos *OrderRecord) decimal.Decimal {
+	closePrice := b.currentPrice
+	if closePrice.IsZero() {
+		closePrice = pos.Price
+	}
+	contractSize := b.config.ContractSize
+	if contractSize.IsZero() {
+		contractSize = decimal.NewFromInt(100000)
+	}
+	profit := closePrice.Sub(pos.Price).Mul(pos.Volume).Mul(contractSize)
+	if pos.Side == sdk.SideSell {
+		profit = profit.Neg()
+	}
+	return profit
+}
 
 func (b *SimBroker) Positions(magic int32) []sdk.Position {
 	var out []sdk.Position
 	for _, p := range b.positions {
 		if magic == 0 || p.Magic == magic {
+			profit := p.Profit
+			if p.State == OrderOpen {
+				profit = b.floatingProfit(p)
+			}
 			out = append(out, sdk.Position{
 				Ticket:     p.Ticket,
 				Symbol:     p.Symbol,
@@ -389,7 +426,7 @@ func (b *SimBroker) Positions(magic int32) []sdk.Position {
 				OpenPrice:  p.Price,
 				StopLoss:   p.StopLoss,
 				TakeProfit: p.TakeProfit,
-				Profit:     p.Profit,
+				Profit:     profit,
 				Swap:       p.Swap,
 				Commission: p.Commission,
 				Comment:    p.Comment,
@@ -652,11 +689,14 @@ func (b *SimBroker) Account() sdk.AccountInfo {
 	// equity = balance + floating P&L (commission already deducted from balance at open)
 	equity := b.balance.Add(floatingProfit)
 	return sdk.AccountInfo{
-		Balance:    b.balance,
-		Equity:     equity,
-		Margin:     marginUsed,
-		FreeMargin: equity.Sub(marginUsed),
-		Leverage:   b.config.Leverage,
-		Currency:   "USD",
+		Balance:        b.balance,
+		Equity:         equity,
+		Margin:         marginUsed,
+		FreeMargin:     equity.Sub(marginUsed),
+		Leverage:       b.config.Leverage,
+		Currency:       "USD",
+		IsDemo:         true, // VM-API-TRUTH-3: backtest = simulated
+		IsConnected:    true, // VM-API-TRUTH-3: backtest = always connected
+		IsTradeAllowed: true, // VM-API-TRUTH-3: backtest = always allowed
 	}
 }
