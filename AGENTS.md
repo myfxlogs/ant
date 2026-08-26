@@ -93,7 +93,7 @@
 
 ## 7. 门禁与提交纪律
 
-- **7.1** `git config core.hooksPath scripts/hooks`；禁 `--no-verify`。
+- **7.1** 首次克隆/新工作副本执行 `bash scripts/setup-hooks.sh` 启用 pre-commit 门禁（`core.hooksPath` 不随 push 传播）；禁 `--no-verify`。
 - **7.2** pre-commit 全过；diff 通读无死代码/TODO/调试残留。
 - **7.3 自审 A–F**：A 架构（复用已有、无逆向依赖）B 实现（第一性·最简）C 洁净（含 check-lines 零警告）D 正确性（边界/nil/竞态）E 合规 F 文档/状态同步；独立重跑 build、gofmt、vet、test、race×3、必要 DSN 及部署后运行时证据。
 - **7.4 root-cause-first**：功能消失/退化 → 先查 git log + blame，理解原设计意图，再动手。禁止凭"我觉得更好"重写。
