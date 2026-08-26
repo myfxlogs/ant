@@ -1,5 +1,9 @@
 # AlphaForge Devin Project Rules
 
+## 职责来源
+
+Devin CLI 角色与职责汇总见 `.devin/角色与职责.md`（指南性汇总，冲突时以 AGENTS.md §0 为准）。本文件只补充 Devin 专属纪律。
+
 ## Source of truth
 
 - `AGENTS.md` is the contract SSOT (唯一真相源); `CLAUDE.md` / `.windsurfrules` are entry shells that load `@AGENTS.md`.
