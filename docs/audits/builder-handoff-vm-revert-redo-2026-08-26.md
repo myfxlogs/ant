@@ -95,7 +95,7 @@ func hashSource(source string) string {
 **目标**：marshal 失败返回 error 而非 `return r, nil, nil`。
 
 **精确坐标**：
-- 文件：`backend/tools/mql2go/interp_runner.go:50`（当前 `return r, nil, nil`）
+- 文件：`backend/tools/mql2go/interp_runner.go:71`（当前 `return r, nil, nil`）
 - 落点：改为 `return nil, nil, fmt.Errorf("marshal bytecode: %w", mErr)`
 
 **对抗证明**：
@@ -119,27 +119,31 @@ func hashSource(source string) string {
 - 文件：`backend/internal/connect/strategy/backtest_worker_python.go:30`
 - 当前代码：`if r, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {`
 - 落点：改为 `if r, bcData, err := mql2go.CompilePythonCached(params.code, cachedBytecode); err == nil {`
-- cache hit 时通过 `CompilePythonWithCoverage` + `InjectCoverageResult` 恢复 coverage（镜像 `backtest_worker_vm.go:43`）
+- cache hit 时通过 `CompilePythonWithCoverage` + `InjectCoverage` + `InjectDefenseAViolations` 恢复 coverage（镜像 `backtest_worker_vm.go:43-49` 的模式）
+- 方法名已确认：`InjectCoverage`（`interp_runner.go:333`）、`InjectDefenseAViolations`（`interp_runner.go:344`）——注意不是 `InjectCoverageResult`
 
 ### S8 — MarshalBytecode/UnmarshalBytecode 序列化 SourceHash
 
 **目标**：SourceHash 字段参与序列化/反序列化。
 
 **精确坐标**：
-- `MarshalBytecode`（`bytecode_cache.go:42`）：在 Version 写入后加 SourceHash 写入
-- `UnmarshalBytecode`（`bytecode_cache.go:138`）：在 Version 读取后加 SourceHash 读取
+- `MarshalBytecode`（`bytecode_cache.go:42`）：Version 写入在 `:125`（`w.writeString(bc.Version)`）→ 在其后加 `w.writeString(bc.SourceHash)`
+- `UnmarshalBytecode`（`bytecode_cache.go:138`）：Version 读取在 `:196`（`if bc.Version, err = r.readString(); err != nil {`）→ 在其后加 SourceHash 读取
+- **顺序一致性**：Marshal 先 Version 后 SourceHash，Unmarshal 必须相同顺序
 
 ### S9 — unmarshal map 函数加 duplicate key 检测
 
 **目标**：5 个 unmarshal map 函数检测 duplicate key，返回 error 而非静默覆盖。
 
-**精确坐标**：
-- `unmarshalGlobalSlots`（`bytecode_cache.go:266`）
-- `unmarshalFuncs`（`bytecode_cache.go:314`）
-- `unmarshalBuiltins`（`bytecode_cache.go:358`）
-- `unmarshalEnums`（`bytecode_cache.go:439`）
-- `unmarshalEventLocals`（`bytecode_cache.go:407`）
-- 每个函数的 map 插入处加 `if _, exists := m[key]; exists { return nil, fmt.Errorf("duplicate key: %s", key) }`
+**精确坐标**（两种返回签名，分别处理）：
+- 返回 `(map[K]V, error)` 的函数（插入 `m[key] = v` 处加 duplicate 检测）：
+  - `unmarshalGlobalSlots`（`bytecode_cache.go:266`）
+  - `unmarshalFuncs`（`bytecode_cache.go:314`）
+  - `unmarshalBuiltins`（`bytecode_cache.go:358`）
+  - `unmarshalEnums`（`bytecode_cache.go:439`）
+- 返回 `error` 的函数（直接写入 `bc.EventLocals[pc] = int(count)` 处加 duplicate 检测）：
+  - `unmarshalEventLocals`（`bytecode_cache.go:407`）——签名 `func(r *bytecodeReader, bc *Bytecode) error`，写入 `bc.EventLocals[pc]`
+- 每个函数的 map 插入处加 `if _, exists := m[key]; exists { return nil, fmt.Errorf("duplicate key: %s", key) }`（EventLocals 用 `return fmt.Errorf(...)`）
 
 **对抗证明**：
 - 构造 little-endian 重复 key 的 enums section → `unmarshalEnums` 返回 error → GREEN
@@ -168,7 +172,7 @@ func hashSource(source string) string {
    - `go vet ./...`
    - `go run ./tools/check-file-lines --strict`（0 errors）
    - `git diff --check`
-3. **file-lines**：新增文件不超限（300/450 红线）；`bytecode_cache.go` 当前 562 行，加 SourceHash 序列化可能超 450 → 如超限先拆分
+3. **file-lines**：`check-file-lines --strict` 只检查 `backend/internal`/`backend/cmd`/`frontend/src`/`proto`/`scripts`（不检查 `tools/`）。但 AGENTS.md §4 的 450 行规范仍适用——`bytecode_cache.go` 当前 562 行（pre-existing 超限），加 SourceHash 序列化（~10 行）后如进一步膨胀，施工方应考虑拆分 unmarshal 函数到独立文件。`backtest_worker_python.go` 在 `internal/` 范围内，如新增 coverage 恢复代码导致超限需拆分。
 4. **复用核对**：`bash scripts/cap.sh hashSource` / `cap.sh SourceHash` / `cap.sh CompilePythonCached`
 
 ### 第一批红队自审（施工方完工前必答）
@@ -177,7 +181,7 @@ func hashSource(source string) string {
 2. `CompilePythonCached` 的 coverage 恢复路径是否镜像 `backtest_worker_vm.go:43`？
 3. 5 个 unmarshal map 函数的 duplicate key 检测是否覆盖所有 map 插入点？
 4. trailing bytes 检查在所有 early return 路径之后？
-5. SourceHash 序列化在 Version 之前还是之后？反序列化顺序是否一致？
+5. SourceHash 序列化顺序：Marshal 先 Version（:125）后 SourceHash，Unmarshal 必须相同顺序（Version 在 :196 读取后紧接 SourceHash）。顺序不一致会导致反序列化错位。
 
 ### 第一批回填纪律
 

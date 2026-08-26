@@ -47,11 +47,15 @@
 - close/modify/delete 的 ticket 是已知的（订单已存在），read-after-write 可以确认订单状态是否已变更
 - fail-closed 对 open mutation 是安全的：即使订单实际已执行，barrier 锁定只是阻止后续下单，不会导致资金损失；而误释放 barrier 可能导致重复下单
 
-**实现**：`mutation_coordinator.go:260-267` 的 recovery 启动条件加 `spec.action != ActionOpen`（或等效的 action 判断）。
+**恢复路径（必须明确）**：open mutation fail-closed 后 barrier 永久锁定 + circuit open → **策略停止**。恢复方式 = **外部干预**（用户重启策略或手动重置 circuit breaker），**不是自动恢复**。这是保守安全的选择：策略停止是可检测的（circuit open + error log），用户可干预；重复下单是静默的（VM 不知道订单已执行，继续下单）。后续可考虑基于 `OnOrderUpdate` 事件推送的自动恢复，但那是架构变更，不在本 spec 范围。
+
+**实现**：`mutation_coordinator.go:258-267` 的 recovery 启动条件加 `spec.action != actionOpen`。
+
+**注意**：`:195-201` 路径已有保护（`if spec.expectedTicket != 0`——open mutation 的 expectedTicket=0 → 不启动 recovery），**不需要修改**。只需修改 `:258-267` 路径。
 
 **对抗证明**：
-- 构造 open mutation outcome unknown 场景 → 验证不启动 recovery（`recoverFromOutcomeUnknown` 不被调用）
-- 将条件改回"open 也启动 recovery" → 验证 recovery 被调用 → RED
+- 构造 open mutation outcome unknown 场景 → 验证 `recoverFromOutcomeUnknown` 不被调用（可用 mock 计数或 channel）
+- 将条件改回"open 也启动 recovery" → `recoverFromOutcomeUnknown` 被调用 → RED
 - 恢复后 GREEN
 
 ### D2：adapter pipeline 测试——改用真实 adapter label 接线
