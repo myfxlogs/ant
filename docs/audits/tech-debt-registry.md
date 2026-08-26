@@ -443,6 +443,64 @@ Generated `gen/`、i18n、scripts 和 proto 的 `info` 不属于 warning 清零�
 - **T4**：`go run ./tools/check-file-lines --strict` 达到 `0 errors, 0 warnings`，`git diff --check` 通过；全量 service 5432 helper 失败单独披露。
 - **T5**：回归审查必须证明只发生语义拆分；任何行为变更、warning 规避、无关 scope、临时测试或文档失配均失败。完成后不 commit/push/deploy，等待 Claude 复审。
 
+<!-- D-CODE-HYGIENE-001-MANIFEST:BEGIN -->
+## D-CODE-HYGIENE-001-MANIFEST 施工提示词（逐文件 manifest 补齐；施工者 GLM-5.2，设计/验收者 Claude）
+
+> **先整读** `AGENTS.md §0`、D-CODE-HYGIENE-001 BEGIN/END 区块（H1/H2/H3）、交付回填、GPT-5.6 两次独立复审、当前问题总览、本节和开工包 `docs/audits/builder-handoff-dcode-manifest-2026-08-26.md`，再动手。只做本节 S1–S4。
+
+### 立项背景（证据链）
+
+GPT-5.6 两次独立复审均 ❌未验收（见 registry D-CODE 交付回填之后）。第二轮后**唯一剩余阻断**（registry 原文）：
+
+> H2 明确要求 registry 对每一个新文件注明"来源文件、抽出的责任、REUSE/NEW、行为回归命令"；当前回填仅有 `120 新文件`总数和 `pipeline_state_callbacks.go` 个别说明，没有完整 manifest。`grep` 检索 registry/audits 也未找到其余逐文件映射。该文档缺口属于 T5 的"文档失配"，不是可由 build/test 代替的项目。
+
+**下一步（registry 原文）**：仅补充逐文件 manifest 并逐项对应 H1 来源、语义责任、REUSE/NEW 和 package 回归命令；不得借机修改代码、AGENTS/CLAUDE、proto、schema 或 VM。补齐后停手等待 Claude 再次复审；不提交、不部署。
+
+本任务 = **纯文档任务**：产出 H2 要求的逐文件 manifest，把 D-CODE 交付证据补完整，让验收可以从 registry 独立确认每个新文件都是 H1 的纯语义拆分。
+
+### 🔴 绝对边界（违反 = 直接判失败）
+
+1. **只允许修改** `docs/audits/tech-debt-registry.md`（追加 manifest 子区块）与 `docs/audits/handover-audit-plan.md`（顶部追加一行）。**禁止改动任何 `backend/**` 代码、`AGENTS.md`、`CLAUDE.md`、proto、schema、VM、check-file-lines 工具**；发现工作树有非本任务的改动，报告 Claude，不得处理。
+2. **禁止 commit / push / deploy**——manifest 只落在工作树，由 Claude 复审验收后统一提交。禁止 `--no-verify`。
+3. 禁止为对齐数字改写已有回填/复审内容；实测与回填声明的数字差异必须在 manifest 中**逐文件披露原因**（append-only，不覆盖历史）。
+4. 收工只显式 `git add` 本任务两个文档；禁止 `git add -A`／`git add .`（本仓多 agent 并发）。
+
+### 施工步骤（目标 + 精确坐标）
+
+- **S1（清单核对）**：运行
+  `git show acaa86db --diff-filter=A --name-only --format="" | grep '\.go$'`
+  得到 acaa86db 新增 Go 文件清单（审计方实测 **121 个：70 实现 + 51 测试**；另有非 Go 的 `docs/audits/vm-adversarial-proofs.md` 1 个）。与交付回填声称的 **120（68 实现 + 52 测试）** 逐项核对，**定位全部差异文件**（多 2 个实现、少 1 个测试），并在 manifest 开头披露差异结论——哪些文件**不属于** D-CODE 拆分产物（候选：round4/round5 VM 对抗测试、D-VM-LIVE-001 相关文件、pre-existing 工作树遗留），其归属是什么。
+- **S2（逐文件 manifest）**：对每个**判定为 D-CODE 拆分新增**的文件（来源为 H1 65 文件清单内文件的直接拆分/改名产物）填写 H2 四项，逐行一条：
+  1. **来源文件**——H1 清单中的文件路径（必须可定位；改名/拆分的给出对应关系证据，不得写"由多个文件合并"之类不可核验描述）；
+  2. **抽出的责任**——从来源文件移出的具体语义（函数名/测试名列表，非泛泛描述）；
+  3. **REUSE/NEW**——纯拆分移动既有符号 = `REUSE:`（列出符号）；因拆分新建的 helper/测试 = `NEW:`（说明理由）；
+  4. **行为回归命令**——该文件所属 package 的回归测试命令（如 `go test ./internal/connect/strategy -count=1`），与拆分前该 package 的测试集对齐。
+- **S3（非 D-CODE 文件披露）**：S1 清单中判定不属于 D-CODE 的文件（来源不在 H1 且非 H1 拆分产物），单独一小节列出并注明归属（如"round5 VM 对抗测试，属 D-VM-LIVE-001 范围"、"pre-existing 工作树遗留随 acaa86db 一并入库"），**不得混入 manifest 主体冒充拆分产物**。
+- **S4（回填）**：manifest 以子区块追加到 registry「D-CODE-HYGIENE-001 交付回填」之后（append-only，不改动已有内容）；`handover-audit-plan.md` 变更日志顶部追加一行；任务状态保持 `⚠️待Claude复审`，不得自标 ✅done。
+
+### 红队自审（施工后切换怀疑者视角，逐条书面回答）
+
+1. manifest 是否覆盖了全部 D-CODE 拆分新增文件？实测 121 vs 声称 120 的差异是否逐文件解释清楚、结论闭合？
+2. 每一条"来源文件"是否真的可定位到 H1 65 文件清单（独立核验者只看 registry 也能验证）？
+3. 每一条"行为回归命令"是否真实覆盖该文件全部测试？拆分前后该 package 测试集是否等价？
+4. 有没有把非 D-CODE 文件（round4/5 对抗测试、pb.go churn、docs）混入 manifest 主体？S3 披露是否完整？
+5. 有没有为了"看起来完整"编造来源/责任或复制粘贴其他条目的内容？每一条的"抽出的责任"必须能与 git show 实际内容对上。
+
+### 验收门禁（Claude 复审时逐条独立核验）
+
+- 文档差异：`git diff --stat docs/audits/` 仅 manifest 子区块 + 两个变更日志行；`git diff --stat` 无任何 `backend/` 改动。
+- 数字自洽：manifest 条目数 = 披露的 D-CODE 新增文件数；与 120/121 的差异结论闭合（每个差异文件都有交代）。
+- 抽检：Claude 随机抽 5 条 manifest，独立 `git show acaa86db -- <文件>` / 与 H1 来源文件 diff，核验来源与责任属实。
+- 无代码改动、无 commit：工作树中 manifest 未提交（Claude 验收后统一提交）。
+
+### 回填与收尾
+
+manifest 追加 + handover 一行；**状态填 `⚠️待Claude复审`，不得自标 ✅done**。
+
+> **勿部署、勿 push、勿 commit，停手等 Claude 复审。禁止 `--no-verify`。收工只显式 `git add` 本任务涉及的两个文档，禁止 `git add -A`／`git add .`（本仓多 agent 并发）。**
+<!-- D-CODE-HYGIENE-001-MANIFEST:END -->
+> **D-CODE-HYGIENE-001-MANIFEST SSOT SHA256: `86b89c74d3871249501b822d0ce10c909aa71c48e07331adf52d1c60224269d3`**（协议 v2；计算=上方核验命令提取的区块原文整体哈希，指纹行在 marker 外）
+
 <!-- D-VM-LIVE-001:BEGIN -->
 ## ⚠️ D-VM-LIVE-001 范围重定（Claude 第一负责人决策，2026-08-25 每周对账后）——先删攻击面，再谈重建
 
@@ -1567,6 +1625,8 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 ## 变更日志
 
+- 2026-08-26 **D-CODE-HYGIENE-001-MANIFEST 已派工 GLM-5.2（ACTIVE—开工，纯文档任务）**：prompt 落 registry `D-CODE-HYGIENE-001-MANIFEST:BEGIN/END` 区块，SSOT SHA256=`86b89c74d3871249501b822d0ce10c909aa71c48e07331adf52d1c60224269d3`。基线 HEAD=`34e983a6`，工作树干净。背景：GPT-5.6 两次复审 ❌未验收，唯一阻断 = H2 逐文件 manifest 缺失（120 新文件缺"来源文件/抽出责任/REUSE/NEW/行为回归命令"四项）。任务：S1 核对 acaa86db 新增清单（审计方实测 121 Go = 70 实现 + 51 测试，vs 回填 120 的差异需逐文件披露）→ S2 逐文件 manifest → S3 非 D-CODE 文件归属披露 → S4 回填 registry+handover。边界：只改两个审计文档、禁改 backend 代码/AGENTS/CLAUDE/proto/schema/VM、**禁 commit**（manifest 落工作树，Claude 验收后统一提交）、禁 push/deploy。验收：Claude 独立抽检 5 条 + 数字自洽 + 无 backend diff。施工后状态 `⚠️待Claude复审`。
+- 2026-08-26 **D-VM-LIVE-001-P1B 验收通过（34e983a6）——D-VM-LIVE-001 整体关闭**：审计方独立复测（指纹 `ed166302…` 一致 / scope 4 文件净 -158 行 / P1 grep 全仓全 0 / P2 拒绝测试 6 测试全 GREEN / P3 dispatchVMLive 生产调用点仅 2 处 / 门禁全绿 build+vet+test+race×3+check-lines 0/0/108+diff-check+gofmt）。裁决：P1B 验收通过 → **D-VM-LIVE-001 整体关闭**（Phase 1+R1+Phase 2 裁决+P1B 全闭环）；D-COMMIT-SCOPE-001 部署闸解除条件保持达成。下一排队任务：D-CODE-HYGIENE-001 逐文件 manifest 补齐（P0）。
 - 2026-08-26 **D-VM-LIVE-001-P1B 已派工 GLM-5.2（ACTIVE—开工）**：prompt 落 registry `D-VM-LIVE-001-P1B:BEGIN/END` 区块（Phase 1b 旁路清理），SSOT SHA256=`ed1663029ae774978c7dc939d533461f8b74b59fa6d757316f5dcc86734e06b1`。基线 HEAD=`7ff5062b`，工作树干净（无并发暂存）。范围：删 `injectServerSideAccountTruth`（vm_live_dispatch.go:161-221）+ `dispatchVMLive` live 分支（:94-106）+ 两个测死代码的测试（vm_trade_context6_round5_test.go:149-232）。**开工前必读**：AGENTS.md §0 + 范围重定段 + P1/R1 复审记录 + Phase 2 裁决；**绝对边界 #1（5 lookup 字段禁止删——调度路径 buildLiveContext 依赖）**。对抗 P1/P2/P3 + 红队 5 问 + 门禁同 P1。施工完成后回填 + handover 一行，状态 `⚠️待Claude复审`，勿部署勿 push，禁 `--no-verify`，禁 `git add -A`。
 
 - 2026-08-15 **收工批验收（Windsurf `62d07a8b` + `2d147edf`）✅ 全过 + 🆕 SRD 监控当场抓获首个真实事件**：① 健康弹窗 i18n+分页——数据值映射（status→Tag 颜色 + success/failed/stopped/running 四态翻译、signalType/orderType buy/sell/hold 翻译）、两表 `pageSize:10 hideOnSinglePage`、textproto 5 locale 补齐；② DiagnosticsTab 键名 snake→camel 对齐（19 处，删 defaultValue 回落——5 locale 翻译本就存在）。**验收实测（e2e zh-CN）**：诊断 tab 全中文（评估次数/Bar评估/窗口Bar数/状态/指标…）✓，tsc 0/vitest 167/build ✓，前端已部署。e2e 顺手加固：登录选择器 locale 无关化（placeholder 正则改结构定位——zh-CN 下英文正则失配的坑）。

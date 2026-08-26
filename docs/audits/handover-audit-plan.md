@@ -22,6 +22,8 @@
 
 ## 变更日志
 
+- 2026-08-26 **D-CODE-HYGIENE-001-MANIFEST 已派工 GLM-5.2（ACTIVE—纯文档任务）**：GPT-5.6 两次复审唯一阻断 = H2 逐文件 manifest 缺失。任务 = 补逐文件 manifest（来源 H1 文件/抽出责任/REUSE/NEW/行为回归命令四项）+ 核对实测 121 vs 回填 120 差异 + 非 D-CODE 文件归属披露（S3）。SSOT `86b89c74…`（registry `D-CODE-HYGIENE-001-MANIFEST:BEGIN/END` 区块）。边界：只改 registry+handover 两文档、禁改 backend 代码/AGENTS/CLAUDE/proto/schema/VM、**禁 commit**（manifest 落工作树，Claude 验收后统一提交）、禁 push/deploy。状态 `⚠️待Claude复审`。开工包：`docs/audits/builder-handoff-dcode-manifest-2026-08-26.md`（含 H1 65 清单 + 121 实测清单 + 数字核对表 + 模板）。
+
 - 2026-08-26 **D-VM-LIVE-001-P1B 审计方独立复审：验收通过，D-VM-LIVE-001 整体关闭**：
 
   审计方（Claude）独立复测（非施工方自报）：
