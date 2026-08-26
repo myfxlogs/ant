@@ -438,8 +438,18 @@ func (c *astCompiler) compileField(e *interp.Expr) {
 		for i := 1; i < len(e.Args); i++ {
 			c.compileExpr(&e.Args[i])
 		}
-		// Use CALL_BUILTIN with a synthetic builtin for the method
-		bid := c.registerMethodBuiltin(e.Name, len(e.Args)-1)
+		// Use CALL_BUILTIN with a synthetic builtin for the method.
+		// Resolve via object type prefix (e.g. "CTrade.Buy") for correct dispatch.
+		objName := ""
+		if e.Args[0].Kind == interp.ExprVar {
+			objName = e.Args[0].Name
+		}
+		var bid BuiltinID
+		if objName != "" {
+			bid = c.registerMethodBuiltinWithObj(objName, e.Name)
+		} else {
+			bid = c.registerMethodBuiltin(e.Name, len(e.Args)-1)
+		}
 		c.emit(OP_CALL_BUILTIN, int32(bid), int32(len(e.Args)-1), 0)
 	} else {
 		// Field read: obj.field

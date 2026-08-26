@@ -43,6 +43,11 @@ type VM struct {
 	// this signal for server-side dispatch (paper / live OMS).
 	signalMode bool
 
+	// CTrade setter state (VM-TRADE-CONTEXT-1): SetExpertMagicNumber /
+	// SetDeviationInPoints write here; ctradeOrder reads from here.
+	tradeMagic     int32
+	tradeDeviation int32
+
 	// Pre-built lookup: EntryPC → FuncEntry (avoids O(n) scan per call)
 	funcByEntryPC map[int32]FuncEntry
 
@@ -180,13 +185,9 @@ func (vm *VM) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 
 // runEvent executes the VM starting at the given entry point.
 func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
-	// Reset state for this event invocation
+	// Reset state for this event invocation (VM-TRADE-CONTEXT-1: centralized cache invalidation).
 	vm.stack = vm.stack[:0]
-	vm.currentPos = nil
-	vm.currentOrder = nil
-	vm.cachedPositions = nil
-	vm.cachedOrders = nil
-	vm.cachedHistory = nil
+	vm.invalidateOrderCaches()
 	vm.callDepth = 0
 	vm.signal = nil
 	vm.pc = entryPC

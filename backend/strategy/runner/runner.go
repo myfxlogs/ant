@@ -6,6 +6,7 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -114,11 +115,20 @@ func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
+	r.broker.resetError() // VM-TRADE-CONTEXT-2
 	r.mu.Lock()
 	r.ctx.setBars(bars)
 	r.mu.Unlock()
 	r.barRev.Add(1)
-	return r.strategy.OnBar(r.ctx, timeframe)
+	sig, err := r.strategy.OnBar(r.ctx, timeframe)
+	if err != nil {
+		return nil, err
+	}
+	// VM-TRADE-CONTEXT-2: fail-closed on broker query error.
+	if brokerErr := r.broker.LastError(); brokerErr != nil {
+		return nil, fmt.Errorf("runner OnBar fail-closed: %w", brokerErr)
+	}
+	return sig, nil
 }
 
 // OnTick calls the strategy's OnTick if it implements TickStrategy.
@@ -132,8 +142,17 @@ func (r *Runner) OnTick(ctx context.Context, bid, ask decimal.Decimal) (*sdk.Sig
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
+	r.broker.resetError() // VM-TRADE-CONTEXT-2
 	r.ctx.setTick(bid, ask)
-	return ts.OnTick(r.ctx, bid, ask)
+	sig, err := ts.OnTick(r.ctx, bid, ask)
+	if err != nil {
+		return nil, err
+	}
+	// VM-TRADE-CONTEXT-2: fail-closed on broker query error.
+	if brokerErr := r.broker.LastError(); brokerErr != nil {
+		return nil, fmt.Errorf("runner OnTick fail-closed: %w", brokerErr)
+	}
+	return sig, nil
 }
 
 // OnTrade calls the strategy's OnTrade if it implements TradeStrategy.
@@ -147,7 +166,16 @@ func (r *Runner) OnTrade(ctx context.Context, event sdk.TradeEvent) (*sdk.Signal
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	return ts.OnTrade(r.ctx, event)
+	r.broker.resetError() // VM-TRADE-CONTEXT-2
+	sig, err := ts.OnTrade(r.ctx, event)
+	if err != nil {
+		return nil, err
+	}
+	// VM-TRADE-CONTEXT-2: fail-closed on broker query error.
+	if brokerErr := r.broker.LastError(); brokerErr != nil {
+		return nil, fmt.Errorf("runner OnTrade fail-closed: %w", brokerErr)
+	}
+	return sig, nil
 }
 
 // OnTimerTick calls the strategy's OnTimer if it implements TimerStrategy.
@@ -161,7 +189,16 @@ func (r *Runner) OnTimerTick(ctx context.Context) (*sdk.Signal, error) {
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	return ts.OnTimer(r.ctx)
+	r.broker.resetError() // VM-TRADE-CONTEXT-2
+	sig, err := ts.OnTimer(r.ctx)
+	if err != nil {
+		return nil, err
+	}
+	// VM-TRADE-CONTEXT-2: fail-closed on broker query error.
+	if brokerErr := r.broker.LastError(); brokerErr != nil {
+		return nil, fmt.Errorf("runner OnTimerTick fail-closed: %w", brokerErr)
+	}
+	return sig, nil
 }
 
 // OnTradeTransaction calls the strategy's OnTradeTransaction if it implements TradeTransactionStrategy.
@@ -175,7 +212,16 @@ func (r *Runner) OnTradeTransaction(ctx context.Context) (*sdk.Signal, error) {
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	return ts.OnTradeTransaction(r.ctx)
+	r.broker.resetError() // VM-TRADE-CONTEXT-2
+	sig, err := ts.OnTradeTransaction(r.ctx)
+	if err != nil {
+		return nil, err
+	}
+	// VM-TRADE-CONTEXT-2: fail-closed on broker query error.
+	if brokerErr := r.broker.LastError(); brokerErr != nil {
+		return nil, fmt.Errorf("runner OnTradeTransaction fail-closed: %w", brokerErr)
+	}
+	return sig, nil
 }
 
 // OnBookEvent calls the strategy's OnBookEvent if it implements BookEventStrategy.
@@ -189,7 +235,16 @@ func (r *Runner) OnBookEvent(ctx context.Context) (*sdk.Signal, error) {
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	return ts.OnBookEvent(r.ctx)
+	r.broker.resetError() // VM-TRADE-CONTEXT-2
+	sig, err := ts.OnBookEvent(r.ctx)
+	if err != nil {
+		return nil, err
+	}
+	// VM-TRADE-CONTEXT-2: fail-closed on broker query error.
+	if brokerErr := r.broker.LastError(); brokerErr != nil {
+		return nil, fmt.Errorf("runner OnBookEvent fail-closed: %w", brokerErr)
+	}
+	return sig, nil
 }
 
 // HasOnTradeTransaction returns true if the underlying strategy implements TradeTransactionStrategy.

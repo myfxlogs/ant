@@ -26,10 +26,15 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 			OrderTicket: ticket,
 			Volume:      volume,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -40,13 +45,19 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket2 := int64(argI(args, 1))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
-			Action:      sdk.ActionClose,
-			OrderTicket: ticket1,
+			Action:         sdk.ActionClose,
+			OrderTicket:    ticket1,
+			OppositeTicket: ticket2, // VM-TRADE-CONTEXT-2
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionCloseBy(ticket1, ticket2)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -65,6 +76,7 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 			StopLoss:    sl,
 			TakeProfit:  tp,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
@@ -78,6 +90,7 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 			}
 		}
 	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 	return interp.BoolVal(true), nil
 }
 
@@ -91,10 +104,15 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 			Action:      sdk.ActionCancel,
 			OrderTicket: ticket,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -108,10 +126,15 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 			OrderTicket: ticket,
 			Volume:      decimal.Zero,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, decimal.Zero)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -126,10 +149,15 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 			OrderTicket: ticket,
 			Volume:      volume,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -140,13 +168,19 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 	t2 := int64(argI(args, 1))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
-			Action:      sdk.ActionClose,
-			OrderTicket: t1,
+			Action:         sdk.ActionClose,
+			OrderTicket:    t1,
+			OppositeTicket: t2, // VM-TRADE-CONTEXT-2
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionCloseBy(t1, t2)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -163,10 +197,15 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 			StopLoss:    sl,
 			TakeProfit:  tp,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -179,10 +218,15 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 			Action:      sdk.ActionCancel,
 			OrderTicket: ticket,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
-	return interp.BoolVal(err == nil), nil
+	if err != nil {
+		return interp.BoolVal(false), nil
+	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	return interp.BoolVal(true), nil
 }
 
 func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -193,6 +237,7 @@ func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 		vm.signal = &sdk.Signal{
 			Action: sdk.ActionCloseAll,
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	positions := vm.ctx.Broker().Positions(0)
@@ -203,7 +248,6 @@ func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 			allOK = false
 		}
 	}
-	vm.cachedPositions = nil
-	vm.cachedOrders = nil
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 	return interp.BoolVal(allOK), nil
 }

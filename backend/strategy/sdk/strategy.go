@@ -32,17 +32,18 @@ type Strategy interface {
 // Signal is returned by OnBar/OnTick/OnTimer/OnTrade to request trade actions.
 // Only non-nil fields are acted upon.
 type Signal struct {
-	Action       SignalAction
-	Symbol       string          // defaults to primary symbol if empty
-	Volume       decimal.Decimal // 0 = use default volume
-	Price        decimal.Decimal // 0 = market price
-	StopLoss     decimal.Decimal
-	TakeProfit   decimal.Decimal
-	Deviation    int32
-	Magic        int32
-	Comment      string
-	FillPolicy   FillPolicy
-	OrderTicket  int64           // for modify/close/cancel: which order to act on
+	Action         SignalAction
+	Symbol         string          // defaults to primary symbol if empty
+	Volume         decimal.Decimal // 0 = use default volume
+	Price          decimal.Decimal // 0 = market price
+	StopLoss       decimal.Decimal
+	TakeProfit     decimal.Decimal
+	Deviation      int32
+	Magic          int32
+	Comment        string
+	FillPolicy     FillPolicy
+	OrderTicket    int64 // for modify/close/cancel: which order to act on
+	OppositeTicket int64 // for CloseBy: the opposite position ticket (VM-TRADE-CONTEXT-2)
 }
 
 // SignalAction tells the runtime what to do.
@@ -127,8 +128,8 @@ type TradeEvent struct {
 type TradeEventType int8
 
 const (
-	TradeFilled  TradeEventType = iota // order executed
-	TradeClosed                        // position closed
-	TradeModified                      // SL/TP modified
-	TradeCancelled                     // pending order cancelled
+	TradeFilled    TradeEventType = iota // order executed
+	TradeClosed                          // position closed
+	TradeModified                        // SL/TP modified
+	TradeCancelled                       // pending order cancelled
 )

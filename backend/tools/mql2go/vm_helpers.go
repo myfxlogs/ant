@@ -11,6 +11,17 @@ import (
 
 // ── Stack helpers ────────────────────────────────────────────────────
 
+// invalidateOrderCaches clears all lazy-loaded order/position caches and
+// selection state. Called after every successful mutation builtin and at
+// the top of runEvent (VM-TRADE-CONTEXT-1).
+func (vm *VM) invalidateOrderCaches() {
+	vm.cachedPositions = nil
+	vm.cachedOrders = nil
+	vm.cachedHistory = nil
+	vm.currentPos = nil
+	vm.currentOrder = nil
+}
+
 func (vm *VM) push(v interp.Value) {
 	vm.stack = append(vm.stack, v)
 }

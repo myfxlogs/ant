@@ -480,3 +480,23 @@ func (c *astCompiler) registerMethodBuiltin(methodName string, _ int) BuiltinID 
 	c.bc.Coverage.AddBlindSpot("unknown method: " + methodName)
 	return 0
 }
+
+// registerMethodBuiltinWithObj resolves a method call (obj.method) by looking
+// up the object's declared type in GlobalDecls and prefixing the method name
+// with "Type." (e.g. "CTrade.SetExpertMagicNumber"). This is the correct path
+// for CTrade method calls — the bare methodName ("SetExpertMagicNumber") is
+// not in bc.Builtins; only the prefixed form is.
+func (c *astCompiler) registerMethodBuiltinWithObj(objName, methodName string) BuiltinID {
+	// Try prefixed form first: "Type.method"
+	for _, g := range c.ir.Globals {
+		if g.Name == objName {
+			fullName := g.Type + "." + methodName
+			if bid, ok := c.bc.Builtins[fullName]; ok {
+				return bid
+			}
+			break
+		}
+	}
+	// Fall back to bare method name (original behavior)
+	return c.registerMethodBuiltin(methodName, 0)
+}

@@ -44,30 +44,32 @@ type Broker interface {
 
 // AccountInfo holds the current account state.
 type AccountInfo struct {
-	Balance       decimal.Decimal
-	Equity        decimal.Decimal
-	Margin        decimal.Decimal
-	FreeMargin    decimal.Decimal
-	MarginLevel   decimal.Decimal
-	Leverage      int32
-	Currency      string
-	Mode          AccountMode
+	Balance     decimal.Decimal
+	Equity      decimal.Decimal
+	Margin      decimal.Decimal
+	FreeMargin  decimal.Decimal
+	MarginLevel decimal.Decimal
+	Leverage    int32
+	Currency    string
+	Mode        AccountMode
+	Login       int64  // account login number, for AccountNumber() (VM-TRADE-CONTEXT-2)
+	Company     string // broker company name, for AccountCompany() (VM-TRADE-CONTEXT-2)
 }
 
 // SymbolInfo holds static symbol parameters.
 type SymbolInfo struct {
-	Name        string
-	Digits      int32
-	Point       decimal.Decimal
-	VolumeMin   decimal.Decimal
-	VolumeMax   decimal.Decimal
-	VolumeStep  decimal.Decimal
-	StopsLevel  int32
-	Spread      int32
-	TickValue   decimal.Decimal
-	TickSize    decimal.Decimal
-	SwapLong    decimal.Decimal
-	SwapShort   decimal.Decimal
+	Name         string
+	Digits       int32
+	Point        decimal.Decimal
+	VolumeMin    decimal.Decimal
+	VolumeMax    decimal.Decimal
+	VolumeStep   decimal.Decimal
+	StopsLevel   int32
+	Spread       int32
+	TickValue    decimal.Decimal
+	TickSize     decimal.Decimal
+	SwapLong     decimal.Decimal
+	SwapShort    decimal.Decimal
 	ContractSize decimal.Decimal
 }
 

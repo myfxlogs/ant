@@ -11,12 +11,19 @@ import (
 
 // brokerImpl implements sdk.Broker by delegating to OrderExecutor.
 type brokerImpl struct {
-	runner   *Runner
-	executor OrderExecutor // set by LiveRunner
-	ctx      context.Context
+	runner    *Runner
+	executor  OrderExecutor // set by LiveRunner
+	ctx       context.Context
+	lastError error // VM-TRADE-CONTEXT-2: records last broker query error
 }
 
 func (b *brokerImpl) setContext(ctx context.Context) { b.ctx = ctx }
+
+// LastError returns the last broker query error (VM-TRADE-CONTEXT-2).
+func (b *brokerImpl) LastError() error { return b.lastError }
+
+// resetError clears the last error (called at the start of each event by Runner).
+func (b *brokerImpl) resetError() { b.lastError = nil }
 
 func (b *brokerImpl) orderCtx() context.Context {
 	if b.ctx != nil {
@@ -108,9 +115,8 @@ func (b *brokerImpl) Positions(magic int32) []sdk.Position {
 	}
 	positions, err := b.executor.OpenedOrders(b.orderCtx())
 	if err != nil {
-		// Log but don't return error — SDK interface returns []Position, not ([]Position, error).
-		// Strategy will see empty positions and may re-enter, but at least we log.
-		_ = err
+		// VM-TRADE-CONTEXT-2: record error for Runner fail-closed check.
+		b.lastError = fmt.Errorf("broker Positions query: %w", err)
 		return nil
 	}
 	if magic == 0 {
@@ -146,6 +152,8 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 	}
 	orders, err := b.executor.PendingOrders(b.orderCtx())
 	if err != nil {
+		// VM-TRADE-CONTEXT-2: record error for Runner fail-closed check.
+		b.lastError = fmt.Errorf("broker Orders query: %w", err)
 		return nil
 	}
 	if magic == 0 {
@@ -161,15 +169,17 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 }
 
 func (b *brokerImpl) HistoryOrders(from, to int64) []sdk.Position {
-	if b.executor == nil {
-		return nil
+	if b.executor != nil {
+		// VM-TRADE-CONTEXT-2: not available in live mode — record error.
+		b.lastError = fmt.Errorf("HistoryOrders not available in live mode")
 	}
 	return nil
 }
 
 func (b *brokerImpl) Deals(from, to int64, magic int32) []sdk.Deal {
-	if b.executor == nil {
-		return nil
+	if b.executor != nil {
+		// VM-TRADE-CONTEXT-2: not available in live mode — record error.
+		b.lastError = fmt.Errorf("Deals not available in live mode")
 	}
 	return nil
 }

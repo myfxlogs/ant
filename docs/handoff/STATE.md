@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM 返工批第二/三/四批待派工。
+- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM 返工批第三/四批待派工。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -17,11 +17,12 @@
 | D-REVERT-SCOPE-DRIFT-001 状态漂移对账 | ✅ | registry D-REVERT-SCOPE-DRIFT-001 |
 | VM-CACHE-INTEGRITY-1/2（第一批） | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
 | LIVE-ORDER-REENTRY-1 R4 复审阻断 | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
-| VM 返工批第二/三/四批（6 个漂移 ID） | 🟦open | spec + builder-handoff 已落档 |
+| VM-TRADE-CONTEXT-1/2（第二批） | ✅done | Devin CLI 验收通过 2026-08-26 |
+| VM 返工批第三/四批（4 个漂移 ID） | 🟦open | spec + builder-handoff 已落档 |
 | DATA-TRUTH-2b MT4 margin 补齐 | ✅ | spec 验证通过，修复+对抗证明存活 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
-- **下一步**: 派工 Devin IDE 施工 VM 返工批第二批（VM-TRADE-CONTEXT-1/2）。
+- **下一步**: 派工 Devin IDE 施工 VM 返工批第三批（VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -31,7 +32,7 @@
 - **D-REVERT-CLEANUP-001** ✅done — revert 遗留拆分文件 build 断裂修复（2026-08-26）
 - **D-REVERT-SCOPE-DRIFT-001** 🟦open — revert 实际范围远超 commit message，8 个 VM ID 状态漂移需重新施工
 - **VM-CACHE-INTEGRITY-1/2** ✅done — SourceHash 绑定（返工后 Devin CLI 验收通过 2026-08-26）
-- **VM-TRADE-CONTEXT-1/2** 🟦open — 交易上下文失真（被 revert，需重新施工）
+- **VM-TRADE-CONTEXT-1/2** ✅done — 交易上下文失真（Devin CLI 验收通过 2026-08-26）
 - **VM-COMPILER-SEMANTICS-1** 🟦open — MQL→IR 语义丢失（被 revert，需重新施工）
 - **BT-FUNC-ENTRYPC-FWD** 🟦open — 前向引用 stale marker PC（被 revert，需重新施工）
 - **VM-TIMESERIES-SEMANTICS-1** 🟦open — timeseries 语义（被 revert，需重新施工）
@@ -45,6 +46,7 @@
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-08-26 VM-TRADE-CONTEXT-1/2 ✅done：Devin CLI 验收通过。invalidateOrderCaches + CTrade setter 透传 + OppositeTicket + AccountNumber 从 context + IsTesting=!signalMode + brokerImpl lastError fail-closed。对抗证明 8 项 RED→restore→GREEN，门禁全绿。
 - 2026-08-26 LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done：返工后 Devin CLI 验收通过。S1a/S1b 的 2 处 time.Sleep→WaitState，S2 FullBrokerPath 防御性同步注释+对抗证明引用。对抗证明 2 项 RED→restore→GREEN，门禁全绿。
 - 2026-08-26 VM-CACHE-INTEGRITY-1/2 ✅done：返工后 Devin CLI 验收通过。marshalHook 注入对抗证明 RED→restore→GREEN（MQL+Python 双路径），binary 引用删除，门禁全绿。
 - 2026-08-26 DATA-TRUTH-2b ✅done：revert 后验证修复+对抗证明完整存活，无需重新施工。

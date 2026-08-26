@@ -180,16 +180,17 @@ func builtinTimeToStr(vm *VM, args []interp.Value) (interp.Value, error) {
 // ── Platform builtins ────────────────────────────────────────────────
 
 func builtinIsTesting(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx != nil && vm.ctx.ServerTime() > 0 {
-		return interp.BoolVal(true), nil
-	}
-	return interp.BoolVal(false), nil
+	// VM-TRADE-CONTEXT-2: backtest mode = !signalMode (signalMode is true for live trading).
+	return interp.BoolVal(!vm.signalMode), nil
 }
 
 func builtinAccountNumber(vm *VM, args []interp.Value) (interp.Value, error) {
-	// Platform handles access control. Return a non-zero value so EA-level
-	// auth checks (e.g. `if (AccountNumber() != 帐号限制) return;`) always pass.
-	return interp.IntVal(999999), nil
+	// VM-TRADE-CONTEXT-2: read from context instead of hardcoding 999999.
+	if vm.ctx != nil {
+		login := vm.ctx.Account().Login
+		return interp.IntVal(int32(login)), nil
+	}
+	return interp.IntVal(0), nil
 }
 
 // ── Array builtins (real implementations) ────────────────────────────

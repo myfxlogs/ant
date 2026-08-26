@@ -53,6 +53,7 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 			Comment:    comment,
 		}
 		// Return a positive ticket so MQL logic that checks the result works.
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.IntVal(1), nil
 	}
 
@@ -60,6 +61,7 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 	if err != nil {
 		return interp.IntVal(-1), nil
 	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 	return interp.IntVal(int32(result.Ticket)), nil
 }
 
@@ -135,6 +137,10 @@ func builtinOrdersHistoryTotal(vm *VM, args []interp.Value) (interp.Value, error
 // pool: MODE_TRADES=0 (active positions), MODE_HISTORY=1 (closed orders).
 // It sets currentPos to the i-th position from the appropriate cached list.
 func builtinOrderSelect(vm *VM, args []interp.Value) (interp.Value, error) {
+	// VM-TRADE-CONTEXT-1: reset selection state — failed select must not leave stale currentPos/currentOrder.
+	vm.currentPos = nil
+	vm.currentOrder = nil
+
 	index := int(argI(args, 0))
 	// SELECT_BY_POS = 0, SELECT_BY_TICKET = 1
 	selectBy := argI(args, 1)
@@ -586,6 +592,8 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 		StopLoss:   sl,
 		TakeProfit: tp,
 		Comment:    comment,
+		Magic:      vm.tradeMagic,     // VM-TRADE-CONTEXT-1
+		Deviation:  vm.tradeDeviation, // VM-TRADE-CONTEXT-1
 	}
 
 	if vm.signalMode {
@@ -601,7 +609,10 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 			StopLoss:   sl,
 			TakeProfit: tp,
 			Comment:    comment,
+			Magic:      vm.tradeMagic,     // VM-TRADE-CONTEXT-1
+			Deviation:  vm.tradeDeviation, // VM-TRADE-CONTEXT-1
 		}
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 
@@ -609,6 +620,7 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 	if err != nil {
 		return interp.BoolVal(false), nil
 	}
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 	return interp.BoolVal(true), nil
 }
 
@@ -633,4 +645,18 @@ func ctradeTypeToSignalAction(orderType sdk.OrderType, side sdk.PositionSide) sd
 	default:
 		return sdk.ActionNone
 	}
+}
+
+// builtinCTradeSetExpertMagicNumber stores the CTrade magic in VM state
+// (VM-TRADE-CONTEXT-1). ctradeOrder reads it for subsequent OrderSend/Signal.
+func builtinCTradeSetExpertMagicNumber(vm *VM, args []interp.Value) (interp.Value, error) {
+	vm.tradeMagic = argI(args, 0)
+	return interp.NoneVal(), nil
+}
+
+// builtinCTradeSetDeviationInPoints stores the CTrade deviation in VM state
+// (VM-TRADE-CONTEXT-1). ctradeOrder reads it for subsequent OrderSend/Signal.
+func builtinCTradeSetDeviationInPoints(vm *VM, args []interp.Value) (interp.Value, error) {
+	vm.tradeDeviation = argI(args, 0)
+	return interp.NoneVal(), nil
 }
