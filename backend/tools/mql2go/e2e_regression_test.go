@@ -2,6 +2,7 @@ package mql2go
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/shopspring/decimal"
@@ -144,7 +145,8 @@ void OnBar()
 
 // TestE2E_IADX_Mode verifies that iADX mode parameter is handled correctly:
 // MODE_MAIN returns ADX value (no blind spot), MODE_PLUSDI/MODE_MINUSDI
-// return 0 and record blind spots.
+// are fail-closed (VM-RUNTIME-FAILCLOSED-1): they set fatalError and stop
+// execution, recording blind spots before the fatal error propagates.
 func TestE2E_IADX_Mode(t *testing.T) {
 	source := `
 extern int ADXPeriod = 14;
@@ -182,22 +184,23 @@ void OnBar()
 
 	engine := backtest.New(cfg, runner, bars)
 	_, err = engine.Run(context.Background())
-	if err != nil {
-		t.Fatalf("backtest.Run failed: %v", err)
+	// VM-RUNTIME-FAILCLOSED-1: MODE_PLUSDI is now fail-closed — backtest must
+	// stop with a fatal error, not silently continue with zero values.
+	if err == nil {
+		t.Fatal("expected backtest.Run to fail with iADX:MODE_PLUSDI fatal error (fail-closed)")
+	}
+	if !strings.Contains(err.Error(), "iADX:MODE_PLUSDI") {
+		t.Fatalf("expected error to mention iADX:MODE_PLUSDI, got: %v", err)
 	}
 
 	blinds := runner.GetRuntimeBlindSpots()
 
 	// MODE_MAIN should NOT produce a blind spot
-	// MODE_PLUSDI and MODE_MINUSDI SHOULD produce blind spots
+	// MODE_PLUSDI SHOULD produce a blind spot (recorded before fatalError)
 	hasPlusDI := false
-	hasMinusDI := false
 	for _, bs := range blinds {
 		if bs.Builtin == "iADX:MODE_PLUSDI" {
 			hasPlusDI = true
-		}
-		if bs.Builtin == "iADX:MODE_MINUSDI" {
-			hasMinusDI = true
 		}
 		if bs.Builtin == "iADX:MODE_MAIN" {
 			t.Error("MODE_MAIN should not produce a blind spot — it returns the ADX line value")
@@ -206,8 +209,5 @@ void OnBar()
 
 	if !hasPlusDI {
 		t.Error("expected blind spot for iADX:MODE_PLUSDI")
-	}
-	if !hasMinusDI {
-		t.Error("expected blind spot for iADX:MODE_MINUSDI")
 	}
 }

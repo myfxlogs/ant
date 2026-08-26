@@ -298,9 +298,12 @@ func builtinIADXWilder(vm *VM, args []interp.Value) (interp.Value, error) {
 	case 0: // MODE_MAIN (ADX line)
 		return interp.DecimalVal(vm.ctx.Indicators().ADXWilder(period, shift)), nil
 	case 1: // MODE_PLUSDI (+DI line)
+		// VM-RUNTIME-FAILCLOSED-1: unsupported mode → fail-closed
+		vm.fatalError = "iADXWilder:MODE_PLUSDI not supported"
 		vm.recordBlindSpot("iADXWilder:MODE_PLUSDI")
 		return interp.DecimalVal(decimalZero), nil
 	case 2: // MODE_MINUSDI (-DI line)
+		vm.fatalError = "iADXWilder:MODE_MINUSDI not supported"
 		vm.recordBlindSpot("iADXWilder:MODE_MINUSDI")
 		return interp.DecimalVal(decimalZero), nil
 	default:

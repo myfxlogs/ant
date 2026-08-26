@@ -124,10 +124,10 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	// VM-COMPILER-SEMANTICS-1: compile each case with fallthrough support.
 	// A case without HasBreak falls through to the next case's body
 	// (skipping the next case's comparison).
-	var caseStarts []int32        // comparison start for each case
-	var caseBodyStarts []int32    // body start for each case (for fallthrough target)
-	var jmpFalseIndices []int32   // JMP_IF_FALSE for each case
-	var fallthroughJmps []int32   // JMP from fallthrough case body to next case body
+	var caseStarts []int32         // comparison start for each case
+	var caseBodyStarts []int32     // body start for each case (for fallthrough target)
+	var jmpFalseIndices []int32    // JMP_IF_FALSE for each case
+	var fallthroughJmps []int32    // JMP from fallthrough case body to next case body
 	var fallthroughTargets []int32 // target case body index for each fallthrough jmp
 
 	for i, sc := range regularCases {
@@ -215,6 +215,17 @@ func isStackNeutral(e *interp.Expr) bool {
 		interp.ExprCompoundAssign,
 		interp.ExprUpdate:
 		return true
+	case interp.ExprField, interp.ExprSubscript:
+		// Field/subscript assignment (obj.field = val, arr[i] = val) is stack-neutral:
+		// OP_SET_FIELD / OP_STORE_ARRAY pop 2 and push nothing.
+		return e.IsAssign
+	case interp.ExprSeq:
+		// ExprSeq is stack-neutral if its last child is stack-neutral
+		// (only the last child leaves a value, if any).
+		if len(e.Args) == 0 {
+			return true
+		}
+		return isStackNeutral(&e.Args[len(e.Args)-1])
 	}
 	return false
 }

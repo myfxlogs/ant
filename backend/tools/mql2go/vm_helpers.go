@@ -26,8 +26,17 @@ func (vm *VM) push(v interp.Value) {
 	vm.stack = append(vm.stack, v)
 }
 
+// setStackError records a stack underflow as a fatal error.
+// VM-RUNTIME-FAILCLOSED-1: runLoop top check will catch and return error.
+func (vm *VM) setStackError(msg string) {
+	if vm.fatalError == "" {
+		vm.fatalError = "stack error: " + msg
+	}
+}
+
 func (vm *VM) pop() interp.Value {
 	if len(vm.stack) == 0 {
+		vm.setStackError("pop from empty stack")
 		return interp.NoneVal()
 	}
 	n := len(vm.stack)
@@ -44,6 +53,7 @@ func (vm *VM) pop2() (interp.Value, interp.Value) {
 
 func (vm *VM) popN(n int) []interp.Value {
 	if n > len(vm.stack) {
+		vm.setStackError(fmt.Sprintf("popN(%d) from stack of %d", n, len(vm.stack)))
 		n = len(vm.stack)
 	}
 	start := len(vm.stack) - n
@@ -217,7 +227,16 @@ func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
 	if entry.fn != nil {
 		result, err := entry.fn(vm, args)
 		if err != nil {
+			// VM-RUNTIME-FAILCLOSED-1: builtin Go error → fail-closed.
+			// Set fatalError so runLoop top check catches it and stops execution.
+			vm.fatalError = fmt.Sprintf("builtin %s error: %v", entry.name, err)
 			vm.recordBlindSpot(entry.name)
+			return interp.NoneVal()
+		}
+		// VM-RUNTIME-FAILCLOSED-1: defense-in-depth — handler may have set
+		// fatalError via recordBlindSpot (e.g. iADX:MODE_PLUSDI). Don't push
+		// the result to stack; runLoop top check will catch fatalError.
+		if vm.fatalError != "" {
 			return interp.NoneVal()
 		}
 		return result

@@ -3,6 +3,9 @@ package mql2go
 import (
 	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go/interp"
+	"fmt"
+
+	"github.com/shopspring/decimal"
 )
 
 // MQL5 timeseries access functions.
@@ -20,6 +23,68 @@ func builtinBars(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(int32(series.Len())), nil
 }
 
+// validSeriesMode returns true if mode is a valid ENUM_SERIESMODE (0-5).
+// VM-TIMESERIES-SEMANTICS-1
+func validSeriesMode(mode int32) bool {
+	return mode >= 0 && mode <= 5
+}
+
+// valueAt returns the bar value for the given series mode.
+// VM-TIMESERIES-SEMANTICS-1: ENUM_SERIESMODE 0-5 → Open/Low/High/Close/Volume/Time
+func valueAt(s sdk.BarSeries, idx int, mode int32) decimal.Decimal {
+	switch mode {
+	case 0:
+		return s.Open(idx) // MODE_OPEN
+	case 1:
+		return s.Low(idx) // MODE_LOW
+	case 2:
+		return s.High(idx) // MODE_HIGH
+	case 3:
+		return s.Close(idx) // MODE_CLOSE
+	case 4:
+		return decimal.NewFromInt(s.Volume(idx)) // MODE_VOLUME
+	case 5:
+		return decimal.NewFromInt(s.Time(idx)) // MODE_TIME
+	default:
+		return decimal.Zero
+	}
+}
+
+// extremeIndex finds the index of the extreme value in series[start, start+count).
+// findMax=true → iHighest, findMax=false → iLowest.
+// VM-TIMESERIES-SEMANTICS-1: bounds guard + count clamp + mode-selective comparison.
+func extremeIndex(vm *VM, series sdk.BarSeries, mode, start, count int32, findMax bool) int32 {
+	if series.Len() == 0 || start < 0 || int(start) >= series.Len() {
+		return -1
+	}
+	if !validSeriesMode(mode) {
+		vm.recordBlindSpot(fmt.Sprintf("invalid series mode: %d", mode))
+		return -1
+	}
+	// Clamp count to remaining bars
+	remaining := int32(series.Len()) - start
+	if count <= 0 || count > remaining {
+		count = remaining
+	}
+	extIdx := start
+	extVal := valueAt(series, int(start), mode)
+	for i := start + 1; i < start+count; i++ {
+		v := valueAt(series, int(i), mode)
+		if findMax {
+			if v.GreaterThan(extVal) {
+				extVal = v
+				extIdx = i
+			}
+		} else {
+			if v.LessThan(extVal) {
+				extVal = v
+				extIdx = i
+			}
+		}
+	}
+	return extIdx
+}
+
 func builtinIBarShift(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil {
 		return interp.IntVal(-1), nil
@@ -29,8 +94,12 @@ func builtinIBarShift(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.IntVal(-1), nil
 	}
 	ts := int64(argI(args, 2)) * 1000
+	// VM-TIMESERIES-SEMANTICS-1: exact parameter
+	// exact=true → only exact timestamp match; exact=false → most recent bar with time<=ts.
+	exact := len(args) > 3 && argI(args, 3) != 0
 	for i := 0; i < series.Len(); i++ {
-		if series.Time(i) <= ts {
+		barTs := series.Time(i)
+		if barTs == ts || (!exact && barTs < ts) {
 			return interp.IntVal(int32(i)), nil
 		}
 	}
@@ -45,25 +114,10 @@ func builtinIHighest(vm *VM, args []interp.Value) (interp.Value, error) {
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
 	}
-	_ = argI(args, 2) // type: MODE_HIGH, MODE_LOW, etc. — unused, we always search High
-	count := int(argI(args, 3))
-	start := int(argI(args, 4))
-	if count <= 0 {
-		count = series.Len()
-	}
-	if start < 0 {
-		start = 0
-	}
-	maxIdx := start
-	maxVal := series.High(start)
-	for i := start + 1; i < start+count && i < series.Len(); i++ {
-		h := series.High(i)
-		if h.GreaterThan(maxVal) {
-			maxVal = h
-			maxIdx = i
-		}
-	}
-	return interp.IntVal(int32(maxIdx)), nil
+	mode := argI(args, 2)  // ENUM_SERIESMODE
+	count := argI(args, 3) // count
+	start := argI(args, 4) // start
+	return interp.IntVal(extremeIndex(vm, series, mode, start, count, true)), nil
 }
 
 func builtinILowest(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -74,25 +128,10 @@ func builtinILowest(vm *VM, args []interp.Value) (interp.Value, error) {
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
 	}
-	_ = argI(args, 2)
-	count := int(argI(args, 3))
-	start := int(argI(args, 4))
-	if count <= 0 {
-		count = series.Len()
-	}
-	if start < 0 {
-		start = 0
-	}
-	minIdx := start
-	minVal := series.Low(start)
-	for i := start + 1; i < start+count && i < series.Len(); i++ {
-		l := series.Low(i)
-		if l.LessThan(minVal) {
-			minVal = l
-			minIdx = i
-		}
-	}
-	return interp.IntVal(int32(minIdx)), nil
+	mode := argI(args, 2)
+	count := argI(args, 3)
+	start := argI(args, 4)
+	return interp.IntVal(extremeIndex(vm, series, mode, start, count, false)), nil
 }
 
 func builtinITickVolume(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -248,7 +287,7 @@ func builtinCopyTime(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.IntVal(-1), nil
 	}
 	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
-		return interp.IntVal(int32(s.Time(shift)))
+		return interp.IntVal(int32(s.Time(shift) / 1000)) // VM-TIMESERIES-SEMANTICS-1: unix_ms → unix seconds (MQL datetime)
 	})
 	return interp.IntVal(n), nil
 }

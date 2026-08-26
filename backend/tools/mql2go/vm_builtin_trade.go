@@ -1,6 +1,8 @@
 package mql2go
 
 import (
+	"fmt"
+
 	"github.com/shopspring/decimal"
 
 	"alphaforge/strategy/sdk"
@@ -23,6 +25,15 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 	tp := argD(args, 6)
 	comment := argS(args, 7)
 	magic := argI(args, 8)
+
+	// VM-RUNTIME-FAILCLOSED-1: validate order parameters — invalid cmd/volume
+	// must be a Go error so callBuiltin sets fatalError and stops execution.
+	if cmd < 0 || cmd > 5 {
+		return interp.IntVal(-1), fmt.Errorf("OrderSend: invalid cmd %d (must be 0-5)", cmd)
+	}
+	if volume.LessThanOrEqual(decimal.Zero) {
+		return interp.IntVal(-1), fmt.Errorf("OrderSend: invalid volume %s (must be > 0)", volume.String())
+	}
 
 	req := sdk.OrderRequest{
 		Symbol:     symbol,
@@ -59,7 +70,8 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 
 	result, err := vm.ctx.Broker().OrderSend(req)
 	if err != nil {
-		return interp.IntVal(-1), nil
+		// VM-RUNTIME-FAILCLOSED-1: propagate broker error (was swallowed as nil).
+		return interp.IntVal(-1), fmt.Errorf("OrderSend broker error: %w", err)
 	}
 	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 	return interp.IntVal(int32(result.Ticket)), nil

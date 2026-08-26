@@ -193,9 +193,12 @@ func builtinIADX(vm *VM, args []interp.Value) (interp.Value, error) {
 		}
 		return interp.DecimalVal(val), nil
 	case 1: // MODE_PLUSDI (+DI line)
+		// VM-RUNTIME-FAILCLOSED-1: unsupported mode → fail-closed
+		vm.fatalError = "iADX:MODE_PLUSDI not supported"
 		vm.recordBlindSpot("iADX:MODE_PLUSDI")
 		return interp.DecimalVal(decimal.Zero), nil
 	case 2: // MODE_MINUSDI (-DI line)
+		vm.fatalError = "iADX:MODE_MINUSDI not supported"
 		vm.recordBlindSpot("iADX:MODE_MINUSDI")
 		return interp.DecimalVal(decimal.Zero), nil
 	default:

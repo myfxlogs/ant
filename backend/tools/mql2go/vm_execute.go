@@ -118,6 +118,11 @@ func (vm *VM) execute(ins Instruction) error {
 		args := vm.popN(nArgs)
 		result := vm.callBuiltin(ins.A, args)
 		vm.push(result)
+		// VM-RUNTIME-FAILCLOSED-1: defense-in-depth — check fatalError after
+		// builtin call (callBuiltin may have set it via handler or setStackError).
+		if vm.fatalError != "" {
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
 
 	case OP_CALL_USER:
 		if err := vm.executeCallUser(ins); err != nil {

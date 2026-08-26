@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done；VM 返工批第四批待派工。
+- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done；VM 返工批第四批（VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1）✅done。D-REVERT-SCOPE-DRIFT-001 全部 8 个漂移 VM ID 返工完成。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -19,11 +19,11 @@
 | LIVE-ORDER-REENTRY-1 R4 复审阻断 | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
 | VM-TRADE-CONTEXT-1/2（第二批） | ✅done | Devin CLI 验收通过 2026-08-26 |
 | VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（第三批） | ✅done | Devin CLI 验收通过 2026-08-26 |
-| VM 返工批第四批（2 个漂移 ID） | 🟦open | spec + builder-handoff 待落档 |
+| VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1（第四批） | ✅done | Devin CLI 验收通过 2026-08-26，8 项对抗证明 |
 | DATA-TRUTH-2b MT4 margin 补齐 | ✅ | spec 验证通过，修复+对抗证明存活 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
-- **下一步**: 派工 Devin IDE 施工 VM 返工批第四批（VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1）。
+- **下一步**: D-REVERT-SCOPE-DRIFT-001 全部 8 个漂移 VM ID 返工完成；待业主指示下一任务（潜在候选：VM 返工批 round 4-5 / SCHEDULE-HOTLOOP-1 生产部署验收 / DATA-TRUTH-2b 部署验证）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -31,13 +31,13 @@
 > 完整明细见 `docs/audits/tech-debt-registry.md`。这里只列当前活跃（🟦open / ⚠️待独立复审）条目。
 
 - **D-REVERT-CLEANUP-001** ✅done — revert 遗留拆分文件 build 断裂修复（2026-08-26）
-- **D-REVERT-SCOPE-DRIFT-001** 🟦open — revert 实际范围远超 commit message，8 个 VM ID 状态漂移需重新施工
+- **D-REVERT-SCOPE-DRIFT-001** ✅done — revert 实际范围远超 commit message，8 个 VM ID 状态漂移全部返工完成（2026-08-26）
 - **VM-CACHE-INTEGRITY-1/2** ✅done — SourceHash 绑定（返工后 Devin CLI 验收通过 2026-08-26）
 - **VM-TRADE-CONTEXT-1/2** ✅done — 交易上下文失真（Devin CLI 验收通过 2026-08-26）
 - **VM-COMPILER-SEMANTICS-1** ✅done — MQL→IR/Bytecode 语义丢失（Devin CLI 验收通过 2026-08-26）
 - **BT-FUNC-ENTRYPC-FWD** ✅done — 前向引用 stale marker PC（Devin CLI 验收通过 2026-08-26）
-- **VM-TIMESERIES-SEMANTICS-1** 🟦open — timeseries 语义（被 revert，需重新施工）
-- **VM-RUNTIME-FAILCLOSED-1** 🟦open — 增强修复被 revert（基本机制幸存）
+- **VM-TIMESERIES-SEMANTICS-1** ✅done — timeseries 语义（Devin CLI 验收通过 2026-08-26）
+- **VM-RUNTIME-FAILCLOSED-1** ✅done — fail-closed 错误传播（Devin CLI 验收通过 2026-08-26）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
 - **VM 返工批 round 4-5** ⚠️待独立复审 — VM-CACHE-INTEGRITY-5/VM-TRADE-CONTEXT-6/VM-API-TRUTH-3 等

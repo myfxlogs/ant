@@ -106,8 +106,8 @@ func (e *Engine) Run(ctx context.Context) (*Result, error) {
 
 		sig, err := e.runStrategySignal(btCtx, bar)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: OnBar error at bar %d: %v\n", i, err)
-			continue
+			// VM-RUNTIME-FAILCLOSED-1: fail-closed — stop backtest on strategy error.
+			return nil, fmt.Errorf("backtest: strategy event failed at bar %d: %w", i, err)
 		}
 		if sig != nil {
 			if e.config.SignalTiming == "same_bar_close" {
