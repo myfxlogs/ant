@@ -68,7 +68,7 @@
 | LIVE-INDICATOR-1 | **实盘 500-bar 滚动窗口与 append-only `SeriesCache` 不兼容，所有缓存指标永久冻结在启动首帧（P0，2026-08-20 生产实测）**：schedule `599ddaa5` / run `3d2184b5` 持续活跃（4817 evaluations = 46 bar + 4771 tick，Window Bars=500，OrdersTotal=0），行情每分钟闭合 bar 正常、账户快照正常；但诊断值 `MACD.main=0.23718981101410463 / signal=8.119201031042982 / EMA26=69559.67407019278` 与生产 `md_bars` 回算的 **00:44 启动首帧逐位一致**，之后 46 根 bar 完全不变；00:51 按同一算法 SELL 条件已成立却 0 signal。代码根因：live 启动先 seed 恰好 `maxContextBars=500`，`appendDedupBar` 每次追加后裁回 500；`indicatorSet.ensureCache()` 虽替换 `src.bars`，但 `SeriesCache.EnsureUpdated()` 只比较 `Len()`，`n==c.n==500` 时认为“无新 bar”并跳过更新，因此 EMA/MACD/RSI/ATR/ADX 等所有 cache-backed 指标永久冻结。此问题不是行情/策略/风控/OMS，而是 runner 指标缓存失效协议错误；现有增量测试只覆盖 100→101 append，未覆盖固定长度 500→500 rolling replacement | ✅done（2026-08-20 施工+红队自审：① indicators 层新增可选 `RevisionedBarSource`（`Revision() uint64`），`SeriesCache.EnsureUpdated()` 对 revisioned source 检测 revision 变化并 reset+lazy rebuild，非 revisioned source 保持 `n>c.n` 增量 / `n<c.n` reset；抽取单一 `reset()` 覆盖全部 17 series map + n + lastRev + hasRev。② `runnerBarSource` 实现 `RevisionedBarSource`，`Runner.OnBar` 用 `atomic.Uint64` 推进 barRev，OnTick/OnTrade/OnTimer/OnBookEvent 不推进。③ backtest `btBarSource` 不实现 revision，零开销保持 O(新增bar)。对抗证明：`TestSeriesCache_RevisionedRollingWindow`（删 revision reset → 23 指标全 RED）、`TestSeriesCache_RevisionUnchanged_NoRebuild`（tick 路径不重建）、`TestRunner_BarRevision_AdvancesOnBarOnly`（删 OnBar advance → RED）、`TestVMLiveSession_RollingWindow_IndicatorUnfreeze`（legacy start() EMA crossover，删 OnBar advance → tick #2 无 SELL → RED）。`go test -race` 全 PASS，file-lines 0 error。✅审计方代码验收（2026-08-20）：独立复跑目标测试/race/mql2go/build/file-lines 全绿；独立删除 `c.reset()` → 23 指标 RED，删除 `barRev.Add(1)` → runner+VMLiveSession RED，恢复后全绿。✅生产验收通过（2026-08-20，随 SCHEDULE-HOTLOOP-1 同批部署）：`599ddaa5` event session 启动正常（BTCUSDm 1m），md_bars 持续写入新 bar（05:10→05:15，close 69495.22→69412.38），指标不再冻结在启动首帧；证据 handover `:151`。**2026-08-25 每周对账修正**——本行原尾注"⚠️生产未验收…线上仍是旧二进制"已过期）|
 | LIVE-MQL-ORDER-CONTEXT-1-REVIEW | **MQL order context 审计复审（2026-08-21）**：broker snapshot→proto→SDK→harness Positions/Orders 的字段与 pending 分流通过；目标 10/10、race、build、file-lines、buf lint 通过；独立删除 `vmPositionsToSdk` Magic、`backfillContextStrings` pending mapping、`brokerImpl.Orders` harness mapping 均 RED。**阻断（已修复 2026-08-21 返工）**：原测试只检查 Go 层 `broker.Positions/Orders` 和手工 `len(positions)+len(orders)`，没有真正执行 VM `OrderSelect`/`OrderMagicNumber`；独立把 `builtinOrderMagicNumber` 的 pending Magic 返回改为 0 后，10 个任务测试仍全 GREEN。**返工修复**：新增 9 个真实 VM/MQL integration test（`tools/mql2go/live_mql_order_context_vm_test.go`），编译 MQL 源码 → 设置 live harness `UpdateLiveState` → 执行 `Runner.OnTick` → VM 调用 `OrdersTotal`/`OrderSelect`/`OrderMagicNumber`/`OrderType`/`OrderSymbol`/`OrderLots`/`OrderOpenPrice`/`OrderStopLoss`/`OrderTakeProfit`/`OrderComment` → 通过 `VMRunner.GetGlobal` 读取 MQL 全局变量验证值。**对抗证明 3/3 RED**：(a) `builtinOrderMagicNumber` pending Magic 改 0 → `OrderMagicNumber_EndToEnd` RED（`OrderMagicNumber[2] = 0, want 1699507621`）；(b) `builtinOrdersTotal` 删 pending 计数 → `OrdersTotal_PositionsPlusPending` + `OnlyPending_OrdersTotal` RED（`VM OrdersTotal = 2, want 4` / `= 0, want 2`）；(c) `builtinOrderSelect` 删 pending SELECT_BY_POS 分支 → `OrderType_MarketVsPending` + `OrderMagicNumber_EndToEnd` RED（pending orders 不可选 → type=0/magic=0）。状态：✅done（2026-08-21 审计方验收；生产未部署） |
 | LIVE-ORDER-REENTRY-1 | **实盘重复开仓 P0 — `live_dispatch.go` 的 `submitOrder` 用 goroutine fire-and-forget 下单，违反 MT4 EA `OrderSend` 单线程语义**。VM 在 broker 确认前继续执行 → `OrdersTotal()==0` → 下一 tick/bar 再次开仓 → 数秒内连续生成多个同方向订单。**根因**：`submitOrder` 内 `go func() { ... PlaceOrder ... }()` 异步化所有 4 个 dispatch 路径（open/close/modify/cancel + close_all），事件循环不阻塞 → 下一事件在前一订单确认前到达 → 重复下单。**不变量（I1-I8）**：I1 每 ActiveSession 最多一个未确认 broker mutation；I2 恢复 trade command 串行语义；I3 broker ticket ≠ positions caught up，须等权威 OnOrderUpdate/read-after-write；I4 barrier 只由确定性 outcome 释放（local reject/broker confirm/single read-after-write），无固定 TTL；I5 transport timeout（DeadlineExceeded）= outcome unknown → fail-closed 不重下；I6 禁 per-tick/bar OpenedOrders 轮询，bounded read-after-write 仅用于 command confirmation；I7 保留 TickSeq ClientID 语义；I8 `OrdersTotal()` 保留 native MQL account-level 语义（无 magic 过滤）。**修复**：① `trade_barrier.go`（新）— session-scoped execution barrier 状态机（idle→submitting→acceptedUnconfirmed→confirmed/deterministicRejected/outcomeUnknown），CAS Acquire + cond.WaitConfirmed + pre-listen confirmation caching（处理 order-event-before-RPC-response 真实竞态）；② `mutation_coordinator.go`（新）— 5 路径共享协议：pre-listen 覆盖整个 cycle → broker RPC with timeout → typed error classify → confirmed push+RPC error convergence → push wait + single read-after-write（I6）；③ `live_dispatch.go` 5 dispatch 全调 coordinateMutation（同步替换 fire-and-forget）；④ `position_cache.go` freshness 拆分 — `GetFreshTradingSnapshot`（financials+positions 都须 fresh，VM/Risk Gate 用）/ `GetFreshFinancialSnapshot`（仅 financials）/ `GetFreshPositionSnapshot`（仅 positions，display 用）；⑤ `mutation_outcome.go`（新）typed MutationError + ClassifyMutationError 无字符串猜测；⑥ `broker_types.go` PositionsCapturedAt/Source + Publish 发 merged 给 live subs 但 latest 存 clean copy 防 replay。**三轮返工**：第1轮 B1-B8 基础结构；第2轮 R1-R7 convergence race/zero provenance/updateType compatibility/bounded cache/modify verify/no double-wrap/PositionCache；第3轮 6 项阻断全部解决：① R4 对抗测试重写——断言 `len(eventCache)<=16` + FIFO 淘汰（对抗证明：删 eviction→RED）；② R7b 生产代码修复——`dispatchCloseAll` 只计 `barrierConfirmed`（对抗证明：恢复旧代码 `closed=2`→RED）；③ R3-③ compatibility 表对齐真实 adapter 标签 `pending_open/pending_close/pending_modify`（对抗证明：恢复旧表→4 RED）；④ R3-④ fail-closed for unknown action/empty updateType + 删 magic=0 fallback（对抗证明：恢复 fail-open→2 RED，恢复 magic=0 fallback→RED）；⑤ R5-⑤ `verifyTicketModified` 用 `*decimal.Decimal` 区分 unspecified 与 explicit zero（对抗证明：恢复旧 `GreaterThan(Zero)`→RED）；⑥ 暂存区清理移除前端/runbook/monitor 非 scope 文件。新增 12 个测试，门禁全绿 build/test/race/file-lines，独立突变均已恢复 | ⚠️待Claude复审（**2026-08-21 第四轮返工完成，2 项遗留全部解决，未部署**。第四轮解决第三轮遗留的 2 项 ⚠️待Claude复审：① **④-① adapter label pipeline 集成测试**——导出 `Mt4UpdateActionLabel`/`Mt5UpdateTypeLabel`，新增 8 个集成测试验证真实 adapter 标签（pending_open/pending_close/pending_modify）→ PositionSnapshotBroker → TradeBarrier 端到端确认（MT4 3 + MT5 3 + FullBrokerPath 1 + IncompatibleRejects 1）；对抗证明：删 compat 表 pending_open→RED，删 Reconcile→build fail。② **④-② outcomeUnknown reconciliation recovery**——新增 `barrier.Reconcile(bool)` 方法从 outcomeUnknown 转换到 confirmed/deterministicRejected；新增 `recoverFromOutcomeUnknown` 后台 goroutine（`mutation_recovery.go`），对 known-ticket 变体（close/modify/cancel）在 `recoveryDelay`（默认 10s）后做单次 OpenedOrders 查询 + verify → Reconcile → Release + 清 circuit breaker；open 变体（ticket=0）不恢复（fail-closed）；新增 5 个恢复测试（CloseConfirmed/CloseNotApplied/QueryFails_StaysLocked/OpenMutation_NoRecovery/AllowsSubsequentOrder）；对抗证明：删 recovery goroutine launch→RED（barrier stays locked），删 Reconcile confirmed 赋值→RED。文件拆分：`mutation_coordinator.go` 340 行 / `mutation_helpers.go` 128 行 / `mutation_recovery.go` 105 行。门禁全绿：`go build ./...` ✓ / `go test -race` ✓（79s）/ `check-file-lines --strict` 0 ERROR / adapter mt4+mt5 测试 ✓。**⚠️待Claude复审**：① 生产环境真实 broker 端到端时序验证（集成测试用 mock broker，需真实 MT4/MT5 流验证）；② recoveryDelay=10s 是否合适（生产 broker 延迟可能不同）；③ open 变体 outcomeUnknown 永久锁定是否需要人工告警机制）|
-| LIVE-ORDER-REENTRY-1-R4-REVIEW | **第四轮审计复审（2026-08-21）**：目标测试/race/build/file-lines 均通过，但暂不验收。阻断一：`mutation_coordinator.go:260-267` 对 broker RPC 成功但确认 outcome unknown 的 open mutation 也启动 recovery，与“open mutation fail-closed”边界冲突，单次 `OpenedOrders` 不能证明新订单已执行；阻断二：④-① 所谓 adapter pipeline 测试直接调用导出的 label 函数和测试 `publishOrderUpdate` helper，隔离突变 MT4 `parseMt4OrderUpdate` 的真实 label 接线为错误标签后，R4 pipeline 测试仍全 GREEN，覆盖不足。另：R4 recovery/FullBrokerPath 测试使用 `time.Sleep`，违反确定性测试纪律，需改 channel 同步。| 🟦open ⚠️待Claude复审 |
+| LIVE-ORDER-REENTRY-1-R4-REVIEW | **第四轮审计复审（2026-08-21）**：目标测试/race/build/file-lines 均通过，但暂不验收。阻断一：`mutation_coordinator.go:260-267` 对 broker RPC 成功但确认 outcome unknown 的 open mutation 也启动 recovery，与“open mutation fail-closed”边界冲突，单次 `OpenedOrders` 不能证明新订单已执行；阻断二：④-① 所谓 adapter pipeline 测试直接调用导出的 label 函数和测试 `publishOrderUpdate` helper，隔离突变 MT4 `parseMt4OrderUpdate` 的真实 label 接线为错误标签后，R4 pipeline 测试仍全 GREEN，覆盖不足。另：R4 recovery/FullBrokerPath 测试使用 `time.Sleep`，违反确定性测试纪律，需改 channel 同步。**2026-08-26 R4 阻断解决施工 + 返工均完成**（2 处 time.Sleep→WaitState + FullBrokerPath 防御性注释 + 对抗证明 RED→restore→GREEN），详见下方"R4 阻断解决施工完成"与"R4 返工施工完成"两节。| 🟦open ⚠️待Claude复审（返工施工完成，待独立复审）|
 | LIVE-ORDER-REENTRY-1-BROKER-REJECT | **Broker 应用层拒绝被误分类为 outcome_unknown → barrier 永久锁定（P0，2026-08-21 生产实测）**：账号 904d14e6 / schedule 599ddaa5 在 MT4 `OrderSend` 返回 `code=130 msg=Invalid S/L or T/P`（broker 明确拒绝，订单未执行）后，引擎将其分类为 `outcome_unknown` 并锁定 barrier → 策略永久无法再下单。**根因**：MT4/MT5 adapter 的 `PlaceOrder`/`CloseOrder`/`DeleteOrder`/`ModifyOrder` 在 `resp.GetError().GetCode() != 0` 时返回裸 `fmt.Errorf("mt4 OrderSend: code=%d msg=%s", ...)`，无 phase 标记；`mthub/service_orders.go:58` 用 `brokerError(err)` 包装为 `MutationError{PhaseBroker}`；`ClassifyMutationError` 先检查 `MutationError` phase → `PhaseBroker` → `outcome_unknown` → barrier 锁定。**关键语义错误**：MT4/MT5 的 `resp.GetError()` 是 broker **应用层响应**（订单已到达 broker 并被明确拒绝），不是传输层错误（不知道订单有没有到达）。`code=130` = broker 看到了订单并说"SL/TP 无效"——这是确定性拒绝，不是未知结果。**修复**：① 新增 `mthub.ErrBrokerRejected` sentinel；② MT4/MT5 adapter 4 个订单操作（send/close/delete/modify）的应用层拒绝全部用 `fmt.Errorf("%w: ...", mthub.ErrBrokerRejected, ...)` 包装；③ `ClassifyMutationError` **sentinel 检查提前到 MutationError phase 检查之前**——sentinel 是权威的，无论 phase 包装如何，`ErrBrokerRejected` 永远是 `deterministic_rejected`。**对抗证明**：`TestLIVE_ORDER_REENTRY_1_T8_BrokerAppRejectionReleasesBarrier`——模拟 MT4 code=130，验证 `ClassifyMutationError=deterministic_rejected` + barrier 释放（state=idle）；将 sentinel 检查移回 MutationError 之后（旧 bug 顺序）→ `ClassifyMutationError=outcome_unknown` → 测试 RED。**线上验证**：部署后零 `outcome unknown` / `barrier locked` 错误。 | ✅done（2026-08-21 施工+红队自审+部署验证）|
 | LIVE-MQL-ORDER-CONTEXT-1 | **实盘 MQL order context 字段语义不完整（P1，已施工完成 2026-08-21，返工完成 2026-08-21）**：原 broker snapshot → `LivePosition` → SDK/MQL 链路缺少 symbol/magic/order type/profit/comment/open time 等字段，挂单没有独立 live proto，Runner harness 也未接收 pending orders，导致 `OrdersTotal`/`OrderSelect`/`OrderMagicNumber` 无法保持 broker 原始账户级语义。**根因**：`vmPositionsToSdk` 丢弃 Symbol/Magic/SL/TP/Swap/Commission/Profit/Comment/OpenTime；`LivePosition` proto 只有 8 字段；`UpdateLiveState` 只接收 positions 不接收 pendingOrders；harness `Orders(magic)` 直接返回 nil；pipeline_callbacks 把 market+pending 全塞进 `Positions`。**修复**：① proto `LivePosition` 补齐 symbol/magic_number/order_type/profit/comment/open_time（9-14 字段），新增 `LivePendingOrder` proto（ticket/symbol/order_type/side/volume/price/sl/tp/comment/magic_number/open_time），4 个 Context（LiveStrategyContext/TickContext/TradeContext/TimerContext）各加 `repeated LivePendingOrder pending_orders`；② `PositionSnapshot` 加 `PendingOrders []PositionSnapshotItem`，`mergePositionSnapshot` 同步 merge；③ `pipeline_callbacks.go`/`pipeline.go`/`mutation_helpers.go` 用 `mdtick.IsPendingOrderType` 按 Type 拆分 market vs pending；④ `position_cache.go` merge 逻辑同步处理 PendingOrders（positions-only 更新替换 + financial-only 更新保留）；⑤ `backfillContextStrings` 签名加 `pendingOrders *[]*antv1.LivePendingOrder`，全字段填充 LivePosition + LivePendingOrder；⑥ `vmPositionsToSdk` 全字段保留 + 新增 `vmPendingOrdersToSdk`；⑦ `Runner.UpdateLiveState` 加 `pendingOrders []sdk.PendingOrder` 参数，`contextImpl` 加 `livePendingOrders` 字段；⑧ `brokerImpl.Orders(magic)` harness 模式返回 `livePendingOrders`（之前返回 nil）；⑨ 新增 `Runner.Broker()` 访问器用于集成测试。**第一轮对抗证明**：3 个 Go 层 RED——(a) 删 `vmPositionsToSdk` Magic 映射 → MagicEndToEnd RED；(b) 删 `backfillContextStrings` pending 循环 → FullChain RED（panic）；(c) 删 `brokerImpl.Orders` harness 返回 → FullChain RED。**返工（审计复审阻断修复）**：第一轮测试只检查 Go 层 `broker.Positions/Orders` 和手工 `len()`，不执行 VM `OrderSelect`/`OrderMagicNumber`；独立把 `builtinOrderMagicNumber` pending Magic 改 0 后 10 个任务测试仍全 GREEN。返工新增 9 个真实 VM/MQL integration test（`tools/mql2go/live_mql_order_context_vm_test.go`），编译 MQL 源码 → `Runner.UpdateLiveState` → `Runner.OnTick` → VM 调用 `OrdersTotal`/`OrderSelect`/`OrderMagicNumber`/`OrderType`/`OrderSymbol`/`OrderLots`/`OrderOpenPrice`/`OrderStopLoss`/`OrderTakeProfit`/`OrderComment` → `VMRunner.GetGlobal` 读取 MQL 全局变量验证值。**返工对抗证明 3/3 RED**：(a) `builtinOrderMagicNumber` pending Magic 改 0 → `OrderMagicNumber_EndToEnd` RED（`OrderMagicNumber[2] = 0, want 1699507621`）；(b) `builtinOrdersTotal` 删 pending 计数 → `OrdersTotal_PositionsPlusPending` + `OnlyPending_OrdersTotal` RED（`VM OrdersTotal = 2, want 4` / `= 0, want 2`）；(c) `builtinOrderSelect` 删 pending SELECT_BY_POS 分支 → `OrderType_MarketVsPending` + `OrderMagicNumber_EndToEnd` RED（pending 不可选 → type=0/magic=0）。**测试**：Go 层 10 + VM 层 9 = 19 个测试全 GREEN。门禁全绿：build ✓ / test ✓ / file-lines 0 ERROR / buf lint ✓。范围遵守：未修改 LIVE-ORDER-REENTRY-1、异步执行 barrier、诊断 UI、FE-POSITIONS-524-PUSH | ✅done ⚠️待Claude复审（架构层：新增 proto message + PositionSnapshot 字段，需独立复审 proto 兼容性与 harness 分流语义） |
 | SCHEDULE-HOTLOOP-1 | **已过期 interval schedule + 用户关闭自动交易导致 timer 0-delay 热循环（P1 运行稳定性，LIVE-INDICATOR-1 排查时发现）**：schedule `8730536b` 的 `next_run_at=2026-08-16 17:39:05` 已过期且 `auto_trade_enabled=false`。`GetEarliestNextRunAt` 每次返回过去时间 → `recomputeTimer` 将 delay 设 0；`executeLoop` 每次查到 due schedule，但 `!isAutoTradeEnabled` 直接 `continue`，不推进/清空 `next_run_at`，因此无限 0-delay 循环。生产实测日志每秒数百条 `due schedules found`、backend CPU 57.67%，50MB×3 日志轮转被快速挤掉，直接妨碍事故取证 | ✅done（2026-08-20 施工 + 审计方独立复审（突变 R1/R2/R3 全 RED）+ 生产部署验收：CPU 68.93%→6.49%、due log 2min 16330→0、`8730536b.next_run_at` 由 08-16 收敛至 08-20 13:14:06；证据 handover `:151`/`:159`/`:161`，commit `58df8e1e`。**2026-08-25 每周对账修正状态漂移**——本行原停留 `🟦open`，与 handover 已记录的审计方验收 + 生产验收矛盾）（**红队修订后方案已定**：把 timer occurrence 当作必须持久化消费的事实。① 新增 deterministic `ComputeNextRunAtFromConfigAt(..., now)`/engine `now()`，对每个 due timer schedule 在 `isRunning`、autoTrade、entitlement/quota、dispatch 前先持久化严格 `>now` 的 next；关闭自动交易不补跑历史次数，恢复后从未来周期继续；② 从 `runOne` 删除完成后推进（live run 可永久不返回）；③ event invariant 双保险：timer repository 查询仅选 interval/cron，startup 发现 event 有残留 next_run_at 时显式清 NULL，避免脏数据热循环；④ GetDue/Compute/Update 失败不 dispatch，`executeLoop` 返回聚合 error，Start 进入可被 Notify/context 打断的 `backoffDelay` timer，timer 必 Stop/drain；invalid config 记录 last_error 并 clear next 进行隔离，禁止永久每30s报错；⑤ autoTrade 两个写入口（ToggleAutoTrade、UpdateGlobalSettings）成功后均通过无 import-cycle callback 调 `ScheduleEngine.InvalidateAutoTradeCache(userID)+Notify()`，杜绝关闭后 TTL 30s 内误下单。对抗测试：A autoTrade=false pre-advance/no dispatch；B already-running pre-advance；C eligible 在 dispatch 前已推进；D UpdateNext/GetDue 失败不 dispatch且查询次数有界、Notify 可提前唤醒；E event 脏 next 被清且 timer query 排除；F toggle/update 两入口均失效 cache；G runOne 不再二次改 next。测试使用 fake now/repo 状态迁移，不用脆弱 sleep；删除 pre-advance/backoff/cache-invalidate 任一关键行必 RED。部署验收：due log 恢复周期频率、CPU 57% 回落、`8730536b.next_run_at>now`、autoTrade=false 零 dispatch）|
@@ -1964,8 +1964,8 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 | VM-TIMESERIES-SEMANTICS-1 | 🟦open (施工完成) | `extremeIndex`/`validSeriesMode` ✗ | **漂移** |
 | VM-TRADE-CONTEXT-1 | 🟦open (施工完成) | `invalidateOrderCaches` ✗ | **漂移** |
 | VM-TRADE-CONTEXT-2 | 🟦open (施工完成) | `OppositeTicket` ✗ | **漂移** |
-| VM-CACHE-INTEGRITY-1 | 🟦open (施工完成) | `SourceHash` ✗ | **漂移** |
-| VM-CACHE-INTEGRITY-2 | 🟦open (施工完成) | `SourceHash` ✗ | **漂移** |
+| VM-CACHE-INTEGRITY-1 | ✅done (Devin CLI 验收 2026-08-26) | `SourceHash` ✓ | 返工后通过 |
+| VM-CACHE-INTEGRITY-2 | ✅done (Devin CLI 验收 2026-08-26) | `SourceHash` ✓ | 返工后通过 |
 | VM-COMPILER-SEMANTICS-1 | 🟦open (施工完成) | `ClassTypes`/`ValClass` ✗ | **漂移** |
 | BT-FUNC-ENTRYPC-FWD | 🟦open (施工完成) | `patchUserCalls` ✗ | **漂移** |
 
@@ -1985,4 +1985,195 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 > 验收：Devin CLI 独立复审 mutation RED→restore→GREEN + 门禁全绿。
 > 施工后状态：`🟦open（施工完成，待独立复审）`，不得自标 ✅done。
 
+### 第一批施工完成：VM-CACHE-INTEGRITY-1/2（2026-08-26 Devin 施工方）
+
+> 基线 HEAD：`99b9859d`，工作树干净。
+> 施工文件：`backend/tools/mql2go/bytecode.go`、`bytecode_cache.go`、`interp_runner.go`、`backend/internal/connect/strategy/backtest_worker_python.go`、`backend/tools/mql2go/vm_cache_integrity_redo_test.go`（新建）。
+
+**VM-CACHE-INTEGRITY-1 重新施工（SourceHash 绑定 + 序列化完整性）**：
+- **S1** `bytecode.go:152`：`Bytecode` struct 新增 `SourceHash string` 字段（SHA256 hex of source）。
+- **S2** `interp_runner.go:3`：`hashSource` 函数 REUSE `failure_signature.go:43`（已存在，TrimSpace + SHA256），不重复声明。
+- **S3** `interp_runner.go`：`CompileMQL`/`CompileMQLWithCoverage`/`CompilePython`/`CompilePythonWithCoverage` 四个编译函数在 `CompileAST` 成功后均设置 `bc.SourceHash = hashSource(source)`。
+- **S4** `interp_runner.go:63`：`CompileMQLCached` cache hit 时校验 `r.Bytecode().SourceHash == hashSource(source)`，mismatch fall through 重编。
+- **S5** `interp_runner.go:74`：`CompileMQLCached` 的 `MarshalBytecode` error 改为 `return nil, nil, fmt.Errorf("marshal freshly compiled bytecode: %w", mErr)`（不再 `return r, nil, nil` 吞 error）。`bytecode_cache.go:43` `MarshalBytecode` 新增 nil bc 检查。
+- **S8** `bytecode_cache.go:124`：`MarshalBytecode` 在 Version 写入后加 `w.writeString(bc.SourceHash)`；`bytecode_cache.go:199` `UnmarshalBytecode` 在 Version 读取后加 `r.readString()` → `bc.SourceHash`。顺序一致（Marshal 先 Version 后 SourceHash，Unmarshal 相同）。
+- **S9** `bytecode_cache.go`：5 个 unmarshal map 函数加 duplicate key 检测——`unmarshalGlobalSlots:284`、`unmarshalFuncs:359`、`unmarshalBuiltins:386`、`unmarshalEnums:472`（返回 `(map, error)`，用 `return nil, fmt.Errorf("duplicate ... key: %s", name)`）；`unmarshalEventLocals:437`（返回 `error`，用 `return fmt.Errorf("duplicate eventLocal pc: %d", pc)`）。
+- **S10** `bytecode_cache.go:209`：`UnmarshalBytecode` 末尾加 `if r.pos != len(r.data) { return nil, fmt.Errorf("trailing bytes: %d", ...) }`；`bytecode_cache.go:218` 新增 `readCount(minBytes int)` 方法，检查 `count*minBytes` 不超过剩余数据；`unmarshalConsts:232` 和 `unmarshalCode:265` 改用 `readCount`。
+
+**VM-CACHE-INTEGRITY-2 重新施工（Python 缓存路径）**：
+- **S6** `interp_runner.go:82`：新增 `CompilePythonCached(source, cachedBytecode)` 函数，镜像 `CompileMQLCached`——cache hit 校验 `SourceHash == hashSource(source)`，mismatch 重编，`MarshalBytecode` error 返回（不吞）。
+- **S7** `backtest_worker_python.go:28`：改用 `mql2go.CompilePythonCached(params.code, cachedBytecode)` 替代直接 `CompileMQLFromBytecode`；cache hit 时通过 `CompilePythonWithCoverage` + `InjectCoverage` + `InjectDefenseAViolations` 恢复 coverage（镜像 `backtest_worker_vm.go:42-48` MQL path）。
+
+**新增行为测试**（`vm_cache_integrity_redo_test.go`，9 个）：
+1. `TestCacheRejectsDifferentSource`：source A 缓存 + source B 调用 → 强制重编，SourceHash 匹配 B。
+2. `TestCacheAcceptsSameSource`：相同 source 缓存命中，返回相同 cachedBytecode。
+3. `TestMarshalErrorNotSwallowed`：`MarshalBytecode(nil)` 返回 error；`CompileMQLCached` 成功时返回非 nil bytecode（证明 marshal 路径执行且结果不被吞）；round-trip 验证 SourceHash。
+4. `TestDuplicateEnumKeyRejected`：构造 duplicate enum key → `UnmarshalBytecode` 返回 "duplicate" error。
+5. `TestDuplicateGlobalSlotKeyRejected`：构造 duplicate globalSlot key → 返回 "duplicate" error。
+6. `TestTrailingBytesRejected`：valid bytecode + trailing 4 bytes → 返回 "trailing" error。
+7. `TestReadCountBounded`：consts count 声明 10 亿但无数据 → 返回 error。
+8. `TestPythonCacheRejectsDifferentSource`：Python source A 缓存 + source B → 强制重编。
+9. `TestPythonCacheAcceptsSameSource`：相同 Python source 缓存命中。
+
+**对抗证明 4 项**（每项 RED→restore→GREEN）：
+- **S4**：删 `CompileMQLCached` 的 `SourceHash == hashSource(source)` 校验（改为 `if e == nil`）→ `TestCacheRejectsDifferentSource` RED（"stale cache from different source should be rejected"）→ 恢复 → GREEN。
+- **S5**：`MarshalBytecode(nil)` 返回 error（nil 检查）；`CompileMQLCached` 成功路径返回非 nil `bcData`（证明 marshal 结果不被吞）。注：MarshalBytecode 对 valid bc 永不失败，故 error path 无法通过 mutation 触发——nil 检查 + 非 nil bcData 断言是可验证的对抗证据。
+- **S9**：删所有 5 个 duplicate key 检测 → `TestDuplicateEnumKeyRejected` + `TestDuplicateGlobalSlotKeyRejected` RED（"expected error for duplicate ... key, got nil"）→ 恢复 → GREEN。
+- **S10**：删 trailing bytes 检查 → `TestTrailingBytesRejected` RED（"expected error for trailing bytes, got nil"）→ 恢复 → GREEN。
+
+**门禁**：
+- `go build ./...` ✓
+- `go test ./tools/mql2go/... -count=1` ✓（7.4s）
+- `go test -race ./tools/mql2go/... -count=1` ✓ ×3（14.9s / 14.3s / 12.9s）
+- `go test ./internal/connect/strategy/... -count=1` ✓（94.3s）
+- `go vet ./tools/mql2go/... ./internal/connect/strategy/...` ✓
+- `go run ./tools/check-file-lines --strict`：0 errors（50 warnings 均为 pre-existing）
+- `git diff --check` ✓ clean
+
+**REUSE 核对**：
+- `hashSource`：REUSE `failure_signature.go:43`（已存在，SHA256+TrimSpace）
+- `SourceHash`：NEW（Bytecode struct 新字段）
+- `CompilePythonCached`：NEW（镜像 CompileMQLCached）
+- `InjectCoverage`/`InjectDefenseAViolations`：REUSE `interp_runner.go:333,344`
+- `CompilePythonWithCoverage`：REUSE `interp_runner.go:99`
+
+**状态**：`🟦open（施工完成，待独立复审）`——不自行宣告 ✅done，停手等 Devin CLI 复审。
+
 - 2026-08-21 **LIVE-DIAG-TRUTH-1 ⚠️待Claude复审（施工完成，对抗证明通过）**：实盘诊断真实性增强。**根因**：诊断页只显示单一 `orders_total`（VM 内部值），无法区分 VM vs broker vs strategy magic 订单数；`RecordIndicators` 在 indicator values 为空时 early return 阻断 `ordersTotalSeen` 更新（OnTick-only 策略 bar 事件空指标 → OrdersTotal 永远不更新）；无执行状态/生命周期/新鲜度暴露。**修复**：① **Proto** `StrategyDiagnostics` 加 L3 字段（vm_orders_total/broker_account_orders/strategy_magic_orders/pending_broker_orders/schedule_magic/execution_state/order_lifecycle/last_broker_ticket/financial_source+captured_at+age+fresh/positions_source+captured_at+age+fresh）；② **后端 `session_diag.go`**：修 `RecordIndicators` 空值阻断 bug（ordersTotal 始终更新，空值不烧节流窗口）；`DiagSnapshot` 加 L3 字段；③ **后端 `active_session_proto.go`**：新增 `enrichDiagSnapshot` 从 PositionCache+TradeBarrier 计算 L3 值（broker/magic/pending 计数 + freshness + execution state + lifecycle），`barrierStateToLifecycle` 映射（signal_generated≠order_confirmed）；④ **`ActiveSession` 加 `posCache` 字段**，三处 Register 调用点接线（live_runner_session/schedule_event/strategy_active_control）；⑤ **前端 `DiagnosticsTab.tsx`**：三段 Descriptions（L1 计数器 + L3 Order Truth + L3 Execution + L3 Freshness），状态徽章加 warning 态（VM≠broker/positions stale/outcome unknown），signal_generated 用 default 色非绿色（rule 1）；⑥ **i18n** 5 语言补齐 21 新 key + lifecycle 6 态。**对抗证明 3 组**：① 还原 `RecordIndicators` 空值 early return → `TestLIVE_DIAG_TRUTH_1_RecordIndicators_EmptyValuesDoesNotBlockOrdersTotal` RED；② 删 magic filter（count all positions）→ `TestLIVE_DIAG_TRUTH_1_MixedMagic` RED（strategy_magic_orders=3 want 1）；③ freshness 函数硬返回 true → `TestLIVE_DIAG_TRUTH_1_StalePositions` RED（stale 误判 fresh）。全部还原后 10/10 GREEN。**测试**：10 个新测试（live_diag_truth_test.go）+ 1 个旧测试更新（session_diag_test.go Throttling：ordersTotal 始终更新）。**门禁**：go build/test strategy 全绿 / check-file-lines 0 RED / buf lint 0 / tsc 0err / npm build 成功。**⚠️待Claude复审**：① 新 proto L3 字段架构决策（是否应独立 message）；② `barrierStateToLifecycle` 映射设计（idle+signalCount>0→signal_generated 是否准确）；③ `posCache` 字段加在 `ActiveSession` 的架构影响。
+
+### LIVE-ORDER-REENTRY-1-R4-REVIEW 阻断解决施工完成（2026-08-26 Devin 施工方）
+
+> 施工提示词：`docs/audits/builder-handoff-live-order-reentry-r4-2026-08-26.md`
+> 基线 HEAD：`99b9859d`，工作树干净。
+> 施工文件：`mutation_coordinator.go`（S1）+ `mutation_coordinator_test.go`（S3）+ `trade_barrier.go`（S3 helper）+ `mt4/order_stream.go`/`mt5/order_stream.go`（S2 导出 wrapper）+ `live_order_reentry_r4_redo_test.go`（新建）。
+
+**S1 — open mutation recovery 边界（D1）**：
+- `mutation_coordinator.go:259-271`：recovery 启动条件加 `if spec.action != actionOpen` 包裹。open mutation outcome unknown 时不启动 `recoverFromOutcomeUnknown`，直接 fail-closed（barrier 锁定 + circuit open → 策略停止，恢复方式 = 外部干预）。
+- `:195-201` 路径不改（已有 `spec.expectedTicket != 0` 保护，open mutation expectedTicket=0 → 已排除）。
+
+**S2 — adapter pipeline 测试改用真实 label 接线（D2）**：
+- `mt4/order_stream.go:218`：新增导出 wrapper `ParseMt4OrderUpdateForTest(s *pb.OrderUpdateSummary, accountID string) *mdtick.OrderUpdate`。
+- `mt5/order_stream.go:218`：新增导出 wrapper `ParseMt5OrderUpdateForTest(s *pb.OrderUpdateSummary, accountID string) *mdtick.OrderUpdate`。
+- 新增 4 个 RealParse 测试（`live_order_reentry_r4_redo_test.go`）：MT4 单元 + MT5 单元 + MT4 FullPath（real adapter → real broker → barrier）。
+- 现有 8 个 AdapterLabelPipeline 测试保留（测试 label → barrier 映射逻辑，仍有价值）。
+
+**S3 — time.Sleep → channel 同步（D3）**：
+- `trade_barrier.go:367`：新增 `WaitState(ctx, target) tradeBarrierState` 方法——阻塞直到 barrier 到达 target 状态或 ctx 取消，基于 `sync.Cond`（与 `WaitConfirmed` 相同模式）。
+- `mutation_coordinator_test.go` 6 处 `time.Sleep` 全部替换：
+  - :1226 `time.Sleep(50ms)` → `sess.barrier.WaitState(ctx, barrierSubmitting)`
+  - :1316 `time.Sleep(300ms)` → `sess.barrier.WaitState(ctx, barrierIdle)`
+  - :1366 `time.Sleep(300ms)` → `sess.barrier.WaitState(ctx, barrierIdle)`
+  - :1414 `time.Sleep(300ms)` → channel `recoveryAttempted`（fetchFn 调用时发信号）
+  - :1473 `time.Sleep(300ms)` → `sess.barrier.WaitState(ctx, barrierIdle)` + 超时断言保持 outcomeUnknown
+  - :1526 `time.Sleep(300ms)` → `sess.barrier.WaitState(ctx, barrierIdle)`
+- `grep "time.Sleep" mutation_coordinator_test.go` 返回 0 行（仅注释行）。
+
+**新增行为测试**（`live_order_reentry_r4_redo_test.go`，4 个）：
+1. `TestLIVE_ORDER_REENTRY_1_R4_OpenMutationWithTicket_NoRecovery`：open mutation RPC 返回 ticket=77 + 确认超时 → 验证 recovery 不启动（barrier 保持 outcomeUnknown，circuit open）。
+2. `TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_MT4`：构造 MT4 `OrderUpdateSummary` protobuf → 真实 `ParseMt4OrderUpdateForTest` → 验证 label="pending_open" + barrier confirmed。
+3. `TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_MT5`：构造 MT5 `OrderUpdateSummary` protobuf → 真实 `ParseMt5OrderUpdateForTest` → 验证 label="open" + barrier confirmed。
+4. `TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_FullPath_MT4`：real adapter → real broker → barrier 全链路。
+
+**对抗证明 3 项**（每项 RED→restore→GREEN）：
+- **S1**：删 `if spec.action != actionOpen` 包裹（恢复旧逻辑）→ `TestLIVE_ORDER_REENTRY_1_R4_OpenMutationWithTicket_NoRecovery` RED（"recovery ran unexpectedly, state=idle"）→ 恢复 → GREEN。
+- **S2**：突变 `Mt4UpdateActionLabel` 的 PendingOpen 返回 "close" → `TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_MT4` RED（"UpdateType=close, want pending_open"）→ 恢复 → GREEN。
+- **S3**：突变 `WaitState` 为立即返回当前状态（不阻塞）→ `TestLIVE_ORDER_REENTRY_1_R4_Recovery_CloseConfirmed` RED（"post-recovery state=outcome_unknown, want idle"）→ 恢复 → GREEN。
+
+**门禁**：
+- `go build ./...` ✓
+- `go test ./internal/connect/strategy -count=1` ✓（96.3s）
+- `go test -race ./internal/connect/strategy -count=1` ✓ ×3（98.7s / 98.8s / 98.8s）
+- `go vet ./internal/connect/strategy/... ./internal/mdgateway/adapter/mt4/... ./internal/mdgateway/adapter/mt5/...` ✓
+- `go run ./tools/check-file-lines --strict`：0 errors（50 warnings 均为 pre-existing）
+- `git diff --check` ✓ clean
+- `grep "time.Sleep" mutation_coordinator_test.go`：0 行（仅注释）
+
+**REUSE 核对**：
+- `WaitState`：NEW（trade_barrier.go 新增，基于 sync.Cond，与 WaitConfirmed 相同模式）
+- `ParseMt4OrderUpdateForTest`/`ParseMt5OrderUpdateForTest`：NEW（导出 wrapper，仅测试用）
+- `publishOrderUpdate`：REUSE `mutation_coordinator_test.go:156`
+- `parseMt4OrderUpdate`/`parseMt5OrderUpdate`：REUSE（通过导出 wrapper 调用）
+
+**状态**：`🟦open（施工完成，待独立复审）`——不自行宣告 ✅done，停手等 Devin CLI 复审。
+
+### LIVE-ORDER-REENTRY-1-R4-REVIEW 返工施工完成（2026-08-26 Devin 施工方，R4 复审退回项）
+
+> 施工提示词：`docs/audits/builder-handoff-live-order-reentry-r4-rework-2026-08-26.md`
+> 基线 HEAD：`1e8f5bae`，工作树含前序 R4 + VM-CACHE-INTEGRITY 改动（未提交）。
+> 施工文件：`backend/internal/connect/strategy/live_order_reentry_r4_redo_test.go`（S1a/S1b 删 time.Sleep）+ `backend/internal/connect/strategy/mutation_coordinator_test.go`（S2 注释）。不改生产代码、不改已通过的 S1/S2/S3 实现。
+
+**触发**：R4 复审 conditional pass，2 项退回——(1) `live_order_reentry_r4_redo_test.go` 新引入 2 处 `time.Sleep`（:79 轮询 10ms、:199 轮询 1ms）违反确定性纪律；(2) `FullBrokerPath` 测试的 `WaitState` 无法通过 `time.Sleep(0)` 突变证明必要性（`dispatchLiveSignal` 同步阻塞模型使差异不明显）。
+
+**S1a — `OpenMutationWithTicket_NoRecovery` 的 :79 轮询改 WaitState**：
+- 原 `for { select <-deadline ...; time.Sleep(10ms) }` 轮询 barrier 是否被 recovery 释放。
+- 改为 `WaitState(ctx 700ms, barrierIdle)`：阻塞直到 barrier 变为 `barrierIdle`（recovery 释放）或 ctx 超时。正确行为下 recovery 不启动 → ctx 超时 → 返回 `barrierOutcomeUnknown` → 断言通过；错误行为下 recovery 启动 → barrier 变 `barrierIdle` → WaitState 提前返回 → 断言 `finalState != barrierOutcomeUnknown` 失败。
+
+**S1b — `RealParse_FullPath_MT4` 的 :199 轮询改 WaitState**：
+- 原 `for i:=0; i<1000; i++ { if state==submitting break; time.Sleep(1ms) }` 轮询 barrier 进入 submitting。
+- 改为 `WaitState(ctx 2s, barrierSubmitting)`：阻塞直到 barrier 进入 submitting 或 ctx 超时。`dispatchLiveSignal` 同步阻塞调用，主 goroutine 在其内部驱动 barrier 状态变化（acquire→submitting），`WaitState` 的 `cond.Wait()` 会被唤醒。注：当 barrier 已越过 submitting 状态时 WaitState 会等满 ctx 超时（与原轮询 1s 上限同性质的确定性最坏情况），测试仍正确通过。
+
+**S2 — `FullBrokerPath` 的 WaitState 加防御性同步注释**：
+- `mutation_coordinator_test.go:1222-1231`：在 `WaitState(ctx, barrierSubmitting)` 前加注释，明确说明其在当前同步 `dispatchLiveSignal` 模型下是**防御性同步**（`time.Sleep(0)` 亦能工作），但 `WaitState` 对 sync/async dispatch 模型均正确，使测试对未来重构鲁棒；对抗证明引用 `TestLIVE_ORDER_REENTRY_1_R4_Recovery_CloseConfirmed`（recovery goroutine 真正异步，`WaitState`→`time.Sleep(0)` 突变已验证 RED）。
+- 不重构测试（避免 scope 扩大，超出返工边界）。
+
+**对抗证明**（RED→restore→GREEN）：
+- **S1a**：突变 `mutation_coordinator.go:266` `if spec.action != actionOpen` → `if true`（恢复旧逻辑）→ recovery 启动 → barrier 变 `barrierIdle` → `TestLIVE_ORDER_REENTRY_1_R4_OpenMutationWithTicket_NoRecovery` RED（`recovery ran unexpectedly, state=idle (should stay outcome_unknown for open)`，0.10s）→ 恢复 → GREEN（0.78s）。
+- **S1b**：`WaitState` 必要性的对抗证明引用 `Recovery_CloseConfirmed`（S3 已验证，真正异步场景）；本测试的 `WaitState` 是防御性同步，注释已明确说明。
+- **S2**：注释-only 改动，无行为变化，对抗证明引用 `Recovery_CloseConfirmed`。
+
+**门禁**：
+- `go build ./...` ✓
+- `go test ./internal/connect/strategy -count=1` ✓（96.3s）
+- `go test -race ./internal/connect/strategy -count=1` ✓ ×3（99.7s / 99.7s / 97.7s）
+- `go vet ./internal/connect/strategy/...` ✓
+- `go run ./tools/check-file-lines --strict`：0 errors（50 warnings 均为 pre-existing）
+- `git diff --check` ✓ clean
+- `grep "time.Sleep" live_order_reentry_r4_redo_test.go`：0 行（注释行已改写为"禁止轮询睡眠"，不含字面 `time.Sleep`）
+
+**REUSE 核对**：
+- `WaitState`：REUSE `trade_barrier.go:371`（R4 S3 已新增，基于 sync.Cond）
+- `publishOrderUpdate`：REUSE `mutation_coordinator_test.go:156`
+- 无新增能力。
+
+**状态**：`🟦open（返工施工完成，待独立复审）`——不自行宣告 ✅done，停手等 Devin CLI 复审。
+
+### VM-CACHE-INTEGRITY-1/2 返工施工完成（2026-08-26 Devin 施工方，第一批复审退回项）
+
+> 施工提示词：`docs/audits/builder-handoff-vm-cache-rework-2026-08-26.md`
+> 基线 HEAD：`1e8f5bae`，工作树含前序 LIVE-ORDER-REENTRY-1-R4 + VM-CACHE-INTEGRITY 第一批改动（未提交）。
+> 施工文件：`backend/tools/mql2go/interp_runner.go`（S1 marshalHook）+ `backend/tools/mql2go/vm_cache_integrity_redo_test.go`（S1 新测试 + S2 删 binary）。
+
+**S1 — 补充 S5 对抗证明：marshal 失败注入（marshalHook）**：
+- `interp_runner.go:46-60`：新增 package-level `marshalHook func(*Bytecode) ([]byte, error)` 变量（仅测试用，生产为 nil）+ `marshalBytecode(bc)` helper（marshalHook 非 nil 时用 hook，否则用 `MarshalBytecode`）。
+- `CompileMQLCached`（:85）和 `CompilePythonCached`（:110）的 marshal 调用从 `MarshalBytecode(bc)` 改为 `marshalBytecode(bc)`，error 路径不变（`return nil, nil, fmt.Errorf(...)`）。
+- 新增 3 个测试（`vm_cache_integrity_redo_test.go`）：
+  1. `TestCompileMQLCached_MarshalFailureReturnsError`：设置 `marshalHook` 返回 `errors.New("injected marshal failure")` → `CompileMQLCached` 返回 error + nil runner + nil bytecode + error 包含 "injected marshal failure"。`t.Cleanup` 恢复 `marshalHook`。
+  2. `TestCompilePythonCached_MarshalFailureReturnsError`：同上，验证 Python 路径。
+  3. `TestMarshalHook_ResetByCleanup`：验证 `marshalHook` 在测试内被设置，`t.Cleanup` 注册恢复。
+
+**S2 — 删除 unnecessary binary 引用**：
+- 删除 `vm_cache_integrity_redo_test.go:4` 的 `"encoding/binary"` 导入。
+- 删除 `vm_cache_integrity_redo_test.go:316-317` 的 `// Ensure binary package is used (for potential future extensions)` + `var _ = binary.LittleEndian`。
+- `grep "binary" vm_cache_integrity_redo_test.go`：仅剩注释中 "binary surgery"（:107，无关词）。
+
+**对抗证明 2 项**（每项 RED→restore→GREEN）：
+- **S1 MQL 路径**：突变 `CompileMQLCached` 的 marshal error 路径为 `return r, nil, nil`（吞 error）→ `TestCompileMQLCached_MarshalFailureReturnsError` RED（"expected error from injected marshal failure, got nil (error swallowed)"）→ 恢复 → GREEN。
+- **S1 Python 路径**：突变 `CompilePythonCached` 的 marshal error 路径为 `return r, nil, nil` → `TestCompilePythonCached_MarshalFailureReturnsError` RED（"expected error from injected marshal failure, got nil (error swallowed)"）→ 恢复 → GREEN。
+
+**门禁**：
+- `go build ./...` ✓
+- `go test ./tools/mql2go/... -count=1` ✓（6.8s）
+- `go test -race ./tools/mql2go/... -count=1` ✓ ×3（15.4s / 17.4s / 14.9s）
+- `go vet ./tools/mql2go/...` ✓
+- `go run ./tools/check-file-lines --strict`：0 errors（50 warnings 均为 pre-existing）
+- `git diff --check` ✓ clean
+- `grep "binary" vm_cache_integrity_redo_test.go`：仅注释 "binary surgery"（无关）
+
+**REUSE 核对**：
+- `marshalHook`/`marshalBytecode`：NEW（测试注入点，生产为 nil）
+- `MarshalBytecode`：REUSE（marshalBytecode helper 内部调用）
+- `CompileMQLCached`/`CompilePythonCached` error 路径：REUSE（已有 `return nil, nil, fmt.Errorf(...)`，仅改调用入口）
+
+**不破坏已通过的 S1-S4/S6-S10**：原有 9 个测试仍全 GREEN（`go test ./tools/mql2go/` 全绿）。
+
+**状态**：`🟦open（施工完成，待独立复审）`——不自行宣告 ✅done，停手等 Devin CLI 复审。
