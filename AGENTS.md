@@ -1,286 +1,137 @@
-# Project "ant" — Mandatory Constraints
+# Project "ant" — AI 协作契约（无损交接 SSOT）
 
-> 🔴 **ACTIVE TASK**: 市场数据架构简化 — 详见 [`docs/adr/0012-remove-tick-persistence.md`](docs/adr/0012-remove-tick-persistence.md)
+> **唯一真相源。** 本文件是所有 AI agent 共同遵守的契约。
+> 各工具入口壳（CLAUDE.md / .windsurfrules）只做一件事：加载本文件。**冲突时以本文件为准。**
+> 技术约束见 `docs/constraints.md`，坑库见 `docs/pitfalls.md`，项目定位见 `docs/项目定位.md`。
 
-## §0 角色定位（项目治理 SSOT；常驻）
-
-> 本节优先于仓库中任何历史角色描述和工具兼容规则文件（包括 `.windsurfrules`）；`CLAUDE.md` 仅保留技术约束并以本节为角色入口。
+## 0. 角色与决策权
 
 | 角色 | 职责 | 决策权 |
-|---|---|---|
-| **Claude** | 项目第一负责人、唯一技术决策者；负责设计、定稿、架构/合规/方向、审计、验收与交付判断 | **最高**：技术判断、架构、合规、方向与最终质量 |
-| **GLM-5.2** | 施工方；严格按 `AGENTS.md` + registry/handover 中的 SSOT 和编号化施工提示词落地 | **无**：遇到设计疑问必须停止并返回 Claude |
-| **人类（业主）** | 提出需求、提供业务输入与必要外部凭证 | 需求可能错误；不直接替代技术结论 |
+|------|------|--------|
+| **Claude** | 项目第一负责人、唯一技术决策者；设计/定稿/架构/合规/方向/审计/验收 | **最高**：技术判断、架构、合规、方向与最终质量 |
+| **其他 agent** | 施工方：按 AGENTS.md + STATE.md + registry 落地 | **无**：遇设计疑问回找 Claude |
+| **人类（业主）** | 提需求，提供业务输入与外部凭证 | 需求可能错误 → Claude 以技术判断把关 |
 
-**固定流程：讨论 → 决定 → 执行 → Claude 独立复审 → 验收/交付；顺序不可跳过。**
-
-### 常驻工作流
-
-1. Claude 完成设计 SSOT，写入 `docs/`/现有治理文档，并在允许的外部操作阶段提交。
-2. Claude 完成整读自审和代码事实回验后，生成带路径、坐标、hash 和验收标准的施工提示词。
-3. GLM-5.2 只施工，不做设计决策、不扩大 scope；超出提示词范围必须停止并返回。
-4. Claude 执行 A–F 独立复审；不达标即退回，不能因测试“基本通过”而放行。
-5. 复审通过后才进入交付/部署流程；部署仍须遵守运行环境安全门禁和外向操作授权。
-
-### Claude 的具体职责
-
-- **设计/定稿/审计/验收（全权）**：设计文档是单一真相源；出提示词前强制整读 SSOT、自审并逐一核实字段号、方法签名、注入坐标、调用链和边界，禁止“或/待核对”类歧义。
-- **施工提示词**：只写指令，不代施工；编号化（S1–Sn/T1–Tn）、串行、单一目标、精确坐标、明确验收标准；复审缺陷形成指令级清单后退回 GLM-5.2。
-- **复审 A–F**：A 架构复用；B 第一性最简；C 洁净（含 check-lines 零警告）；D 正确性（边界/nil/竞态）；E 合规；F 文档/状态同步；独立重跑 build、gofmt、vet、test、race×3、必要 DSN 及部署后三通道运行时证据。
-- **方向/决策**：每个方向决策必须在现有 `docs/adr/`、registry 或 handover 中留痕；聊天不是第二事实源。
+- 流程：**讨论 → 决定 → 执行 → Claude 独立复审 → 验收/交付**，顺序不可跳。
+- Claude 对最终质量负责：不达标不交付；业主方案错误时指出并给更优解，不盲从。
+- **常驻工作流**：每项功能/任务 → Claude 完成设计 SSOT → 给施工方编号化施工提示词（S1–Sn/T1–Tn）→ 施工方只施工不做决策 → 完成后 Claude 复审验收（A–F），不达标退回。
 
 ### 施工提示词语法
 
-固定头部：立项背景（触发 + 证据链）→ 设计 SSOT 声明 → 约束与目标 → 边界/不做；正文使用 S1–Sn/T1–Tn，每步包含目标、精确代码坐标（file:line/字段/方法签名）和落点；验收包含机检五件套、全量 race×3、check-lines 零警告、先红后绿；固定尾部为“勿部署，停手等 Claude 复审”，并禁止 `--no-verify`。
+固定头部：立项背景（触发 + 证据链）→ 设计 SSOT 声明 → 约束与目标 → 边界/不做；正文 S1–Sn/T1–Tn，每步含目标、精确代码坐标（file:line/字段/方法签名）和落点；验收含机检五件套、race×3、check-lines 零警告、先红后绿；固定尾部"勿部署，停手等 Claude 复审"，禁 `--no-verify`。
 
 ### 常驻纪律红线
 
 - 服务器/DB/venue 实拍优先于 proto、文档和旧状态；事实缺失或不确定必须 fail-closed。
 - 事件驱动优先于定时器；没有事件源时先定义必然发生的 boot 事件。
-- P3 单一事实单一位置：结论进决策/SSOT，规则进本文件，禁止复制漂移。
 - 前端零信任：运算、校验、分页由后端负责，前端只渲染。
 - 多 agent 同仓：收工只显式 add 本会话文件；不得覆盖或清理其他 agent 的改动。
+- 每个关键修复必须有真实 mutation RED→restore→GREEN 证据；nil panic、另一条错误、callback-only 或"任意 error"均不算证据。
 
-### 无损交接与状态
+## 1. 定位（方向锚点 · 修改须决策记录）
 
-- 当前仓库没有独立的 `STATE.md` 或 `decisions.md`；在 Claude 正式建立并迁移前，状态与决策 SSOT 只有 `docs/audits/tech-debt-registry.md`、`docs/audits/handover-audit-plan.md` 和现有 `docs/adr/`，禁止 agent 自行创建同义第二事实源。
-- 所有设计、施工、审计和结论落入上述 SSOT 及必要的 `memory/` 入口，不新建并行进度文档。
-- 每项施工完成必须立即回填 registry 根因/实现/对抗证明/测试结果，并在 handover 追加一行；施工方不得自行宣告验收完成。
-- 状态统一为：`❓待核` / `🟦open` / `✅done` / `⚠️待Claude复审`；`✅done` 只有 Claude 独立复审后才权威。
-- 每个关键修复必须有真实 mutation RED→restore→GREEN 证据；nil panic、另一条错误、callback-only 或“任意 error”均不算证据。
-- 收工顺序固定为：自审 → 更新上述 SSOT → 清扫私有记忆 → 追加 handover LOG → 在明确授权的外部操作阶段串行提交/推送 → 写入已批准的知识库入口；当前仓库没有独立 KB/STATE 文件时，禁止 agent 自行发明第二路径。
-- 提交前必须通过 pre-commit 门禁，禁止 `--no-verify`；不得提交 secrets、无关 generated churn 或未审计 scope。
+> **ant = 策略市场平台**。对标 MQL5 Market，核心差异：代码不出平台、实盘战绩公开、AI 持续迭代策略。
+> **服务群体**：MQL 策略开发者（供给侧）+ 零售交易者（需求侧）。
+> **收入模型**：平台订阅 + 策略抽成（15-30%）。不做自营、不做跟单、不拿牌照、不碰用户资金。
+> **终极壁垒**：市场流动性——策略最多、用户最多、战绩数据最全。
+> 首行是方向锚，改动必须走 decisions.md（D#）或 docs/adr/ 留痕。
 
-These constraints are enforced at implementation time. Violation = stop, document the gap, and return to Claude.
+## 2. 开工前必读
 
-## File & Function Size
+1. 本文件全文（T0 契约）。
+2. `docs/handoff/STATE.md` — 当前状态 + 交接负载。
+3. `docs/项目定位.md` — 业务方向 + 功能块导航。
+4. `docs/audits/tech-debt-registry.md` — 技术债务总账（open 条目 = 待施工）。
+5. `docs/audits/handover-audit-plan.md` — 交接审计计划 + 变更日志。
+6. 任务相关 T1 文档（按需）：`docs/constraints.md`（技术约束）/ `docs/pitfalls.md`（坑库）/ `docs/adr/`（架构决策）。
+7. **经验库检索**：先 `grep` `docs/经验库/索引.md`（症状/报错/技术栈/工具名）→ 命中读 `docs/经验库/条目/<id>.md` 全文。未检索就动手 = 失职。
+8. **待归纳消化**：开工先查 `docs/经验库/待归纳.md`——有未消化行先分诊，空表跳过。
 
-**原则**: 按语义域（功能边界）拆分优先，行数作为软性参考。拆分的目的是帮助 AI 阅读代码——如果文件逻辑内聚，适度超标优于碎片化。
+## 3. 无损交接 · 六条原则
 
-| Language | 软性参考 | 函数参考 |
-|----------|---------|---------|
-| Go       | 300 行  | 50 行   |
-| TypeScript | 250 行 | 50 行   |
+| # | 原则 | 推论 |
+|---|------|------|
+| P1 | 通道不变量：私有记忆对对方不可见 | 事实只存 git 跟踪纯文本文档 |
+| P2 | 成本不变量：交接成本恒定 | 活跃层硬封顶；历史滚出 |
+| P3 | 单一真相源：一事实两份必有一错 | 每事实一处，其余用指针 |
+| P4 | 可检查性：无法检查的规则必被违反 | 编码为门禁（hook） |
+| P5 | 方向锚定：方向只存会话上下文 | charter 落盘，改动留痕 |
+| P6 | 增量优先：交付 delta | 交接负载是结构化增量 |
 
-- **拆分前先判断**：是否有明确的功能边界（CRUD/生命周期/实体类型）？有 → 拆。没有 → 保持内聚。
-- **硬性红线**：Go >450 行、TS >375 行必须拆分（AI 明显退化）。
-- 自动生成代码（`gen/`）、测试文件、i18n 文件豁免。
-- 检查：`cd backend && go run ./tools/check-file-lines --strict`（🔴 阻断 CI，🟡🟢 通过）。
-- 详细：见 `complexity-limits.md` 分级严重度系统。
+## 4. 分层与 token 预算
 
-## Command Output Discipline (Token Efficiency)
+| 层 | 文档 | 预算 |
+|----|------|------|
+| T0 契约 | `AGENTS.md` + `docs/handoff/STATE.md` | ≤ 20KB/文件 |
+| T1 知识 | `docs/handoff/decisions.md` / `docs/constraints.md` / `docs/pitfalls.md` / `docs/项目定位.md` | ≤ 450 行 |
+| T1 设计 | `docs/adr/` / `docs/spec/` / `docs/blocks/` | 按需 |
+| T2 归档 | `docs/handoff/LOG.md` / `docs/audits/` | 不限 |
 
-**优先级**: Claude 内置工具 > `rtk` 前缀 > 裸命令
+- 预算由 pre-commit 门禁强制（P4）；超限先把完成项/旧内容滚出到 `docs/handoff/LOG.md` 再提交。
+- `docs/audits/tech-debt-registry.md` 是技术债务总账（不限行数），`STATE.md` 是轻量交接负载（≤20KB）指向 registry。
 
-| 操作 | ✅ 首选 | ⚠️ 次选 | ❌ 禁止 |
-|------|--------|--------|--------|
-| 读文件 | Read 工具 | `rtk read` | `cat` / `head` / `tail` |
-| 搜索文本 | Grep 工具 | `rtk grep` | `grep -rn` |
-| 查找文件 | Glob 工具 | `rtk find` | `find` |
-| 统计行数 | — | `rtk wc` | `wc -l` |
-| 列目录 | — | `rtk ls` | `ls -la` |
+## 5. 交接负载（STATE.md 固定块）
 
-- **内置工具（Read/Grep/Glob）零 token 开销**，且结果格式化，始终优先使用。
-- 内置工具无法满足时（如需要复杂管道、非文件操作），使用 `rtk` 前缀命令，利用 RTK 过滤器压缩输出。
-- **裸 `grep -rn` / `find` / `cat` / `head` / `tail` 禁止在 Bash 中直接使用。**
-- 验证：`rtk discover` 定期检查遗漏，目标裸命令占比 <5%。
+```
+## 交接负载
+- 现状:      <一句话>
+- 方向校验:  <与 §1 一致？>
+- 施工表:    | 子任务 | ⬜🔄✅⚠️ | 锚点 |
+- 阻塞/待决策: <显式>
+- 下一步:    <第一条可执行动作>
+- 清扫上翻:  <私有记忆→共享层>
+```
 
-## Prohibited (Zero Tolerance)
+- 状态标记：`❓待核` / `🟦open` / `✅done` / `⚠️待Claude复审`；`✅done` 只有 Claude 独立复审后才权威。
+- 技术债务明细在 `docs/audits/tech-debt-registry.md`，STATE.md 只放当前活跃条目指针。
 
-- ❌ REST endpoints (except healthz/readyz/livez/metrics)
-- ❌ WebSocket
-- ❌ JSON 作为数据序列化/持久化/交换格式（包括 `json.load`/`json.dump`/`json.Marshal`/`json.Unmarshal`/`encoding/json`/`import json`）。所有跨进程数据交换用 proto，本地持久化用 PostgreSQL。豁免：自动生成产物（`gen/`、tree-sitter `grammar.json`/`node-types.json`）、PG `JSONB` 列（由 DB 管理，不在应用层做 `json.Marshal`）、以及外部 HTTP API 响应解析（如 TronGrid、OpenAI、ZhipuAI 等第三方 API 返回 JSON，必须用 `encoding/json` 解析——此为外部协议约束，非本项目选择）
-- ❌ float64 in price calculations (use `decimal.Decimal` in Go)
-- ❌ Cross-scope changes (one task = one scope)
-- ❌ Hardcoded secrets / `.env` in repo
-- ❌ 硬编码"本应来自外部权威源的可变数据"（broker symbol 清单、broker 参数、服务器地址等外部系统当前状态）。存在权威查询（`FetchAllSymbols`、broker RPC）时禁止写死静态列表——必然漂移→静默 bug。**反例 LIVE-PRICE-4**：`defaultQuoteSymbols()` 硬编码含 broker 不存在的 symbol → 原子 `SubscribeMany` 整批失败 → OnQuote 零交付 → 实盘无法开仓。修复=订阅前用 `FetchAllSymbols` 过滤。**豁免**：通用常量（标准 timeframe 毫秒 `60_000`、数学常量、固定枚举）。详见 CLAUDE.md。
-- ❌ **用本地计算/推导替代服务器权威数据（用户 2026-08-19 确立："服务器有的数据，一律以服务器为准，这是唯一真相"）**。broker/外部服务器返回的字段（balance/equity/margin/free_margin/margin_level、持仓、订单、symbol 参数…）是唯一真相，本地一律**只做透传与持久化，不做重算**。推论：① 存在权威 RPC 时禁止自算（如禁止按 contractSize 反推 margin，必须取 `AccountSummary`）；② **禁止用"不含该字段的次级数据源"覆盖权威值**——反例 DATA-TRUTH-2：MT4 `OnOrderProfit` 帧不填 margin/margin_level，却每 5s 把 `mt_accounts.margin` 覆盖成 0，导致 `MarginLevel > 0` 门槛永不成立、MT4 爆仓预警完全不触发（同一字段 MT5 帧填得完整，`AccountSummary` 也填得完整）；③ 一个事实只允许一个写入方 + 一张真相表——反例 DATA-TRUTH-4：两个同名 `RecordBalanceSnapshot` 写两张不同表，生产那份写进**不存在**的表且错误被 `log.Debug` 吞，净值曲线静默断供 28 天。豁免：纯展示派生值（百分比、涨跌幅）可本地算，但不得回写覆盖权威字段。
-- ❌ `//nolint`, `# noqa`, `// @ts-ignore`, `// #nosec`
-- ❌ **缺失/陈旧 broker 快照静默转零或继续执行**：权威金融快照必须带来源与采集/接收时间；缺失、非法、过期时策略 VM 与 Risk Gate 必须 fail-closed。订单流只可更新持仓事实，不得覆盖 AccountSummary 的金融字段；无 session 查询不得返回空订单成功。
-- ❌ 因困难而妥协最优解。遇到阻碍时禁止退而求其次——必须回到根因，找到正确的修复方式，哪怕需要推翻旧架构、完全重构。快捷方式（回退代替重新生成、标记 legacy 代替移除、沉默代替修复）视为违规。
+## 6. 启动/收工协议
 
-## Reuse Preflight (避免重复造轮子 — 强制)
+- **boot**：读 §2 清单 → 带交接负载开工。未读 STATE.md + registry 就动手 = 失职。
+- **check-out**：自审 A–F → 更新 STATE.md + registry → 私有记忆清扫 → LOG.md 追加会话纪要 → commit+push（pre-commit 门禁）。收工不写 STATE.md = 失职。
+- **收工顺序固定**：自审 → 更新 registry/STATE.md → 清扫私有记忆 → 追加 handover LOG → 在明确授权的外部操作阶段串行提交/推送。
 
-动工任何**新 file/function** 前必须执行复用核对：
+## 7. 门禁与提交纪律
 
-1. 用 `bash scripts/cap.sh <动词/别名/符号>` 查能力（自动刷新 + 只返回命中行 + 代码层兜底）。**禁止整篇 Read `docs/CAPABILITIES.md`**（浪费 token）。
-2. 按**动词 + 别名**（见该文件「动词/别名索引」）多换几个词查，确认是否已有现成能力。
-3. 在 PR 描述里逐条给结论，二选一：`REUSE: <symbol> @ <file:line>`（复用现成）或 `NEW: 无现成能力（已搜：<关键词>）`（确认真空白）。
-4. 发现能力状态/注释过时（注释说"不存在"但其实已实现）→ 同步修正注释与 `docs/CAPABILITIES.md`。
+- **7.1** 首次克隆/新工作副本执行 `bash scripts/setup-hooks.sh` 启用 pre-commit 门禁（`core.hooksPath` 不随 push 传播）；禁 `--no-verify`。
+- **7.2** pre-commit 全过；diff 通读无死代码/TODO/调试残留。
+- **7.3 自审 A–F**：A 架构（复用已有、无逆向依赖）B 实现（第一性·最简）C 洁净（含 check-lines 零警告）D 正确性（边界/nil/竞态）E 合规 F 文档/状态同步；独立重跑 build、gofmt、vet、test、race×3、必要 DSN 及部署后运行时证据。
+- **7.4 root-cause-first**：功能消失/退化 → 先查 git log + blame，理解原设计意图，再动手。禁止凭"我觉得更好"重写。
+- **7.5 复用核对**：动工新 file/function 前 `bash scripts/cap.sh <词>` 查能力，PR 标 `REUSE:`/`NEW:`。缺 = 失败。
+- **7.6 文档规则**：registry 🟦open/❓ 条目 + 根因 + 对抗测试记录必留文件内；变更日志条目禁删（pre-commit 强制）。
 
-**缺少 `REUSE:`/`NEW:` 引用 = 该任务判失败。** 既防重复造轮子，也防误判 shelf-ware（分层状态：gateway-rpc / executor / mthub-method / connect-rpc / wired-live）。
+## 8. 文档索引
 
-## Platform Protocol
+| 文档 | 层 | 用途 |
+|------|----|------|
+| `AGENTS.md` | T0 | 契约 SSOT |
+| `docs/handoff/STATE.md` | T0 | 当前状态 + 交接负载 |
+| `docs/handoff/decisions.md` | T1 | 日常决策记录（D#） |
+| `docs/handoff/LOG.md` | T2 | 历史归档 |
+| `docs/constraints.md` | T1 | 技术约束（禁令/协议/部署） |
+| `docs/pitfalls.md` | T1 | 坑库（静默失败模式 + 调试路径） |
+| `docs/项目定位.md` | T1 | 业务方向 + 功能块导航 |
+| `docs/audits/tech-debt-registry.md` | T2 | 技术债务总账（open/done 明细） |
+| `docs/audits/handover-audit-plan.md` | T2 | 交接审计计划 + 变更日志 |
+| `docs/adr/` | T1 | 架构决策记录（ADR 0001+） |
+| `docs/spec/` | T1 | 技术规格 |
+| `docs/blocks/` | T1 | 功能块文档 |
+| `docs/runbook/` | T1 | 运维手册 |
+| `docs/经验库/` | T1 | 经验库（索引 + 条目 + 待归纳） |
+| `CLAUDE.md` / `.windsurfrules` | — | 入口壳 → 本文件 |
 
-- External API: **ConnectRPC + SSE ONLY**
-- Internal: in-process function calls OR NATS JetStream
-- MT access: mtapi gRPC ONLY (via `adapter/mt4/` and `adapter/mt5/`)
-- MT4 and MT5 adapters MUST NOT share code (except `adapter/mdtick/` shared DTO)
+## 9. 环境快照
 
-## Push-First Architecture
-
-- **gRPC streaming + SSE is the default.** Prefer server-push over client-pull in every scenario.
-- ❌ Polling / cron / `setInterval` / `time.Ticker` — ONLY when the data source has no push capability AND the data is not latency-sensitive
-- ❌ Never poll when a streaming equivalent exists (e.g. MT5 `OnQuote` stream over polling `GetQuote`, SSE `bar_update` over polling `PriceHistory`)
-- ✅ If adding a new data feed, ask first: "Can this be a stream?" If yes, make it a stream
-
-## Data Precision
-
-- Prices: `NUMERIC(20,8)` PG / `Decimal(18,6)` CH / `decimal.Decimal` Go
-- Time: UTC, millisecond precision (`int64 ts_unix_ms`)
-- Symbol: raw broker symbol = canonical (no suffix stripping)
-- **md_bars 查询的 `DISTINCT ON` / `ORDER BY` 不能把 `broker` 排在时间列前面**（反例 BT-MULTIBROKER-ORDER，2026-08-24）：`GetKlines(broker="")` 曾把 `broker` 放进 distinct key + `ORDER BY broker, ...open_ts` → 多 broker 写同一 canonical 时按 broker 名排序而非按时间排序 → 回测崩 `bars are not chronologically ordered`。正确做法：distinct key 恒为 `(canonical, period, open_ts_unix_ms)`，`ORDER BY ...open_ts_unix_ms, tick_count DESC`，`broker` 仅作可选 WHERE 过滤——跨 broker 去重（最高 tick_count 胜出）+ 全局时序。所有 backtest/market-data 调用方都传 `broker=""` 且都需要单一时序。
-
-## Deployment (强制 — 禁止手动)
-
-- **后端部署唯一方式**: `docker compose build backend && docker compose up -d backend`
-- **每次 build 前先清理 Docker build cache**: `docker builder prune -f`（每次构建约产生 2-3GB cache，58G 磁盘不清理会快速吃满）
-- **前端部署唯一方式**: `docker cp frontend/dist/. alphaforge-frontend:/usr/share/nginx/html/ && docker exec alphaforge-frontend nginx -s reload`
-- **❌ 禁止宿主机 `go build` → `docker cp` 到容器**（宿主 glibc，容器 Alpine musl，二进制不兼容）
-- **❌ 禁止在运行中容器里 `go build` 或 `apk add build-base`**（污染运行时环境，容器重建即丢失）
-- **迁移文件**: `git status backend/migrations/` — 未提交的 `.up.sql` 会随 Docker build 自动执行；WIP 文件先移走再 build
-- 项目使用 multi-stage Docker build（`backend/Dockerfile`）：builder stage 在 `golang:alpine` 里编译 CGO 代码，runtime stage 只拷贝二进制 + `mql.so`
-- 运行中二进制名是 `/app/alphaforge`（不是 `alphaforge-backend` / `server`）
-
-## MQL2GO VM Pitfalls (必读)
-
-> 回测不开单 / volume=0 / 指标全零但 MT4/MT5 客户端正常？先查 [`docs/runbook/mql2go-known-pitfalls.md`](docs/runbook/mql2go-known-pitfalls.md)
-
-### 已确认的静默失败模式
-
-- **未知常量 → 0** — `interp/constants.go` 缺常量 → 编译器 push 0。例如 `MODE_SIGNAL` 缺失时 `iMACD` 返回主线而非信号线 → `MacdCurrent == SignalCurrent` → 永不开单。
-- **`builtinOrderType` 映射错误** — 必须返回 `OP_BUY=0 / OP_SELL=1`，不能返回 `PositionSide` (`SideBuy=1 / SideSell=-1`)，否则持仓管理/平仓逻辑失效。
-- **Go map 迭代非确定 → 用户函数前向引用返回 0** — `ir.Funcs` 是 map，编译器必须两遍编译：Pass 1 预注册所有 entry PC，Pass 2 编译体。**通用规则：任何有序 pipeline 禁止裸遍历 map 处理有序依赖**。
-- **Pass 2 中 user→user 前向引用仍可能使用 stale marker PC（BT-FUNC-ENTRYPC-FWD 🟦open）** — 当前修复只在逐个编译函数 body 时更新当前 EntryPC；尚未编译的 callee 在 `c.bc.Funcs` 中仍是 Pass 1 marker PC，caller 若先编译会把 stale PC 写进 `OP_CALL_USER`，之后 callee 更新也不会回补。现有 T3 `ForwardReference` 只覆盖 event→function（事件在所有 user body 之后编译），不是 user→user。**通用规则：所有 user function body entry 地址必须在发出任何 `OP_CALL_USER` 前最终确定，或先发符号目标再统一 patch；必须测试 caller→callee 且 callee 后定义。**
-- **两遍编译的 EntryPC 指向 marker 而非 body → OP_CALL_USER 跳到错误 PC → 被调函数静默不执行（BT-FUNC-ENTRYPC ✅done）** — Pass 1 为每个用户函数 emit `OP_ENTER_FUNC` marker 并记录 `EntryPC = marker PC`；Pass 2 编译所有 body（body 在所有 marker 之后连续排列）。`executeCallUser` 执行 `vm.pc = entryPC + 1` 跳过 marker——但当有 ≥2 个用户函数时，`entryPC+1` 是下一个函数的 marker，不是本函数 body。后果：`if(res==0) CheckForOpen()` 中 `CheckForOpen()` 的 `OP_CALL_USER` 跳到错误 PC → body 静默不执行 → 永不下单。**修复**：`compileUserFuncBody` 在编译 body 前更新 `EntryPC = len(c.bc.Code)`（body 实际起始）；`executeCallUser` 改为 `vm.pc = entryPC`（不再 +1）。**通用规则：两遍编译中 Pass 1 预注册的 PC 值必须在 Pass 2 编译 body 前更新为 body 实际起始位置，不能保留 marker 位置——marker 是占位符，不是跳转目标**。
-- **固定长度滚动窗口 + append-only 指标缓存 → 指标永久冻结（LIVE-INDICATOR-1 ✅done）** — live 启动 seed 恰好 `maxContextBars=500`，之后每根新 bar 都 drop oldest + append newest，窗口长度恒为 500；`SeriesCache.EnsureUpdated()` 只比较 `Len()`，看到 `n==c.n==500` 就认为无更新，导致 EMA/MACD/RSI/ATR/ADX 等所有 cache-backed 指标永远停在启动首帧。生产证据：4817 次 VM eval / 46 bar eval，但 MACD/EMA 与 00:44 首帧逐位一致，00:51 SELL 条件成立却 0 signal。**修复**：indicators 层新增可选 `RevisionedBarSource`（`Revision() uint64`），`EnsureUpdated()` 对 revisioned source 检测 revision 变化并 reset+lazy rebuild；runner 层 `runnerBarSource` 实现 `RevisionedBarSource`，`Runner.OnBar` 用 `atomic.Uint64` 推进 barRev（OnTick/OnTrade/OnTimer 不推进）；backtest `btBarSource` 不实现 revision，零开销。**通用规则：增量缓存 freshness 不能只靠长度；revisioned source 的任何 revision 变化都必须 reset+lazy rebuild，不能因长度增长就猜测只是 append**。对抗测试必须复用同一个 source+cache 做 500→500 mutation（新建 cache 会假绿），并精确覆盖 legacy `start()` 的 BAR→TICK 信号路径。完整证据/修复/对抗证明见 registry `LIVE-INDICATOR-1`。
-- **broker → proto → SDK 字段丢失 → MQL OrderSelect/OrderMagicNumber 返回错误值（LIVE-MQL-ORDER-CONTEXT-1 ✅done）** — `vmPositionsToSdk` 曾只保留 Ticket/Side/Volume/OpenPrice，丢弃 Symbol/Magic/SL/TP/Swap/Commission/Profit/Comment/OpenTime；`LivePosition` proto 只有 8 字段；挂单（buy_limit/sell_stop）没有独立 proto，全塞进 `Positions`；harness `Orders(magic)` 直接返回 nil。后果：MQL `OrderMagicNumber()` 返回 0、`OrderSymbol()` 返回空、`OrdersTotal()` 漏算挂单。**通用规则：跨层字段映射必须全字段透传，禁止"只保留策略当前需要的字段"——MQL 策略可通过 OrderSelect 访问任意字段，任何字段丢失都是静默 bug**。修复：proto 补齐全字段 + 新增 `LivePendingOrder`；pipeline 按 `IsPendingOrderType` 拆分 market vs pending；`UpdateLiveState` 接收 pendingOrders；harness `Orders` 返回 `livePendingOrders`。对抗测试必须验证 magic 端到端 + 删任一层映射必 RED。完整证据见 registry `LIVE-MQL-ORDER-CONTEXT-1`。**返工教训（审计复审阻断）**：Go 层断言 `broker.Positions/Orders` 和手工 `len()` 不够——必须编译 MQL 源码 → `Runner.OnTick` → VM 实际执行 `OrdersTotal`/`OrderSelect`/`OrderMagicNumber` → 通过 `VMRunner.GetGlobal` 读取 MQL 全局变量验证值。独立改 `builtinOrderMagicNumber` pending Magic 为 0 后 Go 层测试仍 GREEN，只有 VM 层测试 RED。**通用规则：MQL builtin 对抗测试必须穿透到 VM 执行层，不能只检查 Go 层 slice**。
-- **bar-based 回测 `Volume[0]` 返回整根 bar tick volume 而非 1 → `if(Volume[0]>1) return;` 新 bar 检测恒 true → 策略永不下单（BT-VOLUME-NEWBAR ✅done）** — 回测引擎每根 bar 调一次 OnTick（等价 MT4 "Open prices only" 模式），但 `Volume[0]` 返回 DB 整根 bar 的 tick volume（几百到上千）而非 MT4 该模式的 Volume=1。`Volume[0]>1` 是 MetaQuotes 官方 Moving Average sample 的新 bar 检测模式——MT4 文档明确 "Open prices only" 模式下 "bar is opened (Open = High = Low = Close, Volume=1)"。**修复**：`bt_bar_series.go` 包装 `sdk.BarSeries`，`Volume(0)=1`（当前 bar），`Volume(>0)` 保持实际值（历史 bar）；`backtestContext.Bars()/BarsTF()/BarsForSymbol()` 全部走包装。`btBarSource`（指标路径）不改——`iVolume` 等指标函数应返回实际 volume，只有 `Volume[0]` series 访问需 MT4 语义。**通用规则：bar-based 回测模拟 MT4 "Open prices only" 模式时，当前 bar 的 `Volume[0]` 必须返回 1（新 bar 第一个 tick），历史 bar 保持实际值**。
-
-### 调试路径
-
-1. 先查 `CoverageReport.BlindSpots` 中的 "unknown constant" / "unknown function" — 这是静默失败的首要信号。
-2. 连跑验证：`for i in $(seq 1 50); do go test -run <TestName> -count=1 -v 2>&1 | grep -E 'PASS|FAIL'; done`。
-3. 对比 PASS vs FAIL 的 debug 输出，确定哪些函数被调用、哪些被静默跳过。
-4. 在 builtin 入口加 `fmt.Fprintf(os.Stderr, ...)` 临时日志，确认参数值与调用次数。
-5. 检查 `compileCall` 路径：user func → builtin → API registry → unknown（每层 fallback 都可能静默吞掉调用）。
-
-## Strategy Runner Rules (实盘执行 — 强制)
-
-**Open bar 过滤（LIVE-1）**：
-- ❌ 策略 runner 禁止处理未收盘 bar（`bar.Closed == false`）—— open bar 是行情快照，非策略事件
-- ✅ 用 `shouldRunOnBar(bar, symbol, timeframe)` 纯函数过滤（`live_runner.go:214`）
-- ✅ extra-symbol context window 也只用 finalized bar（`live_runner.go:231`）
-- 后果：open bar 进 handleBar → 同一根 bar 重复执行 → 指标重复计数 → 实盘与回测发散
-
-**Order submission 串行语义（LIVE-ORDER-REENTRY-1）**：
-- ❌ 禁止 fire-and-forget goroutine 下单——`submitOrder`/`dispatchCloseOrder`/`dispatchModifyOrder`/`dispatchCancelOrder`/`dispatchCloseAll` 全部同步，事件循环阻塞到 broker mutation 确定性 outcome
-- ✅ 每 `ActiveSession` 持有 `TradeBarrier`，CAS Acquire 保证最多一个未确认 broker mutation（I1）
-- ✅ broker ticket ≠ positions caught up——须等权威 `OnOrderUpdate` push 或单次 read-after-write `OpenedOrders` 确认（I3/I4/I6）
-- ✅ transport timeout（DeadlineExceeded）= outcome unknown → barrier 锁定 fail-closed，不重下（I5）
-- ✅ `PositionCache` freshness 拆分：`GetFreshTradingSnapshot`（financials+positions 都须 fresh）给 VM/Risk Gate；`GetFreshFinancialSnapshot`/`GetFreshPositionSnapshot` 给 display；financial-only refresh 不让 stale positions 显 fresh
-- 后果：fire-and-forget → VM 在 broker 确认前继续 → `OrdersTotal()==0` → 下一 tick 重复开仓 → 数秒内多个同方向订单
-
-**Broker 应用层拒绝 vs 传输层错误（LIVE-ORDER-REENTRY-1-BROKER-REJECT）**：
-- ❌ MT4/MT5 adapter 在 `resp.GetError().GetCode() != 0` 时返回裸 `fmt.Errorf("mt4 OrderSend: code=%d msg=%s", ...)` 无 sentinel → `brokerError()` 包装为 `PhaseBroker` → `ClassifyMutationError` 先检查 phase → `outcome_unknown` → barrier 永久锁定 → 策略无法再下单（生产实测 MT4 code=130 Invalid S/L or T/P → 策略永久阻塞）
-- ✅ MT4/MT5 adapter 4 个订单操作（send/close/delete/modify）的应用层拒绝必须用 `fmt.Errorf("%w: ...", mthub.ErrBrokerRejected, ...)` 包装 sentinel
-- ✅ `ClassifyMutationError` **sentinel 检查必须在 MutationError phase 检查之前**——sentinel 是权威的，无论 phase 包装如何，`ErrBrokerRejected` 永远是 `deterministic_rejected`
-- **关键语义区分**：`resp.GetError()` 是 broker **应用层响应**（订单已到达 broker 并被明确拒绝，如 code=130 SL/TP 无效、code=134 余额不足、code=135 价格变化），不是传输层错误（gRPC `err != nil`，不知道订单有没有到达）。前者 = 确定性拒绝 → 释放 barrier → 策略可重试；后者 = outcome unknown → barrier 锁定 → fail-closed
-- **通用规则**：任何从 broker 响应体（`resp.GetError()`）提取的错误都是应用层拒绝，必须标 sentinel；只有 gRPC 传输层错误（`err != nil`）才是 outcome unknown
-
-**账户快照 freshness 续期（DATA-TRUTH-10 / DATA-TRUTH-10-FIX2）**：
-- ❌ `refreshAccountSummary`（45s ticker）调 `fetchAndPublish(ctx, sid, nil, handler)` 时 `p==nil` → `PositionsAuthoritative: false` → `PositionCache.put()` 不更新 `positionsReceivedAt` → 0 持仓账户无 `OnOrderUpdate` 事件 → 90s 后 `GetFreshTradingSnapshot` 全阻塞（生产实测 92 分钟 7,730 次错误）
-- ✅ `fetchAndPublish` 在 `p==nil` 时必须额外调 `OpenedOrders` RPC 获取权威持仓（即使为空），设 `PositionsAuthoritative: true`——0 持仓也是权威的
-- ❌ **测试禁止把 bug 行为编码为期望行为**：原 `TestAccountSummaryRefreshContinuesWithoutProfitFrames` 断言 `PositionsAuthoritative: false`（即 bug），删修复行测试仍 GREEN = 测试穿透。修复后断言改为 `true` + mock 加 `openedOrdersRes`，删 `positionsAuth = true` → RED
-- **通用规则**：任何 `PositionsAuthoritative` / `FinancialsAuthoritative` 的续期路径必须同时更新 `positionsReceivedAt` 和 `financialsReceivedAt`；只更新一个会导致 `GetFreshTradingSnapshot`（要求两者都 fresh）在 90s 后 fail-closed
-
-## Strategy Schedule Engine Pitfalls (SCHEDULE-HOTLOOP-1 代码验收通过，待生产部署验收)
-
-- **due timer occurrence 必须在所有 skip/deny/dispatch 分支前被持久化消费**：过期 `next_run_at` 若在 `isRunning`、`autoTrade=false`、entitlement/quota deny 等分支直接 `continue`，`GetEarliestNextRunAt` 会持续返回过去时间，timer delay=0 → CPU/DB/日志热循环。正确语义：timer schedule 每次 due 先推进 `next_run_at > now`，再决定是否 dispatch；autoTrade 关闭期间不补跑历史次数，恢复后从未来周期继续。
-- **禁止在 live run 返回后才推进 next_run_at**：实盘 run 可以永久运行，`runOne` 完成路径不是 timer occurrence 的收敛点。event schedule 必须保持 `next_run_at=NULL`，timer repository 查询只选 interval/cron，startup 清理 event 脏 next 值。
-- **持久化失败必须有界退避**：GetDue/ComputeNext/UpdateNext 失败时不 dispatch，ScheduleEngine 用 context-aware backoff timer 等待，`Notify` 可提前唤醒；invalid config 记录错误并 clear next 隔离。只降日志级别不能修复热循环。
-- **autoTrade cache 必须由所有写入口主动失效，且 check/query/write 与 invalidate 必须线性化**：`ToggleAutoTrade` 与 `UpdateGlobalSettings` 成功后都必须 callback invalidate+Notify；但仅 delete 不够——cache miss 解锁查 DB 后再回写存在 TOCTOU，旧查询可在 invalidate 后把旧 true 写回 30s。**修复（SCHEDULE-HOTLOOP-1a）**：per-user `autoTradeGeneration` map（与 cache 共用 `autoTradeCacheMu`），`InvalidateAutoTradeCache` 临界区内 `generation[userID]++`+delete；`isAutoTradeEnabled` miss 时记录 gen → DB query 锁外执行 → 回写时 generation 不匹配则丢弃旧结果并重查。对抗测试用 channel 精确控制“旧查询开始→更新+invalidate→旧查询返回”时序，删 generation retry → 4 断言确定性 RED。
-- **ClearNextRunAt 必须用 SQL NULL 而非零时间**：`GetEarliestNextRunAt`/`GetDueSchedules` 过滤 `IS NOT NULL`，零时间 `time.Time{}` 会被当作"现在到期"重新进入热循环。
-- 对抗测试 11 项全 PASS（含 race -race）：autoTrade=false pre-advance/no dispatch、already-running pre-advance、eligible UpdateNextRunAt 先于 dispatch、UpdateNext 失败不 dispatch、GetDue 失败 backoff 有界≤5/200ms、Notify 可提前唤醒 backoff、event SQL 排除+startup 清脏、invalid config 隔离、cache invalidation、callback wiring（ToggleAutoTrade + UpdateGlobalSettings onChange）、runOne 不重写 next。删 pre-consume 行 → Test_AutoTradeDisabledConsumesDue RED。完整证据与方案见 registry `SCHEDULE-HOTLOOP-1`。
-
-## Backtest Status Management (回测状态 — 强制)
-
-**新增回测终态时的检查清单**（BT-5 教训：DEGRADED 曾漏 4 处）：
-新增或修改回测终态状态时，**必须同步更新以下所有位置**，缺任一 = 状态推送断链：
-
-1. `status_constants.go` — 状态常量 + `isTerminalBacktestStatus()` 函数
-2. `backtest_run_worker.go` — lease CASE 语句 + `pg_notify` 条件
-3. `strategy_backtest_watch.go` — SSE watch 终态判断（用 `isTerminalBacktestStatus` helper）
-4. `strategy_converters.go` — `backtestStatusToProto()` switch case + `IsTerminal` 字段
-5. proto enum — `antv1.BacktestRunStatus` 枚举值
-
-## Frontend Auth & Stream Error Pitfalls (FE-AUTH-1 / FE-STREAM-1)
-
-- **Auth-free endpoint 必须前后端同步放行**：`backend/internal/interceptor/auth.go` 的 `WrapUnary` 排除列表与 `frontend/src/client/transport.ts` 的 `isAuthFree` 必须同时包含 `/refreshtoken`、`/refreshtokenfromcookie`、`/verifyemail`、`/resendverification`。任一遗漏 → 刷新后 401 或 token preflight 死锁。
-- **`procedureHint` 必须包含 method name**：格式 `${service.typeName}.${method.name}`（小写）。仅用 service name 会导致 `isAuthFree` 的 `includes('refreshtoken')` 失效。
-- **`"missing request message"` 不是 auth 失败**：页面刷新时 server-stream 被浏览器 abort 会产生该字符串错误，应归类为 `isLikelyStreamTransportFailure`（传输层中断），而非 `isStreamAuthFailure`。误归类会触发 "Session expired" toast。
-- **前端 assets 清理**：`alphaforge-frontend` 以非 root 运行，`docker cp frontend/dist/.` 只叠加不清理，旧 chunk 会堆积。大版本部署前以 root 清理：`docker exec -u root alphaforge-frontend rm -rf /usr/share/nginx/html/assets`。
-
-## Broker Snapshot & Stream Pitfalls (DATA-TRUTH-2~10 / LOG-UX-1)
-
-> 实盘策略 stale / 数据断流 / 前端列空白 / 风控失明？先查 [`docs/runbook/stale-authoritative-snapshot.md`](docs/runbook/stale-authoritative-snapshot.md)
-> 完整根因 + 对抗证明见 `docs/audits/tech-debt-registry.md` DATA-TRUTH-2~10 / LOG-UX-1
-> **核心原则（用户 2026-08-19 确立）**：服务器有的数据一律以服务器为准，本地只做透传与持久化，不做重算；缺失/过期必须 fail-closed，不静默转零。
-
-### 已确认的静默失败模式
-
-**数据源归属类（DATA-TRUTH-2/7）**：
-
-- **MT4 `OnOrderProfit` 不填 margin/free_margin/margin_level，却覆盖权威值（DATA-TRUTH-2）** — MT4 profit stream 帧 `margin=0 / free_margin=equity / margin_level=0`（字段根本未填，`free_margin==equity` 是铁证）。旧代码用这些帧覆盖 `mt_accounts` → `MarginLevel > 0` 门槛永不成立 → MT4 爆仓预警完全不触发。**MT4 的 `AccountSummary` 含 margin（实测 718 行 margin>0），只是 profit 流不含**——错的是数据源归属，不是平台能力。修复：MT4 profit handler 改用 `fetchAndPublish` 模式，每帧调 `AccountSummary` 取权威金融值，stream 帧仅取 positions。
-- **权威 RPC 失败后回退到已知不完整数据（DATA-TRUTH-7）** — MT4 `fetchAndPublish` 在 `AccountSummary` 失败时曾回退到 margin=0 的 `OnOrderProfit`；订单流用 `equity-balance` 本地重算 Profit。短暂 RPC 故障会把正确快照覆盖成假值。**通用规则：权威 RPC 失败时拒绝发布快照，不降级为假数据**。修复：RPC/app error/空结果均拒绝发布；订单流 Profit 改用 broker `GetProfit()`。
-
-**快照生命周期类（DATA-TRUTH-5/6/10）**：
-
-- **瞬时 pub/sub 不保留 latest → late subscriber 错过初始快照（DATA-TRUTH-10 根因①）** — `PositionSnapshotBroker` 曾是纯瞬时 pub/sub：gateway 在策略订阅前就 publish 了初始 AccountSummary，策略晚订阅 → 永远收不到 → 90s 后 `AccountSnapshotMaxAge` 判 stale → `authoritative account snapshot unavailable`。**通用规则：任何"先 publish 后 subscribe"的 broker 必须保留 latest + replay 给 late subscriber**。修复：broker retained latest + `Subscribe` 时立即 replay。
-- **nil-result stream 帧被当作 stream 活跃 → 静默超时永不触发 → 权威快照不续期（DATA-TRUTH-10 根因②）** — MT4/MT5 空账户的 `OnOrderProfit` 持续发 nil-result heartbeat，旧代码把它当作 stream 活跃 → 既无金融更新又不触发 silence timeout → `AccountSummary` 只在 connect 时调一次 → `CapturedAt` 永不刷新 → 90s 后 stale。**通用规则：stream 续期必须基于有效数据帧或独立定时器，nil-result/heartbeat 帧不能算 stream 活跃**。修复：MT4/MT5 profit stream 每 45s 独立调 broker `AccountSummary` 续期。
-- **quote stream 纯 Recv-error 驱动无 silence timeout → mtapi 代理层"gRPC 连接活着但不推数据"时 `Recv()` 永久阻塞 → 策略无 tick 饿死（STREAM-KEEPALIVE-1-FIX）** — STREAM-KEEPALIVE-1 "移除 quote stream no-data 超时反模式，改为纯 Recv-error 驱动"是过度修正。gRPC keepalive (30s/20s) 只检测 TCP/HTTP2 连接活着，不检测应用层有数据；mtapi 代理层可以保持 gRPC 连接活着（keepalive ping 成功）但不推 quote 数据（broker 端连接断开但 mtapi 未检测到）→ `stream.Recv()` 永久阻塞 → 策略无 tick。**通用规则：所有数据流（quote/profit/order-update）必须有 silence timeout——gRPC keepalive 不够，应用层无数据 N 秒必须 cancel+retry（不 Disconnect，避免 tear down 共享连接）**。修复：MT4/MT5 quote stream 加 45s silence timeout（同 profit stream 模式）。**测试穿透反例**：旧测试 `TestQuoteStream_RecvError_DoesNotFireOnIdle` 把 bug 行为（idle 不重连）编码为期望行为，已反转为 `TestQuoteStream_SilenceTimeout_FiresReconnect`。
-- **financial-only refresh 清空持仓（DATA-TRUTH-10 连带）** — 周期 `AccountSummary` 只刷新金融字段时，若把持仓也一起覆盖会清空已有 positions。**通用规则：金融快照与持仓快照 authority 分离**——financial-only refresh 用 `PositionsAuthoritative=false` 标记，consumer 不得用它清空持仓。修复：新增 `PositionsAuthoritative` 字段。
-- **Risk Gate 本地重算 equity/margin/free_margin + 固定 leverage=100（DATA-TRUTH-5）** — `MTAccountStateProvider` 曾固定 `leverage=100`，本地算 `equity=balance+profit`、`margin=notional/100`、`free_margin=equity-margin`，并在 `PositionCache` 与私有 balance/equity cache 间回退。不同 broker 的合约大小、分层杠杆、品种杠杆和保证金货币都可能不同，固定 leverage 没有正确性基础。**通用规则：Risk Gate 必须消费同一份 broker 权威快照，禁止本地重算金融字段**。修复：删除 legacy poll、balance/equity cache、固定 leverage 和本地重算；直接从 `PositionCache.GetFreshSnapshot()` 读取。
-- **快照无来源/采集时间/接收时间，旧快照可无限使用（DATA-TRUTH-6）** — `PositionSnapshot` 曾无 provenance 字段，broker 断开后策略和风控可无限期使用最后一份旧快照。**通用规则：权威快照必须带 `FinancialsSource`/`CapturedAt`/`ReceivedAt`，过期（>90s）fail-closed**。修复：`PositionSnapshot` 增加 leverage/source/authoritative/captured_at；`PositionCache` 90s freshness 检查。
-
-**事实完整性类（DATA-TRUTH-4/6/8）**：
-
-- **双实现写不同表 + `log.Debug` 吞错误 → 净值曲线静默断供 28 天（DATA-TRUTH-4）** — 两个同名 `RecordBalanceSnapshot`：生产那份写进**不存在**的表 `account_balance_snapshots`（`to_regclass` 返回 NULL）→ 100% 失败；错误被 `log.Debug` 吞（生产 level=info）→ 零告警。分析栈全读另一张表 `account_balance_history` → 28 天零写入。**通用规则：一个事实只允许一个写入方 + 一张真相表；写入失败不得用 `log.Debug` 吞**。修复：写入方指向 `account_balance_history` + `log.Warn`；删死代码消除双实现。
-- **无 session 查询返回空仓成功（DATA-TRUTH-6）** — `OpenedOrders`/`OrderHistory` 在 `exec==nil` 时曾返回 `empty,nil`，把"无法查询 broker"伪装成"broker 确认 0 订单"，污染 `OrdersTotal()`、UI、风控、CloseAll 与对账。**通用规则：无 session 必须返回明确 error，不能伪装为空仓**。修复：返回 `ErrSessionNotFound`。
-- **历史快照清理操作不存在的旧表（DATA-TRUTH-8）** — writer 已修到 `account_balance_history`，但 `CleanupOldSnapshots` 仍 DELETE `account_balance_snapshots` → 清理 100% 失败、真实历史表无限增长。**通用规则：修复写入路径时必须同步检查清理/归档/迁移路径**。修复：`CleanupOldSnapshots` 改为清理 `account_balance_history`。
-
-**保证金权威化类（DATA-TRUTH-9）**：
-
-- **MT5 已有 `RequiredMargin` RPC 但风险链本地估算（DATA-TRUTH-9）** — `adapter/mt5.RequiredMargin` 已实现，但 `risk/rules.go` 仍按 contract size/price/leverage 本地估算 required margin；无法覆盖 broker 分层杠杆、品种保证金货币与动态规则。**通用规则：存在 broker 权威 RPC 时必须使用，禁止本地公式 fallback**。修复：MT5 `evaluatePlaceGate` 调 broker `RequiredMargin`；MT4 无等价 RPC → 显式 `Platform==mt4` capability boundary，交由 OrderSend 服务器校验，禁止套固定公式。
-
-**前端字段对账类（LOG-UX-1）**：
-
-- **proto 无 `message` 字段，前端却读 `dataIndex: 'message'` → 列永远空白（LOG-UX-1）** — `ScheduleRunLog` proto 只有 `error_message`/`signal_type`/`kind`/`action`/`status`，无通用 `message`。前端列 `dataIndex: 'message'` → 字段不存在 → 永远空白。**通用规则：前端列 dataIndex 必须与 proto 字段对账**，缺字段时显式 fallback 语义（错误显示 `error_message`，普通行显示 `kind/action/signal_type` 上下文，真空显示 `-`），禁止靠不存在的字段名静默空白。
-
-**诊断真实性类（LIVE-DIAG-TRUTH-1 / SRD-1）**：
-
-- **`RecordIndicators` 空值 early return 阻断 `ordersTotalSeen` 更新（LIVE-DIAG-TRUTH-1）** — `session_diag.go` 的 `RecordIndicators` 在 `len(values)==0` 时直接 return，导致 OnTick-only 策略的 bar 事件（空指标 map）永远不更新 `ordersTotalSeen` → 诊断页 OrdersTotal 永远停在首次非空值。**通用规则：诊断计数器（ordersTotal/evalCount 等）的更新不得被无关字段（indicator values）的空值阻断**——空值只跳过 ring buffer 写入，不跳过计数器更新。修复：`ordersTotalSeen` 始终更新，空值不烧节流窗口。
-- **诊断页只显示单一 OrdersTotal，无法区分 VM vs broker vs magic（LIVE-DIAG-TRUTH-1）** — 旧诊断只暴露 `orders_total`（VM 内部值），mixed magic 场景（broker=3, magic=1, VM=0）无法展示三者差异。**通用规则：诊断必须区分 VM 视角（策略执行时看到的）、broker 视角（账户级真实持仓）、strategy magic 视角（本策略归属的）**——三者不一致即 warning，不能显示为 active 绿色。修复：proto 加 L3 字段 + 后端从 PositionCache+TradeBarrier 计算 + 前端只渲染不推断。
-- **signal_generated 被显示为成交（LIVE-DIAG-TRUTH-1 rule 1）** — 信号不是成交。诊断页必须区分 `signal_generated`/`order_submitting`/`order_submitted`/`order_confirmed`/`order_rejected`/`order_outcome_unknown` 六态，signal_generated 用 default 色非绿色。
-- **从瞬时 barrier state 推导 lifecycle，Release() 后真相丢失（LIVE-DIAG-TRUTH-1 返工）** — `TradeBarrier.Release()` 清空 state/ticket 到 idle/0，若 lifecycle 从 barrier state 推导，confirmed/rejected 后下一次诊断退化为 signal_generated/ticket=0。**通用规则：lifecycle 是历史事实，必须持久化在诊断状态中（`sessionDiag.lastLifecycle`/`lastBrokerTicket`），不能从瞬态状态机推导**。修复：`logOrderLifecycle` 每次过渡调 `RecordLifecycle`，`SnapshotDiag` 返回持久化值，`enrichDiagSnapshot` 只从 barrier 取 transient `ExecutionState`。
-- **server-owned shared cache 放进 ActiveSession 字段导致 Register→notify 竞态（LIVE-DIAG-TRUTH-1 返工）** — `SessionRegistry.Register()` 插入 + notify watcher 后，调用点才写入 `sess.posCache`；watcher 启动时 `activeSessionToProto` 无锁读取 → data race。**通用规则：server-owned shared cache 不得作为 ActiveSession 字段，必须由 server converter 注入参数**。修复：删 `ActiveSession.posCache`，`activeSessionToProto` 加 `posCache` 参数，三处调用点传 `s.posCache`。
-- **posCache=nil（paper/未接入）被前端渲染为 Stale + Warning（LIVE-DIAG-TRUTH-1 返工）** — 无数据源 ≠ 数据过期。paper mode 无 broker 数据，但前端显示 Stale/Warning 混淆语义。**通用规则：诊断必须区分 unavailable（无数据源）与 stale（有源但过期）**——unavailable 显示 N/A，不触发 warning。修复：proto 加 `data_available` 字段，前端 `!dataAvailable` 显示 N/A，warning 只在 `dataAvailable` 时检查。
-
-### 调试路径
-
-1. 看到 `authoritative account snapshot unavailable or stale: account=<uuid>` → 先查 `schedule_run_logs` 确认是持续还是偶发。
-2. 查 `account_balance_history` 该账户最新 `recorded_at` 与 `free_margin` —— 若 `recorded_at` 远滞后 → AccountSummary 续期链断了（DATA-TRUTH-10 根因②）。
-3. 查 `PositionSnapshotBroker` 是否 replay latest 给 late subscriber —— 策略启动日志应有 "replayed latest snapshot" 字样（DATA-TRUTH-10 根因①）。
-4. MT4 账户 `margin=0 / free_margin=equity / margin_level=0` → 查是否用了 profit stream 帧而非 `AccountSummary`（DATA-TRUTH-2）。
-5. 净值曲线断供 → 查 `account_balance_history` 是否有新写入 + 查日志是否有 `snapshot insert failed` 被 `log.Debug` 吞（DATA-TRUTH-4）。
-6. 策略 `OrdersTotal()=0` 但 broker 有持仓 → 查 `OpenedOrders` 是否因无 session 返回了空仓成功（DATA-TRUTH-6）。
-7. 前端日志/订单列空白 → 核对 `dataIndex` 与 proto 字段名是否一致（LOG-UX-1）。
-
-## PG Connection Pool & Push-First LISTEN (PG-POOL-1)
-
-- **主 pgxpool 必须配置 MaxConns**：env `DB_MAX_CONNS` 默认 25。默认 `max(4, NumCPU)` 在 4 核主机上 = 4，而 push-first refactor 后有 4 个永久 LISTEN holder（`normalizer_invalidator`、`backfiller`、`strategy_experiment_worker`、`backtest_worker`）各占 1 conn，启动即占满池。
-- **每个 SSE stream 再占 1 conn**：`pgListen.Listen` per stream 会进一步耗尽池。规模上去后应使用独立 LISTEN pool 或单 listener 按 channel fan-out。
-- **症状**：Login、`/healthz` 的 `pool.Ping` 在 `pool.Acquire()` 上阻塞，524/504，`/readyz` 正常（无 pool），容器 unhealthy。
+| 项 | 值 |
+|----|-----|
+| **定位** | 策略市场平台（MQL5 Market 对标，AI 迭代+实盘战绩） |
+| **后端** | Go 1.26 + PostgreSQL 18 + ConnectRPC + SSE + NATS JetStream |
+| **前端** | React + TypeScript + Node 22 |
+| **MT 接入** | mtapi gRPC（MT4/MT5 adapter 不共享代码） |
+| **架构** | MQL → AST → Bytecode VM（ADR-0023） |
+| **部署** | Docker Compose（multi-stage build），`docker compose build backend && docker compose up -d backend` |
+| **二进制** | `/app/alphaforge`（容器内） |
+| **构建检查** | `cd backend && go run ./tools/check-file-lines --strict`（🔴 阻断 CI） |
 
 ## Before Commit
 
@@ -289,3 +140,6 @@ go build ./...                                          # must pass
 cd backend && go run ./tools/check-file-lines --strict   # file size check (🔴 blocks, 🟡🟢 pass)
 bash scripts/gen_capability_map.sh                      # refresh docs/CAPABILITIES.md (reuse preflight)
 ```
+
+- `docker compose` 命令请使用 `rtk proxy docker compose ...` 避免原始输出
+- 每次 build 前先 `docker builder prune -f` 回收 2-3GB cache
