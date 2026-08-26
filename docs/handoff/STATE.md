@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: D-REVERT-SCOPE-DRIFT-001 VM 返工批第一批（VM-CACHE-INTEGRITY-1/2）✅done；LIVE-ORDER-REENTRY-1 R4 施工完成待返工复审；VM 返工批第二/三/四批待派工。
+- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM 返工批第二/三/四批待派工。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -16,12 +16,12 @@
 | D-REVERT-CLEANUP-001 build 断裂修复 | ✅ | registry D-REVERT-CLEANUP-001 |
 | D-REVERT-SCOPE-DRIFT-001 状态漂移对账 | ✅ | registry D-REVERT-SCOPE-DRIFT-001 |
 | VM-CACHE-INTEGRITY-1/2（第一批） | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
+| LIVE-ORDER-REENTRY-1 R4 复审阻断 | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
 | VM 返工批第二/三/四批（6 个漂移 ID） | 🟦open | spec + builder-handoff 已落档 |
-| LIVE-ORDER-REENTRY-1 R4 复审阻断 | 🟦open（返工中） | P0，2 项退回待修复 |
 | DATA-TRUTH-2b MT4 margin 补齐 | ✅ | spec 验证通过，修复+对抗证明存活 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
-- **下一步**: 派工 Devin IDE 施工 VM 返工批第二批（VM-TRADE-CONTEXT-1/2）+ LIVE-ORDER-REENTRY-1 R4 返工复审。
+- **下一步**: 派工 Devin IDE 施工 VM 返工批第二批（VM-TRADE-CONTEXT-1/2）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -36,7 +36,7 @@
 - **BT-FUNC-ENTRYPC-FWD** 🟦open — 前向引用 stale marker PC（被 revert，需重新施工）
 - **VM-TIMESERIES-SEMANTICS-1** 🟦open — timeseries 语义（被 revert，需重新施工）
 - **VM-RUNTIME-FAILCLOSED-1** 🟦open — 增强修复被 revert（基本机制幸存）
-- **LIVE-ORDER-REENTRY-1** 🟦open — P0 实盘重复开仓（R4 复审阻断）
+- **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
 - **VM 返工批 round 4-5** ⚠️待独立复审 — VM-CACHE-INTEGRITY-5/VM-TRADE-CONTEXT-6/VM-API-TRUTH-3 等
 - **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
@@ -45,6 +45,7 @@
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-08-26 LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done：返工后 Devin CLI 验收通过。S1a/S1b 的 2 处 time.Sleep→WaitState，S2 FullBrokerPath 防御性同步注释+对抗证明引用。对抗证明 2 项 RED→restore→GREEN，门禁全绿。
 - 2026-08-26 VM-CACHE-INTEGRITY-1/2 ✅done：返工后 Devin CLI 验收通过。marshalHook 注入对抗证明 RED→restore→GREEN（MQL+Python 双路径），binary 引用删除，门禁全绿。
 - 2026-08-26 DATA-TRUTH-2b ✅done：revert 后验证修复+对抗证明完整存活，无需重新施工。
 - 2026-08-26 三个 spec 文档落档：`docs/spec/vm-revert-redo-spec.md`、`docs/spec/live-order-reentry-r4-spec.md`、`docs/spec/data-truth-2b-mt4-margin-spec.md`。
