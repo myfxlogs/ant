@@ -65,3 +65,5 @@
 - 2026-08-26 落档第三批施工提示词：VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（编译器正确性）。
 
 - 2026-08-26 VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done：Devin CLI 验收通过。compileDeclaration 多变量 + binaryOp error + switch fallthrough + single-statement body + initGlobals ValClass + ClassTypes 序列化 + compileCall relocation + patchUserCalls + sort.Strings。对抗证明 9 项 RED→restore→GREEN，门禁全绿。
+
+- 2026-08-26 落档第四批施工提示词：VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1（语义正确性 + fail-closed）。
