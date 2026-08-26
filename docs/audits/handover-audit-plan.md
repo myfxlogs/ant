@@ -22,6 +22,8 @@
 
 ## 变更日志
 
+- 2026-08-26 **D-REVERT-SCOPE-DRIFT-001 派工 Devin IDE（🟦open，待施工）**：8 个漂移 VM ID 的重新施工提示词已落档 `docs/audits/builder-handoff-vm-revert-redo-2026-08-26.md`，分 4 批：① CACHE-INTEGRITY-1/2（SourceHash）② TRADE-CONTEXT-1/2（交易上下文）③ COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（编译器）④ TIMESERIES-SEMANTICS-1 + RUNTIME-FAILCLOSED-1（语义）。基线 HEAD `889ff2ec`。施工后状态 `🟦open（施工完成，待独立复审）`，Devin CLI 验收。
+
 - 2026-08-26 **D-REVERT-SCOPE-DRIFT-001 🟦open（Devin 独立审计方对账发现）**：revert `830b2c79` commit message 声称只回滚 round 4-5 的 3 个 ID，实际改了 91 个实现文件，把 `acaa86db` 引入的几乎所有 VM 返工工作（round 1-5，约 15 个 ID）都 revert 了。8 个 ID 状态漂移（registry 标记"施工完成待复审"但代码已被 revert 回施工前状态）：VM-RUNTIME-FAILCLOSED-1（部分）、VM-TIMESERIES-SEMANTICS-1、VM-TRADE-CONTEXT-1/2、VM-CACHE-INTEGRITY-1/2、VM-COMPILER-SEMANTICS-1、BT-FUNC-ENTRYPC-FWD。处置：降级回 `🟦open（待施工）`，需重新施工。详见 registry `D-REVERT-SCOPE-DRIFT-001`。
 
 - 2026-08-26 **D-REVERT-CLEANUP-001 ✅done（Devin 独立审计方验收）**：修复 commit `830b2c79` revert 后遗留 122 个拆分文件导致的 build 断裂。revert 把函数搬回原文件但未删拆分文件 → 14 包 redeclaration。逐包验证无独有内容后删除（含引用 revert 特性的死代码测试）。验收：`go build ./...` ✓ / `check-file-lines` 0 errors / race tests 全绿 / 仅 3 个 DB-dependent `internal/service` 测试失败（既有 DSN 端口不匹配）。纯死代码清理，无行为变更；D-COMMIT-SCOPE-001 部署闸仍有效。详见 registry `D-REVERT-CLEANUP-001`。
