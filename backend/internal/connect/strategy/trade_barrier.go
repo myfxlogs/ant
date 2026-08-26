@@ -365,6 +365,33 @@ func (b *TradeBarrier) State() tradeBarrierState {
 	return b.state
 }
 
+// WaitState blocks until the barrier reaches the target state or ctx is
+// cancelled. Returns the final state. Used by tests for deterministic
+// synchronization without time.Sleep (LIVE-ORDER-REENTRY-1 R4 S3).
+func (b *TradeBarrier) WaitState(ctx context.Context, target tradeBarrierState) tradeBarrierState {
+	stopWatcher := make(chan struct{})
+	go func() {
+		select {
+		case <-ctx.Done():
+			b.mu.Lock()
+			b.cond.Broadcast()
+			b.mu.Unlock()
+		case <-stopWatcher:
+		}
+	}()
+	defer close(stopWatcher)
+
+	b.mu.Lock()
+	for {
+		if b.state == target || ctx.Err() != nil {
+			s := b.state
+			b.mu.Unlock()
+			return s
+		}
+		b.cond.Wait()
+	}
+}
+
 // Ticket returns the broker-accepted ticket (0 if not yet accepted).
 func (b *TradeBarrier) Ticket() int64 {
 	b.mu.Lock()

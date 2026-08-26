@@ -1223,7 +1223,19 @@ func TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_FullBrokerPath(t *testing.
 	// adapter → pipeline_callbacks.publishPositionSnapshot → broker path.
 	// Use a goroutine to publish after the barrier has acquired.
 	go func() {
-		time.Sleep(50 * time.Millisecond) // wait for barrier to enter submitting
+		// WaitState here is defensive synchronization: it ensures the goroutine
+		// publishes after the barrier enters submitting. In the current
+		// synchronous dispatchLiveSignal model, time.Sleep(0) would also work
+		// because the main goroutine blocks inside dispatchLiveSignal. However,
+		// WaitState is correct regardless of dispatch model (sync or async),
+		// making the test robust to future refactors. The adversarial proof for
+		// WaitState necessity in a truly-async scenario is in
+		// TestLIVE_ORDER_REENTRY_1_R4_Recovery_CloseConfirmed (recovery
+		// goroutine is async — WaitState → time.Sleep(0) mutation goes RED).
+		// (R4 S3: no time.Sleep — deterministic sync via cond.Wait.)
+		waitCtx, waitCancel := context.WithTimeout(context.Background(), 2*time.Second)
+		sess.barrier.WaitState(waitCtx, barrierSubmitting)
+		waitCancel()
 		publishOrderUpdate(broker, cfg.AccountID, 42, strategyMagic(cfg.ScheduleID), label)
 	}()
 
@@ -1309,8 +1321,10 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_CloseConfirmed(t *testing.T) {
 		t.Fatal("Recovery_CloseConfirmed: circuit breaker should be open")
 	}
 
-	// Wait for recovery goroutine to complete.
-	time.Sleep(300 * time.Millisecond)
+	// Wait for recovery goroutine to complete (R4 S3: deterministic sync).
+	waitCtx, waitCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	sess.barrier.WaitState(waitCtx, barrierIdle)
+	waitCancel()
 
 	if state := sess.barrier.State(); state != barrierIdle {
 		t.Fatalf("Recovery_CloseConfirmed: post-recovery state=%s, want idle (recovered+released)", state)
@@ -1357,8 +1371,10 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_CloseNotApplied(t *testing.T) {
 		verifyReadAfterWrite: verifyTicketAbsent(99),
 	}, "close", sig, conf)
 
-	// Wait for recovery.
-	time.Sleep(300 * time.Millisecond)
+	// Wait for recovery (R4 S3: deterministic sync).
+	waitCtx2, waitCancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+	sess.barrier.WaitState(waitCtx2, barrierIdle)
+	waitCancel2()
 
 	if state := sess.barrier.State(); state != barrierIdle {
 		t.Fatalf("Recovery_CloseNotApplied: post-recovery state=%s, want idle (rejected+released)", state)
@@ -1372,11 +1388,16 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_CloseNotApplied(t *testing.T) {
 // if the recovery read-after-write query also fails, the barrier stays
 // locked (fail-closed) and the circuit breaker stays open.
 func TestLIVE_ORDER_REENTRY_1_R4_Recovery_QueryFails_StaysLocked(t *testing.T) {
+	recoveryAttempted := make(chan struct{})
 	exec := &prodMockExecutor{
 		closeFn: func(ctx context.Context, ticket int64, lots decimal.Decimal) error {
 			return errors.New("DeadlineExceeded")
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
+			select {
+			case recoveryAttempted <- struct{}{}:
+			default:
+			}
 			return nil, errors.New("broker still unavailable")
 		},
 	}
@@ -1403,8 +1424,15 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_QueryFails_StaysLocked(t *testing.T) {
 		verifyReadAfterWrite: verifyTicketAbsent(99),
 	}, "close", sig, conf)
 
-	// Wait for recovery attempt.
-	time.Sleep(300 * time.Millisecond)
+	// Wait for recovery attempt to complete (R4 S3: deterministic sync via channel).
+	// The recovery goroutine calls fetchFn after recoveryDelay; we signal via channel.
+	// Note: fetchFn may also be called by the initial read-after-write, so we wait
+	// for the 2nd call (recovery) or a timeout.
+	select {
+	case <-recoveryAttempted:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Recovery_QueryFails: recovery goroutine did not attempt fetch within 5s")
+	}
 
 	if state := sess.barrier.State(); state != barrierOutcomeUnknown {
 		t.Fatalf("Recovery_QueryFails: state=%s, want outcome_unknown (stays locked)", state)
@@ -1450,8 +1478,12 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_OpenMutation_NoRecovery(t *testing.T) 
 		verifyReadAfterWrite: nil,
 	}, "buy", sig, conf)
 
-	// Wait longer than recovery delay.
-	time.Sleep(300 * time.Millisecond)
+	// Wait longer than recovery delay to verify no recovery starts (R4 S3:
+	// deterministic — use a bounded wait that asserts the barrier stays
+	// outcomeUnknown for longer than recoveryDelay + readAfterWriteTimeout).
+	noRecoveryCtx, noRecoveryCancel := context.WithTimeout(context.Background(), 600*time.Millisecond)
+	sess.barrier.WaitState(noRecoveryCtx, barrierIdle) // would return if recovery released barrier
+	noRecoveryCancel()
 
 	// Open mutations with no ticket should stay locked — no recovery.
 	if state := sess.barrier.State(); state != barrierOutcomeUnknown {
@@ -1499,8 +1531,10 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_AllowsSubsequentOrder(t *testing.T) {
 		verifyReadAfterWrite: verifyTicketAbsent(99),
 	}, "close", sigClose, conf)
 
-	// Wait for recovery to complete.
-	time.Sleep(300 * time.Millisecond)
+	// Wait for recovery to complete (R4 S3: deterministic sync).
+	recoveryCtx, recoveryCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	sess.barrier.WaitState(recoveryCtx, barrierIdle)
+	recoveryCancel()
 
 	if state := sess.barrier.State(); state != barrierIdle {
 		t.Fatalf("Recovery_AllowsSubsequent: post-recovery state=%s, want idle", state)

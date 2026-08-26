@@ -216,6 +216,14 @@ func parseMt5OrderUpdate(s *pb.OrderUpdateSummary, accountID string) *mdtick.Ord
 	}
 }
 
+// ParseMt5OrderUpdateForTest is an exported wrapper around parseMt5OrderUpdate
+// for integration tests in other packages (e.g. strategy package tests that
+// verify the real adapter → broker → barrier pipeline). Production code should
+// call parseMt5OrderUpdate directly via the adapter's OnOrderUpdate handler.
+func ParseMt5OrderUpdateForTest(s *pb.OrderUpdateSummary, accountID string) *mdtick.OrderUpdate {
+	return parseMt5OrderUpdate(s, accountID)
+}
+
 // Mt5UpdateTypeLabel maps an MT5 UpdateType proto enum to the string
 // label used in UpdateType. Exported for integration tests that verify
 // the adapter → PositionSnapshotBroker → TradeBarrier pipeline.

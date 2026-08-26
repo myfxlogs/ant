@@ -257,14 +257,19 @@ func (s *StrategyExecutionServer) coordinateMutation(
 			activeSess.RecordError(fmt.Sprintf("mutation ticket=%d: confirmation outcome unknown, barrier locked", effectiveTicket))
 		}
 		s.logOrderLifecycle(activeSess, cfg, "order_outcome_unknown", sideStr, effectiveTicket, "confirmation_timeout")
-		// ④-②: For known-ticket mutations, start background reconciliation.
-		// Open mutations (ticket=0 at spec creation, but effectiveTicket is
-		// now known from RPC) also get recovery since we have the ticket.
-		verify := spec.verifyReadAfterWrite
-		if verify == nil {
-			verify = verifyTicketPresent(effectiveTicket)
+		// ④-②: For known-ticket mutations (close/modify/cancel), start background
+		// reconciliation. Open mutations are excluded: read-after-write cannot
+		// prove the new order has been processed by the broker (processing
+		// latency may cause the order to not yet appear in OpenedOrders).
+		// Open mutation outcome unknown = fail-closed (barrier locked + circuit
+		// open → strategy stops; recovery = external intervention).
+		if spec.action != actionOpen {
+			verify := spec.verifyReadAfterWrite
+			if verify == nil {
+				verify = verifyTicketPresent(effectiveTicket)
+			}
+			go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, effectiveTicket, spec.action, verify, conf)
 		}
-		go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, effectiveTicket, spec.action, verify, conf)
 		// Do NOT release.
 	default:
 		// Context cancelled — release to avoid deadlock on shutdown.

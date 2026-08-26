@@ -56,3 +56,5 @@
 - 2026-08-26 D-007：业主全权授权 Devin CLI 自主执行常规 commit/push/deploy，无需逐次授权；破坏性操作仍需确认。AGENTS.md §6 同步。
 
 - 2026-08-26 commit VM-CACHE-INTEGRITY-1/2 已验收代码：SourceHash 绑定 + 序列化完整性 + marshalHook 测试注入（含返工）。
+
+- 2026-08-26 commit LIVE-ORDER-REENTRY-1 R4 已验收代码：open mutation fail-closed + adapter label pipeline + WaitState 确定性同步（含返工）。
