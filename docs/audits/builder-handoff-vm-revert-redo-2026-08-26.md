@@ -1,124 +1,258 @@
 # Builder Handoff — VM 返工批重新施工（revert 830b2c79 状态漂移修复）
 
 > 日期：2026-08-26 ｜ 审计方：Devin CLI（项目第一负责人） ｜ 施工方：Devin IDE
-> 根因与对账证据见 `docs/audits/tech-debt-registry.md` 条目 `D-REVERT-SCOPE-DRIFT-001`（必读）。
-> 每个 ID 的完整修复 spec 见 registry 中对应条目（行号见下）。
+> 设计 SSOT：`docs/spec/vm-revert-redo-spec.md`
+> 根因与对账证据：`docs/audits/tech-debt-registry.md` 条目 `D-REVERT-SCOPE-DRIFT-001`（:1953）
+> 每个 ID 的完整修复 spec：registry 中对应条目（行号见各批）
 
-## 0. 背景一句话
+## 0. 立项背景
 
-commit `830b2c79` 的 revert 实际范围远超 commit message，把 `acaa86db` 引入的几乎所有 VM 返工工作（round 1-5）都 revert 了。8 个 ID 的修复代码已不存在，registry 状态从"施工完成待复审"降级回"🟦open（待施工）"。需要基于 registry 中的原始修复 spec 重新施工。
+**触发**：D-REVERT-CLEANUP-001 修复 build 断裂后，对账 VM 返工批 registry 状态与实际代码。
 
-## 1. 当前代码状态（revert 后，HEAD = `889ff2ec`）
+**证据链**：
+- commit `830b2c79` commit message 声称"回滚 round 4-5 的 3 个 ID"，实际改了 91 个实现文件
+- `git show 830b2c79 --stat -- '*.go'` 证明几乎所有 VM 返工工作被 revert
+- 8 个 ID 的关键符号在 HEAD 不存在（`SourceHash`/`hashSource`/`CompilePythonCached`/`invalidateOrderCaches`/`OppositeTicket`/`ClassTypes`/`patchUserCalls`/`extremeIndex`）
+- registry 标记"施工完成待复审"但代码已 revert 回施工前 → 状态漂移
 
-### 不存在的关键符号（需重新实现）
+**设计 SSOT 声明**：`docs/spec/vm-revert-redo-spec.md`（D1-D4 设计决策）
 
-| 符号 | 所属 ID | 当前状态 | registry spec 位置 |
-|---|---|---|---|
-| `Bytecode.SourceHash` | CACHE-INTEGRITY-1/2 | 字段不存在 | registry :110/:115 |
-| `hashSource()` | CACHE-INTEGRITY-1/2 | 函数不存在 | registry :110 |
-| `CompilePythonCached()` | CACHE-INTEGRITY-2 | 函数不存在 | registry :115 |
-| `Bytecode.Version` | CACHE-INTEGRITY-5 | 字段不存在 | registry :159 |
-| `validateBytecode()` | CACHE-INTEGRITY-1 | 函数不存在 | registry :110 |
-| `bytecode_validate.go` | CACHE-INTEGRITY-1 | 文件不存在（已删） | registry :110 |
-| `invalidateOrderCaches()` | TRADE-CONTEXT-1 | 函数不存在 | registry :109 |
-| `OppositeTicket` (sdk.Signal) | TRADE-CONTEXT-2 | 字段不存在 | registry :116 |
-| `ClassTypes` (Bytecode/IR) | COMPILER-SEMANTICS-1 | 字段不存在 | registry :146 |
-| `patchUserCalls()` | BT-FUNC-ENTRYPC-FWD | 函数不存在 | registry :147 |
-| `extremeIndex`/`validSeriesMode` | TIMESERIES-SEMANTICS-1 | 函数不存在 | registry :108 |
-| `callBuiltin` fatalError 检查 | RUNTIME-FAILCLOSED-1 | 增强修复不存在 | registry :111 |
+**约束与目标**：
+- 基于 registry 中的原始修复 spec 重新施工，不做架构变更（D3）
+- 分 4 批施工，按安全优先级（D2）
+- 每批独立验收（D4）
+- revert 不可逆，不尝试恢复被 revert 的代码（D1）
 
-### 存在但需增强的符号
+**边界/不做**：
+- 不改写历史审计事实
+- 不扩大到无关功能块
+- 不部署（D-COMMIT-SCOPE-001 部署闸仍有效）
+- 不 commit/push/deploy（施工方禁外部操作）
+- 禁 `--no-verify`
 
-| 符号 | 所属 ID | 当前状态 | 需要的增强 |
-|---|---|---|---|
-| `fatalError` 字段 | RUNTIME-FAILCLOSED-1 | 基本机制✓（unimplemented builtin 设置） | handler 返回 error 后也检查 fatalError |
-| `CompileMQLCached()` | CACHE-INTEGRITY-1 | 存在但不校验 SourceHash | 加 SourceHash 校验 |
-| `MarshalBytecode` error | CACHE-INTEGRITY-1/2 | error 被吞（`return r, nil, nil`） | 改为返回 error |
-| `backtest_worker_python.go` | CACHE-INTEGRITY-2 | 直接用 `CompileMQLFromBytecode` | 改用 `CompilePythonCached` |
+---
 
-## 2. 施工批次与优先级
+## 第一批：VM-CACHE-INTEGRITY-1/2 — SourceHash 绑定（P1 安全）
 
-### 第一批（P1 安全）：VM-CACHE-INTEGRITY-1/2 — SourceHash 绑定
+> registry spec：`:110`（CACHE-INTEGRITY-1）、`:115`（CACHE-INTEGRITY-2）
+> 当前代码状态：`SourceHash`/`hashSource`/`CompilePythonCached` 均不存在
 
-**registry spec**：`:110`（CACHE-INTEGRITY-1）、`:115`（CACHE-INTEGRITY-2）
+### S1 — Bytecode struct 加 SourceHash 字段
 
-**施工范围**：
-1. `Bytecode` struct 加 `SourceHash string` 字段（`bytecode.go`）
-2. 新建 `hashSource(source string) string` — SHA256 of source（`interp_runner.go` 或 `bytecode_cache.go`）
-3. `CompileMQL` 正常路径填充 `SourceHash`（`interp_runner.go`）
-4. `CompileMQLCached` cache hit 时校验 `r.Bytecode().SourceHash == hashSource(source)`，mismatch 强制重编（`interp_runner.go:56`）
-5. `CompileMQLCached` 的 `MarshalBytecode` error 改为返回 error（`interp_runner.go:50`，从 `return r, nil, nil` 改为 `return nil, nil, fmt.Errorf(...)`）
-6. `MarshalBytecode`/`UnmarshalBytecode` 序列化/反序列化 `SourceHash` 字段（`bytecode_cache.go`）
-7. 新建 `CompilePythonCached(source, cachedBytecode)` 镜像 `CompileMQLCached`（`interp_runner.go`）
-8. `backtest_worker_python.go` 改用 `CompilePythonCached`（`internal/connect/strategy/backtest_worker_python.go:30`）
-9. `UnmarshalBytecode` map 序列化确定性（sorted keys）+ trailing bytes 拒绝 + 有界解析（`bytecode_cache.go`）
-10. 5 个 unmarshal map 函数加 duplicate key 检测（`bytecode_cache.go`）
+**目标**：Bytecode 持久化时绑定源码 hash，cache hit 时校验。
 
-**对抗证明要求**：
-- 删 `CompileMQLCached` 的 SourceHash 校验 → 缓存 mismatch 测试 RED
-- 删 `CompilePythonCached` 的 SourceHash 校验 → Python 缓存 mismatch 测试 RED
-- 恢复 `MarshalBytecode` error 吞掉 → marshal error 测试 RED
-- 删 duplicate key 检测 → duplicate key 测试 RED
+**精确坐标**：
+- 文件：`backend/tools/mql2go/bytecode.go:116`（`type Bytecode struct`）
+- 字段位置：在 `Version string`（:153）后加 `SourceHash string`（SHA256 hex of source）
+- 序列化：`backend/tools/mql2go/bytecode_cache.go:42`（`MarshalBytecode`）和 `:138`（`UnmarshalBytecode`）同步增加 SourceHash 的写入/读取
 
-### 第二批（P1 交易安全）：VM-TRADE-CONTEXT-1/2 — 交易上下文失真
+**落点**：
+```go
+// bytecode.go:153 后
+Version    string
+SourceHash string // SHA256 of source, for cache integrity (VM-CACHE-INTEGRITY-1)
+```
 
-**registry spec**：`:109`（TRADE-CONTEXT-1）、`:116`（TRADE-CONTEXT-2）
+### S2 — hashSource 函数
 
-**施工范围**：
-1. 新建 `invalidateOrderCaches()` — 清空 `cachedPositions`/`cachedOrders`/`cachedHistory`/`positionsLoaded`/`ordersLoaded`/`historyLoaded`/`currentPos`/`currentOrder`（`vm_helpers.go`）
-2. 所有 mutation builtin（OrderSend/OrderClose/OrderCloseBy/OrderModify/OrderDelete/CTrade.Buy/Sell/BuyLimit/SellLimit/BuyStop/SellStop/CTrade.PositionClose/ClosePartial/CloseBy/Modify/OrderDelete/CloseAll）成功后统一调用 `invalidateOrderCaches()`
-3. `builtinOrderSelect` 顶部 reset `currentPos`/`currentOrder`（`vm_builtin_trade.go`）
-4. `runEvent` 顶部清空所有 cache（`vm.go`）
-5. `CTrade.SetExpertMagicNumber`/`SetDeviationInPoints` 透传到 `vm.tradeMagic`/`vm.tradeDeviation`（`vm_builtin_trade.go`）
-6. `sdk.Signal` 加 `OppositeTicket int64` 字段（`strategy/sdk/strategy.go`）
-7. `builtinOrderCloseBy`/`builtinCTradePositionCloseBy` signal mode 设置 `OppositeTicket`（`vm_builtin_trade_signals.go`）
-8. `sdk.AccountInfo` 加 `Login int64` + `Company string`（`strategy/sdk/broker.go`）
-9. `builtinAccountNumber` 从 `vm.ctx.Account().Login` 读取（`vm_builtin_string.go`）
-10. `brokerImpl` 查询 error fail-closed（`strategy/runner/broker.go` + `runner.go`）
+**目标**：计算源码 SHA256 hash。
 
-### 第三批（P1 编译器正确性）：VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD
+**精确坐标**：
+- 文件：`backend/tools/mql2go/interp_runner.go`（新建函数，放在 `CompileMQLCached` 前）
+- 方法签名：`func hashSource(source string) string`
 
-**registry spec**：`:146`（COMPILER-SEMANTICS-1）、`:147`（BT-FUNC-ENTRYPC-FWD）
+**落点**：
+```go
+func hashSource(source string) string {
+	h := sha256.Sum256([]byte(source))
+	return hex.EncodeToString(h[:])
+}
+```
 
-**施工范围**：
-1. `compileAssignment` 在 `findIdent` 前检查 field/subscript lhs（`compile_interp_expr.go`）
-2. `compileDeclaration` 遍历所有 declarator（`compile_interp.go`）
-3. 不支持的运算符显式报错而非 fallback（`compile_interp_expr.go`）
-4. `methodBuiltinName` 按 CTrade 命名空间解析（`compile_interp.go`）
-5. `IR.ClassTypes` + `Bytecode.ClassTypes` 从 `knownClasses` + `isBuiltinClass` 收集（`ir.go` + `bytecode.go`）
-6. `initGlobals` 对 `ClassTypes[decl.Type]` 的全局初始化为 `ValClass`（`compile.go`）
-7. `MarshalBytecode`/`UnmarshalBytecode` 同步增加 `ClassTypes`（`bytecode_cache.go`）
-8. `compileCall` 发出 `OP_CALL_USER` 时 operand A 写 -1 占位符，记录 `userCallPatch`（`compile_expr.go`）
-9. 所有用户函数 body 编译完成后 `patchUserCalls()` 统一 patch（`compile.go`）
+### S3 — CompileMQL 正常路径填充 SourceHash
 
-### 第四批（P1 语义正确性）：VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1
+**目标**：编译成功后设置 SourceHash。
 
-**registry spec**：`:108`（TIMESERIES-SEMANTICS-1）、`:111`（RUNTIME-FAILCLOSED-1）
+**精确坐标**：
+- 文件：`backend/tools/mql2go/interp_runner.go:127`（`func CompileMQL`）
+- 落点：`bc, err := CompileAST(ir)` 后、`return NewVMRunner(bc)` 前加 `bc.SourceHash = hashSource(source)`
 
-**施工范围**：
-1. `CopyTime` 把 bar 的 `unix_ms` 转为 MQL `datetime`（unix seconds）（`vm_builtin_mql5_ts.go`）
-2. `iHighest`/`iLowest` 按 `ENUM_SERIESMODE`（0-5）选择字段（`vm_builtin_mql5_ts.go`）
-3. `validSeriesMode` 校验 mode 0-5，非法返回 -1（`vm_builtin_mql5_ts.go`）
-4. 越界 guard：`start<0 || start>=Len()` 返回 -1（`vm_builtin_mql5_ts.go`）
-5. `iBarShift` exact 参数支持（`vm_builtin_mql5_ts.go`）
-6. `Copy*` 方向语义：count>0 chronological，count<0 reverse（`vm_builtin_mql5_ts.go`）
-7. `callBuiltin` 在 handler 返回 nil error 后检查 `fatalError`（`vm_helpers.go:212`）
+### S4 — CompileMQLCached cache hit 校验 SourceHash
 
-## 3. 通用施工边界
+**目标**：cache hit 时校验 SourceHash，mismatch 强制重编。
 
-- **身份与边界**：你是施工方，不是验收方。只处理上述 ID 的修复，不改写历史审计事实，不扩大到无关功能块。
-- **复用核对**：动工新 file/function 前 `bash scripts/cap.sh <词>` 查能力，PR 标 `REUSE:`/`NEW:`。
-- **file-lines**：`cd backend && go run ./tools/check-file-lines --strict` → 0 errors。超限先拆分。
-- **对抗证明**：每个关键修复必须有 mutation RED→restore→GREEN 证据。nil panic、另一条错误、callback-only 或"任意 error"均不算证据。
-- **门禁**：`go build ./...` / `go test ./tools/mql2go/... -count=1` / `go test -race ./tools/mql2go/... -count=1` / `go test ./internal/connect/strategy -count=1` / `go test -race ./internal/connect/strategy -count=1` / `go vet ./...` / `check-file-lines --strict`（0 errors）/ `buf lint` / `git diff --check`。
-- **禁提交**：完成后 registry 条目保持 `🟦open（施工完成，待独立复审）`，在 handover 追加真实证据并停工。禁 commit/push/deploy，禁 `--no-verify`，禁 `git add -A`（只 add 本任务文件）。
-- **收工**：回填 registry 当前 ID 的真实实现 + REUSE/NEW 结论 + 测试和 proof 结果，handover 追加一行；状态填 `🟦open（施工完成，待独立复审）`，不得自标 ✅done。
+**精确坐标**：
+- 文件：`backend/tools/mql2go/interp_runner.go:56`（`func CompileMQLCached`）
+- 当前代码：`:57-60` 只校验 `CompileMQLFromBytecode` 成功就返回
+- 落点：cache hit 后加 `if r.Bytecode().SourceHash != hashSource(source) { /* fall through to recompile */ }`
 
-## 4. 开工前必读
+**对抗证明**：
+- 突变：删 SourceHash 校验（始终接受缓存）→ 用 source A 编译缓存，用 source B 调 `CompileMQLCached` → 缓存被接受 → RED
+- 恢复：加回校验 → source B 强制重编 → GREEN
 
-1. `AGENTS.md`（契约 SSOT）
-2. `docs/handoff/STATE.md`（当前状态）
-3. `docs/audits/tech-debt-registry.md` 中对应 ID 条目（完整修复 spec）
-4. `docs/audits/handover-audit-plan.md`（历史复审记录，了解之前为何未通过）
-5. 执行 `git status` / `git diff` / 相关 `git log` / `git blame`
-6. 新 file/function 前执行 `bash scripts/cap.sh` 多关键词复用核对
+### S5 — CompileMQLCached 的 MarshalBytecode error 不再吞
+
+**目标**：marshal 失败返回 error 而非 `return r, nil, nil`。
+
+**精确坐标**：
+- 文件：`backend/tools/mql2go/interp_runner.go:50`（当前 `return r, nil, nil`）
+- 落点：改为 `return nil, nil, fmt.Errorf("marshal bytecode: %w", mErr)`
+
+**对抗证明**：
+- 突变：恢复 `return r, nil, nil` → 注入 marshal 失败 → 测试期望 error 但得 nil → RED
+- 恢复 → GREEN
+
+### S6 — CompilePythonCached 函数
+
+**目标**：Python 缓存路径镜像 MQL 的 SourceHash 校验。
+
+**精确坐标**：
+- 文件：`backend/tools/mql2go/interp_runner.go`（新建函数，放在 `CompileMQLCached` 后）
+- 方法签名：`func CompilePythonCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error)`
+- 逻辑：镜像 `CompileMQLCached`，先校验 `SourceHash == hashSource(source)`，不匹配则 `CompilePython` 重编
+
+### S7 — backtest_worker_python.go 改用 CompilePythonCached
+
+**目标**：Python 回测路径使用带 SourceHash 校验的缓存函数。
+
+**精确坐标**：
+- 文件：`backend/internal/connect/strategy/backtest_worker_python.go:30`
+- 当前代码：`if r, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {`
+- 落点：改为 `if r, bcData, err := mql2go.CompilePythonCached(params.code, cachedBytecode); err == nil {`
+- cache hit 时通过 `CompilePythonWithCoverage` + `InjectCoverageResult` 恢复 coverage（镜像 `backtest_worker_vm.go:43`）
+
+### S8 — MarshalBytecode/UnmarshalBytecode 序列化 SourceHash
+
+**目标**：SourceHash 字段参与序列化/反序列化。
+
+**精确坐标**：
+- `MarshalBytecode`（`bytecode_cache.go:42`）：在 Version 写入后加 SourceHash 写入
+- `UnmarshalBytecode`（`bytecode_cache.go:138`）：在 Version 读取后加 SourceHash 读取
+
+### S9 — unmarshal map 函数加 duplicate key 检测
+
+**目标**：5 个 unmarshal map 函数检测 duplicate key，返回 error 而非静默覆盖。
+
+**精确坐标**：
+- `unmarshalGlobalSlots`（`bytecode_cache.go:266`）
+- `unmarshalFuncs`（`bytecode_cache.go:314`）
+- `unmarshalBuiltins`（`bytecode_cache.go:358`）
+- `unmarshalEnums`（`bytecode_cache.go:439`）
+- `unmarshalEventLocals`（`bytecode_cache.go:407`）
+- 每个函数的 map 插入处加 `if _, exists := m[key]; exists { return nil, fmt.Errorf("duplicate key: %s", key) }`
+
+**对抗证明**：
+- 构造 little-endian 重复 key 的 enums section → `unmarshalEnums` 返回 error → GREEN
+- 删 duplicate key 检测 → 返回 nil error（静默覆盖）→ RED
+
+### S10 — UnmarshalBytecode trailing bytes 拒绝 + 有界解析
+
+**目标**：防止损坏缓存造成非确定输出。
+
+**精确坐标**：
+- `UnmarshalBytecode`（`bytecode_cache.go:138`）：末尾加 `if r.pos != len(data) { return nil, fmt.Errorf("trailing bytes: %d", len(data)-r.pos) }`
+- `readCount`（如不存在则在 `bytecode_cache.go` 新建）：检查 `count*minBytes` 不超过剩余数据
+
+**对抗证明**：
+- 构造 trailing bytes 的缓存 → `UnmarshalBytecode` 返回 error → GREEN
+- 删 trailing bytes 检查 → 返回 nil error → RED
+
+### 第一批验收标准
+
+1. **对抗证明 4 项**（S4/S5/S9/S10），每项 RED→restore→GREEN
+2. **门禁全绿**：
+   - `go build ./...`
+   - `go test ./tools/mql2go/... -count=1`
+   - `go test -race ./tools/mql2go/... -count=1` ×3
+   - `go test ./internal/connect/strategy -count=1`
+   - `go vet ./...`
+   - `go run ./tools/check-file-lines --strict`（0 errors）
+   - `git diff --check`
+3. **file-lines**：新增文件不超限（300/450 红线）；`bytecode_cache.go` 当前 562 行，加 SourceHash 序列化可能超 450 → 如超限先拆分
+4. **复用核对**：`bash scripts/cap.sh hashSource` / `cap.sh SourceHash` / `cap.sh CompilePythonCached`
+
+### 第一批红队自审（施工方完工前必答）
+
+1. SourceHash 校验在 cache corrupted（`CompileMQLFromBytecode` 失败）路径是否正确 fall through？
+2. `CompilePythonCached` 的 coverage 恢复路径是否镜像 `backtest_worker_vm.go:43`？
+3. 5 个 unmarshal map 函数的 duplicate key 检测是否覆盖所有 map 插入点？
+4. trailing bytes 检查在所有 early return 路径之后？
+5. SourceHash 序列化在 Version 之前还是之后？反序列化顺序是否一致？
+
+### 第一批回填纪律
+
+1. registry `VM-CACHE-INTEGRITY-1`（:110）和 `VM-CACHE-INTEGRITY-2`（:115）：状态改为 `🟦open（施工完成，待独立复审）` + 真实实现 + 对抗证明结果
+2. `handover-audit-plan.md` 变更日志加一行
+3. **不自行宣告完成**——停手等 Devin CLI 复审
+
+---
+
+## 第二批：VM-TRADE-CONTEXT-1/2 — 交易上下文失真（P1）
+
+> registry spec：`:109`（TRADE-CONTEXT-1）、`:116`（TRADE-CONTEXT-2）
+> 当前代码状态：`invalidateOrderCaches`/`OppositeTicket` 均不存在
+> **第二批在第一批验收通过后派工**
+
+### S1 — invalidateOrderCaches 函数
+
+**精确坐标**：
+- 文件：`backend/tools/mql2go/vm_helpers.go`（新建函数）
+- 方法签名：`func (vm *VM) invalidateOrderCaches()`
+- 清空：`cachedPositions`/`cachedOrders`/`cachedHistory`/`positionsLoaded`/`ordersLoaded`/`historyLoaded`/`currentPos`/`currentOrder`
+
+### S2 — mutation builtin 成功后调用 invalidateOrderCaches
+
+**精确坐标**：
+- `backend/tools/mql2go/vm_builtin_trade.go` — 所有 mutation builtin（OrderSend/OrderClose/OrderCloseBy/OrderModify/OrderDelete）成功后
+- `backend/tools/mql2go/vm_builtin_trade_signals.go` — CTrade.Buy/Sell/BuyLimit/SellLimit/BuyStop/SellStop/PositionClose/ClosePartial/CloseBy/Modify/OrderDelete/CloseAll 成功后
+
+### S3 — runEvent 顶部清空所有 cache
+
+**精确坐标**：
+- `backend/tools/mql2go/vm.go` — `runEvent` 函数顶部加 `vm.invalidateOrderCaches()`
+
+### S4 — sdk.Signal 加 OppositeTicket
+
+**精确坐标**：
+- `backend/strategy/sdk/strategy.go` — `type Signal struct` 加 `OppositeTicket int64`
+
+### S5 — builtinOrderCloseBy 设置 OppositeTicket
+
+**精确坐标**：
+- `backend/tools/mql2go/vm_builtin_trade_signals.go` — `builtinOrderCloseBy`/`builtinCTradePositionCloseBy` signal mode 设置 `OppositeTicket`
+
+### 第二批验收标准
+
+（同第一批，对抗证明要求：删 `invalidateOrderCaches` 调用 → OrderSelect 返回 stale 数据 → RED）
+
+---
+
+## 第三批：VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（P1）
+
+> registry spec：`:146`（COMPILER-SEMANTICS-1）、`:147`（BT-FUNC-ENTRYPC-FWD）
+> **第三批在第二批验收通过后派工**
+
+### S1-S7 详见 registry :146/:147
+
+（精确坐标在第二批验收后补充，避免在代码变化后坐标失效）
+
+---
+
+## 第四批：VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1（P1）
+
+> registry spec：`:108`（TIMESERIES-SEMANTICS-1）、`:111`（RUNTIME-FAILCLOSED-1）
+> **第四批在第三批验收通过后派工**
+
+### S1-S7 详见 registry :108/:111
+
+（精确坐标在第三批验收后补充）
+
+---
+
+## 通用范围约束
+
+One task = one scope：只动 VM 返工批 8 个 ID 的修复——`backend/tools/mql2go/`（bytecode.go/bytecode_cache.go/interp_runner.go/vm_helpers.go/vm_builtin_trade.go/vm_builtin_trade_signals.go/vm.go/vm_builtin_mql5_ts.go/compile.go/compile_loops.go/compile_interp.go/compile_interp_expr.go）+ `backend/internal/connect/strategy/backtest_worker_python.go` + `backend/strategy/sdk/`。不顺手重构、不改无关逻辑、不动 broker/handler 业务语义。
+
+## 固定尾部
+
+**勿部署，停手等 Devin CLI 复审。** 禁 `--no-verify`。禁 commit/push/deploy。只 add 本任务文件，禁 `git add -A`。
