@@ -22,6 +22,8 @@
 
 ## 变更日志
 
+- 2026-08-26 **D-REVERT-SCOPE-DRIFT-001 🟦open（Devin 独立审计方对账发现）**：revert `830b2c79` commit message 声称只回滚 round 4-5 的 3 个 ID，实际改了 91 个实现文件，把 `acaa86db` 引入的几乎所有 VM 返工工作（round 1-5，约 15 个 ID）都 revert 了。8 个 ID 状态漂移（registry 标记"施工完成待复审"但代码已被 revert 回施工前状态）：VM-RUNTIME-FAILCLOSED-1（部分）、VM-TIMESERIES-SEMANTICS-1、VM-TRADE-CONTEXT-1/2、VM-CACHE-INTEGRITY-1/2、VM-COMPILER-SEMANTICS-1、BT-FUNC-ENTRYPC-FWD。处置：降级回 `🟦open（待施工）`，需重新施工。详见 registry `D-REVERT-SCOPE-DRIFT-001`。
+
 - 2026-08-26 **D-REVERT-CLEANUP-001 ✅done（Devin 独立审计方验收）**：修复 commit `830b2c79` revert 后遗留 122 个拆分文件导致的 build 断裂。revert 把函数搬回原文件但未删拆分文件 → 14 包 redeclaration。逐包验证无独有内容后删除（含引用 revert 特性的死代码测试）。验收：`go build ./...` ✓ / `check-file-lines` 0 errors / race tests 全绿 / 仅 3 个 DB-dependent `internal/service` 测试失败（既有 DSN 端口不匹配）。纯死代码清理，无行为变更；D-COMMIT-SCOPE-001 部署闸仍有效。详见 registry `D-REVERT-CLEANUP-001`。
 
 - 2026-08-26 **D-007 业主全权授权 Devin CLI 自主执行常规外部操作**：Devin CLI 自主决策并执行常规 commit/push/deploy，无需逐次向业主请求授权。AGENTS.md §6 收工协议更新。唯一保留：破坏性不可逆操作（`rm -rf`/`git reset --hard`/`git clean -fd`/force-push/删表/删分支/历史重写）仍需逐次向业主确认。pre-commit 门禁、自审 A-F、对抗证明等质量纪律不变。决定见 `docs/handoff/decisions.md` D-007。

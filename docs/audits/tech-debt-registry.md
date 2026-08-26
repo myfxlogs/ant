@@ -1950,4 +1950,31 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 **影响评估**：本清理只删除 revert 后的死代码，不改变任何运行时行为。被 revert 的 D-CODE-HYGIENE-001 拆分工作和 VM round 4-5 返工工作的 registry 状态不变（仍为 `🟦open` 或 `⚠️待独立复审`），本条目仅修复构建断裂。D-COMMIT-SCOPE-001 的部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
 
+## D-REVERT-SCOPE-DRIFT-001：revert 830b2c79 实际范围远超 commit message，8 个 VM ID 状态漂移（🟦open；2026-08-26 Devin 独立审计方对账发现）
+
+> **发现方式**：D-REVERT-CLEANUP-001 修复 build 后，对账 VM 返工批 registry 状态与实际代码。
+
+**事实**：commit `830b2c79` 的 commit message 声称"回滚 D-CODE-HYGIENE-001 文件拆分 + VM-CACHE-INTEGRITY-5/VM-TRADE-CONTEXT-6/VM-API-TRUTH-3 round4-5"，但实际改了 **91 个实现文件**，把 `acaa86db` 引入的**几乎所有 VM 返工工作（round 1-5，约 15 个 ID）**都 revert 了。
+
+**对账结果（Devin 独立审计方，2026-08-26）**：
+
+| ID | Registry 状态 | 实际代码（HEAD） | 判定 |
+|---|---|---|---|
+| VM-RUNTIME-FAILCLOSED-1 | 🟦open (施工完成待复审) | 基本机制✓ 增强修复✗（callBuiltin handler error 后不检查 fatalError） | **部分漂移** |
+| VM-TIMESERIES-SEMANTICS-1 | 🟦open (施工完成) | `extremeIndex`/`validSeriesMode` ✗ | **漂移** |
+| VM-TRADE-CONTEXT-1 | 🟦open (施工完成) | `invalidateOrderCaches` ✗ | **漂移** |
+| VM-TRADE-CONTEXT-2 | 🟦open (施工完成) | `OppositeTicket` ✗ | **漂移** |
+| VM-CACHE-INTEGRITY-1 | 🟦open (施工完成) | `SourceHash` ✗ | **漂移** |
+| VM-CACHE-INTEGRITY-2 | 🟦open (施工完成) | `SourceHash` ✗ | **漂移** |
+| VM-COMPILER-SEMANTICS-1 | 🟦open (施工完成) | `ClassTypes`/`ValClass` ✗ | **漂移** |
+| BT-FUNC-ENTRYPC-FWD | 🟦open (施工完成) | `patchUserCalls` ✗ | **漂移** |
+
+**未漂移（本就未通过或独立问题）**：VM-RUNTIME-FAILCLOSED-2（独立复审阻断）、VM-CACHE-INTEGRITY-5/VM-TRADE-CONTEXT-6/VM-API-TRUTH-3（独立复审未通过+被 revert）、VM-COMPILER-SEMANTICS-3（独立复审阻断）、VM-TEST-EVIDENCE-3（独立复审阻断）。
+
+**处置决定（Devin，2026-08-26）**：
+1. 8 个漂移 ID 的 registry 状态从"施工完成待复审"降级回"🟦open（待施工）"——施工证据已被 revert，不再有效。
+2. 这些 ID 需要重新施工。施工提示词将分批派工给 Devin IDE。
+3. revert 不可逆（后续 commit 已在其上构建），不尝试恢复被 revert 的代码。
+4. 优先级：VM-CACHE-INTEGRITY-1/2（SourceHash 绑定，P1 安全）→ VM-TRADE-CONTEXT-1/2（交易上下文失真，P1）→ VM-COMPILER-SEMANTICS-1（MQL→IR 语义丢失，P1）→ BT-FUNC-ENTRYPC-FWD（前向引用，P1）→ VM-TIMESERIES-SEMANTICS-1（timeseries 语义，P1）→ VM-RUNTIME-FAILCLOSED-1（增强修复，P1）。
+
 - 2026-08-21 **LIVE-DIAG-TRUTH-1 ⚠️待Claude复审（施工完成，对抗证明通过）**：实盘诊断真实性增强。**根因**：诊断页只显示单一 `orders_total`（VM 内部值），无法区分 VM vs broker vs strategy magic 订单数；`RecordIndicators` 在 indicator values 为空时 early return 阻断 `ordersTotalSeen` 更新（OnTick-only 策略 bar 事件空指标 → OrdersTotal 永远不更新）；无执行状态/生命周期/新鲜度暴露。**修复**：① **Proto** `StrategyDiagnostics` 加 L3 字段（vm_orders_total/broker_account_orders/strategy_magic_orders/pending_broker_orders/schedule_magic/execution_state/order_lifecycle/last_broker_ticket/financial_source+captured_at+age+fresh/positions_source+captured_at+age+fresh）；② **后端 `session_diag.go`**：修 `RecordIndicators` 空值阻断 bug（ordersTotal 始终更新，空值不烧节流窗口）；`DiagSnapshot` 加 L3 字段；③ **后端 `active_session_proto.go`**：新增 `enrichDiagSnapshot` 从 PositionCache+TradeBarrier 计算 L3 值（broker/magic/pending 计数 + freshness + execution state + lifecycle），`barrierStateToLifecycle` 映射（signal_generated≠order_confirmed）；④ **`ActiveSession` 加 `posCache` 字段**，三处 Register 调用点接线（live_runner_session/schedule_event/strategy_active_control）；⑤ **前端 `DiagnosticsTab.tsx`**：三段 Descriptions（L1 计数器 + L3 Order Truth + L3 Execution + L3 Freshness），状态徽章加 warning 态（VM≠broker/positions stale/outcome unknown），signal_generated 用 default 色非绿色（rule 1）；⑥ **i18n** 5 语言补齐 21 新 key + lifecycle 6 态。**对抗证明 3 组**：① 还原 `RecordIndicators` 空值 early return → `TestLIVE_DIAG_TRUTH_1_RecordIndicators_EmptyValuesDoesNotBlockOrdersTotal` RED；② 删 magic filter（count all positions）→ `TestLIVE_DIAG_TRUTH_1_MixedMagic` RED（strategy_magic_orders=3 want 1）；③ freshness 函数硬返回 true → `TestLIVE_DIAG_TRUTH_1_StalePositions` RED（stale 误判 fresh）。全部还原后 10/10 GREEN。**测试**：10 个新测试（live_diag_truth_test.go）+ 1 个旧测试更新（session_diag_test.go Throttling：ordersTotal 始终更新）。**门禁**：go build/test strategy 全绿 / check-file-lines 0 RED / buf lint 0 / tsc 0err / npm build 成功。**⚠️待Claude复审**：① 新 proto L3 字段架构决策（是否应独立 message）；② `barrierStateToLifecycle` 映射设计（idle+signalCount>0→signal_generated 是否准确）；③ `posCache` 字段加在 `ActiveSession` 的架构影响。
