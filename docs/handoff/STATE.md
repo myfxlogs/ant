@@ -60,3 +60,5 @@
 - 2026-08-26 commit VM-CACHE-INTEGRITY-1/2 已验收代码：SourceHash 绑定 + 序列化完整性 + marshalHook 测试注入（含返工）。
 
 - 2026-08-26 commit LIVE-ORDER-REENTRY-1 R4 已验收代码：open mutation fail-closed + adapter label pipeline + WaitState 确定性同步（含返工）。
+
+- 2026-08-26 落档第三批施工提示词：VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（编译器正确性）。
