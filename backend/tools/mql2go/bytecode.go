@@ -160,6 +160,10 @@ type Bytecode struct {
 	// Enums (constant name → int value)
 	Enums map[string]int32
 
+	// ClassTypes lists class/struct type names for ValClass global initialization.
+	// VM-COMPILER-SEMANTICS-1: initGlobals uses this to initialize class-typed globals.
+	ClassTypes map[string]bool
+
 	// Coverage report (populated during compilation)
 	Coverage *CoverageReport
 }

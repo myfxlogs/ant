@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM 返工批第三/四批待派工。
+- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done；VM 返工批第四批待派工。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -18,11 +18,12 @@
 | VM-CACHE-INTEGRITY-1/2（第一批） | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
 | LIVE-ORDER-REENTRY-1 R4 复审阻断 | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
 | VM-TRADE-CONTEXT-1/2（第二批） | ✅done | Devin CLI 验收通过 2026-08-26 |
-| VM 返工批第三/四批（4 个漂移 ID） | 🟦open | spec + builder-handoff 已落档 |
+| VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（第三批） | ✅done | Devin CLI 验收通过 2026-08-26 |
+| VM 返工批第四批（2 个漂移 ID） | 🟦open | spec + builder-handoff 待落档 |
 | DATA-TRUTH-2b MT4 margin 补齐 | ✅ | spec 验证通过，修复+对抗证明存活 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
-- **下一步**: 派工 Devin IDE 施工 VM 返工批第三批（VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD）。
+- **下一步**: 派工 Devin IDE 施工 VM 返工批第四批（VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -33,8 +34,8 @@
 - **D-REVERT-SCOPE-DRIFT-001** 🟦open — revert 实际范围远超 commit message，8 个 VM ID 状态漂移需重新施工
 - **VM-CACHE-INTEGRITY-1/2** ✅done — SourceHash 绑定（返工后 Devin CLI 验收通过 2026-08-26）
 - **VM-TRADE-CONTEXT-1/2** ✅done — 交易上下文失真（Devin CLI 验收通过 2026-08-26）
-- **VM-COMPILER-SEMANTICS-1** 🟦open — MQL→IR 语义丢失（被 revert，需重新施工）
-- **BT-FUNC-ENTRYPC-FWD** 🟦open — 前向引用 stale marker PC（被 revert，需重新施工）
+- **VM-COMPILER-SEMANTICS-1** ✅done — MQL→IR/Bytecode 语义丢失（Devin CLI 验收通过 2026-08-26）
+- **BT-FUNC-ENTRYPC-FWD** ✅done — 前向引用 stale marker PC（Devin CLI 验收通过 2026-08-26）
 - **VM-TIMESERIES-SEMANTICS-1** 🟦open — timeseries 语义（被 revert，需重新施工）
 - **VM-RUNTIME-FAILCLOSED-1** 🟦open — 增强修复被 revert（基本机制幸存）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
@@ -62,3 +63,5 @@
 - 2026-08-26 commit LIVE-ORDER-REENTRY-1 R4 已验收代码：open mutation fail-closed + adapter label pipeline + WaitState 确定性同步（含返工）。
 
 - 2026-08-26 落档第三批施工提示词：VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（编译器正确性）。
+
+- 2026-08-26 VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done：Devin CLI 验收通过。compileDeclaration 多变量 + binaryOp error + switch fallthrough + single-statement body + initGlobals ValClass + ClassTypes 序列化 + compileCall relocation + patchUserCalls + sort.Strings。对抗证明 9 项 RED→restore→GREEN，门禁全绿。

@@ -6,35 +6,35 @@ package interp
 // Expr is a pure Go expression tree node.
 type Expr struct {
 	Kind     ExprKind
-	Val      Value   // ExprLiteral: the literal value
-	Name     string  // ExprVar / ExprConst: variable or constant name
-	Op       string  // ExprBinary / ExprUnary: operator
-	Args     []Expr  // ExprBinary: [left, right]; ExprCall: arguments; ExprField: [obj, args...]
-	Index    *Expr   // ExprSubscript: index expression
-	Cond     *Expr   // ExprTernary: condition
-	ThenExpr *Expr   // ExprTernary: then branch
-	ElseExpr *Expr   // ExprTernary: else branch
-	IsAssign bool    // ExprField: true = field assignment (obj.field = value)
+	Val      Value  // ExprLiteral: the literal value
+	Name     string // ExprVar / ExprConst: variable or constant name
+	Op       string // ExprBinary / ExprUnary: operator
+	Args     []Expr // ExprBinary: [left, right]; ExprCall: arguments; ExprField: [obj, args...]
+	Index    *Expr  // ExprSubscript: index expression
+	Cond     *Expr  // ExprTernary: condition
+	ThenExpr *Expr  // ExprTernary: then branch
+	ElseExpr *Expr  // ExprTernary: else branch
+	IsAssign bool   // ExprField: true = field assignment (obj.field = value)
 }
 
 // ExprKind enumerates expression node types.
 type ExprKind uint8
 
 const (
-	ExprLiteral       ExprKind = iota // Val
-	ExprVar                         // Name
-	ExprConst                       // Name (OP_BUY, PRICE_CLOSE, ...)
-	ExprBinary                      // Op + Args[0], Args[1]
-	ExprUnary                       // Op + Args[0]
-	ExprCall                        // Name + Args
-	ExprSubscript                   // Name + Index → Close[1], High[shift]
-	ExprField                       // Args[0].Name.Args[1:] → obj.method or obj.field
-	ExprTernary                     // Cond ? ThenExpr : ElseExpr
-	ExprUpdate                      // Name + Op: i++, i--
-	ExprAssignment                  // Name + Args[0]: a = b
-	ExprDecl                        // Name + Args[0]: name := value (declaration)
-	ExprCompoundAssign              // Name + Op + Args[0]: a += b
-	ExprSeq                         // Args: evaluate all in order, return last result
+	ExprLiteral        ExprKind = iota // Val
+	ExprVar                            // Name
+	ExprConst                          // Name (OP_BUY, PRICE_CLOSE, ...)
+	ExprBinary                         // Op + Args[0], Args[1]
+	ExprUnary                          // Op + Args[0]
+	ExprCall                           // Name + Args
+	ExprSubscript                      // Name + Index → Close[1], High[shift]
+	ExprField                          // Args[0].Name.Args[1:] → obj.method or obj.field
+	ExprTernary                        // Cond ? ThenExpr : ElseExpr
+	ExprUpdate                         // Name + Op: i++, i--
+	ExprAssignment                     // Name + Args[0]: a = b
+	ExprDecl                           // Name + Args[0]: name := value (declaration)
+	ExprCompoundAssign                 // Name + Op + Args[0]: a += b
+	ExprSeq                            // Args: evaluate all in order, return last result
 )
 
 // Statement is a pure Go statement tree node.
@@ -51,42 +51,44 @@ type Statement struct {
 
 // SwitchCase represents one case in a switch statement.
 type SwitchCase struct {
-	Expr *Expr       // case value (nil = default)
-	Body []Statement // case body
+	Expr     *Expr       // case value (nil = default)
+	Body     []Statement // case body
+	HasBreak bool        // VM-COMPILER-SEMANTICS-1: true if case ends with break (no fallthrough)
 }
 
 // StatementKind enumerates statement node types.
 type StatementKind uint8
 
 const (
-	StmtExpr    StatementKind = iota // expression statement
-	StmtIf                           // if / else
-	StmtFor                          // for(init; cond; update)
-	StmtWhile                        // while(cond)
-	StmtDoWhile                      // do { } while(cond)
-	StmtReturn                       // return expr
-	StmtBlock                        // { ... }
-	StmtSwitch                       // switch / case / default
-	StmtBreak                        // break
-	StmtContinue                     // continue
+	StmtExpr     StatementKind = iota // expression statement
+	StmtIf                            // if / else
+	StmtFor                           // for(init; cond; update)
+	StmtWhile                         // while(cond)
+	StmtDoWhile                       // do { } while(cond)
+	StmtReturn                        // return expr
+	StmtBlock                         // { ... }
+	StmtSwitch                        // switch / case / default
+	StmtBreak                         // break
+	StmtContinue                      // continue
 )
 
 // IR is the compiled representation of an MQL EA.
 type IR struct {
-	Version           string              // "mql4" | "mql5" | "python"
-	OnInit            []Statement         // OnInit body (variable initialization + EventSetTimer)
-	OnBar             []Statement         // OnBar body
-	OnTick            []Statement         // OnTick body
-	OnTimer           []Statement         // OnTimer body
-	OnTrade           []Statement         // OnTrade body (MQL5, no args)
-	OnTradeTransaction []Statement        // OnTradeTransaction body (MQL5, receives MqlTradeTransaction)
-	OnBookEvent       []Statement         // OnBookEvent body (MQL5, receives symbol string)
-	OnDeinit          []Statement         // OnDeinit body
-	Globals           []GlobalVar         // global variable declarations
-	Params            []ParamDecl         // extern/input parameter declarations
-	Funcs             map[string]*FuncDef // user-defined functions
-	Enums             map[string]int32    // enum constants → int value
-	EnumTypes         map[string]bool     // enum type names (e.g. "BuyOrSell0")
+	Version            string              // "mql4" | "mql5" | "python"
+	OnInit             []Statement         // OnInit body (variable initialization + EventSetTimer)
+	OnBar              []Statement         // OnBar body
+	OnTick             []Statement         // OnTick body
+	OnTimer            []Statement         // OnTimer body
+	OnTrade            []Statement         // OnTrade body (MQL5, no args)
+	OnTradeTransaction []Statement         // OnTradeTransaction body (MQL5, receives MqlTradeTransaction)
+	OnBookEvent        []Statement         // OnBookEvent body (MQL5, receives symbol string)
+	OnDeinit           []Statement         // OnDeinit body
+	Globals            []GlobalVar         // global variable declarations
+	Params             []ParamDecl         // extern/input parameter declarations
+	Funcs              map[string]*FuncDef // user-defined functions
+	Enums              map[string]int32    // enum constants → int value
+	EnumTypes          map[string]bool     // enum type names (e.g. "BuyOrSell0")
+	ClassTypes         map[string]bool     // VM-COMPILER-SEMANTICS-1: class/struct type names (for ValClass init)
 }
 
 // GlobalVar represents a global variable declaration.

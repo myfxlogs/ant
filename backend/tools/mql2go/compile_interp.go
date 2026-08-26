@@ -6,6 +6,7 @@ import (
 
 	"alphaforge/tools/mql2go/interp"
 
+	"github.com/shopspring/decimal"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -36,19 +37,25 @@ func CompileToIR(source string) (ir *interp.IR, err error) {
 	version := detectMQLVersion(source)
 	c := &compiler{source: source, version: version}
 
-	return c.compile(root), nil
+	result := c.compile(root)
+	if c.err != nil {
+		return nil, c.err
+	}
+	return result, nil
 }
 
 type compiler struct {
 	source  string
 	version string
+	err     error // VM-COMPILER-SEMANTICS-1: compile-time errors (local arrays, etc.)
 }
 
 func (c *compiler) compile(root *sitter.Node) *interp.IR {
 	ir := &interp.IR{
-		Version: c.version,
-		Funcs:   make(map[string]*interp.FuncDef),
-		Enums:   make(map[string]int32),
+		Version:    c.version,
+		Funcs:      make(map[string]*interp.FuncDef),
+		Enums:      make(map[string]int32),
+		ClassTypes: make(map[string]bool), // VM-COMPILER-SEMANTICS-1
 	}
 
 	// First pass: collect known class/struct types and enums
@@ -64,6 +71,15 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 		case "enum_specifier":
 			c.collectEnum(ir, n)
 		}
+	}
+
+	// VM-COMPILER-SEMANTICS-1: populate ClassTypes (user-defined + builtin).
+	for name := range knownClasses {
+		ir.ClassTypes[name] = true
+	}
+	for _, builtin := range []string{"CTrade", "MqlTradeRequest", "MqlTradeResult",
+		"MqlDateTime", "MqlRates", "MqlTick"} {
+		ir.ClassTypes[builtin] = true
 	}
 
 	for i := 0; i < int(root.NamedChildCount()); i++ {
@@ -364,8 +380,22 @@ func (c *compiler) compileIf(n *sitter.Node) *interp.Statement {
 
 func (c *compiler) compileFor(n *sitter.Node) *interp.Statement {
 	stmt := &interp.Statement{Kind: interp.StmtFor}
+	lastIdx := int(n.NamedChildCount()) - 1
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
+		// VM-COMPILER-SEMANTICS-1: the body is always the last named child.
+		// Handle it as body before the switch, so expression_statement bodies
+		// don't get consumed as init/cond.
+		if i == lastIdx && stmt.Body == nil {
+			if child.Type() == nodeCompoundStatement {
+				stmt.Body = c.compileBlock(child)
+				continue
+			}
+			if s := c.compileStmt(child); s != nil {
+				stmt.Body = []interp.Statement{*s}
+			}
+			continue
+		}
 		switch child.Type() {
 		case "declaration":
 			if s := c.compileDeclaration(child); s != nil {
@@ -409,6 +439,13 @@ func (c *compiler) compileWhile(n *sitter.Node) *interp.Statement {
 			stmt.Cond = c.compileExpr(child)
 		} else if child.Type() == nodeCompoundStatement {
 			stmt.Body = c.compileBlock(child)
+		} else {
+			// VM-COMPILER-SEMANTICS-1: single-statement body (no braces).
+			if s := c.compileStmt(child); s != nil {
+				if stmt.Body == nil {
+					stmt.Body = []interp.Statement{*s}
+				}
+			}
 		}
 	}
 	return stmt
@@ -416,57 +453,149 @@ func (c *compiler) compileWhile(n *sitter.Node) *interp.Statement {
 
 func (c *compiler) compileSwitch(n *sitter.Node) *interp.Statement {
 	stmt := &interp.Statement{Kind: interp.StmtSwitch}
+	// VM-COMPILER-SEMANTICS-1: tree-sitter wraps case_statement children inside
+	// a compound_statement. Also, case values are direct expressions (number_literal,
+	// identifier, etc.), not case_label nodes. Default is a case_statement with no
+	// value expression child.
+	var caseNodes []*sitter.Node
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		if child.Type() == nodeParenExpr {
 			stmt.Expr = c.compileExpr(child)
 		} else if child.Type() == "case_statement" {
-			sc := interp.SwitchCase{}
+			caseNodes = append(caseNodes, child)
+		} else if child.Type() == nodeCompoundStatement {
+			// Cases are inside the compound_statement body.
 			for j := 0; j < int(child.NamedChildCount()); j++ {
 				cc := child.NamedChild(j)
-				if cc.Type() == "default_label" {
-					sc.Expr = nil
-				} else if cc.Type() == "case_label" {
-					sc.Expr = c.compileExpr(cc)
-				} else if cc.Type() == "expression_statement" || cc.Type() == nodeCompoundStatement || cc.Type() == "break_statement" {
-					if cc.Type() == nodeCompoundStatement {
-						sc.Body = c.compileBlock(cc)
-					} else if cc.Type() != "break_statement" {
-						if s := c.compileStmt(cc); s != nil {
-							sc.Body = append(sc.Body, *s)
-						}
+				if cc.Type() == "case_statement" {
+					caseNodes = append(caseNodes, cc)
+				}
+			}
+		}
+	}
+	for _, child := range caseNodes {
+		sc := interp.SwitchCase{}
+		for j := 0; j < int(child.NamedChildCount()); j++ {
+			cc := child.NamedChild(j)
+			switch cc.Type() {
+			case "break_statement":
+				// VM-COMPILER-SEMANTICS-1: track break for fallthrough detection.
+				sc.HasBreak = true
+			case nodeCompoundStatement:
+				sc.Body = c.compileBlock(cc)
+			case "expression_statement", "declaration", "if_statement", "for_statement",
+				"while_statement", "do_statement", "switch_statement", "return_statement",
+				"continue_statement":
+				if s := c.compileStmt(cc); s != nil {
+					sc.Body = append(sc.Body, *s)
+				}
+			default:
+				// The first non-statement child is the case value expression
+				// (number_literal, identifier, binary_expression, etc.).
+				// If it's a "default" keyword, this is the default case.
+				if sc.Expr == nil && !isStmtType(cc.Type()) {
+					txt := c.text(cc)
+					if txt == "default" {
+						sc.Expr = nil
+					} else {
+						sc.Expr = c.compileExpr(cc)
 					}
 				}
 			}
-			stmt.Cases = append(stmt.Cases, sc)
 		}
+		stmt.Cases = append(stmt.Cases, sc)
 	}
 	return stmt
 }
 
+// isStmtType returns true if the node type is a statement type (not a case value).
+func isStmtType(t string) bool {
+	switch t {
+	case "expression_statement", "declaration", "if_statement", "for_statement",
+		"while_statement", "do_statement", "switch_statement", "return_statement",
+		"break_statement", "continue_statement", nodeCompoundStatement:
+		return true
+	}
+	return false
+}
+
 func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
-	// Variable declaration as a statement: int x = 5;
+	// VM-COMPILER-SEMANTICS-1: handle all declarators (multi-variable + no-init).
+	typeName := c.findType(n)
+	var decls []interp.Expr
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "init_declarator" {
+		switch child.Type() {
+		case "init_declarator":
 			name := c.findIdent(child)
 			if name == "" {
 				continue
 			}
 			valExpr := c.findInitValue(child, name)
+			var expr interp.Expr
 			if valExpr != nil {
-				return &interp.Statement{
-					Kind: interp.StmtExpr,
-					Expr: &interp.Expr{
-						Kind: interp.ExprDecl,
-						Name: name,
-						Args: []interp.Expr{*c.compileExpr(valExpr)},
-					},
+				expr = interp.Expr{
+					Kind: interp.ExprDecl,
+					Name: name,
+					Args: []interp.Expr{*c.compileExpr(valExpr)},
+				}
+			} else {
+				// No initializer — zero value.
+				expr = interp.Expr{
+					Kind: interp.ExprDecl,
+					Name: name,
+					Args: []interp.Expr{zeroValueExpr(typeName)},
 				}
 			}
+			decls = append(decls, expr)
+		case "declarator":
+			name := c.findIdent(child)
+			if name == "" {
+				continue
+			}
+			decls = append(decls, interp.Expr{
+				Kind: interp.ExprDecl,
+				Name: name,
+				Args: []interp.Expr{zeroValueExpr(typeName)},
+			})
+		case "array_declarator":
+			name := c.findIdent(child)
+			if name == "" {
+				continue
+			}
+			// Local arrays not supported — compile error.
+			if c.err == nil {
+				c.err = fmt.Errorf("local arrays not supported: %s", name)
+			}
+			return nil
 		}
 	}
-	return nil
+	if len(decls) == 0 {
+		return nil
+	}
+	if len(decls) == 1 {
+		return &interp.Statement{Kind: interp.StmtExpr, Expr: &decls[0]}
+	}
+	// Multiple declarators — wrap in ExprSeq.
+	return &interp.Statement{
+		Kind: interp.StmtExpr,
+		Expr: &interp.Expr{Kind: interp.ExprSeq, Args: decls},
+	}
+}
+
+// zeroValueExpr returns a compile-time Expr representing the zero value for a type.
+// VM-COMPILER-SEMANTICS-1: used by compileDeclaration for no-initializer declarators.
+func zeroValueExpr(typeName string) interp.Expr {
+	switch typeName {
+	case "int", "long", "datetime", "bool":
+		return interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)}
+	case "string":
+		return interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal("")}
+	default:
+		// double, float, unknown — decimal zero.
+		return interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(decimal.Zero)}
+	}
 }
 
 // collectFuncParams extracts parameter declarations from a function_definition node.
@@ -561,6 +690,13 @@ func (c *compiler) compileDoWhile(n *sitter.Node) *interp.Statement {
 			stmt.Body = c.compileBlock(child)
 		} else if child.Type() == nodeParenExpr {
 			stmt.Cond = c.compileExpr(child)
+		} else {
+			// VM-COMPILER-SEMANTICS-1: single-statement body (no braces).
+			if s := c.compileStmt(child); s != nil {
+				if stmt.Body == nil {
+					stmt.Body = []interp.Statement{*s}
+				}
+			}
 		}
 	}
 	return stmt

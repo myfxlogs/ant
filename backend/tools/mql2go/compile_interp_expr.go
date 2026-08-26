@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	sitter "github.com/smacker/go-tree-sitter"
 	"alphaforge/tools/mql2go/interp"
+
+	sitter "github.com/smacker/go-tree-sitter"
 )
 
 // ── Expression compilation (CST → pure Go Expr) ─────────────────────
@@ -248,6 +249,18 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 		}
 	}
 
+	// Field assignment: obj.field = value → ExprField with IsAssign=true
+	// VM-COMPILER-SEMANTICS-1: must check before simple variable assignment,
+	// because findIdent(lhs) would find "obj" from the field_expression.
+	if lhs.Type() == "field_expression" {
+		fieldExpr := c.compileField(lhs)
+		if fieldExpr != nil {
+			fieldExpr.IsAssign = true
+			fieldExpr.Args = append(fieldExpr.Args, c.mustExpr(rhs))
+			return fieldExpr
+		}
+	}
+
 	// Simple variable assignment: x = value (or x += value)
 	name := c.findIdent(lhs)
 	if name != "" {
@@ -263,16 +276,6 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 			Name: name,
 			Op:   op,
 			Args: []interp.Expr{c.mustExpr(rhs)},
-		}
-	}
-
-	// Field assignment: obj.field = value → ExprField with IsAssign=true
-	if lhs.Type() == "field_expression" {
-		fieldExpr := c.compileField(lhs)
-		if fieldExpr != nil {
-			fieldExpr.IsAssign = true
-			fieldExpr.Args = append(fieldExpr.Args, c.mustExpr(rhs))
-			return fieldExpr
 		}
 	}
 

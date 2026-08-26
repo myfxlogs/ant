@@ -121,36 +121,72 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 		}
 	}
 
-	// Compile each case: DUP, compare, JMP_IF_FALSE -> next case (patched later)
-	var caseStarts []int32
-	var jmpFalseIndices []int32
-	for _, sc := range regularCases {
+	// VM-COMPILER-SEMANTICS-1: compile each case with fallthrough support.
+	// A case without HasBreak falls through to the next case's body
+	// (skipping the next case's comparison).
+	var caseStarts []int32        // comparison start for each case
+	var caseBodyStarts []int32    // body start for each case (for fallthrough target)
+	var jmpFalseIndices []int32   // JMP_IF_FALSE for each case
+	var fallthroughJmps []int32   // JMP from fallthrough case body to next case body
+	var fallthroughTargets []int32 // target case body index for each fallthrough jmp
+
+	for i, sc := range regularCases {
 		caseStarts = append(caseStarts, int32(len(c.bc.Code)))
 		c.emit(OP_DUP, 0, 0, 0)
 		c.compileExpr(sc.Expr)
 		c.emit(OP_EQ, 0, 0, 0)
 		jmpNext := c.emitJump(OP_JMP_IF_FALSE, 0)
 		jmpFalseIndices = append(jmpFalseIndices, jmpNext)
-		// Matched — execute case body, then jump to end
+		// Matched — execute case body
+		bodyStart := int32(len(c.bc.Code))
+		caseBodyStarts = append(caseBodyStarts, bodyStart)
 		c.compileStmts(sc.Body)
-		endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
+		if sc.HasBreak {
+			// Case ends with break — jump to end of switch.
+			endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
+		} else if i+1 < len(regularCases) {
+			// VM-COMPILER-SEMANTICS-1: fallthrough — jump to next case's BODY
+			// (skip its comparison). We emit a JMP placeholder now and patch it
+			// to caseBodyStarts[i+1] after all cases are compiled.
+			fj := c.emitJump(OP_JMP, 0)
+			fallthroughJmps = append(fallthroughJmps, fj)
+			fallthroughTargets = append(fallthroughTargets, int32(i+1))
+		}
 	}
 
 	// Default body (compiled after all cases so it only runs when no case matches)
+	var defaultStart int32
 	if defaultBody != nil {
+		defaultStart = int32(len(c.bc.Code))
 		c.compileStmts(defaultBody)
 		endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
 	}
 
-	// Patch each case's JMP_IF_FALSE to the next case start.
-	// Last case's JMP_IF_FALSE jumps to default (or POP if no default).
+	// Patch each case's JMP_IF_FALSE.
+	// VM-COMPILER-SEMANTICS-1: fallthrough cases jump to the next case's BODY
+	// (not comparison), so fallthrough skips the next case's comparison.
 	for i, jf := range jmpFalseIndices {
-		if i+1 < len(jmpFalseIndices) {
+		sc := regularCases[i]
+		if !sc.HasBreak && i+1 < len(regularCases) {
+			// Fallthrough case: JMP_IF_FALSE targets next case's body
+			c.bc.Code[jf].A = caseBodyStarts[i+1]
+		} else if i+1 < len(jmpFalseIndices) {
+			// Normal case: JMP_IF_FALSE targets next case's comparison
 			c.bc.Code[jf].A = caseStarts[i+1]
 		} else {
 			// Last case — jump to default or POP
-			c.bc.Code[jf].A = int32(len(c.bc.Code))
+			if defaultBody != nil {
+				c.bc.Code[jf].A = defaultStart
+			} else {
+				c.bc.Code[jf].A = int32(len(c.bc.Code))
+			}
 		}
+	}
+
+	// Patch fallthrough JMPs to their target case body starts.
+	for idx, fj := range fallthroughJmps {
+		targetIdx := fallthroughTargets[idx]
+		c.bc.Code[fj].A = caseBodyStarts[targetIdx]
 	}
 
 	// Pop the switch expression

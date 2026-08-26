@@ -219,20 +219,33 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 // initGlobals initializes global variables from the Bytecode's variable slots.
 func (vm *VM) initGlobals() {
 	vm.globals = make([]interp.Value, len(vm.bc.GlobalSlots))
-	// Initialize array globals with proper size
 	for _, decl := range vm.bc.GlobalDecls {
+		slot, ok := vm.bc.GlobalSlots[decl.Name]
+		if !ok {
+			continue
+		}
 		if decl.IsArray && decl.ArraySize > 0 {
-			slot, ok := vm.bc.GlobalSlots[decl.Name]
-			if !ok {
-				continue
-			}
+			// Initialize array globals with proper size
 			arr := make([]interp.Value, decl.ArraySize)
 			zeroVal := zeroValueForType(decl.Type)
 			for i := range arr {
 				arr[i] = zeroVal
 			}
 			vm.globals[slot] = interp.Value{Kind: interp.ValArray, Array: arr}
+			continue
 		}
+		// VM-COMPILER-SEMANTICS-1: class/struct type → ValClass with empty Fields.
+		if vm.bc.ClassTypes[decl.Type] {
+			vm.globals[slot] = interp.Value{
+				Kind: interp.ValClass,
+				Class: &interp.ClassInstance{
+					Fields: make(map[string]interp.Value),
+				},
+			}
+			continue
+		}
+		// Default: zero value
+		vm.globals[slot] = zeroValueForType(decl.Type)
 	}
 }
 

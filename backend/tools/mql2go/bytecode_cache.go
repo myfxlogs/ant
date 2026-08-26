@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/shopspring/decimal"
 
@@ -140,6 +141,17 @@ func MarshalBytecode(bc *Bytecode) ([]byte, error) {
 		w.writeI32(val)
 	}
 
+	// ClassTypes (VM-COMPILER-SEMANTICS-1: sorted keys for deterministic serialization)
+	classTypeNames := make([]string, 0, len(bc.ClassTypes))
+	for name := range bc.ClassTypes {
+		classTypeNames = append(classTypeNames, name)
+	}
+	sort.Strings(classTypeNames)
+	w.writeU32(uint32(len(classTypeNames)))
+	for _, name := range classTypeNames {
+		w.writeString(name)
+	}
+
 	return w.buf, nil
 }
 
@@ -209,6 +221,10 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 		return nil, fmt.Errorf("bytecode: read sourceHash: %w", err)
 	}
 	if bc.Enums, err = unmarshalEnums(r); err != nil {
+		return nil, err
+	}
+	// VM-COMPILER-SEMANTICS-1: ClassTypes
+	if bc.ClassTypes, err = unmarshalClassTypes(r); err != nil {
 		return nil, err
 	}
 	// VM-CACHE-INTEGRITY-1: reject trailing bytes to prevent corrupted cache
@@ -501,6 +517,27 @@ func unmarshalEnums(r *bytecodeReader) (map[string]int32, error) {
 		enums[name] = val
 	}
 	return enums, nil
+}
+
+// unmarshalClassTypes reads the ClassTypes map from the bytecode cache.
+// VM-COMPILER-SEMANTICS-1: used by UnmarshalBytecode to restore ClassTypes.
+func unmarshalClassTypes(r *bytecodeReader) (map[string]bool, error) {
+	n, err := r.readCount(2) // minBytes = 2 (u16 length prefix for string)
+	if err != nil {
+		return nil, fmt.Errorf("bytecode: read classTypes count: %w", err)
+	}
+	classTypes := make(map[string]bool, n)
+	for i := uint32(0); i < n; i++ {
+		name, err := r.readString()
+		if err != nil {
+			return nil, fmt.Errorf("bytecode: read classType[%d] name: %w", i, err)
+		}
+		if _, exists := classTypes[name]; exists {
+			return nil, fmt.Errorf("bytecode: duplicate classType key: %s", name)
+		}
+		classTypes[name] = true
+	}
+	return classTypes, nil
 }
 
 // ── binary writer ────────────────────────────────────────────────────

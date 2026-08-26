@@ -75,7 +75,10 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 		case "+":
 			// no-op
 		default:
-			c.bc.Coverage.AddBlindSpot("unary op: " + e.Op)
+			// VM-COMPILER-SEMANTICS-1: explicit error instead of silent blind spot.
+			if c.err == nil {
+				c.err = fmt.Errorf("unsupported unary operator: %s", e.Op)
+			}
 		}
 
 	case interp.ExprCall:
@@ -358,7 +361,14 @@ func (c *astCompiler) compileCall(e *interp.Expr) {
 		for i := range e.Args {
 			c.compileExpr(&e.Args[i])
 		}
-		c.emit(OP_CALL_USER, fn.EntryPC, int32(fn.NumParams), 0)
+		// BT-FUNC-ENTRYPC-FWD: emit placeholder -1, patch later in patchUserCalls.
+		// fn.EntryPC may be a stale marker PC if callee body isn't compiled yet.
+		_ = fn
+		instrIdx := c.emit(OP_CALL_USER, -1, int32(fn.NumParams), 0)
+		c.userCallPatches = append(c.userCallPatches, userCallPatch{
+			instruction: instrIdx,
+			callee:      e.Name,
+		})
 		return
 	}
 
@@ -485,7 +495,10 @@ func (c *astCompiler) binaryOp(op string) Opcode {
 	case ">=":
 		return OP_GE
 	default:
-		c.bc.Coverage.AddBlindSpot("binary op: " + op)
+		// VM-COMPILER-SEMANTICS-1: explicit error instead of silent OP_ADD fallback.
+		if c.err == nil {
+			c.err = fmt.Errorf("unsupported binary operator: %s", op)
+		}
 		return OP_ADD
 	}
 }
@@ -505,6 +518,10 @@ func (c *astCompiler) compoundAssignOp(op string) Opcode {
 	case "%=":
 		return OP_MOD
 	default:
+		// VM-COMPILER-SEMANTICS-1: explicit error instead of silent OP_ADD fallback.
+		if c.err == nil {
+			c.err = fmt.Errorf("unsupported compound assign operator: %s", op)
+		}
 		return OP_ADD
 	}
 }

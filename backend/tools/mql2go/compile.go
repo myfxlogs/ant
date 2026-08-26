@@ -2,6 +2,7 @@ package mql2go
 
 import (
 	"fmt"
+	"sort"
 
 	"alphaforge/tools/mql2go/interp"
 )
@@ -20,6 +21,7 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 			Params:             ir.Params,
 			Version:            ir.Version,
 			Enums:              ir.Enums,
+			ClassTypes:         ir.ClassTypes, // VM-COMPILER-SEMANTICS-1
 			Coverage:           &CoverageReport{},
 			OnInit:             -1,
 			OnBar:              -1,
@@ -68,6 +70,9 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 		c.emit(OP_ENTER_FUNC, int32(len(fn.Params)), 0, 0)
 		userFuncNames = append(userFuncNames, name)
 	}
+
+	// BT-FUNC-ENTRYPC-FWD: deterministic layout (map iteration is non-deterministic).
+	sort.Strings(userFuncNames)
 
 	for _, name := range userFuncNames {
 		fn := ir.Funcs[name]
@@ -135,6 +140,13 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 	// Patch forward jumps (placeholder targets are negative indices)
 	c.patchJumps()
 
+	// BT-FUNC-ENTRYPC-FWD: patch user-call placeholders after all bodies compiled.
+	if err := c.patchUserCalls(); err != nil {
+		if c.err == nil {
+			c.err = err
+		}
+	}
+
 	// Return compile error if any (e.g. unknown constant)
 	if c.err != nil {
 		return nil, c.err
@@ -149,13 +161,23 @@ type loopContext struct {
 }
 
 type astCompiler struct {
-	bc            *Bytecode
-	ir            *interp.IR
-	localScopes   []map[string]VarID // scope stack for local variables
-	currentFunc   *FuncEntry
-	nextLocalSlot int            // next available local slot in current function
-	loopStack     []*loopContext // stack of loop contexts for break/continue
-	err           error          // first compile error encountered (e.g. unknown constant)
+	bc              *Bytecode
+	ir              *interp.IR
+	localScopes     []map[string]VarID // scope stack for local variables
+	currentFunc     *FuncEntry
+	nextLocalSlot   int             // next available local slot in current function
+	loopStack       []*loopContext  // stack of loop contexts for break/continue
+	err             error           // first compile error encountered (e.g. unknown constant)
+	userCallPatches []userCallPatch // BT-FUNC-ENTRYPC-FWD: pending user-call relocations
+}
+
+// userCallPatch records a pending OP_CALL_USER instruction that needs its
+// operand A patched to the callee's final EntryPC after all bodies are compiled.
+// BT-FUNC-ENTRYPC-FWD: fixes forward references where caller body is compiled
+// before callee body, leaving EntryPC as a stale marker PC.
+type userCallPatch struct {
+	instruction int32  // index of OP_CALL_USER in bc.Code
+	callee      string // function name to patch
 }
 
 // emit appends an instruction and returns its index.
@@ -185,6 +207,25 @@ func (c *astCompiler) patchJumps() {
 			panic(fmt.Sprintf("unpatched jump at instruction %d", i))
 		}
 	}
+}
+
+// patchUserCalls resolves all pending user-call relocations.
+// BT-FUNC-ENTRYPC-FWD: called after all user function bodies are compiled,
+// so all EntryPCs are final. This fixes forward references where a caller's
+// body is compiled before the callee's body, leaving the OP_CALL_USER operand
+// as a stale marker PC (-1 placeholder).
+func (c *astCompiler) patchUserCalls() error {
+	for _, p := range c.userCallPatches {
+		fn, ok := c.bc.Funcs[p.callee]
+		if !ok {
+			return fmt.Errorf("patchUserCalls: unknown function %s", p.callee)
+		}
+		if fn.EntryPC < 0 {
+			return fmt.Errorf("patchUserCalls: callee %s has invalid EntryPC %d", p.callee, fn.EntryPC)
+		}
+		c.bc.Code[p.instruction].A = fn.EntryPC
+	}
+	return nil
 }
 
 // addConst adds a constant to the pool and returns its ID.
