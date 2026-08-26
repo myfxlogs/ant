@@ -92,28 +92,6 @@ func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, pos
 	r.ctx.livePendingOrders = pendingOrders
 }
 
-// UpdateAccountIdentity sets the account login and broker company from the
-// parent process (harness mode). VM-TRADE-CONTEXT-3: AccountNumber() reads
-// Login from the context; without this, Login=0 → blind spot.
-// VM-API-TRUTH-3: also sets IsDemo/IsConnected/IsTradeAllowed from
-// authoritative account record.
-func (r *Runner) UpdateAccountIdentity(login int64, company string) {
-	r.ctx.mu.Lock()
-	defer r.ctx.mu.Unlock()
-	r.ctx.liveLogin = login
-	r.ctx.liveCompany = company
-}
-
-// UpdateAccountStatus sets the account status flags from the parent process.
-// VM-API-TRUTH-3: IsDemo/IsConnected/IsTradeAllowed from authoritative source.
-func (r *Runner) UpdateAccountStatus(isDemo, isConnected, isTradeAllowed bool) {
-	r.ctx.mu.Lock()
-	defer r.ctx.mu.Unlock()
-	r.ctx.liveIsDemo = isDemo
-	r.ctx.liveIsConnected = isConnected
-	r.ctx.liveIsTradeAllowed = isTradeAllowed
-}
-
 // UpdateExtraBars sets the extra symbol bar windows for multi-symbol strategies.
 func (r *Runner) UpdateExtraBars(extra map[string][]sdk.Bar) {
 	r.ctx.setExtraBars(extra)
@@ -125,16 +103,7 @@ func (r *Runner) Init(ctx context.Context) error {
 		return nil
 	}
 	r.ctx.setGoContext(ctx)
-	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-3: clear before each event
-	err := r.strategy.OnInit(r.ctx)
-	if err != nil {
-		return err
-	}
-	if bErr := r.broker.LastError(); bErr != nil {
-		return bErr
-	}
-	return nil
+	return r.strategy.OnInit(r.ctx)
 }
 
 // OnBar calls the strategy's OnBar for a new bar.
@@ -145,20 +114,11 @@ func (r *Runner) OnBar(ctx context.Context, bars sdk.BarSeries, timeframe string
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-2: clear before each event
 	r.mu.Lock()
 	r.ctx.setBars(bars)
 	r.mu.Unlock()
 	r.barRev.Add(1)
-	sig, err := r.strategy.OnBar(r.ctx, timeframe)
-	if err != nil {
-		return nil, err
-	}
-	// VM-TRADE-CONTEXT-2: fail-closed if broker queries failed during the event.
-	if bErr := r.broker.LastError(); bErr != nil {
-		return nil, bErr
-	}
-	return sig, nil
+	return r.strategy.OnBar(r.ctx, timeframe)
 }
 
 // OnTick calls the strategy's OnTick if it implements TickStrategy.
@@ -172,17 +132,8 @@ func (r *Runner) OnTick(ctx context.Context, bid, ask decimal.Decimal) (*sdk.Sig
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-2: clear before each event
 	r.ctx.setTick(bid, ask)
-	sig, err := ts.OnTick(r.ctx, bid, ask)
-	if err != nil {
-		return nil, err
-	}
-	// VM-TRADE-CONTEXT-2: fail-closed if broker queries failed during the event.
-	if bErr := r.broker.LastError(); bErr != nil {
-		return nil, bErr
-	}
-	return sig, nil
+	return ts.OnTick(r.ctx, bid, ask)
 }
 
 // OnTrade calls the strategy's OnTrade if it implements TradeStrategy.
@@ -196,15 +147,7 @@ func (r *Runner) OnTrade(ctx context.Context, event sdk.TradeEvent) (*sdk.Signal
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-3: clear before each event
-	sig, err := ts.OnTrade(r.ctx, event)
-	if err != nil {
-		return nil, err
-	}
-	if bErr := r.broker.LastError(); bErr != nil {
-		return nil, bErr
-	}
-	return sig, nil
+	return ts.OnTrade(r.ctx, event)
 }
 
 // OnTimerTick calls the strategy's OnTimer if it implements TimerStrategy.
@@ -218,15 +161,7 @@ func (r *Runner) OnTimerTick(ctx context.Context) (*sdk.Signal, error) {
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-3: clear before each event
-	sig, err := ts.OnTimer(r.ctx)
-	if err != nil {
-		return nil, err
-	}
-	if bErr := r.broker.LastError(); bErr != nil {
-		return nil, bErr
-	}
-	return sig, nil
+	return ts.OnTimer(r.ctx)
 }
 
 // OnTradeTransaction calls the strategy's OnTradeTransaction if it implements TradeTransactionStrategy.
@@ -240,15 +175,7 @@ func (r *Runner) OnTradeTransaction(ctx context.Context) (*sdk.Signal, error) {
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-3: clear before each event
-	sig, err := ts.OnTradeTransaction(r.ctx)
-	if err != nil {
-		return nil, err
-	}
-	if bErr := r.broker.LastError(); bErr != nil {
-		return nil, bErr
-	}
-	return sig, nil
+	return ts.OnTradeTransaction(r.ctx)
 }
 
 // OnBookEvent calls the strategy's OnBookEvent if it implements BookEventStrategy.
@@ -262,15 +189,7 @@ func (r *Runner) OnBookEvent(ctx context.Context) (*sdk.Signal, error) {
 	}
 	r.ctx.setGoContext(ctx)
 	r.broker.setContext(ctx)
-	r.broker.resetError() // VM-TRADE-CONTEXT-3: clear before each event
-	sig, err := ts.OnBookEvent(r.ctx)
-	if err != nil {
-		return nil, err
-	}
-	if bErr := r.broker.LastError(); bErr != nil {
-		return nil, bErr
-	}
-	return sig, nil
+	return ts.OnBookEvent(r.ctx)
 }
 
 // HasOnTradeTransaction returns true if the underlying strategy implements TradeTransactionStrategy.

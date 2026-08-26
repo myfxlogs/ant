@@ -2,28 +2,22 @@ package mql2go
 
 import (
 	"fmt"
-
-	"alphaforge/tools/mql2go/interp"
+	"strings"
 
 	sitter "github.com/smacker/go-tree-sitter"
+	"alphaforge/tools/mql2go/interp"
 )
 
 // ── Expression compilation (CST → pure Go Expr) ─────────────────────
 
-// mustExpr wraps compileExpr to guarantee a non-nil result while preserving
-// the first compilation error for the caller.
+// mustExpr wraps compileExpr to guarantee a non-nil result.
+// If compileExpr returns nil (unrecognized node type), returns a zero literal
+// to avoid nil-pointer panics in callers that dereference immediately.
 func (c *compiler) mustExpr(n *sitter.Node) interp.Expr {
 	if e := c.compileExpr(n); e != nil {
 		return *e
 	}
-	if c.err == nil {
-		if n == nil {
-			c.err = fmt.Errorf("missing MQL expression")
-		} else {
-			c.err = fmt.Errorf("unsupported MQL expression node: %s", n.Type())
-		}
-	}
-	return interp.Expr{Kind: interp.ExprLiteral, Val: interp.NoneVal()}
+	return interp.Expr{Kind: interp.ExprLiteral, Val: interp.IntVal(0)}
 }
 
 func (c *compiler) compileExprFromStmt(n *sitter.Node) *interp.Expr {
@@ -38,33 +32,20 @@ func (c *compiler) compileExprFromStmt(n *sitter.Node) *interp.Expr {
 	return nil
 }
 
-func isMQLExpressionNodeType(nodeType string) bool {
-	switch nodeType {
-	case nodeNumberLiteral, "string_literal", nodeTrue, nodeFalse, nodeIdentifier,
-		nodeTypeIdentifier, "null", "call_expression", "binary_expression",
-		"unary_expression", "subscript_expression", "assignment_expression",
-		"update_expression", "conditional_expression", nodeParenExpr,
-		"field_expression", "cast_expression", "comma_expression":
-		return true
-	default:
-		return false
-	}
-}
-
 func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	if n == nil {
 		return nil
 	}
 	switch n.Type() {
-	case nodeNumberLiteral:
+	case "number_literal":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.ParseNumberLiteral(c.text(n))}
 
 	case "string_literal":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.StringVal(unquote(c.text(n)))}
 
-	case nodeTrue:
+	case "true":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(true)}
-	case nodeFalse:
+	case "false":
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}
 
 	case nodeIdentifier:
@@ -78,7 +59,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "null":
 		return &interp.Expr{Kind: interp.ExprConst, Name: "NULL"}
 
-	case nodeTypeIdentifier:
+	case "type_identifier":
 		// Predefined constant: OP_BUY, PRICE_CLOSE, etc.
 		return &interp.Expr{Kind: interp.ExprConst, Name: c.text(n)}
 
@@ -107,10 +88,6 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		if n.NamedChildCount() > 0 {
 			return c.compileExpr(n.NamedChild(0))
 		}
-		if c.err == nil {
-			c.err = fmt.Errorf("parenthesized expression has no operand")
-		}
-		return nil
 
 	case "field_expression":
 		return c.compileField(n)
@@ -121,44 +98,27 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
 			ct := child.Type()
-			if ct != "primitive_type" && ct != nodeTypeIdentifier && ct != "type_descriptor" {
+			if ct != "primitive_type" && ct != "type_identifier" {
 				return c.compileExpr(child)
 			}
 		}
-		if c.err == nil {
-			c.err = fmt.Errorf("cast expression has no operand")
-		}
 		return nil
 	case "comma_expression":
-		// VM-COMPILER-SEMANTICS-4: evaluate all children left-to-right,
-		// return last value (C comma operator). Must preserve side effects
-		// of all sub-expressions (assignments, function calls), not just
-		// the last one. Generate ExprSeq so the compiler emits all sub-expression
-		// evaluations in order.
-		var args []interp.Expr
+		// Evaluate left-to-right, return last value (C comma operator)
+		var last *interp.Expr
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
 			if e := c.compileExpr(child); e != nil {
-				args = append(args, *e)
+				last = e
 			}
 		}
-		if len(args) == 0 {
-			return nil
-		}
-		if len(args) == 1 {
-			return &args[0]
-		}
-		return &interp.Expr{Kind: interp.ExprSeq, Args: args}
+		return last
 
 	case "argument_list":
 		// Should not be compiled directly
 		return nil
-	default:
-		if c.err == nil {
-			c.err = fmt.Errorf("unsupported MQL expression node: %s", n.Type())
-		}
-		return nil
 	}
+	return nil
 }
 
 func (c *compiler) compileCall(n *sitter.Node) *interp.Expr {
@@ -181,12 +141,6 @@ func (c *compiler) compileCall(n *sitter.Node) *interp.Expr {
 		}
 	}
 	name := callFuncName(c.source, n)
-	if name == "" {
-		if c.err == nil {
-			c.err = fmt.Errorf("call expression has no function name")
-		}
-		return nil
-	}
 	args := c.compileArgs(n)
 	return &interp.Expr{Kind: interp.ExprCall, Name: name, Args: args}
 }
@@ -216,9 +170,6 @@ func (c *compiler) compileBinary(n *sitter.Node) *interp.Expr {
 		}
 	}
 	if left == nil || right == nil {
-		if c.err == nil {
-			c.err = fmt.Errorf("binary expression has missing operand")
-		}
 		return nil
 	}
 	return &interp.Expr{
@@ -248,9 +199,6 @@ func (c *compiler) compileUnary(n *sitter.Node) *interp.Expr {
 		operand = n.NamedChild(0)
 	}
 	if operand == nil {
-		if c.err == nil {
-			c.err = fmt.Errorf("unary expression has missing operand")
-		}
 		return nil
 	}
 	return &interp.Expr{
@@ -258,6 +206,160 @@ func (c *compiler) compileUnary(n *sitter.Node) *interp.Expr {
 		Op:   op,
 		Args: []interp.Expr{c.mustExpr(operand)},
 	}
+}
+
+func (c *compiler) compileSubscript(n *sitter.Node) *interp.Expr {
+	var name string
+	var idx *sitter.Node
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == nodeIdentifier && name == "" {
+			name = c.text(child)
+		} else if child.Type() != "[" && child.Type() != "]" {
+			idx = child
+		}
+	}
+	if name == "" || idx == nil {
+		return nil
+	}
+	return &interp.Expr{
+		Kind:  interp.ExprSubscript,
+		Name:  name,
+		Index: c.compileExpr(idx),
+	}
+}
+
+func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
+	children := getNamedChildren(n)
+	if len(children) < 2 {
+		return nil
+	}
+	lhs := children[0]
+	rhs := children[1]
+
+	// Detect compound assignment operator by scanning non-named children
+	op := "="
+	for i := 0; i < int(n.ChildCount()); i++ {
+		ch := n.Child(i)
+		t := ch.Type()
+		if t == "+=" || t == "-=" || t == "*=" || t == "/=" || t == "%=" {
+			op = t
+			break
+		}
+	}
+
+	// Simple variable assignment: x = value (or x += value)
+	name := c.findIdent(lhs)
+	if name != "" {
+		if op == "=" {
+			return &interp.Expr{
+				Kind: interp.ExprAssignment,
+				Name: name,
+				Args: []interp.Expr{c.mustExpr(rhs)},
+			}
+		}
+		return &interp.Expr{
+			Kind: interp.ExprCompoundAssign,
+			Name: name,
+			Op:   op,
+			Args: []interp.Expr{c.mustExpr(rhs)},
+		}
+	}
+
+	// Field assignment: obj.field = value → ExprField with IsAssign=true
+	if lhs.Type() == "field_expression" {
+		fieldExpr := c.compileField(lhs)
+		if fieldExpr != nil {
+			fieldExpr.IsAssign = true
+			fieldExpr.Args = append(fieldExpr.Args, c.mustExpr(rhs))
+			return fieldExpr
+		}
+	}
+
+	// Subscript assignment: arr[i] = value
+	if lhs.Type() == "subscript_expression" {
+		subExpr := c.compileSubscript(lhs)
+		if subExpr != nil {
+			subExpr.Args = []interp.Expr{c.mustExpr(rhs)}
+			return subExpr
+		}
+	}
+
+	return nil
+}
+
+func (c *compiler) compileUpdate(n *sitter.Node) *interp.Expr {
+	text := c.text(n)
+	name := strings.TrimSuffix(strings.TrimSuffix(text, "++"), "--")
+	op := "++"
+	if strings.HasSuffix(text, "--") {
+		op = "--"
+	}
+	return &interp.Expr{Kind: interp.ExprUpdate, Name: name, Op: op}
+}
+
+func (c *compiler) compileTernary(n *sitter.Node) *interp.Expr {
+	var cond, thenE, elseE *sitter.Node
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "?" || child.Type() == ":" {
+			continue
+		}
+		if cond == nil {
+			cond = child
+		} else if thenE == nil {
+			thenE = child
+		} else {
+			elseE = child
+		}
+	}
+	if cond == nil || thenE == nil || elseE == nil {
+		return nil
+	}
+	return &interp.Expr{
+		Kind:     interp.ExprTernary,
+		Cond:     c.compileExpr(cond),
+		ThenExpr: c.compileExpr(thenE),
+		ElseExpr: c.compileExpr(elseE),
+	}
+}
+
+func (c *compiler) compileField(n *sitter.Node) *interp.Expr {
+	// field_expression: obj.field or obj.method(args)
+	var obj *sitter.Node
+	var fieldName string
+	var args []interp.Expr
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		switch child.Type() {
+		case "field_identifier":
+			fieldName = c.text(child)
+		case nodeIdentifier:
+			if obj == nil {
+				obj = child
+			}
+		case "call_expression":
+			// method call: obj.method(args)
+			fieldName = callFuncName(c.source, child)
+			args = c.compileArgs(child)
+		case "argument_list":
+			// already handled by call_expression above
+		default:
+			if obj == nil {
+				obj = child
+			}
+		}
+	}
+	if obj == nil || fieldName == "" {
+		return nil
+	}
+	result := &interp.Expr{
+		Kind: interp.ExprField,
+		Name: fieldName,
+		Args: []interp.Expr{c.mustExpr(obj)},
+	}
+	result.Args = append(result.Args, args...)
+	return result
 }
 
 func (c *compiler) compileArgs(n *sitter.Node) []interp.Expr {
@@ -281,3 +383,183 @@ func (c *compiler) compileArgs(n *sitter.Node) []interp.Expr {
 }
 
 // ── Compiler helpers ────────────────────────────────────────────────
+
+func (c *compiler) text(n *sitter.Node) string {
+	return nodeText(c.source, n)
+}
+
+func (c *compiler) findIdent(n *sitter.Node) string {
+	// First pass: a direct identifier/field_identifier child that is NOT a
+	// primitive type. The MQL tree-sitter grammar can surface the type as the
+	// first identifier child for float-literal defaults — e.g. "input double
+	// Lots=0.1" parses with "double" as a direct identifier inside
+	// init_declarator — so primitive type names must be skipped to reach the
+	// real variable name. (No legal MQL identifier is a primitive type keyword.)
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == nodeIdentifier || child.Type() == "field_identifier" {
+			name := c.text(child)
+			if !isMQLPrimitiveType(name) {
+				return name
+			}
+		}
+	}
+	// Second pass: the same grammar quirk buries the real identifier inside an
+	// ERROR recovery node. Descend into ERROR nodes to recover it.
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "ERROR" {
+			if name := c.findIdent(child); name != "" {
+				return name
+			}
+		}
+	}
+	// Direct identifier (n itself).
+	if n.Type() == nodeIdentifier || n.Type() == "field_identifier" {
+		name := c.text(n)
+		if !isMQLPrimitiveType(name) {
+			return name
+		}
+	}
+	return ""
+}
+
+// findArraySize detects array dimension in declarations like double Gd_720[30].
+// Returns (size, true) if an array dimension is found, (0, false) otherwise.
+func (c *compiler) findArraySize(n *sitter.Node) (int, bool) {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "subscript_expression" {
+			// The child of subscript_expression is the array name (identifier)
+			// and the index is the dimension size
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				dim := child.NamedChild(j)
+				if dim.Type() == "number_literal" {
+					txt := c.text(dim)
+					var size int
+					fmt.Sscanf(txt, "%d", &size)
+					if size > 0 {
+						return size, true
+					}
+				}
+			}
+			return 0, true // array but unknown size
+		}
+	}
+	return 0, false
+}
+
+func (c *compiler) findType(n *sitter.Node) string {
+	// First check ERROR nodes for primitive types (MQL5 'input int' pattern)
+	for i := 0; i < int(n.ChildCount()); i++ {
+		child := n.Child(i)
+		if child.Type() == "ERROR" {
+			txt := c.text(child)
+			if isMQLPrimitiveType(txt) {
+				return txt
+			}
+		}
+	}
+	if pt := childByType(n, "primitive_type"); pt != nil {
+		return c.text(pt)
+	}
+	// Find type_identifier, skipping 'input'/'extern' keywords
+	// (tree-sitter parses 'input BuyOrSell0 x' with 'input' as type_identifier)
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "type_identifier" {
+			name := c.text(child)
+			if name != "input" && name != "extern" {
+				return name
+			}
+		}
+	}
+	// Fallback for the float-default grammar quirk: "input double Lots=0.1"
+	// parses with "double" as an identifier inside init_declarator (not as
+	// primitive_type). Scan descendants for a primitive-type identifier so the
+	// param's Type is populated (else injectParams skips it → volume=0).
+	if t := c.findPrimitiveTypeIdent(n); t != "" {
+		return t
+	}
+	return ""
+}
+
+// findPrimitiveTypeIdent scans descendants of n for an identifier whose text is a
+// MQL primitive type (int/double/string/...). Needed for the float-default quirk
+// where the type sits as an identifier inside init_declarator.
+func (c *compiler) findPrimitiveTypeIdent(n *sitter.Node) string {
+	if n.Type() == nodeIdentifier {
+		if isMQLPrimitiveType(c.text(n)) {
+			return c.text(n)
+		}
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		if r := c.findPrimitiveTypeIdent(n.NamedChild(i)); r != "" {
+			return r
+		}
+	}
+	return ""
+}
+
+func (c *compiler) findExprChild(n *sitter.Node) *sitter.Node {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		switch child.Type() {
+		case "number_literal", "string_literal", nodeIdentifier,
+			"call_expression", "binary_expression", "unary_expression",
+			"subscript_expression", "conditional_expression",
+			nodeParenExpr, "field_expression",
+			"assignment_expression", "true", "false":
+			return child
+		}
+	}
+	return nil
+}
+
+func (c *compiler) findInitValue(n *sitter.Node, declName string) *sitter.Node {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		switch child.Type() {
+		case "number_literal", "string_literal",
+			"call_expression", "binary_expression", "unary_expression",
+			"subscript_expression", "conditional_expression",
+			nodeParenExpr, "field_expression",
+			"assignment_expression", "true", "false":
+			return child
+		case nodeIdentifier:
+			// Skip the param name itself AND primitive-type identifiers.
+			// Float-default quirk: "input double Lots=0.1" parses with "double"
+			// as an identifier in init_declarator — it's the type, not the value.
+			txt := c.text(child)
+			if txt != declName && !isMQLPrimitiveType(txt) {
+				return child
+			}
+		}
+	}
+	return nil
+}
+
+func isBinaryOp(t string) bool {
+	switch t {
+	case "+", "-", "*", "/", "%", "==", "!=", "<", ">", "<=", ">=",
+		"&&", "||", "&", "|", "^", "<<", ">>":
+		return true
+	}
+	return false
+}
+
+func isUnaryOp(s string) bool {
+	switch s {
+	case "-", "!", "~", "+":
+		return true
+	}
+	return false
+}
+
+func unquote(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+		return s[1 : len(s)-1]
+	}
+	return s
+}

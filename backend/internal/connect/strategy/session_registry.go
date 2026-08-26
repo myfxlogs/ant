@@ -4,6 +4,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mthub"
 	"alphaforge/internal/repository"
+
+	"github.com/shopspring/decimal"
 )
 
 // ActiveSession holds metadata about a running live strategy session.
@@ -234,3 +237,181 @@ func (r *SessionRegistry) GetByScheduleID(scheduleID uuid.UUID) (*ActiveSession,
 // UpdatePnlFromPositions recomputes PnL for active sessions from a broker
 // profit/position snapshot. It matches by account + symbol + magic number and
 // updates each running session's PnL in-place.
+func (r *SessionRegistry) UpdatePnlFromPositions(accountID string, positions []mdtick.ProfitPosition) {
+	r.mu.RLock()
+	byMagic := make(map[int32]*ActiveSession)
+	for _, sess := range r.sessions {
+		if sess.AccountID == accountID {
+			byMagic[sess.MagicNumber] = sess
+		}
+	}
+	r.mu.RUnlock()
+	if len(byMagic) == 0 {
+		return
+	}
+
+	// Sum profit for each magic number. ProfitPosition already contains the
+	// running profit for that position, so simple attribution-by-magic works.
+	pnlByMagic := make(map[int32]decimal.Decimal)
+	for _, pos := range positions {
+		if pos.Magic == 0 {
+			continue
+		}
+		pnlByMagic[pos.Magic] = pnlByMagic[pos.Magic].Add(pos.Profit)
+	}
+
+	// Update PnL for all active sessions on this account. Sessions whose magic
+	// number has no open position get PnL reset to "0" (position closed = no PnL).
+	for magic, sess := range byMagic {
+		if pnl, ok := pnlByMagic[magic]; ok {
+			sess.SetPnL(pnl.String())
+		} else {
+			sess.SetPnL("0")
+		}
+	}
+}
+
+// ListByAccount returns all active sessions for an account.
+func (r *SessionRegistry) ListByAccount(accountID string) []*ActiveSession {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	var out []*ActiveSession
+	for _, sess := range r.sessions {
+		if sess.AccountID == accountID {
+			out = append(out, sess)
+		}
+	}
+	return out
+}
+
+// ListAll returns all active sessions.
+func (r *SessionRegistry) ListAll() []*ActiveSession {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	out := make([]*ActiveSession, 0, len(r.sessions))
+	for _, sess := range r.sessions {
+		out = append(out, sess)
+	}
+	return out
+}
+
+// Stop cancels a session's context, causing RunLiveStrategy to exit.
+func (r *SessionRegistry) Stop(runID uuid.UUID) error {
+	r.mu.RLock()
+	sess, ok := r.sessions[runID]
+	r.mu.RUnlock()
+	if !ok {
+		return fmt.Errorf("session %s not found", runID)
+	}
+	sess.cancel()
+	return nil
+}
+
+// RecordTick updates the latest tick timestamp for this session.
+func (s *ActiveSession) RecordTick(t time.Time) {
+	s.pnlMu.Lock()
+	s.LastTickAt = t
+	s.pnlMu.Unlock()
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
+}
+
+// SetPnL updates the running PnL for this run.
+func (s *ActiveSession) SetPnL(pnl string) {
+	s.pnlMu.Lock()
+	s.PnL = pnl
+	s.pnlMu.Unlock()
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
+}
+
+// RecordSignal updates session metadata when a signal is dispatched and
+// publishes the signal event to all SSE subscribers.
+// Also persists "signal_generated" to sessionDiag so diagnostics reflect
+// the most recent signal even before any order submission attempt.
+func (s *ActiveSession) RecordSignal(event *SignalEvent) {
+	s.signalSubsMu.Lock()
+	s.SignalCount++
+	s.LastSignalAt = event.Timestamp
+	for _, sub := range s.signalSubs {
+		select {
+		case sub <- event:
+		default:
+		}
+	}
+	s.signalSubsMu.Unlock()
+	// LIVE-DIAG-TRUTH-1: persist signal_generated lifecycle (rule 1: signal ≠ fill)
+	if s.diag != nil {
+		s.diag.RecordLifecycle("signal_generated", 0)
+	}
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+	}
+}
+
+// SubscribeSignals returns a channel that receives signal events for this session.
+// The channel is closed when the session is deregistered.
+func (s *ActiveSession) SubscribeSignals() <-chan *SignalEvent {
+	ch := make(chan *SignalEvent, 16)
+	s.signalSubsMu.Lock()
+	s.signalSubs = append(s.signalSubs, ch)
+	s.signalSubsMu.Unlock()
+	return ch
+}
+
+// InsertScheduleRunLog writes a best-effort schedule run log entry.
+// It does not block the caller and swallows panics/timeout internally.
+func (r *SessionRegistry) InsertScheduleRunLog(ctx context.Context, userID, scheduleID uuid.UUID, kind, action, status, errorMessage, signalType string, signalVolume decimal.Decimal) {
+	if r.logRepo == nil {
+		return
+	}
+	go func() {
+		defer func() { _ = recover() }()
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		_ = r.logRepo.InsertScheduleRunLog(ctx, userID, scheduleID, kind, action, status, errorMessage, signalType, signalVolume)
+	}()
+}
+
+// RecordError increments the error count, stores the last error, and logs it.
+func (s *ActiveSession) RecordError(err string) {
+	s.signalSubsMu.Lock()
+	s.ErrorCount++
+	s.LastError = err
+	s.signalSubsMu.Unlock()
+	if s.log != nil {
+		s.log.Error("ActiveSession: recorded error",
+			zap.String("run", s.RunID.String()),
+			zap.String("schedule", s.ScheduleID.String()),
+			zap.String("error", err))
+	}
+	if s.registry != nil {
+		s.registry.notifyWatchers()
+		s.registry.InsertScheduleRunLog(context.Background(), s.UserID, s.ScheduleID,
+			"error", "record", "failed", err, "", decimal.Zero)
+	}
+}
+
+// SetCircuitOpen marks the session as having a tripped circuit breaker.
+// When true, new order signals are suppressed to avoid flooding a broken broker.
+func (s *ActiveSession) SetCircuitOpen(open bool) {
+	s.signalSubsMu.Lock()
+	s.circuitOpen = open
+	s.signalSubsMu.Unlock()
+}
+
+// IsCircuitOpen returns whether the broker circuit breaker is currently open.
+func (s *ActiveSession) IsCircuitOpen() bool {
+	s.signalSubsMu.Lock()
+	defer s.signalSubsMu.Unlock()
+	return s.circuitOpen
+}
+
+// SetStderrTail updates the captured stderr tail from the live session.
+func (s *ActiveSession) SetStderrTail(tail string) {
+	s.signalSubsMu.Lock()
+	s.StderrTail = tail
+	s.signalSubsMu.Unlock()
+}

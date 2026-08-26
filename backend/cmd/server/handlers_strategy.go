@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -80,82 +79,15 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 		}
 		return name
 	})
-	srv.SetBrokerCompanyLookup(func(ctx context.Context, accountID string) (string, error) {
+	srv.SetBrokerCompanyLookup(func(ctx context.Context, accountID string) string {
 		var broker string
 		err := d.pool.QueryRow(ctx,
 			`SELECT COALESCE(broker_company,'') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
 			accountID).Scan(&broker)
 		if err != nil {
-			return "", fmt.Errorf("broker_company query: %w", err)
+			return ""
 		}
-		return broker, nil
-	})
-	srv.SetAccountLoginLookup(func(ctx context.Context, accountID string) (int64, error) {
-		var login int64
-		err := d.pool.QueryRow(ctx,
-			`SELECT login FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&login)
-		if err != nil {
-			return 0, fmt.Errorf("login query: %w", err)
-		}
-		return login, nil
-	})
-	srv.SetAccountIsDemoLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var accountType string
-		err := d.pool.QueryRow(ctx,
-			`SELECT account_type FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&accountType)
-		if err != nil {
-			return false, fmt.Errorf("account_type query: %w", err)
-		}
-		return accountType == "demo" || accountType == "contest", nil
-	})
-	// VM-API-TRUTH-3: IsConnected from authoritative account_status column.
-	srv.SetAccountConnectedLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var status string
-		err := d.pool.QueryRow(ctx,
-			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&status)
-		if err != nil {
-			return false, fmt.Errorf("account_status query: %w", err)
-		}
-		return status == "connected", nil
-	})
-	// VM-API-TRUTH-3 round 4: is_investor from mt_accounts.is_investor column.
-	// Investor/read-only accounts cannot trade even when connected.
-	srv.SetAccountIsInvestorLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var isInvestor bool
-		err := d.pool.QueryRow(ctx,
-			`SELECT is_investor FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&isInvestor)
-		if err != nil {
-			return false, fmt.Errorf("is_investor query: %w", err)
-		}
-		return isInvestor, nil
-	})
-	// VM-API-TRUTH-3 round 5: IsTradeAllowed must NOT be derived from
-	// account_status == 'connected' (connected ≠ trade permission). The MT
-	// gateway does not currently expose an authoritative account-level trade
-	// permission source. Until one is wired, fail-closed: IsTradeAllowed is
-	// false unless the account is connected AND not an investor AND the
-	// account_status explicitly indicates 'trade_allowed'. Currently no such
-	// status exists, so this returns false for all accounts (fail-closed).
-	// This is the correct behavior: the VM should not claim trade is allowed
-	// without an authoritative source. Strategies that check IsTradeAllowed()
-	// will see false and can degrade gracefully.
-	srv.SetAccountTradeAllowedLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var status string
-		err := d.pool.QueryRow(ctx,
-			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&status)
-		if err != nil {
-			return false, fmt.Errorf("account_status query (trade allowed): %w", err)
-		}
-		// VM-API-TRUTH-3 round 5: connected is NOT trade permission.
-		// Only return true if account_status explicitly indicates trade
-		// is allowed. Currently no such status value exists, so this
-		// always returns false (fail-closed).
-		return status == "trade_allowed", nil
+		return broker
 	})
 	srv.SetQuotaChecker(d.quotaChecker)
 	if d.boundSvc != nil {

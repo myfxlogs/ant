@@ -33,72 +33,22 @@ func CompileToIR(source string) (ir *interp.IR, err error) {
 		return nil, fmt.Errorf("parse: %w", err)
 	}
 
-	// VM-COMPILER-SEMANTICS-4 round 4: reject source with syntax errors.
-	// tree-sitter performs error recovery and always returns a "translation_unit"
-	// root, but internal ERROR/MISSING nodes indicate syntax errors.
-	// Without this check, invalid declarations like "int x = ;" or "int x = 1 + ;"
-	// are silently accepted (the compiler skips ERROR nodes in declarations).
-	//
-	// We check each top-level named child for HasError(), but allow known
-	// false-positive patterns that the compiler handles via special fallbacks:
-	//   - "input"/"extern" declarations (tree-sitter MQL grammar doesn't fully
-	//     parse the input keyword; compiler falls back to collectParam)
-	// This avoids false rejection of valid MQL5 strategies with #include stubs.
-	for i := 0; i < int(root.NamedChildCount()); i++ {
-		n := root.NamedChild(i)
-		if !n.HasError() {
-			continue
-		}
-		txt := source[n.StartByte():n.EndByte()]
-		// VM-COMPILER-SEMANTICS-4 round 5: structured input/extern exception.
-		// Instead of strings.Contains (which lets "int x = input ;" through),
-		// we check the node structure:
-		//   - "extern" declaration: first named child is storage_class_specifier
-		//     with text "extern". Valid extern declarations have hasError=false
-		//     (tree-sitter parses them correctly). If hasError=true → reject.
-		//   - "input" declaration: first named child is type_identifier with
-		//     text "input" (tree-sitter mis-parses "input" as a type). The
-		//     init_declarator child has hasError=true due to this structural
-		//     mis-parse, but a valid input declaration has a non-empty
-		//     initializer value. We check the init_declarator's last named
-		//     child is not an empty ERROR/identifier (which indicates a
-		//     missing initializer).
-		if isInputDeclaration(n, source) {
-			if isValidInputDeclaration(n, source) {
-				continue
-			}
-			return nil, fmt.Errorf("parse MQL: syntax error in input declaration at node %q: %s", n.Type(), truncate(txt, 80))
-		}
-		if isExternDeclaration(n, source) {
-			// Valid extern declarations have hasError=false. If hasError=true,
-			// it's a real syntax error (e.g. "extern int X = ;").
-			return nil, fmt.Errorf("parse MQL: syntax error in extern declaration at node %q: %s", n.Type(), truncate(txt, 80))
-		}
-		return nil, fmt.Errorf("parse MQL: syntax error in source at node %q: %s", n.Type(), truncate(txt, 80))
-	}
-
 	version := detectMQLVersion(source)
 	c := &compiler{source: source, version: version}
-	ir = c.compile(root)
-	if c.err != nil {
-		return nil, c.err
-	}
-	return ir, nil
+
+	return c.compile(root), nil
 }
 
 type compiler struct {
 	source  string
 	version string
-	err     error
 }
 
 func (c *compiler) compile(root *sitter.Node) *interp.IR {
 	ir := &interp.IR{
-		Version:    c.version,
-		Funcs:      make(map[string]*interp.FuncDef),
-		Enums:      make(map[string]int32),
-		EnumTypes:  make(map[string]bool),
-		ClassTypes: make(map[string]bool),
+		Version: c.version,
+		Funcs:   make(map[string]*interp.FuncDef),
+		Enums:   make(map[string]int32),
 	}
 
 	// First pass: collect known class/struct types and enums
@@ -110,7 +60,6 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 			name := c.findTypeName(n)
 			if name != "" {
 				knownClasses[name] = true
-				ir.ClassTypes[name] = true
 			}
 		case "enum_specifier":
 			c.collectEnum(ir, n)
@@ -135,19 +84,6 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 			// (e.g. 'input BuyOrSell0 x = 2;' with enum type may parse as ERROR)
 			if strings.Contains(txt, "input ") || strings.Contains(txt, "extern ") {
 				c.collectParam(ir, n)
-			} else if n.Type() != "preproc_def" && n.Type() != "preproc_function_def" &&
-				n.Type() != "preproc_include" && n.Type() != "preproc_ifdef" &&
-				n.Type() != "preproc_call" && n.Type() != "comment" &&
-				n.Type() != "expression_statement" && n.Type() != "linkage_specification" {
-				// VM-COMPILER-SEMANTICS-2/4: unknown root nodes must not be silently
-				// skipped — report a compile error so malformed source is caught.
-				// Note: expression_statement at top level is allowed (e.g. empty
-				// statement ";" or CTrade instance declarations that tree-sitter
-				// parses as expression_statement) — these have no event handler
-				// to execute in, so they are silently ignored.
-				if c.err == nil {
-					c.err = fmt.Errorf("compile: unrecognized top-level node %q: %s", n.Type(), truncate(txt, 80))
-				}
 			}
 		}
 	}
@@ -157,9 +93,8 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 
 // collectGlobal processes top-level declarations (globals + params).
 func (c *compiler) collectGlobal(ir *interp.IR, n *sitter.Node) {
-	// VM-COMPILER-SEMANTICS-4 round 5: use structured detection instead of
-	// strings.Contains (which matched "int x = input ;" as an input declaration).
-	if isInputDeclaration(n, c.source) || isExternDeclaration(n, c.source) {
+	text := c.text(n)
+	if strings.Contains(text, "extern ") || strings.Contains(text, "input ") || strings.HasPrefix(text, "input ") || strings.HasPrefix(text, "extern ") {
 		c.collectParam(ir, n)
 		return
 	}
@@ -201,20 +136,27 @@ func (c *compiler) collectParam(ir *interp.IR, n *sitter.Node) {
 
 func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 	typeName := c.findType(n)
-	// VM-COMPILER-SEMANTICS-4 round 5: check that no identifier in this
-	// declaration uses a reserved keyword (input/extern) as a variable name
-	// or initializer value. tree-sitter accepts "int x = input ;" because
-	// it treats "input" as an identifier, but "input" is a reserved MQL5
-	// keyword and must not be used as a value.
-	if c.err == nil {
-		if err := checkReservedKeywordUsage(n, c.source); err != nil {
-			c.err = err
-			return
-		}
-	}
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "init_declarator" || child.Type() == "declarator" || child.Type() == "array_declarator" {
+		if child.Type() == "init_declarator" {
+			name := c.findIdent(child)
+			if name == "" {
+				continue
+			}
+			gv := interp.GlobalVar{
+				Name: name,
+				Type: typeName,
+			}
+			// Check for array declaration: init_declarator may contain subscript_expression
+			if arrSize, isArr := c.findArraySize(child); isArr {
+				gv.IsArray = true
+				gv.ArraySize = arrSize
+			}
+			if valExpr := c.findInitValue(child, name); valExpr != nil {
+				gv.InitVal = c.compileExpr(valExpr)
+			}
+			ir.Globals = append(ir.Globals, gv)
+		} else if child.Type() == "declarator" {
 			name := c.findIdent(child)
 			if name == "" {
 				continue
@@ -226,11 +168,6 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 			if arrSize, isArr := c.findArraySize(child); isArr {
 				gv.IsArray = true
 				gv.ArraySize = arrSize
-			}
-			if !gv.IsArray {
-				if valExpr := c.findInitValue(child, name); valExpr != nil {
-					gv.InitVal = c.compileExpr(valExpr)
-				}
 			}
 			ir.Globals = append(ir.Globals, gv)
 		} else if child.Type() == nodeIdentifier && typeName != "" {
@@ -246,4 +183,385 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 			}
 		}
 	}
+}
+
+// collectFunction maps MQL event functions to IR slots.
+func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
+	name := funcName(c.source, n)
+	if name == "" {
+		return
+	}
+	// Skip class declarations that tree-sitter mis-parses as function_definition
+	if isBuiltinClass(name) {
+		return
+	}
+	body := funcBody(n)
+	if body == nil {
+		return
+	}
+	stmts := c.compileBlock(body)
+
+	switch name {
+	case "OnInit":
+		ir.OnInit = stmts
+	case "OnTick":
+		ir.OnTick = stmts
+	case "start":
+		// MQL4 legacy: start() is equivalent to OnTick()
+		ir.OnTick = stmts
+	case "OnBar":
+		ir.OnBar = stmts
+	case "OnTimer":
+		ir.OnTimer = stmts
+	case "OnTrade":
+		ir.OnTrade = stmts
+	case "OnTradeTransaction":
+		ir.OnTradeTransaction = stmts
+	case "OnBookEvent":
+		ir.OnBookEvent = stmts
+	case "OnDeinit":
+		ir.OnDeinit = stmts
+	default:
+		// User-defined function
+		params := c.collectFuncParams(n)
+		ir.Funcs[name] = &interp.FuncDef{
+			Name:   name,
+			Params: params,
+			Body:   stmts,
+		}
+		return
+	}
+	// Event handlers: also register as callable user functions so they
+	// can be invoked from other code (e.g. OnTick calling OnTimer()).
+	ir.Funcs[name] = &interp.FuncDef{
+		Name:   name,
+		Params: c.collectFuncParams(n),
+		Body:   stmts,
+	}
+}
+
+// ── Statement compilation ───────────────────────────────────────────
+
+func (c *compiler) compileBlock(n *sitter.Node) []interp.Statement {
+	if n == nil || n.Type() != nodeCompoundStatement {
+		return nil
+	}
+	var stmts []interp.Statement
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if s := c.compileStmt(child); s != nil {
+			stmts = append(stmts, *s)
+		}
+	}
+	return stmts
+}
+
+func (c *compiler) compileStmt(n *sitter.Node) *interp.Statement {
+	if n == nil {
+		return nil
+	}
+	switch n.Type() {
+	case "expression_statement":
+		expr := c.compileExprFromStmt(n)
+		if expr == nil {
+			return nil
+		}
+		return &interp.Statement{Kind: interp.StmtExpr, Expr: expr}
+
+	case "if_statement":
+		return c.compileIf(n)
+
+	case "for_statement":
+		return c.compileFor(n)
+
+	case "while_statement":
+		return c.compileWhile(n)
+
+	case "return_statement":
+		expr := c.findExprChild(n)
+		var e *interp.Expr
+		if expr != nil {
+			// Handle 'return(val)' which tree-sitter may parse as call_expression
+			// with function name 'return' — unwrap to the argument
+			if expr.Type() == "call_expression" && callFuncName(c.source, expr) == "return" {
+				args := c.compileArgs(expr)
+				if len(args) > 0 {
+					e = &args[0]
+				}
+			} else {
+				e = c.compileExpr(expr)
+			}
+		}
+		return &interp.Statement{Kind: interp.StmtReturn, Expr: e}
+
+	case nodeCompoundStatement:
+		body := c.compileBlock(n)
+		return &interp.Statement{Kind: interp.StmtBlock, Body: body}
+
+	case "switch_statement":
+		return c.compileSwitch(n)
+
+	case "break_statement":
+		return &interp.Statement{Kind: interp.StmtBreak}
+
+	case "continue_statement":
+		return &interp.Statement{Kind: interp.StmtContinue}
+
+	case "do_statement":
+		return c.compileDoWhile(n)
+
+	case "declaration":
+		return c.compileDeclaration(n)
+
+	case "update_expression":
+		expr := c.compileExpr(n)
+		if expr == nil {
+			return nil
+		}
+		return &interp.Statement{Kind: interp.StmtExpr, Expr: expr}
+	}
+	return nil
+}
+
+func (c *compiler) compileIf(n *sitter.Node) *interp.Statement {
+	cond := c.findExprChild(n)
+	if cond == nil {
+		return nil
+	}
+	stmt := &interp.Statement{
+		Kind: interp.StmtIf,
+		Cond: c.compileExpr(cond),
+	}
+	// Find body (compound_statement or single statement) and else clause
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == nodeCompoundStatement {
+			stmt.Body = c.compileBlock(child)
+		} else if child.Type() == "if_statement" {
+			// else if → nested if in ElseBody
+			stmt.ElseBody = []interp.Statement{*c.compileIf(child)}
+		} else if child.Type() == "else_clause" {
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				ec := child.NamedChild(j)
+				if ec.Type() == nodeCompoundStatement {
+					stmt.ElseBody = c.compileBlock(ec)
+				} else if ec.Type() == "if_statement" {
+					stmt.ElseBody = []interp.Statement{*c.compileIf(ec)}
+				} else if s := c.compileStmt(ec); s != nil {
+					// single-statement else body
+					stmt.ElseBody = append(stmt.ElseBody, *s)
+				}
+			}
+		} else if s := c.compileStmt(child); s != nil {
+			// single-statement if body (no braces)
+			if stmt.Body == nil {
+				stmt.Body = []interp.Statement{*s}
+			}
+		}
+	}
+	return stmt
+}
+
+func (c *compiler) compileFor(n *sitter.Node) *interp.Statement {
+	stmt := &interp.Statement{Kind: interp.StmtFor}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		switch child.Type() {
+		case "declaration":
+			if s := c.compileDeclaration(child); s != nil {
+				stmt.Init = s
+			}
+		case "expression_statement":
+			// Could be init or condition
+			expr := c.compileExprFromStmt(child)
+			if expr != nil {
+				if stmt.Init == nil {
+					stmt.Init = &interp.Statement{Kind: interp.StmtExpr, Expr: expr}
+				} else if stmt.Cond == nil {
+					stmt.Cond = expr
+				}
+			}
+		case "binary_expression", "call_expression", nodeIdentifier, "number_literal":
+			if stmt.Cond == nil {
+				stmt.Cond = c.compileExpr(child)
+			}
+		case "update_expression":
+			if s := c.compileStmt(child); s != nil {
+				stmt.Update = s
+			} else {
+				expr := c.compileExpr(child)
+				if expr != nil {
+					stmt.Update = &interp.Statement{Kind: interp.StmtExpr, Expr: expr}
+				}
+			}
+		case nodeCompoundStatement:
+			stmt.Body = c.compileBlock(child)
+		}
+	}
+	return stmt
+}
+
+func (c *compiler) compileWhile(n *sitter.Node) *interp.Statement {
+	stmt := &interp.Statement{Kind: interp.StmtWhile}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == nodeParenExpr {
+			stmt.Cond = c.compileExpr(child)
+		} else if child.Type() == nodeCompoundStatement {
+			stmt.Body = c.compileBlock(child)
+		}
+	}
+	return stmt
+}
+
+func (c *compiler) compileSwitch(n *sitter.Node) *interp.Statement {
+	stmt := &interp.Statement{Kind: interp.StmtSwitch}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == nodeParenExpr {
+			stmt.Expr = c.compileExpr(child)
+		} else if child.Type() == "case_statement" {
+			sc := interp.SwitchCase{}
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				cc := child.NamedChild(j)
+				if cc.Type() == "default_label" {
+					sc.Expr = nil
+				} else if cc.Type() == "case_label" {
+					sc.Expr = c.compileExpr(cc)
+				} else if cc.Type() == "expression_statement" || cc.Type() == nodeCompoundStatement || cc.Type() == "break_statement" {
+					if cc.Type() == nodeCompoundStatement {
+						sc.Body = c.compileBlock(cc)
+					} else if cc.Type() != "break_statement" {
+						if s := c.compileStmt(cc); s != nil {
+							sc.Body = append(sc.Body, *s)
+						}
+					}
+				}
+			}
+			stmt.Cases = append(stmt.Cases, sc)
+		}
+	}
+	return stmt
+}
+
+func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
+	// Variable declaration as a statement: int x = 5;
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "init_declarator" {
+			name := c.findIdent(child)
+			if name == "" {
+				continue
+			}
+			valExpr := c.findInitValue(child, name)
+			if valExpr != nil {
+				return &interp.Statement{
+					Kind: interp.StmtExpr,
+					Expr: &interp.Expr{
+						Kind: interp.ExprDecl,
+						Name: name,
+						Args: []interp.Expr{*c.compileExpr(valExpr)},
+					},
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// collectFuncParams extracts parameter declarations from a function_definition node.
+func (c *compiler) collectFuncParams(n *sitter.Node) []interp.ParamDecl {
+	var params []interp.ParamDecl
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "function_declarator" {
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				fc := child.NamedChild(j)
+				if fc.Type() == "parameter_list" {
+					for k := 0; k < int(fc.NamedChildCount()); k++ {
+						pd := fc.NamedChild(k)
+						if pd.Type() == "parameter_declaration" {
+							pName := c.findIdent(pd)
+							pType := c.findType(pd)
+							if pName != "" {
+								params = append(params, interp.ParamDecl{
+									Name: pName,
+									Type: pType,
+								})
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return params
+}
+
+// collectEnum processes enum declarations and registers constants.
+func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
+	var enumName string
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "type_identifier" {
+			enumName = c.text(child)
+			if ir.EnumTypes == nil {
+				ir.EnumTypes = make(map[string]bool)
+			}
+			ir.EnumTypes[enumName] = true
+		}
+		if child.Type() == "enumerator_list" {
+			c.processEnumeratorList(ir, child, enumName)
+		}
+	}
+}
+
+func (c *compiler) processEnumeratorList(ir *interp.IR, list *sitter.Node, enumName string) {
+	counter := int32(0)
+	for j := 0; j < int(list.NamedChildCount()); j++ {
+		ec := list.NamedChild(j)
+		if ec.Type() != "enumerator" {
+			continue
+		}
+		name, val := c.parseEnumerator(ec)
+		if name == "" {
+			continue
+		}
+		if val != nil {
+			counter = *val
+		}
+		ir.Enums[name] = counter
+		if enumName != "" {
+			ir.Enums[enumName+"::"+name] = counter
+		}
+		counter++
+	}
+}
+
+func (c *compiler) parseEnumerator(ec *sitter.Node) (name string, val *int32) {
+	for k := 0; k < int(ec.NamedChildCount()); k++ {
+		ecChild := ec.NamedChild(k)
+		if ecChild.Type() == nodeIdentifier {
+			name = c.text(ecChild)
+		} else if ecChild.Type() == "number_literal" {
+			nVal := interp.ParseNumberLiteral(c.text(ecChild))
+			v := nVal.ToInt()
+			val = &v
+		}
+	}
+	return
+}
+
+// compileDoWhile compiles a do { } while(cond) statement.
+func (c *compiler) compileDoWhile(n *sitter.Node) *interp.Statement {
+	stmt := &interp.Statement{Kind: interp.StmtDoWhile}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == nodeCompoundStatement {
+			stmt.Body = c.compileBlock(child)
+		} else if child.Type() == nodeParenExpr {
+			stmt.Cond = c.compileExpr(child)
+		}
+	}
+	return stmt
 }

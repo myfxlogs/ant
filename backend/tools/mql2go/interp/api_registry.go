@@ -1,7 +1,5 @@
 package interp
 
-import "sort"
-
 // API Registry — Layer 0 of the MQL EA Compatibility Proposal (§12.1).
 //
 // Enumerates every known MQL4/MQL5 API symbol with a two-state status:
@@ -61,7 +59,6 @@ const (
 	reasonAudio    = "audio is not supported"
 	reasonPush     = "push notifications are not supported"
 	reasonHTTP     = "HTTP requests are not supported"
-	reasonVMGap    = "the current VM execution model cannot provide this API faithfully"
 )
 
 // unsupportedSymbols lists MQL functions that are explicitly NOT supported.
@@ -144,73 +141,6 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "WebRequest", Status: StatusUnsupported, Category: CatFunction, Reason: reasonHTTP},
 	{Name: "ResourceCreate", Status: StatusUnsupported, Category: CatFunction, Reason: reasonResource},
 	{Name: "ResourceFree", Status: StatusUnsupported, Category: CatFunction, Reason: reasonResource},
-
-	{Name: "AccountProfit", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	// VM-API-TRUTH-2: AccountCompany is now implemented (reads Account().Company).
-	{Name: "AccountStopoutLevel", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountName", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountServer", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountFreeMarginCheck", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountFreeMarginMode", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountStopoutMode", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountCredit", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountInfoDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountInfoInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "AccountInfoString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "ExpertRemove", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "GetLastError", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "ResetLastError", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SetUserError", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SetReturnError", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "GetTickCount64", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "GetMicrosecondCount", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderExpiration", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderPrint", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "StringAdd", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "StringReplace", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "StringSetCharacter", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "StringFill", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "StringInit", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "StringConcatenate", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "iRealVolume", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "iSpread", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "CopyRates", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "CopyBuffer", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "CopyRealVolume", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "CopySpread", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "CopyTicks", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "BarsCalculated", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SeriesInfoInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolInfoTick", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolName", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolSelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolsTotal", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolInfoMarginRate", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolInfoSessionQuote", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolInfoSessionTrade", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "SymbolIsSynchronized", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderCalcMargin", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderCalcProfit", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderCheck", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderGetTicket", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrderGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "OrdersTotalMQL5", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistorySelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistorySelectByPosition", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryDealsTotal", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryDealSelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryDealGetTicket", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryDealGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryDealGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryDealGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryOrdersTotal", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryOrderSelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryOrderGetTicket", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryOrderGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryOrderGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
-	{Name: "HistoryOrderGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonVMGap},
 }
 
 // registryMap is the lookup index built from unsupportedSymbols + builtin_registry.go + constants.go.
@@ -292,7 +222,6 @@ func AllImplementedFunctions() []string {
 			result = append(result, name)
 		}
 	}
-	sort.Strings(result)
 	return result
 }
 
@@ -304,7 +233,6 @@ func AllUnsupportedFunctions() []string {
 			result = append(result, name)
 		}
 	}
-	sort.Strings(result)
 	return result
 }
 
@@ -316,6 +244,5 @@ func AllRegisteredConstants() []string {
 			result = append(result, name)
 		}
 	}
-	sort.Strings(result)
 	return result
 }

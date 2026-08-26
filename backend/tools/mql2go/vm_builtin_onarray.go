@@ -19,9 +19,8 @@ func arrayToDecimals(arr interp.Value) []decimal.Decimal {
 	if arr.Kind != interp.ValArray {
 		return nil
 	}
-	values := arr.ArrayData()
-	out := make([]decimal.Decimal, len(values))
-	for i, v := range values {
+	out := make([]decimal.Decimal, len(arr.Array))
+	for i, v := range arr.Array {
 		out[i] = v.ToDecimal()
 	}
 	return out
@@ -73,7 +72,7 @@ func smma(data []decimal.Decimal, period int) decimal.Decimal {
 	}
 	prev := sma(data[:period], period)
 	for i := period; i < len(data); i++ {
-		prev = prev.Mul(decimal.NewFromInt(int64(period - 1))).Add(data[i]).Div(decimal.NewFromInt(int64(period)))
+		prev = prev.Mul(decimal.NewFromInt(int64(period-1))).Add(data[i]).Div(decimal.NewFromInt(int64(period)))
 	}
 	return prev
 }
@@ -157,8 +156,8 @@ func builtinIRSIOnArray(vm *VM, args []interp.Value) (interp.Value, error) {
 		} else {
 			loss = diff.Neg()
 		}
-		avgGain = avgGain.Mul(decimal.NewFromInt(int64(period - 1))).Add(gain).Div(decimal.NewFromInt(int64(period)))
-		avgLoss = avgLoss.Mul(decimal.NewFromInt(int64(period - 1))).Add(loss).Div(decimal.NewFromInt(int64(period)))
+		avgGain = avgGain.Mul(decimal.NewFromInt(int64(period-1))).Add(gain).Div(decimal.NewFromInt(int64(period)))
+		avgLoss = avgLoss.Mul(decimal.NewFromInt(int64(period-1))).Add(loss).Div(decimal.NewFromInt(int64(period)))
 	}
 
 	if avgLoss.IsZero() {
@@ -199,7 +198,7 @@ func builtinIATROnArray(vm *VM, args []interp.Value) (interp.Value, error) {
 	atr = atr.Div(decimal.NewFromInt(int64(period)))
 
 	for i := period; i < len(trs); i++ {
-		atr = atr.Mul(decimal.NewFromInt(int64(period - 1))).Add(trs[i]).Div(decimal.NewFromInt(int64(period)))
+		atr = atr.Mul(decimal.NewFromInt(int64(period-1))).Add(trs[i]).Div(decimal.NewFromInt(int64(period)))
 	}
 	return interp.DecimalVal(atr), nil
 }

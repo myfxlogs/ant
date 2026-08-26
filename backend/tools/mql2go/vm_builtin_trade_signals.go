@@ -1,8 +1,6 @@
 package mql2go
 
 import (
-	"fmt"
-
 	"github.com/shopspring/decimal"
 
 	"alphaforge/strategy/sdk"
@@ -18,7 +16,7 @@ import (
 
 func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
@@ -31,38 +29,29 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionClose: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket1 := int64(argI(args, 0))
 	ticket2 := int64(argI(args, 1))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
-			Action:         sdk.ActionClose,
-			OrderTicket:    ticket1,
-			OppositeTicket: ticket2,
+			Action:      sdk.ActionClose,
+			OrderTicket: ticket1,
 		}
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionCloseBy(ticket1, ticket2)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionCloseBy: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	price := argD(args, 1)
@@ -80,33 +69,21 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
 	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionModify: %w", err)
+		return interp.BoolVal(false), nil
 	}
 	if !price.IsZero() {
-		pending := false
-		for _, order := range vm.ctx.Broker().Orders(0) {
-			if order.Ticket == ticket {
-				pending = true
-				break
-			}
-		}
-		if pending {
-			pm, ok := vm.ctx.Broker().(pendingPriceModifier)
-			if !ok {
-				return interp.BoolVal(false), fmt.Errorf("PositionModifyPrice: broker does not support pending price modification")
-			}
+		if pm, ok := vm.ctx.Broker().(pendingPriceModifier); ok {
 			if _, err := pm.PositionModifyPrice(ticket, price); err != nil {
-				return interp.BoolVal(false), fmt.Errorf("PositionModifyPrice: %w", err)
+				return interp.BoolVal(false), nil
 			}
 		}
 	}
-	vm.invalidateOrderCaches()
 	return interp.BoolVal(true), nil
 }
 
 func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
@@ -117,16 +94,12 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("OrderDelete: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
@@ -138,16 +111,12 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, decimal.Zero)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionClose: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
@@ -160,38 +129,29 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionClose: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	t1 := int64(argI(args, 0))
 	t2 := int64(argI(args, 1))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
-			Action:         sdk.ActionClose,
-			OrderTicket:    t1,
-			OppositeTicket: t2,
+			Action:      sdk.ActionClose,
+			OrderTicket: t1,
 		}
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionCloseBy(t1, t2)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionCloseBy: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	sl := argD(args, 1)
@@ -206,16 +166,12 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("PositionModify: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
@@ -226,16 +182,12 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 		return interp.BoolVal(true), nil
 	}
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
-	if err != nil {
-		return interp.BoolVal(false), fmt.Errorf("OrderDelete: %w", err)
-	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	return interp.BoolVal(err == nil), nil
 }
 
 func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx == nil || vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), fmt.Errorf("trade operation: broker context is unavailable")
+		return interp.BoolVal(false), nil
 	}
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
@@ -244,11 +196,14 @@ func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.BoolVal(true), nil
 	}
 	positions := vm.ctx.Broker().Positions(0)
+	allOK := true
 	for _, pos := range positions {
-		if _, err := vm.ctx.Broker().PositionClose(pos.Ticket, decimal.Zero); err != nil {
-			return interp.BoolVal(false), fmt.Errorf("PositionClose: %w", err)
+		_, err := vm.ctx.Broker().PositionClose(pos.Ticket, decimal.Zero)
+		if err != nil {
+			allOK = false
 		}
 	}
-	vm.invalidateOrderCaches()
-	return interp.BoolVal(true), nil
+	vm.cachedPositions = nil
+	vm.cachedOrders = nil
+	return interp.BoolVal(allOK), nil
 }

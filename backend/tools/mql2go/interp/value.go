@@ -16,8 +16,7 @@ type Value struct {
 	Str      string
 	Bool     bool
 	Array    []Value
-	ArrayRef *[]Value       // shared array header for by-reference MQL array arguments
-	Datetime int64          // unix timestamp (seconds)
+	Datetime int64          // unix timestamp (ms)
 	Class    *ClassInstance // ValClass: MQL5 class/struct instance
 }
 
@@ -25,7 +24,7 @@ type Value struct {
 type ValueKind uint8
 
 const (
-	ValNone ValueKind = iota
+	ValNone     ValueKind = iota
 	ValInt
 	ValDecimal
 	ValBool
@@ -61,29 +60,6 @@ func StringVal(s string) Value {
 
 func NoneVal() Value {
 	return Value{Kind: ValNone}
-}
-
-// ArrayVal creates an array value whose slice header is shared across VM copies.
-// MQL array arguments are passed by reference, so resizing must update the
-// original variable rather than only the temporary argument Value.
-func ArrayVal(values []Value) Value {
-	return Value{Kind: ValArray, Array: values, ArrayRef: &values}
-}
-
-// ArrayData returns the current slice for an array value.
-func (v Value) ArrayData() []Value {
-	if v.ArrayRef != nil {
-		return *v.ArrayRef
-	}
-	return v.Array
-}
-
-// SetArrayData updates both the visible slice and the shared array header.
-func (v *Value) SetArrayData(values []Value) {
-	v.Array = values
-	if v.ArrayRef != nil {
-		*v.ArrayRef = values
-	}
 }
 
 func DatetimeVal(ms int64) Value {

@@ -182,18 +182,22 @@ void OnBar()
 
 	engine := backtest.New(cfg, runner, bars)
 	_, err = engine.Run(context.Background())
-	if err == nil {
-		t.Fatal("backtest.Run should fail closed for unsupported fatal indicator modes")
+	if err != nil {
+		t.Fatalf("backtest.Run failed: %v", err)
 	}
 
 	blinds := runner.GetRuntimeBlindSpots()
 
-	// MODE_MAIN should NOT produce a blind spot. The first unsupported
-	// mode must fail closed, so execution may stop before MODE_MINUSDI runs.
+	// MODE_MAIN should NOT produce a blind spot
+	// MODE_PLUSDI and MODE_MINUSDI SHOULD produce blind spots
 	hasPlusDI := false
+	hasMinusDI := false
 	for _, bs := range blinds {
 		if bs.Builtin == "iADX:MODE_PLUSDI" {
 			hasPlusDI = true
+		}
+		if bs.Builtin == "iADX:MODE_MINUSDI" {
+			hasMinusDI = true
 		}
 		if bs.Builtin == "iADX:MODE_MAIN" {
 			t.Error("MODE_MAIN should not produce a blind spot — it returns the ADX line value")
@@ -202,5 +206,8 @@ void OnBar()
 
 	if !hasPlusDI {
 		t.Error("expected blind spot for iADX:MODE_PLUSDI")
+	}
+	if !hasMinusDI {
+		t.Error("expected blind spot for iADX:MODE_MINUSDI")
 	}
 }

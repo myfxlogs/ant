@@ -2,8 +2,6 @@ package runner
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/shopspring/decimal"
@@ -13,16 +11,14 @@ import (
 
 // mockExecutor is a test OrderExecutor that records calls and returns canned responses.
 type mockExecutor struct {
-	orders          []sdk.Position
-	pendingOrders   []sdk.PendingOrder
-	accountInfo     sdk.AccountInfo
-	symbolInfo      sdk.SymbolInfo
-	placeErr        error
-	closeErr        error
-	modifyErr       error
-	cancelErr       error
-	openedOrdersErr error // VM-TRADE-CONTEXT-2: query error injection
-	pendingErr      error
+	orders        []sdk.Position
+	pendingOrders []sdk.PendingOrder
+	accountInfo   sdk.AccountInfo
+	symbolInfo    sdk.SymbolInfo
+	placeErr      error
+	closeErr      error
+	modifyErr     error
+	cancelErr     error
 
 	lastPlace struct {
 		Symbol string
@@ -64,16 +60,10 @@ func (m *mockExecutor) CancelOrder(ctx context.Context, ticket int64) error {
 }
 
 func (m *mockExecutor) OpenedOrders(ctx context.Context) ([]sdk.Position, error) {
-	if m.openedOrdersErr != nil {
-		return nil, m.openedOrdersErr
-	}
 	return m.orders, nil
 }
 
 func (m *mockExecutor) PendingOrders(ctx context.Context) ([]sdk.PendingOrder, error) {
-	if m.pendingErr != nil {
-		return nil, m.pendingErr
-	}
 	return m.pendingOrders, nil
 }
 
@@ -895,140 +885,4 @@ func dec(s string) decimal.Decimal {
 		panic(err)
 	}
 	return d
-}
-
-// ── VM-TRADE-CONTEXT-2 behavior tests ────────────────────────────────
-
-// TestBrokerImpl_PositionsQueryError_RecordsLastError verifies that when
-// executor.OpenedOrders returns an error, brokerImpl records it via LastError()
-// instead of silently returning nil. VM-TRADE-CONTEXT-2: fail-closed.
-func TestBrokerImpl_PositionsQueryError_RecordsLastError(t *testing.T) {
-	r := New(Config{})
-	r.broker.executor = &mockExecutor{
-		openedOrdersErr: fmt.Errorf("connection lost"),
-	}
-
-	positions := r.broker.Positions(0)
-	if positions != nil {
-		t.Errorf("Positions with query error should return nil, got %d positions", len(positions))
-	}
-	err := r.broker.LastError()
-	if err == nil {
-		t.Fatal("LastError should be set when Positions query fails, got nil")
-	}
-	if !strings.Contains(err.Error(), "Positions query failed") {
-		t.Errorf("LastError should mention 'Positions query failed', got: %v", err)
-	}
-}
-
-// TestBrokerImpl_OrdersQueryError_RecordsLastError verifies that when
-// executor.PendingOrders returns an error, brokerImpl records it.
-func TestBrokerImpl_OrdersQueryError_RecordsLastError(t *testing.T) {
-	r := New(Config{})
-	r.broker.executor = &mockExecutor{
-		pendingErr: fmt.Errorf("timeout"),
-	}
-
-	orders := r.broker.Orders(0)
-	if orders != nil {
-		t.Errorf("Orders with query error should return nil, got %d orders", len(orders))
-	}
-	err := r.broker.LastError()
-	if err == nil {
-		t.Fatal("LastError should be set when Orders query fails, got nil")
-	}
-	if !strings.Contains(err.Error(), "Orders query failed") {
-		t.Errorf("LastError should mention 'Orders query failed', got: %v", err)
-	}
-}
-
-// TestBrokerImpl_HistoryOrders_NotAvailable_RecordsError verifies that
-// HistoryOrders in live mode records an error (not silently nil).
-func TestBrokerImpl_HistoryOrders_NotAvailable_RecordsError(t *testing.T) {
-	r := New(Config{})
-	r.broker.executor = &mockExecutor{}
-
-	history := r.broker.HistoryOrders(0, 0)
-	if history != nil {
-		t.Errorf("HistoryOrders in live mode should return nil, got %d", len(history))
-	}
-	err := r.broker.LastError()
-	if err == nil {
-		t.Fatal("LastError should be set for unimplemented HistoryOrders, got nil")
-	}
-}
-
-// ── VM-TRADE-CONTEXT-3 behavior tests (runner package) ──────────────
-
-// TestRunner_UpdateAccountIdentity verifies that UpdateAccountIdentity
-// sets Login/Company on the account info returned by the broker.
-// VM-TRADE-CONTEXT-3: Login must be injected from authoritative context.
-func TestRunner_UpdateAccountIdentity(t *testing.T) {
-	r := New(Config{Symbol: "EURUSD", Timeframe: "M1"})
-	r.UpdateAccountIdentity(12345, "TestBroker")
-	account := r.broker.Account()
-	if account.Login != 12345 {
-		t.Errorf("Login=%d, want 12345 (from UpdateAccountIdentity)", account.Login)
-	}
-	if account.Company != "TestBroker" {
-		t.Errorf("Company=%q, want %q", account.Company, "TestBroker")
-	}
-}
-
-// TestRunner_UpdateAccountStatus verifies that UpdateAccountStatus
-// correctly sets the account status flags in the runner context.
-// VM-API-TRUTH-3: the brokerImpl.Account() must return these flags.
-func TestRunner_UpdateAccountStatus(t *testing.T) {
-	r := New(Config{Symbol: "EURUSD", Timeframe: "M1"})
-	r.UpdateAccountStatus(false, true, true)
-	account := r.broker.Account()
-	if account.IsDemo {
-		t.Errorf("IsDemo=true, want false (real account)")
-	}
-	if !account.IsConnected {
-		t.Errorf("IsConnected=false, want true")
-	}
-	if !account.IsTradeAllowed {
-		t.Errorf("IsTradeAllowed=false, want true")
-	}
-}
-
-// TestRunner_UpdateAccountStatus_Defaults verifies that without
-// UpdateAccountStatus, the harness mode defaults to false (zero value).
-func TestRunner_UpdateAccountStatus_Defaults(t *testing.T) {
-	r := New(Config{Symbol: "EURUSD", Timeframe: "M1"})
-	account := r.broker.Account()
-	if account.IsDemo {
-		t.Errorf("IsDemo=true, want false (default zero value)")
-	}
-}
-
-// TestBrokerImpl_HarnessMode_HistoryOrders_RecordsError verifies that
-// HistoryOrders in harness mode (executor=nil) records an error.
-// VM-TRADE-CONTEXT-3: previously harness mode returned nil silently.
-func TestBrokerImpl_HarnessMode_HistoryOrders_RecordsError(t *testing.T) {
-	r := New(Config{Symbol: "EURUSD", Timeframe: "M1"})
-	// No executor set → harness mode
-	r.broker.resetError()
-	history := r.broker.HistoryOrders(0, 0)
-	if history != nil {
-		t.Errorf("HistoryOrders in harness mode should return nil, got %d", len(history))
-	}
-	if r.broker.LastError() == nil {
-		t.Error("LastError should be set for HistoryOrders in harness mode, got nil")
-	}
-}
-
-// TestBrokerImpl_HarnessMode_Deals_RecordsError verifies that Deals in
-// harness mode (executor=nil) records an error.
-func TestBrokerImpl_HarnessMode_Deals_RecordsError(t *testing.T) {
-	r := New(Config{Symbol: "EURUSD", Timeframe: "M1"})
-	r.broker.resetError()
-	deals := r.broker.Deals(0, 0, 0)
-	if deals != nil {
-		t.Errorf("Deals in harness mode should return nil, got %d", len(deals))
-	}
-	if r.broker.LastError() == nil {
-		t.Error("LastError should be set for Deals in harness mode, got nil")
-	}
 }

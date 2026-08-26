@@ -105,12 +105,7 @@ void OnBar() {
     if (ma > Close[0]) {
         OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "test", 123, 0, clrGreen);
     }
-    // VM-API-TRUTH-2: ObjectCreate is now StatusUnsupported (compile-time
-    // rejection). Use a truly unknown function to produce a blind spot instead.
-    double v = iNonExistentBridgeFunc(Symbol(), 0, 14, 0, 0);
-    if (v > 0) {
-        OrderSend(Symbol(), OP_BUY, 0.1, Ask, 5, 0, 0, "test", 123, 0, clrGreen);
-    }
+    ObjectCreate("label", OBJ_LABEL, 0, 0, 0);
 }`
 	_, mqlCoverage, err := mql2go.CompileMQLWithCoverage(mqlSource)
 	if err != nil {
@@ -189,10 +184,10 @@ func TestBridge_TranslateWithRetry_FailAllAttempts(t *testing.T) {
 // fields needed by the gateway response builder.
 func TestBridge_BridgeResultFields(t *testing.T) {
 	r := &BridgeResult{
-		PythonSource: validPythonSubset,
-		CompileError: "",
-		Status:       "success",
-		Attempts:     1,
+		PythonSource:  validPythonSubset,
+		CompileError:  "",
+		Status:        "success",
+		Attempts:      1,
 	}
 	if r.Status != "success" {
 		t.Errorf("expected status 'success', got %q", r.Status)

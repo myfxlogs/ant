@@ -41,10 +41,8 @@ func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.
 }
 
 // executePythonVMLive runs a single live event via the in-process Bytecode VM for Python strategies.
-// Python source → CompilePythonCached → VMRunner → runner.Runner → dispatch event → ExecuteLiveResponse.
+// Python source → CompilePython → VMRunner → runner.Runner → dispatch event → ExecuteLiveResponse.
 // Uses bytecode cache from imported_strategies when strategy_id is available.
-// VM-CACHE-INTEGRITY-5: uses CompilePythonCached (not CompileMQLFromBytecode directly)
-// to verify SourceHash + language (Version == "python") + restore CoverageResult.
 func (s *StrategyExecutionServer) executePythonVMLive(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
 	var cachedBytecode []byte
 	if req.StrategyId != "" && s.importedRepo != nil {
@@ -53,13 +51,18 @@ func (s *StrategyExecutionServer) executePythonVMLive(ctx context.Context, req *
 		}
 	}
 
-	// VM-CACHE-INTEGRITY-5: use CompilePythonCached which verifies SourceHash,
-	// language (Version == "python"), and restores CoverageResult on cache hit.
-	// Never use CompileMQLFromBytecode directly for Python — it would accept
-	// MQL bytecode without language validation.
-	strategy, _, err := mql2go.CompilePythonCached(req.StrategyCode, cachedBytecode)
-	if err != nil {
-		return nil, fmt.Errorf("compile Python: %w", err)
+	var strategy *mql2go.VMRunner
+	if len(cachedBytecode) > 0 {
+		if r, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
+			strategy = r
+		}
+	}
+	if strategy == nil {
+		r, err := mql2go.CompilePython(req.StrategyCode)
+		if err != nil {
+			return nil, fmt.Errorf("compile Python: %w", err)
+		}
+		strategy = r
 	}
 
 	// Persist newly compiled bytecode for future runs.
@@ -78,20 +81,10 @@ func (s *StrategyExecutionServer) executePythonVMLive(ctx context.Context, req *
 
 // dispatchVMLive builds a runner from the compiled VMRunner and dispatches the live event.
 // Shared by MQL and Python live execution paths.
-// VM-TRADE-CONTEXT-6 round 4: validates the first bar context BEFORE r.Init
-// so that a bad request cannot execute OnInit and then fail mid-strategy.
 func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1.ExecuteLiveRequest, strategy *mql2go.VMRunner) (*antv1.ExecuteLiveResponse, error) {
 	bctx := req.GetBarContext()
 	if bctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "first request must have bar_context for initialization"}, nil
-	}
-
-	// VM-TRADE-CONTEXT-6 round 4: validate ALL fields before Init.
-	// Previously r.Init was called before vmHandleBar validation, allowing
-	// OnInit to execute with invalid data (g_init would be set even with
-	// bad decimals). Now validation happens first.
-	if err := validateBarContext(bctx); err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("first bar_context invalid: %v", err)}, nil
 	}
 
 	params := make(map[string]string)
@@ -106,11 +99,6 @@ func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1
 		Mode:      bctx.Mode,
 	})
 	r.SetStrategy(strategy)
-
-	// VM-TRADE-CONTEXT-5: inject account identity BEFORE Init.
-	r.UpdateAccountIdentity(bctx.Login, bctx.Company)
-	// VM-API-TRUTH-3: inject account status BEFORE Init.
-	r.UpdateAccountStatus(bctx.IsDemo, bctx.IsConnected, bctx.IsTradeAllowed)
 
 	if err := r.Init(ctx); err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}, nil

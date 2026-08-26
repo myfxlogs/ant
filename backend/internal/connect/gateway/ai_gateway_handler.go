@@ -7,6 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -212,4 +213,176 @@ func (s *AIGatewayServer) UpdateProvider(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.UpdateProviderResponse{}), nil
+}
+
+func (s *AIGatewayServer) ListModels(
+	ctx context.Context,
+	req *connect.Request[antv1.ListModelsRequest],
+) (*connect.Response[antv1.ListModelsResponse], error) {
+	pid, err := uuid.Parse(req.Msg.ProviderId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid provider_id"))
+	}
+	models, err := s.modelRepo.ListByProvider(ctx, pid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	out := make([]*antv1.AIModelConfig, 0, len(models))
+	for _, m := range models {
+		out = append(out, &antv1.AIModelConfig{
+			Id: m.ID.String(), ModelName: m.ModelName, DisplayName: m.DisplayName,
+			PricePer_1MInput: m.PricePer1MInput, PricePer_1MOutput: m.PricePer1MOutput,
+			Enabled: m.Enabled, SortOrder: int32(m.SortOrder),
+		})
+	}
+	return connect.NewResponse(&antv1.ListModelsResponse{Models: out}), nil
+}
+
+func (s *AIGatewayServer) UpsertModel(
+	ctx context.Context,
+	req *connect.Request[antv1.UpsertModelRequest],
+) (*connect.Response[antv1.UpsertModelResponse], error) {
+	r := req.Msg
+	pid, err := uuid.Parse(r.ProviderId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid provider_id"))
+	}
+	m := &repository.AIModel{
+		ProviderID: pid, ModelName: r.ModelName,
+		PricePer1MInput: r.PricePer_1MInput, PricePer1MOutput: r.PricePer_1MOutput,
+		Enabled: true,
+	}
+	if r.Id != nil {
+		id, err := uuid.Parse(*r.Id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid id"))
+		}
+		m.ID = id
+	}
+	if r.DisplayName != nil {
+		m.DisplayName = *r.DisplayName
+	}
+	if r.Enabled != nil {
+		m.Enabled = *r.Enabled
+	}
+	if r.SortOrder != nil {
+		m.SortOrder = int(*r.SortOrder)
+	}
+	newID, err := s.modelRepo.Upsert(ctx, m)
+	if err != nil {
+		s.log.Error("upsert model failed",
+			zap.String("provider_id", r.ProviderId),
+			zap.String("model_name", r.ModelName),
+			zap.String("price_in", r.PricePer_1MInput),
+			zap.String("price_out", r.PricePer_1MOutput),
+			zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.UpsertModelResponse{Id: newID.String()}), nil
+}
+
+func (s *AIGatewayServer) DeleteProvider(
+	ctx context.Context,
+	req *connect.Request[antv1.DeleteProviderRequest],
+) (*connect.Response[antv1.DeleteProviderResponse], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid id"))
+	}
+	if err := s.providerRepo.Delete(ctx, id); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.DeleteProviderResponse{}), nil
+}
+
+func (s *AIGatewayServer) DeleteModel(
+	ctx context.Context,
+	req *connect.Request[antv1.DeleteModelRequest],
+) (*connect.Response[antv1.DeleteModelResponse], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid id"))
+	}
+	if err := s.modelRepo.Delete(ctx, id); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.DeleteModelResponse{}), nil
+}
+
+// ── Token billing helper (called by chat pipeline) ──
+
+// RecordTokenUsage records a token usage event and deducts wallet if paid_by=system.
+// When skipDeduction is true, the usage record is inserted without charging the wallet
+// (used for within-quota calls where tokens are included in the user's plan).
+func (s *AIGatewayServer) RecordTokenUsage(
+	ctx context.Context,
+	userID uuid.UUID,
+	paidBy, providerID, modelName, feature string,
+	inputTokens, outputTokens int,
+	cost string,
+	skipDeduction bool,
+) error {
+	rec := &repository.AITokenUsage{
+		UserID: userID, PaidBy: paidBy, ProviderID: providerID,
+		ModelName: modelName, Feature: feature,
+		InputTokens: inputTokens, OutputTokens: outputTokens, Cost: cost,
+	}
+	if paidBy == "system" && cost != "" && s.walletSvc != nil && !skipDeduction {
+		w, err := s.walletSvc.GetOrCreateWallet(ctx, userID)
+		if err != nil {
+			return fmt.Errorf("get wallet: %w", err)
+		}
+		bal, err := decimal.NewFromString(w.Balance)
+		if err != nil {
+			return fmt.Errorf("parse wallet balance: %w", err)
+		}
+		costD, err := decimal.NewFromString(cost)
+		if err != nil {
+			return fmt.Errorf("parse cost: %w", err)
+		}
+		if bal.LessThan(costD) {
+			return &service.InsufficientBalanceError{Balance: w.Balance, Cost: cost}
+		}
+		// Insert usage record BEFORE deducting wallet — if Insert fails,
+		// we haven't charged the user.
+		if err := s.tokenUsageRepo.Insert(ctx, rec); err != nil {
+			return fmt.Errorf("insert token usage: %w", err)
+		}
+		desc := fmt.Sprintf("AI %s (%s): %d+%d tokens", feature, modelName, inputTokens, outputTokens)
+		if _, err := s.walletSvc.AdjustBalance(ctx, userID, "-"+cost, "ai_usage", desc, nil, "ai-"+rec.ID.String()); err != nil {
+			return fmt.Errorf("deduct wallet: %w", err)
+		}
+		return nil
+	}
+	return s.tokenUsageRepo.Insert(ctx, rec)
+}
+
+func (s *AIGatewayServer) DiscoverGatewayModels(
+	ctx context.Context,
+	req *connect.Request[antv1.DiscoverGatewayModelsRequest],
+) (*connect.Response[antv1.DiscoverGatewayModelsResponse], error) {
+	id, err := uuid.Parse(req.Msg.ProviderId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid provider_id"))
+	}
+	p, err := s.providerRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("provider not found"))
+	}
+	if len(p.APIKeyEncrypted) == 0 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("provider has no API key configured"))
+	}
+	secret, err := repository.OpenAPIKey(p.APIKeyEncrypted, s.box)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("decrypt api key: %w", err))
+	}
+	models, err := systemai.DiscoverModelsByConfig(ctx, p.ProviderID, p.BaseURL, secret)
+	if err != nil {
+		s.log.Warn("discover gateway models failed",
+			zap.String("provider", p.ProviderID),
+			zap.String("base_url", p.BaseURL),
+			zap.Error(err))
+		return connect.NewResponse(&antv1.DiscoverGatewayModelsResponse{}), nil
+	}
+	return connect.NewResponse(&antv1.DiscoverGatewayModelsResponse{Models: models}), nil
 }

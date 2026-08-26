@@ -239,9 +239,9 @@ func TestW3_SeedBarWindows_PopulatesWindow(t *testing.T) {
 	srv := &StrategyExecutionServer{
 		log:            zap.NewNop(),
 		marketDataRepo: mockRepo,
-		brokerCompanyLookup: func(_ context.Context, _ string) (string, error) {
-		return "test-broker", nil
-	},
+		brokerCompanyLookup: func(_ context.Context, _ string) string {
+			return "test-broker"
+		},
 	}
 
 	cfg := LiveStrategyConfig{
@@ -411,9 +411,9 @@ func TestSEEDGAP_GapImmuneSeeding(t *testing.T) {
 	srv := &StrategyExecutionServer{
 		log:            zap.NewNop(),
 		marketDataRepo: store,
-		brokerCompanyLookup: func(_ context.Context, _ string) (string, error) {
-		return "test-broker", nil
-	},
+		brokerCompanyLookup: func(_ context.Context, _ string) string {
+			return "test-broker"
+		},
 	}
 	bars := make([]liveBar, 0, maxContextBars)
 	srv.seedBarWindows(context.Background(), LiveStrategyConfig{

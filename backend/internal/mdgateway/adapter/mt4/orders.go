@@ -10,6 +10,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -64,7 +65,6 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		Stoploss:   req.StopLoss.InexactFloat64(),
 		Takeprofit: req.TakeProfit.InexactFloat64(),
 		Magic:      req.Magic,
-		Slippage:   req.Deviation, // VM-TRADE-CONTEXT-7: EA deviation → MT4 slippage
 	})
 	if err != nil {
 		if g.breaker != nil {
@@ -180,6 +180,193 @@ func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price d
 		return fmt.Errorf("%w: mt4 OrderModify: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	return nil
+}
+
+func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if client == nil || sid == "" {
+		return nil, fmt.Errorf("mt4 FetchSymbolParams: not connected")
+	}
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	out := make([]*mthub.SymbolParam, 0, len(canonicals))
+	for _, c := range canonicals {
+		ctx2 := metadata.NewOutgoingContext(ctx, md)
+		resp, err := client.SymbolParams(ctx2, &pb.SymbolParamsRequest{Id: sid, Symbol: c})
+		if err != nil {
+			return nil, fmt.Errorf("mt4 SymbolParams(%s): %w", c, err)
+		}
+		if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+			return nil, fmt.Errorf("mt4 SymbolParams(%s): code=%d msg=%s", c, resp.GetError().GetCode(), resp.GetError().GetMessage())
+		}
+		r := resp.GetResult()
+		if r == nil {
+			continue
+		}
+		si := r.GetSymbol()
+		gp := r.GetGroupParams()
+		param := &mthub.SymbolParam{
+			Canonical:   c,
+			SymbolRaw:   c,
+			SpreadFloat: si.GetSpread() > 0,
+		}
+		if si != nil {
+			param.Digits = si.GetDigits()
+			param.StopLevel = si.GetStopsLevel()
+			param.PointValue = decimal.NewFromFloat(si.GetPoint())
+			param.ContractSize = decimal.NewFromFloat(si.GetContractSize())
+			param.LotSize = param.ContractSize
+		}
+		if gp != nil {
+			param.LotMin = decimal.NewFromFloat(gp.GetMinLot())
+			param.LotMax = decimal.NewFromFloat(gp.GetMaxLot())
+			param.LotStep = decimal.NewFromFloat(gp.GetLotStep())
+			param.TradeMode = gp.GetExecution()
+		}
+		// Do not default ContractSize to 1; zero means "unknown" and triggers
+		// fail-closed margin checks in the risk gate.
+		out = append(out, param)
+	}
+	return out, nil
+}
+
+// FetchPriceHistory fetches K-line bars from the broker (MT4 QuoteHistory RPC).
+// Delegates to GetPriceHistory to avoid duplicating the RPC call and auth logic.
+func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*mthub.Bar, error) {
+	bars, err := g.GetPriceHistory(ctx, "", symbol, period, from, to)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*mthub.Bar, 0, len(bars))
+	for _, b := range bars {
+		out = append(out, &mthub.Bar{
+			Time:   time.UnixMilli(b.OpenTsUnixMs),
+			Open:   b.Open,
+			High:   b.High,
+			Low:    b.Low,
+			Close:  b.Close,
+			Volume: decimal.NewFromFloat(b.Volume),
+		})
+	}
+	return out, nil
+}
+
+// FetchAllSymbols returns all available symbol names from the broker (MT4 Symbols RPC).
+func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if client == nil || sid == "" {
+		return nil, fmt.Errorf("mt4 FetchAllSymbols: not connected")
+	}
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	ctx2 := metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.Symbols(ctx2, &pb.SymbolsRequest{Id: sid})
+	if err != nil {
+		return nil, fmt.Errorf("mt4 Symbols: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return nil, fmt.Errorf("mt4 Symbols: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	return resp.GetResult(), nil
+}
+
+func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHandler) error {
+	g.mu.RLock()
+	streamCli := g.streamCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if streamCli == nil || sid == "" {
+		return fmt.Errorf("mt4 SubscribeOrderEvents: not connected")
+	}
+	g.mu.Lock()
+	if g.cancelHubOrderSub != nil {
+		g.cancelHubOrderSub()
+	}
+	ctx, g.cancelHubOrderSub = context.WithCancel(ctx)
+	g.mu.Unlock()
+	go g.orderEventLoop(ctx, h)
+	return nil
+}
+
+func (g *Gateway) orderEventLoop(ctx context.Context, h mthub.OrderEventHandler) {
+	defer func() {
+		if r := recover(); r != nil {
+			g.log.Error("mt4 order event recv panic", zap.Any("panic", r))
+		}
+	}()
+	backoff := time.Second
+	for {
+		if ctx.Err() != nil {
+			return
+		}
+		g.mu.RLock()
+		streamCli := g.streamCli
+		sid := g.sessionID
+		g.mu.RUnlock()
+		if streamCli == nil || sid == "" {
+			g.sleep(ctx, backoff)
+			backoff = minDuration(backoff*2, streamMaxBackoff)
+			continue
+		}
+		md := metadata.New(map[string]string{"id": sid})
+		if tok := g.token(); tok != "" {
+			md.Set("authorization", "Bearer "+tok)
+		}
+		subCtx, cancel := context.WithCancel(ctx)
+		subCtx = metadata.NewOutgoingContext(subCtx, md)
+		stream, err := streamCli.OnOrderUpdate(subCtx, &pb.OnOrderUpdateRequest{Id: sid})
+		if err != nil {
+			g.log.Warn("mt4 order event subscribe", zap.Error(err), zap.Duration("backoff", backoff))
+			cancel()
+			g.handleStreamError(ctx, err, &backoff)
+			continue
+		}
+		backoff = time.Second
+		g.recvOrderUpdates(ctx, cancel, stream, h, &backoff)
+	}
+}
+
+func (g *Gateway) recvOrderUpdates(ctx context.Context, cancel context.CancelFunc,
+	stream grpc.ServerStreamingClient[pb.OnOrderUpdateReply], h mthub.OrderEventHandler, backoff *time.Duration,
+) {
+	defer cancel()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+		msg, err := stream.Recv()
+		if err != nil {
+			g.log.Warn("mt4 order event recv error", zap.Error(err))
+			g.handleStreamError(ctx, err, backoff)
+			return
+		}
+		if h == nil || msg.GetResult() == nil || msg.GetResult().GetUpdate() == nil {
+			continue
+		}
+		upd := msg.GetResult().GetUpdate()
+		o := upd.GetOrder()
+		event := &mthub.OrderEvent{
+			AccountID: g.cfg.AccountID,
+			EventType: upd.GetAction().String(),
+			Timestamp: time.Now(),
+		}
+		if o != nil {
+			event.Ticket = int64(o.GetTicket())
+		}
+		h(event)
+	}
 }
 
 func truncSid(s string) string {

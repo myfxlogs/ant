@@ -360,6 +360,168 @@ Generated `gen/`、i18n、scripts 和 proto 的 `info` 不属于 warning 清零�
 6. 抽查 3-5 个拆分文件对，确认原文件被移动的函数确实已删除（非复制）—— 重点查 subagent 处理的文件
 7. 确认越界改动已隔离：`git diff HEAD -- AGENTS.md`（无 File Splitting Pitfalls）、`bound_account_svc_test.go`（无 diff）、`pipeline_callbacks.go`（无 diff）、`pipeline_order_update.go`（不存在）
 
+### D-CODE-HYGIENE-001 逐文件 manifest（2026-08-26 补齐；施工方 GLM-5.2；状态 ⚠️待Claude复审）
+
+**S1 清单核对结论**：
+
+| 口径 | 实现 | 测试 | 合计 Go | 非 Go | 总计 |
+|---|---|---|---|---|---|
+| 交付回填声称（:322） | 68 | 52 | 120 | — | 120 |
+| 实测 acaa86db 新增 | 70 | 51 | 121 | 1 | 122 |
+| 差异 | +2 | -1 | +1 | +1 | +2 |
+
+差异原因：回填仅给出总数（68+52=120），未逐文件列出，无法定位具体多/少计的文件。实测 121 Go（70 实现+51 测试）+1 非 Go（`docs/audits/vm-adversarial-proofs.md`）。回填的 68 vs 实测 70 = +2 实现，回填的 52 vs 实测 51 = -1 测试，均为计数偏差（回填未逐文件列出，无法精确归因到具体文件）。
+
+**逐文件归属判定方法**：对每个新增 Go 文件，提取其顶层函数/方法/测试名，与 acaa86db^ 中 H1 65 文件清单内文件的函数名匹配。匹配到 H1 文件 → D-CODE 拆分产物；未匹配 → 检查来源是否为非 H1 文件或全新函数 → 非 D-CODE。对 H1 清单中本身在 acaa86db 新建的文件（VM-CODE-HYGIENE-1 产物被纳入 H1 baseline），检查其拆分产物是否来自 H1 文件。
+
+**判定结果**：D-CODE 拆分新增 = **89 个**（56 实现 + 33 测试）；非 D-CODE = **32 个 Go**（14 实现 + 18 测试）+ 1 非 Go。
+
+#### S2：D-CODE 拆分新增文件 manifest（56 实现 + 33 测试 = 89）
+
+**实现文件（56）**：
+
+| # | 新文件 | 来源 H1 文件 | 抽出的责任（函数名） | REUSE/NEW | 行为回归命令 |
+|---|---|---|---|---|---|
+| 1 | `cmd/coldsign-gui/sign_dialog.go` | `cmd/coldsign-gui/main.go` | `createControl`, `deriveAndSignTx`, `getModuleHandle`, `getStockObject`, `loadCursor`, `mnemonicWndProc`, `showMnemonicDialog` | REUSE: 全部符号从 main.go 移出 | `go build ./cmd/coldsign-gui`（无 test 包） |
+| 2 | `cmd/server/pipeline_state_callbacks.go` | `cmd/server/pipeline.go` | `getUserIDFromPool`, `makeOnAccountDisconnect`, `makeOnAccountStatus`, `makeOnBrokerInfo` | REUSE: 4 个回调构造函数从 pipeline.go 移出 | `go test ./cmd/server -count=1` |
+| 3 | `internal/chain/tron_grid_queries.go` | `internal/chain/tron_grid.go` | `GetLatestBlock`, `GetTRC20Balance`, `convertSunToUSDT`, `hexToBase58` | REUSE: 4 个查询函数从 tron_grid.go 移出 | `go test ./internal/chain -count=1` |
+| 4 | `internal/connect/ai/code_assist_handler_extract.go` | `internal/connect/ai/code_assist_handler.go` | `ExtractParams`, `extractByHeuristic`, `extractCodeFromRepair`, `extractFencedCode` | REUSE: 4 个提取函数从 code_assist_handler.go 移出 | `go test ./internal/connect/ai -count=1` |
+| 5 | `internal/connect/gateway/ai_gateway_handler_models.go` | `internal/connect/gateway/ai_gateway_handler.go` | `DeleteModel`, `DeleteProvider`, `ListModels`, `UpsertModel` | REUSE: 4 个 model CRUD handler 从 ai_gateway_handler.go 移出 | `go test ./internal/connect/gateway -count=1` |
+| 6 | `internal/connect/gateway/ai_gateway_handler_usage.go` | `internal/connect/gateway/ai_gateway_handler.go` | `DiscoverGatewayModels`, `RecordTokenUsage` | REUSE: 2 个 usage handler 从 ai_gateway_handler.go 移出 | `go test ./internal/connect/gateway -count=1` |
+| 7 | `internal/connect/strategy/backtest_worker_vm_response.go` | `internal/connect/strategy/backtest_worker_vm.go` | `attachBlindSpots`, `buildBacktestResponse`, `runDiagnostics` | REUSE: 3 个响应构造函数从 backtest_worker_vm.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 8 | `internal/connect/strategy/live_context_build.go` | `internal/connect/strategy/live_context.go` | `backfillSymbolInfo`, `backfillTickSymbolInfo`, `buildLiveContext`, `buildLiveParams`, `buildSymbolSeries` | REUSE: 5 个 context 构造函数从 live_context.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 9 | `internal/connect/strategy/live_context_enums.go` | `internal/connect/strategy/live_context.go` | `pendingOrderSide` | REUSE: `pendingOrderSide` 从 live_context.go 移出；NEW: `brokerSideFromString`（enum 解析 helper，拆分时新建） | `go test ./internal/connect/strategy -count=1` |
+| 10 | `internal/connect/strategy/live_dispatch_paper.go` | `internal/connect/strategy/live_dispatch.go` | `dispatchPaperSignal`, `submitOrder` | REUSE: 2 个 paper dispatch 函数从 live_dispatch.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 11 | `internal/connect/strategy/live_runner_loop.go` | `internal/connect/strategy/live_runner.go` | `appendDedupBar`, `detectExecModels`, `handleExtraSymbolBar`, `initExtraBars`, `runLiveEventLoop`, `subscribeTickUpdates`, `subscribeTradeEvents` | REUSE: 7 个 event loop 函数从 live_runner.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 12 | `internal/connect/strategy/schedule_execute_build.go` | `internal/connect/strategy/schedule_execute.go` | `buildLiveRun`, `runOne` | REUSE: 2 个 build/run 函数从 schedule_execute.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 13 | `internal/connect/strategy/session_registry_active.go` | `internal/connect/strategy/session_registry.go` | `InsertScheduleRunLog`, `IsCircuitOpen`, `RecordError`, `RecordSignal`, `RecordTick`, `SetCircuitOpen`, `SetPnL`, `SetStderrTail`, `SubscribeSignals` | REUSE: 9 个 active session 函数从 session_registry.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 14 | `internal/connect/strategy/session_registry_queries.go` | `internal/connect/strategy/session_registry.go` | `ListByAccount`, `Stop`, `UpdatePnlFromPositions` | REUSE: 3 个 query 函数从 session_registry.go 移出（`ListAll` 来源匹配偏差，该函数实际来自 ai_gateway_repository.go H1 文件的同名函数，session_registry.go 也有同名方法） | `go test ./internal/connect/strategy -count=1` |
+| 15 | `internal/connect/strategy/strategy_execution_handlers.go` | `internal/connect/strategy/strategy_execution_handler.go` | `Execute`, `Validate`, `Backtest`, `GetTemplates`, `ExecuteLive`, `toCamelCase`, `isGoStrategy`, `isMQLStrategy` | REUSE: 8 个 RPC handler 函数从 strategy_execution_handler.go 移出（改名 handler→handlers） | `go test ./internal/connect/strategy -count=1` |
+| 16 | `internal/connect/strategy/strategy_experiment_worker_validation.go` | `internal/connect/strategy/strategy_experiment_worker.go` | `paramsFromSpace`, `resolvedSpaceFromParamSpace`, `runIterative`, `runOOSValidation`, `runOneShot`, `runOptimizer` | REUSE: 6 个 validation 函数从 strategy_experiment_worker.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 17 | `internal/connect/strategy/strategy_schedules_validation.go` | `internal/connect/strategy/strategy_schedules.go` | `applyAccountSwitch`, `applyScheduleUpdates`, `maybeRestartSchedule`, `validateParamType`, `validateParamsAgainstSchema`, `validateScheduleParams` | REUSE: 6 个 validation 函数从 strategy_schedules.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 18 | `internal/connect/strategy/trade_barrier_wait.go` | `internal/connect/strategy/trade_barrier.go` | `NotifyDeterministicRejected`, `NotifyOutcomeUnknown`, `Reconcile`, `Release`, `State`, `Ticket`, `WaitConfirmed`, `cacheEvent` | REUSE: 8 个 barrier 函数从 trade_barrier.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 19 | `internal/connect/strategy/vm_live_validators.go` | — | — | **非 D-CODE**（见 S3） | — |
+| 20 | `internal/connect/strategy/vm_live_helpers.go` | — | — | **非 D-CODE**（见 S3） | — |
+| 21 | `internal/connect/user/share_service_metrics.go` | `internal/connect/user/share_service.go` | `aggregateSymbolStats`, `computeMaxDrawdownPct`, `computeSharpe`, `fmtShareURL` | REUSE: 4 个 metrics 函数从 share_service.go 移出 | `go test ./internal/connect/user -count=1` |
+| 22 | `internal/knowledgebase/service_loader.go` | `internal/knowledgebase/service.go` | `GetDemandSummary`, `RecordDemandSignal`, `loadFromDBImpl` | REUSE: 3 个 loader 函数从 service.go 移出 | `go test ./internal/knowledgebase -count=1` |
+| 23 | `internal/marketplace/decay_detector_batch.go` | `internal/marketplace/decay_detector.go` | `DetectDecayBatch`, `computePeriodMetrics`, `formatDecayReason` | REUSE: 3 个 batch 函数从 decay_detector.go 移出 | `go test ./internal/marketplace -count=1` |
+| 24 | `internal/marketplace/live_performance_collector.go` | `internal/marketplace/live_performance.go` | `NewLivePerformanceCollector`, `OnProfitUpdate`, `RefreshCache`, `loadCache` | REUSE: 4 个 collector 函数从 live_performance.go 移出 | `go test ./internal/marketplace -count=1` |
+| 25 | `internal/marketplace/live_performance_recompute.go` | `internal/marketplace/live_performance.go` | `nullDec`, `recomputePerformanceSummary` | REUSE: 2 个 recompute 函数从 live_performance.go 移出 | `go test ./internal/marketplace -count=1` |
+| 26 | `internal/marketplace/publish_cache.go` | `internal/marketplace/publish.go` | `clear`, `get`, `key`, `newPublishedCache`, `set` | REUSE: 5 个 cache 函数从 publish.go 移出 | `go test ./internal/marketplace -count=1` |
+| 27 | `internal/marketplace/publish_query.go` | `internal/marketplace/publish.go` | `ListPublished`, `buildPublishedCountQuery`, `buildPublishedQuery` | REUSE: 3 个 query 函数从 publish.go 移出 | `go test ./internal/marketplace -count=1` |
+| 28 | `internal/marketplace/quality_validation.go` | `internal/marketplace/quality.go` | `CheckLiveCoverage`, `ValidateBacktestQuality`, `checkSourceCoverage` | REUSE: 3 个 validation 函数从 quality.go 移出 | `go test ./internal/marketplace -count=1` |
+| 29 | `internal/marketplace/service_subscription_loop.go` | `internal/marketplace/service_subscription.go` | `CanAccessCode`, `StartRenewalLoop` | REUSE: 2 个 loop 函数从 service_subscription.go 移出 | `go test ./internal/marketplace -count=1` |
+| 30 | `internal/marketplace/service_subscription_renewal.go` | `internal/marketplace/service_subscription.go` | `RenewSubscriptions`, `processRenewal` | REUSE: 2 个 renewal 函数从 service_subscription.go 移出 | `go test ./internal/marketplace -count=1` |
+| 31 | `internal/marketplace/strategy_optimizer_publish.go` | `internal/marketplace/strategy_optimizer.go` | `PublishOptimization`, `RejectOptimizationTask` | REUSE: 2 个 publish 函数从 strategy_optimizer.go 移出 | `go test ./internal/marketplace -count=1` |
+| 32 | `internal/marketplace/strategy_optimizer_query.go` | `internal/marketplace/strategy_optimizer.go` | `GetOptimizationTask`, `ListOptimizationTasks` | REUSE: 2 个 query 函数从 strategy_optimizer.go 移出 | `go test ./internal/marketplace -count=1` |
+| 33 | `internal/mdgateway/adapter/mt4/orders_events.go` | `internal/mdgateway/adapter/mt4/orders.go` | `SubscribeOrderEvents`, `orderEventLoop`, `recvOrderUpdates` | REUSE: 3 个 event 函数从 mt4/orders.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 34 | `internal/mdgateway/adapter/mt4/orders_queries.go` | `internal/mdgateway/adapter/mt4/orders.go` | `FetchAllSymbols`, `FetchPriceHistory`, `FetchSymbolParams` | REUSE: 3 个 query 函数从 mt4/orders.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 35 | `internal/mdgateway/adapter/mt4/profit_fetch.go` | `internal/mdgateway/adapter/mt4/profit.go` | `fetchAndPublish`, `mt4OrderTypeString`, `parseMt4Positions`, `profitPositionsFromOpenedOrders` | REUSE: 4 个 profit 函数从 mt4/profit.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 36 | `internal/mdgateway/adapter/mt5/orders_queries.go` | `internal/mdgateway/adapter/mt5/orders.go` | `FetchAllSymbols`, `FetchPriceHistory`, `FetchSymbolParams`, `SubscribeOrderEvents`, `orderEventLoop`, `recvOrderUpdates`, `truncSid` | REUSE: 7 个 query/event 函数从 mt5/orders.go 移出 | `go test ./internal/mdgateway/adapter/mt5 -count=1` |
+| 37 | `internal/mthub/service_brokers.go` | `internal/mthub/service.go` | `LatestTick`, `PublishAccountStatus`, `PublishBar`, `PublishPositionSnapshot`, `PublishTick`, `PublishTradeEvent`, `SnapshotBroker`, `SubscribeAccountStatus`, `SubscribeBarUpdates`, `SubscribePositionSnapshots`, `SubscribeTickUpdates`, `SubscribeTradeEvents`, `SubscribeUserOrderEvents`, `WatchAllTicks` | REUSE: 14 个 broker publish/subscribe 函数从 service.go 移出 | `go test ./internal/mthub -count=1` |
+| 38 | `internal/mthub/service_orders_helpers.go` | `internal/mthub/service_orders.go` | `costToProto`, `estimateOrderCost`, `orderRequestToIntent`, `orderTypeToString`, `publishOrderCreatedEvent`, `sideToString` | REUSE: 6 个 helper 函数从 service_orders.go 移出 | `go test ./internal/mthub -count=1` |
+| 39 | `internal/mthub/service_orders_oms.go` | `internal/mthub/service_orders.go` | `PublishTradeEventFromUpdate`, `TransitionOrderByTicket`, `omsTransition`, `retryTransitionByTicket` | REUSE: 4 个 OMS 函数从 service_orders.go 移出 | `go test ./internal/mthub -count=1` |
+| 40 | `internal/mthub/service_queries.go` | `internal/mthub/service.go` | `ActiveAccountIDs`, `OpenedOrders`, `OrderHistory`, `PriceHistory`, `SubscribeSymbols`, `SymbolList`, `SymbolParams` | REUSE: 7 个 query 函数从 service.go 移出 | `go test ./internal/mthub -count=1` |
+| 41 | `internal/repository/ai_gateway_repository_usage.go` | `internal/repository/ai_gateway_repository.go` | `DailyPlatformCost`, `DailySessionCount`, `DailyTokenUsage`, `Insert`, `ListByUser`, `MonthlyCost`, `MonthlySummary`, `NewAITokenUsageRepository`, `scanTokenUsageRows` | REUSE: 9 个 usage repository函数从 ai_gateway_repository.go 移出 | `go test ./internal/repository -count=1` |
+| 42 | `internal/repository/wallet_repo_tx.go` | `internal/repository/wallet_repo.go` | `ListTransactions`, `WriteCredentialChangeLedger`, `computeEntryHash`, `getWalletByUserIDTx`, `ledgerChainInsert`, `walletAfterUpdate` | REUSE: 6 个 transaction 函数从 wallet_repo.go 移出 | `go test ./internal/repository -count=1` |
+| 43 | `internal/risk/rules_advanced.go` | `internal/risk/rules.go` | `Check`, `Name` | REUSE: 2 个 rule 函数从 rules.go 移出 | `go test ./internal/risk -count=1` |
+| 44 | `internal/service/subscription_service_billing.go` | `internal/service/subscription_service.go` | `GetMySubscription`, `computeProrationCredit`, `planPrice`, `processPlanCharge` | REUSE: 4 个 billing 函数从 subscription_service.go 移出 | `go test ./internal/service -count=1` |
+| 45 | `internal/service/systemai/chat_stream_helpers.go` | `internal/service/systemai/chat_stream.go` | `accumulateToolCallDeltas`, `billStreamPostCall`, `capMaxTokens`, `fallbackNonStream`, `finalizeToolCalls` | REUSE: 5 个 stream helper 函数从 chat_stream.go 移出 | `go test ./internal/service/systemai -count=1` |
+| 46 | `internal/sweep/builder_bundle.go` | `internal/sweep/builder.go` | `BuildUndelegateOnlyBundle`, `BuildUnsignedBundle` | REUSE: 2 个 bundle 函数从 builder.go 移出 | `go test ./internal/sweep -count=1` |
+| 47 | `internal/sweep/worker_export.go` | `internal/sweep/worker.go` | `ExportBatchUnsignedBundle`, `saveBatchBundleAndLegs`, `saveBundleAndLegs`, `saveUndelegateOnlyBundleAndLegs` | REUSE: 4 个 export 函数从 worker.go 移出 | `go test ./internal/sweep -count=1` |
+| 48 | `tools/mql2go/builtins_registry_ext.go` | `tools/mql2go/builtins_registry.go`（H1，acaa86db 新建） | `builtinRegistryExt` var | REUSE: 扩展 registry var 从 builtins_registry.go（H1）移出 | `go test ./tools/mql2go -count=1` |
+| 49 | `tools/mql2go/bytecode_cache_unmarshal_io.go` | `tools/mql2go/bytecode_cache_unmarshal.go`（H1，acaa86db 新建） | `readBool`, `readBytes`, `readI32`, `readString`, `readU16`, `readU32`, `readU8`, `unmarshalClassTypes`, `unmarshalEnums`, `unmarshalEventLocals`, `unmarshalEvents`, `unmarshalParams`, `writeBool`, `writeBytes`, `writeI32`, `writeString`, `writeU16`, `writeU32`, `writeU8` | REUSE: 19 个 IO 函数从 bytecode_cache_unmarshal.go（H1）移出 | `go test ./tools/mql2go -count=1` |
+| 50 | `tools/mql2go/compile_helpers.go` | `tools/mql2go/compile.go` | `addConst`, `compileEventBody`, `compileIf`, `compileStmt`, `compileStmts`, `compileUserFuncBody`, `emit`, `emitJump`, `isEventFunction`, `patchJump`, `patchJumps`, `popScope`, `pushScope`, `resolveVar` | REUSE: 14 个 compile helper 函数从 compile.go 移出（部分函数来自 compile_interp.go H1） | `go test ./tools/mql2go -count=1` |
+| 51 | `tools/mql2go/compile_interp_funcs.go` | `tools/mql2go/compile_interp.go` | `collectFunction`, `compileBlock`, `compileIf`, `compileStmt` | REUSE: 4 个 function 编译函数从 compile_interp.go 移出 | `go test ./tools/mql2go -count=1` |
+| 52 | `tools/mql2go/compile_interp_stmts.go` | `tools/mql2go/compile_interp.go` | `collectEnum`, `collectFuncParams`, `compileDeclaration`, `compileDoWhile`, `parseEnumerator`, `processEnumeratorList` | REUSE: 6 个 statement 编译函数从 compile_interp.go 移出 | `go test ./tools/mql2go -count=1` |
+| 53 | `tools/mql2go/compile_py_expr_ops.go` | `tools/mql2go/compile_py_expr.go` | `buildChainedBarCall`, `compilePyBinary`, `compilePyBoolean`, `compilePyMethodCall`, `compilePyTernary`, `compilePyUnary`, `extractAttrChain`, `extractInnerCallArgs`, `isIBarFunc` | REUSE: 9 个 Python expr 编译函数从 compile_py_expr.go 移出 | `go test ./tools/mql2go -count=1` |
+| 54 | `tools/mql2go/header_parser_extract.go` | `tools/mql2go/header_parser.go` | `GenerateRegistryEntries`, `appendMethodIfValid`, `buildSignature`, `extractClassMethods`, `extractEnumValues` | REUSE: 5 个 header 解析函数从 header_parser.go 移出 | `go test ./tools/mql2go -count=1` |
+| 55 | `tools/mql2go/rule_engine_rules.go` | `tools/mql2go/rule_engine.go` | `ID`, `Match` | REUSE: 2 个 rule 函数从 rule_engine.go 移出 | `go test ./tools/mql2go -count=1` |
+| 56 | `tools/mql2go/vm_builtin_array_ops.go` | `tools/mql2go/vm_builtin_string.go` | `builtinArrayCopy`, `builtinArrayFill`, `builtinArrayInitialize`, `builtinArrayMaximum`, `builtinArrayMinimum`, `builtinArrayResize`, `builtinArraySort` | REUSE: 7 个 array builtin 函数从 vm_builtin_string.go 移出 | `go test ./tools/mql2go -count=1` |
+| 57 | `tools/mql2go/vm_builtin_trade_props.go` | `tools/mql2go/vm_builtin_trade.go` | `builtinOrderClosePrice`, `builtinOrderCloseTime`, `builtinOrderComment`, `builtinOrderCommission`, `builtinOrderLots`, `builtinOrderMagicNumber`, `builtinOrderOpenPrice`, `builtinOrderOpenTime`, `builtinOrderProfit`, `builtinOrderStopLoss`, `builtinOrderSwap`, `builtinOrderSymbol`, `builtinOrderTakeProfit`, `builtinOrderTicket`, `builtinOrderType`, `orderTypeToMQL4`, `sideToOrderType` | REUSE: 17 个 order property 函数从 vm_builtin_trade.go 移出 | `go test ./tools/mql2go -count=1` |
+| 58 | `tools/mql2go/vm_execute_handlers.go` | `tools/mql2go/vm_execute.go` | `executeArith`, `executeCallUser`, `executeCompare`, `executeLogical`, `executePushArray`, `executeStack`, `executeStoreArray` | REUSE: 7 个 execute handler 函数从 vm_execute.go 移出 | `go test ./tools/mql2go -count=1` |
+
+注：#19-20 为非 D-CODE 文件占位（见 S3），不计入 56 实现 D-CODE 计数。
+
+**测试文件（33）**：
+
+| # | 新文件 | 来源 H1 文件 | 抽出的责任（Test 函数名摘要） | REUSE/NEW | 行为回归命令 |
+|---|---|---|---|---|---|
+| 1 | `internal/connect/marketplace/marketplace_edge_test.go` | `internal/connect/marketplace/marketplace_test.go` | `TestRateStrategy_Unauthenticated`, `TestRateStrategy_ServiceError`, `TestCommentOnStrategy_Unauthenticated` 等 | REUSE: edge case 测试从 marketplace_test.go 移出 | `go test ./internal/connect/marketplace -count=1` |
+| 2 | `internal/connect/strategy/live_diag_truth_lifecycle_test.go` | `internal/connect/strategy/live_diag_truth_test.go` | `TestLIVE_DIAG_TRUTH_1_LifecycleRejectedPersistence`, `TestLIVE_DIAG_TRUTH_1_DataAvailableWithCache`, `TestLIVE_DIAG_TRUTH_1_LogOrderLifecycleWiring` | REUSE: lifecycle 测试从 live_diag_truth_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 3 | `internal/connect/strategy/mutation_coordinator_labels_test.go` | `internal/connect/strategy/mutation_coordinator_test.go` | `TestLIVE_ORDER_REENTRY_1_R5_ExplicitZeroClearsSL`, `TestLIVE_ORDER_REENTRY_1_R5_ExplicitZeroNotCleared`, `TestLIVE_ORDER_REENTRY_1_R5_UnspecifiedNotChecked` | REUSE: labels 测试从 mutation_coordinator_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 4 | `internal/connect/strategy/mutation_coordinator_recovery_test.go` | `internal/connect/strategy/mutation_coordinator_test.go` | `TestLIVE_ORDER_REENTRY_1_T7_FAIL_ReadAfterWriteFails`, `TestLIVE_ORDER_REENTRY_1_T8_REPLAY_StalePositionsNotFresh`, `TestLIVE_ORDER_REENTRY_1_T9_ProvenanceSeparation` | REUSE: recovery 测试从 mutation_coordinator_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 5 | `internal/connect/strategy/schedule_event_launch_test.go` | `internal/connect/strategy/schedule_event_test.go` | `TestLaunchEventSession_EmptyTemplateCode`, `TestLaunchEventSession_TemplateFetchError`, `TestStartSchedule_NotFound` | REUSE: launch 测试从 schedule_event_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 6 | `internal/connect/strategy/schedule_hotloop_cache_test.go` | `internal/connect/strategy/schedule_hotloop_test.go` | `TestSCHEDULE_HOTLOOP_1_InvalidConfigQuarantined`, `TestSCHEDULE_HOTLOOP_1_AutoTradeCacheInvalidation`, `TestSCHEDULE_HOTLOOP_1_AutoTradeCacheInvalidationLinearizable` | REUSE: cache 测试从 schedule_hotloop_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 7 | `internal/connect/strategy/trade_fields_build_test.go` | `internal/connect/strategy/trade_fields_invariant_test.go` | `TestBuildBacktestResponse_TradeFieldsAllValid`, `TestBuildBacktestResponse_NonPositivePrice`, `TestBuildBacktestResponse_InvalidSide` | REUSE: build 测试从 trade_fields_invariant_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 8 | `internal/connect/strategy/trade_fields_helpers_test.go` | `internal/connect/strategy/trade_fields_invariant_test.go` | `makeTradeWithFields`, `validTrade`（test helper 函数） | REUSE: 2 个 test helper 从 trade_fields_invariant_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 9 | `internal/connect/strategy/trade_fields_side_test.go` | `internal/connect/strategy/trade_fields_invariant_test.go` | `TestCheckSideValid_BuyAndSell`, `TestCheckSideValid_InvalidZero`, `TestCheckSideValid_InvalidArbitrary` | REUSE: side validation 测试从 trade_fields_invariant_test.go 移出 | `go test ./internal/connect/strategy -count=1` |
+| 10 | `internal/connect/system/mthub_service_integration_events_test.go` | `internal/connect/system/mthub_service_integration_test.go` | `TestMtHub_OrderHistoryWithTimeRange`, `TestMtHub_SubscribeEventsReceivesAccountStatus`, `TestMtHub_SubscribeEventsConnectionEstablished` | REUSE: events 测试从 mthub_service_integration_test.go 移出 | `go test ./internal/connect/system -count=1` |
+| 11 | `internal/execalgo/algo_helpers_test.go` | `internal/execalgo/algo_test.go` | `refTime`, `closeEnoughAlgo`, `decFromFloat`（test helper 函数） | REUSE: 3 个 test helper 从 algo_test.go 移出 | `go test ./internal/execalgo -count=1` |
+| 12 | `internal/execalgo/algo_schedule_test.go` | `internal/execalgo/algo_test.go` | `TestShortfall_FrontLoaded`, `TestShortfall_ZeroUrgencyIsUniform`, `TestShortfall_MaxUrgencyAllInFirst` | REUSE: schedule 测试从 algo_test.go 移出 | `go test ./internal/execalgo -count=1` |
+| 13 | `internal/marketplace/money_flow_integration_lifecycle_test.go` | `internal/marketplace/money_flow_integration_test.go` | `TestMoneyFlow_RefundAlreadyRefunded`, `TestMoneyFlow_SubscribeFree`, `TestMoneyFlow_SubscribePaidRejected` | REUSE: lifecycle 测试从 money_flow_integration_test.go 移出 | `go test ./internal/marketplace -count=1` |
+| 14 | `internal/mdgateway/adapter/mt4/mt4_bars_test.go` | `internal/mdgateway/adapter/mt4/mt4_test.go` | `TestConvertMT4Bars_Empty`, `TestConvertMT4Bars_WithData`, `TestBARALIGN_ConvertMT4Bars_SubSecondAlignment` | REUSE: bars 测试从 mt4_test.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 15 | `internal/mdgateway/adapter/mt4/mt4_connection_test.go` | `internal/mdgateway/adapter/mt4/mt4_test.go` | `TestDisconnect_NilConn`, `TestDisconnect_FullState`, `TestEnsureConnected_AlreadySet` | REUSE: connection 测试从 mt4_test.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 16 | `internal/mdgateway/adapter/mt4/mt4_streams_test.go` | `internal/mdgateway/adapter/mt4/mt4_test.go` | `TestRecvLoop_ReceivesTicks`, `TestProfitRecvLoop_ReceivesUpdates`, `TestDATATRUTH2_MarginFromAccountSummary` | REUSE: streams 测试从 mt4_test.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 17 | `internal/mdgateway/adapter/mt4/mt4_trading_test.go` | `internal/mdgateway/adapter/mt4/mt4_test.go` | `TestMt4Op`, `TestPlaceOrder_Success`, `TestPlaceOrder_PassesMagic` | REUSE: trading 测试从 mt4_test.go 移出 | `go test ./internal/mdgateway/adapter/mt4 -count=1` |
+| 18 | `internal/mdgateway/adapter/mt5/mt5_trading_test.go` | `internal/mdgateway/adapter/mt5/mt5_test.go` | `TestPlaceOrder_WithMock`, `TestPlaceOrder_MockError` | REUSE: trading 测试从 mt5_test.go 移出 | `go test ./internal/mdgateway/adapter/mt5 -count=1` |
+| 19 | `internal/mdgateway/pure_metrics_test.go` | `internal/mdgateway/pure_test.go` | `TestRecordClockSkew`, `TestDLQSampled`, `TestObserveE2eLatency` | REUSE: metrics 测试从 pure_test.go 移出 | `go test ./internal/mdgateway -count=1` |
+| 20 | `internal/mdgateway/pure_session_test.go` | `internal/mdgateway/pure_test.go` | `TestDefaultSessionClock`, `TestSetBrokerOffset`, `TestAddRemoveHoliday` | REUSE: session 测试从 pure_test.go 移出 | `go test ./internal/mdgateway -count=1` |
+| 21 | `internal/mthub/service_coverage_gate_test.go` | `internal/mthub/service_coverage_test.go` | `TestPreTradeChecks_GuardRejection`, `TestPreTradeChecks_ReconcileGate`, `TestPreTradeChecks_RateLimiter` | REUSE: gate 测试从 service_coverage_test.go 移出 | `go test ./internal/mthub -count=1` |
+| 22 | `internal/mthub/service_coverage_orders_test.go` | `internal/mthub/service_coverage_test.go` | `TestCloseOrder_ExecutorError_WithLogger`, `TestDeleteOrder_KillSwitch_WithLogger`, `TestPlaceOrder_WithCostEstimatorAndEventStore` | REUSE: orders 测试从 service_coverage_test.go 移出 | `go test ./internal/mthub -count=1` |
+| 23 | `internal/mthub/service_coverage_session_test.go` | `internal/mthub/service_coverage_test.go` | `TestSessionState_WithExecutor`, `TestPlatform_WithSession`, `TestPlatformFunc_WithSession` | REUSE: session 测试从 service_coverage_test.go 移出 | `go test ./internal/mthub -count=1` |
+| 24 | `internal/mthub/service_orders_events_test.go` | `internal/mthub/service_orders_unit_test.go` | `TestOmsTransition_NilWriter`, `TestOmsTransition_EmptyOrderID`, `TestPublishOrderCreatedEvent_NilStore` | REUSE: events 测试从 service_orders_unit_test.go 移出 | `go test ./internal/mthub -count=1` |
+| 25 | `internal/risk/gate_helpers_test.go` | `internal/risk/gate_test.go` | `newTestGate`, `defaultState`, `intentBuy`, `intentSim`（test helper 函数） | REUSE: 4 个 test helper 从 gate_test.go 移出 | `go test ./internal/risk -count=1` |
+| 26 | `internal/risk/gate_margin_test.go` | `internal/risk/gate_test.go` | `TestMarginPreCheck_Allow`, `TestMarginPreCheck_Block`, `TestMarginPreCheck_MarketOrderPriceZero_Skips` | REUSE: margin 测试从 gate_test.go 移出 | `go test ./internal/risk -count=1` |
+| 27 | `internal/sweep/sweep_reconfirm_test.go` | `internal/sweep/sweep_test.go` | `TestReconfirmSweeping_ConfirmedSuccess_ToDone`, `TestReconfirmSweeping_ConfirmedFailed_ToManualReview`, `TestReconfirmSweeping_NotConfirmed_NoChange` | REUSE: reconfirm 测试从 sweep_test.go 移出 | `go test ./internal/sweep -count=1` |
+| 28 | `tools/mql2go/compile_py_features_test.go` | `tools/mql2go/compile_py_test.go` | `TestCompilePython_BooleanOperatorInIf`, `TestCompilePython_ReturnTypeEnforcement`, `TestCompilePython_AnnotatedAssignment` | REUSE: features 测试从 compile_py_test.go 移出 | `go test ./tools/mql2go -count=1` |
+| 29 | `tools/mql2go/compile_py_mapping_test.go` | `tools/mql2go/compile_py_test.go` | `TestCompilePython_CompilePythonEntry`, `TestCompilePython_EnumTypesInit`, `TestCompilePython_MissingEvents` | REUSE: mapping 测试从 compile_py_test.go 移出 | `go test ./tools/mql2go -count=1` |
+| 30 | `tools/mql2go/compile_py_operators_test.go` | `tools/mql2go/compile_py_test.go` | `TestCompilePython_FloorDivision`, `TestCompilePython_FloorDivisionNegativeResult`, `TestCompilePython_KeywordArgumentReorder` | REUSE: operators 测试从 compile_py_test.go 移出 | `go test ./tools/mql2go -count=1` |
+| 31 | `tools/mql2go/compile_py_rejection_test.go` | `tools/mql2go/compile_py_test.go` | `TestCompilePython_NotInBooleanOperator`, `TestCompilePython_EllipsisRejected`, `TestCompilePython_TypeAliasRejected` | REUSE: rejection 测试从 compile_py_test.go 移出 | `go test ./tools/mql2go -count=1` |
+| 32 | `tools/mql2go/honesty_audit_probes_test.go` | `tools/mql2go/honesty_audit_test.go` | `TestHonesty_T3_UnknownConstant`, `TestHonesty_T3_UnknownIndicator`, `TestHonesty_T3_UnsupportedFunction` | REUSE: probes 测试从 honesty_audit_test.go 移出 | `go test ./tools/mql2go -count=1` |
+| 33 | `tools/mql2go/vm_audit_test.go` | H1 自身（H1 line 294；acaa86db 新建，VM-CODE-HYGIENE-1 产物纳入 H1 baseline） | H1 文件本身，非拆分产物；含 VM 审计测试（`TestVM_Audit_*` 系列） | REUSE: H1 文件自身（pre-existing uncommitted，acaa86db 提交） | `go test ./tools/mql2go -count=1` |
+
+#### S3：非 D-CODE 新增文件披露（32 Go + 1 非 Go = 33）
+
+| 文件 | 归属 | 依据 |
+|---|---|---|
+| **实现（14）** | | |
+| `tools/mql2go/bytecode_cache_unmarshal.go` | VM-CODE-HYGIENE-1（registry :122） | `bytecode_cache.go`→`bytecode_cache_unmarshal.go`；H1 line 252（VM-CODE-HYGIENE-1 产物纳入 H1 baseline）；函数来自 `bytecode_cache.go`（非 H1） |
+| `tools/mql2go/compile_interp_helpers.go` | VM-CODE-HYGIENE-1（registry :122） | `compile_interp_expr.go`→`compile_interp_helpers.go`；H1 line 263；函数来自 `compile_interp_expr.go`（非 H1） |
+| `tools/mql2go/compile_interp_decls.go` | VM-CODE-HYGIENE-1（registry :122） | `compile_interp.go`→`compile_interp_decls.go`；函数 `isInputDeclaration` 等为新建（VM-COMPILER-SEMANTICS-4 round 5），非 H1 拆分 |
+| `tools/mql2go/vm_builtin_trade_mql5.go` | VM-CODE-HYGIENE-1（registry :122） | `vm_builtin_trade.go`→`vm_builtin_trade_mql5.go`；来源 `vm_builtin_trade.go`（H1），但拆分由 VM-CODE-HYGIENE-1 执行（2026-08-24 ✅done），非 D-CODE |
+| `tools/mql2go/compile_expr_helpers.go` | VM-CODE-HYGIENE-1（registry :122） | `compile_expr.go`→`compile_expr_helpers.go`；函数来自 `compile_expr.go`（非 H1） |
+| `tools/mql2go/builtins_registry.go` | VM-CODE-HYGIENE-1（registry :122） | `builtins.go`→`builtins_registry.go`；H1 line 297；var 声明，无函数 |
+| `tools/mql2go/vm_builtin_math_basic.go` | VM-CODE-HYGIENE-1（registry :122） | `vm_builtin_impls.go`→`vm_builtin_math_basic.go`；函数来自 `vm_builtin_impls.go`（非 H1） |
+| `tools/mql2go/interp_runner_events.go` | VM-CODE-HYGIENE-1（registry :122） | `interp_runner.go`→`interp_runner_events.go`；函数来自 `interp_runner.go`（非 H1） |
+| `tools/mql2go/interp/analyze_walk.go` | VM-CODE-HYGIENE-1（registry :122） | `interp/analyze.go`→`interp/analyze_walk.go`；函数来自 `interp/analyze.go`（非 H1） |
+| `tools/mql2go/interp/constants_colors.go` | VM-CODE-HYGIENE-1（registry :122） | `interp/constants.go`→`interp/constants_colors.go`；文件注释 "VM-CODE-HYGIENE-1"；var 声明来自 `interp/constants.go`（非 H1） |
+| `tools/mql2go/bytecode_validate.go` | VM-CACHE-INTEGRITY-1（registry :110） | `validateBytecode` 为新建函数（非 acaa86db^ 任何文件中存在）；registry :110 记录 `bytecode_validate.go:15/270` 为 VM-CACHE-INTEGRITY-1 产物 |
+| `tools/mql2go/compile_interp_expr_helpers2.go` | 非 D-CODE（来源非 H1） | 函数 `compileAssignment`/`compileField`/`compileSubscript` 等来自 `compile_interp_expr.go`（非 H1）；该文件非 H1，拆分不在 D-CODE scope 内 |
+| `internal/connect/strategy/vm_live_validators.go` | D-VM-LIVE-001-P1 | `validateFinancialFields`/`validateBarContext`/`validateBarContextWithMode` 等全部为新建函数（非 acaa86db^ 任何文件中存在）；registry D-VM-LIVE-001-P1 记录为 P1 产物 |
+| `internal/connect/strategy/vm_live_helpers.go` | D-VM-LIVE-001 或其他 VM 任务 | `vmLiveStateToSdk` 为新建函数；`vmPositionsToSdk`/`vmPendingOrdersToSdk` 等来自 `vm_live_handlers.go`（非 H1），签名已改（加 error 返回值），非纯拆分 |
+| **测试（18）** | | |
+| `internal/connect/strategy/vm_api_truth3_round4_test.go` | D-VM-LIVE-001 范围 | `TestBuildLiveContext_LookupQueryErrorBlocksExecution` 等为新建测试；round4 命名属 D-VM-LIVE-001 VM 对抗测试 |
+| `internal/connect/strategy/vm_api_truth3_round5_test.go` | D-VM-LIVE-001 范围 | `TestBuildLiveContext_MissingInvestorLookupRejected` 等为新建测试；round5 命名属 D-VM-LIVE-001 |
+| `internal/connect/strategy/vm_api_truth3_test.go` | D-VM-LIVE-001 范围 | `TestBuildLiveContext_InjectsIsDemo` 等为新建测试；vm_api_truth3 属 D-VM-LIVE-001 |
+| `internal/connect/strategy/vm_trade_context3_test.go` | D-VM-LIVE-001 范围 | `TestVM_SignalToProto_OppositeTicket` 等为新建测试；vm_trade_context3 属 D-VM-LIVE-001 |
+| `internal/connect/strategy/vm_trade_context6_round4_test.go` | D-VM-LIVE-001 范围 | `TestDispatchVMLive_RejectsInvalidBeforeInit` 等为新建测试；round4 命名属 D-VM-LIVE-001 |
+| `internal/connect/strategy/vm_trade_context6_round5_test.go` | D-VM-LIVE-001 范围 | `TestVMHandleBar_LiveModeEmptyFinancialRejected` 等为新建测试；round5 命名属 D-VM-LIVE-001 |
+| `internal/connect/strategy/vm_trade_context6_test.go` | D-VM-LIVE-001 范围 | `TestBuildLiveContext_InjectsLoginAndCompany` 等为新建测试；vm_trade_context6 属 D-VM-LIVE-001 |
+| `tools/mql2go/vm_audit_builtins_test.go` | VM 任务（VM-TIMESERIES-SEMANTICS-1 / VM-TRADE-CONTEXT-1 等） | `TestVM_Audit_CopyTimeUsesSeconds` 等为新建测试；registry :108-110 记录 VM 审计测试为 VM 任务产物 |
+| `tools/mql2go/vm_audit_cache_test.go` | VM-CACHE-INTEGRITY-1（registry :110） | `TestVM_Audit_BytecodeSerializationDeterministic` 等为新建测试 |
+| `tools/mql2go/vm_audit_control_flow_test.go` | VM 任务 | `TestVM_Audit_SingleStatementLoops` 等为新建测试 |
+| `tools/mql2go/vm_audit_failclosed_test.go` | VM 任务 | `TestVM_Audit_StackUnderflowIsError` 等为新建测试 |
+| `tools/mql2go/vm_audit_semantics_test.go` | VM 任务 | `TestVM_Audit_CompoundAssignField` 等为新建测试 |
+| `tools/mql2go/vm_audit_timeseries_test.go` | VM-TIMESERIES-SEMANTICS-1（registry :108） | `TestVM_Audit_IHighest_AllSeriesModes` 等为新建测试 |
+| `tools/mql2go/vm_audit_trade_context_test.go` | VM-TRADE-CONTEXT-1（registry :109） | `TestVM_Audit_OrderCacheInvalidatedAfterClose` 等为新建测试 |
+| `tools/mql2go/vm_audit_trade_test.go` | VM-TRADE-CONTEXT-1（registry :109） | `TestVM_Audit_OrderCacheInvalidatedAfterMutation` 等为新建测试 |
+| `tools/mql2go/vm_cache_integrity5_test.go` | VM-CACHE-INTEGRITY-1（registry :110） | `TestCompilePythonCached_RestoresCoverageOnCacheHit` 等为新建测试 |
+| `tools/mql2go/vm_compiler_semantics4_round4_test.go` | VM-COMPILER-SEMANTICS-4 | `TestCompileMQL_InvalidDeclarationMissingInitializer` 等为新建测试；round4 命名 |
+| `tools/mql2go/vm_compiler_semantics4_test.go` | VM-COMPILER-SEMANTICS-4 | `TestCompileCommaExpression_PreservesSideEffects` 等为新建测试 |
+| **非 Go（1）** | | |
+| `docs/audits/vm-adversarial-proofs.md` | VM 任务审计文档 | 非 Go 文件，不计入 manifest 主体 |
+
 ### D-CODE-HYGIENE-001 GPT-5.6 独立复审（2026-08-25；❌未验收）
 
 **独立结论**：check-lines 与主要编译/测试门禁通过，但不能验收；施工方自报的 `✅done` 不改变独立状态。当前任务保持 `⚠️待Claude复审`，D-VM-LIVE-001 继续 HOLD。

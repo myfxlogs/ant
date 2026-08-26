@@ -2,8 +2,8 @@ package strategy
 
 import (
 	"context"
-	"fmt"
 	"strconv"
+	"time"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
@@ -15,130 +15,47 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	if lctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "bar_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6: validate OHLCV array lengths before indexing.
-	// Mismatched lengths would cause out-of-bounds panic.
+	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions), vmPendingOrdersToSdk(lctx.PendingOrders))
+	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
+
 	n := len(lctx.Close)
-	if len(lctx.Open) != n || len(lctx.High) != n || len(lctx.Low) != n ||
-		len(lctx.Volume) != n || len(lctx.BarTimesMs) != n {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf(
-			"bar_context: OHLCV array length mismatch: close=%d open=%d high=%d low=%d volume=%d times=%d",
-			n, len(lctx.Open), len(lctx.High), len(lctx.Low), len(lctx.Volume), len(lctx.BarTimesMs))}
-	}
-	// VM-TRADE-CONTEXT-6: reject nil repeated messages (symbol/position/order).
-	for i, lp := range lctx.Positions {
-		if lp == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf(
-				"bar_context: positions[%d] is nil", i)}
-		}
-	}
-	for i, lo := range lctx.PendingOrders {
-		if lo == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf(
-				"bar_context: pending_orders[%d] is nil", i)}
-		}
-	}
-	for i, ss := range lctx.Symbols {
-		if ss == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf(
-				"bar_context: symbols[%d] is nil", i)}
-		}
-	}
-	// VM-TRADE-CONTEXT-6: strict parsing of positions/orders — fail closed.
-	// All validation/parsing happens BEFORE any runner method call so that
-	// a bad request cannot partially mutate runner state then fail.
-	positions, orders, perr := vmLiveStateToSdk(lctx.Positions, lctx.PendingOrders)
-	if perr != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar_context: %v", perr)}
-	}
-	// VM-TRADE-CONTEXT-6: strict-parse all OHLCV bars before touching runner.
 	barWindow := make([]sdk.Bar, n)
 	for i := 0; i < n; i++ {
-		open, err := parseDecimalStrict(lctx.Open[i])
-		if err != nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar[%d].open: %v", i, err)}
-		}
-		high, err := parseDecimalStrict(lctx.High[i])
-		if err != nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar[%d].high: %v", i, err)}
-		}
-		low, err := parseDecimalStrict(lctx.Low[i])
-		if err != nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar[%d].low: %v", i, err)}
-		}
-		closeVal, err := parseDecimalStrict(lctx.Close[i])
-		if err != nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar[%d].close: %v", i, err)}
-		}
-		vol, err := parseInt64Strict(lctx.Volume[i])
-		if err != nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar[%d].volume: %v", i, err)}
-		}
 		barWindow[i] = sdk.Bar{
-			Open:      open,
-			High:      high,
-			Low:       low,
-			Close:     closeVal,
-			Volume:    vol,
+			Open:      parseDecimal(lctx.Open[i]),
+			High:      parseDecimal(lctx.High[i]),
+			Low:       parseDecimal(lctx.Low[i]),
+			Close:     parseDecimal(lctx.Close[i]),
+			Volume:    parseInt64(lctx.Volume[i]),
 			Timestamp: lctx.BarTimesMs[i],
 		}
 	}
-	// VM-TRADE-CONTEXT-6: strict-parse multi-symbol series before touching runner.
-	var extra map[string][]sdk.Bar
+
+	barSeries := sdk.BarsToSlice(barWindow)
+
+	// Convert multi-symbol series from the live context.
 	if len(lctx.Symbols) > 0 {
-		extra = make(map[string][]sdk.Bar, len(lctx.Symbols))
+		extra := make(map[string][]sdk.Bar, len(lctx.Symbols))
 		for _, ss := range lctx.Symbols {
-			sn := len(ss.Close)
-			if sn == 0 {
+			n := len(ss.Close)
+			if n == 0 {
 				continue
 			}
-			if len(ss.Open) != sn || len(ss.High) != sn || len(ss.Low) != sn || len(ss.Volume) != sn {
-				return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf(
-					"symbol %s: OHLCV array length mismatch: close=%d open=%d high=%d low=%d volume=%d",
-					ss.Symbol, sn, len(ss.Open), len(ss.High), len(ss.Low), len(ss.Volume))}
-			}
-			bars := make([]sdk.Bar, sn)
-			for i := 0; i < sn; i++ {
-				so, err := parseDecimalStrict(ss.Open[i])
-				if err != nil {
-					return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("symbol %s bar[%d].open: %v", ss.Symbol, i, err)}
+			bars := make([]sdk.Bar, n)
+			for i := 0; i < n; i++ {
+				bars[i] = sdk.Bar{
+					Open:   parseDecimal(ss.Open[i]),
+					High:   parseDecimal(ss.High[i]),
+					Low:    parseDecimal(ss.Low[i]),
+					Close:  parseDecimal(ss.Close[i]),
+					Volume: parseInt64(ss.Volume[i]),
 				}
-				sh, err := parseDecimalStrict(ss.High[i])
-				if err != nil {
-					return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("symbol %s bar[%d].high: %v", ss.Symbol, i, err)}
-				}
-				sl, err := parseDecimalStrict(ss.Low[i])
-				if err != nil {
-					return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("symbol %s bar[%d].low: %v", ss.Symbol, i, err)}
-				}
-				sc, err := parseDecimalStrict(ss.Close[i])
-				if err != nil {
-					return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("symbol %s bar[%d].close: %v", ss.Symbol, i, err)}
-				}
-				sv, err := parseInt64Strict(ss.Volume[i])
-				if err != nil {
-					return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("symbol %s bar[%d].volume: %v", ss.Symbol, i, err)}
-				}
-				bars[i] = sdk.Bar{Open: so, High: sh, Low: sl, Close: sc, Volume: sv}
 			}
 			extra[ss.Symbol] = bars
 		}
-	}
-	// VM-TRADE-CONTEXT-6 round 5: mode-aware financial validation.
-	// Live mode requires non-empty authoritative financial fields;
-	// paper/backtest allows empty (simulation may not have real account data).
-	if err := validateFinancialFieldsForMode(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, lctx.Mode); err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("bar_context: %v", err)}
-	}
-	// All validation/parsing complete — now update runner state.
-	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, positions, orders)
-	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
-	r.UpdateAccountIdentity(lctx.Login, lctx.Company)                         // VM-TRADE-CONTEXT-3
-	r.UpdateAccountStatus(lctx.IsDemo, lctx.IsConnected, lctx.IsTradeAllowed) // VM-API-TRUTH-3
-	if extra != nil {
 		r.UpdateExtraBars(extra)
 	}
 
-	barSeries := sdk.BarsToSlice(barWindow)
 	sig, err := r.OnBar(ctx, barSeries, lctx.Timeframe)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
@@ -151,39 +68,10 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 	if tctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "tick_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6: reject nil repeated messages.
-	for i, lp := range tctx.Positions {
-		if lp == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("tick_context: positions[%d] is nil", i)}
-		}
-	}
-	for i, lo := range tctx.PendingOrders {
-		if lo == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("tick_context: pending_orders[%d] is nil", i)}
-		}
-	}
-	// VM-TRADE-CONTEXT-6: strict parsing of positions/orders — fail closed.
-	// All validation/parsing happens BEFORE any runner method call.
-	positions, orders, perr := vmLiveStateToSdk(tctx.Positions, tctx.PendingOrders)
-	if perr != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("tick_context: %v", perr)}
-	}
-	// VM-TRADE-CONTEXT-6: strict parsing — invalid bid/ask fails closed.
-	bid, err := parseDecimalStrict(tctx.Bid)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("tick bid: %v", err)}
-	}
-	ask, err := parseDecimalStrict(tctx.Ask)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("tick ask: %v", err)}
-	}
-	// VM-TRADE-CONTEXT-6 round 5: mode-aware financial validation.
-	if err := validateFinancialFieldsForMode(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, tctx.Mode); err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("tick_context: %v", err)}
-	}
-	// All validation/parsing complete — now update runner state.
-	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, positions, orders)
+	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions), vmPendingOrdersToSdk(tctx.PendingOrders))
 	r.UpdateSymbolInfo(tctx.Point, tctx.Digits, tctx.ContractSize, strconv.FormatInt(int64(tctx.StopsLevel), 10))
+	bid := parseDecimal(tctx.Bid)
+	ask := parseDecimal(tctx.Ask)
 	r.UpdateTickState(bid, ask)
 	sig, err := r.OnTick(ctx, bid, ask)
 	if err != nil {
@@ -199,86 +87,24 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6: reject nil repeated messages.
-	for i, lp := range evctx.Positions {
-		if lp == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade_context: positions[%d] is nil", i)}
-		}
-	}
-	for i, lo := range evctx.PendingOrders {
-		if lo == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade_context: pending_orders[%d] is nil", i)}
-		}
-	}
-	// VM-TRADE-CONTEXT-6: strict parsing of positions/orders — fail closed.
-	// All validation/parsing happens BEFORE any runner method call.
-	positions, orders, perr := vmLiveStateToSdk(evctx.Positions, evctx.PendingOrders)
-	if perr != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade_context: %v", perr)}
-	}
+	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, vmPositionsToSdk(evctx.Positions), vmPendingOrdersToSdk(evctx.PendingOrders))
 
-	// VM-TRADE-CONTEXT-6 round 4: unknown side/event type must fail-closed.
-	side, err := vmSideFromString(evctx.Side)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade side: %v", err)}
+	side := sdk.SideBuy
+	if evctx.Side == "sell" {
+		side = sdk.SideSell
 	}
-	eventType, err := vmTradeEventType(evctx.EventType)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade event_type: %v", err)}
-	}
-	// VM-TRADE-CONTEXT-6: strict parsing — invalid trade event fields fail closed.
-	vol, err := parseDecimalStrict(evctx.Volume)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade volume: %v", err)}
-	}
-	if vol.IsNegative() {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade volume: negative value %s", vol)}
-	}
-	price, err := parseDecimalStrict(evctx.Price)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade price: %v", err)}
-	}
-	if price.IsNegative() {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade price: negative value %s", price)}
-	}
-	sl, err := parseDecimalStrict(evctx.StopLoss)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade stop_loss: %v", err)}
-	}
-	tp, err := parseDecimalStrict(evctx.TakeProfit)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade take_profit: %v", err)}
-	}
-	profit, err := parseDecimalStrict(evctx.Profit)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade profit: %v", err)}
-	}
-	commission, err := parseDecimalStrict(evctx.Commission)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade commission: %v", err)}
-	}
-	swap, err := parseDecimalStrict(evctx.Swap)
-	if err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade swap: %v", err)}
-	}
-	// VM-TRADE-CONTEXT-6 round 5: mode-aware financial validation.
-	if err := validateFinancialFieldsForMode(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, evctx.Mode); err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("trade_context: %v", err)}
-	}
-	// All validation/parsing complete — now update runner state.
-	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, positions, orders)
 	event := sdk.TradeEvent{
 		Ticket:     evctx.Ticket,
 		Symbol:     evctx.Symbol,
-		EventType:  eventType,
+		EventType:  vmTradeEventType(evctx.EventType),
 		Side:       side,
-		Volume:     vol,
-		Price:      price,
-		StopLoss:   sl,
-		TakeProfit: tp,
-		Profit:     profit,
-		Commission: commission,
-		Swap:       swap,
+		Volume:     parseDecimal(evctx.Volume),
+		Price:      parseDecimal(evctx.Price),
+		StopLoss:   parseDecimal(evctx.StopLoss),
+		TakeProfit: parseDecimal(evctx.TakeProfit),
+		Profit:     parseDecimal(evctx.Profit),
+		Commission: parseDecimal(evctx.Commission),
+		Swap:       parseDecimal(evctx.Swap),
 	}
 	sig, err := r.OnTrade(ctx, event)
 	if err != nil {
@@ -290,9 +116,7 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 	if r.HasOnTradeTransaction() {
 		ttSig, ttErr := r.OnTradeTransaction(ctx)
 		if ttErr != nil {
-			// VM-TRADE-CONTEXT-3: do NOT swallow OnTradeTransaction error —
-			// return an error response instead of the previous success response.
-			return &antv1.ExecuteLiveResponse{Success: false, Error: ttErr.Error()}
+			return resp
 		}
 		if ttSig != nil {
 			ttSignalProto := vmSignalToProto(ttSig, evctx.Symbol)
@@ -310,30 +134,149 @@ func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerCont
 	if tmctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "timer_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6: reject nil repeated messages.
-	for i, lp := range tmctx.Positions {
-		if lp == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("timer_context: positions[%d] is nil", i)}
-		}
-	}
-	for i, lo := range tmctx.PendingOrders {
-		if lo == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("timer_context: pending_orders[%d] is nil", i)}
-		}
-	}
-	// VM-TRADE-CONTEXT-6: strict parsing of positions/orders — fail closed.
-	positions, orders, perr := vmLiveStateToSdk(tmctx.Positions, tmctx.PendingOrders)
-	if perr != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("timer_context: %v", perr)}
-	}
-	// VM-TRADE-CONTEXT-6 round 5: mode-aware financial validation.
-	if err := validateFinancialFieldsForMode(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, tmctx.Mode); err != nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("timer_context: %v", err)}
-	}
-	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, positions, orders)
+	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions), vmPendingOrdersToSdk(tmctx.PendingOrders))
 	sig, err := r.OnTimerTick(ctx)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
 	return vmSignalResponse(sig, tmctx.Symbol)
+}
+
+// vmPositionsToSdk converts LivePosition protos to SDK Positions.
+// LIVE-MQL-ORDER-CONTEXT-1: now preserves ALL fields (symbol, magic, sl, tp,
+// profit, swap, commission, comment, open_time) so MQL OrderSelect/OrderMagicNumber/
+// OrderSymbol/OrderStopLoss/OrderTakeProfit/OrderComment return broker-original values.
+func vmPositionsToSdk(lps []*antv1.LivePosition) []sdk.Position {
+	positions := make([]sdk.Position, 0, len(lps))
+	for _, lp := range lps {
+		side := sdk.SideBuy
+		if lp.Side == "sell" {
+			side = sdk.SideSell
+		}
+		positions = append(positions, sdk.Position{
+			Ticket:     lp.Ticket,
+			Symbol:     lp.Symbol,
+			Side:       side,
+			Volume:     parseDecimal(lp.Volume),
+			OpenPrice:  parseDecimal(lp.OpenPrice),
+			StopLoss:   parseDecimal(lp.Sl),
+			TakeProfit: parseDecimal(lp.Tp),
+			Profit:     parseDecimal(lp.Profit),
+			Swap:       parseDecimal(lp.Swap),
+			Commission: parseDecimal(lp.Commission),
+			Comment:    lp.Comment,
+			Magic:      lp.MagicNumber,
+			OpenTime:   time.Unix(lp.OpenTime, 0),
+		})
+	}
+	return positions
+}
+
+// vmPendingOrdersToSdk converts LivePendingOrder protos to SDK PendingOrders.
+// LIVE-MQL-ORDER-CONTEXT-1: pending orders (limit/stop) are separate from
+// market positions so MQL OrdersTotal/OrderSelect can distinguish them.
+func vmPendingOrdersToSdk(lpos []*antv1.LivePendingOrder) []sdk.PendingOrder {
+	orders := make([]sdk.PendingOrder, 0, len(lpos))
+	for _, lo := range lpos {
+		side := sdk.SideBuy
+		if lo.Side == "sell" {
+			side = sdk.SideSell
+		}
+		orders = append(orders, sdk.PendingOrder{
+			Ticket:     lo.Ticket,
+			Symbol:     lo.Symbol,
+			Type:       vmPendingOrderType(lo.OrderType),
+			Side:       side,
+			Volume:     parseDecimal(lo.Volume),
+			Price:      parseDecimal(lo.Price),
+			StopLoss:   parseDecimal(lo.Sl),
+			TakeProfit: parseDecimal(lo.Tp),
+			Comment:    lo.Comment,
+			Magic:      lo.MagicNumber,
+			OpenTime:   time.Unix(lo.OpenTime, 0),
+		})
+	}
+	return orders
+}
+
+// vmPendingOrderType converts a pending order type string to sdk.OrderType.
+func vmPendingOrderType(s string) sdk.OrderType {
+	switch s {
+	case "buy_limit", "sell_limit":
+		return sdk.OrderLimit
+	case "buy_stop", "sell_stop":
+		return sdk.OrderStop
+	case "buy_stop_limit", "sell_stop_limit":
+		return sdk.OrderStopLimit
+	default:
+		return sdk.OrderMarket
+	}
+}
+
+func vmTradeEventType(s string) sdk.TradeEventType {
+	switch s {
+	case "fill":
+		return sdk.TradeFilled
+	case "close":
+		return sdk.TradeClosed
+	case "modify":
+		return sdk.TradeModified
+	case "cancel":
+		return sdk.TradeCancelled
+	}
+	return sdk.TradeFilled
+}
+
+func vmSignalResponse(sig *sdk.Signal, symbol string) *antv1.ExecuteLiveResponse {
+	resp := &antv1.ExecuteLiveResponse{Success: true}
+	if sig != nil {
+		ss := vmSignalToProto(sig, symbol)
+		resp.Signal = ss
+		resp.Signals = []*antv1.StrategySignal{ss}
+	}
+	return resp
+}
+
+func vmSignalToProto(sig *sdk.Signal, symbol string) *antv1.StrategySignal {
+	if sig == nil {
+		return nil
+	}
+	signalType := "hold"
+	switch sig.Action {
+	case sdk.ActionBuy:
+		signalType = "buy"
+	case sdk.ActionSell:
+		signalType = "sell"
+	case sdk.ActionBuyLimit:
+		signalType = "buy_limit"
+	case sdk.ActionSellLimit:
+		signalType = "sell_limit"
+	case sdk.ActionBuyStop:
+		signalType = "buy_stop"
+	case sdk.ActionSellStop:
+		signalType = "sell_stop"
+	case sdk.ActionClose:
+		signalType = "close"
+	case sdk.ActionModify:
+		signalType = "modify"
+	case sdk.ActionCancel:
+		signalType = "cancel"
+	case sdk.ActionCloseAll:
+		signalType = "close_all"
+	case sdk.ActionCancelAll:
+		signalType = "cancel_all"
+	}
+	sym := sig.Symbol
+	if sym == "" {
+		sym = symbol
+	}
+	return &antv1.StrategySignal{
+		Symbol:         sym,
+		SignalType:     signalType,
+		Volume:         sig.Volume.String(),
+		Price:          sig.Price.String(),
+		StopLoss:       sig.StopLoss.String(),
+		TakeProfit:     sig.TakeProfit.String(),
+		ExecutedTicket: sig.OrderTicket,
+	}
 }

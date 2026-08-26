@@ -16,7 +16,6 @@ type OrderRequest struct {
 	Volume, Price, StopLoss, TakeProfit decimal.Decimal
 	Comment, ClientID                   string
 	Magic                               int32
-	Deviation                           int32 // VM-TRADE-CONTEXT-5: EA-configured deviation
 }
 
 type OrderRecord struct {

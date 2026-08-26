@@ -63,23 +63,12 @@ func NewPythonVMLiveSession(source string) (*VMLiveSession, error) {
 
 // NewPythonVMLiveSessionCached creates a VMLiveSession for a Python strategy
 // using cached bytecode when available. Falls back to full compilation on cache miss.
-// VM-CACHE-INTEGRITY-3: uses CompilePythonCached to verify source hash before
-// accepting cached bytecode — no stale cache accepted.
-// VM-CACHE-INTEGRITY-5: CompilePythonCached also restores CoverageResult on
-// cache hit and verifies language (Version == "python"). If coverage restoration
-// fails, the error is returned (not silently degraded).
 func NewPythonVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSession, error) {
 	if len(cachedBytecode) > 0 {
-		// VM-CACHE-INTEGRITY-3/5: use CompilePythonCached which verifies
-		// SourceHash + language + restores CoverageResult.
-		// If this fails (hash mismatch, corrupt, wrong language, or coverage
-		// restoration failure), fall through to cold compile.
-		runner, _, err := mql2go.CompilePythonCached(source, cachedBytecode)
-		if err == nil && runner != nil {
+		if runner, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
 			runner.SetSignalMode(true)
 			return &VMLiveSession{strategy: runner}, nil
 		}
-		// Cache miss — fall through to cold compile.
 	}
 	strategy, err := mql2go.CompilePython(source)
 	if err != nil {
@@ -104,12 +93,6 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 		return nil, fmt.Errorf("first request must have bar_context for initialization")
 	}
 
-	// VM-TRADE-CONTEXT-6: validate the first bar context BEFORE Init so that
-	// a bad request cannot execute OnInit and then fail mid-strategy.
-	if err := validateFirstBarContext(bctx); err != nil {
-		return nil, fmt.Errorf("first bar_context invalid: %w", err)
-	}
-
 	params := make(map[string]string)
 	for _, p := range bctx.GetParams() {
 		params[p.GetKey()] = p.GetValue()
@@ -122,13 +105,6 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 		Mode:      bctx.Mode,
 	})
 	s.runner.SetStrategy(s.strategy)
-
-	// VM-TRADE-CONTEXT-5: inject account identity BEFORE Init so that
-	// AccountNumber()/AccountCompany() are available during OnInit.
-	s.runner.UpdateAccountIdentity(bctx.Login, bctx.Company)
-	// VM-API-TRUTH-3: inject account status BEFORE Init so that
-	// IsDemo()/IsConnected()/IsTradeAllowed() are available during OnInit.
-	s.runner.UpdateAccountStatus(bctx.IsDemo, bctx.IsConnected, bctx.IsTradeAllowed)
 
 	if err := s.runner.Init(ctx); err != nil {
 		return nil, fmt.Errorf("init: %w", err)
@@ -152,13 +128,6 @@ func (s *VMLiveSession) SendEvent(ctx context.Context, reqBytes []byte) ([]byte,
 
 	resp := s.dispatch(ctx, &req)
 	return proto.Marshal(resp)
-}
-
-// validateFirstBarContext validates the first bar context before OnInit.
-// VM-TRADE-CONTEXT-6 round 4: delegates to the shared validateBarContext
-// so VMLiveSession.Start and dispatchVMLive use the same validation logic.
-func validateFirstBarContext(bctx *antv1.LiveStrategyContext) error {
-	return validateBarContext(bctx)
 }
 
 func (s *VMLiveSession) Close() error {

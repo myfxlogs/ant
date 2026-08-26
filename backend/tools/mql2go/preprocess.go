@@ -26,7 +26,7 @@ func (c *compiler) collectClassDecl(ir *interp.IR, n *sitter.Node) {
 func (c *compiler) findTypeName(n *sitter.Node) string {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == nodeTypeIdentifier {
+		if child.Type() == "type_identifier" {
 			return c.text(child)
 		}
 	}
@@ -44,9 +44,6 @@ func (c *compiler) collectClassInstance(ir *interp.IR, n *sitter.Node, knownClas
 	if !knownClasses[typeName] && !isBuiltinClass(typeName) {
 		return
 	}
-
-	// Register the type so initGlobals knows to initialize it as ValClass.
-	ir.ClassTypes[typeName] = true
 
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
