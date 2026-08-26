@@ -27,6 +27,7 @@ import (
 //   eventLocals: count + entries
 //   params: uint32 length + raw bytes (SerializeParams format)
 //   version: string
+//   sourceHash: string (VM-CACHE-INTEGRITY-1)
 //   enums: count + entries
 //   (Coverage omitted — not needed for execution)
 
@@ -39,7 +40,12 @@ const CompilerVersion = "2026-07-02-v1"
 
 // MarshalBytecode serializes a Bytecode to a compact binary format for DB storage.
 // Coverage report is omitted (not needed for VM execution).
+// VM-CACHE-INTEGRITY-1: returns error on nil bytecode (error must propagate,
+// not be swallowed by caller).
 func MarshalBytecode(bc *Bytecode) ([]byte, error) {
+	if bc == nil {
+		return nil, fmt.Errorf("marshal: nil bytecode")
+	}
 	w := &bytecodeWriter{buf: make([]byte, 0, 4096)}
 	w.writeString(bytecodeMagic)
 	w.writeString(CompilerVersion)
@@ -124,6 +130,9 @@ func MarshalBytecode(bc *Bytecode) ([]byte, error) {
 	// Version
 	w.writeString(bc.Version)
 
+	// SourceHash (VM-CACHE-INTEGRITY-1)
+	w.writeString(bc.SourceHash)
+
 	// Enums
 	w.writeU32(uint32(len(bc.Enums)))
 	for name, val := range bc.Enums {
@@ -196,14 +205,37 @@ func UnmarshalBytecode(data []byte) (*Bytecode, error) {
 	if bc.Version, err = r.readString(); err != nil {
 		return nil, fmt.Errorf("bytecode: read version: %w", err)
 	}
+	if bc.SourceHash, err = r.readString(); err != nil {
+		return nil, fmt.Errorf("bytecode: read sourceHash: %w", err)
+	}
 	if bc.Enums, err = unmarshalEnums(r); err != nil {
 		return nil, err
+	}
+	// VM-CACHE-INTEGRITY-1: reject trailing bytes to prevent corrupted cache
+	// from producing non-deterministic output.
+	if r.pos != len(r.data) {
+		return nil, fmt.Errorf("bytecode: trailing bytes: %d", len(r.data)-r.pos)
 	}
 	return bc, nil
 }
 
-func unmarshalConsts(r *bytecodeReader) ([]ConstValue, error) {
+// readCount reads a uint32 count and verifies that count*minBytes does not
+// exceed the remaining data. VM-CACHE-INTEGRITY-1: prevents corrupted cache
+// from causing excessive allocation or non-deterministic output.
+func (r *bytecodeReader) readCount(minBytes int) (uint32, error) {
 	n, err := r.readU32()
+	if err != nil {
+		return 0, err
+	}
+	remaining := len(r.data) - r.pos
+	if int(n) > remaining/minBytes {
+		return 0, fmt.Errorf("bytecode: count %d exceeds remaining data (%d bytes left, min %d/entry)", n, remaining, minBytes)
+	}
+	return n, nil
+}
+
+func unmarshalConsts(r *bytecodeReader) ([]ConstValue, error) {
+	n, err := r.readCount(10) // min 10 bytes/entry: u8 + i32 + u16(string len) + u16 + u8
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read consts count: %w", err)
 	}
@@ -236,7 +268,7 @@ func unmarshalConsts(r *bytecodeReader) ([]ConstValue, error) {
 }
 
 func unmarshalCode(r *bytecodeReader) ([]Instruction, error) {
-	n, err := r.readU32()
+	n, err := r.readCount(13) // min 13 bytes/entry: u8 + i32 + i32 + u32
 	if err != nil {
 		return nil, fmt.Errorf("bytecode: read code count: %w", err)
 	}
@@ -277,6 +309,9 @@ func unmarshalGlobalSlots(r *bytecodeReader) (map[string]VarID, error) {
 		id, err := r.readU16()
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read globalSlot[%d] id: %w", i, err)
+		}
+		if _, exists := slots[name]; exists {
+			return nil, fmt.Errorf("bytecode: duplicate globalSlot key: %s", name)
 		}
 		slots[name] = VarID(id)
 	}
@@ -346,6 +381,9 @@ func unmarshalFuncs(r *bytecodeReader) (map[string]FuncEntry, error) {
 			}
 			paramNames[j] = pn
 		}
+		if _, exists := funcs[name]; exists {
+			return nil, fmt.Errorf("bytecode: duplicate func key: %s", name)
+		}
 		funcs[name] = FuncEntry{
 			Name: name, EntryPC: entryPC,
 			NumParams: int(numParams), NumLocals: int(numLocals),
@@ -369,6 +407,9 @@ func unmarshalBuiltins(r *bytecodeReader) (map[string]BuiltinID, error) {
 		id, err := r.readU16()
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read builtin[%d] id: %w", i, err)
+		}
+		if _, exists := builtins[name]; exists {
+			return nil, fmt.Errorf("bytecode: duplicate builtin key: %s", name)
 		}
 		builtins[name] = BuiltinID(id)
 	}
@@ -418,6 +459,9 @@ func unmarshalEventLocals(r *bytecodeReader, bc *Bytecode) error {
 		if err != nil {
 			return fmt.Errorf("bytecode: read eventLocal[%d] count: %w", i, err)
 		}
+		if _, exists := bc.EventLocals[pc]; exists {
+			return fmt.Errorf("bytecode: duplicate eventLocal pc: %d", pc)
+		}
 		bc.EventLocals[pc] = int(count)
 	}
 	return nil
@@ -450,6 +494,9 @@ func unmarshalEnums(r *bytecodeReader) (map[string]int32, error) {
 		val, err := r.readI32()
 		if err != nil {
 			return nil, fmt.Errorf("bytecode: read enum[%d] val: %w", i, err)
+		}
+		if _, exists := enums[name]; exists {
+			return nil, fmt.Errorf("bytecode: duplicate enum key: %s", name)
 		}
 		enums[name] = val
 	}

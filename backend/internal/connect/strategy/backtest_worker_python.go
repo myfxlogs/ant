@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"alphaforge/internal/repository"
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/repository"
 	"alphaforge/tools/mql2go"
 )
 
@@ -25,28 +25,30 @@ func (s *StrategyExecutionServer) executePythonVMBacktest(ctx context.Context, p
 		cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, *run.StrategyID)
 	}
 
-	var vmRunner *mql2go.VMRunner
-	if len(cachedBytecode) > 0 {
-		if r, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
-			vmRunner = r
-		}
-	}
-	if vmRunner == nil {
-		r, err := mql2go.CompilePython(params.code)
-		if err != nil {
-			s.log.Error("executePythonVMBacktest: compile failed", zap.Error(err))
-			return nil, fmt.Errorf("compile Python: %w", err)
-		}
-		vmRunner = r
+	// VM-CACHE-INTEGRITY-2: use CompilePythonCached which verifies SourceHash
+	// before accepting cached bytecode, preventing stale cache execution.
+	vmRunner, bcData, err := mql2go.CompilePythonCached(params.code, cachedBytecode)
+	if err != nil {
+		s.log.Error("executePythonVMBacktest: compile failed", zap.Error(err))
+		return nil, fmt.Errorf("compile Python: %w", err)
 	}
 	s.log.Info("executePythonVMBacktest: compiled successfully")
 
+	// Bytecode cache omits CoverageReport; recompile from source to recover
+	// coverage/blind-spot data when cache hit produced nil coverage.
+	// Mirrors backtest_worker_vm.go:42-48 (MQL path).
+	if vmRunner.GetCoverage() == nil && params.code != "" {
+		if covRunner, cov, covErr := mql2go.CompilePythonWithCoverage(params.code); covErr == nil {
+			vmRunner.InjectCoverage(covRunner.GetCoverage())
+			vmRunner.InjectDefenseAViolations(cov.DefenseAViolations)
+			_ = covRunner
+		}
+	}
+
 	// Persist newly compiled bytecode for future runs.
-	if run.StrategyID != nil && s.importedRepo != nil {
-		if bcData, mErr := mql2go.MarshalBytecode(vmRunner.Bytecode()); mErr == nil {
-			if saveErr := s.importedRepo.SaveBytecode(ctx, *run.StrategyID, bcData); saveErr != nil {
-				s.log.Warn("executePythonVMBacktest: save bytecode cache failed", zap.Error(saveErr))
-			}
+	if bcData != nil && run.StrategyID != nil && s.importedRepo != nil {
+		if saveErr := s.importedRepo.SaveBytecode(ctx, *run.StrategyID, bcData); saveErr != nil {
+			s.log.Warn("executePythonVMBacktest: save bytecode cache failed", zap.Error(saveErr))
 		}
 	}
 

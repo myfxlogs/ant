@@ -10,6 +10,9 @@ import (
 	"alphaforge/tools/mql2go/interp"
 )
 
+// hashSource is defined in failure_signature.go and reused for cache integrity
+// (VM-CACHE-INTEGRITY-1). It computes SHA256 of the trimmed source.
+
 // VMRunner wraps a Bytecode VM to implement sdk.Strategy.
 // This is the in-process execution entrypoint that replaces the WASM harness.
 //
@@ -40,6 +43,22 @@ func NewVMRunner(bc *Bytecode) *VMRunner {
 // resource exhaustion. ADR-0023 §5.4.
 const MaxSourceSize = 500_000
 
+// marshalHook is used only by tests to inject marshal failures into
+// CompileMQLCached/CompilePythonCached (VM-CACHE-INTEGRITY-1/2 S5 rework).
+// Production code leaves this nil so MarshalBytecode is called directly.
+var marshalHook func(*Bytecode) ([]byte, error)
+
+// marshalBytecode resolves the marshal function to use: the test-injected
+// marshalHook when set, otherwise the real MarshalBytecode. This keeps the
+// production path unchanged while allowing adversarial tests to force a
+// marshal error and verify it is propagated (not swallowed).
+func marshalBytecode(bc *Bytecode) ([]byte, error) {
+	if marshalHook != nil {
+		return marshalHook(bc)
+	}
+	return MarshalBytecode(bc)
+}
+
 // CompileMQLFromBytecode creates a VMRunner from cached bytecode data.
 // Returns error if the bytecode is invalid or corrupted.
 func CompileMQLFromBytecode(data []byte) (*VMRunner, error) {
@@ -53,22 +72,49 @@ func CompileMQLFromBytecode(data []byte) (*VMRunner, error) {
 // CompileMQLCached tries to load cached bytecode first; on failure or nil cache,
 // falls back to full compilation from source. Returns the runner and the
 // serialized bytecode (for caching by the caller).
+// VM-CACHE-INTEGRITY-1: on cache hit, verifies SourceHash matches current
+// source; mismatch forces recompile to prevent stale bytecode execution.
 func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
 	if len(cachedBytecode) > 0 {
 		r, e := CompileMQLFromBytecode(cachedBytecode)
-		if e == nil {
+		if e == nil && r.Bytecode().SourceHash == hashSource(source) {
 			return r, cachedBytecode, nil
 		}
-		// Cache corrupted — fall through to recompile
+		// Cache corrupted or source changed — fall through to recompile
 	}
 	r, err := CompileMQL(source)
 	if err != nil {
 		return nil, nil, err
 	}
 	bc := r.Bytecode()
-	data, mErr := MarshalBytecode(bc)
+	data, mErr := marshalBytecode(bc)
 	if mErr != nil {
-		return r, nil, nil
+		return nil, nil, fmt.Errorf("marshal freshly compiled bytecode: %w", mErr)
+	}
+	return r, data, nil
+}
+
+// CompilePythonCached mirrors CompileMQLCached for the Python subset path.
+// It verifies the cached bytecode's SourceHash against the current source,
+// falls back to full compilation on mismatch/corruption, and returns the
+// serialized bytecode for caller-side caching.
+// VM-CACHE-INTEGRITY-2: SourceHash verification for Python cache path.
+func CompilePythonCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
+	if len(cachedBytecode) > 0 {
+		r, e := CompileMQLFromBytecode(cachedBytecode)
+		if e == nil && r.Bytecode().SourceHash == hashSource(source) {
+			return r, cachedBytecode, nil
+		}
+		// Cache corrupted or source changed — fall through to recompile
+	}
+	r, err := CompilePython(source)
+	if err != nil {
+		return nil, nil, err
+	}
+	bc := r.Bytecode()
+	data, mErr := marshalBytecode(bc)
+	if mErr != nil {
+		return nil, nil, fmt.Errorf("marshal freshly compiled Python bytecode: %w", mErr)
 	}
 	return r, data, nil
 }
@@ -91,6 +137,7 @@ func CompilePython(source string) (runner *VMRunner, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
+	bc.SourceHash = hashSource(source)
 	return NewVMRunner(bc), nil
 }
 
@@ -112,6 +159,7 @@ func CompilePythonWithCoverage(source string) (r *VMRunner, cov *CoverageResult,
 	if err != nil {
 		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
+	bc.SourceHash = hashSource(source)
 	coverage := AnalyzeCoverage(ir, bc)
 	runner := NewVMRunner(bc)
 	runner.defenseAViolations = coverage.DefenseAViolations
@@ -139,6 +187,7 @@ func CompileMQL(source string) (runner *VMRunner, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
+	bc.SourceHash = hashSource(source)
 	return NewVMRunner(bc), nil
 }
 
@@ -162,6 +211,7 @@ func CompileMQLWithCoverage(source string) (r *VMRunner, cov *CoverageResult, er
 	if err != nil {
 		return nil, nil, fmt.Errorf("compile IR to bytecode: %w", err)
 	}
+	bc.SourceHash = hashSource(source)
 	coverage := AnalyzeCoverage(ir, bc)
 	runner := NewVMRunner(bc)
 	runner.defenseAViolations = coverage.DefenseAViolations
