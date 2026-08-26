@@ -80,29 +80,10 @@ func (s *StrategyExecutionServer) executePythonVMLive(ctx context.Context, req *
 // Shared by MQL and Python live execution paths.
 // VM-TRADE-CONTEXT-6 round 4: validates the first bar context BEFORE r.Init
 // so that a bad request cannot execute OnInit and then fail mid-strategy.
-// VM-TRADE-CONTEXT-6 round 5: in live mode, client-submitted Login/Company/
-// IsDemo/IsConnected/IsTradeAllowed are NOT authoritative — they must come
-// from server-side account truth (mt_accounts). If account_id is empty in
-// live mode, the request is rejected (fail-closed). If account_id is set,
-// server-side lookups override the client-submitted values.
 func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1.ExecuteLiveRequest, strategy *mql2go.VMRunner) (*antv1.ExecuteLiveResponse, error) {
 	bctx := req.GetBarContext()
 	if bctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "first request must have bar_context for initialization"}, nil
-	}
-
-	// VM-TRADE-CONTEXT-6 round 5: in live mode, override client-submitted
-	// account identity/status with server-side account truth. If no
-	// account_id is provided in live mode, reject (fail-closed — do not
-	// trust client-submitted Login/Company/status as authoritative).
-	if bctx.Mode == "live" {
-		if req.GetAccountId() == "" {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires account_id for server-side account truth (client-submitted identity/status are not authoritative)"}, nil
-		}
-		// Override client-submitted account identity/status with server-side lookups.
-		if err := s.injectServerSideAccountTruth(ctx, req.GetAccountId(), bctx); err != nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: fmt.Sprintf("live mode: server-side account truth lookup failed: %v", err)}, nil
-		}
 	}
 
 	// VM-TRADE-CONTEXT-6 round 4: validate ALL fields before Init.
@@ -127,8 +108,6 @@ func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1
 	r.SetStrategy(strategy)
 
 	// VM-TRADE-CONTEXT-5: inject account identity BEFORE Init.
-	// VM-TRADE-CONTEXT-6 round 5: in live mode, these values came from
-	// server-side lookups (injectServerSideAccountTruth), not the client.
 	r.UpdateAccountIdentity(bctx.Login, bctx.Company)
 	// VM-API-TRUTH-3: inject account status BEFORE Init.
 	r.UpdateAccountStatus(bctx.IsDemo, bctx.IsConnected, bctx.IsTradeAllowed)
@@ -152,70 +131,4 @@ func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1
 		}
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}, nil
 	}
-}
-
-// injectServerSideAccountTruth overrides client-submitted account identity
-// and status fields in bctx with server-side authoritative lookups.
-// VM-TRADE-CONTEXT-6 round 5: ExecuteLive must not trust client-submitted
-// Login/Company/IsDemo/IsConnected/IsTradeAllowed in live mode.
-func (s *StrategyExecutionServer) injectServerSideAccountTruth(ctx context.Context, accountID string, bctx *antv1.LiveStrategyContext) error {
-	if s.accountLoginLookup == nil {
-		return fmt.Errorf("accountLoginLookup not configured")
-	}
-	login, err := s.accountLoginLookup(ctx, accountID)
-	if err != nil {
-		return fmt.Errorf("login lookup: %w", err)
-	}
-	if login == 0 {
-		return fmt.Errorf("login lookup returned 0 for account %s", accountID)
-	}
-	bctx.Login = login
-
-	company, err := s.resolveBrokerCompanyErr(ctx, LiveStrategyConfig{AccountID: accountID})
-	if err != nil {
-		return fmt.Errorf("broker company lookup: %w", err)
-	}
-	if company == "" {
-		return fmt.Errorf("broker company lookup returned empty for account %s", accountID)
-	}
-	bctx.Company = company
-
-	if s.accountIsDemoLookup == nil {
-		return fmt.Errorf("accountIsDemoLookup not configured")
-	}
-	isDemo, err := s.accountIsDemoLookup(ctx, accountID)
-	if err != nil {
-		return fmt.Errorf("isDemo lookup: %w", err)
-	}
-	bctx.IsDemo = isDemo
-
-	if s.accountConnectedLookup == nil {
-		return fmt.Errorf("accountConnectedLookup not configured")
-	}
-	isConnected, err := s.accountConnectedLookup(ctx, accountID)
-	if err != nil {
-		return fmt.Errorf("connected lookup: %w", err)
-	}
-	bctx.IsConnected = isConnected
-
-	if s.accountTradeAllowedLookup == nil {
-		return fmt.Errorf("accountTradeAllowedLookup not configured")
-	}
-	tradeAllowed, err := s.accountTradeAllowedLookup(ctx, accountID)
-	if err != nil {
-		return fmt.Errorf("trade allowed lookup: %w", err)
-	}
-	// VM-API-TRUTH-3 round 5: accountIsInvestorLookup is required in live mode.
-	if s.accountIsInvestorLookup == nil {
-		return fmt.Errorf("accountIsInvestorLookup not configured (required in live mode)")
-	}
-	isInvestor, err := s.accountIsInvestorLookup(ctx, accountID)
-	if err != nil {
-		return fmt.Errorf("is_investor lookup: %w", err)
-	}
-	if isInvestor {
-		tradeAllowed = false
-	}
-	bctx.IsTradeAllowed = tradeAllowed
-	return nil
 }

@@ -803,6 +803,64 @@ registry 本条回填真实实现 + REUSE/NEW 结论 + T1/P1/P2/P3 结果 + 红�
 
 > **D-VM-LIVE-001-P1B SSOT SHA256: `ed1663029ae774978c7dc939d533461f8b74b59fa6d757316f5dcc86734e06b1`**（协议 v2；计算=上方核验命令提取的区块原文整体哈希，指纹行在 marker 外）
 
+### D-VM-LIVE-001-P1B 交付回填（2026-08-26；施工方 GLM-5.2；状态 ✅已验收——2026-08-26 Claude 独立复审通过，见下节）
+
+**实现**：
+- S1：删除 `injectServerSideAccountTruth` 整函数（原 vm_live_dispatch.go:157-221，含 :157-160 文档注释）。该函数仅被 `dispatchVMLive` live 分支调用，live 分支已删，函数为死代码。REUSE: 无（删除操作）；NEW: 无
+- S2：删除 `dispatchVMLive` 的 live 分支（原 :94-106 整个 `if bctx.Mode == "live" { ... }` 块）；同步修正函数文档注释（原 :83-87 描述 live mode server-side truth 的 5 行删除）+ :129-131 注释（"server-side lookups (injectServerSideAccountTruth)" 短语删除，保留 VM-TRADE-CONTEXT-5 注入说明）。`dispatchVMLive` 函数保留（paper 路径仍使用）
+- S3：删除两个测死代码的测试：
+  - `TestDispatchVMLive_LiveModeRejectsClientIdentityWithoutAccountID`（原 vm_trade_context6_round5_test.go:121-165）——测被删的 live 分支
+  - `TestDispatchVMLive_LiveModeWithAccountIDOverridesClientIdentity`（原 :167-232）——测被删的 `injectServerSideAccountTruth` 函数
+  - 全仓 grep `injectServerSideAccountTruth` 清零确认（`grep -rn "injectServerSideAccountTruth" backend/ --include="*.go"` 输出为空）
+
+**T1/P1/P2/P3 对抗证明**：
+- T1：`go test ./internal/connect/strategy/ -count=1` → PASS（94s），全绿（含 execute_live_mode_reject_test.go 的 T1/T2/T3/T4/T5b/T5——拒绝逻辑在 handler/validator，不依赖旁路）
+- P1：`grep -rn "injectServerSideAccountTruth" backend/ --include="*.go"` 输出为空 + `go build ./...` exit 0（删除后编译依赖自然验证）
+- P2：`go test ./internal/connect/strategy/ -run 'TestExecuteLive|TestVMLiveSession_LiveModeStillWorks' -count=1` → 全 GREEN（13 测试 PASS），证明 P1 拒绝逻辑与旁路删除无关
+- P3（红队，书面）：调用链证据——public `ExecuteLive`（strategy_execution_handlers.go:90）→ `validateExecuteLiveRequestMode`（:97-99，compile 前拒 live）→ live 请求不到达 `isMQLStrategy`/`isPython` 分支 → 不调用 `executeVMLive`/`executePythonVMLive` → 不调用 `dispatchVMLive`；生产调度路径 `VMLiveSession.Start`（vm_live_session.go:92）→ 自身 `dispatch`（:175），不调用 `dispatchVMLive`（grep 确认 `dispatchVMLive` 仅被 `executeVMLive` :76 和 `executePythonVMLive` 调用）。结论：`dispatchVMLive` live 分支确实不可达
+
+**红队自审 5 问答**：
+1. 删除 live 分支后无路径能让 `Mode:"live"` 到达 `dispatchVMLive`——public `ExecuteLive` 在 compile 前经 `validateExecuteLiveRequestMode` 拒绝 live；生产调度路径 `VMLiveSession.Start` → 自身 `dispatch`，不调用 `dispatchVMLive`
+2. 5 个 lookup 字段不能删——`buildLiveContext`（live_context_build.go:48-108）在 live 模式下用这些 lookup 服务端自建 Login/Company/IsDemo/IsConnected/IsTradeAllowed，删 = 实盘调度全停
+3. paper 模式下 `dispatchVMLive` 行为不变——只删 `if bctx.Mode == "live"` 块，paper 不进入该分支；T1 全量测试 GREEN 确认
+4. `validateBarContextWithMode` 的 live 金融校验保留——`VMLiveSession.Start` → `validateFirstBarContext` → `validateBarContext` → `validateBarContextWithMode`，生产调度路径在 live 模式下经过此校验
+5. 无既有测试失败——T1 全量测试 GREEN（94s）；删除的两个测试是测死代码（测已删的 live 分支和 `injectServerSideAccountTruth` 函数），删除是 S3 明确要求
+
+**验收门禁**：
+- `gofmt -l` 改动文件：空
+- `go build ./...`：exit 0
+- `go vet ./internal/connect/strategy/...`：无问题
+- `go test ./internal/connect/strategy/ -count=1`：PASS（94s）
+- `go test -race ./internal/connect/strategy/ -run 'TestVMLiveSession_LiveModeStillWorks|TestExecuteLive' -count=1` ×3：全部 PASS（1.19s/1.18s/1.17s）
+- `go run ./tools/check-file-lines --strict`：0 errors, 0 warnings, 108 info
+- `git diff --check`：无空白错误
+- buf lint：不涉及（proto 零改动）
+
+**变更文件**：
+- `backend/internal/connect/strategy/vm_live_dispatch.go`（删 injectServerSideAccountTruth 函数 + dispatchVMLive live 分支 + 修正注释，净 -83 行）
+- `backend/internal/connect/strategy/vm_trade_context6_round5_test.go`（删 2 个测死代码的测试，净 -113 行）
+- `docs/audits/tech-debt-registry.md`（本回填）
+- `docs/audits/handover-audit-plan.md`（追加交接行）
+
+**绝对边界遵守确认**：5 个 lookup 字段与装配（strategy_execution_handler.go:109-139/213-243）零改动；`resolveBrokerCompanyErr`/`buildLiveContext`/`backfillContextStrings`/`validateExecuteLiveRequestMode`/`validateBarContextWithMode`/`validateLiveFinancialFields`/`VMLiveSession`/`execute_live_mode_reject_test.go`/`live_indicator_freeze_test.go` 均零改动；proto/DB schema/部署零改动。
+
+### D-VM-LIVE-001-P1B 审计方独立复审（2026-08-26；Claude；结论：**P1B 验收通过，D-VM-LIVE-001 整体关闭**）
+
+**独立核验**（非施工方自报）：
+- **指纹核验**：P1B SSOT `ed1663029ae774978c7dc939d533461f8b74b59fa6d757316f5dcc86734e06b1` 独立复算一致 ✅（协议 v2）
+- **Scope 核验**：工作树仅 4 文件（vm_live_dispatch.go / vm_trade_context6_round5_test.go / 两个文档），净 -158 行；**全部边界文件零改动**（strategy_execution_handler.go / vm_live_validators.go / vm_live_session.go / live_context_build.go / live_context.go / execute_live_mode_reject_test.go / live_indicator_freeze_test.go）✅
+- **实现核验**（逐行读 diff）：`dispatchVMLive` live 分支（原 :94-106 整个 `if bctx.Mode=="live"` 块）删除 ✅；`injectServerSideAccountTruth` 整函数（原 :157-221）删除 ✅；文档注释与 :129-131 注释同步修正（清除函数名引用，保留 VM-TRADE-CONTEXT-5/VM-API-TRUTH-3 注入说明）✅；`dispatchVMLive` paper 路径完整保留（bctx nil 检查 → validateBarContext → runner.New/Init → vmHandle 分发）✅；`fmt` import 仍被 executeVMLive 使用无残留 ✅
+- **测试核验**：仅删两个测死代码测试（`TestDispatchVMLive_LiveModeRejectsClientIdentityWithoutAccountID` + `TestDispatchVMLive_LiveModeWithAccountIDOverridesClientIdentity`），无附带删除 ✅
+
+**审计方独立对抗复测**：
+- **P1**：`grep -c "injectServerSideAccountTruth"` 全仓 Go 文件计数全部 `:0` ✅
+- **P2**：`go test -run 'TestExecuteLive|TestVMLiveSession_LiveModeStillWorks'` 6 测试全 GREEN ✅（拒绝逻辑在 handler/validator，与旁路删除无关——与施工方声明一致）
+- **P3**：`dispatchVMLive` 生产调用点仅 2 处——executeVMLive（vm_live_dispatch.go:40）+ executePythonVMLive（:76）；其余为注释引用（vm_live_session.go:159 / vm_live_validators.go:80 的验证逻辑共享说明，仍准确）；`VMLiveSession` 调度路径不经 dispatchVMLive ✅
+
+**门禁独立复测**：go build ✅ / go vet ✅ / go test ./internal/connect/strategy -count=1（94.5s）✅ / race ×3（1.20/1.18/1.17s）✅ / check-file-lines `0 errors, 0 warnings, 108 info` ✅ / git diff --cached --check ✅ / gofmt -l 空 ✅
+
+**裁决**：D-VM-LIVE-001-P1B **验收通过**。至此 **D-VM-LIVE-001 整体关闭**：Phase 1（public 入口拒 live）+ R1（T5 补强）+ Phase 2 重估裁决（不施工）+ P1B（旁路清理）全部验收闭环。D-COMMIT-SCOPE-001 部署闸解除条件保持达成（已由 P1 验收确立）。**下一排队任务（本任务验收后派工，禁止并行）**：D-CODE-HYGIENE-001 逐文件 manifest 补齐（P0 验收收口，120 新文件缺 H2 要求的 manifest）。
+
 ## D-VM-LIVE-001：VM live truth 与执行入口设计冻结（Phase 2 已裁决不施工——2026-08-25，保留作历史参考）
 
 > 本节是下一次施工的唯一设计入口；旧 round 5 提示词已标记 `SUPERSEDED`，GLM-5.2 不得按旧节施工。该设计先于任何 S/T 施工指令，未完成本节的字段、错误和测试契约不得开工。

@@ -22,6 +22,15 @@
 
 ## 变更日志
 
+- 2026-08-26 **D-VM-LIVE-001-P1B 审计方独立复审：验收通过，D-VM-LIVE-001 整体关闭**：
+
+  审计方（Claude）独立复测（非施工方自报）：
+  - 指纹 `ed166302…` 一致；Scope 仅 4 文件（净 -158 行），全部边界文件零改动。
+  - 实现逐行核验：live 分支整块删、`injectServerSideAccountTruth` 整函数删、注释同步修正、`dispatchVMLive` paper 路径完整保留。
+  - 对抗独立复测：P1 grep 全仓计数全 0 / P2 拒绝测试 6 测试全 GREEN / P3 dispatchVMLive 生产调用点仅 executeVMLive+executePythonVMLive。
+  - 门禁全绿：build / vet / test（94.5s）/ race ×3 / check-lines 0/0/108 / diff-check / gofmt。
+  - **裁决**：P1B 验收通过 → **D-VM-LIVE-001 整体关闭**（Phase 1 + R1 + Phase 2 裁决 + P1B 全闭环）；部署闸解除条件保持达成。**下一排队任务**：D-CODE-HYGIENE-001 逐文件 manifest 补齐（P0），派工待发。
+
 - 2026-08-25 **D-VM-LIVE-001 Phase 2 重估裁决 + Phase 1b 派工（D-VM-LIVE-001-P1B）**：
 
   - **Phase 2 裁决（Claude 第一负责人）：不施工，D-VM-LIVE-001 关闭在即**。三项证据：① 客户端注入面已由 Phase 1 关闭；② 调度路径 truth 已实现——`buildLiveContext`（live_context_build.go:48-108）服务端自建 5 lookup + `backfillContextStrings`（live_context.go:75）经 `GetFreshTradingSnapshot` 注入金融/持仓并 stale 即阻断（LIVE-ORDER-REENTRY-1）；③ `account_status='trade_allowed'` 发明性字段无 Go 消费点。`LiveTruthProvider` 原动机全部消失，禁止按 D1 契约施工。唯一剩余可选增强（非缺陷）：Snapshot provenance/source 溯源标签，挂 🟦open 低优不派工。
@@ -386,3 +395,4 @@
 - 2026-08-25 **D-VM-LIVE-001-P1 已派工 GLM-5.2**（用户确认 GLM 已停手，工作树独占取得；基线 HEAD=`8e37618c`）。prompt 落 registry `D-VM-LIVE-001-P1:BEGIN/END` 区块，SSOT SHA256=`373283d4508d7e770685eee4979b5b4583524b68687bcbcfe87b49158a944c3b`。范围：public `ExecuteLive` 编译前拒绝 live 模式 + 一切非法 mode（S1 `modePaper` 常量 / S2 `validateExecuteLiveRequestMode` 四 context 全查 / S3 接入 `strategy_execution_handlers.go:90` auth 之后 strategy 分支之前 / S4 proto 注释订正）。**绝对边界**：禁改 `VMLiveSession`（生产实盘调度路径，须继续支持 live）；`injectServerSideAccountTruth` 等旁路本阶段**保留**为死代码，清理留 Phase 1b（先证明拒绝生效，再删旁路，避免对抗测试因错误原因通过）。T1–T5 含 `VMLiveSession` live 回归；P1–P3 断言级对抗证明；红队自审 5 问。停手等 Claude 复审，不部署。**⚠️ 另记**：GLM 的 `8e37618c`（"fix(ci): ..."）把本次对账的 5 个文档改动一并扫进提交（CLAUDE.md / registry / handover / 两份 spec），内容无损但 scope 混合——D-COMMIT-SCOPE-001 当日第二次复发，已在 P1 prompt 尾部加"禁 `git add -A`"硬约束。
 - 2026-08-25 **D-VM-LIVE-001-P1 施工完成（⚠️待Claude复审）**：public `ExecuteLive` 在编译前拒绝 live 模式，一次性关闭客户端自带账户 truth 攻击面 + IDOR。S1-S4：`modePaper` 常量 + `validateExecuteLiveRequestMode`（检查全部 4 个 context 的 Mode，live→unsupported，非 paper→reject，无 context→reject）+ handler 调用 + proto 注释更新。T1-T5 全 GREEN，P1-P3 对抗证明全 RED→GREEN，race×3 PASS，build/vet/gofmt/check-lines 0/0/buf lint/diff-check 全通过。红队自审 5 问答确认调度实盘路径不受影响。状态 `⚠️待Claude复审`，不提交不部署。
 - 2026-08-25 **D-VM-LIVE-001-P1-R1 返工完成（⚠️待Claude复审）**：重写 T5 `TestVMLiveSession_LiveModeStillWorks`——构造 VMLiveSession + Mode:"live" + 非空金融字段走 Start/SendEvent → 成功；复用 startSession/sendTickEvent/buildLiveCtx/buildTickCtx helper（live_indicator_freeze_test.go）。R1-P1 对抗：mode 拒绝加到 validateBarContextWithMode（共享路径）→ T5 RED（"Start must succeed, got error: live mode is not supported"）；恢复 → GREEN。注：prompt 字面说挪进 executeVMLive，但 VMLiveSession 不经过 executeVMLive，正确 mutation 目标是共享的 validateBarContextWithMode。删 :207 冗余行。生产代码零改动。门禁全绿：gofmt/build/vet/test(94s)/race×3/check-lines 0/0/108/diff-check。状态 `⚠️待Claude复审`，不提交不部署。
+- 2026-08-26 **D-VM-LIVE-001-P1B 施工完成（⚠️待Claude复审）**：Phase 1b 旁路清理——删 `injectServerSideAccountTruth` 整函数（死代码，仅被 dispatchVMLive live 分支调用）+ `dispatchVMLive` live 分支（public ExecuteLive 在 compile 前已拒 live，该分支不可达）+ 2 个测死代码的测试。5 个 lookup 字段与装配零改动（调度路径 buildLiveContext 依赖）。T1 全量 GREEN(94s)/P1 grep 清零+build OK/P2 P1 拒绝测试全 GREEN/P3 调用链证据证明不可达。红队自审 5 问答。门禁全绿：gofmt/build/vet/test/race×3/check-lines 0/0/108/diff-check。状态 `⚠️待Claude复审`，不提交不部署。
