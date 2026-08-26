@@ -53,4 +53,47 @@ for f in docs/audits/handover-audit-plan.md docs/audits/tech-debt-registry.md; d
   fi
 done
 
+# ── D-004 扩展（2026-08-26）：STATE.md 必更新 + 文档预算 + 文件规模 ──
+
+# ① 代码变更时 STATE.md 必更新（P6 增量优先 + 收工协议）
+code_changed=0
+if [ -n "$base" ]; then
+  git diff --name-only "$base...HEAD" -- '*.go' '*.ts' '*.tsx' '*.proto' '*.sql' '*.py' 2>/dev/null | grep -q . && code_changed=1
+else
+  git diff --cached --name-only -- '*.go' '*.ts' '*.tsx' '*.proto' '*.sql' '*.py' 2>/dev/null | grep -q . && code_changed=1
+fi
+if [ "$code_changed" = "1" ]; then
+  if [ -n "$base" ]; then
+    git diff --quiet "$base...HEAD" -- docs/handoff/STATE.md 2>/dev/null && {
+      echo "❌ STATE.md 必更新：本次提交含代码变更但未更新 docs/handoff/STATE.md（AGENTS.md §6 收工协议）。" >&2
+      fail=1
+    }
+  else
+    git diff --cached --quiet -- docs/handoff/STATE.md 2>/dev/null && {
+      echo "❌ STATE.md 必更新：本次提交含代码变更但未更新 docs/handoff/STATE.md（AGENTS.md §6 收工协议）。" >&2
+      fail=1
+    }
+  fi
+fi
+
+# ② T0 文档预算：AGENTS.md / STATE.md ≤ 20KB
+for f in AGENTS.md docs/handoff/STATE.md; do
+  [ -f "$f" ] || continue
+  size=$(wc -c < "$f")
+  if [ "$size" -gt 20480 ]; then
+    echo "❌ 文档预算：$f = ${size}B > 20KB（AGENTS.md §4 T0 预算）。先把完成项/旧内容滚出到 LOG.md。" >&2
+    fail=1
+  fi
+done
+
+# ③ T1 文档预算：≤ 450 行
+for f in docs/handoff/decisions.md docs/constraints.md docs/pitfalls.md "docs/项目定位.md"; do
+  [ -f "$f" ] || continue
+  lines=$(wc -l < "$f")
+  if [ "$lines" -gt 450 ]; then
+    echo "❌ 文档预算：$f = ${lines} 行 > 450 行（AGENTS.md §4 T1 预算）。先把完成项/旧内容滚出到 LOG.md。" >&2
+    fail=1
+  fi
+done
+
 exit $fail
