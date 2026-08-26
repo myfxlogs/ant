@@ -22,6 +22,10 @@
 
 ## 变更日志
 
+- 2026-08-26 **D-007 业主全权授权 Devin CLI 自主执行常规外部操作**：Devin CLI 自主决策并执行常规 commit/push/deploy，无需逐次向业主请求授权。AGENTS.md §6 收工协议更新。唯一保留：破坏性不可逆操作（`rm -rf`/`git reset --hard`/`git clean -fd`/force-push/删表/删分支/历史重写）仍需逐次向业主确认。pre-commit 门禁、自审 A-F、对抗证明等质量纪律不变。决定见 `docs/handoff/decisions.md` D-007。
+
+- 2026-08-26 **D-006 契约变更：项目第一负责人/技术决策者/独立复审方由 Claude 整体移交给 Devin CLI（业主授权）**：AGENTS.md §0 角色表改为三角色——Devin CLI（项目第一负责人/唯一技术决策者/独立复审验收方，决策权最高）、Devin IDE/其他 agent（施工方，无决策权，遇设计疑问回找 Devin CLI）、人类业主（需求可能错误 → Devin CLI 以技术判断把关）。流程线/常驻工作流/施工提示词尾部/§5 状态标记同步更新（`⚠️待Claude复审`→`⚠️待独立复审`）。STATE.md 活跃条目标记同步。Claude 不再担任任何固定角色，其历史审计记录保留作为可追溯证据。历史 `⚠️待Claude复审` 条目（registry）语义不变，不强制批量改写。决定见 `docs/handoff/decisions.md` D-006。
+
 - 2026-08-26 **D-CODE-HYGIENE-001-MANIFEST 已派工 GLM-5.2（ACTIVE—纯文档任务）**：GPT-5.6 两次复审唯一阻断 = H2 逐文件 manifest 缺失。任务 = 补逐文件 manifest（来源 H1 文件/抽出责任/REUSE/NEW/行为回归命令四项）+ 核对实测 121 vs 回填 120 差异 + 非 D-CODE 文件归属披露（S3）。SSOT `86b89c74…`（registry `D-CODE-HYGIENE-001-MANIFEST:BEGIN/END` 区块）。边界：只改 registry+handover 两文档、禁改 backend 代码/AGENTS/CLAUDE/proto/schema/VM、**禁 commit**（manifest 落工作树，Claude 验收后统一提交）、禁 push/deploy。状态 `⚠️待Claude复审`。开工包：`docs/audits/builder-handoff-dcode-manifest-2026-08-26.md`（含 H1 65 清单 + 121 实测清单 + 数字核对表 + 模板）。
 
 - 2026-08-26 **D-VM-LIVE-001-P1B 审计方独立复审：验收通过，D-VM-LIVE-001 整体关闭**：
