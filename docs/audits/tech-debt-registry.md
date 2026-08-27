@@ -182,6 +182,7 @@
 | VM-AUDIT-2026-08-27-6 | **两条 live 路径缓存逻辑不一致导致 BUG-1 漂移（P2 架构，2026-08-27 全面 VM 审计）**：RPC 单次（`executeVMLive`/`executePythonVMLive`）+ Long-running（`VMLiveSession`）两条 live 路径各自实现缓存加载逻辑，导致 BUG-1（Python 路径漏验证 SourceHash）。建议提取共享 `compileForLive(source, cachedBytecode, isPython)` helper 统一缓存验证逻辑，4 个调用点全部改用。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-6。**施工完成 2026-08-27**：S1 新建 `vm_live_compile.go` 提取 `compileForLive(source, cachedBytecode, isPython)` helper（isPython → `CompilePythonCached`，else → `CompileMQLCached`）；4 个调用点全部改用：`executeVMLive`（`vm_live_dispatch.go:26`）、`executePythonVMLive`（`vm_live_dispatch.go:54`）、`NewVMLiveSessionCached`（`vm_live_session.go:44`）、`NewPythonVMLiveSessionCached`（`vm_live_session.go:66`）。对抗证明：T1 `TestCompileForLive_PythonBranch`（`vm_audit_2026_08_27_batch3_test.go`）— 验证 isPython=true 产生 Version="python" bytecode，isPython=false 产生 Version="mql4"/"mql5"。突变：swap Python 分支为 `CompileMQLCached` → Version="mql5" 而非 "python" → RED → 恢复 → GREEN。门禁追加：`grep -r "CompileMQLFromBytecode" backend/internal/connect/strategy/` = 0 匹配。门禁全绿。**Devin CLI 验收通过 2026-08-27**：A-F 自审全绿，对抗证明独立验证 RED→restore→GREEN，race×3 两包通过。 | ✅done |
 | VM-AUDIT-2026-08-27-7 | **recoverFromOutcomeUnknown 用 time.Sleep 不可取消（P2 架构，2026-08-27 全面 VM 审计）**：`mutation_recovery.go:47` `time.Sleep(conf.recoveryDelay)`（默认 10s）不可取消。session 关闭后 goroutine 仍 sleep 完整 10s，延迟资源释放。修复：改用 `select { case <-time.After(conf.recoveryDelay): case <-ctx.Done(): return }`，需传入 session context。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-7。**施工完成 2026-08-27**：S1 `recoverFromOutcomeUnknown` 函数签名加 `ctx context.Context` 首参，`time.Sleep` 改 `select { case <-time.After: case <-ctx.Done(): return }`；S2 `mutation_coordinator.go:200` 和 `:271` 两处 `go s.recoverFromOutcomeUnknown(...)` 调用加 `ctx` 首参（ctx 来自 `coordinateMutation` 的 session 级 runCtx，`SessionRegistry.Stop` 取消时中断）。同步更新 `live_diag_truth_test.go` 2 处旧调用加 `context.Background()`。对抗证明：T2 `TestRecoverFromOutcomeUnknown_CancelledByContext`（`vm_audit_2026_08_27_batch3_test.go`）— pre-cancelled ctx + 10s recoveryDelay → goroutine 应 <500ms 退出。突变：恢复 `time.Sleep` → goroutine 等 10s → 500ms 超时 → RED → 恢复 → GREEN。门禁全绿。**Devin CLI 验收通过 2026-08-27**：A-F 自审全绿，对抗证明独立验证 RED→restore→GREEN，race×3 两包通过。 | ✅done |
 | VM-AUDIT-2026-08-27-8 | **PositionCache.Subscribe goroutine 无 panic recovery（P2 架构，2026-08-27 全面 VM 审计）**：`position_cache.go:54-67` goroutine 无 `defer recover()`。如果 `c.put` panic（snap 字段 nil 等），整个进程崩溃。修复：goroutine 开头加 `defer func() { if r := recover(); r != nil { c.log.Error(...) } }()`。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-8。**施工完成 2026-08-27**：S1 `position_cache.go:54` goroutine 在 `defer unsub()` 之后加 `defer func() { if r := recover(); r != nil { c.log.Error("PositionCache: subscribe goroutine panicked", zap.String("account", accountID), zap.Any("panic", r)) } }()`。对抗证明：T3 `TestPositionCache_SubscribePanicRecovery`（`vm_audit_2026_08_27_batch3_test.go`）— 创建 nil maps 的 PositionCache + real MtHubService，publish financials-authoritative snapshot → `c.put` 写 nil map → panic。突变：删除 `defer recover()` → goroutine panic 崩溃测试进程 → RED → 恢复 → goroutine recover 后退出，测试继续 → GREEN。门禁全绿。**Devin CLI 验收通过 2026-08-27**：A-F 自审全绿，对抗证明独立验证 RED→restore→GREEN，race×3 两包通过。 | ✅done |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S1 | **实时关闭订单写入 `trade_records` 时未设置 `MagicNumber` 和 `ScheduleID`（P1 数据归因，2026-08-27 实盘端到端验证）**：`writeClosedTradeRecord`（`pipeline_callbacks.go:118-150`）构造 `model.TradeRecord` 时遗漏 `MagicNumber`（→ `trade_records.magic_number=0`）和 `ScheduleID`（→ `schedule_id=NULL`），导致前端 Magic 列显示 `-`、策略订单无法归因到 schedule。`SyncOrderHistory` 路径（`mthub_service_orders.go:143` `orderRecordToTradeRecord`）已正确设置两字段——实时路径遗漏了对称接线。**S1 修复（修复 B）**：① `mdGatewayPipelineDeps` 加 `scheduleResolver mthub.ScheduleResolver` 字段（`pipeline.go:53`）；② `main.go:185` 注入 `scheduleResolver: repository.NewStrategyScheduleRepository(pool)`（镜像 `main.go:132` 已有 `accountSyncSvc.SetScheduleResolver` 接线）；③ `buildOnOrderUpdate` 加 `resolver mthub.ScheduleResolver` 参数（`pipeline_callbacks.go:27`）；④ 提取 `buildClosedTradeRecord` 纯函数（返回 `*model.TradeRecord`，nil = 不构造）从 `writeClosedTradeRecord` 分离构造与持久化，使归因逻辑可无 DB 对抗测试；⑤ `rec` 补齐 `MagicNumber: int(o.UpdateMagic)` + `ScheduleID: mthub.ResolveScheduleID(ctx, resolver, log, uid, o.UpdateMagic)`（镜像 `orderRecordToTradeRecord:161-162`）。hash chain 安全：`computeTradeEntryHash` 不含 magic_number/schedule_id，修复不破坏链。**对抗证明**：`pipeline_callbacks_test.go` 4 测试——`TestBuildClosedTradeRecordMagicAttribution`（magic=777 → MagicNumber=777 + ScheduleID=sid + resolver 调用 1 次）/ `TestBuildClosedTradeRecordManualOrderNoSchedule`（magic=0 → MagicNumber=0 + ScheduleID=nil + resolver 0 调用）/ `TestBuildClosedTradeRecordNilResolver`（nil resolver → MagicNumber 仍设 + ScheduleID=nil）/ `TestBuildClosedTradeRecordSkipsNonClose`（非 close/零 close_time/无效 ID → nil）。**RED**：删除 `MagicNumber:` + `ScheduleID:` 两行 → `TestBuildClosedTradeRecordMagicAttribution` RED（`MagicNumber: expected 777, got 0`）+ `TestBuildClosedTradeRecordNilResolver` RED（`MagicNumber: expected 42, got 0`）→ **restore → GREEN**。门禁全绿。 | 🟦open（S1 施工完成，待 Devin CLI 独立复审）|
 
 ## VM-AUDIT-2026-08-27：VM 管线全面审计（🟦open；2026-08-27 Devin CLI 独立审计方）
 
@@ -2263,3 +2264,49 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **状态**：`🟦open（施工完成，待独立复审）`——施工方不得自标 ✅done。对抗证明 RED→restore→GREEN 闭环已执行 + 门禁全绿 + 代码坐标全匹配 + S10 对抗证明存在。停手等 Devin CLI 独立复审验收。
 
 > **注意**：前序自动提交 `fa482a8d` 的 commit message 与 registry 原始条目错误自标 `✅done / Devin CLI 验收通过`——此为施工方越权自标，已更正为 `🟦open`。独立复审尚未执行。
+
+### FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1 施工完成（🟦open，待 Devin CLI 独立复审 2026-08-27）
+
+> 设计 SSOT：`docs/spec/fix-2026-08-27-order-history-magic-attribution.md`
+> 施工提示词：`docs/audits/builder-handoff-fix-2026-08-27-order-history-magic-attribution.md`（S1 = 修复 B）
+> 基线 HEAD：`1aca95c8`
+
+**根因**：`writeClosedTradeRecord`（`pipeline_callbacks.go`）构造 `model.TradeRecord` 时遗漏 `MagicNumber` 和 `ScheduleID`。`SyncOrderHistory` 路径（`orderRecordToTradeRecord`）已正确设置两字段——实时关闭路径遗漏了对称接线。结果：`trade_records.magic_number=0`、`schedule_id=NULL`，前端 Magic 列显示 `-`，策略订单无法归因到 schedule。
+
+**S1 修复（修复 B）代码坐标**：
+1. `pipeline.go:53` — `mdGatewayPipelineDeps` 加字段 `scheduleResolver mthub.ScheduleResolver`
+2. `main.go:185` — 注入 `scheduleResolver: repository.NewStrategyScheduleRepository(pool)`（镜像 `main.go:132` 已有 `accountSyncSvc.SetScheduleResolver` 接线）
+3. `pipeline.go:75` — `buildOnOrderUpdate` 调用传入 `d.scheduleResolver`
+4. `pipeline_callbacks.go:22-28` — `buildOnOrderUpdate` 加参数 `resolver mthub.ScheduleResolver`
+5. `pipeline_callbacks.go:120-146` — 提取 `buildClosedTradeRecord` 纯函数（返回 `*model.TradeRecord`，nil = 不构造），从 `writeClosedTradeRecord` 分离构造与持久化，使归因逻辑可无 DB 对抗测试
+6. `pipeline_callbacks.go:142-143` — `rec` 补齐 `MagicNumber: int(o.UpdateMagic)` + `ScheduleID: mthub.ResolveScheduleID(ctx, resolver, log, uid, o.UpdateMagic)`（镜像 `orderRecordToTradeRecord:161-162`）
+
+**hash chain 安全**：`computeTradeEntryHash` 不含 `magic_number`/`schedule_id`，修复 B 不破坏 hash chain。
+
+**对抗证明（先红后绿）**：
+- 测试文件：`pipeline_callbacks_test.go`（新建，4 测试）
+- `TestBuildClosedTradeRecordMagicAttribution`：magic=777 → MagicNumber=777 + ScheduleID=sid + resolver 调用 1 次 + magic arg=777
+- `TestBuildClosedTradeRecordManualOrderNoSchedule`：magic=0 → MagicNumber=0 + ScheduleID=nil + resolver 0 调用（`ResolveScheduleID` short-circuit）
+- `TestBuildClosedTradeRecordNilResolver`：nil resolver → MagicNumber 仍设（42）+ ScheduleID=nil（best-effort 归因）
+- `TestBuildClosedTradeRecordSkipsNonClose`：非 close / 零 close_time / 无效 accountID / 无效 userID → nil + resolver 0 调用
+- **RED**：删除 `MagicNumber:` + `ScheduleID:` 两行 → `TestBuildClosedTradeRecordMagicAttribution` RED（`MagicNumber: expected 777, got 0`）+ `TestBuildClosedTradeRecordNilResolver` RED（`MagicNumber: expected 42, got 0`）
+- **GREEN**：恢复两行 → 全 4 测试 PASS
+
+**门禁**：
+- `go build ./...` ✓
+- `go vet ./cmd/server/ ./internal/mthub/ ./internal/repository/` ✓
+- `go test ./internal/repository/... ./internal/connect/system/... ./cmd/server/...` ✓
+- `go test -race ./internal/repository/... ./cmd/server/...` ×3 ✓
+- `go run ./tools/check-file-lines --strict`：0 errors（55 warnings 均 pre-existing；`pipeline.go` 442/300 🟡 为 pre-existing +1 行）
+- `git diff --check` ✓ clean
+
+**REUSE 核对**：
+- `mthub.ScheduleResolver` / `mthub.ResolveScheduleID`：REUSE（`service_setters.go:75` / `service.go:101`）
+- `repository.NewStrategyScheduleRepository`：REUSE（`main.go:132` 已有接线模式）
+- `orderRecordToTradeRecord` 归因模式：REUSE（`mthub_service_orders.go:161-162` 对称镜像）
+- `buildClosedTradeRecord` 纯函数提取：NEW（使归因逻辑可无 DB 对抗测试，镜像 `orderRecordToTradeRecord` 已有的构造/持久化分离模式）
+- `pipeline_callbacks_test.go`：NEW（4 对抗测试）
+
+**diff 统计**：4 文件（3 修改 + 1 新建测试），+24/-7 代码 + 161 行测试。
+
+**状态**：`🟦open（S1 施工完成，待 Devin CLI 独立复审）`——施工方不得自标 ✅done。对抗证明 RED→restore→GREEN 闭环已执行 + 门禁全绿 + 代码坐标全匹配。停手等 Devin CLI 独立复审验收。勿部署。

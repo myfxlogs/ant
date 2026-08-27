@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP，Session interface 改传结构体指针消除进程内 proto round-trip）。spec 见 `docs/spec/fix-2026-08-27-session-proto-roundtrip.md`。
+- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP，Session interface 改传结构体指针消除进程内 proto round-trip）。**FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1 施工完成**（修复 B：`writeClosedTradeRecord` 补齐 Magic + ScheduleID，待独立复审）。spec 见 `docs/spec/fix-2026-08-27-order-history-magic-attribution.md`。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -29,6 +29,7 @@
 | VM round 4-5 + 报价管线派工（5 batch） | ✅done | Batch 1/2/3/4/5 全部 Devin CLI 验收通过 2026-08-27 |
 | P1 live 执行 bug 修复（login lookup + nil/empty slice） | ✅done | 已部署验证 2026-08-27 |
 | FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP | 🟦open | 施工完成 2026-08-27，待 Devin CLI 独立复审（S10 对抗证明 RED→restore→GREEN 已执行） |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1（修复 B） | 🟦open | 施工完成 2026-08-27，待 Devin CLI 独立复审（4 项对抗证明 RED→restore→GREEN 已执行） |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓。
 - **下一步**: P1 业务管线核心 bug 已修复。剩余 P1 管线 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）待决策/施工。
@@ -66,12 +67,14 @@
 - **VM-AUDIT-2026-08-27-7** ✅done — recoverFromOutcomeUnknown select+ctx 可取消（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-8** ✅done — PositionCache.Subscribe panic recovery（Devin CLI 验收通过 2026-08-27）
 - **FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP** ✅done — Session interface 改传结构体指针消除进程内 proto round-trip（Devin CLI 验收通过 2026-08-27，S10 对抗证明 RED→restore→GREEN）
+- **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S1** 🟦open — `writeClosedTradeRecord` 补齐 Magic + ScheduleID（施工完成 2026-08-27，待独立复审，4 项对抗证明 RED→restore→GREEN）
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
 - 2026-08-27 **FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP ✅done**：Devin CLI 验收通过。Session interface 从 `[]byte`（proto-marshaled）改为 `*antv1.ExecuteLiveRequest`/`*antv1.ExecuteLiveResponse` 指针——消除进程内 proto marshal/unmarshal round-trip（proto3 把空 repeated slice 折叠为 nil，导致"无持仓"与"数据缺失"不可区分）。S1-S7 代码坐标全匹配，S8 proto import 清理 3 文件，S9 测试适配 5 文件（3 文档列出 + 2 文档遗漏但施工方正确发现），S10 对抗证明 `TestVMLiveSession_NilPositionsSurviveRoundTrip` RED→restore→GREEN 独立验证。11 文件 +75/-185（净 -110 行）。门禁全绿（build/vet/test 98.3s/race×3 294.8s/check-lines 0 errors）。
+- 2026-08-27 **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1 施工完成（🟦open）**：修复 B——`writeClosedTradeRecord` 构造 `model.TradeRecord` 时遗漏 `MagicNumber` + `ScheduleID`（`SyncOrderHistory` 路径已正确设置，实时路径遗漏对称接线）→ `trade_records.magic_number=0` / `schedule_id=NULL` → 前端 Magic 列显示 `-`。修复：`mdGatewayPipelineDeps` 加 `scheduleResolver` + `main.go` 注入 + `buildOnOrderUpdate` 加 `resolver` 参数 + 提取 `buildClosedTradeRecord` 纯函数 + `rec` 补齐 `MagicNumber: int(o.UpdateMagic)` + `ScheduleID: mthub.ResolveScheduleID(...)`。对抗证明 4 测试 RED→restore→GREEN。门禁全绿。停手等 Devin CLI 复审。勿部署。
 - 2026-08-27 **Batch 5（VM-TEST-EVIDENCE-4）施工完成（🟦open，待独立复审）**：从零重写 `docs/audits/vm-adversarial-proofs.md`（旧版标记 SUPERSEDED）。15 项对抗证明，每条含 mutation target（精确 file:line + 改什么）、预期 RED（测试名 + 断言失败消息）、restore 指令、测试文件位置。Proof 1-6 Batch 1（VM-COMPILER-SEMANTICS-4 + VM-CACHE-INTEGRITY-5）、Proof 7-12 Batch 2（VM-TRADE-CONTEXT-6）、Proof 13-15 Batch 3（VM-API-TRUTH-3）。所有引用测试文件和函数 `grep` 验证存在。文档 165 行（T1 预算 450 行内）。纯文档任务，无代码改动。
 - 2026-08-27 **Batch 3（VM-API-TRUTH-3）施工完成（🟦open，待独立复审）**：从零重做 round 6。S1-S3 `vm_builtin_checkup.go` 的 `builtinIsConnected`/`builtinIsDemo`/`builtinIsTradeAllowed` 改为从 `vm.ctx.Account()` 读取（不再硬编码 true），`vm.ctx == nil` 时保留 true（backtest 默认）；S4 `sdk.AccountInfo` 新增 `IsDemo`/`IsConnected`/`IsTradeAllowed` 字段 + `Runner.SetAccountStatus` + `context.go` 加 3 个字段 + `brokerImpl.Account()` 返回 + `SimBroker.Account()` 默认全 true；S5 `vmHandleBar`/`Start()`/`dispatchVMLive` 在 Init 前调用 `SetAccountStatus`。12 个行为测试（`vm_api_truth3_batch3_test.go`）：T1-T3 builtin readback false/true 双向、T4 nil ctx defaults true、T5-T7 e2e VM readback。golangci-lint 0 issues。门禁全绿（build/vet/mql2go test 7.9s/race×3 1.2s/check-lines 0 errors/connect/strategy 96.3s/diff-check clean）。
 - 2026-08-27 **Batch 2（VM-TRADE-CONTEXT-6）施工完成（🟦open，待独立复审）**：从零重做 round 6。S1 `parseDecimalStrict`/`parseInt64Strict`（`backtest_worker_helpers.go`，返回 error 不转零）；S2 `validateOHLCVLengths` 在 `vmHandleBar` 校验 OHLCV 数组长度（含多 symbol）；S3 所有 live handler strict parse（bar/tick/trade 的 OHLCV/financial/trade 字段）；S4 nil repeated message 拒绝（live mode positions/pending_orders nil = data missing）；S5 `validateFirstBarContext` 在 `VMLiveSession.Start()` 和 `dispatchVMLive` 的 `Init()` 前执行；S6 `Runner.SetLogin` + `brokerImpl.Account()` 返回 `liveLogin` + `injectAccountTruth` 注入 Login/Company/IsDemo/IsConnected/IsTradeAllowed（investor 账户 IsTradeAllowed=false）；S7 `cmd/server/handlers_strategy.go` 接入 5 个 mt_accounts lookup。13 个行为测试（`vm_trade_context6_batch2_test.go`）。golangci-lint 0 issues。门禁全绿（build/vet/test/race×3/check-lines 0 errors）。
@@ -95,12 +98,4 @@
 - 2026-08-26 D-006：项目第一负责人/技术决策者/独立复审方由 Claude 整体移交给 Devin CLI（业主授权）；Claude 不再担任任何固定角色。AGENTS.md §0/§5 + STATE.md 标记同步。
 - 2026-08-26 D-007：业主全权授权 Devin CLI 自主执行常规 commit/push/deploy，无需逐次授权；破坏性操作仍需确认。AGENTS.md §6 同步。
 
-- 2026-08-26 commit VM-CACHE-INTEGRITY-1/2 已验收代码：SourceHash 绑定 + 序列化完整性 + marshalHook 测试注入（含返工）。
-
-- 2026-08-26 commit LIVE-ORDER-REENTRY-1 R4 已验收代码：open mutation fail-closed + adapter label pipeline + WaitState 确定性同步（含返工）。
-
-- 2026-08-26 落档第三批施工提示词：VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（编译器正确性）。
-
-- 2026-08-26 VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done：Devin CLI 验收通过。compileDeclaration 多变量 + binaryOp error + switch fallthrough + single-statement body + initGlobals ValClass + ClassTypes 序列化 + compileCall relocation + patchUserCalls + sort.Strings。对抗证明 9 项 RED→restore→GREEN，门禁全绿。
-
-- 2026-08-26 落档第四批施工提示词：VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1（语义正确性 + fail-closed）。
+> 2026-08-26 更早的变更日志（VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。

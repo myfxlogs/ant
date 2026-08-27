@@ -50,6 +50,7 @@ type mdGatewayPipelineDeps struct {
 	reconLoop         **mthub.ReconciliationLoop
 	brokerReg         *adapter.BrokerRegistry
 	livePerfCollector *marketplace.LivePerformanceCollector
+	scheduleResolver  mthub.ScheduleResolver
 }
 
 func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
@@ -71,7 +72,7 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		BrokerRegistry:      d.brokerReg,
 		Searcher:            brokersearch.NewFromConfig(os.Getenv("MTAPI_MT4_HOST"), os.Getenv("MTAPI_MT5_HOST")),
 		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector, d.snapshotBroker),
-		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo, d.mthubSvc),
+		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo, d.mthubSvc, d.scheduleResolver),
 		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),
 		OnBrokerInfo:        pst.makeOnBrokerInfo(d.accountSvc, d.accountSyncSvc, d.mthubSvc, d.snapshotBroker, d.reconLoop),
 		OnBreakerTrip: func(accountID, userID, status, message string) {

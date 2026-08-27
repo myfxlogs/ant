@@ -181,6 +181,7 @@ func main() {
 			reconLoop:         &reconLoop,
 			brokerReg:         brokerReg,
 			livePerfCollector: livePerfCollector,
+			scheduleResolver:  repository.NewStrategyScheduleRepository(pool),
 		})
 	}()
 

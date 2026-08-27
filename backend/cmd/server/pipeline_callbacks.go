@@ -24,6 +24,7 @@ func buildOnOrderUpdate(
 	snapshotBroker *mthub.PositionSnapshotBroker,
 	tradeRecordRepo *repository.TradeRecordRepository,
 	mthubSvc *mthub.MtHubService,
+	resolver mthub.ScheduleResolver,
 ) func(accountID, userID string, o *mdtick.OrderUpdate) {
 	return func(accountID, userID string, o *mdtick.OrderUpdate) {
 		// Use a detached context with timeout — the gRPC stream context may expire
@@ -31,7 +32,7 @@ func buildOnOrderUpdate(
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
-		writeClosedTradeRecord(log, tradeRecordRepo, writeCtx, accountID, userID, o)
+		writeClosedTradeRecord(log, tradeRecordRepo, resolver, writeCtx, accountID, userID, o)
 
 		// EXEC-2: Transition OMS order state based on broker update type.
 		transitionOMSByUpdate(writeCtx, mthubSvc, accountID, o)
@@ -115,19 +116,24 @@ func publishProfitPositionSnapshot(broker *mthub.PositionSnapshotBroker, account
 	broker.Publish(snapshot)
 }
 
-func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordRepository, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) {
+// buildClosedTradeRecord constructs a TradeRecord from a closed-order update.
+// Returns nil if the update is not a close event or account/user IDs are invalid.
+// FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION (修复 B): Magic + ScheduleID
+// are resolved here so live-closed trades carry strategy attribution, mirroring
+// the SyncOrderHistory path (orderRecordToTradeRecord).
+func buildClosedTradeRecord(log *zap.Logger, resolver mthub.ScheduleResolver, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) *model.TradeRecord {
 	if !strings.EqualFold(o.UpdateType, "close") || o.UpdateCloseTime <= 0 {
-		return
+		return nil
 	}
 	uid, err := uuid.Parse(accountID)
 	if err != nil {
-		return
+		return nil
 	}
 	userUUID, err := uuid.Parse(userID)
 	if err != nil {
-		return
+		return nil
 	}
-	rec := &model.TradeRecord{
+	return &model.TradeRecord{
 		UserID: userUUID, AccountID: uid, Ticket: o.UpdateTicket, Symbol: o.UpdateSymbol, OrderType: o.UpdateOrderType,
 		Volume: o.UpdateVolume, OpenPrice: o.UpdateOpenPrice,
 		ClosePrice: o.UpdateClosePrice, Profit: o.UpdateProfit,
@@ -135,6 +141,15 @@ func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordReposit
 		OpenTime: time.Unix(o.UpdateOpenTime, 0), CloseTime: time.Unix(o.UpdateCloseTime, 0),
 		StopLoss: o.UpdateSL, TakeProfit: o.UpdateTP,
 		OrderComment: o.UpdateComment, Platform: o.Platform,
+		MagicNumber: int(o.UpdateMagic),
+		ScheduleID:  mthub.ResolveScheduleID(ctx, resolver, log, uid, o.UpdateMagic),
+	}
+}
+
+func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordRepository, resolver mthub.ScheduleResolver, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) {
+	rec := buildClosedTradeRecord(log, resolver, ctx, accountID, userID, o)
+	if rec == nil {
+		return
 	}
 	if err := repo.Create(ctx, rec); err != nil {
 		// Retry once with a fresh timeout — transient PG errors (pool exhaustion,
