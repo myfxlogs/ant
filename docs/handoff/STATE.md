@@ -24,12 +24,12 @@
 | VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
-| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）✅done；Batch 2（TRADE-CONTEXT-6）✅done；Batch 3（API-TRUTH-3）施工完成待复审；Batch 5 待施工 |
+| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1/2/3/4 ✅done；Batch 5（TEST-EVIDENCE-4）待施工 |
 | P1 管线审计（13 条目） | 🟦open | 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）+ QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 ✅done |
-| VM round 4-5 + 报价管线派工（5 batch） | 🟦open | Batch 1 + Batch 2 + Batch 4 ✅done；Batch 3 施工完成待复审；Batch 5 依赖 B1-3 |
+| VM round 4-5 + 报价管线派工（5 batch） | 🟦open | Batch 1/2/3/4 ✅done；Batch 5 待开工 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓（VM 管线优先）。
-- **下一步**: Batch 3（VM-API-TRUTH-3）施工完成，待 Devin CLI 独立复审。Batch 5 依赖 B1-3。
+- **下一步**: Batch 5（VM-TEST-EVIDENCE-4）可开工（B1-3 已验收）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -46,7 +46,7 @@
 - **VM-RUNTIME-FAILCLOSED-1** ✅done — fail-closed 错误传播（Devin CLI 验收通过 2026-08-26）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
-- **VM 返工批 round 4-5** 🟦open — Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）✅done；Batch 2（TRADE-CONTEXT-6）✅done；Batch 3（API-TRUTH-3）施工完成待复审；Batch 5 待施工
+- **VM 返工批 round 4-5** 🟦open — Batch 1/2/3/4 ✅done；Batch 5（TEST-EVIDENCE-4）待施工
 - **VM-COMPILER-SEMANTICS-4** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer
 - **VM-CACHE-INTEGRITY-5** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：coverage restore + Version check + payload limit + no Language field
 - **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
