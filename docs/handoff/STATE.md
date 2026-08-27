@@ -24,12 +24,12 @@
 | VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
-| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）施工完成待复审；Batch 4（QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1）施工完成待复审；Batch 2/3/5 待施工 |
-| P1 管线审计（13 条目） | 🟦open | 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）+ QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 施工完成待复审，spec audit-2026-08-27 |
-| VM round 4-5 + 报价管线派工（5 batch） | � | Batch 1 + Batch 4 施工完成待独立复审；Batch 2（VM-TRADE-CONTEXT-6）待开工；Batch 3（VM-API-TRUTH-3）依赖 B2；Batch 5（VM-TEST-EVIDENCE-4）依赖 B1-3 |
+| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）✅done；Batch 2/3/5 待施工 |
+| P1 管线审计（13 条目） | 🟦open | 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）+ QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 ✅done |
+| VM round 4-5 + 报价管线派工（5 batch） | 🟦open | Batch 1 + Batch 4 ✅done；Batch 2 待开工；Batch 3 依赖 B2；Batch 5 依赖 B1-3 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓（VM 管线优先）。
-- **下一步**: Batch 1 + Batch 4 待 Devin CLI 独立复审。Batch 2（VM-TRADE-CONTEXT-6）可开工（依赖 B1 验收，但可先施工）。Batch 3 依赖 B2。Batch 5 依赖 B1-3。
+- **下一步**: Batch 2（VM-TRADE-CONTEXT-6）可开工（B1 已验收）。Batch 3 依赖 B2。Batch 5 依赖 B1-3。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -46,13 +46,13 @@
 - **VM-RUNTIME-FAILCLOSED-1** ✅done — fail-closed 错误传播（Devin CLI 验收通过 2026-08-26）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
-- **VM 返工批 round 4-5** 🟦open — Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）+ Batch 4（QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1）施工完成待复审；Batch 2/3/5 待施工
-- **VM-COMPILER-SEMANTICS-4** 🟦open（施工完成，待独立复审） — 从零重做 round 6（2026-08-27）：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer
-- **VM-CACHE-INTEGRITY-5** 🟦open（施工完成，待独立复审） — 从零重做 round 6（2026-08-27）：coverage restore + Version check + payload limit + no Language field
+- **VM 返工批 round 4-5** 🟦open — Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）✅done；Batch 2/3/5 待施工
+- **VM-COMPILER-SEMANTICS-4** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer
+- **VM-CACHE-INTEGRITY-5** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：coverage restore + Version check + payload limit + no Language field
 - **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
 - **DATA-TRUTH-1** 🟦open — orders 表 reconciliation 只检测不收敛，ghost 仅 log.Warn（P0 数据，需架构决策）
-- **QUOTE-RECONNECT-LOOP** 🟦open（施工完成，待独立复审） — 报价流自持重连循环修复（2026-08-27 Batch 4 施工，S1-S4 + T1-T5 + P1-P2）
-- **BROKER-SEARCH-1** 🟦open（施工完成，待独立复审） — mtapi host 配置接线（2026-08-27 Batch 4 施工，S6-S8 + T6-T8 + P3）
+- **QUOTE-RECONNECT-LOOP** ✅done — 报价流自持重连循环修复（2026-08-27 Devin CLI 验收通过）
+- **BROKER-SEARCH-1** ✅done — mtapi host 配置接线（2026-08-27 Devin CLI 验收通过）
 - **TRUST-1** 🟦open — Demo/真实账户战绩混展无标注（P2 业务，需业务决策）
 - **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
 - **VM-AUDIT-2026-08-27-1** ✅done — Python live 路径 SourceHash 验证（Devin CLI 验收通过 2026-08-27）

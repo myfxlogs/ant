@@ -257,33 +257,47 @@ class MyStrategy:
 // --- T12: rejects MQL bytecode for Python source ---
 
 func TestCompilePythonCached_RejectsMQLBytecodeForPythonSource(t *testing.T) {
-	// Compile MQL source to get MQL bytecode
-	mqlSource := `int x; void OnTick() { x = 1; }`
-	_, mqlBcData, err := CompileMQLCached(mqlSource, nil)
-	if err != nil {
-		t.Fatalf("CompileMQLCached failed: %v", err)
-	}
-
-	// Try to use MQL bytecode for Python source. The Version check
-	// (r.Bytecode().Version == "python") should reject the MQL bytecode
-	// and fall through to cold compile, returning valid Python bytecode.
+	// Compile Python source to get valid Python bytecode (correct SourceHash).
 	pySource := `from decimal import Decimal
 
 class MyStrategy:
     def on_bar(self) -> None:
         return
 `
-	r, pyBcData, err := CompilePythonCached(pySource, mqlBcData)
+	r, _, err := CompilePythonCached(pySource, nil)
+	if err != nil {
+		t.Fatalf("CompilePythonCached cold compile failed: %v", err)
+	}
+	if r == nil || r.Bytecode() == nil {
+		t.Fatal("cold compile returned nil runner/bytecode")
+	}
+
+	// Tamper the bytecode: change Version from "python" to "mql4" while
+	// keeping SourceHash intact. This simulates a cache poisoning attack
+	// where an attacker swaps the Version field to bypass the language check.
+	// Only the Version == "python" guard can catch this — SourceHash still
+	// matches, so without the Version check the poisoned bytecode would be
+	// accepted and used for Python source execution.
+	tamperedBc := *r.Bytecode()
+	tamperedBc.Version = "mql4"
+	poisonedData, err := MarshalBytecode(&tamperedBc)
+	if err != nil {
+		t.Fatalf("MarshalBytecode failed: %v", err)
+	}
+
+	// CompilePythonCached must reject the poisoned bytecode (Version mismatch)
+	// and fall through to cold compile, returning valid Python bytecode.
+	r2, pyBcData2, err := CompilePythonCached(pySource, poisonedData)
 	if err != nil {
 		t.Fatalf("CompilePythonCached failed: %v", err)
 	}
-	// The returned bytecode must be Python, not the MQL bytecode we passed in.
-	if r.Bytecode().Version != "python" {
-		t.Errorf("Version = %q, want \"python\" (MQL bytecode was used instead of falling through to cold compile)", r.Bytecode().Version)
+	// The returned bytecode must be Python, not the poisoned MQL-versioned bytecode.
+	if r2.Bytecode().Version != "python" {
+		t.Errorf("Version = %q, want \"python\" (Version check did not reject poisoned bytecode with matching SourceHash)", r2.Bytecode().Version)
 	}
-	// The returned bytecode must differ from the MQL bytecode (cold compile produced new bytecode).
-	if string(pyBcData) == string(mqlBcData) {
-		t.Error("returned bytecode is identical to MQL bytecode (Version check did not reject mismatched bytecode)")
+	// The returned bytecode must differ from the poisoned bytecode (cold compile produced new bytecode).
+	if string(pyBcData2) == string(poisonedData) {
+		t.Error("returned bytecode is identical to poisoned bytecode (Version check did not reject mismatched bytecode)")
 	}
 }
 
