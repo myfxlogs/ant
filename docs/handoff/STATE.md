@@ -28,7 +28,7 @@
 | P1 管线审计（13 条目） | 🟦open | 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）+ QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 ✅done |
 | VM round 4-5 + 报价管线派工（5 batch） | ✅done | Batch 1/2/3/4/5 全部 Devin CLI 验收通过 2026-08-27 |
 | P1 live 执行 bug 修复（login lookup + nil/empty slice） | ✅done | 已部署验证 2026-08-27 |
-| FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP | ✅done | Devin CLI 验收通过 2026-08-27，S10 对抗证明 RED→restore→GREEN |
+| FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP | 🟦open | 施工完成 2026-08-27，待 Devin CLI 独立复审（S10 对抗证明 RED→restore→GREEN 已执行） |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓。
 - **下一步**: P1 业务管线核心 bug 已修复。剩余 P1 管线 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）待决策/施工。

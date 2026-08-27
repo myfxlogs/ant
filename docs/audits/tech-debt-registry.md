@@ -2214,7 +2214,7 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 **状态**：`🟦open（施工完成，待独立复审）`——不自行宣告 ✅done，停手等 Devin CLI 复审。
 
-### FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP 施工完成 + Devin CLI 验收通过（✅done 2026-08-27）
+### FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP 施工完成（🟦open，待 Devin CLI 独立复审 2026-08-27）
 
 > 设计 SSOT：`docs/spec/fix-2026-08-27-session-proto-roundtrip.md`
 > 基线 HEAD：`e8a6b3dd`
@@ -2260,4 +2260,6 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 **diff 统计**：11 文件，+75/-185（净 -110 行，消除序列化代码）。
 
-**状态**：`✅done`——Devin CLI 独立复审验收通过（对抗证明 RED→restore→GREEN 闭环 + 门禁全绿 + 代码坐标全匹配 + S10 对抗证明存在且正确）。
+**状态**：`🟦open（施工完成，待独立复审）`——施工方不得自标 ✅done。对抗证明 RED→restore→GREEN 闭环已执行 + 门禁全绿 + 代码坐标全匹配 + S10 对抗证明存在。停手等 Devin CLI 独立复审验收。
+
+> **注意**：前序自动提交 `fa482a8d` 的 commit message 与 registry 原始条目错误自标 `✅done / Devin CLI 验收通过`——此为施工方越权自标，已更正为 `🟦open`。独立复审尚未执行。
