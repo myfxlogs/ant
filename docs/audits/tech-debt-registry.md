@@ -168,6 +168,36 @@
 **返工第三阶段（2026-08-25）**：重做 3 项假绿对抗证明：①Proof 6（IsDemo injection）旧版 mutation 后 IsDemo 默认 false（零值）与 lookup 返回 false 相同→假绿；改用 `TestVMLiveSession_IsDemoEndToEnd` 读回 VM global g_isDemo，mutation 后 builtin 返回 true→g_isDemo=1→RED。②Proof 9（payload limit）旧版只检查 err != nil，mutation 后 magic check 仍返回 error→假绿；改用断言 "exceeds max" + "payload size" 特定 error message，mutation 后 error 变为 "invalid magic"→不含 "exceeds max"→RED。③Proof 11（root ERROR guard）旧版承认 mutation 后 compile() 会以不同方式失败→假绿；穷举测试验证 tree-sitter 永不产生 root ERROR→guard 是不可达死代码→已删除，替换为 `TestCompileToIR_RootNeverErrorForAnyInput` 正向证据。`vm-adversarial-proofs.md` 已全面更新。 | 🟦open（施工完成，待独立复审） |
 |**返工第四阶段（2026-08-25）**：修复 3 项仍假绿/正向证据的 proof + 新增 8 项 round 4 proof。①Proof 2b 旧版指向 temporary test，改用已提交的 `TestDispatchVMLive_RejectsInvalidBeforeInit`（验证 dispatchVMLive 在 Init 前拒绝 invalid context，g_init=0）。②Proof 9b 旧版只检查 bc.Version != "python"（重新加入 Language 字段后仍 GREEN），改用 `reflect.TypeOf(Bytecode{}).FieldByName("Language")` 检查字段不存在。③Proof 11 旧版是正向证据（root ERROR guard 已删除），改用 `HasError()` guard 检查每个 top-level named child 的内部 ERROR 节点，mutation 后 `CompileMQL("int x = ;")` 返回 nil→RED。新增 Proof 6e/6f/6g/6h（lookup query error/investor gating/real false vs error）、Proof 9c/9d/9e/9f（trailing garbage/coverage restore failure/nil coverage/identity comparison）、Proof 11b/11c（input/extern exception/error recovery）。所有 proof 指向已提交测试文件。 | 🟦open（施工完成，待独立复审） |
 |**返工第五阶段（2026-08-26）**：更新 `vm-adversarial-proofs.md`：①Proof 9d 改用 non-nil coverage + error 注入（旧版 nil coverage + error 删除 covErr 后被 cov==nil 分支掩盖→假绿）；②Proof 11 改用结构化 input/extern 检测（旧版 strings.Contains 放行 `int x = input ;` 等非法用法）；③新增 Proof 2f/2g/2h（live 空财务/buildTradeContext enum/ExecuteLive 身份）、Proof 6i/6j（accountIsInvestorLookup 必选/IsTradeAllowed 非 connected proxy）。mutation 验证：Proof 9d `if covErr != nil`→`if false`→RED；Proof 11 revert to strings.Contains→3 项测试 RED。 | 🟦open（施工完成，待独立复审） |
+| VM-AUDIT-2026-08-27-1 | **Python live 路径不验证 SourceHash（P1 缓存安全，2026-08-27 全面 VM 审计）**：`executePythonVMLive`（`vm_live_dispatch.go:46-80`）和 `NewPythonVMLiveSessionCached`（`vm_live_session.go:66-79`）用 `CompileMQLFromBytecode` 直接加载缓存，跳过 SourceHash 验证。`CompilePythonCached` 已存在且测试覆盖（VM-CACHE-INTEGRITY-2），但 live 路径未使用它。影响：Python 策略源码修改后 live 仍用旧 bytecode 执行新源码——缓存污染攻击面，违反 VM-CACHE-INTEGRITY-2 不变量。对比：MQL live（`executeVMLive`）→ `CompileMQLCached` ✅；Python 回测（`executePythonVMBacktest`）→ `CompilePythonCached` ✅；**Python live → `CompileMQLFromBytecode` ❌**。修复 spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-1。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-2 | **runEvent 不重置 fatalError → 一次错误永久停止策略（P1 可用性，2026-08-27 全面 VM 审计）**：`vm.go:187-217` `runEvent` 重置 stack/caches/callDepth/signal/pc/lastIndicators/ticks，但不重置 `vm.fatalError`。VMLiveSession 路径复用同一 VM 实例，一次 builtin 错误（如 broker 临时超时）设置 fatalError 后，后续所有 OnTick/OnBar 事件立即返回 `"VM fatal: ..."` 不执行策略——策略永久停止，即使 broker 恢复也不自愈，只能重建 session。`executeVMLive` 路径不受影响（每次新 VM）。修复：`runEvent` 开头加 `vm.fatalError = ""`。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-2。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-3 | **executeCallUser 内联循环缺少 MaxStackDepth 检查（P2 安全，2026-08-27 全面 VM 审计）**：`vm_execute.go:332-358` `executeCallUser` 的内联循环检查 ticks/context/MaxTicks，但不检查 `len(vm.stack) > MaxStackDepth`。外层 `runLoop` 检查，但用户函数内的长循环可能让栈无限增长而不回到外层。恶意/有 bug 的 EA 可通过用户函数内的大量 push 操作绕过栈深度限制，导致 OOM。修复 spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-3。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-4 | **popN 栈不足时 callBuiltin 仍执行（P2 语义，2026-08-27 全面 VM 审计）**：`vm_helpers.go:54-63` `popN` 在 `n > len(vm.stack)` 时设置 fatalError 但返回部分结果。`vm_execute.go:116-125` `OP_CALL_BUILTIN` 调用 `popN` 后直接 `callBuiltin(args)`——虽然 fatalError 会在循环顶部捕获，但当前 builtin 仍会用错误参数执行。栈下溢时 builtin 用部分/空参数执行，可能产生副作用（如 OrderSend 用空 symbol/volume 调用 broker）。修复 spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-4。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-5 | **VMLiveSession.dispatch default 分支误处理未知请求类型（P3 语义，2026-08-27 全面 VM 审计）**：`vm_live_session.go:164-171` default 分支：如果 `bctx != nil` 则当 bar 处理。未知请求类型 + 恰好有 bar_context → 误当 bar 事件执行策略。修复 spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-5。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-6 | **两条 live 路径缓存逻辑不一致导致 BUG-1 漂移（P2 架构，2026-08-27 全面 VM 审计）**：RPC 单次（`executeVMLive`/`executePythonVMLive`）+ Long-running（`VMLiveSession`）两条 live 路径各自实现缓存加载逻辑，导致 BUG-1（Python 路径漏验证 SourceHash）。建议提取共享 `compileForLive(source, cachedBytecode, isPython)` helper 统一缓存验证逻辑，4 个调用点全部改用。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-6。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-7 | **recoverFromOutcomeUnknown 用 time.Sleep 不可取消（P2 架构，2026-08-27 全面 VM 审计）**：`mutation_recovery.go:47` `time.Sleep(conf.recoveryDelay)`（默认 10s）不可取消。session 关闭后 goroutine 仍 sleep 完整 10s，延迟资源释放。修复：改用 `select { case <-time.After(conf.recoveryDelay): case <-ctx.Done(): return }`，需传入 session context。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-7。 | 🟦open（待施工） |
+| VM-AUDIT-2026-08-27-8 | **PositionCache.Subscribe goroutine 无 panic recovery（P2 架构，2026-08-27 全面 VM 审计）**：`position_cache.go:54-67` goroutine 无 `defer recover()`。如果 `c.put` panic（snap 字段 nil 等），整个进程崩溃。修复：goroutine 开头加 `defer func() { if r := recover(); r != nil { c.log.Error(...) } }()`。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-8。 | 🟦open（待施工） |
+
+## VM-AUDIT-2026-08-27：VM 管线全面审计（🟦open；2026-08-27 Devin CLI 独立审计方）
+
+> **审计方**：Devin CLI（独立审计，read-only on source code）
+> **审计范围**：VM 管线 10 个组件、~5500 行（VM 核心 / VM Runner / 编译器 / 交易 builtins / Live session / Live dispatch / Mutation coordinator / Trade barrier / Position cache / Backtest worker）
+> **修复方案 SSOT**：`docs/spec/vm-audit-2026-08-27-spec.md`
+> **基线**：HEAD `68f31692`（工作树干净）
+> **发现**：5 BUG + 3 架构问题，分 3 批施工（P1 缓存安全+可用性 / P2-P3 防御性 / P2 架构加固）
+
+**确认健康的部分（已验证，无需修复）**：
+- **TradeBarrier** 状态机：R3 rework 后单 mutex + cond，状态转换完整，event cache 有界 + eviction，magic 严格匹配——设计成熟。
+- **MutationCoordinator** 5 路径共享协议：pre-listen 覆盖全 cycle，typed error classify，confirmed push + RPC error convergence，read-after-write 单次——LIVE-ORDER-REENTRY-1 修复扎实。
+- **PositionCache** freshness 拆分：financials/positions 独立 captured-at + received-at，90s max age，fail-closed for zero/future timestamps——B6 修复到位。
+- **编译器** two-pass + patchUserCalls：前向引用、deterministic layout（sort.Strings）、unpatched jump panic safety net——BT-FUNC-ENTRYPC-FWD 修复到位。
+- **VM 交易 builtins**：OrderSelect 重置 currentPos/currentOrder、invalidateOrderCaches 在每个 mutation 后调用、signalMode 透传 magic/deviation——VM-TRADE-CONTEXT-1 修复到位。
+
+**施工分批**：
+- **批次 1（P1）**：VM-AUDIT-2026-08-27-1（Python live SourceHash）+ VM-AUDIT-2026-08-27-2（fatalError 重置）
+- **批次 2（P2/P3）**：VM-AUDIT-2026-08-27-3（stack depth）+ VM-AUDIT-2026-08-27-4（popN 检查）+ VM-AUDIT-2026-08-27-5（dispatch default）
+- **批次 3（P2 架构）**：VM-AUDIT-2026-08-27-6（compileForLive helper）+ VM-AUDIT-2026-08-27-7（recovery ctx）+ VM-AUDIT-2026-08-27-8（PositionCache panic）
+
+**验收标准**：每批施工完成后 Devin CLI 独立复审（mutation RED→restore→GREEN + 门禁全绿 + check-lines 0 errors），通过后再派下一批。详见 spec §4。
 
 **Claude round 5 独立复审（2026-08-25）：❌不通过，5 个 ID 继续 `🟦open`**：
 

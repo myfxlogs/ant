@@ -22,6 +22,8 @@
 
 ## 变更日志
 
+- 2026-08-27 **VM-AUDIT-2026-08-27 VM 管线全面审计完成（🟦open，8 个新 ID 待施工）**：Devin CLI 独立审计方对 VM 管线 10 个组件、~5500 行做全面审计。发现 5 BUG + 3 架构问题，落档 8 个 registry 条目（VM-AUDIT-2026-08-27-1 ~ -8）+ 修复方案 spec `docs/spec/vm-audit-2026-08-27-spec.md`。分 3 批施工：① P1 缓存安全+可用性（Python live SourceHash + fatalError 重置）② P2-P3 防御性（stack depth + popN 检查 + dispatch default）③ P2 架构加固（compileForLive helper + recovery ctx + PositionCache panic）。确认健康：TradeBarrier/MutationCoordinator/PositionCache freshness/编译器 two-pass/VM 交易 builtins。基线 HEAD `68f31692`。详见 registry `VM-AUDIT-2026-08-27` 节。
+
 - 2026-08-26 **LIVE-ORDER-REENTRY-1-R4-REVIEW 返工施工完成（🟦open，待独立复审）**：R4 复审 conditional pass 的 2 项退回已施工。S1a：`live_order_reentry_r4_redo_test.go:79` 的 `time.Sleep(10ms)` 轮询改 `WaitState(ctx, barrierIdle)`；S1b：`:199` 的 `time.Sleep(1ms)` 轮询改 `WaitState(ctx, barrierSubmitting)`；S2：`mutation_coordinator_test.go:1222` 的 `FullBrokerPath` `WaitState` 加防御性同步注释 + 引用 `Recovery_CloseConfirmed` 对抗证明。对抗证明 S1a：突变 `mutation_coordinator.go:266` guard `if spec.action != actionOpen`→`if true` → `OpenMutationWithTicket_NoRecovery` RED（`state=idle, should stay outcome_unknown`）→ restore GREEN。门禁：build/test/race×3/vet/check-file-lines(0 errors)/`git diff --check` 全绿；`grep "time.Sleep" live_order_reentry_r4_redo_test.go` = 0 行。不改生产代码、不改已通过的 S1/S2/S3。详见 registry "R4 返工施工完成" 节。停手等 Devin CLI 复审。
 
 - 2026-08-26 **D-REVERT-SCOPE-DRIFT-001 派工 Devin IDE（🟦open，待施工）**：8 个漂移 VM ID 的重新施工提示词已落档 `docs/audits/builder-handoff-vm-revert-redo-2026-08-26.md`，分 4 批：① CACHE-INTEGRITY-1/2（SourceHash）② TRADE-CONTEXT-1/2（交易上下文）③ COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（编译器）④ TIMESERIES-SEMANTICS-1 + RUNTIME-FAILCLOSED-1（语义）。基线 HEAD `889ff2ec`。施工后状态 `🟦open（施工完成，待独立复审）`，Devin CLI 验收。
