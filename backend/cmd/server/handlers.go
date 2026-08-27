@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -64,7 +65,7 @@ func registerHandlers(
 	accountNumberSvc := usersvc.NewAccountNumberService(pool)
 	registrationSvc := service.NewRegistrationService(userRepo, accountNumberSvc, walletSvc, log)
 	emailNotifier := newEmailNotifier(cfg, log)
-	searcher := brokersearch.New("", "")
+	searcher := brokersearch.NewFromConfig(os.Getenv("MTAPI_MT4_HOST"), os.Getenv("MTAPI_MT5_HOST"))
 	rediscoverer := mdgateway.NewHostRediscoverer(searcher, pool, log)
 	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, rediscoverer, log)
 

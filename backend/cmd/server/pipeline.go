@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -68,7 +69,7 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		Secrets:             d.secClient,
 		Hub:                 d.hub,
 		BrokerRegistry:      d.brokerReg,
-		Searcher:            brokersearch.New("", ""),
+		Searcher:            brokersearch.NewFromConfig(os.Getenv("MTAPI_MT4_HOST"), os.Getenv("MTAPI_MT5_HOST")),
 		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector, d.snapshotBroker),
 		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo, d.mthubSvc),
 		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),
@@ -334,9 +335,9 @@ func (p *pipelineState) makeOnBrokerInfo(
 				// labels. Also set Magic/SL/TP which were previously missing.
 				item := mthub.PositionSnapshotItem{
 					Ticket: o.Ticket, Symbol: o.SymbolRaw,
-					Type:    strings.ToLower(o.OrderTypeString()),
-					Magic:   o.Magic,
-					Volume:  o.Volume, OpenPrice: o.OpenPrice, Profit: o.Profit,
+					Type:   strings.ToLower(o.OrderTypeString()),
+					Magic:  o.Magic,
+					Volume: o.Volume, OpenPrice: o.OpenPrice, Profit: o.Profit,
 					Swap: o.Swap, Commission: o.Commission, Comment: o.Comment,
 					StopLoss:   o.StopLoss,
 					TakeProfit: o.TakeProfit,

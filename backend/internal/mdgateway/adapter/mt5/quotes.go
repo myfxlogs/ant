@@ -112,7 +112,12 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		default:
 		}
 
-		if err := g.ensureConnected(ctx, &backoff, maxBackoff); err != nil {
+		// QUOTE-RECONNECT-LOOP S3: ensureConnected never returns an error
+		// (it logs + sleeps + returns nil on Connect failure). The loop
+		// only exits on ctx.Done(). The old code returned on
+		// ensureConnected error, permanently killing the quote stream.
+		_ = g.ensureConnected(ctx, &backoff, maxBackoff)
+		if ctx.Err() != nil {
 			return
 		}
 
@@ -148,15 +153,15 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		backoff = time.Second
 		g.reportStatus("connected", "")
 		g.log.Info("mt5: quote stream active")
-	for {
-		action := g.recvQuoteFrame(ctx, subCtx, stream, handler, &backoff, maxBackoff)
-		if action == quoteActionContinue {
-			continue
+		for {
+			action := g.recvQuoteFrame(ctx, subCtx, stream, handler, &backoff, maxBackoff)
+			if action == quoteActionContinue {
+				continue
+			}
+			cancel()
+			break
 		}
-		cancel()
-		break
 	}
-}
 }
 
 // quoteFrameAction represents the outcome of a single recvQuoteFrame call.

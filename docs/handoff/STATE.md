@@ -49,8 +49,8 @@
 - **VM 返工批 round 4-5** 🟦open — 5 ID 代码被 D-REVERT-SCOPE-DRIFT-001 回滚，需从零重做（2026-08-27 Devin CLI 审计确认）
 - **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
 - **DATA-TRUTH-1** 🟦open — orders 表 reconciliation 只检测不收敛，ghost 仅 log.Warn（P0 数据，需架构决策）
-- **QUOTE-RECONNECT-LOOP** 🟦open — 报价流自持重连循环，Disconnect 杀全 session（P1 报价）
-- **BROKER-SEARCH-1** 🟦open — mtapi broker 搜索 host 硬编码 + 配置未接线（P1 报价）
+- **QUOTE-RECONNECT-LOOP** 🟦open（施工完成，待独立复审） — 报价流自持重连循环修复（2026-08-27 Batch 4 施工，S1-S4 + T1-T5 + P1-P2）
+- **BROKER-SEARCH-1** 🟦open（施工完成，待独立复审） — mtapi host 配置接线（2026-08-27 Batch 4 施工，S6-S8 + T6-T8 + P3）
 - **TRUST-1** 🟦open — Demo/真实账户战绩混展无标注（P2 业务，需业务决策）
 - **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
 - **VM-AUDIT-2026-08-27-1** ✅done — Python live 路径 SourceHash 验证（Devin CLI 验收通过 2026-08-27）

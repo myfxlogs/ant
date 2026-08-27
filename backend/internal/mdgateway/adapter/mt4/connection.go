@@ -21,29 +21,29 @@ import (
 )
 
 type Gateway struct {
-	cfg                  mdtick.AccountConfig
-	log                  *zap.Logger
-	mu                   sync.RWMutex
-	connectMu            sync.Mutex // single-flight guard: serializes concurrent reconnects from the quote/profit/order stream loops
-	conn                 *grpc.ClientConn
-	client               pb.MT4Client
-	connCli              pb.ConnectionClient
-	streamCli            pb.StreamsClient
-	subCli               pb.SubscriptionsClient
-	tradingCli           pb.TradingClient
-	serviceCli           pb.ServiceClient
-	sessionID            string
-	subscribedSymbols    []string // symbols registered via Subscribe/AddSymbols; re-subscribed after reconnect
-	cancelSub            context.CancelFunc
-	cancelProfitSub      context.CancelFunc
-	cancelOrderUpdateSub context.CancelFunc           // set by orderUpdateRecvLoop (SSE stream)
-	cancelHubOrderSub    context.CancelFunc           // set by SubscribeOrderEvents (Hub stream)
-	reconnecting         bool                         // true while reconnection is in progress (prevents recvLoop race)
-	onStatusChange       func(status, message string) // connection state callback (nil-safe)
-	breaker              mdtick.Breaker
-	lastProfitUpdate     *mdtick.ProfitUpdate // last OnOrderProfit frame; used to detect data silence
-	lastProfitAt         time.Time            // last time a frame was received
-	quoteRecvTimeoutOverride time.Duration // test-only: overrides the quote stream silence timeout
+	cfg                      mdtick.AccountConfig
+	log                      *zap.Logger
+	mu                       sync.RWMutex
+	connectMu                sync.Mutex // single-flight guard: serializes concurrent reconnects from the quote/profit/order stream loops
+	conn                     *grpc.ClientConn
+	client                   pb.MT4Client
+	connCli                  pb.ConnectionClient
+	streamCli                pb.StreamsClient
+	subCli                   pb.SubscriptionsClient
+	tradingCli               pb.TradingClient
+	serviceCli               pb.ServiceClient
+	sessionID                string
+	subscribedSymbols        []string // symbols registered via Subscribe/AddSymbols; re-subscribed after reconnect
+	cancelSub                context.CancelFunc
+	cancelProfitSub          context.CancelFunc
+	cancelOrderUpdateSub     context.CancelFunc           // set by orderUpdateRecvLoop (SSE stream)
+	cancelHubOrderSub        context.CancelFunc           // set by SubscribeOrderEvents (Hub stream)
+	reconnecting             bool                         // true while reconnection is in progress (prevents recvLoop race)
+	onStatusChange           func(status, message string) // connection state callback (nil-safe)
+	breaker                  mdtick.Breaker
+	lastProfitUpdate         *mdtick.ProfitUpdate // last OnOrderProfit frame; used to detect data silence
+	lastProfitAt             time.Time            // last time a frame was received
+	quoteRecvTimeoutOverride time.Duration        // test-only: overrides the quote stream silence timeout
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
@@ -184,9 +184,16 @@ func (g *Gateway) Connect(ctx context.Context) error {
 }
 
 func (g *Gateway) Disconnect(ctx context.Context) error {
-	// Drain: brief grace period for in-flight stream Recv() calls
-	// to observe the cancelled context before we tear down the conn.
-	time.Sleep(200 * time.Millisecond)
+	// QUOTE-RECONNECT-LOOP S2: drain grace period for in-flight stream
+	// Recv() calls to observe the cancelled context before we tear down
+	// the conn. Use a ctx-cancellable wait instead of time.Sleep so that
+	// a cancelled context returns immediately (<50ms) rather than
+	// blocking for 200ms — the old time.Sleep killed all sessions after
+	// a fixed delay, amplifying the cascade-disconnect problem.
+	select {
+	case <-time.After(200 * time.Millisecond):
+	case <-ctx.Done():
+	}
 
 	g.mu.Lock()
 	defer g.mu.Unlock()
@@ -253,10 +260,15 @@ func (g *Gateway) ensureConnected(ctx context.Context, backoff *time.Duration, m
 	}
 	defer g.connectMu.Unlock()
 	if err := g.Connect(ctx); err != nil {
-		g.log.Warn("mt4 reconnect failed", zap.Error(err), zap.Duration("backoff", *backoff))
+		// QUOTE-RECONNECT-LOOP S1: do NOT return error — that would make
+		// recvLoop/profitRecvLoop/orderUpdateRecvLoop exit permanently.
+		// Instead log.Warn + sleep(backoff) + return nil so the loop
+		// continues and retries Connect on the next iteration. Only
+		// ctx.Done() should terminate the loop.
+		g.log.Warn("mt4 reconnect failed; will retry", zap.Error(err), zap.Duration("backoff", *backoff))
 		g.sleep(ctx, *backoff)
 		*backoff = minDuration(*backoff*2, maxBackoff)
-		return fmt.Errorf("mt4 reconnect: %w", err)
+		return nil
 	}
 	return nil
 }

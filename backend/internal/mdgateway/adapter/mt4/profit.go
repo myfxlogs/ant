@@ -72,7 +72,10 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		default:
 		}
 
-		if err := g.ensureConnected(ctx, &backoff, maxBackoff); err != nil {
+		// QUOTE-RECONNECT-LOOP S4: ensureConnected never returns an error.
+		// The loop only exits on ctx.Done().
+		_ = g.ensureConnected(ctx, &backoff, maxBackoff)
+		if ctx.Err() != nil {
 			return
 		}
 
@@ -296,20 +299,20 @@ func profitPositionsFromOpenedOrders(orders []*pb.Order) []mdtick.ProfitPosition
 			openTimeUnix = ot.AsTime().Unix()
 		}
 		out = append(out, mdtick.ProfitPosition{
-			Ticket:      int64(o.GetTicket()),
-			Symbol:      o.GetSymbol(),
-			Type:        mt4OrderTypeString(o.GetType()),
-			Magic:       o.GetMagicNumber(),
-			Volume:      decimal.NewFromFloat(o.GetLots()),
-			OpenPrice:   decimal.NewFromFloat(o.GetOpenPrice()),
+			Ticket:       int64(o.GetTicket()),
+			Symbol:       o.GetSymbol(),
+			Type:         mt4OrderTypeString(o.GetType()),
+			Magic:        o.GetMagicNumber(),
+			Volume:       decimal.NewFromFloat(o.GetLots()),
+			OpenPrice:    decimal.NewFromFloat(o.GetOpenPrice()),
 			CurrentPrice: decimal.Zero, // MT4 Order proto has no current price field
-			StopLoss:    decimal.NewFromFloat(o.GetStopLoss()),
-			TakeProfit:  decimal.NewFromFloat(o.GetTakeProfit()),
-			Profit:      decimal.NewFromFloat(o.GetProfit()),
-			Swap:        decimal.NewFromFloat(o.GetSwap()),
-			Commission:  decimal.NewFromFloat(o.GetCommission()),
-			Comment:     o.GetComment(),
-			OpenTime:    openTimeUnix,
+			StopLoss:     decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit:   decimal.NewFromFloat(o.GetTakeProfit()),
+			Profit:       decimal.NewFromFloat(o.GetProfit()),
+			Swap:         decimal.NewFromFloat(o.GetSwap()),
+			Commission:   decimal.NewFromFloat(o.GetCommission()),
+			Comment:      o.GetComment(),
+			OpenTime:     openTimeUnix,
 		})
 	}
 	return out

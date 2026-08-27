@@ -121,7 +121,12 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		default:
 		}
 
-		if err := g.ensureConnected(ctx, &backoff, maxBackoff); err != nil {
+		// QUOTE-RECONNECT-LOOP S3: ensureConnected never returns an error
+		// (it logs + sleeps + returns nil on Connect failure). The loop
+		// only exits on ctx.Done(). The old code returned on
+		// ensureConnected error, permanently killing the quote stream.
+		_ = g.ensureConnected(ctx, &backoff, maxBackoff)
+		if ctx.Err() != nil {
 			return
 		}
 

@@ -65,6 +65,13 @@
 - Internal: in-process function calls OR NATS JetStream
 - MT access: mtapi gRPC ONLY (via `adapter/mt4/` and `adapter/mt5/`)
 - MT4 and MT5 adapters MUST NOT share code (except `adapter/mdtick/` shared DTO)
+- **mtapi gateway host configuration** (BROKER-SEARCH-1): the mtapi gRPC gateway
+  addresses used by broker search and per-account gateways are configurable via
+  environment variables `MTAPI_MT4_HOST` and `MTAPI_MT5_HOST` (e.g.
+  `MTAPI_MT4_HOST=mt4grpc3.mtapi.io:443`). Empty/unset values fall back to the
+  hardcoded defaults (`mt4grpc3.mtapi.io:443` / `mt5grpc3.mtapi.io:443`) so
+  existing deployments are not broken. Set these in the container environment to
+  route mtapi traffic through a regional proxy or failover endpoint.
 
 ## Push-First Architecture
 

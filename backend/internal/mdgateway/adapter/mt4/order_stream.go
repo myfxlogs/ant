@@ -37,7 +37,10 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		default:
 		}
 
-		if err := g.ensureConnected(ctx, &backoff, maxBackoff); err != nil {
+		// QUOTE-RECONNECT-LOOP S4: ensureConnected never returns an error.
+		// The loop only exits on ctx.Done().
+		_ = g.ensureConnected(ctx, &backoff, maxBackoff)
+		if ctx.Err() != nil {
 			return
 		}
 

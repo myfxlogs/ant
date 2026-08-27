@@ -9,9 +9,10 @@ import (
 	"fmt"
 	"strings"
 
+	antv1 "alphaforge/gen/proto/ant/v1"
 	mt4pb "alphaforge/mt4"
 	mt5pb "alphaforge/mt5"
-	antv1 "alphaforge/gen/proto/ant/v1"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -50,7 +51,23 @@ type Searcher struct {
 
 // New creates a Searcher with explicit gateway addresses.
 // If a gateway is empty, the mtapi default is used.
+// Deprecated: prefer NewFromConfig for explicit config-driven construction.
+// New is kept for backward compatibility.
 func New(mt4Gateway, mt5Gateway string) *Searcher {
+	if mt4Gateway == "" {
+		mt4Gateway = "mt4grpc3.mtapi.io:443"
+	}
+	if mt5Gateway == "" {
+		mt5Gateway = "mt5grpc3.mtapi.io:443"
+	}
+	return &Searcher{mt4Gateway: mt4Gateway, mt5Gateway: mt5Gateway}
+}
+
+// NewFromConfig creates a Searcher from explicit configuration values.
+// BROKER-SEARCH-1 S6: unlike New, this constructor is intended for
+// config/env-var-driven wiring. Empty values still fall back to the
+// mtapi hardcoded defaults so existing deployments are not broken.
+func NewFromConfig(mt4Gateway, mt5Gateway string) *Searcher {
 	if mt4Gateway == "" {
 		mt4Gateway = "mt4grpc3.mtapi.io:443"
 	}
