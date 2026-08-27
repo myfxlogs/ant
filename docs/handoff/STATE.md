@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done；VM 返工批第四批（VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1）✅done。D-REVERT-SCOPE-DRIFT-001 全部 8 个漂移 VM ID 返工完成。**VM-AUDIT-2026-08-27 全 3 批 ✅done**（-1~-8，Devin CLI 验收通过 2026-08-27，8 项对抗证明独立验证）。
+- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）。**2026-08-27 第二轮审计**：VM round 4-5 遗留 5 ID 全部 FAIL（代码被 D-REVERT-SCOPE-DRIFT-001 回滚，需从零重做）；P1 资金/数据/报价管线 13 条目审计完成——5 still-open（TRON-SECURITY-1/DATA-TRUTH-1/QUOTE-RECONNECT-LOOP/BROKER-SEARCH-1/TRUST-1）+ 8 fixed-acceptable + DATA-TRUTH-2/2b 状态漂移已修正。spec 见 `docs/spec/audit-2026-08-27-vm-round45-p1-pipeline-spec.md`。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -24,9 +24,11 @@
 | VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
+| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | 代码被 D-REVERT-SCOPE-DRIFT-001 回滚，需从零重做（spec audit-2026-08-27） |
+| P1 管线审计（13 条目） | 🟦open | 5 still-open + 8 fixed-acceptable，spec audit-2026-08-27 |
 
-- **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
-- **下一步**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8，8 项对抗证明独立验证）。VM 管线全面审计闭环。待业主指示下一轮审计或新任务。
+- **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。DATA-TRUTH-1 需架构决策（reconciliation 定位）。TRUST-1 需业务决策（demo/real 处理策略）。
+- **下一步**: P0 资金安全——TRON-SECURITY-1（TLS 凭据）+ DATA-TRUTH-1（架构决策后施工）；P1 功能阻断——QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 + VM round 4-5 × 5 ID 从零重做。待业主指示开工或派工。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -43,7 +45,12 @@
 - **VM-RUNTIME-FAILCLOSED-1** ✅done — fail-closed 错误传播（Devin CLI 验收通过 2026-08-26）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
-- **VM 返工批 round 4-5** ⚠️待独立复审 — VM-CACHE-INTEGRITY-5/VM-TRADE-CONTEXT-6/VM-API-TRUTH-3 等
+- **VM 返工批 round 4-5** 🟦open — 5 ID 代码被 D-REVERT-SCOPE-DRIFT-001 回滚，需从零重做（2026-08-27 Devin CLI 审计确认）
+- **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
+- **DATA-TRUTH-1** 🟦open — orders 表 reconciliation 只检测不收敛，ghost 仅 log.Warn（P0 数据，需架构决策）
+- **QUOTE-RECONNECT-LOOP** 🟦open — 报价流自持重连循环，Disconnect 杀全 session（P1 报价）
+- **BROKER-SEARCH-1** 🟦open — mtapi broker 搜索 host 硬编码 + 配置未接线（P1 报价）
+- **TRUST-1** 🟦open — Demo/真实账户战绩混展无标注（P2 业务，需业务决策）
 - **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
 - **VM-AUDIT-2026-08-27-1** ✅done — Python live 路径 SourceHash 验证（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-2** ✅done — runEvent fatalError 重置（Devin CLI 验收通过 2026-08-27）
@@ -58,6 +65,7 @@
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-08-27 **第二轮审计完成**：Devin CLI 独立审计 ① VM round 4-5 遗留 5 ID + ② P1 资金/数据/报价管线 13 条目。VM round 4-5：5 ID 全部 FAIL——代码被 D-REVERT-SCOPE-DRIFT-001 回滚删除，`vm_live_validators.go`/`live_context_enums.go`/`compile_interp_decls.go` 等文件不存在，`accountIsInvestorLookup`/`validateLiveFinancialFields`/`isInputDeclaration` 等函数零匹配，`vm-adversarial-proofs.md` 标记 SUPERSEDED，需按 D-VM-LIVE-001 从零重做。P1 管线：5 still-open（TRON-SECURITY-1 `tron_client.go:34` 仍 insecure.NewCredentials / DATA-TRUTH-1 `reconciliation.go:191` ghost 仅 log.Warn / QUOTE-RECONNECT-LOOP Disconnect 杀全 session / BROKER-SEARCH-1 host 硬编码 / TRUST-1 demo/real 混展）+ 8 fixed-acceptable + DATA-TRUTH-2/2b 状态漂移已修正为 ✅done。spec 落档 `docs/spec/audit-2026-08-27-vm-round45-p1-pipeline-spec.md`。
 - 2026-08-27 VM-AUDIT-2026-08-27 批次 3 ✅done：Devin CLI 验收通过。S1 新建 `vm_live_compile.go` 提取 `compileForLive` helper，4 个 live 路径调用点全部改用（BUG-6）；S2 `recoverFromOutcomeUnknown` 加 `ctx` 参数 + `select+ctx.Done()` 替换 `time.Sleep`，2 处调用点 + 2 处旧测试同步更新（BUG-7）；S3 `PositionCache.Subscribe` goroutine 加 `defer recover()`（BUG-8）。对抗证明 3 项独立验证 RED→restore→GREEN（T1 swap Python 分支→Version="mql5"、T2 恢复 time.Sleep→500ms 超时、T3 删除 recover→nil map panic 崩溃进程）。门禁追加 `grep CompileMQLFromBytecode` = 0 匹配。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。**VM-AUDIT-2026-08-27 全 3 批闭环，8 个 ID 全部 ✅done。**
 - 2026-08-27 VM-AUDIT-2026-08-27 批次 2 ✅done：Devin CLI 验收通过。S1 `executeCallUser` 内联循环加 `MaxStackDepth` 检查（defense-in-depth）；S2 `OP_CALL_BUILTIN` 在 `popN` 栈下溢后 early return 跳过 `callBuiltin`；S3 `VMLiveSession.dispatch` default 分支直接返回 "unknown request type" error。对抗证明 3 项独立验证 RED→restore→GREEN（T1 stack depth 突变→instruction limit、T2 popN early return 突变→mock builtin 被调用、T3 default 分支突变→Success:true）。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。
 - 2026-08-27 VM-AUDIT-2026-08-27 批次 1 ✅done：Devin CLI 验收通过。S1 `executePythonVMLive` 改用 `CompilePythonCached`（SourceHash 验证）；S2 `NewPythonVMLiveSessionCached` 改用 `CompilePythonCached`；S3 `runEvent` 加 `vm.fatalError = ""` 重置。对抗证明 2 项独立验证 RED→restore→GREEN（T1 SourceHash 突变、T2 fatalError 重置突变）。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。
