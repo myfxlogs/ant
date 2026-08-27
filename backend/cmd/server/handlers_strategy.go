@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -88,6 +89,57 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 			return ""
 		}
 		return broker
+	})
+	// VM-TRADE-CONTEXT-6 S7: server-side account truth lookups.
+	srv.SetAccountLoginLookup(func(ctx context.Context, accountID string) (int64, error) {
+		var login int64
+		err := d.pool.QueryRow(ctx,
+			`SELECT login FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&login)
+		if err != nil {
+			return 0, fmt.Errorf("login lookup: %w", err)
+		}
+		return login, nil
+	})
+	srv.SetAccountIsDemoLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var accountType string
+		err := d.pool.QueryRow(ctx,
+			`SELECT COALESCE(account_type,'unknown') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&accountType)
+		if err != nil {
+			return false, fmt.Errorf("account_type lookup: %w", err)
+		}
+		return accountType == "demo" || accountType == "contest", nil
+	})
+	srv.SetAccountConnectedLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var status string
+		err := d.pool.QueryRow(ctx,
+			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&status)
+		if err != nil {
+			return false, fmt.Errorf("account_status lookup: %w", err)
+		}
+		return status == "connected" || status == "trade_allowed", nil
+	})
+	srv.SetAccountTradeAllowedLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var status string
+		err := d.pool.QueryRow(ctx,
+			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&status)
+		if err != nil {
+			return false, fmt.Errorf("account_status lookup: %w", err)
+		}
+		return status == "trade_allowed", nil
+	})
+	srv.SetAccountIsInvestorLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var isInvestor bool
+		err := d.pool.QueryRow(ctx,
+			`SELECT COALESCE(is_investor, false) FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&isInvestor)
+		if err != nil {
+			return false, fmt.Errorf("is_investor lookup: %w", err)
+		}
+		return isInvestor, nil
 	})
 	srv.SetQuotaChecker(d.quotaChecker)
 	if d.boundSvc != nil {

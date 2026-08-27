@@ -93,6 +93,16 @@ func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, pos
 	r.ctx.livePendingOrders = pendingOrders
 }
 
+// SetLogin sets the account login (AccountNumber) for harness mode.
+// VM-TRADE-CONTEXT-6: Login comes from server-side mt_accounts lookup,
+// not from the client request. Used by vmHandleBar to propagate the
+// authoritative Login to the VM's AccountNumber() builtin.
+func (r *Runner) SetLogin(login int64) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	r.ctx.liveLogin = login
+}
+
 // UpdateExtraBars sets the extra symbol bar windows for multi-symbol strategies.
 func (r *Runner) UpdateExtraBars(extra map[string][]sdk.Bar) {
 	r.ctx.setExtraBars(extra)

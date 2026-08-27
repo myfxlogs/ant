@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -15,43 +16,35 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	if lctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "bar_context missing"}
 	}
-	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions), vmPendingOrdersToSdk(lctx.PendingOrders))
-	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
 
-	n := len(lctx.Close)
-	barWindow := make([]sdk.Bar, n)
-	for i := 0; i < n; i++ {
-		barWindow[i] = sdk.Bar{
-			Open:      parseDecimal(lctx.Open[i]),
-			High:      parseDecimal(lctx.High[i]),
-			Low:       parseDecimal(lctx.Low[i]),
-			Close:     parseDecimal(lctx.Close[i]),
-			Volume:    parseInt64(lctx.Volume[i]),
-			Timestamp: lctx.BarTimesMs[i],
-		}
+	// VM-TRADE-CONTEXT-6 S2: OHLCV array length validation — mismatched
+	// lengths cause index-out-of-range panics. Fail-closed with explicit error.
+	if err := validateOHLCVLengths(lctx.Open, lctx.High, lctx.Low, lctx.Close, lctx.Volume, lctx.BarTimesMs); err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "OHLCV array length mismatch: " + err.Error()}
 	}
 
+	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
+	if resp := rejectNilRepeatedInLive(lctx.Mode, lctx.Positions, lctx.PendingOrders); resp != nil {
+		return resp
+	}
+
+	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions), vmPendingOrdersToSdk(lctx.PendingOrders))
+	// VM-TRADE-CONTEXT-6 S6: propagate authoritative Login to VM's AccountNumber().
+	r.SetLogin(lctx.Login)
+	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
+
+	// VM-TRADE-CONTEXT-6 S3: strict parse bars — invalid decimals fail-closed.
+	barWindow, resp := parseBarsStrict(lctx.Open, lctx.High, lctx.Low, lctx.Close, lctx.Volume, lctx.BarTimesMs, "")
+	if resp != nil {
+		return resp
+	}
 	barSeries := sdk.BarsToSlice(barWindow)
 
 	// Convert multi-symbol series from the live context.
 	if len(lctx.Symbols) > 0 {
-		extra := make(map[string][]sdk.Bar, len(lctx.Symbols))
-		for _, ss := range lctx.Symbols {
-			n := len(ss.Close)
-			if n == 0 {
-				continue
-			}
-			bars := make([]sdk.Bar, n)
-			for i := 0; i < n; i++ {
-				bars[i] = sdk.Bar{
-					Open:   parseDecimal(ss.Open[i]),
-					High:   parseDecimal(ss.High[i]),
-					Low:    parseDecimal(ss.Low[i]),
-					Close:  parseDecimal(ss.Close[i]),
-					Volume: parseInt64(ss.Volume[i]),
-				}
-			}
-			extra[ss.Symbol] = bars
+		extra, errResp := parseExtraSymbolsStrict(lctx.Symbols)
+		if errResp != nil {
+			return errResp
 		}
 		r.UpdateExtraBars(extra)
 	}
@@ -63,15 +56,104 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	return vmSignalResponse(sig, lctx.Symbol)
 }
 
+// rejectNilRepeatedInLive returns an error response if mode is live and
+// positions or pendingOrders are nil (data missing). Returns nil if OK.
+// VM-TRADE-CONTEXT-6 S4.
+func rejectNilRepeatedInLive(mode string, positions []*antv1.LivePosition, pendingOrders []*antv1.LivePendingOrder) *antv1.ExecuteLiveResponse {
+	if mode != modeLive {
+		return nil
+	}
+	if positions == nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
+	}
+	if pendingOrders == nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
+	}
+	return nil
+}
+
+// parseBarsStrict parses OHLCV arrays into sdk.Bar slice using strict parsers.
+// Returns (bars, nil) on success or (nil, errorResponse) on failure.
+// symbolPrefix is "" for primary symbol or "symbol <name> " for extra symbols.
+// VM-TRADE-CONTEXT-6 S3.
+func parseBarsStrict(open, high, low, close, volume []string, barTimesMs []int64, symbolPrefix string) ([]sdk.Bar, *antv1.ExecuteLiveResponse) {
+	n := len(close)
+	bars := make([]sdk.Bar, n)
+	for i := 0; i < n; i++ {
+		o, err := parseDecimalStrict(open[i])
+		if err != nil {
+			return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in " + symbolPrefix + "Open[" + strconv.Itoa(i) + "]: " + err.Error()}
+		}
+		h, err := parseDecimalStrict(high[i])
+		if err != nil {
+			return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in " + symbolPrefix + "High[" + strconv.Itoa(i) + "]: " + err.Error()}
+		}
+		l, err := parseDecimalStrict(low[i])
+		if err != nil {
+			return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in " + symbolPrefix + "Low[" + strconv.Itoa(i) + "]: " + err.Error()}
+		}
+		c, err := parseDecimalStrict(close[i])
+		if err != nil {
+			return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in " + symbolPrefix + "Close[" + strconv.Itoa(i) + "]: " + err.Error()}
+		}
+		v, err := parseInt64Strict(volume[i])
+		if err != nil {
+			return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "invalid int in " + symbolPrefix + "Volume[" + strconv.Itoa(i) + "]: " + err.Error()}
+		}
+		bars[i] = sdk.Bar{Open: o, High: h, Low: l, Close: c, Volume: v}
+		if barTimesMs != nil {
+			bars[i].Timestamp = barTimesMs[i]
+		}
+	}
+	return bars, nil
+}
+
+// parseExtraSymbolsStrict parses multi-symbol OHLCV series with strict validation.
+// Returns (extraBars, nil) on success or (nil, errorResponse) on failure.
+// VM-TRADE-CONTEXT-6 S2+S3.
+func parseExtraSymbolsStrict(symbols []*antv1.LiveSymbolSeries) (map[string][]sdk.Bar, *antv1.ExecuteLiveResponse) {
+	extra := make(map[string][]sdk.Bar, len(symbols))
+	for _, ss := range symbols {
+		if err := validateOHLCVLengths(ss.Open, ss.High, ss.Low, ss.Close, ss.Volume, nil); err != nil {
+			return nil, &antv1.ExecuteLiveResponse{Success: false, Error: "OHLCV array length mismatch for symbol " + ss.Symbol + ": " + err.Error()}
+		}
+		if len(ss.Close) == 0 {
+			continue
+		}
+		bars, errResp := parseBarsStrict(ss.Open, ss.High, ss.Low, ss.Close, ss.Volume, nil, "symbol "+ss.Symbol+" ")
+		if errResp != nil {
+			return nil, errResp
+		}
+		extra[ss.Symbol] = bars
+	}
+	return extra, nil
+}
+
 // vmHandleTick processes a tick event.
 func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext) *antv1.ExecuteLiveResponse {
 	if tctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "tick_context missing"}
 	}
+	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
+	if tctx.Mode == modeLive {
+		if tctx.Positions == nil {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
+		}
+		if tctx.PendingOrders == nil {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
+		}
+	}
 	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions), vmPendingOrdersToSdk(tctx.PendingOrders))
 	r.UpdateSymbolInfo(tctx.Point, tctx.Digits, tctx.ContractSize, strconv.FormatInt(int64(tctx.StopsLevel), 10))
-	bid := parseDecimal(tctx.Bid)
-	ask := parseDecimal(tctx.Ask)
+	// VM-TRADE-CONTEXT-6 S3: strict parse in live path.
+	bid, err := parseDecimalStrict(tctx.Bid)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Bid: " + err.Error()}
+	}
+	ask, err := parseDecimalStrict(tctx.Ask)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Ask: " + err.Error()}
+	}
 	r.UpdateTickState(bid, ask)
 	sig, err := r.OnTick(ctx, bid, ask)
 	if err != nil {
@@ -87,24 +169,62 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
 	}
+	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
+	if evctx.Mode == modeLive {
+		if evctx.Positions == nil {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
+		}
+		if evctx.PendingOrders == nil {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
+		}
+	}
 	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, vmPositionsToSdk(evctx.Positions), vmPendingOrdersToSdk(evctx.PendingOrders))
 
 	side := sdk.SideBuy
 	if evctx.Side == "sell" {
 		side = sdk.SideSell
 	}
+	// VM-TRADE-CONTEXT-6 S3: strict parse in live path.
+	vol, err := parseDecimalStrict(evctx.Volume)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Volume: " + err.Error()}
+	}
+	price, err := parseDecimalStrict(evctx.Price)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Price: " + err.Error()}
+	}
+	sl, err := parseDecimalStrict(evctx.StopLoss)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in StopLoss: " + err.Error()}
+	}
+	tp, err := parseDecimalStrict(evctx.TakeProfit)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in TakeProfit: " + err.Error()}
+	}
+	profit, err := parseDecimalStrict(evctx.Profit)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Profit: " + err.Error()}
+	}
+	commission, err := parseDecimalStrict(evctx.Commission)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Commission: " + err.Error()}
+	}
+	swap, err := parseDecimalStrict(evctx.Swap)
+	if err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Swap: " + err.Error()}
+	}
 	event := sdk.TradeEvent{
 		Ticket:     evctx.Ticket,
 		Symbol:     evctx.Symbol,
 		EventType:  vmTradeEventType(evctx.EventType),
 		Side:       side,
-		Volume:     parseDecimal(evctx.Volume),
-		Price:      parseDecimal(evctx.Price),
-		StopLoss:   parseDecimal(evctx.StopLoss),
-		TakeProfit: parseDecimal(evctx.TakeProfit),
-		Profit:     parseDecimal(evctx.Profit),
-		Commission: parseDecimal(evctx.Commission),
-		Swap:       parseDecimal(evctx.Swap),
+		Volume:     vol,
+		Price:      price,
+		StopLoss:   sl,
+		TakeProfit: tp,
+		Profit:     profit,
+		Commission: commission,
+		Swap:       swap,
 	}
 	sig, err := r.OnTrade(ctx, event)
 	if err != nil {
@@ -133,6 +253,15 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerContext) *antv1.ExecuteLiveResponse {
 	if tmctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "timer_context missing"}
+	}
+	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
+	if tmctx.Mode == modeLive {
+		if tmctx.Positions == nil {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
+		}
+		if tmctx.PendingOrders == nil {
+			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
+		}
 	}
 	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions), vmPendingOrdersToSdk(tmctx.PendingOrders))
 	sig, err := r.OnTimerTick(ctx)
@@ -279,4 +408,27 @@ func vmSignalToProto(sig *sdk.Signal, symbol string) *antv1.StrategySignal {
 		TakeProfit:     sig.TakeProfit.String(),
 		ExecutedTicket: sig.OrderTicket,
 	}
+}
+
+// validateOHLCVLengths checks that all OHLCV arrays have the same length.
+// barTimesMs may be nil (multi-symbol series don't carry timestamps).
+// VM-TRADE-CONTEXT-6 S2: mismatched lengths cause index-out-of-range panics.
+func validateOHLCVLengths(open, high, low, close, volume []string, barTimesMs []int64) error {
+	n := len(close)
+	if len(open) != n {
+		return fmt.Errorf("open length %d != close length %d", len(open), n)
+	}
+	if len(high) != n {
+		return fmt.Errorf("high length %d != close length %d", len(high), n)
+	}
+	if len(low) != n {
+		return fmt.Errorf("low length %d != close length %d", len(low), n)
+	}
+	if len(volume) != n {
+		return fmt.Errorf("volume length %d != close length %d", len(volume), n)
+	}
+	if barTimesMs != nil && len(barTimesMs) != n {
+		return fmt.Errorf("barTimesMs length %d != close length %d", len(barTimesMs), n)
+	}
+	return nil
 }

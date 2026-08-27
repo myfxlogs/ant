@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -54,6 +55,29 @@ func parseInt64(s string) int64 {
 		return 0
 	}
 	return n
+}
+
+// parseDecimalStrict parses a decimal string and returns an error on failure
+// instead of silently returning zero. Used by live handlers where invalid
+// values must fail-closed (VM-TRADE-CONTEXT-6 S1). "0" is a valid decimal
+// and is NOT rejected — only unparseable strings return an error.
+func parseDecimalStrict(s string) (decimal.Decimal, error) {
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return decimal.Zero, fmt.Errorf("invalid decimal %q: %w", s, err)
+	}
+	return d, nil
+}
+
+// parseInt64Strict parses an int64 string and returns an error on failure
+// instead of silently returning zero. Used by live handlers where invalid
+// values must fail-closed (VM-TRADE-CONTEXT-6 S1).
+func parseInt64Strict(s string) (int64, error) {
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid int %q: %w", s, err)
+	}
+	return n, nil
 }
 
 func parseInt32(s string) int32 {

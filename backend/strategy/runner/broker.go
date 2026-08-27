@@ -210,6 +210,7 @@ func (b *brokerImpl) Account() sdk.AccountInfo {
 			Equity:     b.mustDecimal(b.runner.ctx.liveEquity),
 			Margin:     b.mustDecimal(b.runner.ctx.liveMargin),
 			FreeMargin: b.mustDecimal(b.runner.ctx.liveFreeMargin),
+			Login:      b.runner.ctx.liveLogin, // VM-TRADE-CONTEXT-6
 		}
 	}
 	return b.executor.Account()

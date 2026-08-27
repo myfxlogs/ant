@@ -103,6 +103,17 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 	})
 	s.runner.SetStrategy(s.strategy)
 
+	// VM-TRADE-CONTEXT-6 S5: validate first bar context before Init.
+	// Invalid OHLCV lengths or financial fields must be rejected before
+	// OnInit executes — otherwise the strategy runs with corrupt data.
+	if err := validateFirstBarContext(bctx); err != nil {
+		return nil, fmt.Errorf("invalid first bar context: %w", err)
+	}
+
+	// VM-TRADE-CONTEXT-6 S6: set Login before Init so AccountNumber()
+	// returns the authoritative value during OnInit.
+	s.runner.SetLogin(bctx.Login)
+
 	if err := s.runner.Init(ctx); err != nil {
 		return nil, fmt.Errorf("init: %w", err)
 	}

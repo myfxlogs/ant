@@ -23,7 +23,7 @@ func (s *StrategyExecutionServer) buildTickContext(ctx context.Context, cfg Live
 		Params:       buildLiveParams(cfg.Params),
 		CurrentPrice: tick.Bid.String(),
 	}
-	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == "live" {
+	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == modeLive {
 		return nil, err
 	}
 	s.backfillTickSymbolInfo(cfg, tctx)
@@ -60,7 +60,7 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 		Commission: evt.Commission.String(),
 		Swap:       evt.Swap.String(),
 	}
-	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == "live" {
+	if err := s.backfillContextStrings(cfg.AccountID, &tctx.Equity, &tctx.Balance, &tctx.Margin, &tctx.FreeMargin, &tctx.Positions, &tctx.PendingOrders); err != nil && cfg.Mode == modeLive {
 		return nil, err
 	}
 	return tctx, nil
@@ -228,12 +228,93 @@ func (s *StrategyExecutionServer) buildLiveContext(ctx context.Context, cfg Live
 	if n > 0 {
 		lctx.CurrentPrice = closeVals[n-1]
 	}
-	if err := s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions, &lctx.PendingOrders); err != nil && cfg.Mode == "live" {
+	if err := s.backfillContextStrings(cfg.AccountID, &lctx.Equity, &lctx.Balance, &lctx.Margin, &lctx.FreeMargin, &lctx.Positions, &lctx.PendingOrders); err != nil && cfg.Mode == modeLive {
 		return nil, err
 	}
 	s.backfillSymbolInfo(cfg, lctx)
 	lctx.Symbols = buildSymbolSeries(extraBars)
+
+	// VM-TRADE-CONTEXT-6 S6: inject server-side account truth.
+	// Login/Company/IsDemo/IsConnected/IsTradeAllowed come from mt_accounts
+	// (authoritative source), not from the client request. Live mode requires
+	// all lookups to succeed (fail-closed); paper mode tolerates errors.
+	if err := s.injectAccountTruth(ctx, cfg, lctx); err != nil {
+		return nil, err
+	}
+
 	return lctx, nil
+}
+
+// injectAccountTruth populates Login/Company/IsDemo/IsConnected/IsTradeAllowed
+// from server-side mt_accounts lookups. VM-TRADE-CONTEXT-6 S6.
+//
+// Live mode: all lookups must succeed — DB errors fail-closed (return error).
+// Paper mode: lookup errors are non-fatal (fail-open for simulation).
+// Investor accounts get IsTradeAllowed=false even when connected (investor
+// accounts can view but not trade).
+func (s *StrategyExecutionServer) injectAccountTruth(ctx context.Context, cfg LiveStrategyConfig, lctx *antv1.LiveStrategyContext) error {
+	if cfg.AccountID == "" {
+		return nil
+	}
+
+	// Login
+	if s.accountLoginLookup != nil {
+		login, err := s.accountLoginLookup(ctx, cfg.AccountID)
+		if err != nil && cfg.Mode == modeLive {
+			return fmt.Errorf("account login lookup failed: %w", err)
+		} else if err == nil {
+			lctx.Login = login
+		}
+	}
+
+	// Company (broker) — reuse existing brokerCompanyLookup if available.
+	if s.brokerCompanyLookup != nil {
+		lctx.Company = s.brokerCompanyLookup(ctx, cfg.AccountID)
+	}
+
+	// IsDemo
+	if err := s.lookupBool(ctx, cfg, s.accountIsDemoLookup, &lctx.IsDemo, "is_demo"); err != nil {
+		return err
+	}
+
+	// IsConnected
+	if err := s.lookupBool(ctx, cfg, s.accountConnectedLookup, &lctx.IsConnected, "connected"); err != nil {
+		return err
+	}
+
+	// IsTradeAllowed
+	if err := s.lookupBool(ctx, cfg, s.accountTradeAllowedLookup, &lctx.IsTradeAllowed, "trade_allowed"); err != nil {
+		return err
+	}
+
+	// Investor gating: if account is investor, IsTradeAllowed must be false
+	// even when connected and trade_allowed status is true.
+	var isInvestor bool
+	if err := s.lookupBool(ctx, cfg, s.accountIsInvestorLookup, &isInvestor, "is_investor"); err != nil {
+		return err
+	}
+	if isInvestor {
+		lctx.IsTradeAllowed = false
+	}
+
+	return nil
+}
+
+// lookupBool is a shared helper for bool lookups with live-mode fail-closed.
+// VM-TRADE-CONTEXT-6 S6.
+func (s *StrategyExecutionServer) lookupBool(ctx context.Context, cfg LiveStrategyConfig, fn func(ctx context.Context, accountID string) (bool, error), dst *bool, name string) error {
+	if fn == nil {
+		return nil
+	}
+	val, err := fn(ctx, cfg.AccountID)
+	if err != nil {
+		if cfg.Mode == modeLive {
+			return fmt.Errorf("account %s lookup failed: %w", name, err)
+		}
+		return nil
+	}
+	*dst = val
+	return nil
 }
 
 func buildLiveParams(params map[string]string) []*antv1.LiveParam {

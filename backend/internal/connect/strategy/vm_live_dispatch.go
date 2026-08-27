@@ -93,6 +93,18 @@ func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1
 	})
 	r.SetStrategy(strategy)
 
+	// VM-TRADE-CONTEXT-6 S5: validate first bar context before Init.
+	// Invalid OHLCV lengths or financial fields must be rejected before
+	// OnInit executes — otherwise g_init=1 makes it impossible to distinguish
+	// a valid init from a corrupt-data init.
+	if err := validateFirstBarContext(bctx); err != nil {
+		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid first bar context: " + err.Error()}, nil
+	}
+
+	// VM-TRADE-CONTEXT-6 S6: set Login before Init so AccountNumber()
+	// returns the authoritative value during OnInit.
+	r.SetLogin(bctx.Login)
+
 	if err := r.Init(ctx); err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}, nil
 	}

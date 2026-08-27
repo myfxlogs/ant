@@ -108,6 +108,16 @@ type StrategyExecutionServer struct {
 	// brokerCompanyLookup resolves accountID → mt_accounts.broker_company.
 	// Used by seedBarWindows to filter md_bars to the correct data source.
 	brokerCompanyLookup func(ctx context.Context, accountID string) string
+
+	// VM-TRADE-CONTEXT-6 S6/S7: server-side account truth lookups.
+	// Each returns (value, error) so DB query errors can be distinguished
+	// from legitimate false/empty values. Live mode requires all lookups
+	// to succeed (fail-closed); paper mode tolerates errors (fail-open).
+	accountLoginLookup        func(ctx context.Context, accountID string) (int64, error)
+	accountIsDemoLookup       func(ctx context.Context, accountID string) (bool, error)
+	accountConnectedLookup    func(ctx context.Context, accountID string) (bool, error)
+	accountTradeAllowedLookup func(ctx context.Context, accountID string) (bool, error)
+	accountIsInvestorLookup   func(ctx context.Context, accountID string) (bool, error)
 }
 
 // QualityValidator validates backtest quality for marketplace publishing (read-only preview).
@@ -175,6 +185,23 @@ func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Conte
 }
 func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) string) {
 	s.brokerCompanyLookup = f
+}
+
+// VM-TRADE-CONTEXT-6 S7: setters for server-side account truth lookups.
+func (s *StrategyExecutionServer) SetAccountLoginLookup(f func(ctx context.Context, accountID string) (int64, error)) {
+	s.accountLoginLookup = f
+}
+func (s *StrategyExecutionServer) SetAccountIsDemoLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountIsDemoLookup = f
+}
+func (s *StrategyExecutionServer) SetAccountConnectedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountConnectedLookup = f
+}
+func (s *StrategyExecutionServer) SetAccountTradeAllowedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountTradeAllowedLookup = f
+}
+func (s *StrategyExecutionServer) SetAccountIsInvestorLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+	s.accountIsInvestorLookup = f
 }
 
 // QuotaChecker provides subscription plan limit checks.

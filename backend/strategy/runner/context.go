@@ -33,6 +33,7 @@ type contextImpl struct {
 	liveFreeMargin    string
 	livePositions     []sdk.Position
 	livePendingOrders []sdk.PendingOrder // LIVE-MQL-ORDER-CONTEXT-1
+	liveLogin         int64              // VM-TRADE-CONTEXT-6: AccountNumber() source
 
 	// Symbol info from parent process (harness mode — no RPC).
 	livePoint        string
