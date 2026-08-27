@@ -1,364 +1,165 @@
-# VM-TRADE-CONTEXT-6/7, VM-API-TRUTH-3, VM-CACHE-INTEGRITY-5, VM-COMPILER-SEMANTICS-4
-# STATUS: SUPERSEDED (2026-08-25) — historical round 5 proof record only.
-# The next proof registry must be regenerated from D-VM-LIVE-001 and current code.
-# Adversarial Proof Registry — independently verifiable mutation targets.
-#
-# VM-TEST-EVIDENCE-4 (返工第五阶段): each proof below has a specific mutation
-# target (file:line), expected RED behavior, and restore instruction. An
-# independent auditor can reproduce by applying the mutation, running the
-# test, observing RED, then restoring and observing GREEN.
-#
-# 返工第五阶段说明: 旧版 Proof 9d 仍假绿 (covErr 删除后被 cov==nil 分支掩盖),
-# Proof 11 的 strings.Contains 放行非法 input/extern, buildTradeContext 未知 enum
-# 归一成 buy/fill, ExecuteLive 信任客户端身份, live 空财务可执行, IsTradeAllowed
-# 用 connected proxy, accountIsInvestorLookup 可选。本次返工:
-#   - Proof 9d → 注入 non-nil coverage + error (删除 covErr 后 InjectCoverage 成功 → RED)
-#   - Proof 11 → 结构化 input/extern 检测 (isInputDeclaration/isExternDeclaration)
-#   - 新增 Proof 2f/2g/2h (live 空财务/buildTradeContext enum/ExecuteLive 身份)
-#   - 新增 Proof 6i (accountIsInvestorLookup 必选)
-#   - 新增 Proof 6j (IsTradeAllowed 非 connected proxy)
-#   - 新增 Proof 6e/6f/6g/6h/9c/9d/9e/11b (lookup error/investor/trailing/
-#     coverage restore failure/invalid declaration)
+# VM Adversarial Proof Registry — Batch 1-3 (VM-TEST-EVIDENCE-4)
 
-# ── VM-TRADE-CONTEXT-6 ────────────────────────────────────────────────
+> **Status**: 🟦open（施工完成，待独立复审）— 2026-08-27 Batch 5 重写。
+> **Supersedes**: round 5 proof registry (marked SUPERSEDED 2026-08-25 after D-REVERT-SCOPE-DRIFT-001).
+>
+> Each proof below has a specific mutation target (file:line), expected RED
+> behavior, and restore instruction. An independent auditor can reproduce by
+> applying the mutation, running the test, observing RED, then restoring and
+> observing GREEN. All referenced test files and functions verified to exist.
 
-# Proof 1: Array length validation in vmHandleBar
-# Mutation: remove the OHLCV array length check in vm_live_handlers.go
-# Test: TestVMHandleBar_ArrayLengthMismatch
-# Expected RED: test fails (validation removed, execution continues with bad data)
-# Restore: re-add the length check block
-# File: internal/connect/strategy/vm_live_handlers.go
-# Test file: internal/connect/strategy/vm_trade_context6_test.go:TestVMHandleBar_ArrayLengthMismatch
+## Verification commands
 
-# Proof 2: Login injection in buildLiveContext
-# Mutation: remove `lctx.Login = s.accountLoginLookup(ctx, cfg.AccountID)` in live_context.go
-# Test: TestBuildLiveContext_InjectsLoginAndCompany
-# Expected RED: Login=0, want 123456
-# Restore: re-add the Login injection line
-# File: internal/connect/strategy/live_context.go
-# Test file: internal/connect/strategy/vm_trade_context6_test.go:TestBuildLiveContext_InjectsLoginAndCompany
+```bash
+# Batch 1 (VM-COMPILER-SEMANTICS-4 + VM-CACHE-INTEGRITY-5)
+go test ./tools/mql2go/ -run "<TestName>" -count=1 -v
 
-# Proof 2b: validateFirstBarContext wired into Start() + dispatchVMLive pre-Init
-# Mutation: remove `validateFirstBarContext(bctx)` call in vm_live_session.go Start()
-#   OR remove `validateLiveContext` call before r.Init() in vm_live_dispatch.go
-# Test: TestValidateFirstBarContext_InvalidDecimalRejected (Start-level)
-#   AND TestDispatchVMLive_RejectsInvalidBeforeInit (dispatch-level, committed)
-# Expected RED: Start() with invalid decimal ("bad_decimal") does NOT fail
-#   AND dispatchVMLive executes OnInit before rejecting invalid context
-# Restore: re-add the validateFirstBarContext call AND validateLiveContext call
-# File: internal/connect/strategy/vm_live_session.go, vm_live_dispatch.go
-# Test file: internal/connect/strategy/vm_trade_context6_test.go
-#   AND vm_trade_context6_round4_test.go:TestDispatchVMLive_RejectsInvalidBeforeInit
-# 返工第四阶段说明: 旧 Proof 2b 指向 temporary test, 仓库内只有 helper tests。
-#   本次改用已提交的 TestDispatchVMLive_RejectsInvalidBeforeInit, 验证
-#   dispatchVMLive 在 r.Init() 前调用 validateLiveContext, invalid context
-#   不执行 OnInit (g_init=0, not 1)。
+# Batch 2 (VM-TRADE-CONTEXT-6)
+go test ./internal/connect/strategy/ -run "<TestName>" -count=1 -v
 
-# Proof 2c: Strict decimal parsing in vmHandleBar
-# Mutation: replace parseDecimalStrict with parseDecimal (lenient) in vmHandleBar
-# Test: TestVMHandleBar_InvalidDecimalRejected
-# Expected RED: invalid decimal "bad" accepted instead of rejected
-# Restore: re-add parseDecimalStrict
-# File: internal/connect/strategy/vm_live_handlers.go
-# Test file: internal/connect/strategy/vm_trade_context6_test.go:TestVMHandleBar_InvalidDecimalRejected
+# Batch 3 (VM-API-TRUTH-3)
+go test ./tools/mql2go/ -run "<TestName>" -count=1 -v
+```
 
-# Proof 2d: Nil position rejection in vmHandleBar
-# Mutation: remove nil check on positions in vmHandleBar
-# Test: TestVMHandleBar_NilPositionRejected
-# Expected RED: nil position array accepted instead of rejected
-# Restore: re-add the nil check
-# File: internal/connect/strategy/vm_live_handlers.go
-# Test file: internal/connect/strategy/vm_trade_context6_test.go:TestVMHandleBar_NilPositionRejected
+---
 
-# Proof 2e: Live-mode lookup fail-closed
-# Mutation: remove fail-closed error returns for Login/Company in buildLiveContext
-# Test: TestBuildLiveContext_LiveModeLookupFailClosed
-# Expected RED: buildLiveContext returns nil error instead of failing closed
-# Restore: re-add the fail-closed error returns
-# File: internal/connect/strategy/live_context.go
-# Test file: internal/connect/strategy/vm_trade_context6_test.go:TestBuildLiveContext_LiveModeLookupFailClosed
+## VM-COMPILER-SEMANTICS-4 proofs (Batch 1)
 
-# ── VM-TRADE-CONTEXT-7 ────────────────────────────────────────────────
+### Proof 1: comma_expression ExprSeq preserves side effects
 
-# Proof 3: MT4 Deviation→Slippage mapping
-# Mutation: remove `Slippage: req.Deviation` in mt4/orders.go
-# Test: TestPlaceOrder_PassesDeviationAsSlippage
-# Expected RED: OrderSend.Slippage = 0, want 20
-# Restore: re-add `Slippage: req.Deviation`
-# File: internal/mdgateway/adapter/mt4/orders.go
-# Test file: internal/mdgateway/adapter/mt4/mt4_test.go:TestPlaceOrder_PassesDeviationAsSlippage
+- **Mutation target**: `tools/mql2go/compile_interp_expr.go:107` — revert the `case "comma_expression":` branch to only return the last child expression (discard earlier children's side effects).
+- **Expected RED**: `TestCommaExpression_VMSideEffectsExecution` fails — `g_a=0, want 10` (first assignment not executed). Also `TestCommaExpression_VMFunctionCallSideEffects` fails — `g_counter=1, want 3`.
+- **Restore**: re-add the `ExprSeq` generation that emits all children in sequence (`return &interp.Expr{Kind: interp.ExprSeq, Args: args}, nil` at line 143).
+- **Test file**: `tools/mql2go/vm_round45_batch1_test.go:31` (`TestCommaExpression_VMSideEffectsExecution`) and `:383` (`TestCommaExpression_VMFunctionCallSideEffects`).
 
-# Proof 4: MT5 Deviation→Slippage mapping
-# Mutation: remove `Slippage: pUint64(uint64(req.Deviation))` in mt5/orders.go
-# Test: TestPlaceOrder_PassesDeviationAsSlippage
-# Expected RED: OrderSend.Slippage = nil (not set)
-# Restore: re-add the Slippage line
-# File: internal/mdgateway/adapter/mt5/orders.go
-# Test file: internal/mdgateway/adapter/mt5/mt5_test.go:TestPlaceOrder_PassesDeviationAsSlippage
+### Proof 2: hasMissingInitializer guard rejects invalid declarations
 
-# ── VM-API-TRUTH-3 (返工) ─────────────────────────────────────────────
+- **Mutation target**: `tools/mql2go/compile_interp.go:103` — remove the `if hasMissingInitializer(n) { return ... }` guard so declarations with missing initializers fall through.
+- **Expected RED**: `TestCompileMQL_CompletelyInvalidSourceRejected` fails — `expected error for 'int x = ;' (missing initializer), got nil`. Also `TestCompileMQL_InvalidInputMissingInitializer` fails — `expected error for 'input int X = ;', got nil`.
+- **Restore**: re-add the `hasMissingInitializer(n)` check at line 103.
+- **Test file**: `tools/mql2go/vm_round45_batch1_test.go:114` (`TestCompileMQL_CompletelyInvalidSourceRejected`) and `:94` (`TestCompileMQL_InvalidInputMissingInitializer`).
 
-# Proof 5: IsDemo reads from context (not hardcoded true) — VM builtin level
-# Mutation: revert builtinIsDemo to `return interp.BoolVal(true), nil`
-# Test: TestVMLiveSession_IsDemoEndToEnd
-# Expected RED: IsDemo() = 1 (true), want 0 (false, real account)
-#   (test reads back VM global g_isDemo after OnInit execution)
-# Restore: re-add the context-based return
-# File: tools/mql2go/vm_builtin_checkup.go:builtinIsDemo
-# Test file: internal/connect/strategy/vm_api_truth3_test.go:TestVMLiveSession_IsDemoEndToEnd
-# 返工说明: 旧 Proof 6 用 TestBuildLiveContext_InjectsIsDemo — mutation 后
-#   IsDemo 默认 false (零值) 与 lookup 返回 false 相同 → 假绿。改用端到端
-#   VMLiveSession.Start → OnInit → IsDemo() → 读回 VM global, mutation 后
-#   builtin 返回 true → g_isDemo=1 → RED.
+### Proof 3: Structured input/extern detection + reserved keyword rejection
 
-# Proof 5b: IsTradeAllowed from lookup (not hardcoded true) — live mode
-# Mutation: hardcode `lctx.IsTradeAllowed = true` in buildLiveContext live branch
-# Test: TestBuildLiveContext_LiveModeIsTradeAllowedFromLookup
-# Expected RED: IsTradeAllowed=true, want false (lookup returns false)
-# Restore: re-add `lctx.IsTradeAllowed = s.accountTradeAllowedLookup(ctx, cfg.AccountID)`
-# File: internal/connect/strategy/live_context.go
-# Test file: internal/connect/strategy/vm_api_truth3_test.go:TestBuildLiveContext_LiveModeIsTradeAllowedFromLookup
+- **Mutation target**: `tools/mql2go/compile_interp.go:89` — remove the `checkReservedKeywordUsage(n, c)` call before the switch, AND revert `isInputDeclaration`/`isExternDeclaration` (lines 790/799) to `strings.Contains(sourceText, "input ")` / `strings.Contains(sourceText, "extern ")`.
+- **Expected RED**: `TestCompileMML_ReservedKeywordAsIdentifierRejected` fails — `int x = input ;` accepted (reserved keyword used as identifier not caught). Also `TestCompileMQL_InvalidInputMissingInitializer` fails — `input int X = ;` accepted (strings.Contains matches "input " but doesn't validate structure).
+- **Restore**: re-add `checkReservedKeywordUsage` before the switch (line 89) and restore the structured `isInputDeclaration`/`isExternDeclaration` checks (lines 790/799).
+- **Test file**: `tools/mql2go/vm_round45_batch1_test.go:124` (`TestCompileMML_ReservedKeywordAsIdentifierRejected`) and `:94` (`TestCompileMQL_InvalidInputMissingInitializer`).
 
-# Proof 5c: IsConnected from lookup (not hardcoded true) — live mode
-# Mutation: hardcode `lctx.IsConnected = true` in buildLiveContext live branch
-# Test: TestBuildLiveContext_LiveModeIsConnectedFromLookup
-# Expected RED: IsConnected=true, want false (lookup returns false)
-# Restore: re-add `lctx.IsConnected = s.accountConnectedLookup(ctx, cfg.AccountID)`
-# File: internal/connect/strategy/live_context.go
-# Test file: internal/connect/strategy/vm_api_truth3_test.go:TestBuildLiveContext_LiveModeIsConnectedFromLookup
+---
 
-# Proof 5d: IsTradeAllowed false propagates to VM
-# Mutation: revert builtinIsTradeAllowed to `return interp.BoolVal(true), nil`
-# Test: TestVMLiveSession_IsTradeAllowedFalseEndToEnd
-# Expected RED: IsTradeAllowed() = 1 (true), want 0 (false)
-#   (test reads back VM global g_isTradeAllowed after OnInit)
-# Restore: re-add the context-based return
-# File: tools/mql2go/vm_builtin_checkup.go:builtinIsTradeAllowed
-# Test file: internal/connect/strategy/vm_api_truth3_test.go:TestVMLiveSession_IsTradeAllowedFalseEndToEnd
+## VM-CACHE-INTEGRITY-5 proofs (Batch 1)
 
-# ── VM-CACHE-INTEGRITY-5 (返工) ───────────────────────────────────────
+### Proof 4: CoverageResult restore on cache hit
 
-# Proof 7: CoverageResult restore on cache hit
-# Mutation: remove the CoverageResult restore block in CompilePythonCached
-# Test: TestCompilePythonCached_RestoresCoverageOnCacheHit
-# Expected RED: cache hit should restore CoverageResult, got nil
-# Restore: re-add the coverage restore block
-# File: tools/mql2go/interp_runner.go:CompilePythonCached
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestCompilePythonCached_RestoresCoverageOnCacheHit
+- **Mutation target**: `tools/mql2go/interp_runner.go:112-127` — remove the coverage restore block in `CompilePythonCached` (the `var cov *CoverageResult` + `coverageRestoreHook` + `InjectCoverageResult(cov)` block).
+- **Expected RED**: `TestCompilePythonCached_RestoresCoverageOnCacheHit` fails — `CoverageResult is nil on cache hit, expected restored`.
+- **Restore**: re-add the coverage restore block that recompiles from source to recover `CoverageResult` and injects it via `r.InjectCoverageResult(cov)`.
+- **Test file**: `tools/mql2go/vm_round45_batch1_test.go:160` (`TestCompilePythonCached_RestoresCoverageOnCacheHit`).
 
-# Proof 8: Language (Version) validation in CompilePythonCached
-# Mutation: remove `&& r.Bytecode().Version == "python"` check
-# Test: TestCompilePythonCached_RejectsMQLBytecode
-# Expected RED: Version="mql4", want 'python' (MQL bytecode accepted for Python source)
-# Restore: re-add the Version == "python" check
-# File: tools/mql2go/interp_runner.go:CompilePythonCached
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestCompilePythonCached_RejectsMQLBytecode
+### Proof 5: Version=="python" check rejects MQL bytecode
 
-# Proof 9 (返工): Total payload size limit — specific error message assertion
-# Mutation: remove the `len(data) > maxBytecodePayload` check in UnmarshalBytecode
-# Test: TestUnmarshalBytecode_PayloadLimitExceedsMax
-# Expected RED: error does NOT contain "exceeds max" (falls through to magic
-#   check which returns "invalid magic" — different error message)
-# Restore: re-add the payload size check
-# File: tools/mql2go/bytecode_cache.go:UnmarshalBytecode
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestUnmarshalBytecode_PayloadLimitExceedsMax
-# 返工说明: 旧 Proof 9 用 TestUnmarshalBytecode_PayloadLimit 只检查 err != nil —
-#   mutation 后 magic check 仍返回 error → 假绿。改用断言 "exceeds max" +
-#   "payload size" 特定 error message, mutation 后 error 变为 "invalid magic"
-#   → 不包含 "exceeds max" → RED.
+- **Mutation target**: `tools/mql2go/interp_runner.go:111` — remove the `&& r.Bytecode().Version == "python"` condition so any cached bytecode with matching SourceHash is accepted regardless of language.
+- **Expected RED**: `TestCompilePythonCached_RejectsMQLBytecodeForPythonSource` fails — `Version = "mql4", want "python"` (MQL bytecode accepted for Python source). Note: the test constructs a poisoned bytecode with matching SourceHash but Version="mql4" to ensure the Version check is independently exercised (not masked by SourceHash failure).
+- **Restore**: re-add the `&& r.Bytecode().Version == "python"` condition at line 111.
+- **Test file**: `tools/mql2go/vm_round45_batch1_test.go:259` (`TestCompilePythonCached_RejectsMQLBytecodeForPythonSource`).
 
-# Proof 9b: Bytecode.Language dead field removed — reflection check
-# Mutation: re-add `Language string` field to Bytecode struct
-# Test: TestBytecode_NoLanguageField
-# Expected RED: reflect.TypeOf(Bytecode{}).FieldByName("Language") returns true
-#   (field exists) → t.Fatal triggers
-# Restore: remove the Language field from Bytecode struct
-# File: tools/mql2go/bytecode.go
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestBytecode_NoLanguageField
-# 返工第四阶段说明: 旧 Proof 9b 只检查 bc.Version != "python" — 重新加入
-#   Language 字段后测试仍 GREEN (没有检查字段不存在)。改用 reflect.TypeOf
-#   检查 FieldByName("Language") 返回 false, mutation 后字段存在 → RED.
+### Proof 6: maxBytecodePayload guard rejects oversized payloads
 
-# ── VM-COMPILER-SEMANTICS-4 (返工) ────────────────────────────────────
+- **Mutation target**: `tools/mql2go/bytecode_cache.go:168` — remove the `if len(data) > maxBytecodePayload { return nil, ... }` guard so oversized payloads fall through to the magic check.
+- **Expected RED**: `TestUnmarshalBytecode_PayloadLimitExceeded` fails — `error should contain 'exceeds max', got: bytecode: invalid magic` (payload guard removed, magic check returns different error).
+- **Restore**: re-add the `len(data) > maxBytecodePayload` check at line 168.
+- **Test file**: `tools/mql2go/vm_round45_batch1_test.go:306` (`TestUnmarshalBytecode_PayloadLimitExceeded`).
 
-# Proof 10: Comma expression side effects preserved — VM execution
-# Mutation: revert comma_expression to only return last child (discard side effects)
-# Test: TestCommaExpression_VMSideEffectsExecution
-# Expected RED: g_a=0, g_b=0 (first two assignments not executed), want 10, 20
-#   Also: TestCommaExpression_VMFunctionCallSideEffects → g_counter=1, want 3
-# Restore: re-add the ExprSeq generation
-# File: tools/mql2go/compile_interp_expr.go:comma_expression case
-# Test file: tools/mql2go/vm_compiler_semantics4_test.go:TestCommaExpression_VMSideEffectsExecution
-# 返工说明: 旧 Proof 10 只检查 IR 有 ExprSeq — mutation 后 IR 无 ExprSeq →
-#   RED 但只验证 IR 结构, 不验证 VM 执行副作用。新增 VM 执行测试读回 globals
-#   g_a/g_b/g_c 和 g_counter, mutation 后只有最后一个赋值执行 → RED.
+---
 
-# Proof 11 (返工第五阶段): Structured input/extern exception in HasError guard
-# Mutation: revert isInputDeclaration/isExternDeclaration to strings.Contains
-# Test: TestCompileMQL_InvalidInputMissingInitializer
-#   AND TestCompileMQL_InvalidExternMissingInitializer
-#   AND TestCompileMQL_InvalidInputAsValue
-# Expected RED: "input int X = ;" accepted (strings.Contains matches "input ")
-#   "extern int X = ;" accepted (strings.Contains matches "extern ")
-#   "int x = input ;" accepted (strings.Contains matches "input ")
-# Restore: re-add the structured isInputDeclaration/isExternDeclaration checks
-# File: tools/mql2go/compile_interp.go:CompileToIR
-# Test file: tools/mql2go/vm_compiler_semantics4_round4_test.go
-# 返工第五阶段说明: 旧 Proof 11 用 strings.Contains 放行所有含 "input " 或
-#   "extern " 的 source, 包括 "int x = input ;" 等非法用法。本次改用结构化
-#   检测: isInputDeclaration 检查第一个 named child 是 type_identifier "input",
-#   isExternDeclaration 检查第一个 named child 是 storage_class_specifier "extern".
-#   isValidInputDeclaration 检查 init_declarator 最后一个 named child 非空
-#   (区分 "input int X = 5;" 和 "input int X = ;"). checkReservedKeywordUsage
-#   拒绝 "input"/"extern" 作为 identifier (catches "int x = input ;").
-#
-# Proof 11b: HasError guard allows input/extern (no false positive)
-# Mutation: remove the `input `/`extern ` exception in the HasError check
-# Test: TestCompileMQL_ValidInputDeclarationAccepted
-# Expected RED: valid MQL5 with "input int X = 5;" rejected (false positive)
-# Restore: re-add the input/extern exception
-# File: tools/mql2go/compile_interp.go:CompileToIR
-# Test file: tools/mql2go/vm_compiler_semantics4_round4_test.go:TestCompileMQL_ValidInputDeclarationAccepted
-#
-# Proof 11c: Error recovery does not silently skip invalid declarations
-# Mutation: remove the HasError check (same as Proof 11)
-# Test: TestCompileMQL_ErrorRecoveryValidAfterInvalid
-# Expected RED: source with invalid declaration followed by valid OnInit
-#   is accepted (error recovery silently skips the invalid declaration)
-# Restore: re-add the HasError check
-# File: tools/mql2go/compile_interp.go:CompileToIR
-# Test file: tools/mql2go/vm_compiler_semantics4_round4_test.go:TestCompileMQL_ErrorRecoveryValidAfterInvalid
+## VM-TRADE-CONTEXT-6 proofs (Batch 2)
 
-# ── VM-API-TRUTH-3 (返工第四阶段) ────────────────────────────────────
+### Proof 7: OHLCV array length validation
 
-# Proof 6e: Lookup query error blocks execution (fail-closed)
-# Mutation: change `return false, queryErr` to `return false, nil` in any lookup
-# Test: TestBuildLiveContext_LookupQueryErrorBlocksExecution
-# Expected RED: buildLiveContext succeeds (DB error silently ignored, IsDemo=false)
-# Restore: re-add the error return
-# File: internal/connect/strategy/live_context.go:buildLiveContext
-# Test file: internal/connect/strategy/vm_api_truth3_round4_test.go:TestBuildLiveContext_LookupQueryErrorBlocksExecution
+- **Mutation target**: `internal/connect/strategy/vm_live_handlers.go:22` — remove the `validateOHLCVLengths(...)` call so mismatched OHLCV array lengths proceed to indexing (panic).
+- **Expected RED**: `TestVMHandleBar_ArrayLengthMismatch` fails — panic: `runtime error: index out of range` (mismatched arrays indexed without validation).
+- **Restore**: re-add the `validateOHLCVLengths` call at line 22.
+- **Test file**: `internal/connect/strategy/vm_trade_context6_batch2_test.go:77` (`TestVMHandleBar_ArrayLengthMismatch`).
 
-# Proof 6f: Investor account gets IsTradeAllowed=false even when connected
-# Mutation: remove the `if isInvestor { tradeAllowed = false }` block
-# Test: TestBuildLiveContext_InvestorConnectedIsTradeAllowedFalse
-# Expected RED: IsTradeAllowed=true (investor account can trade, wrong)
-# Restore: re-add the investor gating block
-# File: internal/connect/strategy/live_context.go:buildLiveContext
-# Test file: internal/connect/strategy/vm_api_truth3_round4_test.go:TestBuildLiveContext_InvestorConnectedIsTradeAllowedFalse
+### Proof 8: Strict decimal parse rejects invalid values
 
-# Proof 6g: Investor lookup query error blocks execution
-# Mutation: change `return false, queryErr` to `return false, nil` in is_investor lookup
-# Test: TestBuildLiveContext_InvestorLookupQueryErrorBlocksExecution
-# Expected RED: buildLiveContext succeeds (investor lookup error ignored)
-# Restore: re-add the error return
-# File: internal/connect/strategy/live_context.go:buildLiveContext
-# Test file: internal/connect/strategy/vm_api_truth3_round4_test.go:TestBuildLiveContext_InvestorLookupQueryErrorBlocksExecution
+- **Mutation target**: `internal/connect/strategy/vm_live_handlers.go:81` — revert `parseBarsStrict` to use `parseDecimal` (lenient, returns zero on error) instead of `parseDecimalStrict` (returns error).
+- **Expected RED**: `TestVMHandleBar_InvalidDecimalRejected` fails — `vmHandleBar should fail on invalid decimal, got Success=true` (invalid "bad" silently converted to zero).
+- **Restore**: re-add `parseDecimalStrict` in `parseBarsStrict` (line 85+).
+- **Test file**: `internal/connect/strategy/vm_trade_context6_batch2_test.go:101` (`TestVMHandleBar_InvalidDecimalRejected`).
 
-# Proof 6h: Real false not confused with query error
-# Mutation: change `return false, nil` to `return false, errors.New("fake")` in connected lookup
-# Test: TestBuildLiveContext_RealFalseNotConfusedWithError
-# Expected RED: buildLiveContext fails (real false treated as query error)
-# Restore: re-add the nil error return
-# File: internal/connect/strategy/live_context.go:buildLiveContext
-# Test file: internal/connect/strategy/vm_api_truth3_round4_test.go:TestBuildLiveContext_RealFalseNotConfusedWithError
+### Proof 9: Nil position rejection in live mode
 
-# ── VM-CACHE-INTEGRITY-5 (返工第四阶段) ──────────────────────────────
+- **Mutation target**: `internal/connect/strategy/vm_live_handlers.go:27` — remove the `rejectNilRepeatedInLive(...)` call so nil positions/pending_orders are accepted in live mode.
+- **Expected RED**: `TestVMHandleBar_NilPositionRejected` fails — `vmHandleBar should fail on nil positions in live mode, got Success=true`.
+- **Restore**: re-add the `rejectNilRepeatedInLive` call at line 27.
+- **Test file**: `internal/connect/strategy/vm_trade_context6_batch2_test.go:125` (`TestVMHandleBar_NilPositionRejected`).
 
-# Proof 9c: Trailing garbage rejected — specific error assertion
-# Mutation: remove the `if r.pos != len(data)` check in UnmarshalBytecode
-# Test: TestUnmarshalBytecode_TrailingGarbage
-# Expected RED: trailing garbage accepted (no trailing data check)
-# Restore: re-add the trailing data check
-# File: tools/mql2go/bytecode_cache.go:UnmarshalBytecode
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestUnmarshalBytecode_TrailingGarbage
-# 返工第四阶段说明: 旧 Proof 9c 用 t.Log and pass — trailing garbage 可能被
-#   接受。本次改用断言 err != nil AND err contains "trailing", mutation 后
-#   trailing data check 删除 → err=nil → RED.
+### Proof 10: Lookup fail-closed in live mode
 
-# Proof 9d: Coverage restore failure returns error (injectable, hits covErr branch)
-# Mutation: remove the `if covErr != nil` check in CompilePythonCached
-# Test: TestCompilePythonCached_CoverageRestoreFailureReturnsError
-# Expected RED: cache hit succeeds (covErr deleted → cov != nil → InjectCoverage
-#   succeeds → returns nil error → test expects error → RED)
-# Restore: re-add the covErr check
-# File: tools/mql2go/interp_runner.go:CompilePythonCached
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestCompilePythonCached_CoverageRestoreFailureReturnsError
-# 返工第五阶段说明: 旧 Proof 9d 注入 nil coverage + error, 删除 covErr 后
-#   cov==nil 分支也返回 error → 假绿。本次注入 non-nil runner + non-nil coverage
-#   + error (sentinel COVERAGE_RESTORE_FAIL_5F3A), 删除 covErr 后 cov != nil →
-#   跳过 cov==nil 检查 → InjectCoverage 成功 → 返回 nil error → test expects
-#   error → RED. 断言 error 包含 sentinel 证明来自 covErr 分支.
+- **Mutation target**: `internal/connect/strategy/live_context.go:255` — in `injectAccountTruth`, change the live-mode error returns to `return nil` (swallow DB lookup errors instead of failing closed).
+- **Expected RED**: `TestBuildLiveContext_LiveModeLookupFailClosed` fails — `buildLiveContext should fail on lookup error in live mode, got nil` (DB error silently ignored).
+- **Restore**: re-add the `return err` for lookup failures in live mode.
+- **Test file**: `internal/connect/strategy/vm_trade_context6_batch2_test.go:203` (`TestBuildLiveContext_LiveModeLookupFailClosed`).
 
-# Proof 9e: Coverage restore nil coverage returns error
-# Mutation: remove the `if cov == nil` check in CompilePythonCached
-# Test: TestCompilePythonCached_CoverageRestoreNilCoverageReturnsError
-# Expected RED: cache hit succeeds with nil coverage (silent degradation)
-# Restore: re-add the cov == nil check
-# File: tools/mql2go/interp_runner.go:CompilePythonCached
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestCompilePythonCached_CoverageRestoreNilCoverageReturnsError
+### Proof 11: validateFirstBarContext before Init
 
-# Proof 9f: Cache hit vs cold compile coverage identity comparison
-# Mutation: change `r.InjectCoverageResult(cov)` to inject a different coverage
-# Test: TestCompilePythonCached_CacheHitVsColdCompileCoverageEqual
-# Expected RED: BlindSpot Builtin/Severity or DefenseAViolation Rule mismatch
-# Restore: re-add the correct coverage injection
-# File: tools/mql2go/interp_runner.go:CompilePythonCached
-# Test file: tools/mql2go/vm_cache_integrity5_test.go:TestCompilePythonCached_CacheHitVsColdCompileCoverageEqual
-# 返工第四阶段说明: 旧 Proof 9f 只比较 count, 不比较 identity。本次改用比较
-#   BlindSpot.Builtin/Severity 和 DefenseAViolation.Rule, mutation 后 identity
-#   不匹配 → RED.
+- **Mutation target**: `internal/connect/strategy/vm_live_session.go:109` — remove the `if err := validateFirstBarContext(bctx); err != nil { return ... }` call so `Start()` proceeds to `Init()` without validating the first bar context. Also `internal/connect/strategy/vm_live_dispatch.go:100` for the dispatch path.
+- **Expected RED**: `TestVMLiveSession_StartRejectsInvalidFirstBarContext` fails — `Start should fail on invalid first bar context, got nil error` (invalid context reaches Init).
+- **Restore**: re-add the `validateFirstBarContext(bctx)` call at line 109 (session) and line 100 (dispatch).
+- **Test file**: `internal/connect/strategy/vm_trade_context6_batch2_test.go:269` (`TestVMLiveSession_StartRejectsInvalidFirstBarContext`).
 
-# ── VM-TRADE-CONTEXT-6 (返工第五阶段) ────────────────────────────────
+### Proof 12: Login injection (SetLogin before Init)
 
-# Proof 2f: Live mode rejects empty financial fields
-# Mutation: change validateFinancialFieldsForMode to always use validateFinancialFields
-#   (not validateLiveFinancialFields for live mode)
-# Test: TestVMHandleBar_LiveModeEmptyFinancialRejected
-# Expected RED: live mode with empty Balance/Equity/Margin/FreeMargin accepted
-#   (should be rejected — authoritative broker data missing)
-# Restore: re-add the mode == "live" branch using validateLiveFinancialFields
-# File: internal/connect/strategy/vm_live_helpers.go:validateFinancialFieldsForMode
-# Test file: internal/connect/strategy/vm_trade_context6_round5_test.go
+- **Mutation target**: `internal/connect/strategy/vm_live_session.go:115` — remove the `s.runner.SetLogin(bctx.Login)` call so `AccountNumber()` returns 0 during OnInit. Also `internal/connect/strategy/vm_live_handlers.go:33` for the per-bar path.
+- **Expected RED**: `TestVMLiveSession_EndToEndAccountNumberReadback` fails — `g_accountNumber = 0, want 12345` (Login not propagated to VM).
+- **Restore**: re-add `s.runner.SetLogin(bctx.Login)` at line 115 and `r.SetLogin(lctx.Login)` at line 33.
+- **Test file**: `internal/connect/strategy/vm_trade_context6_batch2_test.go:305` (`TestVMLiveSession_EndToEndAccountNumberReadback`).
 
-# Proof 2g: buildTradeContext rejects unknown broker side/event type
-# Mutation: revert brokerSideFromString/brokerTradeEventTypeString to default
-#   sideBuy/"fill" for unknown values
-# Test: TestBuildTradeContext_UnknownSideRejected
-#   AND TestBuildTradeContext_UnknownEventTypeRejected
-# Expected RED: unknown side/event type accepted (silently normalized to buy/fill)
-# Restore: re-add the fail-closed error returns
-# File: internal/connect/strategy/live_context.go:buildTradeContext
-# Test file: internal/connect/strategy/vm_trade_context6_round5_test.go
+---
 
-# Proof 2h: ExecuteLive rejects client-submitted identity in live mode without account_id
-# Mutation: remove the `if bctx.Mode == "live" && req.GetAccountId() == ""` check
-#   in dispatchVMLive
-# Test: TestDispatchVMLive_LiveModeRejectsClientIdentityWithoutAccountID
-# Expected RED: live mode with client-submitted Login/Company/status accepted
-#   (should be rejected — no server-side account truth)
-# Restore: re-add the account_id required check
-# File: internal/connect/strategy/vm_live_dispatch.go:dispatchVMLive
-# Test file: internal/connect/strategy/vm_trade_context6_round5_test.go
+## VM-API-TRUTH-3 proofs (Batch 3)
 
-# ── VM-API-TRUTH-3 (返工第五阶段) ────────────────────────────────────
+### Proof 13: builtinIsConnected reads from context (not hardcoded true)
 
-# Proof 6i: accountIsInvestorLookup required in live mode
-# Mutation: change `if s.accountIsInvestorLookup == nil` to `if false`
-# Test: TestBuildLiveContext_MissingInvestorLookupRejected
-# Expected RED: live mode without accountIsInvestorLookup succeeds
-#   (investor safety gate bypassed)
-# Restore: re-add the nil check
-# File: internal/connect/strategy/live_context.go:buildLiveContext
-# Test file: internal/connect/strategy/vm_api_truth3_round5_test.go
+- **Mutation target**: `tools/mql2go/vm_builtin_checkup.go:16` — revert `builtinIsConnected` to `return interp.BoolVal(true), nil` (hardcoded true, ignoring context).
+- **Expected RED**: `TestBuiltinIsConnected_ReadsFromContext` fails — `IsConnected() = true, want false (from context IsConnected=false)`. Also `TestVMLive_IsConnectedEndToEnd` fails — `g_isConnected = 1, want 0`.
+- **Restore**: re-add the `if vm.ctx == nil { return interp.BoolVal(true), nil }; return interp.BoolVal(vm.ctx.Account().IsConnected), nil` logic.
+- **Test file**: `tools/mql2go/vm_api_truth3_batch3_test.go:25` (`TestBuiltinIsConnected_ReadsFromContext`) and `:132` (`TestVMLive_IsConnectedEndToEnd`).
 
-# Proof 6j: IsTradeAllowed not derived from connected status
-# Mutation: change `return status == "trade_allowed"` to `return status == "connected"`
-#   in handlers_strategy.go accountTradeAllowedLookup
-# Test: TestAccountTradeAllowedLookup_NotConnectedProxy
-# Expected RED: connected account gets IsTradeAllowed=true (connected proxy)
-# Restore: re-add the `status == "trade_allowed"` check
-# File: backend/cmd/server/handlers_strategy.go:accountTradeAllowedLookup
-# Test file: internal/connect/strategy/vm_api_truth3_round5_test.go
-# Note: This is a SQL wiring test, not a buildLiveContext callback test.
-#   The mutation target is the production SQL query, not a test callback.
+### Proof 14: builtinIsTradeAllowed reads from context (not hardcoded true)
+
+- **Mutation target**: `tools/mql2go/vm_builtin_checkup.go:51` — revert `builtinIsTradeAllowed` to `return interp.BoolVal(true), nil` (hardcoded true, ignoring context).
+- **Expected RED**: `TestBuiltinIsTradeAllowed_ReadsFromContext` fails — `IsTradeAllowed() = true, want false (from context IsTradeAllowed=false)`. Also `TestVMLive_IsTradeAllowedEndToEnd` fails — `g_isTradeAllowed = 1, want 0` (investor account).
+- **Restore**: re-add the `if vm.ctx == nil { return interp.BoolVal(true), nil }; return interp.BoolVal(vm.ctx.Account().IsTradeAllowed), nil` logic.
+- **Test file**: `tools/mql2go/vm_api_truth3_batch3_test.go:73` (`TestBuiltinIsTradeAllowed_ReadsFromContext`) and `:149` (`TestVMLive_IsTradeAllowedEndToEnd`).
+
+### Proof 15: End-to-end IsConnected context propagation via SetAccountStatus
+
+- **Mutation target**: `internal/connect/strategy/vm_live_handlers.go:35` — remove the `r.SetAccountStatus(lctx.IsDemo, lctx.IsConnected, lctx.IsTradeAllowed)` call so the VM context never receives the authoritative IsConnected value. Also `internal/connect/strategy/vm_live_session.go:118` for the Start() path.
+- **Expected RED**: `TestVMLive_IsConnectedEndToEnd` fails — `g_isConnected = 1, want 0` (IsConnected defaults to true via zero-value/nil-ctx fallback, never receives false from context).
+- **Restore**: re-add `r.SetAccountStatus(...)` at line 35 (handlers) and line 118 (session).
+- **Test file**: `tools/mql2go/vm_api_truth3_batch3_test.go:132` (`TestVMLive_IsConnectedEndToEnd`).
+
+---
+
+## Summary table
+
+| Proof | Batch | ID | Mutation target | Test | Expected RED |
+|-------|-------|----|-----------------|------|-------------|
+| 1 | 1 | COMPILER-SEMANTICS-4 | `compile_interp_expr.go:107` comma→last only | `TestCommaExpression_VMSideEffectsExecution` | g_a=0, want 10 |
+| 2 | 1 | COMPILER-SEMANTICS-4 | `compile_interp.go:103` remove hasMissingInitializer | `TestCompileMQL_CompletelyInvalidSourceRejected` | expected error, got nil |
+| 3 | 1 | COMPILER-SEMANTICS-4 | `compile_interp.go:89` remove checkReservedKeywordUsage | `TestCompileMML_ReservedKeywordAsIdentifierRejected` | expected error, got nil |
+| 4 | 1 | CACHE-INTEGRITY-5 | `interp_runner.go:112-127` remove coverage restore | `TestCompilePythonCached_RestoresCoverageOnCacheHit` | CoverageResult nil |
+| 5 | 1 | CACHE-INTEGRITY-5 | `interp_runner.go:111` remove Version=="python" | `TestCompilePythonCached_RejectsMQLBytecodeForPythonSource` | Version="mql4" accepted |
+| 6 | 1 | CACHE-INTEGRITY-5 | `bytecode_cache.go:168` remove payload guard | `TestUnmarshalBytecode_PayloadLimitExceeded` | "invalid magic" not "exceeds max" |
+| 7 | 2 | TRADE-CONTEXT-6 | `vm_live_handlers.go:22` remove validateOHLCVLengths | `TestVMHandleBar_ArrayLengthMismatch` | panic: index out of range |
+| 8 | 2 | TRADE-CONTEXT-6 | `vm_live_handlers.go:81` strict→lenient parse | `TestVMHandleBar_InvalidDecimalRejected` | Success=true (should fail) |
+| 9 | 2 | TRADE-CONTEXT-6 | `vm_live_handlers.go:27` remove nil position check | `TestVMHandleBar_NilPositionRejected` | Success=true (should fail) |
+| 10 | 2 | TRADE-CONTEXT-6 | `live_context.go:255` swallow lookup errors | `TestBuildLiveContext_LiveModeLookupFailClosed` | nil error (should fail) |
+| 11 | 2 | TRADE-CONTEXT-6 | `vm_live_session.go:109` remove validateFirstBarContext | `TestVMLiveSession_StartRejectsInvalidFirstBarContext` | nil error (should fail) |
+| 12 | 2 | TRADE-CONTEXT-6 | `vm_live_session.go:115` remove SetLogin | `TestVMLiveSession_EndToEndAccountNumberReadback` | g_accountNumber=0, want 12345 |
+| 13 | 3 | API-TRUTH-3 | `vm_builtin_checkup.go:16` hardcode true | `TestBuiltinIsConnected_ReadsFromContext` | true, want false |
+| 14 | 3 | API-TRUTH-3 | `vm_builtin_checkup.go:51` hardcode true | `TestBuiltinIsTradeAllowed_ReadsFromContext` | true, want false |
+| 15 | 3 | API-TRUTH-3 | `vm_live_handlers.go:35` remove SetAccountStatus | `TestVMLive_IsConnectedEndToEnd` | g_isConnected=1, want 0 |

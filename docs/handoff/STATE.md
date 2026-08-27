@@ -24,12 +24,12 @@
 | VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
-| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1/2/3/4 ✅done；Batch 5（TEST-EVIDENCE-4）待施工 |
+| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1/2/3/4 ✅done；Batch 5（TEST-EVIDENCE-4）施工完成待复审 |
 | P1 管线审计（13 条目） | 🟦open | 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）+ QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 ✅done |
-| VM round 4-5 + 报价管线派工（5 batch） | 🟦open | Batch 1/2/3/4 ✅done；Batch 5 待开工 |
+| VM round 4-5 + 报价管线派工（5 batch） | 🟦open | Batch 1/2/3/4 ✅done；Batch 5 施工完成待复审 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓（VM 管线优先）。
-- **下一步**: Batch 5（VM-TEST-EVIDENCE-4）可开工（B1-3 已验收）。
+- **下一步**: Batch 5（VM-TEST-EVIDENCE-4）施工完成，待 Devin CLI 独立复审。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -46,7 +46,7 @@
 - **VM-RUNTIME-FAILCLOSED-1** ✅done — fail-closed 错误传播（Devin CLI 验收通过 2026-08-26）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
-- **VM 返工批 round 4-5** 🟦open — Batch 1/2/3/4 ✅done；Batch 5（TEST-EVIDENCE-4）待施工
+- **VM 返工批 round 4-5** 🟦open — Batch 1/2/3/4 ✅done；Batch 5（TEST-EVIDENCE-4）施工完成待复审
 - **VM-COMPILER-SEMANTICS-4** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer
 - **VM-CACHE-INTEGRITY-5** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：coverage restore + Version check + payload limit + no Language field
 - **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
@@ -68,6 +68,7 @@
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-08-27 **Batch 5（VM-TEST-EVIDENCE-4）施工完成（🟦open，待独立复审）**：从零重写 `docs/audits/vm-adversarial-proofs.md`（旧版标记 SUPERSEDED）。15 项对抗证明，每条含 mutation target（精确 file:line + 改什么）、预期 RED（测试名 + 断言失败消息）、restore 指令、测试文件位置。Proof 1-6 Batch 1（VM-COMPILER-SEMANTICS-4 + VM-CACHE-INTEGRITY-5）、Proof 7-12 Batch 2（VM-TRADE-CONTEXT-6）、Proof 13-15 Batch 3（VM-API-TRUTH-3）。所有引用测试文件和函数 `grep` 验证存在。文档 165 行（T1 预算 450 行内）。纯文档任务，无代码改动。
 - 2026-08-27 **Batch 3（VM-API-TRUTH-3）施工完成（🟦open，待独立复审）**：从零重做 round 6。S1-S3 `vm_builtin_checkup.go` 的 `builtinIsConnected`/`builtinIsDemo`/`builtinIsTradeAllowed` 改为从 `vm.ctx.Account()` 读取（不再硬编码 true），`vm.ctx == nil` 时保留 true（backtest 默认）；S4 `sdk.AccountInfo` 新增 `IsDemo`/`IsConnected`/`IsTradeAllowed` 字段 + `Runner.SetAccountStatus` + `context.go` 加 3 个字段 + `brokerImpl.Account()` 返回 + `SimBroker.Account()` 默认全 true；S5 `vmHandleBar`/`Start()`/`dispatchVMLive` 在 Init 前调用 `SetAccountStatus`。12 个行为测试（`vm_api_truth3_batch3_test.go`）：T1-T3 builtin readback false/true 双向、T4 nil ctx defaults true、T5-T7 e2e VM readback。golangci-lint 0 issues。门禁全绿（build/vet/mql2go test 7.9s/race×3 1.2s/check-lines 0 errors/connect/strategy 96.3s/diff-check clean）。
 - 2026-08-27 **Batch 2（VM-TRADE-CONTEXT-6）施工完成（🟦open，待独立复审）**：从零重做 round 6。S1 `parseDecimalStrict`/`parseInt64Strict`（`backtest_worker_helpers.go`，返回 error 不转零）；S2 `validateOHLCVLengths` 在 `vmHandleBar` 校验 OHLCV 数组长度（含多 symbol）；S3 所有 live handler strict parse（bar/tick/trade 的 OHLCV/financial/trade 字段）；S4 nil repeated message 拒绝（live mode positions/pending_orders nil = data missing）；S5 `validateFirstBarContext` 在 `VMLiveSession.Start()` 和 `dispatchVMLive` 的 `Init()` 前执行；S6 `Runner.SetLogin` + `brokerImpl.Account()` 返回 `liveLogin` + `injectAccountTruth` 注入 Login/Company/IsDemo/IsConnected/IsTradeAllowed（investor 账户 IsTradeAllowed=false）；S7 `cmd/server/handlers_strategy.go` 接入 5 个 mt_accounts lookup。13 个行为测试（`vm_trade_context6_batch2_test.go`）。golangci-lint 0 issues。门禁全绿（build/vet/test/race×3/check-lines 0 errors）。
 - 2026-08-27 **fix(ci): proto codegen drift 修复**：commit `830b2c79`（revert D-CODE-HYGIENE-001）回滚了生成的 proto 文件但未回滚 `.proto` 源文件，导致 CI proto-drift job 失败。`make proto` 重新生成 3 个文件（`strategy_runtime.pb.go`/`strategy_signal_messages.pb.go`/`strategy_runtime_pb.ts`），补齐 `.proto` 源中已有但 gen 文件缺失的字段（StrategySignal: Magic/Deviation/OppositeTicket；ExecuteLiveRequest: AccountId；LiveStrategyContext: Login/Company/IsDemo/IsConnected/IsTradeAllowed）。build + tsc --noEmit 通过。
