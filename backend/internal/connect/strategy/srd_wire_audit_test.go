@@ -6,7 +6,6 @@ import (
 	"time"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 // TestSRD_Wiring_VMDispatchToDiag verifies the FULL capture chain:
@@ -33,19 +32,17 @@ func TestSRD_Wiring_VMDispatchToDiag(t *testing.T) {
 		CurrentPrice: "5",
 	}
 	req := &antv1.ExecuteLiveRequest{StrategyCode: code, RequestType: antv1.RequestType_REQUEST_TYPE_BAR, BarContext: lctx}
-	b, _ := proto.Marshal(req)
-	if _, err := vmSess.Start(context.Background(), b); err != nil {
+	if _, err := vmSess.Start(context.Background(), req); err != nil {
 		t.Fatalf("start: %v", err)
 	}
 	// bar event → eval recorded
 	tctx := &antv1.TickContext{Bid: "5", Ask: "5.1", Symbol: "EURUSD", Timeframe: "M5", Mode: "paper"}
 	req2 := &antv1.ExecuteLiveRequest{StrategyCode: code, RequestType: antv1.RequestType_REQUEST_TYPE_TICK, TickContext: tctx}
-	b2, _ := proto.Marshal(req2)
-	resp2, err := vmSess.SendEvent(context.Background(), b2)
+	resp2, err := vmSess.SendEvent(context.Background(), req2)
 	if err != nil {
 		t.Fatalf("tick: %v", err)
 	}
-	t.Logf("tick resp success=%v err=%s indicators=%v", protoSuccess(resp2), protoErrField(resp2), vmSess.strategy.LastIndicators())
+	t.Logf("tick resp success=%v err=%s indicators=%v", resp2.GetSuccess(), resp2.GetError(), vmSess.strategy.LastIndicators())
 	time.Sleep(50 * time.Millisecond)
 
 	snap := d.SnapshotDiag()
@@ -66,6 +63,3 @@ func TestSRD_Wiring_VMDispatchToDiag(t *testing.T) {
 		t.Fatalf("WIRING: no iMA/iMACD indicator captured (got %d indicators)", len(p.GetIndicators()))
 	}
 }
-
-func protoSuccess(b []byte) bool { var r antv1.ExecuteLiveResponse; _ = proto.Unmarshal(b, &r); return r.GetSuccess() }
-func protoErrField(b []byte) string { var r antv1.ExecuteLiveResponse; _ = proto.Unmarshal(b, &r); return r.GetError() }

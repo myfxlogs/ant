@@ -7,7 +7,6 @@ import (
 
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 )
@@ -91,14 +90,7 @@ func sendBarEvent(ctx context.Context, sess *VMLiveSession, lctx *antv1.LiveStra
 		RequestType: antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:  lctx,
 	}
-	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := sess.SendEvent(ctx, reqBytes)
-	if err != nil {
-		return nil, err
-	}
-	var resp antv1.ExecuteLiveResponse
-	proto.Unmarshal(respBytes, &resp)
-	return &resp, nil
+	return sess.SendEvent(ctx, req)
 }
 
 // sendTickEvent sends a TICK request to the VMLiveSession and returns the response.
@@ -107,14 +99,7 @@ func sendTickEvent(ctx context.Context, sess *VMLiveSession, tctx *antv1.TickCon
 		RequestType: antv1.RequestType_REQUEST_TYPE_TICK,
 		TickContext: tctx,
 	}
-	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := sess.SendEvent(ctx, reqBytes)
-	if err != nil {
-		return nil, err
-	}
-	var resp antv1.ExecuteLiveResponse
-	proto.Unmarshal(respBytes, &resp)
-	return &resp, nil
+	return sess.SendEvent(ctx, req)
 }
 
 // startSession starts a VMLiveSession with the first BAR context.
@@ -127,14 +112,11 @@ func startSession(ctx context.Context, code string, lctx *antv1.LiveStrategyCont
 		RequestType: antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:  lctx,
 	}
-	reqBytes, _ := proto.Marshal(req)
-	respBytes, err := sess.Start(ctx, reqBytes)
+	resp, err := sess.Start(ctx, req)
 	if err != nil {
 		return nil, nil, err
 	}
-	var resp antv1.ExecuteLiveResponse
-	proto.Unmarshal(respBytes, &resp)
-	return sess, &resp, nil
+	return sess, resp, nil
 }
 
 // hasSellSignal returns true if the response contains a SELL signal.

@@ -2213,3 +2213,51 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **不破坏已通过的 S1-S4/S6-S10**：原有 9 个测试仍全 GREEN（`go test ./tools/mql2go/` 全绿）。
 
 **状态**：`🟦open（施工完成，待独立复审）`——不自行宣告 ✅done，停手等 Devin CLI 复审。
+
+### FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP 施工完成 + Devin CLI 验收通过（✅done 2026-08-27）
+
+> 设计 SSOT：`docs/spec/fix-2026-08-27-session-proto-roundtrip.md`
+> 基线 HEAD：`e8a6b3dd`
+> 施工文件：`vm_live_session.go`（S1/S2/S3 接口签名 + 实现）+ `live_runner_events.go`（S4/S5/S6 调用点）+ `live_context.go`（S7 dispatchFromBytes→dispatchResponse）+ `vm_live_handlers.go`（移除 rejectNilRepeatedInLive + 4 处 nil guard）+ 5 测试文件适配新签名 + `vm_live_session_test.go`（S10 对抗证明）。
+
+**根因**：`Session` interface 用 `[]byte`（proto-marshaled）签名，但 `VMLiveSession` 是进程内实现——proto3 marshal/unmarshal 把空 repeated slice `[]*T{}` 在 round-trip 后折叠为 `nil`，使"无持仓"（空 slice）与"数据缺失"（nil）不可区分，导致 `rejectNilRepeatedInLive` 误拒合法空持仓账户。
+
+**修复**：Session interface 改传 `*antv1.ExecuteLiveRequest` / `*antv1.ExecuteLiveResponse` 指针——无 proto marshal/unmarshal，Go 的空 slice 语义保留（empty stays empty, never nil）。
+
+**S1-S7 代码坐标**（全部精确匹配文档）：
+- S1 `vm_live_session.go:18` `Start(ctx, req *ExecuteLiveRequest) (*ExecuteLiveResponse, error)`
+- S2 `vm_live_session.go:19` `SendEvent(ctx, req *ExecuteLiveRequest) (*ExecuteLiveResponse, error)`
+- S3 `vm_live_session.go:86,131` 实现移除 `proto.Unmarshal`/`proto.Marshal`，直接 `return s.dispatch(ctx, req), nil`
+- S4 `live_runner_events.go:80` `handleBar` → `(*session).Start(ctx, req)`
+- S5 `live_runner_events.go:158` `handleTick` → `(*session).SendEvent(ctx, req)`
+- S6 `live_runner_events.go:194` `handleTrade` → `(*session).SendEvent(ctx, req)`
+- S7 `live_context.go:147` `dispatchFromBytes` → `dispatchResponse`（nil 检查替代 unmarshal error）
+
+**S8 proto import 清理**（3 文件）：`vm_live_session.go` / `live_runner_events.go` / `live_context.go`。
+
+**S9 测试适配**（5 文件，3 文档列出 + 2 文档遗漏但施工方正确发现）：
+- `live_harness_parity_test.go` / `live_indicator_freeze_test.go` / `live_integration_test.go`（文档列出）
+- `srd_wire_audit_test.go` / `vm_audit_2026_08_27_batch2_test.go`（文档遗漏，施工方正确适配）
+- `vm_trade_context6_batch2_test.go`：`NilPositionRejected` → `NilPositionAccepted`，删 `marshalExecuteLiveRequest` helper
+
+**S10 对抗证明**：`vm_live_session_test.go:52` `TestVMLiveSession_NilPositionsSurviveRoundTrip`——空 Positions slice 经 SendEvent 后 resp.Success=true。两部分 mutation（proto round-trip + nil guard）同时恢复 → RED（"live mode requires positions (nil = data missing)"）→ restore → GREEN。**Devin CLI 独立执行 RED 验证**：mutation 1（SendEvent 内恢复 proto.Marshal/Unmarshal）+ mutation 2（vmHandleTick 内恢复 nil guard）→ 测试 RED（0.031s）→ restore → GREEN（0.028s）。
+
+**额外修复（已在前序会话完成，本次 diff 包含）**：移除 `rejectNilRepeatedInLive` 函数 + `vmHandleBar`/`vmHandleTick`/`vmHandleTrade`/`vmHandleTimer` 4 处 inline nil guard。安全依据：`buildLiveContext`/`buildTickContext` 在 live mode 数据回填失败时已 fail-closed。
+
+**门禁**：
+- `go build ./...` ✓
+- `go vet ./...` ✓
+- `go test ./internal/connect/strategy/ -count=1` ✓（98.3s）
+- `go test -race ./internal/connect/strategy/ -count=3` ✓（294.8s）
+- `go run ./tools/check-file-lines --strict`：0 errors（54 warnings 均 pre-existing）
+- `git diff --check` ✓ clean
+
+**REUSE 核对**：
+- `Session` interface：REUSE（改签名，非新建）
+- `VMLiveSession.Start/SendEvent`：REUSE（改实现，非新建）
+- `dispatchResponse`：REUSE（`dispatchFromBytes` 重命名 + 去 unmarshal）
+- `TestVMLiveSession_NilPositionsSurviveRoundTrip`：NEW（S10 对抗证明）
+
+**diff 统计**：11 文件，+75/-185（净 -110 行，消除序列化代码）。
+
+**状态**：`✅done`——Devin CLI 独立复审验收通过（对抗证明 RED→restore→GREEN 闭环 + 门禁全绿 + 代码坐标全匹配 + S10 对抗证明存在且正确）。

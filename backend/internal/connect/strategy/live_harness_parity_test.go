@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
@@ -314,13 +313,10 @@ func TestW3_TwoConsecutiveBars_WindowGrows(t *testing.T) {
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   lctx1,
 	}
-	reqBytes1, _ := proto.Marshal(req1)
-	respBytes1, err := vmSess.Start(ctx, reqBytes1)
+	resp1, err := vmSess.Start(ctx, req1)
 	if err != nil {
 		t.Fatalf("vm Start (event 1): %v", err)
 	}
-	var resp1 antv1.ExecuteLiveResponse
-	proto.Unmarshal(respBytes1, &resp1)
 	if !resp1.GetSuccess() {
 		t.Fatalf("event 1: VM returned error: %s", resp1.GetError())
 	}
@@ -332,13 +328,10 @@ func TestW3_TwoConsecutiveBars_WindowGrows(t *testing.T) {
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   lctx2,
 	}
-	reqBytes2, _ := proto.Marshal(req2)
-	respBytes2, err := vmSess.SendEvent(ctx, reqBytes2)
+	resp2, err := vmSess.SendEvent(ctx, req2)
 	if err != nil {
 		t.Fatalf("vm SendEvent (event 2): %v", err)
 	}
-	var resp2 antv1.ExecuteLiveResponse
-	proto.Unmarshal(respBytes2, &resp2)
 	if !resp2.GetSuccess() {
 		t.Fatalf("event 2: VM returned error: %s", resp2.GetError())
 	}

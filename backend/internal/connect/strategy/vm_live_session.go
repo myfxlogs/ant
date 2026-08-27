@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
 	"alphaforge/tools/mql2go"
@@ -13,9 +11,19 @@ import (
 
 // Session is the interface for live strategy sessions.
 // VMLiveSession (in-process Bytecode VM) implements it.
+//
+// FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP: the interface passes
+// *antv1.ExecuteLiveRequest / *antv1.ExecuteLiveResponse pointers instead of
+// []byte. VMLiveSession is an in-process implementation, so proto
+// marshal/unmarshal is unnecessary — and proto3 collapses empty repeated
+// slices to nil on round-trip, which made "no open positions" (empty slice)
+// indistinguishable from "data missing" (nil) and caused
+// rejectNilRepeatedInLive to reject valid empty-position accounts. Passing
+// the struct pointer preserves Go's empty-slice semantics (empty stays empty,
+// never becomes nil).
 type Session interface {
-	Start(ctx context.Context, reqBytes []byte) ([]byte, error)
-	SendEvent(ctx context.Context, reqBytes []byte) ([]byte, error)
+	Start(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error)
+	SendEvent(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error)
 	Close() error
 }
 
@@ -75,14 +83,9 @@ func NewPythonVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLive
 	return &VMLiveSession{strategy: runner}, nil
 }
 
-func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
+func (s *VMLiveSession) Start(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
 	if s.started {
 		return nil, fmt.Errorf("vm live session already started")
-	}
-
-	var req antv1.ExecuteLiveRequest
-	if err := proto.Unmarshal(reqBytes, &req); err != nil {
-		return nil, fmt.Errorf("unmarshal request: %w", err)
 	}
 
 	bctx := req.GetBarContext()
@@ -123,22 +126,15 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 
 	s.started = true
 
-	resp := s.dispatch(ctx, &req)
-	return proto.Marshal(resp)
+	return s.dispatch(ctx, req), nil
 }
 
-func (s *VMLiveSession) SendEvent(ctx context.Context, reqBytes []byte) ([]byte, error) {
+func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
 	if !s.started {
 		return nil, fmt.Errorf("vm live session not started")
 	}
 
-	var req antv1.ExecuteLiveRequest
-	if err := proto.Unmarshal(reqBytes, &req); err != nil {
-		return nil, fmt.Errorf("unmarshal request: %w", err)
-	}
-
-	resp := s.dispatch(ctx, &req)
-	return proto.Marshal(resp)
+	return s.dispatch(ctx, req), nil
 }
 
 func (s *VMLiveSession) Close() error {

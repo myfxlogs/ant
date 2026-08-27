@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
@@ -59,27 +58,22 @@ func (s *StrategyExecutionServer) handleBar(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   lctx,
 	}
-	reqBytes, marshalErr := proto.Marshal(req)
-	if marshalErr != nil {
-		s.log.Error("LiveStrategyRunner: proto marshal failed", zap.Error(marshalErr))
-		return
-	}
 
-	var respBytes []byte
+	var resp *antv1.ExecuteLiveResponse
 	if *firstBar {
 		vmSess, vmErr := s.initVMSession(ctx, cfg, activeSess)
 		if vmErr != nil {
 			return
 		}
 		*session = vmSess
-		respBytes, err = (*session).Start(ctx, reqBytes)
+		resp, err = (*session).Start(ctx, req)
 		*firstBar = false
 	} else {
 		if *session == nil {
 			s.log.Error("LiveStrategyRunner: session lost before bar event")
 			return
 		}
-		respBytes, err = (*session).SendEvent(ctx, reqBytes)
+		resp, err = (*session).SendEvent(ctx, req)
 	}
 	if err != nil {
 		s.log.Error("LiveStrategyRunner: bar request failed", zap.Error(err))
@@ -93,7 +87,7 @@ func (s *StrategyExecutionServer) handleBar(
 		*firstBar = true
 		return
 	}
-	s.dispatchFromBytes(ctx, cfg, bar, respBytes, activeSess)
+	s.dispatchResponse(ctx, cfg, bar, resp, activeSess)
 }
 
 func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) (Session, error) {
@@ -161,12 +155,7 @@ func (s *StrategyExecutionServer) handleTick(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TICK,
 		TickContext:  tctx,
 	}
-	reqBytes, marshalErr := proto.Marshal(req)
-	if marshalErr != nil {
-		s.log.Warn("LiveStrategyRunner: tick proto marshal failed", zap.Error(marshalErr))
-		return
-	}
-	respBytes, err := (*session).SendEvent(ctx, reqBytes)
+	resp, err := (*session).SendEvent(ctx, req)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
 		if activeSess != nil {
@@ -177,7 +166,7 @@ func (s *StrategyExecutionServer) handleTick(
 		*firstBar = true
 		return
 	}
-	s.dispatchFromBytes(ctx, cfg, nil, respBytes, activeSess)
+	s.dispatchResponse(ctx, cfg, nil, resp, activeSess)
 }
 
 func (s *StrategyExecutionServer) handleTrade(
@@ -202,12 +191,7 @@ func (s *StrategyExecutionServer) handleTrade(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TRADE,
 		TradeContext: tctx,
 	}
-	reqBytes, marshalErr := proto.Marshal(req)
-	if marshalErr != nil {
-		s.log.Warn("LiveStrategyRunner: trade proto marshal failed", zap.Error(marshalErr))
-		return
-	}
-	respBytes, err := (*session).SendEvent(ctx, reqBytes)
+	resp, err := (*session).SendEvent(ctx, req)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))
 		if activeSess != nil {
@@ -218,5 +202,5 @@ func (s *StrategyExecutionServer) handleTrade(
 		*firstBar = true
 		return
 	}
-	s.dispatchFromBytes(ctx, cfg, nil, respBytes, activeSess)
+	s.dispatchResponse(ctx, cfg, nil, resp, activeSess)
 }

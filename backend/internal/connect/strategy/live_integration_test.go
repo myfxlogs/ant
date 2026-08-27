@@ -12,7 +12,6 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
@@ -123,19 +122,11 @@ func vmProbe(ctx context.Context, code string, bar *mthub.BarUpdate) (*antv1.Exe
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   lctx,
 	}
-	reqBytes, err := proto.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("marshal request: %w", err)
-	}
-	respBytes, err := vmSess.Start(ctx, reqBytes)
+	resp, err := vmSess.Start(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("vm Start: %w", err)
 	}
-	var resp antv1.ExecuteLiveResponse
-	if err := proto.Unmarshal(respBytes, &resp); err != nil {
-		return nil, fmt.Errorf("unmarshal response: %w", err)
-	}
-	return &resp, nil
+	return resp, nil
 }
 
 // TestLivePath_E2E is the "net" that runs the full live path from a mock bar

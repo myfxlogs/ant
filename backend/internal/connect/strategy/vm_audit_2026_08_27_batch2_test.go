@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
-
-	"google.golang.org/protobuf/proto"
 )
 
 // vm_audit_2026_08_27_batch2_test.go — VM-AUDIT-2026-08-27 批次 2 对抗测试 (BUG-5).
@@ -55,11 +53,7 @@ void OnBar() {}`
 			Mode:      "live",
 		},
 	}
-	startBytes, sErr := proto.Marshal(startReq)
-	if sErr != nil {
-		t.Fatalf("marshal start request: %v", sErr)
-	}
-	if _, err := sess.Start(context.Background(), startBytes); err != nil {
+	if _, err := sess.Start(context.Background(), startReq); err != nil {
 		t.Fatalf("Start failed: %v", err)
 	}
 	t.Cleanup(func() { _ = sess.Close() })
@@ -76,18 +70,10 @@ void OnBar() {}`
 			Mode:      "live",
 		},
 	}
-	unknownBytes, mErr := proto.Marshal(unknownReq)
-	if mErr != nil {
-		t.Fatalf("marshal unknown request: %v", mErr)
-	}
 
-	respBytes, err := sess.SendEvent(context.Background(), unknownBytes)
+	resp, err := sess.SendEvent(context.Background(), unknownReq)
 	if err != nil {
 		t.Fatalf("SendEvent failed: %v", err)
-	}
-	var resp antv1.ExecuteLiveResponse
-	if uErr := proto.Unmarshal(respBytes, &resp); uErr != nil {
-		t.Fatalf("unmarshal response: %v", uErr)
 	}
 
 	if resp.GetSuccess() {

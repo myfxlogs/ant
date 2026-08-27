@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/internal/mthub"
@@ -143,13 +142,15 @@ func pendingOrderSide(orderType string) string {
 	return "sell"
 }
 
-// dispatchFromBytes unmarshals a live response and dispatches signals to OMS.
-func (s *StrategyExecutionServer) dispatchFromBytes(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, respBytes []byte, activeSess *ActiveSession) {
-	var resp antv1.ExecuteLiveResponse
-	if err := proto.Unmarshal(respBytes, &resp); err != nil {
-		s.log.Error("LiveStrategyRunner: unmarshal response failed", zap.Error(err))
+// dispatchResponse dispatches a live response's signals to the OMS.
+// FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP: receives *antv1.ExecuteLiveResponse
+// directly (no proto unmarshal) — the in-process Session returns the struct
+// pointer, preserving empty-slice semantics for repeated fields.
+func (s *StrategyExecutionServer) dispatchResponse(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, resp *antv1.ExecuteLiveResponse, activeSess *ActiveSession) {
+	if resp == nil {
+		s.log.Error("LiveStrategyRunner: nil response from VM")
 		if activeSess != nil {
-			activeSess.RecordError(err.Error())
+			activeSess.RecordError("nil response from VM")
 		}
 		return
 	}

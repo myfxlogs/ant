@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -92,12 +93,16 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	})
 	// VM-TRADE-CONTEXT-6 S7: server-side account truth lookups.
 	srv.SetAccountLoginLookup(func(ctx context.Context, accountID string) (int64, error) {
-		var login int64
+		var loginStr string
 		err := d.pool.QueryRow(ctx,
 			`SELECT login FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&login)
+			accountID).Scan(&loginStr)
 		if err != nil {
 			return 0, fmt.Errorf("login lookup: %w", err)
+		}
+		login, err := strconv.ParseInt(loginStr, 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("login lookup: parse %q: %w", loginStr, err)
 		}
 		return login, nil
 	})

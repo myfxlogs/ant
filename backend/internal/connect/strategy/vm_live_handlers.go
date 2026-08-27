@@ -23,11 +23,10 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "OHLCV array length mismatch: " + err.Error()}
 	}
 
-	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
-	if resp := rejectNilRepeatedInLive(lctx.Mode, lctx.Positions, lctx.PendingOrders); resp != nil {
-		return resp
-	}
-
+	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection removed —
+	// proto3 marshal/unmarshal collapses empty slices to nil, making the
+	// nil check indistinguishable from "no open positions". The backfill
+	// in buildLiveContext already fail-closes on missing data in live mode.
 	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions), vmPendingOrdersToSdk(lctx.PendingOrders))
 	// VM-TRADE-CONTEXT-6 S6: propagate authoritative Login to VM's AccountNumber().
 	r.SetLogin(lctx.Login)
@@ -56,22 +55,6 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
 	return vmSignalResponse(sig, lctx.Symbol)
-}
-
-// rejectNilRepeatedInLive returns an error response if mode is live and
-// positions or pendingOrders are nil (data missing). Returns nil if OK.
-// VM-TRADE-CONTEXT-6 S4.
-func rejectNilRepeatedInLive(mode string, positions []*antv1.LivePosition, pendingOrders []*antv1.LivePendingOrder) *antv1.ExecuteLiveResponse {
-	if mode != modeLive {
-		return nil
-	}
-	if positions == nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
-	}
-	if pendingOrders == nil {
-		return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
-	}
-	return nil
 }
 
 // parseBarsStrict parses OHLCV arrays into sdk.Bar slice using strict parsers.
@@ -136,15 +119,8 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 	if tctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "tick_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
-	if tctx.Mode == modeLive {
-		if tctx.Positions == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
-		}
-		if tctx.PendingOrders == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
-		}
-	}
+	// VM-TRADE-CONTEXT-6 S4: nil check removed (proto3 nil==empty slice).
+	// buildTickContext fail-closes on missing data in live mode.
 	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions), vmPendingOrdersToSdk(tctx.PendingOrders))
 	r.UpdateSymbolInfo(tctx.Point, tctx.Digits, tctx.ContractSize, strconv.FormatInt(int64(tctx.StopsLevel), 10))
 	// VM-TRADE-CONTEXT-6 S3: strict parse in live path.
@@ -171,15 +147,8 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 	if evctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "trade_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
-	if evctx.Mode == modeLive {
-		if evctx.Positions == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
-		}
-		if evctx.PendingOrders == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
-		}
-	}
+	// VM-TRADE-CONTEXT-6 S4: nil check removed (proto3 nil==empty slice).
+	// buildTradeContext fail-closes on missing data in live mode.
 	r.UpdateLiveState(evctx.Balance, evctx.Equity, evctx.Margin, evctx.FreeMargin, vmPositionsToSdk(evctx.Positions), vmPendingOrdersToSdk(evctx.PendingOrders))
 
 	side := sdk.SideBuy
@@ -256,15 +225,7 @@ func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerCont
 	if tmctx == nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "timer_context missing"}
 	}
-	// VM-TRADE-CONTEXT-6 S4: nil repeated message rejection in live mode.
-	if tmctx.Mode == modeLive {
-		if tmctx.Positions == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires positions (nil = data missing)"}
-		}
-		if tmctx.PendingOrders == nil {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "live mode requires pending_orders (nil = data missing)"}
-		}
-	}
+	// VM-TRADE-CONTEXT-6 S4: nil check removed (proto3 nil==empty slice).
 	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions), vmPendingOrdersToSdk(tmctx.PendingOrders))
 	sig, err := r.OnTimerTick(ctx)
 	if err != nil {

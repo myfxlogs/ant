@@ -19,7 +19,6 @@ import (
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
@@ -122,7 +121,12 @@ func TestVMHandleBar_InvalidDecimalRejected(t *testing.T) {
 
 // --- T3: nil positions rejected in live mode ---
 
-func TestVMHandleBar_NilPositionRejected(t *testing.T) {
+func TestVMHandleBar_NilPositionAccepted(t *testing.T) {
+	// VM-TRADE-CONTEXT-6 S4: nil positions are accepted at the VM handler
+	// level because proto3 marshal/unmarshal collapses empty slices to nil.
+	// The fail-closed protection lives upstream in buildLiveContext, which
+	// returns an error if posCache cannot provide a snapshot in live mode.
+	// At the handler level, nil positions == no open positions (empty slice).
 	r := runner.New(runner.Config{Mode: "live"})
 	lctx := &antv1.LiveStrategyContext{
 		Close:         []string{"1.0"},
@@ -132,15 +136,14 @@ func TestVMHandleBar_NilPositionRejected(t *testing.T) {
 		Volume:        []string{"10"},
 		BarTimesMs:    []int64{1},
 		Mode:          "live",
-		Positions:     nil, // nil = data missing in live mode
-		PendingOrders: []*antv1.LivePendingOrder{},
+		Positions:     nil, // nil == empty slice after proto round-trip
+		PendingOrders: nil,
 	}
 	resp := vmHandleBar(context.Background(), r, lctx)
-	if resp.Success {
-		t.Fatal("vmHandleBar should fail on nil positions in live mode, got Success=true")
-	}
-	if !contains(resp.Error, "positions") {
-		t.Errorf("Error = %q, want contains \"positions\"", resp.Error)
+	// Should succeed — nil positions means "no open positions", not "data missing".
+	// Data-missing protection is in buildLiveContext (posCache fail-closed).
+	if !resp.Success {
+		t.Errorf("vmHandleBar should accept nil positions (proto3 nil==empty), got error: %s", resp.Error)
 	}
 }
 
@@ -289,9 +292,8 @@ func TestVMLiveSession_StartRejectsInvalidFirstBarContext(t *testing.T) {
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   bctx,
 	}
-	reqBytes, _ := marshalExecuteLiveRequest(req)
 
-	_, err = sess.Start(context.Background(), reqBytes)
+	_, err = sess.Start(context.Background(), req)
 	if err == nil {
 		t.Fatal("Start should fail on invalid first bar context, got nil error")
 	}
@@ -327,9 +329,8 @@ func TestVMLiveSession_EndToEndAccountNumberReadback(t *testing.T) {
 		RequestType:  antv1.RequestType_REQUEST_TYPE_BAR,
 		BarContext:   bctx,
 	}
-	reqBytes, _ := marshalExecuteLiveRequest(req)
 
-	_, err = sess.Start(context.Background(), reqBytes)
+	_, err = sess.Start(context.Background(), req)
 	if err != nil {
 		t.Fatalf("Start failed: %v", err)
 	}
@@ -353,7 +354,3 @@ var errLookupFailed = &testError{"lookup failed"}
 type testError struct{ msg string }
 
 func (e *testError) Error() string { return e.msg }
-
-func marshalExecuteLiveRequest(req *antv1.ExecuteLiveRequest) ([]byte, error) {
-	return proto.Marshal(req)
-}
