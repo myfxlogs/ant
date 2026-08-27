@@ -531,10 +531,9 @@ export type ExecuteLiveRequest = Message<"ant.v1.ExecuteLiveRequest"> & {
   strategyId: string;
 
   /**
-   * VM-TRADE-CONTEXT-6 round 5: account ID for server-side account truth
-   * lookup in live mode. When mode == "live" and account_id is empty,
-   * ExecuteLive rejects the request (client-submitted Login/Company/status
-   * are not authoritative). Paper/backtest mode does not require this.
+   * D-VM-LIVE-001-P1: public ExecuteLive no longer supports live mode.
+   * account_id is retained for future paper-mode scenarios but is not
+   * used for server-side account truth lookup in the current endpoint.
    *
    * @generated from field: string account_id = 8;
    */

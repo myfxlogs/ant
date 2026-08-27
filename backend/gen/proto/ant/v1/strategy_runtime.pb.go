@@ -994,11 +994,15 @@ type ExecuteLiveRequest struct {
 	StrategyCode string                 `protobuf:"bytes,1,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"`
 	RequestType  RequestType            `protobuf:"varint,2,opt,name=request_type,json=requestType,proto3,enum=ant.v1.RequestType" json:"request_type,omitempty"`
 	// Context data — which field is populated depends on request_type.
-	BarContext    *LiveStrategyContext `protobuf:"bytes,3,opt,name=bar_context,json=barContext,proto3" json:"bar_context,omitempty"`       // REQUEST_TYPE_BAR
-	TickContext   *TickContext         `protobuf:"bytes,4,opt,name=tick_context,json=tickContext,proto3" json:"tick_context,omitempty"`    // REQUEST_TYPE_TICK
-	TradeContext  *TradeContext        `protobuf:"bytes,5,opt,name=trade_context,json=tradeContext,proto3" json:"trade_context,omitempty"` // REQUEST_TYPE_TRADE
-	TimerContext  *TimerContext        `protobuf:"bytes,6,opt,name=timer_context,json=timerContext,proto3" json:"timer_context,omitempty"` // REQUEST_TYPE_TIMER
-	StrategyId    string               `protobuf:"bytes,7,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // imported strategy ID for bytecode cache
+	BarContext   *LiveStrategyContext `protobuf:"bytes,3,opt,name=bar_context,json=barContext,proto3" json:"bar_context,omitempty"`       // REQUEST_TYPE_BAR
+	TickContext  *TickContext         `protobuf:"bytes,4,opt,name=tick_context,json=tickContext,proto3" json:"tick_context,omitempty"`    // REQUEST_TYPE_TICK
+	TradeContext *TradeContext        `protobuf:"bytes,5,opt,name=trade_context,json=tradeContext,proto3" json:"trade_context,omitempty"` // REQUEST_TYPE_TRADE
+	TimerContext *TimerContext        `protobuf:"bytes,6,opt,name=timer_context,json=timerContext,proto3" json:"timer_context,omitempty"` // REQUEST_TYPE_TIMER
+	StrategyId   string               `protobuf:"bytes,7,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // imported strategy ID for bytecode cache
+	// D-VM-LIVE-001-P1: public ExecuteLive no longer supports live mode.
+	// account_id is retained for future paper-mode scenarios but is not
+	// used for server-side account truth lookup in the current endpoint.
+	AccountId     string `protobuf:"bytes,8,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1078,6 +1082,13 @@ func (x *ExecuteLiveRequest) GetTimerContext() *TimerContext {
 func (x *ExecuteLiveRequest) GetStrategyId() string {
 	if x != nil {
 		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *ExecuteLiveRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
 	}
 	return ""
 }
@@ -1197,8 +1208,17 @@ type LiveStrategyContext struct {
 	// LIVE-MQL-ORDER-CONTEXT-1: pending orders (limit/stop) separate from
 	// market positions for MQL OrdersTotal/OrderSelect account-level semantics.
 	PendingOrders []*LivePendingOrder `protobuf:"bytes,25,rep,name=pending_orders,json=pendingOrders,proto3" json:"pending_orders,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// VM-TRADE-CONTEXT-3: account identity for AccountNumber()/AccountCompany().
+	Login   int64  `protobuf:"varint,26,opt,name=login,proto3" json:"login,omitempty"`
+	Company string `protobuf:"bytes,27,opt,name=company,proto3" json:"company,omitempty"`
+	// VM-API-TRUTH-3: authoritative account status from mt_accounts.
+	// IsDemo: true for demo/contest accounts. IsConnected: true when host
+	// is connected to broker. IsTradeAllowed: true when trading is permitted.
+	IsDemo         bool `protobuf:"varint,28,opt,name=is_demo,json=isDemo,proto3" json:"is_demo,omitempty"`
+	IsConnected    bool `protobuf:"varint,29,opt,name=is_connected,json=isConnected,proto3" json:"is_connected,omitempty"`
+	IsTradeAllowed bool `protobuf:"varint,30,opt,name=is_trade_allowed,json=isTradeAllowed,proto3" json:"is_trade_allowed,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *LiveStrategyContext) Reset() {
@@ -1404,6 +1424,41 @@ func (x *LiveStrategyContext) GetPendingOrders() []*LivePendingOrder {
 		return x.PendingOrders
 	}
 	return nil
+}
+
+func (x *LiveStrategyContext) GetLogin() int64 {
+	if x != nil {
+		return x.Login
+	}
+	return 0
+}
+
+func (x *LiveStrategyContext) GetCompany() string {
+	if x != nil {
+		return x.Company
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetIsDemo() bool {
+	if x != nil {
+		return x.IsDemo
+	}
+	return false
+}
+
+func (x *LiveStrategyContext) GetIsConnected() bool {
+	if x != nil {
+		return x.IsConnected
+	}
+	return false
+}
+
+func (x *LiveStrategyContext) GetIsTradeAllowed() bool {
+	if x != nil {
+		return x.IsTradeAllowed
+	}
+	return false
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -2111,6 +2166,8 @@ type TradeContext struct {
 	FreeMargin string `protobuf:"bytes,16,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
 	// LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
 	PendingOrders []*LivePendingOrder `protobuf:"bytes,17,rep,name=pending_orders,json=pendingOrders,proto3" json:"pending_orders,omitempty"`
+	// VM-TRADE-CONTEXT-6 round 5: mode for mode-aware financial validation.
+	Mode          string `protobuf:"bytes,18,opt,name=mode,proto3" json:"mode,omitempty"` // "live" | "paper"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2262,6 +2319,13 @@ func (x *TradeContext) GetPendingOrders() []*LivePendingOrder {
 		return x.PendingOrders
 	}
 	return nil
+}
+
+func (x *TradeContext) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
 }
 
 // TimerContext carries a periodic timer fire for OnTimer strategies.
@@ -5513,7 +5577,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x14StrategyTemplateInfo\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04code\x18\x03 \x01(\tR\x04code\"\xfe\x02\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\"\x9d\x03\n" +
 	"\x12ExecuteLiveRequest\x12#\n" +
 	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\x126\n" +
 	"\frequest_type\x18\x02 \x01(\x0e2\x13.ant.v1.RequestTypeR\vrequestType\x12<\n" +
@@ -5523,13 +5587,15 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\rtrade_context\x18\x05 \x01(\v2\x14.ant.v1.TradeContextR\ftradeContext\x129\n" +
 	"\rtimer_context\x18\x06 \x01(\v2\x14.ant.v1.TimerContextR\ftimerContext\x12\x1f\n" +
 	"\vstrategy_id\x18\a \x01(\tR\n" +
-	"strategyId\"\xcc\x01\n" +
+	"strategyId\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\b \x01(\tR\taccountId\"\xcc\x01\n" +
 	"\x13ExecuteLiveResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12.\n" +
 	"\x06signal\x18\x02 \x01(\v2\x16.ant.v1.StrategySignalR\x06signal\x12\x14\n" +
 	"\x05error\x18\x03 \x01(\tR\x05error\x12#\n" +
 	"\rstrategy_hash\x18\x04 \x01(\tR\fstrategyHash\x120\n" +
-	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xcb\x06\n" +
+	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xe1\a\n" +
 	"\x13LiveStrategyContext\x12\x14\n" +
 	"\x05close\x18\x01 \x03(\tR\x05close\x12\x12\n" +
 	"\x04open\x18\x02 \x03(\tR\x04open\x12\x12\n" +
@@ -5560,7 +5626,12 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\rcontract_size\x18\x17 \x01(\tR\fcontractSize\x12\x1f\n" +
 	"\vstops_level\x18\x18 \x01(\x05R\n" +
 	"stopsLevel\x12?\n" +
-	"\x0epending_orders\x18\x19 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\"\xee\x02\n" +
+	"\x0epending_orders\x18\x19 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\x12\x14\n" +
+	"\x05login\x18\x1a \x01(\x03R\x05login\x12\x18\n" +
+	"\acompany\x18\x1b \x01(\tR\acompany\x12\x17\n" +
+	"\ais_demo\x18\x1c \x01(\bR\x06isDemo\x12!\n" +
+	"\fis_connected\x18\x1d \x01(\bR\visConnected\x12(\n" +
+	"\x10is_trade_allowed\x18\x1e \x01(\bR\x0eisTradeAllowed\"\xee\x02\n" +
 	"\fLivePosition\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
@@ -5632,7 +5703,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\rcontract_size\x18\x0f \x01(\tR\fcontractSize\x12\x1f\n" +
 	"\vstops_level\x18\x10 \x01(\x05R\n" +
 	"stopsLevel\x12?\n" +
-	"\x0epending_orders\x18\x11 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\"\x89\x04\n" +
+	"\x0epending_orders\x18\x11 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\"\x9d\x04\n" +
 	"\fTradeContext\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1d\n" +
@@ -5656,7 +5727,8 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06margin\x18\x0f \x01(\tR\x06margin\x12\x1f\n" +
 	"\vfree_margin\x18\x10 \x01(\tR\n" +
 	"freeMargin\x12?\n" +
-	"\x0epending_orders\x18\x11 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\"\xe3\x02\n" +
+	"\x0epending_orders\x18\x11 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\x12\x12\n" +
+	"\x04mode\x18\x12 \x01(\tR\x04mode\"\xe3\x02\n" +
 	"\fTimerContext\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1c\n" +
 	"\ttimeframe\x18\x02 \x01(\tR\ttimeframe\x12\x12\n" +
