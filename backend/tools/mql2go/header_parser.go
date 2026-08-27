@@ -104,7 +104,7 @@ func extractDefines(source, sourceFile string) []HeaderSymbol {
 func isClassNode(source string, n *sitter.Node) bool {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			txt := nodeText(source, child)
 			if txt == "class" || txt == "struct" {
 				return true
@@ -288,7 +288,7 @@ func buildSignature(source string, n *sitter.Node) string {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		t := child.Type()
-		if t == "primitive_type" || t == "type_identifier" || t == "sized_type_specifier" {
+		if t == "primitive_type" || t == nodeTypeIdentifier || t == "sized_type_specifier" {
 			retType = nodeText(source, child)
 			break
 		}

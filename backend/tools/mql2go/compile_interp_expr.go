@@ -60,7 +60,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 	case "null":
 		return &interp.Expr{Kind: interp.ExprConst, Name: "NULL"}
 
-	case "type_identifier":
+	case nodeTypeIdentifier:
 		// Predefined constant: OP_BUY, PRICE_CLOSE, etc.
 		return &interp.Expr{Kind: interp.ExprConst, Name: c.text(n)}
 
@@ -99,7 +99,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
 			ct := child.Type()
-			if ct != "primitive_type" && ct != "type_identifier" {
+			if ct != "primitive_type" && ct != nodeTypeIdentifier {
 				return c.compileExpr(child)
 			}
 		}
@@ -109,30 +109,38 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		// side effects, return last value (C comma operator). Previously
 		// only the last child was returned, silently dropping side effects
 		// of earlier children (e.g. `for(int i=0,j=10; ...)` lost `i=0`).
-		var exprs []*interp.Expr
-		for i := 0; i < int(n.NamedChildCount()); i++ {
-			child := n.NamedChild(i)
-			if e := c.compileExpr(child); e != nil {
-				exprs = append(exprs, e)
-			}
-		}
-		if len(exprs) == 0 {
-			return nil
-		}
-		if len(exprs) == 1 {
-			return exprs[0]
-		}
-		args := make([]interp.Expr, len(exprs))
-		for i := range exprs {
-			args[i] = *exprs[i]
-		}
-		return &interp.Expr{Kind: interp.ExprSeq, Args: args}
+		return c.compileCommaExpression(n)
 
 	case "argument_list":
 		// Should not be compiled directly
 		return nil
 	}
 	return nil
+}
+
+// compileCommaExpression evaluates ALL children left-to-right for side effects,
+// returning the last value (C comma operator). VM-COMPILER-SEMANTICS-4:
+// previously only the last child was returned, silently dropping side effects
+// of earlier children (e.g. `for(int i=0,j=10; ...)` lost `i=0`).
+func (c *compiler) compileCommaExpression(n *sitter.Node) *interp.Expr {
+	var exprs []*interp.Expr
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if e := c.compileExpr(child); e != nil {
+			exprs = append(exprs, e)
+		}
+	}
+	if len(exprs) == 0 {
+		return nil
+	}
+	if len(exprs) == 1 {
+		return exprs[0]
+	}
+	args := make([]interp.Expr, len(exprs))
+	for i := range exprs {
+		args[i] = *exprs[i]
+	}
+	return &interp.Expr{Kind: interp.ExprSeq, Args: args}
 }
 
 func (c *compiler) compileCall(n *sitter.Node) *interp.Expr {
@@ -483,7 +491,7 @@ func (c *compiler) findType(n *sitter.Node) string {
 	// (tree-sitter parses 'input BuyOrSell0 x' with 'input' as type_identifier)
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			name := c.text(child)
 			if name != "input" && name != "extern" {
 				return name

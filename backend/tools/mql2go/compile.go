@@ -108,6 +108,32 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 		c.emit(OP_ENTER_ONTICK, 0, 0, 0)
 		c.compileEventBody(ir.OnTick)
 	}
+	c.compileOptionalEvents(ir)
+
+	// Halt instruction at end
+	c.emit(OP_HALT, 0, 0, 0)
+
+	// Patch forward jumps (placeholder targets are negative indices)
+	c.patchJumps()
+
+	// BT-FUNC-ENTRYPC-FWD: patch user-call placeholders after all bodies compiled.
+	if err := c.patchUserCalls(); err != nil {
+		if c.err == nil {
+			c.err = err
+		}
+	}
+
+	// Return compile error if any (e.g. unknown constant)
+	if c.err != nil {
+		return nil, c.err
+	}
+
+	return c.bc, nil
+}
+
+// compileOptionalEvents compiles OnTrade/OnTimer/OnDeinit/OnTradeTransaction/OnBookEvent
+// event handlers. Extracted from CompileAST to reduce function length (funlen).
+func (c *astCompiler) compileOptionalEvents(ir *interp.IR) {
 	if len(ir.OnTrade) > 0 {
 		c.bc.OnTrade = int32(len(c.bc.Code))
 		c.emit(OP_ENTER_ONTRADE, 0, 0, 0)
@@ -133,26 +159,6 @@ func CompileAST(ir *interp.IR) (*Bytecode, error) {
 		c.emit(OP_ENTER_ONBOOKEVENT, 0, 0, 0)
 		c.compileEventBody(ir.OnBookEvent)
 	}
-
-	// Halt instruction at end
-	c.emit(OP_HALT, 0, 0, 0)
-
-	// Patch forward jumps (placeholder targets are negative indices)
-	c.patchJumps()
-
-	// BT-FUNC-ENTRYPC-FWD: patch user-call placeholders after all bodies compiled.
-	if err := c.patchUserCalls(); err != nil {
-		if c.err == nil {
-			c.err = err
-		}
-	}
-
-	// Return compile error if any (e.g. unknown constant)
-	if c.err != nil {
-		return nil, c.err
-	}
-
-	return c.bc, nil
 }
 
 type loopContext struct {

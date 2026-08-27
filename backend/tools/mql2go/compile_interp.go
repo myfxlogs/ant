@@ -653,7 +653,7 @@ func (c *compiler) collectEnum(ir *interp.IR, n *sitter.Node) {
 	var enumName string
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "type_identifier" {
+		if child.Type() == nodeTypeIdentifier {
 			enumName = c.text(child)
 			if ir.EnumTypes == nil {
 				ir.EnumTypes = make(map[string]bool)
@@ -792,7 +792,7 @@ func isInputDeclaration(n *sitter.Node, c *compiler) bool {
 		return false
 	}
 	first := n.NamedChild(0)
-	return first.Type() == "type_identifier" && c.text(first) == "input"
+	return first.Type() == nodeTypeIdentifier && c.text(first) == "input"
 }
 
 // isExternDeclaration checks if a declaration node starts with `extern`.
