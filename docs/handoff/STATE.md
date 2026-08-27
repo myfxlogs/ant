@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done；VM 返工批第四批（VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1）✅done。D-REVERT-SCOPE-DRIFT-001 全部 8 个漂移 VM ID 返工完成。**VM-AUDIT-2026-08-27 批次 1 ✅done**（-1/-2，Devin CLI 验收通过 2026-08-27）；**批次 2 施工完成**（-3 stack depth + -4 popN + -5 dispatch default），待 Devin CLI 独立复审；批次 3（-6~-8）待施工。
+- **现状**: VM-CACHE-INTEGRITY-1/2 ✅done；LIVE-ORDER-REENTRY-1 R4 ✅done；VM-TRADE-CONTEXT-1/2 ✅done；VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done；VM 返工批第四批（VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1）✅done。D-REVERT-SCOPE-DRIFT-001 全部 8 个漂移 VM ID 返工完成。**VM-AUDIT-2026-08-27 批次 1 ✅done**（-1/-2）；**批次 2 ✅done**（-3/-4/-5，Devin CLI 验收通过 2026-08-27）；批次 3（-6~-8）待施工。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -22,11 +22,11 @@
 | VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1（第四批） | ✅done | Devin CLI 验收通过 2026-08-26，8 项对抗证明 |
 | DATA-TRUTH-2b MT4 margin 补齐 | ✅ | spec 验证通过，修复+对抗证明存活 |
 | VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
-| VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | 🟦open（施工完成，待独立复审） | registry VM-AUDIT-2026-08-27-3/-4/-5 |
+| VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 3（-6~-8） | 🟦open | registry VM-AUDIT-2026-08-27-6~8 + spec `docs/spec/vm-audit-2026-08-27-spec.md` |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效（D-VM-LIVE-001 验收前禁止从 main 构建部署 backend）。
-- **下一步**: VM-AUDIT-2026-08-27 批次 1 ✅done；批次 2（-3/-4/-5）施工完成待独立复审；批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic）待施工。待业主指示开工或派工。
+- **下一步**: VM-AUDIT-2026-08-27 批次 1/2 ✅done；批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic）待施工。待业主指示开工或派工。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -47,16 +47,16 @@
 - **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
 - **VM-AUDIT-2026-08-27-1** ✅done — Python live 路径 SourceHash 验证（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-2** ✅done — runEvent fatalError 重置（Devin CLI 验收通过 2026-08-27）
-- **VM-AUDIT-2026-08-27-3** 🟦open（施工完成，待独立复审）— executeCallUser MaxStackDepth 检查（2026-08-27 施工）
-- **VM-AUDIT-2026-08-27-4** 🟦open（施工完成，待独立复审）— popN 栈下溢后 callBuiltin early return（2026-08-27 施工）
-- **VM-AUDIT-2026-08-27-5** 🟦open（施工完成，待独立复审）— dispatch default 未知请求类型 error（2026-08-27 施工）
+- **VM-AUDIT-2026-08-27-3** ✅done — executeCallUser MaxStackDepth 检查（Devin CLI 验收通过 2026-08-27）
+- **VM-AUDIT-2026-08-27-4** ✅done — popN 栈下溢后 callBuiltin early return（Devin CLI 验收通过 2026-08-27）
+- **VM-AUDIT-2026-08-27-5** ✅done — dispatch default 未知请求类型 error（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-6~8** 🟦open — VM 管线全面审计批次 3（3 个待施工），spec `docs/spec/vm-audit-2026-08-27-spec.md`
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-08-27 VM-AUDIT-2026-08-27 批次 2 施工完成：S1 `executeCallUser` 内联循环加 `MaxStackDepth` 检查（defense-in-depth）；S2 `OP_CALL_BUILTIN` 在 `popN` 栈下溢后 early return 跳过 `callBuiltin`；S3 `VMLiveSession.dispatch` default 分支直接返回 "unknown request type" error。对抗证明 3 项 RED→restore→GREEN（T1 stack depth 突变→instruction limit、T2 popN early return 突变→mock builtin 被调用、T3 default 分支突变→Success:true）。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。待 Devin CLI 独立复审。
+- 2026-08-27 VM-AUDIT-2026-08-27 批次 2 ✅done：Devin CLI 验收通过。S1 `executeCallUser` 内联循环加 `MaxStackDepth` 检查（defense-in-depth）；S2 `OP_CALL_BUILTIN` 在 `popN` 栈下溢后 early return 跳过 `callBuiltin`；S3 `VMLiveSession.dispatch` default 分支直接返回 "unknown request type" error。对抗证明 3 项独立验证 RED→restore→GREEN（T1 stack depth 突变→instruction limit、T2 popN early return 突变→mock builtin 被调用、T3 default 分支突变→Success:true）。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。
 - 2026-08-27 VM-AUDIT-2026-08-27 批次 1 ✅done：Devin CLI 验收通过。S1 `executePythonVMLive` 改用 `CompilePythonCached`（SourceHash 验证）；S2 `NewPythonVMLiveSessionCached` 改用 `CompilePythonCached`；S3 `runEvent` 加 `vm.fatalError = ""` 重置。对抗证明 2 项独立验证 RED→restore→GREEN（T1 SourceHash 突变、T2 fatalError 重置突变）。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。
 - 2026-08-27 VM-AUDIT-2026-08-27 全面审计完成：Devin CLI 独立审计 VM 管线 10 个组件 ~5500 行，发现 5 BUG + 3 架构问题。8 个 registry 条目落档（-1~-8），修复方案 spec 落档 `docs/spec/vm-audit-2026-08-27-spec.md`。分 3 批施工。确认健康：TradeBarrier/MutationCoordinator/PositionCache/编译器 two-pass/VM 交易 builtins。
 - 2026-08-26 VM-TRADE-CONTEXT-1/2 ✅done：Devin CLI 验收通过。invalidateOrderCaches + CTrade setter 透传 + OppositeTicket + AccountNumber 从 context + IsTesting=!signalMode + brokerImpl lastError fail-closed。对抗证明 8 项 RED→restore→GREEN，门禁全绿。
