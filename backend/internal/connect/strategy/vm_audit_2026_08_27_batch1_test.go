@@ -10,7 +10,7 @@ import (
 //
 // Tests verify the P1 fixes:
 //   - VM-AUDIT-2026-08-27-1 (BUG-1): Python live paths use CompilePythonCached
-//     (SourceHash verification) instead of CompileMQLFromBytecode (no verification).
+//     (SourceHash verification) instead of the raw bytecode loader (no verification).
 //   - VM-AUDIT-2026-08-27-2 (BUG-2): runEvent resets fatalError between events.
 //
 // Adversarial proofs: each critical line mutated → relevant test RED → restore GREEN.
@@ -69,7 +69,7 @@ func TestExecutePythonVMLive_SourceHashVerification(t *testing.T) {
 	expectedHash := runnerB.Bytecode().SourceHash
 
 	// Call NewPythonVMLiveSessionCached with source B but A's stale cached bytecode.
-	// BUG-1 (old code): used CompileMQLFromBytecode directly → returned cached runner
+	// BUG-1 (old code): used the raw bytecode loader directly → returned cached runner
 	//   with SourceHash == hashSource(A) → stale bytecode for source B.
 	// Fix (S2): uses CompilePythonCached → SourceHash mismatch → recompiles from B.
 	sess, err := NewPythonVMLiveSessionCached(pyAuditSourceB, bcDataA)

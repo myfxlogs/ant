@@ -39,12 +39,20 @@ import (
 // entered for a mutation with a known ticket. It runs independently of the
 // original mutation call (which has already returned).
 func (s *StrategyExecutionServer) recoverFromOutcomeUnknown(
+	ctx context.Context,
 	cfg LiveStrategyConfig, activeSess *ActiveSession,
 	barrier *TradeBarrier, ticket int64, action mutationAction,
 	verify func(orders []*mthub.OrderRecord) bool,
 	conf confirmationConfig,
 ) {
-	time.Sleep(conf.recoveryDelay)
+	// VM-AUDIT-2026-08-27-7: use select+ctx.Done() so session cancellation
+	// (runCtx cancel via SessionRegistry.Stop) interrupts the recovery delay
+	// instead of blocking for the full recoveryDelay (default 10s).
+	select {
+	case <-time.After(conf.recoveryDelay):
+	case <-ctx.Done():
+		return
+	}
 
 	// Check if barrier is still in outcomeUnknown (may have been released
 	// by session shutdown or manual intervention).

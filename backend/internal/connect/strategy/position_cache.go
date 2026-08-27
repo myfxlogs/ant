@@ -53,6 +53,16 @@ func (c *PositionCache) Subscribe(ctx context.Context, hub *mthub.MtHubService, 
 	ch, unsub := hub.SubscribePositionSnapshots(ctx, accountID)
 	go func() {
 		defer unsub()
+		// VM-AUDIT-2026-08-27-8: recover from panics in c.put (e.g. nil map
+		// write from a malformed snapshot) so a single bad snapshot doesn't
+		// crash the entire process. The goroutine exits after recovery.
+		defer func() {
+			if r := recover(); r != nil {
+				c.log.Error("PositionCache: subscribe goroutine panicked",
+					zap.String("account", accountID),
+					zap.Any("panic", r))
+			}
+		}()
 		for {
 			select {
 			case <-ctx.Done():

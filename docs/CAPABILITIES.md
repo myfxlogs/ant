@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-08-27 02:37 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-08-27 03:25 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -394,10 +394,10 @@ GetDivergenceReport	backend/internal/connect/strategy/divergence_handler.go:42
 GetDivergenceReport	proto/ant/v1/live_backtest_divergence.proto:12
 GetExperimentCandidate	backend/internal/connect/strategy/strategy_experiment_handler.go:214
 GetExperimentCandidate	proto/ant/v1/strategy_experiment.proto:16
-GetFreshFinancialSnapshot	backend/internal/connect/strategy/position_cache.go:154
-GetFreshPositionSnapshot	backend/internal/connect/strategy/position_cache.go:173
-GetFreshSnapshot	backend/internal/connect/strategy/position_cache.go:227
-GetFreshTradingSnapshot	backend/internal/connect/strategy/position_cache.go:197
+GetFreshFinancialSnapshot	backend/internal/connect/strategy/position_cache.go:164
+GetFreshPositionSnapshot	backend/internal/connect/strategy/position_cache.go:183
+GetFreshSnapshot	backend/internal/connect/strategy/position_cache.go:237
+GetFreshTradingSnapshot	backend/internal/connect/strategy/position_cache.go:207
 GetGlobalSettings	proto/ant/v1/auto_trading.proto:15
 GetImportedStrategy	backend/internal/connect/strategy/strategy_import_handler.go:113
 GetImportedStrategy	proto/ant/v1/strategy_runtime.proto:35
@@ -461,7 +461,7 @@ GetSecret	backend/internal/service/systemai/service.go:251
 GetSessionFeedback	proto/ant/v1/ai.proto:25
 GetSharedPerformance	proto/ant/v1/share.proto:9
 GetSignal	backend/internal/service/signal_svc.go:51
-GetSnapshot	backend/internal/connect/strategy/position_cache.go:146
+GetSnapshot	backend/internal/connect/strategy/position_cache.go:156
 GetSnapshot	backend/internal/mthub/snapshot_persister.go:99
 GetSnapshot	backend/internal/risksvc/platform_aggregator.go:140
 GetStatus	backend/internal/risksvc/jurisdiction_store.go:22
@@ -794,7 +794,7 @@ PublishTradeEvent	backend/internal/mthub/service.go:171
 PublishTradeEventFromUpdate	backend/internal/mthub/service_orders.go:390
 PurchaseBundle	proto/ant/v1/marketplace_service.proto:92
 PurchaseStrategy	proto/ant/v1/marketplace_service.proto:13
-PutSnapshot	backend/internal/connect/strategy/position_cache.go:132
+PutSnapshot	backend/internal/connect/strategy/position_cache.go:142
 QuestionnaireCompletedAt	backend/internal/risksvc/jurisdiction_store.go:149
 Quote	reference/grpc/mt4.proto:73
 QuoteHistory	reference/grpc/mt4.proto:136
@@ -1131,7 +1131,7 @@ UnpublishStrategy	proto/ant/v1/admin_strategy.proto:25
 UnpublishStrategy	proto/ant/v1/marketplace_service.proto:24
 UnpublishTemplate	backend/internal/service/template_svc_admin.go:276
 UnpublishUserTemplate	backend/internal/service/template_svc.go:116
-Unsubscribe	backend/internal/connect/strategy/position_cache.go:137
+Unsubscribe	backend/internal/connect/strategy/position_cache.go:147
 Unsubscribe	proto/ant/v1/marketplace_service.proto:12
 UnSubscribe	reference/grpc/mt4.proto:244
 UnSubscribe	reference/grpc/mt5.proto:401
@@ -1771,13 +1771,13 @@ backend/internal/connect/strategy/divergence_handler.go:38:func (s *DivergenceSe
 backend/internal/connect/strategy/divergence_handler.go:42:func (s *DivergenceServer) GetDivergenceReport(
 backend/internal/connect/strategy/divergence_handler.go:60:func (s *DivergenceServer) WatchDivergenceReport(
 backend/internal/connect/strategy/live_runner.go:138:func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
-backend/internal/connect/strategy/position_cache.go:132:func (c *PositionCache) PutSnapshot(snap *mthub.PositionSnapshot, receivedAt time.Time) {
-backend/internal/connect/strategy/position_cache.go:137:func (c *PositionCache) Unsubscribe(accountID string) {
-backend/internal/connect/strategy/position_cache.go:146:func (c *PositionCache) GetSnapshot(accountID string) *mthub.PositionSnapshot {
-backend/internal/connect/strategy/position_cache.go:154:func (c *PositionCache) GetFreshFinancialSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
-backend/internal/connect/strategy/position_cache.go:173:func (c *PositionCache) GetFreshPositionSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
-backend/internal/connect/strategy/position_cache.go:197:func (c *PositionCache) GetFreshTradingSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
-backend/internal/connect/strategy/position_cache.go:227:func (c *PositionCache) GetFreshSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:142:func (c *PositionCache) PutSnapshot(snap *mthub.PositionSnapshot, receivedAt time.Time) {
+backend/internal/connect/strategy/position_cache.go:147:func (c *PositionCache) Unsubscribe(accountID string) {
+backend/internal/connect/strategy/position_cache.go:156:func (c *PositionCache) GetSnapshot(accountID string) *mthub.PositionSnapshot {
+backend/internal/connect/strategy/position_cache.go:164:func (c *PositionCache) GetFreshFinancialSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:183:func (c *PositionCache) GetFreshPositionSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:207:func (c *PositionCache) GetFreshTradingSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:237:func (c *PositionCache) GetFreshSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
 backend/internal/connect/strategy/position_cache.go:49:func (c *PositionCache) Subscribe(ctx context.Context, hub *mthub.MtHubService, accountID string) {
 backend/internal/connect/strategy/schedule_engine.go:114:func (e *ScheduleEngine) Start(ctx context.Context) error {
 backend/internal/connect/strategy/schedule_engine.go:170:func (e *ScheduleEngine) Notify() {

@@ -197,7 +197,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 				if verify == nil {
 					verify = verifyTicketPresent(spec.expectedTicket)
 				}
-				go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, spec.expectedTicket, spec.action, verify, conf)
+				go s.recoverFromOutcomeUnknown(ctx, cfg, activeSess, barrier, spec.expectedTicket, spec.action, verify, conf)
 			}
 			return mutationResult{state: barrierOutcomeUnknown}
 		}
@@ -268,7 +268,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 			if verify == nil {
 				verify = verifyTicketPresent(effectiveTicket)
 			}
-			go s.recoverFromOutcomeUnknown(cfg, activeSess, barrier, effectiveTicket, spec.action, verify, conf)
+			go s.recoverFromOutcomeUnknown(ctx, cfg, activeSess, barrier, effectiveTicket, spec.action, verify, conf)
 		}
 		// Do NOT release.
 	default:

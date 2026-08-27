@@ -5,6 +5,7 @@
 package strategy
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -71,13 +72,13 @@ func TestLIVE_DIAG_TRUTH_1_MixedMagic(t *testing.T) {
 
 	now := time.Now()
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             now,
-		PositionsCapturedAt:    now,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              now,
+		PositionsCapturedAt:     now,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 		// 3 positions: 1 with target magic, 2 with other magic
 		Positions: []mthub.PositionSnapshotItem{
 			{Ticket: 1, Magic: magic, Symbol: "EURUSD"},
@@ -122,13 +123,13 @@ func TestLIVE_DIAG_TRUTH_1_PendingOrdersCount(t *testing.T) {
 
 	now := time.Now()
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             now,
-		PositionsCapturedAt:    now,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              now,
+		PositionsCapturedAt:     now,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 		Positions: []mthub.PositionSnapshotItem{
 			{Ticket: 1, Magic: magic, Symbol: "EURUSD"},
 		},
@@ -168,13 +169,13 @@ func TestLIVE_DIAG_TRUTH_1_FreshnessFields(t *testing.T) {
 
 	now := time.Now()
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             now,
-		PositionsCapturedAt:    now,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              now,
+		PositionsCapturedAt:     now,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 	}
 	pc.PutSnapshot(snap, now)
 
@@ -213,13 +214,13 @@ func TestLIVE_DIAG_TRUTH_1_StalePositions(t *testing.T) {
 
 	staleTime := time.Now().Add(-2 * time.Minute) // 120s ago, > 90s max age
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             staleTime,
-		PositionsCapturedAt:    staleTime,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              staleTime,
+		PositionsCapturedAt:     staleTime,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 	}
 	pc.PutSnapshot(snap, staleTime)
 
@@ -271,13 +272,13 @@ func TestLIVE_DIAG_TRUTH_1_ProtoConversion(t *testing.T) {
 
 	now := time.Now()
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             now,
-		PositionsCapturedAt:    now,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              now,
+		PositionsCapturedAt:     now,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 		Positions: []mthub.PositionSnapshotItem{
 			{Ticket: 1, Magic: magic, Symbol: "EURUSD"},
 		},
@@ -364,13 +365,13 @@ func TestLIVE_DIAG_TRUTH_1_VMBrokerMismatch(t *testing.T) {
 
 	now := time.Now()
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             now,
-		PositionsCapturedAt:    now,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              now,
+		PositionsCapturedAt:     now,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 		Positions: []mthub.PositionSnapshotItem{
 			{Ticket: 1, Magic: magic, Symbol: "EURUSD"},
 			{Ticket: 2, Magic: magic, Symbol: "GBPUSD"},
@@ -471,13 +472,13 @@ func TestLIVE_DIAG_TRUTH_1_DataAvailableWithCache(t *testing.T) {
 
 	now := time.Now()
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             now,
-		PositionsCapturedAt:    now,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
+		CapturedAt:              now,
+		PositionsCapturedAt:     now,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
 	}
 	pc.PutSnapshot(snap, now)
 
@@ -674,7 +675,7 @@ func TestLIVE_DIAG_TRUTH_1_RecoveryCanonicalLifecycle(t *testing.T) {
 	// 4. barrier.Reconcile(true) → barrierConfirmed
 	// 5. logOrderLifecycle(..., "order_confirmed", ..., 99, ...)
 	// 6. RecordLifecycle("order_confirmed", 99) in sessionDiag
-	srv.recoverFromOutcomeUnknown(cfg, sess, barrier, ticket, "close", verify, conf)
+	srv.recoverFromOutcomeUnknown(context.Background(), cfg, sess, barrier, ticket, "close", verify, conf)
 
 	snap := sess.diag.SnapshotDiag()
 	if snap.OrderLifecycle != "order_confirmed" {
@@ -718,7 +719,7 @@ func TestLIVE_DIAG_TRUTH_1_RecoveryRejectedCanonicalLifecycle(t *testing.T) {
 		readAfterWriteTimeout: 5 * time.Second,
 	}
 
-	srv.recoverFromOutcomeUnknown(cfg, sess, barrier, ticket, "close", verify, conf)
+	srv.recoverFromOutcomeUnknown(context.Background(), cfg, sess, barrier, ticket, "close", verify, conf)
 
 	snap := sess.diag.SnapshotDiag()
 	if snap.OrderLifecycle != "order_rejected" {
@@ -774,14 +775,14 @@ func TestLIVE_DIAG_TRUTH_1_StaleSnapshotDataAvailable(t *testing.T) {
 	// Snapshot captured 120s ago — stale (> 90s max age)
 	staleTime := time.Now().Add(-120 * time.Second)
 	snap := &mthub.PositionSnapshot{
-		AccountID:              accountID,
+		AccountID:               accountID,
 		FinancialsAuthoritative: true,
 		PositionsAuthoritative:  true,
-		CapturedAt:             staleTime,
-		PositionsCapturedAt:    staleTime,
-		FinancialsSource:       "account_summary",
-		PositionsSource:        "order_stream",
-		Positions: []mthub.PositionSnapshotItem{{Magic: magic}},
+		CapturedAt:              staleTime,
+		PositionsCapturedAt:     staleTime,
+		FinancialsSource:        "account_summary",
+		PositionsSource:         "order_stream",
+		Positions:               []mthub.PositionSnapshotItem{{Magic: magic}},
 	}
 	pc.PutSnapshot(snap, staleTime)
 

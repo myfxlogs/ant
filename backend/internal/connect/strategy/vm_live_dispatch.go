@@ -23,7 +23,7 @@ func (s *StrategyExecutionServer) executeVMLive(ctx context.Context, req *antv1.
 		}
 	}
 
-	strategy, bcData, err := mql2go.CompileMQLCached(req.StrategyCode, cachedBytecode)
+	strategy, bcData, err := compileForLive(req.StrategyCode, cachedBytecode, false)
 	if err != nil {
 		return nil, fmt.Errorf("compile MQL: %w", err)
 	}
@@ -51,9 +51,9 @@ func (s *StrategyExecutionServer) executePythonVMLive(ctx context.Context, req *
 		}
 	}
 
-	// VM-AUDIT-2026-08-27-1: use CompilePythonCached which verifies SourceHash
-	// before accepting cached bytecode (mirrors the MQL path at :26).
-	strategy, bcData, err := mql2go.CompilePythonCached(req.StrategyCode, cachedBytecode)
+	// VM-AUDIT-2026-08-27-6: use compileForLive which dispatches to
+	// CompilePythonCached (SourceHash verification) for Python strategies.
+	strategy, bcData, err := compileForLive(req.StrategyCode, cachedBytecode, true)
 	if err != nil {
 		return nil, fmt.Errorf("compile Python: %w", err)
 	}
