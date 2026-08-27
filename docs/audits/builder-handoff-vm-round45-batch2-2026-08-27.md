@@ -2,7 +2,7 @@
 
 > **设计/验收方**：Devin CLI
 > **施工方**：Devin IDE / Windsurf
-> **基线 HEAD**：`260460a4`（工作树干净，Batch 1 验收后开工）
+> **基线 HEAD**：`036f7683`（工作树干净，Batch 1 + Batch 4 验收后开工）
 > **边界**：只施工 VM-TRADE-CONTEXT-6，禁改写历史审计事实，禁扩 scope，禁 commit/push/deploy。
 > **施工后状态**：`🟦open（施工完成，待独立复审）`，不得自标 ✅done。
 
@@ -12,9 +12,9 @@
 
 D-REVERT-SCOPE-DRIFT-001 回滚了 VM-TRADE-CONTEXT-6 的全部修复。当前代码状态：
 
-1. `vmHandleBar`（`vm_live_handlers.go:14-64`）**无 OHLCV 数组长度校验**——`lctx.Open[i]`/`High[i]`/`Low[i]`/`Close[i]`/`Volume[i]` 访问不检查数组长度一致，长度不一致会 panic。
-2. `parseDecimal`（`backtest_worker_helpers.go:25-32`）**invalid decimal 静默转零**——`decimal.NewFromString` 失败返回 `decimal.Zero`，不报 error。`parseInt64` 同理。
-3. `buildLiveContext`（`live_context.go:199-237`）**不注入 Login/Company/IsDemo/IsConnected/IsTradeAllowed**——`LiveStrategyContext` proto 有这些字段（proto codegen 已修复），但 Go 代码不填充。
+1. `vmHandleBar`（`vm_live_handlers.go:14-65`）**无 OHLCV 数组长度校验**——`lctx.Open[i]`/`High[i]`/`Low[i]`/`Close[i]`/`Volume[i]` 访问不检查数组长度一致，长度不一致会 panic。
+2. `parseDecimal`（`backtest_worker_helpers.go:25-38`）**invalid decimal 静默转零**——`decimal.NewFromString` 失败返回 `decimal.Zero`，不报 error。`parseInt64` 同理（`:51`）。
+3. `buildLiveContext`（`live_context.go:200-286`）**不注入 Login/Company/IsDemo/IsConnected/IsTradeAllowed**——`LiveStrategyContext` proto 有这些字段（proto codegen 已修复），但 Go 代码不填充。
 4. `VMLiveSession.Start()` **无 `validateFirstBarContext`**——invalid decimal 在 Init 前不拒绝。
 5. nil `Positions`/`PendingOrders`/`Symbols` **不拒绝**——nil repeated message 被当空切片处理。
 
@@ -52,7 +52,7 @@ D-REVERT-SCOPE-DRIFT-001 回滚了 VM-TRADE-CONTEXT-6 的全部修复。当前�
   - live mode：所有 lookup 必须成功，error 时 fail-closed 返回 error。investor 账户 IsTradeAllowed=false 即使 connected。paper mode：lookup error 非致命（fail-open for simulation）。
   - 填充 `lctx.Login`/`Company`/`IsDemo`/`IsConnected`/`IsTradeAllowed`。
 
-- **S7** `cmd/server/handlers_strategy.go`：接线 lookup 函数到 `StrategyExecutionServer`——server struct 加 lookup 字段（func 类型），`buildLiveContext` 通过 server 方法调用。DB query error 传播（不混淆真实 false）。
+- **S7** `internal/connect/strategy/strategy_execution_handler.go`（`StrategyExecutionServer` struct `:31`）+ `live_context.go`：接线 lookup 函数到 `StrategyExecutionServer`——server struct 加 lookup 字段（func 类型），`buildLiveContext` 通过 server 方法调用。DB query error 传播（不混淆真实 false）。
 
 - **S8** file-lines 拆分：如果 `live_context.go` 或 `vm_live_handlers.go` 超 450 行，按语义拆分。拆分前先 `bash scripts/cap.sh` 查重。
 
