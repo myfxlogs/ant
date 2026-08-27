@@ -116,6 +116,13 @@ func (vm *VM) execute(ins Instruction) error {
 	case OP_CALL_BUILTIN:
 		nArgs := int(ins.B)
 		args := vm.popN(nArgs)
+		// VM-AUDIT-2026-08-27-4: popN sets fatalError on stack underflow but
+		// returns partial results. Without this early return, callBuiltin would
+		// execute with too few args (e.g. OrderSend with empty symbol/volume),
+		// producing side effects before runLoop's top-of-loop check fires.
+		if vm.fatalError != "" {
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
 		result := vm.callBuiltin(ins.A, args)
 		vm.push(result)
 		// VM-RUNTIME-FAILCLOSED-1: defense-in-depth — check fatalError after
@@ -349,6 +356,16 @@ func (vm *VM) executeCallUser(ins Instruction) error {
 			vm.locals = oldLocals
 			vm.callDepth--
 			return vm.instructionLimitError()
+		}
+		// VM-AUDIT-2026-08-27-3: defense-in-depth — the outer runLoop checks
+		// MaxStackDepth, but a long loop inside a user function never returns
+		// to runLoop, so the stack could grow to MaxTicks (~80-160MB) before
+		// the instruction limit fires. Check here too, restoring locals/callDepth
+		// like the other error exit paths above.
+		if len(vm.stack) > MaxStackDepth {
+			vm.locals = oldLocals
+			vm.callDepth--
+			return fmt.Errorf("strategy exceeded max stack depth (%d)", len(vm.stack))
 		}
 		if err := vm.execute(ins2); err != nil {
 			vm.locals = oldLocals

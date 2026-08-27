@@ -159,11 +159,13 @@ func (s *VMLiveSession) dispatch(ctx context.Context, req *antv1.ExecuteLiveRequ
 		evalKind = -1
 
 	default:
-		if bctx := req.GetBarContext(); bctx != nil {
-			resp = vmHandleBar(ctx, s.runner, bctx)
-			evalKind = evalKindBar
-		} else {
-			return &antv1.ExecuteLiveResponse{Success: false, Error: "unknown request type"}
+		// VM-AUDIT-2026-08-27-5: unknown request types must not be silently
+		// treated as bar events even if a stale BarContext is present. Return
+		// an explicit error so the caller sees the unknown type instead of
+		// executing the strategy on a misinterpreted request.
+		return &antv1.ExecuteLiveResponse{
+			Success: false,
+			Error:   fmt.Sprintf("unknown request type: %s", req.GetRequestType()),
 		}
 	}
 

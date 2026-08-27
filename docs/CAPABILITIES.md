@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-08-27 01:48 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-08-27 02:37 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -908,7 +908,7 @@ SetConfig	proto/ant/v1/admin_config.proto:11
 SetCostBreaker	backend/internal/service/systemai/service.go:124
 SetCostEstimator	backend/internal/mthub/service_setters.go:68
 SetCoverageChecker	backend/internal/connect/strategy/strategy_execution_handler.go:126
-SetDiag	backend/internal/connect/strategy/vm_live_session.go:182
+SetDiag	backend/internal/connect/strategy/vm_live_session.go:184
 SetEmailVerification	backend/internal/service/registration_service.go:61
 SetEngine	backend/internal/connect/strategy/strategy_handler.go:64
 SetExecutor	backend/internal/connect/strategy/strategy_experiment_worker.go:89
@@ -1943,7 +1943,7 @@ backend/internal/connect/strategy/trade_barrier.go:371:func (b *TradeBarrier) Wa
 backend/internal/connect/strategy/trade_barrier.go:396:func (b *TradeBarrier) Ticket() int64 {
 backend/internal/connect/strategy/vm_live_session.go:116:func (s *VMLiveSession) SendEvent(ctx context.Context, reqBytes []byte) ([]byte, error) {
 backend/internal/connect/strategy/vm_live_session.go:130:func (s *VMLiveSession) Close() error {
-backend/internal/connect/strategy/vm_live_session.go:182:func (s *VMLiveSession) SetDiag(d *sessionDiag) {
+backend/internal/connect/strategy/vm_live_session.go:184:func (s *VMLiveSession) SetDiag(d *sessionDiag) {
 backend/internal/connect/strategy/vm_live_session.go:78:func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
 backend/internal/connect/strategy/walk_forward_handler.go:36:func (s *WalkForwardServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 backend/internal/connect/strategy/walk_forward_handler.go:39:func (s *WalkForwardServer) GetWalkForwardReport(
