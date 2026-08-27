@@ -652,11 +652,14 @@ func (b *SimBroker) Account() sdk.AccountInfo {
 	// equity = balance + floating P&L (commission already deducted from balance at open)
 	equity := b.balance.Add(floatingProfit)
 	return sdk.AccountInfo{
-		Balance:    b.balance,
-		Equity:     equity,
-		Margin:     marginUsed,
-		FreeMargin: equity.Sub(marginUsed),
-		Leverage:   b.config.Leverage,
-		Currency:   "USD",
+		Balance:        b.balance,
+		Equity:         equity,
+		Margin:         marginUsed,
+		FreeMargin:     equity.Sub(marginUsed),
+		Leverage:       b.config.Leverage,
+		Currency:       "USD",
+		IsDemo:         true, // VM-API-TRUTH-3: backtest = demo
+		IsConnected:    true, // VM-API-TRUTH-3: backtest always connected
+		IsTradeAllowed: true, // VM-API-TRUTH-3: backtest allows trading
 	}
 }

@@ -34,6 +34,10 @@ type contextImpl struct {
 	livePositions     []sdk.Position
 	livePendingOrders []sdk.PendingOrder // LIVE-MQL-ORDER-CONTEXT-1
 	liveLogin         int64              // VM-TRADE-CONTEXT-6: AccountNumber() source
+	// VM-API-TRUTH-3: authoritative account status from mt_accounts.
+	liveIsDemo         bool
+	liveIsConnected    bool
+	liveIsTradeAllowed bool
 
 	// Symbol info from parent process (harness mode — no RPC).
 	livePoint        string

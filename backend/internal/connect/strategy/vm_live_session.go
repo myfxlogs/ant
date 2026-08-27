@@ -113,6 +113,9 @@ func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, err
 	// VM-TRADE-CONTEXT-6 S6: set Login before Init so AccountNumber()
 	// returns the authoritative value during OnInit.
 	s.runner.SetLogin(bctx.Login)
+	// VM-API-TRUTH-3: set account status before Init so IsConnected()/
+	// IsDemo()/IsTradeAllowed() return authoritative values during OnInit.
+	s.runner.SetAccountStatus(bctx.IsDemo, bctx.IsConnected, bctx.IsTradeAllowed)
 
 	if err := s.runner.Init(ctx); err != nil {
 		return nil, fmt.Errorf("init: %w", err)

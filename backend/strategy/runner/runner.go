@@ -103,6 +103,19 @@ func (r *Runner) SetLogin(login int64) {
 	r.ctx.liveLogin = login
 }
 
+// SetAccountStatus sets the authoritative account status flags for harness
+// mode. VM-API-TRUTH-3: IsDemo/IsConnected/IsTradeAllowed come from
+// server-side mt_accounts lookups, not from the client request. Used by
+// vmHandleBar to propagate the authoritative status to the VM's
+// IsConnected()/IsDemo()/IsTradeAllowed() builtins.
+func (r *Runner) SetAccountStatus(isDemo, isConnected, isTradeAllowed bool) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	r.ctx.liveIsDemo = isDemo
+	r.ctx.liveIsConnected = isConnected
+	r.ctx.liveIsTradeAllowed = isTradeAllowed
+}
+
 // UpdateExtraBars sets the extra symbol bar windows for multi-symbol strategies.
 func (r *Runner) UpdateExtraBars(extra map[string][]sdk.Bar) {
 	r.ctx.setExtraBars(extra)

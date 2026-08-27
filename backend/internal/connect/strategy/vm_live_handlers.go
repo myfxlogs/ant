@@ -31,6 +31,8 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	r.UpdateLiveState(lctx.Balance, lctx.Equity, lctx.Margin, lctx.FreeMargin, vmPositionsToSdk(lctx.Positions), vmPendingOrdersToSdk(lctx.PendingOrders))
 	// VM-TRADE-CONTEXT-6 S6: propagate authoritative Login to VM's AccountNumber().
 	r.SetLogin(lctx.Login)
+	// VM-API-TRUTH-3: propagate authoritative account status to VM builtins.
+	r.SetAccountStatus(lctx.IsDemo, lctx.IsConnected, lctx.IsTradeAllowed)
 	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
 
 	// VM-TRADE-CONTEXT-6 S3: strict parse bars — invalid decimals fail-closed.

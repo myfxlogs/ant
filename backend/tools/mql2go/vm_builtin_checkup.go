@@ -9,12 +9,26 @@ import (
 // MQL4/MQL5 Checkup / Platform functions — complete implementation.
 // In backtest context, most of these return fixed values.
 
+// builtinIsConnected returns the authoritative connection status from the
+// SDK context. VM-API-TRUTH-3: was hardcoded true, now reads vm.ctx.Account().
+// IsConnected. When vm.ctx is nil (backtest without live context), defaults
+// to true (backtest simulation is always "connected").
 func builtinIsConnected(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
+	if vm.ctx == nil {
+		return interp.BoolVal(true), nil
+	}
+	return interp.BoolVal(vm.ctx.Account().IsConnected), nil
 }
 
+// builtinIsDemo returns the authoritative demo-account flag from the SDK
+// context. VM-API-TRUTH-3: was hardcoded true, now reads vm.ctx.Account().
+// IsDemo. When vm.ctx is nil (backtest without live context), defaults to
+// true (backtest simulation runs on a demo account).
 func builtinIsDemo(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
+	if vm.ctx == nil {
+		return interp.BoolVal(true), nil
+	}
+	return interp.BoolVal(vm.ctx.Account().IsDemo), nil
 }
 
 func builtinIsDllsAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -29,8 +43,16 @@ func builtinIsLibrariesAllowed(vm *VM, args []interp.Value) (interp.Value, error
 	return interp.BoolVal(true), nil
 }
 
+// builtinIsTradeAllowed returns the authoritative trade-permission flag from
+// the SDK context. VM-API-TRUTH-3: was hardcoded true, now reads vm.ctx.
+// Account().IsTradeAllowed. Investor accounts have IsTradeAllowed=false
+// (set by Batch 2 injectAccountTruth). When vm.ctx is nil (backtest without
+// live context), defaults to true (backtest simulation allows trading).
 func builtinIsTradeAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
+	if vm.ctx == nil {
+		return interp.BoolVal(true), nil
+	}
+	return interp.BoolVal(vm.ctx.Account().IsTradeAllowed), nil
 }
 
 func builtinIsTradeContextBusy(vm *VM, args []interp.Value) (interp.Value, error) {

@@ -54,6 +54,13 @@ type AccountInfo struct {
 	Mode        AccountMode
 	Login       int64  // account login number, for AccountNumber() (VM-TRADE-CONTEXT-2)
 	Company     string // broker company name, for AccountCompany() (VM-TRADE-CONTEXT-2)
+	// VM-API-TRUTH-3: authoritative account status from mt_accounts.
+	// IsDemo: true for demo/contest accounts. IsConnected: true when host
+	// is connected to broker. IsTradeAllowed: true when trading is permitted.
+	// Backtest SimBroker defaults all to true (simulation environment).
+	IsDemo         bool
+	IsConnected    bool
+	IsTradeAllowed bool
 }
 
 // SymbolInfo holds static symbol parameters.

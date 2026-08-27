@@ -206,11 +206,14 @@ func (b *brokerImpl) Account() sdk.AccountInfo {
 		b.runner.ctx.mu.RLock()
 		defer b.runner.ctx.mu.RUnlock()
 		return sdk.AccountInfo{
-			Balance:    b.mustDecimal(b.runner.ctx.liveBalance),
-			Equity:     b.mustDecimal(b.runner.ctx.liveEquity),
-			Margin:     b.mustDecimal(b.runner.ctx.liveMargin),
-			FreeMargin: b.mustDecimal(b.runner.ctx.liveFreeMargin),
-			Login:      b.runner.ctx.liveLogin, // VM-TRADE-CONTEXT-6
+			Balance:        b.mustDecimal(b.runner.ctx.liveBalance),
+			Equity:         b.mustDecimal(b.runner.ctx.liveEquity),
+			Margin:         b.mustDecimal(b.runner.ctx.liveMargin),
+			FreeMargin:     b.mustDecimal(b.runner.ctx.liveFreeMargin),
+			Login:          b.runner.ctx.liveLogin,          // VM-TRADE-CONTEXT-6
+			IsDemo:         b.runner.ctx.liveIsDemo,         // VM-API-TRUTH-3
+			IsConnected:    b.runner.ctx.liveIsConnected,    // VM-API-TRUTH-3
+			IsTradeAllowed: b.runner.ctx.liveIsTradeAllowed, // VM-API-TRUTH-3
 		}
 	}
 	return b.executor.Account()
