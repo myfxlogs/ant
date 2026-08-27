@@ -190,6 +190,7 @@ func (vm *VM) runEvent(ctx context.Context, entryPC int32) error {
 	vm.invalidateOrderCaches()
 	vm.callDepth = 0
 	vm.signal = nil
+	vm.fatalError = "" // VM-AUDIT-2026-08-27-2: reset so a prior event's fatal error doesn't block subsequent events
 	vm.pc = entryPC
 
 	// Clear L2 indicator captures for this event.

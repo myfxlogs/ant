@@ -51,27 +51,20 @@ func (s *StrategyExecutionServer) executePythonVMLive(ctx context.Context, req *
 		}
 	}
 
-	var strategy *mql2go.VMRunner
-	if len(cachedBytecode) > 0 {
-		if r, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
-			strategy = r
-		}
-	}
-	if strategy == nil {
-		r, err := mql2go.CompilePython(req.StrategyCode)
-		if err != nil {
-			return nil, fmt.Errorf("compile Python: %w", err)
-		}
-		strategy = r
+	// VM-AUDIT-2026-08-27-1: use CompilePythonCached which verifies SourceHash
+	// before accepting cached bytecode (mirrors the MQL path at :26).
+	strategy, bcData, err := mql2go.CompilePythonCached(req.StrategyCode, cachedBytecode)
+	if err != nil {
+		return nil, fmt.Errorf("compile Python: %w", err)
 	}
 
 	// Persist newly compiled bytecode for future runs.
-	if req.StrategyId != "" && s.importedRepo != nil {
+	// bcData is non-nil on both cache hit (returns cachedBytecode input) and
+	// cold compile (fresh marshal); SaveBytecode is idempotent (mirrors MQL path).
+	if bcData != nil && req.StrategyId != "" && s.importedRepo != nil {
 		if sid, parseErr := uuid.Parse(req.StrategyId); parseErr == nil && sid != uuid.Nil {
-			if bcData, mErr := mql2go.MarshalBytecode(strategy.Bytecode()); mErr == nil {
-				if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
-					s.log.Warn("executePythonVMLive: save bytecode cache failed", zap.Error(saveErr))
-				}
+			if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
+				s.log.Warn("executePythonVMLive: save bytecode cache failed", zap.Error(saveErr))
 			}
 		}
 	}

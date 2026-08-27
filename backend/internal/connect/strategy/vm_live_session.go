@@ -64,18 +64,15 @@ func NewPythonVMLiveSession(source string) (*VMLiveSession, error) {
 // NewPythonVMLiveSessionCached creates a VMLiveSession for a Python strategy
 // using cached bytecode when available. Falls back to full compilation on cache miss.
 func NewPythonVMLiveSessionCached(source string, cachedBytecode []byte) (*VMLiveSession, error) {
-	if len(cachedBytecode) > 0 {
-		if runner, err := mql2go.CompileMQLFromBytecode(cachedBytecode); err == nil {
-			runner.SetSignalMode(true)
-			return &VMLiveSession{strategy: runner}, nil
-		}
-	}
-	strategy, err := mql2go.CompilePython(source)
+	// VM-AUDIT-2026-08-27-1: use CompilePythonCached which verifies SourceHash
+	// before accepting cached bytecode (mirrors NewVMLiveSessionCached at :45).
+	// bytecodeData is discarded — persistence is handled by the caller (initVMSession).
+	runner, _, err := mql2go.CompilePythonCached(source, cachedBytecode)
 	if err != nil {
 		return nil, fmt.Errorf("compile Python: %w", err)
 	}
-	strategy.SetSignalMode(true)
-	return &VMLiveSession{strategy: strategy}, nil
+	runner.SetSignalMode(true)
+	return &VMLiveSession{strategy: runner}, nil
 }
 
 func (s *VMLiveSession) Start(ctx context.Context, reqBytes []byte) ([]byte, error) {
