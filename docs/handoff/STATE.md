@@ -24,12 +24,12 @@
 | VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
 | VM-AUDIT-2026-08-27 批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
-| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | 代码被 D-REVERT-SCOPE-DRIFT-001 回滚，需从零重做（spec audit-2026-08-27） |
-| P1 管线审计（13 条目） | 🟦open | 5 still-open + 8 fixed-acceptable，spec audit-2026-08-27 |
-| VM round 4-5 + 报价管线派工（5 batch） | 🟦open | Batch 1-5 施工提示词落档，待施工方开工 |
+| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | 🟦open | Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）施工完成待复审；Batch 4（QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1）施工完成待复审；Batch 2/3/5 待施工 |
+| P1 管线审计（13 条目） | 🟦open | 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）+ QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1 施工完成待复审，spec audit-2026-08-27 |
+| VM round 4-5 + 报价管线派工（5 batch） | � | Batch 1 + Batch 4 施工完成待独立复审；Batch 2（VM-TRADE-CONTEXT-6）待开工；Batch 3（VM-API-TRUTH-3）依赖 B2；Batch 5（VM-TEST-EVIDENCE-4）依赖 B1-3 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓（VM 管线优先）。
-- **下一步**: 5 batch 施工提示词已派工（`docs/audits/builder-handoff-vm-round45-batch{1-5}-2026-08-27.md`）。Batch 1（VM-COMPILER-SEMANTICS-4 + VM-CACHE-INTEGRITY-5）+ Batch 4（报价管线）可并行开工。Batch 2 依赖 Batch 1 验收。Batch 3 依赖 Batch 2。Batch 5 依赖 Batch 1-3。待施工方领取。
+- **下一步**: Batch 1 + Batch 4 待 Devin CLI 独立复审。Batch 2（VM-TRADE-CONTEXT-6）可开工（依赖 B1 验收，但可先施工）。Batch 3 依赖 B2。Batch 5 依赖 B1-3。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -46,7 +46,9 @@
 - **VM-RUNTIME-FAILCLOSED-1** ✅done — fail-closed 错误传播（Devin CLI 验收通过 2026-08-26）
 - **LIVE-ORDER-REENTRY-1** ✅done（R4-REVIEW） — P0 实盘重复开仓（R4 复审阻断返工后 Devin CLI 验收通过 2026-08-26）
 - **DATA-TRUTH-2b** ✅done — MT4 margin 从 AccountSummary 补齐（修复+对抗证明 revert 后存活，2026-08-26 验收）
-- **VM 返工批 round 4-5** 🟦open — 5 ID 代码被 D-REVERT-SCOPE-DRIFT-001 回滚，需从零重做（2026-08-27 Devin CLI 审计确认）
+- **VM 返工批 round 4-5** 🟦open — Batch 1（COMPILER-SEMANTICS-4 + CACHE-INTEGRITY-5）+ Batch 4（QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1）施工完成待复审；Batch 2/3/5 待施工
+- **VM-COMPILER-SEMANTICS-4** 🟦open（施工完成，待独立复审） — 从零重做 round 6（2026-08-27）：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer
+- **VM-CACHE-INTEGRITY-5** 🟦open（施工完成，待独立复审） — 从零重做 round 6（2026-08-27）：coverage restore + Version check + payload limit + no Language field
 - **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
 - **DATA-TRUTH-1** 🟦open — orders 表 reconciliation 只检测不收敛，ghost 仅 log.Warn（P0 数据，需架构决策）
 - **QUOTE-RECONNECT-LOOP** 🟦open（施工完成，待独立复审） — 报价流自持重连循环修复（2026-08-27 Batch 4 施工，S1-S4 + T1-T5 + P1-P2）
@@ -67,6 +69,7 @@
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
 - 2026-08-27 **fix(ci): proto codegen drift 修复**：commit `830b2c79`（revert D-CODE-HYGIENE-001）回滚了生成的 proto 文件但未回滚 `.proto` 源文件，导致 CI proto-drift job 失败。`make proto` 重新生成 3 个文件（`strategy_runtime.pb.go`/`strategy_signal_messages.pb.go`/`strategy_runtime_pb.ts`），补齐 `.proto` 源中已有但 gen 文件缺失的字段（StrategySignal: Magic/Deviation/OppositeTicket；ExecuteLiveRequest: AccountId；LiveStrategyContext: Login/Company/IsDemo/IsConnected/IsTradeAllowed）。build + tsc --noEmit 通过。
+- 2026-08-27 **Batch 1 + Batch 4 施工完成（🟦open，待独立复审）**：Batch 1（VM-COMPILER-SEMANTICS-4 + VM-CACHE-INTEGRITY-5）从零重做：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer（精确区分 missing initializer vs missing `;`）+ coverage restore + Version check + payload limit。15 项测试。修复回归（hasMissingNode 对 Python source 过于激进→TestCompileForLive_PythonBranch RED）+ data race（coverageRestoreHook 并发读写→移除 t.Parallel）。Batch 4（QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1）施工完成：ensureConnected 返回 nil + Disconnect ctx-cancellable + recvLoop/profitLoop/orderLoop 不退出 + NewFromConfig + env var wiring。8 项测试 + 3 项对抗证明。门禁全绿。
 - 2026-08-27 **派工 5 batch**：VM round 4-5 遗留 5 ID + 报价管线 2 ID 从零重做施工提示词落档。Batch 1（VM-COMPILER-SEMANTICS-4 + VM-CACHE-INTEGRITY-5，编译器+缓存）+ Batch 4（QUOTE-RECONNECT-LOOP + BROKER-SEARCH-1，报价管线）可并行；Batch 2（VM-TRADE-CONTEXT-6，live context）依赖 B1；Batch 3（VM-API-TRUTH-3，builtin truth）依赖 B2；Batch 5（VM-TEST-EVIDENCE-4，对抗证明文档）依赖 B1-3。业主指示：TRON-SECURITY-1 暂缓（VM 管线跑通优先），DATA-TRUTH-1/TRUST-1 待决策。施工提示词：`docs/audits/builder-handoff-vm-round45-batch{1-5}-2026-08-27.md`。
 - 2026-08-27 **第二轮审计完成**：Devin CLI 独立审计 ① VM round 4-5 遗留 5 ID + ② P1 资金/数据/报价管线 13 条目。VM round 4-5：5 ID 全部 FAIL——代码被 D-REVERT-SCOPE-DRIFT-001 回滚删除，`vm_live_validators.go`/`live_context_enums.go`/`compile_interp_decls.go` 等文件不存在，`accountIsInvestorLookup`/`validateLiveFinancialFields`/`isInputDeclaration` 等函数零匹配，`vm-adversarial-proofs.md` 标记 SUPERSEDED，需按 D-VM-LIVE-001 从零重做。P1 管线：5 still-open（TRON-SECURITY-1 `tron_client.go:34` 仍 insecure.NewCredentials / DATA-TRUTH-1 `reconciliation.go:191` ghost 仅 log.Warn / QUOTE-RECONNECT-LOOP Disconnect 杀全 session / BROKER-SEARCH-1 host 硬编码 / TRUST-1 demo/real 混展）+ 8 fixed-acceptable + DATA-TRUTH-2/2b 状态漂移已修正为 ✅done。spec 落档 `docs/spec/audit-2026-08-27-vm-round45-p1-pipeline-spec.md`。
 - 2026-08-27 VM-AUDIT-2026-08-27 批次 3 ✅done：Devin CLI 验收通过。S1 新建 `vm_live_compile.go` 提取 `compileForLive` helper，4 个 live 路径调用点全部改用（BUG-6）；S2 `recoverFromOutcomeUnknown` 加 `ctx` 参数 + `select+ctx.Done()` 替换 `time.Sleep`，2 处调用点 + 2 处旧测试同步更新（BUG-7）；S3 `PositionCache.Subscribe` goroutine 加 `defer recover()`（BUG-8）。对抗证明 3 项独立验证 RED→restore→GREEN（T1 swap Python 分支→Version="mql5"、T2 恢复 time.Sleep→500ms 超时、T3 删除 recover→nil map panic 崩溃进程）。门禁追加 `grep CompileMQLFromBytecode` = 0 匹配。门禁全绿（build/vet/test/race×3 两包/check-lines 0 errors/diff --check clean）。**VM-AUDIT-2026-08-27 全 3 批闭环，8 个 ID 全部 ✅done。**

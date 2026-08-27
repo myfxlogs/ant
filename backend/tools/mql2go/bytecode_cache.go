@@ -13,6 +13,12 @@ import (
 
 // Bytecode binary cache format (version 1).
 // All integers are little-endian. Strings are uint16-length-prefixed.
+
+// maxBytecodePayload is the maximum allowed serialized bytecode size.
+// VM-CACHE-INTEGRITY-5: prevents corrupted/oversized caches from causing
+// resource exhaustion. 64MiB is generous for any realistic strategy
+// (typical bytecode is < 100KiB) while bounding worst-case memory.
+const maxBytecodePayload = 64 * 1024 * 1024 // 64 MiB
 // Slices/maps are uint32-count-prefixed.
 //
 // Layout:
@@ -156,7 +162,12 @@ func MarshalBytecode(bc *Bytecode) ([]byte, error) {
 }
 
 // UnmarshalBytecode deserializes a Bytecode from the binary cache format.
+// VM-CACHE-INTEGRITY-5: enforces maxBytecodePayload limit to prevent
+// corrupted/oversized caches from causing resource exhaustion.
 func UnmarshalBytecode(data []byte) (*Bytecode, error) {
+	if len(data) > maxBytecodePayload {
+		return nil, fmt.Errorf("bytecode: payload size %d exceeds max %d (exceeds max bytecode payload)", len(data), maxBytecodePayload)
+	}
 	r := &bytecodeReader{data: data}
 
 	magic, err := r.readString()

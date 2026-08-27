@@ -2,7 +2,6 @@ package mql2go
 
 import (
 	"fmt"
-	"strings"
 
 	"alphaforge/tools/mql2go/interp"
 
@@ -84,9 +83,27 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 
 	for i := 0; i < int(root.NamedChildCount()); i++ {
 		n := root.NamedChild(i)
-		txt := c.text(n)
+		// VM-COMPILER-SEMANTICS-4: reject `input`/`extern` used as an identifier
+		// in any node type (not just default branch). `int x = input ;` is parsed
+		// as a declaration, so the check must run before the switch.
+		if err := checkReservedKeywordUsage(n, c); err != nil {
+			c.err = err
+			return ir
+		}
 		switch n.Type() {
 		case "declaration":
+			// VM-COMPILER-SEMANTICS-4: missing-initializer guard — reject
+			// syntactically invalid MQL declarations (e.g. `int x = ;`) instead
+			// of silently returning empty IR. We check specifically for a MISSING
+			// node inside an init_declarator (missing initializer expression),
+			// not just any MISSING node in the declaration — Python source
+			// parsed as MQL produces declarations with a missing `;` (not a
+			// missing initializer), and the MQL compiler must stay lenient on
+			// non-MQL input so compileForLive(isPython=false) doesn't error.
+			if hasMissingInitializer(n) {
+				c.err = fmt.Errorf("syntax error in declaration at line %d (missing initializer)", n.StartPoint().Row+1)
+				return ir
+			}
 			c.collectGlobal(ir, n)
 			c.collectClassInstance(ir, n, knownClasses)
 		case "class_specifier", "struct_specifier":
@@ -96,9 +113,13 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 		case "function_definition":
 			c.collectFunction(ir, n)
 		default:
-			// Fallback: handle nodes that tree-sitter doesn't parse as 'declaration'
-			// (e.g. 'input BuyOrSell0 x = 2;' with enum type may parse as ERROR)
-			if strings.Contains(txt, "input ") || strings.Contains(txt, "extern ") {
+			// VM-COMPILER-SEMANTICS-4: structured detection replaces
+			// `int x = input ;`. checkReservedKeywordUsage already ran
+			if isInputDeclaration(n, c) || isExternDeclaration(n, c) {
+				if !isValidInputDeclaration(n, c) {
+					c.err = fmt.Errorf("invalid input/extern declaration: missing initializer at line %d", n.StartPoint().Row+1)
+					return ir
+				}
 				c.collectParam(ir, n)
 			}
 		}
@@ -109,8 +130,8 @@ func (c *compiler) compile(root *sitter.Node) *interp.IR {
 
 // collectGlobal processes top-level declarations (globals + params).
 func (c *compiler) collectGlobal(ir *interp.IR, n *sitter.Node) {
-	text := c.text(n)
-	if strings.Contains(text, "extern ") || strings.Contains(text, "input ") || strings.HasPrefix(text, "input ") || strings.HasPrefix(text, "extern ") {
+	// VM-COMPILER-SEMANTICS-4: structured detection replaces strings.Contains.
+	if isInputDeclaration(n, c) || isExternDeclaration(n, c) {
 		c.collectParam(ir, n)
 		return
 	}
@@ -700,4 +721,126 @@ func (c *compiler) compileDoWhile(n *sitter.Node) *interp.Statement {
 		}
 	}
 	return stmt
+}
+
+// HasError recursively checks if a tree-sitter node or any of its named
+// descendants is an ERROR node (parse error). VM-COMPILER-SEMANTICS-4:
+// tree-sitter's MQL grammar produces ERROR nodes for `input` declarations
+// (which are valid), so HasError is NOT used as a blanket guard. It is
+// retained for diagnostic purposes and T8 (proves tree-sitter can produce
+// ERROR nodes, just not at root level).
+func HasError(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	if n.Type() == "ERROR" {
+		return true
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		if HasError(n.NamedChild(i)) {
+			return true
+		}
+	}
+	return false
+}
+
+// hasMissingNode checks if a tree-sitter node or any of its descendants
+// is a MISSING node (tree-sitter inserted it to recover from a syntax error).
+// VM-COMPILER-SEMANTICS-4: this catches `int x = ;` (missing initializer)
+// and `input int X = ;` (missing initializer) without false-positiving on
+// valid `input int X = 5;` (which has ERROR but no MISSING children).
+func hasMissingNode(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	for i := 0; i < int(n.ChildCount()); i++ {
+		c := n.Child(i)
+		if c.IsMissing() {
+			return true
+		}
+		if hasMissingNode(c) {
+			return true
+		}
+	}
+	return false
+}
+
+// hasMissingInitializer checks if a declaration node has an init_declarator
+// with a MISSING child (indicating a missing initializer expression, e.g.
+// `int x = ;`). VM-COMPILER-SEMANTICS-4: this is more precise than
+// hasMissingNode — Python source parsed as MQL produces declarations with
+// a missing `;` (not a missing initializer), and the MQL compiler must stay
+// lenient on non-MQL input.
+func hasMissingInitializer(n *sitter.Node) bool {
+	if n == nil {
+		return false
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		c := n.NamedChild(i)
+		if c.Type() == "init_declarator" && hasMissingNode(c) {
+			return true
+		}
+	}
+	return false
+}
+
+// isInputDeclaration checks if a declaration node starts with the `input`
+// keyword (MQL input parameter). VM-COMPILER-SEMANTICS-4: replaces
+// strings.Contains(txt, "input ") which false-matched `int x = input ;`.
+func isInputDeclaration(n *sitter.Node, c *compiler) bool {
+	if n == nil || n.NamedChildCount() == 0 {
+		return false
+	}
+	first := n.NamedChild(0)
+	return first.Type() == "type_identifier" && c.text(first) == "input"
+}
+
+// isExternDeclaration checks if a declaration node starts with `extern`.
+func isExternDeclaration(n *sitter.Node, c *compiler) bool {
+	if n == nil || n.NamedChildCount() == 0 {
+		return false
+	}
+	first := n.NamedChild(0)
+	return first.Type() == "storage_class_specifier" && c.text(first) == "extern"
+}
+
+// isValidInputDeclaration checks that an input/extern declaration has a
+// non-empty initializer (catches `input int X = ;`). VM-COMPILER-SEMANTICS-4.
+func isValidInputDeclaration(n *sitter.Node, c *compiler) bool {
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		if child.Type() == "init_declarator" {
+			// The last named child of init_declarator is the initializer
+			// expression. If it's missing or ERROR, the declaration is invalid.
+			last := child.NamedChild(int(child.NamedChildCount()) - 1)
+			if last == nil || last.Type() == "ERROR" {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// checkReservedKeywordUsage rejects `input`/`extern` used as an identifier
+// (e.g. `int x = input ;`). VM-COMPILER-SEMANTICS-4.
+func checkReservedKeywordUsage(n *sitter.Node, c *compiler) error {
+	return checkReservedInSubtree(n, c)
+}
+
+func checkReservedInSubtree(n *sitter.Node, c *compiler) error {
+	if n == nil {
+		return nil
+	}
+	if n.Type() == "identifier" {
+		txt := c.text(n)
+		if txt == "input" || txt == "extern" {
+			return fmt.Errorf("reserved keyword %q used as identifier at line %d", txt, n.StartPoint().Row+1)
+		}
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		if err := checkReservedInSubtree(n.NamedChild(i), c); err != nil {
+			return err
+		}
+	}
+	return nil
 }

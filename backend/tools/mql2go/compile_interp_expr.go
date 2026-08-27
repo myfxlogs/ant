@@ -105,15 +105,28 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		}
 		return nil
 	case "comma_expression":
-		// Evaluate left-to-right, return last value (C comma operator)
-		var last *interp.Expr
+		// VM-COMPILER-SEMANTICS-4: evaluate ALL children left-to-right for
+		// side effects, return last value (C comma operator). Previously
+		// only the last child was returned, silently dropping side effects
+		// of earlier children (e.g. `for(int i=0,j=10; ...)` lost `i=0`).
+		var exprs []*interp.Expr
 		for i := 0; i < int(n.NamedChildCount()); i++ {
 			child := n.NamedChild(i)
 			if e := c.compileExpr(child); e != nil {
-				last = e
+				exprs = append(exprs, e)
 			}
 		}
-		return last
+		if len(exprs) == 0 {
+			return nil
+		}
+		if len(exprs) == 1 {
+			return exprs[0]
+		}
+		args := make([]interp.Expr, len(exprs))
+		for i := range exprs {
+			args[i] = *exprs[i]
+		}
+		return &interp.Expr{Kind: interp.ExprSeq, Args: args}
 
 	case "argument_list":
 		// Should not be compiled directly

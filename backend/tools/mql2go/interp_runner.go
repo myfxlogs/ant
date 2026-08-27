@@ -74,13 +74,15 @@ func CompileMQLFromBytecode(data []byte) (*VMRunner, error) {
 // serialized bytecode (for caching by the caller).
 // VM-CACHE-INTEGRITY-1: on cache hit, verifies SourceHash matches current
 // source; mismatch forces recompile to prevent stale bytecode execution.
+// VM-CACHE-INTEGRITY-5: also verifies Version is MQL (mql4/mql5) to prevent
+// Python bytecode from being used for MQL source.
 func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
 	if len(cachedBytecode) > 0 {
 		r, e := CompileMQLFromBytecode(cachedBytecode)
-		if e == nil && r.Bytecode().SourceHash == hashSource(source) {
+		if e == nil && r.Bytecode().SourceHash == hashSource(source) && isMQLVersion(r.Bytecode().Version) {
 			return r, cachedBytecode, nil
 		}
-		// Cache corrupted or source changed — fall through to recompile
+		// Cache corrupted, source changed, or language mismatch — fall through
 	}
 	r, err := CompileMQL(source)
 	if err != nil {
@@ -99,13 +101,33 @@ func CompileMQLCached(source string, cachedBytecode []byte) (runner *VMRunner, b
 // falls back to full compilation on mismatch/corruption, and returns the
 // serialized bytecode for caller-side caching.
 // VM-CACHE-INTEGRITY-2: SourceHash verification for Python cache path.
+// VM-CACHE-INTEGRITY-5: (1) restores CoverageResult on cache hit by
+// recompiling from source (bytecode cache omits coverage); coverage restore
+// failure returns error (no silent degradation). (2) verifies Version is
+// "python" to prevent MQL bytecode from being used for Python source.
 func CompilePythonCached(source string, cachedBytecode []byte) (runner *VMRunner, bytecode []byte, err error) {
 	if len(cachedBytecode) > 0 {
 		r, e := CompileMQLFromBytecode(cachedBytecode)
-		if e == nil && r.Bytecode().SourceHash == hashSource(source) {
+		if e == nil && r.Bytecode().SourceHash == hashSource(source) && r.Bytecode().Version == "python" {
+			// VM-CACHE-INTEGRITY-5: restore CoverageResult by recompiling
+			// from source. Bytecode cache omits coverage analysis.
+			var cov *CoverageResult
+			var covErr error
+			if coverageRestoreHook != nil {
+				cov, covErr = coverageRestoreHook(source)
+			} else {
+				_, cov, covErr = CompilePythonWithCoverage(source)
+			}
+			if covErr != nil {
+				return nil, nil, fmt.Errorf("restore coverage on cache hit: %w", covErr)
+			}
+			if cov == nil {
+				return nil, nil, fmt.Errorf("restore coverage on cache hit: nil coverage result")
+			}
+			r.InjectCoverageResult(cov)
 			return r, cachedBytecode, nil
 		}
-		// Cache corrupted or source changed — fall through to recompile
+		// Cache corrupted, source changed, or language mismatch — fall through
 	}
 	r, err := CompilePython(source)
 	if err != nil {
@@ -118,6 +140,18 @@ func CompilePythonCached(source string, cachedBytecode []byte) (runner *VMRunner
 	}
 	return r, data, nil
 }
+
+// isMQLVersion returns true if the bytecode version indicates an MQL strategy
+// (mql4 or mql5). VM-CACHE-INTEGRITY-5: prevents Python bytecode from being
+// accepted for MQL source in CompileMQLCached.
+func isMQLVersion(version string) bool {
+	return version == "mql4" || version == "mql5"
+}
+
+// coverageRestoreHook is a test-only hook that overrides the coverage
+// restore path in CompilePythonCached. When non-nil, it replaces the
+// CompilePythonWithCoverage call. Production code leaves this nil.
+var coverageRestoreHook func(src string) (*CoverageResult, error)
 
 // CompilePython is a convenience function that compiles Python subset source to a VMRunner.
 // Pipeline: Python source → CST → IR → Bytecode → VMRunner
@@ -382,6 +416,14 @@ func (r *VMRunner) GetCoverageResult() *CoverageResult {
 // coverage is recovered by recompiling from source.
 func (r *VMRunner) InjectCoverage(cov *CoverageReport) {
 	r.bc.Coverage = cov
+}
+
+// InjectCoverageResult sets the full coverage analysis result on the runner.
+// VM-CACHE-INTEGRITY-5: used by CompilePythonCached to restore CoverageResult
+// on cache hit (bytecode cache omits coverage, so it must be recovered by
+// recompiling from source).
+func (r *VMRunner) InjectCoverageResult(cov *CoverageResult) {
+	r.coverageResult = cov
 }
 
 // GetDefenseAViolations returns post-parse validation failures (ADR-0028 §4.1).
