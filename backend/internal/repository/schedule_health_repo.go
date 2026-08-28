@@ -133,7 +133,7 @@ func (r *ScheduleHealthRepository) GetScheduleStats(ctx context.Context, userID,
 // GetLatestOrderProfit returns the most recent closed order's ticket and profit.
 func (r *ScheduleHealthRepository) GetLatestOrderProfit(ctx context.Context, userID, scheduleID uuid.UUID) (ticket int64, profit decimal.Decimal, hasData bool) {
 	err := r.db.QueryRow(ctx,
-		"SELECT COALESCE(ticket, 0), COALESCE(profit, 0) FROM order_history WHERE user_id = $1 AND schedule_id = $2 AND close_time IS NOT NULL ORDER BY close_time DESC LIMIT 1",
+		"SELECT COALESCE(ticket, 0), COALESCE(profit, 0) FROM trade_records WHERE user_id = $1 AND schedule_id = $2 AND close_time IS NOT NULL ORDER BY close_time DESC LIMIT 1",
 		userID, scheduleID,
 	).Scan(&ticket, &profit)
 	return ticket, profit, err == nil && ticket != 0
@@ -169,7 +169,7 @@ func (r *ScheduleHealthRepository) ListOrders(ctx context.Context, userID, sched
 		limit = 20
 	}
 	rows, err := r.db.Query(ctx,
-		"SELECT id::text, ticket, order_type, symbol, profit, open_time, close_time FROM order_history WHERE user_id = $1 AND schedule_id = $2 ORDER BY COALESCE(close_time, open_time) DESC LIMIT $3",
+		"SELECT id::text, ticket, order_type, symbol, profit, open_time, close_time FROM trade_records WHERE user_id = $1 AND schedule_id = $2 ORDER BY COALESCE(close_time, open_time) DESC LIMIT $3",
 		userID, scheduleID, limit,
 	)
 	if err != nil {
