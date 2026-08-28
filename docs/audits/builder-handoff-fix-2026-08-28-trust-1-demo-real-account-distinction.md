@@ -1,7 +1,7 @@
 # 施工提示词 — FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION
 
 > **设计 SSOT**: `docs/spec/fix-2026-08-28-trust-1-demo-real-account-distinction.md`
-> **base commit**: `c0f53813`
+> **base commit**: `67ea2ba0`（当前 HEAD；TRUST-1 涉及的 8 个文件自 c0f53813 以来未被修改，代码坐标不变）
 > **scope**: 单 commit，改 adapter（mt4+mt5 FetchAccountInfo+FetchBrokerInfo）+ mdtick（MTAccountInfo+BrokerInfo）+ service（AccountInfoUpdate+UpdateAccountInfoTx+UpdateAccountType）+ connect/user（CreateAccount）+ marketplace（LinkLiveAccount+UpsertDailyPerformance+recomputePerformanceSummary+leaderboard）+ 新 migration + 新测试文件
 > **不做**: 不改 broker RPC 调用（只读 Type 字段）、不改 `account_type` 列 DEFAULT、不改 ADR-0013、不部署
 
