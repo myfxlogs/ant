@@ -9,7 +9,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -103,41 +102,6 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 		zap.String("account", accountID),
 		zap.Int("records", len(tradeRecs)))
 	return connect.NewResponse(&antv1.SyncOrderHistoryResponse{SyncedRecords: int64(len(tradeRecs))}), nil
-}
-
-// ClosedTradeParams holds parameters for WriteClosedTrade.
-type ClosedTradeParams struct {
-	AccountID, Platform, OrderType, Symbol, Comment                 string
-	Ticket                                                          int64
-	Volume, OpenPrice, ClosePrice, Profit, Swap, Commission, SL, TP decimal.Decimal
-	OpenTime, CloseTime                                             int64
-}
-
-func (s *MtHubServer) WriteClosedTrade(ctx context.Context, p ClosedTradeParams) error {
-	uid, err := uuid.Parse(p.AccountID)
-	if err != nil {
-		return err
-	}
-	rec := &model.TradeRecord{
-		UserID:       uuid.Nil,
-		AccountID:    uid,
-		Ticket:       p.Ticket,
-		Symbol:       p.Symbol,
-		OrderType:    p.OrderType,
-		Volume:       p.Volume,
-		OpenPrice:    p.OpenPrice,
-		ClosePrice:   p.ClosePrice,
-		Profit:       p.Profit,
-		Swap:         p.Swap,
-		Commission:   p.Commission,
-		OpenTime:     time.Unix(p.OpenTime, 0),
-		CloseTime:    time.Unix(p.CloseTime, 0),
-		StopLoss:     p.SL,
-		TakeProfit:   p.TP,
-		OrderComment: p.Comment,
-		Platform:     p.Platform,
-	}
-	return s.tradeRecords.Create(ctx, rec)
 }
 
 func orderRecordToTradeRecord(ctx context.Context, r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string, resolver mthub.ScheduleResolver, log *zap.Logger) *model.TradeRecord {

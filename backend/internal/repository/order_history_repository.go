@@ -6,49 +6,18 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/model"
 )
-
-func (r *LogRepository) CreateOrderHistory(ctx context.Context, order *model.OrderHistory) error {
-	query := `
-		INSERT INTO order_history (
-			id, user_id, account_id, ticket, order_type, symbol, volume,
-			open_price, close_price, open_time, close_time, stop_loss, take_profit,
-			profit, commission, swap, comment, magic_number, is_auto_trade, schedule_id, created_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`
-
-	_, err := r.db.Exec(ctx, query,
-		order.ID, order.UserID, order.AccountID, order.Ticket, order.OrderType, order.Symbol, order.Volume,
-		order.OpenPrice, order.ClosePrice, order.OpenTime, order.CloseTime, order.StopLoss, order.TakeProfit,
-		order.Profit, order.Commission, order.Swap, order.Comment, order.MagicNumber, order.IsAutoTrade, order.ScheduleID, order.CreatedAt)
-	return fmt.Errorf("create order history: %w", err)
-}
-
-// UpdateOrderHistoryClose fills close_* / PnL on a row previously inserted for this schedule ticket (first close only).
-func (r *LogRepository) UpdateOrderHistoryClose(ctx context.Context, userID, accountID, scheduleID uuid.UUID, ticket int64, closePrice, profit, swap, commission decimal.Decimal, closeTime time.Time) (int64, error) {
-	const q = `
-		UPDATE order_history
-		SET close_price = $5,
-			close_time = $6,
-			profit = $7,
-			swap = $8,
-			commission = $9
-		WHERE user_id = $1 AND account_id = $2 AND schedule_id = $3 AND ticket = $4
-		  AND close_time IS NULL`
-	res, err := r.db.Exec(ctx, q, userID, accountID, scheduleID, ticket, closePrice, closeTime, profit, swap, commission)
-	if err != nil {
-		return 0, err
-	}
-	return res.RowsAffected(), nil
-}
 
 // FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION (修复 A): GetOrderHistory
 // queries trade_records (the live write target) instead of the dead
 // order_history table. trade_records carries magic_number + schedule_id
 // (populated by writeClosedTradeRecord and SyncOrderHistory), so the
 // frontend Order Logs tab and Magic column render real data.
+//
+// FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION (修复 C): CreateOrderHistory
+// and UpdateOrderHistoryClose (dead code, zero callers) removed.
 func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.OrderHistory, int, error) {
 	baseQ, args, idx := buildOrderHistoryFilters(userID, params)
 	var total int

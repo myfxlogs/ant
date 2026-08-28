@@ -2,10 +2,8 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 
 	"alphaforge/internal/model"
 	"alphaforge/internal/repository"
@@ -27,17 +25,8 @@ func (s *LogService) GetConnectionLogs(ctx context.Context, userID uuid.UUID, pa
 	return s.logRepo.GetConnectionLogs(ctx, userID, params)
 }
 
-func (s *LogService) LogOrder(ctx context.Context, order *model.OrderHistory) error {
-	return s.logRepo.CreateOrderHistory(ctx, order)
-}
-
-// UpdateOrderHistoryClose updates the open row for a schedule ticket after a successful close.
-func (s *LogService) UpdateOrderHistoryClose(ctx context.Context, userID, accountID, scheduleID uuid.UUID, ticket int64, closePrice, profit, swap, commission decimal.Decimal, closeTime time.Time) (int64, error) {
-	if s == nil || s.logRepo == nil {
-		return 0, nil
-	}
-	return s.logRepo.UpdateOrderHistoryClose(ctx, userID, accountID, scheduleID, ticket, closePrice, profit, swap, commission, closeTime)
-}
+// FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION (修复 C): LogOrder and
+// UpdateOrderHistoryClose (dead code, zero callers) removed.
 
 func (s *LogService) GetOrderHistory(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.OrderHistory, int, error) {
 	return s.logRepo.GetOrderHistory(ctx, userID, params)
