@@ -104,9 +104,9 @@ export function buildOrderColumns({ t, formatTime }: ColOpts): ColumnsType<Order
     { title: t(ORDERS_TABLE_TIME_KEY), key: 'time', width: 180, render: (_: unknown, row: OrderHistoryRecord) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text> },
     { title: t(ORDERS_TABLE_SIDE_KEY), dataIndex: 'orderType', key: 'orderType', width: 100, render: (v: unknown) => renderOrderTypeTag(String(v || ''), t) },
     { title: t(ORDERS_TABLE_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120, render: (v: unknown) => <Text>{String(v || '-')}</Text> },
-    { title: t(ORDERS_TABLE_LOTS_KEY), dataIndex: 'lots', key: 'lots', width: 90, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
-    { title: t(ORDERS_TABLE_OPEN_PRICE_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 120, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
-    { title: t(ORDERS_TABLE_CLOSE_PRICE_KEY), dataIndex: 'closePrice', key: 'closePrice', width: 120, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
+    { title: t(ORDERS_TABLE_LOTS_KEY), dataIndex: 'lots', key: 'lots', width: 90, render: (v: unknown) => <Text>{v ? String(v) : '-'}</Text> },
+    { title: t(ORDERS_TABLE_OPEN_PRICE_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 120, render: (v: unknown) => <Text>{v ? String(v) : '-'}</Text> },
+    { title: t(ORDERS_TABLE_CLOSE_PRICE_KEY), dataIndex: 'closePrice', key: 'closePrice', width: 120, render: (v: unknown) => <Text>{v ? String(v) : '-'}</Text> },
     { title: t(ORDERS_TABLE_PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 120, render: (v: unknown) => {
       const n = typeof v === 'number' ? v : Number(v);
       if (!isFinite(n)) return <Text>-</Text>;
@@ -118,6 +118,6 @@ export function buildOrderColumns({ t, formatTime }: ColOpts): ColumnsType<Order
       const n = typeof v === 'number' ? v : Number(v);
       return n ? <Text type="secondary">{n}</Text> : <Text type="secondary">-</Text>;
     }},
-    { title: t(ORDERS_TABLE_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 110, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
+    { title: t(ORDERS_TABLE_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 110, render: (v: unknown) => <Text>{v ? String(v) : '-'}</Text> },
   ];
 }

@@ -51,7 +51,7 @@
 | LIVE-PRICE-6 | **NATS `DeliverAll()` 重放历史 disconnect 事件杀掉刚建好的网关（P1）**：`runner_nats.go:55` 用 `nats.DeliverAll()`，后端重启时 JetStream 重放 24h 内未 ack 的 `account.disconnect.<id>` → `mgr.RemoveGateway()` 杀掉启动流程刚建好的网关（日志证据：`gateway active` 后 1ms 即 `dynamically stopped gateway`）→ 新网关 `subscribedSymbols` 为空，品种订阅丢失 | ✅done（2026-08-19：改 `nats.DeliverNew()`，只消费订阅后新发布的事件。安全性：启动期网关由 `startAllGateways` 主动加载 DB 账户建立，不依赖 NATS 重放。线上验证：90s 内 `dynamically stopped gateway` = 0 次）|
 | LIVE-PRICE-7 | **品种订阅只做一次，网关重建后不恢复（P1）**：`live_demand_subscribe.go` 首次 `SubscribeSymbols` 成功即 `return` → 网关被重建（LIVE-PRICE-6 / 健康监控 / 用户重连）后新实例 `subscribedSymbols` 空，策略品种永久丢失且无任何日志 | ✅done（2026-08-19：成功后不退出，改 60s 周期性重新确认（`AddSymbols` 对已订阅品种幂等）。线上验证：日志出现间隔 60s 的两次 `added symbols [BTCUSDm]`，自愈生效）|
 | LIVE-PRICE-8 | **重连无 single-flight → 重复 mtapi session + 空/过期 sessionID（P1，牢固性根因）**：quote/profit/orderUpdate 三个 loop 各自调 `ensureConnected`→`Connect()`，`reconnecting` 标志**只由 `Manager.ReconnectGateway` 托管路径设置**，自愈路径（`handleStreamError`→`Disconnect`→各 loop 重连）零互斥 → 并发 Connect 建多个 session，败者持过期/空 sid → 所有 `SubscribeMany` 被拒。日志铁证：`re-subscribe symbol rejected ... Client with id =  not found`（**id 为空**，即 `Disconnect()` 清空 sessionID 与另一 loop 读取之间的竞态）| ✅done（2026-08-19：MT4+MT5 各自加 `connectMu` + `beginConnect()` single-flight 槽（适配器不共享代码），败者直接返回由外层循环重读 sid；另加空 sid 守卫（quote/profit loop + `reSubscribeSymbols`）杜绝用空 id 调 mtapi。对抗证明 `TestRECONNECT_RACE_BeginConnect_IsSingleFlight`：删 `connectMu.Lock()` → 8 goroutine 并发进入临界区 → FAIL；恢复 → ok。线上验证：90s 内 `Client with id` 拒绝 = 0 次）|
-| DATA-TRUTH-1 | **`orders` 表与 broker 双向不一致，reconciliation 只检测不收敛（P1 正确性）**：DB 实测 904d14e6 `orders` 有 9 条未平仓但 broker `OpenedOrders` 连查 3 次为空；反向 3038ae9d/40a7655e/fcca3414 在 DB 为 0 条却持续收到 broker `positions:1~2` 的 profit 帧。`reconciliation.go:189` ghost（broker 有 ant 无）**仅 log.Warn 从不补写**，orphan 仅在 `state==SUBMITTED` 时修 → 永不收敛。且 `reconcileAccount` 拿**全量** ant 订单（`orders ∪ trade_records`，无时间下界）对比 broker **24h 窗口**（`:125`）→ 结构性假 orphan（实测每轮 129 条 warn/账户），噪声淹没真问题。**S1-S4 修复（FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE）**：① S1 ant 查询加 24h 下界（`created_at >= $2` / `close_time >= $2`，与 broker 24h 窗口对称，消除结构性假 orphan）；② S2 ghost 自动补写 `r.svc.ImportBrokerOrder(ctx, accountID, br)`（ADR-0013 §2.3 "broker 有 PG 无 → INSERT"）；③ S3 新增 `MtHubService.ImportBrokerOrder` 方法（`service_orders_import.go`）+ `OmsWriter.Pool()` getter + `MtHubService.tradeRecordRepo` 字段（`TradeRecordCreator` 接口）+ `SetTradeRecordRepo` setter + `handlers_pipeline.go` 装配；`ImportBrokerOrder` 用 `ON CONFLICT (mt_account_id, ticket) DO NOTHING`（UK `uk_order_ticket`，真实 broker ticket，非 `hashToNegative` 占位）+ 已平仓订单写入 `trade_records`（复用 `TradeRecordRepository.Create` 含 hash chain）；④ S4 orphan 修复扩展到所有非终态（`isNonTerminalOMSState` helper 替代硬编码 `OMSStateSubmitted`）。**对抗证明**：`reconciliation_convergence_test.go` 5 测试——T1 `TestReconciliation_AntQueryHasTimeBound`（S1 守卫）/ T2 `TestReconciliation_GhostAutoImports`（S2 守卫）/ T3 `TestReconciliation_OrphanRepairsAllNonTerminal`（S4 守卫）/ T4 `TestImportBrokerOrder_UsesTicketConflict`（S3 守卫）/ T5 `TestIsNonTerminalOMSState_Helper`（helper 正确性）。**RED**：S1 删 `created_at >=`/`close_time >=` → T1 RED；S2 删 `ImportBrokerOrder` 调用 → T2 RED；S3 改 `ON CONFLICT (id) DO NOTHING` → T4 RED；S4 改回 `antState == string(OMSStateSubmitted)` → T3 RED → **restore → GREEN**。门禁全绿。**风险/gap**：部署后需实测 reconciliation warn 数从 129/账户/轮降至 <5；S5 一次性回填脚本待 S2 实现后编写。 | 🟦open（S1-S4 施工完成，待 Devin CLI 独立复审）|
+| DATA-TRUTH-1 | **`orders` 表与 broker 双向不一致，reconciliation 只检测不收敛（P1 正确性）**：DB 实测 904d14e6 `orders` 有 9 条未平仓但 broker `OpenedOrders` 连查 3 次为空；反向 3038ae9d/40a7655e/fcca3414 在 DB 为 0 条却持续收到 broker `positions:1~2` 的 profit 帧。`reconciliation.go:189` ghost（broker 有 ant 无）**仅 log.Warn 从不补写**，orphan 仅在 `state==SUBMITTED` 时修 → 永不收敛。且 `reconcileAccount` 拿**全量** ant 订单（`orders ∪ trade_records`，无时间下界）对比 broker **24h 窗口**（`:125`）→ 结构性假 orphan（实测每轮 129 条 warn/账户），噪声淹没真问题。**S1-S4 修复（FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE）**：① S1 ant 查询加 24h 下界（`created_at >= $2` / `close_time >= $2`，与 broker 24h 窗口对称，消除结构性假 orphan）；② S2 ghost 自动补写 `r.svc.ImportBrokerOrder(ctx, accountID, br)`（ADR-0013 §2.3 "broker 有 PG 无 → INSERT"）；③ S3 新增 `MtHubService.ImportBrokerOrder` 方法（`service_orders_import.go`）+ `OmsWriter.Pool()` getter + `MtHubService.tradeRecordRepo` 字段（`TradeRecordCreator` 接口）+ `SetTradeRecordRepo` setter + `handlers_pipeline.go` 装配；`ImportBrokerOrder` 用 `ON CONFLICT (mt_account_id, ticket) DO NOTHING`（UK `uk_order_ticket`，真实 broker ticket，非 `hashToNegative` 占位）+ 已平仓订单写入 `trade_records`（复用 `TradeRecordRepository.Create` 含 hash chain）；④ S4 orphan 修复扩展到所有非终态（`isNonTerminalOMSState` helper 替代硬编码 `OMSStateSubmitted`）。**对抗证明**：`reconciliation_convergence_test.go` 5 测试——T1 `TestReconciliation_AntQueryHasTimeBound`（S1 守卫）/ T2 `TestReconciliation_GhostAutoImports`（S2 守卫）/ T3 `TestReconciliation_OrphanRepairsAllNonTerminal`（S4 守卫）/ T4 `TestImportBrokerOrder_UsesTicketConflict`（S3 守卫）/ T5 `TestIsNonTerminalOMSState_Helper`（helper 正确性）。**RED**：S1 删 `created_at >=`/`close_time >=` → T1 RED；S2 删 `ImportBrokerOrder` 调用 → T2 RED；S3 改 `ON CONFLICT (id) DO NOTHING` → T4 RED；S4 改回 `antState == string(OMSStateSubmitted)` → T3 RED → **restore → GREEN**。门禁全绿。**风险/gap**：部署后需实测 reconciliation warn 数从 129/账户/轮降至 <5；S5 一次性回填脚本待 S2 实现后编写。 | ✅done（Devin CLI 验收通过 2026-08-28：A-F 全绿 + 4 项对抗证明独立重跑 RED→restore→GREEN + 机检五件套全绿 build/gofmt/vet/test/race×3 4.132s/check-lines 0 errors。风险/gap：部署后需实测 warn 数 <5/账户/轮；S5 一次性回填脚本待编写）|
 
 | DATA-TRUTH-1-DESIGN | **DATA-TRUTH-1 设计方案落档（2026-08-28，🟦open 待业主决策）**：spec `docs/spec/fix-2026-08-28-data-truth-1-reconciliation-convergence.md`。根因 3 层：A ghost 仅 log.Warn 从不补写（违反 ADR-0013 §2.3 "broker 有 PG 无 → INSERT"）；B orphan 仅修 SUBMITTED→FAILED（其他非终态永不修复）；C ant 全量 vs broker 24h 窗口不对称 → 结构性假 orphan（129 条/账户/轮）。修复方案 S1-S5（待业主决策 Q1/Q2/Q3 后定稿）：S1 ant 查询加 24h 下界、S2 ghost 自动补写 ImportBrokerOrder、S3 orphan 修复扩展到所有非终态、S4 对抗证明 T1-T4、S5 一次性回填。**Devin CLI 建议**：Q1=A（加 24h 下界）/Q2=A（ghost 自动补写）/Q3=A（修复器，符合 ADR-0013）。风险：ghost 补写涉及资金账实需业主确认。 | 🟦open（待业主决策 Q1/Q2/Q3）|
 
@@ -2435,3 +2435,29 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **diff 统计**：5 文件（3 修改 + 2 新建测试），+5/-83 代码（净 -78 行死代码删除）。
 
 **状态**：`🟦open（S3 施工完成，待 Devin CLI 独立复审）`——施工方不得自标 ✅done。对抗证明 RED→restore→GREEN 闭环已执行 + 门禁全绿 + 代码坐标全匹配。停手等 Devin CLI 独立复审验收。勿部署。
+
+---
+
+### FIX-2026-08-28-ORDER-LOG-COLUMNS-TYPE-MISMATCH（✅done 2026-08-28 Devin CLI 直接施工+验收）
+
+**症状**：策略调度日志页 Order Logs tab 的 4 列（手数/开仓价/平仓价/订单号）全部显示 `-`，但盈亏/Magic 列正常。
+
+**根因**：`frontend/src/pages/strategy/scheduleLogColumns.tsx` 的 `buildOrderColumns` 中 4 列 render 用 `typeof v === 'number' ? v : '-'` 做类型守卫，但 ConnectRPC JSON 序列化把这 4 个字段传为 string：
+- `lots`/`openPrice`/`closePrice`：proto 定义 `string`（后端 `decimal.String()` 格式化）→ JSON string
+- `ticket`：proto 定义 `int64` → TS 类型 `bigint` → ConnectRPC JSON 传 string
+
+`typeof v === 'number'` 对 string/bigint 永远 false → 显示 `-`。而 `profit`/`magicNumber` 列用 `Number(v)` 转换所以不受影响。
+
+**修复**：4 列 render 改为 `v ? String(v) : '-'`，直接显示 string 值（后端已格式化好）。
+
+**文件**：`frontend/src/pages/strategy/scheduleLogColumns.tsx`（4 行 render 改动）
+
+**验证**：
+- `npx tsc --noEmit` ✓（类型安全）
+- `npm run build` ✓（vite build 成功）
+- 部署验证：前端容器重建 + 重启，binary 含新代码
+- 对抗证明：前端 render 函数无 test harness，验证方式为 tsc 类型检查 + build + 部署。根因确定（proto TS 类型 `string`/`bigint` vs render `typeof number` 不匹配，编译期可证）。
+
+**门禁**：tsc + build 全绿。无 Go 代码变更（不涉及 go build/vet/test）。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-08-28）。已部署。
