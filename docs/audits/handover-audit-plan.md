@@ -22,6 +22,14 @@
 
 ## 变更日志
 
+- 2026-08-28 **DATA-TRUTH-1 + TRUST-1 设计方案定稿 + 审计通过（✅定稿，待施工）**：业主授权 Devin CLI"项目第一负责人，最高权限，业主必须遵守你的决策"。Devin CLI 直接决策 6 个问题并定稿两份 spec，随后对方案做独立审计。
+
+  **DATA-TRUTH-1 决策**：Q1=A（orphan 比对加 24h 下界）/Q2=A（ghost 自动补写 OMS）/Q3=A（reconciliation 是修复器，符合 ADR-0013）。**审计事实核查 8 项全绿**：reconciliation.go:125/143-147/174-177/189-196 代码坐标精确、001_init.up.sql:109 orders.created_at 存在、004_trade_records.up.sql:17 close_time 存在、order_types.go:21 OrderRecord 完整字段、ADR-0013 §2.3 要求 INSERT。**审计 finding #1（已修复）**：OmsWriter.InsertOrder 用 ON CONFLICT (id) DO NOTHING（id=UUID，ticket 占位），不适用于 ghost 补写；spec §3.3 已补充 ImportBrokerOrder 必须用 ON CONFLICT (mt_account_id, ticket) DO NOTHING + 真实 broker ticket。
+
+  **TRUST-1 决策**：Q1=A（real-only，符合 AGENTS.md §1"实盘战绩公开"）/Q2=A（broker RPC 权威，符合"服务器唯一真相"红线）/Q3=A+B（重连自动回填+脚本加速）。**审计事实核查 8 项全绿**：MT4 AccountSummary.GetType() AccountType enum、MT5 AccountSummary.GetType() string、FetchAccountInfo 丢弃 Type、account_lifecycle.go 不写 account_type、live_performance.go 不校验、214 migration 无 account_type 列。**审计 finding #1（已修复）**：spec §3.7 原只说给 daily 表加列，但 leaderboard 查的是 summary 表（leaderboard.go:90），summary 表也需加列；已补充。**审计 finding #2（已修复）**：UpsertDailyPerformance 不查 mt_accounts，已补充方式 A（扩展 LivePerformanceCollector.cache 存 account_type）优于方式 B（子查询）。
+
+  registry 追加 DATA-TRUTH-1-DESIGN-AUDIT + TRUST-1-DESIGN-AUDIT 条目。两份 spec 更新为 ✅定稿。待发施工提示词。
+
 - 2026-08-28 **DATA-TRUTH-1 + TRUST-1 设计方案落档（🟦open，待业主决策）**：业主指示"资金不做（TRON-SECURITY-1 暂缓），做数据和业务的设计方案文档"。Devin CLI 按 ant-workflow §0 规划/设计模式完成两份 spec：
 
   **DATA-TRUTH-1**（`docs/spec/fix-2026-08-28-data-truth-1-reconciliation-convergence.md`）：reconciliation 只检测不收敛。根因 3 层：A ghost 仅 log.Warn 从不补写（违反 ADR-0013 §2.3 "broker 有 PG 无 → INSERT"）；B orphan 仅修 SUBMITTED→FAILED（其他非终态永不修复）；C ant 全量 vs broker 24h 窗口不对称 → 结构性假 orphan（129 条/账户/轮）。3 个架构决策问题：Q1 orphan 比对加 24h 下界？Q2 ghost 自动补写入 OMS？Q3 reconciliation 是检测器还是修复器？Devin CLI 建议 Q1=A/Q2=A/Q3=A。风险：ghost 补写涉及资金账实需业主确认。

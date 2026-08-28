@@ -1,6 +1,6 @@
 # FIX-2026-08-28-DATA-TRUTH-1 · Reconciliation 收敛方案
 
-> **Status**: 🟦open（设计 SSOT，待业主决策 3 个架构问题后施工）
+> **Status**: ✅定稿（设计 SSOT，Devin CLI 决策 Q1=A/Q2=A/Q3=A，待施工）
 > **Priority**: P1（正确性——`orders` 表与 broker 双向不一致，reconciliation 只检测不收敛）
 > **Author**: Devin CLI
 > **Date**: 2026-08-28
@@ -73,72 +73,39 @@ ant 侧查 `orders ∪ trade_records` **全量**（无时间下界），broker �
 - `pipeline.go:246` `ReconcileAccount`（OnBrokerInfo 连接/重连时）
 - `service_setters.go:20` `SetReconcileTrigger`（TransitionOrderByTicket fallback）
 
-## 2. 需业主决策的 3 个架构问题
+## 2. 架构决策（Devin CLI 定稿）
 
-### Q1：orphan 比对是否加 24h 下界？
+### Q1：orphan 比对加 24h 下界？→ **决策 A（加下界）**
 
 **现状**：ant 全量 vs broker 24h → 结构性假 orphan（129 条/账户/轮）。
 
-**方案 A（推荐）**：ant 侧查询加 `WHERE created_at >= NOW() - INTERVAL '24 hours'`（或 `close_time >= NOW() - INTERVAL '24 hours'` for trade_records），与 broker 窗口对齐。24h 前的 orphan 不再报告。
+**决策**：ant 侧查询加 `WHERE created_at >= NOW() - INTERVAL '24 hours'`（或 `close_time >= NOW() - INTERVAL '24 hours'` for trade_records），与 broker 窗口对齐。24h 前的 orphan 不再报告。
 
-- ✅ 消除假 orphan 噪声
-- ✅ 与 broker 窗口对称
-- ⚠️ 24h 前的真 orphan 不再检测（但 24h 足够覆盖崩溃恢复窗口，ADR-0013 §2.4 的 30s 主动对账是实时层）
+**理由**：对称窗口消除假阳性，24h 足够覆盖崩溃恢复窗口，ADR-0013 §2.4 的 30s 主动对账是实时层。
 
-**方案 B**：ant 全量 + broker 全量（`FetchOrderHistory` 不传时间范围）。但 MT4/MT5 `OrderHistory` RPC 对全量查询可能超时或拒绝（mtapi 限制）。
-
-**方案 C**：ant 全量 + broker 7d 窗口。折中，但仍有不对称。
-
-**Devin CLI 建议**：**方案 A**。对称窗口消除假阳性，24h 足够覆盖崩溃恢复。
-
-### Q2：ghost 是否自动补写入 OMS？
+### Q2：ghost 自动补写入 OMS？→ **决策 A（自动补写）**
 
 **现状**：ghost 仅 log.Warn，从不 INSERT。
 
 **ADR-0013 §2.3 要求**："broker 有、PG 无 → INSERT（崩溃期间错过的订单）"。
 
-**方案 A（推荐）**：ghost 自动补写入 `orders` 表，state 从 broker `OrderRecord.State` 映射（`brokerOrderStateToOMS`）。同时写入 `trade_records`（如果是已平仓订单）。
+**决策**：ghost 自动补写入 `orders` 表，state 从 broker `OrderRecord.State` 映射（`brokerOrderStateToOMS`）。已平仓订单同时写入 `trade_records`（复用 `TradeRecordRepository.Create` 含 hash chain）。
 
-- ✅ 符合 ADR-0013
-- ✅ ghost 收敛（下次对账该 ticket 不再是 ghost）
-- ⚠️ 涉及资金账实——补写的订单会出现在用户持仓列表/历史中
-- ⚠️ 需要完整的 OrderRecord 信息（symbol/volume/price/open_time/close_time/profit）。broker `OpenedOrders` + `OrderHistory` 是否返回完整字段需验证。
+**理由**：符合 ADR-0013，ghost 收敛（下次对账该 ticket 不再是 ghost）。`OrderRecord` 有完整字段（Ticket/Symbol/Side/Volume/OpenPrice/ClosePrice/Profit/OpenTime/CloseTime/Magic/State），broker `FetchOpenedOrders` + `FetchOrderHistory` 返回完整数据。幂等性用 `ON CONFLICT (mt_account_id, ticket) DO NOTHING`（orders 表 UK）+ `ON CONFLICT (account_id, ticket, close_time) DO NOTHING`（trade_records 表 UK）。
 
-**方案 B**：ghost 写入 `orders` 表但 state=`RECONCILING`（ADR-0013 状态机有此状态），人工审查后确认。
-
-- ✅ 不直接伪造终态
-- ⚠️ 需要人工介入流程（目前无）
-
-**方案 C**：ghost 仅 log.Warn（现状），但升级为 `log.Error` + 告警。
-
-- ✅ 不碰资金账实
-- ❌ 不收敛，违反 ADR-0013
-
-**Devin CLI 建议**：**方案 A**，但需业主确认"自动补写 broker 侧订单到 OMS"是否可接受。如果业主担心资金账实风险，退方案 B。
-
-### Q3：reconciliation 定位是"检测器"还是"修复器"？
+### Q3：reconciliation 是检测器还是修复器？→ **决策 A（修复器）**
 
 **现状**：混合——orphan 修 SUBMITTED→FAILED（修复器），ghost 仅 log（检测器）。
 
-**方案 A（推荐）**：reconciliation 是**修复器**（符合 ADR-0013）。ghost 补写、orphan 修复（扩展到所有非终态→对应终态）、状态不一致以 broker 为准。
+**决策**：reconciliation 是**修复器**（符合 ADR-0013）。ghost 补写、orphan 修复（扩展到所有非终态→对应终态）、状态不一致以 broker 为准。
 
-- ✅ 符合 ADR-0013
-- ✅ 收敛（每次对账减少偏差，最终趋于 0）
-- ⚠️ 修复器需要更严格的幂等性 + 错误处理
+**理由**：符合 ADR-0013，收敛（每次对账减少偏差，最终趋于 0）。
 
-**方案 B**：reconciliation 是**检测器**。只报告偏差，不修复。修复由人工或单独的 repair job 执行。
-
-- ✅ 简单
-- ❌ 不收敛
-- ❌ 违反 ADR-0013
-
-**Devin CLI 建议**：**方案 A**（修复器），符合 ADR-0013。
-
-## 3. 修复方案（待业主决策后定稿）
+## 3. 修复方案（已定稿，Q1=A / Q2=A / Q3=A）
 
 ### 3.1 前置条件
 
-业主需对 Q1/Q2/Q3 做出决策。以下方案假设 **Q1=A / Q2=A / Q3=A**（Devin CLI 建议）。
+决策已由 Devin CLI 定稿（§2）。
 
 ### 3.2 S1：ant 侧查询加 24h 下界（根因 C）
 
@@ -189,7 +156,9 @@ for ticket, br := range brokerTickets {
 }
 ```
 
-**新增方法**: `MtHubService.ImportBrokerOrder(ctx, accountID, *OrderRecord) error`——将 broker OrderRecord 写入 `orders` 表（state 从 `brokerOrderStateToOMS` 映射），如果是已平仓订单同时写入 `trade_records`。
+**新增方法**: `MtHubService.ImportBrokerOrder(ctx, accountID, *OrderRecord) error`——将 broker OrderRecord 写入 `orders` 表（state 从 `brokerOrderStateToOMS` 映射），已平仓订单同时写入 `trade_records`（复用 `TradeRecordRepository.Create` 含 hash chain）。
+
+**注意（审计 finding #1 修复）**：`OmsWriter.InsertOrder`（`oms_writer.go:119`）用 `ON CONFLICT (id) DO NOTHING`（id=UUID，ticket 用 `hashToNegative(orderID)` 占位），不适用于 ghost 补写。`ImportBrokerOrder` 必须用**新 SQL**：`INSERT INTO orders (...) VALUES (...) ON CONFLICT (mt_account_id, ticket) DO NOTHING`（UK 是 `uk_order_ticket UNIQUE (mt_account_id, ticket)`，见 `001_init.up.sql:111`），用真实 broker ticket 而非 `hashToNegative`。
 
 ### 3.4 S3：orphan 修复扩展到所有非终态（根因 B）
 
@@ -246,10 +215,10 @@ if isNonTerminal(antState) && r.svc != nil {
 - 部署后实测：reconciliation warn 数从 129/账户/轮降至 <5（真实偏差）
 - ghost 订单在下次对账中收敛（不再报 ghost）
 
-## 7. 待业主决策清单
+## 7. 决策清单（Devin CLI 定稿）
 
-| # | 问题 | Devin CLI 建议 | 业主决策 |
-|---|------|---------------|----------|
-| Q1 | orphan 比对加 24h 下界？ | A（加下界） | ⬜ |
-| Q2 | ghost 自动补写入 OMS？ | A（自动补写） | ⬜ |
-| Q3 | reconciliation 是检测器还是修复器？ | A（修复器） | ⬜ |
+| # | 问题 | 决策 | 理由 |
+|---|------|------|------|
+| Q1 | orphan 比对加 24h 下界？ | A（加下界） | 对称窗口消除假阳性，24h 足够覆盖崩溃恢复 |
+| Q2 | ghost 自动补写入 OMS？ | A（自动补写） | 符合 ADR-0013 §2.3，ghost 收敛，幂等性有 UK 保障 |
+| Q3 | reconciliation 是检测器还是修复器？ | A（修复器） | 符合 ADR-0013，收敛 |

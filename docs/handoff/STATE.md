@@ -34,8 +34,8 @@
 | FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S3（修复 C） | ✅done | Devin CLI 验收通过 2026-08-27（5 项对抗证明独立重跑 RED→restore→GREEN） |
 | FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP S1 | ✅done | Devin CLI 验收通过 2026-08-28（4 项对抗证明独立重跑 RED→restore→GREEN） |
 
-- **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策（Q1/Q2/Q3）。TRUST-1 需业务决策（Q1/Q2/Q3）。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: DATA-TRUTH-1 + TRUST-1 设计方案已落档（`docs/spec/fix-2026-08-28-data-truth-1-reconciliation-convergence.md` + `docs/spec/fix-2026-08-28-trust-1-demo-real-account-distinction.md`），待业主对 6 个决策问题（DATA-TRUTH-1 Q1-Q3 + TRUST-1 Q1-Q3）做出选择后施工。
+- **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。DATA-TRUTH-1 + TRUST-1 设计方案已定稿（Devin CLI 决策），待施工。
+- **下一步**: DATA-TRUTH-1 + TRUST-1 设计方案已定稿+审计通过（`docs/spec/fix-2026-08-28-data-truth-1-reconciliation-convergence.md` + `docs/spec/fix-2026-08-28-trust-1-demo-real-account-distinction.md`），可发施工提示词。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针

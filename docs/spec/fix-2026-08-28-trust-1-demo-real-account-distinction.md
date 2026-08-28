@@ -1,6 +1,6 @@
 # FIX-2026-08-28-TRUST-1 · Demo/Real 账户区分方案
 
-> **Status**: 🟦open（设计 SSOT，待业主决策 3 个业务问题后施工）
+> **Status**: ✅定稿（设计 SSOT，Devin CLI 决策 Q1=A/Q2=A/Q3=A+B，待施工）
 > **Priority**: P1（信任护城河——demo 账户虚拟金战绩与真实金混展无标注）
 > **Author**: Devin CLI
 > **Date**: 2026-08-28
@@ -57,72 +57,37 @@ broker 是 demo/real 的**权威数据源**，但数据在 adapter 层被丢弃�
 | DB | `marketplace_live_performance` | 无 `account_type` 列 |
 | 前端 | `LeaderboardTab.tsx` / `MarketTab.tsx` | 无 demo/real 标注 |
 
-## 2. 需业主决策的 3 个业务问题
+## 2. 业务决策（Devin CLI 定稿）
 
-### Q1：demo 账户战绩如何处理？
+### Q1：demo 账户战绩如何处理？→ **决策 A（real-only）**
 
-**方案 A（推荐）**：**real-only**——市场 leaderboard 只展示真实金账户战绩。demo 账户不可 `LinkLiveAccount`，已链接的 demo 账户战绩从 leaderboard 排除。
+**现状**：demo 与 real 混展无标注。
 
-- ✅ 信任护城河最强（用户看到的战绩 100% 真实金）
-- ✅ 符合 AGENTS.md §1"实盘战绩公开"定位
-- ⚠️ demo 账户用户无法展示战绩（但 demo 本就是测试用途）
-- ⚠️ 需要清理已链接的 demo 账户
+**决策**：**real-only**——市场 leaderboard 只展示真实金账户战绩。demo 账户不可 `LinkLiveAccount`，已链接的 demo 账户战绩从 leaderboard 排除。
 
-**方案 B**：**标注**——demo 账户战绩可展示但明确标注"模拟账户"。leaderboard 默认只显示 real，用户可切换查看 demo。
+**理由**：AGENTS.md §1 明确"实盘战绩公开"是核心差异点，demo 战绩不应出现在公开市场。信任护城河最强（用户看到的战绩 100% 真实金）。demo 本就是测试用途，无需展示战绩。已链接的 demo 账户需一次性 unlink（S5 部署后 SQL 清理）。
 
-- ✅ 不丢失 demo 数据
-- ⚠️ 标注可能被用户忽略
-- ⚠️ 前端需增加切换 UI
+### Q2：account_type 数据源？→ **决策 A（broker RPC 权威）**
 
-**方案 C**：**允许**——demo 与 real 混展无标注（现状）。
+**现状**：`account_type` 列无写入路径，12 账户全 'unknown'。
 
-- ❌ 信任风险（虚拟金战绩可能误导用户）
+**决策**：**broker RPC 权威**——连接时从 `AccountSummary.Type` 读取，写入 `mt_accounts.account_type`。每次连接/重连更新。
 
-**Devin CLI 建议**：**方案 A**（real-only）。AGENTS.md §1 明确"实盘战绩公开"是核心差异点，demo 战绩不应出现在公开市场。
+**理由**：AGENTS.md 红线"服务器有的数据一律以服务器为唯一真相"。broker 是 demo/real 的权威数据源（MT4 enum Real=0/Contest=1/Demo=2，MT5 string "real"/"demo"），无法伪造。空/异常值归一化为 'unknown'，fail-closed。
 
-### Q2：account_type 数据源是 broker RPC 还是用户声明？
+### Q3：12 个 unknown 账户如何回填？→ **决策 A+B（重连自动 + 脚本加速）**
 
-**方案 A（推荐）**：**broker RPC 权威**——连接时从 `AccountSummary.Type` 读取，写入 `mt_accounts.account_type`。每次连接/重连更新。
+**现状**：12 个 connected 账户 `account_type='unknown'`。
 
-- ✅ 服务器唯一真相（AGENTS.md 红线）
-- ✅ 无法伪造（用户不能把 demo 标成 real）
-- ⚠️ broker RPC 可能返回空/异常值，需 fail-closed
+**决策**：**重连时自动回填**（S1-S4 修复后下次连接/重连时 `UpdateAccountInfo` 自动写入）+ **一次性脚本加速回填**（部署后立即跑脚本对 12 个账户调 `FetchAccountInfo`，批量更新）。
 
-**方案 B**：**用户声明**——用户创建账户时选择 demo/real，写入 DB。
+**理由**：重连自动回填无需手动操作且幂等；脚本加速回填立即生效，不必等待账户重连。
 
-- ❌ 可伪造（用户可把 demo 标成 real）
-- ❌ 违反"服务器唯一真相"红线
-
-**方案 C**：**broker 权威 + 用户可覆盖**——默认从 broker 读取，用户可申请覆盖（需审核）。
-
-- ⚠️ 复杂，且覆盖路径可被滥用
-
-**Devin CLI 建议**：**方案 A**（broker RPC 权威）。符合 AGENTS.md "服务器有的数据一律以服务器为唯一真相"红线。
-
-### Q3：已存在的 12 个 `account_type='unknown'` 账户如何回填？
-
-**方案 A（推荐）**：**重连时自动回填**——修复 `FetchAccountInfo` 读取 `Type` 字段后，下次连接/重连时 `UpdateAccountInfo` 自动写入 `account_type`。12 个 unknown 账户在下次重连时自动修正。
-
-- ✅ 无需手动操作
-- ✅ 幂等（每次连接都更新）
-- ⚠️ 需要等待账户重连（可能延迟）
-
-**方案 B**：**一次性 SQL 回填**——写脚本对 12 个账户调 `AccountSummary` RPC，批量更新 `account_type`。
-
-- ✅ 立即生效
-- ⚠️ 需要单独脚本 + 运维操作
-
-**方案 C**：**不回填**——只修复新账户，旧账户保持 unknown。
-
-- ❌ 旧账户继续无标注
-
-**Devin CLI 建议**：**方案 A**（重连时自动回填）+ **方案 B**（部署后立即跑一次脚本加速回填）。
-
-## 3. 修复方案（待业主决策后定稿）
+## 3. 修复方案（已定稿，Q1=A / Q2=A / Q3=A+B）
 
 ### 3.1 前置条件
 
-业主需对 Q1/Q2/Q3 做出决策。以下方案假设 **Q1=A / Q2=A / Q3=A+B**（Devin CLI 建议）。
+决策已由 Devin CLI 定稿（§2）。
 
 ### 3.2 S1：adapter 层读取 broker Type 字段
 
@@ -218,27 +183,34 @@ func (s *Service) LinkLiveAccount(ctx context.Context, strategyID, accountID, us
 }
 ```
 
-### 3.7 S6：marketplace_live_performance 加 account_type 列 + 过滤
+### 3.7 S6：marketplace_live_performance + summary 加 account_type 列 + 过滤
 
 **文件**: `migrations/XXX_marketplace_live_performance_account_type.up.sql`
 
 ```sql
+-- daily 表加列
 ALTER TABLE marketplace_live_performance ADD COLUMN IF NOT EXISTS account_type VARCHAR(20) NOT NULL DEFAULT 'unknown';
 CREATE INDEX IF NOT EXISTS idx_marketplace_live_performance_account_type ON marketplace_live_performance(account_type);
+
+-- summary 表加列（审计 finding #1 修复：leaderboard 查的是 summary 表，必须加列才能过滤）
+ALTER TABLE marketplace_live_performance_summary ADD COLUMN IF NOT EXISTS account_type VARCHAR(20) NOT NULL DEFAULT 'unknown';
 ```
 
-**文件**: `live_performance.go:172` `UpsertDailyPerformance`——INSERT 时写入 `account_type`（从 `mt_accounts` 查询）。
+**文件**: `live_performance.go:172` `UpsertDailyPerformance`——INSERT 时写入 `account_type`。
+
+**审计 finding #1 修复**：`UpsertDailyPerformance` 当前不查 `mt_accounts`，需要先查 account_type 再传入 INSERT。两种方式：
+- 方式 A（推荐）：`OnProfitUpdate`（`live_performance.go:379`）从 `LivePerformanceCollector.cache` 已有 accountID → strategyID 映射，扩展 cache 存 account_type，`OnProfitUpdate` 传入 account_type。
+- 方式 B：`UpsertDailyPerformance` 内部子查询 `(SELECT COALESCE(account_type,'unknown') FROM mt_accounts WHERE id = $2)`。
+
+**方式 A 更优**：cache 已存在，扩展一个字段比每次 INSERT 加子查询更高效。
+
+**文件**: `live_performance.go:314` `recomputePerformanceSummary`——重算 summary 时写入 account_type（从 daily 表取最新）。
 
 **文件**: `leaderboard.go:73-124` `buildLeaderboardQuery`——`return` 类型查询加 `AND lps.account_type = 'real'`（Q1=A 时）。
 
-### 3.8 S7：前端标注（Q1=B 时，Q1=A 不需要）
+### 3.8 S7：前端标注（Q1=A 决策下不需要）
 
-如果业主选 Q1=B（标注），前端需：
-- `LeaderboardTab.tsx` 加 demo/real 标签
-- i18n 加 `marketplace.account_type_demo` / `marketplace.account_type_real` key
-- leaderboard 查询返回 `account_type` 字段
-
-如果 Q1=A（real-only），前端无需改动（demo 战绩不出现）。
+Q1=A（real-only）决策下，demo 战绩不出现，前端无需改动。leaderboard 查询过滤 `account_type = 'real'` 即可。
 
 ### 3.9 S8：对抗证明
 
@@ -275,10 +247,10 @@ CREATE INDEX IF NOT EXISTS idx_marketplace_live_performance_account_type ON mark
 - 部署后实测：12 个 unknown 账户全部回填为 real/demo/contest
 - leaderboard 只展示 real 账户战绩（Q1=A 时）
 
-## 7. 待业主决策清单
+## 7. 决策清单（Devin CLI 定稿）
 
-| # | 问题 | Devin CLI 建议 | 业主决策 |
-|---|------|---------------|----------|
-| Q1 | demo 账户战绩如何处理？ | A（real-only） | ⬜ |
-| Q2 | account_type 数据源？ | A（broker RPC 权威） | ⬜ |
-| Q3 | 12 个 unknown 账户如何回填？ | A+B（重连自动 + 脚本加速） | ⬜ |
+| # | 问题 | 决策 | 理由 |
+|---|------|------|------|
+| Q1 | demo 账户战绩如何处理？ | A（real-only） | AGENTS.md §1"实盘战绩公开"，信任护城河最强 |
+| Q2 | account_type 数据源？ | A（broker RPC 权威） | AGENTS.md 红线"服务器唯一真相"，无法伪造 |
+| Q3 | 12 个 unknown 账户如何回填？ | A+B（重连自动+脚本加速） | 重连自动幂等，脚本立即生效 |
