@@ -279,6 +279,14 @@ func (p *pipelineState) makeOnBrokerInfo(
 					info.Balance, info.Equity, info.Margin, info.FreeMargin); err != nil {
 					p.log.Warn("OnBrokerInfo: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 				}
+				if info.AccountType != "" {
+					if err := accountSvc.UpdateAccountType(mctx, accountID, info.AccountType); err != nil {
+						p.log.Warn("OnBrokerInfo: update account_type failed",
+							zap.String("account", accountID),
+							zap.String("account_type", info.AccountType),
+							zap.Error(err))
+					}
+				}
 				mcancel()
 			}
 			p.log.Info("OnBrokerInfo: published authoritative account summary from broker",

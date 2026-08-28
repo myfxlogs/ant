@@ -47,35 +47,56 @@ type AccountInfoUpdate struct {
 	Leverage   int64
 	Currency   string
 	IsInvestor bool
+	// AccountType is the normalized broker account type ("real"/"contest"/"demo"/"unknown").
+	// Written to mt_accounts.account_type. TRUST-1.
+	AccountType string
 }
 
-// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency within a transaction.
+// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency/account_type within a transaction.
 // Does NOT touch account_status — that is owned by the gateway lifecycle.
 func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, p AccountInfoUpdate) error {
 	_, err := p.Tx.Exec(ctx, `
 		UPDATE mt_accounts SET
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
-			is_investor = $10, updated_at = CURRENT_TIMESTAMP
+			is_investor = $10, account_type = $11, updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
-	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.IsInvestor)
+	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.IsInvestor, p.AccountType)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
 	}
 	return nil
 }
 
-// UpdateAccountInfo updates balance/equity/margin/leverage/currency after MT verification.
+// UpdateAccountInfo updates balance/equity/margin/leverage/currency/account_type after MT verification.
 func (s *AccountService) UpdateAccountInfo(ctx context.Context, p AccountInfoUpdate) error {
 	_, err := s.db.Exec(ctx, `
 		UPDATE mt_accounts SET
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
-			updated_at = CURRENT_TIMESTAMP
+			account_type = $10, updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
-	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency)
+	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.AccountType)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
+	}
+	return nil
+}
+
+// UpdateAccountType updates only account_type from broker AccountSummary.Type.
+// Called from OnBrokerInfo on connect/reconnect. Does NOT touch metrics
+// (UpdateAccountMetrics handles those separately). Empty accountType is skipped
+// (fail-closed: don't overwrite a known type with empty). TRUST-1.
+func (s *AccountService) UpdateAccountType(ctx context.Context, id, accountType string) error {
+	if accountType == "" {
+		return nil
+	}
+	_, err := s.db.Exec(ctx,
+		`UPDATE mt_accounts SET account_type = $2, updated_at = CURRENT_TIMESTAMP
+		 WHERE id = $1::uuid AND deleted_at IS NULL`,
+		id, accountType)
+	if err != nil {
+		return fmt.Errorf("service: update account type: %w", err)
 	}
 	return nil
 }

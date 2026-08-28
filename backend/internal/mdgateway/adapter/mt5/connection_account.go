@@ -43,14 +43,15 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 
 	s := resp.GetResult()
 	return &mdtick.MTAccountInfo{
-		Balance:    decimal.NewFromFloat(s.GetBalance()),
-		Credit:     decimal.NewFromFloat(s.GetCredit()),
-		Equity:     decimal.NewFromFloat(s.GetEquity()),
-		Margin:     decimal.NewFromFloat(s.GetMargin()),
-		FreeMargin: decimal.NewFromFloat(s.GetFreeMargin()),
-		Leverage:   int32(s.GetLeverage()),
-		Currency:   s.GetCurrency(),
-		IsInvestor: s.GetIsInvestor(),
+		Balance:     decimal.NewFromFloat(s.GetBalance()),
+		Credit:      decimal.NewFromFloat(s.GetCredit()),
+		Equity:      decimal.NewFromFloat(s.GetEquity()),
+		Margin:      decimal.NewFromFloat(s.GetMargin()),
+		FreeMargin:  decimal.NewFromFloat(s.GetFreeMargin()),
+		Leverage:    int32(s.GetLeverage()),
+		Currency:    s.GetCurrency(),
+		IsInvestor:  s.GetIsInvestor(),
+		AccountType: mdtick.NormalizeAccountType(s.GetType()), // TRUST-1
 	}, nil
 }
 

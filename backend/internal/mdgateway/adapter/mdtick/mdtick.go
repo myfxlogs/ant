@@ -4,6 +4,7 @@ package mdtick
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -54,6 +55,9 @@ type BrokerInfo struct {
 	Profit      decimal.Decimal
 	Leverage    int32
 	CapturedAt  time.Time
+	// AccountType is the normalized broker account type ("real"/"contest"/"demo"/"unknown").
+	// Sourced from AccountSummary.Type (MT4 enum / MT5 string). TRUST-1.
+	AccountType string
 }
 
 // BrokerInfoFetcher is implemented by mt4.Gateway and mt5.Gateway.
@@ -88,6 +92,9 @@ type MTAccountInfo struct {
 	Currency   string
 	IsInvestor bool   // true = read-only / investor password
 	BrokerHost string // the access host that successfully connected
+	// AccountType is the normalized broker account type ("real"/"contest"/"demo"/"unknown").
+	// Sourced from AccountSummary.Type (MT4 enum / MT5 string). TRUST-1.
+	AccountType string
 }
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
@@ -288,4 +295,34 @@ func IsPendingOrderType(orderType string) bool {
 // market position (buy/sell). Pending orders and balance/credit return false.
 func IsMarketPositionType(orderType string) bool {
 	return orderType == "buy" || orderType == "sell"
+}
+
+// Mt4AccountTypeToString maps the MT4 AccountSummary.Type enum to a normalized
+// string. MT4 proto enum AccountType: Real=0, Contest=1, Demo=2. Any other
+// value (including unset) maps to "unknown" (fail-closed). TRUST-1.
+func Mt4AccountTypeToString(t int32) string {
+	switch t {
+	case 0:
+		return "real"
+	case 1:
+		return "contest"
+	case 2:
+		return "demo"
+	}
+	return "unknown"
+}
+
+// NormalizeAccountType normalizes the MT5 AccountSummary.Type string.
+// MT5 returns "real"/"demo"/etc.; unknown or empty values map to "unknown"
+// (fail-closed). TRUST-1.
+func NormalizeAccountType(s string) string {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "real":
+		return "real"
+	case "demo":
+		return "demo"
+	case "contest":
+		return "contest"
+	}
+	return "unknown"
 }

@@ -10,29 +10,29 @@ import (
 )
 
 type LeaderboardEntry struct {
-	StrategyID      string
-	PublishID       string
-	Title           string
-	PublisherName   string
-	PublisherID     string
-	PriceModel      string
-	PriceAmount     string
-	AssetClass      string
-	Timeframe       string
-	RiskLevel       string
+	StrategyID       string
+	PublishID        string
+	Title            string
+	PublisherName    string
+	PublisherID      string
+	PriceModel       string
+	PriceAmount      string
+	AssetClass       string
+	Timeframe        string
+	RiskLevel        string
 	TotalSubscribers int32
-	AvgRating       float64
-	RatingCount     int32
-	Rank            int32
+	AvgRating        float64
+	RatingCount      int32
+	Rank             int32
 	// Return leaderboard
-	TotalReturn    string
-	MaxDrawdown    string
-	SharpeRatio    string
-	WinRate        string
-	TotalTrades    int32
-	TrackingSince  string
+	TotalReturn   string
+	MaxDrawdown   string
+	SharpeRatio   string
+	WinRate       string
+	TotalTrades   int32
+	TrackingSince string
 	// New/rising
-	PublishedAtMs  int64
+	PublishedAtMs int64
 	// Backtest
 	BacktestSnapshot *antv1.BacktestSnapshot
 }
@@ -88,7 +88,7 @@ func buildLeaderboardQuery(lbType, period, assetClass string, limit int) (string
         COALESCE(lps.sharpe_ratio::text,''), COALESCE(lps.win_rate::text,''),
         COALESCE(lps.total_trades,0), COALESCE(lps.tracking_since::text,'')`
 		extraJoins = ` LEFT JOIN marketplace_live_performance_summary lps ON lps.strategy_id = ms.strategy_id`
-		extraWhere = ` AND lps.strategy_id IS NOT NULL`
+		extraWhere = ` AND lps.strategy_id IS NOT NULL AND lps.account_type = 'real'`
 		interval := leaderboardPeriodToInterval(period)
 		if interval != "" {
 			extraWhere += fmt.Sprintf(" AND lps.last_updated >= now() - INTERVAL '%s'", interval)

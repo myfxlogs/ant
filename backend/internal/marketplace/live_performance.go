@@ -25,15 +25,15 @@ type LivePerformancePoint struct {
 
 // LivePerformanceSummary is the aggregated live performance for a strategy.
 type LivePerformanceSummary struct {
-	TotalReturn     decimal.Decimal
-	AnnualReturn    *decimal.Decimal
-	MaxDrawdown     decimal.Decimal
-	SharpeRatio     *decimal.Decimal
-	WinRate         *decimal.Decimal
-	TotalTrades     int32
+	TotalReturn      decimal.Decimal
+	AnnualReturn     *decimal.Decimal
+	MaxDrawdown      decimal.Decimal
+	SharpeRatio      *decimal.Decimal
+	WinRate          *decimal.Decimal
+	TotalTrades      int32
 	AvgMonthlyReturn *decimal.Decimal
-	TrackingSince   time.Time
-	LastUpdated     time.Time
+	TrackingSince    time.Time
+	LastUpdated      time.Time
 }
 
 // LinkLiveAccount links a trading account to a published strategy for live tracking.
@@ -61,6 +61,19 @@ func (s *Service) LinkLiveAccount(ctx context.Context, strategyID, accountID, us
 	uid, err := uuid.Parse(userID)
 	if err != nil || uid != ownerID {
 		return fmt.Errorf("marketplace: only the strategy owner can link a live account")
+	}
+
+	// TRUST-1 (Q1=A real-only): only real accounts can link to published strategies.
+	// demo/contest/unknown accounts are rejected to keep the leaderboard truthful.
+	var accountType string
+	err = s.pg.QueryRow(ctx,
+		`SELECT COALESCE(account_type, 'unknown') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+		aid).Scan(&accountType)
+	if err != nil {
+		return fmt.Errorf("marketplace: account not found: %w", err)
+	}
+	if accountType != "real" {
+		return fmt.Errorf("marketplace: only real accounts can link to published strategies (got %q)", accountType)
 	}
 
 	// Check the account is not already linked to another strategy.
@@ -169,7 +182,9 @@ func (s *Service) GetLivePerformance(ctx context.Context, strategyID string, lim
 // UpsertDailyPerformance records or updates a day's live performance for a strategy.
 // Called from the OnAccountProfit callback when a linked account has new equity data.
 // Computes dailyPnL, dailyReturn, and drawdown from the previous day's closing equity.
-func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accountID string, equity decimal.Decimal) error {
+// accountType is the normalized broker account type ("real"/"contest"/"demo"/"unknown")
+// written to the account_type column (TRUST-1).
+func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accountID string, equity decimal.Decimal, accountType string) error {
 	sid, err := uuid.Parse(strategyID)
 	if err != nil {
 		return fmt.Errorf("marketplace: invalid strategy_id: %w", err)
@@ -238,17 +253,17 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	}
 
 	_, err = tx.Exec(ctx,
-		`INSERT INTO marketplace_live_performance (strategy_id, account_id, date, daily_pnl, daily_return, equity, drawdown, total_trades, winning_trades)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		`INSERT INTO marketplace_live_performance (strategy_id, account_id, date, daily_pnl, daily_return, equity, drawdown, total_trades, winning_trades, account_type)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		 ON CONFLICT (strategy_id, account_id, date)
-		 DO UPDATE SET daily_pnl = $4, daily_return = $5, equity = $6, drawdown = $7, total_trades = $8, winning_trades = $9`,
-		sid, aid, today, dailyPnL, dailyReturn, equity, drawdown, totalTrades, winningTrades)
+		 DO UPDATE SET daily_pnl = $4, daily_return = $5, equity = $6, drawdown = $7, total_trades = $8, winning_trades = $9, account_type = $10`,
+		sid, aid, today, dailyPnL, dailyReturn, equity, drawdown, totalTrades, winningTrades, accountType)
 	if err != nil {
 		return fmt.Errorf("marketplace: upsert daily perf: %w", err)
 	}
 
 	// Recompute summary from all daily records.
-	if err := s.recomputePerformanceSummary(ctx, tx, sid, aid, today, prevEquity); err != nil {
+	if err := s.recomputePerformanceSummary(ctx, tx, sid, aid, today, prevEquity, accountType); err != nil {
 		return err
 	}
 
@@ -264,7 +279,7 @@ func (s *Service) UpsertDailyPerformance(ctx context.Context, strategyID, accoun
 	return nil
 }
 
-func (s *Service) recomputePerformanceSummary(ctx context.Context, tx pgx.Tx, sid, aid uuid.UUID, today time.Time, prevEquity decimal.Decimal) error {
+func (s *Service) recomputePerformanceSummary(ctx context.Context, tx pgx.Tx, sid, aid uuid.UUID, today time.Time, prevEquity decimal.Decimal, accountType string) error {
 	var totalReturn, maxDrawdown decimal.Decimal
 	var allTrades, allWins int32
 	var firstDate, lastDate time.Time
@@ -313,15 +328,15 @@ func (s *Service) recomputePerformanceSummary(ctx context.Context, tx pgx.Tx, si
 	_, err = tx.Exec(ctx,
 		`INSERT INTO marketplace_live_performance_summary
 			   (strategy_id, account_id, total_return, annual_return, max_drawdown, sharpe_ratio, win_rate,
-			    total_trades, tracking_since, last_updated, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
+			    total_trades, tracking_since, last_updated, updated_at, account_type)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), $11)
 		 ON CONFLICT (strategy_id) DO UPDATE SET
 		   total_return = $3, annual_return = $4, max_drawdown = $5, sharpe_ratio = $6, win_rate = $7,
-		   total_trades = $8, tracking_since = $9, last_updated = $10, updated_at = now()`,
+		   total_trades = $8, tracking_since = $9, last_updated = $10, updated_at = now(), account_type = $11`,
 		sid, aid, totalReturn,
 		nullDec(annualReturn), maxDrawdown,
 		nullDec(sharpeRatio), nullDec(winRate),
-		allTrades, firstDate, today)
+		allTrades, firstDate, today, accountType)
 	if err != nil {
 		return fmt.Errorf("marketplace: upsert summary: %w", err)
 	}
@@ -335,30 +350,40 @@ func nullDec(d *decimal.Decimal) interface{} {
 	return *d
 }
 
+// livePerfCacheEntry maps a linked account to its strategy + account type.
+// TRUST-1: account_type is cached so OnProfitUpdate can skip non-real accounts
+// without an extra DB query.
+type livePerfCacheEntry struct {
+	StrategyID  string
+	AccountType string
+}
+
 // LivePerformanceCollector receives push-based profit updates for linked accounts
 // and records daily performance. It is called from the OnAccountProfit callback.
 // Uses an in-memory cache to avoid DB queries on every profit update for unlinked accounts.
 type LivePerformanceCollector struct {
 	svc   *Service
 	log   *zap.Logger
-	cache map[string]string // accountID → strategyID
+	cache map[string]livePerfCacheEntry // accountID → {strategyID, accountType}
 	mu    sync.RWMutex
 }
 
 func NewLivePerformanceCollector(svc *Service, log *zap.Logger) *LivePerformanceCollector {
-	c := &LivePerformanceCollector{svc: svc, log: log, cache: make(map[string]string)}
+	c := &LivePerformanceCollector{svc: svc, log: log, cache: make(map[string]livePerfCacheEntry)}
 	c.loadCache()
 	return c
 }
 
 // loadCache preloads all linked account→strategy mappings from DB at startup.
+// TRUST-1: also caches mt_accounts.account_type for real-only filtering.
 func (c *LivePerformanceCollector) loadCache() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	rows, err := c.svc.pg.Query(ctx,
-		`SELECT linked_account_id::text, strategy_id::text
-			 FROM marketplace_strategies
-			 WHERE linked_account_id IS NOT NULL AND status = 'published'`)
+		`SELECT ms.linked_account_id::text, ms.strategy_id::text, COALESCE(ma.account_type, 'unknown')
+			 FROM marketplace_strategies ms
+			 LEFT JOIN mt_accounts ma ON ma.id = ms.linked_account_id
+			 WHERE ms.linked_account_id IS NOT NULL AND ms.status = 'published'`)
 	if err != nil {
 		c.log.Warn("live performance: failed to preload cache", zap.Error(err))
 		return
@@ -367,30 +392,35 @@ func (c *LivePerformanceCollector) loadCache() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	for rows.Next() {
-		var aid, sid string
-		if err := rows.Scan(&aid, &sid); err == nil {
-			c.cache[aid] = sid
+		var aid, sid, at string
+		if err := rows.Scan(&aid, &sid, &at); err == nil {
+			c.cache[aid] = livePerfCacheEntry{StrategyID: sid, AccountType: at}
 		}
 	}
 }
 
 // OnProfitUpdate is called from the OnAccountProfit pipeline callback.
 // Uses the in-memory cache to skip unlinked accounts without any DB query.
+// TRUST-1 (Q1=A real-only): skips non-real accounts so demo/contest/unknown
+// performance never enters the marketplace leaderboard.
 func (c *LivePerformanceCollector) OnProfitUpdate(accountID string, equity, balance decimal.Decimal) {
 	c.mu.RLock()
-	strategyID, ok := c.cache[accountID]
+	entry, ok := c.cache[accountID]
 	c.mu.RUnlock()
 	if !ok {
 		return // not linked — skip without DB query
+	}
+	if entry.AccountType != "real" {
+		return // TRUST-1: only real accounts feed the leaderboard
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := c.svc.UpsertDailyPerformance(ctx, strategyID, accountID, equity); err != nil {
+	if err := c.svc.UpsertDailyPerformance(ctx, entry.StrategyID, accountID, equity, entry.AccountType); err != nil {
 		c.log.Warn("live performance: upsert failed",
 			zap.String("account", accountID),
-			zap.String("strategy", strategyID),
+			zap.String("strategy", entry.StrategyID),
 			zap.Error(err))
 	}
 }

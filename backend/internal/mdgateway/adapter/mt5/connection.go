@@ -354,6 +354,7 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 		Profit:            decimal.NewFromFloat(s.GetProfit()),
 		Leverage:          int32(s.GetLeverage()),
 		CapturedAt:        Clk.Now(),
+		AccountType:       mdtick.NormalizeAccountType(s.GetType()), // TRUST-1
 	}, nil
 }
 
