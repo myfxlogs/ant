@@ -32,7 +32,7 @@ func buildOnOrderUpdate(
 		writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
-		writeClosedTradeRecord(log, tradeRecordRepo, resolver, writeCtx, accountID, userID, o)
+		writeClosedTradeRecord(log, tradeRecordRepo, resolver, mthubSvc, writeCtx, accountID, userID, o)
 
 		// EXEC-2: Transition OMS order state based on broker update type.
 		transitionOMSByUpdate(writeCtx, mthubSvc, accountID, o)
@@ -116,12 +116,22 @@ func publishProfitPositionSnapshot(broker *mthub.PositionSnapshotBroker, account
 	broker.Publish(snapshot)
 }
 
+// MagicLookup resolves a magic number from the OMS orders table by ticket.
+// *mthub.MtHubService satisfies this. Used as a fallback when broker
+// OnOrderUpdate events don't carry magic.
+type MagicLookup interface {
+	GetOrderMagic(ctx context.Context, accountID string, ticket int64) (int32, error)
+}
+
 // buildClosedTradeRecord constructs a TradeRecord from a closed-order update.
 // Returns nil if the update is not a close event or account/user IDs are invalid.
 // FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION (修复 B): Magic + ScheduleID
 // are resolved here so live-closed trades carry strategy attribution, mirroring
 // the SyncOrderHistory path (orderRecordToTradeRecord).
-func buildClosedTradeRecord(log *zap.Logger, resolver mthub.ScheduleResolver, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) *model.TradeRecord {
+// FIX-2026-08-28-MAGIC-ENRICHMENT: broker OnOrderUpdate events don't carry magic
+// (MT4/MT5 real-time stream omits it). When UpdateMagic==0, fall back to the
+// orders table which has magic from order placement.
+func buildClosedTradeRecord(log *zap.Logger, resolver mthub.ScheduleResolver, svc MagicLookup, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) *model.TradeRecord {
 	if !strings.EqualFold(o.UpdateType, "close") || o.UpdateCloseTime <= 0 {
 		return nil
 	}
@@ -133,6 +143,17 @@ func buildClosedTradeRecord(log *zap.Logger, resolver mthub.ScheduleResolver, ct
 	if err != nil {
 		return nil
 	}
+	magic := o.UpdateMagic
+	if magic == 0 && svc != nil {
+		if fallback, _ := svc.GetOrderMagic(ctx, accountID, o.UpdateTicket); fallback != 0 {
+			magic = fallback
+			if log != nil {
+				log.Debug("buildClosedTradeRecord: magic enriched from orders table",
+					zap.String("account", accountID), zap.Int64("ticket", o.UpdateTicket),
+					zap.Int32("magic", magic))
+			}
+		}
+	}
 	return &model.TradeRecord{
 		UserID: userUUID, AccountID: uid, Ticket: o.UpdateTicket, Symbol: o.UpdateSymbol, OrderType: o.UpdateOrderType,
 		Volume: o.UpdateVolume, OpenPrice: o.UpdateOpenPrice,
@@ -141,13 +162,13 @@ func buildClosedTradeRecord(log *zap.Logger, resolver mthub.ScheduleResolver, ct
 		OpenTime: time.Unix(o.UpdateOpenTime, 0), CloseTime: time.Unix(o.UpdateCloseTime, 0),
 		StopLoss: o.UpdateSL, TakeProfit: o.UpdateTP,
 		OrderComment: o.UpdateComment, Platform: o.Platform,
-		MagicNumber: int(o.UpdateMagic),
-		ScheduleID:  mthub.ResolveScheduleID(ctx, resolver, log, uid, o.UpdateMagic),
+		MagicNumber: int(magic),
+		ScheduleID:  mthub.ResolveScheduleID(ctx, resolver, log, uid, magic),
 	}
 }
 
-func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordRepository, resolver mthub.ScheduleResolver, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) {
-	rec := buildClosedTradeRecord(log, resolver, ctx, accountID, userID, o)
+func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordRepository, resolver mthub.ScheduleResolver, svc MagicLookup, ctx context.Context, accountID, userID string, o *mdtick.OrderUpdate) {
+	rec := buildClosedTradeRecord(log, resolver, svc, ctx, accountID, userID, o)
 	if rec == nil {
 		return
 	}

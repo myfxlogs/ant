@@ -422,7 +422,7 @@ func (s *MtHubService) PublishTradeEventFromUpdate(
 	})
 }
 
-// lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
+// lossyFloat64 converts a decimal to float64 for MT api proto boundaries.
 // Precision loss is detected but not rejected — the MT proto requires float64.
 func costToProto(est *costsvc.CostBreakdown) *antv1.CostEstimate {
 	return &antv1.CostEstimate{

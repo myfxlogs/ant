@@ -23,17 +23,18 @@ func orderRecordToUpdateEvent(rec *mthub.OrderRecord, accountID string, eventTyp
 			}
 			return rec.SymbolRaw
 		}(),
-		Type:       orderSideTypeLabel(rec.Side, rec.OrderType),
-		Volume:     rec.Volume.String(),
-		OpenPrice:  rec.OpenPrice.String(),
-		Profit:     rec.Profit.String(),
-		Action:     eventType,
-		ClosePrice: rec.ClosePrice.String(),
-		Swap:       rec.Swap.String(),
-		Commission: rec.Commission.String(),
-		Comment:    rec.Comment,
-		OpenTime:   rec.OpenTime.Unix(),
-		CloseTime:  rec.CloseTime.Unix(),
+		Type:        orderSideTypeLabel(rec.Side, rec.OrderType),
+		Volume:      rec.Volume.String(),
+		OpenPrice:   rec.OpenPrice.String(),
+		Profit:      rec.Profit.String(),
+		Action:      eventType,
+		ClosePrice:  rec.ClosePrice.String(),
+		Swap:        rec.Swap.String(),
+		Commission:  rec.Commission.String(),
+		Comment:     rec.Comment,
+		OpenTime:    rec.OpenTime.Unix(),
+		CloseTime:   rec.CloseTime.Unix(),
+		MagicNumber: rec.Magic,
 	}
 }
 

@@ -34,6 +34,7 @@ function mapOrderToPosition(o: OrderUpdate): Position {
     closeTime: o.closeTime ? String(o.closeTime) : '',
     openTime: o.openTime ? String(o.openTime) : '',
     currentPrice: 0,
+    magicNumber: o.magicNumber ? Number(o.magicNumber) : undefined,
   };
 }
 

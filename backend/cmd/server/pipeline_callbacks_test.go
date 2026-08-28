@@ -58,7 +58,7 @@ func TestBuildClosedTradeRecordMagicAttribution(t *testing.T) {
 	userID := uuid.New()
 	const magic int32 = 777
 
-	rec := buildClosedTradeRecord(zap.NewNop(), resolver, context.Background(),
+	rec := buildClosedTradeRecord(zap.NewNop(), resolver, nil, context.Background(),
 		accID.String(), userID.String(), closedOrderUpdate(magic))
 	if rec == nil {
 		t.Fatal("expected non-nil record for close event")
@@ -85,7 +85,7 @@ func TestBuildClosedTradeRecordManualOrderNoSchedule(t *testing.T) {
 	accID := uuid.New()
 	userID := uuid.New()
 
-	rec := buildClosedTradeRecord(zap.NewNop(), resolver, context.Background(),
+	rec := buildClosedTradeRecord(zap.NewNop(), resolver, nil, context.Background(),
 		accID.String(), userID.String(), closedOrderUpdate(0))
 	if rec == nil {
 		t.Fatal("expected non-nil record for close event")
@@ -108,7 +108,7 @@ func TestBuildClosedTradeRecordNilResolver(t *testing.T) {
 	userID := uuid.New()
 	const magic int32 = 42
 
-	rec := buildClosedTradeRecord(zap.NewNop(), nil, context.Background(),
+	rec := buildClosedTradeRecord(zap.NewNop(), nil, nil, context.Background(),
 		accID.String(), userID.String(), closedOrderUpdate(magic))
 	if rec == nil {
 		t.Fatal("expected non-nil record for close event")
@@ -131,24 +131,24 @@ func TestBuildClosedTradeRecordSkipsNonClose(t *testing.T) {
 	// Non-close event.
 	o := closedOrderUpdate(777)
 	o.UpdateType = "modify"
-	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, context.Background(),
+	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, nil, context.Background(),
 		accID.String(), userID.String(), o); rec != nil {
 		t.Fatal("expected nil for non-close event")
 	}
 	// Close event with zero close time.
 	o = closedOrderUpdate(777)
 	o.UpdateCloseTime = 0
-	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, context.Background(),
+	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, nil, context.Background(),
 		accID.String(), userID.String(), o); rec != nil {
 		t.Fatal("expected nil for close with zero close_time")
 	}
 	// Invalid account ID.
-	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, context.Background(),
+	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, nil, context.Background(),
 		"not-a-uuid", userID.String(), closedOrderUpdate(777)); rec != nil {
 		t.Fatal("expected nil for invalid account ID")
 	}
 	// Invalid user ID.
-	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, context.Background(),
+	if rec := buildClosedTradeRecord(zap.NewNop(), resolver, nil, context.Background(),
 		accID.String(), "not-a-uuid", closedOrderUpdate(777)); rec != nil {
 		t.Fatal("expected nil for invalid user ID")
 	}
@@ -159,3 +159,76 @@ func TestBuildClosedTradeRecordSkipsNonClose(t *testing.T) {
 
 // Compile-time guard: stubScheduleResolver satisfies mthub.ScheduleResolver.
 var _ mthub.ScheduleResolver = (*stubScheduleResolver)(nil)
+
+// stubMagicLookup satisfies MagicLookup for testing the enrichment fallback.
+type stubMagicLookup struct {
+	magic  int32
+	calls  int
+	ticket int64
+}
+
+func (s *stubMagicLookup) GetOrderMagic(_ context.Context, _ string, ticket int64) (int32, error) {
+	s.calls++
+	s.ticket = ticket
+	return s.magic, nil
+}
+
+// TestBuildClosedTradeRecordMagicEnrichment verifies FIX-2026-08-28 断裂 1:
+// when broker OnOrderUpdate doesn't carry magic (UpdateMagic==0), the magic
+// is enriched from the orders table via MagicLookup. The enriched magic must
+// flow into both MagicNumber and ResolveScheduleID.
+// Adversarial proof: remove the fallback lookup and this test turns RED
+// (MagicNumber stays 0, resolver gets magic=0).
+func TestBuildClosedTradeRecordMagicEnrichment(t *testing.T) {
+	sid := uuid.New()
+	resolver := &stubScheduleResolver{id: &sid}
+	lookup := &stubMagicLookup{magic: -1486243899}
+	accID := uuid.New()
+	userID := uuid.New()
+
+	rec := buildClosedTradeRecord(zap.NewNop(), resolver, lookup, context.Background(),
+		accID.String(), userID.String(), closedOrderUpdate(0))
+	if rec == nil {
+		t.Fatal("expected non-nil record for close event")
+	}
+	if rec.MagicNumber != int(lookup.magic) {
+		t.Fatalf("MagicNumber: expected enriched %d, got %d", lookup.magic, rec.MagicNumber)
+	}
+	if lookup.calls != 1 {
+		t.Fatalf("MagicLookup should be called once when UpdateMagic==0, calls=%d", lookup.calls)
+	}
+	if resolver.calls != 1 {
+		t.Fatalf("resolver should be called once with enriched magic, calls=%d", resolver.calls)
+	}
+	if resolver.last != lookup.magic {
+		t.Fatalf("resolver should receive enriched magic %d, got %d", lookup.magic, resolver.last)
+	}
+	if rec.ScheduleID == nil || *rec.ScheduleID != sid {
+		t.Fatalf("ScheduleID: expected %s from enriched magic, got %v", sid, rec.ScheduleID)
+	}
+}
+
+// TestBuildClosedTradeRecordMagicNoEnrichmentWhenBrokerSends verifies that
+// when broker DOES send magic (UpdateMagic!=0), the MagicLookup is NOT called.
+func TestBuildClosedTradeRecordMagicNoEnrichmentWhenBrokerSends(t *testing.T) {
+	resolver := &stubScheduleResolver{id: nil}
+	lookup := &stubMagicLookup{magic: 999}
+	accID := uuid.New()
+	userID := uuid.New()
+	const brokerMagic int32 = 777
+
+	rec := buildClosedTradeRecord(zap.NewNop(), resolver, lookup, context.Background(),
+		accID.String(), userID.String(), closedOrderUpdate(brokerMagic))
+	if rec == nil {
+		t.Fatal("expected non-nil record")
+	}
+	if rec.MagicNumber != int(brokerMagic) {
+		t.Fatalf("MagicNumber: expected broker value %d, got %d", brokerMagic, rec.MagicNumber)
+	}
+	if lookup.calls != 0 {
+		t.Fatalf("MagicLookup must NOT be called when UpdateMagic!=0, calls=%d", lookup.calls)
+	}
+}
+
+// Compile-time guard: stubMagicLookup satisfies MagicLookup.
+var _ MagicLookup = (*stubMagicLookup)(nil)

@@ -244,21 +244,22 @@ func (s *StreamServer) emitPositionSnapshot(
 	positions := make([]*antv1.OrderUpdateEvent, 0, len(snap.Positions))
 	for _, pos := range snap.Positions {
 		positions = append(positions, &antv1.OrderUpdateEvent{
-			AccountId:  snap.AccountID,
-			Ticket:     pos.Ticket,
-			Symbol:     pos.Symbol,
-			Type:       pos.Type,
-			Volume:     pos.Volume.String(),
-			OpenPrice:  pos.OpenPrice.String(),
-			ClosePrice: pos.CurrentPrice.String(),
-			Profit:     pos.Profit.String(),
-			StopLoss:   pos.StopLoss.String(),
-			TakeProfit: pos.TakeProfit.String(),
-			Swap:       pos.Swap.String(),
-			Commission: pos.Commission.String(),
-			Comment:    pos.Comment,
-			Action:     "open",
-			OpenTime:   pos.OpenTime,
+			AccountId:   snap.AccountID,
+			Ticket:      pos.Ticket,
+			Symbol:      pos.Symbol,
+			Type:        pos.Type,
+			Volume:      pos.Volume.String(),
+			OpenPrice:   pos.OpenPrice.String(),
+			ClosePrice:  pos.CurrentPrice.String(),
+			Profit:      pos.Profit.String(),
+			StopLoss:    pos.StopLoss.String(),
+			TakeProfit:  pos.TakeProfit.String(),
+			Swap:        pos.Swap.String(),
+			Commission:  pos.Commission.String(),
+			Comment:     pos.Comment,
+			Action:      "open",
+			OpenTime:    pos.OpenTime,
+			MagicNumber: pos.Magic,
 		})
 	}
 	if err := sendEvent(&antv1.StreamEvent{

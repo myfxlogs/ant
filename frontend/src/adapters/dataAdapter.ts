@@ -42,6 +42,7 @@ export interface OrderUpdate {
   swap?: number | string;
   commission?: number | string;
   comment?: string;
+  magicNumber?: number;
 }
 
 /**

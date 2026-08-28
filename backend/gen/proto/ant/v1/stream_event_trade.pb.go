@@ -39,6 +39,7 @@ type OrderUpdateEvent struct {
 	Swap          string                 `protobuf:"bytes,14,opt,name=swap,proto3" json:"swap,omitempty"`
 	Commission    string                 `protobuf:"bytes,15,opt,name=commission,proto3" json:"commission,omitempty"`
 	Comment       string                 `protobuf:"bytes,16,opt,name=comment,proto3" json:"comment,omitempty"`
+	MagicNumber   int32                  `protobuf:"varint,17,opt,name=magic_number,json=magicNumber,proto3" json:"magic_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -183,6 +184,13 @@ func (x *OrderUpdateEvent) GetComment() string {
 		return x.Comment
 	}
 	return ""
+}
+
+func (x *OrderUpdateEvent) GetMagicNumber() int32 {
+	if x != nil {
+		return x.MagicNumber
+	}
+	return 0
 }
 
 type DealUpdateEvent struct {
@@ -623,7 +631,7 @@ var File_stream_event_trade_proto protoreflect.FileDescriptor
 
 const file_stream_event_trade_proto_rawDesc = "" +
 	"\n" +
-	"\x18stream_event_trade.proto\x12\x06ant.v1\"\xc5\x03\n" +
+	"\x18stream_event_trade.proto\x12\x06ant.v1\"\xe8\x03\n" +
 	"\x10OrderUpdateEvent\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
@@ -648,7 +656,8 @@ const file_stream_event_trade_proto_rawDesc = "" +
 	"\n" +
 	"commission\x18\x0f \x01(\tR\n" +
 	"commission\x12\x18\n" +
-	"\acomment\x18\x10 \x01(\tR\acomment\"\x92\x03\n" +
+	"\acomment\x18\x10 \x01(\tR\acomment\x12!\n" +
+	"\fmagic_number\x18\x11 \x01(\x05R\vmagicNumber\"\x92\x03\n" +
 	"\x0fDealUpdateEvent\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1f\n" +
