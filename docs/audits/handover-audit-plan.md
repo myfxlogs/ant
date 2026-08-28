@@ -521,3 +521,11 @@
 
 ### 部署
 - 前端镜像 `alphaforge-prod-frontend:latest` 重建 + 容器重启（healthy）。
+
+## 2026-08-28 部署纪要：TRUST-1 已部署
+
+- `docker compose build backend` ✅ 成功
+- `docker compose up -d backend` ✅ 容器 healthy
+- migration 276 自动执行 ✅：`marketplace_live_performance` + `summary` 表加 `account_type VARCHAR(20) NOT NULL DEFAULT 'unknown'` + 索引
+- OnBrokerInfo 自动回填 ✅：60 秒内 14 账户从全 'unknown' 回填为 real=4 / demo=3 / contest=4 / unknown=3（11/14 已回填，3 unknown 可能是未连接账户）
+- leaderboard `lps.account_type = 'real'` 过滤已生效（代码已部署）
