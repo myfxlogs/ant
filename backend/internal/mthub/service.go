@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"alphaforge/internal/costsvc"
+	"alphaforge/internal/model"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/usermgr"
 )
@@ -73,6 +74,11 @@ type MtHubService struct {
 	tradeBroker    *TradeBroker
 	statusBroker   *AccountStatusBroker
 	logger         *zap.Logger
+
+	// tradeRecordRepo is used by ImportBrokerOrder to write closed ghost orders
+	// (broker has, ant missing) into trade_records with hash chain preservation.
+	// May be nil if not wired (ImportBrokerOrder skips trade_records write).
+	tradeRecordRepo TradeRecordCreator
 
 	// reconnectCooldown prevents repeated reconnect attempts for the same
 	// account within a short window. Keyed by accountID, value = last reconnect time.
@@ -393,3 +399,14 @@ func (s *MtHubService) SubscribePositionSnapshots(ctx context.Context, accountID
 // Used by the execution barrier to publish read-after-write confirmation
 // snapshots into the existing position pipeline (LIVE-ORDER-REENTRY-1).
 func (s *MtHubService) SnapshotBroker() *PositionSnapshotBroker { return s.snapshotBroker }
+
+// TradeRecordCreator is the narrow interface used by ImportBrokerOrder to
+// write closed ghost orders into trade_records (with hash chain preservation).
+// Implemented by *repository.TradeRecordRepository.Create.
+type TradeRecordCreator interface {
+	Create(ctx context.Context, record *model.TradeRecord) error
+}
+
+// SetTradeRecordRepo wires the trade record repository for ImportBrokerOrder
+// ghost-order convergence (FIX-2026-08-28-DATA-TRUTH-1). Nil-safe.
+func (s *MtHubService) SetTradeRecordRepo(r TradeRecordCreator) { s.tradeRecordRepo = r }

@@ -11,6 +11,7 @@ import (
 	"alphaforge/internal/config"
 	"alphaforge/internal/costsvc"
 	"alphaforge/internal/mthub"
+	"alphaforge/internal/repository"
 	"alphaforge/internal/risk"
 	"alphaforge/internal/risksvc"
 	"alphaforge/internal/usermgr"
@@ -87,6 +88,7 @@ func wireMthubServices(pool *pgxpool.Pool, log *zap.Logger, mthubSvc *mthub.MtHu
 		Symbol: "DEFAULT", SpreadPips: decimal.NewFromInt(1), PipSize: decimal.NewFromFloat(0.00001), PipValue: decimal.NewFromInt(1), CommissionPerLot: decimal.Zero,
 	}, log))
 	mthubSvc.SetOmsWriter(mthub.NewOmsWriter(pool, eventStore))
+	mthubSvc.SetTradeRecordRepo(repository.NewTradeRecordRepository(pool))
 	mthubSvc.SetAccountOwnerVerifier(func(ctx context.Context, userID, accountID string) (bool, error) {
 		var exists bool
 		err := pool.QueryRow(ctx,

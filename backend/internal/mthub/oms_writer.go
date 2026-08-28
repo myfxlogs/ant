@@ -102,6 +102,11 @@ func (w *OmsWriter) SetOrderEventBroker(b *OrderEventBroker) {
 	w.orderEventBroker = b
 }
 
+// Pool returns the underlying PG connection pool. Used by ImportBrokerOrder
+// (FIX-2026-08-28-DATA-TRUTH-1) to insert ghost orders with a ticket-based
+// ON CONFLICT clause (unlike InsertOrder which uses id-based conflict).
+func (w *OmsWriter) Pool() *pgxpool.Pool { return w.pool }
+
 // InsertOrder inserts a new order with state=NEW.
 // Uses ON CONFLICT DO NOTHING to handle idempotent re-insertion.
 // platform must be "MT4" or "MT5".

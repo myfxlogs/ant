@@ -104,6 +104,20 @@ func brokerOrderStateToOMS(s OrderState) OMSState {
 	return ""
 }
 
+// isNonTerminalOMSState returns true if the OMS state is not a terminal state.
+// Terminal states: FILLED, CANCELLED, FAILED, EXPIRED, REJECTED, SLIPPAGE_REJECTED.
+// Used by reconciliation orphan repair (root cause B): broker confirms the
+// order does not exist → any non-terminal ant-side state should be repaired
+// to FAILED, not just SUBMITTED.
+func isNonTerminalOMSState(state string) bool {
+	switch OMSState(state) {
+	case OMSStateFilled, OMSStateCancelled, OMSStateFailed, OMSStateExpired,
+		OMSStateRejected, OMSStateSlippageRejected:
+		return false
+	}
+	return true
+}
+
 func (r *ReconciliationLoop) repairOrder(ctx context.Context, accountID string, ticket int64, to OMSState) {
 	if r.svc == nil {
 		return
@@ -139,12 +153,15 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		}
 	}
 
-	// 2. Fetch ant-side orders from PG (all states)
+	// 2. Fetch ant-side orders from PG (24h window — symmetric with broker
+	//    FetchOrderHistory window above to avoid structural false orphans
+	//    from comparing ant full-history vs broker 24h slice).
+	cutoff := Clk.Now().Add(-24 * time.Hour)
 	rows, err := r.pg.Query(ctx, `
-		SELECT ticket, state FROM orders WHERE mt_account_id = $1::uuid
+		SELECT ticket, state FROM orders WHERE mt_account_id = $1::uuid AND created_at >= $2
 		UNION ALL
-		SELECT ticket, 'CLOSED' FROM trade_records WHERE account_id = $1::uuid
-	`, accountID)
+		SELECT ticket, 'CLOSED' FROM trade_records WHERE account_id = $1::uuid AND close_time >= $2
+	`, accountID, cutoff)
 	if err != nil {
 		return fmt.Errorf("reconciliation: query ant orders: %w", err)
 	}
@@ -171,7 +188,7 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 				zap.String("accountID", accountID),
 				zap.Int64("ticket", ticket))
 			orphans++
-			if antState == string(OMSStateSubmitted) && r.svc != nil {
+			if isNonTerminalOMSState(antState) && r.svc != nil {
 				r.repairOrder(ctx, accountID, ticket, OMSStateFailed)
 				repaired++
 			}
@@ -186,8 +203,19 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		}
 	}
 
-	for ticket := range brokerTickets {
+	for ticket, br := range brokerTickets {
 		if _, exists := antTickets[ticket]; !exists {
+			// Ghost order (broker has, ant missing): auto-import per ADR-0013 §2.3
+			// ("broker has, PG missing → INSERT"). Idempotent via ON CONFLICT DO NOTHING.
+			if r.svc != nil {
+				if err := r.svc.ImportBrokerOrder(ctx, accountID, br); err != nil {
+					r.log.Error("reconciliation: ghost import failed",
+						zap.String("accountID", accountID),
+						zap.Int64("ticket", ticket), zap.Error(err))
+				} else {
+					repaired++
+				}
+			}
 			r.log.Warn("reconciliation: ghost order (broker has, ant missing)",
 				zap.String("accountID", accountID),
 				zap.Int64("ticket", ticket))
