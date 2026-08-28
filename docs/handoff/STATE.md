@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP，Session interface 改传结构体指针消除进程内 proto round-trip）。**FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1 ✅done**（修复 B：`writeClosedTradeRecord` 补齐 Magic + ScheduleID，Devin CLI 验收通过 2026-08-27）+ **S2 施工完成**（修复 A：`GetOrderHistory` 改查 `trade_records` + proto 加 `magic_number` + 前端加 Magic 列，待独立复审）。spec 见 `docs/spec/fix-2026-08-27-order-history-magic-attribution.md`。
+- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP，Session interface 改传结构体指针消除进程内 proto round-trip）。**FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1+S2 ✅done**（修复 B+A：`writeClosedTradeRecord` 补齐 Magic + ScheduleID + `GetOrderHistory` 改查 `trade_records` + proto 加 `magic_number` + 前端加 Magic 列，Devin CLI 验收通过 2026-08-27）。spec 见 `docs/spec/fix-2026-08-27-order-history-magic-attribution.md`。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -30,7 +30,7 @@
 | P1 live 执行 bug 修复（login lookup + nil/empty slice） | ✅done | 已部署验证 2026-08-27 |
 | FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP | 🟦open | 施工完成 2026-08-27，待 Devin CLI 独立复审（S10 对抗证明 RED→restore→GREEN 已执行） |
 | FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1（修复 B） | ✅done | Devin CLI 验收通过 2026-08-27（4 项对抗证明独立重跑 RED→restore→GREEN） |
-| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S2（修复 A） | 🟦open | 施工完成 2026-08-27，待 Devin CLI 独立复审（6 项对抗证明 RED→restore→GREEN 已执行） |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S2（修复 A） | ✅done | Devin CLI 验收通过 2026-08-27（6 项对抗证明独立重跑 RED→restore→GREEN） |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。DATA-TRUTH-1 需架构决策。TRUST-1 需业务决策。TRON-SECURITY-1 业主暂缓。
 - **下一步**: P1 业务管线核心 bug 已修复。剩余 P1 管线 3 still-open（TRON-SECURITY-1/DATA-TRUTH-1/TRUST-1）待决策/施工。
@@ -69,7 +69,7 @@
 - **VM-AUDIT-2026-08-27-8** ✅done — PositionCache.Subscribe panic recovery（Devin CLI 验收通过 2026-08-27）
 - **FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP** ✅done — Session interface 改传结构体指针消除进程内 proto round-trip（Devin CLI 验收通过 2026-08-27，S10 对抗证明 RED→restore→GREEN）
 - **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S1** ✅done — `writeClosedTradeRecord` 补齐 Magic + ScheduleID（Devin CLI 验收通过 2026-08-27，4 项对抗证明独立重跑 RED→restore→GREEN）
-- **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S2** 🟦open — `GetOrderHistory` 改查 `trade_records` + proto 加 `magic_number` + 前端加 Magic 列（施工完成 2026-08-27，待独立复审，6 项对抗证明 RED→restore→GREEN）
+- **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S2** ✅done — `GetOrderHistory` 改查 `trade_records` + proto 加 `magic_number` + 前端加 Magic 列（Devin CLI 验收通过 2026-08-27，6 项对抗证明独立重跑 RED→restore→GREEN）
 
 ## 最近变更日志
 
