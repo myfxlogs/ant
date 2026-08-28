@@ -35,7 +35,7 @@
 | FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP S1 | ✅done | Devin CLI 验收通过 2026-08-28（4 项对抗证明独立重跑 RED→restore→GREEN） |
 | FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE | �open | 施工完成 2026-08-28，待 Devin CLI 独立复审（5 项对抗证明 RED→restore→GREEN 已执行） |
 | FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION | 🔄施工中 | 施工提示词已发 `docs/audits/builder-handoff-fix-2026-08-28-trust-1-demo-real-account-distinction.md` |
-| FIX-2026-08-28-MAGIC-ENRICHMENT（magic 列 `-` 三条断裂） | ⚠️待独立复审 | 断裂 1: buildClosedTradeRecord 从 orders 表回查 magic + 断裂 2: proto OrderUpdateEvent 加 magic_number + 前端映射 + 断裂 3: DB 回填 252 条 trades。对抗证明 RED→restore→GREEN。门禁全过。 |
+| FIX-2026-08-28-MAGIC-ENRICHMENT（magic 列 `-` 三条断裂） | ⚠️待独立复审 | 断裂 1: buildClosedTradeRecord 从 orders 表回查 magic + 断裂 2: proto OrderUpdateEvent 加 magic_number + 前端映射 + 断裂 3: DB 回填 252 条 trades。对抗证明 RED→restore→GREEN（断裂 1+2 各 2 测试）。门禁全过。审计补加断裂 2 对抗测试。 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。DATA-TRUTH-1 + TRUST-1 施工提示词已发，待施工方落地。
 - **下一步**: 施工方按两份施工提示词落地（DATA-TRUTH-1 S1-S4 + TRUST-1 S1-S8），完成后 Devin CLI 独立复审。
