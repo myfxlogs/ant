@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP ✅done，Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1+S2+S3 ✅done**（Devin CLI 验收通过 2026-08-27）。**FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP ✅done**（Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE S1-S4 ✅done**（Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION S1-S7 施工完成**（demo/real 区分：adapter 读 broker Type + mdtick 加字段 + service 写 account_type + CreateAccount 传值 + LinkLiveAccount real-only 校验 + marketplace 表+cache+leaderboard 过滤，待独立复审）。
+- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP ✅done，Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1+S2+S3 ✅done**（Devin CLI 验收通过 2026-08-27）。**FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP ✅done**（Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE S1-S4 ✅done**（Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION S1-S7 ✅done**（Devin CLI 验收通过 2026-08-28：demo/real 区分——adapter 读 broker Type + mdtick 加字段 + service 写 account_type + CreateAccount 传值 + LinkLiveAccount real-only 校验 + marketplace 表+cache+leaderboard 过滤 + migration 276）。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -38,8 +38,8 @@
 | FIX-2026-08-28-MAGIC-ENRICHMENT（magic 列 `-` 三条断裂） | ✅done | 断裂 1: buildClosedTradeRecord 从 orders 表回查 magic + 断裂 2: proto OrderUpdateEvent 加 magic_number + 前端映射 + 断裂 3: DB 回填 252 条 trades。对抗证明 RED→restore→GREEN（断裂 1+2 各 2 测试）。门禁全过。审计补加断裂 2 对抗测试。已部署 2026-08-28（container healthy）。 |
 | FIX-2026-08-28-ORDER-LOG-COLUMNS-TYPE-MISMATCH | ✅done | Devin CLI 直接施工+验收 2026-08-28。scheduleLogColumns.tsx 4 列 render `typeof v === 'number'`→`v ? String(v) : '-'`（proto string/bigint vs number 类型不匹配）。tsc+build 全绿。已部署。 |
 
-- **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。TRUST-1 S1-S7 施工完成待 Devin CLI 独立复审。
-- **下一步**: Devin CLI 独立复审 TRUST-1（代码坐标 / 11 项对抗证明 / 门禁 / scope / Q1=A real-only 三层过滤 / migration 276 schema 兼容性），通过后闭环。
+- **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。TRUST-1 ✅done 待部署。
+- **下一步**: 部署 TRUST-1（docker compose build+up backend + migration 276）→ 实测 12 unknown 账户回填 + leaderboard real-only 过滤生效。S9 一次性回填脚本待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -63,7 +63,7 @@
 - **DATA-TRUTH-1** 🟦open — orders 表 reconciliation 只检测不收敛，ghost 仅 log.Warn（P0 数据，需架构决策）
 - **QUOTE-RECONNECT-LOOP** ✅done — 报价流自持重连循环修复（2026-08-27 Devin CLI 验收通过）
 - **BROKER-SEARCH-1** ✅done — mtapi host 配置接线（2026-08-27 Devin CLI 验收通过）
-- **TRUST-1** 🟦open — Demo/真实账户战绩混展无标注（S1-S7 施工完成 2026-08-28：adapter 读 broker Type + mdtick 加 AccountType 字段 + service 写 account_type + CreateAccount 传值 + LinkLiveAccount real-only 校验 + marketplace 表+cache+leaderboard 过滤 + migration 276，11 项对抗证明 RED→restore→GREEN，待独立复审）
+- **TRUST-1** ✅done — Demo/真实账户战绩混展无标注（Devin CLI 验收通过 2026-08-28：adapter 读 broker Type + mdtick 加 AccountType 字段 + service 写 account_type + CreateAccount 传值 + LinkLiveAccount real-only 校验 + marketplace 表+cache+leaderboard 过滤 + migration 276，11 项对抗证明 + 4 项独立重跑 RED→restore→GREEN）
 - **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
 - **VM-AUDIT-2026-08-27-1** ✅done — Python live 路径 SourceHash 验证（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-2** ✅done — runEvent fatalError 重置（Devin CLI 验收通过 2026-08-27）
@@ -90,6 +90,7 @@
 - 2026-08-28 **FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP ✅done**：Devin CLI 验收通过。`schedule_health_repo.go:136,172` 2 处 `FROM order_history`→`FROM trade_records`。4 项对抗证明独立重跑 RED→restore→GREEN。门禁全绿。
 - 2026-08-28 **FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE S1-S4 ✅done**（Devin CLI 验收通过 2026-08-28）：reconciliation 只检测不收敛（3 层根因：A ghost 仅 log.Warn / B orphan 仅修 SUBMITTED / C ant 全量 vs broker 24h 不对称 → 129 条假 orphan/账户/轮）。修复：S1 ant 查询加 24h 下界；S2 ghost 自动补写 `ImportBrokerOrder`；S3 新增 `MtHubService.ImportBrokerOrder`（`ON CONFLICT (mt_account_id, ticket) DO NOTHING` + 已平仓写入 `trade_records` 含 hash chain）+ `OmsWriter.Pool()` getter + `tradeRecordRepo` 字段 + `handlers_pipeline.go` 装配；S4 orphan 修复扩展到所有非终态（`isNonTerminalOMSState`）。对抗证明 5 测试 RED→restore→GREEN。门禁全绿。文件拆分 `service_orders_import.go`（保持 `service_orders.go` <300 行）。风险/gap：部署后需实测 warn 数 <5；S5 一次性回填脚本待编写。Devin CLI 验收通过 2026-08-28（A-F 全绿 + 4 项对抗证明独立重跑 + 机检五件套全绿）。
 - 2026-08-28 **FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION S1-S7 施工完成（🟦open）**：demo 账户（虚拟金）与真实金账户战绩混展无标注 → 信任护城河风险（AGENTS.md §1 "实盘战绩公开"）。根因 3 层：A `mt_accounts.account_type` 列无写入路径（12 账户全 'unknown'）；B broker `AccountSummary.Type` 字段被 adapter 丢弃；C marketplace 表无 account_type 列 + LinkLiveAccount 不校验 + leaderboard 不过滤。修复（Q1=A real-only / Q2=A broker RPC 权威）：S1 mt4+mt5 FetchAccountInfo+FetchBrokerInfo 读 `s.GetType()`（mt4 enum→`Mt4AccountTypeToString` / mt5 string→`NormalizeAccountType`，helper 放 mdtick 包）；S2 `MTAccountInfo`+`BrokerInfo` 加 `AccountType` 字段；S3 `AccountInfoUpdate` 加 `AccountType` + `UpdateAccountInfoTx`/`UpdateAccountInfo` SQL 写 `account_type` + 新增 `UpdateAccountType` 方法（不改 sqlc `UpdateAccountMetrics` 签名）+ `pipeline.go:282` OnBrokerInfo 调用；S4 `CreateAccount` 传 `info.AccountType`；S5 `LinkLiveAccount` real-only 校验；S6 migration 276（daily+summary 表加 `account_type` 列）+ `LivePerformanceCollector.cache` 扩展为 `livePerfCacheEntry{StrategyID,AccountType}` + `OnProfitUpdate` 跳过非 real + `UpsertDailyPerformance`/`recomputePerformanceSummary` 写 account_type + leaderboard `lps.account_type = 'real'` 过滤；S7 前端无改动（Q1=A）。对抗证明 11 测试 RED→restore→GREEN。门禁全绿。风险/gap：部署后需实测 12 unknown 账户回填；S9 一次性回填脚本待编写。停手等 Devin CLI 复审。勿部署。
+- 2026-08-28 **FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION Devin CLI 验收通过（✅done）**：独立复审 A-F 全绿。A 架构复用 mdtick helper + UpdateAccountType 不改 sqlc 签名。B 实现 Q1=A real-only 三层过滤。C 洁净 check-lines 0 errors/gofmt clean。D 正确性 11 测试 + 4 项独立重跑 RED→restore→GREEN（T1 删 helper→编译失败 / T4 删 SQL→FAIL / T5 删校验→FAIL / T6 删过滤→FAIL）。E 合规 AGENTS.md §1。F 文档同步。机检五件套全绿。风险/gap：部署后需实测 12 unknown 账户回填；S9 一次性回填脚本待编写。
 - 2026-08-28 **FIX-2026-08-28-ORDER-LOG-COLUMNS-TYPE-MISMATCH ✅done**（Devin CLI 直接施工+验收 2026-08-28）：策略调度日志页 Order Logs tab 4 列（手数/开仓价/平仓价/订单号）全部显示 `-`。根因：`scheduleLogColumns.tsx` `buildOrderColumns` 4 列 render 用 `typeof v === 'number'` 守卫，但 proto TS 类型 `lots/openPrice/closePrice: string` + `ticket: bigint` → ConnectRPC JSON 传 string → 守卫永远 false。修复：4 列改为 `v ? String(v) : '-'`。tsc+build 全绿。已部署。另：调查策略运行 898035e2 无信号——GetActiveStrategy RPC 诊断确认 evalCount=4060/tickCount=4054/barCount=6，策略正常 hold（MACD 无交叉），非系统 bug。
 - 2026-08-27 **VM round 4-5 + 报价管线 5 batch ✅done**：Devin CLI 验收通过。Batch 1-5 全部闭环（VM-COMPILER-SEMANTICS-4 / VM-CACHE-INTEGRITY-5 / VM-TRADE-CONTEXT-6 / VM-API-TRUTH-3 / QUOTE-RECONNECT-LOOP / BROKER-SEARCH-1 / VM-TEST-EVIDENCE-4）。详见 `docs/audits/handover-audit-plan.md`。
 - 2026-08-27 VM-AUDIT-2026-08-27 全 3 批 ✅done：Devin CLI 验收通过。8 个 ID（-1~-8）全部闭环。

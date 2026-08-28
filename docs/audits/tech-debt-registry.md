@@ -2461,3 +2461,27 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **门禁**：tsc + build 全绿。无 Go 代码变更（不涉及 go build/vet/test）。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-08-28）。已部署。
+
+---
+
+### TRUST-1 Devin CLI 验收通过（✅done 2026-08-28）
+
+**独立复审 A-F**：
+- **A 架构**：复用 mdtick helper（MT4/MT5 adapter 共用）+ UpdateAccountType 单独方法不改 sqlc UpdateAccountMetrics 签名 + LivePerformanceCollector cache 扩展复用现有 map 结构（string→livePerfCacheEntry）。无逆向依赖。
+- **B 实现**：Q1=A real-only 三层过滤（LinkLiveAccount 拒绝非 real + OnProfitUpdate 跳过非 real + leaderboard `lps.account_type = 'real'`）。UpdateAccountType 空值 fail-closed（不覆盖已知类型）。helper 归一化是最简方案。
+- **C 洁净**：check-lines 0 errors（55 warnings 均 pre-existing）/ gofmt clean / git diff --check clean / 无 TODO/死代码/调试残留。
+- **D 正确性**：11 测试全 GREEN + 4 项独立重跑 RED→restore→GREEN：
+  - T1 删 Mt4AccountTypeToString helper → 编译失败（最强证明）
+  - T4 删 UpdateAccountInfoTx SQL `account_type = $11` → FAIL
+  - T5 删 LinkLiveAccount real-only 校验块 → FAIL
+  - T6 删 leaderboard `lps.account_type = 'real'` 过滤 → FAIL
+  - nil 安全：UpdateAccountType 空值跳过；OnBrokerInfo `info.AccountType != ""` 守卫
+  - 无竞态：LivePerformanceCollector mu sync.RWMutex 保护 cache
+- **E 合规**：符合 AGENTS.md §1 "实盘战绩公开" + "服务器唯一真相"红线。broker RPC 权威（Q2=A）。
+- **F 文档**：registry TRUST-1 主条目状态更新 + STATE.md 4 处更新 + handover 变更日志追加。
+
+**机检五件套全绿**：build/vet/race×3（marketplace 1.09s）/check-lines 0 errors（55 warnings 均 pre-existing）/gofmt clean/git diff --check clean。
+
+**风险/gap**：部署后需实测 12 unknown 账户回填为 real/demo/contest（OnBrokerInfo 重连时自动写入）；S9 一次性回填脚本待编写。
+
+**状态**：✅done（Devin CLI 验收通过 2026-08-28）。待部署。
