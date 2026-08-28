@@ -72,7 +72,7 @@
 - **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S1** ✅done — `writeClosedTradeRecord` 补齐 Magic + ScheduleID（Devin CLI 验收通过 2026-08-27，4 项对抗证明独立重跑 RED→restore→GREEN）
 - **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S2** ✅done — `GetOrderHistory` 改查 `trade_records` + proto 加 `magic_number` + 前端加 Magic 列（Devin CLI 验收通过 2026-08-27，6 项对抗证明独立重跑 RED→restore→GREEN）
 - **FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S3** ✅done — 删除 5 个死代码方法（WriteClosedTrade/ClosedTradeParams/LogOrder/UpdateOrderHistoryClose×2/CreateOrderHistory）（Devin CLI 验收通过 2026-08-27，5 项对抗证明独立重跑 RED→restore→GREEN）
-- **FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP** 🟦open — schedule_health_repo.go:136,172 仍查死表 order_history（S3 验收发现，待施工）
+- **FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP** 🟦open — schedule_health_repo.go:136,172 仍查死表 order_history（S3 验收发现，待施工）。spec + 施工提示词已落档：`docs/spec/fix-2026-08-27-schedule-health-order-history-gap.md` + `docs/audits/builder-handoff-fix-2026-08-27-schedule-health-order-history-gap.md`
 
 ## 最近变更日志
 
