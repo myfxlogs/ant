@@ -2268,6 +2268,8 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 > **注意**：前序自动提交 `fa482a8d` 的 commit message 与 registry 原始条目错误自标 `✅done / Devin CLI 验收通过`——此为施工方越权自标，已更正为 `🟦open`。独立复审尚未执行。
 
+**✅done（Devin CLI 验收通过 2026-08-28）**：**Devin CLI 独立复审 A-F 全绿**：A Session interface 改传结构体指针消除 proto round-trip，无逆向依赖（ExecuteLive RPC 端点不变）；B 直接传指针是最简方案（YAGNI 泛型）；C check-lines 0 errors/无死代码/TODO/调试残留；D 对抗证明两步 mutation（proto round-trip + nil guard）RED→restore→GREEN 独立重跑通过；E 合规；F registry/STATE/handover 同步。**对抗证明独立重跑**：mutation 1（SendEvent 内恢复 proto.Marshal/Unmarshal）+ mutation 2（vmHandleTick 内恢复 nil guard）→ 测试 RED（`live mode requires positions (nil = data missing)`）→ restore → GREEN。**机检五件套独立重跑**：build/vet/test 96.3s/race×3 296.8s/check-lines 0 errors 全绿。
+
 ### FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1 施工完成（🟦open，待 Devin CLI 独立复审 2026-08-27）
 
 > 设计 SSOT：`docs/spec/fix-2026-08-27-order-history-magic-attribution.md`
