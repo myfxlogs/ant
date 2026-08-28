@@ -49,6 +49,7 @@ const StrategyScheduleLogs = {
       "ordersTable": {
         "closePrice": "平仓价",
         "lots": "手数(Lot)",
+        "magic": "Magic",
         "openPrice": "开仓价",
         "profit": "盈亏",
         "side": "方向",

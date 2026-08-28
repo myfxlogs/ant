@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import type { TFunction } from 'i18next';
 import type { ScheduleRunLog } from '@/gen/ant/v1/log_schedule_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
-import { ACTION_CLEANUP_KEY, ACTION_REGISTER_KEY, ACTION_RESTART_KEY, ACTION_START_KEY, ACTION_STOP_KEY, EXEC_STATUS_FAILED_KEY, EXEC_STATUS_PENDING_KEY, EXEC_STATUS_RUNNING_KEY, EXEC_STATUS_STOPPED_KEY, EXEC_STATUS_SUCCESS_KEY, EXEC_TABLE_ACTION_KEY, EXEC_TABLE_DURATION_MS_KEY, EXEC_TABLE_ERROR_KEY, EXEC_TABLE_EXECUTE_KEY, EXEC_TABLE_STATUS_KEY, EXEC_TABLE_TIME_KEY, ORDERS_TABLE_CLOSE_PRICE_KEY, ORDERS_TABLE_LOTS_KEY, ORDERS_TABLE_OPEN_PRICE_KEY, ORDERS_TABLE_PROFIT_KEY, ORDERS_TABLE_SIDE_KEY, ORDERS_TABLE_SYMBOL_KEY, ORDERS_TABLE_TICKET_KEY, ORDERS_TABLE_TIME_KEY, ORDER_SIDE_BUY_KEY, ORDER_SIDE_CLOSE_KEY, ORDER_SIDE_SELL_KEY, STATUS_FAILED_KEY, STATUS_SUCCESS_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
+import { ACTION_CLEANUP_KEY, ACTION_REGISTER_KEY, ACTION_RESTART_KEY, ACTION_START_KEY, ACTION_STOP_KEY, EXEC_STATUS_FAILED_KEY, EXEC_STATUS_PENDING_KEY, EXEC_STATUS_RUNNING_KEY, EXEC_STATUS_STOPPED_KEY, EXEC_STATUS_SUCCESS_KEY, EXEC_TABLE_ACTION_KEY, EXEC_TABLE_DURATION_MS_KEY, EXEC_TABLE_ERROR_KEY, EXEC_TABLE_EXECUTE_KEY, EXEC_TABLE_STATUS_KEY, EXEC_TABLE_TIME_KEY, ORDERS_TABLE_CLOSE_PRICE_KEY, ORDERS_TABLE_LOTS_KEY, ORDERS_TABLE_MAGIC_KEY, ORDERS_TABLE_OPEN_PRICE_KEY, ORDERS_TABLE_PROFIT_KEY, ORDERS_TABLE_SIDE_KEY, ORDERS_TABLE_SYMBOL_KEY, ORDERS_TABLE_TICKET_KEY, ORDERS_TABLE_TIME_KEY, ORDER_SIDE_BUY_KEY, ORDER_SIDE_CLOSE_KEY, ORDER_SIDE_SELL_KEY, STATUS_FAILED_KEY, STATUS_SUCCESS_KEY } from '@/gen/ant/v1/i18n/strategy_schedule_logs_keys';
 ;
 
 const { Text } = Typography;
@@ -113,6 +113,10 @@ export function buildOrderColumns({ t, formatTime }: ColOpts): ColumnsType<Order
       if (n > 0) return <Text style={{ color: '#00A651' }}>{n.toFixed(2)}</Text>;
       if (n < 0) return <Text type="danger">{n.toFixed(2)}</Text>;
       return <Text>{n.toFixed(2)}</Text>;
+    }},
+    { title: t(ORDERS_TABLE_MAGIC_KEY), dataIndex: 'magicNumber', key: 'magicNumber', width: 110, render: (v: unknown) => {
+      const n = typeof v === 'number' ? v : Number(v);
+      return n ? <Text type="secondary">{n}</Text> : <Text type="secondary">-</Text>;
     }},
     { title: t(ORDERS_TABLE_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 110, render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text> },
   ];

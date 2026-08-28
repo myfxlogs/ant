@@ -35,6 +35,7 @@ message ScheduleLogsI18n {
   string order_side_sell_stop_limit = 27;  // Sell stop limit
   string orders_table_close_price = 28;  // Close price
   string orders_table_lots = 29;  // Lots
+  string orders_table_magic = 51;  // Magic
   string orders_table_open_price = 30;  // Open price
   string orders_table_profit = 31;  // P/L
   string orders_table_side = 32;  // Side

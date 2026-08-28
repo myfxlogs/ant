@@ -44,21 +44,36 @@ func (r *LogRepository) UpdateOrderHistoryClose(ctx context.Context, userID, acc
 	return res.RowsAffected(), nil
 }
 
+// FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION (修复 A): GetOrderHistory
+// queries trade_records (the live write target) instead of the dead
+// order_history table. trade_records carries magic_number + schedule_id
+// (populated by writeClosedTradeRecord and SyncOrderHistory), so the
+// frontend Order Logs tab and Magic column render real data.
 func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.OrderHistory, int, error) {
 	baseQ, args, idx := buildOrderHistoryFilters(userID, params)
 	var total int
-	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil { return nil, 0, err }
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
 	page, pageSize := normalizeOpLogPagination(params)
-	dataQ := fmt.Sprintf(`SELECT * %s ORDER BY open_time DESC LIMIT $%d OFFSET $%d`, baseQ, idx, idx+1)
+	dataQ := fmt.Sprintf(`SELECT id, user_id, account_id, schedule_id, ticket, symbol, order_type, volume, open_price, close_price, profit, open_time, close_time, magic_number %s ORDER BY open_time DESC LIMIT $%d OFFSET $%d`, baseQ, idx, idx+1)
 	args = append(args, pageSize, (page-1)*pageSize)
 	rows, err := r.db.Query(ctx, dataQ, args...)
-	if err != nil { return nil, 0, err }
+	if err != nil {
+		return nil, 0, err
+	}
 	defer rows.Close()
 	var orders []*model.OrderHistory
 	for rows.Next() {
 		var o model.OrderHistory
-		if err := rows.Scan(&o.ID, &o.UserID, &o.AccountID, &o.Ticket, &o.OrderType, &o.Symbol, &o.Volume, &o.OpenPrice, &o.ClosePrice, &o.OpenTime, &o.CloseTime, &o.StopLoss, &o.TakeProfit, &o.Profit, &o.Commission, &o.Swap, &o.Comment, &o.MagicNumber, &o.IsAutoTrade, &o.ScheduleID, &o.CreatedAt); err != nil {
+		var closeTime time.Time
+		var scheduleID uuid.NullUUID
+		if err := rows.Scan(&o.ID, &o.UserID, &o.AccountID, &scheduleID, &o.Ticket, &o.Symbol, &o.OrderType, &o.Volume, &o.OpenPrice, &o.ClosePrice, &o.Profit, &o.OpenTime, &closeTime, &o.MagicNumber); err != nil {
 			return nil, 0, err
+		}
+		o.CloseTime = &closeTime
+		if scheduleID.Valid {
+			o.ScheduleID = scheduleID.UUID
 		}
 		orders = append(orders, &o)
 	}
@@ -66,11 +81,17 @@ func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, p
 }
 
 func buildOrderHistoryFilters(userID uuid.UUID, params *model.LogQueryParams) (baseQ string, args []interface{}, idx int) {
-	baseQ = `FROM order_history WHERE user_id = $1`
+	baseQ = `FROM trade_records WHERE user_id = $1`
 	args = []interface{}{userID}
 	idx = 2
-	if params == nil { return }
-	addFilter := func(col string, val interface{}) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
+	if params == nil {
+		return
+	}
+	addFilter := func(col string, val interface{}) {
+		baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx)
+		args = append(args, val)
+		idx++
+	}
 	if params.ScheduleID != "" {
 		if sid, err := uuid.Parse(params.ScheduleID); err == nil {
 			addFilter("schedule_id", sid)
@@ -81,9 +102,21 @@ func buildOrderHistoryFilters(userID uuid.UUID, params *model.LogQueryParams) (b
 			addFilter("account_id", aid)
 		}
 	}
-	if params.Symbol != "" { addFilter("symbol", params.Symbol) }
-	if params.Type != "" { addFilter("order_type", params.Type) }
-	if params.StartDate != "" { baseQ += fmt.Sprintf(` AND open_time >= $%d`, idx); args = append(args, params.StartDate); idx++ }
-	if params.EndDate != "" { baseQ += fmt.Sprintf(` AND open_time <= $%d`, idx); args = append(args, params.EndDate); idx++ }
+	if params.Symbol != "" {
+		addFilter("symbol", params.Symbol)
+	}
+	if params.Type != "" {
+		addFilter("order_type", params.Type)
+	}
+	if params.StartDate != "" {
+		baseQ += fmt.Sprintf(` AND open_time >= $%d`, idx)
+		args = append(args, params.StartDate)
+		idx++
+	}
+	if params.EndDate != "" {
+		baseQ += fmt.Sprintf(` AND open_time <= $%d`, idx)
+		args = append(args, params.EndDate)
+		idx++
+	}
 	return
 }

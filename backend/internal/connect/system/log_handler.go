@@ -52,17 +52,18 @@ func connectionLogToProto(l *model.AccountConnectionLog) *antv1.ConnectionLog {
 
 func orderHistoryToProto(o *model.OrderHistory) *antv1.OrderHistoryRecord {
 	r := &antv1.OrderHistoryRecord{
-		Id:         o.ID.String(),
-		AccountId:  o.AccountID.String(),
-		ScheduleId: o.ScheduleID.String(),
-		Ticket:     o.Ticket,
-		Symbol:     o.Symbol,
-		OrderType:  string(o.OrderType),
-		Lots:       o.Volume.String(),
-		OpenPrice:  o.OpenPrice.String(),
-		ClosePrice: o.ClosePrice.String(),
-		Profit:     o.Profit.String(),
-		OpenTime:   timestamppb.New(o.OpenTime),
+		Id:          o.ID.String(),
+		AccountId:   o.AccountID.String(),
+		ScheduleId:  o.ScheduleID.String(),
+		Ticket:      o.Ticket,
+		Symbol:      o.Symbol,
+		OrderType:   string(o.OrderType),
+		Lots:        o.Volume.String(),
+		OpenPrice:   o.OpenPrice.String(),
+		ClosePrice:  o.ClosePrice.String(),
+		Profit:      o.Profit.String(),
+		OpenTime:    timestamppb.New(o.OpenTime),
+		MagicNumber: o.MagicNumber,
 	}
 	if o.CloseTime != nil {
 		r.CloseTime = timestamppb.New(*o.CloseTime)

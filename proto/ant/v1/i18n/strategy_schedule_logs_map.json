@@ -34,6 +34,7 @@
     "order_side_sell_stop_limit": "orderSide.sellStopLimit",
     "orders_table_close_price": "ordersTable.closePrice",
     "orders_table_lots": "ordersTable.lots",
+    "orders_table_magic": "ordersTable.magic",
     "orders_table_open_price": "ordersTable.openPrice",
     "orders_table_profit": "ordersTable.profit",
     "orders_table_side": "ordersTable.side",

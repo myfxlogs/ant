@@ -49,6 +49,7 @@ const StrategyScheduleLogs = {
       "ordersTable": {
         "closePrice": "Close price",
         "lots": "Lots",
+        "magic": "Magic",
         "openPrice": "Open price",
         "profit": "P/L",
         "side": "Side",

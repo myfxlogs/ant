@@ -49,6 +49,7 @@ const StrategyScheduleLogs = {
       "ordersTable": {
         "closePrice": "Giá đóng",
         "lots": "Khối lượng (Lot)",
+        "magic": "Magic",
         "openPrice": "Giá mở",
         "profit": "Lãi/Lỗ",
         "side": "Hướng",

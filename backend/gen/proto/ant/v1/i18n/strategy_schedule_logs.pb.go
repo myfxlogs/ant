@@ -52,6 +52,7 @@ type ScheduleLogsI18N struct {
 	OrderSideSellStopLimit    string                 `protobuf:"bytes,27,opt,name=order_side_sell_stop_limit,json=orderSideSellStopLimit,proto3" json:"order_side_sell_stop_limit,omitempty"`        // Sell stop limit
 	OrdersTableClosePrice     string                 `protobuf:"bytes,28,opt,name=orders_table_close_price,json=ordersTableClosePrice,proto3" json:"orders_table_close_price,omitempty"`             // Close price
 	OrdersTableLots           string                 `protobuf:"bytes,29,opt,name=orders_table_lots,json=ordersTableLots,proto3" json:"orders_table_lots,omitempty"`                                 // Lots
+	OrdersTableMagic          string                 `protobuf:"bytes,51,opt,name=orders_table_magic,json=ordersTableMagic,proto3" json:"orders_table_magic,omitempty"`                              // Magic
 	OrdersTableOpenPrice      string                 `protobuf:"bytes,30,opt,name=orders_table_open_price,json=ordersTableOpenPrice,proto3" json:"orders_table_open_price,omitempty"`                // Open price
 	OrdersTableProfit         string                 `protobuf:"bytes,31,opt,name=orders_table_profit,json=ordersTableProfit,proto3" json:"orders_table_profit,omitempty"`                           // P/L
 	OrdersTableSide           string                 `protobuf:"bytes,32,opt,name=orders_table_side,json=ordersTableSide,proto3" json:"orders_table_side,omitempty"`                                 // Side
@@ -310,6 +311,13 @@ func (x *ScheduleLogsI18N) GetOrdersTableLots() string {
 	return ""
 }
 
+func (x *ScheduleLogsI18N) GetOrdersTableMagic() string {
+	if x != nil {
+		return x.OrdersTableMagic
+	}
+	return ""
+}
+
 func (x *ScheduleLogsI18N) GetOrdersTableOpenPrice() string {
 	if x != nil {
 		return x.OrdersTableOpenPrice
@@ -461,7 +469,7 @@ var File_i18n_strategy_schedule_logs_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_schedule_logs_proto_rawDesc = "" +
 	"\n" +
-	"!i18n/strategy_schedule_logs.proto\x12\vant.v1.i18n\"\xda\x11\n" +
+	"!i18n/strategy_schedule_logs.proto\x12\vant.v1.i18n\"\x88\x12\n" +
 	"\x10ScheduleLogsI18n\x12%\n" +
 	"\x0eaction_restart\x18\x01 \x01(\tR\ractionRestart\x12!\n" +
 	"\faction_start\x18\x02 \x01(\tR\vactionStart\x12\x1f\n" +
@@ -493,7 +501,8 @@ const file_i18n_strategy_schedule_logs_proto_rawDesc = "" +
 	"\x14order_side_sell_stop\x18\x1a \x01(\tR\x11orderSideSellStop\x12:\n" +
 	"\x1aorder_side_sell_stop_limit\x18\x1b \x01(\tR\x16orderSideSellStopLimit\x127\n" +
 	"\x18orders_table_close_price\x18\x1c \x01(\tR\x15ordersTableClosePrice\x12*\n" +
-	"\x11orders_table_lots\x18\x1d \x01(\tR\x0fordersTableLots\x125\n" +
+	"\x11orders_table_lots\x18\x1d \x01(\tR\x0fordersTableLots\x12,\n" +
+	"\x12orders_table_magic\x183 \x01(\tR\x10ordersTableMagic\x125\n" +
 	"\x17orders_table_open_price\x18\x1e \x01(\tR\x14ordersTableOpenPrice\x12.\n" +
 	"\x13orders_table_profit\x18\x1f \x01(\tR\x11ordersTableProfit\x12*\n" +
 	"\x11orders_table_side\x18  \x01(\tR\x0fordersTableSide\x12.\n" +

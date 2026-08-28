@@ -100,6 +100,9 @@ export const ORDERS_TABLE_CLOSE_PRICE_KEY = 'strategy.scheduleLogs.ordersTable.c
 /** ordersTable.lots */
 export const ORDERS_TABLE_LOTS_KEY = 'strategy.scheduleLogs.ordersTable.lots' as const;
 
+/** ordersTable.magic */
+export const ORDERS_TABLE_MAGIC_KEY = 'strategy.scheduleLogs.ordersTable.magic' as const;
+
 /** ordersTable.openPrice */
 export const ORDERS_TABLE_OPEN_PRICE_KEY = 'strategy.scheduleLogs.ordersTable.openPrice' as const;
 
@@ -197,6 +200,7 @@ export const STRATEGYSCHEDULELOGS_KEYS = {
   order_side_sell_stop_limit: 'strategy.scheduleLogs.orderSide.sellStopLimit',
   orders_table_close_price: 'strategy.scheduleLogs.ordersTable.closePrice',
   orders_table_lots: 'strategy.scheduleLogs.ordersTable.lots',
+  orders_table_magic: 'strategy.scheduleLogs.ordersTable.magic',
   orders_table_open_price: 'strategy.scheduleLogs.ordersTable.openPrice',
   orders_table_profit: 'strategy.scheduleLogs.ordersTable.profit',
   orders_table_side: 'strategy.scheduleLogs.ordersTable.side',

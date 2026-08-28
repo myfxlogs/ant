@@ -180,6 +180,7 @@ type OrderHistoryRecord struct {
 	Profit        string                 `protobuf:"bytes,9,opt,name=profit,proto3" json:"profit,omitempty"`
 	OpenTime      *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
 	CloseTime     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
+	MagicNumber   int64                  `protobuf:"varint,13,opt,name=magic_number,json=magicNumber,proto3" json:"magic_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -298,6 +299,13 @@ func (x *OrderHistoryRecord) GetCloseTime() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *OrderHistoryRecord) GetMagicNumber() int64 {
+	if x != nil {
+		return x.MagicNumber
+	}
+	return 0
+}
+
 var File_log_order_proto protoreflect.FileDescriptor
 
 const file_log_order_proto_rawDesc = "" +
@@ -316,7 +324,7 @@ const file_log_order_proto_rawDesc = "" +
 	"scheduleId\"f\n" +
 	"\x1aGetOrderLogHistoryResponse\x122\n" +
 	"\x06orders\x18\x01 \x03(\v2\x1a.ant.v1.OrderHistoryRecordR\x06orders\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"\x93\x03\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xb6\x03\n" +
 	"\x12OrderHistoryRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -336,7 +344,8 @@ const file_log_order_proto_rawDesc = "" +
 	"\topen_time\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\bopenTime\x129\n" +
 	"\n" +
-	"close_time\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcloseTimeB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"close_time\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcloseTime\x12!\n" +
+	"\fmagic_number\x18\r \x01(\x03R\vmagicNumberB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_log_order_proto_rawDescOnce sync.Once

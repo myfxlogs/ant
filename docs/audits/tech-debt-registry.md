@@ -183,6 +183,7 @@
 | VM-AUDIT-2026-08-27-7 | **recoverFromOutcomeUnknown 用 time.Sleep 不可取消（P2 架构，2026-08-27 全面 VM 审计）**：`mutation_recovery.go:47` `time.Sleep(conf.recoveryDelay)`（默认 10s）不可取消。session 关闭后 goroutine 仍 sleep 完整 10s，延迟资源释放。修复：改用 `select { case <-time.After(conf.recoveryDelay): case <-ctx.Done(): return }`，需传入 session context。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-7。**施工完成 2026-08-27**：S1 `recoverFromOutcomeUnknown` 函数签名加 `ctx context.Context` 首参，`time.Sleep` 改 `select { case <-time.After: case <-ctx.Done(): return }`；S2 `mutation_coordinator.go:200` 和 `:271` 两处 `go s.recoverFromOutcomeUnknown(...)` 调用加 `ctx` 首参（ctx 来自 `coordinateMutation` 的 session 级 runCtx，`SessionRegistry.Stop` 取消时中断）。同步更新 `live_diag_truth_test.go` 2 处旧调用加 `context.Background()`。对抗证明：T2 `TestRecoverFromOutcomeUnknown_CancelledByContext`（`vm_audit_2026_08_27_batch3_test.go`）— pre-cancelled ctx + 10s recoveryDelay → goroutine 应 <500ms 退出。突变：恢复 `time.Sleep` → goroutine 等 10s → 500ms 超时 → RED → 恢复 → GREEN。门禁全绿。**Devin CLI 验收通过 2026-08-27**：A-F 自审全绿，对抗证明独立验证 RED→restore→GREEN，race×3 两包通过。 | ✅done |
 | VM-AUDIT-2026-08-27-8 | **PositionCache.Subscribe goroutine 无 panic recovery（P2 架构，2026-08-27 全面 VM 审计）**：`position_cache.go:54-67` goroutine 无 `defer recover()`。如果 `c.put` panic（snap 字段 nil 等），整个进程崩溃。修复：goroutine 开头加 `defer func() { if r := recover(); r != nil { c.log.Error(...) } }()`。spec 见 `docs/spec/vm-audit-2026-08-27-spec.md` §3 VM-AUDIT-2026-08-27-8。**施工完成 2026-08-27**：S1 `position_cache.go:54` goroutine 在 `defer unsub()` 之后加 `defer func() { if r := recover(); r != nil { c.log.Error("PositionCache: subscribe goroutine panicked", zap.String("account", accountID), zap.Any("panic", r)) } }()`。对抗证明：T3 `TestPositionCache_SubscribePanicRecovery`（`vm_audit_2026_08_27_batch3_test.go`）— 创建 nil maps 的 PositionCache + real MtHubService，publish financials-authoritative snapshot → `c.put` 写 nil map → panic。突变：删除 `defer recover()` → goroutine panic 崩溃测试进程 → RED → 恢复 → goroutine recover 后退出，测试继续 → GREEN。门禁全绿。**Devin CLI 验收通过 2026-08-27**：A-F 自审全绿，对抗证明独立验证 RED→restore→GREEN，race×3 两包通过。 | ✅done |
 | FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S1 | **实时关闭订单写入 `trade_records` 时未设置 `MagicNumber` 和 `ScheduleID`（P1 数据归因，2026-08-27 实盘端到端验证）**：`writeClosedTradeRecord`（`pipeline_callbacks.go:118-150`）构造 `model.TradeRecord` 时遗漏 `MagicNumber`（→ `trade_records.magic_number=0`）和 `ScheduleID`（→ `schedule_id=NULL`），导致前端 Magic 列显示 `-`、策略订单无法归因到 schedule。`SyncOrderHistory` 路径（`mthub_service_orders.go:143` `orderRecordToTradeRecord`）已正确设置两字段——实时路径遗漏了对称接线。**S1 修复（修复 B）**：① `mdGatewayPipelineDeps` 加 `scheduleResolver mthub.ScheduleResolver` 字段（`pipeline.go:53`）；② `main.go:185` 注入 `scheduleResolver: repository.NewStrategyScheduleRepository(pool)`（镜像 `main.go:132` 已有 `accountSyncSvc.SetScheduleResolver` 接线）；③ `buildOnOrderUpdate` 加 `resolver mthub.ScheduleResolver` 参数（`pipeline_callbacks.go:27`）；④ 提取 `buildClosedTradeRecord` 纯函数（返回 `*model.TradeRecord`，nil = 不构造）从 `writeClosedTradeRecord` 分离构造与持久化，使归因逻辑可无 DB 对抗测试；⑤ `rec` 补齐 `MagicNumber: int(o.UpdateMagic)` + `ScheduleID: mthub.ResolveScheduleID(ctx, resolver, log, uid, o.UpdateMagic)`（镜像 `orderRecordToTradeRecord:161-162`）。hash chain 安全：`computeTradeEntryHash` 不含 magic_number/schedule_id，修复不破坏链。**对抗证明**：`pipeline_callbacks_test.go` 4 测试——`TestBuildClosedTradeRecordMagicAttribution`（magic=777 → MagicNumber=777 + ScheduleID=sid + resolver 调用 1 次）/ `TestBuildClosedTradeRecordManualOrderNoSchedule`（magic=0 → MagicNumber=0 + ScheduleID=nil + resolver 0 调用）/ `TestBuildClosedTradeRecordNilResolver`（nil resolver → MagicNumber 仍设 + ScheduleID=nil）/ `TestBuildClosedTradeRecordSkipsNonClose`（非 close/零 close_time/无效 ID → nil）。**RED**：删除 `MagicNumber:` + `ScheduleID:` 两行 → `TestBuildClosedTradeRecordMagicAttribution` RED（`MagicNumber: expected 777, got 0`）+ `TestBuildClosedTradeRecordNilResolver` RED（`MagicNumber: expected 42, got 0`）→ **restore → GREEN**。门禁全绿。**Devin CLI 验收通过 2026-08-27**：A-F 自审全绿（A 复用 mthub.ResolveScheduleID/NewStrategyScheduleRepository 既有接线，无逆向依赖；B 提取 buildClosedTradeRecord 纯函数是最简可测方案；C check-lines 0 errors/无死代码/TODO/调试残留；D 边界覆盖 magic=0/nil resolver/无效 ID/非 close；E 合规；F registry/STATE/handover 同步）。对抗证明独立重跑 RED→restore→GREEN 通过。race×3 通过。 | ✅done |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION-S2 | **前端"订单日志"tab 永远空 + Magic 列永远显示 `-`（P1 数据展示，2026-08-27 实盘端到端验证）**：`LogRepository.GetOrderHistory`（`order_history_repository.go:47-66`）查死表 `order_history`（`LogService.LogOrder` 全代码库无调用方 → 0 行），实际订单数据在 `trade_records`（331 行）。`OrderHistoryRecord` proto 无 `magic_number` 字段 → 前端无法渲染 Magic 列。**S2 修复（修复 A）**：① `log_order.proto` `OrderHistoryRecord` 加 `int64 magic_number = 13;`（field 13，紧接 close_time=11、schedule_id=12）；② `order_history_repository.go` `GetOrderHistory` 改查 `trade_records`：base query `FROM trade_records WHERE user_id = $1`，显式 SELECT 14 字段（id, user_id, account_id, schedule_id, ticket, symbol, order_type, volume, open_price, close_price, profit, open_time, close_time, magic_number），scan 适配 trade_records schema（close_time NOT NULL → `*time.Time`，schedule_id nullable → `uuid.NullUUID`）；③ `buildOrderHistoryFilters` base query 改 `FROM trade_records`；④ `log_handler.go` `orderHistoryToProto` 补 `MagicNumber: o.MagicNumber`；⑤ `scheduleLogColumns.tsx` `buildOrderColumns` 加 Magic 列（`ORDERS_TABLE_MAGIC_KEY` i18n，`render: n ? <Text>{n}</Text> : <Text>-</Text>`）；⑥ i18n `orders_table_magic` key 加到 proto + map.json + 5 textproto（en/zh-cn/zh-tw/ja/vi）。**对抗证明**：`order_history_repository_test.go` 3 测试 + `log_handler_test.go` 3 测试。**RED**：baseQ 改回 `FROM order_history` → `TestBuildOrderHistoryFiltersQueriesTradeRecords` RED（`base query must query trade_records, got: FROM order_history`）；删除 `MagicNumber: o.MagicNumber` → `TestOrderHistoryToProtoMagicNumber` RED（`MagicNumber: expected 777, got 0`）→ **restore → GREEN**。门禁全绿。 | 🟦open（S2 施工完成，待 Devin CLI 独立复审）|
 
 ## VM-AUDIT-2026-08-27：VM 管线全面审计（🟦open；2026-08-27 Devin CLI 独立审计方）
 
@@ -2310,3 +2311,65 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **diff 统计**：4 文件（3 修改 + 1 新建测试），+24/-7 代码 + 161 行测试。
 
 **状态**：`🟦open（S1 施工完成，待 Devin CLI 独立复审）`——施工方不得自标 ✅done。对抗证明 RED→restore→GREEN 闭环已执行 + 门禁全绿 + 代码坐标全匹配。停手等 Devin CLI 独立复审验收。勿部署。
+
+### FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S2 施工完成（🟦open，待 Devin CLI 独立复审 2026-08-27）
+
+> 设计 SSOT：`docs/spec/fix-2026-08-27-order-history-magic-attribution.md`
+> 施工提示词：`docs/audits/builder-handoff-fix-2026-08-27-order-history-magic-attribution.md`（S2 = 修复 A）
+> 基线 HEAD：`b3bb5e88`
+
+**根因**：`LogRepository.GetOrderHistory` 查死表 `order_history`（`LogService.LogOrder` 全代码库无调用方 → 0 行），实际订单数据在 `trade_records`（331 行）。`OrderHistoryRecord` proto 无 `magic_number` 字段 → 前端无法渲染 Magic 列。
+
+**S2 修复（修复 A）代码坐标**：
+
+### S2.1: Proto 变更
+1. `proto/ant/v1/log_order.proto:11` — `OrderHistoryRecord` 加 `int64 magic_number = 13;`（field 13，紧接 close_time=11、schedule_id=12）
+2. `proto/ant/v1/i18n/strategy_schedule_logs.proto:38` — 加 `string orders_table_magic = 51;`
+3. `proto/ant/v1/i18n/strategy_schedule_logs_map.json:37` — 加 `"orders_table_magic": "ordersTable.magic"`
+4. 5 textproto 文件（en/zh-cn/zh-tw/ja/vi）— 加 `orders_table_magic: 'Magic'`
+5. `buf generate` + `npx tsx scripts/i18n-build.ts` 重新生成 Go/TS proto + i18n keys + resources
+
+### S2.2: 后端查询改 trade_records
+6. `internal/repository/order_history_repository.go:47-77` — `GetOrderHistory` 改查 `trade_records`：显式 SELECT 14 字段（id, user_id, account_id, schedule_id, ticket, symbol, order_type, volume, open_price, close_price, profit, open_time, close_time, magic_number），scan 适配 trade_records schema（close_time NOT NULL → `var closeTime time.Time` + `o.CloseTime = &closeTime`；schedule_id nullable → `var scheduleID uuid.NullUUID` + `if scheduleID.Valid { o.ScheduleID = scheduleID.UUID }`）
+7. `internal/repository/order_history_repository.go:84` — `buildOrderHistoryFilters` base query 改 `FROM trade_records WHERE user_id = $1`
+8. `internal/connect/system/log_handler.go:65` — `orderHistoryToProto` 补 `MagicNumber: o.MagicNumber`
+
+### S2.3: 前端列定义
+9. `frontend/src/pages/strategy/scheduleLogColumns.tsx:7` — import 加 `ORDERS_TABLE_MAGIC_KEY`
+10. `frontend/src/pages/strategy/scheduleLogColumns.tsx:113-116` — `buildOrderColumns` 加 Magic 列（`title: t(ORDERS_TABLE_MAGIC_KEY), dataIndex: 'magicNumber', width: 110, render: n ? <Text type="secondary">{n}</Text> : <Text type="secondary">-</Text>`）
+
+**i18n-build 副作用处理**：`npx tsx scripts/i18n-build.ts` 重新生成时从 5 个 `base.ts` 文件删除了 53 行手动添加但未在 textproto 中定义的 diag keys（`orderTruth`/`vmOrdersTotal`/`brokerAccountOrders` 等，`DiagnosticsTab.tsx` 仍在使用）——已 `git checkout` 恢复 5 个 `base.ts`，仅保留 `strategy_schedule_logs.ts` 的 `magic` key 新增。
+
+**对抗证明（先红后绿）**：
+- 测试文件 1：`internal/repository/order_history_repository_test.go`（新建，3 测试）
+  - `TestBuildOrderHistoryFiltersQueriesTradeRecords`：断言 baseQ 含 `FROM trade_records` 且不含 `order_history`
+  - `TestBuildOrderHistoryFiltersScheduleID`：断言 schedule_id 过滤器 + args + idx
+  - `TestBuildOrderHistoryFiltersAllFilters`：断言全过滤器（schedule_id/account_id/symbol/order_type/start_date/end_date）
+- 测试文件 2：`internal/connect/system/log_handler_test.go`（新建，3 测试）
+  - `TestOrderHistoryToProtoMagicNumber`：magic=777 → proto MagicNumber=777
+  - `TestOrderHistoryToProtoMagicNumberZero`：magic=0 → proto MagicNumber=0（不掩盖）
+  - `TestOrderHistoryToProtoAllFields`：全字段映射验证（Id/AccountId/ScheduleId/Ticket/Symbol/OrderType/Lots/OpenPrice/ClosePrice/Profit/MagicNumber/OpenTime/CloseTime）
+- **RED**：baseQ 改回 `FROM order_history` → `TestBuildOrderHistoryFiltersQueriesTradeRecords` RED（`base query must query trade_records, got: FROM order_history`）；删除 `MagicNumber: o.MagicNumber` → `TestOrderHistoryToProtoMagicNumber` RED（`MagicNumber: expected 777, got 0`）
+- **GREEN**：恢复 → 全 6 测试 PASS
+
+**门禁**：
+- `go build ./...` ✓
+- `go vet ./internal/repository/... ./internal/connect/system/... ./cmd/server/...` ✓
+- `go test ./internal/repository/... ./internal/connect/system/... ./cmd/server/...` ✓
+- `go test -race -count=1 ./internal/repository/... ./cmd/server/...` ✓
+- `go run ./tools/check-file-lines --strict`：0 errors（55 warnings 均 pre-existing）
+- `npx tsc --noEmit` ✓（frontend）
+- `git diff --check` ✓ clean
+
+**REUSE 核对**：
+- `OrderHistoryRecord` proto message：REUSE（加字段，非新建）
+- `buildOrderHistoryFilters` 函数：REUSE（改 base query，非新建）
+- `orderHistoryToProto` 函数：REUSE（加 MagicNumber 字段映射，非新建）
+- `buildOrderColumns` 函数：REUSE（加列，非新建）
+- i18n `orders_table_magic` key：NEW（加到 proto + map.json + 5 textproto）
+- `order_history_repository_test.go`：NEW（3 对抗测试）
+- `log_handler_test.go`：NEW（3 对抗测试）
+
+**diff 统计**：28 文件（22 修改 + 2 新建测试 + 4 生成 proto/i18n），+119/-290 代码（含生成代码）。
+
+**状态**：`🟦open（S2 施工完成，待 Devin CLI 独立复审）`——施工方不得自标 ✅done。对抗证明 RED→restore→GREEN 闭环已执行 + 门禁全绿 + 代码坐标全匹配。停手等 Devin CLI 独立复审验收。勿部署。
