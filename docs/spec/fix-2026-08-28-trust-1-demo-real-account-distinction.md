@@ -89,46 +89,69 @@ broker 是 demo/real 的**权威数据源**，但数据在 adapter 层被丢弃�
 
 决策已由 Devin CLI 定稿（§2）。
 
-### 3.2 S1：adapter 层读取 broker Type 字段
+### 3.2 S1：adapter 层读取 broker Type 字段（FetchAccountInfo + FetchBrokerInfo）
 
-**文件**: `mt4/connection_account.go:48-58` + `mt5/connection_account.go:44-54`
+**文件**: `mt4/connection_account.go:48-58`（FetchAccountInfo）+ `mt5/connection_account.go:44-54`（FetchAccountInfo）+ `mt4/connection.go` FetchBrokerInfo + `mt5/connection.go:311-358` FetchBrokerInfo
+
+**审计 finding #3 修复**：`OnBrokerInfo` 回调（`pipeline.go:241`）调的是 `FetchBrokerInfo`（不是 `FetchAccountInfo`），用于连接/重连时更新 DB。`BrokerInfo` 也需要加 `AccountType` 字段，`FetchBrokerInfo` 也需要读 `s.GetType()`。否则重连时 account_type 不会更新。
 
 ```go
-// MT4: AccountSummary.Type 是 enum (Real=0/Contest=1/Demo=2)
+// MT4 FetchAccountInfo: AccountSummary.Type 是 enum (Real=0/Contest=1/Demo=2)
 s := resp.GetResult()
 return &mdtick.MTAccountInfo{
+    // ...existing fields...
+    AccountType: mt4AccountTypeToString(s.GetType()),  // NEW
+}, nil
+
+// MT4 FetchBrokerInfo: 同样读 s.GetType()
+s := resp.GetResult()
+return &mdtick.BrokerInfo{
     // ...existing fields...
     AccountType: mt4AccountTypeToString(s.GetType()),  // NEW
 }, nil
 ```
 
 ```go
-// MT5: AccountSummary.Type 是 string ("real"/"demo"/...)
+// MT5 FetchAccountInfo: AccountSummary.Type 是 string ("real"/"demo"/...)
 s := resp.GetResult()
 return &mdtick.MTAccountInfo{
     // ...existing fields...
     AccountType: normalizeAccountType(s.GetType()),  // NEW
 }, nil
+
+// MT5 FetchBrokerInfo: 同样读 s.GetType()
+s := resp.GetResult()
+return &mdtick.BrokerInfo{
+    // ...existing fields...
+    AccountType: normalizeAccountType(s.GetType()),  // NEW
+}, nil
 ```
 
-**新增 helper**:
+**新增 helper**（放 `mdtick/mdtick.go` 或 adapter 共用包）:
 - `mt4AccountTypeToString(pb.AccountType) string`——enum → "real"/"contest"/"demo"
 - `normalizeAccountType(string) string`——MT5 string 归一化为 "real"/"contest"/"demo"/"unknown"
 
-### 3.3 S2：MTAccountInfo 加 AccountType 字段
+### 3.3 S2：MTAccountInfo + BrokerInfo 加 AccountType 字段
 
-**文件**: `mdtick/mdtick.go:81-91`
+**文件**: `mdtick/mdtick.go:81-91`（MTAccountInfo）+ `mdtick/mdtick.go:40-57`（BrokerInfo）
 
 ```go
 type MTAccountInfo struct {
     // ...existing fields...
     AccountType string  // NEW: "real"/"contest"/"demo"/"unknown" from broker
 }
+
+type BrokerInfo struct {
+    // ...existing fields...
+    AccountType string  // NEW: "real"/"contest"/"demo"/"unknown" from broker
+}
 ```
 
-### 3.4 S3：AccountInfoUpdate 加 AccountType 字段 + UpdateAccountInfo 写入
+### 3.4 S3：AccountInfoUpdate 加 AccountType + 新增 UpdateAccountType 方法
 
-**文件**: `account_lifecycle.go:38-50` + `account_lifecycle.go:54-81`
+**文件**: `account_lifecycle.go:38-50`（AccountInfoUpdate）+ `account_lifecycle.go:54-81`（UpdateAccountInfoTx + UpdateAccountInfo）+ 新增 `UpdateAccountType` 方法 + `pipeline.go:275`（OnBrokerInfo 调用点）
+
+**审计 finding #3 修复**：`OnBrokerInfo`（`pipeline.go:275`）调的是 `UpdateAccountMetrics`（sqlc 生成，`accounts.sql.go:196`），改签名会破坏 sqlc 生成 + 2 个调用点（pipeline.go:186 OnAccountProfit + 275 OnBrokerInfo）。OnAccountProfit 路径不返回 AccountType。**更简方案**：不改 `UpdateAccountMetrics` 签名，新增 `UpdateAccountType(ctx, id, accountType) error` 方法，在 `OnBrokerInfo` 路径单独调用。
 
 ```go
 type AccountInfoUpdate struct {
@@ -145,6 +168,24 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, p AccountInfoU
         WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
     `, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.IsInvestor, p.AccountType)
     // ...
+}
+
+// 新增：OnBrokerInfo 路径单独更新 account_type（不改 UpdateAccountMetrics 签名）
+func (s *AccountService) UpdateAccountType(ctx context.Context, id, accountType string) error {
+    _, err := s.db.Exec(ctx,
+        `UPDATE mt_accounts SET account_type = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND deleted_at IS NULL`,
+        id, accountType)
+    return err
+}
+```
+
+**`pipeline.go:275` 调用点更新**（在 `UpdateAccountMetrics` 后加一行）：
+```go
+_ = accountSvc.UpdateAccountMetrics(mctx, uid, accountID,
+    info.Balance, info.Equity, info.Credit,
+    info.Margin, info.FreeMargin, info.MarginLevel)
+if info.AccountType != "" {
+    _ = accountSvc.UpdateAccountType(mctx, accountID, info.AccountType)  // NEW
 }
 ```
 

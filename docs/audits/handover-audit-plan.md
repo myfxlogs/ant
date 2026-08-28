@@ -22,6 +22,14 @@
 
 ## 变更日志
 
+- 2026-08-28 **DATA-TRUTH-1 + TRUST-1 施工提示词发出（🔄施工中）**：两份施工提示词落档：
+  - `docs/audits/builder-handoff-fix-2026-08-28-data-truth-1-reconciliation-convergence.md`（S1-S4 + T1-T4 对抗证明）
+  - `docs/audits/builder-handoff-fix-2026-08-28-trust-1-demo-real-account-distinction.md`（S1-S8 + T1-T7 对抗证明）
+  
+  **TRUST-1 spec 审计 finding #3（已修复）**：写施工提示词时发现 `OnBrokerInfo`（`pipeline.go:241`）调的是 `FetchBrokerInfo`（不是 `FetchAccountInfo`），`BrokerInfo` 也需加 `AccountType` 字段，`FetchBrokerInfo` 也需读 `s.GetType()`。spec S1/S2 已补充。同时发现 `UpdateAccountMetrics` 是 sqlc 生成，改签名会破坏 2 个调用点——改用新增 `UpdateAccountType` 方法（spec S3 已补充）。
+
+  STATE.md 施工表加 2 行 🔄施工中。待施工方落地后 Devin CLI 独立复审。
+
 - 2026-08-28 **DATA-TRUTH-1 + TRUST-1 设计方案定稿 + 审计通过（✅定稿，待施工）**：业主授权 Devin CLI"项目第一负责人，最高权限，业主必须遵守你的决策"。Devin CLI 直接决策 6 个问题并定稿两份 spec，随后对方案做独立审计。
 
   **DATA-TRUTH-1 决策**：Q1=A（orphan 比对加 24h 下界）/Q2=A（ghost 自动补写 OMS）/Q3=A（reconciliation 是修复器，符合 ADR-0013）。**审计事实核查 8 项全绿**：reconciliation.go:125/143-147/174-177/189-196 代码坐标精确、001_init.up.sql:109 orders.created_at 存在、004_trade_records.up.sql:17 close_time 存在、order_types.go:21 OrderRecord 完整字段、ADR-0013 §2.3 要求 INSERT。**审计 finding #1（已修复）**：OmsWriter.InsertOrder 用 ON CONFLICT (id) DO NOTHING（id=UUID，ticket 占位），不适用于 ghost 补写；spec §3.3 已补充 ImportBrokerOrder 必须用 ON CONFLICT (mt_account_id, ticket) DO NOTHING + 真实 broker ticket。
