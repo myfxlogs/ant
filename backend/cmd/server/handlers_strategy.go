@@ -73,87 +73,7 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	if d.strategyServer != nil {
 		d.strategyServer.SetSessionRegistry(reg)
 	}
-	srv.SetScheduleNameLookup(func(ctx context.Context, scheduleID uuid.UUID) string {
-		var name string
-		err := d.pool.QueryRow(ctx, `SELECT name FROM strategy_schedules WHERE id = $1`, scheduleID).Scan(&name)
-		if err != nil {
-			return ""
-		}
-		return name
-	})
-	srv.SetStrategyTemplateLookup(func(ctx context.Context, strategyID string) string {
-		var name string
-		err := d.pool.QueryRow(ctx, `SELECT name FROM strategy_templates WHERE id = $1::uuid`, strategyID).Scan(&name)
-		if err != nil {
-			return ""
-		}
-		return name
-	})
-	srv.SetBrokerCompanyLookup(func(ctx context.Context, accountID string) string {
-		var broker string
-		err := d.pool.QueryRow(ctx,
-			`SELECT COALESCE(broker_company,'') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&broker)
-		if err != nil {
-			return ""
-		}
-		return broker
-	})
-	// VM-TRADE-CONTEXT-6 S7: server-side account truth lookups.
-	srv.SetAccountLoginLookup(func(ctx context.Context, accountID string) (int64, error) {
-		var loginStr string
-		err := d.pool.QueryRow(ctx,
-			`SELECT login FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&loginStr)
-		if err != nil {
-			return 0, fmt.Errorf("login lookup: %w", err)
-		}
-		login, err := strconv.ParseInt(loginStr, 10, 64)
-		if err != nil {
-			return 0, fmt.Errorf("login lookup: parse %q: %w", loginStr, err)
-		}
-		return login, nil
-	})
-	srv.SetAccountIsDemoLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var accountType string
-		err := d.pool.QueryRow(ctx,
-			`SELECT COALESCE(account_type,'unknown') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&accountType)
-		if err != nil {
-			return false, fmt.Errorf("account_type lookup: %w", err)
-		}
-		return accountType == "demo" || accountType == "contest", nil
-	})
-	srv.SetAccountConnectedLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var status string
-		err := d.pool.QueryRow(ctx,
-			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&status)
-		if err != nil {
-			return false, fmt.Errorf("account_status lookup: %w", err)
-		}
-		return status == "connected" || status == "trade_allowed", nil
-	})
-	srv.SetAccountTradeAllowedLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var status string
-		err := d.pool.QueryRow(ctx,
-			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&status)
-		if err != nil {
-			return false, fmt.Errorf("account_status lookup: %w", err)
-		}
-		return status == "trade_allowed", nil
-	})
-	srv.SetAccountIsInvestorLookup(func(ctx context.Context, accountID string) (bool, error) {
-		var isInvestor bool
-		err := d.pool.QueryRow(ctx,
-			`SELECT COALESCE(is_investor, false) FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
-			accountID).Scan(&isInvestor)
-		if err != nil {
-			return false, fmt.Errorf("is_investor lookup: %w", err)
-		}
-		return isInvestor, nil
-	})
+	configureStrategyLookups(srv, d.pool)
 	srv.SetQuotaChecker(d.quotaChecker)
 	if d.boundSvc != nil {
 		srv.SetBoundSvc(d.boundSvc)
@@ -207,6 +127,92 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 	srv.SetCoverageChecker(d.mktplaceSvc)
 	srv.SetGateEvalRepo(gateEvalRepo)
 	return srv
+}
+
+// configureStrategyLookups wires all DB-backed lookup closures into the server.
+// Extracted from configureStrategyExecution to satisfy funlen (was 147 > 120).
+func configureStrategyLookups(srv *strategy.StrategyExecutionServer, pool *pgxpool.Pool) {
+	srv.SetScheduleNameLookup(func(ctx context.Context, scheduleID uuid.UUID) string {
+		var name string
+		err := pool.QueryRow(ctx, `SELECT name FROM strategy_schedules WHERE id = $1`, scheduleID).Scan(&name)
+		if err != nil {
+			return ""
+		}
+		return name
+	})
+	srv.SetStrategyTemplateLookup(func(ctx context.Context, strategyID string) string {
+		var name string
+		err := pool.QueryRow(ctx, `SELECT name FROM strategy_templates WHERE id = $1::uuid`, strategyID).Scan(&name)
+		if err != nil {
+			return ""
+		}
+		return name
+	})
+	srv.SetBrokerCompanyLookup(func(ctx context.Context, accountID string) string {
+		var broker string
+		err := pool.QueryRow(ctx,
+			`SELECT COALESCE(broker_company,'') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&broker)
+		if err != nil {
+			return ""
+		}
+		return broker
+	})
+	// VM-TRADE-CONTEXT-6 S7: server-side account truth lookups.
+	srv.SetAccountLoginLookup(func(ctx context.Context, accountID string) (int64, error) {
+		var loginStr string
+		err := pool.QueryRow(ctx,
+			`SELECT login FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&loginStr)
+		if err != nil {
+			return 0, fmt.Errorf("login lookup: %w", err)
+		}
+		login, err := strconv.ParseInt(loginStr, 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("login lookup: parse %q: %w", loginStr, err)
+		}
+		return login, nil
+	})
+	srv.SetAccountIsDemoLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var accountType string
+		err := pool.QueryRow(ctx,
+			`SELECT COALESCE(account_type,'unknown') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&accountType)
+		if err != nil {
+			return false, fmt.Errorf("account_type lookup: %w", err)
+		}
+		return accountType == "demo" || accountType == "contest", nil
+	})
+	srv.SetAccountConnectedLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var status string
+		err := pool.QueryRow(ctx,
+			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&status)
+		if err != nil {
+			return false, fmt.Errorf("account_status lookup: %w", err)
+		}
+		return status == "connected" || status == "trade_allowed", nil
+	})
+	srv.SetAccountTradeAllowedLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var status string
+		err := pool.QueryRow(ctx,
+			`SELECT account_status FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&status)
+		if err != nil {
+			return false, fmt.Errorf("account_status lookup: %w", err)
+		}
+		return status == "trade_allowed", nil
+	})
+	srv.SetAccountIsInvestorLookup(func(ctx context.Context, accountID string) (bool, error) {
+		var isInvestor bool
+		err := pool.QueryRow(ctx,
+			`SELECT COALESCE(is_investor, false) FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&isInvestor)
+		if err != nil {
+			return false, fmt.Errorf("is_investor lookup: %w", err)
+		}
+		return isInvestor, nil
+	})
 }
 
 func setupRiskGate(cfg *config.Config, jurisGate *risksvc.JurisdictionGate, capStore *risksvc.CapabilityStore) *risk.Gate {

@@ -203,25 +203,7 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 		}
 	}
 
-	for ticket, br := range brokerTickets {
-		if _, exists := antTickets[ticket]; !exists {
-			// Ghost order (broker has, ant missing): auto-import per ADR-0013 §2.3
-			// ("broker has, PG missing → INSERT"). Idempotent via ON CONFLICT DO NOTHING.
-			if r.svc != nil {
-				if err := r.svc.ImportBrokerOrder(ctx, accountID, br); err != nil {
-					r.log.Error("reconciliation: ghost import failed",
-						zap.String("accountID", accountID),
-						zap.Int64("ticket", ticket), zap.Error(err))
-				} else {
-					repaired++
-				}
-			}
-			r.log.Warn("reconciliation: ghost order (broker has, ant missing)",
-				zap.String("accountID", accountID),
-				zap.Int64("ticket", ticket))
-			ghosts++
-		}
-	}
+	r.importGhostOrders(ctx, accountID, brokerTickets, antTickets, &ghosts, &repaired)
 
 	if ghosts+orphans > 0 || repaired > 0 {
 		r.log.Info("reconciliation: account summary",
@@ -239,4 +221,35 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 	}
 
 	return nil
+}
+
+// importGhostOrders imports broker-side orders missing from ant (ghosts).
+// Extracted from reconcileAccount to reduce cognitive complexity.
+func (r *ReconciliationLoop) importGhostOrders(
+	ctx context.Context,
+	accountID string,
+	brokerTickets map[int64]*OrderRecord,
+	antTickets map[int64]string,
+	ghosts, repaired *int,
+) {
+	for ticket, br := range brokerTickets {
+		if _, exists := antTickets[ticket]; exists {
+			continue
+		}
+		// Ghost order (broker has, ant missing): auto-import per ADR-0013 §2.3
+		// ("broker has, PG missing → INSERT"). Idempotent via ON CONFLICT DO NOTHING.
+		if r.svc != nil {
+			if err := r.svc.ImportBrokerOrder(ctx, accountID, br); err != nil {
+				r.log.Error("reconciliation: ghost import failed",
+					zap.String("accountID", accountID),
+					zap.Int64("ticket", ticket), zap.Error(err))
+			} else {
+				*repaired++
+			}
+		}
+		r.log.Warn("reconciliation: ghost order (broker has, ant missing)",
+			zap.String("accountID", accountID),
+			zap.Int64("ticket", ticket))
+		*ghosts++
+	}
 }
