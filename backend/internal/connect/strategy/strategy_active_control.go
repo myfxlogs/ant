@@ -124,7 +124,7 @@ func (s *StrategyExecutionServer) StartStrategy(ctx context.Context, req *connec
 
 	runCtx, cancel := context.WithCancel(context.Background())
 	if s.sessionRegistry != nil && runID != uuid.Nil {
-		sess := s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, cancel)
+		sess := s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, cfg.StrategyID, cancel)
 		if sess != nil {
 			cfg.PreRegisteredSession = sess
 		}

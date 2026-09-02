@@ -60,7 +60,7 @@ func (e *ScheduleEngine) launchEventSession(ctx context.Context, schedule *model
 	// attribution is via Magic Numbers, not session exclusivity.
 	if e.runner != nil && e.runner.sessionRegistry != nil && cfg.RunID != uuid.Nil {
 		uid, _ := uuid.Parse(cfg.UserID)
-		sess := e.runner.sessionRegistry.Register(cfg.RunID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, schedule.ID, handle.cancel)
+		sess := e.runner.sessionRegistry.Register(cfg.RunID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, schedule.ID, cfg.StrategyID, handle.cancel)
 		if sess != nil {
 			cfg.PreRegisteredSession = sess
 		}

@@ -40,7 +40,7 @@ const Marketplace = {
       "upgradeHint": "A new version is available. Upgrade to get the latest improvements."
     },
     "purchases": {
-      "empty": "No purchases yet", "strategy": "Strategy", "date": "Purchased",
+      "empty": "No purchases yet", "strategy": "Strategy", "strategyDeleted": "Deleted Strategy", "date": "Purchased",
       "status": "Status", "actions": "Actions", "runBacktest": "Run Backtest",
       "refund": "Refund", "refundTitle": "Request Refund",
       "refundReasonPlaceholder": "Enter refund reason...",

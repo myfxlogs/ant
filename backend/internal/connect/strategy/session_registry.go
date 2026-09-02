@@ -27,6 +27,7 @@ type ActiveSession struct {
 	Timeframe    string
 	Mode         string
 	ScheduleID   uuid.UUID
+	StrategyID   string // strategy template ID for name lookup (temp runs)
 	MagicNumber  int32 // ARCH-4: deterministic magic for position attribution
 	StartedAt    time.Time
 	LastSignalAt time.Time
@@ -157,7 +158,7 @@ func (r *SessionRegistry) Watch() (<-chan struct{}, func()) {
 // ARCH-4: Multiple sessions per account are allowed — position attribution
 // is handled by Magic Numbers, not by session exclusivity.
 // Returns the created ActiveSession.
-func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID, symbol, timeframe, mode string, scheduleID uuid.UUID, cancel context.CancelFunc) *ActiveSession {
+func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID, symbol, timeframe, mode string, scheduleID uuid.UUID, strategyID string, cancel context.CancelFunc) *ActiveSession {
 	sess := &ActiveSession{
 		RunID:       runID,
 		UserID:      userID,
@@ -166,6 +167,7 @@ func (r *SessionRegistry) Register(runID uuid.UUID, userID uuid.UUID, accountID,
 		Timeframe:   timeframe,
 		Mode:        mode,
 		ScheduleID:  scheduleID,
+		StrategyID:  strategyID,
 		MagicNumber: strategyMagic(scheduleID),
 		StartedAt:   time.Now(),
 		cancel:      cancel,

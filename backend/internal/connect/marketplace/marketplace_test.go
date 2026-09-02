@@ -392,7 +392,7 @@ func TestMarketplace_ListSubscriptions(t *testing.T) {
 	t.Parallel()
 	svc := &stubMarketplaceSvc{
 		subs: []marketplace.SubscriptionItem{
-			{SubscriptionID: "sub-1", StrategyID: "s1", Active: true},
+			{SubscriptionID: "sub-1", StrategyID: "s1", StrategyTitle: "Golden Cross", Active: true},
 			{SubscriptionID: "sub-2", StrategyID: "s2", Active: false},
 		},
 	}
@@ -405,6 +405,9 @@ func TestMarketplace_ListSubscriptions(t *testing.T) {
 	}
 	if len(resp.Msg.Subscriptions) != 2 {
 		t.Fatalf("expected 2, got %d", len(resp.Msg.Subscriptions))
+	}
+	if resp.Msg.Subscriptions[0].StrategyTitle != "Golden Cross" {
+		t.Errorf("expected StrategyTitle 'Golden Cross', got %q", resp.Msg.Subscriptions[0].StrategyTitle)
 	}
 }
 

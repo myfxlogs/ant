@@ -80,6 +80,7 @@ const Marketplace = {
     "purchases": {
       "empty": "購入履歴なし",
       "strategy": "戦略",
+      "strategyDeleted": "削除された戦略",
       "date": "購入日",
       "status": "ステータス",
       "actions": "操作",

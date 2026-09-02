@@ -32,11 +32,12 @@ export default function PurchaseTab() {
   const columns: ColumnsType<PurchasedItem> = [
     {
       title: t('marketplace.purchases.strategy'),
-      dataIndex: 'strategyId', key: 'strategy',
-      render: (id: string, row: PurchasedItem) => {
-        const s = m.strategies.find(st => st.strategyId === row.strategyId);
-        return <Text>{s?.title || s?.strategyName || String(id).slice(0, 12)}</Text>;
-      },
+      dataIndex: 'strategyTitle', key: 'strategy',
+      render: (title: string) => (
+        <Text type={title ? undefined : 'secondary'}>
+          {title || t('marketplace.purchases.strategyDeleted', { defaultValue: 'Deleted Strategy' })}
+        </Text>
+      ),
     },
     {
       title: t('marketplace.purchases.date'),
@@ -70,8 +71,7 @@ export default function PurchaseTab() {
             {t('marketplace.purchases.runBacktest')}
           </Button>
           <Button size="small" icon={<RocketOutlined />} onClick={() => {
-            const s = m.strategies.find(s => s.strategyId === row.strategyId);
-            setDeployTarget({ id: row.strategyId, name: s?.title || s?.strategyName || row.strategyId.slice(0, 12) });
+            setDeployTarget({ id: row.strategyId, name: row.strategyTitle || t('marketplace.purchases.strategyDeleted', { defaultValue: 'Deleted Strategy' }) });
             setDeployOpen(true);
           }}>
             {t('strategy.templates.actions.deploy', { defaultValue: 'Deploy' })}

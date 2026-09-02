@@ -15,7 +15,7 @@ func (s *StrategyExecutionServer) registerLiveSession(cfg *LiveStrategyConfig, r
 	activeSess := cfg.PreRegisteredSession
 	uid, _ := uuid.Parse(cfg.UserID)
 	if activeSess == nil && s.sessionRegistry != nil {
-		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, runCancel)
+		activeSess = s.sessionRegistry.Register(runID, uid, cfg.AccountID, cfg.Symbol, cfg.Timeframe, cfg.Mode, cfg.ScheduleID, cfg.StrategyID, runCancel)
 		if activeSess == nil {
 			cleanupOrphan("session registration failed")
 			return nil

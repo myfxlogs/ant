@@ -80,6 +80,7 @@ const Marketplace = {
     "purchases": {
       "empty": "暂无购买",
       "strategy": "策略",
+      "strategyDeleted": "已删除策略",
       "date": "购买时间",
       "status": "状态",
       "actions": "操作",

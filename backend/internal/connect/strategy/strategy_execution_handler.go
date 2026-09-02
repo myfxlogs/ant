@@ -105,6 +105,10 @@ type StrategyExecutionServer struct {
 	// nil = strategy_name left empty (frontend falls back to runId).
 	scheduleNameLookup func(ctx context.Context, scheduleID uuid.UUID) string
 
+	// strategyTemplateLookup resolves strategy template ID → name for temp runs.
+	// nil = strategy_name left empty for runs without schedule_id.
+	strategyTemplateLookup func(ctx context.Context, strategyID string) string
+
 	// brokerCompanyLookup resolves accountID → mt_accounts.broker_company.
 	// Used by seedBarWindows to filter md_bars to the correct data source.
 	brokerCompanyLookup func(ctx context.Context, accountID string) string
@@ -182,6 +186,9 @@ func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, u
 func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCache = pc }
 func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Context, scheduleID uuid.UUID) string) {
 	s.scheduleNameLookup = f
+}
+func (s *StrategyExecutionServer) SetStrategyTemplateLookup(f func(ctx context.Context, strategyID string) string) {
+	s.strategyTemplateLookup = f
 }
 func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) string) {
 	s.brokerCompanyLookup = f

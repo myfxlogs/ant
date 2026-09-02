@@ -277,7 +277,7 @@ func (s *MarketplaceServer) ListSubscriptions(ctx context.Context, req *connect.
 	for _, sub := range list {
 		item := &antv1.SubscriptionItem{
 			SubscriptionId: sub.SubscriptionID, TargetUserId: sub.TargetUserID,
-			StrategyId: sub.StrategyID, Kind: sub.Kind,
+			StrategyId: sub.StrategyID, StrategyTitle: sub.StrategyTitle, Kind: sub.Kind,
 			Active: sub.Active, CreatedAt: timestamppb.New(sub.CreatedAt),
 		}
 		if sub.ExpiresAt != nil {

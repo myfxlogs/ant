@@ -236,6 +236,7 @@ message SubscriptionItem {
   bool active = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp expires_at = 7;  // null = permanent (one-time purchase)
+  string strategy_title = 8;  // denormalized strategy title for display
 }
 
 // --- Rating ---

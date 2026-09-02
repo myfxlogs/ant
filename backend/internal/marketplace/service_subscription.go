@@ -16,6 +16,7 @@ type SubscriptionItem struct {
 	SubscriptionID string
 	TargetUserID   string
 	StrategyID     string
+	StrategyTitle  string
 	Kind           string
 	Active         bool
 	CreatedAt      time.Time
@@ -150,10 +151,13 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	go s.notifySubExpiring(context.WithoutCancel(ctx), uid)
 
 	rows, err := s.pg.Query(ctx, `
-		SELECT id, target_user_id, target_strategy_id, kind, active, created_at, expires_at
-		FROM user_subscriptions
-		WHERE subscriber_user_id = $1 AND active = true
-		ORDER BY created_at DESC
+		SELECT us.id, us.target_user_id, us.target_strategy_id,
+		       COALESCE(st.name, ''),
+		       us.kind, us.active, us.created_at, us.expires_at
+		FROM user_subscriptions us
+		LEFT JOIN strategy_templates st ON st.id = us.target_strategy_id
+		WHERE us.subscriber_user_id = $1 AND us.active = true
+		ORDER BY us.created_at DESC
 	`, uid)
 	if err != nil {
 		return nil, err
@@ -162,7 +166,7 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	var out []SubscriptionItem
 	for rows.Next() {
 		var sub SubscriptionItem
-		if err := rows.Scan(&sub.SubscriptionID, &sub.TargetUserID, &sub.StrategyID, &sub.Kind, &sub.Active, &sub.CreatedAt, &sub.ExpiresAt); err != nil {
+		if err := rows.Scan(&sub.SubscriptionID, &sub.TargetUserID, &sub.StrategyID, &sub.StrategyTitle, &sub.Kind, &sub.Active, &sub.CreatedAt, &sub.ExpiresAt); err != nil {
 			return nil, err
 		}
 		out = append(out, sub)

@@ -80,6 +80,7 @@ const Marketplace = {
     "purchases": {
       "empty": "Chưa mua chiến lược nào",
       "strategy": "Chiến Lược",
+      "strategyDeleted": "Chiến Lược Đã Xóa",
       "date": "Ngày Mua",
       "status": "Trạng Thái",
       "actions": "Thao Tác",

@@ -22,6 +22,11 @@
 
 ## 变更日志
 
+- 2026-09-01 **FIX-2026-09-01-PURCHASES-STRATEGY-TITLE + FIX-2026-09-01-ORPHAN-RUN-STRATEGY-NAME ✅done**（Devin CLI 直接施工+验收 2026-09-01）：两个独立 UI 缺陷，均涉及策略名显示 UUID 而非人类可读名称。
+  - **PURCHASES-STRATEGY-TITLE**：市场"我的购买"页"策略"列显示 UUID + 行抖动。根因：`SubscriptionItem` proto 无 `strategy_title`，前端从 `m.strategies`（分页列表）`find` 标题找不到回退 UUID；`m.strategies` 每 30s refetch 触发重渲染。修复：proto 加 `strategy_title=8` + 后端 `ListSubscriptions` LEFT JOIN `strategy_templates` 取 `COALESCE(st.name,'')`（初版误 JOIN `marketplace_strategies`，该表为空，第二轮修正）+ 前端直接用 `row.strategyTitle` + 孤立订阅显示灰色"已删除策略"（5 语言 i18n）。已部署。
+  - **ORPHAN-RUN-STRATEGY-NAME**：策略页"临时运行"表格"策略"列显示 runId 前缀。根因：`ActiveSession` 无 `StrategyID` 字段，`enrichWithStrategyName` 仅查 `schedule_id`（temp run 无 schedule_id → name 空 → 前端回退 `shortId(runId)`）。修复：`ActiveSession` 加 `StrategyID` + `Register` 传参 + `enrichWithStrategyName` fallback 查 `strategy_templates.name` + `SetStrategyTemplateLookup` 装配。旧运行需重启生效。已部署。
+  - 机检：go build + go test（marketplace + strategy 96s）+ check-file-lines(0 errors) + tsc --noEmit 全绿。
+
 - 2026-08-28 **FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION S1-S7 施工完成（🟦open，待 Devin CLI 独立复审）**：施工提示词 `docs/audits/builder-handoff-fix-2026-08-28-trust-1-demo-real-account-distinction.md`，设计 SSOT `docs/spec/fix-2026-08-28-trust-1-demo-real-account-distinction.md`（Q1=A real-only / Q2=A broker RPC 权威 / Q3=A+B 重连自动+脚本加速）。demo 账户（虚拟金）与真实金账户战绩混展无标注 → 信任护城河风险。根因 3 层：A `mt_accounts.account_type` 列无写入路径（12 账户全 'unknown'）；B broker `AccountSummary.Type` 字段（MT4 enum Real=0/Contest=1/Demo=2，MT5 string "real"/"demo"）被 adapter 丢弃；C `marketplace_live_performance`+summary 表无 account_type 列，`LinkLiveAccount` 不校验，leaderboard 不过滤。修复：S1 mt4+mt5 FetchAccountInfo+FetchBrokerInfo 读 `s.GetType()`（helper `Mt4AccountTypeToString`/`NormalizeAccountType` 放 mdtick 包）；S2 `MTAccountInfo`+`BrokerInfo` 加 `AccountType` 字段；S3 `AccountInfoUpdate` 加 `AccountType` + `UpdateAccountInfoTx`/`UpdateAccountInfo` SQL 写 `account_type` + 新增 `UpdateAccountType` 方法（不改 sqlc `UpdateAccountMetrics` 签名）+ `pipeline.go:282` OnBrokerInfo 调用；S4 `CreateAccount` 传 `info.AccountType`；S5 `LinkLiveAccount` real-only 校验（Q1=A）；S6 migration 276（daily+summary 表加 `account_type` 列+索引）+ `LivePerformanceCollector.cache` 扩展为 `livePerfCacheEntry{StrategyID,AccountType}` + `loadCache` JOIN mt_accounts + `OnProfitUpdate` 跳过非 real + `UpsertDailyPerformance`/`recomputePerformanceSummary` 写 account_type + `leaderboard.go` `lps.account_type = 'real'` 过滤；S7 前端无改动（Q1=A）。对抗证明 11 测试 RED→restore→GREEN：T1 `TestMt4AccountTypeToString`、T2 `TestNormalizeAccountType`、T3 `TestMTAccountInfo_HasAccountTypeField`+`TestBrokerInfo_HasAccountTypeField`、T4 `TestUpdateAccountInfoTx_WritesAccountType`+`TestUpdateAccountType_MethodExists`+`TestAccountInfoUpdate_HasAccountTypeField`、T5 `TestLinkLiveAccount_RejectsDemo`、T6 `TestLeaderboard_FiltersRealOnly`、T7 `TestOnProfitUpdate_SkipsDemo`+`TestUpsertDailyPerformance_WritesAccountType`。门禁全绿：build/vet/race×3（-count=3 fresh）/check-file-lines 0 errors/`git diff --check` clean。风险/gap：部署后需实测 12 unknown 账户回填为 real/demo/contest；S9 一次性回填脚本待编写。详见 registry `TRUST-1` 节。停手等 Devin CLI 复审。勿部署。
 - 2026-08-28 **FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION Devin CLI 验收通过（✅done）**：独立复审 A-F 全绿。A 架构：复用 mdtick helper + UpdateAccountType 单独方法不改 sqlc 签名 + LivePerformanceCollector cache 扩展复用现有结构。B 实现：Q1=A real-only 三层过滤（LinkLiveAccount + OnProfitUpdate + leaderboard）。C 洁净：check-lines 0 errors / gofmt clean / git diff --check clean。D 正确性：11 测试全 GREEN + 4 项独立重跑 RED→restore→GREEN（T1 删 helper→编译失败 / T4 删 SQL account_type→FAIL / T5 删校验块→FAIL / T6 删 leaderboard 过滤→FAIL）。E 合规：符合 AGENTS.md §1 "实盘战绩公开" + "服务器唯一真相"。F 文档：registry + STATE + handover 同步。机检五件套全绿：build/vet/race×3（marketplace 1.09s）/check-lines 0 errors/gofmt clean/git diff --check clean。风险/gap：部署后需实测 12 unknown 账户回填；S9 一次性回填脚本待编写。registry TRUST-1 标记 ✅done。
 
@@ -529,3 +534,26 @@
 - migration 276 自动执行 ✅：`marketplace_live_performance` + `summary` 表加 `account_type VARCHAR(20) NOT NULL DEFAULT 'unknown'` + 索引
 - OnBrokerInfo 自动回填 ✅：60 秒内 14 账户从全 'unknown' 回填为 real=4 / demo=3 / contest=4 / unknown=3（11/14 已回填，3 unknown 可能是未连接账户）
 - leaderboard `lps.account_type = 'real'` 过滤已生效（代码已部署）
+
+## 2026-09-01 FIX-2026-09-01-PURCHASES-STRATEGY-TITLE ✅done
+
+**Devin CLI 直接施工+验收 2026-09-01**
+
+**症状**：市场"我的购买"页"策略"列显示 UUID 前缀 + 表格行上下抖动。
+
+**根因**：
+- `SubscriptionItem` proto 无 `strategy_title` 字段
+- 前端 `PurchaseTab.tsx` 从 `m.strategies`（市场列表分页数据，仅当前页 20 条）`find` 标题，找不到则回退 `String(id).slice(0,12)`（UUID 前缀）
+- `m.strategies` 通过 `useRpcQuery`（staleTime: 30s）每 30s refetch，新数组引用触发表重渲染，find 结果变化导致单元格内容变化 → 行抖动
+
+**修复**（6 文件 +36/-17）：
+- `proto/ant/v1/marketplace_service.proto`：`SubscriptionItem` 加 `string strategy_title = 8`
+- `backend/internal/marketplace/service_subscription.go`：`SubscriptionItem` struct 加 `StrategyTitle` + `ListSubscriptions` SQL LEFT JOIN `marketplace_strategies ms ON ms.strategy_id = us.target_strategy_id` 取 `COALESCE(ms.title,'')`
+- `backend/internal/connect/marketplace/marketplace_handler_subs.go`：handler 映射 `StrategyTitle: sub.StrategyTitle`
+- `frontend/src/pages/marketplace/components/PurchaseTab.tsx`：策略列 `dataIndex: 'strategyTitle'`，render 直接用 `row.strategyTitle`，deploy 按钮同理；移除 `m.strategies.find` 依赖
+- `buf generate` 重新生成 Go + TS proto 代码
+- `marketplace_test.go`：`TestMarketplace_ListSubscriptions` 加 `StrategyTitle: "Golden Cross"` stub + 断言
+
+**对抗证明**：handler 删 `StrategyTitle: sub.StrategyTitle` 映射 → 测试 RED（`expected StrategyTitle 'Golden Cross', got ""`）→ restore → GREEN。
+
+**机检**：go build ✅ / go test ✅ / check-file-lines 0 errors ✅ / tsc --noEmit ✅

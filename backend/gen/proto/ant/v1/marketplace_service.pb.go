@@ -1220,7 +1220,8 @@ type SubscriptionItem struct {
 	Kind           string                 `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
 	Active         bool                   `protobuf:"varint,5,opt,name=active,proto3" json:"active,omitempty"`
 	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	ExpiresAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"` // null = permanent (one-time purchase)
+	ExpiresAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`             // null = permanent (one-time purchase)
+	StrategyTitle  string                 `protobuf:"bytes,8,opt,name=strategy_title,json=strategyTitle,proto3" json:"strategy_title,omitempty"` // denormalized strategy title for display
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -1302,6 +1303,13 @@ func (x *SubscriptionItem) GetExpiresAt() *timestamppb.Timestamp {
 		return x.ExpiresAt
 	}
 	return nil
+}
+
+func (x *SubscriptionItem) GetStrategyTitle() string {
+	if x != nil {
+		return x.StrategyTitle
+	}
+	return ""
 }
 
 type RateStrategyRequest struct {
@@ -9525,7 +9533,7 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +
-	"\rsubscriptions\x18\x01 \x03(\v2\x18.ant.v1.SubscriptionItemR\rsubscriptions\"\xa4\x02\n" +
+	"\rsubscriptions\x18\x01 \x03(\v2\x18.ant.v1.SubscriptionItemR\rsubscriptions\"\xcb\x02\n" +
 	"\x10SubscriptionItem\x12'\n" +
 	"\x0fsubscription_id\x18\x01 \x01(\tR\x0esubscriptionId\x12$\n" +
 	"\x0etarget_user_id\x18\x02 \x01(\tR\ftargetUserId\x12\x1f\n" +
@@ -9536,7 +9544,8 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"g\n" +
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12%\n" +
+	"\x0estrategy_title\x18\b \x01(\tR\rstrategyTitle\"g\n" +
 	"\x13RateStrategyRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +

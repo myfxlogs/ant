@@ -181,19 +181,29 @@ func (s *StrategyExecutionServer) tickPriceFn() func(accountID, symbol string) (
 }
 
 // enrichWithStrategyName fills StrategyName on each ActiveStrategy proto by
-// looking up schedule_id → schedule name. nil lookup = no-op (name stays empty).
-func (s *StrategyExecutionServer) enrichWithStrategyName(ctx context.Context, pbs []*antv1.ActiveStrategy) {
-	if s.scheduleNameLookup == nil {
-		return
-	}
-	for _, pb := range pbs {
-		if pb.ScheduleId == "" {
+// looking up schedule_id → schedule name. For temp runs (no schedule_id),
+// falls back to strategy template ID → strategy_templates.name.
+// nil lookup = no-op (name stays empty).
+func (s *StrategyExecutionServer) enrichWithStrategyName(ctx context.Context, pbs []*antv1.ActiveStrategy, sessions []*ActiveSession) {
+	for i, pb := range pbs {
+		if pb.StrategyName != "" {
 			continue
 		}
-		scheduleID, err := uuid.Parse(pb.ScheduleId)
-		if err != nil {
-			continue
+		// Primary: schedule_id → strategy_schedules.name
+		if pb.ScheduleId != "" && s.scheduleNameLookup != nil {
+			scheduleID, err := uuid.Parse(pb.ScheduleId)
+			if err == nil {
+				if name := s.scheduleNameLookup(ctx, scheduleID); name != "" {
+					pb.StrategyName = name
+					continue
+				}
+			}
 		}
-		pb.StrategyName = s.scheduleNameLookup(ctx, scheduleID)
+		// Fallback: strategy template ID → strategy_templates.name (temp runs)
+		if i < len(sessions) && sessions[i] != nil && sessions[i].StrategyID != "" && s.strategyTemplateLookup != nil {
+			if name := s.strategyTemplateLookup(ctx, sessions[i].StrategyID); name != "" {
+				pb.StrategyName = name
+			}
+		}
 	}
 }

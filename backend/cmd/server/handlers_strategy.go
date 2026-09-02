@@ -81,6 +81,14 @@ func configureStrategyExecution(d strategyExecDeps) *strategy.StrategyExecutionS
 		}
 		return name
 	})
+	srv.SetStrategyTemplateLookup(func(ctx context.Context, strategyID string) string {
+		var name string
+		err := d.pool.QueryRow(ctx, `SELECT name FROM strategy_templates WHERE id = $1::uuid`, strategyID).Scan(&name)
+		if err != nil {
+			return ""
+		}
+		return name
+	})
 	srv.SetBrokerCompanyLookup(func(ctx context.Context, accountID string) string {
 		var broker string
 		err := d.pool.QueryRow(ctx,
