@@ -91,6 +91,15 @@ func TestUserMetricsFlusher_Lifecycle(t *testing.T) {
 		t.Fatal("flush did not happen within timeout")
 	}
 
+	// FlushedTotal is bumped after writeFn returns; allow a brief moment for
+	// the goroutine to execute the atomic add.
+	deadline := time.Now().Add(500 * time.Millisecond)
+	for time.Now().Before(deadline) {
+		if f.FlushedTotal() >= 1 {
+			break
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
 	if f.FlushedTotal() < 1 {
 		t.Fatal("FlushedTotal should be >= 1")
 	}
