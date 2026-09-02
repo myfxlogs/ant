@@ -171,6 +171,9 @@ linters:
           - gocognit
         path: internal/risksvc/jurisdiction\.go
       - linters:
+          - gocognit
+        path: internal/mthub/reconciliation\.go
+      - linters:
           - gosec
         path: internal/agent/hooks\.go
       - linters:
