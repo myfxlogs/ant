@@ -113,7 +113,7 @@ func (q *DailyQuotaChecker) CheckQuota(ctx context.Context, userID uuid.UUID) er
 	}
 	if tokens >= cfg.MaxTokensPerDay {
 		dailyQuotaRejected.WithLabelValues("tokens").Inc()
-		return fmt.Errorf("daily token quota exceeded (%d/%d tokens used today)", tokens, cfg.MaxTokensPerDay)
+		return fmt.Errorf("platform daily AI quota exceeded (%d/%d tokens used today) — 平台每日 AI 配额限制（非模型厂商限制），仅影响平台网关调用；使用自有 API Key 的调用不受此限，可由管理员调整 ai_daily_max_tokens", tokens, cfg.MaxTokensPerDay)
 	}
 	sessions, err := q.repo.DailySessionCount(ctx, userID)
 	if err != nil {
@@ -122,7 +122,7 @@ func (q *DailyQuotaChecker) CheckQuota(ctx context.Context, userID uuid.UUID) er
 	}
 	if sessions >= cfg.MaxSessionsPerDay {
 		dailyQuotaRejected.WithLabelValues("sessions").Inc()
-		return fmt.Errorf("daily session quota exceeded (%d/%d sessions used today)", sessions, cfg.MaxSessionsPerDay)
+		return fmt.Errorf("platform daily AI session quota exceeded (%d/%d sessions used today) — 平台每日会话数限制（非模型厂商限制）", sessions, cfg.MaxSessionsPerDay)
 	}
 	return nil
 }

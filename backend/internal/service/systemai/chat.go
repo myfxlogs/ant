@@ -202,16 +202,17 @@ func (s *Service) ChatCompletionWithUsage(
 	userID uuid.UUID,
 	messages []ChatMessage,
 ) (*ChatResult, error) {
-	// Pre-check wallet balance before making any API call.
-	if s.walletChecker != nil {
-		if _, err := s.walletChecker(ctx, userID); err != nil {
-			return nil, err
-		}
-	}
-
 	providers, err := s.resolveAllChatProviders(ctx, userID)
 	if err != nil {
 		return nil, err
+	}
+	// Platform quota/wallet gating applies ONLY to platform-paid (Gateway)
+	// calls — BYOK calls are paid by the user directly to the vendor and must
+	// not be rationed by platform quotas.
+	if systemPaidCall(providers) && s.walletChecker != nil {
+		if _, err := s.walletChecker(ctx, userID); err != nil {
+			return nil, err
+		}
 	}
 
 	var lastErr error
@@ -229,7 +230,7 @@ func (s *Service) ChatCompletionWithUsage(
 					inTokens, outTokens = estimateTokens(messages, result)
 				}
 				feature := aiFeatureFromCtx(ctx)
-				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
+				if billErr := s.postCallBiller(ctx, userID, p.providerID, p.model, feature, inTokens, outTokens, p.gateway); billErr != nil {
 					return nil, billErr
 				}
 			}

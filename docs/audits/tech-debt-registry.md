@@ -2639,3 +2639,30 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **验收标准**：`compile_interp` 新增用例——函数内动态数组声明/ArrayResize/索引读写，编译通过且 VM 执行结果与 MT4 语义一致；`compile MQL to IR: local arrays not supported` 不再出现。
 
 **关联**：聊天 Agent 已接入 `analyze_mql` 覆盖度分析工具（2026-09-08），盲区在该工具落地前由 Agent 桥接翻译兜底。
+
+---
+
+## FIX-2026-09-08-BYOK-QUOTA：平台每日配额误伤 BYOK 自有 Key 调用（✅done 2026-09-08）
+
+**业主报告**：`daily token quota exceeded (206382/200000 tokens used today)`——问"这是谁限制的？商汤没有这个限制"。
+
+**定位**：限制来自**平台自身** `DailyQuotaChecker`（每用户每日 200k tokens + 5 会话，env `AI_DAILY_MAX_TOKENS`，运行时可经 `agent_managed_settings.ai_daily_max_tokens/ai_daily_max_sessions` 调整），目的是保护平台成本（网关调用平台垫钱）。
+
+**根因（三层）**：
+- ①walletChecker 预检查在 provider 解析**之前**无条件执行——BYOK 调用（用户直付厂商、平台零成本）也被平台配额掐断。管制方与付款方错位（与审计 F1 同类）。
+- ②每日/每月配额统计（DailyTokenUsage/MonthlySummary）不区分 paid_by，BYOK 用量也在喂大平台配额计数。
+- ③PostCallBiller 把所有调用硬编码记为 `paid_by="system"`——BYOK 调用被错误归因（幸好 BYOK provider 无 ai_models 定价行 → cost=0，未实际扣钱包）。
+
+**修复**：
+- `chatProvider` 增加 `gateway bool` 标记（网关候选 true）；`systemPaidCall()` 判定（候选列表不会混装——网关仅在无自有 Key 时解析）。
+- `ChatCompletionWithUsage`/`chatCompletionStream`：provider 解析**之后**，仅 `systemPaidCall` 时执行 walletChecker（每日配额/订阅月度配额/钱包余额）与 max_tokens 按剩余额度封顶；BYOK 调用跳过全部平台门禁。
+- `PostCallBiller` 签名增加 `gateway bool`；billing 接线如实记 `paid_by`（网关=system，BYOK=user）——BYOK 用量仍记录用于分析，但不再计入平台成本、不再参与配额语义。
+- 配额错误文案归属平台：`platform daily AI quota exceeded … — 平台每日 AI 配额限制（非模型厂商限制），仅影响平台网关调用；使用自有 API Key 的调用不受此限，可由管理员调整 ai_daily_max_tokens`。
+
+**对抗证明**：集成测试 `chat_byok_quota_test.go`（双用例）——BYOK 用户（自有 Key + httptest 上游）配额检查器报错时调用**照常成功且检查器未被调用**；无自有 Key 用户走网关时配额检查器**必须执行**。mutation stash → 编译 RED → 恢复 GREEN。网关用例同时验证 Gateway provider+model 装配与失败转移解析。
+
+**门禁**：build/gofmt/vet/systemai race/check-lines 0 errors/integration 双用例 ✓；`internal/service` 仅 3 个既有 5432 环境失败。前端无改动。
+
+**风险/gap**：BYOK 候选全部失败转移到网关的罕见场景（自有 Key 存在但全挂 30s 熔断窗口内）不重新过配额——平台成本仍受全局 PlatformCostBreaker（$50/天）兜底；BYOK 调用不计入平台每日成本统计（设计如此，平台未为其付费）。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。

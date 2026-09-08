@@ -43,11 +43,19 @@ func wireAIBilling(
 		return remaining, nil
 	})
 
-	aiSvc.SetPostCallBiller(func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error {
+	aiSvc.SetPostCallBiller(func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int, gateway bool) error {
 		cost := computeTokenCost(gatewayModelRepo, providerID, modelName, inputTokens, outputTokens)
 		skipDeduction := monthlyTokenRemaining(quotaChecker, tokenUsageRepo, userID) != 0
 
-		if err := gatewayServer.RecordTokenUsage(ctx, userID, "system", providerID, modelName, feature, inputTokens, outputTokens, cost, skipDeduction); err != nil {
+		// Truthful attribution: BYOK calls are paid by the user directly to
+		// the vendor — the platform neither deducts wallet nor counts them
+		// toward platform cost.
+		paidBy := "user"
+		if gateway {
+			paidBy = "system"
+		}
+
+		if err := gatewayServer.RecordTokenUsage(ctx, userID, paidBy, providerID, modelName, feature, inputTokens, outputTokens, cost, skipDeduction); err != nil {
 			if strings.Contains(err.Error(), "insufficient balance") {
 				return systemai.ErrInsufficientBalance
 			}

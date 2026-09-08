@@ -44,40 +44,38 @@ func (s *Service) chatCompletionStream(
 	tools []ToolDefinition,
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
-	// Pre-check wallet balance and quota before making any API call.
-	// remainingTokens is used to cap max_tokens so the AI provider limits
-	// output generation to the user's remaining quota.
-	remainingTokens := -1
-	if s.walletChecker != nil {
-		rt, err := s.walletChecker(ctx, userID)
-		if err != nil {
-			return err
-		}
-		remainingTokens = rt
-	}
-
-	// Subtract session-in-flight tokens (from prior rounds in the same agent loop).
-	if sc := sessionCounterFromCtx(ctx); sc != nil && remainingTokens >= 0 {
-		used := sc.Total()
-		remainingTokens -= used
-		if remainingTokens < 0 {
-			remainingTokens = 0
-		}
-	}
-
-	// Block if no tokens remain and no wallet balance to fall back on.
-	if remainingTokens == 0 {
-		return ErrInsufficientBalance
-	}
-
+	// Resolve providers first: platform quota/wallet gating applies ONLY to
+	// platform-paid (Gateway) calls. BYOK calls are paid by the user directly
+	// to the vendor and must not be rationed by platform quotas.
 	providers, err := s.resolveAllChatProviders(ctx, userID)
 	if err != nil {
 		return err
 	}
+	remainingTokens := -1
+	if systemPaidCall(providers) && s.walletChecker != nil {
+		rt, werr := s.walletChecker(ctx, userID)
+		if werr != nil {
+			return werr
+		}
+		remainingTokens = rt
+		// Subtract session-in-flight tokens (from prior rounds in the same agent loop).
+		if sc := sessionCounterFromCtx(ctx); sc != nil && remainingTokens >= 0 {
+			used := sc.Total()
+			remainingTokens -= used
+			if remainingTokens < 0 {
+				remainingTokens = 0
+			}
+		}
+		// Block if no tokens remain and no wallet balance to fall back on.
+		if remainingTokens == 0 {
+			return ErrInsufficientBalance
+		}
+	}
 
 	var lastErr error
 	for _, p := range providers {
-		// Cap max_tokens to remaining quota so the provider limits output length.
+		// Cap max_tokens to remaining quota so the provider limits
+		// output length (gateway/system-paid calls only).
 		p.maxTokens = capMaxTokens(p.maxTokens, remainingTokens)
 		err := s.tryChatCompletionStream(ctx, p, messages, tools, onChunk)
 		if err == nil {
@@ -345,7 +343,7 @@ func (s *Service) billStreamPostCall(ctx context.Context, p chatProvider, usage 
 		}
 	}
 	feature := aiFeatureFromCtx(ctx)
-	if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
+	if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens, p.gateway); billErr != nil {
 		s.log.Error("chat stream billing failed",
 			zap.String("userID", p.userID.String()),
 			zap.String("provider", p.providerID),
@@ -403,7 +401,7 @@ func (s *Service) fallbackNonStream(ctx context.Context, p chatProvider, message
 			inTokens, outTokens = estimateTokens(messages, result)
 		}
 		feature := aiFeatureFromCtx(ctx)
-		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens); billErr != nil {
+		if billErr := s.postCallBiller(ctx, p.userID, p.providerID, p.model, feature, inTokens, outTokens, p.gateway); billErr != nil {
 			s.log.Error("FALLBACK BILLING FAILED — content delivered without payment",
 				zap.String("userID", p.userID.String()), zap.String("provider", p.providerID), zap.Error(billErr))
 		}

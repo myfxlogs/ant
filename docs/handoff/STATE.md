@@ -35,6 +35,7 @@
 | FIX-2026-09-08-RESILIENCE | ✅done | Devin CLI 直接施工+验收 2026-09-08。AI 聊天瞬时错误自愈：①修 isTransientChatErr 大小写 bug（"Client.Timeout" 不匹配小写 "timeout" → 超时从不重试）；②非流式超时 60s→150s；③瞬时错误统一退避重试 2 次（2s/6s，尊重 Retry-After≤15s），流式同策略（首字节前才重试）；④连带修复重试复用已消费 body bug；⑤流式 ResponseHeaderTimeout=120s；⑥报错带 [provider|model]+中文提示。429 配额类需厂商提额，重试不能根治。mutation 编译 RED + 行为测试全绿。 |
 | AI-SETTINGS-BYOK-2026-09-08-审计 | ✅done | Devin CLI 自审 2026-09-08（审计对象 888bbe7c..1bde4be6）。A-F 全查 + 机检独立重跑全绿。发现并当场修复 F1：下拉框对已有自有 Key 用户展示网关分组，但运行时仅无自有 Key 才走网关 → 选择被静默忽略；修复为有自有 Key 时隐藏网关分组（UI 对齐运行时）。遗留：工作台编译错误上下文设计（待讨论）、analyze_mql 工具接线、局部动态数组盲区、AIGatewayCard 语义、agent gofmt 债。 |
 | CHAT-CTX-2026-09-08 遗留清单执行 | ✅done | Devin CLI 按序执行 5 项：①工作台编译错误上下文——服务端现场编译注入「⚠编译失败+错误+优先修复」段（Conversate/ExecutePlan 双路径，修 ```go 旧围栏）；②聊天 Agent 接入 analyze_mql 覆盖度分析工具 + 5 语言提示词「盲区桥接」指引；③局部动态数组盲区立债 MQL-COMPILER-LOCAL-ARRAYS（🟦open）；④AIGatewayCard 网关模式加「自有 Key 优先」提示；⑤internal/agent 全包 gofmt 清零。 |
+| FIX-2026-09-08-BYOK-QUOTA | ✅done | Devin CLI 直接施工+验收 2026-09-08。业主报告 BYOK 调用被平台每日配额拦截（20 万 tokens，非商汤限制）。根因：walletChecker 预检查在 provider 解析前无条件执行 + 配额统计不分 paid_by + biller 硬编码 paid_by=system。修复：chatProvider 加 gateway 标记，配额/钱包门禁与 max_tokens 封顶仅作用于系统付费（网关）调用，BYOK 跳过；PostCallBiller 如实记 paid_by（BYOK=user）；配额错误文案归属平台。集成测试双用例（BYOK 跳过/网关必检）mutation RED→GREEN。 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
 - **下一步**: S9 一次性回填脚本待编写（3 unknown 账户可能需手动触发重连回填）。

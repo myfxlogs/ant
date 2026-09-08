@@ -59,7 +59,9 @@ func WrapAIError(err error) error {
 
 // PostCallBiller is called after a successful AI call (streaming or non-streaming).
 // If it returns an error, the result is discarded — ensuring users cannot use AI without paying.
-type PostCallBiller func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int) error
+// gateway reports whether the call ran on a platform-paid Gateway provider
+// (system billing) or on the user's own keyed provider (BYOK, paid by user).
+type PostCallBiller func(ctx context.Context, userID uuid.UUID, providerID, modelName, feature string, inputTokens, outputTokens int, gateway bool) error
 
 // CostBreakerChecker is checked before falling back to system-paid Gateway providers.
 // When tripped, BYO-key users continue to work; only system-paid fallback is blocked.

@@ -149,3 +149,11 @@
 ## 2026-09-08 遗留清单按序执行（5 项）
 
 ①工作台编译错误上下文：strategy_plan_context.go 服务端现场编译注入失败段（ Conversate/ExecutePlan）；②analyze_mql 工具 + mqlImportDirective 5 语言提示；③MQL-COMPILER-LOCAL-ARRAYS 立债；④AIGatewayCard 自有 Key 优先提示；⑤internal/agent gofmt 清零。明细见 registry。
+
+## 2026-09-08 FIX-2026-09-08-BYOK-QUOTA
+
+**会话**: Devin CLI 直接施工+验收。业主报告自有 Key 调用被平台每日配额（20 万 tokens）拦截。
+
+**根因**: 预检查在 provider 解析前无条件执行 + 配额统计不分 paid_by + biller 硬编码 paid_by=system。
+
+**修复**: chatProvider.gateway 标记 → 配额/钱包门禁与 max_tokens 封顶仅限系统付费调用；BYOK 跳过；PostCallBiller 如实记 paid_by；错误文案归属平台。集成测试双用例 mutation RED→GREEN。明细见 registry 同名条目。

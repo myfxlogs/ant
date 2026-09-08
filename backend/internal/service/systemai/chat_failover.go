@@ -267,6 +267,14 @@ type chatProvider struct {
 	secret      string
 	maxTokens   int     // from DB config; 0 = use default
 	temperature float64 // from DB config; <=0 resolved to defaultTemperature
+	gateway     bool    // true = platform-paid Gateway candidate (quota/wallet gating + system billing apply)
+}
+
+// systemPaidCall reports whether every candidate is platform-paid. Candidates
+// are never mixed (gateway providers are only resolved when the user has no
+// own keyed providers), so the first candidate decides.
+func systemPaidCall(providers []chatProvider) bool {
+	return len(providers) > 0 && providers[0].gateway
 }
 
 // defaultTemperature is the platform sampling temperature applied when the user
@@ -385,6 +393,7 @@ func (s *Service) resolveGatewayProviders(ctx context.Context, userID uuid.UUID,
 			userID: userID, providerID: sp.ProviderID,
 			model: m, baseURL: base, secret: pt,
 			temperature: defaultTemperature(0),
+			gateway:     true,
 		}
 		if sp.ProviderID == primaryPID {
 			out = append([]chatProvider{cp}, out...)
