@@ -179,3 +179,9 @@
 | FIX-2026-09-08-BYOK-MODEL-PICKER | ✅done | Devin CLI 直接施工+验收 2026-09-08。策略聊天模型下拉框选不到用户自有 BYOK 模型（xianhua.chan 报告）。3 层根因：A StrategyChat 只列系统模型；B ListSystemModels 返回 provider UUID 而运行时按字符串比较（下拉选择对运行时无效）；C base_url 含完整 endpoint 路径被拼双路径（sensenova 实锤日志）。修复：前端分组下拉（自有在前）+ 后端返回字符串 provider_id + normalizeAPIBase。3 项对抗证明 RED→GREEN。门禁全绿。 |
 | FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。①kimi-k3 聊天 400（temperature 只允许 1）：doChatRequest 硬编码 0.3 无视用户配置 → chatProvider 加 temperature（尊重配置，默认 0.3）+ 400 temperature 错误以 temperature=1 自愈重试一次；连带修复流式 fallbackNonStream(nil onChunk) nil panic + (nil,nil) 返回 defer 解引用。②工作区 tab 栏右侧新增常驻 AI 网关设置齿轮入口（无需先开 AI 面板）。对抗证明 RED→GREEN ×3（含真实 nil panic 复现）。门禁全绿。 |
 | FIX-2026-09-08-CURL-IMPORT | ✅done | Devin CLI 直接施工+验收 2026-09-08。BYOK 配置新增「粘贴厂商 curl 示例一键导入」：proto 加 ParseProviderCurl RPC（probe 家族，无持久化）+ 后端 shell 词法解析器（URL 剥后缀/Bearer+x-api-key key 占位符识别/body model 提取/NameHint）+ ConnectionForm 顶部导入框回填表单确认后走原保存路径，存储零改动。业主 NOVA 示例原样通过。对抗证明 RED→GREEN（后端编译 RED + 前端 mutation 2 用例）。门禁全绿。补记2：业主报 401——实测确认 Key 被商汤拒绝（非平台 bug，两种头格式均 401），建议重新生成；聊天报错带 [provider|model] 归因（原 [] 空括号）；解析器支持裸 Authorization Key。 |
+
+## 2026-09-08 FIX-2026-09-08-COMPILE-NOTIFY
+
+**会话**: 业主反馈工作台"编译失败"状态条不带原因。修复：失败态 notification 弹完整原因（仅跃迁弹一次）+ 状态条显示原因首行；AI chat 上下文由服务端编译注入（已上线）。
+
+**验证**: 组件测试 2 用例 mutation RED→GREEN；前端全量 199/199。明细见 registry 同名条目。

@@ -2715,3 +2715,25 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **遗留（更新）**：①工作台流程设计讨论（业主主持）；②analyze_mql 已接线——建议后续观察 Agent 实际调用质量；③MQL-COMPILER-LOCAL-ARRAYS 待排期；④purposes 机制未实现（归流程设计）；⑤既有 gofmt 不洁：internal/connect/ai 10 文件 + internal/ai 若干（pre-existing，与本次无关，建议独立 hygiene 批次）。
 
 **状态**：✅done（Devin CLI 自审 2026-09-08；附带修复随本审计提交，ai_conversation_repository.go 变更需部署 backend）。
+
+---
+
+## FIX-2026-09-08-COMPILE-NOTIFY：工作台编译失败原因醒目提示（✅done 2026-09-08）
+
+**业主反馈**：工作台代码审计状态条只显示"编译失败"文案（icon Tooltip 也仅同一文案）——失败原因（`CheckCode` 返回的 `compileError` 完整文本，含行号）被丢弃；建议改为弹窗等醒目方式展示，并"发给 AI chat 带上失败原因作为上下文"。
+
+**现状核实**：
+- 上下文部分**已覆盖**：今日 FIX-2026-09-08 遗留清单①已在服务端实现——工作台 AI chat 发送 `current_code`，Conversate/ExecutePlan 构建上下文时服务端现场编译并注入"⚠编译失败+错误+优先修复"段（同一编译器同一代码，错误一致）。
+- 前端缺口：状态条丢弃原因文本。本轮修复。
+
+**实现**（`CodeEditorArea.tsx`）：
+- 进入失败态时右下角 `notification.error` 弹窗（完整原因 + 指引文案"打开 AI 助手即可修复——失败原因会自动作为上下文发给 AI"），duration 8s；**仅在状态转入失败时弹一次**（`prevStatusRef` 防逐字编辑重复打扰），持续失败不重复弹。
+- 状态条错误分支：显示原因**首行**（截断 160 字符防溢出），icon 与文本 Tooltip 均为完整原因；恢复/警告/正常态展示不变。
+
+**对抗证明**：组件测试 `code-editor-compile-notify.test.tsx` 2 用例——失败时 notification 弹一次（message 归因 + description 携带原因）且状态条显示原因首行 + 编辑器诊断含原因；持续失败重查**不重复弹窗**。mutation stash 还原 → 2/2 RED → 恢复 2/2 GREEN。
+
+**门禁**：前端 tsc+vite build ✓ / vitest 全量 ✓。后端无改动。
+
+**风险/gap**：notification 为静态 API（仓库既有惯例，如 AIGatewayCard 的 message.success）；编辑期间仅状态条静默更新，弹窗只在状态跃迁时出现。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Button, Tag, Tooltip } from 'antd';
+import { Button, Tag, Tooltip, notification } from 'antd';
 import { ImportOutlined, RobotOutlined, HistoryOutlined, CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import StrategyCodeEditor, { type Diagnostic } from '@/components/strategy/StrategyCodeEditor';
@@ -41,32 +41,58 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [auditStatus, setAuditStatus] = useState<'idle' | 'checking' | 'ok' | 'warn' | 'error'>('idle');
   const [auditSummary, setAuditSummary] = useState<string>('');
+  const [compileError, setCompileError] = useState<string>('');
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastCheckedCode = useRef('');
+  const prevStatusRef = useRef<'idle' | 'checking' | 'ok' | 'warn' | 'error'>('idle');
 
   const runCheck = useCallback(async (sourceCode: string) => {
     if (!sourceCode.trim() || sourceCode.trim().length < 20) {
       setDiagnostics([]);
+      setCompileError('');
       setAuditStatus('idle');
+      prevStatusRef.current = 'idle';
       return;
     }
     setAuditStatus('checking');
     try {
       const resp = await strategyVersionApi.checkCode(sourceCode);
-      const diags = blindSpotsToDiagnostics(resp.blindSpots, resp.compileError || undefined);
+      const errText = resp.compileError || '';
+      const diags = blindSpotsToDiagnostics(resp.blindSpots, errText || undefined);
       setDiagnostics(diags);
+      setCompileError(errText);
+      let next: 'ok' | 'warn' | 'error';
       if (!resp.compileSuccess) {
-        setAuditStatus('error');
+        next = 'error';
         setAuditSummary(t(AUDIT_COMPILE_FAILED_KEY));
       } else if (resp.blindSpots.length > 0) {
-        setAuditStatus('warn');
+        next = 'warn';
         setAuditSummary(t(AUDIT_BLIND_SPOTS_KEY, { count: resp.blindSpots.length, percent: (resp.coverageScore * 100).toFixed(0) }));
       } else {
-        setAuditStatus('ok');
+        next = 'ok';
         setAuditSummary(t(AUDIT_ALL_CLEAR_KEY, { percent: (resp.coverageScore * 100).toFixed(0) }));
       }
+      setAuditStatus(next);
+      // 醒目提示只在「进入失败态」时弹一次——逐字编辑触发的重复检查不打扰。
+      if (next === 'error' && prevStatusRef.current !== 'error') {
+        notification.error({
+          message: t(AUDIT_COMPILE_FAILED_KEY),
+          description: (
+            <div>
+              <div style={{ whiteSpace: 'pre-wrap', maxHeight: 160, overflowY: 'auto' }}>{errText}</div>
+              <div style={{ marginTop: 6, color: 'var(--ant-color-text-secondary)' }}>
+                {t('ai.workspace.compileNotifyHint', { defaultValue: '打开 AI 助手即可修复——失败原因会自动作为上下文发给 AI。' })}
+              </div>
+            </div>
+          ),
+          placement: 'bottomRight',
+          duration: 8,
+        });
+      }
+      prevStatusRef.current = next;
     } catch {
       setAuditStatus('idle');
+      prevStatusRef.current = 'idle';
     }
   }, [t]);
 
@@ -106,12 +132,22 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
           style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
         />
         {auditStatus !== 'idle' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)', minWidth: 0 }}>
             {auditStatus === 'checking' && <Tag color="processing">{t(AUDIT_CHECKING_KEY)}</Tag>}
             {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: 'var(--color-success)' }} /></Tooltip>}
             {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: 'var(--color-warning)' }} /></Tooltip>}
-            {auditStatus === 'error' && <Tooltip title={auditSummary}><CloseCircleOutlined style={{ color: 'var(--color-danger)' }} /></Tooltip>}
-            {auditStatus !== 'checking' && <span>{auditSummary}</span>}
+            {auditStatus === 'error' && (
+              <Tooltip title={compileError || auditSummary}>
+                <CloseCircleOutlined style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
+              </Tooltip>
+            )}
+            {auditStatus === 'error' ? (
+              <Tooltip title={compileError || auditSummary}>
+                <span style={{ color: 'var(--color-danger)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {auditSummary}{compileError ? `：${compileError.split('\n')[0].slice(0, 160)}` : ''}
+                </span>
+              </Tooltip>
+            ) : auditStatus !== 'checking' && <span>{auditSummary}</span>}
           </div>
         )}
       </div>
