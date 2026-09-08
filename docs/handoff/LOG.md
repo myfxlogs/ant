@@ -129,3 +129,19 @@
 **核心**: 修 isTransientChatErr 大小写 bug（超时从不重试的真根因）+ 统一瞬时速错退避重试（2 次，2s/6s，Retry-After 优先）双路径 + 修 body 复用连带 bug + 报错归因与中文提示。
 
 **验证**: mutation 编译 RED + 行为测试全绿；race/check-lines 0 errors。明细见 registry 同名条目。
+
+## 2026-09-08 STATE.md 预算滚出（2026-08-28 长变更日志）
+
+
+
+## 2026-09-08 STATE.md 预算滚出（FIX-2026-08-27/28 施工表明细）
+
+| FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP | ✅done | Devin CLI 验收通过 2026-08-28（S10 对抗证明两步 mutation 独立重跑 RED→restore→GREEN） |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1（修复 B） | ✅done | Devin CLI 验收通过 2026-08-27（4 项对抗证明独立重跑 RED→restore→GREEN） |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S2（修复 A） | ✅done | Devin CLI 验收通过 2026-08-27（6 项对抗证明独立重跑 RED→restore→GREEN） |
+| FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S3（修复 C） | ✅done | Devin CLI 验收通过 2026-08-27（5 项对抗证明独立重跑 RED→restore→GREEN） |
+| FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP S1 | ✅done | Devin CLI 验收通过 2026-08-28（4 项对抗证明独立重跑 RED→restore→GREEN） |
+| FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE | ✅done | Devin CLI 验收通过 2026-08-28（4 项对抗证明独立重跑 RED→restore→GREEN + 机检五件套全绿） |
+| FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION | �open | 施工完成 2026-08-28，待 Devin CLI 独立复审（11 项对抗证明 RED→restore→GREEN + 机检五件套全绿） |
+| FIX-2026-08-28-MAGIC-ENRICHMENT（magic 列 `-` 三条断裂） | ✅done | 断裂 1: buildClosedTradeRecord 从 orders 表回查 magic + 断裂 2: proto OrderUpdateEvent 加 magic_number + 前端映射 + 断裂 3: DB 回填 252 条 trades。对抗证明 RED→restore→GREEN（断裂 1+2 各 2 测试）。门禁全过。审计补加断裂 2 对抗测试。已部署 2026-08-28（container healthy）。 |
+| FIX-2026-08-28-ORDER-LOG-COLUMNS-TYPE-MISMATCH | ✅done | Devin CLI 直接施工+验收 2026-08-28。scheduleLogColumns.tsx 4 列 render `typeof v === 'number'`→`v ? String(v) : '-'`（proto string/bigint vs number 类型不匹配）。tsc+build 全绿。已部署。 |

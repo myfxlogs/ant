@@ -102,9 +102,34 @@ describe('StrategyChat model picker BYOK options', () => {
 
     // selected value + dropdown option both render the own-model label
     expect((await screen.findAllByText('kimi-k3 (NOVA)')).length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('GLM-5.2 (zhipu)')).toBeTruthy()
-    expect(screen.getByText('我的 API Key')).toBeTruthy()
+    // runtime truth: with an own keyed provider present, gateway models are
+    // NOT offered (they would be silently ignored by the resolver)
+    expect(screen.queryByText('GLM-5.2 (zhipu)')).toBeNull()
+    expect(screen.queryByText('AI 网关')).toBeNull()
+  })
+
+  it('offers gateway models when the user has no own keyed provider', async () => {
+    listSystemAIConfigsMock.mockResolvedValue({
+      items: [
+        {
+          provider_id: 'zhipu', name: '智谱 GLM', base_url: '', organization: '',
+          models: [], default_model: '', temperature: 0, timeout_seconds: 0,
+          max_tokens: 0, purposes: [], primary_for: [], enabled: true,
+          has_secret: false, updated_at: '',
+        },
+      ],
+    })
+    getPrimaryMock.mockResolvedValue({ providerId: 'zhipu', model: 'glm-5.2' })
+    render(<StrategyChat onApplyCode={vi.fn()} />)
+
+    const combo = await screen.findByRole('combobox')
+    fireEvent.mouseDown(combo)
+    fireEvent.focus(combo)
+    await waitFor(() => expect(document.querySelector('.ant-select-dropdown')).toBeTruthy())
+
+    expect((await screen.findAllByText('GLM-5.2 (zhipu)')).length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('AI 网关')).toBeTruthy()
+    expect(screen.queryByText('我的 API Key')).toBeNull()
   })
 
   it('shows the saved primary (own provider string id) as the selected value', async () => {

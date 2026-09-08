@@ -2595,3 +2595,33 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：429 配额长期耗尽（单请求超 TPM）重试无效，必须厂商提额；150s 非流式等待对用户偏长但换来自愈率。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+---
+
+## AI-SETTINGS-BYOK-2026-09-08 自我审计（A–F，审计对象 888bbe7c..1bde4be6 共 6 commit）（✅done 2026-09-08）
+
+**审计范围**：AI 设置/BYOK 全部本轮实现——模型下拉框（888bbe7c）、temperature 自愈+设置入口（43f1e20a）、curl 一键导入（fc78f180）、has_saved_key 静默（702e68f5）、瞬时错误自愈（1bde4be6）。
+
+**A 架构 ✓**：解析/重试/路由在 systemai 服务层，connect handler 薄封装，前端仅表单回填与展示；复用 providerRepo.ListAll、secretbox 既有加密链路、AISettingsModal、既有 i18n key、限流/熔断；systemai 无逆向依赖 connect；前端改动限展示组件。
+
+**B 实现 ✓**：normalizeAPIBase 幂等最小；defaultTemperature 单点默认；重试退避表驱动可注入（测试缩短）。观察：chatHTTPTimeout/transientRetryBackoff 为包级 var，仅测试写入、生产只读，无竞态。
+
+**C 洁净 ✓**：gofmt/vet ✓、check-lines --strict 0 errors、diff 无 TODO/console.log/fmt.Println、诊断临时文件（zz_debug_test.go/tmp_diag）已删。既有遗留（非本次）：`internal/agent` 3 文件 gofmt 不洁（旧提交 830b2c79 遗留）→ 记独立卫生债。
+
+**D 正确性 ✓（发现 1 项并已当场修复）**：
+- **F1（已修）**：聊天模型下拉框对已有自有 Key 的用户展示网关分组，但运行时 `resolveAllChatProviders` 仅在自有候选为空时走网关 → BYOK 用户选网关模型被静默忽略（选择为假，显示与运行时脱节）。修复：有自有 Key 时隐藏网关分组（UI 对齐运行时语义）。mutation RED→GREEN（还原后用例失败：网关分组错误出现）。
+- FK `ai_models_provider_id_fkey` CASCADE → UUID→provider 字符串映射无孤儿空洞。
+- failoverErr.retryAfter 仅重试循环消费；temperature 重建有 tempRetried 防重入；attempt-- 有界。
+- 重试复用已消费 request body 的休眠 bug（被 case-bug 掩蔽）已修：每次尝试重建请求。
+- 并发：secretCache sync.Map；流式重试仅首字节前（无重复投递）；fallback 计费失败不触发重试（plain error 非 failoverErr）。
+- 已知外观项（不修）：存量 UUID primary 在下拉框显示原始字符串；own/gateway provider_id 命名空间重叠由 F1 隐藏策略规避。
+
+**E 合规 ✓**：curl 示例 body 的 encoding/json 解析属 constraints.md:41 豁免（第三方 API 协议约束）；ParseProviderCurl 纯解析无网络无落库、鉴权拦截器覆盖（实测未认证 401）、占位符 Key 不落盘（fail-closed）；base_url 保存路径仍走 ValidateBaseURL SSRF 校验，导入不绕过。
+
+**F 文档/状态同步 ✓**：registry 6 条目（BYOK-MODEL-PICKER/TEMP-RETRY/CURL-IMPORT+2 补记/RESILIENCE/本审计）、STATE 施工表+变更日志、LOG 纪要齐全。
+
+**机检独立重跑**：build ✓ / gofmt ✓ / vet ✓ / 全量 test ✓（仅 3 个既有 bound_account 5432 环境失败）/ systemai race×3 ✓ / check-lines --strict 0 errors ✓ / 前端 tsc+vite build ✓ / 前端 vitest 全量 ✓。部署运行时证据：容器 healthy、0 panic、401/429 均已服务器侧实测定位。
+
+**遗留清单**：①工作台编译错误策略→AI chat 上下文设计缺陷（业主指定另行讨论）；②聊天 Agent 缺 MQL 覆盖度分析工具接线（analyze_mql，待拍板）；③编译器盲区：局部动态数组（建议立技术债排期）；④AIGatewayCard 网关选择与 BYOK 共存语义（归流程设计讨论）；⑤internal/agent gofmt 既有不洁。
+
+**状态**：✅done（Devin CLI 自审 2026-09-08，F1 已修复部署）。

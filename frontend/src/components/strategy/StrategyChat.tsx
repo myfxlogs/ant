@@ -65,9 +65,12 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
       } catch {}
       const sys: ModelOption[] = [];
       try { const list = await aiGatewayApi.listSystemModels(); for (const m of list) sys.push({ value: `${m.providerId}|${m.modelName}`, label: `${m.displayName || m.modelName} (${m.providerId})` }); } catch {}
+      // Runtime truth (resolveAllChatProviders): gateway models only serve
+      // users with NO own keyed provider — mirror that here so a gateway
+      // selection can never be silently ignored.
       setModelOptions([
         ...(own.length > 0 ? [{ label: t(GATEWAY_USE_OWN_KEY_KEY, '我的 API Key'), options: own }] : []),
-        ...(sys.length > 0 ? [{ label: t(GATEWAY_USE_GATEWAY_KEY, 'AI 网关'), options: sys }] : []),
+        ...(own.length === 0 && sys.length > 0 ? [{ label: t(GATEWAY_USE_GATEWAY_KEY, 'AI 网关'), options: sys }] : []),
       ]);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only fetch | REF: rd.md#part-0.2-hooks-deps
