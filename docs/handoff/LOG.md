@@ -82,3 +82,11 @@
 - 2026-08-28 **FIX-2026-08-28-ORDER-LOG-COLUMNS-TYPE-MISMATCH ✅done**（Devin CLI 直接施工+验收 2026-08-28）：策略调度日志页 Order Logs tab 4 列（手数/开仓价/平仓价/订单号）全部显示 `-`。根因：`scheduleLogColumns.tsx` `buildOrderColumns` 4 列 render 用 `typeof v === 'number'` 守卫，但 proto TS 类型 `lots/openPrice/closePrice: string` + `ticket: bigint` → ConnectRPC JSON 传 string → 守卫永远 false。修复：4 列改为 `v ? String(v) : '-'`。tsc+build 全绿。已部署。另：调查策略运行 898035e2 无信号——GetActiveStrategy RPC 诊断确认 evalCount=4060/tickCount=4054/barCount=6，策略正常 hold（MACD 无交叉），非系统 bug。
 - 2026-08-27 **VM round 4-5 + 报价管线 5 batch ✅done**：Devin CLI 验收通过。Batch 1-5 全部闭环（VM-COMPILER-SEMANTICS-4 / VM-CACHE-INTEGRITY-5 / VM-TRADE-CONTEXT-6 / VM-API-TRUTH-3 / QUOTE-RECONNECT-LOOP / BROKER-SEARCH-1 / VM-TEST-EVIDENCE-4）。详见 `docs/audits/handover-audit-plan.md`。
 - 2026-08-27 VM-AUDIT-2026-08-27 全 3 批 ✅done：Devin CLI 验收通过。8 个 ID（-1~-8）全部闭环。
+
+## 2026-09-08 FIX-2026-09-08-TEMP-RETRY
+
+**会话**: Devin CLI 直接施工+验收。业主报告 2 项：①kimi-k3 聊天 400（temperature 只允许 1）；②AI 网关设置入口太深（须先开 AI 面板）。
+
+**修复**: ①聊天管线尊重用户配置 temperature（默认 0.3）+ 400 temperature 错误以 temperature=1 自愈重试一次；连带修复流式 fallback onChunk=nil panic + (nil,nil) defer 解引用两个既有雷。②工作区 tab 栏右侧常驻 AI 网关设置齿轮。
+
+**验证**: 对抗证明 3 项 RED→restore→GREEN（含真实 nil panic 复现）；机检全绿。明细见 `docs/audits/tech-debt-registry.md` 同名条目。

@@ -220,12 +220,30 @@ func chatEndpoint(providerID, baseURL string) string {
 
 // chatProvider holds resolved provider info for a single candidate.
 type chatProvider struct {
-	userID     uuid.UUID
-	providerID string
-	model      string
-	baseURL    string
-	secret     string
-	maxTokens  int // from DB config; 0 = use default
+	userID      uuid.UUID
+	providerID  string
+	model       string
+	baseURL     string
+	secret      string
+	maxTokens   int     // from DB config; 0 = use default
+	temperature float64 // from DB config; <=0 resolved to defaultTemperature
+}
+
+// defaultTemperature is the platform sampling temperature applied when the user
+// hasn't configured one (row value 0 = unset). Reasoning models that mandate
+// temperature=1 are handled by the tryChatCompletion 400-retry, not here.
+func defaultTemperature(t float64) float64 {
+	if t > 0 {
+		return t
+	}
+	return 0.3
+}
+
+// isTemperatureErrorBody reports whether an error body indicates the model
+// rejects the requested sampling temperature (e.g. "field Temperature invalid,
+// only 1 is allowed for this model" from kimi-k3/reasoning models).
+func isTemperatureErrorBody(body []byte) bool {
+	return strings.Contains(strings.ToLower(string(body)), "temperature")
 }
 
 // resolveAllChatProviders returns all enabled providers with valid secrets,
@@ -287,7 +305,7 @@ func (s *Service) resolveUserProviders(ctx context.Context, userID uuid.UUID, ro
 		cp := chatProvider{
 			userID: userID, providerID: row.ProviderID,
 			model: m, baseURL: base, secret: sec,
-			maxTokens: row.MaxTokens,
+			maxTokens: row.MaxTokens, temperature: defaultTemperature(row.Temperature),
 		}
 		seenPID[row.ProviderID] = true
 		if row.ProviderID == primaryPID {
@@ -326,6 +344,7 @@ func (s *Service) resolveGatewayProviders(ctx context.Context, userID uuid.UUID,
 		cp := chatProvider{
 			userID: userID, providerID: sp.ProviderID,
 			model: m, baseURL: base, secret: pt,
+			temperature: defaultTemperature(0),
 		}
 		if sp.ProviderID == primaryPID {
 			out = append([]chatProvider{cp}, out...)

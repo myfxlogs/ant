@@ -2512,3 +2512,35 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：存量用户 `users.ai_primary_provider_id` 里已存的 UUID 值不再匹配任何选项 → 下拉框显示 placeholder（非错误），用户重选一次即写入正确格式；部署后需实测 xianhua.chan 账号下拉框出现 "kimi-k3 (NOVA)" 且聊天走自有 key。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+---
+
+## FIX-2026-09-08-TEMP-RETRY：kimi-k3 temperature 400 + 工作区 AI 网关设置入口（✅done 2026-09-08）
+
+**症状**（业主报告 2 项）：
+1. 聊天报错 `[invalid_request_error] chat completion: status 400 (field Temperature invalid, only 1 is allowed for this model)`——用户的 kimi-k3（NOVA/sensenova）只允许 temperature=1。
+2. 模型配置（AI 网关设置）只有打开 AI 聊天面板后才能进入（聊天工具栏齿轮），业主要求在策略工作区 tab 栏常驻入口。
+
+**根因**：
+- **①a 配置值被无视**：`system_ai_configs.temperature`（该用户配了 0.2）从未被聊天管线使用，`doChatRequest` 硬编码 `Temperature: 0.3`。
+- **①b 无自愈**：推理模型（kimi-k3/o1 等）拒绝任何 temperature != 1，400 后现有重试循环原样重发同一请求，必然再次 400。
+- **①c 连带 nil panic 雷**：流式 400 → `doStreamHTTPRequest` 以 `fallbackNonStream(..., nil)` 调用（onChunk=nil）→ fallback 成功后 `onChunk(nil)` 调用 = nil panic；且 fallback 成功时返回 `(nil, nil)`，外层 `defer resp.Body.Close()` nil 解引用。此前该路径不可达（fallback 必 panic），temperature 修复会激活它，必须一并修。
+- **② 入口深**：AISettingsModal 只挂在 StrategyChat 工具栏齿轮上，须先开 AI 面板。
+
+**修复**：
+- `chat_failover.go`：`chatProvider` 加 `temperature` 字段；`resolveUserProviders` 用 `defaultTemperature(row.Temperature)`（0=未配置→平台默认 0.3）；`resolveGatewayProviders` 同默认；新增 `defaultTemperature`、`isTemperatureErrorBody` helper。
+- `chat.go`：`doChatRequest` 加 `temperature` 参数（omitempty，0=省略）；`tryChatCompletion` 遇 400 且 body 含 "temperature" 时以 temperature=1 重建请求自愈重试一次（`tempRetried` 防循环，不消耗原有 transient 重试预算）。
+- `chat_stream.go`：`doStreamHTTPRequest` 透传 onChunk（修 nil panic）+ 签名补参；`tryChatCompletionStream` 对 `(nil, nil)` 返回补守卫（fallback 已投递，直接返回）。流式 400 经 fallbackNonStream → tryChatCompletion 自动获得 temperature 自愈。
+- 前端 `WorkspaceCenterTabBar.tsx`：tab 栏最右侧新增常驻齿轮按钮（lazy AISettingsModal，复用 `PAGE_TITLE_KEY` i18n），code/chat tab 下均可见，不依赖 AI 面板开启。
+
+**对抗证明 RED→restore→GREEN**：
+- T1 `TestTryChatCompletionTemperatureRetry`（httptest：首次 400 temperature 错误，二次 200）— mutation（还原 chat.go/chat_stream.go）后 FAIL（failoverErr，请求体 0.3/无重试）→ 修复后 PASS（请求体 0.2→1，共 2 次请求）。
+- T2 `TestStreamFallbackDeliversChunk` — mutation 后 **真实 nil panic**（`fallbackNonStream` nil onChunk）→ 修复后 PASS（fallback chunk 正常投递）。
+- T3 `TestWorkspaceCenterTabBar`（前端 2 用例）— mutation（还原 tab 栏）后 2/2 RED → 修复后 2/2 GREEN（code tab 齿轮点击开弹窗 + chat tab 齿轮常驻）。
+- 附 `TestDefaultTemperature`、既有 endpoint/resolveModel 守卫全绿。
+
+**门禁**：build ✓ / gofmt clean ✓ / vet ✓ / systemai race×3 ✓ / check-lines --strict 0 errors ✓ / 前端 tsc+vite build ✓ / 前端 vitest 全量 ✓。
+
+**风险/gap**：temperature 自愈只处理 body 含 "temperature" 的 400；若厂商用其他措辞拒绝参数仍走 failover。流式路径先吃一次 400 再 fallback，首字延迟略增（仅对不支持 temperature 的模型发生）。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。

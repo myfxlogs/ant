@@ -94,9 +94,14 @@ func (s *Service) chatCompletionStream(
 }
 
 func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
-	resp, err := s.doStreamHTTPRequest(ctx, p, messages, tools)
+	resp, err := s.doStreamHTTPRequest(ctx, p, messages, tools, onChunk)
 	if err != nil {
 		return err
+	}
+	if resp == nil {
+		// (nil, nil) means the 400 fallback already delivered the full content
+		// via onChunk — nothing left to stream.
+		return nil
 	}
 	defer func() { _ = resp.Body.Close() }()
 
@@ -106,9 +111,9 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	return nil
 }
 
-func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (*http.Response, error) {
+func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) (*http.Response, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(ctx, p.model, messages, tools, true, endpoint, p.secret, p.maxTokens)
+	httpReq, err := doChatRequest(ctx, p.model, messages, tools, true, endpoint, p.secret, p.maxTokens, p.temperature)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +139,7 @@ func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messa
 		}
 		_ = resp.Body.Close()
 		if resp.StatusCode == 400 && !isAuthErrorBody(ae.Raw) {
-			return nil, s.fallbackNonStream(ctx, p, messages, tools, nil)
+			return nil, s.fallbackNonStream(ctx, p, messages, tools, onChunk)
 		}
 		if transient {
 			s.recordProviderFailure(ctx, p.userID, p.providerID)

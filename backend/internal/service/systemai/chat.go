@@ -136,8 +136,9 @@ const defaultMaxTokens = 32768 // was 8192; reasoning models need budget for thi
 
 // doChatRequest builds the HTTP request body and creates an authenticated request.
 // tools may be nil when the caller does not need tool calling.
-// maxTokens 0 means use defaultMaxTokens.
-func doChatRequest(ctx context.Context, model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int) (*http.Request, error) {
+// maxTokens 0 means use defaultMaxTokens. temperature <= 0 omits the field
+// (provider default); callers pass defaultTemperature(configured) normally.
+func doChatRequest(ctx context.Context, model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int, temperature float64) (*http.Request, error) {
 	if maxTokens <= 0 {
 		maxTokens = defaultMaxTokens
 	}
@@ -150,7 +151,7 @@ func doChatRequest(ctx context.Context, model string, messages []ChatMessage, to
 		Model:       model,
 		Messages:    messages,
 		MaxTokens:   maxTokens,
-		Temperature: 0.3,
+		Temperature: temperature,
 		Stream:      stream,
 		Tools:       tools,
 	}
@@ -247,13 +248,14 @@ func (s *Service) ChatCompletionWithUsage(
 // (429/5xx) before giving up — so a single-provider user isn't immediately failed.
 func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (string, []ToolCall, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens)
+	httpReq, err := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, p.temperature)
 	if err != nil {
 		return "", nil, nil, err
 	}
 	client := &http.Client{Timeout: chatTimeout}
 
 	const maxAttempts = 2
+	tempRetried := false
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
 			time.Sleep(time.Duration(attempt) * time.Second)
@@ -273,6 +275,19 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 
 		if resp.StatusCode == http.StatusOK {
 			return s.parseChatResponse(ctx, p, bodyBytes)
+		}
+
+		// Reasoning models (kimi-k3, o1, …) reject any temperature != 1 with a
+		// 400 invalid_request_error. Rebuild once with the mandated value
+		// instead of failing the provider over.
+		if resp.StatusCode == http.StatusBadRequest && !tempRetried && isTemperatureErrorBody(bodyBytes) {
+			tempRetried = true
+			attempt-- // rebuild-and-retry immediately on the same attempt budget
+			httpReq, err = doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, 1)
+			if err != nil {
+				return "", nil, nil, err
+			}
+			continue
 		}
 
 		if ret := s.handleChatHTTPError(ctx, p, resp, bodyBytes, attempt, maxAttempts); ret != nil {

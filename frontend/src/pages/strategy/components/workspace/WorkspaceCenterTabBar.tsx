@@ -1,5 +1,6 @@
+import { lazy, Suspense, useState } from 'react';
 import { Button, Tooltip, Modal } from 'antd';
-import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, SaveOutlined, CopyOutlined, QuestionCircleOutlined, RobotOutlined, HistoryOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
   SEND_TO_AI_KEY, BROWSE_INDICATORS_KEY,
@@ -9,8 +10,11 @@ import {
   SIDEBAR_NEW_STRATEGY_KEY,
 } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import { COMMON_UNSAVED_KEY, COMMON_SAVED_KEY, COMMON_SAVE_KEY, STRATEGY_VERSION_HISTORY_KEY } from '@/gen/ant/v1/i18n/base_keys';
+import { PAGE_TITLE_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
 import { type CenterTab } from '@/stores/workspaceStore';
 import type { WsCode, WsAccount, WsTemplates } from '../../WorkspaceContext';
+
+const AISettingsModal = lazy(() => import('./AISettingsModal'));
 
 interface Props {
   isMobile?: boolean;
@@ -42,6 +46,7 @@ export default function WorkspaceCenterTabBar({
   templates,
 }: Props) {
   const { t } = useTranslation();
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
 
   const CTABS: { key: CenterTab; icon: string; label: string }[] = isMobile
     ? [
@@ -144,6 +149,15 @@ export default function WorkspaceCenterTabBar({
           )}
         </div>
       )}
+      {/* AI gateway settings — always reachable, no need to open the AI chat first */}
+      <Tooltip title={t(PAGE_TITLE_KEY, 'AI Settings')} placement="bottomRight">
+        <Button size="small" type="text" icon={<SettingOutlined />}
+          onClick={() => setAiSettingsOpen(true)}
+          style={{ marginRight: 8 }} />
+      </Tooltip>
+      <Suspense fallback={null}>
+        {aiSettingsOpen && <AISettingsModal open={aiSettingsOpen} onClose={() => setAiSettingsOpen(false)} />}
+      </Suspense>
     </div>
   );
 }
