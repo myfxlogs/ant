@@ -185,3 +185,11 @@
 **会话**: 业主反馈工作台"编译失败"状态条不带原因。修复：失败态 notification 弹完整原因（仅跃迁弹一次）+ 状态条显示原因首行；AI chat 上下文由服务端编译注入（已上线）。
 
 **验证**: 组件测试 2 用例 mutation RED→GREEN；前端全量 199/199。明细见 registry 同名条目。
+
+## 2026-09-08 WORKSPACE-IA 新建策略分区
+
+**会话**: 业主指令：新建策略与我的策略/回测历史同级成区（含 AI 生成/导入 MQL/从模板三来源），取消底部按钮区。
+
+**实现**: WorkspaceSidebar 分区化 + runNewSource 选中即收起；CenterColumn 补 onNewAI/onFirstTemplate 回调；MobileSidebarDrawer 透传；折叠态保留 plus 图标兜底。
+
+**验证**: 组件测试 2 用例 mutation RED→GREEN；前端全量门禁绿。明细见 registry（补记于 COMPILE-NOTIFY 条目后）。

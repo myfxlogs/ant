@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react';
 import { Button } from 'antd';
-import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined } from '@ant-design/icons';
+import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import SidebarStrategyList from './SidebarStrategyList';
 import SidebarRunList from './SidebarRunList';
+
+import { IMPORT_MQL_KEY, AI_GENERATE_KEY, USE_TEMPLATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface StrategyItem {
   id: string;
@@ -36,6 +38,8 @@ interface Props {
   onRenameRun?: (runId: string, name: string) => void;
   onImport: () => void;
   onNew: () => void;
+  onNewAI: () => void;
+  onFirstTemplate: () => void;
   collapsed: boolean;
   onToggle: () => void;
   autoExpandHistory?: boolean;
@@ -46,7 +50,7 @@ interface Props {
 export default function WorkspaceSidebar({
   templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates,
   backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun,
-  onImport, onNew,
+  onImport, onNew, onNewAI, onFirstTemplate,
   collapsed, onToggle,
   autoExpandHistory,
   width = 240, onWidthChange,
@@ -54,7 +58,13 @@ export default function WorkspaceSidebar({
   const { t } = useTranslation();
   const [strategiesExpanded, setStrategiesExpanded] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(false);
+  const [newExpanded, setNewExpanded] = useState(false);
   const [sidebarDragging, setSidebarDragging] = useState(false);
+
+  const runNewSource = useCallback((action: () => void) => {
+    action();
+    setNewExpanded(false);
+  }, []);
 
   // Auto-expand history section when triggered by external event (e.g. backtest completion)
   const [prevAutoExpand, setPrevAutoExpand] = useState(false);
@@ -134,6 +144,36 @@ export default function WorkspaceSidebar({
 
       {!collapsed && (
         <div style={{ flex: '1 1 0', overflow: 'hidden', display: 'flex', flexDirection: 'column', padding: '8px 10px' }}>
+          {/* New Strategy — source selection: AI generate / import MQL / template */}
+          <div style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', marginBottom: 8, overflow: 'hidden' }}>
+            <Button
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => setNewExpanded(prev => !prev)}
+              block
+              style={{ justifyContent: 'space-between', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+            >
+              <span>{t('strategy.workspace.sidebar.newStrategy', { defaultValue: 'New Strategy' })}</span>
+              <DownOutlined style={{ fontSize: 10, transform: newExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+            </Button>
+            {newExpanded && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 6 }}>
+                {([
+                  { icon: <RobotOutlined />, label: t(AI_GENERATE_KEY, { defaultValue: 'AI Generate' }), action: () => runNewSource(onNewAI) },
+                  { icon: <ImportOutlined />, label: t(IMPORT_MQL_KEY, { defaultValue: 'Import MQL' }), action: () => runNewSource(onImport) },
+                  { icon: <FileTextOutlined />, label: t(USE_TEMPLATE_KEY, { defaultValue: 'Use Template' }), action: () => runNewSource(onFirstTemplate) },
+                ]).map(({ icon, label, action }) => (
+                  <button key={label} type="button" className="sidebar-item"
+                    style={{ padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid transparent', background: 'transparent', textAlign: 'left' }}
+                    onClick={action}>
+                    {icon}
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* My Strategies — expands to fill, collapses to button only */}
           <div style={{ flex: strategiesExpanded ? '1 1 auto' : '0 0 auto', display: 'flex', flexDirection: 'column', marginBottom: 8, overflow: 'hidden', minHeight: 0 }}>
             <Button
@@ -191,30 +231,14 @@ export default function WorkspaceSidebar({
         </div>
       )}
 
-      {/* Action buttons */}
-      <div style={{
-        padding: collapsed ? '6px 4px' : '8px 10px',
-        borderTop: '1px solid var(--ant-color-border)', flexShrink: 0,
-        display: 'flex', flexDirection: 'column', gap: 4,
-      }}>
-        {collapsed ? (
-          <>
-            <Button size="small" type="text" icon={<PlusOutlined />} onClick={onNew}
-              title={t('strategy.workspace.sidebar.newStrategy', { defaultValue: 'New Strategy' })} />
-            <Button size="small" type="text" icon={<ImportOutlined />} onClick={onImport}
-              title={t('strategy.workspace.importMql', { defaultValue: 'Import MQL' })} />
-          </>
-        ) : (
-          <>
-            <Button size="small" icon={<PlusOutlined />} onClick={onNew} block>
-              {t('strategy.workspace.sidebar.newStrategy', { defaultValue: 'New Strategy' })}
-            </Button>
-            <Button size="small" icon={<ImportOutlined />} onClick={onImport} block>
-              {t('strategy.workspace.importMql', { defaultValue: 'Import MQL' })}
-            </Button>
-          </>
-        )}
-      </div>
+      {/* Collapsed rail: single quick action (full source selection lives in
+          the 新建策略 section when expanded) */}
+      {collapsed && (
+        <div style={{ padding: '6px 4px', borderTop: '1px solid var(--ant-color-border)', flexShrink: 0 }}>
+          <Button size="small" type="text" icon={<PlusOutlined />} onClick={onNew}
+            title={t('strategy.workspace.sidebar.newStrategy', { defaultValue: 'New Strategy' })} block />
+        </div>
+      )}
     </div>
     {/* Resize handle */}
     {!collapsed && onWidthChange && (

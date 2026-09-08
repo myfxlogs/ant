@@ -38,6 +38,7 @@
 | FIX-2026-09-08-BYOK-QUOTA | ✅done | Devin CLI 直接施工+验收 2026-09-08。业主报告 BYOK 调用被平台每日配额拦截（20 万 tokens，非商汤限制）。根因：walletChecker 预检查在 provider 解析前无条件执行 + 配额统计不分 paid_by + biller 硬编码 paid_by=system。修复：chatProvider 加 gateway 标记，配额/钱包门禁与 max_tokens 封顶仅作用于系统付费（网关）调用，BYOK 跳过；PostCallBiller 如实记 paid_by（BYOK=user）；配额错误文案归属平台。集成测试双用例（BYOK 跳过/网关必检）mutation RED→GREEN。 |
 | FIX-2026-09-08-ADVANCED-PARAMS | ✅done | Devin CLI 直接施工+验收 2026-09-08。高级参数审计落地：新增 reasoning_effort（迁移277+proto19/13+全链路+400 自愈去参，默认空=不发送）；timeout_seconds 接线（钳位 5–600s，非流式总超时/流式首字节）；organization 接线（OpenAI-Organization 头）；purposes 确认 UI 本就无此输入（修正上轮说法）。chat_failover.go 拆分出 chat_retry.go（行数红线）。测试 5 个新用例全绿。 |
 | FIX-2026-09-08-COMPILE-NOTIFY | ✅done | Devin CLI 直接施工+验收 2026-09-08。工作台编译失败原因醒目提示：进入失败态右下角 notification 弹完整原因（仅跃迁时弹一次防打扰）+ 状态条显示原因首行 + Tooltip 全文；AI chat 上下文由服务端编译注入（遗留清单①已覆盖）。组件测试 2 用例 mutation RED→GREEN。 |
+| WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。 |
 | AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。

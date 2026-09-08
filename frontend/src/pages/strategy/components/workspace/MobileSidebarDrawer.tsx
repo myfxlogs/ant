@@ -19,10 +19,12 @@ interface Props {
   onRenameRun?: (runId: string, name: string) => void;
   onImport: () => void;
   onNew: () => void;
+  onNewAI: () => void;
+  onFirstTemplate: () => void;
   autoExpandHistory?: boolean;
 }
 
-export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onImport, onNew, autoExpandHistory }: Props) {
+export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onImport, onNew, onNewAI, onFirstTemplate, autoExpandHistory }: Props) {
   return (
     <Drawer open={open} onClose={onClose} placement="left" width={280} styles={{ body: { padding: 0 } }}>
       <WorkspaceSidebar
@@ -38,6 +40,8 @@ export default function MobileSidebarDrawer({ open, onClose, templates, loading,
         onRenameRun={onRenameRun}
         onImport={() => { onImport(); onClose(); }}
         onNew={() => { onNew(); onClose(); }}
+        onNewAI={() => { onNewAI(); onClose(); }}
+        onFirstTemplate={() => { onFirstTemplate(); onClose(); }}
         collapsed={false} onToggle={onClose}
         autoExpandHistory={autoExpandHistory}
       />

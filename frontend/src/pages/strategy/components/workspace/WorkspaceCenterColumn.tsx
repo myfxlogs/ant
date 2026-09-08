@@ -143,6 +143,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     onRenameRun: sidebarActions.onRenameRun,
     onImport: () => setImportMode(true),
     onNew: handleNewStrategy,
+    onNewAI: () => { handleNewStrategy(); setRightPanelTab('ai'); },
+    onFirstTemplate: () => { const first = templates.list[0]?.id; if (first) templates.onSelect(first); },
     autoExpandHistory: history.autoExpandHistory,
   }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest, code.setCode, setRightPanelTab]);
 
