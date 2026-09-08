@@ -142,7 +142,8 @@ export default function WorkspaceSidebar({
 
   return (
     <>
-    <div style={{
+    <div data-testid="workspace-sidebar"
+      style={{
       width: collapsed ? 36 : width, flexShrink: 0, overflow: 'hidden',
       borderRight: '1px solid var(--ant-color-border)',
       background: 'var(--ant-color-bg-container)',

@@ -48,13 +48,8 @@ function renderEditor(code = BROKEN_CODE) {
     <CodeEditorArea
       code={code}
       importMode={false}
-      isMobile={false}
-      templateCount={0}
       onSetImportMode={vi.fn()}
       onSetCode={vi.fn()}
-      onSetCenterTab={vi.fn()}
-      onSetRightPanelTab={vi.fn()}
-      onSelectFirstTemplate={vi.fn()}
     />,
   )
 }
@@ -88,7 +83,7 @@ describe('CodeEditorArea compile-failure visibility', () => {
     await waitFor(() => expect(notificationErrorMock).toHaveBeenCalledTimes(1))
 
     checkCodeMock.mockClear()
-    rerender(<CodeEditorArea code={BROKEN_CODE + '\n# edited'} importMode={false} isMobile={false} templateCount={0} onSetImportMode={vi.fn()} onSetCode={vi.fn()} onSetCenterTab={vi.fn()} onSetRightPanelTab={vi.fn()} onSelectFirstTemplate={vi.fn()} />)
+    rerender(<CodeEditorArea code={BROKEN_CODE + '\n# edited'} importMode={false} onSetImportMode={vi.fn()} onSetCode={vi.fn()} />)
     await waitFor(() => expect(checkCodeMock).toHaveBeenCalledTimes(1), { timeout: 3000 })
     // still in error state: no duplicate notification
     expect(notificationErrorMock).toHaveBeenCalledTimes(1)

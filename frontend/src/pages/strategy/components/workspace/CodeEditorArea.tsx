@@ -1,26 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, Tag, Tooltip, notification } from 'antd';
-import { ImportOutlined, RobotOutlined, HistoryOutlined, CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import StrategyCodeEditor, { type Diagnostic } from '@/components/strategy/StrategyCodeEditor';
 import ImportEAPanel from '../editor/ImportEAPanel';
 import { strategyVersionApi } from '@/client/strategy';
 import type { BlindSpot } from '@/gen/ant/v1/strategy_runtime_pb';
-import {
-  AUDIT_CHECKING_KEY, AUDIT_COMPILE_FAILED_KEY, AUDIT_BLIND_SPOTS_KEY, AUDIT_ALL_CLEAR_KEY,
-  BACK_TO_EDITOR_KEY, EMPTY_TITLE_KEY, EMPTY_DESC_KEY, IMPORT_MQL_KEY, AI_GENERATE_KEY, USE_TEMPLATE_KEY,
-} from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { AUDIT_CHECKING_KEY, AUDIT_COMPILE_FAILED_KEY, AUDIT_BLIND_SPOTS_KEY, AUDIT_ALL_CLEAR_KEY, BACK_TO_EDITOR_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 interface Props {
   code: string;
   importMode: boolean;
-  isMobile: boolean;
-  templateCount: number;
   onSetImportMode: (v: boolean) => void;
   onSetCode: (c: string) => void;
-  onSetCenterTab: (tab: 'chat' | 'code') => void;
-  onSetRightPanelTab: (tab: 'ai') => void;
-  onSelectFirstTemplate: () => void;
   onStrategyIdChange?: (id: string | undefined) => void;
 }
 
@@ -36,7 +28,7 @@ function blindSpotsToDiagnostics(blindSpots: BlindSpot[], compileError?: string)
   return diags;
 }
 
-export default function CodeEditorArea({ code, importMode, isMobile, templateCount, onSetImportMode, onSetCode, onSetCenterTab, onSetRightPanelTab, onSelectFirstTemplate, onStrategyIdChange }: Props) {
+export default function CodeEditorArea({ code, importMode, onSetImportMode, onSetCode, onStrategyIdChange }: Props) {
   const { t } = useTranslation();
   const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
   const [auditStatus, setAuditStatus] = useState<'idle' | 'checking' | 'ok' | 'warn' | 'error'>('idle');
@@ -115,69 +107,41 @@ export default function CodeEditorArea({ code, importMode, isMobile, templateCou
           </Button>
         </div>
         <ImportEAPanel
-          onApplyCode={(c) => { onSetCode(c); onSetCenterTab('code'); onSetImportMode(false); }}
+          onApplyCode={(c) => { onSetCode(c); onSetImportMode(false); }}
           onStrategyIdChange={onStrategyIdChange}
         />
       </div>
     );
   }
 
-  if (code) {
-    return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        <StrategyCodeEditor
-          value={code}
-          onChange={onSetCode}
-          diagnostics={diagnostics}
-          style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
-        />
-        {auditStatus !== 'idle' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)', minWidth: 0 }}>
-            {auditStatus === 'checking' && <Tag color="processing">{t(AUDIT_CHECKING_KEY)}</Tag>}
-            {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: 'var(--color-success)' }} /></Tooltip>}
-            {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: 'var(--color-warning)' }} /></Tooltip>}
-            {auditStatus === 'error' && (
-              <Tooltip title={compileError || auditSummary}>
-                <CloseCircleOutlined style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
-              </Tooltip>
-            )}
-            {auditStatus === 'error' ? (
-              <Tooltip title={compileError || auditSummary}>
-                <span style={{ color: 'var(--color-danger)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {auditSummary}{compileError ? `：${compileError.split('\n')[0].slice(0, 160)}` : ''}
-                </span>
-              </Tooltip>
-            ) : auditStatus !== 'checking' && <span>{auditSummary}</span>}
-          </div>
-        )}
-      </div>
-    );
-  }
-
+  // 编辑视图：编辑器常驻（空码 = 空白编辑器，来源选择由 sources 视图承担）
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', maxWidth: 420, padding: 40 }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📝</div>
-        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8, color: 'var(--ant-color-text)' }}>
-          {t(EMPTY_TITLE_KEY)}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <StrategyCodeEditor
+        value={code}
+        onChange={onSetCode}
+        diagnostics={diagnostics}
+        style={{ flex: 1, borderRadius: 0, border: 'none', minHeight: 0 }}
+      />
+      {auditStatus !== 'idle' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderTop: '1px solid var(--ant-color-border)', fontSize: 12, color: 'var(--ant-color-text-secondary)', minWidth: 0 }}>
+          {auditStatus === 'checking' && <Tag color="processing">{t(AUDIT_CHECKING_KEY)}</Tag>}
+          {auditStatus === 'ok' && <Tooltip title={auditSummary}><CheckCircleOutlined style={{ color: 'var(--color-success)' }} /></Tooltip>}
+          {auditStatus === 'warn' && <Tooltip title={auditSummary}><WarningOutlined style={{ color: 'var(--color-warning)' }} /></Tooltip>}
+          {auditStatus === 'error' && (
+            <Tooltip title={compileError || auditSummary}>
+              <CloseCircleOutlined style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
+            </Tooltip>
+          )}
+          {auditStatus === 'error' ? (
+            <Tooltip title={compileError || auditSummary}>
+              <span style={{ color: 'var(--color-danger)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {auditSummary}{compileError ? `：${compileError.split('\n')[0].slice(0, 160)}` : ''}
+              </span>
+            </Tooltip>
+          ) : auditStatus !== 'checking' && <span>{auditSummary}</span>}
         </div>
-        <div style={{ fontSize: 13, color: 'var(--ant-color-text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
-          {t(EMPTY_DESC_KEY)}
-        </div>
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Button type="primary" icon={<ImportOutlined />} onClick={() => onSetImportMode(true)}>
-            {t(IMPORT_MQL_KEY)}
-          </Button>
-          <Button icon={<RobotOutlined />} onClick={() => isMobile ? onSetCenterTab('chat') : onSetRightPanelTab('ai')}
-            style={{ background: 'var(--color-ai-btn)', borderColor: 'var(--color-ai-btn)', color: '#fff' }}>
-            {t(AI_GENERATE_KEY)}
-          </Button>
-          <Button icon={<HistoryOutlined />} onClick={onSelectFirstTemplate}
-            disabled={templateCount === 0}>
-            {t(USE_TEMPLATE_KEY)}
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

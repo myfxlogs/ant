@@ -46,6 +46,7 @@ await ctx.addInitScript((auth) => {
 
 await page.goto(`${BASE}/strategy/new`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(2500);
+const sidebar = page.getByTestId('workspace-sidebar');
 
 // 0) 关闭新手引导浮层（会拦截点击）：连点"下一步"直到消失
 await step('关闭新手引导', async () => {
@@ -64,9 +65,9 @@ await step('关闭新手引导', async () => {
 
 // 3) 展开新建策略分区 → 4 来源项（中文）
 await step('展开新建策略分区', async () => {
-  await page.getByRole('button', { name: /新建策略/ }).first().click();
+  await sidebar.getByRole('button', { name: /新建策略/ }).click();
   await page.waitForTimeout(400);
-  for (const label of ['AI 生成', '手动编写', '导入 MQL', '使用模板']) {
+  for (const label of ['AI 生成', '手动编写', '导入 MQL']) {
     if (!(await page.getByText(label, { exact: true }).first().isVisible().catch(() => false))) {
       throw new Error(`来源项缺失: ${label}`);
     }
@@ -75,7 +76,7 @@ await step('展开新建策略分区', async () => {
 
 // 4) 手动编写 → 编辑器
 await step('手动编写 → 空白编辑器', async () => {
-  await page.getByText('手动编写', { exact: true }).first().click();
+  await sidebar.getByText('手动编写', { exact: true }).click();
   await page.waitForTimeout(1200);
   const n = await page.locator('.monaco-editor, .cm-editor, textarea').count();
   if (n === 0) throw new Error('编辑器未出现（落在空态页）');
@@ -83,19 +84,16 @@ await step('手动编写 → 空白编辑器', async () => {
 
 // 5) 新建策略 → AI 生成 → AI 面板
 await step('AI 生成 → AI 面板', async () => {
-  await page.getByRole('button', { name: /新建策略/ }).first().click();
+  await sidebar.getByRole('button', { name: /新建策略/ }).click();
   await page.waitForTimeout(400);
-  await page.getByText('AI 生成', { exact: true }).first().click();
+  await sidebar.getByText('AI 生成', { exact: true }).click();
   await page.waitForTimeout(1200);
 });
 
 // 6) 关键回归：AI 面板开着时点分区头 → 应回到来源选择卡
 await step('AI 打开时切回新建策略', async () => {
-  await page.getByRole('button', { name: /新建策略/ }).first().click();
-  await page.waitForTimeout(800);
-  if (!(await page.getByTestId('new-source-ai').isVisible().catch(() => false))) {
-    throw new Error('AI 面板未让位给来源选择面板');
-  }
+  await sidebar.getByRole('button', { name: /新建策略/ }).click();
+  await page.getByTestId('new-source-ai').waitFor({ state: 'visible', timeout: 5000 });
 });
 
 // 7) 来源卡：导入 MQL → 导入面板
@@ -109,7 +107,7 @@ await step('来源卡导入 MQL → 导入面板', async () => {
 
 // 8) 展开回测历史 → 主区历史面板（真实 20 条数据，protobuf 时间）
 await step('回测历史主区面板', async () => {
-  await page.getByRole('button', { name: /回测历史/ }).first().click();
+  await sidebar.getByRole('button', { name: /回测历史/ }).click();
   await page.waitForTimeout(1200);
   const empty = await page.getByText(/暂无回测记录/).count();
   const list = await page.locator('[data-testid^="history-run-"]').count();
@@ -118,7 +116,7 @@ await step('回测历史主区面板', async () => {
 
 // 9) 我的策略分区 → 编辑器
 await step('我的策略分区 → 编辑器', async () => {
-  await page.getByRole('button', { name: /我的策略/ }).first().click();
+  await sidebar.getByRole('button', { name: /我的策略/ }).click();
   await page.waitForTimeout(800);
 });
 
