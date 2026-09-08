@@ -2485,3 +2485,30 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：部署后需实测 12 unknown 账户回填为 real/demo/contest（OnBrokerInfo 重连时自动写入）；S9 一次性回填脚本待编写。
 
 **状态**：✅done（Devin CLI 验收通过 2026-08-28）。待部署。
+
+---
+
+## FIX-2026-09-08-BYOK-MODEL-PICKER：策略聊天模型下拉框选不到用户自有模型（✅done 2026-09-08）
+
+**症状**（业主报告）：用户 xianhua.chan@gmail.com 已在 /ai/settings 配置自己的 key+model（provider `openai_compatible_mts0f275`，名 "NOVA"，base_url `https://token.sensenova.cn/v1/chat/completions`，model `kimi-k3`，enabled+has_secret=true），但策略聊天框顶部模型下拉框（StrategyChat, width:140/fontSize:11）只显示系统模型"GLM-5.2 (1b5acbfc-…)"，无法选择自己的模型。
+
+**根因 3 层**：
+- **A（上报的直接原因，前端）**：`StrategyChat.tsx` 挂载时只调 `aiGatewayApi.listSystemModels()`（平台网关系统模型）构建 options，从不合并用户自有 BYOK 配置（`system_ai_configs` per-user 行）。ADR-0025 §3.3 设计意图 = 聊天框顶部下拉框是"切换模型"入口，应覆盖自有+系统两类。
+- **B（连带缺陷，后端）**：`ListSystemModels` 返回 `provider_id = ai_models.provider_id`（行 **UUID**），前端把 UUID 写入 `users.ai_primary_provider_id`；运行时 `resolveAllChatProviders`/`resolveGatewayProviders`/`resolveModel` 按字符串 provider_id（如 "zhipu"）比较 → UUID 永不匹配 → **下拉框选择对运行时完全无效**（显示选中 X、实际用默认模型）。实锤：该用户 users 表存 `1b5acbfc-…|glm-5.2`，而 usage 记录全走 system/deepseek。
+- **C（可用性缺陷，后端）**：用户粘贴完整 endpoint URL（以 `/chat/completions` 或 `/models` 结尾）时，`chatEndpoint`/discovery 拼出双路径（`.../v1/chat/completions/v1/chat/completions`）→ 404。生产日志实锤：`openai_compatible_mts0f275` 每 2s "discover models failed: base_url must be openai-compatible"。
+
+**修复**：
+- A：`frontend/src/components/strategy/StrategyChat.tsx` — options 改为分组（antd Select grouped）：`我的 API Key`（复用 i18n key `ai.gateway.useOwnKey`，enabled+has_secret 行的 default_model+models 去重，value=`provider_id|model` 字符串格式，运行时可匹配）在前，`AI 网关`（系统模型）在后；无自有配置时行为不变。
+- B：`backend/internal/connect/gateway/ai_gateway_handler.go` `ListSystemModels` — 经 `providerRepo.ListAll` 建 UUID→字符串映射，返回字符串 provider_id（复用现有 repo 方法，零 SQL 改动）。连带修复 AIGatewayCard 的 setPrimary 语义。
+- C：`backend/internal/service/systemai/chat_failover.go` 新增 `normalizeAPIBase`（剥尾部 `/chat/completions`、`/models`），`chatEndpoint` + `service.go DiscoverModels` + `discovery.go DiscoverModelsByConfig` 三处入口统一调用。
+
+**对抗证明 RED→restore→GREEN**：
+- T-C `chat_failover_test.go::TestChatEndpointToleratesFullEndpointURL` — 修复前 got `.../v1/chat/completions/v1/chat/completions`（RED）→ 修复后 GREEN；mutation = 还原 normalizeAPIBase。附带 `/models` 后缀、deepseek/openai/zhipu 常规路径回归用例 + `resolveModel` primary 优先契约守卫（先绿）。
+- T-B `ai_gateway_handler_test.go`（integration tag）— 修复前 `provider_id = "b6ca8e4e-…"`（UUID，RED）→ 修复后 `= "zhipu_str_test_…"`（GREEN）；mutation = 原始 UUID 代码。
+- T-A `frontend/src/test/strategy-chat-model-options.test.tsx` — 断言下拉框含 `kimi-k3 (NOVA)`（自有分组在前）+ `GLM-5.2 (zhipu)` + 分组标签 + 无 key 的 provider 不出现 + 存的 primary 字符串格式正确回显。mutation：`git stash` 还原 StrategyChat.tsx → 2/2 RED → pop 恢复 → 2/2 GREEN。
+
+**门禁**：go build ✓ / gofmt clean ✓ / go vet ✓ / go test 全量 ✓（仅 3 个 pre-existing 环境失败：`bound_account_svc_test.go` 硬编码 `localhost:5432/alphaforge`，本机无此库，与本次改动无关，CI 有 PG service）/ race×3 systemai ✓ / check-file-lines --strict 0 errors ✓ / 前端 tsc+vite build ✓ / 前端 vitest 189/189 ✓。
+
+**风险/gap**：存量用户 `users.ai_primary_provider_id` 里已存的 UUID 值不再匹配任何选项 → 下拉框显示 placeholder（非错误），用户重选一次即写入正确格式；部署后需实测 xianhua.chan 账号下拉框出现 "kimi-k3 (NOVA)" 且聊天走自有 key。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。

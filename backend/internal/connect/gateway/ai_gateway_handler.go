@@ -60,11 +60,24 @@ func (s *AIGatewayServer) ListSystemModels(
 		s.log.Error("ListSystemModels", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	// users.ai_primary_provider_id stores the provider's string id (set from the
+	// chat model picker / Gateway card); systemai.resolveGatewayProviders compares
+	// against it. Return the string id — not the row UUID — or the saved primary
+	// preference never matches at runtime.
+	provs, err := s.providerRepo.ListAll(ctx)
+	if err != nil {
+		s.log.Error("ListSystemModels providers", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	provStrByID := make(map[uuid.UUID]string, len(provs))
+	for _, p := range provs {
+		provStrByID[p.ID] = p.ProviderID
+	}
 	out := make([]*antv1.SystemModel, 0, len(models))
 	for _, m := range models {
 		out = append(out, &antv1.SystemModel{
 			Id:                m.ID.String(),
-			ProviderId:        m.ProviderID.String(),
+			ProviderId:        provStrByID[m.ProviderID],
 			ModelName:         m.ModelName,
 			DisplayName:       m.DisplayName,
 			PricePer_1MInput:  m.PricePer1MInput,

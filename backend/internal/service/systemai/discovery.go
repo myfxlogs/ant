@@ -286,7 +286,7 @@ func dedupe[T any](in []T, key func(T) string) []string {
 // endpoint using explicit config (no DB lookup). Used by admin Gateway
 // management to discover models for system_ai_providers.
 func DiscoverModelsByConfig(ctx context.Context, providerID, baseURL, secret string) ([]string, error) {
-	base := strings.TrimRight(strings.TrimSpace(baseURL), "/")
+	base := normalizeAPIBase(strings.TrimRight(strings.TrimSpace(baseURL), "/"))
 	if base == "" {
 		return nil, errBaseURLEmpty
 	}

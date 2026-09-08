@@ -195,9 +195,22 @@ func (e apiError) String() string {
 	return e.Raw
 }
 
+// normalizeAPIBase tolerates users pasting a full endpoint URL instead of the
+// API root (e.g. NOVA docs give https://host/v1/chat/completions): strip a
+// trailing "/chat/completions" or "/models" so endpoint construction never
+// doubles the suffix.
+func normalizeAPIBase(base string) string {
+	for _, suffix := range []string{"/chat/completions", "/models"} {
+		if strings.HasSuffix(base, suffix) {
+			return strings.TrimSuffix(base, suffix)
+		}
+	}
+	return base
+}
+
 // chatEndpoint constructs the chat completion API endpoint from a provider's base URL.
 func chatEndpoint(providerID, baseURL string) string {
-	base := strings.TrimRight(baseURL, "/")
+	base := normalizeAPIBase(strings.TrimRight(baseURL, "/"))
 	if providerID == "zhipu" {
 		return base + "/chat/completions"
 	}

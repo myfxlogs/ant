@@ -274,7 +274,7 @@ func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, provider
 	if err != nil {
 		return nil, err
 	}
-	base := strings.TrimRight(strings.TrimSpace(cfg.BaseURL), "/")
+	base := normalizeAPIBase(strings.TrimRight(strings.TrimSpace(cfg.BaseURL), "/"))
 	if base == "" {
 		return nil, errBaseURLEmpty
 	}

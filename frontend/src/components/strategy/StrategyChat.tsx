@@ -11,11 +11,16 @@ import type { ChatTurn } from './ChatHistory';
 import { aiApi } from '@/client/ai';
 const AISettingsModal = lazy(() => import('@/pages/strategy/components/workspace/AISettingsModal'));
 import { aiGatewayApi } from '@/client/aiGateway';
+import { listSystemAIConfigs } from '@/pages/ai/systemai/api';
 import { AI_GATEWAY_SETTINGS_KEY, NEW_CONVERSATION_KEY, SELECT_MODEL_KEY, SELECT_SYMBOL_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
+import { GATEWAY_USE_GATEWAY_KEY, GATEWAY_USE_OWN_KEY_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 
 import type { BacktestSummary } from '@/client/agentGen';
 
 interface Props { symbol?: string; timeframe?: string; accountId?: string; onApplyCode: (code: string) => void; currentCode?: string; lastBacktest?: BacktestSummary; recentBacktests?: BacktestSummary[]; }
+
+type ModelOption = { value: string; label: string };
+type ModelOptionGroup = { label: string; options: ModelOption[] };
 
 function extractCodeFromContent(content: string): string | undefined {
   const m = content.match(/```python[\s\S]*?```/);
@@ -25,7 +30,7 @@ function extractCodeFromContent(content: string): string | undefined {
 
 export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode, currentCode, lastBacktest, recentBacktests }: Props) {
   const { t } = useTranslation();
-  const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [modelOptions, setModelOptions] = useState<ModelOptionGroup[]>([]);
   const [selectedModel, setSelectedModel] = useState('');
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadedTemplateId, setLoadedTemplateId] = useState('');
@@ -46,8 +51,26 @@ export default function StrategyChat({ symbol, timeframe, accountId, onApplyCode
   useEffect(() => {
     (async () => {
       try { const r = await aiApi.getPrimary(); if (r.providerId) setSelectedModel(`${r.providerId}|${r.model || ''}`); } catch {}
-      try { const list = await aiGatewayApi.listSystemModels(); setModelOptions(list.map(m => ({ value: `${m.providerId}|${m.modelName}`, label: `${m.displayName || m.modelName} (${m.providerId})` }))); } catch {}
+      // BYOK: the user's own configured providers (key set in /ai/settings) come first —
+      // value uses the provider_id string so setPrimary matches what the backend
+      // resolver (resolveAllChatProviders) compares against.
+      const own: ModelOption[] = [];
+      try {
+        const { items } = await listSystemAIConfigs();
+        for (const c of items || []) {
+          if (!c.enabled || !c.has_secret) continue;
+          const models = [...new Set([c.default_model, ...(c.models || [])].map((m) => m.trim()).filter(Boolean))];
+          for (const m of models) own.push({ value: `${c.provider_id}|${m}`, label: `${m} (${c.name || c.provider_id})` });
+        }
+      } catch {}
+      const sys: ModelOption[] = [];
+      try { const list = await aiGatewayApi.listSystemModels(); for (const m of list) sys.push({ value: `${m.providerId}|${m.modelName}`, label: `${m.displayName || m.modelName} (${m.providerId})` }); } catch {}
+      setModelOptions([
+        ...(own.length > 0 ? [{ label: t(GATEWAY_USE_OWN_KEY_KEY, '我的 API Key'), options: own }] : []),
+        ...(sys.length > 0 ? [{ label: t(GATEWAY_USE_GATEWAY_KEY, 'AI 网关'), options: sys }] : []),
+      ]);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only fetch | REF: rd.md#part-0.2-hooks-deps
   }, []);
 
   const fetchTemplates = async () => {
