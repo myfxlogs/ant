@@ -27,7 +27,7 @@ const sensenovaCurl = `curl https://token.sensenova.cn/v1/chat/completions \
 }'`
 
 func TestParseProviderCurlSensenovaExample(t *testing.T) {
-	res, err := ParseProviderCurlRaw(sensenovaCurl)
+	res, err := ParseProviderCurlRaw(sensenovaCurl, false)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
@@ -50,7 +50,7 @@ func TestParseProviderCurlSensenovaExample(t *testing.T) {
 }
 
 func TestParseProviderCurlRealKeyAndVariants(t *testing.T) {
-	res, err := ParseProviderCurlRaw(`curl https://api.deepseek.com/v1/chat/completions -H "Authorization: Bearer sk-real-abc123" -H "Content-Type: application/json" -d '{"model":"deepseek-v4","messages":[{"role":"user","content":"hi"}],"stream":false}'`)
+	res, err := ParseProviderCurlRaw(`curl https://api.deepseek.com/v1/chat/completions -H "Authorization: Bearer sk-real-abc123" -H "Content-Type: application/json" -d '{"model":"deepseek-v4","messages":[{"role":"user","content":"hi"}],"stream":false}'`, false)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestParseProviderCurlRealKeyAndVariants(t *testing.T) {
 		t.Fatalf("real key must not warn placeholder: %v", res.Warnings)
 	}
 
-	res2, err := ParseProviderCurlRaw(`curl https://h.example.com/v1/chat/completions -H "x-api-key: my-anthropic-key" --data-raw "{\"model\":\"m1\"}"`)
+	res2, err := ParseProviderCurlRaw(`curl https://h.example.com/v1/chat/completions -H "x-api-key: my-anthropic-key" --data-raw "{\"model\":\"m1\"}"`, false)
 	if err != nil {
 		t.Fatalf("parse x-api-key: %v", err)
 	}
@@ -74,10 +74,10 @@ func TestParseProviderCurlRealKeyAndVariants(t *testing.T) {
 }
 
 func TestParseProviderCurlFailClosed(t *testing.T) {
-	if _, err := ParseProviderCurlRaw("echo hello world"); err == nil {
+	if _, err := ParseProviderCurlRaw("echo hello world", false); err == nil {
 		t.Fatal("no-URL input must error")
 	}
-	res, err := ParseProviderCurlRaw("curl https://only-url.example.com/v1/chat/completions")
+	res, err := ParseProviderCurlRaw("curl https://only-url.example.com/v1/chat/completions", false)
 	if err != nil {
 		t.Fatalf("url-only parse: %v", err)
 	}
@@ -87,5 +87,32 @@ func TestParseProviderCurlFailClosed(t *testing.T) {
 	joined := strings.Join(res.Warnings, "\n")
 	if !strings.Contains(joined, "model") {
 		t.Fatalf("model-missing warning missing: %v", res.Warnings)
+	}
+}
+
+// 已保存过 Key 的厂商：导入不再提示任何 Key 相关告警（占位符/缺失都静默），
+// 且占位符场景只产生一条告警而非两条。
+func TestParseProviderCurlKeyWarningsMutedBySavedKey(t *testing.T) {
+	res, err := ParseProviderCurlRaw(sensenovaCurl, true)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	joined := strings.Join(res.Warnings, "\n")
+	if strings.Contains(joined, "API Key") {
+		t.Fatalf("saved-key provider must not show key warnings: %v", res.Warnings)
+	}
+
+	res2, err := ParseProviderCurlRaw(sensenovaCurl, false)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	keyWarns := 0
+	for _, w := range res2.Warnings {
+		if strings.Contains(w, "API Key") {
+			keyWarns++
+		}
+	}
+	if keyWarns != 1 {
+		t.Fatalf("placeholder case must yield exactly 1 key warning, got %d: %v", keyWarns, res2.Warnings)
 	}
 }

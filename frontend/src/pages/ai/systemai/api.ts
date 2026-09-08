@@ -91,8 +91,8 @@ export interface CurlImportResult {
 }
 
 /** Parse a vendor curl example into provider config fields (no persistence). */
-export async function parseProviderCurl(curl: string): Promise<CurlImportResult> {
-  const r = await systemAIClient.parseProviderCurl(create(ParseProviderCurlRequestSchema, { curl }))
+export async function parseProviderCurl(curl: string, hasSavedKey: boolean): Promise<CurlImportResult> {
+  const r = await systemAIClient.parseProviderCurl(create(ParseProviderCurlRequestSchema, { curl, hasSavedKey }))
   return {
     base_url: r.baseUrl,
     api_key: r.apiKey,

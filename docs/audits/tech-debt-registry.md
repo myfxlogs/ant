@@ -2566,3 +2566,5 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：解析只覆盖 OpenAI 兼容形态（chat/completions 示例）；`--data-urlencode` 当 body 处理可能解析失败（有告警兜底）；非 curl 文本（PowerShell 语法）不支持。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+**FIX-2026-09-08-CURL-IMPORT 补记（2026-09-08 业主实测反馈）**：业主在已存 Key 的 NOVA 卡片导入后仍被提示"未识别到 API Key"。两处修正：①`ParseProviderCurlRequest` 加 `has_saved_key`（前端传 `draft.has_secret`）——已存 Key 的厂商静默全部 Key 类告警（占位符/缺失都不再出现，沿用已存密钥）；②未存 Key 时占位符场景只保留一条告警（原占位符+缺失两条重复），文案改为指向下方 API Key 输入框。`ParseProviderCurlRaw` 加 `hasSavedKey` 参数；新增 `TestParseProviderCurlKeyWarningsMutedBySavedKey`（静默 + 单告警断言）+ 前端 has_secret 透传用例。门禁全绿（race/check-lines 0 errors/vitest 194）。

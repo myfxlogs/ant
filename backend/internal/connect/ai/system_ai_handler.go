@@ -166,7 +166,7 @@ func (s *SystemAIServer) ParseProviderCurl(ctx context.Context, req *connect.Req
 	if strings.TrimSpace(req.Msg.Curl) == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("curl 内容为空"))
 	}
-	res, err := systemai.ParseProviderCurlRaw(req.Msg.Curl)
+	res, err := systemai.ParseProviderCurlRaw(req.Msg.Curl, req.Msg.HasSavedKey)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", err))
 	}

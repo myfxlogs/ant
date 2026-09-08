@@ -25,6 +25,9 @@ message ValidateSystemAIConnectionResponse {
 message ParseProviderCurlRequest {
   // Raw curl command pasted from vendor docs (may span multiple lines).
   string curl = 1;
+  // Provider already has a stored key — key-related warnings are muted
+  // (the saved key keeps working; the example never carries it anyway).
+  bool has_saved_key = 2;
 }
 message ParseProviderCurlResponse {
   string base_url = 1;       // API root, endpoint suffix stripped

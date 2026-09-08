@@ -77,7 +77,7 @@ describe('ConnectionForm curl import', () => {
       default_model: 'kimi-k3',
       models: ['kimi-k3'],
       name_hint: 'sensenova',
-      warnings: ['示例中的 API Key 是占位符——请替换为你自己的真实 Key'],
+      warnings: ['示例中的 API Key 是占位符——请在下方 API Key 输入框粘贴你的真实 Key'],
     })
     const props = renderForm()
 
@@ -85,6 +85,7 @@ describe('ConnectionForm curl import', () => {
     fireEvent.change(textarea, { target: { value: 'curl https://token.sensenova.cn/v1/chat/completions ...' } })
     fireEvent.click(screen.getByRole('button', { name: /导入并回填/ }))
 
+    await waitFor(() => expect(parseProviderCurlMock).toHaveBeenCalledWith(expect.stringContaining('sensenova'), false))
     await waitFor(() => expect(props.onDraftChange).toHaveBeenCalled())
     expect(props.onDraftChange).toHaveBeenCalledWith(expect.objectContaining({
       base_url: 'https://token.sensenova.cn/v1',
@@ -107,5 +108,18 @@ describe('ConnectionForm curl import', () => {
     fireEvent.click(screen.getByRole('button', { name: /导入并回填/ }))
 
     expect(await screen.findByText(/未能识别 URL/)).toBeTruthy()
+  })
+
+  it('passes has_secret so backend mutes key warnings for already-configured providers', async () => {
+    parseProviderCurlMock.mockResolvedValue({ base_url: 'https://h.cn/v1', api_key: '', default_model: 'm1', models: ['m1'], name_hint: '', warnings: [] })
+    const draftWithKey = { has_secret: true }
+    const props = renderForm({ draft: { ...draftWithKey } as AIConfig })
+
+    const textarea = await screen.findByPlaceholderText(/curl https:\/\/api\.example\.com/)
+    fireEvent.change(textarea, { target: { value: 'curl https://h.cn/v1/chat/completions ...' } })
+    fireEvent.click(screen.getByRole('button', { name: /导入并回填/ }))
+
+    await waitFor(() => expect(parseProviderCurlMock).toHaveBeenCalledWith(expect.any(String), true))
+    expect(props.onDraftChange).toHaveBeenCalled()
   })
 })

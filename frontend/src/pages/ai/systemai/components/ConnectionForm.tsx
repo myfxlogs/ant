@@ -52,7 +52,7 @@ export function ConnectionFormSection(props: {
     setImporting(true);
     setCurlNotes([]);
     try {
-      const r = await parseProviderCurl(raw);
+      const r = await parseProviderCurl(raw, draft.has_secret);
       const patch: Partial<AIConfig> = {};
       if (isCustomProvider(draft.provider_id)) {
         if (r.base_url) patch.base_url = r.base_url;

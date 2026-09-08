@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file system_ai_probe.proto.
  */
 export const file_system_ai_probe: GenFile = /*@__PURE__*/
-  fileDesc("ChVzeXN0ZW1fYWlfcHJvYmUucHJvdG8SBmFudC52MSI0Ch1EaXNjb3ZlclN5c3RlbUFJTW9kZWxzUmVxdWVzdBITCgtwcm92aWRlcl9pZBgBIAEoCSJcCh5EaXNjb3ZlclN5c3RlbUFJTW9kZWxzUmVzcG9uc2USEwoLcHJvdmlkZXJfaWQYASABKAkSDgoGbW9kZWxzGAIgAygJEhUKDWRlZmF1bHRfbW9kZWwYAyABKAkiOAohVmFsaWRhdGVTeXN0ZW1BSUNvbm5lY3Rpb25SZXF1ZXN0EhMKC3Byb3ZpZGVyX2lkGAEgASgJIloKIlZhbGlkYXRlU3lzdGVtQUlDb25uZWN0aW9uUmVzcG9uc2USEwoLcHJvdmlkZXJfaWQYASABKAkSCgoCb2sYAiABKAgSEwoLbW9kZWxfY291bnQYAyABKAUiKAoYUGFyc2VQcm92aWRlckN1cmxSZXF1ZXN0EgwKBGN1cmwYASABKAkiigEKGVBhcnNlUHJvdmlkZXJDdXJsUmVzcG9uc2USEAoIYmFzZV91cmwYASABKAkSDwoHYXBpX2tleRgCIAEoCRIVCg1kZWZhdWx0X21vZGVsGAMgASgJEg4KBm1vZGVscxgEIAMoCRIRCgluYW1lX2hpbnQYBSABKAkSEAoId2FybmluZ3MYBiADKAlCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChVzeXN0ZW1fYWlfcHJvYmUucHJvdG8SBmFudC52MSI0Ch1EaXNjb3ZlclN5c3RlbUFJTW9kZWxzUmVxdWVzdBITCgtwcm92aWRlcl9pZBgBIAEoCSJcCh5EaXNjb3ZlclN5c3RlbUFJTW9kZWxzUmVzcG9uc2USEwoLcHJvdmlkZXJfaWQYASABKAkSDgoGbW9kZWxzGAIgAygJEhUKDWRlZmF1bHRfbW9kZWwYAyABKAkiOAohVmFsaWRhdGVTeXN0ZW1BSUNvbm5lY3Rpb25SZXF1ZXN0EhMKC3Byb3ZpZGVyX2lkGAEgASgJIloKIlZhbGlkYXRlU3lzdGVtQUlDb25uZWN0aW9uUmVzcG9uc2USEwoLcHJvdmlkZXJfaWQYASABKAkSCgoCb2sYAiABKAgSEwoLbW9kZWxfY291bnQYAyABKAUiPwoYUGFyc2VQcm92aWRlckN1cmxSZXF1ZXN0EgwKBGN1cmwYASABKAkSFQoNaGFzX3NhdmVkX2tleRgCIAEoCCKKAQoZUGFyc2VQcm92aWRlckN1cmxSZXNwb25zZRIQCghiYXNlX3VybBgBIAEoCRIPCgdhcGlfa2V5GAIgASgJEhUKDWRlZmF1bHRfbW9kZWwYAyABKAkSDgoGbW9kZWxzGAQgAygJEhEKCW5hbWVfaGludBgFIAEoCRIQCgh3YXJuaW5ncxgGIAMoCUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.DiscoverSystemAIModelsRequest
@@ -110,6 +110,14 @@ export type ParseProviderCurlRequest = Message<"ant.v1.ParseProviderCurlRequest"
    * @generated from field: string curl = 1;
    */
   curl: string;
+
+  /**
+   * Provider already has a stored key — key-related warnings are muted
+   * (the saved key keeps working; the example never carries it anyway).
+   *
+   * @generated from field: bool has_saved_key = 2;
+   */
+  hasSavedKey: boolean;
 };
 
 /**

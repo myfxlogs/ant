@@ -232,7 +232,10 @@ func (x *ValidateSystemAIConnectionResponse) GetModelCount() int32 {
 type ParseProviderCurlRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Raw curl command pasted from vendor docs (may span multiple lines).
-	Curl          string `protobuf:"bytes,1,opt,name=curl,proto3" json:"curl,omitempty"`
+	Curl string `protobuf:"bytes,1,opt,name=curl,proto3" json:"curl,omitempty"`
+	// Provider already has a stored key — key-related warnings are muted
+	// (the saved key keeps working; the example never carries it anyway).
+	HasSavedKey   bool `protobuf:"varint,2,opt,name=has_saved_key,json=hasSavedKey,proto3" json:"has_saved_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -272,6 +275,13 @@ func (x *ParseProviderCurlRequest) GetCurl() string {
 		return x.Curl
 	}
 	return ""
+}
+
+func (x *ParseProviderCurlRequest) GetHasSavedKey() bool {
+	if x != nil {
+		return x.HasSavedKey
+	}
+	return false
 }
 
 type ParseProviderCurlResponse struct {
@@ -379,9 +389,10 @@ const file_system_ai_probe_proto_rawDesc = "" +
 	"providerId\x12\x0e\n" +
 	"\x02ok\x18\x02 \x01(\bR\x02ok\x12\x1f\n" +
 	"\vmodel_count\x18\x03 \x01(\x05R\n" +
-	"modelCount\".\n" +
+	"modelCount\"R\n" +
 	"\x18ParseProviderCurlRequest\x12\x12\n" +
-	"\x04curl\x18\x01 \x01(\tR\x04curl\"\xc5\x01\n" +
+	"\x04curl\x18\x01 \x01(\tR\x04curl\x12\"\n" +
+	"\rhas_saved_key\x18\x02 \x01(\bR\vhasSavedKey\"\xc5\x01\n" +
 	"\x19ParseProviderCurlResponse\x12\x19\n" +
 	"\bbase_url\x18\x01 \x01(\tR\abaseUrl\x12\x17\n" +
 	"\aapi_key\x18\x02 \x01(\tR\x06apiKey\x12#\n" +

@@ -22,8 +22,9 @@ var errCurlNoURL = errors.New("未能识别 URL：请粘贴完整的 curl 命令
 // ParseProviderCurlRaw extracts base_url / API key / model from a pasted curl
 // example (POSIX-style quoting, `\` line continuations). Parse only — the
 // caller decides what to apply; nothing is validated or persisted here beyond
-// URL shape.
-func ParseProviderCurlRaw(raw string) (*CurlImport, error) {
+// URL shape. hasSavedKey mutes key-related warnings: when the provider already
+// has a stored key the example never needs to carry one.
+func ParseProviderCurlRaw(raw string, hasSavedKey bool) (*CurlImport, error) {
 	toks := tokenizeCurl(lineContinuations(raw))
 	res := &CurlImport{}
 	u := ""
@@ -60,10 +61,11 @@ func ParseProviderCurlRaw(raw string) (*CurlImport, error) {
 
 	if res.APIKey != "" && isPlaceholderKey(res.APIKey) {
 		res.APIKey = ""
-		res.Warnings = append(res.Warnings, "示例中的 API Key 是占位符——请替换为你自己的真实 Key")
-	}
-	if res.APIKey == "" {
-		res.Warnings = append(res.Warnings, "未识别到 API Key——请手动粘贴你的 Key")
+		if !hasSavedKey {
+			res.Warnings = append(res.Warnings, "示例中的 API Key 是占位符——请在下方 API Key 输入框粘贴你的真实 Key")
+		}
+	} else if res.APIKey == "" && !hasSavedKey {
+		res.Warnings = append(res.Warnings, "未识别到 API Key——请在下方 API Key 输入框粘贴你的 Key")
 	}
 	return res, nil
 }
