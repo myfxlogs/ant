@@ -2739,3 +2739,5 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
 
 **WORKSPACE-IA 补记（2026-09-08 分区导航联动）**：业主指令——分区切换驱动主区联动 + 新增"手动编写"来源 + 修导入 MQL 不跳转。实现：①`WorkspaceSidebar` 重构为受控导航（`activeSection`/`onSectionChange` props，内部 accordion 状态移除，autoExpandHistory 由父级 effect 消费）；②主区按分区渲染——`new`→`NewStrategyPanel` 四来源卡（**AI 生成/手动编写/导入 MQL/从模板**）、`history`→`BacktestHistoryPanel` 主区列表（点条目加载回测+右面板）、`strategies`→编辑器（现状）；③**连带修复跳转 bug**：`rightPanelTab` 打开时主区被 WorkspaceAIPanel 替换、importMode 被吞——新流程中导入卡片点击后 `setActiveSection('strategies')+setImportMode(true)`，编辑器渲染导入面板，不再被 AI 面板抢占。测试：3 个新测试文件 7 用例（分区切换/来源路由/模板置灰/空态），mutation stash RED→restore GREEN。前端全量 tsc+vite+vitest 206/206。
+
+**WORKSPACE-IA 补记 2（2026-09-08 业主实测反馈）**：①AI chat 打开时点"新建策略"分区不切换——根因：主区渲染 `rightPanelTab` 优先于分区状态，AI 面板打开期间分区切换只改状态不换界面。修复：`onSectionChange` 回调中同步 `setRightPanelTab(null)`（autoExpandHistory 路径同样处理）——分区切换即关闭从属面板，主区随之切换。②业主初始表述"4 项还在左边栏"经核实为该 bug 的观感（部署包侧栏组件无来源项残留，四卡片在主区组件中）。前端门禁绿。

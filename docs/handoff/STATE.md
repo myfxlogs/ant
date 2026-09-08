@@ -30,16 +30,14 @@
 | P1 live 执行 bug 修复（login lookup + nil/empty slice） | ✅done | 已部署验证 2026-08-27 |
 
 | FIX-2026-09-08-BYOK-MODEL-PICKER | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
-| FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
+| FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。kimi-k3 temperature 400 自愈重试（尊重配置 temperature，400 时以 1 重试一次）；连带修复流式 fallback nil panic + 分区切换 close right panel；工作区常驻 AI 网关设置入口。对抗证明 RED→GREEN。详见 registry。 |
 | FIX-2026-09-08-CURL-IMPORT | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
-| FIX-2026-09-08-RESILIENCE | ✅done | Devin CLI 直接施工+验收 2026-09-08。AI 聊天瞬时错误自愈：①修 isTransientChatErr 大小写 bug（"Client.Timeout" 不匹配小写 "timeout" → 超时从不重试）；②非流式超时 60s→150s；③瞬时错误统一退避重试 2 次（2s/6s，尊重 Retry-After≤15s），流式同策略（首字节前才重试）；④连带修复重试复用已消费 body bug；⑤流式 ResponseHeaderTimeout=120s；⑥报错带 [provider|model]+中文提示。429 配额类需厂商提额，重试不能根治。mutation 编译 RED + 行为测试全绿。 |
 | AI-SETTINGS-BYOK-2026-09-08-审计 | ✅done | Devin CLI 自审 2026-09-08（审计对象 888bbe7c..1bde4be6）。A-F 全查 + 机检独立重跑全绿。发现并当场修复 F1：下拉框对已有自有 Key 用户展示网关分组，但运行时仅无自有 Key 才走网关 → 选择被静默忽略；修复为有自有 Key 时隐藏网关分组（UI 对齐运行时）。遗留：工作台编译错误上下文设计（待讨论）、analyze_mql 工具接线、局部动态数组盲区、AIGatewayCard 语义、agent gofmt 债。 |
 | CHAT-CTX-2026-09-08 遗留清单执行 | ✅done | Devin CLI 按序执行 5 项：①工作台编译错误上下文——服务端现场编译注入「⚠编译失败+错误+优先修复」段（Conversate/ExecutePlan 双路径，修 ```go 旧围栏）；②聊天 Agent 接入 analyze_mql 覆盖度分析工具 + 5 语言提示词「盲区桥接」指引；③局部动态数组盲区立债 MQL-COMPILER-LOCAL-ARRAYS（🟦open）；④AIGatewayCard 网关模式加「自有 Key 优先」提示；⑤internal/agent 全包 gofmt 清零。 |
-| FIX-2026-09-08-BYOK-QUOTA | ✅done | Devin CLI 直接施工+验收 2026-09-08。业主报告 BYOK 调用被平台每日配额拦截（20 万 tokens，非商汤限制）。根因：walletChecker 预检查在 provider 解析前无条件执行 + 配额统计不分 paid_by + biller 硬编码 paid_by=system。修复：chatProvider 加 gateway 标记，配额/钱包门禁与 max_tokens 封顶仅作用于系统付费（网关）调用，BYOK 跳过；PostCallBiller 如实记 paid_by（BYOK=user）；配额错误文案归属平台。集成测试双用例（BYOK 跳过/网关必检）mutation RED→GREEN。 |
 | FIX-2026-09-08-ADVANCED-PARAMS | ✅done | Devin CLI 直接施工+验收 2026-09-08。高级参数审计落地：新增 reasoning_effort（迁移277+proto19/13+全链路+400 自愈去参，默认空=不发送）；timeout_seconds 接线（钳位 5–600s，非流式总超时/流式首字节）；organization 接线（OpenAI-Organization 头）；purposes 确认 UI 本就无此输入（修正上轮说法）。chat_failover.go 拆分出 chat_retry.go（行数红线）。测试 5 个新用例全绿。 |
 | FIX-2026-09-08-COMPILE-NOTIFY | ✅done | Devin CLI 直接施工+验收 2026-09-08。工作台编译失败原因醒目提示：进入失败态右下角 notification 弹完整原因（仅跃迁时弹一次防打扰）+ 状态条显示原因首行 + Tooltip 全文；AI chat 上下文由服务端编译注入（遗留清单①已覆盖）。组件测试 2 用例 mutation RED→GREEN。 |
 | WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。 |
-| WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 业主指令：分区切换驱动主区联动。侧栏改受控导航（activeSection/onSectionChange），主区按分区渲染：新建策略→NewStrategyPanel 四来源卡（AI 生成/手动编写/导入 MQL/从模板）、回测历史→BacktestHistoryPanel 主区列表（点条目加载回测）、我的策略→编辑器。连带修复：导入 MQL 在 AI 面板打开时不跳转（rightPanelTab 渲染优先吞掉 importMode）。 |
+| WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 业主指令：分区切换驱动主区联动。侧栏改受控导航（activeSection/onSectionChange），主区按分区渲染：新建策略→NewStrategyPanel 四来源卡（AI 生成/手动编写/导入 MQL/从模板）、回测历史→BacktestHistoryPanel 主区列表（点条目加载回测）、我的策略→编辑器。连带修复：导入 MQL 在 AI 面板打开时不跳转（rightPanelTab 渲染优先吞掉 importMode）。补记：分区切换时同步关闭右侧面板（面板从属工作流，分区是主区导航）。 |
 | AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。

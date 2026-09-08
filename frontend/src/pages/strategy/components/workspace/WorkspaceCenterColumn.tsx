@@ -133,7 +133,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
 
   // 回测完成等外部事件要求展开历史分区时，主区随之切换
   useEffect(() => {
-    if (history.autoExpandHistory) setActiveSection('history');
+    if (history.autoExpandHistory) { setActiveSection('history'); setRightPanelTab(null); }
   }, [history.autoExpandHistory]);
 
   const newStrategyPanel = (
@@ -170,7 +170,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     onRenameRun: sidebarActions.onRenameRun,
     onNew: handleNewStrategy,
     activeSection,
-    onSectionChange: setActiveSection,
+    // 切换分区时关闭右侧面板——分区是主区的导航，面板（AI/回测）只从属对应工作流
+    onSectionChange: (s: WorkspaceSection) => { setActiveSection(s); setRightPanelTab(null); },
     autoExpandHistory: history.autoExpandHistory,
   }), [templates, sidebarActions, history, handleNewStrategy, activeSection, backtest, code.setCode, setRightPanelTab]);
 

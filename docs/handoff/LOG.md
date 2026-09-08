@@ -201,3 +201,5 @@
 **实现**: WorkspaceSidebar 改受控导航（activeSection/onSectionChange）；主区按分区渲染 NewStrategyPanel（四来源卡）/BacktestHistoryPanel/编辑器；连带修复 rightPanelTab 优先渲染吞掉 importMode 的跳转 bug。
 
 **验证**: 新增 3 个测试文件 7 用例 mutation RED→GREEN；前端全量门禁绿。明细见 registry（COMPILE-NOTIFY 条目后补记）。
+
+## 2026-09-08 STATE.md 预算滚出（BYOK-QUOTA/RESILIENCE 施工行，明细在 registry）
