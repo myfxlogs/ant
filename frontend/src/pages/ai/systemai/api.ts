@@ -10,6 +10,7 @@ import {
 import {
   DiscoverSystemAIModelsRequestSchema,
   ValidateSystemAIConnectionRequestSchema,
+  ParseProviderCurlRequestSchema,
 } from '@/gen/ant/v1/system_ai_probe_pb'
 import type { AIConfig } from './model'
 
@@ -78,4 +79,26 @@ export async function discoverSystemAIModels(providerId: string) {
 export async function validateSystemAI(providerId: string) {
   const r = await systemAIClient.validateSystemAIConnection(create(ValidateSystemAIConnectionRequestSchema, { providerId }))
   return { provider_id: r.providerId, ok: r.ok, model_count: r.modelCount }
+}
+
+export interface CurlImportResult {
+  base_url: string
+  api_key: string
+  default_model: string
+  models: string[]
+  name_hint: string
+  warnings: string[]
+}
+
+/** Parse a vendor curl example into provider config fields (no persistence). */
+export async function parseProviderCurl(curl: string): Promise<CurlImportResult> {
+  const r = await systemAIClient.parseProviderCurl(create(ParseProviderCurlRequestSchema, { curl }))
+  return {
+    base_url: r.baseUrl,
+    api_key: r.apiKey,
+    default_model: r.defaultModel,
+    models: r.models || [],
+    name_hint: r.nameHint,
+    warnings: r.warnings || [],
+  }
 }

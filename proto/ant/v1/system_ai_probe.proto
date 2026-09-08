@@ -21,3 +21,16 @@ message ValidateSystemAIConnectionResponse {
   bool ok = 2;
   int32 model_count = 3;
 }
+
+message ParseProviderCurlRequest {
+  // Raw curl command pasted from vendor docs (may span multiple lines).
+  string curl = 1;
+}
+message ParseProviderCurlResponse {
+  string base_url = 1;       // API root, endpoint suffix stripped
+  string api_key = 2;        // empty when absent or a {your_key}-style placeholder
+  string default_model = 3;  // "model" from the JSON body
+  repeated string models = 4;
+  string name_hint = 5;      // display-name hint derived from the URL host
+  repeated string warnings = 6; // human-readable notes for the user to review
+}

@@ -51,6 +51,9 @@ const (
 	// SystemAIServiceValidateSystemAIConnectionProcedure is the fully-qualified name of the
 	// SystemAIService's ValidateSystemAIConnection RPC.
 	SystemAIServiceValidateSystemAIConnectionProcedure = "/ant.v1.SystemAIService/ValidateSystemAIConnection"
+	// SystemAIServiceParseProviderCurlProcedure is the fully-qualified name of the SystemAIService's
+	// ParseProviderCurl RPC.
+	SystemAIServiceParseProviderCurlProcedure = "/ant.v1.SystemAIService/ParseProviderCurl"
 )
 
 // SystemAIServiceClient is a client for the ant.v1.SystemAIService service.
@@ -61,6 +64,8 @@ type SystemAIServiceClient interface {
 	UpdateSystemAISecret(context.Context, *connect.Request[v1.UpdateSystemAISecretRequest]) (*connect.Response[v1.UpdateSystemAISecretResponse], error)
 	DiscoverSystemAIModels(context.Context, *connect.Request[v1.DiscoverSystemAIModelsRequest]) (*connect.Response[v1.DiscoverSystemAIModelsResponse], error)
 	ValidateSystemAIConnection(context.Context, *connect.Request[v1.ValidateSystemAIConnectionRequest]) (*connect.Response[v1.ValidateSystemAIConnectionResponse], error)
+	// Parse a vendor curl example into provider config fields (no persistence).
+	ParseProviderCurl(context.Context, *connect.Request[v1.ParseProviderCurlRequest]) (*connect.Response[v1.ParseProviderCurlResponse], error)
 }
 
 // NewSystemAIServiceClient constructs a client for the ant.v1.SystemAIService service. By default,
@@ -110,6 +115,12 @@ func NewSystemAIServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(systemAIServiceMethods.ByName("ValidateSystemAIConnection")),
 			connect.WithClientOptions(opts...),
 		),
+		parseProviderCurl: connect.NewClient[v1.ParseProviderCurlRequest, v1.ParseProviderCurlResponse](
+			httpClient,
+			baseURL+SystemAIServiceParseProviderCurlProcedure,
+			connect.WithSchema(systemAIServiceMethods.ByName("ParseProviderCurl")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -121,6 +132,7 @@ type systemAIServiceClient struct {
 	updateSystemAISecret       *connect.Client[v1.UpdateSystemAISecretRequest, v1.UpdateSystemAISecretResponse]
 	discoverSystemAIModels     *connect.Client[v1.DiscoverSystemAIModelsRequest, v1.DiscoverSystemAIModelsResponse]
 	validateSystemAIConnection *connect.Client[v1.ValidateSystemAIConnectionRequest, v1.ValidateSystemAIConnectionResponse]
+	parseProviderCurl          *connect.Client[v1.ParseProviderCurlRequest, v1.ParseProviderCurlResponse]
 }
 
 // ListSystemAIConfigs calls ant.v1.SystemAIService.ListSystemAIConfigs.
@@ -153,6 +165,11 @@ func (c *systemAIServiceClient) ValidateSystemAIConnection(ctx context.Context, 
 	return c.validateSystemAIConnection.CallUnary(ctx, req)
 }
 
+// ParseProviderCurl calls ant.v1.SystemAIService.ParseProviderCurl.
+func (c *systemAIServiceClient) ParseProviderCurl(ctx context.Context, req *connect.Request[v1.ParseProviderCurlRequest]) (*connect.Response[v1.ParseProviderCurlResponse], error) {
+	return c.parseProviderCurl.CallUnary(ctx, req)
+}
+
 // SystemAIServiceHandler is an implementation of the ant.v1.SystemAIService service.
 type SystemAIServiceHandler interface {
 	ListSystemAIConfigs(context.Context, *connect.Request[v1.ListSystemAIConfigsRequest]) (*connect.Response[v1.ListSystemAIConfigsResponse], error)
@@ -161,6 +178,8 @@ type SystemAIServiceHandler interface {
 	UpdateSystemAISecret(context.Context, *connect.Request[v1.UpdateSystemAISecretRequest]) (*connect.Response[v1.UpdateSystemAISecretResponse], error)
 	DiscoverSystemAIModels(context.Context, *connect.Request[v1.DiscoverSystemAIModelsRequest]) (*connect.Response[v1.DiscoverSystemAIModelsResponse], error)
 	ValidateSystemAIConnection(context.Context, *connect.Request[v1.ValidateSystemAIConnectionRequest]) (*connect.Response[v1.ValidateSystemAIConnectionResponse], error)
+	// Parse a vendor curl example into provider config fields (no persistence).
+	ParseProviderCurl(context.Context, *connect.Request[v1.ParseProviderCurlRequest]) (*connect.Response[v1.ParseProviderCurlResponse], error)
 }
 
 // NewSystemAIServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -206,6 +225,12 @@ func NewSystemAIServiceHandler(svc SystemAIServiceHandler, opts ...connect.Handl
 		connect.WithSchema(systemAIServiceMethods.ByName("ValidateSystemAIConnection")),
 		connect.WithHandlerOptions(opts...),
 	)
+	systemAIServiceParseProviderCurlHandler := connect.NewUnaryHandler(
+		SystemAIServiceParseProviderCurlProcedure,
+		svc.ParseProviderCurl,
+		connect.WithSchema(systemAIServiceMethods.ByName("ParseProviderCurl")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.SystemAIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SystemAIServiceListSystemAIConfigsProcedure:
@@ -220,6 +245,8 @@ func NewSystemAIServiceHandler(svc SystemAIServiceHandler, opts ...connect.Handl
 			systemAIServiceDiscoverSystemAIModelsHandler.ServeHTTP(w, r)
 		case SystemAIServiceValidateSystemAIConnectionProcedure:
 			systemAIServiceValidateSystemAIConnectionHandler.ServeHTTP(w, r)
+		case SystemAIServiceParseProviderCurlProcedure:
+			systemAIServiceParseProviderCurlHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -251,4 +278,8 @@ func (UnimplementedSystemAIServiceHandler) DiscoverSystemAIModels(context.Contex
 
 func (UnimplementedSystemAIServiceHandler) ValidateSystemAIConnection(context.Context, *connect.Request[v1.ValidateSystemAIConnectionRequest]) (*connect.Response[v1.ValidateSystemAIConnectionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.SystemAIService.ValidateSystemAIConnection is not implemented"))
+}
+
+func (UnimplementedSystemAIServiceHandler) ParseProviderCurl(context.Context, *connect.Request[v1.ParseProviderCurlRequest]) (*connect.Response[v1.ParseProviderCurlResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.SystemAIService.ParseProviderCurl is not implemented"))
 }

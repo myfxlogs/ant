@@ -90,3 +90,16 @@
 **修复**: ①聊天管线尊重用户配置 temperature（默认 0.3）+ 400 temperature 错误以 temperature=1 自愈重试一次；连带修复流式 fallback onChunk=nil panic + (nil,nil) defer 解引用两个既有雷。②工作区 tab 栏右侧常驻 AI 网关设置齿轮。
 
 **验证**: 对抗证明 3 项 RED→restore→GREEN（含真实 nil panic 复现）；机检全绿。明细见 `docs/audits/tech-debt-registry.md` 同名条目。
+
+## 2026-09-08 FIX-2026-09-08-CURL-IMPORT
+
+**会话**: Devin CLI 直接施工+验收。业主采纳方案：BYOK 配置新增「粘贴厂商 curl 示例一键导入」，解析放后端、回填表单确认后走原保存路径，存储零改动。
+
+**实现**: ParseProviderCurl RPC（proto 重生成）+ systemai/curl_import.go shell 词法解析器 + ConnectionForm 导入框。
+
+**验证**: 业主原始 NOVA 示例原样通过；后端编译 RED + 前端 mutation RED→GREEN；门禁全绿。明细见 registry 同名条目。
+
+## 2026-09-08 STATE.md 预算滚出（2026-09-01 变更日志）
+
+- 2026-09-01 **FIX-2026-09-01-PURCHASES-STRATEGY-TITLE ✅done**（Devin CLI 直接施工+验收）：市场"我的购买"页"策略"列显示 UUID + 行抖动。根因：`SubscriptionItem` proto 无 `strategy_title`，前端从 `m.strategies` find 标题找不到回退 UUID；`m.strategies` 每 30s refetch 触发重渲染。修复：proto 加 `strategy_title=8` + 后端 `ListSubscriptions` LEFT JOIN `strategy_templates`（初版误 JOIN `marketplace_strategies`，该表为空，第二轮修正）取 `COALESCE(st.name,'')` + 前端直接用 `row.strategyTitle` + 孤立订阅显示灰色"已删除策略"（5 语言 i18n）。已部署。
+- 2026-09-01 **FIX-2026-09-01-ORPHAN-RUN-STRATEGY-NAME ✅done**（Devin CLI 直接施工+验收）：策略页"临时运行"表格"策略"列显示 runId 前缀。根因：`ActiveSession` 无 `StrategyID` 字段，`enrichWithStrategyName` 仅查 `schedule_id`（temp run 无 schedule_id → name 空 → 前端回退 `shortId(runId)`）。修复：`ActiveSession` 加 `StrategyID` + `Register` 传参 + `enrichWithStrategyName` fallback 查 `strategy_templates.name` + `SetStrategyTemplateLookup` 装配。旧运行需重启生效。已部署。

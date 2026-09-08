@@ -229,6 +229,135 @@ func (x *ValidateSystemAIConnectionResponse) GetModelCount() int32 {
 	return 0
 }
 
+type ParseProviderCurlRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Raw curl command pasted from vendor docs (may span multiple lines).
+	Curl          string `protobuf:"bytes,1,opt,name=curl,proto3" json:"curl,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParseProviderCurlRequest) Reset() {
+	*x = ParseProviderCurlRequest{}
+	mi := &file_system_ai_probe_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParseProviderCurlRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParseProviderCurlRequest) ProtoMessage() {}
+
+func (x *ParseProviderCurlRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_system_ai_probe_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParseProviderCurlRequest.ProtoReflect.Descriptor instead.
+func (*ParseProviderCurlRequest) Descriptor() ([]byte, []int) {
+	return file_system_ai_probe_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ParseProviderCurlRequest) GetCurl() string {
+	if x != nil {
+		return x.Curl
+	}
+	return ""
+}
+
+type ParseProviderCurlResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BaseUrl       string                 `protobuf:"bytes,1,opt,name=base_url,json=baseUrl,proto3" json:"base_url,omitempty"`                // API root, endpoint suffix stripped
+	ApiKey        string                 `protobuf:"bytes,2,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`                   // empty when absent or a {your_key}-style placeholder
+	DefaultModel  string                 `protobuf:"bytes,3,opt,name=default_model,json=defaultModel,proto3" json:"default_model,omitempty"` // "model" from the JSON body
+	Models        []string               `protobuf:"bytes,4,rep,name=models,proto3" json:"models,omitempty"`
+	NameHint      string                 `protobuf:"bytes,5,opt,name=name_hint,json=nameHint,proto3" json:"name_hint,omitempty"` // display-name hint derived from the URL host
+	Warnings      []string               `protobuf:"bytes,6,rep,name=warnings,proto3" json:"warnings,omitempty"`                 // human-readable notes for the user to review
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ParseProviderCurlResponse) Reset() {
+	*x = ParseProviderCurlResponse{}
+	mi := &file_system_ai_probe_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ParseProviderCurlResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParseProviderCurlResponse) ProtoMessage() {}
+
+func (x *ParseProviderCurlResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_system_ai_probe_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParseProviderCurlResponse.ProtoReflect.Descriptor instead.
+func (*ParseProviderCurlResponse) Descriptor() ([]byte, []int) {
+	return file_system_ai_probe_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ParseProviderCurlResponse) GetBaseUrl() string {
+	if x != nil {
+		return x.BaseUrl
+	}
+	return ""
+}
+
+func (x *ParseProviderCurlResponse) GetApiKey() string {
+	if x != nil {
+		return x.ApiKey
+	}
+	return ""
+}
+
+func (x *ParseProviderCurlResponse) GetDefaultModel() string {
+	if x != nil {
+		return x.DefaultModel
+	}
+	return ""
+}
+
+func (x *ParseProviderCurlResponse) GetModels() []string {
+	if x != nil {
+		return x.Models
+	}
+	return nil
+}
+
+func (x *ParseProviderCurlResponse) GetNameHint() string {
+	if x != nil {
+		return x.NameHint
+	}
+	return ""
+}
+
+func (x *ParseProviderCurlResponse) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
 var File_system_ai_probe_proto protoreflect.FileDescriptor
 
 const file_system_ai_probe_proto_rawDesc = "" +
@@ -250,7 +379,16 @@ const file_system_ai_probe_proto_rawDesc = "" +
 	"providerId\x12\x0e\n" +
 	"\x02ok\x18\x02 \x01(\bR\x02ok\x12\x1f\n" +
 	"\vmodel_count\x18\x03 \x01(\x05R\n" +
-	"modelCountB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"modelCount\".\n" +
+	"\x18ParseProviderCurlRequest\x12\x12\n" +
+	"\x04curl\x18\x01 \x01(\tR\x04curl\"\xc5\x01\n" +
+	"\x19ParseProviderCurlResponse\x12\x19\n" +
+	"\bbase_url\x18\x01 \x01(\tR\abaseUrl\x12\x17\n" +
+	"\aapi_key\x18\x02 \x01(\tR\x06apiKey\x12#\n" +
+	"\rdefault_model\x18\x03 \x01(\tR\fdefaultModel\x12\x16\n" +
+	"\x06models\x18\x04 \x03(\tR\x06models\x12\x1b\n" +
+	"\tname_hint\x18\x05 \x01(\tR\bnameHint\x12\x1a\n" +
+	"\bwarnings\x18\x06 \x03(\tR\bwarningsB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_system_ai_probe_proto_rawDescOnce sync.Once
@@ -264,12 +402,14 @@ func file_system_ai_probe_proto_rawDescGZIP() []byte {
 	return file_system_ai_probe_proto_rawDescData
 }
 
-var file_system_ai_probe_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_system_ai_probe_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_system_ai_probe_proto_goTypes = []any{
 	(*DiscoverSystemAIModelsRequest)(nil),      // 0: ant.v1.DiscoverSystemAIModelsRequest
 	(*DiscoverSystemAIModelsResponse)(nil),     // 1: ant.v1.DiscoverSystemAIModelsResponse
 	(*ValidateSystemAIConnectionRequest)(nil),  // 2: ant.v1.ValidateSystemAIConnectionRequest
 	(*ValidateSystemAIConnectionResponse)(nil), // 3: ant.v1.ValidateSystemAIConnectionResponse
+	(*ParseProviderCurlRequest)(nil),           // 4: ant.v1.ParseProviderCurlRequest
+	(*ParseProviderCurlResponse)(nil),          // 5: ant.v1.ParseProviderCurlResponse
 }
 var file_system_ai_probe_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -290,7 +430,7 @@ func file_system_ai_probe_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_system_ai_probe_proto_rawDesc), len(file_system_ai_probe_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

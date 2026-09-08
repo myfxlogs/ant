@@ -24,14 +24,15 @@ var File_system_ai_proto protoreflect.FileDescriptor
 
 const file_system_ai_proto_rawDesc = "" +
 	"\n" +
-	"\x0fsystem_ai.proto\x12\x06ant.v1\x1a\x16system_ai_entity.proto\x1a\x18system_ai_requests.proto2\xef\x04\n" +
+	"\x0fsystem_ai.proto\x12\x06ant.v1\x1a\x16system_ai_entity.proto\x1a\x18system_ai_requests.proto2\xc9\x05\n" +
 	"\x0fSystemAIService\x12^\n" +
 	"\x13ListSystemAIConfigs\x12\".ant.v1.ListSystemAIConfigsRequest\x1a#.ant.v1.ListSystemAIConfigsResponse\x12X\n" +
 	"\x11GetSystemAIConfig\x12 .ant.v1.GetSystemAIConfigRequest\x1a!.ant.v1.GetSystemAIConfigResponse\x12a\n" +
 	"\x14UpdateSystemAIConfig\x12#.ant.v1.UpdateSystemAIConfigRequest\x1a$.ant.v1.UpdateSystemAIConfigResponse\x12a\n" +
 	"\x14UpdateSystemAISecret\x12#.ant.v1.UpdateSystemAISecretRequest\x1a$.ant.v1.UpdateSystemAISecretResponse\x12g\n" +
 	"\x16DiscoverSystemAIModels\x12%.ant.v1.DiscoverSystemAIModelsRequest\x1a&.ant.v1.DiscoverSystemAIModelsResponse\x12s\n" +
-	"\x1aValidateSystemAIConnection\x12).ant.v1.ValidateSystemAIConnectionRequest\x1a*.ant.v1.ValidateSystemAIConnectionResponseB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
+	"\x1aValidateSystemAIConnection\x12).ant.v1.ValidateSystemAIConnectionRequest\x1a*.ant.v1.ValidateSystemAIConnectionResponse\x12X\n" +
+	"\x11ParseProviderCurl\x12 .ant.v1.ParseProviderCurlRequest\x1a!.ant.v1.ParseProviderCurlResponseB#Z!alphaforge/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
 
 var file_system_ai_proto_goTypes = []any{
 	(*ListSystemAIConfigsRequest)(nil),         // 0: ant.v1.ListSystemAIConfigsRequest
@@ -40,12 +41,14 @@ var file_system_ai_proto_goTypes = []any{
 	(*UpdateSystemAISecretRequest)(nil),        // 3: ant.v1.UpdateSystemAISecretRequest
 	(*DiscoverSystemAIModelsRequest)(nil),      // 4: ant.v1.DiscoverSystemAIModelsRequest
 	(*ValidateSystemAIConnectionRequest)(nil),  // 5: ant.v1.ValidateSystemAIConnectionRequest
-	(*ListSystemAIConfigsResponse)(nil),        // 6: ant.v1.ListSystemAIConfigsResponse
-	(*GetSystemAIConfigResponse)(nil),          // 7: ant.v1.GetSystemAIConfigResponse
-	(*UpdateSystemAIConfigResponse)(nil),       // 8: ant.v1.UpdateSystemAIConfigResponse
-	(*UpdateSystemAISecretResponse)(nil),       // 9: ant.v1.UpdateSystemAISecretResponse
-	(*DiscoverSystemAIModelsResponse)(nil),     // 10: ant.v1.DiscoverSystemAIModelsResponse
-	(*ValidateSystemAIConnectionResponse)(nil), // 11: ant.v1.ValidateSystemAIConnectionResponse
+	(*ParseProviderCurlRequest)(nil),           // 6: ant.v1.ParseProviderCurlRequest
+	(*ListSystemAIConfigsResponse)(nil),        // 7: ant.v1.ListSystemAIConfigsResponse
+	(*GetSystemAIConfigResponse)(nil),          // 8: ant.v1.GetSystemAIConfigResponse
+	(*UpdateSystemAIConfigResponse)(nil),       // 9: ant.v1.UpdateSystemAIConfigResponse
+	(*UpdateSystemAISecretResponse)(nil),       // 10: ant.v1.UpdateSystemAISecretResponse
+	(*DiscoverSystemAIModelsResponse)(nil),     // 11: ant.v1.DiscoverSystemAIModelsResponse
+	(*ValidateSystemAIConnectionResponse)(nil), // 12: ant.v1.ValidateSystemAIConnectionResponse
+	(*ParseProviderCurlResponse)(nil),          // 13: ant.v1.ParseProviderCurlResponse
 }
 var file_system_ai_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.SystemAIService.ListSystemAIConfigs:input_type -> ant.v1.ListSystemAIConfigsRequest
@@ -54,14 +57,16 @@ var file_system_ai_proto_depIdxs = []int32{
 	3,  // 3: ant.v1.SystemAIService.UpdateSystemAISecret:input_type -> ant.v1.UpdateSystemAISecretRequest
 	4,  // 4: ant.v1.SystemAIService.DiscoverSystemAIModels:input_type -> ant.v1.DiscoverSystemAIModelsRequest
 	5,  // 5: ant.v1.SystemAIService.ValidateSystemAIConnection:input_type -> ant.v1.ValidateSystemAIConnectionRequest
-	6,  // 6: ant.v1.SystemAIService.ListSystemAIConfigs:output_type -> ant.v1.ListSystemAIConfigsResponse
-	7,  // 7: ant.v1.SystemAIService.GetSystemAIConfig:output_type -> ant.v1.GetSystemAIConfigResponse
-	8,  // 8: ant.v1.SystemAIService.UpdateSystemAIConfig:output_type -> ant.v1.UpdateSystemAIConfigResponse
-	9,  // 9: ant.v1.SystemAIService.UpdateSystemAISecret:output_type -> ant.v1.UpdateSystemAISecretResponse
-	10, // 10: ant.v1.SystemAIService.DiscoverSystemAIModels:output_type -> ant.v1.DiscoverSystemAIModelsResponse
-	11, // 11: ant.v1.SystemAIService.ValidateSystemAIConnection:output_type -> ant.v1.ValidateSystemAIConnectionResponse
-	6,  // [6:12] is the sub-list for method output_type
-	0,  // [0:6] is the sub-list for method input_type
+	6,  // 6: ant.v1.SystemAIService.ParseProviderCurl:input_type -> ant.v1.ParseProviderCurlRequest
+	7,  // 7: ant.v1.SystemAIService.ListSystemAIConfigs:output_type -> ant.v1.ListSystemAIConfigsResponse
+	8,  // 8: ant.v1.SystemAIService.GetSystemAIConfig:output_type -> ant.v1.GetSystemAIConfigResponse
+	9,  // 9: ant.v1.SystemAIService.UpdateSystemAIConfig:output_type -> ant.v1.UpdateSystemAIConfigResponse
+	10, // 10: ant.v1.SystemAIService.UpdateSystemAISecret:output_type -> ant.v1.UpdateSystemAISecretResponse
+	11, // 11: ant.v1.SystemAIService.DiscoverSystemAIModels:output_type -> ant.v1.DiscoverSystemAIModelsResponse
+	12, // 12: ant.v1.SystemAIService.ValidateSystemAIConnection:output_type -> ant.v1.ValidateSystemAIConnectionResponse
+	13, // 13: ant.v1.SystemAIService.ParseProviderCurl:output_type -> ant.v1.ParseProviderCurlResponse
+	7,  // [7:14] is the sub-list for method output_type
+	0,  // [0:7] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

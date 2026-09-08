@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { Input, Button, Space, Select } from 'antd';
-import { ReloadOutlined, ExportOutlined, ExclamationCircleOutlined, ClearOutlined } from '@ant-design/icons';
+import { ReloadOutlined, ExportOutlined, ExclamationCircleOutlined, ClearOutlined, ImportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { FIELDS_API_KEY_CONFIGURED_KEY, FIELDS_API_KEY_KEY, FIELDS_API_KEY_REPLACE_HINT_KEY, FIELDS_AVAILABLE_MODELS_EMPTY_KEY, FIELDS_AVAILABLE_MODELS_HINT_KEY, FIELDS_AVAILABLE_MODELS_KEY, FIELDS_AVAILABLE_MODELS_PLACEHOLDER_KEY, FIELDS_AVAILABLE_MODELS_TIP_KEY, FIELDS_BASE_URL_HINT_KEY, FIELDS_BASE_URL_KEY, FIELDS_CLEAR_KEY, FIELDS_DELETE_API_KEY_KEY, SECTIONS_CONNECTION_API_KEY_LINK_KEY, SECTIONS_CONNECTION_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
 import { SYSTEM_A_I_CUSTOM_PROVIDER_NAME_HINT_KEY, SYSTEM_A_I_CUSTOM_PROVIDER_NAME_LABEL_KEY, SYSTEM_A_I_CUSTOM_PROVIDER_NAME_PLACEHOLDER_KEY, SYSTEM_A_I_FIELDS_API_KEY_HINT_KEY, SYSTEM_A_I_FIELDS_API_KEY_PASTE_PLACEHOLDER_KEY, SYSTEM_A_I_FIELDS_AUTO_FETCHING_KEY, SYSTEM_A_I_FIELDS_BASE_URL_CUSTOM_HINT_KEY, SYSTEM_A_I_FIELDS_BASE_URL_CUSTOM_PLACEHOLDER_KEY, SYSTEM_A_I_FIELDS_BASE_URL_READONLY_HINT_KEY, SYSTEM_A_I_FIELDS_BASE_URL_READONLY_PLACEHOLDER_KEY, SYSTEM_A_I_FIELDS_HTTP_WARNING_KEY } from '@/gen/ant/v1/i18n/ai_core_keys';
 
 ;
+import { parseProviderCurl } from '../api';
 import { PROVIDER_LINKS } from '../constants';
 import { Section, Label, SoftTag } from './SharedComponents';
 import type { AIConfig } from '../model';
@@ -39,6 +41,39 @@ export function ConnectionFormSection(props: {
     discoveredModels,
   } = props;
 
+  // ── curl import (parse happens backend-side; here we only prefill the form) ──
+  const [curlText, setCurlText] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [curlNotes, setCurlNotes] = useState<string[]>([]);
+
+  const handleCurlImport = async () => {
+    const raw = curlText.trim();
+    if (!raw || importing) return;
+    setImporting(true);
+    setCurlNotes([]);
+    try {
+      const r = await parseProviderCurl(raw);
+      const patch: Partial<AIConfig> = {};
+      if (isCustomProvider(draft.provider_id)) {
+        if (r.base_url) patch.base_url = r.base_url;
+        if (!draft.name && r.name_hint) patch.name = r.name_hint;
+      } else if (r.base_url && r.base_url !== draft.base_url) {
+        setCurlNotes((n) => [...n, t('aiSettings.curlImport.mismatch', { defaultValue: '该地址与当前厂商官方地址不一致——请改用「自定义 (OpenAI 兼容)」厂商卡片再导入' })]);
+      }
+      if ((r.models || []).length > 0) {
+        patch.models = r.models;
+        patch.default_model = r.default_model || r.models[0];
+      }
+      onDraftChange(patch);
+      if (r.api_key) onSecretInputChange(r.api_key);
+      setCurlNotes((n) => [...n, ...r.warnings]);
+    } catch (e) {
+      setCurlNotes([e instanceof Error ? e.message : t('aiSettings.curlImport.failed', { defaultValue: '导入失败，请检查 curl 内容' })]);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <Section
       step={2}
@@ -57,6 +92,30 @@ export function ConnectionFormSection(props: {
       }
     >
       <div className="space-y-4">
+        <div style={{ border: '1px dashed var(--ant-color-border)', borderRadius: 8, padding: 12 }}>
+          <Label
+            text={t('aiSettings.curlImport.title', { defaultValue: '从厂商 curl 示例导入' })}
+            hint={t('aiSettings.curlImport.hint', { defaultValue: '把厂商文档里的 curl 示例原样粘贴进来，系统自动识别地址、API Key 和模型名并回填到下方表单，确认无误后保存即可。' })}
+          />
+          <Input.TextArea
+            rows={3}
+            value={curlText}
+            onChange={(e) => setCurlText(e.target.value)}
+            placeholder={t('aiSettings.curlImport.placeholder', { defaultValue: 'curl https://api.example.com/v1/chat/completions \\\n  -H "Authorization: Bearer sk-..." \\\n  -d \'{"model": "..."}\'' })}
+          />
+          <Space style={{ marginTop: 8 }}>
+            <Button size="small" type="primary" icon={<ImportOutlined />}
+              loading={importing} disabled={!curlText.trim()}
+              onClick={handleCurlImport}>
+              {t('aiSettings.curlImport.action', { defaultValue: '导入并回填' })}
+            </Button>
+          </Space>
+          {curlNotes.length > 0 && (
+            <ul className="text-xs mt-2 space-y-1" style={{ color: 'var(--ant-color-warning)' }}>
+              {curlNotes.map((w, i) => <li key={i}>· {w}</li>)}
+            </ul>
+          )}
+        </div>
         {isCustomProvider(draft.provider_id) ? (
           <div>
             <Label

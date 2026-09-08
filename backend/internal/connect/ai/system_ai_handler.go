@@ -159,6 +159,27 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 	}), nil
 }
 
+// ParseProviderCurl parses a vendor curl example into provider config fields.
+// Parse only — nothing is persisted; the client prefills its form from the
+// result and the user confirms through the normal save path.
+func (s *SystemAIServer) ParseProviderCurl(ctx context.Context, req *connect.Request[antv1.ParseProviderCurlRequest]) (*connect.Response[antv1.ParseProviderCurlResponse], error) {
+	if strings.TrimSpace(req.Msg.Curl) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("curl 内容为空"))
+	}
+	res, err := systemai.ParseProviderCurlRaw(req.Msg.Curl)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s", err))
+	}
+	return connect.NewResponse(&antv1.ParseProviderCurlResponse{
+		BaseUrl:      res.BaseURL,
+		ApiKey:       res.APIKey,
+		DefaultModel: res.DefaultModel,
+		Models:       res.Models,
+		NameHint:     res.NameHint,
+		Warnings:     res.Warnings,
+	}), nil
+}
+
 func (s *SystemAIServer) ValidateSystemAIConnection(ctx context.Context, req *connect.Request[antv1.ValidateSystemAIConnectionRequest]) (*connect.Response[antv1.ValidateSystemAIConnectionResponse], error) {
 	uid, err := userIDFromCtx(ctx)
 	if err != nil {

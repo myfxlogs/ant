@@ -2544,3 +2544,25 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：temperature 自愈只处理 body 含 "temperature" 的 400；若厂商用其他措辞拒绝参数仍走 failover。流式路径先吃一次 400 再 fallback，首字延迟略增（仅对不支持 temperature 的模型发生）。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+---
+
+## FIX-2026-09-08-CURL-IMPORT：厂商 curl 示例一键导入 BYOK 配置（✅done 2026-09-08）
+
+**背景**（业主采纳方案）：新手配置 BYOK 时最常犯三个错——URL 填错粒度（root vs endpoint）、model 名靠猜、key header 格式不确定；厂商文档的 curl 示例里这三项都是权威原文。方案：**粘贴 curl → 后端解析 → 回填表单确认后走原保存路径**，存储层零改动（结构化行仍是唯一真相源，P3），不做自由 JSON 作为运行时配置（fail-closed 红线：密钥按字段加密、模型白名单/计费归因依赖已知字段）。
+
+**实现**：
+- proto：`system_ai.proto` 新增 `ParseProviderCurl(ParseProviderCurlRequest) returns (ParseProviderCurlResponse)`；消息落 `system_ai_probe.proto`（发现/校验家族，无持久化）。`make proto` 重生成 Go + TS。
+- 后端解析器 `systemai/curl_import.go`：`ParseProviderCurlRaw`——shell 词法（单引号 literal / 双引号 `\"` 转义 / `\` 续行合并）；提取 URL（`normalizeAPIBase` 剥 endpoint 后缀）、`Authorization: Bearer`/`x-api-key`/`api-key` key、body JSON `model`；占位符 key（`{your_key}`/`<token>`/`$KEY`）不导入只提示；`NameHint` 从 host 推导（token.sensenova.cn → sensanova）；无 URL fail-closed 报错；解析纯函数无网络无落库。
+- handler `system_ai_handler.go::ParseProviderCurl`：空入参/解析失败 → InvalidArgument。
+- 前端 `ConnectionFormSection`：顶部虚线框「从厂商 curl 示例导入」——TextArea + 导入按钮；结果回填 `onDraftChange`（base_url/models/default_model，自定义厂商才回填 name hint）+ `onSecretInputChange`（真实 key）；官方厂商卡片地址不一致时提示改用自定义卡片；warnings 行内展示；i18n 用 inline defaultValue 模式（i18n-check 干净树本就有 1519 个既有错误，本次零新增）。
+
+**对抗证明 RED→GREEN**：
+- 后端 `curl_import_test.go` 3 用例：业主原始 NOVA 示例（多行+续行+占位符）→ BaseURL=…/v1 + 占位符告警 + kimi-k3；真实 key/x-api-key/`--data-raw` 转义引号变体；无 URL 报错 + 仅 URL 时 model 缺失告警。RED = `undefined: ParseProviderCurlRaw` 编译失败（最强证明）。
+- 前端 `connection-form-curl-import.test.tsx` 2 用例：导入回填 base_url/models/default_model/name_hint + 占位符 key 不进密钥输入框 + 告警行内展示；解析错误行内显示不崩溃。mutation 还原 ConnectionForm.tsx → 2/2 RED → 恢复 2/2 GREEN。
+
+**门禁**：build ✓ / vet（+integration tag 单独验证既有 NewAIServer 破损与本改动无关）✓ / systemai race×3 ✓ / check-lines --strict 0 errors ✓ / 前端 build ✓ / 前端 vitest 全量 ✓ / i18n-check 零新增错误 ✓。
+
+**风险/gap**：解析只覆盖 OpenAI 兼容形态（chat/completions 示例）；`--data-urlencode` 当 body 处理可能解析失败（有告警兜底）；非 curl 文本（PowerShell 语法）不支持。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。

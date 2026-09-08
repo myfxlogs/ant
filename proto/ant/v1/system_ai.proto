@@ -14,4 +14,6 @@ service SystemAIService {
   rpc UpdateSystemAISecret(UpdateSystemAISecretRequest) returns (UpdateSystemAISecretResponse);
   rpc DiscoverSystemAIModels(DiscoverSystemAIModelsRequest) returns (DiscoverSystemAIModelsResponse);
   rpc ValidateSystemAIConnection(ValidateSystemAIConnectionRequest) returns (ValidateSystemAIConnectionResponse);
+  // Parse a vendor curl example into provider config fields (no persistence).
+  rpc ParseProviderCurl(ParseProviderCurlRequest) returns (ParseProviderCurlResponse);
 }
