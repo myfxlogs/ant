@@ -58,16 +58,26 @@ describe('WorkspaceSidebar navigation sections', () => {
     expect(props.onSectionChange).toHaveBeenCalledWith('new')
   })
 
-  it('expanding the new-strategy section shows the four uniform source items', () => {
+  it('expanding the new-strategy section shows the three uniform source items', () => {
     const props = renderSidebar('new')
-    expect(screen.getByText('AI Generate')).toBeTruthy()
-    expect(screen.getByText('Manual Coding')).toBeTruthy()
-    expect(screen.getByText('Import MQL')).toBeTruthy()
-    expect(screen.getByText('Use Template')).toBeTruthy()
+    expect(screen.getByText('AI 生成')).toBeTruthy()
+    expect(screen.getByText('手动编写')).toBeTruthy()
+    expect(screen.getByText('导入 MQL')).toBeTruthy()
+    expect(screen.queryByText('Use Template')).toBeNull() // removed per owner
 
-    fireEvent.click(screen.getByText('AI Generate'))
+    fireEvent.click(screen.getByText('AI 生成'))
     expect(props.onNewSource).toHaveBeenCalledWith('ai')
-    // main area switch also closes the right panel (CenterColumn behavior)
+  })
+
+  it('keeps the section expanded after picking manual/import (same as AI)', () => {
+    const props = renderSidebar('new')
+    fireEvent.click(screen.getByText('New Strategy'))
+    fireEvent.click(screen.getByText('手动编写'))
+    expect(props.onNewSource).toHaveBeenCalledWith('manual')
+    // section stays expanded: the other sources are still visible
+    expect(screen.getByText('导入 MQL')).toBeTruthy()
+    fireEvent.click(screen.getByText('导入 MQL'))
+    expect(props.onNewSource).toHaveBeenCalledWith('import')
   })
 
   it('highlights the active section and shows counts on inactive ones', () => {

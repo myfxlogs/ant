@@ -137,20 +137,20 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     if (history.autoExpandHistory) { setActiveSection('history'); setRightPanelTab(null); }
   }, [history.autoExpandHistory]);
 
+  // 新建策略分区的中心视图：sources = 来源选择卡；editor = 已选定来源后的编辑器/导入面板
+  const [newCenterView, setNewCenterView] = useState<'sources' | 'editor'>('sources');
   const onNewSource = (source: NewSource) => {
     handleNewStrategy();
     if (source === 'ai') { setRightPanelTab('ai'); return; }
+    // 手动编写/导入保持「新建策略」分区展开（业主指令），仅切换中心视图
+    setNewCenterView('editor');
     if (source === 'import') setImportMode(true);
     if (source === 'manual') {
       // 最小脚手架（<20 字符不触发审计），让用户直接落进空白编辑器
       code.setCode('# 新策略\n');
     }
-    if (source === 'template') { const first = templates.list[0]?.id; if (first) templates.onSelect(first); }
-    setActiveSection('strategies');
   };
-  const newStrategyPanel = (
-    <NewStrategyPanel templateCount={templates.list.length} onNewSource={onNewSource} />
-  );
+
   const backtestHistoryPanel = (
     <BacktestHistoryPanel
       runs={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; name?: string }>) || []}
@@ -249,8 +249,21 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
               />
             ) : activeSection === 'history' ? (
               backtestHistoryPanel
-            ) : activeSection === 'new' ? (
-              newStrategyPanel
+            ) : activeSection === 'new' && newCenterView === 'sources' ? (
+              <NewStrategyPanel onNewSource={onNewSource} />
+            ) : activeSection === 'new' && newCenterView === 'editor' ? (
+              <CodeEditorArea
+                code={code.code || ''}
+                importMode={importMode}
+                isMobile={isMobile}
+                templateCount={templates.list.length}
+                onSetImportMode={setImportMode}
+                onSetCode={code.setCode}
+                onSetCenterTab={setCenterTab}
+                onSetRightPanelTab={setRightPanelTab}
+                onSelectFirstTemplate={() => templates.onSelect(templates.list[0]?.id || '')}
+                onStrategyIdChange={(id) => { if (id) code.setStrategyId(id); }}
+              />
             ) : (
               <CodeEditorArea
                 code={code.code || ''}

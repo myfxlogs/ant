@@ -1,20 +1,18 @@
 import { useState } from 'react';
-import { Empty } from 'antd';
-import { ImportOutlined, FileTextOutlined, RobotOutlined, EditOutlined } from '@ant-design/icons';
+import { ImportOutlined, RobotOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { IMPORT_MQL_KEY, AI_GENERATE_KEY, USE_TEMPLATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { IMPORT_MQL_KEY, AI_GENERATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 import type { NewSource } from './WorkspaceSidebar';
 
 export type WorkspaceSection = 'new' | 'strategies' | 'history';
 
 interface Props {
   onNewSource: (source: NewSource) => void;
-  templateCount: number;
 }
 
 // 新建策略来源选择（主区面板）：分区切换后展示的第一步。
 // 四个来源各自带完成态承诺；选择后由父级切换到对应工作流。
-export default function NewStrategyPanel({ onNewSource, templateCount }: Props) {
+export default function NewStrategyPanel({ onNewSource }: Props) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState('');
 
@@ -24,7 +22,6 @@ export default function NewStrategyPanel({ onNewSource, templateCount }: Props) 
     background: 'var(--ant-color-bg-container)',
     boxShadow: hovered === key ? '0 2px 8px rgba(0,0,0,0.09)' : 'none',
     transition: 'border-color 0.15s, box-shadow 0.15s',
-    opacity: key === 'template' && templateCount === 0 ? 0.5 : 1,
   });
   const titleStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: 'var(--ant-color-text)', marginTop: 10 };
   const descStyle: React.CSSProperties = { fontSize: 12, color: 'var(--ant-color-text-secondary)', marginTop: 6, lineHeight: 1.6 };
@@ -48,13 +45,6 @@ export default function NewStrategyPanel({ onNewSource, templateCount }: Props) 
       desc: t('strategy.workspace.new.importDesc', { defaultValue: '上传/粘贴 MQL4/MQL5 源码，自动获得可运行度报告与盲区翻译建议。' }),
       action: () => onNewSource('import'),
     },
-    {
-      key: 'template', icon: <FileTextOutlined style={{ fontSize: 22, color: 'var(--color-warning)' }} />,
-      title: t(USE_TEMPLATE_KEY, { defaultValue: '使用模板' }),
-      desc: t('strategy.workspace.new.templateDesc', { defaultValue: '从已验证的模板策略起步，改参数即可回测。' }),
-      action: () => onNewSource('template'),
-      disabled: templateCount === 0,
-    },
   ];
 
   return (
@@ -70,7 +60,7 @@ export default function NewStrategyPanel({ onNewSource, templateCount }: Props) 
           {cards.map((c) => (
             <div key={c.key} data-testid={`new-source-${c.key}`}
               style={cardStyle(c.key)}
-              onClick={c.disabled ? undefined : c.action}
+              onClick={c.action}
               onMouseEnter={() => setHovered(c.key)}
               onMouseLeave={() => setHovered('')}>
               {c.icon}
@@ -79,9 +69,6 @@ export default function NewStrategyPanel({ onNewSource, templateCount }: Props) 
             </div>
           ))}
         </div>
-        {templateCount === 0 && (
-          <Empty description={t('strategy.workspace.new.noTemplates', { defaultValue: '暂无模板' })} style={{ marginTop: 16 }} />
-        )}
       </div>
     </div>
   );

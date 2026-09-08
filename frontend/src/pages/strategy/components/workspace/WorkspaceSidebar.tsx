@@ -4,7 +4,7 @@ import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretL
 import { useTranslation } from 'react-i18next';
 import SidebarStrategyList from './SidebarStrategyList';
 import SidebarRunList from './SidebarRunList';
-import { IMPORT_MQL_KEY, AI_GENERATE_KEY, USE_TEMPLATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { IMPORT_MQL_KEY, AI_GENERATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 export type WorkspaceSection = 'new' | 'strategies' | 'history';
 export type NewSource = 'ai' | 'manual' | 'import' | 'template';
@@ -92,7 +92,6 @@ export default function WorkspaceSidebar({
             { key: 'ai' as const, icon: <RobotOutlined />, label: t(AI_GENERATE_KEY, { defaultValue: 'AI 生成' }) },
             { key: 'manual' as const, icon: <EditOutlined />, label: t('strategy.workspace.new.manual', { defaultValue: '手动编写' }) },
             { key: 'import' as const, icon: <ImportOutlined />, label: t(IMPORT_MQL_KEY, { defaultValue: '导入 MQL' }) },
-            { key: 'template' as const, icon: <FileTextOutlined />, label: t(USE_TEMPLATE_KEY, { defaultValue: '使用模板' }) },
           ]).map(({ key, icon, label }) => (
             <button key={key} type="button" className="sidebar-item"
               style={{ padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid transparent', background: 'transparent', textAlign: 'left' }}
