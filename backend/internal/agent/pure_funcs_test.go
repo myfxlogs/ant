@@ -424,12 +424,12 @@ func TestNewProfiler(t *testing.T) {
 func TestFallbackAnalysisUserPrompt(t *testing.T) {
 	t.Parallel()
 	result := &antv1.AgentBacktestResult{
-		Success:      true,
-		TotalReturn:  "0.15",
-		MaxDrawdown:  "0.05",
-		SharpeRatio:  "1.5",
-		WinRate:      "0.6",
-		TotalTrades:  100,
+		Success:     true,
+		TotalReturn: "0.15",
+		MaxDrawdown: "0.05",
+		SharpeRatio: "1.5",
+		WinRate:     "0.6",
+		TotalTrades: 100,
 	}
 	profile := &antv1.StrategyProfile{StrategyType: "trend"}
 	prompt := fallbackAnalysisUserPrompt(result, profile)

@@ -1,8 +1,8 @@
 package agent
 
 import (
-	_ "embed"
 	"context"
+	_ "embed"
 	"fmt"
 	"strconv"
 	"strings"

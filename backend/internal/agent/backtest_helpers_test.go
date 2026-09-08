@@ -22,11 +22,11 @@ func TestBuildBacktestResultProto_InvariantsPopulated(t *testing.T) {
 		},
 		FinalBalance: decimal.NewFromInt(10000),
 		Metrics: &antv1.BacktestMetrics{
-			TotalReturn:  "0",
-			MaxDrawdown:  "0",
-			SharpeRatio:  "0",
-			WinRate:      "0",
-			TotalTrades:  1,
+			TotalReturn: "0",
+			MaxDrawdown: "0",
+			SharpeRatio: "0",
+			WinRate:     "0",
+			TotalTrades: 1,
 		},
 		Trades: []backtest.Trade{
 			{
@@ -58,11 +58,11 @@ func TestBuildBacktestResultProto_InvariantsPopulated(t *testing.T) {
 		},
 		FinalBalance: decimal.NewFromInt(10000),
 		Metrics: &antv1.BacktestMetrics{
-			TotalReturn:  "0",
-			MaxDrawdown:  "0",
-			SharpeRatio:  "0",
-			WinRate:      "0",
-			TotalTrades:  1,
+			TotalReturn: "0",
+			MaxDrawdown: "0",
+			SharpeRatio: "0",
+			WinRate:     "0",
+			TotalTrades: 1,
 		},
 		Trades: []backtest.Trade{
 			{
@@ -104,11 +104,11 @@ func TestBuildBacktestResultProto_InvariantsPopulated(t *testing.T) {
 		},
 		FinalBalance: decimal.NewFromInt(9990), // off by 10, tolerance for 10000 is 1.0
 		Metrics: &antv1.BacktestMetrics{
-			TotalReturn:  "0",
-			MaxDrawdown:  "0",
-			SharpeRatio:  "0",
-			WinRate:      "0",
-			TotalTrades:  1,
+			TotalReturn: "0",
+			MaxDrawdown: "0",
+			SharpeRatio: "0",
+			WinRate:     "0",
+			TotalTrades: 1,
 		},
 		Trades: []backtest.Trade{
 			{

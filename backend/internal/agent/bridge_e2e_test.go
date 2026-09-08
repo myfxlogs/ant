@@ -184,10 +184,10 @@ func TestBridge_TranslateWithRetry_FailAllAttempts(t *testing.T) {
 // fields needed by the gateway response builder.
 func TestBridge_BridgeResultFields(t *testing.T) {
 	r := &BridgeResult{
-		PythonSource:  validPythonSubset,
-		CompileError:  "",
-		Status:        "success",
-		Attempts:      1,
+		PythonSource: validPythonSubset,
+		CompileError: "",
+		Status:       "success",
+		Attempts:     1,
 	}
 	if r.Status != "success" {
 		t.Errorf("expected status 'success', got %q", r.Status)

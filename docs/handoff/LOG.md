@@ -145,3 +145,7 @@
 | FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION | �open | 施工完成 2026-08-28，待 Devin CLI 独立复审（11 项对抗证明 RED→restore→GREEN + 机检五件套全绿） |
 | FIX-2026-08-28-MAGIC-ENRICHMENT（magic 列 `-` 三条断裂） | ✅done | 断裂 1: buildClosedTradeRecord 从 orders 表回查 magic + 断裂 2: proto OrderUpdateEvent 加 magic_number + 前端映射 + 断裂 3: DB 回填 252 条 trades。对抗证明 RED→restore→GREEN（断裂 1+2 各 2 测试）。门禁全过。审计补加断裂 2 对抗测试。已部署 2026-08-28（container healthy）。 |
 | FIX-2026-08-28-ORDER-LOG-COLUMNS-TYPE-MISMATCH | ✅done | Devin CLI 直接施工+验收 2026-08-28。scheduleLogColumns.tsx 4 列 render `typeof v === 'number'`→`v ? String(v) : '-'`（proto string/bigint vs number 类型不匹配）。tsc+build 全绿。已部署。 |
+
+## 2026-09-08 遗留清单按序执行（5 项）
+
+①工作台编译错误上下文：strategy_plan_context.go 服务端现场编译注入失败段（ Conversate/ExecutePlan）；②analyze_mql 工具 + mqlImportDirective 5 语言提示；③MQL-COMPILER-LOCAL-ARRAYS 立债；④AIGatewayCard 自有 Key 优先提示；⑤internal/agent gofmt 清零。明细见 registry。

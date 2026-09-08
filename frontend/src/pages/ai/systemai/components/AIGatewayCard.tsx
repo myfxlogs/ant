@@ -7,6 +7,7 @@ import { GATEWAY_MODEL_PLACEHOLDER_KEY, GATEWAY_MONTHLY_COST_KEY, GATEWAY_MONTHL
 ;
 import { aiGatewayApi, type SystemModelInfo, type TokenUsageInfo } from '@/client/aiGateway';
 import { aiApi } from '@/client/ai';
+import { listSystemAIConfigs } from '@/pages/ai/systemai/api';
 
 const { Text, Title } = Typography;
 
@@ -23,6 +24,15 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
   const [modelsLoading, setModelsLoading] = useState(false);
   const [usage, setUsage] = useState<TokenUsageInfo | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
+  const [hasOwnKey, setHasOwnKey] = useState(false);
+
+  // Runtime truth: any own keyed provider takes precedence over gateway
+  // models (resolveAllChatProviders consults gateway only as fallback).
+  useEffect(() => {
+    listSystemAIConfigs()
+      .then((r) => setHasOwnKey((r.items || []).some((c) => c.enabled && c.has_secret)))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!useGateway) return;
@@ -109,6 +119,15 @@ export default function AIGatewayCard({ useGateway, onToggle, selectedModel, onM
       {/* Gateway mode content */}
       {useGateway && (
         <>
+          {hasOwnKey && (
+            <Row style={{ marginBottom: 12 }}>
+              <Col span={24}>
+                <Text type="warning" style={{ fontSize: 12 }}>
+                  {t('ai.gateway.ownKeyActiveHint', { defaultValue: '检测到已生效的自有 API Key：聊天运行时会优先使用自有 Key，此处选择的网关模型仅作兜底。如需改用网关，请停用对应厂商的自有 Key。' })}
+                </Text>
+              </Col>
+            </Row>
+          )}
           <Row gutter={[16, 12]} align="middle" style={{ marginBottom: 16 }}>
             <Col xs={24} sm={8}>
               <Text type="secondary" style={{ fontSize: 12 }}>{t(GATEWAY_SELECT_MODEL_KEY, '选择模型')}</Text>

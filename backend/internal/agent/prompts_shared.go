@@ -28,4 +28,3 @@ func writeProfileToPrompt(sb *strings.Builder, profile *antv1.StrategyProfile, h
 	fmt.Fprintf(sb, "Exit: %s\n", profile.ExitLogic)
 	fmt.Fprintf(sb, "Risk: %s\n", profile.RiskManagement)
 }
-

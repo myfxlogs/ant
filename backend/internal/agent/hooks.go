@@ -34,30 +34,30 @@ type HookContext struct {
 	BacktestResult *antv1.AgentBacktestResult
 	Profile        *antv1.StrategyProfile
 	Analysis       *antv1.BacktestAnalysis
-	Error error
+	Error          error
 }
 
 // HookType is the execution type of a hook (ADR-0025 §8).
 type HookType string
 
 const (
-	HookTypeCommand  HookType = "command"  // shell command, stdin=JSON, exit code 2 = abort
-	HookTypeWebhook  HookType = "webhook"  // HTTP POST, {"allow": false} = abort
+	HookTypeCommand HookType = "command" // shell command, stdin=JSON, exit code 2 = abort
+	HookTypeWebhook HookType = "webhook" // HTTP POST, {"allow": false} = abort
 )
 
 // HookConfig describes a registered hook with its type and execution params.
 type HookConfig struct {
-	Type     HookType
-	Event    HookEvent
-	Command  string        // for HookTypeCommand
-	WebhookURL string      // for HookTypeWebhook
-	Timeout  time.Duration // default 10s
+	Type       HookType
+	Event      HookEvent
+	Command    string        // for HookTypeCommand
+	WebhookURL string        // for HookTypeWebhook
+	Timeout    time.Duration // default 10s
 }
 
 // HookResult is the outcome of a hook execution.
 type HookResult struct {
-	Abort   bool   // if true, abort the operation
-	Reason  string // abort reason
+	Abort  bool   // if true, abort the operation
+	Reason string // abort reason
 }
 
 // HookHandler is a function called at a lifecycle hook point.
@@ -66,8 +66,8 @@ type HookHandler func(ctx context.Context, hc *HookContext) HookResult
 // HookEngine manages lifecycle hooks (ADR-0025 §8).
 // Supports three hook types: internal (Go function), command (shell), webhook (HTTP POST).
 type HookEngine struct {
-	handlers map[HookEvent][]HookHandler   // internal handlers
-	configs  map[HookEvent][]HookConfig     // command/webhook configs
+	handlers map[HookEvent][]HookHandler // internal handlers
+	configs  map[HookEvent][]HookConfig  // command/webhook configs
 	log      *zap.Logger
 }
 

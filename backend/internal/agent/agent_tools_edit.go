@@ -56,11 +56,11 @@ func (t *editCodeTool) Schema() systemai.ToolDefinition {
 	return systemai.ToolDefinition{
 		Type: "function",
 		Function: systemai.ToolDefFunction{
-			Name: "edit_code",
+			Name:        "edit_code",
 			Description: "精确编辑策略代码（old_string→new_string）。小改动用此工具；大改动请用write_strategy。old_string必须唯一匹配。",
 			Parameters: map[string]any{
-				schemaKeyType:     schemaTypeObject,
-				"required": []string{"old_string", "new_string"},
+				schemaKeyType: schemaTypeObject,
+				"required":    []string{"old_string", "new_string"},
 				schemaKeyProperties: map[string]any{
 					"old_string": map[string]any{schemaKeyType: schemaTypeString, "description": "要替换的原始代码片段（必须唯一匹配）"},
 					"new_string": map[string]any{schemaKeyType: schemaTypeString, "description": "替换后的新代码片段"},

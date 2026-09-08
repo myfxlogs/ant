@@ -124,6 +124,7 @@ func (s *StrategyPlanServer) Conversate(
 	registry.AddPreTool(NewReadKlineTool(s.marketDataRepo))
 	registry.AddPreTool(NewReadBacktestLogTool(s.backtestRepo))
 	registry.AddPreTool(&compilePythonChatTool{})
+	registry.AddPreTool(&analyzeMQLChatTool{})
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
 
 	lang := LangFromAccept(req.Header().Get("Accept-Language"))
@@ -138,9 +139,7 @@ func (s *StrategyPlanServer) Conversate(
 
 	// Inject workspace context into the user prompt.
 	ctxInfo := fmt.Sprintf("[当前工作区: 品种=%s, 周期=%s]", m.Symbol, m.Timeframe)
-	if m.CurrentCode != "" {
-		ctxInfo += "\n\n## 当前策略代码\n```python\n" + m.CurrentCode + "\n```"
-	}
+	ctxInfo += workspacePythonContext(m.CurrentCode)
 	userPrompt := ctxInfo + " " + m.Message
 
 	chunk := func(delta string) error {
@@ -192,6 +191,7 @@ func (s *StrategyPlanServer) ExecutePlan(
 	registry := NewEmptyToolRegistry()
 	registry.AddPreTool(NewReadKlineTool(s.marketDataRepo))
 	registry.AddPreTool(NewReadBacktestLogTool(s.backtestRepo))
+	registry.AddPreTool(&analyzeMQLChatTool{})
 	registry.WireMemoryDB(s.memoryExec, s.memoryQuery)
 
 	lang := LangFromAccept(req.Header().Get("Accept-Language"))
@@ -233,19 +233,15 @@ func (s *StrategyPlanServer) ExecutePlan(
 	return stream.Send(&antv1.ExecutePlanChunk{Phase: "done", Code: code, PreviousCode: m.PreviousCode})
 }
 
-
-
-
-
-
-
-
 func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 	if m.FeedbackMessage != "" {
 		p := "## 执行计划\n" + m.Plan + "\n\n"
 		p += "## 用户的后续消息\n" + m.FeedbackMessage + "\n\n"
 		if m.PreviousCode != "" {
-			p += "## 当前的策略代码\n```go\n" + m.PreviousCode + "\n```\n\n"
+			p += "## 当前的策略代码\n```python\n" + m.PreviousCode + "\n```\n\n"
+			if errs := pythonCompileErrors(m.PreviousCode); errs != "" {
+				p += "## ⚠ 当前工作区代码编译失败\n```\n" + errs + "\n```\n优先修复以上编译错误；修复完成前不要做无关重构。\n\n"
+			}
 		}
 		if m.BacktestMetrics != nil {
 			p += "## 回测数据\n" + formatBacktestMetrics(m.BacktestMetrics) + "\n"
@@ -254,4 +250,3 @@ func buildExecuteUserPrompt(m *antv1.ExecutePlanRequest) string {
 	}
 	return m.Plan
 }
-

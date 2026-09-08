@@ -2625,3 +2625,17 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **遗留清单**：①工作台编译错误策略→AI chat 上下文设计缺陷（业主指定另行讨论）；②聊天 Agent 缺 MQL 覆盖度分析工具接线（analyze_mql，待拍板）；③编译器盲区：局部动态数组（建议立技术债排期）；④AIGatewayCard 网关选择与 BYOK 共存语义（归流程设计讨论）；⑤internal/agent gofmt 既有不洁。
 
 **状态**：✅done（Devin CLI 自审 2026-09-08，F1 已修复部署）。
+
+---
+
+## MQL-COMPILER-LOCAL-ARRAYS：局部动态数组编译盲区（🟦open；2026-09-08 立项）
+
+**症状**：MQL 策略函数内 `double price[]; ArrayResize(price, N)` 编译硬失败：`compile MQL to IR: local arrays not supported: price`。注意 `ArrayResize` 内置函数本身已实现（`vm_builtin_string.go builtinArrayResize`），卡点是 **MQL 前端 IR 层不支持函数内数组声明**——声明阶段即失败，走不到 ArrayResize 调用。
+
+**影响**：临时最高/最低价数组等常见 MQL 写法无法直接导入 VM，Agent 被迫整段走盲区桥接翻译为 Python 子集（2026-09-08 业主策略生成会话即因此触发）。
+
+**建议方案**：tree-sitter MQL 前端 → IR 增加函数内数组声明类型（局部 var 的数组形态），IR→Bytecode 增加局部数组读写指令，复用已有 `builtinArrayResize`/索引读写内建。全局数组已支持，可对照其实现路径。
+
+**验收标准**：`compile_interp` 新增用例——函数内动态数组声明/ArrayResize/索引读写，编译通过且 VM 执行结果与 MT4 语义一致；`compile MQL to IR: local arrays not supported` 不再出现。
+
+**关联**：聊天 Agent 已接入 `analyze_mql` 覆盖度分析工具（2026-09-08），盲区在该工具落地前由 Agent 桥接翻译兜底。

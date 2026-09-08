@@ -329,11 +329,11 @@ func TestGeneratorE2E_GenerateMode_WithConfirmedPlan(t *testing.T) {
 	)
 
 	plan := &antv1.StrategyPlan{
-		Type:    "dual_ema_crossover",
-		Entry:   "EMA(10) crosses above EMA(30)",
-		Exit:    "EMA(10) crosses below EMA(30)",
-		Risk:    "2% per trade, RR 1:2",
-		Market:  "trending, ADX>25, H1",
+		Type:   "dual_ema_crossover",
+		Entry:  "EMA(10) crosses above EMA(30)",
+		Exit:   "EMA(10) crosses below EMA(30)",
+		Risk:   "2% per trade, RR 1:2",
+		Market: "trending, ADX>25, H1",
 	}
 
 	var chunks []*antv1.AgentGenerateStrategyChunk
