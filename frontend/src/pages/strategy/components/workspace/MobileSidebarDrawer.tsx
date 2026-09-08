@@ -1,5 +1,5 @@
 import { Drawer } from 'antd';
-import WorkspaceSidebar from './WorkspaceSidebar';
+import WorkspaceSidebar, { type WorkspaceSection } from './WorkspaceSidebar';
 
 interface Props {
   open: boolean;
@@ -17,14 +17,12 @@ interface Props {
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
   onRenameRun?: (runId: string, name: string) => void;
-  onImport: () => void;
   onNew: () => void;
-  onNewAI: () => void;
-  onFirstTemplate: () => void;
-  autoExpandHistory?: boolean;
+  activeSection: WorkspaceSection;
+  onSectionChange: (s: WorkspaceSection) => void;
 }
 
-export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onImport, onNew, onNewAI, onFirstTemplate, autoExpandHistory }: Props) {
+export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onNew, activeSection, onSectionChange }: Props) {
   return (
     <Drawer open={open} onClose={onClose} placement="left" width={280} styles={{ body: { padding: 0 } }}>
       <WorkspaceSidebar
@@ -38,12 +36,10 @@ export default function MobileSidebarDrawer({ open, onClose, templates, loading,
         onDeleteRun={onDeleteRun}
         onBatchDeleteRuns={onBatchDeleteRuns}
         onRenameRun={onRenameRun}
-        onImport={() => { onImport(); onClose(); }}
         onNew={() => { onNew(); onClose(); }}
-        onNewAI={() => { onNewAI(); onClose(); }}
-        onFirstTemplate={() => { onFirstTemplate(); onClose(); }}
+        activeSection={activeSection}
+        onSectionChange={(s) => { onSectionChange(s); onClose(); }}
         collapsed={false} onToggle={onClose}
-        autoExpandHistory={autoExpandHistory}
       />
     </Drawer>
   );

@@ -2737,3 +2737,5 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：notification 为静态 API（仓库既有惯例，如 AIGatewayCard 的 message.success）；编辑期间仅状态条静默更新，弹窗只在状态跃迁时出现。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+**WORKSPACE-IA 补记（2026-09-08 分区导航联动）**：业主指令——分区切换驱动主区联动 + 新增"手动编写"来源 + 修导入 MQL 不跳转。实现：①`WorkspaceSidebar` 重构为受控导航（`activeSection`/`onSectionChange` props，内部 accordion 状态移除，autoExpandHistory 由父级 effect 消费）；②主区按分区渲染——`new`→`NewStrategyPanel` 四来源卡（**AI 生成/手动编写/导入 MQL/从模板**）、`history`→`BacktestHistoryPanel` 主区列表（点条目加载回测+右面板）、`strategies`→编辑器（现状）；③**连带修复跳转 bug**：`rightPanelTab` 打开时主区被 WorkspaceAIPanel 替换、importMode 被吞——新流程中导入卡片点击后 `setActiveSection('strategies')+setImportMode(true)`，编辑器渲染导入面板，不再被 AI 面板抢占。测试：3 个新测试文件 7 用例（分区切换/来源路由/模板置灰/空态），mutation stash RED→restore GREEN。前端全量 tsc+vite+vitest 206/206。

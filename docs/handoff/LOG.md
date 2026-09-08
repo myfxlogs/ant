@@ -193,3 +193,11 @@
 **实现**: WorkspaceSidebar 分区化 + runNewSource 选中即收起；CenterColumn 补 onNewAI/onFirstTemplate 回调；MobileSidebarDrawer 透传；折叠态保留 plus 图标兜底。
 
 **验证**: 组件测试 2 用例 mutation RED→GREEN；前端全量门禁绿。明细见 registry（补记于 COMPILE-NOTIFY 条目后）。
+
+## 2026-09-08 WORKSPACE-IA 分区导航联动
+
+**会话**: 业主指令：分区切换驱动主区联动 + 新增"手动编写"来源 + 修导入 MQL 不跳转。
+
+**实现**: WorkspaceSidebar 改受控导航（activeSection/onSectionChange）；主区按分区渲染 NewStrategyPanel（四来源卡）/BacktestHistoryPanel/编辑器；连带修复 rightPanelTab 优先渲染吞掉 importMode 的跳转 bug。
+
+**验证**: 新增 3 个测试文件 7 用例 mutation RED→GREEN；前端全量门禁绿。明细见 registry（COMPILE-NOTIFY 条目后补记）。

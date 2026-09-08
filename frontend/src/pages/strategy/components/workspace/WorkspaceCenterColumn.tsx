@@ -3,7 +3,9 @@ import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
-import WorkspaceSidebar from './WorkspaceSidebar';
+import WorkspaceSidebar, { type WorkspaceSection } from './WorkspaceSidebar';
+import NewStrategyPanel from './NewStrategyPanel';
+import BacktestHistoryPanel from './BacktestHistoryPanel';
 import WorkspaceAIPanel from './WorkspaceAIPanel';
 import WorkspaceCenterTabBar from './WorkspaceCenterTabBar';
 import CodeEditorArea from './CodeEditorArea';
@@ -100,6 +102,8 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   }, [account.accountId, backtest.runner, templates.selectedId]);
 
   const [importMode, setImportMode] = useState(false);
+  // 侧栏分区导航：展开哪个分区，主内容区就切换到对应视图。
+  const [activeSection, setActiveSection] = useState<WorkspaceSection>('strategies');
 
   const handleNewStrategy = useCallback(() => {
     const hasUnsaved = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode;
@@ -127,6 +131,29 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     }
   }, [templates, code, backtest, setCenterTab, setRightPanelTab, t]);
 
+  // 回测完成等外部事件要求展开历史分区时，主区随之切换
+  useEffect(() => {
+    if (history.autoExpandHistory) setActiveSection('history');
+  }, [history.autoExpandHistory]);
+
+  const newStrategyPanel = (
+    <NewStrategyPanel
+      templateCount={templates.list.length}
+      onAI={() => { handleNewStrategy(); setRightPanelTab('ai'); }}
+      onManual={() => { handleNewStrategy(); setActiveSection('strategies'); }}
+      onImport={() => { handleNewStrategy(); setImportMode(true); setActiveSection('strategies'); }}
+      onTemplate={() => { const first = templates.list[0]?.id; if (first) { templates.onSelect(first); setActiveSection('strategies'); } else { setActiveSection('strategies'); } }}
+    />
+  );
+  const backtestHistoryPanel = (
+    <BacktestHistoryPanel
+      runs={(history.runs as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; name?: string }>) || []}
+      loading={history.loading}
+      onOpen={(runId: string) => { if (runId) backtest.loadRunById(runId, code.setCode); setRightPanelTab('backtest'); }}
+      onDelete={history.onDeleteRun}
+    />
+  );
+
   const sidebarProps = useMemo(() => ({
     templates: templates.list,
     loading: templates.loading,
@@ -141,12 +168,11 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     onDeleteRun: history.onDeleteRun,
     onBatchDeleteRuns: sidebarActions.onBatchDeleteRuns,
     onRenameRun: sidebarActions.onRenameRun,
-    onImport: () => setImportMode(true),
     onNew: handleNewStrategy,
-    onNewAI: () => { handleNewStrategy(); setRightPanelTab('ai'); },
-    onFirstTemplate: () => { const first = templates.list[0]?.id; if (first) templates.onSelect(first); },
+    activeSection,
+    onSectionChange: setActiveSection,
     autoExpandHistory: history.autoExpandHistory,
-  }), [templates, sidebarActions, history, handleNewStrategy, setImportMode, backtest, code.setCode, setRightPanelTab]);
+  }), [templates, sidebarActions, history, handleNewStrategy, activeSection, backtest, code.setCode, setRightPanelTab]);
 
   const btSummary = backtest.metrics?.totalTrades != null
     ? { totalReturn: backtest.metrics.totalReturn, maxDrawdown: backtest.metrics.maxDrawdown, sharpeRatio: backtest.metrics.sharpeRatio, winRate: backtest.metrics.winRate, totalTrades: backtest.metrics.totalTrades }
@@ -213,6 +239,10 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
                 btSummary={btSummary}
                 recentSummaries={recentSummaries}
               />
+            ) : activeSection === 'history' ? (
+              backtestHistoryPanel
+            ) : activeSection === 'new' ? (
+              newStrategyPanel
             ) : (
               <CodeEditorArea
                 code={code.code || ''}

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
 
-// 业主指令：新建策略升级为侧栏分区（与我的策略/回测历史同级，含 AI 生成/
-// 导入 MQL/从模板三个来源项），取消底部"新建策略/导入 MQL"按钮区。
+// WORKSPACE-IA：侧栏分区 = 导航。展开哪个分区，主内容区就切换到对应视图。
+// 新建策略分区：点头部 → onSectionChange('new')；主区由 CenterColumn 渲染
+// 来源选择面板（含手动编写）。
 //
-// mutation: 还原 WorkspaceSidebar.tsx → 本用例 RED（底部按钮区回归、
-// 新建分区缺失）。
+// mutation: 还原 WorkspaceSidebar.tsx（内部 accordion 状态）→ 本用例 RED。
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -16,24 +16,24 @@ vi.mock('react-i18next', () => ({
     },
   }),
 }))
-vi.mock('./SidebarStrategyList', () => ({ default: () => <div data-testid="strategy-list" /> }))
-vi.mock('./SidebarRunList', () => ({ default: () => <div data-testid="run-list" /> }))
+vi.mock('@/pages/strategy/components/workspace/SidebarStrategyList', () => ({ default: () => <div data-testid="strategy-list" /> }))
+vi.mock('@/pages/strategy/components/workspace/SidebarRunList', () => ({ default: () => <div data-testid="run-list" /> }))
 
 import WorkspaceSidebar from '@/pages/strategy/components/workspace/WorkspaceSidebar'
 
-function renderSidebar() {
+function renderSidebar(activeSection: 'new' | 'strategies' | 'history' = 'strategies') {
   const props = {
-    templates: [{ id: 't1', name: '均线' }, { id: 't2', name: 'MACD' }],
+    templates: [{ id: 't1', name: '均线' }],
     loading: false,
     selectedId: '',
     onSelect: vi.fn(),
-    backtestRuns: [],
+    backtestRuns: [{ id: 'r1', totalReturn: 5.2, totalTrades: 12 }],
     runsLoading: false,
     onOpenHistory: vi.fn(),
     onImport: vi.fn(),
     onNew: vi.fn(),
-    onNewAI: vi.fn(),
-    onFirstTemplate: vi.fn(),
+    activeSection,
+    onSectionChange: vi.fn(),
     collapsed: false,
     onToggle: vi.fn(),
   }
@@ -41,34 +41,26 @@ function renderSidebar() {
   return props
 }
 
-describe('WorkspaceSidebar new-strategy section', () => {
-  it('renders the section at sidebar top; bottom button block is gone', () => {
-    renderSidebar()
-    expect(screen.getByText('New Strategy')).toBeTruthy()
-    // bottom action block removed: no block-style standalone import button
-    expect(screen.queryByText('Import MQL')).toBeNull()
+describe('WorkspaceSidebar navigation sections', () => {
+  it('only the active section renders its list', () => {
+    renderSidebar('strategies')
+    expect(screen.getByTestId('strategy-list')).toBeTruthy()
+    expect(screen.queryByTestId('run-list')).toBeNull()
   })
 
-  it('expands three sources and routes each action, collapsing afterwards', async () => {
-    const props = renderSidebar()
-    fireEvent.click(screen.getByText('New Strategy'))
-
-    expect(await screen.findByText('AI Generate')).toBeTruthy()
-    expect(screen.getByText('Import MQL')).toBeTruthy()
-    expect(screen.getByText('Use Template')).toBeTruthy()
-
-    fireEvent.click(screen.getByText('Import MQL'))
-    expect(props.onImport).toHaveBeenCalledTimes(1)
+  it('clicking a section header switches the active section', () => {
+    const props = renderSidebar('strategies')
+    fireEvent.click(screen.getByText('Backtest History'))
+    expect(props.onSectionChange).toHaveBeenCalledWith('history')
 
     fireEvent.click(screen.getByText('New Strategy'))
-    fireEvent.click(screen.getByText('AI Generate'))
-    expect(props.onNewAI).toHaveBeenCalledTimes(1)
+    expect(props.onSectionChange).toHaveBeenCalledWith('new')
+  })
 
-    fireEvent.click(screen.getByText('New Strategy'))
-    fireEvent.click(screen.getByText('Use Template'))
-    expect(props.onFirstTemplate).toHaveBeenCalledTimes(1)
-
-    // selection section collapsed back after choosing a source
-    expect(screen.queryByText('AI Generate')).toBeNull()
+  it('highlights the active section and shows counts on inactive ones', () => {
+    renderSidebar('history')
+    expect(screen.getByTestId('run-list')).toBeTruthy()
+    expect(screen.queryByTestId('strategy-list')).toBeNull()
+    expect(screen.getByText('1')).toBeTruthy() // strategies count badge
   })
 })
