@@ -140,6 +140,10 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     handleNewStrategy();
     if (source === 'ai') { setRightPanelTab('ai'); return; }
     if (source === 'import') setImportMode(true);
+    if (source === 'manual') {
+      // 最小脚手架（<20 字符不触发审计），让用户直接落进空白编辑器
+      code.setCode('# 新策略\n');
+    }
     if (source === 'template') { const first = templates.list[0]?.id; if (first) templates.onSelect(first); }
     setActiveSection('strategies');
   };
