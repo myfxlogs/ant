@@ -35,8 +35,10 @@ type UpdateSystemAIConfigRequest struct {
 	Purposes       []string               `protobuf:"bytes,10,rep,name=purposes,proto3" json:"purposes,omitempty"`
 	PrimaryFor     []string               `protobuf:"bytes,11,rep,name=primary_for,json=primaryFor,proto3" json:"primary_for,omitempty"`
 	Enabled        bool                   `protobuf:"varint,12,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// "" (omit) | low | medium | high.
+	ReasoningEffort string `protobuf:"bytes,13,opt,name=reasoning_effort,json=reasoningEffort,proto3" json:"reasoning_effort,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *UpdateSystemAIConfigRequest) Reset() {
@@ -151,6 +153,13 @@ func (x *UpdateSystemAIConfigRequest) GetEnabled() bool {
 		return x.Enabled
 	}
 	return false
+}
+
+func (x *UpdateSystemAIConfigRequest) GetReasoningEffort() string {
+	if x != nil {
+		return x.ReasoningEffort
+	}
+	return ""
 }
 
 type UpdateSystemAIConfigResponse struct {
@@ -305,7 +314,7 @@ var File_system_ai_update_proto protoreflect.FileDescriptor
 
 const file_system_ai_update_proto_rawDesc = "" +
 	"\n" +
-	"\x16system_ai_update.proto\x12\x06ant.v1\"\x8f\x03\n" +
+	"\x16system_ai_update.proto\x12\x06ant.v1\"\xba\x03\n" +
 	"\x1bUpdateSystemAIConfigRequest\x12\x1f\n" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\x12\x12\n" +
@@ -322,7 +331,8 @@ const file_system_ai_update_proto_rawDesc = "" +
 	" \x03(\tR\bpurposes\x12\x1f\n" +
 	"\vprimary_for\x18\v \x03(\tR\n" +
 	"primaryFor\x12\x18\n" +
-	"\aenabled\x18\f \x01(\bR\aenabled\"?\n" +
+	"\aenabled\x18\f \x01(\bR\aenabled\x12)\n" +
+	"\x10reasoning_effort\x18\r \x01(\tR\x0freasoningEffort\"?\n" +
 	"\x1cUpdateSystemAIConfigResponse\x12\x1f\n" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\"V\n" +

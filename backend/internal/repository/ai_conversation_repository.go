@@ -104,12 +104,15 @@ func (r *AIConversationRepository) GetByID(ctx context.Context, id, userID uuid.
 }
 
 func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID uuid.UUID, title string) error {
-	_, err := r.db.Exec(ctx,
+	tag, err := r.db.Exec(ctx,
 		`UPDATE ai_conversations SET title = $1, updated_at = $2 WHERE id = $3 AND user_id = $4`,
 		title, time.Now(), id, userID,
 	)
 	if err != nil {
 		return fmt.Errorf("update conversation title: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("conversation not found")
 	}
 	return nil
 }

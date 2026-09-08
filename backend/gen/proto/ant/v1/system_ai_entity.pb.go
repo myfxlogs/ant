@@ -41,8 +41,10 @@ type SystemAIConfig struct {
 	UpdatedBy      string                 `protobuf:"bytes,16,opt,name=updated_by,json=updatedBy,proto3" json:"updated_by,omitempty"`
 	DocsUrl        string                 `protobuf:"bytes,17,opt,name=docs_url,json=docsUrl,proto3" json:"docs_url,omitempty"`
 	ApplyUrl       string                 `protobuf:"bytes,18,opt,name=apply_url,json=applyUrl,proto3" json:"apply_url,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Reasoning effort for reasoning models: "" (omit) | low | medium | high.
+	ReasoningEffort string `protobuf:"bytes,19,opt,name=reasoning_effort,json=reasoningEffort,proto3" json:"reasoning_effort,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *SystemAIConfig) Reset() {
@@ -201,11 +203,18 @@ func (x *SystemAIConfig) GetApplyUrl() string {
 	return ""
 }
 
+func (x *SystemAIConfig) GetReasoningEffort() string {
+	if x != nil {
+		return x.ReasoningEffort
+	}
+	return ""
+}
+
 var File_system_ai_entity_proto protoreflect.FileDescriptor
 
 const file_system_ai_entity_proto_rawDesc = "" +
 	"\n" +
-	"\x16system_ai_entity.proto\x12\x06ant.v1\"\xb6\x04\n" +
+	"\x16system_ai_entity.proto\x12\x06ant.v1\"\xe1\x04\n" +
 	"\x0eSystemAIConfig\x12\x1f\n" +
 	"\vprovider_id\x18\x01 \x01(\tR\n" +
 	"providerId\x12\x12\n" +
@@ -232,7 +241,8 @@ const file_system_ai_entity_proto_rawDesc = "" +
 	"\n" +
 	"updated_by\x18\x10 \x01(\tR\tupdatedBy\x12\x19\n" +
 	"\bdocs_url\x18\x11 \x01(\tR\adocsUrl\x12\x1b\n" +
-	"\tapply_url\x18\x12 \x01(\tR\bapplyUrlB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
+	"\tapply_url\x18\x12 \x01(\tR\bapplyUrl\x12)\n" +
+	"\x10reasoning_effort\x18\x13 \x01(\tR\x0freasoningEffortB#Z!alphaforge/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_system_ai_entity_proto_rawDescOnce sync.Once

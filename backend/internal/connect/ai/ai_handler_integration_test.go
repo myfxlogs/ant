@@ -16,6 +16,7 @@ import (
 	"go.uber.org/zap"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
+	"alphaforge/internal/ai"
 	"alphaforge/internal/interceptor"
 	"alphaforge/internal/pkg/secretbox"
 	"alphaforge/internal/repository"
@@ -199,6 +200,12 @@ func TestSystemAI_UpdateSecret(t *testing.T) {
 	srv := newSystemAIServer(t, pool)
 	ctx := authCtx(userID)
 
+	// Production journey: the settings page lists configs first (EnsureSeed
+	// creates the provider rows) before a secret can be saved.
+	if _, err := srv.ListSystemAIConfigs(ctx, connect.NewRequest(&antv1.ListSystemAIConfigsRequest{})); err != nil {
+		t.Fatalf("ListSystemAIConfigs: %v", err)
+	}
+
 	_, err := srv.UpdateSystemAISecret(ctx, connect.NewRequest(&antv1.UpdateSystemAISecretRequest{
 		ProviderId: "openai",
 		Secret:     "sk-test-secret-key-12345",
@@ -245,6 +252,7 @@ func newAIPrimaryServer(t *testing.T, pool *pgxpool.Pool) *AIPrimaryServer {
 	box := secretbox.New([]byte("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"))
 	repo := repository.NewSystemAIConfigRepository(pool)
 	svc := systemai.NewService(repo, box)
+	svc.SetUserRepo(repository.NewUserRepository(pool))
 	return NewAIPrimaryServer(svc, zap.NewNop())
 }
 
@@ -264,8 +272,8 @@ func TestAIPrimary_GetSetPrimary(t *testing.T) {
 
 	// Set primary
 	_, err := srv.SetAIPrimary(ctx, connect.NewRequest(&antv1.SetAIPrimaryRequest{
-		ProviderId:   "openai",
-		Model: "gpt-4o",
+		ProviderId: "openai",
+		Model:      "gpt-4o",
 	}))
 	if err != nil {
 		t.Fatalf("SetAIPrimary: %v", err)
@@ -292,7 +300,7 @@ func newAIServer(t *testing.T, pool *pgxpool.Pool) *AIServer {
 	configRepo := repository.NewSystemAIConfigRepository(pool)
 	svc := systemai.NewService(configRepo, box)
 	convRepo := repository.NewAIConversationRepository(pool)
-	return NewAIServer(svc, convRepo, zap.NewNop())
+	return NewAIServer(svc, convRepo, ai.NewConversationSession(convRepo), zap.NewNop())
 }
 
 func TestConversations_Lifecycle(t *testing.T) {
@@ -351,8 +359,8 @@ func TestConversations_Lifecycle(t *testing.T) {
 
 	// 5. Update title
 	_, err = srv.UpdateConversationTitle(ctx, connect.NewRequest(&antv1.UpdateConversationTitleRequest{
-		Id: convID,
-		Title:          "Updated Title",
+		Id:    convID,
+		Title: "Updated Title",
 	}))
 	if err != nil {
 		t.Fatalf("UpdateConversationTitle: %v", err)
@@ -454,8 +462,8 @@ func TestConversations_UpdateTitleNotFound(t *testing.T) {
 	ctx := authCtx(userID)
 
 	_, err := srv.UpdateConversationTitle(ctx, connect.NewRequest(&antv1.UpdateConversationTitleRequest{
-		Id: uuid.New().String(),
-		Title:          "Ghost",
+		Id:    uuid.New().String(),
+		Title: "Ghost",
 	}))
 	if err == nil {
 		t.Error("expected error for non-existent conversation")

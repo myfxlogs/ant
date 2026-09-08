@@ -165,3 +165,17 @@
 **实现**: 方案审计通过后动工——迁移 277 + proto 双字段 + 全链路接线 + reasoning 400 自愈去参 + timeout 钳位 + org 头 + 前端下拉/输入框/映射；chat_failover.go 拆分出 chat_retry.go 达标。
 
 **验证**: 5 个新测试用例 + 既有回归全绿；机检五件套。明细见 registry 同名条目。
+
+## 2026-09-08 AI-SETTINGS 第二轮自我审计
+
+**会话**: Devin CLI 自审（对象 ec8dfda1..36f7b3e4）。A-F 全查通过；附带修复 3 项被集成编译断裂掩盖的潜在问题（NewAIServer 缺参 / newAIPrimaryServer 缺 SetUserRepo / UpdateTitle 静默成功→fail-closed）。集成套件数周来首次可运行且全绿。明细见 registry 同名条目。
+
+## 2026-09-08 STATE.md 预算滚出（FIX-2026-08-28 施工表明细）
+
+
+
+## 2026-09-08 STATE.md 预算滚出（09-08 三行压缩，原文见下）
+
+| FIX-2026-09-08-BYOK-MODEL-PICKER | ✅done | Devin CLI 直接施工+验收 2026-09-08。策略聊天模型下拉框选不到用户自有 BYOK 模型（xianhua.chan 报告）。3 层根因：A StrategyChat 只列系统模型；B ListSystemModels 返回 provider UUID 而运行时按字符串比较（下拉选择对运行时无效）；C base_url 含完整 endpoint 路径被拼双路径（sensenova 实锤日志）。修复：前端分组下拉（自有在前）+ 后端返回字符串 provider_id + normalizeAPIBase。3 项对抗证明 RED→GREEN。门禁全绿。 |
+| FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。①kimi-k3 聊天 400（temperature 只允许 1）：doChatRequest 硬编码 0.3 无视用户配置 → chatProvider 加 temperature（尊重配置，默认 0.3）+ 400 temperature 错误以 temperature=1 自愈重试一次；连带修复流式 fallbackNonStream(nil onChunk) nil panic + (nil,nil) 返回 defer 解引用。②工作区 tab 栏右侧新增常驻 AI 网关设置齿轮入口（无需先开 AI 面板）。对抗证明 RED→GREEN ×3（含真实 nil panic 复现）。门禁全绿。 |
+| FIX-2026-09-08-CURL-IMPORT | ✅done | Devin CLI 直接施工+验收 2026-09-08。BYOK 配置新增「粘贴厂商 curl 示例一键导入」：proto 加 ParseProviderCurl RPC（probe 家族，无持久化）+ 后端 shell 词法解析器（URL 剥后缀/Bearer+x-api-key key 占位符识别/body model 提取/NameHint）+ ConnectionForm 顶部导入框回填表单确认后走原保存路径，存储零改动。业主 NOVA 示例原样通过。对抗证明 RED→GREEN（后端编译 RED + 前端 mutation 2 用例）。门禁全绿。补记2：业主报 401——实测确认 Key 被商汤拒绝（非平台 bug，两种头格式均 401），建议重新生成；聊天报错带 [provider|model] 归因（原 [] 空括号）；解析器支持裸 Authorization Key。 |

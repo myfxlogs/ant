@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file system_ai_update.proto.
  */
 export const file_system_ai_update: GenFile = /*@__PURE__*/
-  fileDesc("ChZzeXN0ZW1fYWlfdXBkYXRlLnByb3RvEgZhbnQudjEiiQIKG1VwZGF0ZVN5c3RlbUFJQ29uZmlnUmVxdWVzdBITCgtwcm92aWRlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCGJhc2VfdXJsGAMgASgJEhQKDG9yZ2FuaXphdGlvbhgEIAEoCRIOCgZtb2RlbHMYBSADKAkSFQoNZGVmYXVsdF9tb2RlbBgGIAEoCRITCgt0ZW1wZXJhdHVyZRgHIAEoARIXCg90aW1lb3V0X3NlY29uZHMYCCABKAUSEgoKbWF4X3Rva2VucxgJIAEoBRIQCghwdXJwb3NlcxgKIAMoCRITCgtwcmltYXJ5X2ZvchgLIAMoCRIPCgdlbmFibGVkGAwgASgIIjMKHFVwZGF0ZVN5c3RlbUFJQ29uZmlnUmVzcG9uc2USEwoLcHJvdmlkZXJfaWQYASABKAkiQgobVXBkYXRlU3lzdGVtQUlTZWNyZXRSZXF1ZXN0EhMKC3Byb3ZpZGVyX2lkGAEgASgJEg4KBnNlY3JldBgCIAEoCSJLChxVcGRhdGVTeXN0ZW1BSVNlY3JldFJlc3BvbnNlEhMKC3Byb3ZpZGVyX2lkGAEgASgJEhYKDnNlY3JldF91cGRhdGVkGAIgASgIQiNaIWFscGhhZm9yZ2UvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChZzeXN0ZW1fYWlfdXBkYXRlLnByb3RvEgZhbnQudjEiowIKG1VwZGF0ZVN5c3RlbUFJQ29uZmlnUmVxdWVzdBITCgtwcm92aWRlcl9pZBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCGJhc2VfdXJsGAMgASgJEhQKDG9yZ2FuaXphdGlvbhgEIAEoCRIOCgZtb2RlbHMYBSADKAkSFQoNZGVmYXVsdF9tb2RlbBgGIAEoCRITCgt0ZW1wZXJhdHVyZRgHIAEoARIXCg90aW1lb3V0X3NlY29uZHMYCCABKAUSEgoKbWF4X3Rva2VucxgJIAEoBRIQCghwdXJwb3NlcxgKIAMoCRITCgtwcmltYXJ5X2ZvchgLIAMoCRIPCgdlbmFibGVkGAwgASgIEhgKEHJlYXNvbmluZ19lZmZvcnQYDSABKAkiMwocVXBkYXRlU3lzdGVtQUlDb25maWdSZXNwb25zZRITCgtwcm92aWRlcl9pZBgBIAEoCSJCChtVcGRhdGVTeXN0ZW1BSVNlY3JldFJlcXVlc3QSEwoLcHJvdmlkZXJfaWQYASABKAkSDgoGc2VjcmV0GAIgASgJIksKHFVwZGF0ZVN5c3RlbUFJU2VjcmV0UmVzcG9uc2USEwoLcHJvdmlkZXJfaWQYASABKAkSFgoOc2VjcmV0X3VwZGF0ZWQYAiABKAhCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.UpdateSystemAIConfigRequest
@@ -75,6 +75,13 @@ export type UpdateSystemAIConfigRequest = Message<"ant.v1.UpdateSystemAIConfigRe
    * @generated from field: bool enabled = 12;
    */
   enabled: boolean;
+
+  /**
+   * "" (omit) | low | medium | high.
+   *
+   * @generated from field: string reasoning_effort = 13;
+   */
+  reasoningEffort: string;
 };
 
 /**

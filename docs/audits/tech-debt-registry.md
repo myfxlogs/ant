@@ -2685,3 +2685,33 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：reasoning_effort 为按厂商配置，按任务动态档位（生成=high/闲聊=不发）留待流程设计；purposes 机制未实现（记录在案）；非推理模型设置 reasoning_effort 依赖厂商兼容性（有 400 自愈兜底）。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+---
+
+## AI-SETTINGS-2026-09-08 第二轮自我审计（A–F，审计对象 ec8dfda1..36f7b3e4 共 4 commit）（✅done 2026-09-08）
+
+**审计范围**：上次审计（AI-SETTINGS-BYOK-2026-09-08）之后的修改——F1 下拉修复（ec8dfda1）、遗留清单 5 项执行（1e241aa9：编译错误上下文/analyze_mql/立债/网关提示/gofmt）、BYOK 配额修复（2292179d）、高级参数（36f7b3e4）。
+
+**A 架构 ✓**：编译错误上下文在服务端现场编译（零信任，前端不传错误）；analyze_mql 复用 `CompileMQLWithCoverage`；配额门禁移到 provider 解析后（付款方=管制方对齐）；chat_retry.go 拆分职责单一；无逆向依赖。
+
+**B 实现 ✓**：systemPaidCall 单点判定（候选不混装——网关仅在无自有 Key 时解析，代码注释已断言）；reasoning 400 自愈与 temperature 自愈独立防重入标志，有界（最多 2 次额外重建）；effectiveTimeout 钳位 5s–10m；重试每次重建请求（无 body 复用）。观察：chatHTTPTimeout/transientRetryBackoff 包级 var 仅测试写。
+
+**C 洁净 ✓**：gofmt（本次触碰包全绿）/vet（含 integration tag）/check-lines --strict 0 errors；诊断临时文件即用即删；diff 无 TODO/console.log。注：本次 `gofmt -w` 曾波及 internal/ai、internal/connect/ai 无关文件，已全部 revert 保持工作树干净（不洁为既有状态，见 F）。
+
+**D 正确性 ✓（深查 + 3 项审计附带修复）**：
+- analyze_mql 语义核实：agent_loop 对 `Success:false` 仅回 `{"error":…}` 消息不中断循环；我们的 `Success:true + compiles:false` 结构化输出信息量更大，选择正确。
+- BYOK 配额：`systemPaidCall` 判定与"候选不混装"不变量一致；PostCallBiller `paid_by` 如实标注（BYOK=user，cost=0，不计平台成本/配额）；PlatformCostBreaker 全局兜底不受影响；配额旧文案无测试断言（文案变更安全）。
+- chat_failover.go 拆分完整性：全部符号迁移无丢失（endpoint 测试与既有回归全绿）。
+- 包级 var（chatHTTPTimeout/transientRetryBackoff）仅测试写、无 t.Parallel，race 绿。
+- **审计附带修复 3 项（均为被既有编译断裂掩盖的潜在问题，非本次回归）**：①`ai_handler_integration_test.go` NewAIServer 缺 ConversationSession 参数（编译断裂，`ai.NewConversationSession(convRepo)` 修复）→ 集成套件数周来首次可运行；②`newAIPrimaryServer` 缺 SetUserRepo（SetAIPrimary 必然 internal_error，补接线）；③`AIConversationRepository.UpdateTitle` 对不存在的会话静默成功（违反 fail-closed，补 RowsAffected 检查返回错误）+ UpdateSecret 测试补 List 前置（对齐生产 EnsureSeed 流程）。
+- 已知外观项（不修）：存量 UUID primary 显示原始字符串（见首轮审计）。
+
+**E 合规 ✓**：无新增 encoding/json 使用面；配额文案中英双语归属平台；迁移先于部署应用（新列带 DEFAULT，旧二进制兼容，无停机窗口）并登记 schema_migrations。
+
+**F 文档 ✓**：registry 各条目、STATE 施工表、LOG 纪要同步。
+
+**机检独立重跑**：build ✓ / gofmt（触碰包）✓ / vet ✓ / vet -tags integration ✓（本轮修复后首次通过）/ 全量 test ✓（仅 3 个既有 bound_account 环境失败）/ race（repository/connect-ai/systemai/service）✓ / check-lines --strict 0 errors ✓。运行时：双容器 healthy、0 panic。
+
+**遗留（更新）**：①工作台流程设计讨论（业主主持）；②analyze_mql 已接线——建议后续观察 Agent 实际调用质量；③MQL-COMPILER-LOCAL-ARRAYS 待排期；④purposes 机制未实现（归流程设计）；⑤既有 gofmt 不洁：internal/connect/ai 10 文件 + internal/ai 若干（pre-existing，与本次无关，建议独立 hygiene 批次）。
+
+**状态**：✅done（Devin CLI 自审 2026-09-08；附带修复随本审计提交，ai_conversation_repository.go 变更需部署 backend）。

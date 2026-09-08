@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file system_ai_entity.proto.
  */
 export const file_system_ai_entity: GenFile = /*@__PURE__*/
-  fileDesc("ChZzeXN0ZW1fYWlfZW50aXR5LnByb3RvEgZhbnQudjEi8QIKDlN5c3RlbUFJQ29uZmlnEhMKC3Byb3ZpZGVyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIYmFzZV91cmwYAyABKAkSFAoMb3JnYW5pemF0aW9uGAQgASgJEg4KBm1vZGVscxgFIAMoCRIVCg1kZWZhdWx0X21vZGVsGAYgASgJEhMKC3RlbXBlcmF0dXJlGAcgASgBEhcKD3RpbWVvdXRfc2Vjb25kcxgIIAEoBRISCgptYXhfdG9rZW5zGAkgASgFEhAKCHB1cnBvc2VzGAogAygJEhMKC3ByaW1hcnlfZm9yGAsgAygJEg8KB2VuYWJsZWQYDCABKAgSEgoKaGFzX3NlY3JldBgNIAEoCBISCgpjcmVhdGVkX2F0GA4gASgJEhIKCnVwZGF0ZWRfYXQYDyABKAkSEgoKdXBkYXRlZF9ieRgQIAEoCRIQCghkb2NzX3VybBgRIAEoCRIRCglhcHBseV91cmwYEiABKAlCI1ohYWxwaGFmb3JnZS9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChZzeXN0ZW1fYWlfZW50aXR5LnByb3RvEgZhbnQudjEiiwMKDlN5c3RlbUFJQ29uZmlnEhMKC3Byb3ZpZGVyX2lkGAEgASgJEgwKBG5hbWUYAiABKAkSEAoIYmFzZV91cmwYAyABKAkSFAoMb3JnYW5pemF0aW9uGAQgASgJEg4KBm1vZGVscxgFIAMoCRIVCg1kZWZhdWx0X21vZGVsGAYgASgJEhMKC3RlbXBlcmF0dXJlGAcgASgBEhcKD3RpbWVvdXRfc2Vjb25kcxgIIAEoBRISCgptYXhfdG9rZW5zGAkgASgFEhAKCHB1cnBvc2VzGAogAygJEhMKC3ByaW1hcnlfZm9yGAsgAygJEg8KB2VuYWJsZWQYDCABKAgSEgoKaGFzX3NlY3JldBgNIAEoCBISCgpjcmVhdGVkX2F0GA4gASgJEhIKCnVwZGF0ZWRfYXQYDyABKAkSEgoKdXBkYXRlZF9ieRgQIAEoCRIQCghkb2NzX3VybBgRIAEoCRIRCglhcHBseV91cmwYEiABKAkSGAoQcmVhc29uaW5nX2VmZm9ydBgTIAEoCUIjWiFhbHBoYWZvcmdlL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.SystemAIConfig
@@ -105,6 +105,13 @@ export type SystemAIConfig = Message<"ant.v1.SystemAIConfig"> & {
    * @generated from field: string apply_url = 18;
    */
   applyUrl: string;
+
+  /**
+   * Reasoning effort for reasoning models: "" (omit) | low | medium | high.
+   *
+   * @generated from field: string reasoning_effort = 19;
+   */
+  reasoningEffort: string;
 };
 
 /**
