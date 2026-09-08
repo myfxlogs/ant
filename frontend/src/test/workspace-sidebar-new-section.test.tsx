@@ -32,6 +32,7 @@ function renderSidebar(activeSection: 'new' | 'strategies' | 'history' = 'strate
     onOpenHistory: vi.fn(),
     onImport: vi.fn(),
     onNew: vi.fn(),
+    onNewSource: vi.fn(),
     activeSection,
     onSectionChange: vi.fn(),
     collapsed: false,
@@ -55,6 +56,18 @@ describe('WorkspaceSidebar navigation sections', () => {
 
     fireEvent.click(screen.getByText('New Strategy'))
     expect(props.onSectionChange).toHaveBeenCalledWith('new')
+  })
+
+  it('expanding the new-strategy section shows the four uniform source items', () => {
+    const props = renderSidebar('new')
+    expect(screen.getByText('AI Generate')).toBeTruthy()
+    expect(screen.getByText('Manual Coding')).toBeTruthy()
+    expect(screen.getByText('Import MQL')).toBeTruthy()
+    expect(screen.getByText('Use Template')).toBeTruthy()
+
+    fireEvent.click(screen.getByText('AI Generate'))
+    expect(props.onNewSource).toHaveBeenCalledWith('ai')
+    // main area switch also closes the right panel (CenterColumn behavior)
   })
 
   it('highlights the active section and shows counts on inactive ones', () => {

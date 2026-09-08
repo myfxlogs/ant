@@ -3,7 +3,7 @@ import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import StrategyChat from '@/components/strategy/StrategyChat';
-import WorkspaceSidebar, { type WorkspaceSection } from './WorkspaceSidebar';
+import WorkspaceSidebar, { type WorkspaceSection, type NewSource } from './WorkspaceSidebar';
 import NewStrategyPanel from './NewStrategyPanel';
 import BacktestHistoryPanel from './BacktestHistoryPanel';
 import WorkspaceAIPanel from './WorkspaceAIPanel';
@@ -136,14 +136,15 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     if (history.autoExpandHistory) { setActiveSection('history'); setRightPanelTab(null); }
   }, [history.autoExpandHistory]);
 
+  const onNewSource = (source: NewSource) => {
+    handleNewStrategy();
+    if (source === 'ai') { setRightPanelTab('ai'); return; }
+    if (source === 'import') setImportMode(true);
+    if (source === 'template') { const first = templates.list[0]?.id; if (first) templates.onSelect(first); }
+    setActiveSection('strategies');
+  };
   const newStrategyPanel = (
-    <NewStrategyPanel
-      templateCount={templates.list.length}
-      onAI={() => { handleNewStrategy(); setRightPanelTab('ai'); }}
-      onManual={() => { handleNewStrategy(); setActiveSection('strategies'); }}
-      onImport={() => { handleNewStrategy(); setImportMode(true); setActiveSection('strategies'); }}
-      onTemplate={() => { const first = templates.list[0]?.id; if (first) { templates.onSelect(first); setActiveSection('strategies'); } else { setActiveSection('strategies'); } }}
-    />
+    <NewStrategyPanel templateCount={templates.list.length} onNewSource={onNewSource} />
   );
   const backtestHistoryPanel = (
     <BacktestHistoryPanel
@@ -169,6 +170,7 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     onBatchDeleteRuns: sidebarActions.onBatchDeleteRuns,
     onRenameRun: sidebarActions.onRenameRun,
     onNew: handleNewStrategy,
+    onNewSource,
     activeSection,
     // 切换分区时关闭右侧面板——分区是主区的导航，面板（AI/回测）只从属对应工作流
     onSectionChange: (s: WorkspaceSection) => { setActiveSection(s); setRightPanelTab(null); },

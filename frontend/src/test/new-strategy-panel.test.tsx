@@ -18,7 +18,7 @@ import NewStrategyPanel from '@/pages/strategy/components/workspace/NewStrategyP
 
 function renderPanel(templateCount = 2) {
   const props = {
-    onAI: vi.fn(), onManual: vi.fn(), onImport: vi.fn(), onTemplate: vi.fn(),
+    onNewSource: vi.fn(),
     templateCount,
   }
   render(<NewStrategyPanel {...props} />)
@@ -34,18 +34,18 @@ describe('NewStrategyPanel sources', () => {
     expect(screen.getByTestId('new-source-template')).toBeTruthy()
 
     fireEvent.click(screen.getByTestId('new-source-ai'))
-    expect(props.onAI).toHaveBeenCalledTimes(1)
+    expect(props.onNewSource).toHaveBeenCalledWith('ai')
     fireEvent.click(screen.getByTestId('new-source-manual'))
-    expect(props.onManual).toHaveBeenCalledTimes(1)
+    expect(props.onNewSource).toHaveBeenCalledWith('manual')
     fireEvent.click(screen.getByTestId('new-source-import'))
-    expect(props.onImport).toHaveBeenCalledTimes(1)
+    expect(props.onNewSource).toHaveBeenCalledWith('import')
     fireEvent.click(screen.getByTestId('new-source-template'))
-    expect(props.onTemplate).toHaveBeenCalledTimes(1)
+    expect(props.onNewSource).toHaveBeenCalledWith('template')
   })
 
   it('disables the template card when no templates exist', () => {
     const props = renderPanel(0)
     fireEvent.click(screen.getByTestId('new-source-template'))
-    expect(props.onTemplate).not.toHaveBeenCalled()
+    expect(props.onNewSource).not.toHaveBeenCalledWith('template')
   })
 })

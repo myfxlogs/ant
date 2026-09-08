@@ -203,3 +203,5 @@
 **验证**: 新增 3 个测试文件 7 用例 mutation RED→GREEN；前端全量门禁绿。明细见 registry（COMPILE-NOTIFY 条目后补记）。
 
 ## 2026-09-08 STATE.md 预算滚出（BYOK-QUOTA/RESILIENCE 施工行，明细在 registry）
+
+**补记（分区菜单统一）**: 业主反馈三分区展开菜单不一致。修复：新建策略分区展开为四个来源菜单项（与另两分区同为列表形态），点击经 onNewSource 路由到工作流；主区 NewStrategyPanel 大卡保留（同源双入口）。

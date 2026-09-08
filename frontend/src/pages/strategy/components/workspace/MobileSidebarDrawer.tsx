@@ -1,5 +1,5 @@
 import { Drawer } from 'antd';
-import WorkspaceSidebar, { type WorkspaceSection } from './WorkspaceSidebar';
+import WorkspaceSidebar, { type WorkspaceSection, type NewSource } from './WorkspaceSidebar';
 
 interface Props {
   open: boolean;
@@ -17,12 +17,13 @@ interface Props {
   onDeleteRun?: (runId: string) => void;
   onBatchDeleteRuns?: (runIds: string[]) => void;
   onRenameRun?: (runId: string, name: string) => void;
+  onNewSource: (source: NewSource) => void;
   onNew: () => void;
   activeSection: WorkspaceSection;
   onSectionChange: (s: WorkspaceSection) => void;
 }
 
-export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onNew, activeSection, onSectionChange }: Props) {
+export default function MobileSidebarDrawer({ open, onClose, templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates, backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun, onNewSource, onNew, activeSection, onSectionChange }: Props) {
   return (
     <Drawer open={open} onClose={onClose} placement="left" width={280} styles={{ body: { padding: 0 } }}>
       <WorkspaceSidebar
@@ -36,6 +37,7 @@ export default function MobileSidebarDrawer({ open, onClose, templates, loading,
         onDeleteRun={onDeleteRun}
         onBatchDeleteRuns={onBatchDeleteRuns}
         onRenameRun={onRenameRun}
+        onNewSource={(source) => { onNewSource(source); onClose(); }}
         onNew={() => { onNew(); onClose(); }}
         activeSection={activeSection}
         onSectionChange={(s) => { onSectionChange(s); onClose(); }}

@@ -1,11 +1,13 @@
 import { useCallback, useState } from 'react';
 import { Button } from 'antd';
-import { PlusOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined } from '@ant-design/icons';
+import { PlusOutlined, ImportOutlined, FileTextOutlined, HistoryOutlined, CaretLeftOutlined, DownOutlined, RobotOutlined, EditOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import SidebarStrategyList from './SidebarStrategyList';
 import SidebarRunList from './SidebarRunList';
+import { IMPORT_MQL_KEY, AI_GENERATE_KEY, USE_TEMPLATE_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
 export type WorkspaceSection = 'new' | 'strategies' | 'history';
+export type NewSource = 'ai' | 'manual' | 'import' | 'template';
 
 interface StrategyItem {
   id: string;
@@ -37,6 +39,7 @@ interface Props {
   onBatchDeleteRuns?: (runIds: string[]) => void;
   onRenameRun?: (runId: string, name: string) => void;
   onNew: () => void;
+  onNewSource: (source: NewSource) => void;
   // 导航语义：展开哪个分区，主内容区就切换到对应视图。
   activeSection: WorkspaceSection;
   onSectionChange: (s: WorkspaceSection) => void;
@@ -49,7 +52,7 @@ interface Props {
 export default function WorkspaceSidebar({
   templates, loading, selectedId, onSelect, onDeleteTemplate, onRenameTemplate, onBatchDeleteTemplates,
   backtestRuns, runsLoading, onOpenHistory, onDeleteRun, onBatchDeleteRuns, onRenameRun,
-  onNew,
+  onNew, onNewSource,
   activeSection, onSectionChange,
   collapsed, onToggle,
   width = 240, onWidthChange,
@@ -83,7 +86,23 @@ export default function WorkspaceSidebar({
       label: t('strategy.workspace.sidebar.newStrategy', { defaultValue: 'New Strategy' }),
       count: 0,
       fill: false,
-      content: null, // center shows the source-selection panel for this section
+      content: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {([
+            { key: 'ai' as const, icon: <RobotOutlined />, label: t(AI_GENERATE_KEY, { defaultValue: 'AI Generate' }) },
+            { key: 'manual' as const, icon: <EditOutlined />, label: t('strategy.workspace.new.manual', { defaultValue: 'Manual Coding' }) },
+            { key: 'import' as const, icon: <ImportOutlined />, label: t(IMPORT_MQL_KEY, { defaultValue: 'Import MQL' }) },
+            { key: 'template' as const, icon: <FileTextOutlined />, label: t(USE_TEMPLATE_KEY, { defaultValue: 'Use Template' }) },
+          ]).map(({ key, icon, label }) => (
+            <button key={key} type="button" className="sidebar-item"
+              style={{ padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid transparent', background: 'transparent', textAlign: 'left' }}
+              onClick={() => onNewSource(key)}>
+              {icon}
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+            </button>
+          ))}
+        </div>
+      ),
     },
     {
       key: 'strategies' as const,
