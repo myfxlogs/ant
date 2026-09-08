@@ -207,3 +207,11 @@
 **补记（分区菜单统一）**: 业主反馈三分区展开菜单不一致。修复：新建策略分区展开为四个来源菜单项（与另两分区同为列表形态），点击经 onNewSource 路由到工作流；主区 NewStrategyPanel 大卡保留（同源双入口）。
 
 **补记（新建策略组交互调整）**: 业主指令——①使用模板来源移除；②手动编写/导入 MQL 点击后分区保持展开（与 AI 生成一致，不再收拢）。测试同步更新，全量门禁绿。
+
+## 2026-09-08 WORKSPACE-FRONTEND-ARCH 前端架构审计
+
+**会话**: 业主要求对策略工作台前端做第一性原则审计。结论：战术修复最优，但架构非最优——主区由 6 个正交状态维度组合决定（centerTab/rightPanelTab/activeSection/newCenterView/importMode/code非空），已致 4 个真实 bug。提出单一视图状态机 + AI 停靠面板目标模型与三阶段迁移路径，待业主拍板。全文见 registry 同名条目。
+
+## 2026-09-08 STATE.md 预算滚出（WORKSPACE-IA 分区行原文，registry WORKSPACE-IA 系列）
+
+| WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 业主指令：分区切换驱动主区联动。侧栏改受控导航（activeSection/onSectionChange），主区按分区渲染：新建策略→NewStrategyPanel 四来源卡（AI 生成/手动编写/导入 MQL/从模板）、回测历史→BacktestHistoryPanel 主区列表（点条目加载回测）、我的策略→编辑器。连带修复：导入 MQL 在 AI 面板打开时不跳转（rightPanelTab 渲染优先吞掉 importMode）。补记2：三分区展开菜单统一——新建策略分区展开为四个来源菜单项（AI 生成/手动编写/导入 MQL/使用模板），点击经 onNewSource 路由；主区 NewStrategyPanel 大卡与侧栏菜单同源。补记3+4：粘性 importMode 修复；使用模板来源移除；点击来源项分区保持展开。补记5：工作台前端架构审计——6 维正交导航状态违背第一性原则（已致 4 bug），目标单一视图状态机，迁移方案待拍板（registry）。 |

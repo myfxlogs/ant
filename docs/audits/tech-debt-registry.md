@@ -2743,3 +2743,55 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **WORKSPACE-IA 补记 2（2026-09-08 业主实测反馈）**：①AI chat 打开时点"新建策略"分区不切换——根因：主区渲染 `rightPanelTab` 优先于分区状态，AI 面板打开期间分区切换只改状态不换界面。修复：`onSectionChange` 回调中同步 `setRightPanelTab(null)`（autoExpandHistory 路径同样处理）——分区切换即关闭从属面板，主区随之切换。②业主初始表述"4 项还在左边栏"经核实为该 bug 的观感（部署包侧栏组件无来源项残留，四卡片在主区组件中）。前端门禁绿。
 
 **WORKSPACE-IA 补记 3（2026-09-08 业主实测：回测完成整页崩溃）**：React error #31（对象作为 React 子节点），keys `{typeName,seconds,nanos}` = protobuf Timestamp。根因：`BacktestHistoryPanel` 直接渲染 `r.startedAt`——运行时该字段是 protobuf Timestamp 对象（类型断言 `as string` 掩盖了真实形状）；回测完成 → autoExpandHistory → 主区渲染历史面板 → 崩溃。修复：`formatStartedAt` 稳健格式化（ISO 字符串 / `{seconds,nanos}` 对象 / 空 → 本地时间或空串），回归测试用生产形状数据断言不崩溃且渲染时间。门禁绿（tsc+vite+vitest 208）。
+
+---
+
+## WORKSPACE-FRONTEND-ARCH-2026-09-08：策略工作台前端架构审计（第一性原则）（✅审计完成；重构待业主拍板）
+
+**审计范围**：`frontend/src/pages/strategy/components/workspace/`（11 组件 3594 行）+ `stores/workspaceStore.ts` + 相关 hooks（useTemplateSlice/useStrategyCode 等）。审计对象为工作台**壳层与导航状态架构**，不含各面板内部业务逻辑（调参/回测参数等另行）。
+
+**第一性原则推导**：工作台的本质 = 一个 IDE 式视图，视图内容是**用户意图**的函数。用户意图只有四种：①从零开始（选来源）②编辑既有策略 ③检视回测历史 ④与 AI 协作。**视图应当是单一意图状态的纯函数**——这是第一性原理给出的最小模型。
+
+**实际实现（证据）**：主区内容由 **6 个正交状态维度**的组合决定，分散在 3 层：
+- `workspaceStore.centerTab`（zustand 持久化，'code'|'chat'，workspaceStore.ts:23）——移动端聊天/代码切换
+- `rightPanelTab`（CenterColumn:47，'ai'|'backtest'|null）——右侧面板
+- `activeSection`（CenterColumn:106，'new'|'strategies'|'history'）——侧栏分区
+- `newCenterView`（CenterColumn:141，'sources'|'editor'）——新建分区的二级视图
+- `importMode`（CenterColumn:104，bool）——导入面板
+- `code` 是否非空（CodeEditorArea:109/125 的 `if (importMode)` / `if (code)` 分支门）
+
+渲染优先级链（CenterColumn:246-268）：`rightPanelTab ? AIPanel : section==='history' ? HistoryPanel : section==='new' && newCenterView==='sources' ? NewStrategyPanel : section==='new' && newCenterView==='editor' ? CodeEditorArea : CodeEditorArea`——6 层嵌套三元、两个分支渲染同一组件、优先级规则只存在于阅读代码的人脑中。
+
+**已由该结构造成的真实 bug（本轮全部实测复现并修复）**：
+1. 粘性 importMode——导入面板打开后永不清除，点任何策略都显示导入面板（importMode 无导航复位路径）；
+2. AI 面板抢占——rightPanelTab 优先级压过 activeSection，分区切换"失效"；
+3. 手动编写落点错误——依赖 `if (code)` 门控，空代码无法进编辑器，被迫用 '# 新策略\n' 脚手架 hack 绕过；
+4. 空态与来源卡重复——CodeEditorArea 空态三按钮与 NewStrategyPanel 四卡是同一概念的两套实现。
+
+**逐问回答（业主三问）**：
+- **是否最优解？** 否。战术修复（今日全部增量）在现有架构内是最小正确的；但架构本身是"增量演化"产物——移动端 chat 维度（centerTab）、右面板维度（rightPanelTab）、侧栏分区维度（activeSection）各有各的状态与优先级规则，同一意图（"我要看历史"）需要正确设置多个维度才能成立。6 维正交状态 = 状态组合爆炸 + 隐式优先级 = bug 滋生温床（本轮 4 个真实 bug 即证）。
+- **实现是否最简？** 单看每个修复是；合看不是。例如 `activeSection === 'new' && newCenterView === 'editor'` 与最后一个 else 分支渲染同一个 CodeEditorArea，条件可归约；importMode 本质是"视图=导入"的视图态却建模成了独立业务布尔。
+- **是否符合第一性原则？** 否。偏离点：①视图状态未建模为单一状态机（应为 `view = sources|editor|history|ai`，AI/回测为**停靠面板**而非视图竞争者）；②"新建策略"不是视图而是流程，却塞进了视图状态；③组件分支代替了状态归约。
+
+**目标模型（提案，待业主拍板后施工）**：
+```
+type WorkspaceView =
+  | { kind: 'sources' }                              // 新建：来源选择卡
+  | { kind: 'editor' }                               // 编辑器（空码→引导，有码→代码）
+  | { kind: 'history'; runId?: string }              // 回测历史主区
+type DockPanel = 'ai' | null                          // AI 停靠在编辑器旁，不抢占
+```
+- 侧栏三分区 = 视图切换器（展开态=激活）；来源四项 = sources 视图内的选择；
+- AI 助手/回测为**停靠面板**（editor 视图时可开，grid 并排而非替换），开关独立于视图；
+- 所有门控/优先级/粘性逻辑消亡（状态机转移即全部规则）。
+
+**迁移路径（三阶段，均可独立上线）**：
+- P1（小）：CenterColumn 内建 `workspaceView` 状态机，现有 6 状态降为派生值——纯重构，行为不变；
+- P2（中）：AI 面板改停靠布局（editor + docked AI 并排），消灭"面板替换编辑器"；
+- P3（大）：CodeEditorArea 空态与 NewStrategyPanel 合并为唯一 sources 视图；`if (code)` 门移除（空码也渲染编辑器）。
+
+**A-F 快评（今日战术增量）**：A 在约束内最优 ✓；B 各修复最小 ✓；C 洁净 ✓；D 已修 4 bug 且全带回归 ✓；E 合规 ✓；F 已同步 ✓。**总评：战术满分，战略欠账**。
+
+**关联**：WORKSPACE-IA 系列、FIX-2026-09-08 系列、AI-SETTINGS 两轮审计；偶发 401 自登出（hydration 竞态，P2）另案。
+
+**状态**：✅审计完成 2026-09-08。重构（P1-P3）待业主拍板后排期，不建议与流程设计讨论割裂单独施工。
