@@ -215,3 +215,11 @@
 ## 2026-09-08 STATE.md 预算滚出（WORKSPACE-IA 分区行原文，registry WORKSPACE-IA 系列）
 
 | WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 业主指令：分区切换驱动主区联动。侧栏改受控导航（activeSection/onSectionChange），主区按分区渲染：新建策略→NewStrategyPanel 四来源卡（AI 生成/手动编写/导入 MQL/从模板）、回测历史→BacktestHistoryPanel 主区列表（点条目加载回测）、我的策略→编辑器。连带修复：导入 MQL 在 AI 面板打开时不跳转（rightPanelTab 渲染优先吞掉 importMode）。补记2：三分区展开菜单统一——新建策略分区展开为四个来源菜单项（AI 生成/手动编写/导入 MQL/使用模板），点击经 onNewSource 路由；主区 NewStrategyPanel 大卡与侧栏菜单同源。补记3+4：粘性 importMode 修复；使用模板来源移除；点击来源项分区保持展开。补记5：工作台前端架构审计——6 维正交导航状态违背第一性原则（已致 4 bug），目标单一视图状态机，迁移方案待拍板（registry）。 |
+
+## 2026-09-08 全天会话总结（收工）
+
+**主线**：AI 设置/BYOK 全链路（模型下拉修复合并、temperature 自愈、curl 一键导入、配额错位修复）→ 两轮自我审计 → 工作台流程重构（分区导航、来源选择、编译错误上下文、粘性态清理）→ 前端架构审计 + 最终状态机重构落地。
+
+**交付**：888bbe7c..0d52f0a6 共 15+ commit；前端架构审计报告（WORKSPACE-FRONTEND-ARCH-2026-09-08）；最终架构（单一 centerView 状态机 + 停靠面板）已实现并部署。
+
+**明日待办**：①真实用户数据回归（xianhua 账号跑一次完整回测流程）；②偶发 401 自登出竞态（P2）；③MQL-COMPILER-LOCAL-ARRAYS 排期；④purposes 机制与按任务 reasoning 档位归入流程设计讨论。
