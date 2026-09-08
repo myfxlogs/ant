@@ -41,6 +41,7 @@ function renderForm(over: Partial<Parameters<typeof ConnectionFormSection>[0]> =
     organization: '',
     models: [],
     default_model: '',
+    reasoning_effort: '',
     temperature: 0,
     timeout_seconds: 0,
     max_tokens: 0,

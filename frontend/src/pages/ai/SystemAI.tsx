@@ -121,7 +121,7 @@ export default function SystemAI() {
 
   const selectedMeta = draft ? metaOf(draft.provider_id, draft.name) : null;
   // Base template is never shown — only user-created custom providers appear.
-  const newCustomCard = { provider_id: '__new_openai_compatible__', name: '', base_url: '', organization: '', models: [] as string[], default_model: '', temperature: 0.2, timeout_seconds: 300, max_tokens: 4096, purposes: [] as string[], primary_for: [] as string[], enabled: false, has_secret: false, updated_at: '' };
+  const newCustomCard = { provider_id: '__new_openai_compatible__', name: '', base_url: '', organization: '', models: [] as string[], default_model: '', temperature: 0.2, timeout_seconds: 300, max_tokens: 4096, purposes: [] as string[], primary_for: [] as string[], reasoning_effort: '', enabled: false, has_secret: false, updated_at: '' };
   const providerCards = useMemo(() => {
     const cards = configs.filter((cfg) =>
       cfg.provider_id !== 'openai_compatible' // never show the empty base template

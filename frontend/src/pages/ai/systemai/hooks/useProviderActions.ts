@@ -82,6 +82,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
       organization: '',
       models: [],
       default_model: '',
+      reasoning_effort: '',
       temperature: 0.2,
       timeout_seconds: 300,
       max_tokens: 4096,

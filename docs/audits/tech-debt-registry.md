@@ -2666,3 +2666,22 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **风险/gap**：BYOK 候选全部失败转移到网关的罕见场景（自有 Key 存在但全挂 30s 熔断窗口内）不重新过配额——平台成本仍受全局 PlatformCostBreaker（$50/天）兜底；BYOK 调用不计入平台每日成本统计（设计如此，平台未为其付费）。
 
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
+
+---
+
+## FIX-2026-09-08-ADVANCED-PARAMS：高级参数审计落地（reasoning_effort/timeout/organization）（✅done 2026-09-08）
+
+**背景**：业主质疑"AI 助手设置页的高级参数是否有效？可能限制掉了 LLM 的发挥"。逐字段链路审计结论：temperature（当日修复后才生效，推理模型自动以 1 重试）、max_tokens（生效；agent 工具模式有 16384 向上抬升）、模型/default_model/primary_for（生效/半生效）——但 **reasoning_effort 平台从不发送**（推理模型用厂商默认思考档位，策略生成发挥受限的直接原因）、**timeout_seconds 死设置**（聊天固定 150s，不读该值——迁移 062 曾以 300 回填，属历史接线断裂）、**organization 从不发送**。purposes 经核实 UI 本就无此输入（仅 DB/proto 死字段），修正上轮"UI 误导"说法。
+
+**方案审计**（业主要求先审后做）：reasoning_effort 默认空=不发送（避免向不支持厂商发未声明参数破坏现有配置）+ 400 自愈降级（厂商拒绝时自动去掉参数重试），优于"全局默认 high"；作用域选按厂商配置而非按任务动态（后者需调用方传意图，归流程设计）；purposes 保留数据记 debt 不实现（用途路由归流程设计）；timeout 钳位 5–600s；max_tokens 16384 下限保留。
+
+**实现**：迁移 277（`system_ai_configs.reasoning_effort TEXT DEFAULT ''`，已在生产库应用并登记 schema_migrations）；仓库层列/扫描/Upsert；proto `SystemAIConfig.reasoning_effort=19` + `UpdateSystemAIConfigRequest.reasoning_effort=13`（make proto 重生成）；RowToProto 回显 + 保存路径（`strings.ToLower(strings.TrimSpace)` 归一化，白名单 low/medium/high，非法→空）；chatProvider 增加 `timeoutSeconds/reasoningEffort/organization`；`doChatRequest` 发送 reasoning_effort（空省略）；`effectiveTimeout` 钳位（5s–10m）用于非流式总超时与流式首字节超时；organization 非空发 `OpenAI-Organization` 头；`isReasoningEffortErrorBody` 400 自愈去参重试（与 temperature 自愈并列，各自独立防重入标志，互不挤占预算）。前端：AIConfig 类型/api 映射/更新 payload/自动发现同步流全部透传；AdvancedForm 新增推理深度下拉（low/medium/high/留空）与 Organization 输入。
+- 附带：`chat_failover.go` 超行数红线（465/300）拆分出 `chat_retry.go`（185 行，瞬时速错分类+退避策略助手），chat_failover 283 行。
+
+**测试**：`TestTryChatCompletionDropsReasoningEffortOn400`（首请求带 high→400→去参重试成功，断言首/次请求体）；`TestChatCompletionSendsOrganizationHeader`；`TestEffectiveTimeoutClamp`（未设/负值/配置/下限/上限）；`TestNormalizeReasoningEffort`。既有回归全绿。
+
+**门禁**：build/gofmt/vet/systemai+connect/ai+repository race/check-lines 0 errors/前端 tsc+vite+vitest 全绿。迁移已在生产库应用（新列有默认值，旧二进制兼容，无停机窗口）。
+
+**风险/gap**：reasoning_effort 为按厂商配置，按任务动态档位（生成=high/闲聊=不发）留待流程设计；purposes 机制未实现（记录在案）；非推理模型设置 reasoning_effort 依赖厂商兼容性（有 400 自愈兜底）。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。

@@ -23,4 +23,6 @@ message SystemAIConfig {
   string updated_by = 16;
   string docs_url = 17;
   string apply_url = 18;
+  // Reasoning effort for reasoning models: "" (omit) | low | medium | high.
+  string reasoning_effort = 19;
 }

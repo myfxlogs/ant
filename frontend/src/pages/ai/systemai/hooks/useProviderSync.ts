@@ -163,6 +163,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
                 timeout_seconds: draft.timeout_seconds, max_tokens: draft.max_tokens,
                 purposes: draft.purposes, primary_for: draft.primary_for,
                 organization: draft.organization,
+                reasoning_effort: draft.reasoning_effort || '',
               }).catch(() => {});
           setLastAutoDiscoverKey(key);
         }

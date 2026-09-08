@@ -10,6 +10,7 @@ export interface AIConfig {
   max_tokens: number
   purposes: string[]
   primary_for: string[]
+  reasoning_effort: string
   enabled: boolean
   has_secret: boolean
   updated_at: string

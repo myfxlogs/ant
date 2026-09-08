@@ -29,6 +29,7 @@ export async function listSystemAIConfigs(): Promise<{ items: AIConfig[] }> {
       max_tokens: it.maxTokens,
       purposes: it.purposes || [],
       primary_for: it.primaryFor || [],
+      reasoning_effort: it.reasoningEffort || "",
       enabled: it.enabled,
       has_secret: it.hasSecret,
       updated_at: it.updatedAt,
@@ -37,7 +38,7 @@ export async function listSystemAIConfigs(): Promise<{ items: AIConfig[] }> {
 }
 
 interface UpdateConfigPayload {
-  name?: string; base_url?: string; organization?: string; models?: string[];
+  name?: string; base_url?: string; organization?: string; models?: string[]; reasoning_effort?: string;
   default_model?: string; temperature?: number; timeout_seconds?: number;
   max_tokens?: number; purposes?: string[]; primary_for?: string[]; enabled?: boolean;
 }
@@ -55,6 +56,7 @@ export async function updateSystemAIConfig(providerId: string, payload: UpdateCo
     maxTokens: Number(payload.max_tokens || 0),
     purposes: (payload.purposes as string[]) || [],
     primaryFor: (payload.primary_for as string[]) || [],
+    reasoningEffort: String(payload.reasoning_effort || ''),
     enabled: Boolean(payload.enabled),
   }))
   return { provider_id: providerId }

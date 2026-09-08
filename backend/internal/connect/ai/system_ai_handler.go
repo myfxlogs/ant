@@ -76,19 +76,20 @@ func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.
 		}
 	}
 	row := &repository.SystemAIConfigRow{
-		UserID:         uid,
-		ProviderID:     req.Msg.ProviderId,
-		Name:           req.Msg.Name,
-		BaseURL:        req.Msg.BaseUrl,
-		Organization:   req.Msg.Organization,
-		Models:         req.Msg.Models,
-		DefaultModel:   req.Msg.DefaultModel,
-		Temperature:    req.Msg.Temperature,
-		TimeoutSeconds: int(req.Msg.TimeoutSeconds),
-		MaxTokens:      int(req.Msg.MaxTokens),
-		Purposes:       req.Msg.Purposes,
-		PrimaryFor:     req.Msg.PrimaryFor,
-		Enabled:        req.Msg.Enabled,
+		UserID:          uid,
+		ProviderID:      req.Msg.ProviderId,
+		Name:            req.Msg.Name,
+		BaseURL:         req.Msg.BaseUrl,
+		Organization:    req.Msg.Organization,
+		Models:          req.Msg.Models,
+		DefaultModel:    req.Msg.DefaultModel,
+		Temperature:     req.Msg.Temperature,
+		TimeoutSeconds:  int(req.Msg.TimeoutSeconds),
+		MaxTokens:       int(req.Msg.MaxTokens),
+		Purposes:        req.Msg.Purposes,
+		PrimaryFor:      req.Msg.PrimaryFor,
+		ReasoningEffort: strings.ToLower(strings.TrimSpace(req.Msg.ReasoningEffort)),
+		Enabled:         req.Msg.Enabled,
 	}
 	if err := s.systemSvc.UpdateConfig(ctx, row, uid.String()); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))

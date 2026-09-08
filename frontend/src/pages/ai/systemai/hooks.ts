@@ -64,6 +64,7 @@ export function useSystemAIPage() {
       max_tokens: cfg.max_tokens,
       purposes: cfg.purposes,
       primary_for: cfg.primary_for,
+      reasoning_effort: cfg.reasoning_effort || '',
       enabled: cfg.enabled,
     });
   };

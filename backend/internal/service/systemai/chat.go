@@ -141,7 +141,8 @@ const defaultMaxTokens = 32768 // was 8192; reasoning models need budget for thi
 // tools may be nil when the caller does not need tool calling.
 // maxTokens 0 means use defaultMaxTokens. temperature <= 0 omits the field
 // (provider default); callers pass defaultTemperature(configured) normally.
-func doChatRequest(ctx context.Context, model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int, temperature float64) (*http.Request, error) {
+// reasoningEffort "" omits reasoning_effort (vendor default).
+func doChatRequest(ctx context.Context, model string, messages []ChatMessage, tools []ToolDefinition, stream bool, endpoint, secret string, maxTokens int, temperature float64, reasoningEffort string) (*http.Request, error) {
 	if maxTokens <= 0 {
 		maxTokens = defaultMaxTokens
 	}
@@ -151,12 +152,13 @@ func doChatRequest(ctx context.Context, model string, messages []ChatMessage, to
 		maxTokens = 16384
 	}
 	reqBody := ChatCompletionRequest{
-		Model:       model,
-		Messages:    messages,
-		MaxTokens:   maxTokens,
-		Temperature: temperature,
-		Stream:      stream,
-		Tools:       tools,
+		Model:           model,
+		Messages:        messages,
+		MaxTokens:       maxTokens,
+		Temperature:     temperature,
+		Stream:          stream,
+		Tools:           tools,
+		ReasoningEffort: reasoningEffort,
 	}
 	if agentMode {
 		reqBody.ToolChoice = "auto" // let the model decide when to call tools
@@ -253,11 +255,13 @@ func (s *Service) ChatCompletionWithUsage(
 // single-provider user isn't immediately failed by a hiccup.
 func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (string, []ToolCall, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	client := &http.Client{Timeout: chatHTTPTimeout}
+	client := &http.Client{Timeout: effectiveTimeout(p.timeoutSeconds, chatHTTPTimeout)}
 
 	const maxAttempts = 3
 	tempRetried := false
+	reasoningDropped := false
 	temp := p.temperature
+	reasoning := p.reasoningEffort
 	retryAfter := time.Duration(0)
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
@@ -265,9 +269,12 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 			retryAfter = 0
 		}
 		// Rebuild per attempt — a consumed request body cannot be replayed.
-		httpReq, reqErr := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, temp)
+		httpReq, reqErr := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, temp, reasoning)
 		if reqErr != nil {
 			return "", nil, nil, reqErr
+		}
+		if p.organization != "" {
+			httpReq.Header.Set("OpenAI-Organization", p.organization)
 		}
 		resp, doErr := client.Do(httpReq)
 		if doErr != nil {
@@ -299,6 +306,14 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		if resp.StatusCode == http.StatusBadRequest && !tempRetried && isTemperatureErrorBody(bodyBytes) {
 			tempRetried = true
 			temp = 1
+			attempt-- // rebuild-and-retry immediately on the same attempt budget
+			continue
+		}
+		// Vendors without reasoning_effort support reject the param with a 400:
+		// drop it once and retry rather than failing the provider over.
+		if resp.StatusCode == http.StatusBadRequest && !reasoningDropped && reasoning != "" && isReasoningEffortErrorBody(bodyBytes) {
+			reasoningDropped = true
+			reasoning = ""
 			attempt-- // rebuild-and-retry immediately on the same attempt budget
 			continue
 		}

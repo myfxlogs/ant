@@ -1,4 +1,4 @@
-import { Button, Switch, Slider, InputNumber, Checkbox } from 'antd';
+import { Button, Switch, Slider, InputNumber, Checkbox, Select, Input } from 'antd';
 import { CheckOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { ACTIONS_SAVE_CONFIG_KEY, FIELDS_ENABLED_OFF_KEY, FIELDS_ENABLED_ON_KEY, FIELDS_ENABLED_STATUS_KEY, FIELDS_MAX_TOKENS_KEY, FIELDS_TEMPERATURE_KEY, FIELDS_TIMEOUT_SECONDS_KEY, SECTIONS_ADVANCED_HINT_KEY, SECTIONS_ADVANCED_KEY } from '@/gen/ant/v1/i18n/ai_settings_keys';
@@ -78,6 +78,39 @@ export function AdvancedSection(props: {
             onChange={(vals) => onDraftChange({ primary_for: vals as string[] })}
             options={ALL_PURPOSES.map((p) => ({ label: p, value: p }))}
           />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label
+              text={t('aiSettings.advanced.reasoningEffort', { defaultValue: '推理深度（Reasoning Effort）' })}
+              hint={t('aiSettings.advanced.reasoningEffortHint', { defaultValue: '仅推理模型（如 kimi-k3、o1）识别：high 思考更深、发挥更好，低配额账号注意消耗；留空 = 不发送，使用厂商默认。不支持该参数的厂商会自动降级。' })}
+            />
+            <Select
+              value={draft.reasoning_effort || undefined}
+              onChange={(v) => onDraftChange({ reasoning_effort: (v as string) || '' })}
+              allowClear
+              placeholder={t('aiSettings.advanced.reasoningEffortPlaceholder', { defaultValue: '留空（厂商默认）' })}
+              style={{ width: '100%' }}
+              options={[
+                { value: 'low', label: 'low' },
+                { value: 'medium', label: 'medium' },
+                { value: 'high', label: 'high' },
+              ]}
+            />
+          </div>
+          <div>
+            <Label
+              text={t('aiSettings.advanced.organization', { defaultValue: 'Organization（OpenAI 组织）' })}
+              hint={t('aiSettings.advanced.organizationHint', { defaultValue: '可选：多组织账号填写 org-… 后随请求发送 OpenAI-Organization 头；其他厂商留空即可。' })}
+            />
+            <Input
+              value={draft.organization || ''}
+              onChange={(e) => onDraftChange({ organization: e.target.value })}
+              placeholder="org-xxxxxxxx"
+              allowClear
+            />
+          </div>
         </div>
       </div>
     </Section>

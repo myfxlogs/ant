@@ -130,16 +130,20 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 
 func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) (*http.Response, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(ctx, p.model, messages, tools, true, endpoint, p.secret, p.maxTokens, p.temperature)
+	httpReq, err := doChatRequest(ctx, p.model, messages, tools, true, endpoint, p.secret, p.maxTokens, p.temperature, p.reasoningEffort)
 	if err != nil {
 		return nil, err
 	}
+	if p.organization != "" {
+		httpReq.Header.Set("OpenAI-Organization", p.organization)
+	}
 	// No blanket timeout (streams run long), but bound time-to-first-header so
-	// a dead vendor cannot hang the agent loop forever.
+	// a dead vendor cannot hang the agent loop forever. A per-provider
+	// timeout_seconds overrides the default first-byte budget.
 	client := &http.Client{
 		Timeout: 0,
 		Transport: &http.Transport{
-			ResponseHeaderTimeout: 120 * time.Second,
+			ResponseHeaderTimeout: effectiveTimeout(p.timeoutSeconds, 120*time.Second),
 		},
 	}
 	resp, err := client.Do(httpReq)

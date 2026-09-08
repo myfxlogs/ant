@@ -157,3 +157,11 @@
 **根因**: 预检查在 provider 解析前无条件执行 + 配额统计不分 paid_by + biller 硬编码 paid_by=system。
 
 **修复**: chatProvider.gateway 标记 → 配额/钱包门禁与 max_tokens 封顶仅限系统付费调用；BYOK 跳过；PostCallBiller 如实记 paid_by；错误文案归属平台。集成测试双用例 mutation RED→GREEN。明细见 registry 同名条目。
+
+## 2026-09-08 FIX-2026-09-08-ADVANCED-PARAMS
+
+**会话**: 业主质疑高级参数有效性。审计结论：temperature/max_tokens/模型/primary_for 生效；reasoning_effort 从不发送（发挥受限根因）、timeout_seconds 死设置、organization 从不发送、purposes UI 本就无输入（修正上轮说法）。
+
+**实现**: 方案审计通过后动工——迁移 277 + proto 双字段 + 全链路接线 + reasoning 400 自愈去参 + timeout 钳位 + org 头 + 前端下拉/输入框/映射；chat_failover.go 拆分出 chat_retry.go 达标。
+
+**验证**: 5 个新测试用例 + 既有回归全绿；机检五件套。明细见 registry 同名条目。

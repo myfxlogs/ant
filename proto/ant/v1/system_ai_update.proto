@@ -17,6 +17,8 @@ message UpdateSystemAIConfigRequest {
   repeated string purposes = 10;
   repeated string primary_for = 11;
   bool enabled = 12;
+  // "" (omit) | low | medium | high.
+  string reasoning_effort = 13;
 }
 message UpdateSystemAIConfigResponse {
   string provider_id = 1;

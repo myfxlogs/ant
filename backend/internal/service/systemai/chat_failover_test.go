@@ -119,6 +119,100 @@ func TestTryChatCompletionStreamRetriesOn429Twice(t *testing.T) {
 	}
 }
 
+// FIX-2026-09-08-ADVANCED-PARAMS 对抗证明。
+//
+// 高级参数接线审计（业主质疑"高级参数可能限制 llm 发挥"）：
+// reasoning_effort 从不发送（厂商默认思考档位）、timeout_seconds 死设置、
+// organization 从不发 header。本轮全部接线。
+//
+// mutation: 还原 chat.go/chat_stream.go/chat_failover.go 对应段 → 三个用例 RED。
+
+func TestTryChatCompletionDropsReasoningEffortOn400(t *testing.T) {
+	var bodies []string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		bodies = append(bodies, string(b))
+		w.Header().Set("Content-Type", "application/json")
+		if strings.Contains(string(b), "reasoning_effort") {
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = io.WriteString(w, `{"error":{"message":"Unknown parameter: reasoning_effort","type":"invalid_request_error"}}`)
+			return
+		}
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":"ok"}}]}`)
+	}))
+	defer srv.Close()
+
+	p := chatProvider{
+		userID: uuid.New(), providerID: "openai_compatible_test",
+		model: "kimi-test", baseURL: srv.URL, secret: "sk",
+		temperature: 0.3, reasoningEffort: "high",
+	}
+	res, _, _, err := (&Service{log: zap.NewNop()}).tryChatCompletion(context.Background(), p, []ChatMessage{{Role: "user", Content: "hi"}}, nil)
+	if err != nil {
+		t.Fatalf("reasoning_effort 400 must self-heal by dropping the param: %v", err)
+	}
+	if res != "ok" || len(bodies) != 2 {
+		t.Fatalf("res=%q reqs=%d, want ok/2", res, len(bodies))
+	}
+	if !strings.Contains(bodies[0], "reasoning_effort") {
+		t.Fatalf("first request must carry configured reasoning_effort, body: %s", bodies[0])
+	}
+	if strings.Contains(bodies[1], "reasoning_effort") {
+		t.Fatalf("retry must drop reasoning_effort: %s", bodies[1])
+	}
+}
+
+func TestChatCompletionSendsOrganizationHeader(t *testing.T) {
+	var org string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		org = r.Header.Get("OpenAI-Organization")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":"ok"}}]}`)
+	}))
+	defer srv.Close()
+
+	p := chatProvider{
+		userID: uuid.New(), providerID: "openai", model: "m",
+		baseURL: srv.URL, secret: "sk", temperature: 0.3,
+		organization: "org-test-123",
+	}
+	res, _, _, err := (&Service{log: zap.NewNop()}).tryChatCompletion(context.Background(), p, []ChatMessage{{Role: "user", Content: "hi"}}, nil)
+	if err != nil || res != "ok" {
+		t.Fatalf("chat failed: %v", err)
+	}
+	if org != "org-test-123" {
+		t.Fatalf("OpenAI-Organization header = %q", org)
+	}
+}
+
+func TestEffectiveTimeoutClamp(t *testing.T) {
+	def := 150 * time.Second
+	if got := effectiveTimeout(0, def); got != def {
+		t.Fatalf("unset must fall back to default, got %v", got)
+	}
+	if got := effectiveTimeout(-5, def); got != def {
+		t.Fatalf("negative must fall back to default, got %v", got)
+	}
+	if got := effectiveTimeout(300, def); got != 300*time.Second {
+		t.Fatalf("configured value must win, got %v", got)
+	}
+	if got := effectiveTimeout(1, def); got != 5*time.Second {
+		t.Fatalf("below floor must clamp to 5s, got %v", got)
+	}
+	if got := effectiveTimeout(99999, def); got != 10*time.Minute {
+		t.Fatalf("above ceiling must clamp to 10m, got %v", got)
+	}
+}
+
+func TestNormalizeReasoningEffort(t *testing.T) {
+	cases := map[string]string{" high": "high", "LOW": "low", "Medium": "medium", "": "", " bogus": "", "minimal": ""}
+	for in, want := range cases {
+		if got := normalizeReasoningEffort(in); got != want {
+			t.Fatalf("normalizeReasoningEffort(%q)=%q want %q", in, got, want)
+		}
+	}
+}
+
 func TestIsTransientChatErrCaseInsensitive(t *testing.T) {
 	err := errors.New(`Post "https://h/v1/chat/completions": context deadline exceeded (Client.Timeout exceeded while awaiting headers)`)
 	if !isTransientChatErr(err) {
