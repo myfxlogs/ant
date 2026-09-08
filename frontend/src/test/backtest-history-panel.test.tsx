@@ -35,4 +35,17 @@ describe('BacktestHistoryPanel', () => {
     render(<BacktestHistoryPanel runs={[]} loading={false} onOpen={vi.fn()} />)
     expect(screen.getByText(/暂无回测记录/)).toBeTruthy()
   })
+
+  it('renders protobuf Timestamp startedAt without crashing (React #31 regression)', () => {
+    // 生产数据形状：runs.startedAt 是 protobuf Timestamp 对象（非字符串）。
+    const protoRuns = [
+      { id: 'r1', name: '回测 A', startedAt: { seconds: 1788840000, nanos: 500000000 }, totalReturn: 3.1, totalTrades: 8 },
+      { id: 'r2', name: '回测 B', startedAt: '', totalReturn: -1, totalTrades: 2 },
+    ]
+    render(<BacktestHistoryPanel runs={protoRuns as never} loading={false} onOpen={vi.fn()} />)
+    expect(screen.getByText('回测 A')).toBeTruthy()
+    const stamp = screen.getByText(/2026/)
+    expect(stamp.textContent).toBeTruthy()
+    expect(screen.getByText('回测 B')).toBeTruthy()
+  })
 })

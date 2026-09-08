@@ -3,11 +3,31 @@ import { useTranslation } from 'react-i18next';
 
 interface RunItem {
   id: string;
-  startedAt?: string;
+  // Runtime shape is a protobuf Timestamp ({seconds, nanos}) despite the
+  // legacy cast to string — never render it directly.
+  startedAt?: unknown;
   totalReturn?: number;
   totalTrades?: number;
   templateName?: string;
   name?: string;
+}
+
+// Protobuf Timestamp / ISO string / undefined → 本地时间文本，非法输入返回 ''。
+export function formatStartedAt(v: unknown): string {
+  if (v == null || v === '') return '';
+  if (typeof v === 'string') {
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? v : d.toLocaleString('zh-CN', { hour12: false });
+  }
+  if (typeof v === 'object') {
+    const o = v as { seconds?: number | string | bigint; nanos?: number };
+    if (o.seconds != null) {
+      const ms = Number(o.seconds) * 1000 + Math.floor((o.nanos || 0) / 1e6);
+      const d = new Date(ms);
+      if (!isNaN(d.getTime())) return d.toLocaleString('zh-CN', { hour12: false });
+    }
+  }
+  return '';
 }
 
 interface Props {
@@ -50,7 +70,7 @@ export default function BacktestHistoryPanel({ runs, loading, onOpen, onDelete }
               <span style={{ flex: '1 1 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>
                 {r.name || r.templateName || r.id.slice(0, 8)}
               </span>
-              <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>{r.startedAt || ''}</span>
+              <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>{formatStartedAt(r.startedAt)}</span>
               {ret != null && (
                 <span style={{ fontSize: 13, fontWeight: 600, color: ret >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
                   {ret >= 0 ? '+' : ''}{ret.toFixed(1)}%
