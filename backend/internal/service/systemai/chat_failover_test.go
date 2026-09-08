@@ -2,15 +2,211 @@ package systemai
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
+
+// FIX-2026-09-08-TIMEOUT-SELFHEAL 对抗证明。
+//
+// 业主实测：`chat completion http: … Client.Timeout exceeded while awaiting
+// headers` 直接失败、从不重试。根因：isTransientChatErr 用小写 "timeout"
+// 匹配，Go 超时错误文本是 "Client.Timeout"（大写 T）→ 永远不 transient，
+// 不重试、直接把超时当最终错误抛给用户。
+//
+// mutation: 还原 chat.go 的 isTransientChatErr/tryChatCompletion →
+// T-T1/T-T2 RED；还原 chat_stream.go 的退避重试 → T-T3 RED。
+
+// 瞬时错误统一重试策略：429/5xx/超时 → 退避重试 2 次（表驱动，可测试注入）。
+// Retry-After 存在时优先采用（上限 15s）。
+func TestTransientRetryPolicy(t *testing.T) {
+	oldBackoff := transientRetryBackoff
+	transientRetryBackoff = []time.Duration{10 * time.Millisecond, 20 * time.Millisecond}
+	defer func() { transientRetryBackoff = oldBackoff }()
+
+	if w := retryWait(1, 0); w != 10*time.Millisecond {
+		t.Fatalf("retryWait(1)=%v want table[0]", w)
+	}
+	if w := retryWait(2, 0); w != 20*time.Millisecond {
+		t.Fatalf("retryWait(2)=%v want table[1]", w)
+	}
+	if w := retryWait(1, 30*time.Second); w != 15*time.Second {
+		t.Fatalf("retryWait with Retry-After 30s must cap at 15s, got %v", w)
+	}
+	if w := retryWait(1, 3*time.Second); w != 3*time.Second {
+		t.Fatalf("retryWait with Retry-After 3s must honor it, got %v", w)
+	}
+	if w := retryWait(5, 0); w != 20*time.Millisecond {
+		t.Fatalf("retryWait overflow must clamp to table tail, got %v", w)
+	}
+}
+
+func TestTryChatCompletionRetries429Twice(t *testing.T) {
+	oldBackoff := transientRetryBackoff
+	transientRetryBackoff = []time.Duration{10 * time.Millisecond, 20 * time.Millisecond}
+	defer func() { transientRetryBackoff = oldBackoff }()
+
+	reqs := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqs++
+		w.Header().Set("Content-Type", "application/json")
+		if reqs <= 2 {
+			w.Header().Set("Retry-After", "0")
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = io.WriteString(w, `{"error":{"message":"inference exceeds tpm/rpm limit","type":"rate_limit_error"}}`)
+			return
+		}
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":"ok"}}]}`)
+	}))
+	defer srv.Close()
+
+	p := chatProvider{
+		userID: uuid.New(), providerID: "openai_compatible_test",
+		model: "kimi-test", baseURL: srv.URL, secret: "sk",
+		temperature: 0.3,
+	}
+	res, _, _, err := (&Service{log: zap.NewNop()}).tryChatCompletion(context.Background(), p, []ChatMessage{{Role: "user", Content: "hi"}}, nil)
+	if err != nil {
+		t.Fatalf("two 429s must be retried before giving up: %v", err)
+	}
+	if res != "ok" || reqs != 3 {
+		t.Fatalf("res=%q reqs=%d, want ok/3", res, reqs)
+	}
+}
+
+func TestTryChatCompletionStreamRetriesOn429Twice(t *testing.T) {
+	oldBackoff := transientRetryBackoff
+	transientRetryBackoff = []time.Duration{10 * time.Millisecond, 20 * time.Millisecond}
+	defer func() { transientRetryBackoff = oldBackoff }()
+
+	reqs := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqs++
+		w.Header().Set("Content-Type", "application/json")
+		if reqs <= 2 {
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = io.WriteString(w, `{"error":{"message":"rate limited","type":"rate_limit_error"}}`)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		_, _ = io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"ok-stream\"}}]}\n\ndata: [DONE]\n\n")
+	}))
+	defer srv.Close()
+
+	p := chatProvider{
+		userID: uuid.New(), providerID: "openai_compatible_test",
+		model: "m", baseURL: srv.URL, secret: "sk",
+		temperature: 0.3,
+	}
+	var got []ChatStreamChunk
+	svc := &Service{log: zap.NewNop()}
+	err := svc.tryChatCompletionStream(context.Background(), p, []ChatMessage{{Role: "user", Content: "hi"}}, nil, func(c ChatStreamChunk) error {
+		got = append(got, c)
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("two 429s must be retried: %v", err)
+	}
+	if len(got) == 0 || got[0].Content != "ok-stream" || reqs != 3 {
+		t.Fatalf("delivered=%v reqs=%d", got, reqs)
+	}
+}
+
+func TestIsTransientChatErrCaseInsensitive(t *testing.T) {
+	err := errors.New(`Post "https://h/v1/chat/completions": context deadline exceeded (Client.Timeout exceeded while awaiting headers)`)
+	if !isTransientChatErr(err) {
+		t.Fatal("Client.Timeout (capital T) must be classified transient")
+	}
+	if !isTimeoutLikeErr(err) {
+		t.Fatal("must be classified timeout-like for the user hint")
+	}
+	if isTransientChatErr(nil) || isTransientChatErr(errors.New("invalid api key")) {
+		t.Fatal("nil / auth errors must not be transient")
+	}
+}
+
+func TestTryChatCompletionRetriesOnTimeout(t *testing.T) {
+	oldTimeout := chatHTTPTimeout
+	chatHTTPTimeout = 50 * time.Millisecond
+	defer func() { chatHTTPTimeout = oldTimeout }()
+
+	reqs := 0
+	var lastBody string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqs++
+		b, _ := io.ReadAll(r.Body)
+		lastBody = string(b)
+		if reqs == 1 {
+			time.Sleep(200 * time.Millisecond) // force client timeout
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"choices":[{"message":{"role":"assistant","content":"recovered"}}]}`)
+	}))
+	defer srv.Close()
+
+	p := chatProvider{
+		userID: uuid.New(), providerID: "openai_compatible_test",
+		model: "kimi-test", baseURL: srv.URL, secret: "sk",
+		temperature: 0.3,
+	}
+	svc := &Service{log: zap.NewNop()}
+	res, _, _, err := svc.tryChatCompletion(context.Background(), p, []ChatMessage{{Role: "user", Content: "hi"}}, nil)
+	if err != nil {
+		t.Fatalf("timeout must be retried as transient: %v", err)
+	}
+	if res != "recovered" {
+		t.Fatalf("content = %q", res)
+	}
+	if reqs != 2 {
+		t.Fatalf("requests = %d, want 2 (timeout retry)", reqs)
+	}
+	if !strings.Contains(lastBody, `"temperature":0.3`) {
+		t.Fatalf("retry must keep configured temperature, body: %s", lastBody)
+	}
+}
+
+func TestTryChatCompletionStreamRetriesOn429(t *testing.T) {
+	first := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if first == 0 {
+			first++
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = io.WriteString(w, `{"error":{"message":"inference exceeds tpm/rpm limit","type":"rate_limit_error"}}`)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		_, _ = io.WriteString(w, "data: {\"choices\":[{\"delta\":{\"content\":\"ok-stream\"}}]}\n\ndata: [DONE]\n\n")
+	}))
+	defer srv.Close()
+
+	p := chatProvider{
+		userID: uuid.New(), providerID: "openai_compatible_test",
+		model: "m", baseURL: srv.URL, secret: "sk",
+		temperature: 0.3,
+	}
+	var got []ChatStreamChunk
+	svc := &Service{log: zap.NewNop()}
+	err := svc.tryChatCompletionStream(context.Background(), p, []ChatMessage{{Role: "user", Content: "hi"}}, nil, func(c ChatStreamChunk) error {
+		got = append(got, c)
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("429 stream must be retried with backoff: %v", err)
+	}
+	if len(got) == 0 || got[0].Content != "ok-stream" {
+		t.Fatalf("retry content not delivered: %+v", got)
+	}
+}
 
 // FIX-2026-09-08-TEMP-RETRY 对抗证明。
 //

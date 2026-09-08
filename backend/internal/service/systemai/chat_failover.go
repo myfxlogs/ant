@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -77,6 +78,8 @@ func (s *Service) isCircuitOpen(ctx context.Context, userID uuid.UUID, providerI
 type failoverErr struct {
 	msg       string
 	transient bool
+	// retryAfter is the vendor-advised wait (Retry-After header), 0 when absent.
+	retryAfter time.Duration
 }
 
 func (e *failoverErr) Error() string { return e.msg }
@@ -206,6 +209,43 @@ func normalizeAPIBase(base string) string {
 		}
 	}
 	return base
+}
+
+// transientRetryBackoff is the wait before each transient retry (indexed by
+// retry number). Var so tests can shorten it.
+var transientRetryBackoff = []time.Duration{2 * time.Second, 6 * time.Second}
+
+const maxRetryAfter = 15 * time.Second
+
+// retryWait computes the sleep before a transient retry: the vendor's
+// Retry-After when present (capped), otherwise the staged backoff table.
+func retryWait(retry int, retryAfter time.Duration) time.Duration {
+	if retryAfter > 0 {
+		if retryAfter > maxRetryAfter {
+			return maxRetryAfter
+		}
+		return retryAfter
+	}
+	if retry-1 >= 0 && retry-1 < len(transientRetryBackoff) {
+		return transientRetryBackoff[retry-1]
+	}
+	return transientRetryBackoff[len(transientRetryBackoff)-1]
+}
+
+// parseRetryAfter reads a numeric Retry-After header (seconds), 0 when absent.
+func parseRetryAfter(resp *http.Response) time.Duration {
+	if resp == nil {
+		return 0
+	}
+	v := strings.TrimSpace(resp.Header.Get("Retry-After"))
+	if v == "" {
+		return 0
+	}
+	secs, err := strconv.Atoi(v)
+	if err != nil || secs <= 0 {
+		return 0
+	}
+	return time.Duration(secs) * time.Second
 }
 
 // chatEndpoint constructs the chat completion API endpoint from a provider's base URL.

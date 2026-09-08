@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -94,7 +95,25 @@ func (s *Service) chatCompletionStream(
 }
 
 func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition, onChunk func(chunk ChatStreamChunk) error) error {
-	resp, err := s.doStreamHTTPRequest(ctx, p, messages, tools, onChunk)
+	// Transient pre-stream failures (429/5xx/timeout) are retried with staged
+	// backoff before failing over — nothing has been delivered yet, so a
+	// replay cannot duplicate content.
+	var resp *http.Response
+	var err error
+	retryAfter := time.Duration(0)
+	for attempt := 0; attempt < 3; attempt++ {
+		if attempt > 0 {
+			time.Sleep(retryWait(attempt, retryAfter))
+			retryAfter = 0
+		}
+		resp, err = s.doStreamHTTPRequest(ctx, p, messages, tools, onChunk)
+		if err == nil || !isFailoverErr(err) {
+			break
+		}
+		if fe, ok := err.(*failoverErr); ok {
+			retryAfter = fe.retryAfter
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -117,13 +136,27 @@ func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messa
 	if err != nil {
 		return nil, err
 	}
-	client := &http.Client{Timeout: 0}
+	// No blanket timeout (streams run long), but bound time-to-first-header so
+	// a dead vendor cannot hang the agent loop forever.
+	client := &http.Client{
+		Timeout: 0,
+		Transport: &http.Transport{
+			ResponseHeaderTimeout: 120 * time.Second,
+		},
+	}
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		if isTransientChatErr(err) {
 			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
-		return nil, &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
+		hint := ""
+		if isTimeoutLikeErr(err) {
+			hint = "——推理模型可能思考较久或厂商过载，请重试、稍后再试或切换模型"
+		}
+		return nil, &failoverErr{
+			msg:       fmt.Sprintf("[%s|%s] chat completion stream: 模型服务连接失败/超时（%v）%s", p.providerID, p.model, err, hint),
+			transient: isTransientChatErr(err),
+		}
 	}
 	if resp.StatusCode != http.StatusOK {
 		ae := readAPIErrorBody(resp)
@@ -147,7 +180,7 @@ func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messa
 		if transient {
 			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
-		return nil, &failoverErr{msg: msg, transient: transient}
+		return nil, &failoverErr{msg: msg, transient: transient, retryAfter: parseRetryAfter(resp)}
 	}
 	return resp, nil
 }

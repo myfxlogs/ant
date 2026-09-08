@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-const chatTimeout = 60 * time.Second
+// chatHTTPTimeout bounds a whole non-streaming chat request. Reasoning models
+// (kimi-k3, o1, …) may think for 1-2 minutes before emitting anything.
+var chatHTTPTimeout = 150 * time.Second
+
 const secretCacheTTL = 30 * time.Minute
 
 // ChatMessage is a single message in a chat completion request.
@@ -244,21 +247,26 @@ func (s *Service) ChatCompletionWithUsage(
 }
 
 // tryChatCompletion attempts a single chat completion against one provider.
-// Retries once on transient network errors AND once on transient HTTP statuses
-// (429/5xx) before giving up — so a single-provider user isn't immediately failed.
+// Transient failures (timeout/network/429/5xx) are retried with staged backoff
+// (honoring a vendor Retry-After, capped) before failing over — so a
+// single-provider user isn't immediately failed by a hiccup.
 func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage, tools []ToolDefinition) (string, []ToolCall, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
-	httpReq, err := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, p.temperature)
-	if err != nil {
-		return "", nil, nil, err
-	}
-	client := &http.Client{Timeout: chatTimeout}
+	client := &http.Client{Timeout: chatHTTPTimeout}
 
-	const maxAttempts = 2
+	const maxAttempts = 3
 	tempRetried := false
+	temp := p.temperature
+	retryAfter := time.Duration(0)
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
-			time.Sleep(time.Duration(attempt) * time.Second)
+			time.Sleep(retryWait(attempt, retryAfter))
+			retryAfter = 0
+		}
+		// Rebuild per attempt — a consumed request body cannot be replayed.
+		httpReq, reqErr := doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, temp)
+		if reqErr != nil {
+			return "", nil, nil, reqErr
 		}
 		resp, doErr := client.Do(httpReq)
 		if doErr != nil {
@@ -266,7 +274,14 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 				if isTransientChatErr(doErr) {
 					s.recordProviderFailure(ctx, p.userID, p.providerID)
 				}
-				return "", nil, nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
+				hint := ""
+				if isTimeoutLikeErr(doErr) {
+					hint = "——推理模型可能思考较久或厂商过载，请重试、稍后再试或切换模型"
+				}
+				return "", nil, nil, &failoverErr{
+					msg:       fmt.Sprintf("[%s|%s] chat completion: 模型服务连接失败/超时（%v）%s", p.providerID, p.model, doErr, hint),
+					transient: isTransientChatErr(doErr),
+				}
 			}
 			continue
 		}
@@ -282,14 +297,13 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		// instead of failing the provider over.
 		if resp.StatusCode == http.StatusBadRequest && !tempRetried && isTemperatureErrorBody(bodyBytes) {
 			tempRetried = true
+			temp = 1
 			attempt-- // rebuild-and-retry immediately on the same attempt budget
-			httpReq, err = doChatRequest(ctx, p.model, messages, tools, false, endpoint, p.secret, p.maxTokens, 1)
-			if err != nil {
-				return "", nil, nil, err
-			}
 			continue
 		}
 
+		// every response refreshes the vendor-advised wait for the next sleep
+		retryAfter = parseRetryAfter(resp)
 		if ret := s.handleChatHTTPError(ctx, p, resp, bodyBytes, attempt, maxAttempts); ret != nil {
 			return "", nil, nil, ret
 		}
@@ -367,10 +381,24 @@ func isTransientChatErr(err error) bool {
 	if err == nil {
 		return false
 	}
-	msg := err.Error()
+	// Go's http.Client timeout renders as "Client.Timeout exceeded…" (capital
+	// T) — compare lowercased or the most common transient failure is never
+	// retried.
+	msg := strings.ToLower(err.Error())
 	return strings.Contains(msg, "connection refused") ||
 		strings.Contains(msg, "timeout") ||
-		strings.Contains(msg, "EOF") ||
+		strings.Contains(msg, "deadline exceeded") ||
+		strings.Contains(msg, "eof") ||
 		strings.Contains(msg, "broken pipe") ||
 		strings.Contains(msg, "reset by peer")
+}
+
+// isTimeoutLikeErr reports whether the transport failure was a timeout (as
+// opposed to e.g. connection refused) — used for the user-facing hint.
+func isTimeoutLikeErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "timeout") || strings.Contains(msg, "deadline exceeded")
 }

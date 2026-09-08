@@ -111,3 +111,21 @@
 **会话**: 业主报 kimi-k3 聊天 401。服务器侧实测商汤（存储密钥，两种头格式）→ Key 本身被厂商拒绝，非平台 bug；建议重新生成 Key。诊断用一次性测试文件已删，密钥全程掩码。
 
 **改进**: 聊天报错带 `[provider_id|model]` 归因（原 `[]` 空括号）；curl 解析器支持裸 Authorization Key（带格式告警）。
+
+## 2026-09-08 STATE.md 预算滚出（FIX-2026-09-01 施工表明细）
+
+| FIX-2026-09-01-PURCHASES-STRATEGY-TITLE | ✅done | Devin CLI 直接施工+验收 2026-09-01。PurchaseTab "策略"列显示 UUID + 行抖动。根因：SubscriptionItem proto 无 strategy_title，前端从 m.strategies find 标题找不到回退 UUID；m.strategies 每 30s refetch 触发重渲染抖动。修复：proto 加 strategy_title=8 + 后端 ListSubscriptions LEFT JOIN strategy_templates（初版误 JOIN marketplace_strategies，该表为空）取 COALESCE(st.name,'') + 前端直接用 row.strategyTitle + 孤立订阅显示"已删除策略"（5 语言 i18n）。 |
+| FIX-2026-09-01-ORPHAN-RUN-STRATEGY-NAME | ✅done | Devin CLI 直接施工+验收 2026-09-01。"临时运行"表格"策略"列显示 runId 前缀。根因：ActiveSession 无 StrategyID 字段，enrichWithStrategyName 仅查 schedule_id（temp run 无 schedule_id → name 空 → 前端回退 shortId(runId)）。修复：ActiveSession 加 StrategyID + Register 传参 + enrichWithStrategyName fallback 查 strategy_templates.name + SetStrategyTemplateLookup 装配。旧运行需重启才能生效。 |
+
+## 2026-09-08 STATE.md 预算滚出（FIX-2026-09-01 施工表明细）
+
+| FIX-2026-09-01-PURCHASES-STRATEGY-TITLE | ✅done | Devin CLI 直接施工+验收 2026-09-01。PurchaseTab "策略"列显示 UUID + 行抖动。根因：SubscriptionItem proto 无 strategy_title，前端从 m.strategies find 标题找不到回退 UUID；m.strategies 每 30s refetch 触发重渲染抖动。修复：proto 加 strategy_title=8 + 后端 ListSubscriptions LEFT JOIN strategy_templates（初版误 JOIN marketplace_strategies，该表为空）取 COALESCE(st.name,'') + 前端直接用 row.strategyTitle + 孤立订阅显示"已删除策略"（5 语言 i18n）。 |
+| FIX-2026-09-01-ORPHAN-RUN-STRATEGY-NAME | ✅done | Devin CLI 直接施工+验收 2026-09-01。"临时运行"表格"策略"列显示 runId 前缀。根因：ActiveSession 无 StrategyID 字段，enrichWithStrategyName 仅查 schedule_id（temp run 无 schedule_id → name 空 → 前端回退 shortId(runId)）。修复：ActiveSession 加 StrategyID + Register 传参 + enrichWithStrategyName fallback 查 strategy_templates.name + SetStrategyTemplateLookup 装配。旧运行需重启才能生效。 |
+
+## 2026-09-08 FIX-2026-09-08-RESILIENCE
+
+**会话**: Devin CLI 直接施工+验收。业主要求"其他错误也自己重试处理，前端用户少操作"。
+
+**核心**: 修 isTransientChatErr 大小写 bug（超时从不重试的真根因）+ 统一瞬时速错退避重试（2 次，2s/6s，Retry-After 优先）双路径 + 修 body 复用连带 bug + 报错归因与中文提示。
+
+**验证**: mutation 编译 RED + 行为测试全绿；race/check-lines 0 errors。明细见 registry 同名条目。

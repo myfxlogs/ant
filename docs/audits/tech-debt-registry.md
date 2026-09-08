@@ -2570,3 +2570,28 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **FIX-2026-09-08-CURL-IMPORT 补记（2026-09-08 业主实测反馈）**：业主在已存 Key 的 NOVA 卡片导入后仍被提示"未识别到 API Key"。两处修正：①`ParseProviderCurlRequest` 加 `has_saved_key`（前端传 `draft.has_secret`）——已存 Key 的厂商静默全部 Key 类告警（占位符/缺失都不再出现，沿用已存密钥）；②未存 Key 时占位符场景只保留一条告警（原占位符+缺失两条重复），文案改为指向下方 API Key 输入框。`ParseProviderCurlRaw` 加 `hasSavedKey` 参数；新增 `TestParseProviderCurlKeyWarningsMutedBySavedKey`（静默 + 单告警断言）+ 前端 has_secret 透传用例。门禁全绿（race/check-lines 0 errors/vitest 194）。
 
 **FIX-2026-09-08-CURL-IMPORT 补记 2（2026-09-08 业主报 401 Forbidden 诊断）**：业主聊天报 `[] chat completion stream: status 401 (Forbidden)`。服务器侧用存储密钥直接实测商汤：`/v1/models` 与 `/v1/chat/completions` 以 `Bearer` 和裸 `Authorization` 两种头格式均 401 code=16——**Key 本身被商汤拒绝**（无效/过期/无权限），平台请求构造与 URL 均正确，非平台 bug；已建议业主到商汤控制台重新生成 Key。连带两项改进：①错误归因——`handleChatHTTPError`/`doStreamHTTPRequest` 报错改为 `[provider_id|model] chat completion: status N`（厂商错误体常无 OpenAI type 字段，原 `[]` 空括号无信息量）；②解析器接受裸 `Authorization: <key>`（无空白且 ≥16 字符才视为 Key，Basic 等带 scheme 的仍拒绝），附格式告警——`TestParseProviderCurlBareAuthorizationValue`。门禁全绿。
+
+---
+
+## FIX-2026-09-08-RESILIENCE：AI 聊天瞬时错误自愈（超时/网络/429/5xx 统一退避重试）（✅done 2026-09-08）
+
+**背景**（业主连续追问"其他错误能否自己重试处理，让前端用户少操作"）：随 401→429→超时三轮实测暴露的容错缺口。
+
+**根因（本轮最重）**：`isTransientChatErr` 用小写 `strings.Contains(msg, "timeout")` 匹配，而 Go `http.Client` 超时错误文本是 `"Client.Timeout exceeded…"`（大写 T）→ **超时永远不被判定为 transient → 从不重试，直接把超时当最终错误抛给用户**（业主实测的报错正是此因）。连带：旧重试路径复用已消费的 request body（`ContentLength=117 with Body length 0`）——被 case-bug 掩蔽的休眠 bug，本轮激活重试后暴露。
+
+**修复**：
+- `isTransientChatErr` 改小写比较 + 增加 `deadline exceeded`；新增 `isTimeoutLikeErr`（用户提示用）。
+- 非流式超时 `chatTimeout` 60s → `chatHTTPTimeout` 150s（var，推理模型思考久）。
+- 统一瞬时速错重试策略：`maxAttempts=3`，退避表 `transientRetryBackoff = [2s, 6s]`（var 可注入），`Retry-After` 头存在时优先（`parseRetryAfter`，上限 15s）；流式路径同策略（3 次尝试，仅首字节前失败才重试——不会重复投递内容），并加 `ResponseHeaderTimeout=120s` 防厂商死挂。
+- 重试每次尝试**重建请求**（修 body 复用 bug）；temperature=1 自愈重试不消耗退避预算。
+- 报错统一 `[provider_id|model]` 归因 + 超时场景中文行动提示（"推理模型可能思考较久或厂商过载，请重试、稍后再试或切换模型"）。
+
+**自愈矩阵（终态）**：超时/网络拒连/EOF/reset（重试+failover ✓）；429/5xx（退避重试+failover ✓，配额耗尽类根治需厂商提额）；400 temperature（自动 temperature=1 ✓）；400 stream 不支持（自动转非流式 ✓）；空流响应（重试+failover ✓）；**不可自愈**（提示已到位）：401/403 Key 无效、余额不足、配额长期耗尽。
+
+**对抗证明**：mutation stash 三实现文件 → 编译失败（undefined: chatHTTPTimeout/retryWait 等，最强 RED）→ 恢复全绿；行为测试 `TestTransientRetryPolicy`（退避表/Retry-After 优先/封顶/溢出钳制）、`TestTryChatCompletionRetriesOnTimeout`（超时→重试成功，2 请求）、`TestTryChatCompletionRetries429Twice`（429×2→第 3 次成功）、`TestTryChatCompletionStreamRetriesOn429(Twice)`（流式 429 退避后 SSE 正常投递）。诊断过程中暴露并修复：fallbackNonStream(nil) nil panic、(nil,nil) defer 解引用（见 TEMP-RETRY 条目）。
+
+**门禁**：build ✓ / gofmt ✓ / vet ✓ / race ✓ / check-lines --strict 0 errors ✓。前端无改动。
+
+**风险/gap**：429 配额长期耗尽（单请求超 TPM）重试无效，必须厂商提额；150s 非流式等待对用户偏长但换来自愈率。
+
+**状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
