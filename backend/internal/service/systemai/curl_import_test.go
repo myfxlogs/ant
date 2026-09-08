@@ -49,6 +49,34 @@ func TestParseProviderCurlSensenovaExample(t *testing.T) {
 	}
 }
 
+// 业主实测案例：粘贴的 curl 丢失 Bearer 前缀（Authorization: sk-… 裸值）。
+// 裸 Key 应被识别并附带格式告警，而不是静默丢弃。
+func TestParseProviderCurlBareAuthorizationValue(t *testing.T) {
+	res, err := ParseProviderCurlRaw(`curl https://token.sensenova.cn/v1/chat/completions -H "Authorization: sk-E7JzlSejt39pqXEtmNI3OPSNTJC116jR" -H "Content-Type: application/json" -d '{"model": "kimi-k3", "stream": true}'`, false)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	if res.APIKey != "sk-E7JzlSejt39pqXEtmNI3OPSNTJC116jR" {
+		t.Fatalf("bare key must be extracted, got %q", res.APIKey)
+	}
+	if res.DefaultModel != "kimi-k3" {
+		t.Fatalf("DefaultModel = %q", res.DefaultModel)
+	}
+	joined := strings.Join(res.Warnings, "\n")
+	if !strings.Contains(joined, "Bearer") {
+		t.Fatalf("bare-key format warning missing: %v", res.Warnings)
+	}
+
+	// Basic-auth style (has a space) must NOT be treated as a bare key.
+	res2, err := ParseProviderCurlRaw(`curl https://h.example.com/v1/chat/completions -H "Authorization: Basic dXNlcjpwYXNz" -d '{"model":"m1"}'`, false)
+	if err != nil {
+		t.Fatalf("parse basic: %v", err)
+	}
+	if res2.APIKey != "" {
+		t.Fatalf("Basic scheme must not be imported as key, got %q", res2.APIKey)
+	}
+}
+
 func TestParseProviderCurlRealKeyAndVariants(t *testing.T) {
 	res, err := ParseProviderCurlRaw(`curl https://api.deepseek.com/v1/chat/completions -H "Authorization: Bearer sk-real-abc123" -H "Content-Type: application/json" -d '{"model":"deepseek-v4","messages":[{"role":"user","content":"hi"}],"stream":false}'`, false)
 	if err != nil {

@@ -2568,3 +2568,5 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 **状态**：✅done（Devin CLI 直接施工+验收 2026-09-08）。
 
 **FIX-2026-09-08-CURL-IMPORT 补记（2026-09-08 业主实测反馈）**：业主在已存 Key 的 NOVA 卡片导入后仍被提示"未识别到 API Key"。两处修正：①`ParseProviderCurlRequest` 加 `has_saved_key`（前端传 `draft.has_secret`）——已存 Key 的厂商静默全部 Key 类告警（占位符/缺失都不再出现，沿用已存密钥）；②未存 Key 时占位符场景只保留一条告警（原占位符+缺失两条重复），文案改为指向下方 API Key 输入框。`ParseProviderCurlRaw` 加 `hasSavedKey` 参数；新增 `TestParseProviderCurlKeyWarningsMutedBySavedKey`（静默 + 单告警断言）+ 前端 has_secret 透传用例。门禁全绿（race/check-lines 0 errors/vitest 194）。
+
+**FIX-2026-09-08-CURL-IMPORT 补记 2（2026-09-08 业主报 401 Forbidden 诊断）**：业主聊天报 `[] chat completion stream: status 401 (Forbidden)`。服务器侧用存储密钥直接实测商汤：`/v1/models` 与 `/v1/chat/completions` 以 `Bearer` 和裸 `Authorization` 两种头格式均 401 code=16——**Key 本身被商汤拒绝**（无效/过期/无权限），平台请求构造与 URL 均正确，非平台 bug；已建议业主到商汤控制台重新生成 Key。连带两项改进：①错误归因——`handleChatHTTPError`/`doStreamHTTPRequest` 报错改为 `[provider_id|model] chat completion: status N`（厂商错误体常无 OpenAI type 字段，原 `[]` 空括号无信息量）；②解析器接受裸 `Authorization: <key>`（无空白且 ≥16 字符才视为 Key，Basic 等带 scheme 的仍拒绝），附格式告警——`TestParseProviderCurlBareAuthorizationValue`。门禁全绿。

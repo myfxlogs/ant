@@ -78,6 +78,14 @@ func applyCurlHeader(res *CurlImport, name, val string) {
 	case "authorization":
 		if scheme, key, ok := strings.Cut(val, " "); ok && strings.EqualFold(strings.TrimSpace(scheme), "bearer") {
 			res.APIKey = strings.TrimSpace(key)
+			return
+		}
+		// No scheme — some vendor docs show a bare key. Accept key-like
+		// values (no whitespace, reasonably long) but flag the format:
+		// the platform always sends "Bearer <key>".
+		if !strings.ContainsAny(val, " \t") && len(val) >= 16 {
+			res.APIKey = val
+			res.Warnings = append(res.Warnings, "示例的 Authorization 头缺少 Bearer 前缀——已按裸 Key 识别；平台以 Bearer 方式发送，若实测 401 请确认该 Key 用法")
 		}
 	case "x-api-key", "api-key":
 		res.APIKey = val

@@ -105,3 +105,9 @@
 - 2026-09-01 **FIX-2026-09-01-ORPHAN-RUN-STRATEGY-NAME ✅done**（Devin CLI 直接施工+验收）：策略页"临时运行"表格"策略"列显示 runId 前缀。根因：`ActiveSession` 无 `StrategyID` 字段，`enrichWithStrategyName` 仅查 `schedule_id`（temp run 无 schedule_id → name 空 → 前端回退 `shortId(runId)`）。修复：`ActiveSession` 加 `StrategyID` + `Register` 传参 + `enrichWithStrategyName` fallback 查 `strategy_templates.name` + `SetStrategyTemplateLookup` 装配。旧运行需重启生效。已部署。
 
 **补记（同日）**: 业主实测发现已存 Key 的厂商导入后仍提示"未识别到 API Key"。修正：ParseProviderCurlRequest 加 has_saved_key（前端传 draft.has_secret），已存 Key 静默 Key 类告警；占位符场景双重告警合并为一条。新增静默断言测试 + 前端透传用例。
+
+## 2026-09-08 401 Forbidden 诊断 + 错误归因
+
+**会话**: 业主报 kimi-k3 聊天 401。服务器侧实测商汤（存储密钥，两种头格式）→ Key 本身被厂商拒绝，非平台 bug；建议重新生成 Key。诊断用一次性测试文件已删，密钥全程掩码。
+
+**改进**: 聊天报错带 `[provider_id|model]` 归因（原 `[]` 空括号）；curl 解析器支持裸 Authorization Key（带格式告警）。

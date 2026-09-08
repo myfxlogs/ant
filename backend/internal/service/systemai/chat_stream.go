@@ -131,7 +131,10 @@ func (s *Service) doStreamHTTPRequest(ctx context.Context, p chatProvider, messa
 		if resp.StatusCode == 400 && isAuthErrorBody(ae.Raw) {
 			transient = false
 		}
-		msg := fmt.Sprintf("[%s] chat completion stream: status %d", ae.Type, resp.StatusCode)
+		msg := fmt.Sprintf("[%s|%s] chat completion stream: status %d", p.providerID, p.model, resp.StatusCode)
+		if ae.Type != "" {
+			msg += " type=" + ae.Type
+		}
 		if ae.Message != "" {
 			msg += " (" + ae.Message + ")"
 		} else if ae.Raw != "" {

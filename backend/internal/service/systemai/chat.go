@@ -322,7 +322,13 @@ func (s *Service) handleChatHTTPError(ctx context.Context, p chatProvider, resp 
 		transient = false
 	}
 	if !transient || attempt == maxAttempts-1 {
-		msg := fmt.Sprintf("[%s] chat completion: status %d", ae.Type, resp.StatusCode)
+		// Attribute the failure to the provider+model so the user knows
+		// WHICH credential to fix (vendor bodies often lack the OpenAI
+		// "type" field, e.g. sensanova 401 {"message":"Forbidden"}).
+		msg := fmt.Sprintf("[%s|%s] chat completion: status %d", p.providerID, p.model, resp.StatusCode)
+		if ae.Type != "" {
+			msg += " type=" + ae.Type
+		}
 		if ae.Message != "" {
 			msg += " (" + ae.Message + ")"
 		} else if ae.Raw != "" {
