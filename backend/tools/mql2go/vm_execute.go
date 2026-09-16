@@ -193,22 +193,26 @@ func (vm *VM) executeStack(ins Instruction) {
 		if int(ins.A) < len(vm.locals) {
 			vm.push(vm.locals[ins.A])
 		} else {
-			vm.push(interp.NoneVal())
+			vm.setStackError(fmt.Sprintf("OP_PUSH_VAR slot %d out of range (locals=%d)", ins.A, len(vm.locals)))
 		}
 	case OP_PUSH_GLOBAL:
 		if int(ins.A) < len(vm.globals) {
 			vm.push(vm.globals[ins.A])
 		} else {
-			vm.push(interp.NoneVal())
+			vm.setStackError(fmt.Sprintf("OP_PUSH_GLOBAL slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
 		}
 	case OP_STORE_VAR:
 		if int(ins.A) < len(vm.locals) {
 			vm.locals[ins.A] = vm.pop()
+		} else {
+			vm.setStackError(fmt.Sprintf("OP_STORE_VAR slot %d out of range (locals=%d)", ins.A, len(vm.locals)))
+			vm.pop()
 		}
 	case OP_STORE_GLOBAL:
 		if int(ins.A) < len(vm.globals) {
 			vm.globals[ins.A] = vm.pop()
 		} else {
+			vm.setStackError(fmt.Sprintf("OP_STORE_GLOBAL slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
 			vm.pop()
 		}
 	case OP_POP:
@@ -216,11 +220,15 @@ func (vm *VM) executeStack(ins Instruction) {
 	case OP_DUP:
 		if len(vm.stack) > 0 {
 			vm.push(vm.stack[len(vm.stack)-1])
+		} else {
+			vm.setStackError("OP_DUP underflow")
 		}
 	case OP_SWAP:
 		if len(vm.stack) >= 2 {
 			n := len(vm.stack)
 			vm.stack[n-1], vm.stack[n-2] = vm.stack[n-2], vm.stack[n-1]
+		} else {
+			vm.setStackError("OP_SWAP underflow")
 		}
 	}
 }

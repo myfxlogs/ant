@@ -231,3 +231,27 @@
 - 2026-09-08 **FIX-2026-09-08-CURL-IMPORT ✅done**（Devin CLI 直接施工+验收）：BYOK 配置新增「粘贴厂商 curl 示例一键导入」。实现：①proto `SystemAIService.ParseProviderCurl`（消息落 system_ai_probe.proto，无持久化）+ `make proto` 重生成 Go/TS；②后端解析器 `systemai/curl_import.go`：shell 词法（单引号 literal/双引号转义/续行合并）、URL→normalizeAPIBase 剥后缀、Bearer/x-api-key/api-key 提 key、`{your_key}` 类占位符只告警不导入、body JSON 提 model、NameHint 从 host 推导、无 URL fail-closed；③handler InvalidArgument 映射；④ConnectionForm 顶部导入框——回填 base_url/models/default_model（自定义厂商才回填 name）+ 真实 key 进密钥输入、warnings 行内展示、官方厂商地址不一致提示改用自定义卡片。存储层零改动（结构化行仍唯一真相源，P3）。对抗证明：后端 3 用例（业主原始 NOVA 示例原样通过 + 变体 + fail-closed）编译 RED；前端 2 用例 mutation RED→GREEN。门禁全绿（i18n-check 1519 错误为干净树既有，零新增）。风险/gap：仅支持 OpenAI 兼容 chat/completions 形态示例。详见 registry。
 - 2026-09-08 **FIX-2026-09-08-BYOK-MODEL-PICKER ✅done**（Devin CLI 直接施工+验收）：策略聊天模型下拉框选不到用户自有 BYOK 模型（xianhua.chan 报告，已配置 NOVA/kimi-k3 key 但下拉只显示系统模型）。3 层根因 + 修复：**A** `StrategyChat.tsx` 只调 listSystemModels → 改分组下拉（`我的 API Key` 在前 + `AI 网关` 在后，value=`provider_id|model` 字符串格式）；**B** `ListSystemModels` 返回 provider 行 UUID 而运行时 `resolveAllChatProviders` 按字符串比较 → 存的 primary 永不匹配（显示选中 X 实际用默认模型，usage 记录实锤）→ handler 经 providerRepo.ListAll 映射返回字符串 provider_id；**C** base_url 粘贴完整 endpoint（`/chat/completions` 结尾）被 chatEndpoint/discovery 拼双路径 404（生产日志 sensanova 每 2s 实锤）→ 新增 `normalizeAPIBase` 三处入口统一调用。对抗证明 3 项 RED→restore→GREEN（chatEndpoint 双路径 / handler UUID→字符串 / 前端分组+回显）。门禁全绿（go test 仅 3 个 pre-existing 5432 环境失败与改动无关；前端 vitest 189/189）。风险/gap：存量 UUID primary 显示 placeholder 需重选；部署后实测 xianhua.chan 下拉出现自有模型。详见 registry。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（Devin CLI 直接施工+验收）：①kimi-k3 聊天 400 "field Temperature invalid, only 1 is allowed"：根因 a `doChatRequest` 硬编码 Temperature 0.3 无视 `system_ai_configs.temperature`（该用户配 0.2）；根因 b 400 后原样重发无自愈。修复：`chatProvider` 加 temperature（`defaultTemperature`：配置值>0 用之，否则 0.3）+ `tryChatCompletion` 遇 400 body 含 "temperature" 以 temperature=1 重建自愈重试一次（tempRetried 防循环）。②连带修复两个既有 nil 雷：流式 400 → `fallbackNonStream(..., nil)` onChunk nil panic（签名透传 onChunk 修复）+ fallback 成功返回 (nil,nil) 后 `defer resp.Body.Close()` 解引用（补守卫）。③业主要求的模型配置入口：`WorkspaceCenterTabBar` tab 栏最右新增常驻齿轮（lazy AISettingsModal），code/chat tab 均可见，无需先开 AI 面板。对抗证明 3 项 RED→restore→GREEN（temperature 重试 httptest / 流式 fallback 投递（旧代码真实 nil panic）/ 前端入口 2 用例）。门禁全绿。风险/gap：自愈仅识别 body 含 "temperature" 的 400；流式路径对不支持 temperature 的模型首字延迟略增。详见 registry。
+
+## 2026-09-16 STATE.md 施工表滚出（2026-08-26 批次 ✅done）
+
+> 以下施工表条目已 ✅done，从 STATE.md 滚出归档以满足 ≤20KB 预算。
+
+| 子任务 | 状态 | 锚点 |
+|--------|------|------|
+| D-006 角色移交 Claude→Devin CLI | ✅ | AGENTS.md §0 |
+| D-007 业主全权授权常规操作 | ✅ | AGENTS.md §6 |
+| D-REVERT-CLEANUP-001 build 断裂修复 | ✅ | registry D-REVERT-CLEANUP-001 |
+| D-REVERT-SCOPE-DRIFT-001 状态漂移对账 | ✅ | registry D-REVERT-SCOPE-DRIFT-001 |
+| VM-CACHE-INTEGRITY-1/2（第一批） | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
+| LIVE-ORDER-REENTRY-1 R4 复审阻断 | ✅done | 返工后 Devin CLI 验收通过 2026-08-26 |
+| VM-TRADE-CONTEXT-1/2（第二批） | ✅done | Devin CLI 验收通过 2026-08-26 |
+| VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD（第三批） | ✅done | Devin CLI 验收通过 2026-08-26 |
+| VM-TIMESERIES-SEMANTICS-1 + VM-RUNTIME-FAILCLOSED-1（第四批） | ✅done | Devin CLI 验收通过 2026-08-26，8 项对抗证明 |
+| DATA-TRUTH-2b MT4 margin 补齐 | ✅ | spec 验证通过，修复+对抗证明存活 |
+| VM-AUDIT-2026-08-27 批次 1（-1 Python live SourceHash + -2 fatalError 重置） | ✅done | Devin CLI 验收通过 2026-08-27，2 项对抗证明独立验证 |
+| VM-AUDIT-2026-08-27 批次 2（-3 stack depth + -4 popN + -5 dispatch default） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
+| VM-AUDIT-2026-08-27 批次 3（-6 compileForLive + -7 recovery ctx + -8 PositionCache panic） | ✅done | Devin CLI 验收通过 2026-08-27，3 项对抗证明独立验证 |
+| VM round 4-5 遗留 5 ID 复审（VM-TRADE-CONTEXT-6/API-TRUTH-3/CACHE-INTEGRITY-5/COMPILER-SEMANTICS-4/TEST-EVIDENCE-4） | ✅done | Batch 1/2/3/4/5 全部 Devin CLI 验收通过 2026-08-27 |
+| P1 管线审计（13 条目） | 🟦open | 1 still-open（TRON-SECURITY-1 业主暂缓）；DATA-TRUTH-1/TRUST-1 均 ✅done（2026-09-16 registry 状态纠偏） |
+| VM round 4-5 + 报价管线派工（5 batch） | ✅done | Batch 1/2/3/4/5 全部 Devin CLI 验收通过 2026-08-27 |
+| P1 live 执行 bug 修复（login lookup + nil/empty slice） | ✅done | 已部署验证 2026-08-27 |

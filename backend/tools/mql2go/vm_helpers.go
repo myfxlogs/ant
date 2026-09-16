@@ -84,10 +84,15 @@ func (vm *VM) arith(a, b interp.Value, op string) interp.Value {
 			return interp.DecimalVal(ad.Mul(bd))
 		case "/":
 			if bd.IsZero() {
+				vm.setStackError("decimal division by zero")
 				return interp.DecimalVal(decimal.Zero)
 			}
 			return interp.DecimalVal(ad.Div(bd))
 		case "%":
+			if bd.IsZero() {
+				vm.setStackError("decimal modulo by zero")
+				return interp.DecimalVal(decimal.Zero)
+			}
 			return interp.DecimalVal(ad.Mod(bd))
 		}
 	}
@@ -103,11 +108,13 @@ func (vm *VM) arith(a, b interp.Value, op string) interp.Value {
 		return interp.IntVal(ai * bi)
 	case "/":
 		if bi == 0 {
+			vm.setStackError("integer division by zero")
 			return interp.IntVal(0)
 		}
 		return interp.IntVal(ai / bi)
 	case "%":
 		if bi == 0 {
+			vm.setStackError("integer modulo by zero")
 			return interp.IntVal(0)
 		}
 		return interp.IntVal(ai % bi)
@@ -130,6 +137,7 @@ func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
 		ad := a.ToDecimal()
 		bd := b.ToDecimal()
 		if bd.IsZero() {
+			vm.setStackError("decimal floor division by zero")
 			return interp.DecimalVal(decimal.Zero)
 		}
 		return interp.DecimalVal(ad.Div(bd).Floor())
@@ -138,6 +146,7 @@ func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
 	ai := a.ToInt()
 	bi := b.ToInt()
 	if bi == 0 {
+		vm.setStackError("integer floor division by zero")
 		return interp.IntVal(0)
 	}
 	q := ai / bi
