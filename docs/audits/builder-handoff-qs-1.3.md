@@ -7,7 +7,9 @@
 >
 > **最终决策：Devin CLI（[角色:决策终] 激活）**
 >
-> **修正 v2（2026-09-16）**：施工方 S1 复核发现两处提示词事实错误并已 `[转交决策]`，决策方独立核实后全部采信——①`global`/`nonlocal` 在 CST 黑名单而非白名单（S3b 死代码移除）；②批准 Option B：`GlobalSlots` → `GlobalDecls` 判定谓词（关闭编译顺序导致的残余泄漏洞）。行内 ~~删除线~~ 为修正痕迹。
+> **修正 v2（2026-09-16）**：施工方 S1 复核发现两处提示词事实错误并已 `[转交决策]`，决策方独立核实后全部采信——①`global`/`nonlocal` 在 CST 黑名单而非白名单（S3b 死代码移除）；②批准 Option B：判定谓词 `GlobalSlots` → `GlobalDecls`（关闭编译顺序导致的残余泄漏洞）。行内 ~~删除线~~ 为修正痕迹。
+>
+> **修正 v3（2026-09-16，决策方复审退回）**：独立复审发现 v2 处方引入新回退——`compileFor`（`compile_loops.go:8,53`）为 MQL `for(int i;;)` 词法域 `pushScope/popScope`，Python `for` 体内新局部按"内层 scope"分配会随循环域消亡，循环后读出 ValNone（Python 无块作用域，应为函数域持久）。裁定：**Python 新局部一律分配到函数基域 `localScopes[0]`**（不变量：函数/事件编译首动作是 pushScope，故 python 代码在函数内时 `localScopes[0]` 即函数域，其上只有循环/块域）。`resolveAssignTarget` 与 `compileDecl` 同改——后者顺带修复既有"for 循环变量出循环即死"偏差（`for i in range` 的 `i` 经 `ExprDecl`→`compileDecl` 绑定）。
 
 ## 立项背景（触发 + 证据链）
 
@@ -25,7 +27,8 @@
 
 ## 约束与目标（决策方已定的语义裁定）
 
-- **函数内裸名赋值且全槽未命中 → 分配局部槽**（内层 localScopes + `nextLocalSlot`），不落 GlobalSlots。仅 `ExprAssignment`（`compile_expr.go:105-112`）与 `ExprCompoundAssign`（`:180-194`）入口需要处理。
+- **函数内裸名赋值且全槽未命中 → 分配局部槽**（**函数基域 `localScopes[0]`** + `nextLocalSlot`，修正 v3），不落 GlobalSlots。仅 `ExprAssignment`（`compile_expr.go:105-112`）与 `ExprCompoundAssign`（`:180-194`）入口需要处理。
+- **Python 局部一律函数域（修正 v3）**：`compileFor` 的 `pushScope/popScope`（`compile_loops.go:8,53`）是 MQL `for(int i;;)` 词法域设施，Python 无块作用域——`resolveAssignTarget` 新局部与 `compileDecl` 的 python 新局部都分配到 `localScopes[0]`，不分配到内层域。MQL 路径完全不变。
 - **已声明全局（`GlobalDecls` = `ir.Globals`：self 字段 + 顶层赋值）的名字保持写全局**。判定谓词是 `GlobalDecls` **而非 `GlobalSlots`**（修正 v2，Option B 批准）：`GlobalSlots` 会被"未声明读"的隐式注册污染（`resolveVar` :284-289），若按它判定，先编译函数中的未声明读会让后续函数内同名赋值仍泄漏（编译顺序：函数体先于事件体，`compile.go:77-80` vs :94-111）。`GlobalDecls` 在编译期固定、不受编译顺序影响，且"隐式读注册 ≠ 声明"更贴近 Python 语义。
 - **连带语义（已裁定）**：策略参数名（`ir.Params`）在 `GlobalSlots` 但不在 `GlobalDecls` → 函数内给参数名赋值变局部（Pythonic）；`self.x`/裸 `x` 同槽的既有混同不修（超出边界，自报记一笔即可）。
 - **`x += 1`/`x = f(x)` 等读到未声明名**：读取路径 `resolveVar` 本轮**不改**（仍走隐式全局 + blind spot）；仅赋值落点改局部。
@@ -78,7 +81,11 @@
           if c.isDeclaredGlobal(name) {
               return c.bc.GlobalSlots[name], true
           }
-          scope := c.localScopes[len(c.localScopes)-1]
+          // Python has function scope, not block scope: allocate in the
+          // function base scope (index 0 — the scope pushed by
+          // compileUserFuncBody/compileEventBody), so names assigned inside
+          // for-loop bodies survive the loop scope's popScope.
+          scope := c.localScopes[0]
           scope[name] = VarID(c.nextLocalSlot)
           c.nextLocalSlot++
           return scope[name], false
@@ -95,6 +102,7 @@
 - **落点**：
   a. `ExprCompoundAssign`：`Version=="python"` 且 `localScopes` 非空时，先查 localScopes ∪ `isDeclaredGlobal`；完全未命中 → `c.err`（若 nil）= `cannot use augmented assignment on undeclared name %q (Python: NameError)`，return。**已声明者照常 resolveVar**（self 字段回归不破）。判定谓词与 S2 共用 `isDeclaredGlobal`，不得查 `GlobalSlots`。
   b. ~~`compileStmt` 加 `global_statement`/`nonlocal_statement` case~~ **修正 v2：删除已加的死代码 case**——CST 黑名单已拦截，该 case 永不可达（§7.2 禁死代码）。
+  c. **`compileDecl` Python 函数域分配（修正 v3）**：`compile_expr.go:211-224`，`len(c.localScopes) > 0` 分支内——`Version=="python"` 时分配到 `c.localScopes[0]` 而非内层域（MQL 仍内层，块作用域保持）。效果：python `for i in range` 的 `i`（ExprDecl 路径）与 `for pos in ctx.positions` 脱糖的 `__i`/`__ticket` 落函数域，出循环仍可读——Pythonic 且消除 for-body 赋值消亡回退。
 - **验证**：S4 测试。
 
 ### S4 — 测试（先红后绿 + mutation）
@@ -109,12 +117,16 @@
   f. `x += 1` 完全未声明 → CompilePython 返回明确错误；同一函数先 `x=1` 后 `x+=1` 正常。
   g. NumLocals/EventLocals 正确性：断言局部槽数含新分配。
   h. **参数名赋值变局部（Option B 连带语义 pin）**：`def f(self): <param名> = 99` 后全局 param 值不变；自报注明该语义裁定。
-- **验证**：a 反向形式 / f 先红后绿；a 字面形式在 Option B 下先红（修复前 r=1）后绿（r=None）。
+  i. **for 体赋值跨循环存活（修正 v3）**：`for i in range(3): x = i` 后 `self.r = x` → r=2（局部槽，非全局）；断言 `x` 不在 globals。
+  j. **循环变量跨循环存活（修正 v3）**：`for i in range(3): pass` 后 `self.r = i` → r=2。
+  k. **while 体赋值跨循环存活**：`while` 体内 `x = 1` 后循环外读 → 1（既有行为 pin，防不对称回归）。
+- **验证**：a 反向形式 / f 先红后绿；a 字面形式在 Option B 下先红（修复前 r=1）后绿（r=None）；i/j 在"内层域分配"实现下 RED、函数域分配下 GREEN。
 
 ## 对抗证明（缺一即未完成）
 
 - mutation：S2 的 `resolveAssignTarget` 退回 `resolveVar`（或删 `Version=="python"` 分支）→ S4a/S4b RED；restore → GREEN。
 - mutation：`isDeclaredGlobal` 改回查 `GlobalSlots` → S4a 字面形式 RED（r=1 泄漏复现）；restore → GREEN。
+- mutation（修正 v3）：`localScopes[0]` 改回内层域（`localScopes[len-1]`）→ S4i/S4j RED（循环后读出 ValNone 复现）；restore → GREEN。
 - mutation（替换原不可行项）：从 `forbiddenNodeTypes` 删 `"global_statement"` 条目 → S4e RED（静默丢弃恢复）；restore → GREEN。
 
 ## 验收标准
