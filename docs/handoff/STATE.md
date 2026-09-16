@@ -40,9 +40,10 @@
 | WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 分区切换驱动主区联动；新建策略分区四来源菜单（含手动编写）；粘性 importMode 修复；使用模板移除；分区切换关闭右侧面板。真实走查 9 步全绿。原文滚出 LOG。 |
 | AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
 | QS-1.4 Python bool(x) 语义 + vm_helpers:250 注释 | ✅done | 施工方按 builder-handoff-qs-1.4.md S1–S3 完成：bool→双重 `!`（OP_NOT×2 → IsTrue）、注释更正、行为级测试+IR 形态守卫、BoolConversion 断言同步；对抗证明先红→mutation RED→restore→GREEN；机检全绿。详见 registry QS-1.4。（Devin CLI 验收通过 2026-09-16；commit 88292b14；独立 mutation 重跑 RED→GREEN） |
+| QS-1.6 read-after-write 确认走状态机 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5be48f30；ConfirmByAuthoritativeRead + 2 分支根因核实；独立 mutation×2 RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: 派 QS-1.6（`docs/audits/builder-handoff-qs-1.6.md`）；QS 顺序 1.4✅→1.6→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
+- **下一步**: 派 QS-1.3（`docs/audits/builder-handoff-qs-1.3.md`）；QS 顺序 1.4✅→1.6✅→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -88,12 +89,14 @@
 - **FIX-2026-09-08-CURL-IMPORT** ✅done — 厂商 curl 示例一键导入 BYOK 配置（ParseProviderCurl RPC + 后端解析器 + 表单回填，存储零改动）（Devin CLI 直接施工+验收 2026-09-08）
 - **QS-1.4** ✅done — Python bool(x) 语义修复 + vm_helpers:250 注释（Devin CLI 验收通过 2026-09-16，独立 mutation 重跑 RED→GREEN）
 - **PY-DECIMAL-CTOR-1** 🟦open — `Decimal("0")` 产 ValString 非 ValDecimal（QS-1.4 复审发现，P2）
-- **QS-1.6 / 1.3 / 1.2a / 1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（2026-09-16 Devin CLI 定稿，D-009）；详见 registry + spec §2 核验表
+- **QS-1.6** ✅done — ConfirmByAuthoritativeRead 状态机迁移（Devin CLI 验收通过 2026-09-16）
+- **QS-1.3 / 1.2a / 1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-09-16 **QS-1.6 ✅done**（Devin CLI 独立复审通过，commit 5be48f30）：waitForConfirmation 权威读确认改走 `TradeBarrier.ConfirmByAuthoritativeRead` 状态机迁移；根因=cancel 动作名不在自身 updateType 兼容集 + open ticket==0 早退，两分支测试覆盖；独立 mutation×2 RED→GREEN；范围干净零交接层改动。
 - 2026-09-16 **QS-1.4 ✅done**（Devin CLI 独立复审通过，commit 88292b14）：bool(x)→双重 OP_NOT 复用 IsTrue；独立 mutation（恢复 !=）重跑语义级 RED→restore→GREEN。裁定：Decimal 构造器失真立债 PY-DECIMAL-CTOR-1（P2）；BoolConversion 旧断言同步批准。流程记录：施工方动交接层文件违 §4，内容核验准确保留。同日固化 D-012（施工方自审）/D-013（决策方出件自审）/D-014（自报末行带编号+hash）。
 - 2026-09-16 **VM 管线质量方案 v1 评估→v2 定稿**（Devin CLI 决策 D-009）：源码逐条核验，否决 QS-1.1/1.5/2.1/阶段 3 池化、改修法 QS-1.3/1.4/1.6、拆 QS-1.2、QS-1.7 改调研；10 条 QS 入 registry。详见 handover-audit-plan 2026-09-16 条目。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（Devin CLI 直接施工+验收）：①kimi-k3 聊天 400 "field Temperature invalid, only 1 is allowed"：根因 a `doChatRequest` 硬编码 Temperature 0.3 无视 `system_ai_configs.temperature`（该用户配 0.2）；根因 b 400 后原样重发无自愈。修复：`chatProvider` 加 temperature（`defaultTemperature`：配置值>0 用之，否则 0.3）+ `tryChatCompletion` 遇 400 body 含 "temperature" 以 temperature=1 重建自愈重试一次（tempRetried 防循环）。②连带修复两个既有 nil 雷：流式 400 → `fallbackNonStream(..., nil)` onChunk nil panic（签名透传 onChunk 修复）+ fallback 成功返回 (nil,nil) 后 `defer resp.Body.Close()` 解引用（补守卫）。③业主要求的模型配置入口：`WorkspaceCenterTabBar` tab 栏最右新增常驻齿轮（lazy AISettingsModal），code/chat tab 均可见，无需先开 AI 面板。对抗证明 3 项 RED→restore→GREEN（temperature 重试 httptest / 流式 fallback 投递（旧代码真实 nil panic）/ 前端入口 2 用例）。门禁全绿。风险/gap：自愈仅识别 body 含 "temperature" 的 400；流式路径对不支持 temperature 的模型首字延迟略增。详见 registry。

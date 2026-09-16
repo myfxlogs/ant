@@ -665,3 +665,11 @@
 - **裁定**：① `Decimal("0")`→`StringVal("0")` 失真成立，立债 `PY-DECIMAL-CTOR-1`（P2）；② `TestCompilePython_BoolConversion` 旧断言编码 bug 形态，最小同步为新形态——批准。
 - **流程记录**：施工方 commit 内含交接层文件改动（STATE/registry/handover），违 `dual-terminal-roles.md` §4「施工者不写交接层」；内容经独立核验准确（⚠️待独立复审标记正确），保留不回滚，下不为例。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-1.6 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `5be48f30`（trade_barrier.go 新增 `ConfirmByAuthoritativeRead`；mutation_coordinator.go 调用点接线；barrier/coordinator 双侧测试）。
+- **根因回填（S1 答案核实）**：`NotifyConfirmationEvent(ticket, magic, string(action))` 第三参是动作名非事件标签——`"cancel"` ∉ cancel 兼容集 `{close,pending_close}`（`trade_barrier.go:101-104`，兼容集是 adapter 事件标签）；open/close/modify 因名字恰在自身兼容集而不暴露。第二分支：`ticket==0` 被 `:219` 早退（open 且 broker 未回 ticket）。
+- **独立复审（A–F）**：A 复用锁+Broadcast 模式，不新增状态通道 ✅；B `ConfirmByAuthoritativeRead` 为最简正式迁移 ✅；C check-lines 0 errors 本任务文件零新增警告 ✅；D 幂等/终态/outcomeUnknown/idle 边界全覆盖 ✅；E 合规 ✅；F 文档同步 ✅。机检独立重跑全绿（build / test -count=1 98s / race -count=1 102s / vet / check-lines）。
+- **对抗证明独立重跑**：删 `ConfirmByAuthoritativeRead()` 调用 → 2 coordinator 测试 RED（`state=accepted_unconfirmed` 语义级断言）；删 switch `barrierAcceptedUnconfirmed` 分支 → barrier 单测 RED；restore → GREEN。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
