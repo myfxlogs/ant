@@ -714,3 +714,10 @@
 - **发现项立债（决策方登记）**：F1 `TEST-WAITSTATE-ACQUIRE-BCAST-1`（P3，WaitState(submitting) 前序等待退化 2s ctx 超时；`r4_redo_test.go:195` 注释"会被唤醒"与实现不符实锤）；F2 `SNAPSHOT-SLICE-ALIAS-1`（P3，retained/发布快照共享 slice 底层数组依赖跨文件 immutable 约定）。均不改码本轮不修。
 - **覆盖空洞补记**：`tools/mql2go/cmd/parse_headers` 无测试文件（报告 §5 未列，验收时补录）。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-2.5 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `89353004`——`coordinateMutation` 命名返回 + 首注册 recover defer（unwind 最后执行）+ `acquired`/`brokerCalled` 双标志 → `convergeMutationPanic` 三分支收敛；`dispatchLiveSignal` recover + `State()` 门控（仅在途态 NotifyOutcomeUnknown，idle 禁锁）。`mutation_panic_test.go` 5 测试。
+- **独立复审**：机检全绿（build / test 100.5s / `-race -count=3` 303.3s 含 goleak 门禁 / vet / gofmt / check-lines 0 errors）。**独立 mutation×3**：删 recover → panic 逃逸崩测试进程（生产爆炸半径复现）RED；删 `NotifyOutcomeUnknown` → barrier 停 `submitting` RED；删 `State()` 门控改无条件调用 → idle barrier 被误锁 `outcome_unknown` RED；restore 全绿。
+- **实现核验**：`convergeMutationPanic` 三分支与 spec 一致；dispatchLiveSignal 注释准确说明"coordinator 内 panic 已自行收敛，到达此层的 panic 必在 coordinator 之外"；S3b 注入点（nil mtHub → `SubscribePositionSnapshots` nil panic）与 S3d 注入点（zero-value runRepo → `persistSignal` nil db panic）真实可达。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

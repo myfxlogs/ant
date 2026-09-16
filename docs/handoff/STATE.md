@@ -32,7 +32,7 @@
 | FIX-2026-09-08-BYOK-MODEL-PICKER | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
 | FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry + LOG。 |
 | FIX-2026-09-08-CURL-IMPORT | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
-| AI-SETTINGS-BYOK-2026-09-08-审计 | ✅done | Devin CLI 自审 2026-09-08（审计对象 888bbe7c..1bde4be6）。A-F 全查 + 机检独立重跑全绿。发现并当场修复 F1：下拉框对已有自有 Key 用户展示网关分组，但运行时仅无自有 Key 才走网关 → 选择被静默忽略；修复为有自有 Key 时隐藏网关分组（UI 对齐运行时）。遗留：工作台编译错误上下文设计（待讨论）、analyze_mql 工具接线、局部动态数组盲区、AIGatewayCard 语义、agent gofmt 债。 |
+| AI-SETTINGS-BYOK-2026-09-08-审计 | ✅done | Devin CLI 自审 2026-09-08（888bbe7c..1bde4be6）。修复 F1 网关分组显示与运行时不一致。详见 registry + LOG。 |
 | CHAT-CTX-2026-09-08 遗留清单执行 | ✅done | Devin CLI 按序执行 5 项（编译上下文注入/analyze_mql 接线/立债 MQL-COMPILER-LOCAL-ARRAYS/网关提示/gofmt 清零）。详见 registry + LOG。 |
 | FIX-2026-09-08-ADVANCED-PARAMS | ✅done | Devin CLI 直接施工+验收 2026-09-08。高级参数审计落地：新增 reasoning_effort（迁移277+proto19/13+全链路+400 自愈去参，默认空=不发送）；timeout_seconds 接线（钳位 5–600s，非流式总超时/流式首字节）；organization 接线（OpenAI-Organization 头）；purposes 确认 UI 本就无此输入（修正上轮说法）。chat_failover.go 拆分出 chat_retry.go（行数红线）。测试 5 个新用例全绿。 |
 | FIX-2026-09-08-COMPILE-NOTIFY | ✅done | Devin CLI 直接施工+验收 2026-09-08。工作台编译失败原因醒目提示：进入失败态右下角 notification 弹完整原因（仅跃迁时弹一次防打扰）+ 状态条显示原因首行 + Tooltip 全文；AI chat 上下文由服务端编译注入（遗留清单①已覆盖）。组件测试 2 用例 mutation RED→GREEN。补记2：真实浏览器走查 9 步全过（Playwright + e2e 账号）——新增"手动编写"空白编辑器脚手架 + 侧栏来源项中文默认值。补记：回测历史面板渲染 protobuf Timestamp 对象致整页崩溃（React #31）——formatStartedAt 稳健格式化 + 生产形状回归测试。 |
@@ -46,9 +46,10 @@
 | QS-1.7-INV ClientID 回显链路调研 | ✅done | Devin CLI 验收通过 2026-09-16；commit 05138758；结论=ClientID 不经 Comment 回显（全链路零复制+MT4 不透传+proto 无字段）→ QS-1.7 不立项，维持 fail-closed 锁仓+runbook；findings 落盘 |
 | QS-2.2 goleak 集成 + watcher 无泄漏证明 | ✅done | Devin CLI 验收通过 2026-09-16；commit 174b8405；goleak v1.3.0 + 两包 TestMain + 双路径测试；独立 mutation×2（删 close→RED 抓 watcher；删豁免→RED 仅列 notify 三方常驻树）；race×3 301s 绿 |
 | QS-2.4 VM 管线 race 审计 | ✅done | Devin CLI 验收通过 2026-09-16；commit 8e393cae；三树 race×3 全绿零 DATA RACE；PositionCache/TradeBarrier 审计表逐项核实；发现 F1/F2 两条 P3 已立债 |
+| QS-2.5 panic recovery 加固 | ✅done | Devin CLI 验收通过 2026-09-16；commit 89353004；coordinateMutation/dispatchLiveSignal recover + acquired/brokerCalled 双标志收敛 + State() 门控防 idle 误锁；独立 mutation×3 RED→GREEN；race×3 303s 绿 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: 派 QS-2.5（panic recovery 加固，handoff 待落盘）；QS 顺序 1.4✅→1.6✅→1.3✅→1.2a✅→1.7-INV✅→2.2✅→2.4✅→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
+- **下一步**: 派 QS-2.3（vm.ctx 非 nil 不变量，handoff 待落盘）；QS 顺序 1.4✅→1.6✅→1.3✅→1.2a✅→1.7-INV✅→2.2✅→2.4✅→2.5✅→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -99,7 +100,7 @@
 - **PY-SCOPE-KNOWN-1** 🟦open — Python 作用域已知限制 3 条（QS-1.3 遗留，文档化行为）
 - **QS-1.2a** ✅done — lastError 三 builtin（Devin CLI 验收通过 2026-09-16，commit 65e2cccf）
 - **QS-1.7-INV** ✅done — ClientID 不可回显→QS-1.7 不立项，维持 fail-closed（Devin CLI 验收通过 2026-09-16）
-- **QS-2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
+- **QS-2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
 - **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
 
 ## 最近变更日志
