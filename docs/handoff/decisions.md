@@ -104,3 +104,11 @@
 - **理由**: 与 D-012 对称——决策端错误（错误坐标/冲突修法/重复设计）一旦下发，施工方无权纠偏，损失放大；决策端自审成本最低。
 - **影响**: `.devin/rules/dual-terminal-roles.md` §3 新增 3.1；`docs/audits/builder-handoff-template.md` 派工指令节注明出件前提；`.devin/角色与职责.md` §3 设计行同步引用 D-013。
 - **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）
+
+### D-014 2026-09-16 施工自报强制携带施工编号与 commit hash
+
+- **背景**: 业主转发施工自报给决策方时无法准确标识复审对象；要求施工方自报结束语固定携带施工编号 + commit hash。
+- **决定**: ① 施工完成自报（含 D-012 自审记录）的**最后一行**必须是固定格式 `[施工完成:<任务ID>] @<commit-hash>`——任务ID = handoff 文件名后缀对应的 registry 条目号（如 QS-1.4），hash = 本任务最终 commit。② 决策方复审入口以该行为准：无此行 = 视为未交付，复审不启动。③ 与派工行（决策方末行 `[角色:施工] 开工：... @<hash>`）对称，构成派发→交付双锚点。
+- **理由**: 一行即可转发精确定位复审对象；编号+hash 双锚点防坐标漂移与任务混淆。
+- **影响**: `.devin/rules/dual-terminal-roles.md` §4.1 加第 5 条；`docs/audits/builder-handoff-template.md` 交付格式更新；`docs/audits/builder-handoff-qs-1.4.md` 同步。
+- **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）
