@@ -739,3 +739,10 @@
 - **范围干净**：8 文件、零优化改动、零交接层改动、backtest 路径未接线（符合边界）。
 - **VM 质量方案 v2 状态**：QS-1.4✅ 1.6✅ 1.3✅ 1.2a✅ 1.7-INV✅ 2.2✅ 2.4✅ 2.5✅ 2.3✅ 3-BASELINE✅ —— 全部子任务验收完毕。open 债务剩 4 条：ORDERSEND-NILBROKER-FAILCLOSED-1、TEST-WAITSTATE-ACQUIRE-BCAST-1、SNAPSHOT-SLICE-ALIAS-1、PY-SCOPE-KNOWN-1（均 P3，排期另议）。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 registry 纠偏 + RECONCILE-TZ-WINDOW-1 新债（Devin CLI 生产实拍发现）
+
+- **纠偏**：TRUST-1（主条目/TRUST-1-DESIGN/TRUST-1-DESIGN-AUDIT）早已验收（897e6c8c）+部署验证（b7689f97，migration 276 + 11/14→14/16 自动回填）但 registry/STATE 状态滞留 🟦open——已翻正为 ✅done；DATA-TRUTH-1-DESIGN/DESIGN-AUDIT 同步纠偏（决策由 Devin CLI 第一负责人权限做出并执行，非"待业主决策"）。STATE :28 still-open 计数 3→1（仅 TRON-SECURITY-1 业主暂缓）。
+- **S9 裁定不建（TRUST-1 遗留尾巴）**：DB 实拍 2 unknown 账户（17001900/95300910）均为 2026-08-03/04 起 disconnected 死账户——0 perf 行、0 schedule 绑定，unknown 被 real-only 过滤天然排除（fail-closed 方向），重连即自动回填覆盖。脚本边际价值为零。
+- **新债 RECONCILE-TZ-WINDOW-1（P2）**：DATA-TRUTH-1 S1 残余缺陷——`reconciliation.go:159` `Clk.Now()`（CST wall clock）经 pgx `timestamp` 编码 → ant 24h 窗口实际 ~16h → 16-24h 龄订单每轮假 ghost + `repaired` 虚增。证据链：账户 40a7655e ticket 387276098 created_at=Sep15 17:06 UTC（=首次 flag 时刻，DEFAULT now() UTC），首次重复 flag Sep16 ~09:13 UTC = **16.1h 龄**（恰越 16h 阈值）；psql UTC 会话下该行满足 24h 查询而 app 标 ghost——唯 CST 参数编码可解释。修法：`Clk.Now().UTC()` 或 `($2)::timestamptz` 或列改 timestamptz。施工时须全仓排查同模式 timestamp 比较。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
