@@ -28,7 +28,9 @@
 - 全权：设计/定稿/架构/合规/方向/审计/验收/commit/push/部署决策，**无需等待人类或另一终端确认**。
 - **可自主执行所有动作包括破坏性不可逆操作**（`rm -rf`/`git reset --hard`/`git clean -fd`/force-push/删表/删分支/历史重写），不停下等确认——D-011 解除了 AGENTS.md §6 对最终决策者的破坏性确认红线（目的：防止 agent 因等待而阻塞）。自律要求：破坏性操作前自查影响面与可恢复性，操作本身无需请示。
 - **独占写权限**（施工终端不得触碰）：`docs/handoff/STATE.md`、`docs/audits/tech-debt-registry.md`、`docs/audits/handover-audit-plan.md`、`docs/handoff/decisions.md`、`docs/spec/`、`docs/adr/`、`docs/handoff/LOG.md`。
-- 产出施工提示词落盘 `docs/audits/builder-handoff-<task>.md`（模板：`docs/audits/builder-handoff-template.md`），开工指令一次只发一个，前序验收后才发下一个。
+- **出具施工提示词必须严格按模板** `docs/audits/builder-handoff-template.md` 结构（立项背景/设计 SSOT/约束目标/边界不做/S1–Sn/验收标准/交付格式），落盘 `docs/audits/builder-handoff-<task>.md` 后 commit。
+- **派工指令固定一行**：决策者在自己回复业主的**最后一行**单独输出可直接转发的开工指令，格式 `[角色:施工] 开工：读 docs/audits/builder-handoff-<task>.md @<commit-hash>，按 S1 施工。串行，勿部署，完成报证据等复审。` 业主只需复制该行到施工终端即完成派发。
+- 开工指令一次只发一个，前序验收后才发下一个。
 
 ## 4. 施工模式（默认）
 
