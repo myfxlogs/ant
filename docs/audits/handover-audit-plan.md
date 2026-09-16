@@ -822,3 +822,23 @@
 - **残余**：default 在中间且 default 前的 case 有 break 时，break 跳 popPC 消费 switch value 后到 endPC——正确。default 在中间且 default 前的 case 无 break fallthrough 到 default——S3b 已覆盖。default 在末尾（常见 case）行为与旧实现一致（default body 在末尾）——golden/e2e 7 测试全过证实未破坏。
 - **部署注记**：switch break 栈清理是行为变更（旧代码留栈，新代码消费）——依赖旧留栈行为的策略若存在会在 switch 后语句看到不同的栈状态。但留栈是 bug 非特性，修复方向正确。default 顺序修复是行为变更（旧代码 default 强制末尾，新代码保留原序）——依赖旧 default 末尾顺序的策略若 default 在中间会看到不同 fallthrough。但 default 末尾顺序是 bug 非特性（C/MQL 语义是原序）。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 VM-API-TRUTH-1 批次1 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `e97a43b8`（ANT_ROLE=builder）。改 5 生产文件 + 1 测试文件 + STATE.md（pre-commit 强制）。
+- **范围**：MQL5 order/deal/history 22 API（vm_builtin_mql5_trade.go:8-9 自述 stubs returning safe defaults，全返回 0/""/true/false，无真实 pending order/deal history 数据源）。重分类为 StatusUnsupported，编译期拒绝（fail-closed）。删除假实现函数+注册+绑定（无死代码）。
+- **S1**：`api_registry.go:148-169` unsupportedSymbols 加 22 API + `:62` reasonMQL5History 常量。
+- **S2**：`builtin_registry.go:128-130` implementedMQL5Position 移除 22（保留 PositionSelect）。
+- **S3**：`builtins.go:413-414` 删 22 nil 注册（保留 PositionSelect）。
+- **S4**：`vm_builtin_wiring.go:180-181` 删 22 fn 绑定 + registerExtendedHistory 整函数 + init 调用点。
+- **S5**：`vm_builtin_mql5_trade.go:7-11` 删 22 假实现函数（保留 PositionSelect 委托 PositionSelectByTicket）。
+- **S6a** `TestVM_API_TRUTH_1_MQL5HistoryRejected`：22 API 调用 CompileMQL 返 error 含 unsupported/API 名（表驱动子测试）。
+- **S6b** `TestVM_API_TRUTH_1_RegistryConsistency`：22 API LookupAPI=StatusUnsupported+Reason 非空+IsAPIImplemented=false+IsAPIUnsupported=true。
+- **S6c** `TestVM_API_TRUTH_1_PositionSelectStillImplemented`：PositionSelect StatusImplemented+IsAPIImplemented=true（证明重分类不误伤）。
+- **独立对抗证明×1 重跑**：注释 unsupportedSymbols 22 行 → S6a/S6b RED `LookupAPI returned not-found — missing from registry` → 恢复 GREEN。真对抗（非 nil panic/非另一条错误/非 callback-only）。
+- **机检独立复测全绿**：`go build ./...` ✓ / mql2go test 433 ✓ / `-race -count=3` 1299 ✓ / vet ✓ / gofmt ✓ / check-file-lines 0 errors / diff --check clean。
+- **worktree**：mutation 恢复后干净，最终 diff 只含 5 生产/测试文件 + STATE.md（pre-commit 强制）。
+- **设计评价**：22 API 全为 stubs（文件头自述），无真实数据源，重分类为 StatusUnsupported 符合 fail-closed 原则。删除假实现函数+注册+绑定（无死代码，AGENTS.md §7.2）。PositionSelect 保留（委托 PositionSelectByTicket，有真实实现）。测试表驱动覆盖 22 API 编译期拒绝 + registry 一致性 + PositionSelect 未误伤，mutation 证明 unsupportedSymbols 是拒绝的唯一来源。
+- **残余**：VM-API-TRUTH-1 整体仍 🟦open——后续批次待做：AccountInfo*（部分硬编码 USD/Backtest/SimBroker）、CopyBuffer（by-reference 未填充）、CopyRates（close proxy）、Symbol session/margin（by-reference 未填充）、platform checkup（硬编码常量/空操作）。每批另行派工。
+- **部署注记**：22 API 从 implemented 改为 StatusUnsupported 是行为变更——依赖这些 API 的策略将编译失败（而非运行时返回假数据）。这是 fail-closed 方向正确——假数据比编译失败更危险。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
