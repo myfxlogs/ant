@@ -46,19 +46,20 @@ type APISymbol struct {
 
 // unsupported reason constants (goconst: repeated strings > 5 occurrences).
 const (
-	reasonGUI      = "GUI functions are not supported"
-	reasonChart    = "chart objects are not supported"
-	reasonChartOps = "chart operations are not supported"
-	reasonFileIO   = "file I/O is not supported"
-	reasonNetwork  = "network sockets are not supported"
-	reasonCrypto   = "cryptographic functions are not supported"
-	reasonResource = "graphical resources are not supported"
-	reasonCustom   = "custom indicators are not supported"
-	reasonFTP      = "FTP is not supported"
-	reasonEmail    = "email is not supported"
-	reasonAudio    = "audio is not supported"
-	reasonPush     = "push notifications are not supported"
-	reasonHTTP     = "HTTP requests are not supported"
+	reasonGUI         = "GUI functions are not supported"
+	reasonChart       = "chart objects are not supported"
+	reasonChartOps    = "chart operations are not supported"
+	reasonFileIO      = "file I/O is not supported"
+	reasonNetwork     = "network sockets are not supported"
+	reasonCrypto      = "cryptographic functions are not supported"
+	reasonResource    = "graphical resources are not supported"
+	reasonCustom      = "custom indicators are not supported"
+	reasonFTP         = "FTP is not supported"
+	reasonEmail       = "email is not supported"
+	reasonAudio       = "audio is not supported"
+	reasonPush        = "push notifications are not supported"
+	reasonHTTP        = "HTTP requests are not supported"
+	reasonMQL5History = "MQL5 order/deal/history requires broker integration not available in the backtest VM"
 )
 
 // unsupportedSymbols lists MQL functions that are explicitly NOT supported.
@@ -141,6 +142,31 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "WebRequest", Status: StatusUnsupported, Category: CatFunction, Reason: reasonHTTP},
 	{Name: "ResourceCreate", Status: StatusUnsupported, Category: CatFunction, Reason: reasonResource},
 	{Name: "ResourceFree", Status: StatusUnsupported, Category: CatFunction, Reason: reasonResource},
+	// VM-API-TRUTH-1: MQL5 order/deal/history stubs returning safe defaults
+	// (vm_builtin_mql5_trade.go:8-9 file header). Reclassified StatusUnsupported
+	// so the compiler rejects them instead of letting strategies run on fake data.
+	{Name: "OrderCalcMargin", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrderCalcProfit", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrderCheck", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrderGetTicket", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrderGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrderGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrderGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "OrdersTotalMQL5", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistorySelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistorySelectByPosition", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryDealsTotal", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryDealSelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryDealGetTicket", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryDealGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryDealGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryDealGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryOrdersTotal", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryOrderSelect", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryOrderGetTicket", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryOrderGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryOrderGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	{Name: "HistoryOrderGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
 }
 
 // registryMap is the lookup index built from unsupportedSymbols + builtin_registry.go + constants.go.

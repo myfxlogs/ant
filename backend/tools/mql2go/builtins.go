@@ -411,33 +411,9 @@ var builtinRegistry = []builtinEntry{
 	{"SymbolIsSynchronized", nil},
 
 	// ── MQL5 trade helpers ────────────────────────────────────────────
-	{"OrderCalcMargin", nil},
-	{"OrderCalcProfit", nil},
-	{"OrderCheck", nil},
+	// VM-API-TRUTH-1: OrderCalcMargin/OrderCalcProfit/OrderCheck reclassified
+	// StatusUnsupported (removed from this registry). Only PositionSelect remains.
 	{"PositionSelect", nil},
-
-	// ── MQL5 order functions (pending orders) ─────────────────────────
-	{"OrderGetTicket", nil},
-	{"OrderGetDouble", nil},
-	{"OrderGetInteger", nil},
-	{"OrderGetString", nil},
-	{"OrdersTotalMQL5", nil},
-
-	// ── MQL5 deal/history functions ───────────────────────────────────
-	{"HistorySelect", nil},
-	{"HistorySelectByPosition", nil},
-	{"HistoryDealsTotal", nil},
-	{"HistoryDealSelect", nil},
-	{"HistoryDealGetTicket", nil},
-	{"HistoryDealGetDouble", nil},
-	{"HistoryDealGetInteger", nil},
-	{"HistoryDealGetString", nil},
-	{"HistoryOrdersTotal", nil},
-	{"HistoryOrderSelect", nil},
-	{"HistoryOrderGetTicket", nil},
-	{"HistoryOrderGetDouble", nil},
-	{"HistoryOrderGetInteger", nil},
-	{"HistoryOrderGetString", nil},
 
 	// ── Account info additions (MQL5) ─────────────────────────────────
 	{"AccountInfoDouble", nil},

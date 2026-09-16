@@ -14,7 +14,6 @@ func init() {
 	registerExtendedTimeseries()
 	registerExtendedMarketInfo()
 	registerExtendedTrade()
-	registerExtendedHistory()
 	registerExtendedAccount()
 	registerGlobalVariables()
 }
@@ -178,32 +177,9 @@ func registerExtendedMarketInfo() {
 }
 
 func registerExtendedTrade() {
-	builtinRegistry[id("OrderCalcMargin")].fn = builtinOrderCalcMargin
-	builtinRegistry[id("OrderCalcProfit")].fn = builtinOrderCalcProfit
-	builtinRegistry[id("OrderCheck")].fn = builtinOrderCheck
+	// VM-API-TRUTH-1: 22 MQL5 order/deal/history stubs reclassified
+	// StatusUnsupported — only PositionSelect wiring remains here.
 	builtinRegistry[id("PositionSelect")].fn = builtinPositionSelect
-	builtinRegistry[id("OrderGetTicket")].fn = builtinOrderGetTicket
-	builtinRegistry[id("OrderGetDouble")].fn = builtinOrderGetDouble
-	builtinRegistry[id("OrderGetInteger")].fn = builtinOrderGetInteger
-	builtinRegistry[id("OrderGetString")].fn = builtinOrderGetString
-	builtinRegistry[id("OrdersTotalMQL5")].fn = builtinOrdersTotalMQL5
-}
-
-func registerExtendedHistory() {
-	builtinRegistry[id("HistorySelect")].fn = builtinHistorySelect
-	builtinRegistry[id("HistorySelectByPosition")].fn = builtinHistorySelectByPosition
-	builtinRegistry[id("HistoryDealsTotal")].fn = builtinHistoryDealsTotal
-	builtinRegistry[id("HistoryDealSelect")].fn = builtinHistoryDealSelect
-	builtinRegistry[id("HistoryDealGetTicket")].fn = builtinHistoryDealGetTicket
-	builtinRegistry[id("HistoryDealGetDouble")].fn = builtinHistoryDealGetDouble
-	builtinRegistry[id("HistoryDealGetInteger")].fn = builtinHistoryDealGetInteger
-	builtinRegistry[id("HistoryDealGetString")].fn = builtinHistoryDealGetString
-	builtinRegistry[id("HistoryOrdersTotal")].fn = builtinHistoryOrdersTotal
-	builtinRegistry[id("HistoryOrderSelect")].fn = builtinHistoryOrderSelect
-	builtinRegistry[id("HistoryOrderGetTicket")].fn = builtinHistoryOrderGetTicket
-	builtinRegistry[id("HistoryOrderGetDouble")].fn = builtinHistoryOrderGetDouble
-	builtinRegistry[id("HistoryOrderGetInteger")].fn = builtinHistoryOrderGetInteger
-	builtinRegistry[id("HistoryOrderGetString")].fn = builtinHistoryOrderGetString
 }
 
 func registerExtendedAccount() {

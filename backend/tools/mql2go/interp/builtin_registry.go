@@ -125,17 +125,9 @@ var implementedPlatform = []string{
 	"CopyTicks",
 	"BarsCalculated",
 	"SeriesInfoInteger",
-	// MQL5 trade helpers
-	"OrderCalcMargin", "OrderCalcProfit", "OrderCheck",
+	// MQL5 trade helpers (VM-API-TRUTH-1: only PositionSelect remains;
+	// OrderCalcMargin/OrderCalcProfit/OrderCheck reclassified StatusUnsupported).
 	"PositionSelect",
-	// MQL5 order history
-	"HistorySelect", "HistorySelectByPosition",
-	"HistoryDealsTotal", "HistoryDealSelect", "HistoryDealGetTicket",
-	"HistoryDealGetDouble", "HistoryDealGetInteger", "HistoryDealGetString",
-	"HistoryOrdersTotal", "HistoryOrderSelect", "HistoryOrderGetTicket",
-	"HistoryOrderGetDouble", "HistoryOrderGetInteger", "HistoryOrderGetString",
-	// MQL5 order functions
-	"OrderGetTicket", "OrderGetDouble", "OrderGetInteger", "OrderGetString",
 	// Global Variables
 	"GlobalVariableSet", "GlobalVariableGet", "GlobalVariableDel",
 	"GlobalVariableCheck", "GlobalVariableTemp", "GlobalVariableFlush",
