@@ -402,6 +402,7 @@ var MQLConstants = map[string]Value{
 	"ERR_TRADE_MODIFY_DENIED":      IntVal(145),
 	"ERR_TRADE_CONTEXT_BUSY":       IntVal(146),
 	"ERR_TRADE_EXPIRATION_DENIED":  IntVal(147),
+	"ERR_USER_ERROR_FIRST":         IntVal(65536),
 
 	// ── MQL5 symbol info constants ─────────────────────────────────────
 	"SYMBOL_SELECT":              IntVal(0),

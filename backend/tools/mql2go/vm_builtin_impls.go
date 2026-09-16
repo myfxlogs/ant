@@ -70,8 +70,8 @@ func registerPlatformBuiltins() {
 	builtinRegistry[id("digits")].fn = builtinDigits
 	builtinRegistry[id("symbol")].fn = builtinSymbol
 	builtinRegistry[id("RefreshRates")].fn = builtinNoopBool
-	builtinRegistry[id("GetLastError")].fn = builtinNoopInt
-	builtinRegistry[id("ResetLastError")].fn = builtinNoop
+	builtinRegistry[id("GetLastError")].fn = builtinGetLastError
+	builtinRegistry[id("ResetLastError")].fn = builtinResetLastError
 	builtinRegistry[id("ExpertRemove")].fn = builtinNoop
 	builtinRegistry[id("IsTesting")].fn = builtinIsTesting
 	builtinRegistry[id("IsOptimization")].fn = builtinNoopInt

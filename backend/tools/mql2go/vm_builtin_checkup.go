@@ -99,7 +99,22 @@ func builtinGetMicrosecondCount(vm *VM, args []interp.Value) (interp.Value, erro
 	return interp.IntVal(int32(time.Now().UnixMicro())), nil
 }
 
+// builtinGetLastError implements MQL4 GetLastError: returns the current
+// _LastError value and clears it (read-then-reset semantics).
+func builtinGetLastError(vm *VM, args []interp.Value) (interp.Value, error) {
+	old := vm.lastError
+	vm.lastError = 0
+	return interp.IntVal(old), nil
+}
+
+// builtinResetLastError implements MQL4 ResetLastError: clears _LastError.
+func builtinResetLastError(vm *VM, args []interp.Value) (interp.Value, error) {
+	vm.lastError = 0
+	return interp.NoneVal(), nil
+}
+
 func builtinSetUserError(vm *VM, args []interp.Value) (interp.Value, error) {
+	vm.lastError = 65536 + argI(args, 0) // ERR_USER_ERROR_FIRST + code
 	return interp.NoneVal(), nil
 }
 

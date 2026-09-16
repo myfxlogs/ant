@@ -37,6 +37,7 @@ type VM struct {
 	runCtx          context.Context    // context for cancellation checks
 	callDepth       int                // current user function call depth
 	fatalError      string             // set when a critical builtin is missing (ADR §5.4)
+	lastError       int32              // MQL4 _LastError: persists across events; GetLastError reads-then-clears, not reset per event
 
 	// signalMode is true for live trading: Order* builtins build a pending
 	// sdk.Signal instead of executing through the broker. The runner returns
