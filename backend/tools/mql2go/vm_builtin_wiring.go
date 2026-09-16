@@ -120,25 +120,15 @@ func registerExtendedArrays() {
 }
 
 func registerExtendedPlatform() {
+	// VM-API-TRUTH-1 batch 2a: 12 fixed-value platform checkup stubs
+	// reclassified StatusUnsupported — only real implementations remain.
 	builtinRegistry[id("IsConnected")].fn = builtinIsConnected
 	builtinRegistry[id("IsDemo")].fn = builtinIsDemo
-	builtinRegistry[id("IsDllsAllowed")].fn = builtinIsDllsAllowed
-	builtinRegistry[id("IsExpertEnabled")].fn = builtinIsExpertEnabled
-	builtinRegistry[id("IsLibrariesAllowed")].fn = builtinIsLibrariesAllowed
 	builtinRegistry[id("IsTradeAllowed")].fn = builtinIsTradeAllowed
-	builtinRegistry[id("IsTradeContextBusy")].fn = builtinIsTradeContextBusy
-	builtinRegistry[id("IsStopped")].fn = builtinIsStopped
-	builtinRegistry[id("UninitializeReason")].fn = builtinUninitializeReason
-	builtinRegistry[id("MQLInfoInteger")].fn = builtinMQLInfoInteger
-	builtinRegistry[id("MQLInfoString")].fn = builtinMQLInfoString
-	builtinRegistry[id("TerminalInfoDouble")].fn = builtinTerminalInfoDouble
-	builtinRegistry[id("TerminalInfoInteger")].fn = builtinTerminalInfoInteger
-	builtinRegistry[id("TerminalInfoString")].fn = builtinTerminalInfoString
 	builtinRegistry[id("GetTickCount")].fn = builtinGetTickCount
 	builtinRegistry[id("GetTickCount64")].fn = builtinGetTickCount64
 	builtinRegistry[id("GetMicrosecondCount")].fn = builtinGetMicrosecondCount
 	builtinRegistry[id("SetUserError")].fn = builtinSetUserError
-	builtinRegistry[id("SetReturnError")].fn = builtinSetReturnError
 	builtinRegistry[id("CurTime")].fn = builtinCurTime
 }
 

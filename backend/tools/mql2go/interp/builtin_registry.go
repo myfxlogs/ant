@@ -105,14 +105,12 @@ var implementedPlatform = []string{
 	// MQL4 lowercase math aliases
 	"ceil", "floor", "cos", "sin", "tan", "exp", "fabs",
 	"fmax", "fmin", "fmod", "log", "log10", "pow", "round", "rand", "srand", "sqrt",
-	// Checkup functions
-	"IsConnected", "IsDemo", "IsDllsAllowed", "IsExpertEnabled",
-	"IsLibrariesAllowed", "IsTradeAllowed", "IsTradeContextBusy",
-	"IsStopped", "UninitializeReason",
-	"MQLInfoInteger", "MQLInfoString",
-	"TerminalInfoDouble", "TerminalInfoInteger", "TerminalInfoString",
+	// Checkup functions (VM-API-TRUTH-1 batch 2a: 12 fixed-value stubs
+	// reclassified StatusUnsupported; only real implementations remain).
+	"IsConnected", "IsDemo",
+	"IsTradeAllowed",
 	"GetTickCount", "GetTickCount64", "GetMicrosecondCount",
-	"SetUserError", "SetReturnError", "CurTime",
+	"SetUserError", "CurTime",
 	// MQL5 market info additions
 	"SymbolInfoTick", "SymbolName", "SymbolSelect", "SymbolsTotal",
 	"SymbolInfoMarginRate", "SymbolInfoSessionQuote", "SymbolInfoSessionTrade",

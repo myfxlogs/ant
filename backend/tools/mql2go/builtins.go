@@ -359,23 +359,17 @@ var builtinRegistry = []builtinEntry{
 	// ── Checkup / Platform functions (MQL4/MQL5 complete list) ────────
 	{"IsConnected", nil},
 	{"IsDemo", nil},
-	{"IsDllsAllowed", nil},
-	{"IsExpertEnabled", nil},
-	{"IsLibrariesAllowed", nil},
+	// VM-API-TRUTH-1 batch 2a: IsDllsAllowed/IsExpertEnabled/IsLibrariesAllowed
+	// reclassified StatusUnsupported (removed from this registry).
 	{"IsTradeAllowed", nil},
-	{"IsTradeContextBusy", nil},
-	{"IsStopped", nil},
-	{"UninitializeReason", nil},
-	{"MQLInfoInteger", nil},
-	{"MQLInfoString", nil},
-	{"TerminalInfoDouble", nil},
-	{"TerminalInfoInteger", nil},
-	{"TerminalInfoString", nil},
+	// VM-API-TRUTH-1 batch 2a: IsTradeContextBusy/IsStopped/UninitializeReason
+	// reclassified StatusUnsupported (removed from this registry).
+	// VM-API-TRUTH-1 batch 2a: MQLInfo*/TerminalInfo* reclassified StatusUnsupported.
 	{"GetTickCount", nil},
 	{"GetTickCount64", nil},
 	{"GetMicrosecondCount", nil},
 	{"SetUserError", nil},
-	{"SetReturnError", nil},
+	// VM-API-TRUTH-1 batch 2a: SetReturnError reclassified StatusUnsupported.
 	{"CurTime", nil},
 
 	// ── MQL5 timeseries access ────────────────────────────────────────

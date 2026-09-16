@@ -99,3 +99,98 @@ func TestVM_API_TRUTH_1_PositionSelectStillImplemented(t *testing.T) {
 		t.Fatal("PositionSelect: IsAPIUnsupported=true, want false (VM-API-TRUTH-1 must not误伤 PositionSelect)")
 	}
 }
+
+// VM-API-TRUTH-1 batch 2a: platform checkup 12 API reclassified StatusUnsupported.
+// These were fixed-value stubs (true/false/0/""/NoneVal) — strategies could
+// run on fake platform/terminal data. Now the compiler rejects them.
+
+// unsupportedPlatformCheckup lists the 12 platform checkup API names that
+// VM-API-TRUTH-1 batch 2a reclassified from implemented (fixed-value stub)
+// to StatusUnsupported.
+var unsupportedPlatformCheckup = []string{
+	"IsDllsAllowed", "IsExpertEnabled", "IsLibrariesAllowed",
+	"IsTradeContextBusy", "IsStopped", "UninitializeReason",
+	"MQLInfoInteger", "MQLInfoString",
+	"TerminalInfoDouble", "TerminalInfoInteger", "TerminalInfoString",
+	"SetReturnError",
+}
+
+// TestVM_API_TRUTH_1_PlatformCheckupRejected verifies each of the 12 APIs
+// causes a compile-time error (not silent acceptance with fake platform data).
+//
+// Adversarial: restore any of the 12 to implementedPlatform + remove from
+// unsupportedSymbols → CompileMQL succeeds → RED.
+func TestVM_API_TRUTH_1_PlatformCheckupRejected(t *testing.T) {
+	for _, api := range unsupportedPlatformCheckup {
+		t.Run(api, func(t *testing.T) {
+			src := "int OnInit() { return 0; }\nvoid OnTick() { " + api + "(); }"
+			_, err := CompileMQL(src)
+			if err == nil {
+				t.Fatalf("%s: expected compile error (StatusUnsupported), got nil — API silently accepted", api)
+			}
+			msg := strings.ToLower(err.Error())
+			if !strings.Contains(msg, "unsupported") && !strings.Contains(msg, strings.ToLower(api)) {
+				t.Fatalf("%s: error message must mention 'unsupported' or API name, got: %v", api, err)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_PlatformCheckupRegistryConsistency verifies the API
+// registry reflects the batch 2a reclassification: each of the 12 APIs is
+// StatusUnsupported with a non-empty reason, IsAPIImplemented=false,
+// IsAPIUnsupported=true.
+//
+// Adversarial: remove the 12 entries from unsupportedSymbols → LookupAPI
+// returns not-found (or StatusImplemented if also in implementedPlatform)
+// → RED.
+func TestVM_API_TRUTH_1_PlatformCheckupRegistryConsistency(t *testing.T) {
+	for _, api := range unsupportedPlatformCheckup {
+		t.Run(api, func(t *testing.T) {
+			sym, ok := interp.LookupAPI(api)
+			if !ok {
+				t.Fatalf("%s: LookupAPI returned not-found — missing from registry", api)
+			}
+			if sym.Status != interp.StatusUnsupported {
+				t.Fatalf("%s: status = %v, want StatusUnsupported", api, sym.Status)
+			}
+			if sym.Reason == "" {
+				t.Fatalf("%s: Reason is empty — must explain why unsupported", api)
+			}
+			if interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=true, want false", api)
+			}
+			if !interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=false, want true", api)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_PlatformCheckupRealStillImplemented verifies the batch 2a
+// reclassification only affects the 12 fixed-value stubs — the real
+// implementations (IsConnected/IsDemo/IsTradeAllowed via VM-API-TRUTH-3,
+// GetLastError/ResetLastError/SetUserError via lastError state machine,
+// CurTime/GetTickCount* via real time sources, IsTesting/IsOptimization/
+// IsVisualMode via backtest semantics) are NOT误伤.
+//
+// Adversarial: accidentally remove any of these from implementedPlatform or
+// add to unsupportedSymbols → IsAPIImplemented=false → RED.
+func TestVM_API_TRUTH_1_PlatformCheckupRealStillImplemented(t *testing.T) {
+	realImplemented := []string{
+		"IsConnected", "IsDemo", "IsTradeAllowed",
+		"GetLastError", "ResetLastError", "SetUserError",
+		"CurTime", "GetTickCount", "GetTickCount64", "GetMicrosecondCount",
+		"IsTesting", "IsOptimization", "IsVisualMode",
+	}
+	for _, api := range realImplemented {
+		t.Run(api, func(t *testing.T) {
+			if !interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=false, want true (VM-API-TRUTH-1 batch 2a must not误伤 real implementations)", api)
+			}
+			if interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=true, want false (VM-API-TRUTH-1 batch 2a must not误伤 real implementations)", api)
+			}
+		})
+	}
+}

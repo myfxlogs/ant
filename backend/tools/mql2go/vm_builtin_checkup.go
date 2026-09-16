@@ -6,8 +6,13 @@ import (
 	"alphaforge/tools/mql2go/interp"
 )
 
-// MQL4/MQL5 Checkup / Platform functions — complete implementation.
-// In backtest context, most of these return fixed values.
+// MQL4/MQL5 Checkup / Platform functions — real implementations only.
+// VM-API-TRUTH-1 batch 2a: 12 fixed-value stubs removed (reclassified
+// StatusUnsupported in interp/api_registry.go; the compiler now rejects
+// them instead of letting strategies run on fake platform data).
+// Remaining: IsConnected/IsDemo/IsTradeAllowed (VM-API-TRUTH-3 real),
+// GetLastError/ResetLastError/SetUserError (lastError state machine),
+// CurTime/GetTickCount* (real time sources).
 
 // builtinIsConnected returns the authoritative connection status from the
 // SDK context. VM-API-TRUTH-3: was hardcoded true, now reads vm.ctx.Account().
@@ -31,18 +36,6 @@ func builtinIsDemo(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.BoolVal(vm.ctx.Account().IsDemo), nil
 }
 
-func builtinIsDllsAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
-func builtinIsExpertEnabled(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
-func builtinIsLibrariesAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
 // builtinIsTradeAllowed returns the authoritative trade-permission flag from
 // the SDK context. VM-API-TRUTH-3: was hardcoded true, now reads vm.ctx.
 // Account().IsTradeAllowed. Investor accounts have IsTradeAllowed=false
@@ -53,38 +46,6 @@ func builtinIsTradeAllowed(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.BoolVal(true), nil
 	}
 	return interp.BoolVal(vm.ctx.Account().IsTradeAllowed), nil
-}
-
-func builtinIsTradeContextBusy(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(false), nil
-}
-
-func builtinIsStopped(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(false), nil
-}
-
-func builtinUninitializeReason(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinMQLInfoInteger(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinMQLInfoString(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.StringVal(""), nil
-}
-
-func builtinTerminalInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimalZero), nil
-}
-
-func builtinTerminalInfoInteger(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinTerminalInfoString(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.StringVal(""), nil
 }
 
 func builtinGetTickCount(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -115,10 +76,6 @@ func builtinResetLastError(vm *VM, args []interp.Value) (interp.Value, error) {
 
 func builtinSetUserError(vm *VM, args []interp.Value) (interp.Value, error) {
 	vm.lastError = 65536 + argI(args, 0) // ERR_USER_ERROR_FIRST + code
-	return interp.NoneVal(), nil
-}
-
-func builtinSetReturnError(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.NoneVal(), nil
 }
 

@@ -46,20 +46,21 @@ type APISymbol struct {
 
 // unsupported reason constants (goconst: repeated strings > 5 occurrences).
 const (
-	reasonGUI         = "GUI functions are not supported"
-	reasonChart       = "chart objects are not supported"
-	reasonChartOps    = "chart operations are not supported"
-	reasonFileIO      = "file I/O is not supported"
-	reasonNetwork     = "network sockets are not supported"
-	reasonCrypto      = "cryptographic functions are not supported"
-	reasonResource    = "graphical resources are not supported"
-	reasonCustom      = "custom indicators are not supported"
-	reasonFTP         = "FTP is not supported"
-	reasonEmail       = "email is not supported"
-	reasonAudio       = "audio is not supported"
-	reasonPush        = "push notifications are not supported"
-	reasonHTTP        = "HTTP requests are not supported"
-	reasonMQL5History = "MQL5 order/deal/history requires broker integration not available in the backtest VM"
+	reasonGUI             = "GUI functions are not supported"
+	reasonChart           = "chart objects are not supported"
+	reasonChartOps        = "chart operations are not supported"
+	reasonFileIO          = "file I/O is not supported"
+	reasonNetwork         = "network sockets are not supported"
+	reasonCrypto          = "cryptographic functions are not supported"
+	reasonResource        = "graphical resources are not supported"
+	reasonCustom          = "custom indicators are not supported"
+	reasonFTP             = "FTP is not supported"
+	reasonEmail           = "email is not supported"
+	reasonAudio           = "audio is not supported"
+	reasonPush            = "push notifications are not supported"
+	reasonHTTP            = "HTTP requests are not supported"
+	reasonMQL5History     = "MQL5 order/deal/history requires broker integration not available in the backtest VM"
+	reasonPlatformCheckup = "platform/terminal checkup functions require a live terminal not available in the backtest VM"
 )
 
 // unsupportedSymbols lists MQL functions that are explicitly NOT supported.
@@ -167,6 +168,20 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "HistoryOrderGetDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
 	{Name: "HistoryOrderGetInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
 	{Name: "HistoryOrderGetString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonMQL5History},
+	// VM-API-TRUTH-1 batch 2a: platform checkup stubs returning fixed values
+	// (vm_builtin_checkup.go:9-10 file header). Reclassified StatusUnsupported.
+	{Name: "IsDllsAllowed", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "IsExpertEnabled", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "IsLibrariesAllowed", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "IsTradeContextBusy", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "IsStopped", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "UninitializeReason", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "MQLInfoInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "MQLInfoString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "TerminalInfoDouble", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "TerminalInfoInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "TerminalInfoString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
+	{Name: "SetReturnError", Status: StatusUnsupported, Category: CatFunction, Reason: reasonPlatformCheckup},
 }
 
 // registryMap is the lookup index built from unsupportedSymbols + builtin_registry.go + constants.go.
