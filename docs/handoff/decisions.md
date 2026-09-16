@@ -121,3 +121,11 @@
 - **理由**: env 显式声明优于按文件集推断（后者对决策方忘更是 fail-open）；否决 `git config ant.role` 粘性方案——决策终端忘清会静默失效。
 - **影响**: `scripts/hooks/pre-commit` ① 加豁免；`dual-terminal-roles.md` §4 加提交约定；`builder-handoff-template.md` + `builder-handoff-qs-1.6.md` 头部同步。
 - **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）
+
+### D-016 2026-09-16 施工自报强制携带施工编号与 commit hash
+
+- **背景**: 施工方自报顺序混乱（先报结束语再报证据、或只报结束语省略证据），决策方复审时无法核实实现完整性，施工方易偷懒跳过证据展示。
+- **决定**: 施工完成自报必须按固定顺序：①变更文件清单 → ②S1-Sn 实现摘要（每步落点对码） → ③对抗证明（mutation RED→restore→GREEN 命令+输出） → ④机检门禁（build/test/race×3/vet/gofmt/check-lines/diff --check 逐项真实输出） → ⑤范围确认（仅改派工单列出的文件，无范围外改动） → ⑥最后一行固定结束语 `[施工完成:<任务ID>] @<commit-hash>`（D-014）。六段缺一 = 复审直接退回。
+- **理由**: 证据在前、结束语收尾——决策方按序核实，施工方无法用结束语掩盖证据缺失；六段结构化防止跳过任意一段。
+- **影响**: `docs/audits/builder-handoff-template.md` 交付格式节更新六段顺序；`.devin/rules/dual-terminal-roles.md` §4.1 同步；本决定与 D-012（自审内容）/D-014（结束语锚点）互补，三者构成施工自报完整规范。
+- **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）
