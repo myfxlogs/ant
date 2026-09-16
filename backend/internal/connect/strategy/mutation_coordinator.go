@@ -75,7 +75,17 @@ func (s *StrategyExecutionServer) coordinateMutation(
 	ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession,
 	spec mutationSpec, sideStr string, sig *antv1.StrategySignal,
 	conf confirmationConfig,
-) mutationResult {
+) (result mutationResult) {
+	// Fail-closed panic containment: this runs on the VM event-loop
+	// goroutine — an uncaught panic crashes the whole process. Registered
+	// FIRST so it runs LAST during unwind (after confirmUnsub/brokerCancel).
+	acquired, brokerCalled := false, false
+	defer func() {
+		if r := recover(); r != nil {
+			result = s.convergeMutationPanic(r, cfg, activeSess, spec, acquired, brokerCalled)
+		}
+	}()
+
 	if activeSess == nil || activeSess.barrier == nil {
 		s.log.Error("coordinateMutation: barrier not configured — dropping (fail-closed)",
 			zap.String("account", cfg.AccountID))
@@ -92,6 +102,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 		activeSess.RecordError(fmt.Sprintf("%s dropped: previous broker mutation still in flight", spec.action))
 		return mutationResult{state: barrierIdle}
 	}
+	acquired = true
 
 	s.logOrderLifecycle(activeSess, cfg, "order_submitting", sideStr, 0, "")
 	if s.sessionRegistry != nil {
@@ -127,6 +138,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 	brokerCtx, brokerCancel = context.WithTimeout(brokerCtx, conf.mutationRPCTimeout)
 	defer brokerCancel()
 
+	brokerCalled = true
 	ticket, err := spec.brokerCall(brokerCtx)
 
 	if err != nil {

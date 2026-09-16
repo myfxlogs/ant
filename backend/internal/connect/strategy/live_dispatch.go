@@ -28,6 +28,30 @@ import (
 // LIVE-ORDER-REENTRY-1: all 5 mutation types share the same execution protocol
 // via coordinateMutation — synchronous barrier with confirmation, no fire-and-forget.
 func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+	// Fail-closed panic containment: this runs on the VM event-loop
+	// goroutine — an uncaught panic crashes the whole process. Panics
+	// inside coordinateMutation are already converged by its own recover;
+	// anything reaching here happened outside the coordinator (persist,
+	// logging, sub-dispatcher frames). The barrier is only converged to
+	// outcomeUnknown when it is already in-flight — an idle barrier must
+	// never be locked, or all subsequent mutations would be rejected.
+	defer func() {
+		if r := recover(); r != nil {
+			s.log.Error("dispatchLiveSignal: panic recovered",
+				zap.Any("panic", r),
+				zap.String("account", cfg.AccountID),
+				zap.String("signal_type", sig.GetSignalType()))
+			if activeSess != nil {
+				activeSess.RecordError(fmt.Sprintf("signal %s: panic recovered: %v", sig.GetSignalType(), r))
+				activeSess.SetCircuitOpen(true)
+				if b := activeSess.barrier; b != nil {
+					if st := b.State(); st == barrierSubmitting || st == barrierAcceptedUnconfirmed {
+						b.NotifyOutcomeUnknown()
+					}
+				}
+			}
+		}
+	}()
 	action := sig.GetSignalType()
 	uid, _ := uuid.Parse(cfg.UserID)
 	if s.sessionRegistry != nil {

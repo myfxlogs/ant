@@ -5,6 +5,7 @@
 package strategy
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,6 +15,36 @@ import (
 	"alphaforge/internal/mdgateway/adapter/mdtick"
 	"alphaforge/internal/mthub"
 )
+
+// convergeMutationPanic converges a panic recovered inside coordinateMutation
+// to a fail-closed result. acquired/brokerCalled mark how far the mutation
+// progressed: if the broker RPC may already be in flight the outcome is
+// unknowable (outcomeUnknown + circuit open + barrier stays locked); if it
+// provably was not, the rejection is deterministic (release the barrier).
+func (s *StrategyExecutionServer) convergeMutationPanic(
+	r any, cfg LiveStrategyConfig, activeSess *ActiveSession,
+	spec mutationSpec, acquired, brokerCalled bool,
+) mutationResult {
+	s.log.Error("coordinateMutation: panic recovered — fail-closed",
+		zap.Any("panic", r),
+		zap.String("account", cfg.AccountID),
+		zap.String("action", string(spec.action)),
+		zap.Bool("broker_called", brokerCalled))
+	switch {
+	case !acquired:
+		return mutationResult{state: barrierIdle}
+	case !brokerCalled:
+		activeSess.barrier.NotifyDeterministicRejected()
+		activeSess.barrier.Release()
+		activeSess.RecordError(fmt.Sprintf("%s %s: panic recovered before broker call: %v", spec.action, cfg.Symbol, r))
+		return mutationResult{state: barrierDeterministicRejected}
+	default:
+		activeSess.barrier.NotifyOutcomeUnknown()
+		activeSess.SetCircuitOpen(true)
+		activeSess.RecordError(fmt.Sprintf("%s %s: panic recovered after broker call, outcome unknown: %v", spec.action, cfg.Symbol, r))
+		return mutationResult{state: barrierOutcomeUnknown}
+	}
+}
 
 // publishReadAfterWriteSnapshot publishes the OpenedOrders result into the
 // existing PositionSnapshotBroker so PositionCache and all subscribers
