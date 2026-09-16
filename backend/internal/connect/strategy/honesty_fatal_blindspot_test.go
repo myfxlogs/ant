@@ -38,30 +38,50 @@ func makeE2EBars(n int) []sdk.Bar {
 
 // TestHONESTY3_FatalBlindSpotSetsUnreliable verifies that a fatal coverage
 // blind spot (e.g. unknown indicator iXxx → SeverityFatal → silently returns 0)
-// causes IsReliable=false in the backtest response.
+// causes IsReliable=false in the backtest response — AND that this is the
+// ONLY reason IsReliable is false (not the <10 trades rule in assessRisk).
 //
-// Adversarial proof: if the HONESTY-3 fix in buildBacktestResponse is removed
-// (the fatal-severity check loop), this test will FAIL because IsReliable
-// stays true despite a fatal blind spot being present.
+// Design (VM-HONESTY-3-REVIEW):
+//   - MA crossover (MAPeriod=3, 200 oscillating bars) produces ≥10 closed trades
+//     → assessRisk sets IsReliable=true.
+//   - iNonExistentIndicator is placed in a dead branch if(1==0) so static
+//     coverage still detects it (SeverityFatal) but runtime never calls it
+//     → no interference with trading.
+//   - If the HONESTY-3 fatal-severity loop is removed, IsReliable stays true
+//     (trades≥10) → test RED. This is a true adversarial proof.
+//
+// Adversarial proof: comment out the fatal-severity loop in
+// backtest_worker_vm.go:344-349 → IsReliable=true (trades≥10) → RED.
 func TestHONESTY3_FatalBlindSpotSetsUnreliable(t *testing.T) {
-	// MQL source with an unknown indicator (iXxx pattern → SeverityFatal)
 	source := `
 extern int MagicNumber = 50001;
 extern double LotSize = 0.1;
+extern int MAPeriod = 3;
 int OnInit() { return 0; }
 void OnBar()
 {
-    double v = iNonExistentIndicator(Symbol(), 0, 14, 0, 0);
-    if (v > 0 && OrdersTotal() == 0)
-        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "Test", MagicNumber, 0, clrGreen);
-}
-`
+    double ma = iMA(Symbol(), 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
+    double maPrev = iMA(Symbol(), 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 2);
+    if (ma > maPrev && OrdersTotal() == 0)
+        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "T", MagicNumber, 0, clrGreen);
+    if (ma < maPrev && OrdersTotal() > 0)
+    {
+        if (OrderSelect(0, SELECT_BY_POS, MODE_TRADES))
+            OrderClose(OrderTicket(), LotSize, Bid, 5, clrRed);
+    }
+    // Dead branch: static coverage detects iNonExistentIndicator (iXxx → SeverityFatal),
+    // but runtime never executes it → no interference with trading.
+    if (1 == 0)
+    {
+        double v = iNonExistentIndicator(Symbol(), 0, 14, 0, 0);
+    }
+}`
 	runner, cov, err := mql2go.CompileMQLWithCoverage(source)
 	if err != nil {
 		t.Fatalf("compile failed: %v", err)
 	}
 
-	// Verify the unknown indicator produces a fatal blind spot
+	// 1. Verify the unknown indicator produces a fatal coverage blind spot
 	fatalFound := false
 	if cov != nil {
 		for _, bs := range cov.BlindSpots {
@@ -72,11 +92,11 @@ void OnBar()
 		}
 	}
 	if !fatalFound {
-		t.Fatal("expected at least one fatal coverage blind spot from iNonExistentIndicator")
+		t.Fatal("expected at least one fatal coverage blind spot from iNonExistentIndicator in dead branch")
 	}
 
-	// Run backtest
-	bars := makeE2EBars(80)
+	// Run backtest with 200 oscillating bars → MA crossover produces ≥10 trades
+	bars := makeE2EBars(200)
 	cfg := backtest.Config{
 		Symbol:         "EURUSD",
 		Timeframe:      "M1",
@@ -90,8 +110,15 @@ void OnBar()
 		t.Fatalf("backtest failed: %v", err)
 	}
 
-	// Build the response via buildBacktestResponse — this is where HONESTY-3 fix lives
+	// 2. KEY: ≥10 trades → assessRisk sets IsReliable=true.
+	//    If IsReliable=false, it can ONLY come from the fatal-severity loop.
+	t.Logf("TotalTrades=%d", result.Metrics.TotalTrades)
+	if result.Metrics.TotalTrades < 10 {
+		t.Fatalf("TotalTrades=%d, need ≥10 so assessRisk sets IsReliable=true (got <10 — adjust MAPeriod/bars)", result.Metrics.TotalTrades)
+	}
+
 	params := backtestParams{
+		code:           source,
 		initialCapital: "10000",
 		commission:     "0.001",
 		slippage:       "0",
@@ -101,15 +128,15 @@ void OnBar()
 	}
 	resp, _, _, _ := buildBacktestResponse(result, cfg, params, runner)
 
-	// HONESTY-3: fatal blind spots MUST set IsReliable=false
+	// 3. HONESTY-3: fatal blind spots MUST set IsReliable=false
 	if resp.Risk == nil {
 		t.Fatal("resp.Risk is nil — expected non-nil with IsReliable=false")
 	}
 	if resp.Risk.IsReliable {
-		t.Error("IsReliable=true but fatal coverage blind spots present — HONESTY-3 crack not fixed")
+		t.Error("IsReliable=true but fatal coverage blind spots present and trades≥10 — HONESTY-3 fatal loop not firing")
 	}
 
-	// Verify at least one blind spot in the response has fatal severity
+	// 4. Verify at least one blind spot in the response has fatal severity
 	fatalInResponse := false
 	for _, bs := range resp.BlindSpots {
 		if bs.Severity == interp.SeverityFatal {
@@ -123,37 +150,49 @@ void OnBar()
 }
 
 // TestHONESTY3_NonFatalBlindSpotKeepsReliable verifies that non-fatal blind spots
-// (warning/info severity, e.g. statistical hints) do NOT set IsReliable=false.
-// This is the "don't误伤 advisory/warning" guard from the fix spec.
+// (warning severity, e.g. R06 OrderSelect+MODE_HISTORY) do NOT set
+// IsReliable=false — the HONESTY-3 fatal-severity loop must not误伤 them.
 //
-// We use a simple MA crossover EA that produces >10 trades (so assessRisk
-// returns IsReliable=true), with no fatal blind spots. The test verifies
-// that IsReliable stays true — i.e. the HONESTY-3 fatal-severity check
-// doesn't accidentally flag non-fatal blind spots.
+// Design (VM-HONESTY-3-REVIEW):
+//   - Same MA crossover (≥10 trades) → assessRisk sets IsReliable=true.
+//   - Dead branch if(1==0) contains OrderSelect(0,SELECT_BY_POS,MODE_HISTORY)
+//     → R06 rule (source text scan) fires → SeverityWarning blind spot.
+//   - No fatal blind spots (all builtins implemented, no iXxx).
+//   - Strong assertion: IsReliable must be true.
+//
+// Adversarial proof: change the fatal loop condition from
+// `bs.Severity == interp.SeverityFatal` to `bs.Severity != interp.SeverityInfo`
+// → warning blind spots also flip IsReliable → RED.
 func TestHONESTY3_NonFatalBlindSpotKeepsReliable(t *testing.T) {
-	// Simple MA crossover — no unknown indicators, no unknown functions.
-	// After HONESTY-1 fix, clrGreen is a known constant, so no blind spots at all.
 	source := `
 extern int MagicNumber = 50003;
 extern double LotSize = 0.1;
-extern int MAPeriod = 14;
+extern int MAPeriod = 3;
 int OnInit() { return 0; }
 void OnBar()
 {
     double ma = iMA(Symbol(), 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 1);
     double maPrev = iMA(Symbol(), 0, MAPeriod, 0, MODE_EMA, PRICE_CLOSE, 2);
     if (ma > maPrev && OrdersTotal() == 0)
-        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "Test", MagicNumber, 0, clrGreen);
+        OrderSend(Symbol(), OP_BUY, LotSize, Ask, 5, 0, 0, "T", MagicNumber, 0, clrGreen);
     if (ma < maPrev && OrdersTotal() > 0)
-        OrderClose(OrderTicket(), LotSize, Bid, 5, clrRed);
-}
-`
+    {
+        if (OrderSelect(0, SELECT_BY_POS, MODE_TRADES))
+            OrderClose(OrderTicket(), LotSize, Bid, 5, clrRed);
+    }
+    // Dead branch: R06 rule scans source text for ORDERSELECT + MODE_HISTORY
+    // → SeverityWarning. No runtime execution needed (text-based rule).
+    if (1 == 0)
+    {
+        OrderSelect(0, SELECT_BY_POS, MODE_HISTORY);
+    }
+}`
 	runner, _, err := mql2go.CompileMQLWithCoverage(source)
 	if err != nil {
 		t.Fatalf("compile failed: %v", err)
 	}
 
-	bars := makeE2EBars(80)
+	bars := makeE2EBars(200)
 	cfg := backtest.Config{
 		Symbol:         "EURUSD",
 		Timeframe:      "M1",
@@ -167,18 +206,14 @@ void OnBar()
 		t.Fatalf("backtest failed: %v", err)
 	}
 
-	// Log all blind spots to verify none are fatal
-	covResult := runner.GetCoverageResult()
-	if covResult != nil {
-		for _, bs := range covResult.BlindSpots {
-			t.Logf("coverage blind spot: %s (severity=%s)", bs.Builtin, bs.Severity)
-			if bs.Severity == interp.SeverityFatal {
-				t.Fatalf("unexpected fatal blind spot: %s — test source should have none", bs.Builtin)
-			}
-		}
+	// 1. ≥10 trades → assessRisk sets IsReliable=true
+	t.Logf("TotalTrades=%d", result.Metrics.TotalTrades)
+	if result.Metrics.TotalTrades < 10 {
+		t.Fatalf("TotalTrades=%d, need ≥10 so assessRisk sets IsReliable=true (got <10 — adjust MAPeriod/bars)", result.Metrics.TotalTrades)
 	}
 
 	params := backtestParams{
+		code:           source,
 		initialCapital: "10000",
 		commission:     "0.001",
 		slippage:       "0",
@@ -188,30 +223,33 @@ void OnBar()
 	}
 	resp, _, _, _ := buildBacktestResponse(result, cfg, params, runner)
 
-	// Check all response blind spots — none should be fatal
+	// 2. No fatal blind spots in response
 	for _, bs := range resp.BlindSpots {
 		t.Logf("response blind spot: id=%s severity=%s", bs.Id, bs.Severity)
 		if bs.Severity == interp.SeverityFatal {
-			t.Errorf("unexpected fatal blind spot in response: %s — HONESTY-3 check should not flag non-fatal blind spots", bs.Id)
+			t.Fatalf("unexpected fatal blind spot in response: %s — test source should have none", bs.Id)
 		}
 	}
 
-	// If there are no fatal blind spots, IsReliable should not be set to false
-	// by the HONESTY-3 check. (assessRisk may set it false if trades<10, which
-	// is a separate concern — we only verify the HONESTY-3 loop doesn't fire.)
-	if resp.Risk != nil && !resp.Risk.IsReliable {
-		// Verify it's not because of a fatal blind spot
-		hasFatal := false
-		for _, bs := range resp.BlindSpots {
-			if bs.Severity == interp.SeverityFatal {
-				hasFatal = true
-			}
+	// 3. At least one warning blind spot (R06_orderselect_history) — proves
+	//    non-fatal blind spot exists and passes through the fatal loop
+	warningFound := false
+	for _, bs := range resp.BlindSpots {
+		if bs.Severity == interp.SeverityWarning {
+			warningFound = true
 		}
-		if hasFatal {
-			t.Error("IsReliable=false due to fatal blind spot — but test source should have no fatal blind spots")
-		}
-		// Otherwise it's fine — assessRisk set it false for other reasons (e.g. trades<10)
-		t.Logf("IsReliable=false (expected if trades<10; trades=%d)", int(result.Metrics.TotalTrades))
+	}
+	if !warningFound {
+		t.Fatal("expected at least one SeverityWarning blind spot (R06_orderselect_history) — dead branch OrderSelect+MODE_HISTORY should trigger R06")
+	}
+
+	// 4. STRONG assertion: IsReliable must be true.
+	//    Fatal loop sees only warning → must not flip.
+	if resp.Risk == nil {
+		t.Fatal("resp.Risk is nil — expected non-nil with IsReliable=true")
+	}
+	if !resp.Risk.IsReliable {
+		t.Error("IsReliable=false but no fatal blind spots and trades≥10 — HONESTY-3 fatal loop误伤 warning blind spots")
 	}
 }
 
