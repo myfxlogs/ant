@@ -73,3 +73,10 @@
 - **决定**: ① OrderSend/OrderClose 参数校验失败与 broker 拒绝**保持 fatal**（VM-RUNTIME-FAILCLOSED-1 不变量），`GetLastError` 本轮只由 `SetUserError` 写入（QS-1.2a），不做 "-1 + lastError"（QS-1.2b 不立项）。② open outcomeUnknown 的 magic+symbol+side+时间窗模糊匹配 recovery **永久否决**；先做 QS-1.7-INV 调研 ClientID 回显链路，可靠则按 ClientID 精确单匹配，否则维持 ④-② fail-closed。③ 阶段 3 性能优化（Value/decimal 池化、跳转表、superinstruction）整体否决，改为 QS-3-BASELINE 测量任务；仅在生产 p99 单事件耗时 > tick 间隔 10% 或 benchmark 单项占比 > 30% 时再立优化条目。④ QS-2.1 watcher "泄漏"经实拍不成立，否决。⑤ QS-1.6 修法由 `Reconcile`（在 acceptedUnconfirmed 下是 no-op）改为新增 `TradeBarrier.ConfirmByAuthoritativeRead()`。⑥ QS-1.3 复用 `astCompiler.localScopes`，不在 pyCompiler 另造作用域栈。
 - **理由**: 逆转已验收不变量需要明确收益，signalMode 下 broker 拒绝对 VM 不可见，收益仅剩参数非法一种；模糊匹配在同策略同向连续开仓下必误匹配，触碰资金边界；`interp.Value` 是值结构体，池化在语义上不成立；无 baseline 的优化违反"有证据才立项"。
 - **影响**: spec v2 §2 保留全部否决/降级理由；QS 条目入 registry；施工顺序 QS-1.4 → 1.6 → 1.3 → 1.2a → 1.7-INV → 2.2 → 2.4 → 2.5 → 2.3；QS-3-BASELINE 贯穿。
+
+### D-010 2026-09-16 多终端角色模型：默认施工者 + Claude 在场默认最终决策者 + [角色:决策终] 激活 + 署名溯源
+
+- **背景**: 业主实际用两个 Devin CLI 终端协作，且 Claude 可能加入做决策。原 `.devin/rules/dual-terminal-roles.md`（同日初版）默认无标签为决策者，存在两个终端都自认决策者的混淆风险；且未处理 Claude 参与时的决策权归属。业主 2026-09-16 明确：默认施工者；Claude 加入时默认最终决策者；Devin 需成为最终决策者时用 `[角色:决策终]` 标签或对话明确授权；署名上区分最终决策来源。
+- **决定**: ① 角色改两档：施工者（默认，无标签即是）/ 最终决策者（唯一）。② Claude 在场默认最终决策者（无需标签），Devin 须 `[角色:决策终]` 或业主对话授权激活，可覆盖 Claude 默认（优先级：业主显式指定 > Claude 在场默认 > Devin 标签声明）。③ 决策类交付物（spec/adr/验收结论/缺陷清单/decisions 条目/变更日志决策条目）固定署名 `最终决策：Devin CLI（[角色:决策终] 激活）` 或 `最终决策：Claude`；施工类交付物只标施工方身份。④ 首个角色声明锁定会话，切换须重启。⑤ 最终决策者独占交接层+spec/adr 写权限；施工者禁 push/部署/碰交接层/自标 done/超范围 diff，五类触发器停下转 `[转交决策]`。
+- **理由**: 默认施工者是 fail-closed 设计——未声明角色的终端一律无决策权，杜绝多终端角色混淆。Claude 在场默认最终决策者是对 D-006 的条件性修订（D-006 移除 Claude 固定角色，本条恢复其"在场时的决策优先权"，非恢复固定角色）。署名溯源解决多决策者并存时的责任可追溯性（P3 一事实一处：每个决策只归一个来源）。
+- **影响**: `.devin/rules/dual-terminal-roles.md` 重写为两档模型+署名规范；`docs/audits/builder-handoff-template.md` 角色声明头同步；`.devin/global_rules.md` 与 `.devin/角色与职责.md` 索引更新。AGENTS.md §0 角色表不变（组织层 SSOT），本规则为会话层激活机制。历史决策类文档署名不回改。
