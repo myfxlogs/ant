@@ -50,11 +50,27 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 		r.UpdateExtraBars(extra)
 	}
 
+	start := time.Now()
 	sig, err := r.OnBar(ctx, barSeries, lctx.Timeframe)
+	observeVMEvent("bar", start, r)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
 	return vmSignalResponse(sig, lctx.Symbol)
+}
+
+// observeVMEvent records duration + per-event VM stats for the live event
+// path (QS-3-BASELINE). Must be called immediately after the runner event
+// returns — vm.ticks/fatalError reset at the start of the next event.
+// Degrades to duration-only when the strategy exposes no stats (non-VM).
+func observeVMEvent(event string, start time.Time, r *runner.Runner) {
+	VMEventDurationSeconds.WithLabelValues(event).Observe(time.Since(start).Seconds())
+	if ticks, fatal, ok := r.EventStats(); ok {
+		VMEventInstructions.WithLabelValues(event).Observe(float64(ticks))
+		if fatal != "" {
+			VMFatalTotal.WithLabelValues(event).Inc()
+		}
+	}
 }
 
 // parseBarsStrict parses OHLCV arrays into sdk.Bar slice using strict parsers.
@@ -133,7 +149,9 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 		return &antv1.ExecuteLiveResponse{Success: false, Error: "invalid decimal in Ask: " + err.Error()}
 	}
 	r.UpdateTickState(bid, ask)
+	start := time.Now()
 	sig, err := r.OnTick(ctx, bid, ask)
+	observeVMEvent("tick", start, r)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
@@ -197,7 +215,9 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 		Commission: commission,
 		Swap:       swap,
 	}
+	start := time.Now()
 	sig, err := r.OnTrade(ctx, event)
+	observeVMEvent("trade", start, r)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}
@@ -205,7 +225,9 @@ func vmHandleTrade(ctx context.Context, r *runner.Runner, evctx *antv1.TradeCont
 
 	// Dispatch OnTradeTransaction (MQL5) if the strategy implements it.
 	if r.HasOnTradeTransaction() {
+		ttStart := time.Now()
 		ttSig, ttErr := r.OnTradeTransaction(ctx)
+		observeVMEvent("trade_transaction", ttStart, r)
 		if ttErr != nil {
 			return resp
 		}
@@ -227,7 +249,9 @@ func vmHandleTimer(ctx context.Context, r *runner.Runner, tmctx *antv1.TimerCont
 	}
 	// VM-TRADE-CONTEXT-6 S4: nil check removed (proto3 nil==empty slice).
 	r.UpdateLiveState(tmctx.Balance, tmctx.Equity, tmctx.Margin, tmctx.FreeMargin, vmPositionsToSdk(tmctx.Positions), vmPendingOrdersToSdk(tmctx.PendingOrders))
+	start := time.Now()
 	sig, err := r.OnTimerTick(ctx)
+	observeVMEvent("timer", start, r)
 	if err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}
 	}

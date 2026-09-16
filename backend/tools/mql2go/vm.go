@@ -176,6 +176,15 @@ func (vm *VM) RunOnBookEvent(ctx context.Context) error {
 	return vm.runEvent(ctx, vm.bc.OnBookEvent)
 }
 
+// Ticks returns the instruction count of the most recently completed event.
+// QS-3-BASELINE observation accessor — vm.ticks resets at each runEvent entry,
+// so this is only meaningful immediately after an event returns.
+func (vm *VM) Ticks() int64 { return vm.ticks }
+
+// FatalError returns the fatal error string of the most recently completed
+// event ("" if none). QS-3-BASELINE observation accessor — reset per event.
+func (vm *VM) FatalError() string { return vm.fatalError }
+
 // GetRuntimeBlindSpots returns the blind spots encountered during execution.
 func (vm *VM) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 	var out []interp.RuntimeBlindSpot

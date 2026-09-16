@@ -319,6 +319,21 @@ type OrderExecutor interface {
 	SymbolInfo(symbol string) (sdk.SymbolInfo, error)
 }
 
+// EventStats returns per-event VM execution counters when the underlying
+// strategy exposes them (QS-3-BASELINE). ok=false for non-VM strategies —
+// callers should degrade to duration-only observation. Read immediately
+// after an OnX call returns; counters reset at the next event.
+func (r *Runner) EventStats() (ticks int64, fatalError string, ok bool) {
+	sp, ok := r.strategy.(interface {
+		LastEventStats() (int64, string)
+	})
+	if !ok {
+		return 0, "", false
+	}
+	ticks, fatalError = sp.LastEventStats()
+	return ticks, fatalError, true
+}
+
 // Deinit calls the strategy's OnDeinit.
 func (r *Runner) Deinit(ctx context.Context, reason string) error {
 	if r.strategy == nil {

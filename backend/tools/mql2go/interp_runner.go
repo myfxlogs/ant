@@ -394,6 +394,13 @@ func (r *VMRunner) OnTimer(ctx sdk.Context) (*sdk.Signal, error) {
 	return r.vm.Signal(), nil
 }
 
+// LastEventStats returns the instruction count and fatal error of the most
+// recently completed VM event. QS-3-BASELINE — read immediately after an OnX
+// call returns; both fields reset at the start of the next event.
+func (r *VMRunner) LastEventStats() (ticks int64, fatalError string) {
+	return r.vm.Ticks(), r.vm.FatalError()
+}
+
 // GetRuntimeBlindSpots returns blind spots encountered during VM execution.
 func (r *VMRunner) GetRuntimeBlindSpots() []interp.RuntimeBlindSpot {
 	return r.vm.GetRuntimeBlindSpots()
