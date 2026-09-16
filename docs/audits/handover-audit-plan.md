@@ -721,3 +721,12 @@
 - **独立复审**：机检全绿（build / test 100.5s / `-race -count=3` 303.3s 含 goleak 门禁 / vet / gofmt / check-lines 0 errors）。**独立 mutation×3**：删 recover → panic 逃逸崩测试进程（生产爆炸半径复现）RED；删 `NotifyOutcomeUnknown` → barrier 停 `submitting` RED；删 `State()` 门控改无条件调用 → idle barrier 被误锁 `outcome_unknown` RED；restore 全绿。
 - **实现核验**：`convergeMutationPanic` 三分支与 spec 一致；dispatchLiveSignal 注释准确说明"coordinator 内 panic 已自行收敛，到达此层的 panic 必在 coordinator 之外"；S3b 注入点（nil mtHub → `SubscribePositionSnapshots` nil panic）与 S3d 注入点（zero-value runRepo → `persistSignal` nil db panic）真实可达。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-2.3 ✅done（Devin CLI 独立复审通过）—— VM 质量方案阶段 1/2 收官
+
+- **施工**：commit `5ad339a9`——`noopContext`（vm_context.go 152 行：全 Context 方法 + `noopIndicatorSet` ~35 方法零值 + `emptyBars=BarsToSlice(nil)` 共享不可变空序列）+ `NewVM` 注入 + `SetContext(nil)` 归一化；99 处 `vm.ctx == nil`/`!= nil` 守卫消除，**17 处非等价站点保留**（commit message 逐类披露）。
+- **独立复审**：机检全绿（build / test 8.2s / `-race -count=3` 48.2s 含 goleak 门禁 / vet / gofmt / check-lines 0 errors）。**独立 mutation×2**：删 NewVM 注入 → `builtinBid` nil panic RED（不变量必要性实证）；`emptyBars`→nil interface → `TestQS23_NoopBarsNonNilEmpty` RED；restore 全绿。
+- **17 站点保留裁定（批准）**：①非死代码——测试可 `vm.ctx = nil` 显式构造（`vm_api_truth3_batch3_test.go:100/111/122`）；②多站不可 noop 化（checkup 三 true 默认值 / datetime epoch 非零 / TimeGMT 墙钟 / LEVERAGE 100 / iADX fatalError 语义）；③语义等价第一原则下"不等价不许改"条款的正当执行。生产路径 ctx 永非 nil（NewVM+SetContext 双保险），保留检查仅服务显式 nil 测试场景。
+- **连带立债**：`ORDERSEND-NILBROKER-FAILCLOSED-1`（🟦open P2）——OrderSend 无 broker 静默 -1+nil error，修法需先审计存量策略依赖。
+- **阶段进度**：spec 阶段 1（QS-1.x）+ 阶段 2（QS-2.x）全部 ✅done；仅剩贯穿项 QS-3-BASELINE。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
