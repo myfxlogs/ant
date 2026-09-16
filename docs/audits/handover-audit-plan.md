@@ -673,3 +673,12 @@
 - **独立复审（A–F）**：A 复用锁+Broadcast 模式，不新增状态通道 ✅；B `ConfirmByAuthoritativeRead` 为最简正式迁移 ✅；C check-lines 0 errors 本任务文件零新增警告 ✅；D 幂等/终态/outcomeUnknown/idle 边界全覆盖 ✅；E 合规 ✅；F 文档同步 ✅。机检独立重跑全绿（build / test -count=1 98s / race -count=1 102s / vet / check-lines）。
 - **对抗证明独立重跑**：删 `ConfirmByAuthoritativeRead()` 调用 → 2 coordinator 测试 RED（`state=accepted_unconfirmed` 语义级断言）；删 switch `barrierAcceptedUnconfirmed` 分支 → barrier 单测 RED；restore → GREEN。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-1.3 ✅done（Devin CLI 独立复审通过，两轮回合）
+
+- **施工**：commits `9940eda4`（v2 处方实现）+ `ee47292d`（v3 增量修正）。`resolveAssignTarget`（python+函数内未声明名→函数域局部槽）、`isDeclaredGlobal`（GlobalDecls 判定谓词）、`compileDecl` python 分支落 `localScopes[0]`、`compileCompoundAssign` 未声明名编译期 fail-closed。
+- **过程修正**：v2 采纳施工方两处 `[转交决策]`——①`global`/`nonlocal` 属 CST 黑名单非白名单（提示词事实错误，死代码移除）；②Option B：判定谓词 GlobalSlots→GlobalDecls（关闭"先编译函数未声明读污染 GlobalSlots"残余洞）。v3 决策方复审退回——`compileFor` pushScope/popScope 是 MQL 词法域设施，Python for 体内新局部按内层域分配随循环消亡（独立复现 r=Kind:0 want 2），改函数基域 `localScopes[0]` 并连带修复既有 for 循环变量出循环即死偏差。
+- **独立复审**：机检独立重跑全绿（build / test 8.4s / race -count=3 49.8s / vet / gofmt / check-lines 0 errors）。**独立 mutation×4**：resolveVar 回退→多点语义 RED；GlobalDecls→GlobalSlots→2 RED（字面泄漏 r=1 + 参数名写全局复现）；localScopes[0]→内层→2 RED（for 体/循环变量 ValNone 复现）；删 forbiddenNodeTypes 条目→S4e RED。restore 全绿。范围干净：3 文件零交接层改动。
+- **遗留已知限制**：`PY-SCOPE-KNOWN-1`（P3 🟦open）——self.x/裸x 同槽混同、读路径隐式注册保留、for 脱糖退出值 i=N（pin 为文档化行为）。
+- **流程沉淀**：D-013 自审检查项补"路径可达性回验"+"生命周期推演"两条硬要求（本任务三处漏项教训，commit bb3fe2e4）。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
