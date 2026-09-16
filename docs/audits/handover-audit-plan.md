@@ -746,3 +746,11 @@
 - **S9 裁定不建（TRUST-1 遗留尾巴）**：DB 实拍 2 unknown 账户（17001900/95300910）均为 2026-08-03/04 起 disconnected 死账户——0 perf 行、0 schedule 绑定，unknown 被 real-only 过滤天然排除（fail-closed 方向），重连即自动回填覆盖。脚本边际价值为零。
 - **新债 RECONCILE-TZ-WINDOW-1（P2）**：DATA-TRUTH-1 S1 残余缺陷——`reconciliation.go:159` `Clk.Now()`（CST wall clock）经 pgx `timestamp` 编码 → ant 24h 窗口实际 ~16h → 16-24h 龄订单每轮假 ghost + `repaired` 虚增。证据链：账户 40a7655e ticket 387276098 created_at=Sep15 17:06 UTC（=首次 flag 时刻，DEFAULT now() UTC），首次重复 flag Sep16 ~09:13 UTC = **16.1h 龄**（恰越 16h 阈值）；psql UTC 会话下该行满足 24h 查询而 app 标 ghost——唯 CST 参数编码可解释。修法：`Clk.Now().UTC()` 或 `($2)::timestamptz` 或列改 timestamptz。施工时须全仓排查同模式 timestamp 比较。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 RECONCILE-TZ-WINDOW-1 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `1efbf678`——`reconcileCutoff()` helper + `.UTC()`（reconciliation.go:253-255）+ pin 测试×2（reconciliation_tz_test.go：location==UTC + SimulatedClock CST 注入断言 UTC 钟面 hour=2）+ sweep 报告 `docs/audits/tz-timestamp-sweep-2026-09.md`。
+- **独立复审**：机检全绿（build/vet/gofmt/test/race×3 4.3s/check-lines 0 errors）；**独立 mutation**：删 `.UTC()` → 双 pin 测试精确 RED（`location=Local`/`hour=10` CST 钟面）→ restore → GREEN。范围干净：3 文件。sweep 关键断言抽查属实（analytics.go:45 `since:=time.Now()` 无 .UTC()、schema `TIMESTAMP DEFAULT CURRENT_TIMESTAMP`）。
+- **sweep 分立债 2 条**：TZ-SWEEP-AFFECTED-1（P2，analytics ~9 站统计窗口偏 8h，单点修法）+ TZ-MIXED-ENCODING-1（同列 CST/UTC 混合写入根因级——trade_records.close_time/open_time + user_subscriptions.expires_at，跨日 PnL 错归/到期晚判，先 spike 受影响行数再定案）。
+- **部署注记**：本站修复随下次 backend build 生效；生效后 16-24h 龄订单不再假 ghost，`repaired` 计数恢复真实。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

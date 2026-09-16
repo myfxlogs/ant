@@ -38,7 +38,7 @@
 | FIX-2026-09-08-COMPILE-NOTIFY | ✅done | Devin CLI 直接施工+验收 2026-09-08。编译失败醒目提示 + Timestamp 渲染崩溃修复。详见 registry + LOG。 |
 | WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。补记2：真实浏览器走查 9 步全过（Playwright + e2e 账号）——新增"手动编写"空白编辑器脚手架 + 侧栏来源项中文默认值。补记：回测历史面板渲染 protobuf Timestamp 对象致整页崩溃（React #31）——formatStartedAt 稳健格式化 + 生产形状回归测试。补记3：最终架构重构落地——单一 centerView 状态机 + AI/回测停靠面板（420px 并排不抢占），三分区点击保持展开，使用模板来源移除，CodeEditorArea 编辑器常驻。 |
 | WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 分区切换驱动主区联动；新建策略分区四来源菜单（含手动编写）；粘性 importMode 修复；使用模板移除；分区切换关闭右侧面板。真实走查 9 步全绿。原文滚出 LOG。 |
-| AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
+| AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（ec8dfda1..36f7b3e4）。A-F 全查 + 附带修复 3 项编译断裂掩盖的潜在问题。详见 registry + LOG。 |
 | QS-1.4 Python bool(x) 语义 + vm_helpers:250 注释 | ✅done | 施工方按 builder-handoff-qs-1.4.md S1–S3 完成：bool→双重 `!`（OP_NOT×2 → IsTrue）、注释更正、行为级测试+IR 形态守卫、BoolConversion 断言同步；对抗证明先红→mutation RED→restore→GREEN；机检全绿。详见 registry QS-1.4。（Devin CLI 验收通过 2026-09-16；commit 88292b14；独立 mutation 重跑 RED→GREEN） |
 | QS-1.6 read-after-write 确认走状态机 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5be48f30；ConfirmByAuthoritativeRead + 2 分支根因核实；独立 mutation×2 RED→GREEN |
 | QS-1.3 Python 函数局部作用域 | ✅done | Devin CLI 验收通过 2026-09-16；commits 9940eda4+ee47292d；resolveAssignTarget+isDeclaredGlobal+函数域分配；独立 mutation×4 RED→GREEN；修正 v2/v3 见 handoff |
@@ -49,9 +49,10 @@
 | QS-2.5 panic recovery 加固 | ✅done | Devin CLI 验收通过 2026-09-16；commit 89353004；coordinateMutation/dispatchLiveSignal recover + acquired/brokerCalled 双标志收敛 + State() 门控防 idle 误锁；独立 mutation×3 RED→GREEN；race×3 303s 绿 |
 | QS-2.3 vm.ctx 非 nil 不变量 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5ad339a9；noopContext 注入+SetContext 归一化+99 处守卫消除+17 处非等价站点保留裁定；独立 mutation×2 RED→GREEN；race×3 48.2s 绿 |
 | QS-3-BASELINE VM 性能基线 | ✅done | Devin CLI 验收通过 2026-09-16；commit b8ad1674；B1-B4 benchmark+报告落盘（dispatch ~120ns/B4 67.9µs/decimal div 7.2×）+3 条 live metric 接线；数据独立重跑复现；mutation×1 RED→GREEN |
+| RECONCILE-TZ-WINDOW-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 1efbf678；`.UTC()` 一行+pin×2+sweep 报告；独立 mutation RED→GREEN；sweep 另立 2 债 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: VM 质量方案 v2 全部 ✅done；TRUST-1 S9 裁定不建（实拍零边际价值）。新债处置排期：RECONCILE-TZ-WINDOW-1（P2 生产实拍）+ ORDERSEND-NILBROKER-FAILCLOSED-1 等 5 条 open。
+- **下一步**: RECONCILE-TZ-WINDOW-1 ✅done。新债处置排期：TZ-SWEEP-AFFECTED-1（P2 小批）→ TZ-MIXED-ENCODING-1（spike→定案）→ ORDERSEND-NILBROKER-FAILCLOSED-1 等 P3。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -104,7 +105,9 @@
 - **QS-1.7-INV** ✅done — ClientID 不可回显→QS-1.7 不立项，维持 fail-closed（Devin CLI 验收通过 2026-09-16）
 - **QS-3-BASELINE** ✅done — 基线已落盘 `docs/audits/vm-perf-baseline-2026-09.md`；无项触及 >30% 阈值，生产 p99 待 metric 上线观测
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** 🟦open — QS-2.3 连带记债：无 broker 静默 -1+nil error 非 fail-closed
-- **RECONCILE-TZ-WINDOW-1** 🟦open P2 — reconcile ant 窗口实 16h（timestamp 参数 CST 编码 +8h 偏移）→ 16-24h 龄订单每轮假 ghost
+- **RECONCILE-TZ-WINDOW-1** ✅done — `.UTC()` 修复+pin 测试，Devin CLI 验收通过 2026-09-16（1efbf678）
+- **TZ-SWEEP-AFFECTED-1** 🟦open P2 — analytics.go `since` 缺 `.UTC()` ~9 站统计窗口偏 8h（sweep §2）
+- **TZ-MIXED-ENCODING-1** 🟦open — trade_records.close_time/open_time + expires_at 同列 CST/UTC 混合写入根因级（sweep §3，先 spike 行数）
 - **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
 
 ## 最近变更日志
