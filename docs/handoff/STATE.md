@@ -35,10 +35,10 @@
 | RECONCILE-TZ-WINDOW-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 1efbf678；`.UTC()` 一行+pin×2+sweep 报告；独立 mutation RED→GREEN；sweep 另立 2 债 |
 | TZ-SWEEP-AFFECTED-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 362d285e；analyticsSince()+worker 参数归一化；独立 mutation -8h 编码偏移复现 RED→GREEN |
 | TZ-MIXED-ENCODING-1 根因修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit da85f973；~50 站写入端 .UTC() 全枚举+读侧同步+migration 278 签名回填（10100 行 CST→UTC，幂等）；CST 配对列裁定不翻分立 TZ-PAIRED-CST-COLS-1；独立 mutation RED→GREEN |
-| VM-RUNTIME-FAILCLOSED-2 静默算术/栈/槽位 fail-closed | 🟦open | 施工完成待复审；S1-S4 setStackError 覆盖 arith/floorDiv 除零取模+OP_DUP/OP_SWAP underflow+OP_PUSH/STORE_VAR/GLOBAL 越界（含 OP_STORE_VAR 栈泄漏修复）；7 行为测试+4 对抗证明 RED→GREEN；机检全绿 |
+| VM-RUNTIME-FAILCLOSED-2 静默算术/栈/槽位 fail-closed | ✅done | Devin CLI 验收通过 2026-09-16；commit 4fea9439；S1-S4 setStackError 全覆盖+OP_STORE_VAR 栈泄漏修复；7 行为测试+独立 mutation×4 重跑 RED→GREEN；机检独立复测全绿；分立债 VM-ARRAY-OOB-FAILCLOSED-1(P2)/VM-FUNC-FATAL-DELAY-1(P3) |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: VM-RUNTIME-FAILCLOSED-2 施工完成待 Devin CLI 独立复审。后续队列：VM-HONESTY-3-REVIEW（测试重构 spec 已备）→ VM-COMPILER-SEMANTICS-3（switch default/break 栈）→ VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: VM-RUNTIME-FAILCLOSED-2 ✅done（Devin CLI 验收 2026-09-16）。后续队列：VM-HONESTY-3-REVIEW（测试重构 spec 已备）→ VM-COMPILER-SEMANTICS-3（switch default/break 栈）→ VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -96,12 +96,15 @@
 - **TZ-MIXED-ENCODING-1** ✅done — ~50 站 .UTC() 止血+migration 278 回填，Devin CLI 验收通过 2026-09-16（da85f973）；**部署注记**：migration 在 backend 启动时跑，生效后 trade_records 全列 UTC
 - **TZ-PAIRED-CST-COLS-1** 🟦open P3 — next_run_at/trade_logs 等 CST 写读配对列禁单侧翻 UTC（registry 规则）
 - **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
+- **VM-RUNTIME-FAILCLOSED-2** ✅done — 静默算术/栈/槽位 fail-closed（Devin CLI 验收通过 2026-09-16，commit 4fea9439，独立 mutation×4 RED→GREEN）
+- **VM-ARRAY-OOB-FAILCLOSED-1** 🟦open P2 — OP_PUSH_ARRAY/OP_STORE_ARRAY 越界静默 NoneVal/丢弃（FAILCLOSED-2 复审分立）
+- **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-16 **VM-RUNTIME-FAILCLOSED-2 施工完成**（builder，待独立复审）：S1-S4 setStackError 覆盖 arith/floorDiv 除零取模+OP_DUP/OP_SWAP underflow+OP_PUSH/STORE_VAR/GLOBAL 越界（含 OP_STORE_VAR 栈泄漏修复）；7 行为测试+4 对抗证明 RED→GREEN；机检全绿。
+- 2026-09-16 **VM-RUNTIME-FAILCLOSED-2 ✅done**（Devin CLI 独立复审通过）：commit 4fea9439；S1-S4 setStackError 覆盖 arith/floorDiv 除零取模+OP_DUP/OP_SWAP underflow+OP_PUSH/STORE_VAR/GLOBAL 越界（含 OP_STORE_VAR 栈泄漏修复）；7 行为测试全绿+**独立 mutation×4 重跑** RED→restore→GREEN；机检独立复测：build/mql2go 384/race×3 1152/strategy 367/connect-strategy 416/vet/check-lines 0 errors。分立债：VM-ARRAY-OOB-FAILCLOSED-1（P2）+ VM-FUNC-FATAL-DELAY-1（P3）。
 - 2026-09-16 **VM 质量方案 v2 全量收官**（10 子任务全 Devin CLI 验收）：QS-1.4 bool 双否定（88292b14）/ QS-1.6 权威读状态机迁移（5be48f30）/ QS-1.3 函数域隔离 v3（9940eda4+ee47292d）/ QS-1.2a lastError 三 builtin（65e2cccf）/ QS-1.7-INV 不立项（05138758）/ QS-2.2 goleak（174b8405）/ QS-2.4 race 审计（8e393cae）/ QS-2.5 panic 加固（89353004）/ QS-2.3 noopContext（5ad339a9）/ QS-3-BASELINE 基线+metric（b8ad1674）。明细滚出至 handover-audit-plan.md。
 - 2026-09-16 **registry 全量对账**（Devin CLI）：所有 ⚠️待独立复审项清零——翻正漂移 ✅done×9（LIVE-ORDER-REENTRY-1/LIVE-MQL-ORDER-CONTEXT-1/LIVE-REDESIGN-2TAB/LIVE-DIAG-TRUTH-1/VM-TEST-EVIDENCE-3/返工 Batch5 等），裁定决策项×5（DATA-TRUTH-3=v2 凭据-only 附属表/VM-API-TRUTH-1=批准 StatusUnsupported 派工/VM-LIVE-MTF-1=暂缓需求驱动/STREAM-FREEZE-1=代码验收+生产实测挂业主/LIVE-ORDER-REENTRY-1 三遗留裁定），标注待重施工×2（VM-RUNTIME-FAILCLOSED-2/VM-HONESTY-3-REVIEW 代码不在仓）。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（滚出至 LOG.md）：kimi-k3 400 temperature 自愈重试 + 两个 nil 雷修复 + 模型配置常驻齿轮入口。

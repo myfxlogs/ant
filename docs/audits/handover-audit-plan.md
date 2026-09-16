@@ -781,3 +781,14 @@
 - **MAGIC-ATTRIBUTION S1-S3**：主条目均已录"Devin CLI 验收通过 2026-08-27"，日志段标题待复审为时序记录，无需动作。
 - **STATE.md 同步**：DATA-TRUTH-1/SCHEDULE-HOTLOOP-1 指针漂移翻正 ✅done；下一步队列重写为真实剩余施工序。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 VM-RUNTIME-FAILCLOSED-2 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `4fea9439`（ANT_ROLE=builder）——原 2026-08-24 施工未提交丢失后按派工单重做。`vm_helpers.go` arith 四类除零/取模零 + floorDiv 两路 → `setStackError`；`vm_execute.go` OP_DUP/OP_SWAP underflow + OP_PUSH_VAR/PUSH_GLOBAL/STORE_VAR/STORE_GLOBAL 越界 → `setStackError`（OP_STORE_VAR 越界补 `pop()` 修栈泄漏，setStackError 先于 pop 使主消息胜出）；新 `vm_audit_test.go` 204 行 7 行为测试。
+- **独立复审**：spec S1-S4 逐条对码全覆盖；常量折叠 `foldIntBinary`/`foldDecimalBinary` 零除返回 false → `10/0` 实走运行时 OP_DIV，MQL 测试非恒真。**独立 mutation×4 重跑**（arith int 除零/OP_DUP/OP_PUSH_VAR/OP_SWAP）逐一 RED→restore→GREEN，恢复后 `git status` 净。
+- **机检独立复测全绿**：`go build ./...` ✓ / mql2go test 384 ✓ / `-race -count=3` 1152 ✓ / `strategy/...` 367 ✓ / `connect/strategy` 416 ✓ / vet ✓ / check-file-lines 0 errors / 改动三文件 gofmt 净（compile_py* 等未格式化文件为未触碰既有项）。
+- **交接缺口（已修）**：施工方未翻正 registry 行 128 状态单元（滞留"代码不在仓需重新施工"旧注记）——审计方本次落档翻正。
+- **分立债×2**：`VM-ARRAY-OOB-FAILCLOSED-1`（P2，OP_PUSH_ARRAY/OP_STORE_ARRAY 越界静默 NoneVal/丢弃——MQL array out of range 应为致命，同类 spec 外分支）+ `VM-FUNC-FATAL-DELAY-1`（P3，executeCallUser 内层循环无逐指令 fatalError 检查——函数内 fault 后非-builtin 指令续行至 RETURN，builtin 副作用有门控，事件级 fail-closed 成立）。
+- **残余**：floorDiv×2/decimal mod/STORE_* 越界 setStackError 无专项行为测试（spec 明列排除，结构与已测分支同构）。
+- **部署注记**：VM 行为变更（除零/underflow/越界从静默→fatal）随下次 backend build 生效；依赖旧静默语义的策略将由假值继续转为事件级错误——fail-closed 方向符合预期。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
