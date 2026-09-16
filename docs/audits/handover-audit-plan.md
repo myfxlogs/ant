@@ -761,3 +761,13 @@
 - **独立复审**：机检全绿（build/vet/gofmt/test/race×3 1.1s×2/check-lines 0 errors）；**独立 mutation**：删 `.UTC()` → 双测试 RED（`location=Local` + 编码钟面偏 -8h：19:53 CST vs 11:53 UTC 精确复现）→ restore → GREEN。范围干净：3 文件。M2 覆盖等价说明属实（param 侧归一化无 mock 层不可测，机制经 M1 同类证明）。
 - **部署注记**：随下次 backend build 生效，周期统计窗口恢复真 24h/7d/30d。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 TZ-MIXED-ENCODING-1 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `da85f973`——34 文件全枚举止血：~50 站 `time.Now()/time.Unix()→.UTC()` + trade_records 读侧参数同步翻 UTC + migration 278 签名回填（`close_time-created_at∈[7h,9h]`→-8h，幂等）。
+- **独立复审**：①34 文件 diff 全读——所有翻转为 DB-bound 参数 `.UTC()`，无越界改动；②NOT-flipped 裁定独立核实：`next_run_at`（写 ComputeNextRunAt CST/读 GetDueSchedules CST 配对）、`trade_logs`（ListByDateRange/GetTradeLogsByAccount CST 参数读侧）——单翻即新混合编码，裁定正确；③漏站核查：残余 `time.Now()` 全为纯 Go（cache/throttle/epoch/Format/内存字段），零 DB 写入遗漏；④migration 编号 278 正确衔接、down 近似恢复已注明、幂等性论证成立（delta≈0 不再命中）。
+- **独立 mutation**：删 `pipeline_callbacks.go` CloseTime `.UTC()` → TZ=Asia/Shanghai 下 pin 测试 RED（`location=Asia/Shanghai`）→ restore → GREEN。
+- **机检全绿**：build/vet/gofmt/test（marketplace+repository+connect/system+cmd/server 全过）/race×3（1.16s+1.09s）/check-lines 0 errors。
+- **分立债**：`TZ-PAIRED-CST-COLS-1`（P3）——CST 写读配对列规则文档化，禁单侧翻 UTC。
+- **部署注记**：migration 278 在 backend 启动时执行——部署后 trade_records open/close_time 全列统一 UTC，`live_performance` UTC 日界桶恢复正确。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

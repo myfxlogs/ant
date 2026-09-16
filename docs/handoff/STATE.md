@@ -51,9 +51,10 @@
 | QS-3-BASELINE VM 性能基线 | ✅done | Devin CLI 验收通过 2026-09-16；commit b8ad1674；B1-B4 benchmark+报告落盘（dispatch ~120ns/B4 67.9µs/decimal div 7.2×）+3 条 live metric 接线；数据独立重跑复现；mutation×1 RED→GREEN |
 | RECONCILE-TZ-WINDOW-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 1efbf678；`.UTC()` 一行+pin×2+sweep 报告；独立 mutation RED→GREEN；sweep 另立 2 债 |
 | TZ-SWEEP-AFFECTED-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 362d285e；analyticsSince()+worker 参数归一化；独立 mutation -8h 编码偏移复现 RED→GREEN |
+| TZ-MIXED-ENCODING-1 根因修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit da85f973；~50 站写入端 .UTC() 全枚举+读侧同步+migration 278 签名回填（10100 行 CST→UTC，幂等）；CST 配对列裁定不翻分立 TZ-PAIRED-CST-COLS-1；独立 mutation RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: TZ 两债 ✅done。新债处置排期：TZ-MIXED-ENCODING-1（spike→定案）→ ORDERSEND-NILBROKER-FAILCLOSED-1 + TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE 等 P3。
+- **下一步**: TZ 三债全 ✅done。剩余排期：ORDERSEND-NILBROKER-FAILCLOSED-1 + TEST-WAITSTATE-ACQUIRE-BCAST-1 + SNAPSHOT-SLICE-ALIAS-1 + PY-SCOPE-KNOWN-1 + TZ-PAIRED-CST-COLS-1（P3）→ VM-RUNTIME-FAILCLOSED-2/VM-CACHE-INTEGRITY-2/VM-LIVE-MTF-1/VM-API-TRUTH-1/DATA-TRUTH-3（⚠️待独立复审项）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -108,19 +109,15 @@
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** 🟦open — QS-2.3 连带记债：无 broker 静默 -1+nil error 非 fail-closed
 - **RECONCILE-TZ-WINDOW-1** ✅done — `.UTC()` 修复+pin 测试，Devin CLI 验收通过 2026-09-16（1efbf678）
 - **TZ-SWEEP-AFFECTED-1** ✅done — analyticsSince()+worker 归一化，Devin CLI 验收通过 2026-09-16（362d285e）
-- **TZ-MIXED-ENCODING-1** 🟦open — trade_records.close_time/open_time + expires_at 同列 CST/UTC 混合写入根因级（sweep §3，先 spike 行数）
+- **TZ-MIXED-ENCODING-1** ✅done — ~50 站 .UTC() 止血+migration 278 回填，Devin CLI 验收通过 2026-09-16（da85f973）；**部署注记**：migration 在 backend 启动时跑，生效后 trade_records 全列 UTC
+- **TZ-PAIRED-CST-COLS-1** 🟦open P3 — next_run_at/trade_logs 等 CST 写读配对列禁单侧翻 UTC（registry 规则）
 - **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-16 **QS-1.7-INV ✅done**（Devin CLI 独立复审通过，commit 05138758）：ClientID 全链路五跳零复制进 Comment、mt4 adapter 不透传 Comment、proto 无 client_id 字段→QS-1.7 不立项，open outcomeUnknown 维持 fail-closed 锁仓+runbook；findings 落盘 docs/audits/qs-1.7-inv-findings.md。
-- 2026-09-16 **QS-1.2a ✅done**（Devin CLI 独立复审通过，commit 65e2cccf）：`vm.lastError` 跨事件驻留 + GetLastError 读后清零 + SetUserError=65536+c + ERR_USER_ERROR_FIRST 常量 + 6 项行为测试；独立 mutation×2 RED→GREEN；OrderSend fatal 路径零触碰（FAILCLOSED-1 保持）。
-- 2026-09-16 **QS-1.3 ✅done**（Devin CLI 独立复审通过，commits 9940eda4+ee47292d）：Python 函数内未声明赋值改落函数域局部槽（`resolveAssignTarget`+`isDeclaredGlobal` GlobalDecls 谓词+`compileDecl` localScopes[0]），`+=` 未声明名编译期 fail-closed；过程经修正 v2（施工方两处转交决策采信）+v3（复审退回 for 循环域消亡回退）；独立 mutation×4 RED→GREEN；3 条已知限制入 PY-SCOPE-KNOWN-1。
-- 2026-09-16 **QS-1.6 ✅done**（Devin CLI 独立复审通过，commit 5be48f30）：waitForConfirmation 权威读确认改走 `TradeBarrier.ConfirmByAuthoritativeRead` 状态机迁移；根因=cancel 动作名不在自身 updateType 兼容集 + open ticket==0 早退，两分支测试覆盖；独立 mutation×2 RED→GREEN；范围干净零交接层改动。
-- 2026-09-16 **QS-1.4 ✅done**（Devin CLI 独立复审通过，commit 88292b14）：bool(x)→双重 OP_NOT 复用 IsTrue；独立 mutation（恢复 !=）重跑语义级 RED→restore→GREEN。裁定：Decimal 构造器失真立债 PY-DECIMAL-CTOR-1（P2）；BoolConversion 旧断言同步批准。流程记录：施工方动交接层文件违 §4，内容核验准确保留。同日固化 D-012（施工方自审）/D-013（决策方出件自审）/D-014（自报末行带编号+hash）。
-- 2026-09-16 **VM 管线质量方案 v1 评估→v2 定稿**（Devin CLI 决策 D-009）：源码逐条核验，否决 QS-1.1/1.5/2.1/阶段 3 池化、改修法 QS-1.3/1.4/1.6、拆 QS-1.2、QS-1.7 改调研；10 条 QS 入 registry。详见 handover-audit-plan 2026-09-16 条目。
+- 2026-09-16 **VM 质量方案 v2 全量收官**（10 子任务全 Devin CLI 验收）：QS-1.4 bool 双否定（88292b14）/ QS-1.6 权威读状态机迁移（5be48f30）/ QS-1.3 函数域隔离 v3（9940eda4+ee47292d）/ QS-1.2a lastError 三 builtin（65e2cccf）/ QS-1.7-INV 不立项（05138758）/ QS-2.2 goleak（174b8405）/ QS-2.4 race 审计（8e393cae）/ QS-2.5 panic 加固（89353004）/ QS-2.3 noopContext（5ad339a9）/ QS-3-BASELINE 基线+metric（b8ad1674）。明细滚出至 handover-audit-plan.md。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（滚出至 LOG.md）：kimi-k3 400 temperature 自愈重试 + 两个 nil 雷修复 + 模型配置常驻齿轮入口。
 - 2026-09-08 **FIX-2026-09-08-BYOK-MODEL-PICKER ✅done**（滚出至 LOG.md）：BYOK 模型下拉选不到自有模型，3 层根因修复（分组下拉/UUID→字符串 provider_id/normalizeAPIBase）。
 
