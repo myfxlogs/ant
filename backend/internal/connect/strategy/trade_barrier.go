@@ -341,6 +341,26 @@ func (b *TradeBarrier) Reconcile(confirmed bool) {
 	b.cond.Broadcast()
 }
 
+// ConfirmByAuthoritativeRead transitions the barrier to confirmed based on an
+// authoritative read-after-write result. Used by waitForConfirmation when the
+// OpenedOrders query verified the mutation but no matching push event migrated
+// the state machine. Idempotent; does not override a deterministic rejection.
+// Returns true iff the barrier ends in confirmed.
+func (b *TradeBarrier) ConfirmByAuthoritativeRead() bool {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	switch b.state {
+	case barrierConfirmed:
+		return true
+	case barrierSubmitting, barrierAcceptedUnconfirmed, barrierOutcomeUnknown:
+		b.state = barrierConfirmed
+		b.cond.Broadcast()
+		return true
+	default:
+		return false
+	}
+}
+
 // Release transitions any state→idle. Called by the coordinator after
 // WaitConfirmed returns a confirmed or deterministicRejected state.
 // For outcomeUnknown, the caller must NOT call Release — barrier stays locked

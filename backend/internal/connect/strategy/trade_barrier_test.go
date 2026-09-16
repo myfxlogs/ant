@@ -259,3 +259,83 @@ func TestLIVE_ORDER_REENTRY_1_R3_ZeroExpectedMagicAcceptsAny(t *testing.T) {
 		t.Fatalf("zero expected magic accepts any: state=%s, want confirmed", state)
 	}
 }
+
+// ── QS-1.6: ConfirmByAuthoritativeRead ──
+
+// QS-1.6: ConfirmByAuthoritativeRead migrates in-flight states to confirmed
+// via the state machine (submitting/acceptedUnconfirmed/outcomeUnknown).
+func TestQS16_ConfirmByAuthoritativeRead_InFlightStates(t *testing.T) {
+	// submitting → confirmed
+	b := NewTradeBarrier(zap.NewNop())
+	b.Acquire("client-1", 12345, "close")
+	if !b.ConfirmByAuthoritativeRead() {
+		t.Fatal("submitting: ConfirmByAuthoritativeRead returned false, want true")
+	}
+	if state := b.State(); state != barrierConfirmed {
+		t.Fatalf("submitting: state=%s, want confirmed", state)
+	}
+
+	// acceptedUnconfirmed → confirmed (the QS-1.6 production path)
+	b2 := NewTradeBarrier(zap.NewNop())
+	b2.Acquire("client-1", 12345, "cancel")
+	b2.NotifyBrokerAccepted(42)
+	if state := b2.State(); state != barrierAcceptedUnconfirmed {
+		t.Fatalf("setup: state=%s, want accepted_unconfirmed", state)
+	}
+	if !b2.ConfirmByAuthoritativeRead() {
+		t.Fatal("acceptedUnconfirmed: ConfirmByAuthoritativeRead returned false, want true")
+	}
+	if state := b2.State(); state != barrierConfirmed {
+		t.Fatalf("acceptedUnconfirmed: state=%s, want confirmed", state)
+	}
+
+	// outcomeUnknown → confirmed
+	b3 := NewTradeBarrier(zap.NewNop())
+	b3.Acquire("client-1", 12345, "close")
+	b3.NotifyOutcomeUnknown()
+	if !b3.ConfirmByAuthoritativeRead() {
+		t.Fatal("outcomeUnknown: ConfirmByAuthoritativeRead returned false, want true")
+	}
+	if state := b3.State(); state != barrierConfirmed {
+		t.Fatalf("outcomeUnknown: state=%s, want confirmed", state)
+	}
+}
+
+// QS-1.6: ConfirmByAuthoritativeRead is idempotent on confirmed and must not
+// override deterministicRejected (rejection is broker-authoritative) or idle.
+func TestQS16_ConfirmByAuthoritativeRead_TerminalAndIdle(t *testing.T) {
+	// confirmed → true, stays confirmed (idempotent)
+	b := NewTradeBarrier(zap.NewNop())
+	b.Acquire("client-1", 12345, "close")
+	b.NotifyBrokerAccepted(42)
+	b.NotifyConfirmationEvent(42, 12345, "close")
+	if state := b.State(); state != barrierConfirmed {
+		t.Fatalf("setup: state=%s, want confirmed", state)
+	}
+	if !b.ConfirmByAuthoritativeRead() {
+		t.Fatal("confirmed: ConfirmByAuthoritativeRead returned false, want true (idempotent)")
+	}
+	if state := b.State(); state != barrierConfirmed {
+		t.Fatalf("confirmed: state=%s, want confirmed", state)
+	}
+
+	// deterministicRejected → false, state unchanged
+	b2 := NewTradeBarrier(zap.NewNop())
+	b2.Acquire("client-1", 12345, "close")
+	b2.NotifyDeterministicRejected()
+	if b2.ConfirmByAuthoritativeRead() {
+		t.Fatal("deterministicRejected: ConfirmByAuthoritativeRead returned true, want false")
+	}
+	if state := b2.State(); state != barrierDeterministicRejected {
+		t.Fatalf("deterministicRejected: state=%s, want deterministic_rejected (unchanged)", state)
+	}
+
+	// idle → false, state unchanged
+	b3 := NewTradeBarrier(zap.NewNop())
+	if b3.ConfirmByAuthoritativeRead() {
+		t.Fatal("idle: ConfirmByAuthoritativeRead returned true, want false")
+	}
+	if state := b3.State(); state != barrierIdle {
+		t.Fatalf("idle: state=%s, want idle (unchanged)", state)
+	}
+}

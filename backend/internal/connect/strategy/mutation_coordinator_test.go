@@ -1555,3 +1555,93 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_AllowsSubsequentOrder(t *testing.T) {
 		t.Fatalf("Recovery_AllowsSubsequent: PlaceOrder called %d times, want 1 (barrier should be released)", got)
 	}
 }
+
+// ── QS-1.6: read-after-write confirm must transition via the state machine ──
+
+// TestQS16_ReadAfterWriteConfirmTransitionsBarrier verifies that when
+// read-after-write verifies the mutation but the synthetic
+// NotifyConfirmationEvent cannot migrate the barrier (cancel action: "cancel"
+// is not in its own updateType compatibility set — real broker events are
+// "close"/"pending_close"), waitForConfirmation still drives the barrier to
+// barrierConfirmed via ConfirmByAuthoritativeRead instead of returning a
+// state the barrier never reached (QS-1.6).
+func TestQS16_ReadAfterWriteConfirmTransitionsBarrier(t *testing.T) {
+	exec := &prodMockExecutor{
+		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
+			// Ticket 123 absent → cancel verified by authoritative read.
+			return nil, nil
+		},
+	}
+	srv, _, _ := testCoordinatorSetup(exec)
+	cfg := testLiveCfg()
+	barrier := NewTradeBarrier(zap.NewNop())
+	magic := strategyMagic(cfg.ScheduleID)
+
+	// Drive the barrier to acceptedUnconfirmed for a cancel mutation — the
+	// state waitForConfirmation sees after NotifyBrokerAccepted.
+	if !barrier.Acquire("cancel_123", magic, string(actionCancel)) {
+		t.Fatal("Acquire failed")
+	}
+	barrier.NotifyBrokerAccepted(123)
+	if state := barrier.State(); state != barrierAcceptedUnconfirmed {
+		t.Fatalf("setup: state=%s, want accepted_unconfirmed", state)
+	}
+
+	conf := confirmationConfig{
+		pushWait:              50 * time.Millisecond,
+		readAfterWriteTimeout: 2 * time.Second,
+		mutationRPCTimeout:    5 * time.Second,
+		recoveryDelay:         50 * time.Millisecond,
+	}
+	got := srv.waitForConfirmation(context.Background(), cfg, barrier, 123, magic,
+		actionCancel, verifyTicketAbsent(123), conf)
+	if got != barrierConfirmed {
+		t.Fatalf("waitForConfirmation returned %s, want confirmed", got)
+	}
+	// QS-1.6 core assertion: the barrier itself must BE confirmed (state
+	// machine migrated), not merely reported as confirmed by the coordinator.
+	if state := barrier.State(); state != barrierConfirmed {
+		t.Fatalf("barrier state=%s after waitForConfirmation, want confirmed — coordinator must not report a state the barrier never reached", state)
+	}
+}
+
+// TestQS16_ReadAfterWriteConfirmTransitionsBarrier_ZeroTicket covers the
+// second root-cause branch: NotifyConfirmationEvent early-returns on
+// ticket==0 (trade_barrier.go:219). An open mutation whose broker RPC
+// returned ticket=0 can never migrate via the push-event path — the
+// authoritative read must transition the barrier via the state machine.
+func TestQS16_ReadAfterWriteConfirmTransitionsBarrier_ZeroTicket(t *testing.T) {
+	exec := &prodMockExecutor{
+		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
+			// An order record with Ticket=0 → verifyTicketPresent(0) = true.
+			return []*mthub.OrderRecord{{Ticket: 0, Canonical: "EURUSD"}}, nil
+		},
+	}
+	srv, _, _ := testCoordinatorSetup(exec)
+	cfg := testLiveCfg()
+	barrier := NewTradeBarrier(zap.NewNop())
+	magic := strategyMagic(cfg.ScheduleID)
+
+	if !barrier.Acquire("open_0", magic, string(actionOpen)) {
+		t.Fatal("Acquire failed")
+	}
+	barrier.NotifyBrokerAccepted(0)
+	if state := barrier.State(); state != barrierAcceptedUnconfirmed {
+		t.Fatalf("setup: state=%s, want accepted_unconfirmed", state)
+	}
+
+	conf := confirmationConfig{
+		pushWait:              50 * time.Millisecond,
+		readAfterWriteTimeout: 2 * time.Second,
+		mutationRPCTimeout:    5 * time.Second,
+		recoveryDelay:         50 * time.Millisecond,
+	}
+	got := srv.waitForConfirmation(context.Background(), cfg, barrier, 0, magic,
+		actionOpen, verifyTicketPresent(0), conf)
+	if got != barrierConfirmed {
+		t.Fatalf("waitForConfirmation returned %s, want confirmed", got)
+	}
+	if state := barrier.State(); state != barrierConfirmed {
+		t.Fatalf("barrier state=%s after waitForConfirmation, want confirmed (ticket==0 early-return bypassed)", state)
+	}
+}

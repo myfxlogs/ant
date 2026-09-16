@@ -330,7 +330,10 @@ func (s *StrategyExecutionServer) waitForConfirmation(
 		if state == barrierConfirmed {
 			return barrierConfirmed
 		}
-		// Force-confirm based on the authoritative read.
+		// Authoritative read verified the mutation — transition via the
+		// state machine (QS-1.6) instead of reporting a state the
+		// barrier never reached.
+		barrier.ConfirmByAuthoritativeRead()
 		return barrierConfirmed
 	}
 
