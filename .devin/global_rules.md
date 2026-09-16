@@ -4,7 +4,7 @@
 
 Devin CLI 角色与职责汇总见 `.devin/角色与职责.md`（指南性汇总，冲突时以 AGENTS.md §0 为准）。本文件只补充 Devin 专属纪律。
 
-多终端协作（Devin CLI × N，可含 Claude）的角色激活与权限边界见 `.devin/rules/dual-terminal-roles.md`（D-010）：**默认施工者**（无标签即施工者，无决策权）；Claude 在场默认最终决策者；Devin 须 `[角色:决策终]` 标签或业主对话授权激活最终决策权；决策类交付物署名最终决策来源。
+多终端协作（Devin CLI × N，可含 Claude）的角色激活与权限边界见 `.devin/rules/dual-terminal-roles.md`（D-010/D-011）：**默认施工者**（无标签即施工者，无决策权）；Claude 在场默认最终决策者；Devin 须 `[角色:决策终]` 标签或业主对话授权激活最终决策权；最终决策者可自主执行所有动作含破坏性操作（不停下等确认）；决策类交付物署名最终决策来源。
 
 ## Source of truth
 

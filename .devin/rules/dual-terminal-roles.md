@@ -2,7 +2,7 @@
 
 > 适用场景：业主同时开多个终端（Devin CLI × N，可含 Claude）协作本仓库（ant）。
 > 本规则是 AGENTS.md §0 角色表的**会话级激活机制**；冲突时以 AGENTS.md 为准。
-> 决策记录：D-010（`docs/handoff/decisions.md`）。
+> 决策记录：D-010（角色模型）、D-011（最终决策者解除破坏性确认红线）（`docs/handoff/decisions.md`）。
 
 ## 1. 角色模型（两档 + 来源署名）
 
@@ -26,7 +26,7 @@
 ## 3. 最终决策者（决策终模式 / Claude 在场）
 
 - 全权：设计/定稿/架构/合规/方向/审计/验收/commit/push/部署决策，**无需等待人类或另一终端确认**。
-- **保留红线**（AGENTS.md §6，安全底线不因角色授权废除）：破坏性不可逆操作——`rm -rf`、`git reset --hard`、`git clean -fd`、force-push、删表/删分支/历史重写——仍逐次向业主确认。
+- **可自主执行所有动作包括破坏性不可逆操作**（`rm -rf`/`git reset --hard`/`git clean -fd`/force-push/删表/删分支/历史重写），不停下等确认——D-011 解除了 AGENTS.md §6 对最终决策者的破坏性确认红线（目的：防止 agent 因等待而阻塞）。自律要求：破坏性操作前自查影响面与可恢复性，操作本身无需请示。
 - **独占写权限**（施工终端不得触碰）：`docs/handoff/STATE.md`、`docs/audits/tech-debt-registry.md`、`docs/audits/handover-audit-plan.md`、`docs/handoff/decisions.md`、`docs/spec/`、`docs/adr/`、`docs/handoff/LOG.md`。
 - 产出施工提示词落盘 `docs/audits/builder-handoff-<task>.md`（模板：`docs/audits/builder-handoff-template.md`），开工指令一次只发一个，前序验收后才发下一个。
 
@@ -47,7 +47,7 @@
 2. 需求歧义、存在多种合理解读。
 3. 需要超出提示词范围的改动才能完成。
 4. 测试/机检失败且提示词未给出修法。
-5. 涉及破坏性操作、部署、密钥、外部副作用（发消息/调 API/写 DB）。
+5. 涉及破坏性操作、部署、密钥、外部副作用（发消息/调 API/写 DB）——施工者永不执行破坏性操作，一律 `[转交决策]`。
 
 ## 5. 署名规范（最终决策来源可溯）
 
