@@ -48,9 +48,10 @@
 | QS-2.4 VM 管线 race 审计 | ✅done | Devin CLI 验收通过 2026-09-16；commit 8e393cae；三树 race×3 全绿零 DATA RACE；PositionCache/TradeBarrier 审计表逐项核实；发现 F1/F2 两条 P3 已立债 |
 | QS-2.5 panic recovery 加固 | ✅done | Devin CLI 验收通过 2026-09-16；commit 89353004；coordinateMutation/dispatchLiveSignal recover + acquired/brokerCalled 双标志收敛 + State() 门控防 idle 误锁；独立 mutation×3 RED→GREEN；race×3 303s 绿 |
 | QS-2.3 vm.ctx 非 nil 不变量 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5ad339a9；noopContext 注入+SetContext 归一化+99 处守卫消除+17 处非等价站点保留裁定；独立 mutation×2 RED→GREEN；race×3 48.2s 绿 |
+| QS-3-BASELINE VM 性能基线 | ✅done | Devin CLI 验收通过 2026-09-16；commit b8ad1674；B1-B4 benchmark+报告落盘（dispatch ~120ns/B4 67.9µs/decimal div 7.2×）+3 条 live metric 接线；数据独立重跑复现；mutation×1 RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: 阶段 1/2 全部 ✅done；剩 QS-3-BASELINE（性能基线测量，贯穿项，handoff 待落盘）+ 新债处置排期。S9 回填脚本仍待编写。
+- **下一步**: VM 质量方案 v2 全部子任务 ✅done（QS-1.x/2.x/3-BASELINE）；剩新债处置排期（ORDERSEND-NILBROKER-FAILCLOSED-1 等 4 条 open）。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -101,7 +102,7 @@
 - **PY-SCOPE-KNOWN-1** 🟦open — Python 作用域已知限制 3 条（QS-1.3 遗留，文档化行为）
 - **QS-1.2a** ✅done — lastError 三 builtin（Devin CLI 验收通过 2026-09-16，commit 65e2cccf）
 - **QS-1.7-INV** ✅done — ClientID 不可回显→QS-1.7 不立项，维持 fail-closed（Devin CLI 验收通过 2026-09-16）
-- **QS-3-BASELINE** 🟦open — VM 性能基线测量（贯穿项）；详见 registry + spec §5
+- **QS-3-BASELINE** ✅done — 基线已落盘 `docs/audits/vm-perf-baseline-2026-09.md`；无项触及 >30% 阈值，生产 p99 待 metric 上线观测
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** 🟦open — QS-2.3 连带记债：无 broker 静默 -1+nil error 非 fail-closed
 - **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
 

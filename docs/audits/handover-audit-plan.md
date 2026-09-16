@@ -730,3 +730,12 @@
 - **连带立债**：`ORDERSEND-NILBROKER-FAILCLOSED-1`（🟦open P2）——OrderSend 无 broker 静默 -1+nil error，修法需先审计存量策略依赖。
 - **阶段进度**：spec 阶段 1（QS-1.x）+ 阶段 2（QS-2.x）全部 ✅done；仅剩贯穿项 QS-3-BASELINE。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-3-BASELINE ✅done（Devin CLI 独立复审通过）—— VM 质量方案 v2 全量收官
+
+- **施工**：commit `b8ad1674`——B1-B4 benchmark（vm_bench_test.go，bare NewVM+noopContext）+ `docs/audits/vm-perf-baseline-2026-09.md` 落盘 + 3 条 live metric（duration/instructions/fatal，label=event）接 `vm_live_handlers.go` 5 个 vmHandle* 调用帧；stats 四级透传 `vm.Ticks()/FatalError()`→`VMRunner.LastEventStats()`→`Runner.EventStats()` type-assert→`observeVMEvent`，非 VM 策略降级 duration-only。
+- **基线数据**：dispatch 地板 ~116-128ns/事件；builtin 附加 ~310-480ns；decimal add/mul 2.6-2.7× int、div 7.2×；B4 MA 交叉 1000 tick 单事件均值 **67.9µs** / ~310 allocs。**无单项触及 >30% 阈值**——按 spec §5 不立任何优化条目；生产 p99 判据待 metric 上线观测。
+- **独立复审**：pin 测试×2 绿；**benchmark 11 项数据独立重跑全部复现**（<10% 噪声、alloc 一致——非施工方自报）；**独立 mutation**：`Ticks()` 返常数 0 → `TestQS3Baseline_EventStatsChain` RED → restore GREEN；build/test/race×3（mql2go 47.4s + runner 1.1s + connect/strategy 303.3s）/vet/gofmt/check-lines 0 errors 全绿；goleak 无新增。
+- **范围干净**：8 文件、零优化改动、零交接层改动、backtest 路径未接线（符合边界）。
+- **VM 质量方案 v2 状态**：QS-1.4✅ 1.6✅ 1.3✅ 1.2a✅ 1.7-INV✅ 2.2✅ 2.4✅ 2.5✅ 2.3✅ 3-BASELINE✅ —— 全部子任务验收完毕。open 债务剩 4 条：ORDERSEND-NILBROKER-FAILCLOSED-1、TEST-WAITSTATE-ACQUIRE-BCAST-1、SNAPSHOT-SLICE-ALIAS-1、PY-SCOPE-KNOWN-1（均 P3，排期另议）。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
