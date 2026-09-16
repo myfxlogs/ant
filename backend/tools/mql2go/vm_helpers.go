@@ -247,7 +247,11 @@ func (vm *VM) callBuiltin(builtinID int32, args []interp.Value) interp.Value {
 		vm.recordBlindSpot(entry.name)
 		return interp.NoneVal()
 	}
-	// Non-fatal: Object/Chart/File operations — silent blind spot
+	// Reaching here means the builtin is named in builtinRegistry but has no
+	// handler and the registry does not mark it fatal. StatusUnsupported
+	// symbols (Object/Chart/File operations, etc.) are rejected at compile
+	// time by compile_expr.go and isFatalUnimplemented above — they never
+	// reach this branch.
 	vm.recordBlindSpot(entry.name)
 	return interp.NoneVal()
 }

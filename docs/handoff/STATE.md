@@ -39,9 +39,10 @@
 | WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。补记2：真实浏览器走查 9 步全过（Playwright + e2e 账号）——新增"手动编写"空白编辑器脚手架 + 侧栏来源项中文默认值。补记：回测历史面板渲染 protobuf Timestamp 对象致整页崩溃（React #31）——formatStartedAt 稳健格式化 + 生产形状回归测试。补记3：最终架构重构落地——单一 centerView 状态机 + AI/回测停靠面板（420px 并排不抢占），三分区点击保持展开，使用模板来源移除，CodeEditorArea 编辑器常驻。 |
 | WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 分区切换驱动主区联动；新建策略分区四来源菜单（含手动编写）；粘性 importMode 修复；使用模板移除；分区切换关闭右侧面板。真实走查 9 步全绿。原文滚出 LOG。 |
 | AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
+| QS-1.4 Python bool(x) 语义 + vm_helpers:250 注释 | ⚠️待独立复审 | 施工方按 builder-handoff-qs-1.4.md S1–S3 完成：bool→双重 `!`（OP_NOT×2 → IsTrue）、注释更正、行为级测试+IR 形态守卫、BoolConversion 断言同步；对抗证明先红→mutation RED→restore→GREEN；机检全绿。详见 registry QS-1.4。 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: 派 QS-1.4 第一单（spec `docs/spec/vm-pipeline-quality-stability-improvement-plan.md` v2 §3.1）；QS 顺序 1.4→1.6→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
+- **下一步**: QS-1.4 ⚠️待独立复审——等 Devin CLI（[角色:决策终]）验收；通过后按 QS 顺序派 QS-1.6（spec §3.2）。QS 顺序 1.4→1.6→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -85,7 +86,8 @@
 - **FIX-2026-09-08-BYOK-MODEL-PICKER** ✅done — 聊天模型下拉框选不到用户自有 BYOK 模型 + provider UUID/字符串不匹配 + base_url 双路径（Devin CLI 直接施工+验收 2026-09-08，3 项对抗证明 RED→GREEN）
 - **FIX-2026-09-08-TEMP-RETRY** ✅done — kimi-k3 temperature 400 自愈重试 + 用户配置 temperature 生效 + 流式 fallback nil panic 修复 + 工作区常驻 AI 网关设置入口（Devin CLI 直接施工+验收 2026-09-08）
 - **FIX-2026-09-08-CURL-IMPORT** ✅done — 厂商 curl 示例一键导入 BYOK 配置（ParseProviderCurl RPC + 后端解析器 + 表单回填，存储零改动）（Devin CLI 直接施工+验收 2026-09-08）
-- **QS-1.4 / 1.6 / 1.3 / 1.2a / 1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（2026-09-16 Devin CLI 定稿，D-009）；详见 registry + spec §2 核验表
+- **QS-1.4** ⚠️待独立复审 — Python bool(x) 语义修复 + vm_helpers:250 注释（2026-09-16 施工完成，对抗证明 + 机检全绿，详见 registry）
+- **QS-1.6 / 1.3 / 1.2a / 1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（2026-09-16 Devin CLI 定稿，D-009）；详见 registry + spec §2 核验表
 
 ## 最近变更日志
 

@@ -165,9 +165,9 @@ func (c *pyCompiler) compilePyCall(n *sitter.Node) *interp.Expr {
 	case "bool":
 		if len(args) > 0 {
 			return &interp.Expr{
-				Kind: interp.ExprBinary,
-				Op:   "!=",
-				Args: []interp.Expr{args[0], {Kind: interp.ExprLiteral, Val: interp.IntVal(0)}},
+				Kind: interp.ExprUnary,
+				Op:   "!",
+				Args: []interp.Expr{{Kind: interp.ExprUnary, Op: "!", Args: []interp.Expr{args[0]}}},
 			}
 		}
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}

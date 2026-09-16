@@ -1737,8 +1737,8 @@ class S:
 		t.Fatalf("expected ExprAssignment, got %v", stmt.Expr)
 	}
 	valExpr := stmt.Expr.Args[0]
-	if valExpr.Kind != interp.ExprBinary || valExpr.Op != "!=" {
-		t.Fatalf("expected binary !=, got %v", valExpr)
+	if valExpr.Kind != interp.ExprUnary || valExpr.Op != "!" {
+		t.Fatalf("expected unary ! for bool(), got %v", valExpr)
 	}
 }
 

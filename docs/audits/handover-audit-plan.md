@@ -647,3 +647,12 @@
 - **落档**：spec v2 覆盖 v1；registry 新增 QS-1.4/1.6/1.3/1.2a/1.7-INV/2.2/2.4/2.5/2.3/3-BASELINE 共 10 条 🟦open；STATE.md 指针更新。
 - **下一步**：派 QS-1.4 第一单（含 `vm_helpers.go:250` 注释修正）。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-1.4 施工完成（⚠️待独立复审）
+
+- **施工方**：[角色:施工] agent，按 `docs/audits/builder-handoff-qs-1.4.md` @eca45afd 执行 S1–S3（单 commit，勿部署勿 push）。
+- **改动文件**：`backend/tools/mql2go/compile_py_expr.go`（bool→双重 `!`）、`vm_helpers.go`（:250 过时注释更正）、`compile_py_test.go`（BoolConversion 断言同步新形态）、新增 `compile_py_bool_test.go`（2 测试）。
+- **对抗证明**：先红（S1 前新测试 RED：r_none/r_dec/r_empty/r_false=true want false）→ S1 后 GREEN → mutation 恢复 `!=` → RED → restore → GREEN。
+- **机检**：`go build ./...` ✅ / `go test ./tools/mql2go/...` ✅ / `-race -count=3` ✅ / `check-file-lines --strict` 0 errors（57 警告全 pre-existing，本任务文件零命中）/ `go vet` 零输出 / gofmt 本任务文件零新增。
+- **遗留疑问**：`Decimal("0")` 编译为 `StringVal("0")`（`case "Decimal"` 直返 arg）的既有失真非本任务范围，registry 已记录待裁定。
+- **状态**：⚠️待独立复审，停手等 Devin CLI（[角色:决策终]）。
