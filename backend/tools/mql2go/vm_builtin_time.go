@@ -27,9 +27,6 @@ func builtinTimeDaylightSavings(vm *VM, args []interp.Value) (interp.Value, erro
 }
 
 func builtinTimeTradeServer(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	return interp.IntVal(int32(vm.ctx.ServerTime() / 1000)), nil
 }
 
@@ -102,14 +99,14 @@ func builtinTimeToStruct(vm *VM, args []interp.Value) (interp.Value, error) {
 	ts := int64(argI(args, 0))
 	t := time.Unix(ts, 0).UTC()
 	fields := map[string]interp.Value{
-		"year":         interp.IntVal(int32(t.Year())),
-		"mon":          interp.IntVal(int32(t.Month())),
-		"day":          interp.IntVal(int32(t.Day())),
-		"hour":         interp.IntVal(int32(t.Hour())),
-		"min":          interp.IntVal(int32(t.Minute())),
-		"sec":          interp.IntVal(int32(t.Second())),
-		"day_of_week":  interp.IntVal(int32(t.Weekday())),
-		"day_of_year":  interp.IntVal(int32(t.YearDay())),
+		"year":        interp.IntVal(int32(t.Year())),
+		"mon":         interp.IntVal(int32(t.Month())),
+		"day":         interp.IntVal(int32(t.Day())),
+		"hour":        interp.IntVal(int32(t.Hour())),
+		"min":         interp.IntVal(int32(t.Minute())),
+		"sec":         interp.IntVal(int32(t.Second())),
+		"day_of_week": interp.IntVal(int32(t.Weekday())),
+		"day_of_year": interp.IntVal(int32(t.YearDay())),
 	}
 	return interp.Value{Kind: interp.ValClass, Class: &interp.ClassInstance{Fields: fields}}, nil
 }

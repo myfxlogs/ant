@@ -13,9 +13,6 @@ import (
 // In backtest, they delegate to the existing BarsTF / Bars infrastructure.
 
 func builtinBars(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	series, ok := resolveSeries(vm, 0, 1, args)
 	if !ok || series == nil {
 		return interp.IntVal(0), nil
@@ -86,9 +83,6 @@ func extremeIndex(vm *VM, series sdk.BarSeries, mode, start, count int32, findMa
 }
 
 func builtinIBarShift(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(-1), nil
-	}
 	series, ok := resolveSeries(vm, 0, 1, args)
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
@@ -107,9 +101,6 @@ func builtinIBarShift(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIHighest(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(-1), nil
-	}
 	series, ok := resolveSeries(vm, 0, 1, args)
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
@@ -121,9 +112,6 @@ func builtinIHighest(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinILowest(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(-1), nil
-	}
 	series, ok := resolveSeries(vm, 0, 1, args)
 	if !ok || series == nil {
 		return interp.IntVal(-1), nil
@@ -331,9 +319,6 @@ func builtinCopyTicks(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinBarsCalculated(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	return interp.IntVal(int32(vm.ctx.Bars().Len())), nil
 }
 

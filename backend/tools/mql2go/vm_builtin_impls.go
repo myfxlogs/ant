@@ -314,13 +314,11 @@ func builtinMathExp(vm *VM, args []interp.Value) (interp.Value, error) {
 // ── Platform builtins ────────────────────────────────────────────────
 
 func builtinPrint(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx != nil {
-		parts := make([]string, len(args))
-		for i, a := range args {
-			parts[i] = a.ToString()
-		}
-		vm.ctx.Log(strings.Join(parts, " "))
+	parts := make([]string, len(args))
+	for i, a := range args {
+		parts[i] = a.ToString()
 	}
+	vm.ctx.Log(strings.Join(parts, " "))
 	return interp.NoneVal(), nil
 }
 
@@ -353,44 +351,26 @@ func builtinSeriesTime(vm *VM, args []interp.Value) (interp.Value, error) {
 // ── Price data builtins ──────────────────────────────────────────────
 
 func builtinBid(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Bid()), nil
 }
 
 func builtinAsk(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Ask()), nil
 }
 
 func builtinPoint(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Point()), nil
 }
 
 func builtinDigits(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	return interp.IntVal(vm.ctx.Digits()), nil
 }
 
 func builtinSymbol(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.StringVal(""), nil
-	}
 	return interp.StringVal(vm.ctx.Symbol()), nil
 }
 
 func builtinPeriod(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	tf := vm.ctx.Timeframe()
 	return interp.IntVal(tfToInt(tf)), nil
 }
@@ -421,9 +401,6 @@ func builtinOperatorIn(vm *VM, args []interp.Value) (interp.Value, error) {
 
 // builtinSpread returns the current spread in points (Ask - Bid) / Point.
 func builtinSpread(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	ask := vm.ctx.Ask()
 	bid := vm.ctx.Bid()
 	point := vm.ctx.Point()

@@ -123,8 +123,5 @@ func builtinSetReturnError(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinCurTime(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	return interp.IntVal(int32(vm.ctx.ServerTime() / 1000)), nil
 }

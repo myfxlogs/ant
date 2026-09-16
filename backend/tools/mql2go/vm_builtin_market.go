@@ -67,9 +67,6 @@ func intToTF(period int32) string {
 // These now support multi-symbol: when symbol != primary, delegates to BarsForSymbol.
 
 func builtinIClose(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	sym := argS(args, 0)
 	tf := intToTF(argI(args, 1))
 	shift := int(argI(args, 2))
@@ -81,9 +78,6 @@ func builtinIClose(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIOpen(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	sym := argS(args, 0)
 	tf := intToTF(argI(args, 1))
 	shift := int(argI(args, 2))
@@ -95,9 +89,6 @@ func builtinIOpen(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIHigh(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	sym := argS(args, 0)
 	tf := intToTF(argI(args, 1))
 	shift := int(argI(args, 2))
@@ -109,9 +100,6 @@ func builtinIHigh(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinILow(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	sym := argS(args, 0)
 	tf := intToTF(argI(args, 1))
 	shift := int(argI(args, 2))
@@ -123,9 +111,6 @@ func builtinILow(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinITime(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	sym := argS(args, 0)
 	tf := intToTF(argI(args, 1))
 	shift := int(argI(args, 2))
@@ -137,9 +122,6 @@ func builtinITime(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIVolume(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	sym := argS(args, 0)
 	tf := intToTF(argI(args, 1))
 	shift := int(argI(args, 2))

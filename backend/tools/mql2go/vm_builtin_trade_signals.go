@@ -15,7 +15,7 @@ import (
 // (dispatchLiveSignal) then routes the signal to the OMS or paper engine.
 
 func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -38,7 +38,7 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket1 := int64(argI(args, 0))
@@ -61,7 +61,7 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -95,7 +95,7 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -116,7 +116,7 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -138,7 +138,7 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 }
 
 func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -161,7 +161,7 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 }
 
 func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	t1 := int64(argI(args, 0))
@@ -184,7 +184,7 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 }
 
 func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -209,7 +209,7 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 }
 
 func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	ticket := int64(argI(args, 0))
@@ -230,7 +230,7 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 }
 
 func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	if vm.signalMode {

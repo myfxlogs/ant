@@ -9,9 +9,6 @@ import (
 // ── Indicator builtins ───────────────────────────────────────────────
 
 func builtinIMA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iMA(symbol, period, ma_period, ma_shift, ma_method, applied_price, shift)
 	shift := int(argI(args, 6))
 	period := int(argI(args, 2))
@@ -41,9 +38,6 @@ func maMethodName(id int32) string {
 }
 
 func builtinIRSI(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iRSI(symbol, period, rsi_period, applied_price, shift)
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 3))
@@ -57,9 +51,6 @@ func builtinIRSI(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIATR(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iATR(symbol, period, atr_period, shift)
 	period := int(argI(args, 2))
 	shift := int(argI(args, 3))
@@ -72,9 +63,6 @@ func builtinIATR(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIBands(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iBands(symbol, period, bands_period, deviation, bands_shift, applied_price, mode, shift)
 	period := int(argI(args, 2))
 	deviation := argD(args, 3)
@@ -111,9 +99,6 @@ func builtinIBands(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIMACD(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iMACD(symbol, period, fast_ema, slow_ema, signal, applied_price, mode, shift)
 	fast := int(argI(args, 2))
 	slow := int(argI(args, 3))
@@ -140,9 +125,6 @@ func builtinIMACD(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIStochastic(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iStochastic(symbol, period, Kperiod, Dperiod, slowing, ma_method, price_field, mode, shift)
 	k := int(argI(args, 2))
 	d := int(argI(args, 3))
@@ -166,9 +148,6 @@ func builtinIStochastic(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinICCI(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iCCI(symbol, period, cci_period, applied_price, shift)
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 3))
@@ -212,9 +191,6 @@ func builtinIADX(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIMomentum(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iMomentum(symbol, period, mom_period, applied_price, shift)
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 3))
@@ -223,9 +199,6 @@ func builtinIMomentum(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIWPR(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iWPR(symbol, period, calc_period, shift)
 	period := int(argI(args, 2))
 	shift := int(argI(args, 3))
@@ -233,9 +206,6 @@ func builtinIWPR(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIMFI(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iMFI(symbol, period, mfi_period, shift)
 	period := int(argI(args, 2))
 	shift := int(argI(args, 3))
@@ -243,9 +213,6 @@ func builtinIMFI(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIOBV(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iOBV(symbol, period, applied_price, shift)
 	appliedPrice := int(argI(args, 2))
 	shift := int(argI(args, 3))
@@ -253,9 +220,6 @@ func builtinIOBV(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinISAR(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iSAR(symbol, period, step, maximum, shift)
 	step := argD(args, 2)
 	maximum := argD(args, 3)
@@ -264,9 +228,6 @@ func builtinISAR(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIStdDev(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	// iStdDev(symbol, period, ma_period, ma_shift, ma_method, applied_price, shift)
 	period := int(argI(args, 2))
 	method := maMethodName(argI(args, 4))

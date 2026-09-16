@@ -76,9 +76,6 @@ func builtinStringToInteger(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinTimeCurrent(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	return interp.IntVal(int32(vm.ctx.ServerTime() / 1000)), nil
 }
 
@@ -103,15 +100,11 @@ func builtinNoopString(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinEventSetTimer(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx != nil {
-		vm.ctx.SetTimer(int(argI(args, 0)))
-	}
+	vm.ctx.SetTimer(int(argI(args, 0)))
 	return interp.NoneVal(), nil
 }
 
 func builtinEventKillTimer(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx != nil {
-		vm.ctx.KillTimer()
-	}
+	vm.ctx.KillTimer()
 	return interp.NoneVal(), nil
 }

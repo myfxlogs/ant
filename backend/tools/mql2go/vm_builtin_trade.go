@@ -12,7 +12,7 @@ import (
 // ── MQL4 trade builtins ──────────────────────────────────────────────
 
 func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.IntVal(-1), nil
 	}
 	// OrderSend(symbol, cmd, volume, price, slippage, sl, tp, comment, magic, expiration, color)
@@ -122,7 +122,7 @@ func orderCmdToSignalAction(cmd int32) sdk.SignalAction {
 }
 
 func builtinOrdersTotal(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.IntVal(0), nil
 	}
 	// MQL4 OrdersTotal returns both open positions and pending orders in MODE_TRADES.
@@ -136,7 +136,7 @@ func builtinOrdersTotal(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrdersHistoryTotal(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.IntVal(0), nil
 	}
 	if vm.cachedHistory == nil {
@@ -164,7 +164,7 @@ func builtinOrderSelect(vm *VM, args []interp.Value) (interp.Value, error) {
 
 	if pool == 1 {
 		// MODE_HISTORY — select from closed orders
-		if vm.cachedHistory == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+		if vm.cachedHistory == nil && vm.ctx.Broker() != nil {
 			vm.cachedHistory = vm.ctx.Broker().HistoryOrders(0, 0)
 		}
 		if selectBy == 0 {
@@ -188,10 +188,10 @@ func builtinOrderSelect(vm *VM, args []interp.Value) (interp.Value, error) {
 	// MODE_TRADES (default)
 	// MQL4 MODE_TRADES includes both open positions and pending orders.
 	// Indexing: [0..len(positions)-1] = positions, [len(positions)..len(positions)+len(orders)-1] = pending orders.
-	if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+	if vm.cachedPositions == nil && vm.ctx.Broker() != nil {
 		vm.cachedPositions = vm.ctx.Broker().Positions(0)
 	}
-	if vm.cachedOrders == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+	if vm.cachedOrders == nil && vm.ctx.Broker() != nil {
 		vm.cachedOrders = vm.ctx.Broker().Orders(0)
 	}
 
@@ -353,13 +353,10 @@ func builtinOrderClosePrice(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.DecimalVal(vm.currentPos.ClosePrice), nil
 	}
 	// For open positions, return current market price.
-	if vm.ctx != nil {
-		if vm.currentPos.Side == sdk.SideSell {
-			return interp.DecimalVal(vm.ctx.Ask()), nil
-		}
-		return interp.DecimalVal(vm.ctx.Bid()), nil
+	if vm.currentPos.Side == sdk.SideSell {
+		return interp.DecimalVal(vm.ctx.Ask()), nil
 	}
-	return interp.DecimalVal(decimal.Zero), nil
+	return interp.DecimalVal(vm.ctx.Bid()), nil
 }
 
 func builtinOrderProfit(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -369,7 +366,7 @@ func builtinOrderProfit(vm *VM, args []interp.Value) (interp.Value, error) {
 	// For closed positions, use the recorded close price.
 	closePrice := vm.currentPos.ClosePrice
 	// For open positions, use current market price.
-	if !closePrice.IsPositive() && vm.ctx != nil {
+	if !closePrice.IsPositive() {
 		closePrice = vm.ctx.Bid()
 		if vm.currentPos.Side == sdk.SideSell {
 			closePrice = vm.ctx.Ask()
@@ -379,7 +376,7 @@ func builtinOrderProfit(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.DecimalVal(vm.currentPos.Profit), nil
 	}
 	contractSize := decimal.NewFromInt(100000)
-	if vm.ctx != nil {
+	if vm.ctx.Broker() != nil {
 		if info, err := vm.ctx.Broker().SymbolInfo(vm.currentPos.Symbol); err == nil && info.ContractSize.IsPositive() {
 			contractSize = info.ContractSize
 		}
@@ -445,7 +442,7 @@ func builtinOrderSwap(vm *VM, args []interp.Value) (interp.Value, error) {
 // ── MQL5 position builtins ───────────────────────────────────────────
 
 func builtinPositionsTotal(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.IntVal(0), nil
 	}
 	if vm.cachedPositions == nil {
@@ -456,7 +453,7 @@ func builtinPositionsTotal(vm *VM, args []interp.Value) (interp.Value, error) {
 
 func builtinPositionGetTicket(vm *VM, args []interp.Value) (interp.Value, error) {
 	index := int(argI(args, 0))
-	if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+	if vm.cachedPositions == nil && vm.ctx.Broker() != nil {
 		vm.cachedPositions = vm.ctx.Broker().Positions(0)
 	}
 	if index >= 0 && index < len(vm.cachedPositions) {
@@ -542,7 +539,7 @@ func builtinPositionGetSymbol(vm *VM, args []interp.Value) (interp.Value, error)
 
 func builtinPositionSelectByTicket(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket := int64(argI(args, 0))
-	if vm.cachedPositions == nil && vm.ctx != nil && vm.ctx.Broker() != nil {
+	if vm.cachedPositions == nil && vm.ctx.Broker() != nil {
 		vm.cachedPositions = vm.ctx.Broker().Positions(0)
 	}
 	for i := range vm.cachedPositions {
@@ -581,13 +578,13 @@ func builtinCTradeSellStop(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.PositionSide) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), nil
 	}
 	// CTrade.Buy(volume, symbol, price, sl, tp, comment)
 	volume := argD(args, 0)
 	symbol := argS(args, 1)
-	if symbol == "" && vm.ctx != nil {
+	if symbol == "" {
 		symbol = vm.ctx.Symbol()
 	}
 	price := argD(args, 2)

@@ -10,9 +10,6 @@ import (
 // ── Shared MQL4/MQL5 indicators ──────────────────────────────────────
 
 func builtinIAlligator(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	// MQL4: iAlligator(symbol, timeframe, jaw_period, jaw_shift, teeth_period, teeth_shift,
 	//   lips_period, lips_shift, ma_method, applied_price, mode, shift)
 	jawPeriod := int(argI(args, 2))
@@ -37,9 +34,6 @@ func builtinIAlligator(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIIchimoku(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	// MQL4: iIchimoku(symbol, timeframe, tenkan_sen, kijun_sen, senkou_span_b, mode, shift)
 	tenkan := int(argI(args, 2))
 	kijun := int(argI(args, 3))
@@ -60,9 +54,6 @@ func builtinIIchimoku(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIEnvelopes(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	// MQL4: iEnvelopes(symbol, timeframe, ma_period, ma_method, ma_shift,
 	//   applied_price, deviation, mode, shift)
 	period := int(argI(args, 2))
@@ -80,18 +71,12 @@ func builtinIEnvelopes(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIDeMarker(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	shift := int(argI(args, 3))
 	return interp.DecimalVal(vm.ctx.Indicators().DeMarker(period, shift)), nil
 }
 
 func builtinIOsMA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	fast := int(argI(args, 2))
 	slow := int(argI(args, 3))
 	signal := int(argI(args, 4))
@@ -101,9 +86,6 @@ func builtinIOsMA(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIRVI(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	// MQL4: iRVI(symbol, timeframe, period, mode, shift)
 	period := int(argI(args, 2))
 	mode := argI(args, 3)
@@ -120,9 +102,6 @@ func builtinIRVI(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIForce(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	method := maMethodStr(argI(args, 3))
 	appliedPrice := int(argI(args, 4))
@@ -131,9 +110,6 @@ func builtinIForce(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIFractals(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	// MQL4: iFractals(symbol, timeframe, mode, shift)
 	mode := argI(args, 2)
 	shift := int(argI(args, 3))
@@ -145,9 +121,6 @@ func builtinIFractals(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIGator(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	// MQL4: iGator(symbol, timeframe, jaw_period, jaw_shift, teeth_period, teeth_shift,
 	//   lips_period, lips_shift, ma_method, applied_price, mode, shift)
 	jawPeriod := int(argI(args, 2))
@@ -168,33 +141,21 @@ func builtinIGator(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIAC(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	shift := int(argI(args, 2))
 	return interp.DecimalVal(vm.ctx.Indicators().AC(shift)), nil
 }
 
 func builtinIAD(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	shift := int(argI(args, 2))
 	return interp.DecimalVal(vm.ctx.Indicators().AD(shift)), nil
 }
 
 func builtinIAO(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	shift := int(argI(args, 2))
 	return interp.DecimalVal(vm.ctx.Indicators().AO(shift)), nil
 }
 
 func builtinIBearsPower(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 3))
 	shift := int(argI(args, 4))
@@ -202,9 +163,6 @@ func builtinIBearsPower(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIBullsPower(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 3))
 	shift := int(argI(args, 4))
@@ -212,9 +170,6 @@ func builtinIBullsPower(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIBWMFI(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	shift := int(argI(args, 2))
 	return interp.DecimalVal(vm.ctx.Indicators().BWMFI(shift)), nil
 }
@@ -222,9 +177,6 @@ func builtinIBWMFI(vm *VM, args []interp.Value) (interp.Value, error) {
 // ── MQL5-only indicators ─────────────────────────────────────────────
 
 func builtinIAMA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	fastPeriod := int(argI(args, 3))
 	slowPeriod := int(argI(args, 4))
@@ -234,9 +186,6 @@ func builtinIAMA(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIDEMA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 4))
 	shift := int(argI(args, 5))
@@ -244,9 +193,6 @@ func builtinIDEMA(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinITEMA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 4))
 	shift := int(argI(args, 5))
@@ -254,9 +200,6 @@ func builtinITEMA(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIFrAMA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 4))
 	shift := int(argI(args, 5))
@@ -264,9 +207,6 @@ func builtinIFrAMA(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIVIDyA(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	cmoPeriod := int(argI(args, 2))
 	cmoShift := int(argI(args, 3))
 	maPeriod := int(argI(args, 4))
@@ -277,9 +217,6 @@ func builtinIVIDyA(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinITriX(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	period := int(argI(args, 2))
 	appliedPrice := int(argI(args, 4))
 	shift := int(argI(args, 5))
@@ -312,9 +249,6 @@ func builtinIADXWilder(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIChaikin(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	fastPeriod := int(argI(args, 2))
 	slowPeriod := int(argI(args, 3))
 	shift := int(argI(args, 4))
@@ -322,9 +256,6 @@ func builtinIChaikin(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinIVolumes(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	shift := int(argI(args, 2))
 	return interp.DecimalVal(vm.ctx.Indicators().Volumes(shift)), nil
 }

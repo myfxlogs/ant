@@ -120,17 +120,11 @@ func builtinDayOfWeek(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinHour(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	t := time.UnixMilli(vm.ctx.ServerTime()).UTC()
 	return interp.IntVal(int32(t.Hour())), nil
 }
 
 func builtinMinute(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	t := time.UnixMilli(vm.ctx.ServerTime()).UTC()
 	return interp.IntVal(int32(t.Minute())), nil
 }
@@ -186,11 +180,7 @@ func builtinIsTesting(vm *VM, args []interp.Value) (interp.Value, error) {
 
 func builtinAccountNumber(vm *VM, args []interp.Value) (interp.Value, error) {
 	// VM-TRADE-CONTEXT-2: read from context instead of hardcoding 999999.
-	if vm.ctx != nil {
-		login := vm.ctx.Account().Login
-		return interp.IntVal(int32(login)), nil
-	}
-	return interp.IntVal(0), nil
+	return interp.IntVal(int32(vm.ctx.Account().Login)), nil
 }
 
 // ── Array builtins (real implementations) ────────────────────────────

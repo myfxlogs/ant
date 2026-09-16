@@ -13,19 +13,16 @@ func builtinSymbolInfoTick(vm *VM, args []interp.Value) (interp.Value, error) {
 	// SymbolInfoTick(symbol, tick) fills an MqlTick struct.
 	// Return true with a struct containing bid/ask.
 	fields := map[string]interp.Value{
-		"time":  interp.IntVal(int32(vm.ctx.ServerTime() / 1000)),
-		"bid":   interp.DecimalVal(vm.ctx.Bid()),
-		"ask":   interp.DecimalVal(vm.ctx.Ask()),
-		"last":  interp.DecimalVal(vm.ctx.Bid()),
+		"time":     interp.IntVal(int32(vm.ctx.ServerTime() / 1000)),
+		"bid":      interp.DecimalVal(vm.ctx.Bid()),
+		"ask":      interp.DecimalVal(vm.ctx.Ask()),
+		"last":     interp.DecimalVal(vm.ctx.Bid()),
 		nodeVolume: interp.IntVal(0),
 	}
 	return interp.Value{Kind: interp.ValClass, Class: &interp.ClassInstance{Fields: fields}}, nil
 }
 
 func builtinSymbolName(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.StringVal(""), nil
-	}
 	return interp.StringVal(vm.ctx.Symbol()), nil
 }
 
@@ -55,9 +52,6 @@ func builtinSymbolIsSynchronized(vm *VM, args []interp.Value) (interp.Value, err
 
 // MQL5 AccountInfo* functions
 func builtinAccountInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimalZero), nil
-	}
 	prop := argI(args, 0)
 	switch prop {
 	case 0: // ACCOUNT_BALANCE

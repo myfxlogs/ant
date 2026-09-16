@@ -68,6 +68,7 @@ type VM struct {
 func NewVM(bc *Bytecode) *VM {
 	vm := &VM{
 		bc:                bc,
+		ctx:               noopContext{},
 		runtimeBlindSpots: make(map[string]int),
 		funcByEntryPC:     make(map[int32]FuncEntry),
 		lastIndicators:    make(map[string]decimal.Decimal),
@@ -80,7 +81,11 @@ func NewVM(bc *Bytecode) *VM {
 }
 
 // SetContext sets the SDK context for the VM (provides market data, broker, etc.)
+// ctx is normalized to noopContext so vm.ctx is never nil (QS-2.3 invariant).
 func (vm *VM) SetContext(ctx sdk.Context) {
+	if ctx == nil {
+		ctx = noopContext{}
+	}
 	vm.ctx = ctx
 }
 

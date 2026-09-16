@@ -151,7 +151,7 @@ func (vm *VM) floorDiv(a, b interp.Value) interp.Value {
 // ── Series access ────────────────────────────────────────────────────
 
 func (vm *VM) getSeries(name string, shift int32) interp.Value {
-	if vm.ctx == nil || vm.ctx.Bars() == nil {
+	if vm.ctx.Bars() == nil {
 		return interp.DecimalVal(decimal.Zero)
 	}
 	bars := vm.ctx.Bars()

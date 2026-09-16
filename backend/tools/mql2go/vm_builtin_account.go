@@ -11,44 +11,29 @@ import (
 // ── Account builtins ─────────────────────────────────────────────────
 
 func builtinAccountBalance(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Account().Balance), nil
 }
 
 func builtinAccountEquity(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Account().Equity), nil
 }
 
 func builtinAccountFreeMargin(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Account().FreeMargin), nil
 }
 
 func builtinAccountMargin(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.DecimalVal(decimal.Zero), nil
-	}
 	return interp.DecimalVal(vm.ctx.Account().Margin), nil
 }
 
 func builtinAccountLeverage(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(0), nil
-	}
 	return interp.IntVal(vm.ctx.Account().Leverage), nil
 }
 
 // ── Symbol info builtins ─────────────────────────────────────────────
 
 func builtinSymbolInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.DecimalVal(decimal.Zero), nil
 	}
 	sym := argS(args, 0)
@@ -83,7 +68,7 @@ func builtinSymbolInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) 
 }
 
 func builtinSymbolInfoInteger(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.IntVal(0), nil
 	}
 	sym := argS(args, 0)
@@ -108,7 +93,7 @@ func builtinSymbolInfoInteger(vm *VM, args []interp.Value) (interp.Value, error)
 }
 
 func builtinSymbolInfoString(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.StringVal(""), nil
 	}
 	sym := argS(args, 0)
@@ -123,7 +108,7 @@ func builtinSymbolInfoString(vm *VM, args []interp.Value) (interp.Value, error) 
 }
 
 func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil || vm.ctx.Broker() == nil {
+	if vm.ctx.Broker() == nil {
 		return interp.DecimalVal(decimal.Zero), nil
 	}
 	sym := argS(args, 0)
