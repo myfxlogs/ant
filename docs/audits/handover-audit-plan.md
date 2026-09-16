@@ -842,3 +842,23 @@
 - **残余**：VM-API-TRUTH-1 整体仍 🟦open——后续批次待做：AccountInfo*（部分硬编码 USD/Backtest/SimBroker）、CopyBuffer（by-reference 未填充）、CopyRates（close proxy）、Symbol session/margin（by-reference 未填充）、platform checkup（硬编码常量/空操作）。每批另行派工。
 - **部署注记**：22 API 从 implemented 改为 StatusUnsupported 是行为变更——依赖这些 API 的策略将编译失败（而非运行时返回假数据）。这是 fail-closed 方向正确——假数据比编译失败更危险。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 VM-API-TRUTH-1 批次2a ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `8f946579`（ANT_ROLE=builder）。改 5 生产文件 + 1 测试文件 + STATE.md/LOG.md（pre-commit 强制）。
+- **范围**：platform checkup 12 API（vm_builtin_checkup.go:9-10 文件头自述"In backtest context, most of these return fixed values"，全返回 true/false/0/""/NoneVal，无真实终端/平台数据源）。重分类为 StatusUnsupported，编译期拒绝（fail-closed）。删除假实现函数+注册+绑定（无死代码）。
+- **S1**：`api_registry.go:173-184` unsupportedSymbols 加 12 API + `:64` reasonPlatformCheckup 常量。
+- **S2**：`builtin_registry.go:108-112` implementedPlatform 移除 12（保留 IsConnected/IsDemo/IsTradeAllowed VM-API-TRUTH-3 真实+GetTickCount*/SetUserError/CurTime）。
+- **S3**：`builtins.go:362-378` 删 12 nil 注册（保留上述真实实现）。
+- **S4**：`vm_builtin_wiring.go:123-137` 删 12 fn 绑定。
+- **S5**：`vm_builtin_checkup.go:9-13` 文件头注释更新 + 删 12 假实现函数（保留 IsConnected/IsDemo/IsTradeAllowed+GetLastError/ResetLastError/SetUserError+CurTime/GetTickCount*）。
+- **S6d** `TestVM_API_TRUTH_1_PlatformCheckupRejected`：12 API 编译期拒绝（表驱动子测试）。
+- **S6e** `TestVM_API_TRUTH_1_PlatformCheckupRegistryConsistency`：12 API LookupAPI=StatusUnsupported+Reason 非空+IsAPIImplemented=false+IsAPIUnsupported=true。
+- **S6f** `TestVM_API_TRUTH_1_PlatformCheckupRealStillImplemented`：13 真实实现未误伤（IsConnected/IsDemo/IsTradeAllowed/GetLastError/ResetLastError/SetUserError/CurTime/GetTickCount/GetTickCount64/GetMicrosecondCount/IsTesting/IsOptimization/IsVisualMode）。
+- **独立对抗证明×1 重跑**：注释 unsupportedSymbols 12 行 → S6d/S6e RED `LookupAPI returned not-found`/`API silently accepted` → 恢复 GREEN。真对抗（非 nil panic/非另一条错误/非 callback-only）。
+- **机检独立复测全绿**：`go build ./...` ✓ / mql2go test 473 ✓ / `-race -count=3` 1419 ✓ / vet ✓ / gofmt ✓ / check-file-lines 0 errors / diff --check clean。
+- **worktree**：mutation 恢复后干净，最终 diff 只含 5 生产/测试文件 + STATE.md/LOG.md（pre-commit 强制）。
+- **设计评价**：12 API 全为固定值/空操作（文件头自述），无真实终端/平台数据源，重分类为 StatusUnsupported 符合 fail-closed 原则。保留 IsConnected/IsDemo/IsTradeAllowed（VM-API-TRUTH-3 已修读 vm.ctx.Account() 真实字段）、GetLastError/ResetLastError/SetUserError（lastError 状态机）、CurTime/GetTickCount*（真实时间源）、IsTesting/IsOptimization/IsVisualMode（回测语义合理——IsTesting=true 表示在回测中是正确语义，非假数据）。测试表驱动覆盖 12 API 编译期拒绝 + registry 一致性 + 13 真实实现未误伤，mutation 证明 unsupportedSymbols 是拒绝的唯一来源。
+- **残余**：VM-API-TRUTH-1 整体仍 🟦open——后续批次待做：AccountInfo*（部分硬编码 USD/Backtest/SimBroker）、CopyBuffer（by-reference 未填充）、CopyRates（close proxy）、Symbol session/margin（by-reference 未填充）。每批另行派工。
+- **部署注记**：12 API 从 implemented 改为 StatusUnsupported 是行为变更——依赖这些 API 的策略将编译失败（而非运行时返回假平台数据）。这是 fail-closed 方向正确——假平台数据比编译失败更危险。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
