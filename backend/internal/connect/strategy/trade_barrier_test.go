@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/goleak"
 	"go.uber.org/zap"
 )
 
@@ -338,4 +339,39 @@ func TestQS16_ConfirmByAuthoritativeRead_TerminalAndIdle(t *testing.T) {
 	if state := b3.State(); state != barrierIdle {
 		t.Fatalf("idle: state=%s, want idle (unchanged)", state)
 	}
+}
+
+// QS-2.2: WaitConfirmed watcher goroutine must not leak — both exit paths.
+// This test is the QS-2.1 rejection evidence (D-009): the watcher has a
+// bounded lifecycle via stopWatcher + defer close, no watcher leak exists.
+func TestWaitConfirmed_NoGoroutineLeak(t *testing.T) {
+	// Path 1: ctx cancel — watcher exits via ctx.Done + deferred close.
+	b := NewTradeBarrier(zap.NewNop())
+	if !b.Acquire("client-1", 1, "open") {
+		t.Fatal("Acquire failed")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan tradeBarrierState, 1)
+	go func() { done <- b.WaitConfirmed(ctx) }()
+	// Give WaitConfirmed time to spawn the watcher and enter cond.Wait.
+	time.Sleep(20 * time.Millisecond)
+	cancel()
+	if st := <-done; st != barrierSubmitting {
+		t.Fatalf("ctx-cancel path: state=%s, want submitting (non-terminal return)", st)
+	}
+
+	// Path 2: terminal transition — watcher exits via stopWatcher close.
+	b2 := NewTradeBarrier(zap.NewNop())
+	if !b2.Acquire("client-2", 2, "close") {
+		t.Fatal("Acquire #2 failed")
+	}
+	done2 := make(chan tradeBarrierState, 1)
+	go func() { done2 <- b2.WaitConfirmed(context.Background()) }()
+	time.Sleep(20 * time.Millisecond)
+	b2.NotifyOutcomeUnknown()
+	if st := <-done2; st != barrierOutcomeUnknown {
+		t.Fatalf("terminal path: state=%s, want outcome_unknown", st)
+	}
+
+	goleak.VerifyNone(t, goleakIgnoreThirdParty...)
 }
