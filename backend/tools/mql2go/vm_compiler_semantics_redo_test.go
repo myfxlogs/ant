@@ -231,6 +231,126 @@ void OnTick()
 	if result != 110 {
 		t.Fatalf("g_result = %d, want 110 (case 1 fallthrough to case 2: 10+100)", result)
 	}
+
+	// VM-COMPILER-SEMANTICS-3 S3a: stack depth assertion — case 2 has break,
+	// break must consume switch value via OP_POP (S2 fix). If break bypasses
+	// OP_POP, the switch value stays on the stack.
+	if stackLen := len(vmRunner.vm.stack); stackLen != 0 {
+		t.Fatalf("stack depth = %d after OnTick, want 0 (break must consume switch value via OP_POP)", stackLen)
+	}
+}
+
+// TestVM_Audit_SwitchDefaultBeforeCase verifies that default in the middle
+// of a switch preserves original fallthrough order (VM-COMPILER-SEMANTICS-3 S1).
+//
+// case 1 (no break) falls through to default (next in original order), NOT
+// to case 2. Old code moved default to the end, so case 1 fell through to
+// case 2 instead → g_result=20 (wrong). Correct: g_result=1010.
+//
+// Adversarial: restore old default-to-end extraction → case 1 falls through
+// to case 2 → g_result=20 → RED.
+func TestVM_Audit_SwitchDefaultBeforeCase(t *testing.T) {
+	src := `
+int g_result = -1;
+
+int OnInit() { return 0; }
+
+void OnTick()
+{
+    int x = 1;
+    switch (x)
+    {
+        case 1:
+            g_result = 10;
+            // no break — fallthrough to default (next in original order)
+        default:
+            g_result = g_result + 1000;
+            break;
+        case 2:
+            g_result = 20;
+            break;
+    }
+}`
+	vmRunner, err := CompileMQL(src)
+	if err != nil {
+		t.Fatalf("CompileMQL failed: %v", err)
+	}
+
+	r := runner.New(runner.Config{})
+	r.SetStrategy(vmRunner)
+	r.UpdateLiveState("10000", "10500", "500", "9500", nil, nil)
+
+	if err := r.Init(context.Background()); err != nil {
+		t.Fatalf("Init failed: %v", err)
+	}
+	_, err = r.OnTick(context.Background(), decimal.NewFromFloat(1.1), decimal.NewFromFloat(1.1001))
+	if err != nil {
+		t.Fatalf("OnTick failed: %v", err)
+	}
+
+	result := getGlobalInt(t, vmRunner, "g_result")
+	// case 1 sets g_result=10, falls through to default → g_result=10+1000=1010.
+	// Old code (default moved to end): case 1 falls through to case 2 → g_result=20.
+	if result != 1010 {
+		t.Fatalf("g_result = %d, want 1010 (case 1 fallthrough to default: 10+1000)", result)
+	}
+	if stackLen := len(vmRunner.vm.stack); stackLen != 0 {
+		t.Fatalf("stack depth = %d after OnTick, want 0 (break must consume switch value)", stackLen)
+	}
+}
+
+// TestVM_Audit_SwitchBreakStackCleanup verifies that break inside a switch
+// consumes the switch value via OP_POP (VM-COMPILER-SEMANTICS-3 S2), so the
+// stack is clean for subsequent statements.
+//
+// Adversarial: restore old break-to-endPC (bypassing OP_POP) → switch value
+// stays on stack → stack depth = 1 → RED.
+func TestVM_Audit_SwitchBreakStackCleanup(t *testing.T) {
+	src := `
+int g_result = -1;
+
+int OnInit() { return 0; }
+
+void OnTick()
+{
+    int x = 1;
+    switch (x)
+    {
+        case 1:
+            g_result = 10;
+            break;
+        case 2:
+            g_result = 20;
+            break;
+    }
+    g_result = g_result + 5;
+}`
+	vmRunner, err := CompileMQL(src)
+	if err != nil {
+		t.Fatalf("CompileMQL failed: %v", err)
+	}
+
+	r := runner.New(runner.Config{})
+	r.SetStrategy(vmRunner)
+	r.UpdateLiveState("10000", "10500", "500", "9500", nil, nil)
+
+	if err := r.Init(context.Background()); err != nil {
+		t.Fatalf("Init failed: %v", err)
+	}
+	_, err = r.OnTick(context.Background(), decimal.NewFromFloat(1.1), decimal.NewFromFloat(1.1001))
+	if err != nil {
+		t.Fatalf("OnTick failed: %v", err)
+	}
+
+	result := getGlobalInt(t, vmRunner, "g_result")
+	// case 1 sets g_result=10, break, then g_result=10+5=15.
+	if result != 15 {
+		t.Fatalf("g_result = %d, want 15 (case 1: 10, then +5)", result)
+	}
+	// S2: break must consume switch value via OP_POP — stack must be empty.
+	if stackLen := len(vmRunner.vm.stack); stackLen != 0 {
+		t.Fatalf("stack depth = %d after OnTick, want 0 (break must consume switch value via OP_POP)", stackLen)
+	}
 }
 
 // TestVM_Audit_ForLoopSingleStatementBody verifies that `for(...) doSomething();`

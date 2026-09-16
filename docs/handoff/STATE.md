@@ -27,9 +27,10 @@
 | TZ-MIXED-ENCODING-1 根因修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit da85f973；~50 站写入端 .UTC() 全枚举+读侧同步+migration 278 签名回填（10100 行 CST→UTC，幂等）；CST 配对列裁定不翻分立 TZ-PAIRED-CST-COLS-1；独立 mutation RED→GREEN |
 | VM-RUNTIME-FAILCLOSED-2 静默算术/栈/槽位 fail-closed | ✅done | Devin CLI 验收通过 2026-09-16；commit 4fea9439；S1-S4 setStackError 全覆盖+OP_STORE_VAR 栈泄漏修复；7 行为测试+独立 mutation×4 重跑 RED→GREEN；机检独立复测全绿；分立债 VM-ARRAY-OOB-FAILCLOSED-1(P2)/VM-FUNC-FATAL-DELAY-1(P3) |
 | VM-HONESTY-3-REVIEW 死分支解耦+R06 非致命对抗 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5816d7e9；S1 死分支 iNonExistentIndicator+MA3/200bars 产 10 trades 证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍 false）；独立 mutation×2 RED→GREEN；机检独立复测全绿；零生产代码改动 |
+| VM-COMPILER-SEMANTICS-3 switch default 顺序+break 栈清理 | 🟦open | 施工完成待复审；S1 保留 s.Cases 原始顺序（default 不抽出到末尾，作为 fallthrough target 参与顺序）+default 首位 skip JMP；S2 break JMPs patch 到 popPC（OP_POP 位置）消费 switch value；S3a 栈深度断言+S3b default 中间 fallthrough 测试+S3c break 栈清理测试；2 项 mutation RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: VM-HONESTY-3-REVIEW ✅done（Devin CLI 验收 2026-09-16）。后续队列：VM-COMPILER-SEMANTICS-3（switch default/break 栈）→ VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: VM-COMPILER-SEMANTICS-3 施工完成待 Devin CLI 独立复审。后续队列：VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -91,11 +92,13 @@
 - **VM-ARRAY-OOB-FAILCLOSED-1** 🟦open P2 — OP_PUSH_ARRAY/OP_STORE_ARRAY 越界静默 NoneVal/丢弃（FAILCLOSED-2 复审分立）
 - **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
+- **VM-COMPILER-SEMANTICS-3** 🟦open — switch default 顺序+break 栈清理（施工完成待复审，S1 default 原序+S2 break POP+S3a/b/c 测试+2 mutation RED→GREEN）
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-09-16 **VM-COMPILER-SEMANTICS-3 施工完成**（builder，待独立复审）：S1 保留 s.Cases 原始顺序（default 不抽出到末尾，作为 fallthrough target 参与顺序）+default 首位 skip JMP 防 default body 无条件执行；S2 break JMPs（endJumps+breakJumps）patch 到 popPC（OP_POP 位置）消费 switch value，旧代码 patch 到 endPC 绕过 OP_POP 留栈；S3a SwitchFallthrough 加栈深度断言+S3b SwitchDefaultBeforeCase（default 中间 fallthrough → 1010）+S3c SwitchBreakStackCleanup（break 后语句不被栈残留污染）；2 项 mutation RED→GREEN（① fallthrough 跳过 default → S3b RED g_result=20；② break patch 回 endPC → S3a/S3c RED stack depth=1）。
 - 2026-09-16 **VM-HONESTY-3-REVIEW ✅done**（Devin CLI 独立复审通过）：commit 5816d7e9；S1 死分支 iNonExistentIndicator+MA3/200bars 产 TotalTrades=10（assessRisk 设 IsReliable=true）证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍 false 逻辑）；**独立 mutation×2 重跑** RED→restore→GREEN（① 注释 fatal loop → S1 RED `IsReliable=true, trades≥10, fatal blind spot present`；② fatal loop 条件改 `!=SeverityInfo` → S2 RED `IsReliable=false, warning 误伤`）；机检独立复测：build/connect-strategy 416/race×3 1248/vet/gofmt/check-lines 0 errors/diff --check clean；零生产代码改动（fatal loop 是被测对象非被改对象）。
 - 2026-09-16 **VM-HONESTY-3-REVIEW 施工完成**（builder，待独立复审）：S1 死分支 iNonExistentIndicator+MA3/200bars 产 10 trades 证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍逻辑）；各 1 项 mutation RED→GREEN；零生产代码改动。
 - 2026-09-16 **VM-RUNTIME-FAILCLOSED-2 ✅done**（Devin CLI 独立复审通过）：commit 4fea9439；S1-S4 setStackError 覆盖 arith/floorDiv 除零取模+OP_DUP/OP_SWAP underflow+OP_PUSH/STORE_VAR/GLOBAL 越界（含 OP_STORE_VAR 栈泄漏修复）；7 行为测试全绿+**独立 mutation×4 重跑** RED→restore→GREEN；机检独立复测：build/mql2go 384/race×3 1152/strategy 367/connect-strategy 416/vet/check-lines 0 errors。分立债：VM-ARRAY-OOB-FAILCLOSED-1（P2）+ VM-FUNC-FATAL-DELAY-1（P3）。
