@@ -698,3 +698,11 @@
 - **裁定**：ClientID 精确匹配链路当前不存在；即使接线（ClientID→Comment + MT4 透传 + 定长编码）仍有两层未证——comment 长度截断与 broker 回显改写（仓内有 comment 不可信反例）。**QS-1.7 不立项**：open outcomeUnknown 维持 ④-② 永久锁仓 fail-closed + 运维手册；将来确有运营需求按新债单独立项（路径已记录于 findings §施工方可行性观察）。
 - **提示词事实偏差记录**：handoff 事实 d 称 mt4 同构透传 comment——实测 mt4 未设置 Comment 字段，施工方纠正属实（D-013 路径可达性检查项仍需严格执行）。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-2.2 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `174b8405`——goleak v1.3.0 钉版入 go.mod（test 直接依赖）；`strategy/main_test.go` + `mql2go/main_test.go` 各建 `TestMain`+`VerifyTestMain`；`TestWaitConfirmed_NoGoroutineLeak` 双路径（ctx-cancel + terminal NotifyOutcomeUnknown）。
+- **独立复审**：机检独立重跑全绿（build / `go test -count=1` 两包 98.5s+8.9s / `-race -count=3` strategy 301.2s / vet / gofmt / check-lines 0 errors）。**独立 mutation×2**：①删 `defer close(stopWatcher)`（trade_barrier.go:308）→ RED 精确抓 `WaitConfirmed.func1` watcher 泄漏栈→restore→GREEN；②豁免合法性验证——移除两条 `IgnoreTopFunction` → RED 仅列 `rjeczalik/notify` dispatch/internal（`newNonrecursiveTree` in goroutine 1，三方进程级常驻树）→restore→GREEN。
+- **豁免裁定**：两条 IgnoreTopFunction 证据链成立（hdwallet→gotron-sdk→notify@v0.9.3，仓内零直接 import）；精确限定第三方 top function，未来间接依赖新增常驻 goroutine 会 RED——批准为设计意图。
+- **遗留裁定**：`time.Sleep(20ms)` 仅影响 watcher spawn 覆盖率不影响正确性（ctx 先 cancel 时 `ctx.Done()` 已闭、watcher select 立即就绪广播）；`WaitState` 测试辅助方法存在同构 watcher（:392-402），已有同款 `defer close` 保护。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

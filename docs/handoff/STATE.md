@@ -44,9 +44,10 @@
 | QS-1.3 Python 函数局部作用域 | ✅done | Devin CLI 验收通过 2026-09-16；commits 9940eda4+ee47292d；resolveAssignTarget+isDeclaredGlobal+函数域分配；独立 mutation×4 RED→GREEN；修正 v2/v3 见 handoff |
 | QS-1.2a lastError 三 builtin | ✅done | Devin CLI 验收通过 2026-09-16；commit 65e2cccf；lastError 跨事件驻留+GetLastError 读后清零+SetUserError=65536+c+ERR_USER_ERROR_FIRST 常量；独立 mutation×2 RED→GREEN |
 | QS-1.7-INV ClientID 回显链路调研 | ✅done | Devin CLI 验收通过 2026-09-16；commit 05138758；结论=ClientID 不经 Comment 回显（全链路零复制+MT4 不透传+proto 无字段）→ QS-1.7 不立项，维持 fail-closed 锁仓+runbook；findings 落盘 |
+| QS-2.2 goleak 集成 + watcher 无泄漏证明 | ✅done | Devin CLI 验收通过 2026-09-16；commit 174b8405；goleak v1.3.0 + 两包 TestMain + 双路径测试；独立 mutation×2（删 close→RED 抓 watcher；删豁免→RED 仅列 notify 三方常驻树）；race×3 301s 绿 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: 派 QS-2.2（goleak 集成，handoff 待落盘）；QS 顺序 1.4✅→1.6✅→1.3✅→1.2a✅→1.7-INV✅→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
+- **下一步**: 派 QS-2.4（VM 管线 race 审计，handoff 待落盘）；QS 顺序 1.4✅→1.6✅→1.3✅→1.2a✅→1.7-INV✅→2.2✅→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -97,7 +98,7 @@
 - **PY-SCOPE-KNOWN-1** 🟦open — Python 作用域已知限制 3 条（QS-1.3 遗留，文档化行为）
 - **QS-1.2a** ✅done — lastError 三 builtin（Devin CLI 验收通过 2026-09-16，commit 65e2cccf）
 - **QS-1.7-INV** ✅done — ClientID 不可回显→QS-1.7 不立项，维持 fail-closed（Devin CLI 验收通过 2026-09-16）
-- **QS-2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
+- **QS-2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
 
 ## 最近变更日志
 
