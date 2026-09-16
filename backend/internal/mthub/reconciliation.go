@@ -156,7 +156,7 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 	// 2. Fetch ant-side orders from PG (24h window — symmetric with broker
 	//    FetchOrderHistory window above to avoid structural false orphans
 	//    from comparing ant full-history vs broker 24h slice).
-	cutoff := Clk.Now().Add(-24 * time.Hour)
+	cutoff := reconcileCutoff()
 	rows, err := r.pg.Query(ctx, `
 		SELECT ticket, state FROM orders WHERE mt_account_id = $1::uuid AND created_at >= $2
 		UNION ALL
@@ -241,4 +241,15 @@ func (r *ReconciliationLoop) reconcileAccount(ctx context.Context, accountID str
 	}
 
 	return nil
+}
+
+// reconcileCutoff returns the lower bound for ant-side order queries.
+// The .UTC() matters: orders.created_at / trade_records.close_time are
+// `timestamp` (not timestamptz) columns storing UTC wall clock, and pgx
+// encodes a time.Time parameter for `timestamp` using its wall-clock
+// components — a CST time.Local value encodes +8h, shrinking the effective
+// 24h window to ~16h (RECONCILE-TZ-WINDOW-1). Broker-side windows are
+// unaffected (RPC carries the real instant).
+func reconcileCutoff() time.Time {
+	return Clk.Now().UTC().Add(-24 * time.Hour)
 }
