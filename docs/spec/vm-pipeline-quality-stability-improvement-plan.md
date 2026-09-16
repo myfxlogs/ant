@@ -5,6 +5,7 @@
 - **类型**：实施性设计方案（非 ADR）；配套决策记录 `docs/handoff/decisions.md` D-009
 - **依据**：`docs/audits/vm-pipeline-deep-audit-2026-09-16.md` §11 + `docs/adr/0023-reevaluation-2026-09-16.md` §5 + v2 源码实拍（本文件 §2）
 - **状态**：✅定稿（Devin CLI 决策，无需业主逐项确认）。QS 条目已入 `docs/audits/tech-debt-registry.md`，按 §6 顺序一次派一单。
+- **最终决策**：Devin CLI（[角色:决策终] 激活）
 
 ---
 

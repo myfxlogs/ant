@@ -646,3 +646,4 @@
 - **决策**：D-009（decisions.md）。v2 spec §2 保留全部核验结论。
 - **落档**：spec v2 覆盖 v1；registry 新增 QS-1.4/1.6/1.3/1.2a/1.7-INV/2.2/2.4/2.5/2.3/3-BASELINE 共 10 条 🟦open；STATE.md 指针更新。
 - **下一步**：派 QS-1.4 第一单（含 `vm_helpers.go:250` 注释修正）。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

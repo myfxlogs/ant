@@ -73,6 +73,7 @@
 - **决定**: ① OrderSend/OrderClose 参数校验失败与 broker 拒绝**保持 fatal**（VM-RUNTIME-FAILCLOSED-1 不变量），`GetLastError` 本轮只由 `SetUserError` 写入（QS-1.2a），不做 "-1 + lastError"（QS-1.2b 不立项）。② open outcomeUnknown 的 magic+symbol+side+时间窗模糊匹配 recovery **永久否决**；先做 QS-1.7-INV 调研 ClientID 回显链路，可靠则按 ClientID 精确单匹配，否则维持 ④-② fail-closed。③ 阶段 3 性能优化（Value/decimal 池化、跳转表、superinstruction）整体否决，改为 QS-3-BASELINE 测量任务；仅在生产 p99 单事件耗时 > tick 间隔 10% 或 benchmark 单项占比 > 30% 时再立优化条目。④ QS-2.1 watcher "泄漏"经实拍不成立，否决。⑤ QS-1.6 修法由 `Reconcile`（在 acceptedUnconfirmed 下是 no-op）改为新增 `TradeBarrier.ConfirmByAuthoritativeRead()`。⑥ QS-1.3 复用 `astCompiler.localScopes`，不在 pyCompiler 另造作用域栈。
 - **理由**: 逆转已验收不变量需要明确收益，signalMode 下 broker 拒绝对 VM 不可见，收益仅剩参数非法一种；模糊匹配在同策略同向连续开仓下必误匹配，触碰资金边界；`interp.Value` 是值结构体，池化在语义上不成立；无 baseline 的优化违反"有证据才立项"。
 - **影响**: spec v2 §2 保留全部否决/降级理由；QS 条目入 registry；施工顺序 QS-1.4 → 1.6 → 1.3 → 1.2a → 1.7-INV → 2.2 → 2.4 → 2.5 → 2.3；QS-3-BASELINE 贯穿。
+- **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）
 
 ### D-010 2026-09-16 多终端角色模型：默认施工者 + Claude 在场默认最终决策者 + [角色:决策终] 激活 + 署名溯源
 
