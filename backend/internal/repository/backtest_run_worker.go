@@ -135,10 +135,15 @@ func (r *BacktestRunRepository) CountPendingByUser(ctx context.Context, userID u
 }
 
 // CountRecentStartsByUser counts recently started backtest runs for a user.
+// backtest_runs.created_at is a `timestamp` (not timestamptz) column storing
+// UTC wall clock; pgx encodes `timestamp` params by wall-clock components,
+// so the bound is normalized to UTC regardless of the caller's zone
+// (TZ-SWEEP-AFFECTED-1).
 func (r *BacktestRunRepository) CountRecentStartsByUser(ctx context.Context, userID uuid.UUID, since time.Time) (int, error) {
 	if r == nil || r.db == nil {
 		return 0, errors.New("repository not initialized")
 	}
+	since = since.UTC()
 	var n int
 	err := r.db.QueryRow(ctx,
 		`SELECT COUNT(1) FROM backtest_runs WHERE user_id = $1 AND created_at >= $2`,

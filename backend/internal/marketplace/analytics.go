@@ -42,7 +42,7 @@ type TopItemRow struct {
 // GetMarketplaceAnalytics computes marketplace analytics for the given period.
 func (s *Service) GetMarketplaceAnalytics(ctx context.Context, period string) (*AnalyticsResult, error) {
 	interval := analyticsPeriodToInterval(period)
-	since := time.Now().Add(-interval)
+	since := analyticsSince(interval)
 
 	// Total GMV and transactions from wallet_transactions.
 	// Purchase tx amounts are negative (buyer debit), so use ABS().
@@ -329,6 +329,16 @@ func (s *Service) GetTopProviders(ctx context.Context) ([]TopItemRow, []TopItemR
 	}
 
 	return byRev, byStrat, nil
+}
+
+// analyticsSince returns the window lower bound for analytics queries.
+// The .UTC() matters: wallet_transactions/user_subscriptions/
+// marketplace_strategies.created_at are `timestamp` (not timestamptz)
+// columns storing UTC wall clock, and pgx encodes a `timestamp` parameter
+// by wall-clock components — a CST time.Local value shifts the bound +8h,
+// shrinking every period window by 8h (TZ-SWEEP-AFFECTED-1).
+func analyticsSince(interval time.Duration) time.Time {
+	return time.Now().UTC().Add(-interval)
 }
 
 func analyticsPeriodToInterval(period string) time.Duration {
