@@ -186,7 +186,7 @@ func (s *StrategyExecutionServer) startBacktestWatchers(ctx context.Context, run
 			case <-execCtx.Done():
 				return
 			case <-ticker.C:
-				newLease := time.Now().Add(leaseFor)
+				newLease := time.Now().UTC().Add(leaseFor)
 				if err := s.backtestRepo.ExtendLease(ctx, run.UserID, run.ID, newLease); err != nil {
 					s.log.Warn("extend lease failed", zap.String("runID", run.ID.String()), zap.Error(err))
 				}
@@ -311,7 +311,7 @@ func (s *StrategyExecutionServer) fetchSymbolInfo(ctx context.Context, run *repo
 func (s *StrategyExecutionServer) handleBacktestError(ctx context.Context, run *repository.BacktestRun, execCtx context.Context, err error) {
 	if execCtx.Err() != nil {
 		s.log.Info("backtest worker: run cancelled", zap.String("runID", run.ID.String()))
-		now := time.Now()
+		now := time.Now().UTC()
 		if uerr := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusCanceled, "cancelled by user", nil, &now, nil, nil); uerr != nil {
 			s.log.Error("update backtest run to CANCELED failed", zap.Error(uerr), zap.String("runID", run.ID.String()))
 		}

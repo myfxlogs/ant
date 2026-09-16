@@ -42,7 +42,7 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 	})
 
 	// Add trade distribution + hourly PnL (not in core — not needed by AI report).
-	now := time.Now()
+	now := time.Now().UTC()
 	start := now.AddDate(-1, 0, 0)
 	profits, err := s.repo.GetTradeProfitValues(ctx, accountID, start, now)
 	if err != nil {
@@ -56,9 +56,9 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 	hourlyPnl := make([]*antv1.HourlyPnL, 0, len(hourlyStats))
 	for _, h := range hourlyStats {
 		hourlyPnl = append(hourlyPnl, &antv1.HourlyPnL{
-			Hour:   int32(h.HourStart),
-			Profit: h.Profit.String(),
-			Trades: int64(h.Trades),
+			Hour:    int32(h.HourStart),
+			Profit:  h.Profit.String(),
+			Trades:  int64(h.Trades),
 			WinRate: math.Round(h.WinRate.InexactFloat64()*100) / 100,
 		})
 	}
@@ -78,7 +78,7 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 // Callers that need trade distribution or hourly PnL must add them after
 // calling this method.
 func (s *AnalyticsServer) computeAttributionCore(ctx context.Context, accountID uuid.UUID) *antv1.GetAttributionAnalysisResponse {
-	now := time.Now()
+	now := time.Now().UTC()
 	start := now.AddDate(-1, 0, 0)
 	symbolStats, err := s.repo.GetSymbolStats(ctx, accountID, start, now)
 	if err != nil {

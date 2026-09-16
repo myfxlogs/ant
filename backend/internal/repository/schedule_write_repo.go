@@ -12,7 +12,7 @@ import (
 
 // Create inserts a new strategy schedule.
 func (r *StrategyScheduleRepository) Create(ctx context.Context, s *model.StrategySchedule) error {
-	now := time.Now()
+	now := time.Now().UTC()
 	if s.ID == uuid.Nil {
 		s.ID = uuid.New()
 	}
@@ -45,7 +45,7 @@ func (r *StrategyScheduleRepository) Create(ctx context.Context, s *model.Strate
 
 // Update modifies all mutable fields of an existing schedule.
 func (r *StrategyScheduleRepository) Update(ctx context.Context, s *model.StrategySchedule) error {
-	s.UpdatedAt = time.Now()
+	s.UpdatedAt = time.Now().UTC()
 	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET
 			name = $2, symbol = $3, timeframe = $4, parameters = $5,
@@ -68,7 +68,7 @@ func (r *StrategyScheduleRepository) Update(ctx context.Context, s *model.Strate
 
 // UpdateRiskAssessment updates the backtest metrics and risk assessment for a schedule.
 func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, id uuid.UUID, a *model.RiskAssessment, m *model.BacktestMetrics) error {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	tmp := &model.StrategySchedule{}
 	if err := tmp.SetBacktestMetrics(m); err != nil {
@@ -98,7 +98,7 @@ func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, i
 func (r *StrategyScheduleRepository) UpdateNextRunAt(ctx context.Context, id uuid.UUID, nextRunAt time.Time) error {
 	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET next_run_at = $2, updated_at = $3 WHERE id = $1`,
-		id, nextRunAt, time.Now())
+		id, nextRunAt, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("update next run at: %w", err)
 	}
@@ -113,7 +113,7 @@ func (r *StrategyScheduleRepository) UpdateNextRunAt(ctx context.Context, id uui
 func (r *StrategyScheduleRepository) ClearNextRunAt(ctx context.Context, id uuid.UUID) error {
 	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET next_run_at = NULL, updated_at = $2 WHERE id = $1`,
-		id, time.Now())
+		id, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("clear next run at: %w", err)
 	}
@@ -129,7 +129,7 @@ func (r *StrategyScheduleRepository) ClearEventNextRunAt(ctx context.Context) (i
 	ct, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET next_run_at = NULL, updated_at = $1
 		 WHERE schedule_type = $2 AND next_run_at IS NOT NULL`,
-		time.Now(), model.ScheduleTypeEvent)
+		time.Now().UTC(), model.ScheduleTypeEvent)
 	if err != nil {
 		return 0, fmt.Errorf("clear event next run at: %w", err)
 	}
@@ -138,7 +138,7 @@ func (r *StrategyScheduleRepository) ClearEventNextRunAt(ctx context.Context) (i
 
 // UpdateLastRun records the last run time and error state, incrementing run_count.
 func (r *StrategyScheduleRepository) UpdateLastRun(ctx context.Context, id uuid.UUID, runErr error) error {
-	now := time.Now()
+	now := time.Now().UTC()
 	var errMsg string
 	if runErr != nil {
 		errMsg = runErr.Error()
@@ -160,7 +160,7 @@ func (r *StrategyScheduleRepository) SetActive(ctx context.Context, id uuid.UUID
 			enable_count = enable_count + CASE WHEN $2 = true AND is_active = false THEN 1 ELSE 0 END,
 			updated_at = $3
 		WHERE id = $1`,
-		id, active, time.Now())
+		id, active, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("set schedule active: %w", err)
 	}

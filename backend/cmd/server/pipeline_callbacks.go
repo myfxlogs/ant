@@ -159,7 +159,7 @@ func buildClosedTradeRecord(log *zap.Logger, resolver mthub.ScheduleResolver, sv
 		Volume: o.UpdateVolume, OpenPrice: o.UpdateOpenPrice,
 		ClosePrice: o.UpdateClosePrice, Profit: o.UpdateProfit,
 		Swap: o.UpdateSwap, Commission: o.UpdateCommission,
-		OpenTime: time.Unix(o.UpdateOpenTime, 0), CloseTime: time.Unix(o.UpdateCloseTime, 0),
+		OpenTime: time.Unix(o.UpdateOpenTime, 0).UTC(), CloseTime: time.Unix(o.UpdateCloseTime, 0).UTC(),
 		StopLoss: o.UpdateSL, TakeProfit: o.UpdateTP,
 		OrderComment: o.UpdateComment, Platform: o.Platform,
 		MagicNumber: int(magic),

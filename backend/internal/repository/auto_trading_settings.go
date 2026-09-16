@@ -19,7 +19,7 @@ func (r *AutoTradingRepository) CreateGlobalSettings(ctx context.Context, settin
 				max_positions, max_lot_size, max_daily_loss, max_drawdown_percent, created_at, updated_at
 			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
-	now := time.Now()
+	now := time.Now().UTC()
 	if settings.ID == uuid.Nil {
 		settings.ID = uuid.New()
 	}
@@ -60,7 +60,7 @@ func (r *AutoTradingRepository) UpdateGlobalSettings(ctx context.Context, settin
 				max_positions = $4, max_lot_size = $5, max_daily_loss = $6, max_drawdown_percent = $7, updated_at = $8
 			WHERE id = $1`
 
-	settings.UpdatedAt = time.Now()
+	settings.UpdatedAt = time.Now().UTC()
 	_, err := r.db.Exec(ctx, query,
 		settings.ID, settings.AutoTradeEnabled, settings.MaxRiskPercent,
 		settings.MaxPositions, settings.MaxLotSize, settings.MaxDailyLoss, settings.MaxDrawdownPercent, settings.UpdatedAt,
@@ -73,7 +73,7 @@ func (r *AutoTradingRepository) UpdateGlobalSettings(ctx context.Context, settin
 
 func (r *AutoTradingRepository) UpdateAutoTradeEnabled(ctx context.Context, userID uuid.UUID, enabled bool) error {
 	query := `UPDATE global_settings SET auto_trade_enabled = $2, updated_at = $3 WHERE user_id = $1`
-	_, err := r.db.Exec(ctx, query, userID, enabled, time.Now())
+	_, err := r.db.Exec(ctx, query, userID, enabled, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("update auto trade enabled: %w", err)
 	}
@@ -103,13 +103,24 @@ func (r *AutoTradingRepository) CreateTradingLog(ctx context.Context, log *model
 func (r *AutoTradingRepository) GetTradingLogs(ctx context.Context, userID uuid.UUID, params *model.LogListParams) ([]*model.TradingLog, int, error) {
 	baseQ, args, idx := buildTradingLogFilters(userID, params)
 	var total int
-	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil { return nil, 0, err }
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil {
+		return nil, 0, err
+	}
 	page, pageSize := 1, 20
-	if params != nil { if params.Page > 0 { page = params.Page }; if params.PageSize > 0 { pageSize = params.PageSize } }
+	if params != nil {
+		if params.Page > 0 {
+			page = params.Page
+		}
+		if params.PageSize > 0 {
+			pageSize = params.PageSize
+		}
+	}
 	dataQ := fmt.Sprintf(`SELECT id, user_id, account_id, action, symbol, order_type as log_type, volume, price, ticket, profit, message, created_at %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQ, idx, idx+1)
 	args = append(args, pageSize, (page-1)*pageSize)
 	rows, err := r.db.Query(ctx, dataQ, args...)
-	if err != nil { return nil, 0, err }
+	if err != nil {
+		return nil, 0, err
+	}
 	defer rows.Close()
 	var logs []*model.TradingLog
 	for rows.Next() {
@@ -126,11 +137,27 @@ func buildTradingLogFilters(userID uuid.UUID, params *model.LogListParams) (base
 	baseQ = `FROM trade_logs WHERE user_id = $1`
 	args = []interface{}{userID}
 	idx = 2
-	if params == nil { return }
-	addFilter := func(col, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
-	if params.Module != "" { addFilter("order_type", params.Module) }
-	if params.StartDate != "" { baseQ += fmt.Sprintf(` AND created_at >= $%d`, idx); args = append(args, params.StartDate); idx++ }
-	if params.EndDate != "" { baseQ += fmt.Sprintf(` AND created_at <= $%d`, idx); args = append(args, params.EndDate); idx++ }
+	if params == nil {
+		return
+	}
+	addFilter := func(col, val string) {
+		baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx)
+		args = append(args, val)
+		idx++
+	}
+	if params.Module != "" {
+		addFilter("order_type", params.Module)
+	}
+	if params.StartDate != "" {
+		baseQ += fmt.Sprintf(` AND created_at >= $%d`, idx)
+		args = append(args, params.StartDate)
+		idx++
+	}
+	if params.EndDate != "" {
+		baseQ += fmt.Sprintf(` AND created_at <= $%d`, idx)
+		args = append(args, params.EndDate)
+		idx++
+	}
 	return
 }
 

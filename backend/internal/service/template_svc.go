@@ -20,7 +20,7 @@ type TemplateRow struct {
 	UserID      *uuid.UUID // nil for system strategies (is_system=true)
 	Name        string
 	Description string
-	Code        string // MQL source code (ADR-0023: single source of truth)
+	Code        string     // MQL source code (ADR-0023: single source of truth)
 	StrategyID  *uuid.UUID // FK to imported_strategies.id (nullable for legacy/system templates)
 	Status      string
 	Parameters  []byte
@@ -28,8 +28,8 @@ type TemplateRow struct {
 	IsSystem    bool
 	Tags        []string
 	UseCount    int32
-	I18n        []byte     // JSONB — parameter label translations
-	Flag        string     // "" | "flagged" | "disabled" | "archived"
+	I18n        []byte // JSONB — parameter label translations
+	Flag        string // "" | "flagged" | "disabled" | "archived"
 	FlagReason  string
 	FlaggedBy   *uuid.UUID // admin who flagged
 	FlaggedAt   *time.Time
@@ -67,7 +67,7 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 	if t.ID == uuid.Nil {
 		t.ID = uuid.New()
 	}
-	now := time.Now()
+	now := time.Now().UTC()
 	t.CreatedAt = now
 	t.UpdatedAt = now
 	if t.Tags == nil {
@@ -88,7 +88,7 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 }
 
 func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
-	t.UpdatedAt = time.Now()
+	t.UpdatedAt = time.Now().UTC()
 	// Empty byte slice is not valid JSON; nil lets the column default ('{}'::jsonb) take effect.
 	if len(t.I18n) == 0 {
 		t.I18n = nil
@@ -116,7 +116,7 @@ func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) 
 func (s *StrategySvc) UnpublishUserTemplate(ctx context.Context, id, userID uuid.UUID) error {
 	ct, err := s.pg.Exec(ctx,
 		`UPDATE strategy_templates SET is_public=false, updated_at=$3 WHERE id=$1 AND user_id=$2 AND is_system=false`,
-		id, userID, time.Now())
+		id, userID, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("UnpublishUserTemplate: %w", err)
 	}
@@ -127,7 +127,7 @@ func (s *StrategySvc) UnpublishUserTemplate(ctx context.Context, id, userID uuid
 }
 
 func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
-	ct, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1 AND user_id=$4`, id, status, time.Now(), userID)
+	ct, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1 AND user_id=$4`, id, status, time.Now().UTC(), userID)
 	if err != nil {
 		return fmt.Errorf("SetTemplateStatus: %w", err)
 	}
@@ -139,22 +139,22 @@ func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUI
 
 // StrategyCardRow is a denormalized row for Gallery card display (ADR-0027).
 type StrategyCardRow struct {
-	ID              uuid.UUID
-	UserID          uuid.UUID
-	Name            string
-	Description     string
-	Tags            []string
-	IsSystem        bool
-	IsPublic        bool
-	UseCount        int32
-	CreatedAt       time.Time
-	Sparkline       []string // equity curve from latest successful backtest
-	WinRate         string
-	MaxDrawdown     string
-	ProfitFactor    string
-	SharpeRatio     string
-	RunningSchedules int32
-	BacktestRunID   *uuid.UUID
+	ID                     uuid.UUID
+	UserID                 uuid.UUID
+	Name                   string
+	Description            string
+	Tags                   []string
+	IsSystem               bool
+	IsPublic               bool
+	UseCount               int32
+	CreatedAt              time.Time
+	Sparkline              []string // equity curve from latest successful backtest
+	WinRate                string
+	MaxDrawdown            string
+	ProfitFactor           string
+	SharpeRatio            string
+	RunningSchedules       int32
+	BacktestRunID          *uuid.UUID
 	IsMarketplacePublished bool // H3: true if has active marketplace listing
 }
 
@@ -280,7 +280,10 @@ func parseCardFloat(s string) float64 {
 	return f
 }
 
-type btInfo struct{ runID uuid.UUID; raw []byte }
+type btInfo struct {
+	runID uuid.UUID
+	raw   []byte
+}
 
 func (s *StrategySvc) batchListStrategyCardsQueries(ctx context.Context, tids []uuid.UUID) (map[uuid.UUID]btInfo, map[uuid.UUID]int32, map[uuid.UUID]bool, error) {
 	btRows, err := s.pg.Query(ctx,

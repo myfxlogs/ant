@@ -166,7 +166,7 @@ func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
 
 func (r *UserRepository) UpdateLastLogin(ctx context.Context, id uuid.UUID) error {
 	query := `UPDATE users SET last_login_at = $2 WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id, time.Now())
+	_, err := r.db.Exec(ctx, query, id, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("update last login: %w", err)
 	}

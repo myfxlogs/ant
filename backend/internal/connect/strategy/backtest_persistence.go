@@ -86,7 +86,7 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 		status = StatusDegraded
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	BacktestRunsTotal.WithLabelValues(status).Inc()
 	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, "", &now, &now, protoResp, snapshotBytes); err != nil {
 		s.log.Error("backtest worker: UpdateAsyncFields failed", zap.String("runID", run.ID.String()), zap.Error(err))
@@ -131,7 +131,7 @@ func (s *StrategyExecutionServer) saveBacktestResult(ctx context.Context, run *r
 }
 
 func (s *StrategyExecutionServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {
-	now := time.Now()
+	now := time.Now().UTC()
 	BacktestRunsTotal.WithLabelValues(StatusFailed).Inc()
 	status := StatusFailed
 	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil, nil); err != nil {

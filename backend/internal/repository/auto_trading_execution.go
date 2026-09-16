@@ -23,7 +23,7 @@ func (r *AutoTradingRepository) CreateExecution(ctx context.Context, execution *
 	if execution.ID == uuid.Nil {
 		execution.ID = uuid.New()
 	}
-	execution.StartedAt = time.Now()
+	execution.StartedAt = time.Now().UTC()
 
 	_, err := r.db.Exec(ctx, query,
 		execution.ID, execution.UserID, execution.TemplateID, execution.ScheduleID, execution.AccountID,

@@ -192,7 +192,7 @@ func (s *DepositService) ConfirmDeposit(ctx context.Context, userID, addrID uuid
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	now := time.Now()
+	now := time.Now().UTC()
 	dep := &model.Deposit{
 		ID:               uuid.New(),
 		UserID:           userID,

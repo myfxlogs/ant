@@ -34,7 +34,7 @@ func (s *CalibrationService) RecordPrediction(ctx context.Context, userID uuid.U
 		UserID:        userID,
 		Decision:      decision,
 		RawConfidence: confidence,
-		PredictedAt:   time.Now(),
+		PredictedAt:   time.Now().UTC(),
 		Symbol:        symbol,
 	})
 }
@@ -42,9 +42,9 @@ func (s *CalibrationService) RecordPrediction(ctx context.Context, userID uuid.U
 // Recalibrate recomputes thresholds per confidence bucket via grid search
 // over candidate thresholds, maximizing accuracy while maintaining coverage.
 // Algorithm from QuantDinger ai_calibration.py:
-//   1. Search candidate thresholds (grid: 0.10–0.30 step 0.02)
-//   2. For each threshold, compute accuracy and coverage (BUY+SELL ratio)
-//   3. Pick threshold maximizing accuracy, tie-break by coverage
+//  1. Search candidate thresholds (grid: 0.10–0.30 step 0.02)
+//  2. For each threshold, compute accuracy and coverage (BUY+SELL ratio)
+//  3. Pick threshold maximizing accuracy, tie-break by coverage
 func (s *CalibrationService) Recalibrate(ctx context.Context, userID uuid.UUID) error {
 	stats, err := s.repo.GetPredictionStats(ctx, userID)
 	if err != nil {

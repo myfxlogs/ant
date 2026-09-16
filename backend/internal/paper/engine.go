@@ -176,7 +176,7 @@ func (e *PaperEngine) ClosePaperOrder(ctx context.Context, accountID, symbol str
 			zap.String("accountID", accountID), zap.String("symbol", symbol))
 		return fmt.Errorf("no open position for %s on account %s", symbol, accountID)
 	}
-	now := time.Now()
+	now := time.Now().UTC()
 	order.State = "closed"
 	order.ClosedAt = &now
 	if err := e.repo.UpdateOrder(ctx, order); err != nil {

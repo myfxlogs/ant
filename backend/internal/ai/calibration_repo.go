@@ -57,7 +57,7 @@ func (r *CalibrationRepository) InsertPrediction(ctx context.Context, p *AIPredi
 // GetUnvalidatedPredictions returns predictions older than minAge that
 // haven't been validated yet.
 func (r *CalibrationRepository) GetUnvalidatedPredictions(ctx context.Context, minAge time.Duration, limit int) ([]AIPrediction, error) {
-	cutoff := time.Now().Add(-minAge)
+	cutoff := time.Now().UTC().Add(-minAge)
 	rows, err := r.db.Query(ctx,
 		`SELECT id, user_id, decision, raw_confidence, predicted_at,
 		        COALESCE(symbol,''), actual_return_pct, was_correct, validated_at
@@ -100,7 +100,7 @@ func (r *CalibrationRepository) GetEarliestUnvalidatedAge(ctx context.Context, m
 
 // ValidatePrediction marks a prediction as validated with its outcome.
 func (r *CalibrationRepository) ValidatePrediction(ctx context.Context, id uuid.UUID, actualReturn float64, correct bool) error {
-	now := time.Now()
+	now := time.Now().UTC()
 	_, err := r.db.Exec(ctx,
 		`UPDATE ai_predictions SET actual_return_pct=$1, was_correct=$2, validated_at=$3 WHERE id=$4`,
 		actualReturn, correct, now, id)

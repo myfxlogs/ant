@@ -49,7 +49,7 @@ func (r *AIWorkflowRepository) CreateRun(ctx context.Context, userID uuid.UUID, 
 	if title == "" {
 		title = "AI 工作流"
 	}
-	now := time.Now()
+	now := time.Now().UTC()
 	run := &AIWorkflowRun{
 		ID:        uuid.New(),
 		UserID:    userID,
@@ -77,7 +77,7 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 	}
 	step := &AIWorkflowStep{
 		ID: uuid.New(), RunID: runID, Key: key, Title: title, Status: status,
-		Input: input, Output: output, Error: stepErr, Duration: durationMs, CreatedAt: time.Now(),
+		Input: input, Output: output, Error: stepErr, Duration: durationMs, CreatedAt: time.Now().UTC(),
 	}
 
 	tx, err := r.db.Begin(ctx)
@@ -101,7 +101,7 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 		`UPDATE ai_workflow_runs
 		 SET updated_at = $1, status = CASE WHEN status = 'running' THEN $2 ELSE status END
 		 WHERE id = $3 AND user_id = $4`,
-		time.Now(), determineRunStatus(status, key), runID, userID,
+		time.Now().UTC(), determineRunStatus(status, key), runID, userID,
 	); err != nil {
 		return nil, err
 	}

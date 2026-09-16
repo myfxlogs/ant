@@ -22,52 +22,52 @@ type StrategyExecution struct {
 }
 
 type RiskConfig struct {
-	ID                  uuid.UUID `json:"id" db:"id"`
-	UserID              uuid.UUID `json:"user_id" db:"user_id"`
-	AccountID           uuid.UUID `json:"account_id" db:"account_id"`
+	ID                  uuid.UUID       `json:"id" db:"id"`
+	UserID              uuid.UUID       `json:"user_id" db:"user_id"`
+	AccountID           uuid.UUID       `json:"account_id" db:"account_id"`
 	MaxRiskPercent      decimal.Decimal `json:"max_risk_percent" db:"max_risk_percent"`
-	MaxDailyLoss        decimal.Decimal   `json:"max_daily_loss" db:"max_daily_loss"`
+	MaxDailyLoss        decimal.Decimal `json:"max_daily_loss" db:"max_daily_loss"`
 	MaxDrawdownPercent  decimal.Decimal `json:"max_drawdown_percent" db:"max_drawdown_percent"`
-	MaxPositions        int       `json:"max_positions" db:"max_positions"`
+	MaxPositions        int             `json:"max_positions" db:"max_positions"`
 	MaxLotSize          decimal.Decimal `json:"max_lot_size" db:"max_lot_size"`
-	DailyLossUsed       decimal.Decimal   `json:"daily_loss_used" db:"daily_loss_used"`
+	DailyLossUsed       decimal.Decimal `json:"daily_loss_used" db:"daily_loss_used"`
 	TrailingStopEnabled bool            `json:"trailing_stop_enabled" db:"trailing_stop_enabled"`
 	TrailingStopPips    decimal.Decimal `json:"trailing_stop_pips" db:"trailing_stop_pips"`
-	CreatedAt           time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
+	CreatedAt           time.Time       `json:"created_at" db:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at" db:"updated_at"`
 }
 
 type GlobalSettings struct {
-	ID                  uuid.UUID `json:"id" db:"id"`
-	UserID              uuid.UUID `json:"user_id" db:"user_id"`
-	AutoTradeEnabled    bool      `json:"auto_trade_enabled" db:"auto_trade_enabled"`
-	NotificationEnabled bool      `json:"notification_enabled" db:"notification_enabled"`
-	EmailNotification   bool      `json:"email_notification" db:"email_notification"`
-	SmsNotification     bool      `json:"sms_notification" db:"sms_notification"`
+	ID                  uuid.UUID       `json:"id" db:"id"`
+	UserID              uuid.UUID       `json:"user_id" db:"user_id"`
+	AutoTradeEnabled    bool            `json:"auto_trade_enabled" db:"auto_trade_enabled"`
+	NotificationEnabled bool            `json:"notification_enabled" db:"notification_enabled"`
+	EmailNotification   bool            `json:"email_notification" db:"email_notification"`
+	SmsNotification     bool            `json:"sms_notification" db:"sms_notification"`
 	MaxRiskPercent      decimal.Decimal `json:"max_risk_percent" db:"max_risk_percent"`
-	MaxPositions        int       `json:"max_positions" db:"max_positions"`
+	MaxPositions        int             `json:"max_positions" db:"max_positions"`
 	MaxLotSize          decimal.Decimal `json:"max_lot_size" db:"max_lot_size"`
-	MaxDailyLoss        decimal.Decimal   `json:"max_daily_loss" db:"max_daily_loss"`
+	MaxDailyLoss        decimal.Decimal `json:"max_daily_loss" db:"max_daily_loss"`
 	MaxDrawdownPercent  decimal.Decimal `json:"max_drawdown_percent" db:"max_drawdown_percent"`
-	CreatedAt           time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
+	CreatedAt           time.Time       `json:"created_at" db:"created_at"`
+	UpdatedAt           time.Time       `json:"updated_at" db:"updated_at"`
 }
 
 type TradingLog struct {
-	ID         uuid.UUID `json:"id" db:"id"`
-	UserID     uuid.UUID `json:"user_id" db:"user_id"`
-	AccountID  uuid.UUID `json:"account_id" db:"account_id"`
-	StrategyID uuid.UUID `json:"strategy_id" db:"strategy_id"`
-	LogType    string    `json:"log_type" db:"log_type"`
-	Action     string    `json:"action" db:"action"`
-	Symbol     string    `json:"symbol" db:"symbol"`
-	Details    string    `json:"details" db:"details"`
-	Volume     decimal.Decimal   `json:"volume" db:"volume"`
-	Price      decimal.Decimal   `json:"price" db:"price"`
-	Ticket     int64     `json:"ticket" db:"ticket"`
-	Profit     decimal.Decimal   `json:"profit" db:"profit"`
-	Message    string    `json:"message" db:"message"`
-	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	ID         uuid.UUID       `json:"id" db:"id"`
+	UserID     uuid.UUID       `json:"user_id" db:"user_id"`
+	AccountID  uuid.UUID       `json:"account_id" db:"account_id"`
+	StrategyID uuid.UUID       `json:"strategy_id" db:"strategy_id"`
+	LogType    string          `json:"log_type" db:"log_type"`
+	Action     string          `json:"action" db:"action"`
+	Symbol     string          `json:"symbol" db:"symbol"`
+	Details    string          `json:"details" db:"details"`
+	Volume     decimal.Decimal `json:"volume" db:"volume"`
+	Price      decimal.Decimal `json:"price" db:"price"`
+	Ticket     int64           `json:"ticket" db:"ticket"`
+	Profit     decimal.Decimal `json:"profit" db:"profit"`
+	Message    string          `json:"message" db:"message"`
+	CreatedAt  time.Time       `json:"created_at" db:"created_at"`
 }
 
 func NewTradingLog(userID uuid.UUID, logType, action, symbol, message string) *TradingLog {
@@ -162,7 +162,7 @@ func NewStrategyExecution(userID, templateID, accountID uuid.UUID) *StrategyExec
 		TemplateID: templateID,
 		AccountID:  accountID,
 		Status:     ExecutionStatusRunning,
-		StartedAt:  time.Now(),
+		StartedAt:  time.Now().UTC(),
 	}
 }
 
@@ -174,8 +174,8 @@ func NewRiskConfig(userID uuid.UUID, accountID uuid.UUID) *RiskConfig {
 		MaxRiskPercent:      decimal.NewFromFloat(2.0),
 		MaxPositions:        5,
 		TrailingStopEnabled: false,
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
+		CreatedAt:           time.Now().UTC(),
+		UpdatedAt:           time.Now().UTC(),
 	}
 }
 
@@ -192,7 +192,7 @@ func NewGlobalSettings(userID uuid.UUID) *GlobalSettings {
 		MaxLotSize:          decimal.NewFromFloat(100.0),
 		MaxDailyLoss:        decimal.NewFromFloat(5000),
 		MaxDrawdownPercent:  decimal.NewFromFloat(10.0),
-		CreatedAt:           time.Now(),
-		UpdatedAt:           time.Now(),
+		CreatedAt:           time.Now().UTC(),
+		UpdatedAt:           time.Now().UTC(),
 	}
 }

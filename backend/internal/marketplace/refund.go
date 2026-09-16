@@ -181,7 +181,7 @@ func (s *Service) reverseSettlement(ctx context.Context, tx pgx.Tx, sid, uid uui
 	case SettlementStatusFrozen:
 		_, err = tx.Exec(ctx,
 			`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
-			settlementID, time.Now(),
+			settlementID, time.Now().UTC(),
 		)
 		if err != nil {
 			return fmt.Errorf("marketplace: mark settlement refunded: %w", err)
@@ -239,12 +239,12 @@ func (s *Service) reverseSettlement(ctx context.Context, tx pgx.Tx, sid, uid uui
 			_, err = tx.Exec(ctx,
 				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2,
 				 reversal_failed = true, reversal_failure_note = $3 WHERE id = $1`,
-				settlementID, time.Now(), reversalNote,
+				settlementID, time.Now().UTC(), reversalNote,
 			)
 		} else {
 			_, err = tx.Exec(ctx,
 				`UPDATE marketplace_settlements SET status = 'refunded', refunded_at = $2 WHERE id = $1`,
-				settlementID, time.Now(),
+				settlementID, time.Now().UTC(),
 			)
 		}
 		if err != nil {

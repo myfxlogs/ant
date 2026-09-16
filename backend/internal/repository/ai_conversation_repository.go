@@ -47,8 +47,8 @@ func (r *AIConversationRepository) CreateWithID(ctx context.Context, userID, con
 		ID:        convID,
 		UserID:    userID,
 		Title:     title,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 	}
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_conversations (id, user_id, title, created_at, updated_at)
@@ -106,7 +106,7 @@ func (r *AIConversationRepository) GetByID(ctx context.Context, id, userID uuid.
 func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID uuid.UUID, title string) error {
 	tag, err := r.db.Exec(ctx,
 		`UPDATE ai_conversations SET title = $1, updated_at = $2 WHERE id = $3 AND user_id = $4`,
-		title, time.Now(), id, userID,
+		title, time.Now().UTC(), id, userID,
 	)
 	if err != nil {
 		return fmt.Errorf("update conversation title: %w", err)
@@ -120,7 +120,7 @@ func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID u
 func (r *AIConversationRepository) Touch(ctx context.Context, id, userID uuid.UUID) error {
 	_, err := r.db.Exec(ctx,
 		`UPDATE ai_conversations SET updated_at = $1 WHERE id = $2 AND user_id = $3`,
-		time.Now(), id, userID,
+		time.Now().UTC(), id, userID,
 	)
 	if err != nil {
 		return fmt.Errorf("touch conversation: %w", err)
@@ -145,7 +145,7 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conve
 		ConversationID: conversationID,
 		Role:           role,
 		Content:        content,
-		CreatedAt:      time.Now(),
+		CreatedAt:      time.Now().UTC(),
 	}
 	ct, err := r.db.Exec(ctx,
 		`INSERT INTO ai_messages (id, conversation_id, role, content, created_at, turn_data)
@@ -223,8 +223,8 @@ func (r *AIConversationRepository) CreateWithStrategyKey(ctx context.Context, us
 		ID:        uuid.New(),
 		UserID:    userID,
 		Title:     title,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
 	}
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_conversations (id, user_id, title, strategy_key, created_at, updated_at)

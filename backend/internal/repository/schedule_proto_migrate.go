@@ -89,7 +89,7 @@ func MigrateScheduleProtoColumns(ctx context.Context, pool *pgxpool.Pool) error 
 				parameters = $2, schedule_config = $3, backtest_metrics = $4,
 				risk_reasons = $5, risk_warnings = $6, updated_at = $7
 			WHERE id = $1`,
-			r.id, r.parameters, r.scheduleConfig, r.backtestMetrics, r.riskReasons, r.riskWarnings, time.Now())
+			r.id, r.parameters, r.scheduleConfig, r.backtestMetrics, r.riskReasons, r.riskWarnings, time.Now().UTC())
 		if err != nil {
 			return fmt.Errorf("migrate schedule proto: update %s: %w", r.id, err)
 		}
@@ -122,7 +122,7 @@ func migrateScheduleConfig(data []byte) ([]byte, bool) {
 		return nil, false
 	}
 	var legacy struct {
-		CronExpression            string `json:"cron_expression"`
+		CronExpression           string `json:"cron_expression"`
 		IntervalMs               int64  `json:"interval_ms"`
 		EventTrigger             string `json:"event_trigger"`
 		TriggerMode              string `json:"trigger_mode"`
@@ -133,7 +133,7 @@ func migrateScheduleConfig(data []byte) ([]byte, bool) {
 		return nil, false
 	}
 	out, err := proto.Marshal(&antv1.ScheduleConfig{
-		CronExpression:            legacy.CronExpression,
+		CronExpression:           legacy.CronExpression,
 		IntervalMs:               legacy.IntervalMs,
 		EventTrigger:             legacy.EventTrigger,
 		TriggerMode:              legacy.TriggerMode,

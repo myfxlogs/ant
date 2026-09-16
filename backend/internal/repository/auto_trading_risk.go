@@ -21,7 +21,7 @@ func (r *AutoTradingRepository) CreateRiskConfig(ctx context.Context, config *mo
 				trailing_stop_enabled, trailing_stop_pips, created_at, updated_at
 			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
 
-	now := time.Now()
+	now := time.Now().UTC()
 	if config.ID == uuid.Nil {
 		config.ID = uuid.New()
 	}
@@ -107,7 +107,7 @@ func (r *AutoTradingRepository) UpdateRiskConfig(ctx context.Context, config *mo
 				trailing_stop_enabled = $8, trailing_stop_pips = $9, updated_at = $10
 			WHERE id = $1`
 
-	config.UpdatedAt = time.Now()
+	config.UpdatedAt = time.Now().UTC()
 	_, err := r.db.Exec(ctx, query,
 		config.ID, config.MaxRiskPercent, config.MaxDailyLoss, config.MaxDrawdownPercent,
 		config.MaxPositions, config.MaxLotSize, config.DailyLossUsed,
@@ -121,7 +121,7 @@ func (r *AutoTradingRepository) UpdateRiskConfig(ctx context.Context, config *mo
 
 func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid.UUID, dailyLossUsed decimal.Decimal) error {
 	query := `UPDATE risk_configs SET daily_loss_used = $2, updated_at = $3 WHERE id = $1`
-	_, err := r.db.Exec(ctx, query, id, dailyLossUsed, time.Now())
+	_, err := r.db.Exec(ctx, query, id, dailyLossUsed, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("update daily loss used: %w", err)
 	}
@@ -130,7 +130,7 @@ func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid
 
 func (r *AutoTradingRepository) ResetDailyLossUsed(ctx context.Context, userID uuid.UUID) error {
 	query := `UPDATE risk_configs SET daily_loss_used = 0, updated_at = $2 WHERE user_id = $1`
-	_, err := r.db.Exec(ctx, query, userID, time.Now())
+	_, err := r.db.Exec(ctx, query, userID, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("reset daily loss used: %w", err)
 	}

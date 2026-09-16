@@ -73,7 +73,7 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 	}
 
 	// Add equity / daily / hourly (not in core — not needed by AI report).
-	now := time.Now()
+	now := time.Now().UTC()
 	start := now.AddDate(-1, 0, 0)
 	equityCurve := s.fetchEquityCurve(ctx, req, accountID, start, now)
 	core.EquityCurve = equityCurveToProto(equityCurve)
@@ -94,7 +94,7 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 // Callers that need equity curve, daily PnL, or hourly stats must add them
 // after calling this method.
 func (s *AnalyticsServer) computeAnalyticsCore(ctx context.Context, accountID uuid.UUID) (*antv1.AccountAnalyticsResponse, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	start := now.AddDate(-1, 0, 0)
 	tradeStats, err := s.fetchTradeStats(ctx, accountID, start, now)
 	if err != nil {
@@ -117,7 +117,9 @@ func (s *AnalyticsServer) computeAnalyticsCore(ctx context.Context, accountID uu
 
 func (s *AnalyticsServer) fetchTradeStats(ctx context.Context, accountID uuid.UUID, start, now time.Time) (*model.TradeStats, error) {
 	trades, err := s.repo.GetTradeStatsData(ctx, accountID, start, now)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	tradeStats := computeTradeStats(trades)
 	maxWins, maxLosses, err := s.repo.GetConsecutiveStats(ctx, accountID, start, now)
 	if err != nil {
@@ -207,8 +209,8 @@ func (s *AnalyticsServer) GetRecentTrades(ctx context.Context, req *connect.Requ
 		pageSize = 20
 	}
 
-	start := time.Now().AddDate(-1, 0, 0)
-	end := time.Now()
+	start := time.Now().UTC().AddDate(-1, 0, 0)
+	end := time.Now().UTC()
 
 	records, total, err := s.repo.GetTradeRecordsPaginated(ctx, accountID, start, end, page, pageSize)
 	if err != nil {

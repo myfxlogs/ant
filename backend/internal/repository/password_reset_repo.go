@@ -57,7 +57,7 @@ func (r *PasswordResetRepo) CreateResetToken(ctx context.Context, userID uuid.UU
 	_, err = r.db.Exec(ctx,
 		`INSERT INTO password_reset_tokens (user_id, token, expires_at)
 		 VALUES ($1, $2, $3)`,
-		userID, hashedHex, time.Now().Add(24*time.Hour),
+		userID, hashedHex, time.Now().UTC().Add(24*time.Hour),
 	)
 	if err != nil {
 		return "", fmt.Errorf("create reset token: %w", err)

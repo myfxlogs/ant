@@ -72,8 +72,8 @@ func BuildSharePerformance(
 	}
 
 	aid, _ := uuid.Parse(st.AccountID)
-	start := time.Now().AddDate(-1, 0, 0)
-	end := time.Now()
+	start := time.Now().UTC().AddDate(-1, 0, 0)
+	end := time.Now().UTC()
 
 	// Equity curve.
 	equityPoints, _ := eqRepo.GetEquityCurve(ctx, aid, start, end)

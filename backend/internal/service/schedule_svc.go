@@ -79,7 +79,7 @@ func (s *StrategySvc) CreateSchedule(ctx context.Context, r *ScheduleRow) error 
 	if r.ID == uuid.Nil {
 		r.ID = uuid.New()
 	}
-	now := time.Now()
+	now := time.Now().UTC()
 	r.CreatedAt = now
 	r.UpdatedAt = now
 	if r.Parameters == nil {
@@ -120,7 +120,7 @@ func (s *StrategySvc) CreateSchedule(ctx context.Context, r *ScheduleRow) error 
 }
 
 func (s *StrategySvc) UpdateSchedule(ctx context.Context, r *ScheduleRow) error {
-	r.UpdatedAt = time.Now()
+	r.UpdatedAt = time.Now().UTC()
 	// Recompute next_run_at when schedule_type or schedule_config change.
 	if next, err := model.ComputeNextRunAtFromConfig(r.ScheduleType, r.ScheduleConfig); err == nil && !next.IsZero() {
 		r.NextRunAt = &next
@@ -156,7 +156,7 @@ func (s *StrategySvc) DeleteSchedule(ctx context.Context, id, userID uuid.UUID) 
 func (s *StrategySvc) SetScheduleActive(ctx context.Context, id, userID uuid.UUID, active bool) error {
 	_, err := s.pg.Exec(ctx,
 		`UPDATE strategy_schedules SET is_active=$2, enable_count=enable_count+CASE WHEN $2=true AND is_active=false THEN 1 ELSE 0 END, updated_at=$3 WHERE id=$1 AND user_id=$4`,
-		id, active, time.Now(), userID)
+		id, active, time.Now().UTC(), userID)
 	if err != nil {
 		return fmt.Errorf("SetScheduleActive: %w", err)
 	}

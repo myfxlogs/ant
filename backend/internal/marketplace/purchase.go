@@ -97,7 +97,7 @@ func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, coup
 	var expiresAt *time.Time
 	if stratInfo.priceModel == PriceModelSubscription {
 		subKind = SubKindSubscription
-		exp := time.Now().Add(30 * 24 * time.Hour)
+		exp := time.Now().UTC().Add(30 * 24 * time.Hour)
 		expiresAt = &exp
 	}
 

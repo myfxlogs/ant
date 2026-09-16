@@ -75,7 +75,7 @@ func openTimeFromOrder(o *pb.Order) time.Time {
 		return t.AsTime()
 	}
 	if ts := o.GetOpenTimestampUTC(); ts > 0 {
-		return time.Unix(ts, 0)
+		return time.Unix(ts, 0).UTC()
 	}
 	return time.Time{}
 }
@@ -86,7 +86,7 @@ func closeTimeFromOrder(o *pb.Order) time.Time {
 		return t.AsTime()
 	}
 	if ts := o.GetCloseTimestampUTC(); ts > 0 {
-		return time.Unix(ts, 0)
+		return time.Unix(ts, 0).UTC()
 	}
 	return time.Time{}
 }

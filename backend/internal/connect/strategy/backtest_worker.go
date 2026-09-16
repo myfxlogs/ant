@@ -47,7 +47,7 @@ func (s *StrategyExecutionServer) backtestWorker(ctx context.Context, workerID i
 		}
 
 		// Claim next pending run (atomic SKIP LOCKED — concurrent-safe).
-		leaseUntil := time.Now().Add(leaseFor)
+		leaseUntil := time.Now().UTC().Add(leaseFor)
 		run, err := s.backtestRepo.ClaimNextForWork(ctx, leaseUntil)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {

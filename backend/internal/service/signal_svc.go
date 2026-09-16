@@ -65,7 +65,7 @@ func (s *StrategySvc) GetSignal(ctx context.Context, id, userID uuid.UUID) (*Sig
 }
 
 func (s *StrategySvc) ExecuteSignal(ctx context.Context, signalID, userID uuid.UUID) (*SignalRow, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	tag, err := s.pg.Exec(ctx,
 		`UPDATE strategy_signals SET status='executed', executed_at=$2
 		 WHERE id=$1 AND status='pending'

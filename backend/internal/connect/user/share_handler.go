@@ -53,7 +53,7 @@ func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request
 	st := &repository.ShareToken{
 		UserID: uid, AccountID: req.Msg.AccountId, Token: token,
 		Description: req.Msg.Description, ShowPositions: req.Msg.ShowPositions,
-		ExpiresAt: time.Now().Add(time.Duration(expireDays) * 24 * time.Hour),
+		ExpiresAt: time.Now().UTC().Add(time.Duration(expireDays) * 24 * time.Hour),
 	}
 	if err := s.repo.Create(ctx, st); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)

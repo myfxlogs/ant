@@ -68,7 +68,7 @@ func (s *StrategySvc) ListSystemStrategies(ctx context.Context) ([]SystemStrateg
 }
 
 func (s *StrategySvc) CreateSystemStrategy(ctx context.Context, name, description, code string, tags []string) (*TemplateRow, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	if tags == nil {
 		tags = []string{}
 	}
@@ -120,7 +120,7 @@ func (s *StrategySvc) UpdateSystemStrategy(ctx context.Context, id uuid.UUID, na
 	if tags != nil {
 		t.Tags = tags
 	}
-	t.UpdatedAt = time.Now()
+	t.UpdatedAt = time.Now().UTC()
 	_, err = s.pg.Exec(ctx,
 		`UPDATE strategy_templates SET name=$2, description=$3, code=$4, tags=$5, updated_at=$6 WHERE id=$1 AND is_system=true`,
 		t.ID, t.Name, t.Description, t.Code, t.Tags, t.UpdatedAt)
@@ -133,7 +133,7 @@ func (s *StrategySvc) UpdateSystemStrategy(ctx context.Context, id uuid.UUID, na
 func (s *StrategySvc) DeleteSystemStrategy(ctx context.Context, id uuid.UUID) error {
 	ct, err := s.pg.Exec(ctx,
 		`UPDATE strategy_templates SET status='canceled', updated_at=$2 WHERE id=$1 AND is_system=true AND status!='canceled'`,
-		id, time.Now())
+		id, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("delete system strategy: %w", err)
 	}
@@ -247,7 +247,7 @@ func (s *StrategySvc) ListAllStrategies(ctx context.Context, params ListAllStrat
 // ── Compliance actions ──
 
 func (s *StrategySvc) FlagTemplate(ctx context.Context, id uuid.UUID, reason string, adminID uuid.UUID) error {
-	now := time.Now()
+	now := time.Now().UTC()
 	ct, err := s.pg.Exec(ctx,
 		`UPDATE strategy_templates SET flag='flagged', flag_reason=$2, flagged_by=$3, flagged_at=$4 WHERE id=$1`,
 		id, reason, adminID, now)
@@ -300,7 +300,7 @@ func (s *StrategySvc) PublishTemplate(ctx context.Context, id uuid.UUID) error {
 func (s *StrategySvc) DisableTemplate(ctx context.Context, id uuid.UUID) error {
 	// Stop all active schedules for this template, then flag as disabled.
 	_, err := s.pg.Exec(ctx,
-		`UPDATE strategy_schedules SET is_active = false, updated_at = $2 WHERE template_id = $1 AND is_active = true`, id, time.Now())
+		`UPDATE strategy_schedules SET is_active = false, updated_at = $2 WHERE template_id = $1 AND is_active = true`, id, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("disable schedules: %w", err)
 	}
@@ -330,7 +330,7 @@ func (s *StrategySvc) EnableTemplate(ctx context.Context, id uuid.UUID) error {
 func (s *StrategySvc) ArchiveTemplate(ctx context.Context, id uuid.UUID) error {
 	// Soft-delete: stop schedules + mark as archived.
 	_, err := s.pg.Exec(ctx,
-		`UPDATE strategy_schedules SET is_active = false, updated_at = $2 WHERE template_id = $1 AND is_active = true`, id, time.Now())
+		`UPDATE strategy_schedules SET is_active = false, updated_at = $2 WHERE template_id = $1 AND is_active = true`, id, time.Now().UTC())
 	if err != nil {
 		return fmt.Errorf("archive schedules: %w", err)
 	}

@@ -34,7 +34,7 @@ func (s *AnalyticsServer) GetRollingMetrics(ctx context.Context, req *connect.Re
 		}
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	start := now.AddDate(-1, 0, 0)
 
 	// Equity curve — base for rolling metrics and drawdown.

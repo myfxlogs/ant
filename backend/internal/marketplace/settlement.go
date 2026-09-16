@@ -49,7 +49,7 @@ func (s *Service) SettleExpired(ctx context.Context, providerID string) (*Settle
 		 FROM marketplace_settlements
 		 WHERE provider_id = $1 AND status = 'frozen' AND settles_at <= $2
 		 FOR UPDATE SKIP LOCKED`,
-		pid, time.Now(),
+		pid, time.Now().UTC(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("marketplace: settle: query frozen: %w", err)
@@ -264,7 +264,7 @@ func (s *Service) createFrozenSettlementTx(ctx context.Context, tx pgx.Tx,
 	if refundWindowDays <= 0 {
 		refundWindowDays = DefaultRefundWindowDays
 	}
-	now := time.Now()
+	now := time.Now().UTC()
 	settlesAt := now.Add(time.Duration(refundWindowDays) * 24 * time.Hour)
 	_, err := tx.Exec(ctx,
 		`INSERT INTO marketplace_settlements
@@ -288,7 +288,9 @@ func (s *Service) settleBatch(ctx context.Context, tx pgx.Tx, batch []settlement
 			nil, IdemKeySettle+settleID)
 		if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
 			s.log.Error("settle: credit provider failed, skipping", zap.String("settlementID", settleID), zap.Error(err))
-			failedCount++; failedIDs = append(failedIDs, settleID); continue
+			failedCount++
+			failedIDs = append(failedIDs, settleID)
+			continue
 		}
 		if p.platformFee != "0.00" && p.platformFee != "" {
 			_, err = s.walletRepo.AdjustBalanceTx(ctx, tx, sysWalletID, SystemUserID,
@@ -297,20 +299,26 @@ func (s *Service) settleBatch(ctx context.Context, tx pgx.Tx, batch []settlement
 				nil, IdemKeyFeeSettle+settleID)
 			if err != nil && !errors.Is(err, model.ErrIdempotentReplay) {
 				s.log.Error("settle: credit platform fee failed, skipping", zap.String("settlementID", settleID), zap.Error(err))
-				failedCount++; failedIDs = append(failedIDs, settleID); continue
+				failedCount++
+				failedIDs = append(failedIDs, settleID)
+				continue
 			}
 		}
 		_, err = tx.Exec(ctx,
 			`UPDATE marketplace_settlements SET status = 'settled', settled_at = $2 WHERE id = $1 AND status = 'frozen'`,
-			p.id, time.Now())
+			p.id, time.Now().UTC())
 		if err != nil {
 			s.log.Error("settle: mark settled failed", zap.String("settlementID", settleID), zap.Error(err))
-			failedCount++; failedIDs = append(failedIDs, settleID); continue
+			failedCount++
+			failedIDs = append(failedIDs, settleID)
+			continue
 		}
 		providerAmt, err := decimal.NewFromString(p.providerAmt)
 		if err != nil {
 			s.log.Error("settle: invalid provider amount", zap.String("settlementID", settleID), zap.String("rawAmount", p.providerAmt), zap.Error(err))
-			failedCount++; failedIDs = append(failedIDs, settleID); continue
+			failedCount++
+			failedIDs = append(failedIDs, settleID)
+			continue
 		}
 		totalSettled = totalSettled.Add(providerAmt)
 		settledCount++
