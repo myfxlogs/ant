@@ -39,10 +39,10 @@
 | WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。补记2：真实浏览器走查 9 步全过（Playwright + e2e 账号）——新增"手动编写"空白编辑器脚手架 + 侧栏来源项中文默认值。补记：回测历史面板渲染 protobuf Timestamp 对象致整页崩溃（React #31）——formatStartedAt 稳健格式化 + 生产形状回归测试。补记3：最终架构重构落地——单一 centerView 状态机 + AI/回测停靠面板（420px 并排不抢占），三分区点击保持展开，使用模板来源移除，CodeEditorArea 编辑器常驻。 |
 | WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 分区切换驱动主区联动；新建策略分区四来源菜单（含手动编写）；粘性 importMode 修复；使用模板移除；分区切换关闭右侧面板。真实走查 9 步全绿。原文滚出 LOG。 |
 | AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
-| QS-1.4 Python bool(x) 语义 + vm_helpers:250 注释 | ⚠️待独立复审 | 施工方按 builder-handoff-qs-1.4.md S1–S3 完成：bool→双重 `!`（OP_NOT×2 → IsTrue）、注释更正、行为级测试+IR 形态守卫、BoolConversion 断言同步；对抗证明先红→mutation RED→restore→GREEN；机检全绿。详见 registry QS-1.4。 |
+| QS-1.4 Python bool(x) 语义 + vm_helpers:250 注释 | ✅done | 施工方按 builder-handoff-qs-1.4.md S1–S3 完成：bool→双重 `!`（OP_NOT×2 → IsTrue）、注释更正、行为级测试+IR 形态守卫、BoolConversion 断言同步；对抗证明先红→mutation RED→restore→GREEN；机检全绿。详见 registry QS-1.4。（Devin CLI 验收通过 2026-09-16；commit 88292b14；独立 mutation 重跑 RED→GREEN） |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: QS-1.4 ⚠️待独立复审——等 Devin CLI（[角色:决策终]）验收；通过后按 QS 顺序派 QS-1.6（spec §3.2）。QS 顺序 1.4→1.6→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
+- **下一步**: 派 QS-1.6（`docs/audits/builder-handoff-qs-1.6.md`）；QS 顺序 1.4✅→1.6→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -86,13 +86,15 @@
 - **FIX-2026-09-08-BYOK-MODEL-PICKER** ✅done — 聊天模型下拉框选不到用户自有 BYOK 模型 + provider UUID/字符串不匹配 + base_url 双路径（Devin CLI 直接施工+验收 2026-09-08，3 项对抗证明 RED→GREEN）
 - **FIX-2026-09-08-TEMP-RETRY** ✅done — kimi-k3 temperature 400 自愈重试 + 用户配置 temperature 生效 + 流式 fallback nil panic 修复 + 工作区常驻 AI 网关设置入口（Devin CLI 直接施工+验收 2026-09-08）
 - **FIX-2026-09-08-CURL-IMPORT** ✅done — 厂商 curl 示例一键导入 BYOK 配置（ParseProviderCurl RPC + 后端解析器 + 表单回填，存储零改动）（Devin CLI 直接施工+验收 2026-09-08）
-- **QS-1.4** ⚠️待独立复审 — Python bool(x) 语义修复 + vm_helpers:250 注释（2026-09-16 施工完成，对抗证明 + 机检全绿，详见 registry）
+- **QS-1.4** ✅done — Python bool(x) 语义修复 + vm_helpers:250 注释（Devin CLI 验收通过 2026-09-16，独立 mutation 重跑 RED→GREEN）
+- **PY-DECIMAL-CTOR-1** 🟦open — `Decimal("0")` 产 ValString 非 ValDecimal（QS-1.4 复审发现，P2）
 - **QS-1.6 / 1.3 / 1.2a / 1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（2026-09-16 Devin CLI 定稿，D-009）；详见 registry + spec §2 核验表
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-09-16 **QS-1.4 ✅done**（Devin CLI 独立复审通过，commit 88292b14）：bool(x)→双重 OP_NOT 复用 IsTrue；独立 mutation（恢复 !=）重跑语义级 RED→restore→GREEN。裁定：Decimal 构造器失真立债 PY-DECIMAL-CTOR-1（P2）；BoolConversion 旧断言同步批准。流程记录：施工方动交接层文件违 §4，内容核验准确保留。同日固化 D-012（施工方自审）/D-013（决策方出件自审）/D-014（自报末行带编号+hash）。
 - 2026-09-16 **VM 管线质量方案 v1 评估→v2 定稿**（Devin CLI 决策 D-009）：源码逐条核验，否决 QS-1.1/1.5/2.1/阶段 3 池化、改修法 QS-1.3/1.4/1.6、拆 QS-1.2、QS-1.7 改调研；10 条 QS 入 registry。详见 handover-audit-plan 2026-09-16 条目。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（Devin CLI 直接施工+验收）：①kimi-k3 聊天 400 "field Temperature invalid, only 1 is allowed"：根因 a `doChatRequest` 硬编码 Temperature 0.3 无视 `system_ai_configs.temperature`（该用户配 0.2）；根因 b 400 后原样重发无自愈。修复：`chatProvider` 加 temperature（`defaultTemperature`：配置值>0 用之，否则 0.3）+ `tryChatCompletion` 遇 400 body 含 "temperature" 以 temperature=1 重建自愈重试一次（tempRetried 防循环）。②连带修复两个既有 nil 雷：流式 400 → `fallbackNonStream(..., nil)` onChunk nil panic（签名透传 onChunk 修复）+ fallback 成功返回 (nil,nil) 后 `defer resp.Body.Close()` 解引用（补守卫）。③业主要求的模型配置入口：`WorkspaceCenterTabBar` tab 栏最右新增常驻齿轮（lazy AISettingsModal），code/chat tab 均可见，无需先开 AI 面板。对抗证明 3 项 RED→restore→GREEN（temperature 重试 httptest / 流式 fallback 投递（旧代码真实 nil panic）/ 前端入口 2 用例）。门禁全绿。风险/gap：自愈仅识别 body 含 "temperature" 的 400；流式路径对不支持 temperature 的模型首字延迟略增。详见 registry。
 - 2026-09-08 **FIX-2026-09-08-BYOK-MODEL-PICKER ✅done**（Devin CLI 直接施工+验收）：策略聊天模型下拉框选不到用户自有 BYOK 模型（xianhua.chan 报告，已配置 NOVA/kimi-k3 key 但下拉只显示系统模型）。3 层根因 + 修复：**A** `StrategyChat.tsx` 只调 listSystemModels → 改分组下拉（`我的 API Key` 在前 + `AI 网关` 在后，value=`provider_id|model` 字符串格式）；**B** `ListSystemModels` 返回 provider 行 UUID 而运行时 `resolveAllChatProviders` 按字符串比较 → 存的 primary 永不匹配（显示选中 X 实际用默认模型，usage 记录实锤）→ handler 经 providerRepo.ListAll 映射返回字符串 provider_id；**C** base_url 粘贴完整 endpoint（`/chat/completions` 结尾）被 chatEndpoint/discovery 拼双路径 404（生产日志 sensanova 每 2s 实锤）→ 新增 `normalizeAPIBase` 三处入口统一调用。对抗证明 3 项 RED→restore→GREEN（chatEndpoint 双路径 / handler UUID→字符串 / 前端分组+回显）。门禁全绿（go test 仅 3 个 pre-existing 5432 环境失败与改动无关；前端 vitest 189/189）。风险/gap：存量 UUID primary 显示 placeholder 需重选；部署后实测 xianhua.chan 下拉出现自有模型。详见 registry。

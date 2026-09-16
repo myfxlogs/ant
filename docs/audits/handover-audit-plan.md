@@ -656,3 +656,12 @@
 - **机检**：`go build ./...` ✅ / `go test ./tools/mql2go/...` ✅ / `-race -count=3` ✅ / `check-file-lines --strict` 0 errors（57 警告全 pre-existing，本任务文件零命中）/ `go vet` 零输出 / gofmt 本任务文件零新增。
 - **遗留疑问**：`Decimal("0")` 编译为 `StringVal("0")`（`case "Decimal"` 直返 arg）的既有失真非本任务范围，registry 已记录待裁定。
 - **状态**：⚠️待独立复审，停手等 Devin CLI（[角色:决策终]）。
+
+## 2026-09-16 QS-1.4 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `88292b14`（compile_py_expr.go bool→双重 `!`、vm_helpers.go:250 注释更正、compile_py_bool_test.go 新增 2 测试、BoolConversion 断言同步新形态）。
+- **独立复审（A–F）**：A 复用 OP_NOT/IsTrue 零新设施 ✅；B 双重 `!` 为最简正确形态 ✅；C check-lines 本任务文件零警告 ✅；D 9 边界用例行为级断言 ✅；E 合规 ✅；F 文档同步 ✅。机检独立重跑：`go build` / `go test -count=1 ./tools/mql2go/...` / `go test -race -count=1` / `check-file-lines --strict` / `go vet` 全绿。
+- **对抗证明独立重跑**：恢复 `ExprBinary "!="` → `TestCompilePython_BoolSemantics`（r_none=true want false）+ `TestCompilePython_BoolCompilesToDoubleNot` + `TestCompilePython_BoolConversion` 三测试 RED → restore → GREEN。
+- **裁定**：① `Decimal("0")`→`StringVal("0")` 失真成立，立债 `PY-DECIMAL-CTOR-1`（P2）；② `TestCompilePython_BoolConversion` 旧断言编码 bug 形态，最小同步为新形态——批准。
+- **流程记录**：施工方 commit 内含交接层文件改动（STATE/registry/handover），违 `dual-terminal-roles.md` §4「施工者不写交接层」；内容经独立核验准确（⚠️待独立复审标记正确），保留不回滚，下不为例。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

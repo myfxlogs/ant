@@ -61,7 +61,7 @@
 
 ### 3.2 [QS-1.6] read-after-write 确认走状态机
 
-- **根因先答**：施工方须先写明 `mutation_coordinator.go:325` `NotifyConfirmationEvent` 在 verify 成功后为何可能未迁移（候选：`action==open` 时 `ticket==0` 被 `:219` 早退；`isUpdateTypeCompatible` 不兼容；barrier 仍在 `submitting`）。答案写入 registry。
+- **根因先答**：施工方须先写明 `mutation_coordinator.go:325` `NotifyConfirmationEvent` 在 verify 成功后为何可能未迁移（候选：`action==open` 时 `ticket==0` 被 `:219` 早退；`isUpdateTypeCompatible` 不兼容；barrier 仍在 `submitting`）。答案随自报提交，由决策方回填 registry（施工者不写交接层）。
 - **改动**：`TradeBarrier` 新增 `ConfirmByAuthoritativeRead()`：持 `b.mu`，仅当 `state == barrierAcceptedUnconfirmed`（或 `barrierSubmitting`，视根因而定）→ `barrierConfirmed` + `Broadcast`；其余状态 no-op 并返回 bool。`mutation_coordinator.go:333-334` 改为调用该方法后再 `return barrierConfirmed`。**不用** `Reconcile`。
 - **验证**：新测试构造 verify 成功 + 事件不匹配场景，断言 `barrier.State()==barrierConfirmed` 在 Release 前成立；mutation：删 `ConfirmByAuthoritativeRead` 调用 → 状态仍 `acceptedUnconfirmed` → RED。
 - **REUSE**：`Reconcile`/`NotifyBrokerAccepted` 的锁+Broadcast 模式@`trade_barrier.go:185-206,330-342`。
