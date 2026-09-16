@@ -706,3 +706,11 @@
 - **豁免裁定**：两条 IgnoreTopFunction 证据链成立（hdwallet→gotron-sdk→notify@v0.9.3，仓内零直接 import）；精确限定第三方 top function，未来间接依赖新增常驻 goroutine 会 RED——批准为设计意图。
 - **遗留裁定**：`time.Sleep(20ms)` 仅影响 watcher spawn 覆盖率不影响正确性（ctx 先 cancel 时 `ctx.Done()` 已闭、watcher select 立即就绪广播）；`WaitState` 测试辅助方法存在同构 watcher（:392-402），已有同款 `defer close` 保护。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-2.4 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `8e393cae`——报告 `docs/audits/qs-2.4-race-audit.md`（65 行）：三树 race×3 全绿零 `DATA RACE`；PositionCache 3 项审计 + TradeBarrier 4 项审计逐项行号证据；发现 F1/F2 两条 P3。
+- **独立复审**：race 证据独立重跑属实（`./strategy/...` 4 子包 ~38s + `./tools/mql2go/...` 55.2s 亲跑全绿，connect/strategy 301s 沿用 QS-2.2 实跑）；审计断言逐项抽验——`isTerminal` 含 outcomeUnknown（:59-61）、Acquire :162-176 确无 Broadcast、NotifyBrokerAccepted :186 Lock→:200/:205、enrichFromPositionCache :112-153 全只读、broker_types.go:143 `retained := *merged` 浅拷贝 + mergePositionSnapshot 全 append-nil 新建（:90-91/:112-113）。
+- **发现项立债（决策方登记）**：F1 `TEST-WAITSTATE-ACQUIRE-BCAST-1`（P3，WaitState(submitting) 前序等待退化 2s ctx 超时；`r4_redo_test.go:195` 注释"会被唤醒"与实现不符实锤）；F2 `SNAPSHOT-SLICE-ALIAS-1`（P3，retained/发布快照共享 slice 底层数组依赖跨文件 immutable 约定）。均不改码本轮不修。
+- **覆盖空洞补记**：`tools/mql2go/cmd/parse_headers` 无测试文件（报告 §5 未列，验收时补录）。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
