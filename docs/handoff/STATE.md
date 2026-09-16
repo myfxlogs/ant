@@ -43,9 +43,10 @@
 | QS-1.6 read-after-write 确认走状态机 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5be48f30；ConfirmByAuthoritativeRead + 2 分支根因核实；独立 mutation×2 RED→GREEN |
 | QS-1.3 Python 函数局部作用域 | ✅done | Devin CLI 验收通过 2026-09-16；commits 9940eda4+ee47292d；resolveAssignTarget+isDeclaredGlobal+函数域分配；独立 mutation×4 RED→GREEN；修正 v2/v3 见 handoff |
 | QS-1.2a lastError 三 builtin | ✅done | Devin CLI 验收通过 2026-09-16；commit 65e2cccf；lastError 跨事件驻留+GetLastError 读后清零+SetUserError=65536+c+ERR_USER_ERROR_FIRST 常量；独立 mutation×2 RED→GREEN |
+| QS-1.7-INV ClientID 回显链路调研 | ✅done | Devin CLI 验收通过 2026-09-16；commit 05138758；结论=ClientID 不经 Comment 回显（全链路零复制+MT4 不透传+proto 无字段）→ QS-1.7 不立项，维持 fail-closed 锁仓+runbook；findings 落盘 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: 派 QS-1.7-INV（ClientID 回显链路调研，只查不改，handoff 待落盘）；QS 顺序 1.4✅→1.6✅→1.3✅→1.2a✅→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
+- **下一步**: 派 QS-2.2（goleak 集成，handoff 待落盘）；QS 顺序 1.4✅→1.6✅→1.3✅→1.2a✅→1.7-INV✅→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -95,12 +96,14 @@
 - **QS-1.3** ✅done — Python 函数局部作用域（Devin CLI 验收通过 2026-09-16，commits 9940eda4+ee47292d）
 - **PY-SCOPE-KNOWN-1** 🟦open — Python 作用域已知限制 3 条（QS-1.3 遗留，文档化行为）
 - **QS-1.2a** ✅done — lastError 三 builtin（Devin CLI 验收通过 2026-09-16，commit 65e2cccf）
-- **QS-1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
+- **QS-1.7-INV** ✅done — ClientID 不可回显→QS-1.7 不立项，维持 fail-closed（Devin CLI 验收通过 2026-09-16）
+- **QS-2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（D-009）；详见 registry + spec §2 核验表
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-09-16 **QS-1.7-INV ✅done**（Devin CLI 独立复审通过，commit 05138758）：ClientID 全链路五跳零复制进 Comment、mt4 adapter 不透传 Comment、proto 无 client_id 字段→QS-1.7 不立项，open outcomeUnknown 维持 fail-closed 锁仓+runbook；findings 落盘 docs/audits/qs-1.7-inv-findings.md。
 - 2026-09-16 **QS-1.2a ✅done**（Devin CLI 独立复审通过，commit 65e2cccf）：`vm.lastError` 跨事件驻留 + GetLastError 读后清零 + SetUserError=65536+c + ERR_USER_ERROR_FIRST 常量 + 6 项行为测试；独立 mutation×2 RED→GREEN；OrderSend fatal 路径零触碰（FAILCLOSED-1 保持）。
 - 2026-09-16 **QS-1.3 ✅done**（Devin CLI 独立复审通过，commits 9940eda4+ee47292d）：Python 函数内未声明赋值改落函数域局部槽（`resolveAssignTarget`+`isDeclaredGlobal` GlobalDecls 谓词+`compileDecl` localScopes[0]），`+=` 未声明名编译期 fail-closed；过程经修正 v2（施工方两处转交决策采信）+v3（复审退回 for 循环域消亡回退）；独立 mutation×4 RED→GREEN；3 条已知限制入 PY-SCOPE-KNOWN-1。
 - 2026-09-16 **QS-1.6 ✅done**（Devin CLI 独立复审通过，commit 5be48f30）：waitForConfirmation 权威读确认改走 `TradeBarrier.ConfirmByAuthoritativeRead` 状态机迁移；根因=cancel 动作名不在自身 updateType 兼容集 + open ticket==0 早退，两分支测试覆盖；独立 mutation×2 RED→GREEN；范围干净零交接层改动。

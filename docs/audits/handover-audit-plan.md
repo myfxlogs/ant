@@ -690,3 +690,11 @@
 - **边界核验**：OrderSend/fatal 路径零触碰（FAILCLOSED-1 不变量保持）；`SetReturnError` 维持 no-op（边界内裁定，MQL5 语义另行评估）；SetUserError 不触发 runtime 状态与 MQL4 一致。
 - **流程记录**：施工自报首次缺 `@hash`（D-014 第二次格式偏差），补发后定位复审对象。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-1.7-INV ✅done（Devin CLI 独立复审通过）→ QS-1.7 不立项
+
+- **施工**：commit `05138758`——findings `docs/audits/qs-1.7-inv-findings.md`（62 行，Q1–Q4 全答，逐跳 file:line 证据，未知项显式标注）。
+- **核心结论（决策方抽验属实）**：ClientID 在 submitOrder→PlaceOrder→submitToBroker→Gateway→pb.OrderSendRequest 五跳中**无一跳**进入 Comment 或其他 broker 可见字段；mt4 adapter 连 `req.Comment` 都不下发（`mt4/orders.go:61-68`，proto field 9 存在未用）；mt5 下发恒空串；`pb.OrderSendRequest` 无 client_id/external_id；magic 为 schedule 级非订单唯一；RequestId 只读。
+- **裁定**：ClientID 精确匹配链路当前不存在；即使接线（ClientID→Comment + MT4 透传 + 定长编码）仍有两层未证——comment 长度截断与 broker 回显改写（仓内有 comment 不可信反例）。**QS-1.7 不立项**：open outcomeUnknown 维持 ④-② 永久锁仓 fail-closed + 运维手册；将来确有运营需求按新债单独立项（路径已记录于 findings §施工方可行性观察）。
+- **提示词事实偏差记录**：handoff 事实 d 称 mt4 同构透传 comment——实测 mt4 未设置 Comment 字段，施工方纠正属实（D-013 路径可达性检查项仍需严格执行）。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
