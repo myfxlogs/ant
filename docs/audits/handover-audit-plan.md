@@ -792,3 +792,17 @@
 - **残余**：floorDiv×2/decimal mod/STORE_* 越界 setStackError 无专项行为测试（spec 明列排除，结构与已测分支同构）。
 - **部署注记**：VM 行为变更（除零/underflow/越界从静默→fatal）随下次 backend build 生效；依赖旧静默语义的策略将由假值继续转为事件级错误——fail-closed 方向符合预期。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 VM-HONESTY-3-REVIEW ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `5816d7e9`（ANT_ROLE=builder）——原 2026-08-24 施工未提交丢失后按派工单 `docs/audits/builder-handoff-vm-honesty-3-review.md`（commit `dcdb5ea3`）重做。仅改 `honesty_fatal_blindspot_test.go`（+96 -58），零生产代码改动。
+- **S1 `TestHONESTY3_FatalBlindSpotSetsUnreliable` 重构**：MA 交叉（MAPeriod=3, makeE2EBars(200)）产 TotalTrades=10（assessRisk 设 IsReliable=true）；`iNonExistentIndicator` 入死分支 `if(1==0)`（静态 coverage 仍判 SeverityFatal，运行时不执行）→ IsReliable=false 仅来自 fatal loop。新增 `trades>=10` 断言证明 assessRisk 会设 true，排除 <10 trades 兜底假阳。
+- **S2 `TestHONESTY3_NonFatalBlindSpotKeepsReliable` 重构**：同 MA 交叉 + 死分支 `OrderSelect(0,SELECT_BY_POS,MODE_HISTORY)` 触发 R06 `ruleOrderSelectHistory`（`rule_engine.go:257`, sevWarningEn）→ resp.BlindSpots 含 SeverityWarning。强断言 IsReliable=true（替换原容忍 false 的弱逻辑），证明 fatal loop 不误伤 warning。
+- **S3 `TestHONESTY3_UnsupportedSilentWrongIsFatal` 不变**（已对抗有效）。
+- **独立对抗证明×2 重跑**：① 注释 `backtest_worker_vm.go:344-349` fatal loop → S1 RED（`IsReliable=true, trades=10≥10, fatal blind spot present`）→ 恢复 GREEN；② fatal loop 条件改 `!=SeverityInfo` → S2 RED（`IsReliable=false, warning blind spot 误伤`）→ 恢复 GREEN。均为真对抗（非 nil panic/非另一条错误/非 callback-only）。
+- **机检独立复测全绿**：`go build ./...` ✓ / `connect/strategy` 416 ✓ / `-race -count=3` 1248 ✓ / vet ✓ / gofmt ✓ / check-file-lines 0 errors / diff --check clean。
+- **worktree**：mutation 恢复后干净，最终 diff 只含测试文件 + STATE.md（pre-commit 强制）。
+- **设计评价**：死分支解耦是本任务关键洞察——将"静态 fatal blind spot"与"运行时交易"解耦，使 trades≥10 前提成立，从而把 fatal loop 的因果链从"assessRisk 兜底"中分离出来，成为真对抗。R06 复用既有 rule 的源码文本扫描特性（case-insensitive contains），无需运行时执行即可触发 warning blind spot，是 S2 的确定性触发路径。
+- **残余**：S1 trades=10 恰好踩 assessRisk 阈值 `>=10` 边界——若 engine 行为微调可能跌破，但 spec 明确要求 ≥10 且实测达标，可接受；派工单已注明调参 fallback（MAPeriod=2/bars=300/close-vs-close）。
+- **部署注记**：零生产代码改动，无行为变更，无需部署观测。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

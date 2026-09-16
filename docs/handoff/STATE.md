@@ -11,17 +11,7 @@
 
 | 子任务 | 状态 | 锚点 |
 |--------|------|------|
-| 2026-08-26/27 批次（D-006/D-007/D-REVERT×2/VM-CACHE-INTEGRITY-1/2/LIVE-ORDER-REENTRY-1/VM-TRADE-CONTEXT-1/2/VM-COMPILER-SEMANTICS-1/BT-FUNC-ENTRYPC-FWD/VM-TIMESERIES-SEMANTICS-1/VM-RUNTIME-FAILCLOSED-1/DATA-TRUTH-2b/VM-AUDIT-2026-08-27×3/VM round 4-5/P1 管线审计/P1 live bug 修复） | ✅done | 已滚出 LOG.md 2026-09-16；详见 registry |
-| FIX-2026-09-08-BYOK-MODEL-PICKER | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
-| FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry + LOG。 |
-| FIX-2026-09-08-CURL-IMPORT | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
-| AI-SETTINGS-BYOK-2026-09-08-审计 | ✅done | Devin CLI 自审 2026-09-08（888bbe7c..1bde4be6）。修复 F1 网关分组显示与运行时不一致。详见 registry + LOG。 |
-| CHAT-CTX-2026-09-08 遗留清单执行 | ✅done | Devin CLI 按序执行 5 项（编译上下文注入/analyze_mql 接线/立债 MQL-COMPILER-LOCAL-ARRAYS/网关提示/gofmt 清零）。详见 registry + LOG。 |
-| FIX-2026-09-08-ADVANCED-PARAMS | ✅done | Devin CLI 直接施工+验收 2026-09-08。reasoning_effort/timeout_seconds/organization 三参数接线。详见 registry + LOG。 |
-| FIX-2026-09-08-COMPILE-NOTIFY | ✅done | Devin CLI 直接施工+验收 2026-09-08。编译失败醒目提示 + Timestamp 渲染崩溃修复。详见 registry + LOG。 |
-| WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。补记2：真实浏览器走查 9 步全过（Playwright + e2e 账号）——新增"手动编写"空白编辑器脚手架 + 侧栏来源项中文默认值。补记：回测历史面板渲染 protobuf Timestamp 对象致整页崩溃（React #31）——formatStartedAt 稳健格式化 + 生产形状回归测试。补记3：最终架构重构落地——单一 centerView 状态机 + AI/回测停靠面板（420px 并排不抢占），三分区点击保持展开，使用模板来源移除，CodeEditorArea 编辑器常驻。 |
-| WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 分区切换驱动主区联动；新建策略分区四来源菜单（含手动编写）；粘性 importMode 修复；使用模板移除；分区切换关闭右侧面板。真实走查 9 步全绿。原文滚出 LOG。 |
-| AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（ec8dfda1..36f7b3e4）。A-F 全查 + 附带修复 3 项编译断裂掩盖的潜在问题。详见 registry + LOG。 |
+| 2026-08-26/27 批次 + 2026-09-08 系列（D-006/D-007/D-REVERT×2/VM-CACHE-INTEGRITY-1/2/LIVE-ORDER-REENTRY-1/VM-TRADE-CONTEXT-1/2/VM-COMPILER-SEMANTICS-1/BT-FUNC-ENTRYPC-FWD/VM-TIMESERIES-SEMANTICS-1/VM-RUNTIME-FAILCLOSED-1/DATA-TRUTH-2b/VM-AUDIT-2026-08-27×3/VM round 4-5/P1 管线审计/P1 live bug 修复/FIX-2026-09-08-BYOK-MODEL-PICKER/TEMP-RETRY/CURL-IMPORT/AI-SETTINGS-BYOK/CHAT-CTX/ADVANCED-PARAMS/COMPILE-NOTIFY/WORKSPACE-IA×2/AI-SETTINGS-审计二） | ✅done | 已滚出 LOG.md 2026-09-16；详见 registry |
 | QS-1.4 Python bool(x) 语义 + vm_helpers:250 注释 | ✅done | 施工方按 builder-handoff-qs-1.4.md S1–S3 完成：bool→双重 `!`（OP_NOT×2 → IsTrue）、注释更正、行为级测试+IR 形态守卫、BoolConversion 断言同步；对抗证明先红→mutation RED→restore→GREEN；机检全绿。详见 registry QS-1.4。（Devin CLI 验收通过 2026-09-16；commit 88292b14；独立 mutation 重跑 RED→GREEN） |
 | QS-1.6 read-after-write 确认走状态机 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5be48f30；ConfirmByAuthoritativeRead + 2 分支根因核实；独立 mutation×2 RED→GREEN |
 | QS-1.3 Python 函数局部作用域 | ✅done | Devin CLI 验收通过 2026-09-16；commits 9940eda4+ee47292d；resolveAssignTarget+isDeclaredGlobal+函数域分配；独立 mutation×4 RED→GREEN；修正 v2/v3 见 handoff |
@@ -36,10 +26,10 @@
 | TZ-SWEEP-AFFECTED-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 362d285e；analyticsSince()+worker 参数归一化；独立 mutation -8h 编码偏移复现 RED→GREEN |
 | TZ-MIXED-ENCODING-1 根因修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit da85f973；~50 站写入端 .UTC() 全枚举+读侧同步+migration 278 签名回填（10100 行 CST→UTC，幂等）；CST 配对列裁定不翻分立 TZ-PAIRED-CST-COLS-1；独立 mutation RED→GREEN |
 | VM-RUNTIME-FAILCLOSED-2 静默算术/栈/槽位 fail-closed | ✅done | Devin CLI 验收通过 2026-09-16；commit 4fea9439；S1-S4 setStackError 全覆盖+OP_STORE_VAR 栈泄漏修复；7 行为测试+独立 mutation×4 重跑 RED→GREEN；机检独立复测全绿；分立债 VM-ARRAY-OOB-FAILCLOSED-1(P2)/VM-FUNC-FATAL-DELAY-1(P3) |
-| VM-HONESTY-3-REVIEW 死分支解耦+R06 非致命对抗 | 🟦open | 施工完成待复审；S1 死分支 iNonExistentIndicator+MA3/200bars 产 10 trades 证 IsReliable=false 仅来自 fatal loop；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true；各 1 项 mutation RED→GREEN；零生产代码改动 |
+| VM-HONESTY-3-REVIEW 死分支解耦+R06 非致命对抗 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5816d7e9；S1 死分支 iNonExistentIndicator+MA3/200bars 产 10 trades 证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍 false）；独立 mutation×2 RED→GREEN；机检独立复测全绿；零生产代码改动 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: VM-HONESTY-3-REVIEW 施工完成待 Devin CLI 独立复审。后续队列：VM-COMPILER-SEMANTICS-3（switch default/break 栈）→ VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: VM-HONESTY-3-REVIEW ✅done（Devin CLI 验收 2026-09-16）。后续队列：VM-COMPILER-SEMANTICS-3（switch default/break 栈）→ VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -100,12 +90,13 @@
 - **VM-RUNTIME-FAILCLOSED-2** ✅done — 静默算术/栈/槽位 fail-closed（Devin CLI 验收通过 2026-09-16，commit 4fea9439，独立 mutation×4 RED→GREEN）
 - **VM-ARRAY-OOB-FAILCLOSED-1** 🟦open P2 — OP_PUSH_ARRAY/OP_STORE_ARRAY 越界静默 NoneVal/丢弃（FAILCLOSED-2 复审分立）
 - **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
-- **VM-HONESTY-3-REVIEW** 🟦open — 死分支解耦+R06 非致命对抗测试重构（施工完成待复审，零生产代码改动）
+- **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-09-16 **VM-HONESTY-3-REVIEW ✅done**（Devin CLI 独立复审通过）：commit 5816d7e9；S1 死分支 iNonExistentIndicator+MA3/200bars 产 TotalTrades=10（assessRisk 设 IsReliable=true）证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍 false 逻辑）；**独立 mutation×2 重跑** RED→restore→GREEN（① 注释 fatal loop → S1 RED `IsReliable=true, trades≥10, fatal blind spot present`；② fatal loop 条件改 `!=SeverityInfo` → S2 RED `IsReliable=false, warning 误伤`）；机检独立复测：build/connect-strategy 416/race×3 1248/vet/gofmt/check-lines 0 errors/diff --check clean；零生产代码改动（fatal loop 是被测对象非被改对象）。
 - 2026-09-16 **VM-HONESTY-3-REVIEW 施工完成**（builder，待独立复审）：S1 死分支 iNonExistentIndicator+MA3/200bars 产 10 trades 证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍逻辑）；各 1 项 mutation RED→GREEN；零生产代码改动。
 - 2026-09-16 **VM-RUNTIME-FAILCLOSED-2 ✅done**（Devin CLI 独立复审通过）：commit 4fea9439；S1-S4 setStackError 覆盖 arith/floorDiv 除零取模+OP_DUP/OP_SWAP underflow+OP_PUSH/STORE_VAR/GLOBAL 越界（含 OP_STORE_VAR 栈泄漏修复）；7 行为测试全绿+**独立 mutation×4 重跑** RED→restore→GREEN；机检独立复测：build/mql2go 384/race×3 1152/strategy 367/connect-strategy 416/vet/check-lines 0 errors。分立债：VM-ARRAY-OOB-FAILCLOSED-1（P2）+ VM-FUNC-FATAL-DELAY-1（P3）。
 - 2026-09-16 **VM 质量方案 v2 全量收官**（10 子任务全 Devin CLI 验收）：QS-1.4 bool 双否定（88292b14）/ QS-1.6 权威读状态机迁移（5be48f30）/ QS-1.3 函数域隔离 v3（9940eda4+ee47292d）/ QS-1.2a lastError 三 builtin（65e2cccf）/ QS-1.7-INV 不立项（05138758）/ QS-2.2 goleak（174b8405）/ QS-2.4 race 审计（8e393cae）/ QS-2.5 panic 加固（89353004）/ QS-2.3 noopContext（5ad339a9）/ QS-3-BASELINE 基线+metric（b8ad1674）。明细滚出至 handover-audit-plan.md。

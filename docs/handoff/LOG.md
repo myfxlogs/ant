@@ -255,3 +255,21 @@
 | P1 管线审计（13 条目） | 🟦open | 1 still-open（TRON-SECURITY-1 业主暂缓）；DATA-TRUTH-1/TRUST-1 均 ✅done（2026-09-16 registry 状态纠偏） |
 | VM round 4-5 + 报价管线派工（5 batch） | ✅done | Batch 1/2/3/4/5 全部 Devin CLI 验收通过 2026-08-27 |
 | P1 live 执行 bug 修复（login lookup + nil/empty slice） | ✅done | 已部署验证 2026-08-27 |
+
+## 2026-09-16 STATE.md 施工表滚出（09-08 及更早完成项）
+
+> 从 STATE.md 施工表滚出，保持 T0 预算 ≤20KB。明细见 registry + 各任务 handover-audit-plan 条目。
+
+| 子任务 | 状态 | 锚点 |
+|--------|------|------|
+| 2026-08-26/27 批次（D-006/D-007/D-REVERT×2/VM-CACHE-INTEGRITY-1/2/LIVE-ORDER-REENTRY-1/VM-TRADE-CONTEXT-1/2/VM-COMPILER-SEMANTICS-1/BT-FUNC-ENTRYPC-FWD/VM-TIMESERIES-SEMANTICS-1/VM-RUNTIME-FAILCLOSED-1/DATA-TRUTH-2b/VM-AUDIT-2026-08-27×3/VM round 4-5/P1 管线审计/P1 live bug 修复） | ✅done | 已滚出 LOG.md 2026-09-16；详见 registry |
+| FIX-2026-09-08-BYOK-MODEL-PICKER | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
+| FIX-2026-09-08-TEMP-RETRY | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry + LOG。 |
+| FIX-2026-09-08-CURL-IMPORT | ✅done | Devin CLI 直接施工+验收 2026-09-08。详见 registry。 |
+| AI-SETTINGS-BYOK-2026-09-08-审计 | ✅done | Devin CLI 自审 2026-09-08（888bbe7c..1bde4be6）。修复 F1 网关分组显示与运行时不一致。详见 registry + LOG。 |
+| CHAT-CTX-2026-09-08 遗留清单执行 | ✅done | Devin CLI 按序执行 5 项（编译上下文注入/analyze_mql 接线/立债 MQL-COMPILER-LOCAL-ARRAYS/网关提示/gofmt 清零）。详见 registry + LOG。 |
+| FIX-2026-09-08-ADVANCED-PARAMS | ✅done | Devin CLI 直接施工+验收 2026-09-08。reasoning_effort/timeout_seconds/organization 三参数接线。详见 registry + LOG。 |
+| FIX-2026-09-08-COMPILE-NOTIFY | ✅done | Devin CLI 直接施工+验收 2026-09-08。编译失败醒目提示 + Timestamp 渲染崩溃修复。详见 registry + LOG。 |
+| WORKSPACE-IA-2026-09-08 新建策略分区 | ✅done | 业主指令落地：新建策略升级为侧栏一级分区（与我的策略/回测历史同级），展开含三来源（AI 生成/导入 MQL/从模板），选中后自动收起；取消底部新建/导入按钮区（折叠态保留 + 图标兜底）；Mobile 抽屉透传新回调。组件测试 2 用例 mutation RED→GREEN。补记2：真实浏览器走查 9 步全过（Playwright + e2e 账号）——新增"手动编写"空白编辑器脚手架 + 侧栏来源项中文默认值。补记：回测历史面板渲染 protobuf Timestamp 对象致整页崩溃（React #31）——formatStartedAt 稳健格式化 + 生产形状回归测试。补记3：最终架构重构落地——单一 centerView 状态机 + AI/回测停靠面板（420px 并排不抢占），三分区点击保持展开，使用模板来源移除，CodeEditorArea 编辑器常驻。 |
+| WORKSPACE-IA-2026-09-08 分区导航联动 | ✅done | 分区切换驱动主区联动；新建策略分区四来源菜单（含手动编写）；粘性 importMode 修复；使用模板移除；分区切换关闭右侧面板。真实走查 9 步全绿。原文滚出 LOG。 |
+| AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（ec8dfda1..36f7b3e4）。A-F 全查 + 附带修复 3 项编译断裂掩盖的潜在问题。详见 registry + LOG。 |
