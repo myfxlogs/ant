@@ -862,3 +862,22 @@
 - **残余**：VM-API-TRUTH-1 整体仍 🟦open——后续批次待做：AccountInfo*（部分硬编码 USD/Backtest/SimBroker）、CopyBuffer（by-reference 未填充）、CopyRates（close proxy）、Symbol session/margin（by-reference 未填充）。每批另行派工。
 - **部署注记**：12 API 从 implemented 改为 StatusUnsupported 是行为变更——依赖这些 API 的策略将编译失败（而非运行时返回假平台数据）。这是 fail-closed 方向正确——假平台数据比编译失败更危险。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 收工纪要（Devin CLI 断点，明日续作）
+
+- **当前断点**：VM-API-TRUTH-1 批次1+2a ✅done 已 Devin CLI 独立复审验收。
+  - 批次1：commit `e97a43b8`（MQL5 order/deal/history 22 API 重分类 StatusUnsupported，机检 mql2go 433，race×3 1299）。
+  - 批次2a：commit `8f946579`（platform checkup 12 API 重分类 StatusUnsupported，机检 mql2go 473，race×3 1419）。
+- **已派工待施工**：VM-API-TRUTH-1 批次2b。
+  - 派工单：`docs/audits/builder-handoff-vm-api-truth-1-batch2b.md` @ commit `67c0ed8a`。
+  - 开工指令已发：`[角色:施工] 开工：读 docs/audits/builder-handoff-vm-api-truth-1-batch2b.md @67c0ed8a，按 S1 施工。串行，勿部署，完成报证据等复审。`
+  - 范围：5 API（AccountStopoutMode/AccountCredit 全假固定 0 + SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade by-reference 返回 true 不填充输出）。
+- **后续队列**（待批次2b 验收后派工）：
+  - VM-API-TRUTH-1 批次2c：AccountInfoDouble/Integer/String 混合实现假分支修复（非重分类，需 recordBlindSpot 或返回 error）。
+  - VM-API-TRUTH-1 批次2d：CopyBuffer/CopyRates（by-reference 未填充 / close proxy）。
+  - VM-API-TRUTH-1 批次2e：Symbol session/margin 剩余 by-reference 未填充 API（若批次2b 后仍有）。
+  - VM-ARRAY-OOB-FAILCLOSED-1（P2，OP_PUSH_ARRAY/OP_STORE_ARRAY 越界静默）。
+  - P3 批：ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY。
+- **明日开工入口**：任何 agent 先读 `AGENTS.md` → `docs/handoff/STATE.md` → `docs/audits/tech-debt-registry.md:126` → 取“下一步”首项继续。
+- **禁止**：在未收到 `[施工完成:VM-API-TRUTH-1-批次2b] @<hash>` 前不发新开工指令；不部署、不 push。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

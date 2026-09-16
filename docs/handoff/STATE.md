@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-AUDIT-2026-08-27 全 3 批 ✅done（-1~-8）+ round 4-5 全 5 batch ✅done。**P1 业务管线**：2 个 live 执行 bug 修复完成（login lookup 类型不匹配 + proto3 nil/empty slice 误拒）+ 1 个架构缺陷修复完成（FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP ✅done，Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-27-ORDER-HISTORY-MAGIC-ATTRIBUTION S1+S2+S3 ✅done**（Devin CLI 验收通过 2026-08-27）。**FIX-2026-08-27-SCHEDULE-HEALTH-ORDER-HISTORY-GAP ✅done**（Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE S1-S4 ✅done**（Devin CLI 验收通过 2026-08-28）。**FIX-2026-08-28-TRUST-1-DEMO-REAL-ACCOUNT-DISTINCTION S1-S7 ✅done**（Devin CLI 验收通过 2026-08-28：demo/real 区分——adapter 读 broker Type + mdtick 加字段 + service 写 account_type + CreateAccount 传值 + LinkLiveAccount real-only 校验 + marketplace 表+cache+leaderboard 过滤 + migration 276）。
+- **现状**: VM-API-TRUTH-1 批次1+2a ✅done（Devin CLI 独立复审通过 2026-09-16；commit e97a43b8 批次1 MQL5 order/deal/history 22 API + commit 8f946579 批次2a platform checkup 12 API；均重分类为 StatusUnsupported，fail-closed）。**VM-API-TRUTH-1 批次2b 派工单已出待施工**（commit 67c0ed8a，文件 `docs/audits/builder-handoff-vm-api-truth-1-batch2b.md`），范围：AccountStopoutMode/AccountCredit（全假固定 0）+ SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade（by-reference 返回 true 不填充输出）共 5 API。已开工标准指令：`[角色:施工] 开工：读 docs/audits/builder-handoff-vm-api-truth-1-batch2b.md @67c0ed8a，按 S1 施工。串行，勿部署，完成报证据等复审。`
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -23,7 +23,7 @@
 | VM-API-TRUTH-1 批次2a platform checkup 12 API 重分类 | ✅done(批次2a) | Devin CLI 验收通过 2026-09-16；commit 8f946579；S1 unsupportedSymbols 加 12 API+reasonPlatformCheckup；S2 implementedPlatform 移除 12（保留 IsConnected/IsDemo/IsTradeAllowed/GetTickCount*/SetUserError/CurTime）；S3-S5 删 builtins.go/wiring/checkup 假实现；S6d 编译期拒绝+S6e registry 一致性+S6f 13 真实实现未误伤；独立 mutation×1 RED→GREEN；机检独立复测全绿；后续批次（AccountInfo*/CopyBuffer/CopyRates/Symbol session/margin）待做 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: VM-API-TRUTH-1 批次2a ✅done（Devin CLI 验收 2026-09-16）。后续队列：VM-API-TRUTH-1 批次2b（AccountInfo*）→ 批次2c（CopyBuffer/CopyRates）→ 批次2d（Symbol session/margin）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: **VM-API-TRUTH-1 批次2b 已派工，等待施工方 `[施工完成:VM-API-TRUTH-1-批次2b] @<hash>` 后 Devin CLI 启动独立复审**。派工单 `docs/audits/builder-handoff-vm-api-truth-1-batch2b.md @67c0ed8a`，范围：AccountStopoutMode/AccountCredit + SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade 共 5 API 重分类 StatusUnsupported。开工指令已发（见现状栏）。**后续队列**（待批次2b 验收后派工）：VM-API-TRUTH-1 批次2c（AccountInfoDouble/Integer/String 混合实现假分支修复，非重分类）→ 批次2d（CopyBuffer/CopyRates）→ 批次2e（Symbol session/margin 剩余 by-reference 未填充 API，若批次2b 后仍有）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
