@@ -806,3 +806,19 @@
 - **残余**：S1 trades=10 恰好踩 assessRisk 阈值 `>=10` 边界——若 engine 行为微调可能跌破，但 spec 明确要求 ≥10 且实测达标，可接受；派工单已注明调参 fallback（MAPeriod=2/bars=300/close-vs-close）。
 - **部署注记**：零生产代码改动，无行为变更，无需部署观测。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 VM-COMPILER-SEMANTICS-3 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `c5d1a7e0`（ANT_ROLE=builder）。改 `compile_loops.go` compileSwitch（+88 -66）+ `vm_compiler_semantics_redo_test.go`（+120 新增 S3a/b/c）。
+- **S1 default 原序**：删除 `:114-122` default 抽取逻辑，遍历 `s.Cases` 原始顺序。default 不 emit comparison 只编译 body，`caseBodyStarts` 按原始索引记录。default 首位时 emit skip JMP 到首个 regular case 防 default body 无条件执行（C 语义：default 只在无 case 匹配时执行）。JMP_IF_FALSE：fallthrough case（无 break）跳 `caseBodyStarts[caseIdx+1]`（下一个 case body，含 default body）；normal case（有 break）跳 `regularCaseStarts[ri+1]`（下一个 regular case comparison，跳过 default 无 comparison）或 `defaultBodyStart` 或 POP。fallthrough JMP target = `caseBodyStarts[i+1]`（原始顺序下一个 case body）。
+- **S2 break POP**：`popPC = len(Code)` → emit OP_POP → endJumps（case body 末尾 break）+ breakJumps（case body 内 break statement）patch 到 `popPC`（OP_POP 位置），break 执行 OP_POP 消费 switch value 后继续。旧代码 patch 到 `endPC`（OP_POP 之后）绕过 OP_POP → switch value 留栈污染后续语句。
+- **S3a SwitchFallthrough 增强**：保留 g_result=110 断言 + 新增 `len(vm.stack)==0` 栈深度断言（case2 有 break，break 应消费 switch value）。
+- **S3b SwitchDefaultBeforeCase**：default 在 case1/case2 中间，case1 无 break fallthrough 到 default → g_result=1010（10+1000）。旧代码 default 抽出到末尾 → case1 fallthrough 到 case2 → g_result=20（错误）。栈深度断言 stack=0。
+- **S3c SwitchBreakStackCleanup**：case1 break 后 switch 外 `g_result=g_result+5` → g_result=15。栈深度断言 stack=0（break 消费 switch value，外语句不被栈残留污染）。
+- **独立对抗证明×2 重跑**：① fallthrough target `i+1`→`i+2` 跳过 default → S3b RED `g_result=20, want 1010` → 恢复 GREEN；② break patch 回 endPC 绕过 OP_POP → S3a/S3c RED `stack depth=1, want 0` → 恢复 GREEN。均为真对抗（非 nil panic/非另一条错误/非 callback-only）。
+- **机检独立复测全绿**：`go build ./...` ✓ / mql2go test 386 ✓ / `-race -count=3` 1158 ✓ / golden+e2e 7 ✓ / vet ✓ / gofmt ✓ / check-file-lines 0 errors / diff --check clean。
+- **worktree**：mutation 恢复后干净，最终 diff 只含 compile_loops.go + 测试文件 + STATE.md（pre-commit 强制）。
+- **设计评价**：default 原序修复的关键是 `caseBodyStarts` 按原始索引（含 default）记录，fallthrough target 用 `i+1`（原始顺序下一个）而非 `regularCases` 顺序。default 首位 skip JMP 是边界处理——default 在首位时若无 skip JMP 会无条件执行 default body（因为 default 无 comparison 不跳过）。break POP 修复的关键是区分 popPC（OP_POP 位置）与 endPC（OP_POP 之后），break 跳 popPC 执行 OP_POP 后自然到 endPC。
+- **残余**：default 在中间且 default 前的 case 有 break 时，break 跳 popPC 消费 switch value 后到 endPC——正确。default 在中间且 default 前的 case 无 break fallthrough 到 default——S3b 已覆盖。default 在末尾（常见 case）行为与旧实现一致（default body 在末尾）——golden/e2e 7 测试全过证实未破坏。
+- **部署注记**：switch break 栈清理是行为变更（旧代码留栈，新代码消费）——依赖旧留栈行为的策略若存在会在 switch 后语句看到不同的栈状态。但留栈是 bug 非特性，修复方向正确。default 顺序修复是行为变更（旧代码 default 强制末尾，新代码保留原序）——依赖旧 default 末尾顺序的策略若 default 在中间会看到不同 fallthrough。但 default 末尾顺序是 bug 非特性（C/MQL 语义是原序）。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
