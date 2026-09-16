@@ -323,7 +323,11 @@ func (c *astCompiler) resolveAssignTarget(name string) (VarID, bool) {
 		if c.isDeclaredGlobal(name) {
 			return c.bc.GlobalSlots[name], true
 		}
-		scope := c.localScopes[len(c.localScopes)-1]
+		// Python has function scope, not block scope: allocate in the
+		// function base scope (index 0 — the scope pushed by
+		// compileUserFuncBody/compileEventBody), so names assigned inside
+		// for-loop bodies survive the loop scope's popScope.
+		scope := c.localScopes[0]
 		scope[name] = VarID(c.nextLocalSlot)
 		c.nextLocalSlot++
 		return scope[name], false

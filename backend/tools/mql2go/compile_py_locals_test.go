@@ -285,6 +285,93 @@ func TestQS13_LocalSlotAccounting(t *testing.T) {
 	}
 }
 
+// S4i: assignment inside a for body binds the FUNCTION scope — x survives
+// the loop scope's popScope (Python has no block scope).
+func TestQS13_ForBodyAssignSurvivesLoop(t *testing.T) {
+	source := `class S:
+    def on_bar(self) -> None:
+        for i in range(3):
+            x = i
+        self.r = x
+        return
+`
+	vmRunner, err := CompilePython(source)
+	if err != nil {
+		t.Fatalf("CompilePython failed: %v", err)
+	}
+	if err := vmRunner.vm.RunOnBar(context.Background()); err != nil {
+		t.Fatalf("RunOnBar failed: %v", err)
+	}
+	v, ok := vmRunner.GetGlobal("r")
+	if !ok {
+		t.Fatal("global r not found")
+	}
+	if v.Kind != interp.ValInt || v.Int != 2 {
+		t.Errorf("r = %+v, want IntVal(2) (x bound in function scope survives loop)", v)
+	}
+	if _, ok := vmRunner.GetGlobal("x"); ok {
+		t.Errorf("x found in globals — for-body assignment must not register GlobalSlots")
+	}
+}
+
+// S4j: the for-loop variable itself is function-scoped (ExprDecl path).
+// Note: the range() desugar is i=0; i<N; i++ — i overshoots to 3 at exit
+// (existing desugar semantics; Python would leave 2). Only survival is pinned.
+func TestQS13_ForLoopVarSurvivesLoop(t *testing.T) {
+	source := `class S:
+    def on_bar(self) -> None:
+        for i in range(3):
+            pass
+        self.r = i
+        return
+`
+	vmRunner, err := CompilePython(source)
+	if err != nil {
+		t.Fatalf("CompilePython failed: %v", err)
+	}
+	if err := vmRunner.vm.RunOnBar(context.Background()); err != nil {
+		t.Fatalf("RunOnBar failed: %v", err)
+	}
+	v, ok := vmRunner.GetGlobal("r")
+	if !ok {
+		t.Fatal("global r not found")
+	}
+	if v.Kind != interp.ValInt || v.Int != 3 {
+		t.Errorf("r = %+v, want IntVal(3) (loop var survives; desugar overshoots bound)", v)
+	}
+	if _, ok := vmRunner.GetGlobal("i"); ok {
+		t.Errorf("i found in globals — loop variable must be function-local")
+	}
+}
+
+// S4k: while-body assignment survives the loop — while pushes no scope, so
+// this pins symmetric behavior with for (regression guard).
+func TestQS13_WhileBodyAssignSurvives(t *testing.T) {
+	source := `class S:
+    def on_bar(self) -> None:
+        self.go = True
+        while bool(self.go):
+            x = 1
+            self.go = False
+        self.r = x
+        return
+`
+	vmRunner, err := CompilePython(source)
+	if err != nil {
+		t.Fatalf("CompilePython failed: %v", err)
+	}
+	if err := vmRunner.vm.RunOnBar(context.Background()); err != nil {
+		t.Fatalf("RunOnBar failed: %v", err)
+	}
+	v, ok := vmRunner.GetGlobal("r")
+	if !ok {
+		t.Fatal("global r not found")
+	}
+	if v.Kind != interp.ValInt || v.Int != 1 {
+		t.Errorf("r = %+v, want IntVal(1) (while-body assignment survives)", v)
+	}
+}
+
 // S4h: strategy parameter names live in GlobalSlots but not GlobalDecls.
 // Assigning to a param name inside a function declares a local (Pythonic
 // Option B semantics) — the global param value must be unchanged.

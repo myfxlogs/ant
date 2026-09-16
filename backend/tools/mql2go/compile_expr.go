@@ -212,6 +212,11 @@ func (c *astCompiler) compileDecl(e *interp.Expr) {
 	c.compileExpr(&e.Args[0])
 	if len(c.localScopes) > 0 {
 		scope := c.localScopes[len(c.localScopes)-1]
+		// QS-1.3 v3: Python has function scope — new locals go to the base
+		// scope so `for i in range` variables survive the loop's popScope.
+		if c.bc.Version == "python" {
+			scope = c.localScopes[0]
+		}
 		scope[e.Name] = VarID(c.nextLocalSlot)
 		c.nextLocalSlot++
 	}
