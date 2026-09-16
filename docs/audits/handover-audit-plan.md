@@ -682,3 +682,11 @@
 - **遗留已知限制**：`PY-SCOPE-KNOWN-1`（P3 🟦open）——self.x/裸x 同槽混同、读路径隐式注册保留、for 脱糖退出值 i=N（pin 为文档化行为）。
 - **流程沉淀**：D-013 自审检查项补"路径可达性回验"+"生命周期推演"两条硬要求（本任务三处漏项教训，commit bb3fe2e4）。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 QS-1.2a ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `65e2cccf`——`vm.lastError int32` 跨事件驻留字段、`builtinGetLastError`（读后清零）/`builtinResetLastError`/`builtinSetUserError`（`65536+argI(args,0)`，ERR_USER_ERROR_FIRST+c）、`ERR_USER_ERROR_FIRST=65536` 常量入 `interp/constants.go`、接线换到真实实现、`vm_lasterror_test.go` 6 项行为测试（含跨事件驻留、读后清零、常量可用）。
+- **独立复审**：机检独立重跑全绿（build / test 8.1s / race -count=3 51.4s / vet / check-lines 0 errors，gofmt 包内 drift pre-existing）。**独立 mutation×2**：SetUserError 不写 lastError → 3 RED（S4a/S4b/S4d）；GetLastError 不清零 → 1 RED（S4b）；restore 全绿。
+- **边界核验**：OrderSend/fatal 路径零触碰（FAILCLOSED-1 不变量保持）；`SetReturnError` 维持 no-op（边界内裁定，MQL5 语义另行评估）；SetUserError 不触发 runtime 状态与 MQL4 一致。
+- **流程记录**：施工自报首次缺 `@hash`（D-014 第二次格式偏差），补发后定位复审对象。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
