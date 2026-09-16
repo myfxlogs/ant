@@ -104,7 +104,7 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 
 	case interp.ExprAssignment:
 		c.compileExpr(&e.Args[0])
-		slot, isGlobal := c.resolveVar(e.Name)
+		slot, isGlobal := c.resolveAssignTarget(e.Name)
 		if isGlobal {
 			c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
 		} else {
@@ -178,6 +178,21 @@ func (c *astCompiler) compileUpdate(e *interp.Expr) {
 }
 
 func (c *astCompiler) compileCompoundAssign(e *interp.Expr) {
+	// QS-1.3: Python augmented assignment on a completely undeclared name is a
+	// compile-time error (Python raises NameError) — do not implicitly create a
+	// global to mutate. Names already in local scopes or declared globals proceed.
+	if c.bc.Version == "python" && len(c.localScopes) > 0 {
+		declared := c.isDeclaredGlobal(e.Name)
+		for i := len(c.localScopes) - 1; i >= 0 && !declared; i-- {
+			_, declared = c.localScopes[i][e.Name]
+		}
+		if !declared {
+			if c.err == nil {
+				c.err = fmt.Errorf("cannot use augmented assignment on undeclared name %q (Python: NameError)", e.Name)
+			}
+			return
+		}
+	}
 	slot, isGlobal := c.resolveVar(e.Name)
 	if isGlobal {
 		c.emit(OP_PUSH_GLOBAL, int32(slot), 0, 0)

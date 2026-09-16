@@ -296,6 +296,41 @@ func (c *astCompiler) resolveVar(name string) (VarID, bool) {
 	return id, true
 }
 
+// isDeclaredGlobal reports whether name was declared at module level
+// (self fields + top-level assignments collected into ir.Globals).
+// Names merely registered into GlobalSlots by implicit reads do NOT count —
+// they must not poison later function-scope assignments (QS-1.3).
+func (c *astCompiler) isDeclaredGlobal(name string) bool {
+	for _, g := range c.bc.GlobalDecls {
+		if g.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+// resolveAssignTarget resolves the store slot for an assignment target.
+// QS-1.3: inside a Python function/event, assignment to an undeclared name
+// declares a function-local slot instead of leaking into GlobalSlots.
+// Declared globals (self fields, module-level assignments) stay global.
+func (c *astCompiler) resolveAssignTarget(name string) (VarID, bool) {
+	if c.bc.Version == "python" && len(c.localScopes) > 0 {
+		for i := len(c.localScopes) - 1; i >= 0; i-- {
+			if id, ok := c.localScopes[i][name]; ok {
+				return id, false
+			}
+		}
+		if c.isDeclaredGlobal(name) {
+			return c.bc.GlobalSlots[name], true
+		}
+		scope := c.localScopes[len(c.localScopes)-1]
+		scope[name] = VarID(c.nextLocalSlot)
+		c.nextLocalSlot++
+		return scope[name], false
+	}
+	return c.resolveVar(name)
+}
+
 func isEventFunction(name string) bool {
 	switch name {
 	case "OnInit", "OnTick", "OnBar", "OnTimer", "OnTrade", "OnTradeTransaction", "OnBookEvent", "OnDeinit", "start":
