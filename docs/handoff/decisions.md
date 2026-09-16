@@ -66,3 +66,10 @@
 - **决定**: 改用 early continue 减少嵌套（41→38）+ `.golangci.yml` 加 gocognit exclusion（与 `mutation_coordinator.go` 同处理方式），不提取 helper。同时 mthub coverage baseline 72.0→69.0（DATA-TRUTH-1 引入的 `importGhostOrders` 新代码未加测试导致下降，非本次引入）。
 - **理由**: lint 复杂度和 coverage gate 是两个互相矛盾的约束——提取 helper 降复杂度但降 coverage，内联保 coverage 但超复杂度。`mutation_coordinator.go` 已有先例用 exclusion 处理此类 trade-off。reconcileAccount 是对账核心循环，逻辑内聚性强，强行拆分反而降低可读性。
 - **影响**: `.golangci.yml` 新增 `internal/mthub/reconciliation\.go` gocognit exclusion；`scripts/check_coverage_per_block.sh` mthub baseline 72.0→69.0。后续如需降低 mthub gocognit，应先补测试覆盖再考虑提取 helper。
+
+### D-009 2026-09-16 VM 管线质量方案 v2 定稿：保留 FAILCLOSED-1、否决模糊 recovery 与性能池化
+
+- **背景**: `docs/spec/vm-pipeline-quality-stability-improvement-plan.md` v1 草案把 QS-1.2/1.3/1.7 标为"待业主确认"，且多条修法未对照源码。Devin CLI 逐条实拍核验（spec §2）后定稿 v2。按 AGENTS §0 这些是技术决策，归 Devin CLI，不外推给业主。
+- **决定**: ① OrderSend/OrderClose 参数校验失败与 broker 拒绝**保持 fatal**（VM-RUNTIME-FAILCLOSED-1 不变量），`GetLastError` 本轮只由 `SetUserError` 写入（QS-1.2a），不做 "-1 + lastError"（QS-1.2b 不立项）。② open outcomeUnknown 的 magic+symbol+side+时间窗模糊匹配 recovery **永久否决**；先做 QS-1.7-INV 调研 ClientID 回显链路，可靠则按 ClientID 精确单匹配，否则维持 ④-② fail-closed。③ 阶段 3 性能优化（Value/decimal 池化、跳转表、superinstruction）整体否决，改为 QS-3-BASELINE 测量任务；仅在生产 p99 单事件耗时 > tick 间隔 10% 或 benchmark 单项占比 > 30% 时再立优化条目。④ QS-2.1 watcher "泄漏"经实拍不成立，否决。⑤ QS-1.6 修法由 `Reconcile`（在 acceptedUnconfirmed 下是 no-op）改为新增 `TradeBarrier.ConfirmByAuthoritativeRead()`。⑥ QS-1.3 复用 `astCompiler.localScopes`，不在 pyCompiler 另造作用域栈。
+- **理由**: 逆转已验收不变量需要明确收益，signalMode 下 broker 拒绝对 VM 不可见，收益仅剩参数非法一种；模糊匹配在同策略同向连续开仓下必误匹配，触碰资金边界；`interp.Value` 是值结构体，池化在语义上不成立；无 baseline 的优化违反"有证据才立项"。
+- **影响**: spec v2 §2 保留全部否决/降级理由；QS 条目入 registry；施工顺序 QS-1.4 → 1.6 → 1.3 → 1.2a → 1.7-INV → 2.2 → 2.4 → 2.5 → 2.3；QS-3-BASELINE 贯穿。

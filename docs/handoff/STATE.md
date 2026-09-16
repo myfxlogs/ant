@@ -41,7 +41,7 @@
 | AI-SETTINGS-2026-09-08-审计二 | ✅done | Devin CLI 自审 2026-09-08（审计对象 ec8dfda1..36f7b3e4）。A-F 全查 + 机检独立重跑（含 integration tag 首次通过）。深查确认 analyze_mql ToolOutput 语义正确、systemPaidCall 不变量、拆分无符号丢失。附带修复 3 项被编译断裂掩盖的潜在问题：集成测试 NewAIServer 缺参（编译断裂修复，套件数周来首次可运行）、newAIPrimaryServer 缺 SetUserRepo、UpdateTitle 对不存在会话静默成功（补 fail-closed）。 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: S9 一次性回填脚本待编写（3 unknown 账户可能需手动触发重连回填）。
+- **下一步**: 派 QS-1.4 第一单（spec `docs/spec/vm-pipeline-quality-stability-improvement-plan.md` v2 §3.1）；QS 顺序 1.4→1.6→1.3→1.2a→1.7-INV→2.2→2.4→2.5→2.3，QS-3-BASELINE 贯穿。S9 回填脚本仍待编写。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -85,14 +85,13 @@
 - **FIX-2026-09-08-BYOK-MODEL-PICKER** ✅done — 聊天模型下拉框选不到用户自有 BYOK 模型 + provider UUID/字符串不匹配 + base_url 双路径（Devin CLI 直接施工+验收 2026-09-08，3 项对抗证明 RED→GREEN）
 - **FIX-2026-09-08-TEMP-RETRY** ✅done — kimi-k3 temperature 400 自愈重试 + 用户配置 temperature 生效 + 流式 fallback nil panic 修复 + 工作区常驻 AI 网关设置入口（Devin CLI 直接施工+验收 2026-09-08）
 - **FIX-2026-09-08-CURL-IMPORT** ✅done — 厂商 curl 示例一键导入 BYOK 配置（ParseProviderCurl RPC + 后端解析器 + 表单回填，存储零改动）（Devin CLI 直接施工+验收 2026-09-08）
+- **QS-1.4 / 1.6 / 1.3 / 1.2a / 1.7-INV / 2.2 / 2.4 / 2.5 / 2.3 / 3-BASELINE** 🟦open — VM 管线质量方案 v2（2026-09-16 Devin CLI 定稿，D-009）；详见 registry + spec §2 核验表
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-02 **FIX-CI-LINT funlen/gocognit + coverage baseline + flaky test + trivy CVE + nightly nats healthcheck**：CI 多项报错。修复：① `handlers_strategy.go` funlen 147>120 → 提取 `configureStrategyLookups` helper；② `reconciliation.go` gocognit 41>35 → early continue + `.golangci.yml` exclusion；③ mthub coverage baseline 72.0→69.0；④ `TestUserMetricsFlusher_Lifecycle` flaky race → poll 等待；⑤ trivy CVE-2026-84304 (grpc v1.82.1) → 升级 v1.83.1；⑥ CI Nightly `Initialize containers: failure` — nats:2.10-alpine health check `nats server check connection` 命令不存在（镜像无 nats CLI）→ 改用 `nc -z localhost 4222`。CI #1685 + Security Scan #1642 全绿。
-- 2026-09-08 **FIX-2026-09-08-RESILIENCE ✅done**（Devin CLI 直接施工+验收）：AI 聊天瞬时错误自愈——修 isTransientChatErr 大小写 bug（超时从不重试的根因）、非流式超时 60s→150s、瞬时错误统一退避重试 2 次（2s/6s，尊重 Retry-After≤15s，流式仅首字节前重试防重复投递）、连带修复重试复用已消费 body bug、流式 ResponseHeaderTimeout=120s、报错带 [provider|model]+中文行动提示。mutation 编译 RED + 行为测试全绿。429 配额类需厂商提额，重试不能根治。详见 registry。
-- 2026-09-08 **FIX-2026-09-08-CURL-IMPORT ✅done**（Devin CLI 直接施工+验收）：BYOK 配置新增「粘贴厂商 curl 示例一键导入」。实现：①proto `SystemAIService.ParseProviderCurl`（消息落 system_ai_probe.proto，无持久化）+ `make proto` 重生成 Go/TS；②后端解析器 `systemai/curl_import.go`：shell 词法（单引号 literal/双引号转义/续行合并）、URL→normalizeAPIBase 剥后缀、Bearer/x-api-key/api-key 提 key、`{your_key}` 类占位符只告警不导入、body JSON 提 model、NameHint 从 host 推导、无 URL fail-closed；③handler InvalidArgument 映射；④ConnectionForm 顶部导入框——回填 base_url/models/default_model（自定义厂商才回填 name）+ 真实 key 进密钥输入、warnings 行内展示、官方厂商地址不一致提示改用自定义卡片。存储层零改动（结构化行仍唯一真相源，P3）。对抗证明：后端 3 用例（业主原始 NOVA 示例原样通过 + 变体 + fail-closed）编译 RED；前端 2 用例 mutation RED→GREEN。门禁全绿（i18n-check 1519 错误为干净树既有，零新增）。风险/gap：仅支持 OpenAI 兼容 chat/completions 形态示例。详见 registry。
+- 2026-09-16 **VM 管线质量方案 v1 评估→v2 定稿**（Devin CLI 决策 D-009）：源码逐条核验，否决 QS-1.1/1.5/2.1/阶段 3 池化、改修法 QS-1.3/1.4/1.6、拆 QS-1.2、QS-1.7 改调研；10 条 QS 入 registry。详见 handover-audit-plan 2026-09-16 条目。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（Devin CLI 直接施工+验收）：①kimi-k3 聊天 400 "field Temperature invalid, only 1 is allowed"：根因 a `doChatRequest` 硬编码 Temperature 0.3 无视 `system_ai_configs.temperature`（该用户配 0.2）；根因 b 400 后原样重发无自愈。修复：`chatProvider` 加 temperature（`defaultTemperature`：配置值>0 用之，否则 0.3）+ `tryChatCompletion` 遇 400 body 含 "temperature" 以 temperature=1 重建自愈重试一次（tempRetried 防循环）。②连带修复两个既有 nil 雷：流式 400 → `fallbackNonStream(..., nil)` onChunk nil panic（签名透传 onChunk 修复）+ fallback 成功返回 (nil,nil) 后 `defer resp.Body.Close()` 解引用（补守卫）。③业主要求的模型配置入口：`WorkspaceCenterTabBar` tab 栏最右新增常驻齿轮（lazy AISettingsModal），code/chat tab 均可见，无需先开 AI 面板。对抗证明 3 项 RED→restore→GREEN（temperature 重试 httptest / 流式 fallback 投递（旧代码真实 nil panic）/ 前端入口 2 用例）。门禁全绿。风险/gap：自愈仅识别 body 含 "temperature" 的 400；流式路径对不支持 temperature 的模型首字延迟略增。详见 registry。
 - 2026-09-08 **FIX-2026-09-08-BYOK-MODEL-PICKER ✅done**（Devin CLI 直接施工+验收）：策略聊天模型下拉框选不到用户自有 BYOK 模型（xianhua.chan 报告，已配置 NOVA/kimi-k3 key 但下拉只显示系统模型）。3 层根因 + 修复：**A** `StrategyChat.tsx` 只调 listSystemModels → 改分组下拉（`我的 API Key` 在前 + `AI 网关` 在后，value=`provider_id|model` 字符串格式）；**B** `ListSystemModels` 返回 provider 行 UUID 而运行时 `resolveAllChatProviders` 按字符串比较 → 存的 primary 永不匹配（显示选中 X 实际用默认模型，usage 记录实锤）→ handler 经 providerRepo.ListAll 映射返回字符串 provider_id；**C** base_url 粘贴完整 endpoint（`/chat/completions` 结尾）被 chatEndpoint/discovery 拼双路径 404（生产日志 sensanova 每 2s 实锤）→ 新增 `normalizeAPIBase` 三处入口统一调用。对抗证明 3 项 RED→restore→GREEN（chatEndpoint 双路径 / handler UUID→字符串 / 前端分组+回显）。门禁全绿（go test 仅 3 个 pre-existing 5432 环境失败与改动无关；前端 vitest 189/189）。风险/gap：存量 UUID primary 显示 placeholder 需重选；部署后实测 xianhua.chan 下拉出现自有模型。详见 registry。
 

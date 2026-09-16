@@ -567,3 +567,82 @@
 **对抗证明**：handler 删 `StrategyTitle: sub.StrategyTitle` 映射 → 测试 RED（`expected StrategyTitle 'Golden Cross', got ""`）→ restore → GREEN。
 
 **机检**：go build ✅ / go test ✅ / check-file-lines 0 errors ✅ / tsc --noEmit ✅
+
+---
+
+## 2026-09-16 VM 管线深度审计（整条管线）
+
+- **审计方**：Devin CLI（独立审计验收方，D-006）
+- **类型**：只读深度审计，无代码改动
+- **范围**：MQL/Python 源码 → CST → IR(=AST) → Bytecode → VM → SDK → Runner → 回测/实盘派发 整条管线
+- **方法**：4 个并行只读 subagent 分子系统深探（Builtin / Mutation Coordinator / 指标缓存 / Python 子集编译器）+ 主审计方通读核心文件交叉验证
+- **落档**：`docs/audits/vm-pipeline-deep-audit-2026-09-16.md`
+
+**结论**：VM 管线实际架构与 ADR-0023 契约一致，四段式（CST→IR→Bytecode→VM）落地完整。多轮深度审计的对抗证明已覆盖缓存完整性、编译语义、交易上下文、fail-closed、滚动窗口指标、重复开仓等关键硬伤。fail-closed 贯穿全管线。未发现 P0 级新缺陷。
+
+**识别风险**（建议入 registry 跟踪）：
+- P1：`isFatalUnimplemented` 注释与代码不一致（Object/Chart/File 应 Skip 实际 Fatal）、`GetLastError` 全 no-op、Python 隐式全局变量、`bool(None)=true`、Python 语言检测漏 `from decimal import Decimal`、指标缓存 float64 精度、`waitForConfirmation` 强制 confirmed 兜底、outcomeUnknown open 路径永久锁仓
+- P2：ArrayResize side-effect 作用域、TimeLocal 无时区偏移、MQL5 pending/history stub、GlobalVariableName 顺序不确定、floatSeries.maxLen=1000、Python 无 MQL parity 测试 等
+
+**下一步**：§11 P1/P2 风险条目建议业主决定是否立债施工。本审计不涉及代码改动，无需验收。
+
+---
+
+## 2026-09-16 ADR-0023 再评估（VM 管线更优解评审）
+
+- **评审方**：Devin CLI（唯一技术决策者 / 独立复审验收方，D-006）
+- **类型**：正式架构再评估（方案/设计审查）
+- **触发**：业主要求对 VM 管线做全面重新评估，判断是否还有更优解
+- **落档**：`docs/adr/0023-reevaluation-2026-09-16.md`（ADR-0023 再评估附录，不修改原文）
+
+**评审判定**：🟡 **条件通过**——当前四段式架构（CST→IR→Bytecode→Stack VM）方向正确，**不需要推翻重写**；存在明确的优化空间与语义边界风险，建议按优先级分阶段演进。
+
+**对比矩阵**（语义保真/性能/安全性/可维护性/可观测性/开发成本）：
+- A 现状（Stack VM）：8.2
+- B 寄存器 VM：8.0（收益上限 ~1.3-1.5x，builtin 密集稀释，重写+重审计成本极高）
+- C 树遍历解释器：6.4（性能差 3-10x，失去 Bytecode 核心价值）
+- D 嵌入 runtime（goja/starlark/yaegi）：6.0（语义失真层，沙箱失控，现有投资作废）
+- E AOT 编译到 Go：5.4（ADR-0023 已否决，双重真相源+部署复杂度）
+- **F 现状优化（不调架构）：8.5**
+
+**结论**：不存在"推翻重写"级更优解。真正的更优解是保留架构 + 有针对性演进：
+- **阶段 1（P0）**：修补语义边界——`isFatalUnimplemented` 一致性、`GetLastError` no-op、Python 隐式全局、`bool(None)` 语义、Python 语言检测漏等
+- **阶段 2（P1）**：内存分配优化——`interp.Value` 池化、args/locals 池化、栈预分配、decimal 池化
+- **阶段 3（P1-P2）**：dispatch 优化（`[]func` 跳转表）+ 常量折叠扩展 + Superinstructions + 类型特化指令
+- **阶段 4（P3，暂缓）**：寄存器 VM 仅当前序优化后仍瓶颈时考虑
+
+**下一步**：P1 语义风险建议入 registry 跟踪；是否按阶段立项施工由业主决定优先级与排期。
+
+---
+
+## 2026-09-16 VM 管线质量与稳定性提升设计方案
+
+- **设计方**：Devin CLI（唯一技术决策者 / 独立复审验收方，D-006）
+- **类型**：实施性设计方案（非 ADR 决策记录）
+- **触发**：业主决定沿用 Go 路线，要求针对质量和稳定性出提升设计方案
+- **落档**：`docs/spec/vm-pipeline-quality-stability-improvement-plan.md`
+- **状态**：待业主批准立项
+
+**设计目标**：质量（语义边界修补）+ 稳定性（goroutine 泄漏/资源管理/nil 安全/race/panic）+ 可维护性（可观测性/诊断/运维手册）+ 性能（内存分配/dispatch 优化，次要）。
+
+**四阶段划分**：
+- **阶段 1（P0）语义边界修补**：QS-1.1 isFatalUnimplemented 一致性（改注释+文档，不改代码，fail-closed 优于 silent skip）/ QS-1.2 GetLastError 真实实现（lastError 字段 + OrderSend 失败返回 -1 而非 fatal，需设计决策）/ QS-1.3 Python 隐式全局修复（localScopes 栈，需 pyCompiler 改动）/ QS-1.4 bool(None) 修复（`__bool__` builtin）/ QS-1.5 Python 语言检测补 `from decimal import Decimal` / QS-1.6 waitForConfirmation 兜底改 Reconcile+Release / QS-1.7 outcomeUnknown open 有限 recovery（magic+symbol+side+时间窗口匹配）
+- **阶段 2（P1）运行时稳定性**：QS-2.1 goroutine 泄漏防护（watcher 复用）/ QS-2.2 goleak 集成 / QS-2.3 nil 安全加强（NewVM 传 noopContext 删 nil 检查）/ QS-2.4 data race 防护确认 / QS-2.5 panic recovery 加强
+- **阶段 3（P1-P2）性能优化**：QS-3.1 内存分配（Value/args/locals 池化 + 栈预分配 + decimal 池化）/ QS-3.2 dispatch（`[]func` 跳转表）/ QS-3.3 编译期（常量折叠扩展 + Superinstructions + 类型特化指令）
+- **阶段 4（贯穿）工程纪律**：QS-4.1 测试覆盖（goleak/race×3/chaos/fuzz）/ QS-4.2 可观测性（VM metrics/builtin metrics/盲区上报/session diag）/ QS-4.3 文档与运维（runbook/pitfalls）
+
+**关键设计决策待业主确认**：
+1. QS-1.2 OrderSend 失败语义：signalMode 下返回 -1 + 写 lastError（MQL 语义）vs 保持 fatal（当前）
+2. QS-1.3 Python 隐式全局修复可能 break 现有策略（覆盖度报告标记 + 业主确认）
+3. QS-1.7 outcomeUnknown open recovery 匹配策略严格度（magic+symbol+side+30s 窗口+单匹配才释放）
+
+**下一步**：待业主批准立项；批准后 QS 条目入 `docs/audits/tech-debt-registry.md` 跟踪，按实施顺序派工。
+
+## 2026-09-16 VM 管线质量方案 v1 评估 → v2 定稿（Devin CLI 决策）
+
+- **评估对象**：`docs/spec/vm-pipeline-quality-stability-improvement-plan.md` v1。
+- **方法**：逐条对照源码坐标实拍（`compile_expr.go:386-393` / `vm_builtin_trade.go:29-36` / `compile.go:244-289` / `compile_py_expr.go:165-172` / `value.go:12-21,153-168` / `mutation_coordinator.go:260-266,330-334` / `trade_barrier.go:298-308,330-342` / `live_dispatch.go:366`）。
+- **结论**：有条件通过→返工定稿。7 条 P0 中 QS-1.1 问题不成立（编译期已拒绝）、QS-1.5 无真实影响、QS-1.6 修法无效（Reconcile 在 acceptedUnconfirmed 为 no-op）、QS-1.2 逆转 FAILCLOSED-1 未声明、QS-1.3/1.4 修法重复造轮子；QS-2.1 不是泄漏；阶段 3 池化对值结构体不成立且零 baseline。
+- **决策**：D-009（decisions.md）。v2 spec §2 保留全部核验结论。
+- **落档**：spec v2 覆盖 v1；registry 新增 QS-1.4/1.6/1.3/1.2a/1.7-INV/2.2/2.4/2.5/2.3/3-BASELINE 共 10 条 🟦open；STATE.md 指针更新。
+- **下一步**：派 QS-1.4 第一单（含 `vm_helpers.go:250` 注释修正）。
