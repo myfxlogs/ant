@@ -4,6 +4,8 @@
 
 Devin CLI 角色与职责汇总见 `.devin/角色与职责.md`（指南性汇总，冲突时以 AGENTS.md §0 为准）。本文件只补充 Devin 专属纪律。
 
+双终端协作（两个 Devin CLI 实例）的角色激活与权限边界见 `.devin/rules/dual-terminal-roles.md`：`[角色:施工]` 标签激活施工模式（严格按 builder-handoff 提示词、无决策权），无标签/`[角色:决策]` 为决策模式（默认全权）。
+
 ## Source of truth
 
 - `AGENTS.md` is the contract SSOT (唯一真相源); `CLAUDE.md` / `.windsurfrules` are entry shells that load `@AGENTS.md`.
