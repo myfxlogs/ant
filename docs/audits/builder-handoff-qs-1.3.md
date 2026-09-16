@@ -6,6 +6,8 @@
 > 勿部署、勿 push、禁 `--no-verify`；只显式 add 本任务文件；commit 用 `ANT_ROLE=builder git commit` 前缀（D-015）；**不更新任何交接层文件**。
 >
 > **最终决策：Devin CLI（[角色:决策终] 激活）**
+>
+> **修正 v2（2026-09-16）**：施工方 S1 复核发现两处提示词事实错误并已 `[转交决策]`，决策方独立核实后全部采信——①`global`/`nonlocal` 在 CST 黑名单而非白名单（S3b 死代码移除）；②批准 Option B：`GlobalSlots` → `GlobalDecls` 判定谓词（关闭编译顺序导致的残余泄漏洞）。行内 ~~删除线~~ 为修正痕迹。
 
 ## 立项背景（触发 + 证据链）
 
@@ -13,7 +15,7 @@
 - `backend/tools/mql2go/compile.go:282-289`：`Version=="python"` 的未解析变量赋值登记 `GlobalSlots` → 函数内 `x=1` 跨事件/跨函数污染（VM 单线程，非并发问题）。
 - **决策方预核实的关键事实**（施工时复核，若不符 `[转交决策]`）：
   a. `self.x` 与裸 `x` 在 pyCompiler 阶段都剥前缀映射同名 `ExprAssignment{Name:"x"}`（`compile_py_assign.go:25-38,92-119,124-139`）；self 字段经 `selfVars` 收集进 `ir.Globals`（`compile_py.go:95-101`）→ GlobalSlots。
-  b. `global_statement`/`nonlocal_statement` 在子集白名单（`compile_py_subset.go:202-203`）但 `compileStmt`（`compile_py_stmt.go:24-69`）无 case → 静默丢弃。
+  b. ~~`global_statement`/`nonlocal_statement` 在子集白名单~~ **修正（施工方 S1 复核纠正，决策方确认）**：二者在 `forbiddenNodeTypes` **黑名单**（`compile_py_subset.go:202-203`，表起于 :185），`checkForbiddenNodes`（:67-72）在 CST 校验层即报 `not allowed in Python subset`——编译期已 fail-closed，`compileStmt` 永不可达该节点。
   c. `resolveVar`（`compile.go:257-297`）查找顺序 localScopes→GlobalSlots→python 隐式全局登记；`compileDecl`（`compile_expr.go:196-208`）已有"localScopes 非空→内层 scope 分配 nextLocalSlot"的既有路径。
   d. `nextLocalSlot`/`EventLocals`/`NumLocals` 由 `compile.go:312-316,342,351` 统一收尾——局部槽分配复用 `nextLocalSlot` 即自动正确。
 
@@ -24,10 +26,11 @@
 ## 约束与目标（决策方已定的语义裁定）
 
 - **函数内裸名赋值且全槽未命中 → 分配局部槽**（内层 localScopes + `nextLocalSlot`），不落 GlobalSlots。仅 `ExprAssignment`（`compile_expr.go:105-112`）与 `ExprCompoundAssign`（`:180-194`）入口需要处理。
-- **已命中 GlobalSlots 的名字保持写全局**——含 self 字段（selfVars 收集）与模块级顶层赋值。`self.x`/裸 `x` 同槽的既有混同不修（超出边界，自报记一笔即可）。
+- **已声明全局（`GlobalDecls` = `ir.Globals`：self 字段 + 顶层赋值）的名字保持写全局**。判定谓词是 `GlobalDecls` **而非 `GlobalSlots`**（修正 v2，Option B 批准）：`GlobalSlots` 会被"未声明读"的隐式注册污染（`resolveVar` :284-289），若按它判定，先编译函数中的未声明读会让后续函数内同名赋值仍泄漏（编译顺序：函数体先于事件体，`compile.go:77-80` vs :94-111）。`GlobalDecls` 在编译期固定、不受编译顺序影响，且"隐式读注册 ≠ 声明"更贴近 Python 语义。
+- **连带语义（已裁定）**：策略参数名（`ir.Params`）在 `GlobalSlots` 但不在 `GlobalDecls` → 函数内给参数名赋值变局部（Pythonic）；`self.x`/裸 `x` 同槽的既有混同不修（超出边界，自报记一笔即可）。
 - **`x += 1`/`x = f(x)` 等读到未声明名**：读取路径 `resolveVar` 本轮**不改**（仍走隐式全局 + blind spot）；仅赋值落点改局部。
-- **`x += 1` 完全未声明（无 local 无 global）→ 编译期 `c.err` 报错**（fail-closed，Python 是 NameError；不得隐式建全局再 +=）。
-- **`global`/`nonlocal` 语句 → `compileStmt` 加 case，`c.errorf` 明确报错**（子集不支持；静默丢弃在新语义下危险）。
+- **`x += 1` 未声明（无 local 且不在 `GlobalDecls`）→ 编译期 `c.err` 报错**（fail-closed，Python 是 NameError；不得隐式建全局再 +=）。注意：仅被隐式读注册进 `GlobalSlots` 但未声明的名字同样算未声明——与 `resolveAssignTarget` 用同一谓词。
+- **`global`/`nonlocal` 已由 CST 黑名单 fail-closed 拦截（修正 v2）**——`compileStmt` 不加 case（死代码）；已加的删除。S4e 保留为回归守卫。
 - **顺序语义**：declare-on-assign（顺序分配），不做函数级预扫描；`x = x + 1` 且 x 未声明时 RHS 仍走隐式全局读（既有行为不变）。
 
 ## 边界 / 不做
@@ -48,10 +51,23 @@
 - **坐标**：`backend/tools/mql2go/compile_expr.go:105-112` `case interp.ExprAssignment:`。
 - **落点**：抽 helper（与 `compileDecl` 的分配段同形）：
   ```go
+  // isDeclaredGlobal reports whether name was declared at module level
+  // (self fields + top-level assignments collected into ir.Globals).
+  // Names merely registered into GlobalSlots by implicit reads do NOT count —
+  // they must not poison later function-scope assignments (QS-1.3).
+  func (c *astCompiler) isDeclaredGlobal(name string) bool {
+      for _, g := range c.bc.GlobalDecls {
+          if g.Name == name {
+              return true
+          }
+      }
+      return false
+  }
+
   // resolveAssignTarget resolves the store slot for an assignment target.
   // QS-1.3: inside a Python function/event, assignment to an undeclared name
   // declares a function-local slot instead of leaking into GlobalSlots.
-  // Names already in GlobalSlots (self fields, module globals) stay global.
+  // Declared globals (self fields, module-level assignments) stay global.
   func (c *astCompiler) resolveAssignTarget(name string) (VarID, bool) {
       if c.bc.Version == "python" && len(c.localScopes) > 0 {
           for i := len(c.localScopes) - 1; i >= 0; i-- {
@@ -59,8 +75,8 @@
                   return id, false
               }
           }
-          if id, ok := c.bc.GlobalSlots[name]; ok {
-              return id, true
+          if c.isDeclaredGlobal(name) {
+              return c.bc.GlobalSlots[name], true
           }
           scope := c.localScopes[len(c.localScopes)-1]
           scope[name] = VarID(c.nextLocalSlot)
@@ -70,34 +86,36 @@
       return c.resolveVar(name)
   }
   ```
-  `case ExprAssignment` 中 `c.resolveVar(e.Name)` 改为 `c.resolveAssignTarget(e.Name)`，emit 逻辑不变。
+  `case ExprAssignment` 中 `c.resolveVar(e.Name)` 改为 `c.resolveAssignTarget(e.Name)`，emit 逻辑不变。（`GlobalDecls` 是 `[]interp.GlobalVar`，线性扫描；编译期一次性开销，不预建 set。）
 - **验证**：S4 测试。
 
-### S3 — `ExprCompoundAssign` 未声明名 fail-closed + `global`/`nonlocal` 报错
+### S3 — `ExprCompoundAssign` 未声明名 fail-closed；`compileStmt` 死代码移除（修正 v2）
 
-- **坐标**：`compile_expr.go:180-194` `case interp.ExprCompoundAssign:`；`compile_py_stmt.go:24-69` `compileStmt`。
+- **坐标**：`compile_expr.go` `func compileCompoundAssign`；`compile_py_stmt.go` `compileStmt`。
 - **落点**：
-  a. `ExprCompoundAssign`：在 `resolveVar` 前先查 localScopes/GlobalSlots（同 helper 思路）；`Version=="python"` 且 `localScopes` 非空且完全未命中 → `c.err`（若 nil）= 明确错误（如 `cannot use augmented assignment on undeclared name %q (Python: NameError)`），return。**已命中者照常 resolveVar**（self 字段回归不破）。
-  b. `compileStmt` 加 `case "global_statement", "nonlocal_statement": c.errorf(n, "global/nonlocal is not supported in Python subset")`（复用 :66 的 errorf 模式）。
+  a. `ExprCompoundAssign`：`Version=="python"` 且 `localScopes` 非空时，先查 localScopes ∪ `isDeclaredGlobal`；完全未命中 → `c.err`（若 nil）= `cannot use augmented assignment on undeclared name %q (Python: NameError)`，return。**已声明者照常 resolveVar**（self 字段回归不破）。判定谓词与 S2 共用 `isDeclaredGlobal`，不得查 `GlobalSlots`。
+  b. ~~`compileStmt` 加 `global_statement`/`nonlocal_statement` case~~ **修正 v2：删除已加的死代码 case**——CST 黑名单已拦截，该 case 永不可达（§7.2 禁死代码）。
 - **验证**：S4 测试。
 
 ### S4 — 测试（先红后绿 + mutation）
 
 - **坐标**：新建 `backend/tools/mql2go/compile_py_locals_test.go`（复用 `compile_py_bool_test.go` 的 CompilePython+RunOnBar+GetGlobal 模式）。
-- **落点**（最小集）：
-  a. `def on_bar(self): x = 1` + `def helper(self): return x`——helper 读 x 不得读到 1（编译错误或返回 None 均可，自报注明实际行为）；先红：修复前读到 1。
-  b. 跨事件隔离：on_bar#1 `x=1`；on_bar#2 未赋值读 x → 不为 1（None 或编译期拒绝，以 S2 实现为准注明）。
-  c. 回归守卫：`self.count += 1` 跨两次 on_bar 累加为 2（GlobalSlots 路径不变）。
+- **落点**（最小集，修正 v2）：
+  a. **字面形式转正**：`def on_bar(self): x = 1` + `def helper(self): return x` → helper 读 x 必须 **r=ValNone**（Option B 后隐式读注册不再污染赋值落点）。现有 `TestQS13_LiteralReaderPoisonsSlot` 从"钉洞"改写为断言隔离成立；另保留反向形式 `helper: x=1` / `on_bar: return x` → r=ValNone。
+  b. 跨事件隔离：on_bar#1 `x=1`；on_bar#2 未赋值读 x → 不为 1（None）。
+  c. 回归守卫：`self.count += 1` 跨两次 on_bar 累加为 2（GlobalDecls 命中 → GlobalSlots 路径不变）。
   d. 参数遮蔽：`def f(self, x): x = x + 1` 编译通过且参数槽语义不变。
-  e. `global x` / `nonlocal x` 出现在函数内 → CompilePython 返回明确错误。
-  f. `x += 1` 完全未声明 → CompilePython 返回明确错误。
-  g. NumLocals/EventLocals 正确性：IR/bytecode 层断言局部槽数含新分配（或行为等价断言）。
-- **验证**：a/e/f 先红后绿。
+  e. `global x` / `nonlocal x` 出现在函数内 → CompilePython 返回明确错误（CST 黑名单报错，回归守卫；基线即绿）。
+  f. `x += 1` 完全未声明 → CompilePython 返回明确错误；同一函数先 `x=1` 后 `x+=1` 正常。
+  g. NumLocals/EventLocals 正确性：断言局部槽数含新分配。
+  h. **参数名赋值变局部（Option B 连带语义 pin）**：`def f(self): <param名> = 99` 后全局 param 值不变；自报注明该语义裁定。
+- **验证**：a 反向形式 / f 先红后绿；a 字面形式在 Option B 下先红（修复前 r=1）后绿（r=None）。
 
 ## 对抗证明（缺一即未完成）
 
 - mutation：S2 的 `resolveAssignTarget` 退回 `resolveVar`（或删 `Version=="python"` 分支）→ S4a/S4b RED；restore → GREEN。
-- mutation：删 S3b 的 `global_statement` case → S4e RED；restore → GREEN。
+- mutation：`isDeclaredGlobal` 改回查 `GlobalSlots` → S4a 字面形式 RED（r=1 泄漏复现）；restore → GREEN。
+- mutation（替换原不可行项）：从 `forbiddenNodeTypes` 删 `"global_statement"` 条目 → S4e RED（静默丢弃恢复）；restore → GREEN。
 
 ## 验收标准
 
