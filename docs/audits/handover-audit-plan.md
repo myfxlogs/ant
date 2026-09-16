@@ -754,3 +754,10 @@
 - **sweep 分立债 2 条**：TZ-SWEEP-AFFECTED-1（P2，analytics ~9 站统计窗口偏 8h，单点修法）+ TZ-MIXED-ENCODING-1（同列 CST/UTC 混合写入根因级——trade_records.close_time/open_time + user_subscriptions.expires_at，跨日 PnL 错归/到期晚判，先 spike 受影响行数再定案）。
 - **部署注记**：本站修复随下次 backend build 生效；生效后 16-24h 龄订单不再假 ghost，`repaired` 计数恢复真实。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 TZ-SWEEP-AFFECTED-1 ✅done（Devin CLI 独立复审通过）
+
+- **施工**：commit `362d285e`——`analyticsSince()` helper + `.UTC()`（analytics.go:340-342，单点愈 ~9 站）+ `CountRecentStartsByUser` 参数 `since.UTC()` 归一化（决策方升级：归一化强于注释）+ pin 测试×2（location + `time.Local=CST` 强制重释钟面）。
+- **独立复审**：机检全绿（build/vet/gofmt/test/race×3 1.1s×2/check-lines 0 errors）；**独立 mutation**：删 `.UTC()` → 双测试 RED（`location=Local` + 编码钟面偏 -8h：19:53 CST vs 11:53 UTC 精确复现）→ restore → GREEN。范围干净：3 文件。M2 覆盖等价说明属实（param 侧归一化无 mock 层不可测，机制经 M1 同类证明）。
+- **部署注记**：随下次 backend build 生效，周期统计窗口恢复真 24h/7d/30d。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）

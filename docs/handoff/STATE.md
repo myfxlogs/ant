@@ -50,9 +50,10 @@
 | QS-2.3 vm.ctx 非 nil 不变量 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5ad339a9；noopContext 注入+SetContext 归一化+99 处守卫消除+17 处非等价站点保留裁定；独立 mutation×2 RED→GREEN；race×3 48.2s 绿 |
 | QS-3-BASELINE VM 性能基线 | ✅done | Devin CLI 验收通过 2026-09-16；commit b8ad1674；B1-B4 benchmark+报告落盘（dispatch ~120ns/B4 67.9µs/decimal div 7.2×）+3 条 live metric 接线；数据独立重跑复现；mutation×1 RED→GREEN |
 | RECONCILE-TZ-WINDOW-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 1efbf678；`.UTC()` 一行+pin×2+sweep 报告；独立 mutation RED→GREEN；sweep 另立 2 债 |
+| TZ-SWEEP-AFFECTED-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 362d285e；analyticsSince()+worker 参数归一化；独立 mutation -8h 编码偏移复现 RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: RECONCILE-TZ-WINDOW-1 ✅done。新债处置排期：TZ-SWEEP-AFFECTED-1（P2 小批）→ TZ-MIXED-ENCODING-1（spike→定案）→ ORDERSEND-NILBROKER-FAILCLOSED-1 等 P3。
+- **下一步**: TZ 两债 ✅done。新债处置排期：TZ-MIXED-ENCODING-1（spike→定案）→ ORDERSEND-NILBROKER-FAILCLOSED-1 + TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE 等 P3。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -106,7 +107,7 @@
 - **QS-3-BASELINE** ✅done — 基线已落盘 `docs/audits/vm-perf-baseline-2026-09.md`；无项触及 >30% 阈值，生产 p99 待 metric 上线观测
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** 🟦open — QS-2.3 连带记债：无 broker 静默 -1+nil error 非 fail-closed
 - **RECONCILE-TZ-WINDOW-1** ✅done — `.UTC()` 修复+pin 测试，Devin CLI 验收通过 2026-09-16（1efbf678）
-- **TZ-SWEEP-AFFECTED-1** 🟦open P2 — analytics.go `since` 缺 `.UTC()` ~9 站统计窗口偏 8h（sweep §2）
+- **TZ-SWEEP-AFFECTED-1** ✅done — analyticsSince()+worker 归一化，Devin CLI 验收通过 2026-09-16（362d285e）
 - **TZ-MIXED-ENCODING-1** 🟦open — trade_records.close_time/open_time + expires_at 同列 CST/UTC 混合写入根因级（sweep §3，先 spike 行数）
 - **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
 
