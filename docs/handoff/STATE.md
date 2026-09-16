@@ -54,7 +54,7 @@
 | TZ-MIXED-ENCODING-1 根因修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit da85f973；~50 站写入端 .UTC() 全枚举+读侧同步+migration 278 签名回填（10100 行 CST→UTC，幂等）；CST 配对列裁定不翻分立 TZ-PAIRED-CST-COLS-1；独立 mutation RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: TZ 三债全 ✅done。剩余排期：ORDERSEND-NILBROKER-FAILCLOSED-1 + TEST-WAITSTATE-ACQUIRE-BCAST-1 + SNAPSHOT-SLICE-ALIAS-1 + PY-SCOPE-KNOWN-1 + TZ-PAIRED-CST-COLS-1（P3）→ VM-RUNTIME-FAILCLOSED-2/VM-CACHE-INTEGRITY-2/VM-LIVE-MTF-1/VM-API-TRUTH-1/DATA-TRUTH-3（⚠️待独立复审项）。
+- **下一步**: 2026-09-16 registry 全量对账收官——全部 ⚠️待独立复审/待Claude复审 项已清零（翻正 9 条 ✅done 漂移 + 裁定 5 条决策项）。真实剩余施工队列：VM-RUNTIME-FAILCLOSED-2（代码不在仓，spec 已备）→ VM-HONESTY-3-REVIEW（测试重构 spec 已备）→ VM-COMPILER-SEMANTICS-3（switch default/break 栈）→ VM-API-TRUTH-1（StatusUnsupported 重分类，已裁定可派工）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -75,11 +75,11 @@
 - **VM-COMPILER-SEMANTICS-4** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：comma_expression ExprSeq + checkReservedKeywordUsage before switch + hasMissingInitializer
 - **VM-CACHE-INTEGRITY-5** ✅done — 从零重做 round 6（2026-08-27 Devin CLI 验收通过）：coverage restore + Version check + payload limit + no Language field
 - **TRON-SECURITY-1** 🟦open — 提现冷签 MITM，`tron_client.go:34` 仍 `insecure.NewCredentials()`（P0 资金）
-- **DATA-TRUTH-1** 🟦open — orders 表 reconciliation 只检测不收敛，ghost 仅 log.Warn（P0 数据，需架构决策）
+- **DATA-TRUTH-1** ✅done — orders 表 reconciliation 收敛（S1-S4 已验收，见 FIX-2026-08-28-DATA-TRUTH-1-RECONCILIATION-CONVERGENCE；2026-09-16 对账修正本指针漂移）
 - **QUOTE-RECONNECT-LOOP** ✅done — 报价流自持重连循环修复（2026-08-27 Devin CLI 验收通过）
 - **BROKER-SEARCH-1** ✅done — mtapi host 配置接线（2026-08-27 Devin CLI 验收通过）
 - **TRUST-1** ✅done — Demo/真实账户战绩混展无标注（Devin CLI 验收通过 2026-08-28：adapter 读 broker Type + mdtick 加 AccountType 字段 + service 写 account_type + CreateAccount 传值 + LinkLiveAccount real-only 校验 + marketplace 表+cache+leaderboard 过滤 + migration 276，11 项对抗证明 + 4 项独立重跑 RED→restore→GREEN）
-- **SCHEDULE-HOTLOOP-1** ⚠️待生产部署验收
+- **SCHEDULE-HOTLOOP-1** ✅done — 已部署验收（CPU 57%→6.49%，2026-09-16 对账修正本指针漂移）
 - **VM-AUDIT-2026-08-27-1** ✅done — Python live 路径 SourceHash 验证（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-2** ✅done — runEvent fatalError 重置（Devin CLI 验收通过 2026-08-27）
 - **VM-AUDIT-2026-08-27-3** ✅done — executeCallUser MaxStackDepth 检查（Devin CLI 验收通过 2026-08-27）
@@ -118,6 +118,7 @@
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
 - 2026-09-16 **VM 质量方案 v2 全量收官**（10 子任务全 Devin CLI 验收）：QS-1.4 bool 双否定（88292b14）/ QS-1.6 权威读状态机迁移（5be48f30）/ QS-1.3 函数域隔离 v3（9940eda4+ee47292d）/ QS-1.2a lastError 三 builtin（65e2cccf）/ QS-1.7-INV 不立项（05138758）/ QS-2.2 goleak（174b8405）/ QS-2.4 race 审计（8e393cae）/ QS-2.5 panic 加固（89353004）/ QS-2.3 noopContext（5ad339a9）/ QS-3-BASELINE 基线+metric（b8ad1674）。明细滚出至 handover-audit-plan.md。
+- 2026-09-16 **registry 全量对账**（Devin CLI）：所有 ⚠️待独立复审项清零——翻正漂移 ✅done×9（LIVE-ORDER-REENTRY-1/LIVE-MQL-ORDER-CONTEXT-1/LIVE-REDESIGN-2TAB/LIVE-DIAG-TRUTH-1/VM-TEST-EVIDENCE-3/返工 Batch5 等），裁定决策项×5（DATA-TRUTH-3=v2 凭据-only 附属表/VM-API-TRUTH-1=批准 StatusUnsupported 派工/VM-LIVE-MTF-1=暂缓需求驱动/STREAM-FREEZE-1=代码验收+生产实测挂业主/LIVE-ORDER-REENTRY-1 三遗留裁定），标注待重施工×2（VM-RUNTIME-FAILCLOSED-2/VM-HONESTY-3-REVIEW 代码不在仓）。
 - 2026-09-08 **FIX-2026-09-08-TEMP-RETRY ✅done**（滚出至 LOG.md）：kimi-k3 400 temperature 自愈重试 + 两个 nil 雷修复 + 模型配置常驻齿轮入口。
 - 2026-09-08 **FIX-2026-09-08-BYOK-MODEL-PICKER ✅done**（滚出至 LOG.md）：BYOK 模型下拉选不到自有模型，3 层根因修复（分组下拉/UUID→字符串 provider_id/normalizeAPIBase）。
 

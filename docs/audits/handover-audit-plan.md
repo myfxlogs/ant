@@ -771,3 +771,13 @@
 - **分立债**：`TZ-PAIRED-CST-COLS-1`（P3）——CST 写读配对列规则文档化，禁单侧翻 UTC。
 - **部署注记**：migration 278 在 backend 启动时执行——部署后 trade_records open/close_time 全列统一 UTC，`live_performance` UTC 日界桶恢复正确。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-16 registry 全量对账收官（Devin CLI，全部 ⚠️待独立复审/待Claude复审 项清零）
+
+- **触发**：业主指令"所有 claude 待复审的，都交给 devin决策者"。逐条核 registry 主表 + 返工表 + 审计日志段。
+- **翻正状态漂移 ✅done×9**（D-REVERT 对账表/既有验收条目已录验收、代码在 HEAD 抽验属实，主表状态滞留）：VM-TIMESERIES-SEMANTICS-1 / VM-CACHE-INTEGRITY-1/2 / VM-RUNTIME-FAILCLOSED-1 / VM-COMPILER-SEMANTICS-1 / BT-FUNC-ENTRYPC-FWD / LIVE-ORDER-REENTRY-1（R4 ✅done 2026-08-26 + 三遗留裁定）/ LIVE-MQL-ORDER-CONTEXT-1（proto 纯追加 wire 兼容 + pending 分流核实）/ LIVE-REDESIGN-2TAB（strategyJoin/OrphanRunsTable 在仓 + vitest 12.08s + tsc 0 err 独立复测）/ VM-TEST-EVIDENCE-3（返工行已 ✅done）/ LIVE-DIAG-TRUTH-1（第3轮验收 ✅done 2026-08-21 已在档）。
+- **裁定决策项×5**：① DATA-TRUTH-3 — mt_accounts 主表维持，mt_accounts_v2 降级 credentials-only 附属表 + 删死列 last_checked_at（P3）；② VM-API-TRUTH-1 — 批准 StatusUnsupported 重分类方向，待派工；③ VM-LIVE-MTF-1 — 暂缓，需求驱动，不伪造实现；④ STREAM-FREEZE-1 — 代码已验收，剩余为生产浏览器实测（业主侧动作）；⑤ LIVE-ORDER-REENTRY-1 三遗留 — 真实 broker 验证属部署观测/recoveryDelay=10s 可接受/outcomeUnknown 已有 circuit+fatalError 观测面不另立告警。
+- **标注待重施工×2**：VM-RUNTIME-FAILCLOSED-2（arith 除零/OP_DUP/越界 slot 的 setStackError 代码不在 HEAD——2026-08-24 施工未提交，spec 已备）+ VM-HONESTY-3-REVIEW（dead-branch 测试重构未在仓，spec 已备）。VM-COMPILER-SEMANTICS-3 维持 🟦open（独立复审阻断，switch default 顺序/break 栈清理）。
+- **MAGIC-ATTRIBUTION S1-S3**：主条目均已录"Devin CLI 验收通过 2026-08-27"，日志段标题待复审为时序记录，无需动作。
+- **STATE.md 同步**：DATA-TRUTH-1/SCHEDULE-HOTLOOP-1 指针漂移翻正 ✅done；下一步队列重写为真实剩余施工序。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
