@@ -3,7 +3,7 @@
 > **[角色:施工]** — 你是本任务的施工方 agent（见 `.devin/rules/dual-terminal-roles.md`）。
 > 严格按 S1–S4 施工，不做决策；超出提示词范围 = 违规，停下转 `[转交决策]`。
 > 完成后先过"施工完成自审"（D-012）修至全绿再交回；自报末行带 `[施工完成:QS-1.6] @<commit-hash>`（D-014）。
-> 勿部署、勿 push、禁 `--no-verify`；只显式 add 本任务文件；**不更新任何交接层文件**（STATE/registry/handover/decisions/spec/adr 归决策方独占，根因答案写进自报）。
+> 勿部署、勿 push、禁 `--no-verify`；只显式 add 本任务文件；commit 用 `ANT_ROLE=builder git commit` 前缀（D-015 豁免 STATE.md 必更门禁）；**不更新任何交接层文件**（STATE/registry/handover/decisions/spec/adr 归决策方独占，根因答案写进自报）。
 >
 > **最终决策：Devin CLI（[角色:决策终] 激活）**
 

@@ -3,7 +3,7 @@
 > **[角色:施工]** — 你是本任务的施工方 agent（见 `.devin/rules/dual-terminal-roles.md`）。
 > 严格按 S1–Sn 施工，不做决策；超出提示词范围 = 违规，停下转 `[转交决策]`。
 > 完成后自报证据（机检五件套 + 对抗证明），停手等最终决策者复审。
-> 勿部署、勿 push、禁 `--no-verify`；只显式 add 本任务文件。
+> 勿部署、勿 push、禁 `--no-verify`；只显式 add 本任务文件；commit 用 `ANT_ROLE=builder git commit` 前缀（D-015 豁免 STATE.md 必更门禁）。
 >
 > **最终决策：<Devin CLI（[角色:决策终] 激活）｜Claude>**（派发时填写实际来源）
 

@@ -62,7 +62,9 @@ if [ -n "$base" ]; then
 else
   git diff --cached --name-only -- '*.go' '*.ts' '*.tsx' '*.proto' '*.sql' '*.py' 2>/dev/null | grep -q . && code_changed=1
 fi
-if [ "$code_changed" = "1" ]; then
+# D-015: 施工角色（ANT_ROLE=builder）豁免 STATE.md 必更——交接层归最终决策者独占，
+# 状态更新由决策方验收时补齐。未声明角色 = 决策方/人类提交，门禁照常生效（fail-closed）。
+if [ "$code_changed" = "1" ] && [ "${ANT_ROLE:-}" != "builder" ]; then
   if [ -n "$base" ]; then
     git diff --quiet "$base...HEAD" -- docs/handoff/STATE.md 2>/dev/null && {
       echo "❌ STATE.md 必更新：本次提交含代码变更但未更新 docs/handoff/STATE.md（AGENTS.md §6 收工协议）。" >&2

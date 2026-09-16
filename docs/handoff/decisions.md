@@ -112,3 +112,11 @@
 - **理由**: 一行即可转发精确定位复审对象；编号+hash 双锚点防坐标漂移与任务混淆。
 - **影响**: `.devin/rules/dual-terminal-roles.md` §4.1 加第 5 条；`docs/audits/builder-handoff-template.md` 交付格式更新；`docs/audits/builder-handoff-qs-1.4.md` 同步。
 - **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）
+
+### D-015 2026-09-16 施工角色豁免 STATE.md 必更门禁（ANT_ROLE=builder）
+
+- **背景**: `scripts/hooks/pre-commit` ①（:59-77）强制"代码变更必须含 STATE.md staged"，早于角色分立；D-010 后 STATE.md 归最终决策者独占，施工方 commit 被门禁与 §4 双向夹击（更新=越权，不更新=被拦）。
+- **决定**: ① hook ① 加豁免：存在 `ANT_ROLE=builder` 环境变量时跳过 STATE.md 必更检查（其余门禁不变）。② 施工 commit 统一 `ANT_ROLE=builder git commit ...`（或会话级 `export ANT_ROLE=builder`）；未声明 = 决策方/人类提交，门禁照常生效（fail-closed）。③ 施工方 commit 的状态更新义务由决策方验收时承担，收工协议不变。④ CI 路径（base 模式）不受影响——CI 无此变量。
+- **理由**: env 显式声明优于按文件集推断（后者对决策方忘更是 fail-open）；否决 `git config ant.role` 粘性方案——决策终端忘清会静默失效。
+- **影响**: `scripts/hooks/pre-commit` ① 加豁免；`dual-terminal-roles.md` §4 加提交约定；`builder-handoff-template.md` + `builder-handoff-qs-1.6.md` 头部同步。
+- **署名**: 最终决策：Devin CLI（[角色:决策终] 激活）

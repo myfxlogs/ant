@@ -47,6 +47,7 @@
 **可做**：
 - 严格按指定 `builder-handoff` 提示词的 S1–Sn 编号指令施工：读代码、改代码、写测试、跑 build/test/机检。
 - commit 提示词范围内的文件（只显式 `git add` 本任务文件，禁 `git add -A`）。
+- commit 时用 `ANT_ROLE=builder git commit ...`（或会话级 `export ANT_ROLE=builder`）——D-015 豁免 pre-commit 的 STATE.md 必更检查；施工方 commit 不更新交接层，状态更新由决策方验收时补齐。
 
 **禁止**：
 - 不 push、不部署（除非提示词明确逐条授权；默认禁止）。
