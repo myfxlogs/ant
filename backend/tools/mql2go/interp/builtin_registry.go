@@ -12,7 +12,7 @@ var implementedMarketData = []string{
 	"Ask", "ask", "Bid", "bid", "Point", "point", "_Point",
 	"Symbol", "symbol", "_Symbol", "Digits", "digits", "_Digits",
 	"Period", "_Period", "M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1",
-	"SymbolInfoDouble", "SymbolInfoInteger", "SymbolInfoString",
+	"SymbolInfoDouble", "SymbolInfoInteger",
 	"MarketInfo",
 	// Cross-timeframe market data
 	"iHigh", "iLow", "iOpen", "iClose", "iTime",

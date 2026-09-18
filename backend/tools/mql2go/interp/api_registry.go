@@ -207,6 +207,11 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "AccountServer", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
 	{Name: "AccountStopoutLevel", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
 	{Name: "AccountFreeMarginMode", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
+	// VM-ENUM-NUMBERING-1: the real ENUM_SYMBOL_INFO_STRING has no NAME
+	// member (the symbol name is the query key, not a property) and
+	// sdk.SymbolInfo carries no string fields — every prop is sourceless,
+	// so the whole function is reclassified (same disposition as batch 2d).
+	{Name: "SymbolInfoString", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
 }
 
 // registryMap is the lookup index built from unsupportedSymbols + builtin_registry.go + constants.go.

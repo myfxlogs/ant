@@ -136,7 +136,6 @@ var builtinRegistry = []builtinEntry{
 	// Symbol info
 	{"SymbolInfoDouble", nil},
 	{"SymbolInfoInteger", nil},
-	{"SymbolInfoString", nil},
 	{"MarketInfo", nil},
 
 	// String functions

@@ -87,7 +87,7 @@ func builtinAccountFreeMarginCheck(vm *VM, args []interp.Value) (interp.Value, e
 
 func builtinSymbolInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
-		return interp.DecimalVal(decimal.Zero), nil
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("SymbolInfoDouble: no broker in the VM")
 	}
 	sym := argS(args, 0)
 	if sym == "" {
@@ -95,34 +95,52 @@ func builtinSymbolInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) 
 	}
 	info, err := vm.ctx.Broker().SymbolInfo(sym)
 	if err != nil {
-		return interp.DecimalVal(decimal.Zero), nil
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("SymbolInfoDouble: %w", err)
 	}
 	prop := argI(args, 1)
+	// VM-ENUM-NUMBERING-1: prop numbers are the real MQL5
+	// ENUM_SYMBOL_INFO_DOUBLE values (current doc order).
 	switch prop {
-	case 0: // SYMBOL_POINT
+	case 0: // SYMBOL_BID
+		if sym != vm.ctx.Symbol() || vm.ctx.Bid().IsZero() {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("SymbolInfoDouble: no authoritative bid for %q in the VM", sym)
+		}
+		return interp.DecimalVal(vm.ctx.Bid()), nil
+	case 3: // SYMBOL_ASK
+		if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("SymbolInfoDouble: no authoritative ask for %q in the VM", sym)
+		}
+		return interp.DecimalVal(vm.ctx.Ask()), nil
+	case 6, 7, 8: // SYMBOL_LAST/LASTHIGH/LASTLOW — venue 0: forex has no last-deal price (real MT5 returns 0 too)
+		return interp.DecimalVal(decimal.Zero), nil
+	case 9, 10, 11: // SYMBOL_VOLUME_REAL/VOLUMEHIGH_REAL/VOLUMELOW_REAL — venue 0: no centralized volume in backtest
+		return interp.DecimalVal(decimal.Zero), nil
+	case 13: // SYMBOL_POINT
 		return interp.DecimalVal(info.Point), nil
-	case 1: // SYMBOL_VOLUME_MIN
-		return interp.DecimalVal(info.VolumeMin), nil
-	case 2: // SYMBOL_VOLUME_MAX
-		return interp.DecimalVal(info.VolumeMax), nil
-	case 3: // SYMBOL_VOLUME_STEP
-		return interp.DecimalVal(info.VolumeStep), nil
-	case 4: // SYMBOL_TICK_VALUE
+	case 14: // SYMBOL_TRADE_TICK_VALUE
 		return interp.DecimalVal(info.TickValue), nil
-	case 5: // SYMBOL_TICK_SIZE
+	case 17: // SYMBOL_TRADE_TICK_SIZE
 		return interp.DecimalVal(info.TickSize), nil
-	case 6: // SYMBOL_SWAP_LONG
+	case 18: // SYMBOL_TRADE_CONTRACT_SIZE
+		return interp.DecimalVal(info.ContractSize), nil
+	case 22: // SYMBOL_VOLUME_MIN
+		return interp.DecimalVal(info.VolumeMin), nil
+	case 23: // SYMBOL_VOLUME_MAX
+		return interp.DecimalVal(info.VolumeMax), nil
+	case 24: // SYMBOL_VOLUME_STEP
+		return interp.DecimalVal(info.VolumeStep), nil
+	case 26: // SYMBOL_SWAP_LONG
 		return interp.DecimalVal(info.SwapLong), nil
-	case 7: // SYMBOL_SWAP_SHORT
+	case 27: // SYMBOL_SWAP_SHORT
 		return interp.DecimalVal(info.SwapShort), nil
 	default:
-		return interp.DecimalVal(decimal.Zero), nil
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("SymbolInfoDouble: unsupported prop %d", prop)
 	}
 }
 
 func builtinSymbolInfoInteger(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
-		return interp.IntVal(0), nil
+		return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: no broker in the VM")
 	}
 	sym := argS(args, 0)
 	if sym == "" {
@@ -130,39 +148,66 @@ func builtinSymbolInfoInteger(vm *VM, args []interp.Value) (interp.Value, error)
 	}
 	info, err := vm.ctx.Broker().SymbolInfo(sym)
 	if err != nil {
-		return interp.IntVal(0), nil
+		return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: %w", err)
 	}
 	prop := argI(args, 1)
+	// VM-ENUM-NUMBERING-1: prop numbers are the real MQL5
+	// ENUM_SYMBOL_INFO_INTEGER values (current doc order).
 	switch prop {
-	case 0: // SYMBOL_DIGITS
-		return interp.IntVal(info.Digits), nil
-	case 1: // SYMBOL_SPREAD
-		return interp.IntVal(info.Spread), nil
-	case 2: // SYMBOL_TRADE_STOPS_LEVEL
-		return interp.IntVal(info.StopsLevel), nil
-	default:
+	case 3: // SYMBOL_CUSTOM — venue 0: symbols come from the broker, not synthetic
 		return interp.IntVal(0), nil
+	case 5: // SYMBOL_CHART_MODE — venue SYMBOL_CHART_MODE_BID: backtest models on Bid
+		return interp.IntVal(0), nil
+	case 6: // SYMBOL_EXIST — reaching here means the broker resolved the symbol
+		return interp.IntVal(1), nil
+	case 7: // SYMBOL_SELECT — same venue semantics as SymbolSelect→true
+		return interp.IntVal(1), nil
+	case 8: // SYMBOL_VISIBLE — same
+		return interp.IntVal(1), nil
+	case 15: // SYMBOL_TIME
+		if sym != vm.ctx.Symbol() || vm.ctx.ServerTime() == 0 {
+			return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: no authoritative server time for %q in the VM", sym)
+		}
+		return interp.IntVal(int32(vm.ctx.ServerTime() / 1000)), nil
+	case 16: // SYMBOL_TIME_MSC — millisecond precision is the source's native resolution
+		if sym != vm.ctx.Symbol() || vm.ctx.ServerTime() == 0 {
+			return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: no authoritative server time for %q in the VM", sym)
+		}
+		return interp.IntVal(int32(vm.ctx.ServerTime())), nil
+	case 17: // SYMBOL_DIGITS
+		return interp.IntVal(info.Digits), nil
+	case 18: // SYMBOL_SPREAD_FLOAT — venue 0: fixed-spread backtest model (live re-check via LIVE-ACCOUNT-FIELDS-1)
+		return interp.IntVal(0), nil
+	case 19: // SYMBOL_SPREAD
+		return interp.IntVal(info.Spread), nil
+	case 20: // SYMBOL_TICKS_BOOKDEPTH — venue 0: no DOM queue
+		return interp.IntVal(0), nil
+	case 21: // SYMBOL_TRADE_CALC_MODE — venue SYMBOL_CALC_MODE_FOREX
+		return interp.IntVal(0), nil
+	case 22: // SYMBOL_TRADE_MODE — venue SYMBOL_TRADE_MODE_FULL
+		return interp.IntVal(4), nil
+	case 23, 24: // SYMBOL_START_TIME/SYMBOL_EXPIRATION_TIME — venue 0: perpetual symbols (real MT5 too for non-futures)
+		return interp.IntVal(0), nil
+	case 25: // SYMBOL_TRADE_STOPS_LEVEL
+		return interp.IntVal(info.StopsLevel), nil
+	case 26: // SYMBOL_TRADE_FREEZE_LEVEL — venue 0: no freeze model
+		return interp.IntVal(0), nil
+	case 27: // SYMBOL_TRADE_EXEMODE — venue SYMBOL_TRADE_EXECUTION_MARKET: backtest market execution
+		return interp.IntVal(2), nil
+	case 28: // SYMBOL_SWAP_MODE — venue SYMBOL_SWAP_MODE_POINTS: swap modeled in points
+		return interp.IntVal(1), nil
+	case 33: // SYMBOL_ORDER_MODE — venue mask: market|limit|stop|stop-limit|SL|TP (OrderSend support)
+		return interp.IntVal(63), nil
+	case 34: // SYMBOL_ORDER_GTC_MODE — venue SYMBOL_ORDERS_GTC: no order-expiry model
+		return interp.IntVal(0), nil
+	default:
+		return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: unsupported prop %d", prop)
 	}
-}
-
-func builtinSymbolInfoString(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.StringVal(""), nil
-	}
-	sym := argS(args, 0)
-	if sym == "" {
-		sym = vm.ctx.Symbol()
-	}
-	info, err := vm.ctx.Broker().SymbolInfo(sym)
-	if err != nil {
-		return interp.StringVal(""), nil
-	}
-	return interp.StringVal(info.Name), nil
 }
 
 func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
-		return interp.DecimalVal(decimal.Zero), nil
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no broker in the VM")
 	}
 	sym := argS(args, 0)
 	if sym == "" {
@@ -170,10 +215,26 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	info, err := vm.ctx.Broker().SymbolInfo(sym)
 	if err != nil {
-		return interp.DecimalVal(decimal.Zero), nil
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: %w", err)
 	}
 	mode := argI(args, 1)
+	// VM-ENUM-NUMBERING-1: mode numbers are the real MQL4 MarketInfo values.
 	switch mode {
+	case 5: // MODE_TIME
+		if sym != vm.ctx.Symbol() || vm.ctx.ServerTime() == 0 {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative server time for %q in the VM", sym)
+		}
+		return interp.DecimalVal(decimal.NewFromInt(vm.ctx.ServerTime() / 1000)), nil
+	case 9: // MODE_BID
+		if sym != vm.ctx.Symbol() || vm.ctx.Bid().IsZero() {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative bid for %q in the VM", sym)
+		}
+		return interp.DecimalVal(vm.ctx.Bid()), nil
+	case 10: // MODE_ASK
+		if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative ask for %q in the VM", sym)
+		}
+		return interp.DecimalVal(vm.ctx.Ask()), nil
 	case 11: // MODE_POINT
 		return interp.DecimalVal(info.Point), nil
 	case 12: // MODE_DIGITS
@@ -184,18 +245,44 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.DecimalVal(decimal.NewFromInt(int64(info.StopsLevel))), nil
 	case 15: // MODE_LOTSIZE
 		return interp.DecimalVal(info.ContractSize), nil
-	case 17: // MODE_TICKVALUE
+	case 16: // MODE_TICKVALUE
 		return interp.DecimalVal(info.TickValue), nil
-	case 18: // MODE_TICKSIZE
+	case 17: // MODE_TICKSIZE
 		return interp.DecimalVal(info.TickSize), nil
-	case 20: // MODE_MINLOT
-		return interp.DecimalVal(info.VolumeMin), nil
-	case 21: // MODE_MAXLOT
-		return interp.DecimalVal(info.VolumeMax), nil
-	case 22: // MODE_LOTSTEP
-		return interp.DecimalVal(info.VolumeStep), nil
-	default:
+	case 18: // MODE_SWAPLONG
+		return interp.DecimalVal(info.SwapLong), nil
+	case 19: // MODE_SWAPSHORT
+		return interp.DecimalVal(info.SwapShort), nil
+	case 20: // MODE_STARTING — venue 0: perpetual symbols
 		return interp.DecimalVal(decimal.Zero), nil
+	case 21: // MODE_EXPIRATION — venue 0
+		return interp.DecimalVal(decimal.Zero), nil
+	case 22: // MODE_TRADEALLOWED
+		if vm.ctx.Account().IsTradeAllowed {
+			return interp.DecimalVal(decimal.NewFromInt(1)), nil
+		}
+		return interp.DecimalVal(decimal.Zero), nil
+	case 23: // MODE_MINLOT
+		return interp.DecimalVal(info.VolumeMin), nil
+	case 24: // MODE_LOTSTEP
+		return interp.DecimalVal(info.VolumeStep), nil
+	case 25: // MODE_MAXLOT
+		return interp.DecimalVal(info.VolumeMax), nil
+	case 28, 31: // MODE_MARGININIT / MODE_MARGINREQUIRED — same initial=margin model as AccountFreeMarginCheck (volume=1)
+		if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative ask for %q in the VM", sym)
+		}
+		lev := decimal.NewFromInt(int64(vm.ctx.Account().Leverage))
+		if lev.IsZero() {
+			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: leverage is zero")
+		}
+		return interp.DecimalVal(info.ContractSize.Mul(vm.ctx.Ask()).Div(lev)), nil
+	case 32: // MODE_FREEZELEVEL — venue 0: no freeze model
+		return interp.DecimalVal(decimal.Zero), nil
+	case 33: // MODE_CLOSEBY_ALLOWED — venue 0: close-by not supported
+		return interp.DecimalVal(decimal.Zero), nil
+	default:
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: unsupported mode %d", mode)
 	}
 }
 

@@ -839,3 +839,395 @@ func TestVM_API_TRUTH_1_AccountNoopConsistency(t *testing.T) {
 		})
 	}
 }
+
+// VM-ENUM-NUMBERING-1: SymbolInfoDouble/SymbolInfoInteger/MarketInfo prop
+// numbering aligned to the real MQL5 ENUM_SYMBOL_INFO_DOUBLE/INTEGER and the
+// real MQL4 MarketInfo modes; sourceless branches fail-closed;
+// SymbolInfoString reclassified StatusUnsupported (the real STRING enum has
+// no NAME member and sdk.SymbolInfo carries no string fields).
+
+// symbolEnumTestBroker serves a fully-populated sdk.SymbolInfo whose values
+// are all distinct, so a mis-numbered prop cannot hit a neighbor's value.
+type symbolEnumTestBroker struct{ sdk.Broker }
+
+func (b *symbolEnumTestBroker) SymbolInfo(string) (sdk.SymbolInfo, error) {
+	return sdk.SymbolInfo{
+		Name:         "EURUSD",
+		Digits:       5,
+		Point:        decimal.NewFromFloat(0.0001),
+		VolumeMin:    decimal.NewFromInt(1),
+		VolumeMax:    decimal.NewFromInt(100),
+		VolumeStep:   decimal.NewFromFloat(0.01),
+		StopsLevel:   30,
+		Spread:       12,
+		TickValue:    decimal.NewFromFloat(1.1),
+		TickSize:     decimal.NewFromFloat(0.00001),
+		SwapLong:     decimal.NewFromFloat(0.5),
+		SwapShort:    decimal.NewFromFloat(-1.3),
+		ContractSize: decimal.NewFromInt(100000),
+	}, nil
+}
+
+// symbolEnumTestContext adds quote/time/broker controls to the account
+// context (Symbol() = "EURUSD" comes from the embedded context).
+type symbolEnumTestContext struct {
+	*accountStatusTestContext
+	ask        decimal.Decimal
+	bid        decimal.Decimal
+	serverTime int64
+	broker     sdk.Broker
+}
+
+func (c *symbolEnumTestContext) Ask() decimal.Decimal { return c.ask }
+func (c *symbolEnumTestContext) Bid() decimal.Decimal { return c.bid }
+func (c *symbolEnumTestContext) ServerTime() int64    { return c.serverTime }
+func (c *symbolEnumTestContext) Broker() sdk.Broker   { return c.broker }
+
+func newSymbolEnumVM(t *testing.T) *VM {
+	t.Helper()
+	vm := NewVM(&Bytecode{OnBar: -1, Builtins: make(map[string]BuiltinID)})
+	vm.ctx = &symbolEnumTestContext{
+		accountStatusTestContext: &accountStatusTestContext{leverage: 100, isTradeAllowed: true},
+		ask:                      decimal.NewFromFloat(1.25),
+		bid:                      decimal.NewFromFloat(1.2),
+		serverTime:               1000000, // fits int32 so both TIME (s) and TIME_MSC (ms) are assertable
+		broker:                   &symbolEnumTestBroker{},
+	}
+	return vm
+}
+
+// enumConst resolves a named MQL constant — the S1↔S2 consistency check:
+// calling builtins with the *named* constant must hit the matching real branch.
+func enumConst(t *testing.T, name string) int32 {
+	t.Helper()
+	v, ok := interp.LookupMQLConstant(name)
+	if !ok {
+		t.Fatalf("MQL constant %s missing from the registry", name)
+	}
+	return v.ToInt()
+}
+
+// TestVM_ENUM_NUMBERING_1_SymbolInfoStringRejected verifies the
+// SymbolInfoString reclassification: compile-time rejection + registry
+// consistency.
+//
+// Adversarial: comment the SymbolInfoString entry in unsupportedSymbols →
+// compile succeeds / LookupAPI not-found → RED (×2).
+func TestVM_ENUM_NUMBERING_1_SymbolInfoStringRejected(t *testing.T) {
+	src := "int OnInit() { return 0; }\nvoid OnTick() { SymbolInfoString(\"EURUSD\", 1); }"
+	_, err := CompileMQL(src)
+	if err == nil {
+		t.Fatal("SymbolInfoString: expected compile error (StatusUnsupported), got nil — API silently accepted")
+	}
+	msg := strings.ToLower(err.Error())
+	if !strings.Contains(msg, "unsupported") && !strings.Contains(msg, "symbolinfostring") {
+		t.Fatalf("error must mention 'unsupported' or the API name, got: %v", err)
+	}
+
+	sym, ok := interp.LookupAPI("SymbolInfoString")
+	if !ok {
+		t.Fatal("SymbolInfoString: LookupAPI returned not-found — missing from registry")
+	}
+	if sym.Status != interp.StatusUnsupported {
+		t.Fatalf("status = %v, want StatusUnsupported", sym.Status)
+	}
+	if sym.Reason == "" {
+		t.Fatal("Reason is empty — must explain why unsupported")
+	}
+	if interp.IsAPIImplemented("SymbolInfoString") {
+		t.Fatal("IsAPIImplemented=true, want false")
+	}
+	if !interp.IsAPIUnsupported("SymbolInfoString") {
+		t.Fatal("IsAPIUnsupported=false, want true")
+	}
+	if !interp.IsAPIImplemented("SymbolInfoDouble") || !interp.IsAPIImplemented("SymbolInfoInteger") || !interp.IsAPIImplemented("MarketInfo") {
+		t.Fatal("SymbolInfoDouble/SymbolInfoInteger/MarketInfo must stay implemented (not误伤)")
+	}
+}
+
+// TestVM_ENUM_NUMBERING_1_RealBranchesReadSource is the mis-numbering matrix:
+// every real branch, called with the *named* constant, must return the
+// injected source value. Key cases that used to hit the wrong branch:
+// SymbolInfoDouble(SYMBOL_POINT) returned VolumeMax, SYMBOL_BID returned Point.
+//
+// Adversarial: revert any constant value (SYMBOL_POINT → 2) or any switch
+// case number → the builtin reads the wrong source → RED.
+func TestVM_ENUM_NUMBERING_1_RealBranchesReadSource(t *testing.T) {
+	vm := newSymbolEnumVM(t)
+
+	doubleCases := []struct {
+		constName string
+		want      decimal.Decimal
+	}{
+		{"SYMBOL_BID", decimal.NewFromFloat(1.2)},
+		{"SYMBOL_ASK", decimal.NewFromFloat(1.25)},
+		{"SYMBOL_POINT", decimal.NewFromFloat(0.0001)},
+		{"SYMBOL_TRADE_TICK_VALUE", decimal.NewFromFloat(1.1)},
+		{"SYMBOL_TRADE_TICK_SIZE", decimal.NewFromFloat(0.00001)},
+		{"SYMBOL_TRADE_CONTRACT_SIZE", decimal.NewFromInt(100000)},
+		{"SYMBOL_VOLUME_MIN", decimal.NewFromInt(1)},
+		{"SYMBOL_VOLUME_MAX", decimal.NewFromInt(100)},
+		{"SYMBOL_VOLUME_STEP", decimal.NewFromFloat(0.01)},
+		{"SYMBOL_SWAP_LONG", decimal.NewFromFloat(0.5)},
+		{"SYMBOL_SWAP_SHORT", decimal.NewFromFloat(-1.3)},
+	}
+	for _, tc := range doubleCases {
+		t.Run("Double/"+tc.constName, func(t *testing.T) {
+			v, err := builtinSymbolInfoDouble(vm, []interp.Value{
+				interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, tc.constName)),
+			})
+			if err != nil {
+				t.Fatalf("err = %v, want nil", err)
+			}
+			if !v.ToDecimal().Equal(tc.want) {
+				t.Fatalf("got %s, want %s (prop %s=%d must read its own source)",
+					v.ToDecimal(), tc.want, tc.constName, enumConst(t, tc.constName))
+			}
+		})
+	}
+
+	integerCases := []struct {
+		constName string
+		want      int32
+	}{
+		{"SYMBOL_DIGITS", 5},
+		{"SYMBOL_SPREAD", 12},
+		{"SYMBOL_TRADE_STOPS_LEVEL", 30},
+		{"SYMBOL_TIME", 1000},        // ServerTime(1e6 ms)/1000
+		{"SYMBOL_TIME_MSC", 1000000}, // native ms
+	}
+	for _, tc := range integerCases {
+		t.Run("Integer/"+tc.constName, func(t *testing.T) {
+			v, err := builtinSymbolInfoInteger(vm, []interp.Value{
+				interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, tc.constName)),
+			})
+			if err != nil {
+				t.Fatalf("err = %v, want nil", err)
+			}
+			if v.ToInt() != tc.want {
+				t.Fatalf("got %d, want %d (prop %s=%d must read its own source)",
+					v.ToInt(), tc.want, tc.constName, enumConst(t, tc.constName))
+			}
+		})
+	}
+
+	marketCases := []struct {
+		constName string
+		want      decimal.Decimal
+	}{
+		{"MODE_BID", decimal.NewFromFloat(1.2)},
+		{"MODE_ASK", decimal.NewFromFloat(1.25)},
+		{"MODE_POINT", decimal.NewFromFloat(0.0001)},
+		{"MODE_DIGITS", decimal.NewFromInt(5)},
+		{"MODE_SPREAD", decimal.NewFromInt(12)},
+		{"MODE_STOPLEVEL", decimal.NewFromInt(30)},
+		{"MODE_LOTSIZE", decimal.NewFromInt(100000)},
+		{"MODE_TICKVALUE", decimal.NewFromFloat(1.1)},    // renumbered 17→16
+		{"MODE_TICKSIZE", decimal.NewFromFloat(0.00001)}, // renumbered 18→17
+		{"MODE_SWAPLONG", decimal.NewFromFloat(0.5)},     // new case 18
+		{"MODE_SWAPSHORT", decimal.NewFromFloat(-1.3)},   // new case 19
+		{"MODE_MINLOT", decimal.NewFromInt(1)},           // renumbered 20→23
+		{"MODE_LOTSTEP", decimal.NewFromFloat(0.01)},     // renumbered 22→24
+		{"MODE_MAXLOT", decimal.NewFromInt(100)},         // renumbered 21→25
+		{"MODE_TIME", decimal.NewFromInt(1000)},
+		{"MODE_TRADEALLOWED", decimal.NewFromInt(1)},
+		// MARGININIT/MARGINREQUIRED: ContractSize·Ask/Leverage = 100000·1.25/100
+		{"MODE_MARGININIT", decimal.NewFromInt(1250)},
+		{"MODE_MARGINREQUIRED", decimal.NewFromInt(1250)},
+	}
+	for _, tc := range marketCases {
+		t.Run("MarketInfo/"+tc.constName, func(t *testing.T) {
+			v, err := builtinMarketInfo(vm, []interp.Value{
+				interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, tc.constName)),
+			})
+			if err != nil {
+				t.Fatalf("err = %v, want nil", err)
+			}
+			if !v.ToDecimal().Equal(tc.want) {
+				t.Fatalf("got %s, want %s (mode %s=%d must read its own source)",
+					v.ToDecimal(), tc.want, tc.constName, enumConst(t, tc.constName))
+			}
+		})
+	}
+}
+
+// TestVM_ENUM_NUMBERING_1_VenueValues pins the venue-fact branches (same
+// semantics family as iRealVolume: fixed values that are true facts of the
+// backtest venue, not missing data).
+//
+// Adversarial: change any venue branch value (e.g. SYMBOL_EXIST returns 0) →
+// RED.
+func TestVM_ENUM_NUMBERING_1_VenueValues(t *testing.T) {
+	vm := newSymbolEnumVM(t)
+
+	doubleVenue := []struct {
+		name string
+		prop int32
+	}{
+		{"SYMBOL_LAST", 6}, {"SYMBOL_LASTHIGH", 7}, {"SYMBOL_LASTLOW", 8},
+		{"SYMBOL_VOLUME_REAL", 9}, {"SYMBOL_VOLUMEHIGH_REAL", 10}, {"SYMBOL_VOLUMELOW_REAL", 11},
+	}
+	for _, tc := range doubleVenue {
+		t.Run("Double/"+tc.name, func(t *testing.T) {
+			v, err := builtinSymbolInfoDouble(vm, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(tc.prop)})
+			if err != nil {
+				t.Fatalf("err = %v, want nil (venue 0 is a fact, not missing data)", err)
+			}
+			if !v.ToDecimal().IsZero() {
+				t.Fatalf("got %s, want 0 (venue fact)", v.ToDecimal())
+			}
+		})
+	}
+
+	integerVenue := []struct {
+		name string
+		prop int32
+		want int32
+	}{
+		{"SYMBOL_CUSTOM", 3, 0},
+		{"SYMBOL_CHART_MODE", 5, 0},
+		{"SYMBOL_EXIST", 6, 1},
+		{"SYMBOL_SELECT", 7, 1},
+		{"SYMBOL_VISIBLE", 8, 1},
+		{"SYMBOL_SPREAD_FLOAT", 18, 0},
+		{"SYMBOL_TICKS_BOOKDEPTH", 20, 0},
+		{"SYMBOL_TRADE_CALC_MODE", 21, 0},
+		{"SYMBOL_TRADE_MODE", 22, 4},
+		{"SYMBOL_START_TIME", 23, 0},
+		{"SYMBOL_EXPIRATION_TIME", 24, 0},
+		{"SYMBOL_TRADE_FREEZE_LEVEL", 26, 0},
+		{"SYMBOL_TRADE_EXEMODE", 27, 2},
+		{"SYMBOL_SWAP_MODE", 28, 1},
+		{"SYMBOL_ORDER_MODE", 33, 63},
+		{"SYMBOL_ORDER_GTC_MODE", 34, 0},
+	}
+	for _, tc := range integerVenue {
+		t.Run("Integer/"+tc.name, func(t *testing.T) {
+			v, err := builtinSymbolInfoInteger(vm, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(tc.prop)})
+			if err != nil {
+				t.Fatalf("err = %v, want nil (venue value is a fact, not missing data)", err)
+			}
+			if v.ToInt() != tc.want {
+				t.Fatalf("got %d, want %d (venue fact)", v.ToInt(), tc.want)
+			}
+		})
+	}
+
+	marketVenue := []struct {
+		name string
+		mode int32
+	}{
+		{"MODE_STARTING", 20}, {"MODE_EXPIRATION", 21},
+		{"MODE_FREEZELEVEL", 32}, {"MODE_CLOSEBY_ALLOWED", 33},
+	}
+	for _, tc := range marketVenue {
+		t.Run("MarketInfo/"+tc.name, func(t *testing.T) {
+			v, err := builtinMarketInfo(vm, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(tc.mode)})
+			if err != nil {
+				t.Fatalf("err = %v, want nil (venue 0 is a fact, not missing data)", err)
+			}
+			if !v.ToDecimal().IsZero() {
+				t.Fatalf("got %s, want 0 (venue fact)", v.ToDecimal())
+			}
+		})
+	}
+
+	// TRADEALLOWED mirrors ctx.Account().IsTradeAllowed both ways.
+	vmFalse := newSymbolEnumVM(t)
+	vmFalse.ctx.(*symbolEnumTestContext).isTradeAllowed = false
+	v, err := builtinMarketInfo(vmFalse, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(22)})
+	if err != nil || !v.ToDecimal().IsZero() {
+		t.Fatalf("MODE_TRADEALLOWED with IsTradeAllowed=false: got %s err=%v, want 0/nil", v.ToDecimal(), err)
+	}
+}
+
+// TestVM_ENUM_NUMBERING_1_FailClosed verifies sourceless props error instead
+// of returning fake values, and that constants for non-real modes/props are
+// gone (compile-time rejection).
+//
+// Adversarial: restore any fake 0-return for these props → OnInit-style
+// direct calls succeed → RED.
+func TestVM_ENUM_NUMBERING_1_FailClosed(t *testing.T) {
+	vm := newSymbolEnumVM(t)
+
+	if _, err := builtinSymbolInfoDouble(vm, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(48)}); err == nil {
+		t.Fatal("SymbolInfoDouble(prop 48 MARGIN_HEDGED): err = nil, want error (no hedged-margin model)")
+	}
+	if _, err := builtinSymbolInfoInteger(vm, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(1)}); err == nil {
+		t.Fatal("SymbolInfoInteger(prop 1 SECTOR): err = nil, want error (no source)")
+	}
+	if _, err := builtinMarketInfo(vm, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(1)}); err == nil {
+		t.Fatal("MarketInfo(mode 1 MODE_LOW): err = nil, want error (daily aggregate, no source)")
+	}
+
+	for _, name := range []string{"SYMBOL_SWAP_ROLLOVER3DAYS", "MODE_SWAPTYPE", "MODE_PROFITCALCMODE", "SYMBOL_MARGIN_INITIAL"} {
+		t.Run("const/"+name, func(t *testing.T) {
+			// Registry level: the removed constant no longer resolves.
+			if _, ok := interp.LookupMQLConstant(name); ok {
+				t.Fatalf("%s still resolvable — removed constant must not resolve", name)
+			}
+			// NOTE: an unknown identifier in source does NOT fail compilation —
+			// the front end auto-registers it as an implicit global (value 0).
+			// For props where 0 is an unsupported prop the call then fails
+			// closed at runtime; SYMBOL_MARGIN_INITIAL/MARGIN_MAINTENANCE are
+			// exempt because Double prop 0 is the real BID branch. The implicit
+			//-variable front-end behavior is tracked with
+			// VM-GLOBAL-ARRAY-DECL-1's front-end family.
+			runtimeErrorCases := map[string]string{
+				"SYMBOL_SWAP_ROLLOVER3DAYS": "SymbolInfoInteger",
+				"MODE_SWAPTYPE":             "MarketInfo",
+				"MODE_PROFITCALCMODE":       "MarketInfo",
+			}
+			fn, ok := runtimeErrorCases[name]
+			if !ok {
+				return
+			}
+			src := "int OnInit(){ " + fn + "(\"EURUSD\", " + name + "); return 0; }"
+			runner, err := CompileMQL(src)
+			if err != nil {
+				t.Fatalf("CompileMQL failed: %v", err)
+			}
+			runner.SetSignalMode(true)
+			if err := runner.OnInit(&symbolEnumTestContext{
+				accountStatusTestContext: &accountStatusTestContext{leverage: 100, isTradeAllowed: true},
+				ask:                      decimal.NewFromFloat(1.25),
+				bid:                      decimal.NewFromFloat(1.2),
+				serverTime:               1000000,
+				broker:                   &symbolEnumTestBroker{},
+			}); err == nil {
+				t.Fatalf("%s references a removed constant whose value 0 is an unsupported prop: OnInit err = nil, want error (fail-closed)", name)
+			}
+		})
+	}
+}
+
+// TestVM_ENUM_NUMBERING_1_CurrentSymbolGuards verifies the quote/time guards:
+// BID/ASK/TIME only resolve for the run's own symbol with a non-zero source.
+//
+// Adversarial: remove a guard → the call silently returns a (possibly wrong)
+// value → RED.
+func TestVM_ENUM_NUMBERING_1_CurrentSymbolGuards(t *testing.T) {
+	vm := newSymbolEnumVM(t)
+
+	if _, err := builtinSymbolInfoDouble(vm, []interp.Value{interp.StringVal("OTHER"), interp.IntVal(enumConst(t, "SYMBOL_BID"))}); err == nil {
+		t.Fatal("SymbolInfoDouble(\"OTHER\", SYMBOL_BID): err = nil, want error (no quote source for another symbol)")
+	}
+	if _, err := builtinMarketInfo(vm, []interp.Value{interp.StringVal("OTHER"), interp.IntVal(enumConst(t, "MODE_ASK"))}); err == nil {
+		t.Fatal("MarketInfo(\"OTHER\", MODE_ASK): err = nil, want error")
+	}
+
+	vmNoTime := newSymbolEnumVM(t)
+	vmNoTime.ctx.(*symbolEnumTestContext).serverTime = 0
+	if _, err := builtinSymbolInfoInteger(vmNoTime, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, "SYMBOL_TIME"))}); err == nil {
+		t.Fatal("SymbolInfoInteger(SYMBOL_TIME) with ServerTime=0: err = nil, want error")
+	}
+	if _, err := builtinSymbolInfoInteger(vmNoTime, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, "SYMBOL_TIME_MSC"))}); err == nil {
+		t.Fatal("SymbolInfoInteger(SYMBOL_TIME_MSC) with ServerTime=0: err = nil, want error")
+	}
+
+	vmNoBid := newSymbolEnumVM(t)
+	vmNoBid.ctx.(*symbolEnumTestContext).bid = decimal.Zero
+	if _, err := builtinSymbolInfoDouble(vmNoBid, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, "SYMBOL_BID"))}); err == nil {
+		t.Fatal("SymbolInfoDouble(SYMBOL_BID) with Bid=0: err = nil, want error (zero quote is not a fact)")
+	}
+}

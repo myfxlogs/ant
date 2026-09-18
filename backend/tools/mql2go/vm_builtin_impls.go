@@ -151,7 +151,6 @@ func registerAccountBuiltins() {
 	builtinRegistry[id("AccountFreeMarginCheck")].fn = builtinAccountFreeMarginCheck
 	builtinRegistry[id("SymbolInfoDouble")].fn = builtinSymbolInfoDouble
 	builtinRegistry[id("SymbolInfoInteger")].fn = builtinSymbolInfoInteger
-	builtinRegistry[id("SymbolInfoString")].fn = builtinSymbolInfoString
 	builtinRegistry[id("MarketInfo")].fn = builtinMarketInfo
 }
 
