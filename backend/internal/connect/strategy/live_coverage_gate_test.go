@@ -41,6 +41,11 @@ func TestRunLiveStrategy_T5_FatalCoverage_RejectsLive(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error from fatal coverage check, got nil — adversarial proof: check is missing!")
 	}
+	// MQL-LOOP-4 审计补强（2026-09-19）：必须判别错误来自 coverage 门——
+	// 仅断言 err!=nil 时摘门后下游 barSource 错误照样满足 → 假绿。
+	if !contains(err.Error(), "fatal coverage") {
+		t.Fatalf("expected 'fatal coverage' rejection, got unrelated error: %v", err)
+	}
 }
 
 // TestRunLiveStrategy_T5_FatalCoverage_PaperModeSkips verifies that paper mode

@@ -109,5 +109,6 @@
 - 2026-09-18 **SNAPSHOT-SLICE-ALIAS-1 ✅done** — commit 40148ede（派工单 @e253a836）；边界不变量 4 面私有化+契约钉注；独立 mutation×4 各精确命中；明细 registry 行 212。
 - 2026-09-16 **VM-API-TRUTH-1 批次1/2a ✅done + VM 质量方案 v2 全量收官 + registry 全量对账** — 明细已滚出 LOG.md；registry 行 126/88/87。
 - 2026-09-19 **registry 簿记修正 + pre-commit 续行校验修复** — 20 处陈旧 🟦open 续行格（L165-189，5 父条目 2026-08-27 验收已含其工作）翻正为 ✅done；VM-CACHE-INTEGRITY-1/2 状态格 🟦open 前缀同为漂移残留（D-REVERT 对账已验收 08-26）一并翻正——**从 open 队列移除，非待复审项**；hook 修正：无短ID首格续行去留随父条目（删 CQ-5 负向实测仍拦截）；明细 registry 行 124/129/164-189。
+- 2026-09-19 **MQL-LOOP-4 ✅done（条目漂移翻正+弱 pin 补强）** — 独立复审实证 T5 实盘门控/T4 useAIFix/K3/CI/COV/C1 全部已在库（commit 0ef2638b，08-08），"P2 暂缓"系登记漂移；原 RejectsLive 弱 pin 摘门不红已补强（contains "fatal coverage"），同 mutation 精确 RED→restore 4/4 GREEN；明细 registry 行 21。
 
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
