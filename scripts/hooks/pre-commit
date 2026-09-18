@@ -29,12 +29,31 @@ for f in docs/audits/handover-audit-plan.md docs/audits/tech-debt-registry.md; d
   deleted_open=$(echo "$diff" | grep '^-' | grep -v '^---' | grep -E '🟦open|❓')
   if [ -n "$deleted_open" ]; then
     # 提取被删行的条目 ID（| 分割的第一列），检查该 ID 是否仍存在于新文件中
+    # 续行例外（2026-09-19 Devin CLI 裁定）：首格非条目 ID 格式（如"返工第N阶段"
+    # 过程记录续行）不是独立条目——去留随父条目。在旧版本中向上找最近的
+    # | <ID> | 条目行，父条目仍在新文件即放行；父条目被删时其父行独立触发本检查。
+    preimage=""
     truly_deleted=""
     while IFS= read -r line; do
       id=$(echo "$line" | sed 's/^-//' | sed 's/^|* *//' | sed 's/ |.*//' | tr -d ' ')
-      if [ -n "$id" ] && ! echo "$new" | grep -q "^| $id |"; then
-        truly_deleted="$truly_deleted\n  $id"
+      [ -z "$id" ] && continue
+      echo "$new" | grep -q "^| $id |" && continue
+      if ! echo "$id" | grep -qE '^[A-Z0-9][A-Z0-9._-]+$'; then
+        if [ -z "$preimage" ]; then
+          if [ -n "$base" ]; then
+            mb=$(git merge-base "$base" HEAD 2>/dev/null); preimage=$(git show "${mb:-$base}:$f" 2>/dev/null)
+          else
+            preimage=$(git show "HEAD:$f" 2>/dev/null)
+          fi
+        fi
+        content=${line#-}
+        lno=$(echo "$preimage" | grep -nF -- "$content" | head -1 | cut -d: -f1)
+        if [ -n "$lno" ]; then
+          pid=$(echo "$preimage" | head -n "$lno" | grep -oE '^\| *[A-Z0-9][A-Z0-9._-]+ *\|' | tail -1 | tr -d '| ')
+          [ -n "$pid" ] && echo "$new" | grep -q "^| $pid |" && continue
+        fi
       fi
+      truly_deleted="$truly_deleted\n  $id"
     done <<< "$deleted_open"
     if [ -n "$truly_deleted" ]; then
       echo "❌ 文档规则：$f 删除了 open/待核条目行（🟦open/❓）。open 条目必留文件内（根因+对抗记录），无例外——恢复该行再提交。" >&2
