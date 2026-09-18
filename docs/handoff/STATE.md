@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6：array_declarator 收集+下标赋值前移+4 错标点编译期显式拒，独立 mutation×4）。下一：P3 批择债设计实查（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE/PY-DECIMAL/TZ-PAIRED/VM-FUNC-FATAL-DELAY）。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done**（2739f100：12 站 signalMode 前移+nil-broker→fatal，独立 mutation×3）。下一：P3 批择债设计实查（TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE/PY-DECIMAL/TZ-PAIRED）。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **发 ORDERSEND-NILBROKER-FAILCLOSED-1 开工指令**——设计实查完成（扩族 12 站点+signalMode 排序缺陷+另立 TRADE-BUILTIN-ERR-SWALLOW-1），派工单已落档。**后续队列**：ORDERSEND-NILBROKER → P3 批（VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE/PY-DECIMAL/TZ-PAIRED/TRADE-BUILTIN-ERR-SWALLOW）→ LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **P3 批择债设计实查**——候选：TRADE-BUILTIN-ERR-SWALLOW-1（broker error 吞没，需 RetCode/error 语义审计）/ VM-FUNC-FATAL-DELAY-1 / TEST-WAITSTATE / SNAPSHOT-SLICE / PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -90,7 +90,7 @@
 - **VM-ENUM-NUMBERING-1** ✅done — SymbolInfo*/MarketInfo 全枚举对齐+静默错标修复+SymbolInfoString 重分类（Devin CLI 验收 2026-09-18，commit 477e8273+bfb42ea3 返修，独立 mutation×5）；明细 registry 行 219
 - **VM-GLOBAL-ARRAY-DECL-1** ✅done — 全局数组端到端修复+4 错标点编译期显式拒（Devin CLI 验收 2026-09-18，commit da902af6，独立 mutation×4）；明细 registry 行 220
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
-- **ORDERSEND-NILBROKER-FAILCLOSED-1** 🟦open P2 — 交易写 nil-broker 假值+signalMode 排序缺陷扩族 12 站；派工单 `docs/audits/builder-handoff-ordersend-nilbroker-failclosed-1.md` 就绪
+- **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** 🟦open P3 — broker error 吞没→false ×11 站+RetCode 未查（ORDERSEND 实查分立）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
@@ -106,7 +106,7 @@
 - 2026-09-17 **VM-API-TRUTH-1 批次2e ✅done + 整债收官** — commit 69d2330b；4 重分类+4 实接；python account.profit 顺带修复；独立 mutation×3 RED→GREEN；明细见 registry 行 126（条目转 ✅done）。
 - 2026-09-18 **VM-ENUM-NUMBERING-1 ✅done** — commit 477e8273+bfb42ea3 返修R1；独立 mutation×5 RED→GREEN；TIME_MSC int32 截断 spec 缺陷已修；明细见 registry 行 219。
 - 2026-09-18 **VM-GLOBAL-ARRAY-DECL-1 ✅done** — commit da902af6（自审计修正版派工单 @37358629）；独立 mutation×4 RED→GREEN；明细见 registry 行 220。
-- 2026-09-18 **ORDERSEND-NILBROKER-FAILCLOSED-1 设计实查完成** — 扩族 12 站点（signalMode 排序缺陷+nil-broker 假值）；另立 TRADE-BUILTIN-ERR-SWALLOW-1；派工单落档待开工。
+- 2026-09-18 **ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done** — commit 2739f100（派工单 @0461ff34）；12 站 signalMode 前移+nil-broker→fatal；独立 mutation×3 RED→GREEN；另立 TRADE-BUILTIN-ERR-SWALLOW-1；明细 registry 行 215。
 - 2026-09-18 **VM-ARRAY-OOB-FAILCLOSED-1 ✅done** — commit bdb3733f（修订派工单 @d7f74310）；独立 mutation×4 RED→GREEN；明细见 registry 行 217。
 - 2026-09-17 **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**：`docs/audits/builder-handoff-vm-array-oob-failclosed-1.md @6662b4bb`（A 面 OOB fail-closed+B 面局部数组负编码）。
 - 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
