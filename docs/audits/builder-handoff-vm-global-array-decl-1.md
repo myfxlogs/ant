@@ -34,9 +34,8 @@
   - **多维检测**：child 的命名子节点中若再含 `array_declarator` → `c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", name)`（fail-closed；ValArray 扁平）。
   - **尺寸提取**：child 的直接 `number_literal` 子节点 → `fmt.Sscanf`；缺失或 ≤0 → `c.err = fmt.Errorf("array size required: %s", name)`（无法初始化未知尺寸，诚实拒绝）。
   - `ir.Globals = append(ir.Globals, interp.GlobalVar{Name:name, Type:typeName, IsArray:true, ArraySize:size})`。
-- `init_declarator` 分支（行 178-195）：`findIdent` 前先检查 child 是否含 `array_declarator` 直接子节点：
-  - 含 → 查兄弟 `initializer_list` 是否存在 → `c.err = fmt.Errorf("global array initializer not supported: %s", <name>)`（本批不实现数组字面量；诚实拒绝优于静默丢初始化值）。
-  - 含 array_declarator 且无 initializer_list → 按上条同法收集（防御性，parse 未见此形态）。
+- `init_declarator` 分支（行 178-195）：child 含 `array_declarator` 直接子节点 → **无条件** `c.err = fmt.Errorf("global array initializer not supported: %s", <name>)`。
+  - 依据（自审计探针实证）：`int g[2]={1,2}` 的 initializer 是 `initializer_list`，`int g[2]=5` 的 initializer 是裸 `number_literal`——init_declarator 语法本身就含初始化值，任何 initializer（列表或标量）本批都不实现；真 MQL 同样拒绝标量初始化数组。**不得**设"无 initializer_list→收集"分支（会静默丢 `=5`，假数据）。name 从 array_declarator 子节点提取（`findIdent(arrayDeclChild)`）。
 - `findArraySize` 死分支：可顺手修正为同时检查 `array_declarator`，或保留（本批 S1 新 helper 独立提取，不动它以免越界）。**建议**：新 helper `parseArrayDeclarator(n *sitter.Node) (name string, size int, multiDim, ok bool)` 放 collectGlobalVar 旁，内部做 identifier/number_literal/嵌套检查三合一。
 
 ### S2 `compileAssignment`（`compile_interp_expr.go:254-313`）——顺序对调 + 复合拒绝
@@ -53,7 +52,7 @@
 
 ### S4 参数数组拒绝（`compile_interp.go:625-648` collectParams 循环内）
 
-- `pd.Type()=="parameter_declaration"` 时，检查其命名子节点含 `array_declarator` → `c.err = fmt.Errorf("array parameters not supported: %s", pName)`（MQL 引用语义无法支持；现行静默丢参→幻影全局，必须显式拒）。check order：在 append 前。
+- `pd.Type()=="parameter_declaration"` 时，检查其命名子节点含 `array_declarator` → `c.err = fmt.Errorf("array parameters not supported: %s", c.findIdent(arrayDeclChild))`（MQL 引用语义无法支持；现行静默丢参→幻影全局，必须显式拒）。check order：在 append 前。**注意**：此处 `pName` 尚为 ""（findIdent 看不到嵌套 identifier 正是丢参根因），name 须从 array_declarator 子节点提取或用 `c.text(pd)`。
 
 ### S5 验证 vm.go 初始化链路（只读核对，不改）
 
@@ -63,14 +62,14 @@
 
 行为断言（CompileMQL + RunOnInit/RunOnBar，沿用 vm_array_oob_test.go 的 newSourceVM/accountStatusTestContext 模式）：
 
-- **合法读写（迁移 S4-1）**：`int g[2]; OnInit(){g[0]=5;g[1]=7;} OnBar(){x=g[0]+g[1];}` → x==12。
+- **合法读写（迁移 S4-1）**：`int g[2]; int x; OnInit(){g[0]=5;g[1]=7;} OnBar(){x=g[0]+g[1];}` → x==12。
 - **读 OOB（迁移 S4-2）**：`x=g[5]` → OnBar err 含 `index 5 out of range (len=2)`。
-- **写 OOB（迁移 S4-6）**：`g[9]=1` → OnBar err 含 `OP_STORE_ARRAY index 9 out of range`。
+- **写 OOB（迁移 S4-6）**：`g[9]=1` → OnBar err 含 `index 9 out of range (len=2)`（OP_STORE_ARRAY 消息格式同读路径）。
 - **负索引**：`x=g[-1]` → err。
 - **类型覆盖**：`double d[3]`/`string s[2]`/`bool b[4]` 各读写一轮 + 未写元素为零值（0/""/false）。
 - **声明后使用无关顺序**：先引用后声明的合法 MQL 不受影响（Globals 先收集，两阶段）。
 - **static int g[3]** → 正常收集使用。
-- **编译期拒×4**：`int g[2][3]`（多维）/`int g[2]={1,2}`（initializer）/`void f(int a[])`（参数数组）/`g[0]+=5`（复合）/`g[0]++`（更新）→ `CompileMQL` err 非 nil 且消息含对应关键词。
+- **编译期拒×6**：`int g[2][3]`（多维）/`int g[2]={1,2}`（列表初始化）/`int g[2]=5`（标量初始化，自审计实证形态）/`void f(int a[])`（参数数组）/`g[0]+=5`（复合）/`g[0]++`（更新）→ `CompileMQL` err 非 nil 且消息含对应关键词。
 - **局部数组仍拒**：函数内 `int a[2]` → 既有 compile error 不破。
 - **不误伤**：`int g` 标量、`x=arr[i]` 读、既有 e2e 全绿。
 
@@ -89,5 +88,7 @@
 - **不做**局部数组（`compileDeclaration` 行 583 已编译期拒，保持）。
 - **不做**多维数组、数组 initializer、数组参数、元素级 `+=`/`++`——全部编译期显式拒（本批落错误消息，不实现语义；若 e2e 需求浮现另立债）。
 - **不做** `input` 数组专项（畸形 parse，best-effort）。
+- **不做**类成员数组（`class C{int arr[3]}` 同形态但走类成员收集路径——本批仅修全局声明路径；若类成员数组同样静默丢弃属兄弟债，另立不混入本批）。
+- `arr[i][j]` 嵌套下标（对一维数组的二维写法）不专项处理——经 compileSubscript 后由运行时索引/类型检查 fail-closed 兜底。
 - 不改 VM 运行时（vm.go 链路只读核对）、不改 OP_*_ARRAY 行为、不碰 python 前端。
 - 勿部署、勿 push 远端，完成报六段式证据等 Devin CLI 复审。
