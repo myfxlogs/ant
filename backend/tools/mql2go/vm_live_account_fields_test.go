@@ -70,8 +70,8 @@ func TestHarness_AccountIdentityViaVM(t *testing.T) {
 
 	for name, want := range map[string]int32{
 		"g_lev":   200,
-		"g_hedge": 1,   // hedging → ACCOUNT_HEDGE_ALLOWED = 1
-		"g_mm":    2,   // ACCOUNT_MARGIN_MODE_RETAIL_HEDGING = 2
+		"g_hedge": 1, // hedging → ACCOUNT_HEDGE_ALLOWED = 1
+		"g_mm":    2, // ACCOUNT_MARGIN_MODE_RETAIL_HEDGING = 2
 	} {
 		v, ok := vmRunner.GetGlobal(name)
 		if !ok {
