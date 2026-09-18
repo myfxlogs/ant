@@ -114,4 +114,12 @@ func TestEntryFatalStopsFunctionBody(t *testing.T) {
 	if !strings.Contains(err.Error(), "VM fatal") {
 		t.Fatalf("err = %v, want it to contain 'VM fatal' (entry fatal must stop the body)", err)
 	}
+	// Discriminating assertion (review R1): the loop-top check fires BEFORE
+	// the body's first fetch, so the victim body's OP_PUSH_CONST never runs
+	// and the stack stays empty. Without the check the body still pushes 7
+	// (stack len 1) and only runLoop's top check surfaces the same error text
+	// — err text alone cannot tell the two apart.
+	if len(vm.stack) != 0 {
+		t.Fatalf("stack len = %d, want 0 — the function body executed despite the entry fatal", len(vm.stack))
+	}
 }
