@@ -414,7 +414,6 @@ var MQLConstants = map[string]Value{
 	"SYMBOL_SELECT":             IntVal(7),
 	"SYMBOL_VISIBLE":            IntVal(8),
 	"SYMBOL_TIME":               IntVal(15),
-	"SYMBOL_TIME_MSC":           IntVal(16),
 	"SYMBOL_DIGITS":             IntVal(17),
 	"SYMBOL_SPREAD_FLOAT":       IntVal(18),
 	"SYMBOL_SPREAD":             IntVal(19),

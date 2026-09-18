@@ -890,7 +890,7 @@ func newSymbolEnumVM(t *testing.T) *VM {
 		accountStatusTestContext: &accountStatusTestContext{leverage: 100, isTradeAllowed: true},
 		ask:                      decimal.NewFromFloat(1.25),
 		bid:                      decimal.NewFromFloat(1.2),
-		serverTime:               1000000, // fits int32 so both TIME (s) and TIME_MSC (ms) are assertable
+		serverTime:               1000000, // fits int32 so TIME (seconds) is assertable
 		broker:                   &symbolEnumTestBroker{},
 	}
 	return vm
@@ -993,8 +993,7 @@ func TestVM_ENUM_NUMBERING_1_RealBranchesReadSource(t *testing.T) {
 		{"SYMBOL_DIGITS", 5},
 		{"SYMBOL_SPREAD", 12},
 		{"SYMBOL_TRADE_STOPS_LEVEL", 30},
-		{"SYMBOL_TIME", 1000},        // ServerTime(1e6 ms)/1000
-		{"SYMBOL_TIME_MSC", 1000000}, // native ms
+		{"SYMBOL_TIME", 1000}, // ServerTime(1e6 ms)/1000 (seconds; int32-valid until 2038)
 	}
 	for _, tc := range integerCases {
 		t.Run("Integer/"+tc.constName, func(t *testing.T) {
@@ -1160,7 +1159,7 @@ func TestVM_ENUM_NUMBERING_1_FailClosed(t *testing.T) {
 		t.Fatal("MarketInfo(mode 1 MODE_LOW): err = nil, want error (daily aggregate, no source)")
 	}
 
-	for _, name := range []string{"SYMBOL_SWAP_ROLLOVER3DAYS", "MODE_SWAPTYPE", "MODE_PROFITCALCMODE", "SYMBOL_MARGIN_INITIAL"} {
+	for _, name := range []string{"SYMBOL_SWAP_ROLLOVER3DAYS", "MODE_SWAPTYPE", "MODE_PROFITCALCMODE", "SYMBOL_MARGIN_INITIAL", "SYMBOL_TIME_MSC"} {
 		t.Run("const/"+name, func(t *testing.T) {
 			// Registry level: the removed constant no longer resolves.
 			if _, ok := interp.LookupMQLConstant(name); ok {
@@ -1177,6 +1176,10 @@ func TestVM_ENUM_NUMBERING_1_FailClosed(t *testing.T) {
 				"SYMBOL_SWAP_ROLLOVER3DAYS": "SymbolInfoInteger",
 				"MODE_SWAPTYPE":             "MarketInfo",
 				"MODE_PROFITCALCMODE":       "MarketInfo",
+				// TIME_MSC: IntVal is int32, real unix-ms (~1.7e12) would wrap
+				// into a fake (possibly negative) value — prop 16 is therefore
+				// unsupported in this VM; the implicit-global 0 also errors.
+				"SYMBOL_TIME_MSC": "SymbolInfoInteger",
 			}
 			fn, ok := runtimeErrorCases[name]
 			if !ok {
@@ -1221,8 +1224,14 @@ func TestVM_ENUM_NUMBERING_1_CurrentSymbolGuards(t *testing.T) {
 	if _, err := builtinSymbolInfoInteger(vmNoTime, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, "SYMBOL_TIME"))}); err == nil {
 		t.Fatal("SymbolInfoInteger(SYMBOL_TIME) with ServerTime=0: err = nil, want error")
 	}
-	if _, err := builtinSymbolInfoInteger(vmNoTime, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(enumConst(t, "SYMBOL_TIME_MSC"))}); err == nil {
-		t.Fatal("SymbolInfoInteger(SYMBOL_TIME_MSC) with ServerTime=0: err = nil, want error")
+	// TIME_MSC reworked to the not-implementable class (review R1): IntVal is
+	// int32 and real unix-ms would wrap into a fake value — the constant is
+	// gone and a bare prop 16 must hit the unsupported-prop error.
+	if _, ok := interp.LookupMQLConstant("SYMBOL_TIME_MSC"); ok {
+		t.Fatal("SYMBOL_TIME_MSC still resolvable — removed constant must not resolve")
+	}
+	if _, err := builtinSymbolInfoInteger(vmNoTime, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(16)}); err == nil {
+		t.Fatal("SymbolInfoInteger(prop 16 TIME_MSC): err = nil, want unsupported-prop error")
 	}
 
 	vmNoBid := newSymbolEnumVM(t)

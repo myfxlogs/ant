@@ -169,11 +169,6 @@ func builtinSymbolInfoInteger(vm *VM, args []interp.Value) (interp.Value, error)
 			return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: no authoritative server time for %q in the VM", sym)
 		}
 		return interp.IntVal(int32(vm.ctx.ServerTime() / 1000)), nil
-	case 16: // SYMBOL_TIME_MSC — millisecond precision is the source's native resolution
-		if sym != vm.ctx.Symbol() || vm.ctx.ServerTime() == 0 {
-			return interp.IntVal(0), fmt.Errorf("SymbolInfoInteger: no authoritative server time for %q in the VM", sym)
-		}
-		return interp.IntVal(int32(vm.ctx.ServerTime())), nil
 	case 17: // SYMBOL_DIGITS
 		return interp.IntVal(info.Digits), nil
 	case 18: // SYMBOL_SPREAD_FLOAT — venue 0: fixed-spread backtest model (live re-check via LIVE-ACCOUNT-FIELDS-1)
