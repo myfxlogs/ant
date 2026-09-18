@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede）/**PY-DECIMAL-CTOR-1 ✅done**（e928722c）。**PY-SCOPE-KNOWN-1 ✅done**（373ca8d6）。**TZ-PAIRED-CST-COLS-1 ✅done**（aed6ff70）。**LIVE-ACCOUNT-FIELDS-1 ✅done**（45767c9f）。**ACCOUNT-MARGIN-LEVEL-PCT-1 ✅done**（ac509e20，Devin CLI 验收 2026-09-19）。**DATA-TRUTH-3 🟦open（施工完成，待独立复审）**：migration 279+sqlc 生成物等价手编（历史 migration 阻断重生成，详见 registry）+4 读点删+v2 注释+constraints 规则。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede）/**PY-DECIMAL-CTOR-1 ✅done**（e928722c）。**PY-SCOPE-KNOWN-1 ✅done**（373ca8d6）。**TZ-PAIRED-CST-COLS-1 ✅done**（aed6ff70）。**LIVE-ACCOUNT-FIELDS-1 ✅done**（45767c9f）。**ACCOUNT-MARGIN-LEVEL-PCT-1 ✅done**（ac509e20，Devin CLI 验收 2026-09-19）。**DATA-TRUTH-3 ✅done**（de1d0975，Devin CLI 验收 2026-09-19）。下一：发 MT5-ACCMETHOD-ADAPTER-1 开工指令。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **DATA-TRUTH-3 施工完成等独立复审**（migration 279+引用清零）；验收后发 **MT5-ACCMETHOD-ADAPTER-1**（派工单落档，AccMethod→margin_mode 通道）。VM-LIVE-MTF-1 暂缓。
+- **下一步**: **DATA-TRUTH-3 ✅done 验收**；按序发 **MT5-ACCMETHOD-ADAPTER-1**（派工单落档，AccMethod→margin_mode 通道，S1-S4+mutation×3）。VM-LIVE-MTF-1 暂缓。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -84,6 +84,7 @@
 - **VM-GLOBAL-ARRAY-DECL-1** ✅done — 全局数组端到端修复+4 错标点编译期显式拒（Devin CLI 验收 2026-09-18，commit da902af6，独立 mutation×4）；明细 registry 行 220
 - **LIVE-ACCOUNT-FIELDS-1** ✅done — live runner Account() 四字段补全（Devin CLI 验收 2026-09-19，commit 45767c9f）：proto 31-33+accountIdentityLookup+live fail-closed+MT4=hedging/MT5=""+三站接线+T1-T5；独立 mutation M1/M3/M4 RED，M2 双层冗余不可观测核实准确；明细 registry 行 221
 - **ACCOUNT-MARGIN-LEVEL-PCT-1** ✅done — ACCOUNT_MARGIN_LEVEL 比率→百分比 ×100（Devin CLI 验收 2026-09-19，commit ac509e20）：`Mul(decimalHundred)`+官方示例 pin 992.124+零边界保留；独立 mutation M1 RED（9.92124 复活）；明细 registry 行 224
+- **DATA-TRUTH-3** ✅done — 死列 last_checked_at 删除+v2 凭据-only 视图标注（Devin CLI 验收 2026-09-19，commit de1d0975）：migration 279+sqlc 生成物等价手编（138/142 历史 migration 阻断独立复现）+引用清零+constraints 双源规则；明细 registry 行 84
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
 - **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
