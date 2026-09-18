@@ -59,7 +59,7 @@ _, err := vm.ctx.Broker().<op>(...)
 
 **D2 OrderSend 指令顺序**（新）：parse args → validate(cmd∈[0,5], volume>0) → `if signalMode` emit → `if Broker()==nil` error → broker.OrderSend → propagate。validate 在 signalMode 前——顺带消灭 `cmd>5`→ActionNone→静默 -1 子路径。
 
-**D3 错误语义**：nil broker = 环境配置缺失（非拒单），`fmt.Errorf("<Builtin>: no broker configured")` → callBuiltin 置 fatalError → VM 停。返回值约定保留签名形态（OrderSend `IntVal(-1), err`；bool 族 `BoolVal(false), err`）——err 非 nil 时值不可达。
+**D3 错误语义**：nil broker = 环境配置缺失（非拒单），`fmt.Errorf("<Builtin>: no broker in the VM")` → callBuiltin 置 fatalError → VM 停。返回值约定保留签名形态（OrderSend `IntVal(-1), err`；bool 族 `BoolVal(false), err`）——err 非 nil 时值不可达。
 
 **D4 边界（本单不做，另立新债）**：
 - **缺陷 B**（11 站 broker error→false 吞没 + CloseAll allOK 聚合 + OrderSend RetCode 未查）→ 新债 `TRADE-BUILTIN-ERR-SWALLOW-1`：infra 失败（"no executor configured"）伪装成"拒单"，且真 MQL 拒单语义（false+GetLastError）vs fatal 是**独立设计决策**，需 RetCode/error 语义审计后定。
@@ -95,7 +95,7 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
     // ORDERSEND-NILBROKER-FAILCLOSED-1：无 broker = 环境缺失，fail-closed
     // （原在函数顶部、先于 signalMode——会拦信号路径造成信号静默丢弃）
     if vm.ctx.Broker() == nil {
-        return interp.IntVal(-1), fmt.Errorf("OrderSend: no broker configured")
+        return interp.IntVal(-1), fmt.Errorf("OrderSend: no broker in the VM")
     }
     result, err := vm.ctx.Broker().OrderSend(req)         // 原 :71-77 不变
     if err != nil { return interp.IntVal(-1), fmt.Errorf("OrderSend broker error: %w", err) }
@@ -118,7 +118,7 @@ func ctradeOrder(...) (interp.Value, error) {
         ...emit signal; return BoolVal(true), nil
     }
     if vm.ctx.Broker() == nil {
-        return interp.BoolVal(false), fmt.Errorf("CTrade order: no broker configured")
+        return interp.BoolVal(false), fmt.Errorf("CTrade order: no broker in the VM")
     }
     _, err := vm.ctx.Broker().OrderSend(req)   // 原 :628-633 不变（err→false 吞没属缺陷 B，另债）
     ...
@@ -131,16 +131,16 @@ func ctradeOrder(...) (interp.Value, error) {
 
 | 函数 | 错误消息 |
 |---|---|
-| `builtinOrderClose` | `"OrderClose: no broker configured"` |
-| `builtinOrderCloseBy` | `"OrderCloseBy: no broker configured"` |
-| `builtinOrderModify` | `"OrderModify: no broker configured"` |
-| `builtinOrderDelete` | `"OrderDelete: no broker configured"` |
-| `builtinCTradePositionClose` | `"CTrade.PositionClose: no broker configured"` |
-| `builtinCTradePositionClosePartial` | `"CTrade.PositionClosePartial: no broker configured"` |
-| `builtinCTradePositionCloseBy` | `"CTrade.PositionCloseBy: no broker configured"` |
-| `builtinCTradePositionModify` | `"CTrade.PositionModify: no broker configured"` |
-| `builtinCTradeOrderDelete` | `"CTrade.OrderDelete: no broker configured"` |
-| `builtinCloseAll` | `"CloseAll: no broker configured"` |
+| `builtinOrderClose` | `"OrderClose: no broker in the VM"` |
+| `builtinOrderCloseBy` | `"OrderCloseBy: no broker in the VM"` |
+| `builtinOrderModify` | `"OrderModify: no broker in the VM"` |
+| `builtinOrderDelete` | `"OrderDelete: no broker in the VM"` |
+| `builtinCTradePositionClose` | `"CTrade.PositionClose: no broker in the VM"` |
+| `builtinCTradePositionClosePartial` | `"CTrade.PositionClosePartial: no broker in the VM"` |
+| `builtinCTradePositionCloseBy` | `"CTrade.PositionCloseBy: no broker in the VM"` |
+| `builtinCTradePositionModify` | `"CTrade.PositionModify: no broker in the VM"` |
+| `builtinCTradeOrderDelete` | `"CTrade.OrderDelete: no broker in the VM"` |
+| `builtinCloseAll` | `"CloseAll: no broker in the VM"` |
 
 各函数其余行**逐字保留**（ticket/volume parse 在原位置——parse 不依赖 broker，移到 signalMode 前后的相对顺序保持原样；signalMode 块、broker 调用、err→false、invalidateOrderCaches 全不动）。
 
@@ -159,7 +159,7 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
     // not a rejection — fail closed (was BoolVal(false), nil before the
     // signalMode check, which also dropped live signals).
     if vm.ctx.Broker() == nil {
-        return interp.BoolVal(false), fmt.Errorf("OrderClose: no broker configured")
+        return interp.BoolVal(false), fmt.Errorf("OrderClose: no broker in the VM")
     }
     _, err := vm.ctx.Broker().PositionClose(ticket, volume)
     if err != nil { return interp.BoolVal(false), nil }   // 缺陷 B 保留（另债）
@@ -186,10 +186,13 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 // (b) signalMode + nil broker → err == nil && vm.signal != nil && 返回值成功
 //     （信号 emitted = 排序修复的直接证据；变异掉重排即 RED）
 //
-// 用 NewVM(&Bytecode{...})（noopContext → Broker()=nil）+ vm.signalMode=true
-// 直调各 builtin，传合法 args（OrderSend: cmd=0 volume=1；Close/Delete: ticket=1 volume=1；
-// Modify: ticket=1 price/sl/tp；CloseBy: t1,t2；CloseAll: 无参）。
+// 用 NewVM(&Bytecode{Builtins: make(map[string]BuiltinID)})（noopContext → Broker()=nil，
+// 同 vm_context_test.go 先例）+ vm.signalMode=true 直调各 builtin，传合法 args
+// （OrderSend: cmd=0 volume=1；Close/Delete: ticket=1 volume=1；Modify: ticket=1 price/sl/tp；
+// CloseBy: t1,t2；CloseAll: 无参）。
 // 断言 signal.Action 正确（ActionBuy/ActionClose/ActionModify/ActionCancel/ActionCloseAll）。
+// 注：ctradeOrder 为内部 helper，经 builtinCTradeBuy(vm, args)（volume/symbol/price/sl/tp/comment）
+// 或 builtinCTradeSell 等包装入口触达。
 ```
 
 ### S6：mutation 证据（施工方先跑，复审独立重跑）
