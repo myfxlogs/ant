@@ -4,7 +4,7 @@
 
 ## 立项背景
 
-**触发**：`docs/audits/tech-debt-registry.md:126` VM-API-TRUTH-1（P1）。批次1 ✅done（commit e97a43b8，MQL5 order/deal/history 22 API）。批次2a ✅done（commit 8f946579，platform checkup 12 API）。批次2b 派工单 `@67c0ed8a` 已发待验收（Account 全假 + Symbol by-reference 5 API）。本批 2c 修复 `AccountInfoDouble`/`AccountInfoInteger`/`AccountInfoString` 的混合实现——**非重分类**，函数保持 implemented，假分支改为 fail-closed。
+**触发**：`docs/audits/tech-debt-registry.md:126` VM-API-TRUTH-1（P1）。批次1 ✅done（commit e97a43b8，MQL5 order/deal/history 22 API）。批次2a ✅done（commit 8f946579，platform checkup 12 API）。批次2b ✅done（commit 1fb352f1，Account 全假 + Symbol by-reference 5 API）。本批 2c 修复 `AccountInfoDouble`/`AccountInfoInteger`/`AccountInfoString` 的混合实现——**非重分类**，函数保持 implemented，假分支改为 fail-closed。
 
 **本批范围**：3 个函数的运行时分支 + `constants.go` 枚举常量。机制：`fmt.Errorf` 返回 → `callBuiltin` 置 `vm.fatalError` + `recordBlindSpot`（`vm_helpers.go:241-242` 自动双记）→ `runLoop` 顶检查 → `OnInit`/`OnTick`/`Engine.Run` fail-closed。不用 recordBlindSpot-only（静默遥测让策略继续跑在假数据上，违反 fail-closed 红线）。
 
@@ -14,11 +14,11 @@
 
 | 函数:分支 | 文件:行 | 现返回 | 裁定 |
 |---|---|---|---|
-| `AccountInfoDouble` prop=1 (ACCOUNT_CREDIT) | `vm_builtin_mql5_info.go:59-60` | `decimalZero` | error（同批次2b `AccountCredit` 裁定：回测无 credit 概念） |
-| `AccountInfoDouble` default | `:74-75` | `decimalZero` 静默 | error |
-| `AccountInfoInteger` prop=35/36 (TRADE_ALLOWED/TRADE_EXPERT) | `:87-90` | `BoolVal(true)` 固定 | 接 `Account().IsTradeAllowed`（见分支处置表） |
-| `AccountInfoInteger` default | `:91-92` | `IntVal(0)` 静默 | error |
-| `AccountInfoString` prop=0..3 + default | `:96-110` | `"USD"`/`"Backtest"`/`"SimBroker"`/`""` 固定 | 见分支处置表 |
+| `AccountInfoDouble` prop=1 (ACCOUNT_CREDIT) | `vm_builtin_mql5_info.go:47-48` | `decimalZero` | error（同批次2b `AccountCredit` 裁定：回测无 credit 概念） |
+| `AccountInfoDouble` default | `:62-63` | `decimalZero` 静默 | error |
+| `AccountInfoInteger` prop=35/36 (TRADE_ALLOWED/TRADE_EXPERT) | `:75-78` | `BoolVal(true)` 固定 | 接 `Account().IsTradeAllowed`（见分支处置表） |
+| `AccountInfoInteger` default | `:79-80` | `IntVal(0)` 静默 | error |
+| `AccountInfoString` prop=0..3 + default | `:84-98` | `"USD"`/`"Backtest"`/`"SimBroker"`/`""` 固定 | 见分支处置表 |
 
 ### B. prop 编号偏离真 MQL5 枚举（设计实查新发现）
 
@@ -114,7 +114,7 @@
 
 ### S1 — constants.go：修正 4 个错值 + 补齐命名常量
 
-- **坐标**：`backend/tools/mql2go/interp/constants.go:455-466`（account info double 常量块）。
+- **坐标**：`backend/tools/mql2go/interp/constants.go:455-468`（account info double 常量块，批次2b 后实测）。
 - **落点**：
   - 修正：`"ACCOUNT_MARGIN_SO_CALL": IntVal(7)`、`"ACCOUNT_MARGIN_SO_SO": IntVal(8)`、`"ACCOUNT_MARGIN_INITIAL": IntVal(9)`、`"ACCOUNT_MARGIN_MAINTENANCE": IntVal(10)`（现为 9/10/7/8 错位）。
   - 追加 double 余量：`"ACCOUNT_ASSETS": IntVal(11)`、`"ACCOUNT_LIABILITIES": IntVal(12)`、`"ACCOUNT_COMMISSION_BLOCKED": IntVal(13)`。
@@ -156,13 +156,13 @@
 
 ### S2 — `builtinAccountInfoDouble` 重写
 
-- **坐标**：`backend/tools/mql2go/vm_builtin_mql5_info.go:54-77`。
+- **坐标**：`backend/tools/mql2go/vm_builtin_mql5_info.go:42-65`（批次2b 后实测）。
 - **落点**：按分支处置表重写 switch——保留 0/2/3/4/5/6 真实分支；case 1 + case 7-13（有名 prop 可合并 `case 1, 7, 8, 9, 10, 11, 12, 13:`）+ default 全部返回 error。`import "fmt"` 加入文件头。
 - **验证**：`AccountInfoDouble(0)` 返回 Balance；`AccountInfoDouble(1)`/`AccountInfoDouble(99)` 返回 error。
 
 ### S3 — `builtinAccountInfoInteger` 重写
 
-- **坐标**：`backend/tools/mql2go/vm_builtin_mql5_info.go:79-94`。
+- **坐标**：`backend/tools/mql2go/vm_builtin_mql5_info.go:67-82`（批次2b 后实测）。
 - **落点**：按分支处置表重写 switch——
   ```go
   case 0:  return interp.IntVal(int32(vm.ctx.Account().Login)), nil
@@ -178,7 +178,7 @@
 
 ### S4 — `builtinAccountInfoString` 重写
 
-- **坐标**：`backend/tools/mql2go/vm_builtin_mql5_info.go:96-110`。
+- **坐标**：`backend/tools/mql2go/vm_builtin_mql5_info.go:84-98`（批次2b 后实测）。
 - **落点**：按分支处置表重写 switch——
   ```go
   case 2: if c := vm.ctx.Account().Currency; c != "" { return interp.StringVal(c), nil } → error
