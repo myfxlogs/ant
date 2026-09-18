@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done**（2739f100：12 站 signalMode 前移+nil-broker→fatal，独立 mutation×3）。下一：P3 批择债设计实查（TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE/PY-DECIMAL/TZ-PAIRED）。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9：Acquire 补锁内 Broadcast，独立 mutation RED→GREEN）。下一：SNAPSHOT-SLICE-ALIAS-1 设计实查→PY-SCOPE/PY-DECIMAL/TZ-PAIRED。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **转发 TEST-WAITSTATE-ACQUIRE-BCAST-1 开工指令**（派工单已落档）；后续候选：SNAPSHOT-SLICE / PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **SNAPSHOT-SLICE-ALIAS-1 设计实查**（retained 快照 slice 别名依赖 immutable 约定）；后续：PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -78,15 +78,13 @@
 - **QS-1.2a** ✅done — lastError 三 builtin（Devin CLI 验收通过 2026-09-16，commit 65e2cccf）
 - **QS-1.7-INV** ✅done — ClientID 不可回显→QS-1.7 不立项，维持 fail-closed（Devin CLI 验收通过 2026-09-16）
 - **QS-3-BASELINE** ✅done — 基线已落盘 `docs/audits/vm-perf-baseline-2026-09.md`；无项触及 >30% 阈值，生产 p99 待 metric 上线观测
-- **ORDERSEND-NILBROKER-FAILCLOSED-1** 🟦open — QS-2.3 连带记债：无 broker 静默 -1+nil error 非 fail-closed
 - **RECONCILE-TZ-WINDOW-1** ✅done — `.UTC()` 修复+pin 测试，Devin CLI 验收通过 2026-09-16（1efbf678）
 - **TZ-SWEEP-AFFECTED-1** ✅done — analyticsSince()+worker 归一化，Devin CLI 验收通过 2026-09-16（362d285e）
 - **TZ-MIXED-ENCODING-1** ✅done — ~50 站 .UTC() 止血+migration 278 回填，Devin CLI 验收通过 2026-09-16（da85f973）；**部署注记**：migration 在 backend 启动时跑，生效后 trade_records 全列 UTC
 - **TZ-PAIRED-CST-COLS-1** 🟦open P3 — next_run_at/trade_logs 等 CST 写读配对列禁单侧翻 UTC（registry 规则）
-- **TEST-WAITSTATE-ACQUIRE-BCAST-1 / SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — QS-2.4 审计发现（WaitState(submitting) 时序 footgun / retained 快照 slice 别名依赖 immutable 约定）
+- **SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — retained 快照 slice 别名依赖 immutable 约定（QS-2.4-F2）
 - **VM-RUNTIME-FAILCLOSED-2** ✅done — 静默算术/栈/槽位 fail-closed（Devin CLI 验收通过 2026-09-16，commit 4fea9439，独立 mutation×4 RED→GREEN）
 - **VM-ARRAY-OOB-FAILCLOSED-1** ✅done — 数组 OOB+局部负编码 fail-closed（Devin CLI 验收 2026-09-18，commit bdb3733f，独立 mutation×4）；明细 registry 行 217
-- **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
 - **VM-ENUM-NUMBERING-1** ✅done — SymbolInfo*/MarketInfo 全枚举对齐+静默错标修复+SymbolInfoString 重分类（Devin CLI 验收 2026-09-18，commit 477e8273+bfb42ea3 返修，独立 mutation×5）；明细 registry 行 219
 - **VM-GLOBAL-ARRAY-DECL-1** ✅done — 全局数组端到端修复+4 错标点编译期显式拒（Devin CLI 验收 2026-09-18，commit da902af6，独立 mutation×4）；明细 registry 行 220
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
@@ -108,6 +106,8 @@
 - 2026-09-18 **VM-GLOBAL-ARRAY-DECL-1 ✅done** — commit da902af6（自审计修正版派工单 @37358629）；独立 mutation×4 RED→GREEN；明细见 registry 行 220。
 - 2026-09-18 **ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done** — commit 2739f100（派工单 @0461ff34）；12 站 signalMode 前移+nil-broker→fatal；独立 mutation×3 RED→GREEN；另立 TRADE-BUILTIN-ERR-SWALLOW-1；明细 registry 行 215。
 - 2026-09-18 **TRADE-BUILTIN-ERR-SWALLOW-1 ✅done** — commit 6eae8160（派工单 @d015173f）；13 站三态分裂+SimBroker 通道搬迁+engine RetCode 日志；独立 mutation×4 RED→GREEN；明细 registry 行 222。
+- 2026-09-18 **VM-FUNC-FATAL-DELAY-1 ✅done** — commit de6f672c+6ef18536（派工单 @a74556c6+R1）；executeCallUser 循环顶 fatalError 检查；独立 mutation×2 RED→GREEN；明细 registry 行 218。
+- 2026-09-18 **TEST-WAITSTATE-ACQUIRE-BCAST-1 ✅done** — commit 53e886e9（派工单 @a6ab8bbb）；Acquire 锁内补 Broadcast+判别性延迟测试；独立 mutation RED→GREEN；明细 registry 行 211。
 - 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
 - 2026-09-17 **批次2d 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md`（timeseries 无源/handle 7 API 重分类）。
 - 2026-09-17 **批次2c 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md @64c6efc3`（AccountInfoDouble/Integer/String 假分支修复+枚举编号对齐，非重分类）。
@@ -116,7 +116,6 @@
 - 2026-09-16 **VM-API-TRUTH-1 批次1 ✅done** — 已滚出 LOG.md；详见 registry 行 126（commit e97a43b8，独立 mutation×1 RED→GREEN）。
 - 2026-09-16 **VM-COMPILER-SEMANTICS-3 ✅done** — 已滚出 LOG.md；详见 registry 行 88（commit c5d1a7e0，独立 mutation×2 RED→GREEN）。
 - 2026-09-16 **VM-HONESTY-3-REVIEW ✅done** — 已滚出 LOG.md；详见 registry 行 87（commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）。
-- 2026-09-16 **VM-RUNTIME-FAILCLOSED-2 ✅done** — 已滚出 LOG.md；详见 registry 行 128（commit 4fea9439，独立 mutation×4 RED→GREEN，分立债 VM-ARRAY-OOB-FAILCLOSED-1/VM-FUNC-FATAL-DELAY-1）。
 - 2026-09-16 **VM 质量方案 v2 全量收官**（10 子任务全 Devin CLI 验收）：QS-1.4 bool 双否定（88292b14）/ QS-1.6 权威读状态机迁移（5be48f30）/ QS-1.3 函数域隔离 v3（9940eda4+ee47292d）/ QS-1.2a lastError 三 builtin（65e2cccf）/ QS-1.7-INV 不立项（05138758）/ QS-2.2 goleak（174b8405）/ QS-2.4 race 审计（8e393cae）/ QS-2.5 panic 加固（89353004）/ QS-2.3 noopContext（5ad339a9）/ QS-3-BASELINE 基线+metric（b8ad1674）。明细滚出至 handover-audit-plan.md。
 - 2026-09-16 **registry 全量对账**（Devin CLI）：所有 ⚠️待独立复审项清零——翻正漂移 ✅done×9（LIVE-ORDER-REENTRY-1/LIVE-MQL-ORDER-CONTEXT-1/LIVE-REDESIGN-2TAB/LIVE-DIAG-TRUTH-1/VM-TEST-EVIDENCE-3/返工 Batch5 等），裁定决策项×5（DATA-TRUTH-3=v2 凭据-only 附属表/VM-API-TRUTH-1=批准 StatusUnsupported 派工/VM-LIVE-MTF-1=暂缓需求驱动/STREAM-FREEZE-1=代码验收+生产实测挂业主/LIVE-ORDER-REENTRY-1 三遗留裁定），标注待重施工×2（VM-RUNTIME-FAILCLOSED-2/VM-HONESTY-3-REVIEW 代码不在仓）。
 
