@@ -452,7 +452,7 @@ var MQLConstants = map[string]Value{
 	"ACCOUNT_STOPOUT_MODE_PERCENT": IntVal(1),
 	"ACCOUNT_STOPOUT_MODE_MONEY":   IntVal(2),
 
-	// ── Account info double properties (MQL5) ──────────────────────────
+	// ── Account info double properties (MQL5 ENUM_ACCOUNT_INFO_DOUBLE) ─
 	"ACCOUNT_BALANCE":            IntVal(0),
 	"ACCOUNT_CREDIT":             IntVal(1),
 	"ACCOUNT_PROFIT":             IntVal(2),
@@ -460,10 +460,41 @@ var MQLConstants = map[string]Value{
 	"ACCOUNT_MARGIN":             IntVal(4),
 	"ACCOUNT_MARGIN_FREE":        IntVal(5),
 	"ACCOUNT_MARGIN_LEVEL":       IntVal(6),
-	"ACCOUNT_MARGIN_INITIAL":     IntVal(7),
-	"ACCOUNT_MARGIN_MAINTENANCE": IntVal(8),
-	"ACCOUNT_MARGIN_SO_CALL":     IntVal(9),
-	"ACCOUNT_MARGIN_SO_SO":       IntVal(10),
+	"ACCOUNT_MARGIN_SO_CALL":     IntVal(7),
+	"ACCOUNT_MARGIN_SO_SO":       IntVal(8),
+	"ACCOUNT_MARGIN_INITIAL":     IntVal(9),
+	"ACCOUNT_MARGIN_MAINTENANCE": IntVal(10),
+	"ACCOUNT_ASSETS":             IntVal(11),
+	"ACCOUNT_LIABILITIES":        IntVal(12),
+	"ACCOUNT_COMMISSION_BLOCKED": IntVal(13),
+
+	// ── Account info integer properties (MQL5 ENUM_ACCOUNT_INFO_INTEGER) ──
+	"ACCOUNT_LOGIN":           IntVal(0),
+	"ACCOUNT_TRADE_MODE":      IntVal(1),
+	"ACCOUNT_LEVERAGE":        IntVal(2),
+	"ACCOUNT_LIMIT_ORDERS":    IntVal(3),
+	"ACCOUNT_MARGIN_SO_MODE":  IntVal(4),
+	"ACCOUNT_TRADE_ALLOWED":   IntVal(5),
+	"ACCOUNT_TRADE_EXPERT":    IntVal(6),
+	"ACCOUNT_MARGIN_MODE":     IntVal(7),
+	"ACCOUNT_CURRENCY_DIGITS": IntVal(8),
+	"ACCOUNT_FIFO_CLOSE":      IntVal(9),
+	"ACCOUNT_HEDGE_ALLOWED":   IntVal(10),
+
+	// ── Account info string properties (MQL5 ENUM_ACCOUNT_INFO_STRING) ──
+	"ACCOUNT_NAME":     IntVal(0),
+	"ACCOUNT_SERVER":   IntVal(1),
+	"ACCOUNT_CURRENCY": IntVal(2),
+	"ACCOUNT_COMPANY":  IntVal(3),
+
+	// ── Account trade modes (ENUM_ACCOUNT_TRADE_MODE) ──
+	"ACCOUNT_TRADE_MODE_DEMO":    IntVal(0),
+	"ACCOUNT_TRADE_MODE_CONTEST": IntVal(1),
+	"ACCOUNT_TRADE_MODE_REAL":    IntVal(2),
+	// ── Account margin modes (ENUM_ACCOUNT_MARGIN_MODE) ──
+	"ACCOUNT_MARGIN_MODE_RETAIL_NETTING": IntVal(0),
+	"ACCOUNT_MARGIN_MODE_EXCHANGE":       IntVal(1),
+	"ACCOUNT_MARGIN_MODE_RETAIL_HEDGING": IntVal(2),
 
 	// ── Booleans ───────────────────────────────────────────────────────
 	"true":  BoolVal(true),

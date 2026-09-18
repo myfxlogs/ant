@@ -186,6 +186,11 @@ type accountStatusTestContext struct {
 	isConnected    bool
 	isDemo         bool
 	isTradeAllowed bool
+	leverage       int32
+	login          int64
+	currency       string
+	company        string
+	mode           sdk.AccountMode
 }
 
 func (c *accountStatusTestContext) Account() sdk.AccountInfo {
@@ -193,6 +198,10 @@ func (c *accountStatusTestContext) Account() sdk.AccountInfo {
 		IsConnected:    c.isConnected,
 		IsDemo:         c.isDemo,
 		IsTradeAllowed: c.isTradeAllowed,
+		Leverage:       c.leverage,
+		Login:          c.login,
+		Currency:       c.currency,
+		Company:        c.company,
 	}
 }
 func (c *accountStatusTestContext) Broker() sdk.Broker                    { return &cacheTestBroker{} }
@@ -210,15 +219,20 @@ func (c *accountStatusTestContext) BarsTF(string) sdk.BarSeries       { return n
 func (c *accountStatusTestContext) BarsForSymbol(string, string) sdk.BarSeries {
 	return nil
 }
-func (c *accountStatusTestContext) Symbol() string               { return "EURUSD" }
-func (c *accountStatusTestContext) Timeframe() string            { return "M15" }
-func (c *accountStatusTestContext) Point() decimal.Decimal       { return decimal.Zero }
-func (c *accountStatusTestContext) Pip() decimal.Decimal         { return decimal.Zero }
-func (c *accountStatusTestContext) Digits() int32                { return 5 }
-func (c *accountStatusTestContext) Ask() decimal.Decimal         { return decimal.Zero }
-func (c *accountStatusTestContext) Bid() decimal.Decimal         { return decimal.Zero }
-func (c *accountStatusTestContext) Spread() decimal.Decimal      { return decimal.Zero }
-func (c *accountStatusTestContext) Mode() sdk.AccountMode        { return sdk.ModeHedging }
+func (c *accountStatusTestContext) Symbol() string          { return "EURUSD" }
+func (c *accountStatusTestContext) Timeframe() string       { return "M15" }
+func (c *accountStatusTestContext) Point() decimal.Decimal  { return decimal.Zero }
+func (c *accountStatusTestContext) Pip() decimal.Decimal    { return decimal.Zero }
+func (c *accountStatusTestContext) Digits() int32           { return 5 }
+func (c *accountStatusTestContext) Ask() decimal.Decimal    { return decimal.Zero }
+func (c *accountStatusTestContext) Bid() decimal.Decimal    { return decimal.Zero }
+func (c *accountStatusTestContext) Spread() decimal.Decimal { return decimal.Zero }
+func (c *accountStatusTestContext) Mode() sdk.AccountMode {
+	if c.mode != "" {
+		return c.mode
+	}
+	return sdk.ModeHedging
+}
 func (c *accountStatusTestContext) Indicators() sdk.IndicatorSet { return nil }
 func (c *accountStatusTestContext) SetTimer(int)                 {}
 func (c *accountStatusTestContext) KillTimer()                   {}
