@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"alphaforge/tools/mql2go/interp"
+
+	"github.com/shopspring/decimal"
 )
 
 // TestCompilePython_BasicStrategy verifies that a simple Python strategy compiles to IR and bytecode.
@@ -1575,7 +1577,7 @@ class S:
 
 func TestCompilePython_IndicatorCaseInsensitive(t *testing.T) {
 	indicators := []struct {
-		pythonName string
+		pythonName  string
 		builtinName string
 	}{
 		{"ialligator", "iAlligator"},
@@ -1664,8 +1666,8 @@ class S:
 
 func TestCompilePython_LegacyPositionCloseModify(t *testing.T) {
 	tests := []struct {
-		name   string
-		method string
+		name    string
+		method  string
 		builtin string
 	}{
 		{"position_close", "position_close", "PositionClose"},
@@ -1908,13 +1910,16 @@ class S:
 	if len(expr.Args) != 6 {
 		t.Fatalf("expected 6 args, got %d", len(expr.Args))
 	}
-	// arg[0] should be the lot value (string literal "0.1" from Decimal("0.1"))
-	if expr.Args[0].Kind != interp.ExprLiteral || expr.Args[0].Val.Kind != interp.ValString {
-		t.Errorf("arg[0]: expected string literal (lot/volume), got kind=%v val=%v", expr.Args[0].Kind, expr.Args[0].Val)
+	// arg[0] should be the lot value (PY-DECIMAL-CTOR-1: Decimal("0.1") folds
+	// to a ValDecimal literal — the old ValString passthrough was the bug).
+	if expr.Args[0].Kind != interp.ExprLiteral || expr.Args[0].Val.Kind != interp.ValDecimal ||
+		!expr.Args[0].Val.Decimal.Equal(decimal.NewFromFloat(0.1)) {
+		t.Errorf("arg[0]: expected decimal literal 0.1 (lot/volume), got kind=%v val=%v", expr.Args[0].Kind, expr.Args[0].Val)
 	}
-	// arg[3] should be the sl value (string literal "100" from Decimal("100"))
-	if expr.Args[3].Kind != interp.ExprLiteral || expr.Args[3].Val.Kind != interp.ValString {
-		t.Errorf("arg[3]: expected string literal (sl), got kind=%v val=%v", expr.Args[3].Kind, expr.Args[3].Val)
+	// arg[3] should be the sl value (ValDecimal 100 from Decimal("100"))
+	if expr.Args[3].Kind != interp.ExprLiteral || expr.Args[3].Val.Kind != interp.ValDecimal ||
+		!expr.Args[3].Val.Decimal.Equal(decimal.NewFromInt(100)) {
+		t.Errorf("arg[3]: expected decimal literal 100 (sl), got kind=%v val=%v", expr.Args[3].Kind, expr.Args[3].Val)
 	}
 }
 

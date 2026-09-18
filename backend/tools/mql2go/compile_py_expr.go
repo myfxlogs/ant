@@ -4,9 +4,9 @@ import (
 	"strconv"
 	"strings"
 
+	"alphaforge/tools/mql2go/interp"
 	"github.com/shopspring/decimal"
 	sitter "github.com/smacker/go-tree-sitter"
-	"alphaforge/tools/mql2go/interp"
 )
 
 // compileExpr converts a Python CST expression node into interp.Expr.
@@ -172,10 +172,41 @@ func (c *pyCompiler) compilePyCall(n *sitter.Node) *interp.Expr {
 		}
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.BoolVal(false)}
 	case "Decimal":
-		if len(args) > 0 {
-			return &args[0]
+		if len(args) == 0 {
+			return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(decimalZero)}
 		}
-		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(decimalZero)}
+		arg := args[0]
+		if arg.Kind == interp.ExprLiteral {
+			switch arg.Val.Kind {
+			case interp.ValDecimal:
+				return &arg
+			case interp.ValInt:
+				return &interp.Expr{Kind: interp.ExprLiteral,
+					Val: interp.DecimalVal(decimal.NewFromInt(int64(arg.Val.Int)))}
+			case interp.ValBool:
+				v := int64(0)
+				if arg.Val.Bool {
+					v = 1
+				}
+				return &interp.Expr{Kind: interp.ExprLiteral,
+					Val: interp.DecimalVal(decimal.NewFromInt(v))}
+			case interp.ValString:
+				d, err := decimal.NewFromString(arg.Val.Str)
+				if err != nil {
+					c.errorf(n, "Decimal(%q): invalid decimal literal", arg.Val.Str)
+					return nil
+				}
+				return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.DecimalVal(d)}
+			default:
+				// Decimal(None)/other non-convertible literals: Python raises
+				// TypeError — fail closed at compile time.
+				c.errorf(n, "Decimal(): argument cannot be converted to decimal")
+				return nil
+			}
+		}
+		// PY-DECIMAL-CTOR-1: non-literal → runtime conversion. Residual vs
+		// Python: unparseable string → 0 (Python raises); bool → 0 (Python=1).
+		return &interp.Expr{Kind: interp.ExprCall, Name: "StringToDouble", Args: args}
 	case "abs":
 		return &interp.Expr{Kind: interp.ExprCall, Name: "MathAbs", Args: args}
 	case "max":
