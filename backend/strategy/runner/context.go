@@ -39,6 +39,11 @@ type contextImpl struct {
 	liveIsConnected    bool
 	liveIsTradeAllowed bool
 
+	liveLeverage    int32  // LIVE-ACCOUNT-FIELDS-1
+	liveCurrency    string // LIVE-ACCOUNT-FIELDS-1
+	liveCompany     string // LIVE-ACCOUNT-FIELDS-1
+	liveAccountMode string // "hedging"|"netting"|""(unknown→VM fail-closed)
+
 	// Symbol info from parent process (harness mode — no RPC).
 	livePoint        string
 	liveDigits       int32

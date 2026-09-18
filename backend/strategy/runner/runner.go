@@ -116,6 +116,18 @@ func (r *Runner) SetAccountStatus(isDemo, isConnected, isTradeAllowed bool) {
 	r.ctx.liveIsTradeAllowed = isTradeAllowed
 }
 
+// SetAccountIdentity sets leverage/currency/company/account-mode for
+// harness mode. Called alongside SetLogin/SetAccountStatus at init and
+// OnBar dispatch. LIVE-ACCOUNT-FIELDS-1.
+func (r *Runner) SetAccountIdentity(leverage int32, currency, company, accountMode string) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	r.ctx.liveLeverage = leverage
+	r.ctx.liveCurrency = currency
+	r.ctx.liveCompany = company
+	r.ctx.liveAccountMode = accountMode
+}
+
 // UpdateExtraBars sets the extra symbol bar windows for multi-symbol strategies.
 func (r *Runner) UpdateExtraBars(extra map[string][]sdk.Bar) {
 	r.ctx.setExtraBars(extra)

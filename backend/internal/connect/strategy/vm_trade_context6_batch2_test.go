@@ -172,6 +172,10 @@ func TestBuildLiveContext_InjectsLoginAndCompany(t *testing.T) {
 	srv.SetAccountIsInvestorLookup(func(_ context.Context, _ string) (bool, error) {
 		return false, nil
 	})
+	// LIVE-ACCOUNT-FIELDS-1: live mode requires a resolvable account identity.
+	srv.SetAccountIdentityLookup(func(_ context.Context, _ string) (*AccountIdentity, error) {
+		return &AccountIdentity{Leverage: 100, Currency: "USD", MTType: "mt4"}, nil
+	})
 
 	cfg := LiveStrategyConfig{
 		AccountID: "acct-1",
@@ -246,6 +250,10 @@ func TestBuildLiveContext_InvestorGatingTradeAllowed(t *testing.T) {
 	})
 	srv.SetAccountIsInvestorLookup(func(_ context.Context, _ string) (bool, error) {
 		return true, nil // but account is investor
+	})
+	// LIVE-ACCOUNT-FIELDS-1: live mode requires a resolvable account identity.
+	srv.SetAccountIdentityLookup(func(_ context.Context, _ string) (*AccountIdentity, error) {
+		return &AccountIdentity{Leverage: 100, Currency: "USD", MTType: "mt4"}, nil
 	})
 
 	cfg := LiveStrategyConfig{

@@ -1217,8 +1217,18 @@ type LiveStrategyContext struct {
 	IsDemo         bool `protobuf:"varint,28,opt,name=is_demo,json=isDemo,proto3" json:"is_demo,omitempty"`
 	IsConnected    bool `protobuf:"varint,29,opt,name=is_connected,json=isConnected,proto3" json:"is_connected,omitempty"`
 	IsTradeAllowed bool `protobuf:"varint,30,opt,name=is_trade_allowed,json=isTradeAllowed,proto3" json:"is_trade_allowed,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// LIVE-ACCOUNT-FIELDS-1: account identity from mt_accounts (server-side
+	// authoritative, same trust class as login/company/is_demo).
+	// leverage: account leverage (e.g. 100 = 1:100); 0 = not populated.
+	// currency: deposit currency (e.g. "USD"); "" = not populated.
+	// account_mode: margin mode "hedging"|"netting"; "" = unknown — distinct
+	// from mode (field 13) which is execution mode "live"|"paper". MT5 margin
+	// mode pending AccMethod adapter wiring; VM consumers fail-closed on "".
+	Leverage      int32  `protobuf:"varint,31,opt,name=leverage,proto3" json:"leverage,omitempty"`
+	Currency      string `protobuf:"bytes,32,opt,name=currency,proto3" json:"currency,omitempty"`
+	AccountMode   string `protobuf:"bytes,33,opt,name=account_mode,json=accountMode,proto3" json:"account_mode,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LiveStrategyContext) Reset() {
@@ -1459,6 +1469,27 @@ func (x *LiveStrategyContext) GetIsTradeAllowed() bool {
 		return x.IsTradeAllowed
 	}
 	return false
+}
+
+func (x *LiveStrategyContext) GetLeverage() int32 {
+	if x != nil {
+		return x.Leverage
+	}
+	return 0
+}
+
+func (x *LiveStrategyContext) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetAccountMode() string {
+	if x != nil {
+		return x.AccountMode
+	}
+	return ""
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -5595,7 +5626,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06signal\x18\x02 \x01(\v2\x16.ant.v1.StrategySignalR\x06signal\x12\x14\n" +
 	"\x05error\x18\x03 \x01(\tR\x05error\x12#\n" +
 	"\rstrategy_hash\x18\x04 \x01(\tR\fstrategyHash\x120\n" +
-	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xe1\a\n" +
+	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xbc\b\n" +
 	"\x13LiveStrategyContext\x12\x14\n" +
 	"\x05close\x18\x01 \x03(\tR\x05close\x12\x12\n" +
 	"\x04open\x18\x02 \x03(\tR\x04open\x12\x12\n" +
@@ -5631,7 +5662,10 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\acompany\x18\x1b \x01(\tR\acompany\x12\x17\n" +
 	"\ais_demo\x18\x1c \x01(\bR\x06isDemo\x12!\n" +
 	"\fis_connected\x18\x1d \x01(\bR\visConnected\x12(\n" +
-	"\x10is_trade_allowed\x18\x1e \x01(\bR\x0eisTradeAllowed\"\xee\x02\n" +
+	"\x10is_trade_allowed\x18\x1e \x01(\bR\x0eisTradeAllowed\x12\x1a\n" +
+	"\bleverage\x18\x1f \x01(\x05R\bleverage\x12\x1a\n" +
+	"\bcurrency\x18  \x01(\tR\bcurrency\x12!\n" +
+	"\faccount_mode\x18! \x01(\tR\vaccountMode\"\xee\x02\n" +
 	"\fLivePosition\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +

@@ -107,6 +107,9 @@ func (s *StrategyExecutionServer) dispatchVMLive(ctx context.Context, req *antv1
 	// VM-API-TRUTH-3: set account status before Init so IsConnected()/
 	// IsDemo()/IsTradeAllowed() return authoritative values during OnInit.
 	r.SetAccountStatus(bctx.IsDemo, bctx.IsConnected, bctx.IsTradeAllowed)
+	// LIVE-ACCOUNT-FIELDS-1: set account identity before Init (same point as
+	// SetLogin/SetAccountStatus).
+	r.SetAccountIdentity(bctx.Leverage, bctx.Currency, bctx.Company, bctx.AccountMode)
 
 	if err := r.Init(ctx); err != nil {
 		return &antv1.ExecuteLiveResponse{Success: false, Error: err.Error()}, nil

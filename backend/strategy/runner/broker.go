@@ -210,13 +210,27 @@ func (b *brokerImpl) Account() sdk.AccountInfo {
 			Equity:         b.mustDecimal(b.runner.ctx.liveEquity),
 			Margin:         b.mustDecimal(b.runner.ctx.liveMargin),
 			FreeMargin:     b.mustDecimal(b.runner.ctx.liveFreeMargin),
-			Login:          b.runner.ctx.liveLogin,          // VM-TRADE-CONTEXT-6
-			IsDemo:         b.runner.ctx.liveIsDemo,         // VM-API-TRUTH-3
-			IsConnected:    b.runner.ctx.liveIsConnected,    // VM-API-TRUTH-3
-			IsTradeAllowed: b.runner.ctx.liveIsTradeAllowed, // VM-API-TRUTH-3
+			Login:          b.runner.ctx.liveLogin,                       // VM-TRADE-CONTEXT-6
+			IsDemo:         b.runner.ctx.liveIsDemo,                      // VM-API-TRUTH-3
+			IsConnected:    b.runner.ctx.liveIsConnected,                 // VM-API-TRUTH-3
+			IsTradeAllowed: b.runner.ctx.liveIsTradeAllowed,              // VM-API-TRUTH-3
+			Leverage:       b.runner.ctx.liveLeverage,                    // LIVE-ACCOUNT-FIELDS-1
+			Currency:       b.runner.ctx.liveCurrency,                    // LIVE-ACCOUNT-FIELDS-1
+			Company:        b.runner.ctx.liveCompany,                     // LIVE-ACCOUNT-FIELDS-1
+			Mode:           sdkAccountMode(b.runner.ctx.liveAccountMode), // LIVE-ACCOUNT-FIELDS-1
 		}
 	}
 	return b.executor.Account()
+}
+
+// sdkAccountMode whitelists the proto string into sdk.AccountMode —
+// unrecognized values ("" / garbage) map to "" so VM consumers fail-closed.
+func sdkAccountMode(s string) sdk.AccountMode {
+	switch sdk.AccountMode(s) {
+	case sdk.ModeHedging, sdk.ModeNetting:
+		return sdk.AccountMode(s)
+	}
+	return ""
 }
 
 // parseStopsLevel parses a stops_level string to int32.

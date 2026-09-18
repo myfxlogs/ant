@@ -265,6 +265,17 @@ message LiveStrategyContext {
   bool is_demo = 28;
   bool is_connected = 29;
   bool is_trade_allowed = 30;
+
+  // LIVE-ACCOUNT-FIELDS-1: account identity from mt_accounts (server-side
+  // authoritative, same trust class as login/company/is_demo).
+  // leverage: account leverage (e.g. 100 = 1:100); 0 = not populated.
+  // currency: deposit currency (e.g. "USD"); "" = not populated.
+  // account_mode: margin mode "hedging"|"netting"; "" = unknown — distinct
+  // from mode (field 13) which is execution mode "live"|"paper". MT5 margin
+  // mode pending AccMethod adapter wiring; VM consumers fail-closed on "".
+  int32 leverage = 31;
+  string currency = 32;
+  string account_mode = 33;
 }
 
 // LivePosition mirrors the engine Position for live context.

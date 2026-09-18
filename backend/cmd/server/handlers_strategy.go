@@ -213,6 +213,17 @@ func configureStrategyLookups(srv *strategy.StrategyExecutionServer, pool *pgxpo
 		}
 		return isInvestor, nil
 	})
+
+	srv.SetAccountIdentityLookup(func(ctx context.Context, accountID string) (*strategy.AccountIdentity, error) {
+		var ident strategy.AccountIdentity
+		err := pool.QueryRow(ctx,
+			`SELECT COALESCE(leverage,0), COALESCE(currency,''), COALESCE(mt_type,'') FROM mt_accounts WHERE id = $1::uuid AND deleted_at IS NULL`,
+			accountID).Scan(&ident.Leverage, &ident.Currency, &ident.MTType)
+		if err != nil {
+			return nil, fmt.Errorf("identity lookup: %w", err)
+		}
+		return &ident, nil
+	})
 }
 
 func setupRiskGate(cfg *config.Config, jurisGate *risksvc.JurisdictionGate, capStore *risksvc.CapabilityStore) *risk.Gate {

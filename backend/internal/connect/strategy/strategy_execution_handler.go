@@ -122,6 +122,18 @@ type StrategyExecutionServer struct {
 	accountConnectedLookup    func(ctx context.Context, accountID string) (bool, error)
 	accountTradeAllowedLookup func(ctx context.Context, accountID string) (bool, error)
 	accountIsInvestorLookup   func(ctx context.Context, accountID string) (bool, error)
+
+	// AccountIdentity is the leverage/currency/platform triple read from one
+	// mt_accounts row. LIVE-ACCOUNT-FIELDS-1.
+	accountIdentityLookup func(ctx context.Context, accountID string) (*AccountIdentity, error)
+}
+
+// AccountIdentity is the leverage/currency/platform triple read from one
+// mt_accounts row. LIVE-ACCOUNT-FIELDS-1.
+type AccountIdentity struct {
+	Leverage int32
+	Currency string
+	MTType   string // "mt4" | "mt5"
 }
 
 // QualityValidator validates backtest quality for marketplace publishing (read-only preview).
@@ -209,6 +221,12 @@ func (s *StrategyExecutionServer) SetAccountTradeAllowedLookup(f func(ctx contex
 }
 func (s *StrategyExecutionServer) SetAccountIsInvestorLookup(f func(ctx context.Context, accountID string) (bool, error)) {
 	s.accountIsInvestorLookup = f
+}
+
+// SetAccountIdentityLookup wires the one-query leverage/currency/mt_type
+// resolver. LIVE-ACCOUNT-FIELDS-1.
+func (s *StrategyExecutionServer) SetAccountIdentityLookup(f func(ctx context.Context, accountID string) (*AccountIdentity, error)) {
+	s.accountIdentityLookup = f
 }
 
 // QuotaChecker provides subscription plan limit checks.

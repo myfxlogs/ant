@@ -288,6 +288,32 @@ func (s *StrategyExecutionServer) injectAccountTruth(ctx context.Context, cfg Li
 		return err
 	}
 
+	// LIVE-ACCOUNT-FIELDS-1: leverage/currency/account-mode from one mt_accounts row.
+	if s.accountIdentityLookup != nil {
+		ident, err := s.accountIdentityLookup(ctx, cfg.AccountID)
+		if err != nil {
+			if cfg.Mode == modeLive {
+				return fmt.Errorf("account identity lookup failed: %w", err)
+			}
+		} else if ident != nil {
+			lctx.Leverage = ident.Leverage
+			lctx.Currency = ident.Currency
+			lctx.AccountMode = accountModeForMTType(ident.MTType)
+		}
+	}
+	// Live identity completeness: leverage<=0 / empty currency means the
+	// authoritative row was never synced — fail closed instead of serving
+	// fabricated zeros. account_mode "" is tolerated (MT5 unknown → VM
+	// consumers fail-closed); company "" tolerated (VM fail-closed too).
+	if cfg.Mode == modeLive {
+		if lctx.Leverage <= 0 {
+			return fmt.Errorf("account leverage missing or non-positive: %d", lctx.Leverage)
+		}
+		if lctx.Currency == "" {
+			return fmt.Errorf("account currency missing")
+		}
+	}
+
 	// Investor gating: if account is investor, IsTradeAllowed must be false
 	// even when connected and trade_allowed status is true.
 	var isInvestor bool
@@ -399,4 +425,15 @@ func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig,
 	tctx.Digits = param.Digits
 	tctx.ContractSize = param.ContractSize.String()
 	tctx.StopsLevel = param.StopLevel
+}
+
+// accountModeForMTType derives margin mode from platform semantics.
+// MT4 is hedging-only (platform truth, not a lookup). MT5 margin mode is
+// per-account broker config — mtapi exposes it via AccountSummary.Method
+// but the adapter does not surface it yet; "" = unknown → VM fail-closed.
+func accountModeForMTType(mtType string) string {
+	if mtType == "mt4" {
+		return "hedging"
+	}
+	return ""
 }

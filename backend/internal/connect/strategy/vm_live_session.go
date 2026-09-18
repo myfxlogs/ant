@@ -119,6 +119,9 @@ func (s *VMLiveSession) Start(ctx context.Context, req *antv1.ExecuteLiveRequest
 	// VM-API-TRUTH-3: set account status before Init so IsConnected()/
 	// IsDemo()/IsTradeAllowed() return authoritative values during OnInit.
 	s.runner.SetAccountStatus(bctx.IsDemo, bctx.IsConnected, bctx.IsTradeAllowed)
+	// LIVE-ACCOUNT-FIELDS-1: set account identity before Init (same point as
+	// SetLogin/SetAccountStatus).
+	s.runner.SetAccountIdentity(bctx.Leverage, bctx.Currency, bctx.Company, bctx.AccountMode)
 
 	if err := s.runner.Init(ctx); err != nil {
 		return nil, fmt.Errorf("init: %w", err)
