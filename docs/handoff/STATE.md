@@ -97,9 +97,7 @@
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-17 **VM-API-TRUTH-1 批次2c ✅done** — commit 52add8ed；AccountInfo* 假分支 fail-closed+枚举对齐+26 常量（非重分类）；独立 mutation×4 RED→GREEN；明细见 registry 行 126。
-- 2026-09-17 **VM-API-TRUTH-1 批次2d ✅done** — commit a306f54e；7 timeseries API 重分类；14 真实/venue 实现保留；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
-- 2026-09-17 **VM-API-TRUTH-1 批次2e ✅done + 整债收官** — commit 69d2330b；4 重分类+4 实接；python account.profit 顺带修复；独立 mutation×3 RED→GREEN；明细见 registry 行 126（条目转 ✅done）。
+- 2026-09-17 **VM-API-TRUTH-1 批次2c/2d/2e ✅done + 整债收官** — commit 52add8ed/a306f54e/69d2330b；AccountInfo* fail-closed+7 timeseries 重分类+4 实接收官；明细 registry 行 126（批次明细滚出 LOG.md）。
 - 2026-09-18 **VM-ENUM-NUMBERING-1 ✅done** — commit 477e8273+bfb42ea3 返修R1；独立 mutation×5 RED→GREEN；TIME_MSC int32 截断 spec 缺陷已修；明细见 registry 行 219。
 - 2026-09-18 **VM-GLOBAL-ARRAY-DECL-1 ✅done** — commit da902af6（自审计修正版派工单 @37358629）；独立 mutation×4 RED→GREEN；明细见 registry 行 220。
 - 2026-09-18 **ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done** — commit 2739f100（派工单 @0461ff34）；12 站 signalMode 前移+nil-broker→fatal；独立 mutation×3 RED→GREEN；另立 TRADE-BUILTIN-ERR-SWALLOW-1；明细 registry 行 215。
@@ -110,5 +108,6 @@
 - 2026-09-16 **VM-API-TRUTH-1 批次1/2a ✅done + VM 质量方案 v2 全量收官 + registry 全量对账** — 明细已滚出 LOG.md；registry 行 126/88/87。
 - 2026-09-19 **registry 簿记修正 + pre-commit 续行校验修复** — 20 处陈旧 🟦open 续行格（L165-189，5 父条目 2026-08-27 验收已含其工作）翻正为 ✅done；VM-CACHE-INTEGRITY-1/2 状态格 🟦open 前缀同为漂移残留（D-REVERT 对账已验收 08-26）一并翻正——**从 open 队列移除，非待复审项**；hook 修正：无短ID首格续行去留随父条目（删 CQ-5 负向实测仍拦截）；明细 registry 行 124/129/164-189。
 - 2026-09-19 **MQL-LOOP-4 ✅done（条目漂移翻正+弱 pin 补强）** — 独立复审实证 T5 实盘门控/T4 useAIFix/K3/CI/COV/C1 全部已在库（commit 0ef2638b，08-08），"P2 暂缓"系登记漂移；原 RejectsLive 弱 pin 摘门不红已补强（contains "fatal coverage"），同 mutation 精确 RED→restore 4/4 GREEN；明细 registry 行 21。
+- 2026-09-19 **LLM-CONFIG-1 ✅done（条目漂移翻正）** — 独立复审实证 Temperature/TimeoutSeconds 死字段已由 43f1e20a（09-08）修复——UI AdvancedForm 可配→DB→chat_failover populate→请求体/http.Client.Timeout 全链消费；mutation 改 defaultTemperature→TestDefaultTemperature 精确 RED→restore 4/4 GREEN；明细 registry 行 95。
 
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
