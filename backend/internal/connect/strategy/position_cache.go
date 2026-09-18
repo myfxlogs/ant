@@ -126,6 +126,14 @@ func (c *PositionCache) put(snap *mthub.PositionSnapshot, receivedAt time.Time) 
 		merged.PositionsAuthoritative = true
 		merged.PositionsCapturedAt = current.PositionsCapturedAt
 		merged.PositionsSource = current.PositionsSource
+	} else {
+		// SNAPSHOT-SLICE-ALIAS-1: stored slices must be cache-private —
+		// the incoming snap is shared with other broker subscribers
+		// (positions-authoritative path / no authoritative current).
+		merged.Positions = append([]mthub.PositionSnapshotItem(nil), snap.Positions...)
+		merged.PendingOrders = append([]mthub.PositionSnapshotItem(nil), snap.PendingOrders...)
+		// PositionsAuthoritative/provenance: keep snap's own values
+		// (merged = *snap already carries them; do NOT overwrite).
 	}
 	// B7: clear ephemeral trigger metadata from retained cache state.
 	merged.UpdateTicket = 0
@@ -152,11 +160,26 @@ func (c *PositionCache) Unsubscribe(accountID string) {
 	c.mu.Unlock()
 }
 
+// snapshotCopy returns a copy whose Positions/PendingOrders are
+// cache-private; callers may freely mutate the returned copy
+// (SNAPSHOT-SLICE-ALIAS-1).
+func snapshotCopy(s *mthub.PositionSnapshot) *mthub.PositionSnapshot {
+	if s == nil {
+		return nil
+	}
+	cp := *s
+	cp.Positions = append([]mthub.PositionSnapshotItem(nil), s.Positions...)
+	cp.PendingOrders = append([]mthub.PositionSnapshotItem(nil), s.PendingOrders...)
+	return &cp
+}
+
 // GetSnapshot returns the latest accepted snapshot without a freshness check.
+// The returned copy is cache-private and safe to mutate
+// (SNAPSHOT-SLICE-ALIAS-1).
 func (c *PositionCache) GetSnapshot(accountID string) *mthub.PositionSnapshot {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.snapshots[accountID]
+	return snapshotCopy(c.snapshots[accountID])
 }
 
 // GetFreshFinancialSnapshot returns a snapshot with fresh financials only.
@@ -175,7 +198,7 @@ func (c *PositionCache) GetFreshFinancialSnapshot(accountID string, now time.Tim
 		now.Sub(snap.CapturedAt) > AccountSnapshotMaxAge || now.Sub(finRec) > AccountSnapshotMaxAge {
 		return nil, false
 	}
-	return snap, true
+	return snapshotCopy(snap), true
 }
 
 // GetFreshPositionSnapshot returns a snapshot with fresh positions only.
@@ -199,7 +222,7 @@ func (c *PositionCache) GetFreshPositionSnapshot(accountID string, now time.Time
 		now.Sub(posCap) > AccountSnapshotMaxAge || now.Sub(posRec) > AccountSnapshotMaxAge {
 		return nil, false
 	}
-	return snap, true
+	return snapshotCopy(snap), true
 }
 
 // GetFreshTradingSnapshot returns a snapshot where BOTH financials and positions
@@ -228,7 +251,7 @@ func (c *PositionCache) GetFreshTradingSnapshot(accountID string, now time.Time)
 		now.Sub(posCap) > AccountSnapshotMaxAge || now.Sub(posRec) > AccountSnapshotMaxAge {
 		return nil, false
 	}
-	return snap, true
+	return snapshotCopy(snap), true
 }
 
 // GetFreshSnapshot is a legacy alias for GetFreshTradingSnapshot.

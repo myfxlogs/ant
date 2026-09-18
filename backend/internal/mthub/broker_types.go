@@ -11,6 +11,7 @@ import (
 // --- Position snapshots (full OpenedOrders list from OnOrderUpdate) ---
 
 // PositionSnapshot is a complete account position list pushed from OnOrderUpdate stream.
+// 契约：经 broker 投递的对象为共享只读；需改写请先自行拷贝（SNAPSHOT-SLICE-ALIAS-1）。
 type PositionSnapshot struct {
 	AccountID               string
 	UserID                  string
@@ -81,6 +82,16 @@ func NewPositionSnapshotBroker() *PositionSnapshotBroker {
 	}
 }
 
+// cloneItems deep-copies a PositionSnapshotItem slice; nil stays nil.
+func cloneItems(in []PositionSnapshotItem) []PositionSnapshotItem {
+	if in == nil {
+		return nil
+	}
+	out := make([]PositionSnapshotItem, len(in))
+	copy(out, in)
+	return out
+}
+
 func mergePositionSnapshot(current, incoming *PositionSnapshot) *PositionSnapshot {
 	if incoming == nil {
 		return current
@@ -141,6 +152,10 @@ func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 	// B7: Store a clean copy in latest WITHOUT ephemeral trigger metadata.
 	// New subscribers replaying latest must NOT see old one-shot UpdateTicket.
 	retained := *merged
+	// SNAPSHOT-SLICE-ALIAS-1: retained state must never share mutable
+	// backing arrays with objects delivered to subscribers.
+	retained.Positions = cloneItems(merged.Positions)
+	retained.PendingOrders = cloneItems(merged.PendingOrders)
 	retained.UpdateTicket = 0
 	retained.UpdateType = ""
 	retained.UpdateMagic = 0
@@ -162,12 +177,21 @@ func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 	b.mu.Unlock()
 }
 
+// Subscribe returns a channel receiving snapshots for accountID; a fresh
+// subscriber is replayed the retained snapshot as a private copy. Delivered
+// objects are shared read-only — copy before mutating
+// (SNAPSHOT-SLICE-ALIAS-1).
 func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSnapshot, func()) {
 	ch := make(chan *PositionSnapshot, 8)
 	b.mu.Lock()
 	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
+	// SNAPSHOT-SLICE-ALIAS-1: replay must hand out a private copy, never the
+	// retained snapshot itself.
 	if latest := b.latest[accountID]; latest != nil {
-		ch <- latest
+		cp := *latest
+		cp.Positions = cloneItems(latest.Positions)
+		cp.PendingOrders = cloneItems(latest.PendingOrders)
+		ch <- &cp
 	}
 	b.mu.Unlock()
 	return ch, func() {
@@ -184,14 +208,21 @@ func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSn
 }
 
 // SubscribeAll returns a channel receiving all snapshots regardless of accountID.
-// Used by the SnapshotPersister for throttled PG persistence.
+// Used by the SnapshotPersister for throttled PG persistence. Replay hands out
+// private copies; delivered objects are shared read-only — copy before
+// mutating (SNAPSHOT-SLICE-ALIAS-1).
 func (b *PositionSnapshotBroker) SubscribeAll() (<-chan *PositionSnapshot, func()) {
 	ch := make(chan *PositionSnapshot, 64)
 	b.mu.Lock()
 	b.allSubs = append(b.allSubs, ch)
+	// SNAPSHOT-SLICE-ALIAS-1: replay must hand out private copies, never the
+	// retained snapshots themselves.
 	for _, latest := range b.latest {
+		cp := *latest
+		cp.Positions = cloneItems(latest.Positions)
+		cp.PendingOrders = cloneItems(latest.PendingOrders)
 		select {
-		case ch <- latest:
+		case ch <- &cp:
 		default:
 		}
 	}

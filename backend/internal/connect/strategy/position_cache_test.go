@@ -77,3 +77,46 @@ func TestPositionCacheFinancialRefreshPreservesPositions(t *testing.T) {
 		t.Fatalf("financial-only refresh cleared authoritative positions: %+v", got)
 	}
 }
+
+// SNAPSHOT-SLICE-ALIAS-1: the cache's stored state must never share mutable
+// backing arrays with caller-owned snapshots, and returned snapshots must be
+// cache-private.
+
+// TestPositionCache_PutIsolation — mutating the caller's snapshot AFTER
+// PutSnapshot must not corrupt the stored cache state.
+//
+// Adversarial: delete put's else-branch copy → the stored merged carries the
+// incoming snap's slices → the mutation leaks into GetSnapshot → RED.
+func TestPositionCache_PutIsolation(t *testing.T) {
+	cache := NewPositionCache(nil)
+	snap := cacheSnapshot()
+	snap.Positions = []mthub.PositionSnapshotItem{{Ticket: 42}}
+	cache.PutSnapshot(snap, snap.CapturedAt)
+
+	snap.Positions[0].Ticket = 999 // caller owns this snapshot; cache must be immune
+
+	got := cache.GetSnapshot("acct-1")
+	if got == nil || len(got.Positions) != 1 || got.Positions[0].Ticket != 42 {
+		t.Fatalf("stored state corrupted by caller mutation: %+v, want Ticket 42", got)
+	}
+}
+
+// TestPositionCache_GetCopyIsolation — mutating a returned snapshot must not
+// corrupt the cache (Get* hand out private copies).
+//
+// Adversarial: restore GetSnapshot to return the stored pointer → both reads
+// alias one object → the mutation leaks → RED.
+func TestPositionCache_GetCopyIsolation(t *testing.T) {
+	cache := NewPositionCache(nil)
+	snap := cacheSnapshot()
+	snap.Positions = []mthub.PositionSnapshotItem{{Ticket: 42}}
+	cache.PutSnapshot(snap, snap.CapturedAt)
+
+	first := cache.GetSnapshot("acct-1")
+	first.Positions[0].Ticket = 999
+
+	second := cache.GetSnapshot("acct-1")
+	if second == nil || len(second.Positions) != 1 || second.Positions[0].Ticket != 42 {
+		t.Fatalf("cache corrupted via returned-snapshot mutation: %+v, want Ticket 42", second)
+	}
+}

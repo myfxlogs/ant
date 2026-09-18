@@ -352,8 +352,8 @@ func TestMergePositionSnapshot_NilCurrent(t *testing.T) {
 func TestMergePositionSnapshot_AuthoritativePending(t *testing.T) {
 	t.Parallel()
 	current := &PositionSnapshot{
-		AccountID: "acc-1",
-		Positions: []PositionSnapshotItem{{Ticket: 1}},
+		AccountID:     "acc-1",
+		Positions:     []PositionSnapshotItem{{Ticket: 1}},
 		PendingOrders: []PositionSnapshotItem{{Ticket: 3}},
 	}
 	incoming := &PositionSnapshot{
@@ -374,15 +374,15 @@ func TestMergePositionSnapshot_AuthoritativePending(t *testing.T) {
 func TestMergePositionSnapshot_PartialMerge(t *testing.T) {
 	t.Parallel()
 	current := &PositionSnapshot{
-		AccountID: "acc-1",
-		Balance:   decimal.NewFromInt(1000),
-		Positions: []PositionSnapshotItem{{Ticket: 1}},
+		AccountID:     "acc-1",
+		Balance:       decimal.NewFromInt(1000),
+		Positions:     []PositionSnapshotItem{{Ticket: 1}},
 		PendingOrders: []PositionSnapshotItem{{Ticket: 3}},
 	}
 	incoming := &PositionSnapshot{
-		AccountID:                "acc-1",
-		Balance:                  decimal.NewFromInt(2000),
-		FinancialsAuthoritative:  true,
+		AccountID:               "acc-1",
+		Balance:                 decimal.NewFromInt(2000),
+		FinancialsAuthoritative: true,
 		// No authoritative positions/pending — should keep current
 	}
 	merged := mergePositionSnapshot(current, incoming)
@@ -394,5 +394,75 @@ func TestMergePositionSnapshot_PartialMerge(t *testing.T) {
 	}
 	if len(merged.PendingOrders) != 1 || merged.PendingOrders[0].Ticket != 3 {
 		t.Fatalf("pending orders not retained: %+v", merged.PendingOrders)
+	}
+}
+
+// SNAPSHOT-SLICE-ALIAS-1: the broker's retained state must never share
+// mutable backing arrays with delivered objects.
+
+// TestPositionSnapshotBroker_RetainedIsolation — mutating a DELIVERED
+// snapshot must not corrupt the broker's retained state (a late subscriber's
+// replay still sees the original values).
+//
+// Adversarial: delete Publish's retained cloneItems → retained shares the
+// delivered slices → the mutation leaks into replay → RED.
+func TestPositionSnapshotBroker_RetainedIsolation(t *testing.T) {
+	t.Parallel()
+	b := NewPositionSnapshotBroker()
+	ch1, cancel1 := b.Subscribe("acc-1")
+	defer cancel1()
+
+	b.Publish(&PositionSnapshot{
+		AccountID: "acc-1", Balance: decimal.NewFromInt(10000),
+		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
+		PositionsAuthoritative: true,
+		Positions:              []PositionSnapshotItem{{Ticket: 42}},
+	})
+	ev := <-ch1
+
+	ev.Positions[0].Ticket = 999 // delivered objects are shared read-only by contract; corrupt them
+
+	ch2, cancel2 := b.Subscribe("acc-1")
+	defer cancel2()
+	select {
+	case replay := <-ch2:
+		if len(replay.Positions) != 1 || replay.Positions[0].Ticket != 42 {
+			t.Fatalf("replay sees corrupted retained state: %+v, want Ticket 42", replay.Positions)
+		}
+	default:
+		t.Fatal("late subscriber did not receive retained replay")
+	}
+}
+
+// TestPositionSnapshotBroker_ReplayIsolation — mutating a REPLAYED snapshot
+// must not corrupt the retained state that later subscribers replay.
+//
+// Adversarial: delete Subscribe's replay copy → both subscribers get the
+// retained pointer → the mutation leaks → RED.
+func TestPositionSnapshotBroker_ReplayIsolation(t *testing.T) {
+	t.Parallel()
+	b := NewPositionSnapshotBroker()
+	b.Publish(&PositionSnapshot{
+		AccountID: "acc-1", Balance: decimal.NewFromInt(10000),
+		FinancialsAuthoritative: true, FinancialsSource: "account_summary",
+		PositionsAuthoritative: true,
+		Positions:              []PositionSnapshotItem{{Ticket: 42}},
+	})
+
+	ch1, cancel1 := b.Subscribe("acc-1")
+	ev := <-ch1
+	cancel1()
+
+	ev.Positions[0].Ticket = 999 // corrupt the replayed copy
+
+	ch2, cancel2 := b.Subscribe("acc-1")
+	defer cancel2()
+	select {
+	case replay := <-ch2:
+		if len(replay.Positions) != 1 || replay.Positions[0].Ticket != 42 {
+			t.Fatalf("second replay sees corrupted retained state: %+v, want Ticket 42", replay.Positions)
+		}
+	default:
+		t.Fatal("second subscriber did not receive retained replay")
 	}
 }
