@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede）/**PY-DECIMAL-CTOR-1 ✅done**（e928722c）。**PY-SCOPE-KNOWN-1 ✅done**（373ca8d6）。**TZ-PAIRED-CST-COLS-1 ✅done**（aed6ff70）。**LIVE-ACCOUNT-FIELDS-1 ✅done**（45767c9f）。**ACCOUNT-MARGIN-LEVEL-PCT-1 ✅done**（ac509e20，Devin CLI 验收 2026-09-19）。**DATA-TRUTH-3 ✅done**（de1d0975）。**MT5-ACCMETHOD-ADAPTER-1 ✅done**（4578cb4e，Devin CLI 验收 2026-09-19）。下一：当前批收官——剩余 open 全为暂缓/低优项，择债评估。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede）/**PY-DECIMAL-CTOR-1 ✅done**（e928722c）。**PY-SCOPE-KNOWN-1 ✅done**（373ca8d6）。**TZ-PAIRED-CST-COLS-1 ✅done**（aed6ff70）。**LIVE-ACCOUNT-FIELDS-1 ✅done**（45767c9f）。**ACCOUNT-MARGIN-LEVEL-PCT-1 ✅done**（ac509e20，Devin CLI 验收 2026-09-19）。**DATA-TRUTH-3 ✅done**（de1d0975）。**MT5-ACCMETHOD-ADAPTER-1 ✅done**（4578cb4e，Devin CLI 验收 2026-09-19）。**MQL-LOOP-4 ✅done**（条目漂移翻正+弱 pin 补强）。**LLM-CONFIG-1 ✅done**（条目漂移翻正，43f1e20a 已修复）。**MQL-COMPILER-LOCAL-ARRAYS 设计实查完成**——派工单 `builder-handoff-mql-compiler-local-arrays.md`，另实证 `ArrayResize` 全局静默无效+局部初始化器静默误编译两活 bug。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -19,14 +19,12 @@
 | VM-RUNTIME-FAILCLOSED-2 静默算术/栈/槽位 fail-closed | ✅done | Devin CLI 验收通过 2026-09-16；commit 4fea9439；S1-S4 setStackError 全覆盖+OP_STORE_VAR 栈泄漏修复；7 行为测试+独立 mutation×4 重跑 RED→GREEN；机检独立复测全绿；分立债 VM-ARRAY-OOB-FAILCLOSED-1(P2)/VM-FUNC-FATAL-DELAY-1(P3) |
 | VM-HONESTY-3-REVIEW 死分支解耦+R06 非致命对抗 | ✅done | Devin CLI 验收通过 2026-09-16；commit 5816d7e9；S1 死分支 iNonExistentIndicator+MA3/200bars 产 10 trades 证 IsReliable=false 仅来自 fatal loop（非 <10 trades 兜底）；S2 R06 warning blind spot 证 loop 不误伤+强断言 IsReliable=true（替换原弱容忍 false）；独立 mutation×2 RED→GREEN；机检独立复测全绿；零生产代码改动 |
 | VM-COMPILER-SEMANTICS-3 switch default 顺序+break 栈清理 | ✅done | Devin CLI 验收通过 2026-09-16；commit c5d1a7e0；S1 保留 s.Cases 原始顺序（default 不抽出作 fallthrough target）+default 首位 skip JMP；S2 break JMPs patch 到 popPC（OP_POP 位置）消费 switch value；S3a 栈深度断言+S3b default 中间 fallthrough（1010）+S3c break 栈清理（15+stack=0）；独立 mutation×2 RED→GREEN；机检独立复测全绿 |
-| VM-API-TRUTH-1 MQL5 order/deal/history 22 API 重分类 | ✅done(批次1) | Devin CLI 验收通过 2026-09-16；commit e97a43b8；独立 mutation×1 RED→GREEN；明细滚出 LOG.md |
-| VM-API-TRUTH-1 批次2a platform checkup 12 API 重分类 | ✅done(批次2a) | Devin CLI 验收通过 2026-09-16；commit 8f946579；独立 mutation×1 RED→GREEN；明细滚出 LOG.md |
-| VM-API-TRUTH-1 批次2b~2e（46+8 API 重分类+假分支修复+4 实接，整债收官） | ✅done | Devin CLI 验收通过 2026-09-17；commit 1fb352f1/52add8ed/a306f54e/69d2330b；各批独立 mutation RED→GREEN+机检复测全绿；明细见 registry 行 126+LOG.md |
+| VM-API-TRUTH-1 批次1/2a/2b-2e（46+ API 重分类+假分支修复+4 实接，整债收官） | ✅done | Devin CLI 验收 2026-09-16/17；commit e97a43b8/8f946579/1fb352f1/52add8ed/a306f54e/69d2330b；明细见 registry 行 126+LOG.md |
 | VM-ARRAY-OOB-FAILCLOSED-1 数组 OOB+局部负编码 fail-closed | ✅done | Devin CLI 验收通过 2026-09-18；commit bdb3733f；明细见 registry 行 217 |
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **MT5-ACCMETHOD-ADAPTER-1 ✅done 验收**——当前批收官。剩余 🟦open：VM-LIVE-MTF-1（暂缓需求驱动）/MQL-LOOP-4（P2 暂缓）/TRON-SECURITY-1（业主暂缓）/CQ-5/CQ-10/POST-2/FEAT-3/TUNING-OVERFIT-2/MDGATEWAY-5/EXT-BOUNDARY-WAVE2/LLM-CONFIG-1/I18N-MIXED-1（低优）+VM-CACHE-INTEGRITY-1/2（历史待复审）。
+- **下一步**: **MQL-COMPILER-LOCAL-ARRAYS 施工**（派工单已发）——局部数组声明放行+OP_NEW_ARRAY/OP_ARRAY_RESIZE+locals 读写+resize 槽位回写（同治全局静默无效）。剩余 🟦open：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/CQ-5/CQ-10/POST-2/FEAT-3/TUNING-OVERFIT-2/MDGATEWAY-5/EXT-BOUNDARY-WAVE2/I18N-MIXED-1（低优）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
