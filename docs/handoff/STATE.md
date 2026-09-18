@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-API-TRUTH-1 批次1+2a+2b+2c+2d ✅done（均 Devin CLI 独立复审+独立 mutation；e97a43b8/8f946579/1fb352f1/a306f54e 重分类 46 API StatusUnsupported；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐，非重分类）。**批次2e 派工单已落档**（`batch2e.md` account noop 8 API＝4 重分类+4 实接）——API-TRUTH-1 收官批。VM-ARRAY-OOB-FAILCLOSED-1 派工单已落档（@6662b4bb，A 面 OOB+B 面局部数组负编码）。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（5 批全 Devin CLI 独立复审+独立 mutation；重分类 46 API StatusUnsupported：e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐；69d2330b 批次2e 4 重分类+4 实接）。VM-ARRAY-OOB-FAILCLOSED-1 派工单已落档（@6662b4bb，A 面 OOB+B 面局部数组负编码）。VM-ENUM-NUMBERING-1 设计实查进行中（Devin CLI）。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -24,9 +24,10 @@
 || VM-API-TRUTH-1 批次2b account/symbol stub 5 API 重分类 | ✅done(批次2b) | Devin CLI 验收通过 2026-09-17；commit 1fb352f1；AccountStopoutMode/AccountCredit+SymbolInfoMarginRate/SessionQuote/SessionTrade→StatusUnsupported；独立 mutation×1 RED→GREEN；机检独立复测全绿 |
 || VM-API-TRUTH-1 批次2c AccountInfo* 假分支+枚举编号 | ✅done(批次2c) | Devin CLI 验收通过 2026-09-17；commit 52add8ed；假分支 fail-closed+真分支接源+prop 编号对齐真枚举+26 命名常量；非重分类；独立 mutation×4 RED→GREEN |
 || VM-API-TRUTH-1 批次2d timeseries 7 API 重分类 | ✅done(批次2d) | Devin CLI 验收通过 2026-09-17；commit a306f54e；CopyBuffer/CopyRates/iSpread/CopySpread/CopyTicks/BarsCalculated/SeriesInfoInteger→StatusUnsupported；14 真实/venue 实现保留；独立 mutation×1 RED→GREEN |
+|| VM-API-TRUTH-1 批次2e account noop 8 API（收官批） | ✅done(批次2e) | Devin CLI 验收通过 2026-09-17；commit 69d2330b；4 重分类+4 实接（AccountProfit=Equity−Balance/Currency/Company 接源/FreeMarginCheck 计算）；python account.profit 顺带修复；独立 mutation×3 RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **VM-API-TRUTH-1 批次2e 开工指令已发**（收官批）——施工方读 `docs/audits/builder-handoff-vm-api-truth-1-batch2e.md` 按 S1 施工；等待 `[施工完成:VM-API-TRUTH-1-批次2e] @<hash>` 后 Devin CLI 独立复审。**后续队列**：VM-ENUM-NUMBERING-1（prop-switch 枚举编号偏移审计）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，OOB+局部数组负编码，派工单 @6662b4bb）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**（P2，派工单 @6662b4bb 已就绪）——施工方读 `docs/audits/builder-handoff-vm-array-oob-failclosed-1.md` 按 S1 施工；等待 `[施工完成:VM-ARRAY-OOB-FAILCLOSED-1] @<hash>` 后 Devin CLI 独立复审。Devin CLI 并行做 **VM-ENUM-NUMBERING-1 设计实查**（SymbolInfo*/MarketInfo prop 编号对齐真枚举）。**后续队列**：VM-ENUM-NUMBERING-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -91,7 +92,7 @@
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
-- **VM-API-TRUTH-1** 🟦open（批次1+2a+2b+2c+2d ✅done） — e97a43b8/8f946579/1fb352f1/a306f54e 重分类 46 API；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐（非重分类，独立 mutation×4）；批次2e（收官批 account noop 8 API）开工中
+- **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
 
 ## 最近变更日志
 
@@ -100,6 +101,8 @@
 - 2026-09-17 **VM-API-TRUTH-1 批次2b ✅done** — commit 1fb352f1；5 stub API 重分类；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2c ✅done** — commit 52add8ed；AccountInfo* 假分支 fail-closed+枚举对齐+26 常量（非重分类）；独立 mutation×4 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2d ✅done** — commit a306f54e；7 timeseries API 重分类；14 真实/venue 实现保留；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
+- 2026-09-17 **VM-API-TRUTH-1 批次2e ✅done + 整债收官** — commit 69d2330b；4 重分类+4 实接；python account.profit 顺带修复；独立 mutation×3 RED→GREEN；明细见 registry 行 126（条目转 ✅done）。
+- 2026-09-17 **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**：`docs/audits/builder-handoff-vm-array-oob-failclosed-1.md @6662b4bb`（A 面 OOB fail-closed+B 面局部数组负编码）。
 - 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
 - 2026-09-17 **批次2d 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md`（timeseries 无源/handle 7 API 重分类）。
 - 2026-09-17 **批次2c 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md @64c6efc3`（AccountInfoDouble/Integer/String 假分支修复+枚举编号对齐，非重分类）。
