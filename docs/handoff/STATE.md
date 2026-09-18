@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **P3 批择债设计实查**——候选：TRADE-BUILTIN-ERR-SWALLOW-1（broker error 吞没，需 RetCode/error 语义审计）/ VM-FUNC-FATAL-DELAY-1 / TEST-WAITSTATE / SNAPSHOT-SLICE / PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **转发 TRADE-BUILTIN-ERR-SWALLOW-1 开工指令**（派工单已落档）；后续队列：VM-FUNC-FATAL-DELAY-1 / TEST-WAITSTATE / SNAPSHOT-SLICE / PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -91,7 +91,7 @@
 - **VM-GLOBAL-ARRAY-DECL-1** ✅done — 全局数组端到端修复+4 错标点编译期显式拒（Devin CLI 验收 2026-09-18，commit da902af6，独立 mutation×4）；明细 registry 行 220
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
-- **TRADE-BUILTIN-ERR-SWALLOW-1** 🟦open P3 — broker error 吞没→false ×11 站+RetCode 未查（ORDERSEND 实查分立）
+- **TRADE-BUILTIN-ERR-SWALLOW-1** 🟦open P3 — 设计实查完成：channel-split 裁定（err=infra→fatal；RetCode≠done→false+_LastError；""→fatal）+SimBroker 通道搬迁+engine RetCode 日志；派工单 builder-handoff-trade-builtin-err-swallow-1.md 待开工
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
 - **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
@@ -107,7 +107,6 @@
 - 2026-09-18 **VM-ENUM-NUMBERING-1 ✅done** — commit 477e8273+bfb42ea3 返修R1；独立 mutation×5 RED→GREEN；TIME_MSC int32 截断 spec 缺陷已修；明细见 registry 行 219。
 - 2026-09-18 **VM-GLOBAL-ARRAY-DECL-1 ✅done** — commit da902af6（自审计修正版派工单 @37358629）；独立 mutation×4 RED→GREEN；明细见 registry 行 220。
 - 2026-09-18 **ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done** — commit 2739f100（派工单 @0461ff34）；12 站 signalMode 前移+nil-broker→fatal；独立 mutation×3 RED→GREEN；另立 TRADE-BUILTIN-ERR-SWALLOW-1；明细 registry 行 215。
-- 2026-09-18 **VM-ARRAY-OOB-FAILCLOSED-1 ✅done** — commit bdb3733f（修订派工单 @d7f74310）；独立 mutation×4 RED→GREEN；明细见 registry 行 217。
 - 2026-09-17 **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**：`docs/audits/builder-handoff-vm-array-oob-failclosed-1.md @6662b4bb`（A 面 OOB fail-closed+B 面局部数组负编码）。
 - 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
 - 2026-09-17 **批次2d 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md`（timeseries 无源/handle 7 API 重分类）。
