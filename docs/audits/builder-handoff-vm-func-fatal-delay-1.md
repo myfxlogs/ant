@@ -102,3 +102,13 @@ git diff --check
 ## 6. 回报格式
 
 `[施工完成:VM-FUNC-FATAL-DELAY-1] @<commit-hash>` + 机检五件套 + mutation 证据。勿部署、勿 push、禁 `--no-verify`。
+
+---
+
+## 修订记录（2026-09-18 Devin CLI 复审 R1）
+
+**施工方 spec 缺陷报告核实**：mutation#2（break 形态）经独立实证**确无可观测 RED**——break 后各帧 loop-top 同型检查级联净返回至 runLoop，err 文本/g_after/g2 断言全部等价（仅上报层不同）。施工方如实上报而非伪造 RED，正确处置。S3#2 从验收项剔除。
+
+**复审新发现（需返工）**：测试 (c) `TestEntryFatalStopsFunctionBody` 只断言 err 含 "VM fatal"——M1（摘除检查）下仍 PASS：popN fatal 后 body `OP_PUSH_CONST` 照执行（栈推 7）→ OP_RETURN 净返回 → runLoop 顶检查才拦，错误文本相同。**未观测"函数体不执行"**。
+
+**返工项**：(c) 补判别断言 `len(vm.stack)==0`（修复后检查先于取指，栈空；变异后 body 推 7→栈=1）。一行改动使 (c) 独立判别入口 fatal 场景。
