@@ -11,6 +11,29 @@ import (
 
 // ── MQL4 trade builtins ──────────────────────────────────────────────
 
+// mqlErrFromRetCode maps a business-rejection RetCode to its real MQL4
+// _LastError code. Values come from the interp.MQLConstants ERR_* table
+// (TRADE-BUILTIN-ERR-SWALLOW-1 §1f). RetDone/RetDonePartial never reach here;
+// unknown codes conservatively map to the generic-rejection approximation.
+func mqlErrFromRetCode(rc sdk.RetCode) int32 {
+	switch rc {
+	case sdk.RetNoMoney:
+		return 134 // ERR_NOT_ENOUGH_MONEY
+	case sdk.RetInvalidVolume:
+		return 131 // ERR_INVALID_TRADE_VOLUME
+	case sdk.RetOffQuotes:
+		return 136 // ERR_OFF_QUOTES
+	case sdk.RetInvalidPrice:
+		return 13 // ERR_INVALID_PRICE (table value)
+	case sdk.RetTooManyOrders:
+		return 148 // ERR_TOO_MANY_ORDERS
+	case sdk.RetRiskBlocked:
+		return 4109 // ERR_TRADE_NOT_ALLOWED
+	default:
+		return 146 // ERR_TRADE_CONTEXT_BUSY — generic rejection approximation
+	}
+}
+
 func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 	// OrderSend(symbol, cmd, volume, price, slippage, sl, tp, comment, magic, expiration, color)
 	symbol := argS(args, 0)
@@ -76,8 +99,19 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 		// VM-RUNTIME-FAILCLOSED-1: propagate broker error (was swallowed as nil).
 		return interp.IntVal(-1), fmt.Errorf("OrderSend broker error: %w", err)
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.IntVal(int32(result.Ticket)), nil
+	// TRADE-BUILTIN-ERR-SWALLOW-1: business results travel on the RetCode
+	// channel — rejections become -1 + _LastError (real MQL semantics), not
+	// a fatal that kills the whole backtest.
+	switch result.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.IntVal(int32(result.Ticket)), nil
+	case "":
+		return interp.IntVal(-1), fmt.Errorf("OrderSend: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(result.RetCode)
+		return interp.IntVal(-1), nil
+	}
 }
 
 func mapOrderCmd(cmd int32, req *sdk.OrderRequest) {
@@ -631,12 +665,20 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("CTrade order: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().OrderSend(req)
+	res, err := vm.ctx.Broker().OrderSend(req)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade order broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("CTrade order: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 // ctradeTypeToSignalAction converts CTrade order type + side to sdk.SignalAction.

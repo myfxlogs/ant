@@ -1,7 +1,6 @@
 package backtest
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -140,7 +139,7 @@ func (b *SimBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 		margin := notional.Div(decimal.NewFromInt(int64(b.config.Leverage)))
 		equityWithFloating := b.Account().Equity
 		if equityWithFloating.LessThan(margin) {
-			return sdk.OrderResult{RetCode: sdk.RetNoMoney}, fmt.Errorf("insufficient margin")
+			return sdk.OrderResult{RetCode: sdk.RetNoMoney}, nil // insufficient margin → RetNoMoney
 		}
 		b.positions = append(b.positions, rec)
 	} else {
@@ -211,7 +210,7 @@ func (b *SimBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.Ord
 			return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket, Volume: closeVol, Price: closePrice}, nil
 		}
 	}
-	return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("ticket %d not found", ticket)
+	return sdk.OrderResult{RetCode: sdk.RetRejected}, nil // ticket not found
 }
 
 func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, error) {
@@ -228,13 +227,13 @@ func (b *SimBroker) PositionCloseBy(ticket1, ticket2 int64) (sdk.OrderResult, er
 		}
 	}
 	if pos1 == nil || pos2 == nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("one or both tickets not found")
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil // one or both tickets not found
 	}
 	if pos1.Side == pos2.Side {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("positions must be opposite sides")
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil // positions must be opposite sides
 	}
 	if pos1.Symbol != pos2.Symbol {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("positions must be same symbol")
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, nil // positions must be same symbol
 	}
 
 	baseClosePrice := pos1.ClosePrice

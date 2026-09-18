@@ -32,12 +32,20 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("OrderClose: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
+	res, err := vm.ctx.Broker().PositionClose(ticket, volume)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderClose broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("OrderClose: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -56,12 +64,20 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("OrderCloseBy: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionCloseBy(ticket1, ticket2)
+	res, err := vm.ctx.Broker().PositionCloseBy(ticket1, ticket2)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderCloseBy broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("OrderCloseBy: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -84,13 +100,30 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("OrderModify: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
+	res, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderModify broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("OrderModify: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
 	if !price.IsZero() {
 		if pm, ok := vm.ctx.Broker().(pendingPriceModifier); ok {
-			if _, err := pm.PositionModifyPrice(ticket, price); err != nil {
+			res, err := pm.PositionModifyPrice(ticket, price)
+			if err != nil {
+				return interp.BoolVal(false), fmt.Errorf("OrderModify broker error: %w", err)
+			}
+			switch res.RetCode {
+			case sdk.RetDone, sdk.RetDonePartial:
+			case "":
+				return interp.BoolVal(false), fmt.Errorf("OrderModify: broker returned empty RetCode")
+			default:
+				vm.lastError = mqlErrFromRetCode(res.RetCode)
 				return interp.BoolVal(false), nil
 			}
 		}
@@ -113,12 +146,20 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("OrderDelete: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().OrderDelete(ticket)
+	res, err := vm.ctx.Broker().OrderDelete(ticket)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderDelete broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("OrderDelete: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -136,12 +177,20 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClose: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionClose(ticket, decimal.Zero)
+	res, err := vm.ctx.Broker().PositionClose(ticket, decimal.Zero)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClose broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClose: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -160,12 +209,20 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClosePartial: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
+	res, err := vm.ctx.Broker().PositionClose(ticket, volume)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClosePartial broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClosePartial: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -184,12 +241,20 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionCloseBy: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionCloseBy(t1, t2)
+	res, err := vm.ctx.Broker().PositionCloseBy(t1, t2)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionCloseBy broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionCloseBy: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -210,12 +275,20 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionModify: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
+	res, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionModify broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionModify: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -232,12 +305,20 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 	if vm.ctx.Broker() == nil {
 		return interp.BoolVal(false), fmt.Errorf("CTrade.OrderDelete: no broker in the VM")
 	}
-	_, err := vm.ctx.Broker().OrderDelete(ticket)
+	res, err := vm.ctx.Broker().OrderDelete(ticket)
 	if err != nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.OrderDelete broker error: %w", err)
+	}
+	switch res.RetCode {
+	case sdk.RetDone, sdk.RetDonePartial:
+		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+		return interp.BoolVal(true), nil
+	case "":
+		return interp.BoolVal(false), fmt.Errorf("CTrade.OrderDelete: broker returned empty RetCode")
+	default:
+		vm.lastError = mqlErrFromRetCode(res.RetCode)
 		return interp.BoolVal(false), nil
 	}
-	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-	return interp.BoolVal(true), nil
 }
 
 func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
@@ -255,9 +336,19 @@ func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 	positions := vm.ctx.Broker().Positions(0)
 	allOK := true
 	for _, pos := range positions {
-		_, err := vm.ctx.Broker().PositionClose(pos.Ticket, decimal.Zero)
+		res, err := vm.ctx.Broker().PositionClose(pos.Ticket, decimal.Zero)
 		if err != nil {
+			return interp.BoolVal(false), fmt.Errorf("CloseAll broker error: %w", err)
+		}
+		switch res.RetCode {
+		case sdk.RetDone, sdk.RetDonePartial:
+		case "":
+			return interp.BoolVal(false), fmt.Errorf("CloseAll: broker returned empty RetCode")
+		default:
+			// Aggregation semantics kept: a partial failure = overall false,
+			// recorded in _LastError instead of being silently swallowed.
 			allOK = false
+			vm.lastError = mqlErrFromRetCode(res.RetCode)
 		}
 	}
 	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1

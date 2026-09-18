@@ -396,7 +396,7 @@ func (b *cacheTestBroker) PositionClose(ticket int64, volume decimal.Decimal) (s
 	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 }
 func (b *cacheTestBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
-	return sdk.OrderResult{Ticket: 1}, nil
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: 1}, nil
 }
 
 // accountTestContext implements sdk.Context for AccountNumber/IsTesting tests.

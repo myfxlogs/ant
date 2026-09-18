@@ -245,7 +245,7 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 		if sig.Price.IsPositive() {
 			price = sig.Price
 		}
-		if _, err := e.broker.OrderSend(sdk.OrderRequest{
+		if res, err := e.broker.OrderSend(sdk.OrderRequest{
 			Symbol:     sig.Symbol,
 			Side:       side,
 			Type:       ot,
@@ -257,25 +257,37 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 			Magic:      sig.Magic,
 		}); err != nil {
 			fmt.Fprintf(os.Stderr, "backtest: OrderSend error at bar %d: %v\n", e.broker.currentBar, err)
+		} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+			// TRADE-BUILTIN-ERR-SWALLOW-1: business rejections travel on the
+			// RetCode channel — log them or they vanish silently.
+			fmt.Fprintf(os.Stderr, "backtest: OrderSend rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
 		}
 	case sdk.ActionClose:
-		if _, err := e.broker.PositionClose(sig.OrderTicket, decimal.Zero); err != nil {
+		if res, err := e.broker.PositionClose(sig.OrderTicket, decimal.Zero); err != nil {
 			fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+		} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+			fmt.Fprintf(os.Stderr, "backtest: PositionClose rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
 		}
 	case sdk.ActionCancel:
-		if _, err := e.broker.OrderDelete(sig.OrderTicket); err != nil {
+		if res, err := e.broker.OrderDelete(sig.OrderTicket); err != nil {
 			fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+		} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+			fmt.Fprintf(os.Stderr, "backtest: OrderDelete rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
 		}
 	case sdk.ActionCloseAll:
 		for _, p := range e.broker.Positions(sig.Magic) {
-			if _, err := e.broker.PositionClose(p.Ticket, decimal.Zero); err != nil {
+			if res, err := e.broker.PositionClose(p.Ticket, decimal.Zero); err != nil {
 				fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+			} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+				fmt.Fprintf(os.Stderr, "backtest: PositionClose rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
 			}
 		}
 	case sdk.ActionCancelAll:
 		for _, o := range e.broker.Orders(sig.Magic) {
-			if _, err := e.broker.OrderDelete(o.Ticket); err != nil {
+			if res, err := e.broker.OrderDelete(o.Ticket); err != nil {
 				fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+			} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+				fmt.Fprintf(os.Stderr, "backtest: OrderDelete rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
 			}
 		}
 	}

@@ -401,7 +401,11 @@ var MQLConstants = map[string]Value{
 	"ERR_TRADE_MODIFY_DENIED":      IntVal(145),
 	"ERR_TRADE_CONTEXT_BUSY":       IntVal(146),
 	"ERR_TRADE_EXPIRATION_DENIED":  IntVal(147),
-	"ERR_USER_ERROR_FIRST":         IntVal(65536),
+	"ERR_TOO_MANY_ORDERS":          IntVal(148),
+	// ERR_TRADE_NOT_ALLOWED uses the real (large) MQL4 code 4109; placed at
+	// segment end to keep the table ordered.
+	"ERR_TRADE_NOT_ALLOWED": IntVal(4109),
+	"ERR_USER_ERROR_FIRST":  IntVal(65536),
 
 	// ── MQL5 symbol info constants ─────────────────────────────────────
 	// VM-ENUM-NUMBERING-1: values aligned to the real MQL5

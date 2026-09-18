@@ -20,19 +20,19 @@ type testBroker struct {
 }
 
 func (b *testBroker) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
-	return sdk.OrderResult{Ticket: 1}, nil
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: 1}, nil
 }
 func (b *testBroker) PositionClose(ticket int64, volume decimal.Decimal) (sdk.OrderResult, error) {
-	return sdk.OrderResult{Ticket: ticket}, nil
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 }
 func (b *testBroker) PositionCloseBy(t1, t2 int64) (sdk.OrderResult, error) {
 	return sdk.OrderResult{Ticket: t1}, nil
 }
 func (b *testBroker) PositionModify(ticket int64, sl, tp decimal.Decimal) (sdk.OrderResult, error) {
-	return sdk.OrderResult{Ticket: ticket}, nil
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 }
 func (b *testBroker) OrderDelete(ticket int64) (sdk.OrderResult, error) {
-	return sdk.OrderResult{Ticket: ticket}, nil
+	return sdk.OrderResult{RetCode: sdk.RetDone, Ticket: ticket}, nil
 }
 func (b *testBroker) Positions(magic int32) []sdk.Position  { return nil }
 func (b *testBroker) Orders(magic int32) []sdk.PendingOrder { return nil }

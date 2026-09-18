@@ -4,6 +4,14 @@ import "github.com/shopspring/decimal"
 
 // Broker provides trading operations to strategies.
 // All methods are synchronous — they block until the broker responds.
+//
+// TRADE-BUILTIN-ERR-SWALLOW-1 dual-channel contract for write methods:
+//   - error   = infrastructure failure (executor missing, transport error,
+//     panic) — the VM must fail closed (fatal).
+//   - RetCode = business result (rejection, insufficient margin, invalid
+//     price/volume) — the VM must return false/-1 and map it to MQL
+//     _LastError.
+//   - RetCode on the error path is meaningless (builtins check err first).
 type Broker interface {
 	// OrderSend places a new order (market or pending).
 	OrderSend(req OrderRequest) (OrderResult, error)
