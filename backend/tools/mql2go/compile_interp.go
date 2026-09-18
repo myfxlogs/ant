@@ -171,11 +171,49 @@ func (c *compiler) collectParam(ir *interp.IR, n *sitter.Node) {
 	}
 }
 
+// parseArrayDeclarator inspects an array_declarator node: extracts the
+// variable name (direct identifier child), the dimension (direct
+// number_literal child), and detects multi-dimensional declarations
+// (nested array_declarator). ok=false when n is not an array_declarator.
+// VM-GLOBAL-ARRAY-DECL-1: declaration-site nodes are array_declarator, not
+// subscript_expression (findArraySize never fired on this path).
+func (c *compiler) parseArrayDeclarator(n *sitter.Node) (name string, size int, multiDim bool, ok bool) {
+	if n.Type() != "array_declarator" {
+		return "", 0, false, false
+	}
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		child := n.NamedChild(i)
+		switch child.Type() {
+		case nodeIdentifier:
+			if nm := c.text(child); !isMQLPrimitiveType(nm) && name == "" {
+				name = nm
+			}
+		case "number_literal":
+			fmt.Sscanf(c.text(child), "%d", &size)
+		case "array_declarator":
+			multiDim = true
+		}
+	}
+	return name, size, multiDim, true
+}
+
 func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 	typeName := c.findType(n)
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		if child.Type() == "init_declarator" {
+			// VM-GLOBAL-ARRAY-DECL-1: any initializer on an array declarator
+			// is rejected unconditionally — `int g[2]={1,2}` (initializer_list)
+			// and `int g[2]=5` (scalar) are both unsupported, and collecting
+			// without the initializer would silently drop data.
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				if sub := child.NamedChild(j); sub.Type() == "array_declarator" {
+					if c.err == nil {
+						c.err = fmt.Errorf("global array initializer not supported: %s", c.findIdent(sub))
+					}
+					return
+				}
+			}
 			name := c.findIdent(child)
 			if name == "" {
 				continue
@@ -193,6 +231,43 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 				gv.InitVal = c.compileExpr(valExpr)
 			}
 			ir.Globals = append(ir.Globals, gv)
+		} else if child.Type() == "array_declarator" {
+			// VM-GLOBAL-ARRAY-DECL-1: global array declarations were silently
+			// dropped before (no array_declarator case), so no global array
+			// ever reached initGlobals — every subscript on one silently
+			// returned NoneVal / dropped writes.
+			name, size, multiDim, ok := c.parseArrayDeclarator(child)
+			if !ok {
+				continue
+			}
+			// Multi-dimensional check BEFORE the name fallback: the identifier
+			// of `int g[2][3]` lives in the INNER array_declarator, so name is
+			// empty at this level — fall back to the raw source text.
+			if multiDim {
+				if c.err == nil {
+					label := name
+					if label == "" {
+						label = c.text(child)
+					}
+					c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", label)
+				}
+				return
+			}
+			if name == "" {
+				continue
+			}
+			if size <= 0 {
+				if c.err == nil {
+					c.err = fmt.Errorf("array size required: %s", name)
+				}
+				return
+			}
+			ir.Globals = append(ir.Globals, interp.GlobalVar{
+				Name:      name,
+				Type:      typeName,
+				IsArray:   true,
+				ArraySize: size,
+			})
 		} else if child.Type() == "declarator" {
 			name := c.findIdent(child)
 			if name == "" {
@@ -631,6 +706,24 @@ func (c *compiler) collectFuncParams(n *sitter.Node) []interp.ParamDecl {
 					for k := 0; k < int(fc.NamedChildCount()); k++ {
 						pd := fc.NamedChild(k)
 						if pd.Type() == "parameter_declaration" {
+							// VM-GLOBAL-ARRAY-DECL-1: array parameters were
+							// silently dropped (findIdent cannot see the
+							// identifier nested in array_declarator), so the
+							// function body read a phantom global — MQL
+							// by-reference array semantics are unsupported;
+							// reject explicitly before the append.
+							for m := 0; m < int(pd.NamedChildCount()); m++ {
+								if decl := pd.NamedChild(m); decl.Type() == "array_declarator" {
+									if c.err == nil {
+										name := c.findIdent(decl)
+										if name == "" {
+											name = c.text(pd)
+										}
+										c.err = fmt.Errorf("array parameters not supported: %s", name)
+									}
+									return nil
+								}
+							}
 							pName := c.findIdent(pd)
 							pType := c.findType(pd)
 							if pName != "" {

@@ -282,6 +282,31 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 		}
 	}
 
+	// Subscript assignment: arr[i] = value — must be checked BEFORE
+	// findIdent(lhs), which would find "arr" and mis-compile the element
+	// write as a whole-slot scalar store, silently dropping the subscript
+	// (VM-GLOBAL-ARRAY-DECL-1).
+	if lhs.Type() == "subscript_expression" {
+		if op != "=" {
+			if c.err == nil {
+				c.err = fmt.Errorf("compound assignment on array element not supported: %s", c.text(lhs))
+			}
+			return nil
+		}
+		subExpr := c.compileSubscript(lhs)
+		if subExpr == nil {
+			if c.err == nil {
+				c.err = fmt.Errorf("unsupported subscript assignment: %s", c.text(lhs))
+			}
+			return nil
+		}
+		// Mark the write form stack-neutral (OP_STORE_ARRAY pops 2, pushes
+		// nothing) — isStackNeutral checks IsAssign, mirroring the field path.
+		subExpr.IsAssign = true
+		subExpr.Args = []interp.Expr{c.mustExpr(rhs)}
+		return subExpr
+	}
+
 	// Simple variable assignment: x = value (or x += value)
 	name := c.findIdent(lhs)
 	if name != "" {
@@ -300,19 +325,21 @@ func (c *compiler) compileAssignment(n *sitter.Node) *interp.Expr {
 		}
 	}
 
-	// Subscript assignment: arr[i] = value
-	if lhs.Type() == "subscript_expression" {
-		subExpr := c.compileSubscript(lhs)
-		if subExpr != nil {
-			subExpr.Args = []interp.Expr{c.mustExpr(rhs)}
-			return subExpr
-		}
-	}
-
 	return nil
 }
 
 func (c *compiler) compileUpdate(n *sitter.Node) *interp.Expr {
+	// VM-GLOBAL-ARRAY-DECL-1: ++/-- on an array element used to register a
+	// phantom global named "g[0]" (Name taken from raw source text) — reject
+	// explicitly instead.
+	for i := 0; i < int(n.NamedChildCount()); i++ {
+		if n.NamedChild(i).Type() == "subscript_expression" {
+			if c.err == nil {
+				c.err = fmt.Errorf("++/-- on array element not supported: %s", c.text(n))
+			}
+			return nil
+		}
+	}
 	text := c.text(n)
 	name := strings.TrimSuffix(strings.TrimSuffix(text, "++"), "--")
 	op := "++"
