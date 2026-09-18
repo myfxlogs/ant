@@ -46,22 +46,23 @@ type APISymbol struct {
 
 // unsupported reason constants (goconst: repeated strings > 5 occurrences).
 const (
-	reasonGUI               = "GUI functions are not supported"
-	reasonChart             = "chart objects are not supported"
-	reasonChartOps          = "chart operations are not supported"
-	reasonFileIO            = "file I/O is not supported"
-	reasonNetwork           = "network sockets are not supported"
-	reasonCrypto            = "cryptographic functions are not supported"
-	reasonResource          = "graphical resources are not supported"
-	reasonCustom            = "custom indicators are not supported"
-	reasonFTP               = "FTP is not supported"
-	reasonEmail             = "email is not supported"
-	reasonAudio             = "audio is not supported"
-	reasonPush              = "push notifications are not supported"
-	reasonHTTP              = "HTTP requests are not supported"
-	reasonMQL5History       = "MQL5 order/deal/history requires broker integration not available in the backtest VM"
-	reasonPlatformCheckup   = "platform/terminal checkup functions require a live terminal not available in the backtest VM"
-	reasonAccountSymbolStub = "account/symbol stub functions return fixed values without authoritative data in the backtest VM"
+	reasonGUI                = "GUI functions are not supported"
+	reasonChart              = "chart objects are not supported"
+	reasonChartOps           = "chart operations are not supported"
+	reasonFileIO             = "file I/O is not supported"
+	reasonNetwork            = "network sockets are not supported"
+	reasonCrypto             = "cryptographic functions are not supported"
+	reasonResource           = "graphical resources are not supported"
+	reasonCustom             = "custom indicators are not supported"
+	reasonFTP                = "FTP is not supported"
+	reasonEmail              = "email is not supported"
+	reasonAudio              = "audio is not supported"
+	reasonPush               = "push notifications are not supported"
+	reasonHTTP               = "HTTP requests are not supported"
+	reasonMQL5History        = "MQL5 order/deal/history requires broker integration not available in the backtest VM"
+	reasonPlatformCheckup    = "platform/terminal checkup functions require a live terminal not available in the backtest VM"
+	reasonAccountSymbolStub  = "account/symbol stub functions return fixed values without authoritative data in the backtest VM"
+	reasonTimeseriesNoSource = "timeseries functions returning fixed values or fake success without authoritative data in the backtest VM"
 )
 
 // unsupportedSymbols lists MQL functions that are explicitly NOT supported.
@@ -190,6 +191,16 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "SymbolInfoMarginRate", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
 	{Name: "SymbolInfoSessionQuote", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
 	{Name: "SymbolInfoSessionTrade", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
+	// VM-API-TRUTH-1 batch 2d: timeseries stubs returning fixed values,
+	// fake success counts, or handle semantics without authoritative data.
+	// Reclassified StatusUnsupported.
+	{Name: "CopyBuffer", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	{Name: "CopyRates", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	{Name: "iSpread", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	{Name: "CopySpread", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	{Name: "CopyTicks", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	{Name: "BarsCalculated", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	{Name: "SeriesInfoInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
 }
 
 // registryMap is the lookup index built from unsupportedSymbols + builtin_registry.go + constants.go.

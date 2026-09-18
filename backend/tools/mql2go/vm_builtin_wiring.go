@@ -139,20 +139,13 @@ func registerExtendedTimeseries() {
 	builtinRegistry[id("iLowest")].fn = builtinILowest
 	builtinRegistry[id("iTickVolume")].fn = builtinITickVolume
 	builtinRegistry[id("iRealVolume")].fn = builtinIRealVolume
-	builtinRegistry[id("iSpread")].fn = builtinISpread
-	builtinRegistry[id("CopyRates")].fn = builtinCopyRates
 	builtinRegistry[id("CopyClose")].fn = builtinCopyClose
 	builtinRegistry[id("CopyHigh")].fn = builtinCopyHigh
 	builtinRegistry[id("CopyLow")].fn = builtinCopyLow
 	builtinRegistry[id("CopyOpen")].fn = builtinCopyOpen
 	builtinRegistry[id("CopyTime")].fn = builtinCopyTime
-	builtinRegistry[id("CopyBuffer")].fn = builtinCopyBuffer
 	builtinRegistry[id("CopyTickVolume")].fn = builtinCopyTickVolume
 	builtinRegistry[id("CopyRealVolume")].fn = builtinCopyRealVolume
-	builtinRegistry[id("CopySpread")].fn = builtinCopySpread
-	builtinRegistry[id("CopyTicks")].fn = builtinCopyTicks
-	builtinRegistry[id("BarsCalculated")].fn = builtinBarsCalculated
-	builtinRegistry[id("SeriesInfoInteger")].fn = builtinSeriesInfoInteger
 }
 
 func registerExtendedMarketInfo() {

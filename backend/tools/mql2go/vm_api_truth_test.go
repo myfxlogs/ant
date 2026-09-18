@@ -521,3 +521,101 @@ func TestVM_API_TRUTH_1_AccountInfoStillImplemented(t *testing.T) {
 		})
 	}
 }
+
+// VM-API-TRUTH-1 batch 2d: timeseries stubs reclassified StatusUnsupported.
+// CopyBuffer returned a fake success count without filling its by-reference
+// array (and misread the array arg as count); CopyRates passed close prices
+// off as MqlRates structs; iSpread/CopySpread returned fixed 0 (forex bars
+// have real spread); CopyTicks returned fixed 0 (no tick source);
+// BarsCalculated ignored its handle arg; SeriesInfoInteger returned fixed 0
+// for every prop. The VM has no indicator-handle subsystem (Devin CLI ruling:
+// not extended), so the compiler now rejects them (fail-closed).
+
+// unsupportedTimeseriesNoSource lists the 7 timeseries API names that
+// VM-API-TRUTH-1 batch 2d reclassified from implemented (fixed values /
+// fake success counts / handle semantics) to StatusUnsupported.
+var unsupportedTimeseriesNoSource = []string{
+	"CopyBuffer", "CopyRates", "iSpread", "CopySpread",
+	"CopyTicks", "BarsCalculated", "SeriesInfoInteger",
+}
+
+// TestVM_API_TRUTH_1_TimeseriesNoSourceRejected verifies each of the 7 APIs
+// causes a compile-time error (not silent acceptance with fake runtime data).
+//
+// Adversarial: restore any of the 7 to implementedPlatform + remove from
+// unsupportedSymbols → CompileMQL succeeds → RED.
+func TestVM_API_TRUTH_1_TimeseriesNoSourceRejected(t *testing.T) {
+	for _, api := range unsupportedTimeseriesNoSource {
+		t.Run(api, func(t *testing.T) {
+			src := "int OnInit() { return 0; }\nvoid OnTick() { " + api + "(); }"
+			_, err := CompileMQL(src)
+			if err == nil {
+				t.Fatalf("%s: expected compile error (StatusUnsupported), got nil — API silently accepted", api)
+			}
+			msg := strings.ToLower(err.Error())
+			if !strings.Contains(msg, "unsupported") && !strings.Contains(msg, strings.ToLower(api)) {
+				t.Fatalf("%s: error message must mention 'unsupported' or API name, got: %v", api, err)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_TimeseriesNoSourceRegistryConsistency verifies the API
+// registry reflects the batch 2d reclassification: each of the 7 APIs is
+// StatusUnsupported with a non-empty reason, IsAPIImplemented=false,
+// IsAPIUnsupported=true.
+//
+// Adversarial: remove the 7 entries from unsupportedSymbols → LookupAPI
+// returns not-found (or StatusImplemented if also in implementedPlatform)
+// → RED.
+func TestVM_API_TRUTH_1_TimeseriesNoSourceRegistryConsistency(t *testing.T) {
+	for _, api := range unsupportedTimeseriesNoSource {
+		t.Run(api, func(t *testing.T) {
+			sym, ok := interp.LookupAPI(api)
+			if !ok {
+				t.Fatalf("%s: LookupAPI returned not-found — missing from registry", api)
+			}
+			if sym.Status != interp.StatusUnsupported {
+				t.Fatalf("%s: status = %v, want StatusUnsupported", api, sym.Status)
+			}
+			if sym.Reason == "" {
+				t.Fatalf("%s: Reason is empty — must explain why unsupported", api)
+			}
+			if interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=true, want false", api)
+			}
+			if !interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=false, want true", api)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_TimeseriesRealStillImplemented verifies the batch 2d
+// reclassification only affects the 7 sourceless/handle stubs — the real
+// BarSeries/Volume channel functions stay implemented, including
+// iRealVolume/CopyRealVolume (venue-fact semantics: backtest simulates
+// non-exchange instruments where real volume is legitimately 0, like
+// SymbolSelect=1/IsTesting=true).
+//
+// Adversarial: accidentally remove any of these from implementedPlatform or
+// add to unsupportedSymbols → IsAPIImplemented=false → RED.
+func TestVM_API_TRUTH_1_TimeseriesRealStillImplemented(t *testing.T) {
+	realImplemented := []string{
+		"iTickVolume", "iVolume",
+		// venue-fact semantics (real volume is 0 for non-exchange instruments)
+		"iRealVolume", "CopyRealVolume",
+		"CopyClose", "CopyHigh", "CopyLow", "CopyOpen", "CopyTime", "CopyTickVolume",
+		"Bars", "iBarShift", "iHighest", "iLowest",
+	}
+	for _, api := range realImplemented {
+		t.Run(api, func(t *testing.T) {
+			if !interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=false, want true (batch 2d must not误伤 real/venue-semantics implementations)", api)
+			}
+			if interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=true, want false (batch 2d must not误伤 real/venue-semantics implementations)", api)
+			}
+		})
+	}
+}

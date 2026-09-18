@@ -139,11 +139,6 @@ func builtinIRealVolume(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.DecimalVal(decimalZero), nil
 }
 
-func builtinISpread(vm *VM, args []interp.Value) (interp.Value, error) {
-	// Spread not available per-bar in backtest — return 0
-	return interp.IntVal(0), nil
-}
-
 // Copy* functions — copy bar data into the caller's array.
 // MQL5: CopyClose(symbol, timeframe, start_pos, count, array[])
 //   start_pos >= 0: offset from current bar (0 = latest)
@@ -212,19 +207,6 @@ func copyBarData(args []interp.Value, series sdk.BarSeries, getVal func(sdk.BarS
 	return int32(absCount)
 }
 
-func builtinCopyRates(vm *VM, args []interp.Value) (interp.Value, error) {
-	series, ok := resolveSeries(vm, 0, 1, args)
-	if !ok {
-		return interp.IntVal(-1), nil
-	}
-	// CopyRates fills a MqlRates struct array — we fill with close as proxy
-	// since our VM doesn't have a MqlRates struct type.
-	n := copyBarData(args, series, func(s sdk.BarSeries, shift int) interp.Value {
-		return interp.DecimalVal(s.Close(shift))
-	})
-	return interp.IntVal(n), nil
-}
-
 func builtinCopyClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	series, ok := resolveSeries(vm, 0, 1, args)
 	if !ok {
@@ -280,21 +262,6 @@ func builtinCopyTime(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(n), nil
 }
 
-func builtinCopyBuffer(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx == nil {
-		return interp.IntVal(-1), nil
-	}
-	// CopyBuffer(handle, buffer_num, start_pos, count, array[])
-	// We don't have indicator handles in the VM — all i* builtins return
-	// scalar values directly. Return the requested count as a best-effort
-	// so MQL5 code that checks the return value doesn't error out.
-	count := int(argI(args, 4))
-	if count <= 0 {
-		return interp.IntVal(0), nil
-	}
-	return interp.IntVal(int32(count)), nil
-}
-
 func builtinCopyTickVolume(vm *VM, args []interp.Value) (interp.Value, error) {
 	series, ok := resolveSeries(vm, 0, 1, args)
 	if !ok {
@@ -307,21 +274,5 @@ func builtinCopyTickVolume(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinCopyRealVolume(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinCopySpread(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinCopyTicks(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinBarsCalculated(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(int32(vm.ctx.Bars().Len())), nil
-}
-
-func builtinSeriesInfoInteger(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(0), nil
 }

@@ -118,14 +118,14 @@ var implementedPlatform = []string{
 	// reclassified StatusUnsupported — by-reference outputs never filled).
 	"SymbolInfoTick", "SymbolName", "SymbolSelect", "SymbolsTotal",
 	"SymbolIsSynchronized",
-	// MQL5 timeseries access
+	// MQL5 timeseries access (VM-API-TRUTH-1 batch 2d: iSpread/CopyRates/
+	// CopyBuffer/CopySpread/CopyTicks/BarsCalculated/SeriesInfoInteger
+	// reclassified StatusUnsupported — fixed values, fake success counts,
+	// or handle semantics without authoritative per-bar data).
 	"Bars", "iBarShift", "iHighest", "iLowest",
-	"iTickVolume", "iRealVolume", "iVolume", "iSpread",
-	"CopyRates", "CopyClose", "CopyHigh", "CopyLow", "CopyOpen",
-	"CopyTime", "CopyBuffer", "CopyTickVolume", "CopyRealVolume", "CopySpread",
-	"CopyTicks",
-	"BarsCalculated",
-	"SeriesInfoInteger",
+	"iTickVolume", "iRealVolume", "iVolume",
+	"CopyClose", "CopyHigh", "CopyLow", "CopyOpen",
+	"CopyTime", "CopyTickVolume", "CopyRealVolume",
 	// MQL5 trade helpers (VM-API-TRUTH-1: only PositionSelect remains;
 	// OrderCalcMargin/OrderCalcProfit/OrderCheck reclassified StatusUnsupported).
 	"PositionSelect",
