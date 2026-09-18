@@ -95,3 +95,5 @@ func builtinAliasSrand(vm *VM, args []interp.Value) (interp.Value, error)  { ret
 func builtinAliasSqrt(vm *VM, args []interp.Value) (interp.Value, error)   { return builtinMathSqrt(vm, args) }
 
 var decimalZero = safeDecimalFromFloat(0)
+
+var decimalHundred = safeDecimalFromFloat(100) // ACCOUNT-MARGIN-LEVEL-PCT-1: MQL5 percentage semantics (equity/margin*100)

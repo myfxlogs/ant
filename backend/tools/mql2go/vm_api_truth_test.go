@@ -662,6 +662,7 @@ type accountNoopTestContext struct {
 	*accountStatusTestContext
 	balance    decimal.Decimal
 	equity     decimal.Decimal
+	margin     decimal.Decimal // ACCOUNT-MARGIN-LEVEL-PCT-1 test control
 	freeMargin decimal.Decimal
 	ask        decimal.Decimal
 	bid        decimal.Decimal
@@ -672,6 +673,7 @@ func (c *accountNoopTestContext) Account() sdk.AccountInfo {
 	info := c.accountStatusTestContext.Account()
 	info.Balance = c.balance
 	info.Equity = c.equity
+	info.Margin = c.margin
 	info.FreeMargin = c.freeMargin
 	return info
 }

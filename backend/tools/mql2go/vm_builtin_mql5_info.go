@@ -61,7 +61,10 @@ func builtinAccountInfoDouble(vm *VM, args []interp.Value) (interp.Value, error)
 		if vm.ctx.Account().Margin.IsZero() {
 			return interp.DecimalVal(decimalZero), nil
 		}
-		return interp.DecimalVal(vm.ctx.Account().Equity.Div(vm.ctx.Account().Margin)), nil
+		// MQL5 ACCOUNT_MARGIN_LEVEL is a percentage (equity/margin*100,
+		// official doc: 9921.24/1000 → 992.12) — not a ratio.
+		// ACCOUNT-MARGIN-LEVEL-PCT-1.
+		return interp.DecimalVal(vm.ctx.Account().Equity.Div(vm.ctx.Account().Margin).Mul(decimalHundred)), nil
 	case 1, 7, 8, 9, 10, 11, 12, 13: // known props without a VM data source
 		return interp.DecimalVal(decimalZero), fmt.Errorf("AccountInfoDouble: prop %d (%s) has no authoritative source in the VM", prop, accountInfoDoubleNoSourceName(prop))
 	default:

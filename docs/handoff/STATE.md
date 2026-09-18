@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **LIVE-ACCOUNT-FIELDS-1 ✅done 验收**；按序发 **ACCOUNT-MARGIN-LEVEL-PCT-1**（派工单 @f284a0bd，100× 偏差一行修复）→ **DATA-TRUTH-3**（派工单 `builder-handoff-data-truth-3.md`，v2=VIEW 修正+migration 279 删死列+COMMENT ON VIEW）→ **MT5-ACCMETHOD-ADAPTER-1**（派工单落档，AccMethod→margin_mode 通道）。VM-LIVE-MTF-1 暂缓。
+- **下一步**: **ACCOUNT-MARGIN-LEVEL-PCT-1 🟦open（施工完成，待独立复审）**（×100+pin T1/T2，M1 RED 实证）；验收后发 **DATA-TRUTH-3**（派工单 `builder-handoff-data-truth-3.md`，v2=VIEW 修正+migration 279 删死列+COMMENT ON VIEW）→ **MT5-ACCMETHOD-ADAPTER-1**（派工单落档，AccMethod→margin_mode 通道）。VM-LIVE-MTF-1 暂缓。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
