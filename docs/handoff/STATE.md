@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **发 LIVE-ACCOUNT-FIELDS-1 开工指令**（设计实查完成+派工单 `builder-handoff-live-account-fields-1.md` @78310100）——按字段分治：Company 纯接线（proto f27 已填充）/Leverage+Currency 新 proto 31/32+mt_accounts 权威/Mode MT4=平台语义 hedging+MT5=""保持 fail-closed（AccMethod adapter 未映射另债）；禁 mode=13 执行模式误映射。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **发 LIVE-ACCOUNT-FIELDS-1 开工指令**（派工单 `builder-handoff-live-account-fields-1.md` @78310100）；其后 **ACCOUNT-MARGIN-LEVEL-PCT-1**（派工单 `builder-handoff-account-margin-level-pct-1.md`，MQL5 官方文档实证 100× 偏差一行修复+pin）；MT5-ACCMETHOD-ADAPTER-1 已登记待排。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
