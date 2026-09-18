@@ -399,9 +399,6 @@ var builtinRegistry = []builtinEntry{
 	{"SymbolName", nil},
 	{"SymbolSelect", nil},
 	{"SymbolsTotal", nil},
-	{"SymbolInfoMarginRate", nil},
-	{"SymbolInfoSessionQuote", nil},
-	{"SymbolInfoSessionTrade", nil},
 	{"SymbolIsSynchronized", nil},
 
 	// ── MQL5 trade helpers ────────────────────────────────────────────
@@ -410,11 +407,11 @@ var builtinRegistry = []builtinEntry{
 	{"PositionSelect", nil},
 
 	// ── Account info additions (MQL5) ─────────────────────────────────
+	// VM-API-TRUTH-1 batch 2b: AccountStopoutMode/AccountCredit reclassified
+	// StatusUnsupported (removed from this registry).
 	{"AccountInfoDouble", nil},
 	{"AccountInfoInteger", nil},
 	{"AccountInfoString", nil},
-	{"AccountStopoutMode", nil},
-	{"AccountCredit", nil},
 
 	// ── Python-specific operators ─────────────────────────────────────
 	{"operator_in", nil},

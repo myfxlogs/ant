@@ -160,9 +160,6 @@ func registerExtendedMarketInfo() {
 	builtinRegistry[id("SymbolName")].fn = builtinSymbolName
 	builtinRegistry[id("SymbolSelect")].fn = builtinSymbolSelect
 	builtinRegistry[id("SymbolsTotal")].fn = builtinSymbolsTotal
-	builtinRegistry[id("SymbolInfoMarginRate")].fn = builtinSymbolInfoMarginRate
-	builtinRegistry[id("SymbolInfoSessionQuote")].fn = builtinSymbolInfoSessionQuote
-	builtinRegistry[id("SymbolInfoSessionTrade")].fn = builtinSymbolInfoSessionTrade
 	builtinRegistry[id("SymbolIsSynchronized")].fn = builtinSymbolIsSynchronized
 }
 
@@ -176,8 +173,6 @@ func registerExtendedAccount() {
 	builtinRegistry[id("AccountInfoDouble")].fn = builtinAccountInfoDouble
 	builtinRegistry[id("AccountInfoInteger")].fn = builtinAccountInfoInteger
 	builtinRegistry[id("AccountInfoString")].fn = builtinAccountInfoString
-	builtinRegistry[id("AccountStopoutMode")].fn = builtinAccountStopoutMode
-	builtinRegistry[id("AccountCredit")].fn = builtinAccountCredit
 }
 
 func registerGlobalVariables() {

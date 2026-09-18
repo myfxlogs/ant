@@ -34,18 +34,6 @@ func builtinSymbolsTotal(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(1), nil
 }
 
-func builtinSymbolInfoMarginRate(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
-func builtinSymbolInfoSessionQuote(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
-func builtinSymbolInfoSessionTrade(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.BoolVal(true), nil
-}
-
 func builtinSymbolIsSynchronized(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.BoolVal(true), nil
 }
@@ -107,12 +95,4 @@ func builtinAccountInfoString(vm *VM, args []interp.Value) (interp.Value, error)
 	default:
 		return interp.StringVal(""), nil
 	}
-}
-
-func builtinAccountStopoutMode(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.IntVal(0), nil
-}
-
-func builtinAccountCredit(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.DecimalVal(decimalZero), nil
 }

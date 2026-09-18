@@ -60,8 +60,10 @@ var implementedAccount = []string{
 	"AccountNumber", "AccountStopoutLevel", "AccountCurrency",
 	"AccountName", "AccountCompany",
 	// MQL4-only account functions (callTradeStubs)
+	// VM-API-TRUTH-1 batch 2b: AccountStopoutMode/AccountCredit reclassified
+	// StatusUnsupported (fixed 0 without authoritative data).
 	"AccountFreeMarginCheck", "AccountFreeMarginMode", "AccountServer",
-	"AccountStopoutMode", "AccountCredit", "AccountProfit",
+	"AccountProfit",
 	// MQL5 AccountInfo* functions (callTradeStubs)
 	"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
 }
@@ -111,9 +113,10 @@ var implementedPlatform = []string{
 	"IsTradeAllowed",
 	"GetTickCount", "GetTickCount64", "GetMicrosecondCount",
 	"SetUserError", "CurTime",
-	// MQL5 market info additions
+	// MQL5 market info additions (VM-API-TRUTH-1 batch 2b:
+	// SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade
+	// reclassified StatusUnsupported — by-reference outputs never filled).
 	"SymbolInfoTick", "SymbolName", "SymbolSelect", "SymbolsTotal",
-	"SymbolInfoMarginRate", "SymbolInfoSessionQuote", "SymbolInfoSessionTrade",
 	"SymbolIsSynchronized",
 	// MQL5 timeseries access
 	"Bars", "iBarShift", "iHighest", "iLowest",

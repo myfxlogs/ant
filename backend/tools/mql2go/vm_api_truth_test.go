@@ -194,3 +194,103 @@ func TestVM_API_TRUTH_1_PlatformCheckupRealStillImplemented(t *testing.T) {
 		})
 	}
 }
+
+// VM-API-TRUTH-1 batch 2b: account/symbol stub 5 API reclassified
+// StatusUnsupported. AccountStopoutMode/AccountCredit returned fixed 0 with no
+// authoritative data; SymbolInfoMarginRate/SymbolInfoSessionQuote/
+// SymbolInfoSessionTrade returned true without filling their by-reference
+// outputs. Now the compiler rejects them (fail-closed).
+
+// unsupportedAccountSymbolStub lists the 5 account/symbol stub API names that
+// VM-API-TRUTH-1 batch 2b reclassified from implemented (fixed-value stub /
+// by-reference unfilled) to StatusUnsupported.
+var unsupportedAccountSymbolStub = []string{
+	"AccountStopoutMode", "AccountCredit",
+	"SymbolInfoMarginRate", "SymbolInfoSessionQuote", "SymbolInfoSessionTrade",
+}
+
+// TestVM_API_TRUTH_1_AccountSymbolStubRejected verifies each of the 5 APIs
+// causes a compile-time error (not silent acceptance with fake data).
+//
+// Adversarial: restore any of the 5 to implementedAccount/implementedPlatform
+// + remove from unsupportedSymbols → CompileMQL succeeds → RED.
+func TestVM_API_TRUTH_1_AccountSymbolStubRejected(t *testing.T) {
+	for _, api := range unsupportedAccountSymbolStub {
+		t.Run(api, func(t *testing.T) {
+			src := "int OnInit() { return 0; }\nvoid OnTick() { " + api + "(); }"
+			_, err := CompileMQL(src)
+			if err == nil {
+				t.Fatalf("%s: expected compile error (StatusUnsupported), got nil — API silently accepted", api)
+			}
+			msg := strings.ToLower(err.Error())
+			if !strings.Contains(msg, "unsupported") && !strings.Contains(msg, strings.ToLower(api)) {
+				t.Fatalf("%s: error message must mention 'unsupported' or API name, got: %v", api, err)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_AccountSymbolStubRegistryConsistency verifies the API
+// registry reflects the batch 2b reclassification: each of the 5 APIs is
+// StatusUnsupported with a non-empty reason, IsAPIImplemented=false,
+// IsAPIUnsupported=true.
+//
+// Adversarial: remove the 5 entries from unsupportedSymbols → LookupAPI
+// returns not-found (or StatusImplemented if also in implemented* lists)
+// → RED.
+func TestVM_API_TRUTH_1_AccountSymbolStubRegistryConsistency(t *testing.T) {
+	for _, api := range unsupportedAccountSymbolStub {
+		t.Run(api, func(t *testing.T) {
+			sym, ok := interp.LookupAPI(api)
+			if !ok {
+				t.Fatalf("%s: LookupAPI returned not-found — missing from registry", api)
+			}
+			if sym.Status != interp.StatusUnsupported {
+				t.Fatalf("%s: status = %v, want StatusUnsupported", api, sym.Status)
+			}
+			if sym.Reason == "" {
+				t.Fatalf("%s: Reason is empty — must explain why unsupported", api)
+			}
+			if interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=true, want false", api)
+			}
+			if !interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=false, want true", api)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_AccountSymbolStubRealStillImplemented verifies the batch
+// 2b reclassification only affects the 5 stubs — AccountInfoDouble/Integer/
+// String (mixed real+stub, batch 2c scope), SymbolSelect/SymbolsTotal/
+// SymbolIsSynchronized (fixed values are correct backtest semantics for a
+// single-symbol run, like IsTesting), SymbolInfoTick/SymbolName (real
+// implementations reading vm.ctx) and AccountBalance/Equity/Margin/Leverage
+// (real implementations) are NOT误伤.
+//
+// Adversarial: accidentally remove any of these from implemented* lists or
+// add to unsupportedSymbols → IsAPIImplemented=false → RED.
+func TestVM_API_TRUTH_1_AccountSymbolStubRealStillImplemented(t *testing.T) {
+	realImplemented := []string{
+		// Batch 2c scope: mixed AccountInfo* (real BALANCE/EQUITY/MARGIN/LEVERAGE
+		// branches must stay while stub branches get fixed).
+		"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
+		// Backtest-semantics fixed values (single-symbol run).
+		"SymbolSelect", "SymbolsTotal", "SymbolIsSynchronized",
+		// Real implementations reading vm.ctx.
+		"SymbolInfoTick", "SymbolName",
+		// Real account implementations (vm_builtin_account.go).
+		"AccountBalance", "AccountEquity", "AccountMargin", "AccountLeverage",
+	}
+	for _, api := range realImplemented {
+		t.Run(api, func(t *testing.T) {
+			if !interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=false, want true (VM-API-TRUTH-1 batch 2b must not误伤 real/semantically-valid implementations)", api)
+			}
+			if interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=true, want false (VM-API-TRUTH-1 batch 2b must not误伤 real/semantically-valid implementations)", api)
+			}
+		})
+	}
+}
