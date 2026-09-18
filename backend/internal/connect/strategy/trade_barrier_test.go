@@ -375,3 +375,38 @@ func TestWaitConfirmed_NoGoroutineLeak(t *testing.T) {
 
 	goleak.VerifyNone(t, goleakIgnoreThirdParty...)
 }
+
+// TEST-WAITSTATE-ACQUIRE-BCAST-1: Acquire's idle→submitting transition was
+// the only state change without cond.Broadcast — a WaitState(submitting)
+// waiter that had already entered cond.Wait() slept until the NEXT broadcast
+// (a different transition) or its ctx timeout, missing the submitting window
+// entirely. The only discriminating observable is wake-up latency: with the
+// broadcast the waiter wakes in ~µs; without it, it sleeps until ctx expiry.
+//
+// Adversarial: delete Acquire's cond.Broadcast() → the waiter sleeps past the
+// 2s done-timeout (its ctx is 5s) → RED.
+func TestTradeBarrier_AcquireBroadcastsSubmitting(t *testing.T) {
+	b := NewTradeBarrier(zap.NewNop())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	done := make(chan tradeBarrierState, 1)
+	go func() { done <- b.WaitState(ctx, barrierSubmitting) }()
+
+	// Grace period so the waiter is parked inside cond.Wait() before Acquire
+	// fires (guards against the pre-wait fast path making the test vacuous).
+	time.Sleep(50 * time.Millisecond)
+
+	if !b.Acquire("client-1", 12345, "open") {
+		t.Fatal("Acquire should succeed on an idle barrier")
+	}
+
+	select {
+	case s := <-done:
+		if s != barrierSubmitting {
+			t.Fatalf("WaitState returned %s, want submitting", s)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("WaitState did not wake within 2s — Acquire broadcast missing (waiter slept toward its 5s ctx timeout)")
+	}
+}

@@ -166,6 +166,7 @@ func (b *TradeBarrier) Acquire(clientID string, magic int32, action string) bool
 		return false
 	}
 	b.state = barrierSubmitting
+	b.cond.Broadcast() // TEST-WAITSTATE-ACQUIRE-BCAST-1: all state transitions must broadcast
 	b.clientID = clientID
 	b.magic = magic
 	b.action = action

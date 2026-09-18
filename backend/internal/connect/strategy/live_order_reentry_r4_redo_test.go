@@ -192,7 +192,8 @@ func TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_FullPath_MT4(t *
 		// 确定性等待 barrier 进入 submitting（R4 S3: 用 cond.Wait 同步，禁止轮询睡眠）。
 		// WaitState 阻塞直到 barrier 变为 barrierSubmitting 或 ctx 超时。
 		// dispatchLiveSignal 是同步阻塞调用，主 goroutine 在其内部会驱动 barrier
-		// 状态变化（acquire → submitting），WaitState 的 cond.Wait() 会被唤醒。
+		// 状态变化（acquire → submitting），Acquire 迁移带 Broadcast，WaitState
+		// 的 cond.Wait() 会被唤醒（TEST-WAITSTATE-ACQUIRE-BCAST-1）。
 		waitCtx, waitCancel := context.WithTimeout(context.Background(), 2*time.Second)
 		sess.barrier.WaitState(waitCtx, barrierSubmitting)
 		waitCancel()
