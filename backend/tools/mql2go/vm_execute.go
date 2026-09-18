@@ -373,6 +373,15 @@ func (vm *VM) executeCallUser(ins Instruction) error {
 	vm.pc = entryPC // Jump to function body start (EntryPC points at body, not marker)
 
 	for vm.pc < int32(len(vm.bc.Code)) {
+		// VM-FUNC-FATAL-DELAY-1: mirror runLoop's top-of-loop fatal check
+		// (ADR §5.4): a stack/slot/arith fault inside a user function must
+		// stop the function now, not leak writes until OP_RETURN. Also covers
+		// the entry state — popN above can set a fatal on stack underflow.
+		if vm.fatalError != "" {
+			vm.locals = oldLocals
+			vm.callDepth--
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
 		if vm.ticks%10000 == 0 && vm.runCtx != nil {
 			select {
 			case <-vm.runCtx.Done():
