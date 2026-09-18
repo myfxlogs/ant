@@ -154,3 +154,24 @@
 6. **结束语**：`[施工完成:VM-ARRAY-OOB-FAILCLOSED-1] @<commit-hash>`（D-014，无此行 = 未交付，复审不启动）。
 
 **停手等 Devin CLI 复审；不达标将由决策方开缺陷清单退回。勿部署，禁 `--no-verify`。**
+
+---
+
+## 修订记录（2026-09-17 Devin CLI 决策终裁定：降范围施工）
+
+**起因**：施工方 S1-S3 完成后 S4 阻断上报——测试 1/2/6 前提为假。Devin CLI 独立实证（探针编译 `double g_arr[3]` → `ir.Globals` 无该条、字节码 `STORE_GLOBAL` 替代 `OP_STORE_ARRAY`）确认两个**前端层新缺陷**：
+
+- **发现 1**：`collectGlobalVar`（`compile_interp.go:174-223`）无 `array_declarator` 分支 → 全局数组声明整体丢弃（无 IsArray 槽，`vm.go:243` 的 ValArray 初始化永不触发）。
+- **发现 2**：`compileAssignment`（`compile_interp_expr.go:286`）先查 `findIdent(lhs)` 后查 `subscript_expression` → `arr[i]=v` 恒退化为整槽标量写，line 304 分支不可达。
+
+两发现另立新债 **VM-GLOBAL-ARRAY-DECL-1**（前端层，本债范围外）；option 3 的波及面审计并入新债设计阶段。
+
+**S4 修订（行为断言不变，可达路径修正）**：
+
+- **主路径 = 手工构造**（确定性强、覆盖全分支）：直接构造 VM + `vm.globals[i]=ValArray` + 手工 `Instruction{Op:OP_PUSH_ARRAY/OP_STORE_ARRAY}`，断言槽越界/非数组/索引越界/负槽/界内成功/dispatch 守卫全分支。
+- **源码可达路径**（仅以下形态）：
+  a. builtin 产数组入全局（`g = StringSplit("a,b",",")` → `g[9]` 读 → "index 9 out of range" error；`g[-1]` → error）——覆盖原 S4-1/2 的 OOB 语义。
+  b. `int s; s[0]` → "is not an array" error（原 S4-3 可达）。
+  c. 局部标量下标（`void f(){int a;a[0];}` 形态——局部变量下标引用）→ "local array" error + **断言同索引 globals 未被误写**（原 S4-5 语义保留；注意局部数组声明本身是编译错，用局部**标量**下标触发负编码路径）。
+- **删除/迁移**：原 S4-1/2/6 的 `int g[2]` 全局声明形态 → 移入 VM-GLOBAL-ARRAY-DECL-1 验收（该债修复后全局数组才可达）。
+- mutation 项 1/2/3/4 不变（均可由手工构造路径驱动 RED）。
