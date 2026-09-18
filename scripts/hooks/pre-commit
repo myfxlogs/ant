@@ -31,7 +31,7 @@ for f in docs/audits/handover-audit-plan.md docs/audits/tech-debt-registry.md; d
     # 提取被删行的条目 ID（| 分割的第一列），检查该 ID 是否仍存在于新文件中
     truly_deleted=""
     while IFS= read -r line; do
-      id=$(echo "$line" | sed 's/^-|//' | sed 's/ |.*//' | tr -d ' ')
+      id=$(echo "$line" | sed 's/^-//' | sed 's/^|* *//' | sed 's/ |.*//' | tr -d ' ')
       if [ -n "$id" ] && ! echo "$new" | grep -q "^| $id |"; then
         truly_deleted="$truly_deleted\n  $id"
       fi

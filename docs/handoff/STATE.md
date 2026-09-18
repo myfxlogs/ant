@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（5 批全 Devin CLI 独立复审+独立 mutation；重分类 46 API StatusUnsupported：e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐；69d2330b 批次2e 4 重分类+4 实接）。VM-ARRAY-OOB-FAILCLOSED-1 派工单已落档（@6662b4bb，A 面 OOB+B 面局部数组负编码）。VM-ENUM-NUMBERING-1 设计实查进行中（Devin CLI）。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（5 批全 Devin CLI 独立复审+独立 mutation；重分类 46 API StatusUnsupported：e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐；69d2330b 批次2e 4 重分类+4 实接）。VM-ARRAY-OOB-FAILCLOSED-1 派工单已落档（@6662b4bb，A 面 OOB+B 面局部数组负编码）。VM-ENUM-NUMBERING-1 设计实查完成、派工单已落档——constants↔switch 不自洽系**静默错标**（BID→Point、POINT→VolumeMax、DIGITS→0），SymbolInfoString 整 API 重分类裁定。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -27,7 +27,7 @@
 || VM-API-TRUTH-1 批次2e account noop 8 API（收官批） | ✅done(批次2e) | Devin CLI 验收通过 2026-09-17；commit 69d2330b；4 重分类+4 实接（AccountProfit=Equity−Balance/Currency/Company 接源/FreeMarginCheck 计算）；python account.profit 顺带修复；独立 mutation×3 RED→GREEN |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**（P2，派工单 @6662b4bb 已就绪）——施工方读 `docs/audits/builder-handoff-vm-array-oob-failclosed-1.md` 按 S1 施工；等待 `[施工完成:VM-ARRAY-OOB-FAILCLOSED-1] @<hash>` 后 Devin CLI 独立复审。Devin CLI 并行做 **VM-ENUM-NUMBERING-1 设计实查**（SymbolInfo*/MarketInfo prop 编号对齐真枚举）。**后续队列**：VM-ENUM-NUMBERING-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**（P2，派工单 @6662b4bb 已就绪）——施工方读 `docs/audits/builder-handoff-vm-array-oob-failclosed-1.md` 按 S1 施工；等待 `[施工完成:VM-ARRAY-OOB-FAILCLOSED-1] @<hash>` 后 Devin CLI 独立复审。Devin CLI 并行侧 **VM-ENUM-NUMBERING-1 设计实查已完成、派工单已落档**（等数组批验收后发开工指令；坐标届时需复核漂移）。**后续队列**：VM-ENUM-NUMBERING-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -88,7 +88,7 @@
 - **VM-RUNTIME-FAILCLOSED-2** ✅done — 静默算术/栈/槽位 fail-closed（Devin CLI 验收通过 2026-09-16，commit 4fea9439，独立 mutation×4 RED→GREEN）
 - **VM-ARRAY-OOB-FAILCLOSED-1** 🟦open P2 — OP_PUSH_ARRAY/OP_STORE_ARRAY 越界静默 NoneVal/丢弃（FAILCLOSED-2 复审分立）；2026-09-17 补记 B 面局部数组错读/写全局槽（负编码 fail-closed）；派工单 `docs/audits/builder-handoff-vm-array-oob-failclosed-1.md`
 - **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
-- **VM-ENUM-NUMBERING-1** 🟦open P2 — prop-switch 函数族"自造编号 vs 真枚举"跨文件偏移审计（2026-09-17 批次2c 设计实查登记）
+- **VM-ENUM-NUMBERING-1** 🟦open P2 — prop-switch 函数族"自造编号 vs 真枚举"；2026-09-17 设计实查升级为**静默错标**（constants↔switch 不自洽：BID→Point/POINT→VolumeMax/DIGITS→0）+SymbolInfoString 整 API 重分类裁定；派工单 `docs/audits/builder-handoff-vm-enum-numbering-1.md` 已就绪
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
