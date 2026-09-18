@@ -217,6 +217,7 @@ func (s *StrategySchedule) ComputeNextRunAt() (time.Time, error) {
 // ComputeNextRunAtFromConfig is a standalone helper for computing next_run_at from raw fields.
 // Used by both the model (StrategySchedule.ComputeNextRunAt) and the service layer (ScheduleRow).
 // Accepts proto-encoded ScheduleConfig bytes. Wraps ComputeNextRunAtFromConfigAt with time.Now.
+// TZ: CST-paired column next_run_at — do not add .UTC() here (see docs/constraints.md CST pairing rule).
 func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (time.Time, error) {
 	return ComputeNextRunAtFromConfigAt(scheduleType, scheduleConfig, time.Now())
 }

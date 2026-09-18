@@ -126,6 +126,7 @@
 - **从瞬时 barrier state 推导 lifecycle，Release() 后真相丢失（LIVE-DIAG-TRUTH-1 返工）** — `TradeBarrier.Release()` 清空 state/ticket 到 idle/0，若 lifecycle 从 barrier state 推导，confirmed/rejected 后下一次诊断退化为 signal_generated/ticket=0。**通用规则：lifecycle 是历史事实，必须持久化在诊断状态中（`sessionDiag.lastLifecycle`/`lastBrokerTicket`），不能从瞬态状态机推导**。修复：`logOrderLifecycle` 每次过渡调 `RecordLifecycle`，`SnapshotDiag` 返回持久化值，`enrichDiagSnapshot` 只从 barrier 取 transient `ExecutionState`。
 - **server-owned shared cache 放进 ActiveSession 字段导致 Register→notify 竞态（LIVE-DIAG-TRUTH-1 返工）** — `SessionRegistry.Register()` 插入 + notify watcher 后，调用点才写入 `sess.posCache`；watcher 启动时 `activeSessionToProto` 无锁读取 → data race。**通用规则：server-owned shared cache 不得作为 ActiveSession 字段，必须由 server converter 注入参数**。修复：删 `ActiveSession.posCache`，`activeSessionToProto` 加 `posCache` 参数，三处调用点传 `s.posCache`。
 - **posCache=nil（paper/未接入）被前端渲染为 Stale + Warning（LIVE-DIAG-TRUTH-1 返工）** — 无数据源 ≠ 数据过期。paper mode 无 broker 数据，但前端显示 Stale/Warning 混淆语义。**通用规则：诊断必须区分 unavailable（无数据源）与 stale（有源但过期）**——unavailable 显示 N/A，不触发 warning。修复：proto 加 `data_available` 字段，前端 `!dataAvailable` 显示 N/A，warning 只在 `dataAvailable` 时检查。
+- **CST 配对列单侧 `.UTC()` → 同列混合编码（TZ-PAIRED-CST-COLS-1，文档债）** — `next_run_at`/`trade_logs`/`account_connection_logs`/`system_operation_logs` 的 `created_at` 四列为 CST 写+CST 读配对；好心"修时区"单侧加 `.UTC()` 会制造半 CST 半 UTC 的混合列。另注意 `system_operation_logs` 的 `NOW()-interval` 查询因 DB NOW()=UTC 对 CST 列窗口 +8h 虚高。规则与列清单见 `docs/constraints.md` Data Precision 节。
 
 ### 调试路径
 

@@ -90,6 +90,7 @@
 
 - Prices: `NUMERIC(20,8)` PG / `Decimal(18,6)` CH / `decimal.Decimal` Go
 - Time: UTC, millisecond precision (`int64 ts_unix_ms`)
+- **CST 配对 timestamp 列——禁止单侧 `.UTC()`（TZ-PAIRED-CST-COLS-1）**：以下列为 CST 写入+CST 参数读取自洽配对：`strategy_schedules.next_run_at`、`trade_logs.created_at`、`account_connection_logs.created_at`、`system_operation_logs.created_at`。新代码写/读这些列必须保持 CST 参数一致；或整列一次性迁移 UTC（写+读+存量回填同批）。单侧 `.UTC()` = 制造同列混合编码（TZ-MIXED-ENCODING-1 根因形态）。注意 `system_operation_logs` 读侧含 `NOW()-interval` 存量混合（DB NOW()=UTC，窗口 +8h 虚高，未修）。
 - Symbol: raw broker symbol = canonical (no suffix stripping)
 - **md_bars 查询的 `DISTINCT ON` / `ORDER BY` 不能把 `broker` 排在时间列前面**（反例 BT-MULTIBROKER-ORDER，2026-08-24）：`GetKlines(broker="")` 曾把 `broker` 放进 distinct key + `ORDER BY broker, ...open_ts` → 多 broker 写同一 canonical 时按 broker 名排序而非按时间排序 → 回测崩 `bars are not chronologically ordered`。正确做法：distinct key 恒为 `(canonical, period, open_ts_unix_ms)`，`ORDER BY ...open_ts_unix_ms, tick_count DESC`，`broker` 仅作可选 WHERE 过滤——跨 broker 去重（最高 tick_count 胜出）+ 全局时序。所有 backtest/market-data 调用方都传 `broker=""` 且都需要单一时序。
 

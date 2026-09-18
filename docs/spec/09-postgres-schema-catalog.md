@@ -184,6 +184,7 @@ Tables for position tracking, order lifecycle, trade history, and paper trading.
 | Migration | `002_trade_logs.up.sql` |
 | Purpose | Action-level trade log (manual/auto trade operations). |
 | Key columns | `id` (UUID PK), `user_id` (FK users), `account_id` (FK mt_accounts), `action` (VARCHAR), `symbol`, `order_type`, `volume`, `price`, `ticket`, `profit`, `message` |
+| Encoding note | `created_at` — CST 编码列（写读须同编码，见 `docs/constraints.md` CST 配对列规则，TZ-PAIRED-CST-COLS-1）。 |
 | Indexes | `idx_trade_logs_user`, `idx_trade_logs_account`, `idx_trade_logs_action`, `idx_trade_logs_created_at`, `idx_trade_logs_symbol` |
 
 ### `trading_logs`
@@ -291,6 +292,7 @@ Tables for strategy definitions, AI-assisted trading, agent definitions, workflo
 | Migration | `012_strategy_template_refactor.up.sql` (as `strategy_schedules_v2`), renamed in `027_unify_strategy_schedules.up.sql` and `028_upgrade_strategy_schedules_schema.up.sql`. Original `strategy_schedules` from 010 renamed to `strategy_schedules_legacy`. |
 | Purpose | Strategy execution configurations -- binds a template to an account with schedule settings and backtest snapshots. |
 | Key columns | `id` (UUID PK), `user_id` (FK users), `template_id` (FK strategy_templates), `account_id` (FK mt_accounts), `name`, `symbol`, `timeframe`, `parameters` (JSONB), `schedule_type` (cron/interval/event), `schedule_config` (JSONB), `backtest_metrics` (JSONB), `risk_score`, `risk_level`, `risk_reasons` (JSONB), `risk_warnings` (JSONB), `last_backtest_at`, `is_active`, `last_run_at`, `next_run_at`, `run_count`, `last_error`, `manual_run_count` (added 031), `last_manual_run_at` (031), `last_manual_error` (031), `enable_count` (added 032) |
+| Encoding note | `next_run_at` — CST 编码列（写读须同编码，见 `docs/constraints.md` CST 配对列规则，TZ-PAIRED-CST-COLS-1）。 |
 | Indexes | `idx_strategy_schedules_user_id`, `idx_strategy_schedules_template_id`, `idx_strategy_schedules_account_id`, `idx_strategy_schedules_symbol`, `idx_strategy_schedules_is_active`, `idx_strategy_schedules_risk_level`, `idx_strategy_schedules_next_run_at`, `idx_strategy_schedules_manual_run_count` (031), `idx_strategy_schedules_enable_count` (032) |
 | Altered by | 027 (rename from _v2), 028 (rename + backfill from legacy), 029 (name cleanup), 031 (manual run fields), 032 (enable_count), 034 (FK targets), 038 (unique active constraint), 054 (finalize unification) |
 
@@ -782,6 +784,7 @@ Tables for operational logging, system configuration, and global settings.
 | Migration | `012_enhanced_logs.up.sql` |
 | Purpose | System-level operation logs -- resource changes with old/new value snapshots. |
 | Key columns | `id` (UUID PK), `user_id` (FK users), `operation_type`, `module`, `resource_type`, `resource_id` (UUID), `action`, `old_value` (JSONB), `new_value` (JSONB), `ip_address`, `user_agent`, `status`, `error_message`, `duration_ms` |
+| Encoding note | `created_at` — CST 编码列（写读须同编码，见 `docs/constraints.md` CST 配对列规则）；读侧 `NOW()-interval` 为 UTC 对 CST 列，窗口 +8h 虚高（存量未修，TZ-PAIRED-CST-COLS-1）。 |
 | Indexes | `idx_system_op_logs_user`, `idx_system_op_logs_operation`, `idx_system_op_logs_module`, `idx_system_op_logs_resource`, `idx_system_op_logs_created_at` |
 
 ### `account_connection_logs`
@@ -791,6 +794,7 @@ Tables for operational logging, system configuration, and global settings.
 | Migration | `012_enhanced_logs.up.sql` |
 | Purpose | MT account connection event logs -- connect/disconnect with duration and error details. |
 | Key columns | `id` (UUID PK), `user_id` (FK users), `account_id` (FK mt_accounts), `event_type`, `status`, `message`, `error_detail`, `server_host`, `server_port`, `login_id`, `connection_duration_seconds` |
+| Encoding note | `created_at` — CST 编码列（写读须同编码，见 `docs/constraints.md` CST 配对列规则，TZ-PAIRED-CST-COLS-1）。 |
 | Indexes | `idx_account_conn_logs_user`, `idx_account_conn_logs_account`, `idx_account_conn_logs_event_type`, `idx_account_conn_logs_created_at` |
 
 ### `system_config`

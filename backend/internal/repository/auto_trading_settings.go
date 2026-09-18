@@ -89,7 +89,7 @@ func (r *AutoTradingRepository) CreateTradingLog(ctx context.Context, log *model
 	if log.ID == uuid.Nil {
 		log.ID = uuid.New()
 	}
-	log.CreatedAt = time.Now()
+	log.CreatedAt = time.Now() // CST-paired column trade_logs.created_at — keep CST encoding, no .UTC() (constraints.md)
 
 	_, err := r.db.Exec(ctx, query,
 		log.ID, log.UserID, log.AccountID, log.Action, log.Symbol, log.LogType, 0, 0, 0, 0, log.Message, log.CreatedAt,

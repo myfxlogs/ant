@@ -47,7 +47,7 @@ func NewAccountConnectionLog(userID, accountID uuid.UUID, eventType ConnectionEv
 		AccountID: accountID,
 		EventType: eventType,
 		Status:    status,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now(), // CST-paired column account_connection_logs.created_at — no .UTC() (constraints.md)
 	}
 }
 
@@ -69,16 +69,16 @@ type OrderHistory struct {
 	Ticket      int64            `db:"ticket" json:"ticket"`
 	OrderType   OrderHistoryType `db:"order_type" json:"order_type"`
 	Symbol      string           `db:"symbol" json:"symbol"`
-	Volume      decimal.Decimal          `db:"volume" json:"volume"`
-	OpenPrice   decimal.Decimal          `db:"open_price" json:"open_price"`
-	ClosePrice  decimal.Decimal          `db:"close_price" json:"close_price,omitempty"`
+	Volume      decimal.Decimal  `db:"volume" json:"volume"`
+	OpenPrice   decimal.Decimal  `db:"open_price" json:"open_price"`
+	ClosePrice  decimal.Decimal  `db:"close_price" json:"close_price,omitempty"`
 	OpenTime    time.Time        `db:"open_time" json:"open_time"`
 	CloseTime   *time.Time       `db:"close_time" json:"close_time,omitempty"`
-	StopLoss    decimal.Decimal          `db:"stop_loss" json:"stop_loss,omitempty"`
-	TakeProfit  decimal.Decimal          `db:"take_profit" json:"take_profit,omitempty"`
-	Profit      decimal.Decimal          `db:"profit" json:"profit"`
-	Commission  decimal.Decimal          `db:"commission" json:"commission"`
-	Swap        decimal.Decimal          `db:"swap" json:"swap"`
+	StopLoss    decimal.Decimal  `db:"stop_loss" json:"stop_loss,omitempty"`
+	TakeProfit  decimal.Decimal  `db:"take_profit" json:"take_profit,omitempty"`
+	Profit      decimal.Decimal  `db:"profit" json:"profit"`
+	Commission  decimal.Decimal  `db:"commission" json:"commission"`
+	Swap        decimal.Decimal  `db:"swap" json:"swap"`
 	Comment     string           `db:"comment" json:"comment,omitempty"`
 	MagicNumber int64            `db:"magic_number" json:"magic_number,omitempty"`
 	IsAutoTrade bool             `db:"is_auto_trade" json:"is_auto_trade"`
@@ -132,22 +132,22 @@ func NewSystemOperationLog(userID uuid.UUID, opType OperationType, module, actio
 		OperationType: opType,
 		Module:        module,
 		Action:        action,
-		CreatedAt:     time.Now(),
+		CreatedAt:     time.Now(), // CST-paired column system_operation_logs.created_at — no .UTC() (constraints.md)
 	}
 }
 
 type LogQueryParams struct {
-	Page      int    `form:"page" json:"page"`
-	PageSize  int    `form:"page_size" json:"page_size"`
-	AccountID string `form:"account_id" json:"account_id"`
-	ScheduleID string `form:"schedule_id" json:"schedule_id"`
-	Symbol    string `form:"symbol" json:"symbol"`
-	StartDate string `form:"start_date" json:"start_date"`
-	EndDate   string `form:"end_date" json:"end_date"`
-	Status    string `form:"status" json:"status"`
-	Type      string `form:"type" json:"type"`
-	Module    string `form:"module" json:"module"`
-	Action    string `form:"action" json:"action"`
+	Page         int    `form:"page" json:"page"`
+	PageSize     int    `form:"page_size" json:"page_size"`
+	AccountID    string `form:"account_id" json:"account_id"`
+	ScheduleID   string `form:"schedule_id" json:"schedule_id"`
+	Symbol       string `form:"symbol" json:"symbol"`
+	StartDate    string `form:"start_date" json:"start_date"`
+	EndDate      string `form:"end_date" json:"end_date"`
+	Status       string `form:"status" json:"status"`
+	Type         string `form:"type" json:"type"`
+	Module       string `form:"module" json:"module"`
+	Action       string `form:"action" json:"action"`
 	ResourceType string `form:"resource_type" json:"resource_type"`
-	ResourceID string `form:"resource_id" json:"resource_id"`
+	ResourceID   string `form:"resource_id" json:"resource_id"`
 }
