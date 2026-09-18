@@ -105,3 +105,28 @@ func TestHarness_BogusAccountModeFailsClosed(t *testing.T) {
 		t.Fatalf("err = %v, want it to contain 'VM fatal'", err)
 	}
 }
+
+// TestHarness_NettingModeViaVM — MT5-ACCMETHOD-ADAPTER-1 T4: the netting
+// value flows through to the VM's margin-mode/hedge-allowed props (the
+// counterpart of LIVE-ACCOUNT-FIELDS-1 T1's hedging=2/1 side).
+//
+// Adversarial: corrupt the netting branch in AccountInfoInteger's prop-7/10
+// switch or the sdkAccountMode whitelist → these assertions RED.
+func TestHarness_NettingModeViaVM(t *testing.T) {
+	r, vmRunner := newAccountFieldsRunner(t, 200, "USD", "BrokerCo", "netting")
+	if _, err := r.OnBar(context.Background(), nil, "M15"); err != nil {
+		t.Fatalf("OnBar failed: %v", err)
+	}
+	for name, want := range map[string]int32{
+		"g_mm":    0, // ACCOUNT_MARGIN_MODE_RETAIL_NETTING = 0
+		"g_hedge": 0, // netting → ACCOUNT_HEDGE_ALLOWED = 0
+	} {
+		v, ok := vmRunner.GetGlobal(name)
+		if !ok {
+			t.Fatalf("global %s not found", name)
+		}
+		if got := v.ToInt(); got != want {
+			t.Fatalf("%s = %d, want %d (netting semantics)", name, got, want)
+		}
+	}
+}

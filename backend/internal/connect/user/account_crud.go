@@ -81,6 +81,7 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 			Credit: info.Credit, Margin: info.Margin, FreeMargin: info.FreeMargin,
 			Leverage: int64(info.Leverage), Currency: info.Currency, IsInvestor: info.IsInvestor,
 			AccountType: info.AccountType, // TRUST-1
+			MarginMode:  info.MarginMode,  // MT5-ACCMETHOD-ADAPTER-1
 		}); err != nil {
 			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))

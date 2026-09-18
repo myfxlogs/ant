@@ -52,7 +52,20 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 		Currency:    s.GetCurrency(),
 		IsInvestor:  s.GetIsInvestor(),
 		AccountType: mdtick.NormalizeAccountType(s.GetType()), // TRUST-1
+		MarginMode:  accMethodToString(s.GetMethod()),
 	}, nil
+}
+
+// accMethodToString maps mtapi AccMethod to margin mode string.
+// Default/unknown → "" (fail-closed — do not guess).
+func accMethodToString(m pb.AccMethod) string {
+	switch m {
+	case pb.AccMethod_AccMethod_Netting:
+		return "netting"
+	case pb.AccMethod_AccMethod_Hedging:
+		return "hedging"
+	}
+	return ""
 }
 
 // RequiredMargin calls MT5 RequiredMargin RPC for the given symbol/lots/side/price.

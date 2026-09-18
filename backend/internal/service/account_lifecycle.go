@@ -50,6 +50,9 @@ type AccountInfoUpdate struct {
 	// AccountType is the normalized broker account type ("real"/"contest"/"demo"/"unknown").
 	// Written to mt_accounts.account_type. TRUST-1.
 	AccountType string
+	// MarginMode is the broker margin mode ("hedging"|"netting"|""=unknown)
+	// from mtapi AccMethod. Written via NULLIF ("" → NULL). MT5-ACCMETHOD-ADAPTER-1.
+	MarginMode string
 }
 
 // UpdateAccountInfoTx updates balance/equity/margin/leverage/currency/account_type within a transaction.
@@ -59,9 +62,10 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, p AccountInfoU
 		UPDATE mt_accounts SET
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
-			is_investor = $10, account_type = $11, updated_at = CURRENT_TIMESTAMP
+			is_investor = $10, account_type = $11,
+			margin_mode = NULLIF($12, ''), updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
-	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.IsInvestor, p.AccountType)
+	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.IsInvestor, p.AccountType, p.MarginMode)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
 	}
@@ -74,9 +78,10 @@ func (s *AccountService) UpdateAccountInfo(ctx context.Context, p AccountInfoUpd
 		UPDATE mt_accounts SET
 			balance = $3, equity = $4, credit = $5, margin = $6,
 			free_margin = $7, leverage = $8, currency = $9,
-			account_type = $10, updated_at = CURRENT_TIMESTAMP
+			account_type = $10,
+			margin_mode = NULLIF($11, ''), updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2 AND deleted_at IS NULL
-	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.AccountType)
+	`, p.ID, p.UserID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.Leverage, p.Currency, p.AccountType, p.MarginMode)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
 	}

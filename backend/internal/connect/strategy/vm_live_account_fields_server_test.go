@@ -133,6 +133,39 @@ func TestInjectAccountTruth_LiveIdentityFailClosed(t *testing.T) {
 	})
 }
 
+// TestInjectAccountTruth_MarginModeSourcePriority — MT5-ACCMETHOD-ADAPTER-1
+// T3: DB margin_mode is authoritative; the MT4 platform-semantics fallback
+// only applies to legacy rows with empty margin_mode.
+//
+// Adversarial (M2): remove the ident.MarginMode direct read → netting/mt5
+// sub-cases RED; (M1): accMethodToString constant "" → the whole chain RED
+// upstream (adapter test T1 catches it first).
+func TestInjectAccountTruth_MarginModeSourcePriority(t *testing.T) {
+	cases := []struct {
+		name  string
+		ident *AccountIdentity
+		want  string
+	}{
+		{"mt5 DB netting wins", &AccountIdentity{Leverage: 200, Currency: "USD", MTType: "mt5", MarginMode: "netting"}, "netting"},
+		{"mt5 empty stays unknown", &AccountIdentity{Leverage: 200, Currency: "USD", MTType: "mt5", MarginMode: ""}, ""},
+		{"mt4 legacy empty falls back to hedging", &AccountIdentity{Leverage: 200, Currency: "USD", MTType: "mt4", MarginMode: ""}, "hedging"},
+		{"mt4 DB value wins over fallback", &AccountIdentity{Leverage: 200, Currency: "USD", MTType: "mt4", MarginMode: "hedging"}, "hedging"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := newIdentityTestServer(t, tc.ident, nil)
+			cfg := LiveStrategyConfig{AccountID: "acct-1", Symbol: "EURUSD", Timeframe: "M15", Mode: "live"}
+			lctx, err := srv.buildLiveContext(context.Background(), cfg, identityBars(), nil)
+			if err != nil {
+				t.Fatalf("buildLiveContext failed: %v", err)
+			}
+			if lctx.AccountMode != tc.want {
+				t.Fatalf("AccountMode = %q, want %q", lctx.AccountMode, tc.want)
+			}
+		})
+	}
+}
+
 // TestInjectAccountTruth_PaperTolerates — T5: paper mode tolerates lookup
 // errors and missing identity (fail-open for simulation), fields stay zero.
 func TestInjectAccountTruth_PaperTolerates(t *testing.T) {

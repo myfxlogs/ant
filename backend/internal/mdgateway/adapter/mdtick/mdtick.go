@@ -95,6 +95,11 @@ type MTAccountInfo struct {
 	// AccountType is the normalized broker account type ("real"/"contest"/"demo"/"unknown").
 	// Sourced from AccountSummary.Type (MT4 enum / MT5 string). TRUST-1.
 	AccountType string
+	// MarginMode is the broker account margin mode: "hedging"|"netting"|"".
+	// Sourced from mtapi MT5 AccountSummary.Method (AccMethod); "" = unknown.
+	// MT4 has no Method field — adapter fills "hedging" (platform semantics:
+	// MT4 is hedging-only). MT5-ACCMETHOD-ADAPTER-1.
+	MarginMode string
 }
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.

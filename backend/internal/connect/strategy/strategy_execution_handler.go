@@ -131,9 +131,10 @@ type StrategyExecutionServer struct {
 // AccountIdentity is the leverage/currency/platform triple read from one
 // mt_accounts row. LIVE-ACCOUNT-FIELDS-1.
 type AccountIdentity struct {
-	Leverage int32
-	Currency string
-	MTType   string // "mt4" | "mt5"
+	Leverage   int32
+	Currency   string
+	MTType     string // "mt4" | "mt5"
+	MarginMode string // "hedging"|"netting"|""(unknown); MT5-ACCMETHOD-ADAPTER-1
 }
 
 // QualityValidator validates backtest quality for marketplace publishing (read-only preview).

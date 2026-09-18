@@ -298,7 +298,13 @@ func (s *StrategyExecutionServer) injectAccountTruth(ctx context.Context, cfg Li
 		} else if ident != nil {
 			lctx.Leverage = ident.Leverage
 			lctx.Currency = ident.Currency
-			lctx.AccountMode = accountModeForMTType(ident.MTType)
+			// MT5-ACCMETHOD-ADAPTER-1: DB authoritative read with the MT4
+			// platform-semantics fallback for pre-margin_mode legacy rows.
+			mode := ident.MarginMode
+			if mode == "" {
+				mode = accountModeForMTType(ident.MTType)
+			}
+			lctx.AccountMode = mode
 		}
 	}
 	// Live identity completeness: leverage<=0 / empty currency means the
@@ -427,10 +433,10 @@ func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig,
 	tctx.StopsLevel = param.StopLevel
 }
 
-// accountModeForMTType derives margin mode from platform semantics.
-// MT4 is hedging-only (platform truth, not a lookup). MT5 margin mode is
-// per-account broker config — mtapi exposes it via AccountSummary.Method
-// but the adapter does not surface it yet; "" = unknown → VM fail-closed.
+// accountModeForMTType is the MT4 platform-semantics fallback for rows that
+// predate the margin_mode column (bound before MT5-ACCMETHOD-ADAPTER-1);
+// mt_accounts.margin_mode is the authoritative source. MT4 is hedging-only
+// (platform truth, not a lookup). "" = unknown → VM fail-closed.
 func accountModeForMTType(mtType string) string {
 	if mtType == "mt4" {
 		return "hedging"

@@ -40,4 +40,5 @@ type MtAccount struct {
 	BrokerID                   pgtype.UUID
 	BrokerMarginCallPct        float32
 	BrokerStopOutPct           float32
+	MarginMode                 pgtype.Text
 }

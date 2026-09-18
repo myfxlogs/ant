@@ -56,6 +56,7 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 		Currency:    s.GetCurrency(),
 		IsInvestor:  s.GetIsInvestor(),
 		AccountType: mdtick.Mt4AccountTypeToString(int32(s.GetType())), // TRUST-1
+		MarginMode:  "hedging",                                         // MT4 is hedging-only — platform semantics, not a lookup
 	}, nil
 }
 

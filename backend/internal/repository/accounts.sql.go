@@ -12,7 +12,7 @@ import (
 )
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, last_error, last_connected_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, last_error, last_connected_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct, margin_mode FROM mt_accounts WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 `
 
 type GetAccountParams struct {
@@ -55,6 +55,7 @@ func (q *Queries) GetAccount(ctx context.Context, arg GetAccountParams) (MtAccou
 		&i.BrokerID,
 		&i.BrokerMarginCallPct,
 		&i.BrokerStopOutPct,
+		&i.MarginMode,
 	)
 	return i, err
 }
@@ -136,7 +137,7 @@ func (q *Queries) GetAccountSnapshots(ctx context.Context, userID pgtype.UUID) (
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, last_error, last_connected_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC
+SELECT id, user_id, mt_type, broker_company, broker_server, broker_host, login, alias, balance, credit, equity, margin, free_margin, margin_level, leverage, currency, account_method, is_investor, account_status, last_error, last_connected_at, created_at, updated_at, account_type, mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols, broker_id, broker_margin_call_pct, broker_stop_out_pct, margin_mode FROM mt_accounts WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC
 `
 
 func (q *Queries) ListAccounts(ctx context.Context, userID pgtype.UUID) ([]MtAccount, error) {
@@ -180,6 +181,7 @@ func (q *Queries) ListAccounts(ctx context.Context, userID pgtype.UUID) ([]MtAcc
 			&i.BrokerID,
 			&i.BrokerMarginCallPct,
 			&i.BrokerStopOutPct,
+			&i.MarginMode,
 		); err != nil {
 			return nil, err
 		}
