@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **TZ-PAIRED-CST-COLS-1 施工完成等独立复审**（文档债零行为变更）；后续：LIVE-ACCOUNT-FIELDS-1 设计实查。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **TZ-PAIRED-CST-COLS-1 施工完成等独立复审**（aed6ff70）；**LIVE-ACCOUNT-FIELDS-1 设计实查完成+派工单落档**——按字段分治：Company 纯接线（proto f27 已填充）/Leverage+Currency 新 proto 31/32+mt_accounts 权威/Mode MT4=平台语义 hedging+MT5=""保持 fail-closed（AccMethod adapter 未映射另债）；禁 mode=13 执行模式误映射。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -82,7 +82,7 @@
 - **VM-ARRAY-OOB-FAILCLOSED-1** ✅done — 数组 OOB+局部负编码 fail-closed（Devin CLI 验收 2026-09-18，commit bdb3733f，独立 mutation×4）；明细 registry 行 217
 - **VM-ENUM-NUMBERING-1** ✅done — SymbolInfo*/MarketInfo 全枚举对齐+静默错标修复+SymbolInfoString 重分类（Devin CLI 验收 2026-09-18，commit 477e8273+bfb42ea3 返修，独立 mutation×5）；明细 registry 行 219
 - **VM-GLOBAL-ARRAY-DECL-1** ✅done — 全局数组端到端修复+4 错标点编译期显式拒（Devin CLI 验收 2026-09-18，commit da902af6，独立 mutation×4）；明细 registry 行 220
-- **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
+- **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode；2026-09-19 设计实查完成+派工单 `builder-handoff-live-account-fields-1.md`（按字段分治：Company 纯接线/Leverage+Currency 新 proto 31-32/Mode MT4=hedging 平台语义+MT5="" fail-closed）
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
 - **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
@@ -104,15 +104,6 @@
 - 2026-09-18 **VM-FUNC-FATAL-DELAY-1 ✅done** — commit de6f672c+6ef18536（派工单 @a74556c6+R1）；executeCallUser 循环顶 fatalError 检查；独立 mutation×2 RED→GREEN；明细 registry 行 218。
 - 2026-09-18 **TEST-WAITSTATE-ACQUIRE-BCAST-1 ✅done** — commit 53e886e9（派工单 @a6ab8bbb）；Acquire 锁内补 Broadcast+判别性延迟测试；独立 mutation RED→GREEN；明细 registry 行 211。
 - 2026-09-18 **SNAPSHOT-SLICE-ALIAS-1 ✅done** — commit 40148ede（派工单 @e253a836）；边界不变量 4 面私有化+契约钉注；独立 mutation×4 各精确命中；明细 registry 行 212。
-- 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
-- 2026-09-17 **批次2d 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md`（timeseries 无源/handle 7 API 重分类）。
-- 2026-09-17 **批次2c 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md @64c6efc3`（AccountInfoDouble/Integer/String 假分支修复+枚举编号对齐，非重分类）。
-- 2026-09-16 **VM-API-TRUTH-1 批次2a ✅done** — commit 8f946579；12 platform checkup API 重分类；独立 mutation×1 RED→GREEN；明细滚出 LOG.md + registry 行 126。
-- 2026-09-16 **VM-API-TRUTH-1 批次2a 施工完成** — 已滚出 LOG.md；详见 registry 行 126（commit 8f946579，独立 mutation×1 RED→GREEN）。
-- 2026-09-16 **VM-API-TRUTH-1 批次1 ✅done** — 已滚出 LOG.md；详见 registry 行 126（commit e97a43b8，独立 mutation×1 RED→GREEN）。
-- 2026-09-16 **VM-COMPILER-SEMANTICS-3 ✅done** — 已滚出 LOG.md；详见 registry 行 88（commit c5d1a7e0，独立 mutation×2 RED→GREEN）。
-- 2026-09-16 **VM-HONESTY-3-REVIEW ✅done** — 已滚出 LOG.md；详见 registry 行 87（commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）。
-- 2026-09-16 **VM 质量方案 v2 全量收官**（10 子任务全 Devin CLI 验收）：QS-1.4 bool 双否定（88292b14）/ QS-1.6 权威读状态机迁移（5be48f30）/ QS-1.3 函数域隔离 v3（9940eda4+ee47292d）/ QS-1.2a lastError 三 builtin（65e2cccf）/ QS-1.7-INV 不立项（05138758）/ QS-2.2 goleak（174b8405）/ QS-2.4 race 审计（8e393cae）/ QS-2.5 panic 加固（89353004）/ QS-2.3 noopContext（5ad339a9）/ QS-3-BASELINE 基线+metric（b8ad1674）。明细滚出至 handover-audit-plan.md。
-- 2026-09-16 **registry 全量对账**（Devin CLI）：所有 ⚠️待独立复审项清零——翻正漂移 ✅done×9（LIVE-ORDER-REENTRY-1/LIVE-MQL-ORDER-CONTEXT-1/LIVE-REDESIGN-2TAB/LIVE-DIAG-TRUTH-1/VM-TEST-EVIDENCE-3/返工 Batch5 等），裁定决策项×5（DATA-TRUTH-3=v2 凭据-only 附属表/VM-API-TRUTH-1=批准 StatusUnsupported 派工/VM-LIVE-MTF-1=暂缓需求驱动/STREAM-FREEZE-1=代码验收+生产实测挂业主/LIVE-ORDER-REENTRY-1 三遗留裁定），标注待重施工×2（VM-RUNTIME-FAILCLOSED-2/VM-HONESTY-3-REVIEW 代码不在仓）。
+- 2026-09-16 **VM-API-TRUTH-1 批次1/2a ✅done + VM 质量方案 v2 全量收官 + registry 全量对账** — 明细已滚出 LOG.md；registry 行 126/88/87。
 
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
