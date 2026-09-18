@@ -32,7 +32,6 @@ type MTAccount struct {
 	BrokerStopOutPct     decimal.Decimal    `json:"broker_stop_out_pct" db:"broker_stop_out_pct"`
 	LastError            string     `json:"last_error" db:"last_error"`
 	LastConnectedAt *time.Time `json:"last_connected_at" db:"last_connected_at"`
-	LastCheckedAt   *time.Time `json:"last_checked_at" db:"last_checked_at"`
 	CreatedAt       time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at" db:"updated_at"`
 }

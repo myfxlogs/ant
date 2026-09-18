@@ -255,7 +255,9 @@ func PeriodMs(period string) int64 {
 	}
 }
 
-// AccountConfig comes from PG mt_accounts_v2 view; runner decrypts and passes to adapter.
+// AccountConfig comes from PG mt_accounts_v2 view (credentials-only compat
+// view — do not extend; mt_accounts is the runtime truth, DATA-TRUTH-3);
+// runner decrypts and passes to adapter.
 // Field names strictly align with SQL column names (see spec/13 §4.1).
 type AccountConfig struct {
 	AccountID  string   // mt_accounts_v2.id (UUID)

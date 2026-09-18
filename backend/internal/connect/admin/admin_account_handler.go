@@ -67,9 +67,6 @@ func accountWithUserToProto(a *repository.AccountWithUser) *antv1.AccountWithUse
 	if a.LastConnectedAt != nil {
 		p.LastConnectedAt = timestamppb.New(*a.LastConnectedAt)
 	}
-	if a.LastCheckedAt != nil {
-		p.LastCheckedAt = timestamppb.New(*a.LastCheckedAt)
-	}
 	return p
 }
 

@@ -33,6 +33,8 @@ func loadFinalizedBars(ctx context.Context, store repository.MarketDataStore, lo
 // loadAccountConfigs queries PG for active accounts.
 // Passwords are encrypted in DB; decrypted here via secrets client.
 func loadAccountConfigs(ctx context.Context, deps RunnerDeps) ([]mdtick.AccountConfig, error) {
+	// mt_accounts_v2: credentials-only compat view — mt_accounts is the
+	// runtime truth; do not extend (DATA-TRUTH-3).
 	rows, err := deps.PG.Query(ctx, `
 		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
 		       login, password_encrypted, COALESCE(mtapi_token_encrypted, '\x'::bytea), broker_host, server,
@@ -197,6 +199,7 @@ func loadSingleAccountConfig(ctx context.Context, pg *pgxpool.Pool, sec secrets.
 		passwordEnc, mtTokenEnc []byte
 		symbols           []string
 	)
+	// mt_accounts_v2: credentials-only compat view (DATA-TRUTH-3).
 	err := pg.QueryRow(ctx, `
 		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
 		       login, password_encrypted, COALESCE(mtapi_token_encrypted, '\x'::bytea), broker_host, server,
@@ -243,6 +246,7 @@ type pgActiveAccounts struct {
 }
 
 func (p *pgActiveAccounts) ActiveAccounts(ctx context.Context) ([]backfiller.ActiveAccount, error) {
+	// mt_accounts_v2: credentials-only compat view (DATA-TRUTH-3).
 	rows, err := p.pool.Query(ctx, `
 		SELECT a.id, a.broker, a.canonical_subscribed_symbols
 		FROM mt_accounts_v2 a

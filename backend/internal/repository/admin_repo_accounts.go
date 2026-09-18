@@ -25,7 +25,7 @@ var accountCols = `ma.id, ma.user_id, ma.mt_type,
 		   ma.balance, ma.credit, ma.equity, ma.margin, ma.free_margin,
 		   ma.margin_level, ma.leverage, ma.currency, COALESCE(ma.account_method,''),
 		   ma.is_investor, ma.account_status,
-		   COALESCE(ma.last_error,''), ma.last_connected_at, ma.last_checked_at,
+		   COALESCE(ma.last_error,''), ma.last_connected_at,
 		   ma.created_at, ma.updated_at, ma.account_type`
 
 func (r *AdminRepository) ListAccounts(ctx context.Context, params *model.AccountListParams) ([]*AccountWithUser, int64, error) {
@@ -49,7 +49,7 @@ func (r *AdminRepository) ListAccounts(ctx context.Context, params *model.Accoun
 			&a.Balance, &a.Credit, &a.Equity, &a.Margin, &a.FreeMargin,
 			&a.MarginLevel, &a.Leverage, &a.Currency, &a.AccountMethod,
 			&a.IsInvestor, &a.AccountStatus,
-			&a.LastError, &a.LastConnectedAt, &a.LastCheckedAt,
+			&a.LastError, &a.LastConnectedAt,
 			&a.CreatedAt, &a.UpdatedAt, &a.AccountType,
 			&a.UserEmail, &a.UserNickname); err != nil {
 			return nil, 0, err
@@ -105,7 +105,7 @@ func (r *AdminRepository) GetAccountByID(ctx context.Context, id uuid.UUID) (*Ac
 		&a.Balance, &a.Credit, &a.Equity, &a.Margin, &a.FreeMargin,
 		&a.MarginLevel, &a.Leverage, &a.Currency, &a.AccountMethod,
 		&a.IsInvestor, &a.AccountStatus,
-		&a.LastError, &a.LastConnectedAt, &a.LastCheckedAt,
+		&a.LastError, &a.LastConnectedAt,
 		&a.CreatedAt, &a.UpdatedAt, &a.AccountType,
 		&a.UserEmail, &a.UserNickname,
 	)

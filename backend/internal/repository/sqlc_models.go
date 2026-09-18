@@ -30,7 +30,6 @@ type MtAccount struct {
 	AccountStatus              string
 	LastError                  pgtype.Text
 	LastConnectedAt            pgtype.Timestamp
-	LastCheckedAt              pgtype.Timestamp
 	CreatedAt                  pgtype.Timestamp
 	UpdatedAt                  pgtype.Timestamp
 	AccountType                pgtype.Text
