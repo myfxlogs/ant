@@ -159,7 +159,13 @@ func (vm *VM) execute(ins Instruction) error {
 	// ── User array access ──
 	case OP_PUSH_ARRAY:
 		idx := vm.pop()
-		vm.push(vm.executePushArray(ins, idx))
+		v := vm.executePushArray(ins, idx)
+		// VM-ARRAY-OOB-FAILCLOSED-1: defense-in-depth, same shape as
+		// OP_CALL_BUILTIN — don't push the NoneVal fallback after a
+		// stack error; runLoop's top-of-loop check fires next iteration.
+		if vm.fatalError == "" {
+			vm.push(v)
+		}
 
 	case OP_STORE_ARRAY:
 		idx := vm.pop()
@@ -296,30 +302,52 @@ func (vm *VM) executeLogical(ins Instruction) {
 }
 
 func (vm *VM) executePushArray(ins Instruction, idx interp.Value) interp.Value {
-	if int(ins.A) < len(vm.globals) {
-		arrVal := vm.globals[ins.A]
-		if arrVal.Kind == interp.ValArray {
-			i := int(idx.ToInt())
-			if i >= 0 && i < len(arrVal.Array) {
-				return arrVal.Array[i]
-			}
-		}
+	if ins.A < 0 {
+		// VM-ARRAY-OOB-FAILCLOSED-1: negative-encoded slot = local array
+		// access (compileSubscript). Never treat a local index as a global
+		// slot — that silently read/wrote an unrelated global array.
+		vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY local array slot %d not supported", -ins.A-1))
+		return interp.NoneVal()
 	}
-	return interp.NoneVal()
+	if int(ins.A) >= len(vm.globals) {
+		vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
+		return interp.NoneVal()
+	}
+	arrVal := vm.globals[ins.A]
+	if arrVal.Kind != interp.ValArray {
+		vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY slot %d is not an array", ins.A))
+		return interp.NoneVal()
+	}
+	i := int(idx.ToInt())
+	if i < 0 || i >= len(arrVal.Array) {
+		vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY index %d out of range (len=%d)", i, len(arrVal.Array)))
+		return interp.NoneVal()
+	}
+	return arrVal.Array[i]
 }
 
 func (vm *VM) executeStoreArray(ins Instruction, idx, val interp.Value) {
+	if ins.A < 0 {
+		// VM-ARRAY-OOB-FAILCLOSED-1: negative-encoded slot = local array
+		// access (compileSubscript). See executePushArray.
+		vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY local array slot %d not supported", -ins.A-1))
+		return
+	}
 	if int(ins.A) >= len(vm.globals) {
+		vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
 		return
 	}
 	arrVal := vm.globals[ins.A]
 	if arrVal.Kind != interp.ValArray {
+		vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY slot %d is not an array", ins.A))
 		return
 	}
 	i := int(idx.ToInt())
-	if i >= 0 && i < len(arrVal.Array) {
-		arrVal.Array[i] = val
+	if i < 0 || i >= len(arrVal.Array) {
+		vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY index %d out of range (len=%d)", i, len(arrVal.Array)))
+		return
 	}
+	arrVal.Array[i] = val
 }
 
 func (vm *VM) executeCallUser(ins Instruction) error {

@@ -140,6 +140,11 @@ func (c *astCompiler) compileSubscript(e *interp.Expr) {
 		slot, isGlobal := c.resolveVar(e.Name)
 		if !isGlobal {
 			c.bc.Coverage.AddBlindSpot("local array write: " + e.Name)
+			// VM-ARRAY-OOB-FAILCLOSED-1: negative-encode non-global slots
+			// (uint16 → int32 before negating) so the runtime never mistakes
+			// a local index for a global slot.
+			c.emit(OP_STORE_ARRAY, -int32(slot)-1, 0, 0)
+			return
 		}
 		c.emit(OP_STORE_ARRAY, int32(slot), 0, 0)
 		return
@@ -152,6 +157,10 @@ func (c *astCompiler) compileSubscript(e *interp.Expr) {
 		slot, isGlobal := c.resolveVar(e.Name)
 		if !isGlobal {
 			c.bc.Coverage.AddBlindSpot("local array read: " + e.Name)
+			// VM-ARRAY-OOB-FAILCLOSED-1: same negative encoding as the write
+			// path — see above.
+			c.emit(OP_PUSH_ARRAY, -int32(slot)-1, 0, 0)
+			return
 		}
 		c.emit(OP_PUSH_ARRAY, int32(slot), 0, 0)
 	}
