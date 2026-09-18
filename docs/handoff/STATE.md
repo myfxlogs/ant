@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（5 批全 Devin CLI 独立复审+独立 mutation；重分类 46 API StatusUnsupported：e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐；69d2330b 批次2e 4 重分类+4 实接）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f，A 面 OOB 5 分支 setStackError+B 面局部负编码+dispatch 守卫）。VM-ENUM-NUMBERING-1 设计实查完成、派工单已落档——constants↔switch 不自洽系**静默错标**（BID→Point、POINT→VolumeMax、DIGITS→0），SymbolInfoString 整 API 重分类裁定。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（5 批全 Devin CLI 独立复审+独立 mutation；重分类 46 API StatusUnsupported：e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b；52add8ed 批次2c AccountInfo* 假分支 fail-closed+枚举对齐；69d2330b 批次2e 4 重分类+4 实接）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f，A 面 OOB 5 分支 setStackError+B 面局部负编码+dispatch 守卫）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3 返修：全枚举对齐+静默错标修复+SymbolInfoString 重分类+TIME_MSC int32 截断转不可实现类）。下一：VM-GLOBAL-ARRAY-DECL-1 设计实查（P2，无派工单）。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -23,9 +23,10 @@
 | VM-API-TRUTH-1 批次2a platform checkup 12 API 重分类 | ✅done(批次2a) | Devin CLI 验收通过 2026-09-16；commit 8f946579；独立 mutation×1 RED→GREEN；明细滚出 LOG.md |
 | VM-API-TRUTH-1 批次2b~2e（46+8 API 重分类+假分支修复+4 实接，整债收官） | ✅done | Devin CLI 验收通过 2026-09-17；commit 1fb352f1/52add8ed/a306f54e/69d2330b；各批独立 mutation RED→GREEN+机检复测全绿；明细见 registry 行 126+LOG.md |
 | VM-ARRAY-OOB-FAILCLOSED-1 数组 OOB+局部负编码 fail-closed | ✅done | Devin CLI 验收通过 2026-09-18；commit bdb3733f；明细见 registry 行 217 |
+| VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **VM-ENUM-NUMBERING-1 返修待复审**——施工 @477e8273 经独立复审：实现与派工单逐格相符+门禁全绿，但发现 1 处 spec 自身缺陷（TIME_MSC unix_ms 超 int32 截断成假值，设计责任在 Devin CLI），修订记录已落派工单（删常量+删 case16，同批不可实现 prop 约定）；等施工方返修回报后复审收尾。VM-ARRAY-OOB-FAILCLOSED-1 已验收收官（bdb3733f）。**后续队列**：VM-ENUM-NUMBERING-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: **VM-GLOBAL-ARRAY-DECL-1 设计实查**（P2，Devin CLI 侧）——数组批+枚举批均验收收官；该债尚无派工单（声明收集+下标赋值错译+波及面审计需先设计）。**后续队列**：VM-GLOBAL-ARRAY-DECL-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -86,7 +87,7 @@
 - **VM-RUNTIME-FAILCLOSED-2** ✅done — 静默算术/栈/槽位 fail-closed（Devin CLI 验收通过 2026-09-16，commit 4fea9439，独立 mutation×4 RED→GREEN）
 - **VM-ARRAY-OOB-FAILCLOSED-1** ✅done — 数组 OOB+局部负编码 fail-closed（Devin CLI 验收 2026-09-18，commit bdb3733f，独立 mutation×4）；明细 registry 行 217
 - **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
-- **VM-ENUM-NUMBERING-1** 🟦open P2 — prop-switch 函数族"自造编号 vs 真枚举"；2026-09-17 设计实查升级为**静默错标**（constants↔switch 不自洽：BID→Point/POINT→VolumeMax/DIGITS→0）+SymbolInfoString 整 API 重分类裁定；派工单 `docs/audits/builder-handoff-vm-enum-numbering-1.md` 已就绪
+- **VM-ENUM-NUMBERING-1** ✅done — SymbolInfo*/MarketInfo 全枚举对齐+静默错标修复+SymbolInfoString 重分类（Devin CLI 验收 2026-09-18，commit 477e8273+bfb42ea3 返修，独立 mutation×5）；明细 registry 行 219
 - **VM-GLOBAL-ARRAY-DECL-1** 🟦open P2 — 全局数组端到端从未工作（2026-09-17 数组施工方阻断实证）：collectGlobalVar 无 array_declarator 分支→声明丢弃；compileAssignment 顺序→arr[i]=v 退化整槽标量写；验收含 OOB 批 S4-1/2/6 迁移用例+波及面审计
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
@@ -101,6 +102,7 @@
 - 2026-09-17 **VM-API-TRUTH-1 批次2c ✅done** — commit 52add8ed；AccountInfo* 假分支 fail-closed+枚举对齐+26 常量（非重分类）；独立 mutation×4 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2d ✅done** — commit a306f54e；7 timeseries API 重分类；14 真实/venue 实现保留；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2e ✅done + 整债收官** — commit 69d2330b；4 重分类+4 实接；python account.profit 顺带修复；独立 mutation×3 RED→GREEN；明细见 registry 行 126（条目转 ✅done）。
+- 2026-09-18 **VM-ENUM-NUMBERING-1 ✅done** — commit 477e8273+bfb42ea3 返修R1；独立 mutation×5 RED→GREEN；TIME_MSC int32 截断 spec 缺陷已修；明细见 registry 行 219。
 - 2026-09-18 **VM-ARRAY-OOB-FAILCLOSED-1 ✅done** — commit bdb3733f（修订派工单 @d7f74310）；独立 mutation×4 RED→GREEN；明细见 registry 行 217。
 - 2026-09-17 **VM-ARRAY-OOB-FAILCLOSED-1 开工指令已发**：`docs/audits/builder-handoff-vm-array-oob-failclosed-1.md @6662b4bb`（A 面 OOB fail-closed+B 面局部数组负编码）。
 - 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
