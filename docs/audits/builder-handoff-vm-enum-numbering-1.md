@@ -222,3 +222,19 @@ MODE_MARGINCALCMODE 不是真 MQL4 MarketInfo 模式 → 常量删除）
 - 不实现 handle/session/DOM/margin-rate 子系统（VM-API-TRUTH-1 已裁定显式限制）。
 - `SymbolInfoString` 重分类不在原 registry 描述内——**设计实查新证据**：真枚举无 NAME、无字符串字段可接，属本债"假分支处置"权限内。
 - live 场景 `SPREAD_FLOAT`/venue 值后续由 LIVE-ACCOUNT-FIELDS-1 复核，本批只保证回测 venue 语义诚实。
+
+---
+
+## 修订记录（2026-09-18 Devin CLI 复审 R1）——S1/S2 局部修订 1 处
+
+**复审结论：施工方实现与派工单逐格相符、门禁全绿，但发现 1 处 spec 自身缺陷（设计责任在 Devin CLI，非施工方偏离），返修后重验。**
+
+**缺陷**：§3b 裁定 `TIME_MSC=16 → 实接 ctx.ServerTime()`。`ctx.ServerTime()` 返回 unix **毫秒**（int64，当前 ~1.757e12），`Value.Int` 为 **int32**（上限 2.147e9）→ `IntVal(int32(ServerTime()))` 在生产真实时间戳下**截断回绕成假值**（可为负）。施工方测试用 `serverTime:1000000` 小值规避——正确实现 spec，但生产路径静默错误，正是本批消灭的缺陷类。`ValDatetime` 位宽够但为死类型（VM 无生产者/消费者），不能作为通道。
+
+**修订处置（TIME_MSC 转不可实现类）**：
+1. `constants.go`：删除 `"SYMBOL_TIME_MSC"` 常量——与本批不可实现 prop 无命名常量的约定一致（同 SECTOR 等无名）；源码引用 → 前端隐式全局 0 → prop 0 落 default → error（端到端 fail-closed 保留，同 ROLLOVER3DAYS 链路）。
+2. `vm_builtin_account.go`：删除 `case 16`——裸 `IntVal(16)` 调用落 `default → "unsupported prop 16"`（prop 16 在本 VM 不可支持，消息诚实）。
+3. 测试同步：S6b 值断言表删 `{"SYMBOL_TIME_MSC", 1000000}` 行；S6e 的 TIME_MSC 守卫断言改为 `LookupMQLConstant("SYMBOL_TIME_MSC")` 不可解析 + 裸 `IntVal(16)` → err（或并入 `const/` 删名循环的 runtimeErrorCases）；`SYMBOL_TIME=15`（秒，int32 至 2038 有效）保持不变。
+4. 该分支补 mutation 证据（恢复 IntVal 截断返回 → 相关断言 RED）。
+
+**其余验收项全部成立**（保留复审记录）：枚举值与 §1a-1d 逐值相符（DOUBLE 19 项/INTEGER 21 项/MODE_* 26 项+删 4 非真名+15 返回值枚举）；§3a-3d 处置表逐格落地（实接带源、venue 事实值、无源 error、BID/ASK/TIME 当前品种+非零守卫、MARGININIT/REQUIRED 公式+leverage 守卫）；SymbolInfoString 摘除四路干净；机检 build/680/race×3 2040/vet/gofmt/check-lines 0 errors/diff --check 全绿。

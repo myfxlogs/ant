@@ -25,7 +25,7 @@
 | VM-ARRAY-OOB-FAILCLOSED-1 数组 OOB+局部负编码 fail-closed | ✅done | Devin CLI 验收通过 2026-09-18；commit bdb3733f；明细见 registry 行 217 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **发 VM-ENUM-NUMBERING-1 开工指令**（P2，先复核派工单坐标漂移）——VM-ARRAY-OOB-FAILCLOSED-1 已验收收官（bdb3733f）。**后续队列**：VM-ENUM-NUMBERING-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: **VM-ENUM-NUMBERING-1 返修待复审**——施工 @477e8273 经独立复审：实现与派工单逐格相符+门禁全绿，但发现 1 处 spec 自身缺陷（TIME_MSC unix_ms 超 int32 截断成假值，设计责任在 Devin CLI），修订记录已落派工单（删常量+删 case16，同批不可实现 prop 约定）；等施工方返修回报后复审收尾。VM-ARRAY-OOB-FAILCLOSED-1 已验收收官（bdb3733f）。**后续队列**：VM-ENUM-NUMBERING-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
