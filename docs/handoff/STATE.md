@@ -24,7 +24,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **MQL-COMPILER-LOCAL-ARRAYS ✅done 验收完成**（5c947ce3；局部数组端到端+ArrayResize 槽回写修全局静默无效+initializer 拒收修静默误编译；独立 mutation×4 全 RED→GREEN）。剩余 🟦open：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5/EXT-BOUNDARY-WAVE2/I18N-MIXED-1（低优）。
+- **下一步**: **EXT-BOUNDARY-WAVE2 施工**（派工单已发）——6 项 fail-open/静默失真：SSE stall 看门狗+monitor checkpoint stall 告警+SMTP auth fail-closed+webhook transport Abort+TronScan 双败→MANUAL_REVIEW+finish_reason=length non-transient error。剩余 🟦open：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5/I18N-MIXED-1（低优）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
