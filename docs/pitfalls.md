@@ -8,6 +8,7 @@
 
 ### 已确认的静默失败模式
 
+- **Python 子集作用域偏差（PY-SCOPE-KNOWN-1，文档化行为）** — `self.x` 与裸 `x` 同槽混同双向：函数内裸 `x=1` 覆写 `self.x` 字段槽；同名局部（如 `for x in range(N)`）遮蔽 `self.x` 读。未声明读静默返 `ValNone`（非 NameError，经 `bc.Coverage.BlindSpots` 上报）。`for i in range(N)` 退出 `i=N` 非 `N-1`。策略行为诡异且命中上述形态时先查此条。明细与 pin 测试见 `docs/blocks/mql-compiler/README.md` 已知限制节。
 - **未知常量 → 0** — `interp/constants.go` 缺常量 → 编译器 push 0。例如 `MODE_SIGNAL` 缺失时 `iMACD` 返回主线而非信号线 → `MacdCurrent == SignalCurrent` → 永不开单。
 - **`builtinOrderType` 映射错误** — 必须返回 `OP_BUY=0 / OP_SELL=1`，不能返回 `PositionSide` (`SideBuy=1 / SideSell=-1`)，否则持仓管理/平仓逻辑失效。
 - **Go map 迭代非确定 → 用户函数前向引用返回 0** — `ir.Funcs` 是 map，编译器必须两遍编译：Pass 1 预注册所有 entry PC，Pass 2 编译体。**通用规则：任何有序 pipeline 禁止裸遍历 map 处理有序依赖**。

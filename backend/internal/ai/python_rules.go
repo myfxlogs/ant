@@ -51,6 +51,9 @@ class MyStrategy(StrategyBase):
 - f-strings, walrus operator (:=), global/nonlocal, del, assert, raise
 - slicing, tuple unpacking, *args, **kwargs, multiple inheritance
 - float for prices or volumes — use Decimal
+- reusing a self.<name> field name as a local variable name or loop variable (same name = same storage — bare writes corrupt the field, and a same-named local shadows field reads)
+- reading a variable before assigning it (undeclared reads silently return None — no error is raised)
+- reading the loop variable after a for loop (its value overshoots the range bound, not the last item)
 
 ## SDK API Mapping
 ### Market Data
@@ -153,4 +156,3 @@ If your code violates ANY of these, FIX IT before outputting. No exceptions.
 9. ✅ Code follows the exact skeleton: class MyStrategy(StrategyBase) with __init__ and on_bar
 
 VIOLATING ANY RULE ABOVE = CODE WILL BE REJECTED. Do not output code you have not verified.`
-
