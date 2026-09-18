@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9：Acquire 补锁内 Broadcast，独立 mutation RED→GREEN）。下一：SNAPSHOT-SLICE-ALIAS-1 设计实查→PY-SCOPE/PY-DECIMAL/TZ-PAIRED。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede：retained/replay/put/Get 四面私有化，独立 mutation×4）。下一：PY-SCOPE-KNOWN-1 / PY-DECIMAL-CTOR-1 / TZ-PAIRED 择债设计实查。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **转发 SNAPSHOT-SLICE-ALIAS-1 开工指令**（派工单已落档）；后续：PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **P3 批择债设计实查**——候选：PY-SCOPE-KNOWN-1 / PY-DECIMAL-CTOR-1 / TZ-PAIRED-CST-COLS-1 → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -82,7 +82,6 @@
 - **TZ-SWEEP-AFFECTED-1** ✅done — analyticsSince()+worker 归一化，Devin CLI 验收通过 2026-09-16（362d285e）
 - **TZ-MIXED-ENCODING-1** ✅done — ~50 站 .UTC() 止血+migration 278 回填，Devin CLI 验收通过 2026-09-16（da85f973）；**部署注记**：migration 在 backend 启动时跑，生效后 trade_records 全列 UTC
 - **TZ-PAIRED-CST-COLS-1** 🟦open P3 — next_run_at/trade_logs 等 CST 写读配对列禁单侧翻 UTC（registry 规则）
-- **SNAPSHOT-SLICE-ALIAS-1** 🟦open P3 — retained 快照 slice 别名依赖 immutable 约定（QS-2.4-F2）
 - **VM-RUNTIME-FAILCLOSED-2** ✅done — 静默算术/栈/槽位 fail-closed（Devin CLI 验收通过 2026-09-16，commit 4fea9439，独立 mutation×4 RED→GREEN）
 - **VM-ARRAY-OOB-FAILCLOSED-1** ✅done — 数组 OOB+局部负编码 fail-closed（Devin CLI 验收 2026-09-18，commit bdb3733f，独立 mutation×4）；明细 registry 行 217
 - **VM-ENUM-NUMBERING-1** ✅done — SymbolInfo*/MarketInfo 全枚举对齐+静默错标修复+SymbolInfoString 重分类（Devin CLI 验收 2026-09-18，commit 477e8273+bfb42ea3 返修，独立 mutation×5）；明细 registry 行 219
@@ -108,6 +107,7 @@
 - 2026-09-18 **TRADE-BUILTIN-ERR-SWALLOW-1 ✅done** — commit 6eae8160（派工单 @d015173f）；13 站三态分裂+SimBroker 通道搬迁+engine RetCode 日志；独立 mutation×4 RED→GREEN；明细 registry 行 222。
 - 2026-09-18 **VM-FUNC-FATAL-DELAY-1 ✅done** — commit de6f672c+6ef18536（派工单 @a74556c6+R1）；executeCallUser 循环顶 fatalError 检查；独立 mutation×2 RED→GREEN；明细 registry 行 218。
 - 2026-09-18 **TEST-WAITSTATE-ACQUIRE-BCAST-1 ✅done** — commit 53e886e9（派工单 @a6ab8bbb）；Acquire 锁内补 Broadcast+判别性延迟测试；独立 mutation RED→GREEN；明细 registry 行 211。
+- 2026-09-18 **SNAPSHOT-SLICE-ALIAS-1 ✅done** — commit 40148ede（派工单 @e253a836）；边界不变量 4 面私有化+契约钉注；独立 mutation×4 各精确命中；明细 registry 行 212。
 - 2026-09-17 **批次2e 开工指令已发**（收官批）：`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（account noop 8 API＝4 重分类+4 实接）。
 - 2026-09-17 **批次2d 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md`（timeseries 无源/handle 7 API 重分类）。
 - 2026-09-17 **批次2c 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md @64c6efc3`（AccountInfoDouble/Integer/String 假分支修复+枚举编号对齐，非重分类）。
