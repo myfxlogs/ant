@@ -881,3 +881,15 @@
 - **明日开工入口**：任何 agent 先读 `AGENTS.md` → `docs/handoff/STATE.md` → `docs/audits/tech-debt-registry.md:126` → 取“下一步”首项继续。
 - **禁止**：在未收到 `[施工完成:VM-API-TRUTH-1-批次2b] @<hash>` 前不发新开工指令；不部署、不 push。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-17 会话纪要（Devin CLI 设计复审 + 派工落档）
+
+- **背景**：批次2b 施工方在制中（工作树观察 6 文件在制 diff，范围与派工单一致：5 假函数已删+注册/wiring/registry/测试配套，无越界），未收正式完成报告。等待期间按派工纪律（详细文件可先行落档、开工指令按序）完成后续批次设计 SSOT。
+- **批次2c 派工单落档**（commit `64c6efc3`，`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md`）：AccountInfoDouble/Integer/String 假分支修复——非重分类，真分支接 `sdk.AccountInfo` 权威字段（Balance/Equity/Margin/FreeMargin/Leverage/Currency/Company/IsTradeAllowed/IsDemo/Mode/Login），无源分支 fail-closed error；CREDIT/NAME/SERVER 等无源项记录 blind spot。**实查新发现**：prop 编号偏离真 MQL5 枚举（Integer case 32/35/36 vs 真 2/5/6；String 顺序错位；constants.go ACCOUNT_MARGIN_* 4 值错+命名常量缺失）→ 派工单含枚举对齐+补常量。
+- **批次2d 派工单落档**（commit `e0a8a59c`，`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md`）：7 API 重分类 StatusUnsupported——CopyBuffer（handle 假实现+count 读错参）、CopyRates（close 冒充 MqlRates）、iSpread/CopySpread（per-bar spread 无源）、CopyTicks（tick 无源）、BarsCalculated（忽略 handle）、SeriesInfoInteger（全 0）；iRealVolume/CopyRealVolume 保留（forex venue 事实 real_volume=0）。
+- **批次2e 派工单落档**（commit `815f0a88`，`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`）：8 account noop API——4 实接（AccountProfit=Equity−Balance、AccountCurrency/AccountCompany 接字段空值→error、AccountFreeMarginCheck 全权威输入计算，参数用 argD 防越界 panic）+4 重分类（AccountName/AccountServer/AccountStopoutLevel/AccountFreeMarginMode 无源）。
+- **VM-ARRAY-OOB-FAILCLOSED-1 派工单落档**（commit `6662b4bb`，`docs/audits/builder-handoff-vm-array-oob-failclosed-1.md`）：A 面全局数组 OOB/非数组/槽越界→setStackError；**B 面更深缺陷**——compileSubscript 对局部数组仍 emit OP_*_ARRAY 带局部索引，运行时 globals[localIdx] 恰为数组时静默读写无关全局槽→裁定负编码 `-(slot)-1`→ins.A<0→setStackError。mutation×4 对抗证明含"恢复普通 slot 编码→局部数组测试 RED+全局污染断言"。
+- **registry 新债登记**（同 commit `6662b4bb`）：VM-ENUM-NUMBERING-1（P2，prop-switch 函数族自造编号 vs 真枚举跨文件偏移审计——AccountInfo* 已证、SymbolInfo*/MarketInfo 疑似同类，一次性全枚举对齐勿分散）+ LIVE-ACCOUNT-FIELDS-1（P3，live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口，批次2c 如实暴露为 0/error）。
+- **STATE.md**：施工表批次1/2a 明细行压缩滚出 LOG.md（20KB 预算门禁触发）；活跃条目指针+队列同步。
+- **断点**：等批次2b 施工方 `[施工完成:VM-API-TRUTH-1-批次2b] @<hash>` 六段式报告 → Devin CLI 独立复审（diff+门禁重跑+独立 mutation）→ 通过后按序发批次2c 开工指令。开工指令未发。
+- **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
