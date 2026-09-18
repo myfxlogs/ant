@@ -140,15 +140,15 @@ func registerAccountBuiltins() {
 	builtinRegistry[id("AccountFreeMargin")].fn = builtinAccountFreeMargin
 	builtinRegistry[id("AccountMargin")].fn = builtinAccountMargin
 	builtinRegistry[id("AccountLeverage")].fn = builtinAccountLeverage
-	builtinRegistry[id("AccountProfit")].fn = builtinNoopDecimal
-	builtinRegistry[id("AccountCurrency")].fn = builtinNoopString
-	builtinRegistry[id("AccountCompany")].fn = builtinNoopString
+	// VM-API-TRUTH-1 batch 2e: AccountProfit/AccountCurrency/AccountCompany/
+	// AccountFreeMarginCheck re-wired from noop stubs to real ctx sources;
+	// AccountName/AccountServer/AccountStopoutLevel/AccountFreeMarginMode
+	// reclassified StatusUnsupported (no authoritative data).
+	builtinRegistry[id("AccountProfit")].fn = builtinAccountProfit
+	builtinRegistry[id("AccountCurrency")].fn = builtinAccountCurrency
+	builtinRegistry[id("AccountCompany")].fn = builtinAccountCompany
 	builtinRegistry[id("AccountNumber")].fn = builtinAccountNumber
-	builtinRegistry[id("AccountStopoutLevel")].fn = builtinNoopInt
-	builtinRegistry[id("AccountName")].fn = builtinNoopString
-	builtinRegistry[id("AccountServer")].fn = builtinNoopString
-	builtinRegistry[id("AccountFreeMarginCheck")].fn = builtinNoopDecimal
-	builtinRegistry[id("AccountFreeMarginMode")].fn = builtinNoopInt
+	builtinRegistry[id("AccountFreeMarginCheck")].fn = builtinAccountFreeMarginCheck
 	builtinRegistry[id("SymbolInfoDouble")].fn = builtinSymbolInfoDouble
 	builtinRegistry[id("SymbolInfoInteger")].fn = builtinSymbolInfoInteger
 	builtinRegistry[id("SymbolInfoString")].fn = builtinSymbolInfoString

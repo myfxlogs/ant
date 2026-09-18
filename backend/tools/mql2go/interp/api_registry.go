@@ -201,6 +201,12 @@ var unsupportedSymbols = []APISymbol{
 	{Name: "CopyTicks", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
 	{Name: "BarsCalculated", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
 	{Name: "SeriesInfoInteger", Status: StatusUnsupported, Category: CatFunction, Reason: reasonTimeseriesNoSource},
+	// VM-API-TRUTH-1 batch 2e: account stubs returning fixed values
+	// without authoritative data. Reclassified StatusUnsupported.
+	{Name: "AccountName", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
+	{Name: "AccountServer", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
+	{Name: "AccountStopoutLevel", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
+	{Name: "AccountFreeMarginMode", Status: StatusUnsupported, Category: CatFunction, Reason: reasonAccountSymbolStub},
 }
 
 // registryMap is the lookup index built from unsupportedSymbols + builtin_registry.go + constants.go.

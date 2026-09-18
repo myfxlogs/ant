@@ -30,6 +30,59 @@ func builtinAccountLeverage(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.IntVal(vm.ctx.Account().Leverage), nil
 }
 
+// VM-API-TRUTH-1 batch 2e: real implementations replacing noop stubs.
+
+func builtinAccountProfit(vm *VM, args []interp.Value) (interp.Value, error) {
+	return interp.DecimalVal(vm.ctx.Account().Equity.Sub(vm.ctx.Account().Balance)), nil
+}
+
+func builtinAccountCurrency(vm *VM, args []interp.Value) (interp.Value, error) {
+	c := vm.ctx.Account().Currency
+	if c == "" {
+		return interp.StringVal(""), fmt.Errorf("AccountCurrency: no authoritative currency in the VM")
+	}
+	return interp.StringVal(c), nil
+}
+
+func builtinAccountCompany(vm *VM, args []interp.Value) (interp.Value, error) {
+	c := vm.ctx.Account().Company
+	if c == "" {
+		return interp.StringVal(""), fmt.Errorf("AccountCompany: no authoritative company in the VM")
+	}
+	return interp.StringVal(c), nil
+}
+
+func builtinAccountFreeMarginCheck(vm *VM, args []interp.Value) (interp.Value, error) {
+	if vm.ctx.Broker() == nil {
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("AccountFreeMarginCheck: no broker in the VM")
+	}
+	sym := argS(args, 0)
+	if sym == "" {
+		sym = vm.ctx.Symbol()
+	}
+	cmd := argI(args, 1)
+	volume := argD(args, 2) // out-of-range → decimal.Zero (volume=0 → required=0 → FreeMargin)
+	info, err := vm.ctx.Broker().SymbolInfo(sym)
+	if err != nil {
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("AccountFreeMarginCheck: %w", err)
+	}
+	var price decimal.Decimal
+	switch cmd {
+	case 0: // OP_BUY
+		price = vm.ctx.Ask()
+	case 1: // OP_SELL
+		price = vm.ctx.Bid()
+	default:
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("AccountFreeMarginCheck: invalid cmd %d (must be 0/1)", cmd)
+	}
+	lev := decimal.NewFromInt(int64(vm.ctx.Account().Leverage))
+	if lev.IsZero() {
+		return interp.DecimalVal(decimal.Zero), fmt.Errorf("AccountFreeMarginCheck: leverage is zero")
+	}
+	required := volume.Mul(info.ContractSize).Mul(price).Div(lev)
+	return interp.DecimalVal(vm.ctx.Account().FreeMargin.Sub(required)), nil
+}
+
 // ── Symbol info builtins ─────────────────────────────────────────────
 
 func builtinSymbolInfoDouble(vm *VM, args []interp.Value) (interp.Value, error) {

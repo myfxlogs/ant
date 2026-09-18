@@ -131,11 +131,7 @@ var builtinRegistry = []builtinEntry{
 	{"AccountCurrency", nil},
 	{"AccountCompany", nil},
 	{"AccountNumber", nil},
-	{"AccountStopoutLevel", nil},
-	{"AccountName", nil},
-	{"AccountServer", nil},
 	{"AccountFreeMarginCheck", nil},
-	{"AccountFreeMarginMode", nil},
 
 	// Symbol info
 	{"SymbolInfoDouble", nil},

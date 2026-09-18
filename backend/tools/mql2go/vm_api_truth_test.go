@@ -7,6 +7,8 @@ import (
 
 	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go/interp"
+
+	"github.com/shopspring/decimal"
 )
 
 // VM-API-TRUTH-1: MQL5 order/deal/history 22 API reclassified StatusUnsupported.
@@ -615,6 +617,224 @@ func TestVM_API_TRUTH_1_TimeseriesRealStillImplemented(t *testing.T) {
 			}
 			if interp.IsAPIUnsupported(api) {
 				t.Fatalf("%s: IsAPIUnsupported=true, want false (batch 2d must not误伤 real/venue-semantics implementations)", api)
+			}
+		})
+	}
+}
+
+// VM-API-TRUTH-1 batch 2e: account noop whole-API disposition — 4 stubs
+// (AccountName/AccountServer/AccountStopoutLevel/AccountFreeMarginMode) had no
+// authoritative source and are reclassified StatusUnsupported; 4
+// (AccountProfit/AccountCurrency/AccountCompany/AccountFreeMarginCheck) were
+// re-wired from noop fixed values to real ctx sources.
+
+// unsupportedAccountNoop lists the 4 account API names that VM-API-TRUTH-1
+// batch 2e reclassified from implemented (noop fixed-value stub) to
+// StatusUnsupported.
+var unsupportedAccountNoop = []string{
+	"AccountName", "AccountServer", "AccountStopoutLevel", "AccountFreeMarginMode",
+}
+
+// TestVM_API_TRUTH_1_AccountNoopRejected verifies each of the 4 APIs causes a
+// compile-time error (not silent acceptance with fake runtime data).
+//
+// Adversarial: restore any of the 4 to implementedAccount + remove from
+// unsupportedSymbols → CompileMQL succeeds → RED.
+func TestVM_API_TRUTH_1_AccountNoopRejected(t *testing.T) {
+	for _, api := range unsupportedAccountNoop {
+		t.Run(api, func(t *testing.T) {
+			src := "int OnInit() { return 0; }\nvoid OnTick() { " + api + "(); }"
+			_, err := CompileMQL(src)
+			if err == nil {
+				t.Fatalf("%s: expected compile error (StatusUnsupported), got nil — API silently accepted", api)
+			}
+			msg := strings.ToLower(err.Error())
+			if !strings.Contains(msg, "unsupported") && !strings.Contains(msg, strings.ToLower(api)) {
+				t.Fatalf("%s: error message must mention 'unsupported' or API name, got: %v", api, err)
+			}
+		})
+	}
+}
+
+// accountNoopTestContext extends accountStatusTestContext with the balance/
+// equity/freeMargin/ask/bid/broker controls the batch 2e real-impl tests need.
+type accountNoopTestContext struct {
+	*accountStatusTestContext
+	balance    decimal.Decimal
+	equity     decimal.Decimal
+	freeMargin decimal.Decimal
+	ask        decimal.Decimal
+	bid        decimal.Decimal
+	broker     sdk.Broker
+}
+
+func (c *accountNoopTestContext) Account() sdk.AccountInfo {
+	info := c.accountStatusTestContext.Account()
+	info.Balance = c.balance
+	info.Equity = c.equity
+	info.FreeMargin = c.freeMargin
+	return info
+}
+func (c *accountNoopTestContext) Ask() decimal.Decimal { return c.ask }
+func (c *accountNoopTestContext) Bid() decimal.Decimal { return c.bid }
+func (c *accountNoopTestContext) Broker() sdk.Broker   { return c.broker }
+
+// accountNoopTestBroker serves a fixed ContractSize for the
+// AccountFreeMarginCheck margin formula test. Only SymbolInfo is called.
+type accountNoopTestBroker struct {
+	sdk.Broker   // nil embed: non-SymbolInfo methods are never called here
+	contractSize decimal.Decimal
+}
+
+func (b *accountNoopTestBroker) SymbolInfo(string) (sdk.SymbolInfo, error) {
+	return sdk.SymbolInfo{ContractSize: b.contractSize}, nil
+}
+
+// TestVM_API_TRUTH_1_AccountNoopRealImpl verifies the 4 re-wired APIs read
+// their authoritative sources instead of noop fixed values.
+//
+// Adversarial: re-wire any builtin back to builtinNoop* in
+// vm_builtin_impls.go → the subtest reads the old fixed value (or OnInit
+// unexpectedly succeeds on missing data) → RED.
+func TestVM_API_TRUTH_1_AccountNoopRealImpl(t *testing.T) {
+	t.Run("AccountProfit reads Equity-Balance", func(t *testing.T) {
+		src := "double g=0; int OnInit(){ g=AccountProfit(); return 0; }"
+		runner := compileAndInit(t, src, &accountNoopTestContext{
+			accountStatusTestContext: &accountStatusTestContext{leverage: 100},
+			balance:                  decimal.NewFromInt(9000),
+			equity:                   decimal.NewFromInt(10000),
+		})
+		v, ok := runner.GetGlobal("g")
+		if !ok {
+			t.Fatal("global \"g\" not found")
+		}
+		want := decimal.NewFromInt(1000)
+		if !v.ToDecimal().Equal(want) {
+			t.Errorf("AccountProfit() = %s, want %s (Equity-Balance)", v.ToDecimal(), want)
+		}
+	})
+
+	t.Run("AccountCurrency reads source", func(t *testing.T) {
+		src := "string g=\"\"; int OnInit(){ g=AccountCurrency(); return 0; }"
+		runner := compileAndInit(t, src, &accountNoopTestContext{
+			accountStatusTestContext: &accountStatusTestContext{currency: "EUR"},
+		})
+		v, ok := runner.GetGlobal("g")
+		if !ok {
+			t.Fatal("global \"g\" not found")
+		}
+		if got := v.ToString(); got != "EUR" {
+			t.Errorf("AccountCurrency() = %q, want %q (ctx currency)", got, "EUR")
+		}
+	})
+
+	t.Run("AccountCompany reads source", func(t *testing.T) {
+		src := "string g=\"\"; int OnInit(){ g=AccountCompany(); return 0; }"
+		runner := compileAndInit(t, src, &accountNoopTestContext{
+			accountStatusTestContext: &accountStatusTestContext{company: "TestCo"},
+		})
+		v, ok := runner.GetGlobal("g")
+		if !ok {
+			t.Fatal("global \"g\" not found")
+		}
+		if got := v.ToString(); got != "TestCo" {
+			t.Errorf("AccountCompany() = %q, want %q (ctx company)", got, "TestCo")
+		}
+	})
+
+	t.Run("AccountFreeMarginCheck formula", func(t *testing.T) {
+		// required = volume·ContractSize·Ask/Leverage = 1·100000·1.25/100 = 1250
+		// FreeMarginCheck = FreeMargin − required = 5000 − 1250 = 3750
+		src := "double g=0; int OnInit(){ g=AccountFreeMarginCheck(\"EURUSD\", 0, 1); return 0; }"
+		runner := compileAndInit(t, src, &accountNoopTestContext{
+			accountStatusTestContext: &accountStatusTestContext{leverage: 100},
+			freeMargin:               decimal.NewFromInt(5000),
+			ask:                      decimal.NewFromFloat(1.25),
+			broker:                   &accountNoopTestBroker{contractSize: decimal.NewFromInt(100000)},
+		})
+		v, ok := runner.GetGlobal("g")
+		if !ok {
+			t.Fatal("global \"g\" not found")
+		}
+		want := decimal.NewFromInt(3750)
+		if !v.ToDecimal().Equal(want) {
+			t.Errorf("AccountFreeMarginCheck = %s, want %s (FreeMargin − volume·ContractSize·Ask/Leverage)", v.ToDecimal(), want)
+		}
+	})
+
+	// Missing-fact and invalid-arg cases must fail-closed, not return fake 0.
+	errorCases := []struct {
+		name string
+		src  string
+		ctx  *accountNoopTestContext
+	}{
+		{"AccountCurrency empty errors", "int OnInit(){ AccountCurrency(); return 0; }",
+			&accountNoopTestContext{accountStatusTestContext: &accountStatusTestContext{}}},
+		{"AccountCompany empty errors", "int OnInit(){ AccountCompany(); return 0; }",
+			&accountNoopTestContext{accountStatusTestContext: &accountStatusTestContext{}}},
+		{"AccountFreeMarginCheck invalid cmd errors", "int OnInit(){ AccountFreeMarginCheck(\"EURUSD\", 9, 1); return 0; }",
+			&accountNoopTestContext{
+				accountStatusTestContext: &accountStatusTestContext{leverage: 100},
+				broker:                   &accountNoopTestBroker{contractSize: decimal.NewFromInt(100000)},
+			}},
+		{"AccountFreeMarginCheck nil broker errors", "int OnInit(){ AccountFreeMarginCheck(\"EURUSD\", 0, 1); return 0; }",
+			&accountNoopTestContext{accountStatusTestContext: &accountStatusTestContext{leverage: 100}}},
+	}
+	for _, tc := range errorCases {
+		t.Run(tc.name, func(t *testing.T) {
+			runner, err := CompileMQL(tc.src)
+			if err != nil {
+				t.Fatalf("CompileMQL failed: %v", err)
+			}
+			runner.SetSignalMode(true)
+			if err := runner.OnInit(tc.ctx); err == nil {
+				t.Fatalf("%s: OnInit err = nil, want error (must fail-closed, not return fake value)", tc.name)
+			}
+		})
+	}
+}
+
+// TestVM_API_TRUTH_1_AccountNoopConsistency verifies the registry reflects the
+// batch 2e disposition: the 4 no-source stubs are StatusUnsupported, and the
+// 4 re-wired APIs plus the pre-existing real implementations stay implemented.
+//
+// Adversarial: remove the 4 entries from unsupportedSymbols → LookupAPI
+// returns not-found → RED; accidentally reclassify any real/rewired API →
+// IsAPIImplemented=false → RED.
+func TestVM_API_TRUTH_1_AccountNoopConsistency(t *testing.T) {
+	for _, api := range unsupportedAccountNoop {
+		t.Run(api+"/unsupported", func(t *testing.T) {
+			sym, ok := interp.LookupAPI(api)
+			if !ok {
+				t.Fatalf("%s: LookupAPI returned not-found — missing from registry", api)
+			}
+			if sym.Status != interp.StatusUnsupported {
+				t.Fatalf("%s: status = %v, want StatusUnsupported", api, sym.Status)
+			}
+			if sym.Reason == "" {
+				t.Fatalf("%s: Reason is empty — must explain why unsupported", api)
+			}
+			if interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=true, want false", api)
+			}
+			if !interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=false, want true", api)
+			}
+		})
+	}
+	realOrRewired := []string{
+		// re-wired to real sources in batch 2e
+		"AccountProfit", "AccountCurrency", "AccountCompany", "AccountFreeMarginCheck",
+		// pre-existing real implementations (must not be误伤)
+		"AccountBalance", "AccountLeverage", "AccountNumber",
+	}
+	for _, api := range realOrRewired {
+		t.Run(api+"/implemented", func(t *testing.T) {
+			if !interp.IsAPIImplemented(api) {
+				t.Fatalf("%s: IsAPIImplemented=false, want true (batch 2e must not误伤 real/rewired implementations)", api)
+			}
+			if interp.IsAPIUnsupported(api) {
+				t.Fatalf("%s: IsAPIUnsupported=true, want false (batch 2e must not误伤 real/rewired implementations)", api)
 			}
 		})
 	}

@@ -57,12 +57,16 @@ var implementedAccount = []string{
 	// MQL4 Account* functions (callTrade)
 	"AccountBalance", "AccountEquity", "AccountFreeMargin",
 	"AccountMargin", "AccountLeverage",
-	"AccountNumber", "AccountStopoutLevel", "AccountCurrency",
-	"AccountName", "AccountCompany",
+	"AccountNumber", "AccountCurrency",
+	"AccountCompany",
 	// MQL4-only account functions (callTradeStubs)
 	// VM-API-TRUTH-1 batch 2b: AccountStopoutMode/AccountCredit reclassified
 	// StatusUnsupported (fixed 0 without authoritative data).
-	"AccountFreeMarginCheck", "AccountFreeMarginMode", "AccountServer",
+	// VM-API-TRUTH-1 batch 2e: AccountName/AccountServer/AccountStopoutLevel/
+	// AccountFreeMarginMode reclassified StatusUnsupported (no authoritative
+	// data); AccountProfit/AccountCurrency/AccountCompany/
+	// AccountFreeMarginCheck now read real ctx sources.
+	"AccountFreeMarginCheck",
 	"AccountProfit",
 	// MQL5 AccountInfo* functions (callTradeStubs)
 	"AccountInfoDouble", "AccountInfoInteger", "AccountInfoString",
