@@ -1,6 +1,7 @@
 package mql2go
 
 import (
+	"strings"
 	"testing"
 
 	"alphaforge/tools/mql2go/interp"
@@ -48,10 +49,13 @@ func TestQS23_NoopContextZeroValues(t *testing.T) {
 	if v, _ := builtinPrint(vm, []interp.Value{interp.StringVal("x")}); v.Kind != interp.ValNone {
 		t.Fatal("Print must not panic and must return NoneVal")
 	}
-	// builtinOrderSend keeps its existing no-broker behavior (-1, nil error)
-	// — the fail-closed gap is separately ticketed (ORDERSEND-NILBROKER-FAILCLOSED-1).
-	if v, err := builtinOrderSend(vm, nil); v.Int != -1 || err != nil {
-		t.Fatalf("OrderSend(no broker)=%d, err=%v, want -1 nil", v.Int, err)
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect —
+	// OrderSend fails closed with an error (signalMode exempts the signal path).
+	sendArgs := []interp.Value{
+		interp.StringVal("EURUSD"), interp.IntVal(0), interp.IntVal(1),
+	}
+	if v, err := builtinOrderSend(vm, sendArgs); err == nil || !strings.Contains(err.Error(), "no broker") {
+		t.Fatalf("OrderSend(no broker)=%d err=%v, want error containing 'no broker'", v.Int, err)
 	}
 	// Indicator builtins route through noopIndicatorSet → 0, no panic.
 	ma := []interp.Value{interp.StringVal(""), interp.IntVal(0), interp.IntVal(14),
@@ -90,15 +94,16 @@ func TestQS23_NoopContextParamDefaults(t *testing.T) {
 	}
 }
 
-// S5d: Broker()==nil checks still fire — noop.Broker() is nil.
+// S5d: nil broker fails closed on trade writes (no broker = environment
+// defect → error, not a fake rejection) — noop.Broker() is nil.
 func TestQS23_NoopBrokerNilChecks(t *testing.T) {
 	bc := &Bytecode{Builtins: make(map[string]BuiltinID)}
 	vm := NewVM(bc)
 	if vm.ctx.Broker() != nil {
 		t.Fatal("noopContext.Broker() must be nil")
 	}
-	if v, _ := builtinOrderClose(vm, nil); v.Bool {
-		t.Fatal("OrderClose(no broker)=true, want false")
+	if v, err := builtinOrderClose(vm, nil); v.Bool || err == nil || !strings.Contains(err.Error(), "no broker") {
+		t.Fatalf("OrderClose(no broker)=%v err=%v, want false + error containing 'no broker'", v.Bool, err)
 	}
 	if v, _ := builtinOrdersTotal(vm, nil); v.Int != 0 {
 		t.Fatalf("OrdersTotal(no broker)=%d, want 0", v.Int)

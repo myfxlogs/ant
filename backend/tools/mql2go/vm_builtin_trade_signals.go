@@ -1,6 +1,8 @@
 package mql2go
 
 import (
+	"fmt"
+
 	"github.com/shopspring/decimal"
 
 	"alphaforge/strategy/sdk"
@@ -15,9 +17,6 @@ import (
 // (dispatchLiveSignal) then routes the signal to the OMS or paper engine.
 
 func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
 	if vm.signalMode {
@@ -29,6 +28,10 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderClose: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
 	if err != nil {
 		return interp.BoolVal(false), nil
@@ -38,9 +41,6 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket1 := int64(argI(args, 0))
 	ticket2 := int64(argI(args, 1))
 	if vm.signalMode {
@@ -52,6 +52,10 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderCloseBy: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().PositionCloseBy(ticket1, ticket2)
 	if err != nil {
 		return interp.BoolVal(false), nil
@@ -61,9 +65,6 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	price := argD(args, 1)
 	sl := argD(args, 2)
@@ -78,6 +79,10 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 		}
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
+	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderModify: no broker in the VM")
 	}
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
 	if err != nil {
@@ -95,9 +100,6 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
@@ -106,6 +108,10 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 		}
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
+	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("OrderDelete: no broker in the VM")
 	}
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
 	if err != nil {
@@ -116,9 +122,6 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
@@ -129,6 +132,10 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClose: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, decimal.Zero)
 	if err != nil {
 		return interp.BoolVal(false), nil
@@ -138,9 +145,6 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 }
 
 func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
 	if vm.signalMode {
@@ -152,6 +156,10 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionClosePartial: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().PositionClose(ticket, volume)
 	if err != nil {
 		return interp.BoolVal(false), nil
@@ -161,9 +169,6 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 }
 
 func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	t1 := int64(argI(args, 0))
 	t2 := int64(argI(args, 1))
 	if vm.signalMode {
@@ -175,6 +180,10 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionCloseBy: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().PositionCloseBy(t1, t2)
 	if err != nil {
 		return interp.BoolVal(false), nil
@@ -184,9 +193,6 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 }
 
 func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	sl := argD(args, 1)
 	tp := argD(args, 2)
@@ -200,6 +206,10 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.PositionModify: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().PositionModify(ticket, sl, tp)
 	if err != nil {
 		return interp.BoolVal(false), nil
@@ -209,9 +219,6 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 }
 
 func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
@@ -220,6 +227,10 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 		}
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
+	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade.OrderDelete: no broker in the VM")
 	}
 	_, err := vm.ctx.Broker().OrderDelete(ticket)
 	if err != nil {
@@ -230,15 +241,16 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 }
 
 func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	if vm.signalMode {
 		vm.signal = &sdk.Signal{
 			Action: sdk.ActionCloseAll,
 		}
 		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
+	}
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CloseAll: no broker in the VM")
 	}
 	positions := vm.ctx.Broker().Positions(0)
 	allOK := true

@@ -12,9 +12,6 @@ import (
 // ── MQL4 trade builtins ──────────────────────────────────────────────
 
 func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.IntVal(-1), nil
-	}
 	// OrderSend(symbol, cmd, volume, price, slippage, sl, tp, comment, magic, expiration, color)
 	symbol := argS(args, 0)
 	cmd := argI(args, 1)
@@ -68,6 +65,12 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.IntVal(1), nil
 	}
 
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect,
+	// not a rejection — fail closed (was IntVal(-1), nil before the signalMode
+	// check, which also dropped live signals).
+	if vm.ctx.Broker() == nil {
+		return interp.IntVal(-1), fmt.Errorf("OrderSend: no broker in the VM")
+	}
 	result, err := vm.ctx.Broker().OrderSend(req)
 	if err != nil {
 		// VM-RUNTIME-FAILCLOSED-1: propagate broker error (was swallowed as nil).
@@ -578,9 +581,6 @@ func builtinCTradeSellStop(vm *VM, args []interp.Value) (interp.Value, error) {
 }
 
 func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.PositionSide) (interp.Value, error) {
-	if vm.ctx.Broker() == nil {
-		return interp.BoolVal(false), nil
-	}
 	// CTrade.Buy(volume, symbol, price, sl, tp, comment)
 	volume := argD(args, 0)
 	symbol := argS(args, 1)
@@ -625,6 +625,12 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 		return interp.BoolVal(true), nil
 	}
 
+	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect,
+	// not a rejection — fail closed (was BoolVal(false), nil before the
+	// signalMode check, which also dropped live signals).
+	if vm.ctx.Broker() == nil {
+		return interp.BoolVal(false), fmt.Errorf("CTrade order: no broker in the VM")
+	}
 	_, err := vm.ctx.Broker().OrderSend(req)
 	if err != nil {
 		return interp.BoolVal(false), nil
