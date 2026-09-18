@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **转发 VM-FUNC-FATAL-DELAY-1 开工指令**（派工单已落档）；后续候选：TEST-WAITSTATE / TEST-WAITSTATE / SNAPSHOT-SLICE / PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **P3 批择债设计实查**——候选：TEST-WAITSTATE / SNAPSHOT-SLICE / PY-SCOPE / PY-DECIMAL / TZ-PAIRED → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -92,6 +92,7 @@
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
+- **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
 - **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
@@ -100,7 +101,6 @@
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-17 **VM-API-TRUTH-1 批次2b ✅done** — commit 1fb352f1；5 stub API 重分类；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2c ✅done** — commit 52add8ed；AccountInfo* 假分支 fail-closed+枚举对齐+26 常量（非重分类）；独立 mutation×4 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2d ✅done** — commit a306f54e；7 timeseries API 重分类；14 真实/venue 实现保留；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2e ✅done + 整债收官** — commit 69d2330b；4 重分类+4 实接；python account.profit 顺带修复；独立 mutation×3 RED→GREEN；明细见 registry 行 126（条目转 ✅done）。
