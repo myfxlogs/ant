@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: VM-API-TRUTH-1 批次1+2a ✅done（Devin CLI 独立复审通过 2026-09-16；commit e97a43b8 批次1 MQL5 order/deal/history 22 API + commit 8f946579 批次2a platform checkup 12 API；均重分类为 StatusUnsupported，fail-closed）。**VM-API-TRUTH-1 批次2b 派工单已出待施工**（commit 67c0ed8a，文件 `docs/audits/builder-handoff-vm-api-truth-1-batch2b.md`），范围：AccountStopoutMode/AccountCredit（全假固定 0）+ SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade（by-reference 返回 true 不填充输出）共 5 API。已开工标准指令：`[角色:施工] 开工：读 docs/audits/builder-handoff-vm-api-truth-1-batch2b.md @67c0ed8a，按 S1 施工。串行，勿部署，完成报证据等复审。`。**批次2c/2d/2e 派工单已落档**（`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md` AccountInfo* 假分支+枚举编号、`docs/audits/builder-handoff-vm-api-truth-1-batch2d.md` timeseries 无源/handle 7 API、`docs/audits/builder-handoff-vm-api-truth-1-batch2e.md` account noop 8 API＝4 重分类+4 实接，均 Devin CLI 设计复审 2026-09-17；开工指令按序待前批验收后发）。
+- **现状**: VM-API-TRUTH-1 批次1+2a+2b ✅done（Devin CLI 独立复审通过；e97a43b8 批次1 MQL5 history 22 API、8f946579 批次2a platform checkup 12 API、1fb352f1 批次2b account/symbol stub 5 API——均重分类 StatusUnsupported fail-closed，均独立 mutation RED→GREEN）。**批次2c/2d/2e 派工单已落档**（`builder-handoff-vm-api-truth-1-batch2c.md` AccountInfo* 假分支+枚举编号、`batch2d.md` timeseries 无源/handle 7 API、`batch2e.md` account noop 8 API＝4 重分类+4 实接，均 Devin CLI 设计复审 2026-09-17）。VM-ARRAY-OOB-FAILCLOSED-1 派工单已落档（@6662b4bb，A 面 OOB+B 面局部数组负编码）。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -21,9 +21,10 @@
 | VM-COMPILER-SEMANTICS-3 switch default 顺序+break 栈清理 | ✅done | Devin CLI 验收通过 2026-09-16；commit c5d1a7e0；S1 保留 s.Cases 原始顺序（default 不抽出作 fallthrough target）+default 首位 skip JMP；S2 break JMPs patch 到 popPC（OP_POP 位置）消费 switch value；S3a 栈深度断言+S3b default 中间 fallthrough（1010）+S3c break 栈清理（15+stack=0）；独立 mutation×2 RED→GREEN；机检独立复测全绿 |
 | VM-API-TRUTH-1 MQL5 order/deal/history 22 API 重分类 | ✅done(批次1) | Devin CLI 验收通过 2026-09-16；commit e97a43b8；独立 mutation×1 RED→GREEN；明细滚出 LOG.md |
 | VM-API-TRUTH-1 批次2a platform checkup 12 API 重分类 | ✅done(批次2a) | Devin CLI 验收通过 2026-09-16；commit 8f946579；独立 mutation×1 RED→GREEN；明细滚出 LOG.md |
+|| VM-API-TRUTH-1 批次2b account/symbol stub 5 API 重分类 | ✅done(批次2b) | Devin CLI 验收通过 2026-09-17；commit 1fb352f1；AccountStopoutMode/AccountCredit+SymbolInfoMarginRate/SessionQuote/SessionTrade→StatusUnsupported；独立 mutation×1 RED→GREEN；机检独立复测全绿 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **VM-API-TRUTH-1 批次2b 已派工，等待施工方 `[施工完成:VM-API-TRUTH-1-批次2b] @<hash>` 后 Devin CLI 启动独立复审**。派工单 `docs/audits/builder-handoff-vm-api-truth-1-batch2b.md @67c0ed8a`，范围：AccountStopoutMode/AccountCredit + SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade 共 5 API 重分类 StatusUnsupported。开工指令已发（见现状栏）。**批次2c/2d/2e 派工单已落档** `docs/audits/builder-handoff-vm-api-truth-1-batch2c.md` + `docs/audits/builder-handoff-vm-api-truth-1-batch2d.md` + `docs/audits/builder-handoff-vm-api-truth-1-batch2e.md`（均 Devin CLI 设计复审 2026-09-17；**开工指令未发**，按序待前批验收后发）。**后续队列**（待批次2b 验收后派工）：VM-API-TRUTH-1 批次2c → 批次2d → 批次2e → VM-ENUM-NUMBERING-1（候选债：prop-switch 函数族枚举编号偏移审计）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，数组越界静默）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。**新候选债**：LIVE-ACCOUNT-FIELDS-1（live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口，批次2c 如实暴露为 0/error）。
+- **下一步**: **VM-API-TRUTH-1 批次2c 开工指令已发**（见现状栏）——施工方读 `docs/audits/builder-handoff-vm-api-truth-1-batch2c.md @64c6efc3` 按 S1 施工；等待 `[施工完成:VM-API-TRUTH-1-批次2c] @<hash>` 后 Devin CLI 独立复审。**后续队列**：批次2d（timeseries 无源/handle 7 API）→ 批次2e（account noop 8 API）→ VM-ENUM-NUMBERING-1（prop-switch 枚举编号偏移审计）→ VM-ARRAY-OOB-FAILCLOSED-1（P2，OOB+局部数组负编码，派工单 @6662b4bb）→ P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）。LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）在 VM-ENUM-NUMBERING-1 后。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -88,12 +89,14 @@
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
-- **VM-API-TRUTH-1** 🟦open（批次1+2a ✅done 2026-09-16） — MQL5 order/deal/history 22 API（批次1 commit e97a43b8 ✅done）+ platform checkup 12 API（批次2a commit 8f946579 ✅done，独立 mutation×1 RED→GREEN）；后续批次 AccountInfo*/CopyBuffer/CopyRates/Symbol session/margin 待做
+- **VM-API-TRUTH-1** 🟦open（批次1+2a+2b ✅done） — e97a43b8 批次1 MQL5 history 22 API、8f946579 批次2a platform checkup 12 API、1fb352f1 批次2b account/symbol stub 5 API（均 Devin CLI 独立复审+mutation）；批次2c/2d/2e 派工单已落档，2c 开工中
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
+- 2026-09-17 **VM-API-TRUTH-1 批次2b ✅done**（Devin CLI 独立复审通过）：commit 1fb352f1；5 API（AccountStopoutMode/AccountCredit 全假固定 0 + SymbolInfoMarginRate/SymbolInfoSessionQuote/SymbolInfoSessionTrade by-reference 返 true 不填充）重分类 StatusUnsupported+reasonAccountSymbolStub；S6g 编译期拒绝+S6h registry 一致性+S6i 12 真实/合理实现未误伤；**独立 mutation×1 重跑** RED→restore→GREEN（注释 unsupportedSymbols 5 行 → S6g RED×5 `silently accepted`+S6h RED×5 `not-found`）；机检独立复测：build/mql2go 498/race×3 1494/vet/gofmt 提交文件净/check-lines 0 errors/diff --check clean；施工方如实披露坐标漂移（Symbol API 实在 implementedPlatform 非派工单所写 implementedMarketData）。
+- 2026-09-17 **批次2c 开工指令已发**：`docs/audits/builder-handoff-vm-api-truth-1-batch2c.md @64c6efc3`（AccountInfoDouble/Integer/String 假分支修复+枚举编号对齐，非重分类）。
 - 2026-09-16 **VM-API-TRUTH-1 批次2a ✅done**（Devin CLI 独立复审通过）：commit 8f946579；S1 unsupportedSymbols 加 12 platform checkup API+reasonPlatformCheckup 常量（`api_registry.go:173-184`）；S2 implementedPlatform 移除 12（保留 IsConnected/IsDemo/IsTradeAllowed VM-API-TRUTH-3 真实+GetTickCount*/SetUserError/CurTime，`builtin_registry.go:108-112`）；S3 builtins.go 删 12 nil 注册；S4 vm_builtin_wiring.go 删 12 fn 绑定；S5 vm_builtin_checkup.go 删 12 假实现函数（保留 IsConnected/IsDemo/IsTradeAllowed+GetLastError/ResetLastError/SetUserError+CurTime/GetTickCount*）；S6d `TestVM_API_TRUTH_1_PlatformCheckupRejected`（12 API 编译期拒绝）+S6e `TestVM_API_TRUTH_1_PlatformCheckupRegistryConsistency`（LookupAPI=StatusUnsupported+Reason 非空+IsAPIImplemented=false+IsAPIUnsupported=true）+S6f `TestVM_API_TRUTH_1_PlatformCheckupRealStillImplemented`（13 真实实现未误伤：IsConnected/IsDemo/IsTradeAllowed/GetLastError/ResetLastError/SetUserError/CurTime/GetTickCount*/IsTesting/IsOptimization/IsVisualMode）；**独立 mutation×1 重跑** RED→restore→GREEN（注释 unsupportedSymbols 12 行 → S6d/S6e RED `LookupAPI returned not-found`/`API silently accepted`）；机检独立复测：build/mql2go 473/race×3 1419/vet/gofmt/check-lines 0 errors/diff --check clean。**后续批次待做**：AccountInfo*/CopyBuffer/CopyRates/Symbol session/margin 假实现重分类。
 - 2026-09-16 **VM-API-TRUTH-1 批次2a 施工完成** — 已滚出 LOG.md；详见 registry 行 126（commit 8f946579，独立 mutation×1 RED→GREEN）。
 - 2026-09-16 **VM-API-TRUTH-1 批次1 ✅done** — 已滚出 LOG.md；详见 registry 行 126（commit e97a43b8，独立 mutation×1 RED→GREEN）。
