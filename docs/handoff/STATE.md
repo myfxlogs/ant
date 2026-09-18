@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **VM-GLOBAL-ARRAY-DECL-1 设计实查**（P2，Devin CLI 侧）——数组批+枚举批均验收收官；该债尚无派工单（声明收集+下标赋值错译+波及面审计需先设计）。**后续队列**：VM-GLOBAL-ARRAY-DECL-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
+- **下一步**: **发 VM-GLOBAL-ARRAY-DECL-1 开工指令**（P2）——设计实查完成、派工单已落档（修正为三缺口+扩族 4 错标点，波及面=零）。**后续队列**：VM-GLOBAL-ARRAY-DECL-1 → P3 批（ORDERSEND-NILBROKER/TEST-WAITSTATE/SNAPSHOT-SLICE/PY-SCOPE-KNOWN/PY-DECIMAL-CTOR/TZ-PAIRED-CST-COLS/VM-FUNC-FATAL-DELAY）→ LIVE-ACCOUNT-FIELDS-1（P3 live Account() 字段缺口）。VM-LIVE-MTF-1 暂缓（需求驱动）；DATA-TRUTH-3 已裁定（v2 降级凭据-only + 删死列，P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -88,7 +88,7 @@
 - **VM-ARRAY-OOB-FAILCLOSED-1** ✅done — 数组 OOB+局部负编码 fail-closed（Devin CLI 验收 2026-09-18，commit bdb3733f，独立 mutation×4）；明细 registry 行 217
 - **VM-FUNC-FATAL-DELAY-1** 🟦open P3 — executeCallUser 内层循环无 fatalError 逐指令检查（FAILCLOSED-2 复审分立）
 - **VM-ENUM-NUMBERING-1** ✅done — SymbolInfo*/MarketInfo 全枚举对齐+静默错标修复+SymbolInfoString 重分类（Devin CLI 验收 2026-09-18，commit 477e8273+bfb42ea3 返修，独立 mutation×5）；明细 registry 行 219
-- **VM-GLOBAL-ARRAY-DECL-1** 🟦open P2 — 全局数组端到端从未工作（2026-09-17 数组施工方阻断实证）：collectGlobalVar 无 array_declarator 分支→声明丢弃；compileAssignment 顺序→arr[i]=v 退化整槽标量写；验收含 OOB 批 S4-1/2/6 迁移用例+波及面审计
+- **VM-GLOBAL-ARRAY-DECL-1** 🟦open P2 — 全局数组端到端从未工作；2026-09-18 设计实查完成（修正为三缺口+扩族 4 错标点：声明丢弃×3 机制/赋值整槽写/+=毁数组/++幻影槽/参数丢参）；波及面=零；派工单 `docs/audits/builder-handoff-vm-global-array-decl-1.md` 已就绪
 - **LIVE-ACCOUNT-FIELDS-1** 🟦open P3 — live runner Account() 未填充 Leverage/Currency/Company/Mode 管线缺口（2026-09-17 批次2c 设计实查登记）
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
