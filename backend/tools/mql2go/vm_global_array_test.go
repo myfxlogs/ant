@@ -203,15 +203,17 @@ func TestGlobalArrayCompileRejected(t *testing.T) {
 	}
 }
 
-// TestLocalArrayStillRejected — the pre-existing local-array declaration
-// rejection must survive this batch untouched.
-func TestLocalArrayStillRejected(t *testing.T) {
-	_, err := CompileMQL("void f(){ int a[2]; } int OnInit(){ return 0; }")
-	if err == nil {
-		t.Fatal("local array declaration: CompileMQL err = nil, want error (local arrays not supported)")
+// TestLocalArrayDeclAccepted — MQL-COMPILER-LOCAL-ARRAYS update: local
+// array declarations now compile (OP_NEW_ARRAY); the old "local arrays not
+// supported" rejection pin is inverted. Unsupported forms (initializer /
+// non-constant size / multi-dim) remain compile errors — see
+// TestGlobalArrayCompileRejected family and vm_local_array_test.go.
+func TestLocalArrayDeclAccepted(t *testing.T) {
+	if _, err := CompileMQL("void f(){ int a[2]; } int OnInit(){ return 0; }"); err != nil {
+		t.Fatalf("local array declaration: CompileMQL err = %v, want nil (local arrays are now supported)", err)
 	}
-	if !strings.Contains(err.Error(), "local arrays not supported") {
-		t.Fatalf("err = %v, want it to contain 'local arrays not supported'", err)
+	if _, err := CompileMQL("void f(){ double p[]; } int OnInit(){ return 0; }"); err != nil {
+		t.Fatalf("dynamic local array declaration: CompileMQL err = %v, want nil", err)
 	}
 }
 

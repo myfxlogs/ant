@@ -128,15 +128,18 @@ func TestIndexOOBDirect(t *testing.T) {
 func TestNegativeSlotDirect(t *testing.T) {
 	vm := newArrayOOBVM(t, strArrayVal("a", "b"))
 
+	// MQL-COMPILER-LOCAL-ARRAYS update: negative slots now resolve against
+	// vm.locals; with an empty frame they fail closed as out-of-range (the
+	// "not supported" rejection is gone, the fail-closed contract stays).
 	_ = vm.executePushArray(Instruction{Op: OP_PUSH_ARRAY, A: -1}, interp.IntVal(0))
-	if !strings.Contains(vm.fatalError, "OP_PUSH_ARRAY local array slot 0 not supported") {
-		t.Fatalf("push: fatalError = %q, want 'local array slot 0 not supported'", vm.fatalError)
+	if !strings.Contains(vm.fatalError, "OP_PUSH_ARRAY local slot 0 out of range") {
+		t.Fatalf("push: fatalError = %q, want 'OP_PUSH_ARRAY local slot 0 out of range'", vm.fatalError)
 	}
 
 	vm.fatalError = ""
 	vm.executeStoreArray(Instruction{Op: OP_STORE_ARRAY, A: -1}, interp.IntVal(0), interp.StringVal("evil"))
-	if !strings.Contains(vm.fatalError, "OP_STORE_ARRAY local array slot 0 not supported") {
-		t.Fatalf("store: fatalError = %q, want 'local array slot 0 not supported'", vm.fatalError)
+	if !strings.Contains(vm.fatalError, "OP_STORE_ARRAY local slot 0 out of range") {
+		t.Fatalf("store: fatalError = %q, want 'OP_STORE_ARRAY local slot 0 out of range'", vm.fatalError)
 	}
 	// The same-index global array must be untouched by the rejected write.
 	if got := vm.globals[0].Array[0].ToString(); got != "a" {
@@ -306,21 +309,12 @@ func TestLocalArrayAccessFails(t *testing.T) {
 	}
 	err := vm.RunOnBar(context.Background())
 	if err == nil {
-		t.Fatal("local a[0] read: OnBar err = nil, want error (local array access not supported)")
+		t.Fatal("scalar local a[0] read: OnBar err = nil, want error (not-an-array fail-closed)")
 	}
-	if !strings.Contains(err.Error(), "local array") {
-		t.Fatalf("err = %v, want it to contain 'local array'", err)
-	}
-
-	// The compile-time contract is unchanged: the blind spot is still recorded.
-	found := false
-	for _, bs := range vm.bc.Coverage.BlindSpots {
-		if strings.Contains(bs, "local array read: a") {
-			found = true
-		}
-	}
-	if !found {
-		t.Fatalf("Coverage.BlindSpots = %v, want it to contain 'local array read: a'", vm.bc.Coverage.BlindSpots)
+	// MQL-COMPILER-LOCAL-ARRAYS update: real arrays now read/write vm.locals;
+	// subscripting a SCALAR local still fails closed ("is not an array").
+	if !strings.Contains(err.Error(), "local") || !strings.Contains(err.Error(), "is not an array") {
+		t.Fatalf("err = %v, want it to contain 'local' and 'is not an array'", err)
 	}
 
 	// The same-index global array (globals[0] = g, the StringSplit result)

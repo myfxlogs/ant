@@ -624,6 +624,17 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 		child := n.NamedChild(i)
 		switch child.Type() {
 		case "init_declarator":
+			// MQL-COMPILER-LOCAL-ARRAYS: any initializer on a local array
+			// declarator is rejected unconditionally — collecting without it
+			// would silently compile the array as a scalar (bug B).
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				if sub := child.NamedChild(j); sub.Type() == "array_declarator" {
+					if c.err == nil {
+						c.err = fmt.Errorf("local array initializer not supported: %s", c.findIdent(sub))
+					}
+					return nil
+				}
+			}
 			name := c.findIdent(child)
 			if name == "" {
 				continue
@@ -656,15 +667,57 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 				Args: []interp.Expr{zeroValueExpr(typeName)},
 			})
 		case "array_declarator":
-			name := c.findIdent(child)
+			// MQL-COMPILER-LOCAL-ARRAYS: local array declarations compile to
+			// ExprArrayNew (OP_NEW_ARRAY) — mirrors the global-declaration
+			// path's shape checks (multi-dim / non-constant size rejected).
+			name, size, multiDim, ok := c.parseArrayDeclarator(child)
+			if !ok {
+				continue
+			}
+			if multiDim {
+				if c.err == nil {
+					label := name
+					if label == "" {
+						label = c.text(child)
+					}
+					c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", label)
+				}
+				return nil
+			}
+			// Non-constant dimension: a second identifier as the dimension
+			// (`int a[n]`) must error — silently treating it as a dynamic
+			// empty array would fabricate size 0.
+			seenIdent := false
+			for j := 0; j < int(child.NamedChildCount()); j++ {
+				sub := child.NamedChild(j)
+				switch {
+				case sub.Type() == nodeIdentifier && !seenIdent:
+					seenIdent = true // first identifier = the array name
+				case sub.Type() == "array_declarator" || sub.Type() == nodeIdentifier:
+					// nested dimension / second identifier → non-constant
+					if c.err == nil {
+						c.err = fmt.Errorf("array size must be a constant: %s", name)
+					}
+					return nil
+				case sub.Type() != "number_literal":
+					if c.err == nil {
+						c.err = fmt.Errorf("array size must be a constant: %s", name)
+					}
+					return nil
+				}
+			}
 			if name == "" {
 				continue
 			}
-			// Local arrays not supported — compile error.
-			if c.err == nil {
-				c.err = fmt.Errorf("local arrays not supported: %s", name)
-			}
-			return nil
+			decls = append(decls, interp.Expr{
+				Kind: interp.ExprDecl,
+				Name: name,
+				Args: []interp.Expr{{
+					Kind: interp.ExprArrayNew,
+					Name: typeName,
+					Val:  interp.IntVal(int32(size)), // 0 = dynamic empty (`double p[]`)
+				}},
+			})
 		}
 	}
 	if len(decls) == 0 {

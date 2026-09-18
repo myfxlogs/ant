@@ -186,6 +186,56 @@ func (vm *VM) execute(ins Instruction) error {
 
 	case OP_HALT:
 		vm.pc = int32(len(vm.bc.Code))
+
+	// ── User arrays: construction & resize (MQL-COMPILER-LOCAL-ARRAYS) ──
+	case OP_NEW_ARRAY:
+		if ins.A < 0 || ins.A > 1_000_000 {
+			vm.setStackError(fmt.Sprintf("OP_NEW_ARRAY size %d out of range", ins.A))
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+		vm.push(interp.Value{Kind: interp.ValArray, Array: make([]interp.Value, ins.A)})
+
+	case OP_ARRAY_RESIZE:
+		idx := vm.pop()
+		var slot *interp.Value
+		if ins.A >= 0 {
+			if int(ins.A) >= len(vm.globals) {
+				vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
+				return fmt.Errorf("VM fatal: %s", vm.fatalError)
+			}
+			slot = &vm.globals[ins.A]
+		} else {
+			localIdx := int(-ins.A - 1)
+			if localIdx >= len(vm.locals) {
+				vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE local slot %d out of range (locals=%d)", localIdx, len(vm.locals)))
+				return fmt.Errorf("VM fatal: %s", vm.fatalError)
+			}
+			slot = &vm.locals[localIdx]
+		}
+		if slot.Kind != interp.ValArray {
+			vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE slot %d is not an array", ins.A))
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+		newSize := int(idx.ToInt())
+		if newSize < 0 || newSize > 1_000_000 {
+			vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE size %d out of range", newSize))
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+		arr := slot.Array
+		if newSize <= len(arr) {
+			arr = arr[:newSize]
+		} else {
+			grown := make([]interp.Value, newSize)
+			copy(grown, arr)
+			for i := len(arr); i < newSize; i++ {
+				grown[i] = interp.NoneVal() // same fill semantics as builtinArrayResize
+			}
+			arr = grown
+		}
+		// The essential missing piece the builtin could not do: write the
+		// resized value back to the slot (the Value header is a copy).
+		*slot = interp.Value{Kind: interp.ValArray, Array: arr}
+		vm.push(interp.IntVal(int32(newSize)))
 	}
 
 	return nil
@@ -303,11 +353,24 @@ func (vm *VM) executeLogical(ins Instruction) {
 
 func (vm *VM) executePushArray(ins Instruction, idx interp.Value) interp.Value {
 	if ins.A < 0 {
-		// VM-ARRAY-OOB-FAILCLOSED-1: negative-encoded slot = local array
-		// access (compileSubscript). Never treat a local index as a global
-		// slot — that silently read/wrote an unrelated global array.
-		vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY local array slot %d not supported", -ins.A-1))
-		return interp.NoneVal()
+		// MQL-COMPILER-LOCAL-ARRAYS: negative-encoded slot = local array —
+		// read from the current frame's locals (previously fail-closed).
+		localIdx := int(-ins.A - 1)
+		if localIdx >= len(vm.locals) {
+			vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY local slot %d out of range (locals=%d)", localIdx, len(vm.locals)))
+			return interp.NoneVal()
+		}
+		arrVal := vm.locals[localIdx]
+		if arrVal.Kind != interp.ValArray {
+			vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY local slot %d is not an array", localIdx))
+			return interp.NoneVal()
+		}
+		i := int(idx.ToInt())
+		if i < 0 || i >= len(arrVal.Array) {
+			vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY index %d out of range (len=%d)", i, len(arrVal.Array)))
+			return interp.NoneVal()
+		}
+		return arrVal.Array[i]
 	}
 	if int(ins.A) >= len(vm.globals) {
 		vm.setStackError(fmt.Sprintf("OP_PUSH_ARRAY slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
@@ -328,9 +391,25 @@ func (vm *VM) executePushArray(ins Instruction, idx interp.Value) interp.Value {
 
 func (vm *VM) executeStoreArray(ins Instruction, idx, val interp.Value) {
 	if ins.A < 0 {
-		// VM-ARRAY-OOB-FAILCLOSED-1: negative-encoded slot = local array
-		// access (compileSubscript). See executePushArray.
-		vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY local array slot %d not supported", -ins.A-1))
+		// MQL-COMPILER-LOCAL-ARRAYS: negative-encoded slot = local array —
+		// write into the current frame's locals (slice backing is shared, so
+		// element writes propagate to every alias).
+		localIdx := int(-ins.A - 1)
+		if localIdx >= len(vm.locals) {
+			vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY local slot %d out of range (locals=%d)", localIdx, len(vm.locals)))
+			return
+		}
+		arrVal := vm.locals[localIdx]
+		if arrVal.Kind != interp.ValArray {
+			vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY local slot %d is not an array", localIdx))
+			return
+		}
+		i := int(idx.ToInt())
+		if i < 0 || i >= len(arrVal.Array) {
+			vm.setStackError(fmt.Sprintf("OP_STORE_ARRAY index %d out of range (len=%d)", i, len(arrVal.Array)))
+			return
+		}
+		arrVal.Array[i] = val
 		return
 	}
 	if int(ins.A) >= len(vm.globals) {

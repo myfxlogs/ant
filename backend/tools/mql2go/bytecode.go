@@ -81,6 +81,10 @@ const (
 
 	// Halt
 	OP_HALT
+
+	// User arrays (MQL-COMPILER-LOCAL-ARRAYS)
+	OP_NEW_ARRAY    // A = declared size (0 = dynamic); pushes a fresh ValArray with NoneVal zero elements
+	OP_ARRAY_RESIZE // A = slot (negative = local); pops newSize IntVal, resizes the slot's array, pushes new len
 )
 
 // ConstID is an index into the constant pool.

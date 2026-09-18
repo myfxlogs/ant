@@ -117,6 +117,11 @@ func (c *astCompiler) compileExpr(e *interp.Expr) {
 	case interp.ExprDecl:
 		c.compileDecl(e)
 
+	case interp.ExprArrayNew:
+		// MQL-COMPILER-LOCAL-ARRAYS: declared size is a compile-time constant
+		// (non-constant dimensions are rejected at the declaration site).
+		c.emit(OP_NEW_ARRAY, e.Val.Int, 0, 0)
+
 	case interp.ExprSeq:
 		// Evaluate all children in order; only the last leaves a value on stack.
 		for i := range e.Args {
@@ -139,10 +144,9 @@ func (c *astCompiler) compileSubscript(e *interp.Expr) {
 		c.compileExpr(e.Index)
 		slot, isGlobal := c.resolveVar(e.Name)
 		if !isGlobal {
-			c.bc.Coverage.AddBlindSpot("local array write: " + e.Name)
-			// VM-ARRAY-OOB-FAILCLOSED-1: negative-encode non-global slots
-			// (uint16 → int32 before negating) so the runtime never mistakes
-			// a local index for a global slot.
+			// MQL-COMPILER-LOCAL-ARRAYS: negative-encode non-global slots
+			// (uint16 → int32 before negating); the runtime resolves them
+			// against vm.locals (previously a fail-closed blind spot).
 			c.emit(OP_STORE_ARRAY, -int32(slot)-1, 0, 0)
 			return
 		}
@@ -156,9 +160,8 @@ func (c *astCompiler) compileSubscript(e *interp.Expr) {
 		c.compileExpr(e.Index)
 		slot, isGlobal := c.resolveVar(e.Name)
 		if !isGlobal {
-			c.bc.Coverage.AddBlindSpot("local array read: " + e.Name)
-			// VM-ARRAY-OOB-FAILCLOSED-1: same negative encoding as the write
-			// path — see above.
+			// MQL-COMPILER-LOCAL-ARRAYS: same negative encoding as the write
+			// path; resolved against vm.locals at runtime.
 			c.emit(OP_PUSH_ARRAY, -int32(slot)-1, 0, 0)
 			return
 		}
@@ -398,6 +401,21 @@ func (c *astCompiler) compileCall(e *interp.Expr) {
 			instruction: instrIdx,
 			callee:      e.Name,
 		})
+		return
+	}
+
+	// MQL-COMPILER-LOCAL-ARRAYS: ArrayResize on a plain variable must write
+	// the resized array back to its slot — the builtin receives a Value copy
+	// whose re-sliced header never propagates (bug A). Non-variable arg0
+	// (call results, etc.) falls through to the builtin unchanged.
+	if e.Name == "ArrayResize" && len(e.Args) == 2 && e.Args[0].Kind == interp.ExprVar {
+		c.compileExpr(&e.Args[1])
+		slot, isGlobal := c.resolveVar(e.Args[0].Name)
+		if isGlobal {
+			c.emit(OP_ARRAY_RESIZE, int32(slot), 0, 0)
+		} else {
+			c.emit(OP_ARRAY_RESIZE, -int32(slot)-1, 0, 0)
+		}
 		return
 	}
 

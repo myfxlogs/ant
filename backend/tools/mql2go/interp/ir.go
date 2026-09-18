@@ -35,6 +35,7 @@ const (
 	ExprDecl                           // Name + Args[0]: name := value (declaration)
 	ExprCompoundAssign                 // Name + Op + Args[0]: a += b
 	ExprSeq                            // Args: evaluate all in order, return last result
+	ExprArrayNew                       // MQL-COMPILER-LOCAL-ARRAYS: Name=element type, Val=IntVal declared size (0 = dynamic empty array)
 )
 
 // Statement is a pure Go statement tree node.

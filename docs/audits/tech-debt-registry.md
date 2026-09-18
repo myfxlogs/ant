@@ -2669,6 +2669,8 @@ OrdersTotal/OrderSelect(MODE_TRADES)/AccountBalance/AccountEquity（每事件 Up
 
 **2026-09-19 Devin CLI 设计实查**（派工单 `docs/audits/builder-handoff-mql-compiler-local-arrays.md`）：原"建议方案"方向核实正确——负编码局部槽+`vm.locals` 帧模型+`compileDecl` 槽分配已全就绪（VM-ARRAY-OOB-FAILCLOSED-1 铺好编码约定），缺声明放行+数组构造+局部槽运行时读写。**另实证两个同族活 bug**：①`ArrayResize` 对**全局**数组也静默无效——`interp.Value.Array` 是 `[]Value` header，builtin 改栈上副本永不回写槽（探针：`double g[2]; ArrayResize(g,5)` 后 len 仍 2）；②局部 `int a[2]={1,2}` 今天**静默编译通过**——`init_declarator` 分支把 a 当标量收，数组性+初始化器全丢（比拒收更糟）。方案：S2 前端放行+三拒绝（initializer/非常量维度/multi-dim）；S3 `OP_NEW_ARRAY`+`OP_ARRAY_RESIZE`（槽位直写回修 resize 断链，全局局部同治）；S5 `executePushArray`/`executeStoreArray` 负编码路径改 `vm.locals` 实读写。边界：数组参数仍拒（引用语义另债）。
 
+**🟦open（施工完成，待独立复审）**（builder commit 见 git log）：S1 ExprArrayNew kind；S2 compileDeclaration initializer 前置拒（关 bug B）+array_declarator 分支产 ExprDecl{ExprArrayNew}（非常量维度 `int a[n]` 编译拒——派工单检查规格修正为"跳过首个 identifier"）；S3 OP_NEW_ARRAY/OP_ARRAY_RESIZE 追加尾；S4 astCompiler ArrayNew case+ArrayResize 拦截（ExprVar arg0→负/正槽 OP_ARRAY_RESIZE，非变量回退 builtin）+删两盲记；S5 两 opcode 实现（NEW_ARRAY NoneVal 零值/RESIZE 槽回写=bug A 修复核心）+负路径 vm.locals 实读实写（OOB/not-an-array/slot-range fail-closed 全保留）；S6 T1-T7+三 pin 随语义升级反转/更新（TestNegativeSlotDirect 消息更新/TestLocalArrayAccessFails 标量局部 not-an-array/TestLocalArrayStillRejected→TestLocalArrayDeclAccepted——派工单点名反转）。mutation：M1 NEW_ARRAY→NoneVal→T1 RED（RESIZE not-an-array）✓；M2 负路径恢复拒收→T6 RED ✓；M3 删槽回写→T3 RED（g[4] 写 OOB——bug A 复活等价判别）✓；M4 删前置扫描→T5 两 initializer 子用例 RED（静默误编译复活）✓。 | 🟦open（施工完成，待独立复审） |
+
 ---
 
 ## FIX-2026-09-08-BYOK-QUOTA：平台每日配额误伤 BYOK 自有 Key 调用（✅done 2026-09-08）
