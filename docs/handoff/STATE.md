@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede）/**PY-DECIMAL-CTOR-1 ✅done**（e928722c：字面量折叠+非法编译拒绝+非字面量 StringToDouble，独立 mutation×3）。下一：PY-SCOPE-KNOWN-1 / TZ-PAIRED-CST-COLS-1 择债。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede）/**PY-DECIMAL-CTOR-1 ✅done**（e928722c）。**PY-SCOPE-KNOWN-1 设计实查完成**：①混同双向两面（写覆写+读遮蔽）探针实证，裁定文档化+pin 测试+Agent 规则，派工单已落档。下一：PY-SCOPE-KNOWN-1 开工指令转发→TZ-PAIRED-CST-COLS-1。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -26,17 +26,13 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **PY-SCOPE-KNOWN-1 / TZ-PAIRED-CST-COLS-1 择债设计实查** → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **转发 PY-SCOPE-KNOWN-1 开工指令**（P3 文档债，派工单已落档）；后续：TZ-PAIRED-CST-COLS-1 → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
 
 > 完整明细见 `docs/audits/tech-debt-registry.md`。这里只列当前活跃（🟦open / ⚠️待独立复审）条目。
 
-- **D-REVERT-CLEANUP-001** ✅done — revert 遗留拆分文件 build 断裂修复（2026-08-26）
-- **D-REVERT-SCOPE-DRIFT-001** ✅done — revert 实际范围远超 commit message，8 个 VM ID 状态漂移全部返工完成（2026-08-26）
-- **VM-CACHE-INTEGRITY-1/2** ✅done — SourceHash 绑定（返工后 Devin CLI 验收通过 2026-08-26）
-- **VM-TRADE-CONTEXT-1/2** ✅done — 交易上下文失真（Devin CLI 验收通过 2026-08-26）
 - **VM-COMPILER-SEMANTICS-1** ✅done — MQL→IR/Bytecode 语义丢失（Devin CLI 验收通过 2026-08-26）
 - **BT-FUNC-ENTRYPC-FWD** ✅done — 前向引用 stale marker PC（Devin CLI 验收通过 2026-08-26）
 - **VM-TIMESERIES-SEMANTICS-1** ✅done — timeseries 语义（Devin CLI 验收通过 2026-08-26）
@@ -71,7 +67,7 @@
 - **FIX-2026-09-08-TEMP-RETRY** ✅done — kimi-k3 temperature 400 自愈重试 + 用户配置 temperature 生效 + 流式 fallback nil panic 修复 + 工作区常驻 AI 网关设置入口（Devin CLI 直接施工+验收 2026-09-08）
 - **FIX-2026-09-08-CURL-IMPORT** ✅done — 厂商 curl 示例一键导入 BYOK 配置（ParseProviderCurl RPC + 后端解析器 + 表单回填，存储零改动）（Devin CLI 直接施工+验收 2026-09-08）
 - **QS-1.4** ✅done — Python bool(x) 语义修复 + vm_helpers:250 注释（Devin CLI 验收通过 2026-09-16，独立 mutation 重跑 RED→GREEN）
-- **PY-DECIMAL-CTOR-1** 🟦open — `Decimal("0")` 产 ValString 非 ValDecimal（QS-1.4 复审发现，P2）
+- **PY-DECIMAL-CTOR-1** ✅done — `Decimal(...)` 字面量折叠+非法编译拒绝（Devin CLI 验收通过 2026-09-18，commit e928722c+14591f22）
 - **QS-1.6** ✅done — ConfirmByAuthoritativeRead 状态机迁移（Devin CLI 验收通过 2026-09-16）
 - **QS-1.3** ✅done — Python 函数局部作用域（Devin CLI 验收通过 2026-09-16，commits 9940eda4+ee47292d）
 - **PY-SCOPE-KNOWN-1** 🟦open — Python 作用域已知限制 3 条（QS-1.3 遗留，文档化行为）
