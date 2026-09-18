@@ -5,7 +5,7 @@
 
 ## 交接负载
 
-- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede：retained/replay/put/Get 四面私有化，独立 mutation×4）。下一：PY-SCOPE-KNOWN-1 / PY-DECIMAL-CTOR-1 / TZ-PAIRED 择债设计实查。
+- **现状**: **VM-API-TRUTH-1 整债 ✅done 收官**（46 API 重分类，明细 registry）。VM-ARRAY-OOB-FAILCLOSED-1 ✅done（bdb3733f）。VM-ENUM-NUMBERING-1 ✅done（477e8273+bfb42ea3）。**VM-GLOBAL-ARRAY-DECL-1 ✅done**（da902af6）。**ORDERSEND-NILBROKER ✅done**（2739f100）/**TRADE-BUILTIN-ERR-SWALLOW ✅done**（6eae8160）/**VM-FUNC-FATAL-DELAY ✅done**（de6f672c+6ef18536）/**TEST-WAITSTATE-ACQUIRE-BCAST ✅done**（53e886e9）/**SNAPSHOT-SLICE-ALIAS-1 ✅done**（40148ede：retained/replay/put/Get 四面私有化，独立 mutation×4）。下一：PY-DECIMAL-CTOR-1 开工指令转发→PY-SCOPE/TZ-PAIRED。
 - **方向校验**: ✅ 与 AGENTS.md §1 一致（策略市场平台）。
 - **施工表**:
 
@@ -26,7 +26,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **P3 批择债设计实查**——候选：PY-SCOPE-KNOWN-1 / PY-DECIMAL-CTOR-1 / TZ-PAIRED-CST-COLS-1 → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
+- **下一步**: **转发 PY-DECIMAL-CTOR-1 开工指令**（P2，派工单已落档）；后续：PY-SCOPE-KNOWN-1 / TZ-PAIRED-CST-COLS-1 → LIVE-ACCOUNT-FIELDS-1。VM-LIVE-MTF-1 暂缓；DATA-TRUTH-3 已裁定（P3）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
