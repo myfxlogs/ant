@@ -347,7 +347,7 @@ const Accounts = {
       "table": {
         "closePrice": "決済価格",
         "closeTime": "平仓时间",
-        "magic": "Magic",
+        "magic": "マジックナンバー",
         "currentPrice": "現在値",
         "openPrice": "建値",
         "openTime": "建玉時間",

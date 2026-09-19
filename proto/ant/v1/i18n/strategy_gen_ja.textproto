@@ -45,10 +45,7 @@ exec_backtest_tool: 'バックテスト'
 exec_tool_running: '{tool}を実行中...'
 exec_feedback_title: '💬 AIとの会話を続ける'
 exec_feedback_hint: '自然言語でAIに指示してください — 問題の説明、改善依頼、アイデアの議論ができます。'
-exec_feedback_placeholder: '例：
-「損切りを1%に引き締めて」
-「シャープレシオが低い理由は？改善して」
-「ロングのみに変更、ショートはなし」'
+exec_feedback_placeholder: '試してみて：\n「ストップロスを 1% に引き締める」\n「シャープレシオが低いのはなぜ？改善を手伝って」\n「ロングのみにして、ショートはやめる」'
 exec_chip_lower_dd: 'ドローダウン低減'
 exec_chip_raise_return: 'リターン向上'
 exec_chip_tighten_sl: '損切り強化'
@@ -85,3 +82,5 @@ plan_entry: 'エントリー'
 plan_exit: 'エグジット'
 plan_risk: 'リスク'
 plan_market: '市場'
+plan_hint: 'このプランについて相談するか、「generate code」と入力して実装を開始してください。'
+plan_input_placeholder: '考えを共有...'

@@ -20,6 +20,13 @@ import LogsVi from '../i18n/resources/vi/logs';
 import LogsEn from '../i18n/resources/en/logs';
 import GenZhCn from '../i18n/resources/zh-cn/strategy_gen';
 import GenZhTw from '../i18n/resources/zh-tw/strategy_gen';
+import GenJa from '../i18n/resources/ja/strategy_gen';
+import GenVi from '../i18n/resources/vi/strategy_gen';
+import BaseJa from '../i18n/resources/ja/base';
+import BaseVi from '../i18n/resources/vi/base';
+import LogsJa from '../i18n/resources/ja/logs';
+import LogsVi from '../i18n/resources/vi/logs';
+import LogsEn from '../i18n/resources/en/logs';
 
 type Tree = Record<string, unknown>;
 
@@ -138,6 +145,38 @@ describe('I18N-MIXED-1 R6: absorbed SSOT keys present in all 5 locales', () => {
     const v = at(GenZhTw as unknown as Tree, 'strategy.gen.execFeedbackPlaceholder');
     expect(v).toBeDefined();
     expect(v).toContain('把止損收緊到 1%');
+  });
+
+  it('keeps strategy_gen.execFeedbackPlaceholder present in ja/vi (I18N-MIXED-2 相位 2)', () => {
+    // ja/vi textproto 中 exec_feedback_placeholder 历史值为多行裸换行（不可解析），
+    // 相位 2 修为 \n 转义单行使 check/build 可解析。
+    for (const [loc, tree] of [
+      ['ja', GenJa as unknown as Tree],
+      ['vi', GenVi as unknown as Tree],
+    ] as const) {
+      const v = at(tree, 'strategy.gen.execFeedbackPlaceholder');
+      expect(v, `[${loc}] placeholder`).toBeDefined();
+    }
+  });
+
+  it('keeps ja/vi diag+signalType translations distinct from en (I18N-MIXED-2 相位 2)', () => {
+    // diag 路径在 base 树、signalType 路径在 logs 树——严格按所属树断言非空且 ≠ en
+    const cases = [
+      { loc: 'ja', base: LOCALE_BASES['ja'], logs: LogsJa },
+      { loc: 'vi', base: LOCALE_BASES['vi'], logs: LogsVi },
+    ] as const;
+    for (const { loc, base: baseTree, logs: logsTree } of cases) {
+      for (const path of ['strategy.live.diag.orderTruth', 'strategy.live.diag.lifecycle.signal_generated']) {
+        const v = at(baseTree, path);
+        expect(v, `[${loc}] ${path}`).toBeDefined();
+        expect(v, `[${loc}] ${path}`).not.toEqual(at(LOCALE_BASES['en'], path));
+      }
+      for (const path of ['logs.signalType.buy', 'logs.signalType.modify']) {
+        const v = at(logsTree, path);
+        expect(v, `[${loc}] ${path}`).toBeDefined();
+        expect(v, `[${loc}] ${path}`).not.toEqual(at(LOCALE_BASES['en'], path));
+      }
+    }
   });
 
   it('keeps zh-tw diag translations distinct from en (absorbed real translations)', () => {

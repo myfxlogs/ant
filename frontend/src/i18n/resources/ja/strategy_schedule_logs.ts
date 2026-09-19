@@ -49,7 +49,7 @@ const StrategyScheduleLogs = {
       "ordersTable": {
         "closePrice": "決済値",
         "lots": "ロット",
-        "magic": "Magic",
+        "magic": "マジックナンバー",
         "openPrice": "建値",
         "profit": "損益",
         "side": "方向",

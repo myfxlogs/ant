@@ -95,7 +95,7 @@ const Base = {
         },
         "accountNumber": "Số Tài Khoản",
         "accountNumberInvalid": "5-6 chữ số, không có số 0 ở đầu, không có 4 hoặc 7",
-        "accountNumberPlaceholder": "e.g. 123568",
+        "accountNumberPlaceholder": "vd: 123568",
         "email": "用户邮箱",
         "nickname": "Biệt Danh",
         "password": "Mật Khẩu",
@@ -238,8 +238,8 @@ const Base = {
       "configured": "Đã cấu hình",
       "confirmDeleteModel": "Xóa mô hình này?",
       "description": "Quản lý nhà cung cấp AI, mô hình và giá. Người dùng chọn mô hình có sẵn, tính phí token từ ví.",
-      "discover": "Discover",
-      "discoverFailed": "Failed to discover models",
+      "discover": "Khám phá",
+      "discoverFailed": "Khám phá mô hình thất bại",
       "displayName": "Tên hiển thị",
       "displayNamePlaceholder": "DeepSeek Chat",
       "displayNameRequired": "Vui lòng nhập tên hiển thị",
@@ -249,7 +249,7 @@ const Base = {
       "modelNameRequired": "Vui lòng nhập tên mô hình",
       "models": "Mô hình",
       "noModels": "Không có mô hình",
-      "noModelsDiscovered": "No models discovered. Check API key and base URL.",
+      "noModelsDiscovered": "Không phát hiện mô hình. Vui lòng kiểm tra API key và base URL.",
       "notConfigured": "Chưa cấu hình",
       "priceInput": "Giá đầu vào ($/1M)",
       "priceOutput": "Giá đầu ra ($/1M)",
@@ -362,8 +362,8 @@ const Base = {
         "action": "Hành động",
         "amount": "Số tiền USDT",
         "amountUsd": "Tín dụng USD",
-        "block": "Block",
-        "confirmations": "Confirmations",
+        "block": "Khối",
+        "confirmations": "Số xác nhận",
         "reviewNote": "Ghi chú duyệt",
         "status": "Trạng thái",
         "time": "Thời gian",
@@ -519,8 +519,8 @@ const Base = {
       "noUsers": "Không tìm thấy người dùng",
       "reason": "Lý do điều chỉnh...",
       "searchPlaceholder": "Tìm theo email hoặc số tài khoản...",
-      "tabDepositAddresses": "Deposit Addresses",
-      "tabWallets": "User Wallets",
+      "tabDepositAddresses": "Địa chỉ nạp tiền",
+      "tabWallets": "Ví người dùng",
       "title": "Quản Lý Ví",
       "transactions": "Giao dịch",
       "unassigned": "Chưa gán",
@@ -529,86 +529,86 @@ const Base = {
       "walletFor": "Ví của"
     },
     "analytics": {
-      "activeBuyers": "Active Buyers",
-      "name": "Name",
-      "newStrategies": "New Strategies",
-      "newSubs": "New Subscribers",
-      "platformRev": "Platform Rev",
-      "providerRev": "Provider Rev",
-      "refundRate": "Refund Rate",
-      "topByRevenue": "Top Strategies by Revenue",
-      "topBySubs": "Top Strategies by Subscribers",
-      "topProvidersRev": "Top Providers by Revenue",
-      "topProvidersStrat": "Top Providers by Strategies",
-      "totalStrategies": "Total Strategies",
-      "totalTx": "Transactions",
-      "value": "Value"
+      "activeBuyers": "Người mua hoạt động",
+      "name": "Tên",
+      "newStrategies": "Chiến lược mới",
+      "newSubs": "Người đăng ký mới",
+      "platformRev": "Doanh thu nền tảng",
+      "providerRev": "Doanh thu nhà cung cấp",
+      "refundRate": "Tỷ lệ hoàn tiền",
+      "topByRevenue": "Chiến lược hàng đầu theo doanh thu",
+      "topBySubs": "Chiến lược hàng đầu theo người đăng ký",
+      "topProvidersRev": "Nhà cung cấp hàng đầu theo doanh thu",
+      "topProvidersStrat": "Nhà cung cấp hàng đầu theo số chiến lược",
+      "totalStrategies": "Tổng chiến lược",
+      "totalTx": "Giao dịch",
+      "value": "Giá trị"
     },
     "autogen": {
-      "actions": "Actions",
-      "allStatus": "All Status",
-      "approve": "Approve",
-      "approveFailed": "Approve failed",
-      "approved": "Task approved and published",
-      "confirmApprove": "Approve and publish?",
-      "confirmReject": "Reject this task?",
-      "enqueue": "Enqueue",
-      "error": "Error",
-      "loadFailed": "Failed to load tasks",
-      "quality": "Quality",
-      "refresh": "Refresh",
-      "reject": "Reject",
-      "rejectFailed": "Reject failed",
-      "rejected": "Task rejected",
-      "status": "Status",
-      "strategyType": "Type",
-      "strategyTypes": "Strategy Types (comma-separated)",
-      "symbol": "Symbol",
-      "symbols": "Symbols (comma-separated)",
+      "actions": "Thao tác",
+      "allStatus": "Tất cả trạng thái",
+      "approve": "Phê duyệt",
+      "approveFailed": "Phê duyệt thất bại",
+      "approved": "Tác vụ đã được phê duyệt và xuất bản",
+      "confirmApprove": "Phê duyệt và xuất bản?",
+      "confirmReject": "Từ chối tác vụ này?",
+      "enqueue": "Thêm vào hàng đợi",
+      "error": "Lỗi",
+      "loadFailed": "Tải tác vụ thất bại",
+      "quality": "Chất lượng",
+      "refresh": "Làm mới",
+      "reject": "Từ chối",
+      "rejectFailed": "Từ chối thất bại",
+      "rejected": "Tác vụ đã bị từ chối",
+      "status": "Trạng thái",
+      "strategyType": "Loại",
+      "strategyTypes": "Loại chiến lược (phân tách bằng dấu phẩy)",
+      "symbol": "Ký hiệu",
+      "symbols": "Ký hiệu (phân tách bằng dấu phẩy)",
       "timeframe": "TF",
-      "timeframes": "Timeframes (comma-separated)",
-      "title": "AI Strategy Generation Tasks",
-      "triggerBatch": "Trigger Batch",
-      "triggerFailed": "Trigger failed"
+      "timeframes": "Khung thời gian (phân tách bằng dấu phẩy)",
+      "title": "Tác vụ tạo chiến lược bằng AI",
+      "triggerBatch": "Kích hoạt hàng loạt",
+      "triggerFailed": "Kích hoạt thất bại"
     },
     "coupon": {
-      "codePlaceholder": "Coupon code (e.g. SUMMER20)",
-      "colActions": "Actions",
-      "colCode": "Code",
-      "colExpires": "Expires",
-      "colMinPurchase": "Min Purchase",
-      "colStatus": "Status",
-      "colType": "Type",
-      "colUsage": "Usage",
-      "colValue": "Value",
-      "create": "Create Coupon",
-      "createFailed": "Failed to create coupon",
-      "createTitle": "Create Coupon",
-      "created": "Coupon created",
-      "disable": "Disable",
-      "disableFailed": "Failed to disable coupon",
-      "disabled": "Coupon disabled",
-      "expiresPlaceholder": "Expires at (ISO 8601, empty = never)",
-      "fillRequired": "Please fill required fields",
-      "loadFailed": "Failed to load coupons",
-      "maxUsesPlaceholder": "Max uses (0 = unlimited)",
-      "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
-      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)"
+      "codePlaceholder": "Mã giảm giá (vd: SUMMER20)",
+      "colActions": "Thao tác",
+      "colCode": "Mã",
+      "colExpires": "Hết hạn",
+      "colMinPurchase": "Mua tối thiểu",
+      "colStatus": "Trạng thái",
+      "colType": "Loại",
+      "colUsage": "Lượt dùng",
+      "colValue": "Giá trị",
+      "create": "Tạo phiếu giảm giá",
+      "createFailed": "Tạo phiếu giảm giá thất bại",
+      "createTitle": "Tạo phiếu giảm giá",
+      "created": "Đã tạo phiếu giảm giá",
+      "disable": "Vô hiệu hóa",
+      "disableFailed": "Vô hiệu hóa phiếu giảm giá thất bại",
+      "disabled": "Phiếu giảm giá đã bị vô hiệu hóa",
+      "expiresPlaceholder": "Hết hạn lúc (ISO 8601, bỏ trống = không bao giờ)",
+      "fillRequired": "Vui lòng điền các trường bắt buộc",
+      "loadFailed": "Tải phiếu giảm giá thất bại",
+      "maxUsesPlaceholder": "Số lần sử dụng tối đa (0 = không giới hạn)",
+      "minPurchasePlaceholder": "Mua tối thiểu (0 = không giới hạn)",
+      "valuePlaceholder": "Giá trị chiết khấu (vd: 20 cho 20% hoặc 50 cho $50)"
     },
     "depositAddresses": {
-      "address": "Address",
-      "all": "All Status",
-      "assignedAt": "Assigned At",
-      "availablePool": "Available in Pool",
-      "import": "Import Addresses",
-      "importFailed": "Import failed",
-      "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
-      "index": "Index",
-      "network": "Network",
-      "received": "Received USDT",
-      "status": "Status",
-      "total": "Total Addresses",
-      "user": "User ID"
+      "address": "Địa chỉ",
+      "all": "Tất cả trạng thái",
+      "assignedAt": "Gán lúc",
+      "availablePool": "Khả dụng trong pool",
+      "import": "Nhập địa chỉ",
+      "importFailed": "Nhập thất bại",
+      "importHint": "Sử dụng công cụ hdgen trên máy ngoại tuyến để tạo deposit_addresses.bin, sau đó tải lên tại đây.",
+      "index": "Chỉ số",
+      "network": "Mạng",
+      "received": "USDT đã nhận",
+      "status": "Trạng thái",
+      "total": "Tổng số địa chỉ",
+      "user": "ID người dùng"
     },
     "header": {
       "admin": "管理",
@@ -618,44 +618,44 @@ const Base = {
       "logout": "Đăng xuất"
     },
     "marketplace": {
-      "colActions": "Actions",
-      "colFeatured": "Featured",
-      "colPrice": "Price",
-      "colPublisher": "Publisher",
-      "colRevenue": "Revenue",
-      "colSales": "Sales",
-      "colStatus": "Status",
-      "colTitle": "Title",
-      "feature": "Feature",
-      "featureDesc": "Set priority for featured placement. Higher = more prominent.",
-      "featureFailed": "Failed to feature strategy",
-      "featureSuccess": "Strategy featured",
-      "featureTitle": "Feature Strategy",
-      "filterStatus": "All statuses",
-      "loadFailed": "Failed to load strategies",
-      "searchPlaceholder": "Search by title...",
-      "unfeature": "Remove featured",
-      "unfeatureFailed": "Failed to unfeature",
-      "unfeatureSuccess": "Removed featured"
+      "colActions": "Thao tác",
+      "colFeatured": "Nổi bật",
+      "colPrice": "Giá",
+      "colPublisher": "Nhà xuất bản",
+      "colRevenue": "Doanh thu",
+      "colSales": "Doanh số",
+      "colStatus": "Trạng thái",
+      "colTitle": "Tiêu đề",
+      "feature": "Nổi bật",
+      "featureDesc": "Đặt mức ưu tiên hiển thị nổi bật. Cao = nổi bật hơn.",
+      "featureFailed": "Đưa chiến lược vào nổi bật thất bại",
+      "featureSuccess": "Chiến lược đã được nổi bật",
+      "featureTitle": "Chiến lược nổi bật",
+      "filterStatus": "Tất cả trạng thái",
+      "loadFailed": "Tải chiến lược thất bại",
+      "searchPlaceholder": "Tìm kiếm theo tiêu đề...",
+      "unfeature": "Bỏ nổi bật",
+      "unfeatureFailed": "Bỏ nổi bật thất bại",
+      "unfeatureSuccess": "Đã bỏ nổi bật"
     },
     "refund": {
-      "approve": "Approve & Execute",
-      "approveTitle": "Approve Refund",
-      "approved": "Refund approved and executed",
-      "colActions": "Actions",
-      "colAmount": "Amount",
-      "colDate": "Date",
-      "colReason": "Reason",
-      "colStatus": "Status",
-      "colStrategy": "Strategy",
-      "colUser": "User",
-      "filterStatus": "All statuses",
-      "loadFailed": "Failed to load refund requests",
-      "processFailed": "Failed to process refund",
-      "reject": "Reject",
-      "rejectTitle": "Reject Refund",
-      "rejected": "Refund request rejected",
-      "reviewNotePlaceholder": "Review note (optional for reject, recommended for approve)..."
+      "approve": "Phê duyệt và thực hiện",
+      "approveTitle": "Phê duyệt hoàn tiền",
+      "approved": "Hoàn tiền đã được phê duyệt và thực hiện",
+      "colActions": "Thao tác",
+      "colAmount": "Số tiền",
+      "colDate": "Ngày",
+      "colReason": "Lý do",
+      "colStatus": "Trạng thái",
+      "colStrategy": "Chiến lược",
+      "colUser": "Người dùng",
+      "filterStatus": "Tất cả trạng thái",
+      "loadFailed": "Tải yêu cầu hoàn tiền thất bại",
+      "processFailed": "Xử lý hoàn tiền thất bại",
+      "reject": "Từ chối",
+      "rejectTitle": "Từ chối hoàn tiền",
+      "rejected": "Yêu cầu hoàn tiền đã bị từ chối",
+      "reviewNotePlaceholder": "Ghi chú đánh giá (không bắt buộc khi từ chối, nên có khi phê duyệt)..."
     },
     "sidebar": {
       "accountManagement": "Quản Lý Tài Khoản",
@@ -717,38 +717,38 @@ const Base = {
           "dll": "DLL imports are not supported — remove external DLL calls and use built-in MQL functions",
           "iCustom": "iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually"
         },
-        "aiFailed": "AI fix failed",
-        "aiFix": "AI Fix",
-        "aiNoResult": "AI returned no code",
-        "allSilenced": "All warnings acknowledged as intentional",
-        "apply": "Apply & Re-run",
-        "applyFailed": "Failed to apply fix",
-        "compatible": "compatible",
-        "coverage": "Coverage",
-        "defenseA": "Structural Validation",
-        "diffHint": "Review the AI-generated code below. Apply to create a new version and re-run backtest.",
-        "diffPreview": "AI Fix Preview",
-        "fatal": "Critical Issues",
+        "aiFailed": "Sửa lỗi bằng AI thất bại",
+        "aiFix": "Sửa lỗi bằng AI",
+        "aiNoResult": "AI không trả về mã",
+        "allSilenced": "Tất cả cảnh báo đã được xác nhận là cố ý",
+        "apply": "Áp dụng và chạy lại",
+        "applyFailed": "Áp dụng bản sửa thất bại",
+        "compatible": "tương thích",
+        "coverage": "Độ bao phủ",
+        "defenseA": "Xác thực cấu trúc",
+        "diffHint": "Xem lại mã do AI tạo bên dưới. Áp dụng để tạo phiên bản mới và chạy lại backtest.",
+        "diffPreview": "Xem trước bản sửa AI",
+        "fatal": "Vấn đề nghiêm trọng",
         "fixApplied": "Fix applied — re-running backtest",
-        "fixAppliedCompileWarn": "Fix applied but compile has warnings",
-        "info": "Quality Hints",
-        "invariant": "Invariant Violation",
-        "lookahead": "Lookahead Bias",
-        "noCode": "No strategy code to fix",
-        "saveFirst": "Please save the strategy first to apply AI fixes",
+        "fixAppliedCompileWarn": "Đã áp dụng bản sửa nhưng biên dịch có cảnh báo",
+        "info": "Gợi ý chất lượng",
+        "invariant": "Vi phạm bất biến",
+        "lookahead": "Thiên lệch nhìn trước",
+        "noCode": "Không có mã chiến lược để sửa",
+        "saveFirst": "Vui lòng lưu chiến lược trước khi áp dụng các bản sửa lỗi AI",
         "silenceHint": "Acknowledge as intentional — hide this warning",
-        "statistical": "Statistical Hint",
+        "statistical": "Gợi ý thống kê",
         "suggestionLabel": "建议",
-        "unknown": "Diagnostic",
-        "unsupported": "unsupported",
-        "warning": "Risk Warnings"
+        "unknown": "Chẩn đoán",
+        "unsupported": "không được hỗ trợ",
+        "warning": "Cảnh báo rủi ro"
       },
-      "autoGate": "Auto Gate Evaluation",
-      "cancelFailed": "Cancel failed",
+      "autoGate": "Đánh giá cổng tự động",
+      "cancelFailed": "Hủy thất bại",
       "canceled": "Backtest bị hủy",
       "lotSize": "Khối lượng lô",
-      "notPublishable": "Not Publishable",
-      "publishable": "Publishable",
+      "notPublishable": "Không thể xuất bản",
+      "publishable": "Có thể xuất bản",
       "strategyParameters": "Tham số chiến lược"
     },
     "live": {
@@ -883,76 +883,76 @@ const Base = {
     "templates": {
       "scheduleLaunch": {
         "metrics": {
-          "maxDrawdown": "Max Drawdown",
-          "sharpe": "Sharpe Ratio",
-          "winRate": "Win Rate"
+          "maxDrawdown": "Sụt giảm tối đa",
+          "sharpe": "Tỷ lệ Sharpe",
+          "winRate": "Tỷ lệ thắng"
         }
       },
       "actions": {
-        "create": "New Strategy",
-        "delete": "Delete",
-        "deploy": "Deploy"
+        "create": "Chiến lược mới",
+        "delete": "Xóa",
+        "deploy": "Triển khai"
       },
       "codeModal": {
-        "title": "Code"
+        "title": "Mã"
       },
       "detail": {
-        "equityCurve": "Equity Curve",
-        "noDescription": "No description",
-        "notFound": "Strategy not found",
-        "openInWorkspace": "Open in Workspace",
-        "overview": "Overview",
-        "parameters": "Parameters",
-        "profitFactor": "Profit Factor",
-        "tradeStats": "Trade Statistics"
+        "equityCurve": "Đường cong vốn chủ",
+        "noDescription": "Chưa có mô tả",
+        "notFound": "Không tìm thấy chiến lược",
+        "openInWorkspace": "Mở trong Workspace",
+        "overview": "Tổng quan",
+        "parameters": "Tham số",
+        "profitFactor": "Hệ số lợi nhuận",
+        "tradeStats": "Thống kê giao dịch"
       },
       "gallery": {
-        "aiGenerate": "AI Generate",
-        "deleteFailed": "Delete failed",
-        "deploy": "Deploy",
-        "empty": "No strategies found",
-        "filterAll": "All",
-        "filterMine": "Mine",
-        "filterSystem": "System",
+        "aiGenerate": "Tạo bằng AI",
+        "deleteFailed": "Xóa thất bại",
+        "deploy": "Triển khai",
+        "empty": "Không tìm thấy chiến lược",
+        "filterAll": "Tất cả",
+        "filterMine": "Của tôi",
+        "filterSystem": "Hệ thống",
         "fork": "Fork",
-        "forkEdit": "Fork & Edit",
-        "forkFailed": "Fork failed",
-        "forkSuccess": "Forked to new strategy",
-        "publish": "Publish",
-        "searchPlaceholder": "Search strategies...",
+        "forkEdit": "Fork và chỉnh sửa",
+        "forkFailed": "Fork thất bại",
+        "forkSuccess": "Đã fork thành chiến lược mới",
+        "publish": "Xuất bản",
+        "searchPlaceholder": "Tìm kiếm chiến lược...",
         "shared": "Shared",
-        "sortRecent": "Recent",
-        "sortReturn": "Return",
-        "sortRisk": "Risk",
-        "sortUsage": "Usage",
-        "system": "System",
-        "title": "Strategies",
-        "unpublish": "Unpublish",
-        "unpublishFailed": "Unpublish failed",
-        "unpublishSuccess": "Unpublished"
+        "sortRecent": "Gần đây",
+        "sortReturn": "Lợi nhuận",
+        "sortRisk": "Rủi ro",
+        "sortUsage": "Lượt dùng",
+        "system": "Hệ thống",
+        "title": "Chiến lược",
+        "unpublish": "Hủy xuất bản",
+        "unpublishFailed": "Hủy xuất bản thất bại",
+        "unpublishSuccess": "Đã hủy xuất bản"
       },
       "messages": {
-        "fetchTemplateListFailed": "Failed to load strategies",
-        "publishFailed": "Publish failed",
-        "templateDeleted": "Deleted"
+        "fetchTemplateListFailed": "Tải chiến lược thất bại",
+        "publishFailed": "Xuất bản thất bại",
+        "templateDeleted": "Đã xóa"
       },
       "table": {
-        "createdAt": "Created",
-        "status": "Status",
-        "useCount": "Use Count",
-        "visibility": "Visibility"
+        "createdAt": "Đã tạo",
+        "status": "Trạng thái",
+        "useCount": "Số lượt sử dụng",
+        "visibility": "Chế độ hiển thị"
       },
       "visibility": {
-        "private": "Private",
-        "public": "Public"
+        "private": "Riêng tư",
+        "public": "Công khai"
       },
       "chatEdit": "Chỉnh sửa Chat",
       "confirmDelete": "Xóa chiến lược này?",
       "copyAll": "Sao chép tất cả",
-      "deleteConfirm": "Delete this strategy?",
+      "deleteConfirm": "Xóa chiến lược này?",
       "lines": "dòng",
-      "loadFailed": "Failed to load templates",
-      "loadOneFailed": "Failed to load template",
+      "loadFailed": "Tải mẫu thất bại",
+      "loadOneFailed": "Tải mẫu thất bại",
       "noTemplates": "Không có mẫu chiến lược đã lưu",
       "rename": "Đổi tên",
       "saveCurrent": "Lưu Chiến lược Hiện tại",
@@ -979,19 +979,19 @@ const Base = {
     },
     "tuning": {
       "noParams": {
-        "desc": "Add @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5",
-        "title": "No tunable parameters detected"
+        "desc": "Thêm chú thích @param vào mã chiến lược để bật Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5",
+        "title": "Không phát hiện tham số có thể điều chỉnh"
       },
       "searchMethod": {
         "grid": "Lưới",
         "random": "Ngẫu nhiên"
       },
-      "disabledHint": "Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.",
-      "failed": "Tuning failed",
-      "noDimsHint": "Enable at least one parameter dimension below.",
+      "disabledHint": "Cần mã chiến lược và ký hiệu. Chọn chiến lược từ thanh bên hoặc chạy backtest trước.",
+      "failed": "Tinh chỉnh thất bại",
+      "noDimsHint": "Bật ít nhất một chiều tham số bên dưới.",
       "qualityGate": "Gate",
-      "strategyName": "Strategy",
-      "totalTrades": "Trades"
+      "strategyName": "Chiến lược",
+      "totalTrades": "Giao dịch"
     },
     "workspace": {
       "chartIndicators": {
@@ -999,33 +999,33 @@ const Base = {
         "subPane": "Chỉ báo khung phụ"
       },
       "sidebar": {
-        "backtestHistory": "Backtest History",
-        "batchDeleteConfirm": "Delete selected strategies?",
-        "batchDeleteRunsConfirm": "Delete selected runs?",
-        "deleteRunConfirm": "Delete this backtest run?",
-        "deleteStrategyConfirm": "Delete this strategy?",
-        "myStrategies": "My Strategies",
-        "newStrategy": "New Strategy",
-        "noRuns": "No backtest runs yet",
-        "noStrategies": "No strategies yet",
-        "title": "Workspace",
-        "trades": "trades",
-        "viewAll": "View all"
+        "backtestHistory": "Lịch sử backtest",
+        "batchDeleteConfirm": "Xóa các chiến lược đã chọn?",
+        "batchDeleteRunsConfirm": "Xóa các lần chạy đã chọn?",
+        "deleteRunConfirm": "Xóa lần chạy backtest này?",
+        "deleteStrategyConfirm": "Xóa chiến lược này?",
+        "myStrategies": "Chiến lược của tôi",
+        "newStrategy": "Chiến lược mới",
+        "noRuns": "Chưa có lần chạy backtest",
+        "noStrategies": "Chưa có chiến lược",
+        "title": "Không gian làm việc",
+        "trades": "giao dịch",
+        "viewAll": "Xem tất cả"
       },
       "tour": {
-        "ai": "AI Assistant",
-        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
+        "ai": "Trợ lý AI",
+        "aiDesc": "Yêu cầu AI tạo, tối ưu hoặc gỡ lỗi chiến lược của bạn. Mã được áp dụng sẽ xuất hiện trong trình chỉnh sửa ngay lập tức.",
         "backtest": "Backtest",
-        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "backtestDesc": "Chạy backtest với tham số có thể cấu hình. Xem đường cong vốn chủ, thống kê giao dịch và chỉ số rủi ro.",
+        "code": "Trình soạn thảo mã",
+        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Nhập MQL tab.",
+        "save": "Lưu và xuất bản",
+        "saveDesc": "Lưu chiến lược của bạn làm mẫu, xuất bản lên marketplace hoặc triển khai vào lịch trình trực tiếp."
       },
-      "importMql": "Import MQL"
+      "importMql": "Nhập MQL"
     },
     "aiChat": {
-      "codeLoaded": "Strategy code in context",
+      "codeLoaded": "Mã chiến lược trong ngữ cảnh",
       "historyTab": "Lịch sử",
       "noContext": "No strategy loaded — describe what you want",
       "strategiesTab": "Chiến lược"
@@ -1037,11 +1037,11 @@ const Base = {
     },
     "chat": {
       "codeGenerated": "Đã tạo mã. Sử dụng các nút bên dưới để chạy đánh giá chiến lược và backtest.",
-      "entry": "Entry:",
+      "entry": "Vào:",
       "executionPlan": "Kế hoạch thực hiện",
-      "exit": "Exit:",
-      "indicators": "Indicators:",
-      "risk": "Risk:"
+      "exit": "Thoát:",
+      "indicators": "Chỉ báo:",
+      "risk": "Rủi ro:"
     },
     "importEA": {
       "aiTranslate": "AI Dịch",
@@ -1072,9 +1072,9 @@ const Base = {
     },
     "validate": {
       "allClear": "Tất cả kiểm tra đã thông qua — không tìm thấy vấn đề",
-      "autoFixFailed": "Auto-fix failed",
+      "autoFixFailed": "Tự động sửa thất bại",
       "errors": "Lỗi",
-      "failed": "Validation failed",
+      "failed": "Xác thực thất bại",
       "fixWithAI": "Gửi lỗi cho AI Sửa đổi",
       "hints": "Gợi ý",
       "parameters": "Tham số",
@@ -1122,8 +1122,8 @@ const Base = {
       "shareLinkFailed": "Tạo liên kết chia sẻ thất bại"
     },
     "status": {
-      "circuit_half_open": "Circuit Testing",
-      "circuit_open": "Circuit Open"
+      "circuit_half_open": "Đang thử nghiệm ngắt mạch",
+      "circuit_open": "Ngắt mạch mở"
     }
   },
   "autoTrading": {
@@ -1183,9 +1183,9 @@ const Base = {
         "label": "Mức độ rủi ro"
       },
       "trialDays": {
-        "7": "7 days",
-        "14": "14 days",
-        "30": "30 days"
+        "7": "7 ngày",
+        "14": "14 ngày",
+        "30": "30 ngày"
       },
       "codeSnippet": "Xem trước Chiến lược (công khai)",
       "codeSnippetPlaceholder": "'Tùy chọn: chia sẻ đoạn mã hoặc ý tưởng cấp cao về chiến lược (hiển thị cho tất cả)'",
@@ -1200,9 +1200,9 @@ const Base = {
       "titleLabel": "Tiêu đề",
       "titlePlaceholder": "ví dụ: Chiến lược Golden Cross",
       "trades": "Giao dịch",
-      "trialDaysCustom": "Custom days",
-      "trialDaysLabel": "Trial Period",
-      "trialDaysPlaceholder": "Select or enter custom days",
+      "trialDaysCustom": "Ngày tùy chỉnh",
+      "trialDaysLabel": "Giai đoạn dùng thử",
+      "trialDaysPlaceholder": "Chọn hoặc nhập số ngày tùy chỉnh",
       "winRate": "Tỷ lệ thắng"
     },
     "author": {
@@ -1252,7 +1252,7 @@ const Base = {
       "yourRating": "Đánh Giá Của Bạn"
     },
     "live": {
-      "loadError": "Failed to load live performance data"
+      "loadError": "Tải dữ liệu hiệu suất trực tiếp thất bại"
     },
     "messages": {
       "commentFailed": "Bình luận thất bại",
@@ -1267,20 +1267,20 @@ const Base = {
       "subscribed": "Đã thêm vào mục đã mua"
     },
     "optimization": {
-      "decayScore": "Decay Score",
-      "returnDelta": "Return Delta",
-      "sharpeDecline": "Sharpe Decline",
-      "trigger": "Trigger",
-      "winRateDecline": "Win Rate Decline"
+      "decayScore": "Điểm suy giảm",
+      "returnDelta": "Chênh lệch lợi nhuận",
+      "sharpeDecline": "Sharpe suy giảm",
+      "trigger": "Kích hoạt",
+      "winRateDecline": "Tỷ lệ thắng suy giảm"
     },
     "payment": {
       "alreadyPurchased": "Bạn đã sở hữu chiến lược này.",
       "balanceAfter": "Số dư sau khi mua",
       "cancel": "Hủy",
       "confirm": "Xác Nhận Mua",
-      "deployGuide": "Your strategy is ready to deploy.",
+      "deployGuide": "Chiến lược của bạn đã sẵn sàng triển khai.",
       "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
-      "goDeploy": "Deploy Now",
+      "goDeploy": "Triển khai ngay",
       "goToDeposit": "Nạp Tiền",
       "insufficientBalance": "Số dư không đủ",
       "oneTimePurchase": "¥{{amount}} mua đứt",
@@ -1346,13 +1346,13 @@ const Base = {
       "markAllAsRead": "Đánh dấu đã đọc"
     },
     "prefs": {
-      "newRating": "New rating or comment received",
-      "newStrategy": "New strategy published",
-      "performance": "Strategy performance anomaly",
-      "priceChange": "Strategy price changed",
-      "saveFailed": "Failed to save preferences",
-      "subExpiring": "Subscription expiring soon",
-      "title": "Notification Preferences"
+      "newRating": "Nhận được đánh giá hoặc bình luận mới",
+      "newStrategy": "Chiến lược mới đã được xuất bản",
+      "performance": "Chiến lược có hiệu suất bất thường",
+      "priceChange": "Giá chiến lược đã thay đổi",
+      "saveFailed": "Lưu tùy chọn thất bại",
+      "subExpiring": "Đăng ký sắp hết hạn",
+      "title": "Tùy chọn thông báo"
     },
     "tabs": {
       "all": "Tất cả ({{count}})",
@@ -1376,7 +1376,7 @@ const Base = {
   "schedule": {
     "launch": {
       "noAccount": {
-        "bindButton": "Bind MT Account"
+        "bindButton": "Liên kết tài khoản MT"
       }
     }
   },
@@ -1421,7 +1421,7 @@ const Base = {
       "title": "Cấu hình Canary"
     },
     "killSwitch": {
-      "title": "Kill Switch",
+      "title": "Công tắc khẩn cấp",
       "undoWindow": "Cửa sổ hoàn tác: còn {{minutes}}m {{seconds}}s",
       "confirmEngage": "Xác nhận kích hoạt",
       "confirmTitle": "Kích hoạt Công tắc Khẩn cấp — Xác nhận",
@@ -1584,23 +1584,23 @@ const Base = {
       "password": "Mật Khẩu"
     },
     "forgotPassword": {
-      "adminHint": "Please contact your administrator or support to reset your password.",
-      "adminTab": "Admin",
+      "adminHint": "Vui lòng liên hệ quản trị viên hoặc hỗ trợ để đặt lại mật khẩu.",
+      "adminTab": "Quản trị viên",
       "backToLogin": "返回登录",
-      "emailSent": "If the email exists, a reset link has been sent.",
+      "emailSent": "Nếu email tồn tại, liên kết đặt lại đã được gửi.",
       "emailTab": "Email",
       "hint": "Vui lòng liên hệ quản trị viên hoặc hỗ trợ để đặt lại mật khẩu.",
-      "mtFailed": "MT credential verification failed.",
-      "mtHint": "Enter your bound MT account credentials to verify your identity. Server and platform are detected automatically.",
-      "mtLogin": "MT Account Number",
-      "mtLoginPlaceholder": "e.g. 12345678",
-      "mtPassword": "MT Password",
-      "mtPasswordPlaceholder": "MT trading password",
-      "mtTab": "MT Verify",
-      "mtVerified": "Identity verified. Redirecting to password reset.",
-      "sendResetLink": "Send Reset Link",
+      "mtFailed": "Xác minh thông tin đăng nhập MT thất bại.",
+      "mtHint": "Nhập thông tin đăng nhập tài khoản MT đã liên kết để xác minh danh tính. Máy chủ và nền tảng được tự động phát hiện.",
+      "mtLogin": "Số tài khoản MT",
+      "mtLoginPlaceholder": "vd: 12345678",
+      "mtPassword": "Mật khẩu MT",
+      "mtPasswordPlaceholder": "Mật khẩu giao dịch MT",
+      "mtTab": "Xác minh MT",
+      "mtVerified": "Đã xác minh danh tính. Đang chuyển đến đặt lại mật khẩu.",
+      "sendResetLink": "Gửi liên kết đặt lại",
       "title": "Đặt lại Mật khẩu",
-      "verifyAndReset": "Verify & Reset Password"
+      "verifyAndReset": "Xác minh và đặt lại mật khẩu"
     },
     "login": {
       "forgotPassword": "Quên mật khẩu?",
@@ -1627,15 +1627,15 @@ const Base = {
       "subtitle": "Tạo tài khoản mới"
     },
     "resetPassword": {
-      "confirmPassword": "Confirm Password",
-      "confirmRequired": "Please confirm your password",
-      "failed": "Failed to reset password.",
-      "invalidToken": "Invalid or missing reset token.",
-      "mismatch": "Passwords do not match.",
-      "newPassword": "New Password",
-      "submit": "Reset Password",
-      "success": "Password has been reset. Please log in with your new password.",
-      "title": "Set New Password"
+      "confirmPassword": "Xác nhận mật khẩu",
+      "confirmRequired": "Vui lòng xác nhận mật khẩu",
+      "failed": "Đặt lại mật khẩu thất bại.",
+      "invalidToken": "Mã đặt lại không hợp lệ hoặc bị thiếu.",
+      "mismatch": "Mật khẩu không khớp.",
+      "newPassword": "Mật khẩu mới",
+      "submit": "Đặt lại mật khẩu",
+      "success": "Mật khẩu đã được đặt lại. Vui lòng đăng nhập bằng mật khẩu mới.",
+      "title": "Đặt mật khẩu mới"
     },
     "validation": {
       "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu",
@@ -1720,7 +1720,7 @@ const Base = {
     "saving": "Đang lưu...",
     "searching": "Đang tìm...",
     "selectSymbolToViewChart": "Chọn mã để xem biểu đồ",
-    "selected": "selected",
+    "selected": "đã chọn",
     "send": "Gửi",
     "showDetails": "Xem chi tiết",
     "status": "Trạng thái",
@@ -1728,6 +1728,7 @@ const Base = {
     "step2Label": "Thông tin đăng nhập",
     "step3Label": "Xác nhận",
     "success": "Thành công",
+    "total": "Tổng cộng {{total}}",
     "totalItems": "Tổng {{count}} mục",
     "translate": "Dịch",
     "true": "Đúng",
@@ -1746,7 +1747,7 @@ const Base = {
     "quickActions": {
       "aiStrategy": "Chiến lược AI"
     },
-    "noAccountsDesc": "Bind your first MT4/MT5 account to start monitoring and trading."
+    "noAccountsDesc": "Liên kết tài khoản MT4/MT5 đầu tiên để bắt đầu giám sát và giao dịch."
   },
   "errors": {
     "ai": {
@@ -1803,7 +1804,7 @@ const Base = {
     "analyzing": "Đang phân tích cấu trúc chiến lược...",
     "cannotImport": "Không thể tự động nhập",
     "coverageTitle": "Phạm vi Nhập",
-    "emptyAnalysisDesc": "No strategy logic was recognized. The source code may be incomplete or use a different language.",
+    "emptyAnalysisDesc": "Không nhận diện được logic chiến lược. Mã nguồn có thể chưa đầy đủ hoặc sử dụng ngôn ngữ khác.",
     "goodCoverage": "Phạm vi nhập khẩu tốt",
     "goodCoverageDesc": "Logic chính của chiến lược đã được nhận diện. An toàn để nhập. Kiểm tra danh sách tham số trước khi sử dụng.",
     "guiNoiseDesc": "Các điểm mù sau là các tính năng hiển thị biểu đồ/nút được bỏ qua khi chạy phía máy chủ và không ảnh hưởng đến kết quả giao dịch. An toàn để nhập.",
@@ -1852,21 +1853,21 @@ const Base = {
       "liveStrategies": "{{count}} chiến lược live",
       "strategies": "{{count}} chiến lược",
       "symbols": "{{count}} cặp/chiến lược",
-      "unlimitedAccounts": "Unlimited MT accounts"
+      "unlimitedAccounts": "Tài khoản MT không giới hạn"
     },
-    "accountBroker": "Broker",
-    "accountLogin": "Login",
-    "accountServer": "Server",
-    "accountStatus": "Status",
-    "accountType": "Type",
+    "accountBroker": "Nhà môi giới",
+    "accountLogin": "Đăng nhập",
+    "accountServer": "Máy chủ",
+    "accountStatus": "Trạng thái",
+    "accountType": "Loại",
     "activeStrategies": "Chiến Lược Hoạt Động",
     "aiTokens": "AI Token",
-    "aiTokensRemaining": "AI Tokens Remaining",
+    "aiTokensRemaining": "AI Token còn lại",
     "autoRenew": "Tự động gia hạn",
     "billingCycle": "Thanh Toán",
-    "boundAccountsCount": "Bound Accounts",
-    "boundAccountsTitle": "Bound MT Accounts",
-    "boundAt": "Bound At",
+    "boundAccountsCount": "Tài khoản đã liên kết",
+    "boundAccountsTitle": "Tài khoản MT đã liên kết",
+    "boundAt": "Liên kết lúc",
     "cancelAutoRenew": "Hủy tự động gia hạn",
     "cancelFailed": "Hủy thất bại. Vui lòng thử lại.",
     "cancelSuccess": "Tự động gia hạn đã hủy. Đăng ký của bạn vẫn hiệu lực đến hết kỳ hiện tại.",
@@ -1881,7 +1882,7 @@ const Base = {
     "insufficientBalance": "Số dư ví không đủ. Vui lòng nạp tiền trước.",
     "month": "tháng",
     "monthly": "Hàng Tháng",
-    "noBoundAccounts": "No bound accounts yet. Schedule a strategy to auto-bind an account.",
+    "noBoundAccounts": "Chưa có tài khoản liên kết. Lập lịch cho chiến lược để tự động liên kết tài khoản.",
     "noPlans": "Không có gói nào",
     "period": "Kỳ hiện tại",
     "runtimeMinutes": "Thời Gian Chạy (phút)",
@@ -1890,10 +1891,10 @@ const Base = {
     "subscribeSuccess": "Đăng ký kích hoạt thành công!",
     "subscribeTitle": "Đăng Ký Gói",
     "title": "Gói Đăng Ký",
-    "unbind": "Unbind",
-    "unbindConfirm": "Unbind this account? Active schedules on it will be stopped.",
-    "unbindFailed": "Failed to unbind account.",
-    "unbindSuccess": "Account unbound successfully.",
+    "unbind": "Hủy liên kết",
+    "unbindConfirm": "Hủy liên kết tài khoản này? Các lịch trình đang hoạt động trên đó sẽ bị dừng.",
+    "unbindFailed": "Hủy liên kết tài khoản thất bại.",
+    "unbindSuccess": "Đã hủy liên kết tài khoản thành công.",
     "usageTitle": "Sử Dụng Tháng Này",
     "walletBalance": "Số Dư Ví",
     "year": "năm",
@@ -1914,15 +1915,15 @@ const Base = {
     "unresolvedTooltip": "Chưa liên kết tài khoản giao dịch, không thể phân giải"
   },
   "analytics": {
-    "pnl": "P&L:"
+    "pnl": "Lãi/Lỗ:"
   },
   "app": {
     "name": "AlphaForge"
   },
   "landing": {
-    "brokersDesc": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
-    "brokersLink": "View all supported brokers",
-    "brokersTitle": "Compatible with 30+ MT4/MT5 Brokers"
+    "brokersDesc": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex và hơn thế nữa. Kết nối tài khoản môi giới hiện có trong vài giây.",
+    "brokersLink": "Xem tất cả nhà môi giới được hỗ trợ",
+    "brokersTitle": "Tương thích với hơn 30 nhà môi giới MT4/MT5"
   },
   "language": {
     "english": "English",
@@ -2014,6 +2015,10 @@ const Base = {
     "totalConns": "Tổng số",
     "unknown": "Không xác định",
     "uptime": "Thời gian hoạt động",
+    "uptimeDays": "{{d}} ngày {{h}} giờ",
+    "uptimeHours": "{{h}} giờ {{m}} phút",
+    "uptimeMinutes": "{{m}} phút {{s}} giây",
+    "uptimeSeconds": "{{s}} giây",
     "waitingData": "Đang chờ dữ liệu..."
   },
   "profile": {

@@ -126,6 +126,11 @@ function checkSection(section: string): CheckResult {
       'Base URL', 'API Key', 'VaR 95%',
       // I18N-MIXED-1 附录 C：合法英文保留
       'AI Token', 'ID', 'SL', 'TP', 'OK', 'PASS', 'Goroutines', 'Fork', 'Gate',
+      // I18N-MIXED-2 相位 2（ja/vi）：行情术语/技术缩写/画图工具名各 locale 惯例保留
+      'Bid>Ask', 'N/A', 'Backtest', 'Fibonacci Retracement',
+      'Magic', 'Pro', 'Tx Hash', 'Go Runtime', 'AI Gateway', 'Martingale',
+      'MD Gateway', 'Spill Files', 'Email', 'REJECT', 'Hash',
+      'Marketplace', 'SHORT', 'Trailing Stop (pips)',
       'DeepSeek Chat', 'account-1, account-2',
       '{symbol} · {timeframe}',
       '{{period}} · {{metric}}：{{value}}', '{{symbol}} {{timeframe}} {{name}}',
@@ -148,6 +153,7 @@ function checkSection(section: string): CheckResult {
       /^Example:\n/,
       // I18N-MIXED-1 返修 R4：5 条用户面漏译已 DICT 落地，stopgap 豁免删除
       // （保留会掩盖未来同类回归）。
+      // I18N-MIXED-2 相位 2（ja/vi）：JSONB 模板串各 locale 保留（{{...}} 占位）
     ];
     for (const [key, value] of fields) {
       const enValue = enFields.get(key);

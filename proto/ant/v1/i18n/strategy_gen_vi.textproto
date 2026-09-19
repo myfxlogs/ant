@@ -45,10 +45,7 @@ exec_backtest_tool: 'Backtest'
 exec_tool_running: 'Đang chạy {tool}...'
 exec_feedback_title: '💬 Tiếp Tục Trò Chuyện Với AI'
 exec_feedback_hint: 'Sử dụng ngôn ngữ tự nhiên để hướng dẫn AI — mô tả vấn đề, yêu cầu cải thiện, hoặc thảo luận ý tưởng.'
-exec_feedback_placeholder: 'Thử nói:
-"Thắt chặt cắt lỗ xuống 1%"
-"Tại sao Sharpe thấp? Giúp tôi cải thiện"
-"Đổi sang chỉ Long, không Short"'
+exec_feedback_placeholder: 'Thử nói:\n"Siết chặt stop loss còn 1%"\n"Tỷ lệ Sharpe tại sao thấp vậy? Giúp tôi cải thiện"\n"Chỉ long, không short"'
 exec_chip_lower_dd: 'Giảm Drawdown'
 exec_chip_raise_return: 'Tăng Lợi Nhuận'
 exec_chip_tighten_sl: 'Thắt Cắt Lỗ'
@@ -85,3 +82,5 @@ plan_entry: 'Vào Lệnh'
 plan_exit: 'Thoát Lệnh'
 plan_risk: 'Rủi Ro'
 plan_market: 'Thị Trường'
+plan_hint: 'Bạn có thể thảo luận kế hoạch này hoặc nói "generate code" để bắt đầu triển khai.'
+plan_input_placeholder: 'Chia sẻ suy nghĩ của bạn...'
