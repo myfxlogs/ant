@@ -687,8 +687,6 @@ func TestComputeRateZscore_SingleValue(t *testing.T) {
 	}
 }
 
-// --- session_clock.go BrokerTime ---
-
 // --- manager.go ---
 
 func TestSetBaseContext(t *testing.T) {
@@ -1028,8 +1026,6 @@ func TestStuffingDetector_IsPaused_Active(t *testing.T) {
 }
 
 // --- dlq_writer.go spillDLQ with spill ---
-
-// --- session_clock.go ClockSkewMs with offset ---
 
 // --- quality.go check stale ---
 
