@@ -131,7 +131,7 @@ func (m *Monitor) Run(ctx context.Context) error {
 			// EXT-BOUNDARY-WAVE2 S2: checkpoint stalled while the chain has
 			// confirmable blocks = deposits not being credited. Chain stalls
 			// (safeLatest <= lastBlock) are NOT an alert — nothing to do.
-			if m.lastSafeLatest > lastBlock && time.Since(m.lastProgressAt) > 15*time.Minute {
+			if m.checkpointStalled(lastBlock) {
 				m.log.Error("chain monitor: checkpoint stalled — deposits not being credited",
 					zap.Time("last_progress", m.lastProgressAt),
 					zap.Int64("last_block", lastBlock),
@@ -147,6 +147,13 @@ func (m *Monitor) Run(ctx context.Context) error {
 			}
 		}
 	}
+}
+
+// checkpointStalled reports whether the checkpoint has stopped advancing
+// while the chain has confirmable blocks (EXT-BOUNDARY-WAVE2 S2). A chain
+// stall (safeLatest <= lastBlock) is not a monitor stall — nothing to push.
+func (m *Monitor) checkpointStalled(lastBlock int64) bool {
+	return m.lastSafeLatest > lastBlock && time.Since(m.lastProgressAt) > 15*time.Minute
 }
 
 // loadConfig reads system_config for USDT contract address, min confirmations, and min deposit amount.

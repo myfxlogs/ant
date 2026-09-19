@@ -24,7 +24,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **EXT-BOUNDARY-WAVE2 复审中**——S1/S3/S4/S6 mutation 独立复验 RED 成立；S2/S5 判别覆盖缺口实证（详见 registry），返修指令待发。VM-LIVE-MTF-1 暂缓。
+- **下一步**: **EXT-BOUNDARY-WAVE2 🟦open（施工完成，待独立复审）**（六项 fail-closed 化：S1 看门狗+S2 stall 告警+S3 SMTP fail-closed+S4 webhook Abort+S5 MANUAL_REVIEW+S6 length fail-closed；mutation M1/M2/M4/M5 RED、M3 经返修 R1 端到端用例判别）。VM-LIVE-MTF-1 暂缓。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
