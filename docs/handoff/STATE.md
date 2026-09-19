@@ -24,7 +24,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **I18N-MIXED-2 相位 1 zh-tw ✅done**（bf35cc82+67b80ad8——zh-tw strict 0/0+zh-cn 0/0、引擎共享化、mutation 实证）。**相位 2 ja/vi 待开工**（同模式：ja 424/vi 442=124 Missing+300/318 未译，DICT 换 ja/vi 译文，派工单复用 builder-handoff-i18n-mixed-2.md）。VM-LIVE-MTF-1 暂缓。
+- **下一步**: **I18N-MIXED-2 全债 ✅done**（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。i18n 债系收官。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
