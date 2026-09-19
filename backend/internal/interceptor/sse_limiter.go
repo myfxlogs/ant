@@ -6,9 +6,11 @@ import (
 	"sync"
 )
 
-// SSEStreamLimitMiddleware enforces a per-user concurrent SSE stream limit.
+// SSEStreamLimitMiddleware enforces a per-client concurrent SSE stream limit.
 // It activates for requests whose Accept or Content-Type header signals
-// text/event-stream, and uses the authenticated user ID (or client IP) as key.
+// text/event-stream, and keys on the X-Real-IP / X-Forwarded-For header
+// (see sseOwnerKey). ConnectRPC streaming is capped separately by
+// StreamLimitInterceptor (stream_limit.go).
 func SSEStreamLimitMiddleware(maxStreams int) func(http.Handler) http.Handler {
 	if maxStreams <= 0 {
 		maxStreams = 5
@@ -71,11 +73,14 @@ func isSSERequest(r *http.Request) bool {
 	return strings.Contains(h, "text/event-stream")
 }
 
+// sseOwnerKey resolves the limit key from the request headers directly.
+// GetUserID/GetClientIP context values are injected by the auth Connect
+// interceptor, which runs after HTTP middleware — they are always empty at
+// this layer, collapsing every client onto the "anon" key (G-POST2-1 S4).
+// X-Real-IP is preferred over X-Forwarded-For (spoofing rationale in
+// extractClientIPFromHeader), restoring the per-IP design intent.
 func sseOwnerKey(r *http.Request) string {
-	if uid := GetUserID(r.Context()); uid != "" {
-		return uid
-	}
-	if ip := GetClientIP(r.Context()); ip != "" {
+	if ip := extractClientIPFromHeader(r.Header); ip != "" {
 		return ip
 	}
 	return "anon"

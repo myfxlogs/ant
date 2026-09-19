@@ -19,6 +19,7 @@ import (
 	subscriptionhdr "alphaforge/internal/connect/subscription"
 	"alphaforge/internal/connect/system"
 	"alphaforge/internal/connect/user"
+	"alphaforge/internal/interceptor"
 	"alphaforge/internal/marketplace"
 	"alphaforge/internal/mdgateway"
 	"alphaforge/internal/mdgateway/adapter/brokersearch"
@@ -38,10 +39,22 @@ import (
 	connectrpc "connectrpc.com/connect"
 )
 
+// streamLimit caps concurrent streaming RPCs per user/IP and exports
+// active/rejected stream metrics (G-POST2-1/2). Assigned at registerHandlers
+// entry — the single chokepoint all 55 handler registrations flow through —
+// and appended chain-tail by withSency so it runs after auth and sees the
+// populated GetUserID/GetClientIP context values. Nil until then; withSency
+// skips nil.
+var streamLimit connectrpc.Interceptor
+
 // withSency prepends the Sentry error capture interceptor to the chain.
 // This avoids modifying every WithInterceptors call site individually.
 func withSency(interceptors ...connectrpc.Interceptor) connectrpc.Option {
-	return connectrpc.WithInterceptors(append([]connectrpc.Interceptor{alphasentry.NewErrorInterceptor()}, interceptors...)...)
+	chain := append([]connectrpc.Interceptor{alphasentry.NewErrorInterceptor()}, interceptors...)
+	if streamLimit != nil {
+		chain = append(chain, streamLimit)
+	}
+	return connectrpc.WithInterceptors(chain...)
 }
 
 func registerHandlers(
@@ -52,6 +65,10 @@ func registerHandlers(
 	log := d.Log
 	pool := d.Pool
 	cfg := d.Cfg
+
+	// G-POST2-1/2: per-user(10)/per-IP(30) streaming concurrency cap, wired
+	// chain-tail via withSency before any handler registers below.
+	streamLimit = interceptor.NewStreamLimitInterceptor(10, 30)
 
 	// ConnectRPC handlers
 	// Repositories for handler→service→repository layering (P1-2).

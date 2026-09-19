@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-09-19 11:01 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-09-19 11:50 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -2410,14 +2410,14 @@ backend/internal/service/withdrawal_builder.go:69:func (b *WithdrawalBuilder) Bu
 > 在此列表 = 真正可被调用；只在某 *_test.go 出现而不在此 = 货架闲置（shelf-ware）。
 
 ```
-backend/cmd/server/handlers.go:168:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
-backend/cmd/server/handlers.go:190:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
-backend/cmd/server/handlers.go:254:	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:262:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:265:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:267:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:270:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:97:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:114:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:185:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:207:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:271:	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:279:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:282:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:284:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:287:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otel, auth)))
 backend/cmd/server/handlers_admin.go:49:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, withSency(ic.otel, ic.auth, ic.admin)))
 backend/cmd/server/handlers_admin.go:52:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, withSency(ic.otel, ic.auth, ic.admin)))
 backend/cmd/server/handlers_admin.go:55:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, withSency(ic.otel, ic.auth, ic.admin)))
