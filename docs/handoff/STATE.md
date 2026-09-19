@@ -24,7 +24,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **LOWPRI-SWEEP-1 ✅done**（51b01d87——CQ-10/CQ-5/MDGATEWAY-5/TUNING-OVERFIT-2 全验收；复审副产新登记 CQ-11 传递性死链/CQ-12 lint 存量红）。**LOWPRI-SWEEP-2 施工完成待独立复审**（CQ-11 internal/ai 死簇删净：template_library.go+ai_strategy_templates_repository.go 整文件+strategy_prompt.go 死成员，复核门 grep 删后零有效命中+build 绿=引用清零；CQ-12 WorkspaceCenterColumn 313→242 行：useCallback×2+useWorkspaceSidebarProps hook+三子组件，eslint src 零输出+vitest 217 绿）。POST-2 设计实查完成→探针批派工（builder-handoff-post2-capacity-probe.md，in-process 不触生产）。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
+- **下一步**: **LOWPRI-SWEEP-1 ✅done**（51b01d87——CQ-10/CQ-5/MDGATEWAY-5/TUNING-OVERFIT-2 全验收；复审副产新登记 CQ-11 传递性死链/CQ-12 lint 存量红）。**LOWPRI-SWEEP-2 ✅done**（5c855630——CQ-11 死簇删净复核门零命中；CQ-12 242 行 lint 转绿自 0d52f0a6 起存量红消除）（CQ-11 internal/ai 死簇删净：template_library.go+ai_strategy_templates_repository.go 整文件+strategy_prompt.go 死成员，复核门 grep 删后零有效命中+build 绿=引用清零；CQ-12 WorkspaceCenterColumn 313→242 行：useCallback×2+useWorkspaceSidebarProps hook+三子组件，eslint src 零输出+vitest 217 绿）。POST-2 设计实查完成→探针批派工（builder-handoff-post2-capacity-probe.md，in-process 不触生产）。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -90,14 +90,12 @@
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
 - **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
-- **CQ-11** ⚠️待独立复审 — internal/ai 传递性死簇删除（LOWPRI-SWEEP-2 施工）：template_library.go+ai_strategy_templates_repository.go 整文件+strategy_prompt.go PromptParams/BuildSystemPrompt/BuildUserPrompt/import×2；保留 FeedbackPrompt 链/DetectCodeStrategyType/IntentResult；复核门零有效命中+build 绿=引用清零（删除型债 mutation N/A 如派工单）；明细 registry
-- **CQ-12** ⚠️待独立复审 — WorkspaceCenterColumn.tsx 拆修 lint 归零（LOWPRI-SWEEP-2 施工）：useCallback×2+useWorkspaceSidebarProps hook（handleNewStrategy 原语义保持）+WorkspaceDocks/MobileStrategyChat/WorkspaceBottomPanel 三子组件；313→242 行；eslint src 零输出+tsc 0+vitest 217 绿；明细 registry
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
 - 2026-09-17~09-19 **VM 批七项 ✅done + registry 簿记修正 + MQL-LOOP-4/LLM-CONFIG-1 条目漂移翻正 + i18n 债系收官**——均已滚出至 `docs/handoff/LOG.md`（VM-API-TRUTH-1 收官/VM-ENUM-NUMBERING-1/VM-GLOBAL-ARRAY-DECL-1/ORDERSEND-NILBROKER/TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE-ALIAS/簿记修正 20 处续行格/hook 续行校验修复/MQL-LOOP-4 弱 pin 补强/LLM-CONFIG-1 死字段 43f1e20a/I18N-MIXED-2 相位2 ja+vi 3eb5c69a+2388e919 五 locale strict 全 0/0；backend 批末回归 3663 绿/4 失=3 DB 环境缺+1 审计侧样品换新）。
-- 2026-09-19 **LOWPRI-SWEEP-2 施工完成待独立复审** — CQ-11 internal/ai 传递性死簇删除（backend -289 行：两整文件+strategy_prompt.go 死成员）+ CQ-12 WorkspaceCenterColumn 拆修（313→242 行+4 新文件）；机检全绿：backend build/vet/test（ai+mdgateway+repository）/check-file-lines 0 errors，frontend eslint src 零输出/npm run lint/tsc 0/vitest 全量 217 绿，git diff --check 净；明细 registry。
+- 2026-09-19 **LOWPRI-SWEEP-2 ✅done**（5c855630——CQ-11 死簇删净复核门零命中；CQ-12 242 行 lint 转绿自 0d52f0a6 起存量红消除） — CQ-11 internal/ai 传递性死簇删除（backend -289 行：两整文件+strategy_prompt.go 死成员）+ CQ-12 WorkspaceCenterColumn 拆修（313→242 行+4 新文件）；Devin CLI 独立复审全绿：复核门重跑零有效命中+build/vet/test 绿+eslint src 零输出+lint exit 0[存量红消]+tsc 0+vitest 217 绿+check-lines 0 errors+diff --check 净；明细 registry。
 
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
