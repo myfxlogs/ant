@@ -25,14 +25,14 @@ interface WorkspaceEffectsDeps {
 
 function useCodeSync(code: string) {
   const setCurrentCode = useWorkspaceStore(s => s.setCurrentCode);
-  useEffect(() => { setCurrentCode(code); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setCurrentCode(code); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps -- setCurrentCode is a zustand setter (stable)
 }
 
 function useTemplateNameSync(loadedTemplate: StrategyTemplate | null) {
   const setCurrentCodeName = useWorkspaceStore(s => s.setCurrentCodeName);
   useEffect(() => {
     setCurrentCodeName(loadedTemplate?.name || '');
-  }, [loadedTemplate]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadedTemplate]); // eslint-disable-line react-hooks/exhaustive-deps -- setCurrentCodeName is a zustand setter (stable)
 }
 
 function useCodeRestore(code: string, setCode: (v: string) => void) {
@@ -40,11 +40,11 @@ function useCodeRestore(code: string, setCode: (v: string) => void) {
   const currentCode = useWorkspaceStore(s => s.currentCode);
   useEffect(() => {
     if (hasHydrated && currentCode && !code) setCode(currentCode);
-  }, [hasHydrated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hasHydrated]); // eslint-disable-line react-hooks/exhaustive-deps -- rehydrate store once after persistence restore
 }
 
 function useBacktestReset(code: string, resetBacktestStatus: () => void) {
-  useEffect(() => { resetBacktestStatus(); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { resetBacktestStatus(); }, [code]); // eslint-disable-line react-hooks/exhaustive-deps -- resetBacktestStatus is a zustand setter (stable)
 }
 
 function useStaleAccountCleanup(
@@ -62,7 +62,7 @@ function useStaleAccountCleanup(
 }
 
 function useWorkspaceInit(fetchAccounts: () => void, loadTemplates: () => void) {
-  useEffect(() => { fetchAccounts(); loadTemplates(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAccounts(); loadTemplates(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only initial fetch
 }
 
 function useTradeHistory(accountId: string, financialsReady: boolean, fetchTradeHistory: () => void) {
@@ -75,7 +75,7 @@ function useDatePresetInit(datePreset: string, applyDatePreset: (preset: DatePre
   useEffect(() => {
     const preset = DATE_PRESETS.find(p => p.key === datePreset);
     if (preset) applyDatePreset(preset);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only workspace bootstrap
 }
 
 export function useWorkspaceEffects(deps: WorkspaceEffectsDeps) {

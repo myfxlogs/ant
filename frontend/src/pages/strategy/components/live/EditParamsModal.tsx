@@ -36,7 +36,7 @@ export default function EditParamsModal({ open, schedule, accounts, onClose, onU
         accountId: schedule.accountId,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- form.setFieldsValue is antd API (stable); refill only when modal opens or schedule changes
   }, [open, schedule?.id, form]);
 
   const handleOk = async () => {

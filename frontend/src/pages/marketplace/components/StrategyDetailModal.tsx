@@ -57,7 +57,7 @@ export default function StrategyDetailModal({ strategy, open, isPurchased, isOwn
         setVersions([]);
       }
     }
-  }, [strategy?.strategyId, open, isAuthed]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [strategy?.strategyId, open, isAuthed]); // eslint-disable-line react-hooks/exhaustive-deps -- load is a store action (stable); details refetch on identity/auth change only
 
   const doComment = useCallback(async () => {
     const text = commentText.trim();

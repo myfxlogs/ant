@@ -97,7 +97,7 @@ export default function AssetAnalysisPage() {
     () => (accounts || []).filter((a) => !a.isDisabled),
     [accounts],
   );
-  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only initial fetch
 
   const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
 

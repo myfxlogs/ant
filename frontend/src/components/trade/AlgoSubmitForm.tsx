@@ -37,7 +37,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
     [accounts],
   );
 
-  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only initial fetch
 
   useEffect(() => {
     if (activeAccounts.length > 0 && !form.getFieldValue('accountId')) {

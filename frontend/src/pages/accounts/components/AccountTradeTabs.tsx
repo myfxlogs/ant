@@ -95,7 +95,7 @@ export default function AccountTradeTabs({
     if (historyLoading) return;
     if (historyTrades.length > 0) { autoSyncDone.current = id; return; }
     doSync().then(() => { autoSyncDone.current = id; }).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- auto-sync sentinel: re-check when load completes; doSync/autoSyncDone refs are stable
   }, [id, historyLoading, historyTrades.length]);
 
   const tradeTabs: TabsProps['items'] = [

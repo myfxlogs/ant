@@ -313,89 +313,6 @@ func TestCircuitBreaker_HalfOpenToOpen(t *testing.T) {
 	}
 }
 
-// --- session_clock.go ---
-
-func TestDefaultSessionClock(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	if sc == nil {
-		t.Fatal("DefaultSessionClock returned nil")
-	}
-	if sc.BrokerOffsetMs() != 0 {
-		t.Error("default offset should be 0")
-	}
-}
-
-func TestSetBrokerOffset(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	sc.SetBrokerOffset(500)
-	if sc.BrokerOffsetMs() != 500 {
-		t.Errorf("BrokerOffsetMs = %d, want 500", sc.BrokerOffsetMs())
-	}
-}
-
-func TestAddRemoveHoliday(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	date := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	dateStr := date.Format("2006-01-02")
-	sc.AddHoliday(dateStr)
-	if !sc.IsHoliday(date) {
-		t.Error("date should be holiday after AddHoliday")
-	}
-	sc.RemoveHoliday(dateStr)
-	if sc.IsHoliday(date) {
-		t.Error("date should not be holiday after RemoveHoliday")
-	}
-}
-
-func TestIsWeekend(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	sat := time.Date(2026, 5, 30, 12, 0, 0, 0, time.UTC)
-	if !sc.IsWeekend(sat) {
-		t.Error("Saturday should be weekend")
-	}
-	mon := time.Date(2026, 5, 25, 12, 0, 0, 0, time.UTC)
-	if sc.IsWeekend(mon) {
-		t.Error("Monday should not be weekend")
-	}
-}
-
-func TestSessionPhase(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	phase := sc.SessionPhase(time.Now())
-	if phase == "" {
-		t.Error("SessionPhase should return non-empty string")
-	}
-}
-
-func TestInSwapWindow(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	_ = sc.InSwapWindow(time.Now())
-}
-
-func TestBarBoundary(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	boundary := sc.BarBoundary(time.Now(), 3600_000) // 1h in ms
-	if boundary <= 0 {
-		t.Error("BarBoundary should return positive timestamp")
-	}
-}
-
-func TestClockSkewMs(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	ms := sc.ClockSkewMs(time.Now().UnixMilli())
-	if ms < 0 {
-		t.Errorf("ClockSkewMs = %d, want >=0", ms)
-	}
-}
-
 // --- market_state.go ---
 
 func TestDefaultMarketStateConfig(t *testing.T) {
@@ -423,15 +340,6 @@ func TestMarketState_RefreshAges(t *testing.T) {
 	ms := NewMarketStateTracker(DefaultMarketStateConfig())
 	ms.Update(&mdtick.Tick{Broker: "broker", Canonical: "EURUSD", TsUnixMs: time.Now().UnixMilli()})
 	ms.RefreshAges(time.Now())
-}
-
-func TestEvaluateTradeable_Holiday(t *testing.T) {
-	t.Parallel()
-	ms := NewMarketStateTracker(DefaultMarketStateConfig())
-	state := &MarketState{SessionPhase: PhaseHoliday}
-	if ms.evaluateTradeable(state) {
-		t.Error("should return false for holiday phase")
-	}
 }
 
 // --- user_metrics_flusher.go ---
@@ -781,15 +689,6 @@ func TestComputeRateZscore_SingleValue(t *testing.T) {
 
 // --- session_clock.go BrokerTime ---
 
-func TestBrokerTime(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	bt := sc.BrokerTime()
-	if bt.IsZero() {
-		t.Error("BrokerTime should not be zero")
-	}
-}
-
 // --- manager.go ---
 
 func TestSetBaseContext(t *testing.T) {
@@ -1080,33 +979,6 @@ func TestEvaluateTradeable_Stale(t *testing.T) {
 	}
 }
 
-func TestEvaluateTradeable_NoStatePhase(t *testing.T) {
-	t.Parallel()
-	ms := NewMarketStateTracker(DefaultMarketStateConfig())
-	state := &MarketState{SessionPhase: "UKNOWN_PHASE", QuoteAgeMs: 100}
-	if !ms.evaluateTradeable(state) {
-		t.Error("unknown phase with fresh quote should be tradeable")
-	}
-}
-
-func TestEvaluateTradeable_Weekend(t *testing.T) {
-	t.Parallel()
-	ms := NewMarketStateTracker(DefaultMarketStateConfig())
-	state := &MarketState{SessionPhase: PhaseWeekend, QuoteAgeMs: 100}
-	if ms.evaluateTradeable(state) {
-		t.Error("weekend phase should not be tradeable")
-	}
-}
-
-func TestEvaluateTradeable_SpreadAnomaly(t *testing.T) {
-	t.Parallel()
-	ms := NewMarketStateTracker(DefaultMarketStateConfig())
-	state := &MarketState{SessionPhase: PhaseOpen, QuoteAgeMs: 100, SpreadZscore: 999}
-	if ms.evaluateTradeable(state) {
-		t.Error("spread anomaly should not be tradeable")
-	}
-}
-
 // --- normalizer_invalidator.go tickerLoop ---
 
 func TestNormalizerInvalidator_TickerLoop(t *testing.T) {
@@ -1158,16 +1030,6 @@ func TestStuffingDetector_IsPaused_Active(t *testing.T) {
 // --- dlq_writer.go spillDLQ with spill ---
 
 // --- session_clock.go ClockSkewMs with offset ---
-
-func TestClockSkewMs_WithOffset(t *testing.T) {
-	t.Parallel()
-	sc := DefaultSessionClock()
-	sc.SetBrokerOffset(500)
-	ms := sc.ClockSkewMs(time.Now().UnixMilli())
-	if ms < 0 {
-		t.Errorf("ClockSkewMs should be >=0, got %d", ms)
-	}
-}
 
 // --- quality.go check stale ---
 

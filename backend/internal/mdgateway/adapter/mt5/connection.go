@@ -20,6 +20,9 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// defaultMT5Gateway is the default mtapi gateway for this platform (LOWPRI-SWEEP-1 MDG-5b).
+const defaultMT5Gateway = "mt5grpc3.mtapi.io:443"
+
 type Gateway struct {
 	cfg                      mdtick.AccountConfig
 	log                      *zap.Logger
@@ -93,7 +96,7 @@ func sanitizeToken(t string) string {
 func (g *Gateway) Connect(ctx context.Context) error {
 	gateway := g.cfg.MtapiHost
 	if gateway == "" || gateway == g.cfg.BrokerHost {
-		gateway = "mt5grpc3.mtapi.io:443"
+		gateway = defaultMT5Gateway
 	}
 	if !strings.Contains(gateway, ":") {
 		gateway += ":443"

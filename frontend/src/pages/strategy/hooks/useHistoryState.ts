@@ -96,7 +96,7 @@ export function useHistoryState(accountId: string): HistoryState {
   // Fetch runs on mount and when accountId changes (not only when modal opens).
   useEffect(() => {
     fetchRuns(1, pageSize);
-  }, [accountId, fetchRuns]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [accountId, fetchRuns]); // eslint-disable-line react-hooks/exhaustive-deps -- page reset on account switch; pageSize deliberate omission
 
   return {
     drawerOpen, runId, modalOpen, runs, loading, page, pageSize, total,

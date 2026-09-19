@@ -101,7 +101,7 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, diagnost
     });
     viewRef.current = view;
     return () => view.destroy();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- editor created once; value/extensions update via compartment reconfigure
 
   // Update readOnly compartment when prop changes.
   useEffect(() => {

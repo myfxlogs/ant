@@ -63,7 +63,7 @@ export function useStrategyParams({
       }
       void loadStrategyParams(templateId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refill only when modal opens or template changes; setStrategyParamValues is a zustand setter
   }, [open, templateId, loadStrategyParams]);
 
   // Merge effect — when extracted params arrive, fill in defaults for keys

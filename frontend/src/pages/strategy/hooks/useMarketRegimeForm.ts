@@ -16,7 +16,7 @@ export function useMarketRegimeForm() {
     [accounts],
   );
 
-  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps -- mount-only initial fetch
 
   const watchedAccountId = Form.useWatch('accountId', form) as string | undefined;
 

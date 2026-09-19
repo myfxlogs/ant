@@ -90,7 +90,7 @@ cfg := LiveStrategyConfig{ ..., Code: tpl.CodeSkeleton, ... }
 ### 决策 4：调度引擎注入 strategy_templates 取码能力
 
 - `ScheduleEngine` 当前只持有 `*AIStrategyTemplatesRepository`（缺陷 A 根因）。新增一个 `strategy_templates` 的只读取码依赖（复用 `service.StrategySvc.GetTemplate` 或新增仓库方法 `GetTemplateCode(ctx, id) (string, error)`），注入引擎，替换 `dispatch` 中的 `ai_strategy_templates` 查询。
-- `AIStrategyTemplatesRepository` 保留（AI 生成骨架库仍有用），仅从调度运行时路径移除。
+- `AIStrategyTemplatesRepository` 保留（AI 生成骨架库仍有用），仅从调度运行时路径移除。（2026-09-19 订正：ARCH-3 后该 repo 生产零调用，已删；表+种子保留）
 
 ---
 

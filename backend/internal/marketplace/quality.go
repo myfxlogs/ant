@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	antv1 "alphaforge/gen/proto/ant/v1"
@@ -298,38 +299,58 @@ func (s *Service) ValidateBacktestQuality(ctx context.Context, snapshotProto []b
 		})
 	}
 
-	// Walk-forward OOS degradation check (only if OOS data is present).
-	if gates.MaxIsOosDegradation.IsPositive() && snap.OosSharpeRatio != "" {
-		isSharpe, errIS := decimal.NewFromString(snap.SharpeRatio)
-		oosSharpe, errOOS := decimal.NewFromString(snap.OosSharpeRatio)
-		if errIS == nil && errOOS == nil && isSharpe.IsPositive() {
-			ratio := oosSharpe.Div(isSharpe)
-			degradation := decimal.NewFromInt(1).Sub(ratio)
-			if degradation.GreaterThan(gates.MaxIsOosDegradation) {
-				violations = append(violations, QualityViolation{
-					Metric:    "is_oos_sharpe_degradation",
-					Actual:    degradation.String(),
-					Threshold: gates.MaxIsOosDegradation.String(),
-				})
-			}
-		}
+	violations = append(violations, s.evaluateOosGate(strategyID, gates, &snap)...)
 
-		isReturn, errIS := decimal.NewFromString(snap.TotalReturn)
-		oosReturn, errOOS := decimal.NewFromString(snap.OosTotalReturn)
-		if errIS == nil && errOOS == nil && isReturn.IsPositive() {
-			ratio := oosReturn.Div(isReturn)
-			degradation := decimal.NewFromInt(1).Sub(ratio)
-			if degradation.GreaterThan(gates.MaxIsOosDegradation) {
-				violations = append(violations, QualityViolation{
-					Metric:    "is_oos_return_degradation",
-					Actual:    degradation.String(),
-					Threshold: gates.MaxIsOosDegradation.String(),
-				})
-			}
+	return violations, nil
+}
+
+// evaluateOosGate runs the walk-forward OOS degradation checks (sharpe +
+// return) when OOS data is present.
+//
+// TUNING-OVERFIT-2: if the gate is armed but the snapshot lacks OOS data,
+// the gate is a silent fail-open (it never fires) — log a warning so ops
+// can see the gap. Full closure (producing an OOS backtest at publish time)
+// is a separate feature.
+func (s *Service) evaluateOosGate(strategyID string, gates qualityGates, snap *antv1.BacktestSnapshot) []QualityViolation {
+	if !gates.MaxIsOosDegradation.IsPositive() {
+		return nil
+	}
+	if snap.OosSharpeRatio == "" {
+		s.log.Warn("OOS degradation gate armed but snapshot lacks OOS data; gate skipped",
+			zap.String("strategy_id", strategyID),
+			zap.String("gate", "max_is_oos_degradation"))
+		return nil
+	}
+
+	var violations []QualityViolation
+	isSharpe, errIS := decimal.NewFromString(snap.SharpeRatio)
+	oosSharpe, errOOS := decimal.NewFromString(snap.OosSharpeRatio)
+	if errIS == nil && errOOS == nil && isSharpe.IsPositive() {
+		ratio := oosSharpe.Div(isSharpe)
+		degradation := decimal.NewFromInt(1).Sub(ratio)
+		if degradation.GreaterThan(gates.MaxIsOosDegradation) {
+			violations = append(violations, QualityViolation{
+				Metric:    "is_oos_sharpe_degradation",
+				Actual:    degradation.String(),
+				Threshold: gates.MaxIsOosDegradation.String(),
+			})
 		}
 	}
 
-	return violations, nil
+	isReturn, errIS := decimal.NewFromString(snap.TotalReturn)
+	oosReturn, errOOS := decimal.NewFromString(snap.OosTotalReturn)
+	if errIS == nil && errOOS == nil && isReturn.IsPositive() {
+		ratio := oosReturn.Div(isReturn)
+		degradation := decimal.NewFromInt(1).Sub(ratio)
+		if degradation.GreaterThan(gates.MaxIsOosDegradation) {
+			violations = append(violations, QualityViolation{
+				Metric:    "is_oos_return_degradation",
+				Actual:    degradation.String(),
+				Threshold: gates.MaxIsOosDegradation.String(),
+			})
+		}
+	}
+	return violations
 }
 
 // CheckLiveCoverage checks whether a strategy is safe to run on a real account.

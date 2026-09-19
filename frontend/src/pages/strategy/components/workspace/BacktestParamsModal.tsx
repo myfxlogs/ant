@@ -75,7 +75,7 @@ export const BacktestParamsModal: React.FC<BacktestParamsModalProps> = ({ open, 
       setValidationError('');
       setExtractedParams([]);
     }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps -- modal open/reset cycle: only re-run when open toggles
 
   const doValidate = async () => {
     if (!code.trim()) {
