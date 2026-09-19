@@ -21,19 +21,22 @@ type mockExecutor struct {
 	cancelErr     error
 
 	lastPlace struct {
-		Symbol string
-		Side   sdk.PositionSide
-		Type   sdk.OrderType
-		Volume decimal.Decimal
-		Price  decimal.Decimal
-		SL     decimal.Decimal
-		TP     decimal.Decimal
+		Symbol    string
+		Side      sdk.PositionSide
+		Type      sdk.OrderType
+		Volume    decimal.Decimal
+		Price     decimal.Decimal
+		SL        decimal.Decimal
+		TP        decimal.Decimal
+		Comment   string
+		Magic     int32
+		Deviation int32
 	}
 }
 
 func (m *mockExecutor) PlaceOrder(ctx context.Context, symbol string, side sdk.PositionSide,
 	orderType sdk.OrderType, volume, price, sl, tp decimal.Decimal,
-	comment string, magic int32) (int64, error) {
+	comment string, magic int32, deviation int32) (sdk.OrderResult, error) {
 	m.lastPlace.Symbol = symbol
 	m.lastPlace.Side = side
 	m.lastPlace.Type = orderType
@@ -41,10 +44,20 @@ func (m *mockExecutor) PlaceOrder(ctx context.Context, symbol string, side sdk.P
 	m.lastPlace.Price = price
 	m.lastPlace.SL = sl
 	m.lastPlace.TP = tp
+	m.lastPlace.Comment = comment
+	m.lastPlace.Magic = magic
+	m.lastPlace.Deviation = deviation
 	if m.placeErr != nil {
-		return 0, m.placeErr
+		return sdk.OrderResult{RetCode: sdk.RetRejected}, m.placeErr
 	}
-	return 42, nil
+	// VM-LIVE-PARITY-F1: broker fill facts deliberately differ from any
+	// request values, so passthrough-vs-echo is distinguishable (T5).
+	return sdk.OrderResult{
+		RetCode: sdk.RetDone,
+		Ticket:  42,
+		Price:   decimal.RequireFromString("81262.24"),
+		Volume:  decimal.RequireFromString("0.02"),
+	}, nil
 }
 
 func (m *mockExecutor) CloseOrder(ctx context.Context, ticket int64, volume decimal.Decimal) error {

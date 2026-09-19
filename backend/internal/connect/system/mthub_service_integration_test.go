@@ -78,7 +78,7 @@ func newTrackedExecutor(platform string) *trackedExecutor {
 
 func (e *trackedExecutor) Platform() string { return e.platform }
 
-func (e *trackedExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest) (int64, error) {
+func (e *trackedExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -105,7 +105,7 @@ func (e *trackedExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest)
 		State:      mthub.OrderStateOpen,
 	}
 	e.orders[ticket] = rec
-	return ticket, nil
+	return rec, nil
 }
 
 func (e *trackedExecutor) CloseOrder(_ context.Context, ticket int64, _ decimal.Decimal) error {

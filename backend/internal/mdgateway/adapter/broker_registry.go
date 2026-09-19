@@ -42,11 +42,13 @@ func (a *brokerAdapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms
 		TakeProfit: req.TakeProfit,
 		Comment:    req.Comment,
 	}
-	ticket, err := a.gw.PlaceOrder(ctx, mreq)
+	// Deviation left 0 (upstream OMS request has no deviation concept);
+	// 0 = use broker default.
+	rec, err := a.gw.PlaceOrder(ctx, mreq)
 	if err != nil {
 		return &oms.BrokerResp{ErrorMsg: err.Error(), ErrorCode: -1}, err
 	}
-	return &oms.BrokerResp{Ticket: strconv.FormatInt(ticket, 10), State: oms.StateSubmitted}, nil
+	return &oms.BrokerResp{Ticket: strconv.FormatInt(rec.Ticket, 10), State: oms.StateSubmitted}, nil
 }
 
 func (a *brokerAdapter) Cancel(ctx context.Context, ticket string) error {

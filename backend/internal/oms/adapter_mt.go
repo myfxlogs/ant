@@ -40,13 +40,15 @@ func (a *MTBrokerAdapter) Submit(ctx context.Context, req *OrderRequest) (*Broke
 		Comment:    req.Comment,
 	}
 
-	ticket, err := a.executor.PlaceOrder(ctx, mreq)
+	// Deviation left 0 (upstream OMS request has no deviation concept);
+	// 0 = use broker default.
+	rec, err := a.executor.PlaceOrder(ctx, mreq)
 	if err != nil {
 		return nil, err
 	}
 
 	return &BrokerResp{
-		Ticket: strconv.FormatInt(ticket, 10),
+		Ticket: strconv.FormatInt(rec.Ticket, 10),
 		State:  StateSubmitted,
 	}, nil
 }
@@ -93,14 +95,14 @@ func (a *MTBrokerAdapter) Query(ctx context.Context, ticket string) (*Order, err
 	for _, o := range orders {
 		if fmt.Sprintf("%d", o.Ticket) == ticket {
 			return &Order{
-				Ticket:    ticket,
-				Symbol:    o.Canonical,
-				Volume:    o.Volume,
-				Price:     o.OpenPrice,
-				StopLoss:  decimal.Zero,  // OrderRecord lacks SL/TP; add to DTO
+				Ticket:     ticket,
+				Symbol:     o.Canonical,
+				Volume:     o.Volume,
+				Price:      o.OpenPrice,
+				StopLoss:   decimal.Zero, // OrderRecord lacks SL/TP; add to DTO
 				TakeProfit: decimal.Zero,
-		State:     mtStateToOMS(o.State),
-				AccountID: o.AccountID,
+				State:      mtStateToOMS(o.State),
+				AccountID:  o.AccountID,
 			}, nil
 		}
 	}

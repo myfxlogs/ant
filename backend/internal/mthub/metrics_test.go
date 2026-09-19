@@ -60,8 +60,8 @@ func TestPlaceOrder_Metrics_Err(t *testing.T) {
 	svc := newTestService()
 	exec := &mockExecutor{
 		platform: "MT4",
-		placeOrderFn: func(ctx context.Context, req *OrderRequest) (int64, error) {
-			return 0, ErrSessionNotFound
+		placeOrderFn: func(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
+			return nil, ErrSessionNotFound
 		},
 	}
 	svc.hub.Register("acc-metrics-err", &Session{AccountID: "acc-metrics-err", CreatedAt: time.Now(), MaxAge: 4 * time.Hour}, exec)

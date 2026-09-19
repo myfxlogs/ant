@@ -1224,9 +1224,19 @@ type LiveStrategyContext struct {
 	// account_mode: margin mode "hedging"|"netting"; "" = unknown — distinct
 	// from mode (field 13) which is execution mode "live"|"paper". MT5 margin
 	// mode pending AccMethod adapter wiring; VM consumers fail-closed on "".
-	Leverage      int32  `protobuf:"varint,31,opt,name=leverage,proto3" json:"leverage,omitempty"`
-	Currency      string `protobuf:"bytes,32,opt,name=currency,proto3" json:"currency,omitempty"`
-	AccountMode   string `protobuf:"bytes,33,opt,name=account_mode,json=accountMode,proto3" json:"account_mode,omitempty"`
+	Leverage    int32  `protobuf:"varint,31,opt,name=leverage,proto3" json:"leverage,omitempty"`
+	Currency    string `protobuf:"bytes,32,opt,name=currency,proto3" json:"currency,omitempty"`
+	AccountMode string `protobuf:"bytes,33,opt,name=account_mode,json=accountMode,proto3" json:"account_mode,omitempty"`
+	// VM-LIVE-PARITY-F2: full SymbolParam facts (broker values; "" = unknown).
+	// point/digits/contract_size/stops_level (21-24) carried the original
+	// subset; these extend it so live VM sees lots/tick/swap like backtest.
+	LotMin        string `protobuf:"bytes,34,opt,name=lot_min,json=lotMin,proto3" json:"lot_min,omitempty"`
+	LotMax        string `protobuf:"bytes,35,opt,name=lot_max,json=lotMax,proto3" json:"lot_max,omitempty"`
+	LotStep       string `protobuf:"bytes,36,opt,name=lot_step,json=lotStep,proto3" json:"lot_step,omitempty"`
+	TickValue     string `protobuf:"bytes,37,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`
+	TickSize      string `protobuf:"bytes,38,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`
+	SwapLong      string `protobuf:"bytes,39,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`
+	SwapShort     string `protobuf:"bytes,40,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1488,6 +1498,55 @@ func (x *LiveStrategyContext) GetCurrency() string {
 func (x *LiveStrategyContext) GetAccountMode() string {
 	if x != nil {
 		return x.AccountMode
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetLotMin() string {
+	if x != nil {
+		return x.LotMin
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetLotMax() string {
+	if x != nil {
+		return x.LotMax
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetLotStep() string {
+	if x != nil {
+		return x.LotStep
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetTickValue() string {
+	if x != nil {
+		return x.TickValue
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetTickSize() string {
+	if x != nil {
+		return x.TickSize
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetSwapLong() string {
+	if x != nil {
+		return x.SwapLong
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetSwapShort() string {
+	if x != nil {
+		return x.SwapShort
 	}
 	return ""
 }
@@ -2021,6 +2080,14 @@ type TickContext struct {
 	StopsLevel   int32  `protobuf:"varint,16,opt,name=stops_level,json=stopsLevel,proto3" json:"stops_level,omitempty"`
 	// LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
 	PendingOrders []*LivePendingOrder `protobuf:"bytes,17,rep,name=pending_orders,json=pendingOrders,proto3" json:"pending_orders,omitempty"`
+	// VM-LIVE-PARITY-F2: full SymbolParam facts (broker values; "" = unknown).
+	LotMin        string `protobuf:"bytes,18,opt,name=lot_min,json=lotMin,proto3" json:"lot_min,omitempty"`
+	LotMax        string `protobuf:"bytes,19,opt,name=lot_max,json=lotMax,proto3" json:"lot_max,omitempty"`
+	LotStep       string `protobuf:"bytes,20,opt,name=lot_step,json=lotStep,proto3" json:"lot_step,omitempty"`
+	TickValue     string `protobuf:"bytes,21,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`
+	TickSize      string `protobuf:"bytes,22,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`
+	SwapLong      string `protobuf:"bytes,23,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`
+	SwapShort     string `protobuf:"bytes,24,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2172,6 +2239,55 @@ func (x *TickContext) GetPendingOrders() []*LivePendingOrder {
 		return x.PendingOrders
 	}
 	return nil
+}
+
+func (x *TickContext) GetLotMin() string {
+	if x != nil {
+		return x.LotMin
+	}
+	return ""
+}
+
+func (x *TickContext) GetLotMax() string {
+	if x != nil {
+		return x.LotMax
+	}
+	return ""
+}
+
+func (x *TickContext) GetLotStep() string {
+	if x != nil {
+		return x.LotStep
+	}
+	return ""
+}
+
+func (x *TickContext) GetTickValue() string {
+	if x != nil {
+		return x.TickValue
+	}
+	return ""
+}
+
+func (x *TickContext) GetTickSize() string {
+	if x != nil {
+		return x.TickSize
+	}
+	return ""
+}
+
+func (x *TickContext) GetSwapLong() string {
+	if x != nil {
+		return x.SwapLong
+	}
+	return ""
+}
+
+func (x *TickContext) GetSwapShort() string {
+	if x != nil {
+		return x.SwapShort
+	}
+	return ""
 }
 
 // TradeContext carries a trade event for OnTrade strategies.
@@ -5626,7 +5742,8 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06signal\x18\x02 \x01(\v2\x16.ant.v1.StrategySignalR\x06signal\x12\x14\n" +
 	"\x05error\x18\x03 \x01(\tR\x05error\x12#\n" +
 	"\rstrategy_hash\x18\x04 \x01(\tR\fstrategyHash\x120\n" +
-	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xbc\b\n" +
+	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\x81\n" +
+	"\n" +
 	"\x13LiveStrategyContext\x12\x14\n" +
 	"\x05close\x18\x01 \x03(\tR\x05close\x12\x12\n" +
 	"\x04open\x18\x02 \x03(\tR\x04open\x12\x12\n" +
@@ -5665,7 +5782,16 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x10is_trade_allowed\x18\x1e \x01(\bR\x0eisTradeAllowed\x12\x1a\n" +
 	"\bleverage\x18\x1f \x01(\x05R\bleverage\x12\x1a\n" +
 	"\bcurrency\x18  \x01(\tR\bcurrency\x12!\n" +
-	"\faccount_mode\x18! \x01(\tR\vaccountMode\"\xee\x02\n" +
+	"\faccount_mode\x18! \x01(\tR\vaccountMode\x12\x17\n" +
+	"\alot_min\x18\" \x01(\tR\x06lotMin\x12\x17\n" +
+	"\alot_max\x18# \x01(\tR\x06lotMax\x12\x19\n" +
+	"\blot_step\x18$ \x01(\tR\alotStep\x12\x1d\n" +
+	"\n" +
+	"tick_value\x18% \x01(\tR\ttickValue\x12\x1b\n" +
+	"\ttick_size\x18& \x01(\tR\btickSize\x12\x1b\n" +
+	"\tswap_long\x18' \x01(\tR\bswapLong\x12\x1d\n" +
+	"\n" +
+	"swap_short\x18( \x01(\tR\tswapShort\"\xee\x02\n" +
 	"\fLivePosition\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
@@ -5716,7 +5842,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x03low\x18\x03 \x01(\tR\x03low\x12\x14\n" +
 	"\x05close\x18\x04 \x01(\tR\x05close\x12\x16\n" +
 	"\x06volume\x18\x05 \x01(\tR\x06volume\x12\x1e\n" +
-	"\vbar_time_ms\x18\x06 \x01(\x03R\tbarTimeMs\"\x9f\x04\n" +
+	"\vbar_time_ms\x18\x06 \x01(\x03R\tbarTimeMs\"\xe4\x05\n" +
 	"\vTickContext\x12\x10\n" +
 	"\x03bid\x18\x01 \x01(\tR\x03bid\x12\x10\n" +
 	"\x03ask\x18\x02 \x01(\tR\x03ask\x12\x16\n" +
@@ -5737,7 +5863,16 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\rcontract_size\x18\x0f \x01(\tR\fcontractSize\x12\x1f\n" +
 	"\vstops_level\x18\x10 \x01(\x05R\n" +
 	"stopsLevel\x12?\n" +
-	"\x0epending_orders\x18\x11 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\"\x9d\x04\n" +
+	"\x0epending_orders\x18\x11 \x03(\v2\x18.ant.v1.LivePendingOrderR\rpendingOrders\x12\x17\n" +
+	"\alot_min\x18\x12 \x01(\tR\x06lotMin\x12\x17\n" +
+	"\alot_max\x18\x13 \x01(\tR\x06lotMax\x12\x19\n" +
+	"\blot_step\x18\x14 \x01(\tR\alotStep\x12\x1d\n" +
+	"\n" +
+	"tick_value\x18\x15 \x01(\tR\ttickValue\x12\x1b\n" +
+	"\ttick_size\x18\x16 \x01(\tR\btickSize\x12\x1b\n" +
+	"\tswap_long\x18\x17 \x01(\tR\bswapLong\x12\x1d\n" +
+	"\n" +
+	"swap_short\x18\x18 \x01(\tR\tswapShort\"\x9d\x04\n" +
 	"\fTradeContext\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1d\n" +

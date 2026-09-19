@@ -21,8 +21,11 @@ type mockExecutor struct {
 }
 
 func (m *mockExecutor) Platform() string { return m.platform }
-func (m *mockExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-	return m.placeTicket, m.placeErr
+func (m *mockExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+	if m.placeErr != nil {
+		return nil, m.placeErr
+	}
+	return &mthub.OrderRecord{Ticket: m.placeTicket, AccountID: req.AccountID, Canonical: req.Canonical, State: mthub.OrderStateOpen}, nil
 }
 func (m *mockExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
 	return m.closeErr

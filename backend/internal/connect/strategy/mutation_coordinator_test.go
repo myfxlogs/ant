@@ -54,7 +54,7 @@ func toInt(v interface{}) (int, bool) {
 // prodMockExecutor is a controllable mock for production-wiring tests.
 // Each function is injectable per-test. Call counts are tracked atomically.
 type prodMockExecutor struct {
-	placeFn  func(ctx context.Context, req *mthub.OrderRequest) (int64, error)
+	placeFn  func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error)
 	closeFn  func(ctx context.Context, ticket int64, lots decimal.Decimal) error
 	deleteFn func(ctx context.Context, ticket int64) error
 	modifyFn func(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error
@@ -67,12 +67,12 @@ type prodMockExecutor struct {
 }
 
 func (m *prodMockExecutor) Platform() string { return "mock" }
-func (m *prodMockExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+func (m *prodMockExecutor) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 	m.placeCount.Add(1)
 	if m.placeFn != nil {
 		return m.placeFn(ctx, req)
 	}
-	return 1, nil
+	return &mthub.OrderRecord{Ticket: 1, AccountID: req.AccountID, Canonical: req.Canonical, State: mthub.OrderStateOpen}, nil
 }
 func (m *prodMockExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
 	m.closeCount.Add(1)
@@ -173,8 +173,8 @@ func publishOrderUpdate(broker *mthub.PositionSnapshotBroker, accountID string, 
 // Cutting submitOrder→coordinateMutation must RED.
 func TestLIVE_ORDER_REENTRY_1_T1_PROD_ConcurrentTicksSingleBrokerCall(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 1, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 1, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return []*mthub.OrderRecord{{Ticket: 1, Canonical: "EURUSD"}}, nil
@@ -204,8 +204,8 @@ func TestLIVE_ORDER_REENTRY_1_T1_PROD_ConcurrentTicksSingleBrokerCall(t *testing
 // also fails → outcome_unknown, barrier locked, subsequent signals blocked.
 func TestLIVE_ORDER_REENTRY_1_T2_PROD_NoPushNoFallback(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 42, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return nil, errors.New("broker unavailable")
@@ -235,10 +235,10 @@ func TestLIVE_ORDER_REENTRY_1_T3_PROD_A_PreResponsePush(t *testing.T) {
 	placeStarted := make(chan struct{})
 	placeProceed := make(chan struct{})
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 			close(placeStarted)
 			<-placeProceed
-			return 42, nil
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return []*mthub.OrderRecord{{Ticket: 42, Canonical: "EURUSD"}}, nil
@@ -276,9 +276,9 @@ func TestLIVE_ORDER_REENTRY_1_T3_PROD_A_PreResponsePush(t *testing.T) {
 func TestLIVE_ORDER_REENTRY_1_T3_PROD_B_PostResponsePush(t *testing.T) {
 	placeReturned := make(chan struct{})
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 			close(placeReturned)
-			return 42, nil
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			t.Fatal("T3-PROD-B: read-after-write should not be needed when push confirms")
@@ -312,10 +312,10 @@ func TestLIVE_ORDER_REENTRY_1_T4_PROD_UnrelatedEventsNotConfirmed(t *testing.T) 
 	placeStarted := make(chan struct{})
 	placeProceed := make(chan struct{})
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 			close(placeStarted)
 			<-placeProceed
-			return 42, nil
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return []*mthub.OrderRecord{{Ticket: 42, Canonical: "EURUSD"}}, nil
@@ -442,8 +442,8 @@ func TestLIVE_ORDER_REENTRY_1_T5_PROD_DeterministicRejections(t *testing.T) {
 // T6-PROD: Transport timeout / unknown error → outcome_unknown, barrier locked.
 func TestLIVE_ORDER_REENTRY_1_T6_PROD_TransportTimeoutStaysLocked(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 0, &mthub.MutationError{Phase: mthub.PhaseBroker, Cause: errors.New("context deadline exceeded")}
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return nil, &mthub.MutationError{Phase: mthub.PhaseBroker, Cause: errors.New("context deadline exceeded")}
 		},
 	}
 	srv, _, _ := testCoordinatorSetup(exec)
@@ -475,8 +475,8 @@ func TestLIVE_ORDER_REENTRY_1_T8_BrokerAppRejectionReleasesBarrier(t *testing.T)
 	// Simulate MT4 adapter returning ErrBrokerRejected (wrapped by brokerError
 	// in submitToBroker → MutationError{PhaseBroker, Cause: ErrBrokerRejected}).
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 0, fmt.Errorf("%w: mt4 OrderSend: code=130 msg=Invalid S/L or T/P", mthub.ErrBrokerRejected)
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return nil, fmt.Errorf("%w: mt4 OrderSend: code=130 msg=Invalid S/L or T/P", mthub.ErrBrokerRejected)
 		},
 	}
 	srv, svc, _ := testCoordinatorSetup(exec)
@@ -560,8 +560,8 @@ func TestLIVE_ORDER_REENTRY_1_T6_CONFIRMED_RACE(t *testing.T) {
 func TestLIVE_ORDER_REENTRY_1_T7_PROD_ReadAfterWriteSucceeds(t *testing.T) {
 	var fetchCount atomic.Int64
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 42, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			fetchCount.Add(1)
@@ -586,8 +586,8 @@ func TestLIVE_ORDER_REENTRY_1_T7_PROD_ReadAfterWriteSucceeds(t *testing.T) {
 // T7-FAIL: Read-after-write fails → outcome_unknown, barrier locked.
 func TestLIVE_ORDER_REENTRY_1_T7_FAIL_ReadAfterWriteFails(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 42, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return nil, errors.New("broker unavailable")
@@ -712,9 +712,9 @@ func TestLIVE_ORDER_REENTRY_1_T9_ProvenanceSeparation(t *testing.T) {
 func TestLIVE_ORDER_REENTRY_1_T10_REQUEST_MagicInOrderRequest(t *testing.T) {
 	var capturedMagic int32
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 			capturedMagic = req.Magic
-			return 1, nil
+			return &mthub.OrderRecord{Ticket: 1, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return []*mthub.OrderRecord{{Ticket: 1, Canonical: "EURUSD"}}, nil
@@ -1205,8 +1205,8 @@ func TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_MT5_PendingModify(t *testi
 // exercises the REAL PositionSnapshotBroker subscription wiring.
 func TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_FullBrokerPath(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 42, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return []*mthub.OrderRecord{{Ticket: 42, Canonical: "EURUSD"}}, nil
@@ -1448,8 +1448,8 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_QueryFails_StaysLocked(t *testing.T) {
 // for open mutations since we don't know the ticket to reconcile.
 func TestLIVE_ORDER_REENTRY_1_R4_Recovery_OpenMutation_NoRecovery(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 0, errors.New("DeadlineExceeded") // outcome_unknown, no ticket
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return nil, errors.New("DeadlineExceeded") // outcome_unknown, no ticket
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return nil, errors.New("unavailable")
@@ -1473,7 +1473,11 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_OpenMutation_NoRecovery(t *testing.T) 
 		expectedMagic:  strategyMagic(cfg.ScheduleID),
 		expectedTicket: 0, // open: ticket unknown
 		brokerCall: func(brokerCtx context.Context) (int64, error) {
-			return exec.PlaceOrder(brokerCtx, &mthub.OrderRequest{})
+			rec, err := exec.PlaceOrder(brokerCtx, &mthub.OrderRequest{})
+			if err != nil {
+				return 0, err
+			}
+			return rec.Ticket, nil
 		},
 		verifyReadAfterWrite: nil,
 	}, "buy", sig, conf)
@@ -1542,8 +1546,8 @@ func TestLIVE_ORDER_REENTRY_1_R4_Recovery_AllowsSubsequentOrder(t *testing.T) {
 
 	// Second: a new buy order should succeed (barrier released, circuit clear).
 	exec.placeCount.Store(0)
-	exec.placeFn = func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-		return 55, nil
+	exec.placeFn = func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+		return &mthub.OrderRecord{Ticket: 55, State: mthub.OrderStateOpen}, nil
 	}
 	exec.fetchFn = func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 		return []*mthub.OrderRecord{{Ticket: 55, Canonical: "EURUSD"}}, nil

@@ -7,6 +7,7 @@ package runner
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"sync/atomic"
 
@@ -306,22 +307,42 @@ func (r *Runner) UpdateTickState(bid, ask decimal.Decimal) {
 }
 
 // UpdateSymbolInfo sets the live symbol info from the parent process.
-// Used by the live harness to pass Point/Digits/ContractSize/StopsLevel without RPC.
-func (r *Runner) UpdateSymbolInfo(point string, digits int32, contractSize, stopsLevel string) {
+// Used by the live harness to pass symbol facts without RPC.
+// VM-LIVE-PARITY-F2: aggregate form — VM gets the full SymbolParam facts
+// (lots/tick/swap) instead of the previous 4-field subset.
+type LiveSymbolInfo struct {
+	Point, ContractSize     string
+	LotMin, LotMax, LotStep string
+	TickValue, TickSize     string
+	SwapLong, SwapShort     string
+	Digits, StopsLevel      int32
+}
+
+func (r *Runner) UpdateSymbolInfo(info LiveSymbolInfo) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
-	r.ctx.livePoint = point
-	r.ctx.liveDigits = digits
-	r.ctx.liveContractSize = contractSize
-	r.ctx.liveStopsLevel = stopsLevel
+	r.ctx.livePoint = info.Point
+	r.ctx.liveDigits = info.Digits
+	r.ctx.liveContractSize = info.ContractSize
+	r.ctx.liveStopsLevel = strconv.FormatInt(int64(info.StopsLevel), 10)
+	r.ctx.liveLotMin = info.LotMin
+	r.ctx.liveLotMax = info.LotMax
+	r.ctx.liveLotStep = info.LotStep
+	r.ctx.liveTickValue = info.TickValue
+	r.ctx.liveTickSize = info.TickSize
+	r.ctx.liveSwapLong = info.SwapLong
+	r.ctx.liveSwapShort = info.SwapShort
 }
 
 // OrderExecutor wraps the broker's trading interface.
 // Used by backtest.SimBroker and live-trading adapter.
 type OrderExecutor interface {
+	// PlaceOrder submits the order and returns the broker's fill facts.
+	// Result Volume/Price are broker facts (zero = unknown) — implementations
+	// must never echo the request values.
 	PlaceOrder(ctx context.Context, symbol string, side sdk.PositionSide,
 		orderType sdk.OrderType, volume, price, sl, tp decimal.Decimal,
-		comment string, magic int32) (int64, error)
+		comment string, magic int32, deviation int32) (sdk.OrderResult, error)
 	CloseOrder(ctx context.Context, ticket int64, volume decimal.Decimal) error
 	ModifyOrder(ctx context.Context, ticket int64, sl, tp decimal.Decimal) error
 	CancelOrder(ctx context.Context, ticket int64) error

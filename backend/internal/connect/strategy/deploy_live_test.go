@@ -47,12 +47,12 @@ type mockOrderExecutor struct {
 }
 
 func (m *mockOrderExecutor) Platform() string { return "mock" }
-func (m *mockOrderExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest) (int64, error) {
+func (m *mockOrderExecutor) PlaceOrder(_ context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 	m.placedCh <- req.ClientID
 	m.mu.Lock()
 	m.tickets = append(m.tickets, 1) // mock always returns ticket=1
 	m.mu.Unlock()
-	return 1, nil
+	return &mthub.OrderRecord{Ticket: 1, AccountID: req.AccountID, Canonical: req.Canonical, State: mthub.OrderStateOpen}, nil
 }
 func (m *mockOrderExecutor) CloseOrder(_ context.Context, ticket int64, _ decimal.Decimal) error {
 	if m.closedCh != nil {

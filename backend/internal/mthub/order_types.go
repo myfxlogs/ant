@@ -16,6 +16,9 @@ type OrderRequest struct {
 	Volume, Price, StopLoss, TakeProfit decimal.Decimal
 	Comment, ClientID                   string
 	Magic                               int32
+	// Deviation is the max slippage in points passed to the broker
+	// (MT4/MT5 OrderSend slippage). 0 = use broker default.
+	Deviation int32
 }
 
 type OrderRecord struct {
@@ -32,10 +35,19 @@ type OrderRecord struct {
 }
 
 type SymbolParam struct {
-	Canonical, SymbolRaw                                       string
-	Digits, TradeMode, StopLevel                               int32
-	PointValue, ContractSize, LotSize, LotStep, LotMin, LotMax decimal.Decimal
-	SpreadFloat                                                bool
+	Canonical, SymbolRaw string
+	Digits               int32
+	// TradeMode canonical enum: 0=disabled,1=long_only,2=short_only,
+	// 3=close_only,4=full. MT4/MT5 broker values are the same order and are
+	// passed through as-is (distinct from the admin broker_symbols table's
+	// same-named config column — resolver semantics untouched, R3).
+	TradeMode                        int32
+	StopLevel, FreezeLevel           int32
+	PointValue, ContractSize         decimal.Decimal
+	LotSize, LotStep, LotMin, LotMax decimal.Decimal
+	TickValue, TickSize              decimal.Decimal
+	SwapLong, SwapShort              decimal.Decimal
+	SpreadFloat                      bool
 }
 
 type Bar struct {
@@ -109,7 +121,10 @@ func (r *OrderRecord) OrderTypeString() string {
 
 type OrderExecutor interface {
 	Platform() string
-	PlaceOrder(ctx context.Context, req *OrderRequest) (int64, error)
+	// PlaceOrder submits the order and returns the broker's synchronous
+	// OrderSend receipt mapped into an OrderRecord. Fields absent from the
+	// broker response stay zero (= unknown) — never echoed from the request.
+	PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error)
 	CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error
 	DeleteOrder(ctx context.Context, ticket int64) error
 	ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error

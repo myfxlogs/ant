@@ -490,8 +490,11 @@ func TestPlaceOrder_Success(t *testing.T) {
 	if record.Ticket != 99999 {
 		t.Fatalf("expected ticket 99999, got %d", record.Ticket)
 	}
-	if record.State != OrderStatePending {
-		t.Fatalf("expected state 0 (Pending), got %d", record.State)
+	// VM-LIVE-PARITY-F1: PlaceOrder passes the adapter receipt through —
+	// state now comes from the adapter's explicit derivation (mock returns
+	// Open for a market fill), not the old service-side Pending fabrication.
+	if record.State != OrderStateOpen {
+		t.Fatalf("expected adapter-derived state Open, got %d", record.State)
 	}
 }
 
@@ -500,8 +503,8 @@ func TestPlaceOrder_ExecutorError(t *testing.T) {
 	svc := newTestService()
 	exec := &mockExecutor{
 		platform: "MT5",
-		placeOrderFn: func(ctx context.Context, req *OrderRequest) (int64, error) {
-			return 0, ErrSessionNotFound
+		placeOrderFn: func(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
+			return nil, ErrSessionNotFound
 		},
 	}
 	svc.hub.Register("acc-1", &Session{AccountID: "acc-1", CreatedAt: time.Now()}, exec)

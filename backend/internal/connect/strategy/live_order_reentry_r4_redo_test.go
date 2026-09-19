@@ -23,8 +23,8 @@ import (
 // goroutine starts -> barrier transitions out of outcomeUnknown -> RED.
 func TestLIVE_ORDER_REENTRY_1_R4_OpenMutationWithTicket_NoRecovery(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 77, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 77, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return nil, nil
@@ -48,7 +48,11 @@ func TestLIVE_ORDER_REENTRY_1_R4_OpenMutationWithTicket_NoRecovery(t *testing.T)
 		expectedMagic:  strategyMagic(cfg.ScheduleID),
 		expectedTicket: 0,
 		brokerCall: func(brokerCtx context.Context) (int64, error) {
-			return exec.PlaceOrder(brokerCtx, &mthub.OrderRequest{})
+			rec, err := exec.PlaceOrder(brokerCtx, &mthub.OrderRequest{})
+			if err != nil {
+				return 0, err
+			}
+			return rec.Ticket, nil
 		},
 		verifyReadAfterWrite: nil,
 	}, "buy", sig, conf)
@@ -162,8 +166,8 @@ func TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_MT5(t *testing.T
 // publishOrderUpdate (real broker) -> confirmation listener -> barrier.
 func TestLIVE_ORDER_REENTRY_1_R4_AdapterLabelPipeline_RealParse_FullPath_MT4(t *testing.T) {
 	exec := &prodMockExecutor{
-		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-			return 42, nil
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return &mthub.OrderRecord{Ticket: 42, State: mthub.OrderStateOpen}, nil
 		},
 		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
 			return []*mthub.OrderRecord{{Ticket: 42, Canonical: "EURUSD"}}, nil

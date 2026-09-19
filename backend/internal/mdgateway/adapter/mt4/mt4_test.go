@@ -950,15 +950,15 @@ func TestPlaceOrder_Success(t *testing.T) {
 			Result: &pb.Order{Ticket: 12345},
 		},
 	}
-	ticket, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+	rec, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
 		Canonical: "EURUSD", Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
 		Volume: decimal.NewFromFloat(0.1), Price: decimal.NewFromFloat(1.1000),
 	})
 	if err != nil {
 		t.Fatalf("PlaceOrder: %v", err)
 	}
-	if ticket != 12345 {
-		t.Errorf("ticket = %d, want 12345", ticket)
+	if rec.Ticket != 12345 {
+		t.Errorf("ticket = %d, want 12345", rec.Ticket)
 	}
 }
 

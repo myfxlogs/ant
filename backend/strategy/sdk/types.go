@@ -70,6 +70,9 @@ type OrderRequest struct {
 	TakeProfit decimal.Decimal
 	Deviation  int32
 	Magic      int32
+	// Comment is sent to the broker verbatim. MT4 accepts ANSI codepage
+	// bytes only — non-ASCII may be transcoded or truncated (venue limit,
+	// VM-LIVE-PARITY-F3). Read-back via broker records is authoritative.
 	Comment    string
 	FillPolicy FillPolicy
 }
@@ -90,6 +93,8 @@ const (
 )
 
 // OrderResult is returned by Broker.OrderSend.
+// VM-LIVE-PARITY-F1 contract: Volume/Price are BROKER FILL FACTS from the
+// OrderSend receipt — zero = unknown. Never echo the request values.
 type OrderResult struct {
 	RetCode RetCode
 	Ticket  int64
@@ -138,17 +143,17 @@ type PendingOrder struct {
 
 // Deal represents a historical trade.
 type Deal struct {
-	Ticket     int64
+	Ticket      int64
 	OrderTicket int64
-	Symbol     string
-	Side       PositionSide
-	Volume     decimal.Decimal
-	Price      decimal.Decimal
-	Profit     decimal.Decimal
-	Commission decimal.Decimal
-	Swap       decimal.Decimal
-	Comment    string
-	Magic      int32
-	OpenTime   time.Time
-	CloseTime  time.Time
+	Symbol      string
+	Side        PositionSide
+	Volume      decimal.Decimal
+	Price       decimal.Decimal
+	Profit      decimal.Decimal
+	Commission  decimal.Decimal
+	Swap        decimal.Decimal
+	Comment     string
+	Magic       int32
+	OpenTime    time.Time
+	CloseTime   time.Time
 }

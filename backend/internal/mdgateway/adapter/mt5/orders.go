@@ -16,19 +16,23 @@ import (
 
 const orderTimeout = 30 * time.Second
 
-func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 	g.mu.RLock()
 	tc := g.tradingCli
 	sid := g.sessionID
 	g.mu.RUnlock()
 	if tc == nil || sid == "" {
-		return 0, fmt.Errorf("mt5 PlaceOrder: not connected")
+		return nil, fmt.Errorf("mt5 PlaceOrder: not connected")
 	}
 	if g.breaker != nil && !g.breaker.Allow() {
-		return 0, mthub.ErrCircuitOpen
+		return nil, mthub.ErrCircuitOpen
 	}
 	ot := mt5OrderType(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
+	slippage := uint64(req.Deviation) // negative clamps to 0 (broker default)
+	if req.Deviation < 0 {
+		slippage = 0
+	}
 	md := metadata.New(map[string]string{"id": sid})
 	if tok := g.token(); tok != "" {
 		md.Set("authorization", "Bearer "+tok)
@@ -40,6 +44,7 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		Id: sid, Symbol: req.Canonical, Operation: ot,
 		Volume:     req.Volume.InexactFloat64(),
 		Price:      &price,
+		Slippage:   &slippage,
 		Stoploss:   pfloat64(req.StopLoss),
 		Takeprofit: pfloat64(req.TakeProfit),
 		Comment:    &req.Comment,
@@ -49,24 +54,48 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("mt5 OrderSend: %w", err)
+		return nil, fmt.Errorf("mt5 OrderSend: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("%w: mt5 OrderSend: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
+		return nil, fmt.Errorf("%w: mt5 OrderSend: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
-	if resp.GetResult() == nil {
+	o := resp.GetResult()
+	if o == nil {
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("mt5 OrderSend: nil result")
+		return nil, fmt.Errorf("mt5 OrderSend: nil result")
 	}
 	if g.breaker != nil {
 		g.breaker.OnSuccess()
 	}
-	return resp.GetResult().GetTicket(), nil
+	rec := &mthub.OrderRecord{
+		// Broker receipt verbatim; absent fields stay zero (= unknown).
+		// mt5 pb Order has no magic field → rec.Magic stays 0 (= unknown).
+		Ticket:     o.GetTicket(),
+		OpenPrice:  decimal.NewFromFloat(o.GetOpenPrice()),
+		Volume:     decimal.NewFromFloat(o.GetLots()),
+		StopLoss:   decimal.NewFromFloat(o.GetStopLoss()),
+		TakeProfit: decimal.NewFromFloat(o.GetTakeProfit()),
+		Comment:    o.GetComment(),
+		AccountID:  req.AccountID,
+		Canonical:  req.Canonical,
+		SymbolRaw:  req.Canonical,
+	}
+	if ot2 := o.GetOpenTime(); ot2 != nil {
+		rec.OpenTime = ot2.AsTime()
+	}
+	// Same explicit derivation as mt4: zero State would misreport a market
+	// fill as pending (OrderStatePending is the zero value).
+	if ot == pb.OrderType_OrderType_Buy || ot == pb.OrderType_OrderType_Sell {
+		rec.State = mthub.OrderStateOpen
+	} else {
+		rec.State = mthub.OrderStatePending
+	}
+	return rec, nil
 }
 
 // openTimeFromOrder extracts open time from MT5 Order, falling back to OpenTimestampUTC.
@@ -250,18 +279,29 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		}
 		si := r.GetSymbolInfo()
 		sg := r.GetSymbolGroup()
+		// VM-LIVE-PARITY-F2: PointValue is the point SIZE (mt5 pb `points`),
+		// not the monetary tick value — the old mapping mislabeled every
+		// symbol. Broker facts only; each field keeps its own source.
+		pointValue := decimal.NewFromFloat(si.GetPoints())
+		if pointValue.IsZero() {
+			pointValue = decimal.NewFromFloat(si.GetTickSize())
+		}
+		// mt5 mtapi pb has no freeze-level field (grep 零命中) → FreezeLevel
+		// stays 0 = unknown; not derived.
 		out = append(out, &mthub.SymbolParam{
 			Canonical:    c,
 			SymbolRaw:    c,
 			Digits:       si.GetDigits(),
 			TradeMode:    int32(sg.GetTradeMode()),
 			StopLevel:    sg.GetSL(),
-			PointValue:   decimal.NewFromFloat(si.GetTickValue()),
+			PointValue:   pointValue,
 			ContractSize: decimal.NewFromFloat(si.GetContractSize()),
 			LotSize:      decimal.NewFromFloat(si.GetContractSize()),
 			LotStep:      decimal.NewFromFloat(sg.GetLotsStep()),
 			LotMin:       decimal.NewFromFloat(sg.GetMinLots()),
 			LotMax:       decimal.NewFromFloat(sg.GetMaxLots()),
+			TickValue:    decimal.NewFromFloat(si.GetTickValue()),
+			TickSize:     decimal.NewFromFloat(si.GetTickSize()),
 			SpreadFloat:  si.GetSpread() > 0,
 		})
 	}

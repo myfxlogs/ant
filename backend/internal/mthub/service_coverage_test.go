@@ -469,7 +469,7 @@ func TestSubmitToBroker_MarginPrecheckPass(t *testing.T) {
 			UsedMargin: dec(100),
 		}, nil
 	})
-	ticket, err := svc.submitToBroker(context.Background(), &OrderRequest{
+	rec, err := svc.submitToBroker(context.Background(), &OrderRequest{
 		AccountID: "acc-1", Canonical: "EURUSD",
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
@@ -477,8 +477,8 @@ func TestSubmitToBroker_MarginPrecheckPass(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if ticket != 99999 {
-		t.Fatalf("expected ticket 99999, got %d", ticket)
+	if rec.Ticket != 99999 {
+		t.Fatalf("expected ticket 99999, got %d", rec.Ticket)
 	}
 }
 
@@ -501,7 +501,7 @@ func TestSubmitToBroker_MarginPrecheckReject(t *testing.T) {
 			UsedMargin: dec(50),
 		}, nil
 	})
-	ticket, err := svc.submitToBroker(context.Background(), &OrderRequest{
+	rec, err := svc.submitToBroker(context.Background(), &OrderRequest{
 		AccountID: "acc-1", Canonical: "EURUSD",
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
@@ -509,8 +509,8 @@ func TestSubmitToBroker_MarginPrecheckReject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("submitToBroker should not do margin precheck (D6-A Gate handles it): %v", err)
 	}
-	if ticket != 99999 {
-		t.Fatalf("expected ticket 99999, got %d", ticket)
+	if rec.Ticket != 99999 {
+		t.Fatalf("expected ticket 99999, got %d", rec.Ticket)
 	}
 }
 
@@ -528,7 +528,7 @@ func TestSubmitToBroker_MarginRPCError_Skips(t *testing.T) {
 	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
 		return &risk.AccountState{Balance: dec(10000), Equity: dec(10000)}, nil
 	})
-	ticket, err := svc.submitToBroker(context.Background(), &OrderRequest{
+	rec, err := svc.submitToBroker(context.Background(), &OrderRequest{
 		AccountID: "acc-1", Canonical: "EURUSD",
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
@@ -536,8 +536,8 @@ func TestSubmitToBroker_MarginRPCError_Skips(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected success (no margin RPC in submitToBroker), got %v", err)
 	}
-	if ticket != 99999 {
-		t.Fatalf("expected ticket 99999, got %d", ticket)
+	if rec.Ticket != 99999 {
+		t.Fatalf("expected ticket 99999, got %d", rec.Ticket)
 	}
 }
 
@@ -555,7 +555,7 @@ func TestSubmitToBroker_StateProviderError_Skips(t *testing.T) {
 	svc.SetAccountStateProvider(func(_ context.Context, _ string) (*risk.AccountState, error) {
 		return nil, context.DeadlineExceeded
 	})
-	ticket, err := svc.submitToBroker(context.Background(), &OrderRequest{
+	rec, err := svc.submitToBroker(context.Background(), &OrderRequest{
 		AccountID: "acc-1", Canonical: "EURUSD",
 		Side: SideBuy, OrderType: OrderMarket,
 		Volume: dec(0.1), Price: dec(1.085),
@@ -563,8 +563,8 @@ func TestSubmitToBroker_StateProviderError_Skips(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected success (no state fetch in submitToBroker), got %v", err)
 	}
-	if ticket != 99999 {
-		t.Fatalf("expected ticket 99999, got %d", ticket)
+	if rec.Ticket != 99999 {
+		t.Fatalf("expected ticket 99999, got %d", rec.Ticket)
 	}
 }
 

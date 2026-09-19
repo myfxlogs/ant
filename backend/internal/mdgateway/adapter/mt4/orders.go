@@ -35,20 +35,20 @@ func mt4Op(side mthub.Side, ot mthub.OrderType) (pb.Op, error) {
 	}
 }
 
-func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
 	g.mu.RLock()
 	tc := g.tradingCli
 	sid := g.sessionID
 	g.mu.RUnlock()
 	if tc == nil || sid == "" {
-		return 0, fmt.Errorf("mt4 PlaceOrder: not connected")
+		return nil, fmt.Errorf("mt4 PlaceOrder: not connected")
 	}
 	if g.breaker != nil && !g.breaker.Allow() {
-		return 0, mthub.ErrCircuitOpen
+		return nil, mthub.ErrCircuitOpen
 	}
 	op, err := mt4Op(req.Side, req.OrderType)
 	if err != nil {
-		return 0, fmt.Errorf("mt4 PlaceOrder: %w", err)
+		return nil, fmt.Errorf("mt4 PlaceOrder: %w", err)
 	}
 	price := req.Price.InexactFloat64()
 	md := metadata.New(map[string]string{"id": sid})
@@ -64,30 +64,58 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 		Price:      price,
 		Stoploss:   req.StopLoss.InexactFloat64(),
 		Takeprofit: req.TakeProfit.InexactFloat64(),
+		Comment:    req.Comment,
+		Slippage:   req.Deviation,
 		Magic:      req.Magic,
 	})
 	if err != nil {
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("mt4 OrderSend: %w", err)
+		return nil, fmt.Errorf("mt4 OrderSend: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("%w: mt4 OrderSend: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
+		return nil, fmt.Errorf("%w: mt4 OrderSend: code=%d msg=%s", mthub.ErrBrokerRejected, resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
-	if resp.GetResult() == nil {
+	o := resp.GetResult()
+	if o == nil {
 		if g.breaker != nil {
 			g.breaker.OnFailure()
 		}
-		return 0, fmt.Errorf("mt4 OrderSend: nil result")
+		return nil, fmt.Errorf("mt4 OrderSend: nil result")
 	}
 	if g.breaker != nil {
 		g.breaker.OnSuccess()
 	}
-	return int64(resp.GetResult().GetTicket()), nil
+	rec := &mthub.OrderRecord{
+		// mtapi OrderSend returns the full Order — map the broker receipt
+		// verbatim. Fields absent from the response stay zero (= unknown);
+		// never echo request values (VM-LIVE-PARITY-F1).
+		Ticket:     int64(o.GetTicket()),
+		OpenPrice:  decimal.NewFromFloat(o.GetOpenPrice()),
+		Volume:     decimal.NewFromFloat(o.GetLots()),
+		StopLoss:   decimal.NewFromFloat(o.GetStopLoss()),
+		TakeProfit: decimal.NewFromFloat(o.GetTakeProfit()),
+		Comment:    o.GetComment(),
+		Magic:      o.GetMagicNumber(),
+		AccountID:  req.AccountID,
+		Canonical:  req.Canonical,
+		SymbolRaw:  req.Canonical,
+	}
+	if ot := o.GetOpenTime(); ot != nil {
+		rec.OpenTime = ot.AsTime()
+	}
+	// State must be assigned explicitly: OrderStatePending is the zero value,
+	// so leaving it unset would report a market fill as pending.
+	if op == pb.Op_Op_Buy || op == pb.Op_Op_Sell {
+		rec.State = mthub.OrderStateOpen
+	} else {
+		rec.State = mthub.OrderStatePending
+	}
+	return rec, nil
 }
 
 func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
@@ -210,6 +238,7 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		}
 		si := r.GetSymbol()
 		gp := r.GetGroupParams()
+		ex := si.GetEx()
 		param := &mthub.SymbolParam{
 			Canonical:   c,
 			SymbolRaw:   c,
@@ -217,17 +246,38 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		}
 		if si != nil {
 			param.Digits = si.GetDigits()
-			param.StopLevel = si.GetStopsLevel()
+			// VM-LIVE-PARITY-F2: per-field flat→Ex fallback — flat zero means
+			// unknown, so consult the rich SymbolInfoEx before giving up. Every
+			// field resolves independently; a true zero stays zero.
 			param.PointValue = decimal.NewFromFloat(si.GetPoint())
+			if param.PointValue.IsZero() {
+				param.PointValue = decimal.NewFromFloat(ex.GetPoint())
+			}
 			param.ContractSize = decimal.NewFromFloat(si.GetContractSize())
+			if param.ContractSize.IsZero() {
+				param.ContractSize = decimal.NewFromFloat(ex.GetContractSize())
+			}
 			param.LotSize = param.ContractSize
+			param.StopLevel = si.GetStopsLevel()
+			if param.StopLevel == 0 {
+				param.StopLevel = ex.GetStopsLevel()
+			}
+			param.TickValue = decimal.NewFromFloat(ex.GetTickValue())
+			param.TickSize = decimal.NewFromFloat(ex.GetTickSize())
+			param.SwapLong = decimal.NewFromFloat(ex.GetSwapLong())
+			param.SwapShort = decimal.NewFromFloat(ex.GetSwapShort())
+			param.FreezeLevel = ex.GetFreezeLevel()
 		}
 		if gp != nil {
 			param.LotMin = decimal.NewFromFloat(gp.GetMinLot())
 			param.LotMax = decimal.NewFromFloat(gp.GetMaxLot())
 			param.LotStep = decimal.NewFromFloat(gp.GetLotStep())
-			param.TradeMode = gp.GetExecution()
 		}
+		// TradeMode semantics come from SymbolInfoEx.Trade (the trade-mode
+		// enum); the group Execution mode is a different enum — writing it
+		// here mislabeled every symbol (F2). Canonical enum:
+		// 0=disabled,1=long_only,2=short_only,3=close_only,4=full.
+		param.TradeMode = ex.GetTrade()
 		// Do not default ContractSize to 1; zero means "unknown" and triggers
 		// fail-closed margin checks in the risk gate.
 		out = append(out, param)

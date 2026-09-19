@@ -276,6 +276,17 @@ message LiveStrategyContext {
   int32 leverage = 31;
   string currency = 32;
   string account_mode = 33;
+
+  // VM-LIVE-PARITY-F2: full SymbolParam facts (broker values; "" = unknown).
+  // point/digits/contract_size/stops_level (21-24) carried the original
+  // subset; these extend it so live VM sees lots/tick/swap like backtest.
+  string lot_min = 34;
+  string lot_max = 35;
+  string lot_step = 36;
+  string tick_value = 37;
+  string tick_size = 38;
+  string swap_long = 39;
+  string swap_short = 40;
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -371,6 +382,15 @@ message TickContext {
 
   // LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
   repeated LivePendingOrder pending_orders = 17;
+
+  // VM-LIVE-PARITY-F2: full SymbolParam facts (broker values; "" = unknown).
+  string lot_min = 18;
+  string lot_max = 19;
+  string lot_step = 20;
+  string tick_value = 21;
+  string tick_size = 22;
+  string swap_long = 23;
+  string swap_short = 24;
 }
 
 // TradeContext carries a trade event for OnTrade strategies.

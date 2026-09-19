@@ -49,6 +49,10 @@ type contextImpl struct {
 	liveDigits       int32
 	liveContractSize string
 	liveStopsLevel   string
+	// VM-LIVE-PARITY-F2: full SymbolParam facts for the live VM.
+	liveLotMin, liveLotMax, liveLotStep string
+	liveTickValue, liveTickSize         string
+	liveSwapLong, liveSwapShort         string
 
 	// Tick-level prices (harness mode — set on TICK requests).
 	tickBid decimal.Decimal

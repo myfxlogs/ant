@@ -493,15 +493,15 @@ func TestPlaceOrder_WithMock(t *testing.T) {
 	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
 	gw.sessionID = "sid"
 	gw.tradingCli = tc
-	ticket, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+	rec, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
 		Canonical: "EURUSD", Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
 		Volume: decimal.NewFromFloat(0.1),
 	})
 	if err != nil {
 		t.Fatalf("PlaceOrder: %v", err)
 	}
-	if ticket != 5001 {
-		t.Errorf("ticket = %d, want 5001", ticket)
+	if rec.Ticket != 5001 {
+		t.Errorf("ticket = %d, want 5001", rec.Ticket)
 	}
 }
 

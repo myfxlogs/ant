@@ -388,6 +388,9 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 		Volume:    parseDecimal(sig.GetVolume()),
 		Magic:     strategyMagic(cfg.ScheduleID),
 		ClientID:  strategyOrderClientID(cfg.RunID, barOpenTime, sig.GetSignalType()),
+		// VM-LIVE-PARITY-F3/F1: strategy comment + deviation reach the broker.
+		Comment:   sig.GetComment(),
+		Deviation: sig.GetDeviation(),
 	}
 	sl := parseDecimal(sig.GetStopLoss())
 	if sl.GreaterThan(decimal.Zero) {

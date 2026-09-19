@@ -98,7 +98,7 @@ func TestUserLimiter_RateLimitKicksIn(t *testing.T) {
 // All fn fields are optional — nil means use the default success behavior.
 type mockExecutor struct {
 	platform            string
-	placeOrderFn        func(context.Context, *OrderRequest) (int64, error)
+	placeOrderFn        func(context.Context, *OrderRequest) (*OrderRecord, error)
 	closeOrderFn        func(context.Context, int64, decimal.Decimal) error
 	deleteOrderFn       func(context.Context, int64) error
 	modifyOrderFn       func(context.Context, int64, decimal.Decimal, decimal.Decimal, decimal.Decimal) error
@@ -116,11 +116,11 @@ func (m *mockExecutor) Platform() string {
 	}
 	return "mock"
 }
-func (m *mockExecutor) PlaceOrder(ctx context.Context, req *OrderRequest) (int64, error) {
+func (m *mockExecutor) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
 	if m.placeOrderFn != nil {
 		return m.placeOrderFn(ctx, req)
 	}
-	return 99999, nil
+	return &OrderRecord{Ticket: 99999, AccountID: req.AccountID, Canonical: req.Canonical, State: OrderStateOpen}, nil
 }
 func (m *mockExecutor) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
 	if m.closeOrderFn != nil {

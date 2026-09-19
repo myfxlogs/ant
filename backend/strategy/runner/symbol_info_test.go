@@ -19,7 +19,7 @@ import (
 // into the context, and Point() returns the injected value in harness mode.
 func TestUpdateSymbolInfo_Point(t *testing.T) {
 	r := New(Config{})
-	r.UpdateSymbolInfo("0.00001", 5, "100000", "30")
+	r.UpdateSymbolInfo(LiveSymbolInfo{Point: "0.00001", Digits: 5, ContractSize: "100000", StopsLevel: 30})
 
 	if r.ctx.Point().String() != "0.00001" {
 		t.Errorf("Point()=%s, want 0.00001", r.ctx.Point().String())
@@ -29,7 +29,7 @@ func TestUpdateSymbolInfo_Point(t *testing.T) {
 // TestUpdateSymbolInfo_Digits verifies that UpdateSymbolInfo injects Digits.
 func TestUpdateSymbolInfo_Digits(t *testing.T) {
 	r := New(Config{})
-	r.UpdateSymbolInfo("0.001", 3, "1000", "50")
+	r.UpdateSymbolInfo(LiveSymbolInfo{Point: "0.001", Digits: 3, ContractSize: "1000", StopsLevel: 50})
 
 	if r.ctx.Digits() != 3 {
 		t.Errorf("Digits()=%d, want 3", r.ctx.Digits())
@@ -40,7 +40,7 @@ func TestUpdateSymbolInfo_Digits(t *testing.T) {
 // returns injected values in harness mode (no executor).
 func TestUpdateSymbolInfo_BrokerSymbolInfo(t *testing.T) {
 	r := New(Config{})
-	r.UpdateSymbolInfo("0.001", 3, "1000", "50")
+	r.UpdateSymbolInfo(LiveSymbolInfo{Point: "0.001", Digits: 3, ContractSize: "1000", StopsLevel: 50})
 
 	info, err := r.broker.SymbolInfo("EURUSD")
 	if err != nil {

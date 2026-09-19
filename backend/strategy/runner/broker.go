@@ -36,21 +36,15 @@ func (b *brokerImpl) OrderSend(req sdk.OrderRequest) (sdk.OrderResult, error) {
 	if b.executor == nil {
 		return sdk.OrderResult{RetCode: sdk.RetRejected}, fmt.Errorf("broker: no executor configured")
 	}
-	ticket, err := b.executor.PlaceOrder(
+	// VM-LIVE-PARITY-F1: pure passthrough — the executor returns broker fill
+	// facts. This layer has no fill data of its own; echoing req.Volume/req.
+	// Price here fabricated "facts" the broker never confirmed.
+	return b.executor.PlaceOrder(
 		b.orderCtx(),
 		req.Symbol, req.Side, req.Type,
 		req.Volume, req.Price, req.StopLoss, req.TakeProfit,
-		req.Comment, req.Magic,
+		req.Comment, req.Magic, req.Deviation,
 	)
-	if err != nil {
-		return sdk.OrderResult{RetCode: sdk.RetRejected}, err
-	}
-	return sdk.OrderResult{
-		RetCode: sdk.RetDone,
-		Ticket:  ticket,
-		Volume:  req.Volume,
-		Price:   req.Price,
-	}, nil
 }
 
 func (b *brokerImpl) PositionClose(ticket int64, volume decimal.Decimal) (sdk.OrderResult, error) {

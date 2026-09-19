@@ -32,14 +32,17 @@ type Strategy interface {
 // Signal is returned by OnBar/OnTick/OnTimer/OnTrade to request trade actions.
 // Only non-nil fields are acted upon.
 type Signal struct {
-	Action         SignalAction
-	Symbol         string          // defaults to primary symbol if empty
-	Volume         decimal.Decimal // 0 = use default volume
-	Price          decimal.Decimal // 0 = market price
-	StopLoss       decimal.Decimal
-	TakeProfit     decimal.Decimal
-	Deviation      int32
-	Magic          int32
+	Action     SignalAction
+	Symbol     string          // defaults to primary symbol if empty
+	Volume     decimal.Decimal // 0 = use default volume
+	Price      decimal.Decimal // 0 = market price
+	StopLoss   decimal.Decimal
+	TakeProfit decimal.Decimal
+	Deviation  int32
+	Magic      int32
+	// Comment is sent to the broker verbatim. MT4 accepts ANSI codepage
+	// bytes only — non-ASCII may be transcoded or truncated (venue limit,
+	// VM-LIVE-PARITY-F3). Broker read-back is authoritative.
 	Comment        string
 	FillPolicy     FillPolicy
 	OrderTicket    int64 // for modify/close/cancel: which order to act on

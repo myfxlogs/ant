@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-09-19 11:50 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-09-19 16:35 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -743,7 +743,7 @@ OrderModify	reference/grpc/mt4.proto:304
 OrderModify	reference/grpc/mt5.proto:493
 OrderSend	reference/grpc/mt4.proto:294
 OrderSend	reference/grpc/mt5.proto:482
-OrderTypeString	backend/internal/mthub/order_types.go:87
+OrderTypeString	backend/internal/mthub/order_types.go:99
 PaperPnl	backend/internal/paper/engine.go:146
 ParseProviderCurl	proto/ant/v1/system_ai.proto:18
 PendingOrderHistory	reference/grpc/mt5.proto:104
@@ -795,7 +795,7 @@ PublishTemplateDraft	backend/internal/connect/strategy/strategy_template_handler
 PublishTemplateDraft	proto/ant/v1/strategy.proto:20
 PublishTick	backend/internal/mthub/service.go:140
 PublishTradeEvent	backend/internal/mthub/service.go:177
-PublishTradeEventFromUpdate	backend/internal/mthub/service_orders.go:390
+PublishTradeEventFromUpdate	backend/internal/mthub/service_orders.go:393
 PurchaseBundle	proto/ant/v1/marketplace_service.proto:92
 PurchaseStrategy	proto/ant/v1/marketplace_service.proto:13
 PutSnapshot	backend/internal/connect/strategy/position_cache.go:150
@@ -1130,7 +1130,7 @@ ToggleSchedule	proto/ant/v1/strategy.proto:29
 Total	backend/internal/service/systemai/session_quota.go:31
 TransformCode	proto/ant/v1/code_assist.proto:16
 Transition	backend/internal/mthub/oms_writer.go:166
-TransitionOrderByTicket	backend/internal/mthub/service_orders.go:347
+TransitionOrderByTicket	backend/internal/mthub/service_orders.go:350
 TranslateParamLabels	proto/ant/v1/code_assist.proto:18
 TriggerBatchGeneration	proto/ant/v1/marketplace_service.proto:48
 TriggerReconcile	backend/internal/mthub/reconciliation.go:62
@@ -2000,7 +2000,7 @@ backend/internal/mthub/oms_writer.go:124:func (w *OmsWriter) InsertOrder(ctx con
 backend/internal/mthub/oms_writer.go:142:func (w *OmsWriter) UpdateTicket(ctx context.Context, orderID string, ticket int64) error {
 backend/internal/mthub/oms_writer.go:154:func (w *OmsWriter) OrderIDByTicket(ctx context.Context, accountID string, ticket int64) (orderID, state string, err error) {
 backend/internal/mthub/oms_writer.go:166:func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, current, next OMSState) error {
-backend/internal/mthub/order_types.go:87:func (r *OrderRecord) OrderTypeString() string {
+backend/internal/mthub/order_types.go:99:func (r *OrderRecord) OrderTypeString() string {
 backend/internal/mthub/reconcile_gate.go:24:func (g *ReconcileGate) EnterReconciling(accountID string) {
 backend/internal/mthub/reconcile_gate.go:31:func (g *ReconcileGate) MarkReconciled(accountID string) {
 backend/internal/mthub/reconcile_gate.go:38:func (g *ReconcileGate) CanAccept(accountID string) bool {
@@ -2040,8 +2040,8 @@ backend/internal/mthub/service_account_profit.go:16:func (s *MtHubService) Subsc
 backend/internal/mthub/service_account_profit.go:6:func (s *MtHubService) PublishAccountProfit(ev *AccountProfitEvent) {
 backend/internal/mthub/service_order_magic.go:9:func (s *MtHubService) GetOrderMagic(ctx context.Context, accountID string, ticket int64) (int32, error) {
 backend/internal/mthub/service_orders.go:21:func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
-backend/internal/mthub/service_orders.go:347:func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID string, ticket int64, to OMSState) {
-backend/internal/mthub/service_orders.go:390:func (s *MtHubService) PublishTradeEventFromUpdate(
+backend/internal/mthub/service_orders.go:350:func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID string, ticket int64, to OMSState) {
+backend/internal/mthub/service_orders.go:393:func (s *MtHubService) PublishTradeEventFromUpdate(
 backend/internal/mthub/service_orders_close.go:26:func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
 backend/internal/mthub/service_orders_delete.go:15:func (s *MtHubService) DeleteOrder(ctx context.Context, accountID string, ticket int64) error {
 backend/internal/mthub/service_orders_import.go:22:func (s *MtHubService) ImportBrokerOrder(ctx context.Context, accountID string, br *OrderRecord) error {

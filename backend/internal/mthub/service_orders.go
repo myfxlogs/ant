@@ -51,7 +51,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		costEstimate = s.estimateOrderCost(ctx, req)
 	}
 
-	ticket, err := s.submitToBroker(ctx, req, orderID)
+	rec, err := s.submitToBroker(ctx, req, orderID)
 	if err != nil {
 		OrdersPlacedTotal.WithLabelValues(broker, orderStatusErr).Inc()
 		PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
@@ -59,23 +59,26 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	}
 
 	if s.idem != nil && req.ClientID != "" {
-		if err := s.idem.SetTicket(ctx, req.AccountID, req.ClientID, ticket); err != nil {
+		if err := s.idem.SetTicket(ctx, req.AccountID, req.ClientID, rec.Ticket); err != nil {
 			if s.logger != nil {
 				s.logger.Error("idempotency set ticket failed",
 					zap.Error(err),
 					zap.String("accountID", req.AccountID),
 					zap.String("clientID", req.ClientID),
-					zap.Int64("ticket", ticket))
+					zap.Int64("ticket", rec.Ticket))
 			}
 		}
 	}
 
-	s.publishOrderCreatedEvent(ctx, req, ticket, costEstimate)
+	s.publishOrderCreatedEvent(ctx, req, rec.Ticket, costEstimate)
 
 	OrdersPlacedTotal.WithLabelValues(broker, orderStatusOK).Inc()
 	PlaceLatencySeconds.WithLabelValues(broker).Observe(time.Since(start).Seconds())
 
-	return &OrderRecord{Ticket: ticket, AccountID: req.AccountID, State: OrderStatePending}, nil
+	// Pass the adapter's broker receipt through unchanged (VM-LIVE-PARITY-F1):
+	// constructing a fresh {State: Pending} here would drop the fill facts the
+	// adapter mapped from the mtapi OrderSend response.
+	return rec, nil
 }
 
 func (s *MtHubService) preTradeChecks(ctx context.Context, req *OrderRequest) error {
@@ -202,27 +205,27 @@ func (s *MtHubService) evaluatePlaceGate(ctx context.Context, req *OrderRequest,
 
 // submitToBroker resolves the account's executor and submits the order.
 // All risk checks are handled by the Gate in evaluatePlaceGate (D6-A single chokepoint).
-func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, orderID string) (int64, error) {
+func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, orderID string) (*OrderRecord, error) {
 	exec := s.hub.Get(req.AccountID)
 	if exec == nil {
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
-		return 0, preBrokerError(ErrSessionNotFound)
+		return nil, preBrokerError(ErrSessionNotFound)
 	}
 
-	ticket, err := exec.PlaceOrder(ctx, req)
+	rec, err := exec.PlaceOrder(ctx, req)
 	if err != nil {
 		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
-		return 0, err
+		return nil, err
 	}
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateSubmitted)
 	// Store the real broker ticket so OnOrderUpdate can resolve orderID by ticket.
 	if s.omsWriter != nil {
-		if err := s.omsWriter.UpdateTicket(ctx, orderID, ticket); err != nil && s.logger != nil {
+		if err := s.omsWriter.UpdateTicket(ctx, orderID, rec.Ticket); err != nil && s.logger != nil {
 			s.logger.Error("oms: failed to update ticket after broker accept",
-				zap.String("orderID", orderID), zap.Int64("ticket", ticket), zap.Error(err))
+				zap.String("orderID", orderID), zap.Int64("ticket", rec.Ticket), zap.Error(err))
 		}
 	}
-	return ticket, nil
+	return rec, nil
 }
 
 // orderRequestToIntent converts an mthub OrderRequest into an antv1.OrderIntent

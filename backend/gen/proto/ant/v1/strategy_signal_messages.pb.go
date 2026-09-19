@@ -138,8 +138,11 @@ type StrategySignal struct {
 	Magic          int32 `protobuf:"varint,15,opt,name=magic,proto3" json:"magic,omitempty"`                                         // EA-configured magic number (0 = use schedule magic)
 	Deviation      int32 `protobuf:"varint,16,opt,name=deviation,proto3" json:"deviation,omitempty"`                                 // EA-configured deviation (0 = use default)
 	OppositeTicket int64 `protobuf:"varint,17,opt,name=opposite_ticket,json=oppositeTicket,proto3" json:"opposite_ticket,omitempty"` // for CloseBy: the opposite position ticket
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// VM-LIVE-PARITY-F3: strategy-supplied order comment, forwarded to the
+	// broker verbatim (MT4 ANSI codepage — non-ASCII may not survive).
+	Comment       string `protobuf:"bytes,18,opt,name=comment,proto3" json:"comment,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *StrategySignal) Reset() {
@@ -289,6 +292,13 @@ func (x *StrategySignal) GetOppositeTicket() int64 {
 		return x.OppositeTicket
 	}
 	return 0
+}
+
+func (x *StrategySignal) GetComment() string {
+	if x != nil {
+		return x.Comment
+	}
+	return ""
 }
 
 type ExecuteSignalRequest struct {
@@ -517,7 +527,7 @@ const file_strategy_signal_messages_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"G\n" +
 	"\x13ListSignalsResponse\x120\n" +
-	"\asignals\x18\x01 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xb3\x04\n" +
+	"\asignals\x18\x01 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xcd\x04\n" +
 	"\x0eStrategySignal\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +
@@ -542,7 +552,8 @@ const file_strategy_signal_messages_proto_rawDesc = "" +
 	"executedAt\x12\x14\n" +
 	"\x05magic\x18\x0f \x01(\x05R\x05magic\x12\x1c\n" +
 	"\tdeviation\x18\x10 \x01(\x05R\tdeviation\x12'\n" +
-	"\x0fopposite_ticket\x18\x11 \x01(\x03R\x0eoppositeTicket\"3\n" +
+	"\x0fopposite_ticket\x18\x11 \x01(\x03R\x0eoppositeTicket\x12\x18\n" +
+	"\acomment\x18\x12 \x01(\tR\acomment\"3\n" +
 	"\x14ExecuteSignalRequest\x12\x1b\n" +
 	"\tsignal_id\x18\x01 \x01(\tR\bsignalId\"\xc6\x01\n" +
 	"\x15ExecuteSignalResponse\x12\x16\n" +

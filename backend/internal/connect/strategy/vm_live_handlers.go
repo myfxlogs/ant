@@ -35,7 +35,13 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 	// LIVE-ACCOUNT-FIELDS-1: propagate account identity (leverage/currency/
 	// company/margin-mode) alongside the status flags.
 	r.SetAccountIdentity(lctx.Leverage, lctx.Currency, lctx.Company, lctx.AccountMode)
-	r.UpdateSymbolInfo(lctx.Point, lctx.Digits, lctx.ContractSize, strconv.FormatInt(int64(lctx.StopsLevel), 10))
+	r.UpdateSymbolInfo(runner.LiveSymbolInfo{
+		Point: lctx.Point, Digits: lctx.Digits, ContractSize: lctx.ContractSize,
+		StopsLevel: lctx.StopsLevel,
+		LotMin:     lctx.LotMin, LotMax: lctx.LotMax, LotStep: lctx.LotStep,
+		TickValue: lctx.TickValue, TickSize: lctx.TickSize,
+		SwapLong: lctx.SwapLong, SwapShort: lctx.SwapShort,
+	})
 
 	// VM-TRADE-CONTEXT-6 S3: strict parse bars — invalid decimals fail-closed.
 	barWindow, resp := parseBarsStrict(lctx.Open, lctx.High, lctx.Low, lctx.Close, lctx.Volume, lctx.BarTimesMs, "")
@@ -141,7 +147,13 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 	// VM-TRADE-CONTEXT-6 S4: nil check removed (proto3 nil==empty slice).
 	// buildTickContext fail-closes on missing data in live mode.
 	r.UpdateLiveState(tctx.Balance, tctx.Equity, tctx.Margin, tctx.FreeMargin, vmPositionsToSdk(tctx.Positions), vmPendingOrdersToSdk(tctx.PendingOrders))
-	r.UpdateSymbolInfo(tctx.Point, tctx.Digits, tctx.ContractSize, strconv.FormatInt(int64(tctx.StopsLevel), 10))
+	r.UpdateSymbolInfo(runner.LiveSymbolInfo{
+		Point: tctx.Point, Digits: tctx.Digits, ContractSize: tctx.ContractSize,
+		StopsLevel: tctx.StopsLevel,
+		LotMin:     tctx.LotMin, LotMax: tctx.LotMax, LotStep: tctx.LotStep,
+		TickValue: tctx.TickValue, TickSize: tctx.TickSize,
+		SwapLong: tctx.SwapLong, SwapShort: tctx.SwapShort,
+	})
 	// VM-TRADE-CONTEXT-6 S3: strict parse in live path.
 	bid, err := parseDecimalStrict(tctx.Bid)
 	if err != nil {
@@ -389,6 +401,9 @@ func vmSignalToProto(sig *sdk.Signal, symbol string) *antv1.StrategySignal {
 	if sym == "" {
 		sym = symbol
 	}
+	// VM-LIVE-PARITY-F3/F1: comment + deviation ride the signal to the live
+	// dispatch (Magic stays system-covered via strategyMagic; OppositeTicket
+	// unmapped — CloseBy has no live dispatch,残余 R4).
 	return &antv1.StrategySignal{
 		Symbol:         sym,
 		SignalType:     signalType,
@@ -396,6 +411,8 @@ func vmSignalToProto(sig *sdk.Signal, symbol string) *antv1.StrategySignal {
 		Price:          sig.Price.String(),
 		StopLoss:       sig.StopLoss.String(),
 		TakeProfit:     sig.TakeProfit.String(),
+		Deviation:      sig.Deviation,
+		Comment:        sig.Comment,
 		ExecutedTicket: sig.OrderTicket,
 	}
 }
