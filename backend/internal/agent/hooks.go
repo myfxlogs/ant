@@ -165,15 +165,19 @@ func (e *HookEngine) execWebhook(ctx context.Context, cfg HookConfig, hc *HookCo
 	body := buildHookJSON(hc)
 	req, err := http.NewRequestWithContext(hookCtx, "POST", cfg.WebhookURL, bytes.NewReader([]byte(body)))
 	if err != nil {
+		// EXT-BOUNDARY-WAVE2 S4: a broken URL means the gate cannot run —
+		// fail closed, symmetric with the >=400 abort below.
 		e.log.Warn("hook: webhook request creation failed", zap.Error(err))
-		return HookResult{}
+		return HookResult{Abort: true, Reason: fmt.Sprintf("webhook request creation failed: %v", err)}
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		// EXT-BOUNDARY-WAVE2 S4: unreachable gate = cannot verify — abort
+		// (symmetric with the >=400 abort below; was fail-open).
 		e.log.Warn("hook: webhook call failed", zap.Error(err))
-		return HookResult{}
+		return HookResult{Abort: true, Reason: fmt.Sprintf("webhook unreachable: %v", err)}
 	}
 	defer func() { _ = resp.Body.Close() }()
 

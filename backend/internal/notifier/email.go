@@ -102,9 +102,13 @@ func (n *EmailNotifier) sendToRecipients(to []string, subject, body string) erro
 		}
 	}
 
-	if auth != nil {
+	// EXT-BOUNDARY-WAVE2 S3: credentials that fail auth are an explicit
+	// failure — margin-call / kill-switch alerts must not be silently
+	// dropped on an unauthenticated path. Servers that do not advertise AUTH
+	// at all are a legitimate no-auth relay and skip auth silently.
+	if ok, _ := conn.Extension("AUTH"); ok && auth != nil {
 		if err := conn.Auth(auth); err != nil {
-			n.log.Warn("smtp auth failed, trying without auth", zap.Error(err))
+			return fmt.Errorf("smtp auth: %w", err)
 		}
 	}
 

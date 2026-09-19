@@ -340,6 +340,16 @@ func (s *Service) parseChatResponse(ctx context.Context, p chatProvider, bodyByt
 		return "", nil, nil, fmt.Errorf("chat completion: empty choices")
 	}
 	s.recordProviderSuccess(ctx, p.userID, p.providerID)
+	// EXT-BOUNDARY-WAVE2 S6: finish_reason="length" means the output was cut
+	// at max_tokens — truncated strategy code must not be accepted as a
+	// complete deliverable. Non-transient: retrying with the same parameters
+	// truncates again, so do not burn failover budget.
+	if fr := cr.Choices[0].FinishReason; fr == "length" {
+		return "", nil, nil, &failoverErr{
+			msg:       fmt.Sprintf("[%s|%s] output truncated at max_tokens (finish_reason=length)", p.providerID, p.model),
+			transient: false,
+		}
+	}
 	msg := cr.Choices[0].Message
 	content := strings.TrimSpace(msg.Content)
 	return content, msg.ToolCalls, cr.Usage, nil

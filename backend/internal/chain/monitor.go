@@ -37,6 +37,11 @@ type Monitor struct {
 	usdtContract    string
 	minConfirms     int
 	minDepositAmt   string
+
+	// EXT-BOUNDARY-WAVE2 S2: checkpoint-stall observability (single select
+	// goroutine — no locking needed).
+	lastProgressAt time.Time
+	lastSafeLatest int64
 	scanInterval    time.Duration
 	refreshInterval time.Duration
 }
@@ -113,12 +118,25 @@ func (m *Monitor) Run(ctx context.Context) error {
 	defer scanTicker.Stop()
 	refreshTicker := time.NewTicker(m.refreshInterval)
 	defer refreshTicker.Stop()
+	m.lastProgressAt = time.Now()
+	stallTicker := time.NewTicker(time.Minute)
+	defer stallTicker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
 			m.log.Info("chain monitor stopped")
 			return ctx.Err()
+		case <-stallTicker.C:
+			// EXT-BOUNDARY-WAVE2 S2: checkpoint stalled while the chain has
+			// confirmable blocks = deposits not being credited. Chain stalls
+			// (safeLatest <= lastBlock) are NOT an alert — nothing to do.
+			if m.lastSafeLatest > lastBlock && time.Since(m.lastProgressAt) > 15*time.Minute {
+				m.log.Error("chain monitor: checkpoint stalled — deposits not being credited",
+					zap.Time("last_progress", m.lastProgressAt),
+					zap.Int64("last_block", lastBlock),
+					zap.Int64("safe_latest", m.lastSafeLatest))
+			}
 		case <-refreshTicker.C:
 			if err := m.loadAddresses(ctx); err != nil {
 				m.log.Error("chain monitor: refresh addresses", zap.Error(err))
@@ -234,8 +252,11 @@ func (m *Monitor) scanBlocks(ctx context.Context, lastBlock *int64) error {
 			return fmt.Errorf("save checkpoint for block %d: %w", nextBlock, err)
 		}
 		*lastBlock = nextBlock
+		m.lastProgressAt = time.Now() // EXT-BOUNDARY-WAVE2 S2
 		scanned++
 	}
+
+	m.lastSafeLatest = safeLatest // EXT-BOUNDARY-WAVE2 S2
 
 	if *lastBlock < safeLatest {
 		m.log.Info("chain monitor: catching up",
@@ -293,33 +314,25 @@ func (m *Monitor) processEvent(ctx context.Context, evt TransferEvent) {
 	verified, err := m.scan.VerifyTransaction(ctx, evt.TxHash, evt.To)
 	if err != nil {
 		// TronScan API failure (network/timeout) ≠ source confirmed not-found.
-		// Retry once; if still failing, proceed with TronGrid-only confirmation.
+		// Retry once; EXT-BOUNDARY-WAVE2 S5: if still failing, the second
+		// source could not verify — that is NOT a confirmation (real money,
+		// fail closed into manual review; TronScan recovery → operator
+		// releases via ConfirmDeposit).
 		m.log.Warn("tronscan verification error, retrying",
 			zap.Error(err), zap.String("tx_hash", evt.TxHash))
 		verified, err = m.scan.VerifyTransaction(ctx, evt.TxHash, evt.To)
 		if err != nil {
-			m.log.Warn("tronscan retry failed, proceeding with TronGrid-only confirmation",
+			m.log.Warn("tronscan verification inconclusive — marking MANUAL_REVIEW (was: degrade to single-source)",
 				zap.Error(err), zap.String("tx_hash", evt.TxHash))
-			verified = true // degrade to single-source on API failure (not not-found)
+			m.createManualReviewDeposit(ctx, info, evt)
+			return
 		}
 	}
 
 	if !verified {
 		m.log.Warn("multi-source verification: TronScan did not confirm, marking MANUAL_REVIEW",
 			zap.String("tx_hash", evt.TxHash))
-		d := &model.Deposit{
-			ID:               uuid.New(),
-			UserID:           info.UserID,
-			DepositAddressID: info.AddrID,
-			TxHash:           evt.TxHash,
-			Amount:           evt.AmountString,
-			BlockNumber:      evt.BlockNumber,
-			Confirmations:    m.minConfirms,
-			Status:           "MANUAL_REVIEW",
-		}
-		if err := m.depositRepo.Create(ctx, d); err != nil {
-			m.log.Error("insert manual review deposit", zap.Error(err))
-		}
+		m.createManualReviewDeposit(ctx, info, evt)
 		return
 	}
 
@@ -327,24 +340,30 @@ func (m *Monitor) processEvent(ctx context.Context, evt TransferEvent) {
 		evt.TxHash, evt.AmountString, evt.BlockNumber, m.minConfirms); err != nil {
 		m.log.Error("confirm deposit failed — falling back to MANUAL_REVIEW",
 			zap.Error(err), zap.String("tx_hash", evt.TxHash))
-		d := &model.Deposit{
-			ID:               uuid.New(),
-			UserID:           info.UserID,
-			DepositAddressID: info.AddrID,
-			TxHash:           evt.TxHash,
-			Amount:           evt.AmountString,
-			BlockNumber:      evt.BlockNumber,
-			Confirmations:    m.minConfirms,
-			Status:           "MANUAL_REVIEW",
-		}
-		if err := m.depositRepo.Create(ctx, d); err != nil {
-			m.log.Error("insert manual review fallback deposit",
-				zap.Error(err), zap.String("tx_hash", evt.TxHash))
-		}
+		m.createManualReviewDeposit(ctx, info, evt)
 		return
 	}
 
 	if err := m.addrRepo.MarkReceivedUSDT(ctx, info.AddrID); err != nil {
 		m.log.Error("mark received usdt", zap.Error(err))
+	}
+}
+
+// createManualReviewDeposit inserts a MANUAL_REVIEW deposit row — the shared
+// fail-closed path for unverified/inconclusive/failed-confirm deposits
+// (EXT-BOUNDARY-WAVE2 S5).
+func (m *Monitor) createManualReviewDeposit(ctx context.Context, info repository.AddressInfo, evt TransferEvent) {
+	d := &model.Deposit{
+		ID:               uuid.New(),
+		UserID:           info.UserID,
+		DepositAddressID: info.AddrID,
+		TxHash:           evt.TxHash,
+		Amount:           evt.AmountString,
+		BlockNumber:      evt.BlockNumber,
+		Confirmations:    m.minConfirms,
+		Status:           "MANUAL_REVIEW",
+	}
+	if err := m.depositRepo.Create(ctx, d); err != nil {
+		m.log.Error("insert manual review deposit", zap.Error(err), zap.String("tx_hash", evt.TxHash))
 	}
 }
