@@ -9,6 +9,13 @@ const Logs = {
       "ticket": "チケット",
       "type": "タイプ"
     },
+    "signalType": {
+      "buy": "買い",
+      "close": "決済",
+      "hold": "ホールド",
+      "modify": "修正",
+      "sell": "売り"
+    },
     "accountId": "口座ID",
     "action": "操作",
     "connectionLogs": "接続ログ",

@@ -9,6 +9,13 @@ const Logs = {
       "ticket": "Ticket",
       "type": "Type"
     },
+    "signalType": {
+      "buy": "BUY",
+      "close": "CLOSE",
+      "hold": "HOLD",
+      "modify": "MODIFY",
+      "sell": "SELL"
+    },
     "accountId": "Account ID",
     "action": "Action",
     "connectionLogs": "Connection logs",

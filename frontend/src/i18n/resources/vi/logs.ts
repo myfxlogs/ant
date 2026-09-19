@@ -9,6 +9,13 @@ const Logs = {
       "ticket": "Vé",
       "type": "Loại"
     },
+    "signalType": {
+      "buy": "MUA",
+      "close": "ĐÓNG",
+      "hold": "GIỮ",
+      "modify": "SỬA",
+      "sell": "BÁN"
+    },
     "accountId": "ID tài khoản",
     "action": "Hành động",
     "connectionLogs": "Nhật ký kết nối",

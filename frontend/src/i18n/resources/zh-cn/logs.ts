@@ -9,6 +9,13 @@ const Logs = {
       "ticket": "订单号",
       "type": "类型"
     },
+    "signalType": {
+      "buy": "买入",
+      "close": "平仓",
+      "hold": "持有",
+      "modify": "修改",
+      "sell": "卖出"
+    },
     "accountId": "账户ID",
     "action": "操作",
     "connectionLogs": "连接日志",

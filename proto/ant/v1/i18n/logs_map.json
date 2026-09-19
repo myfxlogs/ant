@@ -1,5 +1,4 @@
 {
-  "prefix": "logs",
   "fields": {
     "account_id": "accountId",
     "action": "action",
@@ -38,10 +37,16 @@
     "server": "server",
     "signal": "signal",
     "signal_price": "signalPrice",
+    "signal_type_buy": "signalType.buy",
+    "signal_type_close": "signalType.close",
+    "signal_type_hold": "signalType.hold",
+    "signal_type_modify": "signalType.modify",
+    "signal_type_sell": "signalType.sell",
     "status": "status",
     "success": "success",
     "symbol": "symbol",
     "time": "time",
     "trigger_source": "triggerSource"
-  }
+  },
+  "prefix": "logs"
 }

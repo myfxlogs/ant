@@ -146,12 +146,8 @@ function checkSection(section: string): CheckResult {
       /^Not recommended for direct/,
       // I18N-MIXED-1 附录 C：AI prompt 内部串（非用户面）
       /^Example:\n/,
-      // I18N-MIXED-1 残留待译（清单外未译，译文需决策方授权后补——登记 I18N-MIXED-2 范围）
-      /^iCustom \(custom indicator\)/,
-      /^DLL imports are not supported/,
-      /^Acknowledge as intentional/,
-      /^Ask AI to generate/,
-      /^Run backtests with configurable parameters/,
+      // I18N-MIXED-1 返修 R4：5 条用户面漏译已 DICT 落地，stopgap 豁免删除
+      // （保留会掩盖未来同类回归）。
     ];
     for (const [key, value] of fields) {
       const enValue = enFields.get(key);

@@ -430,6 +430,12 @@ const DICT: Record<string, string> = {
   'selected': '已选',
   'trades': '笔',
   'unsupported': '不支持',
+  // ── I18N-MIXED-1 返修 R4：5 条用户面漏译（stopgap 豁免收窄）──
+  'Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.': '让 AI 生成、优化或调试您的策略。应用的代码会即时出现在编辑器中。',
+  'Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.': '使用可配置参数运行回测。查看净值曲线、交易统计和风险指标。',
+  'iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually': '不支持 iCustom（自定义指标）——请改用内置指标（iMA/iRSI/iMACD 等）或手动实现该逻辑',
+  'DLL imports are not supported — remove external DLL calls and use built-in MQL functions': '不支持 DLL 导入——请移除外部 DLL 调用，改用内置 MQL 函数',
+  'Acknowledge as intentional — hide this warning': '确认为有意为之——隐藏此警告',
 };
 
 function translate(value: string): string | null {

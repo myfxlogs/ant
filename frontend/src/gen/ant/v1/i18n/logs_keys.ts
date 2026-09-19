@@ -112,6 +112,21 @@ export const SIGNAL_KEY = 'logs.signal' as const;
 /** signalPrice */
 export const SIGNAL_PRICE_KEY = 'logs.signalPrice' as const;
 
+/** signalType.buy */
+export const SIGNAL_TYPE_BUY_KEY = 'logs.signalType.buy' as const;
+
+/** signalType.close */
+export const SIGNAL_TYPE_CLOSE_KEY = 'logs.signalType.close' as const;
+
+/** signalType.hold */
+export const SIGNAL_TYPE_HOLD_KEY = 'logs.signalType.hold' as const;
+
+/** signalType.modify */
+export const SIGNAL_TYPE_MODIFY_KEY = 'logs.signalType.modify' as const;
+
+/** signalType.sell */
+export const SIGNAL_TYPE_SELL_KEY = 'logs.signalType.sell' as const;
+
 /** status */
 export const STATUS_KEY = 'logs.status' as const;
 
@@ -165,6 +180,11 @@ export const LOGS_KEYS = {
   server: 'logs.server',
   signal: 'logs.signal',
   signal_price: 'logs.signalPrice',
+  signal_type_buy: 'logs.signalType.buy',
+  signal_type_close: 'logs.signalType.close',
+  signal_type_hold: 'logs.signalType.hold',
+  signal_type_modify: 'logs.signalType.modify',
+  signal_type_sell: 'logs.signalType.sell',
   status: 'logs.status',
   success: 'logs.success',
   symbol: 'logs.symbol',

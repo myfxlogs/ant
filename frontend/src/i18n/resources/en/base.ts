@@ -18,6 +18,9 @@ const Base = {
         "target": "Target",
         "time": "Time"
       },
+      "errors": {
+        "loadFailed": "Failed to load dashboard data"
+      },
       "riskMetrics": {
         "orderCloseFailed": "Order Closed Failed",
         "orderCloseSuccess": "Order Closed Success",
@@ -44,34 +47,31 @@ const Base = {
         "validateReject": "{{window}} Reject",
         "validateTotal": "{{window}} Validated Total"
       },
-      "errors": {
-        "loadFailed": "Failed to load dashboard data"
-      },
+      "activeSubs": "Active Subs",
       "activeUsers": "Active Users",
       "loadFailed": "Failed to load dashboard data",
+      "marketRevenue": "Market Revenue",
+      "marketSales": "Market Sales",
+      "marketStrategies": "Market Strategies",
+      "monthlyRevenue": "Monthly Revenue",
       "mtAccounts": "MT Accounts",
       "onlineAccounts": "Online Accounts",
+      "orderCloseFailed": "Order Close Failed",
+      "orderCloseSuccess": "Order Close Success",
+      "orderSendFailed": "Order Send Failed",
+      "orderSendSuccess": "Order Send Success",
       "recentLogs": "Recent Operation Logs",
+      "rejectCount": "Reject Count",
       "title": "Admin Dashboard",
       "todayProfit": "Today P&L",
       "todayTrades": "Today Trades",
-      "totalUsers": "Total Users",
-      "verifiedUsers": "Verified Users",
-      "activeSubs": "Active Subs",
-      "monthlyRevenue": "Monthly Revenue",
       "totalRevenue": "Total Revenue",
-      "marketStrategies": "Market Strategies",
-      "marketSales": "Market Sales",
-      "marketRevenue": "Market Revenue",
-      "validateTotal": "Validate Total",
+      "totalUsers": "Total Users",
+      "validateError": "Validate Error",
       "validatePass": "Validate Pass",
       "validateReject": "Validate Reject",
-      "validateError": "Validate Error",
-      "orderSendSuccess": "Order Send Success",
-      "orderSendFailed": "Order Send Failed",
-      "orderCloseSuccess": "Order Close Success",
-      "orderCloseFailed": "Order Close Failed",
-      "rejectCount": "Reject Count"
+      "validateTotal": "Validate Total",
+      "verifiedUsers": "Verified Users"
     },
     "userManagement": {
       "drawer": {
@@ -95,12 +95,12 @@ const Base = {
         },
         "accountNumber": "Account Number",
         "accountNumberInvalid": "5-6 digits, no leading 0, no 4 or 7",
+        "accountNumberPlaceholder": "e.g. 123568",
         "email": "Email",
         "nickname": "Nickname",
         "password": "Password",
         "role": "Role",
-        "status": "Status",
-        "accountNumberPlaceholder": "e.g. 123568"
+        "status": "Status"
       },
       "passwordForm": {
         "placeholders": {
@@ -136,6 +136,7 @@ const Base = {
         "statusPlaceholder": "Filter by status"
       },
       "messages": {
+        "loadUsersFailed": "Failed to load users",
         "newPasswordIs": "New password is: {{password}}",
         "passwordUpdateFailed": "Failed to update password",
         "passwordUpdatedSuccess": "Password updated successfully",
@@ -146,8 +147,7 @@ const Base = {
         "userDisabled": "User disabled",
         "userEnabled": "User enabled",
         "userUpdateFailed": "Failed to update user",
-        "userUpdatedSuccess": "User updated successfully",
-        "loadUsersFailed": "Failed to load users"
+        "userUpdatedSuccess": "User updated successfully"
       },
       "modals": {
         "createTitle": "Create User",
@@ -180,6 +180,125 @@ const Base = {
       },
       "addUser": "Add User",
       "title": "User Management"
+    },
+    "account": {
+      "columns": {
+        "action": "Action",
+        "balance": "Balance",
+        "broker": "Broker",
+        "createdAt": "Created At",
+        "detail": "Detail",
+        "equity": "Equity",
+        "id": "ID",
+        "login": "Login",
+        "margin": "Margin",
+        "server": "Server",
+        "status": "Status",
+        "time": "Time",
+        "type": "Type",
+        "user": "User"
+      },
+      "errors": {
+        "freezeFailed": "Freeze failed",
+        "loadFailed": "Failed to load accounts",
+        "unfreezeFailed": "Unfreeze failed"
+      },
+      "auditLogs": "Audit Logs",
+      "confirmFreeze": "Freeze this account?",
+      "detail": "Detail",
+      "freeze": "Freeze",
+      "frozen": "Account frozen",
+      "offline": "Offline",
+      "online": "Online",
+      "searchPlaceholder": "Search accounts",
+      "status": "Status",
+      "title": "Account Management",
+      "unfreeze": "Unfreeze",
+      "unfrozen": "Account unfrozen"
+    },
+    "aiGateway": {
+      "columns": {
+        "apiKey": "API Key",
+        "baseUrl": "Base URL"
+      },
+      "errors": {
+        "loadModels": "Failed to load models",
+        "loadProviders": "Failed to load providers",
+        "toggleFailed": "Toggle failed"
+      },
+      "addModel": "Add Model",
+      "addProvider": "Add Provider",
+      "addProviderPending": "Add provider feature pending backend support",
+      "apiKeyEditHint": "Leave empty to keep existing key",
+      "apiKeyEditPlaceholder": "Leave empty to keep",
+      "apiKeyHint": "API key, encrypted at rest",
+      "apiKeyLabel": "API Key",
+      "baseUrl": "Base URL",
+      "baseUrlRequired": "Please enter Base URL",
+      "configured": "Configured",
+      "confirmDeleteModel": "Delete this model?",
+      "description": "Manage AI providers, models, and pricing. Users select from available models, billed by token from wallet.",
+      "discover": "Discover",
+      "discoverFailed": "Failed to discover models",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "DeepSeek Chat",
+      "displayNameRequired": "Please enter display name",
+      "editModel": "Edit Model",
+      "editProvider": "Edit Provider",
+      "modelName": "Model Name",
+      "modelNameRequired": "Please enter model name",
+      "models": "Models",
+      "noModels": "No models",
+      "noModelsDiscovered": "No models discovered. Check API key and base URL.",
+      "notConfigured": "Not configured",
+      "priceInput": "Input Price ($/1M)",
+      "priceOutput": "Output Price ($/1M)",
+      "provider": "Provider",
+      "providerId": "Provider ID",
+      "providerIdRequired": "Please enter provider ID",
+      "title": "AI Gateway Management"
+    },
+    "billing": {
+      "columns": {
+        "amount": "Amount",
+        "autoRenew": "Auto Renew",
+        "balanceAfter": "Balance After",
+        "balanceBefore": "Balance Before",
+        "createdAt": "Created At",
+        "cycle": "Cycle",
+        "description": "Description",
+        "periodEnd": "Period End",
+        "periodStart": "Period Start",
+        "plan": "Plan",
+        "price": "Price",
+        "status": "Status",
+        "time": "Time",
+        "type": "Type",
+        "user": "User"
+      },
+      "activeCount": "Active",
+      "activeSubs": "Active Subscriptions",
+      "filterByPlan": "Filter by plan",
+      "filterByStatus": "Filter by status",
+      "filterByType": "Filter by type",
+      "monthlyRevenue": "Monthly Revenue",
+      "planEnterprise": "Enterprise",
+      "planFree": "Free",
+      "planPro": "Pro",
+      "planRevenue": "Plan Revenue Details",
+      "statusActive": "Active",
+      "statusCancelled": "Cancelled",
+      "statusExpired": "Expired",
+      "subscriptions": "Subscriptions",
+      "title": "Billing Management",
+      "totalRevenue": "Total Revenue",
+      "txDeposit": "Deposit",
+      "txPlatformFee": "Platform Fee",
+      "txPurchase": "Purchase",
+      "txRecords": "Transactions",
+      "txSale": "Sale",
+      "txWithdrawal": "Withdrawal",
+      "walletTransactions": "Wallet Transactions"
     },
     "config": {
       "messages": {
@@ -215,6 +334,7 @@ const Base = {
         "yellowSuccessRateRange": "yellow_success_rate must be between 0 and 100"
       },
       "aiProviderCatalog": "AI Model Provider Catalog",
+      "apiKey": "API Key",
       "baseUrlLabel": "Base URL (optional, custom/OpenAI compatible only)",
       "configItem": "Config Item",
       "description": "Description",
@@ -235,8 +355,37 @@ const Base = {
       "title": "System Configuration",
       "toggle": "Toggle",
       "updatedAt": "Updated At",
-      "value": "Value",
-      "apiKey": "API Key"
+      "value": "Value"
+    },
+    "deposit": {
+      "table": {
+        "action": "Action",
+        "amount": "USDT Amount",
+        "amountUsd": "USD Credit",
+        "block": "Block",
+        "confirmations": "Confirmations",
+        "reviewNote": "Review Note",
+        "status": "Status",
+        "time": "Time",
+        "txHash": "Tx Hash",
+        "user": "User"
+      },
+      "allStatuses": "All Statuses",
+      "approve": "Approve",
+      "approveFailed": "Failed to approve deposit.",
+      "approveTitle": "Approve Deposit",
+      "approveWarning": "Approving will credit the user wallet immediately.",
+      "approved": "Deposit approved and wallet credited.",
+      "reject": "Reject",
+      "rejectFailed": "Failed to reject deposit.",
+      "rejectTitle": "Reject Deposit",
+      "rejected": "Deposit rejected.",
+      "reviewNoteLabel": "Review Note (optional)",
+      "reviewNotePlaceholder": "Add a note for this review...",
+      "statusApproved": "Approved",
+      "statusPending": "Pending",
+      "statusRejected": "Rejected",
+      "title": "Deposit Management"
     },
     "jurisdiction": {
       "messages": {
@@ -282,251 +431,184 @@ const Base = {
       "userKYCStatus": "User KYC Status",
       "verified": "Verified"
     },
-    "aiGateway": {
-      "errors": {
-        "loadProviders": "Failed to load providers",
-        "toggleFailed": "Toggle failed",
-        "loadModels": "Failed to load models"
-      },
-      "columns": {
-        "baseUrl": "Base URL",
-        "apiKey": "API Key"
-      },
-      "addProviderPending": "Add provider feature pending backend support",
-      "title": "AI Gateway Management",
-      "description": "Manage AI providers, models, and pricing. Users select from available models, billed by token from wallet.",
-      "addProvider": "Add Provider",
-      "provider": "Provider",
-      "configured": "Configured",
-      "notConfigured": "Not configured",
-      "models": "Models",
-      "editProvider": "Edit Provider",
-      "providerId": "Provider ID",
-      "providerIdRequired": "Please enter provider ID",
-      "displayName": "Display Name",
-      "displayNameRequired": "Please enter display name",
-      "baseUrl": "Base URL",
-      "baseUrlRequired": "Please enter Base URL",
-      "apiKeyLabel": "API Key",
-      "apiKeyEditHint": "Leave empty to keep existing key",
-      "apiKeyHint": "API key, encrypted at rest",
-      "apiKeyEditPlaceholder": "Leave empty to keep",
-      "editModel": "Edit Model",
-      "addModel": "Add Model",
-      "modelName": "Model Name",
-      "modelNameRequired": "Please enter model name",
-      "priceInput": "Input Price ($/1M)",
-      "priceOutput": "Output Price ($/1M)",
-      "confirmDeleteModel": "Delete this model?",
-      "noModels": "No models",
-      "noModelsDiscovered": "No models discovered. Check API key and base URL.",
-      "discoverFailed": "Failed to discover models",
-      "discover": "Discover",
-      "displayNamePlaceholder": "DeepSeek Chat"
-    },
-    "account": {
-      "errors": {
-        "loadFailed": "Failed to load accounts",
-        "freezeFailed": "Freeze failed",
-        "unfreezeFailed": "Unfreeze failed"
-      },
-      "columns": {
-        "id": "ID",
-        "user": "User",
-        "login": "Login",
-        "type": "Type",
-        "broker": "Broker",
-        "status": "Status",
-        "balance": "Balance",
-        "createdAt": "Created At",
-        "action": "Action",
-        "server": "Server",
-        "equity": "Equity",
-        "margin": "Margin",
-        "time": "Time",
-        "detail": "Detail"
-      },
-      "frozen": "Account frozen",
-      "unfrozen": "Account unfrozen",
-      "detail": "Detail",
-      "unfreeze": "Unfreeze",
-      "confirmFreeze": "Freeze this account?",
-      "freeze": "Freeze",
-      "title": "Account Management",
-      "searchPlaceholder": "Search accounts",
-      "status": "Status",
-      "online": "Online",
-      "offline": "Offline",
-      "auditLogs": "Audit Logs"
-    },
-    "settings": {
-      "columns": {
-        "key": "Setting Key",
-        "value": "Value",
-        "action": "Action"
-      },
-      "saveSuccess": "Saved successfully",
-      "saveFailed": "Save failed",
-      "deleted": "Deleted",
-      "deleteFailed": "Delete failed",
-      "actionFailed": "Action failed",
-      "confirmDelete": "Confirm delete?",
-      "title": "Agent Management Settings",
-      "addSetting": "Add Setting",
-      "permissionRules": "Permission Rules (permission.rule.N)",
-      "permissionFormat": "Format: ",
-      "permissionExample": "Example: ",
-      "permissionAddRule": "Add rule: create setting with key ",
-      "addManagedSetting": "Add Managed Setting",
-      "settingKey": "Setting Key",
-      "keyPlaceholder": "e.g.: allowed_models, disable_live_trading, permission.rule.1",
-      "valuePlaceholder": "e.g.: claude-sonnet-5,deepseek-v4"
-    },
-    "billing": {
-      "columns": {
-        "user": "User",
-        "plan": "Plan",
-        "status": "Status",
-        "cycle": "Cycle",
-        "price": "Price",
-        "autoRenew": "Auto Renew",
-        "periodStart": "Period Start",
-        "periodEnd": "Period End",
-        "createdAt": "Created At",
-        "type": "Type",
-        "amount": "Amount",
-        "balanceBefore": "Balance Before",
-        "balanceAfter": "Balance After",
-        "description": "Description",
-        "time": "Time"
-      },
-      "title": "Billing Management",
-      "monthlyRevenue": "Monthly Revenue",
-      "totalRevenue": "Total Revenue",
-      "activeSubs": "Active Subscriptions",
-      "txRecords": "Transactions",
-      "planRevenue": "Plan Revenue Details",
-      "activeCount": "Active",
-      "subscriptions": "Subscriptions",
-      "filterByPlan": "Filter by plan",
-      "planFree": "Free",
-      "planPro": "Pro",
-      "planEnterprise": "Enterprise",
-      "filterByStatus": "Filter by status",
-      "statusActive": "Active",
-      "statusCancelled": "Cancelled",
-      "statusExpired": "Expired",
-      "walletTransactions": "Wallet Transactions",
-      "filterByType": "Filter by type",
-      "txPurchase": "Purchase",
-      "txSale": "Sale",
-      "txPlatformFee": "Platform Fee",
-      "txDeposit": "Deposit",
-      "txWithdrawal": "Withdrawal"
-    },
     "logs": {
-      "columns": {
-        "time": "Time",
-        "module": "Module",
-        "actionType": "Action Type",
-        "target": "Target",
-        "status": "Status",
-        "ip": "IP Address",
-        "action": "Action",
-        "details": "Details"
-      },
-      "modules": {
-        "userManagement": "User Management",
-        "accountManagement": "Account Management",
-        "trading": "Trading",
-        "systemConfig": "System Config"
-      },
-      "errors": {
-        "loadFailed": "Failed to load logs"
-      },
       "actions": {
         "create": "Create",
-        "update": "Update",
         "delete": "Delete",
         "disable": "Disable",
         "enable": "Enable",
         "freeze": "Freeze",
-        "unfreeze": "Unfreeze"
+        "unfreeze": "Unfreeze",
+        "update": "Update"
       },
-      "title": "Operation Logs",
-      "filterModule": "Filter by module",
-      "filterAction": "Filter by action"
-    },
-    "deposit": {
-      "table": {
-        "user": "User",
-        "amount": "USDT Amount",
-        "amountUsd": "USD Credit",
-        "txHash": "Tx Hash",
-        "status": "Status",
-        "reviewNote": "Review Note",
-        "time": "Time",
+      "columns": {
         "action": "Action",
-        "block": "Block",
-        "confirmations": "Confirmations"
+        "actionType": "Action Type",
+        "details": "Details",
+        "ip": "IP Address",
+        "module": "Module",
+        "status": "Status",
+        "target": "Target",
+        "time": "Time"
       },
-      "approved": "Deposit approved and wallet credited.",
-      "approveFailed": "Failed to approve deposit.",
-      "rejected": "Deposit rejected.",
-      "rejectFailed": "Failed to reject deposit.",
-      "approve": "Approve",
-      "reject": "Reject",
-      "title": "Deposit Management",
-      "allStatuses": "All Statuses",
-      "statusPending": "Pending",
-      "statusApproved": "Approved",
-      "statusRejected": "Rejected",
-      "approveTitle": "Approve Deposit",
-      "rejectTitle": "Reject Deposit",
-      "reviewNoteLabel": "Review Note (optional)",
-      "reviewNotePlaceholder": "Add a note for this review...",
-      "approveWarning": "Approving will credit the user wallet immediately."
+      "errors": {
+        "loadFailed": "Failed to load logs"
+      },
+      "modules": {
+        "accountManagement": "Account Management",
+        "systemConfig": "System Config",
+        "trading": "Trading",
+        "userManagement": "User Management"
+      },
+      "filterAction": "Filter by action",
+      "filterModule": "Filter by module",
+      "title": "Operation Logs"
+    },
+    "settings": {
+      "columns": {
+        "action": "Action",
+        "key": "Setting Key",
+        "value": "Value"
+      },
+      "actionFailed": "Action failed",
+      "addManagedSetting": "Add Managed Setting",
+      "addSetting": "Add Setting",
+      "confirmDelete": "Confirm delete?",
+      "deleteFailed": "Delete failed",
+      "deleted": "Deleted",
+      "keyPlaceholder": "e.g.: allowed_models, disable_live_trading, permission.rule.1",
+      "permissionAddRule": "Add rule: create setting with key ",
+      "permissionExample": "Example: ",
+      "permissionFormat": "Format: ",
+      "permissionRules": "Permission Rules (permission.rule.N)",
+      "saveFailed": "Save failed",
+      "saveSuccess": "Saved successfully",
+      "settingKey": "Setting Key",
+      "title": "Agent Management Settings",
+      "valuePlaceholder": "e.g.: claude-sonnet-5,deepseek-v4"
     },
     "wallet": {
+      "columns": {
+        "amount": "Amount",
+        "balance": "Balance",
+        "balanceAfter": "Balance After",
+        "currency": "Currency",
+        "description": "Description",
+        "email": "Email",
+        "frozen": "Frozen",
+        "nickname": "Nickname",
+        "time": "Time",
+        "type": "Type",
+        "walletNumber": "Wallet No."
+      },
       "errors": {
         "noUserSelected": "No user selected"
       },
       "messages": {
-        "adjustSuccess": "Balance adjusted successfully",
-        "adjustFailed": "Adjustment failed"
-      },
-      "columns": {
-        "walletNumber": "Wallet No.",
-        "email": "Email",
-        "nickname": "Nickname",
-        "type": "Type",
-        "amount": "Amount",
-        "balanceAfter": "Balance After",
-        "description": "Description",
-        "time": "Time",
-        "balance": "Balance",
-        "frozen": "Frozen",
-        "currency": "Currency"
+        "adjustFailed": "Adjustment failed",
+        "adjustSuccess": "Balance adjusted successfully"
       },
       "accountNumber": "Account",
       "add": "Add",
       "adjustBalance": "Adjust Balance",
       "adjustFailed": "Adjustment failed",
+      "adjustReason": "Reason",
       "adjustSuccess": "Balance adjusted",
       "deduct": "Deduct",
+      "noMatch": "No matching users",
       "noUsers": "No users found",
       "reason": "Reason for adjustment...",
       "searchPlaceholder": "Search by email or account number...",
+      "tabDepositAddresses": "Deposit Addresses",
+      "tabWallets": "User Wallets",
       "title": "Wallet Management",
-      "walletFor": "Wallet for",
+      "transactions": "Transactions",
       "unassigned": "Unassigned",
       "userList": "User List",
-      "noMatch": "No matching users",
       "walletDetail": "Wallet Detail",
-      "transactions": "Transactions",
-      "adjustReason": "Reason",
-      "tabWallets": "User Wallets",
-      "tabDepositAddresses": "Deposit Addresses"
+      "walletFor": "Wallet for"
+    },
+    "analytics": {
+      "activeBuyers": "Active Buyers",
+      "name": "Name",
+      "newStrategies": "New Strategies",
+      "newSubs": "New Subscribers",
+      "platformRev": "Platform Rev",
+      "providerRev": "Provider Rev",
+      "refundRate": "Refund Rate",
+      "topByRevenue": "Top Strategies by Revenue",
+      "topBySubs": "Top Strategies by Subscribers",
+      "topProvidersRev": "Top Providers by Revenue",
+      "topProvidersStrat": "Top Providers by Strategies",
+      "totalStrategies": "Total Strategies",
+      "totalTx": "Transactions",
+      "value": "Value"
+    },
+    "autogen": {
+      "actions": "Actions",
+      "allStatus": "All Status",
+      "approve": "Approve",
+      "approveFailed": "Approve failed",
+      "approved": "Task approved and published",
+      "confirmApprove": "Approve and publish?",
+      "confirmReject": "Reject this task?",
+      "enqueue": "Enqueue",
+      "error": "Error",
+      "loadFailed": "Failed to load tasks",
+      "quality": "Quality",
+      "refresh": "Refresh",
+      "reject": "Reject",
+      "rejectFailed": "Reject failed",
+      "rejected": "Task rejected",
+      "status": "Status",
+      "strategyType": "Type",
+      "strategyTypes": "Strategy Types (comma-separated)",
+      "symbol": "Symbol",
+      "symbols": "Symbols (comma-separated)",
+      "timeframe": "TF",
+      "timeframes": "Timeframes (comma-separated)",
+      "title": "AI Strategy Generation Tasks",
+      "triggerBatch": "Trigger Batch",
+      "triggerFailed": "Trigger failed"
+    },
+    "coupon": {
+      "codePlaceholder": "Coupon code (e.g. SUMMER20)",
+      "colActions": "Actions",
+      "colCode": "Code",
+      "colExpires": "Expires",
+      "colMinPurchase": "Min Purchase",
+      "colStatus": "Status",
+      "colType": "Type",
+      "colUsage": "Usage",
+      "colValue": "Value",
+      "create": "Create Coupon",
+      "createFailed": "Failed to create coupon",
+      "createTitle": "Create Coupon",
+      "created": "Coupon created",
+      "disable": "Disable",
+      "disableFailed": "Failed to disable coupon",
+      "disabled": "Coupon disabled",
+      "expiresPlaceholder": "Expires at (ISO 8601, empty = never)",
+      "fillRequired": "Please fill required fields",
+      "loadFailed": "Failed to load coupons",
+      "maxUsesPlaceholder": "Max uses (0 = unlimited)",
+      "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
+      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)"
+    },
+    "depositAddresses": {
+      "address": "Address",
+      "all": "All Status",
+      "assignedAt": "Assigned At",
+      "availablePool": "Available in Pool",
+      "import": "Import Addresses",
+      "importFailed": "Import failed",
+      "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
+      "index": "Index",
+      "network": "Network",
+      "received": "Received USDT",
+      "status": "Status",
+      "total": "Total Addresses",
+      "user": "User ID"
     },
     "header": {
       "admin": "Admin",
@@ -535,29 +617,69 @@ const Base = {
       "backToUser": "Back to User",
       "logout": "Logout"
     },
+    "marketplace": {
+      "colActions": "Actions",
+      "colFeatured": "Featured",
+      "colPrice": "Price",
+      "colPublisher": "Publisher",
+      "colRevenue": "Revenue",
+      "colSales": "Sales",
+      "colStatus": "Status",
+      "colTitle": "Title",
+      "feature": "Feature",
+      "featureDesc": "Set priority for featured placement. Higher = more prominent.",
+      "featureFailed": "Failed to feature strategy",
+      "featureSuccess": "Strategy featured",
+      "featureTitle": "Feature Strategy",
+      "filterStatus": "All statuses",
+      "loadFailed": "Failed to load strategies",
+      "searchPlaceholder": "Search by title...",
+      "unfeature": "Remove featured",
+      "unfeatureFailed": "Failed to unfeature",
+      "unfeatureSuccess": "Removed featured"
+    },
+    "refund": {
+      "approve": "Approve & Execute",
+      "approveTitle": "Approve Refund",
+      "approved": "Refund approved and executed",
+      "colActions": "Actions",
+      "colAmount": "Amount",
+      "colDate": "Date",
+      "colReason": "Reason",
+      "colStatus": "Status",
+      "colStrategy": "Strategy",
+      "colUser": "User",
+      "filterStatus": "All statuses",
+      "loadFailed": "Failed to load refund requests",
+      "processFailed": "Failed to process refund",
+      "reject": "Reject",
+      "rejectTitle": "Reject Refund",
+      "rejected": "Refund request rejected",
+      "reviewNotePlaceholder": "Review note (optional for reject, recommended for approve)..."
+    },
     "sidebar": {
       "accountManagement": "Account Management",
       "agentSettings": "Agent Settings",
       "aiGateway": "AI Gateway",
+      "analytics": "Analytics",
+      "autogenTasks": "AI Gen Tasks",
       "billing": "Billing",
+      "coupons": "Coupons",
       "dashboard": "Dashboard",
       "deposits": "Deposits",
       "jurisdiction": "Jurisdiction Gate",
+      "marketplace": "Marketplace",
       "monitoring": "Monitoring & Alerts",
       "operationLogs": "Operation Logs",
+      "refunds": "Refunds",
       "shareManagement": "Share Analytics",
       "sre": "SRE Controls",
       "strategies": "Strategies",
+      "sweep": "Sweep",
       "systemConfig": "System Config",
       "tradingMonitor": "Trading Monitor",
       "userManagement": "User Management",
-      "walletManagement": "Wallets",
-      "sweep": "Sweep",
-      "autogenTasks": "AI Gen Tasks",
-      "marketplace": "Marketplace",
-      "refunds": "Refunds",
-      "analytics": "Analytics",
-      "coupons": "Coupons"
+      "walletManagement": "Wallets"
     },
     "trading": {
       "accounts": "Accounts",
@@ -581,340 +703,295 @@ const Base = {
       "volume": "Volume"
     },
     "walletCalculator": {
-      "title": "Token ↔ USD Calculator",
+      "fillResult": "Fill Result",
       "selectModel": "Select model (pricing basis)",
-      "usdAmount": "USD Amount",
+      "title": "Token ↔ USD Calculator",
       "tokenAmount": "Token Amount",
-      "fillResult": "Fill Result"
-    },
-    "autogen": {
-      "loadFailed": "Failed to load tasks",
-      "approved": "Task approved and published",
-      "approveFailed": "Approve failed",
-      "rejected": "Task rejected",
-      "rejectFailed": "Reject failed",
-      "triggerFailed": "Trigger failed",
-      "symbol": "Symbol",
-      "timeframe": "TF",
-      "strategyType": "Type",
-      "status": "Status",
-      "quality": "Quality",
-      "error": "Error",
-      "actions": "Actions",
-      "confirmApprove": "Approve and publish?",
-      "approve": "Approve",
-      "confirmReject": "Reject this task?",
-      "reject": "Reject",
-      "title": "AI Strategy Generation Tasks",
-      "allStatus": "All Status",
-      "refresh": "Refresh",
-      "triggerBatch": "Trigger Batch",
-      "enqueue": "Enqueue",
-      "symbols": "Symbols (comma-separated)",
-      "timeframes": "Timeframes (comma-separated)",
-      "strategyTypes": "Strategy Types (comma-separated)"
-    },
-    "coupon": {
-      "loadFailed": "Failed to load coupons",
-      "fillRequired": "Please fill required fields",
-      "created": "Coupon created",
-      "createFailed": "Failed to create coupon",
-      "disabled": "Coupon disabled",
-      "disableFailed": "Failed to disable coupon",
-      "colCode": "Code",
-      "colType": "Type",
-      "colValue": "Value",
-      "colMinPurchase": "Min Purchase",
-      "colUsage": "Usage",
-      "colExpires": "Expires",
-      "colStatus": "Status",
-      "colActions": "Actions",
-      "disable": "Disable",
-      "create": "Create Coupon",
-      "createTitle": "Create Coupon",
-      "codePlaceholder": "Coupon code (e.g. SUMMER20)",
-      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)",
-      "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
-      "maxUsesPlaceholder": "Max uses (0 = unlimited)",
-      "expiresPlaceholder": "Expires at (ISO 8601, empty = never)"
-    },
-    "depositAddresses": {
-      "importFailed": "Import failed",
-      "address": "Address",
-      "user": "User ID",
-      "index": "Index",
-      "status": "Status",
-      "received": "Received USDT",
-      "network": "Network",
-      "assignedAt": "Assigned At",
-      "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
-      "all": "All Status",
-      "import": "Import Addresses",
-      "availablePool": "Available in Pool",
-      "total": "Total Addresses"
-    },
-    "analytics": {
-      "name": "Name",
-      "value": "Value",
-      "platformRev": "Platform Rev",
-      "providerRev": "Provider Rev",
-      "activeBuyers": "Active Buyers",
-      "refundRate": "Refund Rate",
-      "totalTx": "Transactions",
-      "newSubs": "New Subscribers",
-      "totalStrategies": "Total Strategies",
-      "newStrategies": "New Strategies",
-      "topByRevenue": "Top Strategies by Revenue",
-      "topBySubs": "Top Strategies by Subscribers",
-      "topProvidersRev": "Top Providers by Revenue",
-      "topProvidersStrat": "Top Providers by Strategies"
-    },
-    "marketplace": {
-      "loadFailed": "Failed to load strategies",
-      "featureSuccess": "Strategy featured",
-      "featureFailed": "Failed to feature strategy",
-      "unfeatureSuccess": "Removed featured",
-      "unfeatureFailed": "Failed to unfeature",
-      "colTitle": "Title",
-      "colPublisher": "Publisher",
-      "colStatus": "Status",
-      "colPrice": "Price",
-      "colSales": "Sales",
-      "colRevenue": "Revenue",
-      "colFeatured": "Featured",
-      "colActions": "Actions",
-      "feature": "Feature",
-      "unfeature": "Remove featured",
-      "filterStatus": "All statuses",
-      "searchPlaceholder": "Search by title...",
-      "featureTitle": "Feature Strategy",
-      "featureDesc": "Set priority for featured placement. Higher = more prominent."
-    },
-    "refund": {
-      "loadFailed": "Failed to load refund requests",
-      "approved": "Refund approved and executed",
-      "rejected": "Refund request rejected",
-      "processFailed": "Failed to process refund",
-      "colUser": "User",
-      "colStrategy": "Strategy",
-      "colAmount": "Amount",
-      "colReason": "Reason",
-      "colStatus": "Status",
-      "colDate": "Date",
-      "colActions": "Actions",
-      "approve": "Approve & Execute",
-      "reject": "Reject",
-      "filterStatus": "All statuses",
-      "approveTitle": "Approve Refund",
-      "rejectTitle": "Reject Refund",
-      "reviewNotePlaceholder": "Review note (optional for reject, recommended for approve)..."
+      "usdAmount": "USD Amount"
     }
   },
   "strategy": {
-    "live": {
-      "diag": {
-        "state": {
-          "active": "Active",
-          "dataStarvation": "Data Starvation",
-          "noEvaluations": "No Evaluations",
-          "error": "Error"
-        },
-        "evalCount": "Evaluations",
-        "barCount": "Bar Evals",
-        "tickCount": "Tick Evals",
-        "windowBars": "Window Bars",
-        "ordersTotal": "Orders Total",
-        "lastEval": "Last Eval",
-        "indicators": "Indicators",
-        "noIndicators": "No indicator data yet",
-        "ago": "ago",
-        "never": "never"
-      },
-      "stopSuccess": "Strategy stopped",
-      "stopFailed": "Failed to stop",
-      "runId": "Run ID",
-      "account": "Account",
-      "symbol": "Symbol",
-      "timeframe": "TF",
-      "mode": "Mode",
-      "signals": "Signals",
-      "errors": "Errors",
-      "startedAt": "Started",
-      "watchSignals": "Watch Signals",
-      "confirmStop": "Stop this strategy?",
-      "confirmClose": "Close this position?",
-      "confirmCloseAll": "Close all positions?",
-      "closeAll": "Close All",
-      "status": "Status",
-      "totalSignals": "Total Signals",
-      "stoppedAt": "Stopped",
-      "error": "Error",
-      "title": "Live Strategy Monitor",
-      "activeTab": "Active Runs",
-      "noActive": "No active strategies",
-      "historyTab": "Run History",
-      "noRuns": "No strategy runs",
-      "schedulesTab": "Schedules",
-      "time": "Time",
-      "signalType": "Type",
-      "volume": "Volume",
-      "price": "Price",
-      "sl": "SL",
-      "tp": "TP",
-      "reason": "Reason",
-      "signalLog": "Signal Log",
-      "waitingSignals": "Waiting for signals...",
-      "myStrategies": "My Strategies",
-      "temporaryRuns": "Temporary Runs",
-      "positions": "Positions",
-      "noPositions": "No open positions",
-      "config": "Config",
-      "parameters": "Parameters",
-      "runStarted": "Run started",
-      "runStartFailed": "Failed to start",
-      "diagnostics": "Diagnostics",
-      "strategyName": "Strategy",
-      "stale": "stale",
-      "lastSignal": "Last Signal",
-      "pnl": "PnL",
-      "unknownError": "Unknown error",
-      "logs": "Logs",
-      "health": "Health",
-      "streamDisconnected": "Connection interrupted, reconnecting…",
-      "goSchedules": "Go to Schedules",
-      "editParams": "Edit Parameters",
-      "editStrategy": "Edit Strategy",
-      "stopAndDisable": "Stop & Disable",
-      "mode_live": "Live",
-      "mode_paper": "Paper",
-      "riskParams": "Risk Parameters",
-      "defaultVolume": "Default Volume",
-      "maxPositions": "Max Positions",
-      "stopLossOffset": "Stop Loss Offset",
-      "takeProfitOffset": "Take Profit Offset",
-      "maxDrawdown": "Max Drawdown %",
-      "positionClosed": "Position closed",
-      "closeFailed": "Close failed"
-    },
     "backtest": {
       "diagnostic": {
         "suggestion": {
-          "iCustom": "iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually",
-          "dll": "DLL imports are not supported — remove external DLL calls and use built-in MQL functions"
+          "dll": "DLL imports are not supported — remove external DLL calls and use built-in MQL functions",
+          "iCustom": "iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually"
         },
-        "invariant": "Invariant Violation",
-        "defenseA": "Structural Validation",
-        "lookahead": "Lookahead Bias",
-        "statistical": "Statistical Hint",
-        "unknown": "Diagnostic",
-        "coverage": "Coverage",
-        "compatible": "compatible",
-        "unsupported": "unsupported",
-        "fatal": "Critical Issues",
-        "suggestionLabel": "建议",
-        "warning": "Risk Warnings",
-        "silenceHint": "Acknowledge as intentional — hide this warning",
-        "allSilenced": "All warnings acknowledged as intentional",
-        "info": "Quality Hints",
-        "aiFix": "AI Fix",
-        "noCode": "No strategy code to fix",
-        "aiNoResult": "AI returned no code",
         "aiFailed": "AI fix failed",
+        "aiFix": "AI Fix",
+        "aiNoResult": "AI returned no code",
+        "allSilenced": "All warnings acknowledged as intentional",
+        "apply": "Apply & Re-run",
+        "applyFailed": "Failed to apply fix",
+        "compatible": "compatible",
+        "coverage": "Coverage",
+        "defenseA": "Structural Validation",
+        "diffHint": "Review the AI-generated code below. Apply to create a new version and re-run backtest.",
+        "diffPreview": "AI Fix Preview",
+        "fatal": "Critical Issues",
         "fixApplied": "Fix applied — re-running backtest",
         "fixAppliedCompileWarn": "Fix applied but compile has warnings",
-        "applyFailed": "Failed to apply fix",
+        "info": "Quality Hints",
+        "invariant": "Invariant Violation",
+        "lookahead": "Lookahead Bias",
+        "noCode": "No strategy code to fix",
         "saveFirst": "Please save the strategy first to apply AI fixes",
-        "diffPreview": "AI Fix Preview",
-        "apply": "Apply & Re-run",
-        "diffHint": "Review the AI-generated code below. Apply to create a new version and re-run backtest."
+        "silenceHint": "Acknowledge as intentional — hide this warning",
+        "statistical": "Statistical Hint",
+        "suggestionLabel": "建议",
+        "unknown": "Diagnostic",
+        "unsupported": "unsupported",
+        "warning": "Risk Warnings"
       },
+      "autoGate": "Auto Gate Evaluation",
+      "cancelFailed": "Cancel failed",
       "canceled": "Backtest canceled",
       "lotSize": "Lot Size",
-      "strategyParameters": "Strategy Parameters",
-      "autoGate": "Auto Gate Evaluation",
-      "publishable": "Publishable",
       "notPublishable": "Not Publishable",
-      "cancelFailed": "Cancel failed"
+      "publishable": "Publishable",
+      "strategyParameters": "Strategy Parameters"
+    },
+    "live": {
+      "diag": {
+        "execState": {
+          "accepted_unconfirmed": "Accepted (Unconfirmed)",
+          "confirmed": "Confirmed",
+          "deterministic_rejected": "Rejected",
+          "idle": "Idle",
+          "outcome_unknown": "Unknown",
+          "submitting": "Submitting"
+        },
+        "lifecycle": {
+          "order_confirmed": "Order Confirmed",
+          "order_outcome_unknown": "Outcome Unknown",
+          "order_rejected": "Order Rejected",
+          "order_submitted": "Order Submitted",
+          "order_submitting": "Order Submitting",
+          "signal_generated": "Signal Generated"
+        },
+        "source": {
+          "account_summary": "Account Summary",
+          "order_update": "Order Update",
+          "position_snapshot": "Position Snapshot",
+          "profit_stream": "Profit Stream"
+        },
+        "state": {
+          "active": "Active",
+          "dataStarvation": "Data Starvation",
+          "error": "Error",
+          "noEvaluations": "No Evaluations",
+          "warning": "Warning"
+        },
+        "ago": "ago",
+        "barCount": "Bar Evals",
+        "brokerAccountOrders": "Broker Account Orders",
+        "evalCount": "Evaluations",
+        "execution": "Execution",
+        "executionState": "Execution State",
+        "financialAge": "Financial Age",
+        "financialFresh": "Financial Fresh",
+        "financialSource": "Financial Source",
+        "fresh": "Fresh",
+        "freshness": "Freshness",
+        "indicators": "Indicators",
+        "lastBrokerTicket": "Last Broker Ticket",
+        "lastEval": "Last Eval",
+        "na": "N/A",
+        "never": "never",
+        "noIndicators": "No indicator data yet",
+        "orderLifecycle": "Order Lifecycle",
+        "orderTruth": "Order Truth",
+        "ordersTotal": "Orders Total",
+        "pendingBrokerOrders": "Pending Broker Orders",
+        "positionsAge": "Positions Age",
+        "positionsFresh": "Positions Fresh",
+        "positionsSource": "Positions Source",
+        "scheduleMagic": "Schedule Magic",
+        "stale": "Stale",
+        "strategyMagicOrders": "Strategy Magic Orders",
+        "tickCount": "Tick Evals",
+        "vmBrokerMismatch": "VM count differs from broker count",
+        "vmOrdersTotal": "VM OrdersTotal",
+        "windowBars": "Window Bars"
+      },
+      "account": "Account",
+      "activeTab": "Active Runs",
+      "closeAll": "Close All",
+      "closeFailed": "Close failed",
+      "config": "Config",
+      "confirmClose": "Close this position?",
+      "confirmCloseAll": "Close all positions?",
+      "confirmStop": "Stop this strategy?",
+      "defaultVolume": "Default Volume",
+      "diagnostics": "Diagnostics",
+      "editParams": "Edit Parameters",
+      "editStrategy": "Edit Strategy",
+      "error": "Error",
+      "errors": "Errors",
+      "goSchedules": "Go to Schedules",
+      "health": "Health",
+      "historyTab": "Run History",
+      "lastSignal": "Last Signal",
+      "logs": "Logs",
+      "maxDrawdown": "Max Drawdown %",
+      "maxPositions": "Max Positions",
+      "mode": "Mode",
+      "mode_live": "Live",
+      "mode_paper": "Paper",
+      "myStrategies": "My Strategies",
+      "noActive": "No active strategies",
+      "noPositions": "No open positions",
+      "noRuns": "No strategy runs",
+      "parameters": "Parameters",
+      "pnl": "PnL",
+      "positionClosed": "Position closed",
+      "positions": "Positions",
+      "price": "Price",
+      "reason": "Reason",
+      "riskParams": "Risk Parameters",
+      "runId": "Run ID",
+      "runStartFailed": "Failed to start",
+      "runStarted": "Run started",
+      "schedulesTab": "Schedules",
+      "signalLog": "Signal Log",
+      "signalType": "Type",
+      "signals": "Signals",
+      "sl": "SL",
+      "stale": "stale",
+      "startedAt": "Started",
+      "status": "Status",
+      "stopAndDisable": "Stop & Disable",
+      "stopFailed": "Failed to stop",
+      "stopLossOffset": "Stop Loss Offset",
+      "stopSuccess": "Strategy stopped",
+      "stoppedAt": "Stopped",
+      "strategyName": "Strategy",
+      "streamDisconnected": "Connection interrupted, reconnecting…",
+      "symbol": "Symbol",
+      "takeProfitOffset": "Take Profit Offset",
+      "temporaryRuns": "Temporary Runs",
+      "time": "Time",
+      "timeframe": "TF",
+      "title": "Live Strategy Monitor",
+      "totalSignals": "Total Signals",
+      "tp": "TP",
+      "unknownError": "Unknown error",
+      "volume": "Volume",
+      "waitingSignals": "Waiting for signals...",
+      "watchSignals": "Watch Signals"
     },
     "templates": {
       "scheduleLaunch": {
         "metrics": {
-          "winRate": "Win Rate",
           "maxDrawdown": "Max Drawdown",
-          "sharpe": "Sharpe Ratio"
+          "sharpe": "Sharpe Ratio",
+          "winRate": "Win Rate"
         }
       },
+      "actions": {
+        "create": "New Strategy",
+        "delete": "Delete",
+        "deploy": "Deploy"
+      },
+      "codeModal": {
+        "title": "Code"
+      },
+      "detail": {
+        "equityCurve": "Equity Curve",
+        "noDescription": "No description",
+        "notFound": "Strategy not found",
+        "openInWorkspace": "Open in Workspace",
+        "overview": "Overview",
+        "parameters": "Parameters",
+        "profitFactor": "Profit Factor",
+        "tradeStats": "Trade Statistics"
+      },
       "gallery": {
-        "title": "Strategies",
-        "system": "System",
-        "shared": "Shared",
-        "forkEdit": "Fork & Edit",
         "aiGenerate": "AI Generate",
-        "searchPlaceholder": "Search strategies...",
+        "deleteFailed": "Delete failed",
+        "deploy": "Deploy",
+        "empty": "No strategies found",
         "filterAll": "All",
         "filterMine": "Mine",
         "filterSystem": "System",
+        "fork": "Fork",
+        "forkEdit": "Fork & Edit",
+        "forkFailed": "Fork failed",
+        "forkSuccess": "Forked to new strategy",
+        "publish": "Publish",
+        "searchPlaceholder": "Search strategies...",
+        "shared": "Shared",
         "sortRecent": "Recent",
         "sortReturn": "Return",
         "sortRisk": "Risk",
         "sortUsage": "Usage",
-        "empty": "No strategies found",
-        "forkSuccess": "Forked to new strategy",
-        "forkFailed": "Fork failed",
-        "unpublishSuccess": "Unpublished",
-        "unpublishFailed": "Unpublish failed",
-        "deleteFailed": "Delete failed",
-        "deploy": "Deploy",
-        "publish": "Publish",
+        "system": "System",
+        "title": "Strategies",
         "unpublish": "Unpublish",
-        "fork": "Fork"
-      },
-      "actions": {
-        "deploy": "Deploy",
-        "create": "New Strategy",
-        "delete": "Delete"
-      },
-      "detail": {
-        "profitFactor": "Profit Factor",
-        "notFound": "Strategy not found",
-        "openInWorkspace": "Open in Workspace",
-        "overview": "Overview",
-        "noDescription": "No description",
-        "equityCurve": "Equity Curve",
-        "tradeStats": "Trade Statistics",
-        "parameters": "Parameters"
-      },
-      "table": {
-        "useCount": "Use Count",
-        "createdAt": "Created",
-        "visibility": "Visibility",
-        "status": "Status"
-      },
-      "visibility": {
-        "public": "Public",
-        "private": "Private"
-      },
-      "codeModal": {
-        "title": "Code"
+        "unpublishFailed": "Unpublish failed",
+        "unpublishSuccess": "Unpublished"
       },
       "messages": {
         "fetchTemplateListFailed": "Failed to load strategies",
         "publishFailed": "Publish failed",
         "templateDeleted": "Deleted"
       },
-      "title": "Strategy Templates",
-      "saveCurrent": "Save Current Strategy",
-      "lines": "lines",
+      "table": {
+        "createdAt": "Created",
+        "status": "Status",
+        "useCount": "Use Count",
+        "visibility": "Visibility"
+      },
+      "visibility": {
+        "private": "Private",
+        "public": "Public"
+      },
       "chatEdit": "Chat Edit",
-      "source": "Source",
-      "rename": "Rename",
       "confirmDelete": "Delete this strategy?",
-      "noTemplates": "No saved strategy templates",
-      "sourceCode": "Strategy Source",
       "copyAll": "Copy All",
       "deleteConfirm": "Delete this strategy?",
+      "lines": "lines",
       "loadFailed": "Failed to load templates",
-      "loadOneFailed": "Failed to load template"
+      "loadOneFailed": "Failed to load template",
+      "noTemplates": "No saved strategy templates",
+      "rename": "Rename",
+      "saveCurrent": "Save Current Strategy",
+      "source": "Source",
+      "sourceCode": "Strategy Source",
+      "title": "Strategy Templates"
+    },
+    "schedules": {
+      "actions": {
+        "runNow": "Run Now"
+      },
+      "deleteConfirm": {
+        "title": "Delete this schedule?"
+      },
+      "status": {
+        "disabled": "Disabled",
+        "enabled": "Enabled",
+        "idle": "Idle",
+        "running": "Running"
+      },
+      "table": {
+        "schedule": "Schedule"
+      }
+    },
+    "tuning": {
+      "noParams": {
+        "desc": "Add @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5",
+        "title": "No tunable parameters detected"
+      },
+      "searchMethod": {
+        "grid": "Grid",
+        "random": "Random"
+      },
+      "disabledHint": "Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.",
+      "failed": "Tuning failed",
+      "noDimsHint": "Enable at least one parameter dimension below.",
+      "qualityGate": "Gate",
+      "strategyName": "Strategy",
+      "totalTrades": "Trades"
     },
     "workspace": {
       "chartIndicators": {
@@ -922,143 +999,131 @@ const Base = {
         "subPane": "Sub-pane indicators"
       },
       "sidebar": {
-        "noRuns": "No backtest runs yet",
-        "batchDeleteRunsConfirm": "Delete selected runs?",
-        "trades": "trades",
-        "deleteRunConfirm": "Delete this backtest run?",
-        "viewAll": "View all",
-        "noStrategies": "No strategies yet",
-        "batchDeleteConfirm": "Delete selected strategies?",
-        "deleteStrategyConfirm": "Delete this strategy?",
-        "title": "Workspace",
-        "myStrategies": "My Strategies",
         "backtestHistory": "Backtest History",
-        "newStrategy": "New Strategy"
+        "batchDeleteConfirm": "Delete selected strategies?",
+        "batchDeleteRunsConfirm": "Delete selected runs?",
+        "deleteRunConfirm": "Delete this backtest run?",
+        "deleteStrategyConfirm": "Delete this strategy?",
+        "myStrategies": "My Strategies",
+        "newStrategy": "New Strategy",
+        "noRuns": "No backtest runs yet",
+        "noStrategies": "No strategies yet",
+        "title": "Workspace",
+        "trades": "trades",
+        "viewAll": "View all"
       },
       "tour": {
         "ai": "AI Assistant",
         "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
         "backtest": "Backtest",
         "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
+        "code": "Code Editor",
+        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
         "save": "Save & Publish",
         "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
       },
       "importMql": "Import MQL"
     },
-    "tuning": {
-      "searchMethod": {
-        "grid": "Grid",
-        "random": "Random"
-      },
-      "noParams": {
-        "title": "No tunable parameters detected",
-        "desc": "Add @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5"
-      },
-      "strategyName": "Strategy",
-      "totalTrades": "Trades",
-      "disabledHint": "Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.",
-      "noDimsHint": "Enable at least one parameter dimension below.",
-      "qualityGate": "Gate",
-      "failed": "Tuning failed"
+    "aiChat": {
+      "codeLoaded": "Strategy code in context",
+      "historyTab": "History",
+      "noContext": "No strategy loaded — describe what you want",
+      "strategiesTab": "Strategies"
     },
-    "schedules": {
-      "status": {
-        "enabled": "Enabled",
-        "running": "Running",
-        "idle": "Idle",
-        "disabled": "Disabled"
-      },
-      "actions": {
-        "runNow": "Run Now"
-      },
-      "deleteConfirm": {
-        "title": "Delete this schedule?"
-      },
-      "table": {
-        "schedule": "Schedule"
-      }
+    "ai": {
+      "explainHint": "Write code to see AI explanation.",
+      "reviseHint": "Write code first, then ask AI to improve it.",
+      "settingsHint": "Configure AI provider and model"
     },
     "chat": {
-      "executionPlan": "Execution Plan",
       "codeGenerated": "Code generated. Use the buttons below to run strategy review and backtest.",
       "entry": "Entry:",
+      "executionPlan": "Execution Plan",
       "exit": "Exit:",
-      "risk": "Risk:",
-      "indicators": "Indicators:"
+      "indicators": "Indicators:",
+      "risk": "Risk:"
     },
-    "aiChat": {
-      "historyTab": "History",
-      "strategiesTab": "Strategies",
-      "codeLoaded": "Strategy code in context",
-      "noContext": "No strategy loaded — describe what you want"
+    "importEA": {
+      "aiTranslate": "AI 翻译",
+      "analyze": "分析策略结构",
+      "apply": "Apply to Editor",
+      "bridge": "盲区桥接",
+      "bridgeBtn": "盲区桥接翻译",
+      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
+      "bridgeFailedTag": "桥接失败",
+      "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集",
+      "bridgeSuccess": "桥接成功",
+      "bridging": "AI bridging blind spots...",
+      "codeTooShort": "Please paste complete EA/indicator source code.",
+      "confirmImport": "确认导入",
+      "hint": "Paste MQL4/MQL5 code and click Analyze",
+      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "importTab": "Import EA",
+      "migration": "策略导入",
+      "noBridgeNeeded": "覆盖率 100%，无需桥接",
+      "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
+      "translate": "Translate to Go",
+      "translating": "AI translating...",
+      "tryAI": "AI 翻译补充",
+      "writeTab": "Strategy Code"
     },
     "schedule": {
       "maxPositionsPlaceholder": "Unlimited"
     },
-    "ai": {
-      "reviseHint": "Write code first, then ask AI to improve it.",
-      "explainHint": "Write code to see AI explanation.",
-      "settingsHint": "Configure AI provider and model"
-    },
     "validate": {
-      "running": "Running validation...",
-      "errors": "Errors",
-      "warnings": "Warnings",
-      "fixWithAI": "Send errors to AI Revise",
-      "parameters": "parameters",
-      "hints": "Suggestions",
       "allClear": "All checks passed — no issues found.",
-      "passed": "Validation passed — Save is now unlocked.",
       "autoFixFailed": "Auto-fix failed",
-      "failed": "Validation failed"
-    },
-    "importEA": {
-      "writeTab": "Strategy Code",
-      "importTab": "Import EA",
-      "codeTooShort": "Please paste complete EA/indicator source code.",
-      "pastePlaceholder": "Paste MQL4/MQL5 EA code...",
-      "migration": "策略导入",
-      "aiTranslate": "AI 翻译",
-      "bridge": "盲区桥接",
-      "analyze": "分析策略结构",
-      "confirmImport": "确认导入",
-      "tryAI": "AI 翻译补充",
-      "apply": "Apply to Editor",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
-      "hint": "Paste MQL4/MQL5 code and click Analyze",
-      "translate": "Translate to Go",
-      "translating": "AI translating...",
-      "bridgeBtn": "盲区桥接翻译",
-      "bridgeSuccess": "桥接成功",
-      "bridgeFailedTag": "桥接失败",
-      "bridging": "AI bridging blind spots...",
-      "bridgeFailedMsg": "Agent 无法自动桥接所有盲区",
-      "noBridgeNeeded": "覆盖率 100%，无需桥接",
-      "bridgeHint": "粘贴 MQL4/MQL5 EA 代码，AI 将自动翻译盲区为 Python 子集"
+      "errors": "Errors",
+      "failed": "Validation failed",
+      "fixWithAI": "Send errors to AI Revise",
+      "hints": "Suggestions",
+      "parameters": "parameters",
+      "passed": "Validation passed — Save is now unlocked.",
+      "running": "Running validation...",
+      "warnings": "Warnings"
     },
     "version": {
-      "loadFailed": "Failed to load versions",
-      "rollbackFailed": "Rollback failed",
-      "loadVersionFailed": "Failed to load version",
-      "loadDiffFailed": "Failed to load diff",
-      "colVersion": "Version",
-      "colSummary": "Change Summary",
-      "colLang": "Lang",
-      "colHash": "Hash",
-      "colDate": "Date",
       "colActions": "Actions",
-      "title": "Version History",
+      "colDate": "Date",
+      "colHash": "Hash",
+      "colLang": "Lang",
+      "colSummary": "Change Summary",
+      "colVersion": "Version",
       "diff": "Diff",
+      "diffFrom": "From",
+      "diffTitle": "Diff: v{{from}} → v{{to}}",
+      "diffTo": "To",
       "empty": "No version history yet",
       "history": "Version History",
-      "rollbackSuccess": "Rolled back to version {{n}}",
+      "loadDiffFailed": "Failed to load diff",
+      "loadFailed": "Failed to load versions",
+      "loadVersionFailed": "Failed to load version",
       "rollbackConfirm": "Rollback to v{{n}}?",
-      "diffTitle": "Diff: v{{from}} → v{{to}}",
-      "viewTitle": "Version {{n}}",
-      "diffFrom": "From",
-      "diffTo": "To"
+      "rollbackFailed": "Rollback failed",
+      "rollbackSuccess": "Rolled back to version {{n}}",
+      "title": "Version History",
+      "viewTitle": "Version {{n}}"
+    }
+  },
+  "accounts": {
+    "bind": {
+      "fields": {
+        "alias": "Account Alias"
+      },
+      "messages": {
+        "changeCredentials": "Change credentials"
+      },
+      "placeholders": {
+        "alias": "Optional custom name"
+      }
+    },
+    "messages": {
+      "shareLinkCopied": "Share link copied to clipboard",
+      "shareLinkFailed": "Failed to create share link"
+    },
+    "status": {
+      "circuit_half_open": "Circuit Testing",
+      "circuit_open": "Circuit Open"
     }
   },
   "autoTrading": {
@@ -1103,6 +1168,158 @@ const Base = {
     },
     "title": "Auto Trading"
   },
+  "marketplace": {
+    "publish": {
+      "assetClass": {
+        "label": "Asset Class"
+      },
+      "priceModel": {
+        "free": "Free",
+        "label": "Pricing",
+        "once": "One-Time Purchase",
+        "subscription": "Monthly Subscription"
+      },
+      "riskLevel": {
+        "label": "Risk Level"
+      },
+      "trialDays": {
+        "7": "7 days",
+        "14": "14 days",
+        "30": "30 days"
+      },
+      "codeSnippet": "Strategy Preview (public)",
+      "codeSnippetPlaceholder": "Optional: share a snippet or high-level idea of your strategy (visible to all)",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Describe your strategy logic, entry/exit rules...",
+      "includeBacktestSnapshot": "Include latest backtest results",
+      "priceAmount": "Amount",
+      "return": "Return",
+      "tags": "Tags",
+      "tagsPlaceholder": "Type and press enter to add tags",
+      "title": "Publish to Marketplace",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Golden Cross Strategy",
+      "trades": "Trades",
+      "trialDaysCustom": "Custom days",
+      "trialDaysLabel": "Trial Period",
+      "trialDaysPlaceholder": "Select or enter custom days",
+      "winRate": "Win Rate"
+    },
+    "author": {
+      "avgRating": "Avg Rating",
+      "empty": "No strategies published yet. Go to Strategy Library to publish one.",
+      "goToLibrary": "Go to Strategy Library",
+      "monthlyRevenue": "Monthly Revenue",
+      "myStrategies": "My Published Strategies",
+      "publishNew": "Publish New Strategy",
+      "published": "Published",
+      "totalRevenue": "Total Revenue"
+    },
+    "backtest": {
+      "capital": "Capital",
+      "commission": "Commission",
+      "completed": "Completed",
+      "equityCurve": "Equity Curve",
+      "idle": "Set parameters and run a backtest",
+      "leverage": "Leverage",
+      "maxDrawdown": "Max Drawdown",
+      "protected": "Strategy code is protected. Backtest runs on our servers.",
+      "run": "Run Backtest",
+      "sharpe": "Sharpe",
+      "title": "Strategy Backtest",
+      "totalReturn": "Total Return",
+      "totalTrades": "Total Trades",
+      "winRate": "Win Rate"
+    },
+    "card": {
+      "by": "by",
+      "free": "Free",
+      "owned": "Purchased",
+      "subscribers": "Subscribers",
+      "winRate": "Win Rate",
+      "yourStrategy": "Your Strategy"
+    },
+    "detail": {
+      "assetClass": "Asset Class",
+      "author": "Author",
+      "commentPlaceholder": "Write a comment...",
+      "comments": "Comments",
+      "description": "Description",
+      "getFree": "Get Free",
+      "rentPrice": "¥{{amount}} / month",
+      "runBacktest": "Run Backtest",
+      "subscribers": "Subscribers",
+      "yourRating": "Your Rating"
+    },
+    "live": {
+      "loadError": "Failed to load live performance data"
+    },
+    "messages": {
+      "commentFailed": "Comment failed",
+      "commentPosted": "Comment posted",
+      "loginFirst": "Please log in first",
+      "paymentComingSoon": "Payment coming soon",
+      "publishFailed": "Failed to publish strategy",
+      "published": "Strategy published to marketplace!",
+      "rateFailed": "Rating failed",
+      "rated": "Rating submitted",
+      "subscribeFailed": "Failed",
+      "subscribed": "Added to your purchases"
+    },
+    "optimization": {
+      "decayScore": "Decay Score",
+      "returnDelta": "Return Delta",
+      "sharpeDecline": "Sharpe Decline",
+      "trigger": "Trigger",
+      "winRateDecline": "Win Rate Decline"
+    },
+    "payment": {
+      "alreadyPurchased": "You already own this strategy.",
+      "balanceAfter": "Balance after purchase",
+      "cancel": "Cancel",
+      "confirm": "Confirm Purchase",
+      "deployGuide": "Your strategy is ready to deploy.",
+      "depositPrompt": "Please deposit funds to continue.",
+      "goDeploy": "Deploy Now",
+      "goToDeposit": "Deposit",
+      "insufficientBalance": "Insufficient balance",
+      "oneTimePurchase": "¥{{amount}} one-time",
+      "price": "Price",
+      "purchaseFailed": "Purchase failed. Please try again.",
+      "purchaseSuccess": "Purchase successful! Strategy added to your library.",
+      "purchasing": "Processing...",
+      "strategyName": "Strategy",
+      "title": "Confirm Purchase",
+      "walletBalance": "Your Balance"
+    },
+    "purchases": {
+      "empty": "No purchases yet. Browse the market to find strategies.",
+      "runBacktest": "Run Backtest",
+      "status": "Status",
+      "strategy": "Strategy"
+    },
+    "sort": {
+      "newest": "Newest",
+      "performance": "Best Performance",
+      "popular": "Most Popular",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "rating": "Highest Rated",
+      "score": "Composite Score"
+    },
+    "tabs": {
+      "author": "Author Center",
+      "marketplace": "Market",
+      "purchases": "My Purchases",
+      "subscriptions": "My Subscriptions"
+    },
+    "empty": "No strategies published yet",
+    "filterByClass": "Filter by asset class",
+    "noSubscriptions": "No subscriptions yet",
+    "searchPlaceholder": "Search strategies...",
+    "subtitle": "Discover, buy, and use community strategies",
+    "title": "Strategy Marketplace"
+  },
   "notifications": {
     "stream": {
       "autoTrading": {
@@ -1128,6 +1345,15 @@ const Base = {
       "clearAllConfirm": "Clear all notifications?",
       "markAllAsRead": "Mark all as read"
     },
+    "prefs": {
+      "newRating": "New rating or comment received",
+      "newStrategy": "New strategy published",
+      "performance": "Strategy performance anomaly",
+      "priceChange": "Strategy price changed",
+      "saveFailed": "Failed to save preferences",
+      "subExpiring": "Subscription expiring soon",
+      "title": "Notification Preferences"
+    },
     "tabs": {
       "all": "All ({{count}})",
       "unread": "Unread ({{count}})"
@@ -1139,15 +1365,6 @@ const Base = {
       "system": "System",
       "trade": "Trade"
     },
-    "prefs": {
-      "saveFailed": "Failed to save preferences",
-      "newStrategy": "New strategy published",
-      "priceChange": "Strategy price changed",
-      "subExpiring": "Subscription expiring soon",
-      "performance": "Strategy performance anomaly",
-      "newRating": "New rating or comment received",
-      "title": "Notification Preferences"
-    },
     "all": "All",
     "clearAll": "Clear all",
     "confirmClearAll": "Clear all notifications?",
@@ -1156,15 +1373,84 @@ const Base = {
     "title": "Notifications",
     "unread": "Unread"
   },
+  "schedule": {
+    "launch": {
+      "noAccount": {
+        "bindButton": "Bind MT Account"
+      }
+    }
+  },
+  "sre": {
+    "breakers": {
+      "columns": {
+        "lossPercent": "Loss %",
+        "state": "State",
+        "strategyId": "Strategy ID",
+        "totalPnl": "Total P&L",
+        "tradeCount": "Trades",
+        "tripReason": "Trip Reason",
+        "trippedAt": "Tripped At"
+      },
+      "confirmReset": "Reset this breaker?",
+      "description": "Strategy breaker status overview — auto-detects abnormal losses and trips",
+      "noBreakers": "No registered breakers",
+      "stateClosed": "Normal",
+      "stateHalfOpen": "Half-Open (probing)",
+      "stateOpen": "Tripped",
+      "title": "Strategy Breakers"
+    },
+    "canary": {
+      "columns": {
+        "accounts": "Canary Accounts",
+        "days": "Days",
+        "startAt": "Start At",
+        "status": "Status",
+        "strategyId": "Strategy ID",
+        "versionTag": "Version Tag"
+      },
+      "accountIdsLabel": "Canary Account IDs (comma or newline separated)",
+      "accountIdsPlaceholder": "account-1, account-2",
+      "canarying": "Canary",
+      "confirmDelete": "Delete this canary config?",
+      "description": "New strategy versions run on a few accounts for N days before promotion to all",
+      "durationDays": "Canary Days",
+      "newCanary": "New Canary",
+      "newCanaryTitle": "New Canary",
+      "noCanaries": "No canary configs",
+      "promoted": "Promoted",
+      "title": "Canary Configuration"
+    },
+    "killSwitch": {
+      "title": "Kill Switch",
+      "undoWindow": "Undo window: {{minutes}}m {{seconds}}s remaining",
+      "confirmEngage": "Confirm Engage",
+      "confirmTitle": "Engage Kill Switch — Confirmation",
+      "confirmWarning": "This will immediately stop all trading activity for all accounts, including pending and submitted orders. Enter a reason and type KILL to confirm.",
+      "description": "One-click stop all trading — requires KILL confirmation; undo within 5 minutes",
+      "disarmed": "Kill Switch disarmed — trading normal",
+      "disengage": "Disengage Kill Switch",
+      "engage": "Engage Kill Switch",
+      "engaged": "Kill Switch engaged — all trading stopped",
+      "engagedAt": "Engaged At",
+      "operator": "Operator",
+      "reason": "Reason",
+      "reasonLabel": "Reason (required)",
+      "reasonPlaceholder": "e.g.: Detected abnormal market volatility, emergency stop all trading",
+      "status": "Status",
+      "typeKill": "Type KILL to confirm",
+      "typeKillPlaceholder": "Type KILL (uppercase)",
+      "undo": "Undo Kill Switch"
+    }
+  },
   "wallet": {
     "deposit": {
       "table": {
         "amount": "USDT Amount",
         "amountUsd": "USD Credit",
+        "confirmations": "Confirmations",
         "status": "Status",
         "time": "Time",
-        "txHash": "Tx Hash",
-        "confirmations": "Confirmations"
+        "txHash": "Tx Hash"
       },
       "address": "Receiving Address",
       "addressCopied": "Address copied to clipboard",
@@ -1184,6 +1470,21 @@ const Base = {
       "txHashLabel": "Transaction Hash (optional)",
       "willCredit": "Will credit"
     },
+    "passkey": {
+      "add": "Add Passkey",
+      "confirmRemove": "Remove this passkey?",
+      "createdAt": "Created At",
+      "credentialId": "Credential ID",
+      "name": "Name",
+      "namePlaceholder": "e.g. My YubiKey",
+      "register": "Register",
+      "registerFailed": "Registration failed",
+      "registerHint": "Enter a name for this passkey, then click Register to start the WebAuthn flow.",
+      "registered": "Passkey registered successfully",
+      "removed": "Passkey removed",
+      "signCount": "Sign Count",
+      "title": "Passkey Management"
+    },
     "table": {
       "amount": "Amount",
       "balanceAfter": "Balance After",
@@ -1198,57 +1499,42 @@ const Base = {
       "reversal": "Reversal",
       "withdrawal": "Withdrawal"
     },
-    "passkey": {
-      "title": "Passkey Management",
-      "add": "Add Passkey",
-      "name": "Name",
-      "credentialId": "Credential ID",
-      "signCount": "Sign Count",
-      "createdAt": "Created At",
-      "confirmRemove": "Remove this passkey?",
-      "register": "Register",
-      "registered": "Passkey registered successfully",
-      "registerFailed": "Registration failed",
-      "registerHint": "Enter a name for this passkey, then click Register to start the WebAuthn flow.",
-      "namePlaceholder": "e.g. My YubiKey",
-      "removed": "Passkey removed"
+    "whitelist": {
+      "add": "Add Address",
+      "added": "Whitelist address added",
+      "address": "Address",
+      "addressLabel": "TRC20 Address",
+      "addressRequired": "Please enter address",
+      "confirmRemove": "Remove this whitelist address?",
+      "confirmedAt": "Confirmed At",
+      "label": "Label",
+      "labelLabel": "Label (optional)",
+      "labelPlaceholder": "e.g. My Binance wallet",
+      "removed": "Whitelist address removed",
+      "status": "Status",
+      "title": "Whitelist Management"
     },
     "withdraw": {
-      "title": "Withdraw",
-      "new": "New Withdrawal",
-      "submit": "Submit",
-      "available": "Available Balance",
       "amount": "Amount",
       "amountLabel": "Withdrawal Amount (USDT)",
       "amountRequired": "Please enter amount",
+      "available": "Available Balance",
+      "cancelled": "Withdrawal cancelled",
+      "confirmCancel": "Cancel this withdrawal?",
       "destAddress": "Destination Address",
       "destLabel": "Destination TRC20 Address",
       "destRequired": "Please enter destination address",
-      "whitelist": "Whitelist (click to fill)",
-      "status": "Status",
-      "txHash": "Tx Hash",
-      "time": "Time",
-      "cancelled": "Withdrawal cancelled",
-      "confirmCancel": "Cancel this withdrawal?",
-      "success": "Withdrawal submitted successfully",
       "failed": "Withdrawal failed",
+      "new": "New Withdrawal",
       "noBalance": "No available balance for withdrawal",
-      "warning": "Withdrawals require passkey verification. Please ensure your destination address is correct — blockchain transactions are irreversible."
-    },
-    "whitelist": {
-      "title": "Whitelist Management",
-      "add": "Add Address",
-      "added": "Whitelist address added",
-      "removed": "Whitelist address removed",
-      "label": "Label",
-      "address": "Address",
       "status": "Status",
-      "confirmedAt": "Confirmed At",
-      "confirmRemove": "Remove this whitelist address?",
-      "addressLabel": "TRC20 Address",
-      "addressRequired": "Please enter address",
-      "labelLabel": "Label (optional)",
-      "labelPlaceholder": "e.g. My Binance wallet"
+      "submit": "Submit",
+      "success": "Withdrawal submitted successfully",
+      "time": "Time",
+      "title": "Withdraw",
+      "txHash": "Tx Hash",
+      "warning": "Withdrawals require passkey verification. Please ensure your destination address is correct — blockchain transactions are irreversible.",
+      "whitelist": "Whitelist (click to fill)"
     },
     "accountNumber": "Account",
     "balance": "Balance",
@@ -1259,292 +1545,62 @@ const Base = {
     "title": "My Wallet",
     "transactions": "Transactions"
   },
-  "accounts": {
-    "bind": {
-      "fields": {
-        "alias": "Account Alias"
-      },
-      "placeholders": {
-        "alias": "Optional custom name"
-      },
-      "messages": {
-        "changeCredentials": "Change credentials"
-      }
-    },
-    "messages": {
-      "shareLinkCopied": "Share link copied to clipboard",
-      "shareLinkFailed": "Failed to create share link"
-    },
-    "status": {
-      "circuit_open": "Circuit Open",
-      "circuit_half_open": "Circuit Testing"
-    }
-  },
-  "sre": {
-    "breakers": {
-      "columns": {
-        "strategyId": "Strategy ID",
-        "state": "State",
-        "totalPnl": "Total P&L",
-        "lossPercent": "Loss %",
-        "tradeCount": "Trades",
-        "trippedAt": "Tripped At",
-        "tripReason": "Trip Reason"
-      },
-      "title": "Strategy Breakers",
-      "stateClosed": "Normal",
-      "stateOpen": "Tripped",
-      "stateHalfOpen": "Half-Open (probing)",
-      "confirmReset": "Reset this breaker?",
-      "description": "Strategy breaker status overview — auto-detects abnormal losses and trips",
-      "noBreakers": "No registered breakers"
-    },
-    "canary": {
-      "columns": {
-        "strategyId": "Strategy ID",
-        "versionTag": "Version Tag",
-        "accounts": "Canary Accounts",
-        "startAt": "Start At",
-        "days": "Days",
-        "status": "Status"
-      },
-      "promoted": "Promoted",
-      "canarying": "Canary",
-      "confirmDelete": "Delete this canary config?",
-      "title": "Canary Configuration",
-      "description": "New strategy versions run on a few accounts for N days before promotion to all",
-      "newCanary": "New Canary",
-      "noCanaries": "No canary configs",
-      "newCanaryTitle": "New Canary",
-      "accountIdsLabel": "Canary Account IDs (comma or newline separated)",
-      "durationDays": "Canary Days",
-      "accountIdsPlaceholder": "account-1, account-2"
-    },
-    "killSwitch": {
-      "description": "One-click stop all trading — requires KILL confirmation; undo within 5 minutes",
-      "engaged": "Kill Switch engaged — all trading stopped",
-      "disarmed": "Kill Switch disarmed — trading normal",
-      "status": "Status",
-      "reason": "Reason",
-      "operator": "Operator",
-      "engagedAt": "Engaged At",
-      "undo": "Undo Kill Switch",
-      "disengage": "Disengage Kill Switch",
-      "engage": "Engage Kill Switch",
-      "confirmTitle": "Engage Kill Switch — Confirmation",
-      "confirmEngage": "Confirm Engage",
-      "confirmWarning": "This will immediately stop all trading activity for all accounts, including pending and submitted orders. Enter a reason and type KILL to confirm.",
-      "reasonLabel": "Reason (required)",
-      "reasonPlaceholder": "e.g.: Detected abnormal market volatility, emergency stop all trading",
-      "typeKill": "Type KILL to confirm",
-      "typeKillPlaceholder": "Type KILL (uppercase)",
-      "undoWindow": "Undo window: {{minutes}}m {{seconds}}s remaining",
-      "title": "Kill Switch"
-    }
-  },
-  "marketplace": {
-    "publish": {
-      "priceModel": {
-        "free": "Free",
-        "subscription": "Monthly Subscription",
-        "once": "One-Time Purchase",
-        "label": "Pricing"
-      },
-      "assetClass": {
-        "label": "Asset Class"
-      },
-      "riskLevel": {
-        "label": "Risk Level"
-      },
-      "trialDays": {
-        "7": "7 days",
-        "14": "14 days",
-        "30": "30 days"
-      },
-      "return": "Return",
-      "winRate": "Win Rate",
-      "trades": "Trades",
-      "title": "Publish to Marketplace",
-      "titleLabel": "Title",
-      "titlePlaceholder": "e.g. Golden Cross Strategy",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Describe your strategy logic, entry/exit rules...",
-      "priceAmount": "Amount",
-      "tags": "Tags",
-      "tagsPlaceholder": "Type and press enter to add tags",
-      "codeSnippet": "Strategy Preview (public)",
-      "codeSnippetPlaceholder": "Optional: share a snippet or high-level idea of your strategy (visible to all)",
-      "includeBacktestSnapshot": "Include latest backtest results",
-      "trialDaysLabel": "Trial Period",
-      "trialDaysPlaceholder": "Select or enter custom days",
-      "trialDaysCustom": "Custom days"
-    },
-    "author": {
-      "avgRating": "Avg Rating",
-      "empty": "No strategies published yet. Go to Strategy Library to publish one.",
-      "published": "Published",
-      "myStrategies": "My Published Strategies",
-      "publishNew": "Publish New Strategy",
-      "monthlyRevenue": "Monthly Revenue",
-      "totalRevenue": "Total Revenue",
-      "goToLibrary": "Go to Strategy Library"
-    },
-    "card": {
-      "by": "by",
-      "free": "Free",
-      "owned": "Purchased",
-      "subscribers": "Subscribers",
-      "winRate": "Win Rate",
-      "yourStrategy": "Your Strategy"
-    },
-    "detail": {
-      "assetClass": "Asset Class",
-      "author": "Author",
-      "commentPlaceholder": "Write a comment...",
-      "comments": "Comments",
-      "description": "Description",
-      "getFree": "Get Free",
-      "rentPrice": "¥{{amount}} / month",
-      "subscribers": "Subscribers",
-      "yourRating": "Your Rating",
-      "runBacktest": "Run Backtest"
-    },
-    "messages": {
-      "commentFailed": "Comment failed",
-      "commentPosted": "Comment posted",
-      "loginFirst": "Please log in first",
-      "paymentComingSoon": "Payment coming soon",
-      "rateFailed": "Rating failed",
-      "rated": "Rating submitted",
-      "subscribeFailed": "Failed",
-      "subscribed": "Added to your purchases",
-      "published": "Strategy published to marketplace!",
-      "publishFailed": "Failed to publish strategy"
-    },
-    "payment": {
-      "alreadyPurchased": "You already own this strategy.",
-      "balanceAfter": "Balance after purchase",
-      "cancel": "Cancel",
-      "confirm": "Confirm Purchase",
-      "depositPrompt": "Please deposit funds to continue.",
-      "goToDeposit": "Deposit",
-      "insufficientBalance": "Insufficient balance",
-      "oneTimePurchase": "¥{{amount}} one-time",
-      "price": "Price",
-      "purchaseFailed": "Purchase failed. Please try again.",
-      "purchaseSuccess": "Purchase successful! Strategy added to your library.",
-      "purchasing": "Processing...",
-      "strategyName": "Strategy",
-      "title": "Confirm Purchase",
-      "walletBalance": "Your Balance",
-      "deployGuide": "Your strategy is ready to deploy.",
-      "goDeploy": "Deploy Now"
-    },
-    "purchases": {
-      "empty": "No purchases yet. Browse the market to find strategies.",
-      "status": "Status",
-      "strategy": "Strategy",
-      "runBacktest": "Run Backtest"
-    },
-    "sort": {
-      "newest": "Newest",
-      "performance": "Best Performance",
-      "popular": "Most Popular",
-      "priceAsc": "Price: Low to High",
-      "priceDesc": "Price: High to Low",
-      "rating": "Highest Rated",
-      "score": "Composite Score"
-    },
-    "tabs": {
-      "author": "Author Center",
-      "marketplace": "Market",
-      "purchases": "My Purchases",
-      "subscriptions": "My Subscriptions"
-    },
-    "backtest": {
-      "title": "Strategy Backtest",
-      "capital": "Capital",
-      "commission": "Commission",
-      "leverage": "Leverage",
-      "completed": "Completed",
-      "totalReturn": "Total Return",
-      "maxDrawdown": "Max Drawdown",
+  "agent": {
+    "analysis": {
+      "consistency": "Consistency",
+      "detailed": "Detailed Analysis",
+      "drawdown": "DD",
+      "observations": "Key Observations",
+      "overfitting": "Overfitting Risk",
+      "risk_adj": "Risk-Adj Return",
       "sharpe": "Sharpe",
-      "winRate": "Win Rate",
-      "totalTrades": "Total Trades",
-      "equityCurve": "Equity Curve",
-      "protected": "Strategy code is protected. Backtest runs on our servers.",
-      "run": "Run Backtest",
-      "idle": "Set parameters and run a backtest"
+      "suggestions": "Improvement Suggestions",
+      "title": "Backtest Analysis",
+      "winrate": "Win Rate"
     },
-    "live": {
-      "loadError": "Failed to load live performance data"
+    "profile": {
+      "blind_spots": "Blind Spots",
+      "coverage": "Coverage",
+      "entry": "Entry",
+      "exit": "Exit",
+      "indicators": "Indicators",
+      "regime": "Market Regime",
+      "risk": "Risk Management",
+      "strengths": "Strengths",
+      "timeframe": "Timeframe",
+      "title": "Strategy Profile",
+      "weaknesses": "Weaknesses"
     },
-    "optimization": {
-      "decayScore": "Decay Score",
-      "trigger": "Trigger",
-      "sharpeDecline": "Sharpe Decline",
-      "winRateDecline": "Win Rate Decline",
-      "returnDelta": "Return Delta"
-    },
-    "empty": "No strategies published yet",
-    "filterByClass": "Filter by asset class",
-    "noSubscriptions": "No subscriptions yet",
-    "searchPlaceholder": "Search strategies...",
-    "subtitle": "Discover, buy, and use community strategies",
-    "title": "Strategy Marketplace"
-  },
-  "schedule": {
-    "launch": {
-      "noAccount": {
-        "bindButton": "Bind MT Account"
-      }
+    "semantic_diff": {
+      "effect": "Effect",
+      "title": "Strategy Changes"
     }
-  },
-  "onboarding": {
-    "step1": {
-      "title": "Connect Your Account",
-      "desc": "Link your MT4/MT5 trading account to start.",
-      "action": "Bind Account"
-    },
-    "step2": {
-      "title": "Create Your First Strategy",
-      "desc": "Use AI to generate a trading strategy from natural language.",
-      "action": "Open Workspace"
-    },
-    "step3": {
-      "title": "Upgrade Your Plan",
-      "desc": "Unlock more AI tokens, strategies, and live trading with Pro.",
-      "action": "View Plans"
-    },
-    "subtitle": "Get started in 3 simple steps",
-    "dismiss": "Got it, dismiss"
   },
   "auth": {
     "fields": {
       "confirmPassword": "Confirm password",
       "email": "Email",
-      "password": "Password",
-      "login": "邮箱/账号"
+      "login": "邮箱/账号",
+      "password": "Password"
     },
     "forgotPassword": {
+      "adminHint": "Please contact your administrator or support to reset your password.",
+      "adminTab": "Admin",
       "backToLogin": "Back to Login",
-      "hint": "Please contact your administrator or support to reset your password.",
-      "title": "Reset Password",
       "emailSent": "If the email exists, a reset link has been sent.",
-      "mtVerified": "Identity verified. Redirecting to password reset.",
-      "mtFailed": "MT credential verification failed.",
       "emailTab": "Email",
-      "sendResetLink": "Send Reset Link",
-      "mtTab": "MT Verify",
+      "hint": "Please contact your administrator or support to reset your password.",
+      "mtFailed": "MT credential verification failed.",
+      "mtHint": "Enter your bound MT account credentials to verify your identity. Server and platform are detected automatically.",
       "mtLogin": "MT Account Number",
       "mtLoginPlaceholder": "e.g. 12345678",
       "mtPassword": "MT Password",
       "mtPasswordPlaceholder": "MT trading password",
-      "mtHint": "Enter your bound MT account credentials to verify your identity. Server and platform are detected automatically.",
-      "verifyAndReset": "Verify & Reset Password",
-      "adminTab": "Admin",
-      "adminHint": "Please contact your administrator or support to reset your password."
+      "mtTab": "MT Verify",
+      "mtVerified": "Identity verified. Redirecting to password reset.",
+      "sendResetLink": "Send Reset Link",
+      "title": "Reset Password",
+      "verifyAndReset": "Verify & Reset Password"
     },
     "login": {
       "forgotPassword": "Forgot password?",
@@ -1570,25 +1626,25 @@ const Base = {
       "signingUp": "Signing up...",
       "subtitle": "Create an account to get started"
     },
+    "resetPassword": {
+      "confirmPassword": "Confirm Password",
+      "confirmRequired": "Please confirm your password",
+      "failed": "Failed to reset password.",
+      "invalidToken": "Invalid or missing reset token.",
+      "mismatch": "Passwords do not match.",
+      "newPassword": "New Password",
+      "submit": "Reset Password",
+      "success": "Password has been reset. Please log in with your new password.",
+      "title": "Set New Password"
+    },
     "validation": {
       "confirmPasswordRequired": "Please confirm your password",
       "emailInvalid": "Invalid email address",
       "emailRequired": "Email is required",
+      "loginRequired": "Please enter your email or account number",
       "passwordMin8": "Password must be at least 8 characters",
       "passwordMismatch": "Passwords do not match",
-      "passwordRequired": "Password is required",
-      "loginRequired": "Please enter your email or account number"
-    },
-    "resetPassword": {
-      "mismatch": "Passwords do not match.",
-      "invalidToken": "Invalid or missing reset token.",
-      "success": "Password has been reset. Please log in with your new password.",
-      "failed": "Failed to reset password.",
-      "title": "Set New Password",
-      "newPassword": "New Password",
-      "confirmRequired": "Please confirm your password",
-      "confirmPassword": "Confirm Password",
-      "submit": "Reset Password"
+      "passwordRequired": "Password is required"
     }
   },
   "common": {
@@ -1602,6 +1658,7 @@ const Base = {
       "lessThanMinute": "<1m",
       "minute": "{{n}}m"
     },
+    "action": "Action",
     "active": "Active",
     "back": "Back",
     "cancel": "Cancel",
@@ -1615,16 +1672,20 @@ const Base = {
     "create": "Create",
     "created": "Created",
     "currentPosition": "📊 Current Position",
+    "currentPrice": "Current",
     "delete": "Delete",
     "deleteFailed": "Delete failed",
     "deleteSelected": "Delete selected ({{count}})",
     "deleted": "Deleted",
     "disable": "Disable",
     "disabled": "Disabled",
+    "duplicateName": "Name already exists",
     "edit": "Edit",
     "enable": "Enable",
     "enabled": "Enabled",
     "error": "Error",
+    "failed": "Failed",
+    "false": "false",
     "gotIt": "Got it",
     "hideDetails": "Hide details",
     "inactive": "Inactive",
@@ -1632,12 +1693,16 @@ const Base = {
     "lineColor": "Line Color",
     "loading": "Loading...",
     "loadingFailed": "Loading failed",
+    "message": "Message",
     "next": "Next",
     "no": "No",
     "noData": "No data",
     "noOpenPositionsForSymbol": "No open positions for {{symbol}}",
     "none": "None",
+    "off": "Off",
     "ok": "OK",
+    "on": "On",
+    "openPrice": "Open Price",
     "operationFailed": "Operation failed",
     "pageError": "Page Error",
     "pageUnderDevelopment": "This page is under development",
@@ -1646,46 +1711,43 @@ const Base = {
     "refresh": "Refresh",
     "remove": "Remove",
     "required": "Required",
+    "reset": "Reset",
     "retry": "Retry",
     "save": "Save",
     "saveFailed": "Save failed",
     "saveSuccess": "Saved successfully",
+    "saved": "Saved",
+    "saving": "saving...",
     "searching": "Searching...",
     "selectSymbolToViewChart": "Select a symbol to view chart",
+    "selected": "selected",
     "send": "Send",
     "showDetails": "Show details",
+    "status": "Status",
+    "step1Label": "Broker",
+    "step2Label": "Credentials",
+    "step3Label": "Confirm",
+    "success": "Success",
+    "total": "{{total}} total",
     "totalItems": "Total {{count}} items",
     "translate": "Translate",
+    "true": "true",
     "unexpectedError": "An unexpected error occurred",
+    "unit": "units",
     "unknown": "Unknown",
+    "unknownError": "Unknown error",
+    "unsaved": "Unsaved",
     "updated": "Updated",
     "viewOriginal": "View original",
     "viewTranslation": "View translation",
     "yes": "Yes",
-    "you": "You",
-    "unsaved": "Unsaved",
-    "saved": "Saved",
-    "unknownError": "Unknown error",
-    "duplicateName": "Name already exists",
-    "step1Label": "Broker",
-    "step2Label": "Credentials",
-    "step3Label": "Confirm",
-    "unit": "units",
-    "action": "Action",
-    "on": "On",
-    "off": "Off",
-    "true": "true",
-    "false": "false",
-    "success": "Success",
-    "failed": "Failed",
-    "reset": "Reset",
-    "status": "Status",
-    "message": "Message",
-    "openPrice": "Open Price",
-    "currentPrice": "Current",
-    "saving": "saving...",
-    "total": "{{total}} total",
-    "selected": "selected"
+    "you": "You"
+  },
+  "dashboard": {
+    "quickActions": {
+      "aiStrategy": "AI Strategy"
+    },
+    "noAccountsDesc": "Bind your first MT4/MT5 account to start monitoring and trading."
   },
   "errors": {
     "ai": {
@@ -1698,6 +1760,8 @@ const Base = {
       "failed_to_create_request": "Failed to create request",
       "forbidden_quota": "Quota exceeded",
       "free_tier_exhausted": "Free tier exhausted",
+      "insufficient_balance": "Your AI wallet balance is insufficient. Please top up before continuing.",
+      "insufficient_balance_title": "Insufficient Balance",
       "invalid_base_url": "Invalid Base URL",
       "invalid_provider": "Invalid provider",
       "no_trade_data_available": "No trade data available",
@@ -1707,9 +1771,7 @@ const Base = {
       "provider_required": "Please select a provider first",
       "provider_returned_empty_message": "AI provider returned an empty response",
       "rate_limited": "Rate limited. Please try again later.",
-      "request_failed": "API request failed",
-      "insufficient_balance_title": "Insufficient Balance",
-      "insufficient_balance": "Your AI wallet balance is insufficient. Please top up before continuing."
+      "request_failed": "API request failed"
     },
     "connection_failed": {
       "content": "Unable to connect to the server. Please check your network and try again.",
@@ -1728,6 +1790,116 @@ const Base = {
     "translate_failed": "Translation failed",
     "user_not_found": "User not found"
   },
+  "importAnalysis": {
+    "execution": {
+      "onBar": "Bar close event-driven",
+      "onInitGrid": "Init grid",
+      "onTick": "Tick-driven"
+    },
+    "sizing": {
+      "fixed": "Fixed lots",
+      "martingale": "Martingale",
+      "percentBalance": "Percent of balance"
+    },
+    "analyzing": "Analyzing strategy structure...",
+    "cannotImport": "Cannot auto-import",
+    "coverageTitle": "Import Coverage",
+    "emptyAnalysisDesc": "No strategy logic was recognized. The source code may be incomplete or use a different language.",
+    "goodCoverage": "Import coverage is good",
+    "goodCoverageDesc": "Strategy main logic recognized. Safe to import. Check parameter list before use.",
+    "guiNoiseDesc": "The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.",
+    "handling": "Handling",
+    "incompleteCoverage": "Trading logic coverage incomplete",
+    "location": "Location",
+    "noBlindSpots": "No logic needs confirmation",
+    "noBlindSpotsDesc": "All strategy logic auto-recognized. Safe to import.",
+    "tradeLogicComplete": "Trading logic fully recognized",
+    "userActionRequired": "Your action required"
+  },
+  "logs": {
+    "result": {
+      "pass": "PASS",
+      "reject": "REJECT"
+    },
+    "triggerSource": {
+      "manual": "Manual",
+      "recovery": "Recovery",
+      "strategy": "Strategy"
+    }
+  },
+  "onboarding": {
+    "step1": {
+      "action": "Bind Account",
+      "desc": "Link your MT4/MT5 trading account to start.",
+      "title": "Connect Your Account"
+    },
+    "step2": {
+      "action": "Open Workspace",
+      "desc": "Use AI to generate a trading strategy from natural language.",
+      "title": "Create Your First Strategy"
+    },
+    "step3": {
+      "action": "View Plans",
+      "desc": "Unlock more AI tokens, strategies, and live trading with Pro.",
+      "title": "Upgrade Your Plan"
+    },
+    "dismiss": "Got it, dismiss",
+    "subtitle": "Get started in 3 simple steps"
+  },
+  "subscription": {
+    "feature": {
+      "aiTokens": "{{count}} AI tokens/mo",
+      "backtests": "{{count}} backtests/day",
+      "liveStrategies": "{{count}} live strategies",
+      "strategies": "{{count}} strategies",
+      "symbols": "{{count}} symbols/strategy",
+      "unlimitedAccounts": "Unlimited MT accounts"
+    },
+    "accountBroker": "Broker",
+    "accountLogin": "Login",
+    "accountServer": "Server",
+    "accountStatus": "Status",
+    "accountType": "Type",
+    "activeStrategies": "Active Strategies",
+    "aiTokens": "AI Tokens",
+    "aiTokensRemaining": "AI Tokens Remaining",
+    "autoRenew": "Auto-renew",
+    "billingCycle": "Billing",
+    "boundAccountsCount": "Bound Accounts",
+    "boundAccountsTitle": "Bound MT Accounts",
+    "boundAt": "Bound At",
+    "cancelAutoRenew": "Cancel Auto-renew",
+    "cancelFailed": "Failed to cancel. Please try again.",
+    "cancelSuccess": "Auto-renewal cancelled. Your subscription remains active until the period ends.",
+    "changeFailed": "Plan change failed. Please try again.",
+    "changePlanTitle": "Change Plan",
+    "changeSuccess": "Plan changed successfully!",
+    "chargeNotice": "Your wallet will be charged for paid plans. Free plans have no charge.",
+    "charged": "Charged: {{amount}}, Balance: {{balance}}",
+    "choosePlan": "Choose Plan",
+    "currentPlan": "Current Plan",
+    "freeForever": "Free forever",
+    "insufficientBalance": "Insufficient wallet balance. Please top up your wallet first.",
+    "month": "mo",
+    "monthly": "Monthly",
+    "noBoundAccounts": "No bound accounts yet. Schedule a strategy to auto-bind an account.",
+    "noPlans": "No plans available",
+    "period": "Current period",
+    "runtimeMinutes": "Runtime (min)",
+    "selectBillingCycle": "Billing Cycle",
+    "subscribeFailed": "Subscription failed. Please try again.",
+    "subscribeSuccess": "Subscription activated successfully!",
+    "subscribeTitle": "Subscribe to Plan",
+    "title": "Subscription Plans",
+    "unbind": "Unbind",
+    "unbindConfirm": "Unbind this account? Active schedules on it will be stopped.",
+    "unbindFailed": "Failed to unbind account.",
+    "unbindSuccess": "Account unbound successfully.",
+    "usageTitle": "Current Month Usage",
+    "walletBalance": "Wallet Balance",
+    "year": "yr",
+    "yearly": "Yearly"
+  },
   "symbolDetection": {
     "tradeMode": {
       "disabled": "Disabled",
@@ -1742,136 +1914,16 @@ const Base = {
     "resolvedTooltip": "broker: {{broker}} | mode: {{mode}}",
     "unresolvedTooltip": "No trading account bound yet, unable to resolve"
   },
-  "subscription": {
-    "feature": {
-      "aiTokens": "{{count}} AI tokens/mo",
-      "strategies": "{{count}} strategies",
-      "backtests": "{{count}} backtests/day",
-      "liveStrategies": "{{count}} live strategies",
-      "symbols": "{{count}} symbols/strategy",
-      "unlimitedAccounts": "Unlimited MT accounts"
-    },
-    "title": "Subscription Plans",
-    "subscribeSuccess": "Subscription activated successfully!",
-    "charged": "Charged: {{amount}}, Balance: {{balance}}",
-    "insufficientBalance": "Insufficient wallet balance. Please top up your wallet first.",
-    "subscribeFailed": "Subscription failed. Please try again.",
-    "cancelSuccess": "Auto-renewal cancelled. Your subscription remains active until the period ends.",
-    "cancelFailed": "Failed to cancel. Please try again.",
-    "changeSuccess": "Plan changed successfully!",
-    "changeFailed": "Plan change failed. Please try again.",
-    "billingCycle": "Billing",
-    "autoRenew": "Auto-renew",
-    "period": "Current period",
-    "cancelAutoRenew": "Cancel Auto-renew",
-    "usageTitle": "Current Month Usage",
-    "aiTokens": "AI Tokens",
-    "activeStrategies": "Active Strategies",
-    "runtimeMinutes": "Runtime (min)",
-    "walletBalance": "Wallet Balance",
-    "month": "mo",
-    "year": "yr",
-    "freeForever": "Free forever",
-    "currentPlan": "Current Plan",
-    "choosePlan": "Choose Plan",
-    "noPlans": "No plans available",
-    "changePlanTitle": "Change Plan",
-    "subscribeTitle": "Subscribe to Plan",
-    "selectBillingCycle": "Billing Cycle",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "chargeNotice": "Your wallet will be charged for paid plans. Free plans have no charge.",
-    "unbindSuccess": "Account unbound successfully.",
-    "unbindFailed": "Failed to unbind account.",
-    "accountLogin": "Login",
-    "accountBroker": "Broker",
-    "accountServer": "Server",
-    "accountType": "Type",
-    "accountStatus": "Status",
-    "boundAt": "Bound At",
-    "unbindConfirm": "Unbind this account? Active schedules on it will be stopped.",
-    "unbind": "Unbind",
-    "boundAccountsCount": "Bound Accounts",
-    "noBoundAccounts": "No bound accounts yet. Schedule a strategy to auto-bind an account.",
-    "aiTokensRemaining": "AI Tokens Remaining",
-    "boundAccountsTitle": "Bound MT Accounts"
-  },
-  "agent": {
-    "analysis": {
-      "title": "Backtest Analysis",
-      "sharpe": "Sharpe",
-      "drawdown": "DD",
-      "winrate": "Win Rate",
-      "consistency": "Consistency",
-      "risk_adj": "Risk-Adj Return",
-      "overfitting": "Overfitting Risk",
-      "observations": "Key Observations",
-      "suggestions": "Improvement Suggestions",
-      "detailed": "Detailed Analysis"
-    },
-    "semantic_diff": {
-      "title": "Strategy Changes",
-      "effect": "Effect"
-    },
-    "profile": {
-      "title": "Strategy Profile",
-      "timeframe": "Timeframe",
-      "regime": "Market Regime",
-      "indicators": "Indicators",
-      "entry": "Entry",
-      "exit": "Exit",
-      "risk": "Risk Management",
-      "coverage": "Coverage",
-      "strengths": "Strengths",
-      "weaknesses": "Weaknesses",
-      "blind_spots": "Blind Spots"
-    }
-  },
-  "importAnalysis": {
-    "execution": {
-      "onBar": "Bar close event-driven",
-      "onTick": "Tick-driven",
-      "onInitGrid": "Init grid"
-    },
-    "sizing": {
-      "fixed": "Fixed lots",
-      "martingale": "Martingale",
-      "percentBalance": "Percent of balance"
-    },
-    "analyzing": "Analyzing strategy structure...",
-    "tradeLogicComplete": "Trading logic fully recognized",
-    "guiNoiseDesc": "The following blind spots are chart display/button features that are skipped during server-side execution and do not affect trading results. Safe to import.",
-    "cannotImport": "Cannot auto-import",
-    "incompleteCoverage": "Trading logic coverage incomplete",
-    "goodCoverage": "Import coverage is good",
-    "goodCoverageDesc": "Strategy main logic recognized. Safe to import. Check parameter list before use.",
-    "coverageTitle": "Import Coverage",
-    "location": "Location",
-    "handling": "Handling",
-    "userActionRequired": "Your action required",
-    "noBlindSpots": "No logic needs confirmation",
-    "noBlindSpotsDesc": "All strategy logic auto-recognized. Safe to import.",
-    "emptyAnalysisDesc": "No strategy logic was recognized. The source code may be incomplete or use a different language."
-  },
-  "dashboard": {
-    "quickActions": {
-      "aiStrategy": "AI Strategy"
-    },
-    "noAccountsDesc": "Bind your first MT4/MT5 account to start monitoring and trading."
-  },
-  "logs": {
-    "triggerSource": {
-      "manual": "Manual",
-      "strategy": "Strategy",
-      "recovery": "Recovery"
-    },
-    "result": {
-      "pass": "PASS",
-      "reject": "REJECT"
-    }
+  "analytics": {
+    "pnl": "P&L:"
   },
   "app": {
     "name": "AlphaForge"
+  },
+  "landing": {
+    "brokersDesc": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
+    "brokersLink": "View all supported brokers",
+    "brokersTitle": "Compatible with 30+ MT4/MT5 Brokers"
   },
   "language": {
     "english": "English",
@@ -1927,6 +1979,48 @@ const Base = {
     "trading": "Trading",
     "wallet": "Wallet"
   },
+  "monitoring": {
+    "acquired": "Acquired",
+    "avgGapSec": "Avg Gap (s)",
+    "bidGtAsk": "Bid>Ask",
+    "consumerLag": "Consumer Lag",
+    "database": "Database",
+    "dbPool": "DB Connection Pool",
+    "deadAccounts": "Dead Accounts",
+    "disconnected": "Disconnected",
+    "diskUsage": "Disk Usage",
+    "dlq": "Dead Letter Queue (DLQ)",
+    "droppedBars": "Dropped Bars",
+    "droppedSignals": "Dropped Signals",
+    "gcCount": "GC Count",
+    "gcPauseAvg": "GC Pause Avg",
+    "goRuntime": "Go Runtime",
+    "goroutines": "Goroutines",
+    "healthy": "OK",
+    "heapMemory": "Heap Memory",
+    "idle": "Idle",
+    "lastUpdate": "Last update",
+    "maxGapSec": "Max Gap (s)",
+    "mdGateway": "MD Gateway",
+    "nonPositive": "Non-Positive",
+    "parseErrors": "Parse Errors",
+    "pushInterval": "Push interval: 5s",
+    "serviceHealth": "Service Health",
+    "spillFiles": "Spill Files",
+    "sseConnected": "SSE Connected",
+    "stackUsage": "Stack Usage",
+    "staleAccounts": "Stale Accounts",
+    "streamError": "Stream Error",
+    "title": "System Monitoring",
+    "totalConns": "Total",
+    "unknown": "Unknown",
+    "uptime": "Uptime",
+    "uptimeDays": "{{d}}d {{h}}h",
+    "uptimeHours": "{{h}}h {{m}}m",
+    "uptimeMinutes": "{{m}}m {{s}}s",
+    "uptimeSeconds": "{{s}}s",
+    "waitingData": "Waiting for data..."
+  },
   "profile": {
     "lastLogin": "Last Login",
     "nickname": "Nickname",
@@ -1957,6 +2051,7 @@ const Base = {
     "bySymbol": "Performance by Symbol",
     "closeTime": "Close",
     "count": "Trades",
+    "countUnit": "笔",
     "disclaimer": "Past performance is not indicative of future results.",
     "equityCurve": "Equity Curve",
     "expired": "This share link has expired",
@@ -1986,8 +2081,11 @@ const Base = {
     "volume": "Volume",
     "winRate": "Win Rate",
     "winningTrades": "Winning Trades",
-    "worstTrade": "Worst Trade",
-    "countUnit": "笔"
+    "worstTrade": "Worst Trade"
+  },
+  "theme": {
+    "switchToDark": "Switch to dark mode",
+    "switchToLight": "Switch to light mode"
   },
   "topbar": {
     "logout": "Logout",
@@ -1996,60 +2094,6 @@ const Base = {
     "switchToAdmin": "Switch to Admin",
     "systemOk": "System running normally",
     "user": "User"
-  },
-  "theme": {
-    "switchToDark": "Switch to dark mode",
-    "switchToLight": "Switch to light mode"
-  },
-  "monitoring": {
-    "unknown": "Unknown",
-    "healthy": "OK",
-    "title": "System Monitoring",
-    "sseConnected": "SSE Connected",
-    "disconnected": "Disconnected",
-    "streamError": "Stream Error",
-    "waitingData": "Waiting for data...",
-    "serviceHealth": "Service Health",
-    "uptime": "Uptime",
-    "database": "Database",
-    "diskUsage": "Disk Usage",
-    "goRuntime": "Go Runtime",
-    "goroutines": "Goroutines",
-    "gcCount": "GC Count",
-    "gcPauseAvg": "GC Pause Avg",
-    "stackUsage": "Stack Usage",
-    "heapMemory": "Heap Memory",
-    "dbPool": "DB Connection Pool",
-    "totalConns": "Total",
-    "idle": "Idle",
-    "acquired": "Acquired",
-    "mdGateway": "MD Gateway",
-    "spillFiles": "Spill Files",
-    "droppedBars": "Dropped Bars",
-    "droppedSignals": "Dropped Signals",
-    "consumerLag": "Consumer Lag",
-    "staleAccounts": "Stale Accounts",
-    "deadAccounts": "Dead Accounts",
-    "avgGapSec": "Avg Gap (s)",
-    "maxGapSec": "Max Gap (s)",
-    "dlq": "Dead Letter Queue (DLQ)",
-    "parseErrors": "Parse Errors",
-    "bidGtAsk": "Bid>Ask",
-    "nonPositive": "Non-Positive",
-    "pushInterval": "Push interval: 5s",
-    "lastUpdate": "Last update",
-    "uptimeDays": "{{d}}d {{h}}h",
-    "uptimeHours": "{{h}}h {{m}}m",
-    "uptimeMinutes": "{{m}}m {{s}}s",
-    "uptimeSeconds": "{{s}}s"
-  },
-  "analytics": {
-    "pnl": "P&L:"
-  },
-  "landing": {
-    "brokersTitle": "Compatible with 30+ MT4/MT5 Brokers",
-    "brokersDesc": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
-    "brokersLink": "View all supported brokers"
   }
 } as const;
 export default Base;
