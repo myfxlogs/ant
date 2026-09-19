@@ -95,7 +95,7 @@ const Base = {
         },
         "accountNumber": "錢包號",
         "accountNumberInvalid": "5-6位數字，無前導零，不含4和7",
-        "accountNumberPlaceholder": "e.g. 123568",
+        "accountNumberPlaceholder": "例：123568",
         "email": "電子郵件",
         "nickname": "暱稱",
         "password": "密碼",
@@ -238,8 +238,8 @@ const Base = {
       "configured": "已設定",
       "confirmDeleteModel": "刪除此模型？",
       "description": "管理 AI 提供者、模型與定價。使用者從可用模型中選擇，按代幣從錢包計費。",
-      "discover": "Discover",
-      "discoverFailed": "Failed to discover models",
+      "discover": "探索",
+      "discoverFailed": "探索模型失敗",
       "displayName": "顯示名稱",
       "displayNamePlaceholder": "DeepSeek Chat",
       "displayNameRequired": "請輸入顯示名稱",
@@ -249,7 +249,7 @@ const Base = {
       "modelNameRequired": "請輸入模型名稱",
       "models": "模型",
       "noModels": "無模型",
-      "noModelsDiscovered": "No models discovered. Check API key and base URL.",
+      "noModelsDiscovered": "未探索到模型。請檢查 API Key 和 Base URL。",
       "notConfigured": "未設定",
       "priceInput": "輸入價格 ($/1M)",
       "priceOutput": "輸出價格 ($/1M)",
@@ -284,7 +284,7 @@ const Base = {
       "monthlyRevenue": "月營收",
       "planEnterprise": "Enterprise",
       "planFree": "免費",
-      "planPro": "Pro",
+      "planPro": "專業版",
       "planRevenue": "方案營收明細",
       "statusActive": "啟用",
       "statusCancelled": "已取消",
@@ -362,8 +362,8 @@ const Base = {
         "action": "操作",
         "amount": "USDT 金額",
         "amountUsd": "美元信用額",
-        "block": "Block",
-        "confirmations": "Confirmations",
+        "block": "區塊",
+        "confirmations": "確認數",
         "reviewNote": "審核備註",
         "status": "狀態",
         "time": "時間",
@@ -520,7 +520,7 @@ const Base = {
       "reason": "調整原因...",
       "searchPlaceholder": "搜尋郵箱或錢包號...",
       "tabDepositAddresses": "Deposit Addresses",
-      "tabWallets": "User Wallets",
+      "tabWallets": "使用者錢包",
       "title": "錢包管理",
       "transactions": "交易明細",
       "unassigned": "未指派",
@@ -529,86 +529,86 @@ const Base = {
       "walletFor": "錢包 -"
     },
     "analytics": {
-      "activeBuyers": "Active Buyers",
-      "name": "Name",
-      "newStrategies": "New Strategies",
-      "newSubs": "New Subscribers",
-      "platformRev": "Platform Rev",
-      "providerRev": "Provider Rev",
-      "refundRate": "Refund Rate",
-      "topByRevenue": "Top Strategies by Revenue",
-      "topBySubs": "Top Strategies by Subscribers",
-      "topProvidersRev": "Top Providers by Revenue",
-      "topProvidersStrat": "Top Providers by Strategies",
-      "totalStrategies": "Total Strategies",
-      "totalTx": "Transactions",
-      "value": "Value"
+      "activeBuyers": "活躍買家",
+      "name": "名稱",
+      "newStrategies": "新策略",
+      "newSubs": "新增訂閱者",
+      "platformRev": "平台收入",
+      "providerRev": "提供商收入",
+      "refundRate": "退款率",
+      "topByRevenue": "收入排行策略",
+      "topBySubs": "訂閱排行策略",
+      "topProvidersRev": "收入排行提供商",
+      "topProvidersStrat": "策略數排行提供商",
+      "totalStrategies": "策略總數",
+      "totalTx": "交易記錄",
+      "value": "數值"
     },
     "autogen": {
-      "actions": "Actions",
-      "allStatus": "All Status",
-      "approve": "Approve",
-      "approveFailed": "Approve failed",
-      "approved": "Task approved and published",
-      "confirmApprove": "Approve and publish?",
-      "confirmReject": "Reject this task?",
-      "enqueue": "Enqueue",
-      "error": "Error",
-      "loadFailed": "Failed to load tasks",
-      "quality": "Quality",
-      "refresh": "Refresh",
-      "reject": "Reject",
-      "rejectFailed": "Reject failed",
-      "rejected": "Task rejected",
-      "status": "Status",
-      "strategyType": "Type",
-      "strategyTypes": "Strategy Types (comma-separated)",
+      "actions": "操作",
+      "allStatus": "全部狀態",
+      "approve": "批准",
+      "approveFailed": "批准失敗",
+      "approved": "任務已批准並發佈",
+      "confirmApprove": "批准並發佈？",
+      "confirmReject": "拒絕此任務？",
+      "enqueue": "排入佇列",
+      "error": "錯誤",
+      "loadFailed": "載入任務失敗",
+      "quality": "品質",
+      "refresh": "重新整理",
+      "reject": "拒絕",
+      "rejectFailed": "拒絕失敗",
+      "rejected": "任務已拒絕",
+      "status": "狀態",
+      "strategyType": "類型",
+      "strategyTypes": "策略 Types (comma-separated)",
       "symbol": "Symbol",
-      "symbols": "Symbols (comma-separated)",
+      "symbols": "品種（逗號分隔）",
       "timeframe": "TF",
-      "timeframes": "Timeframes (comma-separated)",
-      "title": "AI Strategy Generation Tasks",
-      "triggerBatch": "Trigger Batch",
-      "triggerFailed": "Trigger failed"
+      "timeframes": "週期（逗號分隔）",
+      "title": "AI 策略生成任務",
+      "triggerBatch": "觸發批次",
+      "triggerFailed": "觸發失敗"
     },
     "coupon": {
-      "codePlaceholder": "Coupon code (e.g. SUMMER20)",
-      "colActions": "Actions",
-      "colCode": "Code",
-      "colExpires": "Expires",
-      "colMinPurchase": "Min Purchase",
-      "colStatus": "Status",
-      "colType": "Type",
-      "colUsage": "Usage",
-      "colValue": "Value",
-      "create": "Create Coupon",
-      "createFailed": "Failed to create coupon",
-      "createTitle": "Create Coupon",
-      "created": "Coupon created",
-      "disable": "Disable",
-      "disableFailed": "Failed to disable coupon",
-      "disabled": "Coupon disabled",
-      "expiresPlaceholder": "Expires at (ISO 8601, empty = never)",
-      "fillRequired": "Please fill required fields",
-      "loadFailed": "Failed to load coupons",
-      "maxUsesPlaceholder": "Max uses (0 = unlimited)",
-      "minPurchasePlaceholder": "Minimum purchase amount (0 = none)",
-      "valuePlaceholder": "Discount value (e.g. 20 for 20% or 50 for $50)"
+      "codePlaceholder": "優惠碼（如 SUMMER20）",
+      "colActions": "操作",
+      "colCode": "程式碼",
+      "colExpires": "到期時間",
+      "colMinPurchase": "最低購買",
+      "colStatus": "狀態",
+      "colType": "類型",
+      "colUsage": "使用次數",
+      "colValue": "數值",
+      "create": "建立優惠券",
+      "createFailed": "建立優惠券失敗",
+      "createTitle": "建立優惠券",
+      "created": "優惠券已建立",
+      "disable": "停用",
+      "disableFailed": "停用優惠券失敗",
+      "disabled": "優惠券已停用",
+      "expiresPlaceholder": "到期時間（ISO 8601，留空=永不過期）",
+      "fillRequired": "請填寫必填欄位",
+      "loadFailed": "載入優惠券失敗",
+      "maxUsesPlaceholder": "最大使用次數（0 = 不限）",
+      "minPurchasePlaceholder": "最低購買金額（0 = 無限制）",
+      "valuePlaceholder": "折扣金額（如 20 表示 20% 或 50 表示 $50）"
     },
     "depositAddresses": {
-      "address": "Address",
-      "all": "All Status",
-      "assignedAt": "Assigned At",
-      "availablePool": "Available in Pool",
-      "import": "Import Addresses",
-      "importFailed": "Import failed",
-      "importHint": "Use hdgen tool on an offline machine to generate deposit_addresses.bin, then upload it here.",
-      "index": "Index",
-      "network": "Network",
-      "received": "Received USDT",
-      "status": "Status",
-      "total": "Total Addresses",
-      "user": "User ID"
+      "address": "地址",
+      "all": "全部狀態",
+      "assignedAt": "分配時間",
+      "availablePool": "池中可用",
+      "import": "匯入地址",
+      "importFailed": "匯入失敗",
+      "importHint": "請在離線機器上使用 hdgen 工具生成 deposit_addresses.bin，然後在此處上傳。",
+      "index": "索引",
+      "network": "網路",
+      "received": "已收 USDT",
+      "status": "狀態",
+      "total": "地址總數",
+      "user": "使用者 ID"
     },
     "header": {
       "admin": "管理",
@@ -618,44 +618,44 @@ const Base = {
       "logout": "退出登入"
     },
     "marketplace": {
-      "colActions": "Actions",
-      "colFeatured": "Featured",
+      "colActions": "操作",
+      "colFeatured": "精選",
       "colPrice": "Price",
-      "colPublisher": "Publisher",
-      "colRevenue": "Revenue",
-      "colSales": "Sales",
-      "colStatus": "Status",
-      "colTitle": "Title",
-      "feature": "Feature",
-      "featureDesc": "Set priority for featured placement. Higher = more prominent.",
-      "featureFailed": "Failed to feature strategy",
-      "featureSuccess": "Strategy featured",
-      "featureTitle": "Feature Strategy",
-      "filterStatus": "All statuses",
-      "loadFailed": "Failed to load strategies",
+      "colPublisher": "發佈者",
+      "colRevenue": "收入",
+      "colSales": "銷量",
+      "colStatus": "狀態",
+      "colTitle": "標題",
+      "feature": "精選",
+      "featureDesc": "設定精選展示優先級，數值越大越顯眼。",
+      "featureFailed": "設為精選失敗",
+      "featureSuccess": "策略已設為精選",
+      "featureTitle": "精選 策略",
+      "filterStatus": "全部狀態",
+      "loadFailed": "載入策略失敗",
       "searchPlaceholder": "Search by title...",
       "unfeature": "Remove featured",
-      "unfeatureFailed": "Failed to unfeature",
-      "unfeatureSuccess": "Removed featured"
+      "unfeatureFailed": "取消精選失敗",
+      "unfeatureSuccess": "已移除精選"
     },
     "refund": {
-      "approve": "Approve & Execute",
-      "approveTitle": "Approve Refund",
-      "approved": "Refund approved and executed",
-      "colActions": "Actions",
-      "colAmount": "Amount",
-      "colDate": "Date",
-      "colReason": "Reason",
-      "colStatus": "Status",
-      "colStrategy": "Strategy",
-      "colUser": "User",
-      "filterStatus": "All statuses",
-      "loadFailed": "Failed to load refund requests",
-      "processFailed": "Failed to process refund",
-      "reject": "Reject",
-      "rejectTitle": "Reject Refund",
-      "rejected": "Refund request rejected",
-      "reviewNotePlaceholder": "Review note (optional for reject, recommended for approve)..."
+      "approve": "批准並執行",
+      "approveTitle": "批准退款",
+      "approved": "退款已批准並執行",
+      "colActions": "操作",
+      "colAmount": "金額",
+      "colDate": "日期",
+      "colReason": "原因",
+      "colStatus": "狀態",
+      "colStrategy": "策略",
+      "colUser": "使用者",
+      "filterStatus": "全部狀態",
+      "loadFailed": "載入退款請求失敗",
+      "processFailed": "處理退款失敗",
+      "reject": "拒絕",
+      "rejectTitle": "拒絕退款",
+      "rejected": "退款請求已拒絕",
+      "reviewNotePlaceholder": "審核備註（拒絕時可選，批准時建議填寫）..."
     },
     "sidebar": {
       "accountManagement": "账戶管理",
@@ -714,41 +714,41 @@ const Base = {
     "backtest": {
       "diagnostic": {
         "suggestion": {
-          "dll": "DLL imports are not supported — remove external DLL calls and use built-in MQL functions",
+          "dll": "不支援 DLL 匯入——請移除外部 DLL 呼叫，改用內建 MQL 函式",
           "iCustom": "iCustom (custom indicator) is not supported — replace with a built-in indicator (iMA/iRSI/iMACD etc.) or implement the logic manually"
         },
-        "aiFailed": "AI fix failed",
-        "aiFix": "AI Fix",
-        "aiNoResult": "AI returned no code",
-        "allSilenced": "All warnings acknowledged as intentional",
-        "apply": "Apply & Re-run",
-        "applyFailed": "Failed to apply fix",
-        "compatible": "compatible",
-        "coverage": "Coverage",
-        "defenseA": "Structural Validation",
-        "diffHint": "Review the AI-generated code below. Apply to create a new version and re-run backtest.",
-        "diffPreview": "AI Fix Preview",
-        "fatal": "Critical Issues",
-        "fixApplied": "Fix applied — re-running backtest",
-        "fixAppliedCompileWarn": "Fix applied but compile has warnings",
-        "info": "Quality Hints",
-        "invariant": "Invariant Violation",
-        "lookahead": "Lookahead Bias",
-        "noCode": "No strategy code to fix",
-        "saveFirst": "Please save the strategy first to apply AI fixes",
-        "silenceHint": "Acknowledge as intentional — hide this warning",
-        "statistical": "Statistical Hint",
+        "aiFailed": "AI 修復失敗",
+        "aiFix": "AI 修復",
+        "aiNoResult": "AI 未返回程式碼",
+        "allSilenced": "所有警告已確認為有意為之",
+        "apply": "套用並重新執行",
+        "applyFailed": "套用修復失敗",
+        "compatible": "相容",
+        "coverage": "覆蓋率",
+        "defenseA": "結構驗證",
+        "diffHint": "請檢查下方 AI 生成的程式碼。套用後將建立新版本並重新執行回測。",
+        "diffPreview": "AI 修復預覽",
+        "fatal": "嚴重問題",
+        "fixApplied": "修復已套用——正在重新執行回測",
+        "fixAppliedCompileWarn": "修復已套用但編譯有警告",
+        "info": "品質提示",
+        "invariant": "不變量違規",
+        "lookahead": "前瞻偏差",
+        "noCode": "沒有可修復的策略程式碼",
+        "saveFirst": "請先儲存策略以套用 AI 修復",
+        "silenceHint": "確認為有意為之——隱藏此警告",
+        "statistical": "統計提示",
         "suggestionLabel": "建议",
-        "unknown": "Diagnostic",
-        "unsupported": "unsupported",
-        "warning": "Risk Warnings"
+        "unknown": "診斷",
+        "unsupported": "不支援",
+        "warning": "風險警告"
       },
-      "autoGate": "Auto Gate Evaluation",
-      "cancelFailed": "Cancel failed",
+      "autoGate": "自動關卡評估",
+      "cancelFailed": "取消失敗",
       "canceled": "回測已取消",
       "lotSize": "手數",
-      "notPublishable": "Not Publishable",
-      "publishable": "Publishable",
+      "notPublishable": "不可發佈",
+      "publishable": "可發佈",
       "strategyParameters": "策略參數"
     },
     "live": {
@@ -883,76 +883,76 @@ const Base = {
     "templates": {
       "scheduleLaunch": {
         "metrics": {
-          "maxDrawdown": "Max Drawdown",
-          "sharpe": "Sharpe Ratio",
-          "winRate": "Win Rate"
+          "maxDrawdown": "最大回撤",
+          "sharpe": "夏普比率",
+          "winRate": "勝率"
         }
       },
       "actions": {
-        "create": "New Strategy",
-        "delete": "Delete",
-        "deploy": "Deploy"
+        "create": "New 策略",
+        "delete": "刪除",
+        "deploy": "部署"
       },
       "codeModal": {
-        "title": "Code"
+        "title": "程式碼"
       },
       "detail": {
-        "equityCurve": "Equity Curve",
-        "noDescription": "No description",
-        "notFound": "Strategy not found",
-        "openInWorkspace": "Open in Workspace",
-        "overview": "Overview",
-        "parameters": "Parameters",
-        "profitFactor": "Profit Factor",
-        "tradeStats": "Trade Statistics"
+        "equityCurve": "權益曲線",
+        "noDescription": "暫無描述",
+        "notFound": "未找到策略",
+        "openInWorkspace": "在工作區開啟",
+        "overview": "概覽",
+        "parameters": "參數",
+        "profitFactor": "獲利因子",
+        "tradeStats": "交易統計"
       },
       "gallery": {
-        "aiGenerate": "AI Generate",
-        "deleteFailed": "Delete failed",
-        "deploy": "Deploy",
-        "empty": "No strategies found",
-        "filterAll": "All",
-        "filterMine": "Mine",
-        "filterSystem": "System",
+        "aiGenerate": "AI 生成",
+        "deleteFailed": "刪除失敗",
+        "deploy": "部署",
+        "empty": "未找到策略",
+        "filterAll": "全部",
+        "filterMine": "我的",
+        "filterSystem": "系統",
         "fork": "Fork",
-        "forkEdit": "Fork & Edit",
-        "forkFailed": "Fork failed",
-        "forkSuccess": "Forked to new strategy",
-        "publish": "Publish",
-        "searchPlaceholder": "Search strategies...",
+        "forkEdit": "Fork 並編輯",
+        "forkFailed": "Fork 失敗",
+        "forkSuccess": "已 Fork 為新策略",
+        "publish": "發佈",
+        "searchPlaceholder": "搜尋策略...",
         "shared": "Shared",
-        "sortRecent": "Recent",
-        "sortReturn": "Return",
-        "sortRisk": "Risk",
-        "sortUsage": "Usage",
-        "system": "System",
-        "title": "Strategies",
-        "unpublish": "Unpublish",
-        "unpublishFailed": "Unpublish failed",
-        "unpublishSuccess": "Unpublished"
+        "sortRecent": "最近",
+        "sortReturn": "回報",
+        "sortRisk": "風險",
+        "sortUsage": "使用次數",
+        "system": "系統",
+        "title": "策略",
+        "unpublish": "下架",
+        "unpublishFailed": "下架失敗",
+        "unpublishSuccess": "已下架"
       },
       "messages": {
-        "fetchTemplateListFailed": "Failed to load strategies",
-        "publishFailed": "Publish failed",
-        "templateDeleted": "Deleted"
+        "fetchTemplateListFailed": "載入策略失敗",
+        "publishFailed": "發佈失敗",
+        "templateDeleted": "已刪除"
       },
       "table": {
-        "createdAt": "Created",
-        "status": "Status",
-        "useCount": "Use Count",
-        "visibility": "Visibility"
+        "createdAt": "建立時間",
+        "status": "狀態",
+        "useCount": "使用次數",
+        "visibility": "可見性"
       },
       "visibility": {
-        "private": "Private",
-        "public": "Public"
+        "private": "私人",
+        "public": "公開"
       },
       "chatEdit": "對話編輯",
       "confirmDelete": "刪除此策略？",
       "copyAll": "全部複製",
-      "deleteConfirm": "Delete this strategy?",
+      "deleteConfirm": "刪除此策略？",
       "lines": "行數",
-      "loadFailed": "Failed to load templates",
-      "loadOneFailed": "Failed to load template",
+      "loadFailed": "載入策略失敗",
+      "loadOneFailed": "載入範本失敗",
       "noTemplates": "沒有儲存的策略範本",
       "rename": "重新命名",
       "saveCurrent": "儲存目前策略",
@@ -979,19 +979,19 @@ const Base = {
     },
     "tuning": {
       "noParams": {
-        "desc": "Add @param annotations to your strategy code to enable Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5",
-        "title": "No tunable parameters detected"
+        "desc": "在策略程式碼中加入 @param 註解以啟用 Smart Tuning. Example: // @param fastPeriod 14 range=5:30:5",
+        "title": "未偵測到可調參數"
       },
       "searchMethod": {
         "grid": "網格",
         "random": "隨機"
       },
-      "disabledHint": "Need strategy code and symbol. Select a strategy from the sidebar or run a backtest first.",
-      "failed": "Tuning failed",
-      "noDimsHint": "Enable at least one parameter dimension below.",
-      "qualityGate": "Gate",
-      "strategyName": "Strategy",
-      "totalTrades": "Trades"
+      "disabledHint": "需要策略程式碼和品種。請從側邊欄選擇策略或先執行回測。",
+      "failed": "調優失敗",
+      "noDimsHint": "請在下方啟用至少一個參數維度。",
+      "qualityGate": "關卡",
+      "strategyName": "策略",
+      "totalTrades": "交易"
     },
     "workspace": {
       "chartIndicators": {
@@ -999,35 +999,35 @@ const Base = {
         "subPane": "副圖指標"
       },
       "sidebar": {
-        "backtestHistory": "Backtest History",
-        "batchDeleteConfirm": "Delete selected strategies?",
-        "batchDeleteRunsConfirm": "Delete selected runs?",
-        "deleteRunConfirm": "Delete this backtest run?",
-        "deleteStrategyConfirm": "Delete this strategy?",
-        "myStrategies": "My Strategies",
-        "newStrategy": "New Strategy",
-        "noRuns": "No backtest runs yet",
-        "noStrategies": "No strategies yet",
-        "title": "Workspace",
-        "trades": "trades",
-        "viewAll": "View all"
+        "backtestHistory": "回測歷史",
+        "batchDeleteConfirm": "刪除所選策略？",
+        "batchDeleteRunsConfirm": "刪除所選回測記錄？",
+        "deleteRunConfirm": "刪除此回測記錄？",
+        "deleteStrategyConfirm": "刪除此策略？",
+        "myStrategies": "我的策略",
+        "newStrategy": "New 策略",
+        "noRuns": "暫無回測記錄",
+        "noStrategies": "暫無策略",
+        "title": "工作區",
+        "trades": "筆",
+        "viewAll": "查看全部"
       },
       "tour": {
-        "ai": "AI Assistant",
-        "aiDesc": "Ask AI to generate, optimize, or debug your strategy. Applied code appears in the editor instantly.",
-        "backtest": "Backtest",
-        "backtestDesc": "Run backtests with configurable parameters. View equity curve, trade statistics, and risk metrics.",
-        "code": "Code Editor",
-        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the Import MQL tab.",
-        "save": "Save & Publish",
-        "saveDesc": "Save your strategy as a template, publish to marketplace, or deploy to a live schedule."
+        "ai": "AI 助手",
+        "aiDesc": "讓 AI 生成、優化或偵錯您的策略。套用的程式碼會即時出現在編輯器中。",
+        "backtest": "回測",
+        "backtestDesc": "以可配置參數執行回測。查看權益曲線、交易統計和風險指標。",
+        "code": "程式碼編輯器",
+        "codeDesc": "Write or paste your MQL strategy code here. You can also import .mq4/.mq5 files from the 匯入 MQL tab.",
+        "save": "Save & 發佈",
+        "saveDesc": "將策略儲存為範本、發佈到市場或部署到實盤排程。"
       },
-      "importMql": "Import MQL"
+      "importMql": "匯入 MQL"
     },
     "aiChat": {
-      "codeLoaded": "Strategy code in context",
+      "codeLoaded": "策略程式碼已載入",
       "historyTab": "歷史",
-      "noContext": "No strategy loaded — describe what you want",
+      "noContext": "未載入策略——請描述您的需求",
       "strategiesTab": "策略"
     },
     "ai": {
@@ -1037,11 +1037,11 @@ const Base = {
     },
     "chat": {
       "codeGenerated": "程式碼已生成，請使用下方按鈕執行策略審查與回測。",
-      "entry": "Entry:",
+      "entry": "入場：",
       "executionPlan": "執行計畫",
-      "exit": "Exit:",
-      "indicators": "Indicators:",
-      "risk": "Risk:"
+      "exit": "出場：",
+      "indicators": "指標：",
+      "risk": "風險："
     },
     "importEA": {
       "aiTranslate": "AI 翻譯",
@@ -1072,9 +1072,9 @@ const Base = {
     },
     "validate": {
       "allClear": "所有檢查通過 — 沒有發現問題。",
-      "autoFixFailed": "Auto-fix failed",
+      "autoFixFailed": "自動修復失敗",
       "errors": "錯誤",
-      "failed": "Validation failed",
+      "failed": "驗證失敗",
       "fixWithAI": "將錯誤傳送給 AI 修訂",
       "hints": "建議",
       "parameters": "參數",
@@ -1122,8 +1122,8 @@ const Base = {
       "shareLinkFailed": "建立分享連結失敗"
     },
     "status": {
-      "circuit_half_open": "Circuit Testing",
-      "circuit_open": "Circuit Open"
+      "circuit_half_open": "半開測試",
+      "circuit_open": "已熔斷"
     }
   },
   "autoTrading": {
@@ -1183,9 +1183,9 @@ const Base = {
         "label": "風險等級"
       },
       "trialDays": {
-        "7": "7 days",
-        "14": "14 days",
-        "30": "30 days"
+        "7": "7 天",
+        "14": "14 天",
+        "30": "30 天"
       },
       "codeSnippet": "策略預覽（公開）",
       "codeSnippetPlaceholder": "可選：分享您的策略片段或高階構想（對所有人可見）",
@@ -1200,9 +1200,9 @@ const Base = {
       "titleLabel": "標題",
       "titlePlaceholder": "例如：黃金交叉策略",
       "trades": "交易筆數",
-      "trialDaysCustom": "Custom days",
-      "trialDaysLabel": "Trial Period",
-      "trialDaysPlaceholder": "Select or enter custom days",
+      "trialDaysCustom": "自訂天數",
+      "trialDaysLabel": "試用期",
+      "trialDaysPlaceholder": "選擇或輸入自訂天數",
       "winRate": "勝率"
     },
     "author": {
@@ -1252,7 +1252,7 @@ const Base = {
       "yourRating": "我的評分"
     },
     "live": {
-      "loadError": "Failed to load live performance data"
+      "loadError": "載入實盤績效資料失敗"
     },
     "messages": {
       "commentFailed": "評論失敗",
@@ -1267,20 +1267,20 @@ const Base = {
       "subscribed": "已加入您的購買"
     },
     "optimization": {
-      "decayScore": "Decay Score",
-      "returnDelta": "Return Delta",
-      "sharpeDecline": "Sharpe Decline",
-      "trigger": "Trigger",
-      "winRateDecline": "Win Rate Decline"
+      "decayScore": "衰減評分",
+      "returnDelta": "回報差值",
+      "sharpeDecline": "夏普衰退",
+      "trigger": "觸發",
+      "winRateDecline": "勝率衰退"
     },
     "payment": {
       "alreadyPurchased": "您已擁有此策略。",
       "balanceAfter": "購買後餘額",
       "cancel": "取消",
       "confirm": "確認購買",
-      "deployGuide": "Your strategy is ready to deploy.",
+      "deployGuide": "您的策略已就緒，可以部署。",
       "depositPrompt": "請先充值後再繼續。",
-      "goDeploy": "Deploy Now",
+      "goDeploy": "立即部署",
       "goToDeposit": "充值",
       "insufficientBalance": "餘額不足",
       "oneTimePurchase": "¥{{amount}} 一次性買斷",
@@ -1346,13 +1346,13 @@ const Base = {
       "markAllAsRead": "全部已讀"
     },
     "prefs": {
-      "newRating": "New rating or comment received",
-      "newStrategy": "New strategy published",
-      "performance": "Strategy performance anomaly",
-      "priceChange": "Strategy price changed",
-      "saveFailed": "Failed to save preferences",
-      "subExpiring": "Subscription expiring soon",
-      "title": "Notification Preferences"
+      "newRating": "收到新評分或評論",
+      "newStrategy": "新策略已發佈",
+      "performance": "策略績效異常",
+      "priceChange": "策略價格變更",
+      "saveFailed": "儲存偏好失敗",
+      "subExpiring": "訂閱即將到期",
+      "title": "通知偏好"
     },
     "tabs": {
       "all": "全部 ({{count}})",
@@ -1376,7 +1376,7 @@ const Base = {
   "schedule": {
     "launch": {
       "noAccount": {
-        "bindButton": "Bind MT Account"
+        "bindButton": "綁定 MT 帳戶"
       }
     }
   },
@@ -1584,23 +1584,23 @@ const Base = {
       "password": "密碼"
     },
     "forgotPassword": {
-      "adminHint": "Please contact your administrator or support to reset your password.",
-      "adminTab": "Admin",
+      "adminHint": "請聯絡管理員或客服重設密碼。",
+      "adminTab": "管理員",
       "backToLogin": "返回登录",
-      "emailSent": "If the email exists, a reset link has been sent.",
-      "emailTab": "Email",
+      "emailSent": "如果該信箱存在，重設連結已發送。",
+      "emailTab": "電子郵件",
       "hint": "請聯繫管理員或支援人員重設密碼。",
-      "mtFailed": "MT credential verification failed.",
-      "mtHint": "Enter your bound MT account credentials to verify your identity. Server and platform are detected automatically.",
-      "mtLogin": "MT Account Number",
-      "mtLoginPlaceholder": "e.g. 12345678",
-      "mtPassword": "MT Password",
-      "mtPasswordPlaceholder": "MT trading password",
-      "mtTab": "MT Verify",
-      "mtVerified": "Identity verified. Redirecting to password reset.",
-      "sendResetLink": "Send Reset Link",
+      "mtFailed": "MT 憑證驗證失敗。",
+      "mtHint": "輸入已綁定的 MT 帳戶憑證以驗證身份。伺服器和平台將自動識別。",
+      "mtLogin": "MT 帳號",
+      "mtLoginPlaceholder": "例：12345678",
+      "mtPassword": "MT 密碼",
+      "mtPasswordPlaceholder": "MT 交易密碼",
+      "mtTab": "MT 驗證",
+      "mtVerified": "身份已驗證，正在跳轉至密碼重設。",
+      "sendResetLink": "發送重設連結",
       "title": "重設密碼",
-      "verifyAndReset": "Verify & Reset Password"
+      "verifyAndReset": "驗證並重設密碼"
     },
     "login": {
       "forgotPassword": "忘記密碼？",
@@ -1627,15 +1627,15 @@ const Base = {
       "subtitle": "建立新帳號"
     },
     "resetPassword": {
-      "confirmPassword": "Confirm Password",
-      "confirmRequired": "Please confirm your password",
-      "failed": "Failed to reset password.",
-      "invalidToken": "Invalid or missing reset token.",
-      "mismatch": "Passwords do not match.",
-      "newPassword": "New Password",
-      "submit": "Reset Password",
-      "success": "Password has been reset. Please log in with your new password.",
-      "title": "Set New Password"
+      "confirmPassword": "確認密碼",
+      "confirmRequired": "請確認您的密碼",
+      "failed": "重設密碼失敗。",
+      "invalidToken": "重設權杖無效或缺失。",
+      "mismatch": "兩次輸入的密碼不一致。",
+      "newPassword": "新密碼",
+      "submit": "重設密碼",
+      "success": "密碼已重設。請使用新密碼登入。",
+      "title": "設定新密碼"
     },
     "validation": {
       "confirmPasswordRequired": "請確認密碼",
@@ -1720,7 +1720,7 @@ const Base = {
     "saving": "儲存中...",
     "searching": "搜尋中...",
     "selectSymbolToViewChart": "選擇品種查看圖表",
-    "selected": "selected",
+    "selected": "已選",
     "send": "發送",
     "showDetails": "查看詳情",
     "status": "狀態",
@@ -1728,6 +1728,7 @@ const Base = {
     "step2Label": "登入憑證",
     "step3Label": "確認",
     "success": "成功",
+    "total": "共 {{total}}",
     "totalItems": "共 {{count}} 項",
     "translate": "翻譯",
     "true": "是",
@@ -1746,7 +1747,7 @@ const Base = {
     "quickActions": {
       "aiStrategy": "AI 策略"
     },
-    "noAccountsDesc": "Bind your first MT4/MT5 account to start monitoring and trading."
+    "noAccountsDesc": "綁定您的第一個 MT4/MT5 帳戶，開始監控和交易。"
   },
   "errors": {
     "ai": {
@@ -1803,7 +1804,7 @@ const Base = {
     "analyzing": "正在分析策略���構...",
     "cannotImport": "無法自動匯入",
     "coverageTitle": "匯入涵蓋範圍",
-    "emptyAnalysisDesc": "No strategy logic was recognized. The source code may be incomplete or use a different language.",
+    "emptyAnalysisDesc": "未能識別策略邏輯。原始碼可能不完整或使用了其他語言。",
     "goodCoverage": "匯入涵蓋良好",
     "goodCoverageDesc": "策略主要邏輯已識別，可安全匯入。使用前請檢查參數清單。",
     "guiNoiseDesc": "以下盲點為圖表顯示/按鈕功能，伺服器端執行時會略過，不影響交易結果，可安全匯入。",
@@ -1852,21 +1853,21 @@ const Base = {
       "liveStrategies": "{{count}} 個實盤策略",
       "strategies": "{{count}} 個策略",
       "symbols": "{{count}} 個品種/策略",
-      "unlimitedAccounts": "Unlimited MT accounts"
+      "unlimitedAccounts": "無限 MT 帳戶"
     },
-    "accountBroker": "Broker",
-    "accountLogin": "Login",
-    "accountServer": "Server",
-    "accountStatus": "Status",
-    "accountType": "Type",
+    "accountBroker": "經紀商",
+    "accountLogin": "登入帳號",
+    "accountServer": "伺服器",
+    "accountStatus": "狀態",
+    "accountType": "類型",
     "activeStrategies": "活躍策略",
     "aiTokens": "AI Token",
-    "aiTokensRemaining": "AI Tokens Remaining",
+    "aiTokensRemaining": "AI Token 餘額",
     "autoRenew": "自動續訂",
     "billingCycle": "計費",
-    "boundAccountsCount": "Bound Accounts",
-    "boundAccountsTitle": "Bound MT Accounts",
-    "boundAt": "Bound At",
+    "boundAccountsCount": "已綁定帳戶",
+    "boundAccountsTitle": "已綁定 MT 帳戶",
+    "boundAt": "綁定時間",
     "cancelAutoRenew": "取消自動續訂",
     "cancelFailed": "取消失敗，請重試。",
     "cancelSuccess": "自動續訂已取消。您的訂閱在當前週期結束前仍然有效。",
@@ -1881,7 +1882,7 @@ const Base = {
     "insufficientBalance": "錢包餘額不足，請先充值。",
     "month": "月",
     "monthly": "月付",
-    "noBoundAccounts": "No bound accounts yet. Schedule a strategy to auto-bind an account.",
+    "noBoundAccounts": "暫無綁定帳戶。排程策略以自動綁定帳戶。",
     "noPlans": "暫無可用方案",
     "period": "當前週期",
     "runtimeMinutes": "運行時長（分鐘）",
@@ -1890,10 +1891,10 @@ const Base = {
     "subscribeSuccess": "訂閱啟用成功！",
     "subscribeTitle": "訂閱方案",
     "title": "訂閱方案",
-    "unbind": "Unbind",
-    "unbindConfirm": "Unbind this account? Active schedules on it will be stopped.",
-    "unbindFailed": "Failed to unbind account.",
-    "unbindSuccess": "Account unbound successfully.",
+    "unbind": "解除綁定",
+    "unbindConfirm": "解除綁定此帳戶？其上的活躍排程將被停止。",
+    "unbindFailed": "解除綁定帳戶失敗。",
+    "unbindSuccess": "帳戶解除綁定成功。",
     "usageTitle": "本月使用量",
     "walletBalance": "錢包餘額",
     "year": "年",
@@ -1914,15 +1915,15 @@ const Base = {
     "unresolvedTooltip": "尚未綁定交易帳戶，無法解析"
   },
   "analytics": {
-    "pnl": "P&L:"
+    "pnl": "損益："
   },
   "app": {
     "name": "AlphaForge"
   },
   "landing": {
-    "brokersDesc": "IC Markets, Pepperstone, XM, Exness, OANDA, FXTM, FBS, OctaFX, HotForex, Alpari, RoboForex and more. Connect your existing broker account in seconds.",
-    "brokersLink": "View all supported brokers",
-    "brokersTitle": "Compatible with 30+ MT4/MT5 Brokers"
+    "brokersDesc": "IC Markets、Pepperstone、XM、Exness、OANDA、FXTM、FBS、OctaFX、HotForex、Alpari、RoboForex 等。數秒內即可連接您的現有經紀商帳戶。",
+    "brokersLink": "查看全部支持的經紀商",
+    "brokersTitle": "相容 30+ 家 MT4/MT5 經紀商"
   },
   "language": {
     "english": "English",
@@ -2014,6 +2015,10 @@ const Base = {
     "totalConns": "總計",
     "unknown": "未知",
     "uptime": "運行時間",
+    "uptimeDays": "{{d}} 天 {{h}} 小時",
+    "uptimeHours": "{{h}} 小時 {{m}} 分",
+    "uptimeMinutes": "{{m}} 分 {{s}} 秒",
+    "uptimeSeconds": "{{s}} 秒",
     "waitingData": "等待資料中..."
   },
   "profile": {

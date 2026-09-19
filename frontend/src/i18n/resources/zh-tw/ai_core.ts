@@ -86,7 +86,7 @@ const AiCore = {
       "recommendation": {
         "cautious": "謹慎上線：建議先小資金/手動驗證一段時間。",
         "loading": "風險評估進行中，請等待完成後再上線。",
-        "notRecommended": "Not recommended for direct live: high risk or unreliable, optimize before trying.",
+        "notRecommended": "不建議直接實盤：風險高或不可靠，請先優化再嘗試。",
         "recommended": "建議上線：風險可控，指標健康。"
       },
       "score": {

@@ -19,6 +19,7 @@ import LogsJa from '../i18n/resources/ja/logs';
 import LogsVi from '../i18n/resources/vi/logs';
 import LogsEn from '../i18n/resources/en/logs';
 import GenZhCn from '../i18n/resources/zh-cn/strategy_gen';
+import GenZhTw from '../i18n/resources/zh-tw/strategy_gen';
 
 type Tree = Record<string, unknown>;
 
@@ -127,10 +128,26 @@ describe('I18N-MIXED-1 R6: absorbed SSOT keys present in all 5 locales', () => {
     }
   });
 
-  it('keeps strategy_gen.execFeedback.placeholder present in zh-cn (S3 fix)', () => {
+  it('keeps strategy_gen.execFeedbackPlaceholder present in zh-cn (S3 fix)', () => {
     const v = at(GenZhCn as unknown as Tree, 'strategy.gen.execFeedbackPlaceholder');
     expect(v).toBeDefined();
     expect(v).toContain('把止损收紧到 1%');
+  });
+
+  it('keeps strategy_gen.execFeedbackPlaceholder present in zh-tw (I18N-MIXED-2 S3)', () => {
+    const v = at(GenZhTw as unknown as Tree, 'strategy.gen.execFeedbackPlaceholder');
+    expect(v).toBeDefined();
+    expect(v).toContain('把止損收緊到 1%');
+  });
+
+  it('keeps zh-tw diag translations distinct from en (absorbed real translations)', () => {
+    for (const path of ['strategy.live.diag.orderTruth', 'strategy.live.diag.lifecycle.signal_generated']) {
+      const tw = at(LOCALE_BASES['zh-tw'], path);
+      const en = at(LOCALE_BASES['en'], path);
+      expect(tw).toBeDefined();
+      expect(tw).not.toEqual(en);
+    }
+    expect(at(LOCALE_BASES['zh-tw'], 'strategy.live.diag.orderTruth')).toEqual('訂單真相');
   });
 
   it('applies the 5 R4 user-facing translations in zh-cn', () => {

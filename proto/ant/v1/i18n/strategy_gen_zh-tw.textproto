@@ -45,10 +45,7 @@ exec_backtest_tool: '回測'
 exec_tool_running: '正在執行 {tool}...'
 exec_feedback_title: '💬 繼續與 AI 對話'
 exec_feedback_hint: '你可以用自然語言告訴 AI 如何調整策略：描述問題、要求改進、或討論思路都可以。'
-exec_feedback_placeholder: '試著說：
-"止損太大了，改成 1%"
-"為什麼夏普這麼低？幫我最佳化"
-"改成只能做多，不加空單"'
+exec_feedback_placeholder: '試試說：\n"把止損收緊到 1%"\n"為什麼夏普比率這麼低？幫我改進"\n"改成只做多，不做空"'
 exec_chip_lower_dd: '降低回撤'
 exec_chip_raise_return: '提高收益'
 exec_chip_tighten_sl: '收緊止損'
@@ -85,3 +82,5 @@ plan_entry: '入場'
 plan_exit: '出場'
 plan_risk: '風險'
 plan_market: '市場'
+plan_hint: '您可以討論此計畫，或說 "generate code" 開始實作。'
+plan_input_placeholder: '分享您的想法...'

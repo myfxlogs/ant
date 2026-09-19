@@ -117,10 +117,14 @@ for f in docs/handoff/decisions.md docs/constraints.md docs/pitfalls.md "docs/�
   fi
 done
 
-# ⑤ i18n zh-cn strict（I18N-MIXED-1）：i18n 文件变更时校验 zh-cn 无未译/缺字段
+# ⑤ i18n strict（I18N-MIXED-1/2）：i18n 文件变更时校验 zh-cn/zh-tw 无未译/缺字段
 if command -v npx >/dev/null 2>&1 && git diff --cached --name-only | grep -q 'i18n/'; then
   (cd "$(git rev-parse --show-toplevel)" && npx tsx scripts/i18n-check.ts --strict --locale zh-cn) || {
     echo "❌ i18n zh-cn strict 未过（未译/缺字段）。跑 npx tsx scripts/i18n-check.ts --strict --locale zh-cn 看明细。" >&2
+    fail=1
+  }
+  (cd "$(git rev-parse --show-toplevel)" && npx tsx scripts/i18n-check.ts --strict --locale zh-tw) || {
+    echo "❌ i18n zh-tw strict 未过（未译/缺字段）。跑 npx tsx scripts/i18n-check.ts --strict --locale zh-tw 看明细。" >&2
     fail=1
   }
 fi
