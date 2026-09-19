@@ -34,14 +34,14 @@ type Monitor struct {
 	mu      sync.RWMutex
 	addrMap map[string]repository.AddressInfo // address → {userID, addrID}
 
-	usdtContract    string
-	minConfirms     int
-	minDepositAmt   string
+	usdtContract  string
+	minConfirms   int
+	minDepositAmt string
 
 	// EXT-BOUNDARY-WAVE2 S2: checkpoint-stall observability (single select
 	// goroutine — no locking needed).
-	lastProgressAt time.Time
-	lastSafeLatest int64
+	lastProgressAt  time.Time
+	lastSafeLatest  int64
 	scanInterval    time.Duration
 	refreshInterval time.Duration
 }
