@@ -24,7 +24,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **LOWPRI-SWEEP-1 ✅done**（51b01d87——CQ-10/CQ-5/MDGATEWAY-5/TUNING-OVERFIT-2 全验收；复审副产新登记 CQ-11 传递性死链/CQ-12 lint 存量红）。其后 POST-2 设计实查或 CQ-11/CQ-12 清扫。（CQ-10 删死 repo 保表/CQ-5 16 处补理由+17 处既有/MDG-5a fail-closed/MDG-5b 常量/MDG-5c 删 session_clock/TUNING-OVERFIT-2 fail-visible/MDG-5d 枚举全覆盖；mutation T3/T6 RED 实证）。其后 POST-2 设计实查。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。i18n 债系收官。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
+- **下一步**: **LOWPRI-SWEEP-1 ✅done**（51b01d87——CQ-10/CQ-5/MDGATEWAY-5/TUNING-OVERFIT-2 全验收；复审副产新登记 CQ-11 传递性死链/CQ-12 lint 存量红）。LOWPRI-SWEEP-2 已派工（CQ-11 死簇+CQ-12 lint 红，builder-handoff-lowpri-sweep-2.md）。其后 POST-2 设计实查。（CQ-10 删死 repo 保表/CQ-5 16 处补理由+17 处既有/MDG-5a fail-closed/MDG-5b 常量/MDG-5c 删 session_clock/TUNING-OVERFIT-2 fail-visible/MDG-5d 枚举全覆盖；mutation T3/T6 RED 实证）。其后 POST-2 设计实查。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。i18n 债系收官。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
