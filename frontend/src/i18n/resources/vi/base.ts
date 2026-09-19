@@ -715,7 +715,6 @@ const Base = {
       "diag": {
         "state": {
           "active": "Hoạt động",
-          "warning": "Cảnh báo",
           "dataStarvation": "Thiếu dữ liệu",
           "noEvaluations": "Không đánh giá",
           "error": "Lỗi"
@@ -729,50 +728,7 @@ const Base = {
         "indicators": "Chỉ báo",
         "noIndicators": "Chưa có dữ liệu chỉ báo",
         "ago": "trước",
-        "never": "chưa bao giờ",
-        "orderTruth": "Thực tế Lệnh",
-        "vmOrdersTotal": "Tổng lệnh VM",
-        "brokerAccountOrders": "Lệnh tài khoản broker",
-        "strategyMagicOrders": "Lệnh Magic chiến lược",
-        "pendingBrokerOrders": "Lệnh broker chờ xử lý",
-        "scheduleMagic": "Magic lịch trình",
-        "lastBrokerTicket": "Ticket broker cuối",
-        "vmBrokerMismatch": "Số lượng VM khác broker",
-        "execution": "Thực thi",
-        "executionState": "Trạng thái thực thi",
-        "orderLifecycle": "Vòng đời lệnh",
-        "freshness": "Độ tươi",
-        "financialSource": "Nguồn tài chính",
-        "financialAge": "Tuổi tài chính",
-        "financialFresh": "Tươi tài chính",
-        "positionsSource": "Nguồn vị thế",
-        "positionsAge": "Tuổi vị thế",
-        "positionsFresh": "Tươi vị thế",
-        "fresh": "Tươi",
-        "stale": "Lỗi thời",
-        "na": "N/A",
-        "lifecycle": {
-          "signal_generated": "Tín hiệu đã tạo",
-          "order_submitting": "Đang gửi lệnh",
-          "order_submitted": "Lệnh đã gửi",
-          "order_confirmed": "Lệnh đã xác nhận",
-          "order_rejected": "Lệnh bị từ chối",
-          "order_outcome_unknown": "Kết quả không rõ"
-        },
-        "execState": {
-          "idle": "Chờ",
-          "submitting": "Đang gửi",
-          "accepted_unconfirmed": "Đã nhận (chưa xác nhận)",
-          "confirmed": "Đã xác nhận",
-          "deterministic_rejected": "Bị từ chối",
-          "outcome_unknown": "Không rõ"
-        },
-        "source": {
-          "account_summary": "Tóm tắt tài khoản",
-          "profit_stream": "Luồng lợi nhuận",
-          "order_update": "Cập nhật lệnh",
-          "position_snapshot": "Ảnh chụp vị thế"
-        }
+        "never": "chưa bao giờ"
       },
       "stopSuccess": "Chiến lược đã dừng",
       "stopFailed": "Dừng thất bại",
@@ -1911,13 +1867,6 @@ const Base = {
     "result": {
       "pass": "PASS",
       "reject": "REJECT"
-    },
-    "signalType": {
-      "buy": "MUA",
-      "sell": "BÁN",
-      "close": "ĐÓNG",
-      "hold": "GIỮ",
-      "modify": "SỬA"
     }
   },
   "app": {

@@ -86,7 +86,7 @@ const AiCore = {
       "recommendation": {
         "cautious": "谨慎上线：建议先小资金/手动确认运行一段时间。",
         "loading": "风险评估计算中，建议先等待完成再上线。",
-        "notRecommended": "Not recommended for direct live: high risk or unreliable, optimize before trying.",
+        "notRecommended": "不建议直接实盘：风险高或不可靠，请先优化再尝试。",
         "recommended": "推荐上线：风险可控，指标整体健康。"
       },
       "score": {

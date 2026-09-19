@@ -140,7 +140,7 @@ const AiSettings = {
         "unauthorized": "服务商返回：API Key 无效或未授权（401）。请检查 Key 是否正确、是否有该模型权限。"
       },
       "fields": {
-        "apiKey": "API Key",
+        "apiKey": "API 密钥",
         "apiKeyConfigured": "已配置",
         "apiKeyReplaceHint": "如需更换密钥，请重新输入",
         "availableModels": "可用模型",
@@ -148,7 +148,7 @@ const AiSettings = {
         "availableModelsHint": "同一 API Key 下可同时启用多个 model；这里的清单会出现在 /ai/agents 的下拉里。默认空白，从下拉选择或手动输入 model id 后回车添加；只加入显式选过的，不会自动并入全部已发现模型。",
         "availableModelsPlaceholder": "选择或手动输入 model id 后回车添加（默认空白）",
         "availableModelsTip": "提示：删除某个模型不会立即清空 /ai/agents 中已绑定它的 Agent，但会将它从下拉建议中移除。",
-        "baseUrl": "Base URL",
+        "baseUrl": "基础 URL",
         "baseUrlHint": "（模型服务地址）",
         "clear": "清空",
         "defaultModel": "默认模型",

@@ -31,6 +31,10 @@ const SECTIONS = [
 ] as const;
 
 const STRICT = process.argv.includes('--strict');
+// I18N-MIXED-1 S4: --locale <loc> restricts Missing/Untranslated checks to
+// the named locale (other locales are skipped entirely).
+const LOCALE_FILTER_IDX = process.argv.indexOf('--locale');
+const LOCALE_FILTER = LOCALE_FILTER_IDX !== -1 ? process.argv[LOCALE_FILTER_IDX + 1] : undefined;
 
 interface TextprotoField {
   key: string;
@@ -73,6 +77,7 @@ function checkSection(section: string): CheckResult {
   // Check each locale
   for (const locale of LOCALES) {
     if (locale === 'en') continue;
+    if (LOCALE_FILTER && locale !== LOCALE_FILTER) continue;
 
     const tpPath = path.join(PROTO_DIR, `${section}_${locale}.textproto`);
     if (!fs.existsSync(tpPath)) {
@@ -119,6 +124,11 @@ function checkSection(section: string): CheckResult {
       'English', 'Tiếng Việt', '繁體中文', '简体中文', '日本語',
       // Technical
       'Base URL', 'API Key', 'VaR 95%',
+      // I18N-MIXED-1 附录 C：合法英文保留
+      'AI Token', 'ID', 'SL', 'TP', 'OK', 'PASS', 'Goroutines', 'Fork', 'Gate',
+      'DeepSeek Chat', 'account-1, account-2',
+      '{symbol} · {timeframe}',
+      '{{period}} · {{metric}}：{{value}}', '{{symbol}} {{timeframe}} {{name}}',
     ]);
     const EXEMPT_PATTERNS = [
       /^Backtest: \{\{/,
@@ -134,6 +144,14 @@ function checkSection(section: string): CheckResult {
       /^No code block found/,
       /^None \(save template/,
       /^Not recommended for direct/,
+      // I18N-MIXED-1 附录 C：AI prompt 内部串（非用户面）
+      /^Example:\n/,
+      // I18N-MIXED-1 残留待译（清单外未译，译文需决策方授权后补——登记 I18N-MIXED-2 范围）
+      /^iCustom \(custom indicator\)/,
+      /^DLL imports are not supported/,
+      /^Acknowledge as intentional/,
+      /^Ask AI to generate/,
+      /^Run backtests with configurable parameters/,
     ];
     for (const [key, value] of fields) {
       const enValue = enFields.get(key);
@@ -164,7 +182,7 @@ function checkSection(section: string): CheckResult {
 // ── Main ──
 
 function main(): void {
-  console.log(`[i18n-check] ${STRICT ? 'STRICT mode' : 'normal mode'} — checking ${SECTIONS.length} section(s)...\n`);
+  console.log(`[i18n-check] ${STRICT ? 'STRICT mode' : 'normal mode'}${LOCALE_FILTER ? ` — locale: ${LOCALE_FILTER}` : ''} — checking ${SECTIONS.length} section(s)...\n`);
 
   let totalErrors = 0;
   let totalWarnings = 0;

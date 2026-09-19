@@ -58,6 +58,7 @@ const StrategyGen = {
       "execToolRunning": "正在执行 {tool}...",
       "execFeedbackTitle": "💬 继续与 AI 对话",
       "execFeedbackHint": "你可以用自然语言告诉 AI 如何调整策略：描述问题、要求改进、或讨论思路都可以。",
+      "execFeedbackPlaceholder": "试试说：\\n\"把止损收紧到 1%\"\\n\"为什么夏普比率这么低？帮我改进\"\\n\"改成只做多，不做空\"",
       "execChipLowerDd": "降低回撤",
       "execChipRaiseReturn": "提高收益",
       "execChipTightenSl": "收紧止损",

@@ -715,7 +715,6 @@ const Base = {
       "diag": {
         "state": {
           "active": "Active",
-          "warning": "Warning",
           "dataStarvation": "Data Starvation",
           "noEvaluations": "No Evaluations",
           "error": "Error"
@@ -729,50 +728,7 @@ const Base = {
         "indicators": "Indicators",
         "noIndicators": "No indicator data yet",
         "ago": "ago",
-        "never": "never",
-        "orderTruth": "Order Truth",
-        "vmOrdersTotal": "VM OrdersTotal",
-        "brokerAccountOrders": "Broker Account Orders",
-        "strategyMagicOrders": "Strategy Magic Orders",
-        "pendingBrokerOrders": "Pending Broker Orders",
-        "scheduleMagic": "Schedule Magic",
-        "lastBrokerTicket": "Last Broker Ticket",
-        "vmBrokerMismatch": "VM count differs from broker count",
-        "execution": "Execution",
-        "executionState": "Execution State",
-        "orderLifecycle": "Order Lifecycle",
-        "freshness": "Freshness",
-        "financialSource": "Financial Source",
-        "financialAge": "Financial Age",
-        "financialFresh": "Financial Fresh",
-        "positionsSource": "Positions Source",
-        "positionsAge": "Positions Age",
-        "positionsFresh": "Positions Fresh",
-        "fresh": "Fresh",
-        "stale": "Stale",
-        "na": "N/A",
-        "lifecycle": {
-          "signal_generated": "Signal Generated",
-          "order_submitting": "Order Submitting",
-          "order_submitted": "Order Submitted",
-          "order_confirmed": "Order Confirmed",
-          "order_rejected": "Order Rejected",
-          "order_outcome_unknown": "Outcome Unknown"
-        },
-        "execState": {
-          "idle": "Idle",
-          "submitting": "Submitting",
-          "accepted_unconfirmed": "Accepted (Unconfirmed)",
-          "confirmed": "Confirmed",
-          "deterministic_rejected": "Rejected",
-          "outcome_unknown": "Unknown"
-        },
-        "source": {
-          "account_summary": "Account Summary",
-          "profit_stream": "Profit Stream",
-          "order_update": "Order Update",
-          "position_snapshot": "Position Snapshot"
-        }
+        "never": "never"
       },
       "stopSuccess": "Strategy stopped",
       "stopFailed": "Failed to stop",
@@ -1912,13 +1868,6 @@ const Base = {
     "result": {
       "pass": "PASS",
       "reject": "REJECT"
-    },
-    "signalType": {
-      "buy": "BUY",
-      "sell": "SELL",
-      "close": "CLOSE",
-      "hold": "HOLD",
-      "modify": "MODIFY"
     }
   },
   "app": {

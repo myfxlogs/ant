@@ -715,7 +715,6 @@ const Base = {
       "diag": {
         "state": {
           "active": "アクティブ",
-          "warning": "警告",
           "dataStarvation": "データ飢餓",
           "noEvaluations": "評価なし",
           "error": "エラー"
@@ -729,50 +728,7 @@ const Base = {
         "indicators": "インジケーター",
         "noIndicators": "インジケーターデータなし",
         "ago": "前",
-        "never": "なし",
-        "orderTruth": "注文の真実",
-        "vmOrdersTotal": "VM注文総数",
-        "brokerAccountOrders": "ブローカーアカウント注文",
-        "strategyMagicOrders": "ストラテジーマジック注文",
-        "pendingBrokerOrders": "保留中ブローカー注文",
-        "scheduleMagic": "スケジュールマジック",
-        "lastBrokerTicket": "最終ブローカーチケット",
-        "vmBrokerMismatch": "VM数とブローカー数が異なります",
-        "execution": "実行",
-        "executionState": "実行状態",
-        "orderLifecycle": "注文ライフサイクル",
-        "freshness": "鮮度",
-        "financialSource": "金融ソース",
-        "financialAge": "金融経過時間",
-        "financialFresh": "金融鮮度",
-        "positionsSource": "ポジションソース",
-        "positionsAge": "ポジション経過時間",
-        "positionsFresh": "ポジション鮮度",
-        "fresh": "新鮮",
-        "stale": "遅延",
-        "na": "N/A",
-        "lifecycle": {
-          "signal_generated": "シグナル生成",
-          "order_submitting": "注文送信中",
-          "order_submitted": "注文送信済み",
-          "order_confirmed": "注文確認済み",
-          "order_rejected": "注文拒否",
-          "order_outcome_unknown": "結果不明"
-        },
-        "execState": {
-          "idle": "アイドル",
-          "submitting": "送信中",
-          "accepted_unconfirmed": "承認（未確認）",
-          "confirmed": "確認済み",
-          "deterministic_rejected": "拒否",
-          "outcome_unknown": "不明"
-        },
-        "source": {
-          "account_summary": "口座サマリー",
-          "profit_stream": "プロフィットストリーム",
-          "order_update": "注文更新",
-          "position_snapshot": "ポジションスナップショット"
-        }
+        "never": "なし"
       },
       "stopSuccess": "ストラテジーが停止しました",
       "stopFailed": "停止に失敗しました",
@@ -1911,13 +1867,6 @@ const Base = {
     "result": {
       "pass": "合格",
       "reject": "却下"
-    },
-    "signalType": {
-      "buy": "買い",
-      "sell": "売り",
-      "close": "決済",
-      "hold": "ホールド",
-      "modify": "修正"
     }
   },
   "app": {
