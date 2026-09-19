@@ -11,7 +11,7 @@
 
 | 子任务 | 状态 | 锚点 |
 |--------|------|------|
-| POST-2 探针批（S1 VM 并发退化/S2 SSE 扇出成本/S3 paper 下单延迟/S4 容量基线文档） | ⚠️待独立复审 | 施工完成 2026-09-19；三轴实测+容量模型表+设计表修正（SSE limiter 形态错位：已接线 per-user=5 但不覆盖 ConnectRPC binary 主形态）；明细 registry 行 24 |
+| POST-2 探针批（S1 VM 并发退化/S2 SSE 扇出成本/S3 paper 下单延迟/S4 容量基线文档） | ✅done | Devin CLI 验收 2026-09-19；2408d34c；设计表修正核实[SSE limiter 不覆盖 ConnectRPC binary=净无界]；G-POST2-1/2 登记 open；staging 残余 7 项落 docs/benchmarks/post2-capacity-baseline-2026-09.md |
 | 2026-08-26/27 批次 + 2026-09-08 系列（D-006/D-007/D-REVERT×2/VM-CACHE-INTEGRITY-1/2/LIVE-ORDER-REENTRY-1/VM-TRADE-CONTEXT-1/2/VM-COMPILER-SEMANTICS-1/BT-FUNC-ENTRYPC-FWD/VM-TIMESERIES-SEMANTICS-1/VM-RUNTIME-FAILCLOSED-1/DATA-TRUTH-2b/VM-AUDIT-2026-08-27×3/VM round 4-5/P1 管线审计/P1 live bug 修复/FIX-2026-09-08-BYOK-MODEL-PICKER/TEMP-RETRY/CURL-IMPORT/AI-SETTINGS-BYOK/CHAT-CTX/ADVANCED-PARAMS/COMPILE-NOTIFY/WORKSPACE-IA×2/AI-SETTINGS-审计二） | ✅done | 已滚出 LOG.md 2026-09-16；详见 registry |
 | QS 系列（QS-1.2a/1.3/1.4/1.6/1.7-INV/2.2/2.3/2.4/2.5/3-BASELINE） | ✅done | 已滚出 LOG.md 2026-09-16；10 子任务全 Devin CLI 验收 2026-09-16；详见 registry |
 | RECONCILE-TZ-WINDOW-1 修复 | ✅done | Devin CLI 验收通过 2026-09-16；commit 1efbf678；`.UTC()` 一行+pin×2+sweep 报告；独立 mutation RED→GREEN；sweep 另立 2 债 |
@@ -25,7 +25,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **POST-2 探针批 ⚠️待独立复审**（S1 `BenchmarkVMExec_Concurrency` 4vCPU 饱和拐点 N≈4/吞吐 2.1×封顶；S2 SSE 扇出每流恒定 ~2 goroutine+45-50KB、N=500 p99 19.9ms；S3 paper 6.2µs/单、瓶颈在下游 DB；S4 `docs/benchmarks/post2-capacity-baseline-2026-09.md`。**设计表修正**：SSE 并非缺 limiter 而是 `isSSERequest` 不覆盖 ConnectRPC binary 主形态——净效果无界，缺口 G-POST2-1/G-POST2-2 待裁决登记）。LOWPRI-SWEEP-1 ✅done（51b01d87）。LOWPRI-SWEEP-2 ✅done（5c855630）。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2（⚠️待复审）/FEAT-3/CQ-5/CQ-10/MDGATEWAY-5。
+- **下一步**: **POST-2 探针批 ✅done**（2408d34c 独立复审通过——三轴实测绿+设计表修正核实[SSE limiter 形态错位成立]+缺口 G-POST2-1[P2 流上限]/G-POST2-2[P3 metric]已登记 open）（S1 `BenchmarkVMExec_Concurrency` 4vCPU 饱和拐点 N≈4/吞吐 2.1×封顶；S2 SSE 扇出每流恒定 ~2 goroutine+45-50KB、N=500 p99 19.9ms；S3 paper 6.2µs/单、瓶颈在下游 DB；S4 `docs/benchmarks/post2-capacity-baseline-2026-09.md`。**设计表修正**：SSE 并非缺 limiter 而是 `isSSERequest` 不覆盖 ConnectRPC binary 主形态——净效果无界，缺口 G-POST2-1/G-POST2-2 待裁决登记）。LOWPRI-SWEEP-1 ✅done（51b01d87）。LOWPRI-SWEEP-2 ✅done（5c855630）。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/FEAT-3/G-POST2-1/G-POST2-2。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
