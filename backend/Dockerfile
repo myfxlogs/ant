@@ -44,7 +44,6 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
 
 COPY --from=builder /app/alphaforge /app/alphaforge
 COPY --from=builder /app/tools/mql2go/mql.so /app/tools/mql2go/mql.so
-COPY configs /app/configs
 COPY migrations /app/migrations
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
