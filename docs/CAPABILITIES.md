@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-09-08 03:10 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-09-19 11:01 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -83,7 +83,7 @@ ActiveAccountIDs	backend/internal/mthub/service.go:324
 ActiveAccountIDs	backend/internal/mthub/types.go:116
 AddAccount	backend/internal/risk/canary.go:127
 AddCredits	proto/ant/v1/credit.proto:16
-AddGateRule	backend/internal/connect/strategy/strategy_execution_handler.go:242
+AddGateRule	backend/internal/connect/strategy/strategy_execution_handler.go:261
 AddRule	backend/internal/risk/gate.go:184
 AddSanctionedCountry	proto/ant/v1/admin_jurisdiction.proto:13
 AddTokens	backend/internal/service/systemai/session_quota.go:24
@@ -109,7 +109,7 @@ ArchiveStrategy	proto/ant/v1/admin_strategy.proto:29
 ArchiveTemplate	backend/internal/service/template_svc_admin.go:330
 AssignAccountNumber	backend/internal/service/user/account_number.go:221
 BackfillPlaintextCredentials	backend/internal/service/account_sync.go:41
-Backtest	backend/internal/connect/strategy/strategy_execution_handler.go:326
+Backtest	backend/internal/connect/strategy/strategy_execution_handler.go:345
 Backtest	proto/ant/v1/strategy_runtime.proto:19
 BatchSetAgents	proto/ant/v1/ai.proto:21
 BatchSetAgents	proto/ant/v1/ai_agent.proto:9
@@ -143,10 +143,10 @@ ChangePlan	backend/internal/service/subscription_service.go:229
 ChangePlan	proto/ant/v1/subscription.proto:19
 Chat	proto/ant/v1/ai.proto:12
 ChatCompletion	backend/internal/connect/strategy/ai_proposer_adapter.go:22
-ChatCompletion	backend/internal/service/systemai/chat.go:183
-ChatCompletionStream	backend/internal/service/systemai/chat_stream.go:17
-ChatCompletionStreamWithTools	backend/internal/service/systemai/chat_stream.go:29
-ChatCompletionWithUsage	backend/internal/service/systemai/chat.go:196
+ChatCompletion	backend/internal/service/systemai/chat.go:189
+ChatCompletionStream	backend/internal/service/systemai/chat_stream.go:14
+ChatCompletionStreamWithTools	backend/internal/service/systemai/chat_stream.go:26
+ChatCompletionWithUsage	backend/internal/service/systemai/chat.go:202
 ChatStream	proto/ant/v1/ai.proto:14
 Check	backend/internal/risk/guard.go:58
 Check	backend/internal/risk/rules.go:132
@@ -194,11 +194,11 @@ CheckQuota	backend/internal/service/daily_quota.go:107
 CheckRiskLimits	proto/ant/v1/auto_trading.proto:20
 CheckStrategyLimit	backend/internal/service/quota_checker.go:107
 CheckSymbolLimit	backend/internal/service/quota_checker.go:134
-CleanupOldSnapshots	backend/internal/service/account_lifecycle.go:210
+CleanupOldSnapshots	backend/internal/service/account_lifecycle.go:215
 ClearAccount	backend/internal/risksvc/platform_aggregator.go:88
 CloneStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:132
 CloneStrategyAsset	proto/ant/v1/strategy_asset.proto:14
-Close	backend/internal/connect/strategy/vm_live_session.go:140
+Close	backend/internal/connect/strategy/vm_live_session.go:143
 ClosedOrders	reference/grpc/mt4.proto:151
 CloseOrder	backend/internal/mthub/service_orders_close.go:26
 CloseOrder	proto/ant/v1/mthub_service.proto:8
@@ -209,6 +209,7 @@ CompareStrategies	proto/ant/v1/marketplace_service.proto:54
 CompleteWithdrawal	backend/internal/service/wallet_service.go:96
 Config	backend/internal/service/daily_quota.go:130
 Confirm	backend/internal/mthub/idempotency.go:87
+ConfirmByAuthoritativeRead	backend/internal/connect/strategy/trade_barrier.go:350
 ConfirmDeposit	backend/internal/service/deposit_service.go:188
 ConfirmSignal	backend/internal/connect/strategy/strategy_signals.go:72
 ConfirmSignal	backend/internal/service/signal_svc.go:82
@@ -289,19 +290,19 @@ DisableUser	proto/ant/v1/admin_user.proto:16
 Disconnect	reference/grpc/mt4.proto:51
 Disconnect	reference/grpc/mt5.proto:49
 DisconnectAccount	proto/ant/v1/account.proto:20
-DisconnectAccountByID	backend/internal/service/account_lifecycle.go:183
+DisconnectAccountByID	backend/internal/service/account_lifecycle.go:188
 DiscoverGatewayModels	proto/ant/v1/ai_gateway.proto:32
-DiscoverModels	backend/internal/service/systemai/service.go:272
+DiscoverModels	backend/internal/service/systemai/service.go:274
 DiscoverSystemAIModels	proto/ant/v1/system_ai.proto:15
 DisengageKillSwitch	backend/internal/risk/canary.go:266
-DroppedBars	backend/internal/mthub/broker_types.go:270
+DroppedBars	backend/internal/mthub/broker_types.go:301
 EnableStrategy	proto/ant/v1/admin_strategy.proto:28
 EnableTemplate	backend/internal/service/template_svc_admin.go:318
 EnableUser	proto/ant/v1/admin_user.proto:17
 EngageKillSwitch	backend/internal/risk/canary.go:251
 EnsureBoundAccount	backend/internal/service/bound_account_svc.go:35
 EnsureFreeSubscription	backend/internal/service/subscription_service_proto.go:106
-EnsureSeed	backend/internal/service/systemai/service.go:156
+EnsureSeed	backend/internal/service/systemai/service.go:158
 EnsureSession	backend/internal/mthub/types.go:83
 EnterAll	backend/internal/mthub/reconcile_gate.go:59
 EnterReconciling	backend/internal/mthub/reconcile_gate.go:24
@@ -309,7 +310,7 @@ Error	backend/internal/mthub/mutation_outcome.go:37
 Error	backend/internal/mthub/types.go:130
 Error	backend/internal/risksvc/hardlimit.go:188
 Error	backend/internal/service/registration_service.go:152
-Error	backend/internal/service/systemai/chat_failover.go:82
+Error	backend/internal/service/systemai/chat_retry.go:21
 Error	backend/internal/service/wallet_service.go:145
 Error	backend/internal/service/wallet_service.go:153
 Estimate	backend/internal/mthub/hub_estimator.go:46
@@ -317,10 +318,10 @@ Evaluate	backend/internal/risk/gate.go:119
 Evaluate	backend/internal/risksvc/engine.go:27
 Evaluate	backend/internal/risksvc/hardlimit.go:172
 Events	reference/grpc/mt5.proto:512
-Execute	backend/internal/connect/strategy/strategy_execution_handler.go:274
+Execute	backend/internal/connect/strategy/strategy_execution_handler.go:293
 Execute	proto/ant/v1/strategy_runtime.proto:17
 ExecuteBacktestDirect	backend/internal/connect/strategy/backtest_execution.go:29
-ExecuteLive	backend/internal/connect/strategy/strategy_execution_handler.go:347
+ExecuteLive	backend/internal/connect/strategy/strategy_execution_handler.go:366
 ExecuteLive	proto/ant/v1/strategy_runtime.proto:31
 ExecutePlan	proto/ant/v1/strategy_execution.proto:15
 ExecuteSignal	backend/internal/connect/strategy/strategy_signals.go:51
@@ -350,7 +351,7 @@ Get	backend/internal/mthub/derived_state.go:76
 Get	backend/internal/mthub/types.go:77
 Get	backend/internal/risksvc/capability.go:99
 Get	backend/internal/service/analytics_cache.go:28
-Get	backend/internal/service/systemai/service.go:193
+Get	backend/internal/service/systemai/service.go:195
 GetAccount	backend/internal/mthub/derived_state.go:83
 GetAccount	backend/internal/service/account_crud.go:32
 GetAccount	backend/internal/service/platform_service.go:123
@@ -366,7 +367,7 @@ GetActiveStrategy	backend/internal/connect/strategy/strategy_active_watch.go:59
 GetActiveStrategy	proto/ant/v1/strategy_runtime.proto:43
 GetAgentCapabilities	proto/ant/v1/agent_gateway.proto:18
 GetAgentSettings	proto/ant/v1/agent_gateway.proto:45
-GetAIPrimary	backend/internal/service/systemai/service.go:204
+GetAIPrimary	backend/internal/service/systemai/service.go:206
 GetAIPrimary	proto/ant/v1/ai_primary.proto:8
 GetAlgoStatus	proto/ant/v1/execution_algo.proto:17
 GetAllLogs	backend/internal/service/log_service.go:47
@@ -394,10 +395,10 @@ GetDivergenceReport	backend/internal/connect/strategy/divergence_handler.go:42
 GetDivergenceReport	proto/ant/v1/live_backtest_divergence.proto:12
 GetExperimentCandidate	backend/internal/connect/strategy/strategy_experiment_handler.go:214
 GetExperimentCandidate	proto/ant/v1/strategy_experiment.proto:16
-GetFreshFinancialSnapshot	backend/internal/connect/strategy/position_cache.go:164
-GetFreshPositionSnapshot	backend/internal/connect/strategy/position_cache.go:183
-GetFreshSnapshot	backend/internal/connect/strategy/position_cache.go:237
-GetFreshTradingSnapshot	backend/internal/connect/strategy/position_cache.go:207
+GetFreshFinancialSnapshot	backend/internal/connect/strategy/position_cache.go:187
+GetFreshPositionSnapshot	backend/internal/connect/strategy/position_cache.go:206
+GetFreshSnapshot	backend/internal/connect/strategy/position_cache.go:260
+GetFreshTradingSnapshot	backend/internal/connect/strategy/position_cache.go:230
 GetGlobalSettings	proto/ant/v1/auto_trading.proto:15
 GetImportedStrategy	backend/internal/connect/strategy/strategy_import_handler.go:113
 GetImportedStrategy	proto/ant/v1/strategy_runtime.proto:35
@@ -458,11 +459,11 @@ GetSchedulePositions	backend/internal/connect/strategy/strategy_schedule_positio
 GetSchedulePositions	proto/ant/v1/strategy.proto:25
 GetScheduleRunLogs	backend/internal/service/log_service.go:43
 GetScheduleRunLogs	proto/ant/v1/log.proto:16
-GetSecret	backend/internal/service/systemai/service.go:251
+GetSecret	backend/internal/service/systemai/service.go:253
 GetSessionFeedback	proto/ant/v1/ai.proto:25
 GetSharedPerformance	proto/ant/v1/share.proto:9
 GetSignal	backend/internal/service/signal_svc.go:51
-GetSnapshot	backend/internal/connect/strategy/position_cache.go:156
+GetSnapshot	backend/internal/connect/strategy/position_cache.go:179
 GetSnapshot	backend/internal/mthub/snapshot_persister.go:99
 GetSnapshot	backend/internal/risksvc/platform_aggregator.go:140
 GetStatus	backend/internal/risksvc/jurisdiction_store.go:22
@@ -483,7 +484,7 @@ GetTemplate	backend/internal/connect/strategy/strategy_template_handlers.go:65
 GetTemplate	backend/internal/service/template_svc.go:51
 GetTemplate	proto/ant/v1/strategy.proto:12
 GetTemplateDetail	backend/internal/service/template_svc_admin.go:14
-GetTemplates	backend/internal/connect/strategy/strategy_execution_handler.go:341
+GetTemplates	backend/internal/connect/strategy/strategy_execution_handler.go:360
 GetTemplates	proto/ant/v1/strategy_runtime.proto:28
 GetTickValueMany	reference/grpc/mt5.proto:216
 GetTier	backend/internal/risk/rules_risksvc.go:167
@@ -543,7 +544,7 @@ IsTripped	backend/internal/service/daily_quota.go:173
 LatestTick	backend/internal/mthub/service.go:158
 LatestTick	backend/internal/mthub/tick_broker.go:49
 LinkLiveAccount	proto/ant/v1/marketplace_service.proto:33
-List	backend/internal/service/systemai/service.go:186
+List	backend/internal/service/systemai/service.go:188
 ListAccounts	backend/internal/service/account_crud.go:19
 ListAccounts	proto/ant/v1/account.proto:14
 ListAccountsAdmin	proto/ant/v1/admin_account.proto:10
@@ -646,7 +647,7 @@ ListWithdrawals	proto/ant/v1/webauthn.proto:27
 LoadAll	backend/internal/service/quota_checker.go:40
 LoadFromPG	backend/internal/risksvc/capability.go:117
 LoadFromRedis	backend/internal/mthub/state_cache.go:197
-LogAudit	backend/internal/service/account_lifecycle.go:160
+LogAudit	backend/internal/service/account_lifecycle.go:165
 LogConnection	backend/internal/service/log_service.go:20
 Login	proto/ant/v1/auth.proto:11
 LogOperation	backend/internal/service/log_service.go:35
@@ -695,10 +696,10 @@ Name	backend/internal/risksvc/rules.go:92
 Name	backend/internal/risksvc/vol_target_sizer.go:45
 NetExposureForSymbol	backend/internal/risksvc/platform_aggregator.go:145
 Notify	backend/internal/connect/strategy/schedule_engine.go:170
-NotifyBrokerAccepted	backend/internal/connect/strategy/trade_barrier.go:185
-NotifyConfirmationEvent	backend/internal/connect/strategy/trade_barrier.go:218
-NotifyDeterministicRejected	backend/internal/connect/strategy/trade_barrier.go:262
-NotifyOutcomeUnknown	backend/internal/connect/strategy/trade_barrier.go:275
+NotifyBrokerAccepted	backend/internal/connect/strategy/trade_barrier.go:186
+NotifyConfirmationEvent	backend/internal/connect/strategy/trade_barrier.go:219
+NotifyDeterministicRejected	backend/internal/connect/strategy/trade_barrier.go:263
+NotifyOutcomeUnknown	backend/internal/connect/strategy/trade_barrier.go:276
 OnBar	backend/internal/connect/strategy/strategy_templates.go:142
 OnBar	backend/internal/connect/strategy/strategy_templates.go:236
 OnBar	backend/internal/connect/strategy/strategy_templates.go:42
@@ -744,6 +745,7 @@ OrderSend	reference/grpc/mt4.proto:294
 OrderSend	reference/grpc/mt5.proto:482
 OrderTypeString	backend/internal/mthub/order_types.go:87
 PaperPnl	backend/internal/paper/engine.go:146
+ParseProviderCurl	proto/ant/v1/system_ai.proto:18
 PendingOrderHistory	reference/grpc/mt5.proto:104
 Ping	reference/grpc/mt4.proto:185
 Ping	reference/grpc/mt5.proto:342
@@ -773,9 +775,9 @@ Process	backend/internal/risksvc/pipeline.go:96
 PromoteCandidateToDraft	backend/internal/connect/strategy/strategy_experiment_handler.go:227
 PromoteCandidateToDraft	proto/ant/v1/strategy_experiment.proto:17
 PromoteToFull	backend/internal/risk/canary.go:234
-Publish	backend/internal/mthub/broker_types.go:130
-Publish	backend/internal/mthub/broker_types.go:243
-Publish	backend/internal/mthub/broker_types.go:317
+Publish	backend/internal/mthub/broker_types.go:141
+Publish	backend/internal/mthub/broker_types.go:274
+Publish	backend/internal/mthub/broker_types.go:348
 Publish	backend/internal/mthub/tick_broker.go:79
 Publish	backend/internal/mthub/trade_broker.go:82
 Publish	backend/internal/mthub/trade_event_store.go:95
@@ -796,14 +798,14 @@ PublishTradeEvent	backend/internal/mthub/service.go:177
 PublishTradeEventFromUpdate	backend/internal/mthub/service_orders.go:390
 PurchaseBundle	proto/ant/v1/marketplace_service.proto:92
 PurchaseStrategy	proto/ant/v1/marketplace_service.proto:13
-PutSnapshot	backend/internal/connect/strategy/position_cache.go:142
+PutSnapshot	backend/internal/connect/strategy/position_cache.go:150
 QuestionnaireCompletedAt	backend/internal/risksvc/jurisdiction_store.go:149
 Quote	reference/grpc/mt4.proto:73
 QuoteHistory	reference/grpc/mt4.proto:136
 QuoteHistoryMany	reference/grpc/mt4.proto:145
 RateStrategy	proto/ant/v1/marketplace_service.proto:17
 Recalculate	backend/internal/risksvc/platform_aggregator.go:105
-Reconcile	backend/internal/connect/strategy/trade_barrier.go:330
+Reconcile	backend/internal/connect/strategy/trade_barrier.go:331
 ReconcileAccount	backend/internal/mthub/reconciliation.go:53
 ReconcilingCount	backend/internal/mthub/reconcile_gate.go:52
 ReconnectAccount	proto/ant/v1/account.proto:21
@@ -832,7 +834,7 @@ Register	proto/ant/v1/auth.proto:16
 RegisterUser	backend/internal/service/registration_service.go:72
 RejectAutoGenTask	proto/ant/v1/marketplace_service.proto:46
 RejectOptimizationTask	proto/ant/v1/marketplace_service.proto:83
-Release	backend/internal/connect/strategy/trade_barrier.go:348
+Release	backend/internal/connect/strategy/trade_barrier.go:369
 ReleaseHold	backend/internal/service/credit_service.go:235
 RemoveAccount	backend/internal/risk/canary.go:134
 RemoveCredential	proto/ant/v1/webauthn.proto:21
@@ -877,58 +879,59 @@ Search	reference/grpc/mt4.proto:215
 Search	reference/grpc/mt5.proto:365
 SearchBroker	proto/ant/v1/account.proto:22
 SearchExperience	proto/ant/v1/agent_gateway.proto:33
-SendEvent	backend/internal/connect/strategy/vm_live_session.go:132
+SendEvent	backend/internal/connect/strategy/vm_live_session.go:135
 SendNotification	proto/ant/v1/notification_service.proto:16
 ServerTimezone	reference/grpc/mt4.proto:105
 ServerTimezone	reference/grpc/mt5.proto:184
 SessionState	backend/internal/mthub/service.go:224
 Set	backend/internal/risksvc/capability.go:109
 Set	backend/internal/service/analytics_cache.go:43
-SetAccountConnectedLookup	backend/internal/connect/strategy/strategy_execution_handler.go:204
-SetAccountIsDemoLookup	backend/internal/connect/strategy/strategy_execution_handler.go:201
-SetAccountIsInvestorLookup	backend/internal/connect/strategy/strategy_execution_handler.go:210
-SetAccountLoginLookup	backend/internal/connect/strategy/strategy_execution_handler.go:198
-SetAccountLookup	backend/internal/connect/strategy/strategy_execution_handler.go:183
+SetAccountConnectedLookup	backend/internal/connect/strategy/strategy_execution_handler.go:217
+SetAccountIdentityLookup	backend/internal/connect/strategy/strategy_execution_handler.go:229
+SetAccountIsDemoLookup	backend/internal/connect/strategy/strategy_execution_handler.go:214
+SetAccountIsInvestorLookup	backend/internal/connect/strategy/strategy_execution_handler.go:223
+SetAccountLoginLookup	backend/internal/connect/strategy/strategy_execution_handler.go:211
+SetAccountLookup	backend/internal/connect/strategy/strategy_execution_handler.go:196
 SetAccountNumber	backend/internal/service/user/account_number.go:236
 SetAccountOwnerVerifier	backend/internal/mthub/service_setters.go:38
-SetAccountProvider	backend/internal/connect/strategy/strategy_execution_handler.go:249
+SetAccountProvider	backend/internal/connect/strategy/strategy_execution_handler.go:268
 SetAccountStateProvider	backend/internal/mthub/service_setters.go:71
-SetAccountTradeAllowedLookup	backend/internal/connect/strategy/strategy_execution_handler.go:207
-SetAIPrimary	backend/internal/service/systemai/service.go:211
+SetAccountTradeAllowedLookup	backend/internal/connect/strategy/strategy_execution_handler.go:220
+SetAIPrimary	backend/internal/service/systemai/service.go:213
 SetAIPrimary	proto/ant/v1/ai_primary.proto:9
 SetAIService	backend/internal/connect/strategy/strategy_experiment_worker.go:86
 SetAttribution	backend/internal/service/analytics_cache.go:67
 SetAutotradeEnabled	backend/internal/risk/gate.go:106
 SetBarBroker	backend/internal/mthub/service_setters.go:44
-SetBarSource	backend/internal/connect/strategy/strategy_execution_handler.go:171
-SetBoundSvc	backend/internal/connect/strategy/strategy_execution_handler.go:225
+SetBarSource	backend/internal/connect/strategy/strategy_execution_handler.go:184
+SetBoundSvc	backend/internal/connect/strategy/strategy_execution_handler.go:244
 SetBoundSvc	backend/internal/connect/strategy/strategy_handler.go:66
-SetBrokerCompanyLookup	backend/internal/connect/strategy/strategy_execution_handler.go:193
+SetBrokerCompanyLookup	backend/internal/connect/strategy/strategy_execution_handler.go:206
 SetBrokerLimits	backend/internal/risksvc/platform_aggregator.go:96
 SetBrokerRegistry	backend/internal/mthub/service_setters.go:29
 SetCanary	proto/ant/v1/admin_sre.proto:11
-SetCircuitBreakerDB	backend/internal/service/systemai/chat_failover.go:26
+SetCircuitBreakerDB	backend/internal/service/systemai/chat_failover.go:24
 SetCircuitOpen	backend/internal/connect/strategy/session_registry.go:401
 SetCodeAccessChecker	backend/internal/connect/strategy/strategy_handler.go:41
 SetCompromisedChecker	backend/internal/service/deposit_service.go:110
 SetConfig	proto/ant/v1/admin_config.proto:11
-SetCostBreaker	backend/internal/service/systemai/service.go:124
+SetCostBreaker	backend/internal/service/systemai/service.go:126
 SetCostEstimator	backend/internal/mthub/service_setters.go:68
-SetCoverageChecker	backend/internal/connect/strategy/strategy_execution_handler.go:140
-SetDiag	backend/internal/connect/strategy/vm_live_session.go:194
+SetCoverageChecker	backend/internal/connect/strategy/strategy_execution_handler.go:153
+SetDiag	backend/internal/connect/strategy/vm_live_session.go:197
 SetEmailVerification	backend/internal/service/registration_service.go:61
 SetEngine	backend/internal/connect/strategy/strategy_handler.go:64
 SetExecutor	backend/internal/connect/strategy/strategy_experiment_worker.go:89
-SetFailureSignatureRepo	backend/internal/connect/strategy/strategy_execution_handler.go:258
-SetGate	backend/internal/connect/strategy/strategy_execution_handler.go:239
+SetFailureSignatureRepo	backend/internal/connect/strategy/strategy_execution_handler.go:277
+SetGate	backend/internal/connect/strategy/strategy_execution_handler.go:258
 SetGate	backend/internal/mthub/service_setters.go:62
-SetGateEvalRepo	backend/internal/connect/strategy/strategy_execution_handler.go:146
-SetGatewayProviderRepo	backend/internal/service/systemai/service.go:118
-SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:174
+SetGateEvalRepo	backend/internal/connect/strategy/strategy_execution_handler.go:159
+SetGatewayProviderRepo	backend/internal/service/systemai/service.go:120
+SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:187
 SetGuard	backend/internal/mthub/service_setters.go:56
 SetGuard	backend/internal/paper/engine.go:51
 SetHookConfig	proto/ant/v1/agent_hooks.proto:14
-SetImportedRepo	backend/internal/connect/strategy/strategy_execution_handler.go:176
+SetImportedRepo	backend/internal/connect/strategy/strategy_execution_handler.go:189
 SetKillSwitch	backend/internal/mthub/service_setters.go:15
 SetKillSwitch	backend/internal/risk/gate.go:99
 SetKillSwitch	proto/ant/v1/admin_sre.proto:7
@@ -938,25 +941,25 @@ SetLogger	backend/internal/connect/strategy/session_registry.go:88
 SetLogger	backend/internal/mthub/service_setters.go:41
 SetLogger	backend/internal/service/account_service.go:59
 SetLogger	backend/internal/service/platform_service.go:29
-SetLogger	backend/internal/service/systemai/service.go:87
+SetLogger	backend/internal/service/systemai/service.go:89
 SetLogRepository	backend/internal/connect/strategy/session_registry.go:91
 SetManagedSetting	proto/ant/v1/admin_settings.proto:15
 SetManagedSettingProvider	backend/internal/service/daily_quota.go:155
 SetManagedSettingProvider	backend/internal/service/daily_quota.go:84
-SetMarketDataRepo	backend/internal/connect/strategy/strategy_execution_handler.go:156
-SetModelFilter	backend/internal/service/systemai/service.go:131
+SetMarketDataRepo	backend/internal/connect/strategy/strategy_execution_handler.go:169
+SetModelFilter	backend/internal/service/systemai/service.go:133
 SetMonthlyDetail	backend/internal/service/analytics_cache.go:116
-SetMtHub	backend/internal/connect/strategy/strategy_execution_handler.go:172
+SetMtHub	backend/internal/connect/strategy/strategy_execution_handler.go:185
 SetMtHubService	backend/internal/mthub/reconciliation.go:30
 SetNotificationPrefs	proto/ant/v1/notification_service.proto:19
-SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handler.go:257
+SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handler.go:276
 SetNotificationSender	backend/internal/service/account_sync_service.go:48
 SetOmsWriter	backend/internal/mthub/service_setters.go:59
-SetOnBacktestComplete	backend/internal/connect/strategy/strategy_execution_handler.go:261
+SetOnBacktestComplete	backend/internal/connect/strategy/strategy_execution_handler.go:280
 SetOrderEventBroker	backend/internal/mthub/oms_writer.go:101
-SetPaperEngine	backend/internal/connect/strategy/strategy_execution_handler.go:173
+SetPaperEngine	backend/internal/connect/strategy/strategy_execution_handler.go:186
 SetPgListen	backend/internal/connect/strategy/divergence_handler.go:38
-SetPgListen	backend/internal/connect/strategy/strategy_execution_handler.go:398
+SetPgListen	backend/internal/connect/strategy/strategy_execution_handler.go:417
 SetPgListen	backend/internal/connect/strategy/strategy_experiment_handler.go:304
 SetPgListen	backend/internal/connect/strategy/strategy_experiment_worker.go:68
 SetPgListen	backend/internal/connect/strategy/strategy_handler.go:86
@@ -965,25 +968,25 @@ SetPgListen	backend/internal/service/quota_checker.go:158
 SetPlacedType	reference/grpc/mt4.proto:168
 SetPnL	backend/internal/connect/strategy/session_registry.go:323
 SetPositionCache	backend/internal/connect/strategy/account_provider.go:46
-SetPositionCache	backend/internal/connect/strategy/strategy_execution_handler.go:186
+SetPositionCache	backend/internal/connect/strategy/strategy_execution_handler.go:199
 SetPositionCache	backend/internal/connect/strategy/strategy_handler.go:70
-SetPostCallBiller	backend/internal/service/systemai/service.go:113
-SetQualityValidator	backend/internal/connect/strategy/strategy_execution_handler.go:143
-SetQuotaChecker	backend/internal/connect/strategy/strategy_execution_handler.go:222
+SetPostCallBiller	backend/internal/service/systemai/service.go:115
+SetQualityValidator	backend/internal/connect/strategy/strategy_execution_handler.go:156
+SetQuotaChecker	backend/internal/connect/strategy/strategy_execution_handler.go:241
 SetReconcileTrigger	backend/internal/mthub/service_setters.go:20
 SetRolling	backend/internal/service/analytics_cache.go:91
-SetRunRepo	backend/internal/connect/strategy/strategy_execution_handler.go:175
+SetRunRepo	backend/internal/connect/strategy/strategy_execution_handler.go:188
 SetSanctionedOverride	proto/ant/v1/admin_jurisdiction.proto:16
 SetScheduleActive	backend/internal/service/schedule_svc.go:156
-SetScheduleNameLookup	backend/internal/connect/strategy/strategy_execution_handler.go:187
+SetScheduleNameLookup	backend/internal/connect/strategy/strategy_execution_handler.go:200
 SetScheduleResolver	backend/internal/service/account_sync_service.go:51
-SetSessionRegistry	backend/internal/connect/strategy/strategy_execution_handler.go:182
+SetSessionRegistry	backend/internal/connect/strategy/strategy_execution_handler.go:195
 SetSessionRegistry	backend/internal/connect/strategy/strategy_handler.go:68
-SetStatus	backend/internal/service/account_lifecycle.go:194
+SetStatus	backend/internal/service/account_lifecycle.go:199
 SetStatusBroker	backend/internal/mthub/service_setters.go:53
 SetStderrTail	backend/internal/connect/strategy/session_registry.go:415
 SetStrategyPricing	proto/ant/v1/marketplace_service.proto:22
-SetStrategyTemplateLookup	backend/internal/connect/strategy/strategy_execution_handler.go:190
+SetStrategyTemplateLookup	backend/internal/connect/strategy/strategy_execution_handler.go:203
 SetSubscriptionEnsurer	backend/internal/service/registration_service.go:66
 SetTemplateStatus	backend/internal/service/template_svc.go:129
 SetTickBroker	backend/internal/mthub/service_setters.go:47
@@ -994,10 +997,10 @@ SetTradeRecordRepo	backend/internal/mthub/service.go:412
 SetUsageRepos	backend/internal/service/subscription_service.go:42
 SetUserLimiter	backend/internal/mthub/service_setters.go:65
 SetUserLimiter	backend/internal/risksvc/engine.go:22
-SetUserRepo	backend/internal/service/systemai/service.go:90
+SetUserRepo	backend/internal/service/systemai/service.go:92
 SetUserSetting	proto/ant/v1/agent_gateway.proto:46
-SetVersionRepo	backend/internal/connect/strategy/strategy_execution_handler.go:179
-SetWalletChecker	backend/internal/service/systemai/service.go:107
+SetVersionRepo	backend/internal/connect/strategy/strategy_execution_handler.go:192
+SetWalletChecker	backend/internal/service/systemai/service.go:109
 Shutdown	backend/internal/risksvc/platform_aggregator.go:181
 Size	backend/internal/risksvc/kelly_sizer.go:46
 Size	backend/internal/risksvc/vol_target_sizer.go:47
@@ -1024,7 +1027,7 @@ StartSchedule	backend/internal/connect/strategy/schedule_event.go:17
 StartStrategy	backend/internal/connect/strategy/strategy_active_control.go:58
 StartStrategy	proto/ant/v1/strategy_runtime.proto:49
 StartTrial	proto/ant/v1/marketplace_service.proto:52
-State	backend/internal/connect/strategy/trade_barrier.go:362
+State	backend/internal/connect/strategy/trade_barrier.go:383
 State	backend/internal/mthub/derived_state.go:121
 Stats	backend/internal/mthub/state_cache.go:220
 StepUpLotSize	backend/internal/risk/canary.go:205
@@ -1051,9 +1054,9 @@ SubmitStrategyExperiment	backend/internal/connect/strategy/strategy_experiment_h
 SubmitStrategyExperiment	proto/ant/v1/strategy_experiment.proto:11
 Subscribe	backend/internal/connect/strategy/data_source.go:68
 Subscribe	backend/internal/connect/strategy/position_cache.go:49
-Subscribe	backend/internal/mthub/broker_types.go:165
-Subscribe	backend/internal/mthub/broker_types.go:275
-Subscribe	backend/internal/mthub/broker_types.go:331
+Subscribe	backend/internal/mthub/broker_types.go:184
+Subscribe	backend/internal/mthub/broker_types.go:306
+Subscribe	backend/internal/mthub/broker_types.go:362
 Subscribe	backend/internal/mthub/tick_broker.go:57
 Subscribe	backend/internal/mthub/trade_broker.go:57
 Subscribe	backend/internal/mthub/types.go:206
@@ -1067,7 +1070,7 @@ Subscribe	reference/grpc/mt5.proto:387
 SubscribeAccountProfit	backend/internal/mthub/service_account_profit.go:11
 SubscribeAccountProfitAll	backend/internal/mthub/service_account_profit.go:16
 SubscribeAccountStatus	backend/internal/mthub/service.go:201
-SubscribeAll	backend/internal/mthub/broker_types.go:188
+SubscribeAll	backend/internal/mthub/broker_types.go:214
 SubscribeBars	proto/ant/v1/mthub_service.proto:17
 SubscribeBarUpdates	backend/internal/mthub/service.go:130
 SubscribeEvents	proto/ant/v1/stream.proto:75
@@ -1114,7 +1117,7 @@ SyncOrderHistory	proto/ant/v1/mthub_service.proto:16
 SyncStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:171
 SyncStrategyAsset	proto/ant/v1/strategy_asset.proto:16
 Threshold	backend/internal/service/daily_quota.go:226
-Ticket	backend/internal/connect/strategy/trade_barrier.go:396
+Ticket	backend/internal/connect/strategy/trade_barrier.go:417
 TickHistoryRequest	reference/grpc/mt5.proto:453
 TickHistoryStop	reference/grpc/mt5.proto:460
 TickValueWithSize	reference/grpc/mt4.proto:180
@@ -1140,7 +1143,7 @@ UnpublishStrategy	proto/ant/v1/admin_strategy.proto:25
 UnpublishStrategy	proto/ant/v1/marketplace_service.proto:24
 UnpublishTemplate	backend/internal/service/template_svc_admin.go:276
 UnpublishUserTemplate	backend/internal/service/template_svc.go:116
-Unsubscribe	backend/internal/connect/strategy/position_cache.go:147
+Unsubscribe	backend/internal/connect/strategy/position_cache.go:155
 Unsubscribe	proto/ant/v1/marketplace_service.proto:12
 UnSubscribe	reference/grpc/mt4.proto:244
 UnSubscribe	reference/grpc/mt5.proto:401
@@ -1150,14 +1153,14 @@ Unwrap	backend/internal/mthub/mutation_outcome.go:44
 Update	backend/internal/mthub/derived_state.go:62
 UpdateAccount	backend/internal/service/account_crud.go:95
 UpdateAccount	proto/ant/v1/account.proto:17
-UpdateAccountInfo	backend/internal/service/account_lifecycle.go:72
-UpdateAccountInfoTx	backend/internal/service/account_lifecycle.go:57
-UpdateAccountMetrics	backend/internal/service/account_lifecycle.go:105
-UpdateAccountType	backend/internal/service/account_lifecycle.go:90
+UpdateAccountInfo	backend/internal/service/account_lifecycle.go:76
+UpdateAccountInfoTx	backend/internal/service/account_lifecycle.go:60
+UpdateAccountMetrics	backend/internal/service/account_lifecycle.go:110
+UpdateAccountType	backend/internal/service/account_lifecycle.go:95
 UpdateBacktestRun	backend/internal/connect/strategy/strategy_backtest_crud.go:294
 UpdateBacktestRun	proto/ant/v1/strategy_runtime.proto:27
-UpdateBrokerThresholds	backend/internal/service/account_lifecycle.go:149
-UpdateConfig	backend/internal/service/systemai/service.go:197
+UpdateBrokerThresholds	backend/internal/service/account_lifecycle.go:154
+UpdateConfig	backend/internal/service/systemai/service.go:199
 UpdateConversationTitle	proto/ant/v1/ai.proto:19
 UpdateFeeTier	proto/ant/v1/marketplace_service.proto:96
 UpdateGlobalSettings	proto/ant/v1/auto_trading.proto:16
@@ -1168,7 +1171,7 @@ UpdateRiskConfig	proto/ant/v1/auto_trading.proto:19
 UpdateSchedule	backend/internal/connect/strategy/strategy_schedules.go:118
 UpdateSchedule	backend/internal/service/schedule_svc.go:122
 UpdateSchedule	proto/ant/v1/strategy.proto:27
-UpdateSecret	backend/internal/service/systemai/service.go:221
+UpdateSecret	backend/internal/service/systemai/service.go:223
 UpdateSessionStrategyKey	proto/ant/v1/ai.proto:23
 UpdateShareToken	proto/ant/v1/share.proto:10
 UpdateStrategyCode	backend/internal/connect/strategy/strategy_version_handler.go:134
@@ -1188,9 +1191,9 @@ UpdateTradingPassword	proto/ant/v1/account.proto:24
 UpdateUser	proto/ant/v1/admin_user.proto:13
 UpdateXpub	backend/internal/service/deposit_service.go:93
 UpsertModel	proto/ant/v1/ai_gateway.proto:28
-UserOwnsAccount	backend/internal/service/account_lifecycle.go:169
+UserOwnsAccount	backend/internal/service/account_lifecycle.go:174
 UserOwnsAccount	backend/internal/service/platform_service.go:118
-Validate	backend/internal/connect/strategy/strategy_execution_handler.go:298
+Validate	backend/internal/connect/strategy/strategy_execution_handler.go:317
 Validate	proto/ant/v1/strategy_runtime.proto:18
 ValidateCoupon	proto/ant/v1/marketplace_service.proto:72
 ValidateStrategy	proto/ant/v1/backtest_service.proto:15
@@ -1202,9 +1205,9 @@ VerifyMTIdentity	proto/ant/v1/auth.proto:21
 VerifyToken	backend/internal/service/email_verification.go:67
 VerifyTradePermission	proto/ant/v1/account.proto:23
 Version	reference/grpc/mt5.proto:376
-WaitConfirmed	backend/internal/connect/strategy/trade_barrier.go:290
+WaitConfirmed	backend/internal/connect/strategy/trade_barrier.go:291
 WaitSession	backend/internal/mthub/types.go:64
-WaitState	backend/internal/connect/strategy/trade_barrier.go:371
+WaitState	backend/internal/connect/strategy/trade_barrier.go:392
 Watch	backend/internal/connect/strategy/session_registry.go:137
 WatchActiveStrategies	backend/internal/connect/strategy/strategy_active_watch.go:176
 WatchActiveStrategies	proto/ant/v1/strategy_runtime.proto:52
@@ -1610,6 +1613,7 @@ proto/ant/v1/system_ai.proto:13:  rpc UpdateSystemAIConfig(UpdateSystemAIConfigR
 proto/ant/v1/system_ai.proto:14:  rpc UpdateSystemAISecret(UpdateSystemAISecretRequest) returns (UpdateSystemAISecretResponse);
 proto/ant/v1/system_ai.proto:15:  rpc DiscoverSystemAIModels(DiscoverSystemAIModelsRequest) returns (DiscoverSystemAIModelsResponse);
 proto/ant/v1/system_ai.proto:16:  rpc ValidateSystemAIConnection(ValidateSystemAIConnectionRequest) returns (ValidateSystemAIConnectionResponse);
+proto/ant/v1/system_ai.proto:18:  rpc ParseProviderCurl(ParseProviderCurlRequest) returns (ParseProviderCurlResponse);
 proto/ant/v1/walk_forward.proto:11:  rpc GetWalkForwardReport(GetWalkForwardReportRequest) returns (WalkForwardReport);
 proto/ant/v1/walk_forward.proto:15:  rpc WatchWalkForwardReport(WatchWalkForwardReportRequest) returns (stream WalkForwardReport);
 proto/ant/v1/wallet.proto:10:  rpc ListTransactions(ListWalletTransactionsRequest) returns (ListWalletTransactionsResponse);
@@ -1780,13 +1784,13 @@ backend/internal/connect/strategy/divergence_handler.go:38:func (s *DivergenceSe
 backend/internal/connect/strategy/divergence_handler.go:42:func (s *DivergenceServer) GetDivergenceReport(
 backend/internal/connect/strategy/divergence_handler.go:60:func (s *DivergenceServer) WatchDivergenceReport(
 backend/internal/connect/strategy/live_runner.go:138:func (s *StrategyExecutionServer) RunLiveStrategy(ctx context.Context, cfg LiveStrategyConfig) error {
-backend/internal/connect/strategy/position_cache.go:142:func (c *PositionCache) PutSnapshot(snap *mthub.PositionSnapshot, receivedAt time.Time) {
-backend/internal/connect/strategy/position_cache.go:147:func (c *PositionCache) Unsubscribe(accountID string) {
-backend/internal/connect/strategy/position_cache.go:156:func (c *PositionCache) GetSnapshot(accountID string) *mthub.PositionSnapshot {
-backend/internal/connect/strategy/position_cache.go:164:func (c *PositionCache) GetFreshFinancialSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
-backend/internal/connect/strategy/position_cache.go:183:func (c *PositionCache) GetFreshPositionSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
-backend/internal/connect/strategy/position_cache.go:207:func (c *PositionCache) GetFreshTradingSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
-backend/internal/connect/strategy/position_cache.go:237:func (c *PositionCache) GetFreshSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:150:func (c *PositionCache) PutSnapshot(snap *mthub.PositionSnapshot, receivedAt time.Time) {
+backend/internal/connect/strategy/position_cache.go:155:func (c *PositionCache) Unsubscribe(accountID string) {
+backend/internal/connect/strategy/position_cache.go:179:func (c *PositionCache) GetSnapshot(accountID string) *mthub.PositionSnapshot {
+backend/internal/connect/strategy/position_cache.go:187:func (c *PositionCache) GetFreshFinancialSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:206:func (c *PositionCache) GetFreshPositionSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:230:func (c *PositionCache) GetFreshTradingSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
+backend/internal/connect/strategy/position_cache.go:260:func (c *PositionCache) GetFreshSnapshot(accountID string, now time.Time) (*mthub.PositionSnapshot, bool) {
 backend/internal/connect/strategy/position_cache.go:49:func (c *PositionCache) Subscribe(ctx context.Context, hub *mthub.MtHubService, accountID string) {
 backend/internal/connect/strategy/schedule_engine.go:114:func (e *ScheduleEngine) Start(ctx context.Context) error {
 backend/internal/connect/strategy/schedule_engine.go:170:func (e *ScheduleEngine) Notify() {
@@ -1848,42 +1852,43 @@ backend/internal/connect/strategy/strategy_backtest_crud.go:265:func (s *Strateg
 backend/internal/connect/strategy/strategy_backtest_crud.go:294:func (s *StrategyExecutionServer) UpdateBacktestRun(ctx context.Context, req *connect.Request[antv1.UpdateBacktestRunRequest]) (*connect.Response[antv1.UpdateBacktestRunResponse], error) {
 backend/internal/connect/strategy/strategy_backtest_validate.go:123:func (s *StrategyExecutionServer) HasBacktestData(ctx context.Context, symbol, timeframe string) bool {
 backend/internal/connect/strategy/strategy_backtest_watch.go:15:func (s *StrategyExecutionServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
-backend/internal/connect/strategy/strategy_execution_handler.go:140:func (s *StrategyExecutionServer) SetCoverageChecker(c CoverageChecker) { s.coverageChecker = c }
-backend/internal/connect/strategy/strategy_execution_handler.go:143:func (s *StrategyExecutionServer) SetQualityValidator(v QualityValidator) { s.qualityValidator = v }
-backend/internal/connect/strategy/strategy_execution_handler.go:146:func (s *StrategyExecutionServer) SetGateEvalRepo(r *repository.GateEvaluationRepository) {
-backend/internal/connect/strategy/strategy_execution_handler.go:156:func (s *StrategyExecutionServer) SetMarketDataRepo(r repository.MarketDataStore) {
-backend/internal/connect/strategy/strategy_execution_handler.go:171:func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                      { s.barSource = bs }
-backend/internal/connect/strategy/strategy_execution_handler.go:172:func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)                 { s.mtHub = h }
-backend/internal/connect/strategy/strategy_execution_handler.go:173:func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)           { s.paperEngine = pe }
-backend/internal/connect/strategy/strategy_execution_handler.go:174:func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)                   { s.goExecutor = ge }
-backend/internal/connect/strategy/strategy_execution_handler.go:175:func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
-backend/internal/connect/strategy/strategy_execution_handler.go:176:func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) {
-backend/internal/connect/strategy/strategy_execution_handler.go:179:func (s *StrategyExecutionServer) SetVersionRepo(r *repository.StrategyVersionRepository) {
-backend/internal/connect/strategy/strategy_execution_handler.go:182:func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry) { s.sessionRegistry = r }
-backend/internal/connect/strategy/strategy_execution_handler.go:183:func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) {
-backend/internal/connect/strategy/strategy_execution_handler.go:186:func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCache = pc }
-backend/internal/connect/strategy/strategy_execution_handler.go:187:func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Context, scheduleID uuid.UUID) string) {
-backend/internal/connect/strategy/strategy_execution_handler.go:190:func (s *StrategyExecutionServer) SetStrategyTemplateLookup(f func(ctx context.Context, strategyID string) string) {
-backend/internal/connect/strategy/strategy_execution_handler.go:193:func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) string) {
-backend/internal/connect/strategy/strategy_execution_handler.go:198:func (s *StrategyExecutionServer) SetAccountLoginLookup(f func(ctx context.Context, accountID string) (int64, error)) {
-backend/internal/connect/strategy/strategy_execution_handler.go:201:func (s *StrategyExecutionServer) SetAccountIsDemoLookup(f func(ctx context.Context, accountID string) (bool, error)) {
-backend/internal/connect/strategy/strategy_execution_handler.go:204:func (s *StrategyExecutionServer) SetAccountConnectedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
-backend/internal/connect/strategy/strategy_execution_handler.go:207:func (s *StrategyExecutionServer) SetAccountTradeAllowedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
-backend/internal/connect/strategy/strategy_execution_handler.go:210:func (s *StrategyExecutionServer) SetAccountIsInvestorLookup(f func(ctx context.Context, accountID string) (bool, error)) {
-backend/internal/connect/strategy/strategy_execution_handler.go:222:func (s *StrategyExecutionServer) SetQuotaChecker(qc QuotaChecker) { s.quotaChecker = qc }
-backend/internal/connect/strategy/strategy_execution_handler.go:225:func (s *StrategyExecutionServer) SetBoundSvc(b BoundAccountChecker) { s.boundSvc = b }
-backend/internal/connect/strategy/strategy_execution_handler.go:239:func (s *StrategyExecutionServer) SetGate(g *risk.Gate) { s.gate = g }
-backend/internal/connect/strategy/strategy_execution_handler.go:242:func (s *StrategyExecutionServer) AddGateRule(r risk.Rule) {
-backend/internal/connect/strategy/strategy_execution_handler.go:249:func (s *StrategyExecutionServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
-backend/internal/connect/strategy/strategy_execution_handler.go:257:func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
-backend/internal/connect/strategy/strategy_execution_handler.go:258:func (s *StrategyExecutionServer) SetFailureSignatureRepo(repo *repository.FailureSignatureRepository) {
-backend/internal/connect/strategy/strategy_execution_handler.go:261:func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) {
-backend/internal/connect/strategy/strategy_execution_handler.go:274:func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:298:func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:326:func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:341:func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetStrategyTemplatesResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:347:func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
-backend/internal/connect/strategy/strategy_execution_handler.go:398:func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
+backend/internal/connect/strategy/strategy_execution_handler.go:153:func (s *StrategyExecutionServer) SetCoverageChecker(c CoverageChecker) { s.coverageChecker = c }
+backend/internal/connect/strategy/strategy_execution_handler.go:156:func (s *StrategyExecutionServer) SetQualityValidator(v QualityValidator) { s.qualityValidator = v }
+backend/internal/connect/strategy/strategy_execution_handler.go:159:func (s *StrategyExecutionServer) SetGateEvalRepo(r *repository.GateEvaluationRepository) {
+backend/internal/connect/strategy/strategy_execution_handler.go:169:func (s *StrategyExecutionServer) SetMarketDataRepo(r repository.MarketDataStore) {
+backend/internal/connect/strategy/strategy_execution_handler.go:184:func (s *StrategyExecutionServer) SetBarSource(bs BarSource)                      { s.barSource = bs }
+backend/internal/connect/strategy/strategy_execution_handler.go:185:func (s *StrategyExecutionServer) SetMtHub(h *mthub.MtHubService)                 { s.mtHub = h }
+backend/internal/connect/strategy/strategy_execution_handler.go:186:func (s *StrategyExecutionServer) SetPaperEngine(pe PaperOrderExecutor)           { s.paperEngine = pe }
+backend/internal/connect/strategy/strategy_execution_handler.go:187:func (s *StrategyExecutionServer) SetGoExecutor(ge *GoExecutor)                   { s.goExecutor = ge }
+backend/internal/connect/strategy/strategy_execution_handler.go:188:func (s *StrategyExecutionServer) SetRunRepo(r *repository.StrategyRunRepository) { s.runRepo = r }
+backend/internal/connect/strategy/strategy_execution_handler.go:189:func (s *StrategyExecutionServer) SetImportedRepo(r *repository.ImportedStrategyRepository) {
+backend/internal/connect/strategy/strategy_execution_handler.go:192:func (s *StrategyExecutionServer) SetVersionRepo(r *repository.StrategyVersionRepository) {
+backend/internal/connect/strategy/strategy_execution_handler.go:195:func (s *StrategyExecutionServer) SetSessionRegistry(r *SessionRegistry) { s.sessionRegistry = r }
+backend/internal/connect/strategy/strategy_execution_handler.go:196:func (s *StrategyExecutionServer) SetAccountLookup(f func(ctx context.Context, userID string) string) {
+backend/internal/connect/strategy/strategy_execution_handler.go:199:func (s *StrategyExecutionServer) SetPositionCache(pc *PositionCache) { s.posCache = pc }
+backend/internal/connect/strategy/strategy_execution_handler.go:200:func (s *StrategyExecutionServer) SetScheduleNameLookup(f func(ctx context.Context, scheduleID uuid.UUID) string) {
+backend/internal/connect/strategy/strategy_execution_handler.go:203:func (s *StrategyExecutionServer) SetStrategyTemplateLookup(f func(ctx context.Context, strategyID string) string) {
+backend/internal/connect/strategy/strategy_execution_handler.go:206:func (s *StrategyExecutionServer) SetBrokerCompanyLookup(f func(ctx context.Context, accountID string) string) {
+backend/internal/connect/strategy/strategy_execution_handler.go:211:func (s *StrategyExecutionServer) SetAccountLoginLookup(f func(ctx context.Context, accountID string) (int64, error)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:214:func (s *StrategyExecutionServer) SetAccountIsDemoLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:217:func (s *StrategyExecutionServer) SetAccountConnectedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:220:func (s *StrategyExecutionServer) SetAccountTradeAllowedLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:223:func (s *StrategyExecutionServer) SetAccountIsInvestorLookup(f func(ctx context.Context, accountID string) (bool, error)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:229:func (s *StrategyExecutionServer) SetAccountIdentityLookup(f func(ctx context.Context, accountID string) (*AccountIdentity, error)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:241:func (s *StrategyExecutionServer) SetQuotaChecker(qc QuotaChecker) { s.quotaChecker = qc }
+backend/internal/connect/strategy/strategy_execution_handler.go:244:func (s *StrategyExecutionServer) SetBoundSvc(b BoundAccountChecker) { s.boundSvc = b }
+backend/internal/connect/strategy/strategy_execution_handler.go:258:func (s *StrategyExecutionServer) SetGate(g *risk.Gate) { s.gate = g }
+backend/internal/connect/strategy/strategy_execution_handler.go:261:func (s *StrategyExecutionServer) AddGateRule(r risk.Rule) {
+backend/internal/connect/strategy/strategy_execution_handler.go:268:func (s *StrategyExecutionServer) SetAccountProvider(p AccountStateProvider) { s.accountProvider = p }
+backend/internal/connect/strategy/strategy_execution_handler.go:276:func (s *StrategyExecutionServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
+backend/internal/connect/strategy/strategy_execution_handler.go:277:func (s *StrategyExecutionServer) SetFailureSignatureRepo(repo *repository.FailureSignatureRepository) {
+backend/internal/connect/strategy/strategy_execution_handler.go:280:func (s *StrategyExecutionServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) {
+backend/internal/connect/strategy/strategy_execution_handler.go:293:func (s *StrategyExecutionServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:317:func (s *StrategyExecutionServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:345:func (s *StrategyExecutionServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:360:func (s *StrategyExecutionServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetStrategyTemplatesResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:366:func (s *StrategyExecutionServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
+backend/internal/connect/strategy/strategy_execution_handler.go:417:func (s *StrategyExecutionServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 backend/internal/connect/strategy/strategy_execution_runs.go:16:func (s *StrategyExecutionServer) ListStrategyRuns(ctx context.Context, req *connect.Request[antv1.ListStrategyRunsRequest]) (*connect.Response[antv1.ListStrategyRunsResponse], error) {
 backend/internal/connect/strategy/strategy_execution_runs.go:46:func (s *StrategyExecutionServer) GetStrategyRun(ctx context.Context, req *connect.Request[antv1.GetStrategyRunRequest]) (*connect.Response[antv1.GetStrategyRunResponse], error) {
 backend/internal/connect/strategy/strategy_experiment_handler.go:113:func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context, req *connect.Request[antv1.SubmitStrategyExperimentRequest]) (*connect.Response[antv1.SubmitStrategyExperimentResponse], error) {
@@ -1946,31 +1951,32 @@ backend/internal/connect/strategy/strategy_version_handler.go:17:func (s *Strate
 backend/internal/connect/strategy/strategy_version_handler.go:47:func (s *StrategyExecutionServer) GetStrategyVersion(ctx context.Context, req *connect.Request[antv1.GetStrategyVersionRequest]) (*connect.Response[antv1.GetStrategyVersionResponse], error) {
 backend/internal/connect/strategy/strategy_version_handler.go:75:func (s *StrategyExecutionServer) RollbackStrategyVersion(ctx context.Context, req *connect.Request[antv1.RollbackStrategyVersionRequest]) (*connect.Response[antv1.RollbackStrategyVersionResponse], error) {
 backend/internal/connect/strategy/trade_barrier.go:162:func (b *TradeBarrier) Acquire(clientID string, magic int32, action string) bool {
-backend/internal/connect/strategy/trade_barrier.go:185:func (b *TradeBarrier) NotifyBrokerAccepted(ticket int64) {
-backend/internal/connect/strategy/trade_barrier.go:218:func (b *TradeBarrier) NotifyConfirmationEvent(ticket int64, magic int32, updateType string) {
-backend/internal/connect/strategy/trade_barrier.go:262:func (b *TradeBarrier) NotifyDeterministicRejected() {
-backend/internal/connect/strategy/trade_barrier.go:275:func (b *TradeBarrier) NotifyOutcomeUnknown() {
-backend/internal/connect/strategy/trade_barrier.go:290:func (b *TradeBarrier) WaitConfirmed(ctx context.Context) tradeBarrierState {
-backend/internal/connect/strategy/trade_barrier.go:330:func (b *TradeBarrier) Reconcile(confirmed bool) {
-backend/internal/connect/strategy/trade_barrier.go:348:func (b *TradeBarrier) Release() {
-backend/internal/connect/strategy/trade_barrier.go:362:func (b *TradeBarrier) State() tradeBarrierState {
-backend/internal/connect/strategy/trade_barrier.go:371:func (b *TradeBarrier) WaitState(ctx context.Context, target tradeBarrierState) tradeBarrierState {
-backend/internal/connect/strategy/trade_barrier.go:396:func (b *TradeBarrier) Ticket() int64 {
-backend/internal/connect/strategy/vm_live_session.go:132:func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
-backend/internal/connect/strategy/vm_live_session.go:140:func (s *VMLiveSession) Close() error {
-backend/internal/connect/strategy/vm_live_session.go:194:func (s *VMLiveSession) SetDiag(d *sessionDiag) {
+backend/internal/connect/strategy/trade_barrier.go:186:func (b *TradeBarrier) NotifyBrokerAccepted(ticket int64) {
+backend/internal/connect/strategy/trade_barrier.go:219:func (b *TradeBarrier) NotifyConfirmationEvent(ticket int64, magic int32, updateType string) {
+backend/internal/connect/strategy/trade_barrier.go:263:func (b *TradeBarrier) NotifyDeterministicRejected() {
+backend/internal/connect/strategy/trade_barrier.go:276:func (b *TradeBarrier) NotifyOutcomeUnknown() {
+backend/internal/connect/strategy/trade_barrier.go:291:func (b *TradeBarrier) WaitConfirmed(ctx context.Context) tradeBarrierState {
+backend/internal/connect/strategy/trade_barrier.go:331:func (b *TradeBarrier) Reconcile(confirmed bool) {
+backend/internal/connect/strategy/trade_barrier.go:350:func (b *TradeBarrier) ConfirmByAuthoritativeRead() bool {
+backend/internal/connect/strategy/trade_barrier.go:369:func (b *TradeBarrier) Release() {
+backend/internal/connect/strategy/trade_barrier.go:383:func (b *TradeBarrier) State() tradeBarrierState {
+backend/internal/connect/strategy/trade_barrier.go:392:func (b *TradeBarrier) WaitState(ctx context.Context, target tradeBarrierState) tradeBarrierState {
+backend/internal/connect/strategy/trade_barrier.go:417:func (b *TradeBarrier) Ticket() int64 {
+backend/internal/connect/strategy/vm_live_session.go:135:func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
+backend/internal/connect/strategy/vm_live_session.go:143:func (s *VMLiveSession) Close() error {
+backend/internal/connect/strategy/vm_live_session.go:197:func (s *VMLiveSession) SetDiag(d *sessionDiag) {
 backend/internal/connect/strategy/vm_live_session.go:86:func (s *VMLiveSession) Start(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
 backend/internal/connect/strategy/walk_forward_handler.go:36:func (s *WalkForwardServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 backend/internal/connect/strategy/walk_forward_handler.go:39:func (s *WalkForwardServer) GetWalkForwardReport(
 backend/internal/connect/strategy/walk_forward_handler.go:57:func (s *WalkForwardServer) WatchWalkForwardReport(
-backend/internal/mthub/broker_types.go:130:func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
-backend/internal/mthub/broker_types.go:165:func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSnapshot, func()) {
-backend/internal/mthub/broker_types.go:188:func (b *PositionSnapshotBroker) SubscribeAll() (<-chan *PositionSnapshot, func()) {
-backend/internal/mthub/broker_types.go:243:func (b *BarBroker) Publish(ev *BarUpdate) {
-backend/internal/mthub/broker_types.go:270:func (b *BarBroker) DroppedBars(accountID string) int64 {
-backend/internal/mthub/broker_types.go:275:func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
-backend/internal/mthub/broker_types.go:317:func (b *AccountStatusBroker) Publish(ev *AccountStatusEvent) {
-backend/internal/mthub/broker_types.go:331:func (b *AccountStatusBroker) Subscribe(accountID string) (<-chan *AccountStatusEvent, func()) {
+backend/internal/mthub/broker_types.go:141:func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
+backend/internal/mthub/broker_types.go:184:func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSnapshot, func()) {
+backend/internal/mthub/broker_types.go:214:func (b *PositionSnapshotBroker) SubscribeAll() (<-chan *PositionSnapshot, func()) {
+backend/internal/mthub/broker_types.go:274:func (b *BarBroker) Publish(ev *BarUpdate) {
+backend/internal/mthub/broker_types.go:301:func (b *BarBroker) DroppedBars(accountID string) int64 {
+backend/internal/mthub/broker_types.go:306:func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
+backend/internal/mthub/broker_types.go:348:func (b *AccountStatusBroker) Publish(ev *AccountStatusEvent) {
+backend/internal/mthub/broker_types.go:362:func (b *AccountStatusBroker) Subscribe(accountID string) (<-chan *AccountStatusEvent, func()) {
 backend/internal/mthub/derived_state.go:111:func (dc *DerivedComputer) Start() {
 backend/internal/mthub/derived_state.go:116:func (dc *DerivedComputer) Stop() {
 backend/internal/mthub/derived_state.go:121:func (dc *DerivedComputer) State() *DerivedState {
@@ -2216,17 +2222,17 @@ backend/internal/service/account_crud.go:46:func (s *AccountService) BeginTx(ctx
 backend/internal/service/account_crud.go:52:func (s *AccountService) CreateAccountTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
 backend/internal/service/account_crud.go:77:func (s *AccountService) CreateAccount(ctx context.Context, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
 backend/internal/service/account_crud.go:95:func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id, brokerCompany, brokerServer, brokerHost string) error {
-backend/internal/service/account_lifecycle.go:105:func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel decimal.Decimal) error {
-backend/internal/service/account_lifecycle.go:149:func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct decimal.Decimal) error {
-backend/internal/service/account_lifecycle.go:160:func (s *AccountService) LogAudit(ctx context.Context, accountID, userID uuid.UUID, action, detail string) {
-backend/internal/service/account_lifecycle.go:169:func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID string) (bool, error) {
-backend/internal/service/account_lifecycle.go:183:func (s *AccountService) DisconnectAccountByID(ctx context.Context, accountID string) error {
-backend/internal/service/account_lifecycle.go:194:func (s *AccountService) SetStatus(ctx context.Context, userID uuid.UUID, id string, status AccountStatus) error {
+backend/internal/service/account_lifecycle.go:110:func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel decimal.Decimal) error {
+backend/internal/service/account_lifecycle.go:154:func (s *AccountService) UpdateBrokerThresholds(ctx context.Context, id string, marginCallPct, stopOutPct decimal.Decimal) error {
+backend/internal/service/account_lifecycle.go:165:func (s *AccountService) LogAudit(ctx context.Context, accountID, userID uuid.UUID, action, detail string) {
+backend/internal/service/account_lifecycle.go:174:func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID string) (bool, error) {
+backend/internal/service/account_lifecycle.go:188:func (s *AccountService) DisconnectAccountByID(ctx context.Context, accountID string) error {
+backend/internal/service/account_lifecycle.go:199:func (s *AccountService) SetStatus(ctx context.Context, userID uuid.UUID, id string, status AccountStatus) error {
 backend/internal/service/account_lifecycle.go:19:func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.UUID, id string) (*AccountCredentials, error) {
-backend/internal/service/account_lifecycle.go:210:func (s *AccountService) CleanupOldSnapshots(ctx context.Context, log *zap.Logger) error {
-backend/internal/service/account_lifecycle.go:57:func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, p AccountInfoUpdate) error {
-backend/internal/service/account_lifecycle.go:72:func (s *AccountService) UpdateAccountInfo(ctx context.Context, p AccountInfoUpdate) error {
-backend/internal/service/account_lifecycle.go:90:func (s *AccountService) UpdateAccountType(ctx context.Context, id, accountType string) error {
+backend/internal/service/account_lifecycle.go:215:func (s *AccountService) CleanupOldSnapshots(ctx context.Context, log *zap.Logger) error {
+backend/internal/service/account_lifecycle.go:60:func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, p AccountInfoUpdate) error {
+backend/internal/service/account_lifecycle.go:76:func (s *AccountService) UpdateAccountInfo(ctx context.Context, p AccountInfoUpdate) error {
+backend/internal/service/account_lifecycle.go:95:func (s *AccountService) UpdateAccountType(ctx context.Context, id, accountType string) error {
 backend/internal/service/account_service.go:59:func (s *AccountService) SetLogger(log *zap.Logger) { s.log = log }
 backend/internal/service/account_sync.go:102:func (s *AccountService) GetUserAccountIDs(ctx context.Context, userID string) ([]string, error) {
 backend/internal/service/account_sync.go:120:func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, equity decimal.Decimal, status string) {
@@ -2333,28 +2339,28 @@ backend/internal/service/subscription_service_proto.go:106:func (s *Subscription
 backend/internal/service/subscription_service_proto.go:119:func (s *SubscriptionService) GetUsageSummaryProto(ctx context.Context, userID uuid.UUID) (*antv1.UsageSummary, *antv1.Plan, error) {
 backend/internal/service/subscription_service_proto.go:25:func (s *SubscriptionService) ListPlansProto(ctx context.Context) ([]*antv1.Plan, error) {
 backend/internal/service/subscription_service_proto.go:38:func (s *SubscriptionService) GetMySubscriptionProto(ctx context.Context, userID uuid.UUID) (*UserSubscriptionInfo, error) {
-backend/internal/service/systemai/chat.go:183:func (s *Service) ChatCompletion(
-backend/internal/service/systemai/chat.go:196:func (s *Service) ChatCompletionWithUsage(
-backend/internal/service/systemai/chat_failover.go:26:func (s *Service) SetCircuitBreakerDB(db cbExecutor) {
-backend/internal/service/systemai/chat_failover.go:82:func (e *failoverErr) Error() string { return e.msg }
-backend/internal/service/systemai/chat_stream.go:17:func (s *Service) ChatCompletionStream(
-backend/internal/service/systemai/chat_stream.go:29:func (s *Service) ChatCompletionStreamWithTools(
-backend/internal/service/systemai/service.go:107:func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) (int, error)) {
-backend/internal/service/systemai/service.go:113:func (s *Service) SetPostCallBiller(fn PostCallBiller) {
-backend/internal/service/systemai/service.go:118:func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
-backend/internal/service/systemai/service.go:124:func (s *Service) SetCostBreaker(cb CostBreakerChecker) {
-backend/internal/service/systemai/service.go:131:func (s *Service) SetModelFilter(fn func(ctx context.Context, userID uuid.UUID, model string) bool) {
-backend/internal/service/systemai/service.go:156:func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
-backend/internal/service/systemai/service.go:186:func (s *Service) List(ctx context.Context, userID uuid.UUID) ([]*repository.SystemAIConfigRow, error) {
-backend/internal/service/systemai/service.go:193:func (s *Service) Get(ctx context.Context, userID uuid.UUID, providerID string) (*repository.SystemAIConfigRow, error) {
-backend/internal/service/systemai/service.go:197:func (s *Service) UpdateConfig(ctx context.Context, row *repository.SystemAIConfigRow, updatedBy string) error {
-backend/internal/service/systemai/service.go:204:func (s *Service) GetAIPrimary(ctx context.Context, userID uuid.UUID) (providerID, model string, err error) {
-backend/internal/service/systemai/service.go:211:func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
-backend/internal/service/systemai/service.go:221:func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID, secret, updatedBy string) error {
-backend/internal/service/systemai/service.go:251:func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
-backend/internal/service/systemai/service.go:272:func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, providerID string) ([]string, error) {
-backend/internal/service/systemai/service.go:87:func (s *Service) SetLogger(l *zap.Logger) { s.log = l }
-backend/internal/service/systemai/service.go:90:func (s *Service) SetUserRepo(r *repository.UserRepository) {
+backend/internal/service/systemai/chat.go:189:func (s *Service) ChatCompletion(
+backend/internal/service/systemai/chat.go:202:func (s *Service) ChatCompletionWithUsage(
+backend/internal/service/systemai/chat_failover.go:24:func (s *Service) SetCircuitBreakerDB(db cbExecutor) {
+backend/internal/service/systemai/chat_retry.go:21:func (e *failoverErr) Error() string { return e.msg }
+backend/internal/service/systemai/chat_stream.go:14:func (s *Service) ChatCompletionStream(
+backend/internal/service/systemai/chat_stream.go:26:func (s *Service) ChatCompletionStreamWithTools(
+backend/internal/service/systemai/service.go:109:func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) (int, error)) {
+backend/internal/service/systemai/service.go:115:func (s *Service) SetPostCallBiller(fn PostCallBiller) {
+backend/internal/service/systemai/service.go:120:func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
+backend/internal/service/systemai/service.go:126:func (s *Service) SetCostBreaker(cb CostBreakerChecker) {
+backend/internal/service/systemai/service.go:133:func (s *Service) SetModelFilter(fn func(ctx context.Context, userID uuid.UUID, model string) bool) {
+backend/internal/service/systemai/service.go:158:func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
+backend/internal/service/systemai/service.go:188:func (s *Service) List(ctx context.Context, userID uuid.UUID) ([]*repository.SystemAIConfigRow, error) {
+backend/internal/service/systemai/service.go:195:func (s *Service) Get(ctx context.Context, userID uuid.UUID, providerID string) (*repository.SystemAIConfigRow, error) {
+backend/internal/service/systemai/service.go:199:func (s *Service) UpdateConfig(ctx context.Context, row *repository.SystemAIConfigRow, updatedBy string) error {
+backend/internal/service/systemai/service.go:206:func (s *Service) GetAIPrimary(ctx context.Context, userID uuid.UUID) (providerID, model string, err error) {
+backend/internal/service/systemai/service.go:213:func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
+backend/internal/service/systemai/service.go:223:func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID, secret, updatedBy string) error {
+backend/internal/service/systemai/service.go:253:func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
+backend/internal/service/systemai/service.go:274:func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, providerID string) ([]string, error) {
+backend/internal/service/systemai/service.go:89:func (s *Service) SetLogger(l *zap.Logger) { s.log = l }
+backend/internal/service/systemai/service.go:92:func (s *Service) SetUserRepo(r *repository.UserRepository) {
 backend/internal/service/systemai/session_quota.go:24:func (sc *sessionCounter) AddTokens(n int) {
 backend/internal/service/systemai/session_quota.go:31:func (sc *sessionCounter) Total() int {
 backend/internal/service/template_svc.go:105:func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {

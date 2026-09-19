@@ -2,7 +2,10 @@ package mql2go
 
 import (
 	"context"
+	"fmt"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/shopspring/decimal"
 
@@ -139,5 +142,53 @@ func BenchmarkStrategy1000Ticks(b *testing.B) {
 				b.Fatal(err)
 			}
 		}
+	}
+}
+
+// ── B5: concurrency degradation probe — POST-2 capacity baseline ──
+
+// BenchmarkVMExec_Concurrency runs the same compiled strategy on N
+// independent VM instances (one per goroutine, shared read-only *Bytecode +
+// stateless noopContext) and measures wall-clock throughput as N grows past
+// the physical core count. POST-2: quantifies pure VM execution degradation
+// — no claim/lease/PG round-trip (worker-side bounded constants, off this
+// axis) and no competition from live dispatch (in-process probe).
+//
+// Numbers land in docs/benchmarks/post2-capacity-baseline-2026-09.md.
+func BenchmarkVMExec_Concurrency(b *testing.B) {
+	r, err := CompileMQL(benchMACrossSrc)
+	if err != nil {
+		b.Fatalf("compile: %v", err)
+	}
+	bc := r.Bytecode()
+	ctx := context.Background()
+	for _, n := range []int{1, 4, 8, 16} {
+		b.Run(fmt.Sprintf("N=%d", n), func(b *testing.B) {
+			per := b.N / n
+			rem := b.N % n
+			var wg sync.WaitGroup
+			b.ResetTimer()
+			start := time.Now()
+			for w := 0; w < n; w++ {
+				wg.Add(1)
+				go func(iters int) {
+					defer wg.Done()
+					vm := NewVM(bc)
+					for i := 0; i < iters; i++ {
+						if err := vm.RunOnTick(ctx); err != nil {
+							b.Error(err)
+							return
+						}
+					}
+				}(per + func() int {
+					if w < rem {
+						return 1
+					}
+					return 0
+				}())
+			}
+			wg.Wait()
+			b.ReportMetric(float64(b.N)/time.Since(start).Seconds(), "runs/s")
+		})
 	}
 }
