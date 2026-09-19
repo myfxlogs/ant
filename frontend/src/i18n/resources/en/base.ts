@@ -1057,7 +1057,7 @@ const Base = {
       "codeTooShort": "Please paste complete EA/indicator source code.",
       "confirmImport": "确认导入",
       "hint": "Paste MQL4/MQL5 code and click Analyze",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "importSuccess": "MQL source imported. Click \"Apply to Editor\" to write it into the editor.",
       "importTab": "Import EA",
       "migration": "策略导入",
       "noBridgeNeeded": "覆盖率 100%，无需桥接",

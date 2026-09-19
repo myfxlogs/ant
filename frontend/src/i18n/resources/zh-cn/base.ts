@@ -1057,7 +1057,7 @@ const Base = {
       "codeTooShort": "请粘贴完整的EA/指标源码。",
       "confirmImport": "确认导入",
       "hint": "粘贴MQL4/MQL5代码并点击分析",
-      "importSuccess": "MQL 源码已导入，点击「Apply to Editor」写入编辑器",
+      "importSuccess": "MQL 源码已导入，点击「应用到编辑器」写入编辑器",
       "importTab": "导入EA",
       "migration": "策略导入",
       "noBridgeNeeded": "覆盖率 100%，无需桥接",
