@@ -189,6 +189,15 @@ func (b *brokerImpl) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 			Digits:       b.runner.ctx.liveDigits,
 			ContractSize: b.mustDecimal(b.runner.ctx.liveContractSize),
 			StopsLevel:   parseStopsLevel(b.runner.ctx.liveStopsLevel),
+			// VM-LIVE-PARITY-F2: the live VM sees the full SymbolParam fact set
+			// (empty string → -1 missing sentinel, same mustDecimal contract).
+			VolumeMin:  b.mustDecimal(b.runner.ctx.liveLotMin),
+			VolumeMax:  b.mustDecimal(b.runner.ctx.liveLotMax),
+			VolumeStep: b.mustDecimal(b.runner.ctx.liveLotStep),
+			TickValue:  b.mustDecimal(b.runner.ctx.liveTickValue),
+			TickSize:   b.mustDecimal(b.runner.ctx.liveTickSize),
+			SwapLong:   b.mustDecimal(b.runner.ctx.liveSwapLong),
+			SwapShort:  b.mustDecimal(b.runner.ctx.liveSwapShort),
 		}, nil
 	}
 	return b.executor.SymbolInfo(symbol)

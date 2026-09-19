@@ -520,6 +520,38 @@ func TestBrokerImpl_SymbolInfo_NoExecutor(t *testing.T) {
 	}
 }
 
+// VM-LIVE-PARITY-F2: harness-mode SymbolInfo must surface the full
+// SymbolParam fact set pushed via UpdateSymbolInfo — otherwise the ctx
+// fields are dead stores and MODE_MINLOT/LOTSTEP/TICKVALUE stay 0 live.
+func TestBrokerImpl_SymbolInfo_HarnessFullFacts(t *testing.T) {
+	r := New(Config{})
+	r.UpdateSymbolInfo(LiveSymbolInfo{
+		Point: "0.01", Digits: 2, ContractSize: "1", StopsLevel: 0,
+		LotMin: "0.01", LotMax: "100", LotStep: "0.01",
+		TickValue: "1.5", TickSize: "0.01",
+		SwapLong: "-2.5", SwapShort: "1.1",
+	})
+	si, err := r.broker.SymbolInfo("BTCUSDm")
+	if err != nil {
+		t.Fatalf("SymbolInfo: %v", err)
+	}
+	checks := map[string]decimal.Decimal{
+		"VolumeMin": si.VolumeMin, "VolumeMax": si.VolumeMax, "VolumeStep": si.VolumeStep,
+		"TickValue": si.TickValue, "TickSize": si.TickSize,
+		"SwapLong": si.SwapLong, "SwapShort": si.SwapShort,
+	}
+	want := map[string]string{
+		"VolumeMin": "0.01", "VolumeMax": "100", "VolumeStep": "0.01",
+		"TickValue": "1.5", "TickSize": "0.01",
+		"SwapLong": "-2.5", "SwapShort": "1.1",
+	}
+	for k, got := range checks {
+		if !got.Equal(decimal.RequireFromString(want[k])) {
+			t.Errorf("%s = %s, want %s (UpdateSymbolInfo field must reach VM)", k, got, want[k])
+		}
+	}
+}
+
 func TestBrokerImpl_SymbolInfo_WithExecutor(t *testing.T) {
 	r := New(Config{})
 	exec := &mockExecutor{symbolInfo: sdk.SymbolInfo{Digits: 5, Spread: 10}}
