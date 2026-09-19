@@ -79,8 +79,7 @@ func TestAnalyzeMQLToolBlindSpot(t *testing.T) {
 		t.Fatal("tool name")
 	}
 	out := tool.Run(nil, ToolInput{Code: `int start() {
-   double price[];
-   ArrayResize(price, 5);
+   double price[2][3];
    return 0;
 }`})
 	if !out.Success {
@@ -91,9 +90,9 @@ func TestAnalyzeMQLToolBlindSpot(t *testing.T) {
 		t.Fatalf("analysis output must be a map, got %T", out.Output)
 	}
 	if v, _ := om["compiles"].(bool); v {
-		t.Fatalf("local-array MQL is a known blind spot, must report compiles=false: %v", om)
+		t.Fatalf("multi-dim local array is a known blind spot, must report compiles=false: %v", om)
 	}
-	if s, _ := om["error"].(string); !strings.Contains(s, "local arrays not supported") {
+	if s, _ := om["error"].(string); !strings.Contains(s, "multi-dimensional arrays not supported") {
 		t.Fatalf("error must name the blind spot: %v", om)
 	}
 	if empty := (&analyzeMQLChatTool{}).Run(nil, ToolInput{}); empty.Success {

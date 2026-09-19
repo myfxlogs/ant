@@ -295,3 +295,16 @@
 - 2026-09-17 **VM-API-TRUTH-1 批次2c ✅done** — commit 52add8ed；AccountInfo* 假分支 fail-closed+枚举对齐+26 常量（非重分类）；独立 mutation×4 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2d ✅done** — commit a306f54e；7 timeseries API 重分类；14 真实/venue 实现保留；独立 mutation×1 RED→GREEN；明细见 registry 行 126。
 - 2026-09-17 **VM-API-TRUTH-1 批次2e ✅done + 整债收官** — commit 69d2330b；4 重分类+4 实接；python account.profit 顺带修复；独立 mutation×3 RED→GREEN；明细见 registry 行 126（条目转 ✅done）。
+
+
+## 2026-09-17~09-19 滚出（STATE.md 20KB 预算）
+
+- 2026-09-17 **VM-API-TRUTH-1 批次2c/2d/2e ✅done + 整债收官** — commit 52add8ed/a306f54e/69d2330b；AccountInfo* fail-closed+7 timeseries 重分类+4 实接收官；明细 registry 行 126（批次明细滚出 LOG.md）。
+- 2026-09-18 **VM-ENUM-NUMBERING-1 ✅done** — commit 477e8273+bfb42ea3 返修R1；独立 mutation×5 RED→GREEN；TIME_MSC int32 截断 spec 缺陷已修；明细见 registry 行 219。
+- 2026-09-18 **VM-GLOBAL-ARRAY-DECL-1 ✅done** — commit da902af6（自审计修正版派工单 @37358629）；独立 mutation×4 RED→GREEN；明细见 registry 行 220。
+- 2026-09-18 **ORDERSEND-NILBROKER-FAILCLOSED-1 ✅done** — commit 2739f100（派工单 @0461ff34）；12 站 signalMode 前移+nil-broker→fatal；独立 mutation×3 RED→GREEN；另立 TRADE-BUILTIN-ERR-SWALLOW-1；明细 registry 行 215。
+- 2026-09-18 **TRADE-BUILTIN-ERR-SWALLOW-1 ✅done** — commit 6eae8160（派工单 @d015173f）；13 站三态分裂+SimBroker 通道搬迁+engine RetCode 日志；独立 mutation×4 RED→GREEN；明细 registry 行 222。
+- 2026-09-18 **VM-FUNC-FATAL-DELAY-1 ✅done** — commit de6f672c+6ef18536（派工单 @a74556c6+R1）；executeCallUser 循环顶 fatalError 检查；独立 mutation×2 RED→GREEN；明细 registry 行 218。
+- 2026-09-18 **TEST-WAITSTATE-ACQUIRE-BCAST-1 ✅done** — commit 53e886e9（派工单 @a6ab8bbb）；Acquire 锁内补 Broadcast+判别性延迟测试；独立 mutation RED→GREEN；明细 registry 行 211。
+- 2026-09-18 **SNAPSHOT-SLICE-ALIAS-1 ✅done** — commit 40148ede（派工单 @e253a836）；边界不变量 4 面私有化+契约钉注；独立 mutation×4 各精确命中；明细 registry 行 212。
+- 2026-09-16 **VM-API-TRUTH-1 批次1/2a ✅done + VM 质量方案 v2 全量收官 + registry 全量对账** — 明细已滚出 LOG.md；registry 行 126/88/87。
