@@ -1,21 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Modal } from 'antd';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
-import StrategyChat from '@/components/strategy/StrategyChat';
-import WorkspaceSidebar, { type WorkspaceSection, type NewSource } from './WorkspaceSidebar';
+import WorkspaceSidebar, { type WorkspaceSection } from './WorkspaceSidebar';
 import NewStrategyPanel from './NewStrategyPanel';
 import BacktestHistoryPanel from './BacktestHistoryPanel';
-import WorkspaceAIPanel from './WorkspaceAIPanel';
 import WorkspaceCenterTabBar from './WorkspaceCenterTabBar';
 import CodeEditorArea from './CodeEditorArea';
 import MobileSidebarDrawer from './MobileSidebarDrawer';
-import BottomPanelSection from './BottomPanelSection';
-import MobileBacktestContent from './MobileBacktestContent';
+import MobileStrategyChat from './MobileStrategyChat';
+import WorkspaceBottomPanel from './WorkspaceBottomPanel';
+import WorkspaceDocks from './WorkspaceDocks';
 import { useWsAccount, useWsCode, useWsTemplates, useWsBacktest, useWsQuickTrade, useWsLayout, useWsHistory } from '../../WorkspaceContext';
-import { useSidebarActions } from './useSidebarActions';
-import { COMMON_CANCEL_KEY, COMMON_CONFIRM_KEY, COMMON_UNSAVED_KEY } from '@/gen/ant/v1/i18n/base_keys';
-import { SIDEBAR_NEW_STRATEGY_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
+import { useWorkspaceSidebarProps } from './useWorkspaceSidebarProps';
 
 type CenterView = 'sources' | 'editor' | 'history';
 type Dock = 'ai' | 'backtest' | null;
@@ -30,7 +25,6 @@ interface Props {
 }
 
 export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen, setIndicatorDrawerOpen, onShowVersionHistory }: Props) {
-  const { t } = useTranslation();
   const centerTab = useWorkspaceStore(s => s.centerTab);
   const setCenterTab = useWorkspaceStore(s => s.setCenterTab);
 
@@ -41,7 +35,6 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
   const quickTrade = useWsQuickTrade();
   const layout = useWsLayout();
   const history = useWsHistory();
-  const sidebarActions = useSidebarActions(code, history);
 
   const leftSidebarCollapsed = useWorkspaceStore(s => s.leftSidebarCollapsed);
   const setLeftSidebarCollapsed = useWorkspaceStore(s => s.setLeftSidebarCollapsed);
@@ -116,51 +109,22 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     backtest.runner.restoreLastRun(account.accountId, templates.selectedId || undefined);
   }, [account.accountId, backtest.runner, templates.selectedId]);
 
-  const handleNewStrategy = useCallback(() => {
-    const hasUnsaved = code.code && code.lastValidatedCode && code.code !== code.lastValidatedCode;
-    const doNew = () => {
-      templates.onSelect('');
-      code.setCode('');
-      code.setStrategyId(undefined);
-      code.setValidationResult(null);
-      code.setLastValidatedCode('');
-      code.setLoadedTemplate(null);
-      backtest.runner.resetStatus();
-      setImportMode(false);
-      setDock(null);
-      setCenterTab('code');
-    };
-    if (hasUnsaved) {
-      Modal.confirm({
-        title: t(SIDEBAR_NEW_STRATEGY_KEY),
-        content: t(COMMON_UNSAVED_KEY),
-        okText: t(COMMON_CONFIRM_KEY),
-        cancelText: t(COMMON_CANCEL_KEY),
-        onOk: doNew,
-      });
-    } else {
-      doNew();
-    }
-  }, [templates, code, backtest, setCenterTab, t]);
-
-  // 来源选择（侧栏菜单项与主区大卡共用）：全部落在编辑器视图，分区保持展开
-  const onNewSource = (source: NewSource) => {
-    handleNewStrategy();
-    if (source === 'ai') { setDock('ai'); return; }
-    if (source === 'import') setImportMode(true);
-    if (source === 'manual') {
-      // 最小脚手架（<20 字符不触发审计），让用户直接落进空白编辑器
-      code.setCode('# 新策略\n');
-    }
-    setCenterView('editor');
-  };
-
   // 分区头点击：切视图 + 关停靠面板（分区是主区的导航）
-  const onSectionChange = (s: WorkspaceSection) => {
+  const onSectionChange = useCallback((s: WorkspaceSection) => {
     setActiveSection(s);
     setCenterView(s === 'new' ? 'sources' : 'editor');
     setDock(null);
-  };
+  }, [setActiveSection, setCenterView, setDock]);
+
+  // sidebarProps + 新建策略/来源选择回调均内聚在 hook（handleNewStrategy/onNewSource 不再外泄到本文件）
+  const { sidebarProps, onNewSource } = useWorkspaceSidebarProps({
+    activeSection,
+    onSectionChange,
+    onSetCenterView: setCenterView,
+    onSetDock: setDock,
+    onSetImportMode: setImportMode,
+    onSetCode: code.setCode,
+  });
 
   const backtestHistoryPanel = (
     <BacktestHistoryPanel
@@ -171,55 +135,13 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
     />
   );
 
-  const sidebarProps = useMemo(() => ({
-    templates: templates.list,
-    loading: templates.loading,
-    selectedId: templates.selectedId || '',
-    onSelect: (id: string) => { templates.onSelect(id); setImportMode(false); setDock(null); setCenterView('editor'); },
-    onDeleteTemplate: sidebarActions.onDeleteTemplate,
-    onRenameTemplate: sidebarActions.onRenameTemplate,
-    onBatchDeleteTemplates: sidebarActions.onBatchDeleteTemplates,
-    backtestRuns: ((history.runs || []) as Array<{ id: string; startedAt?: string; totalReturn?: number; totalTrades?: number; templateName?: string; templateId?: string; name?: string }>),
-    runsLoading: history.loading,
-    onOpenHistory: (runId?: string) => { if (runId) backtest.loadRunById(runId, code.setCode); setCenterView('history'); setDock('backtest'); },
-    onDeleteRun: history.onDeleteRun,
-    onBatchDeleteRuns: sidebarActions.onBatchDeleteRuns,
-    onRenameRun: sidebarActions.onRenameRun,
-    onNew: handleNewStrategy,
-    onNewSource,
-    activeSection,
-    onSectionChange,
-    autoExpandHistory: history.autoExpandHistory,
-  }), [templates, sidebarActions, history, handleNewStrategy, onNewSource, activeSection, onSectionChange, backtest, code.setCode]);
+
 
   const btSummary = backtest.metrics?.totalTrades != null
     ? { totalReturn: backtest.metrics.totalReturn, maxDrawdown: backtest.metrics.maxDrawdown, sharpeRatio: backtest.metrics.sharpeRatio, winRate: backtest.metrics.winRate, totalTrades: backtest.metrics.totalTrades }
     : undefined;
   const recentSummaries = (history.runs as Array<{ templateName?: string; totalReturn?: number; totalTrades?: number; startedAt?: string }>)
     ?.slice(0, 10).map(r => ({ templateName: r.templateName || '', totalReturn: r.totalReturn ?? 0, totalTrades: r.totalTrades ?? 0, startedAt: r.startedAt || '' })) || [];
-
-  const aiDockPanel = (
-    <div style={{ width: 420, flexShrink: 0, borderLeft: '1px solid var(--ant-color-border)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <WorkspaceAIPanel
-        activeTab="ai"
-        onTabChange={() => setDock('backtest')}
-        onClose={() => setDock(null)}
-        btSummary={btSummary}
-        recentSummaries={recentSummaries}
-      />
-    </div>
-  );
-  const backtestDockPanel = (
-    <div style={{ width: 420, flexShrink: 0, borderLeft: '1px solid var(--ant-color-border)', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-      <WorkspaceAIPanel
-        activeTab="backtest"
-        onTabChange={() => setDock(null)}
-        onClose={() => setDock(null)}
-        btSummary={btSummary}
-        recentSummaries={recentSummaries}
-      />
-    </div>
-  );
 
   return (
     <div data-tour="code-editor" style={{ flex: '1 1 0', minWidth: 0, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -252,21 +174,28 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           {isMobile && (
             <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'chat' ? 'flex' : 'none', flexDirection: 'column' }}>
-              <StrategyChat
+              <MobileStrategyChat
                 symbol={account.symbol}
                 timeframe={account.timeframe}
                 accountId={account.accountId}
-                onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
                 currentCode={code.code}
                 lastBacktest={btSummary}
                 recentBacktests={recentSummaries}
+                onApplyCode={c => { code.setCode(c); setCenterTab('code'); }}
               />
             </div>
           )}
 
           <div style={{ flex: '1 1 0', minHeight: 0, display: centerTab === 'code' ? 'flex' : 'none', flexDirection: 'row' }}>
-            {dock === 'ai' && aiDockPanel}
-            {dock === 'backtest' && backtestDockPanel}
+            {dock && (
+              <WorkspaceDocks
+                dock={dock}
+                btSummary={btSummary}
+                recentSummaries={recentSummaries}
+                onSwitchToBacktest={() => setDock('backtest')}
+                onClose={() => setDock(null)}
+              />
+            )}
             {!dock && centerView === 'sources' && <NewStrategyPanel onNewSource={onNewSource} />}
             {!dock && centerView === 'editor' && (
               <CodeEditorArea
@@ -290,23 +219,23 @@ export default function WorkspaceCenterColumn({ isMobile = false, setBtModalOpen
         />
       )}
 
-      <BottomPanelSection
+      <WorkspaceBottomPanel
         isMobile={!!isMobile}
-        collapsed={layout.bottomPanelCollapsed}
-        onToggleCollapsed={() => layout.setBottomPanelCollapsed(!layout.bottomPanelCollapsed)}
-        positions={quickTrade.allPositions}
-        recentTrades={quickTrade.qtRecentTrades}
-        onClosePosition={quickTrade.handleClosePosition}
-        panelHeight={layout.bottomPanelUserResized ? layout.bottomPanelHeight : undefined}
-        onResizeStart={handleBpResize}
-        dragging={bpDragging}
         accountId={account.accountId}
         symbol={account.symbol}
-        accountMeta={account.selectedAccountMeta ?? undefined}
+        bottomPanelCollapsed={layout.bottomPanelCollapsed}
+        onToggleBottomPanelCollapsed={() => layout.setBottomPanelCollapsed(!layout.bottomPanelCollapsed)}
+        bottomPanelUserResized={layout.bottomPanelUserResized}
+        bottomPanelHeight={layout.bottomPanelHeight}
+        onResizeStart={handleBpResize}
+        dragging={bpDragging}
+        allPositions={quickTrade.allPositions}
+        qtRecentTrades={quickTrade.qtRecentTrades}
+        handleClosePosition={quickTrade.handleClosePosition}
         qtPositions={quickTrade.qtPositions}
         quickTradeCollapsed={layout.quickTradeCollapsed}
         onToggleQuickTrade={() => layout.setQuickTradeCollapsed(!layout.quickTradeCollapsed)}
-        backtestContent={isMobile ? <MobileBacktestContent /> : null}
+        accountMeta={account.selectedAccountMeta}
       />
     </div>
   );

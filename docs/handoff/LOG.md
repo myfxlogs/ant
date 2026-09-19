@@ -308,3 +308,6 @@
 - 2026-09-18 **TEST-WAITSTATE-ACQUIRE-BCAST-1 ✅done** — commit 53e886e9（派工单 @a6ab8bbb）；Acquire 锁内补 Broadcast+判别性延迟测试；独立 mutation RED→GREEN；明细 registry 行 211。
 - 2026-09-18 **SNAPSHOT-SLICE-ALIAS-1 ✅done** — commit 40148ede（派工单 @e253a836）；边界不变量 4 面私有化+契约钉注；独立 mutation×4 各精确命中；明细 registry 行 212。
 - 2026-09-16 **VM-API-TRUTH-1 批次1/2a ✅done + VM 质量方案 v2 全量收官 + registry 全量对账** — 明细已滚出 LOG.md；registry 行 126/88/87。
+## 2026-09-19 滚出（STATE.md 20KB 预算，LOWPRI-SWEEP-2 批）
+
+- 2026-09-17~09-19 **VM 批七项 + 簿记 + i18n 收官**（已滚出 STATE.md 最近变更日志）— registry 簿记修正（20 处陈旧续行格翻正+hook 续行校验修复）；MQL-LOOP-4 ✅done（条目漂移翻正+弱 pin 补强 contains "fatal coverage"，同 mutation 精确 RED→restore 4/4 GREEN）；LLM-CONFIG-1 ✅done（条目漂移翻正，Temperature/TimeoutSeconds 已由 43f1e20a 修复）；i18n 债系收官（I18N-MIXED-2 相位2 ja+vi 3eb5c69a+2388e919 五 locale strict 全 0/0；backend 批末回归 3663 绿/4 失=3 DB 环境缺+1 审计侧样品换新）；VM-API-TRUTH-1 收官/VM-ENUM-NUMBERING-1/VM-GLOBAL-ARRAY-DECL-1/ORDERSEND-NILBROKER/TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE-ALIAS 批次明细见上方 2026-09-17~18 滚出段与 registry。

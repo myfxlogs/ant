@@ -24,7 +24,7 @@
 | VM-ENUM-NUMBERING-1 SymbolInfo*/MarketInfo 全枚举对齐+错标修复 | ✅done | Devin CLI 验收通过 2026-09-18；commit 477e8273+bfb42ea3；明细见 registry 行 219 |
 
 - **阻塞/待决策**: D-COMMIT-SCOPE-001 部署闸仍有效。TRON-SECURITY-1 业主暂缓（不做）。
-- **下一步**: **LOWPRI-SWEEP-1 ✅done**（51b01d87——CQ-10/CQ-5/MDGATEWAY-5/TUNING-OVERFIT-2 全验收；复审副产新登记 CQ-11 传递性死链/CQ-12 lint 存量红）。LOWPRI-SWEEP-2 已派工（CQ-11 死簇+CQ-12 lint 红，builder-handoff-lowpri-sweep-2.md）。POST-2 设计实查完成→探针批派工（builder-handoff-post2-capacity-probe.md，in-process 不触生产）。（CQ-10 删死 repo 保表/CQ-5 16 处补理由+17 处既有/MDG-5a fail-closed/MDG-5b 常量/MDG-5c 删 session_clock/TUNING-OVERFIT-2 fail-visible/MDG-5d 枚举全覆盖；mutation T3/T6 RED 实证）。其后 POST-2 设计实查。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。i18n 债系收官。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
+- **下一步**: **LOWPRI-SWEEP-1 ✅done**（51b01d87——CQ-10/CQ-5/MDGATEWAY-5/TUNING-OVERFIT-2 全验收；复审副产新登记 CQ-11 传递性死链/CQ-12 lint 存量红）。**LOWPRI-SWEEP-2 施工完成待独立复审**（CQ-11 internal/ai 死簇删净：template_library.go+ai_strategy_templates_repository.go 整文件+strategy_prompt.go 死成员，复核门 grep 删后零有效命中+build 绿=引用清零；CQ-12 WorkspaceCenterColumn 313→242 行：useCallback×2+useWorkspaceSidebarProps hook+三子组件，eslint src 零输出+vitest 217 绿）。POST-2 设计实查完成→探针批派工（builder-handoff-post2-capacity-probe.md，in-process 不触生产）。i18n/VM 债系已收官。（相位1 zh-tw bf35cc82+67b80ad8；相位2 ja+vi 3eb5c69a+2388e919——五 locale strict 全 0/0、pre-commit 全量 strict、守卫测试 9 绿）。剩余 🟦open 全为暂缓/低优：VM-LIVE-MTF-1（暂缓需求驱动）/TRON-SECURITY-1（业主暂缓）/POST-2/FEAT-3/TUNING-OVERFIT-2/CQ-5/CQ-10/MDGATEWAY-5。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -90,15 +90,14 @@
 - **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
 - **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
 - **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
+- **CQ-11** ⚠️待独立复审 — internal/ai 传递性死簇删除（LOWPRI-SWEEP-2 施工）：template_library.go+ai_strategy_templates_repository.go 整文件+strategy_prompt.go PromptParams/BuildSystemPrompt/BuildUserPrompt/import×2；保留 FeedbackPrompt 链/DetectCodeStrategyType/IntentResult；复核门零有效命中+build 绿=引用清零（删除型债 mutation N/A 如派工单）；明细 registry
+- **CQ-12** ⚠️待独立复审 — WorkspaceCenterColumn.tsx 拆修 lint 归零（LOWPRI-SWEEP-2 施工）：useCallback×2+useWorkspaceSidebarProps hook（handleNewStrategy 原语义保持）+WorkspaceDocks/MobileStrategyChat/WorkspaceBottomPanel 三子组件；313→242 行；eslint src 零输出+tsc 0+vitest 217 绿；明细 registry
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-17~09-18 VM 批七项 ✅done + registry 簿记修正已滚出至 `docs/handoff/LOG.md`（VM-API-TRUTH-1 收官/VM-ENUM-NUMBERING-1/VM-GLOBAL-ARRAY-DECL-1/ORDERSEND-NILBROKER/TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE-ALIAS/簿记修正）。
-- 2026-09-19 **registry 簿记修正 + pre-commit 续行校验修复** — 20 处陈旧 🟦open 续行格（L165-189，5 父条目 2026-08-27 验收已含其工作）翻正为 ✅done；VM-CACHE-INTEGRITY-1/2 状态格 🟦open 前缀同为漂移残留（D-REVERT 对账已验收 08-26）一并翻正——**从 open 队列移除，非待复审项**；hook 修正：无短ID首格续行去留随父条目（删 CQ-5 负向实测仍拦截）；明细 registry 行 124/129/164-189。
-- 2026-09-19 **MQL-LOOP-4 ✅done（条目漂移翻正+弱 pin 补强）** — 独立复审实证 T5 实盘门控/T4 useAIFix/K3/CI/COV/C1 全部已在库（commit 0ef2638b，08-08），"P2 暂缓"系登记漂移；原 RejectsLive 弱 pin 摘门不红已补强（contains "fatal coverage"），同 mutation 精确 RED→restore 4/4 GREEN；明细 registry 行 21。
-- 2026-09-19 **LLM-CONFIG-1 ✅done（条目漂移翻正）** — 独立复审实证 Temperature/TimeoutSeconds 死字段已由 43f1e20a（09-08）修复——UI AdvancedForm 可配→DB→chat_failover populate→请求体/http.Client.Timeout 全链消费；mutation 改 defaultTemperature→TestDefaultTemperature 精确 RED→restore 4/4 GREEN；明细 registry 行 95。
-- 2026-09-19 **i18n 债系收官 + 批末回归扫** — I18N-MIXED-2 相位2 ja+vi ✅done（3eb5c69a+2388e919，五 locale strict 全 0/0）；I18N-MIXED-1 陈旧状态格翻正。backend 全量回归 3663 绿/4 失——3 例 DB 环境缺（127.0.0.1:5432 未起）+1 例真回归 `TestAnalyzeMQLToolBlindSpot`：local-array 盲区样品已被 MQL-COMPILER-LOCAL-ARRAYS 实现，样品换仍被拒的 multi-dim（审计侧修复）。
+- 2026-09-17~09-19 **VM 批七项 ✅done + registry 簿记修正 + MQL-LOOP-4/LLM-CONFIG-1 条目漂移翻正 + i18n 债系收官**——均已滚出至 `docs/handoff/LOG.md`（VM-API-TRUTH-1 收官/VM-ENUM-NUMBERING-1/VM-GLOBAL-ARRAY-DECL-1/ORDERSEND-NILBROKER/TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE-ALIAS/簿记修正 20 处续行格/hook 续行校验修复/MQL-LOOP-4 弱 pin 补强/LLM-CONFIG-1 死字段 43f1e20a/I18N-MIXED-2 相位2 ja+vi 3eb5c69a+2388e919 五 locale strict 全 0/0；backend 批末回归 3663 绿/4 失=3 DB 环境缺+1 审计侧样品换新）。
+- 2026-09-19 **LOWPRI-SWEEP-2 施工完成待独立复审** — CQ-11 internal/ai 传递性死簇删除（backend -289 行：两整文件+strategy_prompt.go 死成员）+ CQ-12 WorkspaceCenterColumn 拆修（313→242 行+4 新文件）；机检全绿：backend build/vet/test（ai+mdgateway+repository）/check-file-lines 0 errors，frontend eslint src 零输出/npm run lint/tsc 0/vitest 全量 217 绿，git diff --check 净；明细 registry。
 
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
