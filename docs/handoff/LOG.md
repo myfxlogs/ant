@@ -315,3 +315,11 @@
 ## 2026-09-19 POST-2 探针批施工（⚠️待独立复审）
 
 - 2026-09-19 **POST-2 探针批 ⚠️待独立复审** — 派工单 `builder-handoff-post2-capacity-probe.md` @981ec6ad；S1 `BenchmarkVMExec_Concurrency{N=1,4,8,16}`（`vm_bench_test.go`）+ S2 `TestSSEFanoutCostCurve`（`internal/paper/sse_fanout_probe_test.go`）+ S3 `TestPlacePaperOrderLatency_Concurrency`/`BenchmarkPlacePaperOrder`（`internal/paper/paper_order_probe_test.go`）+ S4 `docs/benchmarks/post2-capacity-baseline-2026-09.md`。三轴数字：VM 4vCPU 饱和拐点 N≈4（吞吐 1.83×→平台 2.1×，N=16 并发 1000-tick 回测 ~0.53s vs 单独 68ms）；SSE 每流恒定 ~2 server goroutine+~45-50KB、N=500 投递 p99 19.9ms（5ms 步进口径，突发=chan(8) drop 快照语义自洽）；paper 串行 6.2µs/单、并发封顶 ~34 万单/s。**设计表修正（复审关注点）**：SSE 并非缺 limiter——`SSEStreamLimitMiddleware(5)` 已接线 `main.go:276`，但 `isSSERequest` 只匹配 text/event-stream，前端主形态 ConnectRPC binary（application/connect+proto）不过 limiter，净效果无界；缺口 G-POST2-1（ConnectRPC 流无上限）/G-POST2-2（stream 无 metric）待登记裁决。门禁 build/vet/test/bench/check-lines(0 errors)/diff-check 全绿 + race×3。零触容器/生产端口/mtapi/DB。
+
+## 2026-09-19 VM-LIVE-VENUE-1 独立复审验收（Devin CLI）
+
+- **结论 ✅done**——施工 `dfd9eccd` 范围核符 S1-S6 设计/派工（2a8f7f11）。门禁：build/vet 净、2079 测试（7 影响包）、check-lines 0 errors（mt5/orders.go 450 贴预警线）、diff-check 净。
+- **三项独立 mutation 实证**（Devin CLI 亲跑，非 builder 自报）：M1 mt4 `FetchSymbolParams` Ex==nil 哨兵删→`TestFetchSymbolParams_Parity_TradeEnumsExOrSentinel` RED（`got TradeMode=0 FreezeLevel=0 TradeExemode=0`，哨兵失效精确判）；M2 `SymbolInfoInteger` prop26 复辟常量 0→`TestVMVenueConstR2_SymbolInfoIntegerTradeEnumsVerbatim` RED（真值格 `want 5`+哨兵格 `want -1` 双判）；M3 `MODE_TRADEALLOWED` 复辟纯账户旗标→`TestVMVenueConstR2_ModeTradeAllowedTwoAxis` RED（unknown -1/disabled 0/close_only 3 三格 `want 0 got 1`，fail-closed 门精确判）。全部恢复 GREEN、工作树无 mutation 残留（diff 空）。
+- **裁决**：builder D-012 报 mt5/orders.go 449→450 贴 1.5× 线——HEAD 存量 449 行预警非本批新增，按一任务一范围裁决另立 `CODE-SIZE-MT5-ORDERS-1` 🟦open（抽函数独立批，参照 VM-CODE-HYGIENE-1 先例）；R2 范围接受。
+- **部署状态**：未部署——R2 venue 字段需 backend 重建进 VM 实盘链生效；部署+demo `904d14e6` venue 三字段有界复验列入下一步。
+- registry 行 31 翻 ✅done + 行 32/33 新 open 登记；STATE.md 施工表/现状/下一步/指针区同步。
