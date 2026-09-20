@@ -335,3 +335,11 @@
 - **拆分**：`FetchSymbolParams`/`FetchPriceHistory`/`FetchAllSymbols`（符号元数据查询，非订单语义）verbatim 移至新文件 `symbol_params.go`——orders.go 450→348 🟢、symbol_params.go 115。
 - **零行为变更实证**：搬迁块 diff 逐字节比对一致（`sed 254,354` vs `sed 15,115` 零 diff）；mt5 包 131 测试、build/vet/check-lines 0 errors 全绿。verbatim move 实证替代 mutation（无行为可突变）。
 - registry 行 32 翻 ✅done；STATE.md 指针同步。
+
+## 2026-09-19 TRADE-RECORDS-DUP-1 设计实查+派工落档（Devin CLI）
+
+- **实查扩面**：879 对登记项外同族实证两新伤——**epoch-零幻影行 3,024**（close_time='1970-01-01' 全已 hash，8 账户，仍在出血 09-18+555/09-19+55；根因 `SyncAccountHistory`/`SyncOrderHistory` 两 verbatim 写入点无 State/IsZero 过滤）+ BALANCE 出入金 160 行混入（消费方已过滤=保留）。挂单类 36 行核为合法成交挂单。
+- **链机制实证**：prev_hash 写=全局尾（99.99%）而 VerifyChain 按同账户验=基线噪音 2,113 行——新债 `VERIFY-CHAIN-SEMANTIC-1` 登记。`prevent_trade_delete` 触发器实证（session_replication_role 旁路先例 278）。VerifyChain 生产零调用。
+- **断点面实测**：删 CST 侧 879 行→新断点 0+20（778 双NULL/101 双hash）；删 epoch 3,024→断点 2,024——dedup_log 豁免必需非可选。
+- **方案**：migration 281 dedup_log 全列快照（物理序+精确类型）+严格判据（双时间+8h∧金额四字段恒等=精确 879 零误判）+两写入点守卫+VerifyChain dedup_log 豁免；down 全复原（OVERRIDING SYSTEM VALUE）。
+- 设计稿+派工单双落档自审通过；registry 行 33 翻 🟦open-待施工、行 34 新债登记。
