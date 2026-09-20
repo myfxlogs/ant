@@ -56,7 +56,7 @@ type TradeRecord struct {
 type ChainBreak struct {
 	Seq    int64  `json:"seq"`
 	Ticket int64  `json:"ticket"`
-	Type   string `json:"type"` // "hash_mismatch" or "chain_break"
+	Type   string `json:"type"` // "hash_mismatch", "chain_break" or "deleted_link" (TRADE-RECORDS-DUP-1 informational)
 	Detail string `json:"detail"`
 }
 

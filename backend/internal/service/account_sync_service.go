@@ -97,6 +97,12 @@ func (s *AccountSyncService) syncAccountHistory(ctx context.Context, accountID, 
 	platform := s.mthubSvc.Platform(accountID)
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	for _, r := range records {
+		// TRADE-RECORDS-DUP-1: closed-trade guard — open/pending rows and
+		// balance/credit cash events are not trades; verbatim mapping here
+		// was the phantom-row bleed source (epoch close times + BALANCE).
+		if !r.SyncableClosedTrade() {
+			continue
+		}
 		tradeRecs = append(tradeRecs, orderRecordToTradeRecord(ctx, r, accID, uid, platform, s.scheduleResolver, s.log))
 	}
 

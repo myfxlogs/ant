@@ -89,6 +89,12 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	parsedUID, _ = uuid.Parse(userID)
 	for _, r := range records {
+		// TRADE-RECORDS-DUP-1: closed-trade guard — same single-source guard
+		// as account_sync_service; epoch-close open rows and balance/credit
+		// cash events never enter the trade ledger.
+		if !r.SyncableClosedTrade() {
+			continue
+		}
 		rec := orderRecordToTradeRecord(ctx, r, uid, parsedUID, platform, s.scheduleResolver, s.log)
 		tradeRecs = append(tradeRecs, rec)
 	}

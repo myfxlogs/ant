@@ -97,6 +97,20 @@ type OrderEvent struct {
 
 type OrderEventHandler func(*OrderEvent)
 
+// SyncableClosedTrade reports whether r is a closed trade that belongs in
+// the trade_records ledger. Broker history responses also carry open/pending
+// rows (State != Closed, mapped verbatim with an epoch close time) and cash
+// events (BALANCE/CREDIT deposits/withdrawals) — none of them are trades.
+// Writing them bloats the ledger with phantom rows: TRADE-RECORDS-DUP-1
+// traced 3,024 epoch rows and 160 BALANCE rows to the two unguarded sync
+// sites. Single source for both call sites so the guard cannot drift.
+func (r *OrderRecord) SyncableClosedTrade() bool {
+	if r.State != OrderStateClosed || r.CloseTime.IsZero() {
+		return false
+	}
+	return r.OrderType != OrderBalance && r.OrderType != OrderCredit
+}
+
 // OrderTypeString returns a human-readable string for the order type,
 // prefixed by side (e.g. "BUY_LIMIT", "SELL_STOP", "BALANCE").
 // Shared by service/account_sync_service.go and connect/system/mthub_service_orders.go.
