@@ -1,27 +1,34 @@
-# 设计 SSOT：VERIFY-CHAIN-SEMANTIC-1 — VerifyChain 全局链语义修正
+# 设计 SSOT：VERIFY-CHAIN-SEMANTIC-1 — 交易台账 hash 链端到端语义修正
 
-> 日期：2026-09-19 ｜ 作者：Devin CLI ｜ 状态：设计冻结（自审通过）
-> 关联：TRADE-RECORDS-DUP-1（dedup_log 使本设计可行）、VERIFY-CHAIN-SEMANTIC-1 registry 行 34
+> 日期：2026-09-19（初版）→ 2026-09-20（审计修订 v2：浮点编码根因补入+写路径规范化纳入范围）
+> 作者：Devin CLI ｜ 状态：设计冻结 v2（对抗审计后修订）
+> 关联：TRADE-RECORDS-DUP-1（dedup_log 使全局验链可行）、VERIFY-CHAIN-SEMANTIC-1 registry 行 34
 
-## 1. 证据链（实测定论，非推断）
+## 0. v2 修订说明（对抗审计抓出的设计错误）
+
+初版设计判定「写路径正确、禁动」，仅修验侧视角。审计实测推翻该前提：**stored `entry_hash` 覆盖的是写时内存浮点表示（`NewFromFloat` 最短串，含 ulp 噪声），NUMERIC 列定标舍入后该表示不可重建**——验侧重算在产库只能「确认」不能「否认」，且**新行沿同病继续写入**。只修验侧视角=出厂一个对存量 32% 行与未来全部行都无力的验链器。故 v2 将「写侧 hash 输入规范化」纳入范围——属同一缺陷类（hash 链语义），非范围扩张。
+
+## 1. 证据链（全部产库实测，非推断）
 
 | 事实 | 证据 |
 |---|---|
-| 写路径取**全局尾** | `trade_record_repository.go:197` `SELECT entry_hash FROM trade_records ORDER BY seq DESC LIMIT 1`（无 account/user 过滤），在 `pg_advisory_xact_lock(20827)` 下串行追加——链是**全局 append-only** |
-| 验链按**同账户**走 | `VerifyChain(userID, accountID)` `WHERE user_id=$1 AND account_id=$2 ORDER BY seq`，期望 `prev_hash == 同账户前一行 entry_hash` |
-| 错位规模 | 产库实测：14,392 已 hash 行中 **2,113 行 prev_hash 指向异账户行**（跟随全局尾写入=正确，被误判 chain_break） |
-| **union 视角零断点** | `trade_records ∪ trade_record_dedup_log`（entry_hash NOT NULL）按 seq 走 lag：14,409 行，prev_hash=NULL 仅 1（链创世行），**prev_but_no_leader=0、global_breaks=0**——含被删 3,920 行的完整原链逐节吻合 |
-| VerifyChain 调用面 | 生产代码**零调用**（无 ConnectRPC/proto 端点，仅 repo 方法+integration test）——改签名/语义安全 |
-| dedup_log 快照完备 | 快照含 seq/prev_hash/entry_hash+全部 entry_hash 重算字段（account_id/ticket/symbol/volume/三价格/profit/双时间）——可参与链重建**且可重算验篡改** |
+| 写路径取**全局尾** | `trade_record_repository.go:197` `SELECT entry_hash FROM trade_records ORDER BY seq DESC LIMIT 1`（无账户过滤），`pg_advisory_xact_lock(20827)` 串行追加——链是**全局 append-only** |
+| 验链按**同账户**走 | `VerifyChain` `WHERE user_id AND account_id ORDER BY seq`，期望 prev=同账户前行——**语义错位**，产 2,113 基线假 chain_break |
+| **union 视角零断点** | `trade_records ∪ trade_record_dedup_log`（`entry_hash IS NOT NULL`）按 seq 走查：14,409 行（live 11,347+archived 3,062），prev=NULL 仅 seq=13599 创世行，**global chain_breaks=0**——归档快照使被删链节完整可重建 |
+| **重算编码根因** | 写侧 `computeTradeEntryHash(..., record.Volume.String(), ...)`——`record.X` 来自 `decimal.NewFromFloat(broker float)`，最短浮点串（可含 ulp 噪声）。实测穷举 seq=13601：`open_price="4324.1990000000005"`（+1ulp）命中 stored hash——列存 `4324.19900000`、回读 `"4324.199"`，写时表示**永久不可重建** |
+| 重算可确认率 | union 14,409 行实测：`Decimal.String()` 编码 **9,804 可确认（68%）**、**4,605 不可确认**（live 3,952+archived 653）；`volume::text` 列范式编码 ~0%——现行 VerifyChain 用 `::text`，故产库全量失配 |
+| NULL-hash 行 | live 5,209 + archived 858（链前时代行，链外=如实不可验）。现行验链无 `IS NOT NULL` 过滤，NULL 行必报 hash_mismatch=第二类基线噪音 |
+| VerifyChain 调用面 | 生产**零调用**（无 RPC/proto 端点，仅 repo 方法+集成测试）——签名/语义改造安全 |
+| dedup_log 快照完备 | 快照列含全部 hash 输入字段（seq/prev_hash/entry_hash/account_id/ticket/symbol/volume/三价格/profit/双时间），列类型与 live **逐格一致**（information_schema 实测 volume NUMERIC(10,4)、价格 NUMERIC(18,8)、profit NUMERIC(18,4)） |
 
-## 2. 根因
+## 2. 根因（两个，同属 hash 链语义缺陷类）
 
-验链查询 `WHERE account_id` 是**错误的语义假设**（以为链是 per-account），写路径实际实现的是**全局链**（prev_hash=全局 seq 尾）。写侧正确——全局链才是 append-only 台账应有的抗篡改形态（跨账户插入也无法伪造）；验侧错位导致 2,113 基线假 break，审计能力被噪音淹没。TRADE-RECORDS-DUP-1 的 dedup_log 归档使本修正**完整可行**：被删链节可从快照重算，union 视角恢复"删除前原链"。
+**根因 A（验侧错位）**：`WHERE account_id` 假设 per-account 链，写侧实现全局链——2,113 假 break。
+**根因 B（写侧编码不可重建）**：hash 覆盖 `Decimal.String()` 写时浮点表示，NUMERIC 列不保留该表示——字段级篡改检测对存量 32% 行与未来全部行无效。
 
 ## 3. 设计决策
 
-**D1 验链改全局 union 视角（主修正）**
-`VerifyChain` 查询改为：
+**D1 验链改全局 union 视角（根因 A 修正）**
 
 ```sql
 SELECT seq, ticket, prev_hash, entry_hash, account_id, symbol, volume::text,
@@ -31,47 +38,74 @@ UNION ALL
 SELECT seq, ticket, prev_hash, entry_hash, account_id, symbol, volume::text,
        open_price::text, close_price::text, profit::text, open_time, close_time,
        'archived' FROM trade_record_dedup_log WHERE entry_hash IS NOT NULL
-ORDER BY seq ASC
+ORDER BY seq ASC, src ASC
 ```
 
-- 每行 `prev_hash` 必须等于**union 序上一行** entry_hash（NULL==NULL 创世行合法）
-- 每行 `entry_hash` 重算比对（字段篡改检测——archived 行同样重算，日志表本身防篡改也受验）
-- 42P01（dedup_log 不存在=281 未跑/down 后）→ union 仅 live 侧，语义=「无归档依据则断链按实报」
+- 每行 `prev_hash` == union 序上一已 hash 行 `entry_hash`（首行 NULL==nil 创世合法；后续 NULL prev→chain_break）
+- archived 行同为链成员，同走 linkage+重算（日志表本身防篡改也受验）
+- 42P01（log 不存在）→ union 仅 live 侧，语义=「无归档依据则断链按实报」
+- `IS NOT NULL` 过滤消除第二类噪音；NULL-hash 行不静默丢弃——产出 `Type:"unhashed"` informational findings（审计如实披露链外存量，不混入 linkage）
 
-**D2 签名与报告面**
-- `VerifyGlobalChain(ctx) ([]ChainBreak, error)`：全局验链主 API（零调用面=自由签名）
-- `VerifyChain(ctx, userID, accountID)` 保留签名但**改为**：跑全局验链→按 `account_id` 过滤返回（「该账户涉及的断点」语义——如实而非假装 per-account 链存在）
-- `model.ChainBreak` 增 `AccountID uuid.UUID` 字段（过滤所需；Detail 含 src='live'/'archived' 标注断点侧）
-- **删 `loadDedupLoggedHashes` + deleted_link 分支**——union 视角下归档行本就是链成员，豁免机制被正确性替代（deleted_link 类型保留于 model 注释为历史，不再产出）
+**D2 写侧 hash 输入规范化（根因 B 修正）**
+`insertWithHashChain` 改 hash 覆盖**列范式表示**：
 
-**D3 NULL-hash 行处理（第二类噪音一并消除）**
-union 仅含 `entry_hash IS NOT NULL` 行（链前时代行在链外=如实不可验）。**现行 VerifyChain 无此过滤**——NULL-hash 行 `entryHash=nil` vs 重算值必不等→每行报 `hash_mismatch`；产库实测 NULL-hash 行 5,209 行=第二类基线噪音（2,113 chain_break 之外；live hashed=11,347、log hashed=3,062、log NULL=858）。`IS NOT NULL` 过滤两类噪音同消。夹在链中的 NULL-hash 行不影响 linkage：已 hash 后继行的 prev_hash 指向写时全局尾（可能 NULL）——验时与 union「上一有 hash 行」比对，不一致按实报 chain_break（真实历史断裂非误报）。
+```sql
+INSERT INTO trade_records (...) VALUES (...)
+ON CONFLICT (account_id, ticket, close_time) DO NOTHING
+RETURNING id, seq, volume::text, open_price::text, close_price::text, profit::text,
+          open_time, close_time
+```
 
-**D4 不做**
-- 不改写路径（全局尾正确）
-- 不给 dedup_log 加 FK/触发器（审计表最小面）
-- 不接 RPC 端点（VerifyChain 暴露面另行设计——本批只修语义）
+- `computeTradeEntryHash` 输入改取 RETURNING 的 `::text` 串（volume/open/close/profit）+RETURNING 的 open/close_time（列存时刻）+record 的 prevHash/seq/accountID/ticket/symbol（uuid/int/string 无表示损失，维持原取法）
+- 效果：stored hash 覆盖=列持久化表示 → `::text` 重算**逐字可复现** → 新行 100% 字段级可验（篡改即失配，无浮点歧义）
+- ON CONFLICT 行不返行不 hash——语义不变；持久化字段值零变化（hash 输入换源，落库数据不变）
+- prev_hash 链续性不受影响（链=字节续接）
+
+**D3 双编码重算（存量行最大化确认）**
+验侧每行重算**两个候选编码**（同一 `::text` 列值派生，零额外表列）：
+
+1. 范式编码：`s` 本身（覆盖 D2 后的新行 + 存量中写时表示恰等于列范式的行）
+2. 规格化编码：`decimal.RequireFromString(s).String()`（复现写侧 `NewFromFloat().String()` 形态——实测恢复 9,804/14,409）
+
+- 任一命中→verified；皆不中→`hash_mismatch`
+- 语义如实分级：**canonical-era 行失配=确定性篡改**；**legacy 行失配=篡改或浮点表示漂移（不可分）**——finding Detail 如实标注歧义，产库 legacy 不可确认基线=**4,605**（实测值，克隆库确定性断言可用）
+
+**D4 签名与报告面**
+- `VerifyGlobalChain(ctx) ([]ChainBreak, error)`：全局验链主 API
+- `VerifyChain(ctx, userID, accountID)` 保留签名：全局验链→`AccountID` 过滤返回（「该账户涉及的断点」如实语义）
+- `model.ChainBreak` 增 `AccountID uuid.UUID`；Detail 含 src/era 标注
+- **删 `loadDedupLoggedHashes`+deleted_link 分支**——归档行本就是链成员，豁免被正确性取代
+
+**D5 不做**
+- 不改持久化数据/列结构/dedup_log 表结构/触发器
+- 不接 RPC 端点（暴露面另行设计）
+- 不回填 legacy 行 hash（不可重建是历史事实，回填会伪造「一直可验」假象；D2+D3 已使验链能力前向完整）
 
 ## 4. 范围边界
 
-改：`trade_record_repository.go`（VerifyChain 查询体+新方法+删豁免）、`model/trade.go`（ChainBreak+AccountID）、对应 integration test 改写。
-不动：写路径、insertWithHashChain、dedup_log 表结构、任何 proto。
+改：`trade_record_repository.go`（VerifyGlobalChain+VerifyChain 改造+删豁免+insertWithHashChain hash 输入换 RETURNING 源）、`model/trade.go`（ChainBreak+AccountID）、集成测试改写+新增。
+不动：schema/dedup_log/proto/持久化字段语义/链续接语义。
 
 ## 5. 测试计划（integration，TEST_PG_DSN 产数据克隆或自含种子）
 
-- **T1 全局验链过产数据克隆**：union 走 → **0 break**（自净实证——2,113 基线噪音消失）
-- **T2 篡改判别**：种子链改一行 profit（不改 hash）→ hash_mismatch 报出；改 prev_hash → chain_break
-- **T3 未归档删除判别**：删链中一行（不入 dedup_log）→ follower chain_break（真篡改检出）
-- **T4 归档删除自净**：删行+入 log → 0 break（union 重建原链，取代 deleted_link 豁免）
-- **T5 per-account 过滤**：造异账户断点 → VerifyChain(acctA) 只见 acctA 断点
-- **T6 42P01**：drop dedup_log → VerifyChain 不报错、断链按实报
+- **T1 产数据级**：`VerifyGlobalChain` → `chain_break` **硬断言 0**（union 自净实证）；`hash_mismatch` 计数披露——克隆库确定性断言 `==4,605`（legacy 不可确认基线实测值），计数漂移即回归信号
+- **T2 篡改判别**：种子链（canonical 编码写入）UPDATE profit 不改 hash→hash_mismatch；改 prev_hash→chain_break
+- **T3 未归档删除**：删链中行不入 log→follower chain_break
+- **T4 归档删除自净**：删行+全列 dedup_log 归档→0 break。**harness 用 migration 281 原文全列 DDL**（子集列 harness 不满足 union 查询）
+- **T5 per-account 过滤**：异账户断点→VerifyChain(acctA) 只见 acctA
+- **T6 42P01**：drop log→不报错、断链按实报
+- **T7 legacy 双编码**：种子行手工写 `Decimal.String()` 编码 hash（如 volume `"0.05"`、列存 `"0.0500"`）→verified（规格化通道命中）；canonical-only 变体应失配（D3 承重判别）
+- **T8 canonical 写路径**：insert 噪声十进制（`decimal.RequireFromString("0.30000000000000004")`、列存 `0.3000`）→`::text` 重算命中 verified（写侧规范化实证）
+- **T9 unhashed 披露**：NULL-hash 种子行→`unhashed` informational finding 产出且不污染 linkage
 
 ## 6. Mutation（独立复审执行）
 
-- **M1** union 改回 `WHERE account_id`（复辟错位）→ T1 产数据 RED（2,113 假 break 回归）
-- **M2** 删 archived 行 entry_hash 重算 → T4 变体（log 行字段被改）RED
-- **M3** 删 union 仅查 live → T4 RED（归档行不再在链→断点复活）
+- **M1** union 改回 `WHERE account_id`→T1 RED（假 break 回归）
+- **M2** 删规格化编码候选（canonical-only）→T7 RED（legacy 行不可确认回归）
+- **M3** 删 union archived 侧→T4 RED（断点复活）
+- **M4** 写侧回退 `record.X.String()`→T8 RED（噪声行失配回归）
+- **M5** 删 `unhashed` 产出→T9 RED
 
 ## 7. 验收要点
 
-S1 union 查询+D2 签名改造+D3 删豁免+model 字段；T1-T6；M1-M3 RED→GREEN；build/vet/影响包/check-lines/diff-check；不部署（复审后统一部署）。
+S1 model 字段+S2 写侧规范化+S3 union 验链/双编码/删豁免+S4 测试 T1-T9；M1-M5 RED→GREEN；build/vet/影响包/check-lines/diff-check；不部署（复审后统一部署决策）。

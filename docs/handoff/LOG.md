@@ -353,3 +353,11 @@
 - **复审级截获——第三出血口**：部署后 epoch 行回潮 17+，定位 `ImportBrokerOrder`（reconciliation 幽灵单收敛，reconciliation.go:214）——其守卫 `!CloseTime.IsZero()` 对 epoch 语义失效（`time.Unix(0,0).IsZero()=false`，IsZero 查 year-1 非 epoch）；broker 未平仓行带市价 ClosePrice+浮动 profit 穿透写入。设计阶段误判"已有守卫安全"——IsZero 语义陷阱教训。
 - **审计侧补救 `cc63797e`**：SyncableClosedTrade 加 `CloseTime.Unix()<=0`（覆盖零值+epoch+pre-epoch）；ImportBrokerOrder 台账写入接单源守卫；守卫矩阵+closed_but_epoch_close_time 判别格+第三站点 pin；M-D mutation IsZero 复辟→RED→恢复 GREEN。
 - **二次部署+终验**：残余 17 行同构归档清除（dedup_log 3,903→3,920，removed_by='post_281_bleed_cleanup'），epoch=0 持续；同一 ghost ticket 393912977（此前产幻影行的对象）新二进制下 reconciliation 处理——orders 收敛但台账零幻影写入=修复前后对照实证。scratch 库已清。
+
+## 2026-09-20 VERIFY-CHAIN-SEMANTIC-1 设计/派工对抗审计→设计 v2（Devin CLI）
+
+- **审计对象**：`design-verify-chain-semantic.md` + `builder-handoff-verify-chain-semantic.md`（v1：union 验链、禁动写路径）。
+- **审计抓出根因 B（推翻 v1「写路径正确」前提）**：stored `entry_hash` 覆盖写侧 `record.X.String()`（`NewFromFloat` 最短浮点串），含 ulp 噪声——产库穷举实证 seq=13601 `open_price="4324.1990000000005"`（+1ulp）命中；NUMERIC 列定标舍入后写时表示不可重建。编码判别实测：`volume::text` 重算 ~0% 命中（现行 VerifyChain 编码=产库全量失配根因）、`Decimal.String()` 9,804/14,409（68%）、**4,605 永久不可确认**（live 3,952+archived 653，浮点漂移 vs 篡改不可分）。
+- **union 侧正面实证**：14,409 已 hash 行按 seq 走查 **global chain_breaks=0**（含归档行完整重建）、prev=NULL 仅 seq=13599 创世行——linkage 验在产库完全可靠，deleted_link 豁免可被正确性取代。
+- **设计 v2**（两文档同步重写）：根因 A（验侧 account 错位）+根因 B（写侧编码不可重建）同修——①union 验链+`unhashed` informational findings（5,209+858 NULL-hash 行如实披露）；②写侧 hash 输入规范化 `RETURNING volume::text...`（新行 100% 可验，持久化数据零变化）；③双编码重算（`::text` 范式+`RequireFromString().String()` 规格化——存量 9,804 可确认，4,605 歧义如实标注）。T1-T9+M1-M5。
+- registry 行 34 补审计扩面实录；STATE 同步（顺带修正 DUP-1 指针行「未部署」错误——实际已部署 91ba089d）。
