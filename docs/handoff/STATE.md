@@ -18,7 +18,7 @@
 | KB-SEED-DRIFT-1 kb_compat_fact 种子漂移（43 陈旧枚举值 KB-first 压过内建表） | ✅done | R2 实盘探针实证抓出（SymbolInfoInteger prop16 fatal）；审计侧修复=Seed→reconcile（upsert 纠偏+prune 已移除名，manual 行保留）+Start 每 boot 执行；3 集成测试绿+M1/M2 mutation RED→GREEN；产库已纠 22/17/32 等；明细 registry 行 35 |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R1（signal-mode sentinel）/R4（CloseBy dispatch）裁决：R1 属架构语义变更单独立项评审，R4 为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: KB-SEED-DRIFT-1 ✅done 待部署生效（审计侧修复已提交；部署后 R2 实盘 venue 探针复跑验证真值抵达 VM 内层——此前 KB 陈旧值 prop16 每 tick fatal）。队列：R1（signal-mode sentinel 架构评审）/暂缓系（VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3）。已完成链：TRADE-RECORDS-DUP-1/VERIFY-CHAIN-SEMANTIC-1 均 ✅done+已部署（产库 epoch=0、union 尾=arch seq 102092、同一 ghost ticket 修复前后对照零幻影写入）。此前：demo `904d14e6` F1/F2/F3 复验 ✅done；VM-LIVE-PARITY-1 实盘对账完成（vm-live-parity-results-2026-09.md）。G-POST2/POST-2/LOWPRI-SWEEP/i18n/VM 债系均收官。
+- **下一步**: KB-SEED-DRIFT-1 ✅done **已部署+R2 闭环**——venue 真值实盘抵达 VM 内层实证（BTCUSDm: trade_mode=2/exemode=2/point=0.01/minlot=0.01 等真实 broker 值；此前 KB 陈旧值 prop16 每 tick fatal）。队列：R1（signal-mode sentinel 架构评审）/暂缓系（VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3）。已完成链：TRADE-RECORDS-DUP-1/VERIFY-CHAIN-SEMANTIC-1 均 ✅done+已部署（产库 epoch=0、union 尾=arch seq 102092）。此前：demo `904d14e6` F1/F2/F3 复验 ✅done；VM-LIVE-PARITY-1 实盘对账完成（vm-live-parity-results-2026-09.md）。G-POST2/POST-2/LOWPRI-SWEEP/i18n/VM 债系均收官。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
