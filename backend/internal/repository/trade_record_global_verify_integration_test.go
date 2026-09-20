@@ -385,6 +385,31 @@ func TestVerifyGlobalChain_MissingLogFallback_Integration(t *testing.T) {
 		t.Fatal("live-only walk after drop must report the unhealed gaps as chain_break")
 	}
 
+	// Write-path fallback: appending while dedup_log is absent (pre-migration
+	// / post-down steady state) must succeed via the live-only tail read.
+	var liveAcct, liveUser uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`SELECT account_id, user_id FROM trade_records ORDER BY seq DESC LIMIT 1`,
+	).Scan(&liveAcct, &liveUser); err != nil {
+		t.Fatalf("pick live account: %v", err)
+	}
+	rec := makeTestTradeRecord(liveUser, liveAcct, 977000001)
+	if err := repo.Create(ctx, rec); err != nil {
+		t.Fatalf("Create with dropped log must fall back to live tail: %v", err)
+	}
+	// Remove the fallback-appended row before the restore-heal assertion:
+	// it chained onto the live tail, which would read as a break once the
+	// archived rows above it rejoin the union walk.
+	if _, err := pool.Exec(ctx, `ALTER TABLE trade_records DISABLE TRIGGER prevent_trade_delete`); err != nil {
+		t.Fatalf("disable trigger: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `DELETE FROM trade_records WHERE ticket = 977000001`); err != nil {
+		t.Fatalf("remove fallback row: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `ALTER TABLE trade_records ENABLE TRIGGER prevent_trade_delete`); err != nil {
+		t.Fatalf("enable trigger: %v", err)
+	}
+
 	// Restore and prove the walk self-heals to the baseline.
 	if _, err := pool.Exec(ctx, migration281LogDDL(t)); err != nil {
 		t.Fatalf("recreate log: %v", err)
@@ -421,10 +446,17 @@ func TestVerifyGlobalChain_LegacyNormalizedEncoding_Integration(t *testing.T) {
 
 	var tailSeq int64
 	var tailEntry []byte
+	// Union tail, not live tail: archived rows can sit above the live max
+	// seq (dedup removes tail-most rows), and a seed inserted mid-chain would
+	// break the archived follower's stored prev link.
 	if err := pool.QueryRow(ctx,
-		`SELECT seq, entry_hash FROM trade_records WHERE entry_hash IS NOT NULL ORDER BY seq DESC LIMIT 1`,
+		`SELECT seq, entry_hash FROM (
+			SELECT seq, entry_hash FROM trade_records WHERE entry_hash IS NOT NULL
+			UNION ALL
+			SELECT seq, entry_hash FROM trade_record_dedup_log WHERE entry_hash IS NOT NULL
+		) t ORDER BY seq DESC LIMIT 1`,
 	).Scan(&tailSeq, &tailEntry); err != nil {
-		t.Fatalf("read tail: %v", err)
+		t.Fatalf("read union tail: %v", err)
 	}
 
 	id := uuid.New()

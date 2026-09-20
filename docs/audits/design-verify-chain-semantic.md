@@ -21,10 +21,11 @@
 | VerifyChain 调用面 | 生产**零调用**（无 RPC/proto 端点，仅 repo 方法+集成测试）——签名/语义改造安全 |
 | dedup_log 快照完备 | 快照列含全部 hash 输入字段（seq/prev_hash/entry_hash/account_id/ticket/symbol/volume/三价格/profit/双时间），列类型与 live **逐格一致**（information_schema 实测 volume NUMERIC(10,4)、价格 NUMERIC(18,8)、profit NUMERIC(18,4)） |
 
-## 2. 根因（两个，同属 hash 链语义缺陷类）
+## 2. 根因（三个，同属 hash 链语义缺陷类）
 
 **根因 A（验侧错位）**：`WHERE account_id` 假设 per-account 链，写侧实现全局链——2,113 假 break。
 **根因 B（写侧编码不可重建）**：hash 覆盖 `Decimal.String()` 写时浮点表示，NUMERIC 列不保留该表示——字段级篡改检测对存量 32% 行与未来全部行无效。
+**根因 C（写侧尾读非 union——复审抓出，v3 补记）**：v2 漏点。`insertWithHashChain` 尾读仅 `trade_records`；dedup 归档可让 union 真尾高于 live 尾（产库实况：live 尾 seq=102029，归档含 seq 102070–102092 共 17 行）。此后每个新 append 的 prev 指向陈旧 live 尾，union 走查在归档尾后接缝处**永久 chain_break**。读写必须共享同一链宇宙。施工提交 `e5290433` 的 T2-T9 失败正是该潜伏缺陷首次浮出（复审实证）。
 
 ## 3. 设计决策
 
@@ -59,7 +60,22 @@ RETURNING id, seq, volume::text, open_price::text, close_price::text, profit::te
 - `computeTradeEntryHash` 输入改取 RETURNING 的 `::text` 串（volume/open/close/profit）+RETURNING 的 open/close_time（列存时刻）+record 的 prevHash/seq/accountID/ticket/symbol（uuid/int/string 无表示损失，维持原取法）
 - 效果：stored hash 覆盖=列持久化表示 → `::text` 重算**逐字可复现** → 新行 100% 字段级可验（篡改即失配，无浮点歧义）
 - ON CONFLICT 行不返行不 hash——语义不变；持久化字段值零变化（hash 输入换源，落库数据不变）
-- prev_hash 链续性不受影响（链=字节续接）
+
+**D2b 写侧尾读 union 化（根因 C 修正，v3 复审补）**
+
+`insertWithHashChain` 的 prev_hash 尾读改为覆盖与验链相同的 union 全集：
+
+```sql
+SELECT entry_hash FROM (
+    SELECT seq, entry_hash FROM trade_records
+    UNION ALL
+    SELECT seq, entry_hash FROM trade_record_dedup_log
+) AS chain_tail ORDER BY seq DESC LIMIT 1
+```
+
+- 「prev = 写入时刻 union 序 max-seq 行 entry」不变量无条件成立——归档尾行不再使接缝断链
+- **tx 内不能捕获 42P01**（失败的关系引用中止整个事务，25P02）；先 `to_regclass('trade_record_dedup_log') IS NOT NULL` 探测再选查询——pre-281/post-down 自动回退 live 侧，advisory lock 语义不变
+- 并发 DDL 竞争窗口（probe 与查询间表被 drop）→ 42P01 上抛 fail-closed，不静默
 
 **D3 双编码重算（存量行最大化确认）**
 验侧每行重算**两个候选编码**（同一 `::text` 列值派生，零额外表列）：
@@ -93,7 +109,7 @@ RETURNING id, seq, volume::text, open_price::text, close_price::text, profit::te
 - **T3 未归档删除**：删链中行不入 log→follower chain_break
 - **T4 归档删除自净**：删行+全列 dedup_log 归档→0 break。**harness 用 migration 281 原文全列 DDL**（子集列 harness 不满足 union 查询）
 - **T5 per-account 过滤**：异账户断点→VerifyChain(acctA) 只见 acctA
-- **T6 42P01**：drop log→不报错、断链按实报
+- **T6 42P01**：drop log→验链不报错、断链按实报；**写路径同测**（log 缺席时 `Create` 经 live 侧回退成功——D2b probe 分支覆盖）
 - **T7 legacy 双编码**：种子行手工写 `Decimal.String()` 编码 hash（如 volume `"0.05"`、列存 `"0.0500"`）→verified（规格化通道命中）；canonical-only 变体应失配（D3 承重判别）
 - **T8 canonical 写路径**：insert 噪声十进制（`decimal.RequireFromString("0.30000000000000004")`、列存 `0.3000`）→`::text` 重算命中 verified（写侧规范化实证）
 - **T9 unhashed 披露**：NULL-hash 种子行→`unhashed` informational finding 产出且不污染 linkage
@@ -105,6 +121,7 @@ RETURNING id, seq, volume::text, open_price::text, close_price::text, profit::te
 - **M3** 删 union archived 侧→T4 RED（断点复活）
 - **M4** 写侧回退 `record.X.String()`→T8 RED（噪声行失配回归）
 - **M5** 删 `unhashed` 产出→T9 RED
+- **M6** 写侧尾读回退 live-only（根因 C 回归）→T2-T5/T9 RED（归档尾后接缝断链复活）
 
 ## 7. 验收要点
 

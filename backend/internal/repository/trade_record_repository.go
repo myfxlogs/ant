@@ -191,11 +191,29 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 		return fmt.Errorf("trade hash chain: advisory lock: %w", err)
 	}
 
-	// Read chain tail for prev_hash.
+	// Read chain tail for prev_hash. VERIFY-CHAIN-SEMANTIC-1: the chain is
+	// the GLOBAL union (live ∪ dedup-archived) — archiving tail-most rows
+	// can leave the union tail above the live max seq, and an append that
+	// chains onto the live tail would break the union walk at the seam.
+	// The tail read therefore covers both tables. Probe first: a failed
+	// relation reference inside a transaction aborts it (25P02), so the
+	// pre-migration / post-down fallback cannot rely on catching 42P01.
+	var hasDedupLog bool
+	if err := tx.QueryRow(ctx,
+		`SELECT to_regclass('trade_record_dedup_log') IS NOT NULL`,
+	).Scan(&hasDedupLog); err != nil {
+		return fmt.Errorf("trade hash chain: probe dedup_log: %w", err)
+	}
+	tailQuery := `SELECT entry_hash FROM trade_records ORDER BY seq DESC LIMIT 1`
+	if hasDedupLog {
+		tailQuery = `SELECT entry_hash FROM (
+			SELECT seq, entry_hash FROM trade_records
+			UNION ALL
+			SELECT seq, entry_hash FROM trade_record_dedup_log
+		) AS chain_tail ORDER BY seq DESC LIMIT 1`
+	}
 	var prevHash []byte
-	err := tx.QueryRow(ctx,
-		`SELECT entry_hash FROM trade_records ORDER BY seq DESC LIMIT 1`,
-	).Scan(&prevHash)
+	err := tx.QueryRow(ctx, tailQuery).Scan(&prevHash)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return fmt.Errorf("trade hash chain: read tail: %w", err)
 	}

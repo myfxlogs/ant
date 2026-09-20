@@ -70,6 +70,29 @@ func cleanupTestTradeRecords(t *testing.T, pool *pgxpool.Pool, userID, accountID
 		`ALTER TABLE trade_records ENABLE TRIGGER prevent_trade_delete`)
 }
 
+// ensureTestTradeParents creates the users/mt_accounts FK parents
+// trade_records requires (account_id_fkey / user_id_fkey — both present on
+// production-faithful databases). Call before registering the ledger-row
+// cleanup so the LIFO order removes ledger rows first, parents last.
+func ensureTestTradeParents(t *testing.T, pool *pgxpool.Pool, userID, accountID uuid.UUID) {
+	t.Helper()
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO users (id, email, password_hash, status) VALUES ($1, $2, 'test', 'active') ON CONFLICT DO NOTHING`,
+		userID, "hash-"+userID.String()[:8]+"@test.local"); err != nil {
+		t.Skipf("skipping: cannot insert test user: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO mt_accounts (id, user_id, mt_type, broker_host, login, account_status) VALUES ($1, $2, 'mt4', 'test', '12345', 'disconnected') ON CONFLICT DO NOTHING`,
+		accountID, userID); err != nil {
+		t.Skipf("skipping: cannot insert test account: %v", err)
+	}
+	t.Cleanup(func() {
+		pool.Exec(context.Background(), `DELETE FROM mt_accounts WHERE id = $1`, accountID)
+		pool.Exec(context.Background(), `DELETE FROM users WHERE id = $1`, userID)
+	})
+}
+
 func TestTradeRecordHashChain_Integration(t *testing.T) {
 	pool := getTestPool(t)
 	repo := NewTradeRecordRepository(pool)
@@ -77,6 +100,7 @@ func TestTradeRecordHashChain_Integration(t *testing.T) {
 	userID := uuid.New()
 	accountID := uuid.New()
 
+	ensureTestTradeParents(t, pool, userID, accountID)
 	cleanupTestTradeRecords(t, pool, userID, accountID)
 	t.Cleanup(func() { cleanupTestTradeRecords(t, pool, userID, accountID) })
 
@@ -113,6 +137,7 @@ func TestTradeRecordHashChain_TamperEntryHash_Integration(t *testing.T) {
 	userID := uuid.New()
 	accountID := uuid.New()
 
+	ensureTestTradeParents(t, pool, userID, accountID)
 	cleanupTestTradeRecords(t, pool, userID, accountID)
 	t.Cleanup(func() { cleanupTestTradeRecords(t, pool, userID, accountID) })
 
@@ -164,6 +189,7 @@ func TestTradeRecordHashChain_TamperPrevHash_Integration(t *testing.T) {
 	userID := uuid.New()
 	accountID := uuid.New()
 
+	ensureTestTradeParents(t, pool, userID, accountID)
 	cleanupTestTradeRecords(t, pool, userID, accountID)
 	t.Cleanup(func() { cleanupTestTradeRecords(t, pool, userID, accountID) })
 
@@ -209,6 +235,7 @@ func TestTradeRecordHashChain_DeleteBlocked_Integration(t *testing.T) {
 	userID := uuid.New()
 	accountID := uuid.New()
 
+	ensureTestTradeParents(t, pool, userID, accountID)
 	cleanupTestTradeRecords(t, pool, userID, accountID)
 	t.Cleanup(func() { cleanupTestTradeRecords(t, pool, userID, accountID) })
 
@@ -247,6 +274,7 @@ func TestTradeRecordHashChain_BatchCreate_Integration(t *testing.T) {
 	userID := uuid.New()
 	accountID := uuid.New()
 
+	ensureTestTradeParents(t, pool, userID, accountID)
 	cleanupTestTradeRecords(t, pool, userID, accountID)
 	t.Cleanup(func() { cleanupTestTradeRecords(t, pool, userID, accountID) })
 
@@ -289,6 +317,7 @@ func TestTradeRecordHashChain_ConcurrentInsert_Integration(t *testing.T) {
 	userID := uuid.New()
 	accountID := uuid.New()
 
+	ensureTestTradeParents(t, pool, userID, accountID)
 	cleanupTestTradeRecords(t, pool, userID, accountID)
 	t.Cleanup(func() { cleanupTestTradeRecords(t, pool, userID, accountID) })
 

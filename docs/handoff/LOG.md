@@ -363,3 +363,5 @@
 - registry 行 34 补审计扩面实录；STATE 同步（顺带修正 DUP-1 指针行「未部署」错误——实际已部署 91ba089d）。
 
 - 2026-09-20 **STATE.md 滚出（VERIFY-CHAIN-SEMANTIC-1 施工提交触发 T0 超限，§4 回收）**——「POST-2 探针批（S1 VM 并发退化/S2 SSE 扇出成本/S3 paper 下单延迟/S4 容量基线文档）✅done Devin CLI 验收 2026-09-19；2408d34c；设计表修正核实[SSE limiter 不覆盖 ConnectRPC binary=净无界]；G-POST2-1/2 登记 open；staging 残余 7 项落 docs/benchmarks/post2-capacity-baseline-2026-09.md」自施工表滚出。
+
+- 2026-09-20 VERIFY-CHAIN-SEMANTIC-1 复审验收：施工 e5290433 复审抓出根因 C（写侧尾读仅 live 表，产库归档尾 seq=102092>live 尾 102029→新 append 产假 chain_break）；审计侧修补=尾读 union 化+to_regclass 探测（tx 内 42P01→25P02 毒化）；产克隆 16 测试全绿（chain_break=0/mismatch=4,605）；mutation×4 实证（M1 live-only→1325 break/M2 删规范化→14409/M4 内存串→T8 红/M6 尾读回退→5 测试复红）。未部署。

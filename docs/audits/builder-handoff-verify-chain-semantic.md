@@ -1,8 +1,10 @@
 # 派工单：VERIFY-CHAIN-SEMANTIC-1 — 交易台账 hash 链端到端语义修正
 
-> 日期：2026-09-19（v1）→ 2026-09-20（v2：浮点编码根因补入，写侧规范化纳入范围）
-> 派工：Devin CLI ｜ 设计 SSOT：`docs/audits/design-verify-chain-semantic.md`（v2，先读）
+> 日期：2026-09-19（v1）→ 2026-09-20（v2：浮点编码根因补入，写侧规范化纳入范围）→ 2026-09-20（v3：复审补根因 C 写侧尾读 union 化）
+> 派工：Devin CLI ｜ 设计 SSOT：`docs/audits/design-verify-chain-semantic.md`（v3，先读）
 > 基线：HEAD 含 `91ba089d`｜边界：勿部署、勿实盘单、勿触容器、禁 `--no-verify`
+
+> **v3 复审补记（Devin CLI 审计侧执行）**：施工 `e5290433` 复审抓出根因 C——写侧尾读仅 `trade_records` 而 union 真尾可在 dedup_log（产库 live 尾 seq=102029、归档尾 seq=102092），新 append 产假 chain_break。修复已落：尾读 union 化+`to_regclass` 探测回退（tx 内不可捕获 42P01，25P02 毒化事务）；T6 补写路径回退覆盖；T7 种子改 union 尾追加；存量 hash 集成测试补 FK 父行。M1/M2/M4/M6 复审方已执行 RED→恢复 GREEN。
 
 ## 约束与目标
 
@@ -24,7 +26,8 @@ RETURNING id, seq, volume::text, open_price::text, close_price::text, profit::te
 
 - `computeTradeEntryHash` 输入：prevHash/seq/accountID/ticket/symbol 维持 record 原取法；volume/openPrice/closePrice/profit 取 RETURNING `::text` 串；timeMs 取 RETURNING 的 open_time/close_time `.UnixMilli()`（列存时刻）
 - ON CONFLICT ErrNoRows 早退逻辑不变；`record.EntryHash` 赋值逻辑不变
-- 持久化数据零变化（hash 输入换源，落库值不变）；prev_hash 链续不受影响
+- 持久化数据零变化（hash 输入换源，落库值不变）
+- **v3 补**：prev_hash 尾读改 union 全集（live ∪ dedup_log 按 seq DESC LIMIT 1）——归档尾行高于 live 尾时新行续在归档尾后不断链；先 `to_regclass('trade_record_dedup_log') IS NOT NULL` 探测（tx 内 42P01 会 25P02 毒化事务），缺席回退 live 侧
 
 ## S3 — VerifyChain 改全局 union + 双编码重算
 
