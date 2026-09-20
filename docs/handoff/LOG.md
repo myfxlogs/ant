@@ -345,3 +345,11 @@
 - 设计稿+派工单双落档自审通过；registry 行 33 翻 🟦open-待施工、行 34 新债登记。
 
 - 2026-09-20 **STATE.md 滚出（TRADE-RECORDS-DUP-1 施工提交触发 T0 超限，§4 回收）**——两行 ✅done 批次行自施工表滚出：①「2026-08-26/27 批次 + 2026-09-08 系列（D-006/D-007/D-REVERT×2/VM-CACHE-INTEGRITY-1/2/LIVE-ORDER-REENTRY-1/VM-TRADE-CONTEXT-1/2/VM-COMPILER-SEMANTICS-1/BT-FUNC-ENTRYPC-FWD/VM-TIMESERIES-SEMANTICS-1/VM-RUNTIME-FAILCLOSED-1/DATA-TRUTH-2b/VM-AUDIT-2026-08-27×3/VM round 4-5/P1 管线审计/P1 live bug 修复/FIX-2026-09-08-BYOK-MODEL-PICKER/TEMP-RETRY/CURL-IMPORT/AI-SETTINGS-BYOK/CHAT-CTX/ADVANCED-PARAMS/COMPILE-NOTIFY/WORKSPACE-IA×2/AI-SETTINGS-审计二）✅done 已滚出 LOG.md 2026-09-16；详见 registry」②「QS 系列 + TZ 三修 + VM 09-16/18 批（RECONCILE-TZ-WINDOW-1/TZ-SWEEP-AFFECTED-1/TZ-MIXED-ENCODING-1/VM-RUNTIME-FAILCLOSED-2/VM-HONESTY-3-REVIEW/VM-COMPILER-SEMANTICS-3/VM-API-TRUTH-1/VM-ARRAY-OOB-FAILCLOSED-1/VM-ENUM-NUMBERING-1）✅done 全部 Devin CLI 验收通过 2026-09-16~18；commits/registry 明细见 LOG.md+registry 行 126/215-224」。
+
+## 2026-09-19 TRADE-RECORDS-DUP-1 复审验收+部署+产线第三出血口截获（Devin CLI）
+
+- **独立复审**：`7fce4558` 范围核符 S1-S5；产数据克隆 ant_dedup_review（20,459 行）独立实证——up DELETE 879/3,024 精确、log=3,903（879 kept_id）、谓词幂等 0/0、down 后 pg_dump 全表 diff 与产库逐字节相等；T5/T6 真迁移文件 PASS、T3/T4 豁免/判别 PASS。独立 mutation×3：M-A State 分支删→T1 RED；M-B 豁免禁→T3 RED chain_break seq=-900000；M-C 签名弱化→879→880 吞合成巧合对（open_time+8h 承重实证）。验收落档 `f5628589`。
+- **首次部署**：migration 281 产库应用（log 显示 Applying migration: 281_trade_records_dedup），backend healthy。
+- **复审级截获——第三出血口**：部署后 epoch 行回潮 17+，定位 `ImportBrokerOrder`（reconciliation 幽灵单收敛，reconciliation.go:214）——其守卫 `!CloseTime.IsZero()` 对 epoch 语义失效（`time.Unix(0,0).IsZero()=false`，IsZero 查 year-1 非 epoch）；broker 未平仓行带市价 ClosePrice+浮动 profit 穿透写入。设计阶段误判"已有守卫安全"——IsZero 语义陷阱教训。
+- **审计侧补救 `cc63797e`**：SyncableClosedTrade 加 `CloseTime.Unix()<=0`（覆盖零值+epoch+pre-epoch）；ImportBrokerOrder 台账写入接单源守卫；守卫矩阵+closed_but_epoch_close_time 判别格+第三站点 pin；M-D mutation IsZero 复辟→RED→恢复 GREEN。
+- **二次部署+终验**：残余 17 行同构归档清除（dedup_log 3,903→3,920，removed_by='post_281_bleed_cleanup'），epoch=0 持续；同一 ghost ticket 393912977（此前产幻影行的对象）新二进制下 reconciliation 处理——orders 收敛但台账零幻影写入=修复前后对照实证。scratch 库已清。
