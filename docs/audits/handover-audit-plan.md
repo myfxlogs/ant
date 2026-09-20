@@ -893,3 +893,19 @@
 - **STATE.md**：施工表批次1/2a 明细行压缩滚出 LOG.md（20KB 预算门禁触发）；活跃条目指针+队列同步。
 - **断点**：等批次2b 施工方 `[施工完成:VM-API-TRUTH-1-批次2b] @<hash>` 六段式报告 → Devin CLI 独立复审（diff+门禁重跑+独立 mutation）→ 通过后按序发批次2c 开工指令。开工指令未发。
 - **署名**：最终决策：Devin CLI（[角色:决策终] 激活）
+
+## 2026-09-19 会话纪要（Devin CLI 最终决策席：部署 + R2 立项 + demo 复验）
+
+- **决策背景**：业主授权"你是最终决策席，拥有最高的权限"——部署闸解除，Devin CLI 最终决策执行。
+- **部署链**：
+  - 发现 1：`backend/configs/` 被 `8fdc5ff5` 删除后，`Dockerfile:47 COPY configs` + `docker-entrypoint.sh:99 -config` 双 stale 残留→compose build 失败。修复=删两处引用（二进制 `config.Load()` 纯 env，argv 被忽略，旧容器能跑仅因旧镜像有该目录）。
+  - 发现 2：磁盘 99%——`/root/.cache/go-build` 18G，`go clean -cache` 回收。
+  - **migration 278 部署 crash-loop 实锤两处盲区**（`ad78cf90`）：
+    a. `protect_trade_hash`（275）对 `entry_hash IS NULL` 行拒一切 UPDATE→278 加 `SET LOCAL session_replication_role='replica'`（事务内旁路，hash 字段零改动；规范化反而修链一致性——entry_hash 覆盖 UnixMilli epoch）。
+    b. 879 对 live-CST/history-UTC 重复行撞 `uk_trade_record_ticket`→加 `NOT EXISTS` 守卫，UPDATE 10623 行；879 对登记 `TRADE-RECORDS-DUP-1`（778 双 NULL/80 单侧 hash/21 双 hash——已 hash 行不可删改，去重待专项设计）。
+  - 结果：backend Up healthy，MT4 网关重连、报价/profit/order 流恢复。
+- **demo 有界复验（账户 904d14e6，Exness-Trial）**：BTCUSDm 1 单（ticket 394023965，0.01 手 BUY，magic 99002，P&L -0.09 USD demo）——**F3 comment `REVAL-DEPLOY-F1F3` 实测落 broker**（部署前为空）、**F1 openPrice=81227.46 真实 fill**（请求 price=0）、SymbolParams 真实值回流（digits=2/lotMin=0.01/tradeMode=2——此前全 0）；已平仓，888 持仓未动，测试单零残留。
+- **VM-LIVE-VENUE-1 立项**（`2a8f7f11`）：F 系残余 R2 venue 常量真值化——设计 `design-vm-venue-const-r2.md`+派工 `builder-handoff-vm-venue-const-r2.md` 双落档自审通过（-1=unknown 哨兵全链/mt4 Ex==nil→-1/mt5 pb 无字段→-1/proto LSC 41-43+Tick 25-27/SimBroker 模型常量/MODE_TRADEALLOWED 改 symbol∧账户双轴 mode∈{1,2,4}）。
+- **残余裁决**：R1（signal-mode sentinel `IntVal(1)`）=架构语义变更，单独立项评审；R4（CloseBy live dispatch）=缺功能待需求驱动；R3=文档辨析已闭环。
+- **断点**：VM-LIVE-VENUE-1 开工指令待发；TRADE-RECORDS-DUP-1/FEAT-3/VM-LIVE-MTF-1/TRON-SECURITY-1 待决策/暂缓。
+- **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
