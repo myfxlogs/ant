@@ -86,6 +86,11 @@ type SymbolInfo struct {
 	SwapLong     decimal.Decimal
 	SwapShort    decimal.Decimal
 	ContractSize decimal.Decimal
+	// VM-LIVE-VENUE-R2: canonical trade enums — live: broker facts verbatim
+	// (-1 = unknown); backtest: SimBroker model claim (full/0-freeze/market).
+	TradeMode    int32
+	FreezeLevel  int32
+	TradeExemode int32
 }
 
 // SpreadDecimal returns the spread as a decimal price value (Spread * Point).

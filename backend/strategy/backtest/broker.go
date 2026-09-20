@@ -509,6 +509,12 @@ func (b *SimBroker) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 		StopsLevel:   b.config.StopsLevel,
 		TickValue:    b.config.TickValue,
 		TickSize:     point,
+		// VM-LIVE-VENUE-R2: backtest venue model claim, not broker facts —
+		// the sim has always modeled full trading / no freeze / market
+		// execution; now stated explicitly instead of hardcoded in the VM.
+		TradeMode:    4,
+		FreezeLevel:  0,
+		TradeExemode: 2,
 	}, nil
 }
 

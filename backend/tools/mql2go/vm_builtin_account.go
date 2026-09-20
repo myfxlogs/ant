@@ -179,16 +179,16 @@ func builtinSymbolInfoInteger(vm *VM, args []interp.Value) (interp.Value, error)
 		return interp.IntVal(0), nil
 	case 21: // SYMBOL_TRADE_CALC_MODE — venue SYMBOL_CALC_MODE_FOREX
 		return interp.IntVal(0), nil
-	case 22: // SYMBOL_TRADE_MODE — venue SYMBOL_TRADE_MODE_FULL
-		return interp.IntVal(4), nil
+	case 22: // SYMBOL_TRADE_MODE — venue fact verbatim (backtest model FULL; live: broker enum, -1 = unknown)
+		return interp.IntVal(info.TradeMode), nil
 	case 23, 24: // SYMBOL_START_TIME/SYMBOL_EXPIRATION_TIME — venue 0: perpetual symbols (real MT5 too for non-futures)
 		return interp.IntVal(0), nil
 	case 25: // SYMBOL_TRADE_STOPS_LEVEL
 		return interp.IntVal(info.StopsLevel), nil
-	case 26: // SYMBOL_TRADE_FREEZE_LEVEL — venue 0: no freeze model
-		return interp.IntVal(0), nil
-	case 27: // SYMBOL_TRADE_EXEMODE — venue SYMBOL_TRADE_EXECUTION_MARKET: backtest market execution
-		return interp.IntVal(2), nil
+	case 26: // SYMBOL_TRADE_FREEZE_LEVEL — venue fact verbatim (backtest model 0; live: broker, -1 = unknown)
+		return interp.IntVal(info.FreezeLevel), nil
+	case 27: // SYMBOL_TRADE_EXEMODE — venue fact verbatim (backtest model MARKET; live: mt4 Exemode, -1 = unknown/mt5)
+		return interp.IntVal(info.TradeExemode), nil
 	case 28: // SYMBOL_SWAP_MODE — venue SYMBOL_SWAP_MODE_POINTS: swap modeled in points
 		return interp.IntVal(1), nil
 	case 33: // SYMBOL_ORDER_MODE — venue mask: market|limit|stop|stop-limit|SL|TP (OrderSend support)
@@ -252,8 +252,11 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.DecimalVal(decimal.Zero), nil
 	case 21: // MODE_EXPIRATION — venue 0
 		return interp.DecimalVal(decimal.Zero), nil
-	case 22: // MODE_TRADEALLOWED
-		if vm.ctx.Account().IsTradeAllowed {
+	case 22: // MODE_TRADEALLOWED — VM-LIVE-VENUE-R2: symbol axis "may open"
+		// ∧ account axis. long_only/short_only/full (1/2/4) may open;
+		// disabled(0)/close_only(3)/unknown(-1) fail closed to 0. The account
+		// axis stays mandatory (builtinIsTradeAllowed carries it alone).
+		if vm.ctx.Account().IsTradeAllowed && (info.TradeMode == 1 || info.TradeMode == 2 || info.TradeMode == 4) {
 			return interp.DecimalVal(decimal.NewFromInt(1)), nil
 		}
 		return interp.DecimalVal(decimal.Zero), nil
@@ -272,8 +275,8 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: leverage is zero")
 		}
 		return interp.DecimalVal(info.ContractSize.Mul(vm.ctx.Ask()).Div(lev)), nil
-	case 32: // MODE_FREEZELEVEL — venue 0: no freeze model
-		return interp.DecimalVal(decimal.Zero), nil
+	case 32: // MODE_FREEZELEVEL — venue fact verbatim (backtest model 0; live: broker, -1 = unknown)
+		return interp.DecimalVal(decimal.NewFromInt(int64(info.FreezeLevel))), nil
 	case 33: // MODE_CLOSEBY_ALLOWED — venue 0: close-by not supported
 		return interp.DecimalVal(decimal.Zero), nil
 	default:

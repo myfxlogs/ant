@@ -57,3 +57,37 @@ func TestFetchSymbolParams_Parity_PointValueFromPoints(t *testing.T) {
 		t.Errorf("TickSize = %s, want si.tick_size 0.01", p.TickSize)
 	}
 }
+
+// VM-LIVE-VENUE-R2 T1 (mt5): the pb has no freeze-level / execution-mode
+// fields → explicit -1 = unknown sentinels; TradeMode stays the real group
+// enum. Mutation: drop the -1 literals (Go zero 0 fakes "no freeze" /
+// "instant") → RED.
+func TestFetchSymbolParams_Parity_TradeEnumSentinels(t *testing.T) {
+	mock := &mockMT5Client{
+		symbolParamsRes: &pb.SymbolParamsReply{
+			Result: &pb.SymbolParams{
+				Symbol:      "EURUSD",
+				SymbolInfo:  &pb.SymbolInfo{Digits: 5, Points: 0.01},
+				SymbolGroup: &pb.SymGroup{TradeMode: 4, SL: 10},
+			},
+		},
+	}
+	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
+	gw.sessionID = "sid"
+	gw.client = mock
+
+	params, err := gw.FetchSymbolParams(context.Background(), []string{"EURUSD"})
+	if err != nil || len(params) != 1 {
+		t.Fatalf("FetchSymbolParams: %v (%d params)", err, len(params))
+	}
+	p := params[0]
+	if p.TradeMode != 4 {
+		t.Errorf("TradeMode = %d, want sg.TradeMode=4 (real enum)", p.TradeMode)
+	}
+	if p.FreezeLevel != -1 {
+		t.Errorf("FreezeLevel = %d, want -1 (mt5 pb has no field — unknown, not 0)", p.FreezeLevel)
+	}
+	if p.TradeExemode != -1 {
+		t.Errorf("TradeExemode = %d, want -1 (mt5 pb has no field — unknown, not 0)", p.TradeExemode)
+	}
+}

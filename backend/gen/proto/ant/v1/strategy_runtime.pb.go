@@ -1230,13 +1230,19 @@ type LiveStrategyContext struct {
 	// VM-LIVE-PARITY-F2: full SymbolParam facts (broker values; "" = unknown).
 	// point/digits/contract_size/stops_level (21-24) carried the original
 	// subset; these extend it so live VM sees lots/tick/swap like backtest.
-	LotMin        string `protobuf:"bytes,34,opt,name=lot_min,json=lotMin,proto3" json:"lot_min,omitempty"`
-	LotMax        string `protobuf:"bytes,35,opt,name=lot_max,json=lotMax,proto3" json:"lot_max,omitempty"`
-	LotStep       string `protobuf:"bytes,36,opt,name=lot_step,json=lotStep,proto3" json:"lot_step,omitempty"`
-	TickValue     string `protobuf:"bytes,37,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`
-	TickSize      string `protobuf:"bytes,38,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`
-	SwapLong      string `protobuf:"bytes,39,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`
-	SwapShort     string `protobuf:"bytes,40,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`
+	LotMin    string `protobuf:"bytes,34,opt,name=lot_min,json=lotMin,proto3" json:"lot_min,omitempty"`
+	LotMax    string `protobuf:"bytes,35,opt,name=lot_max,json=lotMax,proto3" json:"lot_max,omitempty"`
+	LotStep   string `protobuf:"bytes,36,opt,name=lot_step,json=lotStep,proto3" json:"lot_step,omitempty"`
+	TickValue string `protobuf:"bytes,37,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`
+	TickSize  string `protobuf:"bytes,38,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`
+	SwapLong  string `protobuf:"bytes,39,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`
+	SwapShort string `protobuf:"bytes,40,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`
+	// VM-LIVE-VENUE-R2: trade enums verbatim from SymbolParam (canonical
+	// values; -1 = unknown / no param data). 0 is a real value (trade_mode
+	// 0 = disabled, freeze_level 0 = no freeze) and is never bleached.
+	TradeMode     int32 `protobuf:"varint,41,opt,name=trade_mode,json=tradeMode,proto3" json:"trade_mode,omitempty"`
+	FreezeLevel   int32 `protobuf:"varint,42,opt,name=freeze_level,json=freezeLevel,proto3" json:"freeze_level,omitempty"`
+	TradeExemode  int32 `protobuf:"varint,43,opt,name=trade_exemode,json=tradeExemode,proto3" json:"trade_exemode,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1549,6 +1555,27 @@ func (x *LiveStrategyContext) GetSwapShort() string {
 		return x.SwapShort
 	}
 	return ""
+}
+
+func (x *LiveStrategyContext) GetTradeMode() int32 {
+	if x != nil {
+		return x.TradeMode
+	}
+	return 0
+}
+
+func (x *LiveStrategyContext) GetFreezeLevel() int32 {
+	if x != nil {
+		return x.FreezeLevel
+	}
+	return 0
+}
+
+func (x *LiveStrategyContext) GetTradeExemode() int32 {
+	if x != nil {
+		return x.TradeExemode
+	}
+	return 0
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -2081,13 +2108,19 @@ type TickContext struct {
 	// LIVE-MQL-ORDER-CONTEXT-1: pending orders separate from market positions.
 	PendingOrders []*LivePendingOrder `protobuf:"bytes,17,rep,name=pending_orders,json=pendingOrders,proto3" json:"pending_orders,omitempty"`
 	// VM-LIVE-PARITY-F2: full SymbolParam facts (broker values; "" = unknown).
-	LotMin        string `protobuf:"bytes,18,opt,name=lot_min,json=lotMin,proto3" json:"lot_min,omitempty"`
-	LotMax        string `protobuf:"bytes,19,opt,name=lot_max,json=lotMax,proto3" json:"lot_max,omitempty"`
-	LotStep       string `protobuf:"bytes,20,opt,name=lot_step,json=lotStep,proto3" json:"lot_step,omitempty"`
-	TickValue     string `protobuf:"bytes,21,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`
-	TickSize      string `protobuf:"bytes,22,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`
-	SwapLong      string `protobuf:"bytes,23,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`
-	SwapShort     string `protobuf:"bytes,24,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`
+	LotMin    string `protobuf:"bytes,18,opt,name=lot_min,json=lotMin,proto3" json:"lot_min,omitempty"`
+	LotMax    string `protobuf:"bytes,19,opt,name=lot_max,json=lotMax,proto3" json:"lot_max,omitempty"`
+	LotStep   string `protobuf:"bytes,20,opt,name=lot_step,json=lotStep,proto3" json:"lot_step,omitempty"`
+	TickValue string `protobuf:"bytes,21,opt,name=tick_value,json=tickValue,proto3" json:"tick_value,omitempty"`
+	TickSize  string `protobuf:"bytes,22,opt,name=tick_size,json=tickSize,proto3" json:"tick_size,omitempty"`
+	SwapLong  string `protobuf:"bytes,23,opt,name=swap_long,json=swapLong,proto3" json:"swap_long,omitempty"`
+	SwapShort string `protobuf:"bytes,24,opt,name=swap_short,json=swapShort,proto3" json:"swap_short,omitempty"`
+	// VM-LIVE-VENUE-R2: trade enums verbatim from SymbolParam (canonical
+	// values; -1 = unknown / no param data) — same contract as
+	// LiveStrategyContext 41-43.
+	TradeMode     int32 `protobuf:"varint,25,opt,name=trade_mode,json=tradeMode,proto3" json:"trade_mode,omitempty"`
+	FreezeLevel   int32 `protobuf:"varint,26,opt,name=freeze_level,json=freezeLevel,proto3" json:"freeze_level,omitempty"`
+	TradeExemode  int32 `protobuf:"varint,27,opt,name=trade_exemode,json=tradeExemode,proto3" json:"trade_exemode,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2288,6 +2321,27 @@ func (x *TickContext) GetSwapShort() string {
 		return x.SwapShort
 	}
 	return ""
+}
+
+func (x *TickContext) GetTradeMode() int32 {
+	if x != nil {
+		return x.TradeMode
+	}
+	return 0
+}
+
+func (x *TickContext) GetFreezeLevel() int32 {
+	if x != nil {
+		return x.FreezeLevel
+	}
+	return 0
+}
+
+func (x *TickContext) GetTradeExemode() int32 {
+	if x != nil {
+		return x.TradeExemode
+	}
+	return 0
 }
 
 // TradeContext carries a trade event for OnTrade strategies.
@@ -5742,7 +5796,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x06signal\x18\x02 \x01(\v2\x16.ant.v1.StrategySignalR\x06signal\x12\x14\n" +
 	"\x05error\x18\x03 \x01(\tR\x05error\x12#\n" +
 	"\rstrategy_hash\x18\x04 \x01(\tR\fstrategyHash\x120\n" +
-	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\x81\n" +
+	"\asignals\x18\x05 \x03(\v2\x16.ant.v1.StrategySignalR\asignals\"\xe8\n" +
 	"\n" +
 	"\x13LiveStrategyContext\x12\x14\n" +
 	"\x05close\x18\x01 \x03(\tR\x05close\x12\x12\n" +
@@ -5791,7 +5845,11 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\ttick_size\x18& \x01(\tR\btickSize\x12\x1b\n" +
 	"\tswap_long\x18' \x01(\tR\bswapLong\x12\x1d\n" +
 	"\n" +
-	"swap_short\x18( \x01(\tR\tswapShort\"\xee\x02\n" +
+	"swap_short\x18( \x01(\tR\tswapShort\x12\x1d\n" +
+	"\n" +
+	"trade_mode\x18) \x01(\x05R\ttradeMode\x12!\n" +
+	"\ffreeze_level\x18* \x01(\x05R\vfreezeLevel\x12#\n" +
+	"\rtrade_exemode\x18+ \x01(\x05R\ftradeExemode\"\xee\x02\n" +
 	"\fLivePosition\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
@@ -5842,7 +5900,7 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\x03low\x18\x03 \x01(\tR\x03low\x12\x14\n" +
 	"\x05close\x18\x04 \x01(\tR\x05close\x12\x16\n" +
 	"\x06volume\x18\x05 \x01(\tR\x06volume\x12\x1e\n" +
-	"\vbar_time_ms\x18\x06 \x01(\x03R\tbarTimeMs\"\xe4\x05\n" +
+	"\vbar_time_ms\x18\x06 \x01(\x03R\tbarTimeMs\"\xcb\x06\n" +
 	"\vTickContext\x12\x10\n" +
 	"\x03bid\x18\x01 \x01(\tR\x03bid\x12\x10\n" +
 	"\x03ask\x18\x02 \x01(\tR\x03ask\x12\x16\n" +
@@ -5872,7 +5930,11 @@ const file_strategy_runtime_proto_rawDesc = "" +
 	"\ttick_size\x18\x16 \x01(\tR\btickSize\x12\x1b\n" +
 	"\tswap_long\x18\x17 \x01(\tR\bswapLong\x12\x1d\n" +
 	"\n" +
-	"swap_short\x18\x18 \x01(\tR\tswapShort\"\x9d\x04\n" +
+	"swap_short\x18\x18 \x01(\tR\tswapShort\x12\x1d\n" +
+	"\n" +
+	"trade_mode\x18\x19 \x01(\x05R\ttradeMode\x12!\n" +
+	"\ffreeze_level\x18\x1a \x01(\x05R\vfreezeLevel\x12#\n" +
+	"\rtrade_exemode\x18\x1b \x01(\x05R\ftradeExemode\"\x9d\x04\n" +
 	"\fTradeContext\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x1d\n" +

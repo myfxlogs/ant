@@ -53,6 +53,8 @@ type contextImpl struct {
 	liveLotMin, liveLotMax, liveLotStep string
 	liveTickValue, liveTickSize         string
 	liveSwapLong, liveSwapShort         string
+	// VM-LIVE-VENUE-R2: canonical trade enums verbatim (-1 = unknown).
+	liveTradeMode, liveFreezeLevel, liveTradeExemode int32
 
 	// Tick-level prices (harness mode — set on TICK requests).
 	tickBid decimal.Decimal

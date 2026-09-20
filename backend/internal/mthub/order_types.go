@@ -41,8 +41,12 @@ type SymbolParam struct {
 	// 3=close_only,4=full. MT4/MT5 broker values are the same order and are
 	// passed through as-is (distinct from the admin broker_symbols table's
 	// same-named config column — resolver semantics untouched, R3).
-	TradeMode                        int32
-	StopLevel, FreezeLevel           int32
+	TradeMode              int32
+	StopLevel, FreezeLevel int32
+	// TradeExemode canonical enum: 0=instant,1=request,2=market,3=exchange;
+	// -1=unknown. Sourced from mt4 SymbolInfoEx.Exemode; mt5 mtapi pb has no
+	// execution-mode field, so mt5 always reports -1 (VM-LIVE-VENUE-R2).
+	TradeExemode                     int32
 	PointValue, ContractSize         decimal.Decimal
 	LotSize, LotStep, LotMin, LotMax decimal.Decimal
 	TickValue, TickSize              decimal.Decimal

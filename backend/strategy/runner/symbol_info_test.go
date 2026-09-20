@@ -126,3 +126,35 @@ func TestBrokerImpl_Account_WithExecutor_StillUsesExecutor(t *testing.T) {
 		t.Errorf("Margin=%s, want 77777 (executor)", info.Margin.String())
 	}
 }
+
+// VM-LIVE-VENUE-R2 T3: venue trade enums flow UpdateSymbolInfo → ctx →
+// brokerImpl.SymbolInfo (harness mode) verbatim, -1 sentinel included.
+// Mutation: drop the harness-branch enum fields → RED.
+func TestUpdateSymbolInfo_TradeEnumsVerbatim(t *testing.T) {
+	r := New(Config{})
+	r.UpdateSymbolInfo(LiveSymbolInfo{
+		Point: "0.001", Digits: 3,
+		TradeMode: 4, FreezeLevel: 5, TradeExemode: 2,
+	})
+
+	info, err := r.broker.SymbolInfo("EURUSD")
+	if err != nil {
+		t.Fatalf("SymbolInfo error: %v", err)
+	}
+	if info.TradeMode != 4 || info.FreezeLevel != 5 || info.TradeExemode != 2 {
+		t.Errorf("trade enums = %d/%d/%d, want 4/5/2 verbatim",
+			info.TradeMode, info.FreezeLevel, info.TradeExemode)
+	}
+
+	// Unknown (-1) passes through unbleached.
+	r2 := New(Config{})
+	r2.UpdateSymbolInfo(LiveSymbolInfo{Point: "0.001", TradeMode: -1, FreezeLevel: -1, TradeExemode: -1})
+	info2, err := r2.broker.SymbolInfo("EURUSD")
+	if err != nil {
+		t.Fatalf("SymbolInfo error: %v", err)
+	}
+	if info2.TradeMode != -1 || info2.FreezeLevel != -1 || info2.TradeExemode != -1 {
+		t.Errorf("unknown sentinels = %d/%d/%d, want -1/-1/-1 unbleached",
+			info2.TradeMode, info2.FreezeLevel, info2.TradeExemode)
+	}
+}

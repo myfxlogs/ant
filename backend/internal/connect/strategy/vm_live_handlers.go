@@ -41,6 +41,8 @@ func vmHandleBar(ctx context.Context, r *runner.Runner, lctx *antv1.LiveStrategy
 		LotMin:     lctx.LotMin, LotMax: lctx.LotMax, LotStep: lctx.LotStep,
 		TickValue: lctx.TickValue, TickSize: lctx.TickSize,
 		SwapLong: lctx.SwapLong, SwapShort: lctx.SwapShort,
+		// VM-LIVE-VENUE-R2: trade enums verbatim (-1 = unknown sentinel).
+		TradeMode: lctx.TradeMode, FreezeLevel: lctx.FreezeLevel, TradeExemode: lctx.TradeExemode,
 	})
 
 	// VM-TRADE-CONTEXT-6 S3: strict parse bars — invalid decimals fail-closed.
@@ -153,6 +155,8 @@ func vmHandleTick(ctx context.Context, r *runner.Runner, tctx *antv1.TickContext
 		LotMin:     tctx.LotMin, LotMax: tctx.LotMax, LotStep: tctx.LotStep,
 		TickValue: tctx.TickValue, TickSize: tctx.TickSize,
 		SwapLong: tctx.SwapLong, SwapShort: tctx.SwapShort,
+		// VM-LIVE-VENUE-R2: trade enums verbatim (-1 = unknown sentinel).
+		TradeMode: tctx.TradeMode, FreezeLevel: tctx.FreezeLevel, TradeExemode: tctx.TradeExemode,
 	})
 	// VM-TRADE-CONTEXT-6 S3: strict parse in live path.
 	bid, err := parseDecimalStrict(tctx.Bid)

@@ -287,6 +287,13 @@ message LiveStrategyContext {
   string tick_size = 38;
   string swap_long = 39;
   string swap_short = 40;
+
+  // VM-LIVE-VENUE-R2: trade enums verbatim from SymbolParam (canonical
+  // values; -1 = unknown / no param data). 0 is a real value (trade_mode
+  // 0 = disabled, freeze_level 0 = no freeze) and is never bleached.
+  int32 trade_mode = 41;
+  int32 freeze_level = 42;
+  int32 trade_exemode = 43;
 }
 
 // LivePosition mirrors the engine Position for live context.
@@ -391,6 +398,13 @@ message TickContext {
   string tick_size = 22;
   string swap_long = 23;
   string swap_short = 24;
+
+  // VM-LIVE-VENUE-R2: trade enums verbatim from SymbolParam (canonical
+  // values; -1 = unknown / no param data) — same contract as
+  // LiveStrategyContext 41-43.
+  int32 trade_mode = 25;
+  int32 freeze_level = 26;
+  int32 trade_exemode = 27;
 }
 
 // TradeContext carries a trade event for OnTrade strategies.

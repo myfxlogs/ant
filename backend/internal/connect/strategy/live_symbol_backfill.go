@@ -20,6 +20,13 @@ import (
 // pre-fetched symbol params (W2: no per-event RPC). Falls back to a one-shot
 // 5s-timeout fetch if startup pre-fetch failed.
 func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lctx *antv1.LiveStrategyContext) {
+	// VM-LIVE-VENUE-R2: -1 = unknown sentinel set before any early return —
+	// "no param data" must stay distinguishable from real enum 0 (mt5
+	// trade_mode 0 = disabled; freeze 0 = no freeze). param present → the
+	// verbatim passthrough below overwrites; 0 is never bleached to -1.
+	lctx.TradeMode = -1
+	lctx.FreezeLevel = -1
+	lctx.TradeExemode = -1
 	param := cfg.SymbolParam
 	if param == nil && s.mtHub != nil && cfg.AccountID != "" && cfg.Symbol != "" {
 		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -33,6 +40,10 @@ func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lct
 	lctx.Digits = param.Digits
 	lctx.ContractSize = param.ContractSize.String()
 	lctx.StopsLevel = param.StopLevel
+	// VM-LIVE-VENUE-R2: trade enums verbatim (0 = disabled is a true value).
+	lctx.TradeMode = param.TradeMode
+	lctx.FreezeLevel = param.FreezeLevel
+	lctx.TradeExemode = param.TradeExemode
 	// VM-LIVE-PARITY-F2: live VM sees the full SymbolParam fact set.
 	lctx.LotMin = param.LotMin.String()
 	lctx.LotMax = param.LotMax.String()
@@ -47,6 +58,11 @@ func (s *StrategyExecutionServer) backfillSymbolInfo(cfg LiveStrategyConfig, lct
 // pre-fetched symbol params (W2: no per-event RPC). Falls back to a one-shot
 // 5s-timeout fetch if startup pre-fetch failed.
 func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig, tctx *antv1.TickContext) {
+	// VM-LIVE-VENUE-R2: -1 = unknown sentinel before the early return (same
+	// contract as backfillSymbolInfo — 0 is a real enum value, never bleached).
+	tctx.TradeMode = -1
+	tctx.FreezeLevel = -1
+	tctx.TradeExemode = -1
 	param := cfg.SymbolParam
 	if param == nil && s.mtHub != nil && cfg.AccountID != "" && cfg.Symbol != "" {
 		fetchCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -60,6 +76,10 @@ func (s *StrategyExecutionServer) backfillTickSymbolInfo(cfg LiveStrategyConfig,
 	tctx.Digits = param.Digits
 	tctx.ContractSize = param.ContractSize.String()
 	tctx.StopsLevel = param.StopLevel
+	// VM-LIVE-VENUE-R2: trade enums verbatim (0 = disabled is a true value).
+	tctx.TradeMode = param.TradeMode
+	tctx.FreezeLevel = param.FreezeLevel
+	tctx.TradeExemode = param.TradeExemode
 	// VM-LIVE-PARITY-F2: live VM sees the full SymbolParam fact set.
 	tctx.LotMin = param.LotMin.String()
 	tctx.LotMax = param.LotMax.String()

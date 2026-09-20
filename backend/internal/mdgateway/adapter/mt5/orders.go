@@ -286,14 +286,15 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		if pointValue.IsZero() {
 			pointValue = decimal.NewFromFloat(si.GetTickSize())
 		}
-		// mt5 mtapi pb has no freeze-level field (grep 零命中) → FreezeLevel
-		// stays 0 = unknown; not derived.
+		// VM-LIVE-VENUE-R2: mt5 pb has no freeze/execution-mode fields → -1 = unknown (0 is a real enum value, not "no data").
 		out = append(out, &mthub.SymbolParam{
 			Canonical:    c,
 			SymbolRaw:    c,
 			Digits:       si.GetDigits(),
 			TradeMode:    int32(sg.GetTradeMode()),
+			TradeExemode: -1,
 			StopLevel:    sg.GetSL(),
+			FreezeLevel:  -1,
 			PointValue:   pointValue,
 			ContractSize: decimal.NewFromFloat(si.GetContractSize()),
 			LotSize:      decimal.NewFromFloat(si.GetContractSize()),

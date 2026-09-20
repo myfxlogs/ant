@@ -266,7 +266,6 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 			param.TickSize = decimal.NewFromFloat(ex.GetTickSize())
 			param.SwapLong = decimal.NewFromFloat(ex.GetSwapLong())
 			param.SwapShort = decimal.NewFromFloat(ex.GetSwapShort())
-			param.FreezeLevel = ex.GetFreezeLevel()
 		}
 		if gp != nil {
 			param.LotMin = decimal.NewFromFloat(gp.GetMinLot())
@@ -277,7 +276,18 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		// enum); the group Execution mode is a different enum — writing it
 		// here mislabeled every symbol (F2). Canonical enum:
 		// 0=disabled,1=long_only,2=short_only,3=close_only,4=full.
-		param.TradeMode = ex.GetTrade()
+		// VM-LIVE-VENUE-R2: Ex absent → -1 = unknown sentinel; the Go zero
+		// value 0 would collide with real enum 0 (disabled / no-freeze /
+		// instant). Ex present → broker facts verbatim. TradeExemode
+		// canonical enum: 0=instant,1=request,2=market,3=exchange.
+		param.TradeMode = -1
+		param.FreezeLevel = -1
+		param.TradeExemode = -1
+		if ex != nil {
+			param.TradeMode = ex.GetTrade()
+			param.FreezeLevel = ex.GetFreezeLevel()
+			param.TradeExemode = ex.GetExemode()
+		}
 		// Do not default ContractSize to 1; zero means "unknown" and triggers
 		// fail-closed margin checks in the risk gate.
 		out = append(out, param)

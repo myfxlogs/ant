@@ -230,3 +230,47 @@ func TestFetchSymbolParams_Parity_TradeModeFromExTrade(t *testing.T) {
 		t.Errorf("TradeMode = %d, want ex.Trade=4 (not gp.Execution=9)", params[0].TradeMode)
 	}
 }
+
+// VM-LIVE-VENUE-R2 T1: venue trade enums come from SymbolInfoEx verbatim;
+// Ex absent → -1 unknown sentinel ×3 — the Go zero value 0 would collide
+// with real enum 0 (disabled / no-freeze / instant).
+// Mutation M1: revert the Ex==nil branch to zero values → RED.
+func TestFetchSymbolParams_Parity_TradeEnumsExOrSentinel(t *testing.T) {
+	// Ex present → Trade/FreezeLevel/Exemode pass through verbatim.
+	gw := parityFetchParams(t, &pb.SymbolParamsReply{
+		Result: &pb.SymbolParams{
+			Symbol: &pb.SymbolInfo{
+				Digits: 2,
+				Ex:     &pb.SymbolInfoEx{Trade: 1, FreezeLevel: 20, Exemode: 3},
+			},
+		},
+	})
+	params, err := gw.FetchSymbolParams(context.Background(), []string{"BTCUSDm"})
+	if err != nil || len(params) != 1 {
+		t.Fatalf("FetchSymbolParams(Ex): %v (%d params)", err, len(params))
+	}
+	p := params[0]
+	if p.TradeMode != 1 {
+		t.Errorf("TradeMode = %d, want ex.Trade=1 (long_only)", p.TradeMode)
+	}
+	if p.FreezeLevel != 20 {
+		t.Errorf("FreezeLevel = %d, want ex.FreezeLevel=20", p.FreezeLevel)
+	}
+	if p.TradeExemode != 3 {
+		t.Errorf("TradeExemode = %d, want ex.Exemode=3 (exchange)", p.TradeExemode)
+	}
+
+	// Ex absent → -1 unknown ×3, never 0.
+	gwNil := parityFetchParams(t, &pb.SymbolParamsReply{
+		Result: &pb.SymbolParams{Symbol: &pb.SymbolInfo{Digits: 2}},
+	})
+	paramsNil, err := gwNil.FetchSymbolParams(context.Background(), []string{"BTCUSDm"})
+	if err != nil || len(paramsNil) != 1 {
+		t.Fatalf("FetchSymbolParams(no Ex): %v (%d params)", err, len(paramsNil))
+	}
+	pn := paramsNil[0]
+	if pn.TradeMode != -1 || pn.FreezeLevel != -1 || pn.TradeExemode != -1 {
+		t.Errorf("Ex==nil must yield -1 sentinels, got TradeMode=%d FreezeLevel=%d TradeExemode=%d",
+			pn.TradeMode, pn.FreezeLevel, pn.TradeExemode)
+	}
+}

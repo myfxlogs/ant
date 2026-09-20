@@ -198,6 +198,11 @@ func (b *brokerImpl) SymbolInfo(symbol string) (sdk.SymbolInfo, error) {
 			TickSize:   b.mustDecimal(b.runner.ctx.liveTickSize),
 			SwapLong:   b.mustDecimal(b.runner.ctx.liveSwapLong),
 			SwapShort:  b.mustDecimal(b.runner.ctx.liveSwapShort),
+			// VM-LIVE-VENUE-R2: trade enums straight from the ctx int32s
+			// (-1 = unknown sentinel passes through unbleached).
+			TradeMode:    b.runner.ctx.liveTradeMode,
+			FreezeLevel:  b.runner.ctx.liveFreezeLevel,
+			TradeExemode: b.runner.ctx.liveTradeExemode,
 		}, nil
 	}
 	return b.executor.SymbolInfo(symbol)

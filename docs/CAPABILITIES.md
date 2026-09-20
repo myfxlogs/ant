@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-09-19 16:35 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-09-20 00:53 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -743,7 +743,7 @@ OrderModify	reference/grpc/mt4.proto:304
 OrderModify	reference/grpc/mt5.proto:493
 OrderSend	reference/grpc/mt4.proto:294
 OrderSend	reference/grpc/mt5.proto:482
-OrderTypeString	backend/internal/mthub/order_types.go:99
+OrderTypeString	backend/internal/mthub/order_types.go:103
 PaperPnl	backend/internal/paper/engine.go:146
 ParseProviderCurl	proto/ant/v1/system_ai.proto:18
 PendingOrderHistory	reference/grpc/mt5.proto:104
@@ -2000,7 +2000,7 @@ backend/internal/mthub/oms_writer.go:124:func (w *OmsWriter) InsertOrder(ctx con
 backend/internal/mthub/oms_writer.go:142:func (w *OmsWriter) UpdateTicket(ctx context.Context, orderID string, ticket int64) error {
 backend/internal/mthub/oms_writer.go:154:func (w *OmsWriter) OrderIDByTicket(ctx context.Context, accountID string, ticket int64) (orderID, state string, err error) {
 backend/internal/mthub/oms_writer.go:166:func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, current, next OMSState) error {
-backend/internal/mthub/order_types.go:99:func (r *OrderRecord) OrderTypeString() string {
+backend/internal/mthub/order_types.go:103:func (r *OrderRecord) OrderTypeString() string {
 backend/internal/mthub/reconcile_gate.go:24:func (g *ReconcileGate) EnterReconciling(accountID string) {
 backend/internal/mthub/reconcile_gate.go:31:func (g *ReconcileGate) MarkReconciled(accountID string) {
 backend/internal/mthub/reconcile_gate.go:38:func (g *ReconcileGate) CanAccept(accountID string) bool {

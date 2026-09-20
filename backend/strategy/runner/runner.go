@@ -316,6 +316,8 @@ type LiveSymbolInfo struct {
 	TickValue, TickSize     string
 	SwapLong, SwapShort     string
 	Digits, StopsLevel      int32
+	// VM-LIVE-VENUE-R2: canonical trade enums verbatim (-1 = unknown).
+	TradeMode, FreezeLevel, TradeExemode int32
 }
 
 func (r *Runner) UpdateSymbolInfo(info LiveSymbolInfo) {
@@ -332,6 +334,10 @@ func (r *Runner) UpdateSymbolInfo(info LiveSymbolInfo) {
 	r.ctx.liveTickSize = info.TickSize
 	r.ctx.liveSwapLong = info.SwapLong
 	r.ctx.liveSwapShort = info.SwapShort
+	// VM-LIVE-VENUE-R2: int32 straight through — no string/mustDecimal hop.
+	r.ctx.liveTradeMode = info.TradeMode
+	r.ctx.liveFreezeLevel = info.FreezeLevel
+	r.ctx.liveTradeExemode = info.TradeExemode
 }
 
 // OrderExecutor wraps the broker's trading interface.

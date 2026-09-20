@@ -867,6 +867,12 @@ func (b *symbolEnumTestBroker) SymbolInfo(string) (sdk.SymbolInfo, error) {
 		SwapLong:     decimal.NewFromFloat(0.5),
 		SwapShort:    decimal.NewFromFloat(-1.3),
 		ContractSize: decimal.NewFromInt(100000),
+		// VM-LIVE-VENUE-R2: the 22/26/27 pins are now passthrough pins
+		// (broker fact → builtin) — this model claim keeps them satisfied;
+		// verbatim flow incl. -1 is pinned in vm_venue_const_r2_test.go.
+		TradeMode:    4,
+		FreezeLevel:  0,
+		TradeExemode: 2,
 	}, nil
 }
 
@@ -1031,6 +1037,8 @@ func TestVM_ENUM_NUMBERING_1_RealBranchesReadSource(t *testing.T) {
 		{"MODE_LOTSTEP", decimal.NewFromFloat(0.01)},     // renumbered 22→24
 		{"MODE_MAXLOT", decimal.NewFromInt(100)},         // renumbered 21→25
 		{"MODE_TIME", decimal.NewFromInt(1000)},
+		// VM-LIVE-VENUE-R2: two-axis — symbolEnumTestBroker reports
+		// TradeMode=4 (full) ∧ account IsTradeAllowed=true.
 		{"MODE_TRADEALLOWED", decimal.NewFromInt(1)},
 		// MARGININIT/MARGINREQUIRED: ContractSize·Ask/Leverage = 100000·1.25/100
 		{"MODE_MARGININIT", decimal.NewFromInt(1250)},
@@ -1133,7 +1141,10 @@ func TestVM_ENUM_NUMBERING_1_VenueValues(t *testing.T) {
 		})
 	}
 
-	// TRADEALLOWED mirrors ctx.Account().IsTradeAllowed both ways.
+	// TRADEALLOWED is two-axis (VM-LIVE-VENUE-R2): account IsTradeAllowed ∧
+	// broker info.TradeMode ∈ {1,2,4}. This VM's broker reports 4 (full), so
+	// flipping the account flag alone drives it 1→0; the symbol axis is
+	// pinned cell-by-cell in TestVMVenueConstR2_ModeTradeAllowedTwoAxis.
 	vmFalse := newSymbolEnumVM(t)
 	vmFalse.ctx.(*symbolEnumTestContext).isTradeAllowed = false
 	v, err := builtinMarketInfo(vmFalse, []interp.Value{interp.StringVal("EURUSD"), interp.IntVal(22)})
