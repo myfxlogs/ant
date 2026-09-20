@@ -87,7 +87,7 @@
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31
 - **CODE-SIZE-MT5-ORDERS-1** ✅done — mt5/orders.go 450→348 拆分（Devin CLI 直接施工+验收 2026-09-19：符号元数据三函数 verbatim move→symbol_params.go，diff 逐字节一致=零行为变更）；明细 registry 行 32
 - **TRADE-RECORDS-DUP-1** ✅done — 去重+写入止血+VerifyChain 豁免（Devin CLI 验收 2026-09-19，7fce4558，产数据克隆实证+mutation×3）；未部署；明细 registry 行 33
-- **VERIFY-CHAIN-SEMANTIC-1** 🟦open — VerifyChain 写全局/验同账户基线噪音 2,113 行（DUP-1 实查发现，生产零调用）；明细 registry 行 34
+- **VERIFY-CHAIN-SEMANTIC-1** 🟦open-待施工 — 设计+派工双落档（union 全局验链实测 0 断点自净、两类噪音同消：2,113 chain_break+5,209 hash_mismatch）；明细 registry 行 34
 
 ## 最近变更日志
 
