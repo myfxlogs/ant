@@ -105,7 +105,11 @@ type OrderEventHandler func(*OrderEvent)
 // traced 3,024 epoch rows and 160 BALANCE rows to the two unguarded sync
 // sites. Single source for both call sites so the guard cannot drift.
 func (r *OrderRecord) SyncableClosedTrade() bool {
-	if r.State != OrderStateClosed || r.CloseTime.IsZero() {
+	// CloseTime.Unix() <= 0 covers both the Go zero time (year 1) and the
+	// Unix epoch: broker history maps "not closed" to seconds=0 → AsTime()
+	// = 1970-01-01, which IsZero() does NOT catch (epoch is not the zero
+	// time). No real close can be dated 1970 or earlier.
+	if r.State != OrderStateClosed || r.CloseTime.Unix() <= 0 {
 		return false
 	}
 	return r.OrderType != OrderBalance && r.OrderType != OrderCredit

@@ -47,7 +47,11 @@ func (s *MtHubService) ImportBrokerOrder(ctx context.Context, accountID string, 
 
 	// 2. If closed (has CloseTime + ClosePrice), also write to trade_records
 	//    via TradeRecordRepository.Create (hash chain + idempotent UK).
-	if !br.CloseTime.IsZero() && br.ClosePrice.GreaterThan(decimal.Zero) {
+	//    Single-source guard: open broker rows carry epoch CloseTime +
+	//    current-price ClosePrice + floating profit — the old IsZero() check
+	//    never fired (epoch is not the Go zero time) and bled phantom rows
+	//    into the ledger via reconciliation ghost import (TRADE-RECORDS-DUP-1).
+	if br.SyncableClosedTrade() && br.ClosePrice.GreaterThan(decimal.Zero) {
 		var userID uuid.UUID
 		if err := pool.QueryRow(ctx,
 			`SELECT user_id FROM mt_accounts WHERE id = $1::uuid`, accountID).Scan(&userID); err != nil {

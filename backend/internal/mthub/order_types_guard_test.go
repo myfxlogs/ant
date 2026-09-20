@@ -28,6 +28,7 @@ func TestSyncableClosedTrade_GuardMatrix(t *testing.T) {
 		{"closed_trade", OrderStateClosed, OrderMarket, realClose, true},
 		{"open_state_epoch_close", OrderStateOpen, OrderMarket, realClose, false},
 		{"closed_but_zero_close_time", OrderStateClosed, OrderMarket, time.Time{}, false},
+		{"closed_but_epoch_close_time", OrderStateClosed, OrderMarket, time.Unix(0, 0), false},
 		{"balance_cash_event", OrderStateClosed, OrderBalance, realClose, false},
 		{"credit_cash_event", OrderStateClosed, OrderCredit, realClose, false},
 		{"pending_limit", OrderStatePending, OrderLimit, realClose, false},

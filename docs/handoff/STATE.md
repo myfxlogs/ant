@@ -11,7 +11,7 @@
 
 | 子任务 | 状态 | 锚点 |
 |--------|------|------|
-| TRADE-RECORDS-DUP-1 trade_records 去重（879 对 CST/UTC+3,024 epoch 幻影+160 BALANCE 混入；删行归档+写入止血+VerifyChain 豁免） | ✅done | Devin CLI 独立复审验收 2026-09-19；施工 7fce4558；产数据克隆实证（ant_dedup_review：DELETE 879/3,024 精确、log=3,903、down 后全表逐字节相等）+独立 mutation×3（M-A State 分支→T1 RED；M-B 豁免→T3 RED chain_break；M-C 签名弱化→879→880 吞合成巧合对）全恢复 GREEN。未部署 |
+| TRADE-RECORDS-DUP-1 trade_records 去重（879 对 CST/UTC+3,024 epoch 幻影+160 BALANCE 混入；删行归档+写入止血+VerifyChain 豁免） | ✅done | Devin CLI 独立复审验收 2026-09-19；施工 7fce4558；产数据克隆实证（ant_dedup_review：DELETE 879/3,024 精确、log=3,903、down 后全表逐字节相等）+独立 mutation×3 全恢复 GREEN。**已部署**——产库实清 epoch=0/log=3,903；**复审抓出第三出血口**：reconciliation 幽灵单 ImportBrokerOrder `!IsZero()` 守卫对 epoch 失效（Unix(0,0)≠Go 零值），部署后仍回潮 17 行→审计侧补救 SyncableClosedTrade 加 `Unix()<=0`+第三站点接单源守卫+pin 锁（M-D mutation RED→GREEN），二次部署止血中 |
 | VM-LIVE-PARITY-F1/F2/F3 实盘对账修复（F1 OrderResult 回显请求值/F2 SymbolParams 瘦数据链/F3 comment 丢链） | ✅done | Devin CLI 独立复审验收 2026-09-19；施工 d39afc62+审计侧 S5 修补（brokerImpl.SymbolInfo harness 7 字段死存储补齐+HarnessFullFacts pin）；M1/M2/M3 独立 mutation 复验 RED→GREEN；残余 R1-R4 登记 |
 | VM-LIVE-VENUE-1 venue 常量真值化（F 系残余 R2：TRADE_MODE/FREEZE_LEVEL/EXEMODE/TRADEALLOWED/FREEZELEVEL 硬编码） | ✅done | Devin CLI 独立复审验收 2026-09-19；施工 dfd9eccd 范围核符 S1-S6；三项独立 mutation 实证（M1 mt4 哨兵删→RED 0/0/0；M2 prop26 复辟常量 0→RED want 5/-1；M3 TRADEALLOWED 复辟纯账户旗标→RED 三格 want 0 got 1）全恢复 GREEN、工作树无残留；build/vet/2079 测试/check-lines 0 errors/diff-check 净；未部署 |
 | POST-2 探针批（S1 VM 并发退化/S2 SSE 扇出成本/S3 paper 下单延迟/S4 容量基线文档） | ✅done | Devin CLI 验收 2026-09-19；2408d34c；设计表修正核实[SSE limiter 不覆盖 ConnectRPC binary=净无界]；G-POST2-1/2 登记 open；staging 残余 7 项落 docs/benchmarks/post2-capacity-baseline-2026-09.md |
