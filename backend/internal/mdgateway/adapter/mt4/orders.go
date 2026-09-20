@@ -10,11 +10,36 @@ import (
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
 const orderTimeout = 30 * time.Second
+
+// mt4OpToSideAndType maps a broker-stated Op back to side/orderType.
+// Inverse of mt4Op — PlaceOrder must populate rec.Side/rec.OrderType from
+// the reply (never echo request values; zero values would misreport a
+// sell-limit as a buy-market record downstream).
+func mt4OpToSideAndType(op pb.Op) (mthub.Side, mthub.OrderType) {
+	side := mthub.SideBuy
+	ot := mthub.OrderMarket
+	switch op {
+	case pb.Op_Op_Sell:
+		side = mthub.SideSell
+	case pb.Op_Op_BuyLimit:
+		ot = mthub.OrderLimit
+	case pb.Op_Op_SellLimit:
+		side, ot = mthub.SideSell, mthub.OrderLimit
+	case pb.Op_Op_BuyStop:
+		ot = mthub.OrderStop
+	case pb.Op_Op_SellStop:
+		side, ot = mthub.SideSell, mthub.OrderStop
+	case pb.Op_Op_Balance:
+		ot = mthub.OrderBalance
+	case pb.Op_Op_Credit:
+		ot = mthub.OrderCredit
+	}
+	return side, ot
+}
 
 func mt4Op(side mthub.Side, ot mthub.OrderType) (pb.Op, error) {
 	switch {
@@ -108,9 +133,12 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mth
 	if ot := o.GetOpenTime(); ot != nil {
 		rec.OpenTime = ot.AsTime()
 	}
+	// Side/OrderType come from the broker's stated order type, not the request
+	// — zero values would inject a buy-market record for a sell-limit fill.
+	rec.Side, rec.OrderType = mt4OpToSideAndType(o.GetType())
 	// State must be assigned explicitly: OrderStatePending is the zero value,
 	// so leaving it unset would report a market fill as pending.
-	if op == pb.Op_Op_Buy || op == pb.Op_Op_Sell {
+	if o.GetType() == pb.Op_Op_Buy || o.GetType() == pb.Op_Op_Sell {
 		rec.State = mthub.OrderStateOpen
 	} else {
 		rec.State = mthub.OrderStatePending
@@ -338,100 +366,4 @@ func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
 		return nil, fmt.Errorf("mt4 Symbols: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
 	return resp.GetResult(), nil
-}
-
-func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHandler) error {
-	g.mu.RLock()
-	streamCli := g.streamCli
-	sid := g.sessionID
-	g.mu.RUnlock()
-	if streamCli == nil || sid == "" {
-		return fmt.Errorf("mt4 SubscribeOrderEvents: not connected")
-	}
-	g.mu.Lock()
-	if g.cancelHubOrderSub != nil {
-		g.cancelHubOrderSub()
-	}
-	ctx, g.cancelHubOrderSub = context.WithCancel(ctx)
-	g.mu.Unlock()
-	go g.orderEventLoop(ctx, h)
-	return nil
-}
-
-func (g *Gateway) orderEventLoop(ctx context.Context, h mthub.OrderEventHandler) {
-	defer func() {
-		if r := recover(); r != nil {
-			g.log.Error("mt4 order event recv panic", zap.Any("panic", r))
-		}
-	}()
-	backoff := time.Second
-	for {
-		if ctx.Err() != nil {
-			return
-		}
-		g.mu.RLock()
-		streamCli := g.streamCli
-		sid := g.sessionID
-		g.mu.RUnlock()
-		if streamCli == nil || sid == "" {
-			g.sleep(ctx, backoff)
-			backoff = minDuration(backoff*2, streamMaxBackoff)
-			continue
-		}
-		md := metadata.New(map[string]string{"id": sid})
-		if tok := g.token(); tok != "" {
-			md.Set("authorization", "Bearer "+tok)
-		}
-		subCtx, cancel := context.WithCancel(ctx)
-		subCtx = metadata.NewOutgoingContext(subCtx, md)
-		stream, err := streamCli.OnOrderUpdate(subCtx, &pb.OnOrderUpdateRequest{Id: sid})
-		if err != nil {
-			g.log.Warn("mt4 order event subscribe", zap.Error(err), zap.Duration("backoff", backoff))
-			cancel()
-			g.handleStreamError(ctx, err, &backoff)
-			continue
-		}
-		backoff = time.Second
-		g.recvOrderUpdates(ctx, cancel, stream, h, &backoff)
-	}
-}
-
-func (g *Gateway) recvOrderUpdates(ctx context.Context, cancel context.CancelFunc,
-	stream grpc.ServerStreamingClient[pb.OnOrderUpdateReply], h mthub.OrderEventHandler, backoff *time.Duration,
-) {
-	defer cancel()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-		}
-		msg, err := stream.Recv()
-		if err != nil {
-			g.log.Warn("mt4 order event recv error", zap.Error(err))
-			g.handleStreamError(ctx, err, backoff)
-			return
-		}
-		if h == nil || msg.GetResult() == nil || msg.GetResult().GetUpdate() == nil {
-			continue
-		}
-		upd := msg.GetResult().GetUpdate()
-		o := upd.GetOrder()
-		event := &mthub.OrderEvent{
-			AccountID: g.cfg.AccountID,
-			EventType: upd.GetAction().String(),
-			Timestamp: time.Now(),
-		}
-		if o != nil {
-			event.Ticket = int64(o.GetTicket())
-		}
-		h(event)
-	}
-}
-
-func truncSid(s string) string {
-	if len(s) > 8 {
-		return s[:8] + "..."
-	}
-	return s
 }

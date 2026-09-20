@@ -505,6 +505,46 @@ func TestPlaceOrder_WithMock(t *testing.T) {
 	}
 }
 
+// PlaceOrder must carry the broker's stated side/orderType into the record —
+// a SellStop reply with zero-value fields would inject into the runner's
+// live state as a BUY market position. Also covers the BuyStopLimit case
+// that mt5OrderTypeToSideAndOrderType was missing (fell to default Buy/Market).
+func TestPlaceOrder_MapsReplySideAndOrderType(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name string
+		ot   pb.OrderType
+		side mthub.Side
+		ot2  mthub.OrderType
+	}{
+		{"sell_stop", pb.OrderType_OrderType_SellStop, mthub.SideSell, mthub.OrderStop},
+		{"buy_stop_limit", pb.OrderType_OrderType_BuyStopLimit, mthub.SideBuy, mthub.OrderStopLimit},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
+			gw.sessionID = "sid"
+			gw.tradingCli = &mockTradingClient{
+				orderSendRes: &pb.OrderSendReply{
+					Result: &pb.Order{Ticket: 888, OrderType: tc.ot},
+				},
+			}
+			rec, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+				Canonical: "EURUSD", Side: tc.side, OrderType: tc.ot2,
+				Volume: decimal.NewFromFloat(0.1),
+			})
+			if err != nil {
+				t.Fatalf("PlaceOrder: %v", err)
+			}
+			if rec.Side != tc.side {
+				t.Errorf("rec.Side = %d, want %d", rec.Side, tc.side)
+			}
+			if rec.OrderType != tc.ot2 {
+				t.Errorf("rec.OrderType = %d, want %d", rec.OrderType, tc.ot2)
+			}
+		})
+	}
+}
+
 func TestPlaceOrder_MockError(t *testing.T) {
 	t.Parallel()
 	tc := &mockTradingClient{orderSendErr: fmt.Errorf("mtapi error")}

@@ -30,8 +30,9 @@ func TestPlaceOrder_Parity_ReceiptMappedVerbatim(t *testing.T) {
 		orderSendRes: &pb.OrderSendReply{
 			Result: &pb.Order{
 				Ticket:      12345,
-				OpenPrice:   81262.24, // broker fill — request price is 0 (market)
-				Lots:        0.02,     // broker normalized — request volume 0.015
+				Type:        pb.Op_Op_Buy, // broker-stated type (real mtapi replies carry it)
+				OpenPrice:   81262.24,     // broker fill — request price is 0 (market)
+				Lots:        0.02,         // broker normalized — request volume 0.015
 				StopLoss:    81000.5,
 				TakeProfit:  83000.75,
 				Comment:     "PARITY-X",
@@ -101,7 +102,7 @@ func TestPlaceOrder_Parity_ReceiptMappedVerbatim(t *testing.T) {
 // T1b: pending op (BuyLimit) → OrderStatePending.
 func TestPlaceOrder_Parity_PendingOpStatePending(t *testing.T) {
 	mock := &mockTradingClient{
-		orderSendRes: &pb.OrderSendReply{Result: &pb.Order{Ticket: 777}},
+		orderSendRes: &pb.OrderSendReply{Result: &pb.Order{Ticket: 777, Type: pb.Op_Op_BuyLimit}},
 	}
 	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
 	gw.sessionID = "sid"

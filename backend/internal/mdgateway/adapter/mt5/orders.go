@@ -88,9 +88,12 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (*mth
 	if ot2 := o.GetOpenTime(); ot2 != nil {
 		rec.OpenTime = ot2.AsTime()
 	}
+	// Side/OrderType come from the broker's stated order type, not the
+	// request — zero values would inject a buy-market record downstream.
+	rec.Side, rec.OrderType = mt5OrderTypeToSideAndOrderType(o.GetOrderType())
 	// Same explicit derivation as mt4: zero State would misreport a market
 	// fill as pending (OrderStatePending is the zero value).
-	if ot == pb.OrderType_OrderType_Buy || ot == pb.OrderType_OrderType_Sell {
+	if o.GetOrderType() == pb.OrderType_OrderType_Buy || o.GetOrderType() == pb.OrderType_OrderType_Sell {
 		rec.State = mthub.OrderStateOpen
 	} else {
 		rec.State = mthub.OrderStatePending

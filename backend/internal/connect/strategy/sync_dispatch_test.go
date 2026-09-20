@@ -190,6 +190,57 @@ func TestSyncDispatch_CloseAll_RemovesRunnerPositions(t *testing.T) {
 	}
 }
 
+// T11: confirmed pending open injects as a pending order with the broker's
+// stated type/side — OrderType() must read OP_BUYLIMIT(2), not OP_BUY(0).
+// (Live probe caught PlaceOrder replies dropping Side/OrderType → the
+// injected pending read as a market position.)
+func TestSyncDispatch_ConfirmedPending_InjectsAsPendingOrder(t *testing.T) {
+	rec := &mthub.OrderRecord{
+		Ticket: 8801, AccountID: "acct-1", Canonical: "EURUSD",
+		Side: mthub.SideSell, OrderType: mthub.OrderLimit,
+		Volume: decimal.NewFromFloat(0.1), OpenPrice: decimal.NewFromFloat(1.0900),
+		State: mthub.OrderStatePending,
+	}
+	exec := &prodMockExecutor{
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return rec, nil
+		},
+		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
+			return []*mthub.OrderRecord{rec}, nil
+		},
+	}
+	srv, _, broker := testCoordinatorSetup(exec)
+	cfg := testLiveCfg()
+	sess := testActiveSess()
+	r := runner.New(runner.Config{Symbol: "EURUSD", Mode: "live"})
+
+	go publishOrderUpdate(broker, cfg.AccountID, 8801, strategyMagic(cfg.ScheduleID), "open")
+
+	ticket, err := srv.dispatchSignalSync(context.Background(), cfg, nil,
+		&sdk.Signal{Action: sdk.ActionSellLimit, Symbol: "EURUSD",
+			Volume: decimal.NewFromFloat(0.1), Price: decimal.NewFromFloat(1.09)},
+		sess, r)
+	if err != nil {
+		t.Fatalf("dispatchSignalSync err: %v", err)
+	}
+	if ticket != 8801 {
+		t.Fatalf("ticket=%d, want 8801", ticket)
+	}
+	// Pending must land in the pending pool with broker-stated type/side —
+	// a zero-value record would inject OrderMarket/SideBuy (OP_BUY readback).
+	if n := len(r.Broker().Positions(0)); n != 0 {
+		t.Fatalf("pending injected into positions pool: %d positions, want 0", n)
+	}
+	orders := r.Broker().Orders(0)
+	if len(orders) != 1 || orders[0].Ticket != 8801 {
+		t.Fatalf("pending orders = %v, want [8801]", orders)
+	}
+	if orders[0].Type != sdk.OrderLimit || orders[0].Side != sdk.SideSell {
+		t.Fatalf("injected pending Type=%v Side=%v, want OrderLimit/SideSell (OP_SELLLIMIT)",
+			orders[0].Type, orders[0].Side)
+	}
+}
+
 // T10: close_all must only CloseOrder market positions — pending orders
 // require DeleteOrder (cancel_all), and CloseOrder on a pending is a
 // deterministic broker rejection (wasted RPC + rejection audit noise).

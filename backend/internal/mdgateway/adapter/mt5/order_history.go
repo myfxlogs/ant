@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt5"
 	"alphaforge/internal/mthub"
+	pb "alphaforge/mt5"
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
@@ -68,10 +68,10 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 			CloseTime:  closeTimeFromOrder(o),
 			Profit:     decimal.NewFromFloat(o.GetProfit()),
 			Swap:       decimal.NewFromFloat(o.GetSwap()),
-			Commission:  decimal.NewFromFloat(o.GetCommission()),
-			StopLoss:    decimal.NewFromFloat(o.GetStopLoss()),
-			TakeProfit:  decimal.NewFromFloat(o.GetTakeProfit()),
-			Comment:     o.GetComment(),
+			Commission: decimal.NewFromFloat(o.GetCommission()),
+			StopLoss:   decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit: decimal.NewFromFloat(o.GetTakeProfit()),
+			Comment:    o.GetComment(),
 			Magic:      int32(o.GetExpertId()),
 			State:      mthub.OrderStateOpen,
 		})
@@ -128,10 +128,10 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 			CloseTime:  closeTimeFromOrder(o),
 			Profit:     decimal.NewFromFloat(o.GetProfit()),
 			Swap:       decimal.NewFromFloat(o.GetSwap()),
-			Commission:  decimal.NewFromFloat(o.GetCommission()),
-			StopLoss:    decimal.NewFromFloat(o.GetStopLoss()),
-			TakeProfit:  decimal.NewFromFloat(o.GetTakeProfit()),
-			Comment:     o.GetComment(),
+			Commission: decimal.NewFromFloat(o.GetCommission()),
+			StopLoss:   decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit: decimal.NewFromFloat(o.GetTakeProfit()),
+			Comment:    o.GetComment(),
 			Magic:      int32(o.GetExpertId()),
 			State:      state,
 		})
@@ -153,6 +153,8 @@ func mt5OrderTypeToSideAndOrderType(ot pb.OrderType) (mthub.Side, mthub.OrderTyp
 		return mthub.SideSell, mthub.OrderStop
 	case pb.OrderType_OrderType_SellStopLimit:
 		return mthub.SideSell, mthub.OrderStopLimit
+	case pb.OrderType_OrderType_BuyStopLimit:
+		return mthub.SideBuy, mthub.OrderStopLimit
 	case pb.OrderType_OrderType_Balance:
 		return mthub.SideBuy, mthub.OrderBalance
 	case pb.OrderType_OrderType_Credit:

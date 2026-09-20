@@ -377,3 +377,9 @@
 - R1 复审登记的 `dispatchCloseAll` 挂单缺陷修复：OpenedOrders 中挂单也走 coordinator 发 CloseOrder——不止浪费 RPC/拒绝噪音，其确认等待超时使整批 outcome_unknown/barrier locked，市价平仓被挂单连带阻断。
 - 修法=循环首行 `OrderType != OrderMarket` skip（镜像 dispatchCancelAll 反向过滤）。T10 先红[未修时 outcome_unknown]→修复绿；M5 mutation 删过滤→T10 复红→恢复。
 - 顺带拆文件：live_dispatch.go 460 行超红线→六个 per-action dispatcher+submitOrder 迁 live_dispatch_actions.go（209+264）。strategy 443 绿/race 绿/check-lines 0 errors。
+
+## 2026-09-20 — LIVE-ORDERREC-SIDE-TYPE-1：PlaceOrder 回执丢 Side/OrderType
+- R1 实盘深探抓出：挂单 `OrderSelect` 命中但 `OrderType()=0`（应 2）。根因=MT4/MT5 `PlaceOrder` 构造 OrderRecord 漏 Side+OrderType（零值→注入读成 SideBuy+OrderMarket；卖单更糟=反向错读）。
+- 修法=回执 verbatim：MT4 新 helper `mt4OpToSideAndType` 读 `o.GetType()`；MT5 复用 `mt5OrderTypeToSideAndOrderType` 并补 BuyStopLimit 缺口；State 判定改读回执类型。
+- T 层 adapter 测试双侧 RED→GREEN；T11 端到端挂单注入断言绿；mutation 删映射双侧复红→恢复。mt4/mt5/strategy 714 绿。
+- 顺带拆 orders.go 466 行超红线→order_events.go（369+110）。

@@ -1008,6 +1008,36 @@ func TestPlaceOrder_ErrorCode(t *testing.T) {
 	}
 }
 
+// PlaceOrder must carry the broker's stated side/orderType into the record —
+// a SellLimit reply with zero-value fields would inject into the runner's
+// live state as a BUY market position (same-event OrderSelect misreads it).
+func TestPlaceOrder_MapsReplySideAndOrderType(t *testing.T) {
+	t.Parallel()
+	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
+	gw.sessionID = "sid"
+	gw.tradingCli = &mockTradingClient{
+		orderSendRes: &pb.OrderSendReply{
+			Result: &pb.Order{Ticket: 777, Type: pb.Op_Op_SellLimit},
+		},
+	}
+	rec, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+		Canonical: "EURUSD", Side: mthub.SideSell, OrderType: mthub.OrderLimit,
+		Volume: decimal.NewFromFloat(0.1), Price: decimal.NewFromFloat(1.0500),
+	})
+	if err != nil {
+		t.Fatalf("PlaceOrder: %v", err)
+	}
+	if rec.Side != mthub.SideSell {
+		t.Errorf("rec.Side = %d, want SideSell(%d) — broker reply Type was SellLimit", rec.Side, mthub.SideSell)
+	}
+	if rec.OrderType != mthub.OrderLimit {
+		t.Errorf("rec.OrderType = %d, want OrderLimit(%d)", rec.OrderType, mthub.OrderLimit)
+	}
+	if rec.State != mthub.OrderStatePending {
+		t.Errorf("rec.State = %d, want OrderStatePending(%d)", rec.State, mthub.OrderStatePending)
+	}
+}
+
 func TestPlaceOrder_TransportErr(t *testing.T) {
 	t.Parallel()
 	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
