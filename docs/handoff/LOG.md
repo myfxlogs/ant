@@ -323,3 +323,9 @@
 - **裁决**：builder D-012 报 mt5/orders.go 449→450 贴 1.5× 线——HEAD 存量 449 行预警非本批新增，按一任务一范围裁决另立 `CODE-SIZE-MT5-ORDERS-1` 🟦open（抽函数独立批，参照 VM-CODE-HYGIENE-1 先例）；R2 范围接受。
 - **部署状态**：未部署——R2 venue 字段需 backend 重建进 VM 实盘链生效；部署+demo `904d14e6` venue 三字段有界复验列入下一步。
 - registry 行 31 翻 ✅done + 行 32/33 新 open 登记；STATE.md 施工表/现状/下一步/指针区同步。
+
+## 2026-09-19 VM-LIVE-VENUE-1 部署+有界复验（Devin CLI 终裁执行）
+
+- **部署**：`docker builder prune`（2.49GB 回收）→ `compose build backend`（镜像 e687a2ab）→ `up -d backend`→ **healthy 57s**。R2 venue 字段链进 VM 实盘生效。
+- **有界复验**：demo `904d14e6`（Exness-Trial）`MtHubService/SymbolParams BTCUSDm` 部署后实测——`tradeMode=2`（short_only 真值）/`digits=2`/`lotMin=0.01`，adapter→mthub Ex 读取链在部署二进制上实证工作。`freeze_level`/`trade_exemode` 为 VM 内链字段（RPC SymbolParam 不暴露），由 2079 测试+3 mutation 在代码层钉住；实盘端到端观测需真策略读 MarketInfo(MODE_FREEZELEVEL)——留残为后续需求驱动验证。
+- 临时验证工具 tmpreval 已清理，工作树净。
