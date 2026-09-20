@@ -329,3 +329,9 @@
 - **部署**：`docker builder prune`（2.49GB 回收）→ `compose build backend`（镜像 e687a2ab）→ `up -d backend`→ **healthy 57s**。R2 venue 字段链进 VM 实盘生效。
 - **有界复验**：demo `904d14e6`（Exness-Trial）`MtHubService/SymbolParams BTCUSDm` 部署后实测——`tradeMode=2`（short_only 真值）/`digits=2`/`lotMin=0.01`，adapter→mthub Ex 读取链在部署二进制上实证工作。`freeze_level`/`trade_exemode` 为 VM 内链字段（RPC SymbolParam 不暴露），由 2079 测试+3 mutation 在代码层钉住；实盘端到端观测需真策略读 MarketInfo(MODE_FREEZELEVEL)——留残为后续需求驱动验证。
 - 临时验证工具 tmpreval 已清理，工作树净。
+
+## 2026-09-19 CODE-SIZE-MT5-ORDERS-1 修复（Devin CLI 直接施工+验收）
+
+- **拆分**：`FetchSymbolParams`/`FetchPriceHistory`/`FetchAllSymbols`（符号元数据查询，非订单语义）verbatim 移至新文件 `symbol_params.go`——orders.go 450→348 🟢、symbol_params.go 115。
+- **零行为变更实证**：搬迁块 diff 逐字节比对一致（`sed 254,354` vs `sed 15,115` 零 diff）；mt5 包 131 测试、build/vet/check-lines 0 errors 全绿。verbatim move 实证替代 mutation（无行为可突变）。
+- registry 行 32 翻 ✅done；STATE.md 指针同步。

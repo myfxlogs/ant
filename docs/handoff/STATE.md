@@ -86,14 +86,14 @@
 - **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
 - **VM-LIVE-PARITY-F1/F2/F3** ✅done — 实盘对账修复（Devin CLI 验收 2026-09-19，d39afc62+审计侧修补，M1/M2/M3 mutation 实证）；明细 registry 行 28-30
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31
-- **CODE-SIZE-MT5-ORDERS-1** 🟦open — mt5/orders.go 450/300 贴线存量债（R2 复审裁决另立，待抽函数独立批）；明细 registry 行 32
+- **CODE-SIZE-MT5-ORDERS-1** ✅done — mt5/orders.go 450→348 拆分（Devin CLI 直接施工+验收 2026-09-19：符号元数据三函数 verbatim move→symbol_params.go，diff 逐字节一致=零行为变更）；明细 registry 行 32
 - **TRADE-RECORDS-DUP-1** 🟦open — 879 对审计台账重复行（部署解堵留残，待专项去重设计）；明细 registry 行 33
 
 ## 最近变更日志
 
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
-- 2026-09-17~09-19 **VM 批七项 ✅done + registry 簿记修正 + MQL-LOOP-4/LLM-CONFIG-1 条目漂移翻正 + i18n 债系收官**——均已滚出至 `docs/handoff/LOG.md`（VM-API-TRUTH-1 收官/VM-ENUM-NUMBERING-1/VM-GLOBAL-ARRAY-DECL-1/ORDERSEND-NILBROKER/TRADE-BUILTIN-ERR-SWALLOW/VM-FUNC-FATAL-DELAY/TEST-WAITSTATE/SNAPSHOT-SLICE-ALIAS/簿记修正 20 处续行格/hook 续行校验修复/MQL-LOOP-4 弱 pin 补强/LLM-CONFIG-1 死字段 43f1e20a/I18N-MIXED-2 相位2 ja+vi 3eb5c69a+2388e919 五 locale strict 全 0/0；backend 批末回归 3663 绿/4 失=3 DB 环境缺+1 审计侧样品换新）。
+- 2026-09-17~09-19 **VM 批七项 ✅done + 簿记修正 + MQL-LOOP-4/LLM-CONFIG-1 翻正 + i18n 收官**——已滚出 `docs/handoff/LOG.md`（明细见该文件同日期段）。
 - 2026-09-19 **LOWPRI-SWEEP-2 ✅done**（5c855630——CQ-11 死簇删净复核门零命中；CQ-12 242 行 lint 转绿自 0d52f0a6 起存量红消除） — CQ-11 internal/ai 传递性死簇删除（backend -289 行：两整文件+strategy_prompt.go 死成员）+ CQ-12 WorkspaceCenterColumn 拆修（313→242 行+4 新文件）；Devin CLI 独立复审全绿：复核门重跑零有效命中+build/vet/test 绿+eslint src 零输出+lint exit 0[存量红消]+tsc 0+vitest 217 绿+check-lines 0 errors+diff --check 净；明细 registry。
 
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
