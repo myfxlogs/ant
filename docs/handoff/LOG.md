@@ -383,3 +383,4 @@
 - 修法=回执 verbatim：MT4 新 helper `mt4OpToSideAndType` 读 `o.GetType()`；MT5 复用 `mt5OrderTypeToSideAndOrderType` 并补 BuyStopLimit 缺口；State 判定改读回执类型。
 - T 层 adapter 测试双侧 RED→GREEN；T11 端到端挂单注入断言绿；mutation 删映射双侧复红→恢复。mt4/mt5/strategy 714 绿。
 - 顺带拆 orders.go 466 行超红线→order_events.go（369+110）。
+- **实盘复验（部署后）**：run `ddbca301` 同 OnTick 内 buy_limit `394081292` → `pend_select type=2`（OP_BUYLIMIT，修复前 0）→ `pend_delete=true` → `sel_after_delete=false`；DB `order_type=1` LIMIT+FILLED 终态。挂单全生命周期+回执映射实盘闭环。
