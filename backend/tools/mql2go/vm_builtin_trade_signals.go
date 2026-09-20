@@ -20,12 +20,16 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionClose,
 			OrderTicket: ticket,
 			Volume:      volume,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -52,12 +56,16 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket1 := int64(argI(args, 0))
 	ticket2 := int64(argI(args, 1))
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:         sdk.ActionClose,
 			OrderTicket:    ticket1,
 			OppositeTicket: ticket2, // VM-TRADE-CONTEXT-2
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -86,14 +94,18 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 	sl := argD(args, 2)
 	tp := argD(args, 3)
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionModify,
 			OrderTicket: ticket,
 			Price:       price,
 			StopLoss:    sl,
 			TakeProfit:  tp,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -135,11 +147,15 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionCancel,
 			OrderTicket: ticket,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -165,12 +181,16 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionClose,
 			OrderTicket: ticket,
 			Volume:      decimal.Zero,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -197,12 +217,16 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionClose,
 			OrderTicket: ticket,
 			Volume:      volume,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -229,12 +253,16 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 	t1 := int64(argI(args, 0))
 	t2 := int64(argI(args, 1))
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:         sdk.ActionClose,
 			OrderTicket:    t1,
 			OppositeTicket: t2, // VM-TRADE-CONTEXT-2
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -262,13 +290,17 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 	sl := argD(args, 1)
 	tp := argD(args, 2)
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionModify,
 			OrderTicket: ticket,
 			StopLoss:    sl,
 			TakeProfit:  tp,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -294,11 +326,15 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket := int64(argI(args, 0))
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:      sdk.ActionCancel,
 			OrderTicket: ticket,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.
@@ -323,10 +359,14 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 
 func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 	if vm.signalMode {
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: broker outcome via sync dispatcher.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action: sdk.ActionCloseAll,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect, not a rejection — fail closed.

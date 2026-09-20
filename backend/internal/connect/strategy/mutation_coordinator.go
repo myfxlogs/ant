@@ -65,6 +65,15 @@ type mutationSpec struct {
 type mutationResult struct {
 	state  tradeBarrierState
 	ticket int64
+	// record is the broker's order record for confirmed open mutations
+	// (VM-LIVE-SYNC-DISPATCH-1: used to inject broker facts into the VM's
+	// live state so same-event OrderSelect sees the real position).
+	record *mthub.OrderRecord
+	// affectedTickets carries individually-confirmed tickets from batch
+	// mutations (close_all/cancel_all). Each entry was confirmed by the
+	// coordinator even when the batch ended early on outcome_unknown —
+	// the VM's live state may drop them truthfully.
+	affectedTickets []int64
 }
 
 // coordinateMutation runs the shared mutation protocol for all 5 types.

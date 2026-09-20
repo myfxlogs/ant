@@ -44,6 +44,14 @@ type VM struct {
 	// this signal for server-side dispatch (paper / live OMS).
 	signalMode bool
 
+	// syncDispatch, when non-nil (live sessions), executes the emitted signal
+	// synchronously via the server-side coordinated mutation path and returns
+	// the broker's real outcome (ticket for opens). Builtins block on it inside
+	// the same event-loop goroutine — restoring MT4's synchronous OrderSend
+	// semantics. nil = async signal mode (paper): sentinel return values.
+	// VM-LIVE-SYNC-DISPATCH-1 (R1).
+	syncDispatch func(*sdk.Signal) (int64, error)
+
 	// CTrade setter state (VM-TRADE-CONTEXT-1): SetExpertMagicNumber /
 	// SetDeviationInPoints write here; ctradeOrder reads from here.
 	tradeMagic     int32
@@ -104,6 +112,37 @@ func (vm *VM) SetSignal(s *sdk.Signal) {
 // calling the broker. The caller (live runner) then dispatches it.
 func (vm *VM) SetSignalMode(enabled bool) {
 	vm.signalMode = enabled
+}
+
+// SetSyncDispatcher installs the synchronous signal dispatcher used by
+// signal-mode trade builtins. When set (live sessions), each emitted signal
+// is executed immediately through the coordinated broker-mutation path and
+// the builtin returns the broker's real outcome. VM-LIVE-SYNC-DISPATCH-1.
+func (vm *VM) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
+	vm.syncDispatch = fn
+}
+
+// emitSignal records the signal for the response/audit path, invalidates
+// order caches, and — when a sync dispatcher is installed — executes the
+// broker mutation synchronously, returning the real ticket. Without a
+// dispatcher (paper mode) it returns the sentinel ticket 1: paper has no
+// broker ticket (documented residual, VM-LIVE-SYNC-DISPATCH-1).
+// On dispatch success the real ticket is written back into the emitted
+// signal (open signals) so audit records carry broker truth.
+func (vm *VM) emitSignal(sig *sdk.Signal) (int64, error) {
+	vm.signal = sig
+	vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
+	if vm.syncDispatch == nil {
+		return 1, nil
+	}
+	ticket, err := vm.syncDispatch(sig)
+	if err != nil {
+		return 0, err
+	}
+	if sig.OrderTicket == 0 {
+		sig.OrderTicket = ticket
+	}
+	return ticket, nil
 }
 
 // getSeriesHelper returns a bar series value by name and shift (int).

@@ -72,7 +72,11 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 		if action == sdk.ActionNone {
 			return interp.IntVal(-1), nil
 		}
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: with a sync dispatcher (live) the mutation
+		// executes inside this call and ticket is the broker's real ticket;
+		// without one (paper) it is sentinel 1. Dispatch failure is a
+		// business rejection → -1 + _LastError, not a VM fatal.
+		ticket, err := vm.emitSignal(&sdk.Signal{
 			Action:     action,
 			Symbol:     symbol,
 			Volume:     volume,
@@ -82,10 +86,12 @@ func builtinOrderSend(vm *VM, args []interp.Value) (interp.Value, error) {
 			Deviation:  deviation,
 			Magic:      magic,
 			Comment:    comment,
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.IntVal(-1), nil
 		}
-		// Return a positive ticket so MQL logic that checks the result works.
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
-		return interp.IntVal(1), nil
+		return interp.IntVal(int32(ticket)), nil
 	}
 
 	// ORDERSEND-NILBROKER-FAILCLOSED-1: no broker is an environment defect,
@@ -644,7 +650,10 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 		if action == sdk.ActionNone {
 			return interp.BoolVal(false), nil
 		}
-		vm.signal = &sdk.Signal{
+		// VM-LIVE-SYNC-DISPATCH-1: sync dispatcher (live) executes the
+		// mutation inside this call — return value is the broker outcome,
+		// not optimistic true.
+		_, err := vm.emitSignal(&sdk.Signal{
 			Action:     action,
 			Symbol:     symbol,
 			Volume:     volume,
@@ -654,8 +663,11 @@ func ctradeOrder(vm *VM, args []interp.Value, orderType sdk.OrderType, side sdk.
 			Comment:    comment,
 			Magic:      vm.tradeMagic,     // VM-TRADE-CONTEXT-1
 			Deviation:  vm.tradeDeviation, // VM-TRADE-CONTEXT-1
+		})
+		if err != nil {
+			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			return interp.BoolVal(false), nil
 		}
-		vm.invalidateOrderCaches() // VM-TRADE-CONTEXT-1
 		return interp.BoolVal(true), nil
 	}
 

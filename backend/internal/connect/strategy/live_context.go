@@ -146,7 +146,7 @@ func pendingOrderSide(orderType string) string {
 // FIX-2026-08-27-SESSION-PROTO-ROUNDTRIP: receives *antv1.ExecuteLiveResponse
 // directly (no proto unmarshal) — the in-process Session returns the struct
 // pointer, preserving empty-slice semantics for repeated fields.
-func (s *StrategyExecutionServer) dispatchResponse(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, resp *antv1.ExecuteLiveResponse, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchResponse(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, resp *antv1.ExecuteLiveResponse, activeSess *ActiveSession, alreadyDispatched bool) {
 	if resp == nil {
 		s.log.Error("LiveStrategyRunner: nil response from VM")
 		if activeSess != nil {
@@ -192,6 +192,12 @@ func (s *StrategyExecutionServer) dispatchResponse(ctx context.Context, cfg Live
 				barTime = bar.OpenTime
 			}
 			cfg.ShadowVerifier.RecordLiveSignal(barTime, sig.GetSignalType(), sig.GetVolume(), sig.GetPrice())
+		}
+		// VM-LIVE-SYNC-DISPATCH-1 (R1): signals from a sync-dispatch live
+		// session already executed inside the VM event — dispatching them
+		// again would double-submit the broker order. Record only.
+		if alreadyDispatched {
+			continue
 		}
 		s.dispatchLiveSignal(ctx, cfg, bar, sig, activeSess)
 	}

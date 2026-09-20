@@ -6,6 +6,7 @@ import (
 
 	antv1 "alphaforge/gen/proto/ant/v1"
 	"alphaforge/strategy/runner"
+	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go"
 )
 
@@ -35,6 +36,9 @@ type VMLiveSession struct {
 	runner   *runner.Runner
 	started  bool
 	diag     *sessionDiag
+	// syncDisp is non-nil in live mode once the event loop wires the
+	// synchronous broker-mutation dispatcher (VM-LIVE-SYNC-DISPATCH-1).
+	syncDisp bool
 }
 
 // NewVMLiveSession creates a VMLiveSession for an MQL strategy.
@@ -139,6 +143,20 @@ func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveReq
 
 	return s.dispatch(ctx, req), nil
 }
+
+// SetSyncDispatcher installs the synchronous broker-mutation dispatcher on
+// the compiled VM (VM-LIVE-SYNC-DISPATCH-1, R1). The event loop calls this
+// before each event in live mode; signal-mode trade builtins then execute
+// mutations inside the event and return real broker outcomes.
+func (s *VMLiveSession) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
+	s.strategy.SetSyncDispatcher(fn)
+	s.syncDisp = fn != nil
+}
+
+// SyncDispatched reports whether this session executes signals
+// synchronously inside the VM event (live mode). dispatchResponse uses it
+// to skip the post-event async dispatch — the mutation already ran.
+func (s *VMLiveSession) SyncDispatched() bool { return s.syncDisp }
 
 func (s *VMLiveSession) Close() error {
 	if !s.started {

@@ -372,6 +372,12 @@ func (r *VMRunner) SetSignalMode(enabled bool) {
 	r.vm.SetSignalMode(enabled)
 }
 
+// SetSyncDispatcher installs the synchronous signal dispatcher.
+// VM-LIVE-SYNC-DISPATCH-1 (R1).
+func (r *VMRunner) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
+	r.vm.SetSyncDispatcher(fn)
+}
+
 // HasOnBookEvent returns true if the EA has OnBookEvent bytecode.
 func (r *VMRunner) HasOnBookEvent() bool {
 	return r.vm.bc.OnBookEvent >= 0

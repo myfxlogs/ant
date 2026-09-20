@@ -53,6 +53,27 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 		}
 	}()
 	action := sig.GetSignalType()
+	s.recordSignalIntent(ctx, cfg, sig, action)
+
+	if cfg.Mode == "paper" {
+		s.dispatchPaperSignal(ctx, cfg, bar, sig)
+		return
+	}
+
+	if s.mtHub == nil {
+		s.log.Warn("LiveStrategyRunner: no MtHubService configured, cannot dispatch live order")
+		return
+	}
+
+	// T3.1: dispatch based on expanded action set.
+	s.dispatchByAction(ctx, cfg, bar, sig, action, activeSess)
+}
+
+// recordSignalIntent performs the pre-dispatch audit preamble shared by the
+// async path (dispatchLiveSignal) and the synchronous path
+// (dispatchSignalSync): schedule-run log + info log + DB persist.
+// VM-LIVE-SYNC-DISPATCH-1 (R1).
+func (s *StrategyExecutionServer) recordSignalIntent(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, action string) {
 	uid, _ := uuid.Parse(cfg.UserID)
 	if s.sessionRegistry != nil {
 		s.sessionRegistry.InsertScheduleRunLog(ctx, uid, cfg.ScheduleID,
@@ -69,18 +90,13 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 
 	// Persist signal to DB before dispatching.
 	s.persistSignal(ctx, cfg, sig)
+}
 
-	if cfg.Mode == "paper" {
-		s.dispatchPaperSignal(ctx, cfg, bar, sig)
-		return
-	}
-
-	if s.mtHub == nil {
-		s.log.Warn("LiveStrategyRunner: no MtHubService configured, cannot dispatch live order")
-		return
-	}
-
-	// T3.1: dispatch based on expanded action set.
+// dispatchByAction routes a signal to the matching broker-mutation
+// dispatcher and returns the coordinated outcome. Opens are suppressed
+// when the circuit breaker is open. Shared by the async dispatch path and
+// dispatchSignalSync (VM-LIVE-SYNC-DISPATCH-1).
+func (s *StrategyExecutionServer) dispatchByAction(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal, action string, activeSess *ActiveSession) mutationResult {
 	switch action {
 	case sideBuy, sideSell:
 		if activeSess != nil && activeSess.IsCircuitOpen() {
@@ -89,9 +105,9 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 				zap.String("symbol", cfg.Symbol),
 				zap.String("action", action),
 			)
-			return
+			return mutationResult{state: barrierIdle}
 		}
-		s.dispatchMarketOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
+		return s.dispatchMarketOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
 	case "buy_limit", "sell_limit", "buy_stop", "sell_stop",
 		"buy_stop_limit", "sell_stop_limit":
 		if activeSess != nil && activeSess.IsCircuitOpen() {
@@ -100,36 +116,39 @@ func (s *StrategyExecutionServer) dispatchLiveSignal(ctx context.Context, cfg Li
 				zap.String("symbol", cfg.Symbol),
 				zap.String("action", action),
 			)
-			return
+			return mutationResult{state: barrierIdle}
 		}
-		s.dispatchPendingOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
+		return s.dispatchPendingOrder(ctx, cfg, barOpenTimeForSignal(bar, cfg), sig, activeSess)
 	case string(actionClose):
-		s.dispatchCloseOrder(ctx, cfg, sig, activeSess)
+		return s.dispatchCloseOrder(ctx, cfg, sig, activeSess)
 	case "close_all":
-		s.dispatchCloseAll(ctx, cfg, activeSess)
+		return s.dispatchCloseAll(ctx, cfg, activeSess)
 	case "modify":
-		s.dispatchModifyOrder(ctx, cfg, sig, activeSess)
+		return s.dispatchModifyOrder(ctx, cfg, sig, activeSess)
 	case "cancel":
-		s.dispatchCancelOrder(ctx, cfg, sig, activeSess)
+		return s.dispatchCancelOrder(ctx, cfg, sig, activeSess)
+	case "cancel_all":
+		return s.dispatchCancelAll(ctx, cfg, activeSess)
 	default:
 		// hold, unknown — no-op.
+		return mutationResult{state: barrierIdle}
 	}
 }
 
 // ── T3.1 action dispatchers ──────────────────────────────────────────
 
-func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchMarketOrder(ctx context.Context, cfg LiveStrategyConfig, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
-		return
+		return mutationResult{state: barrierIdle}
 	}
-	s.submitOrder(ctx, cfg, side, mthub.OrderMarket, barOpenTime, sig, activeSess)
+	return s.submitOrder(ctx, cfg, side, mthub.OrderMarket, barOpenTime, sig, activeSess)
 }
 
-func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg LiveStrategyConfig, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {
 	side := signalToSide(sig.GetSignalType())
 	if side == 0 {
-		return
+		return mutationResult{state: barrierIdle}
 	}
 	var orderType mthub.OrderType
 	switch sig.GetSignalType() {
@@ -142,7 +161,7 @@ func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg 
 	default:
 		orderType = mthub.OrderLimit
 	}
-	s.submitOrder(ctx, cfg, side, orderType, barOpenTime, sig, activeSess)
+	return s.submitOrder(ctx, cfg, side, orderType, barOpenTime, sig, activeSess)
 }
 
 // dispatchCloseAll closes all open positions for the account matching this strategy.
@@ -153,18 +172,18 @@ func (s *StrategyExecutionServer) dispatchPendingOrder(ctx context.Context, cfg 
 // LIVE-ORDER-REENTRY-1 B2: close_all takes the authoritative OpenedOrders list
 // first, then serially closes each matching position through the same coordinator.
 // Any outcome_unknown stops subsequent closes and keeps the barrier locked.
-func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) mutationResult {
 	if s.mtHub == nil {
 		s.log.Warn("LiveStrategyRunner: dispatchCloseAll: no MtHubService")
 		if activeSess != nil {
 			activeSess.RecordError("dispatchCloseAll: no MtHubService")
 		}
-		return
+		return mutationResult{state: barrierIdle}
 	}
 	if activeSess == nil || activeSess.barrier == nil {
 		s.log.Error("dispatchCloseAll: barrier not configured — dropping (fail-closed)",
 			zap.String("account", cfg.AccountID))
-		return
+		return mutationResult{state: barrierIdle}
 	}
 
 	expectedMagic := strategyMagic(cfg.ScheduleID)
@@ -176,11 +195,12 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 		if activeSess != nil {
 			activeSess.RecordError("dispatchCloseAll: OpenedOrders: " + err.Error())
 		}
-		return
+		return mutationResult{state: barrierIdle}
 	}
 
 	closed := 0
 	skipped := 0
+	var closedTickets []int64
 	for _, o := range orders {
 		// ARCH-4: filter by magic or symbol.
 		if expectedMagic != 0 {
@@ -214,13 +234,17 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 			if activeSess != nil {
 				activeSess.RecordError(fmt.Sprintf("close_all: close ticket=%d outcome unknown, barrier locked — remaining closes aborted", o.Ticket))
 			}
-			return
+			// Individually-confirmed closes still happened — carry their
+			// tickets so the VM's live state drops them (VM-LIVE-SYNC-DISPATCH-1).
+			result.affectedTickets = closedTickets
+			return result
 		}
 		// R7b: only count confirmed closes. A deterministic rejection
 		// means the close did NOT happen — counting it as "closed" would
 		// inflate the success count and mask failures.
 		if result.state == barrierConfirmed {
 			closed++
+			closedTickets = append(closedTickets, o.Ticket)
 		}
 	}
 	s.log.Info("LiveStrategyRunner: dispatchCloseAll complete",
@@ -231,19 +255,20 @@ func (s *StrategyExecutionServer) dispatchCloseAll(ctx context.Context, cfg Live
 		zap.Int("skipped", skipped),
 		zap.Int("total", len(orders)),
 	)
+	return mutationResult{state: barrierConfirmed, affectedTickets: closedTickets}
 }
 
-func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: close order without ticket")
 		if activeSess != nil {
 			activeSess.RecordError("close order without ticket")
 		}
-		return
+		return mutationResult{state: barrierIdle}
 	}
 	// B2: close goes through the shared coordinator with full confirmation.
-	s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
+	return s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
 		action:         actionClose,
 		clientID:       fmt.Sprintf("close_%d", ticket),
 		expectedMagic:  strategyMagic(cfg.ScheduleID),
@@ -256,14 +281,14 @@ func (s *StrategyExecutionServer) dispatchCloseOrder(ctx context.Context, cfg Li
 	}, "close", sig, defaultConfirmationConfig)
 }
 
-func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: modify order without ticket")
 		if activeSess != nil {
 			activeSess.RecordError("modify order without ticket")
 		}
-		return
+		return mutationResult{state: barrierIdle}
 	}
 	// B2: modify goes through the shared coordinator with full confirmation.
 	// R5: read-after-write verifies SL/TP/price actually changed, not just
@@ -275,7 +300,7 @@ func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg L
 	slPtr := parseDecimalPtr(sig.GetStopLoss())
 	tpPtr := parseDecimalPtr(sig.GetTakeProfit())
 	pxPtr := parseDecimalPtr(sig.GetPrice())
-	s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
+	return s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
 		action:         actionModify,
 		clientID:       fmt.Sprintf("modify_%d", ticket),
 		expectedMagic:  strategyMagic(cfg.ScheduleID),
@@ -287,17 +312,17 @@ func (s *StrategyExecutionServer) dispatchModifyOrder(ctx context.Context, cfg L
 	}, "modify", sig, defaultConfirmationConfig)
 }
 
-func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {
 	ticket := sig.GetExecutedTicket()
 	if ticket == 0 {
 		s.log.Warn("LiveStrategyRunner: cancel order without ticket")
 		if activeSess != nil {
 			activeSess.RecordError("cancel order without ticket")
 		}
-		return
+		return mutationResult{state: barrierIdle}
 	}
 	// B2: cancel goes through the shared coordinator with full confirmation.
-	s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
+	return s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
 		action:         actionCancel,
 		clientID:       fmt.Sprintf("cancel_%d", ticket),
 		expectedMagic:  strategyMagic(cfg.ScheduleID),
@@ -379,7 +404,7 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 // LIVE-ORDER-REENTRY-1: submission is synchronous via coordinateMutation,
 // restoring MT4 EA single-threaded OrderSend semantics. The event loop blocks
 // until the broker mutation reaches a deterministic outcome.
-func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) {
+func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {
 	req := &mthub.OrderRequest{
 		AccountID: cfg.AccountID,
 		Canonical: cfg.Symbol,
@@ -406,7 +431,8 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 	}
 
 	sideStr := sideToString(side)
-	s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
+	var rec *mthub.OrderRecord
+	res := s.coordinateMutation(ctx, cfg, activeSess, mutationSpec{
 		action:        actionOpen,
 		clientID:      req.ClientID,
 		expectedMagic: req.Magic,
@@ -415,8 +441,13 @@ func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrat
 			if err != nil {
 				return 0, err
 			}
+			rec = record
 			return record.Ticket, nil
 		},
 		verifyReadAfterWrite: nil, // set after ticket is known — see below
 	}, sideStr, sig, defaultConfirmationConfig)
+	// VM-LIVE-SYNC-DISPATCH-1: broker record rides the result so the caller
+	// can inject broker facts into the VM's live state.
+	res.record = rec
+	return res
 }

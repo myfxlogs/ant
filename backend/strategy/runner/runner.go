@@ -63,6 +63,95 @@ func (r *Runner) SetStrategy(s sdk.Strategy) {
 	r.strategy = s
 }
 
+// SetSyncDispatcher forwards the synchronous signal dispatcher to the
+// underlying strategy when it supports it (VMRunner does; other strategy
+// types ignore it). VM-LIVE-SYNC-DISPATCH-1 (R1).
+func (r *Runner) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
+	if d, ok := r.strategy.(interface {
+		SetSyncDispatcher(func(*sdk.Signal) (int64, error))
+	}); ok {
+		d.SetSyncDispatcher(fn)
+	}
+}
+
+// ── VM-LIVE-SYNC-DISPATCH-1: confirmed-mutation live-state injection ──
+// After a coordinated broker mutation reaches barrierConfirmed, the
+// dispatcher applies the broker-verified fact to the runner's live state
+// so MQL OrderSelect/OrdersTotal observe it within the SAME event —
+// restoring MQL4's synchronous OrderSend→OrderSelect semantics. These are
+// broker facts (read-after-write verified), not optimistic writes.
+
+// ApplyConfirmedPosition upserts a broker-confirmed open position.
+func (r *Runner) ApplyConfirmedPosition(pos sdk.Position) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	for i, p := range r.ctx.livePositions {
+		if p.Ticket == pos.Ticket {
+			r.ctx.livePositions[i] = pos
+			return
+		}
+	}
+	r.ctx.livePositions = append(r.ctx.livePositions, pos)
+}
+
+// RemoveConfirmedPosition drops a broker-confirmed closed position.
+func (r *Runner) RemoveConfirmedPosition(ticket int64) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	out := r.ctx.livePositions[:0]
+	for _, p := range r.ctx.livePositions {
+		if p.Ticket != ticket {
+			out = append(out, p)
+		}
+	}
+	r.ctx.livePositions = out
+}
+
+// ApplyConfirmedPendingOrder upserts a broker-confirmed pending order.
+func (r *Runner) ApplyConfirmedPendingOrder(o sdk.PendingOrder) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	for i, p := range r.ctx.livePendingOrders {
+		if p.Ticket == o.Ticket {
+			r.ctx.livePendingOrders[i] = o
+			return
+		}
+	}
+	r.ctx.livePendingOrders = append(r.ctx.livePendingOrders, o)
+}
+
+// RemoveConfirmedPendingOrder drops a broker-confirmed cancelled pending order.
+func (r *Runner) RemoveConfirmedPendingOrder(ticket int64) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	out := r.ctx.livePendingOrders[:0]
+	for _, o := range r.ctx.livePendingOrders {
+		if o.Ticket != ticket {
+			out = append(out, o)
+		}
+	}
+	r.ctx.livePendingOrders = out
+}
+
+// ApplyConfirmedModify updates SL/TP on a broker-confirmed modified ticket
+// (positions and pending orders both checked — the broker decides which).
+func (r *Runner) ApplyConfirmedModify(ticket int64, sl, tp decimal.Decimal) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	for i, p := range r.ctx.livePositions {
+		if p.Ticket == ticket {
+			r.ctx.livePositions[i].StopLoss = sl
+			r.ctx.livePositions[i].TakeProfit = tp
+		}
+	}
+	for i, o := range r.ctx.livePendingOrders {
+		if o.Ticket == ticket {
+			r.ctx.livePendingOrders[i].StopLoss = sl
+			r.ctx.livePendingOrders[i].TakeProfit = tp
+		}
+	}
+}
+
 // Broker returns the broker implementation for testing and external access.
 // LIVE-MQL-ORDER-CONTEXT-1: needed for integration tests verifying the
 // positions/pending orders → MQL OrdersTotal chain.

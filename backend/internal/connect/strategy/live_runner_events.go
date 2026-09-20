@@ -66,6 +66,7 @@ func (s *StrategyExecutionServer) handleBar(
 			return
 		}
 		*session = vmSess
+		s.wireSyncDispatch(ctx, cfg, bar, *session, activeSess)
 		resp, err = (*session).Start(ctx, req)
 		*firstBar = false
 	} else {
@@ -73,6 +74,7 @@ func (s *StrategyExecutionServer) handleBar(
 			s.log.Error("LiveStrategyRunner: session lost before bar event")
 			return
 		}
+		s.wireSyncDispatch(ctx, cfg, bar, *session, activeSess)
 		resp, err = (*session).SendEvent(ctx, req)
 	}
 	if err != nil {
@@ -87,7 +89,35 @@ func (s *StrategyExecutionServer) handleBar(
 		*firstBar = true
 		return
 	}
-	s.dispatchResponse(ctx, cfg, bar, resp, activeSess)
+	s.dispatchResponse(ctx, cfg, bar, resp, activeSess, sessionSyncDispatched(*session))
+}
+
+// wireSyncDispatch installs the synchronous broker-mutation dispatcher on
+// live VM sessions before each event (VM-LIVE-SYNC-DISPATCH-1, R1). The
+// closure captures this event's bar so open-order ClientIDs stay
+// bar-scoped. Signal-mode trade builtins then execute mutations inside
+// the VM event and receive real broker outcomes (ticket/rejection).
+func (s *StrategyExecutionServer) wireSyncDispatch(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sess Session, activeSess *ActiveSession) {
+	if cfg.Mode != modeLive {
+		return
+	}
+	vmSess, ok := sess.(*VMLiveSession)
+	if !ok || vmSess.strategy == nil {
+		return
+	}
+	vmSess.SetSyncDispatcher(func(sig *sdk.Signal) (int64, error) {
+		return s.dispatchSignalSync(ctx, cfg, bar, sig, activeSess, vmSess.runner)
+	})
+}
+
+// sessionSyncDispatched reports whether the session's signals were already
+// executed synchronously inside the VM event — dispatchResponse must then
+// skip the async broker dispatch (VM-LIVE-SYNC-DISPATCH-1: no double-submit).
+func sessionSyncDispatched(sess Session) bool {
+	if vmSess, ok := sess.(*VMLiveSession); ok {
+		return vmSess.SyncDispatched()
+	}
+	return false
 }
 
 func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) (Session, error) {
@@ -155,6 +185,7 @@ func (s *StrategyExecutionServer) handleTick(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TICK,
 		TickContext:  tctx,
 	}
+	s.wireSyncDispatch(ctx, cfg, nil, *session, activeSess)
 	resp, err := (*session).SendEvent(ctx, req)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: tick request failed", zap.Error(err))
@@ -166,7 +197,7 @@ func (s *StrategyExecutionServer) handleTick(
 		*firstBar = true
 		return
 	}
-	s.dispatchResponse(ctx, cfg, nil, resp, activeSess)
+	s.dispatchResponse(ctx, cfg, nil, resp, activeSess, sessionSyncDispatched(*session))
 }
 
 func (s *StrategyExecutionServer) handleTrade(
@@ -191,6 +222,7 @@ func (s *StrategyExecutionServer) handleTrade(
 		RequestType:  antv1.RequestType_REQUEST_TYPE_TRADE,
 		TradeContext: tctx,
 	}
+	s.wireSyncDispatch(ctx, cfg, nil, *session, activeSess)
 	resp, err := (*session).SendEvent(ctx, req)
 	if err != nil {
 		s.log.Warn("LiveStrategyRunner: trade request failed", zap.Error(err))
@@ -202,5 +234,5 @@ func (s *StrategyExecutionServer) handleTrade(
 		*firstBar = true
 		return
 	}
-	s.dispatchResponse(ctx, cfg, nil, resp, activeSess)
+	s.dispatchResponse(ctx, cfg, nil, resp, activeSess, sessionSyncDispatched(*session))
 }
