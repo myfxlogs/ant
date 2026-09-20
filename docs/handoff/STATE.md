@@ -19,7 +19,7 @@
 || VM-LIVE-SYNC-DISPATCH-1（R1）signal-mode 假票号根治（IntVal(1)→broker 真票号+同事件信号丢单+cancel_all 空转） | ✅done | Devin CLI 施工+独立复审验收 2026-09-20；设计 design-vm-live-sync-dispatch-r1.md v2；VM syncDispatch 同步派发+15 builtin emitSignal+confirmed 事实注入 runner live state+alreadyDispatched 防双发+dispatchCancelAll；复审抓出 affectedTickets 缺口修补；mutation×4 RED→GREEN（M1 假票号复活/M2 双发/M3 仓位注入丢失/M4 幽灵仓位）；strategy 442+mql2go 绿；明细 registry 行 36 |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R4（CloseBy dispatch）为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: **R1 ✅done 待部署**——signal-mode 假票号/丢单/cancel_all 空转三缺陷已修+独立复审+mutation×4 实证（VM-LIVE-SYNC-DISPATCH-1，registry 行 36）。队列：R4（CloseBy dispatch 需求驱动）/暂缓系（VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3）。已完成链：KB-SEED-DRIFT-1（R2 闭环 venue 真值实盘抵达 VM）、TRADE-RECORDS-DUP-1/VERIFY-CHAIN-SEMANTIC-1 均 ✅done+已部署（产库 epoch=0、union 尾=arch seq 102092）。此前：demo `904d14e6` F1/F2/F3 复验 ✅done；VM-LIVE-PARITY-1 实盘对账完成。G-POST2/POST-2/LOWPRI-SWEEP/i18n/VM 债系均收官。
+- **下一步**: **R1 ✅done 已部署 `5db60c7f`**——signal-mode 假票号/丢单/cancel_all 空转三缺陷已修+独立复审+mutation×4 实证，backend healthy（VM-LIVE-SYNC-DISPATCH-1，registry 行 36）。队列：R4（CloseBy dispatch 需求驱动）/暂缓系（VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3）。已完成链：KB-SEED-DRIFT-1（R2 闭环 venue 真值实盘抵达 VM）、TRADE-RECORDS-DUP-1/VERIFY-CHAIN-SEMANTIC-1 均 ✅done+已部署（产库 epoch=0、union 尾=arch seq 102092）。此前：demo `904d14e6` F1/F2/F3 复验 ✅done；VM-LIVE-PARITY-1 实盘对账完成。G-POST2/POST-2/LOWPRI-SWEEP/i18n/VM 债系均收官。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
