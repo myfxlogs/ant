@@ -361,3 +361,5 @@
 - **union 侧正面实证**：14,409 已 hash 行按 seq 走查 **global chain_breaks=0**（含归档行完整重建）、prev=NULL 仅 seq=13599 创世行——linkage 验在产库完全可靠，deleted_link 豁免可被正确性取代。
 - **设计 v2**（两文档同步重写）：根因 A（验侧 account 错位）+根因 B（写侧编码不可重建）同修——①union 验链+`unhashed` informational findings（5,209+858 NULL-hash 行如实披露）；②写侧 hash 输入规范化 `RETURNING volume::text...`（新行 100% 可验，持久化数据零变化）；③双编码重算（`::text` 范式+`RequireFromString().String()` 规格化——存量 9,804 可确认，4,605 歧义如实标注）。T1-T9+M1-M5。
 - registry 行 34 补审计扩面实录；STATE 同步（顺带修正 DUP-1 指针行「未部署」错误——实际已部署 91ba089d）。
+
+- 2026-09-20 **STATE.md 滚出（VERIFY-CHAIN-SEMANTIC-1 施工提交触发 T0 超限，§4 回收）**——「POST-2 探针批（S1 VM 并发退化/S2 SSE 扇出成本/S3 paper 下单延迟/S4 容量基线文档）✅done Devin CLI 验收 2026-09-19；2408d34c；设计表修正核实[SSE limiter 不覆盖 ConnectRPC binary=净无界]；G-POST2-1/2 登记 open；staging 残余 7 项落 docs/benchmarks/post2-capacity-baseline-2026-09.md」自施工表滚出。

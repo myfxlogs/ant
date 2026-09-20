@@ -54,9 +54,17 @@ type TradeRecord struct {
 
 // ChainBreak describes a detected tampering in the trade record hash chain.
 type ChainBreak struct {
-	Seq    int64  `json:"seq"`
-	Ticket int64  `json:"ticket"`
-	Type   string `json:"type"` // "hash_mismatch", "chain_break" or "deleted_link" (TRADE-RECORDS-DUP-1 informational)
+	Seq    int64 `json:"seq"`
+	Ticket int64 `json:"ticket"`
+	// AccountID attributes the finding to its account (the chain is global —
+	// VERIFY-CHAIN-SEMANTIC-1 — so per-account views are filters on it).
+	AccountID uuid.UUID `json:"account_id"`
+	// Type: "chain_break" (linkage gap), "hash_mismatch" (recompute miss) or
+	// "unhashed" (informational: row outside the chain, disclosed as-is).
+	// "deleted_link" (TRADE-RECORDS-DUP-1 exemption) is no longer produced —
+	// the archived rows are chain members in the global union walk, which
+	// supersedes the exemption.
+	Type   string `json:"type"`
 	Detail string `json:"detail"`
 }
 

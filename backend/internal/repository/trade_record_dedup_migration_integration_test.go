@@ -130,13 +130,23 @@ func seedDedupClasses(t *testing.T, pool *pgxpool.Pool, userID, accountID uuid.U
 	t.Helper()
 	ctx := context.Background()
 	base := time.Date(2026, 9, 19, 8, 0, 0, 0, time.UTC)
-	// Seqs ascending in chain order — VerifyChain walks ORDER BY seq ASC.
-	rows := []dedupSeedRow{
-		{ticket: 9201, closeTime: base, seq: -920002},
-		{ticket: 9201, closeTime: base.Add(8 * time.Hour), seq: -920001},
-		{ticket: 9202, closeTime: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC), seq: -920000},
+	// Seeds chain from the real global tail: VERIFY-CHAIN-SEMANTIC-1 makes
+	// verification a global walk, so appended rows must continue it (a
+	// nil-prev seed would read as a second genesis and flip the real genesis
+	// row to chain_break).
+	var tailSeq int64
+	var tailEntry []byte
+	if err := pool.QueryRow(ctx,
+		`SELECT seq, entry_hash FROM trade_records WHERE entry_hash IS NOT NULL ORDER BY seq DESC LIMIT 1`,
+	).Scan(&tailSeq, &tailEntry); err != nil {
+		t.Fatalf("read global tail: %v", err)
 	}
-	var prev []byte
+	rows := []dedupSeedRow{
+		{ticket: 9201, closeTime: base, seq: tailSeq + 1},
+		{ticket: 9201, closeTime: base.Add(8 * time.Hour), seq: tailSeq + 2},
+		{ticket: 9202, closeTime: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC), seq: tailSeq + 3},
+	}
+	prev := tailEntry
 	for i := range rows {
 		r := &rows[i]
 		r.id = uuid.New()

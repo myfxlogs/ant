@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"alphaforge/internal/model"
@@ -207,6 +206,8 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 	// Only newly inserted rows (RETURNING yields a row) need entry_hash set.
 	var returnedID uuid.UUID
 	var seq int64
+	var volumeText, openPriceText, closePriceText, profitText string
+	var colOpenTime, colCloseTime time.Time
 	insertQuery := `
 		INSERT INTO trade_records (
 			user_id, schedule_id, account_id, ticket, symbol, order_type, volume,
@@ -216,14 +217,15 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
 		) ON CONFLICT (account_id, ticket, close_time) DO NOTHING
-		RETURNING id, seq
+		RETURNING id, seq, volume::text, open_price::text, close_price::text, profit::text,
+		          open_time, close_time
 	`
 	err = tx.QueryRow(ctx, insertQuery,
 		record.UserID, record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 		record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 		record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
 		record.OrderComment, record.MagicNumber, record.Platform, prevHash,
-	).Scan(&returnedID, &seq)
+	).Scan(&returnedID, &seq, &volumeText, &openPriceText, &closePriceText, &profitText, &colOpenTime, &colCloseTime)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			// Conflict — row already exists, hash chain preserved. Idempotent skip.
@@ -235,10 +237,16 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 	record.Seq = seq
 	record.PrevHash = prevHash
 
-	// Compute entry_hash = SHA256(prev_hash || seq || account_id || ticket || symbol || volume || open_price || close_price || profit || open_time || close_time).
+	// Compute entry_hash over the COLUMN-CANONICAL representations
+	// (VERIFY-CHAIN-SEMANTIC-1 D2): the NUMERIC ::text strings and the
+	// column-stored instants come back from RETURNING, so the covered input
+	// is exactly what the table persists and the verifier can recompute it
+	// verbatim. The in-memory record values are float-derived (ulp noise)
+	// and unrecoverable after NUMERIC rounding — they only feed the INSERT
+	// itself, never the hash.
 	entryHash := computeTradeEntryHash(prevHash, seq, record.AccountID, record.Ticket, record.Symbol,
-		record.Volume.String(), record.OpenPrice.String(), record.ClosePrice.String(),
-		record.Profit.String(), [2]int64{record.OpenTime.UnixMilli(), record.CloseTime.UnixMilli()})
+		volumeText, openPriceText, closePriceText, profitText,
+		[2]int64{colOpenTime.UnixMilli(), colCloseTime.UnixMilli()})
 
 	// Update entry_hash (separate UPDATE because seq is GENERATED ALWAYS AS IDENTITY).
 	// Only reached for newly inserted rows — conflict rows returned early above.
@@ -250,113 +258,6 @@ func (r *TradeRecordRepository) insertWithHashChain(ctx context.Context, tx pgx.
 	record.EntryHash = entryHash
 
 	return nil
-}
-
-// VerifyChain checks the integrity of the trade record hash chain for a given account.
-// Returns a list of ChainBreaks if any tampering is detected.
-func (r *TradeRecordRepository) VerifyChain(ctx context.Context, userID, accountID uuid.UUID) ([]model.ChainBreak, error) {
-	// TRADE-RECORDS-DUP-1: entry_hash values of dedup-removed rows. A
-	// prev_hash pointing at one of these is a documented removed chain
-	// segment (migration 281 archive-then-delete), not tampering. Loaded
-	// once per call — the log holds ~3.9k rows, one SELECT.
-	dedupLogged, err := r.loadDedupLoggedHashes(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("verify chain: load dedup log: %w", err)
-	}
-
-	query := `
-		SELECT seq, ticket, prev_hash, entry_hash, account_id, symbol, volume::text,
-		       open_price::text, close_price::text, profit::text,
-		       open_time, close_time
-		FROM trade_records
-		WHERE user_id = $1 AND account_id = $2
-		ORDER BY seq ASC
-	`
-	rows, err := r.db.Query(ctx, query, userID, accountID)
-	if err != nil {
-		return nil, fmt.Errorf("verify chain: query: %w", err)
-	}
-	defer rows.Close()
-
-	var breaks []model.ChainBreak
-	var expectedPrevHash []byte
-	for rows.Next() {
-		var seq int64
-		var ticket int64
-		var prevHash, entryHash []byte
-		var acctID uuid.UUID
-		var symbol, volume, openPrice, closePrice, profit string
-		var openTime, closeTime time.Time
-
-		if err := rows.Scan(&seq, &ticket, &prevHash, &entryHash, &acctID, &symbol, &volume,
-			&openPrice, &closePrice, &profit, &openTime, &closeTime); err != nil {
-			return nil, fmt.Errorf("verify chain: scan: %w", err)
-		}
-
-		// Check chain linkage: prev_hash should match the previous record's entry_hash.
-		if !bytesEqual(prevHash, expectedPrevHash) {
-			// deleted-link exemption: prev_hash pointing at a dedup-logged
-			// row is a documented removed chain segment, not tampering.
-			// Informational entry, not a break. Nil-safe: unhashed rows carry
-			// NULL prev_hash, which can never equal a logged entry_hash.
-			if len(prevHash) > 0 && dedupLogged[string(prevHash)] {
-				breaks = append(breaks, model.ChainBreak{
-					Seq:    seq,
-					Ticket: ticket,
-					Type:   "deleted_link",
-					Detail: fmt.Sprintf("prev_hash at seq=%d references a dedup-removed row (migration 281)", seq),
-				})
-			} else {
-				breaks = append(breaks, model.ChainBreak{
-					Seq:    seq,
-					Ticket: ticket,
-					Type:   "chain_break",
-					Detail: fmt.Sprintf("prev_hash mismatch at seq=%d: expected %x, got %x", seq, expectedPrevHash, prevHash),
-				})
-			}
-		}
-
-		// Recompute entry_hash and compare.
-		computed := computeTradeEntryHash(prevHash, seq, acctID, ticket, symbol,
-			volume, openPrice, closePrice, profit, [2]int64{openTime.UnixMilli(), closeTime.UnixMilli()})
-		if !bytesEqual(entryHash, computed) {
-			breaks = append(breaks, model.ChainBreak{
-				Seq:    seq,
-				Ticket: ticket,
-				Type:   "hash_mismatch",
-				Detail: fmt.Sprintf("entry_hash mismatch at seq=%d: expected %x, got %x", seq, computed, entryHash),
-			})
-		}
-
-		expectedPrevHash = entryHash
-	}
-	return breaks, rows.Err()
-}
-
-// loadDedupLoggedHashes returns the entry_hash set of rows removed by the
-// dedup migration. A missing table (pre-migration database, or after the
-// down migration dropped the log) means no exemption — the verifier falls
-// back to strict pre-change behavior instead of erroring.
-func (r *TradeRecordRepository) loadDedupLoggedHashes(ctx context.Context) (map[string]bool, error) {
-	rows, err := r.db.Query(ctx, `SELECT entry_hash FROM trade_record_dedup_log WHERE entry_hash IS NOT NULL`)
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "42P01" { // undefined_table
-			return map[string]bool{}, nil
-		}
-		return nil, err
-	}
-	defer rows.Close()
-
-	m := make(map[string]bool)
-	for rows.Next() {
-		var h []byte
-		if err := rows.Scan(&h); err != nil {
-			return nil, err
-		}
-		m[string(h)] = true
-	}
-	return m, rows.Err()
 }
 
 // computeTradeEntryHash calculates SHA256(prev_hash || seq || account_id || ticket || symbol || volume || open_price || close_price || profit || open_time_ms || close_time_ms).
