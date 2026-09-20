@@ -372,3 +372,8 @@
 - 证据：send_ret=394076399（broker 真票号非哨兵 1）；select=true openPrice=80365.17 lots=0.01 type=0（同事件注入仓位带 broker 确认事实）；close=true；select_after_close=false（确认移除无幽灵）。coordinator 生命周期 submitting→submitted→confirmed 事件内同步完成（~1.8s）。探针停后 positions=0。
 - 队列盘点：registry 真 open 集收敛——FEAT-3（roadmap 需产品决策）、VM-LIVE-MTF-1（暂缓/需求驱动）、TRON-SECURITY-1/TRON-GRID-1-FIX（业主排除）、R4 CloseBy（需求驱动）。VM 地基主动施工队列已空。SCHEDULE-HOTLOOP-1 修订方案核实在码（ComputeNextRunAtFromConfigAt+pre-advance+backoffDelay）。
 - 附带发现未修：`dispatchCloseAll` 对挂单也发 CloseOrder（确定性被拒→浪费 RPC+噪音），未登记。
+
+## 2026-09-20 — LIVE-CLOSEALL-PENDING-1：close_all 挂单过滤（R1 残留清偿）
+- R1 复审登记的 `dispatchCloseAll` 挂单缺陷修复：OpenedOrders 中挂单也走 coordinator 发 CloseOrder——不止浪费 RPC/拒绝噪音，其确认等待超时使整批 outcome_unknown/barrier locked，市价平仓被挂单连带阻断。
+- 修法=循环首行 `OrderType != OrderMarket` skip（镜像 dispatchCancelAll 反向过滤）。T10 先红[未修时 outcome_unknown]→修复绿；M5 mutation 删过滤→T10 复红→恢复。
+- 顺带拆文件：live_dispatch.go 460 行超红线→六个 per-action dispatcher+submitOrder 迁 live_dispatch_actions.go（209+264）。strategy 443 绿/race 绿/check-lines 0 errors。

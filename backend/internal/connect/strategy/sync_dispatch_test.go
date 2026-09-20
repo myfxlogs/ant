@@ -190,6 +190,58 @@ func TestSyncDispatch_CloseAll_RemovesRunnerPositions(t *testing.T) {
 	}
 }
 
+// T10: close_all must only CloseOrder market positions — pending orders
+// require DeleteOrder (cancel_all), and CloseOrder on a pending is a
+// deterministic broker rejection (wasted RPC + rejection audit noise).
+func TestSyncDispatch_CloseAll_SkipsPendingOrders(t *testing.T) {
+	cfg := testLiveCfg()
+	market := &mthub.OrderRecord{
+		Ticket: 7001, AccountID: "acct-1", Canonical: "EURUSD",
+		Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
+		Volume: decimal.NewFromFloat(0.1), State: mthub.OrderStateOpen,
+		Magic: strategyMagic(cfg.ScheduleID),
+	}
+	pending := &mthub.OrderRecord{
+		Ticket: 7002, AccountID: "acct-1", Canonical: "EURUSD",
+		Side: mthub.SideBuy, OrderType: mthub.OrderLimit,
+		Volume: decimal.NewFromFloat(0.1), State: mthub.OrderStateOpen,
+		Magic: strategyMagic(cfg.ScheduleID),
+	}
+	fetched := false
+	var closedTickets []int64
+	exec := &prodMockExecutor{
+		fetchFn: func(ctx context.Context) ([]*mthub.OrderRecord, error) {
+			if !fetched {
+				fetched = true
+				return []*mthub.OrderRecord{market, pending}, nil
+			}
+			return []*mthub.OrderRecord{pending}, nil // market closed, pending remains
+		},
+		closeFn: func(ctx context.Context, ticket int64, lots decimal.Decimal) error {
+			closedTickets = append(closedTickets, ticket)
+			return nil
+		},
+	}
+	srv, _, broker := testCoordinatorSetup(exec)
+	sess := testActiveSess()
+
+	go publishOrderUpdate(broker, cfg.AccountID, 7001, strategyMagic(cfg.ScheduleID), "close")
+
+	_, err := srv.dispatchSignalSync(context.Background(), cfg, nil,
+		&sdk.Signal{Action: sdk.ActionCloseAll}, sess, nil)
+	if err != nil {
+		t.Fatalf("close_all dispatch err: %v", err)
+	}
+	if got := exec.closeCount.Load(); got != 1 {
+		t.Fatalf("CloseOrder called %d times, want 1 — close_all must not CloseOrder pending ticket 7002", got)
+	}
+	for _, tk := range closedTickets {
+		if tk == 7002 {
+			t.Fatalf("CloseOrder called on pending order 7002 — pendings require DeleteOrder via cancel_all")
+		}
+	}
+}
+
 // T8: dispatchResponse skips async dispatch for sync-dispatched sessions —
 // no double-submit. Mutating the skip (alreadyDispatched ignored) turns
 // this RED via placeCount=2.
