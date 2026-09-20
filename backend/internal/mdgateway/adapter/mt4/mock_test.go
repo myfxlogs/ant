@@ -128,8 +128,8 @@ func (m *mockQuoteStream) Context() context.Context {
 	m.mu.Unlock()
 	return ctx
 }
-func (m *mockQuoteStream) SendMsg(msg any) error        { return nil }
-func (m *mockQuoteStream) RecvMsg(msg any) error        { return io.EOF }
+func (m *mockQuoteStream) SendMsg(msg any) error { return nil }
+func (m *mockQuoteStream) RecvMsg(msg any) error { return io.EOF }
 
 type mockProfitStream struct {
 	mu      sync.Mutex
@@ -169,8 +169,8 @@ func (m *mockProfitStream) Context() context.Context {
 	m.mu.Unlock()
 	return ctx
 }
-func (m *mockProfitStream) SendMsg(msg any) error        { return nil }
-func (m *mockProfitStream) RecvMsg(msg any) error        { return io.EOF }
+func (m *mockProfitStream) SendMsg(msg any) error { return nil }
+func (m *mockProfitStream) RecvMsg(msg any) error { return io.EOF }
 
 type mockOrderUpdateStream struct {
 	mu      sync.Mutex
@@ -210,8 +210,8 @@ func (m *mockOrderUpdateStream) Context() context.Context {
 	m.mu.Unlock()
 	return ctx
 }
-func (m *mockOrderUpdateStream) SendMsg(msg any) error        { return nil }
-func (m *mockOrderUpdateStream) RecvMsg(msg any) error        { return io.EOF }
+func (m *mockOrderUpdateStream) SendMsg(msg any) error { return nil }
+func (m *mockOrderUpdateStream) RecvMsg(msg any) error { return io.EOF }
 
 // mockServiceClient implements pb.ServiceClient for HealthCheck tests.
 type mockServiceClient struct {

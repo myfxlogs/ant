@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "alphaforge/mt4"
 	"alphaforge/internal/mthub"
+	pb "alphaforge/mt4"
 	"github.com/shopspring/decimal"
 	"google.golang.org/grpc/metadata"
 )
@@ -67,10 +67,10 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 			CloseTime:  o.GetCloseTime().AsTime(),
 			Profit:     decimal.NewFromFloat(o.GetProfit()),
 			Swap:       decimal.NewFromFloat(o.GetSwap()),
-			Commission:  decimal.NewFromFloat(o.GetCommission()),
-			StopLoss:    decimal.NewFromFloat(o.GetStopLoss()),
-			TakeProfit:  decimal.NewFromFloat(o.GetTakeProfit()),
-			Comment:     o.GetComment(),
+			Commission: decimal.NewFromFloat(o.GetCommission()),
+			StopLoss:   decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit: decimal.NewFromFloat(o.GetTakeProfit()),
+			Comment:    o.GetComment(),
 			Magic:      o.GetMagicNumber(),
 			State:      mthub.OrderStateOpen,
 		})
@@ -146,10 +146,10 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 			CloseTime:  o.GetCloseTime().AsTime(),
 			Profit:     decimal.NewFromFloat(o.GetProfit()),
 			Swap:       decimal.NewFromFloat(o.GetSwap()),
-			Commission:  decimal.NewFromFloat(o.GetCommission()),
-			StopLoss:    decimal.NewFromFloat(o.GetStopLoss()),
-			TakeProfit:  decimal.NewFromFloat(o.GetTakeProfit()),
-			Comment:     o.GetComment(),
+			Commission: decimal.NewFromFloat(o.GetCommission()),
+			StopLoss:   decimal.NewFromFloat(o.GetStopLoss()),
+			TakeProfit: decimal.NewFromFloat(o.GetTakeProfit()),
+			Comment:    o.GetComment(),
 			Magic:      o.GetMagicNumber(),
 			State:      state,
 		})
