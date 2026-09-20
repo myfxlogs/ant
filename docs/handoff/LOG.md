@@ -366,3 +366,9 @@
 
 - 2026-09-20 VERIFY-CHAIN-SEMANTIC-1 复审验收：施工 e5290433 复审抓出根因 C（写侧尾读仅 live 表，产库归档尾 seq=102092>live 尾 102029→新 append 产假 chain_break）；审计侧修补=尾读 union 化+to_regclass 探测（tx 内 42P01→25P02 毒化）；产克隆 16 测试全绿（chain_break=0/mismatch=4,605）；mutation×4 实证（M1 live-only→1325 break/M2 删规范化→14409/M4 内存串→T8 红/M6 尾读回退→5 测试复红）。未部署。
 - 2026-09-20 **VM-LIVE-SYNC-DISPATCH-1（R1）✅done**——signal-mode `OrderSend` 假票号 `IntVal(1)` 根治：VM 增 `syncDispatch` 回调，15 处 signalMode 分支统一 `emitSignal`，builtin 在事件循环 goroutine 内同步走 `coordinateMutation`（barrier/熔断/读回验证/审计全复用）→ live 返 broker 真票号、paper 保留哨兵；confirmed broker 事实注入 runner live state（OrderSend→OrderSelect 同事件语义恢复）；`dispatchResponse` `alreadyDispatched` 防双发；潜伏缺陷 B 修复=`dispatchCancelAll`。独立复审抓出 affectedTickets 缺口（close_all/cancel_all 批确认票号回传防幽灵仓位）已修补。mutation×4 全 RED→恢复 GREEN（M1 假票号/M2 双发/M3 注入丢失/M4 幽灵仓位）。strategy 442+mql2go 绿；3 个 internal/service 失败系硬编码 DSN 环境性存量。设计 design-vm-live-sync-dispatch-r1.md v2；registry 行 36。
+
+## 2026-09-20 — R1 实盘端到端探针验证闭环
+- VM-LIVE-SYNC-DISPATCH-1（`5db60c7f` 已部署）补齐最后一轴：demo `904d14e6`（login 95262066 MT4 Exness-Trial）run `8bfe7ef0` 实盘探针，单 OnTick 内 OrderSend→OrderSelect→OrderClose 全链实测。
+- 证据：send_ret=394076399（broker 真票号非哨兵 1）；select=true openPrice=80365.17 lots=0.01 type=0（同事件注入仓位带 broker 确认事实）；close=true；select_after_close=false（确认移除无幽灵）。coordinator 生命周期 submitting→submitted→confirmed 事件内同步完成（~1.8s）。探针停后 positions=0。
+- 队列盘点：registry 真 open 集收敛——FEAT-3（roadmap 需产品决策）、VM-LIVE-MTF-1（暂缓/需求驱动）、TRON-SECURITY-1/TRON-GRID-1-FIX（业主排除）、R4 CloseBy（需求驱动）。VM 地基主动施工队列已空。SCHEDULE-HOTLOOP-1 修订方案核实在码（ComputeNextRunAtFromConfigAt+pre-advance+backoffDelay）。
+- 附带发现未修：`dispatchCloseAll` 对挂单也发 CloseOrder（确定性被拒→浪费 RPC+噪音），未登记。
