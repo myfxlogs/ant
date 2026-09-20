@@ -15,9 +15,10 @@
 | TRADE-RECORDS-DUP-1 trade_records 去重（879 对 CST/UTC+3,024 epoch 幻影+160 BALANCE 混入；删行归档+写入止血+VerifyChain 豁免） | ✅done | Devin CLI 独立复审验收 2026-09-19；施工 7fce4558；产数据克隆实证（ant_dedup_review：DELETE 879/3,024 精确、log=3,903、down 后全表逐字节相等）+独立 mutation×3 全恢复 GREEN。**已部署**——产库实清 epoch=0/log=3,903；**复审抓出第三出血口**：reconciliation 幽灵单 ImportBrokerOrder `!IsZero()` 守卫对 epoch 失效（Unix(0,0)≠Go 零值），部署后仍回潮 17 行→审计侧补救 SyncableClosedTrade 加 `Unix()<=0`+第三站点接单源守卫+pin 锁（M-D mutation RED→GREEN），二次部署止血中 |
 | VM-LIVE-PARITY-F1/F2/F3 实盘对账修复（F1 OrderResult 回显请求值/F2 SymbolParams 瘦数据链/F3 comment 丢链） | ✅done | Devin CLI 独立复审验收 2026-09-19；施工 d39afc62+审计侧 S5 修补（brokerImpl.SymbolInfo harness 7 字段死存储补齐+HarnessFullFacts pin）；M1/M2/M3 独立 mutation 复验 RED→GREEN；残余 R1-R4 登记 |
 | VM-LIVE-VENUE-1 venue 常量真值化（F 系残余 R2） | ✅done | Devin CLI 验收 2026-09-19，dfd9eccd；M1/M2/M3 独立 mutation 实证；已部署+RPC 边界复验 tradeMode=2；明细 registry 行 31 |
+| KB-SEED-DRIFT-1 kb_compat_fact 种子漂移（43 陈旧枚举值 KB-first 压过内建表） | ✅done | R2 实盘探针实证抓出（SymbolInfoInteger prop16 fatal）；审计侧修复=Seed→reconcile（upsert 纠偏+prune 已移除名，manual 行保留）+Start 每 boot 执行；3 集成测试绿+M1/M2 mutation RED→GREEN；产库已纠 22/17/32 等；明细 registry 行 35 |
 
-- **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R1（signal-mode sentinel）/R4（CloseBy dispatch）裁决：R1 属架构语义变更单独立项评审，R4 为缺功能待需求驱动。TRADE-RECORDS-DUP-1 ✅done 已部署——产库 epoch=0/log=3,920（879 CST 侧+3,024 迁移期幻影+17 部署窗口期回潮残余全归档清除）；复审抓出第三出血口（reconciliation ghost→ImportBrokerOrder IsZero 对 epoch 失效）已止血，同一 ghost ticket 393912977 修复后实测零幻影写入。VERIFY-CHAIN-SEMANTIC-1 ✅done（复审抓出根因 C 写侧尾读非 union——产库归档尾 seq 102092>live 尾 102029，新 append 产假 break；已修补+mutation 实证；未部署）。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: **TRADE-RECORDS-DUP-1 ✅done 已部署+产线止血实证**——migration 281 产库应用（879 CST 侧+3,024 epoch 删行归档 log=3,920）、三写入路径守卫全闭（两 sync 站+ImportBrokerOrder epoch 语义修复）、VerifyChain deleted_link 豁免上线；同一 ghost ticket 393912977 修复前后对照实证零幻影写入。此后：VERIFY-CHAIN-SEMANTIC-1 ✅done **已部署**（c74d8d3——旧二进制每写一行即遗永久断链/不可重建行，持续出血型缺陷即时止血；部署后暂无新 append，union 尾=arch seq 102092）/R1（signal-mode sentinel 架构评审）/暂缓系（VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3）。此前：**demo `904d14e6` F1/F2/F3 有界复验 ✅done**（BTCUSDm 1 单 comment 落 broker+SymbolParams 非零+fill 81227.46 事实回读，-0.09 USD 已全平）。此前：**backend 部署完成 healthy**（F1/F2/F3+G-POST2+边界批全上线）；**VM-LIVE-PARITY-1 实盘对账完成**（vm-live-parity-results-2026-09.md——Exness-Trial demo BTCUSDm 实测：P1 回显实锤双轴/P4 瘦数据实锤/拒绝 fail-closed 实证/SL 全链实证；新债 F1 回显/P2 F2 瘦数据/P4 F3 comment 编码登记 open）。G-POST2-1/2 ✅done（295d93f8）。POST-2 探针批 ✅done（2408d34c——容量基线落档 docs/benchmarks/post2-capacity-baseline-2026-09.md）。LOWPRI-SWEEP-1/2 ✅done。i18n/VM 债系收官。剩余暂缓/低优：VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3。
+- **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R1（signal-mode sentinel）/R4（CloseBy dispatch）裁决：R1 属架构语义变更单独立项评审，R4 为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
+- **下一步**: KB-SEED-DRIFT-1 ✅done 待部署生效（审计侧修复已提交；部署后 R2 实盘 venue 探针复跑验证真值抵达 VM 内层——此前 KB 陈旧值 prop16 每 tick fatal）。队列：R1（signal-mode sentinel 架构评审）/暂缓系（VM-LIVE-MTF-1/TRON-SECURITY-1/FEAT-3）。已完成链：TRADE-RECORDS-DUP-1/VERIFY-CHAIN-SEMANTIC-1 均 ✅done+已部署（产库 epoch=0、union 尾=arch seq 102092、同一 ghost ticket 修复前后对照零幻影写入）。此前：demo `904d14e6` F1/F2/F3 复验 ✅done；VM-LIVE-PARITY-1 实盘对账完成（vm-live-parity-results-2026-09.md）。G-POST2/POST-2/LOWPRI-SWEEP/i18n/VM 债系均收官。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -87,7 +88,8 @@
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31
 - **CODE-SIZE-MT5-ORDERS-1** ✅done — mt5/orders.go 450→348 拆分（Devin CLI 直接施工+验收 2026-09-19：符号元数据三函数 verbatim move→symbol_params.go，diff 逐字节一致=零行为变更）；明细 registry 行 32
 - **TRADE-RECORDS-DUP-1** ✅done — 去重+写入止血+VerifyChain 豁免（Devin CLI 验收 2026-09-19，7fce4558，产数据克隆实证+mutation×3）；**已部署**（91ba089d——migration 281 产库应用+第三出血口 ImportBrokerOrder epoch 语义修复+残余 17 行归档清除，产库 epoch=0/log=3,920）；明细 registry 行 33
-- **VERIFY-CHAIN-SEMANTIC-1** ✅done — 复审含根因 C 审计侧修补（写侧尾读 union 化）；产克隆 16 测试全绿+mutation×4 实证；未部署；明细 registry 行 34
+- **VERIFY-CHAIN-SEMANTIC-1** ✅done+已部署 c74d8d3 — 复审含根因 C 审计侧修补；产克隆 16 测试全绿+mutation×4 实证；明细 registry 行 34
+- **KB-SEED-DRIFT-1** ✅done — R2 实盘探针抓出 KB 种子漂移（43 陈旧枚举压过内建表）；reconcile 化修复+mutation×2；明细 registry 行 35
 
 ## 最近变更日志
 

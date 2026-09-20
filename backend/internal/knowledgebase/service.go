@@ -89,23 +89,18 @@ func New(pool *pgxpool.Pool, pgListen *pglisten.Listener, log *zap.Logger) *Serv
 	return s
 }
 
-// Start loads the cache from PG and begins listening for invalidation.
-// If the tables are empty, runs Seed first.
-// Must be called before any compilation occurs.
+// Start reconciles seed rows with the built-in registries, loads the cache
+// from PG, and begins listening for invalidation.
+// Seed is a reconcile, not a one-shot insert: seed-sourced rows mirror the Go
+// registries on every boot (enum renumbering / removals must propagate —
+// stale seed values would otherwise shadow the corrected built-in table via
+// the KB-first lookups forever). Must be called before any compilation occurs.
 func (s *Service) Start(ctx context.Context) error {
+	if err := s.Seed(ctx); err != nil {
+		return fmt.Errorf("kb: seed reconcile: %w", err)
+	}
 	if err := s.loadFromDB(ctx); err != nil {
 		return err
-	}
-
-	// Auto-seed if tables are empty.
-	if len(s.constants) == 0 && len(s.functions) == 0 {
-		s.log.Info("kb: tables empty, running seed")
-		if err := s.Seed(ctx); err != nil {
-			return err
-		}
-		if err := s.loadFromDB(ctx); err != nil {
-			return err
-		}
 	}
 
 	s.log.Info("kb: cache loaded",
