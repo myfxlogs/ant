@@ -2,6 +2,7 @@ package mt5
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -978,5 +979,35 @@ func BenchmarkStrToUint64(b *testing.B) {
 	b.ReportAllocs()
 	for b.Loop() {
 		strToUint64(s)
+	}
+}
+
+// T5 (VM-ERR-CODE-COLLAPSE-1): MT5 broker rejections carry the platform
+// retcode (100xx namespace) verbatim via *mthub.BrokerRejectError.
+// Adversarial: reverting to fmt.Errorf loses errors.As → RED.
+func TestPlaceOrder_BrokerRejectError_CarriesCode(t *testing.T) {
+	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
+	gw.sessionID = "sid"
+	gw.tradingCli = &mockTradingClient{
+		orderSendRes: &pb.OrderSendReply{
+			Error: &pb.Error{Code: pb.ErrorCode_INVALID_STOPS, Message: "Invalid stops"},
+		},
+	}
+	_, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+		Canonical: "EURUSD", Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
+		Volume: decimal.NewFromFloat(0.1),
+	})
+	if err == nil {
+		t.Fatal("broker rejection must return error")
+	}
+	if !errors.Is(err, mthub.ErrBrokerRejected) {
+		t.Fatal("errors.Is(ErrBrokerRejected) = false — classification would break")
+	}
+	var bre *mthub.BrokerRejectError
+	if !errors.As(err, &bre) || bre == nil {
+		t.Fatalf("err type = %T, want *mthub.BrokerRejectError", err)
+	}
+	if bre.Code != 10016 {
+		t.Fatalf("BrokerRejectError.Code = %d, want 10016 (INVALID_STOPS)", bre.Code)
 	}
 }

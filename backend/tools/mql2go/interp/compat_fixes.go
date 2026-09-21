@@ -18,6 +18,9 @@ package interp
 //   - Deprecated → current: (future entries)
 var CompatFixes = map[string]string{
 	// ── clr* prefixed color aliases → unprefixed WebColor names ──────────
+	// clrNone is the common MQL4 spelling of CLR_NONE (no color); clrNONE
+	// already has an entry below.
+	"clrNone":        "CLR_NONE",
 	"clrBlack":       "Black",
 	"clrWhite":       "White",
 	"clrRed":         "Red",
@@ -62,6 +65,30 @@ var CompatFixes = map[string]string{
 	"clrDarkCyan":    "DarkCyan",
 	"clrTransparent": "Transparent",
 	"clrNONE":        "CLR_NONE",
+
+	// ── clr* aliases for the web colors added in constants.go ─────────
+	// (VM-IMPLICIT-VAR-READ-1 compat scan)
+	"clrAliceBlue":  "AliceBlue",
+	"clrAzure":      "Azure",
+	"clrBeige":      "Beige",
+	"clrBlueViolet": "BlueViolet",
+	"clrCrimson":    "Crimson",
+	// clrDarkBlue already maps to "Navy" above (pre-existing; Navy and
+	// DarkBlue differ by 0x0B0000 — left untouched to preserve behavior).
+	"clrDarkViolet": "DarkViolet",
+	"clrDeepPink":   "DeepPink",
+	"clrDimGray":    "DimGray",
+	"clrGoldenrod":  "Goldenrod",
+	"clrHotPink":    "HotPink",
+	"clrIndigo":     "Indigo",
+	"clrIvory":      "Ivory",
+	"clrLavender":   "Lavender",
+	"clrOrchid":     "Orchid",
+	"clrPlum":       "Plum",
+	"clrSlateBlue":  "SlateBlue",
+	"clrTan":        "Tan",
+	"clrViolet":     "Violet",
+	"clrWheat":      "Wheat",
 
 	// ── Naming normalization: MQL5 underscored → MQL4 canonical ──────────
 	"MODE_SENKOU_A": "MODE_SENKOUA",

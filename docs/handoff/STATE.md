@@ -19,7 +19,7 @@
 || VM-LIVE-SYNC-DISPATCH-1（R1）signal-mode 假票号根治（IntVal(1)→broker 真票号+同事件信号丢单+cancel_all 空转） | ✅done | Devin CLI 施工+独立复审验收 2026-09-20；设计 design-vm-live-sync-dispatch-r1.md v2；VM syncDispatch 同步派发+15 builtin emitSignal+confirmed 事实注入 runner live state+alreadyDispatched 防双发+dispatchCancelAll；复审抓出 affectedTickets 缺口修补；mutation×4 RED→GREEN（M1 假票号复活/M2 双发/M3 仓位注入丢失/M4 幽灵仓位）；strategy 442+mql2go 绿；明细 registry 行 36 |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R4（CloseBy dispatch）为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: **VM 地基全链夯牢收官，零 open 债务**——本批交付（明细 registry 行36-40/LOG）：R1 `5db60c7f` 信号模式真票号+实盘探针闭环；LIVE-CLOSEALL-PENDING-1 `799fae03`；LIVE-ORDERREC-SIDE-TYPE-1 `f0508fd9`+实盘复验 `type=2`；OMS-REPLAY-SPAM-1 `34f704d1`；TRON 暂停 `CHAIN_MONITOR_ENABLED=false`。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
+- **下一步**: **实盘探针四缺陷批已修待部署复验**（registry 行40-43）——编译期严格读+typed 错误码透传+dedup 键+IsTradeAllowed 谓词；部署后重跑四轴探针（native err 码/同参多单放行/tradeAllowed=true/SYMBOL_TICK_VALUE 编译拒）。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -92,6 +92,7 @@
 - **VERIFY-CHAIN-SEMANTIC-1** ✅done+已部署 c74d8d3 — 复审含根因 C 审计侧修补；产克隆 16 测试全绿+mutation×4 实证；明细 registry 行 34
 - **KB-SEED-DRIFT-1** ✅done — R2 实盘探针抓出 KB 种子漂移（43 陈旧枚举压过内建表）；reconcile 化修复+mutation×2；明细 registry 行 35
 - **VM-LIVE-SYNC-DISPATCH-1（R1）** ✅done — signal-mode 假票号/丢单/cancel_all 空转根治；VM 内同步派发+confirmed 事实注入+防双发；mutation×4 实证；明细 registry 行 36
+- **实盘探针四缺陷批** ✅done — VM-IMPLICIT-VAR-READ-1（读位严格化+`int x;` 裸声明修复+clrNone/20 web 色补齐，真实策略扫描通过）/VM-ERR-CODE-COLLAPSE-1（typed BrokerRejectError 三段透传 lastError=native code）/RISK-DEDUP-KEY-1（key 纳 account+magic+comment+真 type）/ACCOUNT-TRADE-ALLOWED-DEAD-1（connected 谓词）；各带 mutation RED→GREEN；明细 registry 行 40-43
 
 ## 最近变更日志
 

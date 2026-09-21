@@ -9,6 +9,7 @@ package mt4
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -273,5 +274,43 @@ func TestFetchSymbolParams_Parity_TradeEnumsExOrSentinel(t *testing.T) {
 	if pn.TradeMode != -1 || pn.FreezeLevel != -1 || pn.TradeExemode != -1 {
 		t.Errorf("Ex==nil must yield -1 sentinels, got TradeMode=%d FreezeLevel=%d TradeExemode=%d",
 			pn.TradeMode, pn.FreezeLevel, pn.TradeExemode)
+	}
+}
+
+// T4 (VM-ERR-CODE-COLLAPSE-1): a broker application-level rejection must
+// surface as *mthub.BrokerRejectError carrying the numeric code — the VM's
+// GetLastError depends on it (136 Off quotes must not collapse to 146).
+// errors.Is(ErrBrokerRejected) must hold so ClassifyMutationError still
+// classifies it as deterministic_rejected.
+//
+// Adversarial (M4): reverting the adapter to fmt.Errorf("%w: ... code=%d")
+// loses the typed code → errors.As fails → RED.
+func TestPlaceOrder_BrokerRejectError_CarriesCode(t *testing.T) {
+	mock := &mockTradingClient{
+		orderSendRes: &pb.OrderSendReply{
+			Error: &pb.Error{Code: pb.ErrorCode_OFF_QUOTES, Message: "Off quotes"},
+		},
+	}
+	gw := New(mdtick.AccountConfig{MtapiToken: "t"}, zap.NewNop())
+	gw.sessionID = "sid"
+	gw.tradingCli = mock
+
+	_, err := gw.PlaceOrder(context.Background(), &mthub.OrderRequest{
+		AccountID: "acct-1", Canonical: "BTCUSDm",
+		Side: mthub.SideBuy, OrderType: mthub.OrderMarket,
+		Volume: decimal.NewFromFloat(0.01),
+	})
+	if err == nil {
+		t.Fatal("broker rejection must return error")
+	}
+	if !errors.Is(err, mthub.ErrBrokerRejected) {
+		t.Fatalf("errors.Is(ErrBrokerRejected) = false — classification would break")
+	}
+	var bre *mthub.BrokerRejectError
+	if !errors.As(err, &bre) || bre == nil {
+		t.Fatalf("err type = %T, want *mthub.BrokerRejectError carrying the code", err)
+	}
+	if bre.Code != 136 {
+		t.Fatalf("BrokerRejectError.Code = %d, want 136 (OFF_QUOTES)", bre.Code)
 	}
 }

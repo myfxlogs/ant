@@ -1,6 +1,7 @@
 package mql2go
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/shopspring/decimal"
@@ -16,6 +17,19 @@ import (
 // sdk.Signal instead of calling the broker directly. The server-side dispatch
 // (dispatchLiveSignal) then routes the signal to the OMS or paper engine.
 
+// signalErrorCode maps a synchronous-dispatch failure onto the real
+// GetLastError value (VM-ERR-CODE-COLLAPSE-1): a broker rejection carries
+// its native code (MT4 ERR_* / MT5 retcode) through verbatim; only errors
+// without a broker code (guard rejections, barrier busy, unknown outcomes)
+// fall back to ERR_TRADE_CONTEXT_BUSY=146.
+func signalErrorCode(err error) int32 {
+	var bre *sdk.BrokerRejectError
+	if errors.As(err, &bre) && bre != nil && bre.Code != 0 {
+		return bre.Code
+	}
+	return 146 // ERR_TRADE_CONTEXT_BUSY
+}
+
 func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 	ticket := int64(argI(args, 0))
 	volume := argD(args, 1)
@@ -27,7 +41,7 @@ func builtinOrderClose(vm *VM, args []interp.Value) (interp.Value, error) {
 			Volume:      volume,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -63,7 +77,7 @@ func builtinOrderCloseBy(vm *VM, args []interp.Value) (interp.Value, error) {
 			OppositeTicket: ticket2, // VM-TRADE-CONTEXT-2
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -103,7 +117,7 @@ func builtinOrderModify(vm *VM, args []interp.Value) (interp.Value, error) {
 			TakeProfit:  tp,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -153,7 +167,7 @@ func builtinOrderDelete(vm *VM, args []interp.Value) (interp.Value, error) {
 			OrderTicket: ticket,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -188,7 +202,7 @@ func builtinCTradePositionClose(vm *VM, args []interp.Value) (interp.Value, erro
 			Volume:      decimal.Zero,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -224,7 +238,7 @@ func builtinCTradePositionClosePartial(vm *VM, args []interp.Value) (interp.Valu
 			Volume:      volume,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -260,7 +274,7 @@ func builtinCTradePositionCloseBy(vm *VM, args []interp.Value) (interp.Value, er
 			OppositeTicket: t2, // VM-TRADE-CONTEXT-2
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -298,7 +312,7 @@ func builtinCTradePositionModify(vm *VM, args []interp.Value) (interp.Value, err
 			TakeProfit:  tp,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -332,7 +346,7 @@ func builtinCTradeOrderDelete(vm *VM, args []interp.Value) (interp.Value, error)
 			OrderTicket: ticket,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil
@@ -364,7 +378,7 @@ func builtinCloseAll(vm *VM, args []interp.Value) (interp.Value, error) {
 			Action: sdk.ActionCloseAll,
 		})
 		if err != nil {
-			vm.lastError = 146 // ERR_TRADE_CONTEXT_BUSY
+			vm.lastError = signalErrorCode(err)
 			return interp.BoolVal(false), nil
 		}
 		return interp.BoolVal(true), nil

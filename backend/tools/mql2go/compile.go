@@ -253,7 +253,12 @@ func (c *astCompiler) popScope() {
 	}
 }
 
-// resolveVar resolves a variable name to (slotID, isGlobal).
+// resolveVar resolves a variable name in a READ position to (slotID, isGlobal).
+// VM-IMPLICIT-VAR-READ-1: for MQL4/MQL5 an unknown identifier in a read
+// position is a compile error — silently registering a zero-valued global
+// let typos and unsupported constant aliases (e.g. SYMBOL_TICK_VALUE)
+// evaluate as 0. Python keeps its QS-1.3 implicit-read semantics
+// (undeclared read → never-written global None).
 func (c *astCompiler) resolveVar(name string) (VarID, bool) {
 	// Check local scopes (innermost first)
 	for i := len(c.localScopes) - 1; i >= 0; i-- {
@@ -279,15 +284,53 @@ func (c *astCompiler) resolveVar(name string) (VarID, bool) {
 		c.bc.GlobalSlots[name] = id
 		return id, true
 	}
-	// MQL4 and Python allow implicit variable declaration (assign without declaring).
-	// Record as warning + blind spot, but still register to avoid crash.
+	// Python: undeclared read resolves to the never-written global (None) —
+	// QS-1.3 cross-function isolation semantics, covered by
+	// compile_py_locals_test.go.
+	if c.bc.Version == "python" {
+		c.bc.Coverage.AddBlindSpot("implicit variable: " + name)
+		id := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[name] = id
+		return id, true
+	}
+	// MQL4/MQL5: read of an undeclared name is a compile error (same class as
+	// the existing ExprConst unknown-constant check).
+	if c.err == nil {
+		c.err = fmt.Errorf("unknown variable: %s (not declared, not a constant, not an enum)", name)
+	}
+	id := VarID(len(c.bc.GlobalSlots))
+	c.bc.GlobalSlots[name] = id
+	return id, true
+}
+
+// resolveVarWrite resolves a variable name in a WRITE position
+// (assignment target, declaration, array store). MQL4 and Python keep the
+// implicit-declaration shim: assigning to an undeclared name registers it.
+func (c *astCompiler) resolveVarWrite(name string) (VarID, bool) {
+	for i := len(c.localScopes) - 1; i >= 0; i-- {
+		if id, ok := c.localScopes[i][name]; ok {
+			return id, false
+		}
+	}
+	if id, ok := c.bc.GlobalSlots[name]; ok {
+		return id, true
+	}
+	if interp.IsMQLConstant(name) || isSeriesName(name) {
+		id := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[name] = id
+		return id, true
+	}
+	if _, ok := c.bc.Enums[name]; ok {
+		id := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[name] = id
+		return id, true
+	}
 	if c.bc.Version == "mql4" || c.bc.Version == "python" {
 		c.bc.Coverage.AddBlindSpot("implicit variable: " + name)
 		id := VarID(len(c.bc.GlobalSlots))
 		c.bc.GlobalSlots[name] = id
 		return id, true
 	}
-	// MQL5 requires explicit declaration — this is likely a typo.
 	if c.err == nil {
 		c.err = fmt.Errorf("unknown variable: %s (not declared, not a constant, not an enum)", name)
 	}
@@ -332,7 +375,7 @@ func (c *astCompiler) resolveAssignTarget(name string) (VarID, bool) {
 		c.nextLocalSlot++
 		return scope[name], false
 	}
-	return c.resolveVar(name)
+	return c.resolveVarWrite(name)
 }
 
 func isEventFunction(name string) bool {

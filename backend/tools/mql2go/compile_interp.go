@@ -666,6 +666,17 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 				Name: name,
 				Args: []interp.Expr{zeroValueExpr(typeName)},
 			})
+		case nodeIdentifier:
+			// VM-IMPLICIT-VAR-READ-1: `int x;` parses as
+			// declaration→[primitive_type, identifier] — a bare identifier
+			// child with no init_declarator/declarator wrapper. Without this
+			// case the declaration was silently dropped and a later read fell
+			// through to the implicit-global path (or, now, a compile error).
+			decls = append(decls, interp.Expr{
+				Kind: interp.ExprDecl,
+				Name: c.text(child),
+				Args: []interp.Expr{zeroValueExpr(typeName)},
+			})
 		case "array_declarator":
 			// MQL-COMPILER-LOCAL-ARRAYS: local array declarations compile to
 			// ExprArrayNew (OP_NEW_ARRAY) — mirrors the global-declaration

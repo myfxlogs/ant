@@ -92,6 +92,37 @@ func TestSyncDispatch_Rejected_NoInjection(t *testing.T) {
 	}
 }
 
+// T12 (VM-ERR-CODE-COLLAPSE-1): a broker rejection carrying a numeric code
+// must surface as *sdk.BrokerRejectError with the code intact — the VM
+// builtin maps it onto GetLastError instead of the blanket 146.
+//
+// Adversarial (M2): dropping the errors.As translation in
+// dispatchSignalSync → err is a generic fmt error → assertion RED.
+func TestSyncDispatch_Rejected_CarriesBrokerCode(t *testing.T) {
+	exec := &prodMockExecutor{
+		placeFn: func(ctx context.Context, req *mthub.OrderRequest) (*mthub.OrderRecord, error) {
+			return nil, &mthub.BrokerRejectError{Op: "mt4 OrderSend", Code: 136, Message: "Off quotes"}
+		},
+	}
+	srv, _, _ := testCoordinatorSetup(exec)
+	cfg := testLiveCfg()
+	sess := testActiveSess()
+
+	_, err := srv.dispatchSignalSync(context.Background(), cfg, nil,
+		&sdk.Signal{Action: sdk.ActionBuy, Symbol: "EURUSD", Volume: decimal.NewFromFloat(0.1)},
+		sess, nil)
+	if err == nil {
+		t.Fatal("rejected dispatch must return error")
+	}
+	var bre *sdk.BrokerRejectError
+	if !errors.As(err, &bre) || bre == nil {
+		t.Fatalf("err type = %T, want *sdk.BrokerRejectError (broker code must survive the boundary)", err)
+	}
+	if bre.Code != 136 {
+		t.Fatalf("BrokerRejectError.Code = %d, want 136 (Off quotes)", bre.Code)
+	}
+}
+
 // T6b: outcome unknown (no push, read-after-write fails) → error, fail-closed.
 func TestSyncDispatch_OutcomeUnknown_Error(t *testing.T) {
 	exec := &prodMockExecutor{

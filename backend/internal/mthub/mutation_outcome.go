@@ -99,6 +99,27 @@ var ErrGateRejected = errors.New("mthub: gate rejected order")
 // the adapters so ClassifyMutationError can detect it without string matching.
 var ErrBrokerRejected = errors.New("mthub: broker rejected order")
 
+// BrokerRejectError carries the broker's numeric rejection code and message
+// verbatim (VM-ERR-CODE-COLLAPSE-1). MT4 codes are the MQL4 ERR_* values
+// (130 invalid stops, 136 off quotes, 146 busy); MT5 codes are the platform
+// retcodes. Unwrap returns ErrBrokerRejected so ClassifyMutationError keeps
+// working unchanged, while upstream layers can errors.As the code through
+// to the VM's GetLastError.
+type BrokerRejectError struct {
+	Op      string // e.g. "mt4 OrderSend"
+	Code    int32
+	Message string
+}
+
+func (e *BrokerRejectError) Error() string {
+	if e == nil {
+		return "broker rejected order"
+	}
+	return fmt.Sprintf("%s: code=%d msg=%s", e.Op, e.Code, e.Message)
+}
+
+func (e *BrokerRejectError) Unwrap() error { return ErrBrokerRejected }
+
 // ClassifyMutationError determines whether a mutation error is a deterministic
 // pre-broker rejection (safe to release barrier) or a broker-phase unknown
 // outcome (barrier must stay locked). Returns:

@@ -201,7 +201,7 @@ func configureStrategyLookups(srv *strategy.StrategyExecutionServer, pool *pgxpo
 		if err != nil {
 			return false, fmt.Errorf("account_status lookup: %w", err)
 		}
-		return status == "trade_allowed", nil
+		return mtAccountTradeAllowedStatus(status), nil
 	})
 	srv.SetAccountIsInvestorLookup(func(ctx context.Context, accountID string) (bool, error) {
 		var isInvestor bool
@@ -224,6 +224,16 @@ func configureStrategyLookups(srv *strategy.StrategyExecutionServer, pool *pgxpo
 		}
 		return &ident, nil
 	})
+}
+
+// mtAccountTradeAllowedStatus reports whether the account's status row implies
+// trading capability on the platform axis. The lifecycle never writes
+// "trade_allowed" (that value is a legacy reserved state); a connected
+// session bound with a master password is the truthful source — orders
+// provably reach the broker, and per-order rejections surface as real broker
+// codes. Investor gating is applied separately (is_investor → false).
+func mtAccountTradeAllowedStatus(status string) bool {
+	return status == "connected" || status == "trade_allowed"
 }
 
 func setupRiskGate(cfg *config.Config, jurisGate *risksvc.JurisdictionGate, capStore *risksvc.CapabilityStore) *risk.Gate {

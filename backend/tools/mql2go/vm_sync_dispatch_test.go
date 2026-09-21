@@ -181,6 +181,48 @@ func TestSyncDispatch_TwoOrders_NoDrop(t *testing.T) {
 	}
 }
 
+// T6 (VM-ERR-CODE-COLLAPSE-1): a dispatcher error carrying the broker's
+// numeric code must land on _LastError verbatim — not collapse to 146.
+// Non-code errors keep the 146 fallback.
+//
+// Adversarial (M3): signalErrorCode → hardcoded 146 → both cases RED.
+func TestSyncDispatch_BrokerCodePropagates(t *testing.T) {
+	vm := newSignalTestVM()
+	vm.signal = nil
+	vm.SetSyncDispatcher(func(sig *sdk.Signal) (int64, error) {
+		return 0, &sdk.BrokerRejectError{Op: "mt4 OrderModify", Code: 136, Message: "Off quotes"}
+	})
+	_, err := builtinOrderModify(vm, []interp.Value{
+		interp.IntVal(42),                             // ticket
+		interp.DecimalVal(decimal.NewFromFloat(1.09)), // price
+		interp.DecimalVal(decimal.NewFromFloat(1.08)), // sl
+		interp.DecimalVal(decimal.NewFromFloat(1.10)), // tp
+		interp.IntVal(0),                              // expiration
+	})
+	if err != nil {
+		t.Fatalf("OrderModify returned Go error (should be business false): %v", err)
+	}
+	if vm.lastError != 136 {
+		t.Fatalf("vm.lastError=%d, want 136 (ERR_OFF_QUOTES) — broker code must reach GetLastError", vm.lastError)
+	}
+
+	// No broker code → 146 fallback preserved.
+	vm2 := newSignalTestVM()
+	vm2.SetSyncDispatcher(func(sig *sdk.Signal) (int64, error) {
+		return 0, errors.New("duplicate order within dedup window")
+	})
+	_, _ = builtinOrderModify(vm2, []interp.Value{
+		interp.IntVal(42),
+		interp.DecimalVal(decimal.NewFromFloat(1.09)),
+		interp.DecimalVal(decimal.NewFromFloat(1.08)),
+		interp.DecimalVal(decimal.NewFromFloat(1.10)),
+		interp.IntVal(0),
+	})
+	if vm2.lastError != 146 {
+		t.Fatalf("vm.lastError=%d, want 146 fallback for non-broker-code error", vm2.lastError)
+	}
+}
+
 // T5: dispatch failure still emits the signal for the response/audit path.
 func TestSyncDispatch_FailureEmitsSignal(t *testing.T) {
 	vm := newSignalTestVM()

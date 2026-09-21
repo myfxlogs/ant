@@ -397,3 +397,13 @@
 - LIVE-ORDERREC-SIDE-TYPE-1 `f0508fd9`：MT4/MT5 PlaceOrder 回执 Side/OrderType；实盘复验 buy_limit 394081292 type=2、DB order_type=1。
 - OMS-REPLAY-SPAM-1 `34f704d1`：omsTargetForUpdateType 生命周期白名单+shouldAttemptOMSTransition 幂等/终态守卫；部署后回放窗 0 错误。
 - TRON 暂停：CHAIN_MONITOR_ENABLED=false 门控 monitor/reconciler/sweep 三环。
+
+## 2026-09-21 — 实盘探针四缺陷批（registry 行 40-43）
+全功能分阶段实盘探针（demo 904d14e6 / BTCUSDm，run d10cd63a）抓出四缺陷，全部修复+mutation 实证：
+
+- **VM-IMPLICIT-VAR-READ-1**：`resolveVar` 对 mql4 未声明标识符读位静默注册零值全局——`SymbolInfoDouble(Symbol(), SYMBOL_TICK_VALUE)`（不存在的别名）→prop 0→返回 bid 81337.02 冒充 tick_value。修法：拆 `resolveVar`(读·mql4/mql5 严格 compile error，python 保留 QS-1.3 隐式读) / `resolveVarWrite`(写·mql4+python 隐式声明保留)；写位接线 assign/subscript-store/decl/ArrayResize。顺带抓出 `int x;` 裸声明被静默丢弃（declaration→identifier 分支缺失）+ clrNone/20 个 web 色常量缺失（compat 扫描暴露）。测试 compile_implicit_var_test.go：5 读位拒+3 写位容；M1 mutation 复辟 mql4 隐式读→5 例精确复红。真实策略兼容扫描 7 个：MACD SAMPLE/E2E/均线/eagertest 全编译通过；3 个 IR 段预存失败（全局数组初始化/input 关键字）与本次无关。
+- **VM-ERR-CODE-COLLAPSE-1**：signal 派发错误全压 146=TRADE_CONTEXT_BUSY——OrderModify broker `136 Off quotes` 实盘被读成 146。修法：typed `mthub.BrokerRejectError{Op,Code,Msg}`（Is→ErrBrokerRejected 分类不变）产码于 mt4/mt5 adapter 四订单位（MT4 code=MQL4 ERR_*、MT5 code=100xx retcode 各 verbatim）→`mutationResult.err` 透传→`live_sync_dispatch` errors.As→`sdk.BrokerRejectError`→builtin `signalErrorCode` 映 `lastError=native`；无码错误（guard/dedup/barrier/unknown）仍 146 兜底。T12 dispatch 136 透传+VM lastError 136/146 双断+mt4/mt5 adapter 码保留测试；mutation×3（边界翻译删除/adapter 回退 fmt.Errorf/helper 恒 146）全 RED→GREEN。
+- **RISK-DEDUP-KEY-1**：GuardRequest 硬编码 `OrderType:"market"` 且丢 comment/magic——同 tick 同参第二单被 `duplicate order within dedup window` 误杀（网格/加仓中招）。修法：GuardRequest 扩 AccountID/Magic/Comment+`orderTypeToString` 真值复用；dedup key 对齐 Gate 形状 `account|symbol|side|vol|type|price|magic|comment`。guard_test.go 三例（异 comment/异 magic 放行+全真同仍拦）；M1 回退旧 key 复红；risk 468 绿。
+- **ACCOUNT-TRADE-ALLOWED-DEAD-1**：lookup 只认 `account_status='trade_allowed'`——该值全代码库零写入点（状态机只写 connected/reconnecting/disconnected），`IsTradeAllowed()` 对可交易账户恒 false。修法：抽纯函数 `accountTradeAllowedPredicate` 放宽 `connected||trade_allowed`（connected 会话+非 investor=平台轴可交易，订单可发即证明）；investor 门与缺省 fail-closed 不变。account_trade_allowed_test.go 四例；M1 谓词回退→connected 案例复红。
+
+门禁：mql2go 785 + strategy/mthub/risk/mt4/mt5/cmd-server/sdk 1213 + race×SyncDispatch 9 全绿；check-lines 0 errors；build/vet 净。

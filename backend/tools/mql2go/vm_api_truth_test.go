@@ -1178,20 +1178,19 @@ func TestVM_ENUM_NUMBERING_1_FailClosed(t *testing.T) {
 			if _, ok := interp.LookupMQLConstant(name); ok {
 				t.Fatalf("%s still resolvable — removed constant must not resolve", name)
 			}
-			// NOTE: an unknown identifier in source does NOT fail compilation —
-			// the front end auto-registers it as an implicit global (value 0).
-			// For props where 0 is an unsupported prop the call then fails
-			// closed at runtime; SYMBOL_MARGIN_INITIAL/MARGIN_MAINTENANCE are
-			// exempt because Double prop 0 is the real BID branch. The implicit
-			//-variable front-end behavior is tracked with
-			// VM-GLOBAL-ARRAY-DECL-1's front-end family.
+			// VM-IMPLICIT-VAR-READ-1: an unknown identifier in a read position
+			// now fails AT COMPILE TIME — the stricter fail-closed boundary.
+			// (Previously the front end auto-registered an implicit zero global
+			// and the call failed closed at runtime only when prop 0 was
+			// unsupported.) A runtime error remains acceptable as a second
+			// fail-closed layer for any path that still reaches the builtin.
 			runtimeErrorCases := map[string]string{
 				"SYMBOL_SWAP_ROLLOVER3DAYS": "SymbolInfoInteger",
 				"MODE_SWAPTYPE":             "MarketInfo",
 				"MODE_PROFITCALCMODE":       "MarketInfo",
 				// TIME_MSC: IntVal is int32, real unix-ms (~1.7e12) would wrap
 				// into a fake (possibly negative) value — prop 16 is therefore
-				// unsupported in this VM; the implicit-global 0 also errors.
+				// unsupported in this VM.
 				"SYMBOL_TIME_MSC": "SymbolInfoInteger",
 			}
 			fn, ok := runtimeErrorCases[name]
@@ -1201,7 +1200,8 @@ func TestVM_ENUM_NUMBERING_1_FailClosed(t *testing.T) {
 			src := "int OnInit(){ " + fn + "(\"EURUSD\", " + name + "); return 0; }"
 			runner, err := CompileMQL(src)
 			if err != nil {
-				t.Fatalf("CompileMQL failed: %v", err)
+				// Compile-time rejection is the new expected fail-closed path.
+				return
 			}
 			runner.SetSignalMode(true)
 			if err := runner.OnInit(&symbolEnumTestContext{

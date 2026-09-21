@@ -9,6 +9,7 @@ package strategy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.uber.org/zap"
@@ -84,6 +85,13 @@ func (s *StrategyExecutionServer) dispatchSignalSync(ctx context.Context, cfg Li
 	case barrierConfirmed:
 		return res.ticket, nil
 	case barrierDeterministicRejected:
+		// VM-ERR-CODE-COLLAPSE-1: carry the broker's numeric code through to
+		// the VM — the builtin maps it onto GetLastError instead of the
+		// blanket 146.
+		var bre *mthub.BrokerRejectError
+		if errors.As(res.err, &bre) && bre != nil {
+			return 0, &sdk.BrokerRejectError{Op: bre.Op, Code: bre.Code, Message: bre.Message}
+		}
 		return 0, fmt.Errorf("%s %s rejected by broker", action, cfg.Symbol)
 	case barrierIdle:
 		return 0, fmt.Errorf("%s not dispatched (barrier busy or dropped)", action)

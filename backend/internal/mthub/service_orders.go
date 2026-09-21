@@ -91,8 +91,9 @@ func (s *MtHubService) preTradeChecks(ctx context.Context, req *OrderRequest) er
 			side = "sell"
 		}
 		if result := s.guard.Check(ctx, &risk.GuardRequest{
-			Symbol: req.Canonical, Side: side,
-			Volume: req.Volume, OrderType: "market", Price: req.Price,
+			AccountID: req.AccountID, Symbol: req.Canonical, Side: side,
+			Volume: req.Volume, OrderType: orderTypeToString(req.OrderType), Price: req.Price,
+			Magic: req.Magic, Comment: req.Comment,
 		}); !result.Allowed {
 			return fmt.Errorf("guard: %s", result.Reason)
 		}

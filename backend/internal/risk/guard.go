@@ -14,18 +14,18 @@ import (
 // The three checks are irreducible: kill switch, duplicate, max lot size.
 // These protect against software bugs, not market judgment.
 type Guard struct {
-	killFn    func() bool          // nil → no kill switch
-	maxLots   decimal.Decimal     // 0 → no limit
-	dedup     map[string]time.Time // symbol|side|vol|type|price → last seen
-	dedupMu   sync.Mutex
-	dedupWin  time.Duration       // window to remember orders (default 5s)
+	killFn   func() bool          // nil → no kill switch
+	maxLots  decimal.Decimal      // 0 → no limit
+	dedup    map[string]time.Time // account|symbol|side|vol|type|price|magic|comment → last seen
+	dedupMu  sync.Mutex
+	dedupWin time.Duration // window to remember orders (default 5s)
 }
 
 // GuardConfig sets up the Guard.
 type GuardConfig struct {
-	KillSwitch     func() bool
-	MaxLotSize     decimal.Decimal
-	DedupWindow    time.Duration // 0 → default 5s
+	KillSwitch  func() bool
+	MaxLotSize  decimal.Decimal
+	DedupWindow time.Duration // 0 → default 5s
 }
 
 // NewGuard creates a Guard. Passing nil config is safe (all checks become no-ops).
@@ -68,10 +68,15 @@ func (g *Guard) Check(ctx context.Context, req *GuardRequest) *GuardResult {
 		)}
 	}
 
-	// 3. Duplicate protection: same (symbol|side|volume|type|price) within dedup window.
+	// 3. Duplicate protection: same (account|symbol|side|volume|type|price|
+	// magic|comment) within dedup window. Key shape mirrors the Gate-layer
+	// DuplicateProtection rule plus comment — a retry of the same order
+	// resubmits identical fields, while a distinct same-tick intent
+	// (different magic/comment, pending vs market) must pass.
 	g.dedupMu.Lock()
 	now := time.Now()
-	key := fmt.Sprintf("%s|%s|%s|%s|%s", req.Symbol, req.Side, req.Volume, req.OrderType, req.Price)
+	key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%d|%s",
+		req.AccountID, req.Symbol, req.Side, req.Volume, req.OrderType, req.Price, req.Magic, req.Comment)
 	if last, ok := g.dedup[key]; ok && now.Sub(last) < g.dedupWin {
 		g.dedupMu.Unlock()
 		return &GuardResult{Allowed: false, Reason: "duplicate order within dedup window"}
@@ -92,9 +97,14 @@ func (g *Guard) Check(ctx context.Context, req *GuardRequest) *GuardResult {
 
 // GuardRequest is the input to Guard.Check.
 type GuardRequest struct {
+	AccountID string
 	Symbol    string
 	Side      string
 	Volume    decimal.Decimal
 	OrderType string
 	Price     decimal.Decimal
+	// Magic + Comment carry strategy intent into the dedup key — two orders
+	// differing only here are distinct intents, not retries.
+	Magic   int32
+	Comment string
 }

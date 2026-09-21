@@ -142,7 +142,7 @@ func (c *astCompiler) compileSubscript(e *interp.Expr) {
 	if len(e.Args) > 0 {
 		c.compileExpr(&e.Args[0])
 		c.compileExpr(e.Index)
-		slot, isGlobal := c.resolveVar(e.Name)
+		slot, isGlobal := c.resolveVarWrite(e.Name)
 		if !isGlobal {
 			// MQL-COMPILER-LOCAL-ARRAYS: negative-encode non-global slots
 			// (uint16 → int32 before negating); the runtime resolves them
@@ -232,7 +232,7 @@ func (c *astCompiler) compileDecl(e *interp.Expr) {
 		scope[e.Name] = VarID(c.nextLocalSlot)
 		c.nextLocalSlot++
 	}
-	slot, isGlobal := c.resolveVar(e.Name)
+	slot, isGlobal := c.resolveVarWrite(e.Name)
 	if isGlobal {
 		c.emit(OP_STORE_GLOBAL, int32(slot), 0, 0)
 	} else {
@@ -410,7 +410,7 @@ func (c *astCompiler) compileCall(e *interp.Expr) {
 	// (call results, etc.) falls through to the builtin unchanged.
 	if e.Name == "ArrayResize" && len(e.Args) == 2 && e.Args[0].Kind == interp.ExprVar {
 		c.compileExpr(&e.Args[1])
-		slot, isGlobal := c.resolveVar(e.Args[0].Name)
+		slot, isGlobal := c.resolveVarWrite(e.Args[0].Name)
 		if isGlobal {
 			c.emit(OP_ARRAY_RESIZE, int32(slot), 0, 0)
 		} else {

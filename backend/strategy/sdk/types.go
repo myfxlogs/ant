@@ -4,6 +4,7 @@
 package sdk
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -75,6 +76,25 @@ type OrderRequest struct {
 	// VM-LIVE-PARITY-F3). Read-back via broker records is authoritative.
 	Comment    string
 	FillPolicy FillPolicy
+}
+
+// BrokerRejectError carries the broker's numeric rejection code verbatim
+// across the signal-dispatch boundary (VM-ERR-CODE-COLLAPSE-1). MT4 codes
+// are the MQL4 ERR_* values (130 invalid stops, 136 off quotes); MT5 codes
+// are the platform retcodes (10016 invalid stops, 10019 no money). The VM
+// maps Code onto GetLastError — the same number a real terminal surfaces.
+// Code 0 means the broker gave no numeric code (unknown).
+type BrokerRejectError struct {
+	Op      string // dispatch op label, e.g. "mt4 OrderSend"
+	Code    int32
+	Message string
+}
+
+func (e *BrokerRejectError) Error() string {
+	if e == nil {
+		return "broker rejected order"
+	}
+	return fmt.Sprintf("%s: code=%d msg=%s", e.Op, e.Code, e.Message)
 }
 
 // RetCode mirrors the ConnectRPC Retcode enum.

@@ -322,6 +322,31 @@ var MQLConstants = map[string]Value{
 	"Magenta":           IntVal(16711935),
 	"Pink":              IntVal(13353215),
 
+	// ── Web colors continued (VM-IMPLICIT-VAR-READ-1 compat scan) ──────
+	// Standard MQL4 web-color names that were missing: reading one used to
+	// silently register a zero global (≈Black). Values use the MQL BGR
+	// packing (B<<16|G<<8|R), same convention as "Pink" above.
+	"AliceBlue":  IntVal(16775408),
+	"Azure":      IntVal(16777200),
+	"Beige":      IntVal(14480885),
+	"BlueViolet": IntVal(14822282),
+	"Crimson":    IntVal(3937500),
+	"DarkBlue":   IntVal(9109504),
+	"DarkViolet": IntVal(13828244),
+	"DeepPink":   IntVal(9643263),
+	"DimGray":    IntVal(6908265),
+	"Goldenrod":  IntVal(2139610),
+	"HotPink":    IntVal(11823615),
+	"Indigo":     IntVal(8519755),
+	"Ivory":      IntVal(15794175),
+	"Lavender":   IntVal(16443110),
+	"Orchid":     IntVal(14053594),
+	"Plum":       IntVal(14524637),
+	"SlateBlue":  IntVal(13458026),
+	"Tan":        IntVal(9221330),
+	"Violet":     IntVal(15631086),
+	"Wheat":      IntVal(11788021),
+
 	// clr* prefixed color aliases moved to CompatFixes (L0 deterministic alias).
 	// See compat_fixes.go for the {clr* → unprefixed} mapping.
 

@@ -65,6 +65,10 @@ type mutationSpec struct {
 type mutationResult struct {
 	state  tradeBarrierState
 	ticket int64
+	// err carries the typed mutation error on deterministic_rejected /
+	// outcome_unknown results (VM-ERR-CODE-COLLAPSE-1) — the broker's numeric
+	// code reaches the VM's GetLastError instead of collapsing to 146.
+	err error
 	// record is the broker's order record for confirmed open mutations
 	// (VM-LIVE-SYNC-DISPATCH-1: used to inject broker facts into the VM's
 	// live state so same-event OrderSelect sees the real position).
@@ -166,7 +170,7 @@ func (s *StrategyExecutionServer) coordinateMutation(
 				activeSess.RecordError(fmt.Sprintf("%s %s: %s", spec.action, cfg.Symbol, err.Error()))
 			}
 			barrier.Release()
-			return mutationResult{state: barrierDeterministicRejected}
+			return mutationResult{state: barrierDeterministicRejected, err: err}
 		case "outcome_unknown":
 			// R1: For close/modify/cancel where we know the ticket, a push
 			// may have already arrived and been cached, OR may arrive in
