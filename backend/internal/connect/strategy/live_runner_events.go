@@ -3,6 +3,7 @@ package strategy
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -159,6 +160,35 @@ func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStr
 				}
 			}
 		}
+	}
+	// LIVE-HISTORY-POOL-1: wire broker order-history RPC so OrdersHistoryTotal /
+	// OrderSelect MODE_HISTORY see real closed orders in live mode.
+	if cfg.Mode == modeLive && s.mtHub != nil && vmSess.runner != nil {
+		vmSess.runner.SetHistoryProvider(func(hctx context.Context, from, to int64) ([]sdk.Position, error) {
+			fromT := time.Unix(from, 0)
+			toT := time.Unix(to, 0)
+			if from <= 0 {
+				fromT = time.Unix(0, 0)
+			}
+			if to <= 0 {
+				toT = time.Now()
+			}
+			recs, err := s.mtHub.OrderHistory(hctx, cfg.AccountID, fromT, toT)
+			if err != nil {
+				return nil, err
+			}
+			out := make([]sdk.Position, 0, len(recs))
+			for _, rec := range recs {
+				if rec == nil {
+					continue
+				}
+				p := orderRecordToPosition(rec)
+				p.ClosePrice = rec.ClosePrice
+				p.CloseTime = rec.CloseTime
+				out = append(out, p)
+			}
+			return out, nil
+		})
 	}
 	return vmSess, nil
 }

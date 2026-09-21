@@ -15,6 +15,9 @@ type brokerImpl struct {
 	executor  OrderExecutor // set by LiveRunner
 	ctx       context.Context
 	lastError error // VM-TRADE-CONTEXT-2: records last broker query error
+	// LIVE-HISTORY-POOL-1: live history provider. mtapi order-history RPC
+	// backed; set by the live session wiring. nil → fail-closed empty.
+	historyFn func(ctx context.Context, from, to int64) ([]sdk.Position, error)
 }
 
 func (b *brokerImpl) setContext(ctx context.Context) { b.ctx = ctx }
@@ -163,10 +166,18 @@ func (b *brokerImpl) Orders(magic int32) []sdk.PendingOrder {
 }
 
 func (b *brokerImpl) HistoryOrders(from, to int64) []sdk.Position {
-	if b.executor != nil {
-		// VM-TRADE-CONTEXT-2: not available in live mode — record error.
-		b.lastError = fmt.Errorf("HistoryOrders not available in live mode")
+	// LIVE-HISTORY-POOL-1: live mode queries the broker's order-history RPC
+	// through the injected provider so OrdersHistoryTotal/OrderSelect
+	// MODE_HISTORY see real closed orders instead of an always-empty pool.
+	if b.historyFn != nil {
+		positions, err := b.historyFn(b.orderCtx(), from, to)
+		if err != nil {
+			b.lastError = fmt.Errorf("HistoryOrders: %w", err)
+			return nil
+		}
+		return positions
 	}
+	b.lastError = fmt.Errorf("HistoryOrders not available in live mode")
 	return nil
 }
 

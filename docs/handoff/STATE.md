@@ -82,9 +82,7 @@
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
 - **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
-- **VM-HONESTY-3-REVIEW** ✅done — 死分支解耦+R06 非致命对抗测试重构（Devin CLI 验收通过 2026-09-16，commit 5816d7e9，独立 mutation×2 RED→GREEN，零生产代码改动）
-- **VM-COMPILER-SEMANTICS-3** ✅done — switch default 顺序+break 栈清理（Devin CLI 验收通过 2026-09-16，commit c5d1a7e0，独立 mutation×2 RED→GREEN）
-- **VM-API-TRUTH-1** ✅done — 5 批全 Devin CLI 独立复审验收：46 API 重分类 StatusUnsupported（e97a43b8/8f946579/1fb352f1/a306f54e/69d2330b）+批次2c AccountInfo* 假分支 fail-closed+枚举对齐+批次2e 4 实接（52add8ed/69d2330b）；残余同族债 VM-ENUM-NUMBERING-1/LIVE-ACCOUNT-FIELDS-1 另立跟踪
+- **LIVE-POS-SNAPSHOT-LAG-1 + LIVE-HISTORY-POOL-1** ✅done — Runner confirmed-mutation 保留窗（120s）：已确认开/平票号不被滞后快照回退/复活（OrdersTotal 闪烁→实盘超开仓根因，XAUUSD 实证 36 仓）；HistoryOrders 接 mtHub.OrderHistory，MODE_HISTORY 实盘真值；mutation×2 RED→GREEN；明细 registry 行 44-45
 - **VM-LIVE-PARITY-F1/F2/F3** ✅done — 实盘对账修复（Devin CLI 验收 2026-09-19，d39afc62+审计侧修补，M1/M2/M3 mutation 实证）；明细 registry 行 28-30
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31
 - **CODE-SIZE-MT5-ORDERS-1** ✅done — mt5/orders.go 450→348 拆分（Devin CLI 直接施工+验收 2026-09-19：符号元数据三函数 verbatim move→symbol_params.go，diff 逐字节一致=零行为变更）；明细 registry 行 32
@@ -101,4 +99,5 @@
 - 2026-09-17~09-19 **VM 批七项 ✅done + 簿记修正 + MQL-LOOP-4/LLM-CONFIG-1 翻正 + i18n 收官**——已滚出 `docs/handoff/LOG.md`（明细见该文件同日期段）。
 - 2026-09-19 **LOWPRI-SWEEP-2 ✅done**（5c855630——CQ-11 死簇删净复核门零命中；CQ-12 242 行 lint 转绿自 0d52f0a6 起存量红消除） — CQ-11 internal/ai 传递性死簇删除（backend -289 行：两整文件+strategy_prompt.go 死成员）+ CQ-12 WorkspaceCenterColumn 拆修（313→242 行+4 新文件）；Devin CLI 独立复审全绿：复核门重跑零有效命中+build/vet/test 绿+eslint src 零输出+lint exit 0[存量红消]+tsc 0+vitest 217 绿+check-lines 0 errors+diff --check 净；明细 registry。
 
+> 2026-09-16 的 VM-HONESTY-3-REVIEW / VM-COMPILER-SEMANTICS-3 / VM-API-TRUTH-1 ✅done 明细已滚出至 LOG.md（09-16 段含验收记录）；registry 行保留。
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。

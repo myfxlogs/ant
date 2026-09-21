@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/shopspring/decimal"
 
@@ -81,10 +82,59 @@ func (r *Runner) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
 // restoring MQL4's synchronous OrderSend→OrderSelect semantics. These are
 // broker facts (read-after-write verified), not optimistic writes.
 
+// confirmedMutationRetention bounds how long a broker-confirmed mutation is
+// merged over lagging position snapshots (LIVE-POS-SNAPSHOT-LAG-1). mtapi
+// propagation takes seconds; 120s leaves ample headroom while still letting a
+// permanently-absent ticket fall back to snapshot truth.
+const confirmedMutationRetention = 120 * time.Second
+
+// trackConfirmedAdd records a broker-confirmed open ticket so lagging
+// snapshots cannot erase it (LIVE-POS-SNAPSHOT-LAG-1).
+func trackConfirmedAdd(add, del map[int64]time.Time, ticket int64, now time.Time) map[int64]time.Time {
+	if add == nil {
+		add = make(map[int64]time.Time)
+	}
+	add[ticket] = now
+	if del != nil {
+		delete(del, ticket)
+	}
+	return add
+}
+
+// trackConfirmedDel records a broker-confirmed close/cancel ticket so lagging
+// snapshots cannot resurrect it (LIVE-POS-SNAPSHOT-LAG-1).
+func trackConfirmedDel(del, add map[int64]time.Time, ticket int64, now time.Time) map[int64]time.Time {
+	if del == nil {
+		del = make(map[int64]time.Time)
+	}
+	del[ticket] = now
+	if add != nil {
+		delete(add, ticket)
+	}
+	return del
+}
+
+// pruneConfirmed drops tracking entries that expired or that the snapshot has
+// caught up with: an added ticket already present, or a removed ticket already
+// absent, no longer needs retention.
+func pruneConfirmed(seen map[int64]bool, add, del map[int64]time.Time, now time.Time) {
+	for t, ts := range add {
+		if seen[t] || now.Sub(ts) > confirmedMutationRetention {
+			delete(add, t)
+		}
+	}
+	for t, ts := range del {
+		if !seen[t] || now.Sub(ts) > confirmedMutationRetention {
+			delete(del, t)
+		}
+	}
+}
+
 // ApplyConfirmedPosition upserts a broker-confirmed open position.
 func (r *Runner) ApplyConfirmedPosition(pos sdk.Position) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
+	r.ctx.confirmedPosAdd = trackConfirmedAdd(r.ctx.confirmedPosAdd, r.ctx.confirmedPosDel, pos.Ticket, time.Now())
 	for i, p := range r.ctx.livePositions {
 		if p.Ticket == pos.Ticket {
 			r.ctx.livePositions[i] = pos
@@ -98,6 +148,7 @@ func (r *Runner) ApplyConfirmedPosition(pos sdk.Position) {
 func (r *Runner) RemoveConfirmedPosition(ticket int64) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
+	r.ctx.confirmedPosDel = trackConfirmedDel(r.ctx.confirmedPosDel, r.ctx.confirmedPosAdd, ticket, time.Now())
 	out := r.ctx.livePositions[:0]
 	for _, p := range r.ctx.livePositions {
 		if p.Ticket != ticket {
@@ -111,6 +162,7 @@ func (r *Runner) RemoveConfirmedPosition(ticket int64) {
 func (r *Runner) ApplyConfirmedPendingOrder(o sdk.PendingOrder) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
+	r.ctx.confirmedOrdAdd = trackConfirmedAdd(r.ctx.confirmedOrdAdd, r.ctx.confirmedOrdDel, o.Ticket, time.Now())
 	for i, p := range r.ctx.livePendingOrders {
 		if p.Ticket == o.Ticket {
 			r.ctx.livePendingOrders[i] = o
@@ -124,6 +176,7 @@ func (r *Runner) ApplyConfirmedPendingOrder(o sdk.PendingOrder) {
 func (r *Runner) RemoveConfirmedPendingOrder(ticket int64) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
+	r.ctx.confirmedOrdDel = trackConfirmedDel(r.ctx.confirmedOrdDel, r.ctx.confirmedOrdAdd, ticket, time.Now())
 	out := r.ctx.livePendingOrders[:0]
 	for _, o := range r.ctx.livePendingOrders {
 		if o.Ticket != ticket {
@@ -179,8 +232,74 @@ func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, pos
 	r.ctx.liveEquity = equity
 	r.ctx.liveMargin = margin
 	r.ctx.liveFreeMargin = freeMargin
-	r.ctx.livePositions = positions
-	r.ctx.livePendingOrders = pendingOrders
+	now := time.Now()
+	r.ctx.livePositions = mergeConfirmedPositions(positions, r.ctx.livePositions,
+		r.ctx.confirmedPosAdd, r.ctx.confirmedPosDel, now)
+	r.ctx.livePendingOrders = mergeConfirmedPending(pendingOrders, r.ctx.livePendingOrders,
+		r.ctx.confirmedOrdAdd, r.ctx.confirmedOrdDel, now)
+}
+
+// mergeConfirmedPositions reconciles a broker snapshot with broker-confirmed
+// mutations (LIVE-POS-SNAPSHOT-LAG-1): confirmed-closed tickets still listed
+// by a lagging snapshot are dropped; confirmed-open tickets missing from it
+// are retained from current live state. Once the snapshot catches up the
+// tracking entries prune and the snapshot becomes authoritative again.
+func mergeConfirmedPositions(snap, live []sdk.Position, add, del map[int64]time.Time, now time.Time) []sdk.Position {
+	if len(add) == 0 && len(del) == 0 {
+		return snap
+	}
+	seen := make(map[int64]bool, len(snap))
+	for _, p := range snap {
+		seen[p.Ticket] = true
+	}
+	pruneConfirmed(seen, add, del, now)
+	merged := make([]sdk.Position, 0, len(snap)+len(add))
+	for _, p := range snap {
+		if _, removed := del[p.Ticket]; removed {
+			continue
+		}
+		merged = append(merged, p)
+	}
+	for _, p := range live {
+		if _, added := add[p.Ticket]; added && !seen[p.Ticket] {
+			merged = append(merged, p)
+		}
+	}
+	return merged
+}
+
+// mergeConfirmedPending is mergeConfirmedPositions for pending orders.
+func mergeConfirmedPending(snap, live []sdk.PendingOrder, add, del map[int64]time.Time, now time.Time) []sdk.PendingOrder {
+	if len(add) == 0 && len(del) == 0 {
+		return snap
+	}
+	seen := make(map[int64]bool, len(snap))
+	for _, o := range snap {
+		seen[o.Ticket] = true
+	}
+	pruneConfirmed(seen, add, del, now)
+	merged := make([]sdk.PendingOrder, 0, len(snap)+len(add))
+	for _, o := range snap {
+		if _, removed := del[o.Ticket]; removed {
+			continue
+		}
+		merged = append(merged, o)
+	}
+	for _, o := range live {
+		if _, added := add[o.Ticket]; added && !seen[o.Ticket] {
+			merged = append(merged, o)
+		}
+	}
+	return merged
+}
+
+// SetHistoryProvider installs the live order-history provider
+// (LIVE-HISTORY-POOL-1). The fn is called by Broker().HistoryOrders with the
+// event's context; errors surface via broker LastError (fail-closed empty).
+func (r *Runner) SetHistoryProvider(fn func(ctx context.Context, from, to int64) ([]sdk.Position, error)) {
+	r.ctx.mu.Lock()
+	defer r.ctx.mu.Unlock()
+	r.broker.historyFn = fn
 }
 
 // SetLogin sets the account login (AccountNumber) for harness mode.

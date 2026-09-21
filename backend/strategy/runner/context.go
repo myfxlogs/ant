@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/shopspring/decimal"
 
@@ -33,7 +34,18 @@ type contextImpl struct {
 	liveFreeMargin    string
 	livePositions     []sdk.Position
 	livePendingOrders []sdk.PendingOrder // LIVE-MQL-ORDER-CONTEXT-1
-	liveLogin         int64              // VM-TRADE-CONTEXT-6: AccountNumber() source
+	// LIVE-POS-SNAPSHOT-LAG-1: broker-confirmed mutation tickets with their
+	// confirmation time. mtapi's OpenedOrders snapshots lag fills by seconds
+	// and transiently drop unrelated positions; wholesale UpdateLiveState
+	// overwrite would regress the runner below its own broker-verified
+	// knowledge, flickering OrdersTotal (MACD-Sample-style total<1 gates then
+	// over-trade real money). Snapshots merge over these until they catch up
+	// or the retention window expires.
+	confirmedPosAdd map[int64]time.Time
+	confirmedPosDel map[int64]time.Time
+	confirmedOrdAdd map[int64]time.Time
+	confirmedOrdDel map[int64]time.Time
+	liveLogin       int64 // VM-TRADE-CONTEXT-6: AccountNumber() source
 	// VM-API-TRUTH-3: authoritative account status from mt_accounts.
 	liveIsDemo         bool
 	liveIsConnected    bool
