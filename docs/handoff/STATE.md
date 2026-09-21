@@ -19,7 +19,7 @@
 || VM-LIVE-SYNC-DISPATCH-1（R1）signal-mode 假票号根治（IntVal(1)→broker 真票号+同事件信号丢单+cancel_all 空转） | ✅done | Devin CLI 施工+独立复审验收 2026-09-20；设计 design-vm-live-sync-dispatch-r1.md v2；VM syncDispatch 同步派发+15 builtin emitSignal+confirmed 事实注入 runner live state+alreadyDispatched 防双发+dispatchCancelAll；复审抓出 affectedTickets 缺口修补；mutation×4 RED→GREEN（M1 假票号复活/M2 双发/M3 仓位注入丢失/M4 幽灵仓位）；strategy 442+mql2go 绿；明细 registry 行 36 |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R4（CloseBy dispatch）为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: **VM-BLOCK-SCOPE-1 派工**——施工单 `docs/audits/builder-handoff-vm-block-scope-1.md` 就绪（兼容扫描 11 源 CLEAN 前置门已过），发开工指令。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
+- **下一步**: VM-BLOCK-SCOPE-1 已验收（编译层收紧，如需部署复验随下批镜像走）。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -83,7 +83,7 @@
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
 - **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
 - **VM-STATIC-LOCAL-1** ✅done（Devin CLI 复审 2026-09-21，0af39991）— 函数内 static 脱糖 mangled-global+init-guard（懒初始化）；独立 mutation M1/M3 RED→GREEN；**已部署+实盘复验**（BTCUSDm 探针 counter 1→90 跨 tick 持久、acc 累积、初始化器单次）；明细 registry 行 47
-- **VM-BLOCK-SCOPE-1** 🟦open 待施工 — if/else/while/do/switch 花括号体不建作用域致块内声明外泄（STATIC-1 复审抓出的预存缺口）；设计+施工单已落档，兼容扫描 11 源 CLEAN 门已过；明细 registry 行 48
+- **VM-BLOCK-SCOPE-1** ✅done（Devin CLI 复审 2026-09-21，施工 2f188877）— IR 层 pushScope 包裹 5 插入点（if 双枝/while/do/for 内层体/switch 单层共享）；B1–B12+错误形状断言（拒收全纯读位 v2 纪律）；独立 mutation M1/M2/M3 亲手复红→恢复零偏差；mql2go 811 绿、race×3、CompatScan 20 CLEAN；明细 registry 行 48
 - **LIVE-POS-SNAPSHOT-LAG-1 + LIVE-HISTORY-POOL-1** ✅done — Runner confirmed-mutation 保留窗（120s）：已确认开/平票号不被滞后快照回退/复活（OrdersTotal 闪烁→实盘超开仓根因，XAUUSD 实证 36 仓）；HistoryOrders 经 session 暂存注入 Start() 后接 mtHub.OrderHistory，MODE_HISTORY 实盘真值（BTCUSDm hist=1051 / XAUUSD hist=131、OrdersTotal=92 全量枚举实证）；mutation×2 RED→GREEN；明细 registry 行 45-46
 - **VM-LIVE-PARITY-F1/F2/F3** ✅done — 实盘对账修复（Devin CLI 验收 2026-09-19，d39afc62+审计侧修补，M1/M2/M3 mutation 实证）；明细 registry 行 28-30
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31

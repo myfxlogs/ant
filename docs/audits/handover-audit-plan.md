@@ -925,3 +925,11 @@
 
 - **施工方**（builder）按 `builder-handoff-vm-block-scope-1.md` v2 S1–S5 串行完成：IR 层 pushScope 包裹（compileIf 双枝/while/do/for 内层体/switch 单层），零 IR 结构变更、零 CST/VM 变更；`compile_block_scope_test.go` B1–B12 先红（stash 7 红+5 pin，与设计现状矩阵吻合）后绿 13/13；mutation M1/M2/M3 精确承重 RED→restore→GREEN；机检全绿；`TestBlockScopeCompatScan` 重跑 PASS（扫描器保留）。
 - **自审发现并修复**：测试 helper 首版漏跑 OnInit（全局初始化器在 OnInit 前导）致 B11 假红——修复后 B11 为双态绿 pin；M3 首做 B10 红证因变异脚本误删 pop 致栈失衡无效——作废并对称剥离重做。
+
+## 2026-09-21 VM-BLOCK-SCOPE-1 验收通过（Devin CLI 独立复审）
+
+- **复审结论 ✅done**（施工 2f188877）：A 架构复用 pushScope/popScope/staticScopes 平行栈零新设施；B 第一性最简（IR 层 5 插入点，零 CST/IR 结构变更）；C 洁净（check-lines 0 errors）；D 正确性（B1–B12+错误形状断言，拒收全纯读位 v2 纪律）。
+- **独立重跑**：mql2go 811 绿、race BlockScope|Static 26 绿×3、build/vet/gofmt/diff-check 净、CompatScan 20 CLEAN。
+- **独立 mutation（亲手变异，非采信自报）**：M1 删 compileIf 双包裹→B2/B7/B12+错误形状测试精确复红；M2 删 for 内层→仅 B5 红（重绑定致 cond 读旧槽→死循环撞指令上限）+B3 不红✓；M3 删 while/do/switch 包裹→B4/B9/B10 复红；恢复后 diff 与提交零偏差。
+- **v1→v2 设计审计已修正项全部落地**：纯读位纪律、B3 pin、mutation 映射、扫描器常驻门。
+- **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
