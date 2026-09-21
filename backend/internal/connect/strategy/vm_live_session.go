@@ -39,6 +39,9 @@ type VMLiveSession struct {
 	// syncDisp is non-nil in live mode once the event loop wires the
 	// synchronous broker-mutation dispatcher (VM-LIVE-SYNC-DISPATCH-1).
 	syncDisp bool
+	// historyFn is the live order-history provider installed before Start;
+	// applied to the runner once it is created (LIVE-HISTORY-POOL-1).
+	historyFn func(ctx context.Context, from, to int64) ([]sdk.Position, error)
 }
 
 // NewVMLiveSession creates a VMLiveSession for an MQL strategy.
@@ -109,6 +112,11 @@ func (s *VMLiveSession) Start(ctx context.Context, req *antv1.ExecuteLiveRequest
 		Mode:      bctx.Mode,
 	})
 	s.runner.SetStrategy(s.strategy)
+	// LIVE-HISTORY-POOL-1: the runner only exists now — apply the live
+	// order-history provider that initVMSession staged on the session.
+	if s.historyFn != nil {
+		s.runner.SetHistoryProvider(s.historyFn)
+	}
 
 	// VM-TRADE-CONTEXT-6 S5: validate first bar context before Init.
 	// Invalid OHLCV lengths or financial fields must be rejected before
@@ -148,6 +156,13 @@ func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveReq
 // the compiled VM (VM-LIVE-SYNC-DISPATCH-1, R1). The event loop calls this
 // before each event in live mode; signal-mode trade builtins then execute
 // mutations inside the event and return real broker outcomes.
+// SetHistoryProvider stages the live order-history provider on the session;
+// the runner only exists after Start, where it is applied
+// (LIVE-HISTORY-POOL-1).
+func (s *VMLiveSession) SetHistoryProvider(fn func(ctx context.Context, from, to int64) ([]sdk.Position, error)) {
+	s.historyFn = fn
+}
+
 func (s *VMLiveSession) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
 	s.strategy.SetSyncDispatcher(fn)
 	s.syncDisp = fn != nil

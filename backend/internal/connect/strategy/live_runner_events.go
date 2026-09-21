@@ -161,10 +161,11 @@ func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStr
 			}
 		}
 	}
-	// LIVE-HISTORY-POOL-1: wire broker order-history RPC so OrdersHistoryTotal /
-	// OrderSelect MODE_HISTORY see real closed orders in live mode.
-	if cfg.Mode == modeLive && s.mtHub != nil && vmSess.runner != nil {
-		vmSess.runner.SetHistoryProvider(func(hctx context.Context, from, to int64) ([]sdk.Position, error) {
+	// LIVE-HISTORY-POOL-1: stage the broker order-history provider on the
+	// session so OrdersHistoryTotal / OrderSelect MODE_HISTORY see real
+	// closed orders in live mode (applied to the runner inside Start).
+	if cfg.Mode == modeLive && s.mtHub != nil {
+		vmSess.SetHistoryProvider(func(hctx context.Context, from, to int64) ([]sdk.Position, error) {
 			fromT := time.Unix(from, 0)
 			toT := time.Unix(to, 0)
 			if from <= 0 {
