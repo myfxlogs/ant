@@ -410,3 +410,10 @@
 
 ## 2026-09-21 — 四缺陷批实盘复验（部署 2c28d50+eda7911）
 demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）、`tickval=0/ticksize=0.01` 与 MarketInfo 一致（D1）、同 tick 异 comment `v2=394688565` 放行+全同重试仍拦（D3——复验抓出 Gate 层 intent 丢 comment 同缺陷，已补 eda7911）、`modify err=130` 原生码（D2，原 146）。别名编译拒绝实证：run d457d820 `unknown variable: SYMBOL_TICK_VALUE` fail-closed。账户零残留。
+
+## 2026-09-21 — VM-STATIC-LOCAL-1 + VM-BLOCK-SCOPE-1 双债全链闭环
+
+- **VM-STATIC-LOCAL-1 ✅done+已部署**：函数内 `static` 局部脱糖 mangled-global+init-guard 懒初始化（施工 0af39991）；Devin CLI 独立复审验收（07ed66eb，亲手 mutation M1/M3 复红→恢复）；实盘探针 counter 跨 90+ tick 持久不归零。
+- **VM-BLOCK-SCOPE-1 ✅done+已部署**：设计 v1 经决策方审计退回修订 v2（实证纠正：for 体 decl 本不泄漏、写位 shim 假绿陷阱、mutation 映射、B1 pin 化）；施工 2f188877 IR 层 pushScope 包裹 5 插入点；独立复审亲手 mutation M1/M2/M3 复红→零偏差（c7976d1c）；实盘双探针闭环——拒收态 `unknown variable: n` 编译拒 / 接受态 a=1 b=2 cnt=3 全对（8cbc9b32）。
+- 兼容扫描器入库常驻回归门 `block_scope_scan_test.go`（b388b94e）：repo fixtures + /tmp/strats 外部语料，11 源 CLEAN，空跑/泄漏均 FAIL。
+- 明细：registry 行 47/48。
