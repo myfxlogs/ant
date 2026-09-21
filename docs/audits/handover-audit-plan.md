@@ -914,3 +914,9 @@
 
 - **施工方**（builder）按 `builder-handoff-vm-static-local-1.md` S1–S6 串行完成：编译层脱糖（`Expr.Static` + `staticClassSpecifier` + `compileDeclaration` 打标/fail-closed + `collectFunction` 拒函数位 static[CST dump 实证同构] + staticScopes 别名栈 + compileDecl mangled-global/init-guard）；`compile_static_test.go` T1–T11 先红（stash 12/12 红证）后绿；mutation M1–M4 RED→restore→GREEN；机检全绿（build/mql2go 全量含 golden/vet/gofmt/check-lines 0 errors/race×3/diff --check）。
 - **偏差申报 1 项**：S3 片段同 scope 重定义 dup 检查与 T4 冲突（compileIf 不 pushScope，两枝共享 map 层）——按验收标准优先去除，改重绑定语义，待决策方裁决（明细 registry 行 47）。
+
+## 2026-09-21 VM-STATIC-LOCAL-1 部署+实盘闭环 + VM-BLOCK-SCOPE-1 立项
+
+- **STATIC-1 闭环**：镜像重建部署后 BTCUSDm 1m 实盘探针实证——`static int counter` 跨 90+ tick 单调递增 1→90 不归零、`acc` 0.5→45 累积、`once=100` 初始化器单次执行（修复前每 tick 重打 init）。探针 run 3c4b89b5 已停。
+- **BLOCK-SCOPE-1 立项**：设计 SSOT `design-vm-block-scope-1.md` + 施工单 `builder-handoff-vm-block-scope-1.md` 落档。**兼容扫描前置门已过**：tree-sitter CST 扫描器实测 7 真实用户策略+4 仓内 fixture 共 11 源全部 CLEAN（零块内声明外泄依赖）；扫描器经历两轮修正（Symbol() 调用误报→只取声明符首 identifier；TSV 真换行破行→COPY 转义分文件+序号前缀防同名覆盖）。落点收窄：裸 `{}` 块已产 StmtBlock，缺口仅在 compileIf/compileWhile/compileDoWhile/compileSwitch 直接 compileBlock 的分枝体（compileFor 已 pushScope 正确）。
+- **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）

@@ -19,7 +19,7 @@
 || VM-LIVE-SYNC-DISPATCH-1（R1）signal-mode 假票号根治（IntVal(1)→broker 真票号+同事件信号丢单+cancel_all 空转） | ✅done | Devin CLI 施工+独立复审验收 2026-09-20；设计 design-vm-live-sync-dispatch-r1.md v2；VM syncDispatch 同步派发+15 builtin emitSignal+confirmed 事实注入 runner live state+alreadyDispatched 防双发+dispatchCancelAll；复审抓出 affectedTickets 缺口修补；mutation×4 RED→GREEN（M1 假票号复活/M2 双发/M3 仓位注入丢失/M4 幽灵仓位）；strategy 442+mql2go 绿；明细 registry 行 36 |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R4（CloseBy dispatch）为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: **实盘探针四缺陷批已修待部署复验**（registry 行40-43）——编译期严格读+typed 错误码透传+dedup 键+IsTradeAllowed 谓词；部署后重跑四轴探针（native err 码/同参多单放行/tradeAllowed=true/SYMBOL_TICK_VALUE 编译拒）。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
+- **下一步**: **VM-BLOCK-SCOPE-1 派工**——施工单 `docs/audits/builder-handoff-vm-block-scope-1.md` 就绪（兼容扫描 11 源 CLEAN 前置门已过），发开工指令。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
@@ -82,7 +82,8 @@
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
 - **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
-- **VM-STATIC-LOCAL-1** ✅done（Devin CLI 复审 2026-09-21，0af39991）— 函数内 static 脱糖 mangled-global+init-guard（懒初始化）；独立 mutation M1/M3 RED→GREEN；复审抓出预存缺口 VM-BLOCK-SCOPE-1 登记行 48；明细 registry 行 47
+- **VM-STATIC-LOCAL-1** ✅done（Devin CLI 复审 2026-09-21，0af39991）— 函数内 static 脱糖 mangled-global+init-guard（懒初始化）；独立 mutation M1/M3 RED→GREEN；**已部署+实盘复验**（BTCUSDm 探针 counter 1→90 跨 tick 持久、acc 累积、初始化器单次）；明细 registry 行 47
+- **VM-BLOCK-SCOPE-1** 🟦open 待施工 — if/else/while/do/switch 花括号体不建作用域致块内声明外泄（STATIC-1 复审抓出的预存缺口）；设计+施工单已落档，兼容扫描 11 源 CLEAN 门已过；明细 registry 行 48
 - **LIVE-POS-SNAPSHOT-LAG-1 + LIVE-HISTORY-POOL-1** ✅done — Runner confirmed-mutation 保留窗（120s）：已确认开/平票号不被滞后快照回退/复活（OrdersTotal 闪烁→实盘超开仓根因，XAUUSD 实证 36 仓）；HistoryOrders 经 session 暂存注入 Start() 后接 mtHub.OrderHistory，MODE_HISTORY 实盘真值（BTCUSDm hist=1051 / XAUUSD hist=131、OrdersTotal=92 全量枚举实证）；mutation×2 RED→GREEN；明细 registry 行 45-46
 - **VM-LIVE-PARITY-F1/F2/F3** ✅done — 实盘对账修复（Devin CLI 验收 2026-09-19，d39afc62+审计侧修补，M1/M2/M3 mutation 实证）；明细 registry 行 28-30
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31
@@ -98,7 +99,7 @@
 > 完整历史见 `docs/audits/handover-audit-plan.md` + `docs/handoff/LOG.md`。
 
 - 2026-09-17~09-19 **VM 批七项 ✅done + 簿记修正 + MQL-LOOP-4/LLM-CONFIG-1 翻正 + i18n 收官**——已滚出 `docs/handoff/LOG.md`（明细见该文件同日期段）。
-- 2026-09-19 **LOWPRI-SWEEP-2 ✅done**（5c855630——CQ-11 死簇删净复核门零命中；CQ-12 242 行 lint 转绿自 0d52f0a6 起存量红消除） — CQ-11 internal/ai 传递性死簇删除（backend -289 行：两整文件+strategy_prompt.go 死成员）+ CQ-12 WorkspaceCenterColumn 拆修（313→242 行+4 新文件）；Devin CLI 独立复审全绿：复核门重跑零有效命中+build/vet/test 绿+eslint src 零输出+lint exit 0[存量红消]+tsc 0+vitest 217 绿+check-lines 0 errors+diff --check 净；明细 registry。
+- 2026-09-19 **LOWPRI-SWEEP-2 ✅done**（5c855630）— CQ-11 internal/ai 死簇删净（-289 行）+CQ-12 WorkspaceCenterColumn 313→242 lint 存量红消；Devin CLI 独立复审全绿；明细 registry。
 
 > 2026-09-16 的 VM-HONESTY-3-REVIEW / VM-COMPILER-SEMANTICS-3 / VM-API-TRUTH-1 ✅done 明细已滚出至 LOG.md（09-16 段含验收记录）；registry 行保留。
 > 2026-09-08 及更早的变更日志（FIX-2026-09-08-TEMP-RETRY/FIX-2026-09-08-BYOK-MODEL-PICKER/VM-TRADE-CONTEXT-1/2 ✅done、LIVE-ORDER-REENTRY-1-R4-REVIEW ✅done、VM-CACHE-INTEGRITY-1/2 ✅done、DATA-TRUTH-2b ✅done、三个 spec 落档、D-REVERT-SCOPE-DRIFT-001、D-REVERT-CLEANUP-001、治理结构重构、D-006/D-007、VM-CACHE-INTEGRITY-1/2 commit、LIVE-ORDER-REENTRY-1 R4 commit、第三/四批施工提示词落档、VM-COMPILER-SEMANTICS-1 + BT-FUNC-ENTRYPC-FWD ✅done、第四批施工提示词落档）已滚出至 `docs/handoff/LOG.md` + `docs/audits/handover-audit-plan.md`。
