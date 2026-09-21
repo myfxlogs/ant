@@ -933,3 +933,11 @@
 - **独立 mutation（亲手变异，非采信自报）**：M1 删 compileIf 双包裹→B2/B7/B12+错误形状测试精确复红；M2 删 for 内层→仅 B5 红（重绑定致 cond 读旧槽→死循环撞指令上限）+B3 不红✓；M3 删 while/do/switch 包裹→B4/B9/B10 复红；恢复后 diff 与提交零偏差。
 - **v1→v2 设计审计已修正项全部落地**：纯读位纪律、B3 pin、mutation 映射、扫描器常驻门。
 - **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
+
+## 2026-09-21 VM-BLOCK-SCOPE-1 部署+实盘闭环
+
+- 镜像重建部署（alphaforge-prod-backend），BTCUSDm 1m 实盘双探针：
+  - **A 拒收态**：`if(g>0){int n=1;} g=n;` → `compile MQL failed: unknown variable: n`（修复前泄漏编译过）——run be64457a，已停
+  - **B 接受态**：兄弟枝 static + for 体遮蔽 + 裸块 → `runs=4 a=1 b=2 cnt=3` 全对——run e92d3833，已停
+- registry 行 48 已含完整验收证据；STATE.md 同步。
+- **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
