@@ -82,7 +82,8 @@
 - **ORDERSEND-NILBROKER-FAILCLOSED-1** ✅done — 12 交易写站点 signalMode 前移+nil-broker→fatal（Devin CLI 验收 2026-09-18，commit 2739f100，独立 mutation×3）；明细 registry 行 215
 - **TRADE-BUILTIN-ERR-SWALLOW-1** ✅done — channel-split：err=infra→fatal/RetCode≠done→false+_LastError/""→fatal；13 站三态+SimBroker 搬迁+engine RetCode 日志（Devin CLI 验收 2026-09-18，commit 6eae8160，独立 mutation×4）；明细 registry 行 222
 - **VM-FUNC-FATAL-DELAY-1** ✅done — executeCallUser 循环顶 fatalError 检查覆三泄漏路径（Devin CLI 验收 2026-09-18，commit de6f672c+6ef18536，独立 mutation×2）；明细 registry 行 218
-- **LIVE-POS-SNAPSHOT-LAG-1 + LIVE-HISTORY-POOL-1** ✅done — Runner confirmed-mutation 保留窗（120s）：已确认开/平票号不被滞后快照回退/复活（OrdersTotal 闪烁→实盘超开仓根因，XAUUSD 实证 36 仓）；HistoryOrders 经 session 暂存注入 Start() 后接 mtHub.OrderHistory，MODE_HISTORY 实盘真值（BTCUSDm hist=1051 / XAUUSD hist=131、OrdersTotal=92 全量枚举实证）；mutation×2 RED→GREEN；明细 registry 行 45-46；新债 VM-STATIC-LOCAL-1（函数内 static 不持久）registry 行 47
+- **VM-STATIC-LOCAL-1** ✅done（Devin CLI 复审 2026-09-21，0af39991）— 函数内 static 脱糖 mangled-global+init-guard（懒初始化）；独立 mutation M1/M3 RED→GREEN；复审抓出预存缺口 VM-BLOCK-SCOPE-1 登记行 48；明细 registry 行 47
+- **LIVE-POS-SNAPSHOT-LAG-1 + LIVE-HISTORY-POOL-1** ✅done — Runner confirmed-mutation 保留窗（120s）：已确认开/平票号不被滞后快照回退/复活（OrdersTotal 闪烁→实盘超开仓根因，XAUUSD 实证 36 仓）；HistoryOrders 经 session 暂存注入 Start() 后接 mtHub.OrderHistory，MODE_HISTORY 实盘真值（BTCUSDm hist=1051 / XAUUSD hist=131、OrdersTotal=92 全量枚举实证）；mutation×2 RED→GREEN；明细 registry 行 45-46
 - **VM-LIVE-PARITY-F1/F2/F3** ✅done — 实盘对账修复（Devin CLI 验收 2026-09-19，d39afc62+审计侧修补，M1/M2/M3 mutation 实证）；明细 registry 行 28-30
 - **VM-LIVE-VENUE-1** ✅done — venue 常量真值化 -1=unknown 哨兵全链+TRADEALLOWED 双轴（Devin CLI 验收 2026-09-19，dfd9eccd，M1/M2/M3 独立 mutation；**已部署**+demo RPC 边界复验 tradeMode=2 真值）；明细 registry 行 31
 - **CODE-SIZE-MT5-ORDERS-1** ✅done — mt5/orders.go 450→348 拆分（Devin CLI 直接施工+验收 2026-09-19：符号元数据三函数 verbatim move→symbol_params.go，diff 逐字节一致=零行为变更）；明细 registry 行 32
