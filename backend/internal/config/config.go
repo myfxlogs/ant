@@ -11,9 +11,9 @@ import (
 // Config holds all application configuration sourced from environment variables.
 type Config struct {
 	// D6-A: Risk Gate
-	RiskGateEnabled           bool
-	RiskGateKillSwitch        bool
-	RiskGateAutotradeEnabled  bool
+	RiskGateEnabled          bool
+	RiskGateKillSwitch       bool
+	RiskGateAutotradeEnabled bool
 
 	// Database (PostgreSQL)
 	DBHost     string
@@ -74,16 +74,19 @@ type Config struct {
 	RequireEmailVerification bool
 
 	// Tron chain monitoring (USDT deposit)
-	TrongridAPIKey     string
-	TronscanAPIKey     string
+	TrongridAPIKey       string
+	TronscanAPIKey       string
 	TronGridGRPCEndpoint string // e.g. grpc.trongrid.io:50051
+	// ChainMonitorEnabled gates the TRON deposit monitor loop (paused while
+	// the TRON track is descoped — avoids TronGrid rate-limit noise).
+	ChainMonitorEnabled bool
 
 	// HD wallet deposit (ADR-0026)
-	DepositXpub           string
+	DepositXpub            string
 	DepositXpubFingerprint string
 
 	// WebAuthn withdrawal authorization (ADR-0026 Phase E)
-	WebAuthnRPID    string
+	WebAuthnRPID     string
 	WebAuthnRPOrigin string
 
 	// Cookie security: set Secure flag on refresh_token cookies.
@@ -142,11 +145,12 @@ func Load() *Config {
 		TrongridAPIKey:       getenv("TRONGRID_API_KEY", ""),
 		TronscanAPIKey:       getenv("TRONSCAN_API_KEY", ""),
 		TronGridGRPCEndpoint: getenv("TRONGRID_GRPC_ENDPOINT", "grpc.trongrid.io:50051"),
+		ChainMonitorEnabled:  getenvBool("CHAIN_MONITOR_ENABLED", true),
 
 		DepositXpub:            getenv("DEPOSIT_XPUB", ""),
 		DepositXpubFingerprint: getenv("DEPOSIT_XPUB_FINGERPRINT", ""),
 
-		WebAuthnRPID:    getenv("WEBAUTHN_RP_ID", "alfq.org"),
+		WebAuthnRPID:     getenv("WEBAUTHN_RP_ID", "alfq.org"),
 		WebAuthnRPOrigin: getenv("WEBAUTHN_RP_ORIGIN", "https://alfq.org"),
 
 		CookieSecure: getenvBool("COOKIE_SECURE", true),

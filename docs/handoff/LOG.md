@@ -390,3 +390,10 @@
 - 根因：`transitionOMSByUpdate` default→WORKING 把 modify/balance/credit/unknown/无票号全当转换；`TransitionOrderByTicket` 无幂等/终态守卫。balance/credit 票号不在 orders 表→虚假 not-found→retry→reconcile 链。
 - 修法：`omsTargetForUpdateType` 生命周期白名单 + `shouldAttemptOMSTransition`（同态幂等+终态拒绝转出）双接线（主路径+retry 路径）。
 - T 层 11+12 例 + ticketless nil-safe；M1 复辟 default→WORKING 4 例复红、M2 守卫恒 true 复红→恢复。
+
+## 2026-09-20/21 — 收官明细滚出（STATE 减重）
+- R1 `5db60c7f`：signal-mode 真票号根治+同事件丢单+cancel_all 空转；实盘探针 run 8bfe7ef0：send=394076399/select 同事件/close=true/零残留。
+- LIVE-CLOSEALL-PENDING-1 `799fae03`：close_all 市价过滤；M5 mutation 实证。
+- LIVE-ORDERREC-SIDE-TYPE-1 `f0508fd9`：MT4/MT5 PlaceOrder 回执 Side/OrderType；实盘复验 buy_limit 394081292 type=2、DB order_type=1。
+- OMS-REPLAY-SPAM-1 `34f704d1`：omsTargetForUpdateType 生命周期白名单+shouldAttemptOMSTransition 幂等/终态守卫；部署后回放窗 0 错误。
+- TRON 暂停：CHAIN_MONITOR_ENABLED=false 门控 monitor/reconciler/sweep 三环。

@@ -233,14 +233,20 @@ func main() {
 	go reconLoop.Start(ctx)
 
 	// Start chain monitor for USDT deposit detection (cancelled on shutdown).
-	go func() { _ = chainMonitor.Run(ctx) }()
+	// Gated by CHAIN_MONITOR_ENABLED — TRON track currently paused.
+	if cfg.ChainMonitorEnabled {
+		go func() { _ = chainMonitor.Run(ctx) }()
+	} else {
+		log.Info("chain monitor disabled by CHAIN_MONITOR_ENABLED=false")
+	}
 
-	// Start deposit reconciler (cancelled on shutdown).
-	go func() { _ = reconcilerInst.Run(ctx) }()
-
-	// Start sweep worker for fund consolidation (cancelled on shutdown).
-	if sweepWorker != nil {
-		go func() { _ = sweepWorker.Run(ctx) }()
+	// Start deposit reconciler + sweep worker — both touch TronGrid, so they
+	// share the CHAIN_MONITOR_ENABLED gate while the TRON track is paused.
+	if cfg.ChainMonitorEnabled {
+		go func() { _ = reconcilerInst.Run(ctx) }()
+		if sweepWorker != nil {
+			go func() { _ = sweepWorker.Run(ctx) }()
+		}
 	}
 
 	// Daily data retention cleanup — prevents unbounded disk growth.

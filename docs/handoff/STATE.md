@@ -19,7 +19,7 @@
 || VM-LIVE-SYNC-DISPATCH-1（R1）signal-mode 假票号根治（IntVal(1)→broker 真票号+同事件信号丢单+cancel_all 空转） | ✅done | Devin CLI 施工+独立复审验收 2026-09-20；设计 design-vm-live-sync-dispatch-r1.md v2；VM syncDispatch 同步派发+15 builtin emitSignal+confirmed 事实注入 runner live state+alreadyDispatched 防双发+dispatchCancelAll；复审抓出 affectedTickets 缺口修补；mutation×4 RED→GREEN（M1 假票号复活/M2 双发/M3 仓位注入丢失/M4 幽灵仓位）；strategy 442+mql2go 绿；明细 registry 行 36 |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R4（CloseBy dispatch）为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: **VM 地基全链夯牢收官**——R1 `5db60c7f`+实盘探针闭环（demo 904d14e6：真票号 394076399/同事件注入仓位/无幽灵仓位）；深探追加挂单全生命周期实证（pend send/select/modify/delete+market modify/close+拒绝路径全通）并抓修两缺陷：**LIVE-CLOSEALL-PENDING-1**（挂单毒化批次，已部署 `799fae03`）+**LIVE-ORDERREC-SIDE-TYPE-1**（PlaceOrder 回执丢 Side/OrderType 致注入类型错读，adapter 双侧修复+T11 实证；已部署 `f0508fd9`+实盘复验 buy_limit 394081292 `type=2`、DB `order_type=1`、账户零残留）。剩余：R4·VM-LIVE-MTF-1（需求驱动）、FEAT-3（roadmap 需产品决策）、TRON 系（业主排除）。生产日志巡检追加抓修 **OMS-REPLAY-SPAM-1**（回放对终态单刷非法转换+虚假 reconcile，已修）。已完成链（明细均 registry/LOG）：KB-SEED-DRIFT-1、TRADE-RECORDS-DUP-1、VERIFY-CHAIN-SEMANTIC-1、F1/F2/F3、VM-LIVE-PARITY-1、G-POST2/POST-2/LOWPRI-SWEEP/i18n/VM 债系全收官。
+- **下一步**: **VM 地基全链夯牢收官，零 open 债务**——本批交付（明细 registry 行36-40/LOG）：R1 `5db60c7f` 信号模式真票号+实盘探针闭环；LIVE-CLOSEALL-PENDING-1 `799fae03`；LIVE-ORDERREC-SIDE-TYPE-1 `f0508fd9`+实盘复验 `type=2`；OMS-REPLAY-SPAM-1 `34f704d1`；TRON 暂停 `CHAIN_MONITOR_ENABLED=false`。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
 - **清扫上翻**: 无私有记忆需清扫。
 
 ## 活跃 registry 条目指针
