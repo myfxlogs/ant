@@ -303,6 +303,15 @@ func (c *compiler) collectFunction(ir *interp.IR, n *sitter.Node) {
 	if name == "" {
 		return
 	}
+	// VM-STATIC-LOCAL-1: `static` on a function definition is illegal MQL
+	// (dump-verified: storage_class_specifier as first named child, same form
+	// as the declaration position) and was silently dropped before.
+	if staticClassSpecifier(n, c) == "static" {
+		if c.err == nil {
+			c.err = fmt.Errorf("static storage class not allowed on function %q at line %d", name, n.StartPoint().Row+1)
+		}
+		return
+	}
 	// Skip class declarations that tree-sitter mis-parses as function_definition
 	if isBuiltinClass(name) {
 		return
@@ -617,6 +626,30 @@ func isStmtType(t string) bool {
 }
 
 func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
+	// VM-STATIC-LOCAL-1: the storage class was silently dropped before (the
+	// storage_class_specifier child fell through to the switch default), so a
+	// `static int done` local compiled as a plain frame local that
+	// re-initialized on every call. Capture it here: `static` marks every
+	// declarator's ExprDecl; any other storage class is illegal MQL in local
+	// position and must fail closed instead of being dropped.
+	classSpec := staticClassSpecifier(n, c)
+	if classSpec != "" && classSpec != "static" {
+		if c.err == nil {
+			c.err = fmt.Errorf("unsupported storage class %q in local declaration at line %d", classSpec, n.StartPoint().Row+1)
+		}
+		return nil
+	}
+	// `input`/`sinput` parse as a leading type_identifier (dump-verified, both
+	// local and top-level) — illegal in local position, was silently dropped.
+	if first := n.NamedChild(0); first != nil && first.Type() == nodeTypeIdentifier {
+		if txt := c.text(first); txt == "input" || txt == "sinput" {
+			if c.err == nil {
+				c.err = fmt.Errorf("%q not allowed in local declaration at line %d", txt, n.StartPoint().Row+1)
+			}
+			return nil
+		}
+	}
+	isStatic := classSpec == "static"
 	// VM-COMPILER-SEMANTICS-1: handle all declarators (multi-variable + no-init).
 	typeName := c.findType(n)
 	var decls []interp.Expr
@@ -643,16 +676,18 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 			var expr interp.Expr
 			if valExpr != nil {
 				expr = interp.Expr{
-					Kind: interp.ExprDecl,
-					Name: name,
-					Args: []interp.Expr{*c.compileExpr(valExpr)},
+					Kind:   interp.ExprDecl,
+					Name:   name,
+					Static: isStatic,
+					Args:   []interp.Expr{*c.compileExpr(valExpr)},
 				}
 			} else {
 				// No initializer — zero value.
 				expr = interp.Expr{
-					Kind: interp.ExprDecl,
-					Name: name,
-					Args: []interp.Expr{zeroValueExpr(typeName)},
+					Kind:   interp.ExprDecl,
+					Name:   name,
+					Static: isStatic,
+					Args:   []interp.Expr{zeroValueExpr(typeName)},
 				}
 			}
 			decls = append(decls, expr)
@@ -662,9 +697,10 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 				continue
 			}
 			decls = append(decls, interp.Expr{
-				Kind: interp.ExprDecl,
-				Name: name,
-				Args: []interp.Expr{zeroValueExpr(typeName)},
+				Kind:   interp.ExprDecl,
+				Name:   name,
+				Static: isStatic,
+				Args:   []interp.Expr{zeroValueExpr(typeName)},
 			})
 		case nodeIdentifier:
 			// VM-IMPLICIT-VAR-READ-1: `int x;` parses as
@@ -673,9 +709,10 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 			// case the declaration was silently dropped and a later read fell
 			// through to the implicit-global path (or, now, a compile error).
 			decls = append(decls, interp.Expr{
-				Kind: interp.ExprDecl,
-				Name: c.text(child),
-				Args: []interp.Expr{zeroValueExpr(typeName)},
+				Kind:   interp.ExprDecl,
+				Name:   c.text(child),
+				Static: isStatic,
+				Args:   []interp.Expr{zeroValueExpr(typeName)},
 			})
 		case "array_declarator":
 			// MQL-COMPILER-LOCAL-ARRAYS: local array declarations compile to
@@ -721,8 +758,9 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 				continue
 			}
 			decls = append(decls, interp.Expr{
-				Kind: interp.ExprDecl,
-				Name: name,
+				Kind:   interp.ExprDecl,
+				Name:   name,
+				Static: isStatic,
 				Args: []interp.Expr{{
 					Kind: interp.ExprArrayNew,
 					Name: typeName,
@@ -959,6 +997,23 @@ func isExternDeclaration(n *sitter.Node, c *compiler) bool {
 	}
 	first := n.NamedChild(0)
 	return first.Type() == "storage_class_specifier" && c.text(first) == "extern"
+}
+
+// staticClassSpecifier returns the storage class of a declaration or
+// function_definition node: the text of its first named child when that child
+// is a storage_class_specifier ("static" / "extern"), "" otherwise.
+// VM-STATIC-LOCAL-1: mirrors the isExternDeclaration structural precedent.
+// CST dump-verified: `static int x = 5;` (declaration) and `static void f()`
+// (function_definition) both carry the specifier as first named child.
+func staticClassSpecifier(n *sitter.Node, c *compiler) string {
+	if n == nil || n.NamedChildCount() == 0 {
+		return ""
+	}
+	first := n.NamedChild(0)
+	if first.Type() == "storage_class_specifier" {
+		return c.text(first)
+	}
+	return ""
 }
 
 // isValidInputDeclaration checks that an input/extern declaration has a

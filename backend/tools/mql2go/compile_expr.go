@@ -221,6 +221,46 @@ func (c *astCompiler) compileCompoundAssign(e *interp.Expr) {
 }
 
 func (c *astCompiler) compileDecl(e *interp.Expr) {
+	// VM-STATIC-LOCAL-1: static locals desugar to a mangled global slot plus
+	// an init flag, and the declaration point emits a flag-guarded init-once
+	// sequence — MQL semantics: created on first execution of the statement,
+	// persists across calls. The name binds via staticScopes (global-slot
+	// alias), never via localScopes: no frame slot is consumed, so
+	// EventLocals/NumLocals counts are unaffected.
+	if e.Static {
+		if len(c.staticScopes) == 0 {
+			if c.err == nil {
+				c.err = fmt.Errorf("static local outside scope")
+			}
+			return
+		}
+		seq := c.staticSeq
+		c.staticSeq++
+		varName := fmt.Sprintf("__static_%d", seq)
+		flagName := fmt.Sprintf("__sinit_%d", seq)
+		varSlot := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[varName] = varSlot
+		flagSlot := VarID(len(c.bc.GlobalSlots))
+		c.bc.GlobalSlots[flagName] = flagSlot
+		// No redefinition guard here: compileIf does not push scopes, so both
+		// branches of an if/else share this map level (design T4 requires
+		// same-name statics in sibling branches to compile as independent
+		// storages). Rebinding at the same level is coherent: references
+		// capture the slot current at their compile point, and the plain-local
+		// path below is equally lenient about redeclaration.
+		top := len(c.localScopes) - 1
+		c.staticScopes[top][e.Name] = varSlot
+		// Init guard: flag slot is a never-declared global → zero Value
+		// (ValNone) → IsTrue()=false → initializer runs on first reach only.
+		c.emit(OP_PUSH_GLOBAL, int32(flagSlot), 0, 0)
+		jmpEnd := c.emitJump(OP_JMP_IF_TRUE, 0)
+		c.compileExpr(&e.Args[0]) // initializer inside the guard — evaluated on first reach
+		c.emit(OP_STORE_GLOBAL, int32(varSlot), 0, 0)
+		c.emit(OP_PUSH_CONST, int32(c.addConst(interp.IntVal(1))), 0, 0)
+		c.emit(OP_STORE_GLOBAL, int32(flagSlot), 0, 0)
+		c.patchJump(jmpEnd)
+		return
+	}
 	c.compileExpr(&e.Args[0])
 	if len(c.localScopes) > 0 {
 		scope := c.localScopes[len(c.localScopes)-1]

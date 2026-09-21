@@ -15,6 +15,7 @@ type Expr struct {
 	ThenExpr *Expr  // ExprTernary: then branch
 	ElseExpr *Expr  // ExprTernary: else branch
 	IsAssign bool   // ExprField: true = field assignment (obj.field = value)
+	Static   bool   // ExprDecl: static local — storage persists across calls (VM-STATIC-LOCAL-1)
 }
 
 // ExprKind enumerates expression node types.

@@ -909,3 +909,8 @@
 - **残余裁决**：R1（signal-mode sentinel `IntVal(1)`）=架构语义变更，单独立项评审；R4（CloseBy live dispatch）=缺功能待需求驱动；R3=文档辨析已闭环。
 - **断点**：VM-LIVE-VENUE-1 开工指令待发；TRADE-RECORDS-DUP-1/FEAT-3/VM-LIVE-MTF-1/TRON-SECURITY-1 待决策/暂缓。
 - **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
+
+## 2026-09-21 VM-STATIC-LOCAL-1 施工完成（⚠️待独立复审）
+
+- **施工方**（builder）按 `builder-handoff-vm-static-local-1.md` S1–S6 串行完成：编译层脱糖（`Expr.Static` + `staticClassSpecifier` + `compileDeclaration` 打标/fail-closed + `collectFunction` 拒函数位 static[CST dump 实证同构] + staticScopes 别名栈 + compileDecl mangled-global/init-guard）；`compile_static_test.go` T1–T11 先红（stash 12/12 红证）后绿；mutation M1–M4 RED→restore→GREEN；机检全绿（build/mql2go 全量含 golden/vet/gofmt/check-lines 0 errors/race×3/diff --check）。
+- **偏差申报 1 项**：S3 片段同 scope 重定义 dup 检查与 T4 冲突（compileIf 不 pushScope，两枝共享 map 层）——按验收标准优先去除，改重绑定语义，待决策方裁决（明细 registry 行 47）。

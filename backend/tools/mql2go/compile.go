@@ -170,6 +170,8 @@ type astCompiler struct {
 	bc              *Bytecode
 	ir              *interp.IR
 	localScopes     []map[string]VarID // scope stack for local variables
+	staticScopes    []map[string]VarID // VM-STATIC-LOCAL-1: per-scope name → global slot for static locals (parallel to localScopes)
+	staticSeq       int                // VM-STATIC-LOCAL-1: monotonic mangling sequence for __static_N/__sinit_N
 	currentFunc     *FuncEntry
 	nextLocalSlot   int             // next available local slot in current function
 	loopStack       []*loopContext  // stack of loop contexts for break/continue
@@ -244,12 +246,17 @@ func (c *astCompiler) addConst(v interp.Value) ConstID {
 // pushScope enters a new local variable scope.
 func (c *astCompiler) pushScope() {
 	c.localScopes = append(c.localScopes, make(map[string]VarID))
+	// VM-STATIC-LOCAL-1: staticScopes stays index-aligned with localScopes
+	// (these two helpers are the only places the stack is resized — verified
+	// across all call sites), so resolveVar can probe both per scope level.
+	c.staticScopes = append(c.staticScopes, make(map[string]VarID))
 }
 
 // popScope exits the current local variable scope.
 func (c *astCompiler) popScope() {
 	if len(c.localScopes) > 0 {
 		c.localScopes = c.localScopes[:len(c.localScopes)-1]
+		c.staticScopes = c.staticScopes[:len(c.staticScopes)-1]
 	}
 }
 
@@ -260,10 +267,15 @@ func (c *astCompiler) popScope() {
 // evaluate as 0. Python keeps its QS-1.3 implicit-read semantics
 // (undeclared read → never-written global None).
 func (c *astCompiler) resolveVar(name string) (VarID, bool) {
-	// Check local scopes (innermost first)
+	// Check local scopes (innermost first); static locals bind to their
+	// mangled global slot at the same scope level (VM-STATIC-LOCAL-1) — a
+	// plain local of the same name shadows the static (probed first).
 	for i := len(c.localScopes) - 1; i >= 0; i-- {
 		if id, ok := c.localScopes[i][name]; ok {
 			return id, false
+		}
+		if id, ok := c.staticScopes[i][name]; ok {
+			return id, true
 		}
 	}
 	// Check globals
@@ -310,6 +322,9 @@ func (c *astCompiler) resolveVarWrite(name string) (VarID, bool) {
 	for i := len(c.localScopes) - 1; i >= 0; i-- {
 		if id, ok := c.localScopes[i][name]; ok {
 			return id, false
+		}
+		if id, ok := c.staticScopes[i][name]; ok {
+			return id, true
 		}
 	}
 	if id, ok := c.bc.GlobalSlots[name]; ok {
