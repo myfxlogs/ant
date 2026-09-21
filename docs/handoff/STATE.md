@@ -92,7 +92,7 @@
 - **VERIFY-CHAIN-SEMANTIC-1** ✅done+已部署 c74d8d3 — 复审含根因 C 审计侧修补；产克隆 16 测试全绿+mutation×4 实证；明细 registry 行 34
 - **KB-SEED-DRIFT-1** ✅done — R2 实盘探针抓出 KB 种子漂移（43 陈旧枚举压过内建表）；reconcile 化修复+mutation×2；明细 registry 行 35
 - **VM-LIVE-SYNC-DISPATCH-1（R1）** ✅done — signal-mode 假票号/丢单/cancel_all 空转根治；VM 内同步派发+confirmed 事实注入+防双发；mutation×4 实证；明细 registry 行 36
-- **实盘探针四缺陷批** ✅done — VM-IMPLICIT-VAR-READ-1（读位严格化+`int x;` 裸声明修复+clrNone/20 web 色补齐，真实策略扫描通过）/VM-ERR-CODE-COLLAPSE-1（typed BrokerRejectError 三段透传 lastError=native code）/RISK-DEDUP-KEY-1（key 纳 account+magic+comment+真 type）/ACCOUNT-TRADE-ALLOWED-DEAD-1（connected 谓词）；各带 mutation RED→GREEN；明细 registry 行 40-43
+- **实盘探针四缺陷批** ✅done — VM-IMPLICIT-VAR-READ-1（读位严格化+`int x;` 裸声明修复+clrNone/20 web 色补齐，真实策略扫描通过）/VM-ERR-CODE-COLLAPSE-1（typed BrokerRejectError 三段透传 lastError=native code）/RISK-DEDUP-KEY-1（Guard+Gate 双层 key 纳 account+magic+comment+真 type）/ACCOUNT-TRADE-ALLOWED-DEAD-1（connected 谓词）；各带 mutation RED→GREEN；明细 registry 行 40-43
 
 ## 最近变更日志
 

@@ -242,6 +242,7 @@ func orderRequestToIntent(req *OrderRequest) *antv1.OrderIntent {
 		Sl:        req.StopLoss.String(),
 		Tp:        req.TakeProfit.String(),
 		Magic:     int64(req.Magic),
+		Comment:   req.Comment,
 		Source:    antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
 	}
 }

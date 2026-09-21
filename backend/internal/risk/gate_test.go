@@ -611,3 +611,27 @@ func TestGateConcurrent(t *testing.T) {
 		<-done
 	}
 }
+
+// RISK-DEDUP-KEY-1 (gate layer): two same-param orders with distinct comments
+// are distinct intents (grid/pyramid strategies place same-price orders with
+// different comments); an identical retry (same comment) must still block.
+// Adversarial: remove Comment from the key → first case fails → RED.
+func TestDuplicateProtection_DistinctComment_Allowed(t *testing.T) {
+	r := &DuplicateProtection{DedupWindow: 5 * time.Second}
+	base := func(comment string) *antv1.OrderIntent {
+		return &antv1.OrderIntent{
+			AccountId: "acct-1", Symbol: "BTCUSDm", Side: "buy", Volume: "0.01",
+			Type: "market", Price: "81347.02", Magic: 71001, Comment: comment,
+			Source: antv1.OrderIntentSource_ORDER_INTENT_SOURCE_LIVE,
+		}
+	}
+	if res := r.Check(context.Background(), base("probe4_v1"), nil); !res.Allowed {
+		t.Fatalf("first order blocked: %s", res.Reason)
+	}
+	if res := r.Check(context.Background(), base("probe4_v2"), nil); !res.Allowed {
+		t.Fatalf("distinct comment must be a distinct intent, got: %s", res.Reason)
+	}
+	if res := r.Check(context.Background(), base("probe4_v1"), nil); res.Allowed {
+		t.Fatal("identical retry (same comment) must still be deduped")
+	}
+}

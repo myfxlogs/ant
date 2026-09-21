@@ -269,7 +269,7 @@ func (r *OrderFrequencyLimit) Check(_ context.Context, intent *antv1.OrderIntent
 type DuplicateProtection struct {
 	DedupWindow time.Duration
 	mu          sync.Mutex
-	lastOrders  map[string]time.Time // key: account|symbol|side|volume|type|price|magic
+	lastOrders  map[string]time.Time // key: account|symbol|side|volume|type|price|magic|comment
 }
 
 func (r *DuplicateProtection) Name() string { return "duplicate_protection" }
@@ -279,9 +279,9 @@ func (r *DuplicateProtection) Check(_ context.Context, intent *antv1.OrderIntent
 	defer r.mu.Unlock()
 
 	now := time.Now()
-	key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%d",
+	key := fmt.Sprintf("%s|%s|%s|%s|%s|%s|%d|%s",
 		intent.GetAccountId(), intent.GetSymbol(), intent.GetSide(), intent.GetVolume(),
-		intent.GetType(), intent.GetPrice(), intent.GetMagic())
+		intent.GetType(), intent.GetPrice(), intent.GetMagic(), intent.GetComment())
 
 	if r.lastOrders == nil {
 		r.lastOrders = make(map[string]time.Time)
