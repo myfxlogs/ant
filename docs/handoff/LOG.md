@@ -407,3 +407,6 @@
 - **ACCOUNT-TRADE-ALLOWED-DEAD-1**：lookup 只认 `account_status='trade_allowed'`——该值全代码库零写入点（状态机只写 connected/reconnecting/disconnected），`IsTradeAllowed()` 对可交易账户恒 false。修法：抽纯函数 `accountTradeAllowedPredicate` 放宽 `connected||trade_allowed`（connected 会话+非 investor=平台轴可交易，订单可发即证明）；investor 门与缺省 fail-closed 不变。account_trade_allowed_test.go 四例；M1 谓词回退→connected 案例复红。
 
 门禁：mql2go 785 + strategy/mthub/risk/mt4/mt5/cmd-server/sdk 1213 + race×SyncDispatch 9 全绿；check-lines 0 errors；build/vet 净。
+
+## 2026-09-21 — 四缺陷批实盘复验（部署 2c28d50+eda7911）
+demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）、`tickval=0/ticksize=0.01` 与 MarketInfo 一致（D1）、同 tick 异 comment `v2=394688565` 放行+全同重试仍拦（D3——复验抓出 Gate 层 intent 丢 comment 同缺陷，已补 eda7911）、`modify err=130` 原生码（D2，原 146）。别名编译拒绝实证：run d457d820 `unknown variable: SYMBOL_TICK_VALUE` fail-closed。账户零残留。
