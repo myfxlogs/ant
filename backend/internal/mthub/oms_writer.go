@@ -84,6 +84,25 @@ func isValidOMSTransition(current, next OMSState) bool {
 	return false
 }
 
+// isTerminalOMSState reports whether s has no outgoing transitions.
+func isTerminalOMSState(s OMSState) bool {
+	switch s {
+	case OMSStateFilled, OMSStateCancelled, OMSStateRejected, OMSStateFailed, OMSStateExpired:
+		return true
+	}
+	return false
+}
+
+// shouldAttemptOMSTransition guards the stream-driven transition path against
+// broker replays: same-state updates are idempotent no-ops, and terminal
+// orders never transition again (stale replay after close/delete).
+func shouldAttemptOMSTransition(current, to OMSState) bool {
+	if current == to {
+		return false
+	}
+	return !isTerminalOMSState(current)
+}
+
 // OmsWriter records order lifecycle state transitions in PG.
 type OmsWriter struct {
 	pool             *pgxpool.Pool

@@ -384,3 +384,9 @@
 - T 层 adapter 测试双侧 RED→GREEN；T11 端到端挂单注入断言绿；mutation 删映射双侧复红→恢复。mt4/mt5/strategy 714 绿。
 - 顺带拆 orders.go 466 行超红线→order_events.go（369+110）。
 - **实盘复验（部署后）**：run `ddbca301` 同 OnTick 内 buy_limit `394081292` → `pend_select type=2`（OP_BUYLIMIT，修复前 0）→ `pend_delete=true` → `sel_after_delete=false`；DB `order_type=1` LIMIT+FILLED 终态。挂单全生命周期+回执映射实盘闭环。
+
+## 2026-09-20 — OMS-REPLAY-SPAM-1：broker 回放对终态订单刷非法转换
+- 生产日志巡检抓出：`invalid transition FILLED → FILLED` 27 连发（重连回放）+ `FILLED → WORKING` 每 ~60s 复发（ticket 394135301）。
+- 根因：`transitionOMSByUpdate` default→WORKING 把 modify/balance/credit/unknown/无票号全当转换；`TransitionOrderByTicket` 无幂等/终态守卫。balance/credit 票号不在 orders 表→虚假 not-found→retry→reconcile 链。
+- 修法：`omsTargetForUpdateType` 生命周期白名单 + `shouldAttemptOMSTransition`（同态幂等+终态拒绝转出）双接线（主路径+retry 路径）。
+- T 层 11+12 例 + ticketless nil-safe；M1 复辟 default→WORKING 4 例复红、M2 守卫恒 true 复红→恢复。

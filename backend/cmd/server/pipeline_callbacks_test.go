@@ -232,3 +232,43 @@ func TestBuildClosedTradeRecordMagicNoEnrichmentWhenBrokerSends(t *testing.T) {
 
 // Compile-time guard: stubMagicLookup satisfies MagicLookup.
 var _ MagicLookup = (*stubMagicLookup)(nil)
+
+// TestOMSTargetForUpdateType pins the lifecycle-only mapping for broker
+// order updates. Non-lifecycle update types (modify replays, balance/credit
+// account ops, unknown/empty) must not force OMS transitions — that was the
+// FILLED→WORKING / spurious-reconcile spam source.
+func TestOMSTargetForUpdateType(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want mthub.OMSState
+		ok   bool
+	}{
+		{"close fills", "close", mthub.OMSStateFilled, true},
+		{"pending_close fills", "pending_close", mthub.OMSStateFilled, true},
+		{"delete cancels", "delete", mthub.OMSStateCancelled, true},
+		{"open works", "open", mthub.OMSStateWorking, true},
+		{"pending_open works", "pending_open", mthub.OMSStateWorking, true},
+		{"modify works", "modify", mthub.OMSStateWorking, true},
+		{"pending_modify works", "pending_modify", mthub.OMSStateWorking, true},
+		{"balance no-op", "balance", "", false},
+		{"credit no-op", "credit", "", false},
+		{"unknown no-op", "unknown", "", false},
+		{"empty no-op", "", "", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, ok := omsTargetForUpdateType(tc.in)
+			if ok != tc.ok || (ok && got != tc.want) {
+				t.Fatalf("omsTargetForUpdateType(%q) = (%v,%v), want (%v,%v)", tc.in, got, ok, tc.want, tc.ok)
+			}
+		})
+	}
+}
+
+// TestTransitionOMSByUpdate_SkipsTicketlessUpdate — updates with no order
+// payload (ticket 0) must not attempt any transition (nil svc must not panic).
+func TestTransitionOMSByUpdate_SkipsTicketlessUpdate(t *testing.T) {
+	transitionOMSByUpdate(context.Background(), nil, "acc", &mdtick.OrderUpdate{UpdateType: "close"})
+	transitionOMSByUpdate(context.Background(), nil, "acc", &mdtick.OrderUpdate{UpdateType: "balance", UpdateTicket: 7})
+}

@@ -55,3 +55,35 @@ func TestTask2_ReconcileTrigger_NilSafe(t *testing.T) {
 	// omsWriter is also nil — TransitionOrderByTicket returns early.
 	svc.TransitionOrderByTicket(t.Context(), "acc-1", 999, OMSStateFilled)
 }
+
+// TestShouldAttemptOMSTransition pins idempotency + terminal guards that keep
+// broker stream replays from spamming invalid-transition errors:
+// same-state replays and any transition out of a terminal state must be
+// skipped before hitting the OMS writer.
+func TestShouldAttemptOMSTransition(t *testing.T) {
+	cases := []struct {
+		name        string
+		current, to OMSState
+		want        bool
+	}{
+		{"submitted to working", OMSStateSubmitted, OMSStateWorking, true},
+		{"submitted to filled", OMSStateSubmitted, OMSStateFilled, true},
+		{"working to filled", OMSStateWorking, OMSStateFilled, true},
+		{"filled replay same-state", OMSStateFilled, OMSStateFilled, false},
+		{"working replay same-state", OMSStateWorking, OMSStateWorking, false},
+		{"filled to working regression", OMSStateFilled, OMSStateWorking, false},
+		{"filled to cancelled", OMSStateFilled, OMSStateCancelled, false},
+		{"cancelled to filled", OMSStateCancelled, OMSStateFilled, false},
+		{"expired to working", OMSStateExpired, OMSStateWorking, false},
+		{"rejected terminal", OMSStateRejected, OMSStateFilled, false},
+		{"unknown still attempts", OMSStateUnknown, OMSStateFilled, true},
+		{"reconciling still attempts", OMSStateReconciling, OMSStateWorking, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := shouldAttemptOMSTransition(tc.current, tc.to); got != tc.want {
+				t.Fatalf("shouldAttemptOMSTransition(%s,%s) = %v, want %v", tc.current, tc.to, got, tc.want)
+			}
+		})
+	}
+}

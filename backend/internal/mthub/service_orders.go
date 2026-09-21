@@ -361,7 +361,11 @@ func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID st
 		go s.retryTransitionByTicket(accountID, ticket, to)
 		return
 	}
-	s.omsTransition(ctx, orderID, accountID, OMSState(currentState), to)
+	cur := OMSState(currentState)
+	if !shouldAttemptOMSTransition(cur, to) {
+		return
+	}
+	s.omsTransition(ctx, orderID, accountID, cur, to)
 }
 
 // retryTransitionByTicket retries the ticket lookup after a short delay.
@@ -383,7 +387,11 @@ func (s *MtHubService) retryTransitionByTicket(accountID string, ticket int64, t
 			}
 			return
 		}
-		s.omsTransition(retryCtx, orderID, accountID, OMSState(currentState), to)
+		cur := OMSState(currentState)
+		if !shouldAttemptOMSTransition(cur, to) {
+			return
+		}
+		s.omsTransition(retryCtx, orderID, accountID, cur, to)
 	})
 }
 

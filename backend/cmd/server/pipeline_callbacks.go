@@ -185,16 +185,32 @@ func writeClosedTradeRecord(log *zap.Logger, repo *repository.TradeRecordReposit
 	}
 }
 
+// omsTargetForUpdateType maps broker OnOrderUpdate event types to OMS target
+// states. Only lifecycle events map — modify/open acknowledge the order is
+// working; balance/credit account ops and unknown/empty payloads carry no
+// order transition and return false.
+func omsTargetForUpdateType(updateType string) (mthub.OMSState, bool) {
+	switch strings.ToLower(updateType) {
+	case "close", "pending_close":
+		return mthub.OMSStateFilled, true
+	case "delete":
+		return mthub.OMSStateCancelled, true
+	case "open", "pending_open", "modify", "pending_modify":
+		return mthub.OMSStateWorking, true
+	default:
+		return "", false
+	}
+}
+
 // transitionOMSByUpdate maps broker OnOrderUpdate event types to OMS state transitions.
 // EXEC-2: Without this, orders stay stuck in SUBMITTED forever.
 func transitionOMSByUpdate(ctx context.Context, svc *mthub.MtHubService, accountID string, o *mdtick.OrderUpdate) {
-	ut := strings.ToLower(o.UpdateType)
-	switch ut {
-	case "close", "pending_close":
-		svc.TransitionOrderByTicket(ctx, accountID, o.UpdateTicket, mthub.OMSStateFilled)
-	case "delete":
-		svc.TransitionOrderByTicket(ctx, accountID, o.UpdateTicket, mthub.OMSStateCancelled)
-	default:
-		svc.TransitionOrderByTicket(ctx, accountID, o.UpdateTicket, mthub.OMSStateWorking)
+	if o.UpdateTicket == 0 {
+		return
 	}
+	to, ok := omsTargetForUpdateType(o.UpdateType)
+	if !ok {
+		return
+	}
+	svc.TransitionOrderByTicket(ctx, accountID, o.UpdateTicket, to)
 }
