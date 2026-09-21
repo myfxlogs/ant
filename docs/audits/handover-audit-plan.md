@@ -920,3 +920,8 @@
 - **STATIC-1 闭环**：镜像重建部署后 BTCUSDm 1m 实盘探针实证——`static int counter` 跨 90+ tick 单调递增 1→90 不归零、`acc` 0.5→45 累积、`once=100` 初始化器单次执行（修复前每 tick 重打 init）。探针 run 3c4b89b5 已停。
 - **BLOCK-SCOPE-1 立项**：设计 SSOT `design-vm-block-scope-1.md` + 施工单 `builder-handoff-vm-block-scope-1.md` 落档。**兼容扫描前置门已过**：tree-sitter CST 扫描器实测 7 真实用户策略+4 仓内 fixture 共 11 源全部 CLEAN（零块内声明外泄依赖）；扫描器经历两轮修正（Symbol() 调用误报→只取声明符首 identifier；TSV 真换行破行→COPY 转义分文件+序号前缀防同名覆盖）。落点收窄：裸 `{}` 块已产 StmtBlock，缺口仅在 compileIf/compileWhile/compileDoWhile/compileSwitch 直接 compileBlock 的分枝体（compileFor 已 pushScope 正确）。
 - **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
+
+## 2026-09-21 VM-BLOCK-SCOPE-1 施工完成（⚠️待独立复审）
+
+- **施工方**（builder）按 `builder-handoff-vm-block-scope-1.md` v2 S1–S5 串行完成：IR 层 pushScope 包裹（compileIf 双枝/while/do/for 内层体/switch 单层），零 IR 结构变更、零 CST/VM 变更；`compile_block_scope_test.go` B1–B12 先红（stash 7 红+5 pin，与设计现状矩阵吻合）后绿 13/13；mutation M1/M2/M3 精确承重 RED→restore→GREEN；机检全绿；`TestBlockScopeCompatScan` 重跑 PASS（扫描器保留）。
+- **自审发现并修复**：测试 helper 首版漏跑 OnInit（全局初始化器在 OnInit 前导）致 B11 假红——修复后 B11 为双态绿 pin；M3 首做 B10 红证因变异脚本误删 pop 致栈失衡无效——作废并对称剥离重做。

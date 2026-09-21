@@ -522,13 +522,20 @@ func (c *astCompiler) compileIf(s *interp.Statement) {
 	c.compileExpr(s.Cond)
 	jmpFalse := c.emitJump(OP_JMP_IF_FALSE, 0)
 
-	// Then body
+	// Then body — own scope (VM-BLOCK-SCOPE-1): the CST layer flattens the
+	// branch's compound_statement into Body, so without this wrap its
+	// declarations leaked into the enclosing scope and stayed readable after
+	// the branch (real MQL: undeclared).
+	c.pushScope()
 	c.compileStmts(s.Body)
+	c.popScope()
 
 	if len(s.ElseBody) > 0 {
 		jmpEnd := c.emitJump(OP_JMP, 0)
 		c.patchJump(jmpFalse)
+		c.pushScope()
 		c.compileStmts(s.ElseBody)
+		c.popScope()
 		c.patchJump(jmpEnd)
 	} else {
 		c.patchJump(jmpFalse)

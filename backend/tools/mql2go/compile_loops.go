@@ -26,7 +26,12 @@ func (c *astCompiler) compileFor(s *interp.Statement) {
 	// Body — push loop context so break/continue at any nesting depth are tracked
 	lc := &loopContext{}
 	c.loopStack = append(c.loopStack, lc)
+	// VM-BLOCK-SCOPE-1: body gets its own scope inside the for scope — body
+	// declarations shadow for-init names instead of rebinding them (for-init
+	// and update keep resolving in the outer for scope).
+	c.pushScope()
 	c.compileStmts(s.Body)
+	c.popScope()
 	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 
 	// Update — continue jumps here (after body, before condition check)
@@ -61,7 +66,10 @@ func (c *astCompiler) compileWhile(s *interp.Statement) {
 
 	lc := &loopContext{}
 	c.loopStack = append(c.loopStack, lc)
+	// VM-BLOCK-SCOPE-1: loop body scope — body declarations die with the body.
+	c.pushScope()
 	c.compileStmts(s.Body)
+	c.popScope()
 	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 
 	// Patch continue jumps to condition check
@@ -84,7 +92,10 @@ func (c *astCompiler) compileDoWhile(s *interp.Statement) {
 
 	lc := &loopContext{}
 	c.loopStack = append(c.loopStack, lc)
+	// VM-BLOCK-SCOPE-1: loop body scope — body declarations die with the body.
+	c.pushScope()
 	c.compileStmts(s.Body)
+	c.popScope()
 	c.loopStack = c.loopStack[:len(c.loopStack)-1]
 
 	// Condition check — continue jumps here
@@ -107,6 +118,11 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 
 	lc := &loopContext{} // switch uses loopContext for break only
 	c.loopStack = append(c.loopStack, lc)
+	// VM-BLOCK-SCOPE-1: the whole switch body shares ONE scope — case labels
+	// don't create scopes (C/MQL semantics: a declaration in one case is
+	// reachable in later cases via fallthrough), and nothing leaks past the
+	// switch. Patching below compiles no statements, so the scope closes here.
+	c.pushScope()
 	endJumps := []int32{}
 
 	// VM-COMPILER-SEMANTICS-3 S1: preserve original case order (default stays
@@ -176,6 +192,7 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	}
 
 	// Patch default skip JMP (if default was first) to the first regular case.
+	c.popScope() // VM-BLOCK-SCOPE-1: close the shared switch body scope
 	if defaultSkipJmp >= 0 && len(regularCaseStarts) > 0 {
 		c.bc.Code[defaultSkipJmp].A = regularCaseStarts[0]
 	}
