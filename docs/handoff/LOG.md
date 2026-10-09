@@ -452,3 +452,10 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **已删**：/root/.codex(1.5M)、/root/.cursor(876K)、GitKrakenCLI+/root/.local/share/gk(41M——gk CLI 零引用，无头生产机无 GUI 场景)；arb-core:d106/d107/d108 三枚旧 tag（267M）——保留 latest+最新 tag d108r1 单版回滚。
 - **仍留待裁决**：/root/.claude 340M+/root/.local/share/claude 797M（claude 残留 ~1.1G）；/root/go/bin 346M dev 工具组。
 - 终态：/ 34G/58%，12 容器 healthy，crontab 零改动。
+
+## 2026-10-09 — CI-RESTORE-1 CI 转绿（Zcode 施工，业主令"github 一直在报错"）
+
+- **结果**：CI 自 2026-09-08 起红一月的根因两簇全清。①依赖漏洞：govulncheck 12 affected（7 stdlib+4 x/net/http2+1 otel GO-2026-6505）+trivy HIGH（grpc CVE-2026-84445）全部归零——grpc v1.83.1→v1.83.2 / x/net v0.58→v0.60.0 / otel v1.43→v1.45.0 / Go 1.26.6→1.27.2 全链（go.mod toolchain+ci.yml×6+GOTOOLCHAIN×2+ci-nightly×2+security-scan×2+Dockerfile golang:1.27.2-alpine×2），施工 ada7e10e。②前端 tsc 20 错：LOWPRI-SWEEP-2 CQ-12 拆分遗留——抽出组件手写 Props 假形状（unknown[]/string 字段表/错 import 路径/重复 import 块），改引真类型（StrategyChat BacktestSummary、WorkspaceAIPanel BtSummary·RecentSummary 改 export、QuickTradePosition·RecentTrade、AccountMeta）+路径修正。
+- **机检**：backend build/vet 零错+govulncheck 0 affected+deadcode rc=0+config/secrets/trace/interceptor/connect/mthub 全 ok+check-file-lines 0 ERROR；frontend tsc(app+base) 0 错+改动文件 eslint 0 警告+i18n 守卫 9/9。本地 vitest store 套件 Node26+jsdom 环境噪音挂（CI Node22 绿，与改动零交集）。
+- **机器分工定（业主令）**：本机=开发机（开发+机检+push），sg=生产部署机（pull+build+up+运行时取证）；constraints.md 部署节落档（60c8d084）；ssh alias sg 已配；本会话曾保护性 stash sg 脏改动 24 文件（sg stash aff4aebf，格式化为主+1 处 AccountID 语义改动，来源会话不明）。
+- **STATE.md 滚出**：施工表 2026-09-19~09-20 六行 ✅done（VERIFY-CHAIN-SEMANTIC-1/TRADE-RECORDS-DUP-1/VM-LIVE-PARITY-F1F3/VM-LIVE-VENUE-1/KB-SEED-DRIFT-1/VM-LIVE-SYNC-DISPATCH-1）滚出至本段——全部已部署+已验收，明细在 registry 行 28-36 与各自历史段落。

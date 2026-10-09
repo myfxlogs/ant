@@ -9,7 +9,7 @@ import { useAIFix } from '@/components/backtest/useAIFix';
 import { useWsAccount, useWsCode, useWsBacktest, useWsHistory, useWsAI, useWsTemplates } from '../../WorkspaceContext';
 import { AI_TAB_KEY, BACKTEST_TAB_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
-interface BtSummary {
+export interface BtSummary {
   totalReturn?: number;
   maxDrawdown?: number;
   sharpeRatio?: number;
@@ -17,7 +17,7 @@ interface BtSummary {
   totalTrades: number;
 }
 
-interface RecentSummary {
+export interface RecentSummary {
   templateName: string;
   totalReturn: number;
   totalTrades: number;

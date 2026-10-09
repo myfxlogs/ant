@@ -1,11 +1,11 @@
 // WorkspaceDocks — 主编辑器视图右侧的停靠面板（AI / 回测）。
 // 自 WorkspaceCenterColumn 抽出（LOWPRI-SWEEP-2 CQ-12 max-lines）。
-import WorkspaceAIPanel from './WorkspaceAIPanel';
+import WorkspaceAIPanel, { type BtSummary, type RecentSummary } from './WorkspaceAIPanel';
 
 interface Props {
   dock: 'ai' | 'backtest';
-  btSummary?: { totalReturn: string; maxDrawdown: string; sharpeRatio: string; winRate: string; totalTrades: number };
-  recentSummaries: Array<{ templateName: string; totalReturn: number; totalTrades: number; startedAt: string }>;
+  btSummary?: BtSummary;
+  recentSummaries: RecentSummary[];
   onSwitchToBacktest: () => void;
   onClose: () => void;
 }

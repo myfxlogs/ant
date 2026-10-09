@@ -1,6 +1,8 @@
 // WorkspaceBottomPanel — BottomPanelSection 的 workspace 状态接线包装。
 // 自 WorkspaceCenterColumn 抽出（LOWPRI-SWEEP-2 CQ-12 max-lines）。
 import BottomPanelSection from './BottomPanelSection';
+import type { QuickTradePosition, RecentTrade } from '../../hooks/useQuickTradeData';
+import type { AccountMeta } from '@/components/chart/QuickTradePanel';
 
 interface Props {
   isMobile: boolean;
@@ -12,13 +14,13 @@ interface Props {
   bottomPanelHeight?: number;
   onResizeStart: (e: React.MouseEvent) => void;
   dragging: boolean;
-  allPositions: unknown[];
-  qtRecentTrades: unknown[];
-  handleClosePosition: (args: unknown) => void;
-  qtPositions: unknown[];
+  allPositions: QuickTradePosition[];
+  qtRecentTrades: RecentTrade[];
+  handleClosePosition: (ticket: number, volume?: number) => void;
+  qtPositions: QuickTradePosition[];
   quickTradeCollapsed: boolean;
   onToggleQuickTrade: () => void;
-  accountMeta?: unknown;
+  accountMeta?: AccountMeta | null;
 }
 
 export default function WorkspaceBottomPanel(p: Props) {

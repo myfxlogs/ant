@@ -22,11 +22,6 @@ import GenZhCn from '../i18n/resources/zh-cn/strategy_gen';
 import GenZhTw from '../i18n/resources/zh-tw/strategy_gen';
 import GenJa from '../i18n/resources/ja/strategy_gen';
 import GenVi from '../i18n/resources/vi/strategy_gen';
-import BaseJa from '../i18n/resources/ja/base';
-import BaseVi from '../i18n/resources/vi/base';
-import LogsJa from '../i18n/resources/ja/logs';
-import LogsVi from '../i18n/resources/vi/logs';
-import LogsEn from '../i18n/resources/en/logs';
 
 type Tree = Record<string, unknown>;
 

@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'antd';
-import { useWsCode, useWsTemplates, useWsBacktest, useWsHistory } from '../../../WorkspaceContext';
+import { useWsCode, useWsTemplates, useWsBacktest, useWsHistory } from '../../WorkspaceContext';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useSidebarActions } from './useSidebarActions';
 import { COMMON_CANCEL_KEY, COMMON_CONFIRM_KEY, COMMON_UNSAVED_KEY } from '@/gen/ant/v1/i18n/base_keys';
