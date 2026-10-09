@@ -951,3 +951,10 @@
 - **残余观察（留档不阻验收）**：①C 档键 env 空则不入库→管理面不可见（设计语义「仅缺键种入」，须手工插行）；②enabled 列对 C 键仅管理面标注（overlay/GetConfig 同语义不筛）；③platform_secrets 暂无管理面读写通道（v1 SQL/seed 管理）。
 - **部署态**：未部署（契约勿部署）——migration 282 随下批镜像走；sg 部署后验证清单已写入 STATE.md 下一步。
 - **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
+
+## 2026-10-09 SG-PROD-CLEANUP-1 执行闭环（Devin CLI 直接执行+终态验收）
+
+- 业主改令：不派 zcode，Devin CLI 直接执行（施工+验收同人——ops 任务验收=终态系统事实，非代码 review）。派工单 docs/plan/2026-10-sg-prod-cleanup.md @ea11fe95 逐步落地。
+- **终态事实**：/ 58G 用 40G→34G（69%→58%，释放 ~6G）；docker df reclaimable 3.586G→741.7M（残余为 tagged-unused 镜像，-a 决策留业主）；双项目 12 容器零中断全 healthy；crontab/systemd 零改动；arb 整机未触碰（业主红线）。
+- **guard 生效记录**：antt/anttrader git 脏 → 按 SSOT SKIP 删除改 tar.gz quarantine（/root/cleanup-quarantine 245M，含 anttrader May-17 DB dump 19M）；sg /opt/ant 未跟踪文件 stash@{0} 保护。
+- **留尾**：agent 残留与 go/bin 盘点明细在 LOG.md，处置待业主裁决；/opt/ant 落后 origin 2 commit（部署同步走正常流程）。

@@ -438,3 +438,11 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **关键裁决**：boot 序位安全（entrypoint migration 先于 seed）；JWT_SECRET fail-closed 经 Validate 保留；AI 阈值三分支语义等价；compose 实拍 C/D 键注入面不变；DEPOSIT_XPUB 禁区零触碰；CAPABILITIES.md 重生成环境依赖（reference/ gitignored）已还原不属本债。
 - **残余观察 3 项**（留档）：C 键 env 空不入库→管理面不可见；enabled 列仅标注；platform_secrets 无管理面通道（v1）。
 - **未部署**：migration 282 随下批镜像走；sg 部署后验证清单在 STATE.md 下一步。
+
+## 2026-10-09 — SG-PROD-CLEANUP-1 sg 开发残留清理（Devin CLI 直接执行，业主令）
+
+- **结果**：磁盘 40G→34G（69%→58%，释放 ~6G）；ant 9 容器+arb 3 容器全 Up healthy 零中断；backend /healthz=ok；arb-core running/healthy、cex-proxy active；crontab 12 行零 diff。
+- **已清**：docker dangling 镜像 840M（禁 -a/volume prune 守红线）；go-build cache 2.3G（`go clean -cache`，/root/go/pkg 模块缓存为 arb cron 依赖未动）；npm _npx/_logs 177M；node_modules×3=686M（frontend 490M+proto-gen 155M+e2e 41M，docker 构建路径不涉）；stale 副本 antt+anttrader——**git 均脏**按 SSOT 隔离归档 `/root/cleanup-quarantine/`（antt 151M+anttrader 94M，含 anttrader 5月陈旧 DB dump，数据保全）；/opt/chrome 339M；journal vacuum 79M；/tmp>7d 开发残留（probe_decl2.go/vsl1_backup/windsurf 快照等）；/var/log 30d+ 轮替档。
+- **pgrep 插曲**：`pgrep -f chrome` 自匹配 bash 包装器假阳性，复核 `pgrep -af`+`ps aux` 确认零 chrome 真实进程后删除无误伤。
+- **发现并处置**：sg /opt/ant HEAD=d09f6795 落后 origin/main=ea11fe95（本机 docs commit），未跟踪 `.zcodeignore` 按协议 stash 保护 `stash@{0}`；部署同步不属本单。
+- **S9 盘点不删项报告**：/root/.local/share/claude 797M+/root/.claude 340M（claude 下载缓存+会话史）、/root/go/bin 346M dev 工具（sqlc/gosec/golangci-lint 等 15 件，12 零引用，staticcheck/deadcode 各 1 处脚本引用待复核）、.codex 1.5M、.cursor 876K、GitKrakenCLI 41M、docker 残余可回收 741.7M（tagged-unused 镜像需 -a 决策）——**待业主裁决**，合计潜在 ~1.5-2.3G。
