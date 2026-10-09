@@ -189,55 +189,72 @@ func (vm *VM) execute(ins Instruction) error {
 
 	// ── User arrays: construction & resize (MQL-COMPILER-LOCAL-ARRAYS) ──
 	case OP_NEW_ARRAY:
-		if ins.A < 0 || ins.A > 1_000_000 {
-			vm.setStackError(fmt.Sprintf("OP_NEW_ARRAY size %d out of range", ins.A))
-			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		if err := vm.executeNewArray(ins); err != nil {
+			return err
 		}
-		vm.push(interp.Value{Kind: interp.ValArray, Array: make([]interp.Value, ins.A)})
 
 	case OP_ARRAY_RESIZE:
-		idx := vm.pop()
-		var slot *interp.Value
-		if ins.A >= 0 {
-			if int(ins.A) >= len(vm.globals) {
-				vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
-				return fmt.Errorf("VM fatal: %s", vm.fatalError)
-			}
-			slot = &vm.globals[ins.A]
-		} else {
-			localIdx := int(-ins.A - 1)
-			if localIdx >= len(vm.locals) {
-				vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE local slot %d out of range (locals=%d)", localIdx, len(vm.locals)))
-				return fmt.Errorf("VM fatal: %s", vm.fatalError)
-			}
-			slot = &vm.locals[localIdx]
+		if err := vm.executeArrayResize(ins); err != nil {
+			return err
 		}
-		if slot.Kind != interp.ValArray {
-			vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE slot %d is not an array", ins.A))
-			return fmt.Errorf("VM fatal: %s", vm.fatalError)
-		}
-		newSize := int(idx.ToInt())
-		if newSize < 0 || newSize > 1_000_000 {
-			vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE size %d out of range", newSize))
-			return fmt.Errorf("VM fatal: %s", vm.fatalError)
-		}
-		arr := slot.Array
-		if newSize <= len(arr) {
-			arr = arr[:newSize]
-		} else {
-			grown := make([]interp.Value, newSize)
-			copy(grown, arr)
-			for i := len(arr); i < newSize; i++ {
-				grown[i] = interp.NoneVal() // same fill semantics as builtinArrayResize
-			}
-			arr = grown
-		}
-		// The essential missing piece the builtin could not do: write the
-		// resized value back to the slot (the Value header is a copy).
-		*slot = interp.Value{Kind: interp.ValArray, Array: arr}
-		vm.push(interp.IntVal(int32(newSize)))
 	}
 
+	return nil
+}
+
+// executeNewArray constructs the array addressed by a fresh OP_NEW_ARRAY.
+func (vm *VM) executeNewArray(ins Instruction) error {
+	if ins.A < 0 || ins.A > 1_000_000 {
+		vm.setStackError(fmt.Sprintf("OP_NEW_ARRAY size %d out of range", ins.A))
+		return fmt.Errorf("VM fatal: %s", vm.fatalError)
+	}
+	vm.push(interp.Value{Kind: interp.ValArray, Array: make([]interp.Value, ins.A)})
+	return nil
+}
+
+// executeArrayResize resizes the array in the slot addressed by ins.A
+// (globals slot when ≥0, local slot when <0) and pushes the new size.
+func (vm *VM) executeArrayResize(ins Instruction) error {
+	idx := vm.pop()
+	var slot *interp.Value
+	if ins.A >= 0 {
+		if int(ins.A) >= len(vm.globals) {
+			vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE slot %d out of range (globals=%d)", ins.A, len(vm.globals)))
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+		slot = &vm.globals[ins.A]
+	} else {
+		localIdx := int(-ins.A - 1)
+		if localIdx >= len(vm.locals) {
+			vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE local slot %d out of range (locals=%d)", localIdx, len(vm.locals)))
+			return fmt.Errorf("VM fatal: %s", vm.fatalError)
+		}
+		slot = &vm.locals[localIdx]
+	}
+	if slot.Kind != interp.ValArray {
+		vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE slot %d is not an array", ins.A))
+		return fmt.Errorf("VM fatal: %s", vm.fatalError)
+	}
+	newSize := int(idx.ToInt())
+	if newSize < 0 || newSize > 1_000_000 {
+		vm.setStackError(fmt.Sprintf("OP_ARRAY_RESIZE size %d out of range", newSize))
+		return fmt.Errorf("VM fatal: %s", vm.fatalError)
+	}
+	arr := slot.Array
+	if newSize <= len(arr) {
+		arr = arr[:newSize]
+	} else {
+		grown := make([]interp.Value, newSize)
+		copy(grown, arr)
+		for i := len(arr); i < newSize; i++ {
+			grown[i] = interp.NoneVal() // same fill semantics as builtinArrayResize
+		}
+		arr = grown
+	}
+	// The essential missing piece the builtin could not do: write the
+	// resized value back to the slot (the Value header is a copy).
+	*slot = interp.Value{Kind: interp.ValArray, Array: arr}
+	vm.push(interp.IntVal(int32(newSize)))
 	return nil
 }
 

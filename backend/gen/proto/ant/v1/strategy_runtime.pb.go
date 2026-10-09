@@ -4179,14 +4179,11 @@ type StrategyDiagnostics struct {
 	ScheduleMagic       int32 `protobuf:"varint,12,opt,name=schedule_magic,json=scheduleMagic,proto3" json:"schedule_magic,omitempty"`                     // schedule's magic number for position attribution
 	// L3: Execution state — from TradeBarrier, not inferred by frontend.
 	// Values: "idle", "submitting", "accepted_unconfirmed", "confirmed",
-	//
-	//	"deterministic_rejected", "outcome_unknown"
+	//         "deterministic_rejected", "outcome_unknown"
 	ExecutionState string `protobuf:"bytes,13,opt,name=execution_state,json=executionState,proto3" json:"execution_state,omitempty"`
 	// L3: Order lifecycle — most recent order's lifecycle stage.
 	// Values: "signal_generated", "order_submitting", "order_submitted",
-	//
-	//	"order_confirmed", "order_rejected", "order_outcome_unknown"
-	//
+	//         "order_confirmed", "order_rejected", "order_outcome_unknown"
 	// signal_generated ≠ order_confirmed: a signal is not a fill.
 	OrderLifecycle   string `protobuf:"bytes,14,opt,name=order_lifecycle,json=orderLifecycle,proto3" json:"order_lifecycle,omitempty"`
 	LastBrokerTicket int64  `protobuf:"varint,15,opt,name=last_broker_ticket,json=lastBrokerTicket,proto3" json:"last_broker_ticket,omitempty"` // most recent broker ticket (0 = none)

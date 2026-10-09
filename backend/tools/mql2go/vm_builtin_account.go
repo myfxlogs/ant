@@ -5,6 +5,7 @@ import (
 
 	"github.com/shopspring/decimal"
 
+	"alphaforge/strategy/sdk"
 	"alphaforge/tools/mql2go/interp"
 )
 
@@ -214,22 +215,13 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 	}
 	mode := argI(args, 1)
 	// VM-ENUM-NUMBERING-1: mode numbers are the real MQL4 MarketInfo values.
+	if v, handled, err := marketInfoTickProp(vm, mode, sym); handled {
+		return v, err
+	}
+	if v, handled, err := marketInfoMarginProp(vm, mode, sym, info); handled {
+		return v, err
+	}
 	switch mode {
-	case 5: // MODE_TIME
-		if sym != vm.ctx.Symbol() || vm.ctx.ServerTime() == 0 {
-			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative server time for %q in the VM", sym)
-		}
-		return interp.DecimalVal(decimal.NewFromInt(vm.ctx.ServerTime() / 1000)), nil
-	case 9: // MODE_BID
-		if sym != vm.ctx.Symbol() || vm.ctx.Bid().IsZero() {
-			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative bid for %q in the VM", sym)
-		}
-		return interp.DecimalVal(vm.ctx.Bid()), nil
-	case 10: // MODE_ASK
-		if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
-			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative ask for %q in the VM", sym)
-		}
-		return interp.DecimalVal(vm.ctx.Ask()), nil
 	case 11: // MODE_POINT
 		return interp.DecimalVal(info.Point), nil
 	case 12: // MODE_DIGITS
@@ -266,15 +258,6 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 		return interp.DecimalVal(info.VolumeStep), nil
 	case 25: // MODE_MAXLOT
 		return interp.DecimalVal(info.VolumeMax), nil
-	case 28, 31: // MODE_MARGININIT / MODE_MARGINREQUIRED — same initial=margin model as AccountFreeMarginCheck (volume=1)
-		if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
-			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: no authoritative ask for %q in the VM", sym)
-		}
-		lev := decimal.NewFromInt(int64(vm.ctx.Account().Leverage))
-		if lev.IsZero() {
-			return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: leverage is zero")
-		}
-		return interp.DecimalVal(info.ContractSize.Mul(vm.ctx.Ask()).Div(lev)), nil
 	case 32: // MODE_FREEZELEVEL — venue fact verbatim (backtest model 0; live: broker, -1 = unknown)
 		return interp.DecimalVal(decimal.NewFromInt(int64(info.FreezeLevel))), nil
 	case 33: // MODE_CLOSEBY_ALLOWED — venue 0: close-by not supported
@@ -282,6 +265,47 @@ func builtinMarketInfo(vm *VM, args []interp.Value) (interp.Value, error) {
 	default:
 		return interp.DecimalVal(decimal.Zero), fmt.Errorf("MarketInfo: unsupported mode %d", mode)
 	}
+}
+
+// marketInfoTickProp resolves the tick-axis modes (TIME/BID/ASK) that demand
+// an authoritative quote from the connected symbol; handled=false for others.
+func marketInfoTickProp(vm *VM, mode int32, sym string) (interp.Value, bool, error) {
+	switch mode {
+	case 5: // MODE_TIME
+		if sym != vm.ctx.Symbol() || vm.ctx.ServerTime() == 0 {
+			return interp.DecimalVal(decimal.Zero), true, fmt.Errorf("MarketInfo: no authoritative server time for %q in the VM", sym)
+		}
+		return interp.DecimalVal(decimal.NewFromInt(vm.ctx.ServerTime() / 1000)), true, nil
+	case 9: // MODE_BID
+		if sym != vm.ctx.Symbol() || vm.ctx.Bid().IsZero() {
+			return interp.DecimalVal(decimal.Zero), true, fmt.Errorf("MarketInfo: no authoritative bid for %q in the VM", sym)
+		}
+		return interp.DecimalVal(vm.ctx.Bid()), true, nil
+	case 10: // MODE_ASK
+		if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
+			return interp.DecimalVal(decimal.Zero), true, fmt.Errorf("MarketInfo: no authoritative ask for %q in the VM", sym)
+		}
+		return interp.DecimalVal(vm.ctx.Ask()), true, nil
+	default:
+		return interp.Value{}, false, nil
+	}
+}
+
+// marketInfoMarginProp resolves MODE_MARGININIT / MODE_MARGINREQUIRED — same
+// initial=margin model as AccountFreeMarginCheck (volume=1); handled=false for
+// other modes.
+func marketInfoMarginProp(vm *VM, mode int32, sym string, info sdk.SymbolInfo) (interp.Value, bool, error) {
+	if mode != 28 && mode != 31 {
+		return interp.Value{}, false, nil
+	}
+	if sym != vm.ctx.Symbol() || vm.ctx.Ask().IsZero() {
+		return interp.DecimalVal(decimal.Zero), true, fmt.Errorf("MarketInfo: no authoritative ask for %q in the VM", sym)
+	}
+	lev := decimal.NewFromInt(int64(vm.ctx.Account().Leverage))
+	if lev.IsZero() {
+		return interp.DecimalVal(decimal.Zero), true, fmt.Errorf("MarketInfo: leverage is zero")
+	}
+	return interp.DecimalVal(info.ContractSize.Mul(vm.ctx.Ask()).Div(lev)), true, nil
 }
 
 // ── String format builtin ────────────────────────────────────────────

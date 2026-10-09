@@ -42,8 +42,7 @@ const (
 type AssetAnalysisServiceClient interface {
 	// AnalyzeAsset performs comprehensive asset analysis and streams results
 	// progressively via SSE. Each frame populates a different phase:
-	//
-	//	mtf_outlook → sr_levels → volatility → ai_recommendation → complete
+	//   mtf_outlook → sr_levels → volatility → ai_recommendation → complete
 	AnalyzeAsset(context.Context, *connect.Request[v1.AnalyzeAssetRequest]) (*connect.ServerStreamForClient[v1.AnalyzeAssetResponse], error)
 }
 
@@ -81,8 +80,7 @@ func (c *assetAnalysisServiceClient) AnalyzeAsset(ctx context.Context, req *conn
 type AssetAnalysisServiceHandler interface {
 	// AnalyzeAsset performs comprehensive asset analysis and streams results
 	// progressively via SSE. Each frame populates a different phase:
-	//
-	//	mtf_outlook → sr_levels → volatility → ai_recommendation → complete
+	//   mtf_outlook → sr_levels → volatility → ai_recommendation → complete
 	AnalyzeAsset(context.Context, *connect.Request[v1.AnalyzeAssetRequest], *connect.ServerStream[v1.AnalyzeAssetResponse]) error
 }
 

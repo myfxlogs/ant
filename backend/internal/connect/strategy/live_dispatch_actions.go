@@ -212,7 +212,7 @@ func (s *StrategyExecutionServer) dispatchCancelOrder(ctx context.Context, cfg L
 			return ticket, s.mtHub.DeleteOrder(brokerCtx, cfg.AccountID, ticket)
 		},
 		verifyReadAfterWrite: verifyTicketAbsent(ticket),
-	}, "cancel", sig, defaultConfirmationConfig)
+	}, actionCancel, sig, defaultConfirmationConfig)
 }
 
 func (s *StrategyExecutionServer) submitOrder(ctx context.Context, cfg LiveStrategyConfig, side mthub.Side, orderType mthub.OrderType, barOpenTime int64, sig *antv1.StrategySignal, activeSess *ActiveSession) mutationResult {

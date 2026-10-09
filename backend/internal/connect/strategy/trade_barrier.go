@@ -98,7 +98,7 @@ var actionCompatibleUpdateTypes = map[string]map[string]bool{
 	string(actionModify): {
 		"modify": true, "pending_modify": true, // MT5 PendingModify → "modify"
 	},
-	"cancel": {
+	actionCancel: {
 		// Deleting a pending order emits PendingClose from both adapters.
 		"close": true, "pending_close": true,
 	},

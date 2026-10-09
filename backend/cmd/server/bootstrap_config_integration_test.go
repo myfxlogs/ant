@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.uber.org/zap"
 
 	"alphaforge/internal/config"
 	"alphaforge/internal/repository"
@@ -118,11 +117,10 @@ func platformSecretRow(t *testing.T, pool *pgxpool.Pool, key string) ([]byte, bo
 func TestSeedOnceIdempotentAndOverlayDBWins(t *testing.T) {
 	pool, sec := getBootstrapTestPool(t)
 	ctx := context.Background()
-	log := zap.NewNop()
 
 	t.Setenv("CHAIN_MONITOR_ENABLED", "false")
 	cfg := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, sec, cfg, log); err != nil {
+	if err := seedAndOverlayConfig(ctx, pool, sec, cfg); err != nil {
 		t.Fatalf("first boot: %v", err)
 	}
 	if v, ok := systemConfigValue(t, pool, "CHAIN_MONITOR_ENABLED"); !ok || v != "false" {
@@ -135,7 +133,7 @@ func TestSeedOnceIdempotentAndOverlayDBWins(t *testing.T) {
 	// 二次 boot：env 改值 + 行已存在 → seed 不得覆写；overlay 仍 DB 值。
 	t.Setenv("CHAIN_MONITOR_ENABLED", "true")
 	cfg2 := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, sec, cfg2, log); err != nil {
+	if err := seedAndOverlayConfig(ctx, pool, sec, cfg2); err != nil {
 		t.Fatalf("second boot: %v", err)
 	}
 	if v, _ := systemConfigValue(t, pool, "CHAIN_MONITOR_ENABLED"); v != "false" {
@@ -153,7 +151,7 @@ func TestSeedSkipsAbsentEnv(t *testing.T) {
 
 	t.Setenv("REQUIRE_KYC", "") // 空=缺
 	cfg := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, sec, cfg, zap.NewNop()); err != nil {
+	if err := seedAndOverlayConfig(ctx, pool, sec, cfg); err != nil {
 		t.Fatalf("boot: %v", err)
 	}
 	if _, ok := systemConfigValue(t, pool, "REQUIRE_KYC"); ok {
@@ -171,7 +169,7 @@ func TestSecretSeedRoundtripAndDBWins(t *testing.T) {
 
 	t.Setenv("MTAPI_TOKEN", "tok-secret-e2e-123")
 	cfg := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, sec, cfg, zap.NewNop()); err != nil {
+	if err := seedAndOverlayConfig(ctx, pool, sec, cfg); err != nil {
 		t.Fatalf("first boot: %v", err)
 	}
 	enc, ok := platformSecretRow(t, pool, "MTAPI_TOKEN")
@@ -188,7 +186,7 @@ func TestSecretSeedRoundtripAndDBWins(t *testing.T) {
 	// 二次 boot：env 改值不生效（seed IF ABSENT + overlay DB-wins）。
 	t.Setenv("MTAPI_TOKEN", "rotated-env-should-lose")
 	cfg2 := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, sec, cfg2, zap.NewNop()); err != nil {
+	if err := seedAndOverlayConfig(ctx, pool, sec, cfg2); err != nil {
 		t.Fatalf("second boot: %v", err)
 	}
 	if cfg2.MtapiToken != "tok-secret-e2e-123" {
@@ -203,7 +201,7 @@ func TestWrongMasterKeyFailsClosed(t *testing.T) {
 
 	t.Setenv("SMTP_PASSWORD", "pw-123")
 	cfg := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, sec, cfg, zap.NewNop()); err != nil {
+	if err := seedAndOverlayConfig(ctx, pool, sec, cfg); err != nil {
 		t.Fatalf("seed with correct key: %v", err)
 	}
 
@@ -216,7 +214,7 @@ func TestWrongMasterKeyFailsClosed(t *testing.T) {
 		t.Fatalf("wrong client: %v", err)
 	}
 	cfg2 := config.Load()
-	if err := seedAndOverlayConfig(ctx, pool, wrong, cfg2, zap.NewNop()); err == nil {
+	if err := seedAndOverlayConfig(ctx, pool, wrong, cfg2); err == nil {
 		t.Fatal("wrong master key must fail closed (decrypt error)")
 	}
 }

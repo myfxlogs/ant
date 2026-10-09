@@ -117,7 +117,7 @@ func (s *StrategyExecutionServer) applyConfirmedToRunner(r *runner.Runner, sig *
 		}
 	case string(actionClose):
 		r.RemoveConfirmedPosition(sig.GetExecutedTicket())
-	case "cancel":
+	case actionCancel:
 		r.RemoveConfirmedPendingOrder(sig.GetExecutedTicket())
 	case "modify":
 		r.ApplyConfirmedModify(sig.GetExecutedTicket(), parseDecimal(sig.GetStopLoss()), parseDecimal(sig.GetTakeProfit()))
@@ -232,7 +232,7 @@ func (s *StrategyExecutionServer) dispatchCancelAll(ctx context.Context, cfg Liv
 				return o.Ticket, s.mtHub.DeleteOrder(brokerCtx, cfg.AccountID, o.Ticket)
 			},
 			verifyReadAfterWrite: verifyTicketAbsent(o.Ticket),
-		}, "cancel", &antv1.StrategySignal{SignalType: "cancel"}, defaultConfirmationConfig)
+		}, actionCancel, &antv1.StrategySignal{SignalType: actionCancel}, defaultConfirmationConfig)
 
 		if result.state == barrierOutcomeUnknown {
 			s.log.Error("LiveStrategyRunner: dispatchCancelAll: cancel outcome unknown — stopping batch",

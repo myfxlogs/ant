@@ -178,7 +178,7 @@ func (c *compiler) collectParam(ir *interp.IR, n *sitter.Node) {
 // VM-GLOBAL-ARRAY-DECL-1: declaration-site nodes are array_declarator, not
 // subscript_expression (findArraySize never fired on this path).
 func (c *compiler) parseArrayDeclarator(n *sitter.Node) (name string, size int, multiDim bool, ok bool) {
-	if n.Type() != "array_declarator" {
+	if n.Type() != nodeArrayDeclarator {
 		return "", 0, false, false
 	}
 	for i := 0; i < int(n.NamedChildCount()); i++ {
@@ -188,9 +188,9 @@ func (c *compiler) parseArrayDeclarator(n *sitter.Node) (name string, size int, 
 			if nm := c.text(child); !isMQLPrimitiveType(nm) && name == "" {
 				name = nm
 			}
-		case "number_literal":
+		case nodeNumberLiteral:
 			fmt.Sscanf(c.text(child), "%d", &size)
-		case "array_declarator":
+		case nodeArrayDeclarator:
 			multiDim = true
 		}
 	}
@@ -201,99 +201,128 @@ func (c *compiler) collectGlobalVar(ir *interp.IR, n *sitter.Node) {
 	typeName := c.findType(n)
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "init_declarator" {
-			// VM-GLOBAL-ARRAY-DECL-1: any initializer on an array declarator
-			// is rejected unconditionally — `int g[2]={1,2}` (initializer_list)
-			// and `int g[2]=5` (scalar) are both unsupported, and collecting
-			// without the initializer would silently drop data.
-			for j := 0; j < int(child.NamedChildCount()); j++ {
-				if sub := child.NamedChild(j); sub.Type() == "array_declarator" {
-					if c.err == nil {
-						c.err = fmt.Errorf("global array initializer not supported: %s", c.findIdent(sub))
-					}
-					return
-				}
-			}
-			name := c.findIdent(child)
-			if name == "" {
-				continue
-			}
-			gv := interp.GlobalVar{
-				Name: name,
-				Type: typeName,
-			}
-			// Check for array declaration: init_declarator may contain subscript_expression
-			if arrSize, isArr := c.findArraySize(child); isArr {
-				gv.IsArray = true
-				gv.ArraySize = arrSize
-			}
-			if valExpr := c.findInitValue(child, name); valExpr != nil {
-				gv.InitVal = c.compileExpr(valExpr)
-			}
-			ir.Globals = append(ir.Globals, gv)
-		} else if child.Type() == "array_declarator" {
-			// VM-GLOBAL-ARRAY-DECL-1: global array declarations were silently
-			// dropped before (no array_declarator case), so no global array
-			// ever reached initGlobals — every subscript on one silently
-			// returned NoneVal / dropped writes.
-			name, size, multiDim, ok := c.parseArrayDeclarator(child)
-			if !ok {
-				continue
-			}
-			// Multi-dimensional check BEFORE the name fallback: the identifier
-			// of `int g[2][3]` lives in the INNER array_declarator, so name is
-			// empty at this level — fall back to the raw source text.
-			if multiDim {
-				if c.err == nil {
-					label := name
-					if label == "" {
-						label = c.text(child)
-					}
-					c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", label)
-				}
+		switch child.Type() {
+		case "init_declarator":
+			if c.collectGlobalInitDeclarator(ir, typeName, child) {
 				return
 			}
-			if name == "" {
-				continue
-			}
-			if size <= 0 {
-				if c.err == nil {
-					c.err = fmt.Errorf("array size required: %s", name)
-				}
+		case nodeArrayDeclarator:
+			if c.collectGlobalArrayDeclarator(ir, typeName, child) {
 				return
 			}
-			ir.Globals = append(ir.Globals, interp.GlobalVar{
-				Name:      name,
-				Type:      typeName,
-				IsArray:   true,
-				ArraySize: size,
-			})
-		} else if child.Type() == "declarator" {
-			name := c.findIdent(child)
-			if name == "" {
+		case "declarator":
+			c.collectGlobalDeclarator(ir, typeName, child)
+		case nodeIdentifier:
+			if typeName == "" {
 				continue
 			}
-			gv := interp.GlobalVar{
-				Name: name,
-				Type: typeName,
-			}
-			if arrSize, isArr := c.findArraySize(child); isArr {
-				gv.IsArray = true
-				gv.ArraySize = arrSize
-			}
-			ir.Globals = append(ir.Globals, gv)
-		} else if child.Type() == nodeIdentifier && typeName != "" {
-			// Direct declaration: CTrade trade; (no init_declarator wrapper)
-			// Avoid double-adding if already handled by init_declarator above
-			name := c.text(child)
-			// Skip if this is the type_identifier itself
-			if name != typeName {
-				ir.Globals = append(ir.Globals, interp.GlobalVar{
-					Name: name,
-					Type: typeName,
-				})
-			}
+			c.collectGlobalDirect(ir, typeName, child)
 		}
+	}
+}
+
+// collectGlobalInitDeclarator handles `int g = 5;` form declarations and
+// rejects array initializers. Returns true when collection must stop (fatal).
+func (c *compiler) collectGlobalInitDeclarator(ir *interp.IR, typeName string, child *sitter.Node) bool {
+	// VM-GLOBAL-ARRAY-DECL-1: any initializer on an array declarator
+	// is rejected unconditionally — `int g[2]={1,2}` (initializer_list)
+	// and `int g[2]=5` (scalar) are both unsupported, and collecting
+	// without the initializer would silently drop data.
+	for j := 0; j < int(child.NamedChildCount()); j++ {
+		if sub := child.NamedChild(j); sub.Type() == nodeArrayDeclarator {
+			if c.err == nil {
+				c.err = fmt.Errorf("global array initializer not supported: %s", c.findIdent(sub))
+			}
+			return true
+		}
+	}
+	name := c.findIdent(child)
+	if name == "" {
+		return false
+	}
+	gv := interp.GlobalVar{
+		Name: name,
+		Type: typeName,
+	}
+	// Check for array declaration: init_declarator may contain subscript_expression
+	if arrSize, isArr := c.findArraySize(child); isArr {
+		gv.IsArray = true
+		gv.ArraySize = arrSize
+	}
+	if valExpr := c.findInitValue(child, name); valExpr != nil {
+		gv.InitVal = c.compileExpr(valExpr)
+	}
+	ir.Globals = append(ir.Globals, gv)
+	return false
+}
+
+// collectGlobalArrayDeclarator handles bare `int g[2];` declarations.
+// Returns true when collection must stop (fatal error recorded).
+func (c *compiler) collectGlobalArrayDeclarator(ir *interp.IR, typeName string, child *sitter.Node) bool {
+	// VM-GLOBAL-ARRAY-DECL-1: global array declarations were silently
+	// dropped before (no array_declarator case), so no global array
+	// ever reached initGlobals — every subscript on one silently
+	// returned NoneVal / dropped writes.
+	name, size, multiDim, ok := c.parseArrayDeclarator(child)
+	if !ok {
+		return false
+	}
+	// Multi-dimensional check BEFORE the name fallback: the identifier
+	// of `int g[2][3]` lives in the INNER array_declarator, so name is
+	// empty at this level — fall back to the raw source text.
+	if multiDim {
+		if c.err == nil {
+			label := name
+			if label == "" {
+				label = c.text(child)
+			}
+			c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", label)
+		}
+		return true
+	}
+	if name == "" {
+		return false
+	}
+	if size <= 0 {
+		if c.err == nil {
+			c.err = fmt.Errorf("array size required: %s", name)
+		}
+		return true
+	}
+	ir.Globals = append(ir.Globals, interp.GlobalVar{
+		Name:      name,
+		Type:      typeName,
+		IsArray:   true,
+		ArraySize: size,
+	})
+	return false
+}
+
+func (c *compiler) collectGlobalDeclarator(ir *interp.IR, typeName string, child *sitter.Node) {
+	name := c.findIdent(child)
+	if name == "" {
+		return
+	}
+	gv := interp.GlobalVar{
+		Name: name,
+		Type: typeName,
+	}
+	if arrSize, isArr := c.findArraySize(child); isArr {
+		gv.IsArray = true
+		gv.ArraySize = arrSize
+	}
+	ir.Globals = append(ir.Globals, gv)
+}
+
+// collectGlobalDirect handles direct declarations without an init_declarator
+// wrapper (`CTrade trade;`) — skipped when the identifier is the type itself.
+func (c *compiler) collectGlobalDirect(ir *interp.IR, typeName string, child *sitter.Node) {
+	name := c.text(child)
+	if name != typeName {
+		ir.Globals = append(ir.Globals, interp.GlobalVar{
+			Name: name,
+			Type: typeName,
+		})
 	}
 }
 
@@ -516,7 +545,7 @@ func (c *compiler) compileFor(n *sitter.Node) *interp.Statement {
 					stmt.Cond = expr
 				}
 			}
-		case "binary_expression", "call_expression", nodeIdentifier, "number_literal":
+		case "binary_expression", "call_expression", nodeIdentifier, nodeNumberLiteral:
 			if stmt.Cond == nil {
 				stmt.Cond = c.compileExpr(child)
 			}
@@ -655,118 +684,22 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 	var decls []interp.Expr
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
+		var expr *interp.Expr
 		switch child.Type() {
 		case "init_declarator":
-			// MQL-COMPILER-LOCAL-ARRAYS: any initializer on a local array
-			// declarator is rejected unconditionally — collecting without it
-			// would silently compile the array as a scalar (bug B).
-			for j := 0; j < int(child.NamedChildCount()); j++ {
-				if sub := child.NamedChild(j); sub.Type() == "array_declarator" {
-					if c.err == nil {
-						c.err = fmt.Errorf("local array initializer not supported: %s", c.findIdent(sub))
-					}
-					return nil
-				}
-			}
-			name := c.findIdent(child)
-			if name == "" {
-				continue
-			}
-			valExpr := c.findInitValue(child, name)
-			var expr interp.Expr
-			if valExpr != nil {
-				expr = interp.Expr{
-					Kind:   interp.ExprDecl,
-					Name:   name,
-					Static: isStatic,
-					Args:   []interp.Expr{*c.compileExpr(valExpr)},
-				}
-			} else {
-				// No initializer — zero value.
-				expr = interp.Expr{
-					Kind:   interp.ExprDecl,
-					Name:   name,
-					Static: isStatic,
-					Args:   []interp.Expr{zeroValueExpr(typeName)},
-				}
-			}
-			decls = append(decls, expr)
+			expr = c.declInitDeclarator(child, typeName, isStatic)
 		case "declarator":
-			name := c.findIdent(child)
-			if name == "" {
-				continue
-			}
-			decls = append(decls, interp.Expr{
-				Kind:   interp.ExprDecl,
-				Name:   name,
-				Static: isStatic,
-				Args:   []interp.Expr{zeroValueExpr(typeName)},
-			})
+			expr = c.declDeclarator(child, typeName, isStatic)
 		case nodeIdentifier:
-			// VM-IMPLICIT-VAR-READ-1: `int x;` parses as
-			// declaration→[primitive_type, identifier] — a bare identifier
-			// child with no init_declarator/declarator wrapper. Without this
-			// case the declaration was silently dropped and a later read fell
-			// through to the implicit-global path (or, now, a compile error).
-			decls = append(decls, interp.Expr{
-				Kind:   interp.ExprDecl,
-				Name:   c.text(child),
-				Static: isStatic,
-				Args:   []interp.Expr{zeroValueExpr(typeName)},
-			})
-		case "array_declarator":
-			// MQL-COMPILER-LOCAL-ARRAYS: local array declarations compile to
-			// ExprArrayNew (OP_NEW_ARRAY) — mirrors the global-declaration
-			// path's shape checks (multi-dim / non-constant size rejected).
-			name, size, multiDim, ok := c.parseArrayDeclarator(child)
-			if !ok {
-				continue
-			}
-			if multiDim {
-				if c.err == nil {
-					label := name
-					if label == "" {
-						label = c.text(child)
-					}
-					c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", label)
-				}
-				return nil
-			}
-			// Non-constant dimension: a second identifier as the dimension
-			// (`int a[n]`) must error — silently treating it as a dynamic
-			// empty array would fabricate size 0.
-			seenIdent := false
-			for j := 0; j < int(child.NamedChildCount()); j++ {
-				sub := child.NamedChild(j)
-				switch {
-				case sub.Type() == nodeIdentifier && !seenIdent:
-					seenIdent = true // first identifier = the array name
-				case sub.Type() == "array_declarator" || sub.Type() == nodeIdentifier:
-					// nested dimension / second identifier → non-constant
-					if c.err == nil {
-						c.err = fmt.Errorf("array size must be a constant: %s", name)
-					}
-					return nil
-				case sub.Type() != "number_literal":
-					if c.err == nil {
-						c.err = fmt.Errorf("array size must be a constant: %s", name)
-					}
-					return nil
-				}
-			}
-			if name == "" {
-				continue
-			}
-			decls = append(decls, interp.Expr{
-				Kind:   interp.ExprDecl,
-				Name:   name,
-				Static: isStatic,
-				Args: []interp.Expr{{
-					Kind: interp.ExprArrayNew,
-					Name: typeName,
-					Val:  interp.IntVal(int32(size)), // 0 = dynamic empty (`double p[]`)
-				}},
-			})
+			expr = c.declBareIdent(child, typeName, isStatic)
+		case nodeArrayDeclarator:
+			expr = c.declArrayDeclarator(child, typeName, isStatic)
+		}
+		if c.err != nil {
+			return nil
+		}
+		if expr != nil {
+			decls = append(decls, *expr)
 		}
 	}
 	if len(decls) == 0 {
@@ -779,6 +712,121 @@ func (c *compiler) compileDeclaration(n *sitter.Node) *interp.Statement {
 	return &interp.Statement{
 		Kind: interp.StmtExpr,
 		Expr: &interp.Expr{Kind: interp.ExprSeq, Args: decls},
+	}
+}
+
+// declInitDeclarator compiles `type name = value;` declarators; nil = skip.
+// MQL-COMPILER-LOCAL-ARRAYS: any initializer on a local array declarator is
+// rejected unconditionally — collecting without it would silently compile the
+// array as a scalar (bug B).
+func (c *compiler) declInitDeclarator(child *sitter.Node, typeName string, isStatic bool) *interp.Expr {
+	for j := 0; j < int(child.NamedChildCount()); j++ {
+		if sub := child.NamedChild(j); sub.Type() == nodeArrayDeclarator {
+			if c.err == nil {
+				c.err = fmt.Errorf("local array initializer not supported: %s", c.findIdent(sub))
+			}
+			return nil
+		}
+	}
+	name := c.findIdent(child)
+	if name == "" {
+		return nil
+	}
+	valExpr := c.findInitValue(child, name)
+	var initArgs []interp.Expr
+	if valExpr != nil {
+		initArgs = []interp.Expr{*c.compileExpr(valExpr)}
+	} else {
+		// No initializer — zero value.
+		initArgs = []interp.Expr{zeroValueExpr(typeName)}
+	}
+	return &interp.Expr{
+		Kind:   interp.ExprDecl,
+		Name:   name,
+		Static: isStatic,
+		Args:   initArgs,
+	}
+}
+
+func (c *compiler) declDeclarator(child *sitter.Node, typeName string, isStatic bool) *interp.Expr {
+	name := c.findIdent(child)
+	if name == "" {
+		return nil
+	}
+	return &interp.Expr{
+		Kind:   interp.ExprDecl,
+		Name:   name,
+		Static: isStatic,
+		Args:   []interp.Expr{zeroValueExpr(typeName)},
+	}
+}
+
+// declBareIdent handles `int x;` which parses as
+// declaration→[primitive_type, identifier] (VM-IMPLICIT-VAR-READ-1) — a bare
+// identifier child with no init_declarator/declarator wrapper. Without this
+// case the declaration was silently dropped and a later read fell through to
+// the implicit-global path (or, now, a compile error).
+func (c *compiler) declBareIdent(child *sitter.Node, typeName string, isStatic bool) *interp.Expr {
+	return &interp.Expr{
+		Kind:   interp.ExprDecl,
+		Name:   c.text(child),
+		Static: isStatic,
+		Args:   []interp.Expr{zeroValueExpr(typeName)},
+	}
+}
+
+// declArrayDeclarator compiles local array declarations to ExprArrayNew
+// (OP_NEW_ARRAY) — MQL-COMPILER-LOCAL-ARRAYS; mirrors the global-declaration
+// path's shape checks (multi-dim / non-constant size rejected). nil = skip.
+func (c *compiler) declArrayDeclarator(child *sitter.Node, typeName string, isStatic bool) *interp.Expr {
+	name, size, multiDim, ok := c.parseArrayDeclarator(child)
+	if !ok {
+		return nil
+	}
+	if multiDim {
+		if c.err == nil {
+			label := name
+			if label == "" {
+				label = c.text(child)
+			}
+			c.err = fmt.Errorf("multi-dimensional arrays not supported: %s", label)
+		}
+		return nil
+	}
+	// Non-constant dimension: a second identifier as the dimension
+	// (`int a[n]`) must error — silently treating it as a dynamic
+	// empty array would fabricate size 0.
+	seenIdent := false
+	for j := 0; j < int(child.NamedChildCount()); j++ {
+		sub := child.NamedChild(j)
+		switch {
+		case sub.Type() == nodeIdentifier && !seenIdent:
+			seenIdent = true // first identifier = the array name
+		case sub.Type() == nodeArrayDeclarator || sub.Type() == nodeIdentifier:
+			// nested dimension / second identifier → non-constant
+			if c.err == nil {
+				c.err = fmt.Errorf("array size must be a constant: %s", name)
+			}
+			return nil
+		case sub.Type() != nodeNumberLiteral:
+			if c.err == nil {
+				c.err = fmt.Errorf("array size must be a constant: %s", name)
+			}
+			return nil
+		}
+	}
+	if name == "" {
+		return nil
+	}
+	return &interp.Expr{
+		Kind:   interp.ExprDecl,
+		Name:   name,
+		Static: isStatic,
+		Args: []interp.Expr{{
+			Kind: interp.ExprArrayNew,
+			Name: typeName,
+			Val:  interp.IntVal(int32(size)), // 0 = dynamic empty (`double p[]`)
+		}},
 	}
 }
 
@@ -801,43 +849,55 @@ func (c *compiler) collectFuncParams(n *sitter.Node) []interp.ParamDecl {
 	var params []interp.ParamDecl
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
-		if child.Type() == "function_declarator" {
-			for j := 0; j < int(child.NamedChildCount()); j++ {
-				fc := child.NamedChild(j)
-				if fc.Type() == "parameter_list" {
-					for k := 0; k < int(fc.NamedChildCount()); k++ {
-						pd := fc.NamedChild(k)
-						if pd.Type() == "parameter_declaration" {
-							// VM-GLOBAL-ARRAY-DECL-1: array parameters were
-							// silently dropped (findIdent cannot see the
-							// identifier nested in array_declarator), so the
-							// function body read a phantom global — MQL
-							// by-reference array semantics are unsupported;
-							// reject explicitly before the append.
-							for m := 0; m < int(pd.NamedChildCount()); m++ {
-								if decl := pd.NamedChild(m); decl.Type() == "array_declarator" {
-									if c.err == nil {
-										name := c.findIdent(decl)
-										if name == "" {
-											name = c.text(pd)
-										}
-										c.err = fmt.Errorf("array parameters not supported: %s", name)
-									}
-									return nil
-								}
-							}
-							pName := c.findIdent(pd)
-							pType := c.findType(pd)
-							if pName != "" {
-								params = append(params, interp.ParamDecl{
-									Name: pName,
-									Type: pType,
-								})
-							}
-						}
-					}
-				}
+		if child.Type() != "function_declarator" {
+			continue
+		}
+		for j := 0; j < int(child.NamedChildCount()); j++ {
+			fc := child.NamedChild(j)
+			if fc.Type() != "parameter_list" {
+				continue
 			}
+			params = append(params, c.collectParamList(fc)...)
+			if c.err != nil {
+				return nil
+			}
+		}
+	}
+	return params
+}
+
+// collectParamList appends one parameter_list's declarations; returns nil on
+// the fatal array-parameter rejection (c.err set).
+// VM-GLOBAL-ARRAY-DECL-1: array parameters were silently dropped (findIdent
+// cannot see the identifier nested in array_declarator), so the function body
+// read a phantom global — MQL by-reference array semantics are unsupported;
+// reject explicitly before the append.
+func (c *compiler) collectParamList(pl *sitter.Node) []interp.ParamDecl {
+	var params []interp.ParamDecl
+	for k := 0; k < int(pl.NamedChildCount()); k++ {
+		pd := pl.NamedChild(k)
+		if pd.Type() != "parameter_declaration" {
+			continue
+		}
+		for m := 0; m < int(pd.NamedChildCount()); m++ {
+			if decl := pd.NamedChild(m); decl.Type() == nodeArrayDeclarator {
+				if c.err == nil {
+					name := c.findIdent(decl)
+					if name == "" {
+						name = c.text(pd)
+					}
+					c.err = fmt.Errorf("array parameters not supported: %s", name)
+				}
+				return nil
+			}
+		}
+		pName := c.findIdent(pd)
+		pType := c.findType(pd)
+		if pName != "" {
+			params = append(params, interp.ParamDecl{
+				Name: pName,
+				Type: pType,
+			})
 		}
 	}
 	return params
@@ -888,7 +948,7 @@ func (c *compiler) parseEnumerator(ec *sitter.Node) (name string, val *int32) {
 		ecChild := ec.NamedChild(k)
 		if ecChild.Type() == nodeIdentifier {
 			name = c.text(ecChild)
-		} else if ecChild.Type() == "number_literal" {
+		} else if ecChild.Type() == nodeNumberLiteral {
 			nVal := interp.ParseNumberLiteral(c.text(ecChild))
 			v := nVal.ToInt()
 			val = &v

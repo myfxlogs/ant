@@ -38,7 +38,7 @@ func (c *compiler) compileExpr(n *sitter.Node) *interp.Expr {
 		return nil
 	}
 	switch n.Type() {
-	case "number_literal":
+	case nodeNumberLiteral:
 		return &interp.Expr{Kind: interp.ExprLiteral, Val: interp.ParseNumberLiteral(c.text(n))}
 
 	case "string_literal":
@@ -485,7 +485,7 @@ func (c *compiler) findArraySize(n *sitter.Node) (int, bool) {
 			// and the index is the dimension size
 			for j := 0; j < int(child.NamedChildCount()); j++ {
 				dim := child.NamedChild(j)
-				if dim.Type() == "number_literal" {
+				if dim.Type() == nodeNumberLiteral {
 					txt := c.text(dim)
 					var size int
 					fmt.Sscanf(txt, "%d", &size)
@@ -556,7 +556,7 @@ func (c *compiler) findExprChild(n *sitter.Node) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "number_literal", "string_literal", nodeIdentifier,
+		case nodeNumberLiteral, "string_literal", nodeIdentifier,
 			"call_expression", "binary_expression", "unary_expression",
 			"subscript_expression", "conditional_expression",
 			nodeParenExpr, "field_expression",
@@ -571,7 +571,7 @@ func (c *compiler) findInitValue(n *sitter.Node, declName string) *sitter.Node {
 	for i := 0; i < int(n.NamedChildCount()); i++ {
 		child := n.NamedChild(i)
 		switch child.Type() {
-		case "number_literal", "string_literal",
+		case nodeNumberLiteral, "string_literal",
 			"call_expression", "binary_expression", "unary_expression",
 			"subscript_expression", "conditional_expression",
 			nodeParenExpr, "field_expression",

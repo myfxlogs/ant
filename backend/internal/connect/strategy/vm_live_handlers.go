@@ -356,7 +356,7 @@ func vmTradeEventType(s string) sdk.TradeEventType {
 		return sdk.TradeClosed
 	case "modify":
 		return sdk.TradeModified
-	case "cancel":
+	case actionCancel:
 		return sdk.TradeCancelled
 	}
 	return sdk.TradeFilled
@@ -395,7 +395,7 @@ func vmSignalToProto(sig *sdk.Signal, symbol string) *antv1.StrategySignal {
 	case sdk.ActionModify:
 		signalType = "modify"
 	case sdk.ActionCancel:
-		signalType = "cancel"
+		signalType = actionCancel
 	case sdk.ActionCloseAll:
 		signalType = "close_all"
 	case sdk.ActionCancelAll:

@@ -495,8 +495,11 @@ func TestVerifyGlobalChain_LegacyNormalizedEncoding_Integration(t *testing.T) {
 	if string(canonical) == string(legacyHash) {
 		t.Fatal("test setup: canonical and legacy encodings coincide — discriminator lost")
 	}
-	if !tradeEntryHashVerifies(legacyHash, tailEntry, seq, acct.accountID, 7501, "EURUSD",
-		columnVolume, columnOpen, columnClose, columnProfit, openTime, closeTime) {
+	if !tradeEntryHashVerifies(legacyHash, tailEntry, tradeEntryRow{
+		seq: seq, accountID: acct.accountID, ticket: 7501,
+		symbol: "EURUSD", volume: columnVolume, openPrice: columnOpen, closePrice: columnClose, profit: columnProfit,
+		openTime: openTime, closeTime: closeTime,
+	}) {
 		t.Fatal("normalized encoding channel failed to confirm the legacy row")
 	}
 

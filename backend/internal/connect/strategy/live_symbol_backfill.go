@@ -101,7 +101,7 @@ func pointOrDerived(param *mthub.SymbolParam) string {
 		return param.PointValue.String()
 	}
 	if param.Digits > 0 {
-		return decimal.New(1, -int32(param.Digits)).String()
+		return decimal.New(1, -param.Digits).String()
 	}
 	return param.PointValue.String()
 }

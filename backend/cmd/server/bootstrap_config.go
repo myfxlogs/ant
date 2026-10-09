@@ -83,7 +83,7 @@ var systemSettingDescriptions = map[string]string{
 
 // seedAndOverlayConfig seed-once + DB-wins overlay（语义见文件头）。
 // 错误返回非 nil 表示配置不可用（fail-closed）——调用方（main）boot fatal。
-func seedAndOverlayConfig(ctx context.Context, pool *pgxpool.Pool, secClient secrets.Client, cfg *config.Config, log *zap.Logger) error {
+func seedAndOverlayConfig(ctx context.Context, pool *pgxpool.Pool, secClient secrets.Client, cfg *config.Config) error {
 	adminRepo := repository.NewAdminRepository(pool)
 
 	// ── C 档 seed：env 非空 → system_config 仅缺键种入 ──

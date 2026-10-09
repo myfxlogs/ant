@@ -122,16 +122,38 @@ func sessionSyncDispatched(sess Session) bool {
 }
 
 func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStrategyConfig, activeSess *ActiveSession) (Session, error) {
-	var cachedBytecode []byte
-	if cfg.StrategyID != "" && s.importedRepo != nil {
-		if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil {
-			cachedBytecode, _ = s.importedRepo.GetBytecode(ctx, sid)
-		}
+	cachedBytecode := s.cachedBytecodeFor(ctx, cfg.StrategyID)
+	vmSess, err := s.compileVMLive(cfg, cachedBytecode, activeSess)
+	if err != nil {
+		return nil, err
 	}
-	var vmSess *VMLiveSession
-	var vmErr error
+	if activeSess != nil {
+		vmSess.SetDiag(activeSess.diag)
+	}
+	s.saveVMBytecodeCache(ctx, cfg, vmSess)
+	s.attachHistoryProvider(cfg, vmSess)
+	return vmSess, nil
+}
+
+// cachedBytecodeFor loads the previously persisted bytecode for the strategy,
+// so compile can reuse it instead of recompiling from source.
+func (s *StrategyExecutionServer) cachedBytecodeFor(ctx context.Context, strategyID string) []byte {
+	if strategyID == "" || s.importedRepo == nil {
+		return nil
+	}
+	sid, parseErr := uuid.Parse(strategyID)
+	if parseErr != nil {
+		return nil
+	}
+	bc, _ := s.importedRepo.GetBytecode(ctx, sid)
+	return bc
+}
+
+// compileVMLive builds the VM session (Python or MQL by code shape) and
+// records the compile failure on the active session before returning it.
+func (s *StrategyExecutionServer) compileVMLive(cfg LiveStrategyConfig, cachedBytecode []byte, activeSess *ActiveSession) (*VMLiveSession, error) {
 	if sdk.IsPython(cfg.Code) {
-		vmSess, vmErr = NewPythonVMLiveSessionCached(cfg.Code, cachedBytecode)
+		vmSess, vmErr := NewPythonVMLiveSessionCached(cfg.Code, cachedBytecode)
 		if vmErr != nil {
 			s.log.Error("LiveStrategyRunner: compile Python failed", zap.Error(vmErr))
 			if activeSess != nil {
@@ -139,59 +161,71 @@ func (s *StrategyExecutionServer) initVMSession(ctx context.Context, cfg LiveStr
 			}
 			return nil, vmErr
 		}
-	} else {
-		vmSess, vmErr = NewVMLiveSessionCached(cfg.Code, cachedBytecode)
-		if vmErr != nil {
-			s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
-			if activeSess != nil {
-				activeSess.RecordError("compile MQL: " + vmErr.Error())
-			}
-			return nil, vmErr
+		return vmSess, nil
+	}
+	vmSess, vmErr := NewVMLiveSessionCached(cfg.Code, cachedBytecode)
+	if vmErr != nil {
+		s.log.Error("LiveStrategyRunner: compile MQL failed", zap.Error(vmErr))
+		if activeSess != nil {
+			activeSess.RecordError("compile MQL: " + vmErr.Error())
 		}
-	}
-	if activeSess != nil {
-		vmSess.SetDiag(activeSess.diag)
-	}
-	if cfg.StrategyID != "" && s.importedRepo != nil {
-		if sid, parseErr := uuid.Parse(cfg.StrategyID); parseErr == nil && sid != uuid.Nil {
-			if bcData, mErr := mql2go.MarshalBytecode(vmSess.strategy.Bytecode()); mErr == nil {
-				if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
-					s.log.Warn("LiveStrategyRunner: save bytecode cache failed", zap.Error(saveErr))
-				}
-			}
-		}
-	}
-	// LIVE-HISTORY-POOL-1: stage the broker order-history provider on the
-	// session so OrdersHistoryTotal / OrderSelect MODE_HISTORY see real
-	// closed orders in live mode (applied to the runner inside Start).
-	if cfg.Mode == modeLive && s.mtHub != nil {
-		vmSess.SetHistoryProvider(func(hctx context.Context, from, to int64) ([]sdk.Position, error) {
-			fromT := time.Unix(from, 0)
-			toT := time.Unix(to, 0)
-			if from <= 0 {
-				fromT = time.Unix(0, 0)
-			}
-			if to <= 0 {
-				toT = time.Now()
-			}
-			recs, err := s.mtHub.OrderHistory(hctx, cfg.AccountID, fromT, toT)
-			if err != nil {
-				return nil, err
-			}
-			out := make([]sdk.Position, 0, len(recs))
-			for _, rec := range recs {
-				if rec == nil {
-					continue
-				}
-				p := orderRecordToPosition(rec)
-				p.ClosePrice = rec.ClosePrice
-				p.CloseTime = rec.CloseTime
-				out = append(out, p)
-			}
-			return out, nil
-		})
+		return nil, vmErr
 	}
 	return vmSess, nil
+}
+
+// saveVMBytecodeCache persists the freshly compiled bytecode so subsequent
+// boots can skip recompilation (best-effort: failures only warn).
+func (s *StrategyExecutionServer) saveVMBytecodeCache(ctx context.Context, cfg LiveStrategyConfig, vmSess *VMLiveSession) {
+	if cfg.StrategyID == "" || s.importedRepo == nil {
+		return
+	}
+	sid, parseErr := uuid.Parse(cfg.StrategyID)
+	if parseErr != nil || sid == uuid.Nil {
+		return
+	}
+	bcData, mErr := mql2go.MarshalBytecode(vmSess.strategy.Bytecode())
+	if mErr != nil {
+		return
+	}
+	if saveErr := s.importedRepo.SaveBytecode(ctx, sid, bcData); saveErr != nil {
+		s.log.Warn("LiveStrategyRunner: save bytecode cache failed", zap.Error(saveErr))
+	}
+}
+
+// attachHistoryProvider stages the broker order-history provider on the
+// session (LIVE-HISTORY-POOL-1) so OrdersHistoryTotal / OrderSelect
+// MODE_HISTORY see real closed orders in live mode (applied to the runner
+// inside Start).
+func (s *StrategyExecutionServer) attachHistoryProvider(cfg LiveStrategyConfig, vmSess *VMLiveSession) {
+	if cfg.Mode != modeLive || s.mtHub == nil {
+		return
+	}
+	vmSess.SetHistoryProvider(func(hctx context.Context, from, to int64) ([]sdk.Position, error) {
+		fromT := time.Unix(from, 0)
+		toT := time.Unix(to, 0)
+		if from <= 0 {
+			fromT = time.Unix(0, 0)
+		}
+		if to <= 0 {
+			toT = time.Now()
+		}
+		recs, err := s.mtHub.OrderHistory(hctx, cfg.AccountID, fromT, toT)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]sdk.Position, 0, len(recs))
+		for _, rec := range recs {
+			if rec == nil {
+				continue
+			}
+			p := orderRecordToPosition(rec)
+			p.ClosePrice = rec.ClosePrice
+			p.CloseTime = rec.CloseTime
+			out = append(out, p)
+		}
+		return out, nil
+	})
 }
 
 func (s *StrategyExecutionServer) handleTick(

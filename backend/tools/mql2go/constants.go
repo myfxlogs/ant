@@ -10,5 +10,7 @@ const (
 	nodeString            = "string"
 	nodeVolume            = "volume"
 	nodeTypeIdentifier    = "type_identifier"
+	nodeArrayDeclarator   = "array_declarator"
+	nodeNumberLiteral     = "number_literal"
 	fnPositionGetDouble   = "PositionGetDouble"
 )

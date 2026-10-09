@@ -125,7 +125,7 @@ func (s *StrategyExecutionServer) dispatchByAction(ctx context.Context, cfg Live
 		return s.dispatchCloseAll(ctx, cfg, activeSess)
 	case "modify":
 		return s.dispatchModifyOrder(ctx, cfg, sig, activeSess)
-	case "cancel":
+	case actionCancel:
 		return s.dispatchCancelOrder(ctx, cfg, sig, activeSess)
 	case "cancel_all":
 		return s.dispatchCancelAll(ctx, cfg, activeSess)
@@ -170,7 +170,7 @@ func (s *StrategyExecutionServer) dispatchPaperSignal(ctx context.Context, cfg L
 				zap.Error(err))
 		}
 		return
-	case "cancel":
+	case actionCancel:
 		if err := s.paperEngine.CancelPaperOrder(ctx, cfg.AccountID, cfg.Symbol); err != nil {
 			s.log.Error("LiveStrategyRunner: paper cancel failed",
 				zap.String("run", cfg.RunID.String()),

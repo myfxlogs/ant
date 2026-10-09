@@ -154,7 +154,7 @@ type BacktestRun struct {
 	TemplateId           *string                `protobuf:"bytes,15,opt,name=template_id,json=templateId,proto3,oneof" json:"template_id,omitempty"`
 	TemplateDraftId      *string                `protobuf:"bytes,16,opt,name=template_draft_id,json=templateDraftId,proto3,oneof" json:"template_draft_id,omitempty"`
 	// Phase B2: secondary symbols available to the strategy as features.
-	// Trading execution still targets “symbol“.
+	// Trading execution still targets ``symbol``.
 	ExtraSymbols    []string                 `protobuf:"bytes,17,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
 	IsTerminal      bool                     `protobuf:"varint,18,opt,name=is_terminal,json=isTerminal,proto3" json:"is_terminal,omitempty"`
 	IsSucceeded     bool                     `protobuf:"varint,19,opt,name=is_succeeded,json=isSucceeded,proto3" json:"is_succeeded,omitempty"`

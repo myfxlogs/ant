@@ -95,10 +95,6 @@ func builtinNoopDecimal(vm *VM, args []interp.Value) (interp.Value, error) {
 	return interp.DecimalVal(decimal.Zero), nil
 }
 
-func builtinNoopString(vm *VM, args []interp.Value) (interp.Value, error) {
-	return interp.StringVal(""), nil
-}
-
 func builtinEventSetTimer(vm *VM, args []interp.Value) (interp.Value, error) {
 	vm.ctx.SetTimer(int(argI(args, 0)))
 	return interp.NoneVal(), nil

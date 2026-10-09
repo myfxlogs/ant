@@ -44,7 +44,7 @@ func (s *StrategyExecutionServer) buildTradeContext(ctx context.Context, cfg Liv
 	case mthub.BrokerTradeModified:
 		evtType = "modify"
 	case mthub.BrokerTradeCancelled:
-		evtType = "cancel"
+		evtType = actionCancel
 	}
 	tctx := &antv1.TradeContext{
 		Ticket:     evt.Ticket,

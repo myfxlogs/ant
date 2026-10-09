@@ -39,7 +39,7 @@ const (
 	actionOpen   mutationAction = "open"
 	actionClose  mutationAction = "close"
 	actionModify mutationAction = "modify"
-	actionCancel mutationAction = "cancel"
+	actionCancel                = "cancel" // untyped: serves both mutationAction values and raw string dispatch
 )
 
 // mutationSpec describes a single broker mutation for the coordinator.

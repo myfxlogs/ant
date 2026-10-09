@@ -113,6 +113,22 @@ func (c *astCompiler) compileDoWhile(s *interp.Statement) {
 	}
 }
 
+// emitCaseBodyTail compiles one case body, then records its break jump or the
+// fallthrough jump to the next case body (shared by default and regular cases).
+func (c *astCompiler) emitCaseBodyTail(sc *interp.SwitchCase, caseIdx, casesLen int,
+	caseBodyStarts, endJumps, fallthroughJmps, fallthroughTargets *[]int32) {
+	bodyStart := int32(len(c.bc.Code))
+	*caseBodyStarts = append(*caseBodyStarts, bodyStart)
+	c.compileStmts(sc.Body)
+	if sc.HasBreak {
+		*endJumps = append(*endJumps, c.emitJump(OP_JMP, 0))
+	} else if caseIdx+1 < casesLen {
+		fj := c.emitJump(OP_JMP, 0)
+		*fallthroughJmps = append(*fallthroughJmps, fj)
+		*fallthroughTargets = append(*fallthroughTargets, int32(caseIdx+1))
+	}
+}
+
 func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	c.compileExpr(s.Expr)
 
@@ -156,20 +172,11 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 	for i, sc := range s.Cases {
 		if sc.Expr == nil {
 			// Default: no comparison, just body. Fallthrough target.
-			bodyStart := int32(len(c.bc.Code))
-			caseBodyStarts = append(caseBodyStarts, bodyStart)
 			if !hasDefault {
 				hasDefault = true
-				defaultBodyStart = bodyStart
+				defaultBodyStart = int32(len(c.bc.Code))
 			}
-			c.compileStmts(sc.Body)
-			if sc.HasBreak {
-				endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
-			} else if i+1 < len(s.Cases) {
-				fj := c.emitJump(OP_JMP, 0)
-				fallthroughJmps = append(fallthroughJmps, fj)
-				fallthroughTargets = append(fallthroughTargets, int32(i+1))
-			}
+			c.emitCaseBodyTail(&sc, i, len(s.Cases), &caseBodyStarts, &endJumps, &fallthroughJmps, &fallthroughTargets)
 		} else {
 			regularCaseStarts = append(regularCaseStarts, int32(len(c.bc.Code)))
 			c.emit(OP_DUP, 0, 0, 0)
@@ -178,16 +185,7 @@ func (c *astCompiler) compileSwitch(s *interp.Statement) {
 			jmpNext := c.emitJump(OP_JMP_IF_FALSE, 0)
 			regularJmpFalse = append(regularJmpFalse, jmpNext)
 			regularJmpIdx = append(regularJmpIdx, i)
-			bodyStart := int32(len(c.bc.Code))
-			caseBodyStarts = append(caseBodyStarts, bodyStart)
-			c.compileStmts(sc.Body)
-			if sc.HasBreak {
-				endJumps = append(endJumps, c.emitJump(OP_JMP, 0))
-			} else if i+1 < len(s.Cases) {
-				fj := c.emitJump(OP_JMP, 0)
-				fallthroughJmps = append(fallthroughJmps, fj)
-				fallthroughTargets = append(fallthroughTargets, int32(i+1))
-			}
+			c.emitCaseBodyTail(&sc, i, len(s.Cases), &caseBodyStarts, &endJumps, &fallthroughJmps, &fallthroughTargets)
 		}
 	}
 

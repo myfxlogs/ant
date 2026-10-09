@@ -227,69 +227,75 @@ func (e *Engine) dispatchSignal(sig *sdk.Signal, bar sdk.Bar) {
 	switch sig.Action {
 	case sdk.ActionBuy, sdk.ActionSell, sdk.ActionBuyLimit, sdk.ActionSellLimit,
 		sdk.ActionBuyStop, sdk.ActionSellStop:
-		side := sdk.SideBuy
-		ot := sdk.OrderMarket
-		if sig.Action == sdk.ActionSell {
-			side = sdk.SideSell
-		}
-		if sig.Action == sdk.ActionBuyLimit || sig.Action == sdk.ActionSellLimit {
-			ot = sdk.OrderLimit
-		}
-		if sig.Action == sdk.ActionBuyStop || sig.Action == sdk.ActionSellStop {
-			ot = sdk.OrderStop
-		}
-		price := bar.Close
-		if !e.broker.currentPrice.IsZero() {
-			price = e.broker.currentPrice
-		}
-		if sig.Price.IsPositive() {
-			price = sig.Price
-		}
-		if res, err := e.broker.OrderSend(sdk.OrderRequest{
-			Symbol:     sig.Symbol,
-			Side:       side,
-			Type:       ot,
-			Volume:     sig.Volume,
-			Price:      price,
-			StopLoss:   sig.StopLoss,
-			TakeProfit: sig.TakeProfit,
-			Comment:    sig.Comment,
-			Magic:      sig.Magic,
-		}); err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: OrderSend error at bar %d: %v\n", e.broker.currentBar, err)
-		} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
-			// TRADE-BUILTIN-ERR-SWALLOW-1: business rejections travel on the
-			// RetCode channel — log them or they vanish silently.
-			fmt.Fprintf(os.Stderr, "backtest: OrderSend rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
-		}
+		e.dispatchEntry(sig, bar)
 	case sdk.ActionClose:
-		if res, err := e.broker.PositionClose(sig.OrderTicket, decimal.Zero); err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
-		} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
-			fmt.Fprintf(os.Stderr, "backtest: PositionClose rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
-		}
+		e.closePositionLogged(sig.OrderTicket)
 	case sdk.ActionCancel:
-		if res, err := e.broker.OrderDelete(sig.OrderTicket); err != nil {
-			fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
-		} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
-			fmt.Fprintf(os.Stderr, "backtest: OrderDelete rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
-		}
+		e.deleteOrderLogged(sig.OrderTicket)
 	case sdk.ActionCloseAll:
 		for _, p := range e.broker.Positions(sig.Magic) {
-			if res, err := e.broker.PositionClose(p.Ticket, decimal.Zero); err != nil {
-				fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
-			} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
-				fmt.Fprintf(os.Stderr, "backtest: PositionClose rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
-			}
+			e.closePositionLogged(p.Ticket)
 		}
 	case sdk.ActionCancelAll:
 		for _, o := range e.broker.Orders(sig.Magic) {
-			if res, err := e.broker.OrderDelete(o.Ticket); err != nil {
-				fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
-			} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
-				fmt.Fprintf(os.Stderr, "backtest: OrderDelete rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
-			}
+			e.deleteOrderLogged(o.Ticket)
 		}
+	}
+}
+
+// dispatchEntry sends market/limit/stop entry orders, preferring the signal's
+// price over the current broker price over the bar close.
+func (e *Engine) dispatchEntry(sig *sdk.Signal, bar sdk.Bar) {
+	side := sdk.SideBuy
+	ot := sdk.OrderMarket
+	if sig.Action == sdk.ActionSell {
+		side = sdk.SideSell
+	}
+	if sig.Action == sdk.ActionBuyLimit || sig.Action == sdk.ActionSellLimit {
+		ot = sdk.OrderLimit
+	}
+	if sig.Action == sdk.ActionBuyStop || sig.Action == sdk.ActionSellStop {
+		ot = sdk.OrderStop
+	}
+	price := bar.Close
+	if !e.broker.currentPrice.IsZero() {
+		price = e.broker.currentPrice
+	}
+	if sig.Price.IsPositive() {
+		price = sig.Price
+	}
+	if res, err := e.broker.OrderSend(sdk.OrderRequest{
+		Symbol:     sig.Symbol,
+		Side:       side,
+		Type:       ot,
+		Volume:     sig.Volume,
+		Price:      price,
+		StopLoss:   sig.StopLoss,
+		TakeProfit: sig.TakeProfit,
+		Comment:    sig.Comment,
+		Magic:      sig.Magic,
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "backtest: OrderSend error at bar %d: %v\n", e.broker.currentBar, err)
+	} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+		// TRADE-BUILTIN-ERR-SWALLOW-1: business rejections travel on the
+		// RetCode channel — log them or they vanish silently.
+		fmt.Fprintf(os.Stderr, "backtest: OrderSend rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
+	}
+}
+
+func (e *Engine) closePositionLogged(ticket int64) {
+	if res, err := e.broker.PositionClose(ticket, decimal.Zero); err != nil {
+		fmt.Fprintf(os.Stderr, "backtest: PositionClose error at bar %d: %v\n", e.broker.currentBar, err)
+	} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+		fmt.Fprintf(os.Stderr, "backtest: PositionClose rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
+	}
+}
+
+func (e *Engine) deleteOrderLogged(ticket int64) {
+	if res, err := e.broker.OrderDelete(ticket); err != nil {
+		fmt.Fprintf(os.Stderr, "backtest: OrderDelete error at bar %d: %v\n", e.broker.currentBar, err)
+	} else if res.RetCode != sdk.RetDone && res.RetCode != sdk.RetDonePartial {
+		fmt.Fprintf(os.Stderr, "backtest: OrderDelete rejected (%s) at bar %d\n", res.RetCode, e.broker.currentBar)
 	}
 }
 

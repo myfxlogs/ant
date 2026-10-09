@@ -70,7 +70,7 @@ func main() {
 	pool := connectPostgres(cfg, log)
 	defer pool.Close()
 	secClient := newSecretsClient(cfg, log)
-	if err := seedAndOverlayConfig(context.Background(), pool, secClient, cfg, log); err != nil {
+	if err := seedAndOverlayConfig(context.Background(), pool, secClient, cfg); err != nil {
 		log.Fatal("config seed/overlay failed", zap.Error(err))
 	}
 	if err := cfg.Validate(); err != nil {

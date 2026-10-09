@@ -126,7 +126,11 @@ func (r *TradeRecordRepository) verifyChainLinkage(ctx context.Context) ([]model
 			})
 		}
 
-		if !tradeEntryHashVerifies(entryHash, prevHash, seq, acctID, ticket, symbol, volume, openPrice, closePrice, profit, openTime, closeTime) {
+		if !tradeEntryHashVerifies(entryHash, prevHash, tradeEntryRow{
+			seq: seq, accountID: acctID, ticket: ticket,
+			symbol: symbol, volume: volume, openPrice: openPrice, closePrice: closePrice, profit: profit,
+			openTime: openTime, closeTime: closeTime,
+		}) {
 			breaks = append(breaks, model.ChainBreak{
 				Seq:       seq,
 				Ticket:    ticket,
@@ -185,22 +189,35 @@ func isUndefinedTable(err error) bool {
 	return errors.As(err, &pgErr) && pgErr.Code == "42P01"
 }
 
+// tradeEntryRow carries the ::text-decoded trade_records columns needed to
+// recompute an entry hash (revive arg-limit: 12 裸参捆成行结构).
+type tradeEntryRow struct {
+	seq                 int64
+	accountID           uuid.UUID
+	ticket              int64
+	symbol              string
+	volume              string
+	openPrice           string
+	closePrice          string
+	profit              string
+	openTime, closeTime time.Time
+}
+
 // tradeEntryHashVerifies recomputes the entry hash over two candidate
 // encodings of the same ::text column values (D3): the canonical form itself,
 // then the normalized decimal form — the latter recovers legacy rows whose
 // write-time `Decimal.String()` differs from the persisted representation.
-func tradeEntryHashVerifies(entryHash, prevHash []byte, seq int64, accountID uuid.UUID, ticket int64,
-	symbol, volume, openPrice, closePrice, profit string, openTime, closeTime time.Time) bool {
-	ms := [2]int64{openTime.UnixMilli(), closeTime.UnixMilli()}
-	if bytesEqual(entryHash, computeTradeEntryHash(prevHash, seq, accountID, ticket, symbol,
-		volume, openPrice, closePrice, profit, ms)) {
+func tradeEntryHashVerifies(entryHash, prevHash []byte, row tradeEntryRow) bool {
+	ms := [2]int64{row.openTime.UnixMilli(), row.closeTime.UnixMilli()}
+	if bytesEqual(entryHash, computeTradeEntryHash(prevHash, row.seq, row.accountID, row.ticket, row.symbol,
+		row.volume, row.openPrice, row.closePrice, row.profit, ms)) {
 		return true
 	}
-	normalized := computeTradeEntryHash(prevHash, seq, accountID, ticket, symbol,
-		decimal.RequireFromString(volume).String(),
-		decimal.RequireFromString(openPrice).String(),
-		decimal.RequireFromString(closePrice).String(),
-		decimal.RequireFromString(profit).String(), ms)
+	normalized := computeTradeEntryHash(prevHash, row.seq, row.accountID, row.ticket, row.symbol,
+		decimal.RequireFromString(row.volume).String(),
+		decimal.RequireFromString(row.openPrice).String(),
+		decimal.RequireFromString(row.closePrice).String(),
+		decimal.RequireFromString(row.profit).String(), ms)
 	return bytesEqual(entryHash, normalized)
 }
 

@@ -194,7 +194,7 @@ func extractEnumValues(source string, n *sitter.Node, sourceFile string) []Heade
 					ecChild := ec.NamedChild(k)
 					if ecChild.Type() == nodeIdentifier {
 						name = nodeText(source, ecChild)
-					} else if ecChild.Type() == "number_literal" {
+					} else if ecChild.Type() == nodeNumberLiteral {
 						nVal := interp.ParseNumberLiteral(nodeText(source, ecChild))
 						counter = nVal.ToInt()
 					}

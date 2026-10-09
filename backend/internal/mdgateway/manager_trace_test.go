@@ -10,8 +10,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	"go.uber.org/zap"
 
-	anttrace "alphaforge/internal/trace"
 	"alphaforge/internal/mdgateway/adapter/mdtick"
+	anttrace "alphaforge/internal/trace"
 )
 
 // TestHandleTickCreatesSixSpans verifies the ADR-0010 §2.3 requirement:
@@ -20,9 +20,11 @@ import (
 func TestHandleTickCreatesSixSpans(t *testing.T) {
 	t.Parallel()
 	// 1. Create in-memory exporter + TracerProvider with AlwaysSample.
+	// WithSyncer: span End() 即同步导出——原 WithBatcher+ForceFlush 是时序脆弱
+	// 设计(CI 全量 -race 负载下出过 0 span 假阴性)。
 	exp := tracetest.NewInMemoryExporter()
 	tp := trace.NewTracerProvider(
-		trace.WithBatcher(exp),
+		trace.WithSyncer(exp),
 		trace.WithSampler(trace.AlwaysSample()),
 	)
 	defer func() { _ = tp.Shutdown(context.Background()) }()

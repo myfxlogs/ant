@@ -134,7 +134,7 @@ func pruneConfirmed(seen map[int64]bool, add, del map[int64]time.Time, now time.
 func (r *Runner) ApplyConfirmedPosition(pos sdk.Position) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
-	r.ctx.confirmedPosAdd = trackConfirmedAdd(r.ctx.confirmedPosAdd, r.ctx.confirmedPosDel, pos.Ticket, time.Now())
+	r.ctx.confirmedPosAdd = trackConfirmedAdd(r.ctx.confirmedPosAdd, r.ctx.confirmedPosDel, pos.Ticket, Clk.Now())
 	for i, p := range r.ctx.livePositions {
 		if p.Ticket == pos.Ticket {
 			r.ctx.livePositions[i] = pos
@@ -148,7 +148,7 @@ func (r *Runner) ApplyConfirmedPosition(pos sdk.Position) {
 func (r *Runner) RemoveConfirmedPosition(ticket int64) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
-	r.ctx.confirmedPosDel = trackConfirmedDel(r.ctx.confirmedPosDel, r.ctx.confirmedPosAdd, ticket, time.Now())
+	r.ctx.confirmedPosDel = trackConfirmedDel(r.ctx.confirmedPosDel, r.ctx.confirmedPosAdd, ticket, Clk.Now())
 	out := r.ctx.livePositions[:0]
 	for _, p := range r.ctx.livePositions {
 		if p.Ticket != ticket {
@@ -162,7 +162,7 @@ func (r *Runner) RemoveConfirmedPosition(ticket int64) {
 func (r *Runner) ApplyConfirmedPendingOrder(o sdk.PendingOrder) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
-	r.ctx.confirmedOrdAdd = trackConfirmedAdd(r.ctx.confirmedOrdAdd, r.ctx.confirmedOrdDel, o.Ticket, time.Now())
+	r.ctx.confirmedOrdAdd = trackConfirmedAdd(r.ctx.confirmedOrdAdd, r.ctx.confirmedOrdDel, o.Ticket, Clk.Now())
 	for i, p := range r.ctx.livePendingOrders {
 		if p.Ticket == o.Ticket {
 			r.ctx.livePendingOrders[i] = o
@@ -176,7 +176,7 @@ func (r *Runner) ApplyConfirmedPendingOrder(o sdk.PendingOrder) {
 func (r *Runner) RemoveConfirmedPendingOrder(ticket int64) {
 	r.ctx.mu.Lock()
 	defer r.ctx.mu.Unlock()
-	r.ctx.confirmedOrdDel = trackConfirmedDel(r.ctx.confirmedOrdDel, r.ctx.confirmedOrdAdd, ticket, time.Now())
+	r.ctx.confirmedOrdDel = trackConfirmedDel(r.ctx.confirmedOrdDel, r.ctx.confirmedOrdAdd, ticket, Clk.Now())
 	out := r.ctx.livePendingOrders[:0]
 	for _, o := range r.ctx.livePendingOrders {
 		if o.Ticket != ticket {
@@ -232,7 +232,7 @@ func (r *Runner) UpdateLiveState(balance, equity, margin, freeMargin string, pos
 	r.ctx.liveEquity = equity
 	r.ctx.liveMargin = margin
 	r.ctx.liveFreeMargin = freeMargin
-	now := time.Now()
+	now := Clk.Now()
 	r.ctx.livePositions = mergeConfirmedPositions(positions, r.ctx.livePositions,
 		r.ctx.confirmedPosAdd, r.ctx.confirmedPosDel, now)
 	r.ctx.livePendingOrders = mergeConfirmedPending(pendingOrders, r.ctx.livePendingOrders,
