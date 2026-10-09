@@ -18,9 +18,10 @@
 | KB-SEED-DRIFT-1 kb_compat_fact 种子漂移（43 陈旧枚举值 KB-first 压过内建表） | ✅done | R2 实盘探针实证抓出（SymbolInfoInteger prop16 fatal）；审计侧修复=Seed→reconcile（upsert 纠偏+prune 已移除名，manual 行保留）+Start 每 boot 执行；3 集成测试绿+M1/M2 mutation RED→GREEN；产库已纠 22/17/32 等；明细 registry 行 35 |
 || VM-LIVE-SYNC-DISPATCH-1（R1）signal-mode 假票号根治（IntVal(1)→broker 真票号+同事件信号丢单+cancel_all 空转） | ✅done | Devin CLI 施工+独立复审验收 2026-09-20；设计 design-vm-live-sync-dispatch-r1.md v2；VM syncDispatch 同步派发+15 builtin emitSignal+confirmed 事实注入 runner live state+alreadyDispatched 防双发+dispatchCancelAll；复审抓出 affectedTickets 缺口修补；mutation×4 RED→GREEN（M1 假票号复活/M2 双发/M3 仓位注入丢失/M4 幽灵仓位）；strategy 442+mql2go 绿；明细 registry 行 36 |
 | ENV-TO-PG-1 env 收口 PG——业务配置唯一真相=PG（C 档 21 键→system_config / D 档 10 键→platform_secrets 密文轨 / A·B 档留 env；seed-once+DB-wins overlay+check-env-reads 门禁入 pre-commit） | ✅done | Devin CLI 独立复审验收 2026-10-09，施工 d09f6795；ADR-0031+派工单 docs/plan/2026-10-env-to-pg-consolidation.md；独立重跑：build/vet/gofmt/check-lines 0 ERROR/race 53 测/integration 5/5（arb-postgres-test ant_boot_it 独立库）；独立 mutation×4 RED→GREEN（seed 覆写/overlay 摘除/解密吞没/门禁探针）；残余观察 3 项留档 registry；**勿部署**——migration 282 随下批镜像走 |
+|| SG-PROD-CLEANUP-1 sg 生产机开发残留清理（sg=ant+arb 双项目生产机，业主裁决 arb 整机不碰） | 🟦open | 派工单 docs/plan/2026-10-sg-prod-cleanup.md（S1-S10+红线清单）；实拍证据链 2026-10-09 Devin CLI SSH 盘点（58G/40G/69%；docker 可回收 ~3.6G；go-build 2.3G；node_modules 490M；stale 副本 385M；chrome 339M；npm 177M） |
 
 - **阻塞/待决策**: TRON-SECURITY-1 业主暂缓（不做）。R4（CloseBy dispatch）为缺功能待需求驱动。副本侧观察：trade_records 无 user_id FK（150 意图未落实仅 NOT NULL——另债观察）。
-- **下一步**: ENV-TO-PG-1 ✅done 验收通过。**待下批镜像部署至 sg**（migration 282+首次 boot seed 随镜像走）——部署后验证：①backend healthy ②日志逐键 `[config] <key> (source=system_config|platform_secrets|env|default)` 行 ③删除 .env C/D 档键重启行为不变。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
+- **下一步**: ①SG-PROD-CLEANUP-1 开工指令已发（派工单 docs/plan/2026-10-sg-prod-cleanup.md，施工完成报证据等复审）②ENV-TO-PG-1 待下批镜像部署至 sg 验证（①backend healthy ②日志逐键 source 行 ③删 .env C/D 键行为不变）。剩余外部触发：R4·VM-LIVE-MTF-1（需求）、FEAT-3（产品决策）、TRON 系（业主）。
 - **清扫上翻**: 2026-10-09 ENV-TO-PG-1 验收收工——条目转 ✅done（独立复审证据在 registry 行），待部署验证项移交 sg 下批镜像。
 
 ## 活跃 registry 条目指针
