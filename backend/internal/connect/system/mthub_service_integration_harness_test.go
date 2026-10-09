@@ -201,7 +201,7 @@ func newMtHubTestHarness(t *testing.T) *mtHubTestHarness {
 		`INSERT INTO mt_accounts (user_id, login, password, mt_type, broker_company, broker_server, broker_host, account_status,
 			balance, equity, credit, margin, free_margin)
 		 VALUES ($1, 'testlogin', 'testpass', 'mt5', 'TestBroker', 'TestServer', 'test.example.com', 'connected',
-		 	10000, 10100, 0, 1000, 9100)
+			10000, 10100, 0, 1000, 9100)
 		 RETURNING id::text`,
 		userID,
 	).Scan(&accountID)

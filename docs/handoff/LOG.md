@@ -498,3 +498,12 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 ## 2026-10-09 — 项目故事文档落档（Devin CLI）
 
 - `docs/项目故事.md` 新建：已实现架构与功能管线实录（boot 链/行情/编译/回测/实盘执行/Agent/市场/账户对账/配置九条管线+不变量清单+未竟事项），供项目讨论作基线；AGENTS.md §8 索引同步。
+
+## 2026-10-09 — FILE-SPLIT-T2 独立复审验收（Devin CLI）
+
+- **验收 ✅done**（施工 `4c55322c`，裁决 `02e73db1`+顺手件 commit）：12 中件 8786 行→53 新文件全≤403。
+- **守恒实证**：九包 `go test -list` 基线（47b86f66 worktree）对跑 diff 全零（~1019 测）；integration tag 下 marketplace 81/repository 39 守恒；12 组逐字多重集比对零代码丢失（差异仅别名 import 样板行+gofmt 空白对齐）。
+- **机检**：九包 1104 测绿；race 924 绿（vm_live_parity 单败=存量负载型抖动，基线/HEAD 孤立复跑对称通过，非回归——WaitState 非锁存语义固有竞态，另案观察）；check-lines 52→40 零新增；golangci 0；build/vet 净；13 个 integration 文件 `//go:build` 头全数携带。
+- **mutation 独立抽查**：risk `defaultState` Equity 变异→gate_margin+gate_switch 跨文件精确复 RED→恢复 GREEN。
+- **裁决两件**：①connect/system 阻断根因=acaa86db 残余层 `mthub_service_integration_events_test.go` 与父文件全量重叠（非"两个相同测试二选一"）——实证全 decl ⊆ 新四件、新四件 Test 集=基线父集（守恒成立）→整文件删除恢复 tag 可编译；②connect/strategy `ptr` 重名断=同型另债 INTEG-TAG-STRATEGY-PTR-1（基线可复现非 T2）🟦open。
+- **门禁补洞**：拆纪律新增「integration tag 可编译守恒」（`go test -list` 不带 tag 不编译 integration 文件，撞名逃逸默认门禁）。
