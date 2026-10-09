@@ -476,3 +476,8 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **sg 实拍**：HEAD=3a2bd7a9、backend healthy、schema_migrations 实见 `282_platform_config_secrets`（2026-10-09 11:15:56 UTC）、system_config=29/platform_secrets=1（JWT_SECRET 77B value_enc 密文轨）、boot 日志逐键 source 行格式正确（CHAIN_MONITOR_ENABLED=system_config、JWT_SECRET=platform_secrets、缺键=default）、12 容器全 healthy。
 - **契约纠偏注记**：STATE.md 该条 ✅done 系施工自标（应 ⚠️待独立复审），本次复审后转正权威。
 - **结论**：✅done（验收通过）。残余观察：service 3 测 DSN 存量留债；sg .env 删减重启等价性深验待业主择时。
+
+## 2026-10-09 — 留债清账+超限折分派单（Devin CLI 设计，业主令）
+
+- 业主令：留债处理+超限文件折分派单。落档两单：`docs/plan/2026-10-test-dsn-env-1.md`（3 文件硬编码 DSN→TEST_PG_DSN+Ping-skip，先红后绿 mutation）+`docs/plan/2026-10-file-split-program.md`（57 🟡 文件五批：T1 测试巨件 5/T2 测试中件 12/S1-S3 源文件 11/12/17；通用拆纪律=verbatim 搬运/测试守恒/mutation 等价抽查）。
+- **复审扩查新债**：`internal/knowledgebase/demand_test.go:17` 生产 PG 密码明文入 git（=sg POSTGRES_PASSWORD 实值）→registry 新行 PROD-PG-PASSWORD-IN-GIT，测试侧随 TEST-DSN-ENV-1 出源码，**密码轮换须业主裁决**（ALTER USER+滚动重建，窗口择时）。
