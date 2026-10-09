@@ -507,3 +507,8 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **mutation 独立抽查**：risk `defaultState` Equity 变异→gate_margin+gate_switch 跨文件精确复 RED→恢复 GREEN。
 - **裁决两件**：①connect/system 阻断根因=acaa86db 残余层 `mthub_service_integration_events_test.go` 与父文件全量重叠（非"两个相同测试二选一"）——实证全 decl ⊆ 新四件、新四件 Test 集=基线父集（守恒成立）→整文件删除恢复 tag 可编译；②connect/strategy `ptr` 重名断=同型另债 INTEG-TAG-STRATEGY-PTR-1（基线可复现非 T2）🟦open。
 - **门禁补洞**：拆纪律新增「integration tag 可编译守恒」（`go test -list` 不带 tag 不编译 integration 文件，撞名逃逸默认门禁）。
+
+## 2026-10-09 — 架构/方法评估基线 + 两份派工单（Devin CLI）
+
+- 业主问"架构和方法上是否有更优解"——落档 `docs/audits/architecture-review-2026-10.md`：方法级 M1（复审发现的门禁洞固化进 CI：vet -tags integration + diff --check）/M2（WaitState 非锁存竞态→visited 位图锁存）；结构级 S-A（god package 分解，S1-S3 后）/S-B（SSE 多路复用）/S-C（parity 回执，已立项 F1-F3）；不动清单（monolith/PG 真相/push-first/adapter 隔离）。
+- 派工单两份落档：`docs/plan/2026-10-ci-gate-integ-1.md`（含 INTEG-TAG-STRATEGY-PTR-1 顺手清——ptr.Str 复用共享包）+ `docs/plan/2026-10-barrier-waitstate-latch-1.md`（visited 位图+setStateLocked+8 调用点语义推演）。
