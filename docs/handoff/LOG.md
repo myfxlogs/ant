@@ -446,3 +446,9 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **pgrep 插曲**：`pgrep -f chrome` 自匹配 bash 包装器假阳性，复核 `pgrep -af`+`ps aux` 确认零 chrome 真实进程后删除无误伤。
 - **发现并处置**：sg /opt/ant HEAD=d09f6795 落后 origin/main=ea11fe95（本机 docs commit），未跟踪 `.zcodeignore` 按协议 stash 保护 `stash@{0}`；部署同步不属本单。
 - **S9 盘点不删项报告**：/root/.local/share/claude 797M+/root/.claude 340M（claude 下载缓存+会话史）、/root/go/bin 346M dev 工具（sqlc/gosec/golangci-lint 等 15 件，12 零引用，staticcheck/deadcode 各 1 处脚本引用待复核）、.codex 1.5M、.cursor 876K、GitKrakenCLI 41M、docker 残余可回收 741.7M（tagged-unused 镜像需 -a 决策）——**待业主裁决**，合计潜在 ~1.5-2.3G。
+
+## 2026-10-09 — SG-PROD-CLEANUP-1 二轮（业主逐项裁决）
+
+- **已删**：/root/.codex(1.5M)、/root/.cursor(876K)、GitKrakenCLI+/root/.local/share/gk(41M——gk CLI 零引用，无头生产机无 GUI 场景)；arb-core:d106/d107/d108 三枚旧 tag（267M）——保留 latest+最新 tag d108r1 单版回滚。
+- **仍留待裁决**：/root/.claude 340M+/root/.local/share/claude 797M（claude 残留 ~1.1G）；/root/go/bin 346M dev 工具组。
+- 终态：/ 34G/58%，12 容器 healthy，crontab 零改动。
