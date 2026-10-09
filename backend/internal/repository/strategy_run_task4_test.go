@@ -4,6 +4,7 @@ package repository
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -13,10 +14,19 @@ import (
 
 func getTestPGPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	dsn := "postgres://ant:ant@localhost:5432/ant?sslmode=disable"
+	// TEST-DSN-ENV-1: DSN 走 TEST_PG_DSN env,回落本地约定库;惰性连接必须
+	// Ping 后才 Skipf,否则坏 DSN 变 FAIL 而非 skip。
+	dsn := os.Getenv("TEST_PG_DSN")
+	if dsn == "" {
+		dsn = "postgres://ant:ant@localhost:5432/ant?sslmode=disable"
+	}
 	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		t.Skipf("skipping integration test: pg connect: %v", err)
+	}
+	if err := pool.Ping(context.Background()); err != nil {
+		pool.Close()
+		t.Skipf("skipping integration test: pg ping: %v", err)
 	}
 	t.Cleanup(pool.Close)
 	return pool

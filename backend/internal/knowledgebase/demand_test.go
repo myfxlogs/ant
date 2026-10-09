@@ -2,6 +2,7 @@ package knowledgebase
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -12,9 +13,15 @@ import (
 )
 
 // demandTestPool returns a PG pool for testing, skipping if DB is unavailable.
+// TEST-DSN-ENV-1: DSN 走 TEST_PG_DSN env,回落本地约定库(原硬编码含生产同值
+// 密码,已出源码)。
 func demandTestPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	pool, err := pgxpool.New(context.Background(), "postgres://ant:QxhrPqrizFg0iTWNOnabaFvv@localhost:5433/ant?sslmode=disable")
+	dsn := os.Getenv("TEST_PG_DSN")
+	if dsn == "" {
+		dsn = "postgres://ant:ant@localhost:5432/ant?sslmode=disable"
+	}
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		t.Skipf("no database: %v", err)
 	}

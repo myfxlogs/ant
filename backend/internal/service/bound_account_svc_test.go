@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -174,9 +175,19 @@ func TestEnsureBoundAccount_NotOwnedAccountRejected(t *testing.T) {
 
 func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	pool, err := pgxpool.New(context.Background(), "postgres://alphaforge:alphaforge@localhost:5432/alphaforge?sslmode=disable")
+	// TEST-DSN-ENV-1: DSN 走 TEST_PG_DSN env,回落本地约定库;pgxpool.New 惰性
+	// 连接,必须 Ping 后才 Skipf——否则坏 DSN 不会 skip 而是真跑变 FAIL。
+	dsn := os.Getenv("TEST_PG_DSN")
+	if dsn == "" {
+		dsn = "postgres://ant:ant@localhost:5432/ant?sslmode=disable"
+	}
+	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
 		t.Skipf("no database: %v", err)
+	}
+	if err := pool.Ping(context.Background()); err != nil {
+		pool.Close()
+		t.Skipf("no database (ping failed): %v", err)
 	}
 	return pool
 }
