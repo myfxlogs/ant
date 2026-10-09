@@ -958,3 +958,9 @@
 - **终态事实**：/ 58G 用 40G→34G（69%→58%，释放 ~6G）；docker df reclaimable 3.586G→741.7M（残余为 tagged-unused 镜像，-a 决策留业主）；双项目 12 容器零中断全 healthy；crontab/systemd 零改动；arb 整机未触碰（业主红线）。
 - **guard 生效记录**：antt/anttrader git 脏 → 按 SSOT SKIP 删除改 tar.gz quarantine（/root/cleanup-quarantine 245M，含 anttrader May-17 DB dump 19M）；sg /opt/ant 未跟踪文件 stash@{0} 保护。
 - **留尾**：agent 残留与 go/bin 盘点明细在 LOG.md，处置待业主裁决；/opt/ant 落后 origin 2 commit（部署同步走正常流程）。
+
+## 2026-10-09 CI-RESTORE-1 独立复审验收（Devin CLI [角色:决策]）
+
+- **变更**：tech-debt-registry.md 新增 CI-RESTORE-1 行（ENV-TO-PG-1 行后）；STATE.md CI-RESTORE-1 行追加独立复审验收署名+证据摘要；LOG.md 追加本会话纪要。
+- **结论**：✅done——三 commit 逐 diff 语义审计全部行为保持；独立重跑机检全绿（含本机实装 golangci-lint v2.14.0 0 issues、govulncheck 0 affected）；gh 实证 main HEAD CI+Security Scan 双绿；sg 部署事实核验（HEAD=3a2bd7a9/migration 282/seed 29+1/逐键 source 日志/12 容器 healthy）。
+- **契约注记**：STATE.md ✅done 系施工自标转权威；环境性存量 internal/service 3 测硬编码 DSN（be831d5d）留债不阻。

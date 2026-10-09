@@ -466,3 +466,13 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **mdgateway span 测试假阴性根因**：WithBatcher(异步批量)+ForceFlush 后即断言,CI 全量 -race 负载下出现 0 span;WithSyncer 同步导出根治,测试意图(六阶段 span 存在性)不变。
 - **生产部署（sg,首次按新分工执行）**：CI 全绿后 pull HEAD=3a2bd7a9→docker compose build→up -d。运行时证据：container Up healthy+/healthz=ok；migration `282_platform_config_secrets` 应用于产库；boot seed 落行 system_config=29/platform_secrets=1；逐键 source 日志实证（CHAIN_MONITOR_ENABLED source=system_config,env 未配键 source=default 兜底,零语义漂移符合设计）。
 - **遗留观察**：①STATE.md 下一步③"删 .env C/D 键重启行为不变"深验未做（需改产 .env 重启,留待业主/复审裁决时机）②本机 vitest store 套件 Node26+jsdom 环境噪音(与代码无关,CI Node22 为准)③全仓 go1.27 gofmt 存量漂移(internal/ai 等未触碰文件,无门禁强制,留观察)。
+
+## 2026-10-09 — CI-RESTORE-1 Devin CLI 独立复审验收（[角色:决策]）
+
+- **验收方**：Devin CLI（业主激活 [角色:决策]）。对象：ada7e10e+f92c334a+3a2bd7a9+64850b75。
+- **逐 diff 语义审计**：①ada7e10e 纯上游版本推进零新模块、`go 1.26.0` 指令保留、全仓 1.26 残留=0；②f92c334a 收紧非放松——真类型替换假 Props、WorkspaceContext 路径修正经文件实位核对、i18n 测试删除确为重复第二 import 块；③3a2bd7a9 六处拆分全部 verbatim（compileDeclaration/collectFuncParams/compileSwitch/initVMSession/handleStreamResponse/dispatchSignal，c.err 后置检查+nil-skip 等价原 abort/continue）、revive 12 参捆 tradeEntryRow 字段序不变、actionCancel 无类型常量跨语境值不变、MarketInfo/VM.execute 抽法 verbatim、proto 3 文件 diff 100% 注释级零代码。
+- **独立重跑**：build/vet 0 错、golangci-lint v2.14.0 本机实装 0 issues、受影响包 go test 2134+race 1023、全量 go test 3791 绿 3 败（internal/service bound_account 硬编码 DSN `localhost:5432` 环境性存量 be831d5d——与本批零交集留债）、check-file-lines 0 ERROR、gofmt/diff --check 净、govulncheck go1.27.2 **0 affected**、frontend tsc app+base 0 错、改动文件 eslint 0、i18n 守卫 9/9。
+- **外部权威**：gh run list——main HEAD（64850b75/3a2bd7a9）CI+Security Scan 双绿；中间 ada7e10e/f92c334a 红=proto-drift+lint 工具链二批待修；ci.yml proto-drift job（make proto+git diff）绿=生成物与 CI 再生成一致。
+- **sg 实拍**：HEAD=3a2bd7a9、backend healthy、schema_migrations 实见 `282_platform_config_secrets`（2026-10-09 11:15:56 UTC）、system_config=29/platform_secrets=1（JWT_SECRET 77B value_enc 密文轨）、boot 日志逐键 source 行格式正确（CHAIN_MONITOR_ENABLED=system_config、JWT_SECRET=platform_secrets、缺键=default）、12 容器全 healthy。
+- **契约纠偏注记**：STATE.md 该条 ✅done 系施工自标（应 ⚠️待独立复审），本次复审后转正权威。
+- **结论**：✅done（验收通过）。残余观察：service 3 测 DSN 存量留债；sg .env 删减重启等价性深验待业主择时。
