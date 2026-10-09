@@ -1,8 +1,10 @@
-# BARRIER-WAITSTATE-LATCH-1：TradeBarrier.WaitState 锁存化——消灭竞态测试类（Devin CLI 设计 SSOT 2026-10-09）
+# BARRIER-WAITSTATE-LATCH-1：TradeBarrier.WaitState 锁存化——消灭竞态测试类（Devin CLI 设计 SSOT 2026-10-09，v2 坐标修订）
+
+> **v2 坐标漂移声明**：本单初版坐标系 `trade_barrier.go`；复审期间该文件已被 FILE-SPLIT-S1 在途拆分为 `trade_barrier_core.go`（struct/NewTradeBarrier/Acquire/迁移点）+ `trade_barrier_confirm.go`（确认路径+WaitState :147）+ `trade_barrier_state.go`（状态枚举）。施工一律以**符号名定位**（`func (b *TradeBarrier) WaitState`、`b.state =` 赋值点、`NewTradeBarrier`），行号按施工时实读为准——10 处 `b.state =` 现分布 core(6)+confirm(4)。
 
 ## 立项背景
 
-`TestSubmitOrder_CommentAndDeviationReachExecutor`（`vm_live_parity_test.go:83`）T1/T2 两轮复审各败一次，均判负载型抖动。根因：`WaitState`（`trade_barrier.go:392`）是非锁存**现态**等待——waiter goroutine 必须与同步 submit 路径抢 µs 级窗口，错过 `barrierSubmitting` 瞬态即等到 ctx 超时（2s），测试成败取决于调度运气。同类 8 个调用点（全在 `_test.go`）。修法=锁存化：记录"曾到达"而非只盯"当前"。
+`TestSubmitOrder_CommentAndDeviationReachExecutor`（`vm_live_parity_test.go:83`）T1/T2 两轮复审各败一次，均判负载型抖动。根因：`WaitState`（现 `trade_barrier_confirm.go:147`，初版坐标 trade_barrier.go:392）是非锁存**现态**等待——waiter goroutine 必须与同步 submit 路径抢 µs 级窗口，错过 `barrierSubmitting` 瞬态即等到 ctx 超时（2s），测试成败取决于调度运气。同类 8 个调用点（全在 `_test.go`）。修法=锁存化：记录"曾到达"而非只盯"当前"。
 
 ## 设计 SSOT
 
@@ -17,7 +19,7 @@
 
 ## 施工步骤
 
-### S1 `backend/internal/connect/strategy/trade_barrier.go`
+### S1 `backend/internal/connect/strategy/trade_barrier_{core,confirm,state}.go`（S1 拆分后布局）
 
 - struct 加 `visited uint32` 字段（注释：per-Acquire 生命周期已访状态位图，供 WaitState 锁存判定）。
 - `NewTradeBarrier` 置 `visited = 1 << uint32(barrierIdle)`。
@@ -33,7 +35,7 @@
 
 ## 验收门禁
 
-- build/vet/gofmt/diff-check 净；check-file-lines 0 ERROR（trade_barrier.go 448 行现贴 300 预警线——新增 ~10 行后若破 450 须顺手报实际行数，不破则不动）
+- build/vet/gofmt/diff-check 净；check-file-lines 0 ERROR 且零新增 🟡（拆分后 core/confirm/state 各自有行数余量，新增 ~10 行按实核报）
 - `go test -count=5` + `-race` 全绿；mutation RED→GREEN 证据贴回报
 - 全仓 `WaitState` 调用点行为清单核对（8 处）无遗漏
 
