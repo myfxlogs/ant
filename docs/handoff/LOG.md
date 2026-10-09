@@ -488,3 +488,9 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **独立实证**（非采信自报）：原 3 FAIL→SKIP；knowledgebase demand 系 SKIP；repository strategy_run_task4（integration tag）3 测 SKIP；亲手 mutation 坏回落 DSN→SKIP 非 FAIL、恢复 GREEN；生产密码串代码侧 grep 归零（registry/派工单留痕属审计记录）；gofmt/vet/diff --check/check-file-lines 全过。
 - **留债**：PROD-PG-PASSWORD-IN-GIT 轮换须业主裁决（ALTER USER+滚动窗口择时，源码已出仓）。
 - 结论：✅done。FILE-SPLIT-T1 开工指令随回执下发。
+
+## 2026-10-09 — FILE-SPLIT-T1 Devin CLI 独立复审验收
+
+- 施工 22aedcb1（Zcode）：5 测试巨件 7059 行→36 新文件，切割轴=被测域。
+- **独立实证**：基线 worktree 对跑 `go test -list`——1043 个 Test/Benchmark/Fuzz 名排序 diff 零差异（仅 ok 行计时噪声）；逐字多重集核对——5 文件全部代码行零丢失，仅 2 行注释分隔线被改写；五包 `go test -count=1` 1236 测 PASS；五包 `-race` 复跑全绿（首跑单败 `TestSubmitOrder_CommentAndDeviationReachExecutor`=未触文件 vm_live_parity 负载抖动，单跑+基线+复跑全过，判非回归）；check-file-lines 57→52 警告零新增；golangci-lint 0 issues；gofmt 净；范围 42 文件（36 新+5 删+STATE）零越界。
+- 结论：✅done。FILE-SPLIT-T2 开工指令随回执下发。
