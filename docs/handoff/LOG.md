@@ -459,3 +459,10 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **机检**：backend build/vet 零错+govulncheck 0 affected+deadcode rc=0+config/secrets/trace/interceptor/connect/mthub 全 ok+check-file-lines 0 ERROR；frontend tsc(app+base) 0 错+改动文件 eslint 0 警告+i18n 守卫 9/9。本地 vitest store 套件 Node26+jsdom 环境噪音挂（CI Node22 绿，与改动零交集）。
 - **机器分工定（业主令）**：本机=开发机（开发+机检+push），sg=生产部署机（pull+build+up+运行时取证）；constraints.md 部署节落档（60c8d084）；ssh alias sg 已配；本会话曾保护性 stash sg 脏改动 24 文件（sg stash aff4aebf，格式化为主+1 处 AccountID 语义改动，来源会话不明）。
 - **STATE.md 滚出**：施工表 2026-09-19~09-20 六行 ✅done（VERIFY-CHAIN-SEMANTIC-1/TRADE-RECORDS-DUP-1/VM-LIVE-PARITY-F1F3/VM-LIVE-VENUE-1/KB-SEED-DRIFT-1/VM-LIVE-SYNC-DISPATCH-1）滚出至本段——全部已部署+已验收，明细在 registry 行 28-36 与各自历史段落。
+
+## 2026-10-09 — CI 全绿收官 + ENV-TO-PG-1 生产部署实录（Zcode,业主令"可以继续了"）
+
+- **CI-RESTORE-1 二批（3a2bd7a9）**：CI 10 job + Security Scan 全绿（自 09-08 红一月终结）。二批内容：proto 3 文件 go1.27 gofmt 重生成（CI make proto-tools 同漂移实证后 commit updated gen）；golangci-lint v2.12.2（go1.26 构建）拒跑 go1.27.2→v2.14.0（v2.13.2 读不了 1.27.2 export data 中间版弃用），其下 16 项存量发现清零：goconst×7/gocognit×4 verbatim 拆分/gocyclo×2 非热 opcode 抽出/revive 12 参捆 tradeEntryRow/unconvert/unparam/unused。修复过程抓出自身一处回归：compileSwitch 抽 emitCaseBodyTail 漏 bodyStart 记录致 2 switch 测试 panic,定位修正后 811 测全绿——verbatim move 也必须跑包级测试。
+- **mdgateway span 测试假阴性根因**：WithBatcher(异步批量)+ForceFlush 后即断言,CI 全量 -race 负载下出现 0 span;WithSyncer 同步导出根治,测试意图(六阶段 span 存在性)不变。
+- **生产部署（sg,首次按新分工执行）**：CI 全绿后 pull HEAD=3a2bd7a9→docker compose build→up -d。运行时证据：container Up healthy+/healthz=ok；migration `282_platform_config_secrets` 应用于产库；boot seed 落行 system_config=29/platform_secrets=1；逐键 source 日志实证（CHAIN_MONITOR_ENABLED source=system_config,env 未配键 source=default 兜底,零语义漂移符合设计）。
+- **遗留观察**：①STATE.md 下一步③"删 .env C/D 键重启行为不变"深验未做（需改产 .env 重启,留待业主/复审裁决时机）②本机 vitest store 套件 Node26+jsdom 环境噪音(与代码无关,CI Node22 为准)③全仓 go1.27 gofmt 存量漂移(internal/ai 等未触碰文件,无门禁强制,留观察)。
