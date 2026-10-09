@@ -430,3 +430,11 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **机检**：build/vet/gofmt（本会话文件）/race×4 包/check-file-lines 0 ERROR（pipeline.go 451→450——本会话 +1 行顶破 1.5× 阈值，字段分组声明+删重复行修回 🟡 存量水位）；全量 `go test ./...` 除 `internal/service` bound_account 3 测硬编码 DSN（be831d5d 引入的环境性存量，文件未触碰）外全绿。
 - **STATE.md 滚出**：VM-AUDIT-2026-08-27-1..8 + FIX-2026-08-27-* 五条 ✅done 指针滚出（明细在 registry）。
 - **待复审锚点**：①逐键四档落位核对派工单验收表 ②门禁拦截实证 ③部署后：产库自动建 282 表+首次 boot seed+逐键 source 日志+删 .env C/D 键重启行为不变。
+
+## 2026-10-09 — ENV-TO-PG-1 验收 ✅done（Devin CLI 独立复审）
+
+- **结论**：验收通过（施工 `d09f6795`）。复审证据明细：registry ENV-TO-PG-1 行 + `docs/audits/handover-audit-plan.md` 同日条目。
+- **独立验证**：机检全绿（build/vet/gofmt/check-lines 0 ERROR/race×3 包 53 测）；integration 5/5 在 arb-postgres-test 独立库 ant_boot_it 复跑 GREEN；独立 mutation×4 全 RED→恢复 GREEN（seed 覆写/overlay 摘除/解密吞没/门禁探针 rc=1）。
+- **关键裁决**：boot 序位安全（entrypoint migration 先于 seed）；JWT_SECRET fail-closed 经 Validate 保留；AI 阈值三分支语义等价；compose 实拍 C/D 键注入面不变；DEPOSIT_XPUB 禁区零触碰；CAPABILITIES.md 重生成环境依赖（reference/ gitignored）已还原不属本债。
+- **残余观察 3 项**（留档）：C 键 env 空不入库→管理面不可见；enabled 列仅标注；platform_secrets 无管理面通道（v1）。
+- **未部署**：migration 282 随下批镜像走；sg 部署后验证清单在 STATE.md 下一步。

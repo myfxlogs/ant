@@ -941,3 +941,13 @@
   - **B 接受态**：兄弟枝 static + for 体遮蔽 + 裸块 → `runs=4 a=1 b=2 cnt=3` 全对——run e92d3833，已停
 - registry 行 48 已含完整验收证据；STATE.md 同步。
 - **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
+
+## 2026-10-09 ENV-TO-PG-1 验收通过（Devin CLI 独立复审）
+
+- **复审结论 ✅done**（施工 `d09f6795`，Zcode；ADR-0031 + 派工单 `docs/plan/2026-10-env-to-pg-consolidation.md`）。四档归位逐键核对与 ADR 相符：A 引导件/B 构建期留 env；C 档 21 键→system_config；D 档 10 键→platform_secrets 密文轨（migration 282+`PurposePlatformSecret`）。
+- **独立重跑**（开发机，不采信自报）：build✓ vet✓ gofmt✓ check-file-lines 0 ERROR✓ race×3 包 53 测✓；integration 5/5 独立复跑 GREEN（arb-postgres-test 独立库 ant_boot_it，search_path 隔离方案核实成立）；门禁探针实证：非白名单文件加 `os.Getenv`→check-env-reads rc=1 拦截，清理后恢复。
+- **独立 mutation×4（亲手变异）**：M-A `ON CONFLICT DO NOTHING→DO UPDATE`→二次 boot 覆写 RED（row=true 被抓）；M-B 摘 `ApplySystemSettingsOverlay` 调用→DB-wins RED（env 值复活）；M-C 解密失败 `continue` 吞没→错主钥 fail-closed RED；全部恢复后 diff 零偏差（git status 净）。
+- **边界核录**：migration 282 由 docker-entrypoint 先于 /app/alphaforge 执行→表先于 seed 存在，序位安全；`Validate()` 接管 JWT_SECRET fail-closed（overlay 后判空，等价原 fatal）；AI 阈值解析三分支逐语义等价（45/45.5/-3/0/abc/空/1e3）；compose 实拍 SMTP_*/REQUIRE_* 本就不注入容器=行为不变，JWT `:?`→`:-` 正确；禁区 DEPOSIT_XPUB(+FP) 零触碰；value_type bool/number/string 仅管理面渲染标注无回归。
+- **残余观察（留档不阻验收）**：①C 档键 env 空则不入库→管理面不可见（设计语义「仅缺键种入」，须手工插行）；②enabled 列对 C 键仅管理面标注（overlay/GetConfig 同语义不筛）；③platform_secrets 暂无管理面读写通道（v1 SQL/seed 管理）。
+- **部署态**：未部署（契约勿部署）——migration 282 随下批镜像走；sg 部署后验证清单已写入 STATE.md 下一步。
+- **署名**：最终决策：Devin CLI（业主最终授权，决策终职责在职）
