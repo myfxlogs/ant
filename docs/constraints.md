@@ -106,6 +106,7 @@
 
 ## Deployment (强制 — 禁止手动)
 
+- **机器分工（2026-10-09 定）**：开发机（本仓本地工作副本）只开发+机检+push GitHub，**不做部署**；生产机 **sg**（`192.229.85.35`，开发机 `~/.ssh/config` 已配 `Host sg`，仓库在 `/opt/ant`）负责 pull + build + up + 运行时取证。生产机工作区必须保持干净（脏改动先 stash 保护），部署前先 `git pull --ff-only`。
 - **后端部署唯一方式**: `docker compose build backend && docker compose up -d backend`
 - **每次 build 前先清理 Docker build cache**: `docker builder prune -f`（每次构建约产生 2-3GB cache，58G 磁盘不清理会快速吃满）
 - **前端部署唯一方式**: `docker cp frontend/dist/. alphaforge-frontend:/usr/share/nginx/html/ && docker exec alphaforge-frontend nginx -s reload`
