@@ -33,6 +33,7 @@
 - 服务器/DB/venue 实拍优先于 proto、文档和旧状态；事实缺失或不确定必须 fail-closed。
 - 事件驱动优先于定时器；没有事件源时先定义必然发生的 boot 事件。
 - 前端零信任：运算、校验、分页由后端负责，前端只渲染。
+- **业务配置唯一真相=PG**（ADR-0031）：C 档业务旋钮→`system_config`、D 档秘密件→`platform_secrets`（密文轨）；env 只留引导件/构建期键，`scripts/check-env-reads.sh` 门禁强制（pre-commit）。
 - 多 agent 同仓：收工只显式 add 本会话文件；不得覆盖或清理其他 agent 的改动。
 - 每个关键修复必须有真实 mutation RED→restore→GREEN 证据；nil panic、另一条错误、callback-only 或"任意 error"均不算证据。
 

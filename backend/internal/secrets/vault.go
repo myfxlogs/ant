@@ -28,9 +28,12 @@ type Client interface {
 type Purpose string
 
 const (
-	PurposeMTPassword   Purpose = "mt-password"     // mt_accounts.password_encrypted
-	PurposeMTAPIToken   Purpose = "mtapi-token"     // mt_accounts.mtapi_token_encrypted
-	PurposeBrokerCookie Purpose = "broker-cookie"   // 预留：第三方登录态
+	PurposeMTPassword   Purpose = "mt-password"   // mt_accounts.password_encrypted
+	PurposeMTAPIToken   Purpose = "mtapi-token"   // mt_accounts.mtapi_token_encrypted
+	PurposeBrokerCookie Purpose = "broker-cookie" // 预留：第三方登录态
+	// PurposePlatformSecret ENV-TO-PG-1（ADR-0031）：D 档平台级秘密件
+	// （JWT_SECRET/SMTP_*/MTAPI_TOKEN/TRONGRID|TRONSCAN_API_KEY）platform_secrets.value_enc。
+	PurposePlatformSecret Purpose = "platform-secret"
 )
 
 // RotateClient extends Client with key rotation support. L-3.

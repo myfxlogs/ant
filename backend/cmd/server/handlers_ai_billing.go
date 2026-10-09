@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -24,8 +23,9 @@ func wireAIBilling(
 	quotaChecker *service.QuotaChecker,
 	tokenUsageRepo *repository.AITokenUsageRepository,
 	dailyQuota *service.DailyQuotaChecker,
+	aiMinBalanceCfg string, // ENV-TO-PG-1：cfg.AIMinBalance（env/default/system_config overlay 供值）
 ) {
-	aiMinBalance := parseAIMinBalance()
+	aiMinBalance := parseAIMinBalance(aiMinBalanceCfg)
 
 	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) (int, error) {
 		if dailyQuota != nil {
@@ -65,14 +65,13 @@ func wireAIBilling(
 	})
 }
 
-func parseAIMinBalance() decimal.Decimal {
-	aiMinBalance := decimal.NewFromFloat(1.0)
-	if v := os.Getenv("AI_MIN_BALANCE"); v != "" {
-		if parsed, err := decimal.NewFromString(v); err == nil && !parsed.IsNegative() {
-			aiMinBalance = parsed
-		}
+// parseAIMinBalance 系统代付 AI 最低余额门槛（ENV-TO-PG-1 收口；值来自 cfg.AIMinBalance）。
+// 语义与原 env 直读一致：可解析且非负→其值；坏串/空/负→默认 1.0。
+func parseAIMinBalance(v string) decimal.Decimal {
+	if parsed, err := decimal.NewFromString(v); err == nil && !parsed.IsNegative() {
+		return parsed
 	}
-	return aiMinBalance
+	return decimal.NewFromFloat(1.0)
 }
 
 func monthlyTokenRemaining(quotaChecker *service.QuotaChecker, tokenUsageRepo *repository.AITokenUsageRepository, userID uuid.UUID) int {

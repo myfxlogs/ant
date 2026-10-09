@@ -63,6 +63,16 @@ func main() {
 	defer sentryCleanup()
 
 	cfg := config.Load()
+
+	// ── ENV-TO-PG-1 boot 链（ADR-0031）：连库 → 密钥客户端 → seed-once + DB-wins overlay ──
+	// 必须先于任何 C/D 档消费点；Validate 后移（JWT_SECRET 首选来自 platform_secrets 解密，
+	// env 仅过渡兜底）。pool 前移创建，后续 initInfrastructure 复用。
+	pool := connectPostgres(cfg, log)
+	defer pool.Close()
+	secClient := newSecretsClient(cfg, log)
+	if err := seedAndOverlayConfig(context.Background(), pool, secClient, cfg, log); err != nil {
+		log.Fatal("config seed/overlay failed", zap.Error(err))
+	}
 	if err := cfg.Validate(); err != nil {
 		log.Fatal("invalid config", zap.Error(err))
 	}
@@ -90,9 +100,9 @@ func main() {
 		log.Warn("otelconnect interceptor creation failed", zap.Error(err))
 	}
 
-	// Connect to PostgreSQL, NATS, Redis, secrets, and core services.
-	pool, nc, rdb, secClient, accountSvc, platformSvc, jwtSecret, mdStore := initInfrastructure(cfg, log)
-	defer pool.Close()
+	// Connect to NATS, Redis, and core services (PG pool + secrets client created earlier
+	// by the ENV-TO-PG-1 boot chain).
+	nc, rdb, accountSvc, platformSvc, jwtSecret, mdStore := initInfrastructure(cfg, log, pool, secClient)
 	defer nc.Close()
 	defer func() { _ = rdb.Close() }()
 
@@ -180,6 +190,8 @@ func main() {
 			platformAgg:       &platformAgg,
 			reconLoop:         &reconLoop,
 			brokerReg:         brokerReg,
+			mtapiMT4Host:      cfg.MtapiMT4Host,
+			mtapiMT5Host:      cfg.MtapiMT5Host,
 			livePerfCollector: livePerfCollector,
 			scheduleResolver:  repository.NewStrategyScheduleRepository(pool),
 		})
@@ -289,27 +301,13 @@ func main() {
 
 }
 
-func initInfrastructure(cfg *config.Config, log *zap.Logger) (
-	pool *pgxpool.Pool, nc *nats.Conn, rdb *antredis.Client,
-	secClient secrets.Client, accountSvc *service.AccountService,
+func initInfrastructure(cfg *config.Config, log *zap.Logger, pool *pgxpool.Pool, secClient secrets.Client) (
+	nc *nats.Conn, rdb *antredis.Client,
+	accountSvc *service.AccountService,
 	platformSvc *service.PlatformService, jwtSecret string,
 	mdStore repository.MarketDataStore,
 ) {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSSLMode)
-	poolCfg, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		log.Fatal("pg parse config failed", zap.Error(err))
-	}
-	if cfg.DBMaxConns > 0 {
-		poolCfg.MaxConns = int32(cfg.DBMaxConns)
-	}
-	pool, err = pgxpool.NewWithConfig(context.Background(), poolCfg)
-	if err != nil {
-		log.Fatal("pg connect failed", zap.Error(err))
-	}
-	log.Info("pg pool configured", zap.Int32("max_conns", poolCfg.MaxConns))
-
+	var err error
 	if err := repository.MigrateScheduleProtoColumns(context.Background(), pool); err != nil {
 		log.Warn("schedule proto migration skipped", zap.Error(err))
 	}
@@ -340,16 +338,6 @@ func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 	}
 	pgStore.SetRedisClient(rdb.Client())
 
-	if mk := cfg.AntMasterKey; mk != "" {
-		secClient, err = secrets.New(mk, 1)
-		if err != nil {
-			log.Fatal("secrets: cannot create client from ANT_MASTER_KEY", zap.Error(err))
-		}
-		log.Info("secrets: client initialized")
-	} else {
-		log.Fatal("ANT_MASTER_KEY is required — generate one with: go run cmd/ant-vault/main.go")
-	}
-
 	accountSvc = service.NewAccountService(pool, secClient)
 	accountSvc.SetLogger(log)
 	if n, err := accountSvc.BackfillPlaintextCredentials(context.Background()); err != nil {
@@ -360,8 +348,5 @@ func initInfrastructure(cfg *config.Config, log *zap.Logger) (
 	platformSvc = service.NewPlatformService(pool, accountSvc)
 	platformSvc.SetLogger(log)
 	jwtSecret = cfg.JWTSecret
-	if jwtSecret == "" {
-		log.Fatal("JWT_SECRET is required")
-	}
 	return
 }

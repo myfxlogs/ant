@@ -8,7 +8,14 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// Config holds all application configuration sourced from environment variables.
+// Config holds all application configuration.
+//
+// ENV-TO-PG-1 分档（ADR-0031 / docs/plan/2026-10-env-to-pg-consolidation.md）：
+//   - A 档引导件（连库前必需：DB/NATS/Redis/PORT/目录/主钥/可观测）与 B 档构建期键：唯一来源 env。
+//   - C 档业务旋钮 / D 档秘密件：Load() 仍按 env+default 供值（过渡兜底），boot 时 seed-once 入
+//     PG（system_config / platform_secrets）后 DB-wins overlay 覆写（cmd/server bootstrap_config.go）
+//     ——此后 PG 唯一真相源，env 改值失效。
+//   - 禁区：DEPOSIT_XPUB(+FINGERPRINT) 维持 xpub_audit.go「DB 优先 env 回退」+指纹 env-only 锚。
 type Config struct {
 	// D6-A: Risk Gate
 	RiskGateEnabled          bool
@@ -57,7 +64,15 @@ type Config struct {
 	RequireQuestionnaire bool
 
 	// MTAPI
-	MtapiToken string // optional mtapi gateway token for account connection tests
+	MtapiToken   string // optional mtapi gateway token for account connection tests (D 档→platform_secrets)
+	MtapiMT4Host string // mtapi gRPC gateway host for MT4 broker search (A 档引导件——服务发现留 env)
+	MtapiMT5Host string // mtapi gRPC gateway host for MT5 broker search (A 档引导件)
+
+	// AI gateway quotas (C 档→system_config；运行期另有 agent_managed_settings 热更层覆写)
+	AIDailyMaxSessions  int
+	AIDailyMaxTokens    int
+	AIDailyCostLimitUSD string // decimal 字符串（历史语义接受 "45.5" 形态）
+	AIMinBalance        string // decimal 字符串
 
 	// SMTP (email notifications)
 	SMTPHost     string
@@ -130,6 +145,14 @@ func Load() *Config {
 		RequireQuestionnaire: getenvBool("REQUIRE_QUESTIONNAIRE", false),
 
 		MtapiToken: getenv("MTAPI_TOKEN", ""),
+
+		MtapiMT4Host: getenv("MTAPI_MT4_HOST", ""),
+		MtapiMT5Host: getenv("MTAPI_MT5_HOST", ""),
+
+		AIDailyMaxSessions:  getenvInt("AI_DAILY_MAX_SESSIONS", 5),
+		AIDailyMaxTokens:    getenvInt("AI_DAILY_MAX_TOKENS", 200_000),
+		AIDailyCostLimitUSD: getenv("AI_DAILY_COST_LIMIT_USD", "50"),
+		AIMinBalance:        getenv("AI_MIN_BALANCE", "1.0"),
 
 		SMTPHost:     getenv("SMTP_HOST", ""),
 		SMTPPort:     getenv("SMTP_PORT", "587"),

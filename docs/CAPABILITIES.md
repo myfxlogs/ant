@@ -65,7 +65,7 @@
 ---
 <!-- AUTOGEN-BELOW: 由 scripts/gen_capability_map.sh 重生成，勿手工编辑以下内容 -->
 
-_最后生成：2026-09-20 00:53 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
+_最后生成：2026-10-09 08:24 UTC。运行 `bash scripts/gen_capability_map.sh` 刷新。_
 
 ## 符号索引（扁平 symbol → file:line，grep 友好）
 
@@ -189,7 +189,7 @@ CheckCode	proto/ant/v1/strategy_runtime.proto:65
 CheckConnect	reference/grpc/mt4.proto:45
 CheckConnect	reference/grpc/mt5.proto:43
 CheckLiveStrategyLimit	backend/internal/service/quota_checker.go:125
-CheckMarginCall	backend/internal/service/account_sync_service.go:115
+CheckMarginCall	backend/internal/service/account_sync_service.go:121
 CheckQuota	backend/internal/service/daily_quota.go:107
 CheckRiskLimits	proto/ant/v1/auto_trading.proto:20
 CheckStrategyLimit	backend/internal/service/quota_checker.go:107
@@ -198,7 +198,7 @@ CleanupOldSnapshots	backend/internal/service/account_lifecycle.go:215
 ClearAccount	backend/internal/risksvc/platform_aggregator.go:88
 CloneStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:132
 CloneStrategyAsset	proto/ant/v1/strategy_asset.proto:14
-Close	backend/internal/connect/strategy/vm_live_session.go:143
+Close	backend/internal/connect/strategy/vm_live_session.go:176
 ClosedOrders	reference/grpc/mt4.proto:151
 CloseOrder	backend/internal/mthub/service_orders_close.go:26
 CloseOrder	proto/ant/v1/mthub_service.proto:8
@@ -306,6 +306,7 @@ EnsureSeed	backend/internal/service/systemai/service.go:158
 EnsureSession	backend/internal/mthub/types.go:83
 EnterAll	backend/internal/mthub/reconcile_gate.go:59
 EnterReconciling	backend/internal/mthub/reconcile_gate.go:24
+Error	backend/internal/mthub/mutation_outcome.go:114
 Error	backend/internal/mthub/mutation_outcome.go:37
 Error	backend/internal/mthub/types.go:130
 Error	backend/internal/risksvc/hardlimit.go:188
@@ -516,7 +517,7 @@ ImportDepositAddresses	proto/ant/v1/deposit.proto:21
 ImportSignedSweepBundle	proto/ant/v1/deposit.proto:29
 ImportXpub	proto/ant/v1/deposit.proto:35
 InitiateStrategyIteration	proto/ant/v1/marketplace_service.proto:87
-InsertOrder	backend/internal/mthub/oms_writer.go:124
+InsertOrder	backend/internal/mthub/oms_writer.go:143
 InsertScheduleRunLog	backend/internal/connect/strategy/session_registry.go:368
 Invalidate	backend/internal/service/analytics_cache.go:127
 InvalidateAutoTradeCache	backend/internal/connect/strategy/schedule_engine.go:231
@@ -738,12 +739,12 @@ OrderHistory	proto/ant/v1/mthub_service.proto:10
 OrderHistory	reference/grpc/mt4.proto:126
 OrderHistory	reference/grpc/mt5.proto:95
 OrderHistoryPagination	reference/grpc/mt5.proto:118
-OrderIDByTicket	backend/internal/mthub/oms_writer.go:154
+OrderIDByTicket	backend/internal/mthub/oms_writer.go:173
 OrderModify	reference/grpc/mt4.proto:304
 OrderModify	reference/grpc/mt5.proto:493
 OrderSend	reference/grpc/mt4.proto:294
 OrderSend	reference/grpc/mt5.proto:482
-OrderTypeString	backend/internal/mthub/order_types.go:103
+OrderTypeString	backend/internal/mthub/order_types.go:121
 PaperPnl	backend/internal/paper/engine.go:146
 ParseProviderCurl	proto/ant/v1/system_ai.proto:18
 PendingOrderHistory	reference/grpc/mt5.proto:104
@@ -757,7 +758,7 @@ PlaceOrder	backend/internal/mthub/service_orders.go:21
 PlaceOrder	proto/ant/v1/mthub_service.proto:7
 PlacePaperOrder	backend/internal/paper/engine.go:65
 Platform	backend/internal/mthub/service.go:214
-Pool	backend/internal/mthub/oms_writer.go:108
+Pool	backend/internal/mthub/oms_writer.go:127
 PreHold	backend/internal/service/credit_service.go:91
 PreviewOptimization	proto/ant/v1/marketplace_service.proto:85
 PriceHistory	backend/internal/mthub/service.go:329
@@ -795,7 +796,7 @@ PublishTemplateDraft	backend/internal/connect/strategy/strategy_template_handler
 PublishTemplateDraft	proto/ant/v1/strategy.proto:20
 PublishTick	backend/internal/mthub/service.go:140
 PublishTradeEvent	backend/internal/mthub/service.go:177
-PublishTradeEventFromUpdate	backend/internal/mthub/service_orders.go:393
+PublishTradeEventFromUpdate	backend/internal/mthub/service_orders.go:403
 PurchaseBundle	proto/ant/v1/marketplace_service.proto:92
 PurchaseStrategy	proto/ant/v1/marketplace_service.proto:13
 PutSnapshot	backend/internal/connect/strategy/position_cache.go:150
@@ -879,7 +880,7 @@ Search	reference/grpc/mt4.proto:215
 Search	reference/grpc/mt5.proto:365
 SearchBroker	proto/ant/v1/account.proto:22
 SearchExperience	proto/ant/v1/agent_gateway.proto:33
-SendEvent	backend/internal/connect/strategy/vm_live_session.go:135
+SendEvent	backend/internal/connect/strategy/vm_live_session.go:147
 SendNotification	proto/ant/v1/notification_service.proto:16
 ServerTimezone	reference/grpc/mt4.proto:105
 ServerTimezone	reference/grpc/mt5.proto:184
@@ -918,7 +919,7 @@ SetConfig	proto/ant/v1/admin_config.proto:11
 SetCostBreaker	backend/internal/service/systemai/service.go:126
 SetCostEstimator	backend/internal/mthub/service_setters.go:68
 SetCoverageChecker	backend/internal/connect/strategy/strategy_execution_handler.go:153
-SetDiag	backend/internal/connect/strategy/vm_live_session.go:197
+SetDiag	backend/internal/connect/strategy/vm_live_session.go:230
 SetEmailVerification	backend/internal/service/registration_service.go:61
 SetEngine	backend/internal/connect/strategy/strategy_handler.go:64
 SetExecutor	backend/internal/connect/strategy/strategy_experiment_worker.go:89
@@ -930,6 +931,7 @@ SetGatewayProviderRepo	backend/internal/service/systemai/service.go:120
 SetGoExecutor	backend/internal/connect/strategy/strategy_execution_handler.go:187
 SetGuard	backend/internal/mthub/service_setters.go:56
 SetGuard	backend/internal/paper/engine.go:51
+SetHistoryProvider	backend/internal/connect/strategy/vm_live_session.go:162
 SetHookConfig	proto/ant/v1/agent_hooks.proto:14
 SetImportedRepo	backend/internal/connect/strategy/strategy_execution_handler.go:189
 SetKillSwitch	backend/internal/mthub/service_setters.go:15
@@ -956,7 +958,7 @@ SetNotificationSender	backend/internal/connect/strategy/strategy_execution_handl
 SetNotificationSender	backend/internal/service/account_sync_service.go:48
 SetOmsWriter	backend/internal/mthub/service_setters.go:59
 SetOnBacktestComplete	backend/internal/connect/strategy/strategy_execution_handler.go:280
-SetOrderEventBroker	backend/internal/mthub/oms_writer.go:101
+SetOrderEventBroker	backend/internal/mthub/oms_writer.go:120
 SetPaperEngine	backend/internal/connect/strategy/strategy_execution_handler.go:186
 SetPgListen	backend/internal/connect/strategy/divergence_handler.go:38
 SetPgListen	backend/internal/connect/strategy/strategy_execution_handler.go:417
@@ -988,6 +990,7 @@ SetStderrTail	backend/internal/connect/strategy/session_registry.go:415
 SetStrategyPricing	proto/ant/v1/marketplace_service.proto:22
 SetStrategyTemplateLookup	backend/internal/connect/strategy/strategy_execution_handler.go:203
 SetSubscriptionEnsurer	backend/internal/service/registration_service.go:66
+SetSyncDispatcher	backend/internal/connect/strategy/vm_live_session.go:166
 SetTemplateStatus	backend/internal/service/template_svc.go:129
 SetTickBroker	backend/internal/mthub/service_setters.go:47
 SetTicket	backend/internal/mthub/idempotency.go:167
@@ -1011,7 +1014,7 @@ SoftDeleteUsers	backend/internal/service/user_deletion_service.go:86
 Start	backend/internal/connect/strategy/schedule_engine.go:114
 Start	backend/internal/connect/strategy/shadow_verifier.go:60
 Start	backend/internal/connect/strategy/strategy_experiment_worker.go:44
-Start	backend/internal/connect/strategy/vm_live_session.go:86
+Start	backend/internal/connect/strategy/vm_live_session.go:93
 Start	backend/internal/mthub/derived_state.go:111
 Start	backend/internal/mthub/reconciliation.go:37
 Start	backend/internal/mthub/snapshot_persister.go:45
@@ -1112,7 +1115,9 @@ Symbols	reference/grpc/mt4.proto:92
 Symbols	reference/grpc/mt5.proto:124
 SymbolSessionsEx	reference/grpc/mt5.proto:172
 SymbolSessionsExMany	reference/grpc/mt5.proto:178
+SyncableClosedTrade	backend/internal/mthub/order_types.go:107
 SyncAccountHistory	backend/internal/service/account_sync_service.go:56
+SyncDispatched	backend/internal/connect/strategy/vm_live_session.go:174
 SyncOrderHistory	proto/ant/v1/mthub_service.proto:16
 SyncStrategyAsset	backend/internal/connect/strategy/strategy_asset_handler.go:171
 SyncStrategyAsset	proto/ant/v1/strategy_asset.proto:16
@@ -1129,8 +1134,8 @@ ToggleSchedule	backend/internal/connect/strategy/strategy_schedules.go:260
 ToggleSchedule	proto/ant/v1/strategy.proto:29
 Total	backend/internal/service/systemai/session_quota.go:31
 TransformCode	proto/ant/v1/code_assist.proto:16
-Transition	backend/internal/mthub/oms_writer.go:166
-TransitionOrderByTicket	backend/internal/mthub/service_orders.go:350
+Transition	backend/internal/mthub/oms_writer.go:185
+TransitionOrderByTicket	backend/internal/mthub/service_orders.go:352
 TranslateParamLabels	proto/ant/v1/code_assist.proto:18
 TriggerBatchGeneration	proto/ant/v1/marketplace_service.proto:48
 TriggerReconcile	backend/internal/mthub/reconciliation.go:62
@@ -1149,6 +1154,7 @@ UnSubscribe	reference/grpc/mt4.proto:244
 UnSubscribe	reference/grpc/mt5.proto:401
 UnSubscribeMany	reference/grpc/mt4.proto:250
 UnSubscribeMany	reference/grpc/mt5.proto:407
+Unwrap	backend/internal/mthub/mutation_outcome.go:121
 Unwrap	backend/internal/mthub/mutation_outcome.go:44
 Update	backend/internal/mthub/derived_state.go:62
 UpdateAccount	backend/internal/service/account_crud.go:95
@@ -1186,7 +1192,7 @@ UpdateTemplate	backend/internal/service/template_svc.go:90
 UpdateTemplate	proto/ant/v1/strategy.proto:14
 UpdateTemplateDraft	backend/internal/connect/strategy/strategy_template_handlers.go:231
 UpdateTemplateDraft	proto/ant/v1/strategy.proto:19
-UpdateTicket	backend/internal/mthub/oms_writer.go:142
+UpdateTicket	backend/internal/mthub/oms_writer.go:161
 UpdateTradingPassword	proto/ant/v1/account.proto:24
 UpdateUser	proto/ant/v1/admin_user.proto:13
 UpdateXpub	backend/internal/service/deposit_service.go:93
@@ -1962,10 +1968,13 @@ backend/internal/connect/strategy/trade_barrier.go:369:func (b *TradeBarrier) Re
 backend/internal/connect/strategy/trade_barrier.go:383:func (b *TradeBarrier) State() tradeBarrierState {
 backend/internal/connect/strategy/trade_barrier.go:392:func (b *TradeBarrier) WaitState(ctx context.Context, target tradeBarrierState) tradeBarrierState {
 backend/internal/connect/strategy/trade_barrier.go:417:func (b *TradeBarrier) Ticket() int64 {
-backend/internal/connect/strategy/vm_live_session.go:135:func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
-backend/internal/connect/strategy/vm_live_session.go:143:func (s *VMLiveSession) Close() error {
-backend/internal/connect/strategy/vm_live_session.go:197:func (s *VMLiveSession) SetDiag(d *sessionDiag) {
-backend/internal/connect/strategy/vm_live_session.go:86:func (s *VMLiveSession) Start(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
+backend/internal/connect/strategy/vm_live_session.go:147:func (s *VMLiveSession) SendEvent(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
+backend/internal/connect/strategy/vm_live_session.go:162:func (s *VMLiveSession) SetHistoryProvider(fn func(ctx context.Context, from, to int64) ([]sdk.Position, error)) {
+backend/internal/connect/strategy/vm_live_session.go:166:func (s *VMLiveSession) SetSyncDispatcher(fn func(*sdk.Signal) (int64, error)) {
+backend/internal/connect/strategy/vm_live_session.go:174:func (s *VMLiveSession) SyncDispatched() bool { return s.syncDisp }
+backend/internal/connect/strategy/vm_live_session.go:176:func (s *VMLiveSession) Close() error {
+backend/internal/connect/strategy/vm_live_session.go:230:func (s *VMLiveSession) SetDiag(d *sessionDiag) {
+backend/internal/connect/strategy/vm_live_session.go:93:func (s *VMLiveSession) Start(ctx context.Context, req *antv1.ExecuteLiveRequest) (*antv1.ExecuteLiveResponse, error) {
 backend/internal/connect/strategy/walk_forward_handler.go:36:func (s *WalkForwardServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
 backend/internal/connect/strategy/walk_forward_handler.go:39:func (s *WalkForwardServer) GetWalkForwardReport(
 backend/internal/connect/strategy/walk_forward_handler.go:57:func (s *WalkForwardServer) WatchWalkForwardReport(
@@ -1990,17 +1999,20 @@ backend/internal/mthub/idempotency.go:167:func (g *IdempotencyGuard) SetTicket(c
 backend/internal/mthub/idempotency.go:172:func (g *IdempotencyGuard) DeleteKey(ctx context.Context, accountID, clientID string) {
 backend/internal/mthub/idempotency.go:53:func (g *ThreeLayerGuard) CheckAndSet(ctx context.Context, accountID, clientID string, ticket int64) (isDup bool, existingTicket int64, err error) {
 backend/internal/mthub/idempotency.go:87:func (g *ThreeLayerGuard) Confirm(ctx context.Context, accountID, clientID string, ticket int64) error {
+backend/internal/mthub/mutation_outcome.go:114:func (e *BrokerRejectError) Error() string {
+backend/internal/mthub/mutation_outcome.go:121:func (e *BrokerRejectError) Unwrap() error { return ErrBrokerRejected }
 backend/internal/mthub/mutation_outcome.go:37:func (e *MutationError) Error() string {
 backend/internal/mthub/mutation_outcome.go:44:func (e *MutationError) Unwrap() error {
 backend/internal/mthub/mutation_outcome.go:52:func (e *MutationError) IsPreBroker() bool {
 backend/internal/mthub/mutation_outcome.go:57:func (e *MutationError) IsBroker() bool {
-backend/internal/mthub/oms_writer.go:101:func (w *OmsWriter) SetOrderEventBroker(b *OrderEventBroker) {
-backend/internal/mthub/oms_writer.go:108:func (w *OmsWriter) Pool() *pgxpool.Pool { return w.pool }
-backend/internal/mthub/oms_writer.go:124:func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit decimal.Decimal, magic int32) error {
-backend/internal/mthub/oms_writer.go:142:func (w *OmsWriter) UpdateTicket(ctx context.Context, orderID string, ticket int64) error {
-backend/internal/mthub/oms_writer.go:154:func (w *OmsWriter) OrderIDByTicket(ctx context.Context, accountID string, ticket int64) (orderID, state string, err error) {
-backend/internal/mthub/oms_writer.go:166:func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, current, next OMSState) error {
-backend/internal/mthub/order_types.go:103:func (r *OrderRecord) OrderTypeString() string {
+backend/internal/mthub/oms_writer.go:120:func (w *OmsWriter) SetOrderEventBroker(b *OrderEventBroker) {
+backend/internal/mthub/oms_writer.go:127:func (w *OmsWriter) Pool() *pgxpool.Pool { return w.pool }
+backend/internal/mthub/oms_writer.go:143:func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit decimal.Decimal, magic int32) error {
+backend/internal/mthub/oms_writer.go:161:func (w *OmsWriter) UpdateTicket(ctx context.Context, orderID string, ticket int64) error {
+backend/internal/mthub/oms_writer.go:173:func (w *OmsWriter) OrderIDByTicket(ctx context.Context, accountID string, ticket int64) (orderID, state string, err error) {
+backend/internal/mthub/oms_writer.go:185:func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, current, next OMSState) error {
+backend/internal/mthub/order_types.go:107:func (r *OrderRecord) SyncableClosedTrade() bool {
+backend/internal/mthub/order_types.go:121:func (r *OrderRecord) OrderTypeString() string {
 backend/internal/mthub/reconcile_gate.go:24:func (g *ReconcileGate) EnterReconciling(accountID string) {
 backend/internal/mthub/reconcile_gate.go:31:func (g *ReconcileGate) MarkReconciled(accountID string) {
 backend/internal/mthub/reconcile_gate.go:38:func (g *ReconcileGate) CanAccept(accountID string) bool {
@@ -2040,8 +2052,8 @@ backend/internal/mthub/service_account_profit.go:16:func (s *MtHubService) Subsc
 backend/internal/mthub/service_account_profit.go:6:func (s *MtHubService) PublishAccountProfit(ev *AccountProfitEvent) {
 backend/internal/mthub/service_order_magic.go:9:func (s *MtHubService) GetOrderMagic(ctx context.Context, accountID string, ticket int64) (int32, error) {
 backend/internal/mthub/service_orders.go:21:func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
-backend/internal/mthub/service_orders.go:350:func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID string, ticket int64, to OMSState) {
-backend/internal/mthub/service_orders.go:393:func (s *MtHubService) PublishTradeEventFromUpdate(
+backend/internal/mthub/service_orders.go:352:func (s *MtHubService) TransitionOrderByTicket(ctx context.Context, accountID string, ticket int64, to OMSState) {
+backend/internal/mthub/service_orders.go:403:func (s *MtHubService) PublishTradeEventFromUpdate(
 backend/internal/mthub/service_orders_close.go:26:func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
 backend/internal/mthub/service_orders_delete.go:15:func (s *MtHubService) DeleteOrder(ctx context.Context, accountID string, ticket int64) error {
 backend/internal/mthub/service_orders_import.go:22:func (s *MtHubService) ImportBrokerOrder(ctx context.Context, accountID string, br *OrderRecord) error {
@@ -2242,7 +2254,7 @@ backend/internal/service/account_sync.go:17:func (s *AccountService) GetDecrypte
 backend/internal/service/account_sync.go:209:func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID string) ([]AccountSnapshot, error) {
 backend/internal/service/account_sync.go:247:func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, accountID, userID string, balance, equity, margin, freeMargin decimal.Decimal) error {
 backend/internal/service/account_sync.go:41:func (s *AccountService) BackfillPlaintextCredentials(ctx context.Context) (int, error) {
-backend/internal/service/account_sync_service.go:115:func (s *AccountSyncService) CheckMarginCall(
+backend/internal/service/account_sync_service.go:121:func (s *AccountSyncService) CheckMarginCall(
 backend/internal/service/account_sync_service.go:48:func (s *AccountSyncService) SetNotificationSender(ns *notifpubsub.Sender) { s.notifSender = ns }
 backend/internal/service/account_sync_service.go:51:func (s *AccountSyncService) SetScheduleResolver(r mthub.ScheduleResolver) { s.scheduleResolver = r }
 backend/internal/service/account_sync_service.go:56:func (s *AccountSyncService) SyncAccountHistory(accountID, userID string) {
@@ -2410,14 +2422,14 @@ backend/internal/service/withdrawal_builder.go:69:func (b *WithdrawalBuilder) Bu
 > 在此列表 = 真正可被调用；只在某 *_test.go 出现而不在此 = 货架闲置（shelf-ware）。
 
 ```
-backend/cmd/server/handlers.go:114:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
-backend/cmd/server/handlers.go:185:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
-backend/cmd/server/handlers.go:207:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
-backend/cmd/server/handlers.go:271:	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:279:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:282:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:284:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otel, auth)))
-backend/cmd/server/handlers.go:287:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:113:	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:184:	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:206:	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, withSency(d.OtelInterceptor, d.AuthInterceptor)))
+backend/cmd/server/handlers.go:270:	mux.Handle(antv1c.NewSubscriptionServiceHandler(subscriptionServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:278:	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:281:	mux.Handle(antv1c.NewJobServiceHandler(jobServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:283:	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, withSency(otel, auth)))
+backend/cmd/server/handlers.go:286:	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, withSency(otel, auth)))
 backend/cmd/server/handlers_admin.go:49:	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, withSency(ic.otel, ic.auth, ic.admin)))
 backend/cmd/server/handlers_admin.go:52:	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, withSency(ic.otel, ic.auth, ic.admin)))
 backend/cmd/server/handlers_admin.go:55:	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, withSency(ic.otel, ic.auth, ic.admin)))
@@ -2431,19 +2443,19 @@ backend/cmd/server/handlers_admin.go:80:		mux.Handle(antv1c.NewAdminAgentSetting
 backend/cmd/server/handlers_admin.go:84:		mux.Handle(antv1c.NewAgentHooksServiceHandler(agentHooksServer, withSency(ic.otel, ic.auth, ic.admin)))
 backend/cmd/server/handlers_admin.go:89:	mux.Handle(antv1c.NewAdminMonitorServiceHandler(adminMonitorServer, withSency(ic.otel, ic.auth, ic.admin)))
 backend/cmd/server/handlers_admin.go:93:	mux.Handle(antv1c.NewPlatformHealthServiceHandler(platformHealthServer, withSency(ic.otel, ic.auth, ic.admin)))
-backend/cmd/server/handlers_ai.go:130:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:132:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:134:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:136:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:138:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:152:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:126:	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:128:	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:130:	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:132:	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:134:	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:148:	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 backend/cmd/server/handlers_ai.go:174:	mux.Handle(antv1c.NewCreditServiceHandler(creditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 backend/cmd/server/handlers_ai.go:176:	mux.Handle(antv1c.NewAdminCreditServiceHandler(adminCreditServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 backend/cmd/server/handlers_ai.go:183:	mux.Handle(antv1c.NewAgentGatewayServiceHandler(agentGateway, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:83:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:84:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:88:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
-backend/cmd/server/handlers_ai.go:94:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:82:	mux.Handle(antv1c.NewAIServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:83:	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:87:	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
+backend/cmd/server/handlers_ai.go:93:	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, withSency(p.OtelInterceptor, p.AuthInterceptor)))
 backend/cmd/server/handlers_marketplace.go:33:	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, withSency(otelInterceptor, authInterceptor)))
 backend/cmd/server/handlers_marketplace.go:37:	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, withSency(otelInterceptor, authInterceptor)))
 backend/cmd/server/handlers_share.go:31:	mux.Handle(antv1c.NewShareServiceHandler(shareServer, withSency(otelInterceptor, authInterceptor)))

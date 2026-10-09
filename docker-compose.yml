@@ -60,7 +60,9 @@ services:
       - DB_USER=${DB_USER:-ant}
       - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       - DB_PORT=5432
-      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env (32+ chars)}
+      # ENV-TO-PG-1: JWT_SECRET seeds into platform_secrets on first boot; after that
+      # DB is authoritative and the .env entry may be removed (empty default is valid).
+      - JWT_SECRET=${JWT_SECRET:-}
       - NATS_URL=nats://${NATS_USER:-ant}:${NATS_PASSWORD:-ant}@nats:4222
       - REDIS_HOST=redis
       - REDIS_PORT=6379

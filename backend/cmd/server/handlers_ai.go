@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -95,17 +94,14 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
 
 	// Phase 1.1: per-user daily quota + platform-wide daily cost circuit breaker.
+	// ENV-TO-PG-1：配额四键收口 cfg（C 档→system_config seed+overlay；运行期另有
+	// agent_managed_settings 热更层覆写，语义不变）。
 	dailyQuotaCfg := service.DailyQuotaConfig{
-		MaxSessionsPerDay: envInt("AI_DAILY_MAX_SESSIONS", 5),
-		MaxTokensPerDay:   envInt("AI_DAILY_MAX_TOKENS", 200_000),
+		MaxSessionsPerDay: cfg.AIDailyMaxSessions,
+		MaxTokensPerDay:   cfg.AIDailyMaxTokens,
 	}
 	dailyQuota := service.NewDailyQuotaChecker(gatewayTokenUsageRepo, dailyQuotaCfg, log)
-	costThreshold := decimal.NewFromInt(int64(envInt("AI_DAILY_COST_LIMIT_USD", 50)))
-	if v := os.Getenv("AI_DAILY_COST_LIMIT_USD"); v != "" {
-		if parsed, err := decimal.NewFromString(v); err == nil && parsed.IsPositive() {
-			costThreshold = parsed
-		}
-	}
+	costThreshold := parseAIDailyCostLimit(cfg.AIDailyCostLimitUSD)
 	costBreaker := service.NewPlatformCostBreaker(gatewayTokenUsageRepo, costThreshold, log)
 
 	// Wire runtime config from agent_managed_settings (admin UI adjustable without restart).
@@ -117,7 +113,7 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	// but BYO-key users continue to work.
 	aiSvc.SetCostBreaker(costBreaker)
 
-	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo, dailyQuota)
+	wireAIBilling(aiSvc, p.WalletSvc, gatewayServer, gatewayModelRepo, p.QuotaChecker, gatewayTokenUsageRepo, dailyQuota, cfg.AIMinBalance)
 
 	creditSvc := wireCreditBilling(p, pool, gatewayModelRepo, mux, log)
 	if err := creditSvc.RestoreHolds(ctx); err != nil {
@@ -158,13 +154,17 @@ func setupAIServices(p aiServicesParams) aiServicesDeps {
 	}
 }
 
-func envInt(key string, def int) int {
-	if v := os.Getenv(key); v != "" {
-		if n, err := strconv.Atoi(v); err == nil {
-			return n
-		}
+// parseAIDailyCostLimit 平台 AI 日成本熔断阈值（ENV-TO-PG-1 收口；值来自 cfg.AIDailyCostLimitUSD
+// = env/「50」default 或 system_config overlay）。语义与原 env 直读逐分支等价：
+// 正十进制→其值；非正整数→其值；其余（坏串/空）→50。
+func parseAIDailyCostLimit(v string) decimal.Decimal {
+	if parsed, err := decimal.NewFromString(v); err == nil && parsed.IsPositive() {
+		return parsed
 	}
-	return def
+	if n, err := strconv.Atoi(v); err == nil {
+		return decimal.NewFromInt(int64(n))
+	}
+	return decimal.NewFromInt(50)
 }
 
 func wireCreditBilling(p aiServicesParams, pool *pgxpool.Pool, gatewayModelRepo *repository.AIModelRepository, mux *http.ServeMux, log *zap.Logger) *service.CreditService {

@@ -126,4 +126,11 @@ if command -v npx >/dev/null 2>&1 && git diff --cached --name-only | grep -q 'i1
   }
 fi
 
+# ⑥ ENV-TO-PG-1 env 直读门禁（ADR-0031）：业务配置唯一真相=PG，env 只留引导件。
+# 白名单文件外新增 os.Getenv/os.LookupEnv 即拦（防回潮，含其他席位）。
+bash scripts/check-env-reads.sh || {
+  echo "❌ check-env-reads 未过（见上）。新配置读取点走 seed-once+overlay，或过评审登记 env-allowlist.txt。" >&2
+  fail=1
+}
+
 exit $fail

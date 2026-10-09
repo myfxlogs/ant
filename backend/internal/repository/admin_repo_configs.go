@@ -107,3 +107,36 @@ func (r *AdminRepository) GetHotWalletKey(ctx context.Context) ([]byte, error) {
 	}
 	return encryptedData, nil
 }
+
+// LoadAllSystemConfig 全表 key→value 映射（ENV-TO-PG-1 boot overlay 用）。
+// 不筛 admin_visible/enabled——与 GetConfig 同语义：值即真相，可见性/启停是管理面标注。
+func (r *AdminRepository) LoadAllSystemConfig(ctx context.Context) (map[string]string, error) {
+	rows, err := r.db.Query(ctx, `SELECT key, value FROM system_config`)
+	if err != nil {
+		return nil, fmt.Errorf("load all system config: %w", err)
+	}
+	defer rows.Close()
+	out := make(map[string]string)
+	for rows.Next() {
+		var k, v string
+		if err := rows.Scan(&k, &v); err != nil {
+			return nil, fmt.Errorf("scan system config: %w", err)
+		}
+		out[k] = v
+	}
+	return out, rows.Err()
+}
+
+// InsertSystemConfigIfAbsent seed-once 写入（ON CONFLICT DO NOTHING，仅缺键种入——
+// 已有行（含管理面改过的值）永不被 env 覆盖）。
+func (r *AdminRepository) InsertSystemConfigIfAbsent(ctx context.Context, key, value, valueType, description string) error {
+	_, err := r.db.Exec(ctx, `
+		INSERT INTO system_config (key, value, description, enabled, admin_visible, value_type)
+		VALUES ($1, $2, $3, TRUE, TRUE, $4)
+		ON CONFLICT (key) DO NOTHING`,
+		key, value, description, valueType)
+	if err != nil {
+		return fmt.Errorf("seed system config %s: %w", key, err)
+	}
+	return nil
+}

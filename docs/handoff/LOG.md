@@ -417,3 +417,16 @@ demo 904d14e6 / BTCUSDm 四轴全绿：run 3559decb `tradeAllowed=true`（D4）�
 - **VM-BLOCK-SCOPE-1 ✅done+已部署**：设计 v1 经决策方审计退回修订 v2（实证纠正：for 体 decl 本不泄漏、写位 shim 假绿陷阱、mutation 映射、B1 pin 化）；施工 2f188877 IR 层 pushScope 包裹 5 插入点；独立复审亲手 mutation M1/M2/M3 复红→零偏差（c7976d1c）；实盘双探针闭环——拒收态 `unknown variable: n` 编译拒 / 接受态 a=1 b=2 cnt=3 全对（8cbc9b32）。
 - 兼容扫描器入库常驻回归门 `block_scope_scan_test.go`（b388b94e）：repo fixtures + /tmp/strats 外部语料，11 源 CLEAN，空跑/泄漏均 FAIL。
 - 明细：registry 行 47/48。
+
+## 2026-10-09 — ENV-TO-PG-1 env 收口 PG（业主令派单，Zcode 施工，⚠️待独立复审）
+
+派工单 `docs/plan/2026-10-env-to-pg-consolidation.md`（ARB D-368/D-515/D-564 同类收口平移）。设计 ADR-0031。**勿部署**——migration 282 随下批镜像走。
+
+- **四档归位**：A 引导件留 env；B 构建期留 env（UMAMI_APP_SECRET 实拍=umami 侧容器 compose 期消费、后端零读取——按禁区「构建期不硬搬 PG」对派单 D 清单做一处修正）；C 业务旋钮 21 键→`system_config`（派单 17 键+RATE_LIMIT_*/AI_DAILY_MAX_* 同性质补齐）；D 秘密件 10 键→`platform_secrets` 密文轨（migration 282+`PurposePlatformSecret`）。禁区 DEPOSIT_XPUB(+FP) 原语义保留（ADR-0026 R5）。
+- **机制**：boot 链 `connectPostgres→newSecretsClient→seedAndOverlayConfig→Validate→initInfrastructure`（pool/secClient 自 initInfrastructure 前移）；seed-once（逐键 ON CONFLICT DO NOTHING）+ DB-wins overlay（typed 白名单注册表 `internal/config/appsettings.go`/`appsecrets.go`，坏值 warn+保留、D 档解密失败 fail-closed）；`config.Load()` 保留全键 env+default=零语义漂移。热更自查：RiskGate 三键实拍 boot-only（运行期零写入），迁 PG 语义等价；AI 配额热更走 agent_managed_settings 不受影响。
+- **散落收口**：handlers_ai/ai_billing/pipeline/handlers 4 文件→cfg 字段（AI 四键+MTAPI 双 host+parseAIMinBalance/parseAIDailyCostLimit 语义逐分支平移，单测 pin）。`config.go` 分档注释+新字段（AIDaily*/MtapiMT4|MT5Host）。
+- **门禁**：`scripts/check-env-reads.sh`（backend/{internal,cmd,tools} 非 _test.go，字面+变量 os.Getenv/LookupEnv 白名单=bootstrap 6 文件：config.go/appsettings.go/bootstrap_config.go/sentry.go/master_provider.go/main.go）入 pre-commit ⑥；白名单外探针实测 FAIL、基线 OK；AGENTS.md 红线补「业务配置唯一真相=PG」；.env.example 四档重写（死键 REDIS_DB/FMP_API_KEY/ALPHAFORGE_*(7) 清出）；docker-compose JWT_SECRET `:?`→`:-`。
+- **测试**：单测 config 8 例（typed 矩阵/DB-wins/坏值保留/外来行跳过/密钥白名单禁区判定）+cmd/server 语义等价 2 例；integration 5/5（产库 DSN 经 docker bridge 172.19.0.2——5433 docker-proxy stale 未监听，独立 schema `bootstrap_it_schema` 零接触真实行，跑完自清实测残留=0）；mutation×3 全 RED→恢复 GREEN（M1 seed 幂等破坏/M2 overlay 行丢弃/M3 加密跳过明文落库→双 RED）。
+- **机检**：build/vet/gofmt（本会话文件）/race×4 包/check-file-lines 0 ERROR（pipeline.go 451→450——本会话 +1 行顶破 1.5× 阈值，字段分组声明+删重复行修回 🟡 存量水位）；全量 `go test ./...` 除 `internal/service` bound_account 3 测硬编码 DSN（be831d5d 引入的环境性存量，文件未触碰）外全绿。
+- **STATE.md 滚出**：VM-AUDIT-2026-08-27-1..8 + FIX-2026-08-27-* 五条 ✅done 指针滚出（明细在 registry）。
+- **待复审锚点**：①逐键四档落位核对派工单验收表 ②门禁拦截实证 ③部署后：产库自动建 282 表+首次 boot seed+逐键 source 日志+删 .env C/D 键重启行为不变。

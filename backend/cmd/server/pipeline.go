@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -28,29 +27,30 @@ import (
 )
 
 type mdGatewayPipelineDeps struct {
-	pipelineCtx       context.Context
-	log               *zap.Logger
-	pool              *pgxpool.Pool
-	store             repository.MarketDataStore
-	nc                *nats.Conn
-	rdb               *goredis.Client
-	spillDir          string
-	secClient         secrets.Client
-	hub               *mthub.Hub
-	accountSvc        *service.AccountService
-	mthubSvc          *mthub.MtHubService
-	accountSyncSvc    *service.AccountSyncService
-	tradeRecordRepo   *repository.TradeRecordRepository
-	snapshotBroker    *mthub.PositionSnapshotBroker
-	accountBroker     *mthub.AccountProfitBroker
-	barBroker         *mthub.BarBroker
-	eventStore        *mthub.TradeEventStore
-	emailNotifier     **notifier.EmailNotifier
-	platformAgg       **risksvc.PlatformAggregator
-	reconLoop         **mthub.ReconciliationLoop
-	brokerReg         *adapter.BrokerRegistry
-	livePerfCollector *marketplace.LivePerformanceCollector
-	scheduleResolver  mthub.ScheduleResolver
+	pipelineCtx                context.Context
+	log                        *zap.Logger
+	pool                       *pgxpool.Pool
+	store                      repository.MarketDataStore
+	nc                         *nats.Conn
+	rdb                        *goredis.Client
+	spillDir                   string
+	secClient                  secrets.Client
+	hub                        *mthub.Hub
+	accountSvc                 *service.AccountService
+	mthubSvc                   *mthub.MtHubService
+	accountSyncSvc             *service.AccountSyncService
+	tradeRecordRepo            *repository.TradeRecordRepository
+	snapshotBroker             *mthub.PositionSnapshotBroker
+	accountBroker              *mthub.AccountProfitBroker
+	barBroker                  *mthub.BarBroker
+	eventStore                 *mthub.TradeEventStore
+	emailNotifier              **notifier.EmailNotifier
+	platformAgg                **risksvc.PlatformAggregator
+	reconLoop                  **mthub.ReconciliationLoop
+	brokerReg                  *adapter.BrokerRegistry
+	mtapiMT4Host, mtapiMT5Host string // A 档引导件（ENV-TO-PG-1 自 cfg 传入）
+	livePerfCollector          *marketplace.LivePerformanceCollector
+	scheduleResolver           mthub.ScheduleResolver
 }
 
 func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
@@ -70,7 +70,7 @@ func startMdGatewayPipeline(d mdGatewayPipelineDeps) error {
 		Secrets:             d.secClient,
 		Hub:                 d.hub,
 		BrokerRegistry:      d.brokerReg,
-		Searcher:            brokersearch.NewFromConfig(os.Getenv("MTAPI_MT4_HOST"), os.Getenv("MTAPI_MT5_HOST")),
+		Searcher:            brokersearch.NewFromConfig(d.mtapiMT4Host, d.mtapiMT5Host),
 		OnAccountProfit:     pst.makeOnAccountProfit(d.accountSvc, d.mthubSvc, d.accountSyncSvc, d.eventStore, d.emailNotifier, d.livePerfCollector, d.snapshotBroker),
 		OnOrderUpdate:       buildOnOrderUpdate(d.log, d.snapshotBroker, d.tradeRecordRepo, d.mthubSvc, d.scheduleResolver),
 		OnAccountDisconnect: makeOnAccountDisconnect(d.log, d.pool, d.accountSvc, d.accountSyncSvc, d.platformAgg, d.hub, d.mthubSvc),

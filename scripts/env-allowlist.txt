@@ -1,0 +1,11 @@
+# env-allowlist.txt —— ENV-TO-PG-1：env 直读白名单（文件级，逐行登记；新文件必须过评审）。
+# 原则：业务配置唯一真相=PG（system_config / platform_secrets，ADR-0031）；
+# env 只留「连库之前的引导件」+ 基础设施端点 + 可观测性自举。本表 = bootstrap 清单。
+# 门禁：scripts/check-env-reads.sh（backend/{internal,cmd,tools} 非 _test.go，
+# 字面或变量式 os.Getenv/os.LookupEnv 只允许出现在下列文件）。
+backend/internal/config/config.go
+backend/internal/config/appsettings.go
+backend/cmd/server/bootstrap_config.go
+backend/internal/sentry/sentry.go
+backend/internal/secrets/master_provider.go
+backend/cmd/server/main.go
