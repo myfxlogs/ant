@@ -121,6 +121,7 @@
 | `docs/constraints.md` | T1 | 技术约束（禁令/协议/部署） |
 | `docs/pitfalls.md` | T1 | 坑库（静默失败模式 + 调试路径） |
 | `docs/项目定位.md` | T1 | 业务方向 + 功能块导航 |
+| `docs/项目故事.md` | T1 | 架构与功能管线实录（讨论基线文档） |
 | `docs/audits/tech-debt-registry.md` | T2 | 技术债务总账（open/done 明细） |
 | `docs/audits/handover-audit-plan.md` | T2 | 交接审计计划 + 变更日志 |
 | `docs/adr/` | T1 | 架构决策记录（ADR 0001+） |
