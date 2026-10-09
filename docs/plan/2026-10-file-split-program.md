@@ -70,6 +70,7 @@
 ## 每批门禁（统一）
 
 - `go build ./...`、`go vet ./...` 0 错
+- **integration tag 可编译守恒**（T2 复审补入）：`go build -tags integration ./...` + `go vet -tags integration ./<触及包>` 0 错——`go test -list` 默认不带 tag，不编译 `//go:build integration` 文件，拆分层叠加/残余文件重复声明会逃逸默认守恒门禁（connect/system 实证）
 - `go test -count=1` 每触及包：拆分前后 Test* 清单与 PASS 数一致（输出贴回报）
 - `go test -race` 触及并发包（connect/strategy、mthub、mdgateway、sweep、runner 相关）
 - `check-file-lines --strict`：本批触及路径全部移出 🟡 清单，且不产生新 🟡/🔴
